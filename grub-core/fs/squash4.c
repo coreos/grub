@@ -52,7 +52,8 @@ struct grub_squash_super
   grub_uint32_t creation_time;
   grub_uint32_t dummy2;
   grub_uint32_t dummy3[4];
-  grub_uint32_t root_ino;
+  grub_uint16_t root_ino_offset;
+  grub_uint16_t root_ino_chunk;
   grub_uint32_t dummy4;
   grub_uint64_t total_size;
   grub_uint64_t exttbloffset;
@@ -71,10 +72,18 @@ struct grub_squash_inode
   grub_uint16_t type;
   grub_uint16_t dummy1[3];
   grub_uint32_t mtime;
-  grub_uint16_t dummy2[6];
+  grub_uint16_t dummy2[2];
+  grub_uint16_t chunk;
+  grub_uint16_t dummy3[3];
   grub_uint32_t offset;
   grub_uint32_t size;
 } __attribute__ ((packed));
+
+static inline unsigned
+decode_chunk_number (grub_uint16_t in)
+{
+  return (grub_le_to_cpu16 (in) & 0xff) / 2;
+}
 
 /* Chunk-based.  */
 struct grub_squash_dirent_header
@@ -102,8 +111,10 @@ struct grub_squash_dirent
 
 static grub_err_t
 read_chunk (grub_disk_t disk, void *buf, grub_size_t len,
-	    grub_uint64_t chunk_start, grub_uint64_t offset)
+	    grub_uint64_t chunk, unsigned nchunk, grub_off_t offset)
 {
+  grub_uint64_t chunk_start;
+  chunk_start = grub_le_to_cpu64 (chunk);
   while (len > 0)
     {
       grub_uint64_t csize;
@@ -116,9 +127,12 @@ read_chunk (grub_disk_t disk, void *buf, grub_size_t len,
 				sizeof (d), &d);
 	  if (err)
 	    return err;
-	  if (offset < SQUASH_CHUNK_SIZE)
+	  if (!nchunk && offset < SQUASH_CHUNK_SIZE)
 	    break;
-	  offset -= SQUASH_CHUNK_SIZE;
+	  if (nchunk)
+	    nchunk--;
+	  else
+	    offset -= SQUASH_CHUNK_SIZE;
 	  chunk_start += 2 + (grub_le_to_cpu16 (d) & ~SQUASH_CHUNK_FLAGS);
 	}
 
@@ -197,13 +211,15 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
   /* FIXME: determine this.  */
   unsigned numheaders = 1;
   unsigned i, j;
+
   for (j = 0; j < numheaders; j++)
     {
       struct grub_squash_dirent_header dh;
       grub_err_t err;
 
       err = read_chunk (dir->data->disk, &dh, sizeof (dh),
-			grub_le_to_cpu64 (dir->data->sb.diroffset), off);
+			dir->data->sb.diroffset,
+			decode_chunk_number (dir->ino.chunk), off);
       if (err)
 	return 0;
       off += sizeof (dh);
@@ -217,14 +233,16 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 	  struct grub_squash_inode ino;
 
 	  err = read_chunk (dir->data->disk, &di, sizeof (di),
-			    grub_le_to_cpu64 (dir->data->sb.diroffset), off);
+			    dir->data->sb.diroffset,
+			    decode_chunk_number (dir->ino.chunk), off);
 	  if (err)
 	    return 0;
 	  off += sizeof (di);
 
 	  err = read_chunk (dir->data->disk, &ino, sizeof (ino),
-			    grub_le_to_cpu64 (dir->data->sb.inodeoffset),
-			    grub_le_to_cpu16 (di.ino));
+			    dir->data->sb.inodeoffset,
+			    0,
+			    grub_cpu_to_le16 (di.ino));
 	  if (err)
 	    return 0;
 
@@ -233,7 +251,8 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 	    return 0;
 	  err = read_chunk (dir->data->disk, buf,
 			    grub_le_to_cpu16 (di.namelen) + 1,
-			    grub_le_to_cpu64 (dir->data->sb.diroffset), off);
+			    dir->data->sb.diroffset, 
+			    decode_chunk_number (dir->ino.chunk), off);
 	  if (err)
 	    return 0;
 
@@ -261,10 +280,11 @@ make_root_node (struct grub_squash_data *data, struct grub_fshelp_node *root)
 {
   grub_memset (root, 0, sizeof (*root));
   root->data = data;
-
-  return read_chunk (data->disk, &root->ino, sizeof (root->ino),
-		     grub_le_to_cpu64 (data->sb.inodeoffset),
-		     grub_le_to_cpu32 (data->sb.root_ino));
+ 
+ return read_chunk (data->disk, &root->ino, sizeof (root->ino),
+		     data->sb.inodeoffset,
+		     decode_chunk_number (data->sb.root_ino_chunk),
+		     grub_cpu_to_le16 (data->sb.root_ino_offset));
 }
 
 static grub_err_t
