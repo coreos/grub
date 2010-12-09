@@ -94,6 +94,11 @@ struct grub_squash_inode
       grub_uint16_t offset;
       grub_uint16_t dummy3[2];
     } dir;
+    struct {
+      grub_uint16_t dummy[4];
+      grub_uint32_t namelen;
+      char name[0];
+    } symlink;
   };
 } __attribute__ ((packed));
 
@@ -114,6 +119,7 @@ struct grub_squash_dirent
   grub_uint16_t type;
 #define SQUASH_TYPE_DIR 1
 #define SQUASH_TYPE_REGULAR 2
+#define SQUASH_TYPE_SYMLINK 3
   /* Actually the value is the length of name - 1.  */
   grub_uint16_t namelen;
   char name[0];
@@ -141,6 +147,8 @@ struct grub_fshelp_node
 {
   struct grub_squash_data *data;
   struct grub_squash_inode ino;
+  grub_uint32_t ino_chunk;
+  grub_uint16_t	ino_offset;
 };
 
 static grub_err_t
@@ -251,6 +259,28 @@ squash_mount (grub_disk_t disk)
   return data;
 }
 
+static char *
+grub_squash_read_symlink (grub_fshelp_node_t node)
+{
+  char *ret;
+  grub_err_t err;
+  ret = grub_malloc (grub_le_to_cpu32 (node->ino.symlink.namelen) + 1);
+
+  err = read_chunk (node->data->disk, ret,
+		    grub_le_to_cpu32 (node->ino.symlink.namelen),
+		    grub_le_to_cpu64 (node->data->sb.inodeoffset)
+		    + node->ino_chunk,
+		    node->ino_offset + (node->ino.symlink.name
+					- (char *) &node->ino));
+  if (err)
+    {
+      grub_free (ret);
+      return NULL;
+    }
+  ret[grub_le_to_cpu32 (node->ino.symlink.namelen)] = 0;
+  return ret;
+}
+
 static int
 grub_squash_iterate_dir (grub_fshelp_node_t dir,
 			 int NESTED_FUNC_ATTR
@@ -313,11 +343,17 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 	  buf[grub_le_to_cpu16 (di.namelen) + 1] = 0;
 	  if (grub_le_to_cpu16 (di.type) == SQUASH_TYPE_DIR)
 	    filetype = GRUB_FSHELP_DIR;
+	  if (grub_le_to_cpu16 (di.type) == SQUASH_TYPE_SYMLINK)
+	    filetype = GRUB_FSHELP_SYMLINK;
+
 	  node = grub_malloc (sizeof (*node));
 	  if (! node)
 	    return 0;
 	  *node = *dir;
 	  node->ino = ino;
+	  node->ino_chunk = grub_le_to_cpu32 (dh.ino_chunk);
+	  node->ino_offset = grub_le_to_cpu16 (di.ino_offset);
+
 	  r = hook (buf, filetype, node);
 
 	  grub_free (buf);
@@ -375,7 +411,7 @@ grub_squash_dir (grub_device_t device, const char *path,
     return err;
 
   grub_fshelp_find_file (path, &root, &fdiro, grub_squash_iterate_dir,
-			 NULL, GRUB_FSHELP_DIR);
+			 grub_squash_read_symlink, GRUB_FSHELP_DIR);
   if (!grub_errno)
     grub_squash_iterate_dir (fdiro, iterate);
 
@@ -401,7 +437,7 @@ grub_squash_open (struct grub_file *file, const char *name)
     return err;
 
   grub_fshelp_find_file (name, &root, &fdiro, grub_squash_iterate_dir,
-			 NULL, GRUB_FSHELP_REG);
+			 grub_squash_read_symlink, GRUB_FSHELP_REG);
   if (grub_errno)
     {
       grub_free (data);
