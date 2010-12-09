@@ -227,11 +227,13 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 				  grub_fshelp_node_t node))
 {
   grub_uint32_t off = grub_le_to_cpu32 (dir->ino.offset) >> 16;
-  /* FIXME: determine this.  */
-  unsigned numheaders = 1;
-  unsigned i, j;
+  grub_uint32_t endoff;
+  unsigned i;
 
-  for (j = 0; j < numheaders; j++)
+  /* FIXME: why - 3 ? */
+  endoff = (grub_le_to_cpu32 (dir->ino.offset) & 0xffff) + off - 3;
+
+  while (off < endoff)
     {
       struct grub_squash_dirent_header dh;
       grub_err_t err;
