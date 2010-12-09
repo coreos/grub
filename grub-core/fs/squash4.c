@@ -401,17 +401,18 @@ grub_squash_open (struct grub_file *file, const char *name)
 }
 
 static grub_ssize_t
-grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
+grub_squash_read_data (struct grub_squash_data *data, 
+		       grub_disk_t disk, const struct grub_squash_inode *ino,
+		       grub_off_t off, char *buf, grub_size_t len)
 {
   grub_err_t err;
   grub_uint64_t a, b;
-  struct grub_squash_data *data = file->data;
   int compressed = 0;
 
-  if (grub_le_to_cpu16 (data->ino.fragment) == 0xffff)
+  if (grub_le_to_cpu16 (ino->fragment) == 0xffff)
     {
-      if (grub_le_to_cpu32 (data->ino.chunk))
-	a = grub_le_to_cpu32 (data->ino.chunk);
+      if (grub_le_to_cpu32 (ino->chunk))
+	a = grub_le_to_cpu32 (ino->chunk);
       else
 	a = sizeof (struct grub_squash_super);
       compressed = !(data->sb.flags & SQUASH_FLAG_UNCOMPRESSED_DATA);
@@ -419,26 +420,35 @@ grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
   else
     {
       struct grub_squash_frag_desc frag;
-      err = read_chunk (file->device->disk, &frag, sizeof (frag),
+      err = read_chunk (disk, &frag, sizeof (frag),
 			data->fragments, sizeof (frag)
-			* grub_le_to_cpu16 (data->ino.fragment));
+			* grub_le_to_cpu16 (ino->fragment));
       if (err)
 	return -1;
-      a = grub_le_to_cpu64 (frag.offset) + grub_le_to_cpu32 (data->ino.chunk);
+      a = grub_le_to_cpu64 (frag.offset) + grub_le_to_cpu32 (ino->chunk);
       compressed = !(data->sb.flags & SQUASH_FLAG_UNCOMPRESSED_FRAGMENTS);
     }
 
-  b = grub_le_to_cpu32 (data->ino.offset) + file->offset;
+  b = grub_le_to_cpu32 (data->ino.offset) + off;
 
   /* FIXME: cache uncompressed chunks.  */
   if (compressed)
-    err = grub_zlib_disk_read (file->device->disk, a, b, buf, len);
+    err = grub_zlib_disk_read (disk, a, b, buf, len);
   else
-    err = grub_disk_read (file->device->disk, (a + b) >> GRUB_DISK_SECTOR_BITS,
+    err = grub_disk_read (disk, (a + b) >> GRUB_DISK_SECTOR_BITS,
 			  (a + b) & (GRUB_DISK_SECTOR_SIZE - 1), len, buf);
   if (err)
     return -1;
   return len;
+}
+
+static grub_ssize_t
+grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
+{
+  struct grub_squash_data *data = file->data;
+
+  return grub_squash_read_data (data, file->device->disk, &data->ino,
+				file->offset, buf, len);
 }
 
 static grub_err_t
