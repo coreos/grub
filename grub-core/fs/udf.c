@@ -26,6 +26,7 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 #include <grub/charset.h>
+#include <grub/datetime.h>
 
 #define GRUB_UDF_MAX_PDS		2
 #define GRUB_UDF_MAX_PMS		6
@@ -904,8 +905,36 @@ grub_udf_dir (grub_device_t device, const char *path,
 				grub_fshelp_node_t node)
   {
       struct grub_dirhook_info info;
+      const struct grub_udf_timestamp *tstamp = NULL;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      if (U16 (node->fe.tag.tag_ident) == GRUB_UDF_TAG_IDENT_FE)
+	tstamp = &node->fe.modification_time;
+      else if (U16 (node->fe.tag.tag_ident) == GRUB_UDF_TAG_IDENT_EFE)
+	tstamp = &node->efe.modification_time;
+
+      if (tstamp && (U16 (tstamp->type_and_timezone) & 0xf000) == 0x1000)
+	{
+	  grub_int16_t tz;
+	  struct grub_datetime datetime;
+
+	  datetime.year = U16 (tstamp->year);
+	  datetime.month = tstamp->month;
+	  datetime.day = tstamp->day;
+	  datetime.hour = tstamp->hour;
+	  datetime.minute = tstamp->minute;
+	  datetime.second = tstamp->second;
+
+	  tz = U16 (tstamp->type_and_timezone) & 0xfff;
+	  if (tz & 0x800)
+	    tz |= 0xf000;
+	  if (tz == -2047)
+	    tz = 0;
+
+	  info.mtimeset = !!grub_datetime2unixtime (&datetime, &info.mtime);
+  
+	  info.mtime -= 60 * tz;
+	}
       grub_free (node);
       return hook (filename, &info);
   }

@@ -166,84 +166,9 @@ struct grub_fshelp_node
 static grub_dl_t my_mod;
 
 
-#define SECPERMIN 60
-#define SECPERHOUR (60*SECPERMIN)
-#define SECPERDAY (24*SECPERHOUR)
-#define SECPERYEAR (365*SECPERDAY)
-#define SECPER4YEARS (4*SECPERYEAR+SECPERDAY)
-
-static grub_err_t
-grub_datetime2unixtime (const struct grub_datetime *datetime, grub_int32_t *nix)
-{
-  grub_int32_t ret;
-  int y4, ay;
-  grub_uint16_t monthssum[12]
-    = { 0,
-	31, 
-	31 + 28,
-	31 + 28 + 31,
-	31 + 28 + 31 + 30,
-	31 + 28 + 31 + 30 + 31, 
-	31 + 28 + 31 + 30 + 31 + 30,
-	31 + 28 + 31 + 30 + 31 + 30 + 31,
-	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31,
-	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30,
-	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31,
-	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30};
-  grub_uint8_t months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-  if (datetime->year > 2038 || datetime->year < 1901)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "outside of UNIX epoch");
-  if (datetime->month > 12 || datetime->month < 1)
-    return grub_error (GRUB_ERR_BAD_NUMBER, "not a valid month");
-
-  /* In the period of validity of unixtime all years divisible by 4
-     are bissextile*/
-  /* Convenience: let's have 3 consecutive non-bissextile years
-     at the beginning of the epoch. So count from 1971 instead of 1970 */
-  ret = SECPERYEAR + SECPERDAY;
-
-  /* Transform C divisions and modulos to mathematical ones */
-  y4 = (datetime->year - 1971) / 4;
-  if (datetime->year < 1971)
-    y4--;
-  ay = datetime->year - 1971 - 4 * y4;
-  ret += y4 * SECPER4YEARS;
-  ret += ay * SECPERYEAR;
-
-  ret += monthssum[datetime->month - 1] * SECPERDAY;
-  if (ay == 0 && datetime->month >= 3)
-    ret += SECPERDAY;
-
-  ret += (datetime->day - 1) * SECPERDAY;
-  if ((datetime->day > months[datetime->month - 1]
-       && (!ay || datetime->month != 2 || datetime->day != 29))
-      || datetime->day < 1)
-    return grub_error (GRUB_ERR_BAD_NUMBER, "invalid day");
-
-  ret += datetime->hour * SECPERHOUR;
-  if (datetime->hour > 23)
-    return grub_error (GRUB_ERR_BAD_NUMBER, "invalid hour");
-  ret += datetime->minute * 60;
-  if (datetime->minute > 59)
-    return grub_error (GRUB_ERR_BAD_NUMBER, "invalid minute");
-
-  ret += datetime->second;
-  /* Accept leap seconds.  */
-  if (datetime->second > 60)
-    return grub_error (GRUB_ERR_BAD_NUMBER, "invalid second");
-
-  if ((datetime->year > 1980 && ret < 0)
-      || (datetime->year < 1960 && ret > 0))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "outside of UNIX epoch");
-  *nix = ret;
-  return GRUB_ERR_NONE;
-}
-
 static grub_err_t
 iso9660_to_unixtime (const struct grub_iso9660_date *i, grub_int32_t *nix)
 {
-  grub_err_t err;
   struct grub_datetime datetime;
   
   if (! i->year[0] && ! i->year[1]
@@ -263,17 +188,17 @@ iso9660_to_unixtime (const struct grub_iso9660_date *i, grub_int32_t *nix)
   datetime.minute = (i->minute[0] - '0') * 10 + (i->minute[1] - '0');
   datetime.second = (i->second[0] - '0') * 10 + (i->second[1] - '0');
   
-  err = grub_datetime2unixtime (&datetime, nix);
+  if (!grub_datetime2unixtime (&datetime, nix))
+    return grub_error (GRUB_ERR_BAD_NUMBER, "incorrect date");
   *nix -= i->offset * 60 * 15;
-  return err;
+  return GRUB_ERR_NONE;
 }
 
-static grub_err_t
+static int
 iso9660_to_unixtime2 (const struct grub_iso9660_date2 *i, grub_int32_t *nix)
 {
-  grub_err_t err;
   struct grub_datetime datetime;
-  
+
   datetime.year = i->year + 1900;
   datetime.month = i->month;
   datetime.day = i->day;
@@ -281,9 +206,10 @@ iso9660_to_unixtime2 (const struct grub_iso9660_date2 *i, grub_int32_t *nix)
   datetime.minute = i->minute;
   datetime.second = i->second;
   
-  err = grub_datetime2unixtime (&datetime, nix);
+  if (!grub_datetime2unixtime (&datetime, nix))
+    return 0;
   *nix -= i->offset * 60 * 15;
-  return err;
+  return 1;
 }
 
 /* Iterate over the susp entries, starting with block SUA_BLOCK on the
@@ -811,14 +737,9 @@ grub_iso9660_dir (grub_device_t device, const char *path,
 				grub_fshelp_node_t node)
     {
       struct grub_dirhook_info info;
-      grub_err_t err;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
-      err = iso9660_to_unixtime2 (&node->dirent.mtime, &info.mtime);
-      if (err)
-	grub_errno = GRUB_ERR_NONE;
-      else
-	info.mtimeset = 1;
+      info.mtimeset = !!iso9660_to_unixtime2 (&node->dirent.mtime, &info.mtime);
 
       grub_free (node);
       return hook (filename, &info);
