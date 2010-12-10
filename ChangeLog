@@ -1,3 +1,13 @@
+2010-12-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/gettext/gettext.c (grub_gettext_init_ext): Factor out
+	.mo/.mo.gz opening sequence to ...
+	(grub_mofile_open_lang): ... here.
+	(grub_gettext_init_ext): If opening ll_CC fails, try ll.
+	* util/grub.d/00_header.in (grub_lang): Include country part of
+	locale.
+	Reported by: Mario Limonciello.
+
 2010-12-09  Robert Millan  <rmh@gnu.org>
 
 	* NEWS: Document addition of ZFS support.
