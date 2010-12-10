@@ -27,6 +27,7 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 #include <grub/charset.h>
+#include <grub/datetime.h>
 
 #define GRUB_ISO9660_FSTYPE_DIR		0040000
 #define GRUB_ISO9660_FSTYPE_REG		0100000
@@ -152,6 +153,108 @@ struct grub_fshelp_node
 
 static grub_dl_t my_mod;
 
+
+#define SECPERMIN 60
+#define SECPERHOUR (60*SECPERMIN)
+#define SECPERDAY (24*SECPERHOUR)
+#define SECPERYEAR (365*SECPERDAY)
+#define SECPER4YEARS (4*SECPERYEAR+SECPERDAY)
+
+static grub_err_t
+grub_datetime2unixtime (const struct grub_datetime *datetime, grub_int32_t *nix)
+{
+  grub_int32_t ret;
+  int y4, ay;
+  grub_uint16_t monthssum[12]
+    = { 0,
+	31, 
+	31 + 28,
+	31 + 28 + 31,
+	31 + 28 + 31 + 30,
+	31 + 28 + 31 + 30 + 31, 
+	31 + 28 + 31 + 30 + 31 + 30,
+	31 + 28 + 31 + 30 + 31 + 30 + 31,
+	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31,
+	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30,
+	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31,
+	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30};
+  grub_uint8_t months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+  if (datetime->year > 2038 || datetime->year < 1902)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, "outside of UNIX epoch");
+  if (datetime->month > 12 || datetime->month < 1)
+    return grub_error (GRUB_ERR_BAD_NUMBER, "not a valid month");
+
+  /* In the period of validity of unixtime all years divisible by 4
+     are bissextile*/
+  /* Convenience: let's have 3 consecutive non-bissextile years
+     at the beginning of the epoch. So count from 1973 instead of 1970 */
+  ret = 3*SECPERYEAR + SECPERDAY;
+
+  /* Transform C divisions and modulos to mathematical ones */
+  y4 = (datetime->year - 1973) / 4;
+  if (datetime->year < 1973)
+    y4--;
+  ay = datetime->year - 1973 - 4 * y4;
+  ret += y4 * SECPER4YEARS;
+  ret += ay * SECPERYEAR;
+
+  ret += monthssum[datetime->month - 1] * SECPERDAY;
+  if (ay == 0 && datetime->month >= 3)
+    ret += SECPERDAY;
+
+  ret += (datetime->day - 1) * SECPERDAY;
+  if ((datetime->day > months[datetime->month - 1]
+       && (!ay || datetime->month != 2 || datetime->day != 29))
+      || datetime->day < 1)
+    return grub_error (GRUB_ERR_BAD_NUMBER, "invalid day");
+
+  ret += datetime->hour * SECPERHOUR;
+  if (datetime->hour > 23)
+    return grub_error (GRUB_ERR_BAD_NUMBER, "invalid hour");
+  ret += datetime->minute * 60;
+  if (datetime->minute > 59)
+    return grub_error (GRUB_ERR_BAD_NUMBER, "invalid minute");
+
+  ret += datetime->second;
+  /* Accept leap seconds.  */
+  if (datetime->second > 60)
+    return grub_error (GRUB_ERR_BAD_NUMBER, "invalid second");
+
+  if ((datetime->year > 1980 && ret < 0)
+      || (datetime->year < 1960 && ret > 0))
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, "outside of UNIX epoch");
+  *nix = ret;
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+iso9660_to_unixtime (const struct grub_iso9660_date *i, grub_int32_t *nix)
+{
+  grub_err_t err;
+  struct grub_datetime datetime;
+  
+  if (! i->year[0] && ! i->year[1]
+      && ! i->year[2] && ! i->year[3]
+      && ! i->month[0] && ! i->month[1]
+      && ! i->day[0] && ! i->day[1]
+      && ! i->hour[0] && ! i->hour[1]
+      && ! i->minute[0] && ! i->minute[1]
+      && ! i->second[0] && ! i->second[1]
+      && ! i->hundredth[0] && ! i->hundredth[1])
+    return grub_error (GRUB_ERR_BAD_NUMBER, "empty date");
+  datetime.year = (i->year[0] - '0') * 1000 + (i->year[1] - '0') * 100
+    + (i->year[2] - '0') * 10 + (i->year[3] - '0');
+  datetime.month = (i->month[0] - '0') * 10 + (i->month[1] - '0');
+  datetime.day = (i->day[0] - '0') * 10 + (i->day[1] - '0');
+  datetime.hour = (i->hour[0] - '0') * 10 + (i->hour[1] - '0');
+  datetime.minute = (i->minute[0] - '0') * 10 + (i->minute[1] - '0');
+  datetime.second = (i->second[0] - '0') * 10 + (i->second[1] - '0');
+  
+  err = grub_datetime2unixtime (&datetime, nix);
+  *nix -= i->offset * 60 * 15;
+  return err;
+}
 
 /* Iterate over the susp entries, starting with block SUA_BLOCK on the
    offset SUA_POS with a size of SUA_SIZE bytes.  Hook is called for
@@ -871,6 +974,32 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
   return grub_errno;
 }
 
+/* Get writing time of filesystem. */
+static grub_err_t 
+grub_iso9660_mtime (grub_device_t device, grub_int32_t *timebuf)
+{
+  struct grub_iso9660_data *data;
+  grub_disk_t disk = device->disk;
+  grub_err_t err;
+
+  grub_dl_ref (my_mod);
+
+  data = grub_iso9660_mount (disk);
+  if (!data)
+    {
+      grub_dl_unref (my_mod);
+      return grub_errno;
+    }
+  err = iso9660_to_unixtime (&data->voldesc.modified, timebuf);
+
+  grub_dl_unref (my_mod);
+
+  grub_free (data);
+
+  return err;
+}
+
+
 
 
 static struct grub_fs grub_iso9660_fs =
@@ -882,6 +1011,7 @@ static struct grub_fs grub_iso9660_fs =
     .close = grub_iso9660_close,
     .label = grub_iso9660_label,
     .uuid = grub_iso9660_uuid,
+    .mtime = grub_iso9660_mtime,
     .next = 0
   };
 
