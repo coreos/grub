@@ -54,6 +54,17 @@ struct grub_iso9660_voldesc
   grub_uint8_t version;
 } __attribute__ ((packed));
 
+struct grub_iso9660_date2
+{
+  grub_uint8_t year;
+  grub_uint8_t month;
+  grub_uint8_t day;
+  grub_uint8_t hour;
+  grub_uint8_t minute;
+  grub_uint8_t second;
+  grub_uint8_t offset;
+} __attribute__ ((packed));
+
 /* A directory entry.  */
 struct grub_iso9660_dir
 {
@@ -63,7 +74,7 @@ struct grub_iso9660_dir
   grub_uint32_t first_sector_be;
   grub_uint32_t size;
   grub_uint32_t size_be;
-  grub_uint8_t unused1[7];
+  struct grub_iso9660_date2 mtime;
   grub_uint8_t flags;
   grub_uint8_t unused2[6];
   grub_uint8_t namelen;
@@ -145,6 +156,7 @@ struct grub_iso9660_data
 struct grub_fshelp_node
 {
   struct grub_iso9660_data *data;
+  struct grub_iso9660_dir dirent;
   unsigned int size;
   unsigned int blk;
   unsigned int dir_blk;
@@ -188,14 +200,14 @@ grub_datetime2unixtime (const struct grub_datetime *datetime, grub_int32_t *nix)
   /* In the period of validity of unixtime all years divisible by 4
      are bissextile*/
   /* Convenience: let's have 3 consecutive non-bissextile years
-     at the beginning of the epoch. So count from 1973 instead of 1970 */
-  ret = 3*SECPERYEAR + SECPERDAY;
+     at the beginning of the epoch. So count from 1971 instead of 1970 */
+  ret = SECPERYEAR + SECPERDAY;
 
   /* Transform C divisions and modulos to mathematical ones */
-  y4 = (datetime->year - 1973) / 4;
-  if (datetime->year < 1973)
+  y4 = (datetime->year - 1971) / 4;
+  if (datetime->year < 1971)
     y4--;
-  ay = datetime->year - 1973 - 4 * y4;
+  ay = datetime->year - 1971 - 4 * y4;
   ret += y4 * SECPER4YEARS;
   ret += ay * SECPERYEAR;
 
@@ -250,6 +262,24 @@ iso9660_to_unixtime (const struct grub_iso9660_date *i, grub_int32_t *nix)
   datetime.hour = (i->hour[0] - '0') * 10 + (i->hour[1] - '0');
   datetime.minute = (i->minute[0] - '0') * 10 + (i->minute[1] - '0');
   datetime.second = (i->second[0] - '0') * 10 + (i->second[1] - '0');
+  
+  err = grub_datetime2unixtime (&datetime, nix);
+  *nix -= i->offset * 60 * 15;
+  return err;
+}
+
+static grub_err_t
+iso9660_to_unixtime2 (const struct grub_iso9660_date2 *i, grub_int32_t *nix)
+{
+  grub_err_t err;
+  struct grub_datetime datetime;
+  
+  datetime.year = i->year + 1900;
+  datetime.month = i->month;
+  datetime.day = i->day;
+  datetime.hour = i->hour;
+  datetime.minute = i->minute;
+  datetime.second = i->second;
   
   err = grub_datetime2unixtime (&datetime, nix);
   *nix -= i->offset * 60 * 15;
@@ -467,7 +497,6 @@ grub_iso9660_mount (grub_disk_t disk)
 static char *
 grub_iso9660_read_symlink (grub_fshelp_node_t node)
 {
-  struct grub_iso9660_dir dirent;
   int sua_off;
   int sua_size;
   char *symlink = 0;
@@ -545,13 +574,10 @@ grub_iso9660_read_symlink (grub_fshelp_node_t node)
       return 0;
     }
 
-  if (grub_disk_read (node->data->disk, node->dir_blk, node->dir_off,
-		      sizeof (dirent), (char *) &dirent))
-    return 0;
-
-  sua_off = (sizeof (dirent) + dirent.namelen + 1 - (dirent.namelen % 2)
+  sua_off = (sizeof (node->dirent) + node->dirent.namelen + 1
+	     - (node->dirent.namelen % 2)
 	     + node->data->susp_skip);
-  sua_size = dirent.len - sua_off;
+  sua_size = node->dirent.len - sua_off;
 
   symlink = grub_malloc (1);
   if (!symlink)
@@ -748,6 +774,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
             filename_alloc = 1;
           }
 
+	node->dirent = dirent;
 	if (hook (filename, type, node))
 	  {
 	    if (filename_alloc)
@@ -784,8 +811,15 @@ grub_iso9660_dir (grub_device_t device, const char *path,
 				grub_fshelp_node_t node)
     {
       struct grub_dirhook_info info;
+      grub_err_t err;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      err = iso9660_to_unixtime2 (&node->dirent.mtime, &info.mtime);
+      if (err)
+	grub_errno = GRUB_ERR_NONE;
+      else
+	info.mtimeset = 1;
+
       grub_free (node);
       return hook (filename, &info);
     }
