@@ -1180,6 +1180,62 @@ grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
   return grub_errno;
 }
 
+static grub_err_t
+grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
+                                   int argc, char **args)
+{
+  grub_video_rgba_color_t color;
+  grub_uint8_t *data;
+  unsigned int i;
+
+  if (argc != 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing operand");
+
+  /* Check that we have video adapter active.  */
+  if (grub_video_get_info (NULL) != GRUB_ERR_NONE)
+    return grub_errno;
+
+  if (grub_video_parse_color (args[0], &color) != GRUB_ERR_NONE)
+    return grub_errno;
+
+  /* Destroy existing background bitmap if loaded.  */
+  if (bitmap)
+    {
+      grub_video_bitmap_destroy (bitmap);
+      bitmap = 0;
+
+      /* Mark whole screen as dirty.  */
+      dirty_region_add (0, 0, window.width, window.height);
+    }
+
+  /* Create a filled bitmap so that we get suitable text blending.  */
+  grub_video_bitmap_create (&bitmap, window.width, window.height,
+                            GRUB_VIDEO_BLIT_FORMAT_RGB_888);
+  if (grub_errno != GRUB_ERR_NONE)
+    return grub_errno;
+
+  data = bitmap->data;
+  for (i = 0; i < window.height * window.width; i++)
+    {
+      *data++ = color.red;
+      *data++ = color.green;
+      *data++ = color.blue;
+    }
+
+  bitmap_width = window.width;
+  bitmap_height = window.height;
+
+  /* Set the border color.  */
+  virtual_screen.bg_color_display = grub_video_map_rgba_color (color);
+
+  /* Mark whole screen as dirty.  */
+  dirty_region_add (0, 0, window.width, window.height);
+
+  /* All was ok.  */
+  grub_errno = GRUB_ERR_NONE;
+  return grub_errno;
+}
+
 static struct grub_term_output grub_video_term =
   {
     .name = "gfxterm",
@@ -1201,6 +1257,7 @@ static struct grub_term_output grub_video_term =
   };
 
 static grub_extcmd_t background_image_cmd_handle;
+static grub_command_t background_color_cmd_handle;
 
 GRUB_MOD_INIT(gfxterm)
 {
@@ -1211,10 +1268,16 @@ GRUB_MOD_INIT(gfxterm)
                           N_("[-m (stretch|normal)] FILE"),
                           N_("Load background image for active terminal."),
                           background_image_cmd_options);
+  background_color_cmd_handle =
+    grub_register_command ("background_color",
+                           grub_gfxterm_background_color_cmd,
+                           N_("COLOR"),
+                           N_("Set background color for active terminal."));
 }
 
 GRUB_MOD_FINI(gfxterm)
 {
+  grub_unregister_command (background_color_cmd_handle);
   grub_unregister_extcmd (background_image_cmd_handle);
   grub_term_unregister_output (&grub_video_term);
 }

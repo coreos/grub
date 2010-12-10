@@ -32,3 +32,10 @@
 	(gfxmenu): Remove gfxmenu/named_colors.c.
 	(video_colors) [videomodules]: New module, containing
 	video/colors.c.
+
+	Add a background_color command.
+
+	* grub-core/term/gfxterm.c (grub_gfxterm_background_color_cmd): New
+	function.
+	(GRUB_MOD_INIT): Register background_color command.
+	(GRUB_MOD_FINI): Unregister background_color command.
