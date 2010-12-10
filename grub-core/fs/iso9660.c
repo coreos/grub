@@ -192,7 +192,7 @@ grub_datetime2unixtime (const struct grub_datetime *datetime, grub_int32_t *nix)
 	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30};
   grub_uint8_t months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-  if (datetime->year > 2038 || datetime->year < 1902)
+  if (datetime->year > 2038 || datetime->year < 1901)
     return grub_error (GRUB_ERR_OUT_OF_RANGE, "outside of UNIX epoch");
   if (datetime->month > 12 || datetime->month < 1)
     return grub_error (GRUB_ERR_BAD_NUMBER, "not a valid month");
