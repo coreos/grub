@@ -172,10 +172,18 @@ struct grub_btrfs_root_item
   grub_uint64_t inode;
 };
 
+struct grub_btrfs_time
+{
+  grub_int64_t sec;
+  grub_uint32_t nanosec;
+} __attribute__ ((aligned(4)));
+
 struct grub_btrfs_inode
 {
-  grub_uint8_t dummy[0x10];
+  grub_uint8_t dummy1[0x10];
   grub_uint64_t size;
+  grub_uint8_t dummy2[0x70];
+  struct grub_btrfs_time mtime;
 } __attribute__ ((packed));
 
 struct grub_btrfs_extent_data
@@ -1263,7 +1271,6 @@ grub_btrfs_dir (grub_device_t device, const char *path,
     }
   do
     {
-      struct grub_dirhook_info info;
       struct grub_btrfs_dir_item *cdirel;
       if (key_out.type != GRUB_BTRFS_ITEM_TYPE_DIR_ITEM
 	  || key_out.object_id != key_in.object_id)
@@ -1295,9 +1302,20 @@ grub_btrfs_dir (grub_device_t device, const char *path,
 			      + grub_le_to_cpu16 (cdirel->m)))
 	{
 	  char c;
+	  struct grub_btrfs_inode inode;
+	  struct grub_dirhook_info info;
+	  err = grub_btrfs_read_inode (data, &inode, cdirel->key.object_id,
+				       tree);
+	  grub_memset (&info, 0, sizeof (info));
+	  if (err)
+	    grub_errno = GRUB_ERR_NONE;
+	  else
+	    {
+	      info.mtime = inode.mtime.sec;
+	      info.mtimeset = 1;
+	    }
 	  c = cdirel->name[grub_le_to_cpu16 (cdirel->n)];
 	  cdirel->name[grub_le_to_cpu16 (cdirel->n)] = 0;
-	  grub_memset (&info, 0, sizeof (info));
 	  info.dir = (cdirel->type == GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY);
 	  if (hook (cdirel->name, &info))
 	    goto out;
