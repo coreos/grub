@@ -1,0 +1,34 @@
+2010-12-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	Move gfxmenu color handling to video, so that gfxterm can use it
+	too.
+
+	* grub-core/gfxmenu/named_colors.c: Move to ...
+	* grub-core/video/colors.c: ... here.  Rename
+	grub_gui_get_named_color to grub_video_get_named_color.
+	* grub-core/gfxmenu/gui_string_util.c (my_isxdigit): Move to ...
+	* grub-core/video/colors.c (my_isxdigit): ... here.
+	* grub-core/gfxmenu/gui_string_util.c (parse_hex_color_component):
+	Move to ...
+	* grub-core/video/colors.c (parse_hex_color_component): ... here.
+	* grub-core/gfxmenu/gui_string_util.c (grub_gui_parse_color): Move
+	to ...
+	* grub-core/video/colors.c (grub_video_parse_color): ... here.
+
+	* include/grub/gui.h (grub_gui_color_t): Move to ...
+	* include/grub/video.h (grub_video_rgba_color_t): ... here.
+	* include/grub/gui.h (grub_gui_color_rgb): Move to ...
+	* include/grub/video.h (grub_video_rgba_color_rgb): ... here.
+	* include/grub/gui.h (grub_gui_map_color): Move to ...
+	* include/grub/video.h (grub_video_map_rgba_color): ... here.
+	* include/grub/gui_string_util.h (grub_gui_get_named_color): Move
+	to ...
+	* include/grub/video.h (grub_video_get_named_color): ... here.
+	* include/grub/gui_string_util.h (grub_gui_parse_color): Move to ...
+	* include/grub/video.h (grub_video_parse_color): ... here.
+
+	* grub-core/Makefile.core.def (kernel) [videoinkernel]: Add
+	video/colors.c.
+	(gfxmenu): Remove gfxmenu/named_colors.c.
+	(video_colors) [videomodules]: New module, containing
+	video/colors.c.
