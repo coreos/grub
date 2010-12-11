@@ -106,11 +106,9 @@ struct grub_squash_inode
 struct grub_squash_dirent_header
 {
   /* Actually the value is the number of elements - 1.  */
-  grub_uint16_t nelems;
-  grub_uint16_t dummy1;
-  grub_uint32_t ino_chunk;
-  grub_uint16_t dummy2[2];
-};
+  grub_uint32_t nelems;
+  grub_uint64_t ino_chunk;
+} __attribute__ ((packed));
 
 struct grub_squash_dirent
 {
