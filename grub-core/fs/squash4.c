@@ -509,6 +509,19 @@ grub_squash_close (grub_file_t file)
   return GRUB_ERR_NONE;
 }
 
+static grub_err_t
+grub_squash_mtime (grub_device_t dev, grub_int32_t *tm)
+{
+  struct grub_squash_data *data = 0;
+
+  data = squash_mount (dev->disk);
+  if (! data)
+    return grub_errno;
+  *tm = grub_le_to_cpu32 (data->sb.creation_time);
+  grub_free (data);
+  return GRUB_ERR_NONE;
+} 
+
 static struct grub_fs grub_squash_fs =
   {
     .name = "squash4",
@@ -516,6 +529,7 @@ static struct grub_fs grub_squash_fs =
     .open = grub_squash_open,
     .read = grub_squash_read,
     .close = grub_squash_close,
+    .mtime = grub_squash_mtime,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 0,
 #endif
