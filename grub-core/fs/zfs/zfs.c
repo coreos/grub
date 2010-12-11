@@ -179,6 +179,7 @@ struct grub_zfs_data
   struct grub_zfs_device_desc *devices_attached;
   unsigned n_devices_attached;
   unsigned n_devices_allocated;
+  struct grub_zfs_device_desc *device_original;
 
   uberblock_t current_uberblock;
 
@@ -463,7 +464,8 @@ zfs_fetch_nvlist (struct grub_zfs_device_desc *diskdesc, char **nvlist)
 }
 
 static grub_err_t
-fill_vdev_info_real (const char *nvlist,
+fill_vdev_info_real (struct grub_zfs_data *data,
+		     const char *nvlist,
 		     struct grub_zfs_device_desc *fill,
 		     struct grub_zfs_device_desc *insert)
 {
@@ -492,6 +494,8 @@ fill_vdev_info_real (const char *nvlist,
 	  fill->current_uberblock = insert->current_uberblock;
 	  fill->original = insert->original;
 	}
+      if (!data->device_original)
+	data->device_original = fill;
 
       return GRUB_ERR_NONE;
     }
@@ -533,7 +537,7 @@ fill_vdev_info_real (const char *nvlist,
 	  child = grub_zfs_nvlist_lookup_nvlist_array
 	    (nvlist, ZPOOL_CONFIG_CHILDREN, i);
 
-	  err = fill_vdev_info_real (child, &fill->children[i], insert);
+	  err = fill_vdev_info_real (data, child, &fill->children[i], insert);
 
 	  grub_free (child);
 
@@ -559,7 +563,7 @@ fill_vdev_info (struct grub_zfs_data *data,
 
   for (i = 0; i < data->n_devices_attached; i++)
     if (data->devices_attached[i].id == id)
-      return fill_vdev_info_real (nvlist, &data->devices_attached[i],
+      return fill_vdev_info_real (data, nvlist, &data->devices_attached[i],
 				  diskdesc);
 
   data->n_devices_attached++;
@@ -581,7 +585,7 @@ fill_vdev_info (struct grub_zfs_data *data,
   grub_memset (&data->devices_attached[data->n_devices_attached - 1],
 	       0, sizeof (data->devices_attached[data->n_devices_attached - 1]));
 
-  return fill_vdev_info_real (nvlist,
+  return fill_vdev_info_real (data, nvlist,
 			      &data->devices_attached[data->n_devices_attached - 1],
 			      diskdesc);
 }
@@ -2514,7 +2518,7 @@ grub_zfs_fetch_nvlist (grub_device_t dev, char **nvlist)
   zfs = zfs_mount (dev);
   if (!zfs)
     return grub_errno;
-  err = zfs_fetch_nvlist (&zfs->devices_attached[0], nvlist);
+  err = zfs_fetch_nvlist (zfs->device_original, nvlist);
   zfs_unmount (zfs);
   return err;
 }
@@ -2530,7 +2534,7 @@ zfs_label (grub_device_t device, char **label)
   if (! data)
     return grub_errno;
 
-  err = zfs_fetch_nvlist (data->devices_attached, &nvlist);
+  err = zfs_fetch_nvlist (data->device_original, &nvlist);
   if (err)      
     {
       zfs_unmount (data);
