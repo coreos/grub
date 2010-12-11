@@ -54,7 +54,7 @@ struct grub_affs_time
 {
   grub_int32_t day;
   grub_uint32_t min;
-  grub_uint32_t fractions_of_sec;
+  grub_uint32_t hz;
 } __attribute__ ((packed));
 
 /* The second part of a file header block.  */
@@ -487,6 +487,11 @@ grub_affs_dir (grub_device_t device, const char *path,
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      info.mtimeset = 1;
+      info.mtime = grub_be_to_cpu32 (node->di.mtime.day) * 86400
+	+ grub_be_to_cpu32 (node->di.mtime.min) * 60
+	+ grub_be_to_cpu32 (node->di.mtime.hz) / 50
+	+ 8 * 365 * 86400 + 86400 * 2;
       grub_free (node);
       return hook (filename, &info);
     }
