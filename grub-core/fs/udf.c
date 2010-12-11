@@ -884,6 +884,8 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 
 	      type = ((dirent.characteristics & GRUB_UDF_FID_CHAR_DIRECTORY) ?
 		      (GRUB_FSHELP_DIR) : (GRUB_FSHELP_REG));
+	      if (child->fe.icbtag.file_type == GRUB_UDF_ICBTAG_TYPE_SYMLINK)
+		type = GRUB_FSHELP_SYMLINK;
 
 	      if ((grub_udf_read_file (dir, 0, offset,
 				       dirent.file_ident_length,
@@ -907,6 +909,25 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
     }
 
   return 0;
+}
+
+static char *
+grub_ufs_read_symlink (grub_fshelp_node_t node)
+{
+  grub_size_t sz = U64 (node->fe.file_size);
+  grub_uint8_t *raw;
+  char *ret;
+
+  if (sz < 4)
+    return NULL;
+  raw = grub_malloc (sz - 4);
+  if (!raw)
+    return NULL;
+  if (grub_udf_read_file (node, NULL, 4, sz - 4, (char *) raw) < 0)
+    return NULL;
+  ret = read_string (raw, sz - 4);
+  grub_free (raw);
+  return ret;
 }
 
 static grub_err_t
@@ -972,7 +993,8 @@ grub_udf_dir (grub_device_t device, const char *path,
 
   if (grub_fshelp_find_file (path, &rootnode,
 			     &foundnode,
-			     grub_udf_iterate_dir, 0, GRUB_FSHELP_DIR))
+			     grub_udf_iterate_dir, grub_ufs_read_symlink,
+			     GRUB_FSHELP_DIR))
     goto fail;
 
   grub_udf_iterate_dir (foundnode, iterate);
@@ -1006,7 +1028,8 @@ grub_udf_open (struct grub_file *file, const char *name)
 
   if (grub_fshelp_find_file (name, &rootnode,
 			     &foundnode,
-			     grub_udf_iterate_dir, 0, GRUB_FSHELP_REG))
+			     grub_udf_iterate_dir, grub_ufs_read_symlink,
+			     GRUB_FSHELP_REG))
     goto fail;
 
   file->data = foundnode;
