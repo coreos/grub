@@ -51,23 +51,23 @@ struct grub_squash_super
   grub_uint32_t dummy1;
   grub_uint32_t creation_time;
   grub_uint32_t dummy2;
-  grub_uint32_t dummy3[2];
+  grub_uint64_t dummy3;
   grub_uint8_t flags;
 #define SQUASH_FLAG_UNCOMPRESSED_INODES 1
 #define SQUASH_FLAG_UNCOMPRESSED_DATA 2
 #define SQUASH_FLAG_UNCOMPRESSED_FRAGMENTS 8
   grub_uint8_t dummy4[7];
   grub_uint16_t root_ino_offset;
-  grub_uint16_t root_ino_chunk;
-  grub_uint32_t dummy5;
+  grub_uint32_t root_ino_chunk;
+  grub_uint16_t dummy5;
   grub_uint64_t total_size;
   grub_uint64_t exttbloffset;
-  grub_uint32_t dummy6[2];
+  grub_uint64_t dummy6;
   grub_uint64_t inodeoffset;
   grub_uint64_t diroffset;
   grub_uint64_t unk1offset;
   grub_uint64_t unk2offset;
-};
+} __attribute__ ((packed));
 
 
 /* Chunk-based */
@@ -80,25 +80,25 @@ struct grub_squash_inode
   union
   {
     struct {
-      grub_uint16_t dummy[2];
+      grub_uint32_t dummy;
       grub_uint32_t chunk;
       grub_uint32_t fragment;
       grub_uint32_t offset;
       grub_uint32_t size;
-    } file;
+    }  __attribute__ ((packed)) file;
     struct {
-      grub_uint16_t dummy1[2];
+      grub_uint32_t dummy1;
       grub_uint32_t chunk;
-      grub_uint16_t dummy2[2];
+      grub_uint32_t dummy2;
       grub_uint16_t size;
-      grub_uint16_t offset;
-      grub_uint16_t dummy3[2];
-    } dir;
+      grub_uint32_t offset;
+      grub_uint16_t dummy3;
+    } __attribute__ ((packed)) dir;
     struct {
-      grub_uint16_t dummy[4];
+      grub_uint64_t dummy;
       grub_uint32_t namelen;
       char name[0];
-    } symlink;
+    } __attribute__ ((packed)) symlink;
   };
 } __attribute__ ((packed));
 
