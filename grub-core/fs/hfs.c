@@ -1073,6 +1073,23 @@ grub_hfs_label (grub_device_t device, char **label)
 }
 
 static grub_err_t
+grub_hfs_mtime (grub_device_t device, grub_int32_t *tm)
+{
+  struct grub_hfs_data *data;
+
+  data = grub_hfs_mount (device->disk);
+
+  if (data)
+    *tm = grub_be_to_cpu32 (data->sblock.mtime) - 2082844800;
+  else
+    *tm = 0;
+
+  grub_free (data);
+  return grub_errno;
+}
+
+
+static grub_err_t
 grub_hfs_uuid (grub_device_t device, char **uuid)
 {
   struct grub_hfs_data *data;
@@ -1107,6 +1124,7 @@ static struct grub_fs grub_hfs_fs =
     .close = grub_hfs_close,
     .label = grub_hfs_label,
     .uuid = grub_hfs_uuid,
+    .mtime = grub_hfs_mtime,
     .next = 0
   };
 
