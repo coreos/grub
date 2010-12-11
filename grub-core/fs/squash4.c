@@ -99,7 +99,7 @@ struct grub_squash_inode
       grub_uint32_t namelen;
       char name[0];
     } __attribute__ ((packed)) symlink;
-  };
+  }  __attribute__ ((packed));
 } __attribute__ ((packed));
 
 /* Chunk-based.  */
@@ -121,13 +121,13 @@ struct grub_squash_dirent
   /* Actually the value is the length of name - 1.  */
   grub_uint16_t namelen;
   char name[0];
-};
+} __attribute__ ((packed));
 
 struct grub_squash_frag_desc
 {
   grub_uint64_t offset;
   grub_uint64_t dummy;
-};
+} __attribute__ ((packed));
 
 #define SQUASH_CHUNK_SIZE 0x2000
 #define SQUASH_CHUNK_FLAGS 0x8000
