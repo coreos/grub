@@ -822,6 +822,9 @@ static struct grub_fs grub_xfs_fs =
     .close = grub_xfs_close,
     .label = grub_xfs_label,
     .uuid = grub_xfs_uuid,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 0,
+#endif
     .next = 0
   };
 

@@ -362,6 +362,9 @@ static struct grub_fs grub_cpio_fs = {
   .open = grub_cpio_open,
   .read = grub_cpio_read,
   .close = grub_cpio_close,
+#ifdef GRUB_UTIL
+  .reserved_first_sector = 0,
+#endif
 };
 
 #ifdef MODE_USTAR
