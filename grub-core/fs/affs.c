@@ -50,12 +50,20 @@ struct grub_affs_rblock
   grub_uint32_t hashtable[1];
 } __attribute__ ((packed));
 
+struct grub_affs_time
+{
+  grub_int32_t day;
+  grub_uint32_t min;
+  grub_uint32_t fractions_of_sec;
+} __attribute__ ((packed));
+
 /* The second part of a file header block.  */
 struct grub_affs_file
 {
   grub_uint8_t unused1[12];
   grub_uint32_t size;
-  grub_uint8_t unused2[104];
+  grub_uint8_t unused2[92];
+  struct grub_affs_time mtime;
   grub_uint8_t namelen;
   grub_uint8_t name[30];
   grub_uint8_t unused3[33];
@@ -85,9 +93,9 @@ struct grub_affs_file
 struct grub_fshelp_node
 {
   struct grub_affs_data *data;
-  int block;
-  int size;
-  int parent;
+  grub_disk_addr_t block;
+  struct grub_fshelp_node *parent;
+  struct grub_affs_file di;
 };
 
 /* Information about a "mounted" affs filesystem.  */
@@ -154,7 +162,7 @@ grub_affs_read_file (grub_fshelp_node_t node,
 {
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_affs_read_block,
-				node->size, 0);
+				grub_be_to_cpu32 (node->di.size), 0);
 }
 
 
@@ -241,6 +249,8 @@ grub_affs_mount (grub_disk_t disk)
   data->htsize = grub_be_to_cpu32 (rblock->htsize);
   data->diropen.data = data;
   data->diropen.block = grub_be_to_cpu32 (data->bblock.rootblock);
+  data->diropen.parent = NULL;
+  grub_memcpy (&data->diropen.di, rootblock, sizeof (data->diropen.di));
 
   grub_free (rootblock);
 
@@ -291,12 +301,15 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
   struct grub_affs_data *data = dir->data;
   grub_uint32_t *hashtable;
 
-  auto int NESTED_FUNC_ATTR grub_affs_create_node (const char *name, int block,
-						   int size, int type);
+  auto int NESTED_FUNC_ATTR grub_affs_create_node (const char *name, 
+						   grub_disk_addr_t block,
+						   const struct grub_affs_file *fil);
 
-  int NESTED_FUNC_ATTR grub_affs_create_node (const char *name, int block,
-					      int size, int type)
+  int NESTED_FUNC_ATTR grub_affs_create_node (const char *name,
+					      grub_disk_addr_t block,
+					      const struct grub_affs_file *fil)
     {
+      int type;
       node = grub_malloc (sizeof (*node));
       if (!node)
 	{
@@ -304,10 +317,19 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
 	  return 1;
 	}
 
+      if ((int) grub_be_to_cpu32 (fil->type) == GRUB_AFFS_FILETYPE_DIR)
+	type = GRUB_FSHELP_REG;
+      else if (grub_be_to_cpu32 (fil->type) == GRUB_AFFS_FILETYPE_REG)
+	type = GRUB_FSHELP_DIR;
+      else if (grub_be_to_cpu32 (fil->type) == GRUB_AFFS_FILETYPE_SYMLINK)
+	type = GRUB_FSHELP_SYMLINK;
+      else
+	type = GRUB_FSHELP_UNKNOWN;
+
       node->data = data;
-      node->size = size;
       node->block = block;
-      node->parent = grub_be_to_cpu32 (file.parent);
+      node->di = *fil;
+      node->parent = dir;
 
       if (hook (name, type, node))
 	{
@@ -315,6 +337,24 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
 	  return 1;
 	}
       return 0;
+    }
+
+  /* Create the directory entries for `.' and `..'.  */
+  node = grub_malloc (sizeof (*node));
+  if (!node)
+    return 1;
+    
+  *node = *dir;
+  if (hook (".", GRUB_FSHELP_DIR, node))
+    return 1;
+  if (dir->parent)
+    {
+      node = grub_malloc (sizeof (*node));
+      if (!node)
+	return 1;
+      *node = *dir->parent;
+      if (hook ("..", GRUB_FSHELP_DIR, node))
+	return 1;
     }
 
   hashtable = grub_malloc (data->htsize * sizeof (*hashtable));
@@ -326,16 +366,8 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
   if (grub_errno)
     goto fail;
 
-  /* Create the directory entries for `.' and `..'.  */
-  if (grub_affs_create_node (".", dir->block, dir->size, GRUB_FSHELP_DIR))
-    return 1;
-  if (grub_affs_create_node ("..", dir->parent ? dir->parent : dir->block,
-			     dir->size, GRUB_FSHELP_DIR))
-    return 1;
-
   for (i = 0; i < data->htsize; i++)
     {
-      enum grub_fshelp_filetype type;
       grub_uint64_t next;
 
       if (!hashtable[i])
@@ -356,17 +388,7 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
 
 	  file.name[file.namelen] = '\0';
 
-	  if ((int) grub_be_to_cpu32 (file.type) == GRUB_AFFS_FILETYPE_DIR)
-	    type = GRUB_FSHELP_REG;
-	  else if (grub_be_to_cpu32 (file.type) == GRUB_AFFS_FILETYPE_REG)
-	    type = GRUB_FSHELP_DIR;
-	  else if (grub_be_to_cpu32 (file.type) == GRUB_AFFS_FILETYPE_SYMLINK)
-	    type = GRUB_FSHELP_SYMLINK;
-	  else
-	    type = GRUB_FSHELP_UNKNOWN;
-
-	  if (grub_affs_create_node ((char *) (file.name), next,
-				     grub_be_to_cpu32 (file.size), type))
+	  if (grub_affs_create_node ((char *) (file.name), next, &file))
 	    return 1;
 
 	  next = grub_be_to_cpu32 (file.next);
@@ -401,7 +423,7 @@ grub_affs_open (struct grub_file *file, const char *name)
   if (grub_errno)
     goto fail;
 
-  file->size = fdiro->size;
+  file->size = grub_be_to_cpu32 (fdiro->di.size);
   data->diropen = *fdiro;
   grub_free (fdiro);
 
