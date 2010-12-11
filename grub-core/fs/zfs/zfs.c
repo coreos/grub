@@ -2565,6 +2565,29 @@ zfs_uuid (grub_device_t device, char **uuid)
   return GRUB_ERR_NONE;
 }
 
+static grub_err_t 
+zfs_mtime (grub_device_t device, grub_int32_t *mt)
+{
+  struct grub_zfs_data *data;
+  grub_zfs_endian_t ub_endian = UNKNOWN_ENDIAN;
+  uberblock_t *ub;
+
+  *mt = 0;
+
+  data = zfs_mount (device);
+  if (! data)
+    return grub_errno;
+
+  ub = &(data->current_uberblock);
+  ub_endian = (grub_zfs_to_cpu64 (ub->ub_magic, 
+				  LITTLE_ENDIAN) == UBERBLOCK_MAGIC 
+	       ? LITTLE_ENDIAN : BIG_ENDIAN);
+
+  *mt = grub_zfs_to_cpu64 (ub->ub_timestamp, ub_endian);
+  zfs_unmount (data);
+  return GRUB_ERR_NONE;
+}
+
 /*
  * zfs_open() locates a file in the rootpool by following the
  * MOS and places the dnode of the file in the memory address DNODE.
@@ -2934,7 +2957,7 @@ static struct grub_fs grub_zfs_fs = {
   .close = grub_zfs_close,
   .label = zfs_label,
   .uuid = zfs_uuid,
-  .mtime = 0,
+  .mtime = zfs_mtime,
   .next = 0
 };
 
