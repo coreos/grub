@@ -539,10 +539,20 @@ dirty_region_add (int x, int y, unsigned int width, unsigned int height)
 
   if (repaint_scheduled)
     {
-      x = virtual_screen.offset_x;
-      y = virtual_screen.offset_y;
-      width = virtual_screen.width;
-      height = virtual_screen.height;
+      if (x > (int)virtual_screen.offset_x)
+        {
+          width += virtual_screen.offset_x - x;
+          x = virtual_screen.offset_x;
+        }
+      if (y > (int)virtual_screen.offset_y)
+        {
+          height += virtual_screen.offset_y - y;
+          y = virtual_screen.offset_y;
+        }
+      if (width < virtual_screen.width)
+        width = virtual_screen.width;
+      if (height < virtual_screen.height)
+        height = virtual_screen.height;
       repaint_scheduled = 0;
       repaint_was_scheduled = 1;
     }

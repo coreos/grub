@@ -39,3 +39,9 @@
 	function.
 	(GRUB_MOD_INIT): Register background_color command.
 	(GRUB_MOD_FINI): Unregister background_color command.
+
+	Fix border repainting.
+
+	* grub-core/term/gfxterm.c (dirty_region_add): When a repaint is
+	already scheduled, merge the virtual screen with the requested
+	region rather than repainting only the virtual screen.
