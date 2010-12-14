@@ -374,6 +374,25 @@ grub_video_get_active_render_target (struct grub_video_render_target **target)
   return grub_video_adapter_active->get_active_render_target (target);
 }
 
+grub_err_t
+grub_video_edid_checksum (struct grub_video_edid_info *edid_info)
+{
+  const char *edid_bytes = (const char *) edid_info;
+  int i;
+  char checksum = 0;
+
+  /* Check EDID checksum.  */
+  for (i = 0; i < 128; ++i)
+    checksum += edid_bytes[i];
+
+  if (checksum != 0)
+    return grub_error (GRUB_ERR_BAD_DEVICE,
+		       "invalid EDID checksum %d", checksum);
+
+  grub_errno = GRUB_ERR_NONE;
+  return grub_errno;
+}
+
 /* Parse <width>x<height>[x<depth>]*/
 static grub_err_t
 parse_modespec (const char *current_mode, int *width, int *height, int *depth)

@@ -2,11 +2,11 @@
 
 	Preferred resolution detection for VBE.
 
+	* grub-core/video/video.c (grub_video_edid_checksum): New function.
 	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_get_flat_panel_info):
-	New function.
+	Likewise.
 	(grub_vbe_bios_get_ddc_capabilities): Likewise.
 	(grub_vbe_bios_read_edid): Likewise.
-	(grub_vbe_edid_checksum): Likewise.
 	(grub_vbe_get_preferred_mode): Likewise.  Try EDID followed by the
 	Flat Panel extension, in line with the X.org VESA driver.
 	(grub_video_vbe_setup): When the mode is "auto", try to get the
@@ -14,9 +14,10 @@
 	than the preferred mode (some BIOSes expose a preferred mode that is
 	not in their mode list!).  If this fails, fall back to 640x480 as a
 	safe conservative choice.
+	* include/grub/video.h (struct grub_vbe_edid_info): New structure.
+	(grub_video_edid_checksum): Add prototype.
 	* include/grub/i386/pc/vbe.h (struct grub_vbe_flat_panel_info): New
 	structure.
-	(struct grub_vbe_edid_info): Likewise.
 	(grub_vbe_bios_get_flat_panel_info): Add prototype.
 	(grub_vbe_bios_get_ddc_capabilities): Likewise.
 	(grub_vbe_bios_read_edid): Likewise.

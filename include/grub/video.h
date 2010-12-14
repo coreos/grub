@@ -210,6 +210,66 @@ struct grub_video_palette_data
   grub_uint8_t a; /* Reserved bits value (0-255).  */
 };
 
+struct grub_video_edid_info
+{
+  grub_uint8_t header[8];
+  grub_uint16_t manufacturer_id;
+  grub_uint16_t product_id;
+  grub_uint32_t serial_number;
+  grub_uint8_t week_of_manufacture;
+  grub_uint8_t year_of_manufacture;
+  grub_uint8_t version;
+  grub_uint8_t revision;
+
+  grub_uint8_t video_input_definition;
+  grub_uint8_t max_horizontal_image_size;
+  grub_uint8_t max_vertical_image_size;
+  grub_uint8_t display_gamma;
+  grub_uint8_t feature_support;
+#define GRUB_VIDEO_EDID_FEATURE_PREFERRED_TIMING_MODE	(1 << 1)
+
+  grub_uint8_t red_green_lo;
+  grub_uint8_t blue_white_lo;
+  grub_uint8_t red_x_hi;
+  grub_uint8_t red_y_hi;
+  grub_uint8_t green_x_hi;
+  grub_uint8_t green_y_hi;
+  grub_uint8_t blue_x_hi;
+  grub_uint8_t blue_y_hi;
+  grub_uint8_t white_x_hi;
+  grub_uint8_t white_y_hi;
+
+  grub_uint8_t established_timings_1;
+  grub_uint8_t established_timings_2;
+  grub_uint8_t manufacturer_reserved_timings;
+
+  grub_uint16_t standard_timings[8];
+
+  struct {
+    grub_uint16_t pixel_clock;
+    /* Only valid if the pixel clock is non-null.  */
+    grub_uint8_t horizontal_active_lo;
+    grub_uint8_t horizontal_blanking_lo;
+    grub_uint8_t horizontal_hi;
+    grub_uint8_t vertical_active_lo;
+    grub_uint8_t vertical_blanking_lo;
+    grub_uint8_t vertical_hi;
+    grub_uint8_t horizontal_sync_offset_lo;
+    grub_uint8_t horizontal_sync_pulse_width_lo;
+    grub_uint8_t vertical_sync_lo;
+    grub_uint8_t sync_hi;
+    grub_uint8_t horizontal_image_size_lo;
+    grub_uint8_t vertical_image_size_lo;
+    grub_uint8_t image_size_hi;
+    grub_uint8_t horizontal_border;
+    grub_uint8_t vertical_border;
+    grub_uint8_t flags;
+  } detailed_timings[4];
+
+  grub_uint8_t extension_flag;
+  grub_uint8_t checksum;
+} __attribute__ ((packed));
+
 typedef enum grub_video_driver_id
   {
     GRUB_VIDEO_DRIVER_NONE,
@@ -422,6 +482,8 @@ grub_err_t EXPORT_FUNC (grub_video_delete_render_target) (struct grub_video_rend
 grub_err_t EXPORT_FUNC (grub_video_set_active_render_target) (struct grub_video_render_target *target);
 
 grub_err_t grub_video_get_active_render_target (struct grub_video_render_target **target);
+
+grub_err_t grub_video_edid_checksum (struct grub_video_edid_info *edid_info);
 
 grub_err_t EXPORT_FUNC (grub_video_set_mode) (const char *modestring,
 					      unsigned int modemask,

@@ -308,7 +308,7 @@ grub_vbe_bios_get_ddc_capabilities (grub_uint8_t *level)
 
 /* Call VESA BIOS 0x4f15 to read EDID information, return status.  */
 grub_vbe_status_t
-grub_vbe_bios_read_edid (struct grub_vbe_edid_info *edid_info)
+grub_vbe_bios_read_edid (struct grub_video_edid_info *edid_info)
 {
   struct grub_bios_int_registers regs;
 
@@ -378,30 +378,11 @@ grub_vbe_probe (struct grub_vbe_info_block *info_block)
 }
 
 static grub_err_t
-grub_vbe_edid_checksum (struct grub_vbe_edid_info *edid_info)
-{
-  const char *edid_bytes = (const char *) edid_info;
-  int i;
-  char checksum = 0;
-
-  /* Check EDID checksum.  */
-  for (i = 0; i < 128; ++i)
-    checksum += edid_bytes[i];
-
-  if (checksum != 0)
-    return grub_error (GRUB_ERR_BAD_DEVICE,
-		       "invalid EDID checksum %d", checksum);
-
-  grub_errno = GRUB_ERR_NONE;
-  return grub_errno;
-}
-
-static grub_err_t
 grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
 {
   grub_vbe_status_t status;
   grub_uint8_t ddc_level;
-  struct grub_vbe_edid_info edid_info;
+  struct grub_video_edid_info edid_info;
   struct grub_vbe_flat_panel_info flat_panel_info;
 
   if (controller_info.version >= 0x200
@@ -412,10 +393,10 @@ grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
       /* Bit 1 in the Feature Support field indicates that the first
          Detailed Timing Description is the preferred timing mode.  */
       if (status == GRUB_VBE_STATUS_OK
-	  && grub_vbe_edid_checksum (&edid_info) == GRUB_ERR_NONE
+	  && grub_video_edid_checksum (&edid_info) == GRUB_ERR_NONE
 	  && edid_info.version == 1 /* we don't understand later versions */
 	  && (edid_info.feature_support
-	      & GRUB_VBE_EDID_FEATURE_PREFERRED_TIMING_MODE)
+	      & GRUB_VIDEO_EDID_FEATURE_PREFERRED_TIMING_MODE)
 	  && edid_info.detailed_timings[0].pixel_clock)
 	{
 	  *width = edid_info.detailed_timings[0].horizontal_active_lo
