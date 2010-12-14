@@ -169,7 +169,7 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
 
     adapter->iterate (hook);
 
-    if (adapter->get_edid (&edid_info) == GRUB_ERR_NONE)
+    if (adapter->get_edid && adapter->get_edid (&edid_info) == GRUB_ERR_NONE)
       print_edid (&edid_info);
     else
       grub_errno = GRUB_ERR_NONE;
