@@ -19,6 +19,7 @@
 	(grub_video_vbe_get_edid): New function.
 	(grub_video_vbe_adapter): Add get_edid.
 	* include/grub/video.h (struct grub_vbe_edid_info): New structure.
+	(struct grub_video_adapter): Add get_edid.
 	(grub_video_edid_checksum): Add prototype.
 	(grub_video_get_edid): Likewise.
 	(grub_video_edid_preferred_mode): Likewise.
