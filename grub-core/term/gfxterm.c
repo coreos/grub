@@ -128,6 +128,7 @@ static struct grub_video_render_target *text_layer;
 static unsigned int bitmap_width;
 static unsigned int bitmap_height;
 static struct grub_video_bitmap *bitmap;
+static int blend_text_bg;
 
 static struct grub_dirty_region dirty_region;
 
@@ -344,6 +345,7 @@ grub_gfxterm_fullscreen (void)
       grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
     }
   bitmap = 0;
+  blend_text_bg = 0;
 
   /* Select the font to use.  */
   font_name = grub_env_get ("gfxterm_font");
@@ -396,6 +398,7 @@ destroy_window (void)
     {
       grub_video_bitmap_destroy (bitmap);
       bitmap = 0;
+      blend_text_bg = 0;
     }
 
   repaint_callback = 0;
@@ -481,25 +484,26 @@ redraw_screen_rect (unsigned int x, unsigned int y,
           /* Render background layer.  */
 	  grub_video_fill_rect (color, x, ty, width, h);
         }
-
-      /* Render text layer as blended.  */
-      grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, x, y,
-                                     x - virtual_screen.offset_x,
-                                     y - virtual_screen.offset_y,
-                                     width, height);
     }
   else
     {
       /* Render background layer.  */
       color = virtual_screen.bg_color_display;
       grub_video_fill_rect (color, x, y, width, height);
-
-      /* Render text layer as replaced (to get texts background color).  */
-      grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_REPLACE, x, y,
-                                     x - virtual_screen.offset_x,
-                                     y - virtual_screen.offset_y,
-				     width, height);
     }
+
+  if (blend_text_bg)
+    /* Render text layer as blended.  */
+    grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, x, y,
+                                   x - virtual_screen.offset_x,
+                                   y - virtual_screen.offset_y,
+                                   width, height);
+  else
+    /* Render text layer as replaced (to get texts background color).  */
+    grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_REPLACE, x, y,
+                                   x - virtual_screen.offset_x,
+                                   y - virtual_screen.offset_y,
+                                   width, height);
 
   /* Restore saved viewport.  */
   grub_video_set_viewport (saved_view.x, saved_view.y,
@@ -1137,6 +1141,7 @@ grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
     {
       grub_video_bitmap_destroy (bitmap);
       bitmap = 0;
+      blend_text_bg = 0;
 
       /* Mark whole screen as dirty.  */
       dirty_region_add (0, 0, window.width, window.height);
@@ -1169,6 +1174,7 @@ grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
                     /* Replace the original bitmap with the scaled one.  */
                     grub_video_bitmap_destroy (bitmap);
                     bitmap = scaled_bitmap;
+                    blend_text_bg = 1;
                   }
               }
           }
@@ -1195,8 +1201,6 @@ grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
                                    int argc, char **args)
 {
   grub_video_rgba_color_t color;
-  grub_uint8_t *data;
-  unsigned int i;
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing operand");
@@ -1218,25 +1222,10 @@ grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
       dirty_region_add (0, 0, window.width, window.height);
     }
 
-  /* Create a filled bitmap so that we get suitable text blending.  */
-  grub_video_bitmap_create (&bitmap, window.width, window.height,
-                            GRUB_VIDEO_BLIT_FORMAT_RGB_888);
-  if (grub_errno != GRUB_ERR_NONE)
-    return grub_errno;
-
-  data = bitmap->data;
-  for (i = 0; i < window.height * window.width; i++)
-    {
-      *data++ = color.red;
-      *data++ = color.green;
-      *data++ = color.blue;
-    }
-
-  bitmap_width = window.width;
-  bitmap_height = window.height;
-
-  /* Set the border color.  */
-  virtual_screen.bg_color_display = grub_video_map_rgba_color (color);
+  /* Set the background and border colors.  */
+  virtual_screen.bg_color = grub_video_map_rgba_color (color);
+  virtual_screen.bg_color_display = virtual_screen.bg_color;
+  blend_text_bg = 1;
 
   /* Mark whole screen as dirty.  */
   dirty_region_add (0, 0, window.width, window.height);
