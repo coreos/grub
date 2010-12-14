@@ -3,24 +3,33 @@
 	Preferred resolution detection for VBE.
 
 	* grub-core/video/video.c (grub_video_edid_checksum): New function.
+	(grub_video_get_edid): Likewise.
+	(grub_video_edid_preferred_mode): Likewise.  Try EDID followed by
+	the Flat Panel extension, in line with the X.org VESA driver.
 	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_get_flat_panel_info):
-	Likewise.
+	New function.
 	(grub_vbe_bios_get_ddc_capabilities): Likewise.
 	(grub_vbe_bios_read_edid): Likewise.
-	(grub_vbe_get_preferred_mode): Likewise.  Try EDID followed by the
-	Flat Panel extension, in line with the X.org VESA driver.
+	(grub_vbe_get_preferred_mode): Likewise.
 	(grub_video_vbe_setup): When the mode is "auto", try to get the
 	preferred mode from VBE, and use the largest mode that is no larger
 	than the preferred mode (some BIOSes expose a preferred mode that is
 	not in their mode list!).  If this fails, fall back to 640x480 as a
 	safe conservative choice.
+	(grub_video_vbe_get_edid): New function.
+	(grub_video_vbe_adapter): Add get_edid.
 	* include/grub/video.h (struct grub_vbe_edid_info): New structure.
 	(grub_video_edid_checksum): Add prototype.
+	(grub_video_get_edid): Likewise.
+	(grub_video_edid_preferred_mode): Likewise.
 	* include/grub/i386/pc/vbe.h (struct grub_vbe_flat_panel_info): New
 	structure.
 	(grub_vbe_bios_get_flat_panel_info): Add prototype.
 	(grub_vbe_bios_get_ddc_capabilities): Likewise.
 	(grub_vbe_bios_read_edid): Likewise.
+
+	* grub-core/commands/videoinfo.c (print_edid): New function.
+	(grub_cmd_videoinfo): Print EDID if available.
 
 	* util/grub.d/00_header.in (GRUB_GFXMODE): Default to "auto".  This
 	is more appropriate on a wider range of platforms than 640x480.

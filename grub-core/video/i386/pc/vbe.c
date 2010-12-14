@@ -389,26 +389,12 @@ grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
       && (grub_vbe_bios_get_ddc_capabilities (&ddc_level) & 0xff)
 	 == GRUB_VBE_STATUS_OK)
     {
-      status = grub_vbe_bios_read_edid (&edid_info);
-      /* Bit 1 in the Feature Support field indicates that the first
-         Detailed Timing Description is the preferred timing mode.  */
-      if (status == GRUB_VBE_STATUS_OK
-	  && grub_video_edid_checksum (&edid_info) == GRUB_ERR_NONE
-	  && edid_info.version == 1 /* we don't understand later versions */
-	  && (edid_info.feature_support
-	      & GRUB_VIDEO_EDID_FEATURE_PREFERRED_TIMING_MODE)
-	  && edid_info.detailed_timings[0].pixel_clock)
-	{
-	  *width = edid_info.detailed_timings[0].horizontal_active_lo
-		   | (((unsigned int)
-		       (edid_info.detailed_timings[0].horizontal_hi & 0xf0))
-		      << 4);
-	  *height = edid_info.detailed_timings[0].vertical_active_lo
-		    | (((unsigned int)
-			(edid_info.detailed_timings[0].vertical_hi & 0xf0))
-		       << 4);
-	  return GRUB_ERR_NONE;
-	}
+      if (grub_video_get_edid (&edid_info) == GRUB_ERR_NONE
+	  && grub_video_edid_preferred_mode (&edid_info, width, height)
+	      == GRUB_ERR_NONE)
+	return GRUB_ERR_NONE;
+
+      grub_errno = GRUB_ERR_NONE;
     }
 
   status = grub_vbe_bios_get_flat_panel_info (&flat_panel_info);
@@ -978,6 +964,15 @@ grub_video_vbe_get_info_and_fini (struct grub_video_mode_info *mode_info,
   return grub_video_fb_get_info_and_fini (mode_info, framebuf);
 }
 
+static grub_err_t
+grub_video_vbe_get_edid (struct grub_video_edid_info *edid_info)
+{
+  if (grub_vbe_bios_read_edid (edid_info) != GRUB_VBE_STATUS_OK)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "EDID information not available");
+
+  return GRUB_ERR_NONE;
+}
+
 static void
 grub_video_vbe_print_adapter_specific_info (void)
 {
@@ -1022,6 +1017,7 @@ static struct grub_video_adapter grub_video_vbe_adapter =
     .set_active_render_target = grub_video_fb_set_active_render_target,
     .get_active_render_target = grub_video_fb_get_active_render_target,
     .iterate = grub_video_vbe_iterate,
+    .get_edid = grub_video_vbe_get_edid,
     .print_adapter_specific_info = grub_video_vbe_print_adapter_specific_info,
 
     .next = 0

@@ -371,6 +371,8 @@ struct grub_video_adapter
 
   int (*iterate) (int (*hook) (const struct grub_video_mode_info *info));
 
+  grub_err_t (*get_edid) (struct grub_video_edid_info *edid_info);
+
   void (*print_adapter_specific_info) (void);
 };
 typedef struct grub_video_adapter *grub_video_adapter_t;
@@ -484,6 +486,10 @@ grub_err_t EXPORT_FUNC (grub_video_set_active_render_target) (struct grub_video_
 grub_err_t grub_video_get_active_render_target (struct grub_video_render_target **target);
 
 grub_err_t grub_video_edid_checksum (struct grub_video_edid_info *edid_info);
+grub_err_t grub_video_get_edid (struct grub_video_edid_info *edid_info);
+grub_err_t grub_video_edid_preferred_mode (struct grub_video_edid_info *edid_info,
+					   unsigned int *width,
+					   unsigned int *height);
 
 grub_err_t EXPORT_FUNC (grub_video_set_mode) (const char *modestring,
 					      unsigned int modemask,

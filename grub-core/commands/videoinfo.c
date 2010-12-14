@@ -77,6 +77,30 @@ hook (const struct grub_video_mode_info *info)
   return 0;
 }
 
+static void
+print_edid (struct grub_video_edid_info *edid_info)
+{
+  unsigned int edid_width, edid_height;
+
+  if (grub_video_edid_checksum (edid_info))
+    {
+      grub_printf ("  EDID checksum invalid\n");
+      grub_errno = GRUB_ERR_NONE;
+      return;
+    }
+
+  grub_printf ("  EDID version: %u.%u\n",
+	       edid_info->version, edid_info->revision);
+  if (grub_video_edid_preferred_mode (edid_info, &edid_width, &edid_height)
+	== GRUB_ERR_NONE)
+    grub_printf ("    Preferred mode: %ux%u\n", edid_width, edid_height);
+  else
+    {
+      grub_printf ("    No preferred mode available\n");
+      grub_errno = GRUB_ERR_NONE;
+    }
+}
+
 static grub_err_t
 grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
 		    int argc, char **args)
@@ -120,6 +144,8 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
 
   FOR_VIDEO_ADAPTERS (adapter)
   {
+    struct grub_video_edid_info edid_info;
+
     grub_printf ("Adapter '%s':\n", adapter->name);
 
     if (!adapter->iterate)
@@ -142,6 +168,11 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
       adapter->print_adapter_specific_info ();
 
     adapter->iterate (hook);
+
+    if (adapter->get_edid (&edid_info) == GRUB_ERR_NONE)
+      print_edid (&edid_info);
+    else
+      grub_errno = GRUB_ERR_NONE;
 
     if (adapter->id != id)
       {
