@@ -169,6 +169,81 @@ struct grub_vbe_palette_data
   grub_uint8_t alignment;
 } __attribute__ ((packed));
 
+struct grub_vbe_flat_panel_info
+{
+  grub_uint16_t horizontal_size;
+  grub_uint16_t vertical_size;
+  grub_uint16_t panel_type;
+  grub_uint8_t red_bpp;
+  grub_uint8_t green_bpp;
+  grub_uint8_t blue_bpp;
+  grub_uint8_t reserved_bpp;
+  grub_uint32_t reserved_offscreen_mem_size;
+  grub_vbe_farptr_t reserved_offscreen_mem_ptr;
+
+  grub_uint8_t reserved[14];
+} __attribute__ ((packed));
+
+struct grub_vbe_edid_info
+{
+  grub_uint8_t header[8];
+  grub_uint16_t manufacturer_id;
+  grub_uint16_t product_id;
+  grub_uint32_t serial_number;
+  grub_uint8_t week_of_manufacture;
+  grub_uint8_t year_of_manufacture;
+  grub_uint8_t version;
+  grub_uint8_t revision;
+
+  grub_uint8_t video_input_definition;
+  grub_uint8_t max_horizontal_image_size;
+  grub_uint8_t max_vertical_image_size;
+  grub_uint8_t display_gamma;
+  grub_uint8_t feature_support;
+#define GRUB_VBE_EDID_FEATURE_PREFERRED_TIMING_MODE	(1 << 1)
+
+  grub_uint8_t red_green_lo;
+  grub_uint8_t blue_white_lo;
+  grub_uint8_t red_x_hi;
+  grub_uint8_t red_y_hi;
+  grub_uint8_t green_x_hi;
+  grub_uint8_t green_y_hi;
+  grub_uint8_t blue_x_hi;
+  grub_uint8_t blue_y_hi;
+  grub_uint8_t white_x_hi;
+  grub_uint8_t white_y_hi;
+
+  grub_uint8_t established_timings_1;
+  grub_uint8_t established_timings_2;
+  grub_uint8_t manufacturer_reserved_timings;
+
+  grub_uint16_t standard_timings[8];
+
+  struct {
+    grub_uint16_t pixel_clock;
+    /* Only valid if the pixel clock is non-null.  */
+    grub_uint8_t horizontal_active_lo;
+    grub_uint8_t horizontal_blanking_lo;
+    grub_uint8_t horizontal_hi;
+    grub_uint8_t vertical_active_lo;
+    grub_uint8_t vertical_blanking_lo;
+    grub_uint8_t vertical_hi;
+    grub_uint8_t horizontal_sync_offset_lo;
+    grub_uint8_t horizontal_sync_pulse_width_lo;
+    grub_uint8_t vertical_sync_lo;
+    grub_uint8_t sync_hi;
+    grub_uint8_t horizontal_image_size_lo;
+    grub_uint8_t vertical_image_size_lo;
+    grub_uint8_t image_size_hi;
+    grub_uint8_t horizontal_border;
+    grub_uint8_t vertical_border;
+    grub_uint8_t flags;
+  } detailed_timings[4];
+
+  grub_uint8_t extension_flag;
+  grub_uint8_t checksum;
+} __attribute__ ((packed));
+
 /* Prototypes for helper functions.  */
 /* Call VESA BIOS 0x4f00 to get VBE Controller Information, return status.  */
 grub_vbe_status_t 
@@ -197,6 +272,15 @@ grub_vbe_bios_get_scanline_length (grub_uint32_t *length);
 grub_vbe_status_t 
 grub_vbe_bios_get_display_start (grub_uint32_t *x,
 				 grub_uint32_t *y);
+/* Call VESA BIOS 0x4f11 to get flat panel information, return status.  */
+grub_vbe_status_t
+grub_vbe_bios_get_flat_panel_info (struct grub_vbe_flat_panel_info *flat_panel_info);
+/* Call VESA BIOS 0x4f15 to get DDC availability, return status.  */
+grub_vbe_status_t
+grub_vbe_bios_get_ddc_capabilities (grub_uint8_t *level);
+/* Call VESA BIOS 0x4f15 to read EDID information, return status.  */
+grub_vbe_status_t
+grub_vbe_bios_read_edid (struct grub_vbe_edid_info *edid_data);
 
 grub_vbe_status_t grub_vbe_bios_getset_dac_palette_width (int set, int *width);
 
