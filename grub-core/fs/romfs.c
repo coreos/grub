@@ -399,6 +399,40 @@ grub_romfs_close (grub_file_t file)
   return GRUB_ERR_NONE;
 }
 
+static grub_err_t
+grub_romfs_label (grub_device_t device, char **label)
+{
+  struct grub_romfs_data *data;
+  grub_err_t err;
+
+  *label = NULL;
+
+  data = grub_romfs_mount (device);
+  if (!data)
+    return grub_errno;
+  *label = grub_malloc (data->first_file + 1
+			- sizeof (struct grub_romfs_superblock));
+  if (!*label)
+    {
+      grub_free (data);
+      return grub_errno;
+    }
+  err = grub_disk_read (device->disk, 0, sizeof (struct grub_romfs_superblock),
+			data->first_file
+			- sizeof (struct grub_romfs_superblock),
+			*label);
+  if (err)
+    {
+      grub_free (data);
+      grub_free (*label);
+      *label = NULL;
+      return err;
+    }
+  (*label)[data->first_file - sizeof (struct grub_romfs_superblock)] = 0;
+  return GRUB_ERR_NONE;
+}
+
+
 static struct grub_fs grub_romfs_fs =
   {
     .name = "romfs",
@@ -406,6 +440,7 @@ static struct grub_fs grub_romfs_fs =
     .open = grub_romfs_open,
     .read = grub_romfs_read,
     .close = grub_romfs_close,
+    .label = grub_romfs_label,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 0,
 #endif
