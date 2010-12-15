@@ -62,6 +62,7 @@ struct grub_fshelp_node
 #define GRUB_ROMFS_TYPE_HARDLINK 0
 #define GRUB_ROMFS_TYPE_DIRECTORY 1
 #define GRUB_ROMFS_TYPE_REGULAR 2
+#define GRUB_ROMFS_TYPE_SYMLINK 3
 
 static grub_err_t
 do_checksum (void *in, grub_size_t insize)
@@ -131,6 +132,27 @@ grub_romfs_mount (grub_device_t dev)
   data->first_file = ALIGN_UP (ptr - sb.d, GRUB_ROMFS_ALIGN) + sec * 512;
   data->disk = dev->disk;
   return data;
+}
+
+static char *
+grub_romfs_read_symlink (grub_fshelp_node_t node)
+{
+  char *ret;
+  grub_err_t err;
+  ret = grub_malloc (grub_be_to_cpu32 (node->file.size) + 1);
+  if (!ret)
+    return NULL;
+  err = grub_disk_read (node->data->disk,
+			(node->data_addr) >> GRUB_DISK_SECTOR_BITS,
+			(node->data_addr) & (GRUB_DISK_SECTOR_SIZE - 1),
+			grub_be_to_cpu32 (node->file.size), ret);
+  if (err)
+    {
+      grub_free (ret);
+      return NULL;
+    }
+  ret[grub_be_to_cpu32 (node->file.size)] = 0;
+  return ret;
 }
 
 static int
@@ -210,6 +232,9 @@ grub_romfs_iterate_dir (grub_fshelp_node_t dir,
 	case GRUB_ROMFS_TYPE_REGULAR:
 	  filetype = GRUB_FSHELP_REG;
 	  break;
+	case GRUB_ROMFS_TYPE_SYMLINK:
+	  filetype = GRUB_FSHELP_SYMLINK;
+	  break;
 	case GRUB_ROMFS_TYPE_DIRECTORY:
 	  node->data_addr = grub_be_to_cpu32 (hdr.spec);
 	  filetype = GRUB_FSHELP_DIR;
@@ -225,7 +250,9 @@ grub_romfs_iterate_dir (grub_fshelp_node_t dir,
 	    if (err)
 	      return 1;
 	    if ((grub_be_to_cpu32 (node->file.next_file) & GRUB_ROMFS_TYPE_MASK)
-		== GRUB_ROMFS_TYPE_REGULAR)
+		== GRUB_ROMFS_TYPE_REGULAR
+		|| (grub_be_to_cpu32 (node->file.next_file)
+		    & GRUB_ROMFS_TYPE_MASK) == GRUB_ROMFS_TYPE_SYMLINK)
 	      {
 		laddr += sizeof (hdr);
 		while (1)
@@ -245,16 +272,21 @@ grub_romfs_iterate_dir (grub_fshelp_node_t dir,
 		    laddr += 16;
 		  }
 		node->data_addr = laddr + 16;
-		filetype = GRUB_FSHELP_REG;
 	      }
-	  if ((grub_be_to_cpu32 (node->file.next_file) & GRUB_ROMFS_TYPE_MASK)
-	      == GRUB_ROMFS_TYPE_DIRECTORY)
-	    {
-	      node->data_addr = grub_be_to_cpu32 (node->file.spec);
-	      filetype = GRUB_FSHELP_DIR;
-	    }
-
-	  break;
+	    if ((grub_be_to_cpu32 (node->file.next_file)
+		 & GRUB_ROMFS_TYPE_MASK) == GRUB_ROMFS_TYPE_REGULAR)
+	      filetype = GRUB_FSHELP_REG;
+	    if ((grub_be_to_cpu32 (node->file.next_file)
+		 & GRUB_ROMFS_TYPE_MASK) == GRUB_ROMFS_TYPE_SYMLINK)
+	      filetype = GRUB_FSHELP_SYMLINK;
+	    if ((grub_be_to_cpu32 (node->file.next_file) & GRUB_ROMFS_TYPE_MASK)
+		== GRUB_ROMFS_TYPE_DIRECTORY)
+	      {
+		node->data_addr = grub_be_to_cpu32 (node->file.spec);
+		filetype = GRUB_FSHELP_DIR;
+	      }
+	    
+	    break;
 	  }
 	}
 
@@ -300,7 +332,7 @@ grub_romfs_dir (grub_device_t device, const char *path,
   start.data_addr = data->first_file;
   start.data = data;
   grub_fshelp_find_file (path, &start, &fdiro, grub_romfs_iterate_dir,
-			 NULL, GRUB_FSHELP_DIR);
+			 grub_romfs_read_symlink, GRUB_FSHELP_DIR);
   if (grub_errno)
     goto fail;
 
@@ -327,7 +359,7 @@ grub_romfs_open (struct grub_file *file, const char *name)
   start.data = data;
 
   grub_fshelp_find_file (name, &start, &fdiro, grub_romfs_iterate_dir,
-			 NULL, GRUB_FSHELP_REG);
+			 grub_romfs_read_symlink, GRUB_FSHELP_REG);
   if (grub_errno)
     goto fail;
 
