@@ -52,15 +52,16 @@ struct grub_fshelp_node
 {
   grub_disk_addr_t addr;
   struct grub_romfs_data *data;
-  /* Used only on regular files.  */
   grub_disk_addr_t data_addr;
+  /* Not filled for root.  */
   struct grub_romfs_file_header file;
 };
 
 #define GRUB_ROMFS_ALIGN 16
 #define GRUB_ROMFS_TYPE_MASK 7
-#define GRUB_ROMFS_TYPE_REGULAR 2
+#define GRUB_ROMFS_TYPE_HARDLINK 0
 #define GRUB_ROMFS_TYPE_DIRECTORY 1
+#define GRUB_ROMFS_TYPE_REGULAR 2
 
 static grub_err_t
 do_checksum (void *in, grub_size_t insize)
@@ -145,7 +146,7 @@ grub_romfs_iterate_dir (grub_fshelp_node_t dir,
   char *name = NULL;
   unsigned nptr;
   unsigned i, j;
-  for (caddr = dir->addr; caddr;
+  for (caddr = dir->data_addr; caddr;
        caddr = grub_be_to_cpu32 (hdr.next_file) & ~(GRUB_ROMFS_ALIGN - 1))
     {
       grub_disk_addr_t naddr = caddr + sizeof (hdr);
@@ -180,7 +181,7 @@ grub_romfs_iterate_dir (grub_fshelp_node_t dir,
 				naddr & (GRUB_DISK_SECTOR_SIZE - 1),
 				16, name + 16 * nptr);
 	  if (err)
-	    return err;
+	    return 1;
 	  for (j = 0; j < 16; j++)
 	    if (!name[16 * nptr + j])
 	      break;
@@ -210,8 +211,51 @@ grub_romfs_iterate_dir (grub_fshelp_node_t dir,
 	  filetype = GRUB_FSHELP_REG;
 	  break;
 	case GRUB_ROMFS_TYPE_DIRECTORY:
+	  node->data_addr = grub_be_to_cpu32 (hdr.spec);
 	  filetype = GRUB_FSHELP_DIR;
 	  break;
+	case GRUB_ROMFS_TYPE_HARDLINK:
+	  {
+	    grub_disk_addr_t laddr;
+	    node->addr = laddr = grub_be_to_cpu32 (hdr.spec);
+	    err = grub_disk_read (dir->data->disk,
+				  laddr >> GRUB_DISK_SECTOR_BITS,
+				  laddr & (GRUB_DISK_SECTOR_SIZE - 1),
+				  sizeof (node->file), &node->file);
+	    if (err)
+	      return 1;
+	    if ((grub_be_to_cpu32 (node->file.next_file) & GRUB_ROMFS_TYPE_MASK)
+		== GRUB_ROMFS_TYPE_REGULAR)
+	      {
+		laddr += sizeof (hdr);
+		while (1)
+		  {
+		    char buf[16];
+		    err = grub_disk_read (dir->data->disk, 
+					  laddr >> GRUB_DISK_SECTOR_BITS,
+					  laddr & (GRUB_DISK_SECTOR_SIZE - 1),
+					  16, buf);
+		    if (err)
+		      return 1;
+		    for (i = 0; i < 16; i++)
+		      if (!buf[i])
+			break;
+		    if (i != 16)
+		      break;
+		    laddr += 16;
+		  }
+		node->data_addr = laddr + 16;
+		filetype = GRUB_FSHELP_REG;
+	      }
+	  if ((grub_be_to_cpu32 (node->file.next_file) & GRUB_ROMFS_TYPE_MASK)
+	      == GRUB_ROMFS_TYPE_DIRECTORY)
+	    {
+	      node->data_addr = grub_be_to_cpu32 (node->file.spec);
+	      filetype = GRUB_FSHELP_DIR;
+	    }
+
+	  break;
+	  }
 	}
 
       if (hook (name, filetype, node))
@@ -253,6 +297,7 @@ grub_romfs_dir (grub_device_t device, const char *path,
     goto fail;
 
   start.addr = data->first_file;
+  start.data_addr = data->first_file;
   start.data = data;
   grub_fshelp_find_file (path, &start, &fdiro, grub_romfs_iterate_dir,
 			 NULL, GRUB_FSHELP_DIR);
@@ -278,6 +323,7 @@ grub_romfs_open (struct grub_file *file, const char *name)
     goto fail;
 
   start.addr = data->first_file;
+  start.data_addr = data->first_file;
   start.data = data;
 
   grub_fshelp_find_file (name, &start, &fdiro, grub_romfs_iterate_dir,
