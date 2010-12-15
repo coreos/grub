@@ -1201,6 +1201,7 @@ grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
                                    int argc, char **args)
 {
   grub_video_rgba_color_t color;
+  struct grub_video_render_target *old_target;
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing operand");
@@ -1222,9 +1223,13 @@ grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
       dirty_region_add (0, 0, window.width, window.height);
     }
 
-  /* Set the background and border colors.  */
+  /* Set the background and border colors.  The background color needs to be
+     compatible with the text layer.  */
+  grub_video_get_active_render_target (&old_target);
+  grub_video_set_active_render_target (text_layer);
   virtual_screen.bg_color = grub_video_map_rgba_color (color);
-  virtual_screen.bg_color_display = virtual_screen.bg_color;
+  grub_video_set_active_render_target (old_target);
+  virtual_screen.bg_color_display = grub_video_map_rgba_color (color);
   blend_text_bg = 1;
 
   /* Mark whole screen as dirty.  */
