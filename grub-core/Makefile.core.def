@@ -978,6 +978,11 @@ module = {
 };
 
 module = {
+  name = romfs;
+  common = fs/romfs.c;
+};
+
+module = {
   name = sfs;
   common = fs/sfs.c;
 };
