@@ -1,3 +1,11 @@
+2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix handling of UTF-16 UDF labels.
+
+	* grub-core/fs/udf.c (grub_udf_iterate_dir): Move string-parsing part
+	(read_string): .. here.
+	(grub_udf_label): Use read_string.
+
 2010-12-19  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* grub-core/normal/menu_entry.c (run): Execute commands from menu

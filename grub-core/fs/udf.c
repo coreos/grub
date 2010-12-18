@@ -788,6 +788,43 @@ fail:
   return 0;
 }
 
+static char *
+read_string (grub_uint8_t *raw, grub_size_t sz)
+{
+  grub_uint16_t *utf16;
+  char *ret;
+  grub_size_t utf16len = 0;
+
+  if (raw[0] != 8 && raw[0] != 16)
+    return NULL;
+
+  if (raw[0] == 8)
+    {
+      unsigned i;
+      utf16len = sz - 1;
+      utf16 = grub_malloc (utf16len * sizeof (utf16[0]));
+      if (!utf16)
+	return NULL;
+      for (i = 0; i < utf16len; i++)
+	utf16[i] = raw[i + 1];
+    }
+  if (raw[0] == 16)
+    {
+      unsigned i;
+      utf16len = (sz - 1) / 2;
+      utf16 = grub_malloc (utf16len * sizeof (utf16[0]));
+      if (!utf16)
+	return NULL;
+      for (i = 0; i < utf16len; i++)
+	utf16[i] = (raw[2 * i + 1] << 8) | raw[2*i + 2];
+    }
+  ret = grub_malloc (utf16len * 3 + 1);
+  if (ret)
+    *grub_utf16_to_utf8 ((grub_uint8_t *) ret, utf16, utf16len) = '\0';
+  grub_free (utf16);
+  return ret;
+}
+
 static int
 grub_udf_iterate_dir (grub_fshelp_node_t dir,
 		      int NESTED_FUNC_ATTR
@@ -841,10 +878,8 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
           else
 	    {
 	      enum grub_fshelp_filetype type;
+	      char *filename;
 	      grub_uint8_t raw[dirent.file_ident_length];
-	      grub_uint16_t utf16[dirent.file_ident_length - 1];
-	      grub_uint8_t filename[dirent.file_ident_length * 2];
-	      grub_size_t utf16len = 0;
 
 	      type = ((dirent.characteristics & GRUB_UDF_FID_CHAR_DIRECTORY) ?
 		      (GRUB_FSHELP_DIR) : (GRUB_FSHELP_REG));
@@ -855,27 +890,16 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 		  != dirent.file_ident_length)
 		return 0;
 
-	      if (raw[0] == 8)
-		{
-		  unsigned i;
-		  utf16len = dirent.file_ident_length - 1;
-		  for (i = 0; i < utf16len; i++)
-		    utf16[i] = raw[i + 1];
-		}
-	      if (raw[0] == 16)
-		{
-		  unsigned i;
-		  utf16len = (dirent.file_ident_length - 1) / 2;
-		  for (i = 0; i < utf16len; i++)
-		    utf16[i] = (raw[2 * i + 1] << 8) | raw[2*i + 2];
-		}
-	      if (raw[0] == 8 || raw[0] == 16)
-		{
-		  *grub_utf16_to_utf8 (filename, utf16, utf16len) = '\0';
+	      filename = read_string (raw, dirent.file_ident_length);
+	      if (!filename)
+		grub_print_error ();
 
-		  if (hook ((char *) filename, type, child))
-		    return 1;
+	      if (filename && hook (filename, type, child))
+		{
+		  grub_free (filename);
+		  return 1;
 		}
+	      grub_free (filename);
 	    }
 	}
 
@@ -1004,7 +1028,7 @@ grub_udf_label (grub_device_t device, char **label)
 
   if (data)
     {
-      *label = grub_strdup ((char *) &data->lvd.ident[1]);
+      *label = read_string (data->lvd.ident, sizeof (data->lvd.ident));
       grub_free (data);
     }
   else
