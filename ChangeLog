@@ -1,5 +1,11 @@
 2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/affs.c (grub_affs_mount): Read data->bblock.rootblock
+	rather than assuming than rootblock is exactly in the middle.
+	(grub_affs_label): Likewise.
+
+2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/affs.c (grub_affs_fs) [GRUB_UTIL]: Explicitly set
 	reserved_first_sector to 0.
 	* grub-core/fs/cpio.c (grub_cpio_fs) [GRUB_UTIL]: Likewise.
