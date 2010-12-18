@@ -4,6 +4,10 @@
 	editor under argument scope.
 	Reported by: Jordan Uggla
 
+2010-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkfont.c (main): Handle errors from FT_Set_Pixel_Sizes.
+
 2010-12-18  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/normal/term.c (print_more): Make \r or \n scroll one
