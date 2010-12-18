@@ -1,5 +1,13 @@
 2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/affs.c (grub_affs_fs) [GRUB_UTIL]: Explicitly set
+	reserved_first_sector to 0.
+	* grub-core/fs/cpio.c (grub_cpio_fs) [GRUB_UTIL]: Likewise.
+	* grub-core/fs/sfs.c (grub_sfs_fs) [GRUB_UTIL]: Likewise.
+	* grub-core/fs/xfs.c (grub_xfs_fs) [GRUB_UTIL]: Likewise.
+
+2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix handling of UTF-16 UDF labels.
 
 	* grub-core/fs/udf.c (grub_udf_iterate_dir): Move string-parsing part

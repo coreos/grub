@@ -579,6 +579,9 @@ static struct grub_fs grub_sfs_fs =
     .read = grub_sfs_read,
     .close = grub_sfs_close,
     .label = grub_sfs_label,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 0,
+#endif
     .next = 0
   };
 
