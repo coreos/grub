@@ -441,7 +441,7 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   if (err)
     return err;
   ptrorig = get_virtual_current_address (ch);
-  ptrdest = (grub_addr_t) get_virtual_current_address (ch);
+  ptrdest = get_physical_target_address (ch);
 
   *target = ptrdest;
 

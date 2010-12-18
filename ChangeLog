@@ -1,3 +1,9 @@
+2010-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi):
+	Set ptrdest to correct get_physical_target_address rather than
+	incorrect get_virtual_current_address.
+
 2010-12-18  kashyap garimella <garimella.kashyap@gmail.com>
 
 	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_load): Use
