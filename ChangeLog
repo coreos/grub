@@ -1,3 +1,8 @@
+2010-12-18  kashyap garimella <garimella.kashyap@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_load): Use
+	correct cat to grub_uint8_t * rather than grub_uint32_t *.
+
 2010-12-10  Colin Watson  <cjwatson@ubuntu.com>
 
 	* .bzrignore: Ignore grub-core/rs_decoder.S.

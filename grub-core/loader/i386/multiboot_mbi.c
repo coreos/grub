@@ -141,7 +141,7 @@ grub_multiboot_load (grub_file_t file)
 	}
 
       if (header->bss_end_addr)
-	grub_memset ((grub_uint32_t *) source + load_size, 0,
+	grub_memset ((grub_uint8_t *) source + load_size, 0,
 		     header->bss_end_addr - header->load_addr - load_size);
 
       grub_multiboot_payload_eip = header->entry_addr;
