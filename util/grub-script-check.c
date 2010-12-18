@@ -73,6 +73,7 @@ main (int argc, char *argv[])
 {
   char *argument;
   char *input;
+  int lineno = 0;
   FILE *file = 0;
   int verbose = 0;
   int found_input = 0;
@@ -111,6 +112,7 @@ main (int argc, char *argv[])
 	  cmdline[i] = '\0';
       }
 
+    lineno++;
     *line = grub_strdup (cmdline);
 
     free (cmdline);
@@ -189,5 +191,11 @@ main (int argc, char *argv[])
 
   if (file) fclose (file);
 
-  return (found_input && script == 0);
+  if (found_input && script == 0)
+    {
+      fprintf (stderr, "error: line no: %u\n", lineno);
+      return 1;
+    }
+
+  return 0;
 }

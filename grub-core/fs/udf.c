@@ -894,6 +894,8 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 		return 0;
 
 	      filename = read_string (raw, dirent.file_ident_length);
+	      if (!filename)
+		grub_print_error ();
 
 	      if (filename && hook (filename, type, child))
 		{

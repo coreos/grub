@@ -1,3 +1,75 @@
+2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/affs.c (grub_affs_mount): Read data->bblock.rootblock
+	rather than assuming than rootblock is exactly in the middle.
+	(grub_affs_label): Likewise.
+
+2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/affs.c (grub_affs_fs) [GRUB_UTIL]: Explicitly set
+	reserved_first_sector to 0.
+	* grub-core/fs/cpio.c (grub_cpio_fs) [GRUB_UTIL]: Likewise.
+	* grub-core/fs/sfs.c (grub_sfs_fs) [GRUB_UTIL]: Likewise.
+	* grub-core/fs/xfs.c (grub_xfs_fs) [GRUB_UTIL]: Likewise.
+
+2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix handling of UTF-16 UDF labels.
+
+	* grub-core/fs/udf.c (grub_udf_iterate_dir): Move string-parsing part
+	(read_string): .. here.
+	(grub_udf_label): Use read_string.
+
+2010-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkfont.c (main): Handle errors from FT_Set_Pixel_Sizes.
+
+2010-12-18  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/normal/term.c (print_more): Make \r or \n scroll one
+	line, and other keys scroll an entire page (previous handling was
+	for \r and \n to scroll a page and other keys to scroll two lines).
+
+2010-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi):
+	Set ptrdest to correct get_physical_target_address rather than
+	incorrect get_virtual_current_address.
+
+2010-12-18  kashyap garimella <garimella.kashyap@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_load): Use
+	correct cat to grub_uint8_t * rather than grub_uint32_t *.
+
+2010-12-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Ignore grub-core/rs_decoder.S.
+
+2010-12-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/gettext/gettext.c (grub_gettext_init_ext): Factor out
+	.mo/.mo.gz opening sequence to ...
+	(grub_mofile_open_lang): ... here.
+	(grub_gettext_init_ext): If opening ll_CC fails, try ll.
+	* util/grub.d/00_header.in (grub_lang): Include country part of
+	locale.
+	Reported by: Mario Limonciello.
+
+2010-12-09  Robert Millan  <rmh@gnu.org>
+
+	* NEWS: Document addition of ZFS support.
+
+2010-12-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/i386/pc/startup.S (grub_console_getkey): Use `>> 1'
+	rather than `/ 2', as the latter requires -Wa,--divide which would
+	require bumping our minimum binutils version.
+
+2010-12-03  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* util/grub-script-check.c (main): Print script line number on
+	error.
+
 2010-12-01  Robert Millan  <rmh@gnu.org>
 
 	* grub-core/fs/zfs/zfs.c: New file.
