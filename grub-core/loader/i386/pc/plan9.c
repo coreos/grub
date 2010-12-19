@@ -48,10 +48,10 @@ struct grub_plan9_header
   grub_uint32_t text_size;
   grub_uint32_t data_size;
   grub_uint32_t bss_size;
-  grub_uint32_t zero1;
+  grub_uint32_t sectiona;
   grub_uint32_t entry_addr;
-  grub_uint32_t zero2;
-  grub_uint32_t zero3;
+  grub_uint32_t zero;
+  grub_uint32_t sectionb;
 };
 
 static grub_err_t
@@ -116,7 +116,7 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
     goto fail;
 
   if (grub_be_to_cpu32 (hdr.magic) != GRUB_PLAN9_MAGIC
-      || hdr.zero1 || hdr.zero2 || hdr.zero3)
+      || hdr.zero)
     {
       grub_error (GRUB_ERR_BAD_OS, "unsupported Plan9");
       goto fail;
