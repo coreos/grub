@@ -1147,6 +1147,13 @@ module = {
 };
 
 module = {
+  name = plan9;
+  i386_pc = loader/i386/pc/plan9.c;
+  enable = i386_pc;
+};
+
+
+module = {
   name = linux16;
   i386_pc = loader/i386/pc/linux.c;
   enable = i386_pc;
