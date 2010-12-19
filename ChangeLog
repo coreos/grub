@@ -1,3 +1,9 @@
+2010-12-19  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* grub-core/normal/menu_entry.c (run): Execute commands from menu
+	editor under argument scope.
+	Reported by: Jordan Uggla
+
 2010-12-18  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/normal/term.c (print_more): Make \r or \n scroll one
