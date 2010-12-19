@@ -36,6 +36,7 @@ static struct grub_relocator *rel;
 static grub_uint32_t eip = 0xffffffff;
 
 #define GRUB_PLAN9_TARGET            0x100000
+#define GRUB_PLAN9_ALIGN             4096
 #define GRUB_PLAN9_CONFIG_ADDR       0x001200
 #define GRUB_PLAN9_CONFIG_PATH_SIZE  0x000040
 #define GRUB_PLAN9_CONFIG_MAGIC      "ZORT 0\r\n"
@@ -121,10 +122,10 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  memsize = sizeof (hdr);
-  memsize += ALIGN_UP (grub_be_to_cpu32 (hdr.text_size), 16);
-  memsize += ALIGN_UP (grub_be_to_cpu32 (hdr.data_size), 16);
-  memsize += ALIGN_UP(grub_be_to_cpu32 (hdr.bss_size), 16);
+  memsize = ALIGN_UP (grub_be_to_cpu32 (hdr.text_size) + sizeof (hdr),
+		       GRUB_PLAN9_ALIGN);
+  memsize += ALIGN_UP (grub_be_to_cpu32 (hdr.data_size), GRUB_PLAN9_ALIGN);
+  memsize += ALIGN_UP(grub_be_to_cpu32 (hdr.bss_size), GRUB_PLAN9_ALIGN);
   eip = grub_be_to_cpu32 (hdr.entry_addr) & 0xfffffff;
 
   /* path */
@@ -174,8 +175,9 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
       != (grub_ssize_t) grub_be_to_cpu32 (hdr.text_size))
     goto fail;
   ptr += grub_be_to_cpu32 (hdr.text_size);
-  padsize = ALIGN_UP (grub_be_to_cpu32 (hdr.text_size), 16)
-    - grub_be_to_cpu32 (hdr.text_size);
+  padsize = ALIGN_UP (grub_be_to_cpu32 (hdr.text_size) + sizeof (hdr),
+		      GRUB_PLAN9_ALIGN) - grub_be_to_cpu32 (hdr.text_size)
+    - sizeof (hdr);
 
   grub_memset (ptr, 0, padsize);
   ptr += padsize;
@@ -184,12 +186,12 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
       != (grub_ssize_t) grub_be_to_cpu32 (hdr.data_size))
     goto fail;
   ptr += grub_be_to_cpu32 (hdr.data_size);
-  padsize = ALIGN_UP (grub_be_to_cpu32 (hdr.data_size), 16)
+  padsize = ALIGN_UP (grub_be_to_cpu32 (hdr.data_size), GRUB_PLAN9_ALIGN)
     - grub_be_to_cpu32 (hdr.data_size);
 
   grub_memset (ptr, 0, padsize);
   ptr += padsize;
-  grub_memset (ptr, 0, ALIGN_UP(grub_be_to_cpu32 (hdr.bss_size), 16));
+  grub_memset (ptr, 0, ALIGN_UP(grub_be_to_cpu32 (hdr.bss_size), GRUB_PLAN9_ALIGN));
 
   grub_loader_set (grub_plan9_boot, grub_plan9_unload, 1);
   return GRUB_ERR_NONE;
