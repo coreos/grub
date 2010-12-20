@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/types.h>
 #include <grub/partition.h>
+#include <grub/msdos_partition.h>
+#include <grub/scsi.h>
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
@@ -67,9 +69,6 @@ grub_plan9_boot (void)
     .esp = 0,
     .ebp = 0,
     .esi = 0
-    /*   grub_uint32_t ebp;
-  grub_uint32_t esi;
-*/
   };
   grub_video_set_mode ("text", 0, 0);
 
@@ -90,14 +89,218 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
 {
   grub_file_t file = 0;
-  grub_err_t err;
   void *mem;
-  grub_uint8_t *ptr;
   grub_size_t memsize, padsize;
   struct grub_plan9_header hdr;
   char *config, *configptr;
   grub_size_t configsize;
   int i;
+  char *pmap = NULL;
+  grub_size_t pmapalloc = 256;
+  grub_size_t pmapptr = 0;
+  int noslash = 1;
+  char prefixes[5][10] = {"dos", "plan9", "ntfs", "linux", "linuxswap"};
+  int prefixescnt[5];
+
+  auto int fill_partition (grub_disk_t disk,
+			   const grub_partition_t partition);
+  int fill_partition (grub_disk_t disk,
+		      const grub_partition_t partition)
+  {
+    if (!noslash)
+      {
+	if (grub_extend_alloc (pmapptr + 1, &pmapalloc, (void **) &pmap))
+	  return 1;
+	pmap[pmapptr++] = '/';
+      }
+    noslash = 0;
+
+    if (grub_strcmp (partition->partmap->name, "plan") == 0)
+      {
+	unsigned ptr = partition->index + sizeof ("part ") - 1;
+	grub_err_t err;
+	disk->partition = partition->parent;
+	do
+	  {
+	    if (grub_extend_alloc (pmapptr + 1, &pmapalloc, (void **) &pmap))
+	      return 1;
+	    err = grub_disk_read (disk, 1, ptr, 1, pmap + pmapptr);
+	    if (err)
+	      {
+		disk->partition = 0;
+		return err;
+	      }
+	    ptr++;
+	    pmapptr++;
+	  }
+	while (grub_isalpha (pmap[pmapptr - 1])
+	       || grub_isdigit (pmap[pmapptr - 1]));
+	pmapptr--;
+      }
+    else
+      {
+	char name[50];
+	int c = 0;
+	if (grub_strcmp (partition->partmap->name, "msdos") == 0)
+	  {
+	    switch (partition->msdostype)
+	      {
+	      case GRUB_PC_PARTITION_TYPE_PLAN9:
+		c = 1;
+		break;
+	      case GRUB_PC_PARTITION_TYPE_NTFS:
+		c = 2;
+		break;
+	      case GRUB_PC_PARTITION_TYPE_MINIX:
+	      case GRUB_PC_PARTITION_TYPE_LINUX_MINIX:
+	      case GRUB_PC_PARTITION_TYPE_EXT2FS:
+		c = 3;
+		break;
+	      case GRUB_PC_PARTITION_TYPE_LINUX_SWAP:
+		c = 4;
+		break;
+	      }
+	  }
+
+	if (prefixescnt[c] == 0)
+	  grub_strcpy (name, prefixes[c]);
+	else
+	  grub_snprintf (name, sizeof (name), "%s.%d", prefixes[c],
+			 prefixescnt[c]);
+	prefixescnt[c]++;
+	if (grub_extend_alloc (pmapptr + grub_strlen (name) + 1,
+			       &pmapalloc, (void **) &pmap))
+	  return 1;
+	grub_strcpy (pmap + pmapptr, name);
+	pmapptr += grub_strlen (name);
+      }      
+    if (grub_extend_alloc (pmapptr + 2 + 25 + 5 + 25, &pmapalloc,
+			   (void **) &pmap))
+      return 1;
+    pmap[pmapptr++] = ' ';
+    grub_snprintf (pmap + pmapptr, 25 + 5 + 25,
+		   "%" PRIuGRUB_UINT64_T " %" PRIuGRUB_UINT64_T,
+		   grub_partition_get_start (partition),
+		   grub_partition_get_start (partition)
+		   + grub_partition_get_len (partition));
+    pmapptr += grub_strlen (pmap + pmapptr);
+    return 0;
+  }
+
+  auto int fill_disk (const char *name);
+  int fill_disk (const char *name)
+  {
+    grub_device_t dev;
+    int file_disk;
+    char *plan9name = NULL;
+
+    dev = grub_device_open (name);
+    if (!dev)
+      {
+	grub_print_error ();
+	return 0;
+      }
+    if (!dev->disk)
+      {
+	grub_device_close (dev);
+	return 0;
+      }
+    file_disk = file->device->disk && dev->disk->id == file->device->disk->id
+      && dev->disk->dev->id == file->device->disk->dev->id;
+    switch (dev->disk->dev->id)
+      {
+      case GRUB_DISK_DEVICE_BIOSDISK_ID:
+	if (dev->disk->id & 0x80)
+	  plan9name = grub_xasprintf ("sdB%u",
+				      (unsigned) (dev->disk->id & 0x7f));
+	else
+	  plan9name = grub_xasprintf ("fd%u",
+				      (unsigned) (dev->disk->id & 0x7f));
+	break;
+	/* Shouldn't happen as Plan9 doesn't work on these platforms.  */
+      case GRUB_DISK_DEVICE_OFDISK_ID:
+      case GRUB_DISK_DEVICE_EFIDISK_ID:
+
+	/* Plan9 doesn't see those.  */
+      case GRUB_DISK_DEVICE_LOOPBACK_ID:
+      case GRUB_DISK_DEVICE_RAID_ID:
+      case GRUB_DISK_DEVICE_LVM_ID:
+      case GRUB_DISK_DEVICE_HOST_ID:
+      case GRUB_DISK_DEVICE_MEMDISK_ID:
+      case GRUB_DISK_DEVICE_LUKS_ID:
+
+	/* Not sure how to handle those. */
+      case GRUB_DISK_DEVICE_PXE_ID:
+      case GRUB_DISK_DEVICE_NAND_ID:
+	if (!file_disk)
+	  {
+	    grub_device_close (dev);
+	    return 0;
+	  }
+	  
+	/* if it's the disk the kernel is loaded from we need to name
+	   it nevertheless.  */
+	plan9name = grub_strdup ("sdZ0");
+	break;
+
+      case GRUB_DISK_DEVICE_ATA_ID:
+	{
+	  int unit;
+	  if (grub_strlen (dev->disk->name) < sizeof ("ata0") - 1)
+	    unit = 0;
+	  else
+	    unit = grub_strtoul (dev->disk->name + sizeof ("ata0") - 1, 0, 0);
+	  plan9name = grub_xasprintf ("sd%c%d", 'C' + unit / 2, unit % 2);
+	}
+	break;
+      case GRUB_DISK_DEVICE_SCSI_ID:
+	if (((dev->disk->id >> GRUB_SCSI_ID_SUBSYSTEM_SHIFT) & 0xff)
+	    == GRUB_SCSI_SUBSYSTEM_ATAPI)
+	  {
+	    int unit;
+	    if (grub_strlen (dev->disk->name) < sizeof ("ata0") - 1)
+	      unit = 0;
+	    else
+	      unit = grub_strtoul (dev->disk->name + sizeof ("ata0") - 1, 0, 0);
+	    plan9name = grub_xasprintf ("sd%c%d", 'C' + unit / 2, unit % 2);
+	    break;
+	  }
+	  
+	/* FIXME: how does Plan9 number controllers?
+	   We probably need save the SCSI devices and sort them  */
+	plan9name
+	  = grub_xasprintf ("sd0%u", (unsigned)
+			    ((dev->disk->id >> GRUB_SCSI_ID_BUS_SHIFT) & 0xf));
+	break;
+      }
+    if (!plan9name)
+      {
+	grub_print_error ();
+	return 0;
+      }
+    if (grub_extend_alloc (pmapptr + grub_strlen (plan9name)
+			   + sizeof ("part="), &pmapalloc,
+			   (void **) &pmap))
+      {
+	grub_free (plan9name);
+	return 1;
+      }
+    grub_strcpy (pmap + pmapptr, plan9name);
+    pmapptr += grub_strlen (plan9name);
+    grub_free (plan9name);
+    grub_strcpy (pmap + pmapptr, "part=");
+    pmapptr += sizeof ("part=") - 1;
+
+    noslash = 1;
+    grub_memset (prefixescnt, 0, sizeof (prefixescnt));
+    if (grub_partition_iterate (dev->disk, fill_partition))
+      return 1;
+    if (grub_extend_alloc (pmapptr + 1, &pmapalloc, (void **) &pmap))
+      return 1;
+    pmap[pmapptr++] = '\n';
+
+    return 0;
+  }
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
@@ -111,6 +314,18 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
   file = grub_file_open (argv[0]);
   if (! file)
     goto fail;
+
+  pmap = grub_malloc (pmapalloc);
+  if (!pmap)
+    goto fail;
+
+  if (grub_disk_dev_iterate (fill_disk))
+    goto fail;
+
+  if (grub_extend_alloc (pmapptr + 1, &pmapalloc,
+			 (void **) &pmap))
+    goto fail;
+  pmap[pmapptr] = 0;
 
   if (grub_file_read (file, &hdr, sizeof (hdr)) != (grub_ssize_t) sizeof (hdr))
     goto fail;
@@ -134,11 +349,13 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
   configsize += sizeof (GRUB_PLAN9_CONFIG_MAGIC) - 1;
   for (i = 1; i < argc; i++)
     configsize += grub_strlen (argv[i]) + 1;
+  configsize += pmapptr;
   /* Terminating \0.  */
   configsize++;
 
   {
     grub_relocator_chunk_t ch;
+    grub_err_t err;
     err = grub_relocator_alloc_chunk_addr (rel, &ch, GRUB_PLAN9_CONFIG_ADDR,
 					   configsize);
     if (err)
@@ -156,10 +373,12 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
       configptr = grub_stpcpy (configptr, argv[i]);
       *configptr++ = '\n';
     }
-  *configptr = 0;
+  configptr = grub_stpcpy (configptr, pmap);
 
   {
     grub_relocator_chunk_t ch;
+    grub_err_t err;
+
     err = grub_relocator_alloc_chunk_addr (rel, &ch, GRUB_PLAN9_TARGET,
 					   memsize);
     if (err)
@@ -167,36 +386,40 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
     mem = get_virtual_current_address (ch);
   }
 
-  ptr = mem;
-  grub_memcpy (ptr, &hdr, sizeof (hdr));
-  ptr += sizeof (hdr);
+  {
+    grub_uint8_t *ptr;
+    ptr = mem;
+    grub_memcpy (ptr, &hdr, sizeof (hdr));
+    ptr += sizeof (hdr);
 
-  if (grub_file_read (file, ptr, grub_be_to_cpu32 (hdr.text_size))
-      != (grub_ssize_t) grub_be_to_cpu32 (hdr.text_size))
-    goto fail;
-  ptr += grub_be_to_cpu32 (hdr.text_size);
-  padsize = ALIGN_UP (grub_be_to_cpu32 (hdr.text_size) + sizeof (hdr),
-		      GRUB_PLAN9_ALIGN) - grub_be_to_cpu32 (hdr.text_size)
-    - sizeof (hdr);
+    if (grub_file_read (file, ptr, grub_be_to_cpu32 (hdr.text_size))
+	!= (grub_ssize_t) grub_be_to_cpu32 (hdr.text_size))
+      goto fail;
+    ptr += grub_be_to_cpu32 (hdr.text_size);
+    padsize = ALIGN_UP (grub_be_to_cpu32 (hdr.text_size) + sizeof (hdr),
+			GRUB_PLAN9_ALIGN) - grub_be_to_cpu32 (hdr.text_size)
+      - sizeof (hdr);
 
-  grub_memset (ptr, 0, padsize);
-  ptr += padsize;
+    grub_memset (ptr, 0, padsize);
+    ptr += padsize;
 
-  if (grub_file_read (file, ptr, grub_be_to_cpu32 (hdr.data_size))
-      != (grub_ssize_t) grub_be_to_cpu32 (hdr.data_size))
-    goto fail;
-  ptr += grub_be_to_cpu32 (hdr.data_size);
-  padsize = ALIGN_UP (grub_be_to_cpu32 (hdr.data_size), GRUB_PLAN9_ALIGN)
-    - grub_be_to_cpu32 (hdr.data_size);
+    if (grub_file_read (file, ptr, grub_be_to_cpu32 (hdr.data_size))
+	!= (grub_ssize_t) grub_be_to_cpu32 (hdr.data_size))
+      goto fail;
+    ptr += grub_be_to_cpu32 (hdr.data_size);
+    padsize = ALIGN_UP (grub_be_to_cpu32 (hdr.data_size), GRUB_PLAN9_ALIGN)
+      - grub_be_to_cpu32 (hdr.data_size);
 
-  grub_memset (ptr, 0, padsize);
-  ptr += padsize;
-  grub_memset (ptr, 0, ALIGN_UP(grub_be_to_cpu32 (hdr.bss_size), GRUB_PLAN9_ALIGN));
-
+    grub_memset (ptr, 0, padsize);
+    ptr += padsize;
+    grub_memset (ptr, 0, ALIGN_UP(grub_be_to_cpu32 (hdr.bss_size),
+				  GRUB_PLAN9_ALIGN));
+  }
   grub_loader_set (grub_plan9_boot, grub_plan9_unload, 1);
   return GRUB_ERR_NONE;
 
  fail:
+  grub_free (pmap);
 
   if (file)
     grub_file_close (file);

@@ -353,4 +353,5 @@ extern int EXPORT_VAR(grub_no_autoload);
 #define grub_no_autoload 0
 #endif
 
+
 #endif /* ! GRUB_MISC_HEADER */
