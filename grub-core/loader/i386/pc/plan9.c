@@ -32,6 +32,7 @@
 #include <grub/video.h>
 #include <grub/mm.h>
 #include <grub/cpu/relocator.h>
+#include <grub/extcmd.h>
 
 static grub_dl_t my_mod;
 static struct grub_relocator *rel;
@@ -42,6 +43,14 @@ static grub_uint32_t eip = 0xffffffff;
 #define GRUB_PLAN9_CONFIG_ADDR       0x001200
 #define GRUB_PLAN9_CONFIG_PATH_SIZE  0x000040
 #define GRUB_PLAN9_CONFIG_MAGIC      "ZORT 0\r\n"
+
+static const struct grub_arg_option options[] =
+  {
+    {"map", 'm', GRUB_ARG_OPTION_REPEATABLE,
+     N_("Override guessed mapping of Plan9 devices."), "GRUBDEVICE=PLAN9DEVICE",
+     ARG_TYPE_STRING},
+    {0, 0, 0, 0, 0, 0}
+  };
 
 struct grub_plan9_header
 {
@@ -85,8 +94,7 @@ grub_plan9_unload (void)
 }
 
 static grub_err_t
-grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
-		int argc, char *argv[])
+grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
 {
   grub_file_t file = 0;
   void *mem;
@@ -94,7 +102,6 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
   struct grub_plan9_header hdr;
   char *config, *configptr;
   grub_size_t configsize;
-  int i;
   char *pmap = NULL;
   grub_size_t pmapalloc = 256;
   grub_size_t pmapptr = 0;
@@ -193,6 +200,7 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
     grub_device_t dev;
     int file_disk;
     char *plan9name = NULL;
+    unsigned i;
 
     dev = grub_device_open (name);
     if (!dev)
@@ -207,55 +215,50 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
       }
     file_disk = file->device->disk && dev->disk->id == file->device->disk->id
       && dev->disk->dev->id == file->device->disk->dev->id;
-    switch (dev->disk->dev->id)
-      {
-      case GRUB_DISK_DEVICE_BIOSDISK_ID:
-	if (dev->disk->id & 0x80)
-	  plan9name = grub_xasprintf ("sdB%u",
-				      (unsigned) (dev->disk->id & 0x7f));
-	else
-	  plan9name = grub_xasprintf ("fd%u",
-				      (unsigned) (dev->disk->id & 0x7f));
+    for (i = 0; ctxt->state[0].args && ctxt->state[0].args[i]; i++)
+      if (grub_strncmp (name, ctxt->state[0].args[i], grub_strlen (name)) == 0
+	  && ctxt->state[0].args[i][grub_strlen (name)] == '=')
 	break;
-	/* Shouldn't happen as Plan9 doesn't work on these platforms.  */
-      case GRUB_DISK_DEVICE_OFDISK_ID:
-      case GRUB_DISK_DEVICE_EFIDISK_ID:
-
-	/* Plan9 doesn't see those.  */
-      case GRUB_DISK_DEVICE_LOOPBACK_ID:
-      case GRUB_DISK_DEVICE_RAID_ID:
-      case GRUB_DISK_DEVICE_LVM_ID:
-      case GRUB_DISK_DEVICE_HOST_ID:
-      case GRUB_DISK_DEVICE_MEMDISK_ID:
-      case GRUB_DISK_DEVICE_LUKS_ID:
-
-	/* Not sure how to handle those. */
-      case GRUB_DISK_DEVICE_PXE_ID:
-      case GRUB_DISK_DEVICE_NAND_ID:
-	if (!file_disk)
-	  {
-	    grub_device_close (dev);
-	    return 0;
-	  }
-	  
-	/* if it's the disk the kernel is loaded from we need to name
-	   it nevertheless.  */
-	plan9name = grub_strdup ("sdZ0");
-	break;
-
-      case GRUB_DISK_DEVICE_ATA_ID:
+    if (ctxt->state[0].args && ctxt->state[0].args[i])
+      plan9name = grub_strdup (ctxt->state[0].args[i] + grub_strlen (name) + 1);
+    else
+      switch (dev->disk->dev->id)
 	{
-	  int unit;
-	  if (grub_strlen (dev->disk->name) < sizeof ("ata0") - 1)
-	    unit = 0;
+	case GRUB_DISK_DEVICE_BIOSDISK_ID:
+	  if (dev->disk->id & 0x80)
+	    plan9name = grub_xasprintf ("sdB%u",
+					(unsigned) (dev->disk->id & 0x7f));
 	  else
-	    unit = grub_strtoul (dev->disk->name + sizeof ("ata0") - 1, 0, 0);
-	  plan9name = grub_xasprintf ("sd%c%d", 'C' + unit / 2, unit % 2);
-	}
-	break;
-      case GRUB_DISK_DEVICE_SCSI_ID:
-	if (((dev->disk->id >> GRUB_SCSI_ID_SUBSYSTEM_SHIFT) & 0xff)
-	    == GRUB_SCSI_SUBSYSTEM_ATAPI)
+	    plan9name = grub_xasprintf ("fd%u",
+					(unsigned) (dev->disk->id & 0x7f));
+	  break;
+	  /* Shouldn't happen as Plan9 doesn't work on these platforms.  */
+	case GRUB_DISK_DEVICE_OFDISK_ID:
+	case GRUB_DISK_DEVICE_EFIDISK_ID:
+
+	  /* Plan9 doesn't see those.  */
+	case GRUB_DISK_DEVICE_LOOPBACK_ID:
+	case GRUB_DISK_DEVICE_RAID_ID:
+	case GRUB_DISK_DEVICE_LVM_ID:
+	case GRUB_DISK_DEVICE_HOST_ID:
+	case GRUB_DISK_DEVICE_MEMDISK_ID:
+	case GRUB_DISK_DEVICE_LUKS_ID:
+
+	  /* Not sure how to handle those. */
+	case GRUB_DISK_DEVICE_PXE_ID:
+	case GRUB_DISK_DEVICE_NAND_ID:
+	  if (!file_disk)
+	    {
+	      grub_device_close (dev);
+	      return 0;
+	    }
+	  
+	  /* if it's the disk the kernel is loaded from we need to name
+	     it nevertheless.  */
+	  plan9name = grub_strdup ("sdZ0");
+	  break;
+
+	case GRUB_DISK_DEVICE_ATA_ID:
 	  {
 	    int unit;
 	    if (grub_strlen (dev->disk->name) < sizeof ("ata0") - 1)
@@ -263,16 +266,30 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
 	    else
 	      unit = grub_strtoul (dev->disk->name + sizeof ("ata0") - 1, 0, 0);
 	    plan9name = grub_xasprintf ("sd%c%d", 'C' + unit / 2, unit % 2);
-	    break;
 	  }
+	  break;
+	case GRUB_DISK_DEVICE_SCSI_ID:
+	  if (((dev->disk->id >> GRUB_SCSI_ID_SUBSYSTEM_SHIFT) & 0xff)
+	      == GRUB_SCSI_SUBSYSTEM_ATAPI)
+	    {
+	      int unit;
+	      if (grub_strlen (dev->disk->name) < sizeof ("ata0") - 1)
+		unit = 0;
+	      else
+		unit = grub_strtoul (dev->disk->name + sizeof ("ata0") - 1,
+				     0, 0);
+	      plan9name = grub_xasprintf ("sd%c%d", 'C' + unit / 2, unit % 2);
+	      break;
+	    }
 	  
-	/* FIXME: how does Plan9 number controllers?
-	   We probably need save the SCSI devices and sort them  */
-	plan9name
-	  = grub_xasprintf ("sd0%u", (unsigned)
-			    ((dev->disk->id >> GRUB_SCSI_ID_BUS_SHIFT) & 0xf));
-	break;
-      }
+	  /* FIXME: how does Plan9 number controllers?
+	     We probably need save the SCSI devices and sort them  */
+	  plan9name
+	    = grub_xasprintf ("sd0%u", (unsigned)
+			      ((dev->disk->id >> GRUB_SCSI_ID_BUS_SHIFT)
+			       & 0xf));
+	  break;
+	}
     if (!plan9name)
       {
 	grub_print_error ();
@@ -347,8 +364,11 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
   configsize = GRUB_PLAN9_CONFIG_PATH_SIZE;
   /* magic */
   configsize += sizeof (GRUB_PLAN9_CONFIG_MAGIC) - 1;
-  for (i = 1; i < argc; i++)
-    configsize += grub_strlen (argv[i]) + 1;
+  {
+    int i;
+    for (i = 1; i < argc; i++)
+      configsize += grub_strlen (argv[i]) + 1;
+  }
   configsize += pmapptr;
   /* Terminating \0.  */
   configsize++;
@@ -368,11 +388,14 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
   grub_memcpy (configptr, GRUB_PLAN9_CONFIG_MAGIC,
 	       sizeof (GRUB_PLAN9_CONFIG_MAGIC) - 1);
   configptr += sizeof (GRUB_PLAN9_CONFIG_MAGIC) - 1;
-  for (i = 1; i < argc; i++)
-    {
-      configptr = grub_stpcpy (configptr, argv[i]);
-      *configptr++ = '\n';
-    }
+  {
+    int i;
+    for (i = 1; i < argc; i++)
+      {
+	configptr = grub_stpcpy (configptr, argv[i]);
+	*configptr++ = '\n';
+      }
+  }
   configptr = grub_stpcpy (configptr, pmap);
 
   {
@@ -429,16 +452,18 @@ grub_cmd_plan9 (grub_command_t cmd __attribute__ ((unused)),
   return grub_errno;
 }
 
-static grub_command_t cmd;
+static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(plan9)
 {
-  cmd = grub_register_command ("plan9", grub_cmd_plan9,
-			       0, N_("Load Plan9 kernel."));
+  cmd = grub_register_extcmd ("plan9", grub_cmd_plan9,
+			      GRUB_COMMAND_OPTIONS_AT_START,
+			      N_("KERNEL ARGS"), N_("Load Plan9 kernel."),
+			      options);
   my_mod = mod;
 }
 
 GRUB_MOD_FINI(plan9)
 {
-  grub_unregister_command (cmd);
+  grub_unregister_extcmd (cmd);
 }
