@@ -1309,6 +1309,11 @@ module = {
 };
 
 module = {
+  name = part_plan;
+  common = partmap/plan.c;
+};
+
+module = {
   name = part_bsd;
   common = partmap/bsdlabel.c;
 };
