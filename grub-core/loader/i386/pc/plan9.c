@@ -108,12 +108,15 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
   int noslash = 1;
   char prefixes[5][10] = {"dos", "plan9", "ntfs", "linux", "linuxswap"};
   int prefixescnt[5];
+  char *bootdisk = NULL, *bootpart = NULL, *bootpath = NULL;
 
   auto int fill_partition (grub_disk_t disk,
 			   const grub_partition_t partition);
   int fill_partition (grub_disk_t disk,
 		      const grub_partition_t partition)
   {
+    int file_disk = 0;
+    int pstart, pend;
     if (!noslash)
       {
 	if (grub_extend_alloc (pmapptr + 1, &pmapalloc, (void **) &pmap))
@@ -122,6 +125,10 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
       }
     noslash = 0;
 
+    file_disk = file->device->disk && disk->id == file->device->disk->id
+      && disk->dev->id == file->device->disk->dev->id;
+
+    pstart = pmapptr;
     if (grub_strcmp (partition->partmap->name, "plan") == 0)
       {
 	unsigned ptr = partition->index + sizeof ("part ") - 1;
@@ -180,7 +187,8 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
 	  return 1;
 	grub_strcpy (pmap + pmapptr, name);
 	pmapptr += grub_strlen (name);
-      }      
+      }
+    pend = pmapptr;
     if (grub_extend_alloc (pmapptr + 2 + 25 + 5 + 25, &pmapalloc,
 			   (void **) &pmap))
       return 1;
@@ -190,6 +198,15 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
 		   grub_partition_get_start (partition),
 		   grub_partition_get_start (partition)
 		   + grub_partition_get_len (partition));
+    if (file_disk && grub_partition_get_start (partition)
+	== grub_partition_get_start (file->device->disk->partition)
+	&& grub_partition_get_len (partition)
+	== grub_partition_get_len (file->device->disk->partition))
+      {
+	grub_free (bootpart);
+	bootpart = grub_strndup (pmap + pstart, pend - pstart);
+      }
+
     pmapptr += grub_strlen (pmap + pmapptr);
     return 0;
   }
@@ -198,9 +215,9 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
   int fill_disk (const char *name)
   {
     grub_device_t dev;
-    int file_disk;
     char *plan9name = NULL;
     unsigned i;
+    int file_disk = 0;
 
     dev = grub_device_open (name);
     if (!dev)
@@ -304,7 +321,13 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
       }
     grub_strcpy (pmap + pmapptr, plan9name);
     pmapptr += grub_strlen (plan9name);
-    grub_free (plan9name);
+    if (!file_disk)
+      grub_free (plan9name);
+    else
+      {
+	grub_free (bootdisk);
+	bootdisk = plan9name;
+      }
     grub_strcpy (pmap + pmapptr, "part=");
     pmapptr += sizeof ("part=") - 1;
 
@@ -344,6 +367,25 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
     goto fail;
   pmap[pmapptr] = 0;
 
+  {
+    char *file_name = grub_strchr (argv[0], ')');
+    if (file_name)
+      file_name++;
+    else
+      file_name = argv[0];
+    if (*file_name)
+      file_name++;
+
+    if (bootpart)
+      bootpath = grub_xasprintf ("%s!%s!%s", bootdisk, bootpart, file_name);
+    else
+      bootpath = grub_xasprintf ("%s!%s", bootdisk, file_name);
+    grub_free (bootdisk);
+    grub_free (bootpart);
+  }
+  if (!bootpath)
+    goto fail;
+
   if (grub_file_read (file, &hdr, sizeof (hdr)) != (grub_ssize_t) sizeof (hdr))
     goto fail;
 
@@ -369,6 +411,7 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
     for (i = 1; i < argc; i++)
       configsize += grub_strlen (argv[i]) + 1;
   }
+  configsize += (sizeof ("bootfile=") - 1) + grub_strlen (bootpath) + 1;
   configsize += pmapptr;
   /* Terminating \0.  */
   configsize++;
@@ -384,10 +427,15 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
   }
 
   grub_memset (config, 0, GRUB_PLAN9_CONFIG_PATH_SIZE);
+  grub_strncpy (config, bootpath, GRUB_PLAN9_CONFIG_PATH_SIZE - 1);
+
   configptr = config + GRUB_PLAN9_CONFIG_PATH_SIZE;
   grub_memcpy (configptr, GRUB_PLAN9_CONFIG_MAGIC,
 	       sizeof (GRUB_PLAN9_CONFIG_MAGIC) - 1);
   configptr += sizeof (GRUB_PLAN9_CONFIG_MAGIC) - 1;
+  configptr = grub_stpcpy (configptr, "bootfile=");
+  configptr = grub_stpcpy (configptr, bootpath);
+  *configptr++ = '\n';
   {
     int i;
     for (i = 1; i < argc; i++)
