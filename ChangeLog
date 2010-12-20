@@ -1,3 +1,8 @@
+2010-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_add_module):
+	Avoid next pointing to nowhere.
+
 2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/affs.c (grub_affs_mount): Read data->bblock.rootblock
