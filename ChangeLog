@@ -1,5 +1,13 @@
 2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/lib/reed_solomon.c (gauss_solve): Fix size of standalone
+	scratch area.  Make sure to initialise chosen in standalone mode as
+	well as non-standalone.
+	Reported by: Robert Hooker and Andy Whitcroft.
+	Tested by: Andy Whitcroft.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/commands/echo.c (grub_cmd_echo): Make UTF-8-clean by
 	constructing a new unescaped string and passing it to grub_xputs in
 	one go, rather than passing characters to grub_printf one at a time.
