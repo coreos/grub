@@ -1,5 +1,11 @@
 2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/commands/echo.c (grub_cmd_echo): Make UTF-8-clean by
+	constructing a new unescaped string and passing it to grub_xputs in
+	one go, rather than passing characters to grub_printf one at a time.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/fs/udf.c (read_string): Pacify GCC warning by
 	initialising utf16.
 
