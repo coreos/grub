@@ -1,3 +1,22 @@
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (gettext_quoted): Add clarifying
+	comment.  Add an extra layer of quotation, requiring the output of
+	this function to be used in a printf format string.
+	(gettext_printf): New function.
+	* util/grub.d/10_hurd.in: Use gettext_printf where appropriate.
+	Extract translatable strings from here-documents and use a temporary
+	variable instead, so that xgettext can find them.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
+	* po/grub.d.sed: New file.
+	* po/Makefile.in.in ($(DOMAIN).pot-update): Extract gettext_printf
+	arguments.  Set c-format flags on all strings extracted from
+	util/grub.d/ (xgettext refuses to include these itself for strings
+	it extracted from a shell file, but these really are c-format).
+
 2010-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_add_module):
