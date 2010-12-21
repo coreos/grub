@@ -1,5 +1,10 @@
 2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/fs/udf.c (read_string): Pacify GCC warning by
+	initialising utf16.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-mkconfig_lib.in (gettext_quoted): Add clarifying
 	comment.  Add an extra layer of quotation, requiring the output of
 	this function to be used in a printf format string.

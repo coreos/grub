@@ -791,7 +791,7 @@ fail:
 static char *
 read_string (grub_uint8_t *raw, grub_size_t sz)
 {
-  grub_uint16_t *utf16;
+  grub_uint16_t *utf16 = NULL;
   char *ret;
   grub_size_t utf16len = 0;
 
