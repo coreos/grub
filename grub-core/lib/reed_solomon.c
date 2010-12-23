@@ -18,6 +18,8 @@
 
 #ifdef TEST
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #define xmalloc malloc
 #define grub_memset memset
 #define grub_memcpy memcpy
@@ -25,8 +27,6 @@
 
 #ifndef STANDALONE
 #ifdef TEST
-#include <string.h>
-#include <stdlib.h>
 typedef unsigned int grub_size_t;
 typedef unsigned char grub_uint8_t;
 typedef unsigned short grub_uint16_t;
@@ -45,6 +45,7 @@ typedef unsigned char grub_uint8_t;
 typedef unsigned short grub_uint16_t;
 #else
 #include <grub/types.h>
+#include <grub/misc.h>
 #endif
 void
 grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs);
@@ -207,11 +208,12 @@ gauss_solve (gf_single_t *eq, int n, int m, gf_single_t *sol)
 
 #ifndef STANDALONE
   chosen = xmalloc (n * sizeof (int));
-  grub_memset (chosen, -1, n * sizeof (int));
 #else
   chosen = (void *) scratch;
-  scratch += n;
+  scratch += n * sizeof (int);
 #endif
+  for (i = 0; i < n; i++)
+    chosen[i] = -1;
   for (i = 0; i < m; i++)
     sol[i] = 0;
   gauss_eliminate (eq, n, m, chosen);
@@ -228,7 +230,7 @@ gauss_solve (gf_single_t *eq, int n, int m, gf_single_t *sol)
 #ifndef STANDALONE
   free (chosen);
 #else
-  scratch -= n;
+  scratch -= n * sizeof (int);
 #endif
 }
 
