@@ -1163,37 +1163,35 @@ clear_completions_all (struct screen *screen)
 static int
 run (struct screen *screen)
 {
-  int currline = 0;
-  char *nextline;
+  char *script;
   int errs_before;
   grub_menu_t menu;
+  char *dummy[1] = { NULL };
 
-  auto grub_err_t editor_getline (char **line, int cont);
-  grub_err_t editor_getline (char **line, int cont __attribute__ ((unused)))
-    {
-      struct line *linep = screen->lines + currline;
-      char *p;
+  auto char * editor_getsource (void);
+  char * editor_getsource (void)
+  {
+    int i;
+    int size = 0;
+    char *source;
 
-      if (currline > screen->num_lines)
-	{
-	  *line = 0;
-	  return 0;
-	}
+    for (i = 0; i < screen->num_lines; i++)
+      size += screen->lines[i].len + 1;
 
-      /* Trim down space characters.  */
-      for (p = linep->buf + linep->len - 1;
-	   p >= linep->buf && grub_isspace (*p);
-	   p--)
-	;
-      *++p = '\0';
+    source = grub_malloc (size + 1);
+    if (! source)
+      return NULL;
 
-      linep->len = p - linep->buf;
-      for (p = linep->buf; grub_isspace (*p); p++)
-	;
-      *line = grub_strdup (p);
-      currline++;
-      return 0;
-    }
+    size = 0;
+    for (i = 0; i < screen->num_lines; i++)
+      {
+	grub_strcpy (source + size, screen->lines[i].buf);
+	size += screen->lines[i].len;
+	source[size++] = '\n';
+      }
+    source[size] = '\0';
+    return source;
+  }
 
   grub_cls ();
   grub_printf ("  ");
@@ -1212,12 +1210,11 @@ run (struct screen *screen)
     }
 
   /* Execute the script, line for line.  */
-  while (currline < screen->num_lines)
-    {
-      editor_getline (&nextline, 0);
-      if (grub_normal_parse_line (nextline, editor_getline))
-	break;
-    }
+  script = editor_getsource ();
+  if (! script)
+    return 0;
+  grub_script_execute_sourcecode (script, 0, dummy);
+  grub_free (script);
 
   if (errs_before != grub_err_printed_errors)
     grub_wait_after_message ();

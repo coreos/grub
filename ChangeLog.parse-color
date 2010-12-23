@@ -1,4 +1,4 @@
-2010-12-10  Colin Watson  <cjwatson@ubuntu.com>
+2010-12-23  Colin Watson  <cjwatson@ubuntu.com>
 
 	Move gfxmenu color handling to video, so that gfxterm can use it
 	too.
@@ -30,8 +30,7 @@
 	* grub-core/Makefile.core.def (kernel) [videoinkernel]: Add
 	video/colors.c.
 	(gfxmenu): Remove gfxmenu/named_colors.c.
-	(video_colors) [videomodules]: New module, containing
-	video/colors.c.
+	(video) [videomodules]: Add video/colors.c.
 
 	Add a background_color command.
 

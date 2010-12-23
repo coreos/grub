@@ -1443,12 +1443,6 @@ module = {
 };
 
 module = {
-  name = video_colors;
-  common = video/colors.c;
-  enable = videomodules;
-};
-
-module = {
   name = video_fb;
   common = video/fb/video_fb.c;
   common = video/fb/fbblit.c;
@@ -1460,6 +1454,7 @@ module = {
 module = {
   name = video;
   common = video/video.c;
+  common = video/colors.c;
   enable = videomodules;
 };
 

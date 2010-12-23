@@ -1235,9 +1235,7 @@ grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
   /* Mark whole screen as dirty.  */
   dirty_region_add (0, 0, window.width, window.height);
 
-  /* All was ok.  */
-  grub_errno = GRUB_ERR_NONE;
-  return grub_errno;
+  return GRUB_ERR_NONE;
 }
 
 static struct grub_term_output grub_video_term =
