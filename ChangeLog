@@ -1,3 +1,8 @@
+2010-12-23  Jordan Uggla  <jordan.uggla@gmail.com>
+
+	* tests/util/grub-shell.in: Suppress "ACPI shutdown failed" error to
+	keep unit tests from failing when they shouldn't.
+
 2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_RAW_SIZE): The
