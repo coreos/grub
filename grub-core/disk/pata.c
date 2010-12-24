@@ -182,17 +182,18 @@ grub_pata_readwrite (struct grub_ata *disk,
   /* Start command. */
   grub_pata_regset (dev, GRUB_ATA_REG_CMD, parms->taskfile.cmd);
 
-  /* Wait for !BSY.  */
-  if (grub_pata_wait_not_busy (dev, GRUB_ATA_TOUT_DATA))
-    return grub_errno;
-
   /* Check status.  */
   grub_int8_t sts = grub_pata_regget (dev, GRUB_ATA_REG_STATUS);
   grub_dprintf ("pata", "status=0x%x\n", sts);
 
   if (parms->cmdsize)
     {
-      grub_uint8_t irs = grub_pata_regget (dev, GRUB_ATAPI_REG_IREASON);
+      grub_uint8_t irs;
+      /* Wait for !BSY.  */
+      if (grub_pata_wait_not_busy (dev, GRUB_ATA_TOUT_DATA))
+	return grub_errno;
+
+      irs = grub_pata_regget (dev, GRUB_ATAPI_REG_IREASON);
       /* OK if DRQ is asserted and interrupt reason is as expected.  */
       if (!((sts & GRUB_ATA_STATUS_DRQ)
 	    && (irs & GRUB_ATAPI_IREASON_MASK) == GRUB_ATAPI_IREASON_CMD_OUT))
@@ -210,6 +211,11 @@ grub_pata_readwrite (struct grub_ata *disk,
 		  & GRUB_ATAPI_IREASON_MASK) == GRUB_ATAPI_IREASON_DATA_IN)))
     {
       unsigned cnt;
+
+      /* Wait for !BSY.  */
+      if (grub_pata_wait_not_busy (dev, GRUB_ATA_TOUT_DATA))
+	return grub_errno;
+
       if (parms->cmdsize)
 	{
 	  cnt = grub_pata_regget (dev, GRUB_ATAPI_REG_CNTHIGH) << 8
@@ -245,6 +251,10 @@ grub_pata_readwrite (struct grub_ata *disk,
 	return grub_error (GRUB_ERR_WRITE_ERROR, "ATA write error");
     }
   parms->size = nread;
+
+  /* Wait for !BSY.  */
+  if (grub_pata_wait_not_busy (dev, GRUB_ATA_TOUT_DATA))
+    return grub_errno;
 
   /* Return registers.  */
   for (i = GRUB_ATA_REG_ERROR; i <= GRUB_ATA_REG_STATUS; i++)
