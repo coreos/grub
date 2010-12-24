@@ -72,6 +72,8 @@ grub_atapi_identify (struct grub_ata *dev)
   grub_memset (&parms, 0, sizeof (parms));
   parms.taskfile.disk = 0;
   parms.taskfile.cmd = GRUB_ATA_CMD_IDENTIFY_PACKET_DEVICE;
+  parms.size = GRUB_DISK_SECTOR_SIZE;
+  parms.buffer = info;
 
   err = dev->dev->readwrite (dev, &parms);
   if (err)
@@ -105,6 +107,7 @@ grub_ata_identify (struct grub_ata *dev)
   info16 = (grub_uint16_t *) info;
   grub_memset (&parms, 0, sizeof (parms));
   parms.buffer = info;
+  parms.size = GRUB_DISK_SECTOR_SIZE;
   parms.taskfile.disk = 0;
 
   parms.taskfile.cmd = GRUB_ATA_CMD_IDENTIFY_DEVICE;
