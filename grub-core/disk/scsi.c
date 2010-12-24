@@ -324,9 +324,9 @@ grub_scsi_iterate (int (*hook) (const char *name))
 {
   grub_scsi_dev_t p;
 
-  auto int scsi_iterate (int id, int bus, int luns);
+  auto int NESTED_FUNC_ATTR scsi_iterate (int id, int bus, int luns);
 
-  int scsi_iterate (int id, int bus, int luns)
+  int NESTED_FUNC_ATTR scsi_iterate (int id, int bus, int luns)
     {
       int i;
 

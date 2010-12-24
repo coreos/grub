@@ -50,7 +50,7 @@ grub_make_scsi_id (int subsystem, int bus, int lun)
 struct grub_scsi_dev
 {
   /* Call HOOK with each device name, until HOOK returns non-zero.  */
-  int (*iterate) (int (*hook) (int id, int bus, int luns));
+  int (*iterate) (int NESTED_FUNC_ATTR (*hook) (int id, int bus, int luns));
 
   /* Open the device named NAME, and set up SCSI.  */
   grub_err_t (*open) (int id, int bus, struct grub_scsi *scsi);

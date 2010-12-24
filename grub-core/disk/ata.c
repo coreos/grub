@@ -508,7 +508,7 @@ grub_atapi_open (int id, int bus, struct grub_scsi *scsi)
 }
 
 static int
-grub_atapi_iterate (int (*hook_in) (int id, int bus, int luns))
+grub_atapi_iterate (int NESTED_FUNC_ATTR (*hook_in) (int id, int bus, int luns))
 {
   auto int hook (int id, int bus);
   int hook (int id, int bus)

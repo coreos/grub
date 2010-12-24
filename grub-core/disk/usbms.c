@@ -205,7 +205,7 @@ grub_usbms_attach (grub_usb_device_t usbdev, int configno, int interfno)
 
 
 static int
-grub_usbms_iterate (int (*hook) (int id, int bus, int luns))
+grub_usbms_iterate (int NESTED_FUNC_ATTR (*hook) (int id, int bus, int luns))
 {
   unsigned i;
 
