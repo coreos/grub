@@ -56,10 +56,12 @@ struct grub_ahci_hba_port
   grub_uint32_t intstatus;
   grub_uint32_t inten;
   grub_uint32_t command;
-  grub_uint32_t unused1[6];
+  grub_uint32_t unused1[3];
+  grub_uint32_t status;
+  grub_uint32_t unused2[2];
   grub_uint32_t sata_active;
   grub_uint32_t command_issue;
-  grub_uint32_t unused2[17];
+  grub_uint32_t unused3[17];
 };
 
 struct grub_ahci_hba
@@ -193,6 +195,10 @@ grub_ahci_pciinit (grub_pci_device_t dev,
       struct grub_pci_dma_chunk *command_table;
 
       if (!(hba->ports_implemented & (1 << i)))
+	continue;
+
+      /* FIXME: support hotplugging.  */
+      if (!hba->ports[i].status)
 	continue;
 
       command_list = grub_memalign_dma32 (1024,
@@ -333,8 +339,11 @@ grub_ahci_readwrite (grub_ata_t disk,
 		 parms->cmdsize);
 
   dev->command_table[0].cfis[0] = GRUB_AHCI_FIS_REG_H2D;
+  dev->command_table[0].cfis[1] = 0x80;
   for (i = 0; i < sizeof (parms->taskfile.raw); i++)
-    dev->command_table[0].cfis[register_map[i]] = parms->taskfile.raw[i];
+    dev->command_table[0].cfis[register_map[i]] = parms->taskfile.raw[i]; 
+
+  dev->command_table[0].cfis[7] |= (parms->cmdsize ? 0 : 0xE0);
 
   dev->command_table[0].prdt[0].data_base = grub_dma_get_phys (bufc);
   dev->command_table[0].prdt[0].unused = 0;
@@ -345,12 +354,12 @@ grub_ahci_readwrite (grub_ata_t disk,
     grub_memcpy ((char *) grub_dma_get_virt (bufc), parms->buffer, parms->size);
 
   grub_dprintf ("ahci", "AHCI command schedulded\n");
-  dev->hba->ports[dev->port].inten = (1 << 5);
-  dev->hba->ports[dev->port].intstatus = (1 << 5);
+  dev->hba->ports[dev->port].inten = (1 << 2) | (1 << 5);
+  dev->hba->ports[dev->port].intstatus = (1 << 2) | (1 << 5);
   dev->hba->ports[dev->port].command_issue |= 1;
   dev->hba->ports[dev->port].command |= 1;
 
-  endtime = grub_get_time_ms () + 1000;  
+  endtime = grub_get_time_ms () + 1000;
   while (!(dev->hba->ports[dev->port].intstatus & (1 << 5)))
     if (grub_get_time_ms () > endtime)
       {
@@ -362,6 +371,7 @@ grub_ahci_readwrite (grub_ata_t disk,
 
   grub_dprintf ("ahci", "AHCI command completed succesfully\n");
   dev->hba->ports[dev->port].command &= ~1;
+  dev->hba->ports[dev->port].command_issue &= ~1;
 
   if (!parms->write)
     grub_memcpy (parms->buffer, (char *) grub_dma_get_virt (bufc), parms->size);
@@ -379,10 +389,8 @@ grub_ahci_open (int id, int devnum, struct grub_ata *ata)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not an AHCI device");
 
   FOR_LIST_ELEMENTS(dev, grub_ahci_devices)
-    {
-      if (dev->num == devnum)
-	break;
-    }
+    if (dev->num == devnum)
+      break;
 
   if (! dev)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such AHCI device");
