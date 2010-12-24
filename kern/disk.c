@@ -46,10 +46,6 @@ static struct grub_disk_cache grub_disk_cache_table[GRUB_DISK_CACHE_NUM];
 void (*grub_disk_firmware_fini) (void);
 int grub_disk_firmware_is_tainted;
 
-grub_err_t (* grub_disk_ata_pass_through) (grub_disk_t,
-	    struct grub_disk_ata_pass_through_parms *);
-
-
 #if 0
 static unsigned long grub_disk_cache_hits;
 static unsigned long grub_disk_cache_misses;
