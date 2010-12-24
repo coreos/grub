@@ -19,6 +19,7 @@
 #ifndef	GRUB_USB_H
 #define	GRUB_USB_H	1
 
+#include <grub/err.h>
 #include <grub/usbdesc.h>
 #include <grub/usbtrans.h>
 
@@ -29,6 +30,7 @@ typedef struct grub_usb_controller_dev *grub_usb_controller_dev_t;
 typedef enum
   {
     GRUB_USB_ERR_NONE,
+    GRUB_USB_ERR_WAIT,
     GRUB_USB_ERR_INTERNAL,
     GRUB_USB_ERR_STALL,
     GRUB_USB_ERR_DATA,
@@ -88,6 +90,7 @@ grub_usb_err_t
 grub_usb_root_hub (grub_usb_controller_t controller);
 
 
+
 /* XXX: All handled by libusb for now.  */
 struct grub_usb_controller_dev
 {
@@ -96,8 +99,15 @@ struct grub_usb_controller_dev
 
   int (*iterate) (int (*hook) (grub_usb_controller_t dev));
 
-  grub_usb_err_t (*transfer) (grub_usb_controller_t dev,
-			      grub_usb_transfer_t transfer);
+  grub_usb_err_t (*setup_transfer) (grub_usb_controller_t dev,
+				    grub_usb_transfer_t transfer);
+
+  grub_usb_err_t (*check_transfer) (grub_usb_controller_t dev,
+				    grub_usb_transfer_t transfer,
+				    grub_size_t *actual);
+
+  grub_usb_err_t (*cancel_transfer) (grub_usb_controller_t dev,
+				     grub_usb_transfer_t transfer);
 
   int (*hubports) (grub_usb_controller_t dev);
 
@@ -106,6 +116,9 @@ struct grub_usb_controller_dev
 
   grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port, int *changed);
 
+  /* Per controller flag - port reset pending, don't do another reset */
+  grub_uint64_t pending_reset;
+  
   /* The next host controller.  */
   struct grub_usb_controller_dev *next;
 };
@@ -132,6 +145,8 @@ struct grub_usb_interface
   int attached;
 
   void (*detach_hook) (struct grub_usb_device *dev, int config, int interface);
+
+  void *detach_data;
 };
 
 struct grub_usb_configuration
@@ -166,11 +181,39 @@ struct grub_usb_device
   /* Data toggle values (used for bulk transfers only).  */
   int toggle[256];
 
-  /* Device-specific data.  */
+  /* Used by libusb wrapper.  Schedulded for removal. */
   void *data;
+
+  /* Hub information.  */
+
+  /* Array of children for a hub.  */
+  grub_usb_device_t *children;
+
+  /* Number of hub ports.  */
+  unsigned nports;
+
+  grub_usb_transfer_t hub_transfer;
+
+  grub_uint32_t statuschange;
+
+  struct grub_usb_desc_endp *hub_endpoint;
 };
 
 
+
+typedef enum grub_usb_ep_type
+  {
+    GRUB_USB_EP_CONTROL,
+    GRUB_USB_EP_ISOCHRONOUS,
+    GRUB_USB_EP_BULK,
+    GRUB_USB_EP_INTERRUPT
+  } grub_usb_ep_type_t;
+
+static inline enum grub_usb_ep_type
+grub_usb_get_ep_type (struct grub_usb_desc_endp *ep)
+{
+  return ep->attrib & 3;
+}
 
 typedef enum
   {
@@ -230,5 +273,16 @@ void grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc);
 void grub_usb_poll_devices (void);
 
 void grub_usb_device_attach (grub_usb_device_t dev);
+grub_usb_err_t
+grub_usb_bulk_read_extended (grub_usb_device_t dev,
+			     int endpoint, grub_size_t size, char *data,
+			     int timeout, grub_size_t *actual);
+grub_usb_transfer_t
+grub_usb_bulk_read_background (grub_usb_device_t dev,
+			      int endpoint, grub_size_t size, void *data);
+grub_usb_err_t
+grub_usb_check_transfer (grub_usb_transfer_t trans, grub_size_t *actual);
+void
+grub_usb_cancel_transfer (grub_usb_transfer_t trans);
 
 #endif /* GRUB_USB_H */

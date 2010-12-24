@@ -38,6 +38,7 @@ dnl Written by Pavel Roskin. Based on grub_ASM_EXT_C written by
 dnl Erich Boleyn and modified by Yoshinori K. Okuji.
 AC_DEFUN([grub_ASM_USCORE],
 [AC_REQUIRE([AC_PROG_CC])
+AC_REQUIRE([AC_PROG_EGREP])
 AC_MSG_CHECKING([if C symbols get an underscore after compilation])
 AC_CACHE_VAL(grub_cv_asm_uscore,
 [cat > conftest.c <<\EOF
@@ -56,18 +57,15 @@ else
   AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
 fi
 
-if grep _func conftest.s >/dev/null 2>&1; then
+if $EGREP '(^|[^_[:alnum]])_func' conftest.s >/dev/null 2>&1; then
+  HAVE_ASM_USCORE=1
   grub_cv_asm_uscore=yes
 else
+  HAVE_ASM_USCORE=0
   grub_cv_asm_uscore=no
 fi
 
 rm -f conftest*])
-
-if test "x$grub_cv_asm_uscore" = xyes; then
-  AC_DEFINE_UNQUOTED([HAVE_ASM_USCORE], $grub_cv_asm_uscore,
-    [Define if C symbols get an underscore after compilation])
-fi
 
 AC_MSG_RESULT([$grub_cv_asm_uscore])
 ])
@@ -93,7 +91,7 @@ else
 fi
 grub_cv_prog_objcopy_absolute=yes
 for link_addr in 0x2000 0x8000 0x7C00; do
-  if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -nostdlib ${TARGET_IMG_LDFLAGS_AC}$link_addr conftest.o -o conftest.exec]); then :
+  if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -nostdlib ${TARGET_IMG_LDFLAGS_AC} ${TARGET_IMG_BASE_LDOPT},$link_addr conftest.o -o conftest.exec]); then :
   else
     AC_MSG_ERROR([${CC-cc} cannot link at address $link_addr])
   fi
@@ -236,42 +234,10 @@ else
   grub_tmp_data32="data32;"
 fi
 
-AC_DEFINE_UNQUOTED([ADDR32], $grub_tmp_addr32,
-  [Define it to \"addr32\" or \"addr32;\" to make GAS happy])
-AC_DEFINE_UNQUOTED([DATA32], $grub_tmp_data32,
-  [Define it to \"data32\" or \"data32;\" to make GAS happy])
+ADDR32=$grub_tmp_addr32
+DATA32=$grub_tmp_data32
 
 AC_MSG_RESULT([$grub_cv_i386_asm_prefix_requirement])])
-
-
-dnl Older versions of GAS require that absolute indirect calls/jumps are
-dnl not prefixed with `*', while later versions warn if not prefixed.
-AC_DEFUN([grub_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK],
-[AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING(dnl
-[whether an absolute indirect call/jump must not be prefixed with an asterisk])
-AC_CACHE_VAL(grub_cv_i386_asm_absolute_without_asterisk,
-[cat > conftest.s <<\EOF
-	lcall	*(offset)
-offset:
-	.long	0
-	.word	0
-EOF
-
-if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -c conftest.s]) && test -s conftest.o; then
-  grub_cv_i386_asm_absolute_without_asterisk=no
-else
-  grub_cv_i386_asm_absolute_without_asterisk=yes
-fi
-
-rm -f conftest*])
-
-if test "x$grub_cv_i386_asm_absolute_without_asterisk" = xyes; then
-  AC_DEFINE([ABSOLUTE_WITHOUT_ASTERISK], 1,
-	    [Define it if GAS requires that absolute indirect calls/jumps are not prefixed with an asterisk])
-fi
-
-AC_MSG_RESULT([$grub_cv_i386_asm_absolute_without_asterisk])])
 
 
 dnl Check what symbol is defined as a bss start symbol.
@@ -305,14 +271,12 @@ AC_CACHE_VAL(grub_cv_check_uscore_edata_symbol,
 
 AC_MSG_RESULT([$grub_cv_check_uscore_edata_symbol])
 
-AH_TEMPLATE([BSS_START_SYMBOL], [Define it to one of __bss_start, edata and _edata])
-
 if test "x$grub_cv_check_uscore_uscore_bss_start_symbol" = xyes; then
-  AC_DEFINE([BSS_START_SYMBOL], [__bss_start])
+  BSS_START_SYMBOL=__bss_start
 elif test "x$grub_cv_check_edata_symbol" = xyes; then
-  AC_DEFINE([BSS_START_SYMBOL], [edata])
+  BSS_START_SYMBOL=edata
 elif test "x$grub_cv_check_uscore_edata_symbol" = xyes; then
-  AC_DEFINE([BSS_START_SYMBOL], [_edata])
+  BSS_START_SYMBOL=_edata
 else
   AC_MSG_ERROR([none of __bss_start, edata or _edata is defined])
 fi
@@ -340,12 +304,10 @@ AC_CACHE_VAL(grub_cv_check_uscore_end_symbol,
 
 AC_MSG_RESULT([$grub_cv_check_uscore_end_symbol])
 
-AH_TEMPLATE([END_SYMBOL], [Define it to either end or _end])
-
 if test "x$grub_cv_check_end_symbol" = xyes; then
-  AC_DEFINE([END_SYMBOL], [end])
+  END_SYMBOL=end
 elif test "x$grub_cv_check_uscore_end_symbol" = xyes; then
-  AC_DEFINE([END_SYMBOL], [_end])
+  END_SYMBOL=_end
 else
   AC_MSG_ERROR([neither end nor _end is defined])
 fi
@@ -368,10 +330,10 @@ else
   AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
 fi
 if grep __enable_execute_stack conftest.s >/dev/null 2>&1; then
-  AC_DEFINE([NEED_ENABLE_EXECUTE_STACK], 1,
-	    [Define to 1 if GCC generates calls to __enable_execute_stack()])
+  NEED_ENABLE_EXECUTE_STACK=1
   AC_MSG_RESULT([yes])
 else
+  NEED_ENABLE_EXECUTE_STACK=0
   AC_MSG_RESULT([no])
 fi
 rm -f conftest*

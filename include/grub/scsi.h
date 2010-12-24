@@ -44,7 +44,7 @@ static inline grub_uint32_t
 grub_make_scsi_id (int subsystem, int bus, int lun)
 {
   return (subsystem << GRUB_SCSI_ID_SUBSYSTEM_SHIFT)
-    | (bus << GRUB_SCSI_ID_BUS_SHIFT) | (lun << GRUB_SCSI_ID_BUS_SHIFT);
+    | (bus << GRUB_SCSI_ID_BUS_SHIFT) | (lun << GRUB_SCSI_ID_LUN_SHIFT);
 }
 
 struct grub_scsi_dev

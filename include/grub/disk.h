@@ -78,6 +78,7 @@ struct grub_disk_dev
 
 #ifdef GRUB_UTIL
   struct grub_disk_memberlist *(*memberlist) (struct grub_disk *disk);
+  const char * (*raidname) (struct grub_disk *disk);
 #endif
 
   /* The next disk device.  */
@@ -98,9 +99,6 @@ struct grub_disk
 
   /* The total number of sectors.  */
   grub_uint64_t total_sectors;
-
-  /* If partitions can be stored.  */
-  int has_partitions;
 
   /* The id used by the disk cache manager.  */
   unsigned long id;
@@ -165,5 +163,16 @@ grub_uint64_t EXPORT_FUNC(grub_disk_get_size) (grub_disk_t disk);
 
 extern void (* EXPORT_VAR(grub_disk_firmware_fini)) (void);
 extern int EXPORT_VAR(grub_disk_firmware_is_tainted);
- 
+
+#if defined (GRUB_UTIL) || defined (GRUB_MACHINE_EMU)
+void grub_lvm_init (void);
+void grub_mdraid09_init (void);
+void grub_mdraid1x_init (void);
+void grub_raid_init (void);
+void grub_lvm_fini (void);
+void grub_mdraid09_fini (void);
+void grub_mdraid1x_fini (void);
+void grub_raid_fini (void);
+#endif
+
 #endif /* ! GRUB_DISK_HEADER */

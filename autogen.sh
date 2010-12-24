@@ -1,25 +1,67 @@
-#! /bin/sh
+#! /usr/bin/env bash
 
 set -e
 
-aclocal
-autoconf
-autoheader
+autogen --version >/dev/null || exit 1
 
-# FIXME: automake doesn't like that there's no Makefile.am
-automake -a -c -f || true
+echo "Importing unicode..."
+python util/import_unicode.py unicode/UnicodeData.txt unicode/BidiMirroring.txt unicode/ArabicShaping.txt grub-core/unidata.c
 
-echo timestamp > stamp-h.in
+echo "Importing libgcrypt..."
+python util/import_gcry.py grub-core/lib/libgcrypt/ grub-core
 
-python util/import_gcry.py lib/libgcrypt/ .
+echo "Creating Makefile.tpl..."
+python gentpl.py | sed -e '/^$/{N;/^\n$/D;}' > Makefile.tpl
 
-python util/import_unicode.py unicode/UnicodeData.txt unicode/BidiMirroring.txt unicode/ArabicShaping.txt unidata.c
+echo "Running autogen..."
 
-for rmk in conf/*.rmk ${GRUB_CONTRIB}/*/conf/*.rmk; do
-  if test -e $rmk ; then
-    ruby genmk.rb < $rmk > `echo $rmk | sed 's/\.rmk$/.mk/'`
+# Automake doesn't like including files from a path outside the project.
+rm -f contrib grub-core/contrib
+if [ "x${GRUB_CONTRIB}" != x ]; then
+  [ "${GRUB_CONTRIB}" = contrib ] || ln -s "${GRUB_CONTRIB}" contrib
+  [ "${GRUB_CONTRIB}" = grub-core/contrib ] || ln -s ../contrib grub-core/contrib
+fi
+
+UTIL_DEFS=Makefile.util.def
+CORE_DEFS='grub-core/Makefile.core.def grub-core/Makefile.gcry.def'
+
+for extra in contrib/*/Makefile.util.def; do
+  if test -e "$extra"; then
+    UTIL_DEFS="$UTIL_DEFS $extra"
   fi
 done
-sh gendistlist.sh > DISTLIST
 
+for extra in contrib/*/Makefile.core.def; do
+  if test -e "$extra"; then
+    CORE_DEFS="$CORE_DEFS $extra"
+  fi
+done
+
+cat $UTIL_DEFS | autogen -T Makefile.tpl | sed -e '/^$/{N;/^\n$/D;}' > Makefile.util.am
+cat $CORE_DEFS | autogen -T Makefile.tpl | sed -e '/^$/{N;/^\n$/D;}' > grub-core/Makefile.core.am
+
+for extra in contrib/*/Makefile.common; do
+  if test -e "$extra"; then
+    echo "include $extra" >> Makefile.util.am
+    echo "include $extra" >> grub-core/Makefile.core.am
+  fi
+done
+
+for extra in contrib/*/Makefile.util.common; do
+  if test -e "$extra"; then
+    echo "include $extra" >> Makefile.util.am
+  fi
+done
+
+for extra in contrib/*/Makefile.core.common; do
+  if test -e "$extra"; then
+    echo "include $extra" >> grub-core/Makefile.core.am
+  fi
+done
+
+echo "Saving timestamps..."
+echo timestamp > stamp-h.in
+
+echo "Running autoreconf..."
+autoreconf -vi
 exit 0

@@ -1,1 +1,1 @@
-#include <grub/i386/pc/memory.h>
+#include <grub/i386/coreboot/memory.h>

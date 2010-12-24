@@ -24,6 +24,7 @@
 #include <grub/i18n.h>
 #include <grub/kernel.h>
 #include <grub/disk.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/resolve.h>
 #include <grub/misc.h>
@@ -44,7 +45,16 @@
 
 #define ALIGN_ADDR(x) (ALIGN_UP((x), image_target->voidp_sizeof))
 
+#ifdef HAVE_LIBLZMA
+#include <lzma.h>
+#endif
+
 #define TARGET_NO_FIELD 0xffffffff
+
+typedef enum {
+  COMPRESSION_AUTO, COMPRESSION_NONE, COMPRESSION_XZ
+} grub_compression_t;
+
 struct image_target_desc
 {
   const char *name;
@@ -53,15 +63,17 @@ struct image_target_desc
   enum {
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
     IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
-    IMAGE_YEELOONG_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH
+    IMAGE_YEELOONG_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
+    IMAGE_I386_PC_PXE
   } id;
   enum
     {
       PLATFORM_FLAGS_NONE = 0,
-      PLATFORM_FLAGS_LZMA = 1
+      PLATFORM_FLAGS_LZMA = 1,
+      PLATFORM_FLAGS_DECOMPRESSORS = 2
     } flags;
   unsigned prefix;
-  unsigned data_end;
+  unsigned prefix_end;
   unsigned raw_size;
   unsigned total_module_size;
   unsigned kernel_image_size;
@@ -73,6 +85,7 @@ struct image_target_desc
   unsigned install_dos_part, install_bsd_part;
   grub_uint64_t link_addr;
   unsigned mod_gap, mod_align;
+  grub_compression_t default_compression;
 };
 
 struct image_target_desc image_targets[] =
@@ -84,7 +97,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_COREBOOT,
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_I386_COREBOOT_PREFIX,
-      .data_end = GRUB_KERNEL_I386_COREBOOT_DATA_END,
+      .prefix_end = GRUB_KERNEL_I386_COREBOOT_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -105,8 +118,8 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_COREBOOT,
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_I386_COREBOOT_PREFIX,
-      .data_end = GRUB_KERNEL_I386_COREBOOT_DATA_END,
+      .prefix = GRUB_KERNEL_I386_MULTIBOOT_PREFIX,
+      .prefix_end = GRUB_KERNEL_I386_MULTIBOOT_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -128,7 +141,25 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_I386_PC, 
       .flags = PLATFORM_FLAGS_LZMA,
       .prefix = GRUB_KERNEL_I386_PC_PREFIX,
-      .data_end = GRUB_KERNEL_I386_PC_DATA_END,
+      .prefix_end = GRUB_KERNEL_I386_PC_PREFIX_END,
+      .raw_size = GRUB_KERNEL_I386_PC_RAW_SIZE,
+      .total_module_size = GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE,
+      .kernel_image_size = GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE,
+      .compressed_size = GRUB_KERNEL_I386_PC_COMPRESSED_SIZE,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = GRUB_KERNEL_I386_PC_INSTALL_DOS_PART,
+      .install_bsd_part = GRUB_KERNEL_I386_PC_INSTALL_BSD_PART,
+      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
+    },
+    {
+      .name = "i386-pc-pxe",
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_I386_PC_PXE, 
+      .flags = PLATFORM_FLAGS_LZMA,
+      .prefix = GRUB_KERNEL_I386_PC_PREFIX,
+      .prefix_end = GRUB_KERNEL_I386_PC_PREFIX_END,
       .raw_size = GRUB_KERNEL_I386_PC_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE,
       .kernel_image_size = GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE,
@@ -146,7 +177,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_EFI,
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_I386_EFI_PREFIX,
-      .data_end = GRUB_KERNEL_I386_EFI_DATA_END,
+      .prefix_end = GRUB_KERNEL_I386_EFI_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -168,7 +199,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_I386_IEEE1275, 
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_I386_IEEE1275_PREFIX,
-      .data_end = GRUB_KERNEL_I386_IEEE1275_DATA_END,
+      .prefix_end = GRUB_KERNEL_I386_IEEE1275_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -190,7 +221,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_QEMU, 
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_I386_QEMU_PREFIX,
-      .data_end = GRUB_KERNEL_I386_QEMU_DATA_END,
+      .prefix_end = GRUB_KERNEL_I386_QEMU_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .compressed_size = TARGET_NO_FIELD,
@@ -208,7 +239,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_EFI, 
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_X86_64_EFI_PREFIX,
-      .data_end = GRUB_KERNEL_X86_64_EFI_DATA_END,
+      .prefix_end = GRUB_KERNEL_X86_64_EFI_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -228,40 +259,42 @@ struct image_target_desc image_targets[] =
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_YEELOONG_FLASH, 
-      .flags = PLATFORM_FLAGS_NONE,
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
       .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
-      .data_end = GRUB_KERNEL_MIPS_YEELOONG_DATA_END,
-      .raw_size = GRUB_KERNEL_MIPS_YEELOONG_RAW_SIZE,
+      .prefix_end = GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END,
+      .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
-      .compressed_size = GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE,
-      .kernel_image_size = GRUB_KERNEL_MIPS_YEELOONG_KERNEL_IMAGE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_MIPS_YEELOONG_LINK_ADDR,
       .elf_target = EM_MIPS,
-      .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN
+      .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
     },
     {
       .name = "mipsel-yeeloong-elf",
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_YEELOONG_ELF, 
-      .flags = PLATFORM_FLAGS_NONE,
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
       .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
-      .data_end = GRUB_KERNEL_MIPS_YEELOONG_DATA_END,
-      .raw_size = GRUB_KERNEL_MIPS_YEELOONG_RAW_SIZE,
+      .prefix_end = GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END,
+      .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
-      .compressed_size = GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE,
-      .kernel_image_size = GRUB_KERNEL_MIPS_YEELOONG_KERNEL_IMAGE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_MIPS_YEELOONG_LINK_ADDR,
       .elf_target = EM_MIPS,
-      .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN
+      .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
     },
     {
       .name = "powerpc-ieee1275",
@@ -270,7 +303,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_PPC, 
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_POWERPC_IEEE1275_PREFIX,
-      .data_end = GRUB_KERNEL_POWERPC_IEEE1275_DATA_END,
+      .prefix_end = GRUB_KERNEL_POWERPC_IEEE1275_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -292,7 +325,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_SPARC64_RAW,
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX,
-      .data_end = GRUB_KERNEL_SPARC64_IEEE1275_DATA_END,
+      .prefix_end = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX_END,
       .raw_size = GRUB_KERNEL_SPARC64_IEEE1275_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
       .kernel_image_size = GRUB_KERNEL_SPARC64_IEEE1275_KERNEL_IMAGE_SIZE,
@@ -310,7 +343,7 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_SPARC64_AOUT,
       .flags = PLATFORM_FLAGS_NONE,
       .prefix = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX,
-      .data_end = GRUB_KERNEL_SPARC64_IEEE1275_DATA_END,
+      .prefix_end = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX_END,
       .raw_size = GRUB_KERNEL_SPARC64_IEEE1275_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
       .kernel_image_size = GRUB_KERNEL_SPARC64_IEEE1275_KERNEL_IMAGE_SIZE,
@@ -473,9 +506,66 @@ compress_kernel_lzma (char *kernel_img, size_t kernel_size,
   *core_size += raw_size;
 }
 
+#ifdef HAVE_LIBLZMA
+static void
+compress_kernel_xz (char *kernel_img, size_t kernel_size,
+		    char **core_img, size_t *core_size, size_t raw_size)
+{
+  lzma_stream strm = LZMA_STREAM_INIT;
+  lzma_ret xzret;
+  lzma_options_lzma lzopts = {
+    .dict_size = 1 << 16,
+    .preset_dict = NULL,
+    .preset_dict_size = 0,
+    .lc = 3,
+    .lp = 0,
+    .pb = 2,
+    .mode = LZMA_MODE_NORMAL,
+    .nice_len = 64,
+    .mf = LZMA_MF_BT4,
+    .depth = 0,
+  };
+  lzma_filter fltrs[] = {
+    { .id = LZMA_FILTER_LZMA2, .options = &lzopts},
+    { .id = LZMA_VLI_UNKNOWN, .options = NULL}
+  };
+
+  if (kernel_size < raw_size)
+    grub_util_error (_("the core image is too small"));
+
+  xzret = lzma_stream_encoder (&strm, fltrs, LZMA_CHECK_NONE);
+  if (xzret != LZMA_OK)
+    grub_util_error (_("cannot compress the kernel image"));
+
+  *core_img = xmalloc (kernel_size);
+  memcpy (*core_img, kernel_img, raw_size);
+
+  *core_size = kernel_size - raw_size;
+  strm.next_in = (unsigned char *) kernel_img + raw_size;
+  strm.avail_in = kernel_size - raw_size;
+  strm.next_out = (unsigned char *) *core_img + raw_size;
+  strm.avail_out = *core_size;
+
+  while (1)
+    {
+      xzret = lzma_code (&strm, LZMA_FINISH);
+      if (xzret == LZMA_OK)
+	continue;
+      if (xzret == LZMA_STREAM_END)
+	break;
+      grub_util_error (_("cannot compress the kernel image"));
+    }
+
+  *core_size -= strm.avail_out;
+
+  *core_size += raw_size;
+}
+#endif
+
 static void
 compress_kernel (struct image_target_desc *image_target, char *kernel_img,
-		 size_t kernel_size, char **core_img, size_t *core_size)
+		 size_t kernel_size, char **core_img, size_t *core_size,
+		 grub_compression_t comp)
 {
  if (image_target->flags & PLATFORM_FLAGS_LZMA)
    {
@@ -483,6 +573,20 @@ compress_kernel (struct image_target_desc *image_target, char *kernel_img,
 			   core_size, image_target->raw_size);
      return;
    }
+
+#ifdef HAVE_LIBLZMA
+ if (image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS
+     && (comp == COMPRESSION_XZ))
+   {
+     compress_kernel_xz (kernel_img, kernel_size, core_img,
+			 core_size, image_target->raw_size);
+     return;
+   }
+#endif
+
+ if (image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS
+     && (comp != COMPRESSION_NONE))
+   grub_util_error ("unknown compression %d\n", comp);
 
   *core_img = xmalloc (kernel_size);
   memcpy (*core_img, kernel_img, kernel_size);
@@ -506,12 +610,13 @@ struct fixup_block_list
 
 static void
 generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
-		char *memdisk_path, char *font_path, char *config_path,
-		struct image_target_desc *image_target, int note)
+		char *memdisk_path, char *config_path,
+		struct image_target_desc *image_target, int note,
+		grub_compression_t comp)
 {
   char *kernel_img, *core_img;
   size_t kernel_size, total_module_size, core_size, exec_size;
-  size_t memdisk_size = 0, font_size = 0, config_size = 0, config_size_pure = 0;
+  size_t memdisk_size = 0, config_size = 0, config_size_pure = 0;
   char *kernel_path;
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
@@ -519,6 +624,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   grub_uint64_t start_address;
   void *rel_section;
   grub_size_t reloc_size, align;
+
+  if (comp == COMPRESSION_AUTO)
+    comp = image_target->default_compression;
+
   path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
 
   kernel_path = grub_util_get_path (dir, "kernel.img");
@@ -533,12 +642,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       memdisk_size = ALIGN_UP(grub_util_get_image_size (memdisk_path), 512);
       grub_util_info ("the size of memory disk is 0x%x", memdisk_size);
       total_module_size += memdisk_size + sizeof (struct grub_module_header);
-    }
-
-  if (font_path)
-    {
-      font_size = ALIGN_ADDR (grub_util_get_image_size (font_path));
-      total_module_size += font_size + sizeof (struct grub_module_header);
     }
 
   if (config_path)
@@ -564,7 +667,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 			       total_module_size, &start_address, &rel_section,
 			       &reloc_size, &align, image_target);
 
-  if (image_target->prefix + strlen (prefix) + 1 > image_target->data_end)
+  if (image_target->prefix + strlen (prefix) + 1 > image_target->prefix_end)
     grub_util_error (_("prefix is too long"));
   strcpy (kernel_img + image_target->prefix, prefix);
 
@@ -624,20 +727,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       offset += memdisk_size;
     }
 
-  if (font_path)
-    {
-      struct grub_module_header *header;
-
-      header = (struct grub_module_header *) (kernel_img + offset);
-      memset (header, 0, sizeof (struct grub_module_header));
-      header->type = grub_host_to_target32 (OBJ_TYPE_FONT);
-      header->size = grub_host_to_target32 (font_size + sizeof (*header));
-      offset += sizeof (*header);
-
-      grub_util_load_image (font_path, kernel_img + offset);
-      offset += font_size;
-    }
-
   if (config_path)
     {
       struct grub_module_header *header;
@@ -653,13 +742,19 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       offset += config_size;
     }
 
+  if ((image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
+      && (image_target->total_module_size != TARGET_NO_FIELD))
+    *((grub_uint32_t *) (kernel_img + image_target->total_module_size))
+      = grub_host_to_target32 (total_module_size);
+
   grub_util_info ("kernel_img=%p, kernel_size=0x%x", kernel_img, kernel_size);
   compress_kernel (image_target, kernel_img, kernel_size + total_module_size,
-		   &core_img, &core_size);
+		   &core_img, &core_size, comp);
 
   grub_util_info ("the core size is 0x%x", core_size);
 
-  if (image_target->total_module_size != TARGET_NO_FIELD)
+  if (!(image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS) 
+      && image_target->total_module_size != TARGET_NO_FIELD)
     *((grub_uint32_t *) (core_img + image_target->total_module_size))
       = grub_host_to_target32 (total_module_size);
   if (image_target->kernel_image_size != TARGET_NO_FIELD)
@@ -680,9 +775,57 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	= grub_host_to_target32 (-2);
     }
 
+  if (image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
+    {
+      char *full_img;
+      size_t full_size;
+      char *decompress_path, *decompress_img;
+      size_t decompress_size;
+      const char *name;
+
+      switch (comp)
+	{
+	case COMPRESSION_XZ:
+	  name = "xz_decompress.img";
+	  break;
+	case COMPRESSION_NONE:
+	  name = "none_decompress.img";
+	  break;
+	default:
+	  grub_util_error ("unknown compression %d\n", comp);
+	}
+      
+      decompress_path = grub_util_get_path (dir, name);
+      decompress_size = grub_util_get_image_size (decompress_path);
+      decompress_img = grub_util_read_image (decompress_path);
+
+      *((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE))
+	= grub_host_to_target32 (core_size);
+
+      *((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_YEELOONG_UNCOMPRESSED_SIZE))
+	= grub_host_to_target32 (kernel_size + total_module_size);
+
+      full_size = core_size + decompress_size;
+
+      full_img = xmalloc (full_size);
+      memset (full_img, 0, full_size); 
+
+      memcpy (full_img, decompress_img, decompress_size);
+
+      memcpy (full_img + decompress_size, core_img, core_size);
+
+      memset (full_img + decompress_size + core_size, 0,
+	      full_size - (decompress_size + core_size));
+
+      free (core_img);
+      core_img = full_img;
+      core_size = full_size;
+    }
+
   switch (image_target->id)
     {
     case IMAGE_I386_PC:
+    case IMAGE_I386_PC_PXE:
       {
 	unsigned num;
 	char *boot_path, *boot_img;
@@ -696,6 +839,20 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
 	if (num > 0xffff)
 	  grub_util_error (_("the core image is too big"));
+
+	if (image_target->id == IMAGE_I386_PC_PXE)
+	  {
+	    char *pxeboot_path, *pxeboot_img;
+	    size_t pxeboot_size;
+	    
+	    pxeboot_path = grub_util_get_path (dir, "pxeboot.img");
+	    pxeboot_size = grub_util_get_image_size (pxeboot_path);
+	    pxeboot_img = grub_util_read_image (pxeboot_path);
+	    
+	    grub_util_write_image (pxeboot_img, pxeboot_size, out);
+	    free (pxeboot_img);
+	    free (pxeboot_path);
+	  }
 
 	boot_path = grub_util_get_path (dir, "diskboot.img");
 	boot_size = grub_util_get_image_size (boot_path);
@@ -1203,6 +1360,7 @@ static struct option options[] =
     {"output", required_argument, 0, 'o'},
     {"note", no_argument, 0, 'n'},
     {"format", required_argument, 0, 'O'},
+    {"compression", required_argument, 0, 'C'},
     {"help", no_argument, 0, 'h'},
     {"version", no_argument, 0, 'V'},
     {"verbose", no_argument, 0, 'v'},
@@ -1240,12 +1398,12 @@ Make a bootable image of GRUB.\n\
   -d, --directory=DIR     use images and modules under DIR [default=%s/@platform@]\n\
   -p, --prefix=DIR        set grub_prefix directory [default=%s]\n\
   -m, --memdisk=FILE      embed FILE as a memdisk image\n\
-  -f, --font=FILE         embed FILE as a boot font\n\
   -c, --config=FILE       embed FILE as boot config\n\
   -n, --note              add NOTE segment for CHRP Open Firmware\n\
   -o, --output=FILE       output a generated image to FILE [default=stdout]\n\
   -O, --format=FORMAT     generate an image in format\n\
                           available formats: %s\n\
+  -C, --compression=(xz|none|auto)  choose the compression to use\n\
   -h, --help              display this message and exit\n\
   -V, --version           print version information and exit\n\
   -v, --verbose           print verbose messages\n\
@@ -1272,6 +1430,7 @@ main (int argc, char *argv[])
   FILE *fp = stdout;
   int note = 0;
   struct image_target_desc *image_target = NULL;
+  grub_compression_t comp = COMPRESSION_AUTO;
 
   set_program_name (argv[0]);
 
@@ -1279,7 +1438,7 @@ main (int argc, char *argv[])
 
   while (1)
     {
-      int c = getopt_long (argc, argv, "d:p:m:c:o:O:f:hVvn", options, 0);
+      int c = getopt_long (argc, argv, "d:p:m:c:o:O:f:C:hVvn", options, 0);
 
       if (c == -1)
 	break;
@@ -1329,18 +1488,27 @@ main (int argc, char *argv[])
 	    prefix = xstrdup ("(memdisk)/boot/grub");
 	    break;
 
-	  case 'f':
-	    if (font)
-	      free (font);
-
-	    font = xstrdup (optarg);
-	    break;
-
 	  case 'c':
 	    if (config)
 	      free (config);
 
 	    config = xstrdup (optarg);
+	    break;
+
+	  case 'C':
+	    if (grub_strcmp (optarg, "xz") == 0)
+	      {
+#ifdef HAVE_LIBLZMA
+		comp = COMPRESSION_XZ;
+#else
+		grub_util_error ("grub-mkimage is compiled without XZ support",
+				 optarg);
+#endif
+	      }
+	    else if (grub_strcmp (optarg, "none") == 0)
+	      comp = COMPRESSION_NONE;
+	    else
+	      grub_util_error ("Unknown compression format %s", optarg);
 	    break;
 
 	  case 'h':
@@ -1400,8 +1568,8 @@ main (int argc, char *argv[])
     }
 
   generate_image (dir, prefix ? : DEFAULT_DIRECTORY, fp,
-		  argv + optind, memdisk, font, config,
-		  image_target, note);
+		  argv + optind, memdisk, config,
+		  image_target, note, comp);
 
   fclose (fp);
 

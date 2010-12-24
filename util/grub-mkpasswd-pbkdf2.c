@@ -16,8 +16,11 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
+
 #include <grub/types.h>
 #include <grub/crypto.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/i18n.h>
 
@@ -29,37 +32,6 @@
 #include <termios.h>
 
 #include "progname.h"
-
-/* Few functions to make crypto happy.  */
-void *
-grub_memmove (void *dest, const void *src, grub_size_t n)
-{
-  return memmove (dest, src, n);
-}
-
-void *
-grub_memset (void *s, int c, grub_size_t n)
-{
-  return memset (s, c, n);
-}
-
-int 
-grub_vprintf (const char *fmt, va_list args)
-{
-  return vprintf (fmt, args);
-}
-
-int 
-grub_vsnprintf (char *str, grub_size_t n, const char *fmt, va_list args)
-{
-  return vsnprintf (str, n, fmt, args);
-}
-
-void
-grub_abort (void)
-{
-  abort ();
-}
 
 static struct option options[] =
   {

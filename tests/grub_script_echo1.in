@@ -16,6 +16,33 @@
 # You should have received a copy of the GNU General Public License
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
+# simple arguments
+echo one two three
+echo "one two three"
+echo 'one two three'
+
+# empty arguments
+echo a "" b
+echo a '' b
+
+echo a $foo b
+echo a ${foo} b
+
+echo a "$foo" b
+echo a "${foo}" b
+
+# multi-part arguments
+echo one"two"three
+echo one${two}three
+echo one"two"$three
+
+echo one'two'three
+echo one${two}three
+echo one'two'$three
+
+echo one'two'three"four"five${six}seven$eight
+
+
 foo=bar
 echo $foo ${foo}
 echo "$foo" "${foo}"
@@ -30,3 +57,45 @@ e"$foo"${bar}o hello world
 
 foo=echo
 $foo 1234
+
+echo "one
+"
+echo "one
+\""
+echo "one
+two"
+
+echo one"two
+"three
+echo one"two
+\""three
+echo one"two
+\"three\"
+four"
+
+
+echo 'one
+'
+echo 'one
+\'
+echo 'one
+two'
+echo one'two
+'
+echo one'two
+\'
+echo one'two
+\'three
+
+# echo "one\
+# two"
+# echo 'one\
+# two'
+# echo foo\
+# bar
+# \
+# echo foo
+# echo "one
+#
+# two"
+

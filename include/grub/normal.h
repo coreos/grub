@@ -54,8 +54,6 @@ void grub_normal_execute (const char *config, int nested, int batch);
 void grub_menu_init_page (int nested, int edit,
 			  struct grub_term_output *term);
 void grub_normal_init_page (struct grub_term_output *term);
-grub_err_t grub_normal_add_menu_entry (int argc, const char **args,
-				       const char *sourcecode);
 char *grub_file_getline (grub_file_t file);
 void grub_cmdline_run (int nested);
 
@@ -73,7 +71,7 @@ grub_err_t grub_normal_print_device_info (const char *name);
 /* Defined in `color.c'.  */
 char *grub_env_write_color_normal (struct grub_env_var *var, const char *val);
 char *grub_env_write_color_highlight (struct grub_env_var *var, const char *val);
-void grub_parse_color_name_pair (grub_uint8_t *ret, const char *name);
+int grub_parse_color_name_pair (grub_uint8_t *ret, const char *name);
 
 /* Defined in `menu_text.c'.  */
 void grub_wait_after_message (void);
@@ -112,9 +110,24 @@ void read_terminal_list (const char *prefix);
 
 void grub_set_more (int onoff);
 
-int grub_normal_get_char_counter (void);
 void grub_normal_reset_more (void);
 
 void grub_xputs_normal (const char *str);
+
+extern int grub_extractor_level;
+
+grub_err_t
+grub_normal_add_menu_entry (int argc, const char **args, char **classes,
+			    const char *users, const char *hotkey,
+			    const char *prefix, const char *sourcecode,
+			    int submenu);
+
+grub_err_t
+grub_normal_set_password (const char *user, const char *password);
+
+void grub_normal_free_menu (grub_menu_t menu);
+
+void grub_normal_auth_init (void);
+void grub_normal_auth_fini (void);
 
 #endif /* ! GRUB_NORMAL_HEADER */

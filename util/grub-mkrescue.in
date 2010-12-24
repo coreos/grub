@@ -2,7 +2,7 @@
 set -e
 
 # Make GRUB rescue image
-# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 native_platform=@platform@
-pkglib_DATA="@pkglib_DATA@"
+pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 
 self=`basename $0`
 
@@ -62,7 +62,8 @@ Make GRUB rescue image.
 
 $self generates a bootable rescue image with specified source files, source
 directories, or mkisofs options listed by: xorriso -as mkisofs -help
-Option -- switches to native xorriso command mode. or directories.
+
+Option -- switches to native xorriso command mode.
 
 Report bugs to <bug-grub@gnu.org>.
 Mail xorriso support requests to <bug-xorriso@gnu.org>.
@@ -151,15 +152,7 @@ else
     exit 1
 fi
 
-if test "x$TMP" != x; then
-  MKTEMP_TEMPLATE="$TMP/grub-mkrescue.XXXXXXXXXX"
-elif test "x$TEMP" != x; then
-  MKTEMP_TEMPLATE="$TEMP/grub-mkrescue.XXXXXXXXXX"
-else
-  MKTEMP_TEMPLATE="/tmp/grub-mkrescue.XXXXXXXXXX"
-fi
-
-iso9660_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
+iso9660_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 mkdir -p ${iso9660_dir}/boot/grub
 
 process_input_dir ()
@@ -196,12 +189,12 @@ make_image ()
 
     echo "Enabling $2 support ..."
 
-    memdisk_img=`mktemp "$MKTEMP_TEMPLATE"`
-    memdisk_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
+    memdisk_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
+    memdisk_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     mkdir -p ${memdisk_dir}/boot/grub
 
     cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
-search --fs-uuid --set ${iso_uuid}
+search --fs-uuid --set=root ${iso_uuid}
 set prefix=(\${root})/boot/grub/${platform}
 source \$prefix/grub.cfg
 EOF
@@ -262,12 +255,12 @@ grub_mkisofs_arguments="${grub_mkisofs_arguments} --modification-date=$(echo ${i
 # build BIOS core.img
 if test -e "${pc_dir}" ; then
     echo "Enabling BIOS support ..."
-    core_img=`mktemp "$MKTEMP_TEMPLATE"`
+    core_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     $grub_mkimage -O i386-pc -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
         iso9660 biosdisk
     cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
 
-    embed_img=`mktemp "$MKTEMP_TEMPLATE"`
+    embed_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     cat ${pc_dir}/boot.img ${core_img} > ${embed_img}
 
     rm -f ${core_img}
@@ -286,7 +279,7 @@ fi
 make_image "${multiboot_dir}" i386-multiboot "${iso9660_dir}/boot/multiboot.img" "ata at_keyboard"
 
 if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
-    efi_dir=`mktemp -d "$MKTEMP_TEMPLATE"`
+    efi_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     mkdir -p "${efi_dir}/efi/boot"
 
     # build bootx64.efi
@@ -296,6 +289,7 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
 
     mformat -C -f 2880 -L 16 -i "${iso9660_dir}"/efi.img ::
     mcopy -s -i "${iso9660_dir}"/efi.img ${efi_dir}/efi ::/
+    rm -rf ${efi_dir}
     grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img"
 fi
 

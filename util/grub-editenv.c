@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <grub/types.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/lib/envblk.h>
 #include <grub/i18n.h>
@@ -27,72 +28,83 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <getopt.h>
+#include <argp.h>
 
 #include "progname.h"
 
 #define DEFAULT_ENVBLK_SIZE	1024
+#define DEFAULT_ENVBLK_PATH DEFAULT_DIRECTORY "/" GRUB_ENVBLK_DEFCFG
 
-void
-grub_refresh (void)
+static struct argp_option options[] = {
+  {0,        0, 0, OPTION_DOC, N_("Commands:"), 1},
+  {"create", 0, 0, OPTION_DOC|OPTION_NO_USAGE,
+   N_("Create a blank environment block file."), 0},
+  {"list",   0, 0, OPTION_DOC|OPTION_NO_USAGE,
+   N_("List the current variables."), 0},
+  {"set [name=value ...]", 0, 0, OPTION_DOC|OPTION_NO_USAGE,
+   N_("Set variables."), 0},
+  {"unset [name ....]",    0, 0, OPTION_DOC|OPTION_NO_USAGE,
+   N_("Delete variables."), 0},
+
+  {0,         0, 0, OPTION_DOC, N_("Options:"), -1},
+  {"verbose", 'v', 0, 0, N_("Print verbose messages."), 0},
+
+  { 0, 0, 0, 0, 0, 0 }
+};
+
+/* Print the version information.  */
+static void
+print_version (FILE *stream, struct argp_state *state)
 {
-  fflush (stdout);
+  fprintf (stream, "%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 }
+void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
 
-int
-grub_getkey (void)
+/* Set the bug report address */
+const char *argp_program_bug_address = "<"PACKAGE_BUGREPORT">";
+
+error_t argp_parser (int key, char *arg, struct argp_state *state)
 {
+  switch (key)
+    {
+      case 'v':
+        verbosity++;
+        break;
+
+      case ARGP_KEY_NO_ARGS:
+        fprintf (stderr, "%s",
+		 _("You need to specify at least one command.\n"));
+        argp_usage (state);
+        break;
+
+      default:
+        return ARGP_ERR_UNKNOWN;
+    }
+
   return 0;
 }
 
-void 
-grub_xputs_real (const char *str)
+static char *
+help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 {
-  fputs (str, stdout);
+  switch (key)
+    {
+      case ARGP_KEY_HELP_POST_DOC:
+        return xasprintf(text, DEFAULT_ENVBLK_PATH);
+
+      default:
+        return (char *) text;
+    }
 }
 
-void (*grub_xputs) (const char *str) = grub_xputs_real;
-
-char *
-grub_env_get (const char *name __attribute__ ((unused)))
-{
-  return NULL;
-}
-
-static struct option options[] = {
-  {"help", no_argument, 0, 'h'},
-  {"version", no_argument, 0, 'V'},
-  {"verbose", no_argument, 0, 'v'},
-  {0, 0, 0, 0}
+struct argp argp = {
+  options, argp_parser, N_("FILENAME COMMAND"),
+  "\n"N_("\
+Tool to edit environment block.")
+"\v"N_("\
+If FILENAME is '-', the default value %s is used."),
+  NULL, help_filter, NULL
 };
-
-static void
-usage (int status)
-{
-  if (status)
-    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
-  else
-    printf ("\
-Usage: %s [OPTIONS] [FILENAME] COMMAND\n\
-\n\
-Tool to edit environment block.\n\
-\nCommands:\n\
-  create                    create a blank environment block file\n\
-  list                      list the current variables\n\
-  set [name=value ...]      set variables\n\
-  unset [name ....]         delete variables\n\
-\nOptions:\n\
-  -h, --help                display this message and exit\n\
-  -V, --version             print version information and exit\n\
-  -v, --verbose             print verbose messages\n\
-\n\
-If not given explicitly, FILENAME defaults to %s.\n\
-\n\
-Report bugs to <%s>.\n",
-program_name, DEFAULT_DIRECTORY "/" GRUB_ENVBLK_DEFCFG, PACKAGE_BUGREPORT);
-
-  exit (status);
-}
 
 static void
 create_envblk_file (const char *name)
@@ -252,55 +264,32 @@ main (int argc, char *argv[])
 {
   char *filename;
   char *command;
+  int index, arg_count;
 
   set_program_name (argv[0]);
 
   grub_util_init_nls ();
 
-  /* Check for options.  */
-  while (1)
+  /* Parse our arguments */
+  if (argp_parse (&argp, argc, argv, 0, &index, 0) != 0)
     {
-      int c = getopt_long (argc, argv, "hVv", options, 0);
-
-      if (c == -1)
-	break;
-      else
-	switch (c)
-	  {
-	  case 'h':
-	    usage (0);
-	    break;
-
-	  case 'V':
-	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
-	    return 0;
-
-	  case 'v':
-	    verbosity++;
-	    break;
-
-	  default:
-	    usage (1);
-	    break;
-	  }
+      fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
+      exit(1);
     }
 
-  /* Obtain the filename.  */
-  if (optind >= argc)
-    {
-      fprintf (stderr, "no filename specified\n");
-      usage (1);
-    }
+  arg_count = argc - index;
 
-  if (optind + 1 >= argc)
+  if (arg_count == 1)
     {
-      filename = DEFAULT_DIRECTORY "/" GRUB_ENVBLK_DEFCFG;
-      command = argv[optind];
+      filename = DEFAULT_ENVBLK_PATH;
+      command  = argv[index++];
     }
   else
     {
-      filename = argv[optind];
-      command = argv[optind + 1];
+      filename = argv[index++];
+      if (strcmp (filename, "-") == 0)
+        filename = DEFAULT_ENVBLK_PATH;
+      command  = argv[index++];
     }
 
   if (strcmp (command, "create") == 0)
@@ -308,13 +297,16 @@ main (int argc, char *argv[])
   else if (strcmp (command, "list") == 0)
     list_variables (filename);
   else if (strcmp (command, "set") == 0)
-    set_variables (filename, argc - optind - 2, argv + optind + 2);
+    set_variables (filename, argc - index, argv + index);
   else if (strcmp (command, "unset") == 0)
-    unset_variables (filename, argc - optind - 2, argv + optind + 2);
+    unset_variables (filename, argc - index, argv + index);
   else
     {
-      fprintf (stderr, "unknown command %s\n", command);
-      usage (1);
+      char *program = xstrdup(program_name);
+      fprintf (stderr, _("Unknown command `%s'.\n"), command);
+      argp_help (&argp, stderr, ARGP_HELP_STD_USAGE, program);
+      free(program);
+      exit(1);
     }
 
   return 0;

@@ -25,6 +25,13 @@
 #include <grub/types.h>
 #include <grub/elf.h>
 
+/*
+ * Macros GRUB_MOD_INIT and GRUB_MOD_FINI are also used by build rules
+ * to collect module names, so we define them only when they are not
+ * defined already.
+ */
+
+#ifndef GRUB_MOD_INIT
 #define GRUB_MOD_INIT(name)	\
 static void grub_mod_init (grub_dl_t mod __attribute__ ((unused))) __attribute__ ((used)); \
 void grub_##name##_init (void); \
@@ -32,7 +39,9 @@ void \
 grub_##name##_init (void) { grub_mod_init (0); } \
 static void \
 grub_mod_init (grub_dl_t mod __attribute__ ((unused)))
+#endif
 
+#ifndef GRUB_MOD_FINI
 #define GRUB_MOD_FINI(name)	\
 static void grub_mod_fini (void) __attribute__ ((used)); \
 void grub_##name##_fini (void); \
@@ -40,6 +49,7 @@ void \
 grub_##name##_fini (void) { grub_mod_fini (); } \
 static void \
 grub_mod_fini (void)
+#endif
 
 #ifdef APPLE_CC
 #define GRUB_MOD_NAME(name)	\
@@ -91,12 +101,6 @@ grub_dl_t EXPORT_FUNC(grub_dl_load) (const char *name);
 grub_dl_t grub_dl_load_core (void *addr, grub_size_t size);
 int EXPORT_FUNC(grub_dl_unload) (grub_dl_t mod);
 void grub_dl_unload_unneeded (void);
-void grub_dl_unload_all (void);
-#if defined (GRUB_UTIL) || defined (GRUB_TARGET_NO_MODULES)
-#define GRUB_NO_MODULES 1
-#else
-#define GRUB_NO_MODULES 0
-#endif
 int EXPORT_FUNC(grub_dl_ref) (grub_dl_t mod);
 int EXPORT_FUNC(grub_dl_unref) (grub_dl_t mod);
 extern grub_dl_t EXPORT_VAR(grub_dl_head);
@@ -110,7 +114,7 @@ grub_err_t grub_dl_register_symbol (const char *name, void *addr,
 grub_err_t grub_arch_dl_check_header (void *ehdr);
 grub_err_t grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr);
 
-#if defined (_mips) && ! GRUB_NO_MODULES
+#if defined (_mips)
 #define GRUB_LINKER_HAVE_INIT 1
 void grub_arch_dl_init_linker (void);
 #endif

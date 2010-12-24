@@ -43,6 +43,8 @@
 
 #define ALIGN_UP(addr, align) \
 	((addr + (typeof (addr)) align - 1) & ~((typeof (addr)) align - 1))
+#define ALIGN_DOWN(addr, align) \
+	((addr) & ~((typeof (addr)) align - 1))
 #define ARRAY_SIZE(array) (sizeof (array) / sizeof (array[0]))
 #define COMPILE_TIME_ASSERT(cond) switch (0) { case 1: case !(cond): ; }
 
@@ -191,6 +193,26 @@ grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
   return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
 }
 
+/* Replace all `ch' characters of `input' with `with' and copy the
+   result into `output'; return EOS address of `output'. */
+static inline char *
+grub_strchrsub (char *output, const char *input, char ch, const char *with)
+{
+  grub_size_t grub_strlen (const char *s);
+  while (*input)
+    {
+      if (*input == ch)
+	{
+	  grub_strcpy (output, with);
+	  output += grub_strlen (with);
+	  input++;
+	  continue;
+	}
+      *output++ = *input++;
+    }
+  *output = '\0';
+  return output;
+}
 
 unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);
 unsigned long long EXPORT_FUNC(grub_strtoull) (const char *str, char **end, int base);
@@ -231,10 +253,10 @@ grub_strtol (const char *str, char **end, int base)
     }
 }
 
-char *EXPORT_FUNC(grub_strdup) (const char *s);
-char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n);
+char *EXPORT_FUNC(grub_strdup) (const char *s) __attribute__ ((warn_unused_result));
+char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n) __attribute__ ((warn_unused_result));
 void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
-grub_size_t EXPORT_FUNC(grub_strlen) (const char *s);
+grub_size_t EXPORT_FUNC(grub_strlen) (const char *s) __attribute__ ((warn_unused_result));
 int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 int EXPORT_FUNC(grub_printf_) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 
@@ -261,18 +283,18 @@ int EXPORT_FUNC(grub_snprintf) (char *str, grub_size_t n, const char *fmt, ...)
 int EXPORT_FUNC(grub_vsnprintf) (char *str, grub_size_t n, const char *fmt,
 				 va_list args);
 char *EXPORT_FUNC(grub_xasprintf) (const char *fmt, ...)
-     __attribute__ ((format (printf, 1, 2)));
-char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args);
+     __attribute__ ((format (printf, 1, 2))) __attribute__ ((warn_unused_result));
+char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args) __attribute__ ((warn_unused_result));
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint32_t d, grub_uint32_t *r);
 
-#if defined(NEED_ENABLE_EXECUTE_STACK) && !defined(GRUB_UTIL)
+#if NEED_ENABLE_EXECUTE_STACK && !defined(GRUB_UTIL)
 void EXPORT_FUNC(__enable_execute_stack) (void *addr);
 #endif
 
-#if defined (NEED_REGISTER_FRAME_INFO) && !defined(GRUB_UTIL)
+#if NEED_REGISTER_FRAME_INFO && !defined(GRUB_UTIL)
 void EXPORT_FUNC (__register_frame_info) (void);
 void EXPORT_FUNC (__deregister_frame_info) (void);
 #endif
@@ -286,6 +308,15 @@ grub_abs (int x)
     return (unsigned int) (-x);
   else
     return (unsigned int) x;
+}
+
+static inline long
+grub_min (long x, long y)
+{
+  if (x < y)
+    return x;
+  else
+    return y;
 }
 
 static inline long
@@ -310,9 +341,16 @@ void EXPORT_FUNC (grub_reboot) (void) __attribute__ ((noreturn));
 #ifdef GRUB_MACHINE_PCBIOS
 /* Halt the system, using APM if possible. If NO_APM is true, don't
  * use APM even if it is available.  */
-void EXPORT_FUNC (grub_halt) (int no_apm) __attribute__ ((noreturn));
+void grub_halt (int no_apm) __attribute__ ((noreturn));
 #else
-void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
+void grub_halt (void) __attribute__ ((noreturn));
+#endif
+
+#ifdef GRUB_MACHINE_EMU
+/* Flag to control module autoloading in normal mode.  */
+extern int EXPORT_VAR(grub_no_autoload);
+#else
+#define grub_no_autoload 0
 #endif
 
 #endif /* ! GRUB_MISC_HEADER */

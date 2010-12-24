@@ -80,7 +80,7 @@ for k in $(ls -t /netbsd*) ; do
   echo "Found NetBSD kernel: $k" >&2
   netbsd_entry "knetbsd"   "$k" false "${GRUB_CMDLINE_NETBSD_DEFAULT}"
   netbsd_entry "multiboot" "$k" false "${GRUB_CMDLINE_NETBSD_DEFAULT}"
-  if [ "x${GRUB_DISABLE_NETBSD_RECOVERY}" != "xtrue" ]; then
+  if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then
     netbsd_entry "knetbsd"   "$k" true "-s"
     netbsd_entry "multiboot" "$k" true "-s"
   fi

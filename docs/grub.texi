@@ -46,6 +46,8 @@ Invariant Sections.
 @subtitle The GRand Unified Bootloader, version @value{VERSION}, @value{UPDATED}.
 @author Gordon Matzigkeit
 @author Yoshinori K. Okuji
+@author Colin Watson
+@author Colin D. Bennett
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
@@ -77,6 +79,7 @@ This edition documents version @value{VERSION}.
 * Installation::                Installing GRUB on your drive
 * Booting::                     How to boot different operating systems
 * Configuration::               Writing your own configuration file
+* Theme file format::           Format of GRUB theme files
 * Network::                     Downloading OS images from a network
 * Serial terminal::             Using GRUB via a serial line
 * Vendor power-on keys::        Changing GRUB behaviour on vendor power-on keys
@@ -85,6 +88,7 @@ This edition documents version @value{VERSION}.
 * Interface::                   The menu and the command-line
 * Commands::                    The list of available builtin commands
 * Security::                    Authentication and authorisation
+* Supported kernels::           The list of supported kernels
 * Troubleshooting::             Error messages produced by GRUB
 * Invoking grub-install::       How to use the GRUB installer
 * Invoking grub-mkconfig::      Generate a GRUB configuration file
@@ -105,8 +109,8 @@ This edition documents version @value{VERSION}.
 @menu
 * Overview::                    What exactly GRUB is and how to use it
 * History::                     From maggot to house fly
-* Features::                    GRUB features
 * Changes from GRUB Legacy::    Differences from previous versions
+* Features::                    GRUB features
 * Role of a boot loader::       The role of a boot loader
 @end menu
 
@@ -223,7 +227,9 @@ scripting language: variables, conditionals, and loops are available.
 @item
 A small amount of persistent storage is available across reboots, using the
 @command{save_env} and @command{load_env} commands in GRUB and the
-@command{grub-editenv} utility.
+@command{grub-editenv} utility. For safety reasons this storage is only
+available when installed on plain disk (no LVM or RAID), using non-checksumming
+filesystem (no ZFS) and using BIOS or EFI functions (no ATA, USB or IEEE1275)
 
 @item
 GRUB 2 has more reliable ways to find its own files and those of target
@@ -444,12 +450,13 @@ disk. The number @samp{0} is the drive number, which is counted from
 disk.
 
 @example
-(hd0,2)
+(hd0,msdos2)
 @end example
 
 Here, @samp{hd} means it is a hard disk drive. The first integer
-@samp{0} indicates the drive number, that is, the first hard disk, while
-the second integer, @samp{1}, indicates the partition number (or the
+@samp{0} indicates the drive number, that is, the first hard disk,
+the string @samp{msdos} indicates the partition scheme, while
+the second integer, @samp{2}, indicates the partition number (or the
 @sc{pc} slice number in the BSD terminology). The partition numbers are
 counted from @emph{one}, not from zero (as was the case in previous
 versions of GRUB). This expression means the second partition of the
@@ -457,7 +464,7 @@ first hard disk drive. In this case, GRUB uses one partition of the
 disk, instead of the whole disk.
 
 @example
-(hd0,5)
+(hd0,msdos5)
 @end example
 
 This specifies the first @dfn{extended partition} of the first hard disk
@@ -466,18 +473,15 @@ counted from @samp{5}, regardless of the actual number of primary
 partitions on your hard disk.
 
 @example
-(hd1,a)
+(hd1,msdos1,bsd1)
 @end example
 
-This means the BSD @samp{a} partition of the second hard disk. If you
-need to specify which @sc{pc} slice number should be used, use something
-like this: @samp{(hd1,1,a)}. If the @sc{pc} slice number is omitted,
-GRUB searches for the first @sc{pc} slice which has a BSD @samp{a}
-partition.
+This means the BSD @samp{a} partition on first @sc{pc} slice number
+of the second hard disk.
 
 Of course, to actually access the disks or partitions with GRUB, you
 need to use the device specification in a command, like @samp{set
-root=(fd0)} or @samp{parttool (hd0,3) hidden-}. To help you find out
+root=(fd0)} or @samp{parttool (hd0,msdos3) hidden-}. To help you find out
 which number specifies a partition you want, the GRUB command-line
 (@pxref{Command-line interface}) options have argument
 completion. This means that, for example, you only need to type
@@ -501,7 +505,7 @@ Now the question is, how to specify a file? Again, consider an
 example:
 
 @example
-(hd0,1)/vmlinuz
+(hd0,msdos1)/vmlinuz
 @end example
 
 This specifies the file named @samp{vmlinuz}, found on the first
@@ -557,6 +561,14 @@ always. Therefore, GRUB provides you with a map file called the
 @dfn{device map}, which you must fix if it is wrong. @xref{Device
 map}, for more details.
 
+On BIOS platforms GRUB has to use a so-called embedding zone. On msdos
+partition tables, this is the space between the MBR and the first partition
+(called the MBR gap or the boot track), while on GPT partition tables it
+uses a BIOS Boot Partition (a partition with GUID
+21686148-6449-6e6f-744e656564454649). If you use GRUB on a BIOS system, make
+sure that the embedding zone is at least 31 KiB (512KiB or more
+recommended).
+
 If you still do want to install GRUB under a UNIX-like OS (such
 as @sc{gnu}), invoke the program @command{grub-install} (@pxref{Invoking
 grub-install}) as the superuser (@dfn{root}).
@@ -575,18 +587,6 @@ Likewise, under GNU/Hurd, this has the same effect:
 
 @example
 # @kbd{grub-install /dev/hd0}
-@end example
-
-If it is the first BIOS drive, this is the same as well:
-
-@example
-# @kbd{grub-install '(hd0)'}
-@end example
-
-Or you can omit the parentheses:
-
-@example
-# @kbd{grub-install hd0}
 @end example
 
 But all the above examples assume that GRUB should use images under
@@ -620,13 +620,25 @@ installation. The format is defined in @ref{Device map}. Please be
 quite careful. If the output is wrong, it is unlikely that your
 computer will be able to boot with no problem.
 
+Some BIOSes have a bug of exposing the first partition of a USB drive as a
+floppy instead of exposing the USB drive as a hard disk (they call it
+``USB-FDD'' boot). In such cases, you need to install like this:
+
+@example
+# @kbd{losetup /dev/loop0 /dev/sdb1}
+# @kbd{mount /dev/loop0 /mnt/usb}
+# @kbd{grub-install --boot-directory=/mnt/usb/bugbios --force --allow-floppy /dev/loop0}
+@end example
+
+This install doesn't conflict with standard install as long as they are in
+separate directories.
+
 Note that @command{grub-install} is actually just a shell script and the
 real task is done by @command{grub-mkimage} and @command{grub-setup}.
 Therefore, you may run those commands directly to install GRUB, without
 using @command{grub-install}. Don't do that, however, unless you are very
 familiar with the internals of GRUB. Installing a boot loader on a running
 OS may be extremely dangerous.
-
 
 @node Making a GRUB bootable CD-ROM
 @section Making a GRUB bootable CD-ROM
@@ -830,11 +842,30 @@ Since GNU/Hurd is Multiboot-compliant, it is easy to boot it; there is
 nothing special about it. But do not forget that you have to specify a
 root partition to the kernel.
 
-FIXME: this section is incomplete.
-
 @enumerate
 @item
-Run the command @command{boot} (@pxref{boot}).
+Set GRUB's root device to the same drive as GNU/Hurd's.  The command
+@code{search --file --set /boot/gnumach.gz} or similar may help you
+(@pxref{search}).
+
+@item 
+Load the kernel and the modules, like this:
+
+@example
+@group
+grub> @kbd{multiboot /boot/gnumach.gz root=device:hd0s1}
+grub> @kbd{module  /hurd/ext2fs.static ext2fs --readonly \
+                   --multiboot-command-line='$@{kernel-command-line@}' \
+                   --host-priv-port='$@{host-port@}' \
+                   --device-master-port='$@{device-port@}' \
+                   --exec-server-task='$@{exec-task@}' -T typed '$@{root@}' \
+                   '$(task-create)' '$(task-resume)'}
+grub> @kbd{module /lib/ld.so.1 exec /hurd/exec '$(exec-task=task-create)'}
+@end group
+@end example
+
+@item
+Finally, run the command @command{boot} (@pxref{boot}).
 @end enumerate
 
 
@@ -867,12 +898,26 @@ grub> @kbd{linux /vmlinuz root=/dev/sda1 acpi=off}
 See the documentation in the Linux source tree for complete information on
 the available options.
 
+With @command{linux} GRUB uses 32-bit protocol. Some BIOS services like APM
+or EDD aren't available with this protocol. In this case you need to use
+@command{linux16}
+
+@example
+grub> @kbd{linux16 /vmlinuz root=/dev/sda1 acpi=off}
+@end example 
+
 @item
 If you use an initrd, execute the command @command{initrd} (@pxref{initrd})
 after @command{linux}:
 
 @example
 grub> @kbd{initrd /initrd}
+@end example
+
+If you used @command{linux16} you need to use @command{initrd16}:
+
+@example
+grub> @kbd{initrd16 /initrd}
 @end example
 
 @item
@@ -946,7 +991,6 @@ need to write the whole thing by hand.
 * Simple configuration::        Recommended for most users
 * Shell-like scripting::        For power users and developers
 * Embedded configuration::      Embedding a configuration file into GRUB
-* Themes::                      Graphical menu themes
 @end menu
 
 
@@ -990,6 +1034,8 @@ it as a new default entry for use by future runs of GRUB.  This is only
 useful if @samp{GRUB_DEFAULT=saved}; it is a separate option because
 @samp{GRUB_DEFAULT=saved} is useful without this option, in conjunction with
 @command{grub-set-default} or @command{grub-reboot}.  Unset by default.
+The remarks of @pxref{Changes from GRUB Legacy} on the availability
+of @samp{save_env} apply.
 
 @item GRUB_TIMEOUT
 Boot the default entry this many seconds after the menu is displayed, unless
@@ -1053,7 +1099,7 @@ A command to configure the serial port when using the serial console.
 Command-line arguments to add to menu entries for the Linux kernel.
 
 @item GRUB_CMDLINE_LINUX_DEFAULT
-Unless @samp{GRUB_DISABLE_LINUX_RECOVERY} is set to @samp{true}, two menu
+Unless @samp{GRUB_DISABLE_RECOVERY} is set to @samp{true}, two menu
 entries will be generated for each Linux kernel: one default entry and one
 entry for recovery mode.  This option lists command-line arguments to add
 only to the default menu entry, after those listed in
@@ -1064,6 +1110,11 @@ only to the default menu entry, after those listed in
 As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
 NetBSD.
 
+@item GRUB_CMDLINE_XEN
+@itemx GRUB_CMDLINE_XEN_DEFAULT
+As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
+Linux and Xen.
+
 @item GRUB_DISABLE_LINUX_UUID
 Normally, @command{grub-mkconfig} will generate menu entries that use
 universally-unique identifiers (UUIDs) to identify the root filesystem to
@@ -1071,13 +1122,9 @@ the Linux kernel, using a @samp{root=UUID=...} kernel parameter.  This is
 usually more reliable, but in some cases it may not be appropriate.  To
 disable the use of UUIDs, set this option to @samp{true}.
 
-@item GRUB_DISABLE_LINUX_RECOVERY
+@item GRUB_DISABLE_RECOVERY
 If this option is set to @samp{true}, disable the generation of recovery
-mode menu entries for Linux.
-
-@item GRUB_DISABLE_NETBSD_RECOVERY
-If this option is set to @samp{true}, disable the generation of recovery
-mode menu entries for NetBSD.
+mode menu entries.
 
 @item GRUB_VIDEO_BACKEND
 If graphical video support is required, either because the @samp{gfxterm}
@@ -1103,7 +1150,6 @@ The image will be scaled if necessary to fit the screen.
 
 @item GRUB_THEME
 Set a theme for use with the @samp{gfxterm} graphical terminal.
-@xref{Themes}.
 
 @item GRUB_GFXPAYLOAD_LINUX
 Set to @samp{text} to force the Linux kernel to boot in normal text mode,
@@ -1115,8 +1161,8 @@ try several modes in sequence.
 Depending on your kernel, your distribution, your graphics card, and the
 phase of the moon, note that using this option may cause GNU/Linux to suffer
 from various display problems, particularly during the early part of the
-boot sequence.  If you have problems, simply unset this option and GRUB will
-tell Linux to boot in normal text mode.
+boot sequence.  If you have problems, set this option to @samp{text} and
+GRUB will tell Linux to boot in normal text mode.
 
 @item GRUB_DISABLE_OS_PROBER
 Normally, @command{grub-mkconfig} will try to use the external
@@ -1145,6 +1191,189 @@ that file, making sure to leave at least the first two lines intact.
 @node Shell-like scripting
 @section Writing full configuration files directly
 
+@c Some of this section is derived from the GNU Bash manual page, also
+@c copyrighted by the FSF.
+
+@file{grub.cfg} is written in GRUB's built-in scripting language, which has
+a syntax quite similar to that of GNU Bash and other Bourne shell
+derivatives.
+
+@heading Words
+
+A @dfn{word} is a sequence of characters considered as a single unit by
+GRUB.  Words are separated by @dfn{metacharacters}, which are the following
+plus space, tab, and newline:
+
+@example
+@{ @} | & $ ; < >
+@end example
+ 
+Quoting may be used to include metacharacters in words; see below.
+
+@heading Reserved words
+
+Reserved words have a special meaning to GRUB.  The following words are
+recognised as reserved when unquoted and either the first word of a simple
+command or the third word of a @code{for} command:
+
+@example
+! [[ ]] @{ @}
+case do done elif else esac fi for function
+if in menuentry select then time until while
+@end example
+
+Not all of these reserved words have a useful purpose yet; some are reserved
+for future expansion.
+
+@heading Quoting
+
+Quoting is used to remove the special meaning of certain characters or
+words.  It can be used to treat metacharacters as part of a word, to prevent
+reserved words from being recognised as such, and to prevent variable
+expansion.
+
+There are three quoting mechanisms: the escape character, single quotes, and
+double quotes.
+
+A non-quoted backslash (\) is the @dfn{escape character}.  It preserves the
+literal value of the next character that follows, with the exception of
+newline.
+
+Enclosing characters in single quotes preserves the literal value of each
+character within the quotes.  A single quote may not occur between single
+quotes, even when preceded by a backslash.
+
+Enclosing characters in double quotes preserves the literal value of all
+characters within the quotes, with the exception of @samp{$} and @samp{\}.
+The @samp{$} character retains its special meaning within double quotes.
+The backslash retains its special meaning only when followed by one of the
+following characters: @samp{$}, @samp{"}, @samp{\}, or newline.  A
+backslash-newline pair is treated as a line continuation (that is, it is
+removed from the input stream and effectively ignored@footnote{Currently a
+backslash-newline pair within a variable name is not handled properly, so
+use this feature with some care.}).  A double quote may be quoted within
+double quotes by preceding it with a backslash.
+
+@heading Variable expansion
+
+The @samp{$} character introduces variable expansion.  The variable name to
+be expanded may be enclosed in braces, which are optional but serve to
+protect the variable to be expanded from characters immediately following it
+which could be interpreted as part of the name.
+
+Normal variable names begin with an alphabetic character, followed by zero
+or more alphanumeric characters.
+
+Positional variable names consist of one or more digits.  They represent
+parameters passed to function calls, with @samp{$1} representing the first
+parameter, and so on.
+
+The special variable name @samp{?} expands to the exit status of the most
+recently executed command.  When positional variable names are active, other
+special variable names @samp{@@}, @samp{*} and @samp{#} are defined and they
+expand to all positional parameters with necessary quoting, positional
+parameters without any quoting, and positional parameter count respectively.
+
+@heading Comments
+
+A word beginning with @samp{#} causes that word and all remaining characters
+on that line to be ignored.
+
+@heading Simple commands
+
+A @dfn{simple command} is a sequence of words separated by spaces or tabs
+and terminated by a semicolon or a newline.  The first word specifies the
+command to be executed.  The remaining words are passed as arguments to the
+invoked command.
+
+The return value of a simple command is its exit status.  If the reserved
+word @code{!} precedes the command, then the return value is instead the
+logical negation of the command's exit status.
+
+@heading Compound commands
+
+A @dfn{compound command} is one of the following:
+
+@table @asis
+@item for @var{name} in @var{word} @dots{}; do @var{list}; done
+The list of words following @code{in} is expanded, generating a list of
+items.  The variable @var{name} is set to each element of this list in turn,
+and @var{list} is executed each time.  The return value is the exit status
+of the last command that executes.  If the expansion of the items following
+@code{in} results in an empty list, no commands are executed, and the return
+status is 0.
+
+@item if @var{list}; then @var{list}; [elif @var{list}; then @var{list};] @dots{} [else @var{list};] fi
+The @code{if} @var{list} is executed.  If its exit status is zero, the
+@code{then} @var{list} is executed.  Otherwise, each @code{elif} @var{list}
+is executed in turn, and if its exit status is zero, the corresponding
+@code{then} @var{list} is executed and the command completes.  Otherwise,
+the @code{else} @var{list} is executed, if present.  The exit status is the
+exit status of the last command executed, or zero if no condition tested
+true.
+
+@item while @var{cond}; do @var{list}; done
+@itemx until @var{cond}; do @var{list}; done
+The @code{while} command continuously executes the @code{do} @var{list} as
+long as the last command in @var{cond} returns an exit status of zero.  The
+@code{until} command is identical to the @code{while} command, except that
+the test is negated; the @code{do} @var{list} is executed as long as the
+last command in @var{cond} returns a non-zero exit status.  The exit status
+of the @code{while} and @code{until} commands is the exit status of the last
+@code{do} @var{list} command executed, or zero if none was executed.
+
+@item function @var{name} @{ @var{command}; @dots{} @}
+This defines a function named @var{name}.  The @dfn{body} of the function is
+the list of commands within braces, each of which must be terminated with a
+semicolon or a newline.  This list of commands will be executed whenever
+@var{name} is specified as the name of a simple command.  Function
+definitions do not affect the exit status in @code{$?}.  When executed, the
+exit status of a function is the exit status of the last command executed in
+the body.
+
+@item menuentry @var{title} [@option{--class=class} @dots{}] [@option{--users=users}] [@option{--hotkey=key}] @{ @var{command}; @dots{} @}
+@xref{menuentry}.
+@end table
+
+@heading Built-in Commands
+
+Some built-in commands are also provided by GRUB script to help script
+writers perform actions that are otherwise not possible.  For example, these
+include commands to jump out of a loop without fully completing it, etc.
+
+@table @asis
+@item break [@code{n}]
+Exit from within a @code{for}, @code{while}, or @code{until} loop.  If
+@code{n} is specified, break @code{n} levels.  @code{n} must be greater than
+or equal to 1.  If @code{n} is greater than the number of enclosing loops,
+all enclosing loops are exited.  The return value is 0 unless @code{n} is
+not greater than or equal to 1.
+
+@item continue [@code{n}]
+Resume the next iteration of the enclosing @code{for}, @code{while} or
+@code{until} loop.  If @code{n} is specified, resume at the @code{n}th
+enclosing loop.  @code{n} must be greater than or equal to 1.  If @code{n}
+is greater than the number of enclosing loops, the last enclosing loop (the
+@dfn{top-level} loop) is resumed.  The return value is 0 unless @code{n} is
+not greater than or equal to 1.
+
+@item return [@code{n}]
+Causes a function to exit with the return value specified by @code{n}.  If
+@code{n} is omitted, the return status is that of the last command executed
+in the function body.  If used outside a function the return status is
+false.
+
+@item shift [@code{n}]
+The positional parameters from @code{n}+1 @dots{} are renamed to
+@code{$1}@dots{}.  Parameters represented by the numbers @code{$#} down to
+@code{$#}-@code{n}+1 are unset.  @code{n} must be a non-negative number less
+than or equal to @code{$#}.  If @code{n} is 0, no parameters are changed.
+If @code{n} is not given, it is assumed to be 1.  If @code{n} is greater
+than @code{$#}, the positional parameters are not changed.  The return
+status is greater than zero if @code{n} is greater than @code{$#} or less
+than zero; otherwise 0.
+
+@end table
 
 @node Embedded configuration
 @section Embedding a configuration file into GRUB
@@ -1213,9 +1442,372 @@ fi
 The embedded configuration file may not contain menu entries directly, but
 may only read them from elsewhere using @command{configfile}.
 
+@node Theme file format
+@chapter Theme file format
+@section Introduction
+The GRUB graphical menu supports themes that can customize the layout and
+appearance of the GRUB boot menu.  The theme is configured through a plain
+text file that specifies the layout of the various GUI components (including
+the boot menu, timeout progress bar, and text messages) as well as the
+appearance using colors, fonts, and images. Example is available in docs/example_theme.txt
 
-@node Themes
-@section Graphical menu themes
+@section Theme Elements
+@subsection Colors
+
+Colors can be specified in several ways:
+
+@itemize
+@item HTML-style ``#RRGGBB'' or ``#RGB'' format, where *R*, *G*, and *B* are hexadecimal digits (e.g., ``#8899FF'')
+@item as comma-separated decimal RGB values (e.g., ``128, 128, 255'')
+@item with ``SVG 1.0 color names'' (e.g., ``cornflowerblue'') which must be specified in lowercase.
+@end itemize
+@subsection Fonts
+The fonts GRUB uses ``PFF2 font format'' bitmap fonts.  Fonts are specified
+with full font names.  Currently there is no
+provision for a preference list of fonts, or deriving one font from another.
+Fonts are loaded with the ``loadfont'' command in GRUB.  To see the list of
+loaded fonts, execute the ``lsfonts'' command.  If there are too many fonts to
+fit on screen, do ``set pager=1'' before executing ``lsfonts''.
+
+
+@subsection Progress Bar
+
+@float Figure, Pixmap-styled progress bar
+@c @image{Theme_progress_bar,,,,.png}
+@end float
+
+@float Figure, Plain progress bar, drawn with solid color.
+@c @image{Theme_progress_bar_filled,,,,.png}
+@end float
+
+Progress bars are used to display the remaining time before GRUB boots the
+default menu entry.  To create a progress bar that will display the remaining
+time before automatic boot, simply create a ``progress_bar'' component with
+the id ``__timeout__''.  This indicates to GRUB that the progress bar should
+be updated as time passes, and it should be made invisible if the countdown to
+automatic boot is interrupted by the user.
+
+Progress bars may optionally have text displayed on them.  This is controlled
+through the ``show_text'' property, which can be set to either ``true'' or
+``false'' to control whether text is displayed.  When GRUB is counting down to
+automatic boot, the text informs the user of the number of seconds remaining.
+
+
+@subsection Circular Progress Indicator
+
+@c @image{Theme_circular_progress,,,,.png}
+
+The circular progress indicator functions similarly to the progress bar.  When
+given an id of ``__timeout__'', GRUB updates the circular progress indicator's
+value to indicate the time remaining.  For the circular progress indicator,
+there are two images used to render it:  the *center* image, and the *tick*
+image.  The center image is rendered in the center of the component, while the
+tick image is used to render each mark along the circumference of the
+indicator.
+
+
+@subsection Labels
+
+Text labels can be placed on the boot screen.  The font, color, and horizontal
+alignment can be specified for labels.  If a label is given the id
+``__timeout__'', then the ``text'' property for that label is also updated
+with a message informing the user of the number of seconds remaining until
+automatic boot.  This is useful in case you want the text displayed somewhere
+else instead of directly on the progress bar.
+
+
+@subsection Boot Menu
+
+@c @image{Theme_boot_menu,,,,.png}
+
+The boot menu where GRUB displays the menu entries from the ``grub.cfg'' file.
+It is a list of items, where each item has a title and an optional icon.  The
+icon is selected based on the *classes* specified for the menu entry.  If
+there is a PNG file named ``myclass.png'' in the ``grub/themes/icons''
+directory, it will be displayed for items which have the class *myclass*.  The
+boot menu can be customized in several ways, such as the font and color used
+for the menu entry title, and by specifying styled boxes for the menu itself
+and for the selected item highlight.
+
+
+@subsection Styled Boxes
+
+One of the most important features for customizing the layout is the use of
+ *styled boxes*.  A styled box is composed of 9 rectangular (and potentially
+empty) regions, which are used to seamlessly draw the styled box on screen:
+
+@multitable @columnfractions 0.3 0.3 0.3
+@item Northwest (nw) @tab North (n)  @tab Northeast (ne)
+@item West (w)       @tab Center (c) @tab East (e)
+@item Southwest (sw) @tab South (s)  @tab Southeast (se)
+@end multitable
+
+To support any size of box on screen, the center slice and the slices for the
+top, bottom, and sides are all scaled to the correct size for the component on
+screen, using the following rules:
+
+@enumerate
+@item The edge slices (north, south, east, and west) are scaled in the direction of the edge they are adjacent to.  For instance, the west slice is scaled vertically.
+@item The corner slices (northwest, northeast, southeast, and southwest) are not scaled.
+@item The center slice is scaled to fill the remaining space in the middle.
+@end enumerate
+
+As an example of how an image might be sliced up, consider the styled box
+used for a terminal view.
+
+@float Figure, An example of the slices (in red) used for a terminal window. This drawing was created and sliced in Inkscape_, as the next section explains.
+@c @image{Box_slice_example_terminal,,,,.png}
+@end float
+   
+@subsection Creating Styled Box Images
+
+The Inkscape_ scalable vector graphics editor is a very useful tool for
+creating styled box images.  One process that works well for slicing a drawing
+into the necessary image slices is:
+
+@enumerate
+@item Create or open the drawing you'd like use.
+@item Create a new layer on the top of the layer stack.  Make it visible.  Select this layer as the current layer.
+@item Draw 9 rectangles on your drawing where you'd like the slices to be.  Clear the fill option, and set the stroke to 1 pixel wide solid stroke.  The corners of the slices must meet precisely; if it is off by a single pixel, it will probably be evident when the styled box is rendered in the GRUB menu.  You should probably go to File | Document Properties | Grids and enable a grid or create a guide (click on one of the rulers next to the drawing and drag over the drawing; release the mouse button to place the guide) to help place the rectangles precisely.
+@item Right click on the center slice rectangle and choose Object Properties. Change the "Id" to ``slice_c`` and click Set.  Repeat this for the remaining 8 rectangles, giving them Id values of ``slice_n``, ``slice_ne``, ``slice_e``, and so on according to the location.
+@item Save the drawing.
+@item Select all the slice rectangles.  With the slice layer selected, you can simply press Ctrl+A to select all rectangles.  The status bar should indicate that 9 rectangles are selected.
+@item Click the layer hide icon for the slice layer in the layer palette.  The rectangles will remain selected, even though they are hidden.
+@item Choose File | Export Bitmap and check the *Batch export 9 selected objects* box.  Make sure that *Hide all except selected* is unchecked. click *Export*.  This will create PNG files in the same directory as the drawing, named after the slices.  These can now be used for a styled box in a GRUB theme.
+@end enumerate
+
+@section Theme File Manual
+
+The theme file is a plain text file.  Lines that begin with ``#`` are ignored
+and considered comments.  (Note: This may not be the case if the previous line
+ended where a value was expected.)
+
+The theme file contains two types of statements:
+@enumerate
+@item Global properties.
+@item Component construction.
+@end enumerate
+
+@subsection Global Properties
+
+@subsection Format
+
+Global properties are specified with the simple format:
+@itemize
+@item name1: value1
+@item name2: "value which may contain spaces"
+@item name3: #88F
+@end itemize
+
+In this example, name3 is assigned a color value.
+
+
+@subsection Global Property List
+
+@multitable @columnfractions 0.3 0.6
+@item title-text @tab Specifies the text to display at the top center of the screen as a title.
+@item title-font @tab Defines the font used for the title message at the top of the screen.
+@item title-color @tab Defines the color of the title message.
+@item message-font @tab Defines the font used for messages, such as when GRUB is unable to automatically boot an entry.
+@item message-color @tab Defines the color of the message text.
+@item message-bg-color @tab Defines the background color of the message text area.
+@item desktop-image @tab Specifies the image to use as the background.  It will be scaled to fit the screen size.
+@item desktop-color @tab Specifies the color for the background if *desktop-image* is not specified.
+@item terminal-box @tab Specifies the file name pattern for the styled box slices used for the command line terminal window.  For example, ``terminal-box: terminal_*.png'' will use the images ``terminal_c.png`` as the center area, ``terminal_n.png`` as the north (top) edge, ``terminal_nw.png`` as the northwest (upper left) corner, and so on.  If the image for any slice is not found, it will simply be left empty.
+@end multitable
+
+
+@subsection Component Construction
+
+Greater customizability comes is provided by components.  A tree of components
+forms the user interface.  *Containers* are components that can contain other
+components, and there is always a single root component which is an instance
+of a *canvas* container.
+
+Components are created in the theme file by prefixing the type of component
+with a '+' sign:
+
+@code{   + label @{ text="GRUB" font="aqui 11" color="#8FF" @} }
+
+properties of a component are specified as "name = value" (whitespace
+surrounding tokens is optional and is ignored) where *value* may be:
+@itemize
+@item a single word (e.g., ``align = center``, ``color = #FF8080``),
+@item a quoted string (e.g., ``text = "Hello, World!"``), or
+@item a tuple (e.g., ``preferred_size = (120, 80)``).
+@end itemize
+
+@subsection Component List
+
+The following is a list of the components and the properties they support.
+
+@itemize
+@item label
+   A label displays a line of text.
+   
+   Properties:
+   @multitable @columnfractions 0.2 0.7
+   @item text @tab The text to display.
+   @item font @tab The font to use for text display.
+   @item color @tab The color of the text.
+   @item align @tab The horizontal alignment of the text within the component. Options are ``left``, ``center``, and ``right``.
+   @end multitable
+
+@item image
+   A component that displays an image.  The image is scaled to fit the
+   component, although the preferred size defaults to the image's original
+   size unless the ``preferred_size`` property is explicitly set.
+
+   Properties:
+
+   @multitable @columnfractions 0.2 0.7
+   @item file @tab The full path to the image file to load.
+   @end multitable
+
+@item progress_bar
+   Displays a horizontally oriented progress bar.  It can be rendered using
+   simple solid filled rectangles, or using a pair of pixmap styled boxes.
+
+   Properties:
+
+   @multitable @columnfractions 0.2 0.7
+   @item fg_color @tab The foreground color for plain solid color rendering.
+   @item bg_color @tab The background color for plain solid color rendering.
+   @item border_color @tab The border color for plain solid color rendering.
+   @item text_color @tab The text color.
+   @item show_text @tab Boolean value indicating whether or not text should be displayed on the progress bar.  If set to *false*, then no text will be displayed on the bar.  If set to any other value, text will be displayed on the bar.
+   @item bar_style @tab The styled box specification for the frame of the progress bar. Example: ``progress_frame_*.png``
+   @item highlight_style @tab The styled box specification for the highlighted region of the progress bar. This box will be used to paint just the highlighted region of the bar, and will be increased in size as the bar nears completion. Example: ``progress_hl_*.png``.
+   @item text @tab The text to display on the progress bar.  If the progress bar's ID is set to ``__timeout__``, then GRUB will updated this property with an informative message as the timeout approaches.
+   @item value @tab The progress bar current value.  Normally not set manually.
+   @item start @tab The progress bar start value.  Normally not set manually.
+   @item end @tab The progress bar end value.  Normally not set manually.
+   @end multitable
+
+@item circular_progress
+   Displays a circular progress indicator.  The appearance of this component
+   is determined by two images:  the *center* image and the *tick* image.  The
+   center image is generally larger and will be drawn in the center of the
+   component.  Around the circumference of a circle within the component, the
+   tick image will be drawn a certain number of times, depending on the
+   properties of the component.
+
+   Properties:
+
+   @multitable @columnfractions 0.3 0.6
+   @item center_bitmap
+      @tab The file name of the image to draw in the center of the component.
+   @item tick_bitmap
+      @tab The file name of the image to draw for the tick marks.
+   @item num_ticks
+      @tab The number of ticks that make up a full circle.
+   @item ticks_disappear
+      @tab Boolean value indicating whether tick marks should progressively appear,
+      or progressively disappear as *value* approaches *end*.  Specify
+      ``true`` or ``false``.
+   @item value
+      @tab The progress indicator current value.  Normally not set manually.
+   @item start
+      @tab The progress indicator start value.  Normally not set manually.
+   @item end
+      @tab The progress indicator end value.  Normally not set manually.
+   @end multitable
+@item boot_menu
+   Displays the GRUB boot menu.  It allows selecting items and executing them.
+
+   Properties:
+
+   @multitable @columnfractions 0.4 0.5
+   @item item_font
+      @tab The font to use for the menu item titles.
+   @item selected_item_font
+      @tab The font to use for the selected menu item, or ``inherit`` (the default)
+      to use ``item_font`` for the selected menu item as well.
+   @item item_color
+      @tab The color to use for the menu item titles.
+   @item selected_item_color
+      @tab The color to use for the selected menu item, or ``inherit`` (the default)
+      to use ``item_color`` for the selected menu item as well.
+   @item icon_width
+      @tab The width of menu item icons.  Icons are scaled to the specified size.
+   @item icon_height
+      @tab The height of menu item icons.
+   @item item_height
+      @tab The height of each menu item in pixels.
+   @item item_padding
+      @tab The amount of space in pixels to leave on each side of the menu item
+      contents.
+   @item item_icon_space
+      @tab The space between an item's icon and the title text, in pixels.
+   @item item_spacing
+      @tab The amount of space to leave between menu items, in pixels.
+   @item menu_pixmap_style
+      @tab The image file pattern for the menu frame styled box.
+      Example:  ``menu_*.png`` (this will use images such as ``menu_c.png``,
+      ``menu_w.png``, `menu_nw.png``, etc.)
+   @item selected_item_pixmap_style
+      @tab The image file pattern for the selected item highlight styled box.
+   @item scrollbar
+      @tab Boolean value indicating whether the scroll bar should be drawn if the
+      frame and thumb styled boxes are configured.
+   @item scrollbar_frame
+      @tab The image file pattern for the entire scroll bar.
+      Example:  ``scrollbar_*.png``
+   @item scrollbar_thumb
+      @tab The image file pattern for the scroll bar thumb (the part of the scroll
+      bar that moves as scrolling occurs).
+      Example:  ``scrollbar_thumb_*.png``
+   @item max_items_shown
+      @tab The maximum number of items to show on the menu.  If there are more than
+      *max_items_shown* items in the menu, the list will scroll to make all
+      items accessible.
+   @end multitable
+
+@item canvas
+   Canvas is a container that allows manual placement of components within it.
+   It does not alter the positions of its child components.  It assigns all
+   child components their preferred sizes.
+
+@item hbox
+   The *hbox* container lays out its children from left to right, giving each
+   one its preferred width.  The height of each child is set to the maximum of
+   the preferred heights of all children.
+   
+@item vbox
+   The *vbox* container lays out its children from top to bottom, giving each
+   one its preferred height.  The width of each child is set to the maximum of
+   the preferred widths of all children.
+@end itemize
+
+
+@subsection Common properties
+
+The following properties are supported by all components:
+@table @samp
+@item left
+     The distance from the left border of container to left border of the object in either of three formats:
+        @multitable @columnfractions 0.2 0.7
+             @item x @tab Value in pixels
+             @item p% @tab Percentage
+             @item p%+x @tab mixture of both
+        @end multitable
+@item top
+      The distance from the left border of container to left border of the object in same format.
+@item width
+      The width of object in same format.
+@item height
+      The height of object in same format.
+@item id 
+   The identifier for the component.  This can be any arbitrary string.
+   The ID can be used by scripts to refer to various components in the GUI
+   component tree.  Currently, there is one special ID value that GRUB
+   recognizes:
+
+   @multitable @columnfractions 0.2 0.7
+   @item ``__timeout__`` @tab Any component with this ID will have its *text*, *start*, *end*, *value*, and *visible* properties set by GRUB when it is counting down to an automatic boot of the default menu entry.
+   @end multitable
+@end table
+
 
 
 @node Network
@@ -1228,8 +1820,7 @@ To generate a PXE boot image, run:
 
 @example
 @group
-grub-mkimage --format=i386-pc --output=core.img --prefix='(pxe)/boot/grub' pxe pxecmd
-cat /boot/grub/pxeboot.img core.img >grub.pxe
+grub-mkimage --format=i386-pc-pxe --output=grub.pxe --prefix='(pxe)/boot/grub' pxe pxecmd
 @end group
 @end example
 
@@ -1238,6 +1829,9 @@ to the PXE (TFTP) server, ensuring that @file{*.mod} and @file{*.lst} are
 accessible via the @file{/boot/grub/} path from the TFTP server root.  Set
 the DHCP server configuration to offer @file{grub.pxe} as the boot file (the
 @samp{filename} option in ISC dhcpd).
+
+You can also use the @command{grub-mknetdir} utility to generate an image
+and a GRUB directory tree, rather than copying files around manually.
 
 After GRUB has started, files on the TFTP server will be accessible via the
 @samp{(pxe)} device.
@@ -1277,7 +1871,7 @@ The boot file name provided by DHCP.  Read-only.
 The name of the DHCP server responsible for these boot parameters.
 Read-only.
 
-@item net_pxe_blksize
+@item pxe_blksize
 The PXE transfer block size.  Read-write, defaults to 512.
 
 @item pxe_default_server
@@ -1310,8 +1904,7 @@ simple.  Here is an example:
 @example
 @group
 grub> @kbd{serial --unit=0 --speed=9600}
-grub> @kbd{terminal_input serial}
-grub> @kbd{terminal_output serial}
+grub> @kbd{terminal_input serial; terminal_output serial}
 @end group
 @end example
 
@@ -1322,11 +1915,14 @@ command accepts many other options, so please refer to @ref{serial},
 for more details.
 
 The commands @command{terminal_input} (@pxref{terminal_input}) and
-@command{terminal_output} (@pxref{terminal_output} choose which type of
+@command{terminal_output} (@pxref{terminal_output}) choose which type of
 terminal you want to use. In the case above, the terminal will be a
 serial terminal, but you can also pass @code{console} to the command,
 as @samp{terminal serial console}. In this case, a terminal in which
-you press any key will be selected as a GRUB terminal.
+you press any key will be selected as a GRUB terminal. In the example above,
+note that you need to put both commands on the same command line, as you
+will lose the ability to type commands on the console after the first
+command.
 
 However, note that GRUB assumes that your terminal emulator is
 compatible with VT100 by default. This is true for most terminal
@@ -1791,9 +2387,26 @@ These commands can only be used in the menu:
 @node menuentry
 @subsection menuentry
 
-@deffn Command title name @dots{}
-Start a new boot entry, and set its name to the contents of the rest of
-the line, starting with the first non-space character.
+@deffn Command menuentry @var{title} @
+ [@option{--class=class} @dots{}] [@option{--users=users}] @
+ [@option{--hotkey=key}] @
+ @{ @var{command}; @dots{} @}
+This defines a GRUB menu entry named @var{title}.  When this entry is
+selected from the menu, GRUB will set the @var{chosen} environment variable
+to @var{title}, execute the list of commands given within braces, and if the
+last command in the list returned successfully and a kernel was loaded it
+will execute the @command{boot} command.
+
+The @option{--class} option may be used any number of times to group menu
+entries into classes.  Menu themes may display different classes using
+different styles.
+
+The @option{--users} option grants specific users access to specific menu
+entries.  @xref{Security}.
+
+The @option{--hotkey} option associates a hotkey with a menu entry.
+@var{key} may be a single letter, or one of the aliases @samp{backspace},
+@samp{tab}, or @samp{delete}.
 @end deffn
 
 
@@ -1828,8 +2441,7 @@ The serial port is not used as a communication channel unless the
 @command{terminal_input} or @command{terminal_output} command is used
 (@pxref{terminal_input}, @pxref{terminal_output}).
 
-This command is only available if GRUB is compiled with serial
-support. See also @ref{Serial terminal}.
+See also @ref{Serial terminal}.
 @end deffn
 
 
@@ -1887,7 +2499,9 @@ The @option{-a} (@option{--ascii}), @option{-u} (@option{--utf8}), and
 @option{-v} (@option{--visual-utf8}) options control how non-ASCII text is
 displayed.  @option{-a} specifies an ASCII-only terminal; @option{-u}
 specifies logically-ordered UTF-8; and @option{-v} specifies
-visually-ordered UTF-8.
+"visually-ordered UTF-8" (in other words, arranged such that a terminal
+emulator without bidirectional text support will display right-to-left text
+in the proper order; this is not really proper UTF-8, but a workaround).
 
 If no option or terminal type is specified, the current terminal type is
 printed.
@@ -1934,6 +2548,7 @@ you forget a command, you can run the command @command{help}
 * pxe_unload::                  Unload the PXE environment
 * reboot::                      Reboot your computer
 * search::                      Search devices by file, label, or UUID
+* sendkey::                     Emulate keystrokes
 * set::                         Set an environment variable
 * unset::                       Unset an environment variable
 * uppermem::                    Set the upper memory size
@@ -2317,7 +2932,7 @@ This command is only available on x86 systems.
 @node ls
 @subsection ls
 
-@deffn Command ls [arg]
+@deffn Command ls [arg @dots{}]
 List devices or files.
 
 With no arguments, print all devices known to GRUB.
@@ -2444,6 +3059,154 @@ commands are aliases for @samp{search --file}, @samp{search --label}, and
 @end deffn
 
 
+@node sendkey
+@subsection sendkey
+
+@deffn Command sendkey @
+ [@option{--num}|@option{--caps}|@option{--scroll}|@option{--insert}|@
+@option{--pause}|@option{--left-shift}|@option{--right-shift}|@
+@option{--sysrq}|@option{--numkey}|@option{--capskey}|@option{--scrollkey}|@
+@option{--insertkey}|@option{--left-alt}|@option{--right-alt}|@
+@option{--left-ctrl}|@option{--right-ctrl} @
+ @samp{on}|@samp{off}]@dots{} @
+ [@option{no-led}] @
+ keystroke
+Insert keystrokes into the keyboard buffer when booting.  Sometimes an
+operating system or chainloaded boot loader requires particular keys to be
+pressed: for example, one might need to press a particular key to enter
+"safe mode", or when chainloading another boot loader one might send
+keystrokes to it to navigate its menu.  
+
+You may provide up to 16 keystrokes (the length of the BIOS keyboard
+buffer).  Keystroke names may be upper-case or lower-case letters, digits,
+or taken from the following table:
+
+@c Please keep this table in the same order as in
+@c commands/i386/pc/sendkey.c, for ease of maintenance.
+@c Exception: The function and numeric keys are sorted, for aesthetics.
+
+@multitable @columnfractions .4 .5
+@headitem Name @tab Key
+@item escape @tab Escape
+@item exclam @tab !
+@item at @tab @@
+@item numbersign @tab #
+@item dollar @tab $
+@item percent @tab %
+@item caret @tab ^
+@item ampersand @tab &
+@item asterisk @tab *
+@item parenleft @tab (
+@item parenright @tab )
+@item minus @tab -
+@item underscore @tab _
+@item equal @tab =
+@item plus @tab +
+@item backspace @tab Backspace
+@item tab @tab Tab
+@item bracketleft @tab [
+@item braceleft @tab @{
+@item bracketright @tab ]
+@item braceright @tab @}
+@item enter @tab Enter
+@item control @tab press and release Control
+@item semicolon @tab ;
+@item colon @tab :
+@item quote @tab '
+@item doublequote @tab "
+@item backquote @tab `
+@item tilde @tab ~
+@item shift @tab press and release left Shift
+@item backslash @tab \
+@item bar @tab |
+@item comma @tab ,
+@item less @tab <
+@item period @tab .
+@item greater @tab >
+@item slash @tab /
+@item question @tab ?
+@item rshift @tab press and release right Shift
+@item alt @tab press and release Alt
+@item space @tab space bar
+@item capslock @tab Caps Lock
+@item F1 @tab F1
+@item F2 @tab F2
+@item F3 @tab F3
+@item F4 @tab F4
+@item F5 @tab F5
+@item F6 @tab F6
+@item F7 @tab F7
+@item F8 @tab F8
+@item F9 @tab F9
+@item F10 @tab F10
+@item F11 @tab F11
+@item F12 @tab F12
+@item num1 @tab 1 (numeric keypad)
+@item num2 @tab 2 (numeric keypad)
+@item num3 @tab 3 (numeric keypad)
+@item num4 @tab 4 (numeric keypad)
+@item num5 @tab 5 (numeric keypad)
+@item num6 @tab 6 (numeric keypad)
+@item num7 @tab 7 (numeric keypad)
+@item num8 @tab 8 (numeric keypad)
+@item num9 @tab 9 (numeric keypad)
+@item num0 @tab 0 (numeric keypad)
+@item numperiod @tab . (numeric keypad)
+@item numend @tab End (numeric keypad)
+@item numdown @tab Down (numeric keypad)
+@item numpgdown @tab Page Down (numeric keypad)
+@item numleft @tab Left (numeric keypad)
+@item numcenter @tab 5 with Num Lock inactive (numeric keypad)
+@item numright @tab Right (numeric keypad)
+@item numhome @tab Home (numeric keypad)
+@item numup @tab Up (numeric keypad)
+@item numpgup @tab Page Up (numeric keypad)
+@item numinsert @tab Insert (numeric keypad)
+@item numdelete @tab Delete (numeric keypad)
+@item numasterisk @tab * (numeric keypad)
+@item numminus @tab - (numeric keypad)
+@item numplus @tab + (numeric keypad)
+@item numslash @tab / (numeric keypad)
+@item numenter @tab Enter (numeric keypad)
+@item delete @tab Delete
+@item insert @tab Insert
+@item home @tab Home
+@item end @tab End
+@item pgdown @tab Page Down
+@item pgup @tab Page Up
+@item down @tab Down
+@item up @tab Up
+@item left @tab Left
+@item right @tab Right
+@end multitable
+
+As well as keystrokes, the @command{sendkey} command takes various options
+that affect the BIOS keyboard status flags.  These options take an @samp{on}
+or @samp{off} parameter, specifying that the corresponding status flag be
+set or unset; omitting the option for a given status flag will leave that
+flag at its initial state at boot.  The @option{--num}, @option{--caps},
+@option{--scroll}, and @option{--insert} options emulate setting the
+corresponding mode, while the @option{--numkey}, @option{--capskey},
+@option{--scrollkey}, and @option{--insertkey} options emulate pressing and
+holding the corresponding key.  The other status flag options are
+self-explanatory.
+
+If the @option{--no-led} option is given, the status flag options will have
+no effect on keyboard LEDs.
+
+If the @command{sendkey} command is given multiple times, then only the last
+invocation has any effect.
+
+Since @command{sendkey} manipulates the BIOS keyboard buffer, it may cause
+hangs, reboots, or other misbehaviour on some systems.  If the operating
+system or boot loader that runs after GRUB uses its own keyboard driver
+rather than the BIOS keyboard functions, then @command{sendkey} will have no
+effect.
+
+This command is only available on PC BIOS systems.
+@end deffn
+
+
 @node set
 @subsection set
 
@@ -2533,6 +3296,145 @@ generating configuration files with authentication.  You can use
 adding @kbd{set superusers=} and @kbd{password} or @kbd{password_pbkdf2}
 commands.
 
+
+@node Supported kernels
+@chapter Supported boot targets
+
+X86 support is summarised in the following table. ``Yes'' means that the kernel works on the given platform, ``crashes'' means an early kernel crash which we hope will be fixed by concerned kernel developers. ``no'' means GRUB doesn't load the given kernel on a given platform. ``headless'' means that the kernel works but lacks console drivers (you can still use serial or network console).  In case of ``no'' and ``crashes'' the reason is given in footnote.
+@multitable @columnfractions .50 .22 .22
+@item                                @tab BIOS    @tab Coreboot
+@item BIOS chainloading              @tab yes     @tab no (1)
+@item NTLDR                          @tab yes     @tab no (1)
+@item FreeBSD bootloader             @tab yes     @tab crashes (1)
+@item 32-bit kFreeBSD                @tab yes     @tab crashes (2,6)
+@item 64-bit kFreeBSD                @tab yes     @tab crashes (2,6)
+@item 32-bit kNetBSD                 @tab yes     @tab crashes (1)
+@item 64-bit kNetBSD                 @tab yes     @tab crashes (2)
+@item 32-bit kOpenBSD                @tab yes     @tab yes
+@item 64-bit kOpenBSD                @tab yes     @tab yes
+@item Multiboot                      @tab yes     @tab yes
+@item Multiboot2                     @tab yes     @tab yes
+@item 32-bit Linux (legacy protocol) @tab yes     @tab no (1)
+@item 64-bit Linux (legacy protocol) @tab yes     @tab no (1)
+@item 32-bit Linux (modern protocol) @tab yes     @tab yes
+@item 64-bit Linux (modern protocol) @tab yes     @tab yes
+@item 32-bit XNU                     @tab yes     @tab ?
+@item 64-bit XNU                     @tab yes     @tab ?
+@item 32-bit EFI chainloader         @tab no (3)  @tab no (3)
+@item 64-bit EFI chainloader         @tab no (3)  @tab no (3)
+@item Appleloader                    @tab no (3)  @tab no (3)
+@end multitable
+
+@multitable @columnfractions .50 .22 .22
+@item                                @tab Multiboot    @tab Qemu 
+@item BIOS chainloading              @tab no (1)       @tab no (1)
+@item NTLDR                          @tab no (1)       @tab no (1)
+@item FreeBSD bootloader             @tab crashes (1)  @tab crashes (1)
+@item 32-bit kFreeBSD                @tab crashes (6)  @tab crashes (6)
+@item 64-bit kFreeBSD                @tab crashes (6)  @tab crashes (6)
+@item 32-bit kNetBSD                 @tab crashes (1)  @tab crashes (1)  
+@item 64-bit kNetBSD                 @tab yes          @tab yes
+@item 32-bit kOpenBSD                @tab yes          @tab yes
+@item 64-bit kOpenBSD                @tab yes          @tab yes
+@item Multiboot                      @tab yes          @tab yes
+@item Multiboot2                     @tab yes          @tab yes
+@item 32-bit Linux (legacy protocol) @tab no (1)       @tab no (1)
+@item 64-bit Linux (legacy protocol) @tab no (1)       @tab no (1)
+@item 32-bit Linux (modern protocol) @tab yes          @tab yes
+@item 64-bit Linux (modern protocol) @tab yes          @tab yes
+@item 32-bit XNU                     @tab ?            @tab ?
+@item 64-bit XNU                     @tab ?            @tab ?
+@item 32-bit EFI chainloader         @tab no (3)       @tab no (3)
+@item 64-bit EFI chainloader         @tab no (3)       @tab no (3)
+@item Appleloader                    @tab no (3)       @tab no (3)
+@end multitable
+
+@multitable @columnfractions .50 .22 .22
+@item                                @tab 32-bit EFI    @tab 64-bit EFI
+@item BIOS chainloading              @tab no (1)        @tab no (1)
+@item NTLDR                          @tab no (1)        @tab no (1)
+@item FreeBSD bootloader             @tab crashes (1)   @tab crashes (1)
+@item 32-bit kFreeBSD                @tab headless      @tab headless
+@item 64-bit kFreeBSD                @tab headless      @tab headless
+@item 32-bit kNetBSD                 @tab crashes (1)   @tab crashes (1)
+@item 64-bit kNetBSD                 @tab yes           @tab yes
+@item 32-bit kOpenBSD                @tab headless      @tab headless
+@item 64-bit kOpenBSD                @tab headless      @tab headless
+@item Multiboot                      @tab yes           @tab yes
+@item Multiboot2                     @tab yes           @tab yes
+@item 32-bit Linux (legacy protocol) @tab no (1)        @tab no (1)
+@item 64-bit Linux (legacy protocol) @tab no (1)        @tab no (1)
+@item 32-bit Linux (modern protocol) @tab yes           @tab yes
+@item 64-bit Linux (modern protocol) @tab yes           @tab yes
+@item 32-bit XNU                     @tab yes           @tab yes
+@item 64-bit XNU                     @tab yes (5)       @tab yes
+@item 32-bit EFI chainloader         @tab yes           @tab no (4)
+@item 64-bit EFI chainloader         @tab no (4)        @tab yes
+@item Appleloader                    @tab yes           @tab yes
+@end multitable
+
+@multitable @columnfractions .50 .22 .22
+@item                                @tab IEEE1275
+@item BIOS chainloading              @tab no (1)
+@item NTLDR                          @tab no (1)
+@item FreeBSD bootloader             @tab crashes (1)
+@item 32-bit kFreeBSD                @tab crashes (6)
+@item 64-bit kFreeBSD                @tab crashes (6)
+@item 32-bit kNetBSD                 @tab crashes (1)
+@item 64-bit kNetBSD                 @tab ?
+@item 32-bit kOpenBSD                @tab ?
+@item 64-bit kOpenBSD                @tab ?
+@item Multiboot                      @tab ?
+@item Multiboot2                     @tab ?
+@item 32-bit Linux (legacy protocol) @tab no (1)
+@item 64-bit Linux (legacy protocol) @tab no (1)
+@item 32-bit Linux (modern protocol) @tab ?
+@item 64-bit Linux (modern protocol) @tab ?
+@item 32-bit XNU                     @tab ?
+@item 64-bit XNU                     @tab ?
+@item 32-bit EFI chainloader         @tab no (3)
+@item 64-bit EFI chainloader         @tab no (3)
+@item Appleloader                    @tab no (3)
+@end multitable
+
+@enumerate
+@item Requires BIOS
+@item Crashes because the memory at 0x0-0x1000 isn't available
+@item EFI only
+@item 32-bit and 64-bit EFI have different structures and work in different CPU modes so it's not possible to chainload 32-bit bootloader on 64-bit platform and vice-versa
+@item Some modules may need to be disabled
+@item Requires ACPI
+@end enumerate
+
+PowerPC and Sparc ports support only Linux. MIPS port supports Linux and multiboot2.
+
+@chapter Boot tests
+
+As you have seen in previous chapter the support matrix is pretty big and some of the configurations are only rarely used. To ensure the quality bootchecks are available for all x86 targets except EFI chainloader, Appleloader and XNU. All x86 platforms have bootcheck facility except ieee1275. Multiboot, multiboot2, BIOS chainloader, ntldr and freebsd-bootloader boot targets are tested only with a fake kernel images. Only Linux is tested among the payloads using Linux protocols.
+
+Following variables must be defined:
+
+@multitable  @columnfractions .30 .65
+@item GRUB_PAYLOADS_DIR @tab directory containing the required kernels
+@item GRUB_CBFSTOOL @tab cbfstoll from Coreboot package (for coreboot platform only)
+@item GRUB_COREBOOT_ROM @tab empty Coreboot ROM
+@item GRUB_QEMU_OPTS @tab additional options to be supplied to QEMU
+@end multitable
+
+Required files are:
+
+@multitable  @columnfractions .40 .55
+@item kfreebsd_env.i386 @tab 32-bit kFreeBSD device hints
+@item kfreebsd.i386 @tab 32-bit FreeBSD kernel image
+@item kfreebsd.x86_64, kfreebsd_env.x86_64 @tab same from 64-bit kFreeBSD
+@item knetbsd.i386 @tab 32-bit NetBSD kernel image
+@item knetbsd.miniroot.i386 @tab 32-bit kNetBSD miniroot.kmod.
+@item knetbsd.x86_64, knetbsd.miniroot.x86_64  @tab same from 64-bit kNetBSD
+@item kopenbsd.i386 @tab 32-bit OpenBSD kernel bsd.rd image
+@item kopenbsd.x86_64 @tab same from 64-bit kOpenBSD
+@item linux.i386 @tab 32-bit Linux
+@item linux.x86_64 @tab 64-bit Linux
+@end multitable
 
 @node Troubleshooting
 @chapter Error messages produced by GRUB

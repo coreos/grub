@@ -88,51 +88,9 @@ struct grub_machine_bios_data_area
   grub_uint8_t unused2[0xf0 - 0x18];
 };
 
-struct grub_machine_mmap_entry
-{
-  grub_uint32_t size;
-  grub_uint64_t addr;
-  grub_uint64_t len;
-#define GRUB_MACHINE_MEMORY_AVAILABLE	1
-#define GRUB_MACHINE_MEMORY_RESERVED	2
-#define GRUB_MACHINE_MEMORY_ACPI	3
-#define GRUB_MACHINE_MEMORY_NVS 	4
-#define GRUB_MACHINE_MEMORY_MAX_TYPE 	4
-  /* This one is special: it's used internally but is never reported
-     by firmware. */
-#define GRUB_MACHINE_MEMORY_HOLE 	5
-
-  grub_uint32_t type;
-} __attribute__((packed));
-
-grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate)
-     (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
-
-grub_uint64_t grub_mmap_get_post64 (void);
-grub_uint64_t grub_mmap_get_upper (void);
-grub_uint64_t grub_mmap_get_lower (void);
-
-#define GRUB_MMAP_MALLOC_LOW 1
-
-#ifdef GRUB_MACHINE_PCBIOS
 grub_err_t grub_machine_mmap_register (grub_uint64_t start, grub_uint64_t size,
 				       int type, int handle);
 grub_err_t grub_machine_mmap_unregister (int handle);
-#else
-static inline grub_err_t
-grub_machine_mmap_register (grub_uint64_t start __attribute__ ((unused)),
-			    grub_uint64_t size __attribute__ ((unused)),
-			    int type __attribute__ ((unused)),
-			    int handle __attribute__ ((unused)))
-{
-  return GRUB_ERR_NONE;
-}
-static inline grub_err_t
-grub_machine_mmap_unregister (int handle  __attribute__ ((unused)))
-{
-  return GRUB_ERR_NONE;
-}
-#endif
 
 #endif
 

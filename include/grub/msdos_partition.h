@@ -22,6 +22,8 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 #include <grub/err.h>
+#include <grub/disk.h>
+#include <grub/partition.h>
 
 /* The signature.  */
 #define GRUB_PC_PARTITION_SIGNATURE		0xaa55
@@ -113,5 +115,10 @@ grub_msdos_partition_is_extended (int type)
 	  || type == GRUB_PC_PARTITION_TYPE_WIN95_EXTENDED
 	  || type == GRUB_PC_PARTITION_TYPE_LINUX_EXTENDED);
 }
+
+grub_err_t
+grub_partition_msdos_iterate (grub_disk_t disk,
+			      int (*hook) (grub_disk_t disk,
+					   const grub_partition_t partition));
 
 #endif /* ! GRUB_PC_PARTITION_HEADER */

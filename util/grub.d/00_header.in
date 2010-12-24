@@ -23,7 +23,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 locale_dir=`echo ${GRUB_PREFIX}/locale | sed ${transform}`
-grub_lang=`echo $LANG | cut -d _ -f 1`
+grub_lang=`echo $LANG | cut -d . -f 1`
 
 . ${libdir}/grub/grub-mkconfig_lib
 
@@ -137,11 +137,7 @@ case x${GRUB_TERMINAL_INPUT} in
   ;;
   x*)
     cat << EOF
-if terminal_input ${GRUB_TERMINAL_INPUT} ; then true ; else
-  # For backward compatibility with versions of terminal.mod that don't
-  # understand terminal_input
-  terminal ${GRUB_TERMINAL_INPUT}
-fi
+terminal_input ${GRUB_TERMINAL_INPUT}
 EOF
   ;;
 esac
@@ -152,11 +148,7 @@ case x${GRUB_TERMINAL_OUTPUT} in
   ;;
   x*)
     cat << EOF
-if terminal_output ${GRUB_TERMINAL_OUTPUT} ; then true ; else
-  # For backward compatibility with versions of terminal.mod that don't
-  # understand terminal_output
-  terminal ${GRUB_TERMINAL_OUTPUT}
-fi
+terminal_output ${GRUB_TERMINAL_OUTPUT}
 EOF
   ;;
 esac
@@ -253,6 +245,12 @@ make_timeout "${GRUB_HIDDEN_TIMEOUT}" "${GRUB_TIMEOUT}"
 echo fi
 else
 make_timeout "${GRUB_HIDDEN_TIMEOUT}" "${GRUB_TIMEOUT}"
+fi
+
+if [ "x$GRUB_BUTTON_CMOS_ADDRESS" != "x" ] && [ "x$GRUB_BUTTON_CMOS_CLEAN" = "xyes" ]; then
+    cat <<EOF
+cmosclean $GRUB_BUTTON_CMOS_ADDRESS
+EOF
 fi
 
 # Play an initial tune

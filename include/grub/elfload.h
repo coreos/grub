@@ -46,13 +46,21 @@ grub_elf_t grub_elf_file (grub_file_t);
 grub_err_t grub_elf_close (grub_elf_t);
 
 int grub_elf_is_elf32 (grub_elf_t);
-grub_size_t grub_elf32_size (grub_elf_t, Elf32_Addr *);
+grub_size_t grub_elf32_size (grub_elf_t, Elf32_Addr *, grub_uint32_t *);
 grub_err_t grub_elf32_load (grub_elf_t, grub_elf32_load_hook_t, grub_addr_t *,
 			    grub_size_t *);
 
 int grub_elf_is_elf64 (grub_elf_t);
-grub_size_t grub_elf64_size (grub_elf_t, Elf64_Addr *);
+grub_size_t grub_elf64_size (grub_elf_t, Elf64_Addr *, grub_uint64_t *);
 grub_err_t grub_elf64_load (grub_elf_t, grub_elf64_load_hook_t, grub_addr_t *,
 			    grub_size_t *);
+grub_err_t
+grub_elf32_phdr_iterate (grub_elf_t elf,
+			 int NESTED_FUNC_ATTR (*hook) (grub_elf_t, Elf32_Phdr *, void *),
+			 void *hook_arg);
+grub_err_t
+grub_elf64_phdr_iterate (grub_elf_t elf,
+			 int NESTED_FUNC_ATTR (*hook) (grub_elf_t, Elf64_Phdr *, void *),
+			 void *hook_arg);
 
 #endif /* ! GRUB_ELFLOAD_HEADER */

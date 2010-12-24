@@ -21,7 +21,7 @@ configuring the GRUB.
 
 On GNU/Linux, you also need:
 
-* libdevmapper (recommended)
+* libdevmapper 1.02.34 or later (recommended)
 
 To build grub-emu, you need:
 
@@ -37,10 +37,10 @@ To build GRUB's graphical terminal (gfxterm), you need:
 If you use a development snapshot or want to hack on GRUB you may
 need the following.
 
-* Ruby 1.6 or later
 * Python 2.5.2 or later
 * Autoconf 2.60 or later
 * Automake 1.10.1 or later
+* Autogen 5.10 or later
 
 Prerequisites for make-check:
 

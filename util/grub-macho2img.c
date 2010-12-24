@@ -17,6 +17,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
+
 #include <grub/types.h>
 #include <grub/macho.h>
 #include <stdio.h>
@@ -79,7 +81,7 @@ main (int argc, char **argv)
       fclose (in);
       fclose (out);
       free (buf);
-      printf ("Invalid Mach-O fle\n");
+      printf ("Invalid Mach-O file\n");
       return 4;
     }
   curcmd = (struct grub_macho_segment32 *) (buf + sizeof (*head));

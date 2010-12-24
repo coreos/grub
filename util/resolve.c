@@ -16,13 +16,16 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 
-#include <grub/util/resolve.h>
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
+#include <grub/util/resolve.h>
 
 /* Module.  */
 struct mod_list

@@ -34,26 +34,42 @@
 #include <grub/types.h>
 #include <grub/err.h>
 
+extern struct grub_relocator *grub_multiboot_relocator;
+
 void grub_multiboot (int argc, char *argv[]);
 void grub_module (int argc, char *argv[]);
 
-grub_size_t grub_multiboot_get_mbi_size (void);
-grub_err_t grub_multiboot_make_mbi (void *orig, grub_uint32_t dest,
-				    grub_off_t buf_off, grub_size_t bufsize);
+void grub_multiboot_set_accepts_video (int val);
+grub_err_t grub_multiboot_make_mbi (grub_uint32_t *target);
 void grub_multiboot_free_mbi (void);
 grub_err_t grub_multiboot_init_mbi (int argc, char *argv[]);
 grub_err_t grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
 				      int argc, char *argv[]);
 void grub_multiboot_set_bootdev (void);
+void
+grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
+			    unsigned shndx, void *data);
 
 grub_uint32_t grub_get_multiboot_mmap_count (void);
 grub_err_t grub_multiboot_set_video_mode (void);
 
+/* FIXME: support coreboot as well.  */
+#if defined (GRUB_MACHINE_PCBIOS)
+#define GRUB_MACHINE_HAS_VBE 1
+#else
+#define GRUB_MACHINE_HAS_VBE 0
+#endif
+
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
-#include <grub/i386/pc/vbe.h>
 #define GRUB_MACHINE_HAS_VGA_TEXT 1
 #else
 #define GRUB_MACHINE_HAS_VGA_TEXT 0
+#endif
+
+#if defined (GRUB_MACHINE_EFI) || defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT)
+#define GRUB_MACHINE_HAS_ACPI 1
+#else
+#define GRUB_MACHINE_HAS_ACPI 0
 #endif
 
 #define GRUB_MULTIBOOT_CONSOLE_EGA_TEXT 1
@@ -70,5 +86,7 @@ grub_err_t
 grub_multiboot_load_elf (grub_file_t file, void *buffer);
 extern grub_size_t grub_multiboot_pure_size;
 extern grub_size_t grub_multiboot_alloc_mbi;
+extern grub_uint32_t grub_multiboot_payload_eip;
+
 
 #endif /* ! GRUB_MULTIBOOT_HEADER */
