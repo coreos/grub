@@ -113,13 +113,12 @@ grub_ata_identify (struct grub_ata *dev)
   parms.taskfile.cmd = GRUB_ATA_CMD_IDENTIFY_DEVICE;
 
   err = dev->dev->readwrite (dev, &parms);
-  if (err)
-    return err;
 
-  if (parms.size != GRUB_DISK_SECTOR_SIZE)
+  if (err || parms.size != GRUB_DISK_SECTOR_SIZE)
     {
       grub_uint8_t sts = parms.taskfile.status;
       grub_free (info);
+      grub_errno = GRUB_ERR_NONE;
       if ((sts & (GRUB_ATA_STATUS_BUSY | GRUB_ATA_STATUS_DRQ
 	  | GRUB_ATA_STATUS_ERR)) == GRUB_ATA_STATUS_ERR
 	  && (parms.taskfile.error & 0x04 /* ABRT */))
@@ -503,6 +502,7 @@ grub_atapi_open (int id, int bus, struct grub_scsi *scsi)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such ATAPI device");
 
   scsi->data = ata;
+  scsi->luns = 1;
 
   return GRUB_ERR_NONE;
 }
