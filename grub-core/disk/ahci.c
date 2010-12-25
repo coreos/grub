@@ -44,8 +44,8 @@ struct grub_ahci_prdt_entry
 struct grub_ahci_cmd_table
 {
   grub_uint8_t cfis[0x40];
-  grub_uint8_t command[16];
-  grub_uint32_t reserved[0xc];
+  grub_uint8_t command[0x10];
+  grub_uint8_t reserved[0x30];
   struct grub_ahci_prdt_entry prdt[1];
 };
 
@@ -56,13 +56,26 @@ struct grub_ahci_hba_port
   grub_uint32_t intstatus;
   grub_uint32_t inten;
   grub_uint32_t command;
-  grub_uint32_t unused1[3];
+  grub_uint32_t unused1;
+  grub_uint32_t task_file_data;
+  grub_uint32_t sig;
   grub_uint32_t status;
-  grub_uint32_t unused2[2];
+  grub_uint32_t unused2;
+  grub_uint32_t sata_error;
   grub_uint32_t sata_active;
   grub_uint32_t command_issue;
-  grub_uint32_t unused3[17];
+  grub_uint32_t unused3;
+  grub_uint32_t fbs;
+  grub_uint32_t unused4[15];
 };
+
+enum grub_ahci_hba_port_command
+  {
+    GRUB_AHCI_HBA_PORT_CMD_ST  = 0x01,
+    GRUB_AHCI_HBA_PORT_CMD_FRE = 0x10,
+    GRUB_AHCI_HBA_PORT_CMD_CR = 0x8000,
+    GRUB_AHCI_HBA_PORT_CMD_FR = 0x4000,
+  };
 
 struct grub_ahci_hba
 {
@@ -76,6 +89,11 @@ struct grub_ahci_hba
   struct grub_ahci_hba_port ports[32];
 };
 
+struct grub_ahci_received_fis
+{
+  char raw[4096];
+};
+
 enum
   {
     GRUB_AHCI_HBA_CAP_NPORTS_MASK = 0x1f
@@ -83,6 +101,7 @@ enum
 
 enum
   {
+    GRUB_AHCI_HBA_GLOBAL_CONTROL_RESET = 0x00000001,
     GRUB_AHCI_HBA_GLOBAL_CONTROL_INTR_EN = 0x00000002,
     GRUB_AHCI_HBA_GLOBAL_CONTROL_AHCI_EN = 0x80000000,
   };
@@ -106,7 +125,13 @@ struct grub_ahci_device
   volatile struct grub_ahci_cmd_head *command_list;
   struct grub_pci_dma_chunk *command_table_chunk;
   volatile struct grub_ahci_cmd_table *command_table;
+  struct grub_pci_dma_chunk *rfis;
 };
+
+static grub_err_t 
+grub_ahci_readwrite_real (struct grub_ahci_device *dev,
+			  struct grub_disk_ata_pass_through_parms *parms);
+
 
 enum
   {
@@ -160,10 +185,6 @@ grub_ahci_pciinit (grub_pci_device_t dev,
   hba = grub_pci_device_map_range (dev, bar & GRUB_PCI_ADDR_MEM_MASK,
 				   sizeof (hba));
 
-  hba->global_control |= GRUB_AHCI_HBA_GLOBAL_CONTROL_AHCI_EN;
-
-  nports = (hba->cap & GRUB_AHCI_HBA_CAP_NPORTS_MASK) + 1;
-
   if (! (hba->bios_handoff & GRUB_AHCI_BIOS_HANDOFF_OS_OWNED))
     {
       grub_uint64_t endtime;
@@ -186,6 +207,11 @@ grub_ahci_pciinit (grub_pci_device_t dev,
     }
   else
     grub_dprintf ("ahci", "AHCI is already in OS mode\n");
+
+  hba->global_control |= GRUB_AHCI_HBA_GLOBAL_CONTROL_AHCI_EN;
+
+  nports = (hba->cap & GRUB_AHCI_HBA_CAP_NPORTS_MASK) + 1;
+
   grub_dprintf ("ahci", "%d AHCI ports\n", nports);
 
   for (i = 0; i < nports; i++)
@@ -197,8 +223,9 @@ grub_ahci_pciinit (grub_pci_device_t dev,
       if (!(hba->ports_implemented & (1 << i)))
 	continue;
 
+      grub_dprintf ("ahci", "status %d:%x\n", i, hba->ports[i].status);
       /* FIXME: support hotplugging.  */
-      if (!hba->ports[i].status)
+      if ((hba->ports[i].status & 0xf) != 0x3)
 	continue;
 
       command_list = grub_memalign_dma32 (1024,
@@ -223,6 +250,26 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 	}
 
       grub_dprintf ("ahci", "found device ahci%d (port %d)\n", numdevs, i);
+
+      hba->ports[i].command &= ~GRUB_AHCI_HBA_PORT_CMD_FRE;
+      while ((hba->ports[i].command & GRUB_AHCI_HBA_PORT_CMD_FR));
+      hba->ports[i].command &= ~GRUB_AHCI_HBA_PORT_CMD_ST;
+      while ((hba->ports[i].command & GRUB_AHCI_HBA_PORT_CMD_CR));
+
+      hba->ports[i].fbs = 2;
+
+      adev->rfis = grub_memalign_dma32 (4096,
+					sizeof (struct grub_ahci_received_fis));
+      grub_memset ((char *) grub_dma_get_virt (adev->rfis), 0,
+		   sizeof (struct grub_ahci_received_fis));
+      hba->ports[i].fis_base = grub_dma_get_phys (adev->rfis);
+      hba->ports[i].command |= GRUB_AHCI_HBA_PORT_CMD_FRE;
+      while (!(hba->ports[i].command & GRUB_AHCI_HBA_PORT_CMD_FR));
+      hba->ports[i].command |= GRUB_AHCI_HBA_PORT_CMD_ST;
+      while (!(hba->ports[i].command & GRUB_AHCI_HBA_PORT_CMD_CR));
+
+      hba->ports[i].command = (hba->ports[i].command & 0x0fffffff)
+	| (1 << 28) | 2 | 4;
 
       adev->hba = hba;
       adev->port = i;
@@ -299,13 +346,26 @@ static const int register_map[11] = { 3 /* Features */,
 				      10 /* LBA48 high */ }; 
 
 static grub_err_t 
-grub_ahci_readwrite (grub_ata_t disk,
-		     struct grub_disk_ata_pass_through_parms *parms)
+grub_ahci_readwrite_real (struct grub_ahci_device *dev,
+			  struct grub_disk_ata_pass_through_parms *parms)
 {
-  struct grub_ahci_device *dev = (struct grub_ahci_device *) disk->data;
   struct grub_pci_dma_chunk *bufc;
   grub_uint64_t endtime;
   unsigned i;
+  grub_err_t err = GRUB_ERR_NONE;
+
+  grub_dprintf ("ahci", "AHCI tfd = %x\n",
+		dev->hba->ports[dev->port].task_file_data);
+
+  if ((dev->hba->ports[dev->port].task_file_data & 0x80))
+    {
+      dev->hba->ports[dev->port].command &= ~GRUB_AHCI_HBA_PORT_CMD_ST;
+      while ((dev->hba->ports[dev->port].command & GRUB_AHCI_HBA_PORT_CMD_CR));
+      dev->hba->ports[dev->port].command |= GRUB_AHCI_HBA_PORT_CMD_ST;
+      while (!(dev->hba->ports[dev->port].command & GRUB_AHCI_HBA_PORT_CMD_CR));
+    }
+
+  dev->hba->ports[dev->port].sata_error = dev->hba->ports[dev->port].sata_error;
 
   grub_dprintf("ahci", "grub_ahci_read (size=%llu, cmdsize = %llu)\n",
 	       (unsigned long long) parms->size,
@@ -319,14 +379,19 @@ grub_ahci_readwrite (grub_ata_t disk,
 
   bufc = grub_memalign_dma32 (1024, parms->size + (parms->size & 1));
 
+  dev->hba->ports[dev->port].command |= 8;
+
+  grub_dprintf ("ahci", "AHCI tfd = %x\n",
+		dev->hba->ports[dev->port].task_file_data);
   /* FIXME: support port multipliers.  */
   dev->command_list[0].config
-    = (4 << GRUB_AHCI_CONFIG_CFIS_LENGTH_SHIFT)
-    | GRUB_AHCI_CONFIG_CLEAR_R_OK
+    = (5 << GRUB_AHCI_CONFIG_CFIS_LENGTH_SHIFT)
+    //    | GRUB_AHCI_CONFIG_CLEAR_R_OK
     | (0 << GRUB_AHCI_CONFIG_PMP_SHIFT)
     | (1 << GRUB_AHCI_CONFIG_PRDT_LENGTH_SHIFT)
     | (parms->cmdsize ? GRUB_AHCI_CONFIG_ATAPI : 0)
-    | (parms->write ? GRUB_AHCI_CONFIG_WRITE : GRUB_AHCI_CONFIG_READ);
+    | (parms->write ? GRUB_AHCI_CONFIG_WRITE : GRUB_AHCI_CONFIG_READ)
+    | (parms->taskfile.cmd == 8 ? (1 << 8) : 0);
   dev->command_list[0].transfered = 0;
   dev->command_list[0].command_table_base
     = grub_dma_get_phys (dev->command_table_chunk);
@@ -344,40 +409,97 @@ grub_ahci_readwrite (grub_ata_t disk,
     dev->command_table[0].cfis[register_map[i]] = parms->taskfile.raw[i]; 
 
   dev->command_table[0].cfis[7] |= (parms->cmdsize ? 0 : 0xE0);
+  grub_dprintf ("ahci", "cfis: %02x %02x %02x %02x %02x %02x %02x %02x\n",
+		dev->command_table[0].cfis[0], dev->command_table[0].cfis[1],
+		dev->command_table[0].cfis[2], dev->command_table[0].cfis[3],
+		dev->command_table[0].cfis[4], dev->command_table[0].cfis[5],
+		dev->command_table[0].cfis[6], dev->command_table[0].cfis[7]);
+  grub_dprintf ("ahci", "cfis: %02x %02x %02x %02x %02x %02x %02x %02x\n",
+		dev->command_table[0].cfis[8], dev->command_table[0].cfis[9],
+		dev->command_table[0].cfis[10], dev->command_table[0].cfis[11],
+		dev->command_table[0].cfis[12], dev->command_table[0].cfis[13],
+		dev->command_table[0].cfis[14], dev->command_table[0].cfis[15]);
 
   dev->command_table[0].prdt[0].data_base = grub_dma_get_phys (bufc);
   dev->command_table[0].prdt[0].unused = 0;
   dev->command_table[0].prdt[0].size = (parms->size + (parms->size & 1) - 1)
     | GRUB_AHCI_INTERRUPT_ON_COMPLETE;
 
+  grub_dprintf ("ahci", "PRDT = %" PRIxGRUB_UINT64_T ", %x, %x (%x)\n",
+		dev->command_table[0].prdt[0].data_base,
+		dev->command_table[0].prdt[0].unused,
+		dev->command_table[0].prdt[0].size,
+		(char *) &dev->command_table[0].prdt[0]
+		- (char *) &dev->command_table[0]);
+
   if (parms->write)
     grub_memcpy ((char *) grub_dma_get_virt (bufc), parms->buffer, parms->size);
 
   grub_dprintf ("ahci", "AHCI command schedulded\n");
-  dev->hba->ports[dev->port].inten = (1 << 2) | (1 << 5);
-  dev->hba->ports[dev->port].intstatus = (1 << 2) | (1 << 5);
+  grub_dprintf ("ahci", "AHCI tfd = %x\n",
+		dev->hba->ports[dev->port].task_file_data);
+  dev->hba->ports[dev->port].inten = 0xffffffff;//(1 << 2) | (1 << 5);
+  dev->hba->ports[dev->port].intstatus = 0xffffffff;//(1 << 2) | (1 << 5);
+  grub_dprintf ("ahci", "AHCI tfd = %x\n",
+		dev->hba->ports[dev->port].task_file_data);
   dev->hba->ports[dev->port].command_issue |= 1;
-  dev->hba->ports[dev->port].command |= 1;
+  grub_dprintf ("ahci", "AHCI sig = %x\n", dev->hba->ports[dev->port].sig);
+  grub_dprintf ("ahci", "AHCI tfd = %x\n",
+		dev->hba->ports[dev->port].task_file_data);
 
   endtime = grub_get_time_ms () + 1000;
-  while (!(dev->hba->ports[dev->port].intstatus & (1 << 5)))
+  while ((dev->hba->ports[dev->port].command_issue & 1))
     if (grub_get_time_ms () > endtime)
       {
-	grub_dprintf ("ahci", "AHCI timeout\n");
-	dev->hba->ports[dev->port].command &= ~1;
-	/* FIXME: free resources.  */
-	return grub_error (GRUB_ERR_IO, "AHCI transfer timeouted");
+	grub_dprintf ("ahci", "AHCI status <%x %x %x>\n",
+		      dev->hba->ports[dev->port].command_issue,
+		      dev->hba->ports[dev->port].intstatus,
+		      dev->hba->ports[dev->port].task_file_data);
+	err = grub_error (GRUB_ERR_IO, "AHCI transfer timeouted");
+	break;
       }
 
-  grub_dprintf ("ahci", "AHCI command completed succesfully\n");
-  dev->hba->ports[dev->port].command &= ~1;
-  dev->hba->ports[dev->port].command_issue &= ~1;
+  grub_dprintf ("ahci", "AHCI command completed <%x %x %x %x %x, %x %x>\n",
+		dev->hba->ports[dev->port].command_issue,
+		dev->hba->ports[dev->port].intstatus,
+		dev->hba->ports[dev->port].task_file_data,
+		dev->command_list[0].transfered,
+		dev->hba->ports[dev->port].sata_error,
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x00],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x18]);
+  grub_dprintf ("ahci",
+		"last PIO FIS %08x %08x %08x %08x %08x %08x %08x %08x\n",
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x08],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x09],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x0a],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x0b],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x0c],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x0d],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x0e],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x0f]);
+  grub_dprintf ("ahci",
+		"last REG FIS %08x %08x %08x %08x %08x %08x %08x %08x\n",
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x10],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x11],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x12],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x13],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x14],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x15],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x16],
+		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x17]);
 
   if (!parms->write)
     grub_memcpy (parms->buffer, (char *) grub_dma_get_virt (bufc), parms->size);
   grub_dma_free (bufc);
 
-  return GRUB_ERR_NONE;
+  return err;
+}
+
+static grub_err_t 
+grub_ahci_readwrite (grub_ata_t disk,
+		     struct grub_disk_ata_pass_through_parms *parms)
+{
+  return grub_ahci_readwrite_real (disk->data, parms);
 }
 
 static grub_err_t
@@ -415,8 +537,8 @@ static struct grub_ata_dev grub_ahci_dev =
 GRUB_MOD_INIT(ahci)
 {
   /* To prevent two drivers operating on the same disks.  */
-  //  grub_disk_firmware_is_tainted = 1;
-  if (0 && grub_disk_firmware_fini)
+  grub_disk_firmware_is_tainted = 1;
+  if (grub_disk_firmware_fini)
     {
       grub_disk_firmware_fini ();
       grub_disk_firmware_fini = NULL;
