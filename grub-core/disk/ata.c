@@ -302,6 +302,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
       parms.taskfile.cmd = (! rw ? cmd : cmd_write);
       parms.buffer = buf;
       parms.size = batch * GRUB_DISK_SECTOR_SIZE;
+      parms.write = rw;
       if (ata->dma)
 	parms.dma = 1;
   
