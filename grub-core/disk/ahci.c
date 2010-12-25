@@ -220,13 +220,15 @@ grub_ahci_pciinit (grub_pci_device_t dev,
       struct grub_ahci_device *adev;
       struct grub_pci_dma_chunk *command_list;
       struct grub_pci_dma_chunk *command_table;
+      grub_uint32_t st;
 
       if (!(hba->ports_implemented & (1 << i)))
 	continue;
 
       grub_dprintf ("ahci", "status %d:%x\n", i, hba->ports[i].status);
       /* FIXME: support hotplugging.  */
-      if ((hba->ports[i].status & 0xf) != 0x3)
+      st = hba->ports[i].status;
+      if ((st & 0xf) != 0x3 && (st & 0xf) != 0x1)
 	continue;
 
       command_list = grub_memalign_dma32 (1024,
