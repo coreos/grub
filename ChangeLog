@@ -1,3 +1,7 @@
+2010-12-25  Shea Levy <shlevy>
+
+	* grub-core/genmod.sh.in: Use @OBJCOPY@ rather than objcopy.
+
 2010-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub.d/30_os-prober.in: Don't emit drivemap directive for
