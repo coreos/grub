@@ -1,5 +1,11 @@
 2010-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/30_os-prober.in: Don't emit drivemap directive for
+	Windows Server 2008.
+	Reported by: Devin Giddings.
+
+2010-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/acpihalt.c (grub_acpi_halt): Sleep for 1.5 before
 	writing an error message because of async power management.
 	* grub-core/kern/mips/yeeloong/init.c (grub_halt): Likewise.
