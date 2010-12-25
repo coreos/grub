@@ -70,7 +70,7 @@ grub_atapi_identify (struct grub_ata *dev)
     return grub_errno;
 
   grub_memset (&parms, 0, sizeof (parms));
-  parms.taskfile.disk = 0;
+  parms.taskfile.disk = 0xE0;
   parms.taskfile.cmd = GRUB_ATA_CMD_IDENTIFY_PACKET_DEVICE;
   parms.size = GRUB_DISK_SECTOR_SIZE;
   parms.buffer = info;
@@ -108,7 +108,7 @@ grub_ata_identify (struct grub_ata *dev)
   grub_memset (&parms, 0, sizeof (parms));
   parms.buffer = info;
   parms.size = GRUB_DISK_SECTOR_SIZE;
-  parms.taskfile.disk = 0;
+  parms.taskfile.disk = 0xE0;
 
   parms.taskfile.cmd = GRUB_ATA_CMD_IDENTIFY_DEVICE;
 
@@ -196,7 +196,7 @@ grub_ata_setaddress (struct grub_ata *dev,
 			     "sector %d cannot be addressed "
 			     "using CHS addressing", sector);
 	
-	parms->taskfile.disk = head;
+	parms->taskfile.disk = 0xE0 | head;
 	parms->taskfile.sectnum = sect;
 	parms->taskfile.cyllsb = cylinder & 0xFF;
 	parms->taskfile.cylmsb = cylinder >> 8;
@@ -207,7 +207,7 @@ grub_ata_setaddress (struct grub_ata *dev,
     case GRUB_ATA_LBA:
       if (size == 256)
 	size = 0;
-      parms->taskfile.disk = ((sector >> 24) & 0x0F);
+      parms->taskfile.disk = 0xE0 | ((sector >> 24) & 0x0F);
 
       parms->taskfile.sectors = size;
       parms->taskfile.lba_low = sector & 0xFF;
@@ -219,7 +219,7 @@ grub_ata_setaddress (struct grub_ata *dev,
       if (size == 65536)
 	size = 0;
 
-      parms->taskfile.disk = 0;
+      parms->taskfile.disk = 0xE0;
 
       /* Set "Previous".  */
       parms->taskfile.sectors = size & 0xFF;

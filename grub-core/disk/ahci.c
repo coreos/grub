@@ -408,7 +408,6 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
   for (i = 0; i < sizeof (parms->taskfile.raw); i++)
     dev->command_table[0].cfis[register_map[i]] = parms->taskfile.raw[i]; 
 
-  dev->command_table[0].cfis[7] |= (parms->cmdsize ? 0 : 0xE0);
   grub_dprintf ("ahci", "cfis: %02x %02x %02x %02x %02x %02x %02x %02x\n",
 		dev->command_table[0].cfis[0], dev->command_table[0].cfis[1],
 		dev->command_table[0].cfis[2], dev->command_table[0].cfis[3],

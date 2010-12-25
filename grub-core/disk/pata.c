@@ -151,9 +151,8 @@ grub_pata_readwrite (struct grub_ata *disk,
 	        parms->taskfile.lba_low, parms->size);
 
   /* Set registers.  */
-  grub_pata_regset (dev, GRUB_ATA_REG_DISK, (parms->cmdsize ? 0 : 0xE0)
-		    | dev->device << 4
-		    | (parms->taskfile.disk & 0xf));
+  grub_pata_regset (dev, GRUB_ATA_REG_DISK, (dev->device << 4)
+		    | (parms->taskfile.disk & 0xef));
   if (grub_pata_check_ready (dev))
     return grub_errno;
 

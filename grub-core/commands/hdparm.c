@@ -72,6 +72,8 @@ grub_hdparm_do_ata_cmd (grub_ata_t ata, grub_uint8_t cmd,
   apt.taskfile.cmd = cmd;
   apt.taskfile.features = features;
   apt.taskfile.sectors = sectors;
+  apt.taskfile.disk = 0xE0;
+
   apt.buffer = buffer;
   apt.size = size;
 
@@ -88,6 +90,7 @@ grub_hdparm_do_check_powermode_cmd (grub_ata_t ata)
   grub_memset (&apt, 0, sizeof (apt));
 
   apt.taskfile.cmd = GRUB_ATA_CMD_CHECK_POWER_MODE;
+  apt.taskfile.disk = 0xE0;
 
   if (ata->dev->readwrite (ata, &apt))
     return -1;
@@ -105,6 +108,7 @@ grub_hdparm_do_smart_cmd (grub_ata_t ata, grub_uint8_t features)
   apt.taskfile.features = features;
   apt.taskfile.lba_mid  = 0x4f;
   apt.taskfile.lba_high = 0xc2;
+  apt.taskfile.disk = 0xE0;
 
   if (ata->dev->readwrite (ata, &apt))
     return -1;
