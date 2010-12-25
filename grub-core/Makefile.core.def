@@ -1159,6 +1159,12 @@ module = {
 };
 
 module = {
+  name = freedos;
+  i386_pc = loader/i386/pc/freedos.c;
+  enable = i386_pc;
+};
+
+module = {
   name = multiboot2;
   cppflags = "-DGRUB_USE_MULTIBOOT2";
 
