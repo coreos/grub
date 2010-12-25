@@ -25,6 +25,7 @@
 #include <grub/scsi.h>
 #include <grub/misc.h>
 #include <grub/list.h>
+#include <grub/loader.h>
 
 struct grub_ahci_cmd_head
 {
@@ -296,6 +297,34 @@ grub_ahci_initialize (void)
   return grub_errno;
 }
 
+static grub_err_t
+grub_ahci_fini_hw (int noreturn __attribute__ ((unused)))
+{
+  struct grub_ahci_device *dev, *next;
+
+  for (dev = grub_ahci_devices; dev; dev = next)
+    {
+      next = dev->next;
+      dev->hba->ports[dev->num].command &= ~GRUB_AHCI_HBA_PORT_CMD_FRE;
+      while ((dev->hba->ports[dev->num].command & GRUB_AHCI_HBA_PORT_CMD_FR));
+      dev->hba->ports[dev->num].command &= ~GRUB_AHCI_HBA_PORT_CMD_ST;
+      while ((dev->hba->ports[dev->num].command & GRUB_AHCI_HBA_PORT_CMD_CR));
+      grub_dma_free (dev->command_list_chunk);
+      grub_dma_free (dev->command_table_chunk);
+      grub_dma_free (dev->rfis);
+
+      grub_free (dev);
+    }
+  grub_ahci_devices = NULL;
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_ahci_restore_hw (void)
+{
+  return grub_ahci_initialize ();
+}
+
 
 
 
@@ -533,6 +562,8 @@ static struct grub_ata_dev grub_ahci_dev =
 
 
 
+static void *fini_hnd;
+
 GRUB_MOD_INIT(ahci)
 {
   /* To prevent two drivers operating on the same disks.  */
@@ -548,9 +579,16 @@ GRUB_MOD_INIT(ahci)
 
   /* AHCI devices are handled by scsi.mod.  */
   grub_ata_dev_register (&grub_ahci_dev);
+
+  fini_hnd = grub_loader_register_preboot_hook (grub_ahci_fini_hw,
+						grub_ahci_restore_hw,
+						GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
 }
 
 GRUB_MOD_FINI(ahci)
 {
+  grub_ahci_fini_hw (0);
+  grub_loader_unregister_preboot_hook (fini_hnd);
+
   grub_ata_dev_unregister (&grub_ahci_dev);
 }
