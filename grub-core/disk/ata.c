@@ -173,9 +173,10 @@ static grub_err_t
 grub_ata_setaddress (struct grub_ata *dev,
 		     struct grub_disk_ata_pass_through_parms *parms,
 		     grub_disk_addr_t sector,
-		     grub_size_t size)
+		     grub_size_t size,
+		     grub_ata_addressing_t addressing)
 {
-  switch (dev->addr)
+  switch (addressing)
     {
     case GRUB_ATA_CHS:
       {
@@ -297,7 +298,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 
       grub_dprintf("ata", "rw=%d, sector=%llu, batch=%llu\n", rw, (unsigned long long) sector, (unsigned long long) batch);
       grub_memset (&parms, 0, sizeof (parms));
-      grub_ata_setaddress (ata, &parms, sector, batch);
+      grub_ata_setaddress (ata, &parms, sector, batch, addressing);
       parms.taskfile.cmd = (! rw ? cmd : cmd_write);
       parms.buffer = buf;
       parms.size = batch * GRUB_DISK_SECTOR_SIZE;
