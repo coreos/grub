@@ -82,6 +82,9 @@ enum grub_ata_commands
     GRUB_ATA_CMD_PACKET			= 0xa0,
     GRUB_ATA_CMD_READ_SECTORS		= 0x20,
     GRUB_ATA_CMD_READ_SECTORS_EXT	= 0x24,
+    GRUB_ATA_CMD_READ_SECTORS_DMA	= 0xc8,
+    GRUB_ATA_CMD_READ_SECTORS_DMA_EXT	= 0x25,
+
     GRUB_ATA_CMD_SECURITY_FREEZE_LOCK	= 0xf5,
     GRUB_ATA_CMD_SET_FEATURES		= 0xef,
     GRUB_ATA_CMD_SLEEP			= 0xe6,
@@ -89,6 +92,8 @@ enum grub_ata_commands
     GRUB_ATA_CMD_STANDBY_IMMEDIATE	= 0xe0,
     GRUB_ATA_CMD_WRITE_SECTORS		= 0x30,
     GRUB_ATA_CMD_WRITE_SECTORS_EXT	= 0x34,
+    GRUB_ATA_CMD_WRITE_SECTORS_DMA_EXT	= 0x35,
+    GRUB_ATA_CMD_WRITE_SECTORS_DMA	= 0xca,
   };
 
 enum grub_ata_timeout_milliseconds
@@ -151,6 +156,7 @@ struct grub_disk_ata_pass_through_parms
   int write;
   void *cmd;
   int cmdsize;
+  int dma;
 };
 
 struct grub_ata
@@ -170,6 +176,8 @@ struct grub_ata
 
   /* Set to 0 for ATA, set to 1 for ATAPI.  */
   int atapi;
+
+  int dma;
 
   void *data;
 

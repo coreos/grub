@@ -474,6 +474,7 @@ grub_pata_open (int id, int devnum, struct grub_ata *ata)
     return err;
 
   ata->data = devfnd;
+  ata->dma = 0;
 
   return GRUB_ERR_NONE;
 }

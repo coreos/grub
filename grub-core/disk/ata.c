@@ -255,8 +255,16 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
   if (addressing == GRUB_ATA_LBA48 && ((sector + size) >> 28) != 0)
     {
       batch = 65536;
-      cmd = GRUB_ATA_CMD_READ_SECTORS_EXT;
-      cmd_write = GRUB_ATA_CMD_WRITE_SECTORS_EXT;
+      if (ata->dma)
+	{
+	  cmd = GRUB_ATA_CMD_READ_SECTORS_DMA_EXT;
+	  cmd_write = GRUB_ATA_CMD_WRITE_SECTORS_DMA_EXT;
+	}
+      else
+	{
+	  cmd = GRUB_ATA_CMD_READ_SECTORS_EXT;
+	  cmd_write = GRUB_ATA_CMD_WRITE_SECTORS_EXT;
+	}
     }
   else
     {
@@ -266,9 +274,17 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	batch = 256;
       else
 	batch = 1;
-      cmd = GRUB_ATA_CMD_READ_SECTORS;
-      cmd_write = GRUB_ATA_CMD_WRITE_SECTORS;
-    }
+      if (ata->dma)
+	{
+	  cmd = GRUB_ATA_CMD_READ_SECTORS_DMA;
+	  cmd_write = GRUB_ATA_CMD_WRITE_SECTORS_DMA;
+	}
+      else
+	{
+	  cmd = GRUB_ATA_CMD_READ_SECTORS;
+	  cmd_write = GRUB_ATA_CMD_WRITE_SECTORS;
+	}
+    }    
 
   grub_size_t nsectors = 0;
   while (nsectors < size)
@@ -285,6 +301,8 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
       parms.taskfile.cmd = (! rw ? cmd : cmd_write);
       parms.buffer = buf;
       parms.size = batch * GRUB_DISK_SECTOR_SIZE;
+      if (ata->dma)
+	parms.dma = 1;
   
       err = ata->dev->readwrite (ata, &parms);
       if (err)
