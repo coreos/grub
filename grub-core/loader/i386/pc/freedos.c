@@ -97,7 +97,7 @@ grub_cmd_freedos (grub_command_t cmd __attribute__ ((unused)),
   kernelsyssize = grub_file_size (file);
   {
     grub_relocator_chunk_t ch;
-    err = grub_relocator_alloc_chunk_addr (rel, &ch, GRUB_NTLDR_SEGMENT << 4,
+    err = grub_relocator_alloc_chunk_addr (rel, &ch, GRUB_FREEDOS_SEGMENT << 4,
 					   kernelsyssize);
     if (err)
       goto fail;
@@ -105,7 +105,7 @@ grub_cmd_freedos (grub_command_t cmd __attribute__ ((unused)),
   }
 
   if (grub_file_read (file, kernelsys, kernelsyssize)
-      != (grub_ssize_t) ntldrsize)
+      != (grub_ssize_t) kernelsyssize)
     goto fail;
  
   grub_loader_set (grub_freedos_boot, grub_freedos_unload, 1);
@@ -116,7 +116,7 @@ grub_cmd_freedos (grub_command_t cmd __attribute__ ((unused)),
   if (file)
     grub_file_close (file);
 
-  grub_ntldr_unload ();
+  grub_freedos_unload ();
 
   return grub_errno;
 }
