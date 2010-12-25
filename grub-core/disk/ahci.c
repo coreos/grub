@@ -520,7 +520,7 @@ grub_ahci_open (int id, int devnum, struct grub_ata *ata)
   grub_dprintf ("ahci", "opening AHCI dev `ahci%d'\n", dev->num);
 
   ata->data = dev;
-  ata->dma = 0;
+  ata->dma = 1;
 
   return GRUB_ERR_NONE;
 }
