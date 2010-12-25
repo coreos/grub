@@ -117,7 +117,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   struct grub_pxe_data *data;
   grub_file_t file_int, bufio;
 
-  data = grub_malloc (sizeof (*data));
+  data = grub_zalloc (sizeof (*data) + grub_strlen (name) + 1);
   if (!data)
     return grub_errno;
 
@@ -135,7 +135,10 @@ grub_pxefs_open (struct grub_file *file, const char *name)
 	err = grub_net_resolve_address (file->device->net->name
 					+ sizeof ("pxe,") - 1, &addr);
 	if (err)
-	  return err;
+	  {
+	    grub_free (data);
+	    return err;
+	  }
       }
     else
       {
@@ -144,7 +147,10 @@ grub_pxefs_open (struct grub_file *file, const char *name)
       }
     err = grub_net_route_address (addr, &gateway, &interf);
     if (err)
-      return err;
+      {
+	grub_free (data);
+	return err;
+      }
     data->server_ip = addr.ipv4;
     data->gateway_ip = gateway.ipv4;
   }
@@ -160,7 +166,10 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   grub_strcpy ((char *)&c.c1.filename[0], name);
   grub_pxe_call (GRUB_PXENV_TFTP_GET_FSIZE, &c.c1, pxe_rm_entry);
   if (c.c1.status)
-    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+    {
+      grub_free (data);
+      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+    }
 
   file->size = c.c1.file_size;
 
@@ -168,11 +177,10 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   c.c2.packet_size = grub_pxe_blksize;
   grub_pxe_call (GRUB_PXENV_TFTP_OPEN, &c.c2, pxe_rm_entry);
   if (c.c2.status)
-    return grub_error (GRUB_ERR_BAD_FS, "open fails");
-
-  data = grub_zalloc (sizeof (struct grub_pxe_data) + grub_strlen (name) + 1);
-  if (! data)
-    return grub_errno;
+    {
+      grub_free (data);
+      return grub_error (GRUB_ERR_BAD_FS, "open fails");
+    }
 
   data->block_size = c.c2.packet_size;
   grub_strcpy (data->filename, name);
