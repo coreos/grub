@@ -29,8 +29,6 @@
 /* At the moment, only two IDE ports are supported.  */
 static const grub_port_t grub_pata_ioaddress[] = { GRUB_ATA_CH0_PORT1,
 						   GRUB_ATA_CH1_PORT1 };
-static const grub_port_t grub_pata_ioaddress2[] = { GRUB_ATA_CH0_PORT2, 
-						    GRUB_ATA_CH1_PORT2 };
 
 struct grub_pata_device
 {
@@ -40,7 +38,6 @@ struct grub_pata_device
   /* IO addresses on which the registers for this device can be
      found.  */
   grub_port_t ioaddress;
-  grub_port_t ioaddress2;
 
   /* Two devices can be connected to a single cable.  Use this field
      to select device 0 (commonly known as "master") or device 1
@@ -62,18 +59,6 @@ static inline grub_uint8_t
 grub_pata_regget (struct grub_pata_device *dev, int reg)
 {
   return grub_inb (dev->ioaddress + reg);
-}
-
-static inline void
-grub_pata_regset2 (struct grub_pata_device *dev, int reg, int val)
-{
-  grub_outb (val, dev->ioaddress2 + reg);
-}
-
-static inline grub_uint8_t
-grub_pata_regget2 (struct grub_pata_device *dev, int reg)
-{
-  return grub_inb (dev->ioaddress2 + reg);
 }
 
 /* Wait for !BSY.  */
@@ -298,14 +283,14 @@ check_device (struct grub_pata_device *dev)
 }
 
 static grub_err_t
-grub_pata_device_initialize (int port, int device, int addr, int addr2)
+grub_pata_device_initialize (int port, int device, int addr)
 {
   struct grub_pata_device *dev;
   struct grub_pata_device **devp;
   grub_err_t err;
 
-  grub_dprintf ("pata", "detecting device %d,%d (0x%x, 0x%x)\n",
-		port, device, addr, addr2);
+  grub_dprintf ("pata", "detecting device %d,%d (0x%x)\n",
+		port, device, addr);
 
   dev = grub_malloc (sizeof(*dev));
   if (! dev)
@@ -315,7 +300,6 @@ grub_pata_device_initialize (int port, int device, int addr, int addr2)
   dev->port = port;
   dev->device = device;
   dev->ioaddress = addr + GRUB_MACHINE_PCI_IO_BASE;
-  dev->ioaddress2 = addr2 + GRUB_MACHINE_PCI_IO_BASE;
   dev->next = NULL;
 
   /* Register the device.  */
@@ -339,7 +323,6 @@ grub_pata_pciinit (grub_pci_device_t dev,
   grub_uint32_t bar1;
   grub_uint32_t bar2;
   int rega;
-  int regb;
   int i;
   static int controller = 0;
   int cs5536 = 0;
@@ -372,14 +355,12 @@ grub_pata_pciinit (grub_pci_device_t dev,
 	compat = (class >> (8 + 2 * i)) & 1;
 
       rega = 0;
-      regb = 0;
 
       /* If the channel is in compatibility mode, just assign the
 	 default registers.  */
       if (compat == 0 && !compat_use[i])
 	{
 	  rega = grub_pata_ioaddress[i];
-	  regb = grub_pata_ioaddress2[i];
 	  compat_use[i] = 1;
 	}
       else if (compat)
@@ -398,19 +379,18 @@ grub_pata_pciinit (grub_pci_device_t dev,
 	  if ((bar1 & 1) && (bar2 & 1))
 	    {
 	      rega = bar1 & ~3;
-	      regb = bar2 & ~3;
 	    }
 	}
 
       grub_dprintf ("pata",
-		    "PCI dev (%d,%d,%d) compat=%d rega=0x%x regb=0x%x\n",
+		    "PCI dev (%d,%d,%d) compat=%d rega=0x%x\n",
 		    grub_pci_get_bus (dev), grub_pci_get_device (dev),
-		    grub_pci_get_function (dev), compat, rega, regb);
+		    grub_pci_get_function (dev), compat, rega);
 
-      if (rega && regb)
+      if (rega)
 	{
 	  grub_errno = GRUB_ERR_NONE;
-	  grub_pata_device_initialize (controller * 2 + i, 0, rega, regb);
+	  grub_pata_device_initialize (controller * 2 + i, 0, rega);
 
 	  /* Most errors raised by grub_ata_device_initialize() are harmless.
 	     They just indicate this particular drive is not responding, most
@@ -422,7 +402,7 @@ grub_pata_pciinit (grub_pci_device_t dev,
 	      grub_errno = GRUB_ERR_NONE;
 	    }
 
-	  grub_pata_device_initialize (controller * 2 + i, 1, rega, regb);
+	  grub_pata_device_initialize (controller * 2 + i, 1, rega);
 
 	  /* Likewise.  */
 	  if (grub_errno)
