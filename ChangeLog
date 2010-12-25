@@ -1,3 +1,7 @@
+2010-12-25  Jeroen Dekkers <jeroen@dekkers.ch>
+
+	* grub-core/disk/raid.c (insert_array): Don't add spurious members.
+
 2010-12-25  Shea Levy <shlevy>
 
 	* grub-core/genmod.sh.in: Use @OBJCOPY@ rather than objcopy.
