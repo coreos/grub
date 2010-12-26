@@ -1,3 +1,8 @@
+2010-12-25  Mirko Parthey <mirko.parthey@informatik.tu-chemnitz.de>
+
+	* grub-core/boot/i386/pc/boot.S: Fix %es:%bx pointing to nowhere on
+	floppy probe.
+
 2010-12-25  Jeroen Dekkers <jeroen@dekkers.ch>
 
 	* grub-core/disk/raid.c (insert_array): Don't add spurious members.
