@@ -1,3 +1,13 @@
+2010-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Handling of files of unknown size is currently limited. They can't be
+	used e.g. for initrd or modules. Moreover gzip handling of not
+	easily seekable files is buggy. Disable unknown file size for now. May
+	be inefficient but works.
+
+	* grub-core/io/gzio.c (test_header): Always retrieve the file size.
+	* grub-core/io/xzio.c (grub_xzio_open): Likewise.
+
 2010-12-25  Mirko Parthey <mirko.parthey@informatik.tu-chemnitz.de>
 
 	* grub-core/boot/i386/pc/boot.S: Fix %es:%bx pointing to nowhere on
