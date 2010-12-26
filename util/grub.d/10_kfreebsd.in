@@ -84,8 +84,9 @@ kfreebsd_entry ()
   fi
 
   printf '%s\n' "${prepare_boot_cache}"
+  message="$(gettext_printf "Loading kernel of FreeBSD %s ..." ${version})"
   cat << EOF
-	echo			'$(printf "$(gettext_quoted "Loading kernel of FreeBSD %s ...")" ${version})'
+	echo			'$message'
 	kfreebsd		${rel_dirname}/${basename} ${args}
 EOF
 
