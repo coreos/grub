@@ -1,5 +1,15 @@
 2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid using Reed-Solomon with 0 redundancy.
+
+	* grub-core/kern/i386/pc/startup.S: Remove 0-data check.
+	* grub-core/lib/reed_solomon.c (decode_block): Do not proceed on 0 data
+	or 0 redundancy.
+	(grub_reed_solomon_add_redundancy): Do not proceed with 0 redundancy.
+	(grub_reed_solomon_recover): Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't use disk subsystem in freebsd_boot.
 
 	* grub-core/loader/i386/bsd.c (freebsd_bootdev): New variable.
