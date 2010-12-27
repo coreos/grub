@@ -1,5 +1,12 @@
 2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/xnu.c (grub_cmd_xnu_kext): Abort if no kernel
+	is loaded
+	(grub_cmd_xnu_kextdir): Likewise.
+	(grub_cmd_xnu_splash): Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Avoid using Reed-Solomon with 0 redundancy.
 
 	* grub-core/kern/i386/pc/startup.S: Remove 0-data check.

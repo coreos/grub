@@ -1198,6 +1198,10 @@ grub_cmd_xnu_kext (grub_command_t cmd __attribute__ ((unused)),
 		   int argc, char *args[])
 {
   grub_file_t binfile = 0;
+
+  if (! grub_xnu_heap_size)
+    return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
+
   if (argc == 2)
     {
       /* User explicitly specified plist and binary. */
@@ -1228,6 +1232,9 @@ grub_cmd_xnu_kextdir (grub_command_t cmd __attribute__ ((unused)),
 {
   if (argc != 1 && argc != 2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "directory name required");
+
+  if (! grub_xnu_heap_size)
+    return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
 
   if (argc == 1)
     return grub_xnu_scan_dir_for_kexts (args[0],
@@ -1369,6 +1376,9 @@ grub_cmd_xnu_splash (grub_extcmd_context_t ctxt,
   grub_err_t err;
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
+
+  if (! grub_xnu_heap_size)
+    return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
 
   if (ctxt->state[XNU_SPLASH_CMD_ARGINDEX_MODE].set &&
       grub_strcmp (ctxt->state[XNU_SPLASH_CMD_ARGINDEX_MODE].arg,
