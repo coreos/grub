@@ -34,6 +34,10 @@
 #include <grub/env.h>
 #include <grub/i18n.h>
 
+#if defined (__i386) && !defined (GRUB_MACHINE_EFI)
+#include <grub/autoefi.h>
+#endif
+
 struct grub_xnu_devtree_key *grub_xnu_devtree_root = 0;
 static int driverspackagenum = 0;
 static int driversnum = 0;
@@ -424,6 +428,12 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
   if (ptr != grub_xnu_cmdline)
     *(ptr - 1) = 0;
 
+#if defined (__i386) && !defined (GRUB_MACHINE_EFI)
+  err = grub_efiemu_autocore ();
+  if (err)
+    return err;
+#endif
+
   grub_loader_set (grub_xnu_boot, grub_xnu_unload, 0);
 
   grub_xnu_lock ();
@@ -528,6 +538,12 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
   /* Replace last space by '\0'. */
   if (ptr != grub_xnu_cmdline)
     *(ptr - 1) = 0;
+
+#if defined (__i386) && !defined (GRUB_MACHINE_EFI)
+  err = grub_efiemu_autocore ();
+  if (err)
+    return err;
+#endif
 
   grub_loader_set (grub_xnu_boot, grub_xnu_unload, 0);
 

@@ -1,5 +1,11 @@
 2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/xnu.c (grub_cmd_xnu_kernel) [! GRUB_MACHINE_EFI]:
+	Preload EFIemu.
+	(grub_cmd_xnu_kernel64) [! GRUB_MACHINE_EFI]: Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/xnu.c (grub_cmd_xnu_kext): Abort if no kernel
 	is loaded
 	(grub_cmd_xnu_kextdir): Likewise.
