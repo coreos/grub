@@ -1,3 +1,12 @@
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't use disk subsystem in freebsd_boot.
+
+	* grub-core/loader/i386/bsd.c (freebsd_bootdev): New variable.
+	(freebsd_biosdev): Likewise.
+	(grub_freebsd_boot): Use freebsd_bootdev and freebsd_biosdev.
+	(grub_cmd_freebsd): Set freebsd_bootdev and freebsd_biosdev.
+
 2010-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Handling of files of unknown size is currently limited. They can't be
