@@ -1,5 +1,11 @@
 2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/amiga.c (GRUB_AMIGA_RDSK_MAGIC): New define.
+	(amiga_partition_map_iterate): Use grub_memcmp instead of grub_strcmp.
+	Reported by:EHeM.
+
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/bsdXX.c (grub_openbsd_find_ramdisk): Silence
 	spurious warning.
 	Reported by: crocket
