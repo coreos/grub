@@ -1,3 +1,138 @@
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/amiga.c (GRUB_AMIGA_RDSK_MAGIC): New define.
+	(amiga_partition_map_iterate): Use grub_memcmp instead of grub_strcmp.
+	Reported by:EHeM.
+
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/bsdXX.c (grub_openbsd_find_ramdisk): Silence
+	spurious warning.
+	Reported by: crocket
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/xnu.c (grub_cmd_xnu_kernel) [! GRUB_MACHINE_EFI]:
+	Preload EFIemu.
+	(grub_cmd_xnu_kernel64) [! GRUB_MACHINE_EFI]: Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/xnu.c (grub_cmd_xnu_kext): Abort if no kernel
+	is loaded
+	(grub_cmd_xnu_kextdir): Likewise.
+	(grub_cmd_xnu_splash): Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Avoid using Reed-Solomon with 0 redundancy.
+
+	* grub-core/kern/i386/pc/startup.S: Remove 0-data check.
+	* grub-core/lib/reed_solomon.c (decode_block): Do not proceed on 0 data
+	or 0 redundancy.
+	(grub_reed_solomon_add_redundancy): Do not proceed with 0 redundancy.
+	(grub_reed_solomon_recover): Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't use disk subsystem in freebsd_boot.
+
+	* grub-core/loader/i386/bsd.c (freebsd_bootdev): New variable.
+	(freebsd_biosdev): Likewise.
+	(grub_freebsd_boot): Use freebsd_bootdev and freebsd_biosdev.
+	(grub_cmd_freebsd): Set freebsd_bootdev and freebsd_biosdev.
+
+2010-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Handling of files of unknown size is currently limited. They can't be
+	used e.g. for initrd or modules. Moreover gzip handling of not
+	easily seekable files is buggy. Disable unknown file size for now. May
+	be inefficient but works.
+
+	* grub-core/io/gzio.c (test_header): Always retrieve the file size.
+	* grub-core/io/xzio.c (grub_xzio_open): Likewise.
+
+2010-12-25  Mirko Parthey <mirko.parthey@informatik.tu-chemnitz.de>
+
+	* grub-core/boot/i386/pc/boot.S: Fix %es:%bx pointing to nowhere on
+	floppy probe.
+
+2010-12-25  Jeroen Dekkers <jeroen@dekkers.ch>
+
+	* grub-core/disk/raid.c (insert_array): Don't add spurious members.
+
+2010-12-25  Shea Levy <shlevy>
+
+	* grub-core/genmod.sh.in: Use @OBJCOPY@ rather than objcopy.
+
+2010-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/30_os-prober.in: Don't emit drivemap directive for
+	Windows Server 2008.
+	Reported by: Devin Giddings.
+
+2010-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/acpihalt.c (grub_acpi_halt): Sleep for 1.5 before
+	writing an error message because of async power management.
+	* grub-core/kern/mips/yeeloong/init.c (grub_halt): Likewise.
+	(grub_reboot): Likewise.
+
+2010-12-23  Jordan Uggla  <jordan.uggla@gmail.com>
+
+	* tests/util/grub-shell.in: Suppress "ACPI shutdown failed" error to
+	keep unit tests from failing when they shouldn't.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_RAW_SIZE): The
+	previous patch increased the size of the RS code by 20 bytes (at
+	least with gcc-4.4), so increase this by 20 bytes to match.
+	(GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART): Likewise.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/lib/reed_solomon.c (gauss_solve): Fix size of standalone
+	scratch area.  Make sure to initialise chosen in standalone mode as
+	well as non-standalone.
+	Reported by: Robert Hooker and Andy Whitcroft.
+	Tested by: Andy Whitcroft.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/commands/echo.c (grub_cmd_echo): Make UTF-8-clean by
+	constructing a new unescaped string and passing it to grub_xputs in
+	one go, rather than passing characters to grub_printf one at a time.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/fs/udf.c (read_string): Pacify GCC warning by
+	initialising utf16.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (gettext_quoted): Add clarifying
+	comment.  Add an extra layer of quotation, requiring the output of
+	this function to be used in a printf format string.
+	(gettext_printf): New function.
+	* util/grub.d/10_hurd.in: Use gettext_printf where appropriate.
+	Extract translatable strings from here-documents and use a temporary
+	variable instead, so that xgettext can find them.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
+	* po/grub.d.sed: New file.
+	* po/Makefile.in.in ($(DOMAIN).pot-update): Extract gettext_printf
+	arguments.  Set c-format flags on all strings extracted from
+	util/grub.d/ (xgettext refuses to include these itself for strings
+	it extracted from a shell file, but these really are c-format).
+
+2010-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_add_module):
+	Avoid next pointing to nowhere.
+
 2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/affs.c (grub_affs_mount): Read data->bblock.rootblock
@@ -19,6 +154,12 @@
 	* grub-core/fs/udf.c (grub_udf_iterate_dir): Move string-parsing part
 	(read_string): .. here.
 	(grub_udf_label): Use read_string.
+
+2010-12-19  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* grub-core/normal/menu_entry.c (run): Execute commands from menu
+	editor under argument scope.
+	Reported by: Jordan Uggla
 
 2010-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 

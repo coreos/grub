@@ -111,7 +111,7 @@ EOF
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
 
       case ${LONGNAME} in
-	Windows\ Vista*|Windows\ 7*)
+	Windows\ Vista*|Windows\ 7*|Windows\ Server\ 2008*)
 	;;
 	*)
 	  cat << EOF

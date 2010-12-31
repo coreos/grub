@@ -641,6 +641,7 @@ grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
     return grub_errno;
   newmod->start = start;
   newmod->size = size;
+  newmod->next = 0;
 
   for (i = 0; i < argc; i++)
     len += grub_strlen (argv[i]) + 1;

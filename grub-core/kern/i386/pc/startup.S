@@ -151,8 +151,6 @@ LOCAL (codestart):
 	addl    $(GRUB_KERNEL_MACHINE_RAW_SIZE - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART), %edx
 	movl    reed_solomon_redundancy, %ecx
 	leal    _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART, %eax
-	testl   %edx, %edx
-	jz post_reed_solomon
 	call    EXT_C (grub_reed_solomon_recover)
 	jmp post_reed_solomon
 

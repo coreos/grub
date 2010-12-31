@@ -522,14 +522,16 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
           /* We found more members of the array than the array
              actually has according to its superblock.  This shouldn't
              happen normally.  */
-          grub_dprintf ("raid", "array->nr_devs > array->total_devs (%d)?!?",
-			array->total_devs);
+          return grub_error (GRUB_ERR_BAD_DEVICE,
+			     "superfluous RAID member (%d found)",
+			     array->total_devs);
 
         if (array->members[new_array->index].device != NULL)
           /* We found multiple devices with the same number. Again,
              this shouldn't happen.  */
-          grub_dprintf ("raid", "Found two disks with the number %d?!?",
-			new_array->number);
+	  return grub_error (GRUB_ERR_BAD_DEVICE,
+			     "found two disks with the number %d",
+			     new_array->number);
 
         if (new_array->disk_size < array->disk_size)
           array->disk_size = new_array->disk_size;

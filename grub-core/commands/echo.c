@@ -44,7 +44,13 @@ grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
   for (i = 0; i < argc; i++)
     {
       char *arg = *args;
+      /* Unescaping results in a string no longer than the original.  */
+      char *unescaped = grub_malloc (grub_strlen (arg) + 1);
+      char *p = unescaped;
       args++;
+
+      if (!unescaped)
+	return grub_errno;
 
       while (*arg)
 	{
@@ -58,11 +64,11 @@ grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
 	      switch (*arg)
 		{
 		case '\\':
-		  grub_printf ("\\");
+		  *p++ = '\\';
 		  break;
 
 		case 'a':
-		  grub_printf ("\a");
+		  *p++ = '\a';
 		  break;
 
 		case 'c':
@@ -70,23 +76,23 @@ grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
 		  break;
 
 		case 'f':
-		  grub_printf ("\f");
+		  *p++ = '\f';
 		  break;
 
 		case 'n':
-		  grub_printf ("\n");
+		  *p++ = '\n';
 		  break;
 
 		case 'r':
-		  grub_printf ("\r");
+		  *p++ = '\r';
 		  break;
 
 		case 't':
-		  grub_printf ("\t");
+		  *p++ = '\t';
 		  break;
 
 		case 'v':
-		  grub_printf ("\v");
+		  *p++ = '\v';
 		  break;
 		}
 	      arg++;
@@ -95,9 +101,13 @@ grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
 
 	  /* This was not an escaped character, or escaping is not
 	     enabled.  */
-	  grub_printf ("%c", *arg);
+	  *p++ = *arg;
 	  arg++;
 	}
+
+      *p = '\0';
+      grub_xputs (unescaped);
+      grub_free (unescaped);
 
       /* If another argument follows, insert a space.  */
       if (i != argc - 1)
