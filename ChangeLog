@@ -1,5 +1,11 @@
 2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/amiga.c (GRUB_AMIGA_PART_MAGIC): New define.
+	(amiga_partition_map_iterate): Check "PART" magic to avoid a very long
+	loop in case of incorrect amiga partmap.
+
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/partmap/amiga.c (GRUB_AMIGA_RDSK_MAGIC): New define.
 	(amiga_partition_map_iterate): Use grub_memcmp instead of grub_strcmp.
 	Reported by:EHeM.
