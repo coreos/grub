@@ -1,3 +1,9 @@
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/bsdXX.c (grub_openbsd_find_ramdisk): Silence
+	spurious warning.
+	Reported by: crocket
+
 2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/xnu.c (grub_cmd_xnu_kernel) [! GRUB_MACHINE_EFI]:

@@ -511,7 +511,7 @@ SUFFIX(grub_openbsd_find_ramdisk) (grub_file_t file,
     grub_err_t err;
     Elf_Ehdr e;
     Elf_Shdr *s;
-    char *shdr;
+    char *shdr = NULL;
     
     err = read_headers (file, &e, &shdr);
     if (err)
