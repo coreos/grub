@@ -174,7 +174,6 @@ grub_affs_mount (grub_disk_t disk)
   struct grub_affs_rblock *rblock;
 
   int checksum = 0;
-  int checksumr = 0;
   int blocksize = 0;
 
   data = grub_malloc (sizeof (struct grub_affs_data));
@@ -224,8 +223,6 @@ grub_affs_mount (grub_disk_t disk)
   /* The filesystem blocksize is not stored anywhere in the filesystem
      itself.  One way to determine it is reading blocks for the
      rootblock until the checksum is correct.  */
-  checksumr = grub_be_to_cpu32 (rblock->checksum);
-  rblock->checksum = 0;
   for (blocksize = 0; blocksize < 8; blocksize++)
     {
       grub_uint32_t *currblock = rootblock + GRUB_DISK_SECTOR_SIZE * blocksize;
@@ -234,10 +231,10 @@ grub_affs_mount (grub_disk_t disk)
       for (i = 0; i < GRUB_DISK_SECTOR_SIZE / sizeof (*currblock); i++)
 	checksum += grub_be_to_cpu32 (currblock[i]);
 
-      if (checksumr == -checksum)
+      if (checksum == 0)
 	break;
     }
-  if (-checksum != checksumr)
+  if (checksum != 0)
     {
       grub_error (GRUB_ERR_BAD_FS, "AFFS blocksize couldn't be determined");
       goto fail;
