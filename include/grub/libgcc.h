@@ -50,6 +50,12 @@ void EXPORT_FUNC (__umoddi3) (void);
 # ifdef HAVE___UDIVDI3
 void EXPORT_FUNC (__udivdi3) (void);
 # endif
+# ifdef HAVE___MODDI3
+void EXPORT_FUNC (__moddi3) (void);
+# endif
+# ifdef HAVE___DIVDI3
+void EXPORT_FUNC (__divdi3) (void);
+# endif
 # ifdef HAVE___DIVSI3
 void EXPORT_FUNC (__divsi3) (void);
 # endif
