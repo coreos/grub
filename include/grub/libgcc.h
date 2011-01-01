@@ -53,7 +53,7 @@ void EXPORT_FUNC (__udivdi3) (void);
 # ifdef HAVE___DIVSI3
 void EXPORT_FUNC (__divsi3) (void);
 # endif
-# ifdef HAVE___UMODSI3
+# ifdef HAVE___MODSI3
 void EXPORT_FUNC (__modsi3) (void);
 # endif
 #endif
