@@ -16,12 +16,25 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/init.h>
-#include <grub/machine/int.h>
 #include <grub/machine/memory.h>
+#include <grub/machine/int.h>
 #include <grub/err.h>
 #include <grub/types.h>
 #include <grub/misc.h>
+
+struct grub_machine_mmap_entry
+{
+  grub_uint32_t size;
+  grub_uint64_t addr;
+  grub_uint64_t len;
+#define GRUB_MACHINE_MEMORY_AVAILABLE	1
+#define GRUB_MACHINE_MEMORY_RESERVED	2
+#define GRUB_MACHINE_MEMORY_ACPI	3
+#define GRUB_MACHINE_MEMORY_NVS 	4
+#define GRUB_MACHINE_MEMORY_BADRAM 	5
+  grub_uint32_t type;
+} __attribute__((packed));
+
 
 /*
  * grub_get_ext_memsize() :  return the extended memory size in KB.
@@ -110,7 +123,7 @@ grub_get_mmap_entry (struct grub_machine_mmap_entry *entry,
 }
 
 grub_err_t
-grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
+grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
   grub_uint32_t cont;
   struct grub_machine_mmap_entry *entry
@@ -125,9 +138,9 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
     do
       {
 	if (hook (entry->addr, entry->len,
-		  /* Multiboot mmaps have been defined to match with the E820 definition.
+		  /* GRUB mmaps have been defined to match with the E820 definition.
 		     Therefore, we can just pass type through.  */
-		  entry->type))
+		  ((entry->type <= GRUB_MACHINE_MEMORY_BADRAM) && (entry->type >= GRUB_MACHINE_MEMORY_AVAILABLE)) ? entry->type : GRUB_MEMORY_RESERVED))
 	  break;
 
 	if (! cont)
@@ -144,11 +157,12 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
 
       if (eisa_mmap)
 	{
-	  if (hook (0x100000, (eisa_mmap & 0xFFFF) << 10, GRUB_MACHINE_MEMORY_AVAILABLE) == 0)
-	    hook (0x1000000, eisa_mmap & ~0xFFFF, GRUB_MACHINE_MEMORY_AVAILABLE);
+	  if (hook (0x100000, (eisa_mmap & 0xFFFF) << 10,
+		    GRUB_MEMORY_AVAILABLE) == 0)
+	    hook (0x1000000, eisa_mmap & ~0xFFFF, GRUB_MEMORY_AVAILABLE);
 	}
       else
-	hook (0x100000, grub_get_ext_memsize () << 10, GRUB_MACHINE_MEMORY_AVAILABLE);
+	hook (0x100000, grub_get_ext_memsize () << 10, GRUB_MEMORY_AVAILABLE);
     }
 
   return 0;

@@ -138,11 +138,16 @@ grub_ieee1275_find_options (void)
       */
 
       grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_OFDISK_SDCARD_ONLY);
+      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_HAS_CURSORONOFF);
     }
 
   if (is_qemu)
-    /* OpenFirmware hangs on qemu if one requests any memory below 1.5 MiB.  */
-    grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM);
+    {
+      /* OpenFirmware hangs on qemu if one requests any memory below 1.5 MiB.  */
+      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM);
+
+      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_HAS_CURSORONOFF);
+    }
 
   if (! grub_ieee1275_finddevice ("/rom/boot-rom", &bootrom))
     {

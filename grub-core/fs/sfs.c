@@ -149,7 +149,6 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
   struct grub_sfs_btree *tree;
   int i;
   int next;
-  int prev;
 
   treeblock = grub_malloc (data->blocksize);
   if (!block)
@@ -161,8 +160,6 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
   /* Handle this level in the btree.  */
   do
     {
-      prev = 0;
-
       grub_disk_read (data->disk, next, 0, data->blocksize, treeblock);
       if (grub_errno)
 	{
@@ -582,6 +579,9 @@ static struct grub_fs grub_sfs_fs =
     .read = grub_sfs_read,
     .close = grub_sfs_close,
     .label = grub_sfs_label,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 0,
+#endif
     .next = 0
   };
 

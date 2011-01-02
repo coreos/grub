@@ -1,7 +1,0 @@
-2008-01-28  Tristan Gingold  <gingold@free.fr>
-2010-01-18  Robert Millan  <rmh.grub@aybabtu.com>
-2010-08-31  Vladimir Serbinenko  <phcoder@gmail.com>
-
-	* grub-core/commands/efi/lsefimmap.c: New file.
-	* grub-core/Makefile.core.def (lsefimmap): New module.
-	* include/grub/efi/api.h (PRIxGRUB_EFI_UINTN_T): New definition.

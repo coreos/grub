@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <setjmp.h>
 #include <sys/stat.h>
-#include <getopt.h>
 #include <string.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -190,12 +189,15 @@ main (int argc, char *argv[])
   grub_emu_init ();
   grub_console_init ();
   grub_host_init ();
-  grub_hostfs_init ();
 
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
 
   grub_init_all ();
+
+  grub_hostfs_init ();
+
+  grub_emu_post_init ();
 
   /* Make sure that there is a root device.  */
   if (! root_dev)

@@ -79,21 +79,9 @@ static void
 draw (grub_gfxmenu_box_t self, int x, int y)
 {
   int height_n;
-  int height_s;
-  int height_e;
-  int height_w;
-  int width_n;
-  int width_s;
-  int width_e;
   int width_w;
 
   height_n = get_height (self->scaled_pixmaps[BOX_PIXMAP_N]);
-  height_s = get_height (self->scaled_pixmaps[BOX_PIXMAP_S]);
-  height_e = get_height (self->scaled_pixmaps[BOX_PIXMAP_E]);
-  height_w = get_height (self->scaled_pixmaps[BOX_PIXMAP_W]);
-  width_n = get_width (self->scaled_pixmaps[BOX_PIXMAP_N]);
-  width_s = get_width (self->scaled_pixmaps[BOX_PIXMAP_S]);
-  width_e = get_width (self->scaled_pixmaps[BOX_PIXMAP_E]);
   width_w = get_width (self->scaled_pixmaps[BOX_PIXMAP_W]);
 
   /* Draw sides.  */

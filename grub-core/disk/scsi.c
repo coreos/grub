@@ -431,12 +431,6 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 			     "unknown SCSI device");
 	}
 
-      if (scsi->devtype == grub_scsi_devtype_cdrom)
-	disk->has_partitions = 0;
-      else
-	disk->has_partitions = 1;
-
-
       /* According to USB MS tests specification, issue Test Unit Ready
        * until OK */
       maxtime = grub_get_time_ms () + 5000; /* It is safer value */

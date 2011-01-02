@@ -100,6 +100,8 @@ VARIABLE(grub_install_dos_part)
 	.long	0xFFFFFFFF
 VARIABLE(grub_install_bsd_part)
 	.long	0xFFFFFFFF
+reed_solomon_redundancy:
+	.long	0
 
 #ifdef APPLE_CC
 bss_start:
@@ -107,7 +109,56 @@ bss_start:
 bss_end:
 	.long 0
 #endif
+/*
+ *  This is the area for all of the special variables.
+ */
 
+VARIABLE(grub_boot_drive)
+	.byte	0
+
+/* the real mode code continues... */
+LOCAL (codestart):
+	cli		/* we're not safe here! */
+
+	/* set up %ds, %ss, and %es */
+	xorw	%ax, %ax
+	movw	%ax, %ds
+	movw	%ax, %ss
+	movw	%ax, %es
+
+	/* set up the real mode/BIOS stack */
+	movl	$GRUB_MEMORY_MACHINE_REAL_STACK, %ebp
+	movl	%ebp, %esp
+
+	sti		/* we're safe again */
+
+	/* save the boot drive */
+	ADDR32	movb	%dl, EXT_C(grub_boot_drive)
+
+	/* reset disk system (%ah = 0) */
+	int	$0x13
+
+	/* transition to protected mode */
+	DATA32	call real_to_prot
+
+	/* The ".code32" directive takes GAS out of 16-bit mode. */
+	.code32
+
+	incl	%eax
+	call	grub_gate_a20
+
+	movl	EXT_C(grub_compressed_size), %edx
+	addl    $(GRUB_KERNEL_MACHINE_RAW_SIZE - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART), %edx
+	movl    reed_solomon_redundancy, %ecx
+	leal    _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART, %eax
+	call    EXT_C (grub_reed_solomon_recover)
+	jmp post_reed_solomon
+
+#include <rs_decoder.S>
+
+	.text
+
+	. = _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART
 /*
  * Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
  * This uses the a.out kludge to load raw binary to the area starting at 1MB,
@@ -171,38 +222,9 @@ multiboot_trampoline:
         movb    $0xFF, %dh
 	/* enter the usual booting */
 	call	prot_to_real
-	.code16
+	jmp     LOCAL (codestart)
 
-/* the real mode code continues... */
-LOCAL (codestart):
-	cli		/* we're not safe here! */
-
-	/* set up %ds, %ss, and %es */
-	xorw	%ax, %ax
-	movw	%ax, %ds
-	movw	%ax, %ss
-	movw	%ax, %es
-
-	/* set up the real mode/BIOS stack */
-	movl	$GRUB_MEMORY_MACHINE_REAL_STACK, %ebp
-	movl	%ebp, %esp
-
-	sti		/* we're safe again */
-
-	/* save the boot drive */
-	ADDR32	movb	%dl, EXT_C(grub_boot_drive)
-
-	/* reset disk system (%ah = 0) */
-	int	$0x13
-
-	/* transition to protected mode */
-	DATA32	call real_to_prot
-
-	/* The ".code32" directive takes GAS out of 16-bit mode. */
-	.code32
-
-	incl	%eax
-	call	EXT_C(grub_gate_a20)
+post_reed_solomon:
 
 #ifdef ENABLE_LZMA
 	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
@@ -271,15 +293,6 @@ LOCAL (codestart):
 	 */
 	call EXT_C(grub_main)
 
-/*
- *  This is the area for all of the special variables.
- */
-
-VARIABLE(grub_boot_drive)
-	.byte	0
-
-	.p2align	2	/* force 4-byte alignment */
-
 #include "../realmode.S"
 
 /*
@@ -292,7 +305,7 @@ VARIABLE(grub_boot_drive)
  * It also eats any keystrokes in the keyboard buffer.  :-(
  */
 
-FUNCTION(grub_gate_a20)
+grub_gate_a20:	
 	movl	%eax, %edx
 
 gate_a20_test_current_state:
@@ -478,7 +491,7 @@ FUNCTION(grub_chainloader_real_boot)
 
 	/* Turn off Gate A20 */
 	xorl	%eax, %eax
-	call	EXT_C(grub_gate_a20)
+	call	grub_gate_a20
 
 	/* set up to pass boot drive */
 	popl	%edx
@@ -576,64 +589,32 @@ FUNCTION(grub_console_putchar)
 	ret
 
 
+LOCAL(bypass_table):
+	.word 0x011b, 0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r'
+	.word 0x1c00 | '\n'
+LOCAL(bypass_table_end):
+
 /*
  * int grub_console_getkey (void)
+ *	if there is a character pending, return it; otherwise return -1
+ * BIOS call "INT 16H Function 01H" to check whether a character is pending
+ *	Call with	%ah = 0x1
+ *	Return:
+ *		If key waiting to be input:
+ *			%ah = keyboard scan code
+ *			%al = ASCII character
+ *			Zero flag = clear
+ *		else
+ *			Zero flag = set
  * BIOS call "INT 16H Function 00H" to read character from keyboard
  *	Call with	%ah = 0x0
  *	Return:		%ah = keyboard scan code
  *			%al = ASCII character
  */
 
-/* this table is used in translate_keycode below */
-LOCAL (translation_table):
-	.word	GRUB_CONSOLE_KEY_LEFT, GRUB_TERM_LEFT
-	.word	GRUB_CONSOLE_KEY_RIGHT, GRUB_TERM_RIGHT
-	.word	GRUB_CONSOLE_KEY_UP, GRUB_TERM_UP
-	.word	GRUB_CONSOLE_KEY_DOWN, GRUB_TERM_DOWN
-	.word	GRUB_CONSOLE_KEY_HOME, GRUB_TERM_HOME
-	.word	GRUB_CONSOLE_KEY_END, GRUB_TERM_END
-	.word	GRUB_CONSOLE_KEY_DC, GRUB_TERM_DC
-	.word	GRUB_CONSOLE_KEY_BACKSPACE, GRUB_TERM_BACKSPACE
-	.word	GRUB_CONSOLE_KEY_PPAGE, GRUB_TERM_PPAGE
-	.word	GRUB_CONSOLE_KEY_NPAGE, GRUB_TERM_NPAGE
-	.word	0
-
-/*
- * translate_keycode translates the key code %dx to an ascii code.
- */
-	.code16
-
-translate_keycode:
-	pushw	%bx
-	pushw	%si
-
-#ifdef __APPLE__
-	movw	$(ABS(LOCAL (translation_table)) - 0x10000), %si
-#else
-	movw	$ABS(LOCAL (translation_table)), %si
-#endif
-
-1:	lodsw
-	/* check if this is the end */
-	testw	%ax, %ax
-	jz	2f
-	/* load the ascii code into %ax */
-	movw	%ax, %bx
-	lodsw
-	/* check if this matches the key code */
-	cmpw	%bx, %dx
-	jne	1b
-	/* translate %dx, if successful */
-	movw	%ax, %dx
-
-2:	popw	%si
-	popw	%bx
-	ret
-
-	.code32
-
 FUNCTION(grub_console_getkey)
 	pushl	%ebp
+	pushl   %edi
 
 	call	prot_to_real
 	.code16
@@ -645,69 +626,55 @@ FUNCTION(grub_console_getkey)
 	 * INT 16/AH = 1 before calling INT 16/AH = 0.
 	 */
 
-1:
 	movb	$1, %ah
 	int	$0x16
-	jnz	2f
-	hlt
-	jmp	1b
-
-2:
+	jz	notpending
 
 	movb	$0, %ah
 	int	$0x16
 
+	xorl    %edx, %edx
 	movw	%ax, %dx		/* real_to_prot uses %eax */
-	call	translate_keycode
 
 	DATA32	call	real_to_prot
 	.code32
 
-	movw	%dx, %ax
+	movl    $0xff, %eax
+	testl   %eax, %edx
+	jz      1f
 
-	popl	%ebp
-	ret
-
-
-/*
- * int grub_console_checkkey (void)
- *	if there is a character pending, return it; otherwise return -1
- * BIOS call "INT 16H Function 01H" to check whether a character is pending
- *	Call with	%ah = 0x1
- *	Return:
- *		If key waiting to be input:
- *			%ah = keyboard scan code
- *			%al = ASCII character
- *			Zero flag = clear
- *		else
- *			Zero flag = set
- */
-FUNCTION(grub_console_checkkey)
-	pushl	%ebp
-	xorl	%edx, %edx
-
-	call	prot_to_real	/* enter real mode */
-	.code16
-
-	movb	$0x1, %ah
-	int	$0x16
-
-	jz	notpending
-
-	movw	%ax, %dx
-	DATA32	jmp	pending
-
-notpending:
-	decl	%edx
-
-pending:
-	DATA32	call	real_to_prot
-	.code32
-
+	andl	%edx, %eax
+	cmpl    $0x20, %eax
+	jae     2f
 	movl	%edx, %eax
+	leal    LOCAL(bypass_table), %edi
+	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) >> 1), %ecx
+	repne scasw 
+	jz      3f
 
+	andl	$0xff, %eax
+	addl    $(('a' - 1) | GRUB_TERM_CTRL), %eax
+	jmp     2f
+3:
+	andl    $0xff, %eax
+	jmp 2f
+
+1:	movl    %edx, %eax
+	shrl    $8, %eax
+	orl     $GRUB_TERM_EXTENDED, %eax
+2:
+	popl    %edi
 	popl	%ebp
 	ret
+
+notpending:	
+	.code16
+	DATA32	call	real_to_prot
+	.code32
+#if GRUB_TERM_NO_KEY != 0
+#error Fix this asm code
+#endif
+	jmp 2b
 
 
 /*
@@ -852,6 +819,10 @@ FUNCTION(grub_console_setcursor)
 	DATA32	call	real_to_prot
 	.code32
 
+	cmp     %cl, %ch
+	jb      3f
+	movw    $0x0d0e, %cx
+3:	
 	movw	%cx, console_cursor_shape
 1:
 	/* set %cx to the designated cursor shape */

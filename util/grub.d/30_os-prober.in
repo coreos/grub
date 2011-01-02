@@ -40,7 +40,7 @@ fi
 
 osx_entry() {
         cat << EOF
-menuentry "${LONGNAME} (${2}-bit) (on ${DEVICE})" {
+menuentry "${LONGNAME} (${2}-bit) (on ${DEVICE})" --class osx --class darwin --class os {
 EOF
 	save_default_entry | sed -e "s/^/\t/"
 	prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
@@ -105,13 +105,13 @@ for OS in ${OSPROBED} ; do
     chain)
 
       cat << EOF
-menuentry "${LONGNAME} (on ${DEVICE})" {
+menuentry "${LONGNAME} (on ${DEVICE})" --class windows --class os {
 EOF
       save_default_entry | sed -e "s/^/\t/"
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
 
       case ${LONGNAME} in
-	Windows\ Vista*|Windows\ 7*)
+	Windows\ Vista*|Windows\ 7*|Windows\ Server\ 2008*)
 	;;
 	*)
 	  cat << EOF
@@ -147,7 +147,7 @@ EOF
 	fi
 
         cat << EOF
-menuentry "${LLABEL} (on ${DEVICE})" {
+menuentry "${LLABEL} (on ${DEVICE})" --class gnu-linux --class gnu --class os {
 EOF
 	save_default_entry | sed -e "s/^/\t/"
 	if [ -z "${prepare_boot_cache}" ]; then
@@ -174,7 +174,7 @@ EOF
     ;;
     hurd)
       cat << EOF
-menuentry "${LONGNAME} (on ${DEVICE})" {
+menuentry "${LONGNAME} (on ${DEVICE})" --class hurd --class gnu --class os {
 EOF
       save_default_entry | sed -e "s/^/\t/"
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"

@@ -39,7 +39,7 @@ grub_rescue_read_line (char **line, int cont)
   grub_printf ((cont) ? "> " : "grub rescue> ");
   grub_memset (linebuf, 0, GRUB_RESCUE_BUF_SIZE);
 
-  while ((c = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != '\n' && c != '\r')
+  while ((c = grub_getkey ()) != '\n' && c != '\r')
     {
       if (grub_isprint (c))
 	{

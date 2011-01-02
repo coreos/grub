@@ -24,6 +24,8 @@
  * See <http://www.7-zip.org>, for more information about LZMA.
  */
 
+#include <config.h>
+
 #include <stdio.h>
 #include <string.h>
 

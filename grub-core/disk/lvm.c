@@ -150,7 +150,6 @@ grub_lvm_open (const char *name, grub_disk_t disk)
   if (! lv)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown LVM device %s", name);
 
-  disk->has_partitions = 0;
   disk->id = lv->number;
   disk->data = lv;
   disk->total_sectors = lv->size;
@@ -260,7 +259,7 @@ grub_lvm_scan_device (const char *name)
 {
   grub_err_t err;
   grub_disk_t disk;
-  grub_uint64_t da_offset, da_size, mda_offset, mda_size;
+  grub_uint64_t mda_offset, mda_size;
   char buf[GRUB_LVM_LABEL_SIZE];
   char vg_id[GRUB_LVM_ID_STRLEN+1];
   char pv_id[GRUB_LVM_ID_STRLEN+1];
@@ -274,9 +273,17 @@ grub_lvm_scan_device (const char *name)
   struct grub_lvm_vg *vg;
   struct grub_lvm_pv *pv;
 
+#ifdef GRUB_UTIL
+  grub_util_info ("scanning %s for LVM", name);
+#endif
+
   disk = grub_disk_open (name);
   if (!disk)
-    return 0;
+    {
+      if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+	grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
 
   /* Search for label. */
   for (i = 0; i < GRUB_LVM_LABEL_SCAN_SECTORS; i++)
@@ -294,7 +301,12 @@ grub_lvm_scan_device (const char *name)
 
   /* Return if we didn't find a label. */
   if (i == GRUB_LVM_LABEL_SCAN_SECTORS)
-    goto fail;
+    {
+#ifdef GRUB_UTIL
+      grub_util_info ("no LVM signature found\n");
+#endif
+      goto fail;
+    }
 
   pvh = (struct grub_lvm_pv_header *) (buf + grub_le_to_cpu32(lh->offset_xl));
 
@@ -307,8 +319,6 @@ grub_lvm_scan_device (const char *name)
   pv_id[j] = '\0';
 
   dlocn = pvh->disk_areas_xl;
-  da_offset = grub_le_to_cpu64 (dlocn->offset);
-  da_size = grub_le_to_cpu64 (dlocn->size);
 
   dlocn++;
   /* Is it possible to have multiple data/metadata areas? I haven't
@@ -318,6 +328,9 @@ grub_lvm_scan_device (const char *name)
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		  "we don't support multiple LVM data areas");
 
+#ifdef GRUB_UTIL
+      grub_util_info ("we don't support multiple LVM data areas\n");
+#endif
       goto fail;
     }
 
@@ -344,6 +357,9 @@ grub_lvm_scan_device (const char *name)
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		  "unknown LVM metadata header");
+#ifdef GRUB_UTIL
+      grub_util_info ("unknown LVM metadata header\n");
+#endif
       goto fail2;
     }
 
@@ -364,7 +380,12 @@ grub_lvm_scan_device (const char *name)
     q++;
 
   if (q == metadatabuf + mda_size)
-    goto fail2;
+    {
+#ifdef GRUB_UTIL
+      grub_util_info ("error parsing metadata\n");
+#endif
+      goto fail2;
+    }
 
   vgname_len = q - p;
   vgname = grub_malloc (vgname_len + 1);
@@ -376,7 +397,12 @@ grub_lvm_scan_device (const char *name)
 
   p = grub_strstr (q, "id = \"");
   if (p == NULL)
-    goto fail3;
+    {
+#ifdef GRUB_UTIL
+      grub_util_info ("couldn't find ID\n");
+#endif
+      goto fail3;
+    }
   p += sizeof ("id = \"") - 1;
   grub_memcpy (vg_id, p, GRUB_LVM_ID_STRLEN);
   vg_id[GRUB_LVM_ID_STRLEN] = '\0';
@@ -399,7 +425,12 @@ grub_lvm_scan_device (const char *name)
 
       vg->extent_size = grub_lvm_getvalue (&p, "extent_size = ");
       if (p == NULL)
-	goto fail4;
+	{
+#ifdef GRUB_UTIL
+	  grub_util_info ("unknown extent size\n");
+#endif
+	  goto fail4;
+	}
 
       vg->lvs = NULL;
       vg->pvs = NULL;
@@ -439,11 +470,21 @@ grub_lvm_scan_device (const char *name)
 
 	      pv->start = grub_lvm_getvalue (&p, "pe_start = ");
 	      if (p == NULL)
-		goto pvs_fail;
+		{
+#ifdef GRUB_UTIL
+		  grub_util_info ("unknown pe_start\n");
+#endif
+		  goto pvs_fail;
+		}
 
 	      p = grub_strchr (p, '}');
 	      if (p == NULL)
-		goto pvs_fail;
+		{
+#ifdef GRUB_UTIL
+		  grub_util_info ("error parsing pe_start\n");
+#endif
+		  goto pvs_fail;
+		}
 	      p++;
 
 	      pv->disk = NULL;
@@ -500,7 +541,12 @@ grub_lvm_scan_device (const char *name)
 
 	      lv->segment_count = grub_lvm_getvalue (&p, "segment_count = ");
 	      if (p == NULL)
-		goto lvs_fail;
+		{
+#ifdef GRUB_UTIL
+		  grub_util_info ("unknown segment_count\n");
+#endif
+		  goto lvs_fail;
+		}
 	      lv->segments = grub_malloc (sizeof (*seg) * lv->segment_count);
 	      seg = lv->segments;
 
@@ -510,14 +556,29 @@ grub_lvm_scan_device (const char *name)
 
 		  p = grub_strstr (p, "segment");
 		  if (p == NULL)
-		    goto lvs_segment_fail;
+		    {
+#ifdef GRUB_UTIL
+		      grub_util_info ("unknown segment\n");
+#endif
+		      goto lvs_segment_fail;
+		    }
 
 		  seg->start_extent = grub_lvm_getvalue (&p, "start_extent = ");
 		  if (p == NULL)
-		    goto lvs_segment_fail;
+		    {
+#ifdef GRUB_UTIL
+		      grub_util_info ("unknown start_extent\n");
+#endif
+		      goto lvs_segment_fail;
+		    }
 		  seg->extent_count = grub_lvm_getvalue (&p, "extent_count = ");
 		  if (p == NULL)
-		    goto lvs_segment_fail;
+		    {
+#ifdef GRUB_UTIL
+		      grub_util_info ("unknown extent_count\n");
+#endif
+		      goto lvs_segment_fail;
+		    }
 
 		  if (grub_lvm_checkvalue (&p, "type = ", "snapshot"))
 		    {
@@ -528,7 +589,12 @@ grub_lvm_scan_device (const char *name)
 
 		  seg->stripe_count = grub_lvm_getvalue (&p, "stripe_count = ");
 		  if (p == NULL)
-		    goto lvs_segment_fail;
+		    {
+#ifdef GRUB_UTIL
+		      grub_util_info ("unknown stripe_count\n");
+#endif
+		      goto lvs_segment_fail;
+		    }
 
 		  lv->size += seg->extent_count * vg->extent_size;
 
@@ -541,7 +607,12 @@ grub_lvm_scan_device (const char *name)
 
 		  p = grub_strstr (p, "stripes = [");
 		  if (p == NULL)
-		    goto lvs_segment_fail2;
+		    {
+#ifdef GRUB_UTIL
+		      grub_util_info ("unknown stripes\n");
+#endif
+		      goto lvs_segment_fail2;
+		    }
 		  p += sizeof("stripes = [") - 1;
 
 		  for (j = 0; j < seg->stripe_count; j++)
@@ -655,6 +726,8 @@ grub_lvm_scan_device (const char *name)
   grub_free (metadatabuf);
  fail:
   grub_disk_close (disk);
+  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+    grub_errno = GRUB_ERR_NONE;
   return 0;
 }
 
@@ -689,5 +762,6 @@ GRUB_MOD_INIT(lvm)
 GRUB_MOD_FINI(lvm)
 {
   grub_disk_dev_unregister (&grub_lvm_dev);
+  vg_list = NULL;
   /* FIXME: free the lvm list. */
 }

@@ -19,8 +19,10 @@
 #ifndef GRUB_ACPI_HEADER
 #define GRUB_ACPI_HEADER	1
 
+#ifndef GRUB_DSDT_TEST
 #include <grub/types.h>
 #include <grub/err.h>
+#endif
 
 struct grub_acpi_rsdp_v10
 {
@@ -60,10 +62,12 @@ struct grub_acpi_fadt
   struct grub_acpi_table_header hdr;
   grub_uint32_t facs_addr;
   grub_uint32_t dsdt_addr;
-  grub_uint8_t somefields1[88];
+  grub_uint8_t somefields1[20];
+  grub_uint32_t pm1a;
+  grub_uint8_t somefields2[64];
   grub_uint64_t facs_xaddr;
   grub_uint64_t dsdt_xaddr;
-  grub_uint8_t somefields2[96];
+  grub_uint8_t somefields3[96];
 } __attribute__ ((packed));
 
 #define GRUB_ACPI_MADT_SIGNATURE "APIC"
@@ -137,6 +141,7 @@ enum
     GRUB_ACPI_MADT_ENTRY_SAPIC_FLAGS_ENABLED = 1
   };
 
+#ifndef GRUB_DSDT_TEST
 struct grub_acpi_rsdp_v10 *grub_acpi_get_rsdpv1 (void);
 struct grub_acpi_rsdp_v20 *grub_acpi_get_rsdpv2 (void);
 struct grub_acpi_rsdp_v10 *grub_machine_acpi_get_rsdpv1 (void);
@@ -144,5 +149,28 @@ struct grub_acpi_rsdp_v20 *grub_machine_acpi_get_rsdpv2 (void);
 grub_uint8_t grub_byte_checksum (void *base, grub_size_t size);
 
 grub_err_t grub_acpi_create_ebda (void);
+
+void grub_acpi_halt (void);
+#endif
+
+#define GRUB_ACPI_SLP_EN (1 << 13)
+#define GRUB_ACPI_SLP_TYP_OFFSET 10
+
+enum
+  {
+    GRUB_ACPI_OPCODE_ZERO = 0, GRUB_ACPI_OPCODE_ONE = 1,
+    GRUB_ACPI_OPCODE_NAME = 8, GRUB_ACPI_OPCODE_BYTE_CONST = 0x0a,
+    GRUB_ACPI_OPCODE_WORD_CONST = 0x0b, GRUB_ACPI_OPCODE_DWORD_CONST = 0x0c,
+    GRUB_ACPI_OPCODE_SCOPE = 0x10, GRUB_ACPI_OPCODE_PACKAGE = 0x12,
+    GRUB_ACPI_OPCODE_METHOD = 0x14, GRUB_ACPI_OPCODE_EXTOP = 0x5b,
+    GRUB_ACPI_OPCODE_IF = 0xa0, GRUB_ACPI_OPCODE_ONES = 0xff
+  };
+enum
+  {
+    GRUB_ACPI_EXTOPCODE_MUTEX = 0x01,
+    GRUB_ACPI_EXTOPCODE_OPERATION_REGION = 0x80,
+    GRUB_ACPI_EXTOPCODE_FIELD_OP = 0x81,
+    GRUB_ACPI_EXTOPCODE_INDEX_FIELD_OP = 0x86,
+  };
 
 #endif /* ! GRUB_ACPI_HEADER */

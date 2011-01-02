@@ -65,20 +65,24 @@ linux_entry ()
     title="$(gettext_quoted "%s, with Linux %s and XEN %s")"
   fi
   printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}" "${xen_version}"
-  save_default_entry | sed -e "s/^/\t/"
+  if ! ${recovery} ; then
+      save_default_entry | sed -e "s/^/\t/"
+  fi
 
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
   printf '%s\n' "${prepare_boot_cache}"
+  message="$(gettext_printf "Loading Linux %s ..." ${version})"
   cat << EOF
-	echo	'$(printf "$(gettext_quoted "Loading Linux %s ...")" ${version})'
+	echo	'$message'
 	multiboot	${rel_xen_dirname}/${xen_basename} placeholder ${xen_args}
 	module	${rel_dirname}/${basename} placeholder root=${linux_root_device_thisversion} ro ${args}
 EOF
   if test -n "${initrd}" ; then
+    message="$(gettext_printf "Loading initial ramdisk ...")"
     cat << EOF
-	echo	'$(gettext_quoted "Loading initial ramdisk ...")'
+	echo	'$message'
 	module	${rel_dirname}/${initrd}
 EOF
   fi
@@ -104,6 +108,7 @@ while [ "x${xen_list}" != "x" ] ; do
     xen_dirname=`dirname ${current_xen}`
     rel_xen_dirname=`make_system_path_relative_to_its_root $xen_dirname`
     xen_version=`echo $xen_basename | sed -e "s,.gz$,,g;s,^xen-,,g"`
+    echo "submenu \"Xen ${xen_version}\" {"
     while [ "x$list" != "x" ] ; do
 	linux=`version_find_latest $list`
 	echo "Found linux image: $linux" >&2
@@ -132,12 +137,13 @@ while [ "x${xen_list}" != "x" ] ; do
 
 	linux_entry "${OS}" "${version}" "${xen_version}" false \
 	    "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}" "${GRUB_CMDLINE_XEN} ${GRUB_CMDLINE_XEN_DEFAULT}"
-	if [ "x${GRUB_DISABLE_LINUX_RECOVERY}" != "xtrue" ]; then
+	if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then
 	    linux_entry "${OS}" "${version}" "${xen_version}" true \
 		"single ${GRUB_CMDLINE_LINUX}" "${GRUB_CMDLINE_XEN}"
 	fi
 
 	list=`echo $list | tr ' ' '\n' | grep -vx $linux | tr '\n' ' '`
     done
+    echo "}"
     xen_list=`echo $xen_list | tr ' ' '\n' | grep -vx $current_xen | tr '\n' ' '`
 done

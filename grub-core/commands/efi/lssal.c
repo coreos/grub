@@ -1,4 +1,4 @@
-/* systab.c  - Display EFI systab.  */
+/* lssal.c  - Display EFI SAL systab.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2008  Free Software Foundation, Inc.

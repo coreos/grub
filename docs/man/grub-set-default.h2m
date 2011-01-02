@@ -1,2 +1,2 @@
 [NAME]
-grub-set-default \- set the default boot entry for GRUB
+grub-set-default \- set the saved default boot entry for GRUB

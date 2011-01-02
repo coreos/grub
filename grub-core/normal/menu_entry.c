@@ -71,6 +71,8 @@ struct screen
   /* The flag of a completion window.  */
   int completion_shown;
 
+  int submenu;
+
   struct per_term_screen *terms;
   unsigned nterms;
 };
@@ -170,7 +172,7 @@ static void
 print_up (int flag, struct per_term_screen *term_screen)
 {
   grub_term_gotoxy (term_screen->term, GRUB_TERM_LEFT_BORDER_X 
-		    + grub_term_entry_width (term_screen->term),
+		    + grub_term_border_width (term_screen->term),
 		    GRUB_TERM_FIRST_ENTRY_Y);
 
   if (flag)
@@ -495,6 +497,8 @@ make_screen (grub_menu_entry_t entry)
   screen = grub_zalloc (sizeof (*screen));
   if (! screen)
     return 0;
+
+  screen->submenu = entry->submenu;
 
   screen->num_lines = 1;
   screen->lines = grub_malloc (sizeof (struct line));
@@ -1159,53 +1163,75 @@ clear_completions_all (struct screen *screen)
 static int
 run (struct screen *screen)
 {
-  int currline = 0;
-  char *nextline;
+  char *script;
+  int errs_before;
+  grub_menu_t menu;
+  char *dummy[1] = { NULL };
 
-  auto grub_err_t editor_getline (char **line, int cont);
-  grub_err_t editor_getline (char **line, int cont __attribute__ ((unused)))
-    {
-      struct line *linep = screen->lines + currline;
-      char *p;
+  auto char * editor_getsource (void);
+  char * editor_getsource (void)
+  {
+    int i;
+    int size = 0;
+    char *source;
 
-      if (currline > screen->num_lines)
-	{
-	  *line = 0;
-	  return 0;
-	}
+    for (i = 0; i < screen->num_lines; i++)
+      size += screen->lines[i].len + 1;
 
-      /* Trim down space characters.  */
-      for (p = linep->buf + linep->len - 1;
-	   p >= linep->buf && grub_isspace (*p);
-	   p--)
-	;
-      *++p = '\0';
+    source = grub_malloc (size + 1);
+    if (! source)
+      return NULL;
 
-      linep->len = p - linep->buf;
-      for (p = linep->buf; grub_isspace (*p); p++)
-	;
-      *line = grub_strdup (p);
-      currline++;
-      return 0;
-    }
+    size = 0;
+    for (i = 0; i < screen->num_lines; i++)
+      {
+	grub_strcpy (source + size, screen->lines[i].buf);
+	size += screen->lines[i].len;
+	source[size++] = '\n';
+      }
+    source[size] = '\0';
+    return source;
+  }
 
   grub_cls ();
   grub_printf ("  ");
   grub_printf_ (N_("Booting a command list"));
   grub_printf ("\n\n");
 
+  errs_before = grub_err_printed_errors;
+
+  if (screen->submenu)
+    {
+      grub_env_context_open ();
+      menu = grub_zalloc (sizeof (*menu));
+      if (! menu)
+	return 0;
+      grub_env_set_menu (menu);
+    }
 
   /* Execute the script, line for line.  */
-  while (currline < screen->num_lines)
-    {
-      editor_getline (&nextline, 0);
-      if (grub_normal_parse_line (nextline, editor_getline))
-	break;
-    }
+  script = editor_getsource ();
+  if (! script)
+    return 0;
+  grub_script_execute_sourcecode (script, 0, dummy);
+  grub_free (script);
+
+  if (errs_before != grub_err_printed_errors)
+    grub_wait_after_message ();
 
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
     grub_command_execute ("boot", 0, 0);
+
+  if (screen->submenu)
+    {
+      if (menu && menu->size)
+	{
+	  grub_show_menu (menu, 1);
+	  grub_normal_free_menu (menu);
+	}
+      grub_env_context_close ();
+    }
 
   if (grub_errno != GRUB_ERR_NONE)
     {
@@ -1272,7 +1298,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 
   while (1)
     {
-      int c = GRUB_TERM_ASCII_CHAR (grub_getkey ());
+      int c = grub_getkey ();
 
       if (screen->completion_shown)
 	{
@@ -1288,70 +1314,79 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 
       switch (c)
 	{
-	case 16: /* C-p */
+	case GRUB_TERM_KEY_UP:
+	case GRUB_TERM_CTRL | 'p':
 	  if (! previous_line (screen, 1))
 	    goto fail;
 	  break;
 
-	case 14: /* C-n */
+	case GRUB_TERM_CTRL | 'n':
+	case GRUB_TERM_KEY_DOWN:
 	  if (! next_line (screen, 1))
 	    goto fail;
 	  break;
 
-	case 6: /* C-f */
+	case GRUB_TERM_CTRL | 'f':
+	case GRUB_TERM_KEY_RIGHT:
 	  if (! forward_char (screen, 1))
 	    goto fail;
 	  break;
 
-	case 2: /* C-b */
+	case GRUB_TERM_CTRL | 'b':
+	case GRUB_TERM_KEY_LEFT:
 	  if (! backward_char (screen, 1))
 	    goto fail;
 	  break;
 
-	case 1: /* C-a */
+	case GRUB_TERM_CTRL | 'a':
+	case GRUB_TERM_KEY_HOME:
 	  if (! beginning_of_line (screen, 1))
 	    goto fail;
 	  break;
 
-	case 5: /* C-e */
+	case GRUB_TERM_CTRL | 'e':
+	case GRUB_TERM_KEY_END:
 	  if (! end_of_line (screen, 1))
 	    goto fail;
 	  break;
 
-	case '\t': /* C-i */
+	case GRUB_TERM_CTRL | 'i':
+	case '\t':
 	  if (! complete (screen, prev_c == c, 1))
 	    goto fail;
 	  break;
 
-	case 4: /* C-d */
+	case GRUB_TERM_CTRL | 'd':
+	case GRUB_TERM_KEY_DC:
 	  if (! delete_char (screen, 1))
 	    goto fail;
 	  break;
 
-	case 8: /* C-h */
+	case GRUB_TERM_CTRL | 'h':
+	case '\b':
 	  if (! backward_delete_char (screen, 1))
 	    goto fail;
 	  break;
 
-	case 11: /* C-k */
+	case GRUB_TERM_CTRL | 'k':
 	  if (! kill_line (screen, prev_c == c, 1))
 	    goto fail;
 	  break;
 
-	case 21: /* C-u */
+	case GRUB_TERM_CTRL | 'u':
 	  /* FIXME: What behavior is good for this key?  */
 	  break;
 
-	case 25: /* C-y */
+	case GRUB_TERM_CTRL | 'y':
 	  if (! yank (screen, 1))
 	    goto fail;
 	  break;
 
-	case 12: /* C-l */
+	case GRUB_TERM_CTRL | 'l':
 	  /* FIXME: centering.  */
 	  goto refresh;
 
-	case 15: /* C-o */
+	case GRUB_TERM_CTRL | 'o':
 	  if (! open_line (screen, 1))
 	    goto fail;
 	  break;
@@ -1366,23 +1401,19 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 	  destroy_screen (screen);
 	  return;
 
-	case 3: /* C-c */
+	case GRUB_TERM_CTRL | 'c':
+	case GRUB_TERM_KEY_F2:
 	  grub_cmdline_run (1);
 	  goto refresh;
 
-	case 24: /* C-x */
-	  {
-	    int chars_before = grub_normal_get_char_counter ();
-	    run (screen);
-
-	    if (chars_before != grub_normal_get_char_counter ())
-	      grub_wait_after_message ();
-	  }
+	case GRUB_TERM_CTRL | 'x':
+	case GRUB_TERM_KEY_F10:
+	  run (screen);
 	  goto refresh;
 
-	case 18: /* C-r */
-	case 19: /* C-s */
-	case 20: /* C-t */
+	case GRUB_TERM_CTRL | 'r':
+	case GRUB_TERM_CTRL | 's':
+	case GRUB_TERM_CTRL | 't':
 	  /* FIXME */
 	  break;
 

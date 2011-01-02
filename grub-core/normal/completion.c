@@ -100,15 +100,16 @@ static int
 iterate_partition (grub_disk_t disk, const grub_partition_t p)
 {
   const char *disk_name = disk->name;
-  char *partition_name = grub_partition_get_name (p);
   char *name;
   int ret;
+  char *part_name;
 
-  if (! partition_name)
+  part_name = grub_partition_get_name (p);
+  if (! part_name)
     return 1;
 
-  name = grub_xasprintf ("%s,%s", disk_name, partition_name);
-  grub_free (partition_name);
+  name = grub_xasprintf ("%s,%s", disk_name, part_name);
+  grub_free (part_name);
 
   if (! name)
     return 1;
@@ -160,14 +161,23 @@ iterate_dev (const char *devname)
 
   if (dev)
     {
-      if (dev->disk && dev->disk->has_partitions)
+      char tmp[grub_strlen (devname) + sizeof (",")];
+
+      grub_memcpy (tmp, devname, grub_strlen (devname));
+
+      if (grub_strcmp (devname, current_word) == 0)
 	{
-	  if (add_completion (devname, ",", GRUB_COMPLETION_TYPE_DEVICE))
+	  if (add_completion (devname, ")", GRUB_COMPLETION_TYPE_PARTITION))
 	    return 1;
+
+	  if (dev->disk)
+	    if (grub_partition_iterate (dev->disk, iterate_partition))
+	      return 1;
 	}
       else
 	{
-	  if (add_completion (devname, ")", GRUB_COMPLETION_TYPE_DEVICE))
+	  grub_memcpy (tmp + grub_strlen (devname), "", sizeof (""));
+	  if (add_completion (tmp, "", GRUB_COMPLETION_TYPE_DEVICE))
 	    return 1;
 	}
     }
@@ -200,7 +210,7 @@ complete_device (void)
 
       if (dev)
 	{
-	  if (dev->disk && dev->disk->has_partitions)
+	  if (dev->disk)
 	    {
 	      if (grub_partition_iterate (dev->disk, iterate_partition))
 		{
@@ -247,7 +257,8 @@ complete_file (void)
       goto fail;
     }
 
-  dir = grub_strchr (current_word, '/');
+  dir = grub_strchr (current_word + (device ? 2 + grub_strlen (device) : 0),
+		     '/');
   last_dir = grub_strrchr (current_word, '/');
   if (dir)
     {
@@ -419,11 +430,8 @@ grub_normal_do_completion (char *buf, int *restore,
       {
 	if (cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE)
 	  {
-	    if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
-	      {
-		if (add_completion (cmd->name, " ", GRUB_COMPLETION_TYPE_COMMAND))
-		  goto fail;
-	      }
+	    if (add_completion (cmd->name, " ", GRUB_COMPLETION_TYPE_COMMAND))
+	      goto fail;
 	  }
       }
     }
@@ -500,8 +508,8 @@ grub_normal_do_completion (char *buf, int *restore,
  fail:
   if (argc != 0)
     {
-      grub_free (argv);
       grub_free (argv[0]);
+      grub_free (argv);
     }
   grub_free (match);
   grub_errno = GRUB_ERR_NONE;

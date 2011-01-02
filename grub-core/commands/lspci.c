@@ -211,11 +211,11 @@ grub_lspci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 }
 
 static grub_err_t
-grub_cmd_lspci (grub_extcmd_t cmd,
+grub_cmd_lspci (grub_extcmd_context_t ctxt,
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
-  iospace = cmd->state[0].set;
+  iospace = ctxt->state[0].set;
   grub_pci_iterate (grub_lspci_iter);
   return GRUB_ERR_NONE;
 }
@@ -224,8 +224,8 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(lspci)
 {
-  cmd = grub_register_extcmd ("lspci", grub_cmd_lspci, GRUB_COMMAND_FLAG_BOTH,
-			      "[-i]", N_("List PCI devices."), options);
+  cmd = grub_register_extcmd ("lspci", grub_cmd_lspci, 0, "[-i]",
+			      N_("List PCI devices."), options);
 }
 
 GRUB_MOD_FINI(lspci)

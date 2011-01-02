@@ -26,7 +26,6 @@
 #include <grub/normal.h>
 #include <grub/file.h>
 #include <grub/kernel.h>
-#include <grub/gzio.h>
 #include <grub/i18n.h>
 
 /*
@@ -219,7 +218,7 @@ grub_gettext_translate (const char *orig)
   return ret;
 }
 
-/* This is similar to grub_gzfile_open. */
+/* This is similar to grub_file_open. */
 static grub_file_t
 grub_mofile_open (const char *filename)
 {
@@ -229,7 +228,7 @@ grub_mofile_open (const char *filename)
   /* Using fd_mo and not another variable because
      it's needed for grub_gettext_get_info.  */
 
-  fd_mo = grub_gzfile_open (filename, 1);
+  fd_mo = grub_file_open (filename);
   grub_errno = GRUB_ERR_NONE;
 
   if (!fd_mo)
@@ -262,10 +261,37 @@ grub_mofile_open (const char *filename)
   return fd_mo;
 }
 
+/* Returning grub_file_t would be more natural, but grub_mofile_open assigns
+   to fd_mo anyway ...  */
 static void
-grub_gettext_init_ext (const char *lang)
+grub_mofile_open_lang (const char *locale_dir, const char *locale)
 {
   char *mo_file;
+
+  /* mo_file e.g.: /boot/grub/locale/ca.mo   */
+
+  mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, locale);
+  if (!mo_file)
+    return;
+
+  fd_mo = grub_mofile_open (mo_file);
+
+  /* Will try adding .gz as well.  */
+  if (fd_mo == NULL)
+    {
+      char *mo_file_old;
+      mo_file_old = mo_file;
+      mo_file = grub_xasprintf ("%s.gz", mo_file);
+      grub_free (mo_file_old);
+      if (!mo_file)
+	return;
+      fd_mo = grub_mofile_open (mo_file);
+    }
+}
+
+static void
+grub_gettext_init_ext (const char *locale)
+{
   char *locale_dir;
 
   locale_dir = grub_env_get ("locale_dir");
@@ -277,22 +303,21 @@ grub_gettext_init_ext (const char *lang)
 
   fd_mo = NULL;
 
-  /* mo_file e.g.: /boot/grub/locale/ca.mo   */
+  grub_mofile_open_lang (locale_dir, locale);
 
-  mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, lang);
-  if (!mo_file)
-    return;
-
-  fd_mo = grub_mofile_open (mo_file);
-
-  /* Will try adding .gz as well.  */
+  /* ll_CC didn't work, so try ll.  */
   if (fd_mo == NULL)
     {
-      grub_free (mo_file);
-      mo_file = grub_xasprintf ("%s.gz", mo_file);
-      if (!mo_file)
-	return;
-      fd_mo = grub_mofile_open (mo_file);
+      char *lang = grub_strdup (locale);
+      char *underscore = grub_strchr (lang, '_');
+
+      if (underscore)
+	{
+	  *underscore = '\0';
+	  grub_mofile_open_lang (locale_dir, lang);
+	}
+
+      grub_free (lang);
     }
 
   if (fd_mo)

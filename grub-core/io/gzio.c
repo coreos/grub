@@ -40,7 +40,7 @@
 #include <grub/misc.h>
 #include <grub/fs.h>
 #include <grub/file.h>
-#include <grub/gzio.h>
+#include <grub/dl.h>
 
 /*
  *  Window Size
@@ -206,23 +206,24 @@ test_header (grub_file_t file)
       || ((hdr.flags & ORIG_NAME) && eat_field (gzio->file, -1))
       || ((hdr.flags & COMMENT) && eat_field (gzio->file, -1)))
     {
-      grub_error (GRUB_ERR_BAD_GZIP_DATA, "unsupported gzip format");
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "unsupported gzip format");
       return 0;
     }
 
   gzio->data_offset = grub_file_tell (gzio->file);
 
-  grub_file_seek (gzio->file, grub_file_size (gzio->file) - 4);
-
-  if (grub_file_read (gzio->file, &orig_len, 4) != 4)
-    {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
-      return 0;
-    }
-
-  /* FIXME: this does not handle files whose original size is over 4GB.
-     But how can we know the real original size?  */
-  file->size = grub_le_to_cpu32 (orig_len);
+  /* FIXME: don't do this on not easily seekable files.  */
+  {
+    grub_file_seek (gzio->file, grub_file_size (gzio->file) - 4);
+    if (grub_file_read (gzio->file, &orig_len, 4) != 4)
+      {
+	grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
+	return 0;
+      }
+    /* FIXME: this does not handle files whose original size is over 4GB.
+       But how can we know the real original size?  */
+    file->size = grub_le_to_cpu32 (orig_len);
+  }
 
   initialize_tables (file);
 
@@ -644,7 +645,7 @@ inflate_codes_in_window (grub_file_t file)
 	      {
 		if (e == 99)
 		  {
-		    grub_error (GRUB_ERR_BAD_GZIP_DATA,
+		    grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
 				"an unused code found");
 		    return 1;
 		  }
@@ -683,7 +684,7 @@ inflate_codes_in_window (grub_file_t file)
 		  {
 		    if (e == 99)
 		      {
-			grub_error (GRUB_ERR_BAD_GZIP_DATA,
+			grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
 				    "an unused code found");
 			return 1;
 		      }
@@ -769,7 +770,7 @@ init_stored_block (grub_file_t file)
   DUMPBITS (16);
   NEEDBITS (16);
   if (gzio->block_len != (int) ((~b) & 0xffff))
-    grub_error (GRUB_ERR_BAD_GZIP_DATA,
+    grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
 		"the length of a stored block does not match");
   DUMPBITS (16);
 
@@ -803,7 +804,7 @@ init_fixed_block (grub_file_t file)
   if (huft_build (l, 288, 257, cplens, cplext, &gzio->tl, &gzio->bl) != 0)
     {
       if (grub_errno == GRUB_ERR_NONE)
-	grub_error (GRUB_ERR_BAD_GZIP_DATA,
+	grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
 		    "failed in building a Huffman code table");
       return;
     }
@@ -815,7 +816,7 @@ init_fixed_block (grub_file_t file)
   if (huft_build (l, 30, 0, cpdist, cpdext, &gzio->td, &gzio->bd) > 1)
     {
       if (grub_errno == GRUB_ERR_NONE)
-	grub_error (GRUB_ERR_BAD_GZIP_DATA,
+	grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
 		    "failed in building a Huffman code table");
       huft_free (gzio->tl);
       gzio->tl = 0;
@@ -862,7 +863,7 @@ init_dynamic_block (grub_file_t file)
   DUMPBITS (4);
   if (nl > 286 || nd > 30)
     {
-      grub_error (GRUB_ERR_BAD_GZIP_DATA, "too much data");
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "too much data");
       return;
     }
 
@@ -880,7 +881,7 @@ init_dynamic_block (grub_file_t file)
   gzio->bl = 7;
   if (huft_build (ll, 19, 19, NULL, NULL, &gzio->tl, &gzio->bl) != 0)
     {
-      grub_error (GRUB_ERR_BAD_GZIP_DATA,
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
 		  "failed in building a Huffman code table");
       return;
     }
@@ -904,7 +905,7 @@ init_dynamic_block (grub_file_t file)
 	  DUMPBITS (2);
 	  if ((unsigned) i + j > n)
 	    {
-	      grub_error (GRUB_ERR_BAD_GZIP_DATA, "too many codes found");
+	      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "too many codes found");
 	      return;
 	    }
 	  while (j--)
@@ -917,7 +918,7 @@ init_dynamic_block (grub_file_t file)
 	  DUMPBITS (3);
 	  if ((unsigned) i + j > n)
 	    {
-	      grub_error (GRUB_ERR_BAD_GZIP_DATA, "too many codes found");
+	      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "too many codes found");
 	      return;
 	    }
 	  while (j--)
@@ -932,7 +933,7 @@ init_dynamic_block (grub_file_t file)
 	  DUMPBITS (7);
 	  if ((unsigned) i + j > n)
 	    {
-	      grub_error (GRUB_ERR_BAD_GZIP_DATA, "too many codes found");
+	      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "too many codes found");
 	      return;
 	    }
 	  while (j--)
@@ -954,7 +955,7 @@ init_dynamic_block (grub_file_t file)
   gzio->bl = lbits;
   if (huft_build (ll, nl, 257, cplens, cplext, &gzio->tl, &gzio->bl) != 0)
     {
-      grub_error (GRUB_ERR_BAD_GZIP_DATA,
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
 		  "failed in building a Huffman code table");
       return;
     }
@@ -963,7 +964,7 @@ init_dynamic_block (grub_file_t file)
     {
       huft_free (gzio->tl);
       gzio->tl = 0;
-      grub_error (GRUB_ERR_BAD_GZIP_DATA,
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
 		  "failed in building a Huffman code table");
       return;
     }
@@ -1039,7 +1040,7 @@ inflate_window (grub_file_t file)
 	}
 
       if (gzio->block_type > INFLATE_DYNAMIC)
-	grub_error (GRUB_ERR_BAD_GZIP_DATA,
+	grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
 		    "unknown block type %d", gzio->block_type);
 
       if (grub_errno != GRUB_ERR_NONE)
@@ -1111,8 +1112,8 @@ initialize_tables (grub_file_t file)
 /* Open a new decompressing object on the top of IO. If TRANSPARENT is true,
    even if IO does not contain data compressed by gzip, return a valid file
    object. Note that this function won't close IO, even if an error occurs.  */
-grub_file_t
-grub_gzio_open (grub_file_t io, int transparent)
+static grub_file_t
+grub_gzio_open (grub_file_t io)
 {
   grub_file_t file;
   grub_gzio_t gzio = 0;
@@ -1135,6 +1136,7 @@ grub_gzio_open (grub_file_t io, int transparent)
   file->data = gzio;
   file->read_hook = 0;
   file->fs = &grub_gzio_fs;
+  file->not_easly_seekable = 1;
 
   if (! test_header (file))
     {
@@ -1142,33 +1144,11 @@ grub_gzio_open (grub_file_t io, int transparent)
       grub_free (file);
       grub_file_seek (io, 0);
 
-      if (grub_errno == GRUB_ERR_BAD_FILE_TYPE && transparent)
+      if (grub_errno == GRUB_ERR_BAD_FILE_TYPE)
 	{
 	  grub_errno = GRUB_ERR_NONE;
 	  return io;
 	}
-      else
-	return 0;
-    }
-
-  return file;
-}
-
-/* This is similar to grub_gzio_open, but takes a file name as an argument.  */
-grub_file_t
-grub_gzfile_open (const char *name, int transparent)
-{
-  grub_file_t io, file;
-
-  io = grub_file_open (name);
-  if (! io)
-    return 0;
-
-  file = grub_gzio_open (io, transparent);
-  if (! file)
-    {
-      grub_file_close (io);
-      return 0;
     }
 
   return file;
@@ -1249,3 +1229,13 @@ static struct grub_fs grub_gzio_fs =
     .label = 0,
     .next = 0
   };
+
+GRUB_MOD_INIT(gzio)
+{
+  grub_file_filter_register (GRUB_FILE_FILTER_GZIO, grub_gzio_open);
+}
+
+GRUB_MOD_FINI(gzio)
+{
+  grub_file_filter_unregister (GRUB_FILE_FILTER_GZIO);
+}

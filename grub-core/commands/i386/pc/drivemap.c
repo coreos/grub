@@ -24,9 +24,10 @@
 #include <grub/disk.h>
 #include <grub/loader.h>
 #include <grub/env.h>
-#include <grub/machine/memory.h>
 #include <grub/machine/biosnum.h>
 #include <grub/i18n.h>
+#include <grub/memory.h>
+#include <grub/machine/memory.h>
 
 
 /* Real mode IVT slot (seg:off far pointer) for interrupt 0x13.  */
@@ -196,13 +197,13 @@ list_mappings (void)
 }
 
 static grub_err_t
-grub_cmd_drivemap (struct grub_extcmd *cmd, int argc, char **args)
+grub_cmd_drivemap (struct grub_extcmd_context *ctxt, int argc, char **args)
 {
-  if (cmd->state[OPTIDX_LIST].set)
+  if (ctxt->state[OPTIDX_LIST].set)
     {
       return list_mappings ();
     }
-  else if (cmd->state[OPTIDX_RESET].set)
+  else if (ctxt->state[OPTIDX_RESET].set)
     {
       /* Reset: just delete all mappings, freeing their memory.  */
       drivemap_node_t *curnode = map_head;
@@ -216,7 +217,7 @@ grub_cmd_drivemap (struct grub_extcmd *cmd, int argc, char **args)
       map_head = 0;
       return GRUB_ERR_NONE;
     }
-  else if (!cmd->state[OPTIDX_SWAP].set && argc == 0)
+  else if (!ctxt->state[OPTIDX_SWAP].set && argc == 0)
     {
       /* No arguments */
       return list_mappings ();
@@ -248,11 +249,11 @@ grub_cmd_drivemap (struct grub_extcmd *cmd, int argc, char **args)
     }
   /* Set the mapping for the disk (overwrites any existing mapping).  */
   grub_dprintf ("drivemap", "%s %s (%02x) = %s (%02x)\n",
-		cmd->state[OPTIDX_SWAP].set ? "Swapping" : "Mapping",
+		ctxt->state[OPTIDX_SWAP].set ? "Swapping" : "Mapping",
 		args[1], mapto, args[0], mapfrom);
   err = drivemap_set (mapto, mapfrom);
   /* If -s, perform the reverse mapping too (only if the first was OK).  */
-  if (cmd->state[OPTIDX_SWAP].set && err == GRUB_ERR_NONE)
+  if (ctxt->state[OPTIDX_SWAP].set && err == GRUB_ERR_NONE)
     err = drivemap_set (mapfrom, mapto);
   return err;
 }
@@ -306,7 +307,7 @@ install_int13_handler (int noret __attribute__ ((unused)))
   grub_dprintf ("drivemap", "Payload is %u bytes long\n", total_size);
   handler_base = grub_mmap_malign_and_register (16, total_size,
 						&drivemap_mmap,
-						GRUB_MACHINE_MEMORY_RESERVED,
+						GRUB_MEMORY_RESERVED,
 						GRUB_MMAP_MALLOC_LOW);
   if (! handler_base)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't reserve "
@@ -401,8 +402,7 @@ GRUB_MOD_INIT (drivemap)
 {
   grub_get_root_biosnumber_saved = grub_get_root_biosnumber;
   grub_get_root_biosnumber = grub_get_root_biosnumber_drivemap;
-  cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap, 0,
 			      N_("-l | -r | [-s] grubdev osdisk."),
 			      N_("Manage the BIOS drive mappings."),
 			      options);

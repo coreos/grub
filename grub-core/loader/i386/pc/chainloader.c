@@ -20,19 +20,20 @@
 #include <grub/loader.h>
 #include <grub/machine/loader.h>
 #include <grub/machine/chainloader.h>
+#include <grub/machine/memory.h>
 #include <grub/file.h>
 #include <grub/err.h>
 #include <grub/device.h>
 #include <grub/disk.h>
 #include <grub/misc.h>
 #include <grub/types.h>
-#include <grub/machine/init.h>
 #include <grub/partition.h>
-#include <grub/machine/memory.h>
+#include <grub/memory.h>
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/msdos_partition.h>
 #include <grub/machine/biosnum.h>
+#include <grub/cpu/floppy.h>
 #include <grub/i18n.h>
 #include <grub/video.h>
 #include <grub/mm.h>
@@ -69,6 +70,7 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 
   grub_dl_ref (my_mod);
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (filename);
   if (! file)
     goto fail;

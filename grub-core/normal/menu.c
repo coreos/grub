@@ -153,49 +153,13 @@ get_and_remove_first_entry_number (const char *name)
   return entry;
 }
 
-static void
-grub_menu_execute_entry_real (grub_menu_entry_t entry)
-{
-  const char *source;
-
-  auto grub_err_t getline (char **line, int cont);
-  grub_err_t getline (char **line, int cont __attribute__ ((unused)))
-  {
-    const char *p;
-
-    if (!source)
-      {
-	*line = 0;
-	return 0;
-      }
-
-    p = grub_strchr (source, '\n');
-
-    if (p)
-      *line = grub_strndup (source, p - source);
-    else
-      *line = grub_strdup (source);
-    source = p ? p + 1 : 0;
-    return 0;
-  }
-
-  source = entry->sourcecode;
-
-  while (source)
-    {
-      char *line;
-
-      getline (&line, 0);
-      grub_normal_parse_line (line, getline);
-      grub_free (line);
-    }
-}
-
 /* Run a menu entry.  */
 void
 grub_menu_execute_entry(grub_menu_entry_t entry)
 {
   grub_err_t err = GRUB_ERR_NONE;
+  int errs_before;
+  grub_menu_t menu;
 
   if (entry->restricted)
     err = grub_auth_check_authentication (entry->users);
@@ -207,13 +171,36 @@ grub_menu_execute_entry(grub_menu_entry_t entry)
       return;
     }
 
-  grub_env_set ("chosen", entry->title);
+  errs_before = grub_err_printed_errors;
 
-  grub_menu_execute_entry_real (entry);
+  if (entry->submenu)
+    {
+      grub_env_context_open ();
+      menu = grub_zalloc (sizeof (*menu));
+      if (! menu)
+	return;
+      grub_env_set_menu (menu);
+    }
+
+  grub_env_set ("chosen", entry->title);
+  grub_script_execute_sourcecode (entry->sourcecode, entry->argc, entry->args);
+
+  if (errs_before != grub_err_printed_errors)
+    grub_wait_after_message ();
 
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
     grub_command_execute ("boot", 0, 0);
+
+  if (entry->submenu)
+    {
+      if (menu && menu->size)
+	{
+	  grub_show_menu (menu, 1);
+	  grub_normal_free_menu (menu);
+	}
+      grub_env_context_close ();
+    }
 }
 
 /* Execute ENTRY from the menu MENU, falling back to entries specified
@@ -446,7 +433,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
       if (grub_checkkey () >= 0 || timeout < 0)
 	{
-	  c = GRUB_TERM_ASCII_CHAR (grub_getkey ());
+	  c = grub_getkey ();
 
 	  if (timeout >= 0)
 	    {
@@ -457,31 +444,36 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
 	  switch (c)
 	    {
-	    case GRUB_TERM_HOME:
+	    case GRUB_TERM_KEY_HOME:
+	    case GRUB_TERM_CTRL | 'a':
 	      current_entry = 0;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
-	    case GRUB_TERM_END:
+	    case GRUB_TERM_KEY_END:
+	    case GRUB_TERM_CTRL | 'e':
 	      current_entry = menu->size - 1;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
-	    case GRUB_TERM_UP:
+	    case GRUB_TERM_KEY_UP:
+	    case GRUB_TERM_CTRL | 'p':
 	    case '^':
 	      if (current_entry > 0)
 		current_entry--;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
-	    case GRUB_TERM_DOWN:
+	    case GRUB_TERM_CTRL | 'n':
+	    case GRUB_TERM_KEY_DOWN:
 	    case 'v':
 	      if (current_entry < menu->size - 1)
 		current_entry++;
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
-	    case GRUB_TERM_PPAGE:
+	    case GRUB_TERM_CTRL | 'g':
+	    case GRUB_TERM_KEY_PPAGE:
 	      if (current_entry < GRUB_MENU_PAGE_SIZE)
 		current_entry = 0;
 	      else
@@ -489,7 +481,8 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	      menu_set_chosen_entry (current_entry);
 	      break;
 
-	    case GRUB_TERM_NPAGE:
+	    case GRUB_TERM_CTRL | 'c':
+	    case GRUB_TERM_KEY_NPAGE:
 	      if (current_entry + GRUB_MENU_PAGE_SIZE < menu->size)
 		current_entry += GRUB_MENU_PAGE_SIZE;
 	      else
@@ -499,7 +492,8 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
 	    case '\n':
 	    case '\r':
-	    case 6:
+	    case GRUB_TERM_KEY_RIGHT:
+	    case GRUB_TERM_CTRL | 'f':
 	      menu_fini ();
               *auto_boot = 0;
 	      return current_entry;
@@ -615,20 +609,9 @@ show_menu (grub_menu_t menu, int nested)
       grub_cls ();
 
       if (auto_boot)
-        {
-          grub_menu_execute_with_fallback (menu, e, &execution_callback, 0);
-        }
+	grub_menu_execute_with_fallback (menu, e, &execution_callback, 0);
       else
-        {
-	  int chars_before = grub_normal_get_char_counter ();
-          grub_errno = GRUB_ERR_NONE;
-          grub_menu_execute_entry (e);
-	  grub_print_error ();
-	  grub_errno = GRUB_ERR_NONE;
-
-          if (chars_before != grub_normal_get_char_counter ())
-	    grub_wait_after_message ();
-        }
+	grub_menu_execute_entry (e);
     }
 
   return GRUB_ERR_NONE;

@@ -189,31 +189,40 @@ find_root_device_from_libzfs (const char *dir)
   {
     zpool_handle_t *zpool;
     libzfs_handle_t *libzfs;
-    nvlist_t *nvlist;
-    nvlist_t **nvlist_array;
+    nvlist_t *config, *vdev_tree;
+    nvlist_t **children, **path;
     unsigned int nvlist_count;
+    unsigned int i;
 
     libzfs = grub_get_libzfs_handle ();
     if (! libzfs)
       return NULL;
 
     zpool = zpool_open (libzfs, poolname);
-    nvlist = zpool_get_config (zpool, NULL);
+    config = zpool_get_config (zpool, NULL);
 
-    if (nvlist_lookup_nvlist (nvlist, "vdev_tree", &nvlist) != 0)
+    if (nvlist_lookup_nvlist (config, "vdev_tree", &vdev_tree) != 0)
       error (1, errno, "nvlist_lookup_nvlist (\"vdev_tree\")");
 
-    if (nvlist_lookup_nvlist_array (nvlist, "children", &nvlist_array, &nvlist_count) != 0)
+    if (nvlist_lookup_nvlist_array (vdev_tree, "children", &children, &nvlist_count) != 0)
       error (1, errno, "nvlist_lookup_nvlist_array (\"children\")");
+    assert (nvlist_count > 0);
 
-    do
+    while (nvlist_lookup_nvlist_array (children[0], "children",
+				       &children, &nvlist_count) == 0)
+      assert (nvlist_count > 0);
+
+    for (i = 0; i < nvlist_count; i++)
       {
-	assert (nvlist_count > 0);
-      } while (nvlist_lookup_nvlist_array (nvlist_array[0], "children",
-					   &nvlist_array, &nvlist_count) == 0);
+	if (nvlist_lookup_string (children[i], "path", &device) != 0)
+	  error (1, errno, "nvlist_lookup_string (\"path\")");
 
-    if (nvlist_lookup_string (nvlist_array[0], "path", &device) != 0)
-      error (1, errno, "nvlist_lookup_string (\"path\")");
+	struct stat st;
+	if (stat (device, &st) == 0)
+	  break;
+
+	device = NULL;
+      }
 
     zpool_close (zpool);
   }
@@ -228,8 +237,8 @@ find_root_device_from_libzfs (const char *dir)
 
 #ifdef __MINGW32__
 
-static char *
-find_root_device (const char *dir __attribute__ ((unused)),
+char *
+grub_find_device (const char *dir __attribute__ ((unused)),
                   dev_t dev __attribute__ ((unused)))
 {
   return 0;
@@ -237,12 +246,21 @@ find_root_device (const char *dir __attribute__ ((unused)),
 
 #elif ! defined(__CYGWIN__)
 
-static char *
-find_root_device (const char *dir, dev_t dev)
+char *
+grub_find_device (const char *dir, dev_t dev)
 {
   DIR *dp;
   char *saved_cwd;
   struct dirent *ent;
+
+  if (! dir)
+    {
+#ifdef __CYGWIN__
+      return NULL;
+#else
+      dir = "/dev";
+#endif
+    }
 
   dp = opendir (dir);
   if (! dp)
@@ -292,7 +310,7 @@ find_root_device (const char *dir, dev_t dev)
 	  /* Find it recursively.  */
 	  char *res;
 
-	  res = find_root_device (ent->d_name, dev);
+	  res = grub_find_device (ent->d_name, dev);
 
 	  if (res)
 	    {
@@ -402,8 +420,8 @@ get_bootsec_serial (const char *os_dev, int mbr)
   return serial;
 }
 
-static char *
-find_cygwin_root_device (const char *path, dev_t dev)
+char *
+grub_find_device (const char *path, dev_t dev)
 {
   /* No root device for /cygdrive.  */
   if (dev == (DEV_CYGDRIVE_MAJOR << 16))
@@ -424,7 +442,7 @@ find_cygwin_root_device (const char *path, dev_t dev)
 
   /* Cygwin returns the partition serial number in stat.st_dev.
      This is never identical to the device number of the emulated
-     /dev/sdXN device, so above find_root_device () does not work.
+     /dev/sdXN device, so above grub_find_device () does not work.
      Search the partition with the same serial in boot sector instead.  */
   char devpath[sizeof ("/dev/sda15") + 13]; /* Size + Paranoia.  */
   int d;
@@ -529,12 +547,12 @@ grub_guess_root_device (const char *dir)
 
 #ifdef __CYGWIN__
   /* Cygwin specific function.  */
-  os_dev = find_cygwin_root_device (dir, st.st_dev);
+  os_dev = grub_find_device (dir, st.st_dev);
 
 #else
 
   /* This might be truly slow, but is there any better way?  */
-  os_dev = find_root_device ("/dev", st.st_dev);
+  os_dev = grub_find_device ("/dev", st.st_dev);
 #endif
 #endif /* !__GNU__ */
 
@@ -564,6 +582,8 @@ grub_util_is_dmraid (const char *os_dev)
     return 1;
   else if (! strncmp (os_dev, "/dev/mapper/sil_", 16))
     return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/ddf1_", 17))
+    return 1;
 
   return 0;
 }
@@ -572,6 +592,10 @@ int
 grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
 {
 #ifdef __linux__
+  /* User explicitly claims that this drive is visible by BIOS.  */
+  if (grub_util_biosdisk_is_present (os_dev))
+    return GRUB_DEV_ABSTRACTION_NONE;
+
   /* Check for LVM.  */
   if (!strncmp (os_dev, "/dev/mapper/", 12)
       && ! grub_util_is_dmraid (os_dev)

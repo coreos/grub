@@ -1170,7 +1170,8 @@ main (int argc, char *argv[])
       font_info.style = ft_face->style_flags;
       font_info.size = size;
 
-      FT_Set_Pixel_Sizes (ft_face, size, size);
+      if (FT_Set_Pixel_Sizes (ft_face, size, size))
+	grub_util_error ("can't set %dx%d font size", size, size);
       add_font (&font_info, ft_face, file_format != PF2);
       FT_Done_Face (ft_face);
     }

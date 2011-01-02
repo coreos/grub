@@ -334,6 +334,7 @@ test_parse (char **args, int *argn, int argc)
 	  if (grub_strcmp (args[*argn], "-s") == 0)
 	    {
 	      grub_file_t file;
+	      grub_file_filter_disable_compression ();
 	      file = grub_file_open (args[*argn + 1]);
 	      update_val (file && (grub_file_size (file) != 0));
 	      if (file)
@@ -422,8 +423,10 @@ GRUB_MOD_INIT(test)
 {
   cmd_1 = grub_register_command ("[", grub_cmd_test,
 				 N_("EXPRESSION ]"), N_("Evaluate an expression."));
+  cmd_1->flags |= GRUB_COMMAND_FLAG_EXTRACTOR;
   cmd_2 = grub_register_command ("test", grub_cmd_test,
 				 N_("EXPRESSION"), N_("Evaluate an expression."));
+  cmd_2->flags |= GRUB_COMMAND_FLAG_EXTRACTOR;
 }
 
 GRUB_MOD_FINI(test)

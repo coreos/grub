@@ -22,7 +22,7 @@
 #include <grub/test.h>
 
 static grub_err_t
-grub_functional_test (struct grub_extcmd *cmd __attribute__ ((unused)),
+grub_functional_test (grub_extcmd_context_t ctxt __attribute__ ((unused)),
 		      int argc __attribute__ ((unused)),
 		      char **args __attribute__ ((unused)))
 {
@@ -37,8 +37,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT (functional_test)
 {
-  cmd = grub_register_extcmd ("functional_test", grub_functional_test,
-			      GRUB_COMMAND_FLAG_CMDLINE, 0,
+  cmd = grub_register_extcmd ("functional_test", grub_functional_test, 0, 0,
 			      "Run all functional tests.", 0);
 }
 

@@ -29,7 +29,6 @@ struct grub_loopback
 {
   char *devname;
   grub_file_t file;
-  int has_partitions;
   struct grub_loopback *next;
 };
 
@@ -38,7 +37,6 @@ static struct grub_loopback *loopback_list;
 static const struct grub_arg_option options[] =
   {
     {"delete", 'd', 0, N_("Delete the loopback device entry."), 0, 0},
-    {"partitions", 'p', 0, N_("Simulate a hard drive with partitions."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -71,9 +69,9 @@ delete_loopback (const char *name)
 
 /* The command to add and remove loopback devices.  */
 static grub_err_t
-grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
+grub_cmd_loopback (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  struct grub_arg_list *state = state = cmd->state;
+  struct grub_arg_list *state = ctxt->state;
   grub_file_t file;
   struct grub_loopback *newdev;
   grub_err_t ret;
@@ -106,9 +104,6 @@ grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
       grub_file_close (newdev->file);
       newdev->file = file;
 
-      /* Set has_partitions when `--partitions' was used.  */
-      newdev->has_partitions = state[1].set;
-
       return 0;
     }
 
@@ -125,9 +120,6 @@ grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
     }
 
   newdev->file = file;
-
-  /* Set has_partitions when `--partitions' was used.  */
-  newdev->has_partitions = state[1].set;
 
   /* Add the new entry to the list.  */
   newdev->next = loopback_list;
@@ -167,11 +159,13 @@ grub_loopback_open (const char *name, grub_disk_t disk)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
 
   /* Use the filesize for the disk size, round up to a complete sector.  */
-  disk->total_sectors = ((dev->file->size + GRUB_DISK_SECTOR_SIZE - 1)
-			 / GRUB_DISK_SECTOR_SIZE);
+  if (dev->file->size != GRUB_FILE_SIZE_UNKNOWN)
+    disk->total_sectors = ((dev->file->size + GRUB_DISK_SECTOR_SIZE - 1)
+			   / GRUB_DISK_SECTOR_SIZE);
+  else
+    disk->total_sectors = GRUB_DISK_SIZE_UNKNOWN;
   disk->id = (unsigned long) dev;
 
-  disk->has_partitions = dev->has_partitions;
   disk->data = dev->file;
 
   return 0;
@@ -227,8 +221,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(loopback)
 {
-  cmd = grub_register_extcmd ("loopback", grub_cmd_loopback,
-			      GRUB_COMMAND_FLAG_BOTH,
+  cmd = grub_register_extcmd ("loopback", grub_cmd_loopback, 0,
 			      N_("[-d|-p] DEVICENAME FILE."),
 			      N_("Make a device of a file."), options);
   grub_disk_dev_register (&grub_loopback_dev);

@@ -32,6 +32,10 @@ static grub_uint8_t grub_gpt_magic[8] =
 
 static const grub_gpt_part_type_t grub_gpt_partition_type_empty = GRUB_GPT_PARTITION_TYPE_EMPTY;
 
+#ifdef GRUB_UTIL
+static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
+#endif
+
 /* 512 << 7 = 65536 byte sectors.  */
 #define MAX_SECTOR_LOG 7
 
@@ -97,6 +101,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
 	  part.number = i;
 	  part.index = last_offset;
 	  part.partmap = &grub_gpt_partition_map;
+	  part.parent = disk->partition;
 
 	  grub_dprintf ("gpt", "GPT entry %d: start=%lld, length=%lld\n", i,
 			(unsigned long long) part.start,
@@ -117,12 +122,77 @@ gpt_partition_map_iterate (grub_disk_t disk,
   return GRUB_ERR_NONE;
 }
 
+#ifdef GRUB_UTIL
+static grub_err_t
+gpt_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
+			 grub_embed_type_t embed_type,
+			 grub_disk_addr_t **sectors)
+{
+  grub_disk_addr_t start = 0, len = 0;
+  unsigned i;
+  grub_err_t err;
+
+  auto int NESTED_FUNC_ATTR find_usable_region (grub_disk_t disk,
+						const grub_partition_t p);
+  int NESTED_FUNC_ATTR find_usable_region (grub_disk_t disk __attribute__ ((unused)),
+					   const grub_partition_t p)
+  {
+    struct grub_gpt_partentry gptdata;
+
+    disk->partition = p->parent;
+    if (grub_disk_read (disk, p->offset, p->index,
+			sizeof (gptdata), &gptdata))
+      return 0;
+
+    /* If there's an embed region, it is in a dedicated partition.  */
+    if (! grub_memcmp (&gptdata.type, &grub_gpt_partition_type_bios_boot, 16))
+      {
+	start = p->start;
+	len = p->len;
+	return 1;
+      }
+
+      return 0;
+    }
+
+  if (embed_type != GRUB_EMBED_PCBIOS)
+    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		       "GPT curently supports only PC-BIOS embedding");
+
+  err = gpt_partition_map_iterate (disk, find_usable_region);
+  if (err)
+    return err;
+
+  if (len == 0)
+    return grub_error (GRUB_ERR_FILE_NOT_FOUND,
+		       "This GPT partition label has no BIOS Boot Partition;"
+		       " embedding won't be possible!");
+
+  if (len < *nsectors)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       "Your BIOS Boot Partition is too small;"
+		       " embedding won't be possible!");
+
+  *nsectors = len;
+  *sectors = grub_malloc (*nsectors * sizeof (**sectors));
+  if (!*sectors)
+    return grub_errno;
+  for (i = 0; i < *nsectors; i++)
+    (*sectors)[i] = start + i;
+
+  return GRUB_ERR_NONE;
+}
+#endif
+
 
 /* Partition map type.  */
 static struct grub_partition_map grub_gpt_partition_map =
   {
     .name = "gpt",
     .iterate = gpt_partition_map_iterate,
+#ifdef GRUB_UTIL
+    .embed = gpt_partition_map_embed
+#endif
   };
 
 GRUB_MOD_INIT(part_gpt)

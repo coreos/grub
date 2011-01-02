@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
 DEPDIR = .deps-util
-SUBDIRS = . grub-core po docs
+SUBDIRS = grub-core/gnulib . grub-core po docs util/bash-completion.d
 
 include $(top_srcdir)/conf/Makefile.common
 include $(top_srcdir)/conf/Makefile.extra-dist
@@ -10,6 +10,8 @@ AM_CFLAGS = $(HOST_CFLAGS)
 AM_LDFLAGS = $(HOST_LDFLAGS)
 AM_CPPFLAGS = $(HOST_CPPFLAGS) $(CPPFLAGS_DEFAULT)
 AM_CCASFLAGS = $(HOST_CCASFLAGS) $(CCASFLAGS_DEFAULT)
+
+ACLOCAL_AMFLAGS = -I m4
 
 CFLAGS_PROGRAM += $(CFLAGS_GNULIB)
 LDFLAGS_PROGRAM += $(LDFLAGS_GNULIB)
@@ -31,8 +33,8 @@ grub_script.yy.c: grub_script.yy.h
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 
 # For libgrub.a
-libgrub.pp: grub_script.tab.h grub_script.yy.h $(libgrub_a_SOURCES)
-	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgrub_a_CPPFLAGS) $(CPPFLAGS) \
+libgrub.pp: grub_script.tab.h grub_script.yy.h $(libgrubmods_a_SOURCES) $(libgrubkern_a_SOURCES)
+	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgrubmods_a_CPPFLAGS) $(libgrubkern_a_CPPFLAGS) $(CPPFLAGS) \
 	  -D'GRUB_MOD_INIT(x)=@MARKER@x@' $^ > $@ || (rm -f $@; exit 1)
 CLEANFILES += libgrub.pp
 
@@ -44,9 +46,23 @@ libgrub_a_init.c: libgrub_a_init.lst $(top_srcdir)/geninit.sh
 	sh $(top_srcdir)/geninit.sh `cat $<` > $@ || (rm -f $@; exit 1)
 CLEANFILES += libgrub_a_init.c
 
+# For grub-fstest
+grub_fstest.pp: $(grub_fstest_SOURCES)
+	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(grub_fstest_CPPFLAGS) $(CPPFLAGS) \
+	  -D'GRUB_MOD_INIT(x)=@MARKER@x@' $^ > $@ || (rm -f $@; exit 1)
+CLEANFILES += grub_fstest.pp
+
+grub_fstest_init.lst: libgrub.pp grub_fstest.pp
+	cat $^ | grep '@MARKER@' | sed 's/@MARKER@\(.*\)@/\1/g' | sort -u > $@ || (rm -f $@; exit 1)
+CLEANFILES += grub_fstest_init.lst
+
+grub_fstest_init.c: grub_fstest_init.lst $(top_srcdir)/geninit.sh
+	sh $(top_srcdir)/geninit.sh `cat $<` > $@ || (rm -f $@; exit 1)
+CLEANFILES += grub_fstest_init.c
+
 if COND_GRUB_MKFONT
 if COND_HAVE_FONT_SOURCE
-grubdata_DATA = unicode.pf2 ascii.pf2 ascii.h widthspec.h
+grubdata_DATA = unicode.pf2 ascii.pf2 euro.pf2 ascii.h widthspec.h
 endif
 endif
 
@@ -61,6 +77,10 @@ UNICODE_LINES=0x2501-0x251B
 ascii.pf2: $(FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
 CLEANFILES += ascii.pf2
+
+euro.pf2: $(FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x4ff,0x1e00-0x1fff,$(UNICODE_ARROWS),$(UNICODE_LINES)
+CLEANFILES += euro.pf2
 
 ascii.bitmaps: $(FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont --ascii-bitmaps -o $@ $(FONT_SOURCE)
@@ -169,31 +189,31 @@ kopenbsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kbsd.init-x86_64.S
 	$(TARGET_CC) -o $@ $< -m64 -DTARGET_OPENBSD=1 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux-initramfs.i386: linux.init.i386 Makefile
-	TDIR=`mktemp -d`; cp $< $$TDIR/init; (cd $$TDIR; echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@; rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 linux-initramfs.x86_64: linux.init.x86_64 Makefile
-	TDIR=`mktemp -d`; cp $< $$TDIR/init; (cd $$TDIR; echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@; rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 kfreebsd-mfsroot.i386.img: kfreebsd.init.i386 Makefile
-	TDIR=`mktemp -d`; mkdir $$TDIR/dev; mkdir $$TDIR/sbin; cp $< $$TDIR/sbin/init; makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR; rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
 
 knetbsd.image.i386: knetbsd.init.i386 $(srcdir)/grub-core/tests/boot/kbsd.spec.txt
-	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
 
 kopenbsd.image.i386: kopenbsd.init.i386 $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt
-	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 128k -f 10 -o minfree=0,version=1 $@ $$TDIR && bsdlabel -f -R $@ $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt && rm -rf $$TDIR || rm -f $@
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 128k -f 10 -o minfree=0,version=1 $@ $$TDIR && bsdlabel -f -R $@ $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt && rm -rf $$TDIR || rm -f $@
 
 kopenbsd.image.x86_64: kopenbsd.init.x86_64 $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt
-	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 128k -f 10 -o minfree=0,version=1 $@ $$TDIR && bsdlabel -f -R $@ $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt && rm -rf $$TDIR || rm -f $@
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 128k -f 10 -o minfree=0,version=1 $@ $$TDIR && bsdlabel -f -R $@ $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt && rm -rf $$TDIR || rm -f $@
 
 knetbsd.miniroot-image.i386.img: knetbsd.image.i386 $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.i386
 	$(OBJCOPY) --add-section=miniroot=$< $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.i386 $@
 
 kfreebsd-mfsroot.x86_64.img: kfreebsd.init.x86_64 Makefile
-	TDIR=`mktemp -d`; mkdir $$TDIR/dev; mkdir $$TDIR/sbin; cp $< $$TDIR/sbin/init; makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR; rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
 
 knetbsd.image.x86_64: knetbsd.init.x86_64 $(srcdir)/grub-core/tests/boot/kbsd.spec.txt
-	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
 
 knetbsd.miniroot-image.x86_64.img: knetbsd.image.x86_64 $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.x86_64
 	$(OBJCOPY) --add-section=miniroot=$< $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.x86_64 $@

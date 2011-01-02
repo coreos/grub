@@ -185,7 +185,7 @@ real_code_2:
 	call	LOCAL(move_memory)
 
 	/* Check for multiboot signature.  */
-	cmpl	$MULTIBOOT_HEADER_MAGIC, %ss:(DATA_ADDR + GRUB_KERNEL_I386_PC_MULTIBOOT_SIGNATURE)
+	cmpl	$MULTIBOOT_HEADER_MAGIC, %ss:(DATA_ADDR + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART)
 	jz	1f
 
 	movl	(ramdisk_image - start), %esi

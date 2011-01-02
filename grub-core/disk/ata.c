@@ -723,7 +723,6 @@ grub_ata_open (const char *name, grub_disk_t disk)
 
   disk->id = (unsigned long) dev;
 
-  disk->has_partitions = 1;
   disk->data = dev;
 
   return 0;

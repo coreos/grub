@@ -40,3 +40,8 @@ grub_emu_init (void)
 {
   return;
 }
+
+void
+grub_emu_post_init (void)
+{
+}

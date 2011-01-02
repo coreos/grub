@@ -28,12 +28,15 @@
 #include <grub/machoload.h>
 #include <grub/macho.h>
 #include <grub/cpu/macho.h>
-#include <grub/gzio.h>
 #include <grub/command.h>
 #include <grub/misc.h>
 #include <grub/extcmd.h>
 #include <grub/env.h>
 #include <grub/i18n.h>
+
+#if defined (__i386) && !defined (GRUB_MACHINE_EFI)
+#include <grub/autoefi.h>
+#endif
 
 struct grub_xnu_devtree_key *grub_xnu_devtree_root = 0;
 static int driverspackagenum = 0;
@@ -425,6 +428,12 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
   if (ptr != grub_xnu_cmdline)
     *(ptr - 1) = 0;
 
+#if defined (__i386) && !defined (GRUB_MACHINE_EFI)
+  err = grub_efiemu_autocore ();
+  if (err)
+    return err;
+#endif
+
   grub_loader_set (grub_xnu_boot, grub_xnu_unload, 0);
 
   grub_xnu_lock ();
@@ -529,6 +538,12 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
   /* Replace last space by '\0'. */
   if (ptr != grub_xnu_cmdline)
     *(ptr - 1) = 0;
+
+#if defined (__i386) && !defined (GRUB_MACHINE_EFI)
+  err = grub_efiemu_autocore ();
+  if (err)
+    return err;
+#endif
 
   grub_loader_set (grub_xnu_boot, grub_xnu_unload, 0);
 
@@ -661,7 +676,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
     macho = 0;
 
   if (infoplistname)
-    infoplist = grub_gzfile_open (infoplistname, 1);
+    infoplist = grub_file_open (infoplistname);
   else
     infoplist = 0;
   grub_errno = GRUB_ERR_NONE;
@@ -756,7 +771,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
   if (! grub_xnu_heap_size)
     return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't load driver package");
@@ -869,7 +884,7 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
   if (! grub_xnu_heap_size)
     return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
 
-  file = grub_gzfile_open (args[0], 1);
+  file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 		       "couldn't load ramdisk");
@@ -909,7 +924,7 @@ grub_xnu_check_os_bundle_required (char *plistname, char *osbundlereq,
   if (binname)
     *binname = 0;
 
-  file = grub_gzfile_open (plistname, 1);
+  file = grub_file_open (plistname);
   if (! file)
     {
       grub_file_close (file);
@@ -1166,7 +1181,7 @@ grub_xnu_load_kext_from_dir (char *dirname, char *osbundlerequired,
 		grub_strcpy (binname + grub_strlen (binname), "/");
 	      grub_strcpy (binname + grub_strlen (binname), binsuffix);
 	      grub_dprintf ("xnu", "%s:%s\n", plistname, binname);
-	      binfile = grub_gzfile_open (binname, 1);
+	      binfile = grub_file_open (binname);
 	      if (! binfile)
 		grub_errno = GRUB_ERR_NONE;
 
@@ -1199,12 +1214,16 @@ grub_cmd_xnu_kext (grub_command_t cmd __attribute__ ((unused)),
 		   int argc, char *args[])
 {
   grub_file_t binfile = 0;
+
+  if (! grub_xnu_heap_size)
+    return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
+
   if (argc == 2)
     {
       /* User explicitly specified plist and binary. */
       if (grub_strcmp (args[1], "-") != 0)
 	{
-	  binfile = grub_gzfile_open (args[1], 1);
+	  binfile = grub_file_open (args[1]);
 	  if (! binfile)
 	    {
 	      grub_error (GRUB_ERR_BAD_OS, "can't open file");
@@ -1229,6 +1248,9 @@ grub_cmd_xnu_kextdir (grub_command_t cmd __attribute__ ((unused)),
 {
   if (argc != 1 && argc != 2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "directory name required");
+
+  if (! grub_xnu_heap_size)
+    return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
 
   if (argc == 1)
     return grub_xnu_scan_dir_for_kexts (args[0],
@@ -1364,15 +1386,18 @@ static const struct grub_arg_option xnu_splash_cmd_options[] =
   };
 
 static grub_err_t
-grub_cmd_xnu_splash (grub_extcmd_t cmd,
+grub_cmd_xnu_splash (grub_extcmd_context_t ctxt,
 		     int argc, char *args[])
 {
   grub_err_t err;
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  if (cmd->state[XNU_SPLASH_CMD_ARGINDEX_MODE].set &&
-      grub_strcmp (cmd->state[XNU_SPLASH_CMD_ARGINDEX_MODE].arg,
+  if (! grub_xnu_heap_size)
+    return grub_error (GRUB_ERR_BAD_OS, "no xnu kernel loaded");
+
+  if (ctxt->state[XNU_SPLASH_CMD_ARGINDEX_MODE].set &&
+      grub_strcmp (ctxt->state[XNU_SPLASH_CMD_ARGINDEX_MODE].arg,
 		   "stretch") == 0)
     grub_xnu_bitmap_mode = GRUB_XNU_BITMAP_STRETCH;
   else
@@ -1435,8 +1460,7 @@ GRUB_MOD_INIT(xnu)
 				       "Load XNU ramdisk. "
 				       "It will be seen as md0.");
   cmd_splash = grub_register_extcmd ("xnu_splash",
-				     grub_cmd_xnu_splash,
-				     GRUB_COMMAND_FLAG_BOTH, 0,
+				     grub_cmd_xnu_splash, 0, 0,
 				     N_("Load a splash image for XNU."),
 				     xnu_splash_cmd_options);
 

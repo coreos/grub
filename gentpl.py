@@ -38,6 +38,11 @@ GROUPS["videoinkernel"] = ["mips_yeeloong"]
 GROUPS["videomodules"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["videoinkernel"]: GROUPS["videomodules"].remove(i)
 
+# Similar for terminfo
+GROUPS["terminfoinkernel"] = ["mips_yeeloong"] + GROUPS["ieee1275"];
+GROUPS["terminfomodule"]   = GRUB_PLATFORMS[:];
+for i in GROUPS["terminfoinkernel"]: GROUPS["terminfomodule"].remove(i)
+
 # Miscelaneous groups schedulded to disappear in future
 GROUPS["nosparc64"] = GRUB_PLATFORMS[:]; GROUPS["nosparc64"].remove("sparc64_ieee1275")
 GROUPS["i386_coreboot_multiboot_qemu"] = ["i386_coreboot", "i386_multiboot", "i386_qemu"]
@@ -70,22 +75,31 @@ for platform in GRUB_PLATFORMS:
 #
 # Global variables
 #
-GVARS = []
+GVARS = set()
 
 def gvar_add(var, value):
-    if var not in GVARS:
-        GVARS.append(var)
+    GVARS.add(var)
     return var + " += " + value + "\n"
 
 def global_variable_initializers():
     r = ""
-    for var in GVARS:
+    for var in sorted(GVARS):
         r += var + " ?= \n"
     return r
 
 #
 # Per PROGRAM/SCRIPT variables 
 #
+
+def vars_init(*var_list):
+    r = "[+ IF (if (not (assoc-ref seen-vars (get \".name\"))) \"seen\") +]"
+    r += "[+ (out-suspend \"v\") +]"
+    for var in var_list:
+        r += var + "  = \n"
+    r += "[+ (out-resume \"v\") +]"
+    r += "[+ (set! seen-vars (assoc-set! seen-vars (get \".name\") 0)) +]"
+    r += "[+ ENDIF +]"
+    return first_time(r)
 
 def var_set(var, value):
     return var + "  = " + value + "\n"
@@ -257,6 +271,15 @@ def platform_ccasflags(p): return platform_specific_values(p, "_ccasflags", "cca
 def platform_stripflags(p): return platform_specific_values(p, "_stripflags", "stripflags")
 def platform_objcopyflags(p): return platform_specific_values(p, "_objcopyflags", "objcopyflags")
 
+#
+# Emit snippet only the first time through for the current name.
+#
+def first_time(snippet):
+    r = "[+ IF (if (not (assoc-ref seen-target (get \".name\"))) \"seen\") +]"
+    r += snippet
+    r += "[+ ENDIF +]"
+    return r
+
 def module(platform):
     r = set_canonical_name_suffix(".module")
 
@@ -276,75 +299,13 @@ def module(platform):
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
-    r += gvar_add("DEF_FILES", "def-[+ name +].lst")
-    r += gvar_add("UND_FILES", "und-[+ name +].lst")
     r += gvar_add("MOD_FILES", "[+ name +].mod")
-    r += gvar_add("platform_DATA", "[+ name +].mod")
-    r += gvar_add("CLEANFILES", "def-[+ name +].lst und-[+ name +].lst mod-[+ name +].c mod-[+ name +].o [+ name +].mod")
-
-    r += gvar_add("COMMAND_FILES", "command-[+ name +].lst")
-    r += gvar_add("FS_FILES", "fs-[+ name +].lst")
-    r += gvar_add("VIDEO_FILES", "video-[+ name +].lst")
-    r += gvar_add("PARTMAP_FILES", "partmap-[+ name +].lst")
-    r += gvar_add("HANDLER_FILES", "handler-[+ name +].lst")
-    r += gvar_add("PARTTOOL_FILES", "parttool-[+ name +].lst")
-    r += gvar_add("TERMINAL_FILES", "terminal-[+ name +].lst")
-    r += gvar_add("CLEANFILES", "command-[+ name +].lst fs-[+ name +].lst")
-    r += gvar_add("CLEANFILES", "handler-[+ name +].lst terminal-[+ name +].lst")
-    r += gvar_add("CLEANFILES", "video-[+ name +].lst partmap-[+ name +].lst parttool-[+ name +].lst")
-
-    r += gvar_add("CLEANFILES", "[+ name +].pp")
+    r += gvar_add("MARKER_FILES", "[+ name +].marker")
+    r += gvar_add("CLEANFILES", "[+ name +].marker")
     r += """
-[+ name +].pp: $(""" + cname() + """_SOURCES) $(nodist_""" + cname() + """_SOURCES)
-	$(TARGET_CPP) -DGRUB_LST_GENERATOR $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + cname() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@ || (rm -f $@; exit 1)
-
-def-[+ name +].lst: [+ name +].module$(EXEEXT)
-	if test x$(USE_APPLE_CC_FIXES) = xyes; then \
-	  $(NM) -g -P -p $< | grep -E '^[a-zA-Z0-9_]* [TDS]' | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@; \
-	else \
-	  $(NM) -g --defined-only -P -p $< | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@; \
-	fi
-
-und-[+ name +].lst: [+ name +].module$(EXEEXT)
-	$(NM) -u -P -p $< | sed "s/^\\([^ ]*\\).*/\\1 [+ name +]/" >> $@
-
-mod-[+ name +].c: [+ name +].module$(EXEEXT) moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh [+ name +] moddep.lst > $@ || (rm -f $@; exit 1)
-
-mod-[+ name +].o: mod-[+ name +].c
-	$(TARGET_CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + cname() + """_CPPFLAGS) $(CPPFLAGS) $(""" + cname() + """_CFLAGS) $(CFLAGS) -c -o $@ $<
-
-[+ name +].mod: [+ name +].module$(EXEEXT) mod-[+ name +].o
-	if test x$(USE_APPLE_CC_FIXES) = xyes; then \
-	  $(CCLD) $(""" + cname() + """_LDFLAGS) $(LDFLAGS) -o $@.bin $^; \
-	  $(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -wd1106 -nu -nd $@.bin $@; \
-	  rm -f $@.bin; \
-	else \
-	  $(CCLD) -o $@ $(""" + cname() + """_LDFLAGS) $(LDFLAGS) $^; \
-	  if test ! -z '$(TARGET_OBJ2ELF)'; then $(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi; \
-	  $(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@; \
-	fi
-
-command-[+ name +].lst: [+ name +].pp $(srcdir)/gencmdlist.sh
-	cat $< | sh $(srcdir)/gencmdlist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-fs-[+ name +].lst: [+ name +].pp $(srcdir)/genfslist.sh
-	cat $< | sh $(srcdir)/genfslist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-video-[+ name +].lst: [+ name +].pp $(srcdir)/genvideolist.sh
-	cat $< | sh $(srcdir)/genvideolist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-partmap-[+ name +].lst: [+ name +].pp $(srcdir)/genpartmaplist.sh
-	cat $< | sh $(srcdir)/genpartmaplist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-parttool-[+ name +].lst: [+ name +].pp $(srcdir)/genparttoollist.sh
-	cat $< | sh $(srcdir)/genparttoollist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-handler-[+ name +].lst: [+ name +].pp $(srcdir)/genhandlerlist.sh
-	cat $< | sh $(srcdir)/genhandlerlist.sh [+ name +] > $@ || (rm -f $@; exit 1)
-
-terminal-[+ name +].lst: [+ name +].pp $(srcdir)/genterminallist.sh
-	cat $< | sh $(srcdir)/genterminallist.sh [+ name +] > $@ || (rm -f $@; exit 1)
+[+ name +].marker: $(""" + cname() + """_SOURCES) $(nodist_""" + cname() + """_SOURCES)
+	$(TARGET_CPP) -DGRUB_LST_GENERATOR $(CPPFLAGS_MARKER) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(""" + cname() + """_CPPFLAGS) $(CPPFLAGS) $^ > $@.new || (rm -f $@; exit 1)
+	grep 'MARKER' $@.new > $@; rm -f $@.new
 """
     return r
 
@@ -403,18 +364,25 @@ fi
 
 def library(platform):
     r = set_canonical_name_suffix("")
-    r += gvar_add("noinst_LIBRARIES", "[+ name +]")
-    r += var_set(cname() + "_SOURCES", platform_sources(platform))
-    r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform))
-    r += var_set(cname() + "_CFLAGS", "$(AM_CFLAGS) $(CFLAGS_LIBRARY) " + platform_cflags(platform))
-    r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_LIBRARY) " + platform_cppflags(platform))
-    r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_LIBRARY) " + platform_ccasflags(platform))
-    # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
+
+    r += vars_init(cname() + "_SOURCES",
+                   "nodist_" + cname() + "_SOURCES",
+                   cname() + "_CFLAGS",
+                   cname() + "_CPPFLAGS",
+                   cname() + "_CCASFLAGS")
+    #              cname() + "_DEPENDENCIES")
+
+    r += first_time(gvar_add("noinst_LIBRARIES", "[+ name +]"))
+    r += var_add(cname() + "_SOURCES", platform_sources(platform))
+    r += var_add("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform))
+    r += var_add(cname() + "_CFLAGS", first_time("$(AM_CFLAGS) $(CFLAGS_LIBRARY) ") + platform_cflags(platform))
+    r += var_add(cname() + "_CPPFLAGS", first_time("$(AM_CPPFLAGS) $(CPPFLAGS_LIBRARY) ") + platform_cppflags(platform))
+    r += var_add(cname() + "_CCASFLAGS", first_time("$(AM_CCASFLAGS) $(CCASFLAGS_LIBRARY) ") + platform_ccasflags(platform))
+    # r += var_add(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
     r += gvar_add("EXTRA_DIST", extra_dist())
-    r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
-    r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
-
+    r += first_time(gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)"))
+    r += first_time(gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)"))
     return r
 
 def installdir(default="bin"):
@@ -438,7 +406,7 @@ def program(platform, test=False):
     r += gvar_add("check_PROGRAMS", "[+ name +]")
     r += gvar_add("TESTS", "[+ name +]")
     r += "[+ ELSE +]"
-    r += gvar_add(installdir() + "_PROGRAMS", "[+ name +]")
+    r += var_add(installdir() + "_PROGRAMS", "[+ name +]")
     r += "[+ IF mansection +]" + manpage() + "[+ ENDIF +]"
     r += "[+ ENDIF +]"
 
@@ -459,7 +427,7 @@ def program(platform, test=False):
 def data(platform):
     r  = gvar_add("EXTRA_DIST", platform_sources(platform))
     r += gvar_add("EXTRA_DIST", extra_dist())
-    r += gvar_add(installdir() + "_DATA", platform_sources(platform))
+    r += var_add(installdir() + "_DATA", platform_sources(platform))
     return r
 
 def script(platform):
@@ -467,13 +435,12 @@ def script(platform):
     r += gvar_add("check_SCRIPTS", "[+ name +]")
     r += gvar_add ("TESTS", "[+ name +]")
     r += "[+ ELSE +]"
-    r += gvar_add(installdir() + "_SCRIPTS", "[+ name +]")
+    r += var_add(installdir() + "_SCRIPTS", "[+ name +]")
     r += "[+ IF mansection +]" + manpage() + "[+ ENDIF +]"
     r += "[+ ENDIF +]"
 
-    r += rule("[+ name +]", "$(top_builddir)/config.status " + platform_sources(platform), """
-$(top_builddir)/config.status --file=-:""" + platform_sources(platform) + """ \
-  | sed -e 's,@pkglib_DATA@,$(pkglib_DATA),g' > $@
+    r += rule("[+ name +]", platform_sources(platform) + " $(top_builddir)/config.status", """
+$(top_builddir)/config.status --file=-:$< | sed -e 's,@pkglib_DATA@,$(pkglib_DATA),g' > $@
 chmod a+x [+ name +]
 """)
 
@@ -481,33 +448,43 @@ chmod a+x [+ name +]
     r += gvar_add("dist_noinst_DATA", platform_sources(platform))
     return r
 
+def rules(target, closure):
+    # Create association lists for the benefit of first_time and vars_init.
+    r = "[+ (define seen-target '()) +]"
+    r += "[+ (define seen-vars '()) +]"
+    # Most output goes to a diversion.  This allows us to emit variable
+    # initializations before everything else.
+    r += "[+ (out-push-new) +]"
+
+    r += "[+ FOR " + target + " +]"
+    r += foreach_enabled_platform(
+        lambda p: under_platform_specific_conditionals(p, closure(p)))
+    # Remember that we've seen this target.
+    r += "[+ (set! seen-target (assoc-set! seen-target (get \".name\") 0)) +]"
+    r += "[+ ENDFOR +]"
+    r += "[+ (out-pop #t) +]"
+    return r
+
 def module_rules():
-    return "[+ FOR module +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, module(p))) + "[+ ENDFOR +]"
+    return rules("module", module)
 
 def kernel_rules():
-    return "[+ FOR kernel +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, kernel(p))) + "[+ ENDFOR +]"
+    return rules("kernel", kernel)
 
 def image_rules():
-    return "[+ FOR image +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, image(p))) + "[+ ENDFOR +]"
+    return rules("image", image)
 
 def library_rules():
-    return "[+ FOR library +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, library(p))) + "[+ ENDFOR +]"
+    return rules("library", library)
 
 def program_rules():
-    return "[+ FOR program +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, program(p))) + "[+ ENDFOR +]"
+    return rules("program", program)
 
 def script_rules():
-    return "[+ FOR script +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, script(p))) + "[+ ENDFOR +]"
+    return rules("script", script)
 
 def data_rules():
-    return "[+ FOR data +]" + foreach_enabled_platform(
-        lambda p: under_platform_specific_conditionals(p, data(p))) + "[+ ENDFOR +]"
+    return rules("data", data)
 
 print "[+ AutoGen5 template +]\n"
 a = module_rules()

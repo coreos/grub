@@ -17,8 +17,8 @@
  */
 
 #include <grub/machine/biosdisk.h>
-#include <grub/machine/memory.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/memory.h>
 #include <grub/machine/int.h>
 #include <grub/disk.h>
 #include <grub/dl.h>
@@ -248,6 +248,9 @@ grub_biosdisk_get_drive (const char *name)
 {
   unsigned long drive;
 
+  if (name[0] == 'c' && name[1] == 'd' && name[2] == 0 && cd_drive)
+    return cd_drive;
+
   if ((name[0] != 'f' && name[0] != 'h') || name[1] != 'd')
     goto fail;
 
@@ -269,6 +272,9 @@ static int
 grub_biosdisk_call_hook (int (*hook) (const char *name), int drive)
 {
   char name[10];
+
+  if (cd_drive && drive == cd_drive)
+    return hook ("cd");
 
   grub_snprintf (name, sizeof (name),
 		 (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
@@ -321,7 +327,6 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
   if (drive < 0)
     return grub_errno;
 
-  disk->has_partitions = 1;
   disk->id = drive;
 
   data = (struct grub_biosdisk_data *) grub_zalloc (sizeof (*data));

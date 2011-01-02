@@ -248,10 +248,6 @@ grub_disk_open (const char *name)
   if (! disk)
     return 0;
 
-  disk->name = grub_strdup (name);
-  if (! disk->name)
-    goto fail;
-
   p = find_part_sep (name);
   if (p)
     {
@@ -263,7 +259,13 @@ grub_disk_open (const char *name)
 
       grub_memcpy (raw, name, len);
       raw[len] = '\0';
+      disk->name = grub_strdup (raw);
     }
+  else
+    disk->name = grub_strdup (name);
+  if (! disk->name)
+    goto fail;
+
 
   for (dev = grub_disk_dev_list; dev; dev = dev->next)
     {
@@ -278,12 +280,6 @@ grub_disk_open (const char *name)
   if (! dev)
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such disk");
-      goto fail;
-    }
-
-  if (p && ! disk->has_partitions)
-    {
-      grub_error (GRUB_ERR_BAD_DEVICE, "no partition on this disk");
       goto fail;
     }
 

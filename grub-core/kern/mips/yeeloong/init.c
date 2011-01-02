@@ -26,6 +26,7 @@
 #include <grub/time.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
+#include <grub/memory.h>
 #include <grub/mips/loongson.h>
 #include <grub/cs5536.h>
 #include <grub/term.h>
@@ -39,6 +40,7 @@ extern void grub_gfxterm_init (void);
 extern void grub_at_keyboard_init (void);
 extern void grub_serial_init (void);
 extern void grub_terminfo_init (void);
+extern void grub_keylayouts_init (void);
 
 /* FIXME: use interrupt to count high.  */
 grub_uint64_t
@@ -57,14 +59,12 @@ grub_get_rtc (void)
 }
 
 grub_err_t
-grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
-							 grub_uint64_t,
-							 grub_uint32_t))
+grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
   hook (GRUB_ARCH_LOWMEMPSTART, grub_arch_memsize << 20,
-	GRUB_MACHINE_MEMORY_AVAILABLE);
+	GRUB_MEMORY_AVAILABLE);
   hook (GRUB_ARCH_HIGHMEMPSTART, grub_arch_highmemsize << 20,
-	GRUB_MACHINE_MEMORY_AVAILABLE);
+	GRUB_MEMORY_AVAILABLE);
   return GRUB_ERR_NONE;
 }
 
@@ -205,6 +205,7 @@ grub_machine_init (void)
   grub_font_init ();
   grub_gfxterm_init ();
 
+  grub_keylayouts_init ();
   grub_at_keyboard_init ();
 
   grub_terminfo_init ();
@@ -222,6 +223,8 @@ grub_halt (void)
   grub_outb (grub_inb (GRUB_CPU_LOONGSON_GPIOCFG)
 	     & ~GRUB_CPU_LOONGSON_SHUTDOWN_GPIO, GRUB_CPU_LOONGSON_GPIOCFG);
 
+  grub_millisleep (1500);
+
   grub_printf ("Shutdown failed\n");
   grub_refresh ();
   while (1);
@@ -237,6 +240,8 @@ void
 grub_reboot (void)
 {
   grub_write_ec (GRUB_MACHINE_EC_COMMAND_REBOOT);
+
+  grub_millisleep (1500);
 
   grub_printf ("Reboot failed\n");
   grub_refresh ();

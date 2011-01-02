@@ -1,4 +1,4 @@
-/* memmap.c  - Display memory map.  */
+/* lsefimemmap.c  - Display memory map.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2008  Free Software Foundation, Inc.
@@ -80,7 +80,7 @@ grub_cmd_lsefimmap (grub_command_t cmd __attribute__ ((unused)),
 	grub_printf ("Unk %02x   ", desc->type);
       
       grub_printf (" %016" PRIxGRUB_UINT64_T "-%016" PRIxGRUB_UINT64_T
-		   " %08" PRIxGRUB_EFI_UINTN_T,
+		   " %08" PRIxGRUB_UINT64_T,
 		   desc->physical_start,
 		   desc->physical_start + (desc->num_pages << 12) - 1,
 		   desc->num_pages);

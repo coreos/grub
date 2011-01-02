@@ -40,7 +40,6 @@ struct grub_relocator_subchunk
 #endif
   } type;
   grub_mm_region_t reg;
-  grub_mm_header_t head;
   grub_phys_addr_t start;
   grub_size_t size;
   grub_size_t pre_size;
@@ -355,11 +354,11 @@ free_subchunk (const struct grub_relocator_subchunk *subchu)
       }
     case CHUNK_TYPE_IN_REGION:
       {
-	grub_mm_header_t h = (grub_mm_header_t) ALIGN_DOWN ((grub_addr_t) subchu->head,
+	grub_mm_header_t h = (grub_mm_header_t) ALIGN_DOWN ((grub_addr_t) subchu->start,
 							    GRUB_MM_ALIGN);
 	h->size
 	  = ((subchu->start + subchu->size + GRUB_MM_ALIGN - 1) / GRUB_MM_ALIGN)
-	  - (subchu->start / GRUB_MM_ALIGN);
+	  - (subchu->start / GRUB_MM_ALIGN) - 1;
 	h->next = h;
 	h->magic = GRUB_MM_ALLOC_MAGIC;
 	grub_free (h + 1);
@@ -579,21 +578,17 @@ malloc_in_range (struct grub_relocator *rel,
 
   for (ra = &base_saved, r = *ra; r; ra = &(r->next), r = *ra)
     {
-      int pre_added = 0;
       pa = r->first;
       p = pa->next;
       if (p->magic == GRUB_MM_ALLOC_MAGIC)
 	continue;
       do 
 	{
-	  grub_dprintf ("relocator", "free block %p+0x%lx\n",
-			p, (unsigned long) p->size);
 	  if (p->magic != GRUB_MM_FREE_MAGIC)
 	    grub_fatal (__FILE__":%d free magic broken at %p (0x%x)\n",
 			__LINE__, p, p->magic);
 	  if (p == (grub_mm_header_t) (r + 1))
 	    {
-	      pre_added = 1;
 	      events[N].type = REG_BEG_START;
 	      events[N].pos = grub_vtop (r) - r->pre_size;
 	      events[N].reg = r;
@@ -602,7 +597,8 @@ malloc_in_range (struct grub_relocator *rel,
 	      events[N].hancestor = pa;
 	      N++;
 	      events[N].type = REG_BEG_END;
-	      events[N].pos = grub_vtop (p + p->size) - sizeof (*r);
+	      events[N].pos = grub_vtop (p + p->size) - sizeof (*r)
+		- sizeof (struct grub_mm_header);
 	      N++;
 	    }
 	  else
@@ -669,7 +665,6 @@ malloc_in_range (struct grub_relocator *rel,
     const int nlefto = 0;
 #endif
     grub_addr_t starta = 0;
-    int numstarted;
     for (j = from_low_priv ? 0 : N - 1; from_low_priv ? j < N : (j + 1); 
 	 from_low_priv ? j++ : j--)
       {
@@ -727,11 +722,8 @@ malloc_in_range (struct grub_relocator *rel,
 	isinsideafter = (!ncollisions && (nstarted || ((nlefto || nstartedfw) 
 						       && !nblockfw)));
 	if (!isinsidebefore && isinsideafter)
-	  {
-	    starta = from_low_priv ? ALIGN_UP (events[j].pos, align)
-	      : ALIGN_DOWN (events[j].pos - size, align) + size;
-	    numstarted = j;
-	  }
+	  starta = from_low_priv ? ALIGN_UP (events[j].pos, align)
+	    : ALIGN_DOWN (events[j].pos - size, align) + size;
 	if (isinsidebefore && !isinsideafter && from_low_priv)
 	  {
 	    target = starta;
@@ -979,7 +971,6 @@ malloc_in_range (struct grub_relocator *rel,
 		    || typepre == CHUNK_TYPE_IN_REGION)
 		  {
 		    curschu->reg = events[last_start].reg;
-		    curschu->head = events[last_start].head;
 		    curschu->pre_size = alloc_start - events[j - 1].pos;
 		  }
 		if (!oom && (typepre == CHUNK_TYPE_REGION_START
@@ -1379,11 +1370,13 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 
   {
     int found = 0;
-    auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-    int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t sz, grub_uint32_t type)
+    auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				    grub_memory_type_t);
+    int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t sz,
+			       grub_memory_type_t type)
     {
       grub_uint64_t candidate;
-      if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
+      if (type != GRUB_MEMORY_AVAILABLE)
 	return 0;
       candidate = ALIGN_UP (addr, align);
       if (candidate < min_addr)
@@ -1502,7 +1495,8 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 			grub_relocator_align,
 			rel->relocators_size, &movers_chunk, 1, 1))
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
-  rels = rels0 = grub_map_memory (movers_chunk.src, movers_chunk.size);
+  movers_chunk.srcv = rels = rels0
+    = grub_map_memory (movers_chunk.src, movers_chunk.size);
 
   if (relsize)
     *relsize = rel->relocators_size;

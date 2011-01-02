@@ -23,7 +23,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 locale_dir=`echo ${GRUB_PREFIX}/locale | sed ${transform}`
-grub_lang=`echo $LANG | cut -d _ -f 1`
+grub_lang=`echo $LANG | cut -d . -f 1`
 
 . ${libdir}/grub/grub-mkconfig_lib
 
@@ -245,6 +245,12 @@ make_timeout "${GRUB_HIDDEN_TIMEOUT}" "${GRUB_TIMEOUT}"
 echo fi
 else
 make_timeout "${GRUB_HIDDEN_TIMEOUT}" "${GRUB_TIMEOUT}"
+fi
+
+if [ "x$GRUB_BUTTON_CMOS_ADDRESS" != "x" ] && [ "x$GRUB_BUTTON_CMOS_CLEAN" = "xyes" ]; then
+    cat <<EOF
+cmosclean $GRUB_BUTTON_CMOS_ADDRESS
+EOF
 fi
 
 # Play an initial tune

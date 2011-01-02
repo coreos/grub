@@ -229,7 +229,7 @@ struct grub_ext2_inode
   };
   grub_uint32_t version;
   grub_uint32_t acl;
-  grub_uint32_t dir_acl;
+  grub_uint32_t size_high;
   grub_uint32_t fragment_addr;
   grub_uint32_t osd2[3];
 };
@@ -470,10 +470,41 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       blknr = grub_le_to_cpu32 (indir[rblock % perblock]);
     }
   /* triple indirect.  */
+  else if (fileblock < INDIRECT_BLOCKS + blksz / 4 * (blksz / 4 + 1)
+	   + (blksz / 4) * (blksz / 4) * (blksz / 4 + 1))
+    {
+      unsigned int perblock = blksz / 4;
+      unsigned int rblock = fileblock - (INDIRECT_BLOCKS + blksz / 4
+					 * (blksz / 4 + 1));
+      grub_uint32_t indir[blksz / 4];
+
+      if (grub_disk_read (data->disk,
+			  ((grub_disk_addr_t)
+			   grub_le_to_cpu32 (inode->blocks.triple_indir_block))
+			  << log2_blksz,
+			  0, blksz, indir))
+	return grub_errno;
+
+      if (grub_disk_read (data->disk,
+			  ((grub_disk_addr_t)
+			   grub_le_to_cpu32 (indir[(rblock / perblock) / perblock]))
+			  << log2_blksz,
+			  0, blksz, indir))
+	return grub_errno;
+
+      if (grub_disk_read (data->disk,
+			  ((grub_disk_addr_t)
+			   grub_le_to_cpu32 (indir[(rblock / perblock) % perblock]))
+			  << log2_blksz,
+			  0, blksz, indir))
+	return grub_errno;
+
+      blknr = grub_le_to_cpu32 (indir[rblock % perblock]);
+    }
   else
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "ext2fs doesn't support triple indirect blocks");
+		  "ext2fs doesn't support quadruple indirect blocks");
     }
 
   return blknr;
@@ -485,11 +516,12 @@ static grub_ssize_t
 grub_ext2_read_file (grub_fshelp_node_t node,
 		     void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 					unsigned offset, unsigned length),
-		     int pos, grub_size_t len, char *buf)
+		     grub_off_t pos, grub_size_t len, char *buf)
 {
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_ext2_read_block,
-				node->inode.size,
+				grub_cpu_to_le32 (node->inode.size)
+				| (((grub_off_t) grub_cpu_to_le32 (node->inode.size_high)) << 32),
 				LOG2_EXT2_BLOCK_SIZE (node->data));
 
 }
@@ -728,22 +760,27 @@ grub_ext2_open (struct grub_file *file, const char *name)
 {
   struct grub_ext2_data *data;
   struct grub_fshelp_node *fdiro = 0;
+  grub_err_t err;
 
   grub_dl_ref (my_mod);
 
   data = grub_ext2_mount (file->device->disk);
   if (! data)
-    goto fail;
+    {
+      err = grub_errno;
+      goto fail;
+    }
 
-  grub_fshelp_find_file (name, &data->diropen, &fdiro, grub_ext2_iterate_dir,
-			 grub_ext2_read_symlink, GRUB_FSHELP_REG);
-  if (grub_errno)
+  err = grub_fshelp_find_file (name, &data->diropen, &fdiro,
+			       grub_ext2_iterate_dir,
+			       grub_ext2_read_symlink, GRUB_FSHELP_REG);
+  if (err)
     goto fail;
 
   if (! fdiro->inode_read)
     {
-      grub_ext2_read_inode (data, fdiro->ino, &fdiro->inode);
-      if (grub_errno)
+      err = grub_ext2_read_inode (data, fdiro->ino, &fdiro->inode);
+      if (err)
 	goto fail;
     }
 
@@ -751,6 +788,7 @@ grub_ext2_open (struct grub_file *file, const char *name)
   grub_free (fdiro);
 
   file->size = grub_le_to_cpu32 (data->inode->size);
+  file->size |= ((grub_off_t) grub_le_to_cpu32 (data->inode->size_high)) << 32;
   file->data = data;
   file->offset = 0;
 
@@ -763,7 +801,7 @@ grub_ext2_open (struct grub_file *file, const char *name)
 
   grub_dl_unref (my_mod);
 
-  return grub_errno;
+  return err;
 }
 
 static grub_err_t

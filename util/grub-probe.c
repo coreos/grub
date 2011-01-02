@@ -142,6 +142,7 @@ probe (const char *path, char *device_name)
       int is_raid5 = 0;
       int is_raid6 = 0;
       int raid_level;
+      grub_disk_t raid_disk;
 
       raid_level = probe_raid_level (dev->disk);
       if (raid_level >= 0)
@@ -149,6 +150,7 @@ probe (const char *path, char *device_name)
 	  is_raid = 1;
 	  is_raid5 |= (raid_level == 5);
 	  is_raid6 |= (raid_level == 6);
+	  raid_disk = dev->disk;
 	}
 
       if ((is_lvm) && (dev->disk->dev->memberlist))
@@ -161,6 +163,7 @@ probe (const char *path, char *device_name)
 	      is_raid = 1;
 	      is_raid5 |= (raid_level == 5);
 	      is_raid6 |= (raid_level == 6);
+	      raid_disk = list->disk;
 	    }
 
 	  tmp = list->next;
@@ -175,7 +178,8 @@ probe (const char *path, char *device_name)
 	    printf ("raid5rec ");
 	  if (is_raid6)
 	    printf ("raid6rec ");
-	  printf ("mdraid ");
+	  if (raid_disk->dev->raidname)
+	    printf ("%s ", raid_disk->dev->raidname (raid_disk));
 	}
 
       if (is_lvm)
@@ -226,48 +230,16 @@ probe (const char *path, char *device_name)
 
   if (print == PRINT_FS)
     {
-      if (path)
-        {
-	  struct stat st;
-
-	  stat (path, &st);
-
-	  if (S_ISREG (st.st_mode))
-	    {
-	      /* Regular file.  Verify that we can read it properly.  */
-
-	      grub_file_t file;
-	      char *rel_path;
-	      grub_util_info ("reading %s via OS facilities", path);
-	      filebuf_via_sys = grub_util_read_image (path);
-
-	      rel_path = grub_make_system_path_relative_to_its_root (path);
-	      grub_path = xasprintf ("(%s)%s", drive_name, rel_path);
-	      free (rel_path);
-	      grub_util_info ("reading %s via GRUB facilities", grub_path);
-	      file = grub_file_open (grub_path);
-	      if (! file)
-		grub_util_error ("cannot open %s via GRUB facilities", grub_path);
-	      filebuf_via_grub = xmalloc (file->size);
-	      grub_file_read (file, filebuf_via_grub, file->size);
-
-	      grub_util_info ("comparing");
-
-	      if (memcmp (filebuf_via_grub, filebuf_via_sys, file->size))
-		grub_util_error ("files differ");
-	    }
-	}
-
       printf ("%s\n", fs->name);
     }
-
-  if (print == PRINT_FS_UUID)
+  else if (print == PRINT_FS_UUID)
     {
       char *uuid;
       if (! fs->uuid)
 	grub_util_error ("%s does not support UUIDs", fs->name);
 
-      fs->uuid (dev, &uuid);
+      if (fs->uuid (dev, &uuid) != GRUB_ERR_NONE)
+	grub_util_error ("%s", grub_errmsg);
 
       printf ("%s\n", uuid);
     }
@@ -277,7 +249,8 @@ probe (const char *path, char *device_name)
       if (! fs->label)
 	grub_util_error ("%s does not support labels", fs->name);
 
-      fs->label (dev, &label);
+      if (fs->label (dev, &label) != GRUB_ERR_NONE)
+	grub_util_error ("%s", grub_errmsg);
 
       printf ("%s\n", label);
     }
@@ -420,6 +393,15 @@ main (int argc, char *argv[])
 
   /* Initialize all modules. */
   grub_init_all ();
+
+  grub_lvm_fini ();
+  grub_mdraid09_fini ();
+  grub_mdraid1x_fini ();
+  grub_raid_fini ();
+  grub_raid_init ();
+  grub_mdraid09_init ();
+  grub_mdraid1x_init ();
+  grub_lvm_init ();
 
   /* Do it.  */
   if (argument_is_device)

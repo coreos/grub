@@ -29,7 +29,7 @@ nl_langinfo (nl_item item)
   switch (item)
     {
     case CODESET:
-      return locale_charset ();
+      return "UTF-8";
     default:
       return "";
     }

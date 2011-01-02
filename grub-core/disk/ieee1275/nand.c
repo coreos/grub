@@ -113,7 +113,6 @@ grub_nand_open (const char *name, grub_disk_t disk)
 
   disk->id = dev_ihandle;
 
-  disk->has_partitions = 0;
   disk->data = data;
 
   return 0;

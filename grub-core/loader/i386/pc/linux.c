@@ -25,8 +25,7 @@
 #include <grub/disk.h>
 #include <grub/misc.h>
 #include <grub/types.h>
-#include <grub/machine/init.h>
-#include <grub/machine/memory.h>
+#include <grub/memory.h>
 #include <grub/dl.h>
 #include <grub/cpu/linux.h>
 #include <grub/command.h>
@@ -401,6 +400,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   addr_min = GRUB_LINUX_BZIMAGE_ADDR + grub_linux16_prot_size;
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (argv[0]);
   if (!file)
     goto fail;

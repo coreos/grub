@@ -24,9 +24,9 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/ieee1275/ieee1275.h>
-#include <grub/gzio.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/memory.h>
 
 static grub_dl_t my_mod;
 
@@ -182,8 +182,10 @@ alloc_phys (grub_addr_t size)
 {
   grub_addr_t ret = (grub_addr_t) -1;
 
-  auto int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len __attribute__((unused)), grub_uint32_t type);
-  int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len __attribute__((unused)), grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len,
+				    grub_memory_type_t type);
+  int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len,
+			       grub_memory_type_t type)
   {
     grub_addr_t end = addr + len;
 
@@ -245,7 +247,7 @@ grub_linux_load64 (grub_elf_t elf)
   linux_entry = elf->ehdr.ehdr64.e_entry;
   linux_addr = 0x40004000;
   off = 0x4000;
-  linux_size = grub_elf64_size (elf, 0);
+  linux_size = grub_elf64_size (elf, 0, 0);
   if (linux_size == 0)
     return grub_errno;
 
@@ -305,7 +307,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto out;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (!file)
     goto out;
 
@@ -393,6 +395,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
+  grub_file_filter_disable_compression ();
   file = grub_file_open (argv[0]);
   if (! file)
     goto fail;
