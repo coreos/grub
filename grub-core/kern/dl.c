@@ -360,9 +360,22 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	  sym->st_value += (Elf_Addr) grub_dl_get_section_addr (mod,
 								sym->st_shndx);
 	  if (bind != STB_LOCAL)
-	    if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
-	      return grub_errno;
-
+	    {
+#ifdef __ia64__
+	      /* FIXME: free descriptor once it's not used anymore. */
+	      char **desc;
+	      desc = grub_malloc (2 * sizeof (char *));
+	      if (!desc)
+		return grub_errno;
+	      desc[0] = (void *) sym->st_value;
+	      desc[1] = mod->gp;
+	      if (grub_dl_register_symbol (name, (void *) desc, mod))
+		return grub_errno;
+#else
+	      if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
+		return grub_errno;
+#endif
+	    }
 	  if (grub_strcmp (name, "grub_mod_init") == 0)
 	    mod->init = sym->st_value;
 	  else if (grub_strcmp (name, "grub_mod_fini") == 0)
@@ -552,6 +565,7 @@ grub_dl_load_core (void *addr, grub_size_t size)
   if (grub_dl_resolve_name (mod, e)
       || grub_dl_resolve_dependencies (mod, e)
       || grub_dl_load_segments (mod, e)
+      || grub_arch_dl_allocate_gp (mod, e)
       || grub_dl_resolve_symbols (mod, e)
       || grub_arch_dl_relocate_symbols (mod, e))
     {

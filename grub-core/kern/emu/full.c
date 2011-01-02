@@ -56,4 +56,12 @@ grub_arch_dl_get_tramp_size (const void *ehdr __attribute__ ((unused)),
 {
   return ~(grub_size_t)0;
 }
+
+grub_err_t
+grub_arch_dl_allocate_gp (grub_dl_t mod __attribute__ ((unused)),
+			  const void *ehdr __attribute__ ((unused)))
+{
+  return GRUB_ERR_BAD_MODULE;
+}
+
 #endif

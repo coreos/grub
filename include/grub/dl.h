@@ -124,6 +124,8 @@ void grub_arch_dl_init_linker (void);
 
 #ifdef __ia64__
 grub_size_t grub_arch_dl_get_tramp_size (const void *ehdr, unsigned sec);
+grub_err_t grub_arch_dl_allocate_gp (grub_dl_t mod, const void *ehdr);
+
 #define GRUB_ARCH_DL_TRAMP_ALIGN 16
 #else
 static inline grub_size_t
@@ -131,6 +133,13 @@ grub_arch_dl_get_tramp_size (const void *ehdr __attribute__ ((unused)), int sec 
 {
   return 0;
 }
+static inline grub_err_t
+grub_arch_dl_allocate_gp (grub_dl_t mod __attribute__ ((unused)),
+			  const void *ehdr __attribute__ ((unused)))
+{
+  return GRUB_ERR_NONE;
+}
+
 #define GRUB_ARCH_DL_TRAMP_ALIGN 1
 #endif
 

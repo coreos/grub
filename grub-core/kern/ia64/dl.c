@@ -154,16 +154,13 @@ grub_arch_dl_get_tramp_size (const void *ehdr, unsigned sec)
   return cnt * sizeof (struct ia64_trampoline);
 }
 
-/* Relocate symbols.  */
 grub_err_t
-grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
+grub_arch_dl_allocate_gp (grub_dl_t mod, const void *ehdr)
 {
-  Elf_Ehdr *e = ehdr;
-  Elf_Shdr *s;
-  Elf_Word entsize;
-  unsigned i;
-  grub_uint64_t *gp, *gpptr;
   grub_size_t gp_size = 0;
+  const Elf_Ehdr *e = ehdr;
+  const Elf_Shdr *s;
+  unsigned i;
 
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -199,10 +196,23 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
   if (gp_size > MASK19)
     return grub_error (GRUB_ERR_OUT_OF_RANGE, "gp too big");
 
-  gpptr = gp = grub_malloc (gp_size);
-  if (!gp)
+  mod->gp = grub_malloc (gp_size);
+  if (!mod->gp)
     return grub_errno;
-  mod->gp = (char *) gp;
+  return GRUB_ERR_NONE;
+}
+
+/* Relocate symbols.  */
+grub_err_t
+grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
+{
+  Elf_Ehdr *e = ehdr;
+  Elf_Shdr *s;
+  Elf_Word entsize;
+  unsigned i;
+  grub_uint64_t *gp, *gpptr;
+
+  gp = gpptr = (grub_uint64_t *) mod->gp;
 
   /* Find a symbol table.  */
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
