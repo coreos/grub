@@ -48,3 +48,12 @@ grub_emu_init (void)
 {
   grub_no_autoload = 1;
 }
+
+#ifdef __ia64__
+grub_size_t
+grub_arch_dl_get_tramp_size (const void *ehdr __attribute__ ((unused)),
+			     unsigned sec  __attribute__ ((unused)))
+{
+  return ~(grub_size_t)0;
+}
+#endif

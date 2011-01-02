@@ -90,8 +90,11 @@ struct grub_dl
   grub_dl_dep_t dep;
   grub_dl_segment_t segment;
   Elf_Sym *symtab;
-  void (*init) (struct grub_dl *mod);
-  void (*fini) (void);
+  grub_addr_t init;
+  grub_addr_t fini;
+#ifdef __ia64__
+  char *gp;
+#endif
   struct grub_dl *next;
 };
 typedef struct grub_dl *grub_dl_t;
@@ -118,5 +121,18 @@ grub_err_t grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr);
 #define GRUB_LINKER_HAVE_INIT 1
 void grub_arch_dl_init_linker (void);
 #endif
+
+#ifdef __ia64__
+grub_size_t grub_arch_dl_get_tramp_size (const void *ehdr, unsigned sec);
+#define GRUB_ARCH_DL_TRAMP_ALIGN 16
+#else
+static inline grub_size_t
+grub_arch_dl_get_tramp_size (const void *ehdr __attribute__ ((unused)), int sec __attribute__ ((unused)))
+{
+  return 0;
+}
+#define GRUB_ARCH_DL_TRAMP_ALIGN 1
+#endif
+
 
 #endif /* ! GRUB_DL_H */

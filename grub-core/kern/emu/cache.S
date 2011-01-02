@@ -10,6 +10,7 @@
 #include "../mips/cache.S"
 #elif defined(__powerpc__)
 #include "../powerpc/cache.S"
+#elif defined(__ia64__)
 #else
 #error "No target cpu type is defined"
 #endif

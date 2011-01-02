@@ -37,6 +37,10 @@
 #define GRUB_MODULES_MACHINE_READONLY
 #endif
 
+#ifdef GRUB_MACHINE_EMU
+#include <sys/mman.h>
+#endif
+
 
 
 grub_dl_t grub_dl_head = 0;
@@ -233,10 +237,23 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
       if (s->sh_flags & SHF_ALLOC)
 	{
 	  grub_dl_segment_t seg;
+	  grub_size_t tramp_size = 0;
 
 	  seg = (grub_dl_segment_t) grub_malloc (sizeof (*seg));
 	  if (! seg)
 	    return grub_errno;
+
+	  tramp_size = grub_arch_dl_get_tramp_size (e, i);
+	  if (tramp_size && s->sh_addralign < GRUB_ARCH_DL_TRAMP_ALIGN)
+	    {
+	      s->sh_addralign = GRUB_ARCH_DL_TRAMP_ALIGN;
+	      s->sh_size = ALIGN_UP (s->sh_size, GRUB_ARCH_DL_TRAMP_ALIGN) + tramp_size;
+	    }
+#ifdef GRUB_MACHINE_EMU
+	  if (s->sh_addralign < 8192)
+	    s->sh_addralign = 8192;
+	  s->sh_size = ALIGN_UP (s->sh_size, 8192);
+#endif
 
 	  if (s->sh_size)
 	    {
@@ -260,6 +277,10 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 		}
 
 	      seg->addr = addr;
+#ifdef GRUB_MACHINE_EMU
+	      if (s->sh_flags & SHF_EXECINSTR)
+		mprotect (addr, s->sh_size, PROT_READ | PROT_WRITE | PROT_EXEC);
+#endif
 	    }
 	  else
 	    seg->addr = 0;
@@ -343,9 +364,9 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	      return grub_errno;
 
 	  if (grub_strcmp (name, "grub_mod_init") == 0)
-	    mod->init = (void (*) (grub_dl_t)) sym->st_value;
+	    mod->init = sym->st_value;
 	  else if (grub_strcmp (name, "grub_mod_fini") == 0)
-	    mod->fini = (void (*) (void)) sym->st_value;
+	    mod->fini = sym->st_value;
 	  break;
 
 	case STT_SECTION:
@@ -370,7 +391,16 @@ static void
 grub_dl_call_init (grub_dl_t mod)
 {
   if (mod->init)
-    (mod->init) (mod);
+    {
+#ifndef __ia64__
+      ((void (*) (grub_dl_t)) mod->init) (mod);
+#else
+      char *jmp[2];
+      jmp[0] = (char *) mod->init;
+      jmp[1] = mod->gp;
+      ((void (*) (grub_dl_t)) jmp) (mod);
+#endif
+    }
 }
 
 static grub_err_t
@@ -533,7 +563,7 @@ grub_dl_load_core (void *addr, grub_size_t size)
   grub_dl_flush_cache (mod);
 
   grub_dprintf ("modules", "module name: %s\n", mod->name);
-  grub_dprintf ("modules", "init function: %p\n", mod->init);
+  grub_dprintf ("modules", "init function: %" PRIxGRUB_ADDR "\n", mod->init);
   grub_dl_call_init (mod);
 
   if (grub_dl_add (mod))
@@ -633,7 +663,16 @@ grub_dl_unload (grub_dl_t mod)
     return 0;
 
   if (mod->fini)
-    (mod->fini) ();
+    {
+#ifndef __ia64__
+      ((void (*) (void)) mod->fini) ();
+#else
+      char *jmp[2];
+      jmp[0] = (char *) mod->fini;
+      jmp[1] = mod->gp;
+      ((void (*) (void)) jmp) ();
+#endif
+    }
 
   grub_dl_remove (mod);
   grub_dl_unregister_symbols (mod);
