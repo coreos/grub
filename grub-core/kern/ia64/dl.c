@@ -75,9 +75,9 @@ add_value_to_slot_21_real (grub_uint32_t a, grub_uint32_t value)
   grub_uint32_t high, mid, low, c;
   low  = (a & 0x00007f);
   mid  = (a & 0x7fc000) >> 7;
-  high = (a & 0x003e00) << 5;
+  high = (a & 0x003e00) << 7;
   c = (low | mid | high) + value;
-  return (c & 0x7f) | ((c << 7) & 0x7fc000) | ((c >> 5) & 0x003e00);
+  return (c & 0x7f) | ((c << 7) & 0x7fc000) | ((c >> 7) & 0x0003e00); //0x003e00
 }
 
 static void
@@ -138,7 +138,7 @@ static void
 make_trampoline (struct ia64_trampoline *tr, grub_uint64_t addr)
 {
   grub_memcpy (tr->nop, nopm, sizeof (tr->nop));
-  tr->addr_hi[0] = ((addr & 0xc00000) >> 18);
+  tr->addr_hi[0] = ((addr & 0xc00000) >> 16);
   tr->addr_hi[1] = (addr >> 24) & 0xff;
   tr->addr_hi[2] = (addr >> 32) & 0xff;
   tr->addr_hi[3] = (addr >> 40) & 0xff;
@@ -152,11 +152,11 @@ make_trampoline (struct ia64_trampoline *tr, grub_uint64_t addr)
   grub_memcpy (tr->jump, jump, sizeof (tr->jump));
 }
 
-grub_size_t
-grub_arch_dl_get_tramp_size (const void *ehdr, unsigned sec)
+void
+grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp, grub_size_t *got)
 {
   const Elf_Ehdr *e = ehdr;
-  int cnt = 0;
+  grub_size_t cntt = 0, cntg = 0;;
   const Elf_Shdr *s;
   Elf_Word entsize;
   unsigned i;
@@ -169,7 +169,7 @@ grub_arch_dl_get_tramp_size (const void *ehdr, unsigned sec)
       break;
 
   if (i == e->e_shnum)
-    return 0;
+    return;
 
   entsize = s->sh_entsize;
 
@@ -180,68 +180,25 @@ grub_arch_dl_get_tramp_size (const void *ehdr, unsigned sec)
       {
 	Elf_Rela *rel, *max;
 
-	if (s->sh_info != sec)
-	  continue;
-	
 	for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
 	       max = rel + s->sh_size / s->sh_entsize;
 	     rel < max; rel++)
-	  if (ELF_R_TYPE (rel->r_info) == R_IA64_PCREL21B)
-	    cnt++;
+	  switch (ELF_R_TYPE (rel->r_info))
+	    {
+	    case R_IA64_PCREL21B:
+	      cntt++;
+	      break;
+	    case R_IA64_LTOFF_FPTR22:
+	    case R_IA64_LTOFF22X:
+	    case R_IA64_LTOFF22:
+	      cntg++;
+	      break;
+	    }
       }
-
-  return cnt * sizeof (struct ia64_trampoline);
+  *tramp = cntt * sizeof (struct ia64_trampoline);
+  *got = cntg * sizeof (grub_uint64_t);
 }
 
-grub_err_t
-grub_arch_dl_allocate_gp (grub_dl_t mod, const void *ehdr)
-{
-  grub_size_t gp_size = 0;
-  const Elf_Ehdr *e = ehdr;
-  const Elf_Shdr *s;
-  unsigned i;
-
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_RELA)
-      {
-	grub_dl_segment_t seg;
-
-	/* Find the target segment.  */
-	for (seg = mod->segment; seg; seg = seg->next)
-	  if (seg->section == s->sh_info)
-	    break;
-
-	if (seg)
-	  {
-	    Elf_Rela *rel, *max;
-
-	    for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
-		   max = rel + s->sh_size / s->sh_entsize;
-		 rel < max;
-		 rel++)
-		switch (ELF_R_TYPE (rel->r_info))
-		  {
-		  case R_IA64_LTOFF_FPTR22:
-		  case R_IA64_LTOFF22X:
-		  case R_IA64_LTOFF22:
-		  case R_IA64_GPREL22:
-		    gp_size += 8;
-		    break;
-		  default: break;
-		  }
-	  }
-      }
-
-  if (gp_size > MASK19)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "gp too big");
-
-  mod->gp = grub_malloc (gp_size);
-  if (!mod->gp)
-    return grub_errno;
-  return GRUB_ERR_NONE;
-}
 
 /* Relocate symbols.  */
 grub_err_t
@@ -252,8 +209,11 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
   Elf_Word entsize;
   unsigned i;
   grub_uint64_t *gp, *gpptr;
+  struct ia64_trampoline *tr;
 
-  gp = gpptr = (grub_uint64_t *) mod->gp;
+  gp = (grub_uint64_t *) mod->base;
+  gpptr = (grub_uint64_t *) mod->got;
+  tr = mod->tramp;
 
   /* Find a symbol table.  */
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
@@ -282,9 +242,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 	if (seg)
 	  {
 	    Elf_Rela *rel, *max;
-	    struct ia64_trampoline *tr;
-
-	    tr = (void *) ((char *) seg->addr + ALIGN_UP (seg->size, GRUB_ARCH_DL_TRAMP_ALIGN));
 
 	    for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
 		   max = rel + s->sh_size / s->sh_entsize;
@@ -306,6 +263,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		/* On the PPC the value does not have an explicit
 		   addend, add it.  */
 		value = sym->st_value + rel->r_addend;
+
 		switch (ELF_R_TYPE (rel->r_info))
 		  {
 		  case R_IA64_PCREL21B:
@@ -323,15 +281,24 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		  case R_IA64_SEGREL64LSB:
 		    *(grub_uint64_t *) addr += value - rel->r_offset;
 		    break;
+		  case R_IA64_FPTR64LSB:
 		  case R_IA64_DIR64LSB:
 		    *(grub_uint64_t *) addr += value;
 		    break;
+		  case R_IA64_PCREL64LSB:
+		    *(grub_uint64_t *) addr += value - addr;
+		    break;
+		  case R_IA64_GPREL22:
+		    add_value_to_slot_21 (addr, value - (grub_addr_t) gp);
+		    break;
+
 		  case R_IA64_LTOFF_FPTR22:
 		  case R_IA64_LTOFF22X:
 		  case R_IA64_LTOFF22:
-		  case R_IA64_GPREL22:
 		    *gpptr = value;
-		    add_value_to_slot_21 (addr, (gpptr - gp) * sizeof (grub_uint64_t));
+		    if ((addr & 0xffff) == 0x4301)
+		      grub_dprintf ("modules", "off = %lx\n", (grub_addr_t) gpptr - (grub_addr_t) gp);
+		    add_value_to_slot_21 (addr, (grub_addr_t) gpptr - (grub_addr_t) gp);
 		    gpptr++;
 		    break;
 

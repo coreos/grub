@@ -50,18 +50,11 @@ grub_emu_init (void)
 }
 
 #ifdef __ia64__
-grub_size_t
-grub_arch_dl_get_tramp_size (const void *ehdr __attribute__ ((unused)),
-			     unsigned sec  __attribute__ ((unused)))
+void grub_arch_dl_get_tramp_got_size (const void *ehdr __attribute__ ((unused)),
+				      grub_size_t *tramp, grub_size_t *got)
 {
-  return ~(grub_size_t)0;
-}
-
-grub_err_t
-grub_arch_dl_allocate_gp (grub_dl_t mod __attribute__ ((unused)),
-			  const void *ehdr __attribute__ ((unused)))
-{
-  return GRUB_ERR_BAD_MODULE;
+  *tramp = 0;
+  *got = 0;
 }
 
 #endif

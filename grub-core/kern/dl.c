@@ -229,6 +229,46 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 {
   unsigned i;
   Elf_Shdr *s;
+  grub_size_t tsize = 0, talign = 1;
+#ifdef __ia64__
+  grub_size_t tramp;
+  grub_size_t got;
+#endif
+  char *ptr;
+
+  for (i = 0, s = (Elf_Shdr *)((char *) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (Elf_Shdr *)((char *) s + e->e_shentsize))
+    {
+      tsize += ALIGN_UP (s->sh_size, s->sh_addralign);
+      if (talign < s->sh_addralign)
+	talign = s->sh_addralign;
+    }
+
+#ifdef __ia64__
+  grub_arch_dl_get_tramp_got_size (e, &tramp, &got);
+  tsize += ALIGN_UP (tramp, GRUB_ARCH_DL_TRAMP_ALIGN);
+  if (talign < GRUB_ARCH_DL_TRAMP_ALIGN)
+    talign = GRUB_ARCH_DL_TRAMP_ALIGN;
+  tsize += ALIGN_UP (got, GRUB_ARCH_DL_GOT_ALIGN);
+  if (talign < GRUB_ARCH_DL_GOT_ALIGN)
+    talign = GRUB_ARCH_DL_GOT_ALIGN;
+#endif
+
+#ifdef GRUB_MACHINE_EMU
+  if (talign < 8192 * 16)
+    talign = 8192 * 16;
+  tsize = ALIGN_UP (tsize, 8192 * 16);
+#endif
+
+  mod->base = grub_memalign (talign, tsize);
+  if (!mod->base)
+    return grub_errno;
+  ptr = mod->base;
+
+#ifdef GRUB_MACHINE_EMU
+  mprotect (mod->base, tsize, PROT_READ | PROT_WRITE | PROT_EXEC);
+#endif
 
   for (i = 0, s = (Elf_Shdr *)((char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -237,38 +277,18 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
       if (s->sh_flags & SHF_ALLOC)
 	{
 	  grub_dl_segment_t seg;
-	  grub_size_t tramp_size = 0;
-	  grub_size_t alsize, align;
 
 	  seg = (grub_dl_segment_t) grub_malloc (sizeof (*seg));
 	  if (! seg)
 	    return grub_errno;
 
-	  alsize = s->sh_size;
-	  align = s->sh_addralign;
-	  tramp_size = grub_arch_dl_get_tramp_size (e, i);
-	  if (tramp_size && align < GRUB_ARCH_DL_TRAMP_ALIGN)
-	    {
-	      align = GRUB_ARCH_DL_TRAMP_ALIGN;
-	      alsize = ALIGN_UP (alsize, GRUB_ARCH_DL_TRAMP_ALIGN);
-	    }
-	  alsize += tramp_size;
-#ifdef GRUB_MACHINE_EMU
-	  if (align < 8192 * 16)
-	    align = 8192 * 16;
-	  alsize = ALIGN_UP (alsize, 8192 * 16);
-#endif
-
-	  if (alsize)
+	  if (s->sh_size)
 	    {
 	      void *addr;
 
-	      addr = grub_memalign (align, alsize);
-	      if (! addr)
-		{
-		  grub_free (seg);
-		  return grub_errno;
-		}
+	      ptr = (char *) ALIGN_UP ((grub_addr_t) ptr, s->sh_addralign);
+	      addr = ptr;
+	      ptr += s->sh_size;
 
 	      switch (s->sh_type)
 		{
@@ -281,10 +301,6 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 		}
 
 	      seg->addr = addr;
-#ifdef GRUB_MACHINE_EMU
-	      if (s->sh_flags & SHF_EXECINSTR)
-		mprotect (addr, alsize, PROT_READ | PROT_WRITE | PROT_EXEC);
-#endif
 	    }
 	  else
 	    seg->addr = 0;
@@ -295,6 +311,14 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	  mod->segment = seg;
 	}
     }
+#ifdef __ia64__
+  ptr = (char *) ALIGN_UP ((grub_addr_t) ptr, GRUB_ARCH_DL_TRAMP_ALIGN);
+  mod->tramp = ptr;
+  ptr += tramp;
+  ptr = (char *) ALIGN_UP ((grub_addr_t) ptr, GRUB_ARCH_DL_GOT_ALIGN);
+  mod->got = ptr;
+  ptr += got;
+#endif
 
   return GRUB_ERR_NONE;
 }
@@ -371,7 +395,7 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	      if (!desc)
 		return grub_errno;
 	      desc[0] = (void *) sym->st_value;
-	      desc[1] = mod->gp;
+	      desc[1] = mod->base;
 	      if (grub_dl_register_symbol (name, (void *) desc, mod))
 		return grub_errno;
 	      sym->st_value = (grub_addr_t) desc;
@@ -564,7 +588,6 @@ grub_dl_load_core (void *addr, grub_size_t size)
   if (grub_dl_resolve_name (mod, e)
       || grub_dl_resolve_dependencies (mod, e)
       || grub_dl_load_segments (mod, e)
-      || grub_arch_dl_allocate_gp (mod, e)
       || grub_dl_resolve_symbols (mod, e)
       || grub_arch_dl_relocate_symbols (mod, e))
     {
