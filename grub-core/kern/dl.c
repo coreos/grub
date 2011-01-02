@@ -611,31 +611,6 @@ grub_dl_load_core (void *addr, grub_size_t size)
   return mod;
 }
 
-#ifdef __ia64__
-void
-grub_init_module (const char *name,
-		  void (*init)(grub_dl_t), void (*fini)(void))
-{
-  grub_dl_t mod;
-
-  mod = (grub_dl_t) grub_malloc (sizeof (*mod));
-  if (! mod)
-    return;
-
-  mod->name = (char *) name;
-  mod->ref_count = 1;
-  mod->dep = 0;
-  mod->segment = 0;
-  mod->init = init;
-  mod->fini = fini;
-
-  grub_dl_call_init (mod);
-
-  /* Can't fail.  */
-  grub_dl_add (mod);
-}
-#endif
-
 /* Load a module from the file FILENAME.  */
 grub_dl_t
 grub_dl_load_file (const char *filename)

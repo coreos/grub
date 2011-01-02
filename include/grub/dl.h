@@ -34,9 +34,9 @@
 #ifndef GRUB_MOD_INIT
 #define GRUB_MOD_INIT(name)	\
 static void grub_mod_init (grub_dl_t mod __attribute__ ((unused))) __attribute__ ((used)); \
-void grub_##name##_init (grub_dl_t); \
+void grub_##name##_init (void); \
 void \
-grub_##name##_init (grub_dl_t mod) { grub_mod_init (mod); } \
+grub_##name##_init (void) { grub_mod_init (0); } \
 static void \
 grub_mod_init (grub_dl_t mod __attribute__ ((unused)))
 #endif

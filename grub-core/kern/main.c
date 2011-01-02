@@ -159,7 +159,7 @@ static void
 grub_load_normal_mode (void)
 {
   /* Load the module.  */
-//  grub_dl_load ("normal");
+  grub_dl_load ("normal");
 
   /* Something went wrong.  Print errors here to let user know why we're entering rescue mode.  */
   grub_print_error ();
