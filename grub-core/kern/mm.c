@@ -313,7 +313,7 @@ grub_memalign (grub_size_t align, grub_size_t size)
 
     case 1:
       /* Unload unneeded modules.  */
-//      grub_dl_unload_unneeded ();
+      grub_dl_unload_unneeded ();
       count++;
       goto again;
 

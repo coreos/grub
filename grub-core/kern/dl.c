@@ -402,14 +402,12 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	  }
 #endif
 	  if (bind != STB_LOCAL)
-	    {
-	      if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
-		return grub_errno;
-	    }
+	    if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
+	      return grub_errno;
 	  if (grub_strcmp (name, "grub_mod_init") == 0)
-	    mod->init = sym->st_value;
+	    mod->init = (void (*) (grub_dl_t)) sym->st_value;
 	  else if (grub_strcmp (name, "grub_mod_fini") == 0)
-	    mod->fini = sym->st_value;
+	    mod->fini = (void (*) (void)) sym->st_value;
 	  break;
 
 	case STT_SECTION:
@@ -434,9 +432,7 @@ static void
 grub_dl_call_init (grub_dl_t mod)
 {
   if (mod->init)
-    {
-      ((void (*) (grub_dl_t)) mod->init) (mod);
-    }
+    (mod->init) (mod);
 }
 
 static grub_err_t
@@ -599,7 +595,7 @@ grub_dl_load_core (void *addr, grub_size_t size)
   grub_dl_flush_cache (mod);
 
   grub_dprintf ("modules", "module name: %s\n", mod->name);
-  grub_dprintf ("modules", "init function: %" PRIxGRUB_ADDR "\n", mod->init);
+  grub_dprintf ("modules", "init function: %p\n", mod->init);
   grub_dl_call_init (mod);
 
   if (grub_dl_add (mod))
@@ -699,9 +695,7 @@ grub_dl_unload (grub_dl_t mod)
     return 0;
 
   if (mod->fini)
-    {
-      ((void (*) (void)) mod->fini) ();
-    }
+    (mod->fini) ();
 
   grub_dl_remove (mod);
   grub_dl_unregister_symbols (mod);

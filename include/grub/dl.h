@@ -92,8 +92,8 @@ struct grub_dl
   grub_dl_dep_t dep;
   grub_dl_segment_t segment;
   Elf_Sym *symtab;
-  grub_addr_t init;
-  grub_addr_t fini;
+  void (*init) (struct grub_dl *mod);
+  void (*fini) (void);
 #ifdef __ia64__
   void *got;
   void *tramp;

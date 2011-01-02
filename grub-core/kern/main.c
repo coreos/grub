@@ -76,7 +76,6 @@ grub_modules_get_end (void)
 static void
 grub_load_modules (void)
 {
-#if 0
   auto int hook (struct grub_module_header *);
   int hook (struct grub_module_header *header)
     {
@@ -95,7 +94,6 @@ grub_load_modules (void)
     }
 
   grub_module_iterate (hook);
-#endif
 }
 
 static void
