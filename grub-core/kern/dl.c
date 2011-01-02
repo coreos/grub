@@ -238,28 +238,32 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	{
 	  grub_dl_segment_t seg;
 	  grub_size_t tramp_size = 0;
+	  grub_size_t alsize, align;
 
 	  seg = (grub_dl_segment_t) grub_malloc (sizeof (*seg));
 	  if (! seg)
 	    return grub_errno;
 
+	  alsize = s->sh_size;
+	  align = s->sh_addralign;
 	  tramp_size = grub_arch_dl_get_tramp_size (e, i);
-	  if (tramp_size && s->sh_addralign < GRUB_ARCH_DL_TRAMP_ALIGN)
+	  if (tramp_size && align < GRUB_ARCH_DL_TRAMP_ALIGN)
 	    {
-	      s->sh_addralign = GRUB_ARCH_DL_TRAMP_ALIGN;
-	      s->sh_size = ALIGN_UP (s->sh_size, GRUB_ARCH_DL_TRAMP_ALIGN) + tramp_size;
+	      align = GRUB_ARCH_DL_TRAMP_ALIGN;
+	      alsize = ALIGN_UP (alsize, GRUB_ARCH_DL_TRAMP_ALIGN);
 	    }
+	  alsize += tramp_size;
 #ifdef GRUB_MACHINE_EMU
-	  if (s->sh_addralign < 8192)
-	    s->sh_addralign = 8192;
-	  s->sh_size = ALIGN_UP (s->sh_size, 8192);
+	  if (align < 8192 * 16)
+	    align = 8192 * 16;
+	  alsize = ALIGN_UP (alsize, 8192 * 16);
 #endif
 
-	  if (s->sh_size)
+	  if (alsize)
 	    {
 	      void *addr;
 
-	      addr = grub_memalign (s->sh_addralign, s->sh_size);
+	      addr = grub_memalign (align, alsize);
 	      if (! addr)
 		{
 		  grub_free (seg);
@@ -279,7 +283,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	      seg->addr = addr;
 #ifdef GRUB_MACHINE_EMU
 	      if (s->sh_flags & SHF_EXECINSTR)
-		mprotect (addr, s->sh_size, PROT_READ | PROT_WRITE | PROT_EXEC);
+		mprotect (addr, alsize, PROT_READ | PROT_WRITE | PROT_EXEC);
 #endif
 	    }
 	  else
@@ -359,9 +363,8 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	case STT_FUNC:
 	  sym->st_value += (Elf_Addr) grub_dl_get_section_addr (mod,
 								sym->st_shndx);
-	  if (bind != STB_LOCAL)
-	    {
 #ifdef __ia64__
+	  {
 	      /* FIXME: free descriptor once it's not used anymore. */
 	      char **desc;
 	      desc = grub_malloc (2 * sizeof (char *));
@@ -371,10 +374,13 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	      desc[1] = mod->gp;
 	      if (grub_dl_register_symbol (name, (void *) desc, mod))
 		return grub_errno;
-#else
+	      sym->st_value = (grub_addr_t) desc;
+	  }
+#endif
+	  if (bind != STB_LOCAL)
+	    {
 	      if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
 		return grub_errno;
-#endif
 	    }
 	  if (grub_strcmp (name, "grub_mod_init") == 0)
 	    mod->init = sym->st_value;
@@ -405,14 +411,7 @@ grub_dl_call_init (grub_dl_t mod)
 {
   if (mod->init)
     {
-#ifndef __ia64__
       ((void (*) (grub_dl_t)) mod->init) (mod);
-#else
-      char *jmp[2];
-      jmp[0] = (char *) mod->init;
-      jmp[1] = mod->gp;
-      ((void (*) (grub_dl_t)) jmp) (mod);
-#endif
     }
 }
 
@@ -678,14 +677,7 @@ grub_dl_unload (grub_dl_t mod)
 
   if (mod->fini)
     {
-#ifndef __ia64__
       ((void (*) (void)) mod->fini) ();
-#else
-      char *jmp[2];
-      jmp[0] = (char *) mod->fini;
-      jmp[1] = mod->gp;
-      ((void (*) (void)) jmp) ();
-#endif
     }
 
   grub_dl_remove (mod);

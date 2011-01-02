@@ -41,23 +41,62 @@ grub_arch_dl_check_header (void *ehdr)
 #define MASK20 ((1 << 20) - 1)
 #define MASK19 ((1 << 19) - 1)
 
-static void
-add_value_to_slot13_20 (Elf_Word *addr, grub_uint32_t value, int slot)
+struct unaligned_uint32
 {
-  grub_uint32_t *p __attribute__ ((aligned (1)));
-  switch (slot)
+  grub_uint32_t val;
+}  __attribute__ ((packed));
+
+static void
+add_value_to_slot_20b (grub_addr_t addr, grub_uint32_t value)
+{
+  struct unaligned_uint32 *p;
+  switch (addr & 3)
     {
     case 0:
-      p = (grub_uint32_t *) (addr + 2);
-      *p = (((((*p >> 2) & MASK20) + value) & MASK20) << 2) | (*p & ~(MASK20 << 2));
+      p = (struct unaligned_uint32 *) ((addr & ~3ULL) + 2);
+      p->val = (((((p->val >> 2) & MASK20) + value) & MASK20) << 2) | (p->val & ~(MASK20 << 2));
       break;
     case 1:
-      p = (grub_uint32_t *) ((grub_uint8_t *) addr + 7);
-      *p = (((((*p >> 3) & MASK20) + value) & MASK20) << 3) | (*p & ~(MASK20 << 3));
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 7);
+      p->val = (((((p->val >> 3) & MASK20) + value) & MASK20) << 3) | (p->val & ~(MASK20 << 3));
       break;
     case 2:
-      p = (grub_uint32_t *) ((grub_uint8_t *) addr + 12);
-      *p = (((((*p >> 4) & MASK20) + value) & MASK20) << 4) | (*p & ~(MASK20 << 4));
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 12);
+      p->val = (((((p->val >> 4) & MASK20) + value) & MASK20) << 4) | (p->val & ~(MASK20 << 4));
+      break;
+    }
+}
+
+#define MASKF21 ( ((1 << 23) - 1) & ~((1 << 7) | (1 << 8)) )
+
+static grub_uint32_t
+add_value_to_slot_21_real (grub_uint32_t a, grub_uint32_t value)
+{
+  grub_uint32_t high, mid, low, c;
+  low  = (a & 0x00007f);
+  mid  = (a & 0x7fc000) >> 7;
+  high = (a & 0x003e00) << 5;
+  c = (low | mid | high) + value;
+  return (c & 0x7f) | ((c << 7) & 0x7fc000) | ((c >> 5) & 0x003e00);
+}
+
+static void
+add_value_to_slot_21 (grub_addr_t addr, grub_uint32_t value)
+{
+  struct unaligned_uint32 *p;
+  switch (addr & 3)
+    {
+    case 0:
+      p = (struct unaligned_uint32 *) ((addr & ~3ULL) + 2);
+      p->val = ((add_value_to_slot_21_real (((p->val >> 2) & MASKF21), value) & MASKF21) << 2) | (p->val & ~(MASKF21 << 2));
+      break;
+    case 1:
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 7);
+      p->val = ((add_value_to_slot_21_real (((p->val >> 3) & MASKF21), value) & MASKF21) << 3) | (p->val & ~(MASKF21 << 3));
+      break;
+    case 2:
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 12);
+      p->val = ((add_value_to_slot_21_real (((p->val >> 4) & MASKF21), value) & MASKF21) << 4) | (p->val & ~(MASKF21 << 4));
       break;
     }
 }
@@ -147,8 +186,8 @@ grub_arch_dl_get_tramp_size (const void *ehdr, unsigned sec)
 	for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
 	       max = rel + s->sh_size / s->sh_entsize;
 	     rel < max; rel++)
-	    if (ELF_R_TYPE (rel->r_info) == R_IA64_PCREL21B)
-	      cnt++;
+	  if (ELF_R_TYPE (rel->r_info) == R_IA64_PCREL21B)
+	    cnt++;
       }
 
   return cnt * sizeof (struct ia64_trampoline);
@@ -165,7 +204,7 @@ grub_arch_dl_allocate_gp (grub_dl_t mod, const void *ehdr)
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
        i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_REL)
+    if (s->sh_type == SHT_RELA)
       {
 	grub_dl_segment_t seg;
 
@@ -176,16 +215,18 @@ grub_arch_dl_allocate_gp (grub_dl_t mod, const void *ehdr)
 
 	if (seg)
 	  {
-	    Elf_Rel *rel, *max;
+	    Elf_Rela *rel, *max;
 
-	    for (rel = (Elf_Rel *) ((char *) e + s->sh_offset),
+	    for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
 		   max = rel + s->sh_size / s->sh_entsize;
 		 rel < max;
 		 rel++)
 		switch (ELF_R_TYPE (rel->r_info))
 		  {
+		  case R_IA64_LTOFF_FPTR22:
 		  case R_IA64_LTOFF22X:
 		  case R_IA64_LTOFF22:
+		  case R_IA64_GPREL22:
 		    gp_size += 8;
 		    break;
 		  default: break;
@@ -243,29 +284,22 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 	    Elf_Rela *rel, *max;
 	    struct ia64_trampoline *tr;
 
+	    tr = (void *) ((char *) seg->addr + ALIGN_UP (seg->size, GRUB_ARCH_DL_TRAMP_ALIGN));
+
 	    for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
 		   max = rel + s->sh_size / s->sh_entsize;
 		 rel < max;
 		 rel++)
 	      {
-		Elf_Word *addr;
+		grub_addr_t addr;
 		Elf_Sym *sym;
 		grub_uint64_t value;
-		int slot = 0;
 
 		if (seg->size < (rel->r_offset & ~3))
 		  return grub_error (GRUB_ERR_BAD_MODULE,
 				     "reloc offset is out of the segment");
 
-		tr = (void *) ((char *) seg->addr + ALIGN_UP (seg->size, GRUB_ARCH_DL_TRAMP_ALIGN));
-
-		if (ELF_R_TYPE (rel->r_info) == R_IA64_PCREL21B)
-		  {
-		    addr = (Elf_Word *) ((char *) seg->addr + (rel->r_offset & ~3));
-		    slot = rel->r_offset & 3;
-		  }
-		else
-		  addr = (Elf_Word *) ((char *) seg->addr + rel->r_offset);
+		addr = (grub_addr_t) seg->addr + rel->r_offset;
 		sym = (Elf_Sym *) ((char *) mod->symtab
 				     + entsize * ELF_R_SYM (rel->r_info));
 
@@ -278,21 +312,26 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    {
 		      grub_uint64_t noff;
 		      make_trampoline (tr, value);
-		      noff = ((char *) tr - (char *) addr) >> 4;
+		      noff = ((char *) tr - (char *) (addr & ~3)) >> 4;
 		      tr++;
 		      if (noff & ~MASK19)
 			return grub_error (GRUB_ERR_BAD_OS,
-					   "trampoline offset too big");
-		      add_value_to_slot13_20 (addr, noff, slot);
+					   "trampoline offset too big (%lx)", noff);
+		      add_value_to_slot_20b (addr, noff);
 		    }
 		    break;
 		  case R_IA64_SEGREL64LSB:
 		    *(grub_uint64_t *) addr += value - rel->r_offset;
 		    break;
+		  case R_IA64_DIR64LSB:
+		    *(grub_uint64_t *) addr += value;
+		    break;
+		  case R_IA64_LTOFF_FPTR22:
 		  case R_IA64_LTOFF22X:
 		  case R_IA64_LTOFF22:
+		  case R_IA64_GPREL22:
 		    *gpptr = value;
-		    add_value_to_slot13_20 (addr, (gpptr - gp) * sizeof (grub_uint64_t), slot);
+		    add_value_to_slot_21 (addr, (gpptr - gp) * sizeof (grub_uint64_t));
 		    gpptr++;
 		    break;
 
