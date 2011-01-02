@@ -746,6 +746,7 @@ grub_freebsd_boot (void)
       grub_memcpy (&stack[9], &bi, sizeof (bi));
       state.eip = entry;
       state.esp = stack_target;
+      state.ebp = stack_target;
       stack[0] = entry; /* "Return" address.  */
       stack[1] = bootflags | FREEBSD_RB_BOOTINFO;
       stack[2] = bootdev;
@@ -830,7 +831,8 @@ grub_openbsd_boot (void)
 #endif
 
   state.eip = entry;
-  state.esp = ((grub_uint8_t *) stack - (grub_uint8_t *) buf0) + buf_target;
+  state.ebp = state.esp
+    = ((grub_uint8_t *) stack - (grub_uint8_t *) buf0) + buf_target;
   stack[0] = entry;
   stack[1] = bootflags;
   stack[2] = openbsd_root;
@@ -1045,6 +1047,7 @@ grub_netbsd_boot (void)
 
   state.eip = entry;
   state.esp = stack_target;
+  state.ebp = stack_target;
   stack[0] = entry;
   stack[1] = bootflags;
   stack[2] = 0;

@@ -544,7 +544,7 @@ CFLAGS="$CFLAGS -Wl,--defsym,abort=main"
 fi
 
 # Check for libgcc symbols
-AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x)
+AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x __ia64_trampoline __udivsi3 __umoddi3 __udivdi3 __divsi3 __modsi3 __umodsi3 __moddi3 __divdi3)
 
 if test "x$TARGET_APPLE_CC" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib"
@@ -824,12 +824,23 @@ fi
 
 if test x"$device_mapper_excuse" = x ; then
   # Check for device-mapper library.
-  AC_CHECK_LIB([devmapper], [dm_task_create],
-               [LIBDEVMAPPER="-ldevmapper"
-                AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
-                          [Define to 1 if you have the devmapper library.])],
+  AC_CHECK_LIB([devmapper], [dm_task_create], [],
                [device_mapper_excuse="need devmapper library"])
 fi
+
+if test x"$device_mapper_excuse" = x ; then
+  # Check for device-mapper library.
+  AC_CHECK_LIB([devmapper], [dm_log_with_errno_init],
+               [],
+               [device_mapper_excuse="need devmapper library"])
+fi
+
+if test x"$device_mapper_excuse" = x ; then
+   LIBDEVMAPPER="-ldevmapper";
+   AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
+             [Define to 1 if you have the devmapper library.])
+fi
+
 AC_SUBST([LIBDEVMAPPER])
 
 AC_CHECK_LIB([zfs], [libzfs_init],
@@ -843,6 +854,8 @@ AC_CHECK_LIB([nvpair], [nvlist_print],
               AC_DEFINE([HAVE_LIBNVPAIR], [1],
                         [Define to 1 if you have the NVPAIR library.])],)
 AC_SUBST([LIBNVPAIR])
+
+LIBS=""
 
 pkglibrootdir='$(libdir)'/`echo $PACKAGE | sed "$program_transform_name"`
 AC_SUBST(pkglibrootdir)
@@ -944,6 +957,11 @@ echo PCI support for grub-emu: Yes
 else
 echo PCI support for grub-emu: No "($grub_emu_pci_excuse)"
 fi
+fi
+if test x"$device_mapper_excuse" = x ; then
+echo With devmapper support: Yes
+else
+echo With devmapper support: No "($device_mapper_excuse)"
 fi
 if [ x"$enable_mm_debug" = xyes ]; then
 echo With memory debugging: Yes

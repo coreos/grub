@@ -67,11 +67,25 @@ VARIABLE(grub_relocator32_esp)
 
 	/* mov imm32, %eax */
 	.byte	0xb8
+VARIABLE(grub_relocator32_ebp)
+	.long	0
+
+	movl	%eax, %ebp
+
+	/* mov imm32, %eax */
+	.byte	0xb8
 VARIABLE(grub_relocator32_esi)
 	.long	0
 
 	movl	%eax, %esi
-	
+
+	/* mov imm32, %eax */
+	.byte	0xb8
+VARIABLE(grub_relocator32_edi)
+	.long	0
+
+	movl	%eax, %edi
+
 	/* mov imm32, %eax */
 	.byte	0xb8
 VARIABLE(grub_relocator32_eax)

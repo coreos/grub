@@ -1,3 +1,121 @@
+2010-09-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c: Don't add abort alias in utils.
+	Reported by: echoline.
+
+2010-09-03  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Add missing files into "make dist" tarball for other platforms.
+
+	* gentpl.py (script): Use dist_noinst_DATA instead of EXTRA_DIST.
+	* conf/Makefile.common (dist_noinst_DATA): New variable.
+	* conf/Makefile.extra-dist: Added missing make dist files.
+	* grub-core/Makefile.core.def: Likewise.
+
+2010-09-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Compress grub_prefix.
+
+	* grub-core/boot/i386/pc/lnxboot.S: Use
+	GRUB_KERNEL_I386_PC_MULTIBOOT_SIGNATURE.
+	* grub-core/kern/i386/pc/startup.S: Move grub_prefix to compressed part.
+	* include/grub/offsets.h: Rename GRUB_MACHINE_DATA_END to
+	GRUB_MACHINE_PREFIX_END. All users updated.
+	(GRUB_KERNEL_I386_PC_PREFIX): Set to GRUB_KERNEL_I386_PC_RAW_SIZE.
+	(GRUB_KERNEL_I386_PC_PREFIX_END): Set to GRUB_KERNEL_I386_PC_PREFIX
+	+ 0x40.
+	(GRUB_KERNEL_I386_PC_RAW_SIZE): Decrease.
+	* util/grub-mkimage.c (image_target_desc): Change data_end to
+	prefix_end. All users updated.
+
+2010-09-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/bsd.c (grub_freebsd_boot): Set %ebp to sane
+	value.
+	(grub_openbsd_boot): Likewise.
+	(grub_netbsd_boot): Likewise.
+	* grub-core/loader/i386/xnu.c (grub_xnu_boot_resume): Likewise.
+	(grub_xnu_boot): Likewise.
+
+2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Clean LIBS variable after tests.
+
+2010-09-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* INSTALL: Document that libdevmapper needs to be 1.02.34 or later.
+
+2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Check for dm_log_with_errno_init in libdevmapper and
+	echo if libdevmapper will be used.
+
+2010-09-02  Ian Turner  <Ian.Turner@deshaw.com>
+
+	* grub-core/fs/i386/pc/pxe.c (grub_pxefs_read): Keep the blocksize
+	constant for the same file.
+
+2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/i386/multiboot_mmap.c: Remove leftover include.
+
+2010-09-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Add *.pp, **/.dirstamp, grub-core/*.module, and
+	grub-core/*.pp.
+
+2010-09-02  Colin Watson  <cjwatson@ubuntu.com>
+
+	Zero %ebp and %edi when entering Linux's 32-bit entry point, as
+	required by the boot protocol.
+
+	* include/grub/i386/relocator.h (struct grub_relocator32_state): Add
+	ebp and edi members.
+	* grub-core/lib/i386/relocator.c (grub_relocator_boot): Handle
+	state.ebp and state.edi.
+	* grub-core/lib/i386/relocator32.S (grub_relocator32_start): Set
+	%ebp and %edi according to grub_relocator32_ebp and
+	grub_relocator32_edi respectively.
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Zero state.ebp
+	and state.edi.
+
+2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add i386-pc-pxe image target.
+
+	* util/grub-mkimage.c (image_target_desc): New enum value
+	IMAGE_I386_PC_PXE.
+	(image_targets): New target i386-pc-pxe.
+	(generate_image): Handle i386-pc-pxe image.
+
+2010-09-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix grub_pxe_scan.
+
+	* grub-core/fs/i386/pc/pxe.c (grub_pxe_pxenv): Put correct type bangpxe.
+	(grub_pxe_scan): Fix types and pxe_rm_entry computation.
+	All users updated.
+	* include/grub/i386/pc/pxe.h (grub_pxe_bangpxe): New struct.
+	(grub_pxe_pxenv): Correct type.
+
+2010-09-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* NEWS: Document most of the important changes since 1.98.
+
+2010-09-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrescue.in (usage): Tidy up usage output (and hence
+	generated manual page) a little.
+
+2010-09-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi: Add myself as an author.
+
+2010-09-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.util.def (libgrub.a): Add missing sunpc.
+	Reported by: Seth Goldberg.
+
 2010-08-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Interrupt wrapping and code simplifications.

@@ -41,7 +41,7 @@ struct grub_pxe_disk_data
   grub_uint32_t gateway_ip;
 };
 
-struct grub_pxenv *grub_pxe_pxenv;
+struct grub_pxe_bangpxe *grub_pxe_pxenv;
 static grub_uint32_t grub_pxe_your_ip;
 static grub_uint32_t grub_pxe_default_server_ip;
 static grub_uint32_t grub_pxe_default_gateway_ip;
@@ -58,41 +58,47 @@ struct grub_pxe_data
 
 static grub_uint32_t pxe_rm_entry = 0;
 
-static struct grub_pxenv *
+static struct grub_pxe_bangpxe *
 grub_pxe_scan (void)
 {
   struct grub_bios_int_registers regs;
-  struct grub_pxenv *ret;
-  void *pxe;
+  struct grub_pxenv *pxenv;
+  struct grub_pxe_bangpxe *bangpxe;
 
   regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
 
   regs.ebx = 0;
   regs.ecx = 0;
   regs.eax = 0x5650;
+  regs.es = 0;
 
   grub_bios_interrupt (0x1a, &regs);
 
   if ((regs.eax & 0xffff) != 0x564e)
     return NULL;
-  ret = (struct grub_pxenv *) ((regs.es << 4) + (regs.ebx & 0xffff));
-  if (grub_memcmp (ret->signature, GRUB_PXE_SIGNATURE, sizeof (ret->signature))
+
+  pxenv = (struct grub_pxenv *) ((regs.es << 4) + (regs.ebx & 0xffff));
+  if (grub_memcmp (pxenv->signature, GRUB_PXE_SIGNATURE,
+		   sizeof (pxenv->signature))
       != 0)
     return NULL;
-  if (ret->version < 0x201)
+
+  if (pxenv->version < 0x201)
     return NULL;
 
-  pxe = (void *) ((((ret->pxe_ptr & 0xffff0000) >> 16) << 4)
-		  + (ret->pxe_ptr & 0xffff));
-  if (!pxe)
+  bangpxe = (void *) ((((pxenv->pxe_ptr & 0xffff0000) >> 16) << 4)
+		      + (pxenv->pxe_ptr & 0xffff));
+
+  if (!bangpxe)
     return NULL;
 
-  /* !PXE  */
-  if (*(grub_uint32_t *) pxe !=	0x45585021)
+  if (grub_memcmp (bangpxe->signature, GRUB_PXE_BANGPXE_SIGNATURE,
+		   sizeof (bangpxe->signature)) != 0)
     return NULL;
 
-  pxe_rm_entry = ret->rm_entry;
-  return ret;
+  pxe_rm_entry = bangpxe->rm_entry;
+
+  return bangpxe;
 }
 
 static int
@@ -321,7 +327,7 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
       o.gateway_ip = disk_data->gateway_ip;
       grub_strcpy ((char *)&o.filename[0], data->filename);
       o.tftp_port = grub_cpu_to_be16 (GRUB_PXE_TFTP_PORT);
-      o.packet_size = grub_pxe_blksize;
+      o.packet_size = data->block_size;
       grub_pxe_call (GRUB_PXENV_TFTP_OPEN, &o, pxe_rm_entry);
       if (o.status)
 	{
@@ -483,7 +489,7 @@ parse_dhcp_vendor (void *vend, int limit)
 static void
 grub_pxe_detect (void)
 {
-  struct grub_pxenv *pxenv;
+  struct grub_pxe_bangpxe *pxenv;
   struct grub_pxenv_get_cached_info ci;
   struct grub_pxenv_boot_player *bp;
 

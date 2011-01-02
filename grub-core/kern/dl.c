@@ -37,8 +37,8 @@
 #define GRUB_MODULES_MACHINE_READONLY
 #endif
 
-#ifdef __ia64__
-#include <grub/machine/misc.h>
+#ifdef GRUB_MACHINE_EMU
+#include <sys/mman.h>
 #endif
 
 
@@ -229,6 +229,46 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 {
   unsigned i;
   Elf_Shdr *s;
+  grub_size_t tsize = 0, talign = 1;
+#ifdef __ia64__
+  grub_size_t tramp;
+  grub_size_t got;
+#endif
+  char *ptr;
+
+  for (i = 0, s = (Elf_Shdr *)((char *) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (Elf_Shdr *)((char *) s + e->e_shentsize))
+    {
+      tsize += ALIGN_UP (s->sh_size, s->sh_addralign);
+      if (talign < s->sh_addralign)
+	talign = s->sh_addralign;
+    }
+
+#ifdef __ia64__
+  grub_arch_dl_get_tramp_got_size (e, &tramp, &got);
+  tsize += ALIGN_UP (tramp, GRUB_ARCH_DL_TRAMP_ALIGN);
+  if (talign < GRUB_ARCH_DL_TRAMP_ALIGN)
+    talign = GRUB_ARCH_DL_TRAMP_ALIGN;
+  tsize += ALIGN_UP (got, GRUB_ARCH_DL_GOT_ALIGN);
+  if (talign < GRUB_ARCH_DL_GOT_ALIGN)
+    talign = GRUB_ARCH_DL_GOT_ALIGN;
+#endif
+
+#ifdef GRUB_MACHINE_EMU
+  if (talign < 8192 * 16)
+    talign = 8192 * 16;
+  tsize = ALIGN_UP (tsize, 8192 * 16);
+#endif
+
+  mod->base = grub_memalign (talign, tsize);
+  if (!mod->base)
+    return grub_errno;
+  ptr = mod->base;
+
+#ifdef GRUB_MACHINE_EMU
+  mprotect (mod->base, tsize, PROT_READ | PROT_WRITE | PROT_EXEC);
+#endif
 
   for (i = 0, s = (Elf_Shdr *)((char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -246,12 +286,9 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	    {
 	      void *addr;
 
-	      addr = grub_memalign (s->sh_addralign, s->sh_size);
-	      if (! addr)
-		{
-		  grub_free (seg);
-		  return grub_errno;
-		}
+	      ptr = (char *) ALIGN_UP ((grub_addr_t) ptr, s->sh_addralign);
+	      addr = ptr;
+	      ptr += s->sh_size;
 
 	      switch (s->sh_type)
 		{
@@ -274,6 +311,14 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	  mod->segment = seg;
 	}
     }
+#ifdef __ia64__
+  ptr = (char *) ALIGN_UP ((grub_addr_t) ptr, GRUB_ARCH_DL_TRAMP_ALIGN);
+  mod->tramp = ptr;
+  ptr += tramp;
+  ptr = (char *) ALIGN_UP ((grub_addr_t) ptr, GRUB_ARCH_DL_GOT_ALIGN);
+  mod->got = ptr;
+  ptr += got;
+#endif
 
   return GRUB_ERR_NONE;
 }
@@ -342,14 +387,29 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	case STT_FUNC:
 	  sym->st_value += (Elf_Addr) grub_dl_get_section_addr (mod,
 								sym->st_shndx);
+#ifdef __ia64__
+	  {
+	      /* FIXME: free descriptor once it's not used anymore. */
+	      char **desc;
+	      desc = grub_malloc (2 * sizeof (char *));
+	      if (!desc)
+		return grub_errno;
+	      desc[0] = (void *) sym->st_value;
+	      desc[1] = mod->base;
+	      if (grub_dl_register_symbol (name, (void *) desc, mod))
+		return grub_errno;
+	      sym->st_value = (grub_addr_t) desc;
+	  }
+#endif
 	  if (bind != STB_LOCAL)
-	    if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
-	      return grub_errno;
-
+	    {
+	      if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
+		return grub_errno;
+	    }
 	  if (grub_strcmp (name, "grub_mod_init") == 0)
-	    mod->init = (void (*) (grub_dl_t)) sym->st_value;
+	    mod->init = sym->st_value;
 	  else if (grub_strcmp (name, "grub_mod_fini") == 0)
-	    mod->fini = (void (*) (void)) sym->st_value;
+	    mod->fini = sym->st_value;
 	  break;
 
 	case STT_SECTION:
@@ -374,7 +434,9 @@ static void
 grub_dl_call_init (grub_dl_t mod)
 {
   if (mod->init)
-    (mod->init) (mod);
+    {
+      ((void (*) (grub_dl_t)) mod->init) (mod);
+    }
 }
 
 static grub_err_t
@@ -537,7 +599,7 @@ grub_dl_load_core (void *addr, grub_size_t size)
   grub_dl_flush_cache (mod);
 
   grub_dprintf ("modules", "module name: %s\n", mod->name);
-  grub_dprintf ("modules", "init function: %p\n", mod->init);
+  grub_dprintf ("modules", "init function: %" PRIxGRUB_ADDR "\n", mod->init);
   grub_dl_call_init (mod);
 
   if (grub_dl_add (mod))
@@ -662,7 +724,9 @@ grub_dl_unload (grub_dl_t mod)
     return 0;
 
   if (mod->fini)
-    (mod->fini) ();
+    {
+      ((void (*) (void)) mod->fini) ();
+    }
 
   grub_dl_remove (mod);
   grub_dl_unregister_symbols (mod);

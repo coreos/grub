@@ -42,7 +42,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = EXT_C(_start) + GRUB_KERNEL_MACHINE_DATA_END
+	. = EXT_C(_start) + GRUB_KERNEL_MACHINE_PREFIX_END
 
 codestart:
 	/* Copy the modules past the end of the kernel image.

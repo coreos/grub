@@ -24,8 +24,5 @@
 /* the __jmp_buf element type should be __float80 per ABI... */
 typedef long grub_jmp_buf[_JBLEN] __attribute__ ((aligned (16))); /* guarantees 128-bit alignment! */
 
-#define grub_setjmp setjmp
-#define grub_longjmp longjmp
-
 int grub_setjmp (grub_jmp_buf env);
 void grub_longjmp (grub_jmp_buf env, int val) __attribute__ ((noreturn));

@@ -100,14 +100,6 @@ VARIABLE(grub_install_dos_part)
 	.long	0xFFFFFFFF
 VARIABLE(grub_install_bsd_part)
 	.long	0xFFFFFFFF
-VARIABLE(grub_prefix)
-	/* to be filled by grub-mkimage */
-
-	/*
-	 *  Leave some breathing room for the prefix.
-	 */
-
-	. = _start + GRUB_KERNEL_MACHINE_DATA_END
 
 #ifdef APPLE_CC
 bss_start:
@@ -449,6 +441,16 @@ gate_a20_check_state:
  * code fits GRUB_KERNEL_MACHINE_RAW_SIZE.
  */
 	. = _start + GRUB_KERNEL_MACHINE_RAW_SIZE
+
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX
+VARIABLE(grub_prefix)
+	/* to be filled by grub-mkimage */
+
+	/*
+	 *  Leave some breathing room for the prefix.
+	 */
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
+
 
 
 /*

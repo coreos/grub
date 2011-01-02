@@ -716,7 +716,7 @@ grub_linux_boot (void)
 
   /* FIXME.  */
   /*  asm volatile ("lidt %0" : : "m" (idt_desc)); */
-  state.ebx = 0;
+  state.ebp = state.edi = state.ebx = 0;
   state.esi = real_mode_target;
   state.esp = real_mode_target;
   state.eip = params->code32_start;
