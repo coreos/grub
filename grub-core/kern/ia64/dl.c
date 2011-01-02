@@ -187,6 +187,10 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		 rel++)
 		switch (ELF_R_TYPE (rel->r_info))
 		  {
+		  case R_IA64_LTOFF22X:
+		  case R_IA64_LTOFF22:
+		    gp_size += 8;
+		    break;
 		  default: break;
 		  }
 	  }
@@ -274,6 +278,16 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    break;
 		  case R_IA64_SEGREL64LSB:
 		    *(grub_uint64_t *) addr += value - rel->r_offset;
+		    break;
+		  case R_IA64_LTOFF22X:
+		  case R_IA64_LTOFF22:
+		    *gpptr = value;
+		    add_value_to_slot13_20 (addr, (gpptr - gp) * sizeof (grub_uint64_t), slot);
+		    gpptr++;
+		    break;
+
+		    /* We treat LTOFF22X as LTOFF22, so we can ignore LDXMOV.  */
+		  case R_IA64_LDXMOV:
 		    break;
 		  default:
 		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
