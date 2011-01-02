@@ -173,7 +173,7 @@ kernel = {
   emu = disk/host.c;
   emu = gnulib/progname.c;
   emu = gnulib/error.c;
-  emu = kern/emu/cache.S;
+  emu = kern/emu/cache_s.S;
   emu = kern/emu/console.c;
   emu = kern/emu/getroot.c;
   emu = kern/emu/hostdisk.c;
@@ -461,41 +461,6 @@ module = {
   enable = i386_pc;
   enable = i386_coreboot;
   enable = i386_multiboot;
-};
-
-module = {
-  name = lsacpi;
-
-  common = commands/lsacpi.c;
-
-  enable = efi;
-  enable = i386_pc;
-  enable = i386_coreboot;
-  enable = i386_multiboot;
-};
-
-module = {
-  name = lsefisystab;
-
-  common = commands/efi/lsefisystab.c;
-
-  enable = efi;
-};
-
-module = {
-  name = lssal;
-
-  common = commands/efi/lssal.c;
-
-  enable = efi;
-};
-
-module = {
-  name = lsefimmap;
-
-  common = commands/efi/lsefimmap.c;
-
-  enable = efi;
 };
 
 module = {
