@@ -1,3 +1,8 @@
+2011-01-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/bus/pci.c (grub_pci_iterate): Skip remaining functions
+	on devices that do not implement function 0.
+
 2011-01-03  Dave Vasilevsky <dave@vasilevsky.ca>
 
 	* grub-core/fs/hfsplus.c: Make parent unsigned.
