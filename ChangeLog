@@ -1,3 +1,10 @@
+2011-01-03  Dave Vasilevsky <dave@vasilevsky.ca>
+
+	* grub-core/fs/hfsplus.c: Make parent unsigned.
+	(grub_hfsplus_cmp_catkey): Don't compare using subtraction, it
+	overflows.
+	(grub_hfsplus_cmp_extkey): Likewise
+
 2011-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.in: Correctly use bootloader_id and not
