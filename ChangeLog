@@ -1,3 +1,7 @@
+2011-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkfont.c (main): Report errors in FT_New_Face.
+
 2010-12-31  Ian Campbell <ijc@hellion.org.uk>
 
 	* util/grub.d/20_linux_xen.in (linux_entry): Correctly capitalize

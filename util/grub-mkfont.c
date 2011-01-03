@@ -1146,11 +1146,18 @@ main (int argc, char *argv[])
     {
       FT_Face ft_face;
       int size;
+      FT_Error err;
 
-      if (FT_New_Face (ft_lib, argv[optind], font_index, &ft_face))
+      err = FT_New_Face (ft_lib, argv[optind], font_index, &ft_face);
+      if (err)
 	{
-	  grub_util_info ("can't open file %s, index %d", argv[optind],
-			  font_index);
+	  grub_printf ("can't open file %s, index %d: error %d", argv[optind],
+		       font_index, err);
+	  if (err > 0 && err < (signed) ARRAY_SIZE (ft_errmsgs))
+	    printf (": %s\n", ft_errmsgs[err]);
+	  else
+	    printf ("\n");
+
 	  continue;
 	}
 
