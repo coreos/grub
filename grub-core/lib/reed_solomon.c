@@ -372,6 +372,10 @@ decode_block (gf_single_t *ptr, grub_size_t s,
       grub_size_t rr = (rs + SECTOR_SIZE - 1 - i) / SECTOR_SIZE;
       gf_single_t m[ds + rr];
 
+      /* Nothing to do.  */
+      if (!ds || !rr)
+	continue;
+
       for (j = 0; j < (int) ds; j++)
 	m[j] = ptr[SECTOR_SIZE * j + i];
       for (j = 0; j < (int) rr; j++)
@@ -414,6 +418,10 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
   gf_single_t *ptr = buffer;
   gf_single_t *rptr = ptr + s;
 
+  /* Nothing to do.  */
+  if (!rs)
+    return;
+
   while (s > 0)
     {
       grub_size_t tt;
@@ -441,6 +449,10 @@ grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs)
   gf_single_t *ptr = ptr_;
   gf_single_t *rptr = ptr + s;
 
+  /* Nothing to do.  */
+  if (!rs)
+    return;
+
 #if defined (STANDALONE)
   init_inverts ();
 #endif
@@ -454,8 +466,8 @@ grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs)
       tt = cs + crs;
       if (tt > MAX_BLOCK_SIZE)
 	{
-	  cs = cs * MAX_BLOCK_SIZE / tt;
-	  crs = crs * MAX_BLOCK_SIZE / tt;
+	  cs = (cs * MAX_BLOCK_SIZE) / tt;
+	  crs = (crs * MAX_BLOCK_SIZE) / tt;
 	}
       decode_block (ptr, cs, rptr, crs);
       ptr += cs;

@@ -1,3 +1,91 @@
+2011-01-03  Dave Vasilevsky <dave@vasilevsky.ca>
+
+	* grub-core/fs/hfsplus.c: Make parent unsigned.
+	(grub_hfsplus_cmp_catkey): Don't compare using subtraction, it
+	overflows.
+	(grub_hfsplus_cmp_extkey): Likewise
+
+2011-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Correctly use bootloader_id and not
+	GRUB_DISTRIBUTOR on efibootmgr line.
+
+2011-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkfont.c (main): Report errors in FT_New_Face.
+
+2010-12-31  Ian Campbell <ijc@hellion.org.uk>
+
+	* util/grub.d/20_linux_xen.in (linux_entry): Correctly capitalize
+	Xen and reorder menu item wording to make it clearer that this entry
+	will launch Xen.  Print separate messages when loading Xen and
+	Linux.
+
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/amiga.c (GRUB_AMIGA_PART_MAGIC): New define.
+	(amiga_partition_map_iterate): Check "PART" magic to avoid a very long
+	loop in case of incorrect amiga partmap.
+
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/amiga.c (GRUB_AMIGA_RDSK_MAGIC): New define.
+	(amiga_partition_map_iterate): Use grub_memcmp instead of grub_strcmp.
+	Reported by:EHeM.
+
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/bsdXX.c (grub_openbsd_find_ramdisk): Silence
+	spurious warning.
+	Reported by: crocket
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/xnu.c (grub_cmd_xnu_kernel) [! GRUB_MACHINE_EFI]:
+	Preload EFIemu.
+	(grub_cmd_xnu_kernel64) [! GRUB_MACHINE_EFI]: Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/xnu.c (grub_cmd_xnu_kext): Abort if no kernel
+	is loaded
+	(grub_cmd_xnu_kextdir): Likewise.
+	(grub_cmd_xnu_splash): Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Avoid using Reed-Solomon with 0 redundancy.
+
+	* grub-core/kern/i386/pc/startup.S: Remove 0-data check.
+	* grub-core/lib/reed_solomon.c (decode_block): Do not proceed on 0 data
+	or 0 redundancy.
+	(grub_reed_solomon_add_redundancy): Do not proceed with 0 redundancy.
+	(grub_reed_solomon_recover): Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't use disk subsystem in freebsd_boot.
+
+	* grub-core/loader/i386/bsd.c (freebsd_bootdev): New variable.
+	(freebsd_biosdev): Likewise.
+	(grub_freebsd_boot): Use freebsd_bootdev and freebsd_biosdev.
+	(grub_cmd_freebsd): Set freebsd_bootdev and freebsd_biosdev.
+
+2010-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Handling of files of unknown size is currently limited. They can't be
+	used e.g. for initrd or modules. Moreover gzip handling of not
+	easily seekable files is buggy. Disable unknown file size for now. May
+	be inefficient but works.
+
+	* grub-core/io/gzio.c (test_header): Always retrieve the file size.
+	* grub-core/io/xzio.c (grub_xzio_open): Likewise.
+
+2010-12-25  Mirko Parthey <mirko.parthey@informatik.tu-chemnitz.de>
+
+	* grub-core/boot/i386/pc/boot.S: Fix %es:%bx pointing to nowhere on
+	floppy probe.
+
 2010-12-25  Jeroen Dekkers <jeroen@dekkers.ch>
 
 	* grub-core/disk/raid.c (insert_array): Don't add spurious members.

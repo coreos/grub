@@ -656,7 +656,7 @@ elif [ x"$platform" = xefi ]; then
 	    efidir_disk="$(echo "$clean_devmap" | grep "^$(echo "$efidir_drive" | sed 's/,[^)]*//')" | cut -f2)"
 	    efidir_part="$(echo "$efidir_drive" | sed 's/^([^,]*,[^0-9]*//; s/[^0-9].*//')"
 	    efibootmgr $efi_quiet -c -d "$efidir_disk" -p "$efidir_part" -w \
-		-L "$GRUB_DISTRIBUTOR" -l "\\EFI\\$efi_distributor\\$efi_file"
+		-L "$bootloader_id" -l "\\EFI\\$efi_distributor\\$efi_file"
 	fi
     fi
 fi
