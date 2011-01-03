@@ -199,7 +199,7 @@ grub_cmd_deladdr (struct grub_command *cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
-    if (grub_strcmp (inter->name, args[1]))
+    if (grub_strcmp (inter->name, args[1]) == 0)
       break;
   if (inter == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("address not found"));
@@ -730,7 +730,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "4 arguments expected");
 
   FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
-    if (grub_strcmp (inter->name, args[1]))
+    if (grub_strcmp (inter->name, args[1]) == 0)
       break;
 
   if (!inter)
