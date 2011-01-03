@@ -24,8 +24,8 @@ kernel = {
   x86_64_efi_stripflags    = '--strip-unneeded -K start -R .note -R .comment';
 
   ia64_efi_cflags = '-fno-builtin -fpic -minline-int-divide-max-throughput';
-  ia64_efi_ldflags = '-melf_64';
-  ia64_efi_stripflags = '-R .note -R .comment -X';
+  ia64_efi_ldflags = '-Wl,-r,-d';
+  ia64_efi_stripflags = '--strip-unneeded -K start -R .note -R .comment';
 
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
   i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x8200';

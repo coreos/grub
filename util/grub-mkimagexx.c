@@ -101,9 +101,9 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
       else if (index >= num_sections)
 	grub_util_error ("section %d does not exist", index);
 
-      sym->st_value = (grub_target_to_host32 (sym->st_value)
+      sym->st_value = (grub_target_to_host (sym->st_value)
 		       + section_addresses[index]);
-      grub_util_info ("locating %s at 0x%x", name, sym->st_value);
+      grub_util_info ("locating %s at 0x%x", name, sym->st_value, section_addresses[index]);
 
       if (! start_address)
 	if (strcmp (name, "_start") == 0 || strcmp (name, "start") == 0)
@@ -200,7 +200,9 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
             addend = (s->sh_type == grub_target_to_host32 (SHT_RELA)) ?
 	      r->r_addend : 0;
 
-	    if (image_target->voidp_sizeof == 4)
+	   switch (image_target->elf_target)
+	     {
+	     case EM_386:
 	      switch (ELF_R_TYPE (info))
 		{
 		case R_386_NONE:
@@ -224,11 +226,12 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 				  *target, offset);
 		  break;
 		default:
-		  grub_util_error ("unknown relocation type %d",
+		  grub_util_error ("unknown relocation type 0x%x",
 				   ELF_R_TYPE (info));
 		  break;
 		}
-	    else
+	      break;
+	     case EM_X86_64:
 	      switch (ELF_R_TYPE (info))
 		{
 
@@ -270,6 +273,20 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 				   ELF_R_TYPE (info));
 		  break;
 		}
+	      break;
+	     case EM_IA_64:
+	      switch (ELF_R_TYPE (info))
+		{
+		default:
+		  grub_util_error ("unknown relocation type 0x%x",
+				   ELF_R_TYPE (info));
+		  break;
+		}
+	       break;
+	     default:
+	       grub_util_error ("unknown architecture type %d",
+				image_target->elf_target);
+	     }
 	  }
       }
 }
@@ -417,8 +434,9 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 	    info = grub_le_to_cpu32 (r->r_info);
 
 	    /* Necessary to relocate only absolute addresses.  */
-	    if (image_target->voidp_sizeof == 4)
+	    switch (image_target->elf_target)
 	      {
+	      case EM_386:
 		if (ELF_R_TYPE (info) == R_386_32)
 		  {
 		    Elf_Addr addr;
@@ -431,9 +449,8 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 						  addr, 0, current_address,
 						  image_target);
 		  }
-	      }
-	    else
-	      {
+		break;
+	      case EM_X86_64:
 		if ((ELF_R_TYPE (info) == R_X86_64_32) ||
 		    (ELF_R_TYPE (info) == R_X86_64_32S))
 		  {
@@ -452,6 +469,9 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 						  0, current_address,
 						  image_target);
 		  }
+		break;
+	      default:
+		grub_util_error ("unknown machine type 0x%x", image_target->elf_target);
 	      }
 	  }
       }
