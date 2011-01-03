@@ -126,8 +126,8 @@ kernel = {
   x86_64_efi = kern/i386/efi/init.c;
 
   ia64_efi = kern/ia64/efi/startup.S;
-  ia64_efi = kern/ia64/trampoline.S;
   ia64_efi = kern/ia64/efi/init.c;
+  ia64_efi = kern/ia64/dl.c;
 
   i386_pc = kern/i386/pc/init.c;
   i386_pc = kern/i386/pc/mmap.c;
@@ -575,7 +575,8 @@ module = {
   i386_pc = commands/acpihalt.c;
   i386_coreboot = commands/acpihalt.c;
   i386_multiboot = commands/acpihalt.c;
-  x86_efi = commands/acpihalt.c;
+  i386_efi = commands/acpihalt.c;
+  x86_64_efi = commands/acpihalt.c;
   i386_multiboot = lib/i386/halt.c;
   i386_coreboot = lib/i386/halt.c;
   i386_qemu = lib/i386/halt.c;
@@ -1244,6 +1245,7 @@ module = {
   mips_yeeloong = mmap/mips/yeeloong/uppermem.c;
 
   enable = x86;
+  enable = ia64_efi;
   enable = mips_yeeloong;
 };
 
@@ -1435,7 +1437,8 @@ module = {
 module = {
   name = efi_uga;
   efi = video/efi_uga.c;
-  enable = efi;
+  enable = i386_efi;
+  enable = x86_64_efi;
 };
 
 module = {

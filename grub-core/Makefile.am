@@ -130,7 +130,6 @@ if COND_ia64_efi
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ia64/efi/misc.h
 endif
 
 if COND_mips_yeeloong

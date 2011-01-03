@@ -15,6 +15,10 @@
  *  You should have received a copy of the GNU General Public License
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <config.h>
+#include <grub/symbol.h>
+#include <grub/offsets.h>
+
 	.text
 	.psr abi64
 	.psr lsb
@@ -38,3 +42,12 @@ _start:
 	br.ret.sptk.few rp
 
 	.endp _start
+
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX
+VARIABLE(grub_prefix)
+	/* to be filled by grub-mkimage */
+
+	/*
+	 *  Leave some breathing room for the prefix.
+	 */
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END

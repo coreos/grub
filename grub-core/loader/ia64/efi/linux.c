@@ -30,7 +30,6 @@
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 #include <grub/elf.h>
-#include <grub/gzio.h>
 
 #define ALIGN_MIN (256*1024*1024)
 
@@ -512,7 +511,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (! file)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
@@ -594,7 +593,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (! file)
     goto fail;
 
@@ -644,7 +643,7 @@ grub_cmd_payload  (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  file = grub_gzfile_open (argv[0], 1);
+  file = grub_file_open (argv[0]);
   if (! file)
     goto fail;
 

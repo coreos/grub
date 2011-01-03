@@ -25,13 +25,11 @@
 #include <grub/cache.h>
 #include <grub/kernel.h>
 #include <grub/efi/efi.h>
-#include <grub/machine/misc.h>
 
 void
 grub_machine_init (void)
 {
   grub_efi_init ();
-  grub_init_modules ();
 }
 
 void
