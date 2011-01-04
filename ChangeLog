@@ -1,4 +1,8 @@
-2011-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/reed_solomon.c (main) [TEST]: Reactivate normal test.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/reed_solomon.c (scratch) [! STANDALONE]: Remove leftover
 	variable.

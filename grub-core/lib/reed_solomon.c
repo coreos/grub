@@ -501,14 +501,10 @@ main (int argc, char **argv)
   fseek (in, 0, SEEK_END);
   s = ftell (in);
   fseek (in, 0, SEEK_SET);
-  rs = 1024 * ((s + MAX_BLOCK_SIZE - 1) / (MAX_BLOCK_SIZE - 1024));
+  rs = s / 3;
   buf = xmalloc (s + rs + SECTOR_SIZE);
   fread (buf, 1, s, in);
 
-  s = 0x5fbb;
-  rs = 0x6af9;
-
-#if 0
   grub_reed_solomon_add_redundancy (buf, s, rs);
 
   out = fopen ("tst_rs.bin", "wb");
@@ -520,9 +516,6 @@ main (int argc, char **argv)
   out = fopen ("tst_dam.bin", "wb");
   fwrite (buf, 1, s + rs, out);
   fclose (out);
-#endif
-  s = 0x5fbb;
-  rs = 0x6af9;
   grub_reed_solomon_recover (buf, s, rs);
 
   out = fopen ("tst_rec.bin", "wb");
