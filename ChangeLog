@@ -1,5 +1,11 @@
 2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/getroot.c (grub_util_get_grub_dev): Check md/%s
+	names.
+	Reported by: David Pravec.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/i386/pc/biosdisk.c (GRUB_MOD_INIT): Workaround buggy
 	BIOSes.
 

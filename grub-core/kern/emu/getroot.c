@@ -794,11 +794,18 @@ grub_util_get_grub_dev (const char *os_dev)
 #ifdef __linux__
       {
 	char *mdadm_name = get_mdadm_name (os_dev);
+	struct stat st;
 
 	if (mdadm_name)
 	  {
-	    free (grub_dev);
-	    grub_dev = xasprintf ("md/%s", mdadm_name);
+	    char *newname;
+	    newname = xasprintf ("/dev/md/%s", mdadm_name);
+	    if (stat (newname, &st) == 0)
+	      {
+		free (grub_dev);
+		grub_dev = xasprintf ("md/%s", mdadm_name);
+	      }
+	    free (newname);
 	    free (mdadm_name);
 	  }
       }
