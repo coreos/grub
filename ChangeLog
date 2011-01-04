@@ -1,5 +1,11 @@
 2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/reed_solomon.c (grub_reed_solomon_add_redundancy):
+	Prevent overflow.
+	(grub_reed_solomon_recover): Likewise.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/reed_solomon.c (main) [TEST]: Reactivate normal test.
 
 2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -433,8 +433,8 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
       tt = cs + crs;
       if (tt > MAX_BLOCK_SIZE)
 	{
-	  cs = (cs * MAX_BLOCK_SIZE) / tt;
-	  crs = (crs * MAX_BLOCK_SIZE) / tt;
+	  cs = ((cs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
+	  crs = ((crs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
 	}
       encode_block (ptr, cs, rptr, crs);
       ptr += cs;
@@ -468,8 +468,8 @@ grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs)
       tt = cs + crs;
       if (tt > MAX_BLOCK_SIZE)
 	{
-	  cs = (cs * MAX_BLOCK_SIZE) / tt;
-	  crs = (crs * MAX_BLOCK_SIZE) / tt;
+	  cs = ((cs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
+	  crs = ((crs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
 	}
       decode_block (ptr, cs, rptr, crs);
       ptr += cs;
