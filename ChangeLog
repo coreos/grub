@@ -1,5 +1,11 @@
 2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/efi/relocator.c (grub_relocator_firmware_fill_events):
+	Ignore the memory post-4G.
+	(grub_relocator_firmware_alloc_region): Additional debug statement.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/getroot.c (grub_util_get_grub_dev): Check md/%s
 	names.
 	Reported by: David Pravec.
