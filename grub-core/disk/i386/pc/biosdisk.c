@@ -624,6 +624,11 @@ GRUB_MOD_INIT(biosdisk)
       ((cdrp->media_type & GRUB_BIOSDISK_CDTYPE_MASK)
        == GRUB_BIOSDISK_CDTYPE_NO_EMUL))
     cd_drive = cdrp->drive_no;
+  /* Since diskboot.S rejects devices over 0x90 it must be a CD booted with
+     cdboot.S
+   */
+  if (grub_boot_drive >= 0x90)
+    cd_drive = grub_boot_drive;
 
   grub_disk_dev_register (&grub_biosdisk_dev);
 }

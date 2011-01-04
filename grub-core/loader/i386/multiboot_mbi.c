@@ -141,7 +141,7 @@ grub_multiboot_load (grub_file_t file)
 	}
 
       if (header->bss_end_addr)
-	grub_memset ((grub_uint32_t *) source + load_size, 0,
+	grub_memset ((grub_uint8_t *) source + load_size, 0,
 		     header->bss_end_addr - header->load_addr - load_size);
 
       grub_multiboot_payload_eip = header->entry_addr;
@@ -441,7 +441,7 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   if (err)
     return err;
   ptrorig = get_virtual_current_address (ch);
-  ptrdest = (grub_addr_t) get_virtual_current_address (ch);
+  ptrdest = get_physical_target_address (ch);
 
   *target = ptrdest;
 
@@ -641,6 +641,7 @@ grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
     return grub_errno;
   newmod->start = start;
   newmod->size = size;
+  newmod->next = 0;
 
   for (i = 0; i < argc; i++)
     len += grub_strlen (argv[i]) + 1;

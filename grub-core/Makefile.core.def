@@ -27,6 +27,8 @@ kernel = {
   i386_qemu_ldflags        = '$(TARGET_IMG_LDFLAGS)';
   i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),0x8200';
 
+  ldadd = '$(LDADD_KERNEL)';
+
   i386_coreboot_ldflags    = '-Wl,-Ttext=0x8200';
   i386_multiboot_ldflags   = '-Wl,-Ttext=0x8200';
   i386_ieee1275_ldflags    = '-Wl,-Ttext=0x10000';
@@ -38,10 +40,6 @@ kernel = {
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
   emu_cflags = '$(CFLAGS_GNULIB)';
   emu_cppflags = '$(CPPFLAGS_GNULIB)';
-
-  mips_ldadd = '-lgcc';
-  powerpc_ldadd = '-lgcc';
-  sparc64_ldadd = '-lgcc';
 
   i386_pc_startup = kern/i386/pc/startup.S;
   i386_efi_startup = kern/i386/efi/startup.S;
@@ -164,6 +162,7 @@ kernel = {
   emu = disk/host.c;
   emu = gnulib/progname.c;
   emu = gnulib/error.c;
+  emu = kern/emu/cache.S;
   emu = kern/emu/console.c;
   emu = kern/emu/getroot.c;
   emu = kern/emu/hostdisk.c;
@@ -210,7 +209,6 @@ program = {
   name = grub-emu-lite;
 
   emu = kern/emu/lite.c;
-  emu = kern/emu/cache.S;
   emu_nodist = symlist.c;
 
   ldadd = 'kernel.img$(EXEEXT)';
@@ -302,7 +300,8 @@ image = {
   mips_cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
 
   objcopyflags = '-O binary';
-  ldflags = '-lgcc -static-libgcc -Wl,-Ttext,0x80100000';
+  ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;
 };
@@ -315,7 +314,8 @@ image = {
   mips_cppflags = '-DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
 
   objcopyflags = '-O binary';
-  ldflags = '-lgcc -static-libgcc -Wl,-Ttext,0x80100000';
+  ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;
 };
@@ -1005,6 +1005,19 @@ module = {
 module = {
   name = xfs;
   common = fs/xfs.c;
+};
+
+module = {
+  name = zfs;
+  common = fs/zfs/zfs.c;
+  common = fs/zfs/zfs_lzjb.c;
+  common = fs/zfs/zfs_sha256.c;
+  common = fs/zfs/zfs_fletcher.c;
+};
+
+module = {
+  name = zfsinfo;
+  common = fs/zfs/zfsinfo.c;
 };
 
 module = {

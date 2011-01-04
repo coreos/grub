@@ -178,7 +178,7 @@ enum grub_hfsplus_filetype
 /* Internal representation of a catalog key.  */
 struct grub_hfsplus_catkey_internal
 {
-  int parent;
+  grub_uint32_t parent;
   char *name;
 };
 
@@ -520,9 +520,12 @@ grub_hfsplus_cmp_catkey (struct grub_hfsplus_key *keya,
   int i;
   int diff;
 
-  diff = grub_be_to_cpu32 (catkey_a->parent) - catkey_b->parent;
-  if (diff)
-    return diff;
+  /* Safe unsigned comparison */
+  grub_uint32_t aparent = grub_be_to_cpu32 (catkey_a->parent);
+  if (aparent > catkey_b->parent)
+    return 1;
+  if (aparent < catkey_b->parent)
+    return -1;
 
   /* Change the filename in keya so the endianness is correct.  */
   for (i = 0; i < grub_be_to_cpu16 (catkey_a->namelen); i++)
@@ -555,15 +558,21 @@ grub_hfsplus_cmp_extkey (struct grub_hfsplus_key *keya,
 {
   struct grub_hfsplus_extkey *extkey_a = &keya->extkey;
   struct grub_hfsplus_extkey_internal *extkey_b = &keyb->extkey;
-  int diff;
+  grub_uint32_t akey;
 
-  diff = grub_be_to_cpu32 (extkey_a->fileid) - extkey_b->fileid;
-
-  if (diff)
-    return diff;
-
-  diff = grub_be_to_cpu32 (extkey_a->start) - extkey_b->start;
-  return diff;
+  /* Safe unsigned comparison */
+  akey = grub_be_to_cpu32 (extkey_a->fileid);
+  if (akey > extkey_b->fileid)
+    return 1;
+  if (akey < extkey_b->fileid)
+    return -1;
+  
+  akey = grub_be_to_cpu32 (extkey_a->start);
+  if (akey > extkey_b->start)
+    return 1;
+  if (akey < extkey_b->start)
+    return -1;
+  return 0;
 }
 
 static char *

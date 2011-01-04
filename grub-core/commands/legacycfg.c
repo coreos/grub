@@ -177,9 +177,6 @@ legacy_file (const char *filename)
   grub_free (suffix);
   grub_free (entrysrc);
 
-  if (menu && menu->size)
-    grub_show_menu (menu, 1);
-
   return GRUB_ERR_NONE;
 }
 
@@ -194,8 +191,8 @@ grub_cmd_legacy_source (struct grub_command *cmd,
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
   extractor = (cmd->name[0] == 'e');
-  new_env = (cmd->name[extractor ? sizeof ("extract_legacy_entries_") - 1
-		       : sizeof ("legacy_") - 1] == 'c');
+  new_env = (cmd->name[extractor ? (sizeof ("extract_legacy_entries_") - 1)
+		       : (sizeof ("legacy_") - 1)] == 'c');
 
   if (new_env)
     grub_cls ();
@@ -207,8 +204,15 @@ grub_cmd_legacy_source (struct grub_command *cmd,
 
   ret = legacy_file (args[0]);
 
-  if (new_env && !extractor)
-    grub_env_context_close ();
+  if (new_env)
+    {
+      grub_menu_t menu;
+      menu = grub_env_get_menu ();
+      if (menu && menu->size)
+	grub_show_menu (menu, 1);
+      if (!extractor)
+	grub_env_context_close ();
+    }
   if (extractor)
     grub_env_extractor_close (!new_env);
 
@@ -761,12 +765,12 @@ GRUB_MOD_INIT(legacycfg)
     = grub_register_command ("extract_legacy_entries_source",
 			     grub_cmd_legacy_source,
 			     N_("FILE"),
-			     N_("Parse legacy config in same context taking onl entries"));
+			     N_("Parse legacy config in same context taking only menu entries"));
   cmd_configfile_extract
     = grub_register_command ("extract_legacy_entries_configfile",
 			     grub_cmd_legacy_source,
 			     N_("FILE"),
-			     N_("Parse legacy config in new context taking onl entries"));
+			     N_("Parse legacy config in new context taking only menu entries"));
 
   cmd_kernel = grub_register_command ("legacy_kernel",
 				      grub_cmd_legacy_kernel,

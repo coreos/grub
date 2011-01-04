@@ -109,8 +109,8 @@ This edition documents version @value{VERSION}.
 @menu
 * Overview::                    What exactly GRUB is and how to use it
 * History::                     From maggot to house fly
-* Features::                    GRUB features
 * Changes from GRUB Legacy::    Differences from previous versions
+* Features::                    GRUB features
 * Role of a boot loader::       The role of a boot loader
 @end menu
 
@@ -227,7 +227,9 @@ scripting language: variables, conditionals, and loops are available.
 @item
 A small amount of persistent storage is available across reboots, using the
 @command{save_env} and @command{load_env} commands in GRUB and the
-@command{grub-editenv} utility.
+@command{grub-editenv} utility. For safety reasons this storage is only
+available when installed on plain disk (no LVM or RAID), using non-checksumming
+filesystem (no ZFS) and using BIOS or EFI functions (no ATA, USB or IEEE1275)
 
 @item
 GRUB 2 has more reliable ways to find its own files and those of target
@@ -1032,6 +1034,8 @@ it as a new default entry for use by future runs of GRUB.  This is only
 useful if @samp{GRUB_DEFAULT=saved}; it is a separate option because
 @samp{GRUB_DEFAULT=saved} is useful without this option, in conjunction with
 @command{grub-set-default} or @command{grub-reboot}.  Unset by default.
+The remarks of @pxref{Changes from GRUB Legacy} on the availability
+of @samp{save_env} apply.
 
 @item GRUB_TIMEOUT
 Boot the default entry this many seconds after the menu is displayed, unless

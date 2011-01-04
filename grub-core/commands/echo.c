@@ -1,7 +1,7 @@
 /* echo.c - Command to display a line of text  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <grub/misc.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
+#include <grub/term.h>
 
 static const struct grub_arg_option options[] =
   {
@@ -43,7 +44,13 @@ grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
   for (i = 0; i < argc; i++)
     {
       char *arg = *args;
+      /* Unescaping results in a string no longer than the original.  */
+      char *unescaped = grub_malloc (grub_strlen (arg) + 1);
+      char *p = unescaped;
       args++;
+
+      if (!unescaped)
+	return grub_errno;
 
       while (*arg)
 	{
@@ -57,11 +64,11 @@ grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
 	      switch (*arg)
 		{
 		case '\\':
-		  grub_printf ("\\");
+		  *p++ = '\\';
 		  break;
 
 		case 'a':
-		  grub_printf ("\a");
+		  *p++ = '\a';
 		  break;
 
 		case 'c':
@@ -69,23 +76,23 @@ grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
 		  break;
 
 		case 'f':
-		  grub_printf ("\f");
+		  *p++ = '\f';
 		  break;
 
 		case 'n':
-		  grub_printf ("\n");
+		  *p++ = '\n';
 		  break;
 
 		case 'r':
-		  grub_printf ("\r");
+		  *p++ = '\r';
 		  break;
 
 		case 't':
-		  grub_printf ("\t");
+		  *p++ = '\t';
 		  break;
 
 		case 'v':
-		  grub_printf ("\v");
+		  *p++ = '\v';
 		  break;
 		}
 	      arg++;
@@ -94,9 +101,13 @@ grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
 
 	  /* This was not an escaped character, or escaping is not
 	     enabled.  */
-	  grub_printf ("%c", *arg);
+	  *p++ = *arg;
 	  arg++;
 	}
+
+      *p = '\0';
+      grub_xputs (unescaped);
+      grub_free (unescaped);
 
       /* If another argument follows, insert a space.  */
       if (i != argc - 1)
@@ -105,6 +116,8 @@ grub_cmd_echo (grub_extcmd_context_t ctxt, int argc, char **args)
 
   if (newline)
     grub_printf ("\n");
+
+  grub_refresh ();  
 
   return 0;
 }

@@ -579,8 +579,11 @@ else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wno-error"
 fi
 CPPFLAGS="$TARGET_CPPFLAGS"
-LDFLAGS="$TARGET_LDFLAGS"
+if test x$target_cpu = xi386 || test x$target_cpu = xx86_64 ; then
+LIBS=
+else
 LIBS=-lgcc
+fi
 
 grub_ASM_USCORE
 if test x$grub_cv_asm_uscore = xyes; then
@@ -666,6 +669,23 @@ int va_arg_func (int fixed, va_list args);]], [[]])],
 if test x"$grub_cv_cc_isystem" = xyes ; then
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
 fi
+fi
+
+AC_CACHE_CHECK([whether -Wno-trampolines work], [grub_cv_cc_wnotrampolines], [
+  SAVED_CFLAGS="$CFLAGS"
+  # Test for -Wtrampolines rather than -Wno-trampolines to reduce confusion
+  # in the event of later failures (since -Wno-* is always accepted, but
+  # produces a diagnostic if something else is wrong).
+  CFLAGS="$TARGET_CFLAGS -Wtrampolines"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
+int va_arg_func (int fixed, va_list args);]], [[]])],
+      [grub_cv_cc_wnotrampolines=yes],
+      [grub_cv_cc_wnotrampolines=no])
+  CFLAGS="$SAVED_CFLAGS"
+])
+
+if test x"$grub_cv_cc_wnotrampolines" = xyes ; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -Wno-trampolines"
 fi
 
 # Restore the flags.

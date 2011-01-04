@@ -322,24 +322,23 @@ struct legacy_command legacy_commands[] =
 char *
 grub_legacy_escape (const char *in, grub_size_t len)
 {
-  const char *ptr;
-  char *ret, *outptr;
+  char *ptr;
+  char *ret;
+  char saved;
   int overhead = 0;
-  for (ptr = in; ptr < in + len && *ptr; ptr++)
-    if (*ptr == '\'' || *ptr == '\\')
-      overhead++;
+
+  for (ptr = (char*)in; ptr < in + len && *ptr; ptr++)
+    if (*ptr == '\'')
+      overhead += 3;
   ret = grub_malloc (ptr - in + overhead + 1);
   if (!ret)
     return NULL;
-  outptr = ret;
-  for (ptr = in; ptr < in + len && *ptr; ptr++)
-    {
-      if (*ptr == '\'' || *ptr == '\\')
-	*outptr++ = '\\';
-      
-      *outptr++ = *ptr;
-    }
-  *outptr++ = 0;
+
+  ptr = (char*)in;
+  saved = ptr[len];
+  ptr[len] = '\0';
+  grub_strchrsub (ret, ptr, '\'', "'\\''");
+  ptr[len] = saved;
   return ret;
 }
 
@@ -622,12 +621,13 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		{
 		  for (; *ptr && grub_isspace (*ptr); ptr++);
 		  for (; *ptr && !grub_isspace (*ptr); ptr++)
-		    if (*ptr == '\\' || *ptr == '\'')
-		      overhead++;
+		    if (*ptr == '\'')
+		      overhead += 3;
 		  if (*ptr)
 		    ptr++;
 		  overhead += 3;
 		}
+		
 	      outptr0 = args[i] = grub_malloc (overhead + (ptr - curarg));
 	      if (!outptr0)
 		return NULL;
@@ -641,9 +641,15 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		  *outptr++ = '\'';
 		  for (; *ptr && !grub_isspace (*ptr); ptr++)
 		    {
-		      if (*ptr == '\\' || *ptr == '\'')
-			*outptr++ = '\\';
-		      *outptr++ = *ptr;
+		      if (*ptr == '\'')
+			{
+			  *outptr++ = '\'';
+			  *outptr++ = '\\';
+			  *outptr++ = '\'';
+			  *outptr++ = '\'';
+			}
+		      else
+			*outptr++ = *ptr;
 		    }
 		  *outptr++ = '\'';
 		  if (*ptr)

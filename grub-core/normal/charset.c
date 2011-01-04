@@ -113,16 +113,6 @@ grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 	      count = 3;
 	      code = c & GRUB_UINT8_3_TRAILINGBITS;
 	    }
-	  else if ((c & GRUB_UINT8_6_LEADINGBITS) == GRUB_UINT8_5_LEADINGBITS)
-	    {
-	      count = 4;
-	      code = c & GRUB_UINT8_2_TRAILINGBITS;
-	    }
-	  else if ((c & GRUB_UINT8_7_LEADINGBITS) == GRUB_UINT8_6_LEADINGBITS)
-	    {
-	      count = 5;
-	      code = c & GRUB_UINT8_1_TRAILINGBIT;
-	    }
 	  else
 	    return -1;
 	}
@@ -177,11 +167,20 @@ grub_ucs4_to_utf8 (grub_uint32_t *src, grub_size_t size,
 	  /* No surrogates in UCS-4... */
 	  *dest++ = '?';
 	}
-      else
+      else if (code < 0x10000)
 	{
 	  if (dest + 2 >= destend)
 	    break;
 	  *dest++ = (code >> 12) | 0xE0;
+	  *dest++ = ((code >> 6) & 0x3F) | 0x80;
+	  *dest++ = (code & 0x3F) | 0x80;
+	}
+      else
+	{
+	  if (dest + 3 >= destend)
+	    break;
+	  *dest++ = (code >> 18) | 0xF0;
+	  *dest++ = ((code >> 12) & 0x3F) | 0x80;
 	  *dest++ = ((code >> 6) & 0x3F) | 0x80;
 	  *dest++ = (code & 0x3F) | 0x80;
 	}
@@ -212,8 +211,10 @@ grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size)
 	       || (code >= 0xD800 && code <= 0xDBFF))
 	/* No surrogates in UCS-4... */
 	cnt++;
-      else
+      else if (code < 0x10000)
 	cnt += 3;
+      else
+	cnt += 4;
     }
   cnt++;
 
@@ -272,16 +273,6 @@ grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize)
 	    {
 	      count = 3;
 	      code = c & 0x07;
-	    }
-	  else if ((c & 0xfc) == 0xf8)
-	    {
-	      count = 4;
-	      code = c & 0x03;
-	    }
-	  else if ((c & 0xfe) == 0xfc)
-	    {
-	      count = 5;
-	      code = c & 0x01;
 	    }
 	  else
 	    return 0;
@@ -374,16 +365,6 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 	    {
 	      count = 3;
 	      code = c & 0x07;
-	    }
-	  else if ((c & 0xfc) == 0xf8)
-	    {
-	      count = 4;
-	      code = c & 0x03;
-	    }
-	  else if ((c & 0xfe) == 0xfc)
-	    {
-	      count = 5;
-	      code = c & 0x01;
 	    }
 	  else
 	    {
