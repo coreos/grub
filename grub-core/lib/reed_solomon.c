@@ -60,7 +60,9 @@ typedef grub_uint16_t gf_double_t;
 static char *gf_invert __attribute__ ((section(".text"))) = (void *) 0x100000;
 static char *scratch __attribute__ ((section(".text"))) = (void *) 0x100100;
 #else
+#if defined (STANDALONE)
 static char *scratch;
+#endif
 static grub_uint8_t gf_invert[256];
 #endif
 

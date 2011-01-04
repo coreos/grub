@@ -1,3 +1,8 @@
+2011-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/reed_solomon.c (scratch) [! STANDALONE]: Remove leftover
+	variable.
+
 2011-01-04  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/commands/legacycfg.c (GRUB_MOD_INIT): Fix typo in
