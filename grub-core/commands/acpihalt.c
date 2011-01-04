@@ -36,6 +36,7 @@ typedef uint8_t grub_uint8_t;
 
 #ifndef GRUB_DSDT_TEST
 #include <grub/misc.h>
+#include <grub/time.h>
 #include <grub/cpu/io.h>
 #endif
 
@@ -323,6 +324,8 @@ grub_acpi_halt (void)
 	  	     | (sleep_type << GRUB_ACPI_SLP_TYP_OFFSET), port & 0xffff);
 	}
     }
+
+  grub_millisleep (1500);
 
   grub_printf ("ACPI shutdown failed\n");
 }

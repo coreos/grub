@@ -18,6 +18,8 @@
 
 #ifdef TEST
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #define xmalloc malloc
 #define grub_memset memset
 #define grub_memcpy memcpy
@@ -25,8 +27,6 @@
 
 #ifndef STANDALONE
 #ifdef TEST
-#include <string.h>
-#include <stdlib.h>
 typedef unsigned int grub_size_t;
 typedef unsigned char grub_uint8_t;
 typedef unsigned short grub_uint16_t;
@@ -45,6 +45,7 @@ typedef unsigned char grub_uint8_t;
 typedef unsigned short grub_uint16_t;
 #else
 #include <grub/types.h>
+#include <grub/misc.h>
 #endif
 void
 grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs);
@@ -59,7 +60,9 @@ typedef grub_uint16_t gf_double_t;
 static char *gf_invert __attribute__ ((section(".text"))) = (void *) 0x100000;
 static char *scratch __attribute__ ((section(".text"))) = (void *) 0x100100;
 #else
+#if defined (STANDALONE)
 static char *scratch;
+#endif
 static grub_uint8_t gf_invert[256];
 #endif
 
@@ -207,11 +210,12 @@ gauss_solve (gf_single_t *eq, int n, int m, gf_single_t *sol)
 
 #ifndef STANDALONE
   chosen = xmalloc (n * sizeof (int));
-  grub_memset (chosen, -1, n * sizeof (int));
 #else
   chosen = (void *) scratch;
-  scratch += n;
+  scratch += n * sizeof (int);
 #endif
+  for (i = 0; i < n; i++)
+    chosen[i] = -1;
   for (i = 0; i < m; i++)
     sol[i] = 0;
   gauss_eliminate (eq, n, m, chosen);
@@ -228,7 +232,7 @@ gauss_solve (gf_single_t *eq, int n, int m, gf_single_t *sol)
 #ifndef STANDALONE
   free (chosen);
 #else
-  scratch -= n;
+  scratch -= n * sizeof (int);
 #endif
 }
 
@@ -370,6 +374,10 @@ decode_block (gf_single_t *ptr, grub_size_t s,
       grub_size_t rr = (rs + SECTOR_SIZE - 1 - i) / SECTOR_SIZE;
       gf_single_t m[ds + rr];
 
+      /* Nothing to do.  */
+      if (!ds || !rr)
+	continue;
+
       for (j = 0; j < (int) ds; j++)
 	m[j] = ptr[SECTOR_SIZE * j + i];
       for (j = 0; j < (int) rr; j++)
@@ -412,6 +420,10 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
   gf_single_t *ptr = buffer;
   gf_single_t *rptr = ptr + s;
 
+  /* Nothing to do.  */
+  if (!rs)
+    return;
+
   while (s > 0)
     {
       grub_size_t tt;
@@ -421,8 +433,8 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
       tt = cs + crs;
       if (tt > MAX_BLOCK_SIZE)
 	{
-	  cs = (cs * MAX_BLOCK_SIZE) / tt;
-	  crs = (crs * MAX_BLOCK_SIZE) / tt;
+	  cs = ((cs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
+	  crs = ((crs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
 	}
       encode_block (ptr, cs, rptr, crs);
       ptr += cs;
@@ -439,6 +451,10 @@ grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs)
   gf_single_t *ptr = ptr_;
   gf_single_t *rptr = ptr + s;
 
+  /* Nothing to do.  */
+  if (!rs)
+    return;
+
 #if defined (STANDALONE)
   init_inverts ();
 #endif
@@ -452,8 +468,8 @@ grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs)
       tt = cs + crs;
       if (tt > MAX_BLOCK_SIZE)
 	{
-	  cs = cs * MAX_BLOCK_SIZE / tt;
-	  crs = crs * MAX_BLOCK_SIZE / tt;
+	  cs = ((cs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
+	  crs = ((crs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
 	}
       decode_block (ptr, cs, rptr, crs);
       ptr += cs;
@@ -485,14 +501,10 @@ main (int argc, char **argv)
   fseek (in, 0, SEEK_END);
   s = ftell (in);
   fseek (in, 0, SEEK_SET);
-  rs = 1024 * ((s + MAX_BLOCK_SIZE - 1) / (MAX_BLOCK_SIZE - 1024));
+  rs = s / 3;
   buf = xmalloc (s + rs + SECTOR_SIZE);
   fread (buf, 1, s, in);
 
-  s = 0x5fbb;
-  rs = 0x6af9;
-
-#if 0
   grub_reed_solomon_add_redundancy (buf, s, rs);
 
   out = fopen ("tst_rs.bin", "wb");
@@ -504,9 +516,6 @@ main (int argc, char **argv)
   out = fopen ("tst_dam.bin", "wb");
   fwrite (buf, 1, s + rs, out);
   fclose (out);
-#endif
-  s = 0x5fbb;
-  rs = 0x6af9;
   grub_reed_solomon_recover (buf, s, rs);
 
   out = fopen ("tst_rec.bin", "wb");

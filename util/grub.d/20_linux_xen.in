@@ -60,11 +60,11 @@ linux_entry ()
   args="$5"
   xen_args="$6"
   if ${recovery} ; then
-    title="$(gettext_quoted "%s, with Linux %s and XEN %s (recovery mode)")"
+    title="$(gettext_quoted "%s, with Xen %s and Linux %s (recovery mode)")"
   else
-    title="$(gettext_quoted "%s, with Linux %s and XEN %s")"
+    title="$(gettext_quoted "%s, with Xen %s and Linux %s")"
   fi
-  printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}" "${xen_version}"
+  printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${xen_version}" "${version}"
   if ! ${recovery} ; then
       save_default_entry | sed -e "s/^/\t/"
   fi
@@ -73,14 +73,18 @@ linux_entry ()
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
   printf '%s\n' "${prepare_boot_cache}"
+  xmessage="$(gettext_printf "Loading Xen %s ..." ${xen_version})"
+  lmessage="$(gettext_printf "Loading Linux %s ..." ${version})"
   cat << EOF
-	echo	'$(printf "$(gettext_quoted "Loading Linux %s ...")" ${version})'
+	echo	'$xmessage'
 	multiboot	${rel_xen_dirname}/${xen_basename} placeholder ${xen_args}
+	echo	'$lmessage'
 	module	${rel_dirname}/${basename} placeholder root=${linux_root_device_thisversion} ro ${args}
 EOF
   if test -n "${initrd}" ; then
+    message="$(gettext_printf "Loading initial ramdisk ...")"
     cat << EOF
-	echo	'$(gettext_quoted "Loading initial ramdisk ...")'
+	echo	'$message'
 	module	${rel_dirname}/${initrd}
 EOF
   fi

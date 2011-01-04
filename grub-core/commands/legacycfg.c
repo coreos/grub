@@ -765,12 +765,12 @@ GRUB_MOD_INIT(legacycfg)
     = grub_register_command ("extract_legacy_entries_source",
 			     grub_cmd_legacy_source,
 			     N_("FILE"),
-			     N_("Parse legacy config in same context taking onl entries"));
+			     N_("Parse legacy config in same context taking only menu entries"));
   cmd_configfile_extract
     = grub_register_command ("extract_legacy_entries_configfile",
 			     grub_cmd_legacy_source,
 			     N_("FILE"),
-			     N_("Parse legacy config in new context taking onl entries"));
+			     N_("Parse legacy config in new context taking only menu entries"));
 
   cmd_kernel = grub_register_command ("legacy_kernel",
 				      grub_cmd_legacy_kernel,

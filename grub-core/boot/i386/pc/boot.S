@@ -459,6 +459,8 @@ fd_probe_error_string:	.asciz "Floppy"
 1:
 	/* perform read */
 	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
+	movw	%bx, %es
+	xorw	%bx, %bx
 	movw	$0x201, %ax
 	movb	$0, %ch
 	movb	$0, %dh
