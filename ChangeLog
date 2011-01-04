@@ -1,3 +1,10 @@
+2011-01-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/commands/legacycfg.c (GRUB_MOD_INIT): Fix typo in
+	descriptions of extract_legacy_entries_source and
+	extract_legacy_entries_configfile.
+	Reported by: Seung Soo, Ha.
+
 2011-01-03  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/bus/pci.c (grub_pci_iterate): Skip remaining functions
