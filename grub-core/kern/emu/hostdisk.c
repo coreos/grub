@@ -24,6 +24,7 @@
 #include <grub/err.h>
 #include <grub/emu/misc.h>
 #include <grub/emu/hostdisk.h>
+#include <grub/emu/getroot.h>
 #include <grub/misc.h>
 #include <grub/i18n.h>
 #include <grub/list.h>
