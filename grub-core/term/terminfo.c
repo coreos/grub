@@ -403,6 +403,8 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
       /* Backspace: Ctrl-h.  */
       if (c == 0x7f)
 	c = '\b'; 
+      if (c < 0x20 && c != '\t' && c!= '\b' && c != '\n' && c != '\r')
+	c = GRUB_TERM_CTRL | (c - 1 + 'a');
       *len = 1;
       keys[0] = c;
       return;

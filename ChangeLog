@@ -1,5 +1,10 @@
 2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/terminfo.c (grub_terminfo_readkey): Handle keys with
+	CTRL.
+
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	The E820 type 5 is BADRAM, not EXEC_CODE.
 
 	* grub-core/loader/i386/bsd.c (GRUB_E820_EXEC_CODE): Removed.
