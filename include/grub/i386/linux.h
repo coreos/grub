@@ -68,7 +68,7 @@
 #define GRUB_E820_RESERVED   2
 #define GRUB_E820_ACPI       3
 #define GRUB_E820_NVS        4
-#define GRUB_E820_EXEC_CODE  5
+#define GRUB_E820_BADRAM     5
 
 #define GRUB_E820_MAX_ENTRY  128
 

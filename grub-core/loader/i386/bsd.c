@@ -252,7 +252,7 @@ struct grub_e820_mmap
 #define GRUB_E820_RESERVED   2
 #define GRUB_E820_ACPI       3
 #define GRUB_E820_NVS        4
-#define GRUB_E820_EXEC_CODE  5
+#define GRUB_E820_BADRAM     5
 
 static void
 generate_e820_mmap (grub_size_t *len, grub_size_t *cnt, void *buf)

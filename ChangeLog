@@ -1,3 +1,14 @@
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	The E820 type 5 is BADRAM, not EXEC_CODE.
+
+	* grub-core/loader/i386/bsd.c (GRUB_E820_EXEC_CODE): Removed.
+	(GRUB_E820_BADRAM): New define.
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Translate code
+	into reserved. Propagate BADRAM.
+	* grub-core/loader/i386/bsd.c (GRUB_E820_EXEC_CODE): Removed.
+	(GRUB_E820_BADRAM): New define.
+
 2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/efi/relocator.c (grub_relocator_firmware_fill_events):
