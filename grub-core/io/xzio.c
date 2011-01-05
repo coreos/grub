@@ -222,7 +222,8 @@ grub_xzio_open (grub_file_t io)
   xzio->buf.out_pos = 0;
   xzio->buf.out_size = XZBUFSIZ;
 
-  if (!test_header (file) || !(grub_file_seekable (io) && test_footer (file)))
+  /* FIXME: don't test footer on not easily seekable files.  */
+  if (!test_header (file) || !test_footer (file))
     {
       grub_errno = GRUB_ERR_NONE;
       grub_file_seek (io, 0);

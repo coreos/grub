@@ -70,6 +70,10 @@ library = {
   common = grub-core/fs/ufs2.c;
   common = grub-core/fs/ufs.c;
   common = grub-core/fs/xfs.c;
+  common = grub-core/fs/zfs/zfs.c;
+  common = grub-core/fs/zfs/zfs_lzjb.c;
+  common = grub-core/fs/zfs/zfs_sha256.c;
+  common = grub-core/fs/zfs/zfs_fletcher.c;
   common = grub-core/lib/arg.c;
   common = grub-core/lib/crypto.c;
   common = grub-core/lib/envblk.c;
@@ -607,7 +611,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBDEVMAPPER)';
+  ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
 };
 
 program = {
@@ -620,5 +624,5 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldflags = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
 };

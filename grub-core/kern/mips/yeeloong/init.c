@@ -223,6 +223,8 @@ grub_halt (void)
   grub_outb (grub_inb (GRUB_CPU_LOONGSON_GPIOCFG)
 	     & ~GRUB_CPU_LOONGSON_SHUTDOWN_GPIO, GRUB_CPU_LOONGSON_GPIOCFG);
 
+  grub_millisleep (1500);
+
   grub_printf ("Shutdown failed\n");
   grub_refresh ();
   while (1);
@@ -238,6 +240,8 @@ void
 grub_reboot (void)
 {
   grub_write_ec (GRUB_MACHINE_EC_COMMAND_REBOOT);
+
+  grub_millisleep (1500);
 
   grub_printf ("Reboot failed\n");
   grub_refresh ();

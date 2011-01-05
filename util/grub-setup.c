@@ -493,7 +493,7 @@ unable_to_embed:
 		    "setup by using blocklists.  However, blocklists are UNRELIABLE and "
 		    "their use is discouraged."));
   if (! force)
-    grub_util_error (_("if you really want blocklists, use --force"));
+    grub_util_error (_("will not proceed with blocklists"));
 
   /* The core image must be put on a filesystem unfortunately.  */
   grub_util_info ("will leave the core image on the filesystem");

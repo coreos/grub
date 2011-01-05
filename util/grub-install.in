@@ -56,9 +56,6 @@ debug_image=
 
 update_nvram=yes
 
-ofpathname="`which ofpathname`"
-nvsetenv="`which nvsetenv`"
-efibootmgr="`which efibootmgr 2>/dev/null || true`"
 removable=no
 efi_quiet=
 
@@ -585,6 +582,8 @@ if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" 
 	--device-map="${device_map}" "${install_device}" || exit 1
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
     if [ x"$update_nvram" = xyes ]; then
+	ofpathname="`which ofpathname`"
+	nvsetenv="`which nvsetenv`"
 	set "$ofpathname" dummy
 	if test -f "$1"; then
 	    :
@@ -621,6 +620,7 @@ elif [ x"$platform" = xefi ]; then
     cp "${grubdir}/core.${imgext}" "${efidir}/${efi_file}"
 
     # Try to make this image bootable using the EFI Boot Manager, if available.
+    efibootmgr="`which efibootmgr`"
     if test "$removable" = no && test -n "$efi_distributor" && \
 	test -n "$efibootmgr"; then
         # On Linux, we need the efivars kernel modules.
@@ -648,7 +648,7 @@ elif [ x"$platform" = xefi ]; then
 	    efidir_disk="$(echo "$clean_devmap" | grep "^$(echo "$efidir_drive" | sed 's/,[^)]*//')" | cut -f2)"
 	    efidir_part="$(echo "$efidir_drive" | sed 's/^([^,]*,[^0-9]*//; s/[^0-9].*//')"
 	    efibootmgr $efi_quiet -c -d "$efidir_disk" -p "$efidir_part" -w \
-		-L "$GRUB_DISTRIBUTOR" -l "\\EFI\\$efi_distributor\\$efi_file"
+		-L "$bootloader_id" -l "\\EFI\\$efi_distributor\\$efi_file"
 	fi
     fi
 fi

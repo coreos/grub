@@ -1,4 +1,473 @@
-2010-11-22  Colin Watson  <cjwatson@debian.org>
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Run terminfo_cls on initing terminfo output to clear the screen and
+	move the cursor to (0,0).
+
+	* grub-core/term/ieee1275/ofconsole.c (grub_ofconsole_init_output):
+	Call grub_terminfo_output_init.
+	* grub-core/term/serial.c (grub_serial_term_output): Set .init.
+	* grub-core/term/terminfo.c (grub_terminfo_output_init): New function.
+	* include/grub/terminfo.h (grub_terminfo_output_init): New declaration.
+
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Determine ofpathname, nvsetenv and efibootmgr
+	only when needed.
+
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/terminfo.c (grub_terminfo_readkey): Handle keys with
+	CTRL.
+
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	The E820 type 5 is BADRAM, not EXEC_CODE.
+
+	* grub-core/loader/i386/bsd.c (GRUB_E820_EXEC_CODE): Removed.
+	(GRUB_E820_BADRAM): New define.
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Translate code
+	into reserved. Propagate BADRAM.
+	* grub-core/loader/i386/bsd.c (GRUB_E820_EXEC_CODE): Removed.
+	(GRUB_E820_BADRAM): New define.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/efi/relocator.c (grub_relocator_firmware_fill_events):
+	Ignore the memory post-4G.
+	(grub_relocator_firmware_alloc_region): Additional debug statement.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/getroot.c (grub_util_get_grub_dev): Check md/%s
+	names.
+	Reported by: David Pravec.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/i386/pc/biosdisk.c (GRUB_MOD_INIT): Workaround buggy
+	BIOSes.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/reed_solomon.c (grub_reed_solomon_add_redundancy):
+	Prevent overflow.
+	(grub_reed_solomon_recover): Likewise.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/reed_solomon.c (main) [TEST]: Reactivate normal test.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/reed_solomon.c (scratch) [! STANDALONE]: Remove leftover
+	variable.
+
+2011-01-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/commands/legacycfg.c (GRUB_MOD_INIT): Fix typo in
+	descriptions of extract_legacy_entries_source and
+	extract_legacy_entries_configfile.
+	Reported by: Seung Soo, Ha.
+
+2011-01-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/bus/pci.c (grub_pci_iterate): Skip remaining functions
+	on devices that do not implement function 0.
+
+2011-01-03  Dave Vasilevsky <dave@vasilevsky.ca>
+
+	* grub-core/fs/hfsplus.c: Make parent unsigned.
+	(grub_hfsplus_cmp_catkey): Don't compare using subtraction, it
+	overflows.
+	(grub_hfsplus_cmp_extkey): Likewise
+
+2011-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Correctly use bootloader_id and not
+	GRUB_DISTRIBUTOR on efibootmgr line.
+
+2011-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkfont.c (main): Report errors in FT_New_Face.
+
+2010-12-31  Ian Campbell <ijc@hellion.org.uk>
+
+	* util/grub.d/20_linux_xen.in (linux_entry): Correctly capitalize
+	Xen and reorder menu item wording to make it clearer that this entry
+	will launch Xen.  Print separate messages when loading Xen and
+	Linux.
+
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/amiga.c (GRUB_AMIGA_PART_MAGIC): New define.
+	(amiga_partition_map_iterate): Check "PART" magic to avoid a very long
+	loop in case of incorrect amiga partmap.
+
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/amiga.c (GRUB_AMIGA_RDSK_MAGIC): New define.
+	(amiga_partition_map_iterate): Use grub_memcmp instead of grub_strcmp.
+	Reported by:EHeM.
+
+2010-12-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/bsdXX.c (grub_openbsd_find_ramdisk): Silence
+	spurious warning.
+	Reported by: crocket
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/xnu.c (grub_cmd_xnu_kernel) [! GRUB_MACHINE_EFI]:
+	Preload EFIemu.
+	(grub_cmd_xnu_kernel64) [! GRUB_MACHINE_EFI]: Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/xnu.c (grub_cmd_xnu_kext): Abort if no kernel
+	is loaded
+	(grub_cmd_xnu_kextdir): Likewise.
+	(grub_cmd_xnu_splash): Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Avoid using Reed-Solomon with 0 redundancy.
+
+	* grub-core/kern/i386/pc/startup.S: Remove 0-data check.
+	* grub-core/lib/reed_solomon.c (decode_block): Do not proceed on 0 data
+	or 0 redundancy.
+	(grub_reed_solomon_add_redundancy): Do not proceed with 0 redundancy.
+	(grub_reed_solomon_recover): Likewise.
+
+2010-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't use disk subsystem in freebsd_boot.
+
+	* grub-core/loader/i386/bsd.c (freebsd_bootdev): New variable.
+	(freebsd_biosdev): Likewise.
+	(grub_freebsd_boot): Use freebsd_bootdev and freebsd_biosdev.
+	(grub_cmd_freebsd): Set freebsd_bootdev and freebsd_biosdev.
+
+2010-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Handling of files of unknown size is currently limited. They can't be
+	used e.g. for initrd or modules. Moreover gzip handling of not
+	easily seekable files is buggy. Disable unknown file size for now. May
+	be inefficient but works.
+
+	* grub-core/io/gzio.c (test_header): Always retrieve the file size.
+	* grub-core/io/xzio.c (grub_xzio_open): Likewise.
+
+2010-12-25  Mirko Parthey <mirko.parthey@informatik.tu-chemnitz.de>
+
+	* grub-core/boot/i386/pc/boot.S: Fix %es:%bx pointing to nowhere on
+	floppy probe.
+
+2010-12-25  Jeroen Dekkers <jeroen@dekkers.ch>
+
+	* grub-core/disk/raid.c (insert_array): Don't add spurious members.
+
+2010-12-25  Shea Levy <shlevy>
+
+	* grub-core/genmod.sh.in: Use @OBJCOPY@ rather than objcopy.
+
+2010-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/30_os-prober.in: Don't emit drivemap directive for
+	Windows Server 2008.
+	Reported by: Devin Giddings.
+
+2010-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/acpihalt.c (grub_acpi_halt): Sleep for 1.5 before
+	writing an error message because of async power management.
+	* grub-core/kern/mips/yeeloong/init.c (grub_halt): Likewise.
+	(grub_reboot): Likewise.
+
+2010-12-23  Jordan Uggla  <jordan.uggla@gmail.com>
+
+	* tests/util/grub-shell.in: Suppress "ACPI shutdown failed" error to
+	keep unit tests from failing when they shouldn't.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_RAW_SIZE): The
+	previous patch increased the size of the RS code by 20 bytes (at
+	least with gcc-4.4), so increase this by 20 bytes to match.
+	(GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART): Likewise.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/lib/reed_solomon.c (gauss_solve): Fix size of standalone
+	scratch area.  Make sure to initialise chosen in standalone mode as
+	well as non-standalone.
+	Reported by: Robert Hooker and Andy Whitcroft.
+	Tested by: Andy Whitcroft.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/commands/echo.c (grub_cmd_echo): Make UTF-8-clean by
+	constructing a new unescaped string and passing it to grub_xputs in
+	one go, rather than passing characters to grub_printf one at a time.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/fs/udf.c (read_string): Pacify GCC warning by
+	initialising utf16.
+
+2010-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (gettext_quoted): Add clarifying
+	comment.  Add an extra layer of quotation, requiring the output of
+	this function to be used in a printf format string.
+	(gettext_printf): New function.
+	* util/grub.d/10_hurd.in: Use gettext_printf where appropriate.
+	Extract translatable strings from here-documents and use a temporary
+	variable instead, so that xgettext can find them.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
+	* po/grub.d.sed: New file.
+	* po/Makefile.in.in ($(DOMAIN).pot-update): Extract gettext_printf
+	arguments.  Set c-format flags on all strings extracted from
+	util/grub.d/ (xgettext refuses to include these itself for strings
+	it extracted from a shell file, but these really are c-format).
+
+2010-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_add_module):
+	Avoid next pointing to nowhere.
+
+2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/affs.c (grub_affs_mount): Read data->bblock.rootblock
+	rather than assuming than rootblock is exactly in the middle.
+	(grub_affs_label): Likewise.
+
+2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/affs.c (grub_affs_fs) [GRUB_UTIL]: Explicitly set
+	reserved_first_sector to 0.
+	* grub-core/fs/cpio.c (grub_cpio_fs) [GRUB_UTIL]: Likewise.
+	* grub-core/fs/sfs.c (grub_sfs_fs) [GRUB_UTIL]: Likewise.
+	* grub-core/fs/xfs.c (grub_xfs_fs) [GRUB_UTIL]: Likewise.
+
+2010-12-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix handling of UTF-16 UDF labels.
+
+	* grub-core/fs/udf.c (grub_udf_iterate_dir): Move string-parsing part
+	(read_string): .. here.
+	(grub_udf_label): Use read_string.
+
+2010-12-19  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* grub-core/normal/menu_entry.c (run): Execute commands from menu
+	editor under argument scope.
+	Reported by: Jordan Uggla
+
+2010-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkfont.c (main): Handle errors from FT_Set_Pixel_Sizes.
+
+2010-12-18  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/normal/term.c (print_more): Make \r or \n scroll one
+	line, and other keys scroll an entire page (previous handling was
+	for \r and \n to scroll a page and other keys to scroll two lines).
+
+2010-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi):
+	Set ptrdest to correct get_physical_target_address rather than
+	incorrect get_virtual_current_address.
+
+2010-12-18  kashyap garimella <garimella.kashyap@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_load): Use
+	correct cat to grub_uint8_t * rather than grub_uint32_t *.
+
+2010-12-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Ignore grub-core/rs_decoder.S.
+
+2010-12-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/gettext/gettext.c (grub_gettext_init_ext): Factor out
+	.mo/.mo.gz opening sequence to ...
+	(grub_mofile_open_lang): ... here.
+	(grub_gettext_init_ext): If opening ll_CC fails, try ll.
+	* util/grub.d/00_header.in (grub_lang): Include country part of
+	locale.
+	Reported by: Mario Limonciello.
+
+2010-12-09  Robert Millan  <rmh@gnu.org>
+
+	* NEWS: Document addition of ZFS support.
+
+2010-12-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/i386/pc/startup.S (grub_console_getkey): Use `>> 1'
+	rather than `/ 2', as the latter requires -Wa,--divide which would
+	require bumping our minimum binutils version.
+
+2010-12-03  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* util/grub-script-check.c (main): Print script line number on
+	error.
+
+2010-12-01  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/fs/zfs/zfs.c: New file.
+	* grub-core/fs/zfs/zfs_fletcher.c: Likewise.
+	* grub-core/fs/zfs/zfs_lzjb.c: Likewise.
+	* grub-core/fs/zfs/zfs_sha256.c: Likewise.
+	* grub-core/fs/zfs/zfsinfo.c: Likewise.
+
+	* include/grub/zfs/dmu.h: Likewise.
+	* include/grub/zfs/dmu_objset.h: Likewise.
+	* include/grub/zfs/dnode.h: Likewise.
+	* include/grub/zfs/dsl_dataset.h: Likewise.
+	* include/grub/zfs/dsl_dir.h: Likewise.
+	* include/grub/zfs/sa_impl.h: Likewise.
+	* include/grub/zfs/spa.h: Likewise.
+	* include/grub/zfs/uberblock_impl.h: Likewise.
+	* include/grub/zfs/vdev_impl.h: Likewise.
+	* include/grub/zfs/zap_impl.h: Likewise.
+	* include/grub/zfs/zap_leaf.h: Likewise.
+	* include/grub/zfs/zfs.h: Likewise.
+	* include/grub/zfs/zfs_acl.h: Likewise.
+	* include/grub/zfs/zfs_znode.h: Likewise.
+	* include/grub/zfs/zil.h: Likewise.
+	* include/grub/zfs/zio.h: Likewise.
+	* include/grub/zfs/zio_checksum.h: Likewise.
+
+	* Makefile.util.def: Build ZFS into libgrubmods.
+	* grub-core/Makefile.core.def: Build zfs.mod.
+
+2010-11-30  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/commands/regexp.c (grub_cmd_regexp): Remove unused
+	variable.
+	* grub-core/commands/wildcard.c (match_files): Likewise.
+
+2010-11-30  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/loader/i386/bsd.c
+	(grub_cmd_freebsd_loadenv, grub_cmd_freebsd_module_elf): Check
+	whether kernel is loaded using grub_loader_is_loaded(), rather
+	than `kernel_type', which may still be `KERNEL_TYPE_NONE' under
+	certain error conditions.
+
+2010-11-30  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/commands/echo.c: Include `<grub/term.h>'.
+	(grub_cmd_echo): Call grub_refresh() after printing a message.
+
+2010-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Avoid using tricks for initialising endian variables.
+
+	* grub-core/partmap/gpt.c (grub_gpt_partition_type_bios_boot):
+	Make const.
+	(GRUB_MOD_INIT): Don't byte-swap.
+	* include/grub/gpt_partition.h (GRUB_GPT_PARTITION_TYPE_BIOS_BOOT):
+	Use grub_cpu_to_le16_compile_time and grub_cpu_to_le32_compile_time.
+	* include/grub/types.h (grub_swap_bytes16_compile_time): New macro.
+	(grub_swap_bytes32_compile_time): Likewise.
+	(grub_cpu_to_le32_compile_time): Likewise.
+	(grub_cpu_to_le16_compile_time): Likewise.
+
+2010-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (setup): Stop recommending --force. People who
+	understand the dangers of blocklists are able to find this option
+	anyway and the ones who don't shouldn't use it anyway.
+
+2010-11-26  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/term/i386/pc/vga_text.c (VGA_TEXT_SCREEN): Beautify.
+	Update all users.
+
+2010-11-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix LVM-on-RAID probing.
+
+	* util/grub-probe.c (probe): Remember which disk was detected as
+	RAID (perhaps an LVM physical volume).  Use that disk's raidname
+	rather than that of the top-level disk.
+
+2010-11-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Fix cmdline argument quotes for setparams command of menuentry
+	definitions.
+
+	* grub-core/commands/menuentry.c (setparams_prefix): Use single
+	quotes for arguments.
+	* grub-core/lib/legacy_parse.c (grub_legacy_escape): Use
+	grub_strchrsub function instead.
+
+	* include/grub/misc.h (grub_strchrsub): New function.
+
+2010-11-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/deviceiter.c (grub_util_iterate_devices): Save a bit of
+	effort by skipping "." and ".." entries up-front.
+	Suggested by: Michael Lazarev.
+
+2010-11-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.core.def (xz_decompress): Move -lgcc from
+	ldflags to ldadd, to fix link line ordering.
+	(none_decompress): Likewise.
+
+2010-11-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.core.def (kernel): Add kern/emu/cache.S for emu
+	platforms.
+	(grub-emu-lite): Remove kern/emu/cache.S.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/deviceiter.c (compare_devices): If the by-id link for a
+	device couldn't be resolved, fall back to sorting by the by-id link
+	rather than segfaulting.
+	Reported and tested by: Daniel Mierswa.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (grub-menulst2cfg): List libraries in ldadd, not
+	ldflags, to fix link line ordering.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.am (gentrigtables): Put -lm after $<; some
+	linkers are picky about this.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/Makefile.am (command.lst): Adjust sed expression
+	ordering so that extended and priority commands aren't treated as
+	ordinary commands.
+
+2010-11-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/gpt_partition.h (GRUB_GPT_PARTITION_TYPE_BIOS_BOOT):
+	Remove byte-swapping function calls, which are not valid in
+	structure initialisers.
+	* grub-core/partmap/gpt.c (grub_gpt_partition_type_bios_boot): Make
+	non-const.
+	(GRUB_MOD_INIT): Byte-swap data1, data2, and data3 fields of
+	grub_gpt_partition_type_bios_boot.
+
+2010-11-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix test program build on GNU/kFreeBSD.
+
+	* Makefile.util.def (example_unit_test): Add `$(LIBZFS)
+	$(LIBNVPAIR)' library dependencies.
+
+2010-11-22  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-install.in: Fix parsing of --grub-mkrelpath= option.
 
