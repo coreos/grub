@@ -1,5 +1,10 @@
 2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Determine ofpathname, nvsetenv and efibootmgr
+	only when needed.
+
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/terminfo.c (grub_terminfo_readkey): Handle keys with
 	CTRL.
 
