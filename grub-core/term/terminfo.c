@@ -514,6 +514,13 @@ grub_terminfo_input_init (struct grub_term_input *termi)
   return GRUB_ERR_NONE;
 }
 
+grub_err_t
+grub_terminfo_output_init (struct grub_term_output *term)
+{
+  grub_terminfo_cls (term);
+  return GRUB_ERR_NONE;
+}
+
 /* GRUB Command.  */
 
 static grub_err_t

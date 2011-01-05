@@ -170,6 +170,8 @@ grub_ofconsole_init_output (struct grub_term_output *term)
 
   grub_ofconsole_dimensions ();
 
+  grub_terminfo_output_init (term);
+
   return 0;
 }
 

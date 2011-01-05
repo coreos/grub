@@ -1,5 +1,16 @@
 2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Run terminfo_cls on initing terminfo output to clear the screen and
+	move the cursor to (0,0).
+
+	* grub-core/term/ieee1275/ofconsole.c (grub_ofconsole_init_output):
+	Call grub_terminfo_output_init.
+	* grub-core/term/serial.c (grub_serial_term_output): Set .init.
+	* grub-core/term/terminfo.c (grub_terminfo_output_init): New function.
+	* include/grub/terminfo.h (grub_terminfo_output_init): New declaration.
+
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Determine ofpathname, nvsetenv and efibootmgr
 	only when needed.
 
