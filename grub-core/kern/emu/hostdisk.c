@@ -1045,7 +1045,6 @@ grub_util_get_dm_node_linear_info (const char *dev,
   void *next = NULL;
   uint64_t length, start;
   char *target, *params;
-  const char *node_name;
   char *ptr;
   int major, minor;
 
