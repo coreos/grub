@@ -1,5 +1,10 @@
 2011-01-06  Colin Watson  <cjwatson@ubuntu.com>
 
+	* tests/util/grub-shell.in: Set serial terminfo type to `dumb', to
+	avoid causing test failures by clearing the screen.
+
+2011-01-06  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/kern/emu/getroot.c (find_root_device_from_mountinfo):
 	Fix prefix check to handle the case where dir ends with a slash
 	(most significantly, "/" itself).

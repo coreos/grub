@@ -119,6 +119,7 @@ cat <<EOF >${cfgfile}
 grubshell=yes
 insmod serial
 serial
+terminfo serial dumb
 terminal_input serial
 terminal_output serial
 EOF
