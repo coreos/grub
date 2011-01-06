@@ -1,3 +1,10 @@
+2011-01-06  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/emu/getroot.c (find_root_device_from_mountinfo):
+	Fix prefix check to handle the case where dir ends with a slash
+	(most significantly, "/" itself).
+	Reported by: Michael Vogt.
+
 2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Run terminfo_cls on initing terminfo output to clear the screen and
