@@ -32,6 +32,11 @@ typedef grub_uint16_t uint16_t;
 typedef grub_uint32_t uint32_t;
 typedef grub_uint64_t uint64_t;
 
+typedef grub_int8_t int8_t;
+typedef grub_int16_t int16_t;
+typedef grub_int32_t int32_t;
+typedef grub_int64_t int64_t;
+
 #ifdef GRUB_CPU_WORDS_BIGENDIAN
 #define WORDS_BIGENDIAN
 #else
