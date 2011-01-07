@@ -1,5 +1,10 @@
 2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Do CPU substitution even if it's specified explicitly.
+	Reported and tested by: Alain Greppin.
+
+2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.am (rs_decoder.S): Force compilation with -Os.
 	Reported and tested by: Alain Greppin.
 
