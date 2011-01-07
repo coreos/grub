@@ -33,6 +33,7 @@
 #include <grub/command.h>
 #include <grub/i386/relocator.h>
 #include <grub/i18n.h>
+#include <grub/lib/cmdline.h>
 
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/i386/pc/vesa_modes_table.h>
@@ -575,7 +576,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_size_t real_size, prot_size;
   grub_ssize_t len;
   int i;
-  char *dest;
 
   grub_dl_ref (my_mod);
 
@@ -836,22 +836,14 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	params->loadflags |= GRUB_LINUX_FLAG_QUIET;
       }
 
-
-  /* Specify the boot file.  */
-  dest = grub_stpcpy ((char *) real_mode_mem + GRUB_LINUX_CL_OFFSET,
-		      "BOOT_IMAGE=");
-  dest = grub_stpcpy (dest, argv[0]);
-
-  /* Copy kernel parameters.  */
-  for (i = 1;
-       i < argc
-	 && dest + grub_strlen (argv[i]) + 1 < ((char *) real_mode_mem
-						+ GRUB_LINUX_CL_END_OFFSET);
-       i++)
-    {
-      *dest++ = ' ';
-      dest = grub_stpcpy (dest, argv[i]);
-    }
+  /* Create kernel command line.  */
+  grub_memcpy ((char *)real_mode_mem + GRUB_LINUX_CL_OFFSET, LINUX_IMAGE,
+	      sizeof (LINUX_IMAGE));
+  grub_create_loader_cmdline (argc, argv,
+			      (char *)real_mode_mem + GRUB_LINUX_CL_OFFSET
+			      + sizeof (LINUX_IMAGE) - 1,
+			      GRUB_LINUX_CL_END_OFFSET - GRUB_LINUX_CL_OFFSET
+			      - (sizeof (LINUX_IMAGE) - 1));
 
   len = prot_size;
   if (grub_file_read (file, prot_mode_mem, len) != len)

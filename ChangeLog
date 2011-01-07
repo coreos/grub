@@ -1,3 +1,17 @@
+2011-01-07  Szymon Janc <szymon@janc.net.pl>
+
+	Improve loaders' kernel command line handling.
+
+	* grub-core/lib/cmdline.c: New file.
+	* include/grub/lib/cmdline.h: Likewise.
+	* grub-core/loader/i386/linux.c (grub_cmd_linux): Use
+	grub_create_loader_cmdline to create kernel command line.
+	* grub-core/loader/i386/pc/linux.c (grub_cmd_linux): Likewise.
+	* grub-core/loader/powerpc/ieee1275/linux.c (grub_cmd_linux): Likewise.
+	* grub-core/loader/sparc64/ieee1275/linux.c (grub_cmd_linux): Likewise.
+	* grub-core/Makefile.core.def (linux16): Add lib/cmdline.c on i386_pc.
+	(linux): Add lib/cmdline.c on common.
+
 2011-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/xfs.c (grub_xfs_iterate_dir): Take into account that

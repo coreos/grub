@@ -27,6 +27,7 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 #include <grub/memory.h>
+#include <grub/lib/cmdline.h>
 
 #define ELF32_LOADMASK (0xc0000000UL)
 #define ELF64_LOADMASK (0xc000000000000000ULL)
@@ -238,9 +239,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
 {
   grub_elf_t elf = 0;
-  int i;
   int size;
-  char *dest;
 
   grub_dl_ref (my_mod);
 
@@ -275,23 +274,15 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto out;
     }
 
-  size = sizeof ("BOOT_IMAGE=") + grub_strlen (argv[0]);
-  for (i = 0; i < argc; i++)
-    size += grub_strlen (argv[i]) + 1;
-
-  linux_args = grub_malloc (size);
+  size = grub_loader_cmdline_size(argc, argv);
+  linux_args = grub_malloc (size + sizeof (LINUX_IMAGE));
   if (! linux_args)
     goto out;
 
-  /* Specify the boot file.  */
-  dest = grub_stpcpy (linux_args, "BOOT_IMAGE=");
-  dest = grub_stpcpy (dest, argv[0]);
-
-  for (i = 1; i < argc; i++)
-    {
-      *dest++ = ' ';
-      dest = grub_stpcpy (dest, argv[i]);
-    }
+  /* Create kernel command line.  */
+  grub_memcpy (linux_args, LINUX_IMAGE, sizeof (LINUX_IMAGE));
+  grub_create_loader_cmdline (argc, argv, linux_args + sizeof (LINUX_IMAGE) - 1,
+			      size);
 
 out:
 
