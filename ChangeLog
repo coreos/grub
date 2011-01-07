@@ -1,3 +1,10 @@
+2011-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Add missing
+	endian transformations.
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Likewise.
+	Based on report by: Doug Nazar.
+
 2011-01-07  Doug Nazar  <nazard.michi@gmail.com>
 
 	* grub-core/disk/raid5_recover.c (grub_raid5_recover): Add missing
