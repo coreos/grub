@@ -1,3 +1,9 @@
+2011-01-07  Doug Nazar  <nazard.michi@gmail.com>
+
+	* grub-core/disk/raid5_recover.c (grub_raid5_recover): Add missing
+	array->members[i].start_sector.
+	* grub-core/disk/raid6_recover.c (grub_raid6_recover): Likewise.
+
 2011-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-setup.c (setup): Handle NetBSD and OpenBSD disklabels.
