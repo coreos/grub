@@ -111,12 +111,12 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
   size_t len = 0;
   char *ret = NULL;
 
+  if (relroot)
+    *relroot = NULL;
+
   fp = fopen ("/proc/self/mountinfo", "r");
   if (! fp)
     return NULL; /* fall through to other methods */
-
-  if (relroot)
-    *relroot = NULL;
 
   while (getline (&buf, &len, fp) > 0)
     {
