@@ -1,5 +1,10 @@
 2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.am (rs_decoder.S): Force compilation with -Os.
+	Reported and tested by: Alain Greppin.
+
+2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Satisfy some bison versions need for inttypes.h.
 
 	* grub-core/lib/posix_wrap/inttypes.h: New file.
