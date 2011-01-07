@@ -1,5 +1,10 @@
 2011-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/xfs.c (grub_xfs_iterate_dir): Take into account that
+	inopos might be unaligned.
+
+2011-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Add missing
 	endian transformations.
 	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Likewise.
