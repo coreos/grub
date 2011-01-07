@@ -346,9 +346,11 @@ ext2/ext3/ext4}, @dfn{DOS FAT12/FAT16/FAT32}, @dfn{HFS}, @dfn{HFS+},
 @dfn{BSD UFS/UFS2}, and @dfn{XFS}. @xref{Filesystem}, for more information.
 
 @item Support automatic decompression
-Can decompress files which were compressed by @command{gzip}. This
-function is both automatic and transparent to the user (i.e. all
-functions operate upon the uncompressed contents of the specified
+Can decompress files which were compressed by @command{gzip} or
+@command{xz}@footnote{Only CRC32 data integrity check is supported (xz default
+is CRC64 so one should use --check=crc32 option). LZMA BCJ filters are
+supported.}. This function is both automatic and transparent to the user
+(i.e. all functions operate upon the uncompressed contents of the specified
 files). This greatly reduces a file size and loading time, a
 particularly great benefit for floppies.@footnote{There are a few
 pathological cases where loading a very badly organized ELF kernel might

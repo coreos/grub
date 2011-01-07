@@ -1,5 +1,10 @@
 2011-01-07  Szymon Janc <szymon@janc.net.pl>
 
+	* docs/grub.texi (Support automatic decompression): Update with xz
+	decompression support.
+
+2011-01-07  Szymon Janc <szymon@janc.net.pl>
+
 	Improve loaders' kernel command line handling.
 
 	* grub-core/lib/cmdline.c: New file.
