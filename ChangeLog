@@ -1,3 +1,8 @@
+2011-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (setup): Handle NetBSD and OpenBSD disklabels.
+	Reported and tested by: Grégoire Sutre.
+
 2011-01-06  Colin Watson  <cjwatson@ubuntu.com>
 
 	* tests/util/grub-shell.in: Set serial terminfo type to `dumb', to
