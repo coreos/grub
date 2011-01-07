@@ -418,9 +418,9 @@ grub_linux_boot (void)
 				addr, size, GRUB_E820_NVS);
 	  break;
 
-        case GRUB_MEMORY_CODE:
+        case GRUB_MEMORY_BADRAM:
 	  grub_e820_add_region (params->e820_map, &e820_num,
-				addr, size, GRUB_E820_EXEC_CODE);
+				addr, size, GRUB_E820_BADRAM);
 	  break;
 
         default:

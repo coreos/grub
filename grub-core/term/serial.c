@@ -104,6 +104,7 @@ static struct grub_term_input grub_serial_term_input =
 static struct grub_term_output grub_serial_term_output =
 {
   .name = "serial",
+  .init = grub_terminfo_output_init,
   .putchar = grub_terminfo_putchar,
   .getwh = grub_terminfo_getwh,
   .getxy = grub_terminfo_getxy,

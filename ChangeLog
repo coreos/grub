@@ -1,3 +1,59 @@
+2011-01-06  Colin Watson  <cjwatson@ubuntu.com>
+
+	* tests/util/grub-shell.in: Set serial terminfo type to `dumb', to
+	avoid causing test failures by clearing the screen.
+
+2011-01-06  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/emu/getroot.c (find_root_device_from_mountinfo):
+	Fix prefix check to handle the case where dir ends with a slash
+	(most significantly, "/" itself).
+	Reported by: Michael Vogt.
+
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Run terminfo_cls on initing terminfo output to clear the screen and
+	move the cursor to (0,0).
+
+	* grub-core/term/ieee1275/ofconsole.c (grub_ofconsole_init_output):
+	Call grub_terminfo_output_init.
+	* grub-core/term/serial.c (grub_serial_term_output): Set .init.
+	* grub-core/term/terminfo.c (grub_terminfo_output_init): New function.
+	* include/grub/terminfo.h (grub_terminfo_output_init): New declaration.
+
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Determine ofpathname, nvsetenv and efibootmgr
+	only when needed.
+
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/terminfo.c (grub_terminfo_readkey): Handle keys with
+	CTRL.
+
+2011-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	The E820 type 5 is BADRAM, not EXEC_CODE.
+
+	* grub-core/loader/i386/bsd.c (GRUB_E820_EXEC_CODE): Removed.
+	(GRUB_E820_BADRAM): New define.
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Translate code
+	into reserved. Propagate BADRAM.
+	* grub-core/loader/i386/bsd.c (GRUB_E820_EXEC_CODE): Removed.
+	(GRUB_E820_BADRAM): New define.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/efi/relocator.c (grub_relocator_firmware_fill_events):
+	Ignore the memory post-4G.
+	(grub_relocator_firmware_alloc_region): Additional debug statement.
+
+2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/getroot.c (grub_util_get_grub_dev): Check md/%s
+	names.
+	Reported by: David Pravec.
+
 2011-01-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/i386/pc/biosdisk.c (GRUB_MOD_INIT): Workaround buggy

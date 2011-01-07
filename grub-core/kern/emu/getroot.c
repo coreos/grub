@@ -135,8 +135,12 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
 	continue;
 
       enc_path_len = strlen (enc_path);
+      /* Check that enc_path is a prefix of dir.  The prefix must either be
+         the entire string, or end with a slash, or be immediately followed
+         by a slash.  */
       if (strncmp (dir, enc_path, enc_path_len) != 0 ||
-	  (dir[enc_path_len] && dir[enc_path_len] != '/'))
+	  (enc_path_len && dir[enc_path_len - 1] != '/' &&
+	   dir[enc_path_len] && dir[enc_path_len] != '/'))
 	continue;
 
       /* This is a parent of the requested directory.  /proc/self/mountinfo
@@ -787,11 +791,18 @@ grub_util_get_grub_dev (const char *os_dev)
 #ifdef __linux__
       {
 	char *mdadm_name = get_mdadm_name (os_dev);
+	struct stat st;
 
 	if (mdadm_name)
 	  {
-	    free (grub_dev);
-	    grub_dev = xasprintf ("md/%s", mdadm_name);
+	    char *newname;
+	    newname = xasprintf ("/dev/md/%s", mdadm_name);
+	    if (stat (newname, &st) == 0)
+	      {
+		free (grub_dev);
+		grub_dev = xasprintf ("md/%s", mdadm_name);
+	      }
+	    free (newname);
 	    free (mdadm_name);
 	  }
       }
