@@ -1,3 +1,9 @@
+2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/bsdXX.c (grub_netbsd_load_elf_meta):
+	Silence spurious warning.
+	Reported and tested by: Alain Greppin.
+
 2011-01-07  Szymon Janc <szymon@janc.net.pl>
 
 	* docs/grub.texi (Support automatic decompression): Update with xz
