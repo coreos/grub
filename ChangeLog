@@ -1,5 +1,21 @@
 2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (dmu_read): Use void * for some pointers to
+	avoid aliasing.
+	(fzap_lookup): Likewise.
+	(dnode_get): Likewise.
+	(make_mdn): Likewise.
+	(zfs_mount): Likewise.
+	(fzap_iterate): Use temporary pointer to avoid aliasing.
+	(grub_zfs_read): Likewise.
+	* grub-core/loader/i386/xnu.c (grub_xnu_boot): Likewise.
+	* grub-core/loader/xnu.c (grub_cmd_xnu_kernel): Use void * for some
+	pointers to avoid aliasing.
+	(grub_cmd_xnu_kernel64): Likewise.
+	(grub_xnu_load_driver): Likewise.
+
+2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/terminal.c (grub_cmd_terminal_input): Silence
 	aliasing warning.
 	(grub_cmd_terminal_output): Likewise.
