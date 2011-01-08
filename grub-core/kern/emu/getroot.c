@@ -639,7 +639,7 @@ grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
     return GRUB_DEV_ABSTRACTION_LVM;
 
   /* Check for RAID.  */
-  if (!strncmp (os_dev, "/dev/md", 7))
+  if (!strncmp (os_dev, "/dev/md", 7) && ! grub_util_device_is_mapped (os_dev))
     return GRUB_DEV_ABSTRACTION_RAID;
 #endif
 

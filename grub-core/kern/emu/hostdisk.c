@@ -325,18 +325,23 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   return GRUB_ERR_NONE;
 }
 
-#ifdef HAVE_DEVICE_MAPPER
-static int
-device_is_mapped (const char *dev)
+int
+grub_util_device_is_mapped (const char *dev)
 {
+#ifdef HAVE_DEVICE_MAPPER
   struct stat st;
+
+  if (!grub_device_mapper_supported ())
+    return 0;
 
   if (stat (dev, &st) < 0)
     return 0;
 
   return dm_is_dm_major (major (st.st_rdev));
-}
+#else
+  return 0;
 #endif /* HAVE_DEVICE_MAPPER */
+}
 
 #if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO)
 static grub_disk_addr_t
@@ -351,7 +356,7 @@ find_partition_start (const char *dev)
 # endif /* !defined(HAVE_DIOCGDINFO) */
 
 # ifdef HAVE_DEVICE_MAPPER
-  if (grub_device_mapper_supported () && device_is_mapped (dev)) {
+  if (grub_util_device_is_mapped (dev)) {
     struct dm_task *task = NULL;
     grub_uint64_t start, length;
     char *target_type, *params, *space;
