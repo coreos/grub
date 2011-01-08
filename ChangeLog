@@ -1,3 +1,9 @@
+2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* config.h.in (_LARGEFILE_SOURCE): Add missing define.
+	(_FILE_OFFSET_BITS): Likewise.
+	Reported by: Seth Goldberg.
+
 2011-01-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* configure.ac: Check for libdevmapper header.
