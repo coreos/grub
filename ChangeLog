@@ -1,5 +1,12 @@
 2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/terminal.c (grub_cmd_terminal_input): Silence
+	aliasing warning.
+	(grub_cmd_terminal_output): Likewise.
+	Reported and tested by: Grégoire Sutre.
+
+2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/at_keyboard.c (grub_keyboard_getkey): Silence spurious
 	warning.
 	Reported and tested by: Grégoire Sutre.
