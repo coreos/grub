@@ -494,7 +494,7 @@ static int
 grub_keyboard_getkey (void)
 {
   int key;
-  int is_break;
+  int is_break = 0;
 
   key = fetch_key (&is_break);
   if (key == -1)

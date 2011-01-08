@@ -1,5 +1,11 @@
 2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/at_keyboard.c (grub_keyboard_getkey): Silence spurious
+	warning.
+	Reported and tested by: Grégoire Sutre.
+
+2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Do CPU substitution even if it's specified explicitly.
 	Reported and tested by: Alain Greppin.
 
