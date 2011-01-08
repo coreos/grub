@@ -856,6 +856,37 @@ AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
 
+AC_ARG_ENABLE([grub-mkfont],
+	      [AS_HELP_STRING([--enable-grub-mkfont],
+                             [build and install the `grub-mkfont' utility (default=guessed)])])
+if test x"$enable_grub_mkfont" = xno ; then
+  grub_mkfont_excuse="explicitly disabled"
+fi
+
+if test x"$grub_fuse_excuse" = x ; then
+  AC_CHECK_LIB([fuse], [fuse_main_real], [],
+               [grub_fuse_excuse="need FUSE library"])
+fi
+
+if test x"$grub_fuse_excuse" = x ; then
+  # Check for fuse headers.
+  SAVED_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64"
+  AC_CHECK_HEADERS([fuse/fuse.h], [],
+  	[grub_fuse_excuse=["need FUSE headers"]])
+  CPPFLAGS="$SAVED_CPPFLAGS"
+fi
+
+if test x"$enable_grub_fuse" = xyes && test x"$grub_fuse_excuse" != x ; then
+  AC_MSG_ERROR([grub-fuse was explicitly requested but can't be compiled])
+fi
+if test x"$grub_fuse_excuse" = x ; then
+enable_grub_fuse=yes
+else
+enable_grub_fuse=no
+fi
+AC_SUBST([enable_grub_fuse])
+
 AC_ARG_ENABLE([device-mapper],
               [AS_HELP_STRING([--enable-device-mapper],
                               [enable Linux device-mapper support (default=guessed)])])
@@ -952,6 +983,7 @@ AM_CONDITIONAL([COND_GRUB_EMU_USB], [test x$enable_grub_emu_usb = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_SDL], [test x$enable_grub_emu_sdl = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_PCI], [test x$enable_grub_emu_pci = xyes])
 AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
+AM_CONDITIONAL([COND_GRUB_FUSE], [test x$enable_grub_fuse = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
 AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
 AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
@@ -1026,6 +1058,11 @@ if [ x"$grub_mkfont_excuse" = x ]; then
 echo grub-mkfont: Yes
 else
 echo grub-mkfont: No "($grub_mkfont_excuse)"
+fi
+if [ x"$grub_fuse_excuse" = x ]; then
+echo grub-fuse: Yes
+else
+echo grub-fuse: No "($grub_fuse_excuse)"
 fi
 echo "*******************************************************"
 ]

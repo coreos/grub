@@ -213,6 +213,21 @@ program = {
 };
 
 program = {
+  name = grub-fuse;
+  mansection = 1;
+  common_nodist = grub_fstest_init.c;
+  common = util/grub-fuse.c;
+  common = grub-core/kern/emu/hostfs.c;
+  common = grub-core/disk/host.c;
+
+  ldadd = libgrubmods.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)' '-lfuse';
+  condition = COND_GRUB_FUSE;
+};
+
+program = {
   name = grub-mkfont;
   mansection = 1;
   common = util/grub-mkfont.c;
