@@ -1,3 +1,7 @@
+2011-01-08  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* configure.ac: Check for libdevmapper header.
+
 2011-01-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/zfs/zfs.c (dmu_read): Use void * for some pointers to

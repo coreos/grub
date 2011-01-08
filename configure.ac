@@ -864,6 +864,12 @@ if test x"$enable_device_mapper" = xno ; then
 fi
 
 if test x"$device_mapper_excuse" = x ; then
+  # Check for device-mapper header.
+  AC_CHECK_HEADER([libdevmapper.h], [],
+               [device_mapper_excuse="need libdevmapper header"])
+fi
+
+if test x"$device_mapper_excuse" = x ; then
   # Check for device-mapper library.
   AC_CHECK_LIB([devmapper], [dm_task_create], [],
                [device_mapper_excuse="need devmapper library"])
