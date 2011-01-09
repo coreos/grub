@@ -107,7 +107,12 @@ prepare_grub_to_access_device ()
 
   partmap="`${grub_probe} --device ${device} --target=partmap`"
   for module in ${partmap} ; do
-    echo "insmod part_${module}"
+    case "${module}" in
+      netbsd | openbsd)
+        echo "insmod part_bsd";;
+      *)
+        echo "insmod part_${module}";;
+    esac
   done
 
   fs="`${grub_probe} --device ${device} --target=fs`"
