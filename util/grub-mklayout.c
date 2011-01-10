@@ -259,8 +259,9 @@ usage (int status)
     fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
-Usage: %s [OPTIONS] LAYOUT\n\
-  -o, --output		set output base name file. Default is LAYOUT.gkb\n\
+Usage: %s [OPTIONS]\n\
+  -i, --input		set input filename. Default is STDIN\n\
+  -o, --output		set output filename. Default is STDOUT\n\
   -h, --help		display this message and exit.\n\
   -V, --version		print version information and exit.\n\
   -v, --verbose		print verbose messages.\n\

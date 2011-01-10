@@ -1,5 +1,9 @@
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mklayout.c (usage): Update help text.
+
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/legacycfg.c (legacy_file): Trim the line.
 
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
