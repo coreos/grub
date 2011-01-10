@@ -78,9 +78,12 @@ main (int argc, char **argv)
       {
 	char *oldname = NULL;
 	char *newsuffix;
+	char *ptr;
+
+	for (ptr = buf; *ptr && grub_isspace (*ptr); ptr++);
 
 	oldname = entryname;
-	parsed = grub_legacy_parse (buf, &entryname, &newsuffix);
+	parsed = grub_legacy_parse (ptr, &entryname, &newsuffix);
 	if (newsuffix)
 	  {
 	    suffixlen += strlen (newsuffix);
