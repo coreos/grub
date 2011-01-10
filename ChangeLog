@@ -1,5 +1,11 @@
 2011-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi):
+	Take into account space used by ELF sections and multiboot palette.
+	Reported by: Grégoire Sutre.
+
+2011-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* BUGS: New file.
 
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
