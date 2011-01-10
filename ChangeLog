@@ -1,5 +1,10 @@
 2011-01-09  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
+	* util/grub.d/10_netbsd.in (netbsd_load_fs_module): New function.
+	(netbsd_entry): Use netbsd_load_fs_module() to load filesystem module.
+
+2011-01-09  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
 	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Handle
 	openbsd and netbsd types being in part_bsd module.
 
