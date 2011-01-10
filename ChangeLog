@@ -1,3 +1,7 @@
+2011-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* BUGS: New file.
+
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Pass more appropriate video id to Linux.
