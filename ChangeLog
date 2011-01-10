@@ -1,5 +1,11 @@
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/btrfs.c (grub_btrfs_mount): Transform out of range into
+	badfs.
+	Reported by: TiCPU.
+
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/raid.c (insert_array): Display RAID name in duplicate
 	members errors.
 
