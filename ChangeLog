@@ -1,5 +1,23 @@
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Submenu default support.
+
+	* grub-core/normal/menu.c (grub_menu_execute_entry): New parameter
+	auto_boot. All users updated.
+	Declared static.
+	Handle chosen and default with submenus.
+	(grub_menu_execute_with_fallback): Declared static.
+	Don't notify failure if autobooted. Upper level does it.
+	(menuentry_eq): New function.
+	(get_entry_number): Use menuentry_eq.
+	(show_menu): New parameter "autobooted". All users updated.
+	(grub_show_menu): Likewise.
+	* include/grub/normal.h (grub_show_menu): Likewise.
+	* include/grub/menu.h (grub_menu_execute_entry): Removed.
+	(grub_menu_execute_with_fallback): Likewise.
+
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mklayout.c (usage): Update help text.
 
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>

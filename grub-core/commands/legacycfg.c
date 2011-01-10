@@ -213,7 +213,7 @@ grub_cmd_legacy_source (struct grub_command *cmd,
       grub_menu_t menu;
       menu = grub_env_get_menu ();
       if (menu && menu->size)
-	grub_show_menu (menu, 1);
+	grub_show_menu (menu, 1, 0);
       if (!extractor)
 	grub_env_context_close ();
     }
