@@ -1,5 +1,10 @@
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/pc/mmap.c (grub_get_conv_memsize): New function.
+	(grub_machine_mmap_iterate): Take low memory into account
+
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/btrfs.c (grub_btrfs_mount): Transform out of range into
 	badfs.
 	Reported by: TiCPU.
