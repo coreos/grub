@@ -1,0 +1,2 @@
+Currently search and assembling multidevice abstractions scans all the devices which can be slow.
+Cache isn't used correctly for video which results in slowness.

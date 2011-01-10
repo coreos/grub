@@ -313,6 +313,13 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   struct grub_video_mode_info mode_info;
   void *framebuffer;
   grub_err_t err;
+  grub_video_driver_id_t driver_id;
+  char *gfxlfbvar = grub_env_get ("gfxpayloadforcelfb");
+
+  driver_id = grub_video_get_driver_id ();
+
+  if (driver_id == GRUB_VIDEO_DRIVER_NONE)
+    return 1;
 
   err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
 
@@ -339,12 +346,40 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->reserved_mask_size = mode_info.reserved_mask_size;
   params->reserved_field_pos = mode_info.reserved_field_pos;
 
+  if (gfxlfbvar && (gfxlfbvar[0] == '1' || gfxlfbvar[0] == 'y'))
+    params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
+  else
+    {
+      switch (driver_id)
+	{
+	case GRUB_VIDEO_DRIVER_VBE:
+	  params->lfb_size >>= 16;
+	  params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
+	  break;
+	
+	case GRUB_VIDEO_DRIVER_EFI_UGA:
+	case GRUB_VIDEO_DRIVER_EFI_GOP:
+	  params->have_vga = GRUB_VIDEO_LINUX_TYPE_EFIFB;
+	  break;
+
+	  /* FIXME: check if better id is available.  */
+	case GRUB_VIDEO_DRIVER_SM712:
+	case GRUB_VIDEO_DRIVER_VGA:
+	case GRUB_VIDEO_DRIVER_CIRRUS:
+	case GRUB_VIDEO_DRIVER_BOCHS:
+	  /* Make gcc happy. */
+	case GRUB_VIDEO_DRIVER_SDL:
+	case GRUB_VIDEO_DRIVER_NONE:
+	  params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
+	  break;
+	}
+    }
 
 #ifdef GRUB_MACHINE_PCBIOS
   /* VESA packed modes may come with zeroed mask sizes, which need
      to be set here according to DAC Palette width.  If we don't,
      this results in Linux displaying a black screen.  */
-  if (mode_info.bpp <= 8)
+  if (driver_id == GRUB_VIDEO_DRIVER_VBE && mode_info.bpp <= 8)
     {
       struct grub_vbe_info_block controller_info;
       int status;
@@ -457,15 +492,7 @@ grub_linux_boot (void)
       grub_errno = GRUB_ERR_NONE;
     }
 
-  if (! grub_linux_setup_video (params))
-    {
-      /* Use generic framebuffer unless VESA is known to be supported.  */
-      if (params->have_vga != GRUB_VIDEO_LINUX_TYPE_VESA)
-	params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
-      else
-	params->lfb_size >>= 16;
-    }
-  else
+  if (grub_linux_setup_video (params))
     {
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
       params->have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
@@ -770,10 +797,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 			     argv[i], vid_mode);
 		break;
 	      }
-
-	    /* We can't detect VESA, but user is implicitly telling us that it
-	       is built-in because `vga=' parameter was used.  */
-	    params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
 
 	    linux_mode = &grub_vesa_mode_table[vid_mode
 					       - GRUB_VESA_MODE_TABLE_START];

@@ -1,5 +1,16 @@
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Pass more appropriate video id to Linux.
+
+	* grub-core/loader/i386/linux.c (grub_linux_setup_video): Use
+	grub_video_get_driver_id and variable gfxpayloadforcelfb to
+	fill have_vga.
+	(grub_linux_boot): Rely on grub_linux_setup_video to fill have_vga and
+	shift params->lfb_size.
+	* include/grub/i386/linux.h: Make an enume out of have_vga values.
+
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-menulst2cfg.c: Add missing include of misc.h.
 
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
