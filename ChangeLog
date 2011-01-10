@@ -1,5 +1,9 @@
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-menulst2cfg.c: Add missing include of misc.h.
+
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfsinfo.c (grub_cmd_zfs_bootfs): Use comma as
 	separator and pass bootpath/devid even if only one of them is available.
 	Reported by: Seth Goldberg.

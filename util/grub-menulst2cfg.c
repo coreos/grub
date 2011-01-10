@@ -23,6 +23,7 @@
 #include <string.h>
 #include <errno.h>
 #include <grub/util/misc.h>
+#include <grub/misc.h>
 
 int
 main (int argc, char **argv)
