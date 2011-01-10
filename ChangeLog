@@ -1,3 +1,8 @@
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/raid.c (insert_array): Display RAID name in duplicate
+	members errors.
+
 2011-01-09  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* util/grub.d/10_netbsd.in (netbsd_load_fs_module): New function.
