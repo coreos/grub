@@ -1,5 +1,10 @@
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-kbdcomp.in: Add missing transform and bindir variables.
+	Reported by: nebuchadnezzar.
+
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Submenu default support.
 
 	* grub-core/normal/menu.c (grub_menu_execute_entry): New parameter
