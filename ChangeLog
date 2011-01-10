@@ -1,5 +1,12 @@
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/pc/init.c (grub_get_conv_memsize): Removed.
+	(grub_machine_init): Don't check amount of low memory as reportedly
+	INT 12h can be broken and if low memory is too low we wouldn't have
+	gotten into grub_machine_init anyway.
+
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/pc/mmap.c (grub_get_conv_memsize): New function.
 	(grub_machine_mmap_iterate): Take low memory into account
 
