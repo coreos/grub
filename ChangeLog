@@ -1,5 +1,14 @@
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't use post-4G memory on EFI even if 64-bit since some non-compliant
+	implementations bug on them.
+
+	* grub-core/kern/efi/mm.c (grub_efi_allocate_pages): Skip post-4G
+	memory.
+	(filter_memory_map): Likewise.
+
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-kbdcomp.in: Add missing prefix and exec_prefix variables.
 	Reported by: nebuchadnezzar.
 
