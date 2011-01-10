@@ -1,5 +1,9 @@
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/legacycfg.c (legacy_file): Trim the line.
+
+2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-menulst2cfg.c (main): Trim the line.
 
 2011-01-10  Vladimir Serbinenko  <phcoder@gmail.com>

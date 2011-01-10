@@ -83,9 +83,13 @@ legacy_file (const char *filename)
       {
 	char *oldname = NULL;
 	char *newsuffix;
+	char *ptr;
+
+	for (ptr = buf; *ptr && grub_isspace (*ptr); ptr++);
 
 	oldname = entryname;
-	parsed = grub_legacy_parse (buf, &entryname, &newsuffix);
+	parsed = grub_legacy_parse (ptr, &entryname, &newsuffix);
+	grub_free (buf);
 	buf = NULL;
 	if (newsuffix)
 	  {
