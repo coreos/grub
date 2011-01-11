@@ -213,10 +213,10 @@ program = {
 };
 
 program = {
-  name = grub-fuse;
+  name = grub-mount;
   mansection = 1;
   common_nodist = grub_fstest_init.c;
-  common = util/grub-fuse.c;
+  common = util/grub-mount.c;
   common = grub-core/kern/emu/hostfs.c;
   common = grub-core/disk/host.c;
 

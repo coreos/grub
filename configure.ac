@@ -878,7 +878,7 @@ if test x"$grub_fuse_excuse" = x ; then
 fi
 
 if test x"$enable_grub_fuse" = xyes && test x"$grub_fuse_excuse" != x ; then
-  AC_MSG_ERROR([grub-fuse was explicitly requested but can't be compiled])
+  AC_MSG_ERROR([grub-mount was explicitly requested but can't be compiled])
 fi
 if test x"$grub_fuse_excuse" = x ; then
 enable_grub_fuse=yes
@@ -1060,9 +1060,9 @@ else
 echo grub-mkfont: No "($grub_mkfont_excuse)"
 fi
 if [ x"$grub_fuse_excuse" = x ]; then
-echo grub-fuse: Yes
+echo grub-mount: Yes
 else
-echo grub-fuse: No "($grub_fuse_excuse)"
+echo grub-mount: No "($grub_fuse_excuse)"
 fi
 echo "*******************************************************"
 ]
