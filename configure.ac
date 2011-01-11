@@ -246,7 +246,7 @@ else
 fi
 
 # These are not a "must".
-AC_PATH_PROG(MAKEINFO, makeinfo)
+AC_PATH_PROGS(MAKEINFO, makeinfo true)
 
 #
 # Checks for host programs.

@@ -1,3 +1,7 @@
+2011-01-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Fall back to `true' if `makeinfo' does not exist.
+
 2011-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/powerpc/ieee1275/linux.c (grub_linux_load32): Apply
