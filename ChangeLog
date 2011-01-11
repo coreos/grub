@@ -1,3 +1,9 @@
+2011-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/powerpc/ieee1275/linux.c (grub_linux_load32): Apply
+	loadmask before doing any calculations. Use correct type for offset.
+	(grub_linux_load64): Likewise.
+
 2011-01-11  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mklayout.c (console_grub_equivalences_shift): Terminate
