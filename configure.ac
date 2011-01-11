@@ -103,15 +103,12 @@ else
   platform="$with_platform"
 fi
 
-# Adjust CPU unless target was explicitly specified.
-if test -z "$target_alias"; then
-  case "$target_cpu"-"$platform" in
-    x86_64-efi) ;;
-    x86_64-emu) ;;
-    x86_64-*) target_cpu=i386 ;;
-    powerpc64-ieee1275) target_cpu=powerpc ;;
-  esac
-fi
+case "$target_cpu"-"$platform" in
+  x86_64-efi) ;;
+  x86_64-emu) ;;
+  x86_64-*) target_cpu=i386 ;;
+  powerpc64-ieee1275) target_cpu=powerpc ;;
+esac
 
 # Check if the platform is supported, make final adjustments.
 case "$target_cpu"-"$platform" in
@@ -864,6 +861,12 @@ AC_ARG_ENABLE([device-mapper],
                               [enable Linux device-mapper support (default=guessed)])])
 if test x"$enable_device_mapper" = xno ; then
   device_mapper_excuse="explicitly disabled"
+fi
+
+if test x"$device_mapper_excuse" = x ; then
+  # Check for device-mapper header.
+  AC_CHECK_HEADER([libdevmapper.h], [],
+               [device_mapper_excuse="need libdevmapper header"])
 fi
 
 if test x"$device_mapper_excuse" = x ; then

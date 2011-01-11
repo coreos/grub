@@ -1150,6 +1150,7 @@ module = {
 module = {
   name = linux16;
   i386_pc = loader/i386/pc/linux.c;
+  i386_pc = lib/cmdline.c;
   enable = i386_pc;
 };
 
@@ -1184,6 +1185,7 @@ module = {
   mips = loader/mips/linux.c;
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
+  common = lib/cmdline.c;
   enable = noemu;
 };
 

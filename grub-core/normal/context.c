@@ -175,26 +175,6 @@ grub_env_extractor_close (int source)
   return err;
 }
 
-grub_err_t
-grub_env_export (const char *name)
-{
-  struct grub_env_var *var;
-
-  var = grub_env_find (name);
-  if (! var)
-    {
-      grub_err_t err;
-      
-      err = grub_env_set (name, "");
-      if (err)
-	return err;
-      var = grub_env_find (name);
-    }    
-  var->global = 1;
-
-  return GRUB_ERR_NONE;
-}
-
 static grub_command_t export_cmd;
 
 static grub_err_t
@@ -216,9 +196,6 @@ grub_cmd_export (struct grub_command *cmd __attribute__ ((unused)),
 void
 grub_context_init (void)
 {
-  grub_env_export ("root");
-  grub_env_export ("prefix");
-
   export_cmd = grub_register_command ("export", grub_cmd_export,
 				      N_("ENVVAR [ENVVAR] ..."),
 				      N_("Export variables."));

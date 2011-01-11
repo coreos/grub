@@ -287,7 +287,7 @@ grub_normal_execute (const char *config, int nested, int batch)
     {
       if (menu && menu->size)
 	{
-	  grub_show_menu (menu, nested);
+	  grub_show_menu (menu, nested, 0);
 	  if (nested)
 	    grub_normal_free_menu (menu);
 	}

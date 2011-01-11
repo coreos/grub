@@ -539,6 +539,9 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
       mbi->u.elf_sec.shndx = elf_sec_shstrndx;
 
       mbi->flags |= MULTIBOOT_INFO_ELF_SHDR;
+
+      ptrorig += elf_sec_entsize * elf_sec_num;
+      ptrdest += elf_sec_entsize * elf_sec_num;
     }
 
   err = retrieve_video_parameters (mbi, ptrorig, ptrdest);
@@ -547,6 +550,16 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
     }
+
+  if ((mbi->flags & MULTIBOOT_INFO_FRAMEBUFFER_INFO)
+      && mbi->framebuffer_type == MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED)
+    {
+      ptrorig += mbi->framebuffer_palette_num_colors
+	* sizeof (struct multiboot_color);
+      ptrdest += mbi->framebuffer_palette_num_colors
+	* sizeof (struct multiboot_color);
+    }
+
 #if GRUB_MACHINE_HAS_VBE
   ptrorig += sizeof (struct grub_vbe_info_block);
   ptrdest += sizeof (struct grub_vbe_info_block);
