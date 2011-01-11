@@ -60,6 +60,8 @@ static struct console_grub_equivalence console_grub_equivalences_shift[] = {
   {"KP_8", '8'},
   {"KP_9", '9'},
   {"KP_Period", '.'},
+
+  {NULL, '\0'}
 };
 
 static struct console_grub_equivalence console_grub_equivalences_unshift[] = {
@@ -74,6 +76,8 @@ static struct console_grub_equivalence console_grub_equivalences_unshift[] = {
   {"KP_8", GRUB_TERM_KEY_UP},
   {"KP_9", GRUB_TERM_KEY_PPAGE},
   {"KP_Period", GRUB_TERM_KEY_DC},
+
+  {NULL, '\0'}
 };
 
 static struct console_grub_equivalence console_grub_equivalences_common[] = {
