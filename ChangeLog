@@ -1,5 +1,21 @@
 2011-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/i386/pc/pxe.c (set_mac_env): Export variable.
+	(set_env_limn_ro): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* grub-core/hook/datehook.c (GRUB_MOD_INIT): Likewise. Change to
+	ARRAY_SIZE while on it.
+	(GRUB_MOD_FINI): Change to ARRAY_SIZE.
+	* grub-core/normal/context.c (grub_env_export): Move from here ...
+	* grub-core/kern/env.c (grub_env_export): ... here.
+	* grub-core/normal/context.c (grub_cmd_export): Skip exporting root and
+	prefix.
+	* grub-core/kern/main.c (grub_main): Export root and prefix.
+	* include/grub/env.h (grub_env_export): Export.
+	Reported by: Seth Goldberg.
+
+2011-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi):
 	Take into account space used by ELF sections and multiboot palette.
 	Reported by: Grégoire Sutre.

@@ -420,6 +420,7 @@ set_mac_env (grub_uint8_t *mac_addr, grub_size_t mac_len)
   grub_env_set ("net_pxe_mac", buf);
   /* XXX: Is it possible to change MAC in PXE?  */
   grub_register_variable_hook ("net_pxe_mac", 0, grub_env_write_readonly);
+  grub_env_export ("net_pxe_mac");
 }
 
 static void
@@ -431,6 +432,7 @@ set_env_limn_ro (const char *varname, char *value, grub_size_t len)
   grub_env_set (varname, value);
   value[len] = c;
   grub_register_variable_hook (varname, 0, grub_env_write_readonly);
+  grub_env_export (varname);
 }
 
 static void
@@ -624,12 +626,19 @@ GRUB_MOD_INIT(pxe)
 				   grub_env_write_pxe_default_server);
       grub_register_variable_hook ("pxe_default_gateway", 0,
 				   grub_env_write_pxe_default_gateway);
+      
 
       /* XXX: Is it possible to change IP in PXE?  */
       grub_register_variable_hook ("net_pxe_ip", 0,
 				   grub_env_write_readonly);
       grub_register_variable_hook ("pxe_blksize", 0,
 				   grub_env_write_pxe_blocksize);
+
+      grub_env_export ("pxe_default_server");
+      grub_env_export ("pxe_default_gateway");
+      grub_env_export ("net_pxe_ip");
+      grub_env_export ("pxe_blksize");
+
       grub_disk_dev_register (&grub_pxe_dev);
       grub_fs_register (&grub_pxefs_fs);
     }

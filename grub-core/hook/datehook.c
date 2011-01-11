@@ -86,18 +86,21 @@ grub_read_hook_datetime (struct grub_env_var *var,
 
 GRUB_MOD_INIT(datehook)
 {
-  int i;
+  unsigned i;
 
-  for (i = 0; i < 7; i++)
-    grub_register_variable_hook (grub_datetime_names[i],
-                                 grub_read_hook_datetime, 0);
+  for (i = 0; i < ARRAY_SIZE (grub_datetime_names); i++)
+    {
+      grub_register_variable_hook (grub_datetime_names[i],
+				   grub_read_hook_datetime, 0);
+      grub_env_export (grub_datetime_names[i]);
+    }
 }
 
 GRUB_MOD_FINI(datehook)
 {
-  int i;
+  unsigned i;
 
-  for (i = 0; i < 7; i++)
+  for (i = 0; i < ARRAY_SIZE (grub_datetime_names); i++)
     {
       grub_register_variable_hook (grub_datetime_names[i], 0, 0);
       grub_env_unset (grub_datetime_names[i]);
