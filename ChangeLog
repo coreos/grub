@@ -1,5 +1,10 @@
 2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkfont.c (write_font_pf2): Use appropriate type for data
+	variable. Fixes problem on big endian platforms.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (ieee1275_fb): Disable on sparc.
 	It doesn't work well there.
 
