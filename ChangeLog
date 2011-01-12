@@ -1,3 +1,10 @@
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use alias->path rather than buggy "canon".
+
+	* grub-core/disk/ieee1275/ofdisk.c (ofdisk_hash_add_real): New function.
+	(ofdisk_hash_add): New argument curcan. All users updated.
+
 2011-01-11  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: Fall back to `true' if `makeinfo' does not exist.
