@@ -1,5 +1,11 @@
 2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/00_header.in (load_video): Handle the case when no video
+	drivers available.
+	Thanks to: Axel Beckert.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkfont.c (write_font_pf2): Use appropriate type for data
 	variable. Fixes problem on big endian platforms.
 
