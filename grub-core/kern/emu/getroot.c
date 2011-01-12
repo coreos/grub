@@ -467,7 +467,7 @@ grub_find_device (const char *path, dev_t dev)
 char *
 grub_guess_root_device (const char *dir)
 {
-  char *os_dev;
+  char *os_dev = NULL;
 #ifdef __GNU__
   file_t file;
   mach_port_t *ports;
@@ -526,30 +526,42 @@ grub_guess_root_device (const char *dir)
   mach_port_deallocate (mach_task_self (), file);
 #else /* !__GNU__ */
   struct stat st;
+  dev_t dev;
 
 #ifdef __linux__
-  os_dev = grub_find_root_device_from_mountinfo (dir, NULL);
-  if (os_dev)
-    return os_dev;
+  if (!os_dev)
+    os_dev = grub_find_root_device_from_mountinfo (dir, NULL);
 #endif /* __linux__ */
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
-  os_dev = find_root_device_from_libzfs (dir);
-  if (os_dev)
-    return os_dev;
+  if (!os_dev)
+    os_dev = find_root_device_from_libzfs (dir);
 #endif
 
-  if (stat (dir, &st) < 0)
-    grub_util_error ("cannot stat `%s'", dir);
+  if (os_dev)
+    {
+      if (stat (os_dev, &st) >= 0)
+	dev = st.st_rdev;
+      else
+	grub_util_error ("cannot stat `%s'", os_dev);
+      free (os_dev);
+    }
+  else
+    {
+      if (stat (dir, &st) >= 0)
+	dev = st.st_dev;
+      else
+	grub_util_error ("cannot stat `%s'", dir);
+    }
 
 #ifdef __CYGWIN__
   /* Cygwin specific function.  */
-  os_dev = grub_find_device (dir, st.st_dev);
+  os_dev = grub_find_device (dir, dev);
 
 #else
 
   /* This might be truly slow, but is there any better way?  */
-  os_dev = grub_find_device ("/dev", st.st_dev);
+  os_dev = grub_find_device ("/dev", dev);
 #endif
 #endif /* !__GNU__ */
 
