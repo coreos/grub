@@ -1,5 +1,13 @@
 2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/ofpath.c (grub_util_devname_to_ofpath): Use the
+	realpath'ed device string.
+	Handle floppy (somewhat).
+	Issue error in unknown case rather than garbage.
+	Reported by: Axel Beckert.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/00_header.in (load_video): Handle the case when no video
 	drivers available.
 	Thanks to: Axel Beckert.
