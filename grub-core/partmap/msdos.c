@@ -234,7 +234,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 
   if (end >= *nsectors + 1)
     {
-      int i;
+      unsigned i;
       *nsectors = end - 1;
       *sectors = grub_malloc (*nsectors * sizeof (**sectors));
       if (!*sectors)

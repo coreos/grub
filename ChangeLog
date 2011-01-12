@@ -1,5 +1,13 @@
 2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/context.c (grub_env_context_close): Silence spurious
+	warning.
+	* grub-core/normal/menu.c (grub_menu_execute_entry): Likewise.
+	* grub-core/partmap/msdos.c (pc_partition_map_embed): Use unsigned
+	counter.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use alias->path rather than buggy "canon".
 
 	* grub-core/disk/ieee1275/ofdisk.c (ofdisk_hash_add_real): New function.

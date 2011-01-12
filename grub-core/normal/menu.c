@@ -159,7 +159,7 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
 {
   grub_err_t err = GRUB_ERR_NONE;
   int errs_before;
-  grub_menu_t menu;
+  grub_menu_t menu = NULL;
   char *optr, *buf, *oldchosen = NULL, *olddefault = NULL;
   const char *ptr, *chosen, *def;
   grub_size_t sz = 0;
