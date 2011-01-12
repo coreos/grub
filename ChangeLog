@@ -1,5 +1,10 @@
 2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (ieee1275_fb): Disable on sparc.
+	It doesn't work well there.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/context.c (grub_env_context_close): Silence spurious
 	warning.
 	* grub-core/normal/menu.c (grub_menu_execute_entry): Likewise.
