@@ -364,12 +364,14 @@ grub_cmd_zfs_bootfs (grub_command_t cmd __attribute__ ((unused)), int argc,
   grub_free (nv);
   grub_free (nvlist);
 
-  bootfs = grub_xasprintf ("zfs-bootfs=%s/%llu%s%s%s%s",
+  bootfs = grub_xasprintf ("zfs-bootfs=%s/%llu%s%s%s%s%s%s",
 			   poolname, (unsigned long long) mdnobj,
-			   bootpath ? ",bootpath=" : "",
-			   bootpath ? : "", 
-			   devid ? ",diskdevid=" : "",
-			   devid ? : "");
+			   bootpath ? ",bootpath=\"" : "",
+			   bootpath ? : "",
+			   bootpath ? "\"" : "",
+			   devid ? ",diskdevid=\"" : "",
+			   devid ? : "",
+			   devid ? "\"" : "");
   if (!bootfs)
     return grub_errno;
   if (argc >= 2)

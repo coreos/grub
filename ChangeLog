@@ -1,5 +1,10 @@
 2011-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfsinfo.c (grub_cmd_zfs_bootfs): Quote bootpath and
+	diskdevid.
+
+2011-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix compilation on cygwin.
 
 	* conf/Makefile.common (STRIPFLAGS_KERNEL): Add -F elf32-i386 and
