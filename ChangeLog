@@ -1,3 +1,18 @@
+2011-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix compilation on cygwin.
+
+	* conf/Makefile.common (STRIPFLAGS_KERNEL): Add -F elf32-i386 and
+	-R .drectve on cygwin.
+	* conf/i386-pc-cygwin-img-ld.sc: Merge rdata and pdata into data.
+	* configure.ac: Use $(top_builddir) in TARGET_OBJ2ELF.
+	(COND_CYGWIN): New condition.
+	* grub-core/Makefile.am (%.mod): Set TARGET_OBJ2ELF.
+	* grub-core/genmod.sh.in: Use ${TARGET_OBJ2ELF} and
+	not @TARGET_OBJ2ELF@.
+	* util/grub-pe2elf.c (write_symbol_table): Use pe_symtab->type and not
+	type to determine whether aux is to be used.
+
 2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/ieee1275/ofpath.c (grub_util_devname_to_ofpath): Use the
