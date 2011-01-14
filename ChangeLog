@@ -1,4 +1,9 @@
-2011-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/yeeloong/init.c (grub_machine_init): Init boot
+	module.
+
+2011-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/Makefile.core.def (fwstart): Add lost LDFLAGS.
 
