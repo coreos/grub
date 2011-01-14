@@ -324,6 +324,7 @@ image = {
   name = fwstart;
   mips_yeeloong = boot/mips/yeeloong/fwstart.S;
   objcopyflags = '-O binary';
+  ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_yeeloong;
 };
 
