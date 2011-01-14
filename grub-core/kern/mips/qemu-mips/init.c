@@ -6,9 +6,8 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/time.h>
-#include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
-#include <grub/cpu/kernel.h>
+#include <grub/memory.h>
 
 #define RAMSIZE (*(grub_uint32_t *) ((16 << 20) - 264))
 

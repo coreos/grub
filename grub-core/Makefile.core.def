@@ -48,7 +48,7 @@ kernel = {
   i386_ieee1275_startup = kern/i386/ieee1275/startup.S;
   i386_coreboot_startup = kern/i386/coreboot/startup.S;
   i386_multiboot_startup = kern/i386/coreboot/startup.S;
-  mips_yeeloong_startup = kern/mips/startup.S;
+  mips_startup = kern/mips/startup.S;
   sparc64_ieee1275_startup = kern/sparc64/ieee1275/crt0.S;
   powerpc_ieee1275_startup = kern/powerpc/ieee1275/startup.S;
 
@@ -82,6 +82,7 @@ kernel = {
   i386_coreboot = kern/generic/rtc_get_time_ms.c;
   i386_multiboot = kern/generic/rtc_get_time_ms.c;
   mips_yeeloong = kern/generic/rtc_get_time_ms.c;
+  mips_qemu_mips = kern/generic/rtc_get_time_ms.c;
 
   ieee1275 = disk/ieee1275/ofdisk.c;
   ieee1275 = kern/ieee1275/cmain.c;
@@ -140,10 +141,11 @@ kernel = {
   mips_yeeloong = bus/bonito.c;
   mips_yeeloong = bus/cs5536.c;
   mips_yeeloong = bus/pci.c;
-  mips_yeeloong = kern/mips/cache.S;
-  mips_yeeloong = kern/mips/dl.c;
-  mips_yeeloong = kern/mips/init.c;
+  mips = kern/mips/cache.S;
+  mips = kern/mips/dl.c;
+  mips = kern/mips/init.c;
   mips_yeeloong = kern/mips/yeeloong/init.c;
+  mips_qemu_mips = kern/mips/qemu-mips/init.c;
   mips_yeeloong = term/at_keyboard.c;
   mips_yeeloong = term/serial.c;
   mips_yeeloong = video/sm712.c;
@@ -1229,7 +1231,7 @@ module = {
   mips_yeeloong = mmap/mips/yeeloong/uppermem.c;
 
   enable = x86;
-  enable = mips_yeeloong;
+  enable = mips;
 };
 
 module = {

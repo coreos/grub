@@ -145,6 +145,11 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/lib/arg.h
 endif
 
+if COND_mips_qemu_mips
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
+endif
+
 if COND_powerpc_ieee1275
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h

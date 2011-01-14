@@ -29,8 +29,10 @@
 #include <grub/i18n.h>
 
 /* For frequencies.  */
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
 #include <grub/pci.h>
 #include <grub/machine/time.h>
+#endif
 
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
 /* This can be detected on runtime from PMON, but:
@@ -314,6 +316,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   linux_envp = extra;
   envp_off = (grub_uint8_t *) linux_envp - (grub_uint8_t *) playground;
   linux_envs = (char *) (linux_envp + 5);
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
   grub_snprintf (linux_envs, sizeof ("memsize=XXXXXXXXXXXXXXXXXXXX"),
 		 "memsize=%lld",
 		 (unsigned long long) grub_mmap_get_lower () >> 20);
@@ -338,8 +341,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     + target_addr;
   linux_envs += ALIGN_UP (grub_strlen (linux_envs) + 1, 4);
 
-
   linux_envp[4] = 0;
+#else
+  linux_envp[0] = 0;
+#endif
 
   grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
   initrd_loaded = 0;
