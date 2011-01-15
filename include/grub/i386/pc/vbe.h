@@ -214,15 +214,6 @@ grub_vbe_bios_get_scanline_length (grub_uint32_t *length);
 grub_vbe_status_t 
 grub_vbe_bios_get_display_start (grub_uint32_t *x,
 				 grub_uint32_t *y);
-/* Call VESA BIOS 0x4f11 to get flat panel information, return status.  */
-grub_vbe_status_t
-grub_vbe_bios_get_flat_panel_info (struct grub_vbe_flat_panel_info *flat_panel_info);
-/* Call VESA BIOS 0x4f15 to get DDC availability, return status.  */
-grub_vbe_status_t
-grub_vbe_bios_get_ddc_capabilities (grub_uint8_t *level);
-/* Call VESA BIOS 0x4f15 to read EDID information, return status.  */
-grub_vbe_status_t
-grub_vbe_bios_read_edid (struct grub_video_edid_info *edid_data);
 
 grub_vbe_status_t grub_vbe_bios_getset_dac_palette_width (int set, int *width);
 

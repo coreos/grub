@@ -1,4 +1,4 @@
-2010-12-14  Colin Watson  <cjwatson@ubuntu.com>
+2011-01-15  Colin Watson  <cjwatson@ubuntu.com>
 
 	Preferred resolution detection for VBE.
 
@@ -25,9 +25,6 @@
 	(grub_video_edid_preferred_mode): Likewise.
 	* include/grub/i386/pc/vbe.h (struct grub_vbe_flat_panel_info): New
 	structure.
-	(grub_vbe_bios_get_flat_panel_info): Add prototype.
-	(grub_vbe_bios_get_ddc_capabilities): Likewise.
-	(grub_vbe_bios_read_edid): Likewise.
 
 	* grub-core/commands/videoinfo.c (print_edid): New function.
 	(grub_cmd_videoinfo): Print EDID if available.

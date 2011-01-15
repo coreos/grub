@@ -274,7 +274,7 @@ grub_vbe_bios_get_pm_interface (grub_uint16_t *segment, grub_uint16_t *offset,
 }
 
 /* Call VESA BIOS 0x4f11 to get flat panel information, return status.  */
-grub_vbe_status_t
+static grub_vbe_status_t
 grub_vbe_bios_get_flat_panel_info (struct grub_vbe_flat_panel_info *flat_panel_info)
 {
   struct grub_bios_int_registers regs;
@@ -289,7 +289,7 @@ grub_vbe_bios_get_flat_panel_info (struct grub_vbe_flat_panel_info *flat_panel_i
 }
 
 /* Call VESA BIOS 0x4f15 to get DDC availability, return status.  */
-grub_vbe_status_t
+static grub_vbe_status_t
 grub_vbe_bios_get_ddc_capabilities (grub_uint8_t *level)
 {
   struct grub_bios_int_registers regs;
@@ -307,7 +307,7 @@ grub_vbe_bios_get_ddc_capabilities (grub_uint8_t *level)
 }
 
 /* Call VESA BIOS 0x4f15 to read EDID information, return status.  */
-grub_vbe_status_t
+static grub_vbe_status_t
 grub_vbe_bios_read_edid (struct grub_video_edid_info *edid_info)
 {
   struct grub_bios_int_registers regs;
