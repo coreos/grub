@@ -1,3 +1,8 @@
+2011-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkimage.c (generate_image): Check fwstart.img checksum
+	for safety.
+
 2011-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/mips/yeeloong/init.c (grub_machine_init): Init boot
