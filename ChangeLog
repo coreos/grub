@@ -1,3 +1,7 @@
+2011-01-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Bump version to 1.99~rc1.
+
 2011-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkimage.c (generate_image): Check fwstart.img checksum
