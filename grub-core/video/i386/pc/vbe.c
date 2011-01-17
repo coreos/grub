@@ -405,8 +405,8 @@ grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
   status = grub_vbe_bios_get_flat_panel_info (flat_panel_info);
   if (status == GRUB_VBE_STATUS_OK)
     {
-      *width = flat_panel_info.horizontal_size;
-      *height = flat_panel_info.vertical_size;
+      *width = flat_panel_info->horizontal_size;
+      *height = flat_panel_info->vertical_size;
       return GRUB_ERR_NONE;
     }
 
