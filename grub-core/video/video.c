@@ -394,24 +394,6 @@ grub_video_edid_checksum (struct grub_video_edid_info *edid_info)
 }
 
 grub_err_t
-grub_video_get_edid (struct grub_video_edid_info *edid_info)
-{
-  if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
-
-  if (! grub_video_adapter_active->get_edid)
-    return grub_error (GRUB_ERR_BAD_DEVICE,
-		       "EDID information unavailable for this video mode");
-
-  if (grub_video_adapter_active->get_edid (edid_info) != GRUB_ERR_NONE)
-    return grub_errno;
-  if (grub_video_edid_checksum (edid_info) != GRUB_ERR_NONE)
-    return grub_errno;
-
-  return GRUB_ERR_NONE;
-}
-
-grub_err_t
 grub_video_edid_preferred_mode (struct grub_video_edid_info *edid_info,
 				unsigned int *width, unsigned int *height)
 {

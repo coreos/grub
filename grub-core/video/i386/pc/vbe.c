@@ -378,6 +378,24 @@ grub_vbe_probe (struct grub_vbe_info_block *info_block)
 }
 
 static grub_err_t
+grub_video_vbe_get_edid (struct grub_video_edid_info *edid_info)
+{
+  struct grub_video_edid_info *edid_info_lowmem;
+
+  /* Use low memory scratch area as temporary storage for VESA BIOS calls.  */
+  edid_info_lowmem =
+    (struct grub_video_edid_info *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+  grub_memset (edid_info_lowmem, 0, sizeof (*edid_info_lowmem));
+
+  if (grub_vbe_bios_read_edid (edid_info_lowmem) != GRUB_VBE_STATUS_OK)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "EDID information not available");
+
+  grub_memcpy (edid_info, edid_info_lowmem, sizeof (*edid_info));
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
 {
   grub_vbe_status_t status;
@@ -394,7 +412,8 @@ grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
       && (grub_vbe_bios_get_ddc_capabilities (&ddc_level) & 0xff)
 	 == GRUB_VBE_STATUS_OK)
     {
-      if (grub_video_get_edid (&edid_info) == GRUB_ERR_NONE
+      if (grub_video_vbe_get_edid (&edid_info) == GRUB_ERR_NONE
+	  && grub_video_edid_checksum (&edid_info) == GRUB_ERR_NONE
 	  && grub_video_edid_preferred_mode (&edid_info, width, height)
 	      == GRUB_ERR_NONE)
 	return GRUB_ERR_NONE;
@@ -967,24 +986,6 @@ grub_video_vbe_get_info_and_fini (struct grub_video_mode_info *mode_info,
   grub_free (vbe_mode_list);
   vbe_mode_list = NULL;
   return grub_video_fb_get_info_and_fini (mode_info, framebuf);
-}
-
-static grub_err_t
-grub_video_vbe_get_edid (struct grub_video_edid_info *edid_info)
-{
-  struct grub_video_edid_info *edid_info_lowmem;
-
-  /* Use low memory scratch area as temporary storage for VESA BIOS calls.  */
-  edid_info_lowmem =
-    (struct grub_video_edid_info *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
-  grub_memset (edid_info_lowmem, 0, sizeof (*edid_info_lowmem));
-
-  if (grub_vbe_bios_read_edid (edid_info_lowmem) != GRUB_VBE_STATUS_OK)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "EDID information not available");
-
-  grub_memcpy (edid_info, edid_info_lowmem, sizeof (*edid_info));
-
-  return GRUB_ERR_NONE;
 }
 
 static void
