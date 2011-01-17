@@ -383,7 +383,12 @@ grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
   grub_vbe_status_t status;
   grub_uint8_t ddc_level;
   struct grub_video_edid_info edid_info;
-  struct grub_vbe_flat_panel_info flat_panel_info;
+  struct grub_vbe_flat_panel_info *flat_panel_info;
+
+  /* Use low memory scratch area as temporary storage for VESA BIOS calls.  */
+  flat_panel_info = (struct grub_vbe_flat_panel_info *)
+    (GRUB_MEMORY_MACHINE_SCRATCH_ADDR + sizeof (struct grub_video_edid_info));
+  grub_memset (flat_panel_info, 0, sizeof (*flat_panel_info));
 
   if (controller_info.version >= 0x200
       && (grub_vbe_bios_get_ddc_capabilities (&ddc_level) & 0xff)
@@ -397,7 +402,7 @@ grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
       grub_errno = GRUB_ERR_NONE;
     }
 
-  status = grub_vbe_bios_get_flat_panel_info (&flat_panel_info);
+  status = grub_vbe_bios_get_flat_panel_info (flat_panel_info);
   if (status == GRUB_VBE_STATUS_OK)
     {
       *width = flat_panel_info.horizontal_size;
@@ -967,8 +972,17 @@ grub_video_vbe_get_info_and_fini (struct grub_video_mode_info *mode_info,
 static grub_err_t
 grub_video_vbe_get_edid (struct grub_video_edid_info *edid_info)
 {
-  if (grub_vbe_bios_read_edid (edid_info) != GRUB_VBE_STATUS_OK)
+  struct grub_video_edid_info *edid_info_lowmem;
+
+  /* Use low memory scratch area as temporary storage for VESA BIOS calls.  */
+  edid_info_lowmem =
+    (struct grub_video_edid_info *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+  grub_memset (edid_info_lowmem, 0, sizeof (*edid_info_lowmem));
+
+  if (grub_vbe_bios_read_edid (edid_info_lowmem) != GRUB_VBE_STATUS_OK)
     return grub_error (GRUB_ERR_BAD_DEVICE, "EDID information not available");
+
+  grub_memcpy (edid_info, edid_info_lowmem, sizeof (*edid_info));
 
   return GRUB_ERR_NONE;
 }
