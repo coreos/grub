@@ -147,6 +147,7 @@ kernel = {
   mips_yeeloong = term/at_keyboard.c;
   mips_yeeloong = term/serial.c;
   mips_yeeloong = video/sm712.c;
+  mips_yeeloong = video/sis315pro.c;
   extra_dist = video/sm712_init.c;
   mips_yeeloong = commands/keylayouts.c;
 
