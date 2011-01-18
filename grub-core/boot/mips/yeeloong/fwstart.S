@@ -25,6 +25,9 @@
 #include <grub/cs5536.h>
 #include <grub/smbus.h>
 
+#define GRUB_MACHINE_SERIAL_PORT GRUB_MACHINE_SERIAL_PORT0
+#define GRUB_MACHINE_SERIAL_DIVISOR_115200 GRUB_MACHINE_SERIAL_PORT0_DIVISOR_115200
+
 	.set noreorder
 	.set noat
 	.set nomacro

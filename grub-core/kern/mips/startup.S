@@ -20,6 +20,7 @@
 #include <grub/symbol.h>
 #include <grub/offsets.h>
 #include <grub/machine/memory.h>
+#include <grub/machine/kernel.h>
 #include <grub/offsets.h>
 
 #define BASE_ADDR 8	
@@ -59,6 +60,8 @@ VARIABLE (grub_arch_memsize)
 	.long 0
 VARIABLE (grub_arch_highmemsize)
 	.long 0
+VARIABLE (grub_arch_machine)
+	.long GRUB_ARCH_MACHINE_FULOONG
 #endif
 cont:
 	/* Save our base.  */

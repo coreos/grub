@@ -26,6 +26,9 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 #include <grub/list.h>
+#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#include <grub/machine/kernel.h>
+#endif
 
 #define FOR_SERIAL_PORTS(var) FOR_LIST_ELEMENTS((var), (grub_serial_ports))
 
@@ -296,17 +299,22 @@ grub_serial_register (struct grub_serial_port *port)
   port->term_out = out;
   grub_terminfo_output_register (out, "vt100");
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
-  if (grub_strcmp (port->name, "com0") == 0)
+  if (grub_strcmp (port->name, 
+		   (grub_arch_machine == GRUB_ARCH_MACHINE_YEELOONG)
+		   ? "com0" : "com2") == 0)
     {
       grub_term_register_input_active ("serial_*", in);
       grub_term_register_output_active ("serial_*", out);
     }
   else
-#endif
     {
-      grub_term_register_input ("serial_*", in);
-      grub_term_register_output ("serial_*", out);
+      grub_term_register_input_inactive ("serial_*", in);
+      grub_term_register_output_inactive ("serial_*", out);
     }
+#else
+  grub_term_register_input ("serial_*", in);
+  grub_term_register_output ("serial_*", out);
+#endif
 
   return GRUB_ERR_NONE;
 }

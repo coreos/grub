@@ -252,6 +252,14 @@ grub_term_register_input (const char *name __attribute__ ((unused)),
 }
 
 static inline void
+grub_term_register_input_inactive (const char *name __attribute__ ((unused)),
+				   grub_term_input_t term)
+{
+  grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs_disabled),
+		  GRUB_AS_LIST (term));
+}
+
+static inline void
 grub_term_register_input_active (const char *name __attribute__ ((unused)),
 				 grub_term_input_t term)
 {
@@ -273,6 +281,14 @@ grub_term_register_output (const char *name __attribute__ ((unused)),
 	grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs),
 			GRUB_AS_LIST (term));
     }
+}
+
+static inline void
+grub_term_register_output_inactive (const char *name __attribute__ ((unused)),
+				    grub_term_output_t term)
+{
+  grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs_disabled),
+		  GRUB_AS_LIST (term));
 }
 
 static inline void
