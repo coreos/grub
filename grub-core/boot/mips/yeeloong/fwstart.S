@@ -21,6 +21,7 @@
 #include <grub/mips/loongson.h>
 #include <grub/pci.h>
 #include <grub/machine/serial.h>
+#include <grub/machine/kernel.h>
 #include <grub/ns8250.h>
 #include <grub/cs5536.h>
 #include <grub/smbus.h>
@@ -629,6 +630,6 @@ continue:
 	lui $t0, %hi(cached_continue - 0x20000000)
 	addiu $t0, $t0, %lo(cached_continue - 0x20000000)
 	jr $t0
-	 addiu $a2, $zero, -1
+	 addiu $a2, $zero, -(1 + GRUB_ARCH_MACHINE_YEELOONG)
 
 cached_continue:

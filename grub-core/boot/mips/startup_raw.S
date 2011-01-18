@@ -20,6 +20,7 @@
 #include <grub/symbol.h>
 #include <grub/offsets.h>
 #include <grub/machine/memory.h>
+#include <grub/machine/kernel.h>
 #include <grub/offsets.h>
 
 #define BASE_ADDR 8
@@ -54,10 +55,12 @@ codestart:
 	move $s3, $zero
 	move $s4, $zero
 	move $s5, $zero
+	move $s7, $zero
 
 	/* $a2 has the environment.  */
-	addiu $t0, $a2, 1
-	beq $t0, $zero, argdone
+	addiu $t0, $zero, -0x10
+	and $t1, $a2, $t0
+	beq $t0, $t1, argfw
 	 nop
 	move $t0, $a2	
 argcont:	
@@ -72,11 +75,19 @@ argcont:
 	 nop		  ;\
 	b 2f;\
 	 move reg, $v0;	 \
-1:	
+1:
+#define DO_CHECKT1(str, val)				 \
+	move $t6, $t1					;\
+	addiu $t7, $s0, (str - base);\
+	bal do_check				       ;\
+	 li $t2, val
+
 	DO_PARSE (busclockstr, $s2)
 	DO_PARSE (cpuclockstr, $s3)
 	DO_PARSE (memsizestr, $s4)
 	DO_PARSE (highmemsizestr, $s5)
+	DO_CHECKT1 (pmon_yeeloong_verstr, GRUB_ARCH_MACHINE_YEELOONG)
+	DO_CHECKT1 (pmon_fuloong_verstr, GRUB_ARCH_MACHINE_FULOONG)
 2:	
 	b argcont
 	 addiu $t0, $t0, 4	 
@@ -120,8 +131,47 @@ busclockstr:	.asciiz "busclock="
 cpuclockstr:	.asciiz "cpuclock="
 memsizestr:	.asciiz "memsize="
 highmemsizestr:	.asciiz "highmemsize="
+machtype_yeeloong_str1:	.asciiz "machtype=8.9"
+machtype_yeeloong_str2:	.asciiz "machtype=lemote-yeeloong-"
+machtype_fuloong_str:	.asciiz "machtype=lemote-fuloong-"
+pmon_yeeloong_str:	.asciiz "PMON_VER=LM8"
+pmon_fuloong_str:	.asciiz "PMON_VER=LM6"
+pmon_yeeloong_verstr:	.asciiz "Version=LM8"
+pmon_fuloong_verstr:	.asciiz "Version=LM6"
 	.p2align 2
+
 argdone:
+	beq $a0, $zero, cmdlinedone
+	 nop
+#define DO_CHECKA1(str, val)				 \
+	lw $t6, 0($a1)					;\
+	addiu $t7, $s0, (str - base);\
+	bal do_check				       ;\
+	 li $t2, val
+	DO_CHECKA1 (machtype_yeeloong_str1, GRUB_ARCH_MACHINE_YEELOONG)
+	DO_CHECKA1 (machtype_yeeloong_str2, GRUB_ARCH_MACHINE_YEELOONG)
+	DO_CHECKA1 (pmon_yeeloong_str, GRUB_ARCH_MACHINE_YEELOONG)
+	DO_CHECKA1 (machtype_fuloong_str, GRUB_ARCH_MACHINE_FULOONG)
+	DO_CHECKA1 (pmon_fuloong_str, GRUB_ARCH_MACHINE_FULOONG)
+	addiu $a0, $a0, -1
+	b argdone
+  	 addiu $a1, $a1, 4
+do_check:
+	lb $t4, 0($t7)
+	beq $t4, $zero, 1f
+	 lb $t3, 0($t6)
+	bne $t3, $t4, 2f
+	 addiu $t6, $t6, 1
+	b do_check
+	 addiu $t7, $t7, 1
+1:
+	move $s7, $t2
+2:
+	jr $ra
+	 nop
+argfw:
+	not $s7, $a2
+cmdlinedone:	
 #endif
 	/* Copy the decompressor. */
 	lui $t1, %hi(base)

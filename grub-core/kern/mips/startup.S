@@ -74,6 +74,7 @@ cont:
 	sw $s3, 4($t1)
 	sw $s4, 8($t1)
 	sw $s5, 12($t1)
+	sw $s7, 16($t1)
 #endif
 
 	/* Move the modules out of BSS.  */
