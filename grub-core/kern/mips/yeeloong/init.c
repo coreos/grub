@@ -208,11 +208,9 @@ grub_machine_init (void)
   grub_font_init ();
   grub_gfxterm_init ();
 
+  grub_keylayouts_init ();
   if (grub_arch_machine == GRUB_ARCH_MACHINE_YEELOONG)
-    {
-      grub_keylayouts_init ();
-      grub_at_keyboard_init ();
-    }
+    grub_at_keyboard_init ();
 
   grub_terminfo_init ();
   grub_serial_init ();
