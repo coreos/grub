@@ -226,10 +226,28 @@ grub_machine_fini (void)
 void
 grub_halt (void)
 {
-  grub_outb (grub_inb (GRUB_CPU_LOONGSON_GPIOCFG)
-	     & ~GRUB_CPU_LOONGSON_SHUTDOWN_GPIO, GRUB_CPU_LOONGSON_GPIOCFG);
-
-  grub_millisleep (1500);
+  switch (grub_arch_machine)
+    {
+    case GRUB_ARCH_MACHINE_FULOONG:
+      {
+	grub_pci_device_t dev;
+	grub_port_t p;
+	if (grub_cs5536_find (&dev))
+	  {
+	    p = (grub_cs5536_read_msr (dev, GRUB_CS5536_MSR_GPIO_BAR)
+		 & GRUB_CS5536_LBAR_ADDR_MASK) + GRUB_MACHINE_PCI_IO_BASE;
+	    grub_outl ((1 << 13), p + 4);
+	    grub_outl ((1 << 29), p);
+	    grub_millisleep (5000);
+	  }
+      }
+      break;
+    case GRUB_ARCH_MACHINE_YEELOONG:
+      grub_outb (grub_inb (GRUB_CPU_LOONGSON_GPIOCFG)
+		 & ~GRUB_CPU_YEELOONG_SHUTDOWN_GPIO, GRUB_CPU_LOONGSON_GPIOCFG);
+      grub_millisleep (1500);
+      break;
+    }
 
   grub_printf ("Shutdown failed\n");
   grub_refresh ();
