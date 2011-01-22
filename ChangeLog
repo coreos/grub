@@ -1,3 +1,9 @@
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/raid.c (insert_array): Ensure uniqueness of p->number
+	even if some elements have a name.
+	Reported by: Alexander GQ Gerasiov.
+
 2011-01-22  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Consider a
