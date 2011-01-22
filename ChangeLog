@@ -1,3 +1,8 @@
+2011-01-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Simple configuration): Document
+	GRUB_PRELOAD_MODULES.
+
 2011-01-17  Colin Watson  <cjwatson@ubuntu.com>
 
 	* .bzrignore: Remove nonexistent grub-pbkdf2.

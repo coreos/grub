@@ -1181,6 +1181,11 @@ directly to @ref{play}.
 If this option is set, GRUB will issue a @ref{badram} command to filter
 out specified regions of RAM.
 
+@item GRUB_PRELOAD_MODULES
+This option may be set to a list of GRUB module names separated by spaces.
+Each module will be loaded as early as possible, at the start of
+@file{grub.cfg}.
+
 @end table
 
 For more detailed customisation of @command{grub-mkconfig}'s output, you may
