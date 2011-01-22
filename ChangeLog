@@ -1,5 +1,9 @@
 2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/bonito.c (write_bases): Fix direction of the shift.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/partmap/bsdlabel.c: Include grub/emu/misc.h and not grub/util/misc.h.
 	(iterate_real): Don't rely on partition being non-NULL.
 

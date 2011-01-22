@@ -38,7 +38,7 @@ write_bases (void)
   for (i = 0; i < GRUB_MACHINE_PCI_NUM_WIN; i++) 
     reg |= (((base_win[i] >> GRUB_MACHINE_PCI_WIN_SHIFT) 
 	     & GRUB_MACHINE_PCI_WIN_MASK) 
-	    >> (i * GRUB_MACHINE_PCI_WIN_MASK_SIZE));
+	    << (i * GRUB_MACHINE_PCI_WIN_MASK_SIZE));
   GRUB_MACHINE_PCI_IO_CTRL_REG = reg;
 }
 
