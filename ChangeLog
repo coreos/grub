@@ -1,5 +1,10 @@
 2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/bsdlabel.c: Include grub/emu/misc.h and not grub/util/misc.h.
+	(iterate_real): Don't rely on partition being non-NULL.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/argv.c (round_up_exp): unsigned is 32-bit on all
 	supported platforms. Put a compile time assert for this rather than
 	generate a warning with 32-bit shift.
