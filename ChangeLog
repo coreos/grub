@@ -1,3 +1,7 @@
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/getroot.c: Include config-util.h explicitly.
+
 2011-01-22  Anthony DeRobertis <anthony@derobert.net>
 
 	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Check
