@@ -1,5 +1,12 @@
 2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Ignore install device on platforms
+	where it doesn't make sense. Always use UUIDs except on pc, efi and
+	sparc64.
+	Reported by: Daniel Kahn Gillmor.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/bonito.c (write_bases): Fix direction of the shift.
 
 2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
