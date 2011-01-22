@@ -1,5 +1,10 @@
 2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/scsi.c (grub_scsi_read): Fix binary and check and make
+	logical expression more readable.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/raid.c (insert_array): Ensure uniqueness of p->number
 	even if some elements have a name.
 	Reported by: Alexander GQ Gerasiov.
