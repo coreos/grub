@@ -1,3 +1,8 @@
+2011-01-22  Anthony DeRobertis <anthony@derobert.net>
+
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Check
+	super_offset field.
+
 2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.in: Ignore install device on platforms
