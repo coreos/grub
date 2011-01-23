@@ -43,17 +43,18 @@ __start:
 	/* $t4 chooses device in priority encoding.  */
 	/* Resulting value is kept in GRUB_MACHINE_PCI_CONF_CTRL_REG.
 	   This way we don't need to sacrifice a register for it.  */
+retry_cs5536:	
 	/* We have only one bus (0). Function is 0.  */
 	lui $t0, %hi(GRUB_MACHINE_PCI_CONF_CTRL_REG_ADDR)
 	lui $t1, %hi(GRUB_MACHINE_PCI_CONFSPACE)
 	lui $t3, %hi(GRUB_CS5536_PCIID)
 	addiu $t3, $t3, %lo(GRUB_CS5536_PCIID)
 	ori $t4, $zero, 1
-	lui $a0, %hi(no_cs5536)
 1:
 	andi $t4, $t4, ((1 << GRUB_PCI_NUM_DEVICES) - 1)
-	beql  $t4, $zero, fatal
-	 addiu $a0, $a0, %lo(no_cs5536)
+	/* In case of failure try again. CS5536 may be slow to come up.  */
+	beql  $t4, $zero, retry_cs5536
+	 nop
 	sw   $t4, %lo(GRUB_MACHINE_PCI_CONF_CTRL_REG_ADDR) ($t0)
 	lw   $t2, (%lo(GRUB_MACHINE_PCI_CONFSPACE) + GRUB_PCI_REG_PCI_ID) ($t1)
 	bnel  $t2, $t3, 1b
@@ -383,7 +384,6 @@ read_spd_fail:
 	 ori $v0, $v0, 0x100
 
 notification_string:	.asciz "GRUB "
-no_cs5536:	.asciz "No CS5536 found.\n\r"
 cs5536_found:	.asciz "CS5536 at "
 sm_failed: .asciz "SM transaction failed.\n\r"
 unhandled_tlb_refill:	.asciz "Unhandled TLB refill.\n\r"
