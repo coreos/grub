@@ -726,6 +726,10 @@ continue:
 	lui $t0, %hi(cached_continue - 0x20000000)
 	addiu $t0, $t0, %lo(cached_continue - 0x20000000)
 	jr $t0
+#ifdef FULOONG
+	 addiu $a2, $zero, -(1 + GRUB_ARCH_MACHINE_FULOONG)
+#else
 	 addiu $a2, $zero, -(1 + GRUB_ARCH_MACHINE_YEELOONG)
+#endif
 
 cached_continue:
