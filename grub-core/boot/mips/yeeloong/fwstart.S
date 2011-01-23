@@ -65,7 +65,6 @@ retry_cs5536:
 	bal printhex
 	 move $a0, $t4
 
-	/* Initialise SMBus controller.  */
 	lui $t0, %hi(GRUB_MACHINE_PCI_CONFSPACE)
 	li  $t1, GRUB_CS5536_MSR_MAILBOX_CONFIG_ENABLED
 	sw  $t1, (%lo(GRUB_MACHINE_PCI_CONFSPACE) + GRUB_CS5536_MSR_MAILBOX_CONFIG) ($t0)
@@ -79,6 +78,10 @@ retry_cs5536:
 	 ori $a2, $zero, ((GRUB_CS5536_LBAR_MASK_MASK \
 	                  | GRUB_CS5536_LBAR_ENABLE) >> 32)
 
+	bal gpio_init
+	 nop
+
+	/* Initialise SMBus controller.  */
 	/* Set SMBUS LBAR.  */
 	lui $a0, %hi(GRUB_CS5536_MSR_SMB_BAR)
 	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_SMB_BAR)
@@ -91,14 +94,6 @@ retry_cs5536:
 	lui $a0, %hi(smbus_enabled)
 	bal message
 	  addiu $a0, $a0, %lo(smbus_enabled)
-
-	/* Enable SMBus controller pins.  */
-	lui $t0, %hi(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO)
-	ori $t1, $zero, GRUB_GPIO_SMBUS_PINS
-	sw  $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO + GRUB_GPIO_REG_OUT_EN) ($t0)
-	sw  $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO + GRUB_GPIO_REG_OUT_AUX1) ($t0)
-	sw  $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO + GRUB_GPIO_REG_IN_EN) ($t0)
-	sw  $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO + GRUB_GPIO_REG_IN_AUX1) ($t0)
 
 	lui $t0, %hi(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_SMBUS)
 
@@ -214,6 +209,24 @@ other_exception:
 	lui $a0, %hi(unhandled_exception)
 	b fatal
 	 addiu $a0, $a0, %lo(unhandled_exception)
+
+gpio_init:
+	lui $t0, %hi(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO)
+	addiu  $t0, $t0, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO)
+	lui $t1, %hi (gpio_dump)
+	addiu $t1, $t1, %lo (gpio_dump)
+
+1:	
+	lw $t2, 0($t1)
+	sw $t2, 0($t0)
+	addiu $t0, $t0, 4
+	addiu $t1, $t1, 4
+	lui $t2, %hi (gpio_dump_end)
+	addiu $t2, $t2, %lo (gpio_dump_end)
+	bne $t1, $t2, 1b
+	 nop
+	jr $ra
+	 nop
 
 	/* Same as similarly named C function but in asm since
 	   we need it early.  */
@@ -433,6 +446,45 @@ regdump:
 	.quad 0 /* 1a */
 	.quad 0 /* 1b */
 	.quad 0 /* 1c */
+
+/* Dump of GPIO connections. FIXME: Remove useless and macroify.  */
+gpio_dump:
+#ifdef FULOONG
+	.long 0xffff0000, 0x2eefd110, 0xffff0000, 0xffff0000
+	.long 0x2eefd110, 0xffff0000, 0x1000efff, 0xefff1000
+	.long 0x3df3c20c, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0x7df3820c, 0x3df3c20c, 0xffff0000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0x3de3c21c, 0x3d83c27c
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0xffff0000, 0xffff0000, 0x0000ffff, 0xffff0000
+	.long 0xefff1000, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0xefff1000, 0xefff1000, 0xffff0000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0xefff1000, 0xefff1000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+#else
+	.long 0xffff0000, 0x2ffdd002, 0xffff0000, 0xffff0000
+	.long 0x2fffd000, 0xffff0000, 0x1000efff, 0xefff1000
+	.long 0x3ffbc004, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0x3ffbc004, 0x3ffbc004, 0xffff0000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0x3ffbc004, 0x3f9bc064
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0xffff0000, 0xffff0000, 0x0000ffff, 0xffff0000
+	.long 0xefff1000, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0xefff1000, 0xefff1000, 0xffff0000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0xefff1000, 0xffff0000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x50000000, 0x00000000, 0x00000000
+#endif
+gpio_dump_end:	
 
 	.p2align
 
