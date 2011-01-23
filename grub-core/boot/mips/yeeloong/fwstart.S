@@ -124,7 +124,7 @@ __start:
 	ori $t0, $zero, GRUB_SMBUS_SPD_MEMORY_TYPE_DDR2
 	lui $a0, %hi(unimplemented_memory_type)
 	bne $t0, $v0, fatal
-	 addiu $a0, $a0, %hi(unimplemented_memory_type)
+	 addiu $a0, $a0, %lo(unimplemented_memory_type)
 
 	/* And here is our goal: DDR2 controller initialisation.  */
         lui	$t0, %hi(GRUB_CPU_LOONGSON_CORECFG)
