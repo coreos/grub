@@ -66,6 +66,10 @@ retry_cs5536:
 	 move $a0, $t4
 
 	/* Initialise SMBus controller.  */
+	lui $t0, %hi(GRUB_MACHINE_PCI_CONFSPACE)
+	li  $t1, GRUB_CS5536_MSR_MAILBOX_CONFIG_ENABLED
+	sw  $t1, (%lo(GRUB_MACHINE_PCI_CONFSPACE) + GRUB_CS5536_MSR_MAILBOX_CONFIG) ($t0)
+	
 	/* Set GPIO LBAR.  */
 	lui $a0, %hi(GRUB_CS5536_MSR_GPIO_BAR)
 	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_GPIO_BAR)
