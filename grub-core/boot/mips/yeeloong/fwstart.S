@@ -26,8 +26,13 @@
 #include <grub/cs5536.h>
 #include <grub/smbus.h>
 
+#ifdef FULOONG
+#define GRUB_MACHINE_SERIAL_PORT GRUB_MACHINE_SERIAL_PORT2
+#define GRUB_MACHINE_SERIAL_DIVISOR_115200 GRUB_MACHINE_SERIAL_PORT2_DIVISOR_115200
+#else
 #define GRUB_MACHINE_SERIAL_PORT GRUB_MACHINE_SERIAL_PORT0
 #define GRUB_MACHINE_SERIAL_DIVISOR_115200 GRUB_MACHINE_SERIAL_PORT0_DIVISOR_115200
+#endif
 
 	.set noreorder
 	.set noat
@@ -37,8 +42,14 @@
 start:
 _start:
 __start:	
+	/* Put serial init as soon as possible.  But on Fuloong serial is past
+	   Geode, so on Fuloong we need Geode first.
+	*/
+#ifndef FULOONG
 	bal serial_hw_init
 	 nop
+#endif
+
 	/* Find CS5536 controller.  */
 	/* $t4 chooses device in priority encoding.  */
 	/* Resulting value is kept in GRUB_MACHINE_PCI_CONF_CTRL_REG.
@@ -60,10 +71,12 @@ retry_cs5536:
 	bnel  $t2, $t3, 1b
 	 sll $t4, $t4, 1
 
+#ifndef FULOONG
 	bal message
 	 addiu $a0, $a0, %lo(cs5536_found)
 	bal printhex
 	 move $a0, $t4
+#endif
 
 	lui $t0, %hi(GRUB_MACHINE_PCI_CONFSPACE)
 	li  $t1, GRUB_CS5536_MSR_MAILBOX_CONFIG_ENABLED
@@ -80,6 +93,11 @@ retry_cs5536:
 
 	bal gpio_init
 	 nop
+
+#ifdef FULOONG
+	bal serial_hw_init
+	 nop
+#endif
 
 	/* Initialise SMBus controller.  */
 	/* Set SMBUS LBAR.  */
@@ -230,8 +248,29 @@ gpio_init:
 
 	/* Same as similarly named C function but in asm since
 	   we need it early.  */
-	/* In: none. Out: none. Clobbered: $t0, $t1, $a0.  */
+	/* In: none. Out: none. Clobbered: $t0, $t1, $t2, $a0, $a1, $a2.  */
 serial_hw_init:
+	move $t2, $ra
+#ifdef FULOONG
+	lui $a0, %hi(GRUB_CS5536_MSR_DIVIL_LEG_IO)
+	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_DIVIL_LEG_IO)
+	li $a1, 0x04570003
+	bal wrmsr
+	 move $a2, $zero
+
+	lui $a0, %hi(GRUB_CS5536_MSR_DIVIL_UART1_CONF)
+	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_DIVIL_UART1_CONF)
+	li $a1, 2
+	bal wrmsr
+	 move $a2, $zero
+
+	lui $a0, %hi(GRUB_CS5536_MSR_DIVIL_UART2_CONF)
+	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_DIVIL_UART2_CONF)
+	li $a1, 2
+	bal wrmsr
+	 move $a2, $zero
+#endif
+	
 	lui $t0, %hi (GRUB_MACHINE_SERIAL_PORT)
 
 	/* Turn off the interrupt.  */
@@ -261,6 +300,7 @@ serial_hw_init:
 	/* Let message return to original caller.  */
 	lui  $a0, %hi(notification_string)
 	addiu $a0, $a0, %lo(notification_string)
+	move $ra, $t2
 
 	/* Print message on serial console.  */
 	/* In: $a0 = asciiz message. Out: none. Clobbered: $t0, $t1, $a0.  */
