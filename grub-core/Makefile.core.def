@@ -329,6 +329,14 @@ image = {
   enable = mips_yeeloong;
 };
 
+image = {
+  name = fwstart_fuloong;
+  mips_yeeloong = boot/mips/yeeloong/fuloong.S;
+  objcopyflags = '-O binary';
+  ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
+  enable = mips_yeeloong;
+};
+
 module = {
   name = trig;
   common_nodist = trigtables.c;

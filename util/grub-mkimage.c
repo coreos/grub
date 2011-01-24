@@ -58,14 +58,15 @@ typedef enum {
 
 struct image_target_desc
 {
-  const char *name;
+  const char *dirname;
+  const char *names[6];
   grub_size_t voidp_sizeof;
   int bigendian;
   enum {
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
     IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
     IMAGE_YEELOONG_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
-    IMAGE_I386_PC_PXE
+    IMAGE_FULOONG_FLASH, IMAGE_I386_PC_PXE
   } id;
   enum
     {
@@ -92,7 +93,8 @@ struct image_target_desc
 struct image_target_desc image_targets[] =
   {
     {
-      .name = "i386-coreboot",
+      .dirname = "i386-coreboot",
+      .names = { "i386-coreboot", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_COREBOOT,
@@ -114,7 +116,8 @@ struct image_target_desc image_targets[] =
       .mod_align = GRUB_KERNEL_I386_COREBOOT_MOD_ALIGN
     },
     {
-      .name = "i386-multiboot",
+      .dirname = "i386-multiboot",
+      .names = { "i386-multiboot", NULL},
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_COREBOOT,
@@ -136,7 +139,8 @@ struct image_target_desc image_targets[] =
       .mod_align = GRUB_KERNEL_I386_COREBOOT_MOD_ALIGN
     },
     {
-      .name = "i386-pc",
+      .dirname = "i386-pc",
+      .names = { "i386-pc", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_I386_PC, 
@@ -154,7 +158,8 @@ struct image_target_desc image_targets[] =
       .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
     },
     {
-      .name = "i386-pc-pxe",
+      .dirname = "i386-pc",
+      .names = { "i386-pc-pxe", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_I386_PC_PXE, 
@@ -172,7 +177,8 @@ struct image_target_desc image_targets[] =
       .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
     },
     {
-      .name = "i386-efi",
+      .dirname = "i386-efi",
+      .names = { "i386-efi", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_EFI,
@@ -194,7 +200,8 @@ struct image_target_desc image_targets[] =
       .install_bsd_part = TARGET_NO_FIELD,
     },
     {
-      .name = "i386-ieee1275",
+      .dirname = "i386-ieee1275",
+      .names = { "i386-ieee1275", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_I386_IEEE1275, 
@@ -216,7 +223,8 @@ struct image_target_desc image_targets[] =
       .link_align = 4,
     },
     {
-      .name = "i386-qemu",
+      .dirname = "i386-qemu",
+      .names = { "i386-qemu", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_QEMU, 
@@ -234,7 +242,8 @@ struct image_target_desc image_targets[] =
       .link_addr = GRUB_KERNEL_I386_QEMU_LINK_ADDR
     },
     {
-      .name = "x86_64-efi",
+      .dirname = "x86_64-efi",
+      .names = { "x86_64-efi", NULL },
       .voidp_sizeof = 8,
       .bigendian = 0, 
       .id = IMAGE_EFI, 
@@ -256,7 +265,8 @@ struct image_target_desc image_targets[] =
       .install_bsd_part = TARGET_NO_FIELD,
     },
     {
-      .name = "mipsel-yeeloong-flash",
+      .dirname = "mipsel-yeeloong",
+      .names = { "mipsel-yeeloong-flash", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_YEELOONG_FLASH, 
@@ -277,7 +287,31 @@ struct image_target_desc image_targets[] =
       .default_compression = COMPRESSION_NONE
     },
     {
-      .name = "mipsel-yeeloong-elf",
+      .dirname = "mipsel-yeeloong",
+      .names = { "mipsel-fuloong-flash", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_FULOONG_FLASH, 
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END,
+      .raw_size = 0,
+      .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_MIPS_YEELOONG_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
+    },
+    {
+      .dirname = "mipsel-yeeloong",
+      .names = { "mipsel-loongson-elf", "mipsel-yeeloong-elf",
+		 "mipsel-fuloong-elf", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_YEELOONG_ELF, 
@@ -298,7 +332,8 @@ struct image_target_desc image_targets[] =
       .default_compression = COMPRESSION_NONE
     },
     {
-      .name = "powerpc-ieee1275",
+      .dirname = "powerpc-ieee1275",
+      .names = { "powerpc-ieee1275", NULL },
       .voidp_sizeof = 4,
       .bigendian = 1,
       .id = IMAGE_PPC, 
@@ -320,7 +355,8 @@ struct image_target_desc image_targets[] =
       .link_align = 4
     },
     {
-      .name = "sparc64-ieee1275-raw",
+      .dirname = "sparc64-ieee1275",
+      .names = { "sparc64-ieee1275-raw", NULL },
       .voidp_sizeof = 8,
       .bigendian = 1, 
       .id = IMAGE_SPARC64_RAW,
@@ -338,7 +374,8 @@ struct image_target_desc image_targets[] =
       .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
     },
     {
-      .name = "sparc64-ieee1275-aout",
+      .dirname = "sparc64-ieee1275",
+      .names = { "sparc64-ieee1275-aout", NULL },
       .voidp_sizeof = 8,
       .bigendian = 1,
       .id = IMAGE_SPARC64_AOUT,
@@ -1163,6 +1200,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       }
       break;
     case IMAGE_YEELOONG_FLASH:
+    case IMAGE_FULOONG_FLASH:
     {
       char *rom_img;
       size_t rom_size;
@@ -1170,20 +1208,40 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       size_t boot_size;
       grub_uint8_t context[GRUB_MD_SHA512->contextsize];
       /* fwstart.img is the only part which can't be testes by using *-elf
-	 target. Check it against the checksum. This checksum is obtained with
-	 sha512sum utility after compiling on Gnewsense.
-      */
-      const grub_uint8_t fwstart_good_hash[] = 
-	{ 0x75, 0xbf, 0xa3, 0x0e, 0x7c, 0xd1, 0x03, 0x82,
-	  0xe1, 0x34, 0x55, 0xd7, 0x09, 0x1e, 0x6c, 0xcc,
-	  0xef, 0x08, 0x61, 0xc1, 0x3c, 0xd8, 0xc7, 0x9f,
-	  0xe8, 0x2d, 0x3d, 0xb2, 0xda, 0x41, 0xd3, 0x83,
-	  0xd7, 0xb8, 0xe3, 0xd7, 0x13, 0xec, 0x9b, 0xf6,
-	  0xf6, 0xae, 0x6b, 0x32, 0x29, 0xc1, 0x69, 0x82,
-	  0xfa, 0x65, 0x2d, 0x97, 0x3e, 0x83, 0x6e, 0x6c,
-	  0xce, 0x34, 0x10, 0x59, 0x74, 0x0e, 0x96, 0x26 };
-      
-      boot_path = grub_util_get_path (dir, "fwstart.img");
+	 target. Check it against the checksum. */
+      /* Wasn't retested after important changes. */
+      const grub_uint8_t yeeloong_fwstart_good_hash[512 / 8] = 
+	{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+      /* None yet. */
+      const grub_uint8_t fuloong_fwstart_good_hash[512 / 8] = 
+	{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	};
+      const grub_uint8_t *fwstart_good_hash;
+            
+      if (image_target->id == IMAGE_FULOONG_FLASH)
+	{
+	  fwstart_good_hash = fuloong_fwstart_good_hash;
+	  boot_path = grub_util_get_path (dir, "fwstart_fuloong.img");
+	}
+      else
+	{
+	  fwstart_good_hash = yeeloong_fwstart_good_hash;
+	  boot_path = grub_util_get_path (dir, "fwstart.img");
+	}
       boot_size = grub_util_get_image_size (boot_path);
       boot_img = grub_util_read_image (boot_path);
 
@@ -1403,12 +1461,12 @@ usage (int status)
       char *ptr;
       unsigned i;
       for (i = 0; i < ARRAY_SIZE (image_targets); i++)
-	format_len += strlen (image_targets[i].name) + 2;
+	format_len += strlen (image_targets[i].names[0]) + 2;
       ptr = formats = xmalloc (format_len);
       for (i = 0; i < ARRAY_SIZE (image_targets); i++)
 	{
-	  strcpy (ptr, image_targets[i].name);
-	  ptr += strlen (image_targets[i].name);
+	  strcpy (ptr, image_targets[i].names[0]);
+	  ptr += strlen (image_targets[i].names[0]);
 	  *ptr++ = ',';
 	  *ptr++ = ' ';
 	}
@@ -1478,10 +1536,12 @@ main (int argc, char *argv[])
 
 	  case 'O':
 	    {
-	      unsigned i;
+	      unsigned i, j;
 	      for (i = 0; i < ARRAY_SIZE (image_targets); i++)
-		if (strcmp (optarg, image_targets[i].name) == 0)
-		  image_target = &image_targets[i];
+		for (j = 0; image_targets[i].names[j]
+		       && j < ARRAY_SIZE (image_targets[i].names); j++)
+		  if (strcmp (optarg, image_targets[i].names[j]) == 0)
+		    image_target = &image_targets[i];
 	      if (!image_target)
 		{
 		  printf ("unknown target format %s\n", optarg);
@@ -1576,19 +1636,11 @@ main (int argc, char *argv[])
 
   if (!dir)
     {
-      const char *last;
-      last = strchr (image_target->name, '-');
-      if (last)
-	last = strchr (last + 1, '-');
-      if (!last)
-	last = image_target->name + strlen (image_target->name);
-      dir = xmalloc (sizeof (GRUB_PKGLIBROOTDIR) + (last - image_target->name)
-		     + 1);
+      dir = xmalloc (sizeof (GRUB_PKGLIBROOTDIR)
+		     + grub_strlen (image_target->dirname) + 1);
       memcpy (dir, GRUB_PKGLIBROOTDIR, sizeof (GRUB_PKGLIBROOTDIR) - 1);
       *(dir + sizeof (GRUB_PKGLIBROOTDIR) - 1) = '/';
-      memcpy (dir + sizeof (GRUB_PKGLIBROOTDIR), image_target->name,
-	      last - image_target->name);
-      *(dir + sizeof (GRUB_PKGLIBROOTDIR) + (last - image_target->name)) = 0;
+      strcpy (dir + sizeof (GRUB_PKGLIBROOTDIR), image_target->dirname);
     }
 
   generate_image (dir, prefix ? : DEFAULT_DIRECTORY, fp,
