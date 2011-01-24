@@ -21,6 +21,7 @@
 #include <grub/pci.h>
 #include <grub/time.h>
 #include <grub/ata.h>
+#include <grub/machine/kernel.h>
 
 int
 grub_cs5536_find (grub_pci_device_t *devp)
@@ -264,11 +265,25 @@ grub_cs5536_init_geode (grub_pci_device_t dev)
 			 GRUB_CS5536_LBAR_TURN_ON | GRUB_CS5536_LBAR_PM);
 
   /* Setup DIVIL.  */
-  grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_LEG_IO,
-			 GRUB_CS5536_MSR_DIVIL_LEG_IO_MODE_X86
-			 | GRUB_CS5536_MSR_DIVIL_LEG_IO_F_REMAP
-			 | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE0
-			 | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE1);
+  switch (grub_arch_machine)
+    {
+    case GRUB_ARCH_MACHINE_YEELOONG:
+      grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_LEG_IO,
+			     GRUB_CS5536_MSR_DIVIL_LEG_IO_MODE_X86
+			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_F_REMAP
+			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE0
+			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE1);
+      break;
+    case GRUB_ARCH_MACHINE_FULOONG:
+      grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_LEG_IO,
+			     GRUB_CS5536_MSR_DIVIL_LEG_IO_UART2_COM3
+			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_UART1_COM1
+			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_MODE_X86
+			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_F_REMAP
+			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE0
+			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE1);
+      break;
+    }
   grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_IRQ_MAPPER_PRIMARY_MASK,
 			 (~GRUB_CS5536_DIVIL_LPC_INTERRUPTS) & 0xffff);
   grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_IRQ_MAPPER_LPC_MASK,

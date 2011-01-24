@@ -254,7 +254,12 @@ serial_hw_init:
 #ifdef FULOONG
 	lui $a0, %hi(GRUB_CS5536_MSR_DIVIL_LEG_IO)
 	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_DIVIL_LEG_IO)
-	li $a1, 0x04570003
+	li $a1, (GRUB_CS5536_MSR_DIVIL_LEG_IO_UART2_COM3    \
+	         | GRUB_CS5536_MSR_DIVIL_LEG_IO_F_REMAP	    \
+	         | GRUB_CS5536_MSR_DIVIL_LEG_IO_MODE_X86    \
+	         | GRUB_CS5536_MSR_DIVIL_LEG_IO_UART1_COM1  \
+	         | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE0 \
+		 | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE1)
 	bal wrmsr
 	 move $a2, $zero
 
