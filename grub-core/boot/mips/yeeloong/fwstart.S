@@ -465,14 +465,22 @@ regdump:
 	.quad 0x0100020200010101 /* 4 */
 	.quad 0x0a04030603050203 /* 6 */
 	.quad 0x0f0e040000010a0b /* 7 */
+#ifdef FULOONG
+	.quad 0x0000000100000001 /* 8 */
+#else
 	.quad 0x0000010200000102 /* 8 */
+#endif
 	.quad 0x0000060c00000000 /* 9 */
 	.quad 0x2323233f3f1f0200 /* a */
 	.quad 0x5f7f232323232323 /* b */
 	.quad 0x002a3c0615000000 /* c */
 	.quad 0x002a002a002a002a /* d */
 	.quad 0x002a002a002a002a /* e */
+#ifdef FULOONG
+	.quad 0x00b40020005b0004 /* f */
+#else
 	.quad 0x00b40020006d0004 /* f */
+#endif
 	.quad 0x070007ff00000087 /* 10 */
 	.quad 0x000000000016101f /* 11 */
 	.quad 0x001c000000000000 /* 12 */
