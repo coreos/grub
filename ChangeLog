@@ -1,3 +1,9 @@
+2011-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkimage.c (generate_image): Refuse to create the images
+	bigger than the actual flash (512K) in Loongson machines. 512K is also
+	the biggest chip supported by them.
+
 2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/getroot.c: Include config-util.h explicitly.

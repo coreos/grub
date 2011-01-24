@@ -1196,7 +1196,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	grub_util_warn ("fwstart.img doesn't match the known good version. "
 			"Proceed at your own risk");
 
-      rom_size = ALIGN_UP (core_size + boot_size, 512 * 1024);
+      if (core_size + boot_size > 512 * 1024)
+	grub_util_error ("firmware image is too big");
+      rom_size = 512 * 1024;
 
       rom_img = xmalloc (rom_size);
       memset (rom_img, 0, rom_size); 
