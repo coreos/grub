@@ -573,9 +573,8 @@ grub_util_is_lvm (const char *os_dev)
   {
     struct dm_tree *tree;
     uint32_t maj, min;
-    struct dm_tree_node *node = NULL, *child;
-    void *handle;
-    const char *node_uuid, *mapper_name = NULL, *child_uuid, *child_name;
+    struct dm_tree_node *node = NULL;
+    const char *node_uuid;
     struct stat st;
 
     if (stat (os_dev, &st) < 0)
