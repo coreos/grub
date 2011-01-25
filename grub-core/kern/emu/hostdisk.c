@@ -1271,6 +1271,16 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	      node = NULL;
 	      goto devmapper_out;
 	    }
+	  if (strncmp (node_uuid, "mpath-", 6) == 0)
+	    {
+	      /* Multipath partitions have partN-mpath-* UUIDs, and are
+		 linear mappings so are handled by
+		 grub_util_get_dm_node_linear_info.  Multipath disks are not
+		 linear mappings and must be handled specially.  */
+	      grub_dprintf ("hostdisk", "%s is a multipath disk\n", path);
+	      mapper_name = dm_tree_node_get_name (node);
+	      goto devmapper_out;
+	    }
 	  if (strncmp (node_uuid, "DMRAID-", 7) != 0)
 	    {
 	      int major, minor;
