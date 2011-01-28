@@ -1,3 +1,8 @@
+2011-01-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Making a GRUB bootable CD-ROM): Update to describe
+	grub-mkrescue.
+
 2011-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkimage.c (generate_image): Refuse to create the images
