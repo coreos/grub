@@ -729,7 +729,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 		grub_disk_addr_t paddr;
 
 		stripe = (struct grub_btrfs_chunk_stripe *) (chunk + 1);
-		/* Right now the redundancy handlind is easy.
+		/* Right now the redundancy handling is easy.
 		   With RAID5-like it will be more difficult.  */
 		stripe += stripen + i;
 
