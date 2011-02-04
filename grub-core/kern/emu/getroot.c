@@ -111,6 +111,8 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
   size_t len = 0;
   char *ret = NULL;
 
+  if (! *dir)
+    dir = "/";
   if (relroot)
     *relroot = NULL;
 
