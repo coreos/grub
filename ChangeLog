@@ -1,3 +1,8 @@
+2011-02-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/file.h (not_easly_seekable): Rename to ...
+	(not_easily_seekable): ... this.  Update all users.
+
 2011-01-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Making a GRUB bootable CD-ROM): Update to describe
