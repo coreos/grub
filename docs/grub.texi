@@ -36,6 +36,7 @@ Invariant Sections.
 * grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
 * grub-mkconfig: (grub)Invoking grub-mkconfig.  Generate GRUB configuration
 * grub-mkpasswd-pbkdf2: (grub)Invoking grub-mkpasswd-pbkdf2.
+* grub-mkrescue: (grub)Invoking grub-mkrescue.  Make a GRUB rescue image
 @end direntry
 
 @setchapternewpage odd
@@ -94,6 +95,7 @@ This edition documents version @value{VERSION}.
 * Invoking grub-mkconfig::      Generate a GRUB configuration file
 * Invoking grub-mkpasswd-pbkdf2::
                                 Generate GRUB password hashes
+* Invoking grub-mkrescue::      Make a GRUB rescue image
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Future::                      Some future plans on GRUB
@@ -659,7 +661,7 @@ usually also need to include a configuration file @file{grub.cfg} and some
 other GRUB modules.
 
 To make a simple generic GRUB rescue CD, you can use the
-@command{grub-mkrescue} program:
+@command{grub-mkrescue} program (@pxref{Invoking grub-mkrescue}):
 
 @example
 $ @kbd{grub-mkrescue -o grub.iso}
@@ -3606,6 +3608,64 @@ Length of the generated hash.  Defaults to 64.
 @item -s @var{number}
 @itemx --salt=@var{number}
 Length of the salt.  Defaults to 64.
+@end table
+
+
+@node Invoking grub-mkrescue
+@chapter Invoking grub-mkrescue
+
+The program @command{grub-mkrescue} generates a bootable GRUB rescue image
+(@pxref{Making a GRUB bootable CD-ROM}).
+
+@example
+grub-mkrescue -o grub.iso
+@end example
+
+All arguments not explicitly listed as @command{grub-mkrescue} options are
+passed on directly to @command{xorriso} in @command{mkisofs} emulation mode.
+Options passed to @command{xorriso} will normally be interpreted as
+@command{mkisofs} options; if the option @samp{--} is used, then anything
+after that will be interpreted as native @command{xorriso} options.
+
+Non-option arguments specify additional source directories.  This is
+commonly used to add extra files to the image:
+
+@example
+mkdir -p disk/boot/grub
+@r{(add extra files to @file{disk/boot/grub})}
+grub-mkrescue -o grub.iso disk
+@end example
+
+@command{grub-mkrescue} accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command-line options and exit.
+
+@item --version
+Print the version number of GRUB and exit.
+
+@item -o @var{file}
+@itemx --output=@var{file}
+Save output in @var{file}.  This "option" is required.
+
+@item --modules=@var{modules}
+Pre-load the named GRUB modules in the image.  Multiple entries in
+@var{modules} should be separated by whitespace (so you will probably need
+to quote this for your shell).
+
+@item --rom-directory=@var{dir}
+If generating images for the QEMU or Coreboot platforms, copy the resulting
+@file{qemu.img} or @file{coreboot.elf} files respectively to the @var{dir}
+directory as well as including them in the image.
+
+@item --xorriso=@var{file}
+Use @var{file} as the @command{xorriso} program, rather than the built-in
+default.
+
+@item --grub-mkimage=@var{file}
+Use @var{file} as the @command{grub-mkimage} program, rather than the
+built-in default.
 @end table
 
 

@@ -1,5 +1,12 @@
 2011-02-09  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Kernel): Add reference to grub-mkrescue.
+	(Making a GRUB bootable CD-ROM): Likewise.
+	(Invoking grub-mkrescue): New section.
+	Reported by: Yann Dirson.  Fixes Debian bug #612585.
+
+2011-02-09  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-install.in: Remove unnecessary brackets from tr
 	arguments.
 	* util/grub.d/10_hurd.in: Likewise.
