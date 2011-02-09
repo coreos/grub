@@ -64,7 +64,7 @@ if test -f "${sysconfdir}/default/grub" ; then
     . "${sysconfdir}/default/grub"
 fi
 
-bootloader_id="$(echo "$GRUB_DISTRIBUTOR" | tr '[A-Z]' '[a-z]' | cut -d' ' -f1)"
+bootloader_id="$(echo "$GRUB_DISTRIBUTOR" | tr 'A-Z' 'a-z' | cut -d' ' -f1)"
 if test -z "$bootloader_id"; then
     bootloader_id=grub
 fi
