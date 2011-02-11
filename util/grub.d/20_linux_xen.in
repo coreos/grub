@@ -98,6 +98,9 @@ linux_list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
 	version=$(echo $basename | sed -e "s,^[^0-9]*-,,g")
         if grub_file_is_not_garbage "$i" && grep -qx "CONFIG_XEN_DOM0=y" /boot/config-${version} 2> /dev/null ; then echo -n "$i " ; fi
       done`
+if [ "x${linux_list}" = "x" ] ; then
+    exit 0
+fi
 xen_list=`for i in /boot/xen*; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
