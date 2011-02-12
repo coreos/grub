@@ -1,5 +1,17 @@
 2011-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Workaround yet another IEEE1275 bug.
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New enum value
+	GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS.
+	* grub-core/kern/ieee1275/mmap.c (grub_machine_mmap_iterate): Ignore
+	adress_cells and size:cells if GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS
+	is set.
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
+	GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS on powermacs.
+
+2011-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/partmap/msdos.c (pc_partition_map_embed): Fix off by one
 	error.
 
