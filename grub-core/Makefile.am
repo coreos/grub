@@ -303,7 +303,7 @@ platform_DATA += moddep.lst
 CLEANFILES += config.log syminfo.lst moddep.lst
 
 $(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT)
-	sh $^ $@
+	TARGET_OBJ2ELF=@TARGET_OBJ2ELF@ sh $^ $@
 platform_DATA += $(MOD_FILES)
 CLEANFILES += $(MOD_FILES)
 

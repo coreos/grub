@@ -570,7 +570,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 	{
 	  for (p = array_list; p != NULL; p = p->next)
 	    {
-	      if (! p->name && p->number == array->number) 
+	      if (p->number == array->number) 
 		break;
 	    }
 	}

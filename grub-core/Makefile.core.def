@@ -324,6 +324,7 @@ image = {
   name = fwstart;
   mips_yeeloong = boot/mips/yeeloong/fwstart.S;
   objcopyflags = '-O binary';
+  ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_yeeloong;
 };
 
@@ -1464,7 +1465,6 @@ module = {
   name = ieee1275_fb;
   ieee1275 = video/ieee1275.c;
   enable = powerpc;
-  enable = sparc64;
 };
 
 module = {

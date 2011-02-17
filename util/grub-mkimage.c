@@ -29,6 +29,7 @@
 #include <grub/util/resolve.h>
 #include <grub/misc.h>
 #include <grub/offsets.h>
+#include <grub/crypto.h>
 #include <time.h>
 
 #include <stdio.h>
@@ -1167,12 +1168,37 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       size_t rom_size;
       char *boot_path, *boot_img;
       size_t boot_size;
+      grub_uint8_t context[GRUB_MD_SHA512->contextsize];
+      /* fwstart.img is the only part which can't be testes by using *-elf
+	 target. Check it against the checksum. This checksum is obtained with
+	 sha512sum utility after compiling on Gnewsense.
+      */
+      const grub_uint8_t fwstart_good_hash[] = 
+	{ 0x75, 0xbf, 0xa3, 0x0e, 0x7c, 0xd1, 0x03, 0x82,
+	  0xe1, 0x34, 0x55, 0xd7, 0x09, 0x1e, 0x6c, 0xcc,
+	  0xef, 0x08, 0x61, 0xc1, 0x3c, 0xd8, 0xc7, 0x9f,
+	  0xe8, 0x2d, 0x3d, 0xb2, 0xda, 0x41, 0xd3, 0x83,
+	  0xd7, 0xb8, 0xe3, 0xd7, 0x13, 0xec, 0x9b, 0xf6,
+	  0xf6, 0xae, 0x6b, 0x32, 0x29, 0xc1, 0x69, 0x82,
+	  0xfa, 0x65, 0x2d, 0x97, 0x3e, 0x83, 0x6e, 0x6c,
+	  0xce, 0x34, 0x10, 0x59, 0x74, 0x0e, 0x96, 0x26 };
       
       boot_path = grub_util_get_path (dir, "fwstart.img");
       boot_size = grub_util_get_image_size (boot_path);
       boot_img = grub_util_read_image (boot_path);
 
-      rom_size = ALIGN_UP (core_size + boot_size, 512 * 1024);
+      grub_memset (context, 0, sizeof (context));
+      GRUB_MD_SHA512->init (context);
+      GRUB_MD_SHA512->write (context, boot_img, boot_size);
+      GRUB_MD_SHA512->final (context);
+      if (grub_memcmp (GRUB_MD_SHA512->read (context), fwstart_good_hash,
+		       GRUB_MD_SHA512->mdlen) != 0)
+	grub_util_warn ("fwstart.img doesn't match the known good version. "
+			"Proceed at your own risk");
+
+      if (core_size + boot_size > 512 * 1024)
+	grub_util_error ("firmware image is too big");
+      rom_size = 512 * 1024;
 
       rom_img = xmalloc (rom_size);
       memset (rom_img, 0, rom_size); 

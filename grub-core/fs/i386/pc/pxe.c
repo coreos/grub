@@ -281,7 +281,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
     }
 
   file->data = data;
-  file->not_easly_seekable = 1;
+  file->not_easily_seekable = 1;
   grub_memcpy (file_int, file, sizeof (struct grub_file));
   curr_file = file_int;
 

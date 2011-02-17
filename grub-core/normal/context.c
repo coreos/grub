@@ -148,7 +148,7 @@ grub_env_context_close (void)
 grub_err_t
 grub_env_extractor_close (int source)
 {
-  grub_menu_t menu, menu2;
+  grub_menu_t menu = NULL;
   grub_menu_entry_t *last;
   grub_err_t err;
 
@@ -161,6 +161,7 @@ grub_env_extractor_close (int source)
 
   if (source)
     {
+      grub_menu_t menu2;
       menu2 = grub_env_get_menu ();
       
       last = &menu2->entry_list;

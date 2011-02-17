@@ -84,11 +84,16 @@ if [ -n "${GRUB_VIDEO_BACKEND}" ]; then
 EOF
 else
     # Insert all available backends; GRUB will use the most appropriate.
+    have_video=0;
     for backend in $(cat "${GRUB_PREFIX}/video.lst"); do
+	have_video=1;
 	cat <<EOF
   insmod ${backend}
 EOF
     done
+    if [ x$have_video = x0 ]; then
+	echo "true"
+    fi
 fi
 cat <<EOF
 }

@@ -32,7 +32,7 @@ dnl type, so there is no conflict. Variables with the prefix "TARGET_"
 dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
 dnl type.
 
-AC_INIT([GRUB],[1.99~beta0],[bug-grub@gnu.org])
+AC_INIT([GRUB],[1.99~rc1],[bug-grub@gnu.org])
 
 AC_CONFIG_AUX_DIR([build-aux])
 
@@ -246,7 +246,7 @@ else
 fi
 
 # These are not a "must".
-AC_PATH_PROG(MAKEINFO, makeinfo)
+AC_PATH_PROGS(MAKEINFO, makeinfo true)
 
 #
 # Checks for host programs.
@@ -454,7 +454,7 @@ fi
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
 case "${host_os}" in
-  cygwin) TARGET_OBJ2ELF='$(grub_utildir)/grub-pe2elf';
+  cygwin) TARGET_OBJ2ELF='$(top_builddir)/grub-pe2elf';
 # FIXME: put proper test here
   NEED_REGISTER_FRAME_INFO=1
   ;;
@@ -964,6 +964,7 @@ AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
 
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
+AM_CONDITIONAL([COND_CYGWIN], [test x$host_os = xcygwin])
 
 # Output files.
 grub_CHECK_LINK_DIR

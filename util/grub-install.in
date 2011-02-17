@@ -64,7 +64,7 @@ if test -f "${sysconfdir}/default/grub" ; then
     . "${sysconfdir}/default/grub"
 fi
 
-bootloader_id="$(echo "$GRUB_DISTRIBUTOR" | tr '[A-Z]' '[a-z]' | cut -d' ' -f1)"
+bootloader_id="$(echo "$GRUB_DISTRIBUTOR" | tr 'A-Z' 'a-z' | cut -d' ' -f1)"
 if test -z "$bootloader_id"; then
     bootloader_id=grub
 fi
@@ -268,6 +268,11 @@ if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
     echo "install_device not specified." 1>&2
     usage
     exit 1
+fi
+
+if ! ([ "${target_cpu}-${platform}" = "i386-pc" ] \
+    || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
+    install_device=
 fi
 
 # If the debugging feature is enabled, print commands.
@@ -516,25 +521,22 @@ if [ "x${devabstraction_module}" = "x" ] ; then
     # Strip partition number
     grub_partition="`echo "${grub_drive}" | sed -e 's/^[^,]*[,)]//; s/)$//'`"
     grub_drive="`echo "${grub_drive}" | sed -e s/,[a-z0-9,]*//g`"
-    if [ "$disk_module" = ata ] ; then
+    if [ "$disk_module" = ata ] || [ "x${grub_drive}" != "x${install_drive}" ] || ([ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${target_cpu}-${platform}" != x"sparc64-ieee1275" ]) ; then
         # generic method (used on coreboot and ata mod)
         uuid="`"$grub_probe" --device-map="${device_map}" --target=fs_uuid --device "${grub_device}"`"
         if [ "x${uuid}" = "x" ] ; then
-          echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          if [ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${target_cpu}-${platform}" != x"sparc64-ieee1275" ]; then
+             echo "UUID needed with $platform, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          elif [ "$disk_module" = ata ]; then
+             echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          else
+             echo "UUID needed with cross-disk installs, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          fi
+             
           exit 1
         fi
         echo "search.fs_uuid ${uuid} root " >> "${grubdir}/load.cfg"
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
-	config_opt="-c ${grubdir}/load.cfg "
-        modules="$modules search_fs_uuid"
-    elif [ "x${grub_drive}" != "x${install_drive}" ] ; then
-        uuid="`"$grub_probe" --device-map="${device_map}" --target=fs_uuid --device "${grub_device}"`"
-        if [ "x${uuid}" = "x" ] ; then
-          echo "You attempted a cross-disk install, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
-          exit 1
-        fi
-        echo "search.fs_uuid ${uuid} root " >> ${grubdir}/load.cfg
-	echo 'set prefix=($root)'"${relative_grubdir}" >> ${grubdir}/load.cfg
 	config_opt="-c ${grubdir}/load.cfg "
         modules="$modules search_fs_uuid"
     elif [ "x$platform" = xefi ] || [ "x$platform" = xpc ]; then

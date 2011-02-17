@@ -36,6 +36,7 @@ Invariant Sections.
 * grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
 * grub-mkconfig: (grub)Invoking grub-mkconfig.  Generate GRUB configuration
 * grub-mkpasswd-pbkdf2: (grub)Invoking grub-mkpasswd-pbkdf2.
+* grub-mkrescue: (grub)Invoking grub-mkrescue.  Make a GRUB rescue image
 @end direntry
 
 @setchapternewpage odd
@@ -94,6 +95,7 @@ This edition documents version @value{VERSION}.
 * Invoking grub-mkconfig::      Generate a GRUB configuration file
 * Invoking grub-mkpasswd-pbkdf2::
                                 Generate GRUB password hashes
+* Invoking grub-mkrescue::      Make a GRUB rescue image
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Future::                      Some future plans on GRUB
@@ -651,15 +653,22 @@ using BIOS functions.}. This means that you can use the whole CD-ROM
 from GRUB and you don't have to make a floppy or hard disk image file,
 which can cause compatibility problems.
 
-For booting from a CD-ROM, GRUB uses a special Stage 2 called
-@file{stage2_eltorito}. The only GRUB files you need to have in your
-bootable CD-ROM are this @file{stage2_eltorito} and optionally a config file
-@file{grub.cfg}. You don't need to use @file{stage1} or @file{stage2},
-because El Torito is quite different from the standard boot process.
+For booting from a CD-ROM, GRUB uses a special image called
+@file{cdboot.img}, which is concatenated with @file{core.img}. The
+@file{core.img} used for this should be built with at least the
+@samp{iso9660} and @samp{biosdisk} modules. Your bootable CD-ROM will
+usually also need to include a configuration file @file{grub.cfg} and some
+other GRUB modules.
 
-Here is an example of procedures to make a bootable CD-ROM
-image. First, make a top directory for the bootable image, say,
-@samp{iso}:
+To make a simple generic GRUB rescue CD, you can use the
+@command{grub-mkrescue} program (@pxref{Invoking grub-mkrescue}):
+
+@example
+$ @kbd{grub-mkrescue -o grub.iso}
+@end example
+
+You will often need to include other files in your image. To do this, first
+make a top directory for the bootable image, say, @samp{iso}:
 
 @example
 $ @kbd{mkdir iso}
@@ -671,33 +680,24 @@ Make a directory for GRUB:
 $ @kbd{mkdir -p iso/boot/grub}
 @end example
 
-Copy the file @file{stage2_eltorito}:
-
-@example
-$ @kbd{cp /usr/lib/grub/i386-pc/stage2_eltorito iso/boot/grub}
-@end example
-
 If desired, make the config file @file{grub.cfg} under @file{iso/boot/grub}
 (@pxref{Configuration}), and copy any files and directories for the disc to the
 directory @file{iso/}.
 
-Finally, make a ISO9660 image file like this:
+Finally, make the image:
 
 @example
-$ @kbd{mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot \
-    -boot-load-size 4 -boot-info-table -o grub.iso iso}
+$ @kbd{grub-mkrescue -o grub.iso iso}
 @end example
 
 This produces a file named @file{grub.iso}, which then can be burned
-into a CD (or a DVD).  @kbd{mkisofs} has already set up the disc to boot
-from the @kbd{boot/grub/stage2_eltorito} file, so there is no need to
-setup GRUB on the disc.  (Note that the @kbd{-boot-load-size 4} bit is
-required for compatibility with the BIOS on many older machines.)
+into a CD (or a DVD), or written to a USB mass storage device.
 
-You can use the device @samp{(cd)} to access a CD-ROM in your
-config file. This is not required; GRUB automatically sets the root device
-to @samp{(cd)} when booted from a CD-ROM. It is only necessary to refer to
-@samp{(cd)} if you want to access other drives as well.
+The root device will be set up appropriately on entering your
+@file{grub.cfg} configuration file, so you can refer to file names on the CD
+without needing to use an explicit device name. This makes it easier to
+produce rescue images that will work on both optical drives and USB mass
+storage devices.
 
 
 @node Device map
@@ -1180,6 +1180,11 @@ directly to @ref{play}.
 @item GRUB_BADRAM
 If this option is set, GRUB will issue a @ref{badram} command to filter
 out specified regions of RAM.
+
+@item GRUB_PRELOAD_MODULES
+This option may be set to a list of GRUB module names separated by spaces.
+Each module will be loaded as early as possible, at the start of
+@file{grub.cfg}.
 
 @end table
 
@@ -3603,6 +3608,64 @@ Length of the generated hash.  Defaults to 64.
 @item -s @var{number}
 @itemx --salt=@var{number}
 Length of the salt.  Defaults to 64.
+@end table
+
+
+@node Invoking grub-mkrescue
+@chapter Invoking grub-mkrescue
+
+The program @command{grub-mkrescue} generates a bootable GRUB rescue image
+(@pxref{Making a GRUB bootable CD-ROM}).
+
+@example
+grub-mkrescue -o grub.iso
+@end example
+
+All arguments not explicitly listed as @command{grub-mkrescue} options are
+passed on directly to @command{xorriso} in @command{mkisofs} emulation mode.
+Options passed to @command{xorriso} will normally be interpreted as
+@command{mkisofs} options; if the option @samp{--} is used, then anything
+after that will be interpreted as native @command{xorriso} options.
+
+Non-option arguments specify additional source directories.  This is
+commonly used to add extra files to the image:
+
+@example
+mkdir -p disk/boot/grub
+@r{(add extra files to @file{disk/boot/grub})}
+grub-mkrescue -o grub.iso disk
+@end example
+
+@command{grub-mkrescue} accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command-line options and exit.
+
+@item --version
+Print the version number of GRUB and exit.
+
+@item -o @var{file}
+@itemx --output=@var{file}
+Save output in @var{file}.  This "option" is required.
+
+@item --modules=@var{modules}
+Pre-load the named GRUB modules in the image.  Multiple entries in
+@var{modules} should be separated by whitespace (so you will probably need
+to quote this for your shell).
+
+@item --rom-directory=@var{dir}
+If generating images for the QEMU or Coreboot platforms, copy the resulting
+@file{qemu.img} or @file{coreboot.elf} files respectively to the @var{dir}
+directory as well as including them in the image.
+
+@item --xorriso=@var{file}
+Use @var{file} as the @command{xorriso} program, rather than the built-in
+default.
+
+@item --grub-mkimage=@var{file}
+Use @var{file} as the @command{grub-mkimage} program, rather than the
+built-in default.
 @end table
 
 

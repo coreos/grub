@@ -143,7 +143,8 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 			  &sb))
 	return grub_errno;
 
-      if (grub_le_to_cpu32 (sb.magic) != SB_MAGIC)
+      if (grub_le_to_cpu32 (sb.magic) != SB_MAGIC
+	  || grub_le_to_cpu64 (sb.super_offset) != sector)
 	continue;
 
       {

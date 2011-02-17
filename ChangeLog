@@ -1,3 +1,205 @@
+2011-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Workaround yet another IEEE1275 bug.
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New enum value
+	GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS.
+	* grub-core/kern/ieee1275/mmap.c (grub_machine_mmap_iterate): Ignore
+	adress_cells and size:cells if GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS
+	is set.
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
+	GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS on powermacs.
+
+2011-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/msdos.c (pc_partition_map_embed): Fix off by one
+	error.
+
+2011-02-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/20_linux_xen.in: Bail out early if linux_list is
+	empty, since in that case we can only generate either nothing or a
+	syntactically invalid configuration file.
+	Reported by: Michal Suchanek.  Fixes Debian bug #612898.
+
+2011-02-09  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Kernel): Add reference to grub-mkrescue.
+	(Making a GRUB bootable CD-ROM): Likewise.
+	(Invoking grub-mkrescue): New section.
+	Reported by: Yann Dirson.  Fixes Debian bug #612585.
+
+2011-02-09  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in: Remove unnecessary brackets from tr
+	arguments.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+	Reported by: Jamie Heilman.  Fixes Debian bug #612564.
+
+2011-02-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/file.h (not_easly_seekable): Rename to ...
+	(not_easily_seekable): ... this.  Update all users.
+
+2011-01-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Making a GRUB bootable CD-ROM): Update to describe
+	grub-mkrescue.
+
+2011-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkimage.c (generate_image): Refuse to create the images
+	bigger than the actual flash (512K) in Loongson machines. 512K is also
+	the biggest chip supported by them.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/getroot.c: Include config-util.h explicitly.
+
+2011-01-22  Anthony DeRobertis <anthony@derobert.net>
+
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Check
+	super_offset field.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Ignore install device on platforms
+	where it doesn't make sense. Always use UUIDs except on pc, efi and
+	sparc64.
+	Reported by: Daniel Kahn Gillmor.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/bus/bonito.c (write_bases): Fix direction of the shift.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/bsdlabel.c: Include grub/emu/misc.h and not grub/util/misc.h.
+	(iterate_real): Don't rely on partition being non-NULL.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/script/argv.c (round_up_exp): unsigned is 32-bit on all
+	supported platforms. Put a compile time assert for this rather than
+	generate a warning with 32-bit shift.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/scsi.c (grub_scsi_read): Fix binary and check and make
+	logical expression more readable.
+
+2011-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/raid.c (insert_array): Ensure uniqueness of p->number
+	even if some elements have a name.
+	Reported by: Alexander GQ Gerasiov.
+
+2011-01-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Consider a
+	path unreadable if `grub-probe -t abstraction' fails, for example if
+	memberlist fails on an LVM volume group.
+	Reported by: Darius Jahandarie.
+
+2011-01-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Simple configuration): Document
+	GRUB_PRELOAD_MODULES.
+
+2011-01-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Remove nonexistent grub-pbkdf2.
+
+2011-01-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Bump version to 1.99~rc1.
+
+2011-01-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkimage.c (generate_image): Check fwstart.img checksum
+	for safety.
+
+2011-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/yeeloong/init.c (grub_machine_init): Init boot
+	module.
+
+2011-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.core.def (fwstart): Add lost LDFLAGS.
+
+2011-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfsinfo.c (grub_cmd_zfs_bootfs): Quote bootpath and
+	diskdevid.
+
+2011-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix compilation on cygwin.
+
+	* conf/Makefile.common (STRIPFLAGS_KERNEL): Add -F elf32-i386 and
+	-R .drectve on cygwin.
+	* conf/i386-pc-cygwin-img-ld.sc: Merge rdata and pdata into data.
+	* configure.ac: Use $(top_builddir) in TARGET_OBJ2ELF.
+	(COND_CYGWIN): New condition.
+	* grub-core/Makefile.am (%.mod): Set TARGET_OBJ2ELF.
+	* grub-core/genmod.sh.in: Use ${TARGET_OBJ2ELF} and
+	not @TARGET_OBJ2ELF@.
+	* util/grub-pe2elf.c (write_symbol_table): Use pe_symtab->type and not
+	type to determine whether aux is to be used.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/ieee1275/ofpath.c (grub_util_devname_to_ofpath): Use the
+	realpath'ed device string.
+	Handle floppy (somewhat).
+	Issue error in unknown case rather than garbage.
+	Reported by: Axel Beckert.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/00_header.in (load_video): Handle the case when no video
+	drivers available.
+	Thanks to: Axel Beckert.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkfont.c (write_font_pf2): Use appropriate type for data
+	variable. Fixes problem on big endian platforms.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.core.def (ieee1275_fb): Disable on sparc.
+	It doesn't work well there.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/context.c (grub_env_context_close): Silence spurious
+	warning.
+	* grub-core/normal/menu.c (grub_menu_execute_entry): Likewise.
+	* grub-core/partmap/msdos.c (pc_partition_map_embed): Use unsigned
+	counter.
+
+2011-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use alias->path rather than buggy "canon".
+
+	* grub-core/disk/ieee1275/ofdisk.c (ofdisk_hash_add_real): New function.
+	(ofdisk_hash_add): New argument curcan. All users updated.
+
+2011-01-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Fall back to `true' if `makeinfo' does not exist.
+
+2011-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/powerpc/ieee1275/linux.c (grub_linux_load32): Apply
+	loadmask before doing any calculations. Use correct type for offset.
+	(grub_linux_load64): Likewise.
+
 2011-01-11  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mklayout.c (console_grub_equivalences_shift): Terminate
