@@ -16,8 +16,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/mips/yeeloong/serial.h>
-#include <grub/mips/yeeloong/pci.h>
+#include <grub/mips/loongson/serial.h>
+#include <grub/mips/loongson/pci.h>
 #include <grub/mips/loongson.h>
 #include <grub/pci.h>
 #include <grub/machine/serial.h>
@@ -129,7 +129,7 @@ retry_cs5536:
 	sb $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_CTRL3) ($t0)
 	sb $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_CTRL2) ($t0)
 
-	/* Yeeloong has only one memory slot.  */
+	/* Yeeloong and Fuloong have only one memory slot.  */
 	/* Output first byte on serial for debugging.  */
 	ori $a1, $zero, GRUB_SMB_RAM_START_ADDR
 	bal read_spd

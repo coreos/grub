@@ -80,7 +80,7 @@ init_pci (void)
     /* FIXME: autoscan for BARs and devices.  */
     switch (pciid)
       {
-      case GRUB_YEELOONG_OHCI_PCIID:
+      case GRUB_LOONGSON_OHCI_PCIID:
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
 	grub_pci_write (addr, 0x5025000);
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
@@ -92,7 +92,7 @@ init_pci (void)
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_STATUS);
 	grub_pci_write_word (addr, 0x0200 | GRUB_PCI_STATUS_CAPABILITIES);
 	break;
-      case GRUB_YEELOONG_EHCI_PCIID:
+      case GRUB_LOONGSON_EHCI_PCIID:
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
 	grub_pci_write (addr, 0x5026000);
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
@@ -164,7 +164,7 @@ grub_machine_init (void)
       if (err)
 	grub_fatal ("Couldn't init SMBus: %s\n", grub_errmsg);
 
-      /* Yeeloong has only one memory slot.  */
+      /* Yeeloong and Fuloong have only one memory slot.  */
       err = grub_cs5536_read_spd (smbbase, GRUB_SMB_RAM_START_ADDR, &spd);
       if (err)
 	grub_fatal ("Couldn't read SPD: %s\n", grub_errmsg);

@@ -32,7 +32,7 @@
 #include <grub/pci.h>
 #include <grub/machine/time.h>
 
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
 #include <grub/machine/kernel.h>
 
 const char loongson_machtypes[][60] =
@@ -224,7 +224,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   /* For arguments.  */
   linux_argc = argc;
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
   linux_argc++;
 #endif
   /* Main arguments.  */
@@ -239,7 +239,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   /* Normal arguments.  */
   for (i = 1; i < argc; i++)
     size += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
   size += ALIGN_UP (sizeof (loongson_machtypes[0]), 4);
 #endif
 
@@ -279,7 +279,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   linux_argv++;
   linux_args += ALIGN_UP (sizeof ("a0"), 4);
 
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
   {
     unsigned mtype = grub_arch_machine;
     if (mtype >= ARRAY_SIZE (loongson_machtypes))

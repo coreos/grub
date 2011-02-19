@@ -125,7 +125,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
-if COND_mips_yeeloong
+if COND_mips_loongson
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h

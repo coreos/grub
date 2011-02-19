@@ -257,7 +257,7 @@ grub_keyboard_controller_write (grub_uint8_t c)
   grub_outb (c, KEYBOARD_REG_DATA);
 }
 
-#if !defined (GRUB_MACHINE_MIPS_YEELOONG) && !defined (GRUB_MACHINE_QEMU)
+#if !defined (GRUB_MACHINE_MIPS_LOONGSON) && !defined (GRUB_MACHINE_QEMU)
 
 static grub_uint8_t
 grub_keyboard_controller_read (void)
@@ -562,7 +562,7 @@ grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unus
       keyboard_controller_wait_until_ready ();
       grub_inb (KEYBOARD_REG_DATA);
     }
-#if defined (GRUB_MACHINE_MIPS_YEELOONG) || defined (GRUB_MACHINE_QEMU)
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_QEMU)
   grub_keyboard_controller_orig = 0;
   grub_keyboard_orig_set = 2;
 #else

@@ -36,7 +36,7 @@ grub_dma_free (struct grub_pci_dma_chunk *ch)
 }
 /* #endif */
 
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
 volatile void *
 grub_dma_get_virt (struct grub_pci_dma_chunk *ch)
 {
@@ -99,13 +99,13 @@ grub_pci_iterate (grub_pci_iteratefunc_t hook)
 		    continue;
 		}
 
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
 	      /* Skip ghosts.  */
-	      if (id == GRUB_YEELOONG_OHCI_PCIID
-		  && dev.function == GRUB_YEELOONG_OHCI_GHOST_FUNCTION)
+	      if (id == GRUB_LOONGSON_OHCI_PCIID
+		  && dev.function == GRUB_LOONGSON_OHCI_GHOST_FUNCTION)
 		continue;
-	      if (id == GRUB_YEELOONG_EHCI_PCIID
-		  && dev.function == GRUB_YEELOONG_EHCI_GHOST_FUNCTION)
+	      if (id == GRUB_LOONGSON_EHCI_PCIID
+		  && dev.function == GRUB_LOONGSON_EHCI_GHOST_FUNCTION)
 		continue;
 #endif
 

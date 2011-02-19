@@ -36,7 +36,7 @@ start:
 	bal cont
 	 nop
 
-	. = _start + GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE
+	. = _start + GRUB_KERNEL_MIPS_LOONGSON_TOTAL_MODULE_SIZE
 total_module_size:
 	.long 0
 
@@ -51,7 +51,7 @@ VARIABLE(grub_prefix)
 	 */
 
 	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
 VARIABLE (grub_arch_busclock)
 	.long 0
 VARIABLE (grub_arch_cpuclock)
@@ -67,7 +67,7 @@ cont:
 	/* Save our base.  */
 	move $s0, $ra
 
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
 	lui $t1, %hi(grub_arch_busclock)
 	addiu $t1, %lo(grub_arch_busclock)
 	sw $s2, 0($t1)

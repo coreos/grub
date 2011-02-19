@@ -65,7 +65,7 @@ struct image_target_desc
   enum {
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
     IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
-    IMAGE_YEELOONG_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
+    IMAGE_LOONGSON_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
     IMAGE_FULOONG_FLASH, IMAGE_I386_PC_PXE
   } id;
   enum
@@ -265,70 +265,70 @@ struct image_target_desc image_targets[] =
       .install_bsd_part = TARGET_NO_FIELD,
     },
     {
-      .dirname = "mipsel-yeeloong",
+      .dirname = "mipsel-loongson",
       .names = { "mipsel-yeeloong-flash", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_YEELOONG_FLASH, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
-      .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END,
+      .prefix = GRUB_KERNEL_MIPS_LOONGSON_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_LOONGSON_PREFIX_END,
       .raw_size = 0,
-      .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
+      .total_module_size = GRUB_KERNEL_MIPS_LOONGSON_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
-      .link_addr = GRUB_KERNEL_MIPS_YEELOONG_LINK_ADDR,
+      .link_addr = GRUB_KERNEL_MIPS_LOONGSON_LINK_ADDR,
       .elf_target = EM_MIPS,
-      .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN,
+      .link_align = GRUB_KERNEL_MIPS_LOONGSON_LINK_ALIGN,
       .default_compression = COMPRESSION_NONE
     },
     {
-      .dirname = "mipsel-yeeloong",
+      .dirname = "mipsel-loongson",
       .names = { "mipsel-fuloong-flash", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_FULOONG_FLASH, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
-      .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END,
+      .prefix = GRUB_KERNEL_MIPS_LOONGSON_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_LOONGSON_PREFIX_END,
       .raw_size = 0,
-      .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
+      .total_module_size = GRUB_KERNEL_MIPS_LOONGSON_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
-      .link_addr = GRUB_KERNEL_MIPS_YEELOONG_LINK_ADDR,
+      .link_addr = GRUB_KERNEL_MIPS_LOONGSON_LINK_ADDR,
       .elf_target = EM_MIPS,
-      .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN,
+      .link_align = GRUB_KERNEL_MIPS_LOONGSON_LINK_ALIGN,
       .default_compression = COMPRESSION_NONE
     },
     {
-      .dirname = "mipsel-yeeloong",
+      .dirname = "mipsel-loongson",
       .names = { "mipsel-loongson-elf", "mipsel-yeeloong-elf",
 		 "mipsel-fuloong-elf", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
-      .id = IMAGE_YEELOONG_ELF, 
+      .id = IMAGE_LOONGSON_ELF, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
-      .prefix = GRUB_KERNEL_MIPS_YEELOONG_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END,
+      .prefix = GRUB_KERNEL_MIPS_LOONGSON_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_LOONGSON_PREFIX_END,
       .raw_size = 0,
-      .total_module_size = GRUB_KERNEL_MIPS_YEELOONG_TOTAL_MODULE_SIZE,
+      .total_module_size = GRUB_KERNEL_MIPS_LOONGSON_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
-      .link_addr = GRUB_KERNEL_MIPS_YEELOONG_LINK_ADDR,
+      .link_addr = GRUB_KERNEL_MIPS_LOONGSON_LINK_ADDR,
       .elf_target = EM_MIPS,
-      .link_align = GRUB_KERNEL_MIPS_YEELOONG_LINK_ALIGN,
+      .link_align = GRUB_KERNEL_MIPS_LOONGSON_LINK_ALIGN,
       .default_compression = COMPRESSION_NONE
     },
     {
@@ -837,10 +837,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       decompress_size = grub_util_get_image_size (decompress_path);
       decompress_img = grub_util_read_image (decompress_path);
 
-      *((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_YEELOONG_COMPRESSED_SIZE))
+      *((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_LOONGSON_COMPRESSED_SIZE))
 	= grub_host_to_target32 (core_size);
 
-      *((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_YEELOONG_UNCOMPRESSED_SIZE))
+      *((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_SIZE))
 	= grub_host_to_target32 (kernel_size + total_module_size);
 
       full_size = core_size + decompress_size;
@@ -1271,7 +1271,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       core_size = rom_size;
     }
     break;
-    case IMAGE_YEELOONG_ELF:
+    case IMAGE_LOONGSON_ELF:
     case IMAGE_PPC:
     case IMAGE_COREBOOT:
     case IMAGE_I386_IEEE1275:
@@ -1284,7 +1284,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	int header_size, footer_size = 0;
 	int phnum = 1;
 	
-	if (image_target->id != IMAGE_YEELOONG_ELF)
+	if (image_target->id != IMAGE_LOONGSON_ELF)
 	  phnum += 2;
 
 	if (note)
@@ -1319,7 +1319,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 	/* No section headers.  */
 	ehdr->e_shoff = grub_host_to_target32 (0);
-	if (image_target->id == IMAGE_YEELOONG_ELF)
+	if (image_target->id == IMAGE_LOONGSON_ELF)
 	  ehdr->e_shentsize = grub_host_to_target16 (0);
 	else
 	  ehdr->e_shentsize = grub_host_to_target16 (sizeof (Elf32_Shdr));
@@ -1332,7 +1332,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	phdr->p_offset = grub_host_to_target32 (header_size);
 	phdr->p_flags = grub_host_to_target32 (PF_R | PF_W | PF_X);
 
-	if (image_target->id == IMAGE_YEELOONG_ELF)
+	if (image_target->id == IMAGE_LOONGSON_ELF)
 	  target_addr = ALIGN_UP (image_target->link_addr
 				  + kernel_size + total_module_size, 32);
 	else
@@ -1341,12 +1341,12 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	phdr->p_vaddr = grub_host_to_target32 (target_addr);
 	phdr->p_paddr = grub_host_to_target32 (target_addr);
 	phdr->p_align = grub_host_to_target32 (align > image_target->link_align ? align : image_target->link_align);
-	if (image_target->id == IMAGE_YEELOONG_ELF)
+	if (image_target->id == IMAGE_LOONGSON_ELF)
 	  ehdr->e_flags = grub_host_to_target32 (0x1000 | EF_MIPS_NOREORDER 
 						 | EF_MIPS_PIC | EF_MIPS_CPIC);
 	else
 	  ehdr->e_flags = 0;
-	if (image_target->id == IMAGE_YEELOONG_ELF)
+	if (image_target->id == IMAGE_LOONGSON_ELF)
 	  {
 	    phdr->p_filesz = grub_host_to_target32 (core_size);
 	    phdr->p_memsz = grub_host_to_target32 (core_size);

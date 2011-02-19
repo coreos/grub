@@ -66,8 +66,8 @@ serial_get_divisor (const struct grub_serial_port *port,
   for (i = 0; i < ARRAY_SIZE (divisor_tab); i++)
     if (divisor_tab[i].speed == config->speed)
       {
-	/* internal UART in Yeeloong runs twice the usual rate.  */
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+	/* internal Loongson UART runs twice the usual rate.  */
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
 	if (port->port == 0xbff003f8)
 	  return 2 * divisor_tab[i].div;
 	else
@@ -115,8 +115,8 @@ do_real_config (struct grub_serial_port *port)
 	     | stop_bits[port->config.stop_bits]);
   grub_outb (status, port->port + UART_LCR);
 
-  /* In Yeeloong serial port has only 3 wires.  */
-#ifndef GRUB_MACHINE_MIPS_YEELOONG
+  /* On Loongson machines serial port has only 3 wires.  */
+#ifndef GRUB_MACHINE_MIPS_LOONGSON
   /* Enable the FIFO.  */
   grub_outb (UART_ENABLE_FIFO_TRIGGER1, port->port + UART_FCR);
 
