@@ -837,14 +837,12 @@ zap_leaf_lookup (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
 				name))
 	{
 	  struct zap_leaf_array *la;
-	  grub_uint8_t *ip;
 
 	  if (le->le_int_size != 8 || le->le_value_length != 1)
 	    return grub_error (GRUB_ERR_BAD_FS, "invalid leaf chunk entry");
 
 	  /* get the uint64_t property value */
 	  la = &ZAP_LEAF_CHUNK (l, blksft, le->le_value_chunk).l_array;
-	  ip = la->la_array;
 
 	  *value = grub_be_to_cpu64 (la->la_array64);
 
