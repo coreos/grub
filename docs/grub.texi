@@ -1036,8 +1036,8 @@ it as a new default entry for use by future runs of GRUB.  This is only
 useful if @samp{GRUB_DEFAULT=saved}; it is a separate option because
 @samp{GRUB_DEFAULT=saved} is useful without this option, in conjunction with
 @command{grub-set-default} or @command{grub-reboot}.  Unset by default.
-The remarks of @pxref{Changes from GRUB Legacy} on the availability
-of @samp{save_env} apply.
+@samp{save_env} may not be available in all situations
+(@pxref{Changes from GRUB Legacy}).
 
 @item GRUB_TIMEOUT
 Boot the default entry this many seconds after the menu is displayed, unless
