@@ -1,5 +1,12 @@
 2011-03-09  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/loader/i386/linux.c (find_efi_mmap_size): Page-align
+	cached mmap_size, so that this works correctly when called multiple
+	times.
+	Reported by: Daniel Kahn Gillmor.  Should fix Debian bug #616638.
+
+2011-03-09  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Simple configuration): Tidy up formatting.
 
 2011-03-07  Szymon Janc <szymon@janc.net.pl>
