@@ -1,3 +1,9 @@
+2011-03-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/boot/i386/pc/lnxboot.S (real_code_2): Ensure that the
+	initial chunk read from the kernel always includes GRUB's multiboot
+	header, which is now outside the first sector.
+
 2011-03-09  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/loader/i386/linux.c (find_efi_mmap_size): Page-align
