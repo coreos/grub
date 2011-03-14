@@ -60,6 +60,8 @@ static struct console_grub_equivalence console_grub_equivalences_shift[] = {
   {"KP_8", '8'},
   {"KP_9", '9'},
   {"KP_Period", '.'},
+
+  {NULL, '\0'}
 };
 
 static struct console_grub_equivalence console_grub_equivalences_unshift[] = {
@@ -74,6 +76,8 @@ static struct console_grub_equivalence console_grub_equivalences_unshift[] = {
   {"KP_8", GRUB_TERM_KEY_UP},
   {"KP_9", GRUB_TERM_KEY_PPAGE},
   {"KP_Period", GRUB_TERM_KEY_DC},
+
+  {NULL, '\0'}
 };
 
 static struct console_grub_equivalence console_grub_equivalences_common[] = {
@@ -259,8 +263,9 @@ usage (int status)
     fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
   else
     printf ("\
-Usage: %s [OPTIONS] LAYOUT\n\
-  -o, --output		set output base name file. Default is LAYOUT.gkb\n\
+Usage: %s [OPTIONS]\n\
+  -i, --input		set input filename. Default is STDIN\n\
+  -o, --output		set output filename. Default is STDOUT\n\
   -h, --help		display this message and exit.\n\
   -V, --version		print version information and exit.\n\
   -v, --verbose		print verbose messages.\n\

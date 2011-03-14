@@ -200,7 +200,7 @@ grub_xzio_open (grub_file_t io)
   file->read_hook = 0;
   file->fs = &grub_xzio_fs;
   file->size = GRUB_FILE_SIZE_UNKNOWN;
-  file->not_easly_seekable = 1;
+  file->not_easily_seekable = 1;
 
   if (grub_file_tell (xzio->file) != 0)
     grub_file_seek (xzio->file, 0);

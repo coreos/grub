@@ -530,8 +530,8 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
           /* We found multiple devices with the same number. Again,
              this shouldn't happen.  */
 	  return grub_error (GRUB_ERR_BAD_DEVICE,
-			     "found two disks with the number %d",
-			     new_array->number);
+			     "found two disks with the index %d for RAID %s",
+			     new_array->index, array->name);
 
         if (new_array->disk_size < array->disk_size)
           array->disk_size = new_array->disk_size;
@@ -570,7 +570,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 	{
 	  for (p = array_list; p != NULL; p = p->next)
 	    {
-	      if (! p->name && p->number == array->number) 
+	      if (p->number == array->number) 
 		break;
 	    }
 	}

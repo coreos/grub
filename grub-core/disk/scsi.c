@@ -506,7 +506,7 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
   if (scsi->blocksize != GRUB_DISK_SECTOR_SIZE)
     {
       unsigned spb = scsi->blocksize >> GRUB_DISK_SECTOR_BITS;
-      if (! (spb != 0 && (scsi->blocksize & GRUB_DISK_SECTOR_SIZE) == 0))
+      if (spb == 0 || (scsi->blocksize & (GRUB_DISK_SECTOR_SIZE - 1)) != 0)
 	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			   "unsupported SCSI block size");
 

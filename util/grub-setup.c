@@ -49,6 +49,7 @@
 #include <grub/emu/getroot.h>
 #include "progname.h"
 #include <grub/reed_solomon.h>
+#include <grub/msdos_partition.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -339,6 +340,12 @@ setup (const char *dir,
     {
       if (p->parent != container)
 	return 0;
+      /* NetBSD and OpenBSD subpartitions have metadata inside a partition,
+	 so they are safe to ignore.
+       */
+      if (grub_strcmp (p->partmap->name, "netbsd") == 0
+	  || grub_strcmp (p->partmap->name, "openbsd") == 0)
+	return 0;
       if (dest_partmap == NULL)
 	{
 	  dest_partmap = p->partmap;
@@ -351,6 +358,15 @@ setup (const char *dir,
     }
 
     grub_partition_iterate (dest_dev->disk, identify_partmap);
+
+    if (container && grub_strcmp (container->partmap->name, "msdos") == 0
+	&& dest_partmap
+	&& (container->msdostype == GRUB_PC_PARTITION_TYPE_NETBSD
+	    || container->msdostype == GRUB_PC_PARTITION_TYPE_OPENBSD))
+      {
+	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
+	goto unable_to_embed;
+      }
 
     fs = grub_fs_probe (dest_dev);
     if (!fs)

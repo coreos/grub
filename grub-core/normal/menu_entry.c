@@ -1227,7 +1227,7 @@ run (struct screen *screen)
     {
       if (menu && menu->size)
 	{
-	  grub_show_menu (menu, 1);
+	  grub_show_menu (menu, 1, 0);
 	  grub_normal_free_menu (menu);
 	}
       grub_env_context_close ();

@@ -17,7 +17,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config-util.h>
 #include <config.h>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
@@ -135,8 +137,12 @@ find_root_device_from_mountinfo (const char *dir)
 	continue; /* only a subtree is mounted */
 
       enc_path_len = strlen (enc_path);
+      /* Check that enc_path is a prefix of dir.  The prefix must either be
+         the entire string, or end with a slash, or be immediately followed
+         by a slash.  */
       if (strncmp (dir, enc_path, enc_path_len) != 0 ||
-	  (dir[enc_path_len] && dir[enc_path_len] != '/'))
+	  (enc_path_len && dir[enc_path_len - 1] != '/' &&
+	   dir[enc_path_len] && dir[enc_path_len] != '/'))
 	continue;
 
       /* This is a parent of the requested directory.  /proc/self/mountinfo

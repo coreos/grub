@@ -337,7 +337,7 @@ write_symbol_table (FILE* fp, char *image,
       else
         bind = STB_LOCAL;
 
-      if ((type != STT_FUNC) && (pe_symtab->num_aux))
+      if ((pe_symtab->type != GRUB_PE32_DT_FUNCTION) && (pe_symtab->num_aux))
         {
           if (! pe_symtab->value)
             type = STT_SECTION;

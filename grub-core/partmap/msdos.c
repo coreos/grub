@@ -271,14 +271,14 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 	break;
     }
 
-  if (end >= *nsectors + 1)
+  if (end >= *nsectors + 2)
     {
-      int i, j;
+      unsigned i, j;
       char *embed_signature_check;
       unsigned int orig_nsectors;
 
       orig_nsectors = *nsectors;
-      *nsectors = end - 1;
+      *nsectors = end - 2;
       *sectors = grub_malloc (*nsectors * sizeof (**sectors));
       if (!*sectors)
 	return grub_errno;

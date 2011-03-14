@@ -1136,7 +1136,7 @@ grub_gzio_open (grub_file_t io)
   file->data = gzio;
   file->read_hook = 0;
   file->fs = &grub_gzio_fs;
-  file->not_easly_seekable = 1;
+  file->not_easily_seekable = 1;
 
   if (! test_header (file))
     {

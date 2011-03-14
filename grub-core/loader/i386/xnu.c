@@ -951,10 +951,11 @@ grub_err_t
 grub_xnu_boot (void)
 {
   struct grub_xnu_boot_params *bootparams;
+  void *bp_in;
   grub_addr_t bootparams_target;
   grub_err_t err;
   grub_efi_uintn_t memory_map_size = 0;
-  grub_efi_memory_descriptor_t *memory_map;
+  void *memory_map;
   grub_addr_t memory_map_target;
   grub_efi_uintn_t map_key = 0;
   grub_efi_uintn_t descriptor_size = 0;
@@ -1006,9 +1007,10 @@ grub_xnu_boot (void)
 
   /* Relocate the boot parameters to heap. */
   err = grub_xnu_heap_malloc (sizeof (*bootparams),
-			      (void **) &bootparams, &bootparams_target);
+			      &bp_in, &bootparams_target);
   if (err)
     return err;
+  bootparams = bp_in;
 
   /* Set video. */
   err = grub_xnu_set_video (bootparams);
@@ -1035,7 +1037,7 @@ grub_xnu_boot (void)
      memory map growth.  */
   memory_map_size += 20 * descriptor_size;
   err = grub_xnu_heap_malloc (memory_map_size,
-			      (void **) &memory_map, &memory_map_target);
+			      &memory_map, &memory_map_target);
   if (err)
     return err;
 
@@ -1109,7 +1111,7 @@ grub_xnu_boot (void)
   grub_xnu_arg1 = bootparams_target;
 
   grub_autoefi_set_virtual_address_map (memory_map_size, descriptor_size,
-					descriptor_version,memory_map);
+					descriptor_version, memory_map);
 
   state.eip = grub_xnu_entry_point;
   state.eax = grub_xnu_arg1;

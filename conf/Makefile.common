@@ -67,7 +67,11 @@ CFLAGS_KERNEL = $(CFLAGS_CPU) $(CFLAGS_PLATFORM) -ffreestanding
 LDFLAGS_KERNEL = $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM) -nostdlib -Wl,-N -static-libgcc
 CPPFLAGS_KERNEL = $(CPPFLAGS_CPU) $(CPPFLAGS_PLATFORM)
 CCASFLAGS_KERNEL = $(CCASFLAGS_CPU) $(CCASFLAGS_PLATFORM)
+if COND_CYGWIN
+STRIPFLAGS_KERNEL = -F elf32-i386 -R .rel.dyn -R .reginfo -R .note -R .comment -R .drectve
+else
 STRIPFLAGS_KERNEL = -R .rel.dyn -R .reginfo -R .note -R .comment
+endif
 
 CFLAGS_MODULE = $(CFLAGS_CPU) $(CFLAGS_PLATFORM) -ffreestanding
 LDFLAGS_MODULE = $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM) -nostdlib -Wl,-N,-r,-d

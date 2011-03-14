@@ -394,7 +394,7 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
   grub_err_t err;
   Elf_Ehdr e;
   Elf_Shdr *s, *symsh, *strsh;
-  char *shdr;
+  char *shdr = NULL;
   unsigned symsize, strsize;
   void *sym_chunk;
   grub_uint8_t *curload;

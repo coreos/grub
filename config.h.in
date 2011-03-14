@@ -1,3 +1,7 @@
+#undef _LARGEFILE_SOURCE
+#undef _FILE_OFFSET_BITS
+#define _LARGEFILE_SOURCE
+#define _FILE_OFFSET_BITS 64
 #if defined (GRUB_UTIL) || !defined (GRUB_MACHINE)
 #include <config-util.h>
 #define NESTED_FUNC_ATTR

@@ -1,6 +1,7 @@
+/* cmdline.h - linux command line handling */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009, 2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,31 +17,15 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_POSIX_SYS_TYPES_H
-#define GRUB_POSIX_SYS_TYPES_H	1
+#ifndef GRUB_CMDLINE_HEADER
+#define GRUB_CMDLINE_HEADER	1
 
-#include <grub/misc.h>
+#include <grub/types.h>
 
-typedef grub_size_t size_t;
-typedef enum { false = 0, true = 1 } bool;
+#define LINUX_IMAGE "BOOT_IMAGE="
 
-#define ULONG_MAX GRUB_ULONG_MAX
-#define UCHAR_MAX 0xff
+unsigned int grub_loader_cmdline_size (int argc, char *argv[]);
+int grub_create_loader_cmdline (int argc, char *argv[], char *buf,
+				grub_size_t size);
 
-typedef grub_uint8_t uint8_t;
-typedef grub_uint16_t uint16_t;
-typedef grub_uint32_t uint32_t;
-typedef grub_uint64_t uint64_t;
-
-typedef grub_int8_t int8_t;
-typedef grub_int16_t int16_t;
-typedef grub_int32_t int32_t;
-typedef grub_int64_t int64_t;
-
-#ifdef GRUB_CPU_WORDS_BIGENDIAN
-#define WORDS_BIGENDIAN
-#else
-#undef WORDS_BIGENDIAN
-#endif
-
-#endif
+#endif /* ! GRUB_CMDLINE_HEADER */

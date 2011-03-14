@@ -324,6 +324,7 @@ image = {
   name = fwstart;
   mips_yeeloong = boot/mips/yeeloong/fwstart.S;
   objcopyflags = '-O binary';
+  ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_yeeloong;
 };
 
@@ -1149,6 +1150,7 @@ module = {
 module = {
   name = linux16;
   i386_pc = loader/i386/pc/linux.c;
+  i386_pc = lib/cmdline.c;
   enable = i386_pc;
 };
 
@@ -1183,6 +1185,7 @@ module = {
   mips = loader/mips/linux.c;
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
+  common = lib/cmdline.c;
   enable = noemu;
 };
 
@@ -1461,7 +1464,6 @@ module = {
   name = ieee1275_fb;
   ieee1275 = video/ieee1275.c;
   enable = powerpc;
-  enable = sparc64;
 };
 
 module = {

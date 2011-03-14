@@ -377,8 +377,8 @@ grub_util_devname_to_ofpath (const char *devname)
   if (! name_buf)
     grub_util_error ("cannot get the real path of `%s'", devname);
 
-  device = get_basename (devname);
-  devnode = strip_trailing_digits (devname);
+  device = get_basename (name_buf);
+  devnode = strip_trailing_digits (name_buf);
   devicenode = strip_trailing_digits (device);
 
   ofpath = xmalloc (OF_PATH_MAX);
@@ -391,6 +391,13 @@ grub_util_devname_to_ofpath (const char *devname)
   else if (device[0] == 'v' && device[1] == 'd' && device[2] == 'i'
 	   && device[3] == 's' && device[4] == 'k')
     of_path_of_vdisk(ofpath, name_buf, device, devnode, devicenode);
+  else if (device[0] == 'f' && device[1] == 'd'
+	   && device[2] == '0' && device[3] == '\0')
+    /* All the models I've seen have a devalias "floppy".
+       New models have no floppy at all. */
+    strcpy (ofpath, "floppy");
+  else
+    grub_util_error ("unknown device type %s\n", device);
 
   free (devnode);
   free (devicenode);
