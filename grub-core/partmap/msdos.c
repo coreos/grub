@@ -275,7 +275,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
     {
       int i, j;
       char *embed_signature_check;
-      unsigned int orig_nsectors, extra_sectors = 0;
+      unsigned int orig_nsectors;
 
       orig_nsectors = *nsectors;
       *nsectors = end - 1;
@@ -307,7 +307,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 			  "future.  Please ask its authors not to store data "
 			  "in the boot track",
 			  (*sectors)[i], embed_signatures[j].name);
-	  extra_sectors++;
+	  (*nsectors)--;
 
 	  /* Avoid this sector.  */
 	  for (j = i; j < *nsectors; j++)
@@ -315,7 +315,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 	}
       grub_free (embed_signature_check);
 
-      if (end + extra_sectors < orig_nsectors + 1)
+      if (*nsectors < orig_nsectors)
 	return grub_error (GRUB_ERR_OUT_OF_RANGE,
 			   "Other software is using the embedding area, and "
 			   "there is not enough room for core.img.  Such "
