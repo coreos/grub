@@ -77,10 +77,10 @@ struct grub_relocator_fw_leftover
   grub_uint8_t freebytes[GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT / 8];
 };
 
-struct grub_relocator_fw_leftover *leftovers;
+static struct grub_relocator_fw_leftover *leftovers;
 #endif
 
-struct grub_relocator_extra_block *extra_blocks;
+static struct grub_relocator_extra_block *extra_blocks;
 
 void *
 get_virtual_current_address (grub_relocator_chunk_t in)

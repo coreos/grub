@@ -31,8 +31,8 @@ struct menu_pointer
   struct menu_pointer *prev;
 };
 
-struct menu_pointer initial_menu;
-struct menu_pointer *current_menu = &initial_menu;
+static struct menu_pointer initial_menu;
+static struct menu_pointer *current_menu = &initial_menu;
 
 void
 grub_env_unset_menu (void)

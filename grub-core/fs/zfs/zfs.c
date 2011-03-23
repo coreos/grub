@@ -161,7 +161,7 @@ struct grub_zfs_data
   grub_disk_addr_t vdev_phys_sector;
 };
 
-decomp_entry_t decomp_table[ZIO_COMPRESS_FUNCTIONS] = {
+static decomp_entry_t decomp_table[ZIO_COMPRESS_FUNCTIONS] = {
   {"inherit", NULL},		/* ZIO_COMPRESS_INHERIT */
   {"on", lzjb_decompress},	/* ZIO_COMPRESS_ON */
   {"off", NULL},		/* ZIO_COMPRESS_OFF */
@@ -201,7 +201,7 @@ zio_checksum_off (const void *buf __attribute__ ((unused)),
 }
 
 /* Checksum Table and Values */
-zio_checksum_info_t zio_checksum_table[ZIO_CHECKSUM_FUNCTIONS] = {
+static zio_checksum_info_t zio_checksum_table[ZIO_CHECKSUM_FUNCTIONS] = {
   {NULL, 0, 0, "inherit"},
   {NULL, 0, 0, "on"},
   {zio_checksum_off, 0, 0, "off"},

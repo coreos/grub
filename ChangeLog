@@ -1,5 +1,38 @@
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/usb.c (attach_hooks): Make static.
+	* grub-core/bus/usb/usbhub.c (hubs): Likewise.
+	* grub-core/commands/hashsum.c (aliases): Likewise.
+	* grub-core/commands/setpci.c (pci_registers): Likewise.
+	* grub-core/disk/usbms.c (attach_hook): Likewise.
+	* grub-core/fs/zfs/zfs.c (decomp_table): Likewise.
+	(zio_checksum_table): Likewise.
+	* grub-core/gettext/gettext.c (grub_gettext_msg_list): Likewise.
+	* grub-core/gfxmenu/gfxmenu.c (cached_view): Likewise.
+	* grub-core/lib/legacy_parse.c (legacy_commands): Likewise.
+	* grub-core/lib/relocator.c (leftovers): Likewise.
+	(extra_blocks): Likewise.
+	* grub-core/loader/i386/bsd.c (relocator): Likewise.
+	* grub-core/loader/i386/multiboot_mbi.c (modules): Likewise.
+	(modules_last): Likewise.
+	* grub-core/loader/i386/xnu.c (table_aliases): Likewise.
+	(devices): Likewise.
+	* grub-core/loader/multiboot_mbi2.c (modules): Likewise.
+	(modules_last): Likewise.
+	* grub-core/normal/auth.c (users): Likewise.
+	* grub-core/normal/context.c (initial_menu): Likewise.
+	(current_menu): Likewise.
+	* grub-core/normal/crypto.c (crypto_specs): Likewise.
+	* grub-core/term/serial.c (grub_serial_ports): Likewise.
+	(grub_serial_terminfo_input_template): Likewise.
+	(grub_serial_terminfo_output_template): Likewise.
+	(grub_serial_terminfo_input): Likewise.
+	(grub_serial_terminfo_output): Likewise.
+	(registered): Likewise.
+	* grub-core/term/usb_keyboard.c (attach_hook): Likewise.
+
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/bochs.c (grub_video_bochs_setup): Use
 	grub_video_mode_type_t.
 	* grub-core/video/cirrus.c (grub_video_cirrus_setup): Likewise.

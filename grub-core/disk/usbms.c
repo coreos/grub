@@ -408,7 +408,7 @@ static struct grub_scsi_dev grub_usbms_dev =
     .write = grub_usbms_write
   };
 
-struct grub_usb_attach_desc attach_hook =
+static struct grub_usb_attach_desc attach_hook =
 {
   .class = GRUB_USB_CLASS_MASS_STORAGE,
   .hook = grub_usbms_attach

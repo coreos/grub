@@ -39,7 +39,7 @@ struct grub_usb_hub
   grub_usb_device_t dev;
 };
 
-struct grub_usb_hub *hubs;
+static struct grub_usb_hub *hubs;
 
 /* Add a device that currently has device number 0 and resides on
    CONTROLLER, the Hub reported that the device speed is SPEED.  */

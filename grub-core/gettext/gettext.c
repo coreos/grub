@@ -49,7 +49,7 @@ struct grub_gettext_msg
   const char *translated;
 };
 
-struct grub_gettext_msg *grub_gettext_msg_list = NULL;
+static struct grub_gettext_msg *grub_gettext_msg_list = NULL;
 
 #define GETTEXT_MAGIC_NUMBER 		0
 #define GETTEXT_FILE_FORMAT		4
