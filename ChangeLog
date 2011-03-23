@@ -1,3 +1,19 @@
+2011-03-23  Peter Jones  <pjones@redhat.com>
+
+	Fix incorrect assert failure reporting.
+
+	* grub-core/tests/example_functional_test.c (example_test): Add
+	a failure comment.
+	* grub-core/tests/lib/test.c (add_failure): Renamed to ...
+	(failure_start): ...this. Check that malloc succeeded.
+	Don't call xvasprintf. Return failure struct.
+	(failure_append_vtext): New function.
+	(failure_append_text): Likewise.
+	(add_failure): Likewise.
+	(grub_test_assert_helper): Likewise.
+	* include/grub/test.h (grub_test_assert_helper): New declaration.
+	(grub_test_assert): Macro rewritten.
+
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/main.c (GRUB_MOD_INIT): Export pager variable.
