@@ -367,7 +367,7 @@ if [ x"$platform" = xefi ]; then
 	    case "$target_cpu" in
 		i386)
 		    efi_file=BOOTIA32.EFI ;;
-		x86-64)
+		x86_64)
 		    efi_file=BOOTX64.EFI ;;
 	    # GRUB does not yet support these architectures, but they're defined
 	    # by the specification so we include them here to ease future
@@ -381,7 +381,7 @@ if [ x"$platform" = xefi ]; then
 	    case "$target_cpu" in
 		i386)
 		    efi_file=grubia32.efi ;;
-		x86-64)
+		x86_64)
 		    efi_file=grubx64.efi ;;
 	 # GRUB does not yet support these architectures, but they're defined
  	 # by the specification so we include them here to ease future

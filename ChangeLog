@@ -1,3 +1,7 @@
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Correct the x86-64 name as x86_64.
+
 2011-03-11  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/boot/i386/pc/lnxboot.S (real_code_2): Ensure that the
