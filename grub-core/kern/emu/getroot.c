@@ -131,7 +131,6 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
       size_t enc_path_len;
       const char *sep;
       char fstype[PATH_MAX], device[PATH_MAX];
-      struct stat st;
 
       if (sscanf (buf, "%d %d %u:%u %s %s%n",
 		  &mnt_id, &parent_mnt_id, &major, &minor, enc_root, enc_path,
