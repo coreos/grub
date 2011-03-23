@@ -1,5 +1,9 @@
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/main.c (GRUB_MOD_INIT): Export pager variable.
+
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/i386/pc/biosnum.c: Add missing include.
 
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
