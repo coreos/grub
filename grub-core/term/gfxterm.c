@@ -945,6 +945,8 @@ calculate_normal_character_width (grub_font_t font)
       if (glyph->device_width > width)
 	width = glyph->device_width;
     }
+  if (!width)
+    return 8;
 
   return width;
 }

@@ -1,3 +1,8 @@
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/gfxterm.c (calculate_normal_character_width): Return 8
+	if no ASCII character is found to prevent crash.
+
 2011-03-23  Alexander Kurtz  <kurtz.alex@googlemail.com>
 
 	* grub-core/video/bitmap.c (match_extension): Ignore case.
