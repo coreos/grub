@@ -70,7 +70,11 @@ static int first_available_slot = 0;
 static grub_err_t
 grub_usbms_reset (grub_usb_device_t dev, int interface)
 {
-  return grub_usb_control_msg (dev, 0x21, 255, 0, interface, 0, 0);
+  grub_usb_err_t u;
+  u = grub_usb_control_msg (dev, 0x21, 255, 0, interface, 0, 0);
+  if (u)
+    return grub_error (GRUB_ERR_IO, "USB error %d", u);
+  return GRUB_ERR_NONE;
 }
 
 static void

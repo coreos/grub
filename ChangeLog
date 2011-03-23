@@ -1,5 +1,10 @@
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/usbms.c (grub_usbms_reset): Transform USB-style error
+	into GRUB-style one.
+
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/usbtrans.c (grub_usb_control_msg): Return usb-style
 	error and not grub_errno.
 	* grub-core/bus/usb/usbhub.c (grub_usb_add_hub): Likewise.
