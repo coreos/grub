@@ -1,5 +1,11 @@
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/usbtrans.c (grub_usb_control_msg): Return usb-style
+	error and not grub_errno.
+	* grub-core/bus/usb/usbhub.c (grub_usb_add_hub): Likewise.
+
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/uhci.c (grub_uhci_detect_dev): Return
 	GRUB_USB_SPEED_NONE in case of failure and not the error code.
 
