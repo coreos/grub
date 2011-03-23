@@ -177,7 +177,7 @@ match_extension (const char *filename, const char *ext)
 
   pos -= ext_len;
 
-  return grub_strcmp (filename + pos, ext) == 0;
+  return grub_strcasecmp (filename + pos, ext) == 0;
 }
 
 /* Loads bitmap using registered bitmap readers.  */
