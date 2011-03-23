@@ -1,5 +1,9 @@
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu_entry.c (init_line): Fix off-by-one error.
+
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/parser.y: Declare "time" as valid argument.
 
 2011-03-23  Peter Jones  <pjones@redhat.com>

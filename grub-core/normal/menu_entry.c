@@ -87,7 +87,7 @@ init_line (struct line *linep)
 {
   linep->len = 0;
   linep->max_len = 80; /* XXX */
-  linep->buf = grub_malloc (linep->max_len);
+  linep->buf = grub_malloc (linep->max_len + 1);
   if (! linep->buf)
     return 0;
 
