@@ -110,7 +110,7 @@ static grub_usb_err_t
 grub_usb_add_hub (grub_usb_device_t dev)
 {
   struct grub_usb_usb_hubdesc hubdesc;
-  grub_err_t err;
+  grub_usb_err_t err;
   int i;
   
   err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
