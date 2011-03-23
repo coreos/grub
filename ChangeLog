@@ -1,5 +1,9 @@
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/i386/pc/biosnum.c: Add missing include.
+
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/usbms.c (grub_usbms_reset): Transform USB-style error
 	into GRUB-style one.
 
