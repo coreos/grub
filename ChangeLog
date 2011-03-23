@@ -1,3 +1,7 @@
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/script/parser.y: Declare "time" as valid argument.
+
 2011-03-23  Peter Jones  <pjones@redhat.com>
 
 	Fix incorrect assert failure reporting.
