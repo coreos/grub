@@ -24,7 +24,7 @@
 #include <grub/acpi.h>
 
 grub_err_t
-grub_machine_efiemu_init_tables ()
+grub_machine_efiemu_init_tables (void)
 {
   grub_uint8_t *ptr;
   void *table;

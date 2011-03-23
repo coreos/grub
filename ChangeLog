@@ -1,5 +1,13 @@
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/efiemu/i386/pc/cfgtables.c
+	(grub_machine_efiemu_init_tables): Make declaration a prototype.
+	* grub-core/loader/xnu.c (grub_xnu_lock): Likewise.
+	(grub_xnu_unlock): Likewise.
+	* grub-core/normal/cmdline.c (grub_cmdline_get/cl_set_pos_all): Likewise.
+
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/usb.c (attach_hooks): Make static.
 	* grub-core/bus/usb/usbhub.c (hubs): Likewise.
 	* grub-core/commands/hashsum.c (aliases): Likewise.
