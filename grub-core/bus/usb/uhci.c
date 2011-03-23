@@ -749,8 +749,7 @@ grub_uhci_detect_dev (grub_usb_controller_t dev, int port, int *changed)
   else if (port == 1)
     reg = GRUB_UHCI_REG_PORTSC2;
   else
-    return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "UHCI Root Hub port does not exist");
+    return GRUB_USB_SPEED_NONE;
 
   status = grub_uhci_readreg16 (u, reg);
 

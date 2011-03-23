@@ -1,5 +1,10 @@
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/uhci.c (grub_uhci_detect_dev): Return
+	GRUB_USB_SPEED_NONE in case of failure and not the error code.
+
+2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/efiemu/i386/pc/cfgtables.c
 	(grub_machine_efiemu_init_tables): Make declaration a prototype.
 	* grub-core/loader/xnu.c (grub_xnu_lock): Likewise.
