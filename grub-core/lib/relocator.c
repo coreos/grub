@@ -200,10 +200,12 @@ allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
   struct grub_mm_header *foll = NULL;
   grub_addr_t vaddr = (grub_addr_t) hb + (paddr - grub_vtop (hb));
 
+#ifdef DEBUG_RELOCATOR
   grub_dprintf ("relocator", "inreg paddr = 0x%lx, size = %lu,"
 		" hb = %p, hbp = %p, rb = %p, vaddr = 0x%lx\n",
 		(unsigned long) paddr, (unsigned long) size, hb, hbp,
 		rb, (unsigned long) vaddr);
+#endif
     
   if (ALIGN_UP (vaddr + size, GRUB_MM_ALIGN) + GRUB_MM_ALIGN
       <= (grub_addr_t) (hb + hb->size))
