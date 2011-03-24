@@ -1,5 +1,11 @@
 2011-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/relocator.c (grub_relocator_alloc_chunk_addr)
+	[DEBUG_RELOCATOR]: Reuse grub_mm_check.
+	(grub_relocator_alloc_chunk_align) [DEBUG_RELOCATOR]: Likewise.
+
+2011-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/mm.h (GRUB_MM_CHECK): Rename to ...
 	(grub_mm_check): ... this. MAke a function-like macro and use GRUB_FILE.
 

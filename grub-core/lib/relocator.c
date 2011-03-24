@@ -1284,23 +1284,8 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel,
   chunk->srcv = grub_map_memory (chunk->src, chunk->size);
   *out = chunk;
 #ifdef DEBUG_RELOCATOR
-  {
-    grub_mm_region_t r;
-    grub_mm_header_t p;
-    grub_memset (chunk->srcv, 0xfa, chunk->size);
-    for (r = grub_mm_base; r; r = r->next)
-      {
-	p = r->first;
-	do
-	  {
-	    if ((grub_addr_t) p < (grub_addr_t) (r + 1)
-		|| (grub_addr_t) p >= (grub_addr_t) (r + 1) + r->size)
-	      grub_fatal (__FILE__ ":%d: out of range pointer: %p\n", __LINE__, p);
-	    p = p->next;
-	  }
-	while (p != r->first);
-      }
-  }
+  grub_memset (chunk->srcv, 0xfa, chunk->size);
+  grub_mm_check ();
 #endif
   return GRUB_ERR_NONE;
 }
@@ -1438,24 +1423,8 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
   chunk->srcv = grub_map_memory (chunk->src, chunk->size);
   *out = chunk;
 #ifdef DEBUG_RELOCATOR
-  {
-    grub_mm_region_t r;
-    grub_mm_header_t p;
-
-    grub_memset (chunk->srcv, 0xfa, chunk->size);
-    for (r = grub_mm_base; r; r = r->next)
-      {
-	p = r->first;
-	do
-	  {
-	    if ((grub_addr_t) p < (grub_addr_t) (r + 1)
-		|| (grub_addr_t) p >= (grub_addr_t) (r + 1) + r->size)
-	      grub_fatal (__FILE__ "%d: out of range pointer: %p\n", __LINE__, p);
-	    p = p->next;
-	  }
-	while (p != r->first);
-      }
-  }
+  grub_memset (chunk->srcv, 0xfa, chunk->size);
+  grub_mm_check ();
 #endif
   return GRUB_ERR_NONE;
 }
