@@ -1,3 +1,8 @@
+2011-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/bsdXX.c (grub_freebsd_load_elfmodule): Account
+	for modules headers when counting the needed allocation size.
+
 2011-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/gfxterm.c (calculate_normal_character_width): Return 8
