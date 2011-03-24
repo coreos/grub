@@ -1,5 +1,10 @@
 2011-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/mm.h (GRUB_MM_CHECK): Rename to ...
+	(grub_mm_check): ... this. MAke a function-like macro and use GRUB_FILE.
+
+2011-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/relocator.c (allocate_inreg): Avoid dprintf unless
 	DEBUG_RELOCATOR is defined since gfxterm can't cope with output when
 	malloc is disabled.
