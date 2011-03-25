@@ -426,10 +426,8 @@ setup (const char *dir,
       }
 
     nsec = core_sectors;
-    err = dest_partmap->embed (dest_dev->disk, &nsec,
+    err = dest_partmap->embed (dest_dev->disk, &nsec, 2 * core_sectors,
 			       GRUB_EMBED_PCBIOS, &sectors);
-    if (nsec > 2 * core_sectors)
-      nsec = 2 * core_sectors;
     
     if (err)
       {

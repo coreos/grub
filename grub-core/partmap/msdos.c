@@ -185,6 +185,7 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 #ifdef GRUB_UTIL
 static grub_err_t
 pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
+			unsigned int max_nsectors,
 			grub_embed_type_t embed_type,
 			grub_disk_addr_t **sectors)
 {
@@ -275,10 +276,13 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
     {
       unsigned i, j;
       char *embed_signature_check;
-      unsigned int orig_nsectors;
+      unsigned int orig_nsectors, avail_nsectors;
 
       orig_nsectors = *nsectors;
       *nsectors = end - 2;
+      avail_nsectors = *nsectors;
+      if (*nsectors > max_nsectors)
+	*nsectors = max_nsectors;
       *sectors = grub_malloc (*nsectors * sizeof (**sectors));
       if (!*sectors)
 	return grub_errno;
@@ -307,11 +311,20 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 			  "future.  Please ask its authors not to store data "
 			  "in the boot track",
 			  (*sectors)[i], embed_signatures[j].name);
-	  (*nsectors)--;
+	  avail_nsectors--;
+	  if (avail_nsectors < *nsectors)
+	    *nsectors = avail_nsectors;
 
 	  /* Avoid this sector.  */
 	  for (j = i; j < *nsectors; j++)
 	    (*sectors)[j]++;
+
+	  /* Have we run out of space?  */
+	  if (avail_nsectors < orig_nsectors)
+	    break;
+
+	  /* Make sure to check the next sector.  */
+	  i--;
 	}
       grub_free (embed_signature_check);
 

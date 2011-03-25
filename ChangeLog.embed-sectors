@@ -1,7 +1,12 @@
 2011-03-14  Colin Watson  <cjwatson@ubuntu.com>
 
+	* include/grub/partition.h (grub_partition_map): Change prototype of
+	embed to take a maximum value for nsectors.
 	* grub-core/partmap/msdos.c (embed_signatures): New array.
 	(pc_partition_map_embed): Check for and avoid sectors matching any
-	of the signatures in embed_signatures.
+	of the signatures in embed_signatures, up to max_nsectors.
+	* grub-core/partmap/gpt.c (gpt_partition_map_embed): Restrict
+	returned sector map to max_nsectors.
 	* util/grub-setup.c (setup): Allow for the embedding area being
-	split into multiple blocklists.
+	split into multiple blocklists.  Tell dest_partmap->embed the
+	maximum number of sectors we care about.
