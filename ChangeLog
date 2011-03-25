@@ -1,3 +1,10 @@
+2011-03-24  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/video/fb/video_fb.c (grub_video_fb_get_info_and_fini):
+	Switch back to page zero before loading a kernel, since some kernel
+	drivers expect that.
+	Thanks to: Felix Kuehling.
+
 2011-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/relocator.c (grub_relocator_alloc_chunk_addr)
