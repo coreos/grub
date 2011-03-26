@@ -1,5 +1,34 @@
 2011-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use libgeom on FreeBSD to detect partitions.
+
+	* Makefile.util.def (grub-mkimage): Add LIBGEOM to ldadd.
+	(grub-mkrelpath): Likewise.
+	(grub-script-check): Likewise.
+	(grub-editenv): Likewise.
+	(grub-mkpasswd-pbkdf2): Likewise.
+	(grub-fstest): Likewise.
+	(grub-mkfont): Likewise.
+	(grub-mkdevicemap): Likewise.
+	(grub-probe): Likewise.
+	(grub-setup): Likewise.
+	(grub-ofpathname): Likewise.
+	(grub-mklayout): Likewise.
+	(example_unit_test): Likewise.
+	(grub-menulst2cfg): Likewise.
+	* grub-core/Makefile.core.def (grub-emu): Likewise.
+	(grub-emu-lite): Likewise.
+	* configure.ac: Check for -lgeom on FreeBSD and set LIBGEOM.
+	* grub-core/kern/emu/hostdisk.c [FreeBSD]: Include libgeom.h. Don't
+	define HAVE_DIOCGDINFO.
+	(follow_geom_up) [FreeBSD]: New function.
+	(find_partition_start) [FreeBSD]: Rewritten using follow_geom_up.
+	(convert_system_partition_to_system_disk) [FreeBSD]: Likewise.
+	(grub_util_biosdisk_get_grub_dev) [FreeBSD]: Use FreeBSD path
+	unconditionally of HAVE_DIOCGDINFO.
+
+2011-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix FreeBSD compilation problem.
 
 	* grub-core/kern/emu/hostdisk.c (MAJOR) [FreeBSD]: New definition.

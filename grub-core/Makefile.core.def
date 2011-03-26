@@ -200,7 +200,7 @@ program = {
 
   ldadd = 'kernel.img$(EXEEXT)';
   ldadd = '$(MODULE_FILES)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;
 };
@@ -212,7 +212,7 @@ program = {
   emu_nodist = symlist.c;
 
   ldadd = 'kernel.img$(EXEEXT)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;
 };
