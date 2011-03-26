@@ -1,5 +1,9 @@
 2011-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/iso9660.c (grub_iso9660_label): Rtrim the label.
+
+2011-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use libgeom on FreeBSD to detect partitions.
 
 	* Makefile.util.def (grub-mkimage): Add LIBGEOM to ldadd.
