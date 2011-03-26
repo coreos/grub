@@ -1,3 +1,8 @@
+2011-03-26  Seth Goldberg <seth.goldberg@oracle.com>
+
+	* grub-core/kern/emu/getroot.c (find_root_device_from_libzfs): Don't
+	return freed string.
+
 2011-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/iso9660.c (grub_iso9660_label): Rtrim the label.

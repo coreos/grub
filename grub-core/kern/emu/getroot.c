@@ -184,7 +184,7 @@ find_root_device_from_mountinfo (const char *dir)
 static char *
 find_root_device_from_libzfs (const char *dir)
 {
-  char *device;
+  char *device = NULL;
   char *poolname;
   char *poolfs;
 
@@ -225,7 +225,10 @@ find_root_device_from_libzfs (const char *dir)
 
 	struct stat st;
 	if (stat (device, &st) == 0)
-	  break;
+	  {
+	    device = xstrdup (device);
+	    break;
+	  }
 
 	device = NULL;
       }
