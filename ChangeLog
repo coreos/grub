@@ -1,3 +1,10 @@
+2011-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix FreeBSD compilation problem.
+
+	* grub-core/kern/emu/hostdisk.c (MAJOR) [FreeBSD]: New definition.
+	(FLOPPY_MAJOR) [FreeBSD]: Likewise.
+
 2011-03-24  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/video/fb/video_fb.c (grub_video_fb_get_info_and_fini):

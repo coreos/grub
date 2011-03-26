@@ -92,6 +92,8 @@ struct hd_geometry
 # include <sys/disk.h> /* DIOCGMEDIASIZE */
 # include <sys/param.h>
 # include <sys/sysctl.h>
+# define MAJOR(dev) major(dev)
+# define FLOPPY_MAJOR	2
 #endif
 
 #if defined(__APPLE__)
