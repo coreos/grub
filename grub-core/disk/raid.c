@@ -696,7 +696,8 @@ grub_raid_register (grub_raid_t raid)
       struct grub_raid_array array;
       grub_disk_addr_t start_sector;
 
-      grub_dprintf ("raid", "Scanning for RAID devices on disk %s\n", name);
+      grub_dprintf ("raid", "Scanning for %s RAID devices on disk %s\n",
+		    grub_raid_list->name, name);
 
       disk = grub_disk_open (name);
       if (!disk)
