@@ -1,5 +1,10 @@
 2011-03-28  Colin Watson  <cjwatson@debian.org>
 
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Remove stale
+	comment.
+
+2011-03-28  Colin Watson  <cjwatson@debian.org>
+
 	* grub-core/disk/raid.c (grub_raid_register): Adjust debug message
 	to be specific about what kind of RAID device we're scanning for.
 
