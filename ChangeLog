@@ -1,5 +1,12 @@
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/gfxterm.c (dirty_region_add): Move core part to ...
+	(dirty_region_add_real): ... this.
+	(dirty_region_add): Don't discard margin refresh when performing
+	scheduled repaint.
+
+2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/relocator.c (allocate_regstart)
 	[!DEBUG_RELOCATOR_NOMEM_DPRINTF]: Avoid grub_dprintf since not all
 	terminals are capabple of malloc-free operation.

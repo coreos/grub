@@ -532,21 +532,8 @@ dirty_region_is_empty (void)
 }
 
 static void
-dirty_region_add (int x, int y, unsigned int width, unsigned int height)
+dirty_region_add_real (int x, int y, unsigned int width, unsigned int height)
 {
-  if ((width == 0) || (height == 0))
-    return;
-
-  if (repaint_scheduled)
-    {
-      x = virtual_screen.offset_x;
-      y = virtual_screen.offset_y;
-      width = virtual_screen.width;
-      height = virtual_screen.height;
-      repaint_scheduled = 0;
-      repaint_was_scheduled = 1;
-    }
-
   if (dirty_region_is_empty ())
     {
       dirty_region.top_left_x = x;
@@ -565,6 +552,22 @@ dirty_region_add (int x, int y, unsigned int width, unsigned int height)
       if ((y + (int)height - 1) > dirty_region.bottom_right_y)
         dirty_region.bottom_right_y = y + height - 1;
     }
+}
+
+static void
+dirty_region_add (int x, int y, unsigned int width, unsigned int height)
+{
+  if ((width == 0) || (height == 0))
+    return;
+
+  if (repaint_scheduled)
+    {
+      dirty_region_add_real (virtual_screen.offset_x, virtual_screen.offset_y,
+			     virtual_screen.width, virtual_screen.height);
+      repaint_scheduled = 0;
+      repaint_was_scheduled = 1;
+    }
+  dirty_region_add_real (x, y, width, height);
 }
 
 static void
