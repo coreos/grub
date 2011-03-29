@@ -1,5 +1,10 @@
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ext2.c (grub_ext2_read_inode): Fix an overflow.
+	Reported and tested by: Timothy Nikkel.
+
+2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/gfxterm.c (dirty_region_add): Move core part to ...
 	(dirty_region_add_real): ... this.
 	(dirty_region_add): Don't discard margin refresh when performing
