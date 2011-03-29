@@ -1,5 +1,18 @@
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/lvm.h (grub_lvm_lv): New field 'visible'.
+	(grub_lvm_segment): New fields 'type', 'mirror_count' and 'mirrors'.
+	(grub_lvm_mirror): New struct.
+	* grub-core/disk/lvm.c (grub_lvm_checkvalue): Commented out.
+	(grub_lvm_iterate): Iterate only visible volumes.
+	(grub_lvm_read): Factor out to ..
+	(read_lv): ... this. Support mirrors.
+	(grub_lvm_read): New wrapper function.
+	(grub_lvm_scan_device): Parse mirrors. Skip everything that isn't
+	stripped or mirrored.
+
+2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/10_linux.in: Skip vmlinux-* on x86 platforms.
 
 2011-03-29  Colin Watson  <cjwatson@ubuntu.com>
