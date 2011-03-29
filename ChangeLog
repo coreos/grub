@@ -1,3 +1,12 @@
+2011-03-29  Mario Limonciello  <Mario_Limonciello@Dell.com>
+
+        * util/grub-setup.c: Copy the partition table zone if floppy support
+	is disabled, even if no partition table is found.
+
+        Otherwise, the BIOS on Dell Latitude E series laptops will freeze
+        during POST if an invalid partition table is contained in the PBR
+        of the active partition when GRUB is installed to a partition.
+
 2011-03-28  Colin Watson  <cjwatson@debian.org>
 
 	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Remove stale
