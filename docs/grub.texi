@@ -2589,6 +2589,7 @@ you forget a command, you can run the command @command{help}
 * keystatus::                   Check key modifier status
 * linux::                       Load a Linux kernel
 * linux16::                     Load a Linux kernel (16-bit mode)
+* loopback::                    Make a device from a filesystem image
 * ls::                          List devices or files
 * parttool::                    Modify partition table entries
 * password::                    Set a clear-text password
@@ -2975,6 +2976,23 @@ permits booting some other programs that implement the Linux boot protocol
 for the sake of convenience.
 
 This command is only available on x86 systems.
+@end deffn
+
+
+@node loopback
+@subsection loopback
+
+@deffn Command loopback [@option{-d}] device file
+Make the device named @var{device} correspond to the contents of the
+filesystem image in @var{file}.  For example:
+
+@example
+loopback loop0 /path/to/image
+ls (loop0)/
+@end example
+
+With the @option{-d} option, delete a device previously created using this
+command.
 @end deffn
 
 
