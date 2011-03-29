@@ -1,5 +1,10 @@
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/misc.c (grub_normal_print_device_info): Use correct
+	printf clauses for printing size and start.
+
+2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ext2.c (grub_ext2_read_inode): Fix an overflow.
 	Reported and tested by: Timothy Nikkel.
 
