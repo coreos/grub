@@ -192,7 +192,10 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 	array->level = grub_le_to_cpu32 (real_sb->level);
 	array->layout = grub_le_to_cpu32 (real_sb->layout);
 	array->total_devs = grub_le_to_cpu32 (real_sb->raid_disks);
-	array->disk_size = grub_le_to_cpu64 (real_sb->size);
+	if (real_sb->size)
+	  array->disk_size = grub_le_to_cpu64 (real_sb->size);
+	else
+	  array->disk_size = grub_le_to_cpu64 (real_sb->data_size);
 	array->chunk_size = grub_le_to_cpu32 (real_sb->chunksize);
 
 	if (grub_le_to_cpu32 (real_sb->dev_number) >=

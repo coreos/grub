@@ -1,3 +1,10 @@
+2011-03-29  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): If
+	real_sb->size is zero (e.g. RAID-0), get the disk size from
+	real_sb->data_size instead.
+	Fixes Ubuntu bug #743136.
+
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/misc.c (grub_normal_print_device_info): Use correct
