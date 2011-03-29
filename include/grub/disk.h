@@ -100,6 +100,9 @@ struct grub_disk
   /* The total number of sectors.  */
   grub_uint64_t total_sectors;
 
+  /* Logarithm of sector size.  */
+  unsigned int log_sector_size;
+
   /* The id used by the disk cache manager.  */
   unsigned long id;
 
@@ -132,9 +135,10 @@ typedef struct grub_disk_memberlist *grub_disk_memberlist_t;
 /* The maximum number of disk caches.  */
 #define GRUB_DISK_CACHE_NUM	1021
 
-/* The size of a disk cache in sector units.  */
-#define GRUB_DISK_CACHE_SIZE	8
-#define GRUB_DISK_CACHE_BITS	3
+/* The size of a disk cache in 512B units. Must be at least as big as the
+   largest supported sector size, currently 16K.  */
+#define GRUB_DISK_CACHE_BITS	6
+#define GRUB_DISK_CACHE_SIZE	(1 << GRUB_DISK_CACHE_BITS)
 
 /* Return value of grub_disk_get_size() in case disk size is unknown. */
 #define GRUB_DISK_SIZE_UNKNOWN	 0xffffffffffffffffULL

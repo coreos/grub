@@ -247,6 +247,7 @@ grub_disk_open (const char *name)
   disk = (grub_disk_t) grub_zalloc (sizeof (*disk));
   if (! disk)
     return 0;
+  disk->log_sector_size = GRUB_DISK_SECTOR_BITS;
 
   p = find_part_sep (name);
   if (p)
@@ -266,7 +267,6 @@ grub_disk_open (const char *name)
   if (! disk->name)
     goto fail;
 
-
   for (dev = grub_disk_dev_list; dev; dev = dev->next)
     {
       if ((dev->open) (raw, disk) == GRUB_ERR_NONE)
@@ -280,6 +280,14 @@ grub_disk_open (const char *name)
   if (! dev)
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such disk");
+      goto fail;
+    }
+  if (disk->log_sector_size > GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS
+      || disk->log_sector_size < GRUB_DISK_SECTOR_BITS)
+    {
+      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		  "sector sizes of %d bytes aren't supported yet",
+		  (1 << disk->log_sector_size));
       goto fail;
     }
 
@@ -373,12 +381,21 @@ grub_disk_adjust_range (grub_disk_t disk, grub_disk_addr_t *sector,
       *sector += start;
     }
 
-  if (disk->total_sectors <= *sector
-      || ((*offset + size + GRUB_DISK_SECTOR_SIZE - 1)
-	  >> GRUB_DISK_SECTOR_BITS) > disk->total_sectors - *sector)
+  if (disk->total_sectors != GRUB_DISK_SIZE_UNKNOWN
+      && ((disk->total_sectors << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)) <= *sector
+	  || ((*offset + size + GRUB_DISK_SECTOR_SIZE - 1)
+	  >> GRUB_DISK_SECTOR_BITS) > (disk->total_sectors
+				       << (disk->log_sector_size
+					   - GRUB_DISK_SECTOR_BITS)) - *sector))
     return grub_error (GRUB_ERR_OUT_OF_RANGE, "out of disk");
 
   return GRUB_ERR_NONE;
+}
+
+static inline grub_disk_addr_t
+transform_sector (grub_disk_t disk, grub_disk_addr_t sector)
+{
+  return sector >> (disk->log_sector_size - GRUB_DISK_SECTOR_BITS);
 }
 
 /* Read data from the disk.  */
@@ -433,27 +450,39 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
       else
 	{
 	  /* Otherwise read data from the disk actually.  */
-	  if (start_sector + GRUB_DISK_CACHE_SIZE > disk->total_sectors
-	      || (disk->dev->read) (disk, start_sector,
-				    GRUB_DISK_CACHE_SIZE, tmp_buf)
+	  if ((disk->total_sectors != GRUB_DISK_SIZE_UNKNOWN
+	       && start_sector + GRUB_DISK_CACHE_SIZE
+	       > (disk->total_sectors << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)))
+	      || (disk->dev->read) (disk, transform_sector (disk, start_sector),
+				    1 << (GRUB_DISK_CACHE_BITS
+					  + GRUB_DISK_SECTOR_BITS
+					  - disk->log_sector_size), tmp_buf)
 	      != GRUB_ERR_NONE)
 	    {
 	      /* Uggh... Failed. Instead, just read necessary data.  */
 	      unsigned num;
 	      char *p;
+	      grub_disk_addr_t aligned_sector;
 
 	      grub_errno = GRUB_ERR_NONE;
 
-	      num = ((size + real_offset + GRUB_DISK_SECTOR_SIZE - 1)
-		     >> GRUB_DISK_SECTOR_BITS);
+	      aligned_sector = (sector & ~((1 << (disk->log_sector_size
+						  - GRUB_DISK_SECTOR_BITS))
+					   - 1));
+	      real_offset += ((sector - aligned_sector)
+			      << GRUB_DISK_SECTOR_BITS);
+	      num = ((size + real_offset + (1 << (disk->log_sector_size))
+		      - 1) >> (disk->log_sector_size));
 
-	      p = grub_realloc (tmp_buf, num << GRUB_DISK_SECTOR_BITS);
+	      p = grub_realloc (tmp_buf, num << disk->log_sector_size);
 	      if (!p)
 		goto finish;
 
 	      tmp_buf = p;
 
-	      if ((disk->dev->read) (disk, sector, num, tmp_buf))
+	      if ((disk->dev->read) (disk, transform_sector (disk,
+							     aligned_sector),
+				     num, tmp_buf))
 		{
 		  grub_error_push ();
 		  grub_dprintf ("disk", "%s read failed\n", disk->name);
@@ -528,25 +557,31 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 		 grub_off_t offset, grub_size_t size, const void *buf)
 {
   unsigned real_offset;
+  grub_disk_addr_t aligned_sector;
 
   grub_dprintf ("disk", "Writing `%s'...\n", disk->name);
 
   if (grub_disk_adjust_range (disk, &sector, &offset, size) != GRUB_ERR_NONE)
     return -1;
 
-  real_offset = offset;
+  aligned_sector = (sector & ~((1 << (disk->log_sector_size
+				      - GRUB_DISK_SECTOR_BITS)) - 1));
+  real_offset = offset + ((sector - aligned_sector) << GRUB_DISK_SECTOR_BITS);
+  sector = aligned_sector;
 
   while (size)
     {
-      if (real_offset != 0 || (size < GRUB_DISK_SECTOR_SIZE && size != 0))
+      if (real_offset != 0 || (size < (1U << disk->log_sector_size)
+			       && size != 0))
 	{
-	  char tmp_buf[GRUB_DISK_SECTOR_SIZE];
+	  char tmp_buf[1 << disk->log_sector_size];
 	  grub_size_t len;
 	  grub_partition_t part;
 
 	  part = disk->partition;
 	  disk->partition = 0;
-	  if (grub_disk_read (disk, sector, 0, GRUB_DISK_SECTOR_SIZE, tmp_buf)
+	  if (grub_disk_read (disk, sector,
+			      0, (1 << disk->log_sector_size), tmp_buf)
 	      != GRUB_ERR_NONE)
 	    {
 	      disk->partition = part;
@@ -554,7 +589,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	    }
 	  disk->partition = part;
 
-	  len = GRUB_DISK_SECTOR_SIZE - real_offset;
+	  len = (1 << disk->log_sector_size) - real_offset;
 	  if (len > size)
 	    len = size;
 
@@ -565,7 +600,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	  if ((disk->dev->write) (disk, sector, 1, tmp_buf) != GRUB_ERR_NONE)
 	    goto finish;
 
-	  sector++;
+	  sector += (1 << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 	  buf = (char *) buf + len;
 	  size -= len;
 	  real_offset = 0;
@@ -575,8 +610,8 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	  grub_size_t len;
 	  grub_size_t n;
 
-	  len = size & ~(GRUB_DISK_SECTOR_SIZE - 1);
-	  n = size >> GRUB_DISK_SECTOR_BITS;
+	  len = size & ~((1 << disk->log_sector_size) - 1);
+	  n = size >> disk->log_sector_size;
 
 	  if ((disk->dev->write) (disk, sector, n, buf) != GRUB_ERR_NONE)
 	    goto finish;
@@ -599,6 +634,8 @@ grub_disk_get_size (grub_disk_t disk)
 {
   if (disk->partition)
     return grub_partition_get_len (disk->partition);
+  else if (disk->total_sectors != GRUB_DISK_SIZE_UNKNOWN)
+    return disk->total_sectors << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS);
   else
-    return disk->total_sectors;
+    return GRUB_DISK_SIZE_UNKNOWN;
 }

@@ -536,8 +536,13 @@ grub_efidisk_open (const char *name, struct grub_disk *disk)
      and total sectors should be replaced with total blocks.  */
   grub_dprintf ("efidisk", "m = %p, last block = %llx, block size = %x\n",
 		m, (unsigned long long) m->last_block, m->block_size);
-  disk->total_sectors = (m->last_block
-			 * (m->block_size >> GRUB_DISK_SECTOR_BITS));
+  disk->total_sectors = m->last_block;
+  if (m->blocksize & (m->blocksize - 1) || !m->blocksize)
+    return grub_error (GRUB_ERR_IO, "invalid sector size %d",
+		       m->blocksize);
+  for (disk->log_sector_size = 0;
+       (1 << disk->log_sector_size) < m->blocksize;
+       disk->log_sector_size++);
   disk->data = d;
 
   grub_dprintf ("efidisk", "opening %s succeeded\n", name);
@@ -571,8 +576,8 @@ grub_efidisk_read (struct grub_disk *disk, grub_disk_addr_t sector,
 		(unsigned long) size, (unsigned long long) sector, disk->name);
 
   status = efi_call_5 (dio->read, dio, bio->media->media_id,
-		      (grub_efi_uint64_t) sector << GRUB_DISK_SECTOR_BITS,
-		      (grub_efi_uintn_t) size << GRUB_DISK_SECTOR_BITS,
+		      (grub_efi_uint64_t) sector << disk->log_sector_size,
+		      (grub_efi_uintn_t) size << disk->log_sector_size,
 		      buf);
   if (status != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_READ_ERROR, "efidisk read error");
@@ -599,8 +604,8 @@ grub_efidisk_write (struct grub_disk *disk, grub_disk_addr_t sector,
 		(unsigned long) size, (unsigned long long) sector, disk->name);
 
   status = efi_call_5 (dio->write, dio, bio->media->media_id,
-		       (grub_efi_uint64_t) sector << GRUB_DISK_SECTOR_BITS,
-		       (grub_efi_uintn_t) size << GRUB_DISK_SECTOR_BITS,
+		       (grub_efi_uint64_t) sector << disk->log_sector_size,
+		       (grub_efi_uintn_t) size << disk->log_sector_size,
 		       (void *) buf);
   if (status != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_WRITE_ERROR, "efidisk write error");
