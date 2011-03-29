@@ -1,5 +1,10 @@
 2011-03-29  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/disk/loopback.c (GRUB_MOD_INIT): Stop documenting
+	removed -p option.
+
+2011-03-29  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (BIOS installation): New section, partly based on
 	previous text in other sections.
 	(Installing GRUB using grub-install): Replace BIOS discussion with a
