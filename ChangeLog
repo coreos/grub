@@ -1,5 +1,10 @@
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (find_partition_start)
+	[HAVE_DIOCGDINFO]: Add safety checks.
+
+2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/10_kfreebsd.in: Allow ufs.ko to be missing as it's
 	per default compiled in kernel and prior to 8.0 isn't shipped at all.
 

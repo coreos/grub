@@ -518,9 +518,12 @@ devmapper_fail:
 # if !defined(HAVE_DIOCGDINFO)
   return hdg.start;
 # else /* defined(HAVE_DIOCGDINFO) */
-  p_index = dev[strlen(dev) - 1] - 'a';
-
-  if (p_index >= label.d_npartitions)
+  if (dev[0])
+    p_index = dev[strlen(dev) - 1] - 'a';
+  else
+    p_index = -1;
+  
+  if (p_index >= label.d_npartitions || p_index < 0)
     {
       grub_error (GRUB_ERR_BAD_DEVICE,
 		  "no disk label entry for `%s'", dev);
