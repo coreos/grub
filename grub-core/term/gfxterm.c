@@ -1174,7 +1174,6 @@ grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
                     /* Replace the original bitmap with the scaled one.  */
                     grub_video_bitmap_destroy (bitmap);
                     bitmap = scaled_bitmap;
-                    blend_text_bg = 1;
                   }
               }
           }
@@ -1182,6 +1181,8 @@ grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
       /* If bitmap was loaded correctly, display it.  */
       if (bitmap)
         {
+	  blend_text_bg = 1;
+
           /* Determine bitmap dimensions.  */
           bitmap_width = grub_video_bitmap_get_width (bitmap);
           bitmap_height = grub_video_bitmap_get_height (bitmap);
