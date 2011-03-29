@@ -1,3 +1,8 @@
+2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/10_kfreebsd.in: Allow ufs.ko to be missing as it's
+	per default compiled in kernel and prior to 8.0 isn't shipped at all.
+
 2011-03-29  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): If
