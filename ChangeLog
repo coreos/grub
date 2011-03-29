@@ -1,3 +1,7 @@
+2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/10_linux.in: Skip vmlinux-* on x86 platforms.
+
 2011-03-29  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (loopback): New section.

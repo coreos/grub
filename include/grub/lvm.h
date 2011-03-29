@@ -47,6 +47,9 @@ struct grub_lvm_lv {
   unsigned int number;
   unsigned int segment_count;
   grub_uint64_t size;
+
+  int visible;
+
   struct grub_lvm_segment *segments; /* Pointer to segment_count segments. */
   struct grub_lvm_vg *vg;
   struct grub_lvm_lv *next;
@@ -55,6 +58,11 @@ struct grub_lvm_lv {
 struct grub_lvm_segment {
   unsigned int start_extent;
   unsigned int extent_count;
+  enum { GRUB_LVM_STRIPED, GRUB_LVM_MIRROR } type; 
+
+  unsigned int mirror_count;
+  struct grub_lvm_mirror *mirrors;
+
   unsigned int stripe_count;
   unsigned int stripe_size;
   struct grub_lvm_stripe *stripes; /* Pointer to stripe_count stripes. */
@@ -63,6 +71,11 @@ struct grub_lvm_segment {
 struct grub_lvm_stripe {
   int start;
   struct grub_lvm_pv *pv;
+};
+
+struct grub_lvm_mirror {
+  char *lvname;
+  struct grub_lvm_lv *lv;
 };
 
 #define GRUB_LVM_LABEL_SIZE GRUB_DISK_SECTOR_SIZE

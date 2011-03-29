@@ -45,6 +45,7 @@ grub_lvm_getvalue (char **p, char *str)
   return grub_strtoul (*p, NULL, 10);
 }
 
+#if 0
 static int
 grub_lvm_checkvalue (char **p, char *str, char *tmpl)
 {
@@ -57,6 +58,7 @@ grub_lvm_checkvalue (char **p, char *str, char *tmpl)
     return 0;
   return (grub_memcmp (*p + 1, tmpl, tmpllen) == 0 && (*p)[tmpllen + 1] == '"');
 }
+#endif
 
 static int
 grub_lvm_check_flag (char *p, char *str, char *flag)
@@ -100,7 +102,7 @@ grub_lvm_iterate (int (*hook) (const char *name))
       struct grub_lvm_lv *lv;
       if (vg->lvs)
 	for (lv = vg->lvs; lv; lv = lv->next)
-	  if (hook (lv->name))
+	  if (lv->visible && hook (lv->name))
 	    return 1;
     }
 
@@ -164,17 +166,19 @@ grub_lvm_close (grub_disk_t disk __attribute ((unused)))
 }
 
 static grub_err_t
-grub_lvm_read (grub_disk_t disk, grub_disk_addr_t sector,
-		grub_size_t size, char *buf)
+read_lv (struct grub_lvm_lv *lv, grub_disk_addr_t sector,
+	 grub_size_t size, char *buf)
 {
   grub_err_t err = 0;
-  struct grub_lvm_lv *lv = disk->data;
   struct grub_lvm_vg *vg = lv->vg;
   struct grub_lvm_segment *seg = lv->segments;
   struct grub_lvm_pv *pv;
   grub_uint64_t offset;
   grub_uint64_t extent;
   unsigned int i;
+
+  if (!lv)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown volume");
 
   extent = grub_divmod64 (sector, vg->extent_size, NULL);
 
@@ -190,59 +194,88 @@ grub_lvm_read (grub_disk_t disk, grub_disk_addr_t sector,
       seg++;
     }
 
-  if (seg->stripe_count == 1)
+  if (i == lv->segment_count)
+    return grub_error (GRUB_ERR_READ_ERROR, "incorrect segment");
+
+  switch (seg->type)
     {
-      /* This segment is linear, so that's easy.  We just need to find
-	 out the offset in the physical volume and read SIZE bytes
-	 from that.  */
-      struct grub_lvm_stripe *stripe = seg->stripes;
-      grub_uint64_t seg_offset; /* Offset of the segment in PV device.  */
+    case GRUB_LVM_STRIPED:
+      if (seg->stripe_count == 1)
+	{
+	  /* This segment is linear, so that's easy.  We just need to find
+	     out the offset in the physical volume and read SIZE bytes
+	     from that.  */
+	  struct grub_lvm_stripe *stripe = seg->stripes;
+	  grub_uint64_t seg_offset; /* Offset of the segment in PV device.  */
 
-      pv = stripe->pv;
-      seg_offset = ((grub_uint64_t) stripe->start
-		    * (grub_uint64_t) vg->extent_size) + pv->start;
+	  pv = stripe->pv;
+	  seg_offset = ((grub_uint64_t) stripe->start
+			* (grub_uint64_t) vg->extent_size) + pv->start;
 
-      offset = sector - ((grub_uint64_t) seg->start_extent
-			 * (grub_uint64_t) vg->extent_size) + seg_offset;
+	  offset = sector - ((grub_uint64_t) seg->start_extent
+			     * (grub_uint64_t) vg->extent_size) + seg_offset;
+	}
+      else
+	{
+	  /* This is a striped segment. We have to find the right PV
+	     similar to RAID0. */
+	  struct grub_lvm_stripe *stripe = seg->stripes;
+	  grub_uint32_t a, b;
+	  grub_uint64_t seg_offset; /* Offset of the segment in PV device.  */
+	  unsigned int stripenr;
+
+	  offset = sector - ((grub_uint64_t) seg->start_extent
+			     * (grub_uint64_t) vg->extent_size);
+
+	  a = grub_divmod64 (offset, seg->stripe_size, NULL);
+	  grub_divmod64 (a, seg->stripe_count, &stripenr);
+
+	  a = grub_divmod64 (offset, seg->stripe_size * seg->stripe_count, NULL);
+	  grub_divmod64 (offset, seg->stripe_size, &b);
+	  offset = a * seg->stripe_size + b;
+
+	  stripe += stripenr;
+	  pv = stripe->pv;
+
+	  seg_offset = ((grub_uint64_t) stripe->start
+			* (grub_uint64_t) vg->extent_size) + pv->start;
+
+	  offset += seg_offset;
+	}
+      /* Check whether we actually know the physical volume we want to
+	 read from.  */
+      if (pv->disk)
+	err = grub_disk_read (pv->disk, offset, 0,
+			      size << GRUB_DISK_SECTOR_BITS, buf);
+      else
+	err = grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			  "physical volume %s not found", pv->name);
+
+      return err;
+    case GRUB_LVM_MIRROR:
+      i = 0;
+      while (1)
+	{
+	  if (!seg->mirrors[i].lv)
+	    err = grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown volume '%s'",
+			      seg->mirrors[i].lvname);
+	  else
+	    err = read_lv (seg->mirrors[i].lv, sector, size, buf);
+	  if (!err)
+	    return err;
+	  if (++i >= seg->mirror_count)
+	    return err;
+	  grub_errno = GRUB_ERR_NONE;
+	}
     }
-  else
-    {
-      /* This is a striped segment. We have to find the right PV
-	 similar to RAID0. */
-      struct grub_lvm_stripe *stripe = seg->stripes;
-      grub_uint32_t a, b;
-      grub_uint64_t seg_offset; /* Offset of the segment in PV device.  */
-      unsigned int stripenr;
+  return grub_error (GRUB_ERR_IO, "unknown LVM segment");
+}
 
-      offset = sector - ((grub_uint64_t) seg->start_extent
-			 * (grub_uint64_t) vg->extent_size);
-
-      a = grub_divmod64 (offset, seg->stripe_size, NULL);
-      grub_divmod64 (a, seg->stripe_count, &stripenr);
-
-      a = grub_divmod64 (offset, seg->stripe_size * seg->stripe_count, NULL);
-      grub_divmod64 (offset, seg->stripe_size, &b);
-      offset = a * seg->stripe_size + b;
-
-      stripe += stripenr;
-      pv = stripe->pv;
-
-      seg_offset = ((grub_uint64_t) stripe->start
-		    * (grub_uint64_t) vg->extent_size) + pv->start;
-
-      offset += seg_offset;
-    }
-
-  /* Check whether we actually know the physical volume we want to
-     read from.  */
-  if (pv->disk)
-    err = grub_disk_read (pv->disk, offset, 0,
-			  size << GRUB_DISK_SECTOR_BITS, buf);
-  else
-    err = grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		      "physical volume %s not found", pv->name);
-
-  return err;
+static grub_err_t
+grub_lvm_read (grub_disk_t disk, grub_disk_addr_t sector,
+		grub_size_t size, char *buf)
+{
+  return read_lv (disk->data, sector, size, buf);
 }
 
 static grub_err_t
@@ -533,11 +566,7 @@ grub_lvm_scan_device (const char *name)
 
 	      lv->size = 0;
 
-	      if (!grub_lvm_check_flag (p, "status", "VISIBLE"))
-		{
-		  skip_lv = 1;
-		  goto lv_parsed;
-		}
+	      lv->visible = grub_lvm_check_flag (p, "status", "VISIBLE");
 
 	      lv->segment_count = grub_lvm_getvalue (&p, "segment_count = ");
 	      if (p == NULL)
@@ -552,7 +581,6 @@ grub_lvm_scan_device (const char *name)
 
 	      for (i = 0; i < lv->segment_count; i++)
 		{
-		  struct grub_lvm_stripe *stripe;
 
 		  p = grub_strstr (p, "segment");
 		  if (p == NULL)
@@ -580,78 +608,147 @@ grub_lvm_scan_device (const char *name)
 		      goto lvs_segment_fail;
 		    }
 
-		  if (grub_lvm_checkvalue (&p, "type = ", "snapshot"))
-		    {
-		      /* Found a snapshot, give up and move on. */
-		      skip_lv = 1;
-		      break;
-		    }
-
-		  seg->stripe_count = grub_lvm_getvalue (&p, "stripe_count = ");
+		  p = grub_strstr (p, "type = \"");
 		  if (p == NULL)
-		    {
-#ifdef GRUB_UTIL
-		      grub_util_info ("unknown stripe_count\n");
-#endif
-		      goto lvs_segment_fail;
-		    }
+		    goto lvs_segment_fail;
+		  p += sizeof("type = \"") - 1;
 
 		  lv->size += seg->extent_count * vg->extent_size;
 
-		  if (seg->stripe_count != 1)
-		    seg->stripe_size = grub_lvm_getvalue (&p, "stripe_size = ");
+		  if (grub_memcmp (p, "striped\"",
+				   sizeof ("striped\"") - 1) == 0)
+		    {
+		      struct grub_lvm_stripe *stripe;
 
-		  seg->stripes = grub_malloc (sizeof (*stripe)
-					      * seg->stripe_count);
-		  stripe = seg->stripes;
+		      seg->type = GRUB_LVM_STRIPED;
+		      seg->stripe_count = grub_lvm_getvalue (&p, "stripe_count = ");
+		      if (p == NULL)
+			{
+#ifdef GRUB_UTIL
+			  grub_util_info ("unknown stripe_count\n");
+#endif
+			  goto lvs_segment_fail;
+			}
 
-		  p = grub_strstr (p, "stripes = [");
-		  if (p == NULL)
+		      if (seg->stripe_count != 1)
+			seg->stripe_size = grub_lvm_getvalue (&p, "stripe_size = ");
+
+		      seg->stripes = grub_malloc (sizeof (*stripe)
+						  * seg->stripe_count);
+		      stripe = seg->stripes;
+
+		      p = grub_strstr (p, "stripes = [");
+		      if (p == NULL)
+			{
+#ifdef GRUB_UTIL
+			  grub_util_info ("unknown stripes\n");
+#endif
+			  goto lvs_segment_fail2;
+			}
+		      p += sizeof("stripes = [") - 1;
+
+		      for (j = 0; j < seg->stripe_count; j++)
+			{
+			  char *pvname;
+
+			  p = grub_strchr (p, '"');
+			  if (p == NULL)
+			    continue;
+			  q = ++p;
+			  while (*q != '"')
+			    q++;
+
+			  s = q - p;
+
+			  pvname = grub_malloc (s + 1);
+			  if (pvname == NULL)
+			    goto lvs_segment_fail2;
+
+			  grub_memcpy (pvname, p, s);
+			  pvname[s] = '\0';
+
+			  if (vg->pvs)
+			    for (pv = vg->pvs; pv; pv = pv->next)
+			      {
+				if (! grub_strcmp (pvname, pv->name))
+				  {
+				    stripe->pv = pv;
+				    break;
+				  }
+			      }
+
+			  grub_free(pvname);
+
+			  stripe->start = grub_lvm_getvalue (&p, ",");
+			  if (p == NULL)
+			    continue;
+
+			  stripe++;
+			}
+		    }
+		  else if (grub_memcmp (p, "mirror\"", sizeof ("mirror\"") - 1)
+			   == 0)
+		    {
+		      seg->type = GRUB_LVM_MIRROR;
+		      seg->mirror_count = grub_lvm_getvalue (&p, "mirror_count = ");
+		      if (p == NULL)
+			{
+#ifdef GRUB_UTIL
+			  grub_util_info ("unknown mirror_count\n");
+#endif
+			  goto lvs_segment_fail;
+			}
+
+		      seg->mirrors = grub_zalloc (sizeof (seg->mirrors[0])
+						  * seg->mirror_count);
+
+		      p = grub_strstr (p, "mirrors = [");
+		      if (p == NULL)
+			{
+#ifdef GRUB_UTIL
+			  grub_util_info ("unknown mirrors\n");
+#endif
+			  goto lvs_segment_fail2;
+			}
+		      p += sizeof("mirrors = [") - 1;
+
+		      for (j = 0; j < seg->mirror_count; j++)
+			{
+			  char *lvname;
+
+			  p = grub_strchr (p, '"');
+			  if (p == NULL)
+			    continue;
+			  q = ++p;
+			  while (*q != '"')
+			    q++;
+
+			  s = q - p;
+
+			  lvname = grub_malloc (s + 1);
+			  if (lvname == NULL)
+			    goto lvs_segment_fail2;
+
+			  grub_memcpy (lvname, p, s);
+			  lvname[s] = '\0';
+			  seg->mirrors[j].lvname = lvname;
+			  p = q + 1;
+			}
+		    }
+		  else
 		    {
 #ifdef GRUB_UTIL
-		      grub_util_info ("unknown stripes\n");
+		      char *p2;
+		      p2 = grub_strchr (p, '"');
+		      if (p2)
+			*p2 = 0;
+		      grub_util_info ("unknown LVM type %s\n", p);
+		      if (p2)
+			*p2 ='"';
 #endif
-		      goto lvs_segment_fail2;
-		    }
-		  p += sizeof("stripes = [") - 1;
-
-		  for (j = 0; j < seg->stripe_count; j++)
-		    {
-		      char *pvname;
-
-		      p = grub_strchr (p, '"');
-		      if (p == NULL)
-			continue;
-		      q = ++p;
-		      while (*q != '"')
-			q++;
-
-		      s = q - p;
-
-		      pvname = grub_malloc (s + 1);
-                      if (pvname == NULL)
-                        goto lvs_segment_fail2;
-
-		      grub_memcpy (pvname, p, s);
-		      pvname[s] = '\0';
-
-		      if (vg->pvs)
-			for (pv = vg->pvs; pv; pv = pv->next)
-			  {
-			    if (! grub_strcmp (pvname, pv->name))
-			      {
-				stripe->pv = pv;
-				break;
-			      }
-			  }
-
-		      grub_free(pvname);
-
-		      stripe->start = grub_lvm_getvalue (&p, ",");
-		      if (p == NULL)
-			continue;
-
-		      stripe++;
+		      /* Found a non-supported type, give up and move on. */
+		      skip_lv = 1;
+		      break;
 		    }
 
 		  seg++;
@@ -663,7 +760,6 @@ grub_lvm_scan_device (const char *name)
 		  goto fail4;
 		}
 
-	    lv_parsed:
 	      if (p != NULL)
 		p = grub_strchr (p, '}');
 	      if (p == NULL)
@@ -689,6 +785,20 @@ grub_lvm_scan_device (const char *name)
 	      goto fail4;
 	    }
 	}
+
+      /* Match mirrors  */
+      {
+	struct grub_lvm_lv *lv1;
+	struct grub_lvm_lv *lv2;
+	for (lv1 = vg->lvs; lv1; lv1 = lv1->next)
+	  for (i = 0; i < lv1->segment_count; i++)
+	    if (lv1->segments[i].type == GRUB_LVM_MIRROR)
+	      for (j = 0; j < lv1->segments[i].mirror_count; j++)
+		for (lv2 = vg->lvs; lv2; lv2 = lv2->next)
+		  if (grub_strcmp (lv2->name + grub_strlen (vg->name) + 1,
+				   lv1->segments[i].mirrors[j].lvname) == 0)
+		    lv1->segments[i].mirrors[j].lv = lv2;
+      }
 
 	vg->next = vg_list;
 	vg_list = vg;

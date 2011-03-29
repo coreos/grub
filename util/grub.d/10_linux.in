@@ -111,9 +111,17 @@ EOF
 EOF
 }
 
-list=`for i in /boot/vmlinuz-* /boot/vmlinux-* /vmlinuz-* /vmlinux-* ; do
-        if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
-      done`
+case x`uname -m` in
+    xi?86 | xx86_64)
+	list=`for i in /boot/vmlinuz-* /vmlinuz-* ; do
+                  if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+              done` ;;
+    *) 
+	list=`for i in /boot/vmlinuz-* /boot/vmlinux-* /vmlinuz-* /vmlinux-* ; do
+                  if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+	     done` ;;
+esac
+
 prepare_boot_cache=
 
 while [ "x$list" != "x" ] ; do
