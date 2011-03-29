@@ -1,3 +1,11 @@
+2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/relocator.c (allocate_regstart)
+	[!DEBUG_RELOCATOR_NOMEM_DPRINTF]: Avoid grub_dprintf since not all
+	terminals are capabple of malloc-free operation.
+	(allocate_inreg) [!DEBUG_RELOCATOR_NOMEM_DPRINTF]: Likewise.
+	(malloc_in_range) [!DEBUG_RELOCATOR_NOMEM_DPRINTF]: Likewise.
+
 2011-03-29  Mario Limonciello  <Mario_Limonciello@Dell.com>
 
         * util/grub-setup.c: Copy the partition table zone if floppy support

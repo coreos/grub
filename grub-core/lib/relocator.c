@@ -134,9 +134,10 @@ allocate_regstart (grub_phys_addr_t addr, grub_size_t size, grub_mm_region_t rb,
   grub_addr_t newreg_size, newreg_presize;
   grub_mm_header_t new_header;
   grub_mm_header_t hb = (grub_mm_header_t) (rb + 1);
-  
-  grub_dprintf ("relocator", "ra = %p, rb = %p\n", regancestor, rb);
 
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF  
+  grub_dprintf ("relocator", "ra = %p, rb = %p\n", regancestor, rb);
+#endif
   newreg_start = ALIGN_UP (newreg_raw_start, GRUB_MM_ALIGN);
   newreg_presize = newreg_start - newreg_raw_start;
   newreg_size = rb->size - (newreg_start - (grub_addr_t) rb);
@@ -179,11 +180,12 @@ allocate_regstart (grub_phys_addr_t addr, grub_size_t size, grub_mm_region_t rb,
 	  if ((void *) h < (void *) (newreg + 1))
 	    grub_fatal ("Failed to adjust memory region: %p, %p, %p, %p, %p",
 			newreg, newreg->first, h, hp, hb);
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
 	  if ((void *) h == (void *) (newreg + 1))
 	    grub_dprintf ("relocator",
 			  "Free start memory region: %p, %p, %p, %p, %p",
 			  newreg, newreg->first, h, hp, hb);
-
+#endif
 	  hp = h;
 	  h = h->next;
 	}
@@ -200,7 +202,7 @@ allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
   struct grub_mm_header *foll = NULL;
   grub_addr_t vaddr = (grub_addr_t) hb + (paddr - grub_vtop (hb));
 
-#ifdef DEBUG_RELOCATOR
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
   grub_dprintf ("relocator", "inreg paddr = 0x%lx, size = %lu,"
 		" hb = %p, hbp = %p, rb = %p, vaddr = 0x%lx\n",
 		(unsigned long) paddr, (unsigned long) size, hb, hbp,
@@ -213,8 +215,10 @@ allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
       foll = (void *) ALIGN_UP (vaddr + size, GRUB_MM_ALIGN);
       foll->magic = GRUB_MM_FREE_MAGIC;
       foll->size = hb + hb->size - foll;
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
       grub_dprintf ("relocator", "foll = %p, foll->size = %lu\n", foll,
 		    (unsigned long) foll->size);
+#endif
     }
 
   if (vaddr - (grub_addr_t) hb >= sizeof (*hb))
@@ -821,9 +825,11 @@ malloc_in_range (struct grub_relocator *rel,
 		      fend
 			= ALIGN_UP (alloc_end,
 				    GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT);
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF  
 		      grub_dprintf ("relocator", "requesting %lx-%lx\n",
 				    (unsigned long) fstart,
 				    (unsigned long) fend);
+#endif
 		      /* The failure here can be very expensive.  */
 		      if (!grub_relocator_firmware_alloc_region (fstart, 
 								 fend - fstart))
