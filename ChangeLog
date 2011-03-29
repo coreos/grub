@@ -1,5 +1,9 @@
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/20_linux_xen.in: Accept old-style xen kernels.
+
+2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/lvm.h (grub_lvm_lv): New field 'visible'.
 	(grub_lvm_segment): New fields 'type', 'mirror_count' and 'mirrors'.
 	(grub_lvm_mirror): New struct.
