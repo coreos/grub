@@ -550,6 +550,7 @@ the @dfn{boot directory}.
 * Installing GRUB using grub-install::
 * Making a GRUB bootable CD-ROM::
 * Device map::
+* BIOS installation::
 @end menu
 
 
@@ -565,13 +566,8 @@ always. Therefore, GRUB provides you with a map file called the
 @dfn{device map}, which you must fix if it is wrong. @xref{Device
 map}, for more details.
 
-On BIOS platforms GRUB has to use a so-called embedding zone. On msdos
-partition tables, this is the space between the MBR and the first partition
-(called the MBR gap or the boot track), while on GPT partition tables it
-uses a BIOS Boot Partition (a partition with GUID
-21686148-6449-6e6f-744e656564454649). If you use GRUB on a BIOS system, make
-sure that the embedding zone is at least 31 KiB (512KiB or more
-recommended).
+For information on where GRUB should be installed on PC BIOS platforms,
+@pxref{BIOS installation}.
 
 If you still do want to install GRUB under a UNIX-like OS (such
 as @sc{gnu}), invoke the program @command{grub-install} (@pxref{Invoking
@@ -742,6 +738,72 @@ still some situations that require it to exist.  If necessary, you may edit
 the file if @command{grub-mkdevicemap} makes a mistake.  You can put any
 comments in the file if needed, as the GRUB utilities assume that a line is
 just a comment if the first character is @samp{#}.
+
+
+@node BIOS installation
+@section BIOS installation
+
+@heading MBR
+
+The partition table format traditionally used on PC BIOS platforms is called
+the Master Boot Record (MBR) format; this is the format that allows up to
+four primary partitions and additional logical partitions.  With this
+partition table format, there are two ways to install GRUB: it can be
+embedded in the area between the MBR and the first partition (called by
+various names, such as the "boot track", "MBR gap", or "embedding area", and
+which is usually at least 31 KiB), or the core image can be installed in a
+file system and a list of the blocks that make it up can be stored in the
+first sector of that partition.
+
+Each of these has different problems.  There is no way to reserve space in
+the embedding area with complete safety, and some proprietary software is
+known to use it to make it difficult for users to work around licensing
+restrictions; and systems are sometimes partitioned without leaving enough
+space before the first partition.  On the other hand, installing to a
+filesystem means that GRUB is vulnerable to its blocks being moved around by
+filesystem features such as tail packing, or even by aggressive fsck
+implementations, so this approach is quite fragile; and this approach can
+only be used if the @file{/boot} filesystem is on the same disk that the
+BIOS boots from, so that GRUB does not have to rely on guessing BIOS drive
+numbers.
+
+The GRUB development team generally recommends embedding GRUB before the
+first partition, unless you have special requirements.  You must ensure that
+the first partition starts at least 31 KiB (63 sectors) from the start of
+the disk; on modern disks, it is often a performance advantage to align
+partitions on larger boundaries anyway, so the first partition might start 1
+MiB from the start of the disk.
+
+@heading GPT
+
+Some newer systems use the GUID Partition Table (GPT) format.  This was
+specified as part of the Extensible Firmware Interface (EFI), but it can
+also be used on BIOS platforms if system software supports it; for example,
+GRUB and GNU/Linux can be used in this configuration.  With this format, it
+is possible to reserve a whole partition for GRUB, called the BIOS Boot
+Partition.  GRUB can then be embedded into that partition without the risk
+of being overwritten by other software and without being contained in a
+filesystem which might move its blocks around.
+
+When creating a BIOS Boot Partition on a GPT system, you should make sure
+that it is at least 31 KiB in size.  (GPT-formatted disks are not usually
+particularly small, so we recommend that you make it larger than the bare
+minimum, such as 1 MiB, to allow plenty of room for growth.)  You must also
+make sure that it has the proper partition type.  Using GNU Parted, you can
+set this using a command such as the following:
+
+@example
+# @kbd{parted /dev/@var{disk} set @var{partition-number} bios_grub on}
+@end example
+
+If you are using gdisk, set the partition type to @samp{0xEF02}.  With
+partitioning programs that require setting the GUID directly, it should be
+@samp{21686148-6449-6e6f-744e656564454649}.
+
+@strong{Caution:} Be very careful which partition you select!  When GRUB
+finds a BIOS Boot Partition during installation, it will automatically
+overwrite part of it.  Make sure that the partition does not contain any
+other data.
 
 
 @node Booting
@@ -2021,28 +2083,8 @@ target operating systems, and so on) from the file system at run-time.  The
 modular design allows the core image to be kept small, since the areas of
 disk where it must be installed are often as small as 32KB.
 
-On PC systems using the traditional MBR partition table format, the core
-image is usually installed in the "MBR gap" between the master boot record
-and the first partition, or sometimes it is installed in a file system and
-read directly from that.  The latter is not recommended because GRUB needs
-to encode the location of all the core image sectors in @file{diskboot.img},
-and if the file system ever moves the core image around (as it is entitled
-to do) then GRUB must be reinstalled; it also means that GRUB will not be
-able to reliably find the core image if it resides on a different disk than
-the one to which @file{boot.img} was installed.
-
-On PC systems using the more recent GUID Partition Table (GPT) format, the
-core image should be installed to a BIOS Boot Partition.  This may be
-created by GNU Parted using a command such as the following:
-
-@example
-# @kbd{parted /dev/@var{disk} set @var{partition-number} bios_grub on}
-@end example
-
-@strong{Caution:} Be very careful which partition you select!  When GRUB
-finds a BIOS Boot Partition during installation, it will automatically
-overwrite part of it.  Make sure that the partition does not contain any
-other data.
+@xref{BIOS installation}, for details on where the core image can be
+installed on PC systems.
 
 @item *.mod
 Everything else in GRUB resides in dynamically loadable modules.  These are
