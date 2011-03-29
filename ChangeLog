@@ -1,5 +1,13 @@
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Old macs search for boot.efi rather than for bootia32.efi.
+
+	* util/grub-install.in: Copy bootia32.efi to boot.efi.
+	* util/grub-mkrescue.in: Likewise.
+	Suggested by: Peter Jones.
+
+2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/20_linux_xen.in: Accept old-style xen kernels.
 
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>

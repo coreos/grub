@@ -620,6 +620,10 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
     fi
 elif [ x"$platform" = xefi ]; then
     cp "${grubdir}/core.${imgext}" "${efidir}/${efi_file}"
+    # For old macs. Suggested by Peter Jones.
+    if [ x$target_cpu = xi386 ]; then
+	cp "${grubdir}/core.${imgext}" "${efidir}/boot.efi"
+    fi
 
     # Try to make this image bootable using the EFI Boot Manager, if available.
     efibootmgr="`which efibootmgr`"
