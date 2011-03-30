@@ -1,3 +1,20 @@
+2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Environment): New chapter.
+	(Changes from GRUB Legacy): Link to "Environment block" section for
+	details of limitations.
+	(Simple configuration): Likewise.  Link to documentation of gfxmode
+	and gfxpayload variables from GRUB_GFXMODE and GRUB_GFXPAYLOAD
+	respectively.
+	(Shell-like scripting): Note that normal variables are stored in the
+	environment.
+	(gettext): Link to documentation of lang and locale_dir.
+	(list_env): New section.
+	(load_env): New section.
+	(save_env): New section.
+
+	(Reporting bugs): Fix typo.
+
 2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi: Correctly use "terminal_input" and not "terminal" in

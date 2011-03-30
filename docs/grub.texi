@@ -87,6 +87,7 @@ This edition documents version @value{VERSION}.
 * Images::                      GRUB image files
 * Filesystem::                  Filesystem syntax and semantics
 * Interface::                   The menu and the command-line
+* Environment::                 GRUB environment variables
 * Commands::                    The list of available builtin commands
 * Security::                    Authentication and authorisation
 * Supported kernels::           The list of supported kernels
@@ -229,10 +230,8 @@ scripting language: variables, conditionals, and loops are available.
 @item
 A small amount of persistent storage is available across reboots, using the
 @command{save_env} and @command{load_env} commands in GRUB and the
-@command{grub-editenv} utility.  For safety reasons, this storage is only
-available when installed on a plain disk (no LVM or RAID), using a
-non-checksumming filesystem (no ZFS), and using BIOS or EFI functions (no
-ATA, USB or IEEE1275).
+@command{grub-editenv} utility.  This is not available in all configurations
+(@pxref{Environment block}).
 
 @item
 GRUB 2 has more reliable ways to find its own files and those of target
@@ -1109,8 +1108,8 @@ it as a new default entry for use by future runs of GRUB.  This is only
 useful if @samp{GRUB_DEFAULT=saved}; it is a separate option because
 @samp{GRUB_DEFAULT=saved} is useful without this option, in conjunction with
 @command{grub-set-default} or @command{grub-reboot}.  Unset by default.
-@samp{save_env} may not be available in all situations
-(@pxref{Changes from GRUB Legacy}).
+This option relies on the environment block, which may not be available in
+all situations (@pxref{Environment block}).
 
 @item GRUB_TIMEOUT
 Boot the default entry this many seconds after the menu is displayed, unless
@@ -1215,7 +1214,7 @@ listed in @file{/boot/grub/video.lst}.
 Set the resolution used on the @samp{gfxterm} graphical terminal.  Note that
 you can only use modes which your graphics card supports via VESA BIOS
 Extensions (VBE), so for example native LCD panel resolutions may not be
-available.  The default is @samp{640x480}.
+available.  The default is @samp{640x480}.  @xref{gfxmode}.
 
 @item GRUB_BACKGROUND
 Set a background image for use with the @samp{gfxterm} graphical terminal.
@@ -1231,7 +1230,7 @@ Set to @samp{text} to force the Linux kernel to boot in normal text mode,
 @samp{keep} to preserve the graphics mode set using @samp{GRUB_GFXMODE},
 @samp{@var{width}x@var{height}}[@samp{x@var{depth}}] to set a particular
 graphics mode, or a sequence of these separated by commas or semicolons to
-try several modes in sequence.
+try several modes in sequence.  @xref{gfxpayload}.
 
 Depending on your kernel, your distribution, your graphics card, and the
 phase of the moon, note that using this option may cause GNU/Linux to suffer
@@ -1342,7 +1341,8 @@ protect the variable to be expanded from characters immediately following it
 which could be interpreted as part of the name.
 
 Normal variable names begin with an alphabetic character, followed by zero
-or more alphanumeric characters.
+or more alphanumeric characters.  These names refer to entries in the GRUB
+environment (@pxref{Environment}).
 
 Positional variable names consist of one or more digits.  They represent
 parameters passed to function calls, with @samp{$1} representing the first
@@ -2384,6 +2384,437 @@ Although GRUB unfortunately does not support @dfn{undo}, you can do almost
 the same thing by just returning to the main menu using @key{ESC}.
 
 
+@node Environment
+@chapter GRUB environment variables
+
+GRUB supports environment variables which are rather like those offered by
+all Unix-like systems.  Environment variables have a name, which is unique
+and is usually a short identifier, and a value, which is an arbitrary string
+of characters.  They may be set (@pxref{set}), unset (@pxref{unset}), or
+looked up (@pxref{Shell-like scripting}) by name.
+
+A number of environment variables have special meanings to various parts of
+GRUB.  Others may be used freely in GRUB configuration files.
+
+
+@menu
+* Special environment variables::
+* Environment block::
+@end menu
+
+
+@node Special environment variables
+@section Special environment variables
+
+These variables have special meaning to GRUB.
+
+@menu
+* biosnum::
+* chosen::
+* color_highlight::
+* color_normal::
+* debug::
+* default::
+* fallback::
+* gfxmode::
+* gfxpayload::
+* gfxterm_font::
+* icondir::
+* lang::
+* locale_dir::
+* menu_color_highlight::
+* menu_color_normal::
+* net_pxe_boot_file::
+* net_pxe_dhcp_server_name::
+* net_pxe_domain::
+* net_pxe_extensionspath::
+* net_pxe_hostname::
+* net_pxe_ip::
+* net_pxe_mac::
+* net_pxe_rootpath::
+* pager::
+* prefix::
+* pxe_blksize::
+* pxe_default_gateway::
+* pxe_default_server::
+* root::
+* superusers::
+* theme::
+* timeout::
+@end menu
+
+
+@node biosnum
+@subsection biosnum
+
+When chain-loading another boot loader (@pxref{Chain-loading}), GRUB may
+need to know what BIOS drive number corresponds to the root device
+(@pxref{root}) so that it can set up registers properly.  If the
+@var{biosnum} variable is set, it overrides GRUB's own means of guessing
+this.
+
+For an alternative approach which also changes BIOS drive mappings for the
+chain-loaded system, @pxref{drivemap}.
+
+
+@node chosen
+@subsection chosen
+
+When executing a menu entry, GRUB sets the @var{chosen} variable to the
+title of the entry being executed.
+
+If the menu entry is in one or more submenus, then @var{chosen} is set to
+the titles of each of the submenus starting from the top level followed by
+the title of the menu entry itself, separated by @samp{>}.
+
+
+@node color_highlight
+@subsection color_highlight
+
+This variable contains the ``highlight'' foreground and background terminal
+colors, separated by a slash (@samp{/}).  Setting this variable changes
+those colors.  For the available color names, @pxref{color_normal}.
+
+The default is @samp{black/white}.
+
+
+@node color_normal
+@subsection color_normal
+
+This variable contains the ``normal'' foreground and background terminal
+colors, separated by a slash (@samp{/}).  Setting this variable changes
+those colors.  Each color must be a name from the following list:
+
+@itemize @bullet
+@item black
+@item blue
+@item green
+@item cyan
+@item red
+@item magenta
+@item brown
+@item light-gray
+@item dark-gray
+@item light-blue
+@item light-green
+@item light-cyan
+@item light-red
+@item light-magenta
+@item yellow
+@item white
+@end itemize
+
+The default is @samp{white/black}.
+
+
+@node debug
+@subsection debug
+
+This variable may be set to enable debugging output from various components
+of GRUB.  The value is a list of debug facility names separated by
+whitespace or @samp{,}, or @samp{all} to enable all available debugging
+output.
+
+
+@node default
+@subsection default
+
+If this variable is set, it identifies a menu entry that should be selected
+by default, possibly after a timeout (@pxref{timeout}).  The entry may be
+identified by number or by title.
+
+If the entry is in a submenu, then it must be identified using the titles of
+each of the submenus starting from the top level followed by the number or
+title of the menu entry itself, separated by @samp{>}.  For example, take
+the following menu structure:
+
+@itemize @w
+@item Submenu 1
+@itemize @w
+@item Menu Entry 1
+@item Menu Entry 2
+@end itemize
+@item Submenu 2
+@itemize @w
+@item Submenu 3
+@itemize @w
+@item Menu Entry 3
+@item Menu Entry 4
+@end itemize
+@item Menu Entry 5
+@end itemize
+@end itemize
+
+``Menu Entry 3'' would then be identified as
+@samp{Submenu 2>Submenu 3>Menu Entry 3}.
+
+This variable is often set by @samp{GRUB_DEFAULT} (@pxref{Simple
+configuration}), @command{grub-set-default}, or @command{grub-reboot}.
+
+
+@node fallback
+@subsection fallback
+
+If this variable is set, it identifies a menu entry that should be selected
+if the default menu entry fails to boot.  Entries are identified in the same
+way as for @samp{default} (@pxref{default}).
+
+
+@node gfxmode
+@subsection gfxmode
+
+If this variable is set, it sets the resolution used on the @samp{gfxterm}
+graphical terminal.  Note that you can only use modes which your graphics
+card supports via VESA BIOS Extensions (VBE), so for example native LCD
+panel resolutions may not be available.  The default is @samp{auto}, which
+selects a platform-specific default that should look reasonable.
+
+The resolution may be specified as a sequence of one or more modes,
+separated by commas (@samp{,}) or semicolons (@samp{;}); each will be tried
+in turn until one is found.  Each mode should be either @samp{auto},
+@samp{@var{width}x@var{height}}, or
+@samp{@var{width}x@var{height}x@var{depth}}.
+
+
+@node gfxpayload
+@subsection gfxpayload
+
+If this variable is set, it controls the video mode in which the Linux
+kernel starts up, replacing the @samp{vga=} boot option (@pxref{linux}).  It
+may be set to @samp{text} to force the Linux kernel to boot in normal text
+mode, @samp{keep} to preserve the graphics mode set using @samp{gfxmode}, or
+any of the permitted values for @samp{gfxmode} to set a particular graphics
+mode (@pxref{gfxmode}).
+
+Depending on your kernel, your distribution, your graphics card, and the
+phase of the moon, note that using this option may cause GNU/Linux to suffer
+from various display problems, particularly during the early part of the
+boot sequence.  If you have problems, set this variable to @samp{text} and
+GRUB will tell Linux to boot in normal text mode.
+
+The default is platform-specific.  On platforms with a native text mode
+(such as PC BIOS platforms), the default is @samp{text}.  Otherwise the
+default may be @samp{auto} or a specific video mode.
+
+This variable is often set by @samp{GRUB_GFXPAYLOAD_LINUX} (@pxref{Simple
+configuration}).
+
+
+@node gfxterm_font
+@subsection gfxterm_font
+
+If this variable is set, it names a font to use for text on the
+@samp{gfxterm} graphical terminal.  Otherwise, @samp{gfxterm} may use any
+available font.
+
+
+@node icondir
+@subsection icondir
+
+If this variable is set, it names a directory in which the GRUB graphical
+menu should look for icons after looking in the theme's @samp{icons}
+directory.  @xref{Theme file format}.
+
+
+@node lang
+@subsection lang
+
+If this variable is set, it names the language code that the
+@command{gettext} command (@pxref{gettext}) uses to translate strings.  For
+example, French would be named as @samp{fr}, and Simplified Chinese as
+@samp{zh_CN}.
+
+@command{grub-mkconfig} (@pxref{Simple configuration}) will try to set a
+reasonable default for this variable based on the system locale.
+
+
+@node locale_dir
+@subsection locale_dir
+
+If this variable is set, it names the directory where translation files may
+be found (@pxref{gettext}), usually @file{/boot/grub/locale}.  Otherwise,
+internationalization is disabled.
+
+@command{grub-mkconfig} (@pxref{Simple configuration}) will set a reasonable
+default for this variable if internationalization is needed and any
+translation files are available.
+
+
+@node menu_color_highlight
+@subsection menu_color_highlight
+
+This variable contains the foreground and background colors to be used for
+the highlighted menu entry, separated by a slash (@samp{/}).  Setting this
+variable changes those colors.  For the available color names,
+@pxref{color_normal}.
+
+The default is the value of @samp{color_highlight}
+(@pxref{color_highlight}).
+
+
+@node menu_color_normal
+@subsection menu_color_normal
+
+This variable contains the foreground and background colors to be used for
+non-highlighted menu entries, separated by a slash (@samp{/}).  Setting this
+variable changes those colors.  For the available color names,
+@pxref{color_normal}.
+
+The default is the value of @samp{color_normal} (@pxref{color_normal}).
+
+
+@node net_pxe_boot_file
+@subsection net_pxe_boot_file
+
+@xref{Network}.
+
+
+@node net_pxe_dhcp_server_name
+@subsection net_pxe_dhcp_server_name
+
+@xref{Network}.
+
+
+@node net_pxe_domain
+@subsection net_pxe_domain
+
+@xref{Network}.
+
+
+@node net_pxe_extensionspath
+@subsection net_pxe_extensionspath
+
+@xref{Network}.
+
+
+@node net_pxe_hostname
+@subsection net_pxe_hostname
+
+@xref{Network}.
+
+
+@node net_pxe_ip
+@subsection net_pxe_ip
+
+@xref{Network}.
+
+
+@node net_pxe_mac
+@subsection net_pxe_mac
+
+@xref{Network}.
+
+
+@node net_pxe_rootpath
+@subsection net_pxe_rootpath
+
+@xref{Network}.
+
+
+@node pager
+@subsection pager
+
+If set to @samp{1}, pause output after each screenful and wait for keyboard
+input.  The default is not to pause output.
+
+
+@node prefix
+@subsection prefix
+
+The location of the @samp{/boot/grub} directory as an absolute file name
+(@pxref{File name syntax}).  This is normally set by GRUB at startup based
+on information provided by @command{grub-install}.  GRUB modules are
+dynamically loaded from this directory, so it must be set correctly in order
+for many parts of GRUB to work.
+
+
+@node pxe_blksize
+@subsection pxe_blksize
+
+@xref{Network}.
+
+
+@node pxe_default_gateway
+@subsection pxe_default_gateway
+
+@xref{Network}.
+
+
+@node pxe_default_server
+@subsection pxe_default_server
+
+@xref{Network}.
+
+
+@node root
+@subsection root
+
+The root device name (@pxref{Device syntax}).  Any file names that do not
+specify an explicit device name are read from this device.  The default is
+normally set by GRUB at startup based on the value of @samp{prefix}
+(@pxref{prefix}).
+
+For example, if GRUB was installed to the first partition of the first hard
+disk, then @samp{prefix} might be set to @samp{(hd0,msdos1)/boot/grub} and
+@samp{root} to @samp{hd0,msdos1}.
+
+
+@node superusers
+@subsection superusers
+
+This variable may be set to a list of superuser names to enable
+authentication support.  @xref{Security}.
+
+
+@node theme
+@subsection theme
+
+This variable may be set to a directory containing a GRUB graphical menu
+theme.  @xref{Theme file format}.
+
+This variable is often set by @samp{GRUB_THEME} (@pxref{Simple
+configuration}).
+
+
+@node timeout
+@subsection timeout
+
+If this variable is set, it specifies the time in seconds to wait for
+keyboard input before booting the default menu entry.  A timeout of @samp{0}
+means to boot the default entry immediately without displaying the menu; a
+timeout of @samp{-1} (or unset) means to wait indefinitely.
+
+This variable is often set by @samp{GRUB_TIMEOUT} or
+@samp{GRUB_HIDDEN_TIMEOUT} (@pxref{Simple configuration}).
+
+
+@node Environment block
+@section The GRUB environment block
+
+It is often useful to be able to remember a small amount of information from
+one boot to the next.  For example, you might want to set the default menu
+entry based on what was selected the last time.  GRUB deliberately does not
+implement support for writing files in order to minimise the possibility of
+the boot loader being responsible for file system corruption, so a GRUB
+configuration file cannot just create a file in the ordinary way.  However,
+GRUB provides an ``environment block'' which can be used to save a small
+amount of state.
+
+The environment block is a preallocated 1024-byte file, which normally lives
+in @file{/boot/grub/grubenv} (although you should not assume this).  At boot
+time, the @command{load_env} command (@pxref{load_env}) loads environment
+variables from it, and the @command{save_env} (@pxref{save_env}) command
+saves environment variables to it.  From a running system, the
+@command{grub-editenv} utility can be used to edit the environment block.
+
+For safety reasons, this storage is only available when installed on a plain
+disk (no LVM or RAID), using a non-checksumming filesystem (no ZFS), and
+using BIOS or EFI functions (no ATA, USB or IEEE1275).
+
+@command{grub-mkconfig} uses this facility to implement
+@samp{GRUB_SAVEDEFAULT} (@pxref{Simple configuration}).
+
+
 @node Commands
 @chapter The list of available commands
 
@@ -2607,6 +3038,8 @@ you forget a command, you can run the command @command{help}
 * keystatus::                   Check key modifier status
 * linux::                       Load a Linux kernel
 * linux16::                     Load a Linux kernel (16-bit mode)
+* list_env::                    List variables in environment block
+* load_env::                    Load variables from environment block
 * loopback::                    Make a device from a filesystem image
 * ls::                          List devices or files
 * parttool::                    Modify partition table entries
@@ -2616,6 +3049,7 @@ you forget a command, you can run the command @command{help}
 * pxe_unload::                  Unload the PXE environment
 * read::                        Read user input
 * reboot::                      Reboot your computer
+* save_env::                    Save variables to environment block
 * search::                      Search devices by file, label, or UUID
 * sendkey::                     Emulate keystrokes
 * set::                         Set an environment variable
@@ -2878,8 +3312,8 @@ such as @code{if} and @code{while} (@pxref{Shell-like scripting}).
 Translate @var{string} into the current language.
 
 The current language code is stored in the @samp{lang} variable in GRUB's
-environment.  Translation files in MO format are read from
-@samp{locale_dir}, usually @file{/boot/grub/locale}.
+environment (@pxref{lang}).  Translation files in MO format are read from
+@samp{locale_dir} (@pxref{locale_dir}), usually @file{/boot/grub/locale}.
 @end deffn
 
 
@@ -3005,6 +3439,29 @@ permits booting some other programs that implement the Linux boot protocol
 for the sake of convenience.
 
 This command is only available on x86 systems.
+@end deffn
+
+
+@node list_env
+@subsection list_env
+
+@deffn Command list_env [@option{-f} file]
+List all variables in the environment block file.  @xref{Environment block}.
+
+The @option{-f} option overrides the default location of the environment
+block.
+@end deffn
+
+
+@node load_env
+@subsection load_env
+
+@deffn Command load_env [@option{-f} file]
+Load all variables from the environment block file into the environment.
+@xref{Environment block}.
+
+The @option{-f} option overrides the default location of the environment
+block.
 @end deffn
 
 
@@ -3139,6 +3596,18 @@ with no terminating newline.
 
 @deffn Command reboot
 Reboot the computer.
+@end deffn
+
+
+@node save_env
+@subsection save_env
+
+@deffn Command save_env [@option{-f} file] var @dots{}
+Save the named variables from the environment to the environment block file.
+@xref{Environment block}.
+
+The @option{-f} option overrides the default location of the environment
+block.
 @end deffn
 
 
@@ -3868,7 +4337,7 @@ for.
 
 @item
 Write down anything that you think might be related. Please understand
-that we often need to reproduce the same problem you encounterred in our
+that we often need to reproduce the same problem you encountered in our
 environment. So your information should be sufficient for us to do the
 same thing---Don't forget that we cannot see your computer directly. If
 you are not sure whether to state a fact or leave it out, state it!
