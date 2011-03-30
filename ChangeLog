@@ -1,5 +1,11 @@
 2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/raid.c (insert_array): Add few potentially
+	useful grub_util_info.
+	(grub_raid_register): Likewise.
+
+2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/getroot.c (grub_util_get_grub_dev) [__linux__]:
 	Preserve partition number in mdadm code path.
 

@@ -638,6 +638,10 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 
       grub_dprintf ("raid", "Found array %s (%s)\n", array->name,
                     scanner_name);
+#ifdef GRUB_UTIL
+      grub_util_info ("Found array %s (%s)", array->name,
+		      scanner_name);
+#endif
 
       /* Add our new array to the list.  */
       array->next = array_list;
@@ -698,6 +702,10 @@ grub_raid_register (grub_raid_t raid)
 
       grub_dprintf ("raid", "Scanning for %s RAID devices on disk %s\n",
 		    grub_raid_list->name, name);
+#ifdef GRUB_UTIL
+      grub_util_info ("Scanning for %s RAID devices on disk %s",
+		      grub_raid_list->name, name);
+#endif
 
       disk = grub_disk_open (name);
       if (!disk)
