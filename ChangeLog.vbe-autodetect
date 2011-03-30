@@ -29,3 +29,5 @@
 
 	* util/grub.d/00_header.in (GRUB_GFXMODE): Default to "auto".  This
 	is more appropriate on a wider range of platforms than 640x480.
+	* docs/grub.texi (Simple configuration): Update GRUB_GFXMODE
+	documentation.
