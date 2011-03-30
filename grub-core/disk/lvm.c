@@ -336,7 +336,7 @@ grub_lvm_scan_device (const char *name)
   if (i == GRUB_LVM_LABEL_SCAN_SECTORS)
     {
 #ifdef GRUB_UTIL
-      grub_util_info ("no LVM signature found\n");
+      grub_util_info ("no LVM signature found");
 #endif
       goto fail;
     }

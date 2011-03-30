@@ -26,6 +26,10 @@
 
 2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/lvm.c (grub_lvm_scan_device): Remove spurious \n.
+
+2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi: Correctly use "terminal_input" and not "terminal" in
 	the example.
 
