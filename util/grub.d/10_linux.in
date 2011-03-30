@@ -73,8 +73,8 @@ linux_entry ()
       cat << EOF
 	load_video
 EOF
-      if grep -qx "CONFIG_FB_EFI=y" /boot/config-${version} 2> /dev/null \
-	  && grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" /boot/config-${version} 2> /dev/null; then
+      if grep -qx "CONFIG_FB_EFI=y" "${config}" 2> /dev/null \
+	  && grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" "${config}" 2> /dev/null; then
 	  cat << EOF
 	set gfxpayload=keep
 EOF
@@ -147,13 +147,18 @@ while [ "x$list" != "x" ] ; do
     fi
   done
 
-  initramfs=
+  config=
   for i in "config-${version}" "config-${alt_version}"; do
     if test -e "${dirname}/${i}" ; then
-      initramfs=`grep CONFIG_INITRAMFS_SOURCE= "${dirname}/${i}" | cut -f2 -d= | tr -d \"`
+      config="${dirname}/${i}"
       break
     fi
   done
+
+  initramfs=
+  if test -n "${config}" ; then
+      initramfs=`grep CONFIG_INITRAMFS_SOURCE= "${config}" | cut -f2 -d= | tr -d \"`
+  fi
 
   if test -n "${initrd}" ; then
     echo "Found initrd image: ${dirname}/${initrd}" >&2

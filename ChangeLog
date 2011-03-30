@@ -1,3 +1,9 @@
+2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/10_linux.in: Try alternative config filenames where
+	we parse config file.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
 2011-03-30  Alexey Shvetsov <alexxy@gentoo.org>
 
 	* util/grub.d/10_linux.in: Add gentoo-specific Linux and initrd names.
