@@ -2821,7 +2821,9 @@ anywhere in the menu or specifically in the menu entries.
 
 In rescue mode, only the @command{insmod} (@pxref{insmod}), @command{ls}
 (@pxref{ls}), @command{set} (@pxref{set}), and @command{unset}
-(@pxref{unset}) commands are normally available.
+(@pxref{unset}) commands are normally available.  If you end up in rescue
+mode and do not know what to do, then @pxref{GRUB only offers a rescue
+shell}.
 
 @menu
 * Menu-specific commands::

@@ -1,3 +1,8 @@
+2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Commands): Link to "GRUB only offers a rescue
+	shell".
+
 2011-03-30  Alexey Shvetsov <alexxy@gentoo.org>
 
 	* util/grub.d/10_linux.in: Add gentoo-specific config filename.
