@@ -1518,6 +1518,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   if (stat (os_dev, &st) < 0)
     {
       grub_error (GRUB_ERR_BAD_DEVICE, "cannot stat `%s'", os_dev);
+      grub_util_info ("cannot stat `%s'", os_dev);
       return 0;
     }
 
@@ -1526,6 +1527,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		  "no mapping exists for `%s'", os_dev);
+      grub_util_info ("no mapping exists for `%s'", os_dev);
       return 0;
     }
 
