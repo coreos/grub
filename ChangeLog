@@ -2,6 +2,7 @@
 
 	* docs/grub.texi (Simple configuration): Explain some of the
 	current limitations of grub-mkconfig.
+	Reported by: Leslie Rhorer.
 
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
