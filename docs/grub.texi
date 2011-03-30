@@ -4357,12 +4357,11 @@ Once we get your report, we will try to fix the bugs.
 @node Future
 @appendix Where GRUB will go
 
-We started the next generation of GRUB, GRUB 2. GRUB 2 includes
-internationalization, dynamic module loading, real memory management,
-multiple architecture support, a scripting language, and many other
-nice features. If you are interested in the development of GRUB 2, take
-a look at @uref{http://www.gnu.org/software/grub/grub.html, the
-homepage}.
+GRUB 2 is now quite stable and used in many production systems.  We are
+currently working towards a 2.0 release.
+
+If you are interested in the development of GRUB 2, take a look at
+@uref{http://www.gnu.org/software/grub/grub.html, the homepage}.
 
 
 @node Internals

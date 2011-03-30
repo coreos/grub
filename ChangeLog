@@ -1,5 +1,9 @@
 2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Future): Update.
+
+2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Environment): New chapter.
 	(Changes from GRUB Legacy): Link to "Environment block" section for
 	details of limitations.
