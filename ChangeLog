@@ -1,5 +1,10 @@
 2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (default): Use @example rather than nested
+	itemized lists to avoid breaking gendocs.
+
+2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Future): Update.
 
 2011-03-30  Colin Watson  <cjwatson@ubuntu.com>

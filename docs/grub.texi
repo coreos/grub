@@ -2528,22 +2528,16 @@ each of the submenus starting from the top level followed by the number or
 title of the menu entry itself, separated by @samp{>}.  For example, take
 the following menu structure:
 
-@itemize @w
-@item Submenu 1
-@itemize @w
-@item Menu Entry 1
-@item Menu Entry 2
-@end itemize
-@item Submenu 2
-@itemize @w
-@item Submenu 3
-@itemize @w
-@item Menu Entry 3
-@item Menu Entry 4
-@end itemize
-@item Menu Entry 5
-@end itemize
-@end itemize
+@example
+Submenu 1
+  Menu Entry 1
+  Menu Entry 2
+Submenu 2
+  Submenu 3
+    Menu Entry 3
+    Menu Entry 4
+  Menu Entry 5
+@end example
 
 ``Menu Entry 3'' would then be identified as
 @samp{Submenu 2>Submenu 3>Menu Entry 3}.
