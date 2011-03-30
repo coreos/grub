@@ -1,5 +1,14 @@
 2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (Menu-specific commands): Remove some semantics
+	that were true in GRUB Legacy but not in GRUB 2.
+	(submenu): New section.
+	(false): New section.
+	(read): New section.
+	(true): New section.
+
+2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Changes from GRUB Legacy): Minor proofreading.
 
 2011-03-30  Colin Watson  <cjwatson@ubuntu.com>

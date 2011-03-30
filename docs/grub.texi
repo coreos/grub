@@ -2412,9 +2412,6 @@ The semantics used in parsing the configuration file are the following:
 
 @itemize @bullet
 @item
-The menu-specific commands have to be used before any others.
-
-@item
 The files @emph{must} be in plain-text format.
 
 @item
@@ -2427,20 +2424,13 @@ Options are separated by spaces.
 @item
 All numbers can be either decimal or hexadecimal. A hexadecimal number
 must be preceded by @samp{0x}, and is case-insensitive.
-
-@item
-Extra options or text at the end of the line are ignored unless otherwise
-specified.
-
-@item
-Unrecognized commands are added to the current entry, except before entries
-start, where they are ignored.
 @end itemize
 
 These commands can only be used in the menu:
 
 @menu
 * menuentry::                   Start a menu entry
+* submenu::                     Group menu entries
 @end menu
 
 
@@ -2467,6 +2457,22 @@ entries.  @xref{Security}.
 The @option{--hotkey} option associates a hotkey with a menu entry.
 @var{key} may be a single letter, or one of the aliases @samp{backspace},
 @samp{tab}, or @samp{delete}.
+@end deffn
+
+
+@node submenu
+@subsection submenu
+
+@deffn Command submenu @var{title} @
+ [@option{--class=class} @dots{}] [@option{--users=users}] @
+ [@option{--hotkey=key}] @
+ @{ @var{menu entries} @dots{} @}
+This defines a submenu.  An entry called @var{title} will be added to the
+menu; when that entry is selected, a new menu will be displayed showing all
+the entries within this submenu.
+
+All options are the same as in the @command{menuentry} command
+(@pxref{menuentry}).
 @end deffn
 
 
@@ -2590,6 +2596,7 @@ you forget a command, you can run the command @command{help}
 * drivemap::                    Map a drive to another
 * echo::                        Display a line of text
 * export::                      Export an environment variable
+* false::                       Do nothing, unsuccessfully
 * gettext::                     Translate a string
 * gptsync::                     Fill an MBR based on GPT entries
 * halt::                        Shut down your computer
@@ -2607,10 +2614,12 @@ you forget a command, you can run the command @command{help}
 * password_pbkdf2::             Set a hashed password
 * play::                        Play a tune
 * pxe_unload::                  Unload the PXE environment
+* read::                        Read user input
 * reboot::                      Reboot your computer
 * search::                      Search devices by file, label, or UUID
 * sendkey::                     Emulate keystrokes
 * set::                         Set an environment variable
+* true::                        Do nothing, successfully
 * unset::                       Unset an environment variable
 * uppermem::                    Set the upper memory size
 @end menu
@@ -2850,6 +2859,15 @@ character will print that character.
 @deffn Command export envvar
 Export the environment variable @var{envvar}. Exported variables are visible
 to subsidiary configuration files loaded using @command{configfile}.
+@end deffn
+
+
+@node false
+@subsection false
+
+@deffn Command false
+Do nothing, unsuccessfully.  This is mainly useful in control constructs
+such as @code{if} and @code{while} (@pxref{Shell-like scripting}).
 @end deffn
 
 
@@ -3106,6 +3124,16 @@ This command is only available on PC BIOS systems.
 @end deffn
 
 
+@node read
+@subsection read
+
+@deffn Command read [var]
+Read a line of input from the user.  If an environment variable @var{var} is
+given, set that environment variable to the line of input that was read,
+with no terminating newline.
+@end deffn
+
+
 @node reboot
 @subsection reboot
 
@@ -3291,6 +3319,15 @@ This command is only available on PC BIOS systems.
 @deffn Command set [envvar=value]
 Set the environment variable @var{envvar} to @var{value}. If invoked with no
 arguments, print all environment variables with their values.
+@end deffn
+
+
+@node true
+@subsection true
+
+@deffn Command true
+Do nothing, successfully.  This is mainly useful in control constructs such
+as @code{if} and @code{while} (@pxref{Shell-like scripting}).
 @end deffn
 
 
