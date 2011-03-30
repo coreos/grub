@@ -808,12 +808,30 @@ grub_util_get_grub_dev (const char *os_dev)
 	if (mdadm_name)
 	  {
 	    char *newname;
+	    char *q;
+
+	    for (q = os_dev + strlen (os_dev) - 1; q >= os_dev && isdigit (*q);
+		 q--);
+
+	    if (q >= os_dev && *q == 'p')
+	      {
+		newname = xasprintf ("/dev/md/%sp%s", mdadm_name, q + 1);
+		if (stat (newname, &st) == 0)
+		  {
+		    free (grub_dev);
+		    grub_dev = xasprintf ("md/%s,%s", mdadm_name, q + 1);
+		    goto done;
+		  }
+		free (newname);
+	      }
 	    newname = xasprintf ("/dev/md/%s", mdadm_name);
 	    if (stat (newname, &st) == 0)
 	      {
 		free (grub_dev);
 		grub_dev = xasprintf ("md/%s", mdadm_name);
 	      }
+
+	  done:
 	    free (newname);
 	    free (mdadm_name);
 	  }

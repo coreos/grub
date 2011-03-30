@@ -1,5 +1,10 @@
 2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/getroot.c (grub_util_get_grub_dev) [__linux__]:
+	Preserve partition number in mdadm code path.
+
+2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev): Add
 	few potentially useful grub_util_info.
 
