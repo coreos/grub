@@ -1,4 +1,8 @@
-2011-03-30  Colin Watson  <cjwatson@debian.org>
+2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Changes from GRUB Legacy): Minor proofreading.
+
+2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Simple configuration): Explain some of the
 	current limitations of grub-mkconfig.
