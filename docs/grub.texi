@@ -1998,7 +1998,7 @@ The commands @command{terminal_input} (@pxref{terminal_input}) and
 @command{terminal_output} (@pxref{terminal_output}) choose which type of
 terminal you want to use. In the case above, the terminal will be a
 serial terminal, but you can also pass @code{console} to the command,
-as @samp{terminal serial console}. In this case, a terminal in which
+as @samp{terminal_input serial console}. In this case, a terminal in which
 you press any key will be selected as a GRUB terminal. In the example above,
 note that you need to put both commands on the same command line, as you
 will lose the ability to type commands on the console after the first

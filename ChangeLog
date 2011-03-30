@@ -1,5 +1,10 @@
 2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi: Correctly use "terminal_input" and not "terminal" in
+	the example.
+
+2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/at_keyboard.c (set_scancodes)
 	[!GRUB_MACHINE_MIPS_YEELOONG && !GRUB_MACHINE_QEMU]: Use scancode set 1.
 
