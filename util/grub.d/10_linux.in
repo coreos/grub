@@ -148,9 +148,9 @@ while [ "x$list" != "x" ] ; do
   done
 
   config=
-  for i in "config-${version}" "config-${alt_version}"; do
-    if test -e "${dirname}/${i}" ; then
-      config="${dirname}/${i}"
+  for i in "${dirname}/config-${version}" "${dirname}/config-${alt_version}" "/etc/kernels/kernel-config-${version}" ; do
+    if test -e "${i}" ; then
+      config="${i}"
       break
     fi
   done

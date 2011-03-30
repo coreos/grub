@@ -99,9 +99,9 @@ linux_list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* /boot/kernel-*; do
 	version=$(echo $basename | sed -e "s,^[^0-9]*-,,g")
 	dirname=$(dirname $i)
 	config=
-	for j in "config-${version}" "config-${alt_version}"; do
-	    if test -e "${dirname}/${j}" ; then
-		config="${dirname}/${j}"
+	for j in "${dirname}/config-${version}" "${dirname}/config-${alt_version}" "/etc/kernels/kernel-config-${version}" ; do
+	    if test -e "${j}" ; then
+		config="${j}"
 		break
 	    fi
 	done
