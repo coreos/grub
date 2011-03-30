@@ -1,3 +1,8 @@
+2011-03-30  Colin Watson  <cjwatson@debian.org>
+
+	* docs/grub.texi (Simple configuration): Explain some of the
+	current limitations of grub-mkconfig.
+
 2011-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Old macs search for boot.efi rather than for bootia32.efi.

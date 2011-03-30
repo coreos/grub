@@ -1066,6 +1066,16 @@ generates @file{grub.cfg} files suitable for most cases.  It is suitable for
 use when upgrading a distribution, and will discover available kernels and
 attempt to generate menu entries for them.
 
+@command{grub-mkconfig} does have some limitations.  While adding extra
+custom menu entries to the end of the list can be done by editing
+@file{/etc/grub.d/40_custom} or creating @file{/boot/grub/custom.cfg},
+changing the order of menu entries or changing their titles may require
+making complex changes to shell scripts stored in @file{/etc/grub.d/}.  This
+may be improved in the future.  In the meantime, those who feel that it
+would be easier to write @file{grub.cfg} directly are encouraged to do so
+(@pxref{Booting}, and @ref{Shell-like scripting}), and to disable any system
+provided by their distribution to automatically run @command{grub-mkconfig}.
+
 The file @file{/etc/default/grub} controls the operation of
 @command{grub-mkconfig}.  It is sourced by a shell script, and so must be
 valid POSIX shell input; normally, it will just be a sequence of
