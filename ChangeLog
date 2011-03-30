@@ -1,3 +1,8 @@
+2011-03-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/at_keyboard.c (set_scancodes)
+	[!GRUB_MACHINE_MIPS_YEELOONG && !GRUB_MACHINE_QEMU]: Use scancode set 1.
+
 2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Menu-specific commands): Remove some semantics

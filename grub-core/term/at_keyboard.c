@@ -330,6 +330,11 @@ set_scancodes (void)
       return;
     }
 
+#if !(defined (GRUB_MACHINE_MIPS_YEELOONG) || defined (GRUB_MACHINE_QEMU))
+  current_set = 1;
+  return;
+#endif
+
   grub_keyboard_controller_write (grub_keyboard_controller_orig
 				  & ~KEYBOARD_AT_TRANSLATE);
 
