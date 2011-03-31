@@ -1,5 +1,10 @@
 2011-03-31  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/mmap/efi/mmap.c (grub_mmap_unregister): Remove
+	set-but-not-used variable.
+
+2011-03-31  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Simple configuration): Be more explicit about
 	GRUB_DEFAULT, and add an example.
 	Reported by: Leslie Rhorer.
