@@ -1,3 +1,16 @@
+2011-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/x86_64/efi/callwrap.S (efi_wrap_0): Preserve 16-byte
+	stack alignment.
+	(efi_wrap_1): Likewise.
+	(efi_wrap_2): Likewise.
+	(efi_wrap_3): Likewise.
+	(efi_wrap_4): Likewise.
+	(efi_wrap_5): Likewise.
+	(efi_wrap_6): Likewise.
+	(efi_wrap_10): Likewise.
+	Based on information by: Red Hat/Peter Jones.
+
 2011-03-31  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/mmap/efi/mmap.c (grub_mmap_unregister): Remove
