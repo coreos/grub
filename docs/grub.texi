@@ -1091,10 +1091,24 @@ Valid keys in @file{/etc/default/grub} are as follows:
 @table @samp
 @item GRUB_DEFAULT
 The default menu entry.  This may be a number, in which case it identifies
-the Nth entry in the generated menu counted from zero, or the full name of a
-menu entry, or the special string @samp{saved}.  Using the full name may be
+the Nth entry in the generated menu counted from zero, or the title of a
+menu entry, or the special string @samp{saved}.  Using the title may be
 useful if you want to set a menu entry as the default even though there may
 be a variable number of entries before it.
+
+For example, if you have:
+
+@verbatim
+menuentry 'Example GNU/Linux distribution' --class gnu-linux {
+	...
+}
+@end verbatim
+
+then you can make this the default using:
+
+@example
+GRUB_DEFAULT='Example GNU/Linux distribution'
+@end example
 
 If you set this to @samp{saved}, then the default menu entry will be that
 saved by @samp{GRUB_SAVEDEFAULT}, @command{grub-set-default}, or

@@ -1,3 +1,9 @@
+2011-03-31  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Simple configuration): Be more explicit about
+	GRUB_DEFAULT, and add an example.
+	Reported by: Leslie Rhorer.
+
 2011-03-30  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Commands): Link to "GRUB only offers a rescue
