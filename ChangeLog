@@ -1,3 +1,10 @@
+2011-04-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/normal/menu_entry.c (run): Quieten uninitialised
+	  warning.  (This was in fact always initialised before use, but GCC
+	  wasn't smart enough to prove that.)
+	* grub-core/script/lexer.c (grub_script_lexer_yywrap): Likewise.
+
 2011-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/x86_64/efi/callwrap.S (efi_wrap_0): Preserve 16-byte

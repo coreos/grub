@@ -1165,7 +1165,7 @@ run (struct screen *screen)
 {
   char *script;
   int errs_before;
-  grub_menu_t menu;
+  grub_menu_t menu = NULL;
   char *dummy[1] = { NULL };
 
   auto char * editor_getsource (void);
