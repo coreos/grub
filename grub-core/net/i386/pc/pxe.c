@@ -292,7 +292,7 @@ grub_pxefs_label (grub_device_t device __attribute ((unused)),
   return GRUB_ERR_NONE;
 }
 
-static struct grub_fs grub_pxefs_fs =
+static struct grub_net_app_protocol grub_pxefs_fs =
   {
     .name = "pxe",
     .dir = grub_pxefs_dir,

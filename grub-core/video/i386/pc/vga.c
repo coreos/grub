@@ -116,7 +116,8 @@ grub_video_vga_init (void)
 
 static grub_err_t
 grub_video_vga_setup (unsigned int width, unsigned int height,
-                      unsigned int mode_type, unsigned int mode_mask)
+                      grub_video_mode_type_t mode_type,
+		      grub_video_mode_type_t mode_mask)
 {
   grub_err_t err;
 

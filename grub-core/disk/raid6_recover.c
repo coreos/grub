@@ -118,8 +118,10 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
         bad1 = i;
       else
         {
-          if ((array->device[pos]) &&
-              (! grub_disk_read (array->device[pos], sector, 0, size, buf)))
+          if ((array->members[pos].device) &&
+              (! grub_disk_read (array->members[pos].device,
+				 array->members[i].start_sector + sector,
+				 0, size, buf)))
             {
               grub_raid_block_xor (pbuf, buf, size);
               grub_raid_block_mul (raid6_table2[i][i], buf, size);
@@ -148,21 +150,24 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
   if (bad2 < 0)
     {
       /* One bad device */
-      if ((array->device[p]) &&
-          (! grub_disk_read (array->device[p], sector, 0, size, buf)))
+      if ((array->members[p].device) &&
+          (! grub_disk_read (array->members[p].device,
+			     array->members[i].start_sector + sector,
+			     0, size, buf)))
         {
           grub_raid_block_xor (buf, pbuf, size);
           goto quit;
         }
 
-      if (! array->device[q])
+      if (! array->members[q].device)
         {
           grub_error (GRUB_ERR_READ_ERROR, "not enough disk to restore");
           goto quit;
         }
 
       grub_errno = GRUB_ERR_NONE;
-      if (grub_disk_read (array->device[q], sector, 0, size, buf))
+      if (grub_disk_read (array->members[q].device,
+			  array->members[i].start_sector + sector, 0, size, buf))
         goto quit;
 
       grub_raid_block_xor (buf, qbuf, size);
@@ -174,18 +179,22 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
       /* Two bad devices */
       grub_uint8_t c;
 
-      if ((! array->device[p]) || (! array->device[q]))
+      if ((! array->members[p].device) || (! array->members[q].device))
         {
           grub_error (GRUB_ERR_READ_ERROR, "not enough disk to restore");
           goto quit;
         }
 
-      if (grub_disk_read (array->device[p], sector, 0, size, buf))
+      if (grub_disk_read (array->members[p].device,
+			  array->members[i].start_sector + sector,
+			  0, size, buf))
         goto quit;
 
       grub_raid_block_xor (pbuf, buf, size);
 
-      if (grub_disk_read (array->device[q], sector, 0, size, buf))
+      if (grub_disk_read (array->members[q].device,
+			  array->members[i].start_sector + sector,
+			  0, size, buf))
         goto quit;
 
       grub_raid_block_xor (qbuf, buf, size);

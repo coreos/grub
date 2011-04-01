@@ -49,6 +49,7 @@
 #include <grub/emu/getroot.h>
 #include "progname.h"
 #include <grub/reed_solomon.h>
+#include <grub/msdos_partition.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -339,6 +340,12 @@ setup (const char *dir,
     {
       if (p->parent != container)
 	return 0;
+      /* NetBSD and OpenBSD subpartitions have metadata inside a partition,
+	 so they are safe to ignore.
+       */
+      if (grub_strcmp (p->partmap->name, "netbsd") == 0
+	  || grub_strcmp (p->partmap->name, "openbsd") == 0)
+	return 0;
       if (dest_partmap == NULL)
 	{
 	  dest_partmap = p->partmap;
@@ -351,6 +358,15 @@ setup (const char *dir,
     }
 
     grub_partition_iterate (dest_dev->disk, identify_partmap);
+
+    if (container && grub_strcmp (container->partmap->name, "msdos") == 0
+	&& dest_partmap
+	&& (container->msdostype == GRUB_PC_PARTITION_TYPE_NETBSD
+	    || container->msdostype == GRUB_PC_PARTITION_TYPE_OPENBSD))
+      {
+	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
+	goto unable_to_embed;
+      }
 
     fs = grub_fs_probe (dest_dev);
     if (!fs)
@@ -383,9 +399,18 @@ setup (const char *dir,
       }
 #endif
 
+    /* Copy the partition table.  */
+    if (dest_partmap ||
+        (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk)))
+      memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
+
+    free (tmp_img);
+    
     if (! dest_partmap)
       {
-	grub_util_warn (_("Attempting to install GRUB to a partitionless disk.  This is a BAD idea."));
+	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
 	goto unable_to_embed;
       }
     if (multiple_partmaps || fs)
@@ -394,14 +419,6 @@ setup (const char *dir,
 	goto unable_to_embed;
       }
 
-    /* Copy the partition table.  */
-    if (dest_partmap)
-      memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
-	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
-	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
-
-    free (tmp_img);
-    
     if (!dest_partmap->embed)
       {
 	grub_util_warn ("Partition style '%s' doesn't support embeding",
@@ -482,11 +499,17 @@ unable_to_embed:
     grub_util_error (_("embedding is not possible, but this is required when "
 		       "the root device is on a RAID array or LVM volume"));
 
+#ifdef GRUB_MACHINE_PCBIOS
+  if (dest_dev->disk->id != root_dev->disk->id)
+    grub_util_error (_("embedding is not possible, but this is required for "
+		       "cross-disk install"));
+#endif
+
   grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
 		    "setup by using blocklists.  However, blocklists are UNRELIABLE and "
 		    "their use is discouraged."));
   if (! force)
-    grub_util_error (_("if you really want blocklists, use --force"));
+    grub_util_error (_("will not proceed with blocklists"));
 
   /* The core image must be put on a filesystem unfortunately.  */
   grub_util_info ("will leave the core image on the filesystem");
@@ -822,7 +845,7 @@ Set up images to boot from DEVICE.\n\
 \n\
 You should not normally run this program directly.  Use grub-install instead.")
 "\v"N_("\
-DEVICE must be an OS device (e.g. /dev/sda1)."),
+DEVICE must be an OS device (e.g. /dev/sda)."),
   NULL, help_filter, NULL
 };
 

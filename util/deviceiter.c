@@ -485,12 +485,15 @@ compare_devices (const void *a, const void *b)
 {
   const struct device *left = (const struct device *) a;
   const struct device *right = (const struct device *) b;
-  int ret;
-  ret = strcmp (left->kernel, right->kernel);
-  if (ret)
-    return ret;
-  else
-    return strcmp (left->stable, right->stable);
+
+  if (left->kernel && right->kernel)
+    {
+      int ret = strcmp (left->kernel, right->kernel);
+      if (ret)
+	return ret;
+    }
+
+  return strcmp (left->stable, right->stable);
 }
 #endif /* __linux__ */
 
@@ -533,6 +536,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	   necessary.  */
 	for (entry = readdir (dir); entry; entry = readdir (dir))
 	  {
+	    /* Skip current and parent directory entries.  */
+	    if (strcmp (entry->d_name, ".") == 0 ||
+		strcmp (entry->d_name, "..") == 0)
+	      continue;
 	    /* Skip partition entries.  */
 	    if (strstr (entry->d_name, "-part"))
 	      continue;
@@ -601,7 +608,7 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 #endif /* __linux__ */
 
   /* IDE disks.  */
-  for (i = 0; i < 26; i++)
+  for (i = 0; i < 96; i++)
     {
       char name[16];
 
@@ -655,7 +662,7 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 #endif /* __linux__ */
 
   /* The rest is SCSI disks.  */
-  for (i = 0; i < 26; i++)
+  for (i = 0; i < 48; i++)
     {
       char name[16];
 

@@ -35,36 +35,40 @@ grub_net_arp_resolve(struct grub_net_network_level_interface *inf,
 		     grub_net_link_level_address_t *hw_addr)
 {
   struct arp_entry *entry;
-  struct grub_net_buff *nb;
+  struct grub_net_buff nb;
   struct arphdr *arp_header;
   grub_net_link_level_address_t target_hw_addr;
-  grub_uint8_t *aux, i;
+  char *aux, arp_data[128];
+  int i;
 
-  /* Check cache table */
+  /* Check cache table.  */
   entry = arp_find_entry (proto_addr);
   if (entry)
     {
       *hw_addr = entry->ll_address;
       return GRUB_ERR_NONE;
     }
-  /* Build a request packet */
-  nb = grub_netbuff_alloc (2048);
-  if (!nb)
-    return grub_errno;
-  grub_netbuff_reserve(nb, 2048);
-  grub_netbuff_push(nb, sizeof(*arp_header) + 2 * (6 + 6));
-  arp_header = (struct arphdr *)nb->data;
+  /* Build a request packet.  */
+  nb.head = arp_data;
+  nb.end = arp_data + sizeof (arp_data);
+  grub_netbuff_clear (&nb);  
+
+  grub_netbuff_reserve (&nb,128);  
+  grub_netbuff_push (&nb, sizeof(*arp_header) + 2 * (6 + 4));
+  arp_header = (struct arphdr *) nb.data;
   arp_header->hrd = grub_cpu_to_be16 (GRUB_NET_ARPHRD_ETHERNET);
   arp_header->pro = grub_cpu_to_be16 (GRUB_NET_ETHERTYPE_IP);
+  /* FIXME Add support to ipv6 address.  */
   arp_header->hln = 6;
   arp_header->pln = 4;
   arp_header->op = grub_cpu_to_be16 (ARP_REQUEST);
-  aux = (grub_uint8_t *)arp_header + sizeof(*arp_header);
-  /* Sender hardware address */
-  grub_memcpy(aux, &inf->hwaddress.mac, 6);
+  aux = (char *) arp_header + sizeof (*arp_header);
+  /* Sender hardware address.  */
+  grub_memcpy (aux, &inf->hwaddress.mac, 6);
+
   aux += 6;
   /* Sender protocol address */
-  grub_memcpy(aux, &inf->address.ipv4, 4);
+  grub_memcpy (aux, &inf->address.ipv4, 4);
   aux += 4;
   /* Target hardware address */
   for(i = 0; i < 6; i++)
@@ -72,49 +76,40 @@ grub_net_arp_resolve(struct grub_net_network_level_interface *inf,
   aux += 6;
   /* Target protocol address */
   grub_memcpy(aux, &proto_addr->ipv4, 4);
-
   grub_memset (&target_hw_addr.mac, 0xff, 6);
 
-  send_ethernet_packet (inf, nb, target_hw_addr, GRUB_NET_ETHERTYPE_ARP);
-  grub_netbuff_clear(nb); 
-  grub_netbuff_reserve(nb, 2048);
-
-  grub_uint64_t start_time, current_time;
-  start_time = grub_get_time_ms();
-  do
+  send_ethernet_packet (inf, &nb, target_hw_addr, GRUB_NET_ETHERTYPE_ARP);
+  for (i = 0; i < 3; i++)
     {
-      grub_net_recv_ethernet_packet (inf, nb, GRUB_NET_ETHERTYPE_ARP);
-      /* Now check cache table again */
-      entry = arp_find_entry(proto_addr);
+      entry = arp_find_entry (proto_addr);
       if (entry)
-        {
-          grub_memcpy(hw_addr, &entry->ll_address, sizeof (*hw_addr));
-          grub_netbuff_clear(nb); 
-          return GRUB_ERR_NONE;
-        }
-      current_time = grub_get_time_ms();
-      if (current_time -  start_time > 3000)
-        break;
-    } while (! entry);
-  grub_netbuff_clear(nb); 
+	{
+	  grub_memcpy (hw_addr, &entry->ll_address, sizeof (*hw_addr));
+	  return GRUB_ERR_NONE;
+	}
+      grub_net_pool_cards (200);
+
+    } 
+
   return grub_error (GRUB_ERR_TIMEOUT, "Timeout: could not resolve hardware address.");
 }
 
 grub_err_t
-grub_net_arp_receive (struct grub_net_network_level_interface *inf,
-		      struct grub_net_buff *nb)
+grub_net_arp_receive (struct grub_net_buff *nb)
 {
   struct arphdr *arp_header = (struct arphdr *)nb->data;
   struct arp_entry *entry;
   grub_uint8_t *sender_hardware_address, *sender_protocol_address;
   grub_uint8_t *target_hardware_address, *target_protocol_address;
   grub_net_network_level_address_t hwaddress;
+  struct grub_net_network_level_interface *inf;
 
   sender_hardware_address = (grub_uint8_t *) arp_header + sizeof(*arp_header);
   sender_protocol_address = sender_hardware_address + arp_header->hln;
   target_hardware_address = sender_protocol_address + arp_header->pln;
   target_protocol_address = target_hardware_address + arp_header->hln;
   grub_memcpy (&hwaddress.ipv4, sender_protocol_address, 4);
+
   /* Check if the sender is in the cache table */
   entry = arp_find_entry(&hwaddress);
   /* Update sender hardware address */
@@ -134,21 +129,24 @@ grub_net_arp_receive (struct grub_net_network_level_interface *inf,
 	new_table_entry = 0;
     }
 
-  /* Am I the protocol address target? */
-  if (grub_memcmp(target_protocol_address, inf->hwaddress.mac, 6) == 0
-      && grub_be_to_cpu16 (arp_header->op) == ARP_REQUEST)
+  FOR_NET_NETWORK_LEVEL_INTERFACES(inf)
     {
-      grub_net_link_level_address_t aux;
-      /* Swap hardware fields */
-      grub_memcpy(target_hardware_address, sender_hardware_address, arp_header->hln);
-      grub_memcpy(sender_hardware_address, inf->hwaddress.mac, 6);
-      grub_memcpy(aux.mac, sender_protocol_address, 6);
-      grub_memcpy(sender_protocol_address, target_protocol_address, arp_header->pln);
-      grub_memcpy(target_protocol_address, aux.mac, arp_header->pln);
-      /* Change operation to REPLY and send packet */
-      arp_header->op = grub_be_to_cpu16 (ARP_REPLY);
-      grub_memcpy (aux.mac, target_hardware_address, 6);
-      send_ethernet_packet (inf, nb, aux, GRUB_NET_ETHERTYPE_ARP);
+      /* Am I the protocol address target? */
+      if (grub_memcmp (target_protocol_address, &inf->address.ipv4, 6) == 0
+          && grub_be_to_cpu16 (arp_header->op) == ARP_REQUEST)
+        {
+          grub_net_link_level_address_t aux;
+          /* Swap hardware fields */
+          grub_memcpy (target_hardware_address, sender_hardware_address, arp_header->hln);
+          grub_memcpy (sender_hardware_address, inf->hwaddress.mac, 6);
+          grub_memcpy (aux.mac, sender_protocol_address, 6);
+          grub_memcpy (sender_protocol_address, target_protocol_address, arp_header->pln);
+          grub_memcpy (target_protocol_address, aux.mac, arp_header->pln);
+          /* Change operation to REPLY and send packet */
+          arp_header->op = grub_be_to_cpu16 (ARP_REPLY);
+          grub_memcpy (aux.mac, target_hardware_address, 6);
+          send_ethernet_packet (inf, nb, aux, GRUB_NET_ETHERTYPE_ARP);
+        }
     }
   return GRUB_ERR_NONE;
 }

@@ -27,6 +27,8 @@ kernel = {
   i386_qemu_ldflags        = '$(TARGET_IMG_LDFLAGS)';
   i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),0x8200';
 
+  ldadd = '$(LDADD_KERNEL)';
+
   i386_coreboot_ldflags    = '-Wl,-Ttext=0x8200';
   i386_multiboot_ldflags   = '-Wl,-Ttext=0x8200';
   i386_ieee1275_ldflags    = '-Wl,-Ttext=0x10000';
@@ -38,10 +40,6 @@ kernel = {
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
   emu_cflags = '$(CFLAGS_GNULIB)';
   emu_cppflags = '$(CPPFLAGS_GNULIB)';
-
-  mips_ldadd = '-lgcc';
-  powerpc_ldadd = '-lgcc';
-  sparc64_ldadd = '-lgcc';
 
   i386_pc_startup = kern/i386/pc/startup.S;
   i386_efi_startup = kern/i386/efi/startup.S;
@@ -164,6 +162,7 @@ kernel = {
   emu = disk/host.c;
   emu = gnulib/progname.c;
   emu = gnulib/error.c;
+  emu = kern/emu/cache.S;
   emu = kern/emu/console.c;
   emu = kern/emu/getroot.c;
   emu = kern/emu/hostdisk.c;
@@ -201,7 +200,7 @@ program = {
 
   ldadd = 'kernel.img$(EXEEXT)';
   ldadd = '$(MODULE_FILES)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;
 };
@@ -210,11 +209,10 @@ program = {
   name = grub-emu-lite;
 
   emu = kern/emu/lite.c;
-  emu = kern/emu/cache.S;
   emu_nodist = symlist.c;
 
   ldadd = 'kernel.img$(EXEEXT)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;
 };
@@ -302,7 +300,8 @@ image = {
   mips_cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
 
   objcopyflags = '-O binary';
-  ldflags = '-lgcc -static-libgcc -Wl,-Ttext,0x80100000';
+  ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;
 };
@@ -315,7 +314,8 @@ image = {
   mips_cppflags = '-DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
 
   objcopyflags = '-O binary';
-  ldflags = '-lgcc -static-libgcc -Wl,-Ttext,0x80100000';
+  ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;
 };
@@ -324,6 +324,7 @@ image = {
   name = fwstart;
   mips_yeeloong = boot/mips/yeeloong/fwstart.S;
   objcopyflags = '-O binary';
+  ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_yeeloong;
 };
 
@@ -1008,6 +1009,19 @@ module = {
 };
 
 module = {
+  name = zfs;
+  common = fs/zfs/zfs.c;
+  common = fs/zfs/zfs_lzjb.c;
+  common = fs/zfs/zfs_sha256.c;
+  common = fs/zfs/zfs_fletcher.c;
+};
+
+module = {
+  name = zfsinfo;
+  common = fs/zfs/zfsinfo.c;
+};
+
+module = {
   name = pxe;
   i386_pc = net/i386/pc/pxe.c;
   enable = i386_pc;
@@ -1136,6 +1150,7 @@ module = {
 module = {
   name = linux16;
   i386_pc = loader/i386/pc/linux.c;
+  i386_pc = lib/cmdline.c;
   enable = i386_pc;
 };
 
@@ -1170,6 +1185,7 @@ module = {
   mips = loader/mips/linux.c;
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
+  common = lib/cmdline.c;
   enable = noemu;
 };
 
@@ -1448,7 +1464,6 @@ module = {
   name = ieee1275_fb;
   ieee1275 = video/ieee1275.c;
   enable = powerpc;
-  enable = sparc64;
 };
 
 module = {

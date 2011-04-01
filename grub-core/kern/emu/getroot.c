@@ -17,7 +17,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config-util.h>
 #include <config.h>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
@@ -135,8 +137,12 @@ find_root_device_from_mountinfo (const char *dir)
 	continue; /* only a subtree is mounted */
 
       enc_path_len = strlen (enc_path);
+      /* Check that enc_path is a prefix of dir.  The prefix must either be
+         the entire string, or end with a slash, or be immediately followed
+         by a slash.  */
       if (strncmp (dir, enc_path, enc_path_len) != 0 ||
-	  (dir[enc_path_len] && dir[enc_path_len] != '/'))
+	  (enc_path_len && dir[enc_path_len - 1] != '/' &&
+	   dir[enc_path_len] && dir[enc_path_len] != '/'))
 	continue;
 
       /* This is a parent of the requested directory.  /proc/self/mountinfo
@@ -178,7 +184,7 @@ find_root_device_from_mountinfo (const char *dir)
 static char *
 find_root_device_from_libzfs (const char *dir)
 {
-  char *device;
+  char *device = NULL;
   char *poolname;
   char *poolfs;
 
@@ -219,7 +225,10 @@ find_root_device_from_libzfs (const char *dir)
 
 	struct stat st;
 	if (stat (device, &st) == 0)
-	  break;
+	  {
+	    device = xstrdup (device);
+	    break;
+	  }
 
 	device = NULL;
       }
@@ -582,6 +591,8 @@ grub_util_is_dmraid (const char *os_dev)
     return 1;
   else if (! strncmp (os_dev, "/dev/mapper/sil_", 16))
     return 1;
+  else if (! strncmp (os_dev, "/dev/mapper/ddf1_", 17))
+    return 1;
 
   return 0;
 }
@@ -792,11 +803,36 @@ grub_util_get_grub_dev (const char *os_dev)
 #ifdef __linux__
       {
 	char *mdadm_name = get_mdadm_name (os_dev);
+	struct stat st;
 
 	if (mdadm_name)
 	  {
-	    free (grub_dev);
-	    grub_dev = xasprintf ("md/%s", mdadm_name);
+	    char *newname;
+	    char *q;
+
+	    for (q = os_dev + strlen (os_dev) - 1; q >= os_dev && isdigit (*q);
+		 q--);
+
+	    if (q >= os_dev && *q == 'p')
+	      {
+		newname = xasprintf ("/dev/md/%sp%s", mdadm_name, q + 1);
+		if (stat (newname, &st) == 0)
+		  {
+		    free (grub_dev);
+		    grub_dev = xasprintf ("md/%s,%s", mdadm_name, q + 1);
+		    goto done;
+		  }
+		free (newname);
+	      }
+	    newname = xasprintf ("/dev/md/%s", mdadm_name);
+	    if (stat (newname, &st) == 0)
+	      {
+		free (grub_dev);
+		grub_dev = xasprintf ("md/%s", mdadm_name);
+	      }
+
+	  done:
+	    free (newname);
 	    free (mdadm_name);
 	  }
       }

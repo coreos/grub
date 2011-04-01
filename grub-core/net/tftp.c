@@ -14,26 +14,23 @@ tftp_open (struct grub_file *file, const char *filename)
 {
   struct tftphdr *tftph; 
   char *rrq;
-  char *ptr;
+  int i;
   int rrqlen;
-  int hdrlen; 
-  struct grub_net_buff *nb;
-  grub_net_network_level_address_t addr;
+  int hdrlen;
+  char open_data[1500]; 
+  struct grub_net_buff nb;
+  tftp_data_t data = grub_malloc (sizeof *data);
   grub_err_t err;
+ 
+  file->device->net->socket->data = (void *) data;
+  nb.head = open_data;
+  nb.end = open_data + sizeof (open_data);
+  grub_netbuff_clear (&nb);  
 
-  err = grub_net_resolve_address (file->device->net->name
-				  + sizeof ("tftp,") - 1, &addr);
-  if (err)
-    return err;
+  grub_netbuff_reserve (&nb,1500);  
+  grub_netbuff_push (&nb,sizeof (*tftph));
 
-  nb = grub_netbuff_alloc (2048);
-  if (!nb)
-    return grub_errno;
-
-  grub_netbuff_reserve (nb,2048);  
-  grub_netbuff_push (nb,sizeof (*tftph));
-
-  tftph = (struct tftphdr *) nb->data; 
+  tftph = (struct tftphdr *) nb.data; 
   
   rrq = (char *) tftph->u.rrq;
   rrqlen = 0;
@@ -64,89 +61,93 @@ tftp_open (struct grub_file *file, const char *filename)
   rrq += grub_strlen ("0") + 1;
   hdrlen = sizeof (tftph->opcode) + rrqlen;
  
-  grub_netbuff_unput (nb,nb->tail - (nb->data+hdrlen)); 
+  grub_netbuff_unput (&nb, nb.tail - (nb.data + hdrlen)); 
 
-  err = grub_net_send_udp_packet (&addr,
-				  nb, TFTP_CLIENT_PORT, TFTP_SERVER_PORT);
+  file->device->net->socket->out_port = TFTP_SERVER_PORT;
+
+  err = grub_net_send_udp_packet (file->device->net->socket, &nb);
   if (err)
     return err;
 
-  /* Receive OACK.  */
-  grub_netbuff_clear (nb); 
-  grub_netbuff_reserve (nb,2048);
-
-  do
+  /* Receive OACK packet.  */
+  for ( i = 0; i < 3; i++)
     {
-      err = grub_net_recv_udp_packet (&addr, nb,
-				      TFTP_CLIENT_PORT, TFTP_SERVER_PORT);
-      if (err)
-	return err;
+      grub_net_pool_cards (100);
+      if (grub_errno)
+	return grub_errno;
+      if (file->device->net->socket->status != 0)
+	break;
+      /* Retry.  */
+      //err = grub_net_send_udp_packet (file->device->net->socket, &nb);
+     // if (err)
+     //   return err;
     }
-  while (nb->tail == nb->data);
 
-  file->size = 0;
+  if (file->device->net->socket->status == 0)
+    return grub_error (GRUB_ERR_TIMEOUT,"Time out opening tftp.");
+  file->size = data->file_size;
 
-  for (ptr = nb->data; ptr < nb->tail; )
-    grub_printf ("%02x ", *ptr);
-
-  for (ptr = nb->data; ptr < nb->tail; )
-    {
-      if (grub_memcmp (ptr, "tsize\0=", sizeof ("tsize\0=") - 1) == 0)
-	{
-	  file->size = grub_strtoul (ptr + sizeof ("tsize\0=") - 1, 0, 0);
-	  grub_errno = GRUB_ERR_NONE;
-	}
-      while (ptr < nb->tail && *ptr)
-	ptr++;
-      ptr++;
-    }
   return GRUB_ERR_NONE;
 }
 
-static grub_ssize_t
-tftp_receive (struct grub_file *file, char *buf, grub_size_t len)
+static grub_err_t 
+tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
 {
   struct tftphdr *tftph;
-  //  char *token,*value,*temp; 
+  char  nbdata[128];
+  tftp_data_t data = sock->data;
   grub_err_t err;
-  grub_net_network_level_address_t addr;
-  struct grub_net_buff nb;
+  char *ptr;
+  struct grub_net_buff nb_ack;
 
-  err = grub_net_resolve_address (file->device->net->name
-				  + sizeof ("tftp,") - 1, &addr);
-  if (err)
-    return err;
+  nb_ack.head = nbdata;
+  nb_ack.end = nbdata + sizeof (nbdata);
 
-  grub_net_recv_udp_packet (&addr, &nb,
-			    TFTP_CLIENT_PORT, TFTP_SERVER_PORT);
-   
-  tftph = (struct tftphdr *) nb.data;
+
+  tftph = (struct tftphdr *) nb->data;
   switch (grub_be_to_cpu16 (tftph->opcode))
   {
+    case TFTP_OACK:
+      for (ptr = nb->data; ptr < nb->tail; )
+	{
+	  if (grub_memcmp (ptr, "tsize\0", sizeof ("tsize\0") - 1) == 0)
+	    data->file_size = grub_strtoul (ptr + sizeof ("tsize\0") - 1, 0, 0);
+	  while (ptr < nb->tail && *ptr)
+	    ptr++;
+	  ptr++;
+	}
+      sock->status = 1; 
+      data->block = 0;
+      grub_netbuff_clear(nb);
+    break;
     case TFTP_DATA:
-      grub_netbuff_pull (&nb,sizeof (tftph->opcode) + sizeof (tftph->u.data.block));
-      //      if (tftph->u.data.block == block + 1)
-      //{
-      //  block  = tftph->u.data.block;
-	  grub_memcpy (buf, nb.data, len);
-	  //}
-	  //else
-	  //grub_netbuff_clear(&nb); 
-      break; 
+      grub_netbuff_pull (nb,sizeof (tftph->opcode) + sizeof (tftph->u.data.block));
+      
+      if (grub_be_to_cpu16 (tftph->u.data.block) == data->block + 1)
+	{
+	  data->block++;
+	  if (nb->tail - nb->data < 1024)
+	    sock->status = 2;
+	}
+      else
+	grub_netbuff_clear(nb);
+      
+    break; 
     case TFTP_ERROR:
-      grub_netbuff_clear (&nb);
+      grub_netbuff_clear (nb);
       return grub_error (GRUB_ERR_IO, (char *)tftph->u.err.errmsg);
+    break;
   }
+  grub_netbuff_clear (&nb_ack);
+  grub_netbuff_reserve (&nb_ack,128);
+  grub_netbuff_push (&nb_ack,sizeof (tftph->opcode) + sizeof (tftph->u.ack.block));
 
-  nb.data = nb.tail = nb.end;
- 
-  grub_netbuff_push (&nb,sizeof (tftph->opcode) + sizeof (tftph->u.ack.block));
-
-  tftph = (struct tftphdr *) nb.data; 
+  tftph = (struct tftphdr *) nb_ack.data; 
   tftph->opcode = grub_cpu_to_be16 (TFTP_ACK);
-  //  tftph->u.ack.block = block;
+  tftph->u.ack.block = data->block;
 
-  return grub_net_send_udp_packet (&addr, &nb, TFTP_CLIENT_PORT, TFTP_SERVER_PORT);
+  err = grub_net_send_udp_packet (sock, &nb_ack);
+  return err;
 }
 
 static grub_err_t 
@@ -155,7 +156,7 @@ tftp_close (struct grub_file *file __attribute__ ((unused)))
   return 0;
 }
 
-static struct grub_fs grub_tftp_protocol = 
+static struct grub_net_app_protocol grub_tftp_protocol = 
 {
   .name = "tftp",
   .open = tftp_open,

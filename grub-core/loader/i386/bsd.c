@@ -65,7 +65,7 @@ static void *kern_chunk_src;
 static grub_uint32_t bootflags;
 static int is_elf_kernel, is_64bit;
 static grub_uint32_t openbsd_root;
-struct grub_relocator *relocator = NULL;
+static struct grub_relocator *relocator = NULL;
 static struct grub_openbsd_ramdisk_descriptor openbsd_ramdisk;
 
 struct bsd_tag
@@ -252,7 +252,7 @@ struct grub_e820_mmap
 #define GRUB_E820_RESERVED   2
 #define GRUB_E820_ACPI       3
 #define GRUB_E820_NVS        4
-#define GRUB_E820_EXEC_CODE  5
+#define GRUB_E820_BADRAM     5
 
 static void
 generate_e820_mmap (grub_size_t *len, grub_size_t *cnt, void *buf)
@@ -521,6 +521,8 @@ grub_netbsd_list_modules (void)
 /* This function would be here but it's under different license. */
 #include "bsd_pagetable.c"
 
+static grub_uint32_t freebsd_bootdev, freebsd_biosdev;
+
 static grub_err_t
 grub_freebsd_boot (void)
 {
@@ -528,7 +530,6 @@ grub_freebsd_boot (void)
   grub_uint8_t *p, *p0;
   grub_addr_t p_target;
   grub_size_t p_size = 0;
-  grub_uint32_t bootdev, biosdev, unit, slice, part;
   grub_err_t err;
   grub_size_t tag_buf_len = 0;
 
@@ -564,11 +565,7 @@ grub_freebsd_boot (void)
   bi.version = FREEBSD_BOOTINFO_VERSION;
   bi.length = sizeof (bi);
 
-  grub_bsd_get_device (&biosdev, &unit, &slice, &part);
-  bootdev = (FREEBSD_B_DEVMAGIC + ((slice + 1) << FREEBSD_B_SLICESHIFT) +
-	     (unit << FREEBSD_B_UNITSHIFT) + (part << FREEBSD_B_PARTSHIFT));
-
-  bi.boot_device = biosdev;
+  bi.boot_device = freebsd_biosdev;
 
   p_size = 0;
   grub_env_iterate (iterate_env_count);
@@ -741,7 +738,7 @@ grub_freebsd_boot (void)
       state.ebp = stack_target;
       stack[0] = entry; /* "Return" address.  */
       stack[1] = bootflags | FREEBSD_RB_BOOTINFO;
-      stack[2] = bootdev;
+      stack[2] = freebsd_bootdev;
       stack[3] = 0;
       stack[4] = 0;
       stack[5] = 0;
@@ -1371,6 +1368,8 @@ grub_cmd_freebsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     {
+      grub_uint32_t unit, slice, part;
+
       kern_end = ALIGN_PAGE (kern_end);
       if (is_elf_kernel)
 	{
@@ -1414,6 +1413,10 @@ grub_cmd_freebsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 	  if (err)
 	    return err;
 	}
+      grub_bsd_get_device (&freebsd_biosdev, &unit, &slice, &part);
+      freebsd_bootdev = (FREEBSD_B_DEVMAGIC + ((slice + 1) << FREEBSD_B_SLICESHIFT) +
+			 (unit << FREEBSD_B_UNITSHIFT) + (part << FREEBSD_B_PARTSHIFT));
+
       grub_loader_set (grub_freebsd_boot, grub_bsd_unload, 0);
     }
 
@@ -1611,7 +1614,7 @@ grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
   char *buf = 0, *curr, *next;
   int len;
 
-  if (kernel_type == KERNEL_TYPE_NONE)
+  if (! grub_loader_is_loaded ())
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "you need to load the kernel first");
 
@@ -1844,7 +1847,7 @@ grub_cmd_freebsd_module_elf (grub_command_t cmd __attribute__ ((unused)),
   grub_file_t file = 0;
   grub_err_t err;
 
-  if (kernel_type == KERNEL_TYPE_NONE)
+  if (! grub_loader_is_loaded ())
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "you need to load the kernel first");
 

@@ -91,16 +91,16 @@ print_more (void)
   grub_term_restore_pos (pos);
   grub_free (pos);
 
-  /* Scroll one lines or an entire page, depending on the key.  */
+  /* Scroll one line or an entire page, depending on the key.  */
 
   if (key == '\r' || key =='\n')
-    grub_normal_reset_more ();
-  else
     {
       static struct term_state *state;
       for (state = term_states; state; state = state->next)
-	state->num_lines -= 2;
+	state->num_lines--;
     }
+  else
+    grub_normal_reset_more ();
 }
 
 void

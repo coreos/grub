@@ -78,12 +78,11 @@ bootp_response_properties[] =
   { .name = "bootpreply-packet", .offset = 0x2a },
 };
 
-
-grub_bootp_t 
-grub_getbootp( void )
+static grub_bootp_t 
+grub_getbootp_real ( void )
 {
-  grub_bootp_t packet = grub_malloc(sizeof *packet);
-  void *bootp_response = NULL; 
+  grub_bootp_t packet = grub_malloc (sizeof *packet);
+  char *bootp_response;  
   grub_ssize_t size;
   unsigned int i;
 
@@ -94,30 +93,27 @@ grub_getbootp( void )
       break;
 
   if (size < 0)
-  {
-    grub_printf("Error to get bootp\n");
     return NULL;
-  }
 
+  bootp_response = grub_malloc (size);
   if (grub_ieee1275_get_property (grub_ieee1275_chosen,
 				  bootp_response_properties[i].name,
 				  bootp_response ,
 				  size, 0) < 0)
-  {
-    grub_printf("Error to get bootp\n");
     return NULL;
-  }
 
-  packet = (void *) ((int)bootp_response
-		     + bootp_response_properties[i].offset);
+  grub_memcpy (packet, bootp_response + bootp_response_properties[i].offset, sizeof (*packet));
+  grub_free (bootp_response);
   return packet;
 }
 
+static
 void grub_ofnet_findcards (void)
 {
   struct grub_net_card *card;
+  grub_ieee1275_phandle_t devhandle;
+  grub_net_link_level_address_t lla; 
   int i = 0;
-
   auto int search_net_devices (struct grub_ieee1275_devalias *alias);
 
   int search_net_devices (struct grub_ieee1275_devalias *alias)
@@ -128,53 +124,82 @@ void grub_ofnet_findcards (void)
         card = grub_malloc (sizeof (struct grub_net_card));
         struct grub_ofnetcard_data *ofdata = grub_malloc (sizeof (struct grub_ofnetcard_data));
         ofdata->path = grub_strdup (alias->path);
-        card->data = ofdata; 
+ 
+        grub_ieee1275_finddevice (ofdata->path, &devhandle);
+      
+        if (grub_ieee1275_get_integer_property
+            (devhandle, "max-frame-size", &(ofdata->mtu), sizeof (ofdata->mtu), 0))
+          return grub_error (GRUB_ERR_IO, "Couldn't retrieve mtu size.");
+
+        if (grub_ieee1275_get_property (devhandle, "mac-address", &(lla.mac), 6, 0))
+          return grub_error (GRUB_ERR_IO, "Couldn't retrieve mac address.");
+      
+        lla.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+        card->default_address = lla;
+
+        card->data = ofdata;
+	card->flags = 0;
         card->name = grub_xasprintf("eth%d",i++); // grub_strdup (alias->name);
         grub_net_card_register (card); 
      }
      return 0;
   }
 
-  /*Look at all nodes for devices of the type network*/
+  /* Look at all nodes for devices of the type network.  */
   grub_ieee1275_devices_iterate (search_net_devices);
-
 }
 
+static
 void grub_ofnet_probecards (void)
 {
   struct grub_net_card *card;
   struct grub_net_card_driver *driver;
+  struct grub_net_network_level_interface *inter;
+  grub_bootp_t bootp_pckt;
+  grub_net_network_level_address_t addr;
+  grub_net_network_level_netaddress_t net;
 
- /*Assign correspondent driver for each device. */
+ /* Assign correspondent driver for each device.  */
   FOR_NET_CARDS (card)
   {
     FOR_NET_CARD_DRIVERS (driver)
     {
       if (driver->init(card) == GRUB_ERR_NONE)
-      {
-        card->driver = driver;
-        continue;
-      } 
+	{
+	  card->driver = driver;
+	  bootp_pckt = grub_getbootp ();
+	  if (bootp_pckt)
+	    {
+	      addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+	      addr.ipv4 = bootp_pckt->yiaddr;
+	      grub_net_add_addr ("bootp_cli_addr", card, addr, card->default_address, 0);
+	      FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
+		if (grub_strcmp (inter->name, "bootp_cli_addr") == 0)
+		  break;
+	      net.type = addr.type;
+	      net.ipv4.base = addr.ipv4;
+	      net.ipv4.masksize = 24;
+	      grub_net_add_route ("bootp-router", net, inter);
+	    }
+	  grub_free (bootp_pckt);
+	  break;
+        } 
     }
   }
 }
 
-GRUB_MOD_INIT(ofnet)
+GRUB_MOD_INIT (ofnet)
 {
+  grub_getbootp = grub_getbootp_real;
   grub_net_card_driver_register (&ofdriver);
-  grub_ofnet_findcards(); 
-  grub_ofnet_probecards(); 
-
-  /*init tftp stack - will be handled by module subsystem in the future*/
-  tftp_ini ();
-  /*get bootp packet - won't be needed in the future*/
-  bootp_pckt = grub_getbootp ();
-  grub_disknet_init();
+  grub_ofnet_findcards (); 
+  grub_ofnet_probecards (); 
 }
 
-GRUB_MODE_FINI(ofnet)
+GRUB_MOD_FINI (ofnet)
 {
   grub_net_card_driver_unregister (&ofdriver);
+  grub_getbootp = NULL;
 }
 
 

@@ -68,6 +68,7 @@ struct grub_ofnetcard_data
 {
   char *path;
   grub_ieee1275_ihandle_t handle;
+  grub_uint32_t mtu;
 };
 
 /* Maps a device alias to a pathname.  */
@@ -112,6 +113,12 @@ enum grub_ieee1275_flag
 
   /* OLPC / XO firmware has the cursor ON/OFF routines.  */
   GRUB_IEEE1275_FLAG_HAS_CURSORONOFF,
+
+  /* Some PowerMacs claim to use 2 address cells but in fact use only 1. 
+     Other PowerMacs claim to use only 1 and really do so. Always assume
+     1 address cell is used on PowerMacs.
+   */
+  GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS,
 };
 
 extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);
@@ -195,8 +202,6 @@ int EXPORT_FUNC(grub_ieee1275_devices_iterate) (int (*hook)
 						(struct grub_ieee1275_devalias *
 						 alias));
 char *EXPORT_FUNC(grub_ieee1275_get_aliasdevname) (const char *path);
-void EXPORT_FUNC(grub_ofnet_findcards) (void);
-void EXPORT_FUNC(grub_ofnet_probecards) (void);
 char *EXPORT_FUNC(grub_ieee1275_canonicalise_devname) (const char *path);
 
 #endif /* ! GRUB_IEEE1275_HEADER */

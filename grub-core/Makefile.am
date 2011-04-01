@@ -30,7 +30,7 @@ CCASFLAGS_LIBRARY += $(CCASFLAGS_PLATFORM)
 
 # gentrigtables
 gentrigtables: gentrigtables.c
-	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(CPPFLAGS) -lm $<
+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(CPPFLAGS) $< -lm
 CLEANFILES += gentrigtables
 
 # trigtables.c
@@ -50,7 +50,7 @@ grub_script.yy.h: script/yylex.l
 grub_script.yy.c: grub_script.yy.h
 
 rs_decoder.S: $(srcdir)/lib/reed_solomon.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Os -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3
 
 kern/i386/pc/startup.S: $(builddir)/rs_decoder.S
 
@@ -113,6 +113,7 @@ endif
 
 if COND_i386_ieee1275
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ofnet.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/lib/arg.h
@@ -148,6 +149,7 @@ endif
 
 if COND_powerpc_ieee1275
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ofnet.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/lib/arg.h
@@ -155,6 +157,7 @@ endif
 
 if COND_sparc64_ieee1275
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ofnet.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/sparc64/ieee1275/ieee1275.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
@@ -238,9 +241,9 @@ command.lst: $(MARKER_FILES)
 	(for pp in $^; do \
 	  b=`basename $$pp .marker`; \
 	  sed -n \
-	    -e "/COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}" \
 	    -e "/EXTCOMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" \
-	    -e "/P1COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" $$pp; \
+	    -e "/P1COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/*\1: $$b/;p;}" \
+	    -e "/COMMAND_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/\1: $$b/;p;}" $$pp; \
 	done) | sort -u > $@
 platform_DATA += command.lst
 CLEANFILES += command.lst
@@ -304,7 +307,7 @@ platform_DATA += moddep.lst
 CLEANFILES += config.log syminfo.lst moddep.lst
 
 $(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT)
-	sh $^ $@
+	TARGET_OBJ2ELF=@TARGET_OBJ2ELF@ sh $^ $@
 platform_DATA += $(MOD_FILES)
 CLEANFILES += $(MOD_FILES)
 

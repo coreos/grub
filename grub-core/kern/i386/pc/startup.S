@@ -151,8 +151,6 @@ LOCAL (codestart):
 	addl    $(GRUB_KERNEL_MACHINE_RAW_SIZE - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART), %edx
 	movl    reed_solomon_redundancy, %ecx
 	leal    _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART, %eax
-	testl   %edx, %edx
-	jz post_reed_solomon
 	call    EXT_C (grub_reed_solomon_recover)
 	jmp post_reed_solomon
 
@@ -224,6 +222,7 @@ multiboot_trampoline:
         movb    $0xFF, %dh
 	/* enter the usual booting */
 	call	prot_to_real
+	jmp     LOCAL (codestart)
 
 post_reed_solomon:
 
@@ -649,7 +648,7 @@ FUNCTION(grub_console_getkey)
 	jae     2f
 	movl	%edx, %eax
 	leal    LOCAL(bypass_table), %edi
-	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) / 2), %ecx
+	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) >> 1), %ecx
 	repne scasw 
 	jz      3f
 

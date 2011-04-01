@@ -17,8 +17,12 @@
  */
 
 #include <grub/net.h>
+#include <grub/net/netbuff.h>
+#include <grub/time.h>
+#include <grub/file.h>
 #include <grub/i18n.h>
 #include <grub/mm.h>
+#include <grub/misc.h>
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/env.h>
@@ -40,6 +44,7 @@ struct grub_net_route
 struct grub_net_route *grub_net_routes = NULL;
 struct grub_net_network_level_interface *grub_net_network_level_interfaces = NULL;
 struct grub_net_card *grub_net_cards = NULL;
+struct grub_net_card_driver *grub_net_card_drivers = NULL;
 struct grub_net_network_level_protocol *grub_net_network_level_protocols = NULL;
 
 static inline void
@@ -105,7 +110,7 @@ match_net (const grub_net_network_level_netaddress_t *net,
     {
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
-	grub_int32_t mask = (1 << net->ipv4.masksize) - 1;
+	grub_int32_t mask = ((1 << net->ipv4.masksize) - 1) << (32 - net->ipv4.masksize);
 	return ((grub_be_to_cpu32 (net->ipv4.base) & mask)
 		== (grub_be_to_cpu32 (addr->ipv4) & mask));
       }
@@ -538,6 +543,7 @@ grub_cmd_listcards (struct grub_command *cmd __attribute__ ((unused)),
 }
 
 grub_net_app_level_t grub_net_app_level_list;
+struct grub_net_socket *grub_net_sockets;
 
 static grub_net_t
 grub_net_open_real (const char *name)
@@ -568,6 +574,159 @@ grub_net_open_real (const char *name)
   grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such device");
 
   return NULL;
+}
+
+static grub_err_t
+grub_net_file_open_real (struct grub_file *file, const char *name)
+{
+  grub_err_t err;
+  grub_net_network_level_address_t addr;
+  struct grub_net_network_level_interface *inf;
+  grub_net_network_level_address_t gateway;
+  grub_net_socket_t socket;
+  static int port = 25300;
+
+  err = grub_net_resolve_address (file->device->net->name
+				  + sizeof (file->device->net->protocol->name) + 1, &addr);
+  if (err)
+    return err;
+ 
+  err = grub_net_route_address (addr, &gateway, &inf);
+  if (err)
+    return err;
+
+  if ((socket = (grub_net_socket_t) grub_malloc (sizeof (*socket))) == NULL)
+    return GRUB_ERR_OUT_OF_MEMORY; 
+
+  socket->inf = inf;
+  socket->out_nla = addr;
+  socket->in_port = port++;
+  socket->status = 0;
+  socket->app = file->device->net->protocol;
+  socket->packs = NULL;
+  file->device->net->socket = socket;
+  grub_net_socket_register (socket);
+
+  if ((err = file->device->net->protocol->open (file,name)))
+    goto fail;
+  
+  return GRUB_ERR_NONE;
+fail:
+  grub_net_socket_unregister (socket);
+  grub_free (socket);
+  return err;
+
+}
+
+static grub_err_t
+receive_packets (struct grub_net_card *card)
+{
+  /* Maybe should be better have a fixed number of packets for each card
+     and just mark them as used and not used.  */ 
+  struct grub_net_buff *nb;
+  nb = grub_netbuff_alloc (1500);
+  if (!nb)
+    return grub_errno;
+
+  card->driver->recv (card, nb);
+  return GRUB_ERR_NONE;
+}
+
+void
+grub_net_pool_cards (unsigned time)
+{
+  struct grub_net_card *card;
+  grub_uint64_t start_time;
+  FOR_NET_CARDS (card)
+    {
+      start_time = grub_get_time_ms ();
+       while( (grub_get_time_ms () - start_time) < time)	
+         receive_packets (card);
+    }
+}
+
+static grub_ssize_t
+process_packets (grub_file_t file, void *buf, grub_size_t len, 
+		 void *NESTED_FUNC_ATTR (hook) (void *dest, const void *src, grub_size_t n))
+{
+  grub_net_socket_t sock = file->device->net->socket;
+  struct grub_net_buff *nb;
+  char *ptr = (char *) buf;
+  grub_size_t amount, total = 0;
+  int try = 0;
+  while (try <= 3)
+    {
+      while (sock->packs->first)
+	{
+	  try = 0;
+	  nb = sock->packs->first->nb;
+	  amount = (grub_size_t)(len <= (grub_size_t) (nb->tail - nb->data))? len :(grub_size_t)(nb->tail - nb->data);
+	  len -= amount;
+	  total += amount;
+	  hook (ptr, nb->data, amount);
+	  ptr += amount;
+	  if (amount == (grub_size_t) (nb->tail - nb->data))
+	    {
+	      grub_netbuff_free (nb);
+	      grub_net_remove_packet (sock->packs->first);
+	    }
+	  else
+	    nb->data += amount;
+
+	  if (!len)
+	    return total;
+	}
+      if (sock->status == 1)
+	{
+	  try++;
+	  grub_net_pool_cards (200);
+	}
+      else
+	return total;
+    }
+    return total;
+}
+
+
+/*  Read from the packets list*/
+static grub_ssize_t
+grub_net_read_real (grub_file_t file, void *buf, grub_size_t len )
+{
+  auto void *NESTED_FUNC_ATTR memcpy_hook (void *dest, const void *src, grub_size_t n);
+  void *NESTED_FUNC_ATTR memcpy_hook (void *dest __attribute__ ((unused)), const void *src __attribute__ ((unused)),
+				grub_size_t n __attribute__ ((unused)))
+  {
+    return grub_memcpy (dest, src, n);
+  }
+  return process_packets (file, buf, len, memcpy_hook);
+}
+
+/*  Read from the packets list*/
+static grub_err_t 
+grub_net_seek_real (struct grub_file *file, grub_off_t offset)
+{
+  grub_net_socket_t sock = file->device->net->socket;
+  struct grub_net_buff *nb;
+  grub_size_t len = offset - file->offset;
+
+  if (!len)
+    return GRUB_ERR_NONE;
+
+  /* We cant seek backwards past the current packet.  */
+  if (file->offset > offset)
+    {  
+      nb = sock->packs->first->nb;
+      return grub_netbuff_push (nb, file->offset - offset);
+    }
+
+  auto void *NESTED_FUNC_ATTR dummy (void *dest, const void *src, grub_size_t n);
+  void *NESTED_FUNC_ATTR dummy (void *dest __attribute__ ((unused)), const void *src __attribute__ ((unused)),
+				grub_size_t n __attribute__ ((unused)))
+  {
+    return NULL;
+  }
+  process_packets (file, NULL, len, dummy);
+  return GRUB_ERR_NONE;
 }
 
 static char *
@@ -857,6 +1016,9 @@ GRUB_MOD_INIT(net)
 				       N_("retrieve DHCP option and save it into VAR. If VAR is - then print the value."));
 
   grub_net_open = grub_net_open_real;
+  grub_file_net_open = grub_net_file_open_real;
+  grub_file_net_read = grub_net_read_real;
+  grub_file_net_seek = grub_net_seek_real;
 }
 
 GRUB_MOD_FINI(net)
@@ -869,4 +1031,6 @@ GRUB_MOD_FINI(net)
   grub_unregister_command (cmd_lscards);
   grub_unregister_command (cmd_getdhcp);
   grub_net_open = NULL;
+  grub_file_net_read = NULL;
+  grub_file_net_open = NULL;
 }

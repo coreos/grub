@@ -171,11 +171,12 @@ grub_elf32_phdr_iterate (grub_elf_t elf,
 
 /* Calculate the amount of memory spanned by the segments.  */
 grub_size_t
-grub_elf32_size (grub_elf_t elf, Elf32_Addr *base)
+grub_elf32_size (grub_elf_t elf, Elf32_Addr *base, grub_uint32_t *max_align)
 {
   Elf32_Addr segments_start = (Elf32_Addr) -1;
   Elf32_Addr segments_end = 0;
   int nr_phdrs = 0;
+  grub_uint32_t curr_align = 1;
 
   /* Run through the program headers to calculate the total memory size we
    * should claim.  */
@@ -192,6 +193,8 @@ grub_elf32_size (grub_elf_t elf, Elf32_Addr *base)
 	segments_start = phdr->p_paddr;
       if (phdr->p_paddr + phdr->p_memsz > segments_end)
 	segments_end = phdr->p_paddr + phdr->p_memsz;
+      if (curr_align < phdr->p_align)
+	curr_align = phdr->p_align;
       return 0;
     }
 
@@ -215,7 +218,8 @@ grub_elf32_size (grub_elf_t elf, Elf32_Addr *base)
 
   if (base)
     *base = segments_start;
-
+  if (max_align)
+    *max_align = curr_align;
   return segments_end - segments_start;
 }
 
@@ -290,7 +294,6 @@ grub_elf32_load (grub_elf_t _elf, grub_elf32_load_hook_t _load_hook,
   return err;
 }
 
-
 
 /* 64-bit */
 
@@ -357,16 +360,17 @@ grub_elf64_phdr_iterate (grub_elf_t elf,
 
 /* Calculate the amount of memory spanned by the segments.  */
 grub_size_t
-grub_elf64_size (grub_elf_t elf, Elf64_Addr *base)
+grub_elf64_size (grub_elf_t elf, Elf64_Addr *base, grub_uint64_t *max_align)
 {
   Elf64_Addr segments_start = (Elf64_Addr) -1;
   Elf64_Addr segments_end = 0;
   int nr_phdrs = 0;
+  grub_uint64_t curr_align = 1;
 
   /* Run through the program headers to calculate the total memory size we
    * should claim.  */
   auto int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf, Elf64_Phdr *phdr, void *_arg);
-  int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf __attribute__ ((unused)),
+  int NESTED_FUNC_ATTR calcsize (grub_elf_t _elf  __attribute__ ((unused)),
 				 Elf64_Phdr *phdr,
 				 void *_arg __attribute__ ((unused)))
     {
@@ -378,6 +382,8 @@ grub_elf64_size (grub_elf_t elf, Elf64_Addr *base)
 	segments_start = phdr->p_paddr;
       if (phdr->p_paddr + phdr->p_memsz > segments_end)
 	segments_end = phdr->p_paddr + phdr->p_memsz;
+      if (curr_align < phdr->p_align)
+	curr_align = phdr->p_align;
       return 0;
     }
 
@@ -401,10 +407,10 @@ grub_elf64_size (grub_elf_t elf, Elf64_Addr *base)
 
   if (base)
     *base = segments_start;
-
+  if (max_align)
+    *max_align = curr_align;
   return segments_end - segments_start;
 }
-
 
 /* Load every loadable segment into memory specified by `_load_hook'.  */
 grub_err_t

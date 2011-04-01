@@ -26,7 +26,7 @@
 #include <grub/msdos_partition.h>
 
 #ifdef GRUB_UTIL
-#include <grub/util/misc.h>
+#include <grub/emu/misc.h>
 #endif
 
 static struct grub_partition_map grub_bsdlabel_partition_map;
@@ -44,7 +44,7 @@ iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
   struct grub_partition_bsd_disk_label label;
   struct grub_partition p;
   grub_disk_addr_t delta = 0;
-  unsigned pos;
+  grub_disk_addr_t pos;
 
   /* Read the BSD label.  */
   if (grub_disk_read (disk, sector, 0, sizeof (label), &label))
@@ -101,7 +101,8 @@ iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
 #ifdef GRUB_UTIL
 	  char *partname;
 	  /* disk->partition != NULL as 0 < delta */
-	  partname = grub_partition_get_name (disk->partition);
+	  partname = disk->partition ? grub_partition_get_name (disk->partition)
+	    : "";
 	  grub_util_warn ("Discarding improperly nested partition (%s,%s,%s%d)",
 			  disk->name, partname, p.partmap->name, p.number + 1);
 	  grub_free (partname);

@@ -90,7 +90,14 @@ grub_pci_iterate (grub_pci_iteratefunc_t hook)
 
 	      /* Check if there is a device present.  */
 	      if (id >> 16 == 0xFFFF)
-		continue;
+		{
+		  if (dev.function == 0)
+		    /* Devices are required to implement function 0, so if
+		       it's missing then there is no device here.  */
+		    break;
+		  else
+		    continue;
+		}
 
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
 	      /* Skip ghosts.  */

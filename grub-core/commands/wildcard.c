@@ -266,7 +266,6 @@ match_files (const char *prefix, const char *suffix, const char *end,
 	     const regex_t *regexp)
 {
   int i;
-  int error;
   char **files;
   unsigned nfile;
   char *dir;
@@ -440,8 +439,6 @@ wildcard_expand (const char *s, char ***strs)
 
 	  else if (*start == '/') /* no device part */
 	    {
-	      char **r;
-	      unsigned n;
 	      char *root;
 	      char *prefix;
 

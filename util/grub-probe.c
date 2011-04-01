@@ -142,6 +142,7 @@ probe (const char *path, char *device_name)
       int is_raid5 = 0;
       int is_raid6 = 0;
       int raid_level;
+      grub_disk_t raid_disk;
 
       raid_level = probe_raid_level (dev->disk);
       if (raid_level >= 0)
@@ -149,6 +150,7 @@ probe (const char *path, char *device_name)
 	  is_raid = 1;
 	  is_raid5 |= (raid_level == 5);
 	  is_raid6 |= (raid_level == 6);
+	  raid_disk = dev->disk;
 	}
 
       if ((is_lvm) && (dev->disk->dev->memberlist))
@@ -161,6 +163,7 @@ probe (const char *path, char *device_name)
 	      is_raid = 1;
 	      is_raid5 |= (raid_level == 5);
 	      is_raid6 |= (raid_level == 6);
+	      raid_disk = list->disk;
 	    }
 
 	  tmp = list->next;
@@ -175,8 +178,8 @@ probe (const char *path, char *device_name)
 	    printf ("raid5rec ");
 	  if (is_raid6)
 	    printf ("raid6rec ");
-	  if (dev->disk->dev->raidname)
-	    printf ("%s ", dev->disk->dev->raidname (dev->disk));
+	  if (raid_disk->dev->raidname)
+	    printf ("%s ", raid_disk->dev->raidname (raid_disk));
 	}
 
       if (is_lvm)

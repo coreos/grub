@@ -25,7 +25,7 @@
 #include <grub/term.h>
 
 static grub_usb_controller_dev_t grub_usb_list;
-struct grub_usb_attach_desc *attach_hooks;
+static struct grub_usb_attach_desc *attach_hooks;
 
 void
 grub_usb_controller_dev_register (grub_usb_controller_dev_t usb)

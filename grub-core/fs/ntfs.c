@@ -1072,7 +1072,11 @@ grub_ntfs_uuid (grub_device_t device, char **uuid)
   data = grub_ntfs_mount (disk);
   if (data)
     {
+      char *ptr;
       *uuid = grub_xasprintf ("%016llx", (unsigned long long) data->uuid);
+      if (*uuid)
+	for (ptr = *uuid; *ptr; ptr++)
+	  *ptr = grub_toupper (*ptr);
     }
   else
     *uuid = NULL;

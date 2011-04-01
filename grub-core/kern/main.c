@@ -189,6 +189,8 @@ grub_main (void)
      for convenience.  */
   grub_machine_set_prefix ();
   grub_set_root_dev ();
+  grub_env_export ("root");
+  grub_env_export ("prefix");
 
   grub_register_core_commands ();
 

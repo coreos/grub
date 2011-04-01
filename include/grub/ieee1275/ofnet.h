@@ -60,14 +60,10 @@ struct grub_bootp {
   unsigned char chaddr [16];      /*  Client hardware address */
   char sname [64];    /*  Server name */
   char file [128];      /*  Boot filename */
-//  grub_uint32_t filesize ; /*File size (testing)*/
   unsigned char vend [64];
 }; 
 
 typedef struct grub_bootp* grub_bootp_t;
 
-char * grub_get_filestr(const char * );
-char * grub_ip2str (grub_uint32_t ip);
-void grub_get_netinfo (grub_ofnet_t netinfo,grub_bootp_t packet);
-grub_bootp_t grub_getbootp (void);
+extern grub_bootp_t (*EXPORT_VAR (grub_getbootp)) (void);
 #endif /* ! GRUB_NET_HEADER */

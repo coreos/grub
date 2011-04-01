@@ -37,7 +37,7 @@
 #include <grub/gfxmenu_view.h>
 #include <grub/time.h>
 
-grub_gfxmenu_view_t cached_view;
+static grub_gfxmenu_view_t cached_view;
 
 static void 
 grub_gfxmenu_viewer_fini (void *data __attribute__ ((unused)))

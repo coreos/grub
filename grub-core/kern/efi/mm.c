@@ -52,13 +52,13 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
   grub_efi_status_t status;
   grub_efi_boot_services_t *b;
 
-#if GRUB_TARGET_SIZEOF_VOID_P < 8
+#if 1
   /* Limit the memory access to less than 4GB for 32-bit platforms.  */
   if (address > 0xffffffff)
     return 0;
 #endif
 
-#if GRUB_TARGET_SIZEOF_VOID_P < 8 || defined (MCMODEL_SMALL)
+#if 1
   if (address == 0)
     {
       type = GRUB_EFI_ALLOCATE_MAX_ADDRESS;
@@ -251,7 +251,7 @@ filter_memory_map (grub_efi_memory_descriptor_t *memory_map,
        desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
     {
       if (desc->type == GRUB_EFI_CONVENTIONAL_MEMORY
-#if GRUB_TARGET_SIZEOF_VOID_P < 8 || defined (MCMODEL_SMALL)
+#if 1
 	  && desc->physical_start <= 0xffffffff
 #endif
 	  && desc->physical_start + PAGES_TO_BYTES (desc->num_pages) > 0x100000
@@ -267,7 +267,7 @@ filter_memory_map (grub_efi_memory_descriptor_t *memory_map,
 	      desc->physical_start = 0x100000;
 	    }
 
-#if GRUB_TARGET_SIZEOF_VOID_P < 8 || defined (MCMODEL_SMALL)
+#if 1
 	  if (BYTES_TO_PAGES (filtered_desc->physical_start)
 	      + filtered_desc->num_pages
 	      > BYTES_TO_PAGES (0x100000000LL))

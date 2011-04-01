@@ -89,7 +89,7 @@ void grub_print_message_indented (const char *msg, int margin_left,
 void
 grub_menu_text_register_instances (int entry, grub_menu_t menu, int nested);
 grub_err_t
-grub_show_menu (grub_menu_t menu, int nested);
+grub_show_menu (grub_menu_t menu, int nested, int autobooted);
 
 /* Defined in `handler.c'.  */
 void read_handler_list (void);

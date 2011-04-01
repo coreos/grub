@@ -14,7 +14,6 @@
 
 /* IP port for the TFTP server */
 #define TFTP_SERVER_PORT 69
-#define TFTP_CLIENT_PORT 26300
 
 
 /* We define these based on what's in arpa/tftp.h. We just like our
@@ -40,10 +39,17 @@
 #define TFTP_EBADID 5                   /* unknown transfer ID */
 #define TFTP_EEXISTS 6                  /* file already exists */
 #define TFTP_ENOUSER 7                  /* no such user */
-#define TFTP_DEFAULT_FILENAME   "kernel"
 
  /*  * own here because this is cleaner, and maps to the same data layout.
  *   */
+
+typedef struct tftp_data
+  {
+    int file_size;
+    int block;
+  } *tftp_data_t;
+
+
 struct tftphdr {
   grub_uint16_t opcode;
   union {
@@ -65,6 +71,4 @@ struct tftphdr {
   } u;
 } __attribute__ ((packed)) ;
 
-void tftp_ini(void);
-void tftp_fini(void);
 #endif 
