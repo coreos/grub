@@ -105,7 +105,7 @@ match_net (const grub_net_network_level_netaddress_t *net,
     {
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
-	grub_int32_t mask = (1 << net->ipv4.masksize) - 1;
+	grub_int32_t mask = ((1 << net->ipv4.masksize) - 1) << (32 - net->ipv4.masksize);
 	return ((grub_be_to_cpu32 (net->ipv4.base) & mask)
 		== (grub_be_to_cpu32 (addr->ipv4) & mask));
       }
