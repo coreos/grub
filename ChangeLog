@@ -1,3 +1,8 @@
+2011-04-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/disk/loopback.c (grub_cmd_loopback): Fix a memory leak
+	when replacing an existing device.
+
 2011-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix incorrect types in jfs.c. This enables >2TiB disks and fixes some

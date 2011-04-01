@@ -97,10 +97,6 @@ grub_cmd_loopback (grub_extcmd_context_t ctxt, int argc, char **args)
 
   if (newdev)
     {
-      char *newname = grub_strdup (args[1]);
-      if (! newname)
-	goto fail;
-
       grub_file_close (newdev->file);
       newdev->file = file;
 
