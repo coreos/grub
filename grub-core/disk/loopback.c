@@ -162,7 +162,7 @@ grub_loopback_open (const char *name, grub_disk_t disk)
     disk->total_sectors = GRUB_DISK_SIZE_UNKNOWN;
   disk->id = (unsigned long) dev;
 
-  disk->data = dev->file;
+  disk->data = dev;
 
   return 0;
 }
@@ -171,7 +171,7 @@ static grub_err_t
 grub_loopback_read (grub_disk_t disk, grub_disk_addr_t sector,
 		    grub_size_t size, char *buf)
 {
-  grub_file_t file = (grub_file_t) disk->data;
+  grub_file_t file = ((struct grub_loopback *) disk->data)->file;
   grub_off_t pos;
 
   grub_file_seek (file, sector << GRUB_DISK_SECTOR_BITS);

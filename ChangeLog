@@ -1,5 +1,16 @@
 2011-04-01  Colin Watson  <cjwatson@ubuntu.com>
 
+	Store the loopback device as data on loopback grub_disk structures,
+	rather than the file it points to.  This fixes use of freed memory
+	if an existing loopback device is replaced.
+
+	* grub-core/disk/loopback.c (grub_loopback_open): Store dev in
+	disk->data, not dev->file.
+	(grub_loopback_read): Adjust file assignment to match.
+	Fixes Ubuntu bug #742967.
+
+2011-04-01  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/disk/loopback.c (grub_cmd_loopback): Fix a memory leak
 	when replacing an existing device.
 
