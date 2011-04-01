@@ -28,6 +28,7 @@
 #include <grub/net/disknet.h>
 #include <grub/net/tftp.h>
 
+grub_bootp_t (*grub_getbootp) (void);
 enum grub_ieee1275_parse_type
 {
   GRUB_PARSE_FILENAME,
