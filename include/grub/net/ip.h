@@ -26,7 +26,7 @@ struct ip6hdr
   grub_uint8_t daddr[16];
 } __attribute__ ((packed));
 
-#define IP_UDP          17              /* UDP protocol */
+#define IP_UDP          0x11 /* UDP protocol */
 #define IP_BROADCAST    0xFFFFFFFF
 
 grub_uint16_t ipchksum(void *ipv, int len);

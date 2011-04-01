@@ -1,6 +1,7 @@
 #include <grub/net/ip.h>
 #include <grub/misc.h>
 #include <grub/net/arp.h>
+#include <grub/net/udp.h>
 #include <grub/net/ethernet.h>
 #include <grub/net.h>
 #include <grub/net/netbuff.h>
@@ -33,7 +34,7 @@ grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
   grub_net_link_level_address_t ll_target_addr;
   grub_err_t err;
   
-  grub_netbuff_push(nb,sizeof(*iph)); 
+  grub_netbuff_push (nb, sizeof(*iph)); 
   iph = (struct iphdr *) nb->data;   
 
   iph->verhdrlen = ((4 << 4) | 5);
@@ -49,17 +50,15 @@ grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
   iph->chksum = 0 ;
   iph->chksum = ipchksum((void *)nb->data, sizeof(*iph));
   
-  /* Determine link layer target address via ARP */
-  err = grub_net_arp_resolve(inf, target, &ll_target_addr);
+  /* Determine link layer target address via ARP.  */
+  err = grub_net_arp_resolve (inf, target, &ll_target_addr);
   if (err)
     return err;
-
   return send_ethernet_packet (inf, nb, ll_target_addr, GRUB_NET_ETHERTYPE_IP);
 }
-
+/*
 static int
-ip_filter (struct grub_net_buff *nb,
-	   struct grub_net_network_level_interface *inf)
+ip_filter (struct grub_net_buff *nb)
 {
   struct iphdr *iph = (struct iphdr *) nb->data;
   grub_err_t err;
@@ -80,15 +79,22 @@ ip_filter (struct grub_net_buff *nb,
     }
   return 1;
 }
-
+*/
 grub_err_t 
-grub_net_recv_ip_packets (struct grub_net_network_level_interface *inf)
+grub_net_recv_ip_packets (struct grub_net_buff *nb)
 {
-  struct grub_net_buff *nb;
-  nb = grub_netbuff_alloc (2048);
-  if (!nb)
-    return grub_errno;
-  grub_net_recv_ethernet_packet (inf, nb, GRUB_NET_ETHERTYPE_IP);
-  ip_filter (nb, inf);
+  struct iphdr *iph = (struct iphdr *) nb->data;
+  grub_netbuff_pull (nb, sizeof (*iph));
+
+  switch (iph->protocol)
+    {
+      case IP_UDP:
+	return grub_net_recv_udp_packet (nb);
+      break;
+      default:
+	grub_netbuff_free (nb);
+      break;
+    }
+
   return GRUB_ERR_NONE;
 }

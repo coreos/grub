@@ -23,23 +23,20 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
 
   eth->type = grub_cpu_to_be16 (ethertype);
 
-  return inf->card->driver->send (inf->card,nb);
+  return inf->card->driver->send (inf->card, nb);
 }
 
 grub_err_t 
-grub_net_recv_ethernet_packet (struct grub_net_network_level_interface *inf,
-			       struct grub_net_buff *nb,
-			       grub_uint16_t ethertype)
+grub_net_recv_ethernet_packet (struct grub_net_buff *nb)
 {
   struct etherhdr *eth;
   struct llchdr *llch;
   struct snaphdr *snaph;
   grub_uint16_t type;
 
-  inf->card->driver->recv (inf->card, nb);
   eth = (struct etherhdr *) nb->data; 
   type = grub_be_to_cpu16 (eth->type);
-  grub_netbuff_pull(nb,sizeof (*eth));
+  grub_netbuff_pull (nb, sizeof (*eth));
     
   if (type <= 1500)
     {
@@ -56,10 +53,13 @@ grub_net_recv_ethernet_packet (struct grub_net_network_level_interface *inf,
 
     /* ARP packet */
   if (type == GRUB_NET_ETHERTYPE_ARP)
-    grub_net_arp_receive(inf, nb);
+    {
+      grub_net_arp_receive (nb);
+      grub_netbuff_free (nb);
+    }
   /* IP packet */
-  if(type == GRUB_NET_ETHERTYPE_IP && ethertype == GRUB_NET_ETHERTYPE_IP)
-    return GRUB_ERR_NONE;
+  if (type == GRUB_NET_ETHERTYPE_IP)
+    grub_net_recv_ip_packets (nb);
 
   return GRUB_ERR_NONE; 
 }

@@ -27,8 +27,7 @@ struct arphdr {
   grub_uint16_t op;
 } __attribute__ ((packed));
 
-extern grub_err_t grub_net_arp_receive(struct grub_net_network_level_interface *inf,
-			      struct grub_net_buff *nb);
+extern grub_err_t grub_net_arp_receive(struct grub_net_buff *nb);
 
 extern grub_err_t grub_net_arp_resolve(struct grub_net_network_level_interface *inf,
 			      const grub_net_network_level_address_t *addr, 

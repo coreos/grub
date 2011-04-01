@@ -20,9 +20,14 @@
 #include <grub/misc.h>
 #include <grub/err.h>
 #include <grub/file.h>
+#include <grub/net.h>
 #include <grub/mm.h>
 #include <grub/fs.h>
 #include <grub/device.h>
+
+grub_ssize_t (*grub_file_net_read) (grub_file_t file, void *buf, grub_size_t len) = NULL;
+grub_err_t (*grub_file_net_open) (struct grub_file *file, const char *name) = NULL;
+grub_err_t (*grub_file_net_seek) (struct grub_file *file, grub_off_t offset) = NULL;
 
 grub_file_filter_t grub_file_filters_all[GRUB_FILE_FILTER_MAX];
 grub_file_filter_t grub_file_filters_enabled[GRUB_FILE_FILTER_MAX];
@@ -85,6 +90,13 @@ grub_file_open (const char *name)
 
   file->device = device;
 
+  if (device->net && grub_file_net_open)
+    {
+      if (grub_file_net_open (file, file_name))
+	goto fail;
+      return file;
+    }
+
   if (device->disk && file_name[0] != '/')
     /* This is a block list.  */
     file->fs = &grub_fs_blocklist;
@@ -130,7 +142,7 @@ grub_file_open (const char *name)
 grub_ssize_t
 grub_file_read (grub_file_t file, void *buf, grub_size_t len)
 {
-  grub_ssize_t res;
+  grub_ssize_t res = 0;
 
   if (file->offset > file->size)
     {
@@ -148,8 +160,12 @@ grub_file_read (grub_file_t file, void *buf, grub_size_t len)
 
   if (len == 0)
     return 0;
-
-  res = (file->fs->read) (file, buf, len);
+  if (file->device->disk)
+    res = (file->fs->read) (file, buf, len);
+  else
+    if (grub_file_net_read && file->device->net)
+      res = grub_file_net_read (file, buf, len);
+  
   if (res > 0)
     file->offset += res;
 
@@ -159,6 +175,9 @@ grub_file_read (grub_file_t file, void *buf, grub_size_t len)
 grub_err_t
 grub_file_close (grub_file_t file)
 {
+  if (file->device->net)
+    return grub_errno;
+
   if (file->fs->close)
     (file->fs->close) (file);
 
@@ -179,8 +198,12 @@ grub_file_seek (grub_file_t file, grub_off_t offset)
 		  "attempt to seek outside of the file");
       return -1;
     }
+  
+  if (file->device->net && grub_file_net_seek)
+    grub_file_net_seek (file, offset);
 
   old = file->offset;
   file->offset = offset;
+    
   return old;
 }

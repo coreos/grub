@@ -12,20 +12,12 @@ struct udphdr
 } __attribute__ ((packed));
 
 grub_err_t
-grub_net_send_udp_packet (const grub_net_network_level_address_t *target,
-			  struct grub_net_buff *nb, grub_uint16_t srcport, 
-			  grub_uint16_t destport);
-
+grub_net_send_udp_packet (const grub_net_socket_t socket , struct grub_net_buff *nb);
 
 grub_err_t
-grub_net_recv_udp_packets (struct grub_net_network_level_interface *inf);
+grub_net_recv_udp_packet (struct grub_net_buff *nb);
 
-grub_err_t 
-grub_net_recv_udp_packet (const grub_net_network_level_address_t *target,
-			  struct grub_net_buff *buf,
-			  grub_uint16_t srcport, grub_uint16_t destport);
 
 #define FOR_NET_UDP_PACKETS(inf, var) FOR_PACKETS(inf->udp_pending, var)
-
 
 #endif 
