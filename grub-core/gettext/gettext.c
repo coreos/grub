@@ -49,7 +49,7 @@ struct grub_gettext_msg
   const char *translated;
 };
 
-struct grub_gettext_msg *grub_gettext_msg_list = NULL;
+static struct grub_gettext_msg *grub_gettext_msg_list = NULL;
 
 #define GETTEXT_MAGIC_NUMBER 		0
 #define GETTEXT_FILE_FORMAT		4
@@ -261,24 +261,16 @@ grub_mofile_open (const char *filename)
   return fd_mo;
 }
 
+/* Returning grub_file_t would be more natural, but grub_mofile_open assigns
+   to fd_mo anyway ...  */
 static void
-grub_gettext_init_ext (const char *lang)
+grub_mofile_open_lang (const char *locale_dir, const char *locale)
 {
   char *mo_file;
-  char *locale_dir;
-
-  locale_dir = grub_env_get ("locale_dir");
-  if (locale_dir == NULL)
-    {
-      grub_dprintf ("gettext", "locale_dir variable is not set up.\n");
-      return;
-    }
-
-  fd_mo = NULL;
 
   /* mo_file e.g.: /boot/grub/locale/ca.mo   */
 
-  mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, lang);
+  mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, locale);
   if (!mo_file)
     return;
 
@@ -294,6 +286,38 @@ grub_gettext_init_ext (const char *lang)
       if (!mo_file)
 	return;
       fd_mo = grub_mofile_open (mo_file);
+    }
+}
+
+static void
+grub_gettext_init_ext (const char *locale)
+{
+  char *locale_dir;
+
+  locale_dir = grub_env_get ("locale_dir");
+  if (locale_dir == NULL)
+    {
+      grub_dprintf ("gettext", "locale_dir variable is not set up.\n");
+      return;
+    }
+
+  fd_mo = NULL;
+
+  grub_mofile_open_lang (locale_dir, locale);
+
+  /* ll_CC didn't work, so try ll.  */
+  if (fd_mo == NULL)
+    {
+      char *lang = grub_strdup (locale);
+      char *underscore = grub_strchr (lang, '_');
+
+      if (underscore)
+	{
+	  *underscore = '\0';
+	  grub_mofile_open_lang (locale_dir, lang);
+	}
+
+      grub_free (lang);
     }
 
   if (fd_mo)

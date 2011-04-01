@@ -31,3 +31,11 @@ echo foo -n
 echo foo -n -e
 
 echo -------
+
+if test -n "$grubshell"; then insmod regexp; fi
+
+echo '*'
+echo "*"
+
+foo="*"
+echo "$foo"

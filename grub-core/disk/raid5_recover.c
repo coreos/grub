@@ -45,7 +45,9 @@ grub_raid5_recover (struct grub_raid_array *array, int disknr,
       if (i == disknr)
         continue;
 
-      err = grub_disk_read (array->device[i], sector, 0, size, buf2);
+      err = grub_disk_read (array->members[i].device,
+			    array->members[i].start_sector + sector,
+			    0, size, buf2);
 
       if (err)
         {

@@ -32,7 +32,7 @@ dnl type, so there is no conflict. Variables with the prefix "TARGET_"
 dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
 dnl type.
 
-AC_INIT([GRUB],[1.99~beta0],[bug-grub@gnu.org])
+AC_INIT([GRUB],[1.99~rc1],[bug-grub@gnu.org])
 
 AC_CONFIG_AUX_DIR([build-aux])
 
@@ -103,15 +103,12 @@ else
   platform="$with_platform"
 fi
 
-# Adjust CPU unless target was explicitly specified.
-if test -z "$target_alias"; then
-  case "$target_cpu"-"$platform" in
-    x86_64-efi) ;;
-    x86_64-emu) ;;
-    x86_64-*) target_cpu=i386 ;;
-    powerpc64-ieee1275) target_cpu=powerpc ;;
-  esac
-fi
+case "$target_cpu"-"$platform" in
+  x86_64-efi) ;;
+  x86_64-emu) ;;
+  x86_64-*) target_cpu=i386 ;;
+  powerpc64-ieee1275) target_cpu=powerpc ;;
+esac
 
 # Check if the platform is supported, make final adjustments.
 case "$target_cpu"-"$platform" in
@@ -249,7 +246,7 @@ else
 fi
 
 # These are not a "must".
-AC_PATH_PROG(MAKEINFO, makeinfo)
+AC_PATH_PROGS(MAKEINFO, makeinfo true)
 
 #
 # Checks for host programs.
@@ -401,6 +398,23 @@ if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
 fi
 
+if test "${target_cpu}-${platform}" = mips-yeeloong; then
+  AC_CACHE_CHECK([whether -march=loongson2f works], [grub_cv_cc_march_loongson2f], [
+    SAVE_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS -march=loongson2f"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+        [grub_cv_cc_march_loongson2f=yes],
+        [grub_cv_cc_march_loongson2f=no])
+    CFLAGS="$SAVE_CFLAGS"
+  ])
+
+  if test "x$grub_cv_cc_march_loongson2f" = xyes; then
+    TARGET_CFLAGS="$TARGET_CFLAGS -march=loongson2f"
+  else
+    TARGET_CFLAGS="$TARGET_CFLAGS -march=mips3"
+  fi
+fi
+
 grub_apple_target_cc
 if test x$grub_cv_apple_target_cc = xyes ; then
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS -DAPPLE_CC=1"
@@ -440,7 +454,7 @@ fi
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
 case "${host_os}" in
-  cygwin) TARGET_OBJ2ELF='$(grub_utildir)/grub-pe2elf';
+  cygwin) TARGET_OBJ2ELF='$(top_builddir)/grub-pe2elf';
 # FIXME: put proper test here
   NEED_REGISTER_FRAME_INFO=1
   ;;
@@ -562,8 +576,11 @@ else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wno-error"
 fi
 CPPFLAGS="$TARGET_CPPFLAGS"
-LDFLAGS="$TARGET_LDFLAGS"
+if test x$target_cpu = xi386 || test x$target_cpu = xx86_64 ; then
+LIBS=
+else
 LIBS=-lgcc
+fi
 
 grub_ASM_USCORE
 if test x$grub_cv_asm_uscore = xyes; then
@@ -649,6 +666,23 @@ int va_arg_func (int fixed, va_list args);]], [[]])],
 if test x"$grub_cv_cc_isystem" = xyes ; then
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
 fi
+fi
+
+AC_CACHE_CHECK([whether -Wno-trampolines work], [grub_cv_cc_wnotrampolines], [
+  SAVED_CFLAGS="$CFLAGS"
+  # Test for -Wtrampolines rather than -Wno-trampolines to reduce confusion
+  # in the event of later failures (since -Wno-* is always accepted, but
+  # produces a diagnostic if something else is wrong).
+  CFLAGS="$TARGET_CFLAGS -Wtrampolines"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
+int va_arg_func (int fixed, va_list args);]], [[]])],
+      [grub_cv_cc_wnotrampolines=yes],
+      [grub_cv_cc_wnotrampolines=no])
+  CFLAGS="$SAVED_CFLAGS"
+])
+
+if test x"$grub_cv_cc_wnotrampolines" = xyes ; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -Wno-trampolines"
 fi
 
 # Restore the flags.
@@ -830,6 +864,12 @@ if test x"$enable_device_mapper" = xno ; then
 fi
 
 if test x"$device_mapper_excuse" = x ; then
+  # Check for device-mapper header.
+  AC_CHECK_HEADER([libdevmapper.h], [],
+               [device_mapper_excuse="need libdevmapper header"])
+fi
+
+if test x"$device_mapper_excuse" = x ; then
   # Check for device-mapper library.
   AC_CHECK_LIB([devmapper], [dm_task_create], [],
                [device_mapper_excuse="need devmapper library"])
@@ -849,6 +889,15 @@ if test x"$device_mapper_excuse" = x ; then
 fi
 
 AC_SUBST([LIBDEVMAPPER])
+
+LIBGEOM=
+if test x$host_kernel = xkfreebsd; then
+  AC_CHECK_LIB([geom], [geom_gettree], [],
+               [AC_MSG_ERROR([Your platform requires libgeom])])
+  LIBGEOM="-lgeom"
+fi
+
+AC_SUBST([LIBGEOM])
 
 AC_CHECK_LIB([lzma], [lzma_code],
              [LIBLZMA="-llzma"
@@ -924,6 +973,7 @@ AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
 
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
+AM_CONDITIONAL([COND_CYGWIN], [test x$host_os = xcygwin])
 
 # Output files.
 grub_CHECK_LINK_DIR

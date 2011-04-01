@@ -74,7 +74,7 @@ grub_bufio_open (grub_file_t io, int size)
   file->data = bufio;
   file->read_hook = 0;
   file->fs = &grub_bufio_fs;
-  file->not_easly_seekable = io->not_easly_seekable;
+  file->not_easily_seekable = io->not_easily_seekable;
 
   return file;
 }

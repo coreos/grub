@@ -92,6 +92,8 @@ struct hd_geometry
 # include <sys/disk.h> /* DIOCGMEDIASIZE */
 # include <sys/param.h>
 # include <sys/sysctl.h>
+# define MAJOR(dev) major(dev)
+# define FLOPPY_MAJOR	2
 #endif
 
 #if defined(__APPLE__)
@@ -102,7 +104,9 @@ struct hd_geometry
 # include <libdevmapper.h>
 #endif
 
-#if defined(__NetBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#include <libgeom.h>
+#elif defined(__NetBSD__)
 # define HAVE_DIOCGDINFO
 # include <sys/ioctl.h>
 # include <sys/disklabel.h>    /* struct disklabel */
@@ -337,7 +341,68 @@ device_is_mapped (const char *dev)
 }
 #endif /* HAVE_DEVICE_MAPPER */
 
-#if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO)
+#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
+/* FIXME: geom actually gives us the whole container hierarchy.
+   It can be used more efficiently than this.  */
+static void
+follow_geom_up (const char *name, grub_disk_addr_t *off_out, char **name_out)
+{
+  struct gmesh mesh;
+  struct gclass *class;
+  int error;
+  struct ggeom *geom;
+
+  grub_util_info ("following geom '%s'", name);
+
+  error = geom_gettree (&mesh);
+  if (error != 0)
+    grub_util_error ("couldn't open geom");
+
+  LIST_FOREACH (class, &mesh.lg_class, lg_class)
+    if (strcasecmp (class->lg_name, "part") == 0)
+      break;
+  if (!class)
+    grub_util_error ("couldn't open geom part");
+
+  LIST_FOREACH (geom, &class->lg_geom, lg_geom)
+    { 
+      struct gprovider *provider;
+      LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
+	if (strcmp (provider->lg_name, name) == 0)
+	  {
+	    char *name_tmp = xstrdup (geom->lg_name);
+	    grub_disk_addr_t off = 0;
+	    struct gconfig *config;
+	    grub_util_info ("geom '%s' has parent '%s'", name, geom->lg_name);
+
+	    follow_geom_up (name_tmp, &off, name_out);
+	    free (name_tmp);
+	    LIST_FOREACH (config, &provider->lg_config, lg_config)
+	      if (strcasecmp (config->lg_name, "start") == 0)
+		off += strtoull (config->lg_val, 0, 10);
+	    if (off_out)
+	      *off_out = off;
+	    return;
+	  }
+    }
+  grub_util_info ("geom '%s' has no parent", name);
+  if (name_out)
+    *name_out = xstrdup (name);
+  if (off_out)
+    *off_out = 0;
+}
+
+static grub_disk_addr_t
+find_partition_start (const char *dev)
+{
+  grub_disk_addr_t out;
+  if (strncmp (dev, "/dev/", sizeof ("/dev/") - 1) != 0)
+    return 0;
+  follow_geom_up (dev + sizeof ("/dev/") - 1, &out, NULL);
+
+  return out;
+}
+#elif defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO)
 static grub_disk_addr_t
 find_partition_start (const char *dev)
 {
@@ -453,9 +518,12 @@ devmapper_fail:
 # if !defined(HAVE_DIOCGDINFO)
   return hdg.start;
 # else /* defined(HAVE_DIOCGDINFO) */
-  p_index = dev[strlen(dev) - 1] - 'a';
-
-  if (p_index >= label.d_npartitions)
+  if (dev[0])
+    p_index = dev[strlen(dev) - 1] - 'a';
+  else
+    p_index = -1;
+  
+  if (p_index >= label.d_npartitions || p_index < 0)
     {
       grub_error (GRUB_ERR_BAD_DEVICE,
 		  "no disk label entry for `%s'", dev);
@@ -1152,16 +1220,22 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	   || strncmp ("sd", p, 2) == 0)
 	  && p[2] >= 'a' && p[2] <= 'z')
 	{
-	  /* /dev/[hsv]d[a-z][0-9]* */
-	  p[3] = '\0';
+	  char *pp = p + 2;
+	  while (*pp >= 'a' && *pp <= 'z')
+	    pp++;
+	  /* /dev/[hsv]d[a-z]+[0-9]* */
+	  *pp = '\0';
 	  return path;
 	}
 
       /* If this is a Xen virtual block device.  */
       if ((strncmp ("xvd", p, 3) == 0) && p[3] >= 'a' && p[3] <= 'z')
 	{
-	  /* /dev/xvd[a-z][0-9]* */
-	  p[4] = '\0';
+	  char *pp = p + 3;
+	  while (*pp >= 'a' && *pp <= 'z')
+	    pp++;
+	  /* /dev/xvd[a-z]+[0-9]* */
+	  *pp = '\0';
 	  return path;
 	}
 
@@ -1278,7 +1352,17 @@ devmapper_out:
     path[8] = 0;
   return path;
 
-#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+  char *out, *out2;
+  if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
+    return xstrdup (os_dev);
+  follow_geom_up (os_dev + sizeof ("/dev/") - 1, NULL, &out);
+
+  out2 = xasprintf ("/dev/%s", out);
+  free (out);
+
+  return out2;
+#elif defined(__APPLE__)
   char *path = xstrdup (os_dev);
   if (strncmp ("/dev/", path, 5) == 0)
     {
@@ -1434,6 +1518,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   if (stat (os_dev, &st) < 0)
     {
       grub_error (GRUB_ERR_BAD_DEVICE, "cannot stat `%s'", os_dev);
+      grub_util_info ("cannot stat `%s'", os_dev);
       return 0;
     }
 
@@ -1442,6 +1527,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		  "no mapping exists for `%s'", os_dev);
+      grub_util_info ("no mapping exists for `%s'", os_dev);
       return 0;
     }
 
@@ -1456,7 +1542,8 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 #endif
     return make_device_name (drive, -1, -1);
 
-#if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO)
+#if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+
   /* Linux counts partitions uniformly, whether a BSD partition or a DOS
      partition, so mapping them to GRUB devices is not trivial.
      Here, get the start sector of a partition by HDIO_GETGEO, and

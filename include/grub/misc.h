@@ -193,6 +193,26 @@ grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
   return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
 }
 
+/* Replace all `ch' characters of `input' with `with' and copy the
+   result into `output'; return EOS address of `output'. */
+static inline char *
+grub_strchrsub (char *output, const char *input, char ch, const char *with)
+{
+  grub_size_t grub_strlen (const char *s);
+  while (*input)
+    {
+      if (*input == ch)
+	{
+	  grub_strcpy (output, with);
+	  output += grub_strlen (with);
+	  input++;
+	  continue;
+	}
+      *output++ = *input++;
+    }
+  *output = '\0';
+  return output;
+}
 
 unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);
 unsigned long long EXPORT_FUNC(grub_strtoull) (const char *str, char **end, int base);

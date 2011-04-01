@@ -32,7 +32,7 @@ struct pci_register
   unsigned size;
 };
 
-struct pci_register pci_registers[] =
+static struct pci_register pci_registers[] =
   {
     {"VENDOR_ID",       GRUB_PCI_REG_VENDOR      , 2},
     {"DEVICE_ID",       GRUB_PCI_REG_DEVICE      , 2},

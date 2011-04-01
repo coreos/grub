@@ -119,6 +119,7 @@ cat <<EOF >${cfgfile}
 grubshell=yes
 insmod serial
 serial
+terminfo serial dumb
 terminal_input serial
 terminal_output serial
 EOF
@@ -132,6 +133,8 @@ done
 
 cat <<EOF >>${cfgfile}
 source /boot/grub/testcase.cfg
+# Stop serial output to suppress "ACPI shutdown failed" error.
+terminal_output console
 halt
 EOF
 

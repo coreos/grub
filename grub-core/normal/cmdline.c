@@ -240,7 +240,7 @@ grub_cmdline_get (const char *prompt)
     grub_term_gotoxy (cl_term->term, cl_term->xpos, cl_term->ypos);
   }
 
-  void cl_set_pos_all ()
+  void cl_set_pos_all (void)
   {
     unsigned i;
     for (i = 0; i < nterms; i++)

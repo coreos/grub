@@ -97,9 +97,16 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
 	      /* Error... */
 	      *dest++ = '?';
 	    }
-	  else
+	  else if (code < 0x10000)
 	    {
 	      *dest++ = (code >> 12) | 0xE0;
+	      *dest++ = ((code >> 6) & 0x3F) | 0x80;
+	      *dest++ = (code & 0x3F) | 0x80;
+	    }
+	  else
+	    {
+	      *dest++ = (code >> 18) | 0xF0;
+	      *dest++ = ((code >> 12) & 0x3F) | 0x80;
 	      *dest++ = ((code >> 6) & 0x3F) | 0x80;
 	      *dest++ = (code & 0x3F) | 0x80;
 	    }

@@ -27,6 +27,7 @@ struct grub_amiga_rdsk
 {
   /* "RDSK".  */
   grub_uint8_t magic[4];
+#define GRUB_AMIGA_RDSK_MAGIC "RDSK"
   grub_uint32_t size;
   grub_int32_t checksum;
   grub_uint32_t scsihost;
@@ -43,6 +44,7 @@ struct grub_amiga_partition
 {
   /* "PART".  */
   grub_uint8_t magic[4];
+#define GRUB_AMIGA_PART_MAGIC "PART"
   grub_int32_t size;
   grub_int32_t checksum;
   grub_uint32_t scsihost;
@@ -87,7 +89,8 @@ amiga_partition_map_iterate (grub_disk_t disk,
       if (grub_disk_read (disk, pos, 0, sizeof (rdsk), &rdsk))
 	return grub_errno;
 
-      if (grub_strcmp ((char *) rdsk.magic, "RDSK") == 0)
+      if (grub_memcmp (rdsk.magic, GRUB_AMIGA_RDSK_MAGIC,
+		       sizeof (rdsk.magic)) == 0)
 	{
 	  /* Found the first PART block.  */
 	  next = grub_be_to_cpu32 (rdsk.partitionlst);
@@ -107,6 +110,9 @@ amiga_partition_map_iterate (grub_disk_t disk,
       /* Read the RDSK block which is a descriptor for the entire disk.  */
       if (grub_disk_read (disk, next, 0, sizeof (apart), &apart))
 	return grub_errno;
+
+      if (grub_memcmp (apart.magic, GRUB_AMIGA_PART_MAGIC,
+		       sizeof (apart.magic)) == 0)
 
       /* Calculate the first block and the size of the partition.  */
       part.start = (grub_be_to_cpu32 (apart.lowcyl)

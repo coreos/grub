@@ -147,6 +147,7 @@ argument : "case"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | "until"     { $$ = grub_script_add_arglist (state, 0, $1); }
          | "while"     { $$ = grub_script_add_arglist (state, 0, $1); }
          | "function"  { $$ = grub_script_add_arglist (state, 0, $1); }
+         | "time"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | word { $$ = $1; }
 ;
 

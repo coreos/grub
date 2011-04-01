@@ -51,7 +51,7 @@ grub_btrfs_mount (grub_disk_t disk)
 		      &data->sblock) != GRUB_ERR_NONE)
     goto fail;
 
-  if (grub_strncmp ((char *) data->sblock.signature, BTRFS_SIGNATURE, sizeof (BTRFS_SIGNATURE) - 1))
+  if (grub_memcmp ((char *) data->sblock.signature, BTRFS_SIGNATURE, sizeof (BTRFS_SIGNATURE) - 1))
     {
       grub_error (GRUB_ERR_BAD_FS, "not a Btrfs filesystem");
       goto fail;
@@ -60,6 +60,9 @@ grub_btrfs_mount (grub_disk_t disk)
   return data;
 
  fail:
+  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+    grub_error (GRUB_ERR_BAD_FS, "not a Btrfs filesystem");
+
   grub_free (data);
   return NULL;
 }

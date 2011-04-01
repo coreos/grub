@@ -1505,6 +1505,20 @@ grub_video_fb_get_info_and_fini (struct grub_video_mode_info *mode_info,
 {
   grub_memcpy (mode_info, &(framebuffer.front_target->mode_info),
 	       sizeof (*mode_info));
+
+  /* We are about to load a kernel.  Switch back to page zero, since some
+     kernel drivers expect that.  */
+  if ((mode_info->mode_type & GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED)
+      && framebuffer.set_page && framebuffer.displayed_page != 0)
+    {
+      /* Ensure both pages are exactly in sync.  */
+      grub_memcpy (framebuffer.back_target->data,
+		   framebuffer.front_target->data,
+		   framebuffer.back_target->mode_info.pitch
+		   * framebuffer.back_target->mode_info.height);
+      grub_video_swap_buffers ();
+    }
+
   *framebuf = framebuffer.front_target->data;
 
   grub_video_fb_fini ();

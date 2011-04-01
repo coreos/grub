@@ -808,6 +808,15 @@ grub_iso9660_label (grub_device_t device, char **label)
                  ((grub_uint16_t *) &data->voldesc.volname, 16);
       else
         *label = grub_strndup ((char *) data->voldesc.volname, 32);
+      if (*label)
+	{
+	  char *ptr;
+	  for (ptr = *label; *ptr;ptr++);
+	  ptr--;
+	  while (ptr >= *label && *ptr == ' ')
+	    *ptr-- = 0;
+	}
+
       grub_free (data);
     }
   else

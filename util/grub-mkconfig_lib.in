@@ -61,6 +61,12 @@ is_path_readable_by_grub ()
     return 1
   fi
 
+  # ... or if we can't figure out the abstraction module, for example if
+  # memberlist fails on an LVM volume group.
+  if ${grub_probe} -t abstraction $path > /dev/null 2>&1 ; then : ; else
+    return 1
+  fi
+
   return 0
 }
 
@@ -107,7 +113,12 @@ prepare_grub_to_access_device ()
 
   partmap="`${grub_probe} --device ${device} --target=partmap`"
   for module in ${partmap} ; do
-    echo "insmod part_${module}"
+    case "${module}" in
+      netbsd | openbsd)
+        echo "insmod part_bsd";;
+      *)
+        echo "insmod part_${module}";;
+    esac
   done
 
   fs="`${grub_probe} --device ${device} --target=fs`"
@@ -187,8 +198,20 @@ version_find_latest ()
   echo "$a"
 }
 
+# One layer of quotation is eaten by "", the second by sed, and the third by
+# printf; so this turns ' into \'.  Note that you must use the output of
+# this function in a printf format string.
 gettext_quoted () {
-  $gettext "$@" | sed "s/'/'\\\\''/g"
+  $gettext "$@" | sed "s/'/'\\\\\\\\''/g"
+}
+
+# Run the first argument through gettext_quoted, and then pass that and all
+# remaining arguments to printf.  This is a useful abbreviation and tends to
+# be easier to type.
+gettext_printf () {
+  local format="$1"
+  shift
+  printf "$(gettext_quoted "$format")" "$@"
 }
 
 uses_abstraction () {

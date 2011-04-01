@@ -208,7 +208,7 @@ grub_affs_mount (grub_disk_t disk)
   rblock = (struct grub_affs_rblock *) rootblock;
 
   /* Read the rootblock.  */
-  grub_disk_read (disk, (disk->total_sectors >> 1) + blocksize, 0,
+  grub_disk_read (disk, grub_be_to_cpu32 (data->bblock.rootblock), 0,
 		  GRUB_DISK_SECTOR_SIZE * 16, rootblock);
   if (grub_errno)
     goto fail;
@@ -240,7 +240,7 @@ grub_affs_mount (grub_disk_t disk)
   data->disk = disk;
   data->htsize = grub_be_to_cpu32 (rblock->htsize);
   data->diropen.data = data;
-  data->diropen.block = (disk->total_sectors >> 1);
+  data->diropen.block = grub_be_to_cpu32 (data->bblock.rootblock);
 
   grub_free (rootblock);
 
@@ -507,7 +507,7 @@ grub_affs_label (grub_device_t device, char **label)
     {
       /* The rootblock maps quite well on a file header block, it's
 	 something we can use here.  */
-      grub_disk_read (data->disk, disk->total_sectors >> 1,
+      grub_disk_read (data->disk, grub_be_to_cpu32 (data->bblock.rootblock),
 		      data->blocksize * (GRUB_DISK_SECTOR_SIZE
 					 - GRUB_AFFS_FILE_LOCATION),
 		      sizeof (file), &file);
@@ -535,6 +535,9 @@ static struct grub_fs grub_affs_fs =
     .read = grub_affs_read,
     .close = grub_affs_close,
     .label = grub_affs_label,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 0,
+#endif
     .next = 0
   };
 

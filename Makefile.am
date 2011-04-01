@@ -33,8 +33,8 @@ grub_script.yy.c: grub_script.yy.h
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 
 # For libgrub.a
-libgrub.pp: grub_script.tab.h grub_script.yy.h $(libgrub_a_SOURCES)
-	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgrub_a_CPPFLAGS) $(CPPFLAGS) \
+libgrub.pp: grub_script.tab.h grub_script.yy.h $(libgrubmods_a_SOURCES) $(libgrubkern_a_SOURCES)
+	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgrubmods_a_CPPFLAGS) $(libgrubkern_a_CPPFLAGS) $(CPPFLAGS) \
 	  -D'GRUB_MOD_INIT(x)=@MARKER@x@' $^ > $@ || (rm -f $@; exit 1)
 CLEANFILES += libgrub.pp
 
