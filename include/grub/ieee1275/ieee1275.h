@@ -68,6 +68,7 @@ struct grub_ofnetcard_data
 {
   char *path;
   grub_ieee1275_ihandle_t handle;
+  grub_uint32_t mtu;
 };
 
 /* Maps a device alias to a pathname.  */
@@ -201,8 +202,6 @@ int EXPORT_FUNC(grub_ieee1275_devices_iterate) (int (*hook)
 						(struct grub_ieee1275_devalias *
 						 alias));
 char *EXPORT_FUNC(grub_ieee1275_get_aliasdevname) (const char *path);
-void EXPORT_FUNC(grub_ofnet_findcards) (void);
-void EXPORT_FUNC(grub_ofnet_probecards) (void);
 char *EXPORT_FUNC(grub_ieee1275_canonicalise_devname) (const char *path);
 
 #endif /* ! GRUB_IEEE1275_HEADER */
