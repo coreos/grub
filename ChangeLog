@@ -1,5 +1,23 @@
 2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Increase LVM implementation robustness in order not to crash on
+	configurations like pvmove. Previously code assumed that in some places
+	only lvs or only pvs are used whereas it seems that they are used
+	interchangeably.
+
+	* grub-core/disk/lvm.c (read_node): New function.
+	(read_lv): Use read_node.
+	(grub_lvm_scan_device): Use only first mirror on pvmove'd lvs.
+	Match volumes only at the end when all lvs are found. Take both
+	pvs (first) and lvs (second) into account.
+	* include/grub/lvm.h (grub_lvm_segment): Merge fields stripe_* and
+	mirror_* into node_*. All users updated.
+	(grub_lvm_stripe): Merge this ...
+	(grub_lvm_mirror): ... and this ...
+	(grub_lvm_node): ... into this. All users updated.
+
+2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/lvm.c (grub_lvm_scan_device): Print errors on the end
 	of function to allow further scanning for LVMs.
 
