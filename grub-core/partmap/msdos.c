@@ -35,7 +35,18 @@ struct embed_signature
   const char *name;
   const char *signature;
   int signature_len;
+  enum { TYPE_SOFTWARE, TYPE_RAID } type;
 };
+
+const char message_warn[][200] = {
+  [TYPE_RAID] = "Sector %llu is already in use by %s; avoiding it.  "
+  "Please ask the manufacturer not to store data in MBR gap",
+  [TYPE_SOFTWARE] = "Sector %llu is already in use by %s; avoiding it.  "
+  "This software may cause boot or other problems in "
+  "future.  Please ask its authors not to store data "
+  "in the boot track" 
+};
+
 
 /* Signatures of other software that may be using sectors in the embedding
    area.  */
@@ -44,24 +55,34 @@ struct embed_signature embed_signatures[] =
     {
       .name = "ZISD",
       .signature = "ZISD",
-      .signature_len = 4
+      .signature_len = 4,
+      .type = TYPE_SOFTWARE
     },
     {
       .name = "FlexNet",
       .signature = "\xd4\x41\xa0\xf5\x03\x00\x03\x00",
-      .signature_len = 8
+      .signature_len = 8,
+      .type = TYPE_SOFTWARE
     },
     {
       .name = "FlexNet",
       .signature = "\xd8\x41\xa0\xf5\x02\x00\x02\x00",
-      .signature_len = 8
+      .signature_len = 8,
+      .type = TYPE_SOFTWARE
     },
     {
       /* from Ryan Perkins */
       .name = "HP Backup and Recovery Manager (?)",
       .signature = "\x70\x8a\x5d\x46\x35\xc5\x1b\x93"
 		   "\xae\x3d\x86\xfd\xb1\x55\x3e\xe0",
-      .signature_len = 16
+      .signature_len = 16,
+      .type = TYPE_SOFTWARE
+    },
+    {
+      .name = "HighPoint RAID controller",
+      .signature = "ycgl",
+      .signature_len = 4,
+      .type = TYPE_RAID
     }
   };
 #endif
@@ -306,10 +327,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 	      break;
 	  if (j == ARRAY_SIZE (embed_signatures))
 	    continue;
-	  grub_util_warn ("Sector %llu is already in use by %s; avoiding it.  "
-			  "This software may cause boot or other problems in "
-			  "future.  Please ask its authors not to store data "
-			  "in the boot track",
+	  grub_util_warn (message_warn[embed_signatures[j].type],
 			  (*sectors)[i], embed_signatures[j].name);
 	  avail_nsectors--;
 	  if (avail_nsectors < *nsectors)
