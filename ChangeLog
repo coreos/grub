@@ -1,5 +1,10 @@
 2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/lvm.c (grub_lvm_scan_device): Print errors on the end
+	of function to allow further scanning for LVMs.
+
+2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_read): Don't close
 	on failed seek as it breaks open fd reusage.
 

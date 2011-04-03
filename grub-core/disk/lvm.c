@@ -838,6 +838,7 @@ grub_lvm_scan_device (const char *name)
   grub_disk_close (disk);
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
     grub_errno = GRUB_ERR_NONE;
+  grub_print_error ();
   return 0;
 }
 
