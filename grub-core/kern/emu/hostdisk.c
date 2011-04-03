@@ -876,7 +876,6 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
       if (nread (fd, buf, GRUB_DISK_SECTOR_SIZE) != GRUB_DISK_SECTOR_SIZE)
 	{
 	  grub_error (GRUB_ERR_READ_ERROR, "cannot read `%s'", map[disk->id].device);
-	  close (fd);
 	  return grub_errno;
 	}
 
