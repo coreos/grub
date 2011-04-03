@@ -1,3 +1,15 @@
+2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	GRUB developper manual based on existing Internals section and
+	contributions by the various authors with active copyright assignment.
+
+	* docs/Makefile.am (info_TEXINFOS): Add grub-dev.texi.
+	* docs/font_char_metrics.png: New file.
+	* docs/font_char_metrics.txt: Likewise.
+	* docs/grub-dev.texi: Likewise.
+	* docs/grub.texi (Internals): Move from here ...
+	* docs/grub-dev.texi: ... here.
+
 2011-04-01  Colin Watson  <cjwatson@ubuntu.com>
 
 	Store the loopback device as data on loopback grub_disk structures,

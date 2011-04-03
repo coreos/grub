@@ -100,7 +100,6 @@ This edition documents version @value{VERSION}.
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Future::                      Some future plans on GRUB
-* Internals::                   Hacking GRUB
 * Copying This Manual::         Copying This Manual
 * Index::
 @end menu
@@ -4374,111 +4373,6 @@ If you are interested in the development of GRUB 2, take a look at
 @uref{http://www.gnu.org/software/grub/grub.html, the homepage}.
 
 
-@node Internals
-@appendix Hacking GRUB
-
-@menu
-* Getting the source code::
-* Finding your way around::
-@end menu
-
-
-@node Getting the source code
-@section Getting the source code
-
-GRUB is maintained using the @uref{http://bazaar-vcs.org/, Bazaar revision
-control system}.  To fetch the primary development branch:
-
-@example
-bzr get http://bzr.savannah.gnu.org/r/grub/trunk/grub
-@end example
-
-The GRUB developers maintain several other branches with work in progress.
-Of these, the most interesting is the experimental branch, which is a
-staging area for new code which we expect to eventually merge into trunk but
-which is not yet ready:
-
-@example
-bzr get http://bzr.savannah.gnu.org/r/grub/branches/experimental
-@end example
-
-Once you have used @kbd{bzr get} to fetch an initial copy of a branch, you
-can use @kbd{bzr pull} to keep it up to date.  If you have modified your
-local version, you may need to resolve conflicts when pulling.
-
-
-@node Finding your way around
-@section Finding your way around
-
-Here is a brief map of the GRUB code base.
-
-GRUB uses Autoconf, but not (yet) Automake.  The top-level build rules are
-in @file{configure.ac}, @file{Makefile.in}, and @file{conf/*.rmk}.  Each
-@file{conf/*.rmk} file represents a particular target configuration, and is
-processed into GNU Make rules by @file{genmk.rb} (which you only need to
-look at if you are extending the build system).  If you are adding a new
-module which follows an existing pattern, such as a new command or a new
-filesystem implementation, it is usually easiest to grep @file{conf/*.rmk}
-for an existing example of that pattern to find out where it should be
-added.
-
-Low-level boot code, such as the MBR implementation on PC BIOS systems, is
-in the @file{boot/} directory.
-
-The GRUB kernel is in @file{kern/}.  This contains core facilities such as
-the device, disk, and file frameworks, environment variable handling, list
-processing, and so on.  The kernel should contain enough to get up to a
-rescue prompt.  Header files for kernel facilities, among others, are in
-@file{include/}.
-
-Terminal implementations are in @file{term/}.
-
-Disk access code is spread across @file{disk/} (for accessing the disk
-devices themselves), @file{partmap/} (for interpreting partition table
-data), and @file{fs/} (for accessing filesystems).  Note that, with the odd
-specialised exception, GRUB only contains code to @emph{read} from
-filesystems and tries to avoid containing any code to @emph{write} to
-filesystems; this lets us confidently assure users that GRUB cannot be
-responsible for filesystem corruption.
-
-PCI and USB bus handling is in @file{bus/}.
-
-Video handling code is in @file{video/}.  The graphical menu system uses
-this heavily, but is in a separate directory, @file{gfxmenu/}.
-
-Most commands are implemented by files in @file{commands/}, with the
-following exceptions:
-
-@itemize
-@item
-A few core commands live in @file{kern/corecmd.c}.
-
-@item
-Commands related to normal mode live under @file{normal/}.
-
-@item
-Commands that load and boot kernels live under @file{loader/}.
-
-@item
-The @samp{loopback} command is really a disk device, and so lives in
-@file{disk/loopback.c}.
-
-@item
-The @samp{gettext} command lives under @file{gettext/}.
-
-@item
-The @samp{loadfont} and @samp{lsfonts} commands live under @file{font/}.
-
-@item
-The @samp{serial}, @samp{terminfo}, and @samp{background_image} commands
-live under @file{term/}.
-
-@item
-The @samp{efiemu_*} commands live under @file{efiemu/}.
-@end itemize
-
-There are a few other special-purpose exceptions; grep for them if they
-matter to you.
 
 
 
