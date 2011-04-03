@@ -1,5 +1,10 @@
 2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Add a recommendation to use --recheck before
+	reporting bugs.
+
+2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Vendor power-on buttons): Explain how the numbers
 	are obtained.
 
