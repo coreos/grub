@@ -2049,6 +2049,44 @@ model-specific.  Values known to the GRUB team are:
 To take full advantage of this function, install GRUB into the MBR
 (@pxref{Installing GRUB using grub-install}).
 
+If you have a laptop which has a similar feature and not in the above list
+could you figure your address and contribute?
+To discover the address do the following:
+@itemize
+@item boot normally
+@item
+@example
+sudo modprobe nvram
+sudo cat /dev/nvram | xxd > normal_button.txt
+@end example
+@item boot using vendor button
+@item
+@example
+sudo modprobe nvram
+sudo cat /dev/nvram | xxd > normal_vendor.txt
+@end example
+@end itemize
+
+Then compare these text files and find where a bit was toggled. E.g. in
+case of Dell XPS it was:
+@example
+byte 0x47: 20 --> 28
+@end example
+It's a bit number 3 as seen from following table:
+@multitable @columnfractions .2 .2
+@item 0 @tab 01
+@item 1 @tab 02
+@item 2 @tab 04
+@item 3 @tab 08
+@item 4 @tab 10
+@item 5 @tab 20
+@item 6 @tab 40
+@item 7 @tab 80
+@end multitable
+
+0x47 is decimal 71. Linux nvram implementation cuts first 14 bytes of
+CMOS. So the real byte address in CMOS is 71+14=85
+So complete address is 85:3
 
 @node Images
 @chapter GRUB image files
