@@ -537,11 +537,11 @@ grub_efidisk_open (const char *name, struct grub_disk *disk)
   grub_dprintf ("efidisk", "m = %p, last block = %llx, block size = %x\n",
 		m, (unsigned long long) m->last_block, m->block_size);
   disk->total_sectors = m->last_block;
-  if (m->blocksize & (m->blocksize - 1) || !m->blocksize)
+  if (m->block_size & (m->block_size - 1) || !m->block_size)
     return grub_error (GRUB_ERR_IO, "invalid sector size %d",
-		       m->blocksize);
+		       m->block_size);
   for (disk->log_sector_size = 0;
-       (1 << disk->log_sector_size) < m->blocksize;
+       (1U << disk->log_sector_size) < m->block_size;
        disk->log_sector_size++);
   disk->data = d;
 
