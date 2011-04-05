@@ -515,6 +515,9 @@ GRUB_MOD_INIT(normal)
   /* Set default color names.  */
   grub_env_set ("color_normal", "white/black");
   grub_env_set ("color_highlight", "black/white");
+
+  grub_env_set ("grub_feature_chainloader_bpb", "--bpb");
+  grub_env_export ("grub_feature_chainloader_bpb");
 }
 
 GRUB_MOD_FINI(normal)
