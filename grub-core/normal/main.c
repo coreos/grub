@@ -471,9 +471,14 @@ grub_mini_cmd_clear (struct grub_command *cmd __attribute__ ((unused)),
 static grub_command_t cmd_clear;
 
 static void (*grub_xputs_saved) (const char *str);
+static const char *features[] = {
+  "feature_chainloader_bpb", "feature_ntldr"
+};
 
 GRUB_MOD_INIT(normal)
 {
+  unsigned i;
+
   /* Previously many modules depended on gzio. Be nice to user and load it.  */
   grub_dl_load ("gzio");
 
@@ -516,8 +521,11 @@ GRUB_MOD_INIT(normal)
   grub_env_set ("color_normal", "white/black");
   grub_env_set ("color_highlight", "black/white");
 
-  grub_env_set ("grub_feature_chainloader_bpb", "--bpb");
-  grub_env_export ("grub_feature_chainloader_bpb");
+  for (i = 0; i < ARRAY_SIZE (features); i++)
+    {
+      grub_env_set (features[i], "y");
+      grub_env_export (features[i]);
+    }
 }
 
 GRUB_MOD_FINI(normal)
