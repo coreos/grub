@@ -1,5 +1,11 @@
 2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_RAW_SIZE): Let a bit more
+	space for older compilers.
+	(GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART): Likewise.
+
+2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Detect spares
 	and report them as not RAID members since they are useless for GRUB.
 	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Likewise.
