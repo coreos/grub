@@ -30,6 +30,7 @@
 #include <grub/i18n.h>
 #include <grub/term.h>
 #include <grub/script_sh.h>
+#include <grub/gfxterm.h>
 
 /* Time to delay after displaying an error message about a default/fallback
    entry failing to boot.  */
@@ -345,18 +346,44 @@ static void
 menu_init (int entry, grub_menu_t menu, int nested)
 {
   struct grub_term_output *term;
+  int gfxmenu = 0;
+
+  FOR_ACTIVE_TERM_OUTPUTS(term)
+    if (grub_strcmp (term->name, "gfxterm") == 0)
+      {
+	if (grub_env_get ("theme"))
+	  {
+	    if (!grub_gfxmenu_try_hook)
+	      {
+		grub_dl_load ("gfxmenu");
+		grub_print_error ();
+	      }
+	    if (grub_gfxmenu_try_hook)
+	      {
+		grub_err_t err;
+		err = grub_gfxmenu_try_hook (entry, menu, nested);
+		if(!err)
+		  {
+		    gfxmenu = 1;
+		    break;
+		  }
+	      }
+	    else
+	      grub_error (GRUB_ERR_BAD_MODULE, "no gfxmenu found");
+	    grub_print_error ();
+	    grub_wait_after_message ();
+	  }
+	grub_errno = GRUB_ERR_NONE;
+	grub_gfxterm_fullscreen ();
+	break;
+      }
 
   FOR_ACTIVE_TERM_OUTPUTS(term)
   {
     grub_err_t err;
 
-    if (grub_gfxmenu_try_hook && grub_strcmp (term->name, "gfxterm") == 0)
-      {
-	err = grub_gfxmenu_try_hook (entry, menu, nested);
-	if(!err)
-	  continue;
-	grub_errno = GRUB_ERR_NONE;
-      }
+    if (grub_strcmp (term->name, "gfxterm") == 0 && gfxmenu)
+      break;
 
     err = grub_menu_try_text (term, entry, menu, nested);
     if(!err)

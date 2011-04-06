@@ -1,5 +1,14 @@
 2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Output errors if theme loading failed.
+
+	* grub-core/gfxmenu/gfxmenu.c (grub_gfxmenu_try): Move the call to
+	grub_gfxterm_fullscreen on error paths to ...
+	* grub-core/normal/menu.c (menu_init): ...here. Wait after showing
+	theme loading error.
+
+2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_RAW_SIZE): Let a bit more
 	space for older compilers.
 	(GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART): Likewise.
