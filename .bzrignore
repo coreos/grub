@@ -133,3 +133,5 @@ grub-core/gnulib/wctype.h
 grub-core/rs_decoder.S
 widthspec.bin
 widthspec.h
+docs/stamp-1
+docs/version-dev.texi
