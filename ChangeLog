@@ -1,3 +1,9 @@
+2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Detect spares
+	and report them as not RAID members since they are useless for GRUB.
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Likewise.
+
 2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Increase LVM implementation robustness in order not to crash on
