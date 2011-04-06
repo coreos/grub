@@ -1,5 +1,9 @@
 2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/fs.h (grub_dirhook_info): Use unsigned for 1-bit fields.
+
+2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/00_header.in: Don't use LANG unless unifont is available.
 
 2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
