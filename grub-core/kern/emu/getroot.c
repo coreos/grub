@@ -808,10 +808,10 @@ grub_util_get_grub_dev (const char *os_dev)
 	if (mdadm_name)
 	  {
 	    char *newname;
-	    char *q;
+	    const char *q;
 
-	    for (q = os_dev + strlen (os_dev) - 1; q >= os_dev && isdigit (*q);
-		 q--);
+	    for (q = os_dev + strlen (os_dev) - 1; q >= os_dev
+		   && grub_isdigit (*q); q--);
 
 	    if (q >= os_dev && *q == 'p')
 	      {

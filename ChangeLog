@@ -1,3 +1,8 @@
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/getroot.c (grub_util_get_grub_dev): Add missing
+	const attribute and use grub_isdigit.
+
 2011-04-06  Andrey  <dev_null@ukr.net>
 
 	* grub-core/video/fb/video_fb.c (grub_video_fb_setup): Silence older
