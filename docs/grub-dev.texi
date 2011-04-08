@@ -3,7 +3,7 @@
 @c %**start of header
 @setfilename grub-dev.info
 @include version-dev.texi
-@settitle GNU GRUB Developpers Manual @value{VERSION}
+@settitle GNU GRUB Developers Manual @value{VERSION}
 @c Unify all our little indices for now.
 @syncodeindex fn cp
 @syncodeindex vr cp
@@ -17,7 +17,7 @@
 @finalout
 
 @copying
-This developper manual is for GNU GRUB (version @value{VERSION},
+This developer manual is for GNU GRUB (version @value{VERSION},
 @value{UPDATED}).
 
 Copyright @copyright{} 1999,2000,2001,2002,2004,2005,2006,2008,2009,2010,2011 Free Software Foundation, Inc.
@@ -39,7 +39,7 @@ Invariant Sections.
 
 @titlepage
 @sp 10
-@title the GNU GRUB developper manual
+@title the GNU GRUB developer manual
 @subtitle The GRand Unified Bootloader, version @value{VERSION}, @value{UPDATED}.
 @author Yoshinori K. Okuji
 @author Colin D Bennett
@@ -61,9 +61,9 @@ Invariant Sections.
 
 @ifnottex
 @node Top
-@top GNU GRUB developper manual
+@top GNU GRUB developer manual
 
-This is the developper documentation of GNU GRUB, the GRand Unified Bootloader,
+This is the developer documentation of GNU GRUB, the GRand Unified Bootloader,
 a flexible and powerful boot loader program for a wide range of
 architectures.
 
