@@ -856,11 +856,11 @@ AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
 
-AC_ARG_ENABLE([grub-mkfont],
-	      [AS_HELP_STRING([--enable-grub-mkfont],
-                             [build and install the `grub-mkfont' utility (default=guessed)])])
-if test x"$enable_grub_mkfont" = xno ; then
-  grub_mkfont_excuse="explicitly disabled"
+AC_ARG_ENABLE([grub-fuse],
+	      [AS_HELP_STRING([--enable-grub-fuse],
+                             [build and install the `grub-fuse' utility (default=guessed)])])
+if test x"$enable_grub_fuse" = xno ; then
+  grub_fuse_excuse="explicitly disabled"
 fi
 
 if test x"$grub_fuse_excuse" = x ; then
