@@ -200,8 +200,8 @@ noinst_DATA += kernel_syms.lst
 kernel_syms.lst: $(KERNEL_HEADER_FILES) $(top_builddir)/config.h
 	$(TARGET_CPP) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS_KERNEL) $(CPPFLAGS) $(CFLAGS) -DGRUB_SYMBOL_GENERATOR=1 $^ >kernel_syms.input
 	cat kernel_syms.input | grep -v '^#' | sed -n \
-	  -e '/EXPORT_FUNC *([a-zA-Z0-9_]*)/{s/.*EXPORT_FUNC *(\([a-zA-Z0-9_]*\)).*/defined kernel '"$(ASM_PREFIX)"'\1/;p;}' \
-	  -e '/EXPORT_VAR *([a-zA-Z0-9_]*)/{s/.*EXPORT_VAR *(\([a-zA-Z0-9_]*\)).*/defined kernel '"$(ASM_PREFIX)"'\1/;p;}' \
+	  -e '/EXPORT_FUNC *\([a-zA-Z0-9_]*\)/{s/.*EXPORT_FUNC *(\([a-zA-Z0-9_]*\)).*/defined kernel '"$(ASM_PREFIX)"'\1/;p;}' \
+	  -e '/EXPORT_VAR *\([a-zA-Z0-9_]*\)/{s/.*EXPORT_VAR *(\([a-zA-Z0-9_]*\)).*/defined kernel '"$(ASM_PREFIX)"'\1/;p;}' \
 	  | sort -u >$@
 	rm -f kernel_syms.input
 CLEANFILES += kernel_syms.lst
