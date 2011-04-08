@@ -31,6 +31,7 @@
 #include <grub/term.h>
 #include <grub/script_sh.h>
 #include <grub/gfxterm.h>
+#include <grub/dl.h>
 
 /* Time to delay after displaying an error message about a default/fallback
    entry failing to boot.  */

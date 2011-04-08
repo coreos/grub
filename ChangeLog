@@ -1,6 +1,10 @@
 2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* grub-core/disk/raid.c [GRUB_UTIL]: Addmissing include.
+	* grub-core/normal/menu.c: Add missing include.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/raid.c [GRUB_UTIL]: Add missing include.
 
 2011-04-08  Martin Zuther <mzuther@mzuther.de>
 
