@@ -23,6 +23,9 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/raid.h>
+#ifdef GRUB_UTIL
+#include <grub/util/misc.h>
+#endif
 
 /* Linked list of RAID arrays. */
 static struct grub_raid_array *array_list;
