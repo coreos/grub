@@ -1,5 +1,10 @@
 2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/term.c (print_ucs4_terminal): Don't try to put the
+	word on new line if it's too long anyway. Fixes a hang.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/util/raid.h (grub_util_raid_getmembers): Make argument
 	const.
 	* util/grub-setup.c (main): Reuse md device name if available.

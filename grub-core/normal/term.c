@@ -552,7 +552,7 @@ print_ucs4_terminal (const grub_uint32_t * str,
 	  if (line_width > max_width && last_space > line_start)
 	    ptr = last_space;
 	  else if (line_width > max_width 
-		   && line_start == str && startwidth != 0)
+		   && line_start == str && line_width - lastspacewidth < max_width - 5)
 	    {
 	      ptr = str;
 	      lastspacewidth = startwidth;
