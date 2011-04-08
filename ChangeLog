@@ -1,5 +1,10 @@
 2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu_entry.c (run): Use grub_memcpy rather than
+	grub_strcpy since the lines aren't necessarily 0-terminated.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/legacy_parse.c (legacy_commands): Find doesn't set
 	root on legacy.
 

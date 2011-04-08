@@ -1185,7 +1185,7 @@ run (struct screen *screen)
     size = 0;
     for (i = 0; i < screen->num_lines; i++)
       {
-	grub_strcpy (source + size, screen->lines[i].buf);
+	grub_memcpy (source + size, screen->lines[i].buf, screen->lines[i].len);
 	size += screen->lines[i].len;
 	source[size++] = '\n';
       }
