@@ -1588,9 +1588,19 @@ main (int argc, char *argv[])
 		     + 1);
       memcpy (dir, GRUB_PKGLIBROOTDIR, sizeof (GRUB_PKGLIBROOTDIR) - 1);
       *(dir + sizeof (GRUB_PKGLIBROOTDIR) - 1) = '/';
-      memcpy (dir + sizeof (GRUB_PKGLIBROOTDIR), image_target->name,
-	      last - image_target->name);
-      *(dir + sizeof (GRUB_PKGLIBROOTDIR) + (last - image_target->name)) = 0;
+      if (strncmp (image_target->name, "mipsel-yeeloong",
+		   last - image_target->name) == 0)
+	{
+	  memcpy (dir + sizeof (GRUB_PKGLIBROOTDIR), "mips-yeeloong",
+		  sizeof ("mips-yeeloong"));	  
+	}
+      else
+	{
+	  memcpy (dir + sizeof (GRUB_PKGLIBROOTDIR), image_target->name,
+		  last - image_target->name);
+	  *(dir + sizeof (GRUB_PKGLIBROOTDIR) + (last - image_target->name))
+	    = 0;
+	}
     }
 
   generate_image (dir, prefix ? : DEFAULT_DIRECTORY, fp,
