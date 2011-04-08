@@ -1,4 +1,4 @@
-/* grub-fstest.c - debug tool for filesystem driver */
+/* grub-mount.c - FUSE driver for filesystems that GRUB understands */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2008,2009,2010 Free Software Foundation, Inc.
