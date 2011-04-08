@@ -224,7 +224,7 @@ program = {
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)' '-lfuse';
-  condition = COND_GRUB_FUSE;
+  condition = COND_GRUB_MOUNT;
 };
 
 program = {

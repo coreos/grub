@@ -856,36 +856,36 @@ AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
 
-AC_ARG_ENABLE([grub-fuse],
-	      [AS_HELP_STRING([--enable-grub-fuse],
-                             [build and install the `grub-fuse' utility (default=guessed)])])
-if test x"$enable_grub_fuse" = xno ; then
-  grub_fuse_excuse="explicitly disabled"
+AC_ARG_ENABLE([grub-mount],
+	      [AS_HELP_STRING([--enable-grub-mount],
+                             [build and install the `grub-mount' utility (default=guessed)])])
+if test x"$enable_grub_mount" = xno ; then
+  grub_mount_excuse="explicitly disabled"
 fi
 
-if test x"$grub_fuse_excuse" = x ; then
+if test x"$grub_mount_excuse" = x ; then
   AC_CHECK_LIB([fuse], [fuse_main_real], [],
-               [grub_fuse_excuse="need FUSE library"])
+               [grub_mount_excuse="need FUSE library"])
 fi
 
-if test x"$grub_fuse_excuse" = x ; then
+if test x"$grub_mount_excuse" = x ; then
   # Check for fuse headers.
   SAVED_CPPFLAGS="$CPPFLAGS"
   CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64"
   AC_CHECK_HEADERS([fuse/fuse.h], [],
-  	[grub_fuse_excuse=["need FUSE headers"]])
+  	[grub_mount_excuse=["need FUSE headers"]])
   CPPFLAGS="$SAVED_CPPFLAGS"
 fi
 
-if test x"$enable_grub_fuse" = xyes && test x"$grub_fuse_excuse" != x ; then
+if test x"$enable_grub_mount" = xyes && test x"$grub_mount_excuse" != x ; then
   AC_MSG_ERROR([grub-mount was explicitly requested but can't be compiled])
 fi
-if test x"$grub_fuse_excuse" = x ; then
-enable_grub_fuse=yes
+if test x"$grub_mount_excuse" = x ; then
+enable_grub_mount=yes
 else
-enable_grub_fuse=no
+enable_grub_mount=no
 fi
-AC_SUBST([enable_grub_fuse])
+AC_SUBST([enable_grub_mount])
 
 AC_ARG_ENABLE([device-mapper],
               [AS_HELP_STRING([--enable-device-mapper],
@@ -983,7 +983,7 @@ AM_CONDITIONAL([COND_GRUB_EMU_USB], [test x$enable_grub_emu_usb = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_SDL], [test x$enable_grub_emu_sdl = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_PCI], [test x$enable_grub_emu_pci = xyes])
 AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
-AM_CONDITIONAL([COND_GRUB_FUSE], [test x$enable_grub_fuse = xyes])
+AM_CONDITIONAL([COND_GRUB_MOUNT], [test x$enable_grub_mount = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
 AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
 AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
@@ -1059,10 +1059,10 @@ echo grub-mkfont: Yes
 else
 echo grub-mkfont: No "($grub_mkfont_excuse)"
 fi
-if [ x"$grub_fuse_excuse" = x ]; then
+if [ x"$grub_mount_excuse" = x ]; then
 echo grub-mount: Yes
 else
-echo grub-mount: No "($grub_fuse_excuse)"
+echo grub-mount: No "($grub_mount_excuse)"
 fi
 echo "*******************************************************"
 ]
