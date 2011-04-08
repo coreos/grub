@@ -1,5 +1,10 @@
 2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi):
+	Place mbi on low memory for better compatibility.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/efiemu/efiemu.h: Use grub_memory_hook_t type.
 
 2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
