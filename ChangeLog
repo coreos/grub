@@ -1,5 +1,10 @@
 2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/probe.c (options): Argument to set isn't optional.
+	(GRUB_MOD_INIT): DEVICE isn't optional.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/term.c (print_ucs4_terminal): Don't try to put the
 	word on new line if it's too long anyway. Fixes a hang.
 
