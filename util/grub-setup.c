@@ -973,7 +973,15 @@ main (int argc, char *argv[])
       char **devicelist;
       int i;
 
-      devicelist = grub_util_raid_getmembers (dest_dev);
+      if (arguments.device[0] == '/')
+	devicelist = grub_util_raid_getmembers (arguments.device);
+      else
+	{
+	  char *devname;
+	  devname = xasprintf ("/dev/%s", dest_dev);
+	  devicelist = grub_util_raid_getmembers (dest_dev);
+	  free (devname);
+	}
 
       for (i = 0; devicelist[i]; i++)
         {
