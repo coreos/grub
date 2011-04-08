@@ -1,5 +1,11 @@
 2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (open_device): Sync on close and not
+	on open.
+	(grub_util_biosdisk_close): Likewise.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/getroot.c (grub_util_get_grub_dev): Add missing
 	const attribute and use grub_isdigit.
 

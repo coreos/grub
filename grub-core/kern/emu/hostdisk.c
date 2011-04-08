@@ -664,7 +664,17 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
       {
 	free (data->dev);
 	if (data->fd != -1)
-	  close (data->fd);
+	  {
+	    if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
+	      {
+		fsync (data->fd);
+#ifdef __linux__
+		ioctl (data->fd, BLKFLSBUF, 0);
+#endif
+	      }
+
+	    close (data->fd);
+	  }
 
 	/* Open the partition.  */
 	grub_dprintf ("hostdisk", "opening the device `%s' in open_device()\n", dev);
@@ -674,10 +684,6 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	    grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", dev);
 	    return -1;
 	  }
-
-	/* Flush the buffer cache to the physical disk.
-	   XXX: This also empties the buffer cache.  */
-	ioctl (fd, BLKFLSBUF, 0);
 
 	data->dev = xstrdup (dev);
 	data->access_mode = (flags & O_ACCMODE);
@@ -716,7 +722,16 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
     {
       free (data->dev);
       if (data->fd != -1)
-	close (data->fd);
+	{
+	    if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
+	      {
+		fsync (data->fd);
+#ifdef __linux__
+		ioctl (data->fd, BLKFLSBUF, 0);
+#endif
+	      }
+	    close (data->fd);
+	}
 
       fd = open (map[disk->id].device, flags);
       if (fd >= 0)
@@ -932,7 +947,16 @@ grub_util_biosdisk_close (struct grub_disk *disk)
 
   free (data->dev);
   if (data->fd != -1)
-    close (data->fd);
+    {
+      if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
+	{
+	  fsync (data->fd);
+#ifdef __linux__
+	  ioctl (data->fd, BLKFLSBUF, 0);
+#endif
+	}
+      close (data->fd);
+    }
   free (data);
 }
 
