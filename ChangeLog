@@ -1,5 +1,10 @@
 2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/legacy_parse.c (legacy_commands): Find doesn't set
+	root on legacy.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/probe.c (options): Argument to set isn't optional.
 	(GRUB_MOD_INIT): DEVICE isn't optional.
 
