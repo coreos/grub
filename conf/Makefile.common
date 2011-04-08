@@ -2,6 +2,10 @@
 
 CFLAGS_PLATFORM=
 
+export LC_COLLATE := C
+export LC_CTYPE := C
+unexport LC_ALL
+
 # Platform specific options
 if COND_i386_pc
   CFLAGS_PLATFORM += -mrtd -mregparm=3
