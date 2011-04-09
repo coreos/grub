@@ -115,7 +115,7 @@ local version, you may need to resolve conflicts when pulling.
 @chapter Coding style
 @c By YoshinoriOkuji, VesaJääskeläinen and ColinBennett
 
-Basically we follow the [http://www.gnu.org/prep/standards_toc.html GNU Coding Standards]. We define additional conventions for GRUB here.
+Basically we follow the @uref{http://www.gnu.org/prep/standards_toc.html, GNU Coding Standards}. We define additional conventions for GRUB here.
 
 @menu
 * Naming Conventions::
@@ -167,7 +167,7 @@ If a macro is global, its name must be prefixed with GRUB_ and must consist of o
 @node Comments
 @section Comments
 
-All comments shall be C-style comments, of the form `/*` … `*/`.
+All comments shall be C-style comments, of the form @samp{/* @dots{} */}.
 
 Comments shall be placed only on a line be themselves.  They shall not be placed together with code, variable declarations, or other non-comment entities.  A comment should be placed immediately preceding the entity it describes.
 
@@ -207,7 +207,7 @@ Unacceptable:
  * It is long. */
 @end example
 
-The opening `/*` and closing `*/` should be placed together on a line with text.
+The opening @samp{/*} and closing @samp{*/} should be placed together on a line with text.
 
 @node Finding your way around
 @chapter Finding your way around
@@ -320,7 +320,7 @@ anymore.
 For developers it is recommended always to use the newest development version of GRUB 2. If development takes a long period of time, please remember to keep in sync with newest developments regularly so it is much easier to integrate your change in the future. GRUB 2 is being developed on SVN repository.
 
 Please check Savannah's GRUB project page for details how to get newest BZR:
-[http://savannah.gnu.org/bzr/?group=grub GRUB 2 BZR Repository]
+@uref{http://savannah.gnu.org/bzr/?group=grub, GRUB 2 BZR Repository}
 
 @item Compile it and try it out.
 
@@ -368,7 +368,7 @@ what it changes and so on. Please be prepared to receive even discouraging
 comments about your patch. There is usually at least something that needs
 to be improved in every patch.
 
-Please use unified diff to make your patch (good match of arguments for diff is ''-pruN'').
+Please use unified diff to make your patch (good match of arguments for diff is @samp{-pruN}).
 
 @item Respond to received feedback.
 
@@ -419,7 +419,7 @@ project:
 
 @enumerate
 @item You need to create your own account on Savannah.
-@item You can submit ''Request for Inclusion'' from ''My Groups'' on Savannah.
+@item You can submit ``Request for Inclusion'' from ``My Groups'' on Savannah.
 @end enumerate
 
 Then, one of the admins can approve your request, and you will be a member.
@@ -427,7 +427,7 @@ If you don't want to use the Savannah interface to submit a request, you can
 simply notify the admins by email or something else, alternatively. But you
 still need to create an account beforehand.
 
-NOTE: we sometimes receive a ''Request for Inclusion'' from an unknown person.
+NOTE: we sometimes receive a ``Request for Inclusion'' from an unknown person.
 In this case, the request would be just discarded, since it is too dangerous
 to allow a stranger to be a member, which automatically gives him a commit
 right to the repository, both for a legal reason and for a technical reason. 
@@ -448,13 +448,13 @@ function does not provide handling of the exception it must return back to it's
 calling function and so on, until exception is handled. If exception is not
 handled before prompt is displayed, error message will be shown to user.
 
-Exception information is stored on ''grub_errno'' global variable. If
-''grub_errno'' variable contains value ''GRUB_ERR_NONE'', there is no active
-exception and application can continue normal processing. When grub_errno has
+Exception information is stored on @code{grub_errno} global variable. If
+@code{grub_errno} variable contains value @code{GRUB_ERR_NONE}, there is no active
+exception and application can continue normal processing. When @code{grub_errno} has
 other value, it is required that application code either handles this error or
-returns instantly to caller. If function is with return type ''grub_err_t'' is
-about to return ''GRUB_ERR_NONE'', it should not set ''grub_errno'' to that
-value. Only set ''grub_errno'' in cases where there is error situation. 
+returns instantly to caller. If function is with return type @code{grub_err_t} is
+about to return @code{GRUB_ERR_NONE}, it should not set @code{grub_errno} to that
+value. Only set @code{grub_errno} in cases where there is error situation. 
 
 Simple exception forwarder.
 @example
@@ -478,11 +478,11 @@ forwarding_example (void)
 @end example
 
 Error reporting has two components, the actual error code (of type
-''grub_err_t'') and textual message that will be displayed to user. List of
-valid error codes is listed in header file ''include/grub/err.h''. Textual
+@code{grub_err_t}) and textual message that will be displayed to user. List of
+valid error codes is listed in header file @file{include/grub/err.h}. Textual
 error message can contain any textual data. At time of writing, error message
 can contain up to 256 characters (including terminating NUL). To ease error
-reporting there is a helper function ''grub_error'' that allows easier
+reporting there is a helper function @code{grub_error} that allows easier
 formatting of error messages and should be used instead of writing directly to
 global variables.
 
@@ -499,11 +499,11 @@ failing_example ()
 @end example
 
 If there is a special reason that error code does not need to be taken account,
-''grub_errno'' can be zeroed back to ''GRUB_ERR_NONE''. In cases like this all
+@code{grub_errno} can be zeroed back to @code{GRUB_ERR_NONE}. In cases like this all
 previous error codes should have been handled correctly. This makes sure that
 there are no unhandled exceptions.
 
-Example of zeroing ''grub_errno''.
+Example of zeroing @code{grub_errno}.
 @example
 grub_err_t
 probe_example ()
@@ -539,8 +539,8 @@ Some times there is a need to continue processing even if there is a error
 state in application. In situations like this, there is a needed to save old
 error state and then call other functions that might fail. To aid in this,
 there is a error stack implemented. Error state can be pushed to error stack
-by calling function ''grub_error_push ()''. When processing has been completed,
-''grub_error_pop ()'' can be used to pop error state from stack. Error stack
+by calling function @code{grub_error_push ()}. When processing has been completed,
+@code{grub_error_pop ()} can be used to pop error state from stack. Error stack
 contains predefined amount of error stack items. Error stack is proteced for
 overflow and marks these situations so overflow error does not get unseen.
 If there is no space available to store error message, it is simply discarded
@@ -644,7 +644,7 @@ grub_video_setup (unsigned int width, unsigned int height, unsigned int mode_typ
 @end example
 @item Description:
 
-Driver will use information provided to it to select best possible video mode and switch to it. Supported values for ''mode_type'' are ''GRUB_VIDEO_MODE_TYPE_INDEX_COLOR'' for index color modes, ''GRUB_VIDEO_MODE_TYPE_RGB'' for direct RGB color modes and ''GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED'' for double buffering. When requesting RGB mode, highest bits per pixel mode will be selected. When requesting Index color mode, mode with highest number of colors will be selected. If all parameters are specified as zero, video adapter will try to figure out best possible mode and initialize it, platform specific differences are allowed here. If there is no mode matching request, error X will be returned. If there are no problems, function returns ''GRUB_ERR_NONE''.
+Driver will use information provided to it to select best possible video mode and switch to it. Supported values for @code{mode_type} are @code{GRUB_VIDEO_MODE_TYPE_INDEX_COLOR} for index color modes, @code{GRUB_VIDEO_MODE_TYPE_RGB} for direct RGB color modes and @code{GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED} for double buffering. When requesting RGB mode, highest bits per pixel mode will be selected. When requesting Index color mode, mode with highest number of colors will be selected. If all parameters are specified as zero, video adapter will try to figure out best possible mode and initialize it, platform specific differences are allowed here. If there is no mode matching request, error X will be returned. If there are no problems, function returns @code{GRUB_ERR_NONE}.
 
 This function also performs following task upon succesful mode switch. Active rendering target is changed to screen and viewport is maximized to allow whole screen to be used when performing graphics operations. In RGB modes, emulated palette get's 16 entries containing default values for VGA palette, other colors are defined as black. When switching to Indexed Color mode, driver may set default VGA palette to screen if the video card allows the operation.
 
@@ -712,7 +712,7 @@ struct grub_video_mode_info
 @end example
 @item Description:
 
-Software developer can use this function to query properties of active rendering taget. Information provided here can be used by other parts of GRUB, like image loaders to convert loaded images to correct screen format to allow more optimized blitters to be used. If there there is no configured video driver with active screen, error ''GRUB_ERR_BAD_DEVICE'' is returned, otherwise ''mode_info'' is filled with valid information and ''GRUB_ERR_NONE'' is returned.
+Software developer can use this function to query properties of active rendering taget. Information provided here can be used by other parts of GRUB, like image loaders to convert loaded images to correct screen format to allow more optimized blitters to be used. If there there is no configured video driver with active screen, error @code{GRUB_ERR_BAD_DEVICE} is returned, otherwise @code{mode_info} is filled with valid information and @code{GRUB_ERR_NONE} is returned.
 @end itemize
 
 @subsection grub_video_get_blit_format
@@ -740,7 +740,7 @@ enum grub_video_blit_format
 @end example
 @item Description:
 
-Used to query how data could be optimized to suit specified video mode. Returns exact video format type, or a generic one if there is no definition for the type. For generic formats, use ''grub_video_get_info'' to query video color coding settings.
+Used to query how data could be optimized to suit specified video mode. Returns exact video format type, or a generic one if there is no definition for the type. For generic formats, use @code{grub_video_get_info} to query video color coding settings.
 @end itemize
 
 @subsection grub_video_set_palette
@@ -762,7 +762,7 @@ struct grub_video_palette_data
 @end example
 @item Description:
 
-Used to setup indexed color palettes. If mode is RGB mode, colors will be set to emulated palette data. In Indexed Color modes, palettes will be set to hardware. Color values will be converted to suit requirements of the video mode. ''start'' will tell what hardware color index (or emulated color index) will be set to according information in first indice of ''palette_data'', after that both hardware color index and ''palette_data'' index will be incremented until ''count'' number of colors have been set.
+Used to setup indexed color palettes. If mode is RGB mode, colors will be set to emulated palette data. In Indexed Color modes, palettes will be set to hardware. Color values will be converted to suit requirements of the video mode. @code{start} will tell what hardware color index (or emulated color index) will be set to according information in first indice of @code{palette_data}, after that both hardware color index and @code{palette_data} index will be incremented until @code{count} number of colors have been set.
 @end itemize
 
 @subsection grub_video_get_palette
@@ -784,7 +784,7 @@ struct grub_video_palette_data
 @end example
 @item Description:
 
-Used to query indexed color palettes. If mode is RGB mode, colors will be copied from emulated palette data. In Indexed Color modes, palettes will be read from hardware. Color values will be converted to suit structure format. ''start'' will tell what hardware color index (or emulated color index) will be used as a source for first indice of ''palette_data'', after that both hardware color index and ''palette_data'' index will be incremented until ''count'' number of colors have been read.
+Used to query indexed color palettes. If mode is RGB mode, colors will be copied from emulated palette data. In Indexed Color modes, palettes will be read from hardware. Color values will be converted to suit structure format. @code{start} will tell what hardware color index (or emulated color index) will be used as a source for first indice of @code{palette_data}, after that both hardware color index and @code{palette_data} index will be incremented until @code{count} number of colors have been read.
 @end itemize
 
 @subsection grub_video_set_viewport
@@ -797,7 +797,7 @@ grub_video_set_viewport (unsigned int x, unsigned int y, unsigned int width, uns
 @end example
 @item Description:
 
-Used to specify viewport where draw commands are performed. When viewport is set, all draw commands coordinates relate to those specified by ''x'' and ''y''. If draw commands try to draw over viewport, they are clipped. If developer requests larger than possible viewport, width and height will be clamped to fit screen. If ''x'' and ''y'' are out of bounds, all functions drawing to screen will not be displayed. In order to maximize viewport, use grub_video_get_info to query actual screen dimensions and provide that information to this function.
+Used to specify viewport where draw commands are performed. When viewport is set, all draw commands coordinates relate to those specified by @code{x} and @code{y}. If draw commands try to draw over viewport, they are clipped. If developer requests larger than possible viewport, width and height will be clamped to fit screen. If @code{x} and @code{y} are out of bounds, all functions drawing to screen will not be displayed. In order to maximize viewport, use @code{grub_video_get_info} to query actual screen dimensions and provide that information to this function.
 @end itemize
 
 @subsection grub_video_get_viewport
@@ -823,7 +823,7 @@ grub_video_map_color (grub_uint32_t color_name);
 @end example
 @item Description:
 
-Map color can be used to support color themes in GRUB. There will be collection of color names that can be used to query actual screen mapped color data. Examples could be ''GRUB_COLOR_CONSOLE_BACKGROUND'', ''GRUB_COLOR_CONSOLE_TEXT''. The actual color defines are not specified at this point.
+Map color can be used to support color themes in GRUB. There will be collection of color names that can be used to query actual screen mapped color data. Examples could be @code{GRUB_COLOR_CONSOLE_BACKGROUND}, @code{GRUB_COLOR_CONSOLE_TEXT}. The actual color defines are not specified at this point.
 @end itemize
 
 @subsection grub_video_map_rgb
@@ -862,7 +862,7 @@ grub_video_unmap_color (grub_video_color_t color, grub_uint8_t *red, grub_uint8_
 @end example
 @item Description:
 
-Unmap color value from ''color'' to color channels in ''red'', ''green'', ''blue'' and ''alpha''. Values will be in range 0-255. Active rendering target will be used for color domain. In case alpha information is not available in rendering target, it is assumed to be opaque (having value 255).
+Unmap color value from @code{color} to color channels in @code{red}, @code{green}, @code{blue} and @code{alpha}. Values will be in range 0-255. Active rendering target will be used for color domain. In case alpha information is not available in rendering target, it is assumed to be opaque (having value 255).
 @end itemize
 
 @subsection grub_video_fill_rect
@@ -877,7 +877,7 @@ grub_video_fill_rect (grub_video_color_t color, int x, int y, unsigned int width
 
 Fill specified area limited by given coordinates within specified viewport. Negative coordinates are accepted in order to allow easy moving of rectangle within viewport. If coordinates are negative, area of the rectangle will be shrinken to follow size limits of the viewport.
 
-Software developer should use either ''grub_video_map_color'', ''grub_video_map_rgb'' or ''grub_video_map_rgba'' to map requested color to ''color'' parameter.
+Software developer should use either @code{grub_video_map_color}, @code{grub_video_map_rgb} or @code{grub_video_map_rgba} to map requested color to @code{color} parameter.
 @end itemize
 
 @subsection grub_video_blit_glyph
@@ -895,7 +895,7 @@ struct grub_font_glyph @{
 @end example
 @item Description:
 
-Used to blit glyph to viewport in specified coodinates. If glyph is at edge of viewport, pixels outside of viewport will be clipped out. Software developer should use either ''grub_video_map_rgb'' or ''grub_video_map_rgba'' to map requested color to ''color'' parameter.
+Used to blit glyph to viewport in specified coodinates. If glyph is at edge of viewport, pixels outside of viewport will be clipped out. Software developer should use either @code{grub_video_map_rgb} or @code{grub_video_map_rgba} to map requested color to @code{color} parameter.
 @end itemize
 
 @subsection grub_video_blit_bitmap
@@ -920,9 +920,9 @@ enum grub_video_blit_operators
 @end example
 @item Description:
 
-Used to blit bitmap to viewport in specified coordinates. If part of bitmap is outside of viewport region, it will be clipped out. Offsets affect bitmap position where data will be copied from. Negative values for both viewport coordinates and bitmap offset coordinates are allowed. If data is looked out of bounds of bitmap, color value will be assumed to be transparent. If viewport coordinates are negative, area of the blitted rectangle will be shrinken to follow size limits of the viewport and bitmap. Blitting operator ''oper'' specifies should source pixel replace data in screen or blend with pixel alpha value.
+Used to blit bitmap to viewport in specified coordinates. If part of bitmap is outside of viewport region, it will be clipped out. Offsets affect bitmap position where data will be copied from. Negative values for both viewport coordinates and bitmap offset coordinates are allowed. If data is looked out of bounds of bitmap, color value will be assumed to be transparent. If viewport coordinates are negative, area of the blitted rectangle will be shrinken to follow size limits of the viewport and bitmap. Blitting operator @code{oper} specifies should source pixel replace data in screen or blend with pixel alpha value.
 
-Software developer should use ''grub_video_bitmap_create'' or ''grub_video_bitmap_load'' to create or load bitmap data.
+Software developer should use @code{grub_video_bitmap_create} or @code{grub_video_bitmap_load} to create or load bitmap data.
 @end itemize
 
 @subsection grub_video_blit_render_target
@@ -946,7 +946,7 @@ enum grub_video_blit_operators
 @end example
 @item Description:
 
-Used to blit source render target to viewport in specified coordinates. If part of source render target is outside of viewport region, it will be clipped out. If blitting operator is specified and source contains alpha values, resulting pixel color components will be calculated using formula ((src_color * src_alpha) + (dst_color * (255 - src_alpha)) / 255, if target buffer has alpha, it will be set to src_alpha. Offsets affect render target position where data will be copied from. If data is looked out of bounds of render target, color value will be assumed to be transparent. Blitting operator ''oper'' specifies should source pixel replace data in screen or blend with pixel alpha value.
+Used to blit source render target to viewport in specified coordinates. If part of source render target is outside of viewport region, it will be clipped out. If blitting operator is specified and source contains alpha values, resulting pixel color components will be calculated using formula ((src_color * src_alpha) + (dst_color * (255 - src_alpha)) / 255, if target buffer has alpha, it will be set to src_alpha. Offsets affect render target position where data will be copied from. If data is looked out of bounds of render target, color value will be assumed to be transparent. Blitting operator @code{oper} specifies should source pixel replace data in screen or blend with pixel alpha value.
 @end itemize
 
 @subsection grub_video_scroll
@@ -990,7 +990,7 @@ struct grub_video_render_target @{
 @end example
 @item Description:
 
-Driver will use information provided to it to create best fitting render target. ''mode_type'' will be used to guide on selecting what features are wanted for render target. Supported values for ''mode_type'' are ''GRUB_VIDEO_MODE_TYPE_INDEX_COLOR'' for index color modes, ''GRUB_VIDEO_MODE_TYPE_RGB'' for direct RGB color modes and ''GRUB_VIDEO_MODE_TYPE_ALPHA'' for alpha component.
+Driver will use information provided to it to create best fitting render target. @code{mode_type} will be used to guide on selecting what features are wanted for render target. Supported values for @code{mode_type} are @code{GRUB_VIDEO_MODE_TYPE_INDEX_COLOR} for index color modes, @code{GRUB_VIDEO_MODE_TYPE_RGB} for direct RGB color modes and @code{GRUB_VIDEO_MODE_TYPE_ALPHA} for alpha component.
 @end itemize
 
 @subsection grub_video_delete_render_target
@@ -1003,7 +1003,7 @@ grub_video_delete_render_target (struct grub_video_render_target *target);
 @end example
 @item Description:
 
-Used to delete previously created render target. If ''target'' contains ''NULL'' pointer, nothing will be done. If render target is correctly destroyed, GRUB_ERR_NONE is returned.
+Used to delete previously created render target. If @code{target} contains @code{NULL} pointer, nothing will be done. If render target is correctly destroyed, GRUB_ERR_NONE is returned.
 @end itemize
 
 @subsection grub_video_set_active_render_target
@@ -1016,7 +1016,7 @@ grub_video_set_active_render_target (struct grub_video_render_target *target);
 @end example
 @item Description:
 
-Set's active render target. If this comand is successful all drawing commands will be done to specified ''target''. There is also special values for target, ''GRUB_VIDEO_RENDER_TARGET_DISPLAY'' used to reference screen's front buffer, ''GRUB_VIDEO_RENDER_TARGET_FRONT_BUFFER'' used to reference screen's front buffer (alias for ''GRUB_VIDEO_RENDER_TARGET_DISPLAY'') and ''GRUB_VIDEO_RENDER_TARGET_BACK_BUFFER'' used to reference back buffer (if double buffering is enabled). If render target is correclty switched GRUB_ERR_NONE is returned. In no any event shall there be non drawable active render target.
+Set's active render target. If this comand is successful all drawing commands will be done to specified @code{target}. There is also special values for target, @code{GRUB_VIDEO_RENDER_TARGET_DISPLAY} used to reference screen's front buffer, @code{GRUB_VIDEO_RENDER_TARGET_FRONT_BUFFER} used to reference screen's front buffer (alias for @code{GRUB_VIDEO_RENDER_TARGET_DISPLAY}) and @code{GRUB_VIDEO_RENDER_TARGET_BACK_BUFFER} used to reference back buffer (if double buffering is enabled). If render target is correclty switched GRUB_ERR_NONE is returned. In no any event shall there be non drawable active render target.
 
 @end itemize
 @subsection grub_video_get_active_render_target
@@ -1029,7 +1029,7 @@ grub_video_get_active_render_target (struct grub_video_render_target **target);
 @end example
 @item Description:
 
-Returns currently active render target. It returns value in ''target'' that can be subsequently issued back to ''grub_video_set_active_render_target''.
+Returns currently active render target. It returns value in @code{target} that can be subsequently issued back to @code{grub_video_set_active_render_target}.
 @end itemize
 
 @node Example usage of Video API
@@ -1082,7 +1082,7 @@ grub_err_t grub_video_bitmap_create (struct grub_video_bitmap **bitmap, unsigned
 
 @item Description:
 
-Creates a new bitmap with given dimensions and blitting format. Allocated bitmap data can then be modified freely and finally blitted with ''grub_video_blit_bitmap'' to rendering target.
+Creates a new bitmap with given dimensions and blitting format. Allocated bitmap data can then be modified freely and finally blitted with @code{grub_video_blit_bitmap} to rendering target.
 @end itemize
 
 @subsection grub_video_bitmap_destroy
@@ -1094,7 +1094,7 @@ grub_err_t grub_video_bitmap_destroy (struct grub_video_bitmap *bitmap);
 
 @item Description:
 
-When bitmap is no longer needed, it can be freed from memory using this command. ''bitmap'' is previously allocated bitmap with ''grub_video_bitmap_create'' or loaded with ''grub_video_bitmap_load''.
+When bitmap is no longer needed, it can be freed from memory using this command. @code{bitmap} is previously allocated bitmap with @code{grub_video_bitmap_create} or loaded with @code{grub_video_bitmap_load}.
 @end itemize
 
 @subsection grub_video_bitmap_load
@@ -1106,7 +1106,7 @@ grub_err_t grub_video_bitmap_load (struct grub_video_bitmap **bitmap, const char
 
 @item Description:
 
-Tries to load given bitmap (''filename'') using registered bitmap loaders. In case bitmap format is not recognized or supported error ''GRUB_ERR_BAD_FILE_TYPE'' is returned.
+Tries to load given bitmap (@code{filename}) using registered bitmap loaders. In case bitmap format is not recognized or supported error @code{GRUB_ERR_BAD_FILE_TYPE} is returned.
 @end itemize
 
 @subsection grub_video_bitmap_get_width
@@ -1142,7 +1142,7 @@ void grub_video_bitmap_get_mode_info (struct grub_video_bitmap *bitmap, struct g
 
 @item Description:
 
-Returns bitmap format details in form of ''grub_video_mode_info''.
+Returns bitmap format details in form of @code{grub_video_mode_info}.
 @end itemize
 
 @subsection grub_video_bitmap_get_data
@@ -1181,20 +1181,20 @@ use, compact, and cleanly supports Unicode.
 
 @itemize
 @item Simple to read and use.
-  Since GRUB will only be reading the font files,
-  we are more concerned with making the code to read the font simple than we
-  are with writing the font.
+Since GRUB will only be reading the font files,
+we are more concerned with making the code to read the font simple than we
+are with writing the font.
 
 @item Compact storage.
-  The fonts will generally be stored in a small boot
-  partition where GRUB is located, and this may be on a removable storage
-  device such as a CD or USB flash drive where space is more limited than it
-  is on most hard drives.
+The fonts will generally be stored in a small boot
+partition where GRUB is located, and this may be on a removable storage
+device such as a CD or USB flash drive where space is more limited than it
+is on most hard drives.
 
 @item Unicode.
-  GRUB should not have to deal with multiple character
-  encodings.  The font should always use Unicode character codes for simple
-  internationalization.
+GRUB should not have to deal with multiple character
+encodings.  The font should always use Unicode character codes for simple
+internationalization.
 @end itemize
 
 @subsection Why Another Font Format?
@@ -1205,136 +1205,143 @@ use in GRUB at this time:
 
 @table @samp
 @item BDF 
-       Inefficient storage; uses ASCII to describe properties and 
-       hexadecimal numbers in ASCII for the bitmap rows.
+Inefficient storage; uses ASCII to describe properties and 
+hexadecimal numbers in ASCII for the bitmap rows.
 @item PCF  
-      Many format variations such as byte order and bitmap padding (rows
-      padded to byte, word, etc.) would result in more complex code to
-      handle the font format.
+Many format variations such as byte order and bitmap padding (rows
+padded to byte, word, etc.) would result in more complex code to
+handle the font format.
 @end table
 
 @node File Structure
 @section File Structure
 
-A file *section* consists of a 4-byte name, a 32-bit big-endian length (not
-including the name or length), and then *length* more section-type-specific 
+A file @strong{section} consists of a 4-byte name, a 32-bit big-endian length (not
+including the name or length), and then @var{length} more section-type-specific 
 bytes.
 
-The standard file extension for PFF2 font files is ``.pf2``.
+The standard file extension for PFF2 font files is @file{.pf2}.
 
 
 @subsection Section Types
 
 @table @samp
 @item FILE
-   *File type ID* (ASCII string).  This must be the first section in the file.  It has length 4
-   and the contents are the four bytes of the ASCII string ``PFF2``.
+@strong{File type ID} (ASCII string).  This must be the first section in the file.  It has length 4
+and the contents are the four bytes of the ASCII string @samp{PFF2}.
 
 @item NAME
-   *Font name* (ASCII string).  This is the full font name including family,
-   weight, style, and point size.  For instance, "Helvetica Bold Italic 14".
+@strong{Font name} (ASCII string).  This is the full font name including family,
+weight, style, and point size.  For instance, "Helvetica Bold Italic 14".
 
 @item FAMI
-   *Font family name* (ASCII string).  For instance, "Helvetica".  This should
-   be included so that intelligent font substitution can take place.
+@strong{Font family name} (ASCII string).  For instance, "Helvetica".  This should
+be included so that intelligent font substitution can take place.
 
 @item WEIG
-   *Font weight* (ASCII string).  Valid values are ``bold`` and ``normal``.
-   This should be included so that intelligent font substitution can take
-   place.
+@strong{Font weight} (ASCII string).  Valid values are @samp{bold} and @samp{normal}.
+This should be included so that intelligent font substitution can take
+place.
 
 @item SLAN
-   *Font slant* (ASCII string).  Valid values are ``italic`` and ``normal``.
-   This should be included so that intelligent font substitution can take
-   place.
+@strong{Font slant} (ASCII string).  Valid values are @samp{italic} and @samp{normal}.
+This should be included so that intelligent font substitution can take
+place.
 
 @item PTSZ
-   *Font point size* (uint16be).
+@strong{Font point size} (uint16be).
 
 @item MAXW
-   *Maximum character width in pixels* (uint16be).
+@strong{Maximum character width in pixels} (uint16be).
 
 @item MAXH
-   *Maximum character height in pixels* (uint16be).
+@strong{Maximum character height in pixels} (uint16be).
 
 @item ASCE
-   *Ascent in pixels* (uint16be).  See `Font Metrics`_ for details.
+@strong{Ascent in pixels} (uint16be).  @xref{Font Metrics}, for details.
 
 @item DESC
-   *Descent in pixels* (uint16be).  See `Font Metrics`_ for details.
+@strong{Descent in pixels} (uint16be).  @xref{Font Metrics}, for details.
 
 @item CHIX
-   *Character index.*
-   The character index begins with a 32-bit big-endian unsigned integer
-   indicating the total size of the section, not including this size value.
-   For each character, there is an instance of the following entry structure:
+@strong{Character index.}
+The character index begins with a 32-bit big-endian unsigned integer
+indicating the total size of the section, not including this size value.
+For each character, there is an instance of the following entry structure:
 
-   @itemize
-   @item **Unicode code point.** (32-bit big-endian integer.)
+@itemize
+@item @strong{Unicode code point.} (32-bit big-endian integer.)
 
-   @item **Storage flags.** (byte.)
+@item @strong{Storage flags.} (byte.)
        
-      @itemize
-      @item Bits 2..0: 
+@itemize
+@item Bits 2..0: 
 
-        - If equal to 000 binary, then the character data is stored
-          uncompressed beginning at the offset indicated by the character's
-          *offset* value.
+If equal to 000 binary, then the character data is stored
+uncompressed beginning at the offset indicated by the character's
+@strong{offset} value.
 
-        - If equal to 001 binary, then the character data is stored within a 
-          compressed character definition block that begins at the offset 
-          within the file indicated by the character's *offset* value.
-      @end itemize
-   @item **Offset.** (32-bit big-endian integer.)
+If equal to 001 binary, then the character data is stored within a 
+compressed character definition block that begins at the offset 
+within the file indicated by the character's @strong{offset} value.
+@end itemize
 
-   A marker that indicates the remainder of the file is data accessed via
-   the character index (CHIX) section.  When reading this font file, the rest
-   of the file can be ignored when scanning the sections.  The length should
-   be set to -1 (0xFFFFFFFF).
+@item @strong{Offset.} (32-bit big-endian integer.)
 
-   Supported data structures:
+A marker that indicates the remainder of the file is data accessed via
+the character index (CHIX) section.  When reading this font file, the rest
+of the file can be ignored when scanning the sections.  The length should
+be set to -1 (0xFFFFFFFF).
 
-   Character definition
-      Each character definition consists of:
+Supported data structures:
 
-      @itemize
-      @item **Width.**  Width of the bitmap in pixels.  The bitmap's extents 
-         represent the glyph's bounding box.  *uint16be*.
+Character definition
+Each character definition consists of:
 
-      @item **Height.**  Height of the bitmap in pixels.  The bitmap's extents
-         represent the glyph's bounding box.  *uint16be*.
+@itemize
+@item @strong{Width.}
+Width of the bitmap in pixels.  The bitmap's extents 
+represent the glyph's bounding box.  @code{uint16be}.
 
-      @item **X offset.** The number of pixels to shift the bitmap by
-         horizontally before drawing the character. *int16be*.
+@item @strong{Height.}
+Height of the bitmap in pixels.  The bitmap's extents
+represent the glyph's bounding box.  @code{uint16be}.
 
-      @item **Y offset.** The number of pixels to shift the bitmap by
-         vertically before drawing the character. *int16be*.
+@item @strong{X offset.}
+The number of pixels to shift the bitmap by
+horizontally before drawing the character. @code{int16be}.
 
-      @item **Device width.** The number of pixels to advance horizontally from
-         this character's origin to the origin of the next character.
-         *int16be*.
+@item @strong{Y offset.}
+The number of pixels to shift the bitmap by
+vertically before drawing the character. @code{int16be}.
 
-      @item **Bitmap data.**  This is encoded as a string of bits.  It is
-         organized as a row-major, top-down, left-to-right bitmap.  The most
-         significant bit of each byte is taken to be the leftmost or uppermost
-         bit in the byte.  For the sake of compact storage, rows are not padded
-         to byte boundaries (i.e., a single byte may contain bits belonging to
-         multiple rows).  The last byte of the bitmap *is* padded with zero
-         bits in the bits positions to the right of the last used bit if the
-         bitmap data does not fill the last byte.  
+@item @strong{Device width.}
+The number of pixels to advance horizontally from
+this character's origin to the origin of the next character.
+@code{int16be}.
+
+@item @strong{Bitmap data.}
+This is encoded as a string of bits.  It is
+organized as a row-major, top-down, left-to-right bitmap.  The most
+significant bit of each byte is taken to be the leftmost or uppermost
+bit in the byte.  For the sake of compact storage, rows are not padded
+to byte boundaries (i.e., a single byte may contain bits belonging to
+multiple rows).  The last byte of the bitmap @strong{is} padded with zero
+bits in the bits positions to the right of the last used bit if the
+bitmap data does not fill the last byte.  
          
-         The length of the *bitmap data* field is (*width* * *height* + 7) / 8
-         using integer arithmetic, which is equivalent to ceil(*width* *
-         *height* / 8) using real number arithmetic.
+The length of the @strong{bitmap data} field is (@var{width} * @var{height} + 7) / 8
+using integer arithmetic, which is equivalent to ceil(@var{width} *
+@var{height} / 8) using real number arithmetic.
 
-         It remains to be determined whether bitmap fonts usually make all
-         glyph bitmaps the same height, or if smaller glyphs are stored with
-         bitmaps having a lesser height.  In the latter case, the baseline
-         would have to be used to calculate the location the bitmap should be
-         anchored at on screen.
-       @end itemize
+It remains to be determined whether bitmap fonts usually make all
+glyph bitmaps the same height, or if smaller glyphs are stored with
+bitmaps having a lesser height.  In the latter case, the baseline
+would have to be used to calculate the location the bitmap should be
+anchored at on screen.
+@end itemize
 
-    @end itemize
+@end itemize
 @end table
 
 @node Font Metrics
@@ -1342,28 +1349,28 @@ The standard file extension for PFF2 font files is ``.pf2``.
 
 @itemize
 @item Ascent.
-   The distance from the baseline to the top of most characters.
-   Note that in some cases characters may extend above the ascent.
+The distance from the baseline to the top of most characters.
+Note that in some cases characters may extend above the ascent.
 
 @item Descent.
-   The distance from the baseline to the bottom of most characters.  Note that
-   in some cases characters may extend below the descent.
+The distance from the baseline to the bottom of most characters.  Note that
+in some cases characters may extend below the descent.
  
 @item Leading.
-   The amount of space, in pixels, to leave between the descent of one line of
-   text and the ascent of the next line.  This metrics is not specified in the
-   current file format; instead, the font rendering engine calculates a
-   reasonable leading value based on the other font metrics.
+The amount of space, in pixels, to leave between the descent of one line of
+text and the ascent of the next line.  This metrics is not specified in the
+current file format; instead, the font rendering engine calculates a
+reasonable leading value based on the other font metrics.
 
 @item Horizonal leading.
-   The amount of space, in pixels, to leave horizontally between the left and
-   right edges of two adjacent glyphs.  The *device width* field determines
-   the effective leading value that is used to render the font.
+The amount of space, in pixels, to leave horizontally between the left and
+right edges of two adjacent glyphs.  The @strong{device width} field determines
+the effective leading value that is used to render the font.
 
 @end itemize
 @image{font_char_metrics,,,,.png}
    
-   An illustration of how the various font metrics apply to characters.
+An illustration of how the various font metrics apply to characters.
 
 
 
@@ -1383,15 +1390,15 @@ The standard file extension for PFF2 font files is ``.pf2``.
 @node Introduction_2
 @section Introduction
 
-The ``gfxmenu`` module provides a graphical menu interface for GRUB 2.  It
-functions as an alternative to the menu interface provided by the ``normal``
+The @samp{gfxmenu} module provides a graphical menu interface for GRUB 2.  It
+functions as an alternative to the menu interface provided by the @samp{normal}
 module, which uses the grub terminal interface to display a menu on a
 character-oriented terminal.
 
 The graphical menu uses the GRUB video API, which is currently for the VESA
 BIOS extensions (VBE) 2.0+.  This is supported on the i386-pc platform.
 However, the graphical menu itself does not depend on using VBE, so if another
-GRUB video driver were implemented, the ``gfxmenu`` graphical menu would work
+GRUB video driver were implemented, the @samp{gfxmenu} graphical menu would work
 on the new video driver as well.
 
 
@@ -1402,7 +1409,7 @@ on the new video driver as well.
 @item grub_enter_normal_mode [normal/main.c]
 @item grub_normal_execute [normal/main.c]
 @item read_config_file [normal/main.c]
-@item (When ``gfxmenu.mod`` is loaded with ``insmod``, it will call ``grub_menu_viewer_register()`` to register itself.)
+@item (When @file{gfxmenu.mod} is loaded with @command{insmod}, it will call @code{grub_menu_viewer_register()} to register itself.)
 @item GRUB_MOD_INIT (gfxmenu) [gfxmenu/gfxmenu.c]
 @item grub_menu_viewer_register [kern/menu_viewer.c]
 @item grub_menu_viewer_show_menu [kern/menu_viewer.c]
@@ -1422,7 +1429,7 @@ The graphical menu implements a GUI component system that supports a
 container-based layout system.  Components can be added to containers, and
 containers (which are a type of component) can then be added to other
 containers, to form a tree of components.  Currently, the root component of
-this tree is a *canvas* component, which allows manual layout of its child
+this tree is a @samp{canvas} component, which allows manual layout of its child
 components.
 
 Components (non-container):
@@ -1444,13 +1451,13 @@ Containers:
 @end itemize
 
 The GUI component instances are created by the theme loader in
-``gfxmenu/theme_loader.c`` when a theme is loaded.  Theme files specify
-statements such as ``+vbox@{ +label @{ text="Hello" @} +label@{ text="World" @} @}``
+@file{gfxmenu/theme_loader.c} when a theme is loaded.  Theme files specify
+statements such as @samp{+vbox@{ +label @{ text="Hello" @} +label@{ text="World" @} @}}
 to add components to the component tree root.  By nesting the component
 creation statements in the theme file, the instantiated components are nested
 the same way.
 
-When a component is added to a container, that new child is considered *owned*
+When a component is added to a container, that new child is considered @strong{owned}
 by the container.  Great care should be taken if the caller retains a
 reference to the child component, since it will be destroyed if its parent
 container is destroyed.  A better choice instead of storing a pointer to the
@@ -1459,40 +1466,40 @@ Component IDs do not have to be unique (it is often useful to have multiple
 components with an ID of "__timeout__", for instance).
 
 In order to access and use components in the component tree, there are two
-functions (defined in ``gfxmenu/gui_util.c``) that are particularly useful:
+functions (defined in @file{gfxmenu/gui_util.c}) that are particularly useful:
 
 @itemize
 
-@item ``grub_gui_find_by_id (root, id, callback, userdata)``:
+@item @code{grub_gui_find_by_id (root, id, callback, userdata)}:
 
-  This function ecursively traverses the component tree rooted at *root*, and
-  for every component that has an ID equal to *id*, calls the function pointed
-  to by *callback* with the matching component and the void pointer *userdata*
-  as arguments.  The callback function can do whatever is desired to use the
-  component passed in.
+This function ecursively traverses the component tree rooted at @var{root}, and
+for every component that has an ID equal to @var{id}, calls the function pointed
+to by @var{callback} with the matching component and the void pointer @var{userdata}
+as arguments.  The callback function can do whatever is desired to use the
+component passed in.
 
-@item ``grub_gui_iterate_recursively (root, callback, userdata)``:
+@item @code{grub_gui_iterate_recursively (root, callback, userdata)}:
 
-  This function calls the function pointed to by *callback* for every
-  component that is a descendant of *root* in the component tree.  When the
-  callback function is called, the component and the void pointer *userdata*
-  as arguments.  The callback function can do whatever is desired to use the
-  component passed in.
+This function calls the function pointed to by @var{callback} for every
+component that is a descendant of @var{root} in the component tree.  When the
+callback function is called, the component and the void pointer @var{userdata}
+as arguments.  The callback function can do whatever is desired to use the
+component passed in.
 @end itemize
 
 @node Command Line Window
 @section Command Line Window
 
 The terminal window used to provide command line access within the graphical
-menu is managed by ``gfxmenu/view.c``.  The ``gfxterm`` terminal is used, and
+menu is managed by @file{gfxmenu/view.c}.  The @samp{gfxterm} terminal is used, and
 it has been modified to allow rendering to an offscreen render target to allow
 it to be composed into the double buffering system that the graphical menu
 view uses.  This is bad for performance, however, so it would probably be a
 good idea to make it possible to temporarily disable double buffering as long
 as the terminal window is visible.  There are still unresolved problems that
 occur when commands are executed from the terminal window that change the
-graphics mode.  It's possible that making ``grub_video_restore()`` return to
-the graphics mode that was in use before ``grub_video_setup()`` was called
+graphics mode.  It's possible that making @code{grub_video_restore()} return to
+the graphics mode that was in use before @code{grub_video_setup()} was called
 might fix some of the problems.
 
 

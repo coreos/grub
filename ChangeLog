@@ -1,3 +1,8 @@
+2011-04-09  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub-dev.texi: Replace MoinMoin syntax with Texinfo syntax
+	throughout.
+
 2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkimage.c (main): Handle special naming of yeeloong
