@@ -664,13 +664,9 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	  case GRUB_BTRFS_CHUNK_TYPE_RAID1:
 	    /* FIXME: Use redundancy.  */
 	    {
-	      grub_uint32_t stripe_length;
-	      stripe_length = grub_divmod64 (grub_le_to_cpu64 (chunk->size),
-					     grub_le_to_cpu16 (chunk->nstripes),
-					     NULL);
 	      stripen = 0;
 	      stripe_offset = off;
-	      csize = stripe_length - off;
+	      csize = grub_le_to_cpu64 (chunk->size) - off;
 	      redundancy = 2;
 	      break;
 	    }
