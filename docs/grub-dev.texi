@@ -169,7 +169,7 @@ If a macro is global, its name must be prefixed with GRUB_ and must consist of o
 
 All comments shall be C-style comments, of the form @samp{/* @dots{} */}.
 
-Comments shall be placed only on a line be themselves.  They shall not be placed together with code, variable declarations, or other non-comment entities.  A comment should be placed immediately preceding the entity it describes.
+Comments shall be placed only on a line by themselves.  They shall not be placed together with code, variable declarations, or other non-comment entities.  A comment should be placed immediately preceding the entity it describes.
 
 Acceptable:
 @example
@@ -214,73 +214,84 @@ The opening @samp{/*} and closing @samp{*/} should be placed together on a line 
 
 Here is a brief map of the GRUB code base.
 
-GRUB uses Autoconf, but not (yet) Automake.  The top-level build rules are
-in @file{configure.ac}, @file{Makefile.in}, and @file{conf/*.rmk}.  Each
-@file{conf/*.rmk} file represents a particular target configuration, and is
-processed into GNU Make rules by @file{genmk.rb} (which you only need to
+GRUB uses Autoconf and Automake, with most of the Automake input generated
+by AutoGen.  The top-level build rules are in @file{configure.ac},
+@file{grub-core/Makefile.core.def}, and @file{Makefile.util.def}.  Each
+block in a @file{*.def} file represents a build target, and specifies the
+source files used to build it on various platforms.  The @file{*.def} files
+are processed into AutoGen input by @file{gentpl.py} (which you only need to
 look at if you are extending the build system).  If you are adding a new
 module which follows an existing pattern, such as a new command or a new
-filesystem implementation, it is usually easiest to grep @file{conf/*.rmk}
-for an existing example of that pattern to find out where it should be
-added.
+filesystem implementation, it is usually easiest to grep
+@file{grub-core/Makefile.core.def} and @file{Makefile.util.def} for an
+existing example of that pattern to find out where it should be added.
+
+In general, code that may be run at boot time is in a subdirectory of
+@file{grub-core}, while code that is only run from within a full operating
+system is in a subdirectory of the top level.
 
 Low-level boot code, such as the MBR implementation on PC BIOS systems, is
-in the @file{boot/} directory.
+in the @file{grub-core/boot/} directory.
 
-The GRUB kernel is in @file{kern/}.  This contains core facilities such as
-the device, disk, and file frameworks, environment variable handling, list
-processing, and so on.  The kernel should contain enough to get up to a
-rescue prompt.  Header files for kernel facilities, among others, are in
-@file{include/}.
+The GRUB kernel is in @file{grub-core/kern/}.  This contains core facilities
+such as the device, disk, and file frameworks, environment variable
+handling, list processing, and so on.  The kernel should contain enough to
+get up to a rescue prompt.  Header files for kernel facilities, among
+others, are in @file{include/}.
 
-Terminal implementations are in @file{term/}.
+Terminal implementations are in @file{grub-core/term/}.
 
-Disk access code is spread across @file{disk/} (for accessing the disk
-devices themselves), @file{partmap/} (for interpreting partition table
-data), and @file{fs/} (for accessing filesystems).  Note that, with the odd
-specialised exception, GRUB only contains code to @emph{read} from
-filesystems and tries to avoid containing any code to @emph{write} to
-filesystems; this lets us confidently assure users that GRUB cannot be
-responsible for filesystem corruption.
+Disk access code is spread across @file{grub-core/disk/} (for accessing the
+disk devices themselves), @file{grub-core/partmap/} (for interpreting
+partition table data), and @file{grub-core/fs/} (for accessing filesystems).
+Note that, with the odd specialised exception, GRUB only contains code to
+@emph{read} from filesystems and tries to avoid containing any code to
+@emph{write} to filesystems; this lets us confidently assure users that GRUB
+cannot be responsible for filesystem corruption.
 
-PCI and USB bus handling is in @file{bus/}.
+PCI and USB bus handling is in @file{grub-core/bus/}.
 
-Video handling code is in @file{video/}.  The graphical menu system uses
-this heavily, but is in a separate directory, @file{gfxmenu/}.
+Video handling code is in @file{grub-core/video/}.  The graphical menu
+system uses this heavily, but is in a separate directory,
+@file{grub-core/gfxmenu/}.
 
-Most commands are implemented by files in @file{commands/}, with the
-following exceptions:
+Most commands are implemented by files in @file{grub-core/commands/}, with
+the following exceptions:
 
 @itemize
 @item
-A few core commands live in @file{kern/corecmd.c}.
+A few core commands live in @file{grub-core/kern/corecmd.c}.
 
 @item
-Commands related to normal mode live under @file{normal/}.
+Commands related to normal mode live under @file{grub-core/normal/}.
 
 @item
-Commands that load and boot kernels live under @file{loader/}.
+Commands that load and boot kernels live under @file{grub-core/loader/}.
 
 @item
 The @samp{loopback} command is really a disk device, and so lives in
-@file{disk/loopback.c}.
+@file{grub-core/disk/loopback.c}.
 
 @item
-The @samp{gettext} command lives under @file{gettext/}.
+The @samp{gettext} command lives under @file{grub-core/gettext/}.
 
 @item
-The @samp{loadfont} and @samp{lsfonts} commands live under @file{font/}.
+The @samp{loadfont} and @samp{lsfonts} commands live under
+@file{grub-core/font/}.
 
 @item
 The @samp{serial}, @samp{terminfo}, and @samp{background_image} commands
-live under @file{term/}.
+live under @file{grub-core/term/}.
 
 @item
-The @samp{efiemu_*} commands live under @file{efiemu/}.
+The @samp{efiemu_*} commands live under @file{grub-core/efiemu/}.
 @end itemize
 
 There are a few other special-purpose exceptions; grep for them if they
 matter to you.
+
+Utility programs meant to be run from a full operating system are in
+@file{util/}.
 
 @node Contributing Changes
 @chapter Contributing changes
@@ -317,10 +328,10 @@ anymore.
 @itemize
 @item Always use latest GRUB 2 source code. So get that first.
 
-For developers it is recommended always to use the newest development version of GRUB 2. If development takes a long period of time, please remember to keep in sync with newest developments regularly so it is much easier to integrate your change in the future. GRUB 2 is being developed on SVN repository.
+For developers it is recommended always to use the newest development version of GRUB 2. If development takes a long period of time, please remember to keep in sync with newest developments regularly so it is much easier to integrate your change in the future. GRUB 2 is being developed in a Bazaar (bzr) repository.
 
-Please check Savannah's GRUB project page for details how to get newest BZR:
-@uref{http://savannah.gnu.org/bzr/?group=grub, GRUB 2 BZR Repository}
+Please check Savannah's GRUB project page for details how to get newest bzr:
+@uref{http://savannah.gnu.org/bzr/?group=grub, GRUB 2 bzr Repository}
 
 @item Compile it and try it out.
 
@@ -342,7 +353,7 @@ be free to develop it. If you have not so far announced your idea on grub-devel
 mailing list, please do it now. This is to make sure you are not wasting your
 time working on the solution that will not be integrated to GRUB 2 code base.
 
-You might want to study our coding style before starting to development so you
+You might want to study our coding style before starting development so you
 do not need to change much of the code when your patch is being reviewed.
 (see @ref{Coding style})
 
@@ -357,11 +368,11 @@ discuss it beforehand on grub-devel mailing list.
 
 @item Test your change.
 
-Test that your change works properly. Try it out couple of times. Preferably on different systems. And try to find problems from it.
+Test that your change works properly. Try it out a couple of times, preferably on different systems, and try to find problems with it.
 
 @item Publish your change.
 
-When you are happy with your change. First make sure it is compilable with
+When you are happy with your change, first make sure it is compilable with
 latest development version of GRUB 2. After that please send a patch to
 grub-devel for review. Please describe in your email why you made the change,
 what it changes and so on. Please be prepared to receive even discouraging
@@ -379,15 +390,15 @@ for copyright agreement, process can take some time and is mandatory
 in order to get your changes integrated.
 
 If you are not on grub-devel to respond to questions, most likely your patch
-will not be accepted. Also if there comes problems from your changes later on,
-it would be preferably that you also fix the problem. So stay around
+will not be accepted. Also if problems arise from your changes later on,
+it would be preferable that you also fix the problem. So stay around
 for a while.
 
 @item Your patch is accepted.
 
-Good job! Your patch will no be integrated to GRUB 2 main line and if it didn't break a thing it will be publically available when next release will be done.
+Good job! Your patch will now be integrated into GRUB 2 mainline, and if it didn't break anything it will be publicly available in the next release.
 
-Now you are welcomed to do further improvements :)
+Now you are welcome to do further improvements :)
 @end itemize
 
 @node Typical Developer Experience
@@ -400,7 +411,7 @@ The typical experience for a developer in this project is the following:
 @item You show some result in the mailing list or the IRC.
 @item You are getting to be known to other developers.
 @item You accumulate significant amount of contribution, so copyright assignment is processed.
-@item You are free to check in your changes by your own, legally speaking.
+@item You are free to check in your changes on your own, legally speaking.
 @end enumerate
 
 At this point, it is rather annoying that you ought to ask somebody else every
@@ -444,7 +455,7 @@ doesn't direcly support exceptions, exception handling behavior is emulated
 in software. 
 
 When exception is raised, function must return to calling function. If calling
-function does not provide handling of the exception it must return back to it's
+function does not provide handling of the exception it must return back to its
 calling function and so on, until exception is handled. If exception is not
 handled before prompt is displayed, error message will be shown to user.
 
@@ -541,11 +552,11 @@ error state and then call other functions that might fail. To aid in this,
 there is a error stack implemented. Error state can be pushed to error stack
 by calling function @code{grub_error_push ()}. When processing has been completed,
 @code{grub_error_pop ()} can be used to pop error state from stack. Error stack
-contains predefined amount of error stack items. Error stack is proteced for
+contains predefined amount of error stack items. Error stack is protected for
 overflow and marks these situations so overflow error does not get unseen.
 If there is no space available to store error message, it is simply discarded
 and overflow will be marked as happened. When overflow happens, it most likely
-will corrupt error stack consistency as for  pushed error there is no matching
+will corrupt error stack consistency as for pushed error there is no matching
 pop, but overflow message will be shown to inform user about the situation.
 Overflow message will be shown at time when prompt is about to be drawn.
 
@@ -646,7 +657,7 @@ grub_video_setup (unsigned int width, unsigned int height, unsigned int mode_typ
 
 Driver will use information provided to it to select best possible video mode and switch to it. Supported values for @code{mode_type} are @code{GRUB_VIDEO_MODE_TYPE_INDEX_COLOR} for index color modes, @code{GRUB_VIDEO_MODE_TYPE_RGB} for direct RGB color modes and @code{GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED} for double buffering. When requesting RGB mode, highest bits per pixel mode will be selected. When requesting Index color mode, mode with highest number of colors will be selected. If all parameters are specified as zero, video adapter will try to figure out best possible mode and initialize it, platform specific differences are allowed here. If there is no mode matching request, error X will be returned. If there are no problems, function returns @code{GRUB_ERR_NONE}.
 
-This function also performs following task upon succesful mode switch. Active rendering target is changed to screen and viewport is maximized to allow whole screen to be used when performing graphics operations. In RGB modes, emulated palette get's 16 entries containing default values for VGA palette, other colors are defined as black. When switching to Indexed Color mode, driver may set default VGA palette to screen if the video card allows the operation.
+This function also performs following task upon succesful mode switch. Active rendering target is changed to screen and viewport is maximized to allow whole screen to be used when performing graphics operations. In RGB modes, emulated palette gets 16 entries containing default values for VGA palette, other colors are defined as black. When switching to Indexed Color mode, driver may set default VGA palette to screen if the video card allows the operation.
 
 @end itemize
 
@@ -836,7 +847,7 @@ grub_video_map_rgb (grub_uint8_t red, grub_uint8_t green, grub_uint8_t blue);
 @end example
 @item Description:
 
-Map RGB values to compatible screen color data. Values are excepted to be in range 0-255 and in RGB modes they will be converted to screen color data. In index color modes, index color palette will be searched for specified color and then index is returned.
+Map RGB values to compatible screen color data. Values are expected to be in range 0-255 and in RGB modes they will be converted to screen color data. In index color modes, index color palette will be searched for specified color and then index is returned.
 @end itemize
 
 @subsection grub_video_map_rgba
@@ -849,7 +860,7 @@ grub_video_map_rgba (grub_uint8_t red, grub_uint8_t green, grub_uint8_t blue, gr
 @end example
 @item Description:
 
-Map RGBA values to compatible screen color data. Values are excepted to be in range 0-255. In RGBA modes they will be converted to screen color data. In index color modes, index color palette will be searched for best matching color and it's index is returned.
+Map RGBA values to compatible screen color data. Values are expected to be in range 0-255. In RGBA modes they will be converted to screen color data. In index color modes, index color palette will be searched for best matching color and its index is returned.
 @end itemize
 
 @subsection grub_video_unmap_color
@@ -1016,7 +1027,7 @@ grub_video_set_active_render_target (struct grub_video_render_target *target);
 @end example
 @item Description:
 
-Set's active render target. If this comand is successful all drawing commands will be done to specified @code{target}. There is also special values for target, @code{GRUB_VIDEO_RENDER_TARGET_DISPLAY} used to reference screen's front buffer, @code{GRUB_VIDEO_RENDER_TARGET_FRONT_BUFFER} used to reference screen's front buffer (alias for @code{GRUB_VIDEO_RENDER_TARGET_DISPLAY}) and @code{GRUB_VIDEO_RENDER_TARGET_BACK_BUFFER} used to reference back buffer (if double buffering is enabled). If render target is correclty switched GRUB_ERR_NONE is returned. In no any event shall there be non drawable active render target.
+Sets active render target. If this comand is successful all drawing commands will be done to specified @code{target}. There is also special values for target, @code{GRUB_VIDEO_RENDER_TARGET_DISPLAY} used to reference screen's front buffer, @code{GRUB_VIDEO_RENDER_TARGET_FRONT_BUFFER} used to reference screen's front buffer (alias for @code{GRUB_VIDEO_RENDER_TARGET_DISPLAY}) and @code{GRUB_VIDEO_RENDER_TARGET_BACK_BUFFER} used to reference back buffer (if double buffering is enabled). If render target is correclty switched GRUB_ERR_NONE is returned. In no any event shall there be non drawable active render target.
 
 @end itemize
 @subsection grub_video_get_active_render_target
