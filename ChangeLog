@@ -1,5 +1,11 @@
 2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/mips/linux.c (grub_cmd_initrd): Use correct limits
+	rather than trying to put initrd way too high.
+	Reported by: Ryan Lortie <desrt@desrt.ca>
+
+2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/mips/yeeloong/fwstart.S (no_cs5536): Put back
 	improperly removed string.
 
