@@ -1,3 +1,12 @@
+2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_data): New member
+	is_disk.
+	(grub_util_biosdisk_open): Don't apply ioctl on non-disk devices.
+	(open_device) Likewise.
+	(grub_util_biosdisk_close): Likewise.
+	Reported by: Mark Korenberger.
+
 2011-04-10  Alexander Kurtz <kurtz.alex@googlemail.com>
 
 	* util/grub-mkconfig_lib.in: Add missing quotes.

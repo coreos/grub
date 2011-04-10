@@ -138,6 +138,7 @@ struct grub_util_biosdisk_data
   char *dev;
   int access_mode;
   int fd;
+  int is_disk;
 };
 
 #ifdef __linux__
@@ -239,6 +240,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   data->dev = NULL;
   data->access_mode = 0;
   data->fd = -1;
+  data->is_disk = 0;
 
   /* Get the size.  */
 #if defined(__MINGW32__)
@@ -279,6 +281,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 	close (fd);
 	goto fail;
       }
+    data->is_disk = 1;
 
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     if (ioctl (fd, DIOCGMEDIASIZE, &nr))
@@ -669,7 +672,8 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	      {
 		fsync (data->fd);
 #ifdef __linux__
-		ioctl (data->fd, BLKFLSBUF, 0);
+		if (data->is_disk)
+		  ioctl (data->fd, BLKFLSBUF, 0);
 #endif
 	      }
 
@@ -727,7 +731,8 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	      {
 		fsync (data->fd);
 #ifdef __linux__
-		ioctl (data->fd, BLKFLSBUF, 0);
+		if (data->is_disk)
+		  ioctl (data->fd, BLKFLSBUF, 0);
 #endif
 	      }
 	    close (data->fd);
@@ -952,7 +957,8 @@ grub_util_biosdisk_close (struct grub_disk *disk)
 	{
 	  fsync (data->fd);
 #ifdef __linux__
-	  ioctl (data->fd, BLKFLSBUF, 0);
+	  if (data->is_disk)
+	    ioctl (data->fd, BLKFLSBUF, 0);
 #endif
 	}
       close (data->fd);
