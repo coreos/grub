@@ -44,6 +44,7 @@ grub-kbdcomp
 grub-macho2img
 grub-menulst2cfg
 grub-mk*
+grub-mount
 grub-pbkdf2
 grub-pe2elf
 grub-probe
