@@ -44,6 +44,8 @@
 #include "argp.h"
 
 static char *root = NULL;
+grub_device_t dev = NULL;
+grub_fs_t fs = NULL;
 static char **images = NULL;
 static char *debug_str = NULL;
 static char **fuse_args = NULL;
@@ -62,13 +64,61 @@ execute_command (char *name, int n, char **args)
   return (cmd->func) (cmd, n, args);
 }
 
+/* Translate GRUB error numbers into OS error numbers.  Print any unexpected
+   errors.  */
+static int
+translate_error (void)
+{
+  int ret;
+
+  switch (grub_errno)
+    {
+      case GRUB_ERR_NONE:
+	ret = 0;
+	break;
+
+      case GRUB_ERR_OUT_OF_MEMORY:
+	grub_print_error ();
+	ret = -ENOMEM;
+	break;
+
+      case GRUB_ERR_BAD_FILE_TYPE:
+	/* This could also be EISDIR.  Take a guess.  */
+	ret = -ENOTDIR;
+	break;
+
+      case GRUB_ERR_FILE_NOT_FOUND:
+	ret = -ENOENT;
+	break;
+
+      case GRUB_ERR_FILE_READ_ERROR:
+      case GRUB_ERR_READ_ERROR:
+      case GRUB_ERR_IO:
+	grub_print_error ();
+	ret = -EIO;
+	break;
+
+      case GRUB_ERR_SYMLINK_LOOP:
+	ret = -ELOOP;
+	break;
+
+      default:
+	grub_print_error ();
+	ret = -EINVAL;
+	break;
+    }
+
+  /* Any previous errors were handled.  */
+  grub_errno = GRUB_ERR_NONE;
+
+  return ret;
+}
+
 static int
 fuse_getattr (const char *path, struct stat *st)
 {
   char *filename, *pathname, *path2;
   const char *pathname_t;
-  grub_fs_t fs;
-  grub_device_t dev;
   struct grub_dirhook_info file_info;
   int file_exists = 0;
   
@@ -104,16 +154,6 @@ fuse_getattr (const char *path, struct stat *st)
     }
 
   file_exists = 0;
-  dev = grub_device_open (0);
-  if (! dev)
-    return -1;
-
-  fs = grub_fs_probe (dev);
-  if (! fs)
-    {
-      grub_device_close (dev);
-      return -1;
-    }
 
   pathname_t = grub_strchr (path, ')');
   if (! pathname_t)
@@ -143,10 +183,12 @@ fuse_getattr (const char *path, struct stat *st)
   /* It's the whole device. */
   (fs->dir) (dev, path2, find_file);
 
-  grub_device_close (dev);
   grub_free (path2);
   if (!file_exists)
-    return -1;
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return -ENOENT;
+    }
   st->st_dev = 0;
   st->st_ino = 0;
   st->st_mode = file_info.dir ? (0555 | S_IFDIR) : (0444 | S_IFREG);
@@ -158,10 +200,7 @@ fuse_getattr (const char *path, struct stat *st)
       grub_file_t file;
       file = grub_file_open (path);
       if (! file)
-	{
-	  grub_print_error ();
-	  return -1;
-	}
+	return translate_error ();
       st->st_size = file->size;
       grub_file_close (file);
     }
@@ -171,6 +210,7 @@ fuse_getattr (const char *path, struct stat *st)
   st->st_blocks = (st->st_size + 511) >> 9;
   st->st_atime = st->st_mtime = st->st_ctime = file_info.mtimeset
     ? file_info.mtime : 0;
+  grub_errno = GRUB_ERR_NONE;
   return 0;
 }
 
@@ -190,13 +230,11 @@ fuse_open (const char *path, struct fuse_file_info *fi __attribute__ ((unused)))
   grub_file_t file;
   file = grub_file_open (path);
   if (! file)
-    {
-      grub_print_error ();
-      return -1;
-    }
+    return translate_error ();
   files[first_fd++] = file;
   fi->fh = first_fd;
   files[first_fd++] = file;
+  grub_errno = GRUB_ERR_NONE;
   return 0;
 } 
 
@@ -205,13 +243,21 @@ fuse_read (const char *path, char *buf, size_t sz, off_t off,
 	   struct fuse_file_info *fi)
 {
   grub_file_t file = files[fi->fh];
+  grub_ssize_t size;
 
   if (off > file->size)
-    return -1;
+    return -EINVAL;
 
   file->offset = off;
   
-  return grub_file_read (file, buf, sz);
+  size = grub_file_read (file, buf, sz);
+  if (size < 0)
+    return translate_error ();
+  else
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return size;
+    }
 } 
 
 static int 
@@ -219,6 +265,7 @@ fuse_release (const char *path, struct fuse_file_info *fi)
 {
   grub_file_close (files[fi->fh]);
   files[fi->fh] = NULL;
+  grub_errno = GRUB_ERR_NONE;
   return 0;
 }
 
@@ -227,8 +274,6 @@ fuse_readdir (const char *path, void *buf,
 	      fuse_fill_dir_t fill, off_t off, struct fuse_file_info *fi)
 {
   char *pathname;
-  grub_fs_t fs;
-  grub_device_t dev;
 
   auto int call_fill (const char *filename,
 		      const struct grub_dirhook_info *info);
@@ -238,19 +283,6 @@ fuse_readdir (const char *path, void *buf,
     return 0;
   }
 
-  dev = grub_device_open (0);
-  if (! dev)
-    {
-      return 1;
-    }
-
-  fs = grub_fs_probe (dev);
-  if (! fs)
-    {
-      grub_device_close (dev);
-      return 1;
-    }
-
   pathname = xstrdup (path);
   
   /* Remove trailing '/'. */
@@ -259,8 +291,8 @@ fuse_readdir (const char *path, void *buf,
     pathname[grub_strlen (pathname) - 1] = 0;
 
   (fs->dir) (dev, pathname, call_fill);
-  grub_device_close (dev);
   free (pathname);
+  grub_errno = GRUB_ERR_NONE;
   return 0;
 }
 
@@ -273,7 +305,7 @@ struct fuse_operations grub_opers = {
   .read = fuse_read
 };
 
-static void
+static grub_err_t
 fuse_init (void)
 {
   int i;
@@ -310,6 +342,17 @@ fuse_init (void)
   grub_mdraid1x_init ();
   grub_lvm_init ();
 
+  dev = grub_device_open (0);
+  if (! dev)
+    return grub_errno;
+
+  fs = grub_fs_probe (dev);
+  if (! fs)
+    {
+      grub_device_close (dev);
+      return grub_errno;
+    }
+
   fuse_main (fuse_argc, fuse_args, &grub_opers, NULL);
 
   for (i = 0; i < num_disks; i++)
@@ -328,6 +371,8 @@ fuse_init (void)
 
       grub_free (loop_name);
     }
+
+  return GRUB_ERR_NONE;
 }
 
 static struct argp_option options[] = {  
@@ -447,6 +492,11 @@ main (int argc, char *argv[])
 
   /* Do it.  */
   fuse_init ();
+  if (grub_errno)
+    {
+      grub_print_error ();
+      return 1;
+    }
 
   /* Free resources.  */
   grub_fini_all ();
