@@ -1,5 +1,10 @@
 2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/mips/yeeloong/fwstart.S (no_cs5536): Put back
+	improperly removed string.
+
+2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_data): New member
 	is_disk.
 	(grub_util_biosdisk_open): Don't apply ioctl on non-disk devices.

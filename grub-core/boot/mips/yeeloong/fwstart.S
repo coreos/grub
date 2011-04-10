@@ -379,6 +379,7 @@ read_spd_fail:
 	 ori $v0, $v0, 0x100
 
 notification_string:	.asciz "GRUB "
+no_cs5536:	.asciz "No CS5536 found.\n\r"
 cs5536_found:	.asciz "CS5536 at "
 sm_failed: .asciz "SM transaction failed.\n\r"
 unhandled_tlb_refill:	.asciz "Unhandled TLB refill.\n\r"
