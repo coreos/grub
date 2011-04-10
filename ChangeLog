@@ -1,3 +1,8 @@
+2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/boot/mips/yeeloong/fwstart.S: Fix address to error message.
+	Remove now unused string.
+
 2011-04-09  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub-dev.texi (Finding your way around): Update for 1.99

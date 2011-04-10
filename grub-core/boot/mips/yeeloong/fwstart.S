@@ -120,7 +120,7 @@ __start:
 	ori $t0, $zero, GRUB_SMBUS_SPD_MEMORY_TYPE_DDR2
 	lui $a0, %hi(unimplemented_memory_type)
 	bne $t0, $v0, fatal
-	 addiu $a0, $a0, %hi(unimplemented_memory_type)
+	 addiu $a0, $a0, %lo(unimplemented_memory_type)
 
 	/* And here is our goal: DDR2 controller initialisation.  */
         lui	$t0, %hi(GRUB_CPU_LOONGSON_CORECFG)
@@ -379,7 +379,6 @@ read_spd_fail:
 	 ori $v0, $v0, 0x100
 
 notification_string:	.asciz "GRUB "
-no_cs5536:	.asciz "No CS5536 found.\n\r"
 cs5536_found:	.asciz "CS5536 at "
 sm_failed: .asciz "SM transaction failed.\n\r"
 unhandled_tlb_refill:	.asciz "Unhandled TLB refill.\n\r"
