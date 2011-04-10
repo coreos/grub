@@ -1,5 +1,34 @@
 2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Dynamically count the number of lines for the lower banner.
+
+	* grub-core/normal/menu_entry.c (per_term_screen): New member
+	num_entries.
+	(print_down): Use num_entries.
+	(update_screen): Likewise.
+	(grub_menu_entry_run): Set num_entries.
+	* grub-core/normal/menu_text.c (menu_viewer_data): New member
+	num_entries.
+	(grub_print_message_indented): Move real part to ...
+	(grub_print_message_indented_real): ... here. Additional argument
+	dry_run.
+	(draw_border): Additional argument num_entries.
+	(print_message): Additional argument dry_run.
+	(print_entries): Receive menu viewer data.
+	(grub_menu_init_page): New argment num_entries.
+	(menu_text_set_chosen_entry): Use num_entries.
+	(grub_menu_try_text): Likewise.
+	* grub-core/normal/term.c (print_ucs4_terminal): New argument dry_run.
+	All users updated.
+	(grub_ucs4_count_lines): New function.
+	* include/grub/term.h (grub_term_cursor_x): Moved from here ..
+	* grub-core/normal/menu_text.c (grub_term_cursor_x): ... to here.
+	* include/grub/term.h (GRUB_TERM_MESSAGE_HEIGHT): Removed.
+	(grub_term_border_height): Likewise.
+	(grub_term_num_entries): Likewise.
+
+2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/mips/yeeloong/fwstart.S: Fix address to error message.
 	Remove now unused string.
 
