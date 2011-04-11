@@ -222,6 +222,14 @@ cmd_cmp (char *src, char *dest)
     grub_util_error (_("seek error"));
 
   read_file (src, cmp_hook);
+
+  {
+    grub_uint64_t pre;
+    pre = ftell (ff);
+    fseek (ff, 0, SEEK_END);
+    if (pre != ftell (ff))
+      grub_util_error (_("unexpected end of file"));
+  }
   fclose (ff);
 }
 

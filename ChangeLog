@@ -1,5 +1,9 @@
 2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-fstest.c (cmd_cmp): Check that sizes match.
+
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-fstest.c (read_file): Report GRUB error if file opening
 	failed.
 
