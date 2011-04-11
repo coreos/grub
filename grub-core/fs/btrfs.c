@@ -662,7 +662,6 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	    }
 	  case GRUB_BTRFS_CHUNK_TYPE_DUPLICATED:
 	  case GRUB_BTRFS_CHUNK_TYPE_RAID1:
-	    /* FIXME: Use redundancy.  */
 	    {
 	      stripen = 0;
 	      stripe_offset = off;
@@ -686,7 +685,6 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	      break;
 	    }
 	  case GRUB_BTRFS_CHUNK_TYPE_RAID10:
-	    /* FIXME: Use redundancy.  */
 	    {
 	      grub_uint64_t middle, high;
 	      grub_uint32_t low;
