@@ -83,6 +83,7 @@ struct grub_btrfs_data
 
   /* Cached extent data.  */
   grub_uint64_t extstart;
+  grub_uint64_t extend;
   grub_uint64_t extino;
   grub_uint64_t exttree;
   grub_size_t extsize;
@@ -202,6 +203,7 @@ struct grub_btrfs_extent_data
       grub_uint64_t laddr;
       grub_uint64_t compressed_size;
       grub_uint64_t offset;
+      grub_uint64_t filled;
     };
   };
 } __attribute__ ((packed));
@@ -872,12 +874,12 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
       grub_err_t err;
       grub_off_t extoff;
       if (!data->extent || data->extstart > pos || data->extino != ino
-	  || data->exttree != tree
-	  || grub_le_to_cpu64 (data->extent->size) + data->extstart <= pos)
+	  || data->exttree != tree || data->extend <= pos)
 	{
 	  struct grub_btrfs_key key_in, key_out;
 	  grub_disk_addr_t elemaddr;
 	  grub_size_t elemsize;
+
 	  grub_free (data->extent);
 	  key_in.object_id = ino;
 	  key_in.type = GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM;
@@ -904,15 +906,29 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 					 data->extent, elemsize);
 	  if (err)
 	    return err;
-	  if (grub_le_to_cpu64 (data->extent->size) + data->extstart <= pos)
-	    return grub_error (GRUB_ERR_BAD_FS, "extent not found");
+
+	  data->extend = data->extstart
+	    + grub_le_to_cpu64 (data->extent->size);
+	  if (data->extent->type == GRUB_BTRFS_EXTENT_REGULAR
+	      && (char *) &data->extent + elemsize
+	      >= (char *) &data->extent->filled
+	      + sizeof (data->extent->filled))
+	    data->extend = data->extstart
+	      + grub_le_to_cpu64 (data->extent->filled);
+
 	  grub_dprintf ("btrfs", "extent 0x%" PRIxGRUB_UINT64_T "+0x%"
-			PRIxGRUB_UINT64_T "\n",
+			PRIxGRUB_UINT64_T " (0x%"
+			PRIxGRUB_UINT64_T ")\n",
 			grub_le_to_cpu64 (key_out.offset),
-			grub_le_to_cpu64 (data->extent->size));
+			grub_le_to_cpu64 (data->extent->size),
+			grub_le_to_cpu64 (data->extent->filled));
+	  if (data->extend <= pos)
+	    {
+	      grub_error (GRUB_ERR_BAD_FS, "extent not found");
+	      return -1;
+	    }
 	}
-      csize = grub_le_to_cpu64 (data->extent->size)
-	+ grub_le_to_cpu64 (data->extstart) - pos;
+      csize = data->extend - pos;
       extoff = pos - data->extstart;
       if (csize > len)
 	csize = len;
