@@ -107,41 +107,7 @@ struct grub_minix_sblock
 };
 #endif
 
-#if defined(MODE_MINIX3)
-
-struct grub_minix_inode
-{
-  grub_uint16_t mode;
-  grub_uint16_t nlinks;
-  grub_uint16_t uid;
-  grub_uint8_t gid;
-  grub_uint8_t pad;
-  grub_uint32_t size;
-  grub_uint32_t atime;
-  grub_uint32_t mtime;
-  grub_uint32_t ctime;
-  grub_uint32_t dir_zones[7];
-  grub_uint32_t indir_zone;
-  grub_uint32_t double_indir_zone;
-  grub_uint32_t unused;
-};
-
-#elif !defined(MODE_MINIX2)
-struct grub_minix_inode
-{
-  grub_uint16_t mode;
-  grub_uint16_t uid;
-  grub_uint16_t size;
-  grub_uint32_t ctime;
-  grub_uint8_t gid;
-  grub_uint8_t nlinks;
-  grub_uint16_t dir_zones[7];
-  grub_uint16_t indir_zone;
-  grub_uint16_t double_indir_zone;
-};
-
-#else
-
+#if defined(MODE_MINIX3) || defined(MODE_MINIX2)
 struct grub_minix_inode
 {
   grub_uint16_t mode;
@@ -157,6 +123,19 @@ struct grub_minix_inode
   grub_uint32_t double_indir_zone;
   grub_uint32_t unused;
 
+};
+#else
+struct grub_minix_inode
+{
+  grub_uint16_t mode;
+  grub_uint16_t uid;
+  grub_uint16_t size;
+  grub_uint32_t ctime;
+  grub_uint8_t gid;
+  grub_uint8_t nlinks;
+  grub_uint16_t dir_zones[7];
+  grub_uint16_t indir_zone;
+  grub_uint16_t double_indir_zone;
 };
 
 #endif
