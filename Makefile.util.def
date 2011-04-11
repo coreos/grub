@@ -83,6 +83,7 @@ library = {
   common = grub-core/lib/LzFind.c;
   common = grub-core/lib/LzmaEnc.c;
   common = grub-core/lib/pbkdf2.c;
+  common = grub-core/lib/crc.c;
   common = grub-core/normal/datetime.c;
   common = grub-core/normal/misc.c;
   common = grub-core/partmap/acorn.c;
@@ -98,6 +99,7 @@ library = {
   common = grub-core/script/main.c;
   common = grub-core/script/script.c;
   common = grub-core/script/argv.c;
+  common = grub-core/io/gzio.c;
 };
 
 program = {

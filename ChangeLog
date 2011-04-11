@@ -1,4 +1,31 @@
 2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-04-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	BtrFS support. Written by me (Vladimir) with important bugfixes and
+	even more important testing by Colin.
+
+	* Makefile.util.def (libgrubmods.a): Add crc.c and gzio.c
+	* grub-core/Makefile.core.def (btrfs): Add crc.c.
+	* grub-core/fs/btrfs.c: Stub replaced with real implementation.
+	* grub-core/io/gzio.c (grub_gzio): New fields mem_input_size,
+	mem_input_off and mem_input. All users updated to accept in-RAM input.
+	(gzio_seek): New function.
+	(test_zlib_header): Likewise.
+	(grub_gzio_read): Likewise.
+	(grub_zlib_decompress): Likewise.
+	* grub-core/kern/emu/getroot.c (grub_find_root_device_from_mountinfo):
+	Accept partial and non-virtual mounts.
+	(grub_guess_root_device): Do rescanning after device_from_mountinfo to
+	avoid receiving /dev/dm-X as device.
+	* grub-core/kern/emu/misc.c (grub_make_system_path_relative_to_its_root):
+	Handle bind and partial mounts.
+	* grub-core/lib/crc.c: New file.
+	* include/grub/deflate.h: Likewise.
+	* include/grub/emu/misc.h (grub_find_root_device_from_mountinfo): New
+	proto.
+	* include/grub/lib/crc.h: New file.
+
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Implement automatic module license checking according to new GNU
 	guidelines.
