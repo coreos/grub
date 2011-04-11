@@ -34,7 +34,7 @@
 
 static const struct grub_arg_option options[] =
   {
-    {"set",             's', GRUB_ARG_OPTION_OPTIONAL,
+    {"set",             's', 0,
      N_("Set a variable to return value."), "VAR", ARG_TYPE_STRING},
     {"driver",		'd', 0, N_("Determine driver."), 0, 0},
     {"partmap",		'p', 0, N_("Determine partition map type."), 0, 0},
@@ -150,7 +150,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT (probe)
 {
-  cmd = grub_register_extcmd ("probe", grub_cmd_probe, 0, N_("[DEVICE]"),
+  cmd = grub_register_extcmd ("probe", grub_cmd_probe, 0, N_("DEVICE"),
 			      N_("Retrieve device info."), options);
 }
 

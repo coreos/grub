@@ -481,7 +481,7 @@ parse_dhcp_vendor (void *vend, int limit)
 	  break;
 
 	  /* If you need any other options please contact GRUB
-	     developpement team.  */
+	     development team.  */
 	}
 
       ptr += taglength;

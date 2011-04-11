@@ -178,7 +178,7 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
 static char *
 find_root_device_from_libzfs (const char *dir)
 {
-  char *device;
+  char *device = NULL;
   char *poolname;
   char *poolfs;
 
@@ -219,7 +219,10 @@ find_root_device_from_libzfs (const char *dir)
 
 	struct stat st;
 	if (stat (device, &st) == 0)
-	  break;
+	  {
+	    device = xstrdup (device);
+	    break;
+	  }
 
 	device = NULL;
       }
@@ -811,12 +814,30 @@ grub_util_get_grub_dev (const char *os_dev)
 	if (mdadm_name)
 	  {
 	    char *newname;
+	    const char *q;
+
+	    for (q = os_dev + strlen (os_dev) - 1; q >= os_dev
+		   && grub_isdigit (*q); q--);
+
+	    if (q >= os_dev && *q == 'p')
+	      {
+		newname = xasprintf ("/dev/md/%sp%s", mdadm_name, q + 1);
+		if (stat (newname, &st) == 0)
+		  {
+		    free (grub_dev);
+		    grub_dev = xasprintf ("md/%s,%s", mdadm_name, q + 1);
+		    goto done;
+		  }
+		free (newname);
+	      }
 	    newname = xasprintf ("/dev/md/%s", mdadm_name);
 	    if (stat (newname, &st) == 0)
 	      {
 		free (grub_dev);
 		grub_dev = xasprintf ("md/%s", mdadm_name);
 	      }
+
+	  done:
 	    free (newname);
 	    free (mdadm_name);
 	  }

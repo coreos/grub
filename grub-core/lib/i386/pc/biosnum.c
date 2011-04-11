@@ -19,6 +19,7 @@
 #include <grub/env.h>
 #include <grub/misc.h>
 #include <grub/disk.h>
+#include <grub/machine/biosnum.h>
 
 static int
 grub_get_root_biosnumber_default (void)

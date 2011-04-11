@@ -51,7 +51,7 @@ extern int grub_normal_exit_level;
 /* Defined in `main.c'.  */
 void grub_enter_normal_mode (const char *config);
 void grub_normal_execute (const char *config, int nested, int batch);
-void grub_menu_init_page (int nested, int edit,
+void grub_menu_init_page (int nested, int edit, int *num_entries,
 			  struct grub_term_output *term);
 void grub_normal_init_page (struct grub_term_output *term);
 char *grub_file_getline (grub_file_t file);
@@ -80,6 +80,11 @@ grub_print_ucs4 (const grub_uint32_t * str,
 		 const grub_uint32_t * last_position,
 		 int margin_left, int margin_right,
 		 struct grub_term_output *term);
+int
+grub_ucs4_count_lines (const grub_uint32_t * str,
+		       const grub_uint32_t * last_position,
+		       int margin_left, int margin_right,
+		       struct grub_term_output *term);
 grub_ssize_t grub_getstringwidth (grub_uint32_t * str,
 				  const grub_uint32_t * last_position,
 				  struct grub_term_output *term);

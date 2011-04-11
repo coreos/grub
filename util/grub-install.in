@@ -367,7 +367,7 @@ if [ x"$platform" = xefi ]; then
 	    case "$target_cpu" in
 		i386)
 		    efi_file=BOOTIA32.EFI ;;
-		x86-64)
+		x86_64)
 		    efi_file=BOOTX64.EFI ;;
 	    # GRUB does not yet support these architectures, but they're defined
 	    # by the specification so we include them here to ease future
@@ -381,7 +381,7 @@ if [ x"$platform" = xefi ]; then
 	    case "$target_cpu" in
 		i386)
 		    efi_file=grubia32.efi ;;
-		x86-64)
+		x86_64)
 		    efi_file=grubx64.efi ;;
 	 # GRUB does not yet support these architectures, but they're defined
  	 # by the specification so we include them here to ease future
@@ -467,7 +467,8 @@ fi
 fs_module="`"$grub_probe" --device-map="${device_map}" --target=fs --device "${grub_device}"`"
 if test "x$fs_module" = x ; then
     echo "Auto-detection of a filesystem of ${grub_device} failed." 1>&2
-    echo "Please report this together with the output of \"$grub_probe --device-map=\"${device_map}\" --target=fs -v ${grubdir}\" to <bug-grub@gnu.org>" 1>&2
+    echo "Try with --recheck." 1>&2
+    echo "If the problem persists please report this together with the output of \"$grub_probe --device-map=\"${device_map}\" --target=fs -v ${grubdir}\" to <bug-grub@gnu.org>" 1>&2
     exit 1
 fi
 
@@ -620,6 +621,10 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
     fi
 elif [ x"$platform" = xefi ]; then
     cp "${grubdir}/core.${imgext}" "${efidir}/${efi_file}"
+    # For old macs. Suggested by Peter Jones.
+    if [ x$target_cpu = xi386 ]; then
+	cp "${grubdir}/core.${imgext}" "${efidir}/boot.efi"
+    fi
 
     # Try to make this image bootable using the EFI Boot Manager, if available.
     efibootmgr="`which efibootmgr`"

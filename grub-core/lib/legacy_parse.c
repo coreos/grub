@@ -58,7 +58,7 @@ struct legacy_command
   const char *longdesc;
 };
 
-struct legacy_command legacy_commands[] =
+static struct legacy_command legacy_commands[] =
   {
     {"blocklist", "blocklist '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Print the blocklist notation of the file FILE."},
@@ -116,7 +116,7 @@ struct legacy_command legacy_commands[] =
      " immediately starts over using the NUM entry (same numbering as the"
      " `default' command). This obviously won't help if the machine"
      " was rebooted by a kernel that GRUB loaded."},
-    {"find", "search -sf '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILENAME",
+    {"find", "search -f '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILENAME",
      "Search for the filename FILENAME in all of partitions and print the list of"
      " the devices which contain the file."},
     /* FIXME: fstest unsupported.  */

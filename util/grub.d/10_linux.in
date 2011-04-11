@@ -73,8 +73,8 @@ linux_entry ()
       cat << EOF
 	load_video
 EOF
-      if grep -qx "CONFIG_FB_EFI=y" /boot/config-${version} 2> /dev/null \
-	  && grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" /boot/config-${version} 2> /dev/null; then
+      if grep -qx "CONFIG_FB_EFI=y" "${config}" 2> /dev/null \
+	  && grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" "${config}" 2> /dev/null; then
 	  cat << EOF
 	set gfxpayload=keep
 EOF
@@ -111,9 +111,17 @@ EOF
 EOF
 }
 
-list=`for i in /boot/vmlinuz-* /boot/vmlinux-* /vmlinuz-* /vmlinux-* ; do
-        if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
-      done`
+case x`uname -m` in
+    xi?86 | xx86_64)
+	list=`for i in /boot/vmlinuz-* /vmlinuz-* /boot/kernel-* ; do
+                  if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+              done` ;;
+    *) 
+	list=`for i in /boot/vmlinuz-* /boot/vmlinux-* /vmlinuz-* /vmlinux-* /boot/kernel-* ; do
+                  if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+	     done` ;;
+esac
+
 prepare_boot_cache=
 
 while [ "x$list" != "x" ] ; do
@@ -130,20 +138,27 @@ while [ "x$list" != "x" ] ; do
   for i in "initrd.img-${version}" "initrd-${version}.img" \
 	   "initrd-${version}" "initramfs-${version}.img" \
 	   "initrd.img-${alt_version}" "initrd-${alt_version}.img" \
-	   "initrd-${alt_version}" "initramfs-${alt_version}.img"; do
+	   "initrd-${alt_version}" "initramfs-${alt_version}.img" \
+	   "initramfs-genkernel-${version}" \
+	   "initramfs-genkernel-${alt_version}"; do
     if test -e "${dirname}/${i}" ; then
       initrd="$i"
       break
     fi
   done
 
-  initramfs=
-  for i in "config-${version}" "config-${alt_version}"; do
-    if test -e "${dirname}/${i}" ; then
-      initramfs=`grep CONFIG_INITRAMFS_SOURCE= "${dirname}/${i}" | cut -f2 -d= | tr -d \"`
+  config=
+  for i in "${dirname}/config-${version}" "${dirname}/config-${alt_version}" "/etc/kernels/kernel-config-${version}" ; do
+    if test -e "${i}" ; then
+      config="${i}"
       break
     fi
   done
+
+  initramfs=
+  if test -n "${config}" ; then
+      initramfs=`grep CONFIG_INITRAMFS_SOURCE= "${config}" | cut -f2 -d= | tr -d \"`
+  fi
 
   if test -n "${initrd}" ; then
     echo "Found initrd image: ${dirname}/${initrd}" >&2

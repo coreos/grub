@@ -37,7 +37,7 @@
 #include <grub/gfxmenu_view.h>
 #include <grub/time.h>
 
-grub_gfxmenu_view_t cached_view;
+static grub_gfxmenu_view_t cached_view;
 
 static void 
 grub_gfxmenu_viewer_fini (void *data __attribute__ ((unused)))
@@ -56,30 +56,15 @@ grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
 
   theme_path = grub_env_get ("theme");
   if (! theme_path)
-    {
-      grub_error_push ();
-      grub_gfxterm_fullscreen ();
-      grub_error_pop ();
-      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "no theme specified");
-    }
+    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "no theme specified");
 
   instance = grub_zalloc (sizeof (*instance));
   if (!instance)
-    {
-      grub_error_push ();
-      grub_gfxterm_fullscreen ();
-      grub_error_pop ();
-      return grub_errno;
-    }
+    return grub_errno;
 
   err = grub_video_get_info (&mode_info);
   if (err)
-    {
-      grub_error_push ();
-      grub_gfxterm_fullscreen ();
-      grub_error_pop ();
-      return err;
-    }
+    return err;
 
   if (!cached_view || grub_strcmp (cached_view->theme_path, theme_path) != 0
       || cached_view->screen.width != mode_info.width
@@ -94,9 +79,6 @@ grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
   if (! cached_view)
     {
       grub_free (instance);
-      grub_error_push ();
-      grub_gfxterm_fullscreen ();
-      grub_error_pop ();
       return grub_errno;
     }
 

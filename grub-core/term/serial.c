@@ -41,7 +41,7 @@ static const struct grub_arg_option options[] =
   {0, 0, 0, 0, 0, 0}
 };
 
-struct grub_serial_port *grub_serial_ports;
+static struct grub_serial_port *grub_serial_ports;
 
 struct grub_serial_output_state
 {
@@ -69,7 +69,7 @@ serial_fetch (grub_term_input_t term)
   return data->port->driver->fetch (data->port);
 }
 
-const struct grub_serial_input_state grub_serial_terminfo_input_template =
+static const struct grub_serial_input_state grub_serial_terminfo_input_template =
   {
     .tinfo =
     {
@@ -77,7 +77,7 @@ const struct grub_serial_input_state grub_serial_terminfo_input_template =
     }
   };
 
-const struct grub_serial_output_state grub_serial_terminfo_output_template =
+static const struct grub_serial_output_state grub_serial_terminfo_output_template =
   {
     .tinfo =
     {
@@ -87,11 +87,11 @@ const struct grub_serial_output_state grub_serial_terminfo_output_template =
     }
   };
 
-struct grub_serial_input_state grub_serial_terminfo_input;
+static struct grub_serial_input_state grub_serial_terminfo_input;
 
-struct grub_serial_output_state grub_serial_terminfo_output;
+static struct grub_serial_output_state grub_serial_terminfo_output;
 
-int registered = 0;
+static int registered = 0;
 
 static struct grub_term_input grub_serial_term_input =
 {

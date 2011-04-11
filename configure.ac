@@ -890,6 +890,15 @@ fi
 
 AC_SUBST([LIBDEVMAPPER])
 
+LIBGEOM=
+if test x$host_kernel = xkfreebsd; then
+  AC_CHECK_LIB([geom], [geom_gettree], [],
+               [AC_MSG_ERROR([Your platform requires libgeom])])
+  LIBGEOM="-lgeom"
+fi
+
+AC_SUBST([LIBGEOM])
+
 AC_CHECK_LIB([lzma], [lzma_code],
              [LIBLZMA="-llzma"
               AC_DEFINE([HAVE_LIBLZMA], [1],

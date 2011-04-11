@@ -399,6 +399,15 @@ setup (const char *dir,
       }
 #endif
 
+    /* Copy the partition table.  */
+    if (dest_partmap ||
+        (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk)))
+      memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
+
+    free (tmp_img);
+    
     if (! dest_partmap)
       {
 	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
@@ -410,14 +419,6 @@ setup (const char *dir,
 	goto unable_to_embed;
       }
 
-    /* Copy the partition table.  */
-    if (dest_partmap)
-      memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
-	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
-	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
-
-    free (tmp_img);
-    
     if (!dest_partmap->embed)
       {
 	grub_util_warn ("Partition style '%s' doesn't support embeding",
@@ -972,7 +973,15 @@ main (int argc, char *argv[])
       char **devicelist;
       int i;
 
-      devicelist = grub_util_raid_getmembers (dest_dev);
+      if (arguments.device[0] == '/')
+	devicelist = grub_util_raid_getmembers (arguments.device);
+      else
+	{
+	  char *devname;
+	  devname = xasprintf ("/dev/%s", dest_dev);
+	  devicelist = grub_util_raid_getmembers (dest_dev);
+	  free (devname);
+	}
 
       for (i = 0; devicelist[i]; i++)
         {

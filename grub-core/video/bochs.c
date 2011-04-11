@@ -199,7 +199,8 @@ grub_video_bochs_set_palette (unsigned int start, unsigned int count,
 
 static grub_err_t
 grub_video_bochs_setup (unsigned int width, unsigned int height,
-			unsigned int mode_type, unsigned int mode_mask)
+			grub_video_mode_type_t mode_type,
+			grub_video_mode_type_t mode_mask)
 {
   int depth;
   grub_err_t err;

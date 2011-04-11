@@ -36,7 +36,7 @@ static const struct grub_arg_option options[] = {
   {0, 0, 0, 0, 0, 0}
 };
 
-struct { const char *name; const char *hashname; } aliases[] = 
+static struct { const char *name; const char *hashname; } aliases[] = 
   {
     {"sha256sum", "sha256"},
     {"sha512sum", "sha512"},

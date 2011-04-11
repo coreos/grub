@@ -195,6 +195,11 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
 	chunk_size = s->sh_addr + s->sh_size;
     }
 
+  if (chunk_size < sizeof (e))
+    chunk_size = sizeof (e);
+  chunk_size += e.e_phnum * e.e_phentsize;
+  chunk_size += e.e_shnum * e.e_shentsize;
+
   {
     grub_relocator_chunk_t ch;
 
