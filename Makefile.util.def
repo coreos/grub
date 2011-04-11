@@ -60,6 +60,7 @@ library = {
   common = grub-core/fs/jfs.c;
   common = grub-core/fs/minix.c;
   common = grub-core/fs/minix2.c;
+  common = grub-core/fs/minix3.c;
   common = grub-core/fs/nilfs2.c;
   common = grub-core/fs/ntfs.c;
   common = grub-core/fs/ntfscomp.c;
