@@ -989,6 +989,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	    }
 	  err = grub_btrfs_read_logical (data,
 					 grub_le_to_cpu64 (data->extent->laddr)
+					 + grub_le_to_cpu64 (data->extent->offset)
 					 + extoff,
 					 buf, csize);
 	  if (err)
