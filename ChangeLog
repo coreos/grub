@@ -1,3 +1,10 @@
+2011-04-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/fs/btrfs.c (grub_btrfs_fs) [GRUB_UTIL]: Set
+	reserved_first_sector to 1.  btrfs reserves plenty of space for boot
+	loaders.
+	Reported by: Gene Cumm.  Fixes Ubuntu bug #757446.
+
 2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-fstest.c (cmd_cmp): Check that sizes match.

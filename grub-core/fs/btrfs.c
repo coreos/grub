@@ -122,6 +122,9 @@ static struct grub_fs grub_btrfs_fs =
     .dir = grub_btrfs_dir,
     .open = grub_btrfs_open,
     .uuid = grub_btrfs_uuid,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+#endif
   };
 
 GRUB_MOD_INIT(btrfs)
