@@ -1,4 +1,8 @@
 2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* NEWS: Add btrfs support.
+
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 2011-04-11  Colin Watson  <cjwatson@ubuntu.com>
 
 	BtrFS support. Written by me (Vladimir) with important bugfixes and

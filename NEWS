@@ -29,7 +29,7 @@ New in 1.99:
 
 * New `lsacpi' command.
 
-* Basic btrfs support (detection and UUID).
+* Btrfs support.
 
 * New `--boot-directory' option to `grub-install', `grub-reboot', and
   `grub-set-default', with clearer semantics than the previous
