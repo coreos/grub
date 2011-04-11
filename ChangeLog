@@ -1,3 +1,8 @@
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/file.c (grub_file_open): Don't take into account the
+	parenthesis in the middle of the filename.
+
 2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/mips/linux.c (grub_cmd_initrd): Use correct limits
