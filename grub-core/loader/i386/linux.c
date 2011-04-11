@@ -35,6 +35,8 @@
 #include <grub/i18n.h>
 #include <grub/lib/cmdline.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/i386/pc/vesa_modes_table.h>
 #endif

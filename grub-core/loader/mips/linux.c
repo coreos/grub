@@ -28,6 +28,8 @@
 #include <grub/memory.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* For frequencies.  */
 #include <grub/pci.h>
 #include <grub/machine/time.h>

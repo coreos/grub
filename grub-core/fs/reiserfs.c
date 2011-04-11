@@ -39,6 +39,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define MIN(a, b) \
   ({ typeof (a) _a = (a); \
      typeof (b) _b = (b); \

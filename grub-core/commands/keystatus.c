@@ -23,6 +23,8 @@
 #include <grub/term.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] =
   {
     {"shift", 's', 0, N_("Check Shift key."), 0, 0},

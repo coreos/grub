@@ -24,6 +24,8 @@
 #include <grub/normal.h>
 #include <grub/datetime.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static char *grub_datetime_names[] =
 {
   "YEAR",

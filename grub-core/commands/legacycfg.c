@@ -33,6 +33,8 @@
 #include <grub/disk.h>
 #include <grub/partition.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 legacy_file (const char *filename)
 {

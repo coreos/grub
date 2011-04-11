@@ -28,6 +28,8 @@
 #include <grub/kernel.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /*
    .mo file information from:
    http://www.gnu.org/software/autoconf/manual/gettext/MO-Files.html .

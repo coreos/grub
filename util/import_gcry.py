@@ -91,7 +91,12 @@ for cipher_file in cipher_files:
         f = open (infile, "r")
         fw = open (outfile, "w")
         fw.write ("/* This file was automatically imported with \n")
-        fw.write ("   import_gcry.py. Please don't modify it */\n");
+        fw.write ("   import_gcry.py. Please don't modify it */\n")
+        fw.write ("#include <grub/dl.h>\n")
+        # Whole libgcrypt is distributedunder GPLv3+ or compatible
+        if isc:
+            fw.write ("GRUB_MOD_LICENSE (\"GPLv3+\");\n")
+
         ciphernames = []
         mdnames = []
         hold = False

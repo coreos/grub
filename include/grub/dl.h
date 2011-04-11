@@ -63,7 +63,31 @@ __asm__ (".section .modname\n.asciz \"" #name "\"\n")
 
 #define GRUB_MOD_DEP(name)	\
 __asm__ (".section .moddeps\n.asciz \"" #name "\"\n")
+
 #endif
+
+#ifdef APPLE_CC
+#define GRUB_MOD_SECTION(x) "_" x ", _" x ""
+#else
+#define GRUB_MOD_SECTION(x) "." x
+#endif
+
+/* Me, Vladimir Serbinenko, hereby I add this module check as per new
+   GNU module policy. Note that this license check is informative only.
+   Modules have to be licensed under GPLv3 or GPLv3+ (optionally
+   multi-licensed under other licences as well) independently of the
+   presence of this check and solely by linking (module loading in GRUB
+   constitutes linking) and GRUB core being licensed under GPLv3+.
+   Be sure to understand your license obligations.
+*/
+#define GRUB_MOD_LICENSE(license)	\
+  static char grub_module_license[] __attribute__ ((section (GRUB_MOD_SECTION ("module_license")), used)) = "LICENSE=" license;
+
+/* Under GPL license obligations you have to distribute your module
+   under GPLv3(+). However, you can also distribute the same code under
+   another license as long as GPLv3(+) version is provided.
+*/
+#define GRUB_MOD_DUAL_LICENSE(x)
 
 struct grub_dl_segment
 {

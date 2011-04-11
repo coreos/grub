@@ -21,6 +21,8 @@
 #include <grub/misc.h>
 #include <grub/cmos.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 parse_args (int argc, char *argv[], int *byte, int *bit)
 {

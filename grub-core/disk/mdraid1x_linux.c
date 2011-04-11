@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/raid.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* Linux RAID on disk structures and constants,
    copied from include/linux/raid/md_p.h.  */
 

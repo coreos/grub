@@ -22,6 +22,7 @@
 #include <grub/dl.h>
 #include <grub/mm.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* ATA pass through support, used by hdparm.mod.  */
 static grub_err_t

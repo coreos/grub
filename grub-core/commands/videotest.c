@@ -28,6 +28,8 @@
 #include <grub/gfxmenu_view.h>
 #include <grub/env.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
                     int argc, char **args)

@@ -30,6 +30,8 @@
 #include <grub/video.h>
 #include <grub/machine/int.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static int vbe_detected = -1;
 
 static struct grub_vbe_info_block controller_info;

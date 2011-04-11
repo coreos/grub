@@ -23,6 +23,8 @@
 #include <grub/i18n.h>
 #include <grub/misc.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_term_autoload *grub_term_input_autoload = NULL;
 struct grub_term_autoload *grub_term_output_autoload = NULL;
 

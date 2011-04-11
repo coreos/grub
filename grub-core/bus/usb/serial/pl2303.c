@@ -24,6 +24,8 @@
 #include <grub/usb.h>
 #include <grub/usbserial.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* Convert speed to divisor.  */
 static grub_uint32_t
 is_speed_supported (unsigned int speed)

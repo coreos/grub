@@ -29,6 +29,8 @@
 #include <grub/fs.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* Convert a LBA address to a CHS address in the INT 13 format.  */
 /* Taken from grub1. */
 /* XXX: use hardcoded geometry of C = 1024, H = 255, S = 63.

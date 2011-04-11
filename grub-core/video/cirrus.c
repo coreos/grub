@@ -28,6 +28,8 @@
 #include <grub/pci.h>
 #include <grub/vga.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct
 {
   struct grub_video_mode_info mode_info;

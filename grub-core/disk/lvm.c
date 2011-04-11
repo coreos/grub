@@ -28,6 +28,8 @@
 #include <grub/emu/misc.h>
 #endif
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct grub_lvm_vg *vg_list;
 static int lv_count;
 

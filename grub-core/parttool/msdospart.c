@@ -28,6 +28,8 @@
 #include <grub/partition.h>
 #include <grub/parttool.h>
 
+GRUB_MOD_LICENSE ("GPLv2+");
+
 static int activate_table_handle = -1;
 static int type_table_handle = -1;
 

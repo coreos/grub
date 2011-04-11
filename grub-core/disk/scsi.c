@@ -27,6 +27,8 @@
 #include <grub/scsicmd.h>
 #include <grub/time.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 
 static grub_scsi_dev_t grub_scsi_dev_list;
 

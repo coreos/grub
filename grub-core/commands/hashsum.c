@@ -26,6 +26,8 @@
 #include <grub/normal.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] = {
   {"hash", 'h', 0, N_("Specify hash to use."), N_("HASH"), ARG_TYPE_STRING},
   {"check", 'c', 0, N_("Check hash list file."), N_("FILE"), ARG_TYPE_STRING},

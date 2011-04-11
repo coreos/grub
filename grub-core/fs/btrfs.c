@@ -25,6 +25,8 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define BTRFS_SIGNATURE "_BHRfS_M"
 
 struct btrfs_superblock

@@ -36,6 +36,8 @@
 #include <grub/i386/floppy.h>
 #include <grub/lib/cmdline.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_LINUX_CL_OFFSET		0x9000
 #define GRUB_LINUX_CL_END_OFFSET	0x90FF
 

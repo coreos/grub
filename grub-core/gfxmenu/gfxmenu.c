@@ -37,6 +37,8 @@
 #include <grub/gfxmenu_view.h>
 #include <grub/time.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_gfxmenu_view_t cached_view;
 
 static void 

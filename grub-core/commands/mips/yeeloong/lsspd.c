@@ -24,6 +24,8 @@
 #include <grub/command.h>
 #include <grub/cs5536.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 grub_cmd_lsspd (grub_command_t cmd __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),

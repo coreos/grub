@@ -26,6 +26,8 @@
 #include <grub/types.h>
 #include <grub/charset.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_JFS_MAX_SYMLNK_CNT	8
 #define GRUB_JFS_FILETYPE_MASK	0170000
 #define GRUB_JFS_FILETYPE_REG	0100000

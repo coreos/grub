@@ -26,6 +26,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef MODE_BIGENDIAN
 #define GRUB_AFS_FSNAME_SUFFIX "_be"
 #else

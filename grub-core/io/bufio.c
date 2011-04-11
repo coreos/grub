@@ -23,6 +23,9 @@
 #include <grub/misc.h>
 #include <grub/fs.h>
 #include <grub/bufio.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #define GRUB_BUFIO_DEF_SIZE	8192
 #define GRUB_BUFIO_MAX_SIZE	1048576

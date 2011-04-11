@@ -27,6 +27,8 @@
 #include <grub/search.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] =
   {
     {"file",		'f', 0, N_("Search devices by a file."), 0, 0},

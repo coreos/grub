@@ -29,6 +29,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define BASE_TEMPO (60 * GRUB_TICKS_PER_SECOND)
 
 /* The speaker port.  */

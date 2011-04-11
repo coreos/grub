@@ -30,6 +30,8 @@
 #include <grub/machine/int.h>
 #include <grub/machine/memory.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define SEGMENT(x)	((x) >> 4)
 #define OFFSET(x)	((x) & 0xF)
 #define SEGOFS(x)	((SEGMENT(x) << 16) + OFFSET(x))

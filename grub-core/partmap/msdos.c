@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct grub_partition_map grub_msdos_partition_map;
 
 

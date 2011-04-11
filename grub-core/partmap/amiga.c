@@ -23,6 +23,8 @@
 #include <grub/partition.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_amiga_rdsk
 {
   /* "RDSK".  */

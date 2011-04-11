@@ -24,6 +24,8 @@
 #include <grub/fs.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #include "xz.h"
 #include "xz_stream.h"
 

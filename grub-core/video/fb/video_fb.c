@@ -24,6 +24,9 @@
 #include <grub/fbfill.h>
 #include <grub/fbutil.h>
 #include <grub/bitmap.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 static struct
 {

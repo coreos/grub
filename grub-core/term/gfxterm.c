@@ -31,6 +31,8 @@
 #include <grub/bitmap_scale.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define DEFAULT_VIDEO_MODE	"auto"
 #define DEFAULT_BORDER_WIDTH	10
 

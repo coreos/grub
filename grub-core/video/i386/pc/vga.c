@@ -30,6 +30,8 @@
 #include <grub/misc.h>
 #include <grub/vga.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define VGA_WIDTH	640
 #define VGA_HEIGHT	350
 #define VGA_MEM		((grub_uint8_t *) GRUB_MEMORY_MACHINE_VGA_ADDR)

@@ -28,6 +28,8 @@
 #include <grub/fshelp.h>
 #include <grub/charset.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_ISO9660_FSTYPE_DIR		0040000
 #define GRUB_ISO9660_FSTYPE_REG		0100000
 #define GRUB_ISO9660_FSTYPE_SYMLINK	0120000

@@ -27,6 +27,8 @@
 #include <grub/util/misc.h>
 #endif
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* Linked list of RAID arrays. */
 static struct grub_raid_array *array_list;
 grub_raid5_recover_func_t grub_raid5_recover_func;

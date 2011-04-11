@@ -27,6 +27,8 @@
 /* Linux RAID on disk structures and constants,
    copied from include/linux/raid/md_p.h.  */
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define RESERVED_BYTES			(64 * 1024)
 #define RESERVED_SECTORS		(RESERVED_BYTES / 512)
 

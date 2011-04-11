@@ -23,6 +23,8 @@
 #include <grub/disk.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifndef MODE_USTAR
 /* cpio support */
 #define	MAGIC_BCPIO	070707

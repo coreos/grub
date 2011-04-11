@@ -42,6 +42,8 @@
 #include <grub/file.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /*
  *  Window Size
  *

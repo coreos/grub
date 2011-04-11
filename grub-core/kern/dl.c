@@ -373,6 +373,38 @@ grub_dl_call_init (grub_dl_t mod)
     (mod->init) (mod);
 }
 
+/* Me, Vladimir Serbinenko, hereby I add this module check as per new
+   GNU module policy. Note that this license check is informative only.
+   Modules have to be licensed under GPLv3 or GPLv3+ (optionally
+   multi-licensed under other licences as well) independently of the
+   presence of this check and solely by linking (module loading in GRUB
+   constitutes linking) and GRUB core being licensed under GPLv3+.
+   Be sure to understand your license obligations.
+*/
+static grub_err_t
+grub_dl_check_license (Elf_Ehdr *e)
+{
+  Elf_Shdr *s;
+  const char *str;
+  unsigned i;
+
+  s = (Elf_Shdr *) ((char *) e + e->e_shoff + e->e_shstrndx * e->e_shentsize);
+  str = (char *) e + s->sh_offset;
+
+  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
+    if (grub_strcmp (str + s->sh_name, ".module_license") == 0)
+      {
+	if (grub_strcmp ((char *) e + s->sh_offset, "LICENSE=GPLv3") == 0
+	    || grub_strcmp ((char *) e + s->sh_offset, "LICENSE=GPLv3+") == 0
+	    || grub_strcmp ((char *) e + s->sh_offset, "LICENSE=GPLv2+") == 0)
+	  return GRUB_ERR_NONE;
+      }
+
+  return grub_error (GRUB_ERR_BAD_MODULE, "incompatible license");
+}
+
 static grub_err_t
 grub_dl_resolve_name (grub_dl_t mod, Elf_Ehdr *e)
 {
@@ -519,7 +551,16 @@ grub_dl_load_core (void *addr, grub_size_t size)
   mod->ref_count = 1;
 
   grub_dprintf ("modules", "relocating to %p\n", mod);
-  if (grub_dl_resolve_name (mod, e)
+  /* Me, Vladimir Serbinenko, hereby I add this module check as per new
+     GNU module policy. Note that this license check is informative only.
+     Modules have to be licensed under GPLv3 or GPLv3+ (optionally
+     multi-licensed under other licences as well) independently of the
+     presence of this check and solely by linking (module loading in GRUB
+     constitutes linking) and GRUB core being licensed under GPLv3+.
+     Be sure to understand your license obligations.
+  */
+  if (grub_dl_check_license (e)
+      || grub_dl_resolve_name (mod, e)
       || grub_dl_resolve_dependencies (mod, e)
       || grub_dl_load_segments (mod, e)
       || grub_dl_resolve_symbols (mod, e)
