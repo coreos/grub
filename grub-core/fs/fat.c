@@ -686,7 +686,8 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
 		  slots++;
 		  break;
 		default:
-		  grub_printf ("unknown secondary type 0x%02x\n", sec.entry_type);
+		  grub_dprintf ("exfat", "unknown secondary type 0x%02x\n",
+				sec.entry_type);
 		}
 	    }
 
@@ -712,7 +713,7 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
       /* Volume label. */
       if (dir.entry_type == 0x83)
 	continue;
-      grub_printf ("unknown primary type 0x%02x\n", dir.entry_type);
+      grub_dprintf ("exfat", "unknown primary type 0x%02x\n", dir.entry_type);
     }
   grub_free (filename);
   grub_free (unibuf);
