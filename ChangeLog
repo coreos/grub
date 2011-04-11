@@ -1,5 +1,10 @@
 2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-fstest.c (read_file): Report GRUB error if file opening
+	failed.
+
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/file.c (grub_file_open): Don't take into account the
 	parenthesis in the middle of the filename.
 

@@ -111,7 +111,8 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
   file = grub_file_open (pathname);
   if (!file)
     {
-      grub_util_error (_("cannot open file %s"), pathname);
+      grub_util_error (_("cannot open file %s:%s"), pathname,
+		       grub_errmsg);
       return;
     }
 
