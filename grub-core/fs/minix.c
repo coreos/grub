@@ -126,7 +126,7 @@ struct grub_minix_inode
   grub_uint32_t unused;
 };
 
-#elif defined(MODE_MINIX2)
+#elif !defined(MODE_MINIX2)
 struct grub_minix_inode
 {
   grub_uint16_t mode;
