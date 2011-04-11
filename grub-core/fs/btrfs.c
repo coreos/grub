@@ -589,6 +589,8 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
       struct grub_btrfs_key key_out;
       int challoc = 0;
       grub_device_t dev;
+      grub_dprintf ("btrfs", "searching for laddr %" PRIxGRUB_UINT64_T "\n",
+		    addr);
       for (ptr = data->sblock.bootstrap_mapping;
 	   ptr < data->sblock.bootstrap_mapping
 	     + sizeof (data->sblock.bootstrap_mapping)
@@ -646,6 +648,16 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	grub_uint64_t off = addr - grub_le_to_cpu64 (key->offset);
 	unsigned redundancy = 1;
 	unsigned i, j;
+
+	grub_dprintf ("btrfs", "chunk 0x%" PRIxGRUB_UINT64_T
+		      "+0x%" PRIxGRUB_UINT64_T
+		      " (%d stripes (%d substripes) of %"
+		      PRIxGRUB_UINT64_T ")\n",
+		      grub_le_to_cpu64 (key->offset),
+		      grub_le_to_cpu64 (chunk->size),
+		      grub_le_to_cpu16 (chunk->nstripes),
+		      grub_le_to_cpu16 (chunk->nsubstripes),
+		      grub_le_to_cpu64 (chunk->stripe_length));
 
 	switch (grub_le_to_cpu64 (chunk->type)
 		& ~GRUB_BTRFS_CHUNK_TYPE_BITS_DONTCARE)
