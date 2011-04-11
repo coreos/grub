@@ -1103,12 +1103,9 @@ find_path (struct grub_btrfs_data *data,
 			      + grub_le_to_cpu16 (cdirel->n)
 			      + grub_le_to_cpu16 (cdirel->m)))
 	{
-	  char c;
-	  c = cdirel->name[grub_le_to_cpu16 (cdirel->n)];
-	  cdirel->name[grub_le_to_cpu16 (cdirel->n)] = 0;
-	  if (grub_strncmp (cdirel->name, ctoken, ctokenlen) == 0)
+	  if (ctokenlen == grub_le_to_cpu16 (cdirel->n)
+	      && grub_memcmp (cdirel->name, ctoken, ctokenlen) == 0)
 	    break;
-	  cdirel->name[grub_le_to_cpu16 (cdirel->n)] = c;
 	}
       if ((grub_uint8_t *) cdirel - (grub_uint8_t *) direl
 	  >= (grub_ssize_t) elemsize)
