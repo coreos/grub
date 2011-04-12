@@ -83,10 +83,6 @@ New in 1.99:
 
 * Extensive updates to the Texinfo documentation.
 
-* Add `grub-probe' support for the btrfs filesystem, permitting / to
-  reside on btrfs as long as /boot is on a filesystem natively supported
-  by GRUB.
-
 * Handle symbolic links under /dev/mapper on GNU/Linux.
 
 * Handle installation across multiple partition table types.
