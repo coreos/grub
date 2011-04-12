@@ -1,5 +1,13 @@
 2011-04-12  Colin Watson  <cjwatson@ubuntu.com>
 
+	* docs/grub.texi (normal): New section.
+	(normal_exit): New section.
+	(Embedded configuration): Add reference to normal.
+	(GRUB only offers a rescue shell): Likewise.
+	* docs/grub-dev.texi (Error Handling): Fix typo.
+
+2011-04-12  Colin Watson  <cjwatson@ubuntu.com>
+
 	* NEWS: Drop obsolete entry about probe-only btrfs support.
 
 2011-04-12  Colin Watson  <cjwatson@ubuntu.com>

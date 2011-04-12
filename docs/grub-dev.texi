@@ -451,7 +451,7 @@ request. Instead, please subscribe to the mailing list, and communicate first
 @chapter Error Handling
 
 Error handling in GRUB 2 is based on exception handling model. As C language
-doesn't direcly support exceptions, exception handling behavior is emulated
+doesn't directly support exceptions, exception handling behavior is emulated
 in software. 
 
 When exception is raised, function must return to calling function. If calling

@@ -1486,14 +1486,14 @@ reside anywhere on the file system, and may be removed after running
 @command{grub-mkimage}.
 
 After the embedded configuration file (if any) is executed, GRUB will load
-the @samp{normal} module, which will then read the real configuration file
-from @file{$prefix/grub.cfg}.  By this point, the @code{root} variable will
-also have been set to the root device name.  For example, @code{prefix}
-might be set to @samp{(hd0,1)/boot/grub}, and @code{root} might be set to
-@samp{hd0,1}.  Thus, in most cases, the embedded configuration file only
-needs to set the @code{prefix} and @code{root} variables, and then drop
-through to GRUB's normal processing.  A typical example of this might look
-like this:
+the @samp{normal} module (@pxref{normal}), which will then read the real
+configuration file from @file{$prefix/grub.cfg}.  By this point, the
+@code{root} variable will also have been set to the root device name.  For
+example, @code{prefix} might be set to @samp{(hd0,1)/boot/grub}, and
+@code{root} might be set to @samp{hd0,1}.  Thus, in most cases, the embedded
+configuration file only needs to set the @code{prefix} and @code{root}
+variables, and then drop through to GRUB's normal processing.  A typical
+example of this might look like this:
 
 @example
 @group
@@ -3089,6 +3089,8 @@ you forget a command, you can run the command @command{help}
 * load_env::                    Load variables from environment block
 * loopback::                    Make a device from a filesystem image
 * ls::                          List devices or files
+* normal::                      Enter normal mode
+* normal_exit::                 Exit from normal mode
 * parttool::                    Modify partition table entries
 * password::                    Set a clear-text password
 * password_pbkdf2::             Set a hashed password
@@ -3542,6 +3544,34 @@ syntax}), then list all files at the root directory of that device.
 
 If the argument is a directory given as an absolute file name (@pxref{File
 name syntax}), then list the contents of that directory.
+@end deffn
+
+
+@node normal
+@subsection normal
+
+@deffn Command normal [file]
+Enter normal mode and display the GRUB menu.
+
+In normal mode, commands, filesystem modules, and cryptography modules are
+automatically loaded, and the full GRUB script parser is available.  Other
+modules may be explicitly loaded using @command{insmod} (@pxref{insmod}).
+
+If a @var{file} is given, then commands will be read from that file.
+Otherwise, they will be read from @file{$prefix/grub.cfg} if it exists.
+
+@command{normal} may be called from within normal mode, creating a nested
+environment.  It is more usual to use @command{configfile}
+(@pxref{configfile}) for this.
+@end deffn
+
+
+@node normal_exit
+@subsection normal_exit
+
+@deffn Command normal_exit
+Exit normal mode (@pxref{normal}).  If this instance of normal mode was not
+nested within another one, then return to rescue mode.
 @end deffn
 
 
@@ -4082,7 +4112,7 @@ GRUB's normal start-up procedure involves setting the @samp{prefix}
 environment variable to a value set in the core image by
 @command{grub-install}, setting the @samp{root} variable to match, loading
 the @samp{normal} module from the prefix, and running the @samp{normal}
-command.  This command is responsible for reading
+command (@pxref{normal}).  This command is responsible for reading
 @file{/boot/grub/grub.cfg}, running the menu, and doing all the useful
 things GRUB is supposed to do.
 
