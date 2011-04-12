@@ -1,3 +1,7 @@
+2011-04-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/import_gcry.py: Fix typo.
+
 2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* NEWS: Add btrfs support.
