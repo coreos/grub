@@ -1,3 +1,12 @@
+2011-04-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	Rewrite /proc/self/mountinfo handling to cope with bind-mounts and
+	move-mounts appearing out of order.  Fixes Ubuntu bug #738345.
+
+	* grub-core/kern/emu/getroot.c (find_root_device_from_mountinfo):
+	Build a list of relevant visible mounts using the mnt_id and
+	parent_mnt_id fields, and then scan that list at the end.
+
 2011-04-12  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (normal): New section.

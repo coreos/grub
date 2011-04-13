@@ -98,6 +98,14 @@ xgetcwd (void)
 
 #ifdef __linux__
 
+struct mountinfo_entry
+{
+  int id;
+  int major, minor;
+  char enc_root[PATH_MAX], enc_path[PATH_MAX];
+  char fstype[PATH_MAX], device[PATH_MAX];
+};
+
 /* Statting something on a btrfs filesystem always returns a virtual device
    major/minor pair rather than the real underlying device, because btrfs
    can span multiple underlying devices (and even if it's currently only
@@ -112,6 +120,10 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
   char *buf = NULL;
   size_t len = 0;
   char *ret = NULL;
+  int entry_len = 0, entry_max = 4;
+  struct mountinfo_entry *entries;
+  struct mountinfo_entry parent_entry = { 0, 0, 0, "", "", "", "" };
+  int i;
 
   if (! *dir)
     dir = "/";
@@ -122,52 +134,102 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
   if (! fp)
     return NULL; /* fall through to other methods */
 
+  entries = xmalloc (entry_max * sizeof (*entries));
+
+  /* First, build a list of relevant visible mounts.  */
   while (getline (&buf, &len, fp) > 0)
     {
-      int mnt_id, parent_mnt_id;
-      unsigned int major, minor;
-      char enc_root[PATH_MAX], enc_path[PATH_MAX];
+      struct mountinfo_entry entry;
       int count;
       size_t enc_path_len;
       const char *sep;
-      char fstype[PATH_MAX], device[PATH_MAX];
 
       if (sscanf (buf, "%d %d %u:%u %s %s%n",
-		  &mnt_id, &parent_mnt_id, &major, &minor, enc_root, enc_path,
-		  &count) < 6)
+		  &entry.id, &parent_entry.id, &entry.major, &entry.minor,
+		  entry.enc_root, entry.enc_path, &count) < 6)
 	continue;
 
-      enc_path_len = strlen (enc_path);
+      enc_path_len = strlen (entry.enc_path);
       /* Check that enc_path is a prefix of dir.  The prefix must either be
          the entire string, or end with a slash, or be immediately followed
          by a slash.  */
-      if (strncmp (dir, enc_path, enc_path_len) != 0 ||
+      if (strncmp (dir, entry.enc_path, enc_path_len) != 0 ||
 	  (enc_path_len && dir[enc_path_len - 1] != '/' &&
 	   dir[enc_path_len] && dir[enc_path_len] != '/'))
 	continue;
-
-      /* This is a parent of the requested directory.  /proc/self/mountinfo
-	 is in mount order, so it must be the closest parent we've
-	 encountered so far.  If it's virtual, return its device node;
-	 otherwise, carry on to try to find something closer.  */
-
-      free (ret);
-      ret = NULL;
 
       sep = strstr (buf + count, " - ");
       if (!sep)
 	continue;
 
       sep += sizeof (" - ") - 1;
-      if (sscanf (sep, "%s %s", fstype, device) != 2)
+      if (sscanf (sep, "%s %s", entry.fstype, entry.device) != 2)
 	continue;
 
-      ret = strdup (device);
+      /* Using the mount IDs, find out where this fits in the list of
+	 visible mount entries we've seen so far.  There are three
+	 interesting cases.  Firstly, it may be inserted at the end: this is
+	 the usual case of /foo/bar being mounted after /foo.  Secondly, it
+	 may be inserted at the start: for example, this can happen for
+	 filesystems that are mounted before / and later moved under it.
+	 Thirdly, it may occlude part or all of the existing filesystem
+	 tree, in which case the end of the list needs to be pruned and this
+	 new entry will be inserted at the end.  */
+      if (entry_len >= entry_max)
+	{
+	  entry_max <<= 1;
+	  entries = xrealloc (entries, entry_max * sizeof (*entries));
+	}
+
+      if (!entry_len)
+	{
+	  /* Initialise list.  */
+	  entry_len = 2;
+	  entries[0] = parent_entry;
+	  entries[1] = entry;
+	}
+      else
+	{
+	  for (i = entry_len - 1; i >= 0; i--)
+	    {
+	      if (entries[i].id == parent_entry.id)
+		{
+		  /* Insert at end, pruning anything previously above this.  */
+		  entry_len = i + 2;
+		  entries[i + 1] = entry;
+		  break;
+		}
+	      else if (i == 0 && entries[i].id == entry.id)
+		{
+		  /* Insert at start.  */
+		  entry_len++;
+		  memmove (entries + 1, entries,
+			   (entry_len - 1) * sizeof (*entries));
+		  entries[0] = parent_entry;
+		  entries[1] = entry;
+		  break;
+		}
+	    }
+	}
+    }
+
+  /* Now scan visible mounts for the ones we're interested in.  */
+  for (i = entry_len - 1; i >= 0; i--)
+    {
+      if (entries[i].major != 0)
+	continue; /* not a virtual device */
+
+      if (!*entries[i].device)
+	continue;
+
+      ret = strdup (entries[i].device);
       if (relroot)
-	*relroot = strdup (enc_root);
+	*relroot = strdup (entries[i].enc_root);
+      break;
     }
 
   free (buf);
+  free (entries);
   fclose (fp);
   return ret;
 }
