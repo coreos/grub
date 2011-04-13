@@ -1,5 +1,11 @@
 2011-04-13  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub.d/10_linux.in: Add rootflags=subvol=<name> if / is on a
+	btrfs subvolume.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
+2011-04-13  Colin Watson  <cjwatson@ubuntu.com>
+
 	Rewrite /proc/self/mountinfo handling to cope with bind-mounts and
 	move-mounts appearing out of order.  Fixes Ubuntu bug #738345.
 
