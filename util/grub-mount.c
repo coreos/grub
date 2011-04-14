@@ -450,8 +450,11 @@ main (int argc, char *argv[])
 
   grub_util_init_nls ();
 
-  fuse_args = xrealloc (fuse_args, (fuse_argc + 1) * sizeof (fuse_args[0]));
+  fuse_args = xrealloc (fuse_args, (fuse_argc + 2) * sizeof (fuse_args[0]));
   fuse_args[fuse_argc] = xstrdup (argv[0]);
+  fuse_argc++;
+  /* Run single-threaded.  */
+  fuse_args[fuse_argc] = xstrdup ("-s");
   fuse_argc++;
 
   argp_parse (&argp, argc, argv, 0, 0, 0);
