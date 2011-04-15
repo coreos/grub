@@ -33,12 +33,10 @@ struct grub_efidisk_data
   grub_efi_device_path_t *device_path;
   grub_efi_device_path_t *last_device_path;
   grub_efi_block_io_t *block_io;
-  grub_efi_disk_io_t *disk_io;
   struct grub_efidisk_data *next;
 };
 
-/* GUIDs.  */
-static grub_efi_guid_t disk_io_guid = GRUB_EFI_DISK_IO_GUID;
+/* GUID.  */
 static grub_efi_guid_t block_io_guid = GRUB_EFI_BLOCK_IO_GUID;
 
 static struct grub_efidisk_data *fd_devices;
@@ -143,7 +141,7 @@ make_devices (void)
   struct grub_efidisk_data *devices = 0;
 
   /* Find handles which support the disk io interface.  */
-  handles = grub_efi_locate_handle (GRUB_EFI_BY_PROTOCOL, &disk_io_guid,
+  handles = grub_efi_locate_handle (GRUB_EFI_BY_PROTOCOL, &block_io_guid,
 				    0, &num_handles);
   if (! handles)
     return 0;
@@ -155,7 +153,6 @@ make_devices (void)
       grub_efi_device_path_t *ldp;
       struct grub_efidisk_data *d;
       grub_efi_block_io_t *bio;
-      grub_efi_disk_io_t *dio;
 
       dp = grub_efi_get_device_path (*handle);
       if (! dp)
@@ -168,9 +165,7 @@ make_devices (void)
 
       bio = grub_efi_open_protocol (*handle, &block_io_guid,
 				    GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
-      dio = grub_efi_open_protocol (*handle, &disk_io_guid,
-				    GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
-      if (! bio || ! dio)
+      if (! bio)
 	/* This should not happen... Why?  */
 	continue;
 
@@ -186,7 +181,6 @@ make_devices (void)
       d->device_path = dp;
       d->last_device_path = ldp;
       d->block_io = bio;
-      d->disk_io = dio;
       d->next = devices;
       devices = d;
     }
@@ -563,22 +557,20 @@ grub_efidisk_read (struct grub_disk *disk, grub_disk_addr_t sector,
 {
   /* For now, use the disk io interface rather than the block io's.  */
   struct grub_efidisk_data *d;
-  grub_efi_disk_io_t *dio;
   grub_efi_block_io_t *bio;
   grub_efi_status_t status;
 
   d = disk->data;
-  dio = d->disk_io;
   bio = d->block_io;
 
   grub_dprintf ("efidisk",
 		"reading 0x%lx sectors at the sector 0x%llx from %s\n",
 		(unsigned long) size, (unsigned long long) sector, disk->name);
 
-  status = efi_call_5 (dio->read, dio, bio->media->media_id,
-		      (grub_efi_uint64_t) sector << disk->log_sector_size,
-		      (grub_efi_uintn_t) size << disk->log_sector_size,
-		      buf);
+  status = efi_call_5 (bio->read_blocks, bio, bio->media->media_id,
+		       (grub_efi_uint64_t) sector,
+		       (grub_efi_uintn_t) size << disk->log_sector_size,
+		       buf);
   if (status != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_READ_ERROR, "efidisk read error");
 
@@ -591,20 +583,18 @@ grub_efidisk_write (struct grub_disk *disk, grub_disk_addr_t sector,
 {
   /* For now, use the disk io interface rather than the block io's.  */
   struct grub_efidisk_data *d;
-  grub_efi_disk_io_t *dio;
   grub_efi_block_io_t *bio;
   grub_efi_status_t status;
 
   d = disk->data;
-  dio = d->disk_io;
   bio = d->block_io;
 
   grub_dprintf ("efidisk",
 		"writing 0x%lx sectors at the sector 0x%llx to %s\n",
 		(unsigned long) size, (unsigned long long) sector, disk->name);
 
-  status = efi_call_5 (dio->write, dio, bio->media->media_id,
-		       (grub_efi_uint64_t) sector << disk->log_sector_size,
+  status = efi_call_5 (bio->write_blocks, bio, bio->media->media_id,
+		       (grub_efi_uint64_t) sector,
 		       (grub_efi_uintn_t) size << disk->log_sector_size,
 		       (void *) buf);
   if (status != GRUB_EFI_SUCCESS)
