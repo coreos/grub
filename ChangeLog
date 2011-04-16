@@ -1,3 +1,13 @@
+2011-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Identify RAID by its UUID rather than (guessed) name.
+
+	* grub-core/disk/raid.c (ascii2hex): New function.
+	(grub_raid_open): Accept mduuid/%s specification.
+	* grub-core/kern/emu/getroot.c (get_mdadm_name): Revamped into ...
+	(get_mdadm_uuid): ... this.
+	(grub_util_get_grub_dev): Use mduuid/%s if UUID is available.
+
 2011-04-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/gfxmenu/gui_image.c (rescale_image): Don't attempt to scale

@@ -690,7 +690,7 @@ grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
 
 #ifdef __linux__
 static char *
-get_mdadm_name (const char *os_dev)
+get_mdadm_uuid (const char *os_dev)
 {
   int mdadm_pipe[2];
   pid_t mdadm_pid;
@@ -742,19 +742,21 @@ get_mdadm_name (const char *os_dev)
 
       while (getline (&buf, &len, mdadm) > 0)
 	{
-	  if (strncmp (buf, "MD_NAME=", sizeof ("MD_NAME=") - 1) == 0)
+	  if (strncmp (buf, "MD_UUID=", sizeof ("MD_UUID=") - 1) == 0)
 	    {
-	      char *name_start, *colon;
+	      char *name_start, *ptri, *ptro;
 	      size_t name_len;
 
 	      free (name);
-	      name_start = buf + sizeof ("MD_NAME=") - 1;
-	      /* Strip off the homehost if present.  */
-	      colon = strchr (name_start, ':');
-	      name = strdup (colon ? colon + 1 : name_start);
-	      name_len = strlen (name);
-	      if (name[name_len - 1] == '\n')
-		name[name_len - 1] = '\0';
+	      name_start = buf + sizeof ("MD_UUID=") - 1;
+	      ptro = name = xmalloc (strlen (name_start) + 1);
+	      for (ptri = name_start; *ptri && *ptri != '\n' && *ptri != '\r';
+		   ptri++)
+		if ((*ptri >= '0' && *ptri <= '9')
+		    || (*ptri >= 'a' && *ptri <= 'f')
+		    || (*ptri >= 'A' && *ptri <= 'F'))
+		  *ptro++ = *ptri;
+	      *ptro = 0;
 	    }
 	}
 
@@ -870,12 +872,11 @@ grub_util_get_grub_dev (const char *os_dev)
 
 #ifdef __linux__
       {
-	char *mdadm_name = get_mdadm_name (os_dev);
+	char *mdadm_name = get_mdadm_uuid (os_dev);
 	struct stat st;
 
 	if (mdadm_name)
 	  {
-	    char *newname;
 	    const char *q;
 
 	    for (q = os_dev + strlen (os_dev) - 1; q >= os_dev
@@ -883,24 +884,14 @@ grub_util_get_grub_dev (const char *os_dev)
 
 	    if (q >= os_dev && *q == 'p')
 	      {
-		newname = xasprintf ("/dev/md/%sp%s", mdadm_name, q + 1);
-		if (stat (newname, &st) == 0)
-		  {
-		    free (grub_dev);
-		    grub_dev = xasprintf ("md/%s,%s", mdadm_name, q + 1);
-		    goto done;
-		  }
-		free (newname);
-	      }
-	    newname = xasprintf ("/dev/md/%s", mdadm_name);
-	    if (stat (newname, &st) == 0)
-	      {
 		free (grub_dev);
-		grub_dev = xasprintf ("md/%s", mdadm_name);
+		grub_dev = xasprintf ("mduuid/%s,%s", mdadm_name, q + 1);
+		goto done;
 	      }
+	    free (grub_dev);
+	    grub_dev = xasprintf ("mduuid/%s", mdadm_name);
 
 	  done:
-	    free (newname);
 	    free (mdadm_name);
 	  }
       }

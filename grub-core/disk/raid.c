@@ -122,18 +122,49 @@ grub_raid_getname (struct grub_disk *disk)
 }
 #endif
 
+static inline int
+ascii2hex (char c)
+{
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+  if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+  return 0;
+}
+
 static grub_err_t
 grub_raid_open (const char *name, grub_disk_t disk)
 {
   struct grub_raid_array *array;
   unsigned n;
 
-  for (array = array_list; array != NULL; array = array->next)
+  if (grub_memcmp (name, "mduuid/", sizeof ("mduuid/") - 1) == 0)
     {
-      if (!grub_strcmp (array->name, name))
-	if (grub_is_array_readable (array))
-	  break;
+      const char *uuidstr = name + sizeof ("mduuid/") - 1;
+      grub_size_t uuid_len = grub_strlen (uuidstr) / 2;
+      grub_uint8_t uuidbin[uuid_len];
+      unsigned i;
+      for (i = 0; i < uuid_len; i++)
+	uuidbin[i] = ascii2hex (uuidstr[2 * i + 1])
+	  | (ascii2hex (uuidstr[2 * i]) << 4);
+      
+      for (array = array_list; array != NULL; array = array->next)
+	{
+	  if (uuid_len == (unsigned) array->uuid_len
+	      && grub_memcmp (uuidbin, array->uuid, uuid_len) == 0)
+	    if (grub_is_array_readable (array))
+	      break;
+	}
     }
+  else
+    for (array = array_list; array != NULL; array = array->next)
+      {
+	if (!grub_strcmp (array->name, name))
+	  if (grub_is_array_readable (array))
+	    break;
+      }
 
   if (!array)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown RAID device %s",
