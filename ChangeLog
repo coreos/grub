@@ -1,5 +1,12 @@
 2011-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am (multiboot.elf): Add -Wl,--build-id=none.
+	(kfreebsd.elf): Likewise.
+	(pc-chainloader.elf): Likewise.
+	(ntldr.elf): Likewise.
+
+2011-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Identify RAID by its UUID rather than (guessed) name.
 
 	* grub-core/disk/raid.c (ascii2hex): New function.
