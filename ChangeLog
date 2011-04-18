@@ -1,5 +1,11 @@
 2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/btrfs.c (grub_btrfs_read_logical): Support huge
+	chunks.
+	* include/grub/err.h (grub_err_t): New enum value GRUB_ERR_BUG.
+
+2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Complete 64-bit division support.
 
 	* grub-core/kern/misc.c (grub_divmod64): Rename to ...

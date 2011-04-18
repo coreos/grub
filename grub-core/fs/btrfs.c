@@ -588,7 +588,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
       grub_uint8_t *ptr;
       struct grub_btrfs_key *key;
       struct grub_btrfs_chunk_item *chunk;  
-      grub_ssize_t csize;
+      grub_uint64_t csize;
       grub_err_t err; 
       struct grub_btrfs_key key_out;
       int challoc = 0;
@@ -648,10 +648,17 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
     chunk_found:
       {
 	grub_uint32_t stripen;
-	grub_uint32_t stripe_offset;
+	grub_uint64_t stripe_offset;
 	grub_uint64_t off = addr - grub_le_to_cpu64 (key->offset);
 	unsigned redundancy = 1;
 	unsigned i, j;
+
+	if (grub_le_to_cpu64 (chunk->size) <= off)
+	  {
+	    grub_dprintf ("btrfs", "no chunk\n");
+	    return grub_error (GRUB_ERR_BAD_FS,
+			       "couldn't find the chunk descriptor");
+	  }
 
 	grub_dprintf ("btrfs", "chunk 0x%" PRIxGRUB_UINT64_T
 		      "+0x%" PRIxGRUB_UINT64_T
@@ -668,17 +675,19 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	  {
 	  case GRUB_BTRFS_CHUNK_TYPE_SINGLE:
 	    {
-	      grub_uint32_t stripe_length;
-	      stripe_length = grub_divmod64 (grub_le_to_cpu64 (chunk->size),
-					     grub_le_to_cpu16 (chunk->nstripes),
-					     NULL);
-	      stripen = grub_divmod64 (off, stripe_length, &stripe_offset);
+	      grub_uint64_t stripe_length;
+	      grub_dprintf ("btrfs", "single\n");
+	      stripe_length = grub_divmod64_full (grub_le_to_cpu64 (chunk->size),
+						  grub_le_to_cpu16 (chunk->nstripes),
+						  NULL);
+	      stripen = grub_divmod64_full (off, stripe_length, &stripe_offset);
 	      csize = (stripen + 1) * stripe_length - off;
 	      break;
 	    }
 	  case GRUB_BTRFS_CHUNK_TYPE_DUPLICATED:
 	  case GRUB_BTRFS_CHUNK_TYPE_RAID1:
 	    {
+	      grub_dprintf ("btrfs", "RAID1\n");
 	      stripen = 0;
 	      stripe_offset = off;
 	      csize = grub_le_to_cpu64 (chunk->size) - off;
@@ -689,6 +698,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	    {
 	      grub_uint64_t middle, high;
 	      grub_uint32_t low;
+	      grub_dprintf ("btrfs", "RAID0\n");
 	      middle = grub_divmod64 (off,
 				      grub_le_to_cpu64 (chunk->stripe_length),
 				      &low);
@@ -721,12 +731,13 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	      break;
 	    }
 	  default:
+	    grub_dprintf ("btrfs", "unsupported RAID\n");
 	    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			       "unsupported RAID flags %" PRIxGRUB_UINT64_T,
 			       grub_le_to_cpu64 (chunk->type));
 	  }
-	if (csize <= 0)
-	  return grub_error (GRUB_ERR_BAD_FS,
+	if (csize == 0)
+	  return grub_error (GRUB_ERR_BUG,
 			     "couldn't find the chunk descriptor");
 	if ((grub_size_t) csize > size)
 	  csize = size;
