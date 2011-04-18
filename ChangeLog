@@ -1,3 +1,8 @@
+2011-04-18  Endres Puschner <code@e7p.de>
+
+	* grub-core/gfxmenu/icon_manager.c (grub_gfxmenu_icon_manager_get_icon):
+	Don't skip first class.
+
 2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/btrfs.c (grub_btrfs_read_logical): Support huge
