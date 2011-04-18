@@ -1,3 +1,14 @@
+2011-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Take into account the decorations the computing menu entry width.
+
+	* grub-core/gfxmenu/widget-box.c (get_border_width): New function.
+	(grub_gfxmenu_create_box): Register get_border_width.
+	* grub-core/gfxmenu/gui_list.c (draw_menu): Use get_border_width
+	if available.
+	* include/grub/gfxwidgets.h (grub_gfxmenu_box): New member
+	get_border_width.
+
 2011-04-18  Endres Puschner <code@e7p.de>
 
 	* grub-core/gfxmenu/icon_manager.c (grub_gfxmenu_icon_manager_get_icon):

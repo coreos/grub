@@ -179,6 +179,13 @@ set_content_size (grub_gfxmenu_box_t self,
 }
 
 static int
+get_border_width (grub_gfxmenu_box_t self)
+{
+  return (get_width (self->raw_pixmaps[BOX_PIXMAP_E])
+	  + get_width (self->raw_pixmaps[BOX_PIXMAP_W]));
+}
+
+static int
 get_left_pad (grub_gfxmenu_box_t self)
 {
   return get_width (self->raw_pixmaps[BOX_PIXMAP_W]);
@@ -288,6 +295,8 @@ grub_gfxmenu_create_box (const char *pixmaps_prefix,
 
   box->draw = draw;
   box->set_content_size = set_content_size;
+  box->get_border_width = get_border_width;
+
   box->get_left_pad = get_left_pad;
   box->get_top_pad = get_top_pad;
   box->get_right_pad = get_right_pad;
