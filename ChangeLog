@@ -1,5 +1,15 @@
 2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Complete 64-bit division support.
+
+	* grub-core/kern/misc.c (grub_divmod64): Rename to ...
+	(grub_divmod64_full): ... this. Support 64-bit divisor and reminder.
+	* include/grub/misc.h (grub_divmod64): Rename to ...
+	(grub_divmod64_full): ... this.
+	(grub_divmod64): New inline function.
+
+2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (generate_image): Add forgotten comma.
 
 2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
