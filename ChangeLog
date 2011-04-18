@@ -1,5 +1,9 @@
 2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c (generate_image): Add forgotten comma.
+
+2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (generate_image): Update fwstart.img hash after
 	performing the necessary test.
 
