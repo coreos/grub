@@ -1,5 +1,14 @@
 2011-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/dl.h [ASM_FILE]: Adapt for assembly.
+	* grub-core/lib/i386/setjmp.S: Add missing GRUB_MOD_LICENSE.
+	* grub-core/lib/x86_64/setjmp.S: Likewise.
+	* grub-core/lib/mips/setjmp.S: Likewise.
+	* grub-core/lib/powerpc/setjmp.S: Likewise.
+	* grub-core/lib/sparc64/setjmp.S: Likewise.
+
+2011-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/efi/datetime.c: Add missing GRUB_MOD_LICENSE.
 	* grub-core/lib/efi/datetime.c: Likewise.
 

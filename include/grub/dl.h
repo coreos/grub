@@ -21,15 +21,18 @@
 #define GRUB_DL_H	1
 
 #include <grub/symbol.h>
+#ifndef ASM_FILE
 #include <grub/err.h>
 #include <grub/types.h>
 #include <grub/elf.h>
+#endif
 
 /*
  * Macros GRUB_MOD_INIT and GRUB_MOD_FINI are also used by build rules
  * to collect module names, so we define them only when they are not
  * defined already.
  */
+#ifndef ASM_FILE
 
 #ifndef GRUB_MOD_INIT
 #define GRUB_MOD_INIT(name)	\
@@ -66,10 +69,20 @@ __asm__ (".section .moddeps\n.asciz \"" #name "\"\n")
 
 #endif
 
+#endif
+
+#ifndef ASM_FILE
 #ifdef APPLE_CC
-#define GRUB_MOD_SECTION(x) "_" x ", _" x ""
+#define GRUB_MOD_SECTION(x) "_" #x ", _" #x ""
 #else
-#define GRUB_MOD_SECTION(x) "." x
+#define GRUB_MOD_SECTION(x) "." #x
+#endif
+#else
+#ifdef APPLE_CC
+#define GRUB_MOD_SECTION(x) _ ## x , _ ##x 
+#else
+#define GRUB_MOD_SECTION(x) . ## x
+#endif
 #endif
 
 /* Me, Vladimir Serbinenko, hereby I add this module check as per new
@@ -80,14 +93,24 @@ __asm__ (".section .moddeps\n.asciz \"" #name "\"\n")
    constitutes linking) and GRUB core being licensed under GPLv3+.
    Be sure to understand your license obligations.
 */
+#ifndef ASM_FILE
 #define GRUB_MOD_LICENSE(license)	\
-  static char grub_module_license[] __attribute__ ((section (GRUB_MOD_SECTION ("module_license")), used)) = "LICENSE=" license;
+  static char grub_module_license[] __attribute__ ((section (GRUB_MOD_SECTION (module_license)), used)) = "LICENSE=" license;
+#else
+#define GRUB_MOD_LICENSE(license)	\
+  .section GRUB_MOD_SECTION(module_license), "a";	\
+  .ascii "LICENSE="; \
+  .ascii license; \
+  .byte 0
+#endif
 
 /* Under GPL license obligations you have to distribute your module
    under GPLv3(+). However, you can also distribute the same code under
    another license as long as GPLv3(+) version is provided.
 */
 #define GRUB_MOD_DUAL_LICENSE(x)
+
+#ifndef ASM_FILE
 
 struct grub_dl_segment
 {
@@ -141,6 +164,8 @@ grub_err_t grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr);
 #if defined (_mips)
 #define GRUB_LINKER_HAVE_INIT 1
 void grub_arch_dl_init_linker (void);
+#endif
+
 #endif
 
 #endif /* ! GRUB_DL_H */
