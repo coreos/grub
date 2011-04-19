@@ -1,3 +1,8 @@
+2011-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/efi/datetime.c: Add missing GRUB_MOD_LICENSE.
+	* grub-core/lib/efi/datetime.c: Likewise.
+
 2011-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_flush):
