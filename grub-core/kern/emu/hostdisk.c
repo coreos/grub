@@ -945,6 +945,27 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
   return grub_errno;
 }
 
+grub_err_t
+grub_util_biosdisk_flush (struct grub_disk *disk)
+{
+  struct grub_util_biosdisk_data *data = disk->data;
+
+  if (disk->dev->id != GRUB_DISK_DEVICE_BIOSDISK_ID)
+    return GRUB_ERR_NONE;
+  if (data->fd == -1)
+    {
+      data->fd = open_device (disk, 0, O_RDONLY);
+      if (data->fd < 0)
+	return grub_errno;
+    }
+  fsync (data->fd);
+#ifdef __linux__
+  if (data->is_disk)
+    ioctl (data->fd, BLKFLSBUF, 0);
+#endif
+  return GRUB_ERR_NONE;
+}
+
 static void
 grub_util_biosdisk_close (struct grub_disk *disk)
 {
@@ -954,13 +975,7 @@ grub_util_biosdisk_close (struct grub_disk *disk)
   if (data->fd != -1)
     {
       if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
-	{
-	  fsync (data->fd);
-#ifdef __linux__
-	  if (data->is_disk)
-	    ioctl (data->fd, BLKFLSBUF, 0);
-#endif
-	}
+	grub_util_biosdisk_flush (disk);
       close (data->fd);
     }
   free (data);

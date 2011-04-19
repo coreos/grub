@@ -520,9 +520,7 @@ unable_to_embed:
   core_path_dev = grub_make_system_path_relative_to_its_root (core_path_dev_full);
   free (core_path_dev_full);
 
-  /* It is a Good Thing to sync two times.  */
-  sync ();
-  sync ();
+  grub_util_biosdisk_flush (root_dev->disk);
 
 #define MAX_TRIES	5
 
@@ -583,7 +581,7 @@ unable_to_embed:
 	grub_util_info ("error message = %s", grub_errmsg);
 
       grub_errno = GRUB_ERR_NONE;
-      sync ();
+      grub_util_biosdisk_flush (root_dev->disk);
       sleep (1);
     }
 
@@ -674,8 +672,8 @@ unable_to_embed:
     grub_util_error ("%s", grub_errmsg);
 
 
-  /* Sync is a Good Thing.  */
-  sync ();
+  grub_util_biosdisk_flush (root_dev->disk);
+  grub_util_biosdisk_flush (dest_dev->disk);
 
   free (core_path);
   free (core_img);

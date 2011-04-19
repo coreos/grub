@@ -1,5 +1,13 @@
 2011-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_flush):
+	New function.
+	(grub_util_biosdisk_close): Use grub_util_biosdisk_flush.
+	* include/grub/emu/hostdisk.h (grub_util_biosdisk_flush): New proto.
+	* util/grub-setup.c (setup): Use grub_util_biosdisk_flush.
+
+2011-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/gfxterm.c (grub_gfxterm_fullscreen): Preserve previous
 	bitmap.
 	(grub_gfxterm_term_init): Likewise.
