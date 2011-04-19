@@ -345,7 +345,6 @@ grub_gfxterm_fullscreen (void)
       grub_video_swap_buffers ();
       grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
     }
-  bitmap = 0;
 
   /* Select the font to use.  */
   font_name = grub_env_get ("gfxterm_font");
@@ -394,12 +393,6 @@ grub_gfxterm_term_init (struct grub_term_output *term __attribute__ ((unused)))
 static void
 destroy_window (void)
 {
-  if (bitmap)
-    {
-      grub_video_bitmap_destroy (bitmap);
-      bitmap = 0;
-    }
-
   repaint_callback = 0;
   grub_virtual_screen_free ();
 }

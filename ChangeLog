@@ -1,5 +1,11 @@
 2011-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/gfxterm.c (grub_gfxterm_fullscreen): Preserve previous
+	bitmap.
+	(grub_gfxterm_term_init): Likewise.
+
+2011-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Take into account the decorations the computing menu entry width.
 
 	* grub-core/gfxmenu/widget-box.c (get_border_width): New function.
