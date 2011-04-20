@@ -1,5 +1,9 @@
 2011-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Bump version to 1.99~rc2.
+
+2011-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/dl.h [ASM_FILE]: Adapt for assembly.
 	* grub-core/lib/i386/setjmp.S: Add missing GRUB_MOD_LICENSE.
 	* grub-core/lib/x86_64/setjmp.S: Likewise.
