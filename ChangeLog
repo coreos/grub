@@ -1,3 +1,11 @@
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix stack pointer handling in 16-bit relocator.
+
+	* grub-core/lib/i386/relocator16.S (grub_relocator16_start): Move
+	grub_relocator16_sp to %esp rather than %ss, and zero-extend it.
+	Fixes Ubuntu bug #683904.
+
 2011-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Bump version to 1.99~rc2.
