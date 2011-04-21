@@ -27,6 +27,8 @@
 #include <grub/fshelp.h>
 #include <grub/deflate.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /*
   object         format      Pointed by
   superblock     RAW         Fixed offset (0)
