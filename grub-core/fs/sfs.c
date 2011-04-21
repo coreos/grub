@@ -26,6 +26,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* The common header for a block.  */
 struct grub_sfs_bheader
 {
@@ -579,6 +581,9 @@ static struct grub_fs grub_sfs_fs =
     .read = grub_sfs_read,
     .close = grub_sfs_close,
     .label = grub_sfs_label,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 0,
+#endif
     .next = 0
   };
 

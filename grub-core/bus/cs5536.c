@@ -22,6 +22,10 @@
 #include <grub/time.h>
 #include <grub/ata.h>
 
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
+
 int
 grub_cs5536_find (grub_pci_device_t *devp)
 {

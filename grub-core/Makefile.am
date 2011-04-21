@@ -50,7 +50,7 @@ grub_script.yy.h: script/yylex.l
 grub_script.yy.c: grub_script.yy.h
 
 rs_decoder.S: $(srcdir)/lib/reed_solomon.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Os -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3
 
 kern/i386/pc/startup.S: $(builddir)/rs_decoder.S
 
@@ -303,7 +303,7 @@ platform_DATA += moddep.lst
 CLEANFILES += config.log syminfo.lst moddep.lst
 
 $(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT)
-	sh $^ $@
+	TARGET_OBJ2ELF=@TARGET_OBJ2ELF@ sh $^ $@
 platform_DATA += $(MOD_FILES)
 CLEANFILES += $(MOD_FILES)
 

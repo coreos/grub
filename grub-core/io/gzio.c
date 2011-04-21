@@ -44,6 +44,8 @@
 #include <grub/disk.h>
 #include <grub/deflate.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /*
  *  Window Size
  *
@@ -220,19 +222,18 @@ test_gzip_header (grub_file_t file)
 
   gzio->data_offset = grub_file_tell (gzio->file);
 
-  grub_file_seek (gzio->file, grub_file_size (gzio->file) - 4);
-
-  if (grub_file_seekable (gzio->file))
-    {
-      if (grub_file_read (gzio->file, &orig_len, 4) != 4)
-	{
-	  grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
-	  return 0;
-	}
-    }
-  /* FIXME: this does not handle files whose original size is over 4GB.
-     But how can we know the real original size?  */
-  file->size = grub_le_to_cpu32 (orig_len);
+  /* FIXME: don't do this on not easily seekable files.  */
+  {
+    grub_file_seek (gzio->file, grub_file_size (gzio->file) - 4);
+    if (grub_file_read (gzio->file, &orig_len, 4) != 4)
+      {
+	grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
+	return 0;
+      }
+    /* FIXME: this does not handle files whose original size is over 4GB.
+       But how can we know the real original size?  */
+    file->size = grub_le_to_cpu32 (orig_len);
+  }
 
   initialize_tables (gzio);
 
@@ -1171,7 +1172,7 @@ grub_gzio_open (grub_file_t io)
   file->data = gzio;
   file->read_hook = 0;
   file->fs = &grub_gzio_fs;
-  file->not_easly_seekable = 1;
+  file->not_easily_seekable = 1;
 
   if (! test_gzip_header (file))
     {

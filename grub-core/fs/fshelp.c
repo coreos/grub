@@ -22,7 +22,9 @@
 #include <grub/misc.h>
 #include <grub/disk.h>
 #include <grub/fshelp.h>
+#include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Lookup the node PATH.  The node ROOTNODE describes the root of the
    directory tree.  The node found is returned in FOUNDNODE, which is

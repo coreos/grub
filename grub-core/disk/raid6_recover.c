@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/raid.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_uint8_t raid6_table1[256][256];
 static grub_uint8_t raid6_table2[256][256];
 
@@ -119,7 +121,8 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
       else
         {
           if ((array->members[pos].device) &&
-              (! grub_disk_read (array->members[pos].device, sector,
+              (! grub_disk_read (array->members[pos].device,
+				 array->members[i].start_sector + sector,
 				 0, size, buf)))
             {
               grub_raid_block_xor (pbuf, buf, size);
@@ -150,7 +153,9 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
     {
       /* One bad device */
       if ((array->members[p].device) &&
-          (! grub_disk_read (array->members[p].device, sector, 0, size, buf)))
+          (! grub_disk_read (array->members[p].device,
+			     array->members[i].start_sector + sector,
+			     0, size, buf)))
         {
           grub_raid_block_xor (buf, pbuf, size);
           goto quit;
@@ -163,7 +168,8 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
         }
 
       grub_errno = GRUB_ERR_NONE;
-      if (grub_disk_read (array->members[q].device, sector, 0, size, buf))
+      if (grub_disk_read (array->members[q].device,
+			  array->members[i].start_sector + sector, 0, size, buf))
         goto quit;
 
       grub_raid_block_xor (buf, qbuf, size);
@@ -181,12 +187,16 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
           goto quit;
         }
 
-      if (grub_disk_read (array->members[p].device, sector, 0, size, buf))
+      if (grub_disk_read (array->members[p].device,
+			  array->members[i].start_sector + sector,
+			  0, size, buf))
         goto quit;
 
       grub_raid_block_xor (pbuf, buf, size);
 
-      if (grub_disk_read (array->members[q].device, sector, 0, size, buf))
+      if (grub_disk_read (array->members[q].device,
+			  array->members[i].start_sector + sector,
+			  0, size, buf))
         goto quit;
 
       grub_raid_block_xor (qbuf, buf, size);

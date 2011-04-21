@@ -34,6 +34,9 @@
 #include <grub/cpu/relocator.h>
 #include <grub/video.h>
 #include <grub/i386/floppy.h>
+#include <grub/lib/cmdline.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #define GRUB_LINUX_CL_OFFSET		0x9000
 #define GRUB_LINUX_CL_END_OFFSET	0x90FF
@@ -86,7 +89,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_size_t real_size;
   grub_ssize_t len;
   int i;
-  char *dest;
   char *grub_linux_prot_chunk;
   int grub_linux_is_bzimage;
   grub_addr_t grub_linux_prot_target;
@@ -286,21 +288,14 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		 ((GRUB_LINUX_MAX_SETUP_SECTS - setup_sects - 1)
 		  << GRUB_DISK_SECTOR_BITS));
 
-  /* Specify the boot file.  */
-  dest = grub_stpcpy (grub_linux_real_chunk + GRUB_LINUX_CL_OFFSET,
-		      "BOOT_IMAGE=");
-  dest = grub_stpcpy (dest, argv[0]);
-
-  /* Copy kernel parameters.  */
-  for (i = 1;
-       i < argc
-	 && dest + grub_strlen (argv[i]) + 1 < (grub_linux_real_chunk
-						+ GRUB_LINUX_CL_END_OFFSET);
-       i++)
-    {
-      *dest++ = ' ';
-      dest = grub_stpcpy (dest, argv[i]);
-    }
+  /* Create kernel command line.  */
+  grub_memcpy ((char *)grub_linux_real_chunk + GRUB_LINUX_CL_OFFSET,
+		LINUX_IMAGE, sizeof (LINUX_IMAGE));
+  grub_create_loader_cmdline (argc, argv,
+			      (char *)grub_linux_real_chunk
+			      + GRUB_LINUX_CL_OFFSET + sizeof (LINUX_IMAGE) - 1,
+			      GRUB_LINUX_CL_END_OFFSET - GRUB_LINUX_CL_OFFSET
+			      - (sizeof (LINUX_IMAGE) - 1));
 
   if (grub_linux_is_bzimage)
     grub_linux_prot_target = GRUB_LINUX_BZIMAGE_ADDR;

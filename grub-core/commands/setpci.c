@@ -25,6 +25,8 @@
 #include <grub/mm.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct pci_register
 {
   const char *name;
@@ -32,7 +34,7 @@ struct pci_register
   unsigned size;
 };
 
-struct pci_register pci_registers[] =
+static struct pci_register pci_registers[] =
   {
     {"VENDOR_ID",       GRUB_PCI_REG_VENDOR      , 2},
     {"DEVICE_ID",       GRUB_PCI_REG_DEVICE      , 2},

@@ -41,6 +41,7 @@ extern void grub_at_keyboard_init (void);
 extern void grub_serial_init (void);
 extern void grub_terminfo_init (void);
 extern void grub_keylayouts_init (void);
+extern void grub_boot_init (void);
 
 /* FIXME: use interrupt to count high.  */
 grub_uint64_t
@@ -210,6 +211,8 @@ grub_machine_init (void)
 
   grub_terminfo_init ();
   grub_serial_init ();
+
+  grub_boot_init ();
 }
 
 void
@@ -222,6 +225,8 @@ grub_halt (void)
 {
   grub_outb (grub_inb (GRUB_CPU_LOONGSON_GPIOCFG)
 	     & ~GRUB_CPU_LOONGSON_SHUTDOWN_GPIO, GRUB_CPU_LOONGSON_GPIOCFG);
+
+  grub_millisleep (1500);
 
   grub_printf ("Shutdown failed\n");
   grub_refresh ();
@@ -238,6 +243,8 @@ void
 grub_reboot (void)
 {
   grub_write_ec (GRUB_MACHINE_EC_COMMAND_REBOOT);
+
+  grub_millisleep (1500);
 
   grub_printf ("Reboot failed\n");
   grub_refresh ();

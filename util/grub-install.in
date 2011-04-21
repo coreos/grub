@@ -56,9 +56,6 @@ debug_image=
 
 update_nvram=yes
 
-ofpathname="`which ofpathname`"
-nvsetenv="`which nvsetenv`"
-efibootmgr="`which efibootmgr 2>/dev/null || true`"
 removable=no
 efi_quiet=
 
@@ -67,7 +64,7 @@ if test -f "${sysconfdir}/default/grub" ; then
     . "${sysconfdir}/default/grub"
 fi
 
-bootloader_id="$(echo "$GRUB_DISTRIBUTOR" | tr '[A-Z]' '[a-z]' | cut -d' ' -f1)"
+bootloader_id="$(echo "$GRUB_DISTRIBUTOR" | tr 'A-Z' 'a-z' | cut -d' ' -f1)"
 if test -z "$bootloader_id"; then
     bootloader_id=grub
 fi
@@ -273,6 +270,11 @@ if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
     exit 1
 fi
 
+if ! ([ "${target_cpu}-${platform}" = "i386-pc" ] \
+    || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
+    install_device=
+fi
+
 # If the debugging feature is enabled, print commands.
 setup_verbose=
 if test x"$debug" = xyes; then
@@ -365,7 +367,7 @@ if [ x"$platform" = xefi ]; then
 	    case "$target_cpu" in
 		i386)
 		    efi_file=BOOTIA32.EFI ;;
-		x86-64)
+		x86_64)
 		    efi_file=BOOTX64.EFI ;;
 	    # GRUB does not yet support these architectures, but they're defined
 	    # by the specification so we include them here to ease future
@@ -379,7 +381,7 @@ if [ x"$platform" = xefi ]; then
 	    case "$target_cpu" in
 		i386)
 		    efi_file=grubia32.efi ;;
-		x86-64)
+		x86_64)
 		    efi_file=grubx64.efi ;;
 	 # GRUB does not yet support these architectures, but they're defined
  	 # by the specification so we include them here to ease future
@@ -465,7 +467,8 @@ fi
 fs_module="`"$grub_probe" --device-map="${device_map}" --target=fs --device "${grub_device}"`"
 if test "x$fs_module" = x ; then
     echo "Auto-detection of a filesystem of ${grub_device} failed." 1>&2
-    echo "Please report this together with the output of \"$grub_probe --device-map=\"${device_map}\" --target=fs -v ${grubdir}\" to <bug-grub@gnu.org>" 1>&2
+    echo "Try with --recheck." 1>&2
+    echo "If the problem persists please report this together with the output of \"$grub_probe --device-map=\"${device_map}\" --target=fs -v ${grubdir}\" to <bug-grub@gnu.org>" 1>&2
     exit 1
 fi
 
@@ -519,25 +522,22 @@ if [ "x${devabstraction_module}" = "x" ] ; then
     # Strip partition number
     grub_partition="`echo "${grub_drive}" | sed -e 's/^[^,]*[,)]//; s/)$//'`"
     grub_drive="`echo "${grub_drive}" | sed -e s/,[a-z0-9,]*//g`"
-    if [ "$disk_module" = ata ] ; then
+    if [ "$disk_module" = ata ] || [ "x${grub_drive}" != "x${install_drive}" ] || ([ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${target_cpu}-${platform}" != x"sparc64-ieee1275" ]) ; then
         # generic method (used on coreboot and ata mod)
         uuid="`"$grub_probe" --device-map="${device_map}" --target=fs_uuid --device "${grub_device}"`"
         if [ "x${uuid}" = "x" ] ; then
-          echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          if [ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${target_cpu}-${platform}" != x"sparc64-ieee1275" ]; then
+             echo "UUID needed with $platform, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          elif [ "$disk_module" = ata ]; then
+             echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          else
+             echo "UUID needed with cross-disk installs, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          fi
+             
           exit 1
         fi
         echo "search.fs_uuid ${uuid} root " >> "${grubdir}/load.cfg"
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
-	config_opt="-c ${grubdir}/load.cfg "
-        modules="$modules search_fs_uuid"
-    elif [ "x${grub_drive}" != "x${install_drive}" ] ; then
-        uuid="`"$grub_probe" --device-map="${device_map}" --target=fs_uuid --device "${grub_device}"`"
-        if [ "x${uuid}" = "x" ] ; then
-          echo "You attempted a cross-disk install, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
-          exit 1
-        fi
-        echo "search.fs_uuid ${uuid} root " >> ${grubdir}/load.cfg
-	echo 'set prefix=($root)'"${relative_grubdir}" >> ${grubdir}/load.cfg
 	config_opt="-c ${grubdir}/load.cfg "
         modules="$modules search_fs_uuid"
     elif [ "x$platform" = xefi ] || [ "x$platform" = xpc ]; then
@@ -585,6 +585,8 @@ if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" 
 	--device-map="${device_map}" "${install_device}" || exit 1
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
     if [ x"$update_nvram" = xyes ]; then
+	ofpathname="`which ofpathname`"
+	nvsetenv="`which nvsetenv`"
 	set "$ofpathname" dummy
 	if test -f "$1"; then
 	    :
@@ -619,8 +621,13 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
     fi
 elif [ x"$platform" = xefi ]; then
     cp "${grubdir}/core.${imgext}" "${efidir}/${efi_file}"
+    # For old macs. Suggested by Peter Jones.
+    if [ x$target_cpu = xi386 ]; then
+	cp "${grubdir}/core.${imgext}" "${efidir}/boot.efi"
+    fi
 
     # Try to make this image bootable using the EFI Boot Manager, if available.
+    efibootmgr="`which efibootmgr`"
     if test "$removable" = no && test -n "$efi_distributor" && \
 	test -n "$efibootmgr"; then
         # On Linux, we need the efivars kernel modules.
@@ -648,7 +655,7 @@ elif [ x"$platform" = xefi ]; then
 	    efidir_disk="$(echo "$clean_devmap" | grep "^$(echo "$efidir_drive" | sed 's/,[^)]*//')" | cut -f2)"
 	    efidir_part="$(echo "$efidir_drive" | sed 's/^([^,]*,[^0-9]*//; s/[^0-9].*//')"
 	    efibootmgr $efi_quiet -c -d "$efidir_disk" -p "$efidir_part" -w \
-		-L "$GRUB_DISTRIBUTOR" -l "\\EFI\\$efi_distributor\\$efi_file"
+		-L "$bootloader_id" -l "\\EFI\\$efi_distributor\\$efi_file"
 	fi
     fi
 fi

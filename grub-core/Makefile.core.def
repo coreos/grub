@@ -200,7 +200,7 @@ program = {
 
   ldadd = 'kernel.img$(EXEEXT)';
   ldadd = '$(MODULE_FILES)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;
 };
@@ -212,7 +212,7 @@ program = {
   emu_nodist = symlist.c;
 
   ldadd = 'kernel.img$(EXEEXT)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;
 };
@@ -324,6 +324,7 @@ image = {
   name = fwstart;
   mips_yeeloong = boot/mips/yeeloong/fwstart.S;
   objcopyflags = '-O binary';
+  ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_yeeloong;
 };
 
@@ -1014,6 +1015,19 @@ module = {
 };
 
 module = {
+  name = zfs;
+  common = fs/zfs/zfs.c;
+  common = fs/zfs/zfs_lzjb.c;
+  common = fs/zfs/zfs_sha256.c;
+  common = fs/zfs/zfs_fletcher.c;
+};
+
+module = {
+  name = zfsinfo;
+  common = fs/zfs/zfsinfo.c;
+};
+
+module = {
   name = pxe;
   i386_pc = fs/i386/pc/pxe.c;
   enable = i386_pc;
@@ -1142,6 +1156,7 @@ module = {
 module = {
   name = linux16;
   i386_pc = loader/i386/pc/linux.c;
+  i386_pc = lib/cmdline.c;
   enable = i386_pc;
 };
 
@@ -1176,6 +1191,7 @@ module = {
   mips = loader/mips/linux.c;
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
+  common = lib/cmdline.c;
   enable = noemu;
 };
 
@@ -1454,7 +1470,6 @@ module = {
   name = ieee1275_fb;
   ieee1275 = video/ieee1275.c;
   enable = powerpc;
-  enable = sparc64;
 };
 
 module = {

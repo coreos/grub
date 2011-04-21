@@ -23,6 +23,8 @@
 #include <grub/partition.h>
 #include <grub/acorn_filecore.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define LINUX_NATIVE_MAGIC grub_cpu_to_le32 (0xdeafa1de)
 #define LINUX_SWAP_MAGIC   grub_cpu_to_le32 (0xdeafab1e)
 #define LINUX_MAP_ENTRIES  (512 / 12)

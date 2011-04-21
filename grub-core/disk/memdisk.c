@@ -24,6 +24,8 @@
 #include <grub/mm.h>
 #include <grub/types.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static char *memdisk_addr;
 static grub_off_t memdisk_size = 0;
 

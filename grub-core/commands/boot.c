@@ -25,6 +25,8 @@
 #include <grub/mm.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t (*grub_loader_boot_func) (void);
 static grub_err_t (*grub_loader_unload_func) (void);
 static int grub_loader_noreturn;

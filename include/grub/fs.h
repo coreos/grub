@@ -31,9 +31,9 @@ struct grub_file;
 
 struct grub_dirhook_info
 {
-  int dir:1;
-  int mtimeset:1;
-  int case_insensitive:1;
+  unsigned dir:1;
+  unsigned mtimeset:1;
+  unsigned case_insensitive:1;
   grub_int32_t mtime;
 };
 

@@ -24,6 +24,8 @@
 #include <grub/fs.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #include "xz.h"
 #include "xz_stream.h"
 
@@ -200,7 +202,7 @@ grub_xzio_open (grub_file_t io)
   file->read_hook = 0;
   file->fs = &grub_xzio_fs;
   file->size = GRUB_FILE_SIZE_UNKNOWN;
-  file->not_easly_seekable = 1;
+  file->not_easily_seekable = 1;
 
   if (grub_file_tell (xzio->file) != 0)
     grub_file_seek (xzio->file, 0);
@@ -222,7 +224,8 @@ grub_xzio_open (grub_file_t io)
   xzio->buf.out_pos = 0;
   xzio->buf.out_size = XZBUFSIZ;
 
-  if (!test_header (file) || !(grub_file_seekable (io) && test_footer (file)))
+  /* FIXME: don't test footer on not easily seekable files.  */
+  if (!test_header (file) || !test_footer (file))
     {
       grub_errno = GRUB_ERR_NONE;
       grub_file_seek (io, 0);

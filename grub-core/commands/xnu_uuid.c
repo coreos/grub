@@ -34,6 +34,8 @@
 #include <grub/i18n.h>
 #include <grub/crypto.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* This prefix is used by xnu and boot-132 to hash
    together with volume serial. */
 static grub_uint8_t hash_prefix[16]

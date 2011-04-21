@@ -33,6 +33,9 @@
 #include <grub/command.h>
 #include <grub/i386/relocator.h>
 #include <grub/i18n.h>
+#include <grub/lib/cmdline.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/i386/pc/vesa_modes_table.h>
@@ -135,7 +138,8 @@ find_efi_mmap_size (void)
      later, and EFI itself may allocate more.  */
   mmap_size += (1 << 12);
 
-  return page_align (mmap_size);
+  mmap_size = page_align (mmap_size);
+  return mmap_size;
 }
 
 #endif
@@ -312,6 +316,13 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   struct grub_video_mode_info mode_info;
   void *framebuffer;
   grub_err_t err;
+  grub_video_driver_id_t driver_id;
+  char *gfxlfbvar = grub_env_get ("gfxpayloadforcelfb");
+
+  driver_id = grub_video_get_driver_id ();
+
+  if (driver_id == GRUB_VIDEO_DRIVER_NONE)
+    return 1;
 
   err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
 
@@ -338,12 +349,40 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->reserved_mask_size = mode_info.reserved_mask_size;
   params->reserved_field_pos = mode_info.reserved_field_pos;
 
+  if (gfxlfbvar && (gfxlfbvar[0] == '1' || gfxlfbvar[0] == 'y'))
+    params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
+  else
+    {
+      switch (driver_id)
+	{
+	case GRUB_VIDEO_DRIVER_VBE:
+	  params->lfb_size >>= 16;
+	  params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
+	  break;
+	
+	case GRUB_VIDEO_DRIVER_EFI_UGA:
+	case GRUB_VIDEO_DRIVER_EFI_GOP:
+	  params->have_vga = GRUB_VIDEO_LINUX_TYPE_EFIFB;
+	  break;
+
+	  /* FIXME: check if better id is available.  */
+	case GRUB_VIDEO_DRIVER_SM712:
+	case GRUB_VIDEO_DRIVER_VGA:
+	case GRUB_VIDEO_DRIVER_CIRRUS:
+	case GRUB_VIDEO_DRIVER_BOCHS:
+	  /* Make gcc happy. */
+	case GRUB_VIDEO_DRIVER_SDL:
+	case GRUB_VIDEO_DRIVER_NONE:
+	  params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
+	  break;
+	}
+    }
 
 #ifdef GRUB_MACHINE_PCBIOS
   /* VESA packed modes may come with zeroed mask sizes, which need
      to be set here according to DAC Palette width.  If we don't,
      this results in Linux displaying a black screen.  */
-  if (mode_info.bpp <= 8)
+  if (driver_id == GRUB_VIDEO_DRIVER_VBE && mode_info.bpp <= 8)
     {
       struct grub_vbe_info_block controller_info;
       int status;
@@ -418,9 +457,9 @@ grub_linux_boot (void)
 				addr, size, GRUB_E820_NVS);
 	  break;
 
-        case GRUB_MEMORY_CODE:
+        case GRUB_MEMORY_BADRAM:
 	  grub_e820_add_region (params->e820_map, &e820_num,
-				addr, size, GRUB_E820_EXEC_CODE);
+				addr, size, GRUB_E820_BADRAM);
 	  break;
 
         default:
@@ -456,15 +495,7 @@ grub_linux_boot (void)
       grub_errno = GRUB_ERR_NONE;
     }
 
-  if (! grub_linux_setup_video (params))
-    {
-      /* Use generic framebuffer unless VESA is known to be supported.  */
-      if (params->have_vga != GRUB_VIDEO_LINUX_TYPE_VESA)
-	params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
-      else
-	params->lfb_size >>= 16;
-    }
-  else
+  if (grub_linux_setup_video (params))
     {
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
       params->have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
@@ -575,7 +606,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_size_t real_size, prot_size;
   grub_ssize_t len;
   int i;
-  char *dest;
 
   grub_dl_ref (my_mod);
 
@@ -771,10 +801,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		break;
 	      }
 
-	    /* We can't detect VESA, but user is implicitly telling us that it
-	       is built-in because `vga=' parameter was used.  */
-	    params->have_vga = GRUB_VIDEO_LINUX_TYPE_VESA;
-
 	    linux_mode = &grub_vesa_mode_table[vid_mode
 					       - GRUB_VESA_MODE_TABLE_START];
 
@@ -836,22 +862,14 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	params->loadflags |= GRUB_LINUX_FLAG_QUIET;
       }
 
-
-  /* Specify the boot file.  */
-  dest = grub_stpcpy ((char *) real_mode_mem + GRUB_LINUX_CL_OFFSET,
-		      "BOOT_IMAGE=");
-  dest = grub_stpcpy (dest, argv[0]);
-
-  /* Copy kernel parameters.  */
-  for (i = 1;
-       i < argc
-	 && dest + grub_strlen (argv[i]) + 1 < ((char *) real_mode_mem
-						+ GRUB_LINUX_CL_END_OFFSET);
-       i++)
-    {
-      *dest++ = ' ';
-      dest = grub_stpcpy (dest, argv[i]);
-    }
+  /* Create kernel command line.  */
+  grub_memcpy ((char *)real_mode_mem + GRUB_LINUX_CL_OFFSET, LINUX_IMAGE,
+	      sizeof (LINUX_IMAGE));
+  grub_create_loader_cmdline (argc, argv,
+			      (char *)real_mode_mem + GRUB_LINUX_CL_OFFSET
+			      + sizeof (LINUX_IMAGE) - 1,
+			      GRUB_LINUX_CL_END_OFFSET - GRUB_LINUX_CL_OFFSET
+			      - (sizeof (LINUX_IMAGE) - 1));
 
   len = prot_size;
   if (grub_file_read (file, prot_mode_mem, len) != len)

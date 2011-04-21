@@ -26,6 +26,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define	XFS_INODE_EXTENTS	9
 
 #define XFS_INODE_FORMAT_INO	1
@@ -451,18 +453,27 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 	for (i = 0; i < diro->inode.data.dir.dirhead.count; i++)
 	  {
 	    grub_uint64_t ino;
-	    void *inopos = (((char *) de)
+	    grub_uint8_t *inopos = (((grub_uint8_t *) de)
 			    + sizeof (struct grub_xfs_dir_entry)
 			    + de->len - 1);
 	    char name[de->len + 1];
 
+	    /* inopos might be unaligned.  */
 	    if (smallino)
-	      {
-		ino = grub_be_to_cpu32 (*(grub_uint32_t *) inopos);
-		ino = grub_cpu_to_be64 (ino);
-	      }
+	      ino = (((grub_uint32_t) inopos[0]) << 24)
+		| (((grub_uint32_t) inopos[1]) << 16)
+		| (((grub_uint32_t) inopos[2]) << 8)
+		| (((grub_uint32_t) inopos[3]) << 0);
 	    else
-	      ino = *(grub_uint64_t *) inopos;
+	      ino = (((grub_uint64_t) inopos[0]) << 56)
+		| (((grub_uint64_t) inopos[1]) << 48)
+		| (((grub_uint64_t) inopos[2]) << 40)
+		| (((grub_uint64_t) inopos[3]) << 32)
+		| (((grub_uint64_t) inopos[4]) << 24)
+		| (((grub_uint64_t) inopos[5]) << 16)
+		| (((grub_uint64_t) inopos[6]) << 8)
+		| (((grub_uint64_t) inopos[7]) << 0);
+	    ino = grub_cpu_to_be64 (ino);
 
 	    grub_memcpy (name, de->name, de->len);
 	    name[de->len] = '\0';
@@ -808,6 +819,9 @@ static struct grub_fs grub_xfs_fs =
     .close = grub_xfs_close,
     .label = grub_xfs_label,
     .uuid = grub_xfs_uuid,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 0,
+#endif
     .next = 0
   };
 

@@ -26,6 +26,8 @@
 #include <grub/scsi.h>
 #include <grub/cs5536.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* At the moment, only two IDE ports are supported.  */
 static const grub_port_t grub_ata_ioaddress[] = { GRUB_ATA_CH0_PORT1,
 						  GRUB_ATA_CH1_PORT1 };

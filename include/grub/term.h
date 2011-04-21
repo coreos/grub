@@ -140,9 +140,6 @@ grub_term_color_state;
 /* The X position of the left border.  */
 #define GRUB_TERM_LEFT_BORDER_X	GRUB_TERM_MARGIN
 
-/* The number of lines of messages at the bottom.  */
-#define GRUB_TERM_MESSAGE_HEIGHT	8
-
 /* The Y position of the first entry.  */
 #define GRUB_TERM_FIRST_ENTRY_Y	(GRUB_TERM_TOP_BORDER_Y + 1)
 
@@ -337,29 +334,6 @@ static inline int
 grub_term_entry_width (struct grub_term_output *term)
 {
   return grub_term_border_width (term) - 2 - GRUB_TERM_MARGIN * 2 - 1;
-}
-
-/* The height of the border.  */
-
-static inline unsigned
-grub_term_border_height (struct grub_term_output *term)
-{
-  return grub_term_height (term) - GRUB_TERM_TOP_BORDER_Y
-    - GRUB_TERM_MESSAGE_HEIGHT;
-}
-
-/* The number of entries shown at a time.  */
-static inline int
-grub_term_num_entries (struct grub_term_output *term)
-{
-  return grub_term_border_height (term) - 2;
-}
-
-static inline int
-grub_term_cursor_x (struct grub_term_output *term)
-{
-  return (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term) 
-	  - GRUB_TERM_MARGIN - 1);
 }
 
 static inline grub_uint16_t

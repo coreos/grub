@@ -31,7 +31,7 @@ CLASS="--class os"
 case "${GRUB_DISTRIBUTOR}" in
   Debian)
 	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD"
-	CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]' | cut -d' ' -f1) --class gnu-kfreebsd --class gnu ${CLASS}"
+	CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr 'A-Z' 'a-z' | cut -d' ' -f1) --class gnu-kfreebsd --class gnu ${CLASS}"
   ;;
   *)
 	OS="FreeBSD"
@@ -84,8 +84,9 @@ kfreebsd_entry ()
   fi
 
   printf '%s\n' "${prepare_boot_cache}"
+  message="$(gettext_printf "Loading kernel of FreeBSD %s ..." ${version})"
   cat << EOF
-	echo			'$(printf "$(gettext_quoted "Loading kernel of FreeBSD %s ...")" ${version})'
+	echo			'$message'
 	kfreebsd		${rel_dirname}/${basename} ${args}
 EOF
 
@@ -109,7 +110,11 @@ EOF
     ;;
   esac
 
-  load_kfreebsd_module ${kfreebsd_fs} false
+  if [ x${kfreebsd_fs} = xufs ]; then
+	load_kfreebsd_module ${kfreebsd_fs} true
+  else
+	load_kfreebsd_module ${kfreebsd_fs} false
+  fi
 
   cat << EOF
 	set kFreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${kfreebsd_device}

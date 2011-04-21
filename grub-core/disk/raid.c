@@ -23,6 +23,11 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/raid.h>
+#ifdef GRUB_UTIL
+#include <grub/util/misc.h>
+#endif
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Linked list of RAID arrays. */
 static struct grub_raid_array *array_list;
@@ -117,18 +122,49 @@ grub_raid_getname (struct grub_disk *disk)
 }
 #endif
 
+static inline int
+ascii2hex (char c)
+{
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+  if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+  return 0;
+}
+
 static grub_err_t
 grub_raid_open (const char *name, grub_disk_t disk)
 {
   struct grub_raid_array *array;
   unsigned n;
 
-  for (array = array_list; array != NULL; array = array->next)
+  if (grub_memcmp (name, "mduuid/", sizeof ("mduuid/") - 1) == 0)
     {
-      if (!grub_strcmp (array->name, name))
-	if (grub_is_array_readable (array))
-	  break;
+      const char *uuidstr = name + sizeof ("mduuid/") - 1;
+      grub_size_t uuid_len = grub_strlen (uuidstr) / 2;
+      grub_uint8_t uuidbin[uuid_len];
+      unsigned i;
+      for (i = 0; i < uuid_len; i++)
+	uuidbin[i] = ascii2hex (uuidstr[2 * i + 1])
+	  | (ascii2hex (uuidstr[2 * i]) << 4);
+      
+      for (array = array_list; array != NULL; array = array->next)
+	{
+	  if (uuid_len == (unsigned) array->uuid_len
+	      && grub_memcmp (uuidbin, array->uuid, uuid_len) == 0)
+	    if (grub_is_array_readable (array))
+	      break;
+	}
     }
+  else
+    for (array = array_list; array != NULL; array = array->next)
+      {
+	if (!grub_strcmp (array->name, name))
+	  if (grub_is_array_readable (array))
+	    break;
+      }
 
   if (!array)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown RAID device %s",
@@ -522,14 +558,16 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
           /* We found more members of the array than the array
              actually has according to its superblock.  This shouldn't
              happen normally.  */
-          grub_dprintf ("raid", "array->nr_devs > array->total_devs (%d)?!?",
-			array->total_devs);
+          return grub_error (GRUB_ERR_BAD_DEVICE,
+			     "superfluous RAID member (%d found)",
+			     array->total_devs);
 
         if (array->members[new_array->index].device != NULL)
           /* We found multiple devices with the same number. Again,
              this shouldn't happen.  */
-          grub_dprintf ("raid", "Found two disks with the number %d?!?",
-			new_array->number);
+	  return grub_error (GRUB_ERR_BAD_DEVICE,
+			     "found two disks with the index %d for RAID %s",
+			     new_array->index, array->name);
 
         if (new_array->disk_size < array->disk_size)
           array->disk_size = new_array->disk_size;
@@ -568,7 +606,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 	{
 	  for (p = array_list; p != NULL; p = p->next)
 	    {
-	      if (! p->name && p->number == array->number) 
+	      if (p->number == array->number) 
 		break;
 	    }
 	}
@@ -636,6 +674,10 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 
       grub_dprintf ("raid", "Found array %s (%s)\n", array->name,
                     scanner_name);
+#ifdef GRUB_UTIL
+      grub_util_info ("Found array %s (%s)", array->name,
+		      scanner_name);
+#endif
 
       /* Add our new array to the list.  */
       array->next = array_list;
@@ -694,7 +736,12 @@ grub_raid_register (grub_raid_t raid)
       struct grub_raid_array array;
       grub_disk_addr_t start_sector;
 
-      grub_dprintf ("raid", "Scanning for RAID devices on disk %s\n", name);
+      grub_dprintf ("raid", "Scanning for %s RAID devices on disk %s\n",
+		    grub_raid_list->name, name);
+#ifdef GRUB_UTIL
+      grub_util_info ("Scanning for %s RAID devices on disk %s",
+		      grub_raid_list->name, name);
+#endif
 
       disk = grub_disk_open (name);
       if (!disk)

@@ -28,6 +28,8 @@
 #include <grub/fshelp.h>
 #include <grub/charset.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_ISO9660_FSTYPE_DIR		0040000
 #define GRUB_ISO9660_FSTYPE_REG		0100000
 #define GRUB_ISO9660_FSTYPE_SYMLINK	0120000
@@ -808,6 +810,15 @@ grub_iso9660_label (grub_device_t device, char **label)
                  ((grub_uint16_t *) &data->voldesc.volname, 16);
       else
         *label = grub_strndup ((char *) data->voldesc.volname, 32);
+      if (*label)
+	{
+	  char *ptr;
+	  for (ptr = *label; *ptr;ptr++);
+	  ptr--;
+	  while (ptr >= *label && *ptr == ' ')
+	    *ptr-- = 0;
+	}
+
       grub_free (data);
     }
   else

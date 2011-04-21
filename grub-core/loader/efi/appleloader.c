@@ -27,6 +27,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_dl_t my_mod;
 
 static grub_efi_handle_t image_handle;

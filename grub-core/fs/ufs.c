@@ -25,6 +25,8 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef MODE_UFS2
 #define GRUB_UFS_MAGIC		0x19540119
 #else

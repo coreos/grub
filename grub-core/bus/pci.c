@@ -21,6 +21,8 @@
 #include <grub/pci.h>
 #include <grub/mm.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* FIXME: correctly support 64-bit architectures.  */
 /* #if GRUB_TARGET_SIZEOF_VOID_P == 4 */
 struct grub_pci_dma_chunk *
@@ -90,7 +92,14 @@ grub_pci_iterate (grub_pci_iteratefunc_t hook)
 
 	      /* Check if there is a device present.  */
 	      if (id >> 16 == 0xFFFF)
-		continue;
+		{
+		  if (dev.function == 0)
+		    /* Devices are required to implement function 0, so if
+		       it's missing then there is no device here.  */
+		    break;
+		  else
+		    continue;
+		}
 
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
 	      /* Skip ghosts.  */

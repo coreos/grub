@@ -31,6 +31,8 @@
 #include <grub/bitmap_scale.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define DEFAULT_VIDEO_MODE	"auto"
 #define DEFAULT_BORDER_WIDTH	10
 
@@ -343,7 +345,6 @@ grub_gfxterm_fullscreen (void)
       grub_video_swap_buffers ();
       grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
     }
-  bitmap = 0;
 
   /* Select the font to use.  */
   font_name = grub_env_get ("gfxterm_font");
@@ -392,12 +393,6 @@ grub_gfxterm_term_init (struct grub_term_output *term __attribute__ ((unused)))
 static void
 destroy_window (void)
 {
-  if (bitmap)
-    {
-      grub_video_bitmap_destroy (bitmap);
-      bitmap = 0;
-    }
-
   repaint_callback = 0;
   grub_virtual_screen_free ();
 }
@@ -532,21 +527,8 @@ dirty_region_is_empty (void)
 }
 
 static void
-dirty_region_add (int x, int y, unsigned int width, unsigned int height)
+dirty_region_add_real (int x, int y, unsigned int width, unsigned int height)
 {
-  if ((width == 0) || (height == 0))
-    return;
-
-  if (repaint_scheduled)
-    {
-      x = virtual_screen.offset_x;
-      y = virtual_screen.offset_y;
-      width = virtual_screen.width;
-      height = virtual_screen.height;
-      repaint_scheduled = 0;
-      repaint_was_scheduled = 1;
-    }
-
   if (dirty_region_is_empty ())
     {
       dirty_region.top_left_x = x;
@@ -565,6 +547,22 @@ dirty_region_add (int x, int y, unsigned int width, unsigned int height)
       if ((y + (int)height - 1) > dirty_region.bottom_right_y)
         dirty_region.bottom_right_y = y + height - 1;
     }
+}
+
+static void
+dirty_region_add (int x, int y, unsigned int width, unsigned int height)
+{
+  if ((width == 0) || (height == 0))
+    return;
+
+  if (repaint_scheduled)
+    {
+      dirty_region_add_real (virtual_screen.offset_x, virtual_screen.offset_y,
+			     virtual_screen.width, virtual_screen.height);
+      repaint_scheduled = 0;
+      repaint_was_scheduled = 1;
+    }
+  dirty_region_add_real (x, y, width, height);
 }
 
 static void
@@ -945,6 +943,8 @@ calculate_normal_character_width (grub_font_t font)
       if (glyph->device_width > width)
 	width = glyph->device_width;
     }
+  if (!width)
+    return 8;
 
   return width;
 }
