@@ -69,7 +69,7 @@ typedef enum
 
 struct grub_luks
 {
-  char *devname, *source;
+  char *source;
   grub_uint32_t offset;
   grub_disk_t source_disk;
   int ref;
@@ -438,7 +438,6 @@ grub_luks_scan_device_real (const char *name, grub_disk_t source)
 	if (!newdev)
 	  return grub_errno;
 	newdev->id = n;
-	newdev->devname = grub_xasprintf ("luks%d", n);
 	newdev->source = grub_strdup (name);
 	newdev->source_id = source->id;
 	newdev->source_dev_id = source->dev->id;
@@ -490,8 +489,12 @@ grub_luks_iterate (int (*hook) (const char *name))
   grub_luks_t i;
 
   for (i = luks_list; i != NULL; i = i->next)
-    if (hook (i->devname))
-      return 1;
+    {
+      char buf[30];
+      grub_snprintf (buf, sizeof (buf), "luks%lu", i->id);
+      if (hook (buf))
+	return 1;
+    }
 
   return GRUB_ERR_NONE;
 }
@@ -501,11 +504,25 @@ grub_luks_open (const char *name, grub_disk_t disk)
 {
   grub_luks_t dev;
 
-  /* Search for requested device in the list of LUKS devices.  */
-  for (dev = luks_list; dev != NULL; dev = dev->next)
-    if (grub_strcmp (dev->devname, name) == 0)
-      break;
+  if (grub_memcmp (name, "luks", sizeof ("luks") - 1) != 0)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "No such device");
 
+  if (grub_memcmp (name, "luksuuid/", sizeof ("luksuuid/") - 1) == 0)
+    {
+      for (dev = luks_list; dev != NULL; dev = dev->next)
+	if (grub_strcmp (name + sizeof ("luksuuid/") - 1, dev->uuid) == 0)
+	  break;
+    }
+  else
+    {
+      unsigned long id = grub_strtoul (name + sizeof ("luks") - 1, 0, 0);
+      if (grub_errno)
+	return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "No such device");
+      /* Search for requested device in the list of LUKS devices.  */
+      for (dev = luks_list; dev != NULL; dev = dev->next)
+	if (dev->id == id)
+	  break;
+    }
   if (!dev)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "No such device");
 
@@ -582,7 +599,6 @@ luks_cleanup (void)
 
   while (dev != NULL)
     {
-      grub_free (dev->devname);
       grub_free (dev->source);
       grub_free (dev->cipher);
       grub_free (dev->essiv_cipher);
@@ -608,7 +624,7 @@ grub_cmd_luksmount (grub_extcmd_context_t ctxt, int argc, char **args)
       for (dev = luks_list; dev != NULL; dev = dev->next)
 	if (grub_strcmp (dev->uuid, args[0]) == 0)
 	  {
-	    grub_dprintf ("luks", "already mounted as %s\n", dev->devname);
+	    grub_dprintf ("luks", "already mounted as luks%lu\n", dev->id);
 	    return GRUB_ERR_NONE;
 	  }
 
@@ -632,7 +648,7 @@ grub_cmd_luksmount (grub_extcmd_context_t ctxt, int argc, char **args)
       for (dev = luks_list; dev != NULL; dev = dev->next)
 	if (dev->source_id == disk->id && dev->source_dev_id == disk->dev->id)
 	  {
-	    grub_dprintf ("luks", "already mounted as %s\n", dev->devname);
+	    grub_dprintf ("luks", "already mounted as luks%lu\n", dev->id);
 	    grub_disk_close (disk);
 	    return GRUB_ERR_NONE;
 	  }
