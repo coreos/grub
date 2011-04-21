@@ -1,5 +1,33 @@
 2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
 
+	Add "SEE ALSO" sections to most man pages.  Fixes Debian bug
+	#551428.
+
+	* docs/man/grub-editenv.h2m (SEE ALSO): New section.
+	* docs/man/grub-emu.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-fstest.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-install.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-macho2img.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-menulst2cfg.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkconfig.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkdevicemap.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkfont.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkimage.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mklayout.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mknetdir.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkpasswd-pbkdf2.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkrelpath.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkrescue.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-ofpathname.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-pe2elf.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-probe.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-reboot.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-script-check.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-set-default.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-setup.h2m (SEE ALSO): Likewise.
+
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/kern/emu/getroot.c
 	(grub_find_root_device_from_mountinfo): Remove non-virtual-device
 	test that was incorrectly reintroduced in r3214.
