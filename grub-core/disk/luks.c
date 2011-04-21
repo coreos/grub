@@ -20,11 +20,9 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/dl.h>
-#include <grub/term.h>
 #include <grub/err.h>
 #include <grub/disk.h>
 #include <grub/crypto.h>
-#include <grub/normal.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 

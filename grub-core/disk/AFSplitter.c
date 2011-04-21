@@ -20,28 +20,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <grub/types.h>
-#include <grub/misc.h>
-#include <grub/mm.h>
-#include <grub/dl.h>
-#include <grub/term.h>
-#include <grub/err.h>
-#include <grub/lib/arg.h>
-#include <grub/disk.h>
 #include <grub/crypto.h>
-#include <grub/env.h>
-#include <grub/normal.h>
-#include <grub/command.h>
+#include <grub/mm.h>
+#include <grub/misc.h>
 
 gcry_err_code_t AF_merge (const gcry_md_spec_t * hash, grub_uint8_t * src,
 			  grub_uint8_t * dst, grub_size_t blocksize,
 			  grub_size_t blocknumbers);
-static void diffuse (const gcry_md_spec_t * hash, grub_uint8_t * src,
-		     grub_uint8_t * dst, grub_size_t size);
-gcry_err_code_t AF_split (const gcry_md_spec_t * hash, grub_uint8_t * src,
-			  grub_uint8_t * dst, grub_size_t blocksize,
-			  grub_size_t blocknumbers);
-
 
 static void
 diffuse (const gcry_md_spec_t * hash, grub_uint8_t * src,
