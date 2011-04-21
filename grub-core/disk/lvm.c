@@ -172,7 +172,9 @@ find_lv (const char *name)
     {
       if (vg->lvs)
 	for (lv = vg->lvs; lv; lv = lv->next)
-	  if (! grub_strcmp (lv->name, name) && is_lv_readable (lv))
+	  if ((grub_strcmp (lv->fullname, name) == 0
+	       || grub_strcmp (lv->compatname, name) == 0)
+	      && is_lv_readable (lv))
 	    return lv;
     }
   return NULL;
@@ -188,10 +190,7 @@ grub_lvm_open (const char *name, grub_disk_t disk,
   int explicit = 0;
 
   if (grub_memcmp (name, "lvm/", sizeof ("lvm/") - 1) == 0)
-    {
-      name += sizeof ("lvm/") - 1;
-      explicit = 1;
-    }
+    explicit = 1;
 
   lv = find_lv (name);
 
@@ -685,11 +684,34 @@ grub_lvm_scan_device (const char *name)
 		q++;
 
 	      s = q - p;
-	      lv->name = grub_malloc (vgname_len + 1 + s + 1);
-	      grub_memcpy (lv->name, vgname, vgname_len);
-	      lv->name[vgname_len] = '-';
-	      grub_memcpy (lv->name + vgname_len + 1, p, s);
-	      lv->name[vgname_len + 1 + s] = '\0';
+	      lv->name = grub_strndup (p, s);
+	      lv->compatname = grub_malloc (vgname_len + 1 + s + 1);
+	      grub_memcpy (lv->compatname, vgname, vgname_len);
+	      lv->compatname[vgname_len] = '-';
+	      grub_memcpy (lv->compatname + vgname_len + 1, p, s);
+	      lv->compatname[vgname_len + 1 + s] = '\0';
+
+	      {
+		const char *iptr;
+		char *optr;
+		lv->fullname = grub_malloc (sizeof("lvm/") + 2 * vgname_len
+					    + 1 + 2 * s + 1);
+		optr = lv->fullname;
+		for (iptr = vgname; iptr < vgname + vgname_len; iptr++)
+		  {
+		    *optr++ = *iptr;
+		    if (*iptr == '-')
+		      *optr++ = '-';
+		  }
+		*optr++ = '-';
+		for (iptr = p; iptr < p + s; iptr++)
+		  {
+		    *optr++ = *iptr;
+		    if (*iptr == '-')
+		      *optr++ = '-';
+		  }
+		*optr++ = 0;
+	      }
 
 	      lv->size = 0;
 

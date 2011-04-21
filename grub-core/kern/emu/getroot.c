@@ -783,14 +783,10 @@ grub_util_get_grub_dev (const char *os_dev)
 	grub_size_t offset = sizeof ("/dev/mapper/") - 1;
 
 	len = strlen (os_dev) - offset + 1;
-	grub_dev = xmalloc (len);
+	grub_dev = xmalloc (len + sizeof ("lvm/"));
 
-	for (i = 0; i < len; i++, offset++)
-	  {
-	    grub_dev[i] = os_dev[offset];
-	    if (os_dev[offset] == '-' && os_dev[offset + 1] == '-')
-	      offset++;
-	  }
+	grub_memcpy (grub_dev, "lvm/", sizeof ("lvm/") - 1);
+	grub_memcpy (grub_dev + sizeof ("lvm/") - 1, os_dev + offset, len);
       }
 
       break;
