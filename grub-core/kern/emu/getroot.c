@@ -34,6 +34,10 @@
 #include <stdint.h>
 #include <grub/util/misc.h>
 
+#ifdef HAVE_DEVICE_MAPPER
+# include <libdevmapper.h>
+#endif
+
 #ifdef __GNU__
 #include <hurd.h>
 #include <hurd/lookup.h>
@@ -637,32 +641,65 @@ grub_guess_root_device (const char *dir)
 }
 
 static int
-grub_util_is_dmraid (const char *os_dev)
+grub_util_is_lvm (const char *os_dev)
 {
-  if (! strncmp (os_dev, "/dev/mapper/nvidia_", 19))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/isw_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/hpt37x_", 19))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/hpt45x_", 19))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/via_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/lsi_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/pdc_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/jmicron_", 20))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/asr_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/sil_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/ddf1_", 17))
-    return 1;
+  if ((strncmp ("/dev/mapper/", os_dev, 12) != 0))
+    return 0;
+  
+#ifdef HAVE_DEVICE_MAPPER
+  {
+    struct dm_tree *tree;
+    uint32_t maj, min;
+    struct dm_tree_node *node = NULL;
+    const char *node_uuid;
+    struct stat st;
 
-  return 0;
+    if (stat (os_dev, &st) < 0)
+      return 0;
+
+    tree = dm_tree_create ();
+    if (! tree)
+      {
+	grub_printf ("Failed to create tree\n");
+	grub_dprintf ("hostdisk", "dm_tree_create failed\n");
+	return 0;
+      }
+
+    maj = major (st.st_rdev);
+    min = minor (st.st_rdev);
+
+    if (! dm_tree_add_dev (tree, maj, min))
+      {
+	grub_dprintf ("hostdisk", "dm_tree_add_dev failed\n");
+	dm_tree_free (tree);
+	return 0;
+      }
+
+    node = dm_tree_find_node (tree, maj, min);
+    if (! node)
+      {
+	grub_dprintf ("hostdisk", "dm_tree_find_node failed\n");
+	dm_tree_free (tree);
+	return 0;
+      }
+    node_uuid = dm_tree_node_get_uuid (node);
+    if (! node_uuid)
+      {
+	grub_dprintf ("hostdisk", "%s has no DM uuid\n", os_dev);
+	dm_tree_free (tree);
+	return 0;
+      }
+    if (strncmp (node_uuid, "LVM-", 4) != 0)
+      {
+	dm_tree_free (tree);
+	return 0;
+      }
+    dm_tree_free (tree);
+    return 1;
+  }
+#else
+  return 1;
+#endif /* HAVE_DEVICE_MAPPER */
 }
 
 int
@@ -674,13 +711,11 @@ grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
     return GRUB_DEV_ABSTRACTION_NONE;
 
   /* Check for LVM.  */
-  if (!strncmp (os_dev, "/dev/mapper/", 12)
-      && ! grub_util_is_dmraid (os_dev)
-      && strncmp (os_dev, "/dev/mapper/mpath", 17) != 0)
+  if (grub_util_is_lvm (os_dev))
     return GRUB_DEV_ABSTRACTION_LVM;
 
   /* Check for RAID.  */
-  if (!strncmp (os_dev, "/dev/md", 7))
+  if (!strncmp (os_dev, "/dev/md", 7) && ! grub_util_device_is_mapped (os_dev))
     return GRUB_DEV_ABSTRACTION_RAID;
 #endif
 
