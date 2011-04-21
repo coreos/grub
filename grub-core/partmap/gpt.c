@@ -25,6 +25,8 @@
 #include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_uint8_t grub_gpt_magic[8] =
   {
     0x45, 0x46, 0x49, 0x20, 0x50, 0x41, 0x52, 0x54

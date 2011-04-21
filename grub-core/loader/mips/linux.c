@@ -28,6 +28,8 @@
 #include <grub/memory.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* For frequencies.  */
 #include <grub/pci.h>
 #include <grub/machine/time.h>
@@ -379,8 +381,9 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     grub_relocator_chunk_t ch;
 
     err = grub_relocator_alloc_chunk_align (relocator, &ch,
-					    target_addr + linux_size + 0x10000,
-					    (0xffffffff - size) + 1,
+					    (target_addr & 0x1fffffff)
+					    + linux_size + 0x10000,
+					    (0x10000000 - size),
 					    size, 0x10000,
 					    GRUB_RELOCATOR_PREFERENCE_NONE);
 

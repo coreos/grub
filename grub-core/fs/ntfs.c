@@ -26,6 +26,8 @@
 #include <grub/ntfs.h>
 #include <grub/charset.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_dl_t my_mod;
 
 ntfscomp_func_t grub_ntfscomp_func;

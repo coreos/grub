@@ -23,6 +23,8 @@
 #include <grub/i18n.h>
 #include <grub/misc.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_term_autoload *grub_term_input_autoload = NULL;
 struct grub_term_autoload *grub_term_output_autoload = NULL;
 
@@ -210,11 +212,11 @@ grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
   (void) GRUB_FIELD_MATCH (grub_term_inputs, struct abstract_terminal *, init);
   (void) GRUB_FIELD_MATCH (grub_term_inputs, struct abstract_terminal *, fini);
   return handle_command (argc, args,
-                        (struct abstract_terminal **) &grub_term_inputs,
-                        (struct abstract_terminal **) &grub_term_inputs_disabled,
-                        grub_term_input_autoload,
-                        N_ ("Active input terminals:"),
-                        N_ ("Available input terminals:"));
+			 (struct abstract_terminal **) (void *) &grub_term_inputs,
+			 (struct abstract_terminal **) (void *) &grub_term_inputs_disabled,
+			 grub_term_input_autoload,
+			 N_ ("Active input terminals:"),
+			 N_ ("Available input terminals:"));
 }
 
 static grub_err_t
@@ -225,11 +227,12 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
   (void) GRUB_FIELD_MATCH (grub_term_outputs, struct abstract_terminal *, name);
   (void) GRUB_FIELD_MATCH (grub_term_outputs, struct abstract_terminal *, init);
   (void) GRUB_FIELD_MATCH (grub_term_outputs, struct abstract_terminal *, fini);
-  return handle_command (argc, args, (struct abstract_terminal **) &grub_term_outputs,
-                        (struct abstract_terminal **) &grub_term_outputs_disabled,
-                        grub_term_output_autoload,
-                        N_ ("Active output terminals:"),
-                        N_ ("Available output terminals:"));
+  return handle_command (argc, args,
+			 (struct abstract_terminal **) (void *) &grub_term_outputs,
+			 (struct abstract_terminal **) (void *) &grub_term_outputs_disabled,
+			 grub_term_output_autoload,
+			 N_ ("Active output terminals:"),
+			 N_ ("Available output terminals:"));
 }
 
 static grub_command_t cmd_terminal_input, cmd_terminal_output;

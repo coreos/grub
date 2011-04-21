@@ -25,6 +25,8 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef MODE_MINIX2
 #define GRUB_MINIX_MAGIC	0x2468
 #define GRUB_MINIX_MAGIC_30	0x2478

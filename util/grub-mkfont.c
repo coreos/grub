@@ -859,7 +859,7 @@ void
 write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 {
   FILE *file;
-  grub_uint32_t leng, data;
+  grub_uint32_t leng;
   char style_name[20], *font_name;
   int offset;
   struct grub_glyph_info *cur;
@@ -959,12 +959,14 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   for (cur = font_info->glyphs_sorted;
        cur < font_info->glyphs_sorted + font_info->num_glyphs; cur++)
     {
-      data = grub_cpu_to_be32 (cur->char_code);
-      grub_util_write_image ((char *) &data, 4, file);
-      data = 0;
-      grub_util_write_image ((char *) &data, 1, file);
-      data = grub_cpu_to_be32 (offset);
-      grub_util_write_image ((char *) &data, 4, file);
+      grub_uint32_t data32;
+      grub_uint8_t data8;
+      data32 = grub_cpu_to_be32 (cur->char_code);
+      grub_util_write_image ((char *) &data32, 4, file);
+      data8 = 0;
+      grub_util_write_image ((char *) &data8, 1, file);
+      data32 = grub_cpu_to_be32 (offset);
+      grub_util_write_image ((char *) &data32, 4, file);
       offset += 10 + cur->bitmap_size;
     }
 
@@ -976,6 +978,7 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   for (cur = font_info->glyphs_sorted;
        cur < font_info->glyphs_sorted + font_info->num_glyphs; cur++)
     {
+      grub_uint16_t data;
       data = grub_cpu_to_be16 (cur->width);
       grub_util_write_image ((char *) &data, 2, file);
       data = grub_cpu_to_be16 (cur->height);
@@ -1146,11 +1149,18 @@ main (int argc, char *argv[])
     {
       FT_Face ft_face;
       int size;
+      FT_Error err;
 
-      if (FT_New_Face (ft_lib, argv[optind], font_index, &ft_face))
+      err = FT_New_Face (ft_lib, argv[optind], font_index, &ft_face);
+      if (err)
 	{
-	  grub_util_info ("can't open file %s, index %d", argv[optind],
-			  font_index);
+	  grub_printf ("can't open file %s, index %d: error %d", argv[optind],
+		       font_index, err);
+	  if (err > 0 && err < (signed) ARRAY_SIZE (ft_errmsgs))
+	    printf (": %s\n", ft_errmsgs[err]);
+	  else
+	    printf ("\n");
+
 	  continue;
 	}
 

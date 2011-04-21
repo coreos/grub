@@ -34,6 +34,8 @@
 #include <grub/i18n.h>
 #include <grub/time.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct grub_term_output *terminfo_outputs;
 
 /* Get current terminfo name.  */
@@ -403,6 +405,8 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
       /* Backspace: Ctrl-h.  */
       if (c == 0x7f)
 	c = '\b'; 
+      if (c < 0x20 && c != '\t' && c!= '\b' && c != '\n' && c != '\r')
+	c = GRUB_TERM_CTRL | (c - 1 + 'a');
       *len = 1;
       keys[0] = c;
       return;
@@ -509,6 +513,13 @@ grub_terminfo_input_init (struct grub_term_input *termi)
     = (struct grub_terminfo_input_state *) (termi->data);
   data->npending = 0;
 
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_terminfo_output_init (struct grub_term_output *term)
+{
+  grub_terminfo_cls (term);
   return GRUB_ERR_NONE;
 }
 

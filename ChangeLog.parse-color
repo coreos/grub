@@ -40,13 +40,5 @@
 	(GRUB_MOD_FINI): Unregister background_color command.
 	(redraw_screen_rect): Allow blend/replace of text layer to be
 	controlled independently from whether there is a background bitmap.
-	(grub_gfxterm_fullscreen): Change blend_text_bg when changing
-	bitmap.
-	(destroy_window): Likewise.
-	(grub_gfxterm_background_image_cmd): Likewise.
-
-	Fix border repainting.
-
-	* grub-core/term/gfxterm.c (dirty_region_add): When a repaint is
-	already scheduled, merge the virtual screen with the requested
-	region rather than repainting only the virtual screen.
+	(grub_gfxterm_background_image_cmd): Change blend_text_bg when
+	changing bitmap.

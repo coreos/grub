@@ -29,6 +29,8 @@
 #include <grub/types.h>
 #include <grub/hfs.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define	GRUB_HFS_SBLOCK		2
 #define GRUB_HFS_EMBED_HFSPLUS_SIG 0x482B
 

@@ -29,6 +29,8 @@
 #include <grub/efi/efi.h>
 #include <grub/efi/graphics_output.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_efi_guid_t graphics_output_guid = GRUB_EFI_GOP_GUID;
 static struct grub_efi_gop *gop;
 static unsigned old_mode;

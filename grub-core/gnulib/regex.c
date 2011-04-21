@@ -19,6 +19,9 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. */
 
 #include <config.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Make sure noone compiles this code with a C++ compiler.  */
 #if defined __cplusplus && defined _LIBC

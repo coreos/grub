@@ -24,6 +24,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define BUFFER_SIZE 512
 
 static grub_err_t

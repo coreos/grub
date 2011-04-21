@@ -23,6 +23,9 @@
 #include <grub/file.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Check if EHDR is a valid ELF header.  */
 static grub_err_t

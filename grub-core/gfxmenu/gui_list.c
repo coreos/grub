@@ -248,8 +248,10 @@ draw_menu (list_impl_t self, int num_shown_items)
 
       if (is_selected)
         {
-          selbox->set_content_size (selbox, oviewport.width - 2 * boxpad - 2,
-				    item_height - 1);
+	  int cwidth = oviewport.width - 2 * boxpad - 2;
+	  if (selbox->get_border_width)
+	    cwidth -= selbox->get_border_width (selbox);
+	  selbox->set_content_size (selbox, cwidth, item_height - 1);
           selbox->draw (selbox, 0,
                         item_top - sel_toppad);
         }

@@ -20,6 +20,9 @@
 #include <grub/datetime.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/misc.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 static char *rtc = 0;
 

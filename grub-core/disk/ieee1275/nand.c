@@ -23,6 +23,8 @@
 #include <grub/dl.h>
 #include <grub/ieee1275/ieee1275.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_nand_data
 {
   grub_ieee1275_ihandle_t handle;

@@ -2,6 +2,10 @@
 
 set -e
 
+export LC_CTYPE=C
+export LC_COLLATE=C
+unset LC_ALL
+
 autogen --version >/dev/null || exit 1
 
 echo "Importing unicode..."
