@@ -47,7 +47,7 @@ struct grub_luks_phdr
   grub_uint8_t mkDigest[20];
   grub_uint8_t mkDigestSalt[32];
   grub_uint32_t mkDigestIterations;
-  grub_uint8_t uuid[40];
+  char uuid[40];
   struct
   {
     grub_uint32_t active;
@@ -65,8 +65,7 @@ typedef enum
   GRUB_LUKS_MODE_ECB,
   GRUB_LUKS_MODE_CBC_PLAIN,
   GRUB_LUKS_MODE_CBC_ESSIV
-}
-luks_mode_t;
+} luks_mode_t;
 
 struct grub_luks
 {
@@ -77,7 +76,9 @@ struct grub_luks
   grub_crypto_cipher_handle_t cipher;
   grub_crypto_cipher_handle_t essiv_cipher;
   luks_mode_t mode;
-  int id;
+  unsigned long id, source_id;
+  enum grub_disk_dev_id source_dev_id;
+  char uuid[sizeof (((struct grub_luks_phdr *) 0)->uuid)];
   struct grub_luks *next;
 };
 typedef struct grub_luks *grub_luks_t;
@@ -154,11 +155,9 @@ static int check_uuid, have_it;
 static char *uuid;
 
 static grub_err_t
-grub_luks_scan_device_real (const char *name)
+grub_luks_scan_device_real (const char *name, grub_disk_t source)
 {
-  grub_disk_t source;
   grub_err_t err;
-  grub_luks_t newdev;
   struct grub_luks_phdr header;
   grub_crypto_cipher_handle_t cipher = NULL, essiv_cipher = NULL;
   const gcry_md_spec_t *hash = NULL, *essiv_hash = NULL;
@@ -174,73 +173,38 @@ grub_luks_scan_device_real (const char *name)
   char passphrase[MAX_PASSPHRASE] = "";
   grub_uint8_t candidate_digest[sizeof (header.mkDigest)];
 
-  /* Try to open disk.  */
-  source = grub_disk_open (name);
-  if (!source)
-    return grub_errno;
-
   /* Read the LUKS header.  */
   err = grub_disk_read (source, 0, 0, sizeof (header), &header);
   if (err)
-    {
-      grub_disk_close (source);
-      return err;
-    }
+    return err;
 
   /* Look for LUKS magic sequence.  */
   if (grub_memcmp (header.magic, LUKS_MAGIC, sizeof (header.magic))
       || grub_be_to_cpu16 (header.version) != 1)
-    {
-      grub_disk_close (source);
-      return GRUB_ERR_NONE;
-    }
-
-  if (check_uuid && grub_memcmp (header.uuid, uuid,
-				 sizeof (header.uuid)) != 0)
-    return 0;
-
-  newdev = grub_zalloc (sizeof (struct grub_luks));
-  if (!newdev)
-    {
-      grub_disk_close (source);
-      return grub_errno;
-    }
-
-  newdev->id = n;
-  newdev->devname = grub_xasprintf ("luks%d", n);
-  newdev->source = grub_strdup (name);
-  n++;
+    return GRUB_ERR_NONE;
 
   /* Make sure that strings are null terminated.  */
   header.cipherName[sizeof (header.cipherName) - 1] = 0;
   header.cipherMode[sizeof (header.cipherMode) - 1] = 0;
   header.hashSpec[sizeof (header.hashSpec) - 1] = 0;
+  header.uuid[sizeof (header.uuid) - 1] = 0;
+
+  if (check_uuid && grub_strcmp (header.uuid, uuid) != 0)
+    return 0;
 
   ciph = grub_crypto_lookup_cipher_by_name (header.cipherName);
   if (!ciph)
-    {
-      grub_disk_close (source);
-      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "Cipher %s isn't available",
-			 header.cipherName);
-    }
+    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "Cipher %s isn't available",
+		       header.cipherName);
 
   /* Configure the cipher used for the bulk data.  */
   cipher = grub_crypto_cipher_open (ciph);
   if (!cipher)
-    {
-      grub_disk_close (source);
-      grub_free (newdev);
-      return grub_errno;
-    }
+    return grub_errno;
 
   keysize = grub_be_to_cpu32 (header.keyBytes);
   if (keysize > 1024)
-    {
-      grub_disk_close (source);
-      grub_free (newdev);
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid keysize %d",
-			 keysize);
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid keysize %d", keysize);
 
   /* Configure the cipher mode.  */
   if (grub_strncmp (header.cipherMode, "ecb", 3) == 0)
@@ -258,8 +222,6 @@ grub_luks_scan_device_real (const char *name)
       if (!essiv_hash)
 	{
 	  grub_crypto_cipher_close (cipher);
-	  grub_disk_close (source);
-	  grub_free (newdev);
 	  return grub_error (GRUB_ERR_FILE_NOT_FOUND,
 			     "Couldn't load %s hash", hash_str);
 	}
@@ -267,8 +229,6 @@ grub_luks_scan_device_real (const char *name)
       if (!cipher)
 	{
 	  grub_crypto_cipher_close (cipher);
-	  grub_disk_close (source);
-	  grub_free (newdev);
 	  return grub_errno;
 	}
 
@@ -278,16 +238,12 @@ grub_luks_scan_device_real (const char *name)
 	{
 	  grub_crypto_cipher_close (cipher);
 	  grub_crypto_cipher_close (essiv_cipher);
-	  grub_disk_close (source);
-	  grub_free (newdev);
 	  return grub_errno;
 	}
     }
   else
     {
       grub_crypto_cipher_close (cipher);
-      grub_disk_close (source);
-      grub_free (newdev);
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "Unknown cipher mode: %s",
 			 header.cipherMode);
     }
@@ -299,8 +255,6 @@ grub_luks_scan_device_real (const char *name)
       grub_crypto_cipher_close (cipher);
       grub_crypto_cipher_close (essiv_cipher);
       grub_free (hashed_key);
-      grub_disk_close (source);
-      grub_free (newdev);
       return grub_error (GRUB_ERR_FILE_NOT_FOUND, "Couldn't load %s hash",
 			 header.hashSpec);
     }
@@ -316,8 +270,6 @@ grub_luks_scan_device_real (const char *name)
       grub_crypto_cipher_close (cipher);
       grub_crypto_cipher_close (essiv_cipher);
       grub_free (hashed_key);
-      grub_disk_close (source);
-      grub_free (newdev);
       return grub_errno;
     }
 
@@ -329,8 +281,6 @@ grub_luks_scan_device_real (const char *name)
       grub_crypto_cipher_close (essiv_cipher);
       grub_free (hashed_key);
       grub_free (split_key);
-      grub_disk_close (source);
-      grub_free (newdev);
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "Passphrase not supplied");
     }
 
@@ -361,8 +311,6 @@ grub_luks_scan_device_real (const char *name)
 	  grub_crypto_cipher_close (essiv_cipher);
 	  grub_free (hashed_key);
 	  grub_free (split_key);
-	  grub_disk_close (source);
-	  grub_free (newdev);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
 
@@ -376,8 +324,6 @@ grub_luks_scan_device_real (const char *name)
 	  grub_crypto_cipher_close (essiv_cipher);
 	  grub_free (hashed_key);
 	  grub_free (split_key);
-	  grub_disk_close (source);
-	  grub_free (newdev);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
 
@@ -404,8 +350,6 @@ grub_luks_scan_device_real (const char *name)
 	  grub_crypto_cipher_close (essiv_cipher);
 	  grub_free (hashed_key);
 	  grub_free (split_key);
-	  grub_disk_close (source);
-	  grub_free (newdev);
 	  return err;
 	}
 
@@ -417,8 +361,6 @@ grub_luks_scan_device_real (const char *name)
 	  grub_crypto_cipher_close (essiv_cipher);
 	  grub_free (hashed_key);
 	  grub_free (split_key);
-	  grub_disk_close (source);
-	  grub_free (newdev);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
 
@@ -431,8 +373,6 @@ grub_luks_scan_device_real (const char *name)
 	  grub_crypto_cipher_close (essiv_cipher);
 	  grub_free (hashed_key);
 	  grub_free (split_key);
-	  grub_disk_close (source);
-	  grub_free (newdev);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
 
@@ -453,8 +393,6 @@ grub_luks_scan_device_real (const char *name)
 	  grub_crypto_cipher_close (essiv_cipher);
 	  grub_free (hashed_key);
 	  grub_free (split_key);
-	  grub_disk_close (source);
-	  grub_free (newdev);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
 
@@ -463,8 +401,6 @@ grub_luks_scan_device_real (const char *name)
       if (grub_memcmp (candidate_digest, header.mkDigest,
 		       sizeof (header.mkDigest)) != 0)
 	continue;
-
-      grub_disk_close (source);
 
       grub_printf ("Slot %d opened\n", i);
 
@@ -476,11 +412,8 @@ grub_luks_scan_device_real (const char *name)
 	  grub_crypto_cipher_close (essiv_cipher);
 	  grub_free (hashed_key);
 	  grub_free (split_key);
-	  grub_free (newdev);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
-
-      newdev->cipher = cipher;
 
       /* Configure ESSIV if necessary.  */
       if (mode == GRUB_LUKS_MODE_CBC_ESSIV)
@@ -495,24 +428,33 @@ grub_luks_scan_device_real (const char *name)
 	      grub_crypto_cipher_close (essiv_cipher);
 	      grub_free (hashed_key);
 	      grub_free (split_key);
-	      grub_free (newdev);
 	      return grub_crypto_gcry_error (gcry_err);
 	    }
-	  newdev->essiv_cipher = essiv_cipher;
-	}
-      else
-	{
-	  newdev->essiv_cipher = NULL;
 	}
 
-      newdev->offset = grub_be_to_cpu32 (header.payloadOffset);
-      newdev->source_disk = NULL;
-      newdev->mode = mode;
+      {
+	grub_luks_t newdev;
+	newdev = grub_zalloc (sizeof (struct grub_luks));
+	if (!newdev)
+	  return grub_errno;
+	newdev->id = n;
+	newdev->devname = grub_xasprintf ("luks%d", n);
+	newdev->source = grub_strdup (name);
+	newdev->source_id = source->id;
+	newdev->source_dev_id = source->dev->id;
+	newdev->cipher = cipher;
+	newdev->offset = grub_be_to_cpu32 (header.payloadOffset);
+	newdev->source_disk = NULL;
+	newdev->mode = mode;
+	newdev->essiv_cipher = essiv_cipher;
+	grub_memcpy (newdev->uuid, header.uuid, sizeof (newdev->uuid));
+	newdev->next = luks_list;
+	luks_list = newdev;
+	n++;
+      }
 
       grub_free (split_key);
       grub_free (hashed_key);
-      newdev->next = luks_list;
-      luks_list = newdev;
 
       have_it = 1;
 
@@ -526,7 +468,17 @@ static int
 grub_luks_scan_device (const char *name)
 {
   grub_err_t err;
-  err = grub_luks_scan_device_real (name);
+  grub_disk_t source;
+
+  /* Try to open disk.  */
+  source = grub_disk_open (name);
+  if (!source)
+    return grub_errno;
+
+  err = grub_luks_scan_device_real (name, source);
+
+  grub_disk_close (source);
+  
   if (err)
     grub_print_error ();
   return have_it && check_uuid ? 0 : 1;
@@ -651,6 +603,15 @@ grub_cmd_luksmount (grub_extcmd_context_t ctxt, int argc, char **args)
   have_it = 0;
   if (state[0].set)
     {
+      grub_luks_t dev;
+
+      for (dev = luks_list; dev != NULL; dev = dev->next)
+	if (grub_strcmp (dev->uuid, args[0]) == 0)
+	  {
+	    grub_dprintf ("luks", "already mounted as %s\n", dev->devname);
+	    return GRUB_ERR_NONE;
+	  }
+
       check_uuid = 1;
       uuid = args[0];
       grub_device_iterate (&grub_luks_scan_device);
@@ -659,9 +620,27 @@ grub_cmd_luksmount (grub_extcmd_context_t ctxt, int argc, char **args)
   else
     {
       grub_err_t err;
+      grub_disk_t disk;
+      grub_luks_t dev;
+
       check_uuid = 0;
       uuid = NULL;
-      err = grub_luks_scan_device_real (args[0]);
+      disk = grub_disk_open (args[0]);
+      if (!disk)
+	return grub_errno;
+
+      for (dev = luks_list; dev != NULL; dev = dev->next)
+	if (dev->source_id == disk->id && dev->source_dev_id == disk->dev->id)
+	  {
+	    grub_dprintf ("luks", "already mounted as %s\n", dev->devname);
+	    grub_disk_close (disk);
+	    return GRUB_ERR_NONE;
+	  }
+
+      err = grub_luks_scan_device_real (args[0], disk);
+
+      grub_disk_close (disk);
+
       return err;
     }
   if (!have_it)
