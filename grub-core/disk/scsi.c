@@ -316,7 +316,8 @@ grub_scsi_write12 (grub_disk_t disk, grub_disk_addr_t sector,
 
 
 static int
-grub_scsi_iterate (int (*hook) (const char *name))
+grub_scsi_iterate (int (*hook) (const char *name),
+		   grub_disk_pull_t pull)
 {
   grub_scsi_dev_t p;
 
@@ -356,6 +357,9 @@ grub_scsi_iterate (int (*hook) (const char *name))
       return 0;
     }
 
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
+
   for (p = grub_scsi_dev_list; p; p = p->next)
     if (p->iterate && (p->iterate) (scsi_iterate))
       return 1;
@@ -364,7 +368,8 @@ grub_scsi_iterate (int (*hook) (const char *name))
 }
 
 static grub_err_t
-grub_scsi_open (const char *name, grub_disk_t disk)
+grub_scsi_open (const char *name, grub_disk_t disk,
+		grub_disk_pull_t pull __attribute__ ((unused)))
 {
   grub_scsi_dev_t p;
   grub_scsi_t scsi;

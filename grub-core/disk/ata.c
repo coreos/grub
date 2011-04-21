@@ -666,9 +666,13 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 
 
 static int
-grub_ata_iterate (int (*hook) (const char *name))
+grub_ata_iterate (int (*hook) (const char *name),
+		  grub_disk_pull_t pull)
 {
   struct grub_ata_device *dev;
+
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
@@ -696,7 +700,8 @@ grub_ata_iterate (int (*hook) (const char *name))
 }
 
 static grub_err_t
-grub_ata_open (const char *name, grub_disk_t disk)
+grub_ata_open (const char *name, grub_disk_t disk,
+	       grub_disk_pull_t pull __attribute__ ((unused)))
 {
   struct grub_ata_device *dev;
   grub_err_t err;
