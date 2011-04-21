@@ -25,6 +25,7 @@ enum grub_dev_abstraction_types {
   GRUB_DEV_ABSTRACTION_NONE,
   GRUB_DEV_ABSTRACTION_LVM,
   GRUB_DEV_ABSTRACTION_RAID,
+  GRUB_DEV_ABSTRACTION_LUKS,
 };
 
 char *grub_find_device (const char *dir, dev_t dev);

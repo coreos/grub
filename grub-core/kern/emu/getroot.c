@@ -640,11 +640,11 @@ grub_guess_root_device (const char *dir)
   return os_dev;
 }
 
-static int
-grub_util_is_lvm (const char *os_dev)
+static char *
+get_dm_uuid (const char *os_dev)
 {
   if ((strncmp ("/dev/mapper/", os_dev, 12) != 0))
-    return 0;
+    return NULL;
   
 #ifdef HAVE_DEVICE_MAPPER
   {
@@ -652,17 +652,18 @@ grub_util_is_lvm (const char *os_dev)
     uint32_t maj, min;
     struct dm_tree_node *node = NULL;
     const char *node_uuid;
+    char *ret;
     struct stat st;
 
     if (stat (os_dev, &st) < 0)
-      return 0;
+      return NULL;
 
     tree = dm_tree_create ();
     if (! tree)
       {
 	grub_printf ("Failed to create tree\n");
 	grub_dprintf ("hostdisk", "dm_tree_create failed\n");
-	return 0;
+	return NULL;
       }
 
     maj = major (st.st_rdev);
@@ -672,7 +673,7 @@ grub_util_is_lvm (const char *os_dev)
       {
 	grub_dprintf ("hostdisk", "dm_tree_add_dev failed\n");
 	dm_tree_free (tree);
-	return 0;
+	return NULL;
       }
 
     node = dm_tree_find_node (tree, maj, min);
@@ -680,39 +681,64 @@ grub_util_is_lvm (const char *os_dev)
       {
 	grub_dprintf ("hostdisk", "dm_tree_find_node failed\n");
 	dm_tree_free (tree);
-	return 0;
+	return NULL;
       }
     node_uuid = dm_tree_node_get_uuid (node);
     if (! node_uuid)
       {
 	grub_dprintf ("hostdisk", "%s has no DM uuid\n", os_dev);
 	dm_tree_free (tree);
-	return 0;
+	return NULL;
       }
-    if (strncmp (node_uuid, "LVM-", 4) != 0)
-      {
-	dm_tree_free (tree);
-	return 0;
-      }
+
+    ret = grub_strdup (node_uuid);
     dm_tree_free (tree);
-    return 1;
+    return ret;
   }
 #else
-  return 1;
+  return NULL;
 #endif /* HAVE_DEVICE_MAPPER */
+}
+
+static enum grub_dev_abstraction_types
+grub_util_get_dm_abstraction (const char *os_dev)
+{
+  char *uuid;
+  uuid = get_dm_uuid (os_dev);
+
+  if (uuid == NULL)
+    return GRUB_DEV_ABSTRACTION_NONE;
+
+  if (strncmp (uuid, "LVM-", 4) == 0)
+    {
+      grub_free (uuid);
+      return GRUB_DEV_ABSTRACTION_LVM;
+    }
+  if (strncmp (uuid, "CRYPT-LUKS1-", 4) == 0)
+    {
+      grub_free (uuid);
+      return GRUB_DEV_ABSTRACTION_LUKS;
+    }
+
+  grub_free (uuid);
+  return GRUB_DEV_ABSTRACTION_NONE;
 }
 
 int
 grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
 {
 #ifdef __linux__
+  enum grub_dev_abstraction_types ret;
+
   /* User explicitly claims that this drive is visible by BIOS.  */
   if (grub_util_biosdisk_is_present (os_dev))
     return GRUB_DEV_ABSTRACTION_NONE;
 
-  /* Check for LVM.  */
-  if (grub_util_is_lvm (os_dev))
-    return GRUB_DEV_ABSTRACTION_LVM;
+  /* Check for LVM and LUKS.  */
+  ret = grub_util_get_dm_abstraction (os_dev);
+
+  if (ret != GRUB_DEV_ABSTRACTION_NONE)
+    return ret;
 
   /* Check for RAID.  */
   if (!strncmp (os_dev, "/dev/md", 7) && ! grub_util_device_is_mapped (os_dev))
@@ -828,6 +854,19 @@ grub_util_get_grub_dev (const char *os_dev)
 	  }
       }
 
+      break;
+
+    case GRUB_DEV_ABSTRACTION_LUKS:
+      {
+	char *uuid, *dash;
+	uuid = get_dm_uuid (os_dev);
+	dash = grub_strchr (uuid + sizeof ("CRYPT-LUKS1-") - 1, '-');
+	if (dash)
+	  *dash = 0;
+	grub_dev = grub_xasprintf ("luksuuid/%s",
+				   uuid + sizeof ("CRYPT-LUKS1-") - 1);
+	grub_free (uuid);
+      }
       break;
 
     case GRUB_DEV_ABSTRACTION_RAID:
