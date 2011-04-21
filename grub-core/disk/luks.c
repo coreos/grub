@@ -78,7 +78,7 @@ struct grub_luks
   luks_mode_t mode;
   unsigned long id, source_id;
   enum grub_disk_dev_id source_dev_id;
-  char uuid[sizeof (((struct grub_luks_phdr *) 0)->uuid)];
+  char uuid[sizeof (((struct grub_luks_phdr *) 0)->uuid) + 1];
   struct grub_luks *next;
 };
 typedef struct grub_luks *grub_luks_t;
@@ -152,7 +152,7 @@ luks_decrypt (grub_crypto_cipher_handle_t cipher, luks_mode_t mode,
 }
 
 static int check_uuid, have_it;
-static char *uuid;
+static char *search_uuid;
 
 static grub_err_t
 grub_luks_scan_device_real (const char *name, grub_disk_t source)
@@ -172,6 +172,8 @@ grub_luks_scan_device_real (const char *name, grub_disk_t source)
   const struct gcry_cipher_spec *ciph;
   char passphrase[MAX_PASSPHRASE] = "";
   grub_uint8_t candidate_digest[sizeof (header.mkDigest)];
+  char uuid[sizeof (header.uuid) + 1];
+  char *iptr, *optr;
 
   /* Read the LUKS header.  */
   err = grub_disk_read (source, 0, 0, sizeof (header), &header);
@@ -189,8 +191,20 @@ grub_luks_scan_device_real (const char *name, grub_disk_t source)
   header.hashSpec[sizeof (header.hashSpec) - 1] = 0;
   header.uuid[sizeof (header.uuid) - 1] = 0;
 
-  if (check_uuid && grub_strcmp (header.uuid, uuid) != 0)
-    return 0;
+  optr = uuid;
+  for (iptr = header.uuid; iptr < &header.uuid[ARRAY_SIZE (header.uuid)];
+       iptr++)
+    {
+      if (*iptr != '-')
+	*optr++ = *iptr;
+    }
+  *optr = 0;
+
+  if (check_uuid && grub_strcasecmp (search_uuid, uuid) != 0)
+    {
+      grub_dprintf ("luks", "%s != %s", uuid, search_uuid);
+      return 0;
+    }
 
   ciph = grub_crypto_lookup_cipher_by_name (header.cipherName);
   if (!ciph)
@@ -274,7 +288,7 @@ grub_luks_scan_device_real (const char *name, grub_disk_t source)
     }
 
   /* Get the passphrase from the user.  */
-  grub_printf ("Enter passphrase: ");
+  grub_printf ("Enter passphrase for %s (%s): ", name, uuid);
   if (!grub_password_get (passphrase, MAX_PASSPHRASE))
     {
       grub_crypto_cipher_close (cipher);
@@ -446,7 +460,7 @@ grub_luks_scan_device_real (const char *name, grub_disk_t source)
 	newdev->source_disk = NULL;
 	newdev->mode = mode;
 	newdev->essiv_cipher = essiv_cipher;
-	grub_memcpy (newdev->uuid, header.uuid, sizeof (newdev->uuid));
+	grub_memcpy (newdev->uuid, uuid, sizeof (newdev->uuid));
 	newdev->next = luks_list;
 	luks_list = newdev;
 	n++;
@@ -510,7 +524,7 @@ grub_luks_open (const char *name, grub_disk_t disk)
   if (grub_memcmp (name, "luksuuid/", sizeof ("luksuuid/") - 1) == 0)
     {
       for (dev = luks_list; dev != NULL; dev = dev->next)
-	if (grub_strcmp (name + sizeof ("luksuuid/") - 1, dev->uuid) == 0)
+	if (grub_strcasecmp (name + sizeof ("luksuuid/") - 1, dev->uuid) == 0)
 	  break;
     }
   else
@@ -622,16 +636,20 @@ grub_cmd_luksmount (grub_extcmd_context_t ctxt, int argc, char **args)
       grub_luks_t dev;
 
       for (dev = luks_list; dev != NULL; dev = dev->next)
-	if (grub_strcmp (dev->uuid, args[0]) == 0)
+	if (grub_strcasecmp (dev->uuid, args[0]) == 0)
 	  {
 	    grub_dprintf ("luks", "already mounted as luks%lu\n", dev->id);
 	    return GRUB_ERR_NONE;
 	  }
 
       check_uuid = 1;
-      uuid = args[0];
+      search_uuid = args[0];
       grub_device_iterate (&grub_luks_scan_device);
-      uuid = NULL;
+      search_uuid = NULL;
+
+      if (!have_it)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "no such luks found");
+      return GRUB_ERR_NONE;
     }
   else
     {
@@ -640,7 +658,7 @@ grub_cmd_luksmount (grub_extcmd_context_t ctxt, int argc, char **args)
       grub_luks_t dev;
 
       check_uuid = 0;
-      uuid = NULL;
+      search_uuid = NULL;
       disk = grub_disk_open (args[0]);
       if (!disk)
 	return grub_errno;
@@ -659,9 +677,6 @@ grub_cmd_luksmount (grub_extcmd_context_t ctxt, int argc, char **args)
 
       return err;
     }
-  if (!have_it)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no such luks found");
-  return 0;
 }
 
 static struct grub_disk_dev grub_luks_dev = {
