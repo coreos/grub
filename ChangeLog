@@ -1,5 +1,12 @@
 2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/kern/emu/getroot.c
+	(grub_find_root_device_from_mountinfo): Remove non-virtual-device
+	test that was incorrectly reintroduced in r3214.
+	Reported by: Ian Dall.  Fixes Savannah bug #33133.
+
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
 	Fix stack pointer handling in 16-bit relocator.
 
 	* grub-core/lib/i386/relocator16.S (grub_relocator16_start): Move
