@@ -25,6 +25,15 @@
 #include <grub/crypto.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
+#ifdef GRUB_UTIL
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <grub/emu/hostdisk.h>
+#include <unistd.h>
+#include <string.h>
+#endif
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -80,6 +89,10 @@ struct grub_luks
   unsigned long id, source_id;
   enum grub_disk_dev_id source_dev_id;
   char uuid[sizeof (((struct grub_luks_phdr *) 0)->uuid) + 1];
+#ifdef GRUB_UTIL
+  char *cheat;
+  int cheat_fd;
+#endif
   struct grub_luks *next;
 };
 typedef struct grub_luks *grub_luks_t;
@@ -497,6 +510,12 @@ grub_luks_scan_device_real (const char *name, grub_disk_t source)
     }
 
   newdev->source = grub_strdup (name);
+  if (!newdev->source)
+    {
+      grub_free (newdev);
+      return grub_errno;
+    }
+
   newdev->source_id = source->id;
   newdev->source_dev_id = source->dev->id;
   newdev->next = luks_list;
@@ -506,6 +525,48 @@ grub_luks_scan_device_real (const char *name, grub_disk_t source)
 
   return GRUB_ERR_NONE;
 }
+
+#ifdef GRUB_UTIL
+grub_err_t
+grub_luks_cheat_mount (const char *sourcedev, const char *cheat)
+{
+  grub_err_t err;
+  struct grub_luks_phdr header;
+  grub_luks_t newdev;
+  grub_disk_t source;
+
+  /* Try to open disk.  */
+  source = grub_disk_open (sourcedev);
+  if (!source)
+    return grub_errno;
+
+  /* Read the LUKS header.  */
+  err = grub_disk_read (source, 0, 0, sizeof (header), &header);
+  if (err)
+    return err;
+
+  newdev = configure_ciphers (&header);
+  grub_disk_close (source);
+  if (!newdev)
+    return grub_errno;
+
+  newdev->cheat = grub_strdup (cheat);
+  newdev->source = grub_strdup (sourcedev);
+  if (!newdev->source || !newdev->cheat)
+    {
+      grub_free (newdev->source);
+      grub_free (newdev->cheat);
+      grub_free (newdev);
+      return grub_errno;
+    }
+  newdev->cheat_fd = -1;
+  newdev->source_id = source->id;
+  newdev->source_dev_id = source->dev->id;
+  newdev->next = luks_list;
+  luks_list = newdev;
+  return GRUB_ERR_NONE;
+}
+#endif
 
 static int
 grub_luks_scan_device (const char *name)
@@ -575,6 +636,17 @@ grub_luks_open (const char *name, grub_disk_t disk,
   if (!dev)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "No such device");
 
+#ifdef GRUB_UTIL
+  if (dev->cheat)
+    {
+      if (dev->cheat_fd == -1)
+	dev->cheat_fd = open (dev->cheat, O_RDONLY);
+      if (dev->cheat_fd == -1)
+	return grub_error (GRUB_ERR_IO, "couldn't open %s: %s",
+			   dev->cheat, strerror (errno));
+    }
+#endif
+
   if (!dev->source_disk)
     {
       grub_dprintf ("luks", "Opening device %s\n", name);
@@ -599,11 +671,17 @@ grub_luks_close (grub_disk_t disk)
 
   dev->ref--;
 
-  if (dev->ref == 0)
+  if (dev->ref != 0)
+    return;
+#ifdef GRUB_UTIL
+  if (dev->cheat)
     {
-      grub_disk_close (dev->source_disk);
-      dev->source_disk = NULL;
+      close (dev->cheat_fd);
+      dev->cheat_fd = -1;
     }
+#endif
+  grub_disk_close (dev->source_disk);
+  dev->source_disk = NULL;
 }
 
 static grub_err_t
@@ -612,6 +690,21 @@ grub_luks_read (grub_disk_t disk, grub_disk_addr_t sector,
 {
   grub_luks_t dev = (grub_luks_t) disk->data;
   grub_err_t err;
+
+#ifdef GRUB_UTIL
+  if (dev->cheat)
+    {
+      err = grub_util_fd_sector_seek (dev->cheat_fd, dev->cheat, sector);
+      if (err)
+	return err;
+      if (grub_util_fd_read (dev->cheat_fd, buf, size << GRUB_DISK_SECTOR_BITS)
+	  != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
+	return grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'",
+			   dev->cheat);
+      return GRUB_ERR_NONE;
+    }
+#endif
+
   grub_dprintf ("luks",
 		"Reading %" PRIuGRUB_SIZE " sectors from sector 0x%"
 		PRIxGRUB_UINT64_T " with offset of %" PRIuGRUB_UINT32_T "\n",

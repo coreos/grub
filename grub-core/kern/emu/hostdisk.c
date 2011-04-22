@@ -631,6 +631,37 @@ linux_find_partition (char *dev, unsigned long sector)
 }
 #endif /* __linux__ */
 
+#if defined(__linux__) && (!defined(__GLIBC__) || \
+        ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))))
+  /* Maybe libc doesn't have large file support.  */
+grub_err_t
+grub_util_fd_sector_seek (int fd, const char *name, grub_disk_addr_t sector)
+{
+  loff_t offset, result;
+  static int _llseek (uint filedes, ulong hi, ulong lo,
+		      loff_t *res, uint wh);
+  _syscall5 (int, _llseek, uint, filedes, ulong, hi, ulong, lo,
+	     loff_t *, res, uint, wh);
+
+  offset = (loff_t) sector << GRUB_DISK_SECTOR_BITS;
+  if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
+    {
+      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", name);
+    }
+  return GRUB_ERR_NONE;
+}
+#else
+grub_err_t
+grub_util_fd_sector_seek (int fd, const char *name, grub_disk_addr_t sector)
+{
+  off_t offset = (off_t) sector << GRUB_DISK_SECTOR_BITS;
+
+  if (lseek (fd, offset, SEEK_SET) != offset)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", name);
+  return 0;
+}
+#endif
+
 static int
 open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 {
@@ -781,44 +812,19 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
   configure_device_driver (fd);
 #endif /* defined(__NetBSD__) */
 
-#if defined(__linux__) && (!defined(__GLIBC__) || \
-        ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))))
-  /* Maybe libc doesn't have large file support.  */
-  {
-    loff_t offset, result;
-    static int _llseek (uint filedes, ulong hi, ulong lo,
-                        loff_t *res, uint wh);
-    _syscall5 (int, _llseek, uint, filedes, ulong, hi, ulong, lo,
-               loff_t *, res, uint, wh);
-
-    offset = (loff_t) sector << GRUB_DISK_SECTOR_BITS;
-    if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
-      {
-	grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", map[disk->id].device);
-	close (fd);
-	return -1;
-      }
-  }
-#else
-  {
-    off_t offset = (off_t) sector << GRUB_DISK_SECTOR_BITS;
-
-    if (lseek (fd, offset, SEEK_SET) != offset)
-      {
-	grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", map[disk->id].device);
-	close (fd);
-	return -1;
-      }
-  }
-#endif
+  if (grub_util_fd_sector_seek (fd, map[disk->id].device, sector))
+    {
+      close (fd);
+      return -1;
+    }
 
   return fd;
 }
 
 /* Read LEN bytes from FD in BUF. Return less than or equal to zero if an
    error occurs, otherwise return LEN.  */
-static ssize_t
-nread (int fd, char *buf, size_t len)
+ssize_t
+grub_util_fd_read (int fd, char *buf, size_t len)
 {
   ssize_t size = len;
 
@@ -901,7 +907,8 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	 sectors that are read together with the MBR in one read.  It
 	 should only remap the MBR, so we split the read in two
 	 parts. -jochen  */
-      if (nread (fd, buf, GRUB_DISK_SECTOR_SIZE) != GRUB_DISK_SECTOR_SIZE)
+      if (grub_util_fd_read (fd, buf, GRUB_DISK_SECTOR_SIZE)
+	  != GRUB_DISK_SECTOR_SIZE)
 	{
 	  grub_error (GRUB_ERR_READ_ERROR, "cannot read `%s'", map[disk->id].device);
 	  return grub_errno;
@@ -912,7 +919,7 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
     }
 #endif /* __linux__ */
 
-  if (nread (fd, buf, size << GRUB_DISK_SECTOR_BITS)
+  if (grub_util_fd_read (fd, buf, size << GRUB_DISK_SECTOR_BITS)
       != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
     grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'", map[disk->id].device);
 

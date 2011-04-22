@@ -865,7 +865,9 @@ out:
 void
 grub_util_pull_device (const char *os_dev)
 {
-  switch (grub_util_get_dev_abstraction (os_dev))
+  int ab;
+  ab = grub_util_get_dev_abstraction (os_dev);
+  switch (ab)
     {
     case GRUB_DEV_ABSTRACTION_LVM:
     case GRUB_DEV_ABSTRACTION_LUKS:
@@ -875,6 +877,7 @@ grub_util_pull_device (const char *os_dev)
 	struct dm_tree_node *node;
 	struct dm_tree_node *child;
 	void *handle = NULL;
+	char *lastsubdev = NULL;
 
 	if (!grub_util_open_dm (os_dev, &tree, &node))
 	  return;
@@ -887,9 +890,26 @@ grub_util_pull_device (const char *os_dev)
 	      continue;
 	    subdev = grub_find_device ("/dev", makedev (dm->major, dm->minor));
 	    if (subdev)
-	      grub_util_pull_device (subdev);
+	      {
+		lastsubdev = subdev;
+		grub_util_pull_device (subdev);
+	      }
 	  }
-	dm_tree_free (tree);
+	if (ab == GRUB_DEV_ABSTRACTION_LUKS && lastsubdev)
+	  {
+	    char *grdev = grub_util_get_grub_dev (lastsubdev);
+	    dm_tree_free (tree);
+	    if (grdev)
+	      {
+		grub_err_t err;
+		err = grub_luks_cheat_mount (grdev, os_dev);
+		if (err)
+		  grub_util_error ("Can't mount LUKS: %s", grub_errmsg);
+	      }
+	    grub_free (grdev);
+	  }
+	else
+	  dm_tree_free (tree);
       }
 #endif
       return;
