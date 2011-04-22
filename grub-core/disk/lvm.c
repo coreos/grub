@@ -26,6 +26,7 @@
 
 #ifdef GRUB_UTIL
 #include <grub/emu/misc.h>
+#include <grub/emu/hostdisk.h>
 #endif
 
 GRUB_MOD_LICENSE ("GPLv3+");
@@ -197,6 +198,16 @@ grub_lvm_open (const char *name, grub_disk_t disk,
   if (! lv && !scan_depth &&
       pull == (explicit ? GRUB_DISK_PULL_RESCAN : GRUB_DISK_PULL_RESCAN_UNTYPED))
     {
+#ifdef GRUB_UTIL
+      if (explicit)
+	{
+	  char buf[grub_strlen (name) + sizeof ("/dev/mapper/")];
+	  grub_memcpy (buf, "/dev/mapper/", sizeof ("/dev/mapper/"));
+	  grub_strcpy (buf + sizeof ("/dev/mapper/") - 1,
+		       name + sizeof ("lvm/") - 1);
+	  grub_util_pull_device (buf);
+	}
+#endif
       scan_for = name;
       scan_depth++;
       grub_device_iterate (&grub_lvm_scan_device);
@@ -685,7 +696,11 @@ grub_lvm_scan_device (const char *name)
 
 	      s = q - p;
 	      lv->name = grub_strndup (p, s);
+	      if (!lv->name)
+		goto lvs_fail;
 	      lv->compatname = grub_malloc (vgname_len + 1 + s + 1);
+	      if (!lv->compatname)
+		goto lvs_fail;
 	      grub_memcpy (lv->compatname, vgname, vgname_len);
 	      lv->compatname[vgname_len] = '-';
 	      grub_memcpy (lv->compatname + vgname_len + 1, p, s);
@@ -696,7 +711,12 @@ grub_lvm_scan_device (const char *name)
 		char *optr;
 		lv->fullname = grub_malloc (sizeof("lvm/") + 2 * vgname_len
 					    + 1 + 2 * s + 1);
+		if (!lv->fullname)
+		  goto lvs_fail;
+
 		optr = lv->fullname;
+		grub_memcpy (optr, "lvm/", sizeof ("lvm/") - 1);
+		optr += sizeof ("lvm/") - 1;
 		for (iptr = vgname; iptr < vgname + vgname_len; iptr++)
 		  {
 		    *optr++ = *iptr;

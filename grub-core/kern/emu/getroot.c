@@ -640,6 +640,56 @@ grub_guess_root_device (const char *dir)
   return os_dev;
 }
 
+#ifdef HAVE_DEVICE_MAPPER
+
+static int
+grub_util_open_dm (const char *os_dev, struct dm_tree **tree,
+		   struct dm_tree_node **node)
+{
+  uint32_t maj, min;
+  struct stat st;
+
+  *node = NULL;
+  *tree = NULL;
+
+  if ((strncmp ("/dev/mapper/", os_dev, 12) != 0))
+    return 0;
+
+  if (stat (os_dev, &st) < 0)
+    return 0;
+
+  *tree = dm_tree_create ();
+  if (! *tree)
+    {
+      grub_printf ("Failed to create tree\n");
+      grub_dprintf ("hostdisk", "dm_tree_create failed\n");
+      return 0;
+    }
+
+  maj = major (st.st_rdev);
+  min = minor (st.st_rdev);
+
+  if (! dm_tree_add_dev (*tree, maj, min))
+    {
+      grub_dprintf ("hostdisk", "dm_tree_add_dev failed\n");
+      dm_tree_free (*tree);
+      *tree = NULL;
+      return 0;
+    }
+
+  *node = dm_tree_find_node (*tree, maj, min);
+  if (! *node)
+    {
+      grub_dprintf ("hostdisk", "dm_tree_find_node failed\n");
+      dm_tree_free (*tree);
+      *tree = NULL;
+      return 0;
+    }
+  return 1;
+}
+
+#endif
+
 static int
 grub_util_is_lvm (const char *os_dev)
 {
@@ -648,40 +698,13 @@ grub_util_is_lvm (const char *os_dev)
   
 #ifdef HAVE_DEVICE_MAPPER
   {
-    struct dm_tree *tree;
-    uint32_t maj, min;
-    struct dm_tree_node *node = NULL;
     const char *node_uuid;
-    struct stat st;
+    struct dm_tree *tree;
+    struct dm_tree_node *node;
 
-    if (stat (os_dev, &st) < 0)
+    if (!grub_util_open_dm (os_dev, &tree, &node))
       return 0;
 
-    tree = dm_tree_create ();
-    if (! tree)
-      {
-	grub_printf ("Failed to create tree\n");
-	grub_dprintf ("hostdisk", "dm_tree_create failed\n");
-	return 0;
-      }
-
-    maj = major (st.st_rdev);
-    min = minor (st.st_rdev);
-
-    if (! dm_tree_add_dev (tree, maj, min))
-      {
-	grub_dprintf ("hostdisk", "dm_tree_add_dev failed\n");
-	dm_tree_free (tree);
-	return 0;
-      }
-
-    node = dm_tree_find_node (tree, maj, min);
-    if (! node)
-      {
-	grub_dprintf ("hostdisk", "dm_tree_find_node failed\n");
-	dm_tree_free (tree);
-	return 0;
-      }
     node_uuid = dm_tree_node_get_uuid (node);
     if (! node_uuid)
       {
@@ -803,6 +826,43 @@ out:
   return name;
 }
 #endif /* __linux__ */
+
+void
+grub_util_pull_device (const char *os_dev)
+{
+  switch (grub_util_get_dev_abstraction (os_dev))
+    {
+    case GRUB_DEV_ABSTRACTION_LVM:
+#ifdef HAVE_DEVICE_MAPPER
+      {
+	struct dm_tree *tree;
+	struct dm_tree_node *node;
+	struct dm_tree_node *child;
+	void *handle = NULL;
+
+	if (!grub_util_open_dm (os_dev, &tree, &node))
+	  return;
+
+	while ((child = dm_tree_next_child (&handle, node, 0)))
+	  {
+	    const struct dm_info *dm = dm_tree_node_get_info (child);
+	    char *subdev;
+	    if (!dm)
+	      continue;
+	    subdev = grub_find_device ("/dev", makedev (dm->major, dm->minor));
+	    if (subdev)
+	      grub_util_pull_device (subdev);
+	  }
+	dm_tree_free (tree);
+	return;
+      }
+#endif
+
+    default:  /* GRUB_DEV_ABSTRACTION_NONE */
+      grub_util_biosdisk_get_grub_dev (os_dev);
+      return;
+    }
+}
 
 char *
 grub_util_get_grub_dev (const char *os_dev)
