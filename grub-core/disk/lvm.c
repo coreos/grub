@@ -129,10 +129,7 @@ grub_lvm_iterate (int (*hook) (const char *name),
 	for (lv = vg->lvs; lv; lv = lv->next)
 	  if (lv->visible && lv->number >= old_count)
 	    {
-	      char lvname[sizeof ("lvm/") + grub_strlen (lv->name)];
-	      grub_memcpy (lvname, "lvm/", sizeof ("lvm/") - 1);
-	      grub_strcpy (lvname + sizeof ("lvm/") - 1, lv->name);
-	      if (hook (lvname))
+	      if (hook (lv->fullname))
 		return 1;
 	    }
     }
