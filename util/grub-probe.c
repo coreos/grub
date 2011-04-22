@@ -55,6 +55,7 @@ enum {
   PRINT_DEVICE,
   PRINT_PARTMAP,
   PRINT_ABSTRACTION,
+  PRINT_LUKS_UUID
 };
 
 int print = PRINT_FS;
@@ -86,6 +87,27 @@ probe_partmap (grub_disk_t disk)
       free (list);
       list = tmp;
     }
+}
+
+static void
+probe_luks_uuid (grub_disk_t disk)
+{
+  grub_disk_memberlist_t list = NULL, tmp;
+
+  /* In case of LVM/RAID, check the member devices as well.  */
+  if (disk->dev->memberlist)
+    {
+      list = disk->dev->memberlist (disk);
+    }
+  while (list)
+    {
+      probe_luks_uuid (list->disk);
+      tmp = list->next;
+      free (list);
+      list = tmp;
+    }
+  if (disk->dev->id == GRUB_DISK_DEVICE_LUKS_ID)
+    grub_util_luks_print_uuid (disk);
 }
 
 static int
@@ -194,6 +216,13 @@ probe (const char *path, char *device_name)
       goto end;
     }
 
+  if (print == PRINT_LUKS_UUID)
+    {
+      probe_luks_uuid (dev->disk);
+      printf ("\n");
+      goto end;
+    }
+
   if (print == PRINT_PARTMAP)
     {
       /* Check if dev->disk itself is contained in a partmap.  */
@@ -267,8 +296,8 @@ Probe device information for a given path (or device, if the -d option is given)
 \n\
   -d, --device              given argument is a system device, not a path\n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
-  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction)\n\
-                            print filesystem module, GRUB drive, system device, partition map module or abstraction module [default=fs]\n\
+  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|luks_uuid)\n\
+                            print filesystem module, GRUB drive, system device, partition map module, abstraction module or LUKS UUID [default=fs]\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
   -v, --verbose             print verbose messages\n\
@@ -326,6 +355,8 @@ main (int argc, char *argv[])
 	      print = PRINT_PARTMAP;
 	    else if (!strcmp (optarg, "abstraction"))
 	      print = PRINT_ABSTRACTION;
+	    else if (!strcmp (optarg, "luks_uuid"))
+	      print = PRINT_LUKS_UUID;
 	    else
 	      usage (1);
 	    break;

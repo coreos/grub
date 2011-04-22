@@ -893,6 +893,13 @@ grub_util_luks_print_ciphers (grub_disk_t disk)
   if (dev->essiv_hash)
     grub_printf ("%s ", dev->essiv_hash->modname);
 }
+
+void
+grub_util_luks_print_uuid (grub_disk_t disk)
+{
+  grub_luks_t dev = (grub_luks_t) disk->data;
+  grub_printf ("%s ", dev->uuid);
+}
 #endif
 
 static void
