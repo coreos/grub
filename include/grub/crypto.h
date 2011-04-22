@@ -274,4 +274,10 @@ grub_password_get (char buf[], unsigned buf_size);
 
 extern void (*grub_crypto_autoload_hook) (const char *name);
 
+#ifdef GRUB_UTIL
+void grub_gcry_init_all (void);
+void grub_gcry_fini_all (void);
+#endif
+
+
 #endif

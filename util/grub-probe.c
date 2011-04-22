@@ -393,6 +393,7 @@ main (int argc, char *argv[])
 
   /* Initialize all modules. */
   grub_init_all ();
+  grub_gcry_init_all ();
 
   grub_lvm_fini ();
   grub_mdraid09_fini ();
@@ -410,6 +411,7 @@ main (int argc, char *argv[])
     probe (argument, NULL);
 
   /* Free resources.  */
+  grub_gcry_fini_all ();
   grub_fini_all ();
   grub_util_biosdisk_fini ();
 

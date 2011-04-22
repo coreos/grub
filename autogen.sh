@@ -26,7 +26,7 @@ if [ "x${GRUB_CONTRIB}" != x ]; then
   [ "${GRUB_CONTRIB}" = grub-core/contrib ] || ln -s ../contrib grub-core/contrib
 fi
 
-UTIL_DEFS=Makefile.util.def
+UTIL_DEFS='Makefile.util.def Makefile.utilgcry.def'
 CORE_DEFS='grub-core/Makefile.core.def grub-core/Makefile.gcry.def'
 
 for extra in contrib/*/Makefile.util.def; do

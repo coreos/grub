@@ -42,7 +42,15 @@ except:
 cipher_files = os.listdir (cipher_dir_in)
 conf = open (os.path.join ("grub-core", "Makefile.gcry.def"), "w")
 conf.write ("AutoGen definitions Makefile.tpl;\n\n")
+confutil = open ("Makefile.utilgcry.def", "w")
+confutil.write ("AutoGen definitions Makefile.tpl;\n\n")
+confutil.write ("library = {\n");
+confutil.write ("  name = libgrubgcry.a;\n");
+confutil.write ("  cflags = '$(CFLAGS_GCRY)';\n");
+confutil.write ("  cppflags = '$(CPPFLAGS_GCRY)';\n");
+confutil.write ("\n");
 chlog = ""
+modules = []
 
 # Strictly speaking CRC32/CRC24 work on bytes so this value should be 1
 # But libgcrypt uses 64. Let's keep the value for compatibility. Since
@@ -249,6 +257,7 @@ for cipher_file in cipher_files:
                     % (cipher_file, cipher_file.replace ("-glue.c", ".c"))
             else:
                 modfiles = "lib/libgcrypt-grub/cipher/%s" % cipher_file
+            modules.append (modname)
             chmsg = "(GRUB_MOD_INIT(%s)): New function\n" % modname
             if nch:
                 chlognew = "%s\n	%s" % (chlognew, chmsg)
@@ -283,6 +292,7 @@ for cipher_file in cipher_files:
             conf.write ("  name = %s;\n" % modname)
             for src in modfiles.split():
                 conf.write ("  common = %s;\n" % src)
+                confutil.write ("  common = grub-core/%s;\n" % src)
             conf.write ("  cflags = '$(CFLAGS_GCRY)';\n");
             conf.write ("  cppflags = '$(CPPFLAGS_GCRY)';\n");
             conf.write ("};\n\n")
@@ -328,6 +338,32 @@ fw.close ()
 
 infile = os.path.join (cipher_dir_in, "ChangeLog")
 outfile = os.path.join (cipher_dir_out, "ChangeLog")
+
+conf.close ();
+
+initfile = open (os.path.join (cipher_dir_out, "init.c"), "w")
+for module in modules:
+    initfile.write ("extern void grub_%s_init (void);\n" % module)
+    initfile.write ("extern void grub_%s_fini (void);\n" % module)
+initfile.write ("\n")
+initfile.write ("void\n")
+initfile.write ("grub_gcry_init_all (void)\n")
+initfile.write ("{\n")
+for module in modules:
+    initfile.write ("  grub_%s_init ();\n" % module)
+initfile.write ("}\n")
+initfile.write ("\n")
+initfile.write ("void\n")
+initfile.write ("grub_gcry_fini_all (void)\n")
+initfile.write ("{\n")
+for module in modules:
+    initfile.write ("  grub_%s_fini ();\n" % module)
+initfile.write ("}\n")
+initfile.close ()
+
+confutil.write ("  common = grub-core/lib/libgcrypt-grub/cipher/init.c;\n")
+confutil.write ("};\n");
+confutil.close ();
 
 
 f=open (infile, "r")
