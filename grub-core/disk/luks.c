@@ -112,27 +112,26 @@ static const struct grub_arg_option options[] =
   };
 
 static gcry_err_code_t
-luks_decrypt (grub_crypto_cipher_handle_t cipher, luks_mode_t mode,
-	      grub_uint8_t * data, grub_size_t len,
-	      grub_size_t sector, grub_crypto_cipher_handle_t essiv_cipher)
+luks_decrypt (const struct grub_luks *dev,
+	      grub_uint8_t * data, grub_size_t len, grub_size_t sector)
 {
   grub_size_t i;
   gcry_err_code_t err;
 
-  switch (mode)
+  switch (dev->mode)
     {
     case GRUB_LUKS_MODE_ECB:
-      return grub_crypto_ecb_decrypt (cipher, data, data, len);
+      return grub_crypto_ecb_decrypt (dev->cipher, data, data, len);
 
     case GRUB_LUKS_MODE_CBC_PLAIN:
       for (i = 0; i < len; i += GRUB_DISK_SECTOR_SIZE)
 	{
-	  grub_uint32_t iv[(cipher->cipher->blocksize
+	  grub_uint32_t iv[(dev->cipher->cipher->blocksize
 			    + sizeof (grub_uint32_t) - 1)
 			   / sizeof (grub_uint32_t)];
-	  grub_memset (iv, 0, cipher->cipher->blocksize);
+	  grub_memset (iv, 0, dev->cipher->cipher->blocksize);
 	  iv[0] = grub_cpu_to_le32 (sector & 0xFFFFFFFF);
-	  err = grub_crypto_cbc_decrypt (cipher, data + i, data + i,
+	  err = grub_crypto_cbc_decrypt (dev->cipher, data + i, data + i,
 					 GRUB_DISK_SECTOR_SIZE, iv);
 	  if (err)
 	    return err;
@@ -143,17 +142,17 @@ luks_decrypt (grub_crypto_cipher_handle_t cipher, luks_mode_t mode,
     case GRUB_LUKS_MODE_CBC_ESSIV:
       for (i = 0; i < len; i += GRUB_DISK_SECTOR_SIZE)
 	{
-	  grub_uint32_t iv[(cipher->cipher->blocksize
+	  grub_uint32_t iv[(dev->cipher->cipher->blocksize
 			    + sizeof (grub_uint32_t) - 1)
 			   / sizeof (grub_uint32_t)];
-	  grub_memset (iv, 0, cipher->cipher->blocksize);
+	  grub_memset (iv, 0, dev->cipher->cipher->blocksize);
 	  iv[0] = grub_cpu_to_le32 (sector & 0xFFFFFFFF);
 	  err =
-	    grub_crypto_ecb_encrypt (essiv_cipher, iv, iv,
-				     cipher->cipher->blocksize);
+	    grub_crypto_ecb_encrypt (dev->essiv_cipher, iv, iv,
+				     dev->cipher->cipher->blocksize);
 	  if (err)
 	    return err;
-	  err = grub_crypto_cbc_decrypt (cipher, data + i, data + i,
+	  err = grub_crypto_cbc_decrypt (dev->cipher, data + i, data + i,
 					 GRUB_DISK_SECTOR_SIZE, iv);
 	  if (err)
 	    return err;
@@ -398,8 +397,7 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 	  return err;
 	}
 
-      gcry_err = luks_decrypt (dev->cipher, dev->mode, split_key,
-			       length, 0, dev->essiv_cipher);
+      gcry_err = luks_decrypt (dev, split_key, length, 0);
       if (gcry_err)
 	{
 	  grub_free (hashed_key);
@@ -729,11 +727,9 @@ grub_luks_read (grub_disk_t disk, grub_disk_addr_t sector,
       grub_dprintf ("luks", "grub_disk_read failed with error %d\n", err);
       return err;
     }
-  return grub_crypto_gcry_error (luks_decrypt (dev->cipher,
-					       dev->mode,
-					       (grub_uint8_t *) buf,
+  return grub_crypto_gcry_error (luks_decrypt (dev, (grub_uint8_t *) buf,
 					       size << GRUB_DISK_SECTOR_BITS,
-					       sector, dev->essiv_cipher));
+					       sector));
 }
 
 static grub_err_t
