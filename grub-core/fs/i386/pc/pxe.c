@@ -104,8 +104,12 @@ grub_pxe_scan (void)
 }
 
 static int
-grub_pxe_iterate (int (*hook) (const char *name))
+grub_pxe_iterate (int (*hook) (const char *name),
+		  grub_disk_pull_t pull)
 {
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
+
   if (hook ("pxe"))
     return 1;
   return 0;
@@ -139,7 +143,8 @@ parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
 }
 
 static grub_err_t
-grub_pxe_open (const char *name, grub_disk_t disk)
+grub_pxe_open (const char *name, grub_disk_t disk,
+	       grub_disk_pull_t pull __attribute__ ((unused)))
 {
   struct grub_pxe_disk_data *data;
 

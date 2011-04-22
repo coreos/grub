@@ -26,13 +26,19 @@
 
 #ifdef GRUB_UTIL
 #include <grub/emu/misc.h>
+#include <grub/emu/hostdisk.h>
 #endif
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
 static struct grub_lvm_vg *vg_list;
 static int lv_count;
+static int scan_depth = 0;
 
+static int is_lv_readable (struct grub_lvm_lv *lv);
+
+static int
+grub_lvm_scan_device (const char *name);
 
 /* Go the string STR and return the number after STR.  *P will point
    at the number.  In case STR is not found, *P will be NULL and the
@@ -96,16 +102,36 @@ grub_lvm_check_flag (char *p, char *str, char *flag)
 }
 
 static int
-grub_lvm_iterate (int (*hook) (const char *name))
+grub_lvm_iterate (int (*hook) (const char *name),
+		  grub_disk_pull_t pull)
 {
   struct grub_lvm_vg *vg;
+  unsigned old_count = 0;
+  if (pull == GRUB_DISK_PULL_RESCAN && scan_depth)
+    return 0;
+
+  if (pull == GRUB_DISK_PULL_RESCAN)
+    {
+      old_count = lv_count;
+      if (!scan_depth)
+	{
+	  scan_depth++;
+	  grub_device_iterate (&grub_lvm_scan_device);
+	  scan_depth--;
+	}
+    }
+  if (pull != GRUB_DISK_PULL_RESCAN && pull != GRUB_DISK_PULL_NONE)
+    return GRUB_ERR_NONE;
   for (vg = vg_list; vg; vg = vg->next)
     {
       struct grub_lvm_lv *lv;
       if (vg->lvs)
 	for (lv = vg->lvs; lv; lv = lv->next)
-	  if (lv->visible && hook (lv->name))
-	    return 1;
+	  if (lv->visible && lv->number >= old_count)
+	    {
+	      if (hook (lv->fullname))
+		return 1;
+	    }
     }
 
   return 0;
@@ -135,8 +161,8 @@ grub_lvm_memberlist (grub_disk_t disk)
 }
 #endif
 
-static grub_err_t
-grub_lvm_open (const char *name, grub_disk_t disk)
+static struct grub_lvm_lv *
+find_lv (const char *name)
 {
   struct grub_lvm_vg *vg;
   struct grub_lvm_lv *lv = NULL;
@@ -144,11 +170,42 @@ grub_lvm_open (const char *name, grub_disk_t disk)
     {
       if (vg->lvs)
 	for (lv = vg->lvs; lv; lv = lv->next)
-	  if (! grub_strcmp (lv->name, name))
-	    break;
+	  if ((grub_strcmp (lv->fullname, name) == 0
+	       || grub_strcmp (lv->compatname, name) == 0)
+	      && is_lv_readable (lv))
+	    return lv;
+    }
+  return NULL;
+}
 
-      if (lv)
-	break;
+static const char *scan_for = NULL;
+
+static grub_err_t
+grub_lvm_open (const char *name, grub_disk_t disk,
+	       grub_disk_pull_t pull)
+{
+  struct grub_lvm_lv *lv = NULL;
+  int explicit = 0;
+
+  if (grub_memcmp (name, "lvm/", sizeof ("lvm/") - 1) == 0)
+    explicit = 1;
+
+  lv = find_lv (name);
+
+  if (! lv && !scan_depth &&
+      pull == (explicit ? GRUB_DISK_PULL_RESCAN : GRUB_DISK_PULL_RESCAN_UNTYPED))
+    {
+      scan_for = name;
+      scan_depth++;
+      grub_device_iterate (&grub_lvm_scan_device);
+      scan_depth--;
+      scan_for = NULL;
+      if (grub_errno)
+	{
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+	}
+      lv = find_lv (name);
     }
 
   if (! lv)
@@ -286,6 +343,49 @@ read_lv (struct grub_lvm_lv *lv, grub_disk_addr_t sector,
 }
 
 static grub_err_t
+is_node_readable (const struct grub_lvm_node *node)
+{
+  /* Check whether we actually know the physical volume we want to
+     read from.  */
+  if (node->pv)
+    return !!(node->pv->disk);
+  if (node->lv)
+    return is_lv_readable (node->lv);
+  return 0;
+}
+
+static int
+is_lv_readable (struct grub_lvm_lv *lv)
+{
+  unsigned int i, j;
+
+  if (!lv)
+    return 0;
+
+  /* Find the right segment.  */
+  for (i = 0; i < lv->segment_count; i++)
+    switch (lv->segments[i].type)
+      {
+      case GRUB_LVM_STRIPED:
+	for (j = 0; j < lv->segments[i].node_count; j++)
+	  if (!is_node_readable (lv->segments[i].nodes + j))
+	    return 0;
+	break;
+      case GRUB_LVM_MIRROR:
+	for (j = 0; j < lv->segments[i].node_count; j++)
+	  if (is_node_readable (lv->segments[i].nodes + j))
+	    break;
+	if (j == lv->segments[i].node_count)
+	  return 0;
+      default:
+	return 0;
+      }
+
+  return 1;
+}
+
+
+static grub_err_t
 grub_lvm_read (grub_disk_t disk, grub_disk_addr_t sector,
 		grub_size_t size, char *buf)
 {
@@ -331,6 +431,15 @@ grub_lvm_scan_device (const char *name)
 	grub_errno = GRUB_ERR_NONE;
       return 0;
     }
+
+  for (vg = vg_list; vg; vg = vg->next)
+    for (pv = vg->pvs; pv; pv = pv->next)
+      if (pv->disk && pv->disk->id == disk->id
+	  && pv->disk->dev->id == disk->dev->id)
+	{
+	  grub_disk_close (disk);
+	  return 0;
+	}
 
   /* Search for label. */
   for (i = 0; i < GRUB_LVM_LABEL_SCAN_SECTORS; i++)
@@ -573,11 +682,43 @@ grub_lvm_scan_device (const char *name)
 		q++;
 
 	      s = q - p;
-	      lv->name = grub_malloc (vgname_len + 1 + s + 1);
-	      grub_memcpy (lv->name, vgname, vgname_len);
-	      lv->name[vgname_len] = '-';
-	      grub_memcpy (lv->name + vgname_len + 1, p, s);
-	      lv->name[vgname_len + 1 + s] = '\0';
+	      lv->name = grub_strndup (p, s);
+	      if (!lv->name)
+		goto lvs_fail;
+	      lv->compatname = grub_malloc (vgname_len + 1 + s + 1);
+	      if (!lv->compatname)
+		goto lvs_fail;
+	      grub_memcpy (lv->compatname, vgname, vgname_len);
+	      lv->compatname[vgname_len] = '-';
+	      grub_memcpy (lv->compatname + vgname_len + 1, p, s);
+	      lv->compatname[vgname_len + 1 + s] = '\0';
+
+	      {
+		const char *iptr;
+		char *optr;
+		lv->fullname = grub_malloc (sizeof("lvm/") + 2 * vgname_len
+					    + 1 + 2 * s + 1);
+		if (!lv->fullname)
+		  goto lvs_fail;
+
+		optr = lv->fullname;
+		grub_memcpy (optr, "lvm/", sizeof ("lvm/") - 1);
+		optr += sizeof ("lvm/") - 1;
+		for (iptr = vgname; iptr < vgname + vgname_len; iptr++)
+		  {
+		    *optr++ = *iptr;
+		    if (*iptr == '-')
+		      *optr++ = '-';
+		  }
+		*optr++ = '-';
+		for (iptr = p; iptr < p + s; iptr++)
+		  {
+		    *optr++ = *iptr;
+		    if (*iptr == '-')
+		      *optr++ = '-';
+		  }
+		*optr++ = 0;
+	      }
 
 	      lv->size = 0;
 
@@ -857,6 +998,8 @@ grub_lvm_scan_device (const char *name)
   if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
     grub_errno = GRUB_ERR_NONE;
   grub_print_error ();
+  if (scan_for && find_lv (scan_for))
+    return 1;
   return 0;
 }
 
@@ -878,13 +1021,6 @@ static struct grub_disk_dev grub_lvm_dev =
 
 GRUB_MOD_INIT(lvm)
 {
-  grub_device_iterate (&grub_lvm_scan_device);
-  if (grub_errno)
-    {
-      grub_print_error ();
-      grub_errno = GRUB_ERR_NONE;
-    }
-
   grub_disk_dev_register (&grub_lvm_dev);
 }
 

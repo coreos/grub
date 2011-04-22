@@ -213,7 +213,8 @@ find_free_slot (void)
 }
 
 static int
-grub_util_biosdisk_iterate (int (*hook) (const char *name))
+grub_util_biosdisk_iterate (int (*hook) (const char *name),
+			    grub_disk_pull_t pull)
 {
   unsigned i;
 
@@ -225,7 +226,8 @@ grub_util_biosdisk_iterate (int (*hook) (const char *name))
 }
 
 static grub_err_t
-grub_util_biosdisk_open (const char *name, grub_disk_t disk)
+grub_util_biosdisk_open (const char *name, grub_disk_t disk,
+			 grub_disk_pull_t pull __attribute__ ((unused)))
 {
   int drive;
   struct stat st;

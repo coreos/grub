@@ -207,10 +207,16 @@ int
 grub_disk_dev_iterate (int (*hook) (const char *name))
 {
   grub_disk_dev_t p;
+  grub_disk_pull_t pull;
 
-  for (p = grub_disk_dev_list; p; p = p->next)
-    if (p->iterate && (p->iterate) (hook))
-      return 1;
+  for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
+    {
+      if (pull == GRUB_DISK_PULL_RESCAN_UNTYPED)
+	continue;
+      for (p = grub_disk_dev_list; p; p = p->next)
+	if (p->iterate && (p->iterate) (hook, pull))
+	  return 1;
+    }
 
   return 0;
 }
@@ -241,6 +247,7 @@ grub_disk_open (const char *name)
   grub_disk_dev_t dev;
   char *raw = (char *) name;
   grub_uint64_t current_time;
+  grub_disk_pull_t pull;
 
   grub_dprintf ("disk", "Opening `%s'...\n", name);
 
@@ -266,15 +273,19 @@ grub_disk_open (const char *name)
   if (! disk->name)
     goto fail;
 
-
-  for (dev = grub_disk_dev_list; dev; dev = dev->next)
+  for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
     {
-      if ((dev->open) (raw, disk) == GRUB_ERR_NONE)
+      for (dev = grub_disk_dev_list; dev; dev = dev->next)
+	{
+	  if ((dev->open) (raw, disk, pull) == GRUB_ERR_NONE)
+	    break;
+	  else if (grub_errno == GRUB_ERR_UNKNOWN_DEVICE)
+	    grub_errno = GRUB_ERR_NONE;
+	  else
+	    goto fail;
+	}
+      if (dev)
 	break;
-      else if (grub_errno == GRUB_ERR_UNKNOWN_DEVICE)
-	grub_errno = GRUB_ERR_NONE;
-      else
-	goto fail;
     }
 
   if (! dev)

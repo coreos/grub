@@ -33,6 +33,11 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static struct grub_raid_array *array_list;
 grub_raid5_recover_func_t grub_raid5_recover_func;
 grub_raid6_recover_func_t grub_raid6_recover_func;
+static grub_raid_t grub_raid_list;
+static int inscnt = 0;
+
+static struct grub_raid_array *
+find_array (const char *name);
 
 
 static char
@@ -78,14 +83,98 @@ grub_is_array_readable (struct grub_raid_array *array)
   return 0;
 }
 
+static grub_err_t
+insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
+              grub_disk_addr_t start_sector, const char *scanner_name,
+	      grub_raid_t raid __attribute__ ((unused)));
+
+static int scan_depth = 0;
+
+static void
+scan_devices (const char *arname)
+{
+  grub_raid_t raid;
+
+  auto int hook (const char *name);
+  int hook (const char *name)
+    {
+      grub_disk_t disk;
+      struct grub_raid_array array;
+      struct grub_raid_array *arr;
+      grub_disk_addr_t start_sector;
+
+      grub_dprintf ("raid", "Scanning for %s RAID devices on disk %s\n",
+		    raid->name, name);
+#ifdef GRUB_UTIL
+      grub_util_info ("Scanning for %s RAID devices on disk %s",
+		      raid->name, name);
+#endif
+
+      disk = grub_disk_open (name);
+      if (!disk)
+        return 0;
+      
+      for (arr = array_list; arr != NULL; arr = arr->next)
+	{
+	  struct grub_raid_member *m;
+	  for (m = arr->members; m < arr->members + arr->nr_devs; m++)
+	    if (m->device && m->device->id == disk->id
+		&& m->device->dev->id == m->device->dev->id)
+	      {
+		grub_disk_close (disk);
+		return 0;
+	      }
+	}
+
+      if ((disk->total_sectors != GRUB_ULONG_MAX) &&
+	  (! raid->detect (disk, &array, &start_sector)) &&
+	  (! insert_array (disk, &array, start_sector, raid->name,
+			   raid)))
+	return 0;
+
+      /* This error usually means it's not raid, no need to display
+	 it.  */
+      if (grub_errno != GRUB_ERR_OUT_OF_RANGE)
+	grub_print_error ();
+
+      grub_errno = GRUB_ERR_NONE;
+
+      grub_disk_close (disk);
+
+      if (arname && find_array (arname))
+	return 1;
+
+      return 0;
+    }
+
+  if (scan_depth)
+    return;
+
+  scan_depth++;
+  for (raid = grub_raid_list; raid; raid = raid->next)
+    grub_device_iterate (&hook);
+  scan_depth--;
+}
+
 static int
-grub_raid_iterate (int (*hook) (const char *name))
+grub_raid_iterate (int (*hook) (const char *name),
+		   grub_disk_pull_t pull)
 {
   struct grub_raid_array *array;
+  int islcnt = 0;
+
+  if (pull == GRUB_DISK_PULL_RESCAN)
+    {
+      islcnt = inscnt;
+      scan_devices (NULL);
+    }
+
+  if (pull != GRUB_DISK_PULL_NONE && pull != GRUB_DISK_PULL_RESCAN)
+    return 0;
 
   for (array = array_list; array != NULL; array = array->next)
     {
-      if (grub_is_array_readable (array))
+      if (grub_is_array_readable (array) && array->became_readable_at >= islcnt)
 	if (hook (array->name))
 	  return 1;
     }
@@ -134,11 +223,10 @@ ascii2hex (char c)
   return 0;
 }
 
-static grub_err_t
-grub_raid_open (const char *name, grub_disk_t disk)
+static struct grub_raid_array *
+find_array (const char *name)
 {
   struct grub_raid_array *array;
-  unsigned n;
 
   if (grub_memcmp (name, "mduuid/", sizeof ("mduuid/") - 1) == 0)
     {
@@ -155,7 +243,7 @@ grub_raid_open (const char *name, grub_disk_t disk)
 	  if (uuid_len == (unsigned) array->uuid_len
 	      && grub_memcmp (uuidbin, array->uuid, uuid_len) == 0)
 	    if (grub_is_array_readable (array))
-	      break;
+	      return array;
 	}
     }
   else
@@ -163,8 +251,33 @@ grub_raid_open (const char *name, grub_disk_t disk)
       {
 	if (!grub_strcmp (array->name, name))
 	  if (grub_is_array_readable (array))
-	    break;
+	    return array;
       }
+  return NULL;
+}
+
+static grub_err_t
+grub_raid_open (const char *name, grub_disk_t disk, grub_disk_pull_t pull)
+{
+  struct grub_raid_array *array;
+  unsigned n;
+
+  if (grub_memcmp (name, "md", sizeof ("md") - 1) != 0)
+     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown RAID device %s",
+			name);
+
+  array = find_array (name);
+
+  if (! array && pull == GRUB_DISK_PULL_RESCAN)
+    {
+      scan_devices (name);
+      if (grub_errno)
+	{
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+	}
+      array = find_array (name);
+    }
 
   if (!array)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown RAID device %s",
@@ -690,14 +803,18 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
     }
 
   /* Add the device to the array. */
-  array->members[new_array->index].device = disk;
-  array->members[new_array->index].start_sector = start_sector;
-  array->nr_devs++;
+  {
+    int was_readable = grub_is_array_readable (array);
+
+    array->members[new_array->index].device = disk;
+    array->members[new_array->index].start_sector = start_sector;
+    array->nr_devs++;
+    if (!was_readable && grub_is_array_readable (array))
+      array->became_readable_at = inscnt++;
+  }
 
   return 0;
 }
-
-static grub_raid_t grub_raid_list;
 
 static void
 free_array (void)
@@ -729,45 +846,8 @@ free_array (void)
 void
 grub_raid_register (grub_raid_t raid)
 {
-  auto int hook (const char *name);
-  int hook (const char *name)
-    {
-      grub_disk_t disk;
-      struct grub_raid_array array;
-      grub_disk_addr_t start_sector;
-
-      grub_dprintf ("raid", "Scanning for %s RAID devices on disk %s\n",
-		    grub_raid_list->name, name);
-#ifdef GRUB_UTIL
-      grub_util_info ("Scanning for %s RAID devices on disk %s",
-		      grub_raid_list->name, name);
-#endif
-
-      disk = grub_disk_open (name);
-      if (!disk)
-        return 0;
-
-      if ((disk->total_sectors != GRUB_ULONG_MAX) &&
-	  (! grub_raid_list->detect (disk, &array, &start_sector)) &&
-	  (! insert_array (disk, &array, start_sector, grub_raid_list->name,
-			   grub_raid_list)))
-	return 0;
-
-      /* This error usually means it's not raid, no need to display
-	 it.  */
-      if (grub_errno != GRUB_ERR_OUT_OF_RANGE)
-	grub_print_error ();
-
-      grub_errno = GRUB_ERR_NONE;
-
-      grub_disk_close (disk);
-
-      return 0;
-    }
-
   raid->next = grub_raid_list;
   grub_raid_list = raid;
-  grub_device_iterate (&hook);
 }
 
 void

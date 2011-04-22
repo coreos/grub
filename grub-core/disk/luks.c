@@ -498,9 +498,13 @@ grub_luks_scan_device (const char *name)
 }
 
 static int
-grub_luks_iterate (int (*hook) (const char *name))
+grub_luks_iterate (int (*hook) (const char *name),
+		   grub_disk_pull_t pull)
 {
   grub_luks_t i;
+
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
 
   for (i = luks_list; i != NULL; i = i->next)
     {
@@ -514,7 +518,8 @@ grub_luks_iterate (int (*hook) (const char *name))
 }
 
 static grub_err_t
-grub_luks_open (const char *name, grub_disk_t disk)
+grub_luks_open (const char *name, grub_disk_t disk,
+		grub_disk_pull_t pull __attribute__ ((unused)))
 {
   grub_luks_t dev;
 

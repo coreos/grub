@@ -165,6 +165,7 @@ kernel = {
   emu = kern/emu/cache.S;
   emu = kern/emu/console.c;
   emu = kern/emu/getroot.c;
+  emu = kern/emu/raid.c;
   emu = kern/emu/hostdisk.c;
   emu = kern/emu/hostfs.c;
   emu = kern/emu/main.c;
