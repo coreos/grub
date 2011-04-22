@@ -456,6 +456,8 @@ for dir in "${localedir}"/*; do
     fi
 done
 
+is_path_readable_by_grub "${grubdir}" || (echo "${grubdir}" not readable 1>&2 ; exit 1)
+
 # Write device to a variable so we don't have to traverse /dev every time.
 grub_device="`"$grub_probe" --device-map="${device_map}" --target=device "${grubdir}"`" || exit 1
 
@@ -536,6 +538,12 @@ if [ "x${devabstraction_module}" = "x" ] ; then
              
           exit 1
         fi
+	if [ x$GRUB_LUKS_ENABLE = xy ]; then
+	    for uuid in "`"${grub_probe}" --device "${device}" --target=luks_uuid`"; do
+		echo "luksmount -u $uuid"
+	    done
+	fi
+
         echo "search.fs_uuid ${uuid} root " >> "${grubdir}/load.cfg"
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
 	config_opt="-c ${grubdir}/load.cfg "

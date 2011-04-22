@@ -63,9 +63,21 @@ is_path_readable_by_grub ()
 
   # ... or if we can't figure out the abstraction module, for example if
   # memberlist fails on an LVM volume group.
-  if ${grub_probe} -t abstraction $path > /dev/null 2>&1 ; then : ; else
+  if abstractions="`"${grub_probe}" -t abstraction "$path"`" 2>&1 ; then 
+      :
+  else
     return 1
   fi
+
+  if [ x$GRUB_LUKS_ENABLE = xy ]; then
+      return 0
+  fi
+  
+  for abstraction in $abstractions; do
+      if [ "x$abstraction" = xluks ]; then
+	  return 1
+      fi
+  done
 
   return 0
 }
@@ -125,6 +137,12 @@ prepare_grub_to_access_device ()
   for module in ${fs} ; do
     echo "insmod ${module}"
   done
+
+  if [ x$GRUB_LUKS_ENABLE = xy ]; then
+      for uuid in "`"${grub_probe}" --device "${device}" --target=luks_uuid`"; do
+	  echo "luksmount -u $uuid"
+      done
+  fi
 
   # If there's a filesystem UUID that GRUB is capable of identifying, use it;
   # otherwise set root as per value in device.map.
