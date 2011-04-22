@@ -107,6 +107,7 @@ gcry_err_code_t AF_merge (const gcry_md_spec_t * hash, grub_uint8_t * src,
 static const struct grub_arg_option options[] =
   {
     {"uuid", 'u', 0, N_("Mount by UUID."), 0, 0},
+    {"all", 'a', 0, N_("Mount all."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -491,7 +492,11 @@ grub_luks_scan_device_real (const char *name, grub_disk_t source)
 {
   grub_err_t err;
   struct grub_luks_phdr header;
-  grub_luks_t newdev;
+  grub_luks_t newdev, dev;
+
+  for (dev = luks_list; dev != NULL; dev = dev->next)
+    if (dev->source_id == source->id && dev->source_dev_id == source->dev->id)
+      return GRUB_ERR_NONE;
 
   /* Read the LUKS header.  */
   err = grub_disk_read (source, 0, 0, sizeof (header), &header);
@@ -532,13 +537,20 @@ grub_luks_cheat_mount (const char *sourcedev, const char *cheat)
 {
   grub_err_t err;
   struct grub_luks_phdr header;
-  grub_luks_t newdev;
+  grub_luks_t newdev, dev;
   grub_disk_t source;
 
   /* Try to open disk.  */
   source = grub_disk_open (sourcedev);
   if (!source)
     return grub_errno;
+
+  for (dev = luks_list; dev != NULL; dev = dev->next)
+    if (dev->source_id == source->id && dev->source_dev_id == source->dev->id)
+      {
+	grub_disk_close (source);	
+	return GRUB_ERR_NONE;
+      }
 
   /* Read the LUKS header.  */
   err = grub_disk_read (source, 0, 0, sizeof (header), &header);
@@ -755,7 +767,7 @@ grub_cmd_luksmount (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
 
-  if (argc < 1)
+  if (argc < 1 && !state[1].set)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "device name required");
 
   have_it = 0;
@@ -777,6 +789,14 @@ grub_cmd_luksmount (grub_extcmd_context_t ctxt, int argc, char **args)
 
       if (!have_it)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "no such luks found");
+      return GRUB_ERR_NONE;
+    }
+  else if (state[1].set)
+    {
+      check_uuid = 0;
+      search_uuid = NULL;
+      grub_device_iterate (&grub_luks_scan_device);
+      search_uuid = NULL;
       return GRUB_ERR_NONE;
     }
   else
@@ -823,7 +843,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT (luks)
 {
   cmd = grub_register_extcmd ("luksmount", grub_cmd_luksmount, 0,
-			      N_("SOURCE|-u UUID"),
+			      N_("SOURCE|-u UUID|-a"),
 			      N_("Mount a LUKS device."), options);
   grub_disk_dev_register (&grub_luks_dev);
 }
