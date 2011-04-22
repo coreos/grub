@@ -863,6 +863,38 @@ grub_luks_write (grub_disk_t disk __attribute ((unused)),
   return GRUB_ERR_NOT_IMPLEMENTED_YET;
 }
 
+#ifdef GRUB_UTIL
+static grub_disk_memberlist_t
+grub_luks_memberlist (grub_disk_t disk)
+{
+  grub_luks_t dev = (grub_luks_t) disk->data;
+  grub_disk_memberlist_t list = NULL;
+
+  list = grub_malloc (sizeof (*list));
+  if (list)
+    {
+      list->disk = dev->source_disk;
+      list->next = NULL;
+    }
+
+  return list;
+}
+
+void
+grub_util_luks_print_ciphers (grub_disk_t disk)
+{
+  grub_luks_t dev = (grub_luks_t) disk->data;
+  if (dev->cipher)
+    grub_printf ("%s ", dev->cipher->cipher->modname);
+  if (dev->secondary_cipher)
+    grub_printf ("%s ", dev->secondary_cipher->cipher->modname);
+  if (dev->hash)
+    grub_printf ("%s ", dev->hash->modname);
+  if (dev->essiv_hash)
+    grub_printf ("%s ", dev->essiv_hash->modname);
+}
+#endif
+
 static void
 luks_cleanup (void)
 {
@@ -953,6 +985,9 @@ static struct grub_disk_dev grub_luks_dev = {
   .close = grub_luks_close,
   .read = grub_luks_read,
   .write = grub_luks_write,
+#ifdef GRUB_UTIL
+  .memberlist = grub_luks_memberlist,
+#endif
   .next = 0
 };
 

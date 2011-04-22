@@ -111,6 +111,7 @@ for cipher_file in cipher_files:
         skip = False
         skip2 = False
         ismd = False
+        iscipher = False
         iscryptostart = False
         iscomma = False
         isglue = False
@@ -140,15 +141,22 @@ for cipher_file in cipher_files:
                     sg = s.groups()[0]
                     cryptolist.write (("%s: %s\n") % (sg, modname))
                     iscryptostart = False
-            if ismd:
+            if ismd or iscipher:
                 if not re.search (" *};", line) is None:
-                    if not mdblocksizes.has_key (mdname):
-                        print ("ERROR: Unknown digest blocksize: %s\n" % mdname)
-                        exit (1)
                     if not iscomma:
                         fw.write ("    ,\n")
-                    fw.write ("    .blocksize = %s\n" % mdblocksizes [mdname])
+                    fw.write ("#ifdef GRUB_UTIL\n");
+                    fw.write ("    .modname = \"%s\",\n" % modname);
+                    fw.write ("#endif\n");
+                    if ismd:
+                        if not mdblocksizes.has_key (mdname):
+                            print ("ERROR: Unknown digest blocksize: %s\n"
+                                   % mdname)
+                            exit (1)
+                            fw.write ("    .blocksize = %s\n"
+                                      % mdblocksizes [mdname])
                     ismd = False
+                    iscipher = False
                 iscomma = not re.search (",$", line) is None
             # Used only for selftests.
             m = re.match ("(static byte|static unsigned char) (weak_keys_chksum)\[[0-9]*\] =", line)
@@ -190,13 +198,17 @@ for cipher_file in cipher_files:
             m = re.match ("gcry_cipher_spec_t", line)
             if isc and not m is None:
                 assert (not iscryptostart)
+                assert (not iscipher)
+                assert (not iscryptostart)
                 ciphername = line [len ("gcry_cipher_spec_t"):].strip ()
                 ciphername = re.match("[a-zA-Z0-9_]*",ciphername).group ()
                 ciphernames.append (ciphername)
+                iscipher = True
                 iscryptostart = True
             m = re.match ("gcry_md_spec_t", line)
             if isc and not m is None:
                 assert (not ismd)
+                assert (not iscipher)
                 assert (not iscryptostart)
                 mdname = line [len ("gcry_md_spec_t"):].strip ()
                 mdname = re.match("[a-zA-Z0-9_]*",mdname).group ()

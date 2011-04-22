@@ -36,5 +36,6 @@ grub_util_fd_sector_seek (int fd, const char *name, grub_disk_addr_t sector);
 ssize_t grub_util_fd_read (int fd, char *buf, size_t len);
 grub_err_t
 grub_luks_cheat_mount (const char *sourcedev, const char *cheat);
+void grub_util_luks_print_ciphers (grub_disk_t disk);
 
 #endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */

@@ -126,6 +126,9 @@ typedef struct gcry_cipher_spec
   gcry_cipher_decrypt_t decrypt;
   gcry_cipher_stencrypt_t stencrypt;
   gcry_cipher_stdecrypt_t stdecrypt;
+#ifdef GRUB_UTIL
+  const char *modname;
+#endif
   struct gcry_cipher_spec *next;
 } gcry_cipher_spec_t;
 
@@ -161,6 +164,9 @@ typedef struct gcry_md_spec
   grub_size_t contextsize; /* allocate this amount of context */
   /* Block size, needed for HMAC.  */
   grub_size_t blocksize;
+#ifdef GRUB_UTIL
+  const char *modname;
+#endif
   struct gcry_md_spec *next;
 } gcry_md_spec_t;
 
