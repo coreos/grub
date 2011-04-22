@@ -20,6 +20,7 @@
 
 #include <grub/types.h>
 #include <grub/crypto.h>
+#include <grub/auth.h>
 #include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/i18n.h>
@@ -29,7 +30,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
-#include <termios.h>
 
 #include "progname.h"
 
@@ -85,14 +85,12 @@ int
 main (int argc, char *argv[])
 {
   unsigned int count = 10000, buflen = 64, saltlen = 64;
-  char *pass1, *pass2;
   char *bufhex, *salthex;
   gcry_err_code_t gcry_err;
   grub_uint8_t *buf, *salt;
   ssize_t nr;
-  FILE *in, *out;
-  struct termios s, t;
-  int tty_changed;
+  char pass1[GRUB_AUTH_MAX_PASSLEN];
+  char pass2[GRUB_AUTH_MAX_PASSLEN];
 
   set_program_name (argv[0]);
 
@@ -160,86 +158,37 @@ main (int argc, char *argv[])
       free (buf);
       grub_util_error ("out of memory");
     }
-
-  /* Disable echoing. Based on glibc.  */
-  in = fopen ("/dev/tty", "w+c");
-  if (in == NULL)
-    {
-      in = stdin;
-      out = stderr;
-    }
-  else
-    out = in;
-
-  if (tcgetattr (fileno (in), &t) == 0)
-    {
-      /* Save the old one. */
-      s = t;
-      /* Tricky, tricky. */
-      t.c_lflag &= ~(ECHO|ISIG);
-      tty_changed = (tcsetattr (fileno (in), TCSAFLUSH, &t) == 0);
-    }
-  else
-    tty_changed = 0;
   
   printf ("Enter password: ");
-  pass1 = NULL;
-  {
-    grub_size_t n;
-    nr = getline (&pass1, &n, stdin);
-  }
-  if (nr < 0 || !pass1)
+  if (!grub_password_get (pass1, GRUB_AUTH_MAX_PASSLEN))
     {
       free (buf);
       free (bufhex);
       free (salthex);
       free (salt);
-      /* Restore the original setting.  */
-      if (tty_changed)
-	(void) tcsetattr (fileno (in), TCSAFLUSH, &s);
       grub_util_error ("failure to read password");
     }
-  if (nr >= 1 && pass1[nr-1] == '\n')
-    pass1[nr-1] = 0;
-
   printf ("\nReenter password: ");
-  pass2 = NULL;
-  {
-    grub_size_t n;
-    nr = getline (&pass2, &n, stdin);
-  }
-  /* Restore the original setting.  */
-  if (tty_changed)
-    (void) tcsetattr (fileno (in), TCSAFLUSH, &s);
-  printf ("\n");
-
-  if (nr < 0 || !pass2)
+  if (!grub_password_get (pass2, GRUB_AUTH_MAX_PASSLEN))
     {
-      memset (pass1, 0, strlen (pass1));
-      free (pass1);
       free (buf);
       free (bufhex);
       free (salthex);
       free (salt);
       grub_util_error ("failure to read password");
     }
-  if (nr >= 1 && pass2[nr-1] == '\n')
-    pass2[nr-1] = 0;
 
   if (strcmp (pass1, pass2) != 0)
     {
-      memset (pass1, 0, strlen (pass1));
-      memset (pass2, 0, strlen (pass2));
-      free (pass1);
-      free (pass2);
+      memset (pass1, 0, sizeof (pass1));
+      memset (pass2, 0, sizeof (pass2));
       free (buf);
       free (bufhex);
       free (salthex);
       free (salt);
       grub_util_error ("passwords don't match");
     }
-  memset (pass2, 0, strlen (pass2));
-  free (pass2);
+  memset (pass2, 0, sizeof (pass2));
 
 #if ! defined (__linux__) && ! defined (__FreeBSD__)
   printf ("WARNING: your random generator isn't known to be secure\n");
@@ -251,8 +200,7 @@ main (int argc, char *argv[])
     f = fopen ("/dev/random", "rb");
     if (!f)
       {
-	memset (pass1, 0, strlen (pass1));
-	free (pass1);
+	memset (pass1, 0, sizeof (pass1));
 	free (buf);
 	free (bufhex);
 	free (salthex);
@@ -264,8 +212,7 @@ main (int argc, char *argv[])
     if (rd != saltlen)
       {
 	fclose (f);
-	memset (pass1, 0, strlen (pass1));
-	free (pass1);
+	memset (pass1, 0, sizeof (pass1));
 	free (buf);
 	free (bufhex);
 	free (salthex);
@@ -280,8 +227,7 @@ main (int argc, char *argv[])
 				 (grub_uint8_t *) pass1, strlen (pass1),
 				 salt, saltlen,
 				 count, buf, buflen);
-  memset (pass1, 0, strlen (pass1));
-  free (pass1);
+  memset (pass1, 0, sizeof (pass1));
 
   if (gcry_err)
     {
