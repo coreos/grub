@@ -21,7 +21,6 @@
 #ifdef __linux__
 #include <grub/emu/misc.h>
 #include <grub/util/misc.h>
-#include <grub/util/raid.h>
 #include <grub/emu/getroot.h>
 
 #include <string.h>
@@ -36,7 +35,7 @@
 #include <linux/raid/md_u.h>
 
 char **
-grub_util_raid_getmembers (const char *name)
+grub_util_raid_getmembers (const char *name, int bootable)
 {
   int fd, ret, i, j;
   char **devicelist;
@@ -53,7 +52,14 @@ grub_util_raid_getmembers (const char *name)
   if (ret != 0)
     grub_util_error ("ioctl RAID_VERSION error: %s", strerror (errno));
 
-  if (version.major != 0 || version.minor != 90)
+  if ((version.major != 0 || version.minor != 90)
+      && (version.major != 1 || version.minor != 0)
+      && (version.major != 1 || version.minor != 1)
+      && (version.major != 1 || version.minor != 2))
+    grub_util_error ("unsupported RAID version: %d.%d",
+		     version.major, version.minor);
+
+  if (bootable && (version.major != 0 || version.minor != 90))
     grub_util_error ("unsupported RAID version: %d.%d",
 		     version.major, version.minor);
 

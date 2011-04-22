@@ -854,9 +854,20 @@ grub_util_pull_device (const char *os_dev)
 	      grub_util_pull_device (subdev);
 	  }
 	dm_tree_free (tree);
-	return;
       }
 #endif
+      return;
+    case GRUB_DEV_ABSTRACTION_RAID:
+#ifdef __linux__
+      {
+	char **devicelist = grub_util_raid_getmembers (os_dev, 0);
+	int i;
+	for (i = 0; devicelist[i];i++)
+	  grub_util_pull_device (devicelist[i]);
+	free (devicelist);
+      }
+#endif
+      return;
 
     default:  /* GRUB_DEV_ABSTRACTION_NONE */
       grub_util_biosdisk_get_grub_dev (os_dev);
@@ -868,6 +879,8 @@ char *
 grub_util_get_grub_dev (const char *os_dev)
 {
   char *grub_dev = NULL;
+
+  grub_util_pull_device (os_dev);
 
   switch (grub_util_get_dev_abstraction (os_dev))
     {

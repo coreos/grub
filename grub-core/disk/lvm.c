@@ -198,16 +198,6 @@ grub_lvm_open (const char *name, grub_disk_t disk,
   if (! lv && !scan_depth &&
       pull == (explicit ? GRUB_DISK_PULL_RESCAN : GRUB_DISK_PULL_RESCAN_UNTYPED))
     {
-#ifdef GRUB_UTIL
-      if (explicit)
-	{
-	  char buf[grub_strlen (name) + sizeof ("/dev/mapper/")];
-	  grub_memcpy (buf, "/dev/mapper/", sizeof ("/dev/mapper/"));
-	  grub_strcpy (buf + sizeof ("/dev/mapper/") - 1,
-		       name + sizeof ("lvm/") - 1);
-	  grub_util_pull_device (buf);
-	}
-#endif
       scan_for = name;
       scan_depth++;
       grub_device_iterate (&grub_lvm_scan_device);

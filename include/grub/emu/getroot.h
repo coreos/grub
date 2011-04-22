@@ -34,5 +34,8 @@ char *grub_util_get_grub_dev (const char *os_dev);
 char *grub_make_system_path_relative_to_its_root (const char *path);
 const char *grub_util_check_block_device (const char *blk_dev);
 const char *grub_util_check_char_device (const char *blk_dev);
+#ifdef __linux__
+char **grub_util_raid_getmembers (const char *name, int bootable);
+#endif
 
 #endif /* ! GRUB_UTIL_GETROOT_HEADER */
