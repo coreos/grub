@@ -153,8 +153,8 @@ for cipher_file in cipher_files:
                             print ("ERROR: Unknown digest blocksize: %s\n"
                                    % mdname)
                             exit (1)
-                            fw.write ("    .blocksize = %s\n"
-                                      % mdblocksizes [mdname])
+                        fw.write ("    .blocksize = %s\n"
+                                  % mdblocksizes [mdname])
                     ismd = False
                     iscipher = False
                 iscomma = not re.search (",$", line) is None
