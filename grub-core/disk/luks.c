@@ -90,6 +90,8 @@ typedef enum
 /* Our irreducible polynom is x^128+x^7+x^2+x+1. Lowest byte of it is:  */
 #define GF_POLYNOM 0x87
 #define GF_SIZE 128
+#define GF_BYTES (GF_SIZE / 8)
+#define GF_PER_SECTOR (GRUB_DISK_SECTOR_SIZE / GF_BYTES)
 
 struct grub_luks
 {
@@ -107,7 +109,7 @@ struct grub_luks
   unsigned long id, source_id;
   enum grub_disk_dev_id source_dev_id;
   char uuid[sizeof (((struct grub_luks_phdr *) 0)->uuid) + 1];
-  grub_uint8_t lrw_key[GF_SIZE / 8];
+  grub_uint8_t lrw_key[GF_BYTES];
   grub_uint8_t *lrw_precalc;
 #ifdef GRUB_UTIL
   char *cheat;
@@ -137,7 +139,7 @@ gf_mul_x (grub_uint8_t *g)
   int over = 0, over2 = 0;
   int j;
 
-  for (j = 0; j < GF_SIZE / 8; j++)
+  for (j = 0; j < GF_BYTES; j++)
     {
       over2 = !!(g[j] & 0x80);
       g[j] <<= 1;
@@ -155,7 +157,7 @@ gf_mul_x_be (grub_uint8_t *g)
   int over = 0, over2 = 0;
   int j;
 
-  for (j = GF_SIZE / 8 - 1; j >= 0; j--)
+  for (j = GF_BYTES - 1; j >= 0; j--)
     {
       over2 = !!(g[j] & 0x80);
       g[j] <<= 1;
@@ -163,20 +165,20 @@ gf_mul_x_be (grub_uint8_t *g)
       over = over2;
     }
   if (over)
-    g[GF_SIZE / 8 - 1] ^= GF_POLYNOM;
+    g[GF_BYTES - 1] ^= GF_POLYNOM;
 }
 
 static void
 gf_mul_be (grub_uint8_t *o, const grub_uint8_t *a, const grub_uint8_t *b)
 {
   int i;
-  grub_uint8_t t[GF_SIZE / 8];
-  grub_memset (o, 0, GF_SIZE / 8);
-  grub_memcpy (t, b, GF_SIZE / 8);
+  grub_uint8_t t[GF_BYTES];
+  grub_memset (o, 0, GF_BYTES);
+  grub_memcpy (t, b, GF_BYTES);
   for (i = 0; i < GF_SIZE; i++)
     {
-      if (((a[GF_SIZE / 8 - i / 8 - 1] >> (i % 8))) & 1)
-	grub_crypto_xor (o, o, t, GF_SIZE / 8);
+      if (((a[GF_BYTES - i / 8 - 1] >> (i % 8))) & 1)
+	grub_crypto_xor (o, o, t, GF_BYTES);
       gf_mul_x_be (t);
     }
 }
@@ -203,9 +205,6 @@ grub_crypto_pcbc_decrypt (grub_crypto_cipher_handle_t cipher,
     }
   return GPG_ERR_NO_ERROR;
 }
-
-#define GF_BYTES (GF_SIZE / 8)
-#define GF_PER_SECTOR (GRUB_DISK_SECTOR_SIZE / GF_BYTES)
 
 struct lrw_sector
 {
@@ -473,14 +472,14 @@ configure_ciphers (const struct grub_luks_phdr *header)
 	  grub_crypto_cipher_close (cipher);
 	  return NULL;
 	}
-      if (cipher->cipher->blocksize != GF_SIZE / 8)
+      if (cipher->cipher->blocksize != GF_BYTES)
 	{
 	  grub_crypto_cipher_close (cipher);
 	  grub_error (GRUB_ERR_BAD_ARGUMENT, "Unsupported XTS block size: %d",
 		      cipher->cipher->blocksize);
 	  return NULL;
 	}
-      if (secondary_cipher->cipher->blocksize != GF_SIZE / 8)
+      if (secondary_cipher->cipher->blocksize != GF_BYTES)
 	{
 	  grub_crypto_cipher_close (cipher);
 	  grub_error (GRUB_ERR_BAD_ARGUMENT, "Unsupported XTS block size: %d",
@@ -492,7 +491,7 @@ configure_ciphers (const struct grub_luks_phdr *header)
     {
       mode = GRUB_LUKS_MODE_LRW;
       cipheriv = ciphermode + sizeof ("lrw-") - 1;
-      if (cipher->cipher->blocksize != GF_SIZE / 8)
+      if (cipher->cipher->blocksize != GF_BYTES)
 	{
 	  grub_crypto_cipher_close (cipher);
 	  grub_error (GRUB_ERR_BAD_ARGUMENT, "Unsupported LRW block size: %d",
@@ -627,7 +626,7 @@ luks_setkey (grub_luks_t dev, grub_uint8_t *key, grub_size_t keysize)
   if (dev->mode == GRUB_LUKS_MODE_LRW)
     {
       int i;
-      grub_uint8_t idx[GF_SIZE / 8];
+      grub_uint8_t idx[GF_BYTES];
 
       grub_free (dev->lrw_precalc);
       grub_memcpy (dev->lrw_key, key + real_keysize,
@@ -635,10 +634,10 @@ luks_setkey (grub_luks_t dev, grub_uint8_t *key, grub_size_t keysize)
       dev->lrw_precalc = grub_malloc (GRUB_DISK_SECTOR_SIZE);
       if (!dev->lrw_precalc)
 	return GPG_ERR_OUT_OF_MEMORY;
-      grub_memset (idx, 0, GF_SIZE / 8);
-      for (i = 0; i < GRUB_DISK_SECTOR_SIZE; i += GF_SIZE / 8)
+      grub_memset (idx, 0, GF_BYTES);
+      for (i = 0; i < GRUB_DISK_SECTOR_SIZE; i += GF_BYTES)
 	{
-	  idx[15] = i / (GF_SIZE / 8);
+	  idx[15] = i / GF_BYTES;
 	  gf_mul_be (dev->lrw_precalc + i, idx, dev->lrw_key);
 	}
     }
