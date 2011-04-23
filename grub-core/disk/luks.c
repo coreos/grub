@@ -70,12 +70,20 @@ struct grub_luks_phdr
 typedef struct grub_luks_phdr *grub_luks_phdr_t;
 
 typedef enum
-{
-  GRUB_LUKS_MODE_ECB,
-  GRUB_LUKS_MODE_CBC_PLAIN,
-  GRUB_LUKS_MODE_CBC_ESSIV,
-  GRUB_LUKS_MODE_XTS
-} luks_mode_t;
+  {
+    GRUB_LUKS_MODE_ECB,
+    GRUB_LUKS_MODE_CBC,
+    GRUB_LUKS_MODE_XTS
+  } luks_mode_t;
+
+typedef enum
+  {
+    GRUB_LUKS_MODE_IV_NULL,
+    GRUB_LUKS_MODE_IV_PLAIN,
+    GRUB_LUKS_MODE_IV_PLAIN64,
+    GRUB_LUKS_MODE_IV_ESSIV,
+    GRUB_LUKS_MODE_IV_BENBI,
+  } luks_mode_iv_t;
 
 struct grub_luks
 {
@@ -85,8 +93,10 @@ struct grub_luks
   int ref;
   grub_crypto_cipher_handle_t cipher;
   grub_crypto_cipher_handle_t secondary_cipher;
+  grub_crypto_cipher_handle_t essiv_cipher;
   const gcry_md_spec_t *essiv_hash, *hash;
   luks_mode_t mode;
+  luks_mode_iv_t mode_iv;
   unsigned long id, source_id;
   enum grub_disk_dev_id source_dev_id;
   char uuid[sizeof (((struct grub_luks_phdr *) 0)->uuid) + 1];
@@ -112,13 +122,6 @@ static const struct grub_arg_option options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
-static inline void
-make_iv (grub_uint32_t *iv, grub_size_t sz, grub_disk_addr_t sector)
-{
-  grub_memset (iv, 0, sz * sizeof (iv[0]));
-  iv[0] = grub_cpu_to_le32 (sector & 0xFFFFFFFF);
-}
-
 /* Our irreducible polynom is x^128+x^7+x^2+x+1. Lowest byte of it is:  */
 #define POLYNOM 0x87
 
@@ -141,89 +144,83 @@ gf_mul_x (grub_uint8_t *g)
 
 static gcry_err_code_t
 luks_decrypt (const struct grub_luks *dev,
-	      grub_uint8_t * data, grub_size_t len, grub_size_t sector)
+	      grub_uint8_t * data, grub_size_t len, grub_disk_addr_t sector)
 {
   grub_size_t i;
   gcry_err_code_t err;
 
-  switch (dev->mode)
+  /* The only mode without IV.  */
+  if (dev->mode == GRUB_LUKS_MODE_ECB)
+    return grub_crypto_ecb_decrypt (dev->cipher, data, data, len);
+
+  for (i = 0; i < len; i += GRUB_DISK_SECTOR_SIZE)
     {
-    case GRUB_LUKS_MODE_ECB:
-      return grub_crypto_ecb_decrypt (dev->cipher, data, data, len);
+      grub_size_t sz = ((dev->cipher->cipher->blocksize
+			 + sizeof (grub_uint32_t) - 1)
+			/ sizeof (grub_uint32_t));
+      grub_uint32_t iv[sz];
 
-    case GRUB_LUKS_MODE_CBC_PLAIN:
-      for (i = 0; i < len; i += GRUB_DISK_SECTOR_SIZE)
+      grub_memset (iv, 0, sz * sizeof (iv[0]));
+      switch (dev->mode_iv)
 	{
-	  grub_size_t sz = ((dev->cipher->cipher->blocksize
-			    + sizeof (grub_uint32_t) - 1)
-			    / sizeof (grub_uint32_t));
-	  grub_uint32_t iv[sz];
-	  make_iv (iv, sz, sector);
+	case GRUB_LUKS_MODE_IV_NULL:
+	  break;
+	case GRUB_LUKS_MODE_IV_PLAIN64:
+	  iv[1] = grub_cpu_to_le32 (sector >> 32);
+	case GRUB_LUKS_MODE_IV_PLAIN:
+	  iv[0] = grub_cpu_to_le32 (sector & 0xFFFFFFFF);
+	  break;
+	case GRUB_LUKS_MODE_IV_BENBI:
+	  iv[sz - 2] = grub_cpu_to_be32 (sector >> 32);
+	  iv[sz - 1] = grub_cpu_to_be32 (sector & 0xFFFFFFFF);
+	  break;
+	case GRUB_LUKS_MODE_IV_ESSIV:
+	  iv[0] = grub_cpu_to_le32 (sector & 0xFFFFFFFF);
+	  err = grub_crypto_ecb_encrypt (dev->essiv_cipher, iv, iv,
+					 dev->cipher->cipher->blocksize);
+	  if (err)
+	    return err;
+	}
+
+      switch (dev->mode)
+	{
+	case GRUB_LUKS_MODE_CBC:
 	  err = grub_crypto_cbc_decrypt (dev->cipher, data + i, data + i,
 					 GRUB_DISK_SECTOR_SIZE, iv);
 	  if (err)
 	    return err;
-	  sector++;
+	  break;
+
+	case GRUB_LUKS_MODE_XTS:
+	  {
+	    int j;
+	    err = grub_crypto_ecb_encrypt (dev->secondary_cipher, iv, iv,
+					   dev->cipher->cipher->blocksize);
+	    if (err)
+	      return err;
+	    
+	    for (j = 0; j < GRUB_DISK_SECTOR_SIZE;
+		 j += dev->cipher->cipher->blocksize)
+	      {
+		grub_crypto_xor (data + i + j, data + i + j, iv,
+				 dev->cipher->cipher->blocksize);
+		err = grub_crypto_ecb_decrypt (dev->cipher, data + i + j, 
+					       data + i + j,
+					       dev->cipher->cipher->blocksize);
+		if (err)
+		  return err;
+		grub_crypto_xor (data + i + j, data + i + j, iv,
+				 dev->cipher->cipher->blocksize);
+		gf_mul_x ((grub_uint8_t *) iv);
+	      }
+	  }
+	  break;
+	default:
+	  return GPG_ERR_NOT_IMPLEMENTED;
 	}
-      return GPG_ERR_NO_ERROR;
-
-    case GRUB_LUKS_MODE_CBC_ESSIV:
-      for (i = 0; i < len; i += GRUB_DISK_SECTOR_SIZE)
-	{
-	  grub_size_t sz = ((dev->cipher->cipher->blocksize
-			    + sizeof (grub_uint32_t) - 1)
-			    / sizeof (grub_uint32_t));
-	  grub_uint32_t iv[sz];
-	  make_iv (iv, sz, sector);
-
-	  err = grub_crypto_ecb_encrypt (dev->secondary_cipher, iv, iv,
-					 dev->cipher->cipher->blocksize);
-	  if (err)
-	    return err;
-	  err = grub_crypto_cbc_decrypt (dev->cipher, data + i, data + i,
-					 GRUB_DISK_SECTOR_SIZE, iv);
-	  if (err)
-	    return err;
-	  sector++;
-	}
-      return GPG_ERR_NO_ERROR;
-
-    case GRUB_LUKS_MODE_XTS:
-      for (i = 0; i < len; i += GRUB_DISK_SECTOR_SIZE)
-	{
-	  grub_size_t sz = ((dev->cipher->cipher->blocksize
-			    + sizeof (grub_uint32_t) - 1)
-			    / sizeof (grub_uint32_t));
-	  grub_uint32_t iv[sz];
-	  int j;
-	  make_iv (iv, sz, sector);
-
-	  err = grub_crypto_ecb_encrypt (dev->secondary_cipher, iv, iv,
-					 dev->cipher->cipher->blocksize);
-	  if (err)
-	    return err;
-
-	  for (j = 0; j < GRUB_DISK_SECTOR_SIZE;
-	       j += dev->cipher->cipher->blocksize)
-	    {
-	      grub_crypto_xor (data + i + j, data + i + j, iv,
-			       dev->cipher->cipher->blocksize);
-	      err = grub_crypto_ecb_decrypt (dev->cipher, data + i + j, 
-					     data + i + j,
-					     dev->cipher->cipher->blocksize);
-	      if (err)
-		return err;
-	      grub_crypto_xor (data + i + j, data + i + j, iv,
-			       dev->cipher->cipher->blocksize);
-	      gf_mul_x ((grub_uint8_t *) iv);
-	    }
-	  sector++;
-	}
-      return GPG_ERR_NO_ERROR;
-
-    default:
-      return GPG_ERR_NOT_IMPLEMENTED;
+      sector++;
     }
+  return GPG_ERR_NO_ERROR;
 }
 
 static int check_uuid, have_it;
@@ -238,11 +235,14 @@ configure_ciphers (const struct grub_luks_phdr *header)
   char uuid[sizeof (header->uuid) + 1];
   char ciphername[sizeof (header->cipherName) + 1];
   char ciphermode[sizeof (header->cipherMode) + 1];
+  char *cipheriv = NULL;
   char hashspec[sizeof (header->hashSpec) + 1];
   grub_crypto_cipher_handle_t cipher = NULL, secondary_cipher = NULL;
+  grub_crypto_cipher_handle_t essiv_cipher = NULL;
   const gcry_md_spec_t *hash = NULL, *essiv_hash = NULL;
   const struct gcry_cipher_spec *ciph;
   luks_mode_t mode;
+  luks_mode_iv_t mode_iv;
   
   /* Look for LUKS magic sequence.  */
   if (grub_memcmp (header->magic, LUKS_MAGIC, sizeof (header->magic))
@@ -294,35 +294,26 @@ configure_ciphers (const struct grub_luks_phdr *header)
 
   /* Configure the cipher mode.  */
   if (grub_strcmp (ciphermode, "ecb") == 0)
-    mode = GRUB_LUKS_MODE_ECB;
-  else if (grub_strcmp (ciphermode, "cbc-plain") == 0
-	   || grub_strcmp (ciphermode, "plain") == 0)
-    mode = GRUB_LUKS_MODE_CBC_PLAIN;
-  else if (grub_memcmp (ciphermode, "cbc-essiv:", sizeof ("cbc-essiv:") - 1) 
-	   == 0)
     {
-      mode = GRUB_LUKS_MODE_CBC_ESSIV;
-      char *hash_str = ciphermode + 10;
-
-      /* Configure the hash and cipher used for ESSIV.  */
-      essiv_hash = grub_crypto_lookup_md_by_name (hash_str);
-      if (!essiv_hash)
-	{
-	  grub_crypto_cipher_close (cipher);
-	  grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		      "Couldn't load %s hash", hash_str);
-	  return NULL;
-	}
-      secondary_cipher = grub_crypto_cipher_open (ciph);
-      if (!secondary_cipher)
-	{
-	  grub_crypto_cipher_close (cipher);
-	  return NULL;
-	}
+      mode = GRUB_LUKS_MODE_ECB;
+      mode_iv = GRUB_LUKS_MODE_IV_PLAIN;
+      cipheriv = NULL;
     }
-  else if (grub_strcmp (ciphermode, "xts-plain") == 0)
+  else if (grub_strcmp (ciphermode, "plain") == 0)
+    {
+      mode = GRUB_LUKS_MODE_CBC;
+      mode_iv = GRUB_LUKS_MODE_IV_PLAIN;
+      cipheriv = NULL;
+    }
+  else if (grub_memcmp (ciphermode, "cbc-", sizeof ("cbc-") - 1) == 0)
+    {
+      mode = GRUB_LUKS_MODE_CBC;
+      cipheriv = ciphermode + sizeof ("cbc-") - 1;
+    }
+  else if (grub_memcmp (ciphermode, "xts-", sizeof ("xts-") - 1) == 0)
     {
       mode = GRUB_LUKS_MODE_XTS;
+      cipheriv = ciphermode + sizeof ("xts-") - 1;
       secondary_cipher = grub_crypto_cipher_open (ciph);
       if (!secondary_cipher)
 	{
@@ -350,11 +341,51 @@ configure_ciphers (const struct grub_luks_phdr *header)
       return NULL;
     }
 
+  if (cipheriv == NULL);
+  else if (grub_memcmp (cipheriv, "plain", sizeof ("plain") - 1) == 0)
+      mode_iv = GRUB_LUKS_MODE_IV_PLAIN;
+  else if (grub_memcmp (cipheriv, "plain64", sizeof ("plain64") - 1) == 0)
+      mode_iv = GRUB_LUKS_MODE_IV_PLAIN64;
+  else if (grub_memcmp (cipheriv, "benbi", sizeof ("benbi") - 1) == 0)
+      mode_iv = GRUB_LUKS_MODE_IV_BENBI;
+  else if (grub_memcmp (cipheriv, "null", sizeof ("null") - 1) == 0)
+      mode_iv = GRUB_LUKS_MODE_IV_NULL;
+  else if (grub_memcmp (cipheriv, "essiv:", sizeof ("essiv:") - 1) == 0)
+    {
+      char *hash_str = cipheriv + 6;
+
+      mode_iv = GRUB_LUKS_MODE_IV_ESSIV;
+
+      /* Configure the hash and cipher used for ESSIV.  */
+      essiv_hash = grub_crypto_lookup_md_by_name (hash_str);
+      if (!essiv_hash)
+	{
+	  grub_crypto_cipher_close (cipher);
+	  grub_error (GRUB_ERR_FILE_NOT_FOUND,
+		      "Couldn't load %s hash", hash_str);
+	  return NULL;
+	}
+      essiv_cipher = grub_crypto_cipher_open (ciph);
+      if (!essiv_cipher)
+	{
+	  grub_crypto_cipher_close (cipher);
+	  return NULL;
+	}
+    }
+  else
+    {
+      grub_crypto_cipher_close (cipher);
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "Unknown IV mode: %s",
+		  cipheriv);
+      return NULL;
+    }
+
   /* Configure the hash used for the AF splitter and HMAC.  */
   hash = grub_crypto_lookup_md_by_name (hashspec);
   if (!hash)
     {
       grub_crypto_cipher_close (cipher);
+      grub_crypto_cipher_close (essiv_cipher);
       grub_crypto_cipher_close (secondary_cipher);
       grub_error (GRUB_ERR_FILE_NOT_FOUND, "Couldn't load %s hash",
 		  hashspec);
@@ -368,7 +399,9 @@ configure_ciphers (const struct grub_luks_phdr *header)
   newdev->offset = grub_be_to_cpu32 (header->payloadOffset);
   newdev->source_disk = NULL;
   newdev->mode = mode;
+  newdev->mode_iv = mode_iv;
   newdev->secondary_cipher = secondary_cipher;
+  newdev->essiv_cipher = essiv_cipher;
   newdev->essiv_hash = essiv_hash;
   newdev->hash = hash;
   newdev->id = n++;
@@ -392,7 +425,7 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
   grub_size_t length;
   grub_err_t err;
 
-  if (dev->mode == GRUB_LUKS_MODE_CBC_ESSIV)
+  if (dev->mode_iv == GRUB_LUKS_MODE_IV_ESSIV)
     {
       essiv_keysize = dev->essiv_hash->mdlen;
       hashed_key = grub_malloc (dev->essiv_hash->mdlen);
@@ -433,8 +466,7 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
       gcry_err = grub_crypto_pbkdf2 (dev->hash, (grub_uint8_t *) passphrase,
 				     grub_strlen (passphrase),
 				     header->keyblock[i].passwordSalt,
-				     sizeof (header->
-					     keyblock[i].passwordSalt),
+				     sizeof (header->keyblock[i].passwordSalt),
 				     grub_be_to_cpu32 (header->keyblock[i].
 						       passwordIterations),
 				     digest, keysize);
@@ -460,10 +492,10 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 	}
 
       /* Configure ESSIV if necessary.  */
-      if (dev->mode == GRUB_LUKS_MODE_CBC_ESSIV)
+      if (dev->mode_iv == GRUB_LUKS_MODE_IV_ESSIV)
 	{
 	  grub_crypto_hash (dev->essiv_hash, hashed_key, digest, keysize);
-	  gcry_err = grub_crypto_cipher_set_key (dev->secondary_cipher,
+	  gcry_err = grub_crypto_cipher_set_key (dev->essiv_cipher,
 						 hashed_key,
 						 essiv_keysize);
 	  if (gcry_err)
@@ -562,12 +594,12 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 	}
 
       /* Configure ESSIV if necessary.  */
-      if (dev->mode == GRUB_LUKS_MODE_CBC_ESSIV)
+      if (dev->mode_iv == GRUB_LUKS_MODE_IV_ESSIV)
 	{
 	  grub_crypto_hash (dev->essiv_hash, hashed_key,
 			    candidate_key, keysize);
 	  gcry_err =
-	    grub_crypto_cipher_set_key (dev->secondary_cipher, hashed_key,
+	    grub_crypto_cipher_set_key (dev->essiv_cipher, hashed_key,
 					essiv_keysize);
 	  if (gcry_err)
 	    {
@@ -604,6 +636,7 @@ luks_close (grub_luks_t luks)
 {
   grub_crypto_cipher_close (luks->cipher);
   grub_crypto_cipher_close (luks->secondary_cipher);
+  grub_crypto_cipher_close (luks->essiv_cipher);
   grub_free (luks);
 }
 
@@ -888,6 +921,8 @@ grub_util_luks_print_ciphers (grub_disk_t disk)
     grub_printf ("%s ", dev->cipher->cipher->modname);
   if (dev->secondary_cipher)
     grub_printf ("%s ", dev->secondary_cipher->cipher->modname);
+  if (dev->essiv_cipher)
+    grub_printf ("%s ", dev->essiv_cipher->cipher->modname);
   if (dev->hash)
     grub_printf ("%s ", dev->hash->modname);
   if (dev->essiv_hash)
@@ -913,6 +948,7 @@ luks_cleanup (void)
       grub_free (dev->source);
       grub_free (dev->cipher);
       grub_free (dev->secondary_cipher);
+      grub_free (dev->essiv_cipher);
       tmp = dev->next;
       grub_free (dev);
       dev = tmp;
