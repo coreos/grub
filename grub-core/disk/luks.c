@@ -73,6 +73,7 @@ typedef enum
   {
     GRUB_LUKS_MODE_ECB,
     GRUB_LUKS_MODE_CBC,
+    GRUB_LUKS_MODE_PCBC,
     GRUB_LUKS_MODE_XTS
   } luks_mode_t;
 
@@ -143,6 +144,29 @@ gf_mul_x (grub_uint8_t *g)
 }
 
 static gcry_err_code_t
+grub_crypto_pcbc_decrypt (grub_crypto_cipher_handle_t cipher,
+			 void *out, void *in, grub_size_t size,
+			 void *iv)
+{
+  grub_uint8_t *inptr, *outptr, *end;
+  grub_uint8_t ivt[cipher->cipher->blocksize];
+  if (!cipher->cipher->decrypt)
+    return GPG_ERR_NOT_SUPPORTED;
+  if (size % cipher->cipher->blocksize != 0)
+    return GPG_ERR_INV_ARG;
+  end = (grub_uint8_t *) in + size;
+  for (inptr = in, outptr = out; inptr < end;
+       inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
+    {
+      grub_memcpy (ivt, inptr, cipher->cipher->blocksize);
+      cipher->cipher->decrypt (cipher->ctx, outptr, inptr);
+      grub_crypto_xor (outptr, outptr, iv, cipher->cipher->blocksize);
+      grub_crypto_xor (iv, ivt, outptr, cipher->cipher->blocksize);
+    }
+  return GPG_ERR_NO_ERROR;
+}
+
+static gcry_err_code_t
 luks_decrypt (const struct grub_luks *dev,
 	      grub_uint8_t * data, grub_size_t len, grub_disk_addr_t sector)
 {
@@ -191,6 +215,12 @@ luks_decrypt (const struct grub_luks *dev,
 	    return err;
 	  break;
 
+	case GRUB_LUKS_MODE_PCBC:
+	  err = grub_crypto_pcbc_decrypt (dev->cipher, data + i, data + i,
+					  GRUB_DISK_SECTOR_SIZE, iv);
+	  if (err)
+	    return err;
+	  break;
 	case GRUB_LUKS_MODE_XTS:
 	  {
 	    int j;
@@ -309,6 +339,11 @@ configure_ciphers (const struct grub_luks_phdr *header)
     {
       mode = GRUB_LUKS_MODE_CBC;
       cipheriv = ciphermode + sizeof ("cbc-") - 1;
+    }
+  else if (grub_memcmp (ciphermode, "pcbc-", sizeof ("pcbc-") - 1) == 0)
+    {
+      mode = GRUB_LUKS_MODE_PCBC;
+      cipheriv = ciphermode + sizeof ("pcbc-") - 1;
     }
   else if (grub_memcmp (ciphermode, "xts-", sizeof ("xts-") - 1) == 0)
     {
