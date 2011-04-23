@@ -108,6 +108,7 @@ struct grub_luks
   enum grub_disk_dev_id source_dev_id;
   char uuid[sizeof (((struct grub_luks_phdr *) 0)->uuid) + 1];
   grub_uint8_t lrw_key[GF_SIZE / 8];
+  grub_uint8_t *lrw_precalc;
 #ifdef GRUB_UTIL
   char *cheat;
   int cheat_fd;
@@ -203,6 +204,68 @@ grub_crypto_pcbc_decrypt (grub_crypto_cipher_handle_t cipher,
   return GPG_ERR_NO_ERROR;
 }
 
+#define GF_BYTES (GF_SIZE / 8)
+#define GF_PER_SECTOR (GRUB_DISK_SECTOR_SIZE / GF_BYTES)
+
+struct lrw_sector
+{
+  grub_uint8_t low[GF_BYTES];
+  grub_uint8_t high[GF_BYTES];
+  grub_uint8_t low_byte, low_byte_c;
+};
+
+static void
+generate_lrw_sector (struct lrw_sector *sec,
+		     const struct grub_luks *dev,
+		     const grub_uint8_t *iv)
+{
+  grub_uint8_t idx[GF_BYTES];
+  grub_uint16_t c;
+  int j;
+  grub_memcpy (idx, iv, GF_BYTES);
+  sec->low_byte = (idx[GF_BYTES - 1] & (GF_PER_SECTOR - 1));
+  sec->low_byte_c = (((GF_PER_SECTOR - 1) & ~sec->low_byte) + 1);
+  idx[GF_BYTES - 1] &= ~(GF_PER_SECTOR - 1);
+  gf_mul_be (sec->low, dev->lrw_key, idx);
+  if (!sec->low_byte)
+    return;
+
+  c = idx[GF_BYTES - 1] + GF_PER_SECTOR;
+  if (c & 0x100)
+    {
+      for (j = GF_BYTES - 2; j >= 0; j--)
+	{
+	  idx[j]++;
+	  if (idx[j] != 0)
+	    break;
+	}
+    }
+  idx[GF_BYTES - 1] = c;
+  gf_mul_be (sec->high, dev->lrw_key, idx);
+}
+
+static void __attribute__ ((unused))
+lrw_xor (const struct lrw_sector *sec,
+	 const struct grub_luks *dev,
+	 grub_uint8_t *b)
+{
+  int i;
+
+  for (i = 0; i < sec->low_byte_c * GF_BYTES; i += GF_BYTES)
+    grub_crypto_xor (b + i, b + i, sec->low, GF_BYTES);
+  grub_crypto_xor (b, b, dev->lrw_precalc + GF_BYTES * sec->low_byte,
+		   sec->low_byte_c * GF_BYTES);
+  if (!sec->low_byte)
+    return;
+
+  for (i = sec->low_byte_c * GF_BYTES;
+       i < GRUB_DISK_SECTOR_SIZE; i += GF_BYTES)
+    grub_crypto_xor (b + i, b + i, sec->high, GF_BYTES);
+  grub_crypto_xor (b + sec->low_byte_c * GF_BYTES,
+		   b + sec->low_byte_c * GF_BYTES,
+		   dev->lrw_precalc, sec->low_byte * GF_BYTES);
+}
+
 static gcry_err_code_t
 luks_decrypt (const struct grub_luks *dev,
 	      grub_uint8_t * data, grub_size_t len, grub_disk_addr_t sector)
@@ -287,30 +350,16 @@ luks_decrypt (const struct grub_luks *dev,
 	  break;
 	case GRUB_LUKS_MODE_LRW:
 	  {
-	    int j, k;
-	    for (j = 0;
-		 j < GRUB_DISK_SECTOR_SIZE;
-		 j += dev->cipher->cipher->blocksize)
-	      {
-		grub_uint8_t x[sz * sizeof (grub_uint32_t)];
+	    struct lrw_sector sec;
 
-		gf_mul_be (x, dev->lrw_key, (grub_uint8_t *) iv);
-		grub_crypto_xor (data + i + j, data + i + j, x,
-				 dev->cipher->cipher->blocksize);
-		err = grub_crypto_ecb_decrypt (dev->cipher, data + i + j, 
-					       data + i + j,
-					       dev->cipher->cipher->blocksize);
-		if (err)
-		  return err;
-		grub_crypto_xor (data + i + j, data + i + j, x,
-				 dev->cipher->cipher->blocksize);
-		for (k = sz - 1; k >= 0; k++)
-		  {
-		    iv[k] = grub_cpu_to_be32 (grub_be_to_cpu32 (iv[k]) + 1);
-		    if (iv[k] != 0)
-		      break;
-		  }
-	      }
+	    generate_lrw_sector (&sec, dev, (grub_uint8_t *) iv);
+	    lrw_xor (&sec, dev, data + i);
+
+	    err = grub_crypto_ecb_decrypt (dev->cipher, data + i, 
+					   data + i, GRUB_DISK_SECTOR_SIZE);
+	    if (err)
+	      return err;
+	    lrw_xor (&sec, dev, data + i);
 	  }
 	  break;
 	default:
@@ -576,8 +625,23 @@ luks_setkey (grub_luks_t dev, grub_uint8_t *key, grub_size_t keysize)
     }
 
   if (dev->mode == GRUB_LUKS_MODE_LRW)
-    grub_memcpy (dev->lrw_key, key + real_keysize,
-		 dev->cipher->cipher->blocksize);
+    {
+      int i;
+      grub_uint8_t idx[GF_SIZE / 8];
+
+      grub_free (dev->lrw_precalc);
+      grub_memcpy (dev->lrw_key, key + real_keysize,
+		   dev->cipher->cipher->blocksize);
+      dev->lrw_precalc = grub_malloc (GRUB_DISK_SECTOR_SIZE);
+      if (!dev->lrw_precalc)
+	return GPG_ERR_OUT_OF_MEMORY;
+      grub_memset (idx, 0, GF_SIZE / 8);
+      for (i = 0; i < GRUB_DISK_SECTOR_SIZE; i += GF_SIZE / 8)
+	{
+	  idx[15] = i / (GF_SIZE / 8);
+	  gf_mul_be (dev->lrw_precalc + i, idx, dev->lrw_key);
+	}
+    }
   return GPG_ERR_NO_ERROR;
 }
 
