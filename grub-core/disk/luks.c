@@ -454,6 +454,8 @@ grub_luks_scan_device_real (const char *name, grub_disk_t source)
   if (!newdev)
     return grub_errno;
 
+  newdev->total_length = grub_disk_get_size (source) - newdev->offset;
+
   err = luks_recover_key (newdev, &header, name, source);
   if (err)
     {
@@ -501,6 +503,8 @@ grub_luks_cheat_mount (const char *sourcedev, const char *cheat)
       grub_disk_close (source);
       return grub_errno;
     }
+
+  newdev->total_length = grub_disk_get_size (source) - newdev->offset;
 
   err = grub_cryptodisk_cheat_insert (newdev, sourcedev, source, cheat);
   grub_disk_close (source);

@@ -1,0 +1,99 @@
+/*
+ *  GRUB  --  GRand Unified Bootloader
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *
+ *  GRUB is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  GRUB is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef GRUB_CRYPTODISK_HEADER
+#define GRUB_CRYPTODISK_HEADER	1
+
+#include <grub/disk.h>
+#include <grub/crypto.h>
+
+typedef enum
+  {
+    GRUB_CRYPTODISK_MODE_ECB,
+    GRUB_CRYPTODISK_MODE_CBC,
+    GRUB_CRYPTODISK_MODE_PCBC,
+    GRUB_CRYPTODISK_MODE_XTS,
+    GRUB_CRYPTODISK_MODE_LRW
+  } grub_cryptodisk_mode_t;
+
+typedef enum
+  {
+    GRUB_CRYPTODISK_MODE_IV_NULL,
+    GRUB_CRYPTODISK_MODE_IV_PLAIN,
+    GRUB_CRYPTODISK_MODE_IV_PLAIN64,
+    GRUB_CRYPTODISK_MODE_IV_ESSIV,
+    GRUB_CRYPTODISK_MODE_IV_BENBI,
+    GRUB_CRYPTODISK_MODE_IV_BYTECOUNT64_HASH
+  } grub_cryptodisk_mode_iv_t;
+
+#define GRUB_CRYPTODISK_MAX_UUID_LENGTH 63
+
+#define GRUB_CRYPTODISK_GF_SIZE 128
+#define GRUB_CRYPTODISK_GF_BYTES (GRUB_CRYPTODISK_GF_SIZE / 8)
+
+struct grub_cryptodisk
+{
+  char *source;
+  grub_disk_addr_t offset;
+  grub_disk_addr_t total_length;
+  grub_disk_t source_disk;
+  int ref;
+  grub_crypto_cipher_handle_t cipher;
+  grub_crypto_cipher_handle_t secondary_cipher;
+  grub_crypto_cipher_handle_t essiv_cipher;
+  const gcry_md_spec_t *essiv_hash, *hash, *iv_hash;
+  grub_cryptodisk_mode_t mode;
+  grub_cryptodisk_mode_iv_t mode_iv;
+  int benbi_log;
+  unsigned long id, source_id;
+  enum grub_disk_dev_id source_dev_id;
+  char uuid[GRUB_CRYPTODISK_MAX_UUID_LENGTH + 1];
+  grub_uint8_t lrw_key[GRUB_CRYPTODISK_GF_BYTES];
+  grub_uint8_t *lrw_precalc;
+  grub_uint8_t iv_prefix[64];
+  grub_size_t iv_prefix_len;
+#ifdef GRUB_UTIL
+  char *cheat;
+  int cheat_fd;
+#endif
+  struct grub_cryptodisk *next;
+};
+typedef struct grub_cryptodisk *grub_cryptodisk_t;
+
+gcry_err_code_t
+grub_cryptodisk_setkey (grub_cryptodisk_t dev,
+			grub_uint8_t *key, grub_size_t keysize);
+gcry_err_code_t
+grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
+			 grub_uint8_t * data, grub_size_t len,
+			 grub_disk_addr_t sector);
+grub_err_t
+grub_cryptodisk_insert (grub_cryptodisk_t newdev, const char *name,
+			grub_disk_t source);
+#ifdef GRUB_UTIL
+grub_err_t
+grub_cryptodisk_cheat_insert (grub_cryptodisk_t newdev, const char *name,
+			      grub_disk_t source, const char *cheat);
+void
+grub_util_cryptodisk_print_abstraction (grub_disk_t disk);
+#endif
+
+grub_cryptodisk_t grub_cryptodisk_get_by_uuid (const char *uuid);
+grub_cryptodisk_t grub_cryptodisk_get_by_source_disk (grub_disk_t disk);
+
+#endif

@@ -780,6 +780,11 @@ module = {
 };
 
 module = {
+  name = geli;
+  common = disk/geli.c;
+};
+
+module = {
   name = lvm;
   common = disk/lvm.c;
 };

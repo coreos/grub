@@ -193,9 +193,10 @@ grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size)
 
 gcry_err_code_t
 grub_crypto_ecb_decrypt (grub_crypto_cipher_handle_t cipher,
-			 void *out, void *in, grub_size_t size)
+			 void *out, const void *in, grub_size_t size)
 {
-  grub_uint8_t *inptr, *outptr, *end;
+  const grub_uint8_t *inptr;
+  grub_uint8_t *outptr, *end;
   if (!cipher->cipher->decrypt)
     return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
@@ -249,10 +250,11 @@ grub_crypto_cbc_encrypt (grub_crypto_cipher_handle_t cipher,
 
 gcry_err_code_t
 grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
-			 void *out, void *in, grub_size_t size,
+			 void *out, const void *in, grub_size_t size,
 			 void *iv)
 {
-  grub_uint8_t *inptr, *outptr, *end;
+  const grub_uint8_t *inptr;
+  grub_uint8_t *outptr, *end;
   grub_uint8_t ivt[cipher->cipher->blocksize];
   if (!cipher->cipher->decrypt)
     return GPG_ERR_NOT_SUPPORTED;

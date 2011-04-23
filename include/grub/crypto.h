@@ -199,7 +199,7 @@ grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size);
 
 gcry_err_code_t
 grub_crypto_ecb_decrypt (grub_crypto_cipher_handle_t cipher,
-			 void *out, void *in, grub_size_t size);
+			 void *out, const void *in, grub_size_t size);
 
 gcry_err_code_t
 grub_crypto_ecb_encrypt (grub_crypto_cipher_handle_t cipher,
@@ -210,7 +210,7 @@ grub_crypto_cbc_encrypt (grub_crypto_cipher_handle_t cipher,
 			 void *iv_in);
 gcry_err_code_t
 grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
-			 void *out, void *in, grub_size_t size,
+			 void *out, const void *in, grub_size_t size,
 			 void *iv);
 void 
 grub_cipher_register (gcry_cipher_spec_t *cipher);
