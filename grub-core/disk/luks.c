@@ -98,6 +98,7 @@ struct grub_luks
   const gcry_md_spec_t *essiv_hash, *hash;
   luks_mode_t mode;
   luks_mode_iv_t mode_iv;
+  int benbi_log;
   unsigned long id, source_id;
   enum grub_disk_dev_id source_dev_id;
   char uuid[sizeof (((struct grub_luks_phdr *) 0)->uuid) + 1];
@@ -195,8 +196,11 @@ luks_decrypt (const struct grub_luks *dev,
 	  iv[0] = grub_cpu_to_le32 (sector & 0xFFFFFFFF);
 	  break;
 	case GRUB_LUKS_MODE_IV_BENBI:
-	  iv[sz - 2] = grub_cpu_to_be32 (sector >> 32);
-	  iv[sz - 1] = grub_cpu_to_be32 (sector & 0xFFFFFFFF);
+	  {
+	    grub_uint64_t num = (sector << dev->benbi_log) + 1;
+	    iv[sz - 2] = grub_cpu_to_be32 (num >> 32);
+	    iv[sz - 1] = grub_cpu_to_be32 (num & 0xFFFFFFFF);
+	  }
 	  break;
 	case GRUB_LUKS_MODE_IV_ESSIV:
 	  iv[0] = grub_cpu_to_le32 (sector & 0xFFFFFFFF);
@@ -273,7 +277,8 @@ configure_ciphers (const struct grub_luks_phdr *header)
   const struct gcry_cipher_spec *ciph;
   luks_mode_t mode;
   luks_mode_iv_t mode_iv;
-  
+  int benbi_log = 0;
+
   /* Look for LUKS magic sequence.  */
   if (grub_memcmp (header->magic, LUKS_MAGIC, sizeof (header->magic))
       || grub_be_to_cpu16 (header->version) != 1)
@@ -382,7 +387,16 @@ configure_ciphers (const struct grub_luks_phdr *header)
   else if (grub_memcmp (cipheriv, "plain64", sizeof ("plain64") - 1) == 0)
       mode_iv = GRUB_LUKS_MODE_IV_PLAIN64;
   else if (grub_memcmp (cipheriv, "benbi", sizeof ("benbi") - 1) == 0)
+    {
+      if (cipher->cipher->blocksize & (cipher->cipher->blocksize - 1)
+	  || cipher->cipher->blocksize == 0)
+	grub_error (GRUB_ERR_BAD_ARGUMENT, "Unsupported benbi blocksize: %d",
+		    cipher->cipher->blocksize);
+      for (benbi_log = 0; 
+	   (cipher->cipher->blocksize << benbi_log) < GRUB_DISK_SECTOR_SIZE;
+	   benbi_log++);
       mode_iv = GRUB_LUKS_MODE_IV_BENBI;
+    }
   else if (grub_memcmp (cipheriv, "null", sizeof ("null") - 1) == 0)
       mode_iv = GRUB_LUKS_MODE_IV_NULL;
   else if (grub_memcmp (cipheriv, "essiv:", sizeof ("essiv:") - 1) == 0)
@@ -433,6 +447,7 @@ configure_ciphers (const struct grub_luks_phdr *header)
   newdev->cipher = cipher;
   newdev->offset = grub_be_to_cpu32 (header->payloadOffset);
   newdev->source_disk = NULL;
+  newdev->benbi_log = benbi_log;
   newdev->mode = mode;
   newdev->mode_iv = mode_iv;
   newdev->secondary_cipher = secondary_cipher;
