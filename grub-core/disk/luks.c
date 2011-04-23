@@ -74,7 +74,8 @@ typedef enum
     GRUB_LUKS_MODE_ECB,
     GRUB_LUKS_MODE_CBC,
     GRUB_LUKS_MODE_PCBC,
-    GRUB_LUKS_MODE_XTS
+    GRUB_LUKS_MODE_XTS,
+    GRUB_LUKS_MODE_LRW
   } luks_mode_t;
 
 typedef enum
@@ -85,6 +86,10 @@ typedef enum
     GRUB_LUKS_MODE_IV_ESSIV,
     GRUB_LUKS_MODE_IV_BENBI,
   } luks_mode_iv_t;
+
+/* Our irreducible polynom is x^128+x^7+x^2+x+1. Lowest byte of it is:  */
+#define GF_POLYNOM 0x87
+#define GF_SIZE 128
 
 struct grub_luks
 {
@@ -102,6 +107,7 @@ struct grub_luks
   unsigned long id, source_id;
   enum grub_disk_dev_id source_dev_id;
   char uuid[sizeof (((struct grub_luks_phdr *) 0)->uuid) + 1];
+  grub_uint8_t lrw_key[GF_SIZE / 8];
 #ifdef GRUB_UTIL
   char *cheat;
   int cheat_fd;
@@ -124,16 +130,13 @@ static const struct grub_arg_option options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
-/* Our irreducible polynom is x^128+x^7+x^2+x+1. Lowest byte of it is:  */
-#define POLYNOM 0x87
-
 static void
 gf_mul_x (grub_uint8_t *g)
 {
   int over = 0, over2 = 0;
   int j;
 
-  for (j = 0; j < 16; j++)
+  for (j = 0; j < GF_SIZE / 8; j++)
     {
       over2 = !!(g[j] & 0x80);
       g[j] <<= 1;
@@ -141,7 +144,40 @@ gf_mul_x (grub_uint8_t *g)
       over = over2;
     }
   if (over)
-    g[0] ^= POLYNOM;
+    g[0] ^= GF_POLYNOM;
+}
+
+
+static void
+gf_mul_x_be (grub_uint8_t *g)
+{
+  int over = 0, over2 = 0;
+  int j;
+
+  for (j = GF_SIZE / 8 - 1; j >= 0; j--)
+    {
+      over2 = !!(g[j] & 0x80);
+      g[j] <<= 1;
+      g[j] |= over;
+      over = over2;
+    }
+  if (over)
+    g[GF_SIZE / 8 - 1] ^= GF_POLYNOM;
+}
+
+static void
+gf_mul_be (grub_uint8_t *o, const grub_uint8_t *a, const grub_uint8_t *b)
+{
+  int i;
+  grub_uint8_t t[GF_SIZE / 8];
+  grub_memset (o, 0, GF_SIZE / 8);
+  grub_memcpy (t, b, GF_SIZE / 8);
+  for (i = 0; i < GF_SIZE; i++)
+    {
+      if (((a[GF_SIZE / 8 - i / 8 - 1] >> (i % 8))) & 1)
+	grub_crypto_xor (o, o, t, GF_SIZE / 8);
+      gf_mul_x_be (t);
+    }
 }
 
 static gcry_err_code_t
@@ -246,6 +282,34 @@ luks_decrypt (const struct grub_luks *dev,
 		grub_crypto_xor (data + i + j, data + i + j, iv,
 				 dev->cipher->cipher->blocksize);
 		gf_mul_x ((grub_uint8_t *) iv);
+	      }
+	  }
+	  break;
+	case GRUB_LUKS_MODE_LRW:
+	  {
+	    int j, k;
+	    for (j = 0;
+		 j < GRUB_DISK_SECTOR_SIZE;
+		 j += dev->cipher->cipher->blocksize)
+	      {
+		grub_uint8_t x[sz * sizeof (grub_uint32_t)];
+
+		gf_mul_be (x, dev->lrw_key, (grub_uint8_t *) iv);
+		grub_crypto_xor (data + i + j, data + i + j, x,
+				 dev->cipher->cipher->blocksize);
+		err = grub_crypto_ecb_decrypt (dev->cipher, data + i + j, 
+					       data + i + j,
+					       dev->cipher->cipher->blocksize);
+		if (err)
+		  return err;
+		grub_crypto_xor (data + i + j, data + i + j, x,
+				 dev->cipher->cipher->blocksize);
+		for (k = sz - 1; k >= 0; k++)
+		  {
+		    iv[k] = grub_cpu_to_be32 (grub_be_to_cpu32 (iv[k]) + 1);
+		    if (iv[k] != 0)
+		      break;
+		  }
 	      }
 	  }
 	  break;
@@ -360,16 +424,30 @@ configure_ciphers (const struct grub_luks_phdr *header)
 	  grub_crypto_cipher_close (cipher);
 	  return NULL;
 	}
-      if (cipher->cipher->blocksize != 16)
+      if (cipher->cipher->blocksize != GF_SIZE / 8)
 	{
+	  grub_crypto_cipher_close (cipher);
 	  grub_error (GRUB_ERR_BAD_ARGUMENT, "Unsupported XTS block size: %d",
 		      cipher->cipher->blocksize);
 	  return NULL;
 	}
-      if (secondary_cipher->cipher->blocksize != 16)
+      if (secondary_cipher->cipher->blocksize != GF_SIZE / 8)
 	{
+	  grub_crypto_cipher_close (cipher);
 	  grub_error (GRUB_ERR_BAD_ARGUMENT, "Unsupported XTS block size: %d",
 		      secondary_cipher->cipher->blocksize);
+	  return NULL;
+	}
+    }
+  else if (grub_memcmp (ciphermode, "lrw-", sizeof ("lrw-") - 1) == 0)
+    {
+      mode = GRUB_LUKS_MODE_LRW;
+      cipheriv = ciphermode + sizeof ("lrw-") - 1;
+      if (cipher->cipher->blocksize != GF_SIZE / 8)
+	{
+	  grub_crypto_cipher_close (cipher);
+	  grub_error (GRUB_ERR_BAD_ARGUMENT, "Unsupported LRW block size: %d",
+		      cipher->cipher->blocksize);
 	  return NULL;
 	}
     }
@@ -505,6 +583,7 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
   for (i = 0; i < ARRAY_SIZE (header->keyblock); i++)
     {
       gcry_err_code_t gcry_err;
+      int real_keysize;
 
       /* Check if keyslot is enabled.  */
       if (grub_be_to_cpu32 (header->keyblock[i].active) != LUKS_KEY_ENABLED)
@@ -530,10 +609,14 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 
       grub_dprintf ("luks", "PBKDF2 done\n");
 
+      real_keysize = keysize;
+      if (dev->mode == GRUB_LUKS_MODE_XTS)
+	real_keysize /= 2;
+      if (dev->mode == GRUB_LUKS_MODE_LRW)
+	real_keysize -= dev->cipher->cipher->blocksize;
+	
       /* Set the PBKDF2 output as the cipher key.  */
-      gcry_err = grub_crypto_cipher_set_key (dev->cipher, digest,
-					     (dev->mode == GRUB_LUKS_MODE_XTS)
-					     ? (keysize / 2) : keysize);
+      gcry_err = grub_crypto_cipher_set_key (dev->cipher, digest, real_keysize);
       if (gcry_err)
 	{
 	  grub_free (hashed_key);
@@ -559,7 +642,7 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
       if (dev->mode == GRUB_LUKS_MODE_XTS)
 	{
 	  gcry_err = grub_crypto_cipher_set_key (dev->secondary_cipher,
-						 digest + (keysize / 2),
+						 digest + real_keysize,
 						 keysize / 2);
 	  if (gcry_err)
 	    {
@@ -568,6 +651,10 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 	      return grub_crypto_gcry_error (gcry_err);
 	    }
 	}
+
+      if (dev->mode == GRUB_LUKS_MODE_LRW)
+	grub_memcpy (dev->lrw_key, digest + real_keysize,
+		     dev->cipher->cipher->blocksize);
 
       length =
 	grub_be_to_cpu32 (header->keyBytes) *
@@ -634,8 +721,7 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 
       /* Set the master key.  */
       gcry_err = grub_crypto_cipher_set_key (dev->cipher, candidate_key,
-					     (dev->mode == GRUB_LUKS_MODE_XTS)
-					     ? (keysize / 2) : keysize);
+					     real_keysize);
       if (gcry_err)
 	{
 	  grub_free (hashed_key);
@@ -662,7 +748,7 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
       if (dev->mode == GRUB_LUKS_MODE_XTS)
 	{
 	  gcry_err = grub_crypto_cipher_set_key (dev->secondary_cipher,
-						 candidate_key + (keysize / 2),
+						 candidate_key + real_keysize,
 						 keysize / 2);
 	  if (gcry_err)
 	    {
@@ -671,6 +757,10 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 	      return grub_crypto_gcry_error (gcry_err);
 	    }
 	}
+
+      if (dev->mode == GRUB_LUKS_MODE_LRW)
+	grub_memcpy (dev->lrw_key, candidate_key + real_keysize,
+		     dev->cipher->cipher->blocksize);
 
       grub_free (split_key);
       grub_free (hashed_key);
