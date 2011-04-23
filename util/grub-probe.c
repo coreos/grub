@@ -35,6 +35,7 @@
 #include <grub/raid.h>
 #include <grub/i18n.h>
 #include <grub/crypto.h>
+#include <grub/cryptodisk.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -106,7 +107,8 @@ probe_luks_uuid (grub_disk_t disk)
       free (list);
       list = tmp;
     }
-  if (disk->dev->id == GRUB_DISK_DEVICE_LUKS_ID)
+  /* FIXME: support non-LUKS.  */
+  if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
     grub_util_luks_print_uuid (disk);
 }
 
@@ -144,11 +146,8 @@ probe_abstraction (grub_disk_t disk)
   if (disk->dev->id == GRUB_DISK_DEVICE_LVM_ID)
     printf ("lvm ");
 
-  if (disk->dev->id == GRUB_DISK_DEVICE_LUKS_ID)
-    {
-      printf ("luks ");
-      grub_util_luks_print_ciphers (disk);
-    }
+  if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
+    grub_util_cryptodisk_print_abstraction (disk);
 
   raid_level = probe_raid_level (disk);
   if (raid_level >= 0)

@@ -962,7 +962,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	dash = grub_strchr (uuid + sizeof ("CRYPT-LUKS1-") - 1, '-');
 	if (dash)
 	  *dash = 0;
-	grub_dev = grub_xasprintf ("luksuuid/%s",
+	grub_dev = grub_xasprintf ("cryptouuid/%s",
 				   uuid + sizeof ("CRYPT-LUKS1-") - 1);
 	grub_free (uuid);
       }

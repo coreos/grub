@@ -23,6 +23,7 @@ library = {
   common = grub-core/kern/partition.c;
   common = grub-core/lib/crypto.c;
   common = grub-core/disk/luks.c;
+  common = grub-core/disk/cryptodisk.c;
   common = grub-core/disk/AFSplitter.c;
   common = grub-core/lib/pbkdf2.c;
   common = grub-core/commands/extcmd.c;

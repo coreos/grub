@@ -769,6 +769,11 @@ module = {
 };
 
 module = {
+  name = cryptodisk;
+  common = disk/cryptodisk.c;
+};
+
+module = {
   name = luks;
   common = disk/luks.c;
   common = disk/AFSplitter.c;
