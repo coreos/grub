@@ -637,7 +637,7 @@ luks_setkey (grub_luks_t dev, grub_uint8_t *key, grub_size_t keysize)
       grub_memset (idx, 0, GF_BYTES);
       for (i = 0; i < GRUB_DISK_SECTOR_SIZE; i += GF_BYTES)
 	{
-	  idx[15] = i / GF_BYTES;
+	  idx[GF_BYTES - 1] = i / GF_BYTES;
 	  gf_mul_be (dev->lrw_precalc + i, idx, dev->lrw_key);
 	}
     }
