@@ -537,6 +537,50 @@ configure_ciphers (const struct grub_luks_phdr *header)
   return newdev;
 }
 
+static gcry_err_code_t
+luks_setkey (grub_luks_t dev, grub_uint8_t *key, grub_size_t keysize)
+{
+  gcry_err_code_t err;
+  int real_keysize;
+
+  real_keysize = keysize;
+  if (dev->mode == GRUB_LUKS_MODE_XTS)
+    real_keysize /= 2;
+  if (dev->mode == GRUB_LUKS_MODE_LRW)
+    real_keysize -= dev->cipher->cipher->blocksize;
+	
+  /* Set the PBKDF2 output as the cipher key.  */
+  err = grub_crypto_cipher_set_key (dev->cipher, key, real_keysize);
+  if (err)
+    return err;
+
+  /* Configure ESSIV if necessary.  */
+  if (dev->mode_iv == GRUB_LUKS_MODE_IV_ESSIV)
+    {
+      grub_size_t essiv_keysize = dev->essiv_hash->mdlen;
+      grub_uint8_t hashed_key[essiv_keysize];
+
+      grub_crypto_hash (dev->essiv_hash, hashed_key, key, keysize);
+      err = grub_crypto_cipher_set_key (dev->essiv_cipher,
+					hashed_key, essiv_keysize);
+      if (err)
+	return err;
+    }
+  if (dev->mode == GRUB_LUKS_MODE_XTS)
+    {
+      err = grub_crypto_cipher_set_key (dev->secondary_cipher,
+					key + real_keysize,
+					keysize / 2);
+      if (err)
+	return err;
+    }
+
+  if (dev->mode == GRUB_LUKS_MODE_LRW)
+    grub_memcpy (dev->lrw_key, key + real_keysize,
+		 dev->cipher->cipher->blocksize);
+  return GPG_ERR_NO_ERROR;
+}
+
 static grub_err_t
 luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 		  const char *name, grub_disk_t source)
@@ -544,37 +588,23 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
   grub_size_t keysize = grub_be_to_cpu32 (header->keyBytes);
   grub_uint8_t candidate_key[keysize];
   grub_uint8_t digest[keysize];
-  grub_uint8_t *hashed_key = NULL;
   grub_uint8_t *split_key = NULL;
   char passphrase[MAX_PASSPHRASE] = "";
   grub_uint8_t candidate_digest[sizeof (header->mkDigest)];
   unsigned i;
-  grub_size_t essiv_keysize = 0;
   grub_size_t length;
   grub_err_t err;
-
-  if (dev->mode_iv == GRUB_LUKS_MODE_IV_ESSIV)
-    {
-      essiv_keysize = dev->essiv_hash->mdlen;
-      hashed_key = grub_malloc (dev->essiv_hash->mdlen);
-      if (!hashed_key)
-	return grub_errno;
-    }
 
   grub_printf ("Attempting to decrypt master key...\n");
 
   split_key = grub_malloc (keysize * LUKS_STRIPES);
   if (!split_key)
-    {
-      grub_free (hashed_key);
-      return grub_errno;
-    }
+    return grub_errno;
 
   /* Get the passphrase from the user.  */
   grub_printf ("Enter passphrase for %s (%s): ", name, dev->uuid);
   if (!grub_password_get (passphrase, MAX_PASSPHRASE))
     {
-      grub_free (hashed_key);
       grub_free (split_key);
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "Passphrase not supplied");
     }
@@ -583,7 +613,6 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
   for (i = 0; i < ARRAY_SIZE (header->keyblock); i++)
     {
       gcry_err_code_t gcry_err;
-      int real_keysize;
 
       /* Check if keyslot is enabled.  */
       if (grub_be_to_cpu32 (header->keyblock[i].active) != LUKS_KEY_ENABLED)
@@ -602,63 +631,21 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 
       if (gcry_err)
 	{
-	  grub_free (hashed_key);
 	  grub_free (split_key);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
 
       grub_dprintf ("luks", "PBKDF2 done\n");
 
-      real_keysize = keysize;
-      if (dev->mode == GRUB_LUKS_MODE_XTS)
-	real_keysize /= 2;
-      if (dev->mode == GRUB_LUKS_MODE_LRW)
-	real_keysize -= dev->cipher->cipher->blocksize;
-	
-      /* Set the PBKDF2 output as the cipher key.  */
-      gcry_err = grub_crypto_cipher_set_key (dev->cipher, digest, real_keysize);
+      gcry_err = luks_setkey (dev, digest, keysize); 
       if (gcry_err)
 	{
-	  grub_free (hashed_key);
 	  grub_free (split_key);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
 
-      /* Configure ESSIV if necessary.  */
-      if (dev->mode_iv == GRUB_LUKS_MODE_IV_ESSIV)
-	{
-	  grub_crypto_hash (dev->essiv_hash, hashed_key, digest, keysize);
-	  gcry_err = grub_crypto_cipher_set_key (dev->essiv_cipher,
-						 hashed_key,
-						 essiv_keysize);
-	  if (gcry_err)
-	    {
-	      grub_free (hashed_key);
-	      grub_free (split_key);
-	      return grub_crypto_gcry_error (gcry_err);
-	    }
-	}
-
-      if (dev->mode == GRUB_LUKS_MODE_XTS)
-	{
-	  gcry_err = grub_crypto_cipher_set_key (dev->secondary_cipher,
-						 digest + real_keysize,
-						 keysize / 2);
-	  if (gcry_err)
-	    {
-	      grub_free (hashed_key);
-	      grub_free (split_key);
-	      return grub_crypto_gcry_error (gcry_err);
-	    }
-	}
-
-      if (dev->mode == GRUB_LUKS_MODE_LRW)
-	grub_memcpy (dev->lrw_key, digest + real_keysize,
-		     dev->cipher->cipher->blocksize);
-
-      length =
-	grub_be_to_cpu32 (header->keyBytes) *
-	grub_be_to_cpu32 (header->keyblock[i].stripes);
+      length = (grub_be_to_cpu32 (header->keyBytes)
+		* grub_be_to_cpu32 (header->keyblock[i].stripes));
 
       /* Read and decrypt the key material from the disk.  */
       err = grub_disk_read (source,
@@ -667,7 +654,6 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 			    length, split_key);
       if (err)
 	{
-	  grub_free (hashed_key);
 	  grub_free (split_key);
 	  return err;
 	}
@@ -675,7 +661,6 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
       gcry_err = luks_decrypt (dev, split_key, length, 0);
       if (gcry_err)
 	{
-	  grub_free (hashed_key);
 	  grub_free (split_key);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
@@ -685,7 +670,6 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 			   grub_be_to_cpu32 (header->keyblock[i].stripes));
       if (gcry_err)
 	{
-	  grub_free (hashed_key);
 	  grub_free (split_key);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
@@ -703,7 +687,6 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
 				     sizeof (candidate_digest));
       if (gcry_err)
 	{
-	  grub_free (hashed_key);
 	  grub_free (split_key);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
@@ -720,50 +703,14 @@ luks_recover_key (grub_luks_t dev, const struct grub_luks_phdr *header,
       grub_printf ("Slot %d opened\n", i);
 
       /* Set the master key.  */
-      gcry_err = grub_crypto_cipher_set_key (dev->cipher, candidate_key,
-					     real_keysize);
+      gcry_err = luks_setkey (dev, candidate_key, keysize); 
       if (gcry_err)
 	{
-	  grub_free (hashed_key);
 	  grub_free (split_key);
 	  return grub_crypto_gcry_error (gcry_err);
 	}
 
-      /* Configure ESSIV if necessary.  */
-      if (dev->mode_iv == GRUB_LUKS_MODE_IV_ESSIV)
-	{
-	  grub_crypto_hash (dev->essiv_hash, hashed_key,
-			    candidate_key, keysize);
-	  gcry_err =
-	    grub_crypto_cipher_set_key (dev->essiv_cipher, hashed_key,
-					essiv_keysize);
-	  if (gcry_err)
-	    {
-	      grub_free (hashed_key);
-	      grub_free (split_key);
-	      return grub_crypto_gcry_error (gcry_err);
-	    }
-	}
-
-      if (dev->mode == GRUB_LUKS_MODE_XTS)
-	{
-	  gcry_err = grub_crypto_cipher_set_key (dev->secondary_cipher,
-						 candidate_key + real_keysize,
-						 keysize / 2);
-	  if (gcry_err)
-	    {
-	      grub_free (hashed_key);
-	      grub_free (split_key);
-	      return grub_crypto_gcry_error (gcry_err);
-	    }
-	}
-
-      if (dev->mode == GRUB_LUKS_MODE_LRW)
-	grub_memcpy (dev->lrw_key, candidate_key + real_keysize,
-		     dev->cipher->cipher->blocksize);
-
       grub_free (split_key);
-      grub_free (hashed_key);
 
       return GRUB_ERR_NONE;
     }
