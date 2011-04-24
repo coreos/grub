@@ -200,6 +200,9 @@ grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
 	  {
 	    grub_uint64_t tmp;
 	    grub_uint64_t ctx[(dev->iv_hash->contextsize + 7) / 8];
+
+	    grub_memset (ctx, 0, sizeof (ctx));
+
 	    tmp = grub_cpu_to_le64 (sector << GRUB_DISK_SECTOR_BITS);
 	    dev->iv_hash->init (ctx);
 	    dev->iv_hash->write (ctx, dev->iv_prefix, dev->iv_prefix_len);
