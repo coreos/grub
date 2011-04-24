@@ -345,7 +345,8 @@ grub_crypto_hmac_init (const struct gcry_md_spec *md,
 }
 
 void
-grub_crypto_hmac_write (struct grub_crypto_hmac_handle *hnd, void *data,
+grub_crypto_hmac_write (struct grub_crypto_hmac_handle *hnd,
+			const void *data,
 			grub_size_t datalen)
 {
   hnd->md->write (hnd->ctx, data, datalen);
