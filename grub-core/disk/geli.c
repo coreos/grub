@@ -107,7 +107,8 @@ configure_ciphers (const struct grub_geli_phdr *header)
 
   /* Look for GELI magic sequence.  */
   if (grub_memcmp (header->magic, GELI_MAGIC, sizeof (GELI_MAGIC))
-      || grub_le_to_cpu32 (header->version) != 3)
+      || grub_le_to_cpu32 (header->version) > 3
+      || grub_le_to_cpu32 (header->version) < 2)
     {
       grub_dprintf ("geli", "wrong magic %02x\n", header->magic[0]);
       return NULL;
