@@ -81,14 +81,19 @@ struct grub_geli_phdr
   struct grub_geli_key keys[2];
 } __attribute__ ((packed));
 
+/* FIXME: support big-endian pre-version-4 volumes.  */
+/* FIXME: support for keyfiles.  */
+/* FIXME: support for HMAC.  */
+/* FIXME: support for UUID.  */
+/* FIXME: support for mounting all boot volumes.  */
 const char *algorithms[] = {
   [0x01] = "des",
   [0x02] = "3des",
   [0x03] = "blowfish",
   [0x04] = "cast5",
-  /* 0x05 is skipjack, but we don't have it.  */
+  /* FIXME: 0x05 is skipjack, but we don't have it.  */
   [0x0b] = "aes",
-  /* 0x10 is null.  */
+  /* FIXME: 0x10 is null.  */
   [0x15] = "camellia128",
 };
 
