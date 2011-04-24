@@ -84,7 +84,6 @@ struct grub_geli_phdr
 /* FIXME: support big-endian pre-version-4 volumes.  */
 /* FIXME: support for keyfiles.  */
 /* FIXME: support for HMAC.  */
-/* FIXME: support for UUID.  */
 /* FIXME: support for mounting all boot volumes.  */
 const char *algorithms[] = {
   [0x01] = "des",
@@ -132,6 +131,18 @@ geli_rekey (struct grub_cryptodisk *dev, grub_uint64_t zoneno)
 				 dev->rekey_derived_size); 
 }
 
+static inline int
+ascii2hex (char c)
+{
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+  if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+  return 0;
+}
+
 static grub_cryptodisk_t
 configure_ciphers (const struct grub_geli_phdr *header)
 {
@@ -139,6 +150,11 @@ configure_ciphers (const struct grub_geli_phdr *header)
   grub_crypto_cipher_handle_t cipher = NULL, secondary_cipher = NULL;
   const struct gcry_cipher_spec *ciph;
   const char *ciphername = NULL;
+  char uuid[GRUB_MD_SHA256->mdlen * 2 + 1];
+  grub_uint8_t uuidbin[GRUB_MD_SHA256->mdlen];
+  grub_uint8_t *iptr;
+  char *optr;
+  gcry_err_code_t gcry_err;
 
   /* Look for GELI magic sequence.  */
   if (grub_memcmp (header->magic, GELI_MAGIC, sizeof (GELI_MAGIC))
@@ -157,13 +173,19 @@ configure_ciphers (const struct grub_geli_phdr *header)
       return NULL;
     }     
 
-#if 0
-  optr = uuid;
-  for (iptr = header->uuid; iptr < &header->uuid[ARRAY_SIZE (header->uuid)];
-       iptr++)
+  gcry_err = grub_crypto_hmac_buffer (GRUB_MD_SHA256,
+				      header->salt, sizeof (header->salt),
+				      "uuid", sizeof ("uuid") - 1, uuidbin);
+  if (gcry_err)
     {
-      if (*iptr != '-')
-	*optr++ = *iptr;
+      grub_crypto_gcry_error (gcry_err);
+      return NULL;
+    }
+  optr = uuid;
+  for (iptr = uuidbin; iptr < &uuidbin[ARRAY_SIZE (uuidbin)]; iptr++)
+    {
+      grub_snprintf (optr, 3, "%02x", *iptr);
+      optr += 2;
     }
   *optr = 0;
 
@@ -172,7 +194,6 @@ configure_ciphers (const struct grub_geli_phdr *header)
       grub_dprintf ("luks", "%s != %s", uuid, search_uuid);
       return NULL;
     }
-#endif
 
   if (grub_le_to_cpu16 (header->alg) >= ARRAY_SIZE (algorithms)
       || algorithms[grub_le_to_cpu16 (header->alg)] == NULL)
@@ -242,9 +263,9 @@ configure_ciphers (const struct grub_geli_phdr *header)
       newdev->rekey = geli_rekey;
       newdev->rekey_shift = 20;
     }
-#if 0
+
   grub_memcpy (newdev->uuid, uuid, sizeof (newdev->uuid));
-#endif
+  COMPILE_TIME_ASSERT (sizeof (newdev->uuid) >= 32 * 2 + 1);
   return newdev;
 }
 

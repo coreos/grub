@@ -284,6 +284,7 @@ configure_ciphers (const struct grub_luks_phdr *header)
   newdev->hash = hash;
   newdev->log_sector_size = 9;
   grub_memcpy (newdev->uuid, uuid, sizeof (newdev->uuid));
+  COMPILE_TIME_ASSERT (sizeof (newdev->uuid) >= sizeof (uuid));
   return newdev;
 }
 
