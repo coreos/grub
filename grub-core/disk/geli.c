@@ -70,7 +70,7 @@ struct grub_geli_phdr
   grub_uint8_t magic[16];
 #define GELI_MAGIC "GEOM::ELI"
   grub_uint32_t version;
-  grub_uint32_t unused1;
+  grub_uint32_t flags;
   grub_uint16_t alg;
   grub_uint16_t keylen;
   grub_uint16_t unused3[5];
@@ -80,6 +80,12 @@ struct grub_geli_phdr
   grub_uint8_t salt[64];
   struct grub_geli_key keys[2];
 } __attribute__ ((packed));
+
+enum
+  {
+    GRUB_GELI_FLAGS_ONETIME = 1,
+    GRUB_GELI_FLAGS_BOOT = 2,
+  };
 
 /* FIXME: support big-endian pre-version-4 volumes.  */
 /* FIXME: support for keyfiles.  */
@@ -103,10 +109,11 @@ static const struct grub_arg_option options[] =
   {
     {"uuid", 'u', 0, N_("Mount by UUID."), 0, 0},
     {"all", 'a', 0, N_("Mount all."), 0, 0},
+    {"boot", 'b', 0, N_("Mount all volumes marked as boot."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
-static int check_uuid, have_it;
+static int check_uuid, check_boot, have_it;
 static char *search_uuid;
 
 static gcry_err_code_t
@@ -171,7 +178,19 @@ configure_ciphers (const struct grub_geli_phdr *header)
       grub_dprintf ("geli", "incorrect sector size %d\n",
 		    grub_le_to_cpu32 (header->sector_size));
       return NULL;
-    }     
+    }
+
+  if (grub_le_to_cpu32 (header->flags) & GRUB_GELI_FLAGS_ONETIME)
+    {
+      grub_dprintf ("geli", "skipping one-time volume\n");
+      return NULL;
+    }
+
+  if (check_boot && !(grub_le_to_cpu32 (header->flags) & GRUB_GELI_FLAGS_BOOT))
+    {
+      grub_dprintf ("geli", "not a boot volume\n");
+      return NULL;
+    }    
 
   gcry_err = grub_crypto_hmac_buffer (GRUB_MD_SHA256,
 				      header->salt, sizeof (header->salt),
@@ -191,7 +210,7 @@ configure_ciphers (const struct grub_geli_phdr *header)
 
   if (check_uuid && grub_strcasecmp (search_uuid, uuid) != 0)
     {
-      grub_dprintf ("luks", "%s != %s", uuid, search_uuid);
+      grub_dprintf ("geli", "%s != %s\n", uuid, search_uuid);
       return NULL;
     }
 
@@ -549,7 +568,7 @@ grub_cmd_gelimount (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
 
-  if (argc < 1 && !state[1].set)
+  if (argc < 1 && !state[1].set && !state[2].set)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "device name required");
 
   have_it = 0;
@@ -565,6 +584,7 @@ grub_cmd_gelimount (grub_extcmd_context_t ctxt, int argc, char **args)
 	}
 
       check_uuid = 1;
+      check_boot = state[2].set;
       search_uuid = args[0];
       grub_device_iterate (&grub_geli_scan_device);
       search_uuid = NULL;
@@ -573,10 +593,11 @@ grub_cmd_gelimount (grub_extcmd_context_t ctxt, int argc, char **args)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "no such luks found");
       return GRUB_ERR_NONE;
     }
-  else if (state[1].set)
+  else if (state[1].set || (argc == 0 && state[2].set))
     {
       check_uuid = 0;
       search_uuid = NULL;
+      check_boot = state[2].set;
       grub_device_iterate (&grub_geli_scan_device);
       search_uuid = NULL;
       return GRUB_ERR_NONE;
@@ -589,6 +610,7 @@ grub_cmd_gelimount (grub_extcmd_context_t ctxt, int argc, char **args)
 
       check_uuid = 0;
       search_uuid = NULL;
+      check_boot = state[2].set;
       disk = grub_disk_open (args[0]);
       if (!disk)
 	return grub_errno;
@@ -614,7 +636,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT (geli)
 {
   cmd = grub_register_extcmd ("gelimount", grub_cmd_gelimount, 0,
-			      N_("SOURCE|-u UUID|-a"),
+			      N_("SOURCE|-u UUID|-a|-b"),
 			      N_("Mount a GELI device."), options);
 }
 

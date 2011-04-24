@@ -109,7 +109,7 @@ configure_ciphers (const struct grub_luks_phdr *header)
 
   if (check_uuid && grub_strcasecmp (search_uuid, uuid) != 0)
     {
-      grub_dprintf ("luks", "%s != %s", uuid, search_uuid);
+      grub_dprintf ("luks", "%s != %s\n", uuid, search_uuid);
       return NULL;
     }
 
