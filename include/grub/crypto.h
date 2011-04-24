@@ -244,7 +244,7 @@ grub_crypto_hmac_fini (struct grub_crypto_hmac_handle *hnd, void *out);
 gcry_err_code_t
 grub_crypto_hmac_buffer (const struct gcry_md_spec *md,
 			 const void *key, grub_size_t keylen,
-			 void *data, grub_size_t datalen, void *out);
+			 const void *data, grub_size_t datalen, void *out);
 
 extern gcry_md_spec_t _gcry_digest_spec_md5;
 extern gcry_md_spec_t _gcry_digest_spec_sha1;

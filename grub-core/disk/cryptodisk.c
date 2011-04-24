@@ -178,7 +178,7 @@ lrw_xor (const struct lrw_sector *sec,
 }
 
 gcry_err_code_t
-grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
+grub_cryptodisk_decrypt (struct grub_cryptodisk *dev,
 			 grub_uint8_t * data, grub_size_t len,
 			 grub_disk_addr_t sector)
 {
@@ -186,7 +186,7 @@ grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
   gcry_err_code_t err;
 
   /* The only mode without IV.  */
-  if (dev->mode == GRUB_CRYPTODISK_MODE_ECB)
+  if (dev->mode == GRUB_CRYPTODISK_MODE_ECB && !dev->rekey)
     return grub_crypto_ecb_decrypt (dev->cipher, data, data, len);
 
   for (i = 0; i < len; i += (1U << dev->log_sector_size))
@@ -195,6 +195,18 @@ grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
 			 + sizeof (grub_uint32_t) - 1)
 			/ sizeof (grub_uint32_t));
       grub_uint32_t iv[sz];
+
+      if (dev->rekey)
+	{
+	  grub_uint64_t zone = sector >> dev->rekey_shift;
+	  if (zone != dev->last_rekey)
+	    {
+	      err = dev->rekey (dev, zone);
+	      if (err)
+		return err;
+	      dev->last_rekey = zone;
+	    }
+	}
 
       grub_memset (iv, 0, sz * sizeof (iv[0]));
       switch (dev->mode_iv)
@@ -290,6 +302,10 @@ grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
 	      return err;
 	    lrw_xor (&sec, dev, data + i);
 	  }
+	  break;
+	case GRUB_CRYPTODISK_MODE_ECB:
+	  grub_crypto_ecb_decrypt (dev->cipher, data + i, data + i,
+				   (1U << dev->log_sector_size));
 	  break;
 	default:
 	  return GPG_ERR_NOT_IMPLEMENTED;

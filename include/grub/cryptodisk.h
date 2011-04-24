@@ -48,6 +48,12 @@ typedef enum
 #define GRUB_CRYPTODISK_GF_LOG_BYTES (GRUB_CRYPTODISK_GF_LOG_SIZE - 3)
 #define GRUB_CRYPTODISK_GF_BYTES (1U << GRUB_CRYPTODISK_GF_LOG_BYTES)
 
+struct grub_cryptodisk;
+
+typedef gcry_err_code_t
+(*grub_cryptodisk_rekey_func_t) (struct grub_cryptodisk *dev,
+				 grub_uint64_t zoneno);
+
 struct grub_cryptodisk
 {
   char *source;
@@ -74,6 +80,11 @@ struct grub_cryptodisk
   int cheat_fd;
 #endif
   int log_sector_size;
+  grub_cryptodisk_rekey_func_t rekey;
+  int rekey_shift;
+  grub_uint8_t rekey_key[64];
+  grub_uint64_t last_rekey;
+  int rekey_derived_size;
   struct grub_cryptodisk *next;
 };
 typedef struct grub_cryptodisk *grub_cryptodisk_t;
@@ -82,7 +93,7 @@ gcry_err_code_t
 grub_cryptodisk_setkey (grub_cryptodisk_t dev,
 			grub_uint8_t *key, grub_size_t keysize);
 gcry_err_code_t
-grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
+grub_cryptodisk_decrypt (struct grub_cryptodisk *dev,
 			 grub_uint8_t * data, grub_size_t len,
 			 grub_disk_addr_t sector);
 grub_err_t

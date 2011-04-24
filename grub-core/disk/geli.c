@@ -104,6 +104,28 @@ static const struct grub_arg_option options[] =
 static int check_uuid, have_it;
 static char *search_uuid;
 
+static gcry_err_code_t
+geli_rekey (struct grub_cryptodisk *dev, grub_uint64_t zoneno)
+{
+  gcry_err_code_t gcry_err;
+  const struct {
+    char magic[4];
+    grub_uint64_t zone;
+  } __attribute__ ((packed)) tohash
+      = { {'e', 'k', 'e', 'y'}, grub_cpu_to_le64 (zoneno) };
+  grub_uint64_t key[(dev->hash->mdlen + 7) / 8];
+
+  grub_dprintf ("geli", "rekeying %" PRIuGRUB_UINT64_T " keysize=%d\n",
+		zoneno, dev->rekey_derived_size);
+  gcry_err = grub_crypto_hmac_buffer (dev->hash, dev->rekey_key, 64,
+				      &tohash, sizeof (tohash), key);
+  if (gcry_err)
+    return grub_crypto_gcry_error (gcry_err);
+
+  return grub_cryptodisk_setkey (dev, (grub_uint8_t *) key,
+				 dev->rekey_derived_size); 
+}
+
 static grub_cryptodisk_t
 configure_ciphers (const struct grub_geli_phdr *header)
 {
@@ -115,8 +137,8 @@ configure_ciphers (const struct grub_geli_phdr *header)
 
   /* Look for GELI magic sequence.  */
   if (grub_memcmp (header->magic, GELI_MAGIC, sizeof (GELI_MAGIC))
-      || grub_le_to_cpu32 (header->version) > 3
-      || grub_le_to_cpu32 (header->version) < 2)
+      || grub_le_to_cpu32 (header->version) > 5
+      || grub_le_to_cpu32 (header->version) < 1)
     {
       grub_dprintf ("geli", "wrong magic %02x\n", header->magic[0]);
       return NULL;
@@ -212,6 +234,12 @@ configure_ciphers (const struct grub_geli_phdr *header)
   for (newdev->log_sector_size = 0;
        (1U << newdev->log_sector_size) < grub_le_to_cpu32 (header->sector_size);
        newdev->log_sector_size++);
+
+  if (grub_le_to_cpu32 (header->version) >= 5)
+    {
+      newdev->rekey = geli_rekey;
+      newdev->rekey_shift = 20;
+    }
 #if 0
   grub_memcpy (newdev->uuid, uuid, sizeof (newdev->uuid));
 #endif
@@ -325,10 +353,23 @@ recover_key (grub_cryptodisk_t dev, const struct grub_geli_phdr *header,
       grub_printf ("Slot %d opened\n", i);
 
       /* Set the master key.  */
-      gcry_err = grub_cryptodisk_setkey (dev, candidate_key.cipher_key,
-					 keysize); 
-      if (gcry_err)
-	return grub_crypto_gcry_error (gcry_err);
+      if (!dev->rekey)
+	{
+	  gcry_err = grub_cryptodisk_setkey (dev, candidate_key.cipher_key,
+					     keysize); 
+	  if (gcry_err)
+	    return grub_crypto_gcry_error (gcry_err);
+	}
+      else
+	{
+	  /* For a reason I don't know, the IV key is used in rekeying.  */
+	  grub_memcpy (dev->rekey_key, candidate_key.iv_key,
+		       sizeof (candidate_key.iv_key));
+	  dev->rekey_derived_size = keysize;
+	  dev->last_rekey = -1;
+	  COMPILE_TIME_ASSERT (sizeof (dev->rekey_key)
+			       >= sizeof (candidate_key.iv_key));
+	}
 
       dev->iv_prefix_len = sizeof (candidate_key.iv_key);
       grub_memcpy (dev->iv_prefix, candidate_key.iv_key,
