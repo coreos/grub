@@ -637,6 +637,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 	      grub_raid_t raid __attribute__ ((unused)))
 {
   struct grub_raid_array *array = 0, *p;
+  int was_readable = 0;
 
   /* See whether the device is part of an array we have already seen a
      device from.  */
@@ -646,6 +647,8 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       {
         grub_free (new_array->uuid);
         array = p;
+
+	was_readable = grub_is_array_readable (array);
 
         /* Do some checks before adding the device to the array.  */
 
@@ -803,15 +806,11 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
     }
 
   /* Add the device to the array. */
-  {
-    int was_readable = grub_is_array_readable (array);
-
-    array->members[new_array->index].device = disk;
-    array->members[new_array->index].start_sector = start_sector;
-    array->nr_devs++;
-    if (!was_readable && grub_is_array_readable (array))
-      array->became_readable_at = inscnt++;
-  }
+  array->members[new_array->index].device = disk;
+  array->members[new_array->index].start_sector = start_sector;
+  array->nr_devs++;
+  if (!was_readable && grub_is_array_readable (array))
+    array->became_readable_at = inscnt++;
 
   return 0;
 }
