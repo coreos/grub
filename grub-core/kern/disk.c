@@ -571,7 +571,8 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	
       if (data)
 	{
-	  grub_memcpy (buf, data, GRUB_DISK_CACHE_SIZE);
+	  grub_memcpy (buf, data,
+		       GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS);
 	  sector += GRUB_DISK_CACHE_SIZE;
 	  buf = (char *) buf + (GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS);
 	  size -= (GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS);
