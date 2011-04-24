@@ -81,7 +81,14 @@ struct grub_geli_phdr
 } __attribute__ ((packed));
 
 const char *algorithms[] = {
+  [0x01] = "des",
+  [0x02] = "3des",
+  [0x03] = "blowfish",
+  [0x04] = "cast5",
+  /* 0x05 is skipjack, but we don't have it.  */
   [0x0b] = "aes",
+  /* 0x10 is null.  */
+  [0x15] = "camellia128",
 };
 
 #define MAX_PASSPHRASE 256
