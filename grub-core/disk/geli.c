@@ -87,10 +87,10 @@ enum
     GRUB_GELI_FLAGS_BOOT = 2,
   };
 
+/* FIXME: support version 0.  */
 /* FIXME: support big-endian pre-version-4 volumes.  */
 /* FIXME: support for keyfiles.  */
 /* FIXME: support for HMAC.  */
-/* FIXME: support for mounting all boot volumes.  */
 const char *algorithms[] = {
   [0x01] = "des",
   [0x02] = "3des",
