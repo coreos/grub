@@ -73,7 +73,8 @@ struct grub_geli_phdr
   grub_uint32_t unused1;
   grub_uint16_t alg;
   grub_uint16_t keylen;
-  grub_uint16_t unused3[7];
+  grub_uint16_t unused3[5];
+  grub_uint32_t sector_size;
   grub_uint8_t keys_used;
   grub_uint32_t niter;
   grub_uint8_t salt[64];
@@ -120,6 +121,14 @@ configure_ciphers (const struct grub_geli_phdr *header)
       grub_dprintf ("geli", "wrong magic %02x\n", header->magic[0]);
       return NULL;
     }
+  if ((grub_le_to_cpu32 (header->sector_size)
+       & (grub_le_to_cpu32 (header->sector_size) - 1))
+      || grub_le_to_cpu32 (header->sector_size) == 0)
+    {
+      grub_dprintf ("geli", "incorrect sector size %d\n",
+		    grub_le_to_cpu32 (header->sector_size));
+      return NULL;
+    }     
 
 #if 0
   optr = uuid;
@@ -199,6 +208,10 @@ configure_ciphers (const struct grub_geli_phdr *header)
   newdev->essiv_hash = NULL;
   newdev->hash = hash;
   newdev->iv_hash = iv_hash;
+
+  for (newdev->log_sector_size = 0;
+       (1U << newdev->log_sector_size) < grub_le_to_cpu32 (header->sector_size);
+       newdev->log_sector_size++);
 #if 0
   grub_memcpy (newdev->uuid, uuid, sizeof (newdev->uuid));
 #endif

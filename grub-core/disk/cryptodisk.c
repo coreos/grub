@@ -35,7 +35,10 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Our irreducible polynom is x^128+x^7+x^2+x+1. Lowest byte of it is:  */
 #define GF_POLYNOM 0x87
-#define GF_PER_SECTOR (GRUB_DISK_SECTOR_SIZE / GRUB_CRYPTODISK_GF_BYTES)
+static inline int GF_PER_SECTOR (const struct grub_cryptodisk *dev)
+{
+  return 1U << (dev->log_sector_size - GRUB_CRYPTODISK_GF_LOG_BYTES);
+}
 
 static grub_cryptodisk_t cryptodisk_list = NULL;
 static grub_uint8_t n = 0;
@@ -44,7 +47,7 @@ static void
 gf_mul_x (grub_uint8_t *g)
 {
   int over = 0, over2 = 0;
-  int j;
+  unsigned j;
 
   for (j = 0; j < GRUB_CRYPTODISK_GF_BYTES; j++)
     {
@@ -64,7 +67,7 @@ gf_mul_x_be (grub_uint8_t *g)
   int over = 0, over2 = 0;
   int j;
 
-  for (j = GRUB_CRYPTODISK_GF_BYTES - 1; j >= 0; j--)
+  for (j = (int) GRUB_CRYPTODISK_GF_BYTES - 1; j >= 0; j--)
     {
       over2 = !!(g[j] & 0x80);
       g[j] <<= 1;
@@ -78,7 +81,7 @@ gf_mul_x_be (grub_uint8_t *g)
 static void
 gf_mul_be (grub_uint8_t *o, const grub_uint8_t *a, const grub_uint8_t *b)
 {
-  int i;
+  unsigned i;
   grub_uint8_t t[GRUB_CRYPTODISK_GF_BYTES];
   grub_memset (o, 0, GRUB_CRYPTODISK_GF_BYTES);
   grub_memcpy (t, b, GRUB_CRYPTODISK_GF_BYTES);
@@ -129,14 +132,15 @@ generate_lrw_sector (struct lrw_sector *sec,
   grub_uint16_t c;
   int j;
   grub_memcpy (idx, iv, GRUB_CRYPTODISK_GF_BYTES);
-  sec->low_byte = (idx[GRUB_CRYPTODISK_GF_BYTES - 1] & (GF_PER_SECTOR - 1));
-  sec->low_byte_c = (((GF_PER_SECTOR - 1) & ~sec->low_byte) + 1);
-  idx[GRUB_CRYPTODISK_GF_BYTES - 1] &= ~(GF_PER_SECTOR - 1);
+  sec->low_byte = (idx[GRUB_CRYPTODISK_GF_BYTES - 1]
+		   & (GF_PER_SECTOR (dev) - 1));
+  sec->low_byte_c = (((GF_PER_SECTOR (dev) - 1) & ~sec->low_byte) + 1);
+  idx[GRUB_CRYPTODISK_GF_BYTES - 1] &= ~(GF_PER_SECTOR (dev) - 1);
   gf_mul_be (sec->low, dev->lrw_key, idx);
   if (!sec->low_byte)
     return;
 
-  c = idx[GRUB_CRYPTODISK_GF_BYTES - 1] + GF_PER_SECTOR;
+  c = idx[GRUB_CRYPTODISK_GF_BYTES - 1] + GF_PER_SECTOR (dev);
   if (c & 0x100)
     {
       for (j = GRUB_CRYPTODISK_GF_BYTES - 2; j >= 0; j--)
@@ -155,9 +159,10 @@ lrw_xor (const struct lrw_sector *sec,
 	 const struct grub_cryptodisk *dev,
 	 grub_uint8_t *b)
 {
-  int i;
+  unsigned i;
 
-  for (i = 0; i < sec->low_byte_c * GRUB_CRYPTODISK_GF_BYTES; i += GRUB_CRYPTODISK_GF_BYTES)
+  for (i = 0; i < sec->low_byte_c * GRUB_CRYPTODISK_GF_BYTES;
+       i += GRUB_CRYPTODISK_GF_BYTES)
     grub_crypto_xor (b + i, b + i, sec->low, GRUB_CRYPTODISK_GF_BYTES);
   grub_crypto_xor (b, b, dev->lrw_precalc + GRUB_CRYPTODISK_GF_BYTES * sec->low_byte,
 		   sec->low_byte_c * GRUB_CRYPTODISK_GF_BYTES);
@@ -165,7 +170,7 @@ lrw_xor (const struct lrw_sector *sec,
     return;
 
   for (i = sec->low_byte_c * GRUB_CRYPTODISK_GF_BYTES;
-       i < GRUB_DISK_SECTOR_SIZE; i += GRUB_CRYPTODISK_GF_BYTES)
+       i < (1U << dev->log_sector_size); i += GRUB_CRYPTODISK_GF_BYTES)
     grub_crypto_xor (b + i, b + i, sec->high, GRUB_CRYPTODISK_GF_BYTES);
   grub_crypto_xor (b + sec->low_byte_c * GRUB_CRYPTODISK_GF_BYTES,
 		   b + sec->low_byte_c * GRUB_CRYPTODISK_GF_BYTES,
@@ -184,7 +189,7 @@ grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
   if (dev->mode == GRUB_CRYPTODISK_MODE_ECB)
     return grub_crypto_ecb_decrypt (dev->cipher, data, data, len);
 
-  for (i = 0; i < len; i += GRUB_DISK_SECTOR_SIZE)
+  for (i = 0; i < len; i += (1U << dev->log_sector_size))
     {
       grub_size_t sz = ((dev->cipher->cipher->blocksize
 			 + sizeof (grub_uint32_t) - 1)
@@ -203,7 +208,7 @@ grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
 
 	    grub_memset (ctx, 0, sizeof (ctx));
 
-	    tmp = grub_cpu_to_le64 (sector << GRUB_DISK_SECTOR_BITS);
+	    tmp = grub_cpu_to_le64 (sector << dev->log_sector_size);
 	    dev->iv_hash->init (ctx);
 	    dev->iv_hash->write (ctx, dev->iv_prefix, dev->iv_prefix_len);
 	    dev->iv_hash->write (ctx, &tmp, sizeof (tmp));
@@ -236,26 +241,26 @@ grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
 	{
 	case GRUB_CRYPTODISK_MODE_CBC:
 	  err = grub_crypto_cbc_decrypt (dev->cipher, data + i, data + i,
-					 GRUB_DISK_SECTOR_SIZE, iv);
+					 (1U << dev->log_sector_size), iv);
 	  if (err)
 	    return err;
 	  break;
 
 	case GRUB_CRYPTODISK_MODE_PCBC:
 	  err = grub_crypto_pcbc_decrypt (dev->cipher, data + i, data + i,
-					  GRUB_DISK_SECTOR_SIZE, iv);
+					  (1U << dev->log_sector_size), iv);
 	  if (err)
 	    return err;
 	  break;
 	case GRUB_CRYPTODISK_MODE_XTS:
 	  {
-	    int j;
+	    unsigned j;
 	    err = grub_crypto_ecb_encrypt (dev->secondary_cipher, iv, iv,
 					   dev->cipher->cipher->blocksize);
 	    if (err)
 	      return err;
 	    
-	    for (j = 0; j < GRUB_DISK_SECTOR_SIZE;
+	    for (j = 0; j < (1U << dev->log_sector_size);
 		 j += dev->cipher->cipher->blocksize)
 	      {
 		grub_crypto_xor (data + i + j, data + i + j, iv,
@@ -279,7 +284,8 @@ grub_cryptodisk_decrypt (const struct grub_cryptodisk *dev,
 	    lrw_xor (&sec, dev, data + i);
 
 	    err = grub_crypto_ecb_decrypt (dev->cipher, data + i, 
-					   data + i, GRUB_DISK_SECTOR_SIZE);
+					   data + i,
+					   (1U << dev->log_sector_size));
 	    if (err)
 	      return err;
 	    lrw_xor (&sec, dev, data + i);
@@ -333,17 +339,17 @@ grub_cryptodisk_setkey (grub_cryptodisk_t dev, grub_uint8_t *key, grub_size_t ke
 
   if (dev->mode == GRUB_CRYPTODISK_MODE_LRW)
     {
-      int i;
+      unsigned i;
       grub_uint8_t idx[GRUB_CRYPTODISK_GF_BYTES];
 
       grub_free (dev->lrw_precalc);
       grub_memcpy (dev->lrw_key, key + real_keysize,
 		   dev->cipher->cipher->blocksize);
-      dev->lrw_precalc = grub_malloc (GRUB_DISK_SECTOR_SIZE);
+      dev->lrw_precalc = grub_malloc ((1U << dev->log_sector_size));
       if (!dev->lrw_precalc)
 	return GPG_ERR_OUT_OF_MEMORY;
       grub_memset (idx, 0, GRUB_CRYPTODISK_GF_BYTES);
-      for (i = 0; i < GRUB_DISK_SECTOR_SIZE;
+      for (i = 0; i < (1U << dev->log_sector_size);
 	   i += GRUB_CRYPTODISK_GF_BYTES)
 	{
 	  idx[GRUB_CRYPTODISK_GF_BYTES - 1] = i / GRUB_CRYPTODISK_GF_BYTES;
@@ -400,6 +406,8 @@ grub_cryptodisk_open (const char *name, grub_disk_t disk,
     }
   if (!dev)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "No such device");
+
+  disk->log_sector_size = dev->log_sector_size;
 
 #ifdef GRUB_UTIL
   if (dev->cheat)

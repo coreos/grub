@@ -43,8 +43,10 @@ typedef enum
 
 #define GRUB_CRYPTODISK_MAX_UUID_LENGTH 63
 
-#define GRUB_CRYPTODISK_GF_SIZE 128
-#define GRUB_CRYPTODISK_GF_BYTES (GRUB_CRYPTODISK_GF_SIZE / 8)
+#define GRUB_CRYPTODISK_GF_LOG_SIZE 7
+#define GRUB_CRYPTODISK_GF_SIZE (1U << GRUB_CRYPTODISK_GF_LOG_SIZE)
+#define GRUB_CRYPTODISK_GF_LOG_BYTES (GRUB_CRYPTODISK_GF_LOG_SIZE - 3)
+#define GRUB_CRYPTODISK_GF_BYTES (1U << GRUB_CRYPTODISK_GF_LOG_BYTES)
 
 struct grub_cryptodisk
 {
@@ -71,6 +73,7 @@ struct grub_cryptodisk
   char *cheat;
   int cheat_fd;
 #endif
+  int log_sector_size;
   struct grub_cryptodisk *next;
 };
 typedef struct grub_cryptodisk *grub_cryptodisk_t;

@@ -283,6 +283,7 @@ configure_ciphers (const struct grub_luks_phdr *header)
   newdev->essiv_cipher = essiv_cipher;
   newdev->essiv_hash = essiv_hash;
   newdev->hash = hash;
+  newdev->log_sector_size = 9;
   grub_memcpy (newdev->uuid, uuid, sizeof (newdev->uuid));
   return newdev;
 }
