@@ -205,7 +205,6 @@ recover_key (grub_cryptodisk_t dev, const struct grub_geli_phdr *header,
   grub_uint8_t digest[dev->hash->mdlen];
   grub_uint8_t geomkey[dev->hash->mdlen];
   grub_uint8_t verify_key[dev->hash->mdlen];
-  grub_uint8_t pbkdf_key[64];
   grub_uint8_t zero[dev->cipher->cipher->blocksize];
   char passphrase[MAX_PASSPHRASE] = "";
   unsigned i;
@@ -220,21 +219,40 @@ recover_key (grub_cryptodisk_t dev, const struct grub_geli_phdr *header,
   if (!grub_password_get (passphrase, MAX_PASSPHRASE))
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "Passphrase not supplied");
 
-      /* Calculate the PBKDF2 of the user supplied passphrase.  */
-  gcry_err = grub_crypto_pbkdf2 (dev->hash, (grub_uint8_t *) passphrase,
-				 grub_strlen (passphrase),
-				 header->salt,
-				 sizeof (header->salt),
-				 grub_le_to_cpu32 (header->niter),
-				 pbkdf_key, sizeof (pbkdf_key));
+  /* Calculate the PBKDF2 of the user supplied passphrase.  */
+  if (grub_le_to_cpu32 (header->niter) != 0)
+    {
+      grub_uint8_t pbkdf_key[64];
+      gcry_err = grub_crypto_pbkdf2 (dev->hash, (grub_uint8_t *) passphrase,
+				     grub_strlen (passphrase),
+				     header->salt,
+				     sizeof (header->salt),
+				     grub_le_to_cpu32 (header->niter),
+				     pbkdf_key, sizeof (pbkdf_key));
 
-  if (gcry_err)
-    return grub_crypto_gcry_error (gcry_err);
+      if (gcry_err)
+	return grub_crypto_gcry_error (gcry_err);
 
-  gcry_err = grub_crypto_hmac_buffer (dev->hash, NULL, 0, pbkdf_key,
-				      sizeof (pbkdf_key), geomkey);
-  if (gcry_err)
-    return grub_crypto_gcry_error (gcry_err);
+      gcry_err = grub_crypto_hmac_buffer (dev->hash, NULL, 0, pbkdf_key,
+					  sizeof (pbkdf_key), geomkey);
+      if (gcry_err)
+	return grub_crypto_gcry_error (gcry_err);
+    }
+  else
+    {
+      struct grub_crypto_hmac_handle *hnd;
+
+      hnd = grub_crypto_hmac_init (dev->hash, NULL, 0);
+      if (!hnd)
+	return grub_crypto_gcry_error (GPG_ERR_OUT_OF_MEMORY);
+
+      grub_crypto_hmac_write (hnd, header->salt, sizeof (header->salt));
+      grub_crypto_hmac_write (hnd, passphrase, grub_strlen (passphrase));
+
+      gcry_err = grub_crypto_hmac_fini (hnd, geomkey);
+      if (gcry_err)
+	return grub_crypto_gcry_error (gcry_err);
+    }
 
   gcry_err = grub_crypto_hmac_buffer (dev->hash, geomkey,
 				      sizeof (geomkey), "\1", 1, digest);
