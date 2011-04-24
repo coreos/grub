@@ -234,6 +234,11 @@ grub_cryptodisk_decrypt (struct grub_cryptodisk *dev,
 	case GRUB_CRYPTODISK_MODE_IV_PLAIN:
 	  iv[0] = grub_cpu_to_le32 (sector & 0xFFFFFFFF);
 	  break;
+	case GRUB_CRYPTODISK_MODE_IV_BYTECOUNT64:
+	  iv[1] = grub_cpu_to_le32 (sector >> (32 - dev->log_sector_size));
+	  iv[0] = grub_cpu_to_le32 ((sector << dev->log_sector_size)
+				    & 0xFFFFFFFF);
+	  break;
 	case GRUB_CRYPTODISK_MODE_IV_BENBI:
 	  {
 	    grub_uint64_t num = (sector << dev->benbi_log) + 1;

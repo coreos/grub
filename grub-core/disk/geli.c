@@ -95,6 +95,7 @@ const char *algorithms[] = {
   [0x0b] = "aes",
   /* FIXME: 0x10 is null.  */
   [0x15] = "camellia128",
+  [0x16] = "aes"
 };
 
 #define MAX_PASSPHRASE 256
@@ -135,7 +136,7 @@ static grub_cryptodisk_t
 configure_ciphers (const struct grub_geli_phdr *header)
 {
   grub_cryptodisk_t newdev;
-  grub_crypto_cipher_handle_t cipher = NULL;
+  grub_crypto_cipher_handle_t cipher = NULL, secondary_cipher = NULL;
   const struct gcry_cipher_spec *ciph;
   const char *ciphername = NULL;
   const gcry_md_spec_t *hash = NULL, *iv_hash = NULL;
@@ -196,6 +197,13 @@ configure_ciphers (const struct grub_geli_phdr *header)
   if (!cipher)
     return NULL;
 
+  if (grub_le_to_cpu16 (header->alg) == 0x16)
+    {
+      secondary_cipher = grub_crypto_cipher_open (ciph);
+      if (!secondary_cipher)
+	return NULL;
+    }
+
   if (grub_le_to_cpu16 (header->keylen) > 1024)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid keysize %d",
@@ -225,12 +233,20 @@ configure_ciphers (const struct grub_geli_phdr *header)
   if (!newdev)
     return NULL;
   newdev->cipher = cipher;
+  newdev->secondary_cipher = secondary_cipher;
   newdev->offset = 0;
   newdev->source_disk = NULL;
   newdev->benbi_log = 0;
-  newdev->mode = GRUB_CRYPTODISK_MODE_CBC;
-  newdev->mode_iv = GRUB_CRYPTODISK_MODE_IV_BYTECOUNT64_HASH;
-  newdev->secondary_cipher = NULL;
+  if (grub_le_to_cpu16 (header->alg) == 0x16)
+    {
+      newdev->mode = GRUB_CRYPTODISK_MODE_XTS;
+      newdev->mode_iv = GRUB_CRYPTODISK_MODE_IV_BYTECOUNT64;
+    }
+  else
+    {
+      newdev->mode = GRUB_CRYPTODISK_MODE_CBC;
+      newdev->mode_iv = GRUB_CRYPTODISK_MODE_IV_BYTECOUNT64_HASH;
+    }
   newdev->essiv_cipher = NULL;
   newdev->essiv_hash = NULL;
   newdev->hash = hash;
@@ -360,17 +376,23 @@ recover_key (grub_cryptodisk_t dev, const struct grub_geli_phdr *header,
       /* Set the master key.  */
       if (!dev->rekey)
 	{
+	  grub_size_t real_keysize = keysize;
+	  if (grub_le_to_cpu16 (header->alg) == 0x16)
+	    real_keysize *= 2;
 	  gcry_err = grub_cryptodisk_setkey (dev, candidate_key.cipher_key,
-					     keysize); 
+					     real_keysize); 
 	  if (gcry_err)
 	    return grub_crypto_gcry_error (gcry_err);
 	}
       else
 	{
+	  grub_size_t real_keysize = keysize;
+	  if (grub_le_to_cpu16 (header->alg) == 0x16)
+	    real_keysize *= 2;
 	  /* For a reason I don't know, the IV key is used in rekeying.  */
 	  grub_memcpy (dev->rekey_key, candidate_key.iv_key,
 		       sizeof (candidate_key.iv_key));
-	  dev->rekey_derived_size = keysize;
+	  dev->rekey_derived_size = real_keysize;
 	  dev->last_rekey = -1;
 	  COMPILE_TIME_ASSERT (sizeof (dev->rekey_key)
 			       >= sizeof (candidate_key.iv_key));
