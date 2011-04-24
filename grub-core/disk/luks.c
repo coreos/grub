@@ -32,7 +32,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define MAX_PASSPHRASE 256
 
 #define LUKS_KEY_ENABLED  0x00AC71F3
-#define LUKS_STRIPES      4000
 
 /* On disk LUKS header */
 struct grub_luks_phdr
@@ -301,10 +300,16 @@ luks_recover_key (grub_cryptodisk_t dev, const struct grub_luks_phdr *header,
   unsigned i;
   grub_size_t length;
   grub_err_t err;
+  grub_size_t max_stripes = 1;
 
   grub_printf ("Attempting to decrypt master key...\n");
 
-  split_key = grub_malloc (keysize * LUKS_STRIPES);
+  for (i = 0; i < ARRAY_SIZE (header->keyblock); i++)
+    if (grub_be_to_cpu32 (header->keyblock[i].active) == LUKS_KEY_ENABLED
+	&& grub_be_to_cpu32 (header->keyblock[i].stripes) > max_stripes)
+      max_stripes = grub_be_to_cpu32 (header->keyblock[i].stripes);
+
+  split_key = grub_malloc (keysize * max_stripes);
   if (!split_key)
     return grub_errno;
 
@@ -351,8 +356,7 @@ luks_recover_key (grub_cryptodisk_t dev, const struct grub_luks_phdr *header,
 	  return grub_crypto_gcry_error (gcry_err);
 	}
 
-      length = (grub_be_to_cpu32 (header->keyBytes)
-		* grub_be_to_cpu32 (header->keyblock[i].stripes));
+      length = (keysize * grub_be_to_cpu32 (header->keyblock[i].stripes));
 
       /* Read and decrypt the key material from the disk.  */
       err = grub_disk_read (source,
