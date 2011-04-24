@@ -32,7 +32,7 @@ int grub_util_biosdisk_is_floppy (grub_disk_t disk);
 grub_err_t grub_util_biosdisk_flush (struct grub_disk *disk);
 void grub_util_pull_device (const char *osname);
 grub_err_t
-grub_util_fd_sector_seek (int fd, const char *name, grub_disk_addr_t sector);
+grub_util_fd_seek (int fd, const char *name, grub_uint64_t sector);
 ssize_t grub_util_fd_read (int fd, char *buf, size_t len);
 grub_err_t
 grub_luks_cheat_mount (const char *sourcedev, const char *cheat);

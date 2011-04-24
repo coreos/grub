@@ -460,11 +460,12 @@ grub_cryptodisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 #ifdef GRUB_UTIL
   if (dev->cheat)
     {
-      err = grub_util_fd_sector_seek (dev->cheat_fd, dev->cheat, sector);
+      err = grub_util_fd_seek (dev->cheat_fd, dev->cheat,
+			       sector << disk->log_sector_size);
       if (err)
 	return err;
-      if (grub_util_fd_read (dev->cheat_fd, buf, size << GRUB_DISK_SECTOR_BITS)
-	  != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
+      if (grub_util_fd_read (dev->cheat_fd, buf, size << disk->log_sector_size)
+	  != (ssize_t) (size << disk->log_sector_size))
 	return grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'",
 			   dev->cheat);
       return GRUB_ERR_NONE;
@@ -476,15 +477,17 @@ grub_cryptodisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 		PRIxGRUB_UINT64_T " with offset of %" PRIuGRUB_UINT64_T "\n",
 		size, sector, dev->offset);
 
-  err = grub_disk_read (dev->source_disk, sector + dev->offset, 0,
-			size << GRUB_DISK_SECTOR_BITS, buf);
+  err = grub_disk_read (dev->source_disk,
+			(sector << (disk->log_sector_size
+				   - GRUB_DISK_SECTOR_BITS)) + dev->offset, 0,
+			size << disk->log_sector_size, buf);
   if (err)
     {
       grub_dprintf ("cryptodisk", "grub_disk_read failed with error %d\n", err);
       return err;
     }
   gcry_err = grub_cryptodisk_decrypt (dev, (grub_uint8_t *) buf,
-				      size << GRUB_DISK_SECTOR_BITS,
+				      size << disk->log_sector_size,
 				      sector);
   return grub_crypto_gcry_error (gcry_err);
 }

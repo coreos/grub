@@ -43,6 +43,7 @@
 
 #ifdef __linux__
 # include <sys/ioctl.h>         /* ioctl */
+# include <sys/mount.h>
 # if !defined(__GLIBC__) || \
         ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1)))
 /* Maybe libc doesn't have large file support.  */
@@ -269,6 +270,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk,
 # else
     unsigned long long nr;
 # endif
+    int sector_size;
     int fd;
 
     fd = open (map[drive].device, O_RDONLY);
@@ -301,16 +303,28 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk,
 	goto fail;
       }
 
+    if (ioctl (fd, BLKSSZGET, &sector_size))
+       {
+         close (fd);
+	 goto fail;
+       }
+
     close (fd);
+
+    if (sector_size & (sector_size - 1) || !sector_size)
+      goto fail;
+    for (disk->log_sector_size = 0;
+	 (1 << disk->log_sector_size) < sector_size;
+	 disk->log_sector_size++);
 
 # if defined (__APPLE__)
     disk->total_sectors = nr;
 # elif defined(__NetBSD__)
     disk->total_sectors = label.d_secperunit;
 # else
-    disk->total_sectors = nr / 512;
+    disk->total_sectors = nr >> disk->log_sector_size;
 
-    if (nr % 512)
+    if (nr & ((1 << disk->log_sector_size) - 1))
       grub_util_error ("unaligned device size");
 # endif
 
@@ -327,7 +341,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk,
   if (stat (map[drive].device, &st) < 0)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "cannot stat `%s'", map[drive].device);
 
-  disk->total_sectors = st.st_size >> GRUB_DISK_SECTOR_BITS;
+  disk->total_sectors = st.st_size >> disk->log_sector_size;
 
   grub_util_info ("the size of %s is %lu", name, disk->total_sectors);
 
@@ -635,7 +649,7 @@ linux_find_partition (char *dev, unsigned long sector)
         ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))))
   /* Maybe libc doesn't have large file support.  */
 grub_err_t
-grub_util_fd_sector_seek (int fd, const char *name, grub_disk_addr_t sector)
+grub_util_fd_seek (int fd, const char *name, grub_uint64_t off)
 {
   loff_t offset, result;
   static int _llseek (uint filedes, ulong hi, ulong lo,
@@ -643,7 +657,7 @@ grub_util_fd_sector_seek (int fd, const char *name, grub_disk_addr_t sector)
   _syscall5 (int, _llseek, uint, filedes, ulong, hi, ulong, lo,
 	     loff_t *, res, uint, wh);
 
-  offset = (loff_t) sector << GRUB_DISK_SECTOR_BITS;
+  offset = (loff_t) off;
   if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
     {
       return grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", name);
@@ -652,9 +666,9 @@ grub_util_fd_sector_seek (int fd, const char *name, grub_disk_addr_t sector)
 }
 #else
 grub_err_t
-grub_util_fd_sector_seek (int fd, const char *name, grub_disk_addr_t sector)
+grub_util_fd_seek (int fd, const char *name, grub_uint64_t off)
 {
-  off_t offset = (off_t) sector << GRUB_DISK_SECTOR_BITS;
+  off_t offset = (off_t) off;
 
   if (lseek (fd, offset, SEEK_SET) != offset)
     return grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", name);
@@ -812,7 +826,8 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
   configure_device_driver (fd);
 #endif /* defined(__NetBSD__) */
 
-  if (grub_util_fd_sector_seek (fd, map[disk->id].device, sector))
+  if (grub_util_fd_seek (fd, map[disk->id].device,
+			 sector << disk->log_sector_size))
     {
       close (fd);
       return -1;
@@ -907,20 +922,20 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	 sectors that are read together with the MBR in one read.  It
 	 should only remap the MBR, so we split the read in two
 	 parts. -jochen  */
-      if (grub_util_fd_read (fd, buf, GRUB_DISK_SECTOR_SIZE)
-	  != GRUB_DISK_SECTOR_SIZE)
+      if (grub_util_fd_read (fd, buf, (1 << disk->log_sector_size))
+	  != (1 << disk->log_sector_size))
 	{
 	  grub_error (GRUB_ERR_READ_ERROR, "cannot read `%s'", map[disk->id].device);
 	  return grub_errno;
 	}
 
-      buf += GRUB_DISK_SECTOR_SIZE;
+      buf += (1 << disk->log_sector_size);
       size--;
     }
 #endif /* __linux__ */
 
-  if (grub_util_fd_read (fd, buf, size << GRUB_DISK_SECTOR_BITS)
-      != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
+  if (grub_util_fd_read (fd, buf, size << disk->log_sector_size)
+      != (ssize_t) (size << disk->log_sector_size))
     grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'", map[disk->id].device);
 
   return grub_errno;
@@ -953,8 +968,8 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
   if (fd < 0)
     return grub_errno;
 
-  if (nwrite (fd, buf, size << GRUB_DISK_SECTOR_BITS)
-      != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
+  if (nwrite (fd, buf, size << disk->log_sector_size)
+      != (ssize_t) (size << disk->log_sector_size))
     grub_error (GRUB_ERR_WRITE_ERROR, "cannot write to `%s'", map[disk->id].device);
 
   return grub_errno;
