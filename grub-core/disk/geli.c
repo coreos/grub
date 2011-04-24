@@ -139,7 +139,6 @@ configure_ciphers (const struct grub_geli_phdr *header)
   grub_crypto_cipher_handle_t cipher = NULL, secondary_cipher = NULL;
   const struct gcry_cipher_spec *ciph;
   const char *ciphername = NULL;
-  const gcry_md_spec_t *hash = NULL, *iv_hash = NULL;
 
   /* Look for GELI magic sequence.  */
   if (grub_memcmp (header->magic, GELI_MAGIC, sizeof (GELI_MAGIC))
@@ -211,24 +210,6 @@ configure_ciphers (const struct grub_geli_phdr *header)
       return NULL;
     }
 
-  hash = grub_crypto_lookup_md_by_name ("sha512");
-  if (!hash)
-    {
-      grub_crypto_cipher_close (cipher);
-      grub_error (GRUB_ERR_FILE_NOT_FOUND, "Couldn't load %s hash",
-		  "sha512");
-      return NULL;
-    }
-
-  iv_hash = grub_crypto_lookup_md_by_name ("sha256");
-  if (!hash)
-    {
-      grub_crypto_cipher_close (cipher);
-      grub_error (GRUB_ERR_FILE_NOT_FOUND, "Couldn't load %s hash",
-		  "sha512");
-      return NULL;
-    }
-
   newdev = grub_zalloc (sizeof (struct grub_cryptodisk));
   if (!newdev)
     return NULL;
@@ -249,8 +230,8 @@ configure_ciphers (const struct grub_geli_phdr *header)
     }
   newdev->essiv_cipher = NULL;
   newdev->essiv_hash = NULL;
-  newdev->hash = hash;
-  newdev->iv_hash = iv_hash;
+  newdev->hash = GRUB_MD_SHA512;
+  newdev->iv_hash = GRUB_MD_SHA256;
 
   for (newdev->log_sector_size = 0;
        (1U << newdev->log_sector_size) < grub_le_to_cpu32 (header->sector_size);
