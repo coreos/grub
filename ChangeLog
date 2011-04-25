@@ -1,3 +1,8 @@
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Make mdraid UUID
+	match the one used by mdadm.
+
 2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	* po/README: Add instructions for creating po/LINGUAS.
