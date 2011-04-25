@@ -221,9 +221,6 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
   /* Now scan visible mounts for the ones we're interested in.  */
   for (i = entry_len - 1; i >= 0; i--)
     {
-      if (entries[i].major != 0)
-	continue; /* not a virtual device */
-
       if (!*entries[i].device)
 	continue;
 

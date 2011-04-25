@@ -1,3 +1,71 @@
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Supply target rather
+	than source address for efi mmap buffer.
+
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/amiga.c (amiga_partition_map_iterate): Fix a
+	wrong action on non-detecting the magic.
+
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gnulib/regex.c: Remove GRUB_MOD_LICENSE since it's
+	already supplied by another part of the module (fixes compilation on
+	FreeBSD).
+
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Make mdraid UUID
+	match the one used by mdadm.
+
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* po/README: Add instructions for creating po/LINGUAS.
+
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	Add "SEE ALSO" sections to most man pages.  Fixes Debian bug
+	#551428.
+
+	* docs/man/grub-editenv.h2m (SEE ALSO): New section.
+	* docs/man/grub-emu.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-fstest.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-install.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-macho2img.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-menulst2cfg.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkconfig.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkdevicemap.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkfont.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkimage.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mklayout.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mknetdir.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkpasswd-pbkdf2.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkrelpath.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkrescue.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-ofpathname.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-pe2elf.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-probe.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-reboot.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-script-check.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-set-default.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-setup.h2m (SEE ALSO): Likewise.
+
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/emu/getroot.c
+	(grub_find_root_device_from_mountinfo): Remove non-virtual-device
+	test that was incorrectly reintroduced in r3214.
+	Reported by: Ian Dall.  Fixes Savannah bug #33133.
+
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix stack pointer handling in 16-bit relocator.
+
+	* grub-core/lib/i386/relocator16.S (grub_relocator16_start): Move
+	grub_relocator16_sp to %esp rather than %ss, and zero-extend it.
+	Fixes Ubuntu bug #683904.
+
 2011-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Bump version to 1.99~rc2.

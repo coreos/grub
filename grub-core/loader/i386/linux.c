@@ -549,6 +549,7 @@ grub_linux_boot (void)
 #ifdef GRUB_MACHINE_EFI
   {
     grub_efi_uintn_t efi_desc_size;
+    grub_size_t efi_mmap_target;
     grub_efi_uint32_t efi_desc_version;
     err = grub_efi_finish_boot_services (&efi_mmap_size, efi_mmap_buf, NULL,
 					 &efi_desc_size, &efi_desc_version);
@@ -556,23 +557,24 @@ grub_linux_boot (void)
       return err;
     
     /* Note that no boot services are available from here.  */
-
+    efi_mmap_target = real_mode_target 
+      + ((grub_uint8_t *) efi_mmap_buf - (grub_uint8_t *) real_mode_mem);
     /* Pass EFI parameters.  */
     if (grub_le_to_cpu16 (params->version) >= 0x0206)
       {
 	params->v0206.efi_mem_desc_size = efi_desc_size;
 	params->v0206.efi_mem_desc_version = efi_desc_version;
-	params->v0206.efi_mmap = (grub_uint32_t) (unsigned long) efi_mmap_buf;
+	params->v0206.efi_mmap = efi_mmap_target;
 	params->v0206.efi_mmap_size = efi_mmap_size;
 #ifdef __x86_64__
-	params->v0206.efi_mmap_hi = (grub_uint32_t) ((grub_uint64_t) efi_mmap_buf >> 32);
+	params->v0206.efi_mmap_hi = (efi_mmap_target >> 32);
 #endif
       }
     else if (grub_le_to_cpu16 (params->version) >= 0x0204)
       {
 	params->v0204.efi_mem_desc_size = efi_desc_size;
 	params->v0204.efi_mem_desc_version = efi_desc_version;
-	params->v0204.efi_mmap = (grub_uint32_t) (unsigned long) efi_mmap_buf;
+	params->v0204.efi_mmap = efi_mmap_target;
 	params->v0204.efi_mmap_size = efi_mmap_size;
       }
   }

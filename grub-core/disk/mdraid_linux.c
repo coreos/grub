@@ -221,10 +221,10 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
       return grub_errno;
 
   uuid = (grub_uint32_t *) array->uuid;
-  uuid[0] = sb.set_uuid0;
-  uuid[1] = sb.set_uuid1;
-  uuid[2] = sb.set_uuid2;
-  uuid[3] = sb.set_uuid3;
+  uuid[0] = grub_swap_bytes32 (sb.set_uuid0);
+  uuid[1] = grub_swap_bytes32 (sb.set_uuid1);
+  uuid[2] = grub_swap_bytes32 (sb.set_uuid2);
+  uuid[3] = grub_swap_bytes32 (sb.set_uuid3);
 
   *start_sector = 0;
 

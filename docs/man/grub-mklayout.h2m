@@ -1,2 +1,4 @@
 [NAME]
 grub-mklayout \- generate a GRUB keyboard layout file
+[SEE ALSO]
+.BR grub-mkconfig (8)
