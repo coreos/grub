@@ -107,8 +107,8 @@ program = {
   name = grub-bin2h;
   common = util/bin2h.c;
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
   mansection = 1;
@@ -123,8 +123,8 @@ program = {
   extra_dist = util/grub-mkimagexx.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBLZMA)';
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
@@ -138,8 +138,8 @@ program = {
   common = util/grub-mkrelpath.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
@@ -151,8 +151,8 @@ program = {
   common = util/grub-script-check.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
@@ -164,8 +164,8 @@ program = {
   common = util/grub-editenv.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
@@ -177,8 +177,8 @@ program = {
   common = util/grub-mkpasswd-pbkdf2.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
   cflags = '$(CFLAGS_GCRY)';
@@ -198,8 +198,8 @@ program = {
   common = util/grub-pe2elf.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL)';
   condition = COND_GRUB_PE2ELF;
@@ -217,8 +217,8 @@ program = {
   cppflags = '$(CPPFLAGS_GCRY)';
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
@@ -232,8 +232,8 @@ program = {
   cflags = '$(freetype_cflags)';
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(freetype_libs)';
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
@@ -253,8 +253,8 @@ program = {
   sparc64_ieee1275 = util/ieee1275/devicemap.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
@@ -266,8 +266,8 @@ program = {
   common = util/grub-probe.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
@@ -299,8 +299,8 @@ program = {
   ieee1275 = util/ieee1275/ofpath.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBGEOM)';
 
@@ -314,8 +314,8 @@ program = {
   common = util/grub-mklayout.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
@@ -625,8 +625,8 @@ program = {
   common = grub-core/tests/lib/test.c;
   cflags = -Wno-format;
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
@@ -639,8 +639,8 @@ program = {
   common = grub-core/lib/i386/pc/vesa_modes_table.c;
 
   ldadd = libgrubmods.a;
-  ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
