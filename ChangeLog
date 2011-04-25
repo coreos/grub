@@ -1,5 +1,11 @@
 2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gnulib/regex.c: Remove GRUB_MOD_LICENSE since it's
+	already supplied by another part of the module (fixes compilation on
+	FreeBSD).
+
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Make mdraid UUID
 	match the one used by mdadm.
 
