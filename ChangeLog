@@ -1,5 +1,10 @@
 2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/amiga.c (amiga_partition_map_iterate): Fix a
+	wrong action on non-detecting the magic.
+
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gnulib/regex.c: Remove GRUB_MOD_LICENSE since it's
 	already supplied by another part of the module (fixes compilation on
 	FreeBSD).
