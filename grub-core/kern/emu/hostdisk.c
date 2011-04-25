@@ -106,9 +106,7 @@ struct hd_geometry
 # include <libdevmapper.h>
 #endif
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include <libgeom.h>
-#elif defined(__NetBSD__)
+#if defined(__NetBSD__)
 # define HAVE_DIOCGDINFO
 # include <sys/ioctl.h>
 # include <sys/disklabel.h>    /* struct disklabel */
@@ -226,6 +224,82 @@ grub_util_biosdisk_iterate (int (*hook) (const char *name),
   return 0;
 }
 
+#if !defined(__MINGW32__)
+grub_uint64_t
+grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
+{
+#if defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
+  defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
+# if defined(__NetBSD__)
+  struct disklabel label;
+# else
+  unsigned long long nr;
+# endif
+  unsigned sector_size, log_sector_size;
+  struct stat st;
+
+  if (fstat (fd, &st) < 0)
+    grub_util_error ("fstat failed");
+
+# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
+  if (! S_ISCHR (st.st_mode))
+# else
+  if (! S_ISBLK (st.st_mode))
+# endif
+    goto fail;
+
+# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+    if (ioctl (fd, DIOCGMEDIASIZE, &nr))
+# elif defined(__APPLE__)
+    if (ioctl (fd, DKIOCGETBLOCKCOUNT, &nr))
+# elif defined(__NetBSD__)
+    configure_device_driver (fd);
+    if (ioctl (fd, DIOCGDINFO, &label) == -1)
+# else
+    if (ioctl (fd, BLKGETSIZE64, &nr))
+# endif
+      goto fail;
+
+# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+    if (ioctl (fd, DIOCGSECTORSIZE, &sector_size))
+# else
+    if (ioctl (fd, BLKSSZGET, &sector_size))
+# endif
+      goto fail;
+
+    if (sector_size & (sector_size - 1) || !sector_size)
+      goto fail;
+    for (log_sector_size = 0;
+	 (1 << log_sector_size) < sector_size;
+	 log_sector_size++);
+
+    if (log_secsize)
+      *log_secsize = log_sector_size;
+
+# if defined (__APPLE__)
+    return nr;
+# elif defined(__NetBSD__)
+    return label.d_secperunit;
+# else
+    if (nr & ((1 << log_sector_size) - 1))
+      grub_util_error ("unaligned device size");
+
+    return (nr >> log_sector_size);
+# endif
+
+ fail:
+  /* In GNU/Hurd, stat() will return the right size.  */
+#elif !defined (__GNU__)
+# warning "No special routine to get the size of a block device is implemented for your OS. This is not possibly fatal."
+#endif
+
+  if (log_secsize)
+   *log_secsize = 9;
+
+  return st.st_size >> 9;
+}
+#endif
+
 static grub_err_t
 grub_util_biosdisk_open (const char *name, grub_disk_t disk,
 			 grub_disk_pull_t pull __attribute__ ((unused)))
@@ -262,90 +336,30 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk,
 
     return GRUB_ERR_NONE;
   }
-#elif defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
-      defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
+#else
   {
-# if defined(__NetBSD__)
-    struct disklabel label;
-# else
-    unsigned long long nr;
-# endif
-    int sector_size;
     int fd;
 
     fd = open (map[drive].device, O_RDONLY);
     if (fd == -1)
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "cannot open `%s' while attempting to get disk size", map[drive].device);
 
+    disk->total_sectors = grub_util_get_fd_sectors (fd, &disk->log_sector_size);
+
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
     if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
 # else
     if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
 # endif
-      {
-	close (fd);
-	goto fail;
-      }
-    data->is_disk = 1;
-
-# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-    if (ioctl (fd, DIOCGMEDIASIZE, &nr))
-# elif defined(__APPLE__)
-    if (ioctl (fd, DKIOCGETBLOCKCOUNT, &nr))
-# elif defined(__NetBSD__)
-    configure_device_driver (fd);
-    if (ioctl (fd, DIOCGDINFO, &label) == -1)
-# else
-    if (ioctl (fd, BLKGETSIZE64, &nr))
-# endif
-      {
-	close (fd);
-	goto fail;
-      }
-
-    if (ioctl (fd, BLKSSZGET, &sector_size))
-       {
-         close (fd);
-	 goto fail;
-       }
+      data->is_disk = 1;
 
     close (fd);
-
-    if (sector_size & (sector_size - 1) || !sector_size)
-      goto fail;
-    for (disk->log_sector_size = 0;
-	 (1 << disk->log_sector_size) < sector_size;
-	 disk->log_sector_size++);
-
-# if defined (__APPLE__)
-    disk->total_sectors = nr;
-# elif defined(__NetBSD__)
-    disk->total_sectors = label.d_secperunit;
-# else
-    disk->total_sectors = nr >> disk->log_sector_size;
-
-    if (nr & ((1 << disk->log_sector_size) - 1))
-      grub_util_error ("unaligned device size");
-# endif
 
     grub_util_info ("the size of %s is %llu", name, disk->total_sectors);
 
     return GRUB_ERR_NONE;
   }
-
- fail:
-  /* In GNU/Hurd, stat() will return the right size.  */
-#elif !defined (__GNU__)
-# warning "No special routine to get the size of a block device is implemented for your OS. This is not possibly fatal."
 #endif
-  if (stat (map[drive].device, &st) < 0)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "cannot stat `%s'", map[drive].device);
-
-  disk->total_sectors = st.st_size >> disk->log_sector_size;
-
-  grub_util_info ("the size of %s is %lu", name, disk->total_sectors);
-
-  return GRUB_ERR_NONE;
 }
 
 int
@@ -367,55 +381,6 @@ grub_util_device_is_mapped (const char *dev)
 }
 
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
-/* FIXME: geom actually gives us the whole container hierarchy.
-   It can be used more efficiently than this.  */
-static void
-follow_geom_up (const char *name, grub_disk_addr_t *off_out, char **name_out)
-{
-  struct gmesh mesh;
-  struct gclass *class;
-  int error;
-  struct ggeom *geom;
-
-  grub_util_info ("following geom '%s'", name);
-
-  error = geom_gettree (&mesh);
-  if (error != 0)
-    grub_util_error ("couldn't open geom");
-
-  LIST_FOREACH (class, &mesh.lg_class, lg_class)
-    if (strcasecmp (class->lg_name, "part") == 0)
-      break;
-  if (!class)
-    grub_util_error ("couldn't open geom part");
-
-  LIST_FOREACH (geom, &class->lg_geom, lg_geom)
-    { 
-      struct gprovider *provider;
-      LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
-	if (strcmp (provider->lg_name, name) == 0)
-	  {
-	    char *name_tmp = xstrdup (geom->lg_name);
-	    grub_disk_addr_t off = 0;
-	    struct gconfig *config;
-	    grub_util_info ("geom '%s' has parent '%s'", name, geom->lg_name);
-
-	    follow_geom_up (name_tmp, &off, name_out);
-	    free (name_tmp);
-	    LIST_FOREACH (config, &provider->lg_config, lg_config)
-	      if (strcasecmp (config->lg_name, "start") == 0)
-		off += strtoull (config->lg_val, 0, 10);
-	    if (off_out)
-	      *off_out = off;
-	    return;
-	  }
-    }
-  grub_util_info ("geom '%s' has no parent", name);
-  if (name_out)
-    *name_out = xstrdup (name);
-  if (off_out)
-    *off_out = 0;
-}
 
 static grub_disk_addr_t
 find_partition_start (const char *dev)
@@ -423,10 +388,11 @@ find_partition_start (const char *dev)
   grub_disk_addr_t out;
   if (strncmp (dev, "/dev/", sizeof ("/dev/") - 1) != 0)
     return 0;
-  follow_geom_up (dev + sizeof ("/dev/") - 1, &out, NULL);
+  grub_util_follow_gpart_up (dev + sizeof ("/dev/") - 1, &out, NULL);
 
   return out;
 }
+
 #elif defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO)
 static grub_disk_addr_t
 find_partition_start (const char *dev)
@@ -1508,7 +1474,7 @@ devmapper_out:
   char *out, *out2;
   if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
     return xstrdup (os_dev);
-  follow_geom_up (os_dev + sizeof ("/dev/") - 1, NULL, &out);
+  grub_util_follow_gpart_up (os_dev + sizeof ("/dev/") - 1, NULL, &out);
 
   out2 = xasprintf ("/dev/%s", out);
   free (out);
@@ -1666,6 +1632,8 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 {
   struct stat st;
   int drive;
+
+  grub_util_info ("Looking for %s", os_dev);
 
   if (stat (os_dev, &st) < 0)
     {

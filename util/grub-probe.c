@@ -56,7 +56,7 @@ enum {
   PRINT_DEVICE,
   PRINT_PARTMAP,
   PRINT_ABSTRACTION,
-  PRINT_LUKS_UUID
+  PRINT_CRYPTODISK_UUID
 };
 
 int print = PRINT_FS;
@@ -91,7 +91,7 @@ probe_partmap (grub_disk_t disk)
 }
 
 static void
-probe_luks_uuid (grub_disk_t disk)
+probe_cryptodisk_uuid (grub_disk_t disk)
 {
   grub_disk_memberlist_t list = NULL, tmp;
 
@@ -102,14 +102,13 @@ probe_luks_uuid (grub_disk_t disk)
     }
   while (list)
     {
-      probe_luks_uuid (list->disk);
+      probe_cryptodisk_uuid (list->disk);
       tmp = list->next;
       free (list);
       list = tmp;
     }
-  /* FIXME: support non-LUKS.  */
   if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
-    grub_util_luks_print_uuid (disk);
+    grub_util_cryptodisk_print_uuid (disk);
 }
 
 static int
@@ -215,9 +214,9 @@ probe (const char *path, char *device_name)
       goto end;
     }
 
-  if (print == PRINT_LUKS_UUID)
+  if (print == PRINT_CRYPTODISK_UUID)
     {
-      probe_luks_uuid (dev->disk);
+      probe_cryptodisk_uuid (dev->disk);
       printf ("\n");
       goto end;
     }
@@ -295,8 +294,8 @@ Probe device information for a given path (or device, if the -d option is given)
 \n\
   -d, --device              given argument is a system device, not a path\n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
-  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|luks_uuid)\n\
-                            print filesystem module, GRUB drive, system device, partition map module, abstraction module or LUKS UUID [default=fs]\n\
+  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|cryptodisk_uuid)\n\
+                            print filesystem module, GRUB drive, system device, partition map module, abstraction module or CRYPTO UUID [default=fs]\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
   -v, --verbose             print verbose messages\n\
@@ -354,8 +353,8 @@ main (int argc, char *argv[])
 	      print = PRINT_PARTMAP;
 	    else if (!strcmp (optarg, "abstraction"))
 	      print = PRINT_ABSTRACTION;
-	    else if (!strcmp (optarg, "luks_uuid"))
-	      print = PRINT_LUKS_UUID;
+	    else if (!strcmp (optarg, "cryptodisk_uuid"))
+	      print = PRINT_CRYPTODISK_UUID;
 	    else
 	      usage (1);
 	    break;

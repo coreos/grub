@@ -24,7 +24,7 @@
 #include <grub/err.h>
 #include <grub/disk.h>
 #include <grub/crypto.h>
-#include <grub/extcmd.h>
+#include <grub/partition.h>
 #include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
@@ -64,27 +64,19 @@ gcry_err_code_t AF_merge (const gcry_md_spec_t * hash, grub_uint8_t * src,
 			  grub_uint8_t * dst, grub_size_t blocksize,
 			  grub_size_t blocknumbers);
 
-static const struct grub_arg_option options[] =
-  {
-    {"uuid", 'u', 0, N_("Mount by UUID."), 0, 0},
-    {"all", 'a', 0, N_("Mount all."), 0, 0},
-    {0, 0, 0, 0, 0, 0}
-  };
-
-static int check_uuid, have_it;
-static char *search_uuid;
-
 static grub_cryptodisk_t
-configure_ciphers (const struct grub_luks_phdr *header)
+configure_ciphers (grub_disk_t disk, const char *check_uuid,
+		   int check_boot)
 {
   grub_cryptodisk_t newdev;
   const char *iptr;
+  struct grub_luks_phdr header;
   char *optr;
-  char uuid[sizeof (header->uuid) + 1];
-  char ciphername[sizeof (header->cipherName) + 1];
-  char ciphermode[sizeof (header->cipherMode) + 1];
+  char uuid[sizeof (header.uuid) + 1];
+  char ciphername[sizeof (header.cipherName) + 1];
+  char ciphermode[sizeof (header.cipherMode) + 1];
   char *cipheriv = NULL;
-  char hashspec[sizeof (header->hashSpec) + 1];
+  char hashspec[sizeof (header.hashSpec) + 1];
   grub_crypto_cipher_handle_t cipher = NULL, secondary_cipher = NULL;
   grub_crypto_cipher_handle_t essiv_cipher = NULL;
   const gcry_md_spec_t *hash = NULL, *essiv_hash = NULL;
@@ -92,14 +84,27 @@ configure_ciphers (const struct grub_luks_phdr *header)
   grub_cryptodisk_mode_t mode;
   grub_cryptodisk_mode_iv_t mode_iv;
   int benbi_log = 0;
+  grub_err_t err;
+
+  if (check_boot)
+    return NULL;
+
+  /* Read the LUKS header.  */
+  err = grub_disk_read (disk, 0, 0, sizeof (header), &header);
+  if (err)
+    {
+      if (err == GRUB_ERR_OUT_OF_RANGE)
+	grub_errno = GRUB_ERR_NONE;
+      return NULL;
+    }
 
   /* Look for LUKS magic sequence.  */
-  if (grub_memcmp (header->magic, LUKS_MAGIC, sizeof (header->magic))
-      || grub_be_to_cpu16 (header->version) != 1)
+  if (grub_memcmp (header.magic, LUKS_MAGIC, sizeof (header.magic))
+      || grub_be_to_cpu16 (header.version) != 1)
     return NULL;
 
   optr = uuid;
-  for (iptr = header->uuid; iptr < &header->uuid[ARRAY_SIZE (header->uuid)];
+  for (iptr = header.uuid; iptr < &header.uuid[ARRAY_SIZE (header.uuid)];
        iptr++)
     {
       if (*iptr != '-')
@@ -107,19 +112,19 @@ configure_ciphers (const struct grub_luks_phdr *header)
     }
   *optr = 0;
 
-  if (check_uuid && grub_strcasecmp (search_uuid, uuid) != 0)
+  if (check_uuid && grub_strcasecmp (check_uuid, uuid) != 0)
     {
-      grub_dprintf ("luks", "%s != %s\n", uuid, search_uuid);
+      grub_dprintf ("luks", "%s != %s\n", uuid, check_uuid);
       return NULL;
     }
 
   /* Make sure that strings are null terminated.  */
-  grub_memcpy (ciphername, header->cipherName, sizeof (header->cipherName));
-  ciphername[sizeof (header->cipherName)] = 0;
-  grub_memcpy (ciphermode, header->cipherMode, sizeof (header->cipherMode));
-  ciphermode[sizeof (header->cipherMode)] = 0;
-  grub_memcpy (hashspec, header->hashSpec, sizeof (header->hashSpec));
-  hashspec[sizeof (header->hashSpec)] = 0;
+  grub_memcpy (ciphername, header.cipherName, sizeof (header.cipherName));
+  ciphername[sizeof (header.cipherName)] = 0;
+  grub_memcpy (ciphermode, header.cipherMode, sizeof (header.cipherMode));
+  ciphermode[sizeof (header.cipherMode)] = 0;
+  grub_memcpy (hashspec, header.hashSpec, sizeof (header.hashSpec));
+  hashspec[sizeof (header.hashSpec)] = 0;
 
   ciph = grub_crypto_lookup_cipher_by_name (ciphername);
   if (!ciph)
@@ -134,10 +139,10 @@ configure_ciphers (const struct grub_luks_phdr *header)
   if (!cipher)
     return NULL;
 
-  if (grub_be_to_cpu32 (header->keyBytes) > 1024)
+  if (grub_be_to_cpu32 (header.keyBytes) > 1024)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid keysize %d",
-		  grub_be_to_cpu32 (header->keyBytes));
+		  grub_be_to_cpu32 (header.keyBytes));
       return NULL;
     }
 
@@ -273,7 +278,7 @@ configure_ciphers (const struct grub_luks_phdr *header)
   if (!newdev)
     return NULL;
   newdev->cipher = cipher;
-  newdev->offset = grub_be_to_cpu32 (header->payloadOffset);
+  newdev->offset = grub_be_to_cpu32 (header.payloadOffset);
   newdev->source_disk = NULL;
   newdev->benbi_log = benbi_log;
   newdev->mode = mode;
@@ -283,39 +288,54 @@ configure_ciphers (const struct grub_luks_phdr *header)
   newdev->essiv_hash = essiv_hash;
   newdev->hash = hash;
   newdev->log_sector_size = 9;
+  newdev->total_length = grub_disk_get_size (disk) - newdev->offset;
   grub_memcpy (newdev->uuid, uuid, sizeof (newdev->uuid));
+#ifdef GRUB_UTIL
+  newdev->modname = "luks";
+#endif
   COMPILE_TIME_ASSERT (sizeof (newdev->uuid) >= sizeof (uuid));
   return newdev;
 }
 
 static grub_err_t
-luks_recover_key (grub_cryptodisk_t dev, const struct grub_luks_phdr *header,
-		  const char *name, grub_disk_t source)
+luks_recover_key (grub_disk_t source,
+		  grub_cryptodisk_t dev)
 {
-  grub_size_t keysize = grub_be_to_cpu32 (header->keyBytes);
-  grub_uint8_t candidate_key[keysize];
-  grub_uint8_t digest[keysize];
+  struct grub_luks_phdr header;
+  grub_size_t keysize;
   grub_uint8_t *split_key = NULL;
   char passphrase[MAX_PASSPHRASE] = "";
-  grub_uint8_t candidate_digest[sizeof (header->mkDigest)];
+  grub_uint8_t candidate_digest[sizeof (header.mkDigest)];
   unsigned i;
   grub_size_t length;
   grub_err_t err;
   grub_size_t max_stripes = 1;
+  char *tmp;
+
+  err = grub_disk_read (source, 0, 0, sizeof (header), &header);
+  if (err)
+    return err;
 
   grub_printf ("Attempting to decrypt master key...\n");
+  keysize = grub_be_to_cpu32 (header.keyBytes);
 
-  for (i = 0; i < ARRAY_SIZE (header->keyblock); i++)
-    if (grub_be_to_cpu32 (header->keyblock[i].active) == LUKS_KEY_ENABLED
-	&& grub_be_to_cpu32 (header->keyblock[i].stripes) > max_stripes)
-      max_stripes = grub_be_to_cpu32 (header->keyblock[i].stripes);
+  for (i = 0; i < ARRAY_SIZE (header.keyblock); i++)
+    if (grub_be_to_cpu32 (header.keyblock[i].active) == LUKS_KEY_ENABLED
+	&& grub_be_to_cpu32 (header.keyblock[i].stripes) > max_stripes)
+      max_stripes = grub_be_to_cpu32 (header.keyblock[i].stripes);
 
   split_key = grub_malloc (keysize * max_stripes);
   if (!split_key)
     return grub_errno;
 
   /* Get the passphrase from the user.  */
-  grub_printf ("Enter passphrase for %s (%s): ", name, dev->uuid);
+  tmp = NULL;
+  if (source->partition)
+    tmp = grub_partition_get_name (source->partition);
+  grub_printf ("Enter passphrase for %s%s%s (%s): ", source->name,
+	       source->partition ? "," : "", tmp ? : "",
+	       dev->uuid);
+  grub_free (tmp);
   if (!grub_password_get (passphrase, MAX_PASSPHRASE))
     {
       grub_free (split_key);
@@ -323,12 +343,14 @@ luks_recover_key (grub_cryptodisk_t dev, const struct grub_luks_phdr *header,
     }
 
   /* Try to recover master key from each active keyslot.  */
-  for (i = 0; i < ARRAY_SIZE (header->keyblock); i++)
+  for (i = 0; i < ARRAY_SIZE (header.keyblock); i++)
     {
       gcry_err_code_t gcry_err;
+      grub_uint8_t candidate_key[keysize];
+      grub_uint8_t digest[keysize];
 
       /* Check if keyslot is enabled.  */
-      if (grub_be_to_cpu32 (header->keyblock[i].active) != LUKS_KEY_ENABLED)
+      if (grub_be_to_cpu32 (header.keyblock[i].active) != LUKS_KEY_ENABLED)
 	continue;
 
       grub_dprintf ("luks", "Trying keyslot %d\n", i);
@@ -336,9 +358,9 @@ luks_recover_key (grub_cryptodisk_t dev, const struct grub_luks_phdr *header,
       /* Calculate the PBKDF2 of the user supplied passphrase.  */
       gcry_err = grub_crypto_pbkdf2 (dev->hash, (grub_uint8_t *) passphrase,
 				     grub_strlen (passphrase),
-				     header->keyblock[i].passwordSalt,
-				     sizeof (header->keyblock[i].passwordSalt),
-				     grub_be_to_cpu32 (header->keyblock[i].
+				     header.keyblock[i].passwordSalt,
+				     sizeof (header.keyblock[i].passwordSalt),
+				     grub_be_to_cpu32 (header.keyblock[i].
 						       passwordIterations),
 				     digest, keysize);
 
@@ -357,11 +379,11 @@ luks_recover_key (grub_cryptodisk_t dev, const struct grub_luks_phdr *header,
 	  return grub_crypto_gcry_error (gcry_err);
 	}
 
-      length = (keysize * grub_be_to_cpu32 (header->keyblock[i].stripes));
+      length = (keysize * grub_be_to_cpu32 (header.keyblock[i].stripes));
 
       /* Read and decrypt the key material from the disk.  */
       err = grub_disk_read (source,
-			    grub_be_to_cpu32 (header->keyblock
+			    grub_be_to_cpu32 (header.keyblock
 					      [i].keyMaterialOffset), 0,
 			    length, split_key);
       if (err)
@@ -379,7 +401,7 @@ luks_recover_key (grub_cryptodisk_t dev, const struct grub_luks_phdr *header,
 
       /* Merge the decrypted key material to get the candidate master key.  */
       gcry_err = AF_merge (dev->hash, split_key, candidate_key, keysize,
-			   grub_be_to_cpu32 (header->keyblock[i].stripes));
+			   grub_be_to_cpu32 (header.keyblock[i].stripes));
       if (gcry_err)
 	{
 	  grub_free (split_key);
@@ -390,11 +412,11 @@ luks_recover_key (grub_cryptodisk_t dev, const struct grub_luks_phdr *header,
 
       /* Calculate the PBKDF2 of the candidate master key.  */
       gcry_err = grub_crypto_pbkdf2 (dev->hash, candidate_key,
-				     grub_be_to_cpu32 (header->keyBytes),
-				     header->mkDigestSalt,
-				     sizeof (header->mkDigestSalt),
+				     grub_be_to_cpu32 (header.keyBytes),
+				     header.mkDigestSalt,
+				     sizeof (header.mkDigestSalt),
 				     grub_be_to_cpu32
-				     (header->mkDigestIterations),
+				     (header.mkDigestIterations),
 				     candidate_digest,
 				     sizeof (candidate_digest));
       if (gcry_err)
@@ -405,8 +427,8 @@ luks_recover_key (grub_cryptodisk_t dev, const struct grub_luks_phdr *header,
 
       /* Compare the calculated PBKDF2 to the digest stored
          in the header to see if it's correct.  */
-      if (grub_memcmp (candidate_digest, header->mkDigest,
-		       sizeof (header->mkDigest)) != 0)
+      if (grub_memcmp (candidate_digest, header.mkDigest,
+		       sizeof (header.mkDigest)) != 0)
 	{
 	  grub_dprintf ("luks", "bad digest\n");
 	  continue;
@@ -430,204 +452,19 @@ luks_recover_key (grub_cryptodisk_t dev, const struct grub_luks_phdr *header,
   return GRUB_ACCESS_DENIED;
 }
 
-static void
-luks_close (grub_cryptodisk_t luks)
-{
-  grub_crypto_cipher_close (luks->cipher);
-  grub_crypto_cipher_close (luks->secondary_cipher);
-  grub_crypto_cipher_close (luks->essiv_cipher);
-  grub_free (luks);
-}
-
-static grub_err_t
-grub_luks_scan_device_real (const char *name, grub_disk_t source)
-{
-  grub_err_t err;
-  struct grub_luks_phdr header;
-  grub_cryptodisk_t newdev, dev;
-
-  dev = grub_cryptodisk_get_by_source_disk (source);
-
-  if (dev)
-    return GRUB_ERR_NONE;
-
-  /* Read the LUKS header.  */
-  err = grub_disk_read (source, 0, 0, sizeof (header), &header);
-  if (err)
-    return err;
-
-  newdev = configure_ciphers (&header);
-  if (!newdev)
-    return grub_errno;
-
-  newdev->total_length = grub_disk_get_size (source) - newdev->offset;
-
-  err = luks_recover_key (newdev, &header, name, source);
-  if (err)
-    {
-      luks_close (newdev);
-      return err;
-    }
-
-  grub_cryptodisk_insert (newdev, name, source);
-
-  have_it = 1;
-
-  return GRUB_ERR_NONE;
-}
-
-#ifdef GRUB_UTIL
-grub_err_t
-grub_luks_cheat_mount (const char *sourcedev, const char *cheat)
-{
-  grub_err_t err;
-  struct grub_luks_phdr header;
-  grub_cryptodisk_t newdev, dev;
-  grub_disk_t source;
-
-  /* Try to open disk.  */
-  source = grub_disk_open (sourcedev);
-  if (!source)
-    return grub_errno;
-
-  dev = grub_cryptodisk_get_by_source_disk (source);
-
-  if (dev)
-    {
-      grub_disk_close (source);	
-      return GRUB_ERR_NONE;
-    }
-
-  /* Read the LUKS header.  */
-  err = grub_disk_read (source, 0, 0, sizeof (header), &header);
-  if (err)
-    return err;
-
-  newdev = configure_ciphers (&header);
-  if (!newdev)
-    {
-      grub_disk_close (source);
-      return grub_errno;
-    }
-
-  newdev->total_length = grub_disk_get_size (source) - newdev->offset;
-
-  err = grub_cryptodisk_cheat_insert (newdev, sourcedev, source, cheat);
-  grub_disk_close (source);
-  if (err)
-    grub_free (newdev);
-
-  return err;
-}
-#endif
-
-static int
-grub_luks_scan_device (const char *name)
-{
-  grub_err_t err;
-  grub_disk_t source;
-
-  /* Try to open disk.  */
-  source = grub_disk_open (name);
-  if (!source)
-    return grub_errno;
-
-  err = grub_luks_scan_device_real (name, source);
-
-  grub_disk_close (source);
-  
-  if (err)
-    grub_print_error ();
-  return have_it && check_uuid ? 0 : 1;
-}
-
-#ifdef GRUB_UTIL
-
-void
-grub_util_luks_print_uuid (grub_disk_t disk)
-{
-  grub_cryptodisk_t dev = (grub_cryptodisk_t) disk->data;
-  grub_printf ("%s ", dev->uuid);
-}
-#endif
-
-static grub_err_t
-grub_cmd_luksmount (grub_extcmd_context_t ctxt, int argc, char **args)
-{
-  struct grub_arg_list *state = ctxt->state;
-
-  if (argc < 1 && !state[1].set)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "device name required");
-
-  have_it = 0;
-  if (state[0].set)
-    {
-      grub_cryptodisk_t dev;
-
-      dev = grub_cryptodisk_get_by_uuid (args[0]);
-      if (dev)
-	{
-	  grub_dprintf ("luks", "already mounted as crypto%lu\n", dev->id);
-	  return GRUB_ERR_NONE;
-	}
-
-      check_uuid = 1;
-      search_uuid = args[0];
-      grub_device_iterate (&grub_luks_scan_device);
-      search_uuid = NULL;
-
-      if (!have_it)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "no such luks found");
-      return GRUB_ERR_NONE;
-    }
-  else if (state[1].set)
-    {
-      check_uuid = 0;
-      search_uuid = NULL;
-      grub_device_iterate (&grub_luks_scan_device);
-      search_uuid = NULL;
-      return GRUB_ERR_NONE;
-    }
-  else
-    {
-      grub_err_t err;
-      grub_disk_t disk;
-      grub_cryptodisk_t dev;
-
-      check_uuid = 0;
-      search_uuid = NULL;
-      disk = grub_disk_open (args[0]);
-      if (!disk)
-	return grub_errno;
-
-      dev = grub_cryptodisk_get_by_source_disk (disk);
-      if (dev)
-	{
-	  grub_dprintf ("luks", "already mounted as luks%lu\n", dev->id);
-	  grub_disk_close (disk);
-	  return GRUB_ERR_NONE;
-	}
-
-      err = grub_luks_scan_device_real (args[0], disk);
-
-      grub_disk_close (disk);
-
-      return err;
-    }
-}
-
-static grub_extcmd_t cmd;
+struct grub_cryptodisk_dev luks_crypto = {
+  .scan = configure_ciphers,
+  .recover_key = luks_recover_key
+};
 
 GRUB_MOD_INIT (luks)
 {
   COMPILE_TIME_ASSERT (sizeof (((struct grub_luks_phdr *) 0)->uuid)
 		       < GRUB_CRYPTODISK_MAX_UUID_LENGTH);
-  cmd = grub_register_extcmd ("luksmount", grub_cmd_luksmount, 0,
-			      N_("SOURCE|-u UUID|-a"),
-			      N_("Mount a LUKS device."), options);
+  grub_cryptodisk_dev_register (&luks_crypto);
 }
 
 GRUB_MOD_FINI (luks)
 {
-  grub_unregister_extcmd (cmd);
+  grub_cryptodisk_dev_unregister (&luks_crypto);
 }

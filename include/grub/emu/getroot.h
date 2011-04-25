@@ -26,6 +26,7 @@ enum grub_dev_abstraction_types {
   GRUB_DEV_ABSTRACTION_LVM,
   GRUB_DEV_ABSTRACTION_RAID,
   GRUB_DEV_ABSTRACTION_LUKS,
+  GRUB_DEV_ABSTRACTION_GELI,
 };
 
 char *grub_find_device (const char *dir, dev_t dev);
@@ -37,6 +38,10 @@ const char *grub_util_check_block_device (const char *blk_dev);
 const char *grub_util_check_char_device (const char *blk_dev);
 #ifdef __linux__
 char **grub_util_raid_getmembers (const char *name, int bootable);
+#endif
+#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
+void grub_util_follow_gpart_up (const char *name, grub_disk_addr_t *off_out,
+				char **name_out);
 #endif
 
 #endif /* ! GRUB_UTIL_GETROOT_HEADER */

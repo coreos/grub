@@ -538,9 +538,9 @@ if [ "x${devabstraction_module}" = "x" ] ; then
              
           exit 1
         fi
-	if [ x$GRUB_LUKS_ENABLE = xy ]; then
-	    for uuid in "`"${grub_probe}" --device "${device}" --target=luks_uuid`"; do
-		echo "luksmount -u $uuid"
+	if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
+	    for uuid in "`"${grub_probe}" --device "${device}" --target=cryptodisk_uuid`"; do
+		echo "cryptomount -u $uuid"
 	    done
 	fi
 

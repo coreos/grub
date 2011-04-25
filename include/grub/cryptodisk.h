@@ -21,6 +21,7 @@
 
 #include <grub/disk.h>
 #include <grub/crypto.h>
+#include <grub/list.h>
 
 typedef enum
   {
@@ -57,6 +58,8 @@ typedef gcry_err_code_t
 
 struct grub_cryptodisk
 {
+  struct grub_cryptodisk *next;
+
   char *source;
   grub_disk_addr_t offset;
   grub_disk_addr_t total_length;
@@ -78,6 +81,7 @@ struct grub_cryptodisk
   grub_size_t iv_prefix_len;
 #ifdef GRUB_UTIL
   char *cheat;
+  const char *modname;
   int cheat_fd;
 #endif
   int log_sector_size;
@@ -86,9 +90,36 @@ struct grub_cryptodisk
   grub_uint8_t rekey_key[64];
   grub_uint64_t last_rekey;
   int rekey_derived_size;
-  struct grub_cryptodisk *next;
 };
 typedef struct grub_cryptodisk *grub_cryptodisk_t;
+
+struct grub_cryptodisk_dev
+{
+  struct grub_cryptodisk_dev *next;
+
+  grub_cryptodisk_t (*scan) (grub_disk_t disk, const char *check_uuid,
+			     int boot_only);
+  grub_err_t (*recover_key) (grub_disk_t disk, grub_cryptodisk_t dev);
+};
+typedef struct grub_cryptodisk_dev *grub_cryptodisk_dev_t;
+
+extern grub_cryptodisk_dev_t EXPORT_VAR (grub_cryptodisk_list);
+
+#ifndef GRUB_LST_GENERATOR
+static inline void
+grub_cryptodisk_dev_register (grub_cryptodisk_dev_t cr)
+{
+  grub_list_push (GRUB_AS_LIST_P (&grub_cryptodisk_list), GRUB_AS_LIST (cr));
+}
+#endif
+
+static inline void
+grub_cryptodisk_dev_unregister (grub_cryptodisk_dev_t cr)
+{
+  grub_list_remove (GRUB_AS_LIST_P (&grub_cryptodisk_list), GRUB_AS_LIST (cr));
+}
+
+#define FOR_CRYPTODISK_DEVS(var) FOR_LIST_ELEMENTS((var), (grub_cryptodisk_list))
 
 gcry_err_code_t
 grub_cryptodisk_setkey (grub_cryptodisk_t dev,
@@ -106,6 +137,8 @@ grub_cryptodisk_cheat_insert (grub_cryptodisk_t newdev, const char *name,
 			      grub_disk_t source, const char *cheat);
 void
 grub_util_cryptodisk_print_abstraction (grub_disk_t disk);
+char *
+grub_util_get_geli_uuid (const char *dev);
 #endif
 
 grub_cryptodisk_t grub_cryptodisk_get_by_uuid (const char *uuid);

@@ -309,10 +309,8 @@ fstest (int n, char **args)
     char *argv[2] = { "-a", NULL};
     if (mount_crypt)
       {
-	if (execute_command ("luksmount", 1, argv))
-	  grub_util_error (_("luksmount command fails: %s"), grub_errmsg);
-	if (execute_command ("gelimount", 1, argv))
-	  grub_util_error (_("gelimount command fails: %s"), grub_errmsg);
+	if (execute_command ("cryptomount", 1, argv))
+	  grub_util_error (_("cryptomount command fails: %s"), grub_errmsg);
       }
   }
 

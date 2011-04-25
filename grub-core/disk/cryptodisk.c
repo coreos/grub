@@ -20,6 +20,8 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/dl.h>
+#include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_UTIL
 #include <errno.h>
@@ -32,6 +34,16 @@
 #endif
 
 GRUB_MOD_LICENSE ("GPLv3+");
+
+grub_cryptodisk_dev_t grub_cryptodisk_list;
+
+static const struct grub_arg_option options[] =
+  {
+    {"uuid", 'u', 0, N_("Mount by UUID."), 0, 0},
+    {"all", 'a', 0, N_("Mount all."), 0, 0},
+    {"boot", 'b', 0, N_("Mount all volumes marked as boot."), 0, 0},
+    {0, 0, 0, 0, 0, 0}
+  };
 
 /* Our irreducible polynom is x^128+x^7+x^2+x+1. Lowest byte of it is:  */
 #define GF_POLYNOM 0x87
@@ -480,7 +492,7 @@ grub_cryptodisk_close (grub_disk_t disk)
 
 static grub_err_t
 grub_cryptodisk_read (grub_disk_t disk, grub_disk_addr_t sector,
-		grub_size_t size, char *buf)
+		      grub_size_t size, char *buf)
 {
   grub_cryptodisk_t dev = (grub_cryptodisk_t) disk->data;
   grub_err_t err;
@@ -635,7 +647,7 @@ grub_util_cryptodisk_print_abstraction (grub_disk_t disk)
 {
   grub_cryptodisk_t dev = (grub_cryptodisk_t) disk->data;
 
-  grub_printf ("luks ");
+  grub_printf ("cryptodisk %s ", dev->modname);
 
   if (dev->cipher)
     grub_printf ("%s ", dev->cipher->cipher->modname);
@@ -650,7 +662,196 @@ grub_util_cryptodisk_print_abstraction (grub_disk_t disk)
   if (dev->iv_hash)
     grub_printf ("%s ", dev->iv_hash->modname);
 }
+
+void
+grub_util_cryptodisk_print_uuid (grub_disk_t disk)
+{
+  grub_cryptodisk_t dev = (grub_cryptodisk_t) disk->data;
+  grub_printf ("%s ", dev->uuid);
+}
+
 #endif
+
+static int check_boot, have_it;
+static char *search_uuid;
+
+static void
+cryptodisk_close (grub_cryptodisk_t dev)
+{
+  grub_crypto_cipher_close (dev->cipher);
+  grub_crypto_cipher_close (dev->secondary_cipher);
+  grub_crypto_cipher_close (dev->essiv_cipher);
+  grub_free (dev);
+}
+
+static grub_err_t
+grub_cryptodisk_scan_device_real (const char *name, grub_disk_t source)
+{
+  grub_err_t err;
+  grub_cryptodisk_t dev;
+  grub_cryptodisk_dev_t cr;
+
+  dev = grub_cryptodisk_get_by_source_disk (source);
+
+  if (dev)
+    return GRUB_ERR_NONE;
+
+  FOR_CRYPTODISK_DEVS (cr)
+  {
+    dev = cr->scan (source, search_uuid, check_boot);
+    if (grub_errno)
+      return grub_errno;
+    if (!dev)
+      continue;
+    
+    err = cr->recover_key (source, dev);
+    if (err)
+    {
+      cryptodisk_close (dev);
+      return err;
+    }
+
+    grub_cryptodisk_insert (dev, name, source);
+
+    have_it = 1;
+
+    return GRUB_ERR_NONE;
+  }
+  return GRUB_ERR_NONE;
+}
+
+#ifdef GRUB_UTIL
+#include <grub/util/misc.h>
+grub_err_t
+grub_cryptodisk_cheat_mount (const char *sourcedev, const char *cheat)
+{
+  grub_err_t err;
+  grub_cryptodisk_t dev;
+  grub_cryptodisk_dev_t cr;
+  grub_disk_t source;
+
+  /* Try to open disk.  */
+  source = grub_disk_open (sourcedev);
+  if (!source)
+    return grub_errno;
+
+  dev = grub_cryptodisk_get_by_source_disk (source);
+
+  if (dev)
+    {
+      grub_disk_close (source);	
+      return GRUB_ERR_NONE;
+    }
+
+  FOR_CRYPTODISK_DEVS (cr)
+  {
+    dev = cr->scan (source, search_uuid, check_boot);
+    if (grub_errno)
+      return grub_errno;
+    if (!dev)
+      continue;
+
+    grub_util_info ("cheatmounted %s (%s) at %s", sourcedev, dev->modname,
+		    cheat);
+    err = grub_cryptodisk_cheat_insert (dev, sourcedev, source, cheat);
+    grub_disk_close (source);
+    if (err)
+      grub_free (dev);
+
+    return GRUB_ERR_NONE;
+  }
+
+  grub_disk_close (source);
+
+  return GRUB_ERR_NONE;
+}
+#endif
+
+static int
+grub_cryptodisk_scan_device (const char *name)
+{
+  grub_err_t err;
+  grub_disk_t source;
+
+  /* Try to open disk.  */
+  source = grub_disk_open (name);
+  if (!source)
+    return grub_errno;
+
+  err = grub_cryptodisk_scan_device_real (name, source);
+
+  grub_disk_close (source);
+  
+  if (err)
+    grub_print_error ();
+  return have_it && search_uuid ? 1 : 0;
+}
+
+static grub_err_t
+grub_cmd_cryptomount (grub_extcmd_context_t ctxt, int argc, char **args)
+{
+  struct grub_arg_list *state = ctxt->state;
+
+  if (argc < 1 && !state[1].set && !state[2].set)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "device name required");
+
+  have_it = 0;
+  if (state[0].set)
+    {
+      grub_cryptodisk_t dev;
+
+      dev = grub_cryptodisk_get_by_uuid (args[0]);
+      if (dev)
+	{
+	  grub_dprintf ("cryptodisk",
+			"already mounted as crypto%lu\n", dev->id);
+	  return GRUB_ERR_NONE;
+	}
+
+      check_boot = state[2].set;
+      search_uuid = args[0];
+      grub_device_iterate (&grub_cryptodisk_scan_device);
+      search_uuid = NULL;
+
+      if (!have_it)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "no such cryptodisk found");
+      return GRUB_ERR_NONE;
+    }
+  else if (state[1].set || (argc == 0 && state[2].set))
+    {
+      search_uuid = NULL;
+      check_boot = state[2].set;
+      grub_device_iterate (&grub_cryptodisk_scan_device);
+      search_uuid = NULL;
+      return GRUB_ERR_NONE;
+    }
+  else
+    {
+      grub_err_t err;
+      grub_disk_t disk;
+      grub_cryptodisk_t dev;
+
+      search_uuid = NULL;
+      check_boot = state[2].set;
+      disk = grub_disk_open (args[0]);
+      if (!disk)
+	return grub_errno;
+
+      dev = grub_cryptodisk_get_by_source_disk (disk);
+      if (dev)
+	{
+	  grub_dprintf ("cryptodisk", "already mounted as crypto%lu\n", dev->id);
+	  grub_disk_close (disk);
+	  return GRUB_ERR_NONE;
+	}
+
+      err = grub_cryptodisk_scan_device_real (args[0], disk);
+
+      grub_disk_close (disk);
+
+      return err;
+    }
+}
 
 static struct grub_disk_dev grub_cryptodisk_dev = {
   .name = "cryptodisk",
@@ -666,9 +867,14 @@ static struct grub_disk_dev grub_cryptodisk_dev = {
   .next = 0
 };
 
+static grub_extcmd_t cmd;
+
 GRUB_MOD_INIT (cryptodisk)
 {
   grub_disk_dev_register (&grub_cryptodisk_dev);
+  cmd = grub_register_extcmd ("cryptomount", grub_cmd_cryptomount, 0,
+			      N_("SOURCE|-u UUID|-a|-b"),
+			      N_("Mount a crypto device."), options);
 }
 
 GRUB_MOD_FINI (cryptodisk)

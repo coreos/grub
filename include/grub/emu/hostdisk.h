@@ -35,7 +35,11 @@ grub_err_t
 grub_util_fd_seek (int fd, const char *name, grub_uint64_t sector);
 ssize_t grub_util_fd_read (int fd, char *buf, size_t len);
 grub_err_t
-grub_luks_cheat_mount (const char *sourcedev, const char *cheat);
-void grub_util_luks_print_uuid (grub_disk_t disk);
+grub_cryptodisk_cheat_mount (const char *sourcedev, const char *cheat);
+void grub_util_cryptodisk_print_uuid (grub_disk_t disk);
+#if !defined(__MINGW32__)
+grub_uint64_t
+grub_util_get_fd_sectors (int fd, unsigned *log_secsize);
+#endif
 
 #endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */

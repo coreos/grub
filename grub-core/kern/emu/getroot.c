@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <grub/util/misc.h>
+#include <grub/cryptodisk.h>
 
 #ifdef HAVE_DEVICE_MAPPER
 # include <libdevmapper.h>
@@ -756,6 +757,94 @@ grub_util_get_dm_abstraction (const char *os_dev)
 #endif
 }
 
+#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
+#include <libgeom.h>
+
+/* FIXME: geom actually gives us the whole container hierarchy.
+   It can be used more efficiently than this.  */
+void
+grub_util_follow_gpart_up (const char *name, grub_disk_addr_t *off_out, char **name_out)
+{
+  struct gmesh mesh;
+  struct gclass *class;
+  int error;
+  struct ggeom *geom;
+
+  grub_util_info ("following geom '%s'", name);
+
+  error = geom_gettree (&mesh);
+  if (error != 0)
+    grub_util_error ("couldn't open geom");
+
+  LIST_FOREACH (class, &mesh.lg_class, lg_class)
+    if (strcasecmp (class->lg_name, "part") == 0)
+      break;
+  if (!class)
+    grub_util_error ("couldn't open geom part");
+
+  LIST_FOREACH (geom, &class->lg_geom, lg_geom)
+    { 
+      struct gprovider *provider;
+      LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
+	if (strcmp (provider->lg_name, name) == 0)
+	  {
+	    char *name_tmp = xstrdup (geom->lg_name);
+	    grub_disk_addr_t off = 0;
+	    struct gconfig *config;
+	    grub_util_info ("geom '%s' has parent '%s'", name, geom->lg_name);
+
+	    grub_util_follow_gpart_up (name_tmp, &off, name_out);
+	    free (name_tmp);
+	    LIST_FOREACH (config, &provider->lg_config, lg_config)
+	      if (strcasecmp (config->lg_name, "start") == 0)
+		off += strtoull (config->lg_val, 0, 10);
+	    if (off_out)
+	      *off_out = off;
+	    return;
+	  }
+    }
+  grub_util_info ("geom '%s' has no parent", name);
+  if (name_out)
+    *name_out = xstrdup (name);
+  if (off_out)
+    *off_out = 0;
+}
+
+static const char *
+grub_util_get_geom_abstraction (const char *dev)
+{
+  char *whole;
+  struct gmesh mesh;
+  struct gclass *class;
+  const char *name;
+  int error;
+
+  if (strncmp (dev, "/dev/", sizeof ("/dev/") - 1) != 0)
+    return 0;
+  name = dev + sizeof ("/dev/") - 1;
+  grub_util_follow_gpart_up (name, NULL, &whole);
+
+  grub_util_info ("following geom '%s'", name);
+
+  error = geom_gettree (&mesh);
+  if (error != 0)
+    grub_util_error ("couldn't open geom");
+
+  LIST_FOREACH (class, &mesh.lg_class, lg_class)
+    {
+      struct ggeom *geom;
+      LIST_FOREACH (geom, &class->lg_geom, lg_geom)
+	{ 
+	  struct gprovider *provider;
+	  LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
+	    if (strcmp (provider->lg_name, name) == 0)
+	      return class->lg_name;
+	}
+    }
+  return NULL;
+}
+#endif
+
 int
 grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
 {
@@ -775,6 +864,14 @@ grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
   /* Check for RAID.  */
   if (!strncmp (os_dev, "/dev/md", 7) && ! grub_util_device_is_mapped (os_dev))
     return GRUB_DEV_ABSTRACTION_RAID;
+#endif
+
+#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
+  const char *abs;
+  abs = grub_util_get_geom_abstraction (os_dev);
+  grub_util_info ("abstraction of %s is %s", os_dev, abs);
+  if (abs && grub_strcasecmp (abs, "eli") == 0)
+    return GRUB_DEV_ABSTRACTION_GELI;
 #endif
 
   /* No abstraction found.  */
@@ -869,6 +966,71 @@ grub_util_pull_device (const char *os_dev)
   ab = grub_util_get_dev_abstraction (os_dev);
   switch (ab)
     {
+    case GRUB_DEV_ABSTRACTION_GELI:
+      {
+	char *whole;
+	struct gmesh mesh;
+	struct gclass *class;
+	const char *name;
+	int error;
+	char *lastsubdev = NULL;
+
+	if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
+	  return;
+	name = os_dev + sizeof ("/dev/") - 1;
+	grub_util_follow_gpart_up (name, NULL, &whole);
+
+	grub_util_info ("following geom '%s'", name);
+
+	error = geom_gettree (&mesh);
+	if (error != 0)
+	  grub_util_error ("couldn't open geom");
+
+	LIST_FOREACH (class, &mesh.lg_class, lg_class)
+	  {
+	    struct ggeom *geom;
+	    LIST_FOREACH (geom, &class->lg_geom, lg_geom)
+	      { 
+		struct gprovider *provider;
+		LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
+		  if (strcmp (provider->lg_name, name) == 0)
+		    {
+		      struct gconsumer *consumer;
+		      char *fname;
+		      char *uuid;
+
+		      LIST_FOREACH (consumer, &geom->lg_consumer, lg_consumer)
+			break;
+		      if (!consumer)
+			grub_util_error ("couldn't find geli consumer");
+		      fname = xasprintf ("/dev/%s", consumer->lg_provider->lg_name);
+		      grub_util_info ("consumer %s", consumer->lg_provider->lg_name);
+		      lastsubdev = consumer->lg_provider->lg_name;
+		      grub_util_pull_device (fname);
+		      free (fname);
+		    }
+	      }
+	  }
+	if (ab == GRUB_DEV_ABSTRACTION_GELI && lastsubdev)
+	  {
+	    char *fname = xasprintf ("/dev/%s", lastsubdev);
+	    char *grdev = grub_util_get_grub_dev (fname);
+	    free (fname);
+
+	    if (grdev)
+	      {
+		grub_err_t err;
+		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
+		if (err)
+		  grub_util_error ("Can't mount crypto: %s", grub_errmsg);
+	      }
+
+	    grub_free (grdev);
+	  }
+
+      }
+      break;
+
     case GRUB_DEV_ABSTRACTION_LVM:
     case GRUB_DEV_ABSTRACTION_LUKS:
 #ifdef HAVE_DEVICE_MAPPER
@@ -895,7 +1057,7 @@ grub_util_pull_device (const char *os_dev)
 		grub_util_pull_device (subdev);
 	      }
 	  }
-	if (ab == GRUB_DEV_ABSTRACTION_LUKS && lastsubdev)
+	if (ab == GRUB_DEV_ABSTRACTION_CRYPTO && lastsubdev)
 	  {
 	    char *grdev = grub_util_get_grub_dev (lastsubdev);
 	    dm_tree_free (tree);
@@ -904,7 +1066,7 @@ grub_util_pull_device (const char *os_dev)
 		grub_err_t err;
 		err = grub_luks_cheat_mount (grdev, os_dev);
 		if (err)
-		  grub_util_error ("Can't mount LUKS: %s", grub_errmsg);
+		  grub_util_error ("Can't mount crypto: %s", grub_errmsg);
 	      }
 	    grub_free (grdev);
 	  }
@@ -959,12 +1121,63 @@ grub_util_get_grub_dev (const char *os_dev)
       {
 	char *uuid, *dash;
 	uuid = get_dm_uuid (os_dev);
+	if (!uuid)
+	  break;
 	dash = grub_strchr (uuid + sizeof ("CRYPT-LUKS1-") - 1, '-');
 	if (dash)
 	  *dash = 0;
 	grub_dev = grub_xasprintf ("cryptouuid/%s",
 				   uuid + sizeof ("CRYPT-LUKS1-") - 1);
 	grub_free (uuid);
+      }
+      break;
+
+    case GRUB_DEV_ABSTRACTION_GELI:
+      {
+	char *whole;
+	struct gmesh mesh;
+	struct gclass *class;
+	const char *name;
+	int error;
+
+	if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
+	  return 0;
+	name = os_dev + sizeof ("/dev/") - 1;
+	grub_util_follow_gpart_up (name, NULL, &whole);
+
+	grub_util_info ("following geom '%s'", name);
+
+	error = geom_gettree (&mesh);
+	if (error != 0)
+	  grub_util_error ("couldn't open geom");
+
+	LIST_FOREACH (class, &mesh.lg_class, lg_class)
+	  {
+	    struct ggeom *geom;
+	    LIST_FOREACH (geom, &class->lg_geom, lg_geom)
+	      { 
+		struct gprovider *provider;
+		LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
+		  if (strcmp (provider->lg_name, name) == 0)
+		    {
+		      struct gconsumer *consumer;
+		      char *fname;
+		      char *uuid;
+
+		      LIST_FOREACH (consumer, &geom->lg_consumer, lg_consumer)
+			break;
+		      if (!consumer)
+			grub_util_error ("couldn't find geli consumer");
+		      fname = xasprintf ("/dev/%s", consumer->lg_provider->lg_name);
+		      uuid = grub_util_get_geli_uuid (fname);
+		      if (!uuid)
+			grub_util_error ("couldn't retrieve geli UUID");
+		      grub_dev = xasprintf ("cryptouuid/%s", uuid);
+		      free (fname);
+		      free (uuid);
+		    }
+	      }
+	  }
       }
       break;
 

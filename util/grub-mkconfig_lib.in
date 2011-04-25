@@ -69,12 +69,12 @@ is_path_readable_by_grub ()
     return 1
   fi
 
-  if [ x$GRUB_LUKS_ENABLE = xy ]; then
+  if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
       return 0
   fi
   
   for abstraction in $abstractions; do
-      if [ "x$abstraction" = xluks ]; then
+      if [ "x$abstraction" = xcryptodisk ]; then
 	  return 1
       fi
   done
@@ -138,9 +138,9 @@ prepare_grub_to_access_device ()
     echo "insmod ${module}"
   done
 
-  if [ x$GRUB_LUKS_ENABLE = xy ]; then
-      for uuid in "`"${grub_probe}" --device "${device}" --target=luks_uuid`"; do
-	  echo "luksmount -u $uuid"
+  if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
+      for uuid in "`"${grub_probe}" --device "${device}" --target=cryptodisk_uuid`"; do
+	  echo "cryptomount -u $uuid"
       done
   fi
 
