@@ -1,3 +1,8 @@
+2011-05-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (GRUB only offers a rescue shell): Suggest the use
+	of `ls' to find out which devices are available.
+
 2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/linux.c (grub_linux_boot): Supply target rather

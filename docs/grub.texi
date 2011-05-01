@@ -4127,6 +4127,8 @@ device), then you can correct this and enter normal mode manually:
 @group
 # Inspect the current prefix (and other preset variables):
 set
+# Find out which devices are available:
+ls
 # Set to the correct value, which might be something like this:
 set prefix=(hd0,1)/grub
 set root=(hd0,1)
