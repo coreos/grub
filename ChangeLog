@@ -1,5 +1,14 @@
 2011-05-03  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/fs/i386/pc/pxe.c (grub_pxefs_dir): Return
+	GRUB_ERR_BAD_FS rather than GRUB_ERR_IO if the disk is not a pxe
+	disk; otherwise grub_fs_probe will not fall back to the next
+	filesystem.
+	(grub_pxefs_open): Likewise, for consistency.
+	Reported and tested by: Ezekiel Grave.
+
+2011-05-03  Colin Watson  <cjwatson@ubuntu.com>
+
 	* tests/partmap_test.in: Don't hardcode path to parted.
 	Reported by: Peter Hjalmarsson.  Fixes Savannah bug #33150.
 

@@ -227,7 +227,7 @@ grub_pxefs_dir (grub_device_t device,
 		__attribute__ ((unused)))
 {
   if (device->disk->dev->id != GRUB_DISK_DEVICE_PXE_ID)
-    return grub_error (GRUB_ERR_IO, "not a pxe disk");
+    return grub_error (GRUB_ERR_BAD_FS, "not a pxe disk");
 
   return GRUB_ERR_NONE;
 }
@@ -245,7 +245,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   grub_file_t file_int, bufio;
 
   if (file->device->disk->dev->id != GRUB_DISK_DEVICE_PXE_ID)
-    return grub_error (GRUB_ERR_IO, "not a pxe disk");
+    return grub_error (GRUB_ERR_BAD_FS, "not a pxe disk");
 
   if (curr_file != 0)
     {
