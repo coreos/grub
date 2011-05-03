@@ -1,3 +1,8 @@
+2011-05-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* tests/partmap_test.in: Don't hardcode path to parted.
+	Reported by: Peter Hjalmarsson.  Fixes Savannah bug #33150.
+
 2011-05-01  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (GRUB only offers a rescue shell): Suggest the use
