@@ -1,3 +1,8 @@
+2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/efiemu/main.c (grub_efiemu_load_file): Return grub_errno
+	and not 0 on failure.
+
 2011-05-03  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/fs/i386/pc/pxe.c (grub_pxefs_dir): Return
