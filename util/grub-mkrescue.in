@@ -160,7 +160,7 @@ process_input_dir ()
     input_dir="$1"
     platform="$2"
     mkdir -p ${iso9660_dir}/boot/grub/${platform}
-    for file in ${input_dir}/*.mod; do
+    for file in "${input_dir}/"*.mod "${input_dir}/"efiemu32.o "${input_dir}/"efiemu64.o; do
         if test -f "$file"; then
             cp -f "$file" ${iso9660_dir}/boot/grub/${platform}/
         fi

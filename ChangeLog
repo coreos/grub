@@ -1,5 +1,9 @@
 2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.in (process_input_dir): Include efiemu??.o.
+
+2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/legacy_parse.c (grub_legacy_parse): Correctly handle
 	hexadecimal.
 
