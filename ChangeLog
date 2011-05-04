@@ -1,5 +1,10 @@
 2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkpasswd-pbkdf2.c (main): Use /dev/urandom and not
+	/dev/random. /dev/urandom is good enough for our purposes (salting).
+
+2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in (process_input_dir): Include efiemu??.o.
 
 2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
