@@ -1,5 +1,10 @@
 2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/legacy_parse.c (grub_legacy_parse): Correctly handle
+	hexadecimal.
+
+2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/efiemu/main.c (grub_efiemu_load_file): Return grub_errno
 	and not 0 on failure.
 

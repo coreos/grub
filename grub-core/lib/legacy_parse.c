@@ -680,7 +680,10 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 	      int base = 10;
 	      brk = curarg;
 	      if (brk[0] == '0' && brk[1] == 'x')
-		base = 16;
+		{
+		  base = 16;
+		  brk += 2;
+		}
 	      else if (brk[0] == '0')
 		base = 8;
 	      for (; *brk && brk < curarg + curarglen; brk++)
