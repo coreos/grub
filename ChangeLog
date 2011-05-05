@@ -1,3 +1,10 @@
+2011-05-05  Zach <mikezackles>
+
+	Support 2010 Macbooks.
+
+	* grub-core/loader/efi/appleloader.c (devpath_6): New variable.
+	(devs): Add devpath_6.
+
 2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkpasswd-pbkdf2.c (main): Use /dev/urandom and not
