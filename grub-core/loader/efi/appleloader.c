@@ -69,197 +69,60 @@ struct piwg_full_device_path
   struct grub_efi_device_path end;
 };
 
-/* early 2006 Core Duo / Core Solo models  */
-static struct piwg_full_device_path devpath_1 =
-{
-  .comp1 =
-  {
-    .header = {
-      .type = GRUB_EFI_HARDWARE_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_MEMORY_MAPPED_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_memory_mapped_device_path), 0}
-    },
-    .memory_type = GRUB_EFI_MEMORY_MAPPED_IO,
-    .start_address = 0xffe00000,
-    .end_address = 0xfff9ffff
-  },
-  .comp2 =
-  {
-    .header = {
-      .type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_piwg_device_path), 0}
-    },
-    .guid = {0x2B0585EB, 0xD8B8, 0x49A9, {0x8B, 0x8C, 0xE2, 0x1B,
-					  0x01, 0xAE, 0xF2, 0xB7}}
-  },
-  .end =
-  {
-    .type = GRUB_EFI_END_DEVICE_PATH_TYPE,
-    .subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE,
-    .length = {sizeof (struct grub_efi_device_path), 0}
+#define MAKE_PIWG_PATH(st, en)						\
+  {									\
+  .comp1 =								\
+    {									\
+      .header = {							\
+	.type = GRUB_EFI_HARDWARE_DEVICE_PATH_TYPE,			\
+	.subtype = GRUB_EFI_MEMORY_MAPPED_DEVICE_PATH_SUBTYPE,		\
+	.length = {sizeof (struct grub_efi_memory_mapped_device_path), 0} \
+      },								\
+      .memory_type = GRUB_EFI_MEMORY_MAPPED_IO,				\
+      .start_address = st,						\
+      .end_address = en							\
+    },									\
+    .comp2 =								\
+      {									\
+	.header = {							\
+	  .type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE,			\
+	  .subtype = GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE,			\
+	  .length = {sizeof (struct grub_efi_piwg_device_path), 0}	\
+	},								\
+	.guid = {0x2B0585EB, 0xD8B8, 0x49A9, {0x8B, 0x8C, 0xE2, 0x1B,	\
+					      0x01, 0xAE, 0xF2, 0xB7}}	\
+      },								\
+       .end =								\
+	  {								\
+	    .type = GRUB_EFI_END_DEVICE_PATH_TYPE,			\
+	    .subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE,		\
+	    .length = {sizeof (struct grub_efi_device_path), 0}		\
+	  }								\
   }
-};
+
+/* early 2006 Core Duo / Core Solo models  */
+static struct piwg_full_device_path devpath_1 = MAKE_PIWG_PATH (0xffe00000,
+								0xfff9ffff);
 
 /* mid-2006 Mac Pro (and probably other Core 2 models)  */
-static struct piwg_full_device_path devpath_2 =
-{
-  .comp1 =
-  {
-    .header = {
-      .type = GRUB_EFI_HARDWARE_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_MEMORY_MAPPED_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_memory_mapped_device_path), 0}
-    },
-    .memory_type = GRUB_EFI_MEMORY_MAPPED_IO,
-    .start_address = 0xffe00000,
-    .end_address = 0xfff7ffff
-  },
-  .comp2 =
-  {
-    .header = {
-      .type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_piwg_device_path), 0}
-    },
-    .guid = {0x2B0585EB, 0xD8B8, 0x49A9, {0x8B, 0x8C, 0xE2, 0x1B,
-					  0x01, 0xAE, 0xF2, 0xB7}}
-  },
-  .end =
-  {
-    .type = GRUB_EFI_END_DEVICE_PATH_TYPE,
-    .subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE,
-    .length = {sizeof (struct grub_efi_device_path), 0}
-  }
-};
+static struct piwg_full_device_path devpath_2 = MAKE_PIWG_PATH (0xffe00000,
+								0xfff7ffff);
 
 /* mid-2007 MBP ("Santa Rosa" based models)  */
-static struct piwg_full_device_path devpath_3 =
-{
-  .comp1 =
-  {
-    .header = {
-      .type = GRUB_EFI_HARDWARE_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_MEMORY_MAPPED_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_memory_mapped_device_path), 0}
-    },
-    .memory_type = GRUB_EFI_MEMORY_MAPPED_IO,
-    .start_address = 0xffe00000,
-    .end_address = 0xfff8ffff
-  },
-  .comp2 =
-  {
-    .header = {
-      .type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_piwg_device_path), 0}
-    },
-    .guid = {0x2B0585EB, 0xD8B8, 0x49A9, {0x8B, 0x8C, 0xE2, 0x1B,
-					  0x01, 0xAE, 0xF2, 0xB7}}
-  },
-  .end =
-  {
-    .type = GRUB_EFI_END_DEVICE_PATH_TYPE,
-    .subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE,
-    .length = {sizeof (struct grub_efi_device_path), 0}
-  }
-};
+static struct piwg_full_device_path devpath_3 = MAKE_PIWG_PATH (0xffe00000,
+								0xfff8ffff);
 
 /* early-2008 MBA  */
-static struct piwg_full_device_path devpath_4 =
-{
-  .comp1 =
-  {
-    .header = {
-      .type = GRUB_EFI_HARDWARE_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_MEMORY_MAPPED_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_memory_mapped_device_path), 0}
-    },
-    .memory_type = GRUB_EFI_MEMORY_MAPPED_IO,
-    .start_address = 0xffc00000,
-    .end_address = 0xfff8ffff
-  },
-  .comp2 =
-  {
-    .header = {
-      .type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_piwg_device_path), 0}
-    },
-    .guid = {0x2B0585EB, 0xD8B8, 0x49A9, {0x8B, 0x8C, 0xE2, 0x1B,
-					  0x01, 0xAE, 0xF2, 0xB7}}
-  },
-  .end =
-  {
-    .type = GRUB_EFI_END_DEVICE_PATH_TYPE,
-    .subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE,
-    .length = {sizeof (struct grub_efi_device_path), 0}
-  }
-};
+static struct piwg_full_device_path devpath_4 = MAKE_PIWG_PATH (0xffc00000,
+								0xfff8ffff);
 
 /* late-2008 MB/MBP (NVidia chipset)  */
-static struct piwg_full_device_path devpath_5 =
-{
-  .comp1 =
-  {
-    .header = {
-      .type = GRUB_EFI_HARDWARE_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_MEMORY_MAPPED_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_memory_mapped_device_path), 0}
-    },
-    .memory_type = GRUB_EFI_MEMORY_MAPPED_IO,
-    .start_address = 0xffcb4000,
-    .end_address = 0xffffbfff
-  },
-  .comp2 =
-  {
-    .header = {
-      .type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_piwg_device_path), 0}
-    },
-    .guid = {0x2B0585EB, 0xD8B8, 0x49A9, {0x8B, 0x8C, 0xE2, 0x1B,
-					  0x01, 0xAE, 0xF2, 0xB7}}
-  },
-  .end =
-  {
-    .type = GRUB_EFI_END_DEVICE_PATH_TYPE,
-    .subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE,
-    .length = {sizeof (struct grub_efi_device_path), 0}
-  }
-};
+static struct piwg_full_device_path devpath_5 = MAKE_PIWG_PATH (0xffcb4000,
+								0xffffbfff);
 
 /* mid-2010 MB/MBP (NVidia chipset)  */
-static struct piwg_full_device_path devpath_6 =
-{
-  .comp1 =
-  {
-    .header = {
-      .type = GRUB_EFI_HARDWARE_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_MEMORY_MAPPED_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_memory_mapped_device_path), 0}
-    },
-    .memory_type = GRUB_EFI_MEMORY_MAPPED_IO,
-    .start_address = 0xffcc4000,
-    .end_address = 0xffffbfff
-  },
-  .comp2 =
-  {
-    .header = {
-      .type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE,
-      .subtype = GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE,
-      .length = {sizeof (struct grub_efi_piwg_device_path), 0}
-    },
-    .guid = {0x2B0585EB, 0xD8B8, 0x49A9, {0x8B, 0x8C, 0xE2, 0x1B,
-					  0x01, 0xAE, 0xF2, 0xB7}}
-  },
-  .end =
-  {
-    .type = GRUB_EFI_END_DEVICE_PATH_TYPE,
-    .subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE,
-    .length = {sizeof (struct grub_efi_device_path), 0}
-  }
-};
+static struct piwg_full_device_path devpath_6 = MAKE_PIWG_PATH (0xffcc4000,
+								0xffffbfff);
 
 struct devdata
 {

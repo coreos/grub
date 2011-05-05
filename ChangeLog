@@ -1,3 +1,16 @@
+2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/efi/appleloader.c (MAKE_PIWG_PATH): New macro.
+	(devpath_1): Use MAKE_PIWG_PATH.
+	(devpath_2): Likewise.
+	(devpath_3): Likewise.
+	(devpath_4): Likewise.
+	(devpath_5): Likewise.
+	(devpath_6): Likewise.
+
+	The appleldr.mod was checked that to be binary identical to previous
+	version.
+
 2011-05-05  Zach <mikezackles>
 
 	Support 2010 Macbooks.
