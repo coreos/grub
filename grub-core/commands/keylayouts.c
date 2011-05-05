@@ -28,6 +28,8 @@
 #include <grub/i18n.h>
 #include <grub/file.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct grub_keyboard_layout layout_us = {
   .keyboard_map = {
     /* Keyboard errors. Handled by driver.  */

@@ -29,6 +29,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* cat FILE */
 static grub_err_t
 grub_mini_cmd_cat (struct grub_command *cmd __attribute__ ((unused)),

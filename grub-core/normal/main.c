@@ -33,6 +33,8 @@
 #include <grub/charset.h>
 #include <grub/script_sh.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
 static int nested_level = 0;

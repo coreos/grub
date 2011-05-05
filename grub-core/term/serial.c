@@ -27,6 +27,8 @@
 #include <grub/i18n.h>
 #include <grub/list.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define FOR_SERIAL_PORTS(var) FOR_LIST_ELEMENTS((var), (grub_serial_ports))
 
 /* Argument options.  */

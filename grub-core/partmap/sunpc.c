@@ -26,6 +26,8 @@
 #include <grub/types.h>
 #include <grub/err.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_PARTMAP_SUN_PC_MAGIC 0xDABE
 #define GRUB_PARTMAP_SUN_PC_MAX_PARTS 16
 #define GRUB_PARTMAP_SUN_PC_WHOLE_DISK_ID 0x05

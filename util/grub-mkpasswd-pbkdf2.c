@@ -248,7 +248,7 @@ main (int argc, char *argv[])
   {
     FILE *f;
     size_t rd;
-    f = fopen ("/dev/random", "rb");
+    f = fopen ("/dev/urandom", "rb");
     if (!f)
       {
 	memset (pass1, 0, strlen (pass1));

@@ -28,6 +28,8 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] =
   {
     {"file", 'f', 0, N_("Specify filename."), 0, ARG_TYPE_PATHNAME},

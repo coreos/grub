@@ -24,6 +24,8 @@
 #include <grub/list.h>
 #include <grub/term.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_usb_controller_dev_t grub_usb_list;
 static struct grub_usb_attach_desc *attach_hooks;
 

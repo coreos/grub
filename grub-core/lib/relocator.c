@@ -22,6 +22,9 @@
 #include <grub/misc.h>
 #include <grub/cache.h>
 #include <grub/memory.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 struct grub_relocator
 {
@@ -1416,10 +1419,16 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 	break;
     }
 
+  grub_dprintf ("relocator", "relocators_size=%ld\n",
+		(unsigned long) rel->relocators_size);
+
   if (chunk->src < chunk->target)
     rel->relocators_size += grub_relocator_backward_size;
   if (chunk->src > chunk->target)
     rel->relocators_size += grub_relocator_forward_size;
+
+  grub_dprintf ("relocator", "relocators_size=%ld\n",
+		(unsigned long) rel->relocators_size);
 
   chunk->size = size;
   chunk->next = rel->chunks;

@@ -34,6 +34,8 @@
 #include <grub/i18n.h>
 #include <grub/time.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct grub_term_output *terminfo_outputs;
 
 /* Get current terminfo name.  */

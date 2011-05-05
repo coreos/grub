@@ -100,7 +100,6 @@ This edition documents version @value{VERSION}.
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Future::                      Some future plans on GRUB
-* Internals::                   Hacking GRUB
 * Copying This Manual::         Copying This Manual
 * Index::
 @end menu
@@ -1487,14 +1486,14 @@ reside anywhere on the file system, and may be removed after running
 @command{grub-mkimage}.
 
 After the embedded configuration file (if any) is executed, GRUB will load
-the @samp{normal} module, which will then read the real configuration file
-from @file{$prefix/grub.cfg}.  By this point, the @code{root} variable will
-also have been set to the root device name.  For example, @code{prefix}
-might be set to @samp{(hd0,1)/boot/grub}, and @code{root} might be set to
-@samp{hd0,1}.  Thus, in most cases, the embedded configuration file only
-needs to set the @code{prefix} and @code{root} variables, and then drop
-through to GRUB's normal processing.  A typical example of this might look
-like this:
+the @samp{normal} module (@pxref{normal}), which will then read the real
+configuration file from @file{$prefix/grub.cfg}.  By this point, the
+@code{root} variable will also have been set to the root device name.  For
+example, @code{prefix} might be set to @samp{(hd0,1)/boot/grub}, and
+@code{root} might be set to @samp{hd0,1}.  Thus, in most cases, the embedded
+configuration file only needs to set the @code{prefix} and @code{root}
+variables, and then drop through to GRUB's normal processing.  A typical
+example of this might look like this:
 
 @example
 @group
@@ -2050,6 +2049,44 @@ model-specific.  Values known to the GRUB team are:
 To take full advantage of this function, install GRUB into the MBR
 (@pxref{Installing GRUB using grub-install}).
 
+If you have a laptop which has a similar feature and not in the above list
+could you figure your address and contribute?
+To discover the address do the following:
+@itemize
+@item boot normally
+@item
+@example
+sudo modprobe nvram
+sudo cat /dev/nvram | xxd > normal_button.txt
+@end example
+@item boot using vendor button
+@item
+@example
+sudo modprobe nvram
+sudo cat /dev/nvram | xxd > normal_vendor.txt
+@end example
+@end itemize
+
+Then compare these text files and find where a bit was toggled. E.g. in
+case of Dell XPS it was:
+@example
+byte 0x47: 20 --> 28
+@end example
+It's a bit number 3 as seen from following table:
+@multitable @columnfractions .2 .2
+@item 0 @tab 01
+@item 1 @tab 02
+@item 2 @tab 04
+@item 3 @tab 08
+@item 4 @tab 10
+@item 5 @tab 20
+@item 6 @tab 40
+@item 7 @tab 80
+@end multitable
+
+0x47 is decimal 71. Linux nvram implementation cuts first 14 bytes of
+CMOS. So the real byte address in CMOS is 71+14=85
+So complete address is 85:3
 
 @node Images
 @chapter GRUB image files
@@ -3052,6 +3089,8 @@ you forget a command, you can run the command @command{help}
 * load_env::                    Load variables from environment block
 * loopback::                    Make a device from a filesystem image
 * ls::                          List devices or files
+* normal::                      Enter normal mode
+* normal_exit::                 Exit from normal mode
 * parttool::                    Modify partition table entries
 * password::                    Set a clear-text password
 * password_pbkdf2::             Set a hashed password
@@ -3505,6 +3544,34 @@ syntax}), then list all files at the root directory of that device.
 
 If the argument is a directory given as an absolute file name (@pxref{File
 name syntax}), then list the contents of that directory.
+@end deffn
+
+
+@node normal
+@subsection normal
+
+@deffn Command normal [file]
+Enter normal mode and display the GRUB menu.
+
+In normal mode, commands, filesystem modules, and cryptography modules are
+automatically loaded, and the full GRUB script parser is available.  Other
+modules may be explicitly loaded using @command{insmod} (@pxref{insmod}).
+
+If a @var{file} is given, then commands will be read from that file.
+Otherwise, they will be read from @file{$prefix/grub.cfg} if it exists.
+
+@command{normal} may be called from within normal mode, creating a nested
+environment.  It is more usual to use @command{configfile}
+(@pxref{configfile}) for this.
+@end deffn
+
+
+@node normal_exit
+@subsection normal_exit
+
+@deffn Command normal_exit
+Exit normal mode (@pxref{normal}).  If this instance of normal mode was not
+nested within another one, then return to rescue mode.
 @end deffn
 
 
@@ -4045,7 +4112,7 @@ GRUB's normal start-up procedure involves setting the @samp{prefix}
 environment variable to a value set in the core image by
 @command{grub-install}, setting the @samp{root} variable to match, loading
 the @samp{normal} module from the prefix, and running the @samp{normal}
-command.  This command is responsible for reading
+command (@pxref{normal}).  This command is responsible for reading
 @file{/boot/grub/grub.cfg}, running the menu, and doing all the useful
 things GRUB is supposed to do.
 
@@ -4060,6 +4127,8 @@ device), then you can correct this and enter normal mode manually:
 @group
 # Inspect the current prefix (and other preset variables):
 set
+# Find out which devices are available:
+ls
 # Set to the correct value, which might be something like this:
 set prefix=(hd0,1)/grub
 set root=(hd0,1)
@@ -4374,111 +4443,6 @@ If you are interested in the development of GRUB 2, take a look at
 @uref{http://www.gnu.org/software/grub/grub.html, the homepage}.
 
 
-@node Internals
-@appendix Hacking GRUB
-
-@menu
-* Getting the source code::
-* Finding your way around::
-@end menu
-
-
-@node Getting the source code
-@section Getting the source code
-
-GRUB is maintained using the @uref{http://bazaar-vcs.org/, Bazaar revision
-control system}.  To fetch the primary development branch:
-
-@example
-bzr get http://bzr.savannah.gnu.org/r/grub/trunk/grub
-@end example
-
-The GRUB developers maintain several other branches with work in progress.
-Of these, the most interesting is the experimental branch, which is a
-staging area for new code which we expect to eventually merge into trunk but
-which is not yet ready:
-
-@example
-bzr get http://bzr.savannah.gnu.org/r/grub/branches/experimental
-@end example
-
-Once you have used @kbd{bzr get} to fetch an initial copy of a branch, you
-can use @kbd{bzr pull} to keep it up to date.  If you have modified your
-local version, you may need to resolve conflicts when pulling.
-
-
-@node Finding your way around
-@section Finding your way around
-
-Here is a brief map of the GRUB code base.
-
-GRUB uses Autoconf, but not (yet) Automake.  The top-level build rules are
-in @file{configure.ac}, @file{Makefile.in}, and @file{conf/*.rmk}.  Each
-@file{conf/*.rmk} file represents a particular target configuration, and is
-processed into GNU Make rules by @file{genmk.rb} (which you only need to
-look at if you are extending the build system).  If you are adding a new
-module which follows an existing pattern, such as a new command or a new
-filesystem implementation, it is usually easiest to grep @file{conf/*.rmk}
-for an existing example of that pattern to find out where it should be
-added.
-
-Low-level boot code, such as the MBR implementation on PC BIOS systems, is
-in the @file{boot/} directory.
-
-The GRUB kernel is in @file{kern/}.  This contains core facilities such as
-the device, disk, and file frameworks, environment variable handling, list
-processing, and so on.  The kernel should contain enough to get up to a
-rescue prompt.  Header files for kernel facilities, among others, are in
-@file{include/}.
-
-Terminal implementations are in @file{term/}.
-
-Disk access code is spread across @file{disk/} (for accessing the disk
-devices themselves), @file{partmap/} (for interpreting partition table
-data), and @file{fs/} (for accessing filesystems).  Note that, with the odd
-specialised exception, GRUB only contains code to @emph{read} from
-filesystems and tries to avoid containing any code to @emph{write} to
-filesystems; this lets us confidently assure users that GRUB cannot be
-responsible for filesystem corruption.
-
-PCI and USB bus handling is in @file{bus/}.
-
-Video handling code is in @file{video/}.  The graphical menu system uses
-this heavily, but is in a separate directory, @file{gfxmenu/}.
-
-Most commands are implemented by files in @file{commands/}, with the
-following exceptions:
-
-@itemize
-@item
-A few core commands live in @file{kern/corecmd.c}.
-
-@item
-Commands related to normal mode live under @file{normal/}.
-
-@item
-Commands that load and boot kernels live under @file{loader/}.
-
-@item
-The @samp{loopback} command is really a disk device, and so lives in
-@file{disk/loopback.c}.
-
-@item
-The @samp{gettext} command lives under @file{gettext/}.
-
-@item
-The @samp{loadfont} and @samp{lsfonts} commands live under @file{font/}.
-
-@item
-The @samp{serial}, @samp{terminfo}, and @samp{background_image} commands
-live under @file{term/}.
-
-@item
-The @samp{efiemu_*} commands live under @file{efiemu/}.
-@end itemize
-
-There are a few other special-purpose exceptions; grep for them if they
-matter to you.
 
 
 

@@ -33,6 +33,8 @@
 #include <grub/i18n.h>
 #include <grub/net.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] =
   {
     {"long", 'l', 0, N_("Show a long list with more detailed information."), 0, 0},

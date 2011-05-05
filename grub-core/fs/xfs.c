@@ -26,6 +26,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define	XFS_INODE_EXTENTS	9
 
 #define XFS_INODE_FORMAT_INO	1

@@ -60,21 +60,16 @@ struct grub_lvm_segment {
   unsigned int extent_count;
   enum { GRUB_LVM_STRIPED, GRUB_LVM_MIRROR } type; 
 
-  unsigned int mirror_count;
-  struct grub_lvm_mirror *mirrors;
+  unsigned int node_count;
+  struct grub_lvm_node *nodes;
 
-  unsigned int stripe_count;
   unsigned int stripe_size;
-  struct grub_lvm_stripe *stripes; /* Pointer to stripe_count stripes. */
 };
 
-struct grub_lvm_stripe {
-  int start;
+struct grub_lvm_node {
+  grub_disk_addr_t start;
+  char *name;
   struct grub_lvm_pv *pv;
-};
-
-struct grub_lvm_mirror {
-  char *lvname;
   struct grub_lvm_lv *lv;
 };
 

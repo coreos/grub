@@ -27,6 +27,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* A simple implementation for signed numbers. */
 static int
 grub_strtosl (char *arg, char **end, int base)

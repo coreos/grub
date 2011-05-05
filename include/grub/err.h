@@ -59,7 +59,8 @@ typedef enum
     GRUB_ERR_NET_BAD_ADDRESS,
     GRUB_ERR_NET_ROUTE_LOOP,
     GRUB_ERR_NET_NO_ROUTE,
-    GRUB_ERR_WAIT
+    GRUB_ERR_WAIT,
+    GRUB_ERR_BUG
   }
 grub_err_t;
 

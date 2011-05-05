@@ -21,6 +21,8 @@
 #include <grub/pci.h>
 #include <grub/mm.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* FIXME: correctly support 64-bit architectures.  */
 /* #if GRUB_TARGET_SIZEOF_VOID_P == 4 */
 struct grub_pci_dma_chunk *

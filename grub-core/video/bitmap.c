@@ -23,6 +23,8 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* List of bitmap readers registered to system.  */
 static grub_video_bitmap_reader_t bitmap_readers_list;
 

@@ -1,3 +1,608 @@
+2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/efi/appleloader.c (MAKE_PIWG_PATH): New macro.
+	(devpath_1): Use MAKE_PIWG_PATH.
+	(devpath_2): Likewise.
+	(devpath_3): Likewise.
+	(devpath_4): Likewise.
+	(devpath_5): Likewise.
+	(devpath_6): Likewise.
+
+	The appleldr.mod was checked that to be binary identical to previous
+	version.
+
+2011-05-05  Zach <mikezackles>
+
+	Support 2010 Macbooks.
+
+	* grub-core/loader/efi/appleloader.c (devpath_6): New variable.
+	(devs): Add devpath_6.
+
+2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkpasswd-pbkdf2.c (main): Use /dev/urandom and not
+	/dev/random. /dev/urandom is good enough for our purposes (salting).
+
+2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.in (process_input_dir): Include efiemu??.o.
+
+2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/legacy_parse.c (grub_legacy_parse): Correctly handle
+	hexadecimal.
+
+2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/efiemu/main.c (grub_efiemu_load_file): Return grub_errno
+	and not 0 on failure.
+
+2011-05-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/fs/i386/pc/pxe.c (grub_pxefs_dir): Return
+	GRUB_ERR_BAD_FS rather than GRUB_ERR_IO if the disk is not a pxe
+	disk; otherwise grub_fs_probe will not fall back to the next
+	filesystem.
+	(grub_pxefs_open): Likewise, for consistency.
+	Reported and tested by: Ezekiel Grave.
+
+2011-05-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* tests/partmap_test.in: Don't hardcode path to parted.
+	Reported by: Peter Hjalmarsson.  Fixes Savannah bug #33150.
+
+2011-05-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (GRUB only offers a rescue shell): Suggest the use
+	of `ls' to find out which devices are available.
+
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Supply target rather
+	than source address for efi mmap buffer.
+
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/amiga.c (amiga_partition_map_iterate): Fix a
+	wrong action on non-detecting the magic.
+
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gnulib/regex.c: Remove GRUB_MOD_LICENSE since it's
+	already supplied by another part of the module (fixes compilation on
+	FreeBSD).
+
+2011-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Make mdraid UUID
+	match the one used by mdadm.
+
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* po/README: Add instructions for creating po/LINGUAS.
+
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	Add "SEE ALSO" sections to most man pages.  Fixes Debian bug
+	#551428.
+
+	* docs/man/grub-editenv.h2m (SEE ALSO): New section.
+	* docs/man/grub-emu.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-fstest.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-install.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-macho2img.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-menulst2cfg.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkconfig.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkdevicemap.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkfont.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkimage.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mklayout.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mknetdir.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkpasswd-pbkdf2.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkrelpath.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkrescue.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-ofpathname.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-pe2elf.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-probe.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-reboot.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-script-check.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-set-default.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-setup.h2m (SEE ALSO): Likewise.
+
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/emu/getroot.c
+	(grub_find_root_device_from_mountinfo): Remove non-virtual-device
+	test that was incorrectly reintroduced in r3214.
+	Reported by: Ian Dall.  Fixes Savannah bug #33133.
+
+2011-04-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix stack pointer handling in 16-bit relocator.
+
+	* grub-core/lib/i386/relocator16.S (grub_relocator16_start): Move
+	grub_relocator16_sp to %esp rather than %ss, and zero-extend it.
+	Fixes Ubuntu bug #683904.
+
+2011-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Bump version to 1.99~rc2.
+
+2011-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/dl.h [ASM_FILE]: Adapt for assembly.
+	* grub-core/lib/i386/setjmp.S: Add missing GRUB_MOD_LICENSE.
+	* grub-core/lib/x86_64/setjmp.S: Likewise.
+	* grub-core/lib/mips/setjmp.S: Likewise.
+	* grub-core/lib/powerpc/setjmp.S: Likewise.
+	* grub-core/lib/sparc64/setjmp.S: Likewise.
+
+2011-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/efi/datetime.c: Add missing GRUB_MOD_LICENSE.
+	* grub-core/lib/efi/datetime.c: Likewise.
+
+2011-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_flush):
+	New function.
+	(grub_util_biosdisk_close): Use grub_util_biosdisk_flush.
+	* include/grub/emu/hostdisk.h (grub_util_biosdisk_flush): New proto.
+	* util/grub-setup.c (setup): Use grub_util_biosdisk_flush.
+
+2011-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/gfxterm.c (grub_gfxterm_fullscreen): Preserve previous
+	bitmap.
+	(grub_gfxterm_term_init): Likewise.
+
+2011-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Take into account the decorations the computing menu entry width.
+
+	* grub-core/gfxmenu/widget-box.c (get_border_width): New function.
+	(grub_gfxmenu_create_box): Register get_border_width.
+	* grub-core/gfxmenu/gui_list.c (draw_menu): Use get_border_width
+	if available.
+	* include/grub/gfxwidgets.h (grub_gfxmenu_box): New member
+	get_border_width.
+
+2011-04-18  Endres Puschner <code@e7p.de>
+
+	* grub-core/gfxmenu/icon_manager.c (grub_gfxmenu_icon_manager_get_icon):
+	Don't skip first class.
+
+2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/btrfs.c (grub_btrfs_read_logical): Support huge
+	chunks.
+	* include/grub/err.h (grub_err_t): New enum value GRUB_ERR_BUG.
+
+2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Complete 64-bit division support.
+
+	* grub-core/kern/misc.c (grub_divmod64): Rename to ...
+	(grub_divmod64_full): ... this. Support 64-bit divisor and reminder.
+	* include/grub/misc.h (grub_divmod64): Rename to ...
+	(grub_divmod64_full): ... this.
+	(grub_divmod64): New inline function.
+
+2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkimage.c (generate_image): Add forgotten comma.
+
+2011-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkimage.c (generate_image): Update fwstart.img hash after
+	performing the necessary test.
+
+2011-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.am (multiboot.elf): Add -Wl,--build-id=none.
+	(kfreebsd.elf): Likewise.
+	(pc-chainloader.elf): Likewise.
+	(ntldr.elf): Likewise.
+
+2011-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Identify RAID by its UUID rather than (guessed) name.
+
+	* grub-core/disk/raid.c (ascii2hex): New function.
+	(grub_raid_open): Accept mduuid/%s specification.
+	* grub-core/kern/emu/getroot.c (get_mdadm_name): Revamped into ...
+	(get_mdadm_uuid): ... this.
+	(grub_util_get_grub_dev): Use mduuid/%s if UUID is available.
+
+2011-04-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gfxmenu/gui_image.c (rescale_image): Don't attempt to scale
+	to negative size.
+
+2011-04-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/10_linux.in: Add rootflags=subvol=<name> if / is on a
+	btrfs subvolume.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
+2011-04-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	Rewrite /proc/self/mountinfo handling to cope with bind-mounts and
+	move-mounts appearing out of order.  Fixes Ubuntu bug #738345.
+
+	* grub-core/kern/emu/getroot.c (find_root_device_from_mountinfo):
+	Build a list of relevant visible mounts using the mnt_id and
+	parent_mnt_id fields, and then scan that list at the end.
+
+2011-04-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (normal): New section.
+	(normal_exit): New section.
+	(Embedded configuration): Add reference to normal.
+	(GRUB only offers a rescue shell): Likewise.
+	* docs/grub-dev.texi (Error Handling): Fix typo.
+
+2011-04-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	* NEWS: Drop obsolete entry about probe-only btrfs support.
+
+2011-04-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/import_gcry.py: Fix typo.
+
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* NEWS: Add btrfs support.
+
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-04-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	BtrFS support. Written by me (Vladimir) with important bugfixes and
+	even more important testing by Colin.
+
+	* Makefile.util.def (libgrubmods.a): Add crc.c and gzio.c
+	* grub-core/Makefile.core.def (btrfs): Add crc.c.
+	* grub-core/fs/btrfs.c: Stub replaced with real implementation.
+	* grub-core/io/gzio.c (grub_gzio): New fields mem_input_size,
+	mem_input_off and mem_input. All users updated to accept in-RAM input.
+	(gzio_seek): New function.
+	(test_zlib_header): Likewise.
+	(grub_gzio_read): Likewise.
+	(grub_zlib_decompress): Likewise.
+	* grub-core/kern/emu/getroot.c (grub_find_root_device_from_mountinfo):
+	Accept partial and non-virtual mounts.
+	(grub_guess_root_device): Do rescanning after device_from_mountinfo to
+	avoid receiving /dev/dm-X as device.
+	* grub-core/kern/emu/misc.c (grub_make_system_path_relative_to_its_root):
+	Handle bind and partial mounts.
+	* grub-core/lib/crc.c: New file.
+	* include/grub/deflate.h: Likewise.
+	* include/grub/emu/misc.h (grub_find_root_device_from_mountinfo): New
+	proto.
+	* include/grub/lib/crc.h: New file.
+
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Implement automatic module license checking according to new GNU
+	guidelines.
+
+	* grub-core/kern/dl.c (grub_dl_check_license): New function.
+	(grub_dl_load_core): Use grub_dl_check_license.
+	* include/grub/dl.h (GRUB_MOD_SECTION): New macro.
+	(GRUB_MOD_LICENSE): Likewise.
+	(GRUB_MOD_DUAL_LICENSE): Likewise.
+	All modules updated.
+
+2011-04-11  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/fs/btrfs.c (grub_btrfs_fs) [GRUB_UTIL]: Set
+	reserved_first_sector to 1.  btrfs reserves plenty of space for boot
+	loaders.
+	Reported by: Gene Cumm.  Fixes Ubuntu bug #757446.
+
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-fstest.c (cmd_cmp): Check that sizes match.
+
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-fstest.c (read_file): Report GRUB error if file opening
+	failed.
+
+2011-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/file.c (grub_file_open): Don't take into account the
+	parenthesis in the middle of the filename.
+
+2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/mips/linux.c (grub_cmd_initrd): Use correct limits
+	rather than trying to put initrd way too high.
+	Reported by: Ryan Lortie <desrt@desrt.ca>
+
+2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/boot/mips/yeeloong/fwstart.S (no_cs5536): Put back
+	improperly removed string.
+
+2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_data): New member
+	is_disk.
+	(grub_util_biosdisk_open): Don't apply ioctl on non-disk devices.
+	(open_device) Likewise.
+	(grub_util_biosdisk_close): Likewise.
+	Reported by: Mark Korenberger.
+
+2011-04-10  Alexander Kurtz <kurtz.alex@googlemail.com>
+
+	* util/grub-mkconfig_lib.in: Add missing quotes.
+
+2011-04-10  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/gnulib/argp-parse.c (__argp_input): Don't crash if pstate
+	is NULL.
+
+2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Dynamically count the number of lines for the lower banner.
+
+	* grub-core/normal/menu_entry.c (per_term_screen): New member
+	num_entries.
+	(print_down): Use num_entries.
+	(update_screen): Likewise.
+	(grub_menu_entry_run): Set num_entries.
+	* grub-core/normal/menu_text.c (menu_viewer_data): New member
+	num_entries.
+	(grub_print_message_indented): Move real part to ...
+	(grub_print_message_indented_real): ... here. Additional argument
+	dry_run.
+	(draw_border): Additional argument num_entries.
+	(print_message): Additional argument dry_run.
+	(print_entries): Receive menu viewer data.
+	(grub_menu_init_page): New argment num_entries.
+	(menu_text_set_chosen_entry): Use num_entries.
+	(grub_menu_try_text): Likewise.
+	* grub-core/normal/term.c (print_ucs4_terminal): New argument dry_run.
+	All users updated.
+	(grub_ucs4_count_lines): New function.
+	* include/grub/term.h (grub_term_cursor_x): Moved from here ..
+	* grub-core/normal/menu_text.c (grub_term_cursor_x): ... to here.
+	* include/grub/term.h (GRUB_TERM_MESSAGE_HEIGHT): Removed.
+	(grub_term_border_height): Likewise.
+	(grub_term_num_entries): Likewise.
+
+2011-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/boot/mips/yeeloong/fwstart.S: Fix address to error message.
+	Remove now unused string.
+
+2011-04-09  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub-dev.texi (Finding your way around): Update for 1.99
+	build system.
+	(Getting started): GRUB is developed in Bazaar now, not Subversion.
+
+	(Comment): Fix typo.
+	(Getting started): General copy-editing.
+	(Typical Development Experience): Likewise.
+	(Error Handling): Likewise.
+	(Video API): Likewise.
+
+2011-04-09  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub-dev.texi: Replace MoinMoin syntax with Texinfo syntax
+	throughout.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkimage.c (main): Handle special naming of yeeloong
+	directory.
+
+2011-04-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub-dev.texi: Fix spelling of "developer" throughout.
+	* grub-core/fs/i386/pc/pxe.c (parse_dhcp_vendor): Fix spelling of
+	"development".
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/menu_entry.c (run): Use grub_memcpy rather than
+	grub_strcpy since the lines aren't necessarily 0-terminated.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/legacy_parse.c (legacy_commands): Find doesn't set
+	root on legacy.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/probe.c (options): Argument to set isn't optional.
+	(GRUB_MOD_INIT): DEVICE isn't optional.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/term.c (print_ucs4_terminal): Don't try to put the
+	word on new line if it's too long anyway. Fixes a hang.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/util/raid.h (grub_util_raid_getmembers): Make argument
+	const.
+	* util/grub-setup.c (main): Reuse md device name if available.
+	* util/raid.c (grub_util_raid_getmembers): Receive device name and
+	not GRUB name as argument.
+	Based on patch by: Florian Wagner <fwagner>.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi):
+	Place mbi on low memory for better compatibility.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/efiemu/efiemu.h: Use grub_memory_hook_t type.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-04-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* autogen.sh: Ensure that collate and ctype locale is C.
+	* conf/Makefile.common: Likewise.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/menu.c: Add missing include.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/raid.c [GRUB_UTIL]: Add missing include.
+
+2011-04-08  Martin Zuther <mzuther@mzuther.de>
+
+	* util/grub-mkconfig.in: Ignore emacsen backup.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (open_device): Sync on close and not
+	on open.
+	(grub_util_biosdisk_close): Likewise.
+
+2011-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/getroot.c (grub_util_get_grub_dev): Add missing
+	const attribute and use grub_isdigit.
+
+2011-04-06  Andrey  <dev_null@ukr.net>
+
+	* grub-core/video/fb/video_fb.c (grub_video_fb_setup): Silence older
+	gcc warning.
+
+2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/relocator.c (grub_relocator_alloc_chunk_align): Add few
+	useful grub_dprintf's.
+
+2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/fs.h (grub_dirhook_info): Use unsigned for 1-bit fields.
+
+2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/00_header.in: Don't use LANG unless unifont is available.
+
+2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Output errors if theme loading failed.
+
+	* grub-core/gfxmenu/gfxmenu.c (grub_gfxmenu_try): Move the call to
+	grub_gfxterm_fullscreen on error paths to ...
+	* grub-core/normal/menu.c (menu_init): ...here. Wait after showing
+	theme loading error.
+
+2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_RAW_SIZE): Let a bit more
+	space for older compilers.
+	(GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART): Likewise.
+
+2011-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Detect spares
+	and report them as not RAID members since they are useless for GRUB.
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Likewise.
+
+2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Increase LVM implementation robustness in order not to crash on
+	configurations like pvmove. Previously code assumed that in some places
+	only lvs or only pvs are used whereas it seems that they are used
+	interchangeably.
+
+	* grub-core/disk/lvm.c (read_node): New function.
+	(read_lv): Use read_node.
+	(grub_lvm_scan_device): Use only first mirror on pvmove'd lvs.
+	Match volumes only at the end when all lvs are found. Take both
+	pvs (first) and lvs (second) into account.
+	* include/grub/lvm.h (grub_lvm_segment): Merge fields stripe_* and
+	mirror_* into node_*. All users updated.
+	(grub_lvm_stripe): Merge this ...
+	(grub_lvm_mirror): ... and this ...
+	(grub_lvm_node): ... into this. All users updated.
+
+2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/lvm.c (grub_lvm_scan_device): Print errors on the end
+	of function to allow further scanning for LVMs.
+
+2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_read): Don't close
+	on failed seek as it breaks open fd reusage.
+
+2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Add a recommendation to use --recheck before
+	reporting bugs.
+
+2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Vendor power-on buttons): Explain how the numbers
+	are obtained.
+
+2011-04-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	GRUB developper manual based on existing Internals section and
+	contributions by the various authors with active copyright assignment.
+
+	* docs/Makefile.am (info_TEXINFOS): Add grub-dev.texi.
+	* docs/font_char_metrics.png: New file.
+	* docs/font_char_metrics.txt: Likewise.
+	* docs/grub-dev.texi: Likewise.
+	* docs/grub.texi (Internals): Move from here ...
+	* docs/grub-dev.texi: ... here.
+
+2011-04-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	Store the loopback device as data on loopback grub_disk structures,
+	rather than the file it points to.  This fixes use of freed memory
+	if an existing loopback device is replaced.
+
+	* grub-core/disk/loopback.c (grub_loopback_open): Store dev in
+	disk->data, not dev->file.
+	(grub_loopback_read): Adjust file assignment to match.
+	Fixes Ubuntu bug #742967.
+
+2011-04-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/disk/loopback.c (grub_cmd_loopback): Fix a memory leak
+	when replacing an existing device.
+
+2011-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix incorrect types in jfs.c. This enables >2TiB disks and fixes some
+	memory corruptions.
+
+	* grub-core/fs/jfs.c (struct grub_jfs_diropen): Interpret bytes as
+	unsigned.
+	(grub_jfs_lookup_symlink): Make ino a grub_uint32_t rather than int.
+	(grub_jfs_blkno): Use 64-bit quantities for block sectors.
+	(grub_jfs_read_inode): Likewise.
+	(grub_jfs_opendir): Likewise. Remove now useless casts.
+	(grub_jfs_getent): Likewise.
+	Make ino a grub_uint32_t rather than int.
+	(grub_jfs_mount): Ensure that blksize and log2_blksize are consistent.
+	(grub_jfs_read_file): Use 64-bit quantities when necessary. Replace
+	division and module with bit operations.
+	(grub_jfs_find_file): Make ino a grub_uint32_t.
+	(grub_jfs_lookup_symlink): Likewise. Use 64-bit quantities
+
+2011-04-01  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/normal/menu_entry.c (run): Quieten uninitialised
+	  warning.  (This was in fact always initialised before use, but GCC
+	  wasn't smart enough to prove that.)
+	* grub-core/script/lexer.c (grub_script_lexer_yywrap): Likewise.
+
 2011-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/x86_64/efi/callwrap.S (efi_wrap_0): Preserve 16-byte

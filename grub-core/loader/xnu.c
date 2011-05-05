@@ -34,6 +34,8 @@
 #include <grub/env.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #if defined (__i386) && !defined (GRUB_MACHINE_EFI)
 #include <grub/autoefi.h>
 #endif

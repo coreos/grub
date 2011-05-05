@@ -26,6 +26,8 @@
 #include <grub/time.h>
 #include <grub/loader.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static short at_keyboard_status = 0;
 static int e0_received = 0;
 static int f0_received = 0;

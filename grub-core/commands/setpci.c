@@ -25,6 +25,8 @@
 #include <grub/mm.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct pci_register
 {
   const char *name;

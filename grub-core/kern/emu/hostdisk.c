@@ -138,6 +138,7 @@ struct grub_util_biosdisk_data
   char *dev;
   int access_mode;
   int fd;
+  int is_disk;
 };
 
 #ifdef __linux__
@@ -239,6 +240,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   data->dev = NULL;
   data->access_mode = 0;
   data->fd = -1;
+  data->is_disk = 0;
 
   /* Get the size.  */
 #if defined(__MINGW32__)
@@ -279,6 +281,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 	close (fd);
 	goto fail;
       }
+    data->is_disk = 1;
 
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     if (ioctl (fd, DIOCGMEDIASIZE, &nr))
@@ -664,7 +667,18 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
       {
 	free (data->dev);
 	if (data->fd != -1)
-	  close (data->fd);
+	  {
+	    if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
+	      {
+		fsync (data->fd);
+#ifdef __linux__
+		if (data->is_disk)
+		  ioctl (data->fd, BLKFLSBUF, 0);
+#endif
+	      }
+
+	    close (data->fd);
+	  }
 
 	/* Open the partition.  */
 	grub_dprintf ("hostdisk", "opening the device `%s' in open_device()\n", dev);
@@ -674,10 +688,6 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	    grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", dev);
 	    return -1;
 	  }
-
-	/* Flush the buffer cache to the physical disk.
-	   XXX: This also empties the buffer cache.  */
-	ioctl (fd, BLKFLSBUF, 0);
 
 	data->dev = xstrdup (dev);
 	data->access_mode = (flags & O_ACCMODE);
@@ -716,7 +726,17 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
     {
       free (data->dev);
       if (data->fd != -1)
-	close (data->fd);
+	{
+	    if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
+	      {
+		fsync (data->fd);
+#ifdef __linux__
+		if (data->is_disk)
+		  ioctl (data->fd, BLKFLSBUF, 0);
+#endif
+	      }
+	    close (data->fd);
+	}
 
       fd = open (map[disk->id].device, flags);
       if (fd >= 0)
@@ -876,7 +896,6 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
       if (nread (fd, buf, GRUB_DISK_SECTOR_SIZE) != GRUB_DISK_SECTOR_SIZE)
 	{
 	  grub_error (GRUB_ERR_READ_ERROR, "cannot read `%s'", map[disk->id].device);
-	  close (fd);
 	  return grub_errno;
 	}
 
@@ -926,6 +945,27 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
   return grub_errno;
 }
 
+grub_err_t
+grub_util_biosdisk_flush (struct grub_disk *disk)
+{
+  struct grub_util_biosdisk_data *data = disk->data;
+
+  if (disk->dev->id != GRUB_DISK_DEVICE_BIOSDISK_ID)
+    return GRUB_ERR_NONE;
+  if (data->fd == -1)
+    {
+      data->fd = open_device (disk, 0, O_RDONLY);
+      if (data->fd < 0)
+	return grub_errno;
+    }
+  fsync (data->fd);
+#ifdef __linux__
+  if (data->is_disk)
+    ioctl (data->fd, BLKFLSBUF, 0);
+#endif
+  return GRUB_ERR_NONE;
+}
+
 static void
 grub_util_biosdisk_close (struct grub_disk *disk)
 {
@@ -933,7 +973,11 @@ grub_util_biosdisk_close (struct grub_disk *disk)
 
   free (data->dev);
   if (data->fd != -1)
-    close (data->fd);
+    {
+      if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
+	grub_util_biosdisk_flush (disk);
+      close (data->fd);
+    }
   free (data);
 }
 

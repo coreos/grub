@@ -30,6 +30,8 @@
 #include <grub/unicode.h>
 #include <grub/fontformat.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef USE_ASCII_FAILBACK
 #include "ascii.h"
 #endif

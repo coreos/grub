@@ -23,6 +23,8 @@
 #include <grub/partition.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_amiga_rdsk
 {
   /* "RDSK".  */
@@ -112,8 +114,9 @@ amiga_partition_map_iterate (grub_disk_t disk,
 	return grub_errno;
 
       if (grub_memcmp (apart.magic, GRUB_AMIGA_PART_MAGIC,
-		       sizeof (apart.magic)) == 0)
-
+		       sizeof (apart.magic)) != 0)
+	return grub_error (GRUB_ERR_BAD_PART_TABLE,
+			   "invalid Amiga partition map");
       /* Calculate the first block and the size of the partition.  */
       part.start = (grub_be_to_cpu32 (apart.lowcyl)
 		    * grub_be_to_cpu32 (apart.heads)

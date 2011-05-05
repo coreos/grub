@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/raid.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* Linux RAID on disk structures and constants,
    copied from include/linux/raid/md_p.h.  */
 
@@ -200,11 +202,14 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 
 	if (grub_le_to_cpu32 (real_sb->dev_number) >=
 	    grub_le_to_cpu32 (real_sb->max_dev))
-	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+	  return grub_error (GRUB_ERR_OUT_OF_RANGE,
 			     "spares aren't implemented");
 
 	array->index = grub_le_to_cpu16
 	  (real_sb->dev_roles[grub_le_to_cpu32 (real_sb->dev_number)]);
+	if (array->index >= array->total_devs)
+	  return grub_error (GRUB_ERR_OUT_OF_RANGE,
+			     "spares aren't implemented");
 	array->uuid_len = 16;
 	array->uuid = grub_malloc (16);
 	if (!array->uuid)

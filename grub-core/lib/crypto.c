@@ -21,6 +21,9 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/term.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 struct grub_crypto_hmac_handle
 {

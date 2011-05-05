@@ -34,6 +34,8 @@
 #include <grub/i18n.h>
 #include <grub/ns8250.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #include <grub/video.h>
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>

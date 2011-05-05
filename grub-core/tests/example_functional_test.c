@@ -18,6 +18,9 @@
 
 /* All tests need to include test.h for GRUB testing framework.  */
 #include <grub/test.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Functional test main method.  */
 static void
