@@ -178,6 +178,7 @@ grub_net_remove_packet (grub_net_packet_t *pkt)
     pkt->next->prev = pkt->prev;
   else
     pkt->up->last = pkt->prev;
+  grub_free (pkt);
 }
 
 typedef struct grub_net_app_protocol *grub_net_app_level_t;
