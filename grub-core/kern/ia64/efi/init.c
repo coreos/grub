@@ -20,6 +20,7 @@
 #include <grub/types.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/time.h>
 #include <grub/err.h>
 #include <grub/dl.h>
 #include <grub/cache.h>
@@ -30,6 +31,7 @@ void
 grub_machine_init (void)
 {
   grub_efi_init ();
+  grub_install_get_time_ms (grub_rtc_get_time_ms);
 }
 
 void
