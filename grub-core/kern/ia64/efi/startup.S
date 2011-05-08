@@ -45,6 +45,7 @@ _start:
 
 	. = _start + GRUB_KERNEL_MACHINE_PREFIX
 VARIABLE(grub_prefix)
+	.byte 0
 	/* to be filled by grub-mkimage */
 
 	/*
