@@ -116,7 +116,7 @@ extern grub_dl_t EXPORT_VAR(grub_dl_head);
 
 grub_dl_t EXPORT_FUNC(grub_dl_get) (const char *name);
 grub_err_t grub_dl_register_symbol (const char *name, void *addr,
-				    grub_dl_t mod);
+				    int isfunc, grub_dl_t mod);
 
 grub_err_t grub_arch_dl_check_header (void *ehdr);
 grub_err_t grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr);

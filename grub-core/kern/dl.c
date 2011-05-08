@@ -90,6 +90,7 @@ struct grub_symbol
   struct grub_symbol *next;
   const char *name;
   void *addr;
+  int isfunc;
   grub_dl_t mod;	/* The module to which this symbol belongs.  */
 };
 typedef struct grub_symbol *grub_symbol_t;
@@ -114,21 +115,22 @@ grub_symbol_hash (const char *s)
 
 /* Resolve the symbol name NAME and return the address.
    Return NULL, if not found.  */
-static void *
+static grub_symbol_t
 grub_dl_resolve_symbol (const char *name)
 {
   grub_symbol_t sym;
 
   for (sym = grub_symtab[grub_symbol_hash (name)]; sym; sym = sym->next)
     if (grub_strcmp (sym->name, name) == 0)
-      return sym->addr;
+      return sym;
 
   return 0;
 }
 
 /* Register a symbol with the name NAME and the address ADDR.  */
 grub_err_t
-grub_dl_register_symbol (const char *name, void *addr, grub_dl_t mod)
+grub_dl_register_symbol (const char *name, void *addr, int isfunc,
+			 grub_dl_t mod)
 {
   grub_symbol_t sym;
   unsigned k;
@@ -151,6 +153,7 @@ grub_dl_register_symbol (const char *name, void *addr, grub_dl_t mod)
 
   sym->addr = addr;
   sym->mod = mod;
+  sym->isfunc = isfunc;
 
   k = grub_symbol_hash (name);
   sym->next = grub_symtab[k];
@@ -371,17 +374,20 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	  /* Resolve a global symbol.  */
 	  if (sym->st_name != 0 && sym->st_shndx == 0)
 	    {
-	      sym->st_value = (Elf_Addr) grub_dl_resolve_symbol (name);
-	      if (! sym->st_value)
+	      grub_symbol_t nsym = grub_dl_resolve_symbol (name);
+	      if (! nsym)
 		return grub_error (GRUB_ERR_BAD_MODULE,
 				   "symbol not found: `%s'", name);
+	      sym->st_value = (Elf_Addr) nsym->addr;
+	      if (nsym->isfunc)
+		sym->st_info = ELF_ST_INFO (bind, STT_FUNC);
 	    }
 	  else
 	    {
 	      sym->st_value += (Elf_Addr) grub_dl_get_section_addr (mod,
 								    sym->st_shndx);
 	      if (bind != STB_LOCAL)
-		if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
+		if (grub_dl_register_symbol (name, (void *) sym->st_value, 0, mod))
 		  return grub_errno;
 	    }
 	  break;
@@ -398,13 +404,11 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 		return grub_errno;
 	      desc[0] = (void *) sym->st_value;
 	      desc[1] = mod->base;
-	      if (grub_dl_register_symbol (name, (void *) desc, mod))
-		return grub_errno;
 	      sym->st_value = (grub_addr_t) desc;
 	  }
 #endif
 	  if (bind != STB_LOCAL)
-	    if (grub_dl_register_symbol (name, (void *) sym->st_value, mod))
+	    if (grub_dl_register_symbol (name, (void *) sym->st_value, 1, mod))
 	      return grub_errno;
 	  if (grub_strcmp (name, "grub_mod_init") == 0)
 	    mod->init = (void (*) (grub_dl_t)) sym->st_value;
