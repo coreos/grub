@@ -29,6 +29,7 @@
 #include <grub/util/resolve.h>
 #include <grub/misc.h>
 #include <grub/offsets.h>
+#include <grub/dl.h>
 #include <time.h>
 
 #include <stdio.h>
@@ -88,6 +89,13 @@ struct image_target_desc
   grub_compression_t default_compression;
   grub_uint16_t pe_target;
 };
+
+#define EFI64_HEADER_SIZE ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE		\
+				    + GRUB_PE32_SIGNATURE_SIZE		\
+				    + sizeof (struct grub_pe32_coff_header) \
+				    + sizeof (struct grub_pe64_optional_header) \
+				    + 4 * sizeof (struct grub_pe32_section_table), \
+				    GRUB_PE32_SECTION_ALIGNMENT)
 
 struct image_target_desc image_targets[] =
   {
@@ -248,12 +256,7 @@ struct image_target_desc image_targets[] =
       .kernel_image_size = TARGET_NO_FIELD,
       .compressed_size = TARGET_NO_FIELD,
       .section_align = GRUB_PE32_SECTION_ALIGNMENT,
-      .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
-				+ GRUB_PE32_SIGNATURE_SIZE
-				+ sizeof (struct grub_pe32_coff_header)
-				+ sizeof (struct grub_pe64_optional_header)
-				+ 4 * sizeof (struct grub_pe32_section_table),
-				GRUB_PE32_SECTION_ALIGNMENT),
+      .vaddr_offset = EFI64_HEADER_SIZE,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
       .pe_target = GRUB_PE32_MACHINE_X86_64,
@@ -372,12 +375,7 @@ struct image_target_desc image_targets[] =
       .kernel_image_size = TARGET_NO_FIELD,
       .compressed_size = TARGET_NO_FIELD,
       .section_align = GRUB_PE32_SECTION_ALIGNMENT,
-      .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
-				+ GRUB_PE32_SIGNATURE_SIZE
-				+ sizeof (struct grub_pe32_coff_header)
-				+ sizeof (struct grub_pe64_optional_header)
-				+ 4 * sizeof (struct grub_pe32_section_table),
-				GRUB_PE32_SECTION_ALIGNMENT),
+      .vaddr_offset = EFI64_HEADER_SIZE,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
       .pe_target = GRUB_PE32_MACHINE_IA64,
@@ -930,12 +928,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 				  + 4 * sizeof (struct grub_pe32_section_table),
 				  GRUB_PE32_SECTION_ALIGNMENT);
 	else
-	  header_size = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
-				  + GRUB_PE32_SIGNATURE_SIZE
-				  + sizeof (struct grub_pe32_coff_header)
-				  + sizeof (struct grub_pe64_optional_header)
-				  + 4 * sizeof (struct grub_pe32_section_table),
-				  GRUB_PE32_SECTION_ALIGNMENT);
+	  header_size = EFI64_HEADER_SIZE;
 
 	reloc_addr = ALIGN_UP (header_size + core_size,
 			       image_target->section_align);

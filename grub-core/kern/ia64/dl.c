@@ -54,15 +54,18 @@ add_value_to_slot_20b (grub_addr_t addr, grub_uint32_t value)
     {
     case 0:
       p = (struct unaligned_uint32 *) ((addr & ~3ULL) + 2);
-      p->val = (((((p->val >> 2) & MASK20) + value) & MASK20) << 2) | (p->val & ~(MASK20 << 2));
+      p->val = ((((((p->val >> 2) & MASK20) + value) & MASK20) << 2) 
+		| (p->val & ~(MASK20 << 2)));
       break;
     case 1:
       p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 7);
-      p->val = (((((p->val >> 3) & MASK20) + value) & MASK20) << 3) | (p->val & ~(MASK20 << 3));
+      p->val = ((((((p->val >> 3) & MASK20) + value) & MASK20) << 3)
+		| (p->val & ~(MASK20 << 3)));
       break;
     case 2:
       p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 12);
-      p->val = (((((p->val >> 4) & MASK20) + value) & MASK20) << 4) | (p->val & ~(MASK20 << 4));
+      p->val = ((((((p->val >> 4) & MASK20) + value) & MASK20) << 4)
+		| (p->val & ~(MASK20 << 4)));
       break;
     }
 }
@@ -137,6 +140,8 @@ struct ia64_trampoline
 static void
 make_trampoline (struct ia64_trampoline *tr, grub_uint64_t addr)
 {
+  COMPILE_TIME_ASSERT (sizeof (struct ia64_trampoline)
+		       == GRUB_IA64_DL_TRAMP_SIZE);
   grub_memcpy (tr->nop, nopm, sizeof (tr->nop));
   tr->addr_hi[0] = ((addr & 0xc00000) >> 16);
   tr->addr_hi[1] = (addr >> 24) & 0xff;
@@ -146,59 +151,12 @@ make_trampoline (struct ia64_trampoline *tr, grub_uint64_t addr)
   tr->addr_hi[5] = (addr >> 56) & 0xff;
   tr->e0 = 0xe0;
   tr->addr_lo[0] = ((addr & 0x000f) << 4) | 0x01;
-  tr->addr_lo[1] = ((addr & 0x0070) >> 4) | ((addr & 0x070000) >> 11) | ((addr & 0x200000) >> 17);
+  tr->addr_lo[1] = (((addr & 0x0070) >> 4) | ((addr & 0x070000) >> 11)
+		    | ((addr & 0x200000) >> 17));
   tr->addr_lo[2] = ((addr & 0x1f80) >> 5) | ((addr & 0x180000) >> 19);
   tr->addr_lo[3] = ((addr & 0xe000) >> 13) | 0x60;
   grub_memcpy (tr->jump, jump, sizeof (tr->jump));
 }
-
-void
-grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp, grub_size_t *got)
-{
-  const Elf_Ehdr *e = ehdr;
-  grub_size_t cntt = 0, cntg = 0;;
-  const Elf_Shdr *s;
-  Elf_Word entsize;
-  unsigned i;
-
-  /* Find a symbol table.  */
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_SYMTAB)
-      break;
-
-  if (i == e->e_shnum)
-    return;
-
-  entsize = s->sh_entsize;
-
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_RELA)
-      {
-	Elf_Rela *rel, *max;
-
-	for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
-	       max = rel + s->sh_size / s->sh_entsize;
-	     rel < max; rel++)
-	  switch (ELF_R_TYPE (rel->r_info))
-	    {
-	    case R_IA64_PCREL21B:
-	      cntt++;
-	      break;
-	    case R_IA64_LTOFF_FPTR22:
-	    case R_IA64_LTOFF22X:
-	    case R_IA64_LTOFF22:
-	      cntg++;
-	      break;
-	    }
-      }
-  *tramp = cntt * sizeof (struct ia64_trampoline);
-  *got = cntg * sizeof (grub_uint64_t);
-}
-
 
 /* Relocate symbols.  */
 grub_err_t
@@ -279,7 +237,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    }
 		    break;
 		  case R_IA64_SEGREL64LSB:
-		    *(grub_uint64_t *) addr += value - rel->r_offset;
+		    *(grub_uint64_t *) addr += value - (grub_addr_t) seg->addr;
 		    break;
 		  case R_IA64_FPTR64LSB:
 		  case R_IA64_DIR64LSB:
@@ -296,8 +254,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		  case R_IA64_LTOFF22X:
 		  case R_IA64_LTOFF22:
 		    *gpptr = value;
-		    if ((addr & 0xffff) == 0x4301)
-		      grub_dprintf ("modules", "off = %lx\n", (grub_addr_t) gpptr - (grub_addr_t) gp);
 		    add_value_to_slot_21 (addr, (grub_addr_t) gpptr - (grub_addr_t) gp);
 		    gpptr++;
 		    break;

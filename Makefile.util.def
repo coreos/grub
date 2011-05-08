@@ -98,6 +98,7 @@ library = {
   common = grub-core/script/main.c;
   common = grub-core/script/script.c;
   common = grub-core/script/argv.c;
+  common = grub-core/kern/ia64/dl_helper.c;
 };
 
 program = {

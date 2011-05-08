@@ -126,12 +126,18 @@ grub_err_t grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr);
 void grub_arch_dl_init_linker (void);
 #endif
 
-#ifdef __ia64__
-void grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp, grub_size_t *got);
+#define GRUB_IA64_DL_TRAMP_ALIGN 16
+#define GRUB_IA64_DL_TRAMP_SIZE 48
+#define GRUB_IA64_DL_GOT_ALIGN 16
 
+void
+grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
+				 grub_size_t *got);
+
+#ifdef __ia64__
 #define GRUB_ARCH_DL_TRAMP_ALIGN 16
 #define GRUB_ARCH_DL_GOT_ALIGN 16
-
+#define grub_arch_dl_get_tramp_got_size grub_ia64_dl_get_tramp_got_size
 #else
 #endif
 

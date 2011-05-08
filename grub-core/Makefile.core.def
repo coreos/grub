@@ -128,6 +128,7 @@ kernel = {
   ia64_efi = kern/ia64/efi/startup.S;
   ia64_efi = kern/ia64/efi/init.c;
   ia64_efi = kern/ia64/dl.c;
+  ia64_efi = kern/ia64/dl_helper.c;
 
   i386_pc = kern/i386/pc/init.c;
   i386_pc = kern/i386/pc/mmap.c;

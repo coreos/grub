@@ -247,6 +247,8 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 
 #ifdef __ia64__
   grub_arch_dl_get_tramp_got_size (e, &tramp, &got);
+  tramp *= GRUB_IA64_DL_TRAMP_SIZE;
+  got *= sizeof (grub_uint64_t);
   tsize += ALIGN_UP (tramp, GRUB_ARCH_DL_TRAMP_ALIGN);
   if (talign < GRUB_ARCH_DL_TRAMP_ALIGN)
     talign = GRUB_ARCH_DL_TRAMP_ALIGN;
