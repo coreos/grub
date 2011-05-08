@@ -83,7 +83,6 @@ kernel = {
   noemu_nodist = symlist.c;
 
   i386_pc = kern/generic/rtc_get_time_ms.c;
-  efi = kern/generic/rtc_get_time_ms.c;
   i386_qemu = kern/generic/rtc_get_time_ms.c;
   i386_coreboot = kern/generic/rtc_get_time_ms.c;
   i386_multiboot = kern/generic/rtc_get_time_ms.c;
