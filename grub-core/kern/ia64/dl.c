@@ -250,9 +250,11 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    add_value_to_slot_21 (addr, value - (grub_addr_t) gp);
 		    break;
 
-		  case R_IA64_LTOFF_FPTR22:
 		  case R_IA64_LTOFF22X:
 		  case R_IA64_LTOFF22:
+		    if (ELF_ST_TYPE (sym->st_info) == STT_FUNC)
+		      value = *(grub_uint64_t *) sym->st_value + rel->r_addend;
+		  case R_IA64_LTOFF_FPTR22:
 		    *gpptr = value;
 		    add_value_to_slot_21 (addr, (grub_addr_t) gpptr - (grub_addr_t) gp);
 		    gpptr++;

@@ -455,9 +455,20 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  }
 		  break;
 
-		case R_IA64_LTOFF_FPTR22:
 		case R_IA64_LTOFF22X:
 		case R_IA64_LTOFF22:
+		  {
+		    Elf_Sym *sym;
+
+		    sym = (Elf_Sym *) ((char *) e
+				       + grub_target_to_host32 (symtab_section->sh_offset)
+				       + ELF_R_SYM (info) * grub_target_to_host32 (symtab_section->sh_entsize));
+		    if (ELF_ST_TYPE (sym->st_info) == STT_FUNC)
+		      sym_addr = grub_target_to_host64 (*(grub_uint64_t *) (pe_target
+									    + sym->st_value
+									    - image_target->vaddr_offset));
+		  }
+		case R_IA64_LTOFF_FPTR22:
 		  *gpptr = grub_host_to_target64 (addend + sym_addr);
 		  add_value_to_slot_21 ((grub_addr_t) target,
 					(char *) gpptr - (char *) pe_target
