@@ -446,8 +446,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		    grub_uint64_t noff;
 		    make_trampoline (tr, addend + sym_addr);
 		    noff = ((char *) tr - (char *) pe_target
-			    - target_section_addr - (offset & ~3)
-			    - image_target->vaddr_offset) >> 4;
+			    - target_section_addr - (offset & ~3)) >> 4;
 		    tr++;
 		    if (noff & ~MASK19)
 		      grub_util_error ("trampoline offset too big (%lx)",
@@ -461,7 +460,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		case R_IA64_LTOFF22:
 		  *gpptr = grub_host_to_target64 (addend + sym_addr);
 		  add_value_to_slot_21 ((grub_addr_t) target,
-					(char *) gpptr - (char *) pe_target);
+					(char *) gpptr - (char *) pe_target
+					+ image_target->vaddr_offset);
 		  gpptr++;
 		  break;
 
