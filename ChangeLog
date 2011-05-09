@@ -1,5 +1,11 @@
 2011-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (open_device): Set data->fd to -1 if
+	openning fails.
+	Reported by: Mark Korenberg.
+
+2011-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (linux_find_partition): Prevent possible
 	overflow.
 

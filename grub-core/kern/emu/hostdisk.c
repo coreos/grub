@@ -678,6 +678,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	      }
 
 	    close (data->fd);
+	    data->fd = -1;
 	  }
 
 	/* Open the partition.  */
@@ -736,6 +737,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 #endif
 	      }
 	    close (data->fd);
+	    data->fd = -1;
 	}
 
       fd = open (map[disk->id].device, flags);
