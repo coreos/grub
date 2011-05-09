@@ -431,11 +431,11 @@ fetch_key (int *is_break)
   if (!ret)
     {
       if (was_ext)
-	grub_printf ("Unknown key 0xe0+0x%02x from set %d\n",
-		     at_key, current_set);
+	grub_dprintf ("atkeyb", "Unknown key 0xe0+0x%02x from set %d\n",
+		      at_key, current_set);
       else
-	grub_printf ("Unknown key 0x%02x from set %d\n",
-		     at_key, current_set);
+	grub_dprintf ("atkeyb", "Unknown key 0x%02x from set %d\n",
+		      at_key, current_set);
       return -1;
     }
   return ret;

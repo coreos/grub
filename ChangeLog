@@ -1,5 +1,10 @@
 2011-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/at_keyboard.c (fetch_key): Make a printf on
+	unknown key into a dprintf.
+
+2011-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (linux_find_partition): Don't abort
 	on first non-existant partition.
 
