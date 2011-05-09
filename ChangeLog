@@ -348,7 +348,7 @@
 	(grub_util_biosdisk_open): Don't apply ioctl on non-disk devices.
 	(open_device) Likewise.
 	(grub_util_biosdisk_close): Likewise.
-	Reported by: Mark Korenberger.
+	Reported by: Mark Korenberg.
 
 2011-04-10  Alexander Kurtz <kurtz.alex@googlemail.com>
 
