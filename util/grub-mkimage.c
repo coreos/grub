@@ -1609,6 +1609,8 @@ main (int argc, char *argv[])
 		  argv + optind, memdisk, config,
 		  image_target, note, comp);
 
+  fflush (fp);
+  fsync (fileno (fp));
   fclose (fp);
 
   if (dir)

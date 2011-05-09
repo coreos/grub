@@ -1,3 +1,8 @@
+2011-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkimage.c (main): Explicitely flush and sync the output
+	before closing to ensure that it will be readable by grub-setup.
+
 2011-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/efi/appleloader.c (MAKE_PIWG_PATH): New macro.
