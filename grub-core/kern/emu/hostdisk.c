@@ -596,7 +596,7 @@ linux_find_partition (char *dev, grub_disk_addr_t sector)
 
       fd = open (real_dev, O_RDONLY);
       if (fd == -1)
-	return 0;
+	continue;
       close (fd);
 
       start = find_partition_start (real_dev);
