@@ -1,5 +1,10 @@
 2011-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (linux_find_partition): Prevent possible
+	overflow.
+
+2011-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (main): Explicitely flush and sync the output
 	before closing to ensure that it will be readable by grub-setup.
 

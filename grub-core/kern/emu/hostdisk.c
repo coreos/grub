@@ -550,7 +550,7 @@ struct linux_partition_cache
 struct linux_partition_cache *linux_partition_cache_list;
 
 static int
-linux_find_partition (char *dev, unsigned long sector)
+linux_find_partition (char *dev, grub_disk_addr_t sector)
 {
   size_t len = strlen (dev);
   const char *format;
