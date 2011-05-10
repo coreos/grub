@@ -42,24 +42,29 @@ send_card_buffer (struct grub_net_card *dev, struct grub_net_buff *pack)
 				pack->tail - pack->data, &actual);
 
   if (status)
-    return grub_error (GRUB_ERR_IO, "couldn't send network packet");
+    return grub_error (GRUB_ERR_IO, "Couldn't send network packet.");
   return GRUB_ERR_NONE;
 }
 
 static grub_err_t
-get_card_packet (struct grub_net_card *dev, struct grub_net_buff *pack)
+get_card_packet (struct grub_net_card *dev, struct grub_net_buff *nb)
 {
 
   int actual, rc;
   struct grub_ofnetcard_data *data = dev->data;
-  grub_netbuff_clear(pack); 
+  grub_uint64_t start_time;
 
+  grub_netbuff_clear (nb); 
+  start_time = grub_get_time_ms ();
   do
-    rc = grub_ieee1275_read (data->handle, pack->data, 1500, &actual);
-  while (actual <= 0 || rc < 0);
-  grub_netbuff_put (pack, actual);
-
-  return GRUB_ERR_NONE; 
+    rc = grub_ieee1275_read (data->handle, nb->data, data->mtu, &actual);
+  while ((actual <= 0 || rc < 0) && (grub_get_time_ms () - start_time < 200));
+  if (actual)
+    {
+      grub_netbuff_put (nb, actual);  
+      return grub_net_recv_ethernet_packet (nb);
+    }
+  return GRUB_ERR_TIMEOUT; 
 }
 
 static struct grub_net_card_driver ofdriver = 
