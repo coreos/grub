@@ -609,6 +609,7 @@ grub_net_file_open_real (struct grub_file *file, const char *name)
 
   if ((err = file->device->net->protocol->open (file,name)))
     goto fail;
+  file->not_easily_seekable = 1;
   
   return GRUB_ERR_NONE;
 fail:
