@@ -200,7 +200,7 @@ grub_cmd_deladdr (struct grub_command *cmd __attribute__ ((unused)),
 {
   struct grub_net_network_level_interface *inter;
 
-  if (argc != 4)
+  if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
