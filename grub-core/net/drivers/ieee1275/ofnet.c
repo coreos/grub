@@ -1,17 +1,23 @@
 #include <grub/net/netbuff.h>
 #include <grub/ieee1275/ofnet.h>
 #include <grub/ieee1275/ieee1275.h>
+#include <grub/dl.h>
 #include <grub/net.h>
+#include <grub/time.h>
 
 static grub_err_t 
 card_open (struct grub_net_card *dev)
 {
   int status;
   struct grub_ofnetcard_data *data = dev->data;
-  status = grub_ieee1275_open (data->path,&(data->handle)); 
+  char path[grub_strlen(data->path) + grub_strlen(":speed=auto,duplex=auto,1.1.1.1,dummy,1.1.1.1,1.1.1.1,5,5,1.1.1.1,512") + 1];
+  /* The full string will prevent a bootp packet to be sent. Just put some valid ip in there.  */
+  grub_snprintf(path,sizeof(path),"%s%s",data->path,":speed=auto,duplex=auto,1.1.1.1,dummy,1.1.1.1,1.1.1.1,5,5,1.1.1.1,512");
+  status = grub_ieee1275_open (path,&(data->handle)); 
 
   if (status)
-    return grub_error (GRUB_ERR_IO, "couldn't open network card");
+    return grub_error (GRUB_ERR_IO, "Couldn't open network card.");
+
   return GRUB_ERR_NONE;
 }
 
