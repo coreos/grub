@@ -171,6 +171,7 @@ void grub_ofnet_probecards (void)
   grub_bootp_t bootp_pckt;
   grub_net_network_level_address_t addr;
   grub_net_network_level_netaddress_t net;
+  bootp_pckt = grub_getbootp ();
 
  /* Assign correspondent driver for each device.  */
   FOR_NET_CARDS (card)
@@ -180,8 +181,7 @@ void grub_ofnet_probecards (void)
       if (driver->init(card) == GRUB_ERR_NONE)
 	{
 	  card->driver = driver;
-	  bootp_pckt = grub_getbootp ();
-	  if (bootp_pckt)
+	  if (bootp_pckt && grub_memcmp(bootp_pckt->chaddr,card->default_address.mac,6) == 0)
 	    {
 	      addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
 	      addr.ipv4 = bootp_pckt->yiaddr;
