@@ -157,7 +157,8 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
 static grub_err_t 
 tftp_close (struct grub_file *file __attribute__ ((unused)))
 {
-  return 0;
+  grub_free (file->device->net->socket->data);
+  return GRUB_ERR_NONE;
 }
 
 static struct grub_net_app_protocol grub_tftp_protocol = 
