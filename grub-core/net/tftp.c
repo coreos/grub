@@ -126,8 +126,12 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
       if (grub_be_to_cpu16 (tftph->u.data.block) == data->block + 1)
 	{
 	  data->block++;
-	  if (nb->tail - nb->data < 1024)
+	  unsigned size = nb->tail - nb->data;
+	  if (size < 1024)
 	    sock->status = 2;
+	  /* Prevent garbage in broken cards.  */
+	  if (size > 1024)
+	    grub_netbuff_unput (nb, size - 1024); 
 	}
       else
 	grub_netbuff_clear(nb);
