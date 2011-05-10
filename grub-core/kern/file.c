@@ -27,6 +27,7 @@
 
 grub_ssize_t (*grub_file_net_read) (grub_file_t file, void *buf, grub_size_t len) = NULL;
 grub_err_t (*grub_file_net_open) (struct grub_file *file, const char *name) = NULL;
+grub_err_t (*grub_file_net_close) (grub_file_t file) = NULL;
 grub_err_t (*grub_file_net_seek) (struct grub_file *file, grub_off_t offset) = NULL;
 
 grub_file_filter_t grub_file_filters_all[GRUB_FILE_FILTER_MAX];
@@ -176,8 +177,11 @@ grub_err_t
 grub_file_close (grub_file_t file)
 {
   if (file->device->net)
-    return grub_errno;
-
+    {
+      grub_file_net_close (file);
+      return grub_errno;
+    }
+ 
   if (file->fs->close)
     (file->fs->close) (file);
 

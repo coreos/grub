@@ -620,17 +620,34 @@ fail:
 }
 
 static grub_err_t
+grub_net_file_close_real (grub_file_t file)
+{
+  grub_net_socket_t sock = file->device->net->socket;
+  while (sock->packs->first)
+    {
+      grub_netbuff_free (sock->packs->first->nb);
+      grub_net_remove_packet (sock->packs->first);
+    }
+  grub_net_socket_unregister (sock);
+  grub_free (sock);
+  return GRUB_ERR_NONE;
+
+}
+
+static grub_err_t
 receive_packets (struct grub_net_card *card)
 {
   /* Maybe should be better have a fixed number of packets for each card
      and just mark them as used and not used.  */ 
   struct grub_net_buff *nb;
+  grub_err_t err;
   nb = grub_netbuff_alloc (1500);
   if (!nb)
     return grub_errno;
 
-  card->driver->recv (card, nb);
-  return GRUB_ERR_NONE;
+  if ((err = card->driver->recv (card, nb)) != GRUB_ERR_NONE)
+    grub_netbuff_free (nb);
+  return err;
 }
 
 void
@@ -642,7 +659,8 @@ grub_net_pool_cards (unsigned time)
     {
       start_time = grub_get_time_ms ();
        while( (grub_get_time_ms () - start_time) < time)	
-         receive_packets (card);
+         if( receive_packets (card) != GRUB_ERR_NONE)
+	   break;
     }
 }
 
@@ -1018,6 +1036,7 @@ GRUB_MOD_INIT(net)
 
   grub_net_open = grub_net_open_real;
   grub_file_net_open = grub_net_file_open_real;
+  grub_file_net_close = grub_net_file_close_real;
   grub_file_net_read = grub_net_read_real;
   grub_file_net_seek = grub_net_seek_real;
 }
@@ -1034,4 +1053,5 @@ GRUB_MOD_FINI(net)
   grub_net_open = NULL;
   grub_file_net_read = NULL;
   grub_file_net_open = NULL;
+  grub_file_net_close = NULL;
 }
