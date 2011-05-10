@@ -1,5 +1,13 @@
 2011-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/efi/chainloader.c (grub_chainloader_unload): Set
+	file_path to 0 for surety.
+	(grub_chainloader_boot): Set exit_data to NULL.
+	Unset the loader once done.
+	(grub_cmd_chainloader): Fix confusing error message if file is empty.
+
+2011-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/at_keyboard.c (fetch_key): Make a printf on
 	unknown key into a dprintf.
 
