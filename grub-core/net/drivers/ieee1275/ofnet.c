@@ -148,10 +148,12 @@ void grub_ofnet_findcards (void)
         lla.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
         card->default_address = lla;
 
+        card->driver = NULL;
         card->data = ofdata;
 	card->flags = 0;
         card->name = grub_xasprintf("eth%d",i++); // grub_strdup (alias->name);
-        grub_net_card_register (card); 
+        grub_net_card_register (card);
+	return 0;
      }
      return 0;
   }
@@ -192,19 +194,24 @@ void grub_ofnet_probecards (void)
 	      net.ipv4.masksize = 24;
 	      grub_net_add_route ("bootp-router", net, inter);
 	    }
-	  grub_free (bootp_pckt);
 	  break;
-        } 
+        }
     }
   }
+  grub_free (bootp_pckt);
+  
 }
 
 GRUB_MOD_INIT (ofnet)
 {
+  struct grub_net_card *card;
   grub_getbootp = grub_getbootp_real;
   grub_net_card_driver_register (&ofdriver);
   grub_ofnet_findcards (); 
   grub_ofnet_probecards (); 
+  FOR_NET_CARDS (card)
+    if (card->driver == NULL)
+      grub_net_card_unregister (card);
 }
 
 GRUB_MOD_FINI (ofnet)
