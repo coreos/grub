@@ -1,3 +1,7 @@
+2011-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/10_linux.in: Correctly handle the Linux in root.
+
 2011-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/efi/chainloader.c (grub_chainloader_unload): Set
