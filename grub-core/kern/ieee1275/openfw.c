@@ -25,7 +25,6 @@
 #include <grub/ieee1275/ofnet.h>
 #include <grub/net/ieee1275/interface.h>
 #include <grub/net.h>
-#include <grub/net/disknet.h>
 #include <grub/net/tftp.h>
 
 grub_bootp_t (*grub_getbootp) (void);

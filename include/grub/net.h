@@ -434,7 +434,5 @@ grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
 void
 grub_net_pool_cards (unsigned time);
 
-void
-hwaddr_to_str (const grub_net_link_level_address_t *addr, char *str);
-
+extern grub_err_t (*EXPORT_VAR (grub_file_net_close)) (grub_file_t file);
 #endif /* ! GRUB_NET_HEADER */

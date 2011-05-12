@@ -1503,7 +1503,7 @@ module = {
 module = {
   name = emunet;
   emu = net/drivers/emu/emunet.c;
-  enable = ieee1275;
+  enable = emu;
 };
 
 module = {

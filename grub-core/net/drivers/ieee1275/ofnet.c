@@ -1,4 +1,5 @@
 #include <grub/net/netbuff.h>
+#include <grub/net/ethernet.h>
 #include <grub/ieee1275/ofnet.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/dl.h>
