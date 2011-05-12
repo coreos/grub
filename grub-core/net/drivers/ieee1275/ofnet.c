@@ -6,6 +6,8 @@
 #include <grub/net.h>
 #include <grub/time.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t 
 card_open (struct grub_net_card *dev)
 {

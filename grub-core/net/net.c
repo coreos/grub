@@ -27,6 +27,8 @@
 #include <grub/command.h>
 #include <grub/env.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_net_route
 {
   struct grub_net_route *next;

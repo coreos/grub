@@ -9,6 +9,8 @@
 #include <grub/dl.h>
 #include <grub/file.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t 
 tftp_open (struct grub_file *file, const char *filename)
 {
