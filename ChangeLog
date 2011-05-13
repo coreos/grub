@@ -1,5 +1,9 @@
 2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Bump version to 1.99.
+
+2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Give ATA device a bit more time on first try in order to allow disks
 	to spin up.
 
