@@ -36,6 +36,9 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#define ANSI_C0 0x9b
+#define ANSI_C0_STR "\x9b"
+
 static struct grub_term_output *terminfo_outputs;
 
 /* Get current terminfo name.  */
@@ -120,6 +123,20 @@ grub_terminfo_set_current (struct grub_term_output *term,
       data->cursor_on         = grub_strdup ("\e[?25h");
       data->cursor_off        = grub_strdup ("\e[?25l");
       data->setcolor          = grub_strdup ("\e[3%p1%dm\e[4%p2%dm");
+      return grub_errno;
+    }
+
+  if (grub_strcmp ("arc", str) == 0)
+    {
+      data->name              = grub_strdup ("arc");
+      data->gotoxy            = grub_strdup (ANSI_C0_STR "%i%p1%d;%p2%dH");
+      data->cls               = grub_strdup (ANSI_C0_STR "2J");
+      data->reverse_video_on  = grub_strdup (ANSI_C0_STR "7m");
+      data->reverse_video_off = grub_strdup (ANSI_C0_STR "0m");
+      data->cursor_on         = 0;
+      data->cursor_off        = 0;
+      data->setcolor          = grub_strdup (ANSI_C0_STR "3%p1%dm"
+					     ANSI_C0_STR "4%p2%dm");
       return grub_errno;
     }
 
@@ -368,8 +385,6 @@ grub_terminfo_getwh (struct grub_term_output *term)
 
   return (data->width << 8) | data->height;
 }
-
-#define ANSI_C0 0x9b
 
 static void
 grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,

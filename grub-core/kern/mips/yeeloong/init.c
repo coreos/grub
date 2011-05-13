@@ -31,6 +31,7 @@
 #include <grub/cs5536.h>
 #include <grub/term.h>
 #include <grub/machine/ec.h>
+#include <grub/cpu/memory.h>
 
 extern void grub_video_sm712_init (void);
 extern void grub_video_init (void);
@@ -42,22 +43,6 @@ extern void grub_serial_init (void);
 extern void grub_terminfo_init (void);
 extern void grub_keylayouts_init (void);
 extern void grub_boot_init (void);
-
-/* FIXME: use interrupt to count high.  */
-grub_uint64_t
-grub_get_rtc (void)
-{
-  static grub_uint32_t high = 0;
-  static grub_uint32_t last = 0;
-  grub_uint32_t low;
-
-  asm volatile ("mfc0 %0, " GRUB_CPU_LOONGSON_COP0_TIMER_COUNT : "=r" (low));
-  if (low < last)
-    high++;
-  last = low;
-
-  return (((grub_uint64_t) high) << 32) | low;
-}
 
 grub_err_t
 grub_machine_mmap_iterate (grub_memory_hook_t hook)

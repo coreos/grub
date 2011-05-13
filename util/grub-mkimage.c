@@ -65,7 +65,7 @@ struct image_target_desc
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
     IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
     IMAGE_YEELOONG_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
-    IMAGE_I386_PC_PXE
+    IMAGE_I386_PC_PXE, IMAGE_MIPS_ARC
   } id;
   enum
     {
@@ -354,6 +354,27 @@ struct image_target_desc image_targets[] =
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
+    },
+    {
+      .name = "mips-arc",
+      .voidp_sizeof = 4,
+      .bigendian = 1,
+      .id = IMAGE_MIPS_ARC, 
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .prefix = GRUB_KERNEL_MIPS_ARC_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_ARC_PREFIX_END,
+      .raw_size = 0,
+      .total_module_size = GRUB_KERNEL_MIPS_ARC_TOTAL_MODULE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_MIPS_ARC_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_ARC_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
     },
   };
 
@@ -1217,6 +1238,76 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       core_size = rom_size;
     }
     break;
+    case IMAGE_MIPS_ARC:
+      {
+	char *ecoff_img;
+	struct ecoff_header {
+	  grub_uint16_t magic;
+	  grub_uint16_t nsec;
+	  grub_uint32_t time;
+	  grub_uint32_t syms;
+	  grub_uint32_t nsyms;
+	  grub_uint16_t opt;
+	  grub_uint16_t flags;
+	  grub_uint16_t magic2;
+	  grub_uint16_t version;
+	  grub_uint32_t textsize;
+	  grub_uint32_t datasize;
+	  grub_uint32_t bsssize;
+	  grub_uint32_t entry;
+	  grub_uint32_t text_start;
+	  grub_uint32_t data_start;
+	  grub_uint32_t bss_start;
+	  grub_uint32_t gprmask;
+	  grub_uint32_t cprmask[4];
+	  grub_uint32_t gp_value;
+	};
+	struct ecoff_section
+	{
+	  char name[8];
+	  grub_uint32_t paddr;
+	  grub_uint32_t vaddr;
+	  grub_uint32_t size;
+	  grub_uint32_t file_offset;
+	  grub_uint32_t reloc;
+	  grub_uint32_t gp;
+	  grub_uint16_t nreloc;
+	  grub_uint16_t ngp;
+	  grub_uint32_t flags;
+	};
+	struct ecoff_header *head;
+	struct ecoff_section *section;
+	grub_uint32_t target_addr;
+	size_t program_size;
+
+	program_size = ALIGN_ADDR (core_size);
+	target_addr = image_target->link_addr - ALIGN_UP(program_size, 1048576)
+	  - (1 << 20);
+
+	ecoff_img = xmalloc (program_size + sizeof (*head) + sizeof (*section));
+	grub_memset (ecoff_img, 0, program_size + sizeof (*head) + sizeof (*section));
+	head = (void *) ecoff_img;
+	section = (void *) (head + 1);
+	head->magic = grub_host_to_target16 (0x160);
+	head->nsec = grub_host_to_target16 (1);
+	head->time = grub_host_to_target32 (0);
+	head->opt = grub_host_to_target16 (0x38);
+	head->flags = grub_host_to_target16 (0x207);
+	head->magic2 = grub_host_to_target16 (0x107);
+	head->textsize = grub_host_to_target32 (program_size);
+	head->entry = grub_host_to_target32 (target_addr);
+	head->text_start = grub_host_to_target32 (target_addr);
+	head->data_start = grub_host_to_target32 (target_addr + program_size);
+	grub_memcpy (section->name, ".text", sizeof (".text") - 1); 
+	section->vaddr = grub_host_to_target32 (target_addr);
+	section->size = grub_host_to_target32 (program_size);
+	section->file_offset = grub_host_to_target32 (sizeof (*head) + sizeof (*section));
+	memcpy (section + 1, core_img, core_size);
+	free (core_img);
+	core_img = ecoff_img;
+	core_size = program_size + sizeof (*head) + sizeof (*section);
+      }
+      break;
     case IMAGE_YEELOONG_ELF:
     case IMAGE_PPC:
     case IMAGE_COREBOOT:

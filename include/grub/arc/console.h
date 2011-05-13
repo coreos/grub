@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,22 +16,16 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KERNEL_CPU_TIME_HEADER
-#define KERNEL_CPU_TIME_HEADER	1
+#ifndef GRUB_CONSOLE_MACHINE_HEADER
+#define GRUB_CONSOLE_MACHINE_HEADER 1
 
-#ifndef GRUB_UTIL
+#include <grub/symbol.h>
 
-#define GRUB_TICKS_PER_SECOND	(grub_arch_cpuclock / 2)
+/* Initialize the console system.  */
+void grub_console_init_early (void);
+void grub_console_init_lately (void);
 
-/* Return the real time in ticks.  */
-grub_uint64_t EXPORT_FUNC (grub_get_rtc) (void);
+/* Finish the console system.  */
+void grub_console_fini (void);
 
-extern grub_uint32_t EXPORT_VAR (grub_arch_cpuclock);
-#endif
-
-static inline void
-grub_cpu_idle(void)
-{
-}
-
-#endif
+#endif /* ! GRUB_CONSOLE_MACHINE_HEADER */

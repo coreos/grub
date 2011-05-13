@@ -111,6 +111,17 @@
 #define GRUB_KERNEL_MIPS_YEELOONG_PREFIX	        0x0c
 #define GRUB_KERNEL_MIPS_YEELOONG_PREFIX_END	        0x54
 
+#define GRUB_KERNEL_MIPS_ARC_LINK_ADDR         0x8a000000
+
+#define GRUB_KERNEL_MIPS_ARC_LINK_ALIGN  32
+
+#define GRUB_KERNEL_MIPS_ARC_COMPRESSED_SIZE          0x8
+#define GRUB_KERNEL_MIPS_ARC_UNCOMPRESSED_SIZE        0xc
+
+#define GRUB_KERNEL_MIPS_ARC_TOTAL_MODULE_SIZE	0x08
+#define GRUB_KERNEL_MIPS_ARC_PREFIX	        0x0c
+#define GRUB_KERNEL_MIPS_ARC_PREFIX_END	        0x54
+
 /* The offset of GRUB_PREFIX.  */
 #define GRUB_KERNEL_I386_EFI_PREFIX		0x8
 
@@ -145,6 +156,7 @@
 #define GRUB_KERNEL_POWERPC_IEEE1275_MOD_ALIGN 0x1000
 
 #define GRUB_KERNEL_MIPS_YEELOONG_MOD_ALIGN 0x1
+#define GRUB_KERNEL_MIPS_ARC_MOD_ALIGN 0x1
 
 /* Minimal gap between _end and the start of the modules.  It's a hack
    for PowerMac to prevent "CLAIM failed" error.  The real fix is to

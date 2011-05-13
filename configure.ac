@@ -124,6 +124,7 @@ case "$target_cpu"-"$platform" in
   sparc64-ieee1275) ;;
   mips-qemu-mips) ;;
   mips-yeeloong) ;;
+  mips-arc) ;;
   *-emu) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
@@ -158,6 +159,7 @@ case "$platform" in
   emu)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_EMU=1" ;;
   yeeloong)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
   qemu-mips)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  mips-arc)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_ARC=1 -DGRUB_MACHINE_ARC=1" ;;
 esac
 case "$target_cpu" in
   mips)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS=1" ;;
@@ -952,6 +954,7 @@ AM_CONDITIONAL([COND_i386_multiboot], [test x$target_cpu = xi386 -a x$platform =
 AM_CONDITIONAL([COND_x86_64_efi], [test x$target_cpu = xx86_64 -a x$platform = xefi])
 AM_CONDITIONAL([COND_mips_yeeloong], [test x$target_cpu = xmips -a x$platform = xyeeloong])
 AM_CONDITIONAL([COND_mips_qemu_mips], [test x$target_cpu = xmips -a x$platform = xqemu_mips])
+AM_CONDITIONAL([COND_mips_arc], [test x$target_cpu = xmips -a x$platform = xarc])
 AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_mips], [test x$target_cpu = xmips])

@@ -7,7 +7,7 @@
 GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
                    "i386_multiboot", "i386_ieee1275", "x86_64_efi",
                    "mips_yeeloong", "sparc64_ieee1275",
-                   "powerpc_ieee1275" ]
+                   "powerpc_ieee1275", "mips_arc" ]
 
 GROUPS = {}
 
@@ -17,7 +17,7 @@ GROUPS["common"]   = GRUB_PLATFORMS[:]
 GROUPS["i386"]     = [ "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot", "i386_multiboot", "i386_ieee1275" ]
 GROUPS["x86_64"]   = [ "x86_64_efi" ]
 GROUPS["x86"]      = GROUPS["i386"] + GROUPS["x86_64"]
-GROUPS["mips"]     = [ "mips_yeeloong" ]
+GROUPS["mips"]     = [ "mips_yeeloong", "mips_arc" ]
 GROUPS["sparc64"]  = [ "sparc64_ieee1275" ]
 GROUPS["powerpc"]  = [ "powerpc_ieee1275" ]
 
@@ -30,7 +30,7 @@ GROUPS["noemu"]   = GRUB_PLATFORMS[:]; GROUPS["noemu"].remove("emu")
 
 # Groups based on hardware features
 GROUPS["cmos"] = GROUPS["x86"][:] + ["mips_yeeloong"]; GROUPS["cmos"].remove("i386_efi"); GROUPS["cmos"].remove("x86_64_efi")
-GROUPS["pci"]      = GROUPS["x86"] + GROUPS["mips"]
+GROUPS["pci"]      = GROUPS["x86"] + ["mips_yeeloong"]
 GROUPS["usb"]      = GROUPS["pci"]
 
 # If gfxterm is main output console integrate it into kernel
@@ -39,7 +39,7 @@ GROUPS["videomodules"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["videoinkernel"]: GROUPS["videomodules"].remove(i)
 
 # Similar for terminfo
-GROUPS["terminfoinkernel"] = ["mips_yeeloong"] + GROUPS["ieee1275"];
+GROUPS["terminfoinkernel"] = ["mips_yeeloong", "mips_arc"] + GROUPS["ieee1275"];
 GROUPS["terminfomodule"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["terminfoinkernel"]: GROUPS["terminfomodule"].remove(i)
 

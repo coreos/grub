@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,22 +16,15 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KERNEL_CPU_TIME_HEADER
-#define KERNEL_CPU_TIME_HEADER	1
+#ifndef GRUB_REGISTORS_CPU_HEADER
+#define GRUB_REGISTORS_CPU_HEADER	1
 
-#ifndef GRUB_UTIL
-
-#define GRUB_TICKS_PER_SECOND	(grub_arch_cpuclock / 2)
-
-/* Return the real time in ticks.  */
-grub_uint64_t EXPORT_FUNC (grub_get_rtc) (void);
-
-extern grub_uint32_t EXPORT_VAR (grub_arch_cpuclock);
+#ifdef ASM_FILE
+#define GRUB_CPU_REGISTER_WRAP(x) x
+#else
+#define GRUB_CPU_REGISTER_WRAP(x) #x
 #endif
 
-static inline void
-grub_cpu_idle(void)
-{
-}
+#define GRUB_CPU_MIPS_COP0_TIMER_COUNT GRUB_CPU_REGISTER_WRAP($9)
 
 #endif

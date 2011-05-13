@@ -35,6 +35,7 @@ kernel = {
   mips_yeeloong_ldflags    = '-Wl,-Ttext,0x80200000';
   powerpc_ieee1275_ldflags = '-Wl,-Ttext,0x200000';
   sparc64_ieee1275_ldflags = '-Wl,-Ttext,0x4400';
+  mips_arc_ldflags    = '-Wl,-Ttext,0x8a000000';
 
   mips_yeeloong_cppflags = '-DUSE_ASCII_FAILBACK';
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
@@ -48,7 +49,7 @@ kernel = {
   i386_ieee1275_startup = kern/i386/ieee1275/startup.S;
   i386_coreboot_startup = kern/i386/coreboot/startup.S;
   i386_multiboot_startup = kern/i386/coreboot/startup.S;
-  mips_yeeloong_startup = kern/mips/startup.S;
+  mips_startup = kern/mips/startup.S;
   sparc64_ieee1275_startup = kern/sparc64/ieee1275/crt0.S;
   powerpc_ieee1275_startup = kern/powerpc/ieee1275/startup.S;
 
@@ -81,7 +82,7 @@ kernel = {
   i386_qemu = kern/generic/rtc_get_time_ms.c;
   i386_coreboot = kern/generic/rtc_get_time_ms.c;
   i386_multiboot = kern/generic/rtc_get_time_ms.c;
-  mips_yeeloong = kern/generic/rtc_get_time_ms.c;
+  mips = kern/generic/rtc_get_time_ms.c;
 
   ieee1275 = disk/ieee1275/ofdisk.c;
   ieee1275 = kern/ieee1275/cmain.c;
@@ -136,13 +137,18 @@ kernel = {
 
   i386_ieee1275 = kern/ieee1275/init.c;
 
+  mips = kern/mips/cache.S;
+  mips = kern/mips/dl.c;
+  mips = kern/mips/init.c;
+
+  mips_arc = kern/mips/arc/init.c;
+  mips_arc = term/arc/console.c;
+  mips_arc = disk/arc/arcdisk.c;
+
   mips_yeeloong = term/ns8250.c;
   mips_yeeloong = bus/bonito.c;
   mips_yeeloong = bus/cs5536.c;
   mips_yeeloong = bus/pci.c;
-  mips_yeeloong = kern/mips/cache.S;
-  mips_yeeloong = kern/mips/dl.c;
-  mips_yeeloong = kern/mips/init.c;
   mips_yeeloong = kern/mips/yeeloong/init.c;
   mips_yeeloong = term/at_keyboard.c;
   mips_yeeloong = term/serial.c;
@@ -297,10 +303,12 @@ image = {
 
   cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed';
 
-  mips_cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
+  mips_arc_cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x8a000000';
+  mips_yeeloong_cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
 
   objcopyflags = '-O binary';
-  ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  mips_yeeloong_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  mips_arc_ldflags = '-static-libgcc -Wl,-Ttext,0x89f00000';
   ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;
@@ -311,10 +319,12 @@ image = {
   mips = boot/mips/startup_raw.S;
   common = boot/decompressor/none.c;
 
-  mips_cppflags = '-DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
+  mips_arc_cppflags = '-DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x8a000000';
+  mips_yeeloong_cppflags = '-DGRUB_EMBED_DECOMPRESSOR=1 -DGRUB_MACHINE_LINK_ADDR=0x80200000';
 
   objcopyflags = '-O binary';
-  ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  mips_yeeloong_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  mips_arc_ldflags = '-static-libgcc -Wl,-Ttext,0x89f00000';
   ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;
@@ -406,6 +416,13 @@ module = {
   enable = i386_coreboot;
   enable = i386_multiboot;
   emu_condition = COND_GRUB_EMU_PCI;
+};
+
+module = {
+  name = lsdev;
+  common = commands/arc/lsdev.c;
+
+  enable = mips_arc;
 };
 
 library = {
@@ -1117,6 +1134,7 @@ module = {
   x86_efi = lib/efi/datetime.c;
   sparc64_ieee1275 = lib/ieee1275/datetime.c;
   powerpc_ieee1275 = lib/ieee1275/datetime.c;
+  mips_arc = lib/arc/datetime.c;
   enable = noemu;
 };
 
@@ -1228,10 +1246,10 @@ module = {
 
   x86_efi = mmap/efi/mmap.c;
 
-  mips_yeeloong = mmap/mips/yeeloong/uppermem.c;
+  mips = mmap/mips/uppermem.c;
 
   enable = x86;
-  enable = mips_yeeloong;
+  enable = mips;
 };
 
 module = {
@@ -1303,6 +1321,11 @@ module = {
 module = {
   name = part_sun;
   common = partmap/sun.c;
+};
+
+module = {
+  name = part_dvh;
+  common = partmap/dvh.c;
 };
 
 module = {
