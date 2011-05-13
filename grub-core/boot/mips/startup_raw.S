@@ -150,6 +150,13 @@ argdone:
 	b 1b
 	 addiu $t1, $t1, 1
 2:
+	lui $a0, %hi(base)
+	addiu $a0, $a0, %lo(base)
+	lui $a1, %hi(_end)
+	addiu $a1, %lo(_end)
+	subu $a1,$a1,$a0
+
+#include "../../kern/mips/cache_flush.S"
 
 	/* Decompress the payload. */
 	lui $a0, %hi(__bss_start)

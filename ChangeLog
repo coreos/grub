@@ -1,5 +1,10 @@
 2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/mips/startup_raw.S: Flush cache after loading
+	decompressor.
+
+2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/mips/startup_raw.S: Use jalr rather than bal to call
 	grub_decompress_core since later would fail if grub_decompress_core
 	is too far.
