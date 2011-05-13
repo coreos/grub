@@ -50,10 +50,10 @@ VARIABLE(grub_prefix)
 	 */
 
 	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
+VARIABLE (grub_arch_cpuclock)
+	.long 0
 #ifdef GRUB_MACHINE_MIPS_YEELOONG
 VARIABLE (grub_arch_busclock)
-	.long 0
-VARIABLE (grub_arch_cpuclock)
 	.long 0
 VARIABLE (grub_arch_memsize)
 	.long 0
