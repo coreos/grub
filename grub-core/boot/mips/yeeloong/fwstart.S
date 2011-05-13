@@ -28,6 +28,7 @@
 	.set noreorder
 	.set noat
 	.set nomacro
+	.set mips3
 
 	.global start,_start,__start
 start:

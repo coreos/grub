@@ -1,5 +1,10 @@
 2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/mips/yeeloong/fwstart.S: Add explicit set mips3
+	to avoid asm treating ld and sd as macros.
+
+2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/mips/startup_raw.S: Flush cache after loading
 	decompressor.
 
