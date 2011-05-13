@@ -61,9 +61,9 @@ iterate_rec (const char *prefix, const struct grub_arc_component *parent,
       if (!cname)
 	cname = "unknown";
       if (alt_names)
-	name = grub_xasprintf ("%s/%s%d", prefix, cname, comp->key);
+	name = grub_xasprintf ("%s/%s%lu", prefix, cname, comp->key);
       else
-	name = grub_xasprintf ("%s%s(%d)", prefix, cname, comp->key);
+	name = grub_xasprintf ("%s%s(%lu)", prefix, cname, comp->key);
       if (!name)
 	return 1;
       if (hook (name, comp))

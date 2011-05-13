@@ -22,7 +22,7 @@
 #include <grub/mm.h>
 #include <grub/arc/arc.h>
 
-static unsigned last_handle = 0;
+static grub_arc_fileno_t last_handle = 0;
 static char *last_path = NULL;
 
 static int
@@ -45,7 +45,7 @@ grub_arcdisk_iterate (int (*hook_in) (const char *name))
 static grub_err_t
 reopen (const char *name)
 {
-  unsigned handle;
+  grub_arc_fileno_t handle;
 
   if (last_path && grub_strcmp (last_path, name) == 0)
     {
@@ -79,7 +79,7 @@ grub_arcdisk_open (const char *name, grub_disk_t disk)
   const char *iptr;
   int state = 0;
   grub_err_t err;
-  int r;
+  grub_arc_err_t r;
   struct grub_arc_fileinfo info;
   if (grub_memcmp (name, "arc/", 4) != 0)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not arc device");
@@ -124,7 +124,7 @@ grub_arcdisk_open (const char *name, grub_disk_t disk)
       grub_uint64_t res = 0;
       int i;
 
-      grub_dprintf ("arcdisk", "couldn't retrieve size: %d\n", r);
+      grub_dprintf ("arcdisk", "couldn't retrieve size: %ld\n", r);
       for (i = 40; i >= 9; i--)
 	{
 	  grub_uint64_t pos = res | (1ULL << i);
@@ -165,7 +165,7 @@ grub_arcdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   grub_uint64_t pos = sector << 9;
   unsigned long count;
   grub_uint64_t totl = size << 9;
-  int r;
+  grub_arc_err_t r;
 
   err = reopen (disk->data);
   if (err)
@@ -173,7 +173,7 @@ grub_arcdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   r = GRUB_ARC_FIRMWARE_VECTOR->seek (last_handle, &pos, 0);
   if (r)
     {
-      grub_dprintf ("arcdisk", "seek to 0x%" PRIxGRUB_UINT64_T " failed: %d\n",
+      grub_dprintf ("arcdisk", "seek to 0x%" PRIxGRUB_UINT64_T " failed: %ld\n",
 		    pos, r);
       return grub_error (GRUB_ERR_IO, "couldn't seek");
     }

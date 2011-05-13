@@ -22,11 +22,21 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 
+typedef unsigned grub_arc_enum_t;
+typedef grub_uint64_t grub_arc_ularge_t;
+typedef unsigned long grub_arc_ulong_t;
+typedef long grub_arc_long_t;
+typedef unsigned short grub_arc_ushort_t;
+typedef unsigned char grub_arc_uchar_t;
+
+typedef grub_arc_long_t grub_arc_err_t;
+typedef grub_arc_ulong_t grub_arc_fileno_t;
+
 struct grub_arc_memory_descriptor
 {
-  grub_uint32_t type;
-  grub_uint32_t start_page;
-  grub_uint32_t num_pages;
+  grub_arc_enum_t type;
+  grub_arc_ulong_t start_page;
+  grub_arc_ulong_t num_pages;
 };
 
 enum grub_arc_memory_type
@@ -47,39 +57,39 @@ enum grub_arc_memory_type
 
 struct grub_arc_timeinfo
 {
-  grub_uint16_t y;
-  grub_uint16_t m;
-  grub_uint16_t d;
-  grub_uint16_t h;
-  grub_uint16_t min;
-  grub_uint16_t s;
-  grub_uint16_t ms;
+  grub_arc_ushort_t y;
+  grub_arc_ushort_t m;
+  grub_arc_ushort_t d;
+  grub_arc_ushort_t h;
+  grub_arc_ushort_t min;
+  grub_arc_ushort_t s;
+  grub_arc_ushort_t ms;
 };
 
 struct grub_arc_display_status
 {
-  grub_uint16_t x;
-  grub_uint16_t y;
-  grub_uint16_t w;
-  grub_uint16_t h;
-  grub_uint8_t fgcolor;
-  grub_uint8_t bgcolor;
-  grub_uint8_t high_intensity;
-  grub_uint8_t underscored;
-  grub_uint8_t reverse_video;
+  grub_arc_ushort_t x;
+  grub_arc_ushort_t y;
+  grub_arc_ushort_t w;
+  grub_arc_ushort_t h;
+  grub_arc_uchar_t fgcolor;
+  grub_arc_uchar_t bgcolor;
+  grub_arc_uchar_t high_intensity;
+  grub_arc_uchar_t underscored;
+  grub_arc_uchar_t reverse_video;
 };
 
 struct grub_arc_component
 {
-  unsigned class;
-  unsigned type;
-  unsigned flags;
-  grub_uint16_t version;
-  grub_uint16_t rev;
-  grub_uint32_t key;
-  grub_uint32_t affinity;
-  grub_uint32_t configdatasize;
-  grub_uint32_t idlen;
+  grub_arc_enum_t class;
+  grub_arc_enum_t type;
+  grub_arc_enum_t flags;
+  grub_arc_ushort_t version;
+  grub_arc_ushort_t rev;
+  grub_arc_ulong_t key;
+  grub_arc_ulong_t affinity;
+  grub_arc_ulong_t configdatasize;
+  grub_arc_ulong_t idlen;
   const char *idstr;
 };
 
@@ -131,12 +141,12 @@ enum
 
 struct grub_arc_fileinfo
 {
-  grub_uint64_t start;
-  grub_uint64_t end;
-  grub_uint64_t current;
-  grub_uint32_t type;
-  grub_uint32_t fnamelength;
-  grub_uint8_t attr;
+  grub_arc_ularge_t start;
+  grub_arc_ularge_t end;
+  grub_arc_ularge_t current;
+  grub_arc_enum_t type;
+  grub_arc_ulong_t fnamelength;
+  grub_arc_uchar_t attr;
   char filename[32];
 };
 
@@ -176,54 +186,59 @@ struct grub_arc_firmware_vector
   struct grub_arc_timeinfo *(*gettime) (void);
   void *getrelativetime;
   void *getdirectoryentry;
-  int (*open) (const char *path, int mode, unsigned *fileno);
+  grub_arc_err_t (*open) (const char *path, grub_arc_enum_t mode,
+			  grub_arc_fileno_t *fileno);
 
   /* 0x60. */
-  int (*close) (unsigned fileno);
-  int (*read) (unsigned fileno, void *buf, unsigned long n,
-	       unsigned long *count);
-  int (*get_read_status) (unsigned fileno);
-  int (*write) (unsigned fileno, void *buf, unsigned long n,
-		unsigned long *count);
+  grub_arc_err_t (*close) (grub_arc_fileno_t fileno);
+  grub_arc_err_t (*read) (grub_arc_fileno_t fileno, void *buf,
+			  grub_arc_ulong_t n,
+			  grub_arc_ulong_t *count);
+  grub_arc_err_t (*get_read_status) (grub_arc_fileno_t fileno);
+  grub_arc_err_t (*write) (grub_arc_fileno_t fileno, void *buf,
+			   grub_arc_ulong_t n,
+			   grub_arc_ulong_t *count);
 
   /* 0x70. */
-  int (*seek) (unsigned fileno, grub_uint64_t *pos, int mode);
+  grub_arc_err_t (*seek) (grub_arc_fileno_t fileno,
+			  grub_arc_ularge_t *pos, grub_arc_enum_t mode);
   void *mount;
   void *getenvironmentvariable;
   void *setenvironmentvariable;
 
   /* 0x80. */
-  int (*getfileinformation) (unsigned fileno, struct grub_arc_fileinfo *info);
+  grub_arc_err_t (*getfileinformation) (grub_arc_fileno_t fileno,
+					struct grub_arc_fileinfo *info);
   void *setfileinformation;
   void *flushallcaches;
   void *testunicodecharacter;
   
   /* 0x90. */
-  struct grub_arc_display_status * (*getdisplaystatus) (unsigned fileno);
+  struct grub_arc_display_status * (*getdisplaystatus) (grub_arc_fileno_t fileno);
 };
 
 struct grub_arc_adapter
 {
-  grub_uint32_t adapter_type;
-  grub_uint32_t adapter_vector_length;
+  grub_arc_ulong_t adapter_type;
+  grub_arc_ulong_t adapter_vector_length;
   void *adapter_vector;
 };
 
 struct grub_arc_system_parameter_block
 {
-  grub_uint32_t signature;
-  grub_uint32_t length;
-  grub_uint16_t version;
-  grub_uint16_t revision;
+  grub_arc_ulong_t signature;
+  grub_arc_ulong_t length;
+  grub_arc_ushort_t version;
+  grub_arc_ushort_t revision;
   void *restartblock;
   void *debugblock;
   void *gevector;
   void *utlbmissvector;
-  grub_uint32_t firmware_vector_length;
+  grub_arc_ulong_t firmware_vector_length;
   struct grub_arc_firmware_vector *firmwarevector;
-  grub_uint32_t private_vector_length;
+  grub_arc_ulong_t private_vector_length;
   void *private_vector;
-  grub_uint32_t adapter_count;
+  grub_arc_ulong_t adapter_count;
   struct grub_arc_adapter adapters[0];
 };
 
