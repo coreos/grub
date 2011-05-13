@@ -1,5 +1,16 @@
 2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Give ATA device a bit more time on first try in order to allow disks
+	to spin up.
+
+	* grub-core/disk/ata.c (grub_atapi_identify): Use GRUB_ATA_TOUT_DEV_INIT
+	if dev->present is 1. Reset dev->present on failure.
+	(grub_ata_device_initialize): Set dev->present to 1.
+	* include/grub/ata.h (GRUB_ATA_TOUT_DEV_INIT): New value.
+	(grub_ata_device): New member 'present'.
+
+2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (generate_image): Update hash.
 
 2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
