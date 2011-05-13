@@ -1,5 +1,9 @@
 2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c (generate_image): Update hash.
+
+2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Flush caches on DMA memory.
 
 	* grub-core/kern/mips/cache.S (grub_arch_sync_dma_caches): New function.
