@@ -1,5 +1,14 @@
 2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Flush caches on DMA memory.
+
+	* grub-core/kern/mips/cache.S (grub_arch_sync_dma_caches): New function.
+	* grub-core/bus/pci.c (grub_memalign_dma32): Flush caches.
+	(grub_dma_free): Likewise.
+	* include/grub/cache.h (grub_arch_sync_dma_caches): New declaration.
+
+2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/mips/yeeloong/fwstart.S: Add explicit set mips3
 	to avoid asm treating ld and sd as macros.
 
