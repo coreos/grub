@@ -170,9 +170,11 @@ argdone:
 	*/
 	move $s6, $a3
 
-	lui $sp, %hi(_start - 256)
+	lui $t0, %hi(EXT_C(grub_decompress_core))
+	addiu $t0, $t0, %lo(EXT_C(grub_decompress_core))
 
-	bal EXT_C(grub_decompress_core)
+	lui $sp, %hi(_start - 256)
+	jalr $t0
 	 addiu $sp, $sp, %lo(_start - 256)
 	
 	move $a0, $s1

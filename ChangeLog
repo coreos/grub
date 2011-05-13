@@ -1,5 +1,11 @@
 2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/mips/startup_raw.S: Use jalr rather than bal to call
+	grub_decompress_core since later would fail if grub_decompress_core
+	is too far.
+
+2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/mips/dl.c (grub_arch_dl_relocate_symbols): Handle
 	R_MIPS_JALR since it's used by newer compiler.
 
