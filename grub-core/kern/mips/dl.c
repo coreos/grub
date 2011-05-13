@@ -213,6 +213,8 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		      = sizeof (grub_uint32_t) * (gpptr - gp);
 		    gpptr++;
 		    break;
+		  case R_MIPS_JALR:
+		    break;
 		  default:
 		    {
 		      grub_free (gp);

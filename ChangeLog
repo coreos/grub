@@ -1,3 +1,8 @@
+2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/dl.c (grub_arch_dl_relocate_symbols): Handle
+	R_MIPS_JALR since it's used by newer compiler.
+
 2011-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub.d/10_linux.in: Correctly handle the Linux in root.
