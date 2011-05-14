@@ -1,5 +1,10 @@
 2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/10_linux.in: Autoload gzio since it's needed on some
+	platforms if kernel is compressed.
+
+2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/mm.c (grub_memalign): Disable auto-unloadding of
 	unused modules since currently referrence counter isn't reliable and
 	there isn't much memory to recover there anyway.

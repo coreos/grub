@@ -98,6 +98,10 @@ EOF
 EOF
   fi
 
+  cat << EOF
+	insmod gzio
+EOF
+
   if [ x$dirname = x/ ]; then
     if [ -z "${prepare_root_cache}" ]; then
       prepare_root_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/")"
