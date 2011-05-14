@@ -16,14 +16,23 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/mips/yeeloong/serial.h>
-#include <grub/mips/yeeloong/pci.h>
+#include <grub/mips/loongson/serial.h>
+#include <grub/mips/loongson/pci.h>
 #include <grub/mips/loongson.h>
 #include <grub/pci.h>
 #include <grub/machine/serial.h>
+#include <grub/machine/kernel.h>
 #include <grub/ns8250.h>
 #include <grub/cs5536.h>
 #include <grub/smbus.h>
+
+#ifdef FULOONG
+#define GRUB_MACHINE_SERIAL_PORT GRUB_MACHINE_SERIAL_PORT2
+#define GRUB_MACHINE_SERIAL_DIVISOR_115200 GRUB_MACHINE_SERIAL_PORT2_DIVISOR_115200
+#else
+#define GRUB_MACHINE_SERIAL_PORT GRUB_MACHINE_SERIAL_PORT0
+#define GRUB_MACHINE_SERIAL_DIVISOR_115200 GRUB_MACHINE_SERIAL_PORT0_DIVISOR_115200
+#endif
 
 	.set noreorder
 	.set noat
@@ -34,34 +43,46 @@
 start:
 _start:
 __start:	
+	/* Put serial init as soon as possible.  But on Fuloong serial is past
+	   Geode, so on Fuloong we need Geode first.
+	*/
+#ifndef FULOONG
 	bal serial_hw_init
 	 nop
+#endif
+
 	/* Find CS5536 controller.  */
 	/* $t4 chooses device in priority encoding.  */
 	/* Resulting value is kept in GRUB_MACHINE_PCI_CONF_CTRL_REG.
 	   This way we don't need to sacrifice a register for it.  */
+retry_cs5536:	
 	/* We have only one bus (0). Function is 0.  */
 	lui $t0, %hi(GRUB_MACHINE_PCI_CONF_CTRL_REG_ADDR)
 	lui $t1, %hi(GRUB_MACHINE_PCI_CONFSPACE)
 	lui $t3, %hi(GRUB_CS5536_PCIID)
 	addiu $t3, $t3, %lo(GRUB_CS5536_PCIID)
 	ori $t4, $zero, 1
-	lui $a0, %hi(no_cs5536)
 1:
 	andi $t4, $t4, ((1 << GRUB_PCI_NUM_DEVICES) - 1)
-	beql  $t4, $zero, fatal
-	 addiu $a0, $a0, %lo(no_cs5536)
+	/* In case of failure try again. CS5536 may be slow to come up.  */
+	beql  $t4, $zero, retry_cs5536
+	 nop
 	sw   $t4, %lo(GRUB_MACHINE_PCI_CONF_CTRL_REG_ADDR) ($t0)
 	lw   $t2, (%lo(GRUB_MACHINE_PCI_CONFSPACE) + GRUB_PCI_REG_PCI_ID) ($t1)
 	bnel  $t2, $t3, 1b
 	 sll $t4, $t4, 1
 
+#ifndef FULOONG
 	bal message
 	 addiu $a0, $a0, %lo(cs5536_found)
 	bal printhex
 	 move $a0, $t4
+#endif
 
-	/* Initialise SMBus controller.  */
+	lui $t0, %hi(GRUB_MACHINE_PCI_CONFSPACE)
+	li  $t1, GRUB_CS5536_MSR_MAILBOX_CONFIG_ENABLED
+	sw  $t1, (%lo(GRUB_MACHINE_PCI_CONFSPACE) + GRUB_CS5536_MSR_MAILBOX_CONFIG) ($t0)
+	
 	/* Set GPIO LBAR.  */
 	lui $a0, %hi(GRUB_CS5536_MSR_GPIO_BAR)
 	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_GPIO_BAR)
@@ -71,6 +92,15 @@ __start:
 	 ori $a2, $zero, ((GRUB_CS5536_LBAR_MASK_MASK \
 	                  | GRUB_CS5536_LBAR_ENABLE) >> 32)
 
+	bal gpio_init
+	 nop
+
+#ifdef FULOONG
+	bal serial_hw_init
+	 nop
+#endif
+
+	/* Initialise SMBus controller.  */
 	/* Set SMBUS LBAR.  */
 	lui $a0, %hi(GRUB_CS5536_MSR_SMB_BAR)
 	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_SMB_BAR)
@@ -83,14 +113,6 @@ __start:
 	lui $a0, %hi(smbus_enabled)
 	bal message
 	  addiu $a0, $a0, %lo(smbus_enabled)
-
-	/* Enable SMBus controller pins.  */
-	lui $t0, %hi(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO)
-	ori $t1, $zero, GRUB_GPIO_SMBUS_PINS
-	sw  $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO + GRUB_GPIO_REG_OUT_EN) ($t0)
-	sw  $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO + GRUB_GPIO_REG_OUT_AUX1) ($t0)
-	sw  $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO + GRUB_GPIO_REG_IN_EN) ($t0)
-	sw  $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO + GRUB_GPIO_REG_IN_AUX1) ($t0)
 
 	lui $t0, %hi(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_SMBUS)
 
@@ -108,7 +130,7 @@ __start:
 	sb $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_CTRL3) ($t0)
 	sb $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_CTRL2) ($t0)
 
-	/* Yeeloong has only one memory slot.  */
+	/* Yeeloong and Fuloong have only one memory slot.  */
 	/* Output first byte on serial for debugging.  */
 	ori $a1, $zero, GRUB_SMB_RAM_START_ADDR
 	bal read_spd
@@ -207,10 +229,54 @@ other_exception:
 	b fatal
 	 addiu $a0, $a0, %lo(unhandled_exception)
 
+gpio_init:
+	lui $t0, %hi(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO)
+	addiu  $t0, $t0, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_GPIO)
+	lui $t1, %hi (gpio_dump)
+	addiu $t1, $t1, %lo (gpio_dump)
+
+1:	
+	lw $t2, 0($t1)
+	sw $t2, 0($t0)
+	addiu $t0, $t0, 4
+	addiu $t1, $t1, 4
+	lui $t2, %hi (gpio_dump_end)
+	addiu $t2, $t2, %lo (gpio_dump_end)
+	bne $t1, $t2, 1b
+	 nop
+	jr $ra
+	 nop
+
 	/* Same as similarly named C function but in asm since
 	   we need it early.  */
-	/* In: none. Out: none. Clobbered: $t0, $t1, $a0.  */
+	/* In: none. Out: none. Clobbered: $t0, $t1, $t2, $a0, $a1, $a2.  */
 serial_hw_init:
+	move $t2, $ra
+#ifdef FULOONG
+	lui $a0, %hi(GRUB_CS5536_MSR_DIVIL_LEG_IO)
+	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_DIVIL_LEG_IO)
+	lui $a1, %hi (GRUB_CS5536_MSR_DIVIL_LEG_IO_UART2_COM3    \
+		     | GRUB_CS5536_MSR_DIVIL_LEG_IO_F_REMAP	    \
+		     | GRUB_CS5536_MSR_DIVIL_LEG_IO_MODE_X86    \
+	             | GRUB_CS5536_MSR_DIVIL_LEG_IO_UART1_COM1)
+	ori $a1, $a1, (GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE0 \
+		       | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE1)
+	bal wrmsr
+	 move $a2, $zero
+
+	lui $a0, %hi(GRUB_CS5536_MSR_DIVIL_UART1_CONF)
+	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_DIVIL_UART1_CONF)
+	li $a1, 2
+	bal wrmsr
+	 move $a2, $zero
+
+	lui $a0, %hi(GRUB_CS5536_MSR_DIVIL_UART2_CONF)
+	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_DIVIL_UART2_CONF)
+	li $a1, 2
+	bal wrmsr
+	 move $a2, $zero
+#endif
+	
 	lui $t0, %hi (GRUB_MACHINE_SERIAL_PORT)
 
 	/* Turn off the interrupt.  */
@@ -240,6 +306,7 @@ serial_hw_init:
 	/* Let message return to original caller.  */
 	lui  $a0, %hi(notification_string)
 	addiu $a0, $a0, %lo(notification_string)
+	move $ra, $t2
 
 	/* Print message on serial console.  */
 	/* In: $a0 = asciiz message. Out: none. Clobbered: $t0, $t1, $a0.  */
@@ -380,7 +447,6 @@ read_spd_fail:
 	 ori $v0, $v0, 0x100
 
 notification_string:	.asciz "GRUB "
-no_cs5536:	.asciz "No CS5536 found.\n\r"
 cs5536_found:	.asciz "CS5536 at "
 sm_failed: .asciz "SM transaction failed.\n\r"
 unhandled_tlb_refill:	.asciz "Unhandled TLB refill.\n\r"
@@ -405,14 +471,22 @@ regdump:
 	.quad 0x0100020200010101 /* 4 */
 	.quad 0x0a04030603050203 /* 6 */
 	.quad 0x0f0e040000010a0b /* 7 */
+#ifdef FULOONG
+	.quad 0x0000000100000001 /* 8 */
+#else
 	.quad 0x0000010200000102 /* 8 */
+#endif
 	.quad 0x0000060c00000000 /* 9 */
 	.quad 0x2323233f3f1f0200 /* a */
 	.quad 0x5f7f232323232323 /* b */
 	.quad 0x002a3c0615000000 /* c */
 	.quad 0x002a002a002a002a /* d */
 	.quad 0x002a002a002a002a /* e */
+#ifdef FULOONG
+	.quad 0x00b40020005b0004 /* f */
+#else
 	.quad 0x00b40020006d0004 /* f */
+#endif
 	.quad 0x070007ff00000087 /* 10 */
 	.quad 0x000000000016101f /* 11 */
 	.quad 0x001c000000000000 /* 12 */
@@ -426,6 +500,45 @@ regdump:
 	.quad 0 /* 1a */
 	.quad 0 /* 1b */
 	.quad 0 /* 1c */
+
+/* Dump of GPIO connections. FIXME: Remove useless and macroify.  */
+gpio_dump:
+#ifdef FULOONG
+	.long 0xffff0000, 0x2eefd110, 0xffff0000, 0xffff0000
+	.long 0x2eefd110, 0xffff0000, 0x1000efff, 0xefff1000
+	.long 0x3df3c20c, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0x7df3820c, 0x3df3c20c, 0xffff0000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0x3de3c21c, 0x3d83c27c
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0xffff0000, 0xffff0000, 0x0000ffff, 0xffff0000
+	.long 0xefff1000, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0xefff1000, 0xefff1000, 0xffff0000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0xefff1000, 0xefff1000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+#else
+	.long 0xffff0000, 0x2ffdd002, 0xffff0000, 0xffff0000
+	.long 0x2fffd000, 0xffff0000, 0x1000efff, 0xefff1000
+	.long 0x3ffbc004, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0x3ffbc004, 0x3ffbc004, 0xffff0000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0x3ffbc004, 0x3f9bc064
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0xffff0000, 0xffff0000, 0x0000ffff, 0xffff0000
+	.long 0xefff1000, 0xffff0000, 0xffff0000, 0xffff0000
+	.long 0xefff1000, 0xefff1000, 0xffff0000, 0x00000000
+	.long 0xffff0000, 0xffff0000, 0xefff1000, 0xffff0000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x00000000, 0x00000000, 0x00000000
+	.long 0x00000000, 0x50000000, 0x00000000, 0x00000000
+#endif
+gpio_dump_end:	
 
 	.p2align
 
@@ -627,6 +740,10 @@ continue:
 	lui $t0, %hi(cached_continue - 0x20000000)
 	addiu $t0, $t0, %lo(cached_continue - 0x20000000)
 	jr $t0
-	 addiu $a2, $zero, -1
+#ifdef FULOONG
+	 addiu $a2, $zero, -(1 + GRUB_ARCH_MACHINE_FULOONG)
+#else
+	 addiu $a2, $zero, -(1 + GRUB_ARCH_MACHINE_YEELOONG)
+#endif
 
 cached_continue:

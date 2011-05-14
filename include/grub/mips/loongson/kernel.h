@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,15 +16,21 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MACHINE_SERIAL_HEADER
-#define GRUB_MACHINE_SERIAL_HEADER	1
+#ifndef GRUB_KERNEL_MACHINE_HEADER
+#define GRUB_KERNEL_MACHINE_HEADER	1
 
-#define GRUB_MACHINE_SERIAL_DIVISOR_115200 2
-#define GRUB_MACHINE_SERIAL_PORT  0xbff003f8
+#include <grub/symbol.h>
+
+#define GRUB_ARCH_MACHINE_YEELOONG 0
+#define GRUB_ARCH_MACHINE_FULOONG 1
 
 #ifndef ASM_FILE
-#define GRUB_MACHINE_SERIAL_PORTS { GRUB_MACHINE_SERIAL_PORT }
-#else
+
+void EXPORT_FUNC (grub_reboot) (void) __attribute__ ((noreturn));
+void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
+
+extern grub_uint32_t EXPORT_VAR (grub_arch_machine);
+
 #endif
 
-#endif 
+#endif /* ! GRUB_KERNEL_MACHINE_HEADER */

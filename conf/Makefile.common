@@ -25,7 +25,7 @@ endif
 if COND_i386_ieee1275
   CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
-if COND_mips_yeeloong
+if COND_mips_loongson
   CFLAGS_PLATFORM += -mexplicit-relocs
   CPPFLAGS_PLATFORM = -DUSE_ASCII_FAILBACK
   CCASFLAGS_PLATFORM = -march=mips3

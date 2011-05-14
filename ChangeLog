@@ -1,3 +1,68 @@
+2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fuloong support.
+
+	* configure.ac: Rename yeeloong platform to loongson. All users updated.
+	* grub-core/Makefile.core.def (fwstart_fuloong): New image.
+	* grub-core/boot/mips/loongson/fuloong.S: New file.
+	* grub-core/boot/mips/loongson/fwstart.S: Wait for CS5536 to come up.
+	Explicitly init CS5536.
+	[FULOONG]: Don't use serial until CS5536 is available.
+	Set GPIO based on dumps.
+	(serial_hw_init) [FULOONG]: Handle CS5536 parts.
+	[FULOONG]: Handle GPIO and memory controller differences.
+	Parse machine type in $a2.
+	* grub-core/boot/mips/startup_raw.S: Determine and save the
+	architecture.
+	* grub-core/bus/cs5536.c (gpiodump): Move to fwstart.S.
+	(grub_cs5536_init_geode): Remove gpio part. Conditionalise DIVIL
+	init on architecture type.
+	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Init
+	SIS315E. Don't init at_keyboard on fuloong.
+	(grub_halt): Support Fuloong.
+	* grub-core/kern/mips/startup.S [LOONGSON]: Save $s7.
+	* grub-core/loader/mips/linux.c (LOONGSON_MACHTYPE): Removed.
+	(loongson_machtypes): New array.
+	(grub_cmd_linux) [GRUB_MACHINE_MIPS_LOONGSON]: Pass the right machine
+	type.
+	* grub-core/term/ns8250.c (serial_get_divisor): New parameter port and
+	config. All users updated. Handle CS5536 serial.
+	* grub-core/term/serial.c (grub_serial_register): Conditionalise
+	default port on machine type. Register serial as inactive.
+	* grub-core/video/sis315pro.c: New file.
+	* include/grub/cs5536.h (GRUB_CS5536_MSR_MAILBOX_CONFIG_ENABLED): New
+	definition.
+	(GRUB_CS5536_MSR_MAILBOX_CONFIG): Likewise.
+	(GRUB_CS5536_MSR_DIVIL_LEG_IO_UART1_COM1): Likewise.
+	(GRUB_CS5536_MSR_DIVIL_LEG_IO_UART2_COM3): Likewise.
+	(GRUB_CS5536_MSR_DIVIL_UART1_CONF): Likewise.
+	(GRUB_CS5536_MSR_DIVIL_UART2_CONF): Likewise.
+	* include/grub/mips/loongson.h (GRUB_CPU_LOONGSON_SHUTDOWN_GPIO): Rename
+	to ...
+	(GRUB_CPU_YEELOONG_SHUTDOWN_GPIO): ... this.
+	* include/grub/mips/loongson/kernel.h (GRUB_ARCH_MACHINE_YEELOONG): New
+	definition.
+	(GRUB_ARCH_MACHINE_FULOONG): Likewise.
+	(grub_arch_machine): New extern var.
+	* include/grub/mips/loongson/serial.h
+	(GRUB_MACHINE_SERIAL_DIVISOR_115200): Renamed to ...
+	(GRUB_MACHINE_SERIAL_PORT0_DIVISOR_115200): ... this.
+	(GRUB_MACHINE_SERIAL_PORT): Renamed to ...
+	(GRUB_MACHINE_SERIAL_PORT0): ... this.
+	(GRUB_MACHINE_SERIAL_PORT2_DIVISOR_115200): New definition.
+	(GRUB_MACHINE_SERIAL_PORT1): Likewise.
+	(GRUB_MACHINE_SERIAL_PORT2): Likewise.
+	(GRUB_MACHINE_SERIAL_PORTS): Include ports 1 and 2.
+	* include/grub/term.h (grub_term_register_input_inactive): New inline
+	function.
+	(grub_term_register_output_inactive): Likewise.
+	* include/grub/video.h (grub_video_driver_id): New value
+	GRUB_VIDEO_DRIVER_SIS315PRO.
+	* util/grub-mkimage.c (image_target_desc): Rename name to dirname.
+	New field "names". All users updated.
+	New field value IMAGE_FULOONG_FLASH.
+	(generate_image): USe separate fwstart hashes for yeeloong and fuloong.
+
 2011-05-14  Jordan Uggla  <jordan.uggla@gmail.com>
 
 	* docs/grub.texi (Invoking grub-install): Fix additional outdated claims
