@@ -1,9 +1,17 @@
 2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/font/font_cmd.c (loadfont_command): Set grub_errno
+	on error if not already done.
+
+2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix few potential memory misusage.
 
 	* grub-core/font/font.c (load_font_index): Don't free char_index to
 	avoid double free.
+	(grub_font_load): Zero-fill font at alloc for safety.
+	Close file on error.
+	(free_font): Free bmp_idx.
 
 2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
