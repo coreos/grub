@@ -1,5 +1,15 @@
 2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle module_license on windows.
+
+	* util/grub-pe2elf.c (MODLICENSE_SECTION): New definition. All following
+	sections shifted.
+	(insert_string): Make argument const char * instead of char *.
+	(write_section_data): Handle long section names.
+	Handle module_license.
+
+2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/menuentry.c (grub_cmd_menuentry): Correctly
 	handle class-free menuentries.
 	(grub_normal_add_menu_entry): Add a check to be sure.
