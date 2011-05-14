@@ -1,3 +1,8 @@
+2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/at_keyboard.c (set1_e0_mapping): Fix swap between
+	PgUp and PgDown.
+
 2011-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Bump version to 1.99.
