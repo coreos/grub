@@ -1,3 +1,8 @@
+2011-05-14  Jordan Uggla  <jordan.uggla@gmail.com>
+
+	* docs/grub.texi (Invoking grub-install): Fix additional outdated claims
+	and add some clarification.
+
 2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub.d/10_linux.in: Autoload gzio since it's needed on some
