@@ -311,11 +311,13 @@ grub_memalign (grub_size_t align, grub_size_t size)
       count++;
       goto again;
 
+#if 0
     case 1:
       /* Unload unneeded modules.  */
       grub_dl_unload_unneeded ();
       count++;
       goto again;
+#endif
 
     default:
       break;

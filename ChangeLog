@@ -1,5 +1,11 @@
 2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mm.c (grub_memalign): Disable auto-unloadding of
+	unused modules since currently referrence counter isn't reliable and
+	there isn't much memory to recover there anyway.
+
+2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/dl.c (grub_dl_load_file): Decrease ref counter
 	rather than resetting it to allow modules to reference themselves
 	in init.
