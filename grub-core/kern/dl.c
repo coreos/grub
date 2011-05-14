@@ -626,7 +626,7 @@ grub_dl_load_file (const char *filename)
       return 0;
     }
 
-  mod->ref_count = 0;
+  mod->ref_count--;
   return mod;
 }
 
