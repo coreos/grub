@@ -1,5 +1,10 @@
 2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/dl.c (grub_dl_unload): Don't decrease reference
+	counter on dependencies since grub_dl_unref already handles this.
+
+2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/font/font_cmd.c (loadfont_command): Set grub_errno
 	on error if not already done.
 

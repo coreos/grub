@@ -683,8 +683,7 @@ grub_dl_unload (grub_dl_t mod)
     {
       depn = dep->next;
 
-      if (! grub_dl_unref (dep->mod))
-	grub_dl_unload (dep->mod);
+      grub_dl_unload (dep->mod);
 
       grub_free (dep);
     }
