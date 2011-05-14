@@ -1,5 +1,9 @@
 2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Installation): Fix several outdated claims.
+
+2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle module_license on windows.
 
 	* util/grub-pe2elf.c (MODLICENSE_SECTION): New definition. All following
