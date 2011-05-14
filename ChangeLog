@@ -1,5 +1,12 @@
 2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix few potential memory misusage.
+
+	* grub-core/font/font.c (load_font_index): Don't free char_index to
+	avoid double free.
+
+2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Installation): Fix several outdated claims.
 
 2011-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
