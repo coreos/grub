@@ -118,6 +118,12 @@
 #define GRUB_KERNEL_I386_EFI_PREFIX_END		0x50
 
 /* The offset of GRUB_PREFIX.  */
+#define GRUB_KERNEL_IA64_EFI_PREFIX		0x50
+
+/* End of the data section. */
+#define GRUB_KERNEL_IA64_EFI_PREFIX_END		0xa0
+
+/* The offset of GRUB_PREFIX.  */
 #define GRUB_KERNEL_X86_64_EFI_PREFIX		0x8
 
 /* End of the data section. */

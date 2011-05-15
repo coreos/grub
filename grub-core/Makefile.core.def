@@ -18,8 +18,14 @@ kernel = {
   nostrip = emu;
 
   emu_ldflags              = '-Wl,-r,-d';
-  x86_efi_ldflags          = '-Wl,-r,-d';
-  x86_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment';
+  i386_efi_ldflags         = '-Wl,-r,-d';
+  i386_efi_stripflags      = '--strip-unneeded -K start -R .note -R .comment';
+  x86_64_efi_ldflags       = '-Wl,-r,-d';
+  x86_64_efi_stripflags    = '--strip-unneeded -K start -R .note -R .comment';
+
+  ia64_efi_cflags = '-fno-builtin -fpic -minline-int-divide-max-throughput';
+  ia64_efi_ldflags = '-Wl,-r,-d';
+  ia64_efi_stripflags = '--strip-unneeded -K start -R .note -R .comment';
 
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
   i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x8200';
@@ -77,7 +83,6 @@ kernel = {
   noemu_nodist = symlist.c;
 
   i386_pc = kern/generic/rtc_get_time_ms.c;
-  x86_efi = kern/generic/rtc_get_time_ms.c;
   i386_qemu = kern/generic/rtc_get_time_ms.c;
   i386_coreboot = kern/generic/rtc_get_time_ms.c;
   i386_multiboot = kern/generic/rtc_get_time_ms.c;
@@ -105,18 +110,24 @@ kernel = {
 
   x86 = kern/i386/pit.c;
 
-  x86_efi = disk/efi/efidisk.c;
-  x86_efi = kern/efi/efi.c;
-  x86_efi = kern/efi/init.c;
-  x86_efi = kern/efi/mm.c;
-  x86_efi = kern/i386/efi/init.c;
-  x86_efi = term/efi/console.c;
+  efi = disk/efi/efidisk.c;
+  efi = kern/efi/efi.c;
+  efi = kern/efi/init.c;
+  efi = kern/efi/mm.c;
+  efi = term/efi/console.c;
 
   i386_efi = kern/i386/tsc.c;
+  i386_efi = kern/i386/efi/init.c;
 
   x86_64_efi = kern/i386/tsc.c;
   x86_64_efi = kern/x86_64/dl.c;
   x86_64_efi = kern/x86_64/efi/callwrap.S;
+  x86_64_efi = kern/i386/efi/init.c;
+
+  ia64_efi = kern/ia64/efi/startup.S;
+  ia64_efi = kern/ia64/efi/init.c;
+  ia64_efi = kern/ia64/dl.c;
+  ia64_efi = kern/ia64/dl_helper.c;
 
   i386_pc = kern/i386/pc/init.c;
   i386_pc = kern/i386/pc/mmap.c;
@@ -163,7 +174,7 @@ kernel = {
   emu = disk/host.c;
   emu = gnulib/progname.c;
   emu = gnulib/error.c;
-  emu = kern/emu/cache.S;
+  emu = kern/emu/cache_s.S;
   emu = kern/emu/console.c;
   emu = kern/emu/getroot.c;
   emu = kern/emu/hostdisk.c;
@@ -172,6 +183,7 @@ kernel = {
   emu = kern/emu/misc.c;
   emu = kern/emu/mm.c;
   emu = kern/emu/time.c;
+  emu = kern/emu/cache.c;
 
   videoinkernel = term/gfxterm.c;
   videoinkernel = font/font.c;
@@ -410,7 +422,8 @@ module = {
 
   enable = emu;
   enable = i386_pc;
-  enable = x86_efi;
+  enable = i386_efi;
+  enable = x86_64_efi;
   enable = i386_ieee1275;
   enable = i386_coreboot;
   enable = i386_multiboot;
@@ -449,12 +462,12 @@ module = {
   name = acpi;
 
   common = commands/acpi.c;
-  x86_efi = commands/efi/acpi.c;
+  efi = commands/efi/acpi.c;
   i386_pc = commands/i386/pc/acpi.c;
   i386_coreboot = commands/i386/pc/acpi.c;
   i386_multiboot = commands/i386/pc/acpi.c;
 
-  enable = x86_efi;
+  enable = efi;
   enable = i386_pc;
   enable = i386_coreboot;
   enable = i386_multiboot;
@@ -555,8 +568,9 @@ module = {
 
 module = {
   name = fixvideo;
-  x86_efi = commands/efi/fixvideo.c;
-  enable = x86_efi;
+  common = commands/efi/fixvideo.c;
+  enable = i386_efi;
+  enable = x86_64_efi;
 };
 
 module = {
@@ -571,11 +585,12 @@ module = {
   i386_pc = commands/acpihalt.c;
   i386_coreboot = commands/acpihalt.c;
   i386_multiboot = commands/acpihalt.c;
-  x86_efi = commands/acpihalt.c;
+  i386_efi = commands/acpihalt.c;
+  x86_64_efi = commands/acpihalt.c;
   i386_multiboot = lib/i386/halt.c;
   i386_coreboot = lib/i386/halt.c;
   i386_qemu = lib/i386/halt.c;
-  x86_efi = lib/efi/halt.c;
+  efi = lib/efi/halt.c;
   ieee1275 = lib/ieee1275/halt.c;
   emu = lib/emu/halt.c;
 };
@@ -610,8 +625,9 @@ module = {
 
 module = {
   name = loadbios;
-  x86_efi = commands/efi/loadbios.c;
-  enable = x86_efi;
+  common = commands/efi/loadbios.c;
+  enable = i386_efi;
+  enable = x86_64_efi;
 };
 
 module = {
@@ -1106,7 +1122,7 @@ module = {
   x86_64 = lib/x86_64/relocator_asm.S;
   x86 = lib/i386/relocator.c;
   ieee1275 = lib/ieee1275/relocator.c;
-  x86_efi = lib/efi/relocator.c;
+  efi = lib/efi/relocator.c;
   mips = lib/mips/relocator_asm.S;
   mips = lib/mips/relocator.c;
   powerpc = lib/powerpc/relocator_asm.S;
@@ -1123,7 +1139,7 @@ module = {
 module = {
   name = datetime;
   cmos = lib/cmos_datetime.c;
-  x86_efi = lib/efi/datetime.c;
+  efi = lib/efi/datetime.c;
   sparc64_ieee1275 = lib/ieee1275/datetime.c;
   powerpc_ieee1275 = lib/ieee1275/datetime.c;
   enable = noemu;
@@ -1195,6 +1211,7 @@ module = {
   mips = loader/mips/linux.c;
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
+  ia64_efi = loader/ia64/efi/linux.c;
   common = lib/cmdline.c;
   enable = noemu;
 };
@@ -1214,16 +1231,17 @@ module = {
 
 module = {
   name = appleldr;
-  x86_efi = loader/efi/appleloader.c;
-  enable = x86_efi;
+  common = loader/efi/appleloader.c;
+  enable = i386_efi;
+  enable = x86_64_efi;
 };
 
 module = {
   name = chain;
-  x86_efi = loader/efi/chainloader.c;
+  efi = loader/efi/chainloader.c;
   i386_pc = loader/i386/pc/chainloader.c;
   enable = i386_pc;
-  enable = x86_efi;
+  enable = efi;
 };
 
 module = {
@@ -1235,11 +1253,12 @@ module = {
   i386_pc = mmap/i386/pc/mmap.c;
   i386_pc = mmap/i386/pc/mmap_helper.S;
 
-  x86_efi = mmap/efi/mmap.c;
+  efi = mmap/efi/mmap.c;
 
   mips_loongson = mmap/mips/loongson/uppermem.c;
 
   enable = x86;
+  enable = ia64_efi;
   enable = mips_loongson;
 };
 
@@ -1424,14 +1443,15 @@ module = {
 
 module = {
   name = efi_gop;
-  x86_efi = video/efi_gop.c;
-  enable = x86_efi;
+  efi = video/efi_gop.c;
+  enable = efi;
 };
 
 module = {
   name = efi_uga;
-  x86_efi = video/efi_uga.c;
-  enable = x86_efi;
+  efi = video/efi_uga.c;
+  enable = i386_efi;
+  enable = x86_64_efi;
 };
 
 module = {

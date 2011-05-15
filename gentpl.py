@@ -7,7 +7,7 @@
 GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
                    "i386_multiboot", "i386_ieee1275", "x86_64_efi",
                    "mips_loongson", "sparc64_ieee1275",
-                   "powerpc_ieee1275" ]
+                   "powerpc_ieee1275", "ia64_efi" ]
 
 GROUPS = {}
 
@@ -22,7 +22,7 @@ GROUPS["sparc64"]  = [ "sparc64_ieee1275" ]
 GROUPS["powerpc"]  = [ "powerpc_ieee1275" ]
 
 # Groups based on firmware
-GROUPS["x86_efi"]  = [ "i386_efi", "x86_64_efi" ]
+GROUPS["efi"]  = [ "i386_efi", "x86_64_efi", "ia64_efi" ]
 GROUPS["ieee1275"]   = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
 
 # emu is a special case so many core functionality isn't needed on this platform

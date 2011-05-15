@@ -1,3 +1,104 @@
+2011-05-15  Tristan Gingold  <gingold@free.fr>
+2011-05-15  Robert Millan  <rmh.grub@aybabtu.com>
+2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	IA64 support.
+
+	* Makefile.util.def (libgrubmods.a): Add grub-core/kern/ia64/dl_helper.c
+	* configure.ac: Add ia64-efi target.
+	Probe for __ia64_trampoline, __udivsi3, __umoddi3, __udivdi3,
+	__divsi3, __modsi3, __umodsi3, __moddi3 and __divdi3 symbols.
+	* gentpl.py: Add ia64_efi platform.
+	Rename x86_efi to efi and Add ia64-efi. All users updated.
+	* grub-core/Makefile.am: Set KERNEL_HEADER_FILES for ia64-efi.
+	* grub-core/Makefile.core.def (kernel.img): Add compile flags for ia64.
+	Remove kern/generic/rtc_get_time_ms.c on EFI.
+	Add kern/ia64/efi/startup.S, kern/ia64/efi/init.c, kern/ia64/dl.c,
+	kern/ia64/dl_helper.c on ia64-efi.
+	Add kern/emu/cache.c on emu.
+	(linux): Use on loader/ia64/efi/linux.c on ia64.
+	* grub-core/gensymlist.sh (grub_register_exported_symbols): Check
+	whether symbol is a function.
+	* grub-core/kern/dl.c [GRUB_MACHINE_EMU]: Include sys/mman.h.
+	(grub_symbol): New field 'isfunc'.
+	(grub_dl_resolve_symbol): Return whole symbol rather than just address.
+	(grub_dl_register_symbol): New argument 'isfunc'. All users updated.
+	(grub_dl_load_segments): Place all sections into the same region.
+	[__ia64__]: Create trampolines and got.
+	[GRUB_MACHINE_EMU]: Call mprotect.
+	(grub_dl_resolve_symbols): Resolve symbol type as well.
+	[__ia64__]: Create function descriptors.
+	* grub-core/kern/efi/efi.c (grub_get_rtc): Renamed to ...
+	(grub_rtc_get_time_ms): ... this. Expressions simplified.
+	(grub_get_rtc): New function.
+	* grub-core/kern/emu/cache.c [__ia64__]: New file.
+	* grub-core/kern/emu/cache.S: Renamed to ...
+	* grub-core/kern/emu/cache_s.S: ... this.
+	[__ia64__]: Add a nop.
+	* grub-core/kern/emu/full.c (grub_arch_dl_get_tramp_got_size)
+	[__ia64__]: New function.
+	* grub-core/kern/emu/lite.c [__ia64__]: Include ../ia64/dl.c.
+	* grub-core/kern/ia64/dl.c: New file.
+	* grub-core/kern/ia64/dl_helper.c: Likewise.
+	* grub-core/kern/ia64/efi/init.c: New file.
+	* grub-core/kern/ia64/efi/startup.S: Likewise.
+	* grub-core/lib/efi/halt.c [__ia64__]: Don't try acpi.
+	* grub-core/lib/ia64/longjmp.S: New file (from glibc).
+	* grub-core/lib/ia64/setjmp.S: Likewise (from glibc).
+	* grub-core/lib/setjmp.S [__ia64__]: Include ./ia64/setjmp.S.
+	* grub-core/loader/ia64/efi/linux.c: New file.
+	* include/grub/dl.h (GRUB_MOD_NAME): Redefined using C rather than asm.
+	(GRUB_MOD_DEP): Likewise.
+	(grub_dl) [__ia64__]: New fields got and tramp.
+	(grub_dl): New field 'base'.
+	(grub_dl_register_symbol): New argument isfunc. All users updated.
+	(GRUB_IA64_DL_TRAMP_ALIGN): New definition.
+	(GRUB_IA64_DL_TRAMP_SIZE): Likewise.
+	(GRUB_IA64_DL_GOT_ALIGN): Likewise.
+	(grub_ia64_dl_get_tramp_got_size): New proto.
+	(GRUB_ARCH_DL_TRAMP_ALIGN) [__ia64__]: Likewise
+	(GRUB_ARCH_DL_GOT_ALIGN) [__ia64__]: Likewise
+	(grub_arch_dl_get_tramp_got_size) [__ia64__]: Likewise
+	* include/grub/efi/api.h: Skip call wrappers on ia64.
+	* include/grub/efi/pe32.h (GRUB_PE32_MACHINE_IA64): New definition.
+	* include/grub/efi/time.h (GRUB_TICKS_PER_SECOND): Change to 1000.
+	* include/grub/elf.h (ELF_ST_INFO): New definition.
+	* include/grub/ia64/efi/kernel.h: New file.
+	* include/grub/ia64/efi/memory.h: Likewise.
+	* include/grub/ia64/efi/time.h: Likewise.
+	* include/grub/ia64/kernel.h: Likewise.
+	* include/grub/ia64/setjmp.h: Likewise (from glibc).
+	* include/grub/ia64/time.h: New file.
+	* include/grub/ia64/types.h: Likewise.
+	* include/grub/libgcc.h (__udivsi3, __umodsi3, __umoddi3, __udivdi3,
+	__moddi3, __divdi3, __divsi3, __modsi3, __ia64_trampoline):
+	New protos.
+	* include/grub/offsets.h (GRUB_KERNEL_IA64_EFI_PREFIX): New definition.
+	(GRUB_KERNEL_IA64_EFI_PREFIX_END): Likewise.
+	* include/grub/types.h (PRIxGRUB_ADDR): Likewise.
+	* util/grub-mkimage.c (image_target_desc): New field pe_target.
+	All users updated.
+	(EFI64_HEADER_SIZE): New definition. All users updated.
+	(image_targets): Add ia64-efi.
+	* util/grub-mkimagexx.c (relocate_symbols): New arguments jumpers and
+	jumpers_addr. All users updated.
+	Create function descriptors.
+	(count_funcs): New function.
+	(unaligned_uint32): New struct.
+	(MASK20): New definition.
+	(MASK19): Likewise.
+	(MASKF21): Likewise.
+	(add_value_to_slot_20b): New function.
+	(add_value_to_slot_21_real): Likewise.
+	(add_value_to_slot_21): Likewise.
+	(ia64_kernel_trampoline): New struct.
+	(nopm): New variable.
+	(jump): Likewise.
+	(make_trampoline): New function.
+	(relocate_addresses): Handle ia64.
+	(make_reloc_section): Likewise.
+	(load_image): Likewise.
+
 2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/btrfs.c (grub_btrfs_read_logical): Silence spurious

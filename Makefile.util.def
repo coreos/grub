@@ -100,6 +100,7 @@ library = {
   common = grub-core/script/script.c;
   common = grub-core/script/argv.c;
   common = grub-core/io/gzio.c;
+  common = grub-core/kern/ia64/dl_helper.c;
 };
 
 program = {
@@ -383,7 +384,8 @@ script = {
   x86 = util/grub-mkrescue.in;
   powerpc_ieee1275 = util/powerpc/ieee1275/grub-mkrescue.in;
   enable = i386_pc;
-  enable = x86_efi;
+  enable = i386_efi;
+  enable = x86_64_efi;
   enable = i386_qemu;
   enable = i386_multiboot;
   enable = i386_coreboot;

@@ -30,6 +30,7 @@
 #include <grub/misc.h>
 #include <grub/offsets.h>
 #include <grub/crypto.h>
+#include <grub/dl.h>
 #include <time.h>
 
 #include <stdio.h>
@@ -88,7 +89,15 @@ struct image_target_desc
   grub_uint64_t link_addr;
   unsigned mod_gap, mod_align;
   grub_compression_t default_compression;
+  grub_uint16_t pe_target;
 };
+
+#define EFI64_HEADER_SIZE ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE		\
+				    + GRUB_PE32_SIGNATURE_SIZE		\
+				    + sizeof (struct grub_pe32_coff_header) \
+				    + sizeof (struct grub_pe64_optional_header) \
+				    + 4 * sizeof (struct grub_pe32_section_table), \
+				    GRUB_PE32_SECTION_ALIGNMENT)
 
 struct image_target_desc image_targets[] =
   {
@@ -198,6 +207,8 @@ struct image_target_desc image_targets[] =
 				GRUB_PE32_SECTION_ALIGNMENT),
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
+      .pe_target = GRUB_PE32_MACHINE_I386,
+      .elf_target = EM_386,
     },
     {
       .dirname = "i386-ieee1275",
@@ -255,14 +266,11 @@ struct image_target_desc image_targets[] =
       .kernel_image_size = TARGET_NO_FIELD,
       .compressed_size = TARGET_NO_FIELD,
       .section_align = GRUB_PE32_SECTION_ALIGNMENT,
-      .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
-				+ GRUB_PE32_SIGNATURE_SIZE
-				+ sizeof (struct grub_pe32_coff_header)
-				+ sizeof (struct grub_pe64_optional_header)
-				+ 4 * sizeof (struct grub_pe32_section_table),
-				GRUB_PE32_SECTION_ALIGNMENT),
+      .vaddr_offset = EFI64_HEADER_SIZE,
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
+      .pe_target = GRUB_PE32_MACHINE_X86_64,
+      .elf_target = EM_X86_64,
     },
     {
       .dirname = "mips-loongson",
@@ -391,6 +399,26 @@ struct image_target_desc image_targets[] =
       .install_dos_part = TARGET_NO_FIELD,
       .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
+    },
+    {
+      .dirname = "ia64-efi",
+      .names = {"ia64-efi", NULL},
+      .voidp_sizeof = 8,
+      .bigendian = 0, 
+      .id = IMAGE_EFI, 
+      .flags = PLATFORM_FLAGS_NONE,
+      .prefix = GRUB_KERNEL_IA64_EFI_PREFIX,
+      .prefix_end = GRUB_KERNEL_IA64_EFI_PREFIX_END,
+      .raw_size = 0,
+      .total_module_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .compressed_size = TARGET_NO_FIELD,
+      .section_align = GRUB_PE32_SECTION_ALIGNMENT,
+      .vaddr_offset = EFI64_HEADER_SIZE,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .pe_target = GRUB_PE32_MACHINE_IA64,
+      .elf_target = EM_IA_64,
     },
   };
 
@@ -939,12 +967,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 				  + 4 * sizeof (struct grub_pe32_section_table),
 				  GRUB_PE32_SECTION_ALIGNMENT);
 	else
-	  header_size = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
-				  + GRUB_PE32_SIGNATURE_SIZE
-				  + sizeof (struct grub_pe32_coff_header)
-				  + sizeof (struct grub_pe64_optional_header)
-				  + 4 * sizeof (struct grub_pe32_section_table),
-				  GRUB_PE32_SECTION_ALIGNMENT);
+	  header_size = EFI64_HEADER_SIZE;
 
 	reloc_addr = ALIGN_UP (header_size + core_size,
 			       image_target->section_align);
@@ -965,10 +988,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	/* The COFF file header.  */
 	c = (struct grub_pe32_coff_header *) (header + GRUB_PE32_MSDOS_STUB_SIZE
 					      + GRUB_PE32_SIGNATURE_SIZE);
-	if (image_target->voidp_sizeof == 4)
-	  c->machine = grub_host_to_target16 (GRUB_PE32_MACHINE_I386);
-	else
-	  c->machine = grub_host_to_target16 (GRUB_PE32_MACHINE_X86_64);
+	c->machine = grub_host_to_target16 (image_target->pe_target);
 
 	c->num_sections = grub_host_to_target16 (4);
 	c->time = grub_host_to_target32 (time (0));

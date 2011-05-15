@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,15 +15,40 @@
  *  You should have received a copy of the GNU General Public License
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifndef GRUB_EFI_TIME_HEADER
-#define GRUB_EFI_TIME_HEADER	1
-
+#include <config.h>
 #include <grub/symbol.h>
+#include <grub/offsets.h>
 
-#define GRUB_TICKS_PER_SECOND	1000
+	.text
+	.psr abi64
+	.psr lsb
+	.lsb
 
-/* Return the real time in ticks.  */
-grub_uint32_t EXPORT_FUNC (grub_get_rtc) (void);
+	.global _start
+	.proc _start
+_start:
+	alloc loc0=ar.pfs,2,4,0,0
+	mov loc1=rp
+	addl loc2=@gprel(grub_efi_image_handle),gp
+	addl loc3=@gprel(grub_efi_system_table),gp
+	;;
+	st8 [loc2]=in0
+	st8 [loc3]=in1
+	br.call.sptk.few rp=grub_main
+	;;
+	mov ar.pfs=loc0
+	mov rp=loc1
+	;;
+	br.ret.sptk.few rp
 
-#endif /* ! GRUB_EFI_TIME_HEADER */
+	.endp _start
+
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX
+VARIABLE(grub_prefix)
+	.byte 0
+	/* to be filled by grub-mkimage */
+
+	/*
+	 *  Leave some breathing room for the prefix.
+	 */
+	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
