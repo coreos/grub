@@ -160,18 +160,23 @@ grub_atapi_identify (struct grub_ata_device *dev)
 
   grub_ata_regset (dev, GRUB_ATA_REG_DISK, 0xE0 | dev->device << 4);
   grub_ata_wait ();
-  if (grub_ata_check_ready (dev))
+  if ((grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_BUSY)
+      && grub_ata_wait_not_busy (dev, dev->present ? GRUB_ATA_TOUT_DEV_INIT 
+				 : GRUB_ATA_TOUT_STD))
     {
       grub_free (info);
+      dev->present = 0;
       return grub_errno;
     }
 
   grub_ata_regset (dev, GRUB_ATA_REG_CMD, GRUB_ATA_CMD_IDENTIFY_PACKET_DEVICE);
   grub_ata_wait ();
 
-  if (grub_ata_wait_drq (dev, 0, GRUB_ATA_TOUT_STD))
+  if (grub_ata_wait_drq (dev, 0, dev->present ? GRUB_ATA_TOUT_DEV_INIT 
+			 : GRUB_ATA_TOUT_STD))
     {
       grub_free (info);
+      dev->present = 0;
       return grub_errno;
     }
   grub_ata_pio_read (dev, info, GRUB_DISK_SECTOR_SIZE);
@@ -258,8 +263,11 @@ grub_ata_identify (struct grub_ata_device *dev)
 
   grub_ata_regset (dev, GRUB_ATA_REG_DISK, 0xE0 | dev->device << 4);
   grub_ata_wait ();
-  if (grub_ata_check_ready (dev))
+  if ((grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_BUSY)
+      && grub_ata_wait_not_busy (dev, dev->present ? GRUB_ATA_TOUT_DEV_INIT 
+				 : GRUB_ATA_TOUT_STD))
     {
+      dev->present = 0;
       grub_free (info);
       return grub_errno;
     }
@@ -267,7 +275,8 @@ grub_ata_identify (struct grub_ata_device *dev)
   grub_ata_regset (dev, GRUB_ATA_REG_CMD, GRUB_ATA_CMD_IDENTIFY_DEVICE);
   grub_ata_wait ();
 
-  if (grub_ata_wait_drq (dev, 0, GRUB_ATA_TOUT_STD))
+  if (grub_ata_wait_drq (dev, 0, dev->present ? GRUB_ATA_TOUT_DEV_INIT 
+			 : GRUB_ATA_TOUT_STD))
     {
       grub_free (info);
       grub_errno = GRUB_ERR_NONE;
@@ -280,13 +289,18 @@ grub_ata_identify (struct grub_ata_device *dev)
 	return grub_atapi_identify (dev);
 
       else if (sts == 0x00)
-	/* No device, return error but don't print message.  */
-	return GRUB_ERR_UNKNOWN_DEVICE;
-
+	{
+	  dev->present = 0;
+	  /* No device, return error but don't print message.  */
+	  return GRUB_ERR_UNKNOWN_DEVICE;
+	}
       else
-	/* Other Error.  */
-	return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-			   "device cannot be identified");
+	{
+	  dev->present = 0;
+	  /* Other Error.  */
+	  return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			     "device cannot be identified");
+	}
     }
 
   grub_ata_pio_read (dev, info, GRUB_DISK_SECTOR_SIZE);
@@ -381,6 +395,7 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
   dev->device = device;
   dev->ioaddress = addr + GRUB_MACHINE_PCI_IO_BASE;
   dev->ioaddress2 = addr2 + GRUB_MACHINE_PCI_IO_BASE;
+  dev->present = 1;
   dev->next = NULL;
 
   /* Register the device.  */

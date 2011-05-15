@@ -554,13 +554,13 @@ fi
 
 case "${target_cpu}-${platform}" in
     sparc64-ieee1275) mkimage_target=sparc64-ieee1275-raw ;;
-    mips-yeeloong) mkimage_target=mipsel-yeeloong-elf ;;
+    mips-loongson) mkimage_target=mipsel-loongson-elf ;;
     *) mkimage_target="${target_cpu}-${platform}" ;;
 esac
 
 case "${target_cpu}-${platform}" in
     i386-efi | x86_64-efi) imgext=efi ;;
-    mips-yeeloong | i386-coreboot | i386-multiboot | i386-ieee1275 \
+    mips-loongson | i386-coreboot | i386-multiboot | i386-ieee1275 \
 	| powerpc-ieee1275) imgext=elf ;;
     *) imgext=img ;;
 esac
@@ -569,7 +569,7 @@ esac
 "$grub_mkimage" ${config_opt} -d "${pkglibdir}" -O ${mkimage_target} --output="${grubdir}/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
 
 # Backward-compatibility kludges
-if [ "${target_cpu}-${platform}" = "mips-yeeloong" ]; then
+if [ "${target_cpu}-${platform}" = "mips-loongson" ]; then
     cp "${grubdir}/core.${imgext}" "${bootdir}"/grub.elf
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
     cp "${grubdir}/core.${imgext}" "${grubdir}/grub"

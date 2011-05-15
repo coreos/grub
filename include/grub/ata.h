@@ -94,7 +94,8 @@ enum grub_ata_commands
 enum grub_ata_timeout_milliseconds
   {
     GRUB_ATA_TOUT_STD  =  1000,  /* 1s standard timeout.  */
-    GRUB_ATA_TOUT_DATA = 10000   /* 10s DATA I/O timeout.  */
+    GRUB_ATA_TOUT_DATA = 10000,   /* 10s DATA I/O timeout.  */
+    GRUB_ATA_TOUT_DEV_INIT  =  10000,  /* Give the device 10s on first try to spinon.  */
   };
 
 struct grub_ata_device
@@ -127,6 +128,8 @@ struct grub_ata_device
 
   /* Set to 0 for ATA, set to 1 for ATAPI.  */
   int atapi;
+
+  int present;
 
   struct grub_ata_device *next;
 };

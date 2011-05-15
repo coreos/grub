@@ -34,6 +34,7 @@
 #include <grub/cpu/memory.h>
 
 extern void grub_video_sm712_init (void);
+extern void grub_video_sis315pro_init (void);
 extern void grub_video_init (void);
 extern void grub_bitmap_init (void);
 extern void grub_font_init (void);
@@ -64,7 +65,7 @@ init_pci (void)
     /* FIXME: autoscan for BARs and devices.  */
     switch (pciid)
       {
-      case GRUB_YEELOONG_OHCI_PCIID:
+      case GRUB_LOONGSON_OHCI_PCIID:
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
 	grub_pci_write (addr, 0x5025000);
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
@@ -76,7 +77,7 @@ init_pci (void)
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_STATUS);
 	grub_pci_write_word (addr, 0x0200 | GRUB_PCI_STATUS_CAPABILITIES);
 	break;
-      case GRUB_YEELOONG_EHCI_PCIID:
+      case GRUB_LOONGSON_EHCI_PCIID:
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
 	grub_pci_write (addr, 0x5026000);
 	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
@@ -148,7 +149,7 @@ grub_machine_init (void)
       if (err)
 	grub_fatal ("Couldn't init SMBus: %s\n", grub_errmsg);
 
-      /* Yeeloong has only one memory slot.  */
+      /* Yeeloong and Fuloong have only one memory slot.  */
       err = grub_cs5536_read_spd (smbbase, GRUB_SMB_RAM_START_ADDR, &spd);
       if (err)
 	grub_fatal ("Couldn't read SPD: %s\n", grub_errmsg);
@@ -187,12 +188,14 @@ grub_machine_init (void)
      relies on a working heap.  */
   grub_video_init ();
   grub_video_sm712_init ();
+  grub_video_sis315pro_init ();
   grub_bitmap_init ();
   grub_font_init ();
   grub_gfxterm_init ();
 
   grub_keylayouts_init ();
-  grub_at_keyboard_init ();
+  if (grub_arch_machine == GRUB_ARCH_MACHINE_YEELOONG)
+    grub_at_keyboard_init ();
 
   grub_terminfo_init ();
   grub_serial_init ();
@@ -208,10 +211,28 @@ grub_machine_fini (void)
 void
 grub_halt (void)
 {
-  grub_outb (grub_inb (GRUB_CPU_LOONGSON_GPIOCFG)
-	     & ~GRUB_CPU_LOONGSON_SHUTDOWN_GPIO, GRUB_CPU_LOONGSON_GPIOCFG);
-
-  grub_millisleep (1500);
+  switch (grub_arch_machine)
+    {
+    case GRUB_ARCH_MACHINE_FULOONG:
+      {
+	grub_pci_device_t dev;
+	grub_port_t p;
+	if (grub_cs5536_find (&dev))
+	  {
+	    p = (grub_cs5536_read_msr (dev, GRUB_CS5536_MSR_GPIO_BAR)
+		 & GRUB_CS5536_LBAR_ADDR_MASK) + GRUB_MACHINE_PCI_IO_BASE;
+	    grub_outl ((1 << 13), p + 4);
+	    grub_outl ((1 << 29), p);
+	    grub_millisleep (5000);
+	  }
+      }
+      break;
+    case GRUB_ARCH_MACHINE_YEELOONG:
+      grub_outb (grub_inb (GRUB_CPU_LOONGSON_GPIOCFG)
+		 & ~GRUB_CPU_YEELOONG_SHUTDOWN_GPIO, GRUB_CPU_LOONGSON_GPIOCFG);
+      grub_millisleep (1500);
+      break;
+    }
 
   grub_printf ("Shutdown failed\n");
   grub_refresh ();

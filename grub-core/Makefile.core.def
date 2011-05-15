@@ -32,12 +32,12 @@ kernel = {
   i386_coreboot_ldflags    = '-Wl,-Ttext=0x8200';
   i386_multiboot_ldflags   = '-Wl,-Ttext=0x8200';
   i386_ieee1275_ldflags    = '-Wl,-Ttext=0x10000';
-  mips_yeeloong_ldflags    = '-Wl,-Ttext,0x80200000';
+  mips_loongson_ldflags    = '-Wl,-Ttext,0x80200000';
   powerpc_ieee1275_ldflags = '-Wl,-Ttext,0x200000';
   sparc64_ieee1275_ldflags = '-Wl,-Ttext,0x4400';
   mips_arc_ldflags    = '-Wl,-Ttext,0x8a000000';
 
-  mips_yeeloong_cppflags = '-DUSE_ASCII_FAILBACK';
+  mips_loongson_cppflags = '-DUSE_ASCII_FAILBACK';
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
   emu_cflags = '$(CFLAGS_GNULIB)';
   emu_cppflags = '$(CPPFLAGS_GNULIB)';
@@ -145,16 +145,17 @@ kernel = {
   mips_arc = term/arc/console.c;
   mips_arc = disk/arc/arcdisk.c;
 
-  mips_yeeloong = term/ns8250.c;
-  mips_yeeloong = bus/bonito.c;
-  mips_yeeloong = bus/cs5536.c;
-  mips_yeeloong = bus/pci.c;
-  mips_yeeloong = kern/mips/yeeloong/init.c;
-  mips_yeeloong = term/at_keyboard.c;
-  mips_yeeloong = term/serial.c;
-  mips_yeeloong = video/sm712.c;
+  mips_loongson = term/ns8250.c;
+  mips_loongson = bus/bonito.c;
+  mips_loongson = bus/cs5536.c;
+  mips_loongson = bus/pci.c;
+  mips_loongson = kern/mips/loongson/init.c;
+  mips_loongson = term/at_keyboard.c;
+  mips_loongson = term/serial.c;
+  mips_loongson = video/sm712.c;
+  mips_loongson = video/sis315pro.c;
   extra_dist = video/sm712_init.c;
-  mips_yeeloong = commands/keylayouts.c;
+  mips_loongson = commands/keylayouts.c;
 
   powerpc_ieee1275 = kern/ieee1275/init.c;
   powerpc_ieee1275 = kern/powerpc/cache.S;
@@ -332,10 +333,18 @@ image = {
 
 image = {
   name = fwstart;
-  mips_yeeloong = boot/mips/yeeloong/fwstart.S;
+  mips_loongson = boot/mips/loongson/fwstart.S;
   objcopyflags = '-O binary';
   ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
-  enable = mips_yeeloong;
+  enable = mips_loongson;
+};
+
+image = {
+  name = fwstart_fuloong;
+  mips_loongson = boot/mips/loongson/fuloong.S;
+  objcopyflags = '-O binary';
+  ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
+  enable = mips_loongson;
 };
 
 module = {
@@ -359,8 +368,8 @@ module = {
 
 module = {
   name = lsspd;
-  mips_yeeloong = commands/mips/yeeloong/lsspd.c;
-  enable = mips_yeeloong;
+  mips_loongson = commands/mips/loongson/lsspd.c;
+  enable = mips_loongson;
 };
 
 module = {
