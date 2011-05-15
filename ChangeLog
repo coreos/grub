@@ -1,5 +1,16 @@
 2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix compilation errors.
+
+	* grub-core/term/ns8250.c (serial_get_divisor): Declare 'port' as
+	potentially unused.
+	* grub-core/loader/i386/linux.c (grub_linux_setup_video):
+	Handle GRUB_VIDEO_DRIVER_SIS315PRO.
+	* grub-core/bus/cs5536.c (grub_cs5536_init_geode): Restrict DIVIL init
+	to loongson machines.
+
+2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Several FS mtime support.
 
 	* grub-core/fs/affs.c (grub_affs_time): New struct.

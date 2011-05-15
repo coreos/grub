@@ -37,7 +37,7 @@ static const grub_port_t serial_hw_io_addr[] = GRUB_MACHINE_SERIAL_PORTS;
 
 /* Convert speed to divisor.  */
 static unsigned short
-serial_get_divisor (const struct grub_serial_port *port,
+serial_get_divisor (const struct grub_serial_port *port __attribute__ ((unused)),
 		    const struct grub_serial_config *config)
 {
   unsigned int i;

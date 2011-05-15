@@ -269,6 +269,7 @@ grub_cs5536_init_geode (grub_pci_device_t dev)
 			 GRUB_CS5536_LBAR_TURN_ON | GRUB_CS5536_LBAR_PM);
 
   /* Setup DIVIL.  */
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
   switch (grub_arch_machine)
     {
     case GRUB_ARCH_MACHINE_YEELOONG:
@@ -288,6 +289,7 @@ grub_cs5536_init_geode (grub_pci_device_t dev)
 			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE1);
       break;
     }
+#endif
   grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_IRQ_MAPPER_PRIMARY_MASK,
 			 (~GRUB_CS5536_DIVIL_LPC_INTERRUPTS) & 0xffff);
   grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_IRQ_MAPPER_LPC_MASK,

@@ -367,6 +367,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 
 	  /* FIXME: check if better id is available.  */
 	case GRUB_VIDEO_DRIVER_SM712:
+	case GRUB_VIDEO_DRIVER_SIS315PRO:
 	case GRUB_VIDEO_DRIVER_VGA:
 	case GRUB_VIDEO_DRIVER_CIRRUS:
 	case GRUB_VIDEO_DRIVER_BOCHS:
