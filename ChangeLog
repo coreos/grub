@@ -1,4 +1,17 @@
 2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Squashfs v4 support.
+
+	* Makefile.util.def (libgrubmods.a): Add squash4.
+	* grub-core/Makefile.core.def (squash4): New module.
+	* grub-core/fs/squash4.c: New file.
+	* grub-core/io/gzio.c (grub_gzio): New members disk_input_off,
+	disk_input_start, disk_input.
+	(get_byte): Handle disk_input.
+	(grub_zlib_disk_read): New function.
+	* include/grub/deflate.h (grub_zlib_disk_read): New proto.
+
+2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 2011-05-15  Feiran Zheng <famcool@gmail.com>
 
 	* Makefile.util.def (libgrubmods.a): Add minix3.
