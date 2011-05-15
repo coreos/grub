@@ -535,6 +535,13 @@ grub_minix_dir (grub_device_t device, const char *path,
       grub_minix_read_inode (data, grub_minix_le_to_cpu_ino (ino));
       info.dir = ((GRUB_MINIX_INODE_MODE (data)
 		   & GRUB_MINIX_IFDIR) == GRUB_MINIX_IFDIR);
+      info.mtimeset = 1;
+#ifndef MODE_MINIX2
+      info.mtime = grub_le_to_cpu32 (data->inode.ctime);
+#else
+      info.mtime = grub_le_to_cpu32 (data->inode.mtime);
+#endif
+
       if (hook (filename, &info) ? 1 : 0)
 	break;
 

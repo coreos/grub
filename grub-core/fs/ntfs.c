@@ -612,6 +612,10 @@ list_file (struct grub_ntfs_file *diro, char *pos,
 
 	  fdiro->data = diro->data;
 	  fdiro->ino = u32at (pos, 0);
+	  if (u64at (pos, 0x20) > u64at (pos, 0x28))
+	    fdiro->mtime = u64at (pos, 0x20);
+	  else
+	    fdiro->mtime = u64at (pos, 0x28);
 
 	  ustr = grub_malloc (ns * 4 + 1);
 	  if (ustr == NULL)
@@ -882,6 +886,10 @@ grub_ntfs_dir (grub_device_t device, const char *path,
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      info.mtimeset = 1;
+      info.mtime = grub_divmod64 (node->mtime, 10000000, 0) 
+	- 86400ULL * 365 * (1970 - 1601)
+	- 86400ULL * ((1970 - 1601) / 4) + 86400ULL * ((1970 - 1601) / 100);
       grub_free (node);
       return hook (filename, &info);
   }

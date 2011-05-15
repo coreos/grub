@@ -1,5 +1,66 @@
 2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Several FS mtime support.
+
+	* grub-core/fs/affs.c (grub_affs_time): New struct.
+	(grub_affs_file): New field mtime.
+	(grub_fshelp_node): Changed 'block' and 'parent' to more appropriate
+	type. Removed 'size'. New field 'di'. All users updated.
+	(grub_affs_mount): Simplify checsum checking.
+	(grub_affs_iterate_dir): New helper grub_affs_create_node.
+	(grub_affs_dir): Handle mtime.
+	* grub-core/fs/cpio.c (grub_cpio_find_file): Handle mtime.
+	(grub_cpio_dir): Likewise.
+	* grub-core/fs/hfs.c (grub_hfs_dirrec): New fields 'ctime' and 'mtime'.
+	(grub_hfs_filerec): New field mtime.
+	(grub_hfs_dir): Handle mtime.
+	(grub_hfs_mtime): New function.
+	(grub_hfs_fs): Register grub_hfs_mtime.
+	* grub-core/fs/iso9660.c (grub_iso9660_date2): New struct.
+	(grub_iso9660_dir): New field mtime.
+	(grub_fshelp_node): New field dirent.
+	(iso9660_to_unixtime): New function.
+	(iso9660_to_unixtime2): Likewise.
+	(grub_iso9660_read_symlink): Use node->dirent.
+	(grub_iso9660_iterate_dir): Likewise.
+	(grub_iso9660_dir): Set mtime.
+	(grub_iso9660_mtime): New function.
+	(grub_iso9660_fs): Register grub_iso9660_mtime.
+	* grub-core/fs/jfs.c (grub_jfs_time): New struct.
+	(grub_jfs_inode): New fields atime, ctime and mtime.
+	(grub_jfs_dir): Set mtime.
+	* grub-core/fs/minix.c (grub_minix_dir): Likewise.
+	* grub-core/fs/ntfs.c (list_file): Set mtime.
+	(grub_ntfs_dir): Likewise.
+	* grub-core/fs/reiserfs.c (grub_fshelp_node): New field 'mtime'.
+	(grub_reiserfs_iterate_dir): Set mtime.
+	(grub_reiserfs_dir): Likewise.
+	* grub-core/fs/sfs.c (grub_sfs_obj): New field mtime.
+	(grub_fshelp_node): Likewise.
+	(grub_sfs_iterate_dir): Set mtime.
+	(grub_sfs_dir): Likewise.
+	* grub-core/fs/udf.c (grub_udf_dir): Set mtime.
+	* grub-core/fs/xfs.c (grub_xfs_time): New struct.
+	(grub_xfs_inode): New fields atime, mtime, ctime.
+	(grub_xfs_dir): Set mtime.
+	* include/grub/datetime.h (grub_datetime2unixtime): New function.
+	* include/grub/hfs.h (grub_hfs_sblock): New fields ctime and mtime.
+	* include/grub/ntfs.h (grub_fshelp_node): New field mtime.
+
+	Support UDF symlinks.
+
+	* grub-core/fs/udf.c (grub_udf_iterate_dir): Handle symlinks.
+	(grub_ufs_read_symlink): New function. All users updated.
+
+	Check amiga partmap checksum.
+
+	* grub-core/partmap/amiga.c (grub_amiga_rdsk): Pad to 128 bytes.
+	(grub_amiga_partition): Likewise.
+	(amiga_partition_map_checksum): New function.
+	(amiga_partition_map_iterate): Check checksum.
+
+2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	ROMFS support.
 
 	* Makefile.util.def (libgrubmods.a): Add romfs.

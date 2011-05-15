@@ -133,6 +133,8 @@ struct grub_hfs_dirrec
   grub_uint8_t type;
   grub_uint8_t unused[5];
   grub_uint32_t dirid;
+  grub_uint32_t ctime;
+  grub_uint32_t mtime;
 } __attribute__ ((packed));
 
 /* Information about a file.  */
@@ -144,7 +146,9 @@ struct grub_hfs_filerec
   grub_uint32_t fileid;
   grub_uint8_t unused2[2];
   grub_uint32_t size;
-  grub_uint8_t unused3[44];
+  grub_uint8_t unused3[18];
+  grub_uint32_t mtime;
+  grub_uint8_t unused4[22];
 
   /* The first 3 extents of the file.  The other extents can be found
      in the extent overflow file.  */
@@ -953,19 +957,29 @@ grub_hfs_dir (grub_device_t device, const char *path,
   int dir_hook (struct grub_hfs_record *rec)
     {
       char fname[32] = { 0 };
-      char *filetype = rec->data;
+      struct grub_hfs_dirrec *drec = rec->data;
+      struct grub_hfs_filerec *frec = rec->data;
       struct grub_hfs_catalog_key *ckey = rec->key;
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
 
       grub_strncpy (fname, (char *) (ckey->str), ckey->strlen);
 
-      if (*filetype == GRUB_HFS_FILETYPE_DIR
-	  || *filetype == GRUB_HFS_FILETYPE_FILE)
+      if (drec->type == GRUB_HFS_FILETYPE_DIR)
 	{
-	  info.dir = (*filetype == GRUB_HFS_FILETYPE_DIR);
+	  info.dir = 1;
+	  info.mtimeset = 1;
+	  info.mtime = grub_be_to_cpu32 (drec->mtime) - 2082844800;
 	  return hook (fname, &info);
 	}
+      if (frec->type == GRUB_HFS_FILETYPE_FILE)
+	{
+	  info.dir = 0;
+	  info.mtimeset = 1;
+	  info.mtime = grub_be_to_cpu32 (frec->mtime) - 2082844800;
+	  return hook (fname, &info);
+	}
+
       return 0;
     }
 
@@ -1075,6 +1089,22 @@ grub_hfs_label (grub_device_t device, char **label)
 }
 
 static grub_err_t
+grub_hfs_mtime (grub_device_t device, grub_int32_t *tm)
+{
+  struct grub_hfs_data *data;
+
+  data = grub_hfs_mount (device->disk);
+
+  if (data)
+    *tm = grub_be_to_cpu32 (data->sblock.mtime) - 2082844800;
+  else
+    *tm = 0;
+
+  grub_free (data);
+  return grub_errno;
+}
+
+static grub_err_t
 grub_hfs_uuid (grub_device_t device, char **uuid)
 {
   struct grub_hfs_data *data;
@@ -1109,6 +1139,7 @@ static struct grub_fs grub_hfs_fs =
     .close = grub_hfs_close,
     .label = grub_hfs_label,
     .uuid = grub_hfs_uuid,
+    .mtime = grub_hfs_mtime,
     .next = 0
   };
 

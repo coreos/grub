@@ -27,6 +27,7 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 #include <grub/charset.h>
+#include <grub/datetime.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -55,6 +56,17 @@ struct grub_iso9660_voldesc
   grub_uint8_t version;
 } __attribute__ ((packed));
 
+struct grub_iso9660_date2
+{
+  grub_uint8_t year;
+  grub_uint8_t month;
+  grub_uint8_t day;
+  grub_uint8_t hour;
+  grub_uint8_t minute;
+  grub_uint8_t second;
+  grub_uint8_t offset;
+} __attribute__ ((packed));
+
 /* A directory entry.  */
 struct grub_iso9660_dir
 {
@@ -64,7 +76,7 @@ struct grub_iso9660_dir
   grub_uint32_t first_sector_be;
   grub_uint32_t size;
   grub_uint32_t size_be;
-  grub_uint8_t unused1[7];
+  struct grub_iso9660_date2 mtime;
   grub_uint8_t flags;
   grub_uint8_t unused2[6];
   grub_uint8_t namelen;
@@ -146,6 +158,7 @@ struct grub_iso9660_data
 struct grub_fshelp_node
 {
   struct grub_iso9660_data *data;
+  struct grub_iso9660_dir dirent;
   unsigned int size;
   unsigned int blk;
   unsigned int dir_blk;
@@ -154,6 +167,52 @@ struct grub_fshelp_node
 
 static grub_dl_t my_mod;
 
+
+static grub_err_t
+iso9660_to_unixtime (const struct grub_iso9660_date *i, grub_int32_t *nix)
+{
+  struct grub_datetime datetime;
+  
+  if (! i->year[0] && ! i->year[1]
+      && ! i->year[2] && ! i->year[3]
+      && ! i->month[0] && ! i->month[1]
+      && ! i->day[0] && ! i->day[1]
+      && ! i->hour[0] && ! i->hour[1]
+      && ! i->minute[0] && ! i->minute[1]
+      && ! i->second[0] && ! i->second[1]
+      && ! i->hundredth[0] && ! i->hundredth[1])
+    return grub_error (GRUB_ERR_BAD_NUMBER, "empty date");
+  datetime.year = (i->year[0] - '0') * 1000 + (i->year[1] - '0') * 100
+    + (i->year[2] - '0') * 10 + (i->year[3] - '0');
+  datetime.month = (i->month[0] - '0') * 10 + (i->month[1] - '0');
+  datetime.day = (i->day[0] - '0') * 10 + (i->day[1] - '0');
+  datetime.hour = (i->hour[0] - '0') * 10 + (i->hour[1] - '0');
+  datetime.minute = (i->minute[0] - '0') * 10 + (i->minute[1] - '0');
+  datetime.second = (i->second[0] - '0') * 10 + (i->second[1] - '0');
+  
+  if (!grub_datetime2unixtime (&datetime, nix))
+    return grub_error (GRUB_ERR_BAD_NUMBER, "incorrect date");
+  *nix -= i->offset * 60 * 15;
+  return GRUB_ERR_NONE;
+}
+
+static int
+iso9660_to_unixtime2 (const struct grub_iso9660_date2 *i, grub_int32_t *nix)
+{
+  struct grub_datetime datetime;
+
+  datetime.year = i->year + 1900;
+  datetime.month = i->month;
+  datetime.day = i->day;
+  datetime.hour = i->hour;
+  datetime.minute = i->minute;
+  datetime.second = i->second;
+  
+  if (!grub_datetime2unixtime (&datetime, nix))
+    return 0;
+  *nix -= i->offset * 60 * 15;
+  return 1;
+}
 
 /* Iterate over the susp entries, starting with block SUA_BLOCK on the
    offset SUA_POS with a size of SUA_SIZE bytes.  Hook is called for
@@ -366,7 +425,6 @@ grub_iso9660_mount (grub_disk_t disk)
 static char *
 grub_iso9660_read_symlink (grub_fshelp_node_t node)
 {
-  struct grub_iso9660_dir dirent;
   int sua_off;
   int sua_size;
   char *symlink = 0;
@@ -444,13 +502,10 @@ grub_iso9660_read_symlink (grub_fshelp_node_t node)
       return 0;
     }
 
-  if (grub_disk_read (node->data->disk, node->dir_blk, node->dir_off,
-		      sizeof (dirent), (char *) &dirent))
-    return 0;
-
-  sua_off = (sizeof (dirent) + dirent.namelen + 1 - (dirent.namelen % 2)
+  sua_off = (sizeof (node->dirent) + node->dirent.namelen + 1
+	     - (node->dirent.namelen % 2)
 	     + node->data->susp_skip);
-  sua_size = dirent.len - sua_off;
+  sua_size = node->dirent.len - sua_off;
 
   symlink = grub_malloc (1);
   if (!symlink)
@@ -647,6 +702,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
             filename_alloc = 1;
           }
 
+	node->dirent = dirent;
 	if (hook (filename, type, node))
 	  {
 	    if (filename_alloc)
@@ -685,6 +741,8 @@ grub_iso9660_dir (grub_device_t device, const char *path,
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      info.mtimeset = !!iso9660_to_unixtime2 (&node->dirent.mtime, &info.mtime);
+
       grub_free (node);
       return hook (filename, &info);
     }
@@ -882,6 +940,32 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
   return grub_errno;
 }
 
+/* Get writing time of filesystem. */
+static grub_err_t 
+grub_iso9660_mtime (grub_device_t device, grub_int32_t *timebuf)
+{
+  struct grub_iso9660_data *data;
+  grub_disk_t disk = device->disk;
+  grub_err_t err;
+
+  grub_dl_ref (my_mod);
+
+  data = grub_iso9660_mount (disk);
+  if (!data)
+    {
+      grub_dl_unref (my_mod);
+      return grub_errno;
+    }
+  err = iso9660_to_unixtime (&data->voldesc.modified, timebuf);
+
+  grub_dl_unref (my_mod);
+
+  grub_free (data);
+
+  return err;
+}
+
+
 
 
 static struct grub_fs grub_iso9660_fs =
@@ -893,6 +977,7 @@ static struct grub_fs grub_iso9660_fs =
     .close = grub_iso9660_close,
     .label = grub_iso9660_label,
     .uuid = grub_iso9660_uuid,
+    .mtime = grub_iso9660_mtime,
     .next = 0
   };
 
