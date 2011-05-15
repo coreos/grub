@@ -985,6 +985,11 @@ module = {
 };
 
 module = {
+  name = minix3;
+  common = fs/minix3.c;
+};
+
+module = {
   name = nilfs2;
   common = fs/nilfs2.c;
 };

@@ -1,3 +1,19 @@
+2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-05-15  Feiran Zheng <famcool@gmail.com>
+
+	* Makefile.util.def (libgrubmods.a): Add minix3.
+	* grub-core/Makefile.core.def (minix3): New module.
+	* grub-core/fs/minix.c (GRUB_MINIX_MAGIC) [MODE_MINIX3]: New value.
+	(GRUB_MINIX_BSIZE): Removed.
+	(GRUB_MINIX_INODE_DIR_BLOCKS): New definition. All users updated.
+	(grub_minix_ino_t): New type.
+	(grub_minix_le_to_cpu_ino): New macro.
+	(GRUB_MINIX_ZONE2SECT): New definition. All users updated.
+	(grub_minix_sblock) [MODE_MINIX3]: Change for minix3.
+	(grub_minix_data): New field block_size.
+	(grub_minix_read_file): Handle 64-bit correctly.
+	* grub-core/fs/minix3.c: New file.
+
 2011-05-15  Tristan Gingold  <gingold@free.fr>
 2011-05-15  Robert Millan  <rmh.grub@aybabtu.com>
 2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
