@@ -1,5 +1,12 @@
 2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/cs5536.c: Don't include grub/machine/kernel.h on
+	non-loongson.
+	* grub-core/kern/mips/dl.c (grub_arch_dl_init_linker): Fix argument
+	to grub_dl_register_symbol.
+
+2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix compilation errors.
 
 	* grub-core/term/ns8250.c (serial_get_divisor): Declare 'port' as

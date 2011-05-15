@@ -21,7 +21,9 @@
 #include <grub/pci.h>
 #include <grub/time.h>
 #include <grub/ata.h>
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
 #include <grub/machine/kernel.h>
+#endif
 
 #include <grub/dl.h>
 
