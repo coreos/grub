@@ -1,5 +1,13 @@
 2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	ROMFS support.
+
+	* Makefile.util.def (libgrubmods.a): Add romfs.
+	* grub-core/Makefile.core.def (romfs): New module.
+	* grub-core/fs/romfs.c: New file.
+
+2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Squashfs v4 support.
 
 	* Makefile.util.def (libgrubmods.a): Add squash4.
