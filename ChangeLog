@@ -1,5 +1,10 @@
 2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/btrfs.c (grub_btrfs_read_logical): Silence spurious
+	warning. Move variables before code while on it.
+
+2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fuloong support.
 
 	* configure.ac: Rename yeeloong platform to loongson. All users updated.

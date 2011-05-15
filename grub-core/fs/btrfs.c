@@ -589,10 +589,14 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
       struct grub_btrfs_key *key;
       struct grub_btrfs_chunk_item *chunk;  
       grub_uint64_t csize;
-      grub_err_t err; 
+      grub_err_t err = 0; 
       struct grub_btrfs_key key_out;
       int challoc = 0;
       grub_device_t dev;
+      struct grub_btrfs_key key_in;
+      grub_size_t chsize;
+      grub_disk_addr_t chaddr;
+
       grub_dprintf ("btrfs", "searching for laddr %" PRIxGRUB_UINT64_T "\n",
 		    addr);
       for (ptr = data->sblock.bootstrap_mapping;
@@ -616,9 +620,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	    + sizeof (struct grub_btrfs_chunk_stripe)
 	    * grub_le_to_cpu16 (chunk->nstripes);
 	}
-      struct grub_btrfs_key key_in;
-      grub_size_t chsize;
-      grub_disk_addr_t chaddr;
+
       key_in.object_id = GRUB_BTRFS_OBJECT_ID_CHUNK;
       key_in.type = GRUB_BTRFS_ITEM_TYPE_CHUNK;
       key_in.offset = addr;
