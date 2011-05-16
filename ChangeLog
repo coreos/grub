@@ -1,5 +1,14 @@
 2011-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Skip incorrect USB devices.
+
+	* grub-core/bus/usb/usb.c (grub_usb_device_initialize): Fail if
+	configcnt == 0.
+	* include/grub/usb.h (grub_usb_err_t): New enum value
+	GRUB_USB_ERR_BADDEVICE.
+
+2011-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fuloong video init support.
 
 	* include/grub/vga.h (grub_vga_write_arx): inb monochrome address as
