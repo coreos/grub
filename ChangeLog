@@ -1,5 +1,10 @@
 2011-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/pci.c (grub_memalign_dma32): Always allocate in 64-byte
+	blocks.
+
+2011-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/usbhub.c (attach_root_port): Wait 10ms
 	after enabling port.
 

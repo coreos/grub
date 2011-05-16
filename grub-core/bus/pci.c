@@ -20,6 +20,7 @@
 #include <grub/dl.h>
 #include <grub/pci.h>
 #include <grub/mm.h>
+#include <grub/misc.h>
 #include <grub/mm_private.h>
 #include <grub/cache.h>
 
@@ -30,7 +31,11 @@ GRUB_MOD_LICENSE ("GPLv3+");
 struct grub_pci_dma_chunk *
 grub_memalign_dma32 (grub_size_t align, grub_size_t size)
 {
-  void *ret = grub_memalign (align, size);
+  void *ret;
+  if (align < 64)
+    align = 64;
+  size = ALIGN_UP (size, align);
+  ret = grub_memalign (align, size);
   if (!ret)
     return 0;
   grub_arch_sync_dma_caches (ret, size);
