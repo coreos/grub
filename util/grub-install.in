@@ -621,8 +621,7 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
     fi
 elif [ x"${target_cpu}-${platform}" = xmips-arc ]; then
     dvhtool -d "${install_device}" --unix-to-vh "{grubdir}/core.${imgext}" grub
-    echo "You will have to set boot-device manually.  At the Open Firmware prompt, type:"
-
+    echo "You will have to set SystemPartition and OSLoader manually."
 elif [ x"$platform" = xefi ]; then
     cp "${grubdir}/core.${imgext}" "${efidir}/${efi_file}"
     # For old macs. Suggested by Peter Jones.
