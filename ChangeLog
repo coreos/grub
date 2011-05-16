@@ -1,3 +1,19 @@
+2011-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fuloong video init support.
+
+	* include/grub/vga.h (grub_vga_write_arx): inb monochrome address as
+	well.
+	(grub_vga_read_arx): New function.
+	* grub-core/video/sis315pro.c (GRUB_SIS315PRO_MMIO_SPACE): New
+	definition.
+	(framebuffer): New members io, mmioptr and mmiobase.
+	(read_sis_cmd): New function.
+	(write_sis_cmd): Likewise.
+	(grub_video_sis315pro_setup): Do the initialisation. Use 640x480
+	rather than 640x400.
+	* grub-core/video/sis315_init.c: New file.
+
 2011-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/bus/cs5536.c: Don't include grub/machine/kernel.h on
