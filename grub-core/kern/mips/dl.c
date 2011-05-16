@@ -213,6 +213,8 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		      = sizeof (grub_uint32_t) * (gpptr - gp);
 		    gpptr++;
 		    break;
+		  case R_MIPS_JALR:
+		    break;
 		  default:
 		    {
 		      grub_free (gp);
@@ -232,6 +234,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 void 
 grub_arch_dl_init_linker (void)
 {
-  grub_dl_register_symbol ("__gnu_local_gp", &__gnu_local_gp_dummy, 0);
+  grub_dl_register_symbol ("__gnu_local_gp", &__gnu_local_gp_dummy, 0, 0);
 }
 

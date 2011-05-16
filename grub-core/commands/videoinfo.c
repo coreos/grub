@@ -25,6 +25,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static unsigned height, width, depth; 
 
 static int

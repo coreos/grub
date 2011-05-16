@@ -28,16 +28,20 @@
 #include <grub/memory.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* For frequencies.  */
 #include <grub/pci.h>
 #include <grub/machine/time.h>
 
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
-/* This can be detected on runtime from PMON, but:
-     a) it wouldn't work when GRUB is the firmware
-   and
-     b) for now we only support Yeeloong anyway.  */
-#define LOONGSON_MACHTYPE "machtype=lemote-yeeloong-2f-8.9inches"
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+#include <grub/machine/kernel.h>
+
+const char loongson_machtypes[][60] =
+  {
+    [GRUB_ARCH_MACHINE_YEELOONG] = "machtype=lemote-yeeloong-2f-8.9inches",
+    [GRUB_ARCH_MACHINE_FULOONG]  = "machtype=lemote-fuloong-2f-unknown"
+  };
 #endif
 
 static grub_dl_t my_mod;
@@ -222,7 +226,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   /* For arguments.  */
   linux_argc = argc;
-#ifdef LOONGSON_MACHTYPE
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
   linux_argc++;
 #endif
   /* Main arguments.  */
@@ -237,8 +241,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   /* Normal arguments.  */
   for (i = 1; i < argc; i++)
     size += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
-#ifdef LOONGSON_MACHTYPE
-  size += ALIGN_UP (sizeof (LOONGSON_MACHTYPE), 4);
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+  size += ALIGN_UP (sizeof (loongson_machtypes[0]), 4);
 #endif
 
   /* rd arguments.  */
@@ -277,14 +281,20 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   linux_argv++;
   linux_args += ALIGN_UP (sizeof ("a0"), 4);
 
-#ifdef LOONGSON_MACHTYPE
-  /* In Loongson platform, it is the responsibility of the bootloader/firmware
-     to supply the OS kernel with machine type information.  */
-  grub_memcpy (linux_args, LOONGSON_MACHTYPE, sizeof (LOONGSON_MACHTYPE));
-  *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
-    + target_addr;
-  linux_argv++;
-  linux_args += ALIGN_UP (sizeof (LOONGSON_MACHTYPE), 4);
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+  {
+    unsigned mtype = grub_arch_machine;
+    if (mtype >= ARRAY_SIZE (loongson_machtypes))
+      mtype = 0;
+    /* In Loongson platform, it is the responsibility of the bootloader/firmware
+       to supply the OS kernel with machine type information.  */
+    grub_memcpy (linux_args, loongson_machtypes[mtype],
+		 sizeof (loongson_machtypes[mtype]));
+    *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
+      + target_addr;
+    linux_argv++;
+    linux_args += ALIGN_UP (sizeof (loongson_machtypes[mtype]), 4);
+  }
 #endif
 
   for (i = 1; i < argc; i++)
@@ -379,8 +389,9 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     grub_relocator_chunk_t ch;
 
     err = grub_relocator_alloc_chunk_align (relocator, &ch,
-					    target_addr + linux_size + 0x10000,
-					    (0xffffffff - size) + 1,
+					    (target_addr & 0x1fffffff)
+					    + linux_size + 0x10000,
+					    (0x10000000 - size),
 					    size, 0x10000,
 					    GRUB_RELOCATOR_PREFERENCE_NONE);
 

@@ -60,7 +60,9 @@ typedef grub_uint16_t gf_double_t;
 static char *gf_invert __attribute__ ((section(".text"))) = (void *) 0x100000;
 static char *scratch __attribute__ ((section(".text"))) = (void *) 0x100100;
 #else
+#if defined (STANDALONE)
 static char *scratch;
+#endif
 static grub_uint8_t gf_invert[256];
 #endif
 
@@ -431,8 +433,8 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
       tt = cs + crs;
       if (tt > MAX_BLOCK_SIZE)
 	{
-	  cs = (cs * MAX_BLOCK_SIZE) / tt;
-	  crs = (crs * MAX_BLOCK_SIZE) / tt;
+	  cs = ((cs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
+	  crs = ((crs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
 	}
       encode_block (ptr, cs, rptr, crs);
       ptr += cs;
@@ -466,8 +468,8 @@ grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs)
       tt = cs + crs;
       if (tt > MAX_BLOCK_SIZE)
 	{
-	  cs = (cs * MAX_BLOCK_SIZE) / tt;
-	  crs = (crs * MAX_BLOCK_SIZE) / tt;
+	  cs = ((cs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
+	  crs = ((crs * (MAX_BLOCK_SIZE / 512)) / tt) * 512;
 	}
       decode_block (ptr, cs, rptr, crs);
       ptr += cs;
@@ -499,14 +501,10 @@ main (int argc, char **argv)
   fseek (in, 0, SEEK_END);
   s = ftell (in);
   fseek (in, 0, SEEK_SET);
-  rs = 1024 * ((s + MAX_BLOCK_SIZE - 1) / (MAX_BLOCK_SIZE - 1024));
+  rs = s / 3;
   buf = xmalloc (s + rs + SECTOR_SIZE);
   fread (buf, 1, s, in);
 
-  s = 0x5fbb;
-  rs = 0x6af9;
-
-#if 0
   grub_reed_solomon_add_redundancy (buf, s, rs);
 
   out = fopen ("tst_rs.bin", "wb");
@@ -518,9 +516,6 @@ main (int argc, char **argv)
   out = fopen ("tst_dam.bin", "wb");
   fwrite (buf, 1, s + rs, out);
   fclose (out);
-#endif
-  s = 0x5fbb;
-  rs = 0x6af9;
   grub_reed_solomon_recover (buf, s, rs);
 
   out = fopen ("tst_rec.bin", "wb");

@@ -127,11 +127,13 @@ struct grub_ahci_device
   struct grub_pci_dma_chunk *command_table_chunk;
   volatile struct grub_ahci_cmd_table *command_table;
   struct grub_pci_dma_chunk *rfis;
+  int present;
 };
 
 static grub_err_t 
 grub_ahci_readwrite_real (struct grub_ahci_device *dev,
-			  struct grub_disk_ata_pass_through_parms *parms);
+			  struct grub_disk_ata_pass_through_parms *parms,
+			  int spinup);
 
 
 enum
@@ -370,6 +372,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 
       adev->hba = hba;
       adev->port = i;
+      adev->present = 1;
       adev->num = numdevs++;
 
       if (init_port (adev))
@@ -495,7 +498,8 @@ static const int register_map[11] = { 3 /* Features */,
 
 static grub_err_t 
 grub_ahci_readwrite_real (struct grub_ahci_device *dev,
-			  struct grub_disk_ata_pass_through_parms *parms)
+			  struct grub_disk_ata_pass_through_parms *parms,
+			  int spinup)
 {
   struct grub_pci_dma_chunk *bufc;
   grub_uint64_t endtime;
@@ -516,7 +520,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
 	    break;
 	  }
       dev->hba->ports[dev->port].command |= GRUB_AHCI_HBA_PORT_CMD_ST;
-      endtime = grub_get_time_ms () + 1000;
+      endtime = grub_get_time_ms () + (spinup ? 10000 : 1000);
       while (!(dev->hba->ports[dev->port].command & GRUB_AHCI_HBA_PORT_CMD_CR))
 	if (grub_get_time_ms () > endtime)
 	  {
@@ -606,7 +610,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
   grub_dprintf ("ahci", "AHCI tfd = %x\n",
 		dev->hba->ports[dev->port].task_file_data);
 
-  endtime = grub_get_time_ms () + 1000;
+  endtime = grub_get_time_ms () + (spinup ? 10000 : 1000);
   while ((dev->hba->ports[dev->port].command_issue & 1))
     if (grub_get_time_ms () > endtime)
       {
@@ -656,9 +660,10 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
 
 static grub_err_t 
 grub_ahci_readwrite (grub_ata_t disk,
-		     struct grub_disk_ata_pass_through_parms *parms)
+		     struct grub_disk_ata_pass_through_parms *parms,
+		     int spinup)
 {
-  return grub_ahci_readwrite_real (disk->data, parms);
+  return grub_ahci_readwrite_real (disk->data, parms, spinup);
 }
 
 static grub_err_t
@@ -680,6 +685,7 @@ grub_ahci_open (int id, int devnum, struct grub_ata *ata)
 
   ata->data = dev;
   ata->dma = 1;
+  ata->present = &dev->present;
 
   return GRUB_ERR_NONE;
 }

@@ -30,6 +30,8 @@
 #include <grub/hfs.h>
 #include <grub/charset.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_HFSPLUS_MAGIC 0x482B
 #define GRUB_HFSPLUSX_MAGIC 0x4858
 #define GRUB_HFSPLUS_SBLOCK 2

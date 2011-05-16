@@ -195,6 +195,11 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
 	chunk_size = s->sh_addr + s->sh_size;
     }
 
+  if (chunk_size < sizeof (e))
+    chunk_size = sizeof (e);
+  chunk_size += e.e_phnum * e.e_phentsize;
+  chunk_size += e.e_shnum * e.e_shentsize;
+
   {
     grub_relocator_chunk_t ch;
 
@@ -394,7 +399,7 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
   grub_err_t err;
   Elf_Ehdr e;
   Elf_Shdr *s, *symsh, *strsh;
-  char *shdr;
+  char *shdr = NULL;
   unsigned symsize, strsize;
   void *sym_chunk;
   grub_uint8_t *curload;

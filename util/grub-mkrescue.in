@@ -160,7 +160,7 @@ process_input_dir ()
     input_dir="$1"
     platform="$2"
     mkdir -p ${iso9660_dir}/boot/grub/${platform}
-    for file in ${input_dir}/*.mod; do
+    for file in "${input_dir}/"*.mod "${input_dir}/"efiemu32.o "${input_dir}/"efiemu64.o; do
         if test -f "$file"; then
             cp -f "$file" ${iso9660_dir}/boot/grub/${platform}/
         fi
@@ -286,6 +286,10 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
     make_image "${efi64_dir}" x86_64-efi "${efi_dir}"/efi/boot/bootx64.efi ""
     # build bootia32.efi
     make_image "${efi32_dir}" i386-efi "${efi_dir}"/efi/boot/bootia32.efi ""
+    if [ -e "${efi_dir}"/efi/boot/bootia32.efi ]; then
+        # For old macs. Suggested by Peter Jones.
+	cp "${efi_dir}"/efi/boot/bootia32.efi "${efi_dir}"/efi/boot/boot.efi
+    fi
 
     mformat -C -f 2880 -L 16 -i "${iso9660_dir}"/efi.img ::
     mcopy -s -i "${iso9660_dir}"/efi.img ${efi_dir}/efi ::/

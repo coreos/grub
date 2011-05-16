@@ -20,10 +20,10 @@
 #include <grub/types.h>
 #include <grub/lib/crc.h>
 
-static grub_uint32_t crc32_table [256];
+static grub_uint32_t crc32c_table [256];
 
 static void
-init_crc32_table (void)
+init_crc32c_table (void)
 {
   auto grub_uint32_t reflect (grub_uint32_t ref, int len);
   grub_uint32_t reflect (grub_uint32_t ref, int len)
@@ -41,33 +41,33 @@ init_crc32_table (void)
       return result;
     }
 
-  grub_uint32_t polynomial = 0x04c11db7;
+  grub_uint32_t polynomial = 0x1edc6f41;
   int i, j;
 
   for(i = 0; i < 256; i++)
     {
-      crc32_table[i] = reflect(i, 8) << 24;
+      crc32c_table[i] = reflect(i, 8) << 24;
       for (j = 0; j < 8; j++)
-        crc32_table[i] = (crc32_table[i] << 1) ^
-            (crc32_table[i] & (1 << 31) ? polynomial : 0);
-      crc32_table[i] = reflect(crc32_table[i], 32);
+        crc32c_table[i] = (crc32c_table[i] << 1) ^
+            (crc32c_table[i] & (1 << 31) ? polynomial : 0);
+      crc32c_table[i] = reflect(crc32c_table[i], 32);
     }
 }
 
 grub_uint32_t
-grub_getcrc32 (grub_uint32_t crc, void *buf, int size)
+grub_getcrc32c (grub_uint32_t crc, const void *buf, int size)
 {
   int i;
-  grub_uint8_t *data = buf;
+  const grub_uint8_t *data = buf;
 
-  if (! crc32_table[1])
-    init_crc32_table ();
+  if (! crc32c_table[1])
+    init_crc32c_table ();
 
   crc^= 0xffffffff;
 
   for (i = 0; i < size; i++)
     {
-      crc = (crc >> 8) ^ crc32_table[(crc & 0xFF) ^ *data];
+      crc = (crc >> 8) ^ crc32c_table[(crc & 0xFF) ^ *data];
       data++;
     }
 

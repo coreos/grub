@@ -415,6 +415,18 @@ grub_make_system_path_relative_to_its_root (const char *path)
 	  if (offset == 0)
 	    {
 	      free (buf);
+#ifdef __linux__
+	      {
+		char *bind;
+		grub_free (grub_find_root_device_from_mountinfo (buf2, &bind));
+		if (bind && bind[0] && bind[1])
+		  {
+		    buf3 = bind;
+		    goto parsedir;
+		  }
+		grub_free (bind);
+	      }
+#endif
 	      free (buf2);
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 	      if (poolfs)
@@ -437,6 +449,21 @@ grub_make_system_path_relative_to_its_root (const char *path)
     }
   free (buf);
   buf3 = xstrdup (buf2 + offset);
+  buf2[offset] = 0;
+#ifdef __linux__
+  {
+    char *bind;
+    grub_free (grub_find_root_device_from_mountinfo (buf2, &bind));
+    if (bind && bind[0] && bind[1])
+      {
+	char *temp = buf3;
+	buf3 = grub_xasprintf ("%s%s%s", bind, buf3[0] == '/' ?"":"/", buf3);
+	grub_free (temp);
+      }
+    grub_free (bind);
+  }
+#endif
+  
   free (buf2);
 
 #ifdef __CYGWIN__
@@ -452,6 +479,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
     }
 #endif
 
+ parsedir:
   /* Remove trailing slashes, return empty string if root directory.  */
   len = strlen (buf3);
   while (len > 0 && buf3[len - 1] == '/')

@@ -23,6 +23,8 @@
 #include <grub/mm.h>
 #include <grub/scsi.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_ata_dev_t grub_ata_dev_list;
 
 /* Byteorder has to be changed before strings can be read.  */
@@ -75,13 +77,19 @@ grub_atapi_identify (struct grub_ata *dev)
   parms.size = GRUB_DISK_SECTOR_SIZE;
   parms.buffer = info;
 
-  err = dev->dev->readwrite (dev, &parms);
+  err = dev->dev->readwrite (dev, &parms, *dev->present);
   if (err)
-    return err;
+    {
+      *dev->present = 0;
+      return err;
+    }
 
   if (parms.size != GRUB_DISK_SECTOR_SIZE)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		       "device cannot be identified");
+    {
+      *dev->present = 0;
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			 "device cannot be identified");
+    }
 
   dev->atapi = 1;
 
@@ -112,7 +120,7 @@ grub_ata_identify (struct grub_ata *dev)
 
   parms.taskfile.cmd = GRUB_ATA_CMD_IDENTIFY_DEVICE;
 
-  err = dev->dev->readwrite (dev, &parms);
+  err = dev->dev->readwrite (dev, &parms, *dev->present);
 
   if (err || parms.size != GRUB_DISK_SECTOR_SIZE)
     {
@@ -126,13 +134,18 @@ grub_ata_identify (struct grub_ata *dev)
 	return grub_atapi_identify (dev);
 
       else if (sts == 0x00)
-	/* No device, return error but don't print message.  */
-	return GRUB_ERR_UNKNOWN_DEVICE;
-
+	{
+	  *dev->present = 0;
+	  /* No device, return error but don't print message.  */
+	  return GRUB_ERR_UNKNOWN_DEVICE;
+	}
       else
-	/* Other Error.  */
-	return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-			   "device cannot be identified");
+	{
+	  *dev->present = 0;
+	  /* Other Error.  */
+	  return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			     "device cannot be identified");
+	}
     }
 
   /* Now it is certain that this is not an ATAPI device.  */
@@ -306,7 +319,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
       if (ata->dma)
 	parms.dma = 1;
   
-      err = ata->dev->readwrite (ata, &parms);
+      err = ata->dev->readwrite (ata, &parms, 0);
       if (err)
 	return err;
       if (parms.size != batch * GRUB_DISK_SECTOR_SIZE)
@@ -489,7 +502,7 @@ grub_atapi_read (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
   parms.size = size;
   parms.buffer = buf;
   
-  err = dev->dev->readwrite (dev, &parms);
+  err = dev->dev->readwrite (dev, &parms, 0);
   if (err)
     return err;
 

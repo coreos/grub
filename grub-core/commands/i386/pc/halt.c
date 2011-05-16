@@ -24,6 +24,8 @@
 #include <grub/machine/int.h>
 #include <grub/acpi.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] =
   {
     {"no-apm", 'n', 0, N_("Do not use APM to halt the computer."), 0, 0},

@@ -23,6 +23,9 @@
 #include <grub/bitmap.h>
 #include <grub/bitmap_scale.h>
 #include <grub/types.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Prototypes for module-local functions.  */
 static grub_err_t scale_nn (struct grub_video_bitmap *dst,

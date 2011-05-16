@@ -24,6 +24,8 @@
 #include <grub/scsicmd.h>
 #include <grub/misc.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_USBMS_DIRECTION_BIT	7
 
 /* The USB Mass Storage Command Block Wrapper.  */
@@ -70,7 +72,11 @@ static int first_available_slot = 0;
 static grub_err_t
 grub_usbms_reset (grub_usb_device_t dev, int interface)
 {
-  return grub_usb_control_msg (dev, 0x21, 255, 0, interface, 0, 0);
+  grub_usb_err_t u;
+  u = grub_usb_control_msg (dev, 0x21, 255, 0, interface, 0, 0);
+  if (u)
+    return grub_error (GRUB_ERR_IO, "USB error %d", u);
+  return GRUB_ERR_NONE;
 }
 
 static void
@@ -410,7 +416,7 @@ static struct grub_scsi_dev grub_usbms_dev =
     .write = grub_usbms_write
   };
 
-struct grub_usb_attach_desc attach_hook =
+static struct grub_usb_attach_desc attach_hook =
 {
   .class = GRUB_USB_CLASS_MASS_STORAGE,
   .hook = grub_usbms_attach

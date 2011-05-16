@@ -35,6 +35,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define NILFS_INODE_BMAP_SIZE	7
 
 #define NILFS_SUPORT_REV	2

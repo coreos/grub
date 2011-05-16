@@ -30,6 +30,8 @@
 #include <grub/efi/uga_draw.h>
 #include <grub/pci.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_efi_guid_t uga_draw_guid = GRUB_EFI_UGA_DRAW_GUID;
 static struct grub_efi_uga_draw_protocol *uga;
 static grub_uint32_t uga_fb;

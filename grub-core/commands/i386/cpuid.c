@@ -27,6 +27,8 @@
 #include <grub/i386/cpuid.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define cpuid(num,a,b,c,d) \
   asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
 		: "=a" (a), "=r" (b), "=c" (c), "=d" (d)  \

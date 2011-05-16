@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/bufio.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* Uncomment following define to enable PNG debug.  */
 //#define PNG_DEBUG
 

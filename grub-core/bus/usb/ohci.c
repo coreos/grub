@@ -29,6 +29,8 @@
 #include <grub/cs5536.h>
 #include <grub/loader.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_ohci_hcca
 {
   /* Pointers to Interrupt Endpoint Descriptors.  Not used by

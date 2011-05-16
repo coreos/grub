@@ -23,6 +23,7 @@
 #include <string.h>
 #include <errno.h>
 #include <grub/util/misc.h>
+#include <grub/misc.h>
 
 int
 main (int argc, char **argv)
@@ -78,9 +79,12 @@ main (int argc, char **argv)
       {
 	char *oldname = NULL;
 	char *newsuffix;
+	char *ptr;
+
+	for (ptr = buf; *ptr && grub_isspace (*ptr); ptr++);
 
 	oldname = entryname;
-	parsed = grub_legacy_parse (buf, &entryname, &newsuffix);
+	parsed = grub_legacy_parse (ptr, &entryname, &newsuffix);
 	if (newsuffix)
 	  {
 	    suffixlen += strlen (newsuffix);

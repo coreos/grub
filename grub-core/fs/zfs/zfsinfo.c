@@ -26,6 +26,8 @@
 #include <grub/dl.h>
 #include <grub/env.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static inline void
 print_tabs (int n)
 {
@@ -364,21 +366,16 @@ grub_cmd_zfs_bootfs (grub_command_t cmd __attribute__ ((unused)), int argc,
   grub_free (nv);
   grub_free (nvlist);
 
-  if (bootpath && devid)
-    {
-      bootfs = grub_xasprintf ("zfs-bootfs=%s/%llu bootpath=%s diskdevid=%s",
-			       poolname, (unsigned long long) mdnobj,
-			       bootpath, devid);
-      if (!bootfs)
-	return grub_errno;
-    }
-  else
-    {
-      bootfs = grub_xasprintf ("zfs-bootfs=%s/%llu",
-			       poolname, (unsigned long long) mdnobj);
-      if (!bootfs)
-	return grub_errno;
-    }
+  bootfs = grub_xasprintf ("zfs-bootfs=%s/%llu%s%s%s%s%s%s",
+			   poolname, (unsigned long long) mdnobj,
+			   bootpath ? ",bootpath=\"" : "",
+			   bootpath ? : "",
+			   bootpath ? "\"" : "",
+			   devid ? ",diskdevid=\"" : "",
+			   devid ? : "",
+			   devid ? "\"" : "");
+  if (!bootfs)
+    return grub_errno;
   if (argc >= 2)
     grub_env_set (args[1], bootfs);
   else

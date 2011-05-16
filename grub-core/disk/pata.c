@@ -26,6 +26,8 @@
 #include <grub/cs5536.h>
 #include <grub/time.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* At the moment, only two IDE ports are supported.  */
 static const grub_port_t grub_pata_ioaddress[] = { GRUB_ATA_CH0_PORT1,
 						   GRUB_ATA_CH1_PORT1 };
@@ -43,6 +45,8 @@ struct grub_pata_device
      to select device 0 (commonly known as "master") or device 1
      (commonly known as "slave").  */
   int device;
+
+  int present;
 
   struct grub_pata_device *next;
 };
@@ -90,10 +94,11 @@ grub_pata_wait_not_busy (struct grub_pata_device *dev, int milliseconds)
 }
 
 static inline grub_err_t
-grub_pata_check_ready (struct grub_pata_device *dev)
+grub_pata_check_ready (struct grub_pata_device *dev, int spinup)
 {
   if (grub_pata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_BUSY)
-    return grub_pata_wait_not_busy (dev, GRUB_ATA_TOUT_STD);
+    return grub_pata_wait_not_busy (dev, spinup ? GRUB_ATA_TOUT_SPINUP
+				    : GRUB_ATA_TOUT_STD);
 
   return GRUB_ERR_NONE;
 }
@@ -132,10 +137,12 @@ grub_pata_pio_write (struct grub_pata_device *dev, char *buf, grub_size_t size)
 /* ATA pass through support, used by hdparm.mod.  */
 static grub_err_t
 grub_pata_readwrite (struct grub_ata *disk,
-		     struct grub_disk_ata_pass_through_parms *parms)
+		     struct grub_disk_ata_pass_through_parms *parms,
+		     int spinup)
 {
   struct grub_pata_device *dev = (struct grub_pata_device *) disk->data;
   grub_size_t nread = 0;
+  int i;
 
   if (! (parms->cmdsize == 0 || parms->cmdsize == 12))
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
@@ -153,10 +160,9 @@ grub_pata_readwrite (struct grub_ata *disk,
   /* Set registers.  */
   grub_pata_regset (dev, GRUB_ATA_REG_DISK, (dev->device << 4)
 		    | (parms->taskfile.disk & 0xef));
-  if (grub_pata_check_ready (dev))
+  if (grub_pata_check_ready (dev, spinup))
     return grub_errno;
 
-  int i;
   for (i = GRUB_ATA_REG_SECTORS; i <= GRUB_ATA_REG_LBAHIGH; i++)
     grub_pata_regset (dev, i,
 		     parms->taskfile.raw[7 + (i - GRUB_ATA_REG_SECTORS)]);
@@ -299,6 +305,7 @@ grub_pata_device_initialize (int port, int device, int addr)
   dev->port = port;
   dev->device = device;
   dev->ioaddress = addr + GRUB_MACHINE_PCI_IO_BASE;
+  dev->present = 1;
   dev->next = NULL;
 
   /* Register the device.  */
@@ -454,6 +461,7 @@ grub_pata_open (int id, int devnum, struct grub_ata *ata)
 
   ata->data = devfnd;
   ata->dma = 0;
+  ata->present = &devfnd->present;
 
   return GRUB_ERR_NONE;
 }

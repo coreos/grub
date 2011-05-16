@@ -34,6 +34,8 @@
 #include <grub/env.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #if defined (__i386) && !defined (GRUB_MACHINE_EFI)
 #include <grub/autoefi.h>
 #endif
@@ -342,7 +344,8 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
   grub_macho_t macho;
   grub_uint32_t startcode, endcode;
   int i;
-  char *ptr, *loadaddr;
+  char *ptr;
+  void *loadaddr;
   grub_addr_t loadaddr_target;
 
   if (argc < 1)
@@ -375,7 +378,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
   if (!grub_xnu_relocator)
     return grub_errno;
   grub_xnu_heap_target_start = startcode;
-  err = grub_xnu_heap_malloc (endcode - startcode, (void **) &loadaddr,
+  err = grub_xnu_heap_malloc (endcode - startcode, &loadaddr,
 			      &loadaddr_target);
 
   if (err)
@@ -386,7 +389,8 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
     }
 
   /* Load kernel. */
-  err = grub_macho_load32 (macho, loadaddr - startcode, GRUB_MACHO_NOBSS);
+  err = grub_macho_load32 (macho, (char *) loadaddr - startcode,
+			   GRUB_MACHO_NOBSS);
   if (err)
     {
       grub_macho_close (macho);
@@ -450,7 +454,8 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
   grub_macho_t macho;
   grub_uint64_t startcode, endcode;
   int i;
-  char *ptr, *loadaddr;
+  char *ptr;
+  void *loadaddr;
   grub_addr_t loadaddr_target;
 
   if (argc < 1)
@@ -486,7 +491,7 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
   if (!grub_xnu_relocator)
     return grub_errno;
   grub_xnu_heap_target_start = startcode;
-  err = grub_xnu_heap_malloc (endcode - startcode, (void **) &loadaddr,
+  err = grub_xnu_heap_malloc (endcode - startcode, &loadaddr,
 			      &loadaddr_target);
 
   if (err)
@@ -497,7 +502,8 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
     }
 
   /* Load kernel. */
-  err = grub_macho_load64 (macho, loadaddr - startcode, GRUB_MACHO_NOBSS);
+  err = grub_macho_load64 (macho, (char *) loadaddr - startcode,
+			   GRUB_MACHO_NOBSS);
   if (err)
     {
       grub_macho_close (macho);
@@ -636,7 +642,8 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   grub_file_t infoplist;
   struct grub_xnu_extheader *exthead;
   int neededspace = sizeof (*exthead);
-  grub_uint8_t *buf, *buf0;
+  grub_uint8_t *buf;
+  void *buf0;
   grub_addr_t buf_target;
   grub_size_t infoplistsize = 0, machosize = 0;
   char *name, *nameend;
@@ -692,7 +699,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   err = grub_xnu_align_heap (GRUB_XNU_PAGESIZE);
   if (err)
     return err;
-  err = grub_xnu_heap_malloc (neededspace, (void **) &buf0, &buf_target);
+  err = grub_xnu_heap_malloc (neededspace, &buf0, &buf_target);
   if (err)
     return err;
   buf = buf0;
@@ -704,7 +711,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   /* Load the binary. */
   if (macho)
     {
-      exthead->binaryaddr = buf_target + (buf - buf0);
+      exthead->binaryaddr = buf_target + (buf - (grub_uint8_t *) buf0);
       exthead->binarysize = machosize;
       if (grub_xnu_is_64bit)
 	err = grub_macho_readfile64 (macho, buf);
@@ -723,7 +730,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
   /* Load the plist. */
   if (infoplist)
     {
-      exthead->infoplistaddr = buf_target + (buf - buf0);
+      exthead->infoplistaddr = buf_target + (buf - (grub_uint8_t *) buf0);
       exthead->infoplistsize = infoplistsize + 1;
       if (grub_file_read (infoplist, buf, infoplistsize)
 	  != (grub_ssize_t) (infoplistsize))
@@ -739,7 +746,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
     }
   grub_errno = GRUB_ERR_NONE;
 
-  exthead->nameaddr = (buf - buf0) + buf_target;
+  exthead->nameaddr = (buf - (grub_uint8_t *) buf0) + buf_target;
   exthead->namesize = namelen + 1;
   grub_memcpy (buf, name, namelen);
   buf[namelen] = 0;
@@ -1424,7 +1431,7 @@ grub_cmd_xnu_resume (grub_command_t cmd __attribute__ ((unused)),
 #endif
 
 void
-grub_xnu_lock ()
+grub_xnu_lock (void)
 {
   if (!locked)
     grub_dl_ref (my_mod);
@@ -1432,7 +1439,7 @@ grub_xnu_lock ()
 }
 
 void
-grub_xnu_unlock ()
+grub_xnu_unlock (void)
 {
   if (locked)
     grub_dl_unref (my_mod);

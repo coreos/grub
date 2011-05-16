@@ -99,7 +99,8 @@ enum grub_ata_commands
 enum grub_ata_timeout_milliseconds
   {
     GRUB_ATA_TOUT_STD  =  1000,  /* 1s standard timeout.  */
-    GRUB_ATA_TOUT_DATA = 10000   /* 10s DATA I/O timeout.  */
+    GRUB_ATA_TOUT_DATA = 10000,   /* 10s DATA I/O timeout.  */
+    GRUB_ATA_TOUT_SPINUP  =  10000,  /* Give the device 10s on first try to spinon.  */
   };
 
 typedef union
@@ -179,6 +180,8 @@ struct grub_ata
 
   int dma;
 
+  int *present;
+
   void *data;
 
   struct grub_ata_dev *dev;
@@ -200,7 +203,8 @@ struct grub_ata_dev
   /* Read SIZE bytes from the device SCSI into BUF after sending the
      command CMD of size CMDSIZE.  */
   grub_err_t (*readwrite) (struct grub_ata *ata,
-			   struct grub_disk_ata_pass_through_parms *parms);
+			   struct grub_disk_ata_pass_through_parms *parms,
+			   int spinup);
 
   /* The next scsi device.  */
   struct grub_ata_dev *next;

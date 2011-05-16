@@ -68,7 +68,7 @@
 #define GRUB_E820_RESERVED   2
 #define GRUB_E820_ACPI       3
 #define GRUB_E820_NVS        4
-#define GRUB_E820_EXEC_CODE  5
+#define GRUB_E820_BADRAM     5
 
 #define GRUB_E820_MAX_ENTRY  128
 
@@ -79,9 +79,13 @@ struct grub_e820_mmap
   grub_uint32_t type;
 } __attribute__((packed));
 
-#define GRUB_VIDEO_LINUX_TYPE_TEXT	0x01
-#define GRUB_VIDEO_LINUX_TYPE_VESA	0x23    /* VESA VGA in graphic mode.  */
-#define GRUB_VIDEO_LINUX_TYPE_SIMPLE	0x70    /* Linear framebuffer without any additional functions.  */
+enum
+  {
+    GRUB_VIDEO_LINUX_TYPE_TEXT = 0x01,
+    GRUB_VIDEO_LINUX_TYPE_VESA = 0x23,    /* VESA VGA in graphic mode.  */
+    GRUB_VIDEO_LINUX_TYPE_EFIFB = 0x70,    /* EFI Framebuffer.  */
+    GRUB_VIDEO_LINUX_TYPE_SIMPLE = 0x70    /* Linear framebuffer without any additional functions.  */
+  };
 
 /* For the Linux/i386 boot protocol version 2.03.  */
 struct linux_kernel_header

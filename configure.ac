@@ -32,7 +32,7 @@ dnl type, so there is no conflict. Variables with the prefix "TARGET_"
 dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
 dnl type.
 
-AC_INIT([GRUB],[1.99~beta0],[bug-grub@gnu.org])
+AC_INIT([GRUB],[1.99],[bug-grub@gnu.org])
 
 AC_CONFIG_AUX_DIR([build-aux])
 
@@ -96,22 +96,20 @@ if test "x$with_platform" = x; then
     powerpc-*) platform=ieee1275 ;;
     powerpc64-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
-    mips-*) platform=yeeloong ;;
+    mips-*) platform=loongson ;;
+    ia64-*) platform=efi ;;
     *) AC_MSG_ERROR([unsupported CPU: "$target_cpu"]) ;;
   esac
 else
   platform="$with_platform"
 fi
 
-# Adjust CPU unless target was explicitly specified.
-if test -z "$target_alias"; then
-  case "$target_cpu"-"$platform" in
-    x86_64-efi) ;;
-    x86_64-emu) ;;
-    x86_64-*) target_cpu=i386 ;;
-    powerpc64-ieee1275) target_cpu=powerpc ;;
-  esac
-fi
+case "$target_cpu"-"$platform" in
+  x86_64-efi) ;;
+  x86_64-emu) ;;
+  x86_64-*) target_cpu=i386 ;;
+  powerpc64-ieee1275) target_cpu=powerpc ;;
+esac
 
 # Check if the platform is supported, make final adjustments.
 case "$target_cpu"-"$platform" in
@@ -125,8 +123,11 @@ case "$target_cpu"-"$platform" in
   i386-qemu) ;;
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
+  ia64-efi) ;;
   mips-qemu-mips) ;;
-  mips-yeeloong) ;;
+  mips-yeeloong) platform=loongson ;;
+  mips-fuloong) platform=loongson ;;
+  mips-loongson) ;;
   *-emu) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
@@ -159,7 +160,7 @@ case "$platform" in
   qemu)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_QEMU=1" ;;
   pc)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_PCBIOS=1" ;;
   emu)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_EMU=1" ;;
-  yeeloong)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_YEELOONG=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  loongson)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_LOONGSON=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
   qemu-mips)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
 esac
 case "$target_cpu" in
@@ -222,8 +223,8 @@ for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
   done
 done
 
-if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xyeeloong ); then
-   AC_MSG_ERROR([qemu and yeeloong ports need unifont])
+if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xloongson ); then
+   AC_MSG_ERROR([qemu and loongson ports need unifont])
 fi
 
 AC_SUBST([FONT_SOURCE])
@@ -249,7 +250,7 @@ else
 fi
 
 # These are not a "must".
-AC_PATH_PROG(MAKEINFO, makeinfo)
+AC_PATH_PROGS(MAKEINFO, makeinfo true)
 
 #
 # Checks for host programs.
@@ -401,7 +402,7 @@ if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
 fi
 
-if test "${target_cpu}-${platform}" = mips-yeeloong; then
+if test "${target_cpu}-${platform}" = mips-loongson; then
   AC_CACHE_CHECK([whether -march=loongson2f works], [grub_cv_cc_march_loongson2f], [
     SAVE_CFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -march=loongson2f"
@@ -457,7 +458,7 @@ fi
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
 case "${host_os}" in
-  cygwin) TARGET_OBJ2ELF='$(grub_utildir)/grub-pe2elf';
+  cygwin) TARGET_OBJ2ELF='$(top_builddir)/grub-pe2elf';
 # FIXME: put proper test here
   NEED_REGISTER_FRAME_INFO=1
   ;;
@@ -593,7 +594,7 @@ CFLAGS="$CFLAGS -Wl,--defsym,abort=main"
 fi
 
 # Check for libgcc symbols
-AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x)
+AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x __ia64_trampoline __udivsi3 __umoddi3 __udivdi3 __divsi3 __modsi3 __umodsi3 __moddi3 __divdi3)
 
 if test "x$TARGET_APPLE_CC" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib"
@@ -867,6 +868,12 @@ if test x"$enable_device_mapper" = xno ; then
 fi
 
 if test x"$device_mapper_excuse" = x ; then
+  # Check for device-mapper header.
+  AC_CHECK_HEADER([libdevmapper.h], [],
+               [device_mapper_excuse="need libdevmapper header"])
+fi
+
+if test x"$device_mapper_excuse" = x ; then
   # Check for device-mapper library.
   AC_CHECK_LIB([devmapper], [dm_task_create], [],
                [device_mapper_excuse="need devmapper library"])
@@ -886,6 +893,15 @@ if test x"$device_mapper_excuse" = x ; then
 fi
 
 AC_SUBST([LIBDEVMAPPER])
+
+LIBGEOM=
+if test x$host_kernel = xkfreebsd; then
+  AC_CHECK_LIB([geom], [geom_gettree], [],
+               [AC_MSG_ERROR([Your platform requires libgeom])])
+  LIBGEOM="-lgeom"
+fi
+
+AC_SUBST([LIBGEOM])
 
 AC_CHECK_LIB([lzma], [lzma_code],
              [LIBLZMA="-llzma"
@@ -933,12 +949,13 @@ AC_SUBST(NEED_REGISTER_FRAME_INFO)
 AM_CONDITIONAL([COND_emu], [test x$platform = xemu])
 AM_CONDITIONAL([COND_i386_pc], [test x$target_cpu = xi386 -a x$platform = xpc])
 AM_CONDITIONAL([COND_i386_efi], [test x$target_cpu = xi386 -a x$platform = xefi])
+AM_CONDITIONAL([COND_ia64_efi], [test x$target_cpu = xia64 -a x$platform = xefi])
 AM_CONDITIONAL([COND_i386_qemu], [test x$target_cpu = xi386 -a x$platform = xqemu])
 AM_CONDITIONAL([COND_i386_ieee1275], [test x$target_cpu = xi386 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_i386_coreboot], [test x$target_cpu = xi386 -a x$platform = xcoreboot])
 AM_CONDITIONAL([COND_i386_multiboot], [test x$target_cpu = xi386 -a x$platform = xmultiboot])
 AM_CONDITIONAL([COND_x86_64_efi], [test x$target_cpu = xx86_64 -a x$platform = xefi])
-AM_CONDITIONAL([COND_mips_yeeloong], [test x$target_cpu = xmips -a x$platform = xyeeloong])
+AM_CONDITIONAL([COND_mips_loongson], [test x$target_cpu = xmips -a x$platform = xloongson])
 AM_CONDITIONAL([COND_mips_qemu_mips], [test x$target_cpu = xmips -a x$platform = xqemu_mips])
 AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
@@ -961,6 +978,7 @@ AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
 
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
+AM_CONDITIONAL([COND_CYGWIN], [test x$host_os = xcygwin])
 
 # Output files.
 grub_CHECK_LINK_DIR

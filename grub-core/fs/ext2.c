@@ -51,6 +51,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* Log2 size of ext2 block in 512 blocks.  */
 #define LOG2_EXT2_BLOCK_SIZE(data)			\
 	(grub_le_to_cpu32 (data->sblock.log2_block_size) + 1)
@@ -555,7 +557,7 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
 
   /* Read the inode.  */
   if (grub_disk_read (data->disk,
-		      ((grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno)
+		      (((grub_disk_addr_t) grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno)
 		        << LOG2_EXT2_BLOCK_SIZE (data)),
 		      EXT2_INODE_SIZE (data) * blkoff,
 		      sizeof (struct grub_ext2_inode), inode))

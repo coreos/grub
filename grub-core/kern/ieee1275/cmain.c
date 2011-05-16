@@ -84,6 +84,9 @@ grub_ieee1275_find_options (void)
   if (rc >= 0 && !grub_strcmp (tmp, "Emulated PC"))
     is_qemu = 1;
 
+  if (grub_strncmp (tmp, "PowerMac", sizeof ("PowerMac") - 1) == 0)
+    grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS);
+
   if (is_smartfirmware)
     {
       /* Broken in all versions */

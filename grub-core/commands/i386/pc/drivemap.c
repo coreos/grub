@@ -29,6 +29,7 @@
 #include <grub/memory.h>
 #include <grub/machine/memory.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Real mode IVT slot (seg:off far pointer) for interrupt 0x13.  */
 static grub_uint32_t *const int13slot = UINT_TO_PTR (4 * 0x13);

@@ -1,6 +1,7 @@
+/* cmdline.h - linux command line handling */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,15 +17,15 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MACHINE_SERIAL_HEADER
-#define GRUB_MACHINE_SERIAL_HEADER	1
+#ifndef GRUB_CMDLINE_HEADER
+#define GRUB_CMDLINE_HEADER	1
 
-#define GRUB_MACHINE_SERIAL_DIVISOR_115200 2
-#define GRUB_MACHINE_SERIAL_PORT  0xbff003f8
+#include <grub/types.h>
 
-#ifndef ASM_FILE
-#define GRUB_MACHINE_SERIAL_PORTS { GRUB_MACHINE_SERIAL_PORT }
-#else
-#endif
+#define LINUX_IMAGE "BOOT_IMAGE="
 
-#endif 
+unsigned int grub_loader_cmdline_size (int argc, char *argv[]);
+int grub_create_loader_cmdline (int argc, char *argv[], char *buf,
+				grub_size_t size);
+
+#endif /* ! GRUB_CMDLINE_HEADER */

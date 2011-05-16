@@ -22,6 +22,8 @@
 #include <grub/types.h>
 #include <grub/vga.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define COLS	80
 #define ROWS	25
 

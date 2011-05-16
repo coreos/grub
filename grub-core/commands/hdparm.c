@@ -27,6 +27,8 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] = {
   {"apm",             'B', 0, N_("Set Advanced Power Management\n"
 			      "(1=low, ..., 254=high, 255=off)."),
@@ -77,7 +79,7 @@ grub_hdparm_do_ata_cmd (grub_ata_t ata, grub_uint8_t cmd,
   apt.buffer = buffer;
   apt.size = size;
 
-  if (ata->dev->readwrite (ata, &apt))
+  if (ata->dev->readwrite (ata, &apt, 0))
     return grub_errno;
 
   return GRUB_ERR_NONE;
@@ -92,7 +94,7 @@ grub_hdparm_do_check_powermode_cmd (grub_ata_t ata)
   apt.taskfile.cmd = GRUB_ATA_CMD_CHECK_POWER_MODE;
   apt.taskfile.disk = 0xE0;
 
-  if (ata->dev->readwrite (ata, &apt))
+  if (ata->dev->readwrite (ata, &apt, 0))
     return -1;
 
   return apt.taskfile.sectors;
@@ -110,7 +112,7 @@ grub_hdparm_do_smart_cmd (grub_ata_t ata, grub_uint8_t features)
   apt.taskfile.lba_high = 0xc2;
   apt.taskfile.disk = 0xE0;
 
-  if (ata->dev->readwrite (ata, &apt))
+  if (ata->dev->readwrite (ata, &apt, 0))
     return -1;
 
   if (features == GRUB_ATA_FEAT_SMART_STATUS)

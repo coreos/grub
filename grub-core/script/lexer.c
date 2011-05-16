@@ -126,7 +126,7 @@ int
 grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
 			  const char *input)
 {
-  int len;
+  int len = 0;
   char *p = 0;
   char *line = 0;
   YY_BUFFER_STATE buffer;

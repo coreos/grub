@@ -50,7 +50,7 @@ grub_script.yy.h: script/yylex.l
 grub_script.yy.c: grub_script.yy.h
 
 rs_decoder.S: $(srcdir)/lib/reed_solomon.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Os -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3
 
 kern/i386/pc/startup.S: $(builddir)/rs_decoder.S
 
@@ -125,7 +125,13 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
-if COND_mips_yeeloong
+if COND_ia64_efi
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/time.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
+endif
+
+if COND_mips_loongson
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
@@ -303,7 +309,7 @@ platform_DATA += moddep.lst
 CLEANFILES += config.log syminfo.lst moddep.lst
 
 $(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT)
-	sh $^ $@
+	TARGET_OBJ2ELF=@TARGET_OBJ2ELF@ sh $^ $@
 platform_DATA += $(MOD_FILES)
 CLEANFILES += $(MOD_FILES)
 
