@@ -30,6 +30,7 @@
 
 #define GRUB_SIS315PRO_PCIID 0x03251039
 #define GRUB_SIS315PRO_TOTAL_MEMORY_SPACE  0x800000
+#define GRUB_SIS315PRO_MMIO_SPACE 0x1000
 
 static struct
 {
@@ -39,8 +40,25 @@ static struct
   grub_uint8_t *ptr;
   int mapped;
   grub_uint32_t base;
+  grub_uint32_t mmiobase;
+  volatile grub_uint32_t *mmioptr;
   grub_pci_device_t dev;
+  grub_port_t io;
 } framebuffer;
+
+static grub_uint8_t
+read_sis_cmd (grub_uint8_t addr)
+{
+  grub_outb (addr, framebuffer.io + 0x44);
+  return grub_inb (framebuffer.io + 0x45);
+}
+
+static void
+write_sis_cmd (grub_uint8_t val, grub_uint8_t addr)
+{
+  grub_outb (addr, framebuffer.io + 0x44);
+  grub_outb (val, framebuffer.io + 0x45);
+}
 
 #ifndef TEST
 static grub_err_t
@@ -63,6 +81,8 @@ grub_video_sis315pro_video_fini (void)
 }
 #endif
 
+#include "sis315_init.c"
+
 static grub_err_t
 grub_video_sis315pro_setup (unsigned int width, unsigned int height,
 			    unsigned int mode_type,
@@ -71,6 +91,7 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
   int depth;
   grub_err_t err;
   int found = 0;
+  unsigned i;
 
 #ifndef TEST
   auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)));
@@ -89,7 +110,12 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
       found = 1;
 
       addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
-      framebuffer.base = grub_pci_read (addr);
+      framebuffer.base = grub_pci_read (addr) & GRUB_PCI_ADDR_MEM_MASK;
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG1);
+      framebuffer.mmiobase = grub_pci_read (addr) & GRUB_PCI_ADDR_MEM_MASK;
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG2);
+      framebuffer.io = (grub_pci_read (addr) & GRUB_PCI_ADDR_IO_MASK)
+	+ GRUB_MACHINE_PCI_IO_BASE;
       framebuffer.dev = dev;
 
       return 1;
@@ -99,7 +125,7 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
   depth = (mode_type & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK)
           >> GRUB_VIDEO_MODE_TYPE_DEPTH_POS;
 
-  if ((width != 640 && width != 0) || (height != 400 && height != 0)
+  if ((width != 640 && width != 0) || (height != 480 && height != 0)
       || (depth != 8 && depth != 0))
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "Only 640x400x8 is supported");
@@ -110,7 +136,7 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
 #endif
   /* Fill mode info details.  */
   framebuffer.mode_info.width = 640;
-  framebuffer.mode_info.height = 400;
+  framebuffer.mode_info.height = 480;
   framebuffer.mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
   framebuffer.mode_info.bpp = 8;
   framebuffer.mode_info.bytes_per_pixel = 1;
@@ -129,12 +155,49 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
     = grub_video_get_blit_format (&framebuffer.mode_info);
 #endif
 
+#ifndef TEST
+  if (found && (framebuffer.base == 0 || framebuffer.mmiobase == 0))
+    {
+      grub_pci_address_t addr;
+      /* FIXME: choose address dynamically if needed.   */
+      framebuffer.base =     0x40000000;
+      framebuffer.mmiobase = 0x04000000;
+      framebuffer.io = 0xb300;
+
+      addr = grub_pci_make_address (framebuffer.dev, GRUB_PCI_REG_ADDRESS_REG0);
+      grub_pci_write (addr, framebuffer.base | GRUB_PCI_ADDR_MEM_PREFETCH);
+
+      addr = grub_pci_make_address (framebuffer.dev, GRUB_PCI_REG_ADDRESS_REG1);
+      grub_pci_write (addr, framebuffer.mmiobase);
+
+      addr = grub_pci_make_address (framebuffer.dev, GRUB_PCI_REG_ADDRESS_REG2);
+      grub_pci_write (addr, framebuffer.io | GRUB_PCI_ADDR_SPACE_IO);
+
+      /* Set latency.  */
+      addr = grub_pci_make_address (framebuffer.dev, GRUB_PCI_REG_CACHELINE);
+      grub_pci_write (addr, 0x80004700);
+
+      /* Enable address spaces.  */
+      addr = grub_pci_make_address (framebuffer.dev, GRUB_PCI_REG_COMMAND);
+      grub_pci_write (addr, 0x7);
+
+      addr = grub_pci_make_address (framebuffer.dev, 0x30);
+      grub_pci_write (addr, 0x04060001);
+
+      framebuffer.io += GRUB_MACHINE_PCI_IO_BASE;
+    }
+#endif
+
+
   /* We can safely discard volatile attribute.  */
 #ifndef TEST
   framebuffer.ptr
     = (void *) grub_pci_device_map_range (framebuffer.dev,
 					  framebuffer.base,
 					  GRUB_SIS315PRO_TOTAL_MEMORY_SPACE);
+  framebuffer.mmioptr = grub_pci_device_map_range (framebuffer.dev,
+						   framebuffer.mmiobase,
+						   GRUB_SIS315PRO_MMIO_SPACE);
 #endif
   framebuffer.mapped = 1;
 
@@ -142,6 +205,145 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
   /* Prevent garbage from appearing on the screen.  */
   grub_memset (framebuffer.ptr, 0, 
 	       framebuffer.mode_info.height * framebuffer.mode_info.pitch);
+#endif
+
+  grub_outb (GRUB_VGA_IO_MISC_NEGATIVE_VERT_POLARITY
+	     | GRUB_VGA_IO_MISC_NEGATIVE_HORIZ_POLARITY
+	     | GRUB_VGA_IO_MISC_UPPER_64K
+	     | GRUB_VGA_IO_MISC_EXTERNAL_CLOCK_0
+	     | GRUB_VGA_IO_MISC_28MHZ
+	     | GRUB_VGA_IO_MISC_ENABLE_VRAM_ACCESS
+	     | GRUB_VGA_IO_MISC_COLOR, 
+	     GRUB_VGA_IO_MISC_WRITE + GRUB_MACHINE_PCI_IO_BASE);
+
+  grub_vga_sr_write (0x86, 5);
+  for (i = 6; i <= 0x27; i++)
+    grub_vga_sr_write (0, i);
+
+  for (i = 0x31; i <= 0x3d; i++)
+    grub_vga_sr_write (0, i);
+
+  for (i = 0; i < ARRAY_SIZE (sr_dump); i++)
+    grub_vga_sr_write (sr_dump[i].val, sr_dump[i].reg);
+
+  for (i = 0x30; i < 0x40; i++)
+    grub_vga_cr_write (0, i);
+
+  grub_vga_cr_write (0x77, 0x40);
+  grub_vga_cr_write (0x77, 0x41);
+  grub_vga_cr_write (0x00, 0x42);
+  grub_vga_cr_write (0x5b, 0x43);
+  grub_vga_cr_write (0x00, 0x44);
+  grub_vga_cr_write (0x23, 0x48);
+  grub_vga_cr_write (0xaa, 0x49);
+  grub_vga_cr_write (0x02, 0x37);
+  grub_vga_cr_write (0x20, 0x5b);
+  grub_vga_cr_write (0x00, 0x83);
+  grub_vga_cr_write (0x80, 0x63);
+
+  grub_vga_cr_write (0x0c, GRUB_VGA_CR_VSYNC_END);
+  grub_vga_cr_write (0x5f, GRUB_VGA_CR_HTOTAL);
+  grub_vga_cr_write (0x4f, GRUB_VGA_CR_HORIZ_END);
+  grub_vga_cr_write (0x50, GRUB_VGA_CR_HBLANK_START);
+  grub_vga_cr_write (0x82, GRUB_VGA_CR_HBLANK_END);
+  grub_vga_cr_write (0x54, GRUB_VGA_CR_HORIZ_SYNC_PULSE_START);
+  grub_vga_cr_write (0x80, GRUB_VGA_CR_HORIZ_SYNC_PULSE_END);
+  grub_vga_cr_write (0x0b, GRUB_VGA_CR_VERT_TOTAL);
+  grub_vga_cr_write (0x3e, GRUB_VGA_CR_OVERFLOW);
+  grub_vga_cr_write (0x00, GRUB_VGA_CR_BYTE_PANNING);
+  grub_vga_cr_write (0x40, GRUB_VGA_CR_CELL_HEIGHT);
+  grub_vga_cr_write (0x00, GRUB_VGA_CR_CURSOR_START);
+  grub_vga_cr_write (0x00, GRUB_VGA_CR_CURSOR_END);
+  grub_vga_cr_write (0x00, GRUB_VGA_CR_START_ADDR_HIGH_REGISTER);
+  grub_vga_cr_write (0x00, GRUB_VGA_CR_START_ADDR_LOW_REGISTER);
+  grub_vga_cr_write (0x00, GRUB_VGA_CR_CURSOR_ADDR_HIGH);
+  grub_vga_cr_write (0x00, GRUB_VGA_CR_CURSOR_ADDR_LOW);
+  grub_vga_cr_write (0xea, GRUB_VGA_CR_VSYNC_START);
+  grub_vga_cr_write (0x8c, GRUB_VGA_CR_VSYNC_END);
+  grub_vga_cr_write (0xdf, GRUB_VGA_CR_VDISPLAY_END);
+  grub_vga_cr_write (0x28, GRUB_VGA_CR_PITCH);
+  grub_vga_cr_write (0x40, GRUB_VGA_CR_UNDERLINE_LOCATION);
+  grub_vga_cr_write (0xe7, GRUB_VGA_CR_VERTICAL_BLANK_START);
+  grub_vga_cr_write (0x04, GRUB_VGA_CR_VERTICAL_BLANK_END);
+  grub_vga_cr_write (0xa3, GRUB_VGA_CR_MODE);
+  grub_vga_cr_write (0xff, GRUB_VGA_CR_LINE_COMPARE);
+
+  grub_vga_cr_write (0x0c, GRUB_VGA_CR_VSYNC_END);
+  grub_vga_cr_write (0x5f, GRUB_VGA_CR_HTOTAL);
+  grub_vga_cr_write (0x4f, GRUB_VGA_CR_HORIZ_END);
+  grub_vga_cr_write (0x50, GRUB_VGA_CR_HBLANK_START);
+  grub_vga_cr_write (0x82, GRUB_VGA_CR_HBLANK_END);
+  grub_vga_cr_write (0x55, GRUB_VGA_CR_HORIZ_SYNC_PULSE_START);
+  grub_vga_cr_write (0x81, GRUB_VGA_CR_HORIZ_SYNC_PULSE_END);
+  grub_vga_cr_write (0x0b, GRUB_VGA_CR_VERT_TOTAL);
+  grub_vga_cr_write (0x3e, GRUB_VGA_CR_OVERFLOW);
+  grub_vga_cr_write (0xe9, GRUB_VGA_CR_VSYNC_START);
+  grub_vga_cr_write (0x8b, GRUB_VGA_CR_VSYNC_END);
+  grub_vga_cr_write (0xdf, GRUB_VGA_CR_VDISPLAY_END);
+  grub_vga_cr_write (0xe7, GRUB_VGA_CR_VERTICAL_BLANK_START);
+  grub_vga_cr_write (0x04, GRUB_VGA_CR_VERTICAL_BLANK_END);
+  grub_vga_cr_write (0x40, GRUB_VGA_CR_CELL_HEIGHT);
+  grub_vga_cr_write (0x50, GRUB_VGA_CR_PITCH);
+
+  grub_vga_cr_write (0x00, 0x19);
+  grub_vga_cr_write (0x00, 0x1a);
+  grub_vga_cr_write (0x6c, 0x52);
+  grub_vga_cr_write (0x2e, 0x34);
+  grub_vga_cr_write (0x00, 0x31);
+
+
+  grub_vga_cr_write (0, GRUB_VGA_CR_START_ADDR_HIGH_REGISTER);
+  grub_vga_cr_write (0, GRUB_VGA_CR_START_ADDR_LOW_REGISTER);
+
+  for (i = 0; i < 16; i++)
+    grub_vga_write_arx (i, i);
+  grub_vga_write_arx (1, GRUB_VGA_ARX_MODE);
+  grub_vga_write_arx (0, GRUB_VGA_ARX_OVERSCAN);
+  grub_vga_write_arx (0, GRUB_VGA_ARX_COLOR_PLANE_ENABLE);
+  grub_vga_write_arx (0, GRUB_VGA_ARX_HORIZONTAL_PANNING);
+  grub_vga_write_arx (0, GRUB_VGA_ARX_COLOR_SELECT);
+
+  grub_outb (0xff, GRUB_VGA_IO_PIXEL_MASK + GRUB_MACHINE_PCI_IO_BASE);
+
+  for (i = 0; i < ARRAY_SIZE (gr); i++)
+    grub_vga_gr_write (gr[i], i);
+
+  for (i = 0; i < GRUB_VIDEO_FBSTD_NUMCOLORS; i++)
+    grub_vga_palette_write (i, grub_video_fbstd_colors[i].r,
+			    grub_video_fbstd_colors[i].g,
+			    grub_video_fbstd_colors[i].b);
+
+#if 1
+  {
+    if (read_sis_cmd (0x5) != 0xa1)
+      write_sis_cmd (0x86, 0x5);
+    
+    write_sis_cmd (read_sis_cmd (0x20) | 0xa1, 0x20);
+    write_sis_cmd (read_sis_cmd (0x1e) | 0xda, 0x1e);
+
+#define IND_SIS_CMDQUEUE_SET            0x26
+#define IND_SIS_CMDQUEUE_THRESHOLD      0x27
+
+#define COMMAND_QUEUE_THRESHOLD 0x1F
+#define SIS_CMD_QUEUE_RESET             0x01
+
+#define SIS_AGP_CMDQUEUE_ENABLE         0x80  /* 315/330/340 series SR26 */
+#define SIS_VRAM_CMDQUEUE_ENABLE        0x40
+#define SIS_MMIO_CMD_ENABLE             0x20
+#define SIS_CMD_QUEUE_SIZE_512k         0x00
+#define SIS_CMD_QUEUE_SIZE_1M           0x04
+#define SIS_CMD_QUEUE_SIZE_2M           0x08
+#define SIS_CMD_QUEUE_SIZE_4M           0x0C
+#define SIS_CMD_QUEUE_RESET             0x01
+#define SIS_CMD_AUTO_CORR               0x02
+
+
+    write_sis_cmd (COMMAND_QUEUE_THRESHOLD, IND_SIS_CMDQUEUE_THRESHOLD);
+    write_sis_cmd (SIS_CMD_QUEUE_RESET, IND_SIS_CMDQUEUE_SET);
+    framebuffer.mmioptr[0x85C4 / 4] = framebuffer.mmioptr[0x85C8 / 4];
+    write_sis_cmd (SIS_MMIO_CMD_ENABLE | SIS_CMD_AUTO_CORR, IND_SIS_CMDQUEUE_SET);
+    framebuffer.mmioptr[0x85C0 / 4] = (0x1000000 - (512 * 1024));
+  }
 #endif
 
 #ifndef TEST
