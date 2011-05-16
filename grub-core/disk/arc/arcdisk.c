@@ -25,6 +25,59 @@
 static grub_arc_fileno_t last_handle = 0;
 static char *last_path = NULL;
 
+static int lnum = 0;
+
+struct arcdisk_hash_ent
+{
+  char *devpath;
+  int num;
+  struct arcdisk_hash_ent *next;
+};
+
+#define ARCDISK_HASH_SZ	8
+static struct arcdisk_hash_ent *arcdisk_hash[ARCDISK_HASH_SZ];
+
+static int
+arcdisk_hash_fn (const char *devpath)
+{
+  int hash = 0;
+  while (*devpath)
+    hash ^= *devpath++;
+  return (hash & (ARCDISK_HASH_SZ - 1));
+}
+
+static struct arcdisk_hash_ent *
+arcdisk_hash_find (const char *devpath)
+{
+  struct arcdisk_hash_ent *p = arcdisk_hash[arcdisk_hash_fn (devpath)];
+
+  while (p)
+    {
+      if (!grub_strcmp (p->devpath, devpath))
+	break;
+      p = p->next;
+    }
+  return p;
+}
+
+static struct arcdisk_hash_ent *
+arcdisk_hash_add (char *devpath)
+{
+  struct arcdisk_hash_ent *p;
+  struct arcdisk_hash_ent **head = &arcdisk_hash[arcdisk_hash_fn(devpath)];
+
+  p = grub_malloc (sizeof (*p));
+  if (!p)
+    return NULL;
+
+  p->devpath = devpath;
+  p->next = *head;
+  p->num = lnum++;
+  *head = p;
+  return p;
+}
+
+
 static int
 grub_arcdisk_iterate (int (*hook_in) (const char *name))
 {
@@ -81,6 +134,8 @@ grub_arcdisk_open (const char *name, grub_disk_t disk)
   grub_err_t err;
   grub_arc_err_t r;
   struct grub_arc_fileinfo info;
+  struct arcdisk_hash_ent *hash;
+
   if (grub_memcmp (name, "arc/", 4) != 0)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not arc device");
   fullname = grub_malloc (2 * grub_strlen (name) + sizeof (RAW_SUFFIX));
@@ -114,6 +169,13 @@ grub_arcdisk_open (const char *name, grub_disk_t disk)
   grub_memcpy (optr, RAW_SUFFIX, sizeof (RAW_SUFFIX));
   disk->data = fullname;
   grub_dprintf ("arcdisk", "opening %s\n", fullname);
+
+  hash = arcdisk_hash_find (fullname);
+  if (!hash)
+    hash = arcdisk_hash_add (fullname);
+  if (!hash)
+    return grub_errno;
+
   err = reopen (fullname);
   if (err)
     return err;
@@ -147,7 +209,8 @@ grub_arcdisk_open (const char *name, grub_disk_t disk)
     }
   else
     disk->total_sectors = (info.end >> 9);
-  disk->id = 0; /* XXX */
+
+  disk->id = hash->num;
   return GRUB_ERR_NONE;
 }
 
