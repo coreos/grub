@@ -1,5 +1,10 @@
 2011-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/usbhub.c (attach_root_port): Wait 10ms
+	after enabling port.
+
+2011-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Skip incorrect USB devices.
 
 	* grub-core/bus/usb/usb.c (grub_usb_device_initialize): Fail if

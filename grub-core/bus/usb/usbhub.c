@@ -215,6 +215,8 @@ attach_root_port (struct grub_usb_hub *hub, int portno,
     return;
   hub->controller->dev->pending_reset = grub_get_time_ms () + 5000;
 
+  grub_millisleep (10);
+
   /* Enable the port and create a device.  */
   dev = grub_usb_hub_add_dev (hub->controller, speed);
   hub->controller->dev->pending_reset = 0;
