@@ -736,6 +736,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   grub_uint64_t start_address;
   void *rel_section;
   grub_size_t reloc_size, align;
+  size_t decompress_size;
 
   if (comp == COMPRESSION_AUTO)
     comp = image_target->default_compression;
@@ -913,7 +914,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       char *full_img;
       size_t full_size;
       char *decompress_path, *decompress_img;
-      size_t decompress_size;
       const char *name;
 
       switch (comp)
@@ -1410,9 +1410,13 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	size_t program_size;
 
 	program_size = ALIGN_ADDR (core_size);
-	target_addr = (image_target->link_addr 
-		       - ALIGN_UP(total_module_size + core_size, 1048576)
-		       - (1 << 20));
+	if (comp == COMPRESSION_NONE)
+	  target_addr = (image_target->link_addr 
+			 - total_module_size - decompress_size);
+	else
+	  target_addr = (image_target->link_addr 
+			 - ALIGN_UP(total_module_size + core_size, 1048576)
+			 - (1 << 20));
 
 	ecoff_img = xmalloc (program_size + sizeof (*head) + sizeof (*section));
 	grub_memset (ecoff_img, 0, program_size + sizeof (*head) + sizeof (*section));
@@ -1500,8 +1504,13 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	phdr->p_flags = grub_host_to_target32 (PF_R | PF_W | PF_X);
 
 	if (image_target->id == IMAGE_LOONGSON_ELF)
-	  target_addr = ALIGN_UP (image_target->link_addr
-				  + kernel_size + total_module_size, 32);
+	  {
+	    if (comp == COMPRESSION_NONE)
+	      target_addr = (image_target->link_addr - decompress_size);
+	    else
+	      target_addr = ALIGN_UP (image_target->link_addr
+				      + kernel_size + total_module_size, 32);
+	  }
 	else
 	  target_addr = image_target->link_addr;
 	ehdr->e_entry = grub_host_to_target32 (target_addr);

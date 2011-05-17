@@ -1,5 +1,14 @@
 2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid unnecessary copying on MIPS.
+
+	* grub-core/boot/decompressor/none.c (grub_decompress_core): Exit
+	early if src == dest.
+	* util/grub-mkimage.c (generate_image): Arange for src == dest if
+	compression is none.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Reduce memory footprint on SGI by putting modules before the kernel
 	as opposed to after.
 
