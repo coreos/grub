@@ -1,5 +1,10 @@
 2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mips/startup.S (grub_arch_cpuclock): Move to the right
+	place.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Reenable qemu-mips port.
 
 	* configure.ac: Handle --target=qemu-mips and --target=qemu_mips.
