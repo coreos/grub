@@ -104,6 +104,7 @@
 	to 6.
 	* util/grub-install.in: Run dvhtool on ARC.
 	* util/grub-mkimage.c (image_targets): Add mips-arc.
+	(generate_image): Handle ECOFF output for mips-arc.
 
 2011-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
