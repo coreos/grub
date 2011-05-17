@@ -60,11 +60,14 @@ library = {
   common = grub-core/fs/jfs.c;
   common = grub-core/fs/minix.c;
   common = grub-core/fs/minix2.c;
+  common = grub-core/fs/minix3.c;
   common = grub-core/fs/nilfs2.c;
   common = grub-core/fs/ntfs.c;
   common = grub-core/fs/ntfscomp.c;
   common = grub-core/fs/reiserfs.c;
+  common = grub-core/fs/romfs.c;
   common = grub-core/fs/sfs.c;
+  common = grub-core/fs/squash4.c;
   common = grub-core/fs/tar.c;
   common = grub-core/fs/udf.c;
   common = grub-core/fs/ufs2.c;
@@ -83,6 +86,7 @@ library = {
   common = grub-core/lib/LzFind.c;
   common = grub-core/lib/LzmaEnc.c;
   common = grub-core/lib/pbkdf2.c;
+  common = grub-core/lib/crc.c;
   common = grub-core/normal/datetime.c;
   common = grub-core/normal/misc.c;
   common = grub-core/partmap/acorn.c;
@@ -91,6 +95,7 @@ library = {
   common = grub-core/partmap/gpt.c;
   common = grub-core/partmap/msdos.c;
   common = grub-core/partmap/sun.c;
+  common = grub-core/partmap/dvh.c;
   common = grub-core/partmap/sunpc.c;
   common = grub-core/partmap/bsdlabel.c;
   common = grub-core/script/function.c;
@@ -98,6 +103,8 @@ library = {
   common = grub-core/script/main.c;
   common = grub-core/script/script.c;
   common = grub-core/script/argv.c;
+  common = grub-core/io/gzio.c;
+  common = grub-core/kern/ia64/dl_helper.c;
 };
 
 program = {
@@ -122,7 +129,7 @@ program = {
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBLZMA)';
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
   cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
 };
 
@@ -135,7 +142,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 program = {
@@ -147,7 +154,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 program = {
@@ -159,7 +166,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 program = {
@@ -171,7 +178,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
   cflags = '$(CFLAGS_GCRY)';
   cppflags = '$(CPPFLAGS_GCRY)';
 };
@@ -209,7 +216,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 program = {
@@ -224,7 +231,7 @@ program = {
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(freetype_libs)';
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
   condition = COND_GRUB_MKFONT;
 };
 
@@ -243,7 +250,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 program = {
@@ -255,7 +262,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 program = {
@@ -272,7 +279,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = i386_pc;
   enable = sparc64_ieee1275;
@@ -287,7 +294,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBGEOM)';
 
   enable = sparc64_ieee1275;
 };
@@ -301,7 +308,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 data = {
@@ -381,7 +388,8 @@ script = {
   x86 = util/grub-mkrescue.in;
   powerpc_ieee1275 = util/powerpc/ieee1275/grub-mkrescue.in;
   enable = i386_pc;
-  enable = x86_efi;
+  enable = i386_efi;
+  enable = x86_64_efi;
   enable = i386_qemu;
   enable = i386_multiboot;
   enable = i386_coreboot;
@@ -611,7 +619,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 program = {
@@ -624,5 +632,5 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };

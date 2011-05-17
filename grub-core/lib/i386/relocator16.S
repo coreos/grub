@@ -130,7 +130,7 @@ VARIABLE(grub_relocator16_ss)
 	.byte	0xb8
 VARIABLE(grub_relocator16_sp)
 	.word	0
-	movw	%ax, %ss
+	movzwl	%ax, %esp
 
 	/* movw imm32, %edx.  */
 	.byte	0x66, 0xba

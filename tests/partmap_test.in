@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
-parted=/sbin/parted
+parted=parted
 grubshell=@builddir@/grub-shell
 
 create_disk_image () {

@@ -27,6 +27,8 @@
 #include <grub/dl.h>
 #include <grub/charset.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_FAT_DIR_ENTRY_SIZE	32
 
 #define GRUB_FAT_ATTR_READ_ONLY	0x01

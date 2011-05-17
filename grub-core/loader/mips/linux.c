@@ -28,18 +28,20 @@
 #include <grub/memory.h>
 #include <grub/i18n.h>
 
-/* For frequencies.  */
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
-#include <grub/pci.h>
-#include <grub/machine/time.h>
-#endif
+GRUB_MOD_LICENSE ("GPLv3+");
 
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
-/* This can be detected on runtime from PMON, but:
-     a) it wouldn't work when GRUB is the firmware
-   and
-     b) for now we only support Yeeloong anyway.  */
-#define LOONGSON_MACHTYPE "machtype=lemote-yeeloong-2f-8.9inches"
+/* For frequencies.  */
+#include <grub/machine/time.h>
+
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+#include <grub/pci.h>
+#include <grub/machine/kernel.h>
+
+const char loongson_machtypes[][60] =
+  {
+    [GRUB_ARCH_MACHINE_YEELOONG] = "machtype=lemote-yeeloong-2f-8.9inches",
+    [GRUB_ARCH_MACHINE_FULOONG]  = "machtype=lemote-fuloong-2f-unknown"
+  };
 #endif
 
 static grub_dl_t my_mod;
@@ -52,7 +54,10 @@ static struct grub_relocator *relocator;
 static grub_uint8_t *playground;
 static grub_addr_t target_addr, entry_addr;
 static int linux_argc;
-static grub_off_t argv_off, envp_off;
+static grub_off_t argv_off;
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+static grub_off_t envp_off;
+#endif
 static grub_off_t rd_addr_arg_off, rd_size_arg_off;
 static int initrd_loaded = 0;
 
@@ -65,7 +70,12 @@ grub_linux_boot (void)
   state.gpr[1] = entry_addr;
   state.gpr[4] = linux_argc;
   state.gpr[5] = target_addr + argv_off;
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
   state.gpr[6] = target_addr + envp_off;
+#else
+  state.gpr[6] = 0;
+#endif
+  state.gpr[7] = 0;
   state.jumpreg = 1;
   grub_relocator32_boot (relocator, state);
 
@@ -200,9 +210,13 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   int i;
   int size;
   void *extra = NULL;
-  grub_uint32_t *linux_argv, *linux_envp;
-  char *linux_args, *linux_envs;
+  grub_uint32_t *linux_argv;
+  char *linux_args;
   grub_err_t err;
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+  char *linux_envs;
+  grub_uint32_t *linux_envp;
+#endif
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
@@ -224,7 +238,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   /* For arguments.  */
   linux_argc = argc;
-#ifdef LOONGSON_MACHTYPE
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
   linux_argc++;
 #endif
   /* Main arguments.  */
@@ -239,8 +253,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   /* Normal arguments.  */
   for (i = 1; i < argc; i++)
     size += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
-#ifdef LOONGSON_MACHTYPE
-  size += ALIGN_UP (sizeof (LOONGSON_MACHTYPE), 4);
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+  size += ALIGN_UP (sizeof (loongson_machtypes[0]), 4);
 #endif
 
   /* rd arguments.  */
@@ -279,14 +293,20 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   linux_argv++;
   linux_args += ALIGN_UP (sizeof ("a0"), 4);
 
-#ifdef LOONGSON_MACHTYPE
-  /* In Loongson platform, it is the responsibility of the bootloader/firmware
-     to supply the OS kernel with machine type information.  */
-  grub_memcpy (linux_args, LOONGSON_MACHTYPE, sizeof (LOONGSON_MACHTYPE));
-  *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
-    + target_addr;
-  linux_argv++;
-  linux_args += ALIGN_UP (sizeof (LOONGSON_MACHTYPE), 4);
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+  {
+    unsigned mtype = grub_arch_machine;
+    if (mtype >= ARRAY_SIZE (loongson_machtypes))
+      mtype = 0;
+    /* In Loongson platform, it is the responsibility of the bootloader/firmware
+       to supply the OS kernel with machine type information.  */
+    grub_memcpy (linux_args, loongson_machtypes[mtype],
+		 sizeof (loongson_machtypes[mtype]));
+    *linux_argv = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground
+      + target_addr;
+    linux_argv++;
+    linux_args += ALIGN_UP (sizeof (loongson_machtypes[mtype]), 4);
+  }
 #endif
 
   for (i = 1; i < argc; i++)
@@ -313,10 +333,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   extra = linux_args;
 
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
   linux_envp = extra;
   envp_off = (grub_uint8_t *) linux_envp - (grub_uint8_t *) playground;
   linux_envs = (char *) (linux_envp + 5);
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
   grub_snprintf (linux_envs, sizeof ("memsize=XXXXXXXXXXXXXXXXXXXX"),
 		 "memsize=%lld",
 		 (unsigned long long) grub_mmap_get_lower () >> 20);
@@ -342,8 +362,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   linux_envs += ALIGN_UP (grub_strlen (linux_envs) + 1, 4);
 
   linux_envp[4] = 0;
-#else
-  linux_envp[0] = 0;
 #endif
 
   grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
@@ -384,8 +402,9 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     grub_relocator_chunk_t ch;
 
     err = grub_relocator_alloc_chunk_align (relocator, &ch,
-					    target_addr + linux_size + 0x10000,
-					    (0xffffffff - size) + 1,
+					    (target_addr & 0x1fffffff)
+					    + linux_size + 0x10000,
+					    (0x10000000 - size),
 					    size, 0x10000,
 					    GRUB_RELOCATOR_PREFERENCE_NONE);
 

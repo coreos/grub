@@ -30,6 +30,8 @@
 #include <grub/misc.h>
 #include <grub/vga.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define VGA_WIDTH	640
 #define VGA_HEIGHT	350
 #define VGA_MEM		((grub_uint8_t *) GRUB_MEMORY_MACHINE_VGA_ADDR)
@@ -116,7 +118,8 @@ grub_video_vga_init (void)
 
 static grub_err_t
 grub_video_vga_setup (unsigned int width, unsigned int height,
-                      unsigned int mode_type, unsigned int mode_mask)
+                      grub_video_mode_type_t mode_type,
+		      grub_video_mode_type_t mode_mask)
 {
   grub_err_t err;
 

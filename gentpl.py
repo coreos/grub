@@ -6,8 +6,9 @@
 
 GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
                    "i386_multiboot", "i386_ieee1275", "x86_64_efi",
-                   "mips_yeeloong", "mips_qemu_mips", "sparc64_ieee1275",
-                   "powerpc_ieee1275" ]
+                   "mips_loongson", "sparc64_ieee1275",
+                   "powerpc_ieee1275", "mips_arc", "ia64_efi",
+                   "mips_qemu_mips" ]
 
 GROUPS = {}
 
@@ -17,29 +18,29 @@ GROUPS["common"]   = GRUB_PLATFORMS[:]
 GROUPS["i386"]     = [ "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot", "i386_multiboot", "i386_ieee1275" ]
 GROUPS["x86_64"]   = [ "x86_64_efi" ]
 GROUPS["x86"]      = GROUPS["i386"] + GROUPS["x86_64"]
-GROUPS["mips"]     = [ "mips_yeeloong", "mips_qemu_mips" ]
+GROUPS["mips"]     = [ "mips_loongson", "mips_qemu_mips", "mips_arc" ]
 GROUPS["sparc64"]  = [ "sparc64_ieee1275" ]
 GROUPS["powerpc"]  = [ "powerpc_ieee1275" ]
 
 # Groups based on firmware
-GROUPS["x86_efi"]  = [ "i386_efi", "x86_64_efi" ]
+GROUPS["efi"]  = [ "i386_efi", "x86_64_efi", "ia64_efi" ]
 GROUPS["ieee1275"]   = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
 
 # emu is a special case so many core functionality isn't needed on this platform
 GROUPS["noemu"]   = GRUB_PLATFORMS[:]; GROUPS["noemu"].remove("emu")
 
 # Groups based on hardware features
-GROUPS["cmos"] = GROUPS["x86"][:] + ["mips_yeeloong", "mips_qemu_mips" ]; GROUPS["cmos"].remove("i386_efi"); GROUPS["cmos"].remove("x86_64_efi")
-GROUPS["pci"]      = GROUPS["x86"] + ["mips_yeeloong"]
+GROUPS["cmos"] = GROUPS["x86"][:] + ["mips_loongson", "mips_qemu_mips"]; GROUPS["cmos"].remove("i386_efi"); GROUPS["cmos"].remove("x86_64_efi")
+GROUPS["pci"]      = GROUPS["x86"] + ["mips_loongson"]
 GROUPS["usb"]      = GROUPS["pci"]
 
 # If gfxterm is main output console integrate it into kernel
-GROUPS["videoinkernel"] = ["mips_yeeloong"]
+GROUPS["videoinkernel"] = ["mips_loongson"]
 GROUPS["videomodules"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["videoinkernel"]: GROUPS["videomodules"].remove(i)
 
 # Similar for terminfo
-GROUPS["terminfoinkernel"] = ["mips_yeeloong"] + GROUPS["ieee1275"];
+GROUPS["terminfoinkernel"] = ["mips_loongson", "mips_arc", "mips_qemu_mips" ] + GROUPS["ieee1275"];
 GROUPS["terminfomodule"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["terminfoinkernel"]: GROUPS["terminfomodule"].remove(i)
 
@@ -238,7 +239,7 @@ def foreach_enabled_platform(closure):
 #    noemu = bus/usb/usbhub.c;
 #    enable = emu;
 #    enable = i386;
-#    enable = mips_yeeloong;
+#    enable = mips_loongson;
 #    emu_condition = COND_GRUB_EMU_USB;
 #  };
 #

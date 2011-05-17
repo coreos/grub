@@ -38,6 +38,8 @@
 #include <grub/video.h>
 #include <grub/mm.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_dl_t my_mod;
 static int boot_drive;
 static void *boot_part_addr;

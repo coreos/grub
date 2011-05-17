@@ -28,6 +28,8 @@
 #include <grub/err.h>
 #include <grub/term.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static int cd_drive = 0;
 static int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap);
 

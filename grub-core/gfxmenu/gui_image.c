@@ -101,6 +101,9 @@ image_get_parent (void *vself)
 static grub_err_t
 rescale_image (grub_gui_image_t self)
 {
+  signed width;
+  signed height;
+
   if (! self->raw_bitmap)
     {
       if (self->bitmap)
@@ -111,12 +114,12 @@ rescale_image (grub_gui_image_t self)
       return grub_errno;
     }
 
-  unsigned width = self->bounds.width;
-  unsigned height = self->bounds.height;
+  width = self->bounds.width;
+  height = self->bounds.height;
 
   if (self->bitmap
-      && (grub_video_bitmap_get_width (self->bitmap) == width)
-      && (grub_video_bitmap_get_height (self->bitmap) == height))
+      && ((signed) grub_video_bitmap_get_width (self->bitmap) == width)
+      && ((signed) grub_video_bitmap_get_height (self->bitmap) == height))
     {
       /* Nothing to do; already the right size.  */
       return grub_errno;
@@ -131,15 +134,15 @@ rescale_image (grub_gui_image_t self)
 
   /* Create a scaled bitmap, unless the requested size is the same
      as the raw size -- in that case a reference is made.  */
-  if (grub_video_bitmap_get_width (self->raw_bitmap) == width
-      && grub_video_bitmap_get_height (self->raw_bitmap) == height)
+  if ((signed) grub_video_bitmap_get_width (self->raw_bitmap) == width
+      && (signed) grub_video_bitmap_get_height (self->raw_bitmap) == height)
     {
       self->bitmap = self->raw_bitmap;
       return grub_errno;
     }
 
   /* Don't scale to an invalid size.  */
-  if (width == 0 || height == 0)
+  if (width <= 0 || height <= 0)
     return grub_errno;
 
   /* Create the scaled bitmap.  */

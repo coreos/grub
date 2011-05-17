@@ -33,6 +33,8 @@
 #include <grub/efi/api.h>
 #endif
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] = {
   {"exclude", 'x', 0,
    N_("Don't load host tables specified by comma-separated list."),

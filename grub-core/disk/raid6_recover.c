@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/raid.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_uint8_t raid6_table1[256][256];
 static grub_uint8_t raid6_table2[256][256];
 

@@ -32,7 +32,7 @@ if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU/Linux
 else
   OS="${GRUB_DISTRIBUTOR} GNU/Linux"
-  CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]' | cut -d' ' -f1) ${CLASS}"
+  CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr 'A-Z' 'a-z' | cut -d' ' -f1) ${CLASS}"
 fi
 
 # loop-AES arranges things so that /dev/loop/X can be our root device, but
@@ -49,6 +49,14 @@ if [ "x${GRUB_DEVICE_UUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue"
   LINUX_ROOT_DEVICE=${GRUB_DEVICE}
 else
   LINUX_ROOT_DEVICE=UUID=${GRUB_DEVICE_UUID}
+fi
+
+if [ "x`${grub_probe} --device ${GRUB_DEVICE} --target=fs 2>/dev/null || true`" = xbtrfs ]; then
+  rootsubvol="`make_system_path_relative_to_its_root /`"
+  rootsubvol="${rootsubvol#/}"
+  if [ "x${rootsubvol}" != x ]; then
+    GRUB_CMDLINE_LINUX="rootflags=subvol=${rootsubvol} ${GRUB_CMDLINE_LINUX}"
+  fi
 fi
 
 linux_entry ()
@@ -93,11 +101,24 @@ EOF
 EOF
 }
 
-linux_list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
+linux_list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* /boot/kernel-*; do
+    if grub_file_is_not_garbage "$i"; then
     	basename=$(basename $i)
 	version=$(echo $basename | sed -e "s,^[^0-9]*-,,g")
-        if grub_file_is_not_garbage "$i" && grep -qx "CONFIG_XEN_DOM0=y" /boot/config-${version} 2> /dev/null ; then echo -n "$i " ; fi
-      done`
+	dirname=$(dirname $i)
+	config=
+	for j in "${dirname}/config-${version}" "${dirname}/config-${alt_version}" "/etc/kernels/kernel-config-${version}" ; do
+	    if test -e "${j}" ; then
+		config="${j}"
+		break
+	    fi
+	done
+        if (grep -qx "CONFIG_XEN_DOM0=y" "${config}" 2> /dev/null || grep -qx "CONFIG_XEN_PRIVILEGED_GUEST=y" "${config}" 2> /dev/null); then echo -n "$i " ; fi
+    fi
+    done`
+if [ "x${linux_list}" = "x" ] ; then
+    exit 0
+fi
 xen_list=`for i in /boot/xen*; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
@@ -124,7 +145,9 @@ while [ "x${xen_list}" != "x" ] ; do
 	initrd=
 	for i in "initrd.img-${version}" "initrd-${version}.img" \
 	    "initrd-${version}" "initrd.img-${alt_version}" \
-	    "initrd-${alt_version}.img" "initrd-${alt_version}"; do
+	    "initrd-${alt_version}.img" "initrd-${alt_version}" \
+	    "initramfs-genkernel-${version}" \
+	    "initramfs-genkernel-${alt_version}" ; do
 	    if test -e "${dirname}/${i}" ; then
 		initrd="$i"
 		break

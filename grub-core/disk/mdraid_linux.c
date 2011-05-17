@@ -27,6 +27,8 @@
 /* Linux RAID on disk structures and constants,
    copied from include/linux/raid/md_p.h.  */
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define RESERVED_BYTES			(64 * 1024)
 #define RESERVED_SECTORS		(RESERVED_BYTES / 512)
 
@@ -202,7 +204,7 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 		       "unsupported RAID level: %d", level);
   if (grub_le_to_cpu32 (sb.this_disk.number) == 0xffff
       || grub_le_to_cpu32 (sb.this_disk.number) == 0xfffe)
-    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
 		       "spares aren't implemented");
 
   array->name = NULL;
@@ -219,10 +221,10 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
       return grub_errno;
 
   uuid = (grub_uint32_t *) array->uuid;
-  uuid[0] = sb.set_uuid0;
-  uuid[1] = sb.set_uuid1;
-  uuid[2] = sb.set_uuid2;
-  uuid[3] = sb.set_uuid3;
+  uuid[0] = grub_swap_bytes32 (sb.set_uuid0);
+  uuid[1] = grub_swap_bytes32 (sb.set_uuid1);
+  uuid[2] = grub_swap_bytes32 (sb.set_uuid2);
+  uuid[3] = grub_swap_bytes32 (sb.set_uuid3);
 
   *start_sector = 0;
 

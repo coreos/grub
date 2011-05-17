@@ -34,6 +34,8 @@
 #include <grub/i18n.h>
 #include <grub/ns8250.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #include <grub/video.h>
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
@@ -65,7 +67,7 @@ static void *kern_chunk_src;
 static grub_uint32_t bootflags;
 static int is_elf_kernel, is_64bit;
 static grub_uint32_t openbsd_root;
-struct grub_relocator *relocator = NULL;
+static struct grub_relocator *relocator = NULL;
 static struct grub_openbsd_ramdisk_descriptor openbsd_ramdisk;
 
 struct bsd_tag

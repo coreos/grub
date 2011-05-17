@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct grub_partition_map grub_msdos_partition_map;
 
 
@@ -232,10 +234,10 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 	break;
     }
 
-  if (end >= *nsectors + 1)
+  if (end >= *nsectors + 2)
     {
       unsigned i;
-      *nsectors = end - 1;
+      *nsectors = end - 2;
       *sectors = grub_malloc (*nsectors * sizeof (**sectors));
       if (!*sectors)
 	return grub_errno;

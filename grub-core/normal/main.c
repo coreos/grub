@@ -33,6 +33,8 @@
 #include <grub/charset.h>
 #include <grub/script_sh.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
 static int nested_level = 0;
@@ -496,6 +498,7 @@ GRUB_MOD_INIT(normal)
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
+  grub_env_export ("pager");
 
   /* Register a command "normal" for the rescue mode.  */
   grub_register_command ("normal", grub_cmd_normal,

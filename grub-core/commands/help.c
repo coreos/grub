@@ -26,6 +26,8 @@
 #include <grub/normal.h>
 #include <grub/charset.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 grub_cmd_help (grub_extcmd_context_t ctxt __attribute__ ((unused)), int argc,
 	       char **args)

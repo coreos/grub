@@ -26,6 +26,8 @@
 #include <grub/dl.h>
 #include <grub/env.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static inline void
 print_tabs (int n)
 {

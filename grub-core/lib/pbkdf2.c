@@ -21,6 +21,9 @@
 #include <grub/crypto.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv2+");
 
 /* Implement PKCS#5 PBKDF2 as per RFC 2898.  The PRF to use is HMAC variant
    of digest supplied by MD.  Inputs are the password P of length PLEN,

@@ -2,6 +2,10 @@
 
 CFLAGS_PLATFORM=
 
+export LC_COLLATE := C
+export LC_CTYPE := C
+unexport LC_ALL
+
 # Platform specific options
 if COND_i386_pc
   CFLAGS_PLATFORM += -mrtd -mregparm=3
@@ -21,13 +25,13 @@ endif
 if COND_i386_ieee1275
   CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
-if COND_mips_yeeloong
+if COND_mips_loongson
   CFLAGS_PLATFORM += -mexplicit-relocs
   CPPFLAGS_PLATFORM = -DUSE_ASCII_FAILBACK
-  CCASFLAGS_PLATFORM = -march=mips3
 endif
 if COND_mips
   CFLAGS_PLATFORM += -mflush-func=grub_cpu_flush_cache
+  CCASFLAGS_PLATFORM = -march=mips3
 endif
 if COND_sparc64_ieee1275
   CFLAGS_PLATFORM += -mno-app-regs

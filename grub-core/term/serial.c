@@ -26,6 +26,11 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 #include <grub/list.h>
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+#include <grub/machine/kernel.h>
+#endif
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #define FOR_SERIAL_PORTS(var) FOR_LIST_ELEMENTS((var), (grub_serial_ports))
 
@@ -41,7 +46,7 @@ static const struct grub_arg_option options[] =
   {0, 0, 0, 0, 0, 0}
 };
 
-struct grub_serial_port *grub_serial_ports;
+static struct grub_serial_port *grub_serial_ports;
 
 struct grub_serial_output_state
 {
@@ -69,7 +74,7 @@ serial_fetch (grub_term_input_t term)
   return data->port->driver->fetch (data->port);
 }
 
-const struct grub_serial_input_state grub_serial_terminfo_input_template =
+static const struct grub_serial_input_state grub_serial_terminfo_input_template =
   {
     .tinfo =
     {
@@ -77,7 +82,7 @@ const struct grub_serial_input_state grub_serial_terminfo_input_template =
     }
   };
 
-const struct grub_serial_output_state grub_serial_terminfo_output_template =
+static const struct grub_serial_output_state grub_serial_terminfo_output_template =
   {
     .tinfo =
     {
@@ -87,11 +92,11 @@ const struct grub_serial_output_state grub_serial_terminfo_output_template =
     }
   };
 
-struct grub_serial_input_state grub_serial_terminfo_input;
+static struct grub_serial_input_state grub_serial_terminfo_input;
 
-struct grub_serial_output_state grub_serial_terminfo_output;
+static struct grub_serial_output_state grub_serial_terminfo_output;
 
-int registered = 0;
+static int registered = 0;
 
 static struct grub_term_input grub_serial_term_input =
 {
@@ -295,18 +300,23 @@ grub_serial_register (struct grub_serial_port *port)
   port->term_in = in;
   port->term_out = out;
   grub_terminfo_output_register (out, "vt100");
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
-  if (grub_strcmp (port->name, "com0") == 0)
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+  if (grub_strcmp (port->name, 
+		   (grub_arch_machine == GRUB_ARCH_MACHINE_YEELOONG)
+		   ? "com0" : "com2") == 0)
     {
       grub_term_register_input_active ("serial_*", in);
       grub_term_register_output_active ("serial_*", out);
     }
   else
-#endif
     {
-      grub_term_register_input ("serial_*", in);
-      grub_term_register_output ("serial_*", out);
+      grub_term_register_input_inactive ("serial_*", in);
+      grub_term_register_output_inactive ("serial_*", out);
     }
+#else
+  grub_term_register_input ("serial_*", in);
+  grub_term_register_output ("serial_*", out);
+#endif
 
   return GRUB_ERR_NONE;
 }

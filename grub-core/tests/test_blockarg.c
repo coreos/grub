@@ -24,6 +24,8 @@
 #include <grub/extcmd.h>
 #include <grub/script_sh.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 test_blockarg (grub_extcmd_context_t ctxt, int argc, char **args)
 {

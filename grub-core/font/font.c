@@ -30,6 +30,8 @@
 #include <grub/unicode.h>
 #include <grub/fontformat.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef USE_ASCII_FAILBACK
 #include "ascii.h"
 #endif
@@ -314,10 +316,7 @@ load_font_index (grub_file_t file, grub_uint32_t sect_length, struct
     return 1;
   font->bmp_idx = grub_malloc (0x10000 * sizeof (grub_uint16_t));
   if (!font->bmp_idx)
-    {
-      grub_free (font->char_index);
-      return 1;
-    }
+    return 1;
   grub_memset (font->bmp_idx, 0xff, 0x10000 * sizeof (grub_uint16_t));
 
 
@@ -492,7 +491,7 @@ grub_font_load (const char *filename)
 #endif
 
   /* Allocate the font object.  */
-  font = (grub_font_t) grub_malloc (sizeof (struct grub_font));
+  font = (grub_font_t) grub_zalloc (sizeof (struct grub_font));
   if (!font)
     goto fail;
 
@@ -638,6 +637,11 @@ grub_font_load (const char *filename)
   return 0;
 
 fail:
+  if (file)
+    grub_file_close (file);
+  if (font)
+    font->file = 0;
+
   free_font (font);
   return 1;
 }
@@ -797,6 +801,7 @@ free_font (grub_font_t font)
       grub_free (font->name);
       grub_free (font->family);
       grub_free (font->char_index);
+      grub_free (font->bmp_idx);
       grub_free (font);
     }
 }

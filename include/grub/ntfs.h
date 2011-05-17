@@ -135,6 +135,7 @@ struct grub_fshelp_node
   struct grub_ntfs_data *data;
   char *buf;
   grub_uint64_t size;
+  grub_uint64_t mtime;
   grub_uint32_t ino;
   int inode_read;
   struct grub_ntfs_attr attr;

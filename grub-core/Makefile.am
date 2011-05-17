@@ -125,7 +125,26 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
-if COND_mips_yeeloong
+if COND_ia64_efi
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/time.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
+endif
+
+if COND_mips
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/kernel.h
+endif
+
+if COND_mips_arc
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/arc/arc.h
+endif
+
+if COND_mips_qemu_mips
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
+endif
+
+if COND_mips_loongson
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h

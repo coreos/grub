@@ -46,7 +46,7 @@ struct module
   int cmdline_size;
 };
 
-struct module *modules, *modules_last;
+static struct module *modules, *modules_last;
 static grub_size_t cmdline_size;
 static grub_size_t total_modcmd;
 static unsigned modcnt;
@@ -435,7 +435,7 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   bufsize = grub_multiboot_get_mbi_size ();
 
   err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
-					  0, 0xffffffff - bufsize,
+					  0x10000, 0x100000 - bufsize,
 					  bufsize, 4,
 					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)

@@ -19,6 +19,9 @@
 
 #include <grub/datetime.h>
 #include <grub/cmos.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 grub_err_t
 grub_get_datetime (struct grub_datetime *datetime)

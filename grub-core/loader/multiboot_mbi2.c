@@ -54,7 +54,7 @@ struct module
   int cmdline_size;
 };
 
-struct module *modules, *modules_last;
+static struct module *modules, *modules_last;
 static grub_size_t cmdline_size;
 static grub_size_t total_modcmd;
 static unsigned modcnt;
@@ -671,7 +671,6 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
     ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
 
-#if defined (__i386) || defined (__x86_64__) || defined (GRUB_MACHINE_MIPS_YEELOONG)
   {
     struct multiboot_tag_basic_meminfo *tag
       = (struct multiboot_tag_basic_meminfo *) ptrorig;
@@ -683,7 +682,6 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
     tag->mem_upper = grub_mmap_get_upper () / 1024;
     ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
-#endif
 
   if (bootdev_set)
     {
