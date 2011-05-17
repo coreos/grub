@@ -1,6 +1,3 @@
-
-	/* Qemu doesn't emulate caches. Oh boy.  */
-#ifndef GRUB_MACHINE_MIPS_QEMU_MIPS
 	move $t2, $a0
 	addu $t3, $a0, $a1
 	srl $t2, $t2, 5
@@ -24,4 +21,3 @@
 	bne $t1, $zero, 2b
 	 addiu $t0, $t0, 0x4
 	sync
-#endif
