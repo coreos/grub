@@ -1,5 +1,11 @@
 2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ia64/dl_helper.c (grub_ia64_dl_get_tramp_got_size):
+	Fix potential usage of Elf32 instead of Elf64 when compiling on
+	32-bit architecture. Add endianness macros while on it.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use mipsel- rather than mips- in directories involving mipsel ports to
 	allow both endiannesses coexist.
 
