@@ -27,7 +27,6 @@ builddir=@builddir@
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
-target_cpu=@target_cpu@
 
 # Force build directory components
 PATH=${builddir}:$PATH

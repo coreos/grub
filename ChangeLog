@@ -1,5 +1,18 @@
 2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use mipsel- rather than mips- in directories involving mipsel ports to
+	allow both endiannesses coexist.
+
+	* configure.ac: proparate target_cpu=mipsel rather than resetting to
+	mips. All conditions adjusted.
+	* tests/util/grub-shell-tester.in: Remove gratuitious target_cpu
+	variable.
+	* util/grub-install.in: Adjust conditions to take renaming into account.
+	* util/grub-mkimage.c (image_targets): Likewise. New target
+	mips-qemu_mips-elf for bigendian mips.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Avoid unnecessary copying on MIPS.
 
 	* grub-core/boot/decompressor/none.c (grub_decompress_core): Exit
