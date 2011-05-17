@@ -36,7 +36,7 @@ start:
 	bal cont
 	 nop
 
-	. = _start + GRUB_KERNEL_MIPS_LOONGSON_TOTAL_MODULE_SIZE
+	. = _start + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
 total_module_size:
 	.long 0
 

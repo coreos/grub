@@ -442,6 +442,28 @@ struct image_target_desc image_targets[] =
       .link_align = GRUB_KERNEL_MIPS_ARC_LINK_ALIGN,
       .default_compression = COMPRESSION_NONE
     },
+    {
+      .dirname = "mips-qemu_mips",
+      .names = { "mipsel-qemu_mips-elf", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_LOONGSON_ELF, 
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .prefix = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END,
+      .raw_size = 0,
+      .total_module_size = GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
+    },
   };
 
 #define grub_target_to_host32(x) (grub_target_to_host32_real (image_target, (x)))

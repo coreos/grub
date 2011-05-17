@@ -124,7 +124,8 @@ case "$target_cpu"-"$platform" in
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
   ia64-efi) ;;
-  mips-qemu-mips) ;;
+  mips-qemu_mips) ;;
+  mips-qemu-mips) platform=qemu_mips;;
   mips-yeeloong) platform=loongson ;;
   mips-fuloong) platform=loongson ;;
   mips-loongson) ;;
@@ -162,8 +163,8 @@ case "$platform" in
   pc)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_PCBIOS=1" ;;
   emu)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_EMU=1" ;;
   loongson)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_LOONGSON=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
-  qemu-mips)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
-  mips-arc)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_ARC=1 -DGRUB_MACHINE_ARC=1" ;;
+  qemu_mips)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  arc)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_ARC=1" ;;
 esac
 case "$target_cpu" in
   mips)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS=1" ;;

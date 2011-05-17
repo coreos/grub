@@ -27,6 +27,7 @@
 #include <grub/mips/relocator.h>
 #include <grub/memory.h>
 #include <grub/i18n.h>
+#include <grub/lib/cmdline.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -53,12 +54,16 @@ static grub_size_t linux_size;
 static struct grub_relocator *relocator;
 static grub_uint8_t *playground;
 static grub_addr_t target_addr, entry_addr;
+#ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+static char *params;
+#else
 static int linux_argc;
 static grub_off_t argv_off;
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
 static grub_off_t envp_off;
 #endif
 static grub_off_t rd_addr_arg_off, rd_size_arg_off;
+#endif
 static int initrd_loaded = 0;
 
 static grub_err_t
@@ -66,8 +71,26 @@ grub_linux_boot (void)
 {
   struct grub_relocator32_state state;
 
+  grub_memset (&state, 0, sizeof (state));
+
   /* Boot the kernel.  */
   state.gpr[1] = entry_addr;
+
+#ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+  {
+    grub_err_t err;
+    grub_relocator_chunk_t ch;
+
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   ((16 << 20) - 256),
+					   grub_strlen (params) + 1);
+    if (err)
+      return err;
+    grub_strcpy (get_virtual_current_address (ch), params);
+  }
+#endif  
+
+#ifndef GRUB_MACHINE_MIPS_QEMU_MIPS
   state.gpr[4] = linux_argc;
   state.gpr[5] = target_addr + argv_off;
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
@@ -76,6 +99,7 @@ grub_linux_boot (void)
   state.gpr[6] = 0;
 #endif
   state.gpr[7] = 0;
+#endif
   state.jumpreg = 1;
   grub_relocator32_boot (relocator, state);
 
@@ -87,6 +111,11 @@ grub_linux_unload (void)
 {
   grub_relocator_unload (relocator);
   grub_dl_unref (my_mod);
+
+#ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+  grub_free (params);
+  params = 0;
+#endif
 
   loaded = 0;
 
@@ -207,11 +236,13 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
 {
   grub_elf_t elf = 0;
-  int i;
   int size;
   void *extra = NULL;
+#ifndef GRUB_MACHINE_MIPS_QEMU_MIPS
+  int i;
   grub_uint32_t *linux_argv;
   char *linux_args;
+#endif
   grub_err_t err;
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
   char *linux_envs;
@@ -236,6 +267,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_unset ();
   loaded = 0;
 
+#ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+  size = 0;
+#else
   /* For arguments.  */
   linux_argc = argc;
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
@@ -268,6 +302,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     + ALIGN_UP (sizeof ("highmemsize=XXXXXXXXXXXXXXXXXXXX"), 4)
     + ALIGN_UP (sizeof ("busclock=XXXXXXXXXX"), 4)
     + ALIGN_UP (sizeof ("cpuclock=XXXXXXXXXX"), 4);
+#endif
 
   if (grub_elf_is_elf32 (elf))
     err = grub_linux_load32 (elf, &extra, size);
@@ -282,6 +317,20 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (err)
     return err;
 
+#ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+  /* Create kernel command line.  */
+  size = grub_loader_cmdline_size(argc, argv);
+  params = grub_malloc (size + sizeof (LINUX_IMAGE));
+  if (! params)
+    {
+      grub_linux_unload ();
+      return grub_errno;
+    }
+
+  grub_memcpy (params, LINUX_IMAGE, sizeof (LINUX_IMAGE));
+  grub_create_loader_cmdline (argc, argv, params + sizeof (LINUX_IMAGE) - 1,
+			      size);
+#else
   linux_argv = extra;
   argv_off = (grub_uint8_t *) linux_argv - (grub_uint8_t *) playground;
   extra = linux_argv + (linux_argc + 1 + 2);
@@ -363,6 +412,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   linux_envp[4] = 0;
 #endif
+#endif
 
   grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
   initrd_loaded = 0;
@@ -425,6 +475,21 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       return grub_errno;
     }
 
+#ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+  {
+    char *tmp;
+    tmp = grub_xasprintf ("%s rd_start=0x%" PRIxGRUB_ADDR
+			  " rd_size=0x%" PRIxGRUB_ADDR, params,
+			  initrd_dest, size);
+    if (!tmp)
+      {
+	grub_file_close (file);
+	return grub_errno;
+      }
+    grub_free (params);
+    params = tmp;
+  }
+#else
   grub_snprintf ((char *) playground + rd_addr_arg_off,
 		 sizeof ("rd_start=0xXXXXXXXXXXXXXXXX"), "rd_start=0x%llx",
 		(unsigned long long) initrd_dest);
@@ -438,6 +503,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   ((grub_uint32_t *) (playground + argv_off))[linux_argc]
     = target_addr + rd_size_arg_off;
   linux_argc++;
+#endif
 
   initrd_loaded = 1;
 

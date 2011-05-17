@@ -1,5 +1,53 @@
 2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Reenable qemu-mips port.
+
+	* configure.ac: Handle --target=qemu-mips and --target=qemu_mips.
+	Fix small arc bug while on it.
+	* gentpl.py: Handle qemu_mips.
+	* grub-core/Makefile.am: Likewise.
+	* grub-core/Makefile.core.def: Likewise.
+	* grub-core/disk/ata.c [GRUB_MACHINE_MIPS_QEMU_MIPS]: Remove
+	inappropriate includes.
+	(grub_ata_pciinit) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Removed.
+	(grub_ata_initialize): [GRUB_MACHINE_MIPS_QEMU_MIPS]: Rewritten.
+	* grub-core/kern/main.c (grub_modules_get_end)
+	[GRUB_MACHINE_MIPS_QEMU_MIPS]: Enable.
+	* grub-core/kern/mips/qemu-mips: Moved to ..
+	* grub-core/kern/mips/qemu_mips: ... this.
+	* grub-core/kern/mips/qemu_mips/init.c (grub_get_rtc): Removed.
+	(grub_machine_init): Call terminfo_init and serial_init.
+	* grub-core/kern/mips/startup.S: Change MIPS_LOONGSON to MACHINE.
+	* grub-core/loader/mips/linux.c (params) [GRUB_MACHINE_MIPS_QEMU_MIPS]:
+	New variable.
+	(grub_linux_boot) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Handle the qemu-mips
+	parameter passing.
+	(grub_linux_unload) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Free params.
+	(grub_cmd_linux) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Handle params.
+	(grub_cmd_initrd) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Likewise.
+	* include/grub/mips/qemu_mips/cmos.h: New file.
+	* include/grub/mips/qemu-mips/kernel.h: Don't include cpu/kernel.h.
+	* include/grub/mips/qemu-mips/memory.h (grub_machine_mmap_iterate):
+	Removed.
+	* include/grub/mips/qemu-mips/serial.h (GRUB_MACHINE_SERIAL_PORTS):
+	Use correct mips-style address.
+	* include/grub/mips/qemu-mips/time.h: Include cpu/time.h.
+	(GRUB_TICKS_PER_SECOND): Removed.
+	(grub_get_rtc): Likewise.
+	(grub_cpu_idle): Likewise.
+	* include/grub/offsets.h (GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR):
+	New definition.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_COMPRESSED_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_UNCOMPRESSED_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_MOD_ALIGN): Likewise.
+	* util/grub-mkimage.c (image_targets): Add mipsel-qemu_mips-elf.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	SGI ARCS port.
 
 	* Makefile.util.def (libgrubmods.a): Add dvh.c.

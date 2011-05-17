@@ -22,9 +22,13 @@
 #include <grub/disk.h>
 #include <grub/mm.h>
 #include <grub/time.h>
+#ifndef GRUB_MACHINE_MIPS_QEMU_MIPS
 #include <grub/pci.h>
-#include <grub/scsi.h>
 #include <grub/cs5536.h>
+#else
+#define GRUB_MACHINE_PCI_IO_BASE  0xb4000000
+#endif
+#include <grub/scsi.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -409,6 +413,7 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
   return 0;
 }
 
+#ifndef GRUB_MACHINE_MIPS_QEMU_MIPS
 static int NESTED_FUNC_ATTR
 grub_ata_pciinit (grub_pci_device_t dev,
 		  grub_pci_id_t pciid)
@@ -524,6 +529,21 @@ grub_ata_initialize (void)
   grub_pci_iterate (grub_ata_pciinit);
   return 0;
 }
+#else
+static grub_err_t
+grub_ata_initialize (void)
+{
+  int i;
+  for (i = 0; i < 2; i++)
+    {
+      grub_ata_device_initialize (i, 0, grub_ata_ioaddress[i],
+				  grub_ata_ioaddress2[i]);
+      grub_ata_device_initialize (i, 1, grub_ata_ioaddress[i],
+				  grub_ata_ioaddress2[i]);
+    }
+  return 0;
+}
+#endif
 
 static void
 grub_ata_setlba (struct grub_ata_device *dev, grub_disk_addr_t sector,

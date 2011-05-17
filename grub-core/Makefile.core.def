@@ -42,6 +42,7 @@ kernel = {
   powerpc_ieee1275_ldflags = '-Wl,-Ttext,0x200000';
   sparc64_ieee1275_ldflags = '-Wl,-Ttext,0x4400';
   mips_arc_ldflags    = '-Wl,-Ttext,0x8a000000';
+  mips_qemu_mips_ldflags    = '-Wl,-Ttext,0x80200000';
 
   mips_loongson_cppflags = '-DUSE_ASCII_FAILBACK';
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
@@ -151,6 +152,10 @@ kernel = {
   mips = kern/mips/cache.S;
   mips = kern/mips/dl.c;
   mips = kern/mips/init.c;
+
+  mips_qemu_mips = kern/mips/qemu_mips/init.c;
+  mips_qemu_mips = term/ns8250.c;
+  mips_qemu_mips = term/serial.c;
 
   mips_arc = kern/mips/arc/init.c;
   mips_arc = term/arc/console.c;
@@ -318,6 +323,7 @@ image = {
 
   objcopyflags = '-O binary';
   mips_loongson_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  mips_qemu_mips_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
   mips_arc_ldflags = '-static-libgcc -Wl,-Ttext,0x89f00000';
   ldadd = '-lgcc';
   cflags = '-static-libgcc';
@@ -333,6 +339,7 @@ image = {
 
   objcopyflags = '-O binary';
   mips_loongson_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
+  mips_qemu_mips_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
   mips_arc_ldflags = '-static-libgcc -Wl,-Ttext,0x89f00000';
   ldadd = '-lgcc';
   cflags = '-static-libgcc';
@@ -849,12 +856,14 @@ module = {
   name = ata;
   common = disk/ata.c;
   enable = pci;
+  enable = mips_qemu_mips;
 };
 
 module = {
   name = ata_pthru;
   common = disk/ata_pthru.c;
   enable = pci;
+  enable = mips_qemu_mips;
 };
 
 module = {

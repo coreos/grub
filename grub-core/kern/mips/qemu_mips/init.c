@@ -6,25 +6,31 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/time.h>
-#include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
-#include <grub/cpu/kernel.h>
+#include <grub/cpu/memory.h>
+#include <grub/memory.h>
 
 #define RAMSIZE (*(grub_uint32_t *) ((16 << 20) - 264))
 
-grub_uint32_t
-grub_get_rtc (void)
-{
-  static int calln = 0;
-  return calln++;
-}
+extern void grub_serial_init (void);
+extern void grub_terminfo_init (void);
 
 void
 grub_machine_init (void)
 {
-  grub_mm_init_region ((void *) GRUB_MACHINE_MEMORY_USABLE,
-		       RAMSIZE - (GRUB_MACHINE_MEMORY_USABLE & 0x7fffffff));
+  grub_addr_t modend;
+
+  /* FIXME: measure this.  */
+  grub_arch_cpuclock = 64000000;
+
+  modend = grub_modules_get_end ();
+  grub_mm_init_region ((void *) modend, RAMSIZE
+		       - (modend - GRUB_ARCH_LOWMEMVSTART));
+
   grub_install_get_time_ms (grub_rtc_get_time_ms);
+
+  grub_terminfo_init ();
+  grub_serial_init ();
 }
 
 void
