@@ -1,3 +1,110 @@
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	SGI ARCS port.
+
+	* Makefile.util.def (libgrubmods.a): Add dvh.c.
+	* conf/Makefile.common (CCASFLAGS_PLATFORM): Add -mips3 on all mips
+	platforms.
+	* configure.ac: New target mips-arc.
+	* gentpl.py: Likewise.
+	* grub-core/Makefile.am: Likewise.
+	* grub-core/Makefile.core.def: Likewise.
+	(xz_decompress): Remove -D GRUB_MACHINE_LINK_ADDR.
+	(none_decompress): Likewise.
+	(lsdev): New module.
+	(datetime): Use lib/arc/datetime.c on ARC.
+	(part_dvh): New module.
+	* grub-core/commands/arc/lsdev.c: New file.
+	* grub-core/disk/arc/arcdisk.c: Likewise.
+	* grub-core/kern/mips/arc/init.c: Likewise.
+	* grub-core/kern/mips/cache_flush.S: Don't flush non 4-byte
+	aligned addresses.
+	* grub-core/kern/mips/dl.c (grub_arch_dl_check_header): Fix bigendian
+	support.
+	(grub_arch_dl_relocate_symbols): Likewise.
+	* grub-core/kern/mips/loongson/init.c (grub_get_rtc): Moved from here...
+	* grub-core/kern/mips/init.c (grub_get_rtc): ... here.
+	* grub-core/kern/mips/startup.S (grub_arch_cpuclock): Have on all
+	platforms.
+	* grub-core/lib/arc/datetime.c: New file.
+	* grub-core/loader/mips/linux.c: Always include time.h. Don't include
+	pci.h on non-loongson.
+	(envp_off) [!GRUB_MACHINE_MIPS_LOONGSON]: Remove.
+	(grub_linux_boot): Set unused registers to 0.
+	(grub_cmd_linux) [!GRUB_MACHINE_MIPS_LOONGSON]: Remove envp.
+	* grub-core/mmap/mips/loongson/uppermem.c: Moved from here ...
+	* grub-core/mmap/mips/uppermem.c: ...here.
+	* grub-core/partmap/dvh.c: New file.
+	* grub-core/term/arc/console.c: Likewise.
+	* grub-core/term/terminfo.c (ANSI_C0_STR): New const.
+	(grub_terminfo_set_current): Add terminal "arc".
+	(grub_terminfo_readkey): Support ARC sequences.
+	* include/grub/arc/arc.h: New file.
+	* include/grub/arc/console.h: Likewise.
+	* include/grub/disk.h (grub_disk_dev_id): Add
+	GRUB_DISK_DEVICE_ARCDISK_ID.
+	* include/grub/mips/arc/kernel.h: New file.
+	* include/grub/mips/arc/memory.h: Likewise.
+	* include/grub/mips/arc/time.h: Likewise.
+	* include/grub/mips/loongson/kernel.h (grub_halt): Moved from here ...
+	* include/grub/mips/kernel.h (grub_halt): ... here.
+	* include/grub/mips/loongson.h (GRUB_CPU_REGISTER_WRAP): Moved from
+	here...
+	* include/grub/mips/mips.h (GRUB_CPU_REGISTER_WRAP): ... here.
+	(GRUB_CPU_LOONGSON_COP0_TIMER_COUNT): Moved from here ...
+	* include/grub/mips/mips.h (GRUB_CPU_LOONGSON_COP0_TIMER_COUNT): .. here
+	* include/grub/mips/loongson/kernel.h (grub_reboot): Removed redundant
+	proto.
+	* include/grub/mips/loongson/memory.h (GRUB_ARCH_LOWMEMVSTART): Moved
+	from here ...
+	* include/grub/mips/memory.h (GRUB_ARCH_LOWMEMVSTART): ... here.
+	(GRUB_ARCH_LOWMEMPSTART): Moved from here ...
+	* include/grub/mips/memory.h (GRUB_ARCH_LOWMEMPSTART): ... here.
+	(GRUB_ARCH_LOWMEMMAXSIZE): Moved from here ...
+	* include/grub/mips/memory.h (GRUB_ARCH_LOWMEMMAXSIZE): ... here.
+	(GRUB_ARCH_HIGHMEMPSTART): Moved from here ...
+	* include/grub/mips/memory.h (GRUB_ARCH_HIGHMEMPSTART): ... here.
+	(grub_phys_addr_t): Moved from here ...
+	* include/grub/mips/memory.h (grub_phys_addr_t): ... here.
+	(grub_vtop): Moved from here ...
+	* include/grub/mips/memory.h (grub_vtop): ... here.
+	(grub_map_memory): Moved from here ...
+	* include/grub/mips/memory.h (grub_map_memory): ... here.
+	(grub_unmap_memory): Moved from here ...
+	* include/grub/mips/memory.h (grub_unmap_memory): ... here.
+	(grub_machine_mmap_iterate): Moved from here ...
+	* include/grub/mips/memory.h (grub_machine_mmap_iterate): ... here.
+	(grub_mmap_get_lower): Moved from here ...
+	* include/grub/mips/memory.h (grub_mmap_get_lower): ... here.
+	(grub_mmap_get_upper): Moved from here ...
+	* include/grub/mips/memory.h (grub_mmap_get_upper): ... here.
+	* include/grub/mips/loongson/time.h (grub_arch_cpuclock): Moved from
+	here ...
+	* include/grub/mips/time.h (grub_arch_cpuclock): ... here.
+	* include/grub/mips/loongson/time.h (grub_get_rtc): Moved from
+	here ...
+	* include/grub/mips/time.h (grub_get_rtc): ... here.
+	* include/grub/mips/loongson/time.h (grub_arch_cpuclock): Moved from
+	here ...
+	* include/grub/mips/time.h (grub_arch_cpuclock): ... here.
+	* include/grub/mips/loongson/time.h (grub_cpu_idle): Moved from
+	here ...
+	* include/grub/mips/time.h (grub_cpu_idle): ... here.
+	* include/grub/offsets.h (GRUB_KERNEL_MIPS_ARC_LINK_ADDR): New
+	definition.
+	(GRUB_KERNEL_MIPS_ARC_LINK_ALIGN): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_COMPRESSED_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_UNCOMPRESSED_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_TOTAL_MODULE_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_PREFIX): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_PREFIX_END): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_MOD_ALIGN): Likewise.
+	(GRUB_MACHINE_LINK_ADDR): Likewise.
+	* include/grub/terminfo.h (GRUB_TERMINFO_READKEY_MAX_LEN): Increased
+	to 6.
+	* util/grub-install.in: Run dvhtool on ARC.
+	* util/grub-mkimage.c (image_targets): Add mips-arc.
+
 2011-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/bus/pci.c (grub_memalign_dma32): Always allocate in 64-byte

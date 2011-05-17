@@ -31,10 +31,10 @@
 GRUB_MOD_LICENSE ("GPLv3+");
 
 /* For frequencies.  */
-#include <grub/pci.h>
 #include <grub/machine/time.h>
 
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
+#include <grub/pci.h>
 #include <grub/machine/kernel.h>
 
 const char loongson_machtypes[][60] =
@@ -54,7 +54,10 @@ static struct grub_relocator *relocator;
 static grub_uint8_t *playground;
 static grub_addr_t target_addr, entry_addr;
 static int linux_argc;
-static grub_off_t argv_off, envp_off;
+static grub_off_t argv_off;
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+static grub_off_t envp_off;
+#endif
 static grub_off_t rd_addr_arg_off, rd_size_arg_off;
 static int initrd_loaded = 0;
 
@@ -67,7 +70,12 @@ grub_linux_boot (void)
   state.gpr[1] = entry_addr;
   state.gpr[4] = linux_argc;
   state.gpr[5] = target_addr + argv_off;
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
   state.gpr[6] = target_addr + envp_off;
+#else
+  state.gpr[6] = 0;
+#endif
+  state.gpr[7] = 0;
   state.jumpreg = 1;
   grub_relocator32_boot (relocator, state);
 
@@ -202,9 +210,13 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   int i;
   int size;
   void *extra = NULL;
-  grub_uint32_t *linux_argv, *linux_envp;
-  char *linux_args, *linux_envs;
+  grub_uint32_t *linux_argv;
+  char *linux_args;
   grub_err_t err;
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+  char *linux_envs;
+  grub_uint32_t *linux_envp;
+#endif
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
@@ -321,6 +333,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   extra = linux_args;
 
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
   linux_envp = extra;
   envp_off = (grub_uint8_t *) linux_envp - (grub_uint8_t *) playground;
   linux_envs = (char *) (linux_envp + 5);
@@ -348,8 +361,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     + target_addr;
   linux_envs += ALIGN_UP (grub_strlen (linux_envs) + 1, 4);
 
-
   linux_envp[4] = 0;
+#endif
 
   grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
   initrd_loaded = 0;
