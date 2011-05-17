@@ -1,5 +1,14 @@
 2011-05-17  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub.d/20_linux_xen.in: Honour GRUB_CMDLINE_LINUX_XEN_REPLACE
+	and GRUB_CMDLINE_LINUX_XEN_REPLACE_DEFAULT, which replace
+	GRUB_CMDLINE_LINUX and GRUB_CMDLINE_LINUX_DEFAULT (complementing the
+	existing options which append).
+	* docs/grub.texi (Simple configuration): Document new options.
+	Reported by: Ian Jackson.  Fixes Debian bug #617538.
+
+2011-05-17  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-fstest.c (cmd_cat): New function.
 	(fstest): Handle CMD_CAT.
 	(options): Add cat.

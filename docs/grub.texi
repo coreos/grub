@@ -1169,8 +1169,14 @@ NetBSD.
 
 @item GRUB_CMDLINE_XEN
 @itemx GRUB_CMDLINE_XEN_DEFAULT
-As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
-Linux and Xen.
+The values of these options are appended to the values of
+@samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT} for Linux
+and Xen menu entries.
+
+@item GRUB_CMDLINE_LINUX_XEN_REPLACE
+@item GRUB_CMDLINE_LINUX_XEN_REPLACE_DEFAULT
+The values of these options replace the values of @samp{GRUB_CMDLINE_LINUX}
+and @samp{GRUB_CMDLINE_LINUX_DEFAULT} for Linux and Xen menu entries.
 
 @item GRUB_DISABLE_LINUX_UUID
 Normally, @command{grub-mkconfig} will generate menu entries that use
