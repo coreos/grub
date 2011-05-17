@@ -329,6 +329,7 @@ CLEANFILES += config.log syminfo.lst moddep.lst
 $(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT)
 	TARGET_OBJ2ELF=@TARGET_OBJ2ELF@ sh $^ $@
 platform_DATA += $(MOD_FILES)
+platform_DATA += modinfo.sh
 CLEANFILES += $(MOD_FILES)
 
 if COND_ENABLE_EFIEMU

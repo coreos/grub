@@ -12,6 +12,12 @@ script = {
   common = genmod.sh.in;
 };
 
+script = {
+  installdir = noinst;
+  name = modinfo.sh;
+  common = modinfo.sh.in;
+};
+
 kernel = {
   name = kernel;
 

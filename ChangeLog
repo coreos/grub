@@ -1,3 +1,13 @@
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Unify grub-mkrescue (except powerpc) and grrub-mknetdir across platforms
+
+	* grub-core/Makefile.am (platform_DATA): Add modinfo.sh.
+	* grub-core/modinfo.sh.in: New file.
+	* grub-core/Makefile.core.def (modinfo.sh): New script.
+	* util/grub-mknetdir.in: Use modinfo.sh.
+	* util/grub-mkrescue.in: Likewise.
+
 2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/ia64/dl_helper.c (grub_ia64_dl_get_tramp_got_size):
