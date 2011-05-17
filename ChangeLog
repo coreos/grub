@@ -1,3 +1,8 @@
+2011-05-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (grub-bin2h): Don't install.
+	* docs/man/grub-bin2h.h2m: Remove.
+
 2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/mips/startup.S (grub_arch_cpuclock): Move to the right

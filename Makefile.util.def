@@ -114,7 +114,7 @@ program = {
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
-  mansection = 1;
+  installdir = noinst;
 };
 
 program = {
