@@ -60,3 +60,11 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
   hook (0, grub_arch_memsize, GRUB_MEMORY_AVAILABLE);
   return GRUB_ERR_NONE;
 }
+
+extern char _end[];
+
+grub_addr_t
+grub_arch_modules_addr (void)
+{
+  return (grub_addr_t) _end;
+}

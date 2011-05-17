@@ -257,3 +257,10 @@ grub_reboot (void)
   while (1);
 }
 
+extern char _end[];
+
+grub_addr_t
+grub_arch_modules_addr (void)
+{
+  return (grub_addr_t) _end;
+}

@@ -73,7 +73,8 @@ struct image_target_desc
     {
       PLATFORM_FLAGS_NONE = 0,
       PLATFORM_FLAGS_LZMA = 1,
-      PLATFORM_FLAGS_DECOMPRESSORS = 2
+      PLATFORM_FLAGS_DECOMPRESSORS = 2,
+      PLATFORM_FLAGS_MODULES_BEFORE_KERNEL = 4,
     } flags;
   unsigned prefix;
   unsigned prefix_end;
@@ -426,7 +427,8 @@ struct image_target_desc image_targets[] =
       .voidp_sizeof = 4,
       .bigendian = 1,
       .id = IMAGE_MIPS_ARC, 
-      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .flags = (PLATFORM_FLAGS_DECOMPRESSORS
+		| PLATFORM_FLAGS_MODULES_BEFORE_KERNEL),
       .prefix = GRUB_KERNEL_MIPS_ARC_PREFIX,
       .prefix_end = GRUB_KERNEL_MIPS_ARC_PREFIX_END,
       .raw_size = 0,
@@ -781,27 +783,47 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     grub_util_error (_("prefix is too long"));
   strcpy (kernel_img + image_target->prefix, prefix);
 
+  if ((image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
+      && (image_target->total_module_size != TARGET_NO_FIELD))
+    *((grub_uint32_t *) (kernel_img + image_target->total_module_size))
+      = grub_host_to_target32 (total_module_size);
+
+  if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+    memmove (kernel_img + total_module_size, kernel_img, kernel_size);
+
   if (image_target->voidp_sizeof == 8)
     {
       /* Fill in the grub_module_info structure.  */
       struct grub_module_info64 *modinfo;
-      modinfo = (struct grub_module_info64 *) (kernel_img + kernel_size);
+      if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+	modinfo = (struct grub_module_info64 *) kernel_img;
+      else
+	modinfo = (struct grub_module_info64 *) (kernel_img + kernel_size);
       memset (modinfo, 0, sizeof (struct grub_module_info64));
       modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
       modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info64));
       modinfo->size = grub_host_to_target_addr (total_module_size);
-      offset = kernel_size + sizeof (struct grub_module_info64);
+      if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+	offset = sizeof (struct grub_module_info64);
+      else
+	offset = kernel_size + sizeof (struct grub_module_info64);
     }
   else
     {
       /* Fill in the grub_module_info structure.  */
       struct grub_module_info32 *modinfo;
-      modinfo = (struct grub_module_info32 *) (kernel_img + kernel_size);
+      if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+	modinfo = (struct grub_module_info32 *) kernel_img;
+      else
+	modinfo = (struct grub_module_info32 *) (kernel_img + kernel_size);
       memset (modinfo, 0, sizeof (struct grub_module_info32));
       modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
       modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info32));
       modinfo->size = grub_host_to_target_addr (total_module_size);
-      offset = kernel_size + sizeof (struct grub_module_info32);
+      if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+	offset = sizeof (struct grub_module_info32);
+      else
+	offset = kernel_size + sizeof (struct grub_module_info32);
     }
 
   for (p = path_list; p; p = p->next)
@@ -852,26 +874,27 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       offset += config_size;
     }
 
-  if ((image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
-      && (image_target->total_module_size != TARGET_NO_FIELD))
-    *((grub_uint32_t *) (kernel_img + image_target->total_module_size))
-      = grub_host_to_target32 (total_module_size);
-
   grub_util_info ("kernel_img=%p, kernel_size=0x%x", kernel_img, kernel_size);
   compress_kernel (image_target, kernel_img, kernel_size + total_module_size,
 		   &core_img, &core_size, comp);
+  free (kernel_img);
+
+  if (image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
+    kernel_img = core_img + total_module_size;
+  else
+    kernel_img = core_img;
 
   grub_util_info ("the core size is 0x%x", core_size);
 
   if (!(image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS) 
       && image_target->total_module_size != TARGET_NO_FIELD)
-    *((grub_uint32_t *) (core_img + image_target->total_module_size))
+    *((grub_uint32_t *) (kernel_img + image_target->total_module_size))
       = grub_host_to_target32 (total_module_size);
   if (image_target->kernel_image_size != TARGET_NO_FIELD)
-    *((grub_uint32_t *) (core_img + image_target->kernel_image_size))
+    *((grub_uint32_t *) (kernel_img + image_target->kernel_image_size))
       = grub_host_to_target32 (kernel_size);
   if (image_target->compressed_size != TARGET_NO_FIELD)
-    *((grub_uint32_t *) (core_img + image_target->compressed_size))
+    *((grub_uint32_t *) (kernel_img + image_target->compressed_size))
       = grub_host_to_target32 (core_size - image_target->raw_size);
 
   /* If we included a drive in our prefix, let GRUB know it doesn't have to
@@ -879,9 +902,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   if (image_target->install_dos_part != TARGET_NO_FIELD
       && image_target->install_bsd_part != TARGET_NO_FIELD && prefix[0] == '(')
     {
-      *((grub_int32_t *) (core_img + image_target->install_dos_part))
+      *((grub_int32_t *) (kernel_img + image_target->install_dos_part))
 	= grub_host_to_target32 (-2);
-      *((grub_int32_t *) (core_img + image_target->install_bsd_part))
+      *((grub_int32_t *) (kernel_img + image_target->install_bsd_part))
 	= grub_host_to_target32 (-2);
     }
 
@@ -914,6 +937,13 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       *((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_SIZE))
 	= grub_host_to_target32 (kernel_size + total_module_size);
+
+      if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+	*((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR))
+	  = grub_host_to_target_addr (image_target->link_addr - total_module_size);
+      else
+	*((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR))
+	  = grub_host_to_target_addr (image_target->link_addr);
 
       full_size = core_size + decompress_size;
 
@@ -1199,7 +1229,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	rom_img = xmalloc (rom_size);
 	memset (rom_img, 0, rom_size);
 
-	*((grub_int32_t *) (core_img + GRUB_KERNEL_I386_QEMU_CORE_ENTRY_ADDR))
+	*((grub_int32_t *) (kernel_img + GRUB_KERNEL_I386_QEMU_CORE_ENTRY_ADDR))
 	  = grub_host_to_target32 ((grub_uint32_t) -rom_size);
 
 	memcpy (rom_img, core_img, core_size);
@@ -1380,8 +1410,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	size_t program_size;
 
 	program_size = ALIGN_ADDR (core_size);
-	target_addr = image_target->link_addr - ALIGN_UP(program_size, 1048576)
-	  - (1 << 20);
+	target_addr = (image_target->link_addr 
+		       - ALIGN_UP(total_module_size + core_size, 1048576)
+		       - (1 << 20));
 
 	ecoff_img = xmalloc (program_size + sizeof (*head) + sizeof (*section));
 	grub_memset (ecoff_img, 0, program_size + sizeof (*head) + sizeof (*section));
@@ -1553,7 +1584,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     }
 
   grub_util_write_image (core_img, core_size, out);
-  free (kernel_img);
   free (core_img);
   free (kernel_path);
 

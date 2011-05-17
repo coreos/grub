@@ -1,5 +1,36 @@
 2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Reduce memory footprint on SGI by putting modules before the kernel
+	as opposed to after.
+
+	* grub-core/Makefile.core.def (kernel): Increase linking address.
+	(none_decompress): Likewise.
+	(xz_decompress): Likewise.
+	* grub-core/boot/mips/startup_raw.S: Use prewritten uncompression
+	address.
+	* grub-core/kern/mips/arc/init.c (grub_machine_init): Handle memory
+	layout change.
+	(grub_arch_modules_addr): New function.
+	* grub-core/kern/mips/init.c (grub_arch_modules_addr): Moved from here...
+	* grub-core/kern/mips/loongson/init.c (grub_arch_modules_addr): .. here
+	* grub-core/kern/mips/qemu_mips/init.c (grub_arch_modules_addr): ... and
+	here.
+	* grub-core/kern/mips/startup.S (total_size): Rename to ...
+	(grub_total_modules_size): ... this. Make global.
+	[GRUB_MACHINE_ARC]: Don't attempt to move modules out of the bss.
+	* include/grub/offsets.h (GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR):
+	New definition.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_UNCOMPRESSED_ADDR): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_UNCOMPRESSED_ADDR): Likewise.
+	(GRUB_KERNEL_MACHINE_UNCOMPRESSED_ADDR): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_LINK_ADDR): Increased.
+	* util/grub-mkimage.c (image_target_desc): New flag
+	PLATFORM_FLAGS_MODULES_BEFORE_KERNEL.
+	(image_targets): Set PLATFORM_FLAGS_MODULES_BEFORE_KERNEL on mips-arc.
+	(generate_image): Handle images with modules before kernel.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Prevent potential loss of memory map by overwrite on qemu-mips.
 
 	* grub-core/boot/mips/startup_raw.S [GRUB_MACHINE_MIPS_QEMU_MIPS]:

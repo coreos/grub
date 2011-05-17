@@ -124,6 +124,8 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
     }
 }
 
+extern grub_uint32_t grub_total_modules_size;
+
 void
 grub_machine_init (void)
 {
@@ -148,8 +150,10 @@ grub_machine_init (void)
       start = ((grub_uint64_t) cur->start_page) << 12;
       end = ((grub_uint64_t) cur->num_pages)  << 12;
       end += start;
-      if ((grub_uint64_t) end > (GRUB_KERNEL_MIPS_ARC_LINK_ADDR & 0x1fffffff))
-	end = (GRUB_KERNEL_MIPS_ARC_LINK_ADDR & 0x1fffffff);
+      if ((grub_uint64_t) end > ((GRUB_KERNEL_MIPS_ARC_LINK_ADDR
+				  - grub_total_modules_size) & 0x1fffffff))
+	end = ((GRUB_KERNEL_MIPS_ARC_LINK_ADDR - grub_total_modules_size)
+	       & 0x1fffffff);
       if (end > start)
 	grub_mm_init_region ((void *) (grub_addr_t) (start | 0x80000000),
 			     end - start);
@@ -158,6 +162,12 @@ grub_machine_init (void)
   grub_console_init_lately ();
 
   grub_arcdisk_init ();
+}
+
+grub_addr_t
+grub_arch_modules_addr (void)
+{
+  return GRUB_KERNEL_MIPS_ARC_LINK_ADDR - grub_total_modules_size;
 }
 
 void

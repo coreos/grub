@@ -42,11 +42,3 @@ grub_machine_set_prefix (void)
 {
   grub_env_set ("prefix", grub_prefix);
 }
-
-extern char _end[];
-
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return (grub_addr_t) _end;
-}
