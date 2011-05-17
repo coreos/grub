@@ -444,7 +444,7 @@ struct image_target_desc image_targets[] =
     },
     {
       .dirname = "mips-qemu_mips",
-      .names = { "mips-qemu_mips-elf", NULL },
+      .names = { "mipsel-qemu_mips-elf", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_LOONGSON_ELF, 
