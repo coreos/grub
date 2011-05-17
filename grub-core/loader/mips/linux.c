@@ -80,13 +80,21 @@ grub_linux_boot (void)
   {
     grub_err_t err;
     grub_relocator_chunk_t ch;
+    grub_uint32_t *memsize;
+    grub_uint32_t *magic;
+    char *str;
 
     err = grub_relocator_alloc_chunk_addr (relocator, &ch,
-					   ((16 << 20) - 256),
-					   grub_strlen (params) + 1);
+					   ((16 << 20) - 264),
+					   grub_strlen (params) + 1 + 8);
     if (err)
       return err;
-    grub_strcpy (get_virtual_current_address (ch), params);
+    memsize = get_virtual_current_address (ch);
+    magic = memsize + 1;
+    *memsize = grub_mmap_get_lower ();
+    *magic = 0x12345678;
+    str = (char *) (magic + 1);
+    grub_strcpy (str, params);
   }
 #endif  
 

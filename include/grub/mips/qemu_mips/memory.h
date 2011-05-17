@@ -29,6 +29,9 @@
 #define GRUB_MACHINE_MEMORY_USABLE       0x81000000
 
 #ifndef ASM_FILE
+
+extern grub_uint32_t grub_arch_memsize;
+
 static inline grub_err_t
 grub_machine_mmap_register (grub_uint64_t start __attribute__ ((unused)),
 			    grub_uint64_t size __attribute__ ((unused)),

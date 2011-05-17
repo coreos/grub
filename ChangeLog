@@ -1,3 +1,18 @@
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Prevent potential loss of memory map by overwrite on qemu-mips.
+
+	* grub-core/boot/mips/startup_raw.S [GRUB_MACHINE_MIPS_QEMU_MIPS]:
+	Save ram size in $s4.
+	* grub-core/kern/mips/qemu_mips/init.c (RAMSIZE): Removed.
+	All users changed to grub_arch_memsize.
+	* grub-core/kern/mips/startup.S (grub_arch_machine): Restrict to
+	Loongson.
+	[GRUB_MACHINE_MIPS_QEMU_MIPS]: Save grub_arch_memsize.
+	* grub-core/loader/mips/linux.c (grub_linux_boot): Pass memory size.
+	* include/grub/mips/qemu_mips/memory.h (grub_arch_memsize): New
+	external variable.
+
 2011-05-17  Colin Watson  <cjwatson@ubuntu.com>
 
 	* .bzrignore: Remove grub-dumpbios.

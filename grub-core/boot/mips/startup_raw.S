@@ -50,6 +50,11 @@ codestart:
 
 	/* Parse arguments. Has to be done before relocation.
 	So need to do it in asm.  */
+#ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+	lui $t0, %hi (((16 << 20) - 264) | 0x80000000)
+	lw $s4, %lo (((16 << 20) - 264) | 0x80000000) ($t0)
+#endif
+
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
 	move $s2, $zero
 	move $s3, $zero

@@ -59,11 +59,19 @@ VARIABLE (grub_arch_memsize)
 	.long 0
 VARIABLE (grub_arch_highmemsize)
 	.long 0
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
 VARIABLE (grub_arch_machine)
 	.long GRUB_ARCH_MACHINE_FULOONG
+#endif
 cont:
 	/* Save our base.  */
 	move $s0, $ra
+
+#ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+	lui $t1, %hi(grub_arch_busclock)
+	addiu $t1, %lo(grub_arch_busclock)
+	sw $s4, 8($t1)
+#endif
 
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
 	lui $t1, %hi(grub_arch_busclock)

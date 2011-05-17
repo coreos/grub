@@ -10,8 +10,6 @@
 #include <grub/cpu/memory.h>
 #include <grub/memory.h>
 
-#define RAMSIZE (*(grub_uint32_t *) ((16 << 20) - 264))
-
 extern void grub_serial_init (void);
 extern void grub_terminfo_init (void);
 
@@ -24,7 +22,7 @@ grub_machine_init (void)
   grub_arch_cpuclock = 64000000;
 
   modend = grub_modules_get_end ();
-  grub_mm_init_region ((void *) modend, RAMSIZE
+  grub_mm_init_region ((void *) modend, grub_arch_memsize
 		       - (modend - GRUB_ARCH_LOWMEMVSTART));
 
   grub_install_get_time_ms (grub_rtc_get_time_ms);
@@ -59,6 +57,6 @@ grub_reboot (void)
 grub_err_t 
 grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
-  hook (0, RAMSIZE, GRUB_MEMORY_AVAILABLE);
+  hook (0, grub_arch_memsize, GRUB_MEMORY_AVAILABLE);
   return GRUB_ERR_NONE;
 }
