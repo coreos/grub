@@ -208,6 +208,7 @@ kernel = {
   videoinkernel = io/bufio.c;
   videoinkernel = video/bitmap.c;
   videoinkernel = video/bitmap_scale.c;
+  videoinkernel = video/colors.c;
   videoinkernel = video/fb/fbblit.c;
   videoinkernel = video/fb/fbfill.c;
   videoinkernel = video/fb/fbutil.c;
@@ -1119,7 +1120,6 @@ module = {
   common = gfxmenu/gui_progress_bar.c;
   common = gfxmenu/gui_util.c;
   common = gfxmenu/gui_string_util.c;
-  common = gfxmenu/named_colors.c;
 };
 
 module = {
@@ -1542,6 +1542,7 @@ module = {
 module = {
   name = video;
   common = video/video.c;
+  common = video/colors.c;
   enable = videomodules;
 };
 
