@@ -1,5 +1,17 @@
 2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	FreeDOS direct loading support.
+
+	* docs/grub.texi (Supported OS): Add FreeDOS.
+	* grub-core/Makefile.core.def (freedos): New module.
+	* grub-core/lib/i386/relocator.c (grub_relocator16_ebx): New extern
+	variable.
+	(grub_relocator16_boot): Handle %ebx.
+	* grub-core/lib/i386/relocator16.S: Likewise.
+	* grub-core/loader/i386/pc/freedos.c: New file.
+
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Long Linux command line support.
 
 	* grub-core/loader/i386/linux.c (GRUB_LINUX_CL_END_OFFSET): Removed.
