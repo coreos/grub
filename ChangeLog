@@ -1,4 +1,19 @@
 2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Long Linux command line support.
+
+	* grub-core/loader/i386/linux.c (GRUB_LINUX_CL_END_OFFSET): Removed.
+	(maximal_cmdline_size): New variable.
+	(allocate_pages): Use maximal_cmdline_size.
+	(grub_cmd_linux): Set and use maximal_cmdline_size.
+	* grub-core/loader/i386/pc/linux.c (GRUB_LINUX_CL_END_OFFSET): Removed.
+	(allocate_pages): Use maximal_cmdline_size.
+	(grub_cmd_linux): Set and use maximal_cmdline_size.
+	* include/grub/i386/linux.h (GRUB_LINUX_SETUP_MOVE_SIZE): Removed.
+	(linux_kernel_header): Add fields kernel_alignment, relocatable, pad
+	and cmdline_size.
+
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 2011-05-18  Colin Watson  <cjwatson@ubuntu.com>
 
 	Improve devmapper support
