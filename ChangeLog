@@ -1,4 +1,22 @@
 2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-05-18  Colin Watson  <cjwatson@ubuntu.com>
+
+	Improve devmapper support
+
+	* grub-core/kern/emu/getroot.c (grub_util_is_dmraid): Removed.
+	(grub_util_is_lvm): New function.
+	(grub_util_get_dev_abstraction): Assume dmraid if not lvm rather
+	than lvm if not dmraid.
+	Handle mapped md nodes.
+	* grub-core/kern/emu/hostdisk.c (device_is_mapped): Rename to ...
+	(grub_util_device_is_mapped): ... this. Make always available. All users
+	updated.
+	(grub_util_get_dm_node_linear_info) [HAVE_DEVICE_MAPPER]: New function.
+	(convert_system_partition_to_system_disk): Handle lvm, mpath and
+	dmraid nodes.
+	* include/grub/emu/misc.h (grub_util_device_is_mapped): New proto.
+
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Unify grub-mkrescue (except powerpc) and grrub-mknetdir across platforms
 
