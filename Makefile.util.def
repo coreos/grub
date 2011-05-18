@@ -288,6 +288,7 @@ program = {
 program = {
   name = grub-ofpathname;
   installdir = sbin;
+  mansection = 8;
   ieee1275 = util/ieee1275/grub-ofpathname.c;
   ieee1275 = util/ieee1275/ofpath.c;
 
