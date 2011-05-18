@@ -1,5 +1,6 @@
-#! /bin/sh -e
-#
+#! /bin/sh
+set -e
+
 # Copyright (C) 2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify

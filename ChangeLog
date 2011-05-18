@@ -1,5 +1,20 @@
 2011-05-18  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/genmod.sh.in: Use 'set -e' rather than '#! /bin/sh -e',
+	to avoid accidents when debugging with 'sh -x'.
+	* grub-core/gensyminfo.sh.in: Likewise.
+	* tests/example_scripted_test.in: Likewise.
+	* tests/grub_cmd_regexp.in: Likewise.
+	* tests/grub_script_blanklines.in: Likewise.
+	* tests/grub_script_dollar.in: Likewise.
+	* tests/grub_script_expansion.in: Likewise.
+	* tests/grub_script_final_semicolon.in: Likewise.
+	* tests/partmap_test.in: Likewise.
+	* tests/util/grub-shell-tester.in: Likewise.
+	* tests/util/grub-shell.in: Likewise.
+
+2011-05-18  Colin Watson  <cjwatson@ubuntu.com>
+
 	Move gfxmenu color handling to video, so that gfxterm can use it
 	too.
 
