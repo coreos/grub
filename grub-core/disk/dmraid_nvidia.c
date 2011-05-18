@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/raid.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define NV_SIGNATURES		4
 
 #define NV_IDLE			0

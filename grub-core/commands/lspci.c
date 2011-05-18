@@ -23,6 +23,8 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_pci_classname
 {
   int class;

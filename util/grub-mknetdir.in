@@ -27,12 +27,8 @@ libdir=@libdir@
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
-target_cpu=@target_cpu@
-platform=@platform@
 host_os=@host_os@
-pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 localedir=@datadir@/locale
-native_platform=@platform@
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 
 self=`basename $0`
@@ -64,7 +60,7 @@ Install GRUB on your drive.
   --subdir=DIR            relative subdirectory on network server
   --grub-mkimage=FILE     use FILE as grub-mkimage
 
-$self copies GRUB images into net_directory/subdir/${target_cpu}-${platform}
+$self copies GRUB images into net_directory/subdir/target_cpu-platform
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -222,7 +218,8 @@ if [ "${override_dir}" = "" ] ; then
         process_input_dir ${pc_dir} i386-pc
     fi
 else
-    process_input_dir ${override_dir} ${target_cpu}-${native_platform}
+    source "${override_dir}"/modinfo.sh
+    process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
 fi
 
 

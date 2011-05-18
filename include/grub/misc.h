@@ -288,7 +288,8 @@ char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args) __attribute__
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
-					  grub_uint32_t d, grub_uint32_t *r);
+					  grub_uint64_t d,
+					  grub_uint64_t *r);
 
 #if NEED_ENABLE_EXECUTE_STACK && !defined(GRUB_UTIL)
 void EXPORT_FUNC(__enable_execute_stack) (void *addr);

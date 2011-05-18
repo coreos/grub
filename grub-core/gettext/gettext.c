@@ -28,6 +28,8 @@
 #include <grub/kernel.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /*
    .mo file information from:
    http://www.gnu.org/software/autoconf/manual/gettext/MO-Files.html .
@@ -49,7 +51,7 @@ struct grub_gettext_msg
   const char *translated;
 };
 
-struct grub_gettext_msg *grub_gettext_msg_list = NULL;
+static struct grub_gettext_msg *grub_gettext_msg_list = NULL;
 
 #define GETTEXT_MAGIC_NUMBER 		0
 #define GETTEXT_FILE_FORMAT		4

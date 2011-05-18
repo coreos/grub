@@ -17,7 +17,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config-util.h>
 #include <config.h>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
@@ -31,6 +33,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <grub/util/misc.h>
+
+#ifdef HAVE_DEVICE_MAPPER
+# include <libdevmapper.h>
+#endif
 
 #ifdef __GNU__
 #include <hurd.h>
@@ -96,6 +102,14 @@ xgetcwd (void)
 
 #ifdef __linux__
 
+struct mountinfo_entry
+{
+  int id;
+  int major, minor;
+  char enc_root[PATH_MAX], enc_path[PATH_MAX];
+  char fstype[PATH_MAX], device[PATH_MAX];
+};
+
 /* Statting something on a btrfs filesystem always returns a virtual device
    major/minor pair rather than the real underlying device, because btrfs
    can span multiple underlying devices (and even if it's currently only
@@ -103,71 +117,120 @@ xgetcwd (void)
    can't deal with the multiple-device case yet, but in the meantime, we can
    at least cope with the single-device case by scanning
    /proc/self/mountinfo.  */
-static char *
-find_root_device_from_mountinfo (const char *dir)
+char *
+grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
 {
   FILE *fp;
   char *buf = NULL;
   size_t len = 0;
   char *ret = NULL;
+  int entry_len = 0, entry_max = 4;
+  struct mountinfo_entry *entries;
+  struct mountinfo_entry parent_entry = { 0, 0, 0, "", "", "", "" };
+  int i;
+
+  if (! *dir)
+    dir = "/";
+  if (relroot)
+    *relroot = NULL;
 
   fp = fopen ("/proc/self/mountinfo", "r");
   if (! fp)
     return NULL; /* fall through to other methods */
 
+  entries = xmalloc (entry_max * sizeof (*entries));
+
+  /* First, build a list of relevant visible mounts.  */
   while (getline (&buf, &len, fp) > 0)
     {
-      int mnt_id, parent_mnt_id;
-      unsigned int major, minor;
-      char enc_root[PATH_MAX], enc_path[PATH_MAX];
+      struct mountinfo_entry entry;
       int count;
       size_t enc_path_len;
       const char *sep;
-      char fstype[PATH_MAX], device[PATH_MAX];
-      struct stat st;
 
       if (sscanf (buf, "%d %d %u:%u %s %s%n",
-		  &mnt_id, &parent_mnt_id, &major, &minor, enc_root, enc_path,
-		  &count) < 6)
+		  &entry.id, &parent_entry.id, &entry.major, &entry.minor,
+		  entry.enc_root, entry.enc_path, &count) < 6)
 	continue;
 
-      if (strcmp (enc_root, "/") != 0)
-	continue; /* only a subtree is mounted */
-
-      enc_path_len = strlen (enc_path);
-      if (strncmp (dir, enc_path, enc_path_len) != 0 ||
-	  (dir[enc_path_len] && dir[enc_path_len] != '/'))
+      enc_path_len = strlen (entry.enc_path);
+      /* Check that enc_path is a prefix of dir.  The prefix must either be
+         the entire string, or end with a slash, or be immediately followed
+         by a slash.  */
+      if (strncmp (dir, entry.enc_path, enc_path_len) != 0 ||
+	  (enc_path_len && dir[enc_path_len - 1] != '/' &&
+	   dir[enc_path_len] && dir[enc_path_len] != '/'))
 	continue;
-
-      /* This is a parent of the requested directory.  /proc/self/mountinfo
-	 is in mount order, so it must be the closest parent we've
-	 encountered so far.  If it's virtual, return its device node;
-	 otherwise, carry on to try to find something closer.  */
-
-      free (ret);
-      ret = NULL;
-
-      if (major != 0)
-	continue; /* not a virtual device */
 
       sep = strstr (buf + count, " - ");
       if (!sep)
 	continue;
 
       sep += sizeof (" - ") - 1;
-      if (sscanf (sep, "%s %s", fstype, device) != 2)
+      if (sscanf (sep, "%s %s", entry.fstype, entry.device) != 2)
 	continue;
 
-      if (stat (device, &st) < 0)
+      /* Using the mount IDs, find out where this fits in the list of
+	 visible mount entries we've seen so far.  There are three
+	 interesting cases.  Firstly, it may be inserted at the end: this is
+	 the usual case of /foo/bar being mounted after /foo.  Secondly, it
+	 may be inserted at the start: for example, this can happen for
+	 filesystems that are mounted before / and later moved under it.
+	 Thirdly, it may occlude part or all of the existing filesystem
+	 tree, in which case the end of the list needs to be pruned and this
+	 new entry will be inserted at the end.  */
+      if (entry_len >= entry_max)
+	{
+	  entry_max <<= 1;
+	  entries = xrealloc (entries, entry_max * sizeof (*entries));
+	}
+
+      if (!entry_len)
+	{
+	  /* Initialise list.  */
+	  entry_len = 2;
+	  entries[0] = parent_entry;
+	  entries[1] = entry;
+	}
+      else
+	{
+	  for (i = entry_len - 1; i >= 0; i--)
+	    {
+	      if (entries[i].id == parent_entry.id)
+		{
+		  /* Insert at end, pruning anything previously above this.  */
+		  entry_len = i + 2;
+		  entries[i + 1] = entry;
+		  break;
+		}
+	      else if (i == 0 && entries[i].id == entry.id)
+		{
+		  /* Insert at start.  */
+		  entry_len++;
+		  memmove (entries + 1, entries,
+			   (entry_len - 1) * sizeof (*entries));
+		  entries[0] = parent_entry;
+		  entries[1] = entry;
+		  break;
+		}
+	    }
+	}
+    }
+
+  /* Now scan visible mounts for the ones we're interested in.  */
+  for (i = entry_len - 1; i >= 0; i--)
+    {
+      if (!*entries[i].device)
 	continue;
 
-      if (!S_ISBLK (st.st_mode))
-	continue; /* not a block device */
-
-      ret = strdup (device);
+      ret = strdup (entries[i].device);
+      if (relroot)
+	*relroot = strdup (entries[i].enc_root);
+      break;
     }
 
   free (buf);
+  free (entries);
   fclose (fp);
   return ret;
 }
@@ -178,7 +241,7 @@ find_root_device_from_mountinfo (const char *dir)
 static char *
 find_root_device_from_libzfs (const char *dir)
 {
-  char *device;
+  char *device = NULL;
   char *poolname;
   char *poolfs;
 
@@ -219,7 +282,10 @@ find_root_device_from_libzfs (const char *dir)
 
 	struct stat st;
 	if (stat (device, &st) == 0)
-	  break;
+	  {
+	    device = xstrdup (device);
+	    break;
+	  }
 
 	device = NULL;
       }
@@ -470,7 +536,7 @@ grub_find_device (const char *path, dev_t dev)
 char *
 grub_guess_root_device (const char *dir)
 {
-  char *os_dev;
+  char *os_dev = NULL;
 #ifdef __GNU__
   file_t file;
   mach_port_t *ports;
@@ -529,30 +595,42 @@ grub_guess_root_device (const char *dir)
   mach_port_deallocate (mach_task_self (), file);
 #else /* !__GNU__ */
   struct stat st;
+  dev_t dev;
 
 #ifdef __linux__
-  os_dev = find_root_device_from_mountinfo (dir);
-  if (os_dev)
-    return os_dev;
+  if (!os_dev)
+    os_dev = grub_find_root_device_from_mountinfo (dir, NULL);
 #endif /* __linux__ */
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
-  os_dev = find_root_device_from_libzfs (dir);
-  if (os_dev)
-    return os_dev;
+  if (!os_dev)
+    os_dev = find_root_device_from_libzfs (dir);
 #endif
 
-  if (stat (dir, &st) < 0)
-    grub_util_error ("cannot stat `%s'", dir);
+  if (os_dev)
+    {
+      if (stat (os_dev, &st) >= 0)
+	dev = st.st_rdev;
+      else
+	grub_util_error ("cannot stat `%s'", os_dev);
+      free (os_dev);
+    }
+  else
+    {
+      if (stat (dir, &st) >= 0)
+	dev = st.st_dev;
+      else
+	grub_util_error ("cannot stat `%s'", dir);
+    }
 
 #ifdef __CYGWIN__
   /* Cygwin specific function.  */
-  os_dev = grub_find_device (dir, st.st_dev);
+  os_dev = grub_find_device (dir, dev);
 
 #else
 
   /* This might be truly slow, but is there any better way?  */
-  os_dev = grub_find_device ("/dev", st.st_dev);
+  os_dev = grub_find_device ("/dev", dev);
 #endif
 #endif /* !__GNU__ */
 
@@ -560,32 +638,65 @@ grub_guess_root_device (const char *dir)
 }
 
 static int
-grub_util_is_dmraid (const char *os_dev)
+grub_util_is_lvm (const char *os_dev)
 {
-  if (! strncmp (os_dev, "/dev/mapper/nvidia_", 19))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/isw_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/hpt37x_", 19))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/hpt45x_", 19))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/via_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/lsi_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/pdc_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/jmicron_", 20))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/asr_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/sil_", 16))
-    return 1;
-  else if (! strncmp (os_dev, "/dev/mapper/ddf1_", 17))
-    return 1;
+  if ((strncmp ("/dev/mapper/", os_dev, 12) != 0))
+    return 0;
+  
+#ifdef HAVE_DEVICE_MAPPER
+  {
+    struct dm_tree *tree;
+    uint32_t maj, min;
+    struct dm_tree_node *node = NULL;
+    const char *node_uuid;
+    struct stat st;
 
-  return 0;
+    if (stat (os_dev, &st) < 0)
+      return 0;
+
+    tree = dm_tree_create ();
+    if (! tree)
+      {
+	grub_printf ("Failed to create tree\n");
+	grub_dprintf ("hostdisk", "dm_tree_create failed\n");
+	return 0;
+      }
+
+    maj = major (st.st_rdev);
+    min = minor (st.st_rdev);
+
+    if (! dm_tree_add_dev (tree, maj, min))
+      {
+	grub_dprintf ("hostdisk", "dm_tree_add_dev failed\n");
+	dm_tree_free (tree);
+	return 0;
+      }
+
+    node = dm_tree_find_node (tree, maj, min);
+    if (! node)
+      {
+	grub_dprintf ("hostdisk", "dm_tree_find_node failed\n");
+	dm_tree_free (tree);
+	return 0;
+      }
+    node_uuid = dm_tree_node_get_uuid (node);
+    if (! node_uuid)
+      {
+	grub_dprintf ("hostdisk", "%s has no DM uuid\n", os_dev);
+	dm_tree_free (tree);
+	return 0;
+      }
+    if (strncmp (node_uuid, "LVM-", 4) != 0)
+      {
+	dm_tree_free (tree);
+	return 0;
+      }
+    dm_tree_free (tree);
+    return 1;
+  }
+#else
+  return 1;
+#endif /* HAVE_DEVICE_MAPPER */
 }
 
 int
@@ -597,13 +708,11 @@ grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
     return GRUB_DEV_ABSTRACTION_NONE;
 
   /* Check for LVM.  */
-  if (!strncmp (os_dev, "/dev/mapper/", 12)
-      && ! grub_util_is_dmraid (os_dev)
-      && strncmp (os_dev, "/dev/mapper/mpath", 17) != 0)
+  if (grub_util_is_lvm (os_dev))
     return GRUB_DEV_ABSTRACTION_LVM;
 
   /* Check for RAID.  */
-  if (!strncmp (os_dev, "/dev/md", 7))
+  if (!strncmp (os_dev, "/dev/md", 7) && ! grub_util_device_is_mapped (os_dev))
     return GRUB_DEV_ABSTRACTION_RAID;
 #endif
 
@@ -613,7 +722,7 @@ grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
 
 #ifdef __linux__
 static char *
-get_mdadm_name (const char *os_dev)
+get_mdadm_uuid (const char *os_dev)
 {
   int mdadm_pipe[2];
   pid_t mdadm_pid;
@@ -665,19 +774,21 @@ get_mdadm_name (const char *os_dev)
 
       while (getline (&buf, &len, mdadm) > 0)
 	{
-	  if (strncmp (buf, "MD_NAME=", sizeof ("MD_NAME=") - 1) == 0)
+	  if (strncmp (buf, "MD_UUID=", sizeof ("MD_UUID=") - 1) == 0)
 	    {
-	      char *name_start, *colon;
+	      char *name_start, *ptri, *ptro;
 	      size_t name_len;
 
 	      free (name);
-	      name_start = buf + sizeof ("MD_NAME=") - 1;
-	      /* Strip off the homehost if present.  */
-	      colon = strchr (name_start, ':');
-	      name = strdup (colon ? colon + 1 : name_start);
-	      name_len = strlen (name);
-	      if (name[name_len - 1] == '\n')
-		name[name_len - 1] = '\0';
+	      name_start = buf + sizeof ("MD_UUID=") - 1;
+	      ptro = name = xmalloc (strlen (name_start) + 1);
+	      for (ptri = name_start; *ptri && *ptri != '\n' && *ptri != '\r';
+		   ptri++)
+		if ((*ptri >= '0' && *ptri <= '9')
+		    || (*ptri >= 'a' && *ptri <= 'f')
+		    || (*ptri >= 'A' && *ptri <= 'F'))
+		  *ptro++ = *ptri;
+	      *ptro = 0;
 	    }
 	}
 
@@ -793,12 +904,26 @@ grub_util_get_grub_dev (const char *os_dev)
 
 #ifdef __linux__
       {
-	char *mdadm_name = get_mdadm_name (os_dev);
+	char *mdadm_name = get_mdadm_uuid (os_dev);
+	struct stat st;
 
 	if (mdadm_name)
 	  {
+	    const char *q;
+
+	    for (q = os_dev + strlen (os_dev) - 1; q >= os_dev
+		   && grub_isdigit (*q); q--);
+
+	    if (q >= os_dev && *q == 'p')
+	      {
+		free (grub_dev);
+		grub_dev = xasprintf ("mduuid/%s,%s", mdadm_name, q + 1);
+		goto done;
+	      }
 	    free (grub_dev);
-	    grub_dev = xasprintf ("md/%s", mdadm_name);
+	    grub_dev = xasprintf ("mduuid/%s", mdadm_name);
+
+	  done:
 	    free (mdadm_name);
 	  }
       }

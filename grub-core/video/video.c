@@ -22,6 +22,8 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* The list of video adapters registered to system.  */
 grub_video_adapter_t grub_video_adapter_list = NULL;
 

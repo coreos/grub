@@ -27,7 +27,7 @@ char *EXPORT_FUNC(grub_terminfo_get_current) (struct grub_term_output *term);
 grub_err_t EXPORT_FUNC(grub_terminfo_set_current) (struct grub_term_output *term,
 												const char *);
 
-#define GRUB_TERMINFO_READKEY_MAX_LEN 4
+#define GRUB_TERMINFO_READKEY_MAX_LEN 6
 struct grub_terminfo_input_state
 {
   int input_buf[GRUB_TERMINFO_READKEY_MAX_LEN];
@@ -56,6 +56,7 @@ struct grub_terminfo_output_state
   void (*put) (struct grub_term_output *term, const int c);
 };
 
+grub_err_t EXPORT_FUNC(grub_terminfo_output_init) (struct grub_term_output *term);
 void EXPORT_FUNC(grub_terminfo_gotoxy) (grub_term_output_t term,
 					grub_uint8_t x, grub_uint8_t y);
 void EXPORT_FUNC(grub_terminfo_cls) (grub_term_output_t term);

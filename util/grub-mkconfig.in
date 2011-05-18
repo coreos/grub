@@ -280,6 +280,8 @@ for i in ${grub_mkconfig_dir}/* ; do
   case "$i" in
     # emacsen backup files. FIXME: support other editors
     *~) ;;
+    # emacsen autosave files. FIXME: support other editors
+    \#*\#) ;;
     *)
       if grub_file_is_not_garbage "$i" && test -x "$i" ; then
         echo

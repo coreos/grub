@@ -30,6 +30,8 @@
 #include <grub/machine/int.h>
 #include <grub/machine/memory.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define SEGMENT(x)	((x) >> 4)
 #define OFFSET(x)	((x) & 0xF)
 #define SEGOFS(x)	((SEGMENT(x) << 16) + OFFSET(x))
@@ -225,7 +227,7 @@ grub_pxefs_dir (grub_device_t device,
 		__attribute__ ((unused)))
 {
   if (device->disk->dev->id != GRUB_DISK_DEVICE_PXE_ID)
-    return grub_error (GRUB_ERR_IO, "not a pxe disk");
+    return grub_error (GRUB_ERR_BAD_FS, "not a pxe disk");
 
   return GRUB_ERR_NONE;
 }
@@ -243,7 +245,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   grub_file_t file_int, bufio;
 
   if (file->device->disk->dev->id != GRUB_DISK_DEVICE_PXE_ID)
-    return grub_error (GRUB_ERR_IO, "not a pxe disk");
+    return grub_error (GRUB_ERR_BAD_FS, "not a pxe disk");
 
   if (curr_file != 0)
     {
@@ -281,7 +283,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
     }
 
   file->data = data;
-  file->not_easly_seekable = 1;
+  file->not_easily_seekable = 1;
   grub_memcpy (file_int, file, sizeof (struct grub_file));
   curr_file = file_int;
 
@@ -304,7 +306,8 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
   struct grub_pxenv_tftp_read c;
   struct grub_pxe_data *data;
   struct grub_pxe_disk_data *disk_data = file->device->disk->data;
-  grub_uint32_t pn, r;
+  grub_uint32_t pn;
+  grub_uint64_t r;
 
   data = file->data;
 
@@ -420,6 +423,7 @@ set_mac_env (grub_uint8_t *mac_addr, grub_size_t mac_len)
   grub_env_set ("net_pxe_mac", buf);
   /* XXX: Is it possible to change MAC in PXE?  */
   grub_register_variable_hook ("net_pxe_mac", 0, grub_env_write_readonly);
+  grub_env_export ("net_pxe_mac");
 }
 
 static void
@@ -431,6 +435,7 @@ set_env_limn_ro (const char *varname, char *value, grub_size_t len)
   grub_env_set (varname, value);
   value[len] = c;
   grub_register_variable_hook (varname, 0, grub_env_write_readonly);
+  grub_env_export (varname);
 }
 
 static void
@@ -479,7 +484,7 @@ parse_dhcp_vendor (void *vend, int limit)
 	  break;
 
 	  /* If you need any other options please contact GRUB
-	     developpement team.  */
+	     development team.  */
 	}
 
       ptr += taglength;
@@ -624,12 +629,19 @@ GRUB_MOD_INIT(pxe)
 				   grub_env_write_pxe_default_server);
       grub_register_variable_hook ("pxe_default_gateway", 0,
 				   grub_env_write_pxe_default_gateway);
+      
 
       /* XXX: Is it possible to change IP in PXE?  */
       grub_register_variable_hook ("net_pxe_ip", 0,
 				   grub_env_write_readonly);
       grub_register_variable_hook ("pxe_blksize", 0,
 				   grub_env_write_pxe_blocksize);
+
+      grub_env_export ("pxe_default_server");
+      grub_env_export ("pxe_default_gateway");
+      grub_env_export ("net_pxe_ip");
+      grub_env_export ("pxe_blksize");
+
       grub_disk_dev_register (&grub_pxe_dev);
       grub_fs_register (&grub_pxefs_fs);
     }

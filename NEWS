@@ -29,7 +29,7 @@ New in 1.99:
 
 * New `lsacpi' command.
 
-* Basic btrfs support (detection and UUID).
+* Btrfs support.
 
 * New `--boot-directory' option to `grub-install', `grub-reboot', and
   `grub-set-default', with clearer semantics than the previous
@@ -82,10 +82,6 @@ New in 1.99:
 * AMD Geode CS5536 support.
 
 * Extensive updates to the Texinfo documentation.
-
-* Add `grub-probe' support for the btrfs filesystem, permitting / to
-  reside on btrfs as long as /boot is on a filesystem natively supported
-  by GRUB.
 
 * Handle symbolic links under /dev/mapper on GNU/Linux.
 

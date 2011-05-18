@@ -21,7 +21,7 @@
 #define GRUB_RAID_UTIL_HEADER	1
 
 #ifdef __linux__
-char** grub_util_raid_getmembers (char *name);
+char** grub_util_raid_getmembers (const char *name);
 #endif
 
 #endif /* ! GRUB_RAID_UTIL_HEADER */

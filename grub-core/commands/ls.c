@@ -32,6 +32,8 @@
 #include <grub/datetime.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] =
   {
     {"long", 'l', 0, N_("Show a long list with more detailed information."), 0, 0},
@@ -132,11 +134,12 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 
 	      if (units)
 		{
-		  grub_uint32_t whole, fraction;
+		  grub_uint64_t whole, fraction;
 
 		  whole = grub_divmod64 (fsize, 100, &fraction);
 		  grub_snprintf (buf, sizeof (buf),
-				 "%u.%02u%c", whole, fraction,
+				 "%" PRIuGRUB_UINT64_T
+				 ".%02" PRIuGRUB_UINT64_T "%c", whole, fraction,
 				 grub_human_sizes[units]);
 		  grub_printf ("%-12s", buf);
 		}
