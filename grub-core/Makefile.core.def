@@ -1548,7 +1548,7 @@ module = {
 module = {
   name = ieee1275_fb;
   ieee1275 = video/ieee1275.c;
-  enable = powerpc;
+  enable = powerpc_ieee1275;
 };
 
 module = {

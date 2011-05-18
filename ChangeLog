@@ -1,5 +1,10 @@
 2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (ieee1275_fb): Use enable=powerpc_ieee1275
+	for cleanness.
+
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	FreeDOS direct loading support.
 
 	* docs/grub.texi (Supported OS): Add FreeDOS.
