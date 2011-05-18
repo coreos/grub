@@ -125,7 +125,7 @@ grub_affs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   int block = node->block;
   struct grub_affs_file file;
   struct grub_affs_data *data = node->data;
-  grub_uint32_t mod;
+  grub_uint64_t mod;
 
   /* Find the block that points to the fileblock we are looking up by
      following the chain until the right table is reached.  */

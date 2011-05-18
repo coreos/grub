@@ -306,7 +306,8 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
   struct grub_pxenv_tftp_read c;
   struct grub_pxe_data *data;
   struct grub_pxe_disk_data *disk_data = file->device->disk->data;
-  grub_uint32_t pn, r;
+  grub_uint32_t pn;
+  grub_uint64_t r;
 
   data = file->data;
 

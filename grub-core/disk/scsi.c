@@ -512,7 +512,7 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
 	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			   "unsupported SCSI block size");
 
-      grub_uint32_t sector_mod = 0;
+      grub_uint64_t sector_mod = 0;
       sector = grub_divmod64 (sector, spb, &sector_mod);
 
       if (! (sector_mod == 0 && size % spb == 0))

@@ -229,7 +229,7 @@ grub_minix_read_file (struct grub_minix_data *data,
   grub_disk_addr_t i;
   grub_disk_addr_t blockcnt;
   grub_uint64_t posblock;
-  grub_uint32_t blockoff;
+  grub_uint64_t blockoff;
 
   /* Adjust len so it we can't read past the end of the file.  */
   if (len + pos > GRUB_MINIX_INODE_SIZE (data))
@@ -242,7 +242,7 @@ grub_minix_read_file (struct grub_minix_data *data,
   for (i = posblock; i < blockcnt; i++)
     {
       grub_disk_addr_t blknr;
-      grub_uint32_t blockend = data->block_size;
+      grub_uint64_t blockend = data->block_size;
       grub_off_t skipfirst = 0;
 
       blknr = grub_minix_get_file_block (data, i);

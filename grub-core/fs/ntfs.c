@@ -431,7 +431,7 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
   if (at->flags & AF_GPOS)
     {
       grub_disk_addr_t st0, st1;
-      grub_uint32_t m;
+      grub_uint64_t m;
 
       grub_divmod64 (ofs >> BLK_SHR, ctx->comp.spc, &m);
 

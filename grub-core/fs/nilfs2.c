@@ -303,7 +303,7 @@ grub_nilfs2_palloc_entries_per_group (struct grub_nilfs2_data *data)
 
 static inline grub_uint64_t
 grub_nilfs2_palloc_group (struct grub_nilfs2_data *data,
-			  grub_uint64_t nr, grub_uint32_t * offset)
+			  grub_uint64_t nr, grub_uint64_t * offset)
 {
   return grub_divmod64 (nr, grub_nilfs2_palloc_entries_per_group (data),
 			offset);
@@ -368,13 +368,15 @@ grub_nilfs2_palloc_entry_offset (struct grub_nilfs2_data *data,
 				 grub_uint64_t nr, unsigned long entry_size)
 {
   unsigned long group;
-  grub_uint32_t group_offset;
+  grub_uint64_t group_offset;
 
   group = grub_nilfs2_palloc_group (data, nr, &group_offset);
 
   return grub_nilfs2_palloc_bitmap_block_offset (data, group,
 						 entry_size) + 1 +
-    group_offset / grub_nilfs2_entries_per_block (data, entry_size);
+    grub_divmod64 (group_offset, grub_nilfs2_entries_per_block (data,
+								entry_size),
+		   NULL);
 
 }
 
@@ -577,7 +579,7 @@ grub_nilfs2_dat_translate (struct grub_nilfs2_data *data, grub_uint64_t key)
   struct grub_nilfs2_dat_entry entry;
   grub_disk_t disk = data->disk;
   grub_uint64_t pptr;
-  grub_uint32_t blockno, offset;
+  grub_uint64_t blockno, offset;
   unsigned int nilfs2_block_count = (1 << LOG2_NILFS2_BLOCK_SIZE (data));
 
   blockno = grub_nilfs2_palloc_entry_offset (data, key,
@@ -641,7 +643,7 @@ grub_nilfs2_read_checkpoint (struct grub_nilfs2_data *data,
 			     struct grub_nilfs2_checkpoint *cpp)
 {
   grub_uint64_t blockno;
-  grub_uint32_t offset;
+  grub_uint64_t offset;
   grub_uint64_t pptr;
   grub_disk_t disk = data->disk;
   unsigned int nilfs2_block_count = (1 << LOG2_NILFS2_BLOCK_SIZE (data));
@@ -679,7 +681,7 @@ grub_nilfs2_read_inode (struct grub_nilfs2_data *data,
 			grub_uint64_t ino, struct grub_nilfs2_inode *inodep)
 {
   grub_uint64_t blockno;
-  unsigned int offset;
+  grub_uint64_t offset;
   grub_uint64_t pptr;
   grub_disk_t disk = data->disk;
   unsigned int nilfs2_block_count = (1 << LOG2_NILFS2_BLOCK_SIZE (data));

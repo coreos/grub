@@ -506,7 +506,7 @@ static grub_size_t
 get_safe_sectors (grub_disk_addr_t sector, grub_uint32_t sectors)
 {
   grub_size_t size;
-  grub_uint32_t offset;
+  grub_uint64_t offset;
 
   /* OFFSET = SECTOR % SECTORS */
   grub_divmod64 (sector, sectors, &offset);

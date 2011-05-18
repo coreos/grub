@@ -1,3 +1,12 @@
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use full 64-bit division.
+
+	* grub-core/kern/misc.c (grub_divmod64_full): Renamed to ...
+	(grub_divmod64): ... this.
+	* include/grub/misc.h (grub_divmod64): Removed. All users switch to full
+	version.
+
 2011-05-18  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkrescue.in: Use portable `.' rather than non-portable
