@@ -1,5 +1,27 @@
 2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/fat.c: Include grub/fat.h.
+	(grub_fat_bpb): Moved to ...
+	* include/grub/fat.h (grub_fat_bpb): ... here. New file.
+	* grub-core/loader/i386/pc/chainloader.c: Include grub/fat.h and
+	grub/ntfs.h.
+	* include/grub/i386/pc/chainloader.h (grub_chainloader_flags_t):
+	Moved from here...
+	* grub-core/loader/i386/pc/chainloader.c (grub_chainloader_flags_t): ...
+	here.
+	* grub-core/loader/i386/pc/chainloader.c (grub_chainloader_patch_bpb):
+	New function.
+	(grub_chainloader_cmd): Patch BPB if --bpb is given.
+	(GRUB_MOD_INIT): Show --bpb.
+	* grub-core/loader/i386/pc/ntldr.c (grub_cmd_ntldr): Patch BPB.
+	* grub-core/normal/main.c (features): New variable.
+	(GRUB_MOD_INIT): Set feature_* variables.
+	* include/grub/i386/pc/chainloader.h (grub_chainloader_patch_bpb): New
+	proto.
+	* include/grub/ntfs.h (grub_ntfs_bpb): New field bios_drive.
+
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (ieee1275_fb): Use enable=powerpc_ieee1275
 	for cleanness.
 
