@@ -1,5 +1,10 @@
 2011-05-18  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub-mkrescue.in: Use portable `.' rather than non-portable
+	`source'.
+
+2011-05-18  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/genmod.sh.in: Use 'set -e' rather than '#! /bin/sh -e',
 	to avoid accidents when debugging with 'sh -x'.
 	* grub-core/gensyminfo.sh.in: Likewise.

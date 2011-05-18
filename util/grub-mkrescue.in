@@ -229,7 +229,7 @@ if [ "${override_dir}" = "" ] ; then
         process_input_dir ${efi64_dir} x86_64-efi
     fi
 else
-    source "${override_dir}"/modinfo.sh
+    . "${override_dir}"/modinfo.sh
     process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
     multiboot_dir=
     pc_dir=
