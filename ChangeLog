@@ -1,5 +1,10 @@
 2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/usbhub.c (poll_nonroot_hub): Downgrade a printf
+	into dprintf.
+
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use full 64-bit division.
 
 	* grub-core/kern/misc.c (grub_divmod64_full): Renamed to ...

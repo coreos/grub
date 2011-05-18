@@ -352,8 +352,8 @@ poll_nonroot_hub (grub_usb_device_t dev)
 				  GRUB_USB_REQ_GET_STATUS,
 				  0, i, sizeof (status), (char *) &status);
 
-      grub_printf ("dev = %p, i = %d, status = %08x\n",
-                   dev, i, status);
+      grub_dprintf ("usb", "dev = %p, i = %d, status = %08x\n",
+		    dev, i, status);
 
       if (err)
 	continue;
