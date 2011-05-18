@@ -1,5 +1,7 @@
 2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Patch BPB in ntldr and chainloader --bpb.
+
 	* grub-core/fs/fat.c: Include grub/fat.h.
 	(grub_fat_bpb): Moved to ...
 	* include/grub/fat.h (grub_fat_bpb): ... here. New file.
