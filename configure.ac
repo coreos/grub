@@ -72,7 +72,7 @@ case "$target_cpu" in
   amd64)	target_cpu=x86_64 ;;
   sparc)	target_cpu=sparc64 ;;
   mipsel|mips64el)
-                target_cpu=mips;
+                target_cpu=mipsel;
 		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_CPU_MIPSEL=1";
 		;;
   mips|mips64)
@@ -96,7 +96,8 @@ if test "x$with_platform" = x; then
     powerpc-*) platform=ieee1275 ;;
     powerpc64-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
-    mips-*) platform=loongson ;;
+    mipsel-*) platform=loongson ;;
+    mips-*) platform=arc ;;
     ia64-*) platform=efi ;;
     *) AC_MSG_ERROR([unsupported CPU: "$target_cpu"]) ;;
   esac
@@ -124,10 +125,14 @@ case "$target_cpu"-"$platform" in
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
   ia64-efi) ;;
-  mips-qemu-mips) ;;
-  mips-yeeloong) platform=loongson ;;
-  mips-fuloong) platform=loongson ;;
-  mips-loongson) ;;
+  mips-qemu_mips) ;;
+  mips-qemu-mips) platform=qemu_mips;;
+  mips-arc) ;;
+  mipsel-qemu_mips) ;;
+  mipsel-qemu-mips) platform=qemu_mips;;
+  mipsel-yeeloong) platform=loongson ;;
+  mipsel-fuloong) platform=loongson ;;
+  mipsel-loongson) ;;
   *-emu) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
@@ -161,13 +166,18 @@ case "$platform" in
   pc)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_PCBIOS=1" ;;
   emu)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_EMU=1" ;;
   loongson)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_LOONGSON=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
-  qemu-mips)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  qemu_mips)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  arc)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_ARC=1" ;;
 esac
 case "$target_cpu" in
-  mips)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS=1" ;;
+  mips |mipsel)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS=1" ;;
   sparc64)      machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
-machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
+if test x${target_cpu} = xmipsel ; then
+   machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE=`echo mips_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
+else
+   machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
+fi
 
 HOST_CPPFLAGS="$HOST_CPPFLAGS $machine_CPPFLAGS"
 TARGET_CPPFLAGS="$TARGET_CPPFLAGS $machine_CPPFLAGS"
@@ -402,7 +412,7 @@ if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
 fi
 
-if test "${target_cpu}-${platform}" = mips-loongson; then
+if test "${target_cpu}-${platform}" = mipsel-loongson; then
   AC_CACHE_CHECK([whether -march=loongson2f works], [grub_cv_cc_march_loongson2f], [
     SAVE_CFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -march=loongson2f"
@@ -955,11 +965,12 @@ AM_CONDITIONAL([COND_i386_ieee1275], [test x$target_cpu = xi386 -a x$platform = 
 AM_CONDITIONAL([COND_i386_coreboot], [test x$target_cpu = xi386 -a x$platform = xcoreboot])
 AM_CONDITIONAL([COND_i386_multiboot], [test x$target_cpu = xi386 -a x$platform = xmultiboot])
 AM_CONDITIONAL([COND_x86_64_efi], [test x$target_cpu = xx86_64 -a x$platform = xefi])
-AM_CONDITIONAL([COND_mips_loongson], [test x$target_cpu = xmips -a x$platform = xloongson])
-AM_CONDITIONAL([COND_mips_qemu_mips], [test x$target_cpu = xmips -a x$platform = xqemu_mips])
+AM_CONDITIONAL([COND_mips_loongson], [test x$target_cpu = xmipsel -a x$platform = xloongson])
+AM_CONDITIONAL([COND_mips_qemu_mips], [test "(" x$target_cpu = xmips -o x$target_cpu = xmipsel ")"  -a x$platform = xqemu_mips])
+AM_CONDITIONAL([COND_mips_arc], [test x$target_cpu = xmips -a x$platform = xarc])
 AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
-AM_CONDITIONAL([COND_mips], [test x$target_cpu = xmips])
+AM_CONDITIONAL([COND_mips], [test x$target_cpu = xmips -o x$target_cpu = xmipsel])
 
 AM_CONDITIONAL([COND_HOST_HURD], [test x$host_kernel = xhurd])
 AM_CONDITIONAL([COND_HOST_LINUX], [test x$host_kernel = xlinux])
@@ -981,19 +992,23 @@ AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
 AM_CONDITIONAL([COND_CYGWIN], [test x$host_os = xcygwin])
 
 # Output files.
+cpudir="${target_cpu}"
+if test x${cpudir} = xmipsel; then
+  cpudir=mips;
+fi
 grub_CHECK_LINK_DIR
 if test x"$link_dir" = xyes ; then
-  AC_CONFIG_LINKS([include/grub/cpu:include/grub/$target_cpu])
+  AC_CONFIG_LINKS([include/grub/cpu:include/grub/$cpudir])
   if test "$platform" != emu ; then
-    AC_CONFIG_LINKS([include/grub/machine:include/grub/$target_cpu/$platform])
+    AC_CONFIG_LINKS([include/grub/machine:include/grub/$cpudir/$platform])
   fi
 else
   mkdir -p include/grub 2>/dev/null
   rm -rf include/grub/cpu
-  cp -rp $srcdir/include/grub/$target_cpu include/grub/cpu 2>/dev/null
+  cp -rp $srcdir/include/grub/$cpudir include/grub/cpu 2>/dev/null
   if test "$platform" != emu ; then
     rm -rf include/grub/machine
-    cp -rp $srcdir/include/grub/$target_cpu/$platform include/grub/machine 2>/dev/null
+    cp -rp $srcdir/include/grub/$cpudir/$platform include/grub/machine 2>/dev/null
   fi
 fi
 

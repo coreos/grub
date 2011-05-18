@@ -20,14 +20,12 @@
 #define GRUB_KERNEL_MACHINE_HEADER	1
 
 #include <grub/symbol.h>
+#include <grub/cpu/kernel.h>
 
 #define GRUB_ARCH_MACHINE_YEELOONG 0
 #define GRUB_ARCH_MACHINE_FULOONG 1
 
 #ifndef ASM_FILE
-
-void EXPORT_FUNC (grub_reboot) (void) __attribute__ ((noreturn));
-void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
 
 extern grub_uint32_t EXPORT_VAR (grub_arch_machine);
 

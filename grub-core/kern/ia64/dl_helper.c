@@ -27,35 +27,35 @@ void
 grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got)
 {
-  const Elf_Ehdr *e = ehdr;
+  const Elf64_Ehdr *e = ehdr;
   grub_size_t cntt = 0, cntg = 0;;
-  const Elf_Shdr *s;
-  Elf_Word entsize;
+  const Elf64_Shdr *s;
+  Elf64_Word entsize;
   unsigned i;
 
   /* Find a symbol table.  */
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_SYMTAB)
+  for (i = 0, s = (Elf64_Shdr *) ((char *) e + grub_le_to_cpu32 (e->e_shoff));
+       i < grub_le_to_cpu16 (e->e_shnum);
+       i++, s = (Elf64_Shdr *) ((char *) s + grub_le_to_cpu16 (e->e_shentsize)))
+    if (grub_le_to_cpu32 (s->sh_type) == SHT_SYMTAB)
       break;
 
-  if (i == e->e_shnum)
+  if (i == grub_le_to_cpu16 (e->e_shnum))
     return;
 
   entsize = s->sh_entsize;
 
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_RELA)
+  for (i = 0, s = (Elf64_Shdr *) ((char *) e + grub_le_to_cpu32 (e->e_shoff));
+       i < grub_le_to_cpu16 (e->e_shnum);
+       i++, s = (Elf64_Shdr *) ((char *) s + grub_le_to_cpu16 (e->e_shentsize)))
+    if (grub_le_to_cpu32 (s->sh_type) == SHT_RELA)
       {
-	Elf_Rela *rel, *max;
+	Elf64_Rela *rel, *max;
 
-	for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
-	       max = rel + s->sh_size / s->sh_entsize;
+	for (rel = (Elf64_Rela *) ((char *) e + grub_le_to_cpu32 (s->sh_offset)),
+	       max = rel + grub_le_to_cpu32 (s->sh_size) / grub_le_to_cpu16 (s->sh_entsize);
 	     rel < max; rel++)
-	  switch (ELF_R_TYPE (rel->r_info))
+	  switch (ELF64_R_TYPE (grub_le_to_cpu32 (rel->r_info)))
 	    {
 	    case R_IA64_PCREL21B:
 	      cntt++;

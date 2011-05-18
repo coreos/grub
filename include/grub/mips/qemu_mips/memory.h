@@ -29,10 +29,8 @@
 #define GRUB_MACHINE_MEMORY_USABLE       0x81000000
 
 #ifndef ASM_FILE
-grub_err_t EXPORT_FUNC (grub_machine_mmap_iterate)
-(int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
-grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate)
-     (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
+
+extern grub_uint32_t grub_arch_memsize;
 
 static inline grub_err_t
 grub_machine_mmap_register (grub_uint64_t start __attribute__ ((unused)),

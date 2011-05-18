@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,10 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MACHINE_SERIAL_HEADER
-#define GRUB_MACHINE_SERIAL_HEADER	1
+#ifndef KERNEL_MACHINE_TIME_HEADER
+#define KERNEL_MACHINE_TIME_HEADER	1
 
-#define GRUB_MACHINE_SERIAL_PORTS { 0x140003f8 }
+#include <grub/symbol.h>
+#include <grub/cpu/time.h>
 
-#endif 
+#endif /* ! KERNEL_MACHINE_TIME_HEADER */

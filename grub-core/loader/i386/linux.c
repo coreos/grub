@@ -57,7 +57,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #endif
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
-#define GRUB_LINUX_CL_END_OFFSET	0x2000
 
 static grub_dl_t my_mod;
 
@@ -74,6 +73,7 @@ static grub_uint32_t prot_mode_pages;
 static grub_uint32_t initrd_pages;
 static struct grub_relocator *relocator = NULL;
 static void *efi_mmap_buf;
+static grub_size_t maximal_cmdline_size;
 #ifdef GRUB_MACHINE_EFI
 static grub_efi_uintn_t efi_mmap_size;
 #else
@@ -189,7 +189,7 @@ allocate_pages (grub_size_t prot_size)
   grub_err_t err;
 
   /* Make sure that each size is aligned to a page boundary.  */
-  real_size = GRUB_LINUX_CL_END_OFFSET;
+  real_size = GRUB_LINUX_CL_OFFSET + maximal_cmdline_size;
   prot_size = page_align (prot_size);
   mmap_size = find_mmap_size ();
 
@@ -663,6 +663,14 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
+  if (grub_le_to_cpu16 (lh.version) >= 0x0206)
+    maximal_cmdline_size = grub_le_to_cpu32 (lh.cmdline_size) + 1;
+  else
+    maximal_cmdline_size = 256;
+
+  if (maximal_cmdline_size < 128)
+    maximal_cmdline_size = 128;
+
   setup_sects = lh.setup_sects;
 
   /* If SETUP_SECTS is not set, set it to the default (4).  */
@@ -676,7 +684,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     goto fail;
 
   params = (struct linux_kernel_params *) real_mode_mem;
-  grub_memset (params, 0, GRUB_LINUX_CL_END_OFFSET);
+  grub_memset (params, 0, GRUB_LINUX_CL_OFFSET + maximal_cmdline_size);
   grub_memcpy (&params->setup_sects, &lh.setup_sects, sizeof (lh) - 0x1F1);
 
   params->ps_mouse = params->padding10 =  0;
@@ -871,7 +879,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_create_loader_cmdline (argc, argv,
 			      (char *)real_mode_mem + GRUB_LINUX_CL_OFFSET
 			      + sizeof (LINUX_IMAGE) - 1,
-			      GRUB_LINUX_CL_END_OFFSET - GRUB_LINUX_CL_OFFSET
+			      maximal_cmdline_size
 			      - (sizeof (LINUX_IMAGE) - 1));
 
   len = prot_size;

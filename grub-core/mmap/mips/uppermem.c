@@ -20,7 +20,7 @@
 #include <grub/memory.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
-#include <grub/machine/memory.h>
+#include <grub/cpu/memory.h>
 
 grub_uint64_t
 grub_mmap_get_lower (void)

@@ -31,7 +31,6 @@ genkernsyms.sh
 gensymlist.sh
 gentrigtables
 grub-bin2h
-grub-dumpbios
 grub-editenv
 grub-emu
 grub_emu_init.c

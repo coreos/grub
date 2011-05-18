@@ -67,13 +67,14 @@ struct image_target_desc
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
     IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
     IMAGE_LOONGSON_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
-    IMAGE_FULOONG_FLASH, IMAGE_I386_PC_PXE
+    IMAGE_FULOONG_FLASH, IMAGE_I386_PC_PXE, IMAGE_MIPS_ARC
   } id;
   enum
     {
       PLATFORM_FLAGS_NONE = 0,
       PLATFORM_FLAGS_LZMA = 1,
-      PLATFORM_FLAGS_DECOMPRESSORS = 2
+      PLATFORM_FLAGS_DECOMPRESSORS = 2,
+      PLATFORM_FLAGS_MODULES_BEFORE_KERNEL = 4,
     } flags;
   unsigned prefix;
   unsigned prefix_end;
@@ -273,7 +274,7 @@ struct image_target_desc image_targets[] =
       .elf_target = EM_X86_64,
     },
     {
-      .dirname = "mips-loongson",
+      .dirname = "mipsel-loongson",
       .names = { "mipsel-yeeloong-flash", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
@@ -295,7 +296,7 @@ struct image_target_desc image_targets[] =
       .default_compression = COMPRESSION_NONE
     },
     {
-      .dirname = "mips-loongson",
+      .dirname = "mipsel-loongson",
       .names = { "mipsel-fuloong-flash", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
@@ -317,7 +318,7 @@ struct image_target_desc image_targets[] =
       .default_compression = COMPRESSION_NONE
     },
     {
-      .dirname = "mips-loongson",
+      .dirname = "mipsel-loongson",
       .names = { "mipsel-loongson-elf", "mipsel-yeeloong-elf",
 		 "mipsel-fuloong-elf", NULL },
       .voidp_sizeof = 4,
@@ -419,6 +420,73 @@ struct image_target_desc image_targets[] =
       .install_bsd_part = TARGET_NO_FIELD,
       .pe_target = GRUB_PE32_MACHINE_IA64,
       .elf_target = EM_IA_64,
+    },
+    {
+      .dirname = "mips-arc",
+      .names = {"mips-arc", NULL},
+      .voidp_sizeof = 4,
+      .bigendian = 1,
+      .id = IMAGE_MIPS_ARC, 
+      .flags = (PLATFORM_FLAGS_DECOMPRESSORS
+		| PLATFORM_FLAGS_MODULES_BEFORE_KERNEL),
+      .prefix = GRUB_KERNEL_MIPS_ARC_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_ARC_PREFIX_END,
+      .raw_size = 0,
+      .total_module_size = GRUB_KERNEL_MIPS_ARC_TOTAL_MODULE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_MIPS_ARC_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_ARC_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
+    },
+    {
+      .dirname = "mipsel-qemu_mips",
+      .names = { "mipsel-qemu_mips-elf", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_LOONGSON_ELF, 
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .prefix = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END,
+      .raw_size = 0,
+      .total_module_size = GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
+    },
+    {
+      .dirname = "mips-qemu_mips",
+      .names = { "mips-qemu_mips-elf", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 1,
+      .id = IMAGE_LOONGSON_ELF, 
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .prefix = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END,
+      .raw_size = 0,
+      .total_module_size = GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
     },
   };
 
@@ -690,6 +758,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   grub_uint64_t start_address;
   void *rel_section;
   grub_size_t reloc_size, align;
+  size_t decompress_size;
 
   if (comp == COMPRESSION_AUTO)
     comp = image_target->default_compression;
@@ -737,27 +806,47 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     grub_util_error (_("prefix is too long"));
   strcpy (kernel_img + image_target->prefix, prefix);
 
+  if ((image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
+      && (image_target->total_module_size != TARGET_NO_FIELD))
+    *((grub_uint32_t *) (kernel_img + image_target->total_module_size))
+      = grub_host_to_target32 (total_module_size);
+
+  if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+    memmove (kernel_img + total_module_size, kernel_img, kernel_size);
+
   if (image_target->voidp_sizeof == 8)
     {
       /* Fill in the grub_module_info structure.  */
       struct grub_module_info64 *modinfo;
-      modinfo = (struct grub_module_info64 *) (kernel_img + kernel_size);
+      if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+	modinfo = (struct grub_module_info64 *) kernel_img;
+      else
+	modinfo = (struct grub_module_info64 *) (kernel_img + kernel_size);
       memset (modinfo, 0, sizeof (struct grub_module_info64));
       modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
       modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info64));
       modinfo->size = grub_host_to_target_addr (total_module_size);
-      offset = kernel_size + sizeof (struct grub_module_info64);
+      if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+	offset = sizeof (struct grub_module_info64);
+      else
+	offset = kernel_size + sizeof (struct grub_module_info64);
     }
   else
     {
       /* Fill in the grub_module_info structure.  */
       struct grub_module_info32 *modinfo;
-      modinfo = (struct grub_module_info32 *) (kernel_img + kernel_size);
+      if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+	modinfo = (struct grub_module_info32 *) kernel_img;
+      else
+	modinfo = (struct grub_module_info32 *) (kernel_img + kernel_size);
       memset (modinfo, 0, sizeof (struct grub_module_info32));
       modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
       modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info32));
       modinfo->size = grub_host_to_target_addr (total_module_size);
-      offset = kernel_size + sizeof (struct grub_module_info32);
+      if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+	offset = sizeof (struct grub_module_info32);
+      else
+	offset = kernel_size + sizeof (struct grub_module_info32);
     }
 
   for (p = path_list; p; p = p->next)
@@ -808,26 +897,27 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       offset += config_size;
     }
 
-  if ((image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
-      && (image_target->total_module_size != TARGET_NO_FIELD))
-    *((grub_uint32_t *) (kernel_img + image_target->total_module_size))
-      = grub_host_to_target32 (total_module_size);
-
   grub_util_info ("kernel_img=%p, kernel_size=0x%x", kernel_img, kernel_size);
   compress_kernel (image_target, kernel_img, kernel_size + total_module_size,
 		   &core_img, &core_size, comp);
+  free (kernel_img);
+
+  if (image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
+    kernel_img = core_img + total_module_size;
+  else
+    kernel_img = core_img;
 
   grub_util_info ("the core size is 0x%x", core_size);
 
   if (!(image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS) 
       && image_target->total_module_size != TARGET_NO_FIELD)
-    *((grub_uint32_t *) (core_img + image_target->total_module_size))
+    *((grub_uint32_t *) (kernel_img + image_target->total_module_size))
       = grub_host_to_target32 (total_module_size);
   if (image_target->kernel_image_size != TARGET_NO_FIELD)
-    *((grub_uint32_t *) (core_img + image_target->kernel_image_size))
+    *((grub_uint32_t *) (kernel_img + image_target->kernel_image_size))
       = grub_host_to_target32 (kernel_size);
   if (image_target->compressed_size != TARGET_NO_FIELD)
-    *((grub_uint32_t *) (core_img + image_target->compressed_size))
+    *((grub_uint32_t *) (kernel_img + image_target->compressed_size))
       = grub_host_to_target32 (core_size - image_target->raw_size);
 
   /* If we included a drive in our prefix, let GRUB know it doesn't have to
@@ -835,9 +925,9 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   if (image_target->install_dos_part != TARGET_NO_FIELD
       && image_target->install_bsd_part != TARGET_NO_FIELD && prefix[0] == '(')
     {
-      *((grub_int32_t *) (core_img + image_target->install_dos_part))
+      *((grub_int32_t *) (kernel_img + image_target->install_dos_part))
 	= grub_host_to_target32 (-2);
-      *((grub_int32_t *) (core_img + image_target->install_bsd_part))
+      *((grub_int32_t *) (kernel_img + image_target->install_bsd_part))
 	= grub_host_to_target32 (-2);
     }
 
@@ -846,7 +936,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       char *full_img;
       size_t full_size;
       char *decompress_path, *decompress_img;
-      size_t decompress_size;
       const char *name;
 
       switch (comp)
@@ -870,6 +959,13 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       *((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_SIZE))
 	= grub_host_to_target32 (kernel_size + total_module_size);
+
+      if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
+	*((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR))
+	  = grub_host_to_target_addr (image_target->link_addr - total_module_size);
+      else
+	*((grub_uint32_t *) (decompress_img + GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR))
+	  = grub_host_to_target_addr (image_target->link_addr);
 
       full_size = core_size + decompress_size;
 
@@ -1155,7 +1251,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	rom_img = xmalloc (rom_size);
 	memset (rom_img, 0, rom_size);
 
-	*((grub_int32_t *) (core_img + GRUB_KERNEL_I386_QEMU_CORE_ENTRY_ADDR))
+	*((grub_int32_t *) (kernel_img + GRUB_KERNEL_I386_QEMU_CORE_ENTRY_ADDR))
 	  = grub_host_to_target32 ((grub_uint32_t) -rom_size);
 
 	memcpy (rom_img, core_img, core_size);
@@ -1293,6 +1389,81 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       core_size = rom_size;
     }
     break;
+    case IMAGE_MIPS_ARC:
+      {
+	char *ecoff_img;
+	struct ecoff_header {
+	  grub_uint16_t magic;
+	  grub_uint16_t nsec;
+	  grub_uint32_t time;
+	  grub_uint32_t syms;
+	  grub_uint32_t nsyms;
+	  grub_uint16_t opt;
+	  grub_uint16_t flags;
+	  grub_uint16_t magic2;
+	  grub_uint16_t version;
+	  grub_uint32_t textsize;
+	  grub_uint32_t datasize;
+	  grub_uint32_t bsssize;
+	  grub_uint32_t entry;
+	  grub_uint32_t text_start;
+	  grub_uint32_t data_start;
+	  grub_uint32_t bss_start;
+	  grub_uint32_t gprmask;
+	  grub_uint32_t cprmask[4];
+	  grub_uint32_t gp_value;
+	};
+	struct ecoff_section
+	{
+	  char name[8];
+	  grub_uint32_t paddr;
+	  grub_uint32_t vaddr;
+	  grub_uint32_t size;
+	  grub_uint32_t file_offset;
+	  grub_uint32_t reloc;
+	  grub_uint32_t gp;
+	  grub_uint16_t nreloc;
+	  grub_uint16_t ngp;
+	  grub_uint32_t flags;
+	};
+	struct ecoff_header *head;
+	struct ecoff_section *section;
+	grub_uint32_t target_addr;
+	size_t program_size;
+
+	program_size = ALIGN_ADDR (core_size);
+	if (comp == COMPRESSION_NONE)
+	  target_addr = (image_target->link_addr 
+			 - total_module_size - decompress_size);
+	else
+	  target_addr = (image_target->link_addr 
+			 - ALIGN_UP(total_module_size + core_size, 1048576)
+			 - (1 << 20));
+
+	ecoff_img = xmalloc (program_size + sizeof (*head) + sizeof (*section));
+	grub_memset (ecoff_img, 0, program_size + sizeof (*head) + sizeof (*section));
+	head = (void *) ecoff_img;
+	section = (void *) (head + 1);
+	head->magic = grub_host_to_target16 (0x160);
+	head->nsec = grub_host_to_target16 (1);
+	head->time = grub_host_to_target32 (0);
+	head->opt = grub_host_to_target16 (0x38);
+	head->flags = grub_host_to_target16 (0x207);
+	head->magic2 = grub_host_to_target16 (0x107);
+	head->textsize = grub_host_to_target32 (program_size);
+	head->entry = grub_host_to_target32 (target_addr);
+	head->text_start = grub_host_to_target32 (target_addr);
+	head->data_start = grub_host_to_target32 (target_addr + program_size);
+	grub_memcpy (section->name, ".text", sizeof (".text") - 1); 
+	section->vaddr = grub_host_to_target32 (target_addr);
+	section->size = grub_host_to_target32 (program_size);
+	section->file_offset = grub_host_to_target32 (sizeof (*head) + sizeof (*section));
+	memcpy (section + 1, core_img, core_size);
+	free (core_img);
+	core_img = ecoff_img;
+	core_size = program_size + sizeof (*head) + sizeof (*section);
+      }
+      break;
     case IMAGE_LOONGSON_ELF:
     case IMAGE_PPC:
     case IMAGE_COREBOOT:
@@ -1355,8 +1526,13 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	phdr->p_flags = grub_host_to_target32 (PF_R | PF_W | PF_X);
 
 	if (image_target->id == IMAGE_LOONGSON_ELF)
-	  target_addr = ALIGN_UP (image_target->link_addr
-				  + kernel_size + total_module_size, 32);
+	  {
+	    if (comp == COMPRESSION_NONE)
+	      target_addr = (image_target->link_addr - decompress_size);
+	    else
+	      target_addr = ALIGN_UP (image_target->link_addr
+				      + kernel_size + total_module_size, 32);
+	  }
 	else
 	  target_addr = image_target->link_addr;
 	ehdr->e_entry = grub_host_to_target32 (target_addr);
@@ -1439,7 +1615,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     }
 
   grub_util_write_image (core_img, core_size, out);
-  free (kernel_img);
   free (core_img);
   free (kernel_path);
 

@@ -44,12 +44,20 @@ compressed_size:
 	. = _start + GRUB_KERNEL_MACHINE_UNCOMPRESSED_SIZE
 uncompressed_size:
 	.long 0
+	. = _start + GRUB_KERNEL_MACHINE_UNCOMPRESSED_ADDR
+uncompressed_addr:
+	.long 0
 codestart:
 	/* Save our base.  */
 	move $s0, $ra
 
 	/* Parse arguments. Has to be done before relocation.
 	So need to do it in asm.  */
+#ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+	lui $t0, %hi (((16 << 20) - 264) | 0x80000000)
+	lw $s4, %lo (((16 << 20) - 264) | 0x80000000) ($t0)
+#endif
+
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
 	move $s2, $zero
 	move $s3, $zero
@@ -216,8 +224,7 @@ cmdlinedone:
 	subu $a0, $a0, $t0
 	addu $a0, $a0, $s0
 
-	lui $a1, %hi(GRUB_MACHINE_LINK_ADDR)
-	addiu $a1, %lo(GRUB_MACHINE_LINK_ADDR)
+	lw $a1, (GRUB_KERNEL_MACHINE_UNCOMPRESSED_ADDR - BASE_ADDR)($s0)
 	lw $a2, (GRUB_KERNEL_MACHINE_COMPRESSED_SIZE - BASE_ADDR)($s0)
 	lw $a3, (GRUB_KERNEL_MACHINE_UNCOMPRESSED_SIZE - BASE_ADDR)($s0)
 	move $s1, $a1

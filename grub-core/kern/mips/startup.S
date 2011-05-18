@@ -36,8 +36,8 @@ start:
 	bal cont
 	 nop
 
-	. = _start + GRUB_KERNEL_MIPS_LOONGSON_TOTAL_MODULE_SIZE
-total_module_size:
+	. = _start + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
+VARIABLE(grub_total_modules_size)
 	.long 0
 
 	. = _start + GRUB_KERNEL_MACHINE_PREFIX
@@ -51,7 +51,6 @@ VARIABLE(grub_prefix)
 	 */
 
 	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
-#ifdef GRUB_MACHINE_MIPS_LOONGSON
 VARIABLE (grub_arch_busclock)
 	.long 0
 VARIABLE (grub_arch_cpuclock)
@@ -60,12 +59,19 @@ VARIABLE (grub_arch_memsize)
 	.long 0
 VARIABLE (grub_arch_highmemsize)
 	.long 0
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
 VARIABLE (grub_arch_machine)
 	.long GRUB_ARCH_MACHINE_FULOONG
 #endif
 cont:
 	/* Save our base.  */
 	move $s0, $ra
+
+#ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+	lui $t1, %hi(grub_arch_busclock)
+	addiu $t1, %lo(grub_arch_busclock)
+	sw $s4, 8($t1)
+#endif
 
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
 	lui $t1, %hi(grub_arch_busclock)
@@ -78,6 +84,7 @@ cont:
 #endif
 
 	/* Move the modules out of BSS.  */
+#ifndef GRUB_MACHINE_ARC
 	lui $t2, %hi(__bss_start)
 	addiu $t2, %lo(__bss_start)
 	
@@ -107,6 +114,7 @@ modulesmovcont:
 	b modulesmovcont
 	 addiu $t3, $t3, -1
 modulesmovdone:
+#endif
 
 	/* Clean BSS.  */
 	

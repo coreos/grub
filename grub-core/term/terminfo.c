@@ -36,6 +36,9 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#define ANSI_C0 0x9b
+#define ANSI_C0_STR "\x9b"
+
 static struct grub_term_output *terminfo_outputs;
 
 /* Get current terminfo name.  */
@@ -120,6 +123,20 @@ grub_terminfo_set_current (struct grub_term_output *term,
       data->cursor_on         = grub_strdup ("\e[?25h");
       data->cursor_off        = grub_strdup ("\e[?25l");
       data->setcolor          = grub_strdup ("\e[3%p1%dm\e[4%p2%dm");
+      return grub_errno;
+    }
+
+  if (grub_strcmp ("arc", str) == 0)
+    {
+      data->name              = grub_strdup ("arc");
+      data->gotoxy            = grub_strdup (ANSI_C0_STR "%i%p1%d;%p2%dH");
+      data->cls               = grub_strdup (ANSI_C0_STR "2J");
+      data->reverse_video_on  = grub_strdup (ANSI_C0_STR "7m");
+      data->reverse_video_off = grub_strdup (ANSI_C0_STR "0m");
+      data->cursor_on         = 0;
+      data->cursor_off        = 0;
+      data->setcolor          = grub_strdup (ANSI_C0_STR "3%p1%dm"
+					     ANSI_C0_STR "4%p2%dm");
       return grub_errno;
     }
 
@@ -369,8 +386,6 @@ grub_terminfo_getwh (struct grub_term_output *term)
   return (data->width << 8) | data->height;
 }
 
-#define ANSI_C0 0x9b
-
 static void
 grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 		       int (*readkey) (struct grub_term_input *term))
@@ -430,7 +445,8 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 	{'K', GRUB_TERM_KEY_END},
 	{'P', GRUB_TERM_KEY_DC},
 	{'?', GRUB_TERM_KEY_PPAGE},
-	{'/', GRUB_TERM_KEY_NPAGE}
+	{'/', GRUB_TERM_KEY_NPAGE},
+	{'@', GRUB_TERM_KEY_INSERT},
       };
 
     static struct
@@ -445,6 +461,14 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 	{'5', GRUB_TERM_KEY_PPAGE},
 	{'6', GRUB_TERM_KEY_NPAGE}
       };
+    char fx_key[] = 
+      { 'P', 'Q', 'w', 'x', 't', 'u',
+        'q', 'r', 'p', 'M', 'A', 'B' };
+    unsigned fx_code[] = 
+	{ GRUB_TERM_KEY_F1, GRUB_TERM_KEY_F2, GRUB_TERM_KEY_F3,
+	  GRUB_TERM_KEY_F4, GRUB_TERM_KEY_F5, GRUB_TERM_KEY_F6,
+	  GRUB_TERM_KEY_F7, GRUB_TERM_KEY_F8, GRUB_TERM_KEY_F9,
+	  GRUB_TERM_KEY_F10, GRUB_TERM_KEY_F11, GRUB_TERM_KEY_F12 };
     unsigned i;
 
     if (c == '\e')
@@ -465,17 +489,53 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 	  return;
 	}
 
-    for (i = 0; i < ARRAY_SIZE (four_code_table); i++)
-      if (four_code_table[i].key == c)
+    switch (c)
+      {
+      case 'O':
+	CONTINUE_READ;
+	for (i = 0; i < ARRAY_SIZE (fx_key); i++)
+	  if (fx_key[i] == c)
+	    {
+	      keys[0] = fx_code[i];
+	      *len = 1;
+	      return;
+	    }
+	return;
+
+      case '0':
 	{
+	  int num = 0;
 	  CONTINUE_READ;
-	  if (c != '~')
+	  if (c != '0' && c != '1')
 	    return;
-	  keys[0] = three_code_table[i].ascii;
+	  num = (c - '0') * 10;
+	  CONTINUE_READ;
+	  if (c < '0' || c > '9')
+	    return;
+	  num += (c - '0');
+	  if (num == 0 || num > 12)
+	    return;
+	  CONTINUE_READ;
+	  if (c != 'q')
+	    return;
+	  keys[0] = fx_code[num - 1];
 	  *len = 1;
 	  return;
-	}
-    return;
+	}	  
+
+      default:
+	for (i = 0; i < ARRAY_SIZE (four_code_table); i++)
+	  if (four_code_table[i].key == c)
+	    {
+	      CONTINUE_READ;
+	      if (c != '~')
+		return;
+	      keys[0] = three_code_table[i].ascii;
+	      *len = 1;
+	      return;
+	    }
+	return;
+      }
   }
 #undef CONTINUE_READ
 }

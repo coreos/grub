@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,19 +16,13 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KERNEL_MACHINE_TIME_HEADER
-#define KERNEL_MACHINE_TIME_HEADER	1
+#ifndef	GRUB_CPU_CMOS_H
+#define	GRUB_CPU_CMOS_H	1
 
-#include <grub/symbol.h>
+#include <grub/types.h>
+#include <grub/cpu/io.h>
 
-#define GRUB_TICKS_PER_SECOND	1000
+#define GRUB_CMOS_ADDR_REG	0xb4000070
+#define GRUB_CMOS_DATA_REG	0xb4000071
 
-/* Return the real time in ticks.  */
-grub_uint32_t EXPORT_FUNC (grub_get_rtc) (void);
-
-static inline void
-grub_cpu_idle(void)
-{
-}
-
-#endif /* ! KERNEL_MACHINE_TIME_HEADER */
+#endif /* GRUB_CPU_CMOS_H */

@@ -1,3 +1,318 @@
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	FreeDOS direct loading support.
+
+	* docs/grub.texi (Supported OS): Add FreeDOS.
+	* grub-core/Makefile.core.def (freedos): New module.
+	* grub-core/lib/i386/relocator.c (grub_relocator16_ebx): New extern
+	variable.
+	(grub_relocator16_boot): Handle %ebx.
+	* grub-core/lib/i386/relocator16.S: Likewise.
+	* grub-core/loader/i386/pc/freedos.c: New file.
+
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Long Linux command line support.
+
+	* grub-core/loader/i386/linux.c (GRUB_LINUX_CL_END_OFFSET): Removed.
+	(maximal_cmdline_size): New variable.
+	(allocate_pages): Use maximal_cmdline_size.
+	(grub_cmd_linux): Set and use maximal_cmdline_size.
+	* grub-core/loader/i386/pc/linux.c (GRUB_LINUX_CL_END_OFFSET): Removed.
+	(allocate_pages): Use maximal_cmdline_size.
+	(grub_cmd_linux): Set and use maximal_cmdline_size.
+	* include/grub/i386/linux.h (GRUB_LINUX_SETUP_MOVE_SIZE): Removed.
+	(linux_kernel_header): Add fields kernel_alignment, relocatable, pad
+	and cmdline_size.
+
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-05-18  Colin Watson  <cjwatson@ubuntu.com>
+
+	Improve devmapper support
+
+	* grub-core/kern/emu/getroot.c (grub_util_is_dmraid): Removed.
+	(grub_util_is_lvm): New function.
+	(grub_util_get_dev_abstraction): Assume dmraid if not lvm rather
+	than lvm if not dmraid.
+	Handle mapped md nodes.
+	* grub-core/kern/emu/hostdisk.c (device_is_mapped): Rename to ...
+	(grub_util_device_is_mapped): ... this. Make always available. All users
+	updated.
+	(grub_util_get_dm_node_linear_info) [HAVE_DEVICE_MAPPER]: New function.
+	(convert_system_partition_to_system_disk): Handle lvm, mpath and
+	dmraid nodes.
+	* include/grub/emu/misc.h (grub_util_device_is_mapped): New proto.
+
+2011-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Unify grub-mkrescue (except powerpc) and grrub-mknetdir across platforms
+
+	* grub-core/Makefile.am (platform_DATA): Add modinfo.sh.
+	* grub-core/modinfo.sh.in: New file.
+	* grub-core/Makefile.core.def (modinfo.sh): New script.
+	* util/grub-mknetdir.in: Use modinfo.sh.
+	* util/grub-mkrescue.in: Likewise.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/ia64/dl_helper.c (grub_ia64_dl_get_tramp_got_size):
+	Fix potential usage of Elf32 instead of Elf64 when compiling on
+	32-bit architecture. Add endianness macros while on it.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use mipsel- rather than mips- in directories involving mipsel ports to
+	allow both endiannesses coexist.
+
+	* configure.ac: proparate target_cpu=mipsel rather than resetting to
+	mips. All conditions adjusted.
+	* tests/util/grub-shell-tester.in: Remove gratuitious target_cpu
+	variable.
+	* util/grub-install.in: Adjust conditions to take renaming into account.
+	* util/grub-mkimage.c (image_targets): Likewise. New target
+	mips-qemu_mips-elf for bigendian mips.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Avoid unnecessary copying on MIPS.
+
+	* grub-core/boot/decompressor/none.c (grub_decompress_core): Exit
+	early if src == dest.
+	* util/grub-mkimage.c (generate_image): Arange for src == dest if
+	compression is none.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Reduce memory footprint on SGI by putting modules before the kernel
+	as opposed to after.
+
+	* grub-core/Makefile.core.def (kernel): Increase linking address.
+	(none_decompress): Likewise.
+	(xz_decompress): Likewise.
+	* grub-core/boot/mips/startup_raw.S: Use prewritten uncompression
+	address.
+	* grub-core/kern/mips/arc/init.c (grub_machine_init): Handle memory
+	layout change.
+	(grub_arch_modules_addr): New function.
+	* grub-core/kern/mips/init.c (grub_arch_modules_addr): Moved from here...
+	* grub-core/kern/mips/loongson/init.c (grub_arch_modules_addr): .. here
+	* grub-core/kern/mips/qemu_mips/init.c (grub_arch_modules_addr): ... and
+	here.
+	* grub-core/kern/mips/startup.S (total_size): Rename to ...
+	(grub_total_modules_size): ... this. Make global.
+	[GRUB_MACHINE_ARC]: Don't attempt to move modules out of the bss.
+	* include/grub/offsets.h (GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR):
+	New definition.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_UNCOMPRESSED_ADDR): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_UNCOMPRESSED_ADDR): Likewise.
+	(GRUB_KERNEL_MACHINE_UNCOMPRESSED_ADDR): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_LINK_ADDR): Increased.
+	* util/grub-mkimage.c (image_target_desc): New flag
+	PLATFORM_FLAGS_MODULES_BEFORE_KERNEL.
+	(image_targets): Set PLATFORM_FLAGS_MODULES_BEFORE_KERNEL on mips-arc.
+	(generate_image): Handle images with modules before kernel.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Prevent potential loss of memory map by overwrite on qemu-mips.
+
+	* grub-core/boot/mips/startup_raw.S [GRUB_MACHINE_MIPS_QEMU_MIPS]:
+	Save ram size in $s4.
+	* grub-core/kern/mips/qemu_mips/init.c (RAMSIZE): Removed.
+	All users changed to grub_arch_memsize.
+	* grub-core/kern/mips/startup.S (grub_arch_machine): Restrict to
+	Loongson.
+	[GRUB_MACHINE_MIPS_QEMU_MIPS]: Save grub_arch_memsize.
+	* grub-core/loader/mips/linux.c (grub_linux_boot): Pass memory size.
+	* include/grub/mips/qemu_mips/memory.h (grub_arch_memsize): New
+	external variable.
+
+2011-05-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Remove grub-dumpbios.
+
+2011-05-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/20_linux_xen.in: Honour GRUB_CMDLINE_LINUX_XEN_REPLACE
+	and GRUB_CMDLINE_LINUX_XEN_REPLACE_DEFAULT, which replace
+	GRUB_CMDLINE_LINUX and GRUB_CMDLINE_LINUX_DEFAULT (complementing the
+	existing options which append).
+	* docs/grub.texi (Simple configuration): Document new options.
+	Reported by: Ian Jackson.  Fixes Debian bug #617538.
+
+2011-05-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-fstest.c (cmd_cat): New function.
+	(fstest): Handle CMD_CAT.
+	(options): Add cat.
+	(argp_parser): Handle cat.
+
+2011-05-17  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (grub-bin2h): Don't install.
+	* docs/man/grub-bin2h.h2m: Remove.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/startup.S (grub_arch_cpuclock): Move to the right
+	place.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Reenable qemu-mips port.
+
+	* configure.ac: Handle --target=qemu-mips and --target=qemu_mips.
+	Fix small arc bug while on it.
+	* gentpl.py: Handle qemu_mips.
+	* grub-core/Makefile.am: Likewise.
+	* grub-core/Makefile.core.def: Likewise.
+	* grub-core/disk/ata.c [GRUB_MACHINE_MIPS_QEMU_MIPS]: Remove
+	inappropriate includes.
+	(grub_ata_pciinit) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Removed.
+	(grub_ata_initialize): [GRUB_MACHINE_MIPS_QEMU_MIPS]: Rewritten.
+	* grub-core/kern/main.c (grub_modules_get_end)
+	[GRUB_MACHINE_MIPS_QEMU_MIPS]: Enable.
+	* grub-core/kern/mips/qemu-mips: Moved to ..
+	* grub-core/kern/mips/qemu_mips: ... this.
+	* grub-core/kern/mips/qemu_mips/init.c (grub_get_rtc): Removed.
+	(grub_machine_init): Call terminfo_init and serial_init.
+	* grub-core/kern/mips/startup.S: Change MIPS_LOONGSON to MACHINE.
+	* grub-core/loader/mips/linux.c (params) [GRUB_MACHINE_MIPS_QEMU_MIPS]:
+	New variable.
+	(grub_linux_boot) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Handle the qemu-mips
+	parameter passing.
+	(grub_linux_unload) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Free params.
+	(grub_cmd_linux) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Handle params.
+	(grub_cmd_initrd) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Likewise.
+	* include/grub/mips/qemu_mips/cmos.h: New file.
+	* include/grub/mips/qemu-mips/kernel.h: Don't include cpu/kernel.h.
+	* include/grub/mips/qemu-mips/memory.h (grub_machine_mmap_iterate):
+	Removed.
+	* include/grub/mips/qemu-mips/serial.h (GRUB_MACHINE_SERIAL_PORTS):
+	Use correct mips-style address.
+	* include/grub/mips/qemu-mips/time.h: Include cpu/time.h.
+	(GRUB_TICKS_PER_SECOND): Removed.
+	(grub_get_rtc): Likewise.
+	(grub_cpu_idle): Likewise.
+	* include/grub/offsets.h (GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR):
+	New definition.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_COMPRESSED_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_UNCOMPRESSED_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_MOD_ALIGN): Likewise.
+	* util/grub-mkimage.c (image_targets): Add mipsel-qemu_mips-elf.
+
+2011-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	SGI ARCS port.
+
+	* Makefile.util.def (libgrubmods.a): Add dvh.c.
+	* conf/Makefile.common (CCASFLAGS_PLATFORM): Add -mips3 on all mips
+	platforms.
+	* configure.ac: New target mips-arc.
+	* gentpl.py: Likewise.
+	* grub-core/Makefile.am: Likewise.
+	* grub-core/Makefile.core.def: Likewise.
+	(xz_decompress): Remove -D GRUB_MACHINE_LINK_ADDR.
+	(none_decompress): Likewise.
+	(lsdev): New module.
+	(datetime): Use lib/arc/datetime.c on ARC.
+	(part_dvh): New module.
+	* grub-core/commands/arc/lsdev.c: New file.
+	* grub-core/disk/arc/arcdisk.c: Likewise.
+	* grub-core/kern/mips/arc/init.c: Likewise.
+	* grub-core/kern/mips/cache_flush.S: Don't flush non 4-byte
+	aligned addresses.
+	* grub-core/kern/mips/dl.c (grub_arch_dl_check_header): Fix bigendian
+	support.
+	(grub_arch_dl_relocate_symbols): Likewise.
+	* grub-core/kern/mips/loongson/init.c (grub_get_rtc): Moved from here...
+	* grub-core/kern/mips/init.c (grub_get_rtc): ... here.
+	* grub-core/kern/mips/startup.S (grub_arch_cpuclock): Have on all
+	platforms.
+	* grub-core/lib/arc/datetime.c: New file.
+	* grub-core/loader/mips/linux.c: Always include time.h. Don't include
+	pci.h on non-loongson.
+	(envp_off) [!GRUB_MACHINE_MIPS_LOONGSON]: Remove.
+	(grub_linux_boot): Set unused registers to 0.
+	(grub_cmd_linux) [!GRUB_MACHINE_MIPS_LOONGSON]: Remove envp.
+	* grub-core/mmap/mips/loongson/uppermem.c: Moved from here ...
+	* grub-core/mmap/mips/uppermem.c: ...here.
+	* grub-core/partmap/dvh.c: New file.
+	* grub-core/term/arc/console.c: Likewise.
+	* grub-core/term/terminfo.c (ANSI_C0_STR): New const.
+	(grub_terminfo_set_current): Add terminal "arc".
+	(grub_terminfo_readkey): Support ARC sequences.
+	* include/grub/arc/arc.h: New file.
+	* include/grub/arc/console.h: Likewise.
+	* include/grub/disk.h (grub_disk_dev_id): Add
+	GRUB_DISK_DEVICE_ARCDISK_ID.
+	* include/grub/mips/arc/kernel.h: New file.
+	* include/grub/mips/arc/memory.h: Likewise.
+	* include/grub/mips/arc/time.h: Likewise.
+	* include/grub/mips/loongson/kernel.h (grub_halt): Moved from here ...
+	* include/grub/mips/kernel.h (grub_halt): ... here.
+	* include/grub/mips/loongson.h (GRUB_CPU_REGISTER_WRAP): Moved from
+	here...
+	* include/grub/mips/mips.h (GRUB_CPU_REGISTER_WRAP): ... here.
+	(GRUB_CPU_LOONGSON_COP0_TIMER_COUNT): Moved from here ...
+	* include/grub/mips/mips.h (GRUB_CPU_LOONGSON_COP0_TIMER_COUNT): .. here
+	* include/grub/mips/loongson/kernel.h (grub_reboot): Removed redundant
+	proto.
+	* include/grub/mips/loongson/memory.h (GRUB_ARCH_LOWMEMVSTART): Moved
+	from here ...
+	* include/grub/mips/memory.h (GRUB_ARCH_LOWMEMVSTART): ... here.
+	(GRUB_ARCH_LOWMEMPSTART): Moved from here ...
+	* include/grub/mips/memory.h (GRUB_ARCH_LOWMEMPSTART): ... here.
+	(GRUB_ARCH_LOWMEMMAXSIZE): Moved from here ...
+	* include/grub/mips/memory.h (GRUB_ARCH_LOWMEMMAXSIZE): ... here.
+	(GRUB_ARCH_HIGHMEMPSTART): Moved from here ...
+	* include/grub/mips/memory.h (GRUB_ARCH_HIGHMEMPSTART): ... here.
+	(grub_phys_addr_t): Moved from here ...
+	* include/grub/mips/memory.h (grub_phys_addr_t): ... here.
+	(grub_vtop): Moved from here ...
+	* include/grub/mips/memory.h (grub_vtop): ... here.
+	(grub_map_memory): Moved from here ...
+	* include/grub/mips/memory.h (grub_map_memory): ... here.
+	(grub_unmap_memory): Moved from here ...
+	* include/grub/mips/memory.h (grub_unmap_memory): ... here.
+	(grub_machine_mmap_iterate): Moved from here ...
+	* include/grub/mips/memory.h (grub_machine_mmap_iterate): ... here.
+	(grub_mmap_get_lower): Moved from here ...
+	* include/grub/mips/memory.h (grub_mmap_get_lower): ... here.
+	(grub_mmap_get_upper): Moved from here ...
+	* include/grub/mips/memory.h (grub_mmap_get_upper): ... here.
+	* include/grub/mips/loongson/time.h (grub_arch_cpuclock): Moved from
+	here ...
+	* include/grub/mips/time.h (grub_arch_cpuclock): ... here.
+	* include/grub/mips/loongson/time.h (grub_get_rtc): Moved from
+	here ...
+	* include/grub/mips/time.h (grub_get_rtc): ... here.
+	* include/grub/mips/loongson/time.h (grub_arch_cpuclock): Moved from
+	here ...
+	* include/grub/mips/time.h (grub_arch_cpuclock): ... here.
+	* include/grub/mips/loongson/time.h (grub_cpu_idle): Moved from
+	here ...
+	* include/grub/mips/time.h (grub_cpu_idle): ... here.
+	* include/grub/offsets.h (GRUB_KERNEL_MIPS_ARC_LINK_ADDR): New
+	definition.
+	(GRUB_KERNEL_MIPS_ARC_LINK_ALIGN): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_COMPRESSED_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_UNCOMPRESSED_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_TOTAL_MODULE_SIZE): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_PREFIX): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_PREFIX_END): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_MOD_ALIGN): Likewise.
+	(GRUB_MACHINE_LINK_ADDR): Likewise.
+	* include/grub/terminfo.h (GRUB_TERMINFO_READKEY_MAX_LEN): Increased
+	to 6.
+	* util/grub-install.in: Run dvhtool on ARC.
+	* util/grub-mkimage.c (image_targets): Add mips-arc.
+	(generate_image): Handle ECOFF output for mips-arc.
+
 2011-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/bus/pci.c (grub_memalign_dma32): Always allocate in 64-byte

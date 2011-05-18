@@ -41,7 +41,6 @@
 #define GRUB_LINUX_VID_MODE_ASK		0xFFFD
 #define GRUB_LINUX_VID_MODE_VESA_START	0x0300
 
-#define GRUB_LINUX_SETUP_MOVE_SIZE	0x9100
 #define GRUB_LINUX_CL_MAGIC		0xA33F
 
 #ifdef __x86_64__
@@ -130,6 +129,10 @@ struct linux_kernel_header
   grub_uint16_t pad1;			/* Unused */
   grub_uint32_t cmd_line_ptr;		/* Points to the kernel command line */
   grub_uint32_t initrd_addr_max;        /* Highest address for initrd */
+  grub_uint32_t kernel_alignment;
+  grub_uint8_t relocatable;
+  grub_uint8_t pad[3];
+  grub_uint32_t cmdline_size;
 } __attribute__ ((packed));
 
 /* Boot parameters for Linux based on 2.6.12. This is used by the setup

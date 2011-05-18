@@ -54,7 +54,7 @@ grub_module_iterate (int (*hook) (struct grub_module_header *header))
 }
 
 /* This is actualy platform-independant but used only on loongson and sparc.  */
-#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_SPARC64)
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_SPARC64)
 grub_addr_t
 grub_modules_get_end (void)
 {
