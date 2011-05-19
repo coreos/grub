@@ -505,7 +505,7 @@ module = {
 
   common = commands/lsacpi.c;
 
-  enable = x86_efi;
+  enable = efi;
   enable = i386_pc;
   enable = i386_coreboot;
   enable = i386_multiboot;
@@ -516,7 +516,7 @@ module = {
 
   common = commands/efi/lsefisystab.c;
 
-  enable = x86_efi;
+  enable = efi;
 };
 
 module = {
@@ -524,7 +524,7 @@ module = {
 
   common = commands/efi/lssal.c;
 
-  enable = x86_efi;
+  enable = efi;
 };
 
 module = {
@@ -532,7 +532,7 @@ module = {
 
   common = commands/efi/lsefimmap.c;
 
-  enable = x86_efi;
+  enable = efi;
 };
 
 module = {
@@ -632,6 +632,7 @@ module = {
   common = commands/hdparm.c;
   common = lib/hexdump.c;
   enable = pci;
+  enable = mips_qemu_mips;
 };
 
 module = {
@@ -1197,6 +1198,7 @@ module = {
   extra_dist = lib/x86_64/setjmp.S;
   extra_dist = lib/sparc64/setjmp.S;
   extra_dist = lib/powerpc/setjmp.S;
+  extra_dist = lib/ia64/setjmp.S;
 };
 
 module = {
@@ -1421,8 +1423,7 @@ module = {
   x86 = term/ns8250.c;
 
   enable = emu;
-  enable = i386;
-  enable = x86_64_efi;
+  enable = x86;
   emu_condition = COND_GRUB_EMU_USB;
 };
 
