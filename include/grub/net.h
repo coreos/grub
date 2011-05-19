@@ -63,7 +63,7 @@ struct grub_net_card_driver
   grub_err_t (*init) (struct grub_net_card *dev);
   grub_err_t (*fini) (struct grub_net_card *dev);
   grub_err_t (*send) (struct grub_net_card *dev, struct grub_net_buff *buf);
-  grub_size_t (*recv) (struct grub_net_card *dev, struct grub_net_buff *buf);  
+  grub_ssize_t (*recv) (struct grub_net_card *dev, struct grub_net_buff *buf);  
 };
 
 extern struct grub_net_card_driver *grub_net_card_drivers;
@@ -207,24 +207,24 @@ struct grub_net_socket
   grub_net_app_level_t app;
   grub_net_network_level_address_t out_nla;
   struct grub_net_network_level_interface *inf;
-  grub_net_packets_t *packs;
+  grub_net_packets_t packs;
   void *data;
 };
 
 extern struct grub_net_socket *grub_net_sockets;
 
 static inline void
-grub_net_socket_register (grub_net_socket_t socket)
+grub_net_socket_register (grub_net_socket_t sock)
 {
   grub_list_push (GRUB_AS_LIST_P (&grub_net_sockets),
-		  GRUB_AS_LIST (socket));
+		  GRUB_AS_LIST (sock));
 }
 
 static inline void
-grub_net_socket_unregister (grub_net_socket_t socket)
+grub_net_socket_unregister (grub_net_socket_t sock)
 {
   grub_list_remove (GRUB_AS_LIST_P (&grub_net_sockets),
-		    GRUB_AS_LIST (socket));
+		    GRUB_AS_LIST (sock));
 }
 
 #define FOR_NET_SOCKETS(var) for (var = grub_net_sockets; var; var = var->next)
@@ -432,7 +432,7 @@ grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
 #define FOR_NET_NL_PACKETS(inf, var) FOR_PACKETS(inf->nl_pending, var)
 
 void
-grub_net_pool_cards (unsigned time);
+grub_net_poll_cards (unsigned time);
 
 extern grub_err_t (*EXPORT_VAR (grub_file_net_close)) (grub_file_t file);
 #endif /* ! GRUB_NET_HEADER */

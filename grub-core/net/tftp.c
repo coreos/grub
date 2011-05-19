@@ -21,8 +21,12 @@ tftp_open (struct grub_file *file, const char *filename)
   int hdrlen;
   char open_data[1500]; 
   struct grub_net_buff nb;
-  tftp_data_t data = grub_malloc (sizeof *data);
+  tftp_data_t data;
   grub_err_t err;
+
+  data = grub_malloc (sizeof *data);
+  if (!data)
+    return grub_errno;
  
   file->device->net->socket->data = (void *) data;
   nb.head = open_data;
@@ -74,7 +78,7 @@ tftp_open (struct grub_file *file, const char *filename)
   /* Receive OACK packet.  */
   for ( i = 0; i < 3; i++)
     {
-      grub_net_pool_cards (100);
+      grub_net_poll_cards (100);
       if (grub_errno)
 	return grub_errno;
       if (file->device->net->socket->status != 0)
@@ -110,10 +114,13 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
   switch (grub_be_to_cpu16 (tftph->opcode))
   {
     case TFTP_OACK:
-      for (ptr = nb->data; ptr < nb->tail; )
+      for (ptr = nb->data + sizeof (tftph->opcode); ptr < nb->tail; )
 	{
 	  if (grub_memcmp (ptr, "tsize\0", sizeof ("tsize\0") - 1) == 0)
-	    data->file_size = grub_strtoul (ptr + sizeof ("tsize\0") - 1, 0, 0);
+	    {
+	      data->file_size = grub_strtoul (ptr + sizeof ("tsize\0") - 1,
+					      0, 0);
+	    }
 	  while (ptr < nb->tail && *ptr)
 	    ptr++;
 	  ptr++;
@@ -150,7 +157,7 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
 
   tftph = (struct tftphdr *) nb_ack.data; 
   tftph->opcode = grub_cpu_to_be16 (TFTP_ACK);
-  tftph->u.ack.block = data->block;
+  tftph->u.ack.block = grub_cpu_to_be16 (data->block);
 
   err = grub_net_send_udp_packet (sock, &nb_ack);
   return err;

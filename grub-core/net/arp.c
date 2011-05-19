@@ -87,11 +87,10 @@ grub_net_arp_resolve(struct grub_net_network_level_interface *inf,
 	  grub_memcpy (hw_addr, &entry->ll_address, sizeof (*hw_addr));
 	  return GRUB_ERR_NONE;
 	}
-      grub_net_pool_cards (200);
+      grub_net_poll_cards (200);
+    }
 
-    } 
-
-  return grub_error (GRUB_ERR_TIMEOUT, "Timeout: could not resolve hardware address.");
+  return grub_error (GRUB_ERR_TIMEOUT, "timeout: could not resolve hardware address");
 }
 
 grub_err_t

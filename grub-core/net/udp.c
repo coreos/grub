@@ -36,15 +36,14 @@ grub_net_recv_udp_packet (struct grub_net_buff *nb)
       if (grub_be_to_cpu16 (udph->dst) == sock->in_port)
 	{
 	  if (sock->status == 0)
-	      sock->out_port = udph->src;
+	    sock->out_port = grub_be_to_cpu16 (udph->src);
       
-
 	  /* App protocol remove its own reader.  */
 	  sock->app->read (sock,nb);
  
 	  /* If there is data, puts packet in socket list */
 	  if ((nb->tail - nb->data) > 0)
-	    grub_net_put_packet (sock->packs, nb);
+	    grub_net_put_packet (&sock->packs, nb);
 	  else
 	    grub_netbuff_free (nb);  
 	  return GRUB_ERR_NONE;

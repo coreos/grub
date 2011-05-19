@@ -1,5 +1,4 @@
 #include <grub/net/netbuff.h>
-#include <grub/net/ethernet.h>
 #include <grub/ieee1275/ofnet.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/dl.h>
@@ -49,7 +48,7 @@ send_card_buffer (struct grub_net_card *dev, struct grub_net_buff *pack)
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t
+static grub_ssize_t
 get_card_packet (struct grub_net_card *dev, struct grub_net_buff *nb)
 {
 
@@ -65,9 +64,9 @@ get_card_packet (struct grub_net_card *dev, struct grub_net_buff *nb)
   if (actual)
     {
       grub_netbuff_put (nb, actual);  
-      return grub_net_recv_ethernet_packet (nb);
+      return actual;
     }
-  return GRUB_ERR_TIMEOUT; 
+  return -1;
 }
 
 static struct grub_net_card_driver ofdriver = 
