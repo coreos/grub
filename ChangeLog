@@ -1,3 +1,9 @@
+2011-05-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig.in: Export GRUB_CMDLINE_LINUX_XEN_REPLACE and
+	GRUB_CMDLINE_LINUX_XEN_REPLACE_DEFAULT.
+	Reported by: Pawel Tecza.
+
 2011-05-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/Makefile.core.def (lsacpi): Fix ia64 mismerge.
