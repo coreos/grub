@@ -1,7 +1,7 @@
 /* ofdisk.c - Open Firmware disk access.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2006,2007,2008,2009,2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -105,17 +105,17 @@ reopen (const char *name)
       grub_dprintf ("arcdisk", "using already opened %s\n", name);
       return GRUB_ERR_NONE;
     }
-  if (GRUB_ARC_FIRMWARE_VECTOR->open (name, 0, &handle))
-    {
-      grub_dprintf ("arcdisk", "couldn't open %s\n", name);
-      return grub_error (GRUB_ERR_IO, "couldn't open %s", name);
-    }
   if (last_path)
     {
       GRUB_ARC_FIRMWARE_VECTOR->close (last_handle);
       grub_free (last_path);
       last_path = NULL;
       last_handle = 0;
+    }
+  if (GRUB_ARC_FIRMWARE_VECTOR->open (name, 0, &handle))
+    {
+      grub_dprintf ("arcdisk", "couldn't open %s\n", name);
+      return grub_error (GRUB_ERR_IO, "couldn't open %s", name);
     }
   last_path = grub_strdup (name);
   if (!last_path)

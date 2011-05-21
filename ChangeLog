@@ -1,3 +1,8 @@
+2011-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/arc/arcdisk.c (reopen): Close old handle before
+	opening new one.
+
 2011-05-21  Colin Watson  <cjwatson@ubuntu.com>
 2011-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
