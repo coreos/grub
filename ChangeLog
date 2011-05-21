@@ -1,3 +1,15 @@
+2011-05-21  Colin Watson  <cjwatson@ubuntu.com>
+2011-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't stat devices unless we have to.
+
+	* grub-core/kern/emu/getroot.c (grub_find_device): Recognize
+	dir == /dev/mapper.
+	(grub_guess_root_device): Use already known os_dev if possible.
+	* grub-core/kern/emu/hostdisk.c
+	(convert_system_partition_to_system_disk): Scan only in /dev/mapper
+	if device is known to be a dm one.
+
 2011-05-20  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig.in: Export GRUB_CMDLINE_LINUX_XEN_REPLACE and
