@@ -23,9 +23,6 @@
 #include <grub/err.h>
 #include <grub/types.h>
 
-void grub_ofnet_init(void);
-void grub_ofnet_fini(void);
-
 struct grub_ofnet
 {
   /* The net name.  */
