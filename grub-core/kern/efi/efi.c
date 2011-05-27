@@ -24,6 +24,7 @@
 #include <grub/efi/console_control.h>
 #include <grub/efi/pe32.h>
 #include <grub/machine/time.h>
+#include <grub/time.h>
 #include <grub/term.h>
 #include <grub/kernel.h>
 #include <grub/mm.h>
@@ -193,8 +194,8 @@ grub_efi_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
   return grub_error (GRUB_ERR_IO, "set_virtual_address_map failed");
 }
 
-grub_uint32_t
-grub_get_rtc (void)
+grub_uint64_t
+grub_rtc_get_time_ms (void)
 {
   grub_efi_time_t time;
   grub_efi_runtime_services_t *r;
@@ -204,9 +205,14 @@ grub_get_rtc (void)
     /* What is possible in this case?  */
     return 0;
 
-  return (((time.minute * 60 + time.second) * 1000
-	   + time.nanosecond / 1000000)
-	  * GRUB_TICKS_PER_SECOND / 1000);
+  return ((time.minute * 60 + time.second) * 1000
+	   + time.nanosecond / 1000000);
+}
+
+grub_uint32_t
+grub_get_rtc (void)
+{
+  return grub_rtc_get_time_ms ();
 }
 
 /* Search the mods section from the PE32/PE32+ image. This code uses

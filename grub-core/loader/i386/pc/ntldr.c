@@ -32,6 +32,7 @@
 #include <grub/video.h>
 #include <grub/mm.h>
 #include <grub/cpu/relocator.h>
+#include <grub/machine/chainloader.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -112,6 +113,7 @@ grub_cmd_ntldr (grub_command_t cmd __attribute__ ((unused)),
 	  grub_device_close (dev);
 	  goto fail;
 	}
+      grub_chainloader_patch_bpb (bs, dev, edx);
     }
 
   if (dev)

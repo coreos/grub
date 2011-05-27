@@ -589,10 +589,14 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
       struct grub_btrfs_key *key;
       struct grub_btrfs_chunk_item *chunk;  
       grub_uint64_t csize;
-      grub_err_t err; 
+      grub_err_t err = 0; 
       struct grub_btrfs_key key_out;
       int challoc = 0;
       grub_device_t dev;
+      struct grub_btrfs_key key_in;
+      grub_size_t chsize;
+      grub_disk_addr_t chaddr;
+
       grub_dprintf ("btrfs", "searching for laddr %" PRIxGRUB_UINT64_T "\n",
 		    addr);
       for (ptr = data->sblock.bootstrap_mapping;
@@ -616,9 +620,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	    + sizeof (struct grub_btrfs_chunk_stripe)
 	    * grub_le_to_cpu16 (chunk->nstripes);
 	}
-      struct grub_btrfs_key key_in;
-      grub_size_t chsize;
-      grub_disk_addr_t chaddr;
+
       key_in.object_id = GRUB_BTRFS_OBJECT_ID_CHUNK;
       key_in.type = GRUB_BTRFS_ITEM_TYPE_CHUNK;
       key_in.offset = addr;
@@ -647,7 +649,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 
     chunk_found:
       {
-	grub_uint32_t stripen;
+	grub_uint64_t stripen;
 	grub_uint64_t stripe_offset;
 	grub_uint64_t off = addr - grub_le_to_cpu64 (key->offset);
 	unsigned redundancy = 1;
@@ -677,10 +679,10 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	    {
 	      grub_uint64_t stripe_length;
 	      grub_dprintf ("btrfs", "single\n");
-	      stripe_length = grub_divmod64_full (grub_le_to_cpu64 (chunk->size),
-						  grub_le_to_cpu16 (chunk->nstripes),
-						  NULL);
-	      stripen = grub_divmod64_full (off, stripe_length, &stripe_offset);
+	      stripe_length = grub_divmod64 (grub_le_to_cpu64 (chunk->size),
+					     grub_le_to_cpu16 (chunk->nstripes),
+					     NULL);
+	      stripen = grub_divmod64 (off, stripe_length, &stripe_offset);
 	      csize = (stripen + 1) * stripe_length - off;
 	      break;
 	    }
@@ -697,7 +699,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	  case GRUB_BTRFS_CHUNK_TYPE_RAID0:
 	    {
 	      grub_uint64_t middle, high;
-	      grub_uint32_t low;
+	      grub_uint64_t low;
 	      grub_dprintf ("btrfs", "RAID0\n");
 	      middle = grub_divmod64 (off,
 				      grub_le_to_cpu64 (chunk->stripe_length),
@@ -713,7 +715,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 	  case GRUB_BTRFS_CHUNK_TYPE_RAID10:
 	    {
 	      grub_uint64_t middle, high;
-	      grub_uint32_t low;
+	      grub_uint64_t low;
 	      middle = grub_divmod64 (off,
 				      grub_le_to_cpu64 (chunk->stripe_length),
 				      &low);
@@ -758,7 +760,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 
 		grub_dprintf ("btrfs", "chunk 0x%" PRIxGRUB_UINT64_T
 			      "+0x%" PRIxGRUB_UINT64_T " (%d stripes (%d substripes) of %"
-			      PRIxGRUB_UINT64_T ") stripe %" PRIxGRUB_UINT32_T
+			      PRIxGRUB_UINT64_T ") stripe %" PRIxGRUB_UINT64_T
 			      " maps to 0x%" PRIxGRUB_UINT64_T "\n",
 			      grub_le_to_cpu64 (key->offset),
 			      grub_le_to_cpu64 (chunk->size),

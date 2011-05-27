@@ -27,8 +27,6 @@ libdir=@libdir@
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
-target_cpu=@target_cpu@
-native_platform=@platform@
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 
 self=`basename $0`
@@ -231,14 +229,15 @@ if [ "${override_dir}" = "" ] ; then
         process_input_dir ${efi64_dir} x86_64-efi
     fi
 else
-    process_input_dir ${override_dir} ${target_cpu}-${native_platform}
+    . "${override_dir}"/modinfo.sh
+    process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
     multiboot_dir=
     pc_dir=
     efi32_dir=
     efi64_dir=
     coreboot_dir=
     qemu_dir=
-    case "${target_cpu}-${native_platform}" in
+    case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
         i386-multiboot) multiboot_dir=${override_dir} ;;
         i386-coreboot) coreboot_dir=${override_dir} ;;
         i386-qemu) qemu_dir=${override_dir} ;;

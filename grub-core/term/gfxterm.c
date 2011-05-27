@@ -130,6 +130,7 @@ static struct grub_video_render_target *text_layer;
 static unsigned int bitmap_width;
 static unsigned int bitmap_height;
 static struct grub_video_bitmap *bitmap;
+static int blend_text_bg;
 
 static struct grub_dirty_region dirty_region;
 
@@ -476,25 +477,26 @@ redraw_screen_rect (unsigned int x, unsigned int y,
           /* Render background layer.  */
 	  grub_video_fill_rect (color, x, ty, width, h);
         }
-
-      /* Render text layer as blended.  */
-      grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, x, y,
-                                     x - virtual_screen.offset_x,
-                                     y - virtual_screen.offset_y,
-                                     width, height);
     }
   else
     {
       /* Render background layer.  */
       color = virtual_screen.bg_color_display;
       grub_video_fill_rect (color, x, y, width, height);
-
-      /* Render text layer as replaced (to get texts background color).  */
-      grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_REPLACE, x, y,
-                                     x - virtual_screen.offset_x,
-                                     y - virtual_screen.offset_y,
-				     width, height);
     }
+
+  if (blend_text_bg)
+    /* Render text layer as blended.  */
+    grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, x, y,
+                                   x - virtual_screen.offset_x,
+                                   y - virtual_screen.offset_y,
+                                   width, height);
+  else
+    /* Render text layer as replaced (to get texts background color).  */
+    grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_REPLACE, x, y,
+                                   x - virtual_screen.offset_x,
+                                   y - virtual_screen.offset_y,
+                                   width, height);
 
   /* Restore saved viewport.  */
   grub_video_set_viewport (saved_view.x, saved_view.y,
@@ -1127,6 +1129,7 @@ grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
     {
       grub_video_bitmap_destroy (bitmap);
       bitmap = 0;
+      blend_text_bg = 0;
 
       /* Mark whole screen as dirty.  */
       dirty_region_add (0, 0, window.width, window.height);
@@ -1166,6 +1169,8 @@ grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
       /* If bitmap was loaded correctly, display it.  */
       if (bitmap)
         {
+	  blend_text_bg = 1;
+
           /* Determine bitmap dimensions.  */
           bitmap_width = grub_video_bitmap_get_width (bitmap);
           bitmap_height = grub_video_bitmap_get_height (bitmap);
@@ -1178,6 +1183,48 @@ grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
   /* All was ok.  */
   grub_errno = GRUB_ERR_NONE;
   return grub_errno;
+}
+
+static grub_err_t
+grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
+                                   int argc, char **args)
+{
+  grub_video_rgba_color_t color;
+  struct grub_video_render_target *old_target;
+
+  if (argc != 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing operand");
+
+  /* Check that we have video adapter active.  */
+  if (grub_video_get_info (NULL) != GRUB_ERR_NONE)
+    return grub_errno;
+
+  if (grub_video_parse_color (args[0], &color) != GRUB_ERR_NONE)
+    return grub_errno;
+
+  /* Destroy existing background bitmap if loaded.  */
+  if (bitmap)
+    {
+      grub_video_bitmap_destroy (bitmap);
+      bitmap = 0;
+
+      /* Mark whole screen as dirty.  */
+      dirty_region_add (0, 0, window.width, window.height);
+    }
+
+  /* Set the background and border colors.  The background color needs to be
+     compatible with the text layer.  */
+  grub_video_get_active_render_target (&old_target);
+  grub_video_set_active_render_target (text_layer);
+  virtual_screen.bg_color = grub_video_map_rgba_color (color);
+  grub_video_set_active_render_target (old_target);
+  virtual_screen.bg_color_display = grub_video_map_rgba_color (color);
+  blend_text_bg = 1;
+
+  /* Mark whole screen as dirty.  */
+  dirty_region_add (0, 0, window.width, window.height);
+
+  return GRUB_ERR_NONE;
 }
 
 static struct grub_term_output grub_video_term =
@@ -1201,6 +1248,7 @@ static struct grub_term_output grub_video_term =
   };
 
 static grub_extcmd_t background_image_cmd_handle;
+static grub_command_t background_color_cmd_handle;
 
 GRUB_MOD_INIT(gfxterm)
 {
@@ -1211,10 +1259,16 @@ GRUB_MOD_INIT(gfxterm)
                           N_("[-m (stretch|normal)] FILE"),
                           N_("Load background image for active terminal."),
                           background_image_cmd_options);
+  background_color_cmd_handle =
+    grub_register_command ("background_color",
+                           grub_gfxterm_background_color_cmd,
+                           N_("COLOR"),
+                           N_("Set background color for active terminal."));
 }
 
 GRUB_MOD_FINI(gfxterm)
 {
+  grub_unregister_command (background_color_cmd_handle);
   grub_unregister_extcmd (background_image_cmd_handle);
   grub_term_unregister_output (&grub_video_term);
 }

@@ -106,7 +106,7 @@ grub_bufio_read (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_size_t res = len;
   grub_bufio_t bufio = file->data;
-  grub_uint32_t pos;
+  grub_uint64_t pos;
 
   if ((file->offset >= bufio->file->offset) &&
       (file->offset < bufio->file->offset + bufio->buffer_len))

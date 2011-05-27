@@ -597,7 +597,7 @@ grub_reverse (char *str)
 
 /* Divide N by D, return the quotient, and store the remainder in *R.  */
 grub_uint64_t
-grub_divmod64_full (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
+grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
 {
   /* This algorithm is typically implemented by hardware. The idea
      is to get the highest bit in N, 64 times, by keeping
@@ -666,7 +666,7 @@ grub_lltoa (char *str, int c, unsigned long long n)
     /* BASE == 10 */
     do
       {
-	unsigned m;
+	grub_uint64_t m;
 
 	n = grub_divmod64 (n, 10, &m);
 	*p++ = m + '0';

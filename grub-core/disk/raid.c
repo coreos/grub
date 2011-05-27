@@ -245,7 +245,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
     case 10:
       {
         grub_disk_addr_t read_sector, far_ofs;
-	grub_uint32_t disknr, b, near, far, ofs;
+	grub_uint64_t disknr, b, near, far, ofs;
 
         read_sector = grub_divmod64 (sector, array->chunk_size, &b);
         far = ofs = near = 1;
@@ -351,7 +351,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
     case 6:
       {
 	grub_disk_addr_t read_sector;
-	grub_uint32_t b, p, n, disknr, e;
+	grub_uint64_t b, p, n, disknr, e;
 
         /* n = 1 for level 4 and 5, 2 for level 6.  */
         n = array->level / 3;

@@ -24,6 +24,7 @@
 #include <grub/err.h>
 #include <grub/emu/misc.h>
 #include <grub/emu/hostdisk.h>
+#include <grub/emu/getroot.h>
 #include <grub/misc.h>
 #include <grub/i18n.h>
 #include <grub/list.h>
@@ -331,18 +332,23 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   return GRUB_ERR_NONE;
 }
 
-#ifdef HAVE_DEVICE_MAPPER
-static int
-device_is_mapped (const char *dev)
+int
+grub_util_device_is_mapped (const char *dev)
 {
+#ifdef HAVE_DEVICE_MAPPER
   struct stat st;
+
+  if (!grub_device_mapper_supported ())
+    return 0;
 
   if (stat (dev, &st) < 0)
     return 0;
 
   return dm_is_dm_major (major (st.st_rdev));
-}
+#else
+  return 0;
 #endif /* HAVE_DEVICE_MAPPER */
+}
 
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
 /* FIXME: geom actually gives us the whole container hierarchy.
@@ -418,7 +424,7 @@ find_partition_start (const char *dev)
 # endif /* !defined(HAVE_DIOCGDINFO) */
 
 # ifdef HAVE_DEVICE_MAPPER
-  if (grub_device_mapper_supported () && device_is_mapped (dev)) {
+  if (grub_util_device_is_mapped (dev)) {
     struct dm_task *task = NULL;
     grub_uint64_t start, length;
     char *target_type, *params, *space;
@@ -550,7 +556,7 @@ struct linux_partition_cache
 struct linux_partition_cache *linux_partition_cache_list;
 
 static int
-linux_find_partition (char *dev, unsigned long sector)
+linux_find_partition (char *dev, grub_disk_addr_t sector)
 {
   size_t len = strlen (dev);
   const char *format;
@@ -596,7 +602,7 @@ linux_find_partition (char *dev, unsigned long sector)
 
       fd = open (real_dev, O_RDONLY);
       if (fd == -1)
-	return 0;
+	continue;
       close (fd);
 
       start = find_partition_start (real_dev);
@@ -678,6 +684,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	      }
 
 	    close (data->fd);
+	    data->fd = -1;
 	  }
 
 	/* Open the partition.  */
@@ -736,6 +743,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 #endif
 	      }
 	    close (data->fd);
+	    data->fd = -1;
 	}
 
       fd = open (map[disk->id].device, flags);
@@ -1147,6 +1155,54 @@ make_device_name (int drive, int dos_part, int bsd_part)
   return ret;
 }
 
+#ifdef HAVE_DEVICE_MAPPER
+static int
+grub_util_get_dm_node_linear_info (const char *dev,
+				   int *maj, int *min)
+{
+  struct dm_task *dmt;
+  void *next = NULL;
+  uint64_t length, start;
+  char *target, *params;
+  char *ptr;
+  int major, minor;
+
+  dmt = dm_task_create(DM_DEVICE_TABLE);
+  if (!dmt)
+    return 0;
+  
+  if (!dm_task_set_name(dmt, dev))
+    return 0;
+  dm_task_no_open_count(dmt);
+  if (!dm_task_run(dmt))
+    return 0;
+  next = dm_get_next_target(dmt, next, &start, &length,
+			    &target, &params);
+  if (grub_strcmp (target, "linear") != 0)
+    return 0;
+  major = grub_strtoul (params, &ptr, 10);
+  if (grub_errno)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
+  if (*ptr != ':')
+    return 0;
+  ptr++;
+  minor = grub_strtoul (ptr, 0, 10);
+  if (grub_errno)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
+  if (maj)
+    *maj = major;
+  if (min)
+    *min = minor;
+  return 1;
+}
+#endif
+
 static char *
 convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 {
@@ -1323,9 +1379,40 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	      node = NULL;
 	      goto devmapper_out;
 	    }
-	  else if (strncmp (node_uuid, "DMRAID-", 7) != 0)
+	  if (strncmp (node_uuid, "LVM-", 4) == 0)
 	    {
+	      grub_dprintf ("hostdisk", "%s is an LVM\n", path);
+	      node = NULL;
+	      goto devmapper_out;
+	    }
+	  if (strncmp (node_uuid, "mpath-", 6) == 0)
+	    {
+	      /* Multipath partitions have partN-mpath-* UUIDs, and are
+		 linear mappings so are handled by
+		 grub_util_get_dm_node_linear_info.  Multipath disks are not
+		 linear mappings and must be handled specially.  */
+	      grub_dprintf ("hostdisk", "%s is a multipath disk\n", path);
+	      mapper_name = dm_tree_node_get_name (node);
+	      goto devmapper_out;
+	    }
+	  if (strncmp (node_uuid, "DMRAID-", 7) != 0)
+	    {
+	      int major, minor;
+	      const char *node_name;
 	      grub_dprintf ("hostdisk", "%s is not DM-RAID\n", path);
+
+	      if ((node_name = dm_tree_node_get_name (node))
+		  && grub_util_get_dm_node_linear_info (node_name,
+							&major, &minor))
+		{
+		  if (tree)
+		    dm_tree_free (tree);
+		  free (path);
+		  char *ret = grub_find_device ("/dev/mapper",
+						(major << 8) | minor);
+		  return ret;
+		}
+
 	      node = NULL;
 	      goto devmapper_out;
 	    }
