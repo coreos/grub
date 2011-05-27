@@ -564,6 +564,7 @@ linux_find_partition (char *dev, grub_disk_addr_t sector)
   int i;
   char real_dev[PATH_MAX];
   struct linux_partition_cache *cache;
+  int missing = 0;
 
   strcpy(real_dev, dev);
 
@@ -602,7 +603,13 @@ linux_find_partition (char *dev, grub_disk_addr_t sector)
 
       fd = open (real_dev, O_RDONLY);
       if (fd == -1)
-	continue;
+	{
+	  if (missing++ < 10)
+	    continue;
+	  else
+	    return 0;
+	}
+      missing = 0;
       close (fd);
 
       start = find_partition_start (real_dev);
