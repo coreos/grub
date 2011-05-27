@@ -1,5 +1,10 @@
 2011-05-27  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/kern/emu/hostdisk.c (linux_find_partition): Handle
+	partitions under /dev/disk/by-id/.
+
+2011-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/kern/emu/hostdisk.c (linux_find_partition): Give up
 	after ten consecutive open failures.  Scanning all the way up to
 	10000 is excessive and can cause serious performance problems in

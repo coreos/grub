@@ -573,6 +573,12 @@ linux_find_partition (char *dev, grub_disk_addr_t sector)
       p = real_dev + len - 4;
       format = "part%d";
     }
+  else if (strncmp (real_dev, "/dev/disk/by-id/",
+		    sizeof ("/dev/disk/by-id/") - 1) == 0)
+    {
+      p = real_dev + len;
+      format = "-part%d";
+    }
   else if (real_dev[len - 1] >= '0' && real_dev[len - 1] <= '9')
     {
       p = real_dev + len;
