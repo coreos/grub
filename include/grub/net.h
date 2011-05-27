@@ -234,11 +234,10 @@ typedef struct grub_net
   char *name;
   grub_net_app_level_t protocol;
   grub_net_socket_t socket;
+  grub_fs_t fs;
 } *grub_net_t;
 
 extern grub_net_t (*EXPORT_VAR (grub_net_open)) (const char *name);
-extern grub_ssize_t (*EXPORT_VAR (grub_file_net_read)) (grub_file_t file, void *buf, grub_size_t len);
-extern grub_err_t (*EXPORT_VAR (grub_file_net_open)) (struct grub_file *file, const char *name);
 extern grub_err_t (*EXPORT_VAR (grub_file_net_seek)) (struct grub_file *file, grub_off_t offset);
 
 struct grub_net_network_level_interface
@@ -434,5 +433,4 @@ grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
 void
 grub_net_poll_cards (unsigned time);
 
-extern grub_err_t (*EXPORT_VAR (grub_file_net_close)) (grub_file_t file);
 #endif /* ! GRUB_NET_HEADER */

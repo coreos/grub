@@ -94,8 +94,8 @@ grub_fs_probe (grub_device_t device)
 	  count--;
 	}
     }
-  else if (device->net)
-    return NULL;
+  else if (device->net && device->net->fs)
+    return device->net->fs;
 
   grub_error (GRUB_ERR_UNKNOWN_FS, "unknown filesystem");
   return 0;

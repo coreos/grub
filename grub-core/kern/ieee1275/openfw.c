@@ -23,7 +23,6 @@
 #include <grub/mm.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/ieee1275/ofnet.h>
-#include <grub/net/ieee1275/interface.h>
 #include <grub/net.h>
 #include <grub/net/tftp.h>
 

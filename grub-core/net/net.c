@@ -49,6 +49,7 @@ struct grub_net_network_level_interface *grub_net_network_level_interfaces = NUL
 struct grub_net_card *grub_net_cards = NULL;
 struct grub_net_card_driver *grub_net_card_drivers = NULL;
 struct grub_net_network_level_protocol *grub_net_network_level_protocols = NULL;
+static struct grub_fs grub_net_fs;
 
 static inline void
 grub_net_network_level_interface_unregister (struct grub_net_network_level_interface *inter)
@@ -571,6 +572,7 @@ grub_net_open_real (const char *name)
 	    grub_free (ret);
 	    return NULL;
 	  }
+	ret->fs = &grub_net_fs;
 	return ret;
       }
   }
@@ -580,7 +582,7 @@ grub_net_open_real (const char *name)
 }
 
 static grub_err_t
-grub_net_file_open_real (struct grub_file *file, const char *name)
+grub_net_fs_open (struct grub_file *file, const char *name)
 {
   grub_err_t err;
   grub_net_network_level_address_t addr;
@@ -620,7 +622,7 @@ grub_net_file_open_real (struct grub_file *file, const char *name)
   if (err)
     goto fail;
   file->not_easily_seekable = 1;
-  
+
   return GRUB_ERR_NONE;
 fail:
   grub_net_socket_unregister (socket);
@@ -630,7 +632,7 @@ fail:
 }
 
 static grub_err_t
-grub_net_file_close_real (grub_file_t file)
+grub_net_fs_close (grub_file_t file)
 {
   grub_net_socket_t sock = file->device->net->socket;
   while (sock->packs.first)
@@ -681,11 +683,11 @@ grub_net_poll_cards (unsigned time)
 
 /*  Read from the packets list*/
 static grub_ssize_t
-grub_net_read_real (grub_file_t file, void *buf, grub_size_t len)
+grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_net_socket_t sock = file->device->net->socket;
   struct grub_net_buff *nb;
-  char *ptr = (char *) buf;
+  char *ptr =  buf;
   grub_size_t amount, total = 0;
   int try = 0;
   while (try <= 3)
@@ -744,7 +746,7 @@ grub_net_seek_real (struct grub_file *file, grub_off_t offset)
       return grub_netbuff_push (nb, file->offset - offset);
     }
 
-  grub_net_read_real (file, NULL, len);
+  grub_net_fs_read (file, NULL, len);
   return GRUB_ERR_NONE;
 }
 
@@ -1009,6 +1011,17 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 		     "unrecognised format specification %s", args[3]);
 }
 
+static struct grub_fs grub_net_fs =
+  {
+    .name = "netfs",
+    .dir = NULL,
+    .open = grub_net_fs_open,
+    .read = grub_net_fs_read,
+    .close = grub_net_fs_close,
+    .label = NULL,
+    .uuid = NULL,
+    .mtime = NULL,
+  };
 static grub_command_t cmd_addaddr, cmd_deladdr, cmd_addroute, cmd_delroute;
 static grub_command_t cmd_lsroutes, cmd_lscards, cmd_getdhcp;
 
@@ -1034,10 +1047,8 @@ GRUB_MOD_INIT(net)
 				       N_("VAR INTERFACE NUMBER DESCRIPTION"),
 				       N_("retrieve DHCP option and save it into VAR. If VAR is - then print the value."));
 
+  grub_fs_register (&grub_net_fs);
   grub_net_open = grub_net_open_real;
-  grub_file_net_open = grub_net_file_open_real;
-  grub_file_net_close = grub_net_file_close_real;
-  grub_file_net_read = grub_net_read_real;
   grub_file_net_seek = grub_net_seek_real;
 }
 
@@ -1050,8 +1061,7 @@ GRUB_MOD_FINI(net)
   grub_unregister_command (cmd_lsroutes);
   grub_unregister_command (cmd_lscards);
   grub_unregister_command (cmd_getdhcp);
+  grub_fs_unregister (&grub_net_fs);
   grub_net_open = NULL;
-  grub_file_net_read = NULL;
-  grub_file_net_open = NULL;
-  grub_file_net_close = NULL;
+  grub_file_net_seek = NULL;
 }
