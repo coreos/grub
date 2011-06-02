@@ -193,7 +193,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
     }
 
   file->data = data;
-  file->not_easly_seekable = 1;
+  file->not_easily_seekable = 1;
   grub_memcpy (file_int, file, sizeof (struct grub_file));
   curr_file = file_int;
 
@@ -215,7 +215,8 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_pxenv_tftp_read c;
   struct grub_pxe_data *data;
-  grub_uint32_t pn, r;
+  grub_uint32_t pn;
+  grub_uint64_t r;
 
   data = file->data;
 
@@ -292,7 +293,7 @@ grub_pxefs_label (grub_device_t device __attribute ((unused)),
   return GRUB_ERR_NONE;
 }
 
-static struct grub_net_app_protocol grub_pxefs_fs =
+static struct grub_fs grub_pxefs_fs =
   {
     .name = "pxe",
     .dir = grub_pxefs_dir,
@@ -303,7 +304,7 @@ static struct grub_net_app_protocol grub_pxefs_fs =
     .next = 0
   };
 
-static grub_size_t 
+static grub_ssize_t 
 grub_pxe_recv (struct grub_net_card *dev __attribute__ ((unused)),
 	       struct grub_net_buff *buf __attribute__ ((unused)))
 {
@@ -334,7 +335,7 @@ grub_pxe_unload (void)
 {
   if (grub_pxe_pxenv)
     {
-      grub_net_app_level_unregister (&grub_pxefs_fs);
+      grub_fs_unregister (&grub_pxefs_fs);
       grub_net_card_unregister (&grub_pxe_card);
       grub_pxe_pxenv = 0;
     }
@@ -466,7 +467,7 @@ GRUB_MOD_INIT(pxe)
 	       ? bp->hw_len : sizeof (grub_pxe_card.default_address.mac));
   grub_pxe_card.default_address.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
-  grub_net_app_level_register (&grub_pxefs_fs);
+  grub_fs_register (&grub_pxefs_fs);
   grub_net_card_register (&grub_pxe_card);
   grub_net_configure_by_dhcp_ack ("pxe", &grub_pxe_card,
 				  GRUB_NET_INTERFACE_PERMANENT
