@@ -84,9 +84,9 @@ tftp_open (struct grub_file *file, const char *filename)
       if (file->device->net->socket->status != 0)
 	break;
       /* Retry.  */
-      //err = grub_net_send_udp_packet (file->device->net->socket, &nb);
-     // if (err)
-     //   return err;
+      /*err = grub_net_send_udp_packet (file->device->net->socket, &nb);
+      if (err)
+        return err;*/
     }
 
   if (file->device->net->socket->status == 0)

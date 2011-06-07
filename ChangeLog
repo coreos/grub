@@ -1,3 +1,29 @@
+2011-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-06-07  Manoel Rebelo Abranches <mrabran@gmail.com>
+
+	Network infrastructure.
+	The ARP protocol was made by Paulo Pinatti <ppinatti@br.ibm.com>
+
+	* include/grub/net/arp.h: New file.
+	* include/grub/net/ethernet.h: New file.
+	* include/grub/net/ip.h: New file.
+	* include/grub/net/netbuff.h: New file.
+	* include/grub/net/tftp.h: New file.
+	* include/grub/net/udp.h: New file.
+	* include/grub/net.h: New file.
+	* grub-core/net/arp.c: New file.
+	* grub-core/net/ethernet.c: New file.
+	* grub-core/net/ip.c: New file.
+	* grub-core/net/netbuff.c: New file.
+	* grub-core/net/net.c: New file.
+	* grub-core/net/drivers/emu/emunet.c: New file.
+	* grub-core/net/drivers/ieee1275/ofnet.c: New file.
+	* grub-core/kern/device.c (grub_net_open) : New function.
+	(grub_device_open) : Handle Network device.
+	* grub-core/kern/file.c (grub_file_net_seek) : New function.
+	(grub_file_net_seek): Seek in network device.
+
+
 2011-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/arc/arcdisk.c (reopen): Close old handle before

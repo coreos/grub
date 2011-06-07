@@ -25,7 +25,6 @@ grub_net_send_udp_packet (const grub_net_socket_t socket , struct grub_net_buff 
 grub_err_t 
 grub_net_recv_udp_packet (struct grub_net_buff *nb)
 {
-  //grub_err_t err;
   struct udphdr *udph;
   grub_net_socket_t sock;
   udph = (struct udphdr *) nb->data;
@@ -41,7 +40,7 @@ grub_net_recv_udp_packet (struct grub_net_buff *nb)
 	  /* App protocol remove its own reader.  */
 	  sock->app->read (sock,nb);
  
-	  /* If there is data, puts packet in socket list */
+	  /* If there is data, puts packet in socket list.  */
 	  if ((nb->tail - nb->data) > 0)
 	    grub_net_put_packet (&sock->packs, nb);
 	  else
