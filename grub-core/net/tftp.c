@@ -11,15 +11,15 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-static grub_err_t 
+static grub_err_t
 tftp_open (struct grub_file *file, const char *filename)
 {
-  struct tftphdr *tftph; 
+  struct tftphdr *tftph;
   char *rrq;
   int i;
   int rrqlen;
   int hdrlen;
-  char open_data[1500]; 
+  char open_data[1500];
   struct grub_net_buff nb;
   tftp_data_t data;
   grub_err_t err;
@@ -27,47 +27,47 @@ tftp_open (struct grub_file *file, const char *filename)
   data = grub_malloc (sizeof *data);
   if (!data)
     return grub_errno;
- 
+
   file->device->net->socket->data = (void *) data;
   nb.head = open_data;
   nb.end = open_data + sizeof (open_data);
-  grub_netbuff_clear (&nb);  
+  grub_netbuff_clear (&nb);
 
-  grub_netbuff_reserve (&nb,1500);  
-  grub_netbuff_push (&nb,sizeof (*tftph));
+  grub_netbuff_reserve (&nb, 1500);
+  grub_netbuff_push (&nb, sizeof (*tftph));
 
-  tftph = (struct tftphdr *) nb.data; 
-  
+  tftph = (struct tftphdr *) nb.data;
+
   rrq = (char *) tftph->u.rrq;
   rrqlen = 0;
-  
+
   tftph->opcode = grub_cpu_to_be16 (TFTP_RRQ);
   grub_strcpy (rrq, filename);
   rrqlen += grub_strlen (filename) + 1;
-  rrq +=  grub_strlen (filename) + 1;
-  
-  grub_strcpy (rrq,"octet");
+  rrq += grub_strlen (filename) + 1;
+
+  grub_strcpy (rrq, "octet");
   rrqlen += grub_strlen ("octet") + 1;
-  rrq +=  grub_strlen ("octet") + 1;
+  rrq += grub_strlen ("octet") + 1;
 
-  grub_strcpy (rrq,"blksize");
-  rrqlen += grub_strlen("blksize") + 1;
-  rrq +=  grub_strlen ("blksize") + 1;
+  grub_strcpy (rrq, "blksize");
+  rrqlen += grub_strlen ("blksize") + 1;
+  rrq += grub_strlen ("blksize") + 1;
 
-  grub_strcpy (rrq,"1024");
+  grub_strcpy (rrq, "1024");
   rrqlen += grub_strlen ("1024") + 1;
-  rrq +=  grub_strlen ("1024") + 1;
-  
-  grub_strcpy (rrq,"tsize");
-  rrqlen += grub_strlen ("tsize") + 1;
-  rrq +=  grub_strlen ("tsize") + 1;
+  rrq += grub_strlen ("1024") + 1;
 
-  grub_strcpy (rrq,"0");
+  grub_strcpy (rrq, "tsize");
+  rrqlen += grub_strlen ("tsize") + 1;
+  rrq += grub_strlen ("tsize") + 1;
+
+  grub_strcpy (rrq, "0");
   rrqlen += grub_strlen ("0") + 1;
   rrq += grub_strlen ("0") + 1;
   hdrlen = sizeof (tftph->opcode) + rrqlen;
- 
-  grub_netbuff_unput (&nb, nb.tail - (nb.data + hdrlen)); 
+
+  grub_netbuff_unput (&nb, nb.tail - (nb.data + hdrlen));
 
   file->device->net->socket->out_port = TFTP_SERVER_PORT;
 
@@ -76,7 +76,7 @@ tftp_open (struct grub_file *file, const char *filename)
     return err;
 
   /* Receive OACK packet.  */
-  for ( i = 0; i < 3; i++)
+  for (i = 0; i < 3; i++)
     {
       grub_net_poll_cards (100);
       if (grub_errno)
@@ -85,22 +85,22 @@ tftp_open (struct grub_file *file, const char *filename)
 	break;
       /* Retry.  */
       /*err = grub_net_send_udp_packet (file->device->net->socket, &nb);
-      if (err)
-        return err;*/
+         if (err)
+           return err; */
     }
 
   if (file->device->net->socket->status == 0)
-    return grub_error (GRUB_ERR_TIMEOUT,"Time out opening tftp.");
+    return grub_error (GRUB_ERR_TIMEOUT, "Time out opening tftp.");
   file->size = data->file_size;
 
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t 
+static grub_err_t
 tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
 {
   struct tftphdr *tftph;
-  char  nbdata[128];
+  char nbdata[128];
   tftp_data_t data = sock->data;
   grub_err_t err;
   char *ptr;
@@ -112,9 +112,9 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
 
   tftph = (struct tftphdr *) nb->data;
   switch (grub_be_to_cpu16 (tftph->opcode))
-  {
+    {
     case TFTP_OACK:
-      for (ptr = nb->data + sizeof (tftph->opcode); ptr < nb->tail; )
+      for (ptr = nb->data + sizeof (tftph->opcode); ptr < nb->tail;)
 	{
 	  if (grub_memcmp (ptr, "tsize\0", sizeof ("tsize\0") - 1) == 0)
 	    {
@@ -125,13 +125,14 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
 	    ptr++;
 	  ptr++;
 	}
-      sock->status = 1; 
+      sock->status = 1;
       data->block = 0;
-      grub_netbuff_clear(nb);
-    break;
+      grub_netbuff_clear (nb);
+      break;
     case TFTP_DATA:
-      grub_netbuff_pull (nb,sizeof (tftph->opcode) + sizeof (tftph->u.data.block));
-      
+      grub_netbuff_pull (nb, sizeof (tftph->opcode) +
+			 sizeof (tftph->u.data.block));
+
       if (grub_be_to_cpu16 (tftph->u.data.block) == data->block + 1)
 	{
 	  data->block++;
@@ -140,22 +141,23 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
 	    sock->status = 2;
 	  /* Prevent garbage in broken cards.  */
 	  if (size > 1024)
-	    grub_netbuff_unput (nb, size - 1024); 
+	    grub_netbuff_unput (nb, size - 1024);
 	}
       else
-	grub_netbuff_clear(nb);
-      
-    break; 
+	grub_netbuff_clear (nb);
+
+      break;
     case TFTP_ERROR:
       grub_netbuff_clear (nb);
-      return grub_error (GRUB_ERR_IO, (char *)tftph->u.err.errmsg);
-    break;
-  }
+      return grub_error (GRUB_ERR_IO, (char *) tftph->u.err.errmsg);
+      break;
+    }
   grub_netbuff_clear (&nb_ack);
-  grub_netbuff_reserve (&nb_ack,128);
-  grub_netbuff_push (&nb_ack,sizeof (tftph->opcode) + sizeof (tftph->u.ack.block));
+  grub_netbuff_reserve (&nb_ack, 128);
+  grub_netbuff_push (&nb_ack, sizeof (tftph->opcode) 
+		    + sizeof (tftph->u.ack.block));
 
-  tftph = (struct tftphdr *) nb_ack.data; 
+  tftph = (struct tftphdr *) nb_ack.data;
   tftph->opcode = grub_cpu_to_be16 (TFTP_ACK);
   tftph->u.ack.block = grub_cpu_to_be16 (data->block);
 
@@ -163,7 +165,7 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
   return err;
 }
 
-static grub_err_t 
+static grub_err_t
 tftp_close (struct grub_file *file __attribute__ ((unused)))
 {
   grub_free (file->device->net->socket->data);
@@ -171,19 +173,19 @@ tftp_close (struct grub_file *file __attribute__ ((unused)))
 }
 
 static struct grub_net_app_protocol grub_tftp_protocol = 
-{
-  .name = "tftp",
-  .open = tftp_open,
-  .read = tftp_receive, 
-  .close = tftp_close 
-};
+  {
+    .name = "tftp",
+    .open = tftp_open,
+    .read = tftp_receive,
+    .close = tftp_close
+  };
 
-GRUB_MOD_INIT (tftp)
+GRUB_MOD_INIT(tftp)
 {
   grub_net_app_level_register (&grub_tftp_protocol);
 }
 
-GRUB_MOD_FINI (tftp)
+GRUB_MOD_FINI(tftp)
 {
   grub_net_app_level_unregister (&grub_tftp_protocol);
 }

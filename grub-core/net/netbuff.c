@@ -22,73 +22,84 @@
 #include <grub/net/netbuff.h>
 
 
-grub_err_t grub_netbuff_put (struct grub_net_buff *nb ,grub_size_t len)
+grub_err_t
+grub_netbuff_put (struct grub_net_buff *nb, grub_size_t len)
 {
   nb->tail += len;
   if (nb->tail > nb->end)
     return grub_error (GRUB_ERR_OUT_OF_RANGE, "put out of the packet range.");
-  return GRUB_ERR_NONE; 
+  return GRUB_ERR_NONE;
 }
 
-grub_err_t grub_netbuff_unput (struct grub_net_buff *nb ,grub_size_t len)
+grub_err_t
+grub_netbuff_unput (struct grub_net_buff *nb, grub_size_t len)
 {
   nb->tail -= len;
   if (nb->tail < nb->head)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "unput out of the packet range.");
-  return GRUB_ERR_NONE; 
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       "unput out of the packet range.");
+  return GRUB_ERR_NONE;
 }
 
-grub_err_t grub_netbuff_push (struct grub_net_buff *nb ,grub_size_t len)
+grub_err_t
+grub_netbuff_push (struct grub_net_buff *nb, grub_size_t len)
 {
   nb->data -= len;
   if (nb->data < nb->head)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "push out of the packet range.");
-  return GRUB_ERR_NONE; 
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       "push out of the packet range.");
+  return GRUB_ERR_NONE;
 }
 
-grub_err_t grub_netbuff_pull (struct grub_net_buff *nb ,grub_size_t len)
+grub_err_t
+grub_netbuff_pull (struct grub_net_buff *nb, grub_size_t len)
 {
   nb->data += len;
   if (nb->data > nb->end)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "pull out of the packet range.");
-  return GRUB_ERR_NONE; 
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       "pull out of the packet range.");
+  return GRUB_ERR_NONE;
 }
 
-grub_err_t grub_netbuff_reserve (struct grub_net_buff *nb ,grub_size_t len)
+grub_err_t
+grub_netbuff_reserve (struct grub_net_buff *nb, grub_size_t len)
 {
   nb->data += len;
   nb->tail += len;
   if ((nb->tail > nb->end) || (nb->data > nb->end))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "reserve out of the packet range.");
-  return GRUB_ERR_NONE; 
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       "reserve out of the packet range.");
+  return GRUB_ERR_NONE;
 }
 
-struct grub_net_buff *grub_netbuff_alloc ( grub_size_t len )
+struct grub_net_buff *
+grub_netbuff_alloc (grub_size_t len)
 {
   struct grub_net_buff *nb;
   void *data;
 
-  if (len < NETBUFFMINLEN) 
+  if (len < NETBUFFMINLEN)
     len = NETBUFFMINLEN;
-  
-  len = ALIGN_UP (len,NETBUFF_ALIGN);
+
+  len = ALIGN_UP (len, NETBUFF_ALIGN);
   data = grub_memalign (NETBUFF_ALIGN, len + sizeof (*nb));
   if (!data)
     return NULL;
-  nb = (struct grub_net_buff *) ((grub_uint8_t *) data + len); 
+  nb = (struct grub_net_buff *) ((grub_uint8_t *) data + len);
   nb->head = nb->data = nb->tail = data;
-  nb->end = (char *) nb;  
-  return nb; 
+  nb->end = (char *) nb;
+  return nb;
 }
 
-grub_err_t grub_netbuff_free (struct grub_net_buff *nb)
+grub_err_t
+grub_netbuff_free (struct grub_net_buff *nb)
 {
   grub_free (nb->head);
   return 0;
-   
 }
 
-grub_err_t grub_netbuff_clear (struct grub_net_buff *nb)
+grub_err_t
+grub_netbuff_clear (struct grub_net_buff *nb)
 {
   nb->data = nb->tail = nb->head;
   return 0;
