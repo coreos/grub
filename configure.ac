@@ -871,7 +871,7 @@ fi
 if test x"$grub_mount_excuse" = x ; then
   # Check for fuse headers.
   SAVED_CPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64"
+  CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=26"
   AC_CHECK_HEADERS([fuse/fuse.h], [],
   	[grub_mount_excuse=["need FUSE headers"]])
   CPPFLAGS="$SAVED_CPPFLAGS"

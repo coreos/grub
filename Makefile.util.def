@@ -223,7 +223,7 @@ program = {
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR)' '-lfuse';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) -lfuse';
   condition = COND_GRUB_MOUNT;
 };
 
