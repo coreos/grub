@@ -1,3 +1,8 @@
+2011-06-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/man/grub-mklayout.h2m (DESCRIPTION): Add a reference to the
+	input format.
+
 2011-05-29  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Obtaining and Building GRUB): Substitute
