@@ -582,6 +582,16 @@ grub_net_open_real (const char *name)
 }
 
 static grub_err_t
+grub_net_fs_dir (grub_device_t device, const char *path __attribute__ ((unused)),
+	       int (*hook) (const char *filename,
+			    const struct grub_dirhook_info *info) __attribute__ ((unused)))
+{
+  if (!device->net)
+    return grub_error (GRUB_ERR_BAD_FS, "invalid extent");
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 grub_net_fs_open (struct grub_file *file, const char *name)
 {
   grub_err_t err;
@@ -1014,7 +1024,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 static struct grub_fs grub_net_fs =
   {
     .name = "netfs",
-    .dir = NULL,
+    .dir = grub_net_fs_dir,
     .open = grub_net_fs_open,
     .read = grub_net_fs_read,
     .close = grub_net_fs_close,
