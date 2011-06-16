@@ -1,3 +1,14 @@
+2011-06-16  Robert Millan  <rmh@gnu.org>
+
+	Detect `ataraid' devices on GNU/kFreeBSD.  Fix for ATA devices using
+	`ata' driver on kernel of FreeBSD 9.
+
+	* util/deviceiter.c [__FreeBSD_kernel__] (get_ada_disk_name)
+	(get_ataraid_disk_name): New functions.
+	[__FreeBSD_kernel__] (grub_util_iterate_devices): Scan for ataraid
+	(/dev/ar[0-9]+) and ada (/dev/ada[0-9]+) devices using
+	get_ataraid_disk_name() and get_ada_disk_name().
+
 2011-06-13  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/man/grub-mklayout.h2m (DESCRIPTION): Add a reference to the
