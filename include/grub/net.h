@@ -239,6 +239,7 @@ typedef struct grub_net
 
 extern grub_net_t (*EXPORT_VAR (grub_net_open)) (const char *name);
 extern grub_err_t (*EXPORT_VAR (grub_file_net_seek)) (struct grub_file *file, grub_off_t offset);
+void (*EXPORT_VAR (grub_grubnet_fini)) (void);
 
 struct grub_net_network_level_interface
 {

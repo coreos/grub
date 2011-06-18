@@ -225,6 +225,10 @@ GRUB_MOD_INIT(ofnet)
 
 GRUB_MOD_FINI(ofnet)
 {
+  struct grub_net_card *card;
+  FOR_NET_CARDS (card) 
+    if (card->driver && !grub_strcmp (card->driver->name, "ofnet"))
+      card->driver->fini (card);
   grub_net_card_driver_unregister (&ofdriver);
   grub_getbootp = NULL;
 }

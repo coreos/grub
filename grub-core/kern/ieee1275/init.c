@@ -264,6 +264,8 @@ grub_machine_init (void)
 void
 grub_machine_fini (void)
 {
+  if (grub_grubnet_fini)
+    grub_grubnet_fini ();
   grub_ofdisk_fini ();
   grub_console_fini ();
 }

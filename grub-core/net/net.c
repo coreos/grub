@@ -1021,6 +1021,15 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 		     "unrecognised format specification %s", args[3]);
 }
 
+static void
+grub_grubnet_fini_real (void)
+{
+  struct grub_net_card *card;
+  FOR_NET_CARDS (card)
+    if (card->driver)
+      card->driver->fini (card);
+}
+
 static struct grub_fs grub_net_fs =
   {
     .name = "netfs",
@@ -1060,6 +1069,7 @@ GRUB_MOD_INIT(net)
   grub_fs_register (&grub_net_fs);
   grub_net_open = grub_net_open_real;
   grub_file_net_seek = grub_net_seek_real;
+  grub_grubnet_fini = grub_grubnet_fini_real;
 }
 
 GRUB_MOD_FINI(net)
@@ -1074,4 +1084,5 @@ GRUB_MOD_FINI(net)
   grub_fs_unregister (&grub_net_fs);
   grub_net_open = NULL;
   grub_file_net_seek = NULL;
+  grub_grubnet_fini = NULL;
 }
