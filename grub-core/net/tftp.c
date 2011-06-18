@@ -34,7 +34,8 @@ tftp_open (struct grub_file *file, const char *filename)
   grub_netbuff_clear (&nb);
 
   grub_netbuff_reserve (&nb, 1500);
-  grub_netbuff_push (&nb, sizeof (*tftph));
+  if ((err = grub_netbuff_push (&nb, sizeof (*tftph))) != GRUB_ERR_NONE)
+    return err;
 
   tftph = (struct tftphdr *) nb.data;
 
@@ -67,8 +68,8 @@ tftp_open (struct grub_file *file, const char *filename)
   rrq += grub_strlen ("0") + 1;
   hdrlen = sizeof (tftph->opcode) + rrqlen;
 
-  grub_netbuff_unput (&nb, nb.tail - (nb.data + hdrlen));
-
+  if ((err = grub_netbuff_unput (&nb, nb.tail - (nb.data + hdrlen))) != GRUB_ERR_NONE)
+    return err;
   file->device->net->socket->out_port = TFTP_SERVER_PORT;
 
   err = grub_net_send_udp_packet (file->device->net->socket, &nb);
@@ -130,9 +131,9 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
       grub_netbuff_clear (nb);
       break;
     case TFTP_DATA:
-      grub_netbuff_pull (nb, sizeof (tftph->opcode) +
-			 sizeof (tftph->u.data.block));
-
+      if ((err = grub_netbuff_pull (nb, sizeof (tftph->opcode) +
+			 sizeof (tftph->u.data.block))) != GRUB_ERR_NONE)
+	return err;
       if (grub_be_to_cpu16 (tftph->u.data.block) == data->block + 1)
 	{
 	  data->block++;
@@ -141,7 +142,8 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
 	    sock->status = 2;
 	  /* Prevent garbage in broken cards.  */
 	  if (size > 1024)
-	    grub_netbuff_unput (nb, size - 1024);
+	    if ((err = grub_netbuff_unput (nb, size - 1024)) != GRUB_ERR_NONE)
+	      return err;
 	}
       else
 	grub_netbuff_clear (nb);
@@ -154,8 +156,9 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
     }
   grub_netbuff_clear (&nb_ack);
   grub_netbuff_reserve (&nb_ack, 128);
-  grub_netbuff_push (&nb_ack, sizeof (tftph->opcode) 
-		    + sizeof (tftph->u.ack.block));
+  if ((err = grub_netbuff_push (&nb_ack, sizeof (tftph->opcode) 
+		    + sizeof (tftph->u.ack.block))) != GRUB_ERR_NONE)
+    return err;
 
   tftph = (struct tftphdr *) nb_ack.data;
   tftph->opcode = grub_cpu_to_be16 (TFTP_ACK);

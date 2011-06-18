@@ -85,7 +85,10 @@ grub_err_t
 grub_net_recv_ip_packets (struct grub_net_buff *nb)
 {
   struct iphdr *iph = (struct iphdr *) nb->data;
-  grub_netbuff_pull (nb, sizeof (*iph));
+  grub_err_t err;
+
+  if ((err = grub_netbuff_pull (nb, sizeof (*iph))) != GRUB_ERR_NONE)
+    return err;
 
   switch (iph->protocol)
     {
