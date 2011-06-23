@@ -102,7 +102,7 @@ grub_serial_config_defaults (struct grub_serial_port *port)
 {
   struct grub_serial_config config =
     {
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
       .speed = 115200,
 #else
       .speed = 9600,

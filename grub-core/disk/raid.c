@@ -23,6 +23,11 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/raid.h>
+#ifdef GRUB_UTIL
+#include <grub/util/misc.h>
+#endif
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Linked list of RAID arrays. */
 static struct grub_raid_array *array_list;
@@ -117,18 +122,49 @@ grub_raid_getname (struct grub_disk *disk)
 }
 #endif
 
+static inline int
+ascii2hex (char c)
+{
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+  if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+  return 0;
+}
+
 static grub_err_t
 grub_raid_open (const char *name, grub_disk_t disk)
 {
   struct grub_raid_array *array;
   unsigned n;
 
-  for (array = array_list; array != NULL; array = array->next)
+  if (grub_memcmp (name, "mduuid/", sizeof ("mduuid/") - 1) == 0)
     {
-      if (!grub_strcmp (array->name, name))
-	if (grub_is_array_readable (array))
-	  break;
+      const char *uuidstr = name + sizeof ("mduuid/") - 1;
+      grub_size_t uuid_len = grub_strlen (uuidstr) / 2;
+      grub_uint8_t uuidbin[uuid_len];
+      unsigned i;
+      for (i = 0; i < uuid_len; i++)
+	uuidbin[i] = ascii2hex (uuidstr[2 * i + 1])
+	  | (ascii2hex (uuidstr[2 * i]) << 4);
+      
+      for (array = array_list; array != NULL; array = array->next)
+	{
+	  if (uuid_len == (unsigned) array->uuid_len
+	      && grub_memcmp (uuidbin, array->uuid, uuid_len) == 0)
+	    if (grub_is_array_readable (array))
+	      break;
+	}
     }
+  else
+    for (array = array_list; array != NULL; array = array->next)
+      {
+	if (!grub_strcmp (array->name, name))
+	  if (grub_is_array_readable (array))
+	    break;
+      }
 
   if (!array)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown RAID device %s",
@@ -209,7 +245,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
     case 10:
       {
         grub_disk_addr_t read_sector, far_ofs;
-	grub_uint32_t disknr, b, near, far, ofs;
+	grub_uint64_t disknr, b, near, far, ofs;
 
         read_sector = grub_divmod64 (sector, array->chunk_size, &b);
         far = ofs = near = 1;
@@ -315,7 +351,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
     case 6:
       {
 	grub_disk_addr_t read_sector;
-	grub_uint32_t b, p, n, disknr, e;
+	grub_uint64_t b, p, n, disknr, e;
 
         /* n = 1 for level 4 and 5, 2 for level 6.  */
         n = array->level / 3;
@@ -638,6 +674,10 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 
       grub_dprintf ("raid", "Found array %s (%s)\n", array->name,
                     scanner_name);
+#ifdef GRUB_UTIL
+      grub_util_info ("Found array %s (%s)", array->name,
+		      scanner_name);
+#endif
 
       /* Add our new array to the list.  */
       array->next = array_list;
@@ -698,6 +738,10 @@ grub_raid_register (grub_raid_t raid)
 
       grub_dprintf ("raid", "Scanning for %s RAID devices on disk %s\n",
 		    grub_raid_list->name, name);
+#ifdef GRUB_UTIL
+      grub_util_info ("Scanning for %s RAID devices on disk %s",
+		      grub_raid_list->name, name);
+#endif
 
       disk = grub_disk_open (name);
       if (!disk)

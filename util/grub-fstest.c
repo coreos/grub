@@ -54,12 +54,15 @@ execute_command (char *name, int n, char **args)
   return (cmd->func) (cmd, n, args);
 }
 
-#define CMD_LS          1
-#define CMD_CP          2
-#define CMD_CMP         3
-#define CMD_HEX         4
-#define CMD_CRC         6
-#define CMD_BLOCKLIST   7
+enum {
+  CMD_LS = 1,
+  CMD_CP,
+  CMD_CAT,
+  CMD_CMP,
+  CMD_HEX,
+  CMD_CRC,
+  CMD_BLOCKLIST
+};
 
 #define BUF_SIZE  32256
 
@@ -111,7 +114,8 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
   file = grub_file_open (pathname);
   if (!file)
     {
-      grub_util_error (_("cannot open file %s"), pathname);
+      grub_util_error (_("cannot open file %s:%s"), pathname,
+		       grub_errmsg);
       return;
     }
 
@@ -182,6 +186,26 @@ cmd_cp (char *src, char *dest)
 }
 
 static void
+cmd_cat (char *src)
+{
+  auto int cat_hook (grub_off_t ofs, char *buf, int len);
+  int cat_hook (grub_off_t ofs, char *buf, int len)
+  {
+    (void) ofs;
+
+    if ((int) fwrite (buf, 1, len, stdout) != len)
+      {
+	grub_util_error (_("write error"));
+	return 1;
+      }
+
+    return 0;
+  }
+
+  read_file (src, cat_hook);
+}
+
+static void
 cmd_cmp (char *src, char *dest)
 {
   FILE *ff;
@@ -221,6 +245,14 @@ cmd_cmp (char *src, char *dest)
     grub_util_error (_("seek error"));
 
   read_file (src, cmp_hook);
+
+  {
+    grub_uint64_t pre;
+    pre = ftell (ff);
+    fseek (ff, 0, SEEK_END);
+    if (pre != ftell (ff))
+      grub_util_error (_("unexpected end of file"));
+  }
   fclose (ff);
 }
 
@@ -312,6 +344,9 @@ fstest (int n, char **args)
     case CMD_CP:
       cmd_cp (args[0], args[1]);
       break;
+    case CMD_CAT:
+      cmd_cat (args[0]);
+      break;
     case CMD_CMP:
       cmd_cmp (args[0], args[1]);
       break;
@@ -347,6 +382,7 @@ static struct argp_option options[] = {
   {0,          0, 0      , OPTION_DOC, N_("Commands:"), 1},
   {N_("ls PATH"),  0, 0      , OPTION_DOC, N_("List files in PATH."), 1},
   {N_("cp FILE LOCAL"),  0, 0, OPTION_DOC, N_("Copy FILE to local file LOCAL."), 1},
+  {N_("cat FILE"), 0, 0      , OPTION_DOC, N_("Copy FILE to standard output."), 1},
   {N_("cmp FILE LOCAL"), 0, 0, OPTION_DOC, N_("Compare FILE with local file LOCAL."), 1},
   {N_("hex FILE"), 0, 0      , OPTION_DOC, N_("Hex dump FILE."), 1},
   {N_("crc FILE"), 0, 0     , OPTION_DOC, N_("Get crc32 checksum of FILE."), 1},
@@ -458,6 +494,11 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	{
 	  cmd = CMD_CP;
           nparm = 2;
+	}
+      else if (!grub_strcmp (arg, "cat"))
+	{
+	  cmd = CMD_CAT;
+	  nparm = 1;
 	}
       else if (!grub_strcmp (arg, "cmp"))
 	{

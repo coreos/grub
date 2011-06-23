@@ -24,6 +24,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_DATETIME_SET_YEAR		1
 #define GRUB_DATETIME_SET_MONTH		2
 #define GRUB_DATETIME_SET_DAY		4

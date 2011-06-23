@@ -130,13 +130,18 @@ VARIABLE(grub_relocator16_ss)
 	.byte	0xb8
 VARIABLE(grub_relocator16_sp)
 	.word	0
-	movw	%ax, %ss
+	movzwl	%ax, %esp
 
 	/* movw imm32, %edx.  */
 	.byte	0x66, 0xba
 VARIABLE(grub_relocator16_edx)
 	.long	0
-	
+
+	/* movw imm32, %ebx.  */
+	.byte	0x66, 0xbb
+VARIABLE(grub_relocator16_ebx)
+	.long	0
+
 	/* Cleared direction flag is of no problem with any current
 	   payload and makes this implementation easier.  */
 	cld

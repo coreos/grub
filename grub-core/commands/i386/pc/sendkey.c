@@ -27,6 +27,8 @@
 #include <grub/cpu/io.h>
 #include <grub/loader.h>
 
+GRUB_MOD_LICENSE ("GPLv2+");
+
 static char sendkey[0x20];
 /* Length of sendkey.  */
 static int keylen = 0;

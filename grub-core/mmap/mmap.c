@@ -26,6 +26,8 @@
 #include <grub/dl.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifndef GRUB_MMAP_REGISTER_BY_FIRMWARE
 
 struct grub_mmap_region *grub_mmap_overlays = 0;

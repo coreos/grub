@@ -33,6 +33,8 @@
 #include <grub/charset.h>
 #include <grub/script_sh.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
 static int nested_level = 0;
@@ -471,9 +473,14 @@ grub_mini_cmd_clear (struct grub_command *cmd __attribute__ ((unused)),
 static grub_command_t cmd_clear;
 
 static void (*grub_xputs_saved) (const char *str);
+static const char *features[] = {
+  "feature_chainloader_bpb", "feature_ntldr"
+};
 
 GRUB_MOD_INIT(normal)
 {
+  unsigned i;
+
   /* Previously many modules depended on gzio. Be nice to user and load it.  */
   grub_dl_load ("gzio");
 
@@ -515,6 +522,12 @@ GRUB_MOD_INIT(normal)
   /* Set default color names.  */
   grub_env_set ("color_normal", "white/black");
   grub_env_set ("color_highlight", "black/white");
+
+  for (i = 0; i < ARRAY_SIZE (features); i++)
+    {
+      grub_env_set (features[i], "y");
+      grub_env_export (features[i]);
+    }
 }
 
 GRUB_MOD_FINI(normal)

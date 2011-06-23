@@ -27,6 +27,8 @@
 #include <grub/script_sh.h>
 #include <regex.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] =
   {
     { "set", 's', GRUB_ARG_OPTION_REPEATABLE,

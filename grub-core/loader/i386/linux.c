@@ -35,6 +35,8 @@
 #include <grub/i18n.h>
 #include <grub/lib/cmdline.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/i386/pc/vesa_modes_table.h>
 #endif
@@ -55,7 +57,6 @@
 #endif
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
-#define GRUB_LINUX_CL_END_OFFSET	0x2000
 
 static grub_dl_t my_mod;
 
@@ -72,6 +73,7 @@ static grub_uint32_t prot_mode_pages;
 static grub_uint32_t initrd_pages;
 static struct grub_relocator *relocator = NULL;
 static void *efi_mmap_buf;
+static grub_size_t maximal_cmdline_size;
 #ifdef GRUB_MACHINE_EFI
 static grub_efi_uintn_t efi_mmap_size;
 #else
@@ -187,7 +189,7 @@ allocate_pages (grub_size_t prot_size)
   grub_err_t err;
 
   /* Make sure that each size is aligned to a page boundary.  */
-  real_size = GRUB_LINUX_CL_END_OFFSET;
+  real_size = GRUB_LINUX_CL_OFFSET + maximal_cmdline_size;
   prot_size = page_align (prot_size);
   mmap_size = find_mmap_size ();
 
@@ -365,6 +367,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 
 	  /* FIXME: check if better id is available.  */
 	case GRUB_VIDEO_DRIVER_SM712:
+	case GRUB_VIDEO_DRIVER_SIS315PRO:
 	case GRUB_VIDEO_DRIVER_VGA:
 	case GRUB_VIDEO_DRIVER_CIRRUS:
 	case GRUB_VIDEO_DRIVER_BOCHS:
@@ -547,6 +550,7 @@ grub_linux_boot (void)
 #ifdef GRUB_MACHINE_EFI
   {
     grub_efi_uintn_t efi_desc_size;
+    grub_size_t efi_mmap_target;
     grub_efi_uint32_t efi_desc_version;
     err = grub_efi_finish_boot_services (&efi_mmap_size, efi_mmap_buf, NULL,
 					 &efi_desc_size, &efi_desc_version);
@@ -554,23 +558,24 @@ grub_linux_boot (void)
       return err;
     
     /* Note that no boot services are available from here.  */
-
+    efi_mmap_target = real_mode_target 
+      + ((grub_uint8_t *) efi_mmap_buf - (grub_uint8_t *) real_mode_mem);
     /* Pass EFI parameters.  */
     if (grub_le_to_cpu16 (params->version) >= 0x0206)
       {
 	params->v0206.efi_mem_desc_size = efi_desc_size;
 	params->v0206.efi_mem_desc_version = efi_desc_version;
-	params->v0206.efi_mmap = (grub_uint32_t) (unsigned long) efi_mmap_buf;
+	params->v0206.efi_mmap = efi_mmap_target;
 	params->v0206.efi_mmap_size = efi_mmap_size;
 #ifdef __x86_64__
-	params->v0206.efi_mmap_hi = (grub_uint32_t) ((grub_uint64_t) efi_mmap_buf >> 32);
+	params->v0206.efi_mmap_hi = (efi_mmap_target >> 32);
 #endif
       }
     else if (grub_le_to_cpu16 (params->version) >= 0x0204)
       {
 	params->v0204.efi_mem_desc_size = efi_desc_size;
 	params->v0204.efi_mem_desc_version = efi_desc_version;
-	params->v0204.efi_mmap = (grub_uint32_t) (unsigned long) efi_mmap_buf;
+	params->v0204.efi_mmap = efi_mmap_target;
 	params->v0204.efi_mmap_size = efi_mmap_size;
       }
   }
@@ -658,6 +663,14 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
+  if (grub_le_to_cpu16 (lh.version) >= 0x0206)
+    maximal_cmdline_size = grub_le_to_cpu32 (lh.cmdline_size) + 1;
+  else
+    maximal_cmdline_size = 256;
+
+  if (maximal_cmdline_size < 128)
+    maximal_cmdline_size = 128;
+
   setup_sects = lh.setup_sects;
 
   /* If SETUP_SECTS is not set, set it to the default (4).  */
@@ -671,7 +684,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     goto fail;
 
   params = (struct linux_kernel_params *) real_mode_mem;
-  grub_memset (params, 0, GRUB_LINUX_CL_END_OFFSET);
+  grub_memset (params, 0, GRUB_LINUX_CL_OFFSET + maximal_cmdline_size);
   grub_memcpy (&params->setup_sects, &lh.setup_sects, sizeof (lh) - 0x1F1);
 
   params->ps_mouse = params->padding10 =  0;
@@ -866,7 +879,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_create_loader_cmdline (argc, argv,
 			      (char *)real_mode_mem + GRUB_LINUX_CL_OFFSET
 			      + sizeof (LINUX_IMAGE) - 1,
-			      GRUB_LINUX_CL_END_OFFSET - GRUB_LINUX_CL_OFFSET
+			      maximal_cmdline_size
 			      - (sizeof (LINUX_IMAGE) - 1));
 
   len = prot_size;

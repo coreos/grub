@@ -26,6 +26,8 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] = {
   {"apm",             'B', 0, N_("Set Advanced Power Management\n"
 			      "(1=low, ..., 254=high, 255=off)."),

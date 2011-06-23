@@ -27,6 +27,15 @@
    specific coding format.  */
 typedef grub_uint32_t grub_video_color_t;
 
+/* Video color in hardware independent format.  */
+typedef struct grub_video_rgba_color
+{
+  grub_uint8_t red;
+  grub_uint8_t green;
+  grub_uint8_t blue;
+  grub_uint8_t alpha;
+} grub_video_rgba_color_t;
+
 /* This structure is driver specific and should not be accessed directly by
    outside code.  */
 struct grub_video_render_target;
@@ -211,7 +220,8 @@ typedef enum grub_video_driver_id
     GRUB_VIDEO_DRIVER_VGA,
     GRUB_VIDEO_DRIVER_CIRRUS,
     GRUB_VIDEO_DRIVER_BOCHS,
-    GRUB_VIDEO_DRIVER_SDL
+    GRUB_VIDEO_DRIVER_SDL,
+    GRUB_VIDEO_DRIVER_SIS315PRO,
   } grub_video_driver_id_t;
 
 typedef enum grub_video_adapter_prio
@@ -427,5 +437,28 @@ grub_video_check_mode_flag (grub_video_mode_type_t flags,
 }
 
 grub_video_driver_id_t EXPORT_FUNC (grub_video_get_driver_id) (void);
+
+static __inline grub_video_rgba_color_t
+grub_video_rgba_color_rgb (int r, int g, int b)
+{
+  grub_video_rgba_color_t c;
+  c.red = r;
+  c.green = g;
+  c.blue = b;
+  c.alpha = 255;
+  return c;
+}
+
+static __inline grub_video_color_t
+grub_video_map_rgba_color (grub_video_rgba_color_t c)
+{
+  return grub_video_map_rgba (c.red, c.green, c.blue, c.alpha);
+}
+
+int EXPORT_FUNC (grub_video_get_named_color) (const char *name,
+					      grub_video_rgba_color_t *color);
+
+grub_err_t EXPORT_FUNC (grub_video_parse_color) (const char *s,
+						 grub_video_rgba_color_t *color);
 
 #endif /* ! GRUB_VIDEO_HEADER */

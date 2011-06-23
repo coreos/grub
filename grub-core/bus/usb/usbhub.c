@@ -215,6 +215,8 @@ attach_root_port (struct grub_usb_hub *hub, int portno,
     return;
   hub->controller->dev->pending_reset = grub_get_time_ms () + 5000;
 
+  grub_millisleep (10);
+
   /* Enable the port and create a device.  */
   dev = grub_usb_hub_add_dev (hub->controller, speed);
   hub->controller->dev->pending_reset = 0;
@@ -350,8 +352,8 @@ poll_nonroot_hub (grub_usb_device_t dev)
 				  GRUB_USB_REQ_GET_STATUS,
 				  0, i, sizeof (status), (char *) &status);
 
-      grub_printf ("dev = %p, i = %d, status = %08x\n",
-                   dev, i, status);
+      grub_dprintf ("usb", "dev = %p, i = %d, status = %08x\n",
+		    dev, i, status);
 
       if (err)
 	continue;

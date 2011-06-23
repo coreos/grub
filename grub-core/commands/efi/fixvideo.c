@@ -24,6 +24,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct grub_video_patch
 {
   const char *name;

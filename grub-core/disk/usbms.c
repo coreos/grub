@@ -24,6 +24,8 @@
 #include <grub/scsicmd.h>
 #include <grub/misc.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_USBMS_DIRECTION_BIT	7
 
 /* The USB Mass Storage Command Block Wrapper.  */

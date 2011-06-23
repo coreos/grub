@@ -36,25 +36,18 @@
 #include <linux/raid/md_u.h>
 
 char **
-grub_util_raid_getmembers (char *name)
+grub_util_raid_getmembers (const char *name)
 {
   int fd, ret, i, j;
-  char *devname;
   char **devicelist;
   mdu_version_t version;
   mdu_array_info_t info;
   mdu_disk_info_t disk;
 
-  devname = xmalloc (strlen (name) + 6);
-  strcpy (devname, "/dev/");
-  strcpy (devname+5, name);
-
-  fd = open (devname, O_RDONLY);
+  fd = open (name, O_RDONLY);
 
   if (fd == -1)
-    grub_util_error ("can't open %s: %s", devname, strerror (errno));
-
-  free (devname);
+    grub_util_error ("can't open %s: %s", name, strerror (errno));
 
   ret = ioctl (fd, RAID_VERSION, &version);
   if (ret != 0)

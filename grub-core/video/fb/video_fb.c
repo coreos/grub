@@ -24,6 +24,9 @@
 #include <grub/fbfill.h>
 #include <grub/fbutil.h>
 #include <grub/bitmap.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 static struct
 {
@@ -1445,13 +1448,16 @@ grub_video_fb_setup (unsigned int mode_type, unsigned int mode_mask,
 				  GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED,
 				  0))
     {
+      /* It was much nicer with the cast directly at function call but
+	 some older gcc versions don't accept it properly.*/
+      void *tmp = (void *) page0_ptr;
       mode_info->mode_type |= (GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
 			       | GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
 
       err = grub_video_fb_doublebuf_blit_init (&framebuffer.front_target,
 					       &framebuffer.back_target,
 					       *mode_info,
-					       (void *) page0_ptr);
+					       tmp);
 
       if (!err)
 	{

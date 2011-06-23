@@ -55,7 +55,8 @@ typedef enum
     GRUB_ERR_TIMEOUT,
     GRUB_ERR_IO,
     GRUB_ERR_ACCESS_DENIED,
-    GRUB_ERR_EXTRACTOR
+    GRUB_ERR_EXTRACTOR,
+    GRUB_ERR_BUG
   }
 grub_err_t;
 

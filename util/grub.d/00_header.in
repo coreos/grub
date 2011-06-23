@@ -132,6 +132,19 @@ if loadfont `make_system_path_relative_to_its_root "${GRUB_FONT_PATH}"` ; then
   set gfxmode=${GRUB_GFXMODE}
   load_video
   insmod gfxterm
+EOF
+
+# Gettext variables and module
+if [ "x${LANG}" != "xC" ] && [ -d "${locale_dir}" ] ; then
+    prepare_grub_to_access_device $(${grub_probe} --target=device ${locale_dir}) | sed -e "s/^/  /"
+  cat << EOF
+  set locale_dir=(\$root)$(make_system_path_relative_to_its_root ${locale_dir})
+  set lang=${grub_lang}
+  insmod gettext
+EOF
+fi
+
+cat <<EOF
 fi
 EOF
 fi
@@ -208,16 +221,6 @@ insmod $reader
 background_image -m stretch `make_system_path_relative_to_its_root "$GRUB_BACKGROUND"`
 EOF
     fi
-fi
-
-# Gettext variables and module
-if [ "x${LANG}" != "xC" ] && [ -d "${locale_dir}" ] ; then
-    prepare_grub_to_access_device $(${grub_probe} --target=device ${locale_dir})
-  cat << EOF
-set locale_dir=(\$root)$(make_system_path_relative_to_its_root ${locale_dir})
-set lang=${grub_lang}
-insmod gettext
-EOF
 fi
 
 make_timeout ()

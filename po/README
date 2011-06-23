@@ -8,6 +8,10 @@ that will hopefully clarify the situation.
 
       rsync -Lrtvz  translationproject.org::tp/latest/grub/ po
 
+    Then create a po/LINGUAS file listing all the language codes:
+
+      (cd po && ls *.po | cut -d. -f1 | xargs) >po/LINGUAS
+
     GRUB's build system will automatically detect those and include them
     in your install.
 

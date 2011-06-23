@@ -48,7 +48,7 @@ struct grub_gui_label
   char *text;
   char *template;
   grub_font_t font;
-  grub_gui_color_t color;
+  grub_video_rgba_color_t color;
   int value;
   enum align_mode align;
 };
@@ -107,7 +107,7 @@ label_paint (void *vself, const grub_video_rect_t *region)
   grub_gui_set_viewport (&self->bounds, &vpsave);
   grub_font_draw_string (self->text,
                          self->font,
-                         grub_gui_map_color (self->color),
+                         grub_video_map_rgba_color (self->color),
                          left_x,
                          grub_font_get_ascent (self->font));
   grub_gui_restore_viewport (&vpsave);
@@ -186,7 +186,7 @@ label_set_property (void *vself, const char *name, const char *value)
     }
   else if (grub_strcmp (name, "color") == 0)
     {
-      grub_gui_parse_color (value, &self->color);
+      grub_video_parse_color (value, &self->color);
     }
   else if (grub_strcmp (name, "align") == 0)
     {

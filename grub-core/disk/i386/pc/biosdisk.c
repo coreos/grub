@@ -28,6 +28,8 @@
 #include <grub/err.h>
 #include <grub/term.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static int cd_drive = 0;
 static int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap);
 
@@ -513,7 +515,7 @@ static grub_size_t
 get_safe_sectors (grub_disk_t disk, grub_disk_addr_t sector)
 {
   grub_size_t size;
-  grub_uint32_t offset;
+  grub_uint64_t offset;
   struct grub_biosdisk_data *data = disk->data;
   grub_uint32_t sectors = data->sectors;
 

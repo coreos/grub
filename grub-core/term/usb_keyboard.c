@@ -27,6 +27,8 @@
 #include <grub/time.h>
 #include <grub/keyboard_layouts.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 
 
 enum

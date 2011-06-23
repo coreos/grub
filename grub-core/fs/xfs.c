@@ -26,6 +26,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define	XFS_INODE_EXTENTS	9
 
 #define XFS_INODE_FORMAT_INO	1
@@ -98,13 +100,22 @@ struct grub_xfs_btree_root
   grub_uint64_t keys[1];
 }  __attribute__ ((packed));
 
+struct grub_xfs_time
+{
+  grub_uint32_t sec;
+  grub_uint32_t nanosec;
+}  __attribute__ ((packed));
+
 struct grub_xfs_inode
 {
   grub_uint8_t magic[2];
   grub_uint16_t mode;
   grub_uint8_t version;
   grub_uint8_t format;
-  grub_uint8_t unused2[50];
+  grub_uint8_t unused2[26];
+  struct grub_xfs_time atime;
+  struct grub_xfs_time mtime;
+  struct grub_xfs_time ctime;
   grub_uint64_t size;
   grub_uint64_t nblocks;
   grub_uint32_t extsize;
@@ -652,6 +663,11 @@ grub_xfs_dir (grub_device_t device, const char *path,
     {
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
+      if (node->inode_read)
+	{
+	  info.mtimeset = 1;
+	  info.mtime = grub_be_to_cpu32 (node->inode.mtime.sec);
+	}
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
       grub_free (node);
       return hook (filename, &info);

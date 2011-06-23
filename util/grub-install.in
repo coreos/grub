@@ -467,7 +467,8 @@ fi
 fs_module="`"$grub_probe" --device-map="${device_map}" --target=fs --device "${grub_device}"`"
 if test "x$fs_module" = x ; then
     echo "Auto-detection of a filesystem of ${grub_device} failed." 1>&2
-    echo "Please report this together with the output of \"$grub_probe --device-map=\"${device_map}\" --target=fs -v ${grubdir}\" to <bug-grub@gnu.org>" 1>&2
+    echo "Try with --recheck." 1>&2
+    echo "If the problem persists please report this together with the output of \"$grub_probe --device-map=\"${device_map}\" --target=fs -v ${grubdir}\" to <bug-grub@gnu.org>" 1>&2
     exit 1
 fi
 
@@ -553,13 +554,13 @@ fi
 
 case "${target_cpu}-${platform}" in
     sparc64-ieee1275) mkimage_target=sparc64-ieee1275-raw ;;
-    mips-yeeloong) mkimage_target=mipsel-yeeloong-elf ;;
+    mipsel-loongson) mkimage_target=mipsel-loongson-elf ;;
     *) mkimage_target="${target_cpu}-${platform}" ;;
 esac
 
 case "${target_cpu}-${platform}" in
     i386-efi | x86_64-efi) imgext=efi ;;
-    mips-yeeloong | i386-coreboot | i386-multiboot | i386-ieee1275 \
+    mipsel-loongson | i386-coreboot | i386-multiboot | i386-ieee1275 \
 	| powerpc-ieee1275) imgext=elf ;;
     *) imgext=img ;;
 esac
@@ -568,7 +569,7 @@ esac
 "$grub_mkimage" ${config_opt} -d "${pkglibdir}" -O ${mkimage_target} --output="${grubdir}/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
 
 # Backward-compatibility kludges
-if [ "${target_cpu}-${platform}" = "mips-yeeloong" ]; then
+if [ "${target_cpu}-${platform}" = "mipsel-loongson" ]; then
     cp "${grubdir}/core.${imgext}" "${bootdir}"/grub.elf
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
     cp "${grubdir}/core.${imgext}" "${grubdir}/grub"
@@ -618,8 +619,15 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	    exit 1
 	}
     fi
+elif [ x"${target_cpu}-${platform}" = xmips-arc ]; then
+    dvhtool -d "${install_device}" --unix-to-vh "{grubdir}/core.${imgext}" grub
+    echo "You will have to set SystemPartition and OSLoader manually."
 elif [ x"$platform" = xefi ]; then
     cp "${grubdir}/core.${imgext}" "${efidir}/${efi_file}"
+    # For old macs. Suggested by Peter Jones.
+    if [ x$target_cpu = xi386 ]; then
+	cp "${grubdir}/core.${imgext}" "${efidir}/boot.efi"
+    fi
 
     # Try to make this image bootable using the EFI Boot Manager, if available.
     efibootmgr="`which efibootmgr`"

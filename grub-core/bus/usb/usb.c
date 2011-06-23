@@ -24,6 +24,8 @@
 #include <grub/list.h>
 #include <grub/term.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_usb_controller_dev_t grub_usb_list;
 static struct grub_usb_attach_desc *attach_hooks;
 
@@ -182,6 +184,12 @@ grub_usb_device_initialize (grub_usb_device_t dev)
 
   for (i = 0; i < 8; i++)
     dev->config[i].descconf = NULL;
+
+  if (descdev->configcnt == 0)
+    {
+      err = GRUB_USB_ERR_BADDEVICE;
+      goto fail;
+    }    
 
   for (i = 0; i < descdev->configcnt; i++)
     {

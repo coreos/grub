@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/raid.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 grub_raid5_recover (struct grub_raid_array *array, int disknr,
                     char *buf, grub_disk_addr_t sector, int size)

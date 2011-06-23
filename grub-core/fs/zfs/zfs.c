@@ -52,6 +52,8 @@
 #include <grub/zfs/dsl_dir.h>
 #include <grub/zfs/dsl_dataset.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define	ZPOOL_PROP_BOOTFS		"bootfs"
 
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))

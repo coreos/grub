@@ -23,6 +23,9 @@
 #include <grub/misc.h>
 #include <grub/fs.h>
 #include <grub/bufio.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #define GRUB_BUFIO_DEF_SIZE	8192
 #define GRUB_BUFIO_MAX_SIZE	1048576
@@ -103,7 +106,7 @@ grub_bufio_read (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_size_t res = len;
   grub_bufio_t bufio = file->data;
-  grub_uint32_t pos;
+  grub_uint64_t pos;
 
   if ((file->offset >= bufio->file->offset) &&
       (file->offset < bufio->file->offset + bufio->buffer_len))

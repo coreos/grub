@@ -25,6 +25,8 @@
 #include <grub/dl.h>
 #include <grub/msdos_partition.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef GRUB_UTIL
 #include <grub/emu/misc.h>
 #endif

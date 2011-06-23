@@ -31,6 +31,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv2+");
+
 static struct grub_parttool *parts = 0;
 static int curhandle = 0;
 static grub_dl_t mymod;

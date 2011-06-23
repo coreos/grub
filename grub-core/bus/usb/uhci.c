@@ -26,6 +26,8 @@
 #include <grub/i386/io.h>
 #include <grub/time.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_UHCI_IOMASK	(0x7FF << 5)
 
 #define N_QH  256
