@@ -1,5 +1,12 @@
 2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix spurious warning.
+
+	* grub-core/partmap/acorn.c (grub_acorn_boot_block): Make a union.
+	(acorn_partition_map_find): Use .bin member.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/getroot.c (grub_guess_root_device): Don't accept
 	/dev/root as a valid device.
 
