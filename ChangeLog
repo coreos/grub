@@ -1,3 +1,22 @@
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	ZFS zlib support
+
+	* grub-core/fs/zfs/zfs.c (zlib_decompress): New function.
+	(decomp_table): Add zlib entries.
+	(zio_read): USe 8 bits for compression function rather than 3.
+	* include/grub/zfs/zio.h (zio_compress): Add zlib values.
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ahci.c: Add missing license statements.
+	* grub-core/fs/romfs.c: Likewise.
+	* grub-core/lib/ia64/setjmp.S: Likewise.
+	* grub-core/loader/i386/pc/freedos.c: Likewise.
+	* grub-core/loader/ia64/efi/linux.c: Likewise.
+	* grub-core/video/colors.c: Likewise.
+	* include/grub/dl.h (GRUB_MOD_DEP): New macro.
+
 2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	AHCI support.
