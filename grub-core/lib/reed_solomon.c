@@ -277,6 +277,11 @@ rs_recover (gf_single_t *m, grub_size_t s, grub_size_t rs)
       free (errpot);
       free (errpos);
       free (sy);
+#else
+      scratch -= rs2 * sizeof (gf_single_t);
+      scratch -= rs2 * sizeof (gf_single_t);
+      scratch -= rs2 * sizeof (int);
+      scratch -= rs * sizeof (gf_single_t);
 #endif
       return;
     }

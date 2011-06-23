@@ -1,7 +1,13 @@
 2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/reed_solomon.c (rs_recover) [STANDALONE]:
+	Prevent memory leak.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/reed_solomon.c (rs_recover): Prevent memory leak.
 	(main): Close file.
+	Reported by: David Volgyes <dvolgyes>.
 
 2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
