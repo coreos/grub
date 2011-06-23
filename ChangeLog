@@ -1,3 +1,8 @@
+2011-06-23  David Volgyes <dvolgyes>
+
+	* grub-core/bus/usb/ohci.c (grub_ohci_pci_iter): Avoid NULL-pointer
+	dereference.
+
 2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix spurious warning.

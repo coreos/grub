@@ -454,10 +454,12 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
 
  fail:
   if (o)
-    grub_dma_free (o->td_chunk);
-    grub_dma_free (o->ed_bulk_chunk);
-    grub_dma_free (o->ed_ctrl_chunk);
-    grub_dma_free (o->hcca_chunk);
+    {
+      grub_dma_free (o->td_chunk);
+      grub_dma_free (o->ed_bulk_chunk);
+      grub_dma_free (o->ed_ctrl_chunk);
+      grub_dma_free (o->hcca_chunk);
+    }
   grub_free (o);
 
   return 0;
