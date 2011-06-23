@@ -544,6 +544,17 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	    break;
 	}
 
+      if (data)
+	{
+	  grub_memcpy ((char *) buf
+		       + (agglomerate << (GRUB_DISK_CACHE_BITS
+					  + GRUB_DISK_SECTOR_BITS)),
+		       data, GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS);
+	  grub_disk_cache_unlock (disk->dev->id, disk->id,
+				  sector + (agglomerate
+					    << GRUB_DISK_CACHE_BITS));
+	}
+
       if (agglomerate)
 	{
 	  grub_disk_addr_t i;
@@ -568,17 +579,12 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	  buf = (char *) buf 
 	    + (agglomerate << (GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS));
 	}
-	
+
       if (data)
 	{
-	  grub_memcpy (buf, data,
-		       GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS);
 	  sector += GRUB_DISK_CACHE_SIZE;
 	  buf = (char *) buf + (GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS);
 	  size -= (GRUB_DISK_CACHE_SIZE << GRUB_DISK_SECTOR_BITS);
-	  grub_disk_cache_unlock (disk->dev->id, disk->id,
-				  sector + (agglomerate
-					    << GRUB_DISK_CACHE_BITS));
 	}
     }
 
