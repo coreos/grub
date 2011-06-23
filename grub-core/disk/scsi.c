@@ -465,15 +465,20 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 	  return err;
 	}
 
-      /* SCSI blocks can be something else than 512, although GRUB
-	 wants 512 byte blocks.  */
-      disk->total_sectors = ((grub_uint64_t)scsi->size
-                             * (grub_uint64_t)scsi->blocksize)
-			    >> GRUB_DISK_SECTOR_BITS;
+      disk->total_sectors = scsi->size;
+      if (scsi->blocksize & (scsi->blocksize - 1) || !scsi->blocksize)
+	{
+	  grub_free (scsi);
+	  return grub_error (GRUB_ERR_IO, "invalid sector size %d",
+			     scsi->blocksize);
+	}
+      for (disk->log_sector_size = 0;
+	   (1 << disk->log_sector_size) < scsi->blocksize;
+	   disk->log_sector_size++);
 
       grub_dprintf ("scsi", "blocks=%u, blocksize=%u\n",
 		    scsi->size, scsi->blocksize);
-      grub_dprintf ("scsi", "Disk total 512 sectors = %llu\n",
+      grub_dprintf ("scsi", "Disk total sectors = %llu\n",
 		    (unsigned long long) disk->total_sectors);
 
       return GRUB_ERR_NONE;
@@ -502,25 +507,6 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
   grub_scsi_t scsi;
 
   scsi = disk->data;
-
-  /* SCSI sectors are variable in size.  GRUB uses 512 byte
-     sectors.  */
-  if (scsi->blocksize != GRUB_DISK_SECTOR_SIZE)
-    {
-      unsigned spb = scsi->blocksize >> GRUB_DISK_SECTOR_BITS;
-      if (spb == 0 || (scsi->blocksize & (GRUB_DISK_SECTOR_SIZE - 1)) != 0)
-	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			   "unsupported SCSI block size");
-
-      grub_uint64_t sector_mod = 0;
-      sector = grub_divmod64 (sector, spb, &sector_mod);
-
-      if (! (sector_mod == 0 && size % spb == 0))
-	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			   "unaligned SCSI read not supported");
-
-      size /= spb;
-    }
 
   /* Depending on the type, select a read function.  */
   switch (scsi->devtype)

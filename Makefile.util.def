@@ -34,6 +34,7 @@ library = {
   common_nodist = grub_script.tab.h;
 
   common = grub-core/commands/blocklist.c;
+  common = grub-core/commands/testload.c;
   common = grub-core/commands/extcmd.c;
   common = grub-core/commands/ls.c;
   common = grub-core/disk/dmraid_nvidia.c;

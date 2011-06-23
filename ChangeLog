@@ -1,3 +1,44 @@
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support non-512B sectors and agglomerate reads.
+
+	* Makefile.util.def (libgrubmods.a): Add grub-core/commands/testload.c.
+	* grub-core/disk/efi/efidisk.c (grub_efidisk_data): Remove disk_io.
+	(disk_io_guid): Removed.
+	(make_devices): Locate solely by BlockIO.
+	(grub_efidisk_open): Fill log_sector_size and total_sectors.
+	(grub_efidisk_read): Use read_blocks.
+	(grub_efidisk_write): Use write_blocks.
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_open): Fill
+	log_sector_size.
+	(get_safe_sectors): Handle non-512B sectors.
+	(grub_biosdisk_read): Remove special CDROM handling. Handle non-512B
+	sectors.
+	(grub_biosdisk_write): Handle non-512B sectors.
+	* grub-core/disk/scsi.c (grub_scsi_open): Fill log_sector_size.
+	(grub_scsi_read): Remove special non-512B block handling (now handled
+	one level up).
+	* grub-core/kern/disk.c (grub_disk_open): Fill default log_sector_size
+	and do sanity checks.
+	(grub_disk_adjust_range): Handle non-512B sectors.
+	(transform_sector): New function.
+	(grub_disk_read_small): Likewise.
+	(grub_disk_read): Rewritten.
+	(grub_disk_write): Handle non-512B sectors.
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_open): Fill
+	log_sector_size.
+	(open_device): Use log_sector_size.
+	(grub_util_biosdisk_read): Likewise.
+	(grub_util_biosdisk_write): Likewise.
+	* grub-core/partmap/msdos.c (grub_partition_msdos_iterate): Handle
+	non-512B sectors.
+	(pc_partition_map_embed): Likewise.
+	* include/grub/disk.h (grub_disk): New field log_sector_size.
+	(GRUB_DISK_CACHE_SIZE): Redefined from GRUB_DISK_CACHE_BITS.
+	(GRUB_DISK_CACHE_BITS): Increased to 6.
+	* util/grub-fstest.c (fstest): New command testload.
+	(argp_parser): Likewise.
+
 2011-06-16  Robert Millan  <rmh@gnu.org>
 
 	Detect `ataraid' devices on GNU/kFreeBSD.  Fix for ATA devices using
