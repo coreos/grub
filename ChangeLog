@@ -1,3 +1,10 @@
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/xnu.c (grub_cpu_xnu_fill_devprop): Don't attempt
+	to continue if allocation is failed.
+
+	Reported by: David Volgyes <dvolgyes>.
+
 2011-06-23  David Volgyes <dvolgyes>
 
 	* grub-core/bus/usb/ohci.c (grub_ohci_pci_iter): Avoid NULL-pointer
