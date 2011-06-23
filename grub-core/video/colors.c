@@ -21,6 +21,9 @@
 #include <grub/gui.h>
 #include <grub/gui_string_util.h>
 #include <grub/misc.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 struct named_color
 {

@@ -64,6 +64,12 @@
   	0x1b0	f30
   	0x1c0	f31 */
 
+#include <grub/symbol.h>
+#include <grub/dl.h>
+
+	.file	"setjmp.S"
+
+GRUB_MOD_LICENSE ("GPLv2+")
 
 	/* The following two entry points are the traditional entry points: */
 

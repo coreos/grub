@@ -31,6 +31,8 @@
 #include <grub/efi/efi.h>
 #include <grub/elf.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define ALIGN_MIN (256*1024*1024)
 
 #define GRUB_ELF_SEARCH 1024

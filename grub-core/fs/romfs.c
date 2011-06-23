@@ -24,6 +24,8 @@
 #include <grub/fs.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_romfs_superblock
 {
   char magic[8];

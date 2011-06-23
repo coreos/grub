@@ -27,6 +27,8 @@
 #include <grub/list.h>
 #include <grub/loader.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_ahci_cmd_head
 {
   grub_uint32_t config;

@@ -33,6 +33,8 @@
 #include <grub/mm.h>
 #include <grub/cpu/relocator.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_dl_t my_mod;
 static struct grub_relocator *rel;
 static grub_uint32_t ebx = 0xffffffff;
