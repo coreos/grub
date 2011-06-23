@@ -1,5 +1,11 @@
 2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/ofpath.c (check_sas): Close fd.
+	(main): Free of_path.
+	Reported by: David Volgyes <dvolgyes>.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkpasswd-pbkdf2.c (main): Don't double-close.
 	Reported by: David Volgyes <dvolgyes>.
 
