@@ -1,3 +1,9 @@
+2011-06-23  Jim Meyering  <meyering@redhat.com>
+
+	avoid NULL deref in grub_device_open
+	* grub-core/kern/device.c (grub_device_open): Don't dereference
+	a NULL pointer upon failed grub_env_get.
+
 2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support non-512B sectors and agglomerate reads.
