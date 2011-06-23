@@ -1866,7 +1866,12 @@ grub_util_biosdisk_is_floppy (grub_disk_t disk)
 
   /* Shouldn't happen either.  */
   if (fstat (fd, &st) < 0)
-    return 0;
+    {
+      close (fd);
+      return 0;
+    }
+
+  close (fd);
 
 #if defined(__NetBSD__)
   if (major(st.st_rdev) == RAW_FLOPPY_MAJOR)
