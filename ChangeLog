@@ -1,5 +1,11 @@
 2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/raid.c (grub_util_raid_getmembers): Close fd before returning.
+
+	Reported by: David Volgyes <dvolgyes>.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/reed_solomon.c (rs_recover) [STANDALONE]:
 	Prevent memory leak.
 

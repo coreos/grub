@@ -80,6 +80,8 @@ grub_util_raid_getmembers (const char *name)
 
   devicelist[j] = NULL;
 
+  close (fd);
+
   return devicelist;
 }
 
