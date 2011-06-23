@@ -169,17 +169,6 @@ grub_uint64_t EXPORT_FUNC(grub_disk_get_size) (grub_disk_t disk);
 extern void (* EXPORT_VAR(grub_disk_firmware_fini)) (void);
 extern int EXPORT_VAR(grub_disk_firmware_is_tainted);
 
-/* ATA pass through parameters and function.  */
-struct grub_disk_ata_pass_through_parms
-{
-  grub_uint8_t taskfile[8];
-  void * buffer;
-  int size;
-};
-
-extern grub_err_t (* EXPORT_VAR(grub_disk_ata_pass_through)) (grub_disk_t,
-		   struct grub_disk_ata_pass_through_parms *);
-
 #if defined (GRUB_UTIL) || defined (GRUB_MACHINE_EMU)
 void grub_lvm_init (void);
 void grub_mdraid09_init (void);

@@ -1,3 +1,39 @@
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	AHCI support.
+
+	* grub-core/Makefile.core.def (ata_pthru): Removed.
+	(ahci): New module.
+	(pata): Likewise.
+	* grub-core/bus/usb/ohci.c (GRUB_MOD_FINI): Unregister preboot hook
+	on unload.
+	* grub-core/commands/hdparm.c (grub_hdparm_do_ata_cmd): Use ATA
+	readwrite.
+	(grub_hdparm_do_check_powermode_cmd): Likewise.
+	(grub_hdparm_do_smart_cmd): Likewise.
+	(grub_hdparm_set_val_cmd): Likewise.
+	(grub_cmd_hdparm): Likewise. Check thta we have an ATA device.
+	* grub-core/disk/ahci.c: New file.
+	* grub-core/disk/ata.c: Factor out the low-level part into ...
+	* grub-core/disk/pata.c: ... here.
+	* grub-core/disk/ata_pthru.c: Contents moved to ...
+	* grub-core/disk/pata.c: ... here.
+	* grub-core/disk/scsi.c (grub_scsi_names): New array.
+	(grub_scsi_iterate): Use grub_scsi_names.
+	(grub_scsi_open): Likewise.
+	* grub-core/kern/disk.c (grub_disk_ata_pass_through): Removed.
+	* include/grub/ata.h (grub_ata_commands): Add DMA commands.
+	(grub_ata_regs_t): New struct.
+	(grub_disk_ata_pass_through_parms): Likewise.
+	(grub_ata_device): Renamed to ...
+	(grub_ata): ... this.
+	(grub_ata_dev): New struct.
+	Removed all low-level inline functions.
+	* include/grub/scsi.h: Add PATA and AHCI subsystems.
+	(grub_scsi_dev): Removed 'name' and 'id'. Added 'id' parameter to
+	iterate hooks and open. All users updated.
+	* util/grub-install.in: Handle AHCI disk module.
+
 2011-06-23  Szymon Janc <szymon@janc.net.pl>
 
 	Add support for DRI and RSTn markers in JPEG files.

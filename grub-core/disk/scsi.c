@@ -32,6 +32,12 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_scsi_dev_t grub_scsi_dev_list;
 
+const char grub_scsi_names[GRUB_SCSI_NUM_SUBSYSTEMS][5] = {
+  [GRUB_SCSI_SUBSYSTEM_USBMS] = "usb",
+  [GRUB_SCSI_SUBSYSTEM_PATA] = "ata",
+  [GRUB_SCSI_SUBSYSTEM_AHCI] = "ahci"
+};
+
 void
 grub_scsi_dev_register (grub_scsi_dev_t dev)
 {
@@ -320,9 +326,9 @@ grub_scsi_iterate (int (*hook) (const char *name))
 {
   grub_scsi_dev_t p;
 
-  auto int scsi_iterate (int bus, int luns);
+  auto int NESTED_FUNC_ATTR scsi_iterate (int id, int bus, int luns);
 
-  int scsi_iterate (int bus, int luns)
+  int NESTED_FUNC_ATTR scsi_iterate (int id, int bus, int luns)
     {
       int i;
 
@@ -331,7 +337,7 @@ grub_scsi_iterate (int (*hook) (const char *name))
 	{
 	  char *sname;
 	  int ret;
-	  sname = grub_xasprintf ("%s%d", p->name, bus);
+	  sname = grub_xasprintf ("%s%d", grub_scsi_names[id], bus);
 	  if (!sname)
 	    return 1;
 	  ret = hook (sname);
@@ -345,7 +351,7 @@ grub_scsi_iterate (int (*hook) (const char *name))
 	{
 	  char *sname;
 	  int ret;
-	  sname = grub_xasprintf ("%s%d%c", p->name, bus, 'a' + i);
+	  sname = grub_xasprintf ("%s%d%c", grub_scsi_names[id], bus, 'a' + i);
 	  if (!sname)
 	    return 1;
 	  ret = hook (sname);
@@ -372,6 +378,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
   int lun, bus;
   grub_uint64_t maxtime;
   const char *nameend;
+  unsigned id;
 
   nameend = name + grub_strlen (name) - 1;
   /* Try to detect a LUN ('a'-'z'), otherwise just use the first
@@ -396,15 +403,25 @@ grub_scsi_open (const char *name, grub_disk_t disk)
   if (! scsi)
     return grub_errno;
 
+  for (id = 0; id < ARRAY_SIZE (grub_scsi_names); id++)
+    if (grub_strncmp (grub_scsi_names[id], name, nameend - name) == 0)
+      break;
+
+  if (id == ARRAY_SIZE (grub_scsi_names))
+    {
+      grub_free (scsi);
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a SCSI disk");
+    }
+
   for (p = grub_scsi_dev_list; p; p = p->next)
     {
-      if (grub_strncmp (p->name, name, nameend - name) != 0)
-	continue;
+      if (p->open (id, bus, scsi))
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
 
-      if (p->open (bus, scsi))
-	continue;
-
-      disk->id = grub_make_scsi_id (p->id, bus, lun);
+      disk->id = grub_make_scsi_id (id, bus, lun);
       disk->data = scsi;
       scsi->dev = p;
       scsi->lun = lun;
@@ -485,7 +502,6 @@ grub_scsi_open (const char *name, grub_disk_t disk)
     }
 
   grub_free (scsi);
-
   return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a SCSI disk");
 }
 
