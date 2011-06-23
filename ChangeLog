@@ -1,3 +1,24 @@
+2011-06-23  Szymon Janc <szymon@janc.net.pl>
+
+	Add support for DRI and RSTn markers in JPEG files.
+
+	* grub-core/video/readers/jpeg.c (JPEG_MARKER_DRI): New define.
+	(JPEG_MARKER_RST0): Likewise.
+	(JPEG_MARKER_RST1): Likewise.
+	(JPEG_MARKER_RST2): Likewise.
+	(JPEG_MARKER_RST3): Likewise.
+	(JPEG_MARKER_RST4): Likewise.
+	(JPEG_MARKER_RST5): Likewise.
+	(JPEG_MARKER_RST6): Likewise.
+	(JPEG_MARKER_RST7): Likewise.
+	(grub_jpeg_data): New fields dri, r1, bitmap_ptr.
+	(grub_jpeg_decode_dri): New function.
+	(grub_jpeg_decode_sos): Move image data related part into
+	grub_jpeg_decode_data function.
+	(grub_jpeg_decode_data): New function.
+	(grub_jpeg_reset): New function.
+	(grub_jpeg_decode_jpeg): Handle new markers.
+
 2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/ieee1275/ofpath.c (check_sas): Close fd.
