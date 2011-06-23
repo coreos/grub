@@ -1,5 +1,10 @@
 2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/reed_solomon.c (rs_recover): Prevent memory leak.
+	(main): Close file.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/xnu.c (grub_cpu_xnu_fill_devprop): Don't attempt
 	to continue if allocation is failed.
 
