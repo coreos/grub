@@ -24,7 +24,7 @@ tftp_open (struct grub_file *file, const char *filename)
   tftp_data_t data;
   grub_err_t err;
 
-  data = grub_malloc (sizeof *data);
+  data = grub_malloc (sizeof (*data));
   if (!data)
     return grub_errno;
 
@@ -86,7 +86,7 @@ tftp_open (struct grub_file *file, const char *filename)
       /* Retry.  */
       /*err = grub_net_send_udp_packet (file->device->net->socket, &nb);
          if (err)
-           return err; */
+         return err; */
     }
 
   if (file->device->net->socket->status == 0)
@@ -154,8 +154,8 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
     }
   grub_netbuff_clear (&nb_ack);
   grub_netbuff_reserve (&nb_ack, 128);
-  grub_netbuff_push (&nb_ack, sizeof (tftph->opcode) 
-		    + sizeof (tftph->u.ack.block));
+  grub_netbuff_push (&nb_ack, sizeof (tftph->opcode)
+		     + sizeof (tftph->u.ack.block));
 
   tftph = (struct tftphdr *) nb_ack.data;
   tftph->opcode = grub_cpu_to_be16 (TFTP_ACK);
@@ -180,12 +180,12 @@ static struct grub_net_app_protocol grub_tftp_protocol =
     .close = tftp_close
   };
 
-GRUB_MOD_INIT(tftp)
+GRUB_MOD_INIT (tftp)
 {
   grub_net_app_level_register (&grub_tftp_protocol);
 }
 
-GRUB_MOD_FINI(tftp)
+GRUB_MOD_FINI (tftp)
 {
   grub_net_app_level_unregister (&grub_tftp_protocol);
 }

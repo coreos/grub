@@ -25,9 +25,9 @@ ipchksum (void *ipv, int len)
 }
 
 grub_err_t
-grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
-			 const grub_net_network_level_address_t *target,
-			 struct grub_net_buff *nb)
+grub_net_send_ip_packet (struct grub_net_network_level_interface * inf,
+			 const grub_net_network_level_address_t * target,
+			 struct grub_net_buff * nb)
 {
   struct iphdr *iph;
   static int id = 0x2400;
@@ -54,43 +54,58 @@ grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
   err = grub_net_arp_resolve (inf, target, &ll_target_addr);
   if (err)
     return err;
-  return send_ethernet_packet (inf, nb, ll_target_addr, GRUB_NET_ETHERTYPE_IP);
+  return send_ethernet_packet (inf, nb, ll_target_addr,
+			       GRUB_NET_ETHERTYPE_IP);
 }
 
-/*
-static int
-ip_filter (struct grub_net_buff *nb)
+grub_err_t
+grub_net_recv_ip_packets (struct grub_net_buff * nb,
+			  const struct grub_net_card * card,
+			  const grub_net_link_level_address_t * hwaddress)
 {
   struct iphdr *iph = (struct iphdr *) nb->data;
   grub_err_t err;
+  struct grub_net_network_level_interface *inf;
 
-  if (nb->end - nb->data < (signed) sizeof (*iph))
-    return 0;
-  
-  if (iph->protocol != 0x11 ||
-      iph->dest != inf->address.ipv4)
-    return 0;
-
-  grub_netbuff_pull (nb, sizeof (iph));
-  err = grub_net_put_packet (&inf->nl_pending, nb);
+  err = grub_netbuff_pull (nb, sizeof (*iph));
   if (err)
+    return err;
+
+  FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
+  {
+    if (inf->card == card
+	&& inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+	&& inf->address.ipv4 == iph->dest
+	&& grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
+      break;
+  }
+  if (!inf)
     {
-      grub_print_error ();
-      return 0;
+      FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
+	if (inf->card == card
+	    && inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC
+	    && grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
+	break;
     }
-  return 1;
-}
-*/
-grub_err_t
-grub_net_recv_ip_packets (struct grub_net_buff *nb)
-{
-  struct iphdr *iph = (struct iphdr *) nb->data;
-  grub_netbuff_pull (nb, sizeof (*iph));
+  if (!inf)
+    {
+      if (iph->protocol == IP_UDP
+	  && grub_net_hwaddr_cmp (&card->default_address, hwaddress) == 0)
+	{
+	  struct udphdr *udph;
+	  udph = (struct udphdr *) nb->data;
+	  grub_netbuff_pull (nb, sizeof (*udph));
+	  if (grub_be_to_cpu16 (udph->dst) == 68)
+	    grub_net_process_dhcp (nb, card);
+	}
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
 
   switch (iph->protocol)
     {
     case IP_UDP:
-      return grub_net_recv_udp_packet (nb);
+      return grub_net_recv_udp_packet (nb, inf);
       break;
     default:
       grub_netbuff_free (nb);

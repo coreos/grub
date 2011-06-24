@@ -24,7 +24,8 @@ grub_net_send_udp_packet (const grub_net_socket_t socket,
 }
 
 grub_err_t
-grub_net_recv_udp_packet (struct grub_net_buff *nb)
+grub_net_recv_udp_packet (struct grub_net_buff * nb,
+			  struct grub_net_network_level_interface * inf)
 {
   struct udphdr *udph;
   grub_net_socket_t sock;
@@ -33,7 +34,8 @@ grub_net_recv_udp_packet (struct grub_net_buff *nb)
 
   FOR_NET_SOCKETS (sock)
   {
-    if (grub_be_to_cpu16 (udph->dst) == sock->in_port)
+    if (grub_be_to_cpu16 (udph->dst) == sock->in_port
+	&& inf == sock->inf && sock->app)
       {
 	if (sock->status == 0)
 	  sock->out_port = grub_be_to_cpu16 (udph->src);
@@ -41,7 +43,7 @@ grub_net_recv_udp_packet (struct grub_net_buff *nb)
 	/* App protocol remove its own reader.  */
 	sock->app->read (sock, nb);
 
-	/* If there is data, puts packet in socket list.  */
+	/* If there is data, puts packet in socket list. */
 	if ((nb->tail - nb->data) > 0)
 	  grub_net_put_packet (&sock->packs, nb);
 	else
@@ -49,6 +51,8 @@ grub_net_recv_udp_packet (struct grub_net_buff *nb)
 	return GRUB_ERR_NONE;
       }
   }
+  if (grub_be_to_cpu16 (udph->dst) == 68)
+    grub_net_process_dhcp (nb, inf->card);
   grub_netbuff_free (nb);
   return GRUB_ERR_NONE;
 }

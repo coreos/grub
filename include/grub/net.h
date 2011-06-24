@@ -62,8 +62,10 @@ struct grub_net_card_driver
   char *name;
   grub_err_t (*init) (struct grub_net_card *dev);
   grub_err_t (*fini) (struct grub_net_card *dev);
-  grub_err_t (*send) (struct grub_net_card *dev, struct grub_net_buff *buf);
-  grub_ssize_t (*recv) (struct grub_net_card *dev, struct grub_net_buff *buf);  
+  grub_err_t (*send) (const struct grub_net_card *dev,
+		      struct grub_net_buff *buf);
+  grub_ssize_t (*recv) (const struct grub_net_card *dev,
+			struct grub_net_buff *buf);
 };
 
 extern struct grub_net_card_driver *grub_net_card_drivers;
@@ -116,6 +118,7 @@ struct grub_net_network_level_interface;
 
 typedef enum grub_network_level_protocol_id 
 {
+  GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC,
   GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
 } grub_network_level_protocol_id_t;
 
@@ -243,12 +246,13 @@ extern grub_err_t (*EXPORT_VAR (grub_file_net_seek)) (struct grub_file *file, gr
 struct grub_net_network_level_interface
 {
   struct grub_net_network_level_interface *next;
+  struct grub_net_network_level_interface **prev;
   char *name;
-  struct grub_net_card *card;
+  const struct grub_net_card *card;
   grub_net_network_level_address_t address;
   grub_net_link_level_address_t hwaddress;
   grub_net_interface_flags_t flags;
-  struct grub_net_bootp_ack *dhcp_ack;
+  struct grub_net_bootp_packet *dhcp_ack;
   grub_size_t dhcp_acklen;
   void *data;
 };
@@ -291,7 +295,8 @@ grub_net_session_recv (struct grub_net_session *session, void *buf,
 }
 
 struct grub_net_network_level_interface *
-grub_net_add_addr (const char *name, struct grub_net_card *card,
+grub_net_add_addr (const char *name,
+		   const struct grub_net_card *card,
 		   grub_net_network_level_address_t addr,
 		   grub_net_link_level_address_t hwaddress,
 		   grub_net_interface_flags_t flags);
@@ -369,7 +374,7 @@ grub_net_add_route_gw (const char *name,
 
 typedef grub_uint8_t grub_net_bootp_mac_addr_t[GRUB_NET_BOOTP_MAC_ADDR_LEN];
 
-struct grub_net_bootp_ack
+struct grub_net_bootp_packet
 {
   grub_uint8_t opcode;
   grub_uint8_t hw_type;		/* hardware type.  */
@@ -391,10 +396,20 @@ struct grub_net_bootp_ack
 #define	GRUB_NET_BOOTP_RFC1048_MAGIC	0x63825363L
 
 struct grub_net_network_level_interface *
-grub_net_configure_by_dhcp_ack (const char *name, struct grub_net_card *card,
+grub_net_configure_by_dhcp_ack (const char *name,
+				const struct grub_net_card *card,
 				grub_net_interface_flags_t flags,
-				struct grub_net_bootp_ack *bp,
+				const struct grub_net_bootp_packet *bp,
 				grub_size_t size);
+
+void
+grub_net_process_dhcp (struct grub_net_buff *nb,
+		       const struct grub_net_card *card);
+
+int
+grub_net_hwaddr_cmp (const grub_net_link_level_address_t *a,
+		     const grub_net_link_level_address_t *b);
+
 
 /*
   Currently suppoerted adresses:
@@ -420,8 +435,11 @@ typedef int
 grub_err_t grub_net_recv_link_layer (struct grub_net_network_level_interface *inf,
 				     grub_net_packet_handler_t handler); 
 
-grub_err_t 
-grub_net_recv_ip_packets (struct grub_net_buff *nb);
+
+grub_err_t
+grub_net_recv_ip_packets (struct grub_net_buff *nb,
+			  const struct grub_net_card *card,
+			  const grub_net_link_level_address_t *hwaddress);
 
 grub_err_t
 grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,

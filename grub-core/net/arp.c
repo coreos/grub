@@ -41,6 +41,14 @@ grub_net_arp_resolve (struct grub_net_network_level_interface *inf,
   char *aux, arp_data[128];
   int i;
 
+  if (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+      && proto_addr->ipv4 == 0xffffffff)
+    {
+      hw_addr->type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+      grub_memset (hw_addr->mac, -1, 6);
+      return GRUB_ERR_NONE;
+    }
+
   /* Check cache table.  */
   entry = arp_find_entry (proto_addr);
   if (entry)
