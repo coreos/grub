@@ -1,3 +1,7 @@
+2011-06-24  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/io/xzio.c: Fix code style issues
+
 2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
 2011-06-24  Manoel Rebelo Abranches <mrabran@gmail.com>
 
