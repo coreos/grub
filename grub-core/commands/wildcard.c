@@ -288,6 +288,8 @@ match_files (const char *prefix, const char *suffix, const char *end,
     if (regexec (regexp, name, 0, 0, 0))
       return 0;
 
+    grub_dprintf ("expand", "matched\n");
+
     buffer = grub_xasprintf ("%s%s", dir, name);
     if (! buffer)
       return 1;
@@ -423,8 +425,6 @@ wildcard_expand (const char *s, char ***strs)
   while (*start)
     {
       split_path (start, &noregexop, &regexop);
-      if (noregexop >= regexop) /* no more wildcards */
-	break;
 
       if (make_regex (noregexop, regexop, &regexp))
 	goto fail;

@@ -1,5 +1,12 @@
 2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/wildcard.c (match_files): Add a useful dprintf.
+	(wildcard_expand): Don't stop on nonregexp parts after regexp ones since
+	it truncates the output.
+	Reported by: Ximin Luo.
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Skip . and ..
 
 2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
