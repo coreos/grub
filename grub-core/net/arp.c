@@ -39,6 +39,7 @@ grub_net_arp_resolve (struct grub_net_network_level_interface *inf,
   struct arphdr *arp_header;
   grub_net_link_level_address_t target_hw_addr;
   char *aux, arp_data[128];
+  grub_err_t err;
   int i;
 
   if (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
@@ -60,9 +61,12 @@ grub_net_arp_resolve (struct grub_net_network_level_interface *inf,
   nb.head = arp_data;
   nb.end = arp_data + sizeof (arp_data);
   grub_netbuff_clear (&nb);
-
   grub_netbuff_reserve (&nb, 128);
-  grub_netbuff_push (&nb, sizeof (*arp_header) + 2 * (6 + 4));
+
+  err = grub_netbuff_push (&nb, sizeof (*arp_header) + 2 * (6 + 4));
+  if (err)
+    return err;
+
   arp_header = (struct arphdr *) nb.data;
   arp_header->hrd = grub_cpu_to_be16 (GRUB_NET_ARPHRD_ETHERNET);
   arp_header->pro = grub_cpu_to_be16 (GRUB_NET_ETHERTYPE_IP);

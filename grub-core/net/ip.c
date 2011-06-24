@@ -94,7 +94,9 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
 	{
 	  struct udphdr *udph;
 	  udph = (struct udphdr *) nb->data;
-	  grub_netbuff_pull (nb, sizeof (*udph));
+	  err = grub_netbuff_pull (nb, sizeof (*udph));
+	  if (err)
+	    return err;
 	  if (grub_be_to_cpu16 (udph->dst) == 68)
 	    grub_net_process_dhcp (nb, card);
 	}

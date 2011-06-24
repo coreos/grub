@@ -9,8 +9,11 @@ grub_net_send_udp_packet (const grub_net_socket_t socket,
 			  struct grub_net_buff *nb)
 {
   struct udphdr *udph;
+  grub_err_t err;
 
-  grub_netbuff_push (nb, sizeof (*udph));
+  err = grub_netbuff_push (nb, sizeof (*udph));
+  if (err)
+    return err;
 
   udph = (struct udphdr *) nb->data;
   udph->src = grub_cpu_to_be16 (socket->in_port);

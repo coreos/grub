@@ -633,6 +633,16 @@ grub_net_open_real (const char *name)
 }
 
 static grub_err_t
+grub_net_fs_dir (grub_device_t device, const char *path __attribute__ ((unused)),
+	       int (*hook) (const char *filename,
+			    const struct grub_dirhook_info *info) __attribute__ ((unused)))
+{
+  if (!device->net)
+    return grub_error (GRUB_ERR_BAD_FS, "invalid extent");
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 grub_net_fs_open (struct grub_file *file, const char *name)
 {
   grub_err_t err;
@@ -1224,11 +1234,20 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
   return err;
 }
 
+static void
+grub_grubnet_fini_real (void)
+{
+  struct grub_net_card *card;
+
+  FOR_NET_CARDS (card)
+    if (card->driver)
+      card->driver->fini (card);
+}
 
 static struct grub_fs grub_net_fs =
   {
     .name = "netfs",
-    .dir = NULL,
+    .dir = grub_net_fs_dir,
     .open = grub_net_fs_open,
     .read = grub_net_fs_read,
     .close = grub_net_fs_close,
@@ -1273,6 +1292,7 @@ GRUB_MOD_INIT(net)
   grub_fs_register (&grub_net_fs);
   grub_net_open = grub_net_open_real;
   grub_file_net_seek = grub_net_seek_real;
+  grub_grubnet_fini = grub_grubnet_fini_real;
 }
 
 GRUB_MOD_FINI(net)
@@ -1288,4 +1308,5 @@ GRUB_MOD_FINI(net)
   grub_fs_unregister (&grub_net_fs);
   grub_net_open = NULL;
   grub_file_net_seek = NULL;
+  grub_grubnet_fini = NULL;
 }

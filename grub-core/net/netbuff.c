@@ -95,12 +95,12 @@ grub_err_t
 grub_netbuff_free (struct grub_net_buff *nb)
 {
   grub_free (nb->head);
-  return 0;
+  return GRUB_ERR_NONE;
 }
 
 grub_err_t
 grub_netbuff_clear (struct grub_net_buff *nb)
 {
   nb->data = nb->tail = nb->head;
-  return 0;
+  return GRUB_ERR_NONE;
 }

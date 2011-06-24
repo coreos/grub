@@ -15,8 +15,11 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
 		      grub_uint16_t ethertype)
 {
   struct etherhdr *eth;
+  grub_err_t err;
 
-  grub_netbuff_push (nb, sizeof (*eth));
+  err = grub_netbuff_push (nb, sizeof (*eth));
+  if (err)
+    return err;
   eth = (struct etherhdr *) nb->data;
   grub_memcpy (eth->dst, target_addr.mac, 6);
   grub_memcpy (eth->src, inf->hwaddress.mac, 6);
@@ -35,10 +38,13 @@ grub_net_recv_ethernet_packet (struct grub_net_buff * nb,
   struct snaphdr *snaph;
   grub_uint16_t type;
   grub_net_link_level_address_t hwaddress;
+  grub_err_t err;
 
   eth = (struct etherhdr *) nb->data;
   type = grub_be_to_cpu16 (eth->type);
-  grub_netbuff_pull (nb, sizeof (*eth));
+  err = grub_netbuff_pull (nb, sizeof (*eth));
+  if (err)
+    return err;
 
   if (type <= 1500)
     {
@@ -47,7 +53,9 @@ grub_net_recv_ethernet_packet (struct grub_net_buff * nb,
 
       if (llch->dsap == 0xaa && llch->ssap == 0xaa && llch->ctrl == 0x3)
 	{
-	  grub_netbuff_pull (nb, sizeof (*llch));
+	  err = grub_netbuff_pull (nb, sizeof (*llch));
+	  if (err)
+	    return err;
 	  snaph = (struct snaphdr *) nb->data;
 	  type = snaph->type;
 	}
