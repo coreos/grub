@@ -1,5 +1,11 @@
 2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/getroot.c (grub_guess_root_device): Revert to
+	old method if mountinfo would return /dev/root and /dev/root doesn't
+	exist.
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	ZFS zlib support
 
 	* grub-core/fs/zfs/zfs.c (zlib_decompress): New function.
