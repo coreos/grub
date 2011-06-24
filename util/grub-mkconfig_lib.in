@@ -63,7 +63,7 @@ is_path_readable_by_grub ()
 
   # ... or if we can't figure out the abstraction module, for example if
   # memberlist fails on an LVM volume group.
-  if ${grub_probe} -t abstraction $path > /dev/null 2>&1 ; then : ; else
+  if "${grub_probe}" -t abstraction "$path" > /dev/null 2>&1 ; then : ; else
     return 1
   fi
 

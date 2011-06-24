@@ -1,3 +1,7 @@
+2011-06-24  Alexander Kurtz <kurtz.alex@googlemail.com>
+
+	* util/grub-mkconfig_lib.in: Add missing quotes.
+
 2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/getroot.c (grub_guess_root_device): Revert to
