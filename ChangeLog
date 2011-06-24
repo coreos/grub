@@ -1,3 +1,7 @@
+2011-06-25  Patrick <p55@mailinator.com>
+
+	* grub-core/kern/main.c (grub_load_normal_mode): Correct the comment.
+
 2011-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/net/i386/pc/pxe.c (grub_pxe_recv): Fix declaration.
