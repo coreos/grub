@@ -31,6 +31,8 @@
 #include <grub/ieee1275/console.h>
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
+#include <grub/ieee1275/ofnet.h>
+#include <grub/net.h>
 #include <grub/offsets.h>
 #include <grub/memory.h>
 
@@ -74,7 +76,22 @@ grub_machine_set_prefix (void)
   char bootpath[64]; /* XXX check length */
   char *filename;
   char *prefix;
-
+  grub_bootp_t bootp_pckt;
+  char addr[GRUB_NET_MAX_STR_ADDR_LEN];
+  
+  /* Set the net prefix when possible.  */
+  if (grub_getbootp && (bootp_pckt = grub_getbootp()))
+    {
+	grub_uint32_t n = bootp_pckt->siaddr;
+	grub_snprintf (addr, GRUB_NET_MAX_STR_ADDR_LEN, "%d.%d.%d.%d",
+		       ((n >> 24) & 0xff), ((n >> 16) & 0xff),
+		       ((n >> 8) & 0xff), ((n >> 0) & 0xff));
+      prefix = grub_xasprintf ("(tftp,%s)%s", addr,grub_prefix); 
+      grub_env_set ("prefix", prefix);
+      grub_free (prefix);
+      return;  
+    }
+ 
   if (grub_prefix[0])
     {
       grub_env_set ("prefix", grub_prefix);
@@ -247,6 +264,8 @@ grub_machine_init (void)
 void
 grub_machine_fini (void)
 {
+  if (grub_grubnet_fini)
+    grub_grubnet_fini ();
   grub_ofdisk_fini ();
   grub_console_fini ();
 }

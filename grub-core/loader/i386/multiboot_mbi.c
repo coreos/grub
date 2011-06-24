@@ -33,6 +33,7 @@
 #include <grub/relocator.h>
 #include <grub/video.h>
 #include <grub/file.h>
+#include <grub/net.h>
 
 /* The bits in the required part of flags field we don't support.  */
 #define UNSUPPORTED_FLAGS			0x0000fff8
@@ -194,7 +195,10 @@ grub_multiboot_load (grub_file_t file)
 static grub_size_t
 grub_multiboot_get_mbi_size (void)
 {
-  return sizeof (struct multiboot_info) + ALIGN_UP (cmdline_size, 4)
+  grub_size_t ret;
+  struct grub_net_network_level_interface *net;
+
+  ret = sizeof (struct multiboot_info) + ALIGN_UP (cmdline_size, 4)
     + modcnt * sizeof (struct multiboot_mod_list) + total_modcmd
     + ALIGN_UP (sizeof(PACKAGE_STRING), 4) 
     + grub_get_multiboot_mmap_count () * sizeof (struct multiboot_mmap_entry)
@@ -205,6 +209,15 @@ grub_multiboot_get_mbi_size (void)
     + sizeof (struct grub_vbe_mode_info_block)
 #endif
     + ALIGN_UP (sizeof (struct multiboot_apm_info), 4);
+
+  FOR_NET_NETWORK_LEVEL_INTERFACES(net)
+    if (net->dhcp_ack)
+      {
+	ret += net->dhcp_acklen;
+	break;
+      }
+
+  return ret;
 }
 
 /* Fill previously allocated Multiboot mmap.  */
@@ -529,6 +542,20 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
       mbi->boot_device = bootdev;
       mbi->flags |= MULTIBOOT_INFO_BOOTDEV;
     }
+
+  {
+    struct grub_net_network_level_interface *net;
+    FOR_NET_NETWORK_LEVEL_INTERFACES(net)
+      if (net->dhcp_ack)
+	{
+	  grub_memcpy (ptrorig, net->dhcp_ack, net->dhcp_acklen);
+	  mbi->drives_addr = ptrdest;
+	  mbi->drives_length = net->dhcp_acklen;
+	  ptrorig += net->dhcp_acklen;
+	  ptrdest += net->dhcp_acklen;
+	  break;
+	}
+  }
 
   if (elf_sec_num)
     {

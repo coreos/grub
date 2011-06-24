@@ -1,4 +1,62 @@
 2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-06-24  Manoel Rebelo Abranches <mrabran@gmail.com>
+
+	Network infrastructure.
+	The ARP protocol was made by Paulo Pinatti <ppinatti@br.ibm.com>
+
+	* include/grub/net/arp.h: New file.
+	* include/grub/net/device.h: Likewise.
+	* include/grub/net/ethernet.h: Likewise.
+	* include/grub/net/ip.h: Likewise.
+	* include/grub/net/netbuff.h: Likewise.
+	* include/grub/net/tftp.h: Likewise.
+	* include/grub/net/udp.h: Likewise.
+	* include/grub/ieee1275/ofnet.h: Likewise.
+	* include/grub/emu/export.h: Likewise.
+	* include/grub/net.h: Likewise.
+	* grub-core/net/arp.c: Likewise.
+	* grub-core/net/ethernet.c: Likewise.
+	* grub-core/net/ip.c: Likewise.
+	* grub-core/net/udp.c: Likewise.
+	* grub-core/net/tftp.c: Likewise.
+	* grub-core/net/netbuff.c: Likewise.
+	* grub-core/net/net.c: Likewise.
+	* grub-core/net/drivers/emu/emunet.c: Likewise.
+	* grub-core/net/drivers/ieee1275/ofnet.c: Likewise.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Add net.h, ofnet.h and
+	export.h.
+	* grub-core/Makefile.core.def (net): New module.
+	(tftp): Likewise.
+	(ofnet): Likewise.
+	(emunet): Likewise.
+	* grub-core/commands/ls.c (grub_ls_list_devices) [!GRUB_UTIL]: List
+	network protocols.
+	* grub-core/kern/device.c (grub_net_open) : New variable.
+	(grub_device_open): Handle network device.
+	(grub_device_close): Likewise.
+	* grub-core/kern/file.c (grub_file_net_seek) : New variable.
+	(grub_grubnet_fini): Likewise.
+	(grub_file_seek): Seek in network device.
+	* grub-core/kern/fs.c (grub_fs_probe): Handle network devices.
+	* grub-core/kern/ieee1275/init.c (grub_machine_set_prefix): Handle
+	network root.
+	(grub_machine_fini): Call grub_grubnet_fini.
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_parse_args): Handle
+	network.
+	(grub_ieee1275_get_aliasdevname): New function.
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_get_mbi_size):
+	Add unofficial Solaris network info.
+	(grub_multiboot_make_mbi): Likewise.
+	* grub-core/fs/i386/pc/pxe.c: Moved from here ...
+	* grub-core/net/i386/pc/pxe.c: ...here. Adapted for new design.
+	* include/grub/device.h (grub_fs): Removed.
+	* include/grub/err.h (grub_err_t): Add network-related values.
+	* include/grub/i386/pc/pxe.h: Removed bootp parts.
+	* include/grub/ieee1275/ieee1275.h (grub_ofnetcard_data): New struct.
+	(grub_ieee1275_get_aliasdevname): New proto.
+	* include/grub/net.h: Rewritten.
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/raid.c (insert_array): Ensure uniqueness of readable
 	names.
