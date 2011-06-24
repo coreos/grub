@@ -1,5 +1,10 @@
 2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/raid.c (insert_array): Ensure uniqueness of readable
+	names.
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/wildcard.c (match_files): Add a useful dprintf.
 	(wildcard_expand): Don't stop on nonregexp parts after regexp ones since
 	it truncates the output.
