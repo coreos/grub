@@ -1,3 +1,9 @@
+2011-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/net/i386/pc/pxe.c (grub_pxe_recv): Fix declaration.
+	(grub_pxe_send): Likewise.
+	(GRUB_MOD_INIT): Fix types.
+
 2011-06-24  Szymon Janc <szymon@janc.net.pl>
 
 	* grub-core/io/xzio.c: Fix code style issues

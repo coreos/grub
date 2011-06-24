@@ -305,14 +305,14 @@ static struct grub_fs grub_pxefs_fs =
   };
 
 static grub_ssize_t 
-grub_pxe_recv (struct grub_net_card *dev __attribute__ ((unused)),
+grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)),
 	       struct grub_net_buff *buf __attribute__ ((unused)))
 {
   return 0;
 }
 
 static grub_err_t 
-grub_pxe_send (struct grub_net_card *dev __attribute__ ((unused)),
+grub_pxe_send (const struct grub_net_card *dev __attribute__ ((unused)),
 	       struct grub_net_buff *buf __attribute__ ((unused)))
 {
   return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "not implemented");
@@ -424,7 +424,7 @@ GRUB_MOD_INIT(pxe)
 {
   struct grub_pxe_bangpxe *pxenv;
   struct grub_pxenv_get_cached_info ci;
-  struct grub_net_bootp_ack *bp;
+  struct grub_net_bootp_packet *bp;
   char *buf;
 
   pxenv = grub_pxe_scan ();
