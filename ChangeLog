@@ -1,5 +1,9 @@
 2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Skip . and ..
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Load
 	partmap before abstraction.
 
