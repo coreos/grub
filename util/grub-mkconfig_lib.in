@@ -105,12 +105,6 @@ prepare_grub_to_access_device ()
 {
   device="$1"
 
-  # Abstraction modules aren't auto-loaded.
-  abstraction="`"${grub_probe}" --device "${device}" --target=abstraction`"
-  for module in ${abstraction} ; do
-    echo "insmod ${module}"
-  done
-
   partmap="`"${grub_probe}" --device "${device}" --target=partmap`"
   for module in ${partmap} ; do
     case "${module}" in
@@ -119,6 +113,12 @@ prepare_grub_to_access_device ()
       *)
         echo "insmod part_${module}";;
     esac
+  done
+
+  # Abstraction modules aren't auto-loaded.
+  abstraction="`"${grub_probe}" --device "${device}" --target=abstraction`"
+  for module in ${abstraction} ; do
+    echo "insmod ${module}"
   done
 
   fs="`"${grub_probe}" --device "${device}" --target=fs`"
