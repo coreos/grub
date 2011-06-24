@@ -90,6 +90,9 @@ static const char grub_module_name_##name[] \
 #ifndef ASM_FILE
 #define GRUB_MOD_LICENSE(license)	\
   static char grub_module_license[] __attribute__ ((section (GRUB_MOD_SECTION (module_license)), used)) = "LICENSE=" license;
+#define GRUB_MOD_DEP(name)	\
+static const char grub_module_depend_##name[] \
+ __attribute__((section(GRUB_MOD_SECTION(moddeps)), __used__)) = #name
 #else
 #define GRUB_MOD_LICENSE(license)	\
   .section GRUB_MOD_SECTION(module_license), "a";	\

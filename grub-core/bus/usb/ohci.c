@@ -454,10 +454,12 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
 
  fail:
   if (o)
-    grub_dma_free (o->td_chunk);
-    grub_dma_free (o->ed_bulk_chunk);
-    grub_dma_free (o->ed_ctrl_chunk);
-    grub_dma_free (o->hcca_chunk);
+    {
+      grub_dma_free (o->td_chunk);
+      grub_dma_free (o->ed_bulk_chunk);
+      grub_dma_free (o->ed_ctrl_chunk);
+      grub_dma_free (o->hcca_chunk);
+    }
   grub_free (o);
 
   return 0;
@@ -1424,18 +1426,22 @@ static struct grub_usb_controller_dev usb_controller =
   .detect_dev = grub_ohci_detect_dev
 };
 
+static void *fini_hnd;
+
 GRUB_MOD_INIT(ohci)
 {
   COMPILE_TIME_ASSERT (sizeof (struct grub_ohci_td) == 32);
   COMPILE_TIME_ASSERT (sizeof (struct grub_ohci_ed) == 16);
   grub_ohci_inithw ();
   grub_usb_controller_dev_register (&usb_controller);
-  grub_loader_register_preboot_hook (grub_ohci_fini_hw, grub_ohci_restore_hw,
-				     GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
+  fini_hnd = grub_loader_register_preboot_hook (grub_ohci_fini_hw,
+						grub_ohci_restore_hw,
+						GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
 }
 
 GRUB_MOD_FINI(ohci)
 {
   grub_ohci_fini_hw (0);
+  grub_loader_unregister_preboot_hook (fini_hnd);
   grub_usb_controller_dev_unregister (&usb_controller);
 }

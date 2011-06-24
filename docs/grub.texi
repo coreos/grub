@@ -4330,11 +4330,11 @@ how to get the latest version.
 @end quotation
 
 GRUB is available from the GNU alpha archive site
-@uref{ftp://alpha.gnu.org/gnu/grub} or any of its mirrors. The file
+@uref{ftp://ftp.gnu.org/gnu/grub} or any of its mirrors. The file
 will be named grub-version.tar.gz. The current version is
 @value{VERSION}, so the file you should grab is:
 
-@uref{ftp://alpha.gnu.org/gnu/grub/grub-@value{VERSION}.tar.gz}
+@uref{ftp://ftp.gnu.org/gnu/grub/grub-@value{VERSION}.tar.gz}
 
 To unbundle GRUB use the instruction:
 

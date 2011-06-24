@@ -616,13 +616,17 @@ grub_guess_root_device (const char *dir)
 
   if (os_dev)
     {
-      if (strncmp (os_dev, "/dev/dm-", sizeof ("/dev/dm-") - 1) != 0)
+      int dm = (strncmp (os_dev, "/dev/dm-", sizeof ("/dev/dm-") - 1) == 0);
+      int root = (strcmp (os_dev, "/dev/root") == 0);
+      if (!dm && !root)
 	return os_dev;
-      if (stat (os_dev, &st) < 0)
-	grub_util_error ("cannot stat `%s'", os_dev);
+      if (stat (os_dev, &st) >= 0)
+	{
+	  free (os_dev);
+	  dev = st.st_rdev;
+	  return grub_find_device (dm ? "/dev/mapper" : "/dev", dev);
+	}
       free (os_dev);
-      dev = st.st_rdev;
-      return grub_find_device ("/dev/mapper", dev);
     }
 
   if (stat (dir, &st) < 0)

@@ -32,6 +32,12 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_scsi_dev_t grub_scsi_dev_list;
 
+const char grub_scsi_names[GRUB_SCSI_NUM_SUBSYSTEMS][5] = {
+  [GRUB_SCSI_SUBSYSTEM_USBMS] = "usb",
+  [GRUB_SCSI_SUBSYSTEM_PATA] = "ata",
+  [GRUB_SCSI_SUBSYSTEM_AHCI] = "ahci"
+};
+
 void
 grub_scsi_dev_register (grub_scsi_dev_t dev)
 {
@@ -320,9 +326,9 @@ grub_scsi_iterate (int (*hook) (const char *name))
 {
   grub_scsi_dev_t p;
 
-  auto int scsi_iterate (int bus, int luns);
+  auto int NESTED_FUNC_ATTR scsi_iterate (int id, int bus, int luns);
 
-  int scsi_iterate (int bus, int luns)
+  int NESTED_FUNC_ATTR scsi_iterate (int id, int bus, int luns)
     {
       int i;
 
@@ -331,7 +337,7 @@ grub_scsi_iterate (int (*hook) (const char *name))
 	{
 	  char *sname;
 	  int ret;
-	  sname = grub_xasprintf ("%s%d", p->name, bus);
+	  sname = grub_xasprintf ("%s%d", grub_scsi_names[id], bus);
 	  if (!sname)
 	    return 1;
 	  ret = hook (sname);
@@ -345,7 +351,7 @@ grub_scsi_iterate (int (*hook) (const char *name))
 	{
 	  char *sname;
 	  int ret;
-	  sname = grub_xasprintf ("%s%d%c", p->name, bus, 'a' + i);
+	  sname = grub_xasprintf ("%s%d%c", grub_scsi_names[id], bus, 'a' + i);
 	  if (!sname)
 	    return 1;
 	  ret = hook (sname);
@@ -372,6 +378,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
   int lun, bus;
   grub_uint64_t maxtime;
   const char *nameend;
+  unsigned id;
 
   nameend = name + grub_strlen (name) - 1;
   /* Try to detect a LUN ('a'-'z'), otherwise just use the first
@@ -396,15 +403,25 @@ grub_scsi_open (const char *name, grub_disk_t disk)
   if (! scsi)
     return grub_errno;
 
+  for (id = 0; id < ARRAY_SIZE (grub_scsi_names); id++)
+    if (grub_strncmp (grub_scsi_names[id], name, nameend - name) == 0)
+      break;
+
+  if (id == ARRAY_SIZE (grub_scsi_names))
+    {
+      grub_free (scsi);
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a SCSI disk");
+    }
+
   for (p = grub_scsi_dev_list; p; p = p->next)
     {
-      if (grub_strncmp (p->name, name, nameend - name) != 0)
-	continue;
+      if (p->open (id, bus, scsi))
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
 
-      if (p->open (bus, scsi))
-	continue;
-
-      disk->id = grub_make_scsi_id (p->id, bus, lun);
+      disk->id = grub_make_scsi_id (id, bus, lun);
       disk->data = scsi;
       scsi->dev = p;
       scsi->lun = lun;
@@ -465,22 +482,26 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 	  return err;
 	}
 
-      /* SCSI blocks can be something else than 512, although GRUB
-	 wants 512 byte blocks.  */
-      disk->total_sectors = ((grub_uint64_t)scsi->size
-                             * (grub_uint64_t)scsi->blocksize)
-			    >> GRUB_DISK_SECTOR_BITS;
+      disk->total_sectors = scsi->size;
+      if (scsi->blocksize & (scsi->blocksize - 1) || !scsi->blocksize)
+	{
+	  grub_free (scsi);
+	  return grub_error (GRUB_ERR_IO, "invalid sector size %d",
+			     scsi->blocksize);
+	}
+      for (disk->log_sector_size = 0;
+	   (1 << disk->log_sector_size) < scsi->blocksize;
+	   disk->log_sector_size++);
 
       grub_dprintf ("scsi", "blocks=%u, blocksize=%u\n",
 		    scsi->size, scsi->blocksize);
-      grub_dprintf ("scsi", "Disk total 512 sectors = %llu\n",
+      grub_dprintf ("scsi", "Disk total sectors = %llu\n",
 		    (unsigned long long) disk->total_sectors);
 
       return GRUB_ERR_NONE;
     }
 
   grub_free (scsi);
-
   return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a SCSI disk");
 }
 
@@ -502,25 +523,6 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
   grub_scsi_t scsi;
 
   scsi = disk->data;
-
-  /* SCSI sectors are variable in size.  GRUB uses 512 byte
-     sectors.  */
-  if (scsi->blocksize != GRUB_DISK_SECTOR_SIZE)
-    {
-      unsigned spb = scsi->blocksize >> GRUB_DISK_SECTOR_BITS;
-      if (spb == 0 || (scsi->blocksize & (GRUB_DISK_SECTOR_SIZE - 1)) != 0)
-	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			   "unsupported SCSI block size");
-
-      grub_uint64_t sector_mod = 0;
-      sector = grub_divmod64 (sector, spb, &sector_mod);
-
-      if (! (sector_mod == 0 && size % spb == 0))
-	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			   "unaligned SCSI read not supported");
-
-      size /= spb;
-    }
 
   /* Depending on the type, select a read function.  */
   switch (scsi->devtype)

@@ -37,7 +37,7 @@ grub_device_open (const char *name)
   if (! name)
     {
       name = grub_env_get ("root");
-      if (*name == '\0')
+      if (name == NULL || *name == '\0')
 	{
 	  grub_error (GRUB_ERR_BAD_DEVICE, "no device is set");
 	  goto fail;

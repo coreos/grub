@@ -679,6 +679,49 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
 		      scanner_name);
 #endif
 
+      {
+	int max_used_number = 0, len, need_new_name = 0;
+	int add_us = 0;
+	len = grub_strlen (array->name);
+	if (len && grub_isdigit (array->name[len-1]))
+	  add_us = 1;
+	for (p = array_list; p != NULL; p = p->next)
+	  {
+	    int cur_num;
+	    char *num, *end;
+	    if (grub_strncmp (p->name, array->name, len) != 0)
+	      continue;
+	    if (p->name[len] == 0)
+	      {
+		need_new_name = 1;
+		continue;
+	      }
+	    if (add_us && p->name[len] != '_')
+	      continue;
+	    if (add_us)
+	      num = p->name + len + 1;
+	    else
+	      num = p->name + len;
+	    if (!grub_isdigit (num[0]))
+	      continue;
+	    cur_num = grub_strtoull (num, &end, 10);
+	    if (end[0])
+	      continue;
+	    if (cur_num > max_used_number)
+	      max_used_number = cur_num;
+	  }
+	if (need_new_name)
+	  {
+	    char *tmp;
+	    tmp = grub_xasprintf ("%s%s%d", array->name, add_us ? "_" : "",
+				  max_used_number + 1);
+	    if (!tmp)
+	      return grub_errno;
+	    grub_free (array->name);
+	    array->name = tmp;
+	  }
+      }
+
       /* Add our new array to the list.  */
       array->next = array_list;
       array_list = array;

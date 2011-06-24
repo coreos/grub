@@ -1,28 +1,307 @@
-2011-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
-2011-06-07  Manoel Rebelo Abranches <mrabran@gmail.com>
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-06-24  Manoel Rebelo Abranches <mrabran@gmail.com>
 
 	Network infrastructure.
 	The ARP protocol was made by Paulo Pinatti <ppinatti@br.ibm.com>
 
 	* include/grub/net/arp.h: New file.
-	* include/grub/net/ethernet.h: New file.
-	* include/grub/net/ip.h: New file.
-	* include/grub/net/netbuff.h: New file.
-	* include/grub/net/tftp.h: New file.
-	* include/grub/net/udp.h: New file.
-	* include/grub/net.h: New file.
-	* grub-core/net/arp.c: New file.
-	* grub-core/net/ethernet.c: New file.
-	* grub-core/net/ip.c: New file.
-	* grub-core/net/netbuff.c: New file.
-	* grub-core/net/net.c: New file.
-	* grub-core/net/drivers/emu/emunet.c: New file.
-	* grub-core/net/drivers/ieee1275/ofnet.c: New file.
-	* grub-core/kern/device.c (grub_net_open) : New function.
-	(grub_device_open) : Handle Network device.
-	* grub-core/kern/file.c (grub_file_net_seek) : New function.
-	(grub_file_net_seek): Seek in network device.
+	* include/grub/net/device.h: Likewise.
+	* include/grub/net/ethernet.h: Likewise.
+	* include/grub/net/ip.h: Likewise.
+	* include/grub/net/netbuff.h: Likewise.
+	* include/grub/net/tftp.h: Likewise.
+	* include/grub/net/udp.h: Likewise.
+	* include/grub/ieee1275/ofnet.h: Likewise.
+	* include/grub/emu/export.h: Likewise.
+	* include/grub/net.h: Likewise.
+	* grub-core/net/arp.c: Likewise.
+	* grub-core/net/ethernet.c: Likewise.
+	* grub-core/net/ip.c: Likewise.
+	* grub-core/net/udp.c: Likewise.
+	* grub-core/net/tftp.c: Likewise.
+	* grub-core/net/netbuff.c: Likewise.
+	* grub-core/net/net.c: Likewise.
+	* grub-core/net/drivers/emu/emunet.c: Likewise.
+	* grub-core/net/drivers/ieee1275/ofnet.c: Likewise.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Add net.h, ofnet.h and
+	export.h.
+	* grub-core/Makefile.core.def (net): New module.
+	(tftp): Likewise.
+	(ofnet): Likewise.
+	(emunet): Likewise.
+	* grub-core/commands/ls.c (grub_ls_list_devices) [!GRUB_UTIL]: List
+	network protocols.
+	* grub-core/kern/device.c (grub_net_open) : New variable.
+	(grub_device_open): Handle network device.
+	(grub_device_close): Likewise.
+	* grub-core/kern/file.c (grub_file_net_seek) : New variable.
+	(grub_grubnet_fini): Likewise.
+	(grub_file_seek): Seek in network device.
+	* grub-core/kern/fs.c (grub_fs_probe): Handle network devices.
+	* grub-core/kern/ieee1275/init.c (grub_machine_set_prefix): Handle
+	network root.
+	(grub_machine_fini): Call grub_grubnet_fini.
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_parse_args): Handle
+	network.
+	(grub_ieee1275_get_aliasdevname): New function.
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_get_mbi_size):
+	Add unofficial Solaris network info.
+	(grub_multiboot_make_mbi): Likewise.
+	* grub-core/fs/i386/pc/pxe.c: Moved from here ...
+	* grub-core/net/i386/pc/pxe.c: ...here. Adapted for new design.
+	* include/grub/device.h (grub_fs): Removed.
+	* include/grub/err.h (grub_err_t): Add network-related values.
+	* include/grub/i386/pc/pxe.h: Removed bootp parts.
+	* include/grub/ieee1275/ieee1275.h (grub_ofnetcard_data): New struct.
+	(grub_ieee1275_get_aliasdevname): New proto.
+	* include/grub/net.h: Rewritten.
 
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/raid.c (insert_array): Ensure uniqueness of readable
+	names.
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/wildcard.c (match_files): Add a useful dprintf.
+	(wildcard_expand): Don't stop on nonregexp parts after regexp ones since
+	it truncates the output.
+	Reported by: Ximin Luo.
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Skip . and ..
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Load
+	partmap before abstraction.
+
+2011-06-24  Alexander Kurtz <kurtz.alex@googlemail.com>
+
+	* util/grub-mkconfig_lib.in: Add missing quotes.
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/getroot.c (grub_guess_root_device): Revert to
+	old method if mountinfo would return /dev/root and /dev/root doesn't
+	exist.
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	ZFS zlib support
+
+	* grub-core/fs/zfs/zfs.c (zlib_decompress): New function.
+	(decomp_table): Add zlib entries.
+	(zio_read): USe 8 bits for compression function rather than 3.
+	* include/grub/zfs/zio.h (zio_compress): Add zlib values.
+
+2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ahci.c: Add missing license statements.
+	* grub-core/fs/romfs.c: Likewise.
+	* grub-core/lib/ia64/setjmp.S: Likewise.
+	* grub-core/loader/i386/pc/freedos.c: Likewise.
+	* grub-core/loader/ia64/efi/linux.c: Likewise.
+	* grub-core/video/colors.c: Likewise.
+	* include/grub/dl.h (GRUB_MOD_DEP): New macro.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	AHCI support.
+
+	* grub-core/Makefile.core.def (ata_pthru): Removed.
+	(ahci): New module.
+	(pata): Likewise.
+	* grub-core/bus/usb/ohci.c (GRUB_MOD_FINI): Unregister preboot hook
+	on unload.
+	* grub-core/commands/hdparm.c (grub_hdparm_do_ata_cmd): Use ATA
+	readwrite.
+	(grub_hdparm_do_check_powermode_cmd): Likewise.
+	(grub_hdparm_do_smart_cmd): Likewise.
+	(grub_hdparm_set_val_cmd): Likewise.
+	(grub_cmd_hdparm): Likewise. Check thta we have an ATA device.
+	* grub-core/disk/ahci.c: New file.
+	* grub-core/disk/ata.c: Factor out the low-level part into ...
+	* grub-core/disk/pata.c: ... here.
+	* grub-core/disk/ata_pthru.c: Contents moved to ...
+	* grub-core/disk/pata.c: ... here.
+	* grub-core/disk/scsi.c (grub_scsi_names): New array.
+	(grub_scsi_iterate): Use grub_scsi_names.
+	(grub_scsi_open): Likewise.
+	* grub-core/kern/disk.c (grub_disk_ata_pass_through): Removed.
+	* include/grub/ata.h (grub_ata_commands): Add DMA commands.
+	(grub_ata_regs_t): New struct.
+	(grub_disk_ata_pass_through_parms): Likewise.
+	(grub_ata_device): Renamed to ...
+	(grub_ata): ... this.
+	(grub_ata_dev): New struct.
+	Removed all low-level inline functions.
+	* include/grub/scsi.h: Add PATA and AHCI subsystems.
+	(grub_scsi_dev): Removed 'name' and 'id'. Added 'id' parameter to
+	iterate hooks and open. All users updated.
+	* util/grub-install.in: Handle AHCI disk module.
+
+2011-06-23  Szymon Janc <szymon@janc.net.pl>
+
+	Add support for DRI and RSTn markers in JPEG files.
+
+	* grub-core/video/readers/jpeg.c (JPEG_MARKER_DRI): New define.
+	(JPEG_MARKER_RST0): Likewise.
+	(JPEG_MARKER_RST1): Likewise.
+	(JPEG_MARKER_RST2): Likewise.
+	(JPEG_MARKER_RST3): Likewise.
+	(JPEG_MARKER_RST4): Likewise.
+	(JPEG_MARKER_RST5): Likewise.
+	(JPEG_MARKER_RST6): Likewise.
+	(JPEG_MARKER_RST7): Likewise.
+	(grub_jpeg_data): New fields dri, r1, bitmap_ptr.
+	(grub_jpeg_decode_dri): New function.
+	(grub_jpeg_decode_sos): Move image data related part into
+	grub_jpeg_decode_data function.
+	(grub_jpeg_decode_data): New function.
+	(grub_jpeg_reset): New function.
+	(grub_jpeg_decode_jpeg): Handle new markers.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/ieee1275/ofpath.c (check_sas): Close fd.
+	(main): Free of_path.
+	Reported by: David Volgyes <dvolgyes>.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkpasswd-pbkdf2.c (main): Don't double-close.
+	Reported by: David Volgyes <dvolgyes>.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_is_floppy): Close
+	file after stat.
+	Reported by: David Volgyes <dvolgyes>.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/raid.c (grub_util_raid_getmembers): Close fd before returning.
+
+	Reported by: David Volgyes <dvolgyes>.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/reed_solomon.c (rs_recover) [STANDALONE]:
+	Prevent memory leak.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/reed_solomon.c (rs_recover): Prevent memory leak.
+	(main): Close file.
+	Reported by: David Volgyes <dvolgyes>.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/xnu.c (grub_cpu_xnu_fill_devprop): Don't attempt
+	to continue if allocation is failed.
+
+	Reported by: David Volgyes <dvolgyes>.
+
+2011-06-23  David Volgyes <dvolgyes>
+
+	* grub-core/bus/usb/ohci.c (grub_ohci_pci_iter): Avoid NULL-pointer
+	dereference.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix spurious warning.
+
+	* grub-core/partmap/acorn.c (grub_acorn_boot_block): Make a union.
+	(acorn_partition_map_find): Use .bin member.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/getroot.c (grub_guess_root_device): Don't accept
+	/dev/root as a valid device.
+
+2011-06-23  Jim Meyering  <meyering@redhat.com>
+
+	Avoid NULL deref in grub_device_open.
+
+	* grub-core/kern/device.c (grub_device_open): Don't dereference
+	a NULL pointer upon failed grub_env_get.
+
+2011-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support non-512B sectors and agglomerate reads.
+
+	* Makefile.util.def (libgrubmods.a): Add grub-core/commands/testload.c.
+	* grub-core/disk/efi/efidisk.c (grub_efidisk_data): Remove disk_io.
+	(disk_io_guid): Removed.
+	(make_devices): Locate solely by BlockIO.
+	(grub_efidisk_open): Fill log_sector_size and total_sectors.
+	(grub_efidisk_read): Use read_blocks.
+	(grub_efidisk_write): Use write_blocks.
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_open): Fill
+	log_sector_size.
+	(get_safe_sectors): Handle non-512B sectors.
+	(grub_biosdisk_read): Remove special CDROM handling. Handle non-512B
+	sectors.
+	(grub_biosdisk_write): Handle non-512B sectors.
+	* grub-core/disk/scsi.c (grub_scsi_open): Fill log_sector_size.
+	(grub_scsi_read): Remove special non-512B block handling (now handled
+	one level up).
+	* grub-core/kern/disk.c (grub_disk_open): Fill default log_sector_size
+	and do sanity checks.
+	(grub_disk_adjust_range): Handle non-512B sectors.
+	(transform_sector): New function.
+	(grub_disk_read_small): Likewise.
+	(grub_disk_read): Rewritten.
+	(grub_disk_write): Handle non-512B sectors.
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_open): Fill
+	log_sector_size.
+	(open_device): Use log_sector_size.
+	(grub_util_biosdisk_read): Likewise.
+	(grub_util_biosdisk_write): Likewise.
+	* grub-core/partmap/msdos.c (grub_partition_msdos_iterate): Handle
+	non-512B sectors.
+	(pc_partition_map_embed): Likewise.
+	* include/grub/disk.h (grub_disk): New field log_sector_size.
+	(GRUB_DISK_CACHE_SIZE): Redefined from GRUB_DISK_CACHE_BITS.
+	(GRUB_DISK_CACHE_BITS): Increased to 6.
+	* util/grub-fstest.c (fstest): New command testload.
+	(argp_parser): Likewise.
+
+2011-06-16  Robert Millan  <rmh@gnu.org>
+
+	Detect `ataraid' devices on GNU/kFreeBSD.  Fix for ATA devices using
+	`ata' driver on kernel of FreeBSD 9.
+
+	* util/deviceiter.c [__FreeBSD_kernel__] (get_ada_disk_name)
+	(get_ataraid_disk_name): New functions.
+	[__FreeBSD_kernel__] (grub_util_iterate_devices): Scan for ataraid
+	(/dev/ar[0-9]+) and ada (/dev/ada[0-9]+) devices using
+	get_ataraid_disk_name() and get_ada_disk_name().
+
+2011-06-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/man/grub-mklayout.h2m (DESCRIPTION): Add a reference to the
+	input format.
+
+2011-05-29  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Obtaining and Building GRUB): Substitute
+	`ftp.gnu.org' for `alpha.gnu.org'.
+
+2011-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/emu/hostdisk.c (linux_find_partition): Handle
+	partitions under /dev/disk/by-id/.
+
+2011-05-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/kern/emu/hostdisk.c (linux_find_partition): Give up
+	after ten consecutive open failures.  Scanning all the way up to
+	10000 is excessive and can cause serious performance problems in
+	some configurations.
+	Fixes Ubuntu bug #787461.
 
 2011-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
 

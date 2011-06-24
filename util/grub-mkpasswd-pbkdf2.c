@@ -270,7 +270,6 @@ main (int argc, char *argv[])
 	free (bufhex);
 	free (salthex);
 	free (salt);
-	fclose (f);
 	grub_util_error ("couldn't retrieve random data for salt");
       }
     fclose (f);

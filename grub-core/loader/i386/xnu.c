@@ -452,11 +452,11 @@ grub_cpu_xnu_fill_devprop (void)
     }
 
   devprop = grub_xnu_create_value (&(efikey->first_child), "device-properties");
-  if (devprop)
-    {
-      devprop->data = grub_malloc (total_length);
-      devprop->datasize = total_length;
-    }
+  if (!devprop)
+    return grub_errno;
+
+  devprop->data = grub_malloc (total_length);
+  devprop->datasize = total_length;
 
   ptr = devprop->data;
   head = ptr;

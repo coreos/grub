@@ -598,7 +598,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
       return 0;
     }
 
-  while (offset < dir->size)
+  for (; offset < dir->size; offset += dirent.len)
     {
       if (grub_disk_read (dir->data->disk,
 			  (dir->blk << GRUB_ISO9660_LOG2_BLKSZ)
@@ -676,10 +676,9 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	    if (filename)
 	      *filename = '\0';
 
-	    if (dirent.namelen == 1 && name[0] == 0)
-	      filename = ".";
-	    else if (dirent.namelen == 1 && name[0] == 1)
-	      filename = "..";
+	    /* . and .. */
+	    if (dirent.namelen == 1 && (name[0] == 0 || name[0] == 1))
+	      continue;
 	    else
 	      filename = name;
 	  }
@@ -712,8 +711,6 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	if (filename_alloc)
 	  grub_free (filename);
       }
-
-      offset += dirent.len;
     }
 
   return 0;

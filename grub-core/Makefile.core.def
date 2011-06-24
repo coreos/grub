@@ -868,8 +868,14 @@ module = {
 };
 
 module = {
-  name = ata_pthru;
-  common = disk/ata_pthru.c;
+  name = ahci;
+  common = disk/ahci.c;
+  enable = pci;
+};
+
+module = {
+  name = pata;
+  common = disk/pata.c;
   enable = pci;
   enable = mips_qemu_mips;
 };

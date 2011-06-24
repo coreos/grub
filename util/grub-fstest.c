@@ -61,7 +61,8 @@ enum {
   CMD_CMP,
   CMD_HEX,
   CMD_CRC,
-  CMD_BLOCKLIST
+  CMD_BLOCKLIST,
+  CMD_TESTLOAD
 };
 
 #define BUF_SIZE  32256
@@ -359,6 +360,9 @@ fstest (int n, char **args)
     case CMD_BLOCKLIST:
       execute_command ("blocklist", n, args);
       grub_printf ("\n");
+    case CMD_TESTLOAD:
+      execute_command ("testload", n, args);
+      grub_printf ("\n");
     }
     
   for (i = 0; i < num_disks; i++)
@@ -518,6 +522,11 @@ argp_parser (int key, char *arg, struct argp_state *state)
       else if (!grub_strcmp (arg, "blocklist"))
 	{
 	  cmd = CMD_BLOCKLIST;
+          nparm = 1;
+	}
+      else if (!grub_strcmp (arg, "testload"))
+	{
+	  cmd = CMD_TESTLOAD;
           nparm = 1;
 	}
       else

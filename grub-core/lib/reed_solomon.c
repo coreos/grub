@@ -265,6 +265,27 @@ rs_recover (gf_single_t *m, grub_size_t s, grub_size_t rs)
 
   syndroms (m, s, rs, sy);
 
+  for (i = 0; i < (int) rs; i++)
+    if (sy[i] != 0)
+      break;
+
+  /* No error detected.  */
+  if (i == (int) rs)
+    {
+#ifndef STANDALONE
+      free (sigma);
+      free (errpot);
+      free (errpos);
+      free (sy);
+#else
+      scratch -= rs2 * sizeof (gf_single_t);
+      scratch -= rs2 * sizeof (gf_single_t);
+      scratch -= rs2 * sizeof (int);
+      scratch -= rs * sizeof (gf_single_t);
+#endif
+      return;
+    }
+
   {
     gf_single_t *eq;
 
@@ -274,14 +295,6 @@ rs_recover (gf_single_t *m, grub_size_t s, grub_size_t rs)
     eq = (void *) scratch;
     scratch += rs2 * (rs2 + 1) * sizeof (gf_single_t);
 #endif
-
-    for (i = 0; i < (int) rs; i++)
-      if (sy[i] != 0)
-	break;
-
-    /* No error detected.  */
-    if (i == (int) rs)
-      return;
 
     for (i = 0; i < (int) rs2; i++)
       for (j = 0; j < (int) rs2 + 1; j++)
@@ -504,6 +517,7 @@ main (int argc, char **argv)
   rs = s / 3;
   buf = xmalloc (s + rs + SECTOR_SIZE);
   fread (buf, 1, s, in);
+  fclose (in);
 
   grub_reed_solomon_add_redundancy (buf, s, rs);
 
