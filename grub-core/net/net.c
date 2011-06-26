@@ -576,9 +576,10 @@ grub_cmd_listcards (struct grub_command *cmd __attribute__ ((unused)),
   struct grub_net_card *card;
   FOR_NET_CARDS(card)
   {
-    grub_printf ("%s ", card->name);
+    char buf[MAX_STR_HWADDR_LEN];
+    hwaddr_to_str (&card->default_address, buf);
+    grub_printf ("%s %s\n", card->name, buf);
   }
-  grub_printf ("\n");
   return GRUB_ERR_NONE;
 }
 
