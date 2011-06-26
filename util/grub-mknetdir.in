@@ -224,16 +224,16 @@ EOF
 
 if [ "${override_dir}" = "" ] ; then
     if test -e "${pc_dir}" ; then
-        process_input_dir ${pc_dir} i386-pc
+        process_input_dir "${pc_dir}" i386-pc
     fi
     if test -e "${ppc_dir}" ; then
-        process_input_dir ${ppc_dir} powerpc-ieee1275
+        process_input_dir "${ppc_dir}" powerpc-ieee1275
     fi
     if test -e "${sparc_dir}" ; then
         process_input_dir ${sparc_dir} sparc64-ieee1275
     fi
     if test -e "${i386_ieee1275_dir}" ; then
-        process_input_dir ${sparc_dir} i386-ieee1275
+        process_input_dir "${i386_ieee1275_dir}" i386-ieee1275
     fi
 else
     source "${override_dir}"/modinfo.sh
