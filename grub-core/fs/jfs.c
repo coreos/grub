@@ -699,7 +699,7 @@ grub_jfs_find_file (struct grub_jfs_data *data, const char *path)
     }
 
   grub_jfs_closedir (diro);
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
   return grub_errno;
 }
 

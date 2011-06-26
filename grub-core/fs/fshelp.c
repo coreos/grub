@@ -197,7 +197,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  name = next;
 	}
 
-      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
     }
 
   if (!path || path[0] != '/')

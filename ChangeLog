@@ -1,3 +1,16 @@
+2011-06-26  Yves Blusseau  <blusseau@zetam.org>
+
+	Display the path of the file when file is not found
+
+	* grub-core/fs/fat.c: Display the filename when file is not found.
+	* grub-core/fs/fshelp.c: Likewise.
+	* grub-core/fs/hfs.c: Likewise.
+	* grub-core/fs/jfs.c: Likewise.
+	* grub-core/fs/minix.c: Likewise.
+	* grub-core/fs/ufs.c: Likewise.
+	* grub-core/fs/btrfs.c: Likewise.
+	* grub-core/commands/i386/pc/play.c: Likewise.
+
 2011-06-26  Szymon Janc <szymon@janc.net.pl>
 
 	* grub-core/commands/cmp.c (grub_cmd_cmp): Remove unnecessary NULL

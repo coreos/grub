@@ -424,7 +424,7 @@ grub_minix_find_file (struct grub_minix_data *data, const char *path)
       pos += sizeof (ino) + data->filename_size;
     } while (pos < GRUB_MINIX_INODE_SIZE (data));
 
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
   return grub_errno;
 }
 

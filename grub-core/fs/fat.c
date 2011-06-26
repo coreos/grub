@@ -565,6 +565,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 				const struct grub_dirhook_info *info))
 {
   char *dirname, *dirp;
+  char *origpath = NULL;
   int call_hook;
   int found = 0;
 
@@ -605,6 +606,10 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
       return 0;
     }
 
+  origpath = grub_strdup (path);
+  if (!origpath)
+    return 0;
+
   /* Extract a directory name.  */
   while (*path == '/')
     path++;
@@ -616,7 +621,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
       dirname = grub_malloc (len + 1);
       if (! dirname)
-	return 0;
+	goto fail;
 
       grub_memcpy (dirname, path, len);
       dirname[len] = '\0';
@@ -629,9 +634,11 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
   grub_fat_iterate_dir (disk, data, iter_hook);
   if (grub_errno == GRUB_ERR_NONE && ! found && !call_hook)
-    grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+    grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", origpath);
 
+ fail:
   grub_free (dirname);
+  grub_free (origpath);
 
   return found ? dirp : 0;
 }
