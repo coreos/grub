@@ -1588,8 +1588,14 @@ module = {
 
 module = {
   name = ofnet;
-  ieee1275 = net/drivers/ieee1275/ofnet.c;
+  common = net/drivers/ieee1275/ofnet.c;
   enable = ieee1275;
+};
+
+module = {
+  name = efinet;
+  common = net/drivers/efi/efinet.c;
+  enable = efi;
 };
 
 module = {
