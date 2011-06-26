@@ -205,10 +205,10 @@ process_input_dir ()
 	 	  netmodules="pxe";
 		  ext=0 ;;
     	 sparc64-ieee1275) mkimage_target=sparc64-ieee1275-aout;
-	 	  netmodules="";
+	 	  netmodules="ofnet";
 		  ext=img ;;
     	 *-ieee1275) mkimage_target="${platform}";
-	 	  netmodules="";
+	 	  netmodules="ofnet";
 		  ext=elf ;;
     	 *) echo Unsupported platform ${platform};
     	    exit 1;;
@@ -218,7 +218,7 @@ process_input_dir ()
 source ${subdir}/grub.cfg
 EOF
 
-    $grub_mkimage ${config_opt} -d "${input_dir}" -O ${mkimage_target} --output=${grubdir}/core.$ext --prefix=$prefix $modules $netmodules || exit 1
+    $grub_mkimage ${config_opt} -d "${input_dir}" -O ${mkimage_target} --output=${grubdir}/core.$ext --prefix=$prefix $modules $netmodules tftp || exit 1
     echo "Netboot directory for ${platform} created. Configure your DHCP server to point to ${subdir}/${platform}/core.$ext"
 }
 
