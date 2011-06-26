@@ -69,10 +69,14 @@ grub_net_recv_ethernet_packet (struct grub_net_buff * nb,
     {
       grub_net_arp_receive (nb);
       grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
     }
   /* IP packet.  */
   if (type == GRUB_NET_ETHERTYPE_IP)
-    grub_net_recv_ip_packets (nb, card, &hwaddress);
-
+    {
+      grub_net_recv_ip_packets (nb, card, &hwaddress);
+      return GRUB_ERR_NONE;
+    }
+  grub_netbuff_free (nb);
   return GRUB_ERR_NONE;
 }
