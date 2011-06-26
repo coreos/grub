@@ -286,7 +286,7 @@ GRUB_MOD_INIT(pxe)
   grub_pxe_card.default_address.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
   ou = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
-  grub_memset (ou, 0, sizeof (ou));
+  grub_memset (ou, 0, sizeof (*ou));
   ou->pkt_filter = 4;
   grub_pxe_call (GRUB_PXENV_UNDI_OPEN, ou, pxe_rm_entry);
   
