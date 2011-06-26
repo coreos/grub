@@ -879,7 +879,10 @@ parse_dhcp_vendor (const char *name, void *vend, int limit)
 
   ptr = ptr0 = vend;
 
-  if (grub_be_to_cpu32 (*(grub_uint32_t *) ptr) != GRUB_NET_BOOTP_RFC1048_MAGIC)
+  if (ptr[0] != GRUB_NET_BOOTP_RFC1048_MAGIC_0
+      || ptr[1] != GRUB_NET_BOOTP_RFC1048_MAGIC_1
+      || ptr[2] != GRUB_NET_BOOTP_RFC1048_MAGIC_2
+      || ptr[3] != GRUB_NET_BOOTP_RFC1048_MAGIC_3)
     return;
   ptr = ptr + sizeof (grub_uint32_t);
   while (ptr - ptr0 < limit)
@@ -1078,8 +1081,10 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 
   ptr = inter->dhcp_ack->vendor;
 
-  if (grub_be_to_cpu32 (*(grub_uint32_t *) ptr)
-      != GRUB_NET_BOOTP_RFC1048_MAGIC)
+  if (ptr[0] != GRUB_NET_BOOTP_RFC1048_MAGIC_0
+      || ptr[1] != GRUB_NET_BOOTP_RFC1048_MAGIC_1
+      || ptr[2] != GRUB_NET_BOOTP_RFC1048_MAGIC_2
+      || ptr[3] != GRUB_NET_BOOTP_RFC1048_MAGIC_3)
     return grub_error (GRUB_ERR_IO, N_("no DHCP options found"));
   ptr = ptr + sizeof (grub_uint32_t);
   while (1)

@@ -394,7 +394,10 @@ struct grub_net_bootp_packet
   grub_uint8_t vendor[0];
 } __attribute__ ((packed));
 
-#define	GRUB_NET_BOOTP_RFC1048_MAGIC	0x63825363L
+#define	GRUB_NET_BOOTP_RFC1048_MAGIC_0	0x63
+#define	GRUB_NET_BOOTP_RFC1048_MAGIC_1	0x82
+#define	GRUB_NET_BOOTP_RFC1048_MAGIC_2	0x53
+#define	GRUB_NET_BOOTP_RFC1048_MAGIC_3	0x63
 
 struct grub_net_network_level_interface *
 grub_net_configure_by_dhcp_ack (const char *name,
