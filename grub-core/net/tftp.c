@@ -131,8 +131,9 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
       grub_netbuff_clear (nb);
       break;
     case TFTP_DATA:
-      if ((err = grub_netbuff_pull (nb, sizeof (tftph->opcode) +
-			 sizeof (tftph->u.data.block))) != GRUB_ERR_NONE)
+      err = grub_netbuff_pull (nb, sizeof (tftph->opcode) +
+			       sizeof (tftph->u.data.block));
+      if (err)
 	return err;
       if (grub_be_to_cpu16 (tftph->u.data.block) == data->block + 1)
 	{
@@ -142,8 +143,11 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
 	    sock->status = 2;
 	  /* Prevent garbage in broken cards.  */
 	  if (size > 1024)
-	    if ((err = grub_netbuff_unput (nb, size - 1024)) != GRUB_ERR_NONE)
-	      return err;
+	    {
+	      err = grub_netbuff_unput (nb, size - 1024);
+	      if (err)
+		return err;
+	    }
 	}
       else
 	grub_netbuff_clear (nb);
