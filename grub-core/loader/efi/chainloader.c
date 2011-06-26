@@ -329,8 +329,7 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
   if (file)
     grub_file_close (file);
 
-  if (file_path)
-    grub_free (file_path);
+  grub_free (file_path);
 
   if (address)
     efi_call_2 (b->free_pages, address, pages);

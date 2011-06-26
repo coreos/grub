@@ -324,8 +324,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
         }
     }
 
-  if (leaf)
-    grub_free (leaf);
+  grub_free (leaf);
 
   return GRUB_XFS_FSB_TO_BLOCK(node->data, ret);
 }

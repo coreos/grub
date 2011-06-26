@@ -355,8 +355,7 @@ grub_lexer_unput (const char *text, yyscan_t yyscanner)
 {
   struct grub_lexer_param *lexerstate = yyget_extra (yyscanner)->lexerstate;
 
-  if (lexerstate->prefix)
-    grub_free (lexerstate->prefix);
+  grub_free (lexerstate->prefix);
 
   lexerstate->prefix = grub_strdup (text);
   if (! lexerstate->prefix)

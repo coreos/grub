@@ -546,8 +546,7 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
     }
 
 fail:
-  if (buf)
-    grub_free (buf);
+  grub_free (buf);
 
   return 0;
 }

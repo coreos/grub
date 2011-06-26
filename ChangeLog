@@ -1,3 +1,19 @@
+2011-06-26  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/commands/cmp.c (grub_cmd_cmp): Remove unnecessary NULL
+	pointer checks before calling grub_free().
+	* grub-core/commands/wildcard.c (match_devices): Likewise.
+	* grub-core/commands/wildcard.c (match_files): Likewise.
+	* grub-core/fs/cpio.c (grub_cpio_dir): Likewise.
+	* grub-core/fs/cpio.c (grub_cpio_open): Likewise.
+	* grub-core/fs/udf.c (grub_udf_read_block): Likewise.
+	* grub-core/fs/xfs.c (grub_xfs_read_block): Likewise.
+	* grub-core/loader/efi/chainloader.c (grub_cmd_chainloader): Likewise.
+	* grub-core/normal/cmdline.c (grub_cmdline_get): Likewise.
+	* grub-core/script/yylex.l (grub_lexer_unput): Likewise.
+	* grub-core/video/readers/jpeg.c (grub_video_reader_jpeg): Likewise.
+	* grub-core/video/readers/png.c (grub_png_output_byte): Likewise.
+
 2011-06-25  Patrick <p55@mailinator.com>
 
 	* grub-core/kern/main.c (grub_load_normal_mode): Correct the comment.
