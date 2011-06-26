@@ -234,7 +234,7 @@ grub_net_socket_unregister (grub_net_socket_t sock)
 
 typedef struct grub_net
 {
-  char *name;
+  char *server;
   grub_net_app_level_t protocol;
   grub_net_socket_t socket;
   grub_fs_t fs;
@@ -389,8 +389,8 @@ struct grub_net_bootp_packet
   grub_uint32_t	server_ip;
   grub_uint32_t	gateway_ip;
   grub_net_bootp_mac_addr_t mac_addr;
-  grub_uint8_t server_name[64];
-  grub_uint8_t boot_file[128];
+  char server_name[64];
+  char boot_file[128];
   grub_uint8_t vendor[0];
 } __attribute__ ((packed));
 

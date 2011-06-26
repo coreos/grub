@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2010,2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,6 +31,8 @@
 #include <grub/datetime.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
+
+static char *default_server;
 
 struct grub_net_route
 {
@@ -603,26 +605,63 @@ struct grub_net_socket *grub_net_sockets;
 static grub_net_t
 grub_net_open_real (const char *name)
 {
-  const char *comma = grub_strchr (name, ',');
   grub_net_app_level_t proto;
+  const char *protname, *server;
+  grub_size_t protnamelen;
 
-  if (!comma)
-    comma = name + grub_strlen (name);
+  if (grub_strncmp (name, "pxe:", sizeof ("pxe:") - 1) == 0)
+    {
+      protname = "tftp";
+      protnamelen = sizeof ("tftp") - 1;
+      server = name + sizeof ("pxe:") - 1;
+    }
+  else if (grub_strcmp (name, "pxe") == 0)
+    {
+      protname = "tftp";
+      protnamelen = sizeof ("tftp") - 1;
+      server = default_server;
+    }
+  else
+    {
+      const char *comma;
+      comma = grub_strchr (name, ',');
+      if (comma)
+	{
+	  protnamelen = comma - name;
+	  server = comma + 1;
+	}
+      else
+	{
+	  protnamelen = grub_strlen (name);
+	  server = default_server;
+	}
+    }
+  if (!server)
+    {
+      grub_error (GRUB_ERR_NET_BAD_ADDRESS, "no server");
+      return NULL;
+    }
+
   FOR_NET_APP_LEVEL (proto)
   {
-    if (comma - name == (grub_ssize_t) grub_strlen (proto->name)
-	&& grub_memcmp (proto->name, name, comma - name) == 0)
+    if (grub_memcmp (proto->name, protname, protnamelen) == 0
+	&& proto->name[protnamelen] == 0)
       {
 	grub_net_t ret = grub_malloc (sizeof (*ret));
 	if (!ret)
 	  return NULL;
 	ret->protocol = proto;
-	ret->name = grub_strdup (name);
-	if (!ret->name)
+	if (server)
 	  {
-	    grub_free (ret);
-	    return NULL;
+	    ret->server = grub_strdup (server);
+	    if (!ret->server)
+	      {
+		grub_free (ret);
+		return NULL;
+	      }
 	  }
+	else
+	  ret->server = NULL;
 	ret->fs = &grub_net_fs;
 	return ret;
       }
@@ -651,13 +690,8 @@ grub_net_fs_open (struct grub_file *file, const char *name)
   grub_net_network_level_address_t gateway;
   grub_net_socket_t socket;
   static int port = 25300;
-  const char *comma;
 
-  comma = grub_strchr (file->device->net->name, ',');
-  if (!comma)
-    return grub_error (GRUB_ERR_NET_BAD_ADDRESS, "no separator");
-
-  err = grub_net_resolve_address (comma + 1, &addr);
+  err = grub_net_resolve_address (file->device->net->server, &addr);
   if (err)
     return err;
  
@@ -913,20 +947,19 @@ grub_net_configure_by_dhcp_ack (const char *name,
   hwaddr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
   inter = grub_net_add_addr (name, card, addr, hwaddr, flags);
-  if (bp->gateway_ip != bp->server_ip)
-    {
-      grub_net_network_level_netaddress_t target;
-      grub_net_network_level_address_t gw;
-      char rname[grub_strlen (name) + sizeof ("_gw")];
+  {
+    grub_net_network_level_netaddress_t target;
+    grub_net_network_level_address_t gw;
+    char rname[grub_strlen (name) + sizeof ("_gw")];
 	  
-      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-      target.ipv4.base = bp->server_ip;
-      target.ipv4.masksize = 32;
-      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-      gw.ipv4 = bp->gateway_ip;
-      grub_snprintf (rname, sizeof (rname), "%s_gw", name);
-      grub_net_add_route_gw (rname, target, gw);
-    }
+    target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+    target.ipv4.base = bp->server_ip;
+    target.ipv4.masksize = 32;
+    gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+    gw.ipv4 = bp->gateway_ip;
+    grub_snprintf (rname, sizeof (rname), "%s_gw", name);
+    grub_net_add_route_gw (rname, target, gw);
+  }
   {
     grub_net_network_level_netaddress_t target;
     target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
@@ -938,9 +971,26 @@ grub_net_configure_by_dhcp_ack (const char *name,
   if (size > OFFSET_OF (boot_file, bp))
     set_env_limn_ro (name, "boot_file", (char *) bp->boot_file,
 		     sizeof (bp->boot_file));
-  if (size > OFFSET_OF (server_name, bp))
-    set_env_limn_ro (name, "dhcp_server_name", (char *) bp->server_name,
-		     sizeof (bp->server_name));
+  if (size > OFFSET_OF (server_name, bp)
+      && bp->server_name[0])
+    {
+      set_env_limn_ro (name, "dhcp_server_name", (char *) bp->server_name,
+		       sizeof (bp->server_name));
+      if (!default_server)
+	{
+	  default_server = grub_strdup (bp->server_name);
+	  grub_errno = GRUB_ERR_NONE;
+	}	  
+    }
+  if (!default_server)
+    {
+      default_server = grub_xasprintf ("%d.%d.%d.%d",
+				       ((grub_uint8_t *) &bp->server_ip)[0],
+				       ((grub_uint8_t *) &bp->server_ip)[1],
+				       ((grub_uint8_t *) &bp->server_ip)[2],
+				       ((grub_uint8_t *) &bp->server_ip)[3]);
+      grub_errno = GRUB_ERR_NONE;
+    }	  
   if (size > OFFSET_OF (vendor, bp))
     parse_dhcp_vendor (name, &bp->vendor, size - OFFSET_OF (vendor, bp));
 

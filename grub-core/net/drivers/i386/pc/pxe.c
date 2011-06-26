@@ -204,7 +204,6 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)),
       ptr += isr->buffer_len;
     }
 
-  grub_printf ("<%d>\n", len);
   return len;
 }
 
