@@ -48,6 +48,9 @@ pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc
 ppc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/powerpc-ieee1275
 sparc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/sparc64-ieee1275
 i386_ieee1275_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-ieee1275
+efi32_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi
+efi64_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi
+itanium_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/ia64-efi
 
 # Usage: usage
 # Print the usage.
@@ -210,6 +213,9 @@ process_input_dir ()
     	 *-ieee1275) mkimage_target="${platform}";
 	 	  netmodules="ofnet";
 		  ext=elf ;;
+    	 *-efi) mkimage_target="${platform}";
+	 	  netmodules="efinet";
+		  ext=efi ;;
     	 *) echo Unsupported platform ${platform};
     	    exit 1;;
     esac
@@ -234,6 +240,15 @@ if [ "${override_dir}" = "" ] ; then
     fi
     if test -e "${i386_ieee1275_dir}" ; then
         process_input_dir "${i386_ieee1275_dir}" i386-ieee1275
+    fi
+    if test -e "${efi32_dir}" ; then
+        process_input_dir "${efi32_dir}" i386-efi
+    fi
+    if test -e "${efi64_dir}" ; then
+        process_input_dir "${efi64_dir}" x86_64-efi
+    fi
+    if test -e "${itanium_dir}" ; then
+        process_input_dir "${itanium_dir}" ia64-efi
     fi
 else
     source "${override_dir}"/modinfo.sh
