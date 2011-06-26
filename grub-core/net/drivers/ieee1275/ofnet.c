@@ -1,3 +1,21 @@
+/*
+ *  GRUB  --  GRand Unified Bootloader
+ *  Copyright (C) 2010,2011  Free Software Foundation, Inc.
+ *
+ *  GRUB is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  GRUB is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <grub/net/netbuff.h>
 #include <grub/ieee1275/ofnet.h>
 #include <grub/ieee1275/ieee1275.h>
@@ -37,7 +55,8 @@ card_close (struct grub_net_card *dev)
 }
 
 static grub_err_t
-send_card_buffer (struct grub_net_card *dev, struct grub_net_buff *pack)
+send_card_buffer (const struct grub_net_card *dev,
+		  struct grub_net_buff *pack)
 {
   int actual;
   int status;
@@ -52,7 +71,8 @@ send_card_buffer (struct grub_net_card *dev, struct grub_net_buff *pack)
 }
 
 static grub_ssize_t
-get_card_packet (struct grub_net_card *dev, struct grub_net_buff *nb)
+get_card_packet (const struct grub_net_card *dev,
+		 struct grub_net_buff *nb)
 {
 
   int actual, rc;
@@ -125,20 +145,33 @@ grub_getbootp_real (void)
 static void
 grub_ofnet_findcards (void)
 {
-  struct grub_net_card *card;
-  grub_ieee1275_phandle_t devhandle;
-  grub_net_link_level_address_t lla;
   int i = 0;
+
   auto int search_net_devices (struct grub_ieee1275_devalias *alias);
 
   int search_net_devices (struct grub_ieee1275_devalias *alias)
   {
     if (!grub_strcmp (alias->type, "network"))
       {
+	struct grub_ofnetcard_data *ofdata;
+	struct grub_net_card *card;
+	grub_ieee1275_phandle_t devhandle;
+	grub_net_link_level_address_t lla;
 
+	ofdata = grub_malloc (sizeof (struct grub_ofnetcard_data));
+	if (!ofdata)
+	  {
+	    grub_print_error ();
+	    return 1;
+	  }
 	card = grub_malloc (sizeof (struct grub_net_card));
-	struct grub_ofnetcard_data *ofdata =
-	  grub_malloc (sizeof (struct grub_ofnetcard_data));
+	if (!card)
+	  {
+	    grub_free (ofdata);
+	    grub_print_error ();
+	    return 1;
+	  }
+
 	ofdata->path = grub_strdup (alias->path);
 
 	grub_ieee1275_finddevice (ofdata->path, &devhandle);
