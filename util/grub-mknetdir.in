@@ -196,11 +196,17 @@ process_input_dir ()
        config_opt="-c ${grubdir}/load.cfg "
     fi
 
+    prefix="/${subdir}/${platform}";
     case "${platform}" in
     	 i386-pc) mkimage_target=i386-pc-pxe;
 	 	  netmodules="pxe";
-		  prefix="(pxe)/${subdir}/${platform}";
 		  ext=0 ;;
+    	 sparc64-ieee1275) mkimage_target=sparc64-ieee1275-aout;
+	 	  netmodules="";
+		  ext=img ;;
+    	 *-ieee1275) mkimage_target="${platform}";
+	 	  netmodules="";
+		  ext=elf ;;
     	 *) echo Unsupported platform ${platform};
     	    exit 1;;
     esac
