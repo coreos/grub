@@ -1,5 +1,10 @@
 2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/grub-ofpathname.c (main): Handle --help and --version
+	so that help2man doesn't fail.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/drivers/ieee1275/ofnet.c (send_card_buffer) Use right
 	type in pointers on sparc64.
 	(get_card_packet): Likewise.
