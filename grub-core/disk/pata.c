@@ -156,7 +156,8 @@ grub_pata_readwrite (struct grub_ata *disk,
 		parms->taskfile.cmd,
 		parms->taskfile.features,
 		parms->taskfile.sectors);
-  grub_dprintf ("pata", "lba_high=0x%x, lba_mid=0x%x, lba_low=0x%x, size=%d\n",
+  grub_dprintf ("pata", "lba_high=0x%x, lba_mid=0x%x, lba_low=0x%x, size=%"
+		PRIuGRUB_SIZE "\n",
 	        parms->taskfile.lba_high,
 	        parms->taskfile.lba_mid,
 	        parms->taskfile.lba_low, parms->size);

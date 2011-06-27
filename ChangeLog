@@ -1,5 +1,11 @@
 2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ahci.c (grub_ahci_readwrite_real): Use proper
+	definitions for dprintf.
+	* grub-core/disk/pata.c (grub_pata_readwrite): Likewise.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/drivers/ieee1275/ofnet.c (send_card_buffer): Fix
 	prototype.
 	(get_card_packet): Likewise.
