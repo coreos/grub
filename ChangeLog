@@ -1,5 +1,25 @@
 2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Coreboot video support.
+
+	* grub-core/Makefile.core.def (vga): Extend to coreboot and multiboot.
+	(vbe): Likewise.
+	* grub-core/kern/i386/coreboot/startup.S: Include int.S.
+	* grub-core/kern/i386/pc/startup.S (grub_bios_interrupt): Moved from
+	here ...
+	* grub-core/kern/i386/int.S: ... here.
+	* grub-core/video/i386/pc/vbe.c: Updated includes.
+	* grub-core/video/i386/pc/vga.c: Likewise.
+	* include/grub/i386/coreboot/memory.h
+	(GRUB_MEMORY_MACHINE_SCRATCH_ADDR): New definition.
+	(GRUB_MEMORY_MACHINE_SCRATCH_SEG): Likewise.
+	(GRUB_MEMORY_MACHINE_SCRATCH_SIZE): Likewise.
+	* include/grub/i386/pc/int.h (GRUB_CPU_INT_FLAGS_DEFAULT) [!PCBIOS]:
+	Disable interrupts.
+	* include/grub/i386/pc/vga.h: Removed. All users updated.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ahci.c (grub_ahci_readwrite_real): Use proper
 	definitions for dprintf.
 	* grub-core/disk/pata.c (grub_pata_readwrite): Likewise.

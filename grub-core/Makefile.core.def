@@ -1454,8 +1454,10 @@ module = {
 
 module = {
   name = vga;
-  i386_pc = video/i386/pc/vga.c;
+  common = video/i386/pc/vga.c;
   enable = i386_pc;
+  enable = i386_coreboot;
+  enable = i386_multiboot;
 };
 
 module = {
@@ -1533,8 +1535,10 @@ module = {
 
 module = {
   name = vbe;
-  i386_pc = video/i386/pc/vbe.c;
+  common = video/i386/pc/vbe.c;
   enable = i386_pc;
+  enable = i386_coreboot;
+  enable = i386_multiboot;
 };
 
 module = {

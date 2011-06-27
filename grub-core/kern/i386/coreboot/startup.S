@@ -87,3 +87,4 @@ codestart:
  */
 #include "../realmode.S"
 
+#include "../int.S"
