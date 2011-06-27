@@ -1,5 +1,10 @@
 2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/scsi.c (grub_scsi_read): Limit SCSI reads to 32K
+	because of underlying system restrictions.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Rename "ata" to "pata" and add ahci when
 	necessary.
 
