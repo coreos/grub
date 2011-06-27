@@ -1641,3 +1641,8 @@ module = {
   common = commands/keylayouts.c;
   enable = videomodules;
 };
+
+module = {
+  name = time;
+  common = commands/time.c;
+};
