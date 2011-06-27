@@ -1,5 +1,9 @@
 2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (chain): Fix coreboot filename.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/pata.c (grub_pata_initialize) [QEMU_MIPS]: Fix a
 	mismerge.
 
