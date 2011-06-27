@@ -39,7 +39,7 @@ card_close (struct grub_net_card *dev)
 static grub_err_t
 send_card_buffer (const struct grub_net_card *dev, struct grub_net_buff *pack)
 {
-  int actual;
+  grub_ssize_t actual;
   int status;
   struct grub_ofnetcard_data *data = dev->data;
 
@@ -54,7 +54,8 @@ send_card_buffer (const struct grub_net_card *dev, struct grub_net_buff *pack)
 static grub_ssize_t
 get_card_packet (const struct grub_net_card *dev, struct grub_net_buff *nb)
 {
-  int actual, rc;
+  grub_ssize_t actual;
+  int rc;
   struct grub_ofnetcard_data *data = dev->data;
   grub_uint64_t start_time;
 

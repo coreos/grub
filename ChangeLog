@@ -1,3 +1,9 @@
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/net/drivers/ieee1275/ofnet.c (send_card_buffer) Use right
+	type in pointers on sparc64.
+	(get_card_packet): Likewise.
+
 2011-06-27  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/commands/videoinfo.c (hook): Indicate current video mode
