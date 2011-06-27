@@ -1,5 +1,10 @@
 2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.in: Rename "ata" to "pata" and add ahci when
+	necessary.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Coreboot video support.
 
 	* grub-core/Makefile.core.def (vga): Extend to coreboot and multiboot.
