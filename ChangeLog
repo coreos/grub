@@ -1,5 +1,10 @@
 2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/bsd.c (grub_bsd_load): Handle relocator failure
+	if it happens.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Implement time command.
 
 	* grub-core/Makefile.core.def (time): New module.
