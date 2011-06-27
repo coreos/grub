@@ -1,3 +1,9 @@
+2011-06-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/commands/videoinfo.c (hook): Indicate current video mode
+	with `*'.
+	(grub_cmd_videoinfo): Fetch current video mode.
+
 2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/scsi.c (grub_scsi_read): Limit SCSI reads to 32K
