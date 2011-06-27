@@ -165,7 +165,10 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)),
       isr->func_flag = GRUB_PXE_ISR_IN_START;
       grub_pxe_call (GRUB_PXENV_UNDI_ISR, isr, pxe_rm_entry);
       if (isr->status || isr->func_flag != GRUB_PXE_ISR_OUT_OURS)
-	return -1;
+	{
+	  in_progress = 0;
+	  return -1;
+	}
       grub_memset (isr, 0, sizeof (*isr));
       isr->func_flag = GRUB_PXE_ISR_IN_PROCESS;
       grub_pxe_call (GRUB_PXENV_UNDI_ISR, isr, pxe_rm_entry);
@@ -180,7 +183,10 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)),
   while (isr->func_flag != GRUB_PXE_ISR_OUT_RECEIVE)
     {
       if (isr->status || isr->func_flag == GRUB_PXE_ISR_OUT_DONE)
-	return -1;
+	{
+	  in_progress = 0;
+	  return -1;
+	}
       grub_memset (isr, 0, sizeof (*isr));
       isr->func_flag = GRUB_PXE_ISR_IN_GET_NEXT;
       grub_pxe_call (GRUB_PXENV_UNDI_ISR, isr, pxe_rm_entry);
@@ -198,11 +204,15 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)),
       isr->func_flag = GRUB_PXE_ISR_IN_GET_NEXT;
       grub_pxe_call (GRUB_PXENV_UNDI_ISR, isr, pxe_rm_entry);
       if (isr->status || isr->func_flag != GRUB_PXE_ISR_OUT_RECEIVE)
-	return -1;
+	{
+	  in_progress = 1;
+	  return -1;
+	}
 
       grub_memcpy (ptr, LINEAR (isr->buffer), isr->buffer_len);
       ptr += isr->buffer_len;
     }
+  in_progress = 1;
 
   return len;
 }
