@@ -438,15 +438,13 @@ grub_pata_initialize (void)
 }
 #else
 static grub_err_t
-grub_ata_initialize (void)
+grub_pata_initialize (void)
 {
   int i;
   for (i = 0; i < 2; i++)
     {
-      grub_ata_device_initialize (i, 0, grub_ata_ioaddress[i],
-				  grub_ata_ioaddress2[i]);
-      grub_ata_device_initialize (i, 1, grub_ata_ioaddress[i],
-				  grub_ata_ioaddress2[i]);
+      grub_pata_device_initialize (i, 0, grub_pata_ioaddress[i]);
+      grub_pata_device_initialize (i, 1, grub_pata_ioaddress[i]);
     }
   return 0;
 }
