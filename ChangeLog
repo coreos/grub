@@ -1,3 +1,9 @@
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/net/drivers/ieee1275/ofnet.c (send_card_buffer): Fix
+	prototype.
+	(get_card_packet): Likewise.
+
 2011-06-26  Yves Blusseau  <blusseau@zetam.org>
 
 	Display the path of the file when file is not found
