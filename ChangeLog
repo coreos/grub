@@ -1,3 +1,11 @@
+2011-06-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/term/gfxterm.c (grub_virtual_screen_setup): Use
+	default_bg_color rather than black.
+	(grub_gfxterm_fullscreen): Likewise.
+	(grub_gfxterm_background_color_cmd): Save new background color in
+	default_bg_color.
+
 2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/Makefile.core.def (chain): Fix coreboot filename.
