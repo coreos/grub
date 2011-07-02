@@ -664,6 +664,7 @@ grub_net_open_real (const char *name)
 	else
 	  ret->server = NULL;
 	ret->fs = &grub_net_fs;
+	ret->offset = 0;
 	return ret;
       }
   }
@@ -784,7 +785,7 @@ grub_net_poll_cards (unsigned time)
 
 /*  Read from the packets list*/
 static grub_ssize_t
-grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
+grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_net_socket_t sock = file->device->net->socket;
   struct grub_net_buff *nb;
@@ -802,6 +803,7 @@ grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
 	    amount = len;
 	  len -= amount;
 	  total += amount;
+	  file->device->net->offset += amount;
 	  if (buf)
 	    {
 	      grub_memcpy (ptr, nb->data, amount);
@@ -829,26 +831,38 @@ grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
     return total;
 }
 
-/*  Read from the packets list*/
 static grub_err_t 
 grub_net_seek_real (struct grub_file *file, grub_off_t offset)
 {
   grub_net_socket_t sock = file->device->net->socket;
   struct grub_net_buff *nb;
-  grub_size_t len = offset - file->offset;
+  grub_size_t len = offset - file->device->net->offset;
 
   if (!len)
     return GRUB_ERR_NONE;
 
   /* We cant seek backwards past the current packet.  */
-  if (file->offset > offset)
+  if (file->device->net->offset > offset)
     {  
       nb = sock->packs.first->nb;
-      return grub_netbuff_push (nb, file->offset - offset);
+      return grub_netbuff_push (nb, file->device->net->offset - offset);
     }
 
-  grub_net_fs_read (file, NULL, len);
+  grub_net_fs_read_real (file, NULL, len);
   return GRUB_ERR_NONE;
+}
+
+static grub_ssize_t
+grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
+{
+  if (file->offset != file->device->net->offset)
+    {
+      grub_err_t err;
+      err = grub_net_seek_real (file, file->offset);
+      if (err)
+	return err;
+    }
+  return grub_net_fs_read_real (file, buf, len);
 }
 
 static char *
@@ -1384,7 +1398,6 @@ GRUB_MOD_INIT(net)
 
   grub_fs_register (&grub_net_fs);
   grub_net_open = grub_net_open_real;
-  grub_file_net_seek = grub_net_seek_real;
   grub_grubnet_fini = grub_grubnet_fini_real;
 }
 
@@ -1400,6 +1413,5 @@ GRUB_MOD_FINI(net)
   grub_unregister_command (cmd_getdhcp);
   grub_fs_unregister (&grub_net_fs);
   grub_net_open = NULL;
-  grub_file_net_seek = NULL;
   grub_grubnet_fini = NULL;
 }

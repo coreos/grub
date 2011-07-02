@@ -25,7 +25,6 @@
 #include <grub/fs.h>
 #include <grub/device.h>
 
-grub_err_t (*grub_file_net_seek) (struct grub_file *file, grub_off_t offset) = NULL;
 void (*EXPORT_VAR (grub_grubnet_fini)) (void);
 
 grub_file_filter_t grub_file_filters_all[GRUB_FILE_FILTER_MAX];
@@ -183,9 +182,6 @@ grub_file_seek (grub_file_t file, grub_off_t offset)
       return -1;
     }
   
-  if (file->device->net && grub_file_net_seek)
-    grub_file_net_seek (file, offset);
-
   old = file->offset;
   file->offset = offset;
     

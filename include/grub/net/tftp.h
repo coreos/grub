@@ -43,12 +43,6 @@
  /*  * own here because this is cleaner, and maps to the same data layout.
  *   */
 
-typedef struct tftp_data
-  {
-    int file_size;
-    int block;
-  } *tftp_data_t;
-
 
 struct tftphdr {
   grub_uint16_t opcode;

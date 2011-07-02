@@ -11,6 +11,13 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+typedef struct tftp_data
+{
+  grub_uint64_t file_size;
+  grub_uint64_t block;
+  grub_uint32_t block_size;
+} *tftp_data_t;
+
 static grub_err_t
 tftp_open (struct grub_file *file, const char *filename)
 {
@@ -85,9 +92,9 @@ tftp_open (struct grub_file *file, const char *filename)
       if (file->device->net->socket->status != 0)
 	break;
       /* Retry.  */
-      /*err = grub_net_send_udp_packet (file->device->net->socket, &nb);
-         if (err)
-         return err; */
+      err = grub_net_send_udp_packet (file->device->net->socket, &nb);
+      if (err)
+	return err;
     }
 
   if (file->device->net->socket->status == 0)
@@ -110,17 +117,22 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
   nb_ack.head = nbdata;
   nb_ack.end = nbdata + sizeof (nbdata);
 
-
   tftph = (struct tftphdr *) nb->data;
   switch (grub_be_to_cpu16 (tftph->opcode))
     {
     case TFTP_OACK:
+      data->block_size = 512;
       for (ptr = nb->data + sizeof (tftph->opcode); ptr < nb->tail;)
 	{
 	  if (grub_memcmp (ptr, "tsize\0", sizeof ("tsize\0") - 1) == 0)
 	    {
 	      data->file_size = grub_strtoul (ptr + sizeof ("tsize\0") - 1,
 					      0, 0);
+	    }
+	  if (grub_memcmp (ptr, "blksize\0", sizeof ("blksize\0") - 1) == 0)
+	    {
+	      data->block_size = grub_strtoul (ptr + sizeof ("blksize\0") - 1,
+					       0, 0);
 	    }
 	  while (ptr < nb->tail && *ptr)
 	    ptr++;
@@ -139,12 +151,12 @@ tftp_receive (grub_net_socket_t sock, struct grub_net_buff *nb)
 	{
 	  data->block++;
 	  unsigned size = nb->tail - nb->data;
-	  if (size < 1024)
+	  if (size < data->block_size)
 	    sock->status = 2;
 	  /* Prevent garbage in broken cards.  */
-	  if (size > 1024)
+	  if (size > data->block_size)
 	    {
-	      err = grub_netbuff_unput (nb, size - 1024);
+	      err = grub_netbuff_unput (nb, size - data->block_size);
 	      if (err)
 		return err;
 	    }

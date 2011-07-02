@@ -45,9 +45,10 @@ struct mem_region
 static struct mem_region mem_regions[MAX_REGIONS];
 static int num_regions;
 
+void (*grub_pc_net_config) (char **device, char **path);
+
 void
-grub_machine_get_bootlocation (char **device,
-			       char **path __attribute__ ((unused)))
+grub_machine_get_bootlocation (char **device, char **path)
 {
   char *ptr;
 
@@ -55,7 +56,8 @@ grub_machine_get_bootlocation (char **device,
      partition number encoded at the install time.  */
   if (grub_boot_drive == GRUB_BOOT_MACHINE_PXE_DL)
     {
-      *device = grub_strdup ("pxe");
+      if (grub_pc_net_config)
+	grub_pc_net_config (device, path);
       return;
     }
 

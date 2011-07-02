@@ -28,6 +28,7 @@
 #include <grub/machine/pxe.h>
 #include <grub/machine/int.h>
 #include <grub/machine/memory.h>
+#include <grub/machine/kernel.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -44,6 +45,22 @@ struct grub_pxe_undi_open
   grub_uint16_t mcast_count;
   grub_uint8_t mcast[8][6];
 } __attribute__ ((packed));
+
+struct grub_pxe_undi_info
+{
+  grub_uint16_t status;
+  grub_uint16_t base_io;
+  grub_uint16_t int_number;
+  grub_uint16_t mtu;
+  grub_uint16_t hwtype;
+  grub_uint16_t hwaddrlen;
+  grub_uint8_t current_addr[16];
+  grub_uint8_t permanent_addr[16];
+  grub_uint32_t romaddr;
+  grub_uint16_t rxbufct;
+  grub_uint16_t txbufct;
+} __attribute__ ((packed));
+
 
 struct grub_pxe_undi_isr
 {
@@ -259,7 +276,7 @@ struct grub_net_card grub_pxe_card =
 void
 grub_pxe_unload (void)
 {
-  if (grub_pxe_pxenv)
+  if (pxe_rm_entry)
     {
       grub_pxe_call (GRUB_PXENV_UNDI_CLOSE,
 		     (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR,
@@ -269,17 +286,11 @@ grub_pxe_unload (void)
     }
 }
 
-GRUB_MOD_INIT(pxe)
+static void
+grub_pc_net_config_real (char **device, char **path)
 {
-  struct grub_pxe_bangpxe *pxenv;
-  struct grub_pxenv_get_cached_info ci;
   struct grub_net_bootp_packet *bp;
-  struct grub_pxe_undi_open *ou;
-
-  pxenv = grub_pxe_scan ();
-  if (! pxenv)
-    return;
-
+  struct grub_pxenv_get_cached_info ci;
   ci.packet_type = GRUB_PXENV_PACKET_TYPE_DHCP_ACK;
   ci.buffer = 0;
   ci.buffer_size = 0;
@@ -289,9 +300,41 @@ GRUB_MOD_INIT(pxe)
 
   bp = LINEAR (ci.buffer);
 
-  grub_memcpy (grub_pxe_card.default_address.mac, bp->mac_addr,
-	       bp->hw_len < sizeof (grub_pxe_card.default_address.mac)
-	       ? bp->hw_len : sizeof (grub_pxe_card.default_address.mac));
+  grub_net_configure_by_dhcp_ack ("pxe", &grub_pxe_card, 0,
+				  bp, GRUB_PXE_BOOTP_SIZE,
+				  1, device, path);
+}
+
+GRUB_MOD_INIT(pxe)
+{
+  struct grub_pxe_bangpxe *pxenv;
+  struct grub_pxe_undi_open *ou;
+  struct grub_pxe_undi_info *ui;
+  unsigned i;
+
+  pxenv = grub_pxe_scan ();
+  if (! pxenv)
+    return;
+
+  ui = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+  grub_memset (ui, 0, sizeof (*ui));
+  grub_pxe_call (GRUB_PXENV_UNDI_GET_INFORMATION, ui, pxe_rm_entry);
+
+  grub_memcpy (grub_pxe_card.default_address.mac, ui->current_addr,
+	       sizeof (grub_pxe_card.default_address.mac));
+  for (i = 0; i < sizeof (grub_pxe_card.default_address.mac); i++)
+    if (grub_pxe_card.default_address.mac[i] != 0)
+      break;
+  if (i != sizeof (grub_pxe_card.default_address.mac))
+    {
+      for (i = 0; i < sizeof (grub_pxe_card.default_address.mac); i++)
+	if (grub_pxe_card.default_address.mac[i] != 0xff)
+	  break;
+    }
+  if (i == sizeof (grub_pxe_card.default_address.mac))
+    grub_memcpy (grub_pxe_card.default_address.mac, ui->permanent_addr,
+		 sizeof (grub_pxe_card.default_address.mac));
+
   grub_pxe_card.default_address.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
   ou = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
@@ -303,11 +346,11 @@ GRUB_MOD_INIT(pxe)
     return;
 
   grub_net_card_register (&grub_pxe_card);
-  grub_net_configure_by_dhcp_ack ("pxe", &grub_pxe_card, 0,
-				  bp, GRUB_PXE_BOOTP_SIZE);
+  grub_pc_net_config = grub_pc_net_config_real;
 }
 
 GRUB_MOD_FINI(pxe)
 {
+  grub_pc_net_config = 0;
   grub_pxe_unload ();
 }
