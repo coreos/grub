@@ -25,7 +25,7 @@ libdir=@libdir@
 locale_dir=`echo ${GRUB_PREFIX}/locale | sed ${transform}`
 grub_lang=`echo $LANG | cut -d . -f 1`
 
-. ${libdir}/grub/grub-mkconfig_lib
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 # Do this as early as possible, since other commands might depend on it.
 # (e.g. the `loadfont' command might need lvm or raid modules)

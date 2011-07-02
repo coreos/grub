@@ -18,6 +18,6 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 
-. ${libdir}/grub/grub-mkconfig_lib
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 grub_warn "update-grub_lib is deprecated, use grub-mkconfig_lib instead"

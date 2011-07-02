@@ -95,7 +95,7 @@ do
     esac
 done
 
-. ${libdir}/grub/grub-mkconfig_lib
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 if [ "x$EUID" = "x" ] ; then
   EUID=`id -u`
