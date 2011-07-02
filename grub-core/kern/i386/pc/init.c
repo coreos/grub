@@ -45,52 +45,39 @@ struct mem_region
 static struct mem_region mem_regions[MAX_REGIONS];
 static int num_regions;
 
-static char *
-make_install_device (void)
+void
+grub_machine_get_bootlocation (char **device,
+			       char **path __attribute__ ((unused)))
 {
+  char *ptr;
+
+  /* No hardcoded root partition - make it from the boot drive and the
+     partition number encoded at the install time.  */
+  if (grub_boot_drive == GRUB_BOOT_MACHINE_PXE_DL)
+    {
+      *device = grub_strdup ("pxe");
+      return;
+    }
+
   /* XXX: This should be enough.  */
-  char dev[100], *ptr = dev;
+#define DEV_SIZE 100
+  *device = grub_malloc (DEV_SIZE);
+  ptr = *device;
+  grub_snprintf (*device, DEV_SIZE,
+		 "%cd%u", (grub_boot_drive & 0x80) ? 'h' : 'f',
+		 grub_boot_drive & 0x7f);
+  ptr += grub_strlen (ptr);
 
-  if (grub_prefix[0] != '(')
-    {
-      /* No hardcoded root partition - make it from the boot drive and the
-	 partition number encoded at the install time.  */
-      if (grub_boot_drive == GRUB_BOOT_MACHINE_PXE_DL)
-	{
-	  grub_strcpy (dev, "(pxe");
-	  ptr += sizeof ("(pxe") - 1;
-	}
-      else
-	{
-	  grub_snprintf (dev, sizeof (dev),
-			 "(%cd%u", (grub_boot_drive & 0x80) ? 'h' : 'f',
-			 grub_boot_drive & 0x7f);
-	  ptr += grub_strlen (ptr);
+  if (grub_install_dos_part >= 0)
+    grub_snprintf (ptr, DEV_SIZE - (ptr - *device),
+		   ",%u", grub_install_dos_part + 1);
+  ptr += grub_strlen (ptr);
 
-	  if (grub_install_dos_part >= 0)
-	    grub_snprintf (ptr, sizeof (dev) - (ptr - dev),
-			   ",%u", grub_install_dos_part + 1);
-	  ptr += grub_strlen (ptr);
-
-	  if (grub_install_bsd_part >= 0)
-	    grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ",%u",
-			   grub_install_bsd_part + 1);
-	  ptr += grub_strlen (ptr);
-	}
-
-      grub_snprintf (ptr, sizeof (dev) - (ptr - dev), ")%s", grub_prefix);
-      grub_strcpy (grub_prefix, dev);
-    }
-  else if (grub_prefix[1] == ',' || grub_prefix[1] == ')')
-    {
-      /* We have a prefix, but still need to fill in the boot drive.  */
-      grub_snprintf (dev, sizeof (dev),
-		     "(%cd%u%s", (grub_boot_drive & 0x80) ? 'h' : 'f',
-		     grub_boot_drive & 0x7f, grub_prefix + 1);
-      grub_strcpy (grub_prefix, dev);
-    }
-
-  return grub_prefix;
+  if (grub_install_bsd_part >= 0)
+    grub_snprintf (ptr, DEV_SIZE - (ptr - *device), ",%u",
+		   grub_install_bsd_part + 1);
+  ptr += grub_strlen (ptr);
+  *ptr = 0;
 }
 
 /* Add a memory region.  */
@@ -209,13 +196,6 @@ grub_machine_init (void)
       grub_mm_init_region ((void *) mem_regions[i].addr, mem_regions[i].size);
 
   grub_tsc_init ();
-}
-
-void
-grub_machine_set_prefix (void)
-{
-  /* Initialize the prefix.  */
-  grub_env_set ("prefix", make_install_device ());
 }
 
 void

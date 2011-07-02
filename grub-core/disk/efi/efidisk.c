@@ -530,7 +530,7 @@ grub_efidisk_open (const char *name, struct grub_disk *disk)
      and total sectors should be replaced with total blocks.  */
   grub_dprintf ("efidisk", "m = %p, last block = %llx, block size = %x\n",
 		m, (unsigned long long) m->last_block, m->block_size);
-  disk->total_sectors = m->last_block;
+  disk->total_sectors = m->last_block + 1;
   if (m->block_size & (m->block_size - 1) || !m->block_size)
     return grub_error (GRUB_ERR_IO, "invalid sector size %d",
 		       m->block_size);
@@ -788,19 +788,27 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 
       /* Find a partition which matches the hard drive device path.  */
       grub_memcpy (&hd, ldp, sizeof (hd));
-      grub_partition_iterate (parent, find_partition);
-
-      if (! tpart)
+      if (hd.partition_start == 0
+	  && hd.partition_size == grub_disk_get_size (parent))
 	{
-	  grub_disk_close (parent);
-	  return 0;
+	  device_name = grub_strdup (parent->name);
 	}
+      else
+	{
+	  char *partition_name;
 
-      {
-	char *partition_name = grub_partition_get_name (tpart);
-	device_name = grub_xasprintf ("%s,%s", parent->name, partition_name);
-	grub_free (partition_name);
-      }
+	  grub_partition_iterate (parent, find_partition);
+
+	  if (! tpart)
+	    {
+	      grub_disk_close (parent);
+	      return 0;
+	    }
+
+	  partition_name = grub_partition_get_name (tpart);
+	  device_name = grub_xasprintf ("%s,%s", parent->name, partition_name);
+	  grub_free (partition_name);
+	}
       grub_disk_close (parent);
 
       return device_name;

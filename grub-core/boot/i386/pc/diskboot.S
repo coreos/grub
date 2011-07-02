@@ -83,7 +83,7 @@ LOCAL(setup_sectors):
 
 	/* the maximum is limited to 0x7f because of Phoenix EDD */
 	xorl	%eax, %eax
-	movb	$0x7f, %al
+	movb	$0x1, %al
 
 	/* how many do we really want to read? */
 	cmpw	%ax, 8(%di)	/* compare against total number of sectors */

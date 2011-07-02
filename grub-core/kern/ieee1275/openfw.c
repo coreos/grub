@@ -369,6 +369,11 @@ grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
 	    ret = grub_strdup (args);
 	  else
 	    ret = grub_strndup (args, (grub_size_t)(comma - args));
+	  /* Consistently provide numbered partitions to GRUB.
+	     OpenBOOT traditionally uses alphabetical partition
+	     specifiers.  */
+	  if (ret[0] >= 'a' && ret[0] <= 'z')
+	    ret[0] = '1' + (ret[0] - 'a');
 	}
     }
 

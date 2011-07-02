@@ -35,6 +35,9 @@
 #include <grub/net.h>
 #include <grub/offsets.h>
 #include <grub/memory.h>
+#ifdef __sparc__
+#include <grub/machine/kernel.h>
+#endif
 
 /* The minimal heap size we can live with. */
 #define HEAP_MIN_SIZE		(unsigned long) (2 * 1024 * 1024)
@@ -48,6 +51,10 @@
 
 extern char _start[];
 extern char _end[];
+
+#ifdef __sparc__
+grub_addr_t grub_ieee1275_original_stack;
+#endif
 
 void
 grub_exit (void)
@@ -71,51 +78,39 @@ grub_translate_ieee1275_path (char *filepath)
 }
 
 void
-grub_machine_set_prefix (void)
+grub_machine_get_bootlocation (char **device, char **path)
 {
   char bootpath[64]; /* XXX check length */
   char *filename;
-  char *prefix;
   grub_bootp_t bootp_pckt;
-  char addr[GRUB_NET_MAX_STR_ADDR_LEN];
   
   /* Set the net prefix when possible.  */
   if (grub_getbootp && (bootp_pckt = grub_getbootp()))
     {
-	grub_uint32_t n = bootp_pckt->siaddr;
-	grub_snprintf (addr, GRUB_NET_MAX_STR_ADDR_LEN, "%d.%d.%d.%d",
-		       ((n >> 24) & 0xff), ((n >> 16) & 0xff),
-		       ((n >> 8) & 0xff), ((n >> 0) & 0xff));
-      prefix = grub_xasprintf ("(tftp,%s)%s", addr,grub_prefix); 
-      grub_env_set ("prefix", prefix);
-      grub_free (prefix);
+      grub_uint32_t n = bootp_pckt->siaddr;
+      char addr[GRUB_NET_MAX_STR_ADDR_LEN];
+      grub_snprintf (addr, GRUB_NET_MAX_STR_ADDR_LEN, "%d.%d.%d.%d",
+		     ((n >> 24) & 0xff), ((n >> 16) & 0xff),
+		     ((n >> 8) & 0xff), ((n >> 0) & 0xff));
+      *device = grub_xasprintf ("(tftp,%s)", addr);
       return;  
     }
  
-  if (grub_prefix[0])
-    {
-      grub_env_set ("prefix", grub_prefix);
-      /* Prefix is hardcoded in the core image.  */
-      return;
-    }
-
   if (grub_ieee1275_get_property (grub_ieee1275_chosen, "bootpath", &bootpath,
 				  sizeof (bootpath), 0))
     {
       /* Should never happen.  */
       grub_printf ("/chosen/bootpath property missing!\n");
-      grub_env_set ("prefix", "");
       return;
     }
 
   /* Transform an OF device path to a GRUB path.  */
 
-  prefix = grub_ieee1275_encode_devname (bootpath);
+  *device = grub_ieee1275_encode_devname (bootpath);
 
   filename = grub_ieee1275_get_filename (bootpath);
   if (filename)
     {
-      char *newprefix;
       char *lastslash = grub_strrchr (filename, '\\');
 
       /* Truncate at last directory.  */
@@ -124,23 +119,22 @@ grub_machine_set_prefix (void)
 	  *lastslash = '\0';
 	  grub_translate_ieee1275_path (filename);
 
-	  newprefix = grub_xasprintf ("%s%s", prefix, filename);
-	  if (newprefix)
-	    {
-	      grub_free (prefix);
-	      prefix = newprefix;
-	    }
+	  *path = filename;
 	}
     }
-
-  grub_env_set ("prefix", prefix);
-
-  grub_free (filename);
-  grub_free (prefix);
 }
 
 /* Claim some available memory in the first /memory node. */
-static void grub_claim_heap (void)
+#ifdef __sparc__
+static void 
+grub_claim_heap (void)
+{
+  grub_mm_init_region ((void *) (grub_modules_get_end ()
+				 + GRUB_KERNEL_MACHINE_STACK_SIZE), 0x200000);
+}
+#else
+static void 
+grub_claim_heap (void)
 {
   unsigned long total = 0;
 
@@ -208,23 +202,14 @@ static void grub_claim_heap (void)
   else
     grub_machine_mmap_iterate (heap_init);
 }
+#endif
 
-static grub_uint64_t ieee1275_get_time_ms (void);
-
-void
-grub_machine_init (void)
+static void
+grub_parse_cmdline (void)
 {
-  char args[256];
   grub_ssize_t actual;
+  char args[256];
 
-  grub_ieee1275_init ();
-
-  grub_console_init_early ();
-  grub_claim_heap ();
-  grub_console_init_lately ();
-  grub_ofdisk_init ();
-
-  /* Process commandline.  */
   if (grub_ieee1275_get_property (grub_ieee1275_chosen, "bootargs", &args,
 				  sizeof args, &actual) == 0
       && actual > 1)
@@ -257,6 +242,21 @@ grub_machine_init (void)
 	    }
 	}
     }
+}
+
+static grub_uint64_t ieee1275_get_time_ms (void);
+
+void
+grub_machine_init (void)
+{
+  grub_ieee1275_init ();
+
+  grub_console_init_early ();
+  grub_claim_heap ();
+  grub_console_init_lately ();
+  grub_ofdisk_init ();
+
+  grub_parse_cmdline ();
 
   grub_install_get_time_ms (ieee1275_get_time_ms);
 }

@@ -60,6 +60,10 @@ grub_ieee1275_find_options (void)
   int is_olpc = 0;
   int is_qemu = 0;
 
+#ifdef _sparc64
+  grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0);
+#endif
+
   grub_ieee1275_finddevice ("/", &root);
   grub_ieee1275_finddevice ("/options", &options);
   grub_ieee1275_finddevice ("/openprom", &openprom);
