@@ -75,7 +75,8 @@ tftp_open (struct grub_file *file, const char *filename)
   rrq += grub_strlen ("0") + 1;
   hdrlen = sizeof (tftph->opcode) + rrqlen;
 
-  if ((err = grub_netbuff_unput (&nb, nb.tail - (nb.data + hdrlen))) != GRUB_ERR_NONE)
+  err = grub_netbuff_unput (&nb, nb.tail - (nb.data + hdrlen));
+  if (err)
     return err;
   file->device->net->socket->out_port = TFTP_SERVER_PORT;
 
