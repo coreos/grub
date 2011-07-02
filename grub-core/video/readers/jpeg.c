@@ -750,8 +750,7 @@ grub_video_reader_jpeg (struct grub_video_bitmap **bitmap,
       grub_jpeg_decode_jpeg (data);
 
       for (i = 0; i < 4; i++)
-	if (data->huff_value[i])
-	  grub_free (data->huff_value[i]);
+	grub_free (data->huff_value[i]);
 
       grub_free (data);
     }

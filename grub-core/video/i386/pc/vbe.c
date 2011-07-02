@@ -20,15 +20,14 @@
 
 #include <grub/err.h>
 #include <grub/machine/memory.h>
-#include <grub/machine/vga.h>
-#include <grub/machine/vbe.h>
+#include <grub/i386/pc/vbe.h>
 #include <grub/video_fb.h>
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/video.h>
-#include <grub/machine/int.h>
+#include <grub/i386/pc/int.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -377,7 +376,7 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
   if (vbe_mode < 0x100)
     {
       /* If this is not a VESA mode, guess address.  */
-      framebuffer.ptr = (grub_uint8_t *) GRUB_MEMORY_MACHINE_VGA_ADDR;
+      framebuffer.ptr = (grub_uint8_t *) 0xa0000;
     }
   else
     {

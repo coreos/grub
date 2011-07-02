@@ -28,6 +28,7 @@
 GRUB_MOD_LICENSE ("GPLv3+");
 
 static unsigned height, width, depth; 
+static struct grub_video_mode_info *current_mode;
 
 static int
 hook (const struct grub_video_mode_info *info)
@@ -41,7 +42,13 @@ hook (const struct grub_video_mode_info *info)
   if (info->mode_number == GRUB_VIDEO_MODE_NUMBER_INVALID)
     grub_printf ("        ");
   else
-    grub_printf ("  0x%03x ", info->mode_number);
+    {
+      if (current_mode && info->mode_number == current_mode->mode_number)
+	grub_printf ("*");
+      else
+	grub_printf (" ");
+      grub_printf (" 0x%03x ", info->mode_number);
+    }
   grub_printf ("%4d x %4d x %2d  ", info->width, info->height, info->bpp);
 
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_PURE_TEXT)
@@ -122,6 +129,8 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
 
   FOR_VIDEO_ADAPTERS (adapter)
   {
+    struct grub_video_mode_info info;
+
     grub_printf ("Adapter '%s':\n", adapter->name);
 
     if (!adapter->iterate)
@@ -130,7 +139,17 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
 	continue;
       }
 
-    if (adapter->id != id)
+    current_mode = NULL;
+
+    if (adapter->id == id)
+      {
+	if (grub_video_get_info (&info) == GRUB_ERR_NONE)
+	  current_mode = &info;
+	else
+	  /* Don't worry about errors.  */
+	  grub_errno = GRUB_ERR_NONE;
+      }
+    else
       {
 	if (adapter->init ())
 	  {
@@ -144,6 +163,8 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
       adapter->print_adapter_specific_info ();
 
     adapter->iterate (hook);
+
+    current_mode = NULL;
 
     if (adapter->id != id)
       {

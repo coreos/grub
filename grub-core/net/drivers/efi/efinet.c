@@ -35,7 +35,7 @@ send_card_buffer (const struct grub_net_card *dev,
 {
   grub_efi_status_t st;
   grub_efi_simple_network_t *net = dev->efi_net;
-  st = efi_call_7 (net->transmit, net, 0, pack->tail - pack->data,
+  st = efi_call_7 (net->transmit, net, 0, (pack->tail - pack->data),
 		   pack->data, NULL, NULL, NULL);
   if (st != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_IO, "Couldn't send network packet.");

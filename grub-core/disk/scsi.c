@@ -524,17 +524,36 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
 
   scsi = disk->data;
 
-  /* Depending on the type, select a read function.  */
-  switch (scsi->devtype)
+  while (size)
     {
-    case grub_scsi_devtype_direct:
-      return grub_scsi_read10 (disk, sector, size, buf);
+      /* PATA doesn't support more than 32K reads.
+	 Not sure about AHCI and USB. If it's confirmed that either of
+	 them can do bigger reads reliably this value can be moved to 'scsi'
+	 structure.  */
+      grub_size_t len = 32768 >> disk->log_sector_size;
+      grub_err_t err;
+      if (len > size)
+	len = size;
+      /* Depending on the type, select a read function.  */
+      switch (scsi->devtype)
+	{
+	case grub_scsi_devtype_direct:
+	  err = grub_scsi_read10 (disk, sector, len, buf);
+	  if (err)
+	    return err;
+	  break;
 
-    case grub_scsi_devtype_cdrom:
-      return grub_scsi_read12 (disk, sector, size, buf);
+	case grub_scsi_devtype_cdrom:
+	  err = grub_scsi_read12 (disk, sector, len, buf);
+	  if (err)
+	    return err;
+	  break;
+	}
+      size -= len;
+      sector += len;
+      buf += len << disk->log_sector_size;
     }
 
-  /* XXX: Never reached.  */
   return GRUB_ERR_NONE;
 
 #if 0 /* Workaround - it works - but very slowly, from some reason

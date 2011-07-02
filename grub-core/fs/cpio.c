@@ -239,8 +239,7 @@ grub_cpio_dir (grub_device_t device, const char *path,
 	      info.mtimeset = 1;
 
 	      hook (name + len, &info);
-	      if (prev)
-		grub_free (prev);
+	      grub_free (prev);
 	      prev = name;
 	    }
 	  else
@@ -251,11 +250,8 @@ grub_cpio_dir (grub_device_t device, const char *path,
 
 fail:
 
-  if (prev)
-    grub_free (prev);
-
-  if (data)
-    grub_free (data);
+  grub_free (prev);
+  grub_free (data);
 
   grub_dl_unref (my_mod);
 
@@ -326,8 +322,7 @@ grub_cpio_open (grub_file_t file, const char *name)
 
 fail:
 
-  if (data)
-    grub_free (data);
+  grub_free (data);
 
   grub_dl_unref (my_mod);
 

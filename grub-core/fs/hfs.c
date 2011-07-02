@@ -921,7 +921,7 @@ grub_hfs_find_dir (struct grub_hfs_data *data, const char *path,
       if (! grub_hfs_find_node (data, (char *) &key, data->cat_root,
 				0, (char *) &fdrec.frec, sizeof (fdrec.frec)))
 	{
-	  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+	  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", origpath);
 	  goto fail;
 	}
 

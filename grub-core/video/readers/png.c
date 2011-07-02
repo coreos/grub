@@ -625,8 +625,7 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
 	  }
 	}
 
-      if (blank_line)
-	grub_free (blank_line);
+      grub_free (blank_line);
 
       data->cur_column = 0;
       data->first_line = 0;

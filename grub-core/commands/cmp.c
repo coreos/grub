@@ -94,10 +94,8 @@ grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
 
 cleanup:
 
-  if (buf1)
-    grub_free (buf1);
-  if (buf2)
-    grub_free (buf2);
+  grub_free (buf1);
+  grub_free (buf2);
   if (file1)
     grub_file_close (file1);
   if (file2)

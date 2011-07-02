@@ -74,7 +74,6 @@
 %token <arg> GRUB_PARSER_TOKEN_THEN      "then"
 %token <arg> GRUB_PARSER_TOKEN_UNTIL     "until"
 %token <arg> GRUB_PARSER_TOKEN_WHILE     "while"
-%token <arg> GRUB_PARSER_TOKEN_TIME      "time"
 %token <arg> GRUB_PARSER_TOKEN_FUNCTION  "function"
 %token <arg> GRUB_PARSER_TOKEN_NAME      "name"
 %token <arg> GRUB_PARSER_TOKEN_WORD      "word"
@@ -147,7 +146,6 @@ argument : "case"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | "until"     { $$ = grub_script_add_arglist (state, 0, $1); }
          | "while"     { $$ = grub_script_add_arglist (state, 0, $1); }
          | "function"  { $$ = grub_script_add_arglist (state, 0, $1); }
-         | "time"      { $$ = grub_script_add_arglist (state, 0, $1); }
          | word { $$ = $1; }
 ;
 

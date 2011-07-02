@@ -1322,6 +1322,11 @@ grub_bsd_load (int argc, char *argv[])
     goto fail;
 
   relocator = grub_relocator_new ();
+  if (!relocator)
+    {
+      grub_file_close (file);
+      goto fail;
+    }
 
   elf = grub_elf_file (file);
   if (elf)
@@ -1343,7 +1348,7 @@ grub_bsd_load (int argc, char *argv[])
 fail:
 
   if (grub_errno != GRUB_ERR_NONE)
-    grub_dl_unref (my_mod);
+    grub_dl_unref (my_mod);	
 
   return grub_errno;
 }

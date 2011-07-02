@@ -590,7 +590,8 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
   dev->command_table[0].prdt[0].size = (parms->size + (parms->size & 1) - 1)
     | GRUB_AHCI_INTERRUPT_ON_COMPLETE;
 
-  grub_dprintf ("ahci", "PRDT = %" PRIxGRUB_UINT64_T ", %x, %x (%x)\n",
+  grub_dprintf ("ahci", "PRDT = %" PRIxGRUB_UINT64_T ", %x, %x (%"
+		PRIuGRUB_SIZE ")\n",
 		dev->command_table[0].prdt[0].data_base,
 		dev->command_table[0].prdt[0].unused,
 		dev->command_table[0].prdt[0].size,

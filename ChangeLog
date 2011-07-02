@@ -1,3 +1,144 @@
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.core.def (chain): Fix coreboot filename.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/pata.c (grub_pata_initialize) [QEMU_MIPS]: Fix a
+	mismerge.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Chainloading on coreboot support.
+
+	* grub-core/Makefile.core.def (chain): Add coreboot.
+	* grub-core/loader/i386/coreboot/chainloader.c: New file.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/bsd.c (grub_bsd_load): Handle relocator failure
+	if it happens.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Implement time command.
+
+	* grub-core/Makefile.core.def (time): New module.
+	* grub-core/commands/time.c: New file.
+	* grub-core/script/parser.y: Remove "time" keyword.
+	* grub-core/script/yylex.l: Likewise.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/loader.h (grub_loader_unregister_preboot_hook): Export.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/relocator.c (malloc_in_range): Fix a memory corruption
+	when handling leftovers.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/ieee1275/grub-ofpathname.c (main): Handle --help and --version
+	so that help2man doesn't fail.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/net/drivers/ieee1275/ofnet.c (send_card_buffer) Use right
+	type in pointers on sparc64.
+	(get_card_packet): Likewise.
+
+2011-06-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/commands/videoinfo.c (hook): Indicate current video mode
+	with `*'.
+	(grub_cmd_videoinfo): Fetch current video mode.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/scsi.c (grub_scsi_read): Limit SCSI reads to 32K
+	because of underlying system restrictions.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.in: Rename "ata" to "pata" and add ahci when
+	necessary.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Coreboot video support.
+
+	* grub-core/Makefile.core.def (vga): Extend to coreboot and multiboot.
+	(vbe): Likewise.
+	* grub-core/kern/i386/coreboot/startup.S: Include int.S.
+	* grub-core/kern/i386/pc/startup.S (grub_bios_interrupt): Moved from
+	here ...
+	* grub-core/kern/i386/int.S: ... here.
+	* grub-core/video/i386/pc/vbe.c: Updated includes.
+	* grub-core/video/i386/pc/vga.c: Likewise.
+	* include/grub/i386/coreboot/memory.h
+	(GRUB_MEMORY_MACHINE_SCRATCH_ADDR): New definition.
+	(GRUB_MEMORY_MACHINE_SCRATCH_SEG): Likewise.
+	(GRUB_MEMORY_MACHINE_SCRATCH_SIZE): Likewise.
+	* include/grub/i386/pc/int.h (GRUB_CPU_INT_FLAGS_DEFAULT) [!PCBIOS]:
+	Disable interrupts.
+	* include/grub/i386/pc/vga.h: Removed. All users updated.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ahci.c (grub_ahci_readwrite_real): Use proper
+	definitions for dprintf.
+	* grub-core/disk/pata.c (grub_pata_readwrite): Likewise.
+
+2011-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/net/drivers/ieee1275/ofnet.c (send_card_buffer): Fix
+	prototype.
+	(get_card_packet): Likewise.
+
+2011-06-26  Yves Blusseau  <blusseau@zetam.org>
+
+	Display the path of the file when file is not found
+
+	* grub-core/fs/fat.c: Display the filename when file is not found.
+	* grub-core/fs/fshelp.c: Likewise.
+	* grub-core/fs/hfs.c: Likewise.
+	* grub-core/fs/jfs.c: Likewise.
+	* grub-core/fs/minix.c: Likewise.
+	* grub-core/fs/ufs.c: Likewise.
+	* grub-core/fs/btrfs.c: Likewise.
+	* grub-core/commands/i386/pc/play.c: Likewise.
+
+2011-06-26  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/commands/cmp.c (grub_cmd_cmp): Remove unnecessary NULL
+	pointer checks before calling grub_free().
+	* grub-core/commands/wildcard.c (match_devices): Likewise.
+	* grub-core/commands/wildcard.c (match_files): Likewise.
+	* grub-core/fs/cpio.c (grub_cpio_dir): Likewise.
+	* grub-core/fs/cpio.c (grub_cpio_open): Likewise.
+	* grub-core/fs/udf.c (grub_udf_read_block): Likewise.
+	* grub-core/fs/xfs.c (grub_xfs_read_block): Likewise.
+	* grub-core/loader/efi/chainloader.c (grub_cmd_chainloader): Likewise.
+	* grub-core/normal/cmdline.c (grub_cmdline_get): Likewise.
+	* grub-core/script/yylex.l (grub_lexer_unput): Likewise.
+	* grub-core/video/readers/jpeg.c (grub_video_reader_jpeg): Likewise.
+	* grub-core/video/readers/png.c (grub_png_output_byte): Likewise.
+
+2011-06-25  Patrick <p55@mailinator.com>
+
+	* grub-core/kern/main.c (grub_load_normal_mode): Correct the comment.
+
+2011-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/net/i386/pc/pxe.c (grub_pxe_recv): Fix declaration.
+	(grub_pxe_send): Likewise.
+	(GRUB_MOD_INIT): Fix types.
+
+2011-06-24  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/io/xzio.c: Fix code style issues
+
 2011-06-24  Vladimir Serbinenko  <phcoder@gmail.com>
 2011-06-24  Manoel Rebelo Abranches <mrabran@gmail.com>
 
