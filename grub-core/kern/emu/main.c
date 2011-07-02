@@ -49,7 +49,7 @@
 static jmp_buf main_env;
 
 /* Store the prefix specified by an argument.  */
-static char *root_dev = NULL, *dir = DEFAULT_DIRECTORY;
+static char *root_dev = NULL, *dir = NULL;
 
 int grub_no_autoload;
 
@@ -139,14 +139,18 @@ main (int argc, char *argv[])
 
   set_program_name (argv[0]);
 
+  dir = xstrdup (DEFAULT_DIRECTORY);
+
   while ((opt = getopt_long (argc, argv, "r:d:m:vH:hV", options, 0)) != -1)
     switch (opt)
       {
       case 'r':
-        root_dev = optarg;
+	free (root_dev);
+        root_dev = xstrdup (optarg);
         break;
       case 'd':
-        dir = optarg;
+	free (dir);
+        dir = xstrdup (optarg);
         break;
       case 'm':
         dev_map = optarg;

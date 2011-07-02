@@ -119,7 +119,7 @@ match_net (const grub_net_network_level_netaddress_t *net,
     return 0;
   switch (net->type)
     {
-    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC:
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
       return 0;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
@@ -238,8 +238,8 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target, char *buf)
 {
   switch (target->type)
     {
-    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC:
-      grub_strcpy (buf, "promisc");
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
+      grub_strcpy (buf, "temporary");
       return;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
@@ -521,8 +521,8 @@ print_net_address (const grub_net_network_level_netaddress_t *target)
 {
   switch (target->type)
     {
-    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC:
-      grub_printf ("promisc\n");
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
+      grub_printf ("temporary\n");
       break;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
@@ -1257,7 +1257,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	grub_free (ifaces);
 	return grub_errno;
       }
-    ifaces[j].address.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC;
+    ifaces[j].address.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV;
     grub_memcpy (&ifaces[j].hwaddress, &card->default_address, 
 		 sizeof (ifaces[j].hwaddress));
     j++;

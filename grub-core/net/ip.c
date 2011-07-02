@@ -65,50 +65,49 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
 {
   struct iphdr *iph = (struct iphdr *) nb->data;
   grub_err_t err;
-  struct grub_net_network_level_interface *inf;
+  struct grub_net_network_level_interface *inf = NULL;
 
   err = grub_netbuff_pull (nb, sizeof (*iph));
   if (err)
     return err;
 
-  FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
+  /* DHCP needs special treatment since we don't know IP yet.  */
   {
-    if (inf->card == card
-	&& inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
-	&& inf->address.ipv4 == iph->dest
-	&& grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
-      break;
+    struct udphdr *udph;
+    udph = (struct udphdr *) nb->data;
+    if (iph->protocol == IP_UDP && grub_be_to_cpu16 (udph->dst) == 68)
+      {
+	FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
+	  if (inf->card == card
+	      && inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV
+	      && grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
+	    {
+	      err = grub_netbuff_pull (nb, sizeof (*udph));
+	      if (err)
+		return err;
+	      grub_net_process_dhcp (nb, inf->card);
+	      grub_netbuff_free (nb);
+	    }
+	return GRUB_ERR_NONE;
+      }
   }
+
   if (!inf)
     {
       FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
+      {
 	if (inf->card == card
-	    && inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC
+	    && inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+	    && inf->address.ipv4 == iph->dest
 	    && grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
-	break;
-    }
-  if (!inf)
-    {
-      if (iph->protocol == IP_UDP
-	  && grub_net_hwaddr_cmp (&card->default_address, hwaddress) == 0)
-	{
-	  struct udphdr *udph;
-	  udph = (struct udphdr *) nb->data;
-	  err = grub_netbuff_pull (nb, sizeof (*udph));
-	  if (err)
-	    return err;
-	  if (grub_be_to_cpu16 (udph->dst) == 68)
-	    grub_net_process_dhcp (nb, card);
-	}
-      grub_netbuff_free (nb);
-      return GRUB_ERR_NONE;
+	  break;
+      }
     }
 
   switch (iph->protocol)
     {
     case IP_UDP:
       return grub_net_recv_udp_packet (nb, inf);
-      break;
     default:
       grub_netbuff_free (nb);
       break;

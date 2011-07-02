@@ -123,7 +123,7 @@ struct grub_net_network_level_interface;
 
 typedef enum grub_network_level_protocol_id 
 {
-  GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC,
+  GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV,
   GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
 } grub_network_level_protocol_id_t;
 

@@ -32,8 +32,11 @@ grub_net_recv_udp_packet (struct grub_net_buff * nb,
 {
   struct udphdr *udph;
   grub_net_socket_t sock;
+  grub_err_t err;
   udph = (struct udphdr *) nb->data;
-  grub_netbuff_pull (nb, sizeof (*udph));
+  err = grub_netbuff_pull (nb, sizeof (*udph));
+  if (err)
+    return err;
 
   FOR_NET_SOCKETS (sock)
   {
@@ -54,8 +57,6 @@ grub_net_recv_udp_packet (struct grub_net_buff * nb,
 	return GRUB_ERR_NONE;
       }
   }
-  if (grub_be_to_cpu16 (udph->dst) == 68)
-    grub_net_process_dhcp (nb, inf->card);
   grub_netbuff_free (nb);
   return GRUB_ERR_NONE;
 }
