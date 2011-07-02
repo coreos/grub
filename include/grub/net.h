@@ -109,6 +109,11 @@ struct grub_net_card
   grub_net_card_flags_t flags;
   union
   {
+    struct
+    {
+      struct grub_efi_simple_network *efi_net;
+      void *efi_handle;
+    };
     void *data;
     int data_num;
   };
@@ -404,7 +409,8 @@ grub_net_configure_by_dhcp_ack (const char *name,
 				const struct grub_net_card *card,
 				grub_net_interface_flags_t flags,
 				const struct grub_net_bootp_packet *bp,
-				grub_size_t size);
+				grub_size_t size,
+				int is_def, char **device, char **path);
 
 void
 grub_net_process_dhcp (struct grub_net_buff *nb,

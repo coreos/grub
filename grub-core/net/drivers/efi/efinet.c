@@ -27,14 +27,14 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 /* GUID.  */
 static grub_efi_guid_t net_io_guid = GRUB_EFI_SIMPLE_NETWORK_GUID;
-
+static grub_efi_guid_t pxe_io_guid = GRUB_EFI_PXE_GUID;
 
 static grub_err_t
 send_card_buffer (const struct grub_net_card *dev,
 		  struct grub_net_buff *pack)
 {
   grub_efi_status_t st;
-  grub_efi_simple_network_t *net = dev->data;
+  grub_efi_simple_network_t *net = dev->efi_net;
   st = efi_call_7 (net->transmit, net, 0, pack->tail - pack->data,
 		   pack->data, NULL, NULL, NULL);
   if (st != GRUB_EFI_SUCCESS)
@@ -46,7 +46,7 @@ static grub_ssize_t
 get_card_packet (const struct grub_net_card *dev,
 		 struct grub_net_buff *nb)
 {
-  grub_efi_simple_network_t *net = dev->data;
+  grub_efi_simple_network_t *net = dev->efi_net;
   grub_err_t err;
   grub_efi_status_t st;
   grub_efi_uintn_t bufsize = 1500;
@@ -139,21 +139,62 @@ grub_efinet_findcards (void)
       grub_memcpy (card->default_address.mac,
 		   net->mode->current_address,
 		   sizeof (card->default_address.mac));
-      card->data = net;
+      card->efi_net = net;
+      card->efi_handle = *handle;
 
       grub_net_card_register (card);
     }
   grub_free (handles);
 }
 
+static void
+grub_efi_net_config_real (grub_efi_handle_t hnd, char **device,
+			  char **path)
+{
+  struct grub_net_card *card;
+  grub_efi_device_path_t *dp;
+
+  dp = grub_efi_get_device_path (hnd);
+  if (! dp)
+    return;
+
+  FOR_NET_CARDS (card)
+  {
+    grub_efi_device_path_t *cdp;
+    struct grub_efi_pxe *pxe;
+    struct grub_efi_pxe_mode *pxe_mode;
+    if (card->driver != &efidriver)
+      continue;
+    cdp = grub_efi_get_device_path (card->efi_handle);
+    if (! cdp)
+      continue;
+    if (grub_efi_compare_device_paths (dp, cdp) != 0)
+      continue;
+    pxe = grub_efi_open_protocol (hnd, &pxe_io_guid,
+				  GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+    if (! pxe)
+      continue;
+    pxe_mode = pxe->mode;
+    grub_net_configure_by_dhcp_ack (card->name, card, 0,
+				    (struct grub_net_bootp_packet *)
+				    &pxe_mode->dhcp_ack,
+				    sizeof (pxe_mode->dhcp_ack),
+				    1, device, path);
+    return;
+  }
+}
+
+
 GRUB_MOD_INIT(efinet)
 {
   grub_efinet_findcards ();
+  grub_efi_net_config = grub_efi_net_config_real;
 }
 
 GRUB_MOD_FINI(ofnet)
 {
   struct grub_net_card *card;
+  grub_efi_net_config = 0;
   FOR_NET_CARDS (card) 
     if (card->driver && !grub_strcmp (card->driver->name, "efinet"))
       {

@@ -84,54 +84,6 @@ find_last_device_path (const grub_efi_device_path_t *dp)
   return p;
 }
 
-/* Compare device paths.  */
-static int
-compare_device_paths (const grub_efi_device_path_t *dp1,
-		      const grub_efi_device_path_t *dp2)
-{
-  if (! dp1 || ! dp2)
-    /* Return non-zero.  */
-    return 1;
-
-  while (1)
-    {
-      grub_efi_uint8_t type1, type2;
-      grub_efi_uint8_t subtype1, subtype2;
-      grub_efi_uint16_t len1, len2;
-      int ret;
-
-      type1 = GRUB_EFI_DEVICE_PATH_TYPE (dp1);
-      type2 = GRUB_EFI_DEVICE_PATH_TYPE (dp2);
-
-      if (type1 != type2)
-	return (int) type2 - (int) type1;
-
-      subtype1 = GRUB_EFI_DEVICE_PATH_SUBTYPE (dp1);
-      subtype2 = GRUB_EFI_DEVICE_PATH_SUBTYPE (dp2);
-
-      if (subtype1 != subtype2)
-	return (int) subtype1 - (int) subtype2;
-
-      len1 = GRUB_EFI_DEVICE_PATH_LENGTH (dp1);
-      len2 = GRUB_EFI_DEVICE_PATH_LENGTH (dp2);
-
-      if (len1 != len2)
-	return (int) len1 - (int) len2;
-
-      ret = grub_memcmp (dp1, dp2, len1);
-      if (ret != 0)
-	return ret;
-
-      if (GRUB_EFI_END_ENTIRE_DEVICE_PATH (dp1))
-	break;
-
-      dp1 = (grub_efi_device_path_t *) ((char *) dp1 + len1);
-      dp2 = (grub_efi_device_path_t *) ((char *) dp2 + len2);
-    }
-
-  return 0;
-}
-
 static struct grub_efidisk_data *
 make_devices (void)
 {
@@ -214,7 +166,7 @@ find_parent_device (struct grub_efidisk_data *devices,
       if (parent == d)
 	continue;
 
-      if (compare_device_paths (parent->device_path, dp) == 0)
+      if (grub_efi_compare_device_paths (parent->device_path, dp) == 0)
 	{
 	  /* Found.  */
 	  if (! parent->last_device_path)
@@ -249,7 +201,7 @@ iterate_child_devices (struct grub_efidisk_data *devices,
       ldp->length[0] = sizeof (*ldp);
       ldp->length[1] = 0;
 
-      if (compare_device_paths (dp, d->device_path) == 0)
+      if (grub_efi_compare_device_paths (dp, d->device_path) == 0)
 	if (hook (p))
 	  {
 	    grub_free (dp);
@@ -273,11 +225,11 @@ add_device (struct grub_efidisk_data **devices, struct grub_efidisk_data *d)
     {
       int ret;
 
-      ret = compare_device_paths (find_last_device_path ((*p)->device_path),
-				  find_last_device_path (d->device_path));
+      ret = grub_efi_compare_device_paths (find_last_device_path ((*p)->device_path),
+					   find_last_device_path (d->device_path));
       if (ret == 0)
-	ret = compare_device_paths ((*p)->device_path,
-				    d->device_path);
+	ret = grub_efi_compare_device_paths ((*p)->device_path,
+					     d->device_path);
       if (ret == 0)
 	return;
       else if (ret > 0)
@@ -706,7 +658,35 @@ grub_efidisk_get_device_handle (grub_disk_t disk)
 char *
 grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 {
-  grub_efi_device_path_t *dp, *ldp;
+  grub_efi_device_path_t *dp, *ldp, *sdp;
+  /* This is a hard disk partition.  */
+  grub_disk_t parent = 0;
+  auto int find_parent_disk (const char *name);
+
+  /* Find the disk which is the parent of a given hard disk partition.  */
+  int find_parent_disk (const char *name)
+  {
+    grub_disk_t disk;
+
+    disk = grub_disk_open (name);
+    if (! disk)
+      return 1;
+
+    if (disk->dev->id == GRUB_DISK_DEVICE_EFIDISK_ID)
+      {
+	struct grub_efidisk_data *d;
+
+	d = disk->data;
+	if (grub_efi_compare_device_paths (d->device_path, sdp) == 0)
+	  {
+	    parent = disk;
+	    return 1;
+	  }
+      }
+
+    grub_disk_close (disk);
+    return 0;
+  }
 
   dp = grub_efi_get_device_path (handle);
   if (! dp)
@@ -720,39 +700,11 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
       && (GRUB_EFI_DEVICE_PATH_SUBTYPE (ldp)
 	  == GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE))
     {
-      /* This is a hard disk partition.  */
-      grub_disk_t parent = 0;
       grub_partition_t tpart = NULL;
       char *device_name;
       grub_efi_device_path_t *dup_dp, *dup_ldp;
       grub_efi_hard_drive_device_path_t hd;
-      auto int find_parent_disk (const char *name);
       auto int find_partition (grub_disk_t disk, const grub_partition_t part);
-
-      /* Find the disk which is the parent of a given hard disk partition.  */
-      int find_parent_disk (const char *name)
-	{
-	  grub_disk_t disk;
-
-	  disk = grub_disk_open (name);
-	  if (! disk)
-	    return 1;
-
-	  if (disk->dev->id == GRUB_DISK_DEVICE_EFIDISK_ID)
-	    {
-	      struct grub_efidisk_data *d;
-
-	      d = disk->data;
-	      if (compare_device_paths (d->device_path, dup_dp) == 0)
-		{
-		  parent = disk;
-		  return 1;
-		}
-	    }
-
-	  grub_disk_close (disk);
-	  return 0;
-	}
 
       /* Find the identical partition.  */
       int find_partition (grub_disk_t disk __attribute__ ((unused)),
@@ -779,6 +731,8 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
       dup_ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
       dup_ldp->length[0] = sizeof (*dup_ldp);
       dup_ldp->length[1] = 0;
+
+      sdp = dup_dp;
 
       grub_efidisk_iterate (find_parent_disk);
       grub_free (dup_dp);
@@ -816,36 +770,15 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
   else
     {
       /* This should be an entire disk.  */
-      auto int find_disk (const char *name);
       char *device_name = 0;
 
-      int find_disk (const char *name)
-	{
-	  grub_disk_t disk;
+      sdp = dp;
 
-	  disk = grub_disk_open (name);
-	  if (! disk)
-	    return 1;
-
-	  if (disk->dev->id == GRUB_DISK_DEVICE_EFIDISK_ID)
-	    {
-	      struct grub_efidisk_data *d;
-
-	      d = disk->data;
-	      if (compare_device_paths (d->device_path, dp) == 0)
-		{
-		  device_name = grub_strdup (disk->name);
-		  grub_disk_close (disk);
-		  return 1;
-		}
-	    }
-
-	  grub_disk_close (disk);
-	  return 0;
-
-	}
-
-      grub_efidisk_iterate (find_disk);
+      grub_efidisk_iterate (find_parent_disk);
+      if (!parent)
+	return NULL;
+      device_name = grub_strdup (parent->name);
+      grub_disk_close (parent);
       return device_name;
     }
 

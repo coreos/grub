@@ -936,7 +936,8 @@ grub_net_configure_by_dhcp_ack (const char *name,
 				const struct grub_net_card *card,
 				grub_net_interface_flags_t flags,
 				const struct grub_net_bootp_packet *bp,
-				grub_size_t size)
+				grub_size_t size,
+				int is_def, char **device, char **path)
 {
   grub_net_network_level_address_t addr;
   grub_net_link_level_address_t hwaddr;
@@ -944,6 +945,11 @@ grub_net_configure_by_dhcp_ack (const char *name,
 
   addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
   addr.ipv4 = bp->your_ip;
+
+  if (device)
+    *device = 0;
+  if (path)
+    *path = 0;
 
   grub_memcpy (hwaddr.mac, bp->mac_addr,
 	       bp->hw_len < sizeof (hwaddr.mac) ? bp->hw_len
@@ -975,26 +981,57 @@ grub_net_configure_by_dhcp_ack (const char *name,
   if (size > OFFSET_OF (boot_file, bp))
     set_env_limn_ro (name, "boot_file", (char *) bp->boot_file,
 		     sizeof (bp->boot_file));
+  if (is_def)
+    default_server = 0;
   if (size > OFFSET_OF (server_name, bp)
       && bp->server_name[0])
     {
       set_env_limn_ro (name, "dhcp_server_name", (char *) bp->server_name,
 		       sizeof (bp->server_name));
-      if (!default_server)
+      if (is_def && !default_server)
 	{
 	  default_server = grub_strdup (bp->server_name);
-	  grub_errno = GRUB_ERR_NONE;
-	}	  
+	  grub_print_error ();
+	}
+      if (device && !*device)
+	{
+	  *device = grub_xasprintf ("tftp,%s", bp->server_name);
+	  grub_print_error ();
+	}
     }
-  if (!default_server)
+  if (is_def && !default_server)
     {
       default_server = grub_xasprintf ("%d.%d.%d.%d",
 				       ((grub_uint8_t *) &bp->server_ip)[0],
 				       ((grub_uint8_t *) &bp->server_ip)[1],
 				       ((grub_uint8_t *) &bp->server_ip)[2],
 				       ((grub_uint8_t *) &bp->server_ip)[3]);
-      grub_errno = GRUB_ERR_NONE;
-    }	  
+      grub_print_error ();
+    }
+
+  if (device && !*device)
+    {
+      *device = grub_xasprintf ("tftp,%d.%d.%d.%d",
+				((grub_uint8_t *) &bp->server_ip)[0],
+				((grub_uint8_t *) &bp->server_ip)[1],
+				((grub_uint8_t *) &bp->server_ip)[2],
+				((grub_uint8_t *) &bp->server_ip)[3]);
+      grub_print_error ();
+    }
+  if (size > OFFSET_OF (boot_file, bp) && path)
+    {
+      *path = grub_strndup (bp->boot_file, sizeof (bp->boot_file));
+      grub_print_error ();
+      if (*path)
+	{
+	  char *slash;
+	  slash = grub_strrchr (*path, '/');
+	  if (slash)
+	    *slash = 0;
+	  else
+	    **path = 0;
+	}
+    }
   if (size > OFFSET_OF (vendor, bp))
     parse_dhcp_vendor (name, &bp->vendor, size - OFFSET_OF (vendor, bp));
 
@@ -1025,7 +1062,7 @@ grub_net_process_dhcp (struct grub_net_buff *nb,
     }
   grub_net_configure_by_dhcp_ack (name, card,
 				  0, (const struct grub_net_bootp_packet *) nb->data,
-				  (nb->tail - nb->data));
+				  (nb->tail - nb->data), 0, 0, 0);
   grub_free (name);
   if (grub_errno)
     grub_print_error ();
