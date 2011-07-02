@@ -201,22 +201,23 @@ struct grub_net_app_protocol
 		     int (*hook) (const char *filename,
 				  const struct grub_dirhook_info *info));
   grub_err_t (*open) (struct grub_file *file, const char *filename);
-  grub_err_t (*read) (grub_net_socket_t sock, struct grub_net_buff *nb);
   grub_err_t (*close) (struct grub_file *file);
-  grub_err_t (*label) (grub_device_t device, char **label);
 };
 
 struct grub_net_socket
 {
   struct grub_net_socket *next;
-  int status;
-  int in_port;
-  int out_port;
-  grub_net_app_level_t app;
-  grub_net_network_level_address_t out_nla;
-  struct grub_net_network_level_interface *inf;
-  grub_net_packets_t packs;
-  void *data;
+
+  enum { GRUB_NET_SOCKET_START,
+	 GRUB_NET_SOCKET_ESTABLISHED,
+	 GRUB_NET_SOCKET_CLOSED } x_status;
+  int x_in_port;
+  int x_out_port;
+  grub_err_t (*recv_hook) (grub_net_socket_t sock, struct grub_net_buff *nb,
+			   void *recv);
+  void *recv_hook_data;
+  grub_net_network_level_address_t x_out_nla;
+  struct grub_net_network_level_interface *x_inf;
 };
 
 extern struct grub_net_socket *grub_net_sockets;
@@ -240,10 +241,12 @@ grub_net_socket_unregister (grub_net_socket_t sock)
 typedef struct grub_net
 {
   char *server;
+  char *name;
   grub_net_app_level_t protocol;
-  grub_net_socket_t socket;
+  grub_net_packets_t packs;
   grub_off_t offset;
   grub_fs_t fs;
+  int eof;
 } *grub_net_t;
 
 extern grub_net_t (*EXPORT_VAR (grub_net_open)) (const char *name);

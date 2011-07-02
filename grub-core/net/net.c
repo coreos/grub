@@ -27,6 +27,7 @@
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/env.h>
+#include <grub/term.h>
 #include <grub/net/ethernet.h>
 #include <grub/datetime.h>
 
@@ -630,25 +631,27 @@ grub_net_open_real (const char *name)
 	{
 	  protnamelen = comma - name;
 	  server = comma + 1;
+	  protname = name;
 	}
       else
 	{
 	  protnamelen = grub_strlen (name);
 	  server = default_server;
+	  protname = name;
 	}
     }
   if (!server)
     {
       grub_error (GRUB_ERR_NET_BAD_ADDRESS, "no server");
       return NULL;
-    }
+    }  
 
   FOR_NET_APP_LEVEL (proto)
   {
     if (grub_memcmp (proto->name, protname, protnamelen) == 0
 	&& proto->name[protnamelen] == 0)
       {
-	grub_net_t ret = grub_malloc (sizeof (*ret));
+	grub_net_t ret = grub_zalloc (sizeof (*ret));
 	if (!ret)
 	  return NULL;
 	ret->protocol = proto;
@@ -665,6 +668,7 @@ grub_net_open_real (const char *name)
 	  ret->server = NULL;
 	ret->fs = &grub_net_fs;
 	ret->offset = 0;
+	ret->eof = 0;
 	return ret;
       }
   }
@@ -686,61 +690,26 @@ grub_net_fs_dir (grub_device_t device, const char *path __attribute__ ((unused))
 static grub_err_t
 grub_net_fs_open (struct grub_file *file, const char *name)
 {
-  grub_err_t err;
-  grub_net_network_level_address_t addr;
-  struct grub_net_network_level_interface *inf;
-  grub_net_network_level_address_t gateway;
-  grub_net_socket_t socket;
-  static int port = 25300;
+  file->device->net->packs.first = NULL;
+  file->device->net->packs.last = NULL;
+  file->device->net->name = grub_strdup (name);
+  if (!file->device->net->name)
+    return grub_errno;
 
-  err = grub_net_resolve_address (file->device->net->server, &addr);
-  if (err)
-    return err;
- 
-  err = grub_net_route_address (addr, &gateway, &inf);
-  if (err)
-    return err;
-
-  socket = (grub_net_socket_t) grub_malloc (sizeof (*socket));
-  if (socket == NULL)
-    return grub_errno; 
-
-  socket->inf = inf;
-  socket->out_nla = addr;
-  socket->in_port = port++;
-  socket->status = 0;
-  socket->app = file->device->net->protocol;
-  socket->packs.first = NULL;
-  socket->packs.last = NULL;
-  file->device->net->socket = socket;
-  grub_net_socket_register (socket);
-
-  err = file->device->net->protocol->open (file,name);
-  if (err)
-    goto fail;
-  file->not_easily_seekable = 1;
-
-  return GRUB_ERR_NONE;
-fail:
-  grub_net_socket_unregister (socket);
-  grub_free (socket);
-  return err;
-
+  return file->device->net->protocol->open (file, name);
 }
 
 static grub_err_t
 grub_net_fs_close (grub_file_t file)
 {
-  grub_net_socket_t sock = file->device->net->socket;
-  while (sock->packs.first)
+  while (file->device->net->packs.first)
     {
-      grub_netbuff_free (sock->packs.first->nb);
-      grub_net_remove_packet (sock->packs.first);
+      grub_netbuff_free (file->device->net->packs.first->nb);
+      grub_net_remove_packet (file->device->net->packs.first);
     }
-  grub_net_socket_unregister (sock);
-  grub_free (sock);
+  file->device->net->protocol->close (file);
+  grub_free (file->device->net->name);
   return GRUB_ERR_NONE;
-
 }
 
 static void
@@ -787,9 +756,9 @@ grub_net_poll_cards (unsigned time)
 static grub_ssize_t
 grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
 {
-  grub_net_socket_t sock = file->device->net->socket;
+  grub_net_t sock = file->device->net;
   struct grub_net_buff *nb;
-  char *ptr =  buf;
+  char *ptr = buf;
   grub_size_t amount, total = 0;
   int try = 0;
   while (try <= 3)
@@ -820,7 +789,7 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
 	  if (!len)
 	    return total;
 	}
-      if (sock->status == 1)
+      if (!sock->eof)
 	{
 	  try++;
 	  grub_net_poll_cards (200);
@@ -834,18 +803,29 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
 static grub_err_t 
 grub_net_seek_real (struct grub_file *file, grub_off_t offset)
 {
-  grub_net_socket_t sock = file->device->net->socket;
-  struct grub_net_buff *nb;
   grub_size_t len = offset - file->device->net->offset;
 
   if (!len)
     return GRUB_ERR_NONE;
 
-  /* We cant seek backwards past the current packet.  */
   if (file->device->net->offset > offset)
-    {  
-      nb = sock->packs.first->nb;
-      return grub_netbuff_push (nb, file->device->net->offset - offset);
+    {
+      grub_err_t err;
+      while (file->device->net->packs.first)
+	{
+	  grub_netbuff_free (file->device->net->packs.first->nb);
+	  grub_net_remove_packet (file->device->net->packs.first);
+	}
+      file->device->net->protocol->close (file);
+
+      file->device->net->packs.first = NULL;
+      file->device->net->packs.last = NULL;
+      file->device->net->offset = 0;
+      file->device->net->eof = 0;
+      err = file->device->net->protocol->open (file, file->device->net->name);
+      if (err)
+	return err;
+      len = offset;
     }
 
   grub_net_fs_read_real (file, NULL, len);
