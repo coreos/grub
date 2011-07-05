@@ -31,7 +31,6 @@
 #include <grub/ieee1275/console.h>
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
-#include <grub/ieee1275/ofnet.h>
 #include <grub/net.h>
 #include <grub/offsets.h>
 #include <grub/memory.h>
@@ -77,25 +76,16 @@ grub_translate_ieee1275_path (char *filepath)
     }
 }
 
+void (*grub_ieee1275_net_config) (const char *dev,
+				  char **device,
+				  char **path);
 void
 grub_machine_get_bootlocation (char **device, char **path)
 {
   char bootpath[64]; /* XXX check length */
   char *filename;
-  grub_bootp_t bootp_pckt;
-  
-  /* Set the net prefix when possible.  */
-  if (grub_getbootp && (bootp_pckt = grub_getbootp()))
-    {
-      grub_uint32_t n = bootp_pckt->siaddr;
-      char addr[GRUB_NET_MAX_STR_ADDR_LEN];
-      grub_snprintf (addr, GRUB_NET_MAX_STR_ADDR_LEN, "%d.%d.%d.%d",
-		     ((n >> 24) & 0xff), ((n >> 16) & 0xff),
-		     ((n >> 8) & 0xff), ((n >> 0) & 0xff));
-      *device = grub_xasprintf ("(tftp,%s)", addr);
-      return;  
-    }
- 
+  char *type;
+   
   if (grub_ieee1275_get_property (grub_ieee1275_chosen, "bootpath", &bootpath,
 				  sizeof (bootpath), 0))
     {
@@ -106,7 +96,27 @@ grub_machine_get_bootlocation (char **device, char **path)
 
   /* Transform an OF device path to a GRUB path.  */
 
-  *device = grub_ieee1275_encode_devname (bootpath);
+  type = grub_ieee1275_get_device_type (bootpath);
+  if (type && grub_strcmp (type, "network") == 0)
+    {
+      char *dev, *canon;
+      char *ptr;
+      dev = grub_ieee1275_get_aliasdevname (bootpath);
+      canon = grub_ieee1275_canonicalise_devname (dev);
+      ptr = canon + grub_strlen (canon) - 1;
+      while (ptr > canon && (*ptr == ',' || *ptr == ':'))
+	ptr--;
+      ptr++;
+      *ptr = 0;
+
+      if (grub_ieee1275_net_config)
+	grub_ieee1275_net_config (canon, device, path);
+      grub_free (dev);
+      grub_free (canon);
+    }
+  else
+    *device = grub_ieee1275_encode_devname (bootpath);
+  grub_free (type);
 
   filename = grub_ieee1275_get_filename (bootpath);
   if (filename)
@@ -264,8 +274,6 @@ grub_machine_init (void)
 void
 grub_machine_fini (void)
 {
-  if (grub_grubnet_fini)
-    grub_grubnet_fini ();
   grub_ofdisk_fini ();
   grub_console_fini ();
 }

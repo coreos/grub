@@ -17,7 +17,6 @@
  */
 
 #include <grub/net/netbuff.h>
-#include <grub/ieee1275/ofnet.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/dl.h>
 #include <grub/net.h>
@@ -25,8 +24,15 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+struct grub_ofnetcard_data
+{
+  char *path;
+  grub_ieee1275_ihandle_t handle;
+  grub_uint32_t mtu;
+};
+
 static grub_err_t
-card_open (struct grub_net_card *dev)
+card_open (const struct grub_net_card *dev)
 {
   int status;
   struct grub_ofnetcard_data *data = dev->data;
@@ -44,14 +50,13 @@ card_open (struct grub_net_card *dev)
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t
-card_close (struct grub_net_card *dev)
+static void
+card_close (const struct grub_net_card *dev)
 {
   struct grub_ofnetcard_data *data = dev->data;
 
   if (data->handle)
     grub_ieee1275_close (data->handle);
-  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -93,8 +98,8 @@ get_card_packet (const struct grub_net_card *dev, struct grub_net_buff *nb)
 static struct grub_net_card_driver ofdriver =
   {
     .name = "ofnet",
-    .init = card_open,
-    .fini = card_close,
+    .open = card_open,
+    .close = card_close,
     .send = send_card_buffer,
     .recv = get_card_packet
   };
@@ -112,39 +117,87 @@ bootp_response_properties[] =
     { .name = "bootpreply-packet", .offset = 0x2a},
   };
 
-static grub_bootp_t
-grub_getbootp_real (void)
+static void
+grub_ieee1275_net_config_real (const char *devpath, char **device, char **path)
 {
-  grub_bootp_t packet = grub_malloc (sizeof *packet);
-  char *bootp_response;
-  grub_ssize_t size;
-  unsigned int i;
+  struct grub_net_card *card;
 
-  for (i = 0; i < ARRAY_SIZE (bootp_response_properties); i++)
-    if (grub_ieee1275_get_property_length (grub_ieee1275_chosen,
-					   bootp_response_properties[i].name,
-					   &size) >= 0)
-      break;
+  /* FIXME: Check that it's the right card.  */
+  FOR_NET_CARDS (card)
+  {
+    char *bootp_response;
+    char *cardpath;
+    char *canon;
 
-  if (size < 0)
-    return NULL;
+    grub_ssize_t size = -1;
+    unsigned int i;
 
-  bootp_response = grub_malloc (size);
-  if (grub_ieee1275_get_property (grub_ieee1275_chosen,
-				  bootp_response_properties[i].name,
-				  bootp_response, size, 0) < 0)
-    return NULL;
+    if (card->driver != &ofdriver)
+      continue;
 
-  grub_memcpy (packet, bootp_response + bootp_response_properties[i].offset, sizeof (*packet));
-  grub_free (bootp_response);
-  return packet;
+    cardpath = ((struct grub_ofnetcard_data *) card->data)->path;
+    canon = grub_ieee1275_canonicalise_devname (cardpath);
+    if (grub_strcmp (devpath, canon) != 0)
+      {
+	grub_free (canon);
+	continue;
+      }
+    grub_free (canon);
+
+    for (i = 0; i < ARRAY_SIZE (bootp_response_properties); i++)
+      if (grub_ieee1275_get_property_length (grub_ieee1275_chosen,
+					     bootp_response_properties[i].name,
+					     &size) >= 0)
+	break;
+
+    if (size < 0)
+      return;
+
+    bootp_response = grub_malloc (size);
+    if (!bootp_response)
+      {
+	grub_print_error ();
+	return;
+      }
+    if (grub_ieee1275_get_property (grub_ieee1275_chosen,
+				    bootp_response_properties[i].name,
+				    bootp_response, size, 0) < 0)
+      return;
+
+    grub_net_configure_by_dhcp_ack (card->name, card, 0,
+				    (struct grub_net_bootp_packet *)
+				    &bootp_response
+				    + bootp_response_properties[i].offset,
+				    size - bootp_response_properties[i].offset,
+				    1, device, path);
+    return;
+  }
+}
+
+static char *
+find_alias (const char *fullname)
+{
+  char *ret = NULL;
+  auto int find_alias_hook (struct grub_ieee1275_devalias *alias);
+
+  int find_alias_hook (struct grub_ieee1275_devalias *alias)
+  {
+    if (grub_strcmp (alias->path, fullname) == 0)
+      {
+	ret = grub_strdup (alias->name);
+	return 1;
+      }
+    return 0;
+  }
+
+  grub_devalias_iterate (find_alias_hook);
+  grub_errno = GRUB_ERR_NONE;
+  return ret;
 }
 
 static void
 grub_ofnet_findcards (void)
 {
-  int i = 0;
-
   auto int search_net_devices (struct grub_ieee1275_devalias *alias);
 
   int search_net_devices (struct grub_ieee1275_devalias *alias)
@@ -155,6 +208,7 @@ grub_ofnet_findcards (void)
 	struct grub_net_card *card;
 	grub_ieee1275_phandle_t devhandle;
 	grub_net_link_level_address_t lla;
+	char *shortname;
 
 	ofdata = grub_malloc (sizeof (struct grub_ofnetcard_data));
 	if (!ofdata)
@@ -162,7 +216,7 @@ grub_ofnet_findcards (void)
 	    grub_print_error ();
 	    return 1;
 	  }
-	card = grub_malloc (sizeof (struct grub_net_card));
+	card = grub_zalloc (sizeof (struct grub_net_card));
 	if (!card)
 	  {
 	    grub_free (ofdata);
@@ -177,11 +231,19 @@ grub_ofnet_findcards (void)
 	if (grub_ieee1275_get_integer_property
 	    (devhandle, "max-frame-size", &(ofdata->mtu),
 	     sizeof (ofdata->mtu), 0))
-	  return grub_error (GRUB_ERR_IO, "Couldn't retrieve mtu size.");
+	  {
+	    ofdata->mtu = 1500;
+	  }
 
-	if (grub_ieee1275_get_property
-	    (devhandle, "mac-address", &(lla.mac), 6, 0))
-	  return grub_error (GRUB_ERR_IO, "Couldn't retrieve mac address.");
+	if (grub_ieee1275_get_property (devhandle, "mac-address",
+					&(lla.mac), 6, 0)
+	    && grub_ieee1275_get_property (devhandle, "local-mac-address",
+					   &(lla.mac), 6, 0))
+	  {
+	    grub_error (GRUB_ERR_IO, "Couldn't retrieve mac address.");
+	    grub_print_error ();
+	    return 0;
+	  }
 
 	lla.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 	card->default_address = lla;
@@ -189,7 +251,11 @@ grub_ofnet_findcards (void)
 	card->driver = NULL;
 	card->data = ofdata;
 	card->flags = 0;
-	card->name = grub_xasprintf ("eth%d", i++);
+	shortname = find_alias (alias->path);
+	card->name = grub_xasprintf ("ofnet_%s", shortname ? : alias->path);
+	grub_free (shortname);
+
+	card->driver = &ofdriver;
 	grub_net_card_register (card);
 	return 0;
       }
@@ -200,69 +266,18 @@ grub_ofnet_findcards (void)
   grub_ieee1275_devices_iterate (search_net_devices);
 }
 
-static void
-grub_ofnet_probecards (void)
-{
-  struct grub_net_card *card;
-  struct grub_net_card_driver *driver;
-  struct grub_net_network_level_interface *inter;
-  grub_bootp_t bootp_pckt;
-  grub_net_network_level_address_t addr;
-  grub_net_network_level_netaddress_t net;
-  bootp_pckt = grub_getbootp ();
-
-  /* Assign correspondent driver for each device.  */
-  FOR_NET_CARDS (card)
-  {
-    FOR_NET_CARD_DRIVERS (driver)
-    {
-      if (driver->init (card) == GRUB_ERR_NONE)
-	{
-	  card->driver = driver;
-	  if (bootp_pckt
-	      && grub_memcmp (bootp_pckt->chaddr, card->default_address.mac, 6) == 0)
-	    {
-	      addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	      addr.ipv4 = bootp_pckt->yiaddr;
-	      grub_net_add_addr ("bootp_cli_addr", card, addr,
-				 card->default_address, 0);
-	      FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
-		if (grub_strcmp (inter->name, "bootp_cli_addr") == 0)
-		  break;
-	      net.type = addr.type;
-	      net.ipv4.base = addr.ipv4;
-	      net.ipv4.masksize = 24;
-	      grub_net_add_route ("bootp-router", net, inter);
-	    }
-	  break;
-	}
-    }
-  }
-  grub_free (bootp_pckt);
-
-}
-
 GRUB_MOD_INIT(ofnet)
 {
-  struct grub_net_card *card;
-  grub_getbootp = grub_getbootp_real;
-  grub_net_card_driver_register (&ofdriver);
   grub_ofnet_findcards ();
-  grub_ofnet_probecards ();
-  FOR_NET_CARDS (card) 
-    if (card->driver == NULL)
-      grub_net_card_unregister (card);
+  grub_ieee1275_net_config = grub_ieee1275_net_config_real;
 }
 
 GRUB_MOD_FINI(ofnet)
 {
-  struct grub_net_card *card;
-  FOR_NET_CARDS (card) 
-    if (card->driver && !grub_strcmp (card->driver->name, "ofnet"))
-      {
-	card->driver->fini (card);
-	card->driver = NULL;
-      }
-  grub_net_card_driver_unregister (&ofdriver);
-  grub_getbootp = NULL;
+  struct grub_net_card *card, *next;
+
+  FOR_NET_CARDS_SAFE (card, next) 
+    if (card->driver && grub_strcmp (card->driver->name, "ofnet") == 0)
+      grub_net_card_unregister (card);
+  grub_ieee1275_net_config = 0;
 }

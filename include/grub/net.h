@@ -60,6 +60,8 @@ struct grub_net_card_driver
 {
   struct grub_net_card_driver *next;
   char *name;
+  grub_err_t (*open) (const struct grub_net_card *dev);
+  void (*close) (const struct grub_net_card *dev);
   grub_err_t (*send) (const struct grub_net_card *dev,
 		      struct grub_net_buff *buf);
   grub_ssize_t (*recv) (const struct grub_net_card *dev,
@@ -87,6 +89,8 @@ struct grub_net_card
   struct grub_net_card_driver *driver;
   grub_net_link_level_address_t default_address;
   grub_net_card_flags_t flags;
+  int num_ifaces;
+  int opened;
   union
   {
     struct
@@ -236,7 +240,7 @@ struct grub_net_network_level_interface
   struct grub_net_network_level_interface *next;
   struct grub_net_network_level_interface **prev;
   char *name;
-  const struct grub_net_card *card;
+  struct grub_net_card *card;
   grub_net_network_level_address_t address;
   grub_net_link_level_address_t hwaddress;
   grub_net_interface_flags_t flags;
@@ -284,7 +288,7 @@ grub_net_session_recv (struct grub_net_session *session, void *buf,
 
 struct grub_net_network_level_interface *
 grub_net_add_addr (const char *name,
-		   const struct grub_net_card *card,
+		   struct grub_net_card *card,
 		   grub_net_network_level_address_t addr,
 		   grub_net_link_level_address_t hwaddress,
 		   grub_net_interface_flags_t flags);
@@ -321,12 +325,8 @@ grub_net_card_register (struct grub_net_card *card)
 		  GRUB_AS_LIST (card));
 }
 
-static inline void
-grub_net_card_unregister (struct grub_net_card *card)
-{
-  grub_list_remove (GRUB_AS_LIST_P (&grub_net_cards),
-		    GRUB_AS_LIST (card));
-}
+void
+grub_net_card_unregister (struct grub_net_card *card);
 
 #define FOR_NET_CARDS(var) for (var = grub_net_cards; var; var = var->next)
 #define FOR_NET_CARDS_SAFE(var, next) for (var = grub_net_cards, next = var->next; var; var = next, next = var->next)
@@ -390,7 +390,7 @@ struct grub_net_bootp_packet
 
 struct grub_net_network_level_interface *
 grub_net_configure_by_dhcp_ack (const char *name,
-				const struct grub_net_card *card,
+				struct grub_net_card *card,
 				grub_net_interface_flags_t flags,
 				const struct grub_net_bootp_packet *bp,
 				grub_size_t size,
@@ -398,7 +398,7 @@ grub_net_configure_by_dhcp_ack (const char *name,
 
 void
 grub_net_process_dhcp (struct grub_net_buff *nb,
-		       const struct grub_net_card *card);
+		       struct grub_net_card *card);
 
 int
 grub_net_hwaddr_cmp (const grub_net_link_level_address_t *a,
@@ -417,6 +417,8 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target,
 
 extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
 #define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
+
+#define FOR_NET_NETWORK_LEVEL_INTERFACES_SAFE(var,next) for (var = grub_net_network_level_interfaces, next = var->next; var; var = next, next = var->next)
 
 grub_err_t grub_net_send_link_layer (struct grub_net_network_level_interface *inf,
 				     struct grub_net_buff *nb,

@@ -30,6 +30,7 @@
 #include <grub/term.h>
 #include <grub/net/ethernet.h>
 #include <grub/datetime.h>
+#include <grub/loader.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -58,12 +59,31 @@ static struct grub_fs grub_net_fs;
 static inline void
 grub_net_network_level_interface_unregister (struct grub_net_network_level_interface *inter)
 {
+  inter->card->num_ifaces--;
   *inter->prev = inter->next;
   if (inter->next)
     inter->next->prev = inter->prev;
   inter->next = 0;
   inter->prev = 0;
 }
+
+void
+grub_net_card_unregister (struct grub_net_card *card)
+{
+  struct grub_net_network_level_interface *inf, *next;
+  FOR_NET_NETWORK_LEVEL_INTERFACES_SAFE(inf, next)
+    if (inf->card == card)
+      grub_net_network_level_interface_unregister (inf);
+  if (card->opened)
+    {
+      if (card->driver->close)
+	card->driver->close (card);
+      card->opened = 0;
+    }
+  grub_list_remove (GRUB_AS_LIST_P (&grub_net_cards),
+		    GRUB_AS_LIST (card));
+}
+
 
 static inline void
 grub_net_route_register (struct grub_net_route *route)
@@ -336,6 +356,7 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
     grub_register_variable_hook (name, 0, addr_set_env);
   }
 
+  inter->card->num_ifaces++;
   inter->prev = &grub_net_network_level_interfaces;
   inter->next = grub_net_network_level_interfaces;
   if (inter->next)
@@ -345,7 +366,7 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
 
 struct grub_net_network_level_interface *
 grub_net_add_addr (const char *name, 
-		   const struct grub_net_card *card,
+		   struct grub_net_card *card,
 		   grub_net_network_level_address_t addr,
 		   grub_net_link_level_address_t hwaddress,
 		   grub_net_interface_flags_t flags)
@@ -714,6 +735,20 @@ grub_net_fs_close (grub_file_t file)
 static void
 receive_packets (struct grub_net_card *card)
 {
+  if (card->num_ifaces == 0)
+    return;
+  if (!card->opened)
+    {
+      grub_err_t err = GRUB_ERR_NONE;
+      if (card->driver->open)
+	err = card->driver->open (card);
+      if (err)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  return;
+	}
+      card->opened = 1;
+    }
   while (1)
     {
       /* Maybe should be better have a fixed number of packets for each card
@@ -926,7 +961,7 @@ parse_dhcp_vendor (const char *name, void *vend, int limit)
 
 struct grub_net_network_level_interface *
 grub_net_configure_by_dhcp_ack (const char *name,
-				const struct grub_net_card *card,
+				struct grub_net_card *card,
 				grub_net_interface_flags_t flags,
 				const struct grub_net_bootp_packet *bp,
 				grub_size_t size,
@@ -1042,7 +1077,7 @@ grub_net_configure_by_dhcp_ack (const char *name,
 
 void
 grub_net_process_dhcp (struct grub_net_buff *nb,
-		       const struct grub_net_card *card)
+		       struct grub_net_card *card)
 {
   char *name;
   struct grub_net_network_level_interface *inf;
@@ -1228,6 +1263,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
     if (j)
       ifaces[j].prev = &ifaces[j-1].next;
     ifaces[j].name = grub_xasprintf ("%s:dhcp_tmp", card->name);
+    card->num_ifaces++;
     if (!ifaces[j].name)
       {
 	unsigned i;
@@ -1331,6 +1367,29 @@ static struct grub_fs grub_net_fs =
     .uuid = NULL,
     .mtime = NULL,
   };
+
+static grub_err_t
+grub_net_fini_hw (int noreturn __attribute__ ((unused)))
+{
+  struct grub_net_card *card;
+  FOR_NET_CARDS (card) 
+    if (card->opened)
+      {
+	if (card->driver->close)
+	  card->driver->close (card);
+	card->opened = 0;
+      }
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_net_restore_hw (void)
+{
+  return GRUB_ERR_NONE;
+}
+
+static void *fini_hnd;
+
 static grub_command_t cmd_addaddr, cmd_deladdr, cmd_addroute, cmd_delroute;
 static grub_command_t cmd_lsroutes, cmd_lscards, cmd_getdhcp, cmd_bootp;
 static grub_command_t cmd_dhcp, cmd_lsaddr;
@@ -1367,6 +1426,11 @@ GRUB_MOD_INIT(net)
 
   grub_fs_register (&grub_net_fs);
   grub_net_open = grub_net_open_real;
+  fini_hnd = grub_loader_register_preboot_hook (grub_net_fini_hw,
+						grub_net_restore_hw,
+						GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
+  grub_net_fini_hw (0);
+  grub_loader_unregister_preboot_hook (fini_hnd);
 }
 
 GRUB_MOD_FINI(net)
@@ -1381,4 +1445,5 @@ GRUB_MOD_FINI(net)
   grub_unregister_command (cmd_getdhcp);
   grub_fs_unregister (&grub_net_fs);
   grub_net_open = NULL;
+  grub_loader_unregister_preboot_hook (fini_hnd);
 }

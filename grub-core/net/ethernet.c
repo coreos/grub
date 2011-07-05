@@ -25,7 +25,15 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
   grub_memcpy (eth->src, inf->hwaddress.mac, 6);
 
   eth->type = grub_cpu_to_be16 (ethertype);
-
+  if (!inf->card->opened)
+    {
+      err = GRUB_ERR_NONE;
+      if (inf->card->driver->open)
+	err = inf->card->driver->open (inf->card);
+      if (err)
+	return err;
+      inf->card->opened = 1;
+    }
   return inf->card->driver->send (inf->card, nb);
 }
 

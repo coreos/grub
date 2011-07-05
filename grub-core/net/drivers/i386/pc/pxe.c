@@ -23,7 +23,6 @@
 #include <grub/file.h>
 #include <grub/misc.h>
 #include <grub/env.h>
-#include <grub/loader.h>
 
 #include <grub/machine/pxe.h>
 #include <grub/machine/int.h>
@@ -261,20 +260,8 @@ grub_pxe_send (const struct grub_net_card *dev __attribute__ ((unused)),
   return 0;
 }
 
-struct grub_net_card_driver grub_pxe_card_driver =
-{
-  .send = grub_pxe_send,
-  .recv = grub_pxe_recv
-};
-
-struct grub_net_card grub_pxe_card =
-{
-  .driver = &grub_pxe_card_driver,
-  .name = "pxe"
-};
-
 static grub_err_t
-grub_pxe_fini_hw (int noreturn __attribute__ ((unused)))
+grub_pxe_close (const struct grub_net_card *dev __attribute__ ((unused)))
 {
   if (pxe_rm_entry)
     grub_pxe_call (GRUB_PXENV_UNDI_CLOSE,
@@ -285,7 +272,7 @@ grub_pxe_fini_hw (int noreturn __attribute__ ((unused)))
 }
 
 static grub_err_t
-grub_pxe_restore_hw (void)
+grub_pxe_open (const struct grub_net_card *dev __attribute__ ((unused)))
 {
   struct grub_pxe_undi_open *ou;
   ou = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
@@ -294,14 +281,23 @@ grub_pxe_restore_hw (void)
   grub_pxe_call (GRUB_PXENV_UNDI_OPEN, ou, pxe_rm_entry);
 
   if (ou->status)
-    {
-      grub_net_card_unregister (&grub_pxe_card);
-      return grub_error (GRUB_ERR_IO, "can't open UNDI");
-    }
+    return grub_error (GRUB_ERR_IO, "can't open UNDI");
   return GRUB_ERR_NONE;
 } 
 
-static void *fini_hnd;
+struct grub_net_card_driver grub_pxe_card_driver =
+{
+  .open = grub_pxe_open,
+  .close = grub_pxe_close,
+  .send = grub_pxe_send,
+  .recv = grub_pxe_recv
+};
+
+struct grub_net_card grub_pxe_card =
+{
+  .driver = &grub_pxe_card_driver,
+  .name = "pxe"
+};
 
 static void
 grub_pc_net_config_real (char **device, char **path)
@@ -355,30 +351,12 @@ GRUB_MOD_INIT(pxe)
 
   grub_pxe_card.default_address.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
-  ou = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
-  grub_memset (ou, 0, sizeof (*ou));
-  ou->pkt_filter = 4;
-  grub_pxe_call (GRUB_PXENV_UNDI_OPEN, ou, pxe_rm_entry);
-  
-  if (ou->status)
-    return;
-
   grub_net_card_register (&grub_pxe_card);
   grub_pc_net_config = grub_pc_net_config_real;
-  fini_hnd = grub_loader_register_preboot_hook (grub_pxe_fini_hw,
-						grub_pxe_restore_hw,
-						GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
 }
 
 GRUB_MOD_FINI(pxe)
 {
-  struct grub_net_card *card, *next;
-
   grub_pc_net_config = 0;
-  grub_pxe_fini_hw (0);
   grub_net_card_unregister (&grub_pxe_card);
-  FOR_NET_CARDS_SAFE (card, next) 
-    if (card->driver && grub_strcmp (card->driver->name, "pxe") == 0)
-      grub_net_card_unregister (card);
-  grub_loader_unregister_preboot_hook (fini_hnd);
 }
