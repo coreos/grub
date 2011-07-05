@@ -169,7 +169,7 @@
 /* Non-zero value is only needed for PowerMacs.  */
 #define GRUB_KERNEL_I386_IEEE1275_MOD_GAP 0x0
 #define GRUB_KERNEL_I386_COREBOOT_MOD_GAP 0x0
-#define GRUB_KERNEL_POWERPC_IEEE1275_MOD_GAP 0x0
+#define GRUB_KERNEL_SPARC64_IEEE1275_MOD_GAP 0x0
 
 #define GRUB_KERNEL_POWERPC_IEEE1275_MOD_ALIGN 0x1000
 #define GRUB_KERNEL_SPARC64_IEEE1275_MOD_ALIGN 0x1
@@ -181,7 +181,7 @@
 /* Minimal gap between _end and the start of the modules.  It's a hack
    for PowerMac to prevent "CLAIM failed" error.  The real fix is to
    rewrite grub-mkimage to generate valid ELF files.  */
-#define GRUB_KERNEL_SPARC64_IEEE1275_MOD_GAP 0x8000
+#define GRUB_KERNEL_POWERPC_IEEE1275_MOD_GAP 0x8000
 
 #ifdef GRUB_MACHINE
 #define GRUB_OFFSETS_CONCAT_(a,b,c) a ## b ## c
