@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2010,2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef __mips__
 #include <grub/pci.h>
+#endif
 #include <grub/machine/kernel.h>
 #include <grub/misc.h>
 #include <grub/vga.h>
@@ -43,7 +45,17 @@ static struct {grub_uint8_t r, g, b, a; } colors[] =
     {0xFE, 0xFE, 0xFE, 0xFF}  // 15 = white
   };
 
+#ifdef __mips__
+extern unsigned char ascii_bitmaps[];
+#else
 #include <ascii.h>
+#endif
+
+#ifdef __mips__
+#define VGA_ADDR 0xb00a0000
+#else
+#define VGA_ADDR 0xa0000
+#endif
 
 static void
 load_font (void)
@@ -61,7 +73,7 @@ load_font (void)
   grub_vga_gr_write (0xff, GRUB_VGA_GR_BITMASK);
 
   for (i = 0; i < 128; i++)
-    grub_memcpy ((void *) (0xa0000 + 32 * i), ascii_bitmaps + 16 * i, 16);
+    grub_memcpy ((void *) (VGA_ADDR + 32 * i), ascii_bitmaps + 16 * i, 16);
 }
 
 static void
@@ -78,6 +90,7 @@ load_palette (void)
 void
 grub_qemu_init_cirrus (void)
 {
+#ifndef __mips__
   auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid);
   int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)))
     {
@@ -106,8 +119,10 @@ grub_qemu_init_cirrus (void)
     }
 
   grub_pci_iterate (find_card);
+#endif
 
-  grub_outb (GRUB_VGA_IO_MISC_COLOR, GRUB_VGA_IO_MISC_WRITE);
+  grub_outb (GRUB_VGA_IO_MISC_COLOR,
+	     GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_MISC_WRITE);
 
   load_font ();
 
@@ -143,5 +158,5 @@ grub_qemu_init_cirrus (void)
   grub_vga_cr_write (14, GRUB_VGA_CR_CURSOR_START);
   grub_vga_cr_write (15, GRUB_VGA_CR_CURSOR_END);
 
-  grub_outb (0x20, 0x3c0);
+  grub_outb (0x20, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_ARX);
 }

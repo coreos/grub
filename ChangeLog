@@ -1,5 +1,22 @@
 2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	VGA text support in qemu-mips
+
+	* grub-core/Makefile.core.def (kernel): Add term/i386/pc/vga_text.c,
+	term/i386/vga_common.c and kern/vga_init.c on qemu-mips.
+	* grub-core/kern/mips/qemu_mips/init.c (grub_machine_init): Init vga
+	text.
+	* grub-core/kern/i386/qemu/init.c: Renamed to ...
+	* grub-core/kern/vga_init.c: ... this.
+	* grub-core/kern/vga_init.c (VGA_ADDR) [__mips__]: Adjust.
+	(grub_qemu_init_cirrus) [__mips__]: Skip PCI and adjust the I/O base.
+	* grub-core/term/i386/pc/vga_text.c (VGA_TEXT_SCREEN) [__mips__]:
+	Adjust.
+	* include/grub/vga.h [GRUB_MACHINE_MIPS_QEMU_MIPS]: Declare
+	GRUB_MACHINE_PCI_IO_BASE.
+
+2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	MIPS qemu flash support.
 
 	* grub-core/boot/mips/startup_raw.S [GRUB_MACHINE_MIPS_QEMU_MIPS]: Check

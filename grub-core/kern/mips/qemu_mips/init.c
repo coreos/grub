@@ -7,6 +7,7 @@
 #include <grub/mm.h>
 #include <grub/time.h>
 #include <grub/machine/memory.h>
+#include <grub/machine/kernel.h>
 #include <grub/cpu/memory.h>
 #include <grub/memory.h>
 
@@ -22,6 +23,7 @@ extern void grub_serial_init (void);
 extern void grub_terminfo_init (void);
 extern void grub_keylayouts_init (void);
 extern void grub_boot_init (void);
+extern void grub_vga_text_init (void);
 
 static inline int
 probe_mem (grub_addr_t addr)
@@ -68,6 +70,9 @@ grub_machine_init (void)
 
   grub_keylayouts_init ();
   grub_at_keyboard_init ();
+
+  grub_qemu_init_cirrus ();
+  grub_vga_text_init ();
 
   grub_terminfo_init ();
   grub_serial_init ();

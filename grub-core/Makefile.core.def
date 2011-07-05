@@ -143,7 +143,7 @@ kernel = {
   i386_pc = term/i386/pc/console.c;
 
   i386_qemu = bus/pci.c;
-  i386_qemu = kern/i386/qemu/init.c;
+  i386_qemu = kern/vga_init.c;
   i386_qemu = kern/i386/qemu/mmap.c;
   i386_qemu = kern/i386/tsc.c;
 
@@ -164,6 +164,9 @@ kernel = {
   mips_qemu_mips = term/serial.c;
   mips_qemu_mips = term/at_keyboard.c;
   mips_qemu_mips = commands/keylayouts.c;
+  mips_qemu_mips = term/i386/pc/vga_text.c;
+  mips_qemu_mips = term/i386/vga_common.c;
+  mips_qemu_mips = kern/vga_init.c;
 
   mips_arc = kern/mips/arc/init.c;
   mips_arc = term/arc/console.c;

@@ -25,6 +25,7 @@
 
 void EXPORT_FUNC (grub_reboot) (void);
 void EXPORT_FUNC (grub_halt) (void);
+void grub_qemu_init_cirrus (void);
 
 #endif
 
