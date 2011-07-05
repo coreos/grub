@@ -313,6 +313,17 @@ grub_serial_register (struct grub_serial_port *port)
       grub_term_register_input_inactive ("serial_*", in);
       grub_term_register_output_inactive ("serial_*", out);
     }
+#elif defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+  if (grub_strcmp (port->name, "com0") == 0)
+    {
+      grub_term_register_input_active ("serial_*", in);
+      grub_term_register_output_active ("serial_*", out);
+    }
+  else
+    {
+      grub_term_register_input_inactive ("serial_*", in);
+      grub_term_register_output_inactive ("serial_*", out);
+    }
 #else
   grub_term_register_input ("serial_*", in);
   grub_term_register_output ("serial_*", out);

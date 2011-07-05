@@ -19,7 +19,12 @@
 #ifndef GRUB_VGA_HEADER
 #define GRUB_VGA_HEADER	1
 
+#ifndef GRUB_MACHINE_MIPS_QEMU_MIPS
 #include <grub/pci.h>
+#else
+#include <grub/cpu/io.h>
+#define GRUB_MACHINE_PCI_IO_BASE  0xb4000000
+#endif
 
 enum
   {

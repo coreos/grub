@@ -1,5 +1,47 @@
 2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	VGA text support in qemu-mips
+
+	* grub-core/Makefile.core.def (kernel): Add term/i386/pc/vga_text.c,
+	term/i386/vga_common.c and kern/vga_init.c on qemu-mips.
+	* grub-core/kern/mips/qemu_mips/init.c (grub_machine_init): Init vga
+	text.
+	* grub-core/kern/i386/qemu/init.c: Renamed to ...
+	* grub-core/kern/vga_init.c: ... this.
+	* grub-core/kern/vga_init.c (VGA_ADDR) [__mips__]: Adjust.
+	(grub_qemu_init_cirrus) [__mips__]: Skip PCI and adjust the I/O base.
+	* grub-core/term/i386/pc/vga_text.c (VGA_TEXT_SCREEN) [__mips__]:
+	Adjust.
+	* include/grub/vga.h [GRUB_MACHINE_MIPS_QEMU_MIPS]: Declare
+	GRUB_MACHINE_PCI_IO_BASE.
+
+2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	MIPS qemu flash support.
+
+	* grub-core/boot/mips/startup_raw.S [GRUB_MACHINE_MIPS_QEMU_MIPS]: Check
+	magic.
+	* grub-core/kern/mips/qemu_mips/init.c (probe_mem): New function.
+	(grub_machine_init): Probe memory if its size isn't known.
+	* util/grub-mkimage.c (image_targets): Add flash targets.
+	(generate_image): Handle flash targets.
+
+2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	MIPS qemu at_keyboard support.
+
+	* gentpl.py (videoinkernel): Add qemu-mips.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Add necessary headers.
+	* grub-core/Makefile.core.def (kernel): Add at_keyboard and layout.
+	* grub-core/kern/mips/qemu_mips/init.c (grub_machine_init): Init new
+	modules.
+	* grub-core/term/at_keyboard.c (grub_keyboard_controller_init)
+	[GRUB_MACHINE_MIPS_QEMU_MIPS]: Don't consider original set.
+	* grub-core/term/serial.c (grub_serial_register)
+	[GRUB_MACHINE_MIPS_QEMU_MIPS]: Make com0 explicitly active.
+
+2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	CMOS support on sparc.
 
 	* gentpl.py (cmos): Add powerpc and sparc.

@@ -144,7 +144,20 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/arc/arc.h
 endif
 
 if COND_mips_qemu_mips
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap_scale.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/serial.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/lib/arg.h
 endif
 
 if COND_mips_loongson
