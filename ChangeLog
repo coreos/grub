@@ -1,3 +1,27 @@
+2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	CMOS support on sparc.
+
+	* gentpl.py (cmos): Add powerpc and sparc.
+	* grub-core/Makefile.core.def (datetime): Add lib/ieee1275/cmos.c on
+	powerpc and sparc.
+	* grub-core/lib/cmos_datetime.c (grub_get_datetime)
+	[__powerpc__ || __sparc__]: Rename to grub_get_datetime_cmos.
+	(grub_set_datetime) [__powerpc__ || __sparc__]: Likewise to
+	grub_set_datetime_cmos.
+	* grub-core/lib/ieee1275/cmos.c: New file.
+	* grub-core/lib/ieee1275/datetime.c (no_ieee1275_rtc): New vaiable.
+	(find_rtc): Set no_ieee1275_rtc on error.
+	(grub_get_datetime): Call grub_get_datetime_cmos on error.
+	(grub_set_datetime): Call grub_set_datetime_cmos on error.
+	* include/grub/cmos.h (grub_cmos_read): Return grub_err_t since it may
+	fail. Move value to argument. All users updated
+	(grub_cmos_write): Likewise.
+	(grub_cmos_read) [__powerpc__ || __sparc__]: Rewritten.
+	(grub_cmos_write) [__powerpc__ || __sparc__]: Likewise.
+	* include/grub/datetime.h [__powerpc__ || __sparc__]: Declare
+	grub_get_datetime_cmos and grub_set_datetime_cmos.
+
 2011-07-02  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* util/grub-mkconfig.in: Use @PACKAGE@ instead of hardcoded name when
