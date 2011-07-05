@@ -184,23 +184,18 @@ grub_efi_net_config_real (grub_efi_handle_t hnd, char **device,
   }
 }
 
-
 GRUB_MOD_INIT(efinet)
 {
   grub_efinet_findcards ();
   grub_efi_net_config = grub_efi_net_config_real;
 }
 
-GRUB_MOD_FINI(ofnet)
+GRUB_MOD_FINI(efinet)
 {
-  struct grub_net_card *card;
-  grub_efi_net_config = 0;
-  FOR_NET_CARDS (card) 
-    if (card->driver && !grub_strcmp (card->driver->name, "efinet"))
-      {
-	card->driver->fini (card);
-	card->driver = NULL;
-      }
-  grub_net_card_driver_unregister (&efidriver);
+  struct grub_net_card *card, *next;
+
+  FOR_NET_CARDS_SAFE (card, next) 
+    if (card->driver && grub_strcmp (card->driver->name, "efinet") == 0)
+      grub_net_card_unregister (card);
 }
 

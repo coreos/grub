@@ -60,31 +60,11 @@ struct grub_net_card_driver
 {
   struct grub_net_card_driver *next;
   char *name;
-  grub_err_t (*init) (struct grub_net_card *dev);
-  grub_err_t (*fini) (struct grub_net_card *dev);
   grub_err_t (*send) (const struct grub_net_card *dev,
 		      struct grub_net_buff *buf);
   grub_ssize_t (*recv) (const struct grub_net_card *dev,
 			struct grub_net_buff *buf);
 };
-
-extern struct grub_net_card_driver *grub_net_card_drivers;
-
-static inline void
-grub_net_card_driver_register (struct grub_net_card_driver *driver)
-{
-  grub_list_push (GRUB_AS_LIST_P (&grub_net_card_drivers),
-		  GRUB_AS_LIST (driver));
-}
-
-static inline void
-grub_net_card_driver_unregister (struct grub_net_card_driver *driver)
-{
-  grub_list_remove (GRUB_AS_LIST_P (&grub_net_card_drivers),
-		    GRUB_AS_LIST (driver));
-}
-
-#define FOR_NET_CARD_DRIVERS(var) for (var = grub_net_card_drivers; var; var = var->next)
 
 typedef struct grub_net_packet
 {
@@ -250,7 +230,6 @@ typedef struct grub_net
 } *grub_net_t;
 
 extern grub_net_t (*EXPORT_VAR (grub_net_open)) (const char *name);
-extern void (*EXPORT_VAR (grub_grubnet_fini)) (void);
 
 struct grub_net_network_level_interface
 {
@@ -350,6 +329,8 @@ grub_net_card_unregister (struct grub_net_card *card)
 }
 
 #define FOR_NET_CARDS(var) for (var = grub_net_cards; var; var = var->next)
+#define FOR_NET_CARDS_SAFE(var, next) for (var = grub_net_cards, next = var->next; var; var = next, next = var->next)
+
 
 struct grub_net_session *
 grub_net_open_tcp (char *address, grub_uint16_t port);

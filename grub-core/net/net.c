@@ -52,7 +52,6 @@ struct grub_net_route
 struct grub_net_route *grub_net_routes = NULL;
 struct grub_net_network_level_interface *grub_net_network_level_interfaces = NULL;
 struct grub_net_card *grub_net_cards = NULL;
-struct grub_net_card_driver *grub_net_card_drivers = NULL;
 struct grub_net_network_level_protocol *grub_net_network_level_protocols = NULL;
 static struct grub_fs grub_net_fs;
 
@@ -1321,16 +1320,6 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
   return err;
 }
 
-static void
-grub_grubnet_fini_real (void)
-{
-  struct grub_net_card *card;
-
-  FOR_NET_CARDS (card)
-    if (card->driver)
-      card->driver->fini (card);
-}
-
 static struct grub_fs grub_net_fs =
   {
     .name = "netfs",
@@ -1378,7 +1367,6 @@ GRUB_MOD_INIT(net)
 
   grub_fs_register (&grub_net_fs);
   grub_net_open = grub_net_open_real;
-  grub_grubnet_fini = grub_grubnet_fini_real;
 }
 
 GRUB_MOD_FINI(net)
@@ -1393,5 +1381,4 @@ GRUB_MOD_FINI(net)
   grub_unregister_command (cmd_getdhcp);
   grub_fs_unregister (&grub_net_fs);
   grub_net_open = NULL;
-  grub_grubnet_fini = NULL;
 }

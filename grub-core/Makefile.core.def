@@ -715,12 +715,6 @@ module = {
 };
 
 module = {
-  name = pxecmd;
-  i386_pc = commands/i386/pc/pxecmd.c;
-  enable = i386_pc;
-};
-
-module = {
   name = read;
   common = commands/read.c;
 };
