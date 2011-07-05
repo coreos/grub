@@ -67,7 +67,8 @@ struct image_target_desc
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
     IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
     IMAGE_LOONGSON_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
-    IMAGE_FULOONG_FLASH, IMAGE_I386_PC_PXE, IMAGE_MIPS_ARC
+    IMAGE_FULOONG_FLASH, IMAGE_I386_PC_PXE, IMAGE_MIPS_ARC,
+    IMAGE_QEMU_MIPS_FLASH
   } id;
   enum
     {
@@ -450,6 +451,50 @@ struct image_target_desc image_targets[] =
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_LOONGSON_ELF, 
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .prefix = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END,
+      .raw_size = 0,
+      .total_module_size = GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
+    },
+    {
+      .dirname = "mips-qemu_mips",
+      .names = { "mips-qemu_mips-flash", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 1,
+      .id = IMAGE_QEMU_MIPS_FLASH, 
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .prefix = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX,
+      .prefix_end = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END,
+      .raw_size = 0,
+      .total_module_size = GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE,
+      .compressed_size = TARGET_NO_FIELD,
+      .kernel_image_size = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .install_dos_part = TARGET_NO_FIELD,
+      .install_bsd_part = TARGET_NO_FIELD,
+      .link_addr = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
+    },
+    {
+      .dirname = "mipsel-qemu_mips",
+      .names = { "mipsel-qemu_mips-flash", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_QEMU_MIPS_FLASH, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
       .prefix = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX,
       .prefix_end = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END,
@@ -1383,6 +1428,28 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
       memset (rom_img + boot_size + core_size, 0,
 	      rom_size - (boot_size + core_size));
+
+      free (core_img);
+      core_img = rom_img;
+      core_size = rom_size;
+    }
+    break;
+    case IMAGE_QEMU_MIPS_FLASH:
+    {
+      char *rom_img;
+      size_t rom_size;
+
+      if (core_size > 512 * 1024)
+	grub_util_error ("firmware image is too big");
+      rom_size = 512 * 1024;
+
+      rom_img = xmalloc (rom_size);
+      memset (rom_img, 0, rom_size); 
+
+      memcpy (rom_img, core_img, core_size);
+
+      memset (rom_img + core_size, 0,
+	      rom_size - core_size);
 
       free (core_img);
       core_img = rom_img;

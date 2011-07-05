@@ -1,5 +1,16 @@
 2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	MIPS qemu flash support.
+
+	* grub-core/boot/mips/startup_raw.S [GRUB_MACHINE_MIPS_QEMU_MIPS]: Check
+	magic.
+	* grub-core/kern/mips/qemu_mips/init.c (probe_mem): New function.
+	(grub_machine_init): Probe memory if its size isn't known.
+	* util/grub-mkimage.c (image_targets): Add flash targets.
+	(generate_image): Handle flash targets.
+
+2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	MIPS qemu at_keyboard support.
 
 	* gentpl.py (videoinkernel): Add qemu-mips.
