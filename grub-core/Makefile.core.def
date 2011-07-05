@@ -162,6 +162,8 @@ kernel = {
   mips_qemu_mips = kern/mips/qemu_mips/init.c;
   mips_qemu_mips = term/ns8250.c;
   mips_qemu_mips = term/serial.c;
+  mips_qemu_mips = term/at_keyboard.c;
+  mips_qemu_mips = commands/keylayouts.c;
 
   mips_arc = kern/mips/arc/init.c;
   mips_arc = term/arc/console.c;

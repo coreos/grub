@@ -12,6 +12,16 @@
 
 extern void grub_serial_init (void);
 extern void grub_terminfo_init (void);
+extern void grub_at_keyboard_init (void);
+extern void grub_video_init (void);
+extern void grub_bitmap_init (void);
+extern void grub_font_init (void);
+extern void grub_gfxterm_init (void);
+extern void grub_at_keyboard_init (void);
+extern void grub_serial_init (void);
+extern void grub_terminfo_init (void);
+extern void grub_keylayouts_init (void);
+extern void grub_boot_init (void);
 
 void
 grub_machine_init (void)
@@ -27,8 +37,18 @@ grub_machine_init (void)
 
   grub_install_get_time_ms (grub_rtc_get_time_ms);
 
+  grub_video_init ();
+  grub_bitmap_init ();
+  grub_font_init ();
+  grub_gfxterm_init ();
+
+  grub_keylayouts_init ();
+  grub_at_keyboard_init ();
+
   grub_terminfo_init ();
   grub_serial_init ();
+
+  grub_boot_init ();
 }
 
 void
