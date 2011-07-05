@@ -1183,6 +1183,9 @@ module = {
   efi = lib/efi/datetime.c;
   sparc64_ieee1275 = lib/ieee1275/datetime.c;
   powerpc_ieee1275 = lib/ieee1275/datetime.c;
+  sparc64_ieee1275 = lib/ieee1275/cmos.c;
+  powerpc_ieee1275 = lib/ieee1275/cmos.c;
+
   mips_arc = lib/arc/datetime.c;
   enable = noemu;
 };

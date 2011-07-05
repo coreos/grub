@@ -125,4 +125,11 @@ grub_datetime2unixtime (const struct grub_datetime *datetime, grub_int32_t *nix)
   return 1;
 }
 
+#if defined (__powerpc__) || defined (__sparc__)
+grub_err_t
+grub_get_datetime_cmos (struct grub_datetime *datetime);
+grub_err_t
+grub_set_datetime_cmos (struct grub_datetime *datetime);
+#endif
+
 #endif /* ! KERNEL_DATETIME_HEADER */

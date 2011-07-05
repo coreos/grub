@@ -30,7 +30,9 @@ GROUPS["ieee1275"]   = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275"
 GROUPS["noemu"]   = GRUB_PLATFORMS[:]; GROUPS["noemu"].remove("emu")
 
 # Groups based on hardware features
-GROUPS["cmos"] = GROUPS["x86"][:] + ["mips_loongson", "mips_qemu_mips"]; GROUPS["cmos"].remove("i386_efi"); GROUPS["cmos"].remove("x86_64_efi")
+GROUPS["cmos"] = GROUPS["x86"][:] + ["mips_loongson", "mips_qemu_mips",
+                                     "sparc64_ieee1275", "powerpc_ieee1275"]
+GROUPS["cmos"].remove("i386_efi"); GROUPS["cmos"].remove("x86_64_efi")
 GROUPS["pci"]      = GROUPS["x86"] + ["mips_loongson"]
 GROUPS["usb"]      = GROUPS["pci"]
 
