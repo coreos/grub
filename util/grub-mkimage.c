@@ -1278,6 +1278,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	aout_size = core_size + sizeof (*aout_head);
 	aout_img = xmalloc (aout_size);
 	aout_head = aout_img;
+	grub_memset (aout_head, 0, sizeof (*aout_head));
 	aout_head->a_midmag = grub_host_to_target32 ((AOUT_MID_SUN << 16)
 						     | AOUT32_OMAGIC);
 	aout_head->a_text = grub_host_to_target32 (core_size);
