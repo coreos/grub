@@ -1,35 +1,42 @@
+/*
+ *  GRUB  --  GRand Unified Bootloader
+ *  Copyright (C) 2010,2011  Free Software Foundation, Inc.
+ *
+ *  GRUB is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  GRUB is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef GRUB_NET_IP_HEADER
 #define GRUB_NET_IP_HEADER	1
 #include <grub/misc.h>
+#include <grub/net.h>
 
-struct iphdr {
-  grub_uint8_t verhdrlen;
-  grub_uint8_t service;
-  grub_uint16_t len;
-  grub_uint16_t ident;
-  grub_uint16_t frags;
-  grub_uint8_t ttl;
-  grub_uint8_t protocol;
-  grub_uint16_t chksum;
-  grub_uint32_t src;
-  grub_uint32_t  dest;
-} __attribute__ ((packed)) ;
-
-struct ip6hdr
-{
-  grub_uint8_t version:4, priority:4;
-  grub_uint8_t flow_lbl[3];
-  grub_uint16_t payload_len;
-  grub_uint8_t nexthdr;
-  grub_uint8_t hop_limit;
-  grub_uint8_t saddr[16];
-  grub_uint8_t daddr[16];
-} __attribute__ ((packed));
-
-#define IP_UDP          0x11 /* UDP protocol */
+enum
+  {
+    IP_UDP =          0x11 /* UDP protocol */
+  };
 #define IP_BROADCAST    0xFFFFFFFF
 
-grub_uint16_t ipchksum(void *ipv, int len);
-void ipv4_ini(void);
-void ipv4_fini(void);
+grub_uint16_t grub_net_ip_chksum(void *ipv, int len);
+
+grub_err_t
+grub_net_recv_ip_packets (struct grub_net_buff *nb,
+			  const struct grub_net_card *card,
+			  const grub_net_link_level_address_t *hwaddress);
+
+grub_err_t
+grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
+			 const grub_net_network_level_address_t *target,
+			 struct grub_net_buff *nb);
+
 #endif 

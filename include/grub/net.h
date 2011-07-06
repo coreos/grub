@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2010,2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -82,6 +82,10 @@ typedef struct grub_net_packets
   grub_net_packet_t *last;
 } grub_net_packets_t;
 
+#ifdef GRUB_MACHINE_EFI
+#include <grub/efi/api.h>
+#endif
+
 struct grub_net_card
 {
   struct grub_net_card *next;
@@ -93,11 +97,13 @@ struct grub_net_card
   int opened;
   union
   {
+#ifdef GRUB_MACHINE_EFI
     struct
     {
       struct grub_efi_simple_network *efi_net;
-      void *efi_handle;
+      grub_efi_handle_t efi_handle;
     };
+#endif
     void *data;
     int data_num;
   };
@@ -419,30 +425,6 @@ extern struct grub_net_network_level_interface *grub_net_network_level_interface
 #define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
 
 #define FOR_NET_NETWORK_LEVEL_INTERFACES_SAFE(var,next) for (var = grub_net_network_level_interfaces, next = var->next; var; var = next, next = var->next)
-
-grub_err_t grub_net_send_link_layer (struct grub_net_network_level_interface *inf,
-				     struct grub_net_buff *nb,
-				     grub_net_link_level_address_t *target); 
-
-typedef int
-(*grub_net_packet_handler_t) (struct grub_net_buff *nb,
-			      struct grub_net_network_level_interface *inf);
-
-grub_err_t grub_net_recv_link_layer (struct grub_net_network_level_interface *inf,
-				     grub_net_packet_handler_t handler); 
-
-
-grub_err_t
-grub_net_recv_ip_packets (struct grub_net_buff *nb,
-			  const struct grub_net_card *card,
-			  const grub_net_link_level_address_t *hwaddress);
-
-grub_err_t
-grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
-			 const grub_net_network_level_address_t *target,
-			 struct grub_net_buff *nb);
-
-#define FOR_NET_NL_PACKETS(inf, var) FOR_PACKETS(inf->nl_pending, var)
 
 void
 grub_net_poll_cards (unsigned time);

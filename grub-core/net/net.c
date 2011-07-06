@@ -19,6 +19,7 @@
 #include <grub/net/udp.h>
 #include <grub/net.h>
 #include <grub/net/netbuff.h>
+#include <grub/net/ip.h>
 #include <grub/time.h>
 #include <grub/file.h>
 #include <grub/i18n.h>
