@@ -95,6 +95,8 @@ struct grub_net_card
   grub_net_card_flags_t flags;
   int num_ifaces;
   int opened;
+  unsigned idle_poll_delay_ms;
+  grub_uint64_t last_poll;
   union
   {
 #ifdef GRUB_MACHINE_EFI

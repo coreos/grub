@@ -768,6 +768,7 @@ receive_packets (struct grub_net_card *card)
       if (!nb)
 	{
 	  grub_print_error ();
+	  card->last_poll = grub_get_time_ms ();
 	  return;
 	}
 
@@ -775,6 +776,7 @@ receive_packets (struct grub_net_card *card)
       if (actual < 0)
 	{
 	  grub_netbuff_free (nb);
+	  card->last_poll = grub_get_time_ms ();
 	  break;
 	}
       grub_net_recv_ethernet_packet (nb, card);
@@ -800,7 +802,13 @@ grub_net_poll_cards_idle_real (void)
 {
   struct grub_net_card *card;
   FOR_NET_CARDS (card)
-    receive_packets (card);
+  {
+    grub_uint64_t ctime = grub_get_time_ms ();
+
+    if (ctime < card->last_poll
+	|| ctime >= card->last_poll + card->idle_poll_delay_ms)
+      receive_packets (card);
+  }
 }
 
 /*  Read from the packets list*/

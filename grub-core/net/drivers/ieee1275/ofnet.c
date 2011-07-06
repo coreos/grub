@@ -253,6 +253,7 @@ grub_ofnet_findcards (void)
 	card->flags = 0;
 	shortname = find_alias (alias->path);
 	card->name = grub_xasprintf ("ofnet_%s", shortname ? : alias->path);
+	card->idle_poll_delay_ms = 1;
 	grub_free (shortname);
 
 	card->driver = &ofdriver;
