@@ -32,6 +32,7 @@
 #include <grub/net/ethernet.h>
 #include <grub/datetime.h>
 #include <grub/loader.h>
+#include <grub/bufio.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -709,15 +710,36 @@ grub_net_fs_dir (grub_device_t device, const char *path __attribute__ ((unused))
 }
 
 static grub_err_t
-grub_net_fs_open (struct grub_file *file, const char *name)
+grub_net_fs_open (struct grub_file *file_out, const char *name)
 {
+  grub_err_t err;
+  struct grub_file *file, *bufio;
+
+  file = grub_malloc (sizeof (*file));
+  if (!file)
+    return grub_errno;
+
+  grub_memcpy (file, file_out, sizeof (struct grub_file));
   file->device->net->packs.first = NULL;
   file->device->net->packs.last = NULL;
   file->device->net->name = grub_strdup (name);
   if (!file->device->net->name)
     return grub_errno;
 
-  return file->device->net->protocol->open (file, name);
+  err = file->device->net->protocol->open (file, name);
+  if (err)
+    return err;
+  bufio = grub_bufio_open (file, 32768);
+  if (! bufio)
+    {
+      file->device->net->protocol->close (file);
+      grub_free (file->device->net->name);
+      grub_free (file);
+      return grub_errno;
+    }
+
+  grub_memcpy (file_out, bufio, sizeof (struct grub_file));
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -1430,8 +1452,6 @@ GRUB_MOD_INIT(net)
   fini_hnd = grub_loader_register_preboot_hook (grub_net_fini_hw,
 						grub_net_restore_hw,
 						GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
-  grub_net_fini_hw (0);
-  grub_loader_unregister_preboot_hook (fini_hnd);
 }
 
 GRUB_MOD_FINI(net)
@@ -1446,5 +1466,6 @@ GRUB_MOD_FINI(net)
   grub_unregister_command (cmd_getdhcp);
   grub_fs_unregister (&grub_net_fs);
   grub_net_open = NULL;
+  grub_net_fini_hw (0);
   grub_loader_unregister_preboot_hook (fini_hnd);
 }
