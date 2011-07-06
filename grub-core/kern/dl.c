@@ -688,11 +688,9 @@ grub_dl_load_file (const char *filename)
   grub_file_close (file);
 
   mod = grub_dl_load_core (core, size);
+  grub_free (core);
   if (! mod)
-    {
-      grub_free (core);
-      return 0;
-    }
+    return 0;
 
   mod->ref_count--;
   return mod;
