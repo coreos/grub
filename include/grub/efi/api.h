@@ -84,6 +84,16 @@
     { 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b } \
   }
 
+#define GRUB_EFI_SIMPLE_NETWORK_GUID	\
+  { 0xa19832b9, 0xac25, 0x11d3, \
+    { 0x9a, 0x2d, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
+  }
+
+#define GRUB_EFI_PXE_GUID	\
+  { 0x03c4e603, 0xac28, 0x11d3, \
+    { 0x9a, 0x2d, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
+  }
+
 #define GRUB_EFI_DEVICE_PATH_GUID	\
   { 0x09576e91, 0x6d3f, 0x11d2, \
     { 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b } \
@@ -1113,6 +1123,36 @@ struct grub_efi_simple_text_output_interface
 };
 typedef struct grub_efi_simple_text_output_interface grub_efi_simple_text_output_interface_t;
 
+typedef grub_uint8_t grub_efi_pxe_packet_t[1472];
+
+typedef struct grub_efi_pxe_mode
+{
+  grub_uint8_t unused[52];
+  grub_efi_pxe_packet_t dhcp_discover;
+  grub_efi_pxe_packet_t dhcp_ack;
+  grub_efi_pxe_packet_t proxy_offer;
+  grub_efi_pxe_packet_t pxe_discover;
+  grub_efi_pxe_packet_t pxe_reply;
+} grub_efi_pxe_mode_t;
+
+typedef struct grub_efi_pxe
+{
+  grub_uint64_t rev;
+  void (*start) (void);
+  void (*stop) (void);
+  void (*dhcp) (void);
+  void (*discover) (void);
+  void (*mftp) (void);
+  void (*udpwrite) (void);
+  void (*udpread) (void);
+  void (*setipfilter) (void);
+  void (*arp) (void);
+  void (*setparams) (void);
+  void (*setstationip) (void);
+  void (*setpackets) (void);
+  struct grub_efi_pxe_mode *mode;
+} grub_efi_pxe_t;
+
 #define GRUB_EFI_BLACK		0x00
 #define GRUB_EFI_BLUE		0x01
 #define GRUB_EFI_GREEN		0x02
@@ -1214,6 +1254,74 @@ struct grub_efi_block_io_media
 };
 typedef struct grub_efi_block_io_media grub_efi_block_io_media_t;
 
+typedef grub_uint8_t grub_efi_mac_t[32];
+
+struct grub_efi_simple_network_mode
+{
+  grub_uint32_t state;
+  grub_uint32_t hwaddr_size;
+  grub_uint32_t media_header_size;
+  grub_uint32_t max_packet_size;
+  grub_uint32_t nvram_size;
+  grub_uint32_t nvram_access_size;
+  grub_uint32_t receive_filter_mask;
+  grub_uint32_t receive_filter_setting;
+  grub_uint32_t max_mcast_filter_count;
+  grub_uint32_t mcast_filter_count;
+  grub_efi_mac_t mcast_filter[16];
+  grub_efi_mac_t current_address;
+  grub_efi_mac_t broadcast_address;
+  grub_efi_mac_t permanent_address;
+  grub_uint8_t if_type;
+  grub_uint8_t mac_changeable;
+  grub_uint8_t multitx_supported;
+  grub_uint8_t media_present_supported;
+  grub_uint8_t media_present;
+};
+
+enum
+  {
+    GRUB_EFI_NETWORK_STOPPED,
+    GRUB_EFI_NETWORK_STARTED,
+    GRUB_EFI_NETWORK_INITIALIZED,
+  };
+
+struct grub_efi_simple_network
+{
+  grub_uint64_t revision;
+  grub_efi_status_t (*start) (struct grub_efi_simple_network *this);
+  void (*stop) (void);
+  grub_efi_status_t (*initialize) (struct grub_efi_simple_network *this,
+				   grub_efi_uintn_t extra_rx,
+				   grub_efi_uintn_t extra_tx);
+  void (*reset) (void);
+  void (*shutdown) (void);
+  void (*receive_filters) (void);
+  void (*station_address) (void);
+  void (*statistics) (void);
+  void (*mcastiptomac) (void);
+  void (*nvdata) (void);
+  void (*getstatus) (void);
+  grub_efi_status_t (*transmit) (struct grub_efi_simple_network *this,
+				 grub_efi_uintn_t header_size,
+				 grub_efi_uintn_t buffer_size,
+				 void *buffer,
+				 grub_efi_mac_t *src_addr,
+				 grub_efi_mac_t *dest_addr,
+				 grub_efi_uint16_t *protocol);
+  grub_efi_status_t (*receive) (struct grub_efi_simple_network *this,
+				grub_efi_uintn_t *header_size,
+				grub_efi_uintn_t *buffer_size,
+				void *buffer,
+				grub_efi_mac_t *src_addr,
+				grub_efi_mac_t *dest_addr,
+				grub_uint16_t *protocol);
+  void (*waitforpacket) (void);
+  struct grub_efi_simple_network_mode *mode;
+};
+typedef struct grub_efi_simple_network grub_efi_simple_network_t;
+
+
 struct grub_efi_block_io
 {
   grub_efi_uint64_t revision;
@@ -1243,6 +1351,7 @@ typedef struct grub_efi_block_io grub_efi_block_io_t;
 #define efi_call_4(func, a, b, c, d)	func(a, b, c, d)
 #define efi_call_5(func, a, b, c, d, e)	func(a, b, c, d, e)
 #define efi_call_6(func, a, b, c, d, e, f) func(a, b, c, d, e, f)
+#define efi_call_7(func, a, b, c, d, e, f, g) func(a, b, c, d, e, f, g)
 #define efi_call_10(func, a, b, c, d, e, f, g, h, i, j)	func(a, b, c, d, e, f, g, h, i, j)
 
 #else
@@ -1250,24 +1359,31 @@ typedef struct grub_efi_block_io grub_efi_block_io_t;
 #define efi_call_0(func) \
   efi_wrap_0(func)
 #define efi_call_1(func, a) \
-  efi_wrap_1(func, (grub_uint64_t) a)
+  efi_wrap_1(func, (grub_uint64_t) (a))
 #define efi_call_2(func, a, b) \
-  efi_wrap_2(func, (grub_uint64_t) a, (grub_uint64_t) b)
+  efi_wrap_2(func, (grub_uint64_t) (a), (grub_uint64_t) (b))
 #define efi_call_3(func, a, b, c) \
-  efi_wrap_3(func, (grub_uint64_t) a, (grub_uint64_t) b, (grub_uint64_t) c)
+  efi_wrap_3(func, (grub_uint64_t) (a), (grub_uint64_t) (b), \
+	     (grub_uint64_t) (c))
 #define efi_call_4(func, a, b, c, d) \
-  efi_wrap_4(func, (grub_uint64_t) a, (grub_uint64_t) b, (grub_uint64_t) c, \
-  (grub_uint64_t) d)
+  efi_wrap_4(func, (grub_uint64_t) (a), (grub_uint64_t) (b), \
+	     (grub_uint64_t) (c), (grub_uint64_t) (d))
 #define efi_call_5(func, a, b, c, d, e)	\
-  efi_wrap_5(func, (grub_uint64_t) a, (grub_uint64_t) b, (grub_uint64_t) c, \
-  (grub_uint64_t) d, (grub_uint64_t) e)
+  efi_wrap_5(func, (grub_uint64_t) (a), (grub_uint64_t) (b), \
+	     (grub_uint64_t) (c), (grub_uint64_t) (d), (grub_uint64_t) (e))
 #define efi_call_6(func, a, b, c, d, e, f) \
-  efi_wrap_6(func, (grub_uint64_t) a, (grub_uint64_t) b, (grub_uint64_t) c, \
-  (grub_uint64_t) d, (grub_uint64_t) e, (grub_uint64_t) f)
+  efi_wrap_6(func, (grub_uint64_t) (a), (grub_uint64_t) (b), \
+	     (grub_uint64_t) (c), (grub_uint64_t) (d), (grub_uint64_t) (e), \
+	     (grub_uint64_t) (f))
+#define efi_call_7(func, a, b, c, d, e, f, g) \
+  efi_wrap_7(func, (grub_uint64_t) (a), (grub_uint64_t) (b), \
+	     (grub_uint64_t) (c), (grub_uint64_t) (d), (grub_uint64_t) (e), \
+	     (grub_uint64_t) (f), (grub_uint64_t) (g))
 #define efi_call_10(func, a, b, c, d, e, f, g, h, i, j) \
-  efi_wrap_10(func, (grub_uint64_t) a, (grub_uint64_t) b, (grub_uint64_t) c, \
-  (grub_uint64_t) d, (grub_uint64_t) e, (grub_uint64_t) f, (grub_uint64_t) g, \
-  (grub_uint64_t) h, (grub_uint64_t) i, (grub_uint64_t) j)
+  efi_wrap_10(func, (grub_uint64_t) (a), (grub_uint64_t) (b), \
+	      (grub_uint64_t) (c), (grub_uint64_t) (d), (grub_uint64_t) (e), \
+	      (grub_uint64_t) (f), (grub_uint64_t) (g),	(grub_uint64_t) (h), \
+	      (grub_uint64_t) (i), (grub_uint64_t) (j))
 
 grub_uint64_t EXPORT_FUNC(efi_wrap_0) (void *func);
 grub_uint64_t EXPORT_FUNC(efi_wrap_1) (void *func, grub_uint64_t arg1);
@@ -1285,6 +1401,10 @@ grub_uint64_t EXPORT_FUNC(efi_wrap_6) (void *func, grub_uint64_t arg1,
                                        grub_uint64_t arg2, grub_uint64_t arg3,
                                        grub_uint64_t arg4, grub_uint64_t arg5,
                                        grub_uint64_t arg6);
+grub_uint64_t EXPORT_FUNC(efi_wrap_7) (void *func, grub_uint64_t arg1,
+                                       grub_uint64_t arg2, grub_uint64_t arg3,
+                                       grub_uint64_t arg4, grub_uint64_t arg5,
+                                       grub_uint64_t arg6, grub_uint64_t arg7);
 grub_uint64_t EXPORT_FUNC(efi_wrap_10) (void *func, grub_uint64_t arg1,
                                         grub_uint64_t arg2, grub_uint64_t arg3,
                                         grub_uint64_t arg4, grub_uint64_t arg5,

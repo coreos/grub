@@ -41,12 +41,6 @@ grub_machine_fini (void)
 }
 
 void
-grub_machine_set_prefix (void)
-{
-  grub_efi_set_prefix ();
-}
-
-void
 grub_arch_sync_caches (void *address, grub_size_t len)
 {
   /* Cache line length is at least 32.  */

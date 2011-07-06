@@ -44,6 +44,8 @@ extern grub_int32_t grub_install_bsd_part;
 /* The boot BIOS drive number.  */
 extern grub_uint8_t EXPORT_VAR(grub_boot_drive);
 
+extern void (*EXPORT_VAR(grub_pc_net_config)) (char **device, char **path);
+
 #endif /* ! ASM_FILE */
 
 #endif /* ! KERNEL_MACHINE_HEADER */

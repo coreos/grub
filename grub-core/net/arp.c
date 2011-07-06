@@ -144,7 +144,8 @@ grub_net_arp_receive (struct grub_net_buff *nb)
   FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
   {
     /* Am I the protocol address target? */
-    if (grub_memcmp (target_protocol_address, &inf->address.ipv4, 6) == 0
+    if (inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+	&& grub_memcmp (target_protocol_address, &inf->address.ipv4, 4) == 0
 	&& grub_be_to_cpu16 (arp_header->op) == ARP_REQUEST)
       {
 	grub_net_link_level_address_t aux;

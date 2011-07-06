@@ -38,7 +38,7 @@ grub_get_rtc (void)
 }
 
 void
-grub_machine_set_prefix (void)
+grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
+			       char **path __attribute__ ((unused)))
 {
-  grub_env_set ("prefix", grub_prefix);
 }

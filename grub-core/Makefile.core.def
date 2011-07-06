@@ -102,6 +102,7 @@ kernel = {
   ieee1275 = kern/ieee1275/mmap.c;
   ieee1275 = kern/ieee1275/openfw.c;
   ieee1275 = term/ieee1275/ofconsole.c;
+  ieee1275 = kern/ieee1275/init.c;
 
   terminfoinkernel = term/terminfo.c;
   terminfoinkernel = term/tparm.c;
@@ -153,8 +154,6 @@ kernel = {
   i386_multiboot = kern/i386/multiboot_mmap.c;
   i386_multiboot = kern/i386/tsc.c;
 
-  i386_ieee1275 = kern/ieee1275/init.c;
-
   mips = kern/mips/cache.S;
   mips = kern/mips/dl.c;
   mips = kern/mips/init.c;
@@ -184,14 +183,12 @@ kernel = {
   extra_dist = video/sm712_init.c;
   mips_loongson = commands/keylayouts.c;
 
-  powerpc_ieee1275 = kern/ieee1275/init.c;
   powerpc_ieee1275 = kern/powerpc/cache.S;
   powerpc_ieee1275 = kern/powerpc/dl.c;
 
   sparc64_ieee1275 = kern/sparc64/cache.S;
   sparc64_ieee1275 = kern/sparc64/dl.c;
   sparc64_ieee1275 = kern/sparc64/ieee1275/ieee1275.c;
-  sparc64_ieee1275 = kern/sparc64/ieee1275/init.c;
 
   emu = disk/host.c;
   emu = gnulib/progname.c;
@@ -723,12 +720,6 @@ module = {
 };
 
 module = {
-  name = pxecmd;
-  i386_pc = commands/i386/pc/pxecmd.c;
-  enable = i386_pc;
-};
-
-module = {
   name = read;
   common = commands/read.c;
 };
@@ -1105,7 +1096,7 @@ module = {
 
 module = {
   name = pxe;
-  i386_pc = net/i386/pc/pxe.c;
+  i386_pc = net/drivers/i386/pc/pxe.c;
   enable = i386_pc;
 };
 
@@ -1588,6 +1579,7 @@ module = {
 module = {
   name = net;
   common = net/net.c;
+  common = net/bootp.c;
   common = net/ip.c;
   common = net/udp.c;
   common = net/ethernet.c;
@@ -1602,8 +1594,14 @@ module = {
 
 module = {
   name = ofnet;
-  ieee1275 = net/drivers/ieee1275/ofnet.c;
+  common = net/drivers/ieee1275/ofnet.c;
   enable = ieee1275;
+};
+
+module = {
+  name = efinet;
+  common = net/drivers/efi/efinet.c;
+  enable = efi;
 };
 
 module = {

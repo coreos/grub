@@ -74,7 +74,7 @@ grub_cmd_probe (grub_extcmd_context_t ctxt, int argc, char **args)
     {
       const char *val = "none";
       if (dev->net)
-	val = dev->net->name;
+	val = dev->net->protocol->name;
       if (dev->disk)
 	val = dev->disk->dev->name;
       if (state[0].set)

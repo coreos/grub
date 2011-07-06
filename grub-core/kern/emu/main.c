@@ -49,7 +49,7 @@
 static jmp_buf main_env;
 
 /* Store the prefix specified by an argument.  */
-static char *prefix = NULL;
+static char *root_dev = NULL, *dir = NULL;
 
 int grub_no_autoload;
 
@@ -71,11 +71,10 @@ grub_machine_init (void)
 }
 
 void
-grub_machine_set_prefix (void)
+grub_machine_get_bootlocation (char **device, char **path)
 {
-  grub_env_set ("prefix", prefix);
-  free (prefix);
-  prefix = 0;
+  *device = root_dev;
+  *path = dir;
 }
 
 void
@@ -83,6 +82,8 @@ grub_machine_fini (void)
 {
   grub_console_fini ();
 }
+
+char grub_prefix[64] = "";
 
 
 
@@ -132,22 +133,24 @@ void grub_emu_init (void);
 int
 main (int argc, char *argv[])
 {
-  char *root_dev = 0;
-  char *dir = DEFAULT_DIRECTORY;
   char *dev_map = DEFAULT_DEVICE_MAP;
   volatile int hold = 0;
   int opt;
 
   set_program_name (argv[0]);
 
+  dir = xstrdup (DEFAULT_DIRECTORY);
+
   while ((opt = getopt_long (argc, argv, "r:d:m:vH:hV", options, 0)) != -1)
     switch (opt)
       {
       case 'r':
-        root_dev = optarg;
+	free (root_dev);
+        root_dev = xstrdup (optarg);
         break;
       case 'd':
-        dir = optarg;
+	free (dir);
+        dir = xstrdup (optarg);
         break;
       case 'm':
         dev_map = optarg;
@@ -219,9 +222,6 @@ main (int argc, char *argv[])
     dir = xstrdup (dir);
   else
     dir = grub_make_system_path_relative_to_its_root (dir);
-  prefix = xmalloc (strlen (root_dev) + 2 + strlen (dir) + 1);
-  sprintf (prefix, "(%s)%s", root_dev, dir);
-  free (dir);
 
   /* Start GRUB!  */
   if (setjmp (main_env) == 0)

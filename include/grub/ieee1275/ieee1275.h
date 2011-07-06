@@ -64,12 +64,9 @@ struct grub_ieee1275_common_hdr
 typedef grub_uint32_t grub_ieee1275_ihandle_t;
 typedef grub_uint32_t grub_ieee1275_phandle_t;
 
-struct grub_ofnetcard_data
-{
-  char *path;
-  grub_ieee1275_ihandle_t handle;
-  grub_uint32_t mtu;
-};
+extern void (*EXPORT_VAR(grub_ieee1275_net_config)) (const char *dev,
+						     char **device,
+						     char **path);
 
 /* Maps a device alias to a pathname.  */
 extern grub_ieee1275_phandle_t EXPORT_VAR(grub_ieee1275_chosen);
@@ -203,5 +200,6 @@ int EXPORT_FUNC(grub_ieee1275_devices_iterate) (int (*hook)
 						 alias));
 char *EXPORT_FUNC(grub_ieee1275_get_aliasdevname) (const char *path);
 char *EXPORT_FUNC(grub_ieee1275_canonicalise_devname) (const char *path);
+char *EXPORT_FUNC(grub_ieee1275_get_device_type) (const char *path);
 
 #endif /* ! GRUB_IEEE1275_HEADER */

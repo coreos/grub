@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2010,2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/net/udp.h>
 #include <grub/net.h>
 #include <grub/net/netbuff.h>
 #include <grub/time.h>
@@ -28,9 +27,13 @@
 #include <grub/command.h>
 #include <grub/env.h>
 #include <grub/net/ethernet.h>
-#include <grub/datetime.h>
+#include <grub/loader.h>
+#include <grub/bufio.h>
+#include <grub/kernel.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
+
+char *grub_net_default_server;
 
 struct grub_net_route
 {
@@ -49,19 +52,26 @@ struct grub_net_route
 struct grub_net_route *grub_net_routes = NULL;
 struct grub_net_network_level_interface *grub_net_network_level_interfaces = NULL;
 struct grub_net_card *grub_net_cards = NULL;
-struct grub_net_card_driver *grub_net_card_drivers = NULL;
 struct grub_net_network_level_protocol *grub_net_network_level_protocols = NULL;
 static struct grub_fs grub_net_fs;
 
-static inline void
-grub_net_network_level_interface_unregister (struct grub_net_network_level_interface *inter)
+void
+grub_net_card_unregister (struct grub_net_card *card)
 {
-  *inter->prev = inter->next;
-  if (inter->next)
-    inter->next->prev = inter->prev;
-  inter->next = 0;
-  inter->prev = 0;
+  struct grub_net_network_level_interface *inf, *next;
+  FOR_NET_NETWORK_LEVEL_INTERFACES_SAFE(inf, next)
+    if (inf->card == card)
+      grub_net_network_level_interface_unregister (inf);
+  if (card->opened)
+    {
+      if (card->driver->close)
+	card->driver->close (card);
+      card->opened = 0;
+    }
+  grub_list_remove (GRUB_AS_LIST_P (&grub_net_cards),
+		    GRUB_AS_LIST (card));
 }
+
 
 static inline void
 grub_net_route_register (struct grub_net_route *route)
@@ -117,7 +127,7 @@ match_net (const grub_net_network_level_netaddress_t *net,
     return 0;
   switch (net->type)
     {
-    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC:
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
       return 0;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
@@ -236,8 +246,8 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target, char *buf)
 {
   switch (target->type)
     {
-    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC:
-      grub_strcpy (buf, "promisc");
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
+      grub_strcpy (buf, "temporary");
       return;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
@@ -334,6 +344,7 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
     grub_register_variable_hook (name, 0, addr_set_env);
   }
 
+  inter->card->num_ifaces++;
   inter->prev = &grub_net_network_level_interfaces;
   inter->next = grub_net_network_level_interfaces;
   if (inter->next)
@@ -343,7 +354,7 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
 
 struct grub_net_network_level_interface *
 grub_net_add_addr (const char *name, 
-		   const struct grub_net_card *card,
+		   struct grub_net_card *card,
 		   grub_net_network_level_address_t addr,
 		   grub_net_link_level_address_t hwaddress,
 		   grub_net_interface_flags_t flags)
@@ -519,8 +530,8 @@ print_net_address (const grub_net_network_level_netaddress_t *target)
 {
   switch (target->type)
     {
-    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC:
-      grub_printf ("promisc\n");
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
+      grub_printf ("temporary\n");
       break;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
@@ -574,9 +585,10 @@ grub_cmd_listcards (struct grub_command *cmd __attribute__ ((unused)),
   struct grub_net_card *card;
   FOR_NET_CARDS(card)
   {
-    grub_printf ("%s ", card->name);
+    char buf[MAX_STR_HWADDR_LEN];
+    hwaddr_to_str (&card->default_address, buf);
+    grub_printf ("%s %s\n", card->name, buf);
   }
-  grub_printf ("\n");
   return GRUB_ERR_NONE;
 }
 
@@ -603,27 +615,68 @@ struct grub_net_socket *grub_net_sockets;
 static grub_net_t
 grub_net_open_real (const char *name)
 {
-  const char *comma = grub_strchr (name, ',');
   grub_net_app_level_t proto;
+  const char *protname, *server;
+  grub_size_t protnamelen;
 
-  if (!comma)
-    comma = name + grub_strlen (name);
+  if (grub_strncmp (name, "pxe:", sizeof ("pxe:") - 1) == 0)
+    {
+      protname = "tftp";
+      protnamelen = sizeof ("tftp") - 1;
+      server = name + sizeof ("pxe:") - 1;
+    }
+  else if (grub_strcmp (name, "pxe") == 0)
+    {
+      protname = "tftp";
+      protnamelen = sizeof ("tftp") - 1;
+      server = grub_net_default_server;
+    }
+  else
+    {
+      const char *comma;
+      comma = grub_strchr (name, ',');
+      if (comma)
+	{
+	  protnamelen = comma - name;
+	  server = comma + 1;
+	  protname = name;
+	}
+      else
+	{
+	  protnamelen = grub_strlen (name);
+	  server = grub_net_default_server;
+	  protname = name;
+	}
+    }
+  if (!server)
+    {
+      grub_error (GRUB_ERR_NET_BAD_ADDRESS, "no server");
+      return NULL;
+    }  
+
   FOR_NET_APP_LEVEL (proto)
   {
-    if (comma - name == (grub_ssize_t) grub_strlen (proto->name)
-	&& grub_memcmp (proto->name, name, comma - name) == 0)
+    if (grub_memcmp (proto->name, protname, protnamelen) == 0
+	&& proto->name[protnamelen] == 0)
       {
-	grub_net_t ret = grub_malloc (sizeof (*ret));
+	grub_net_t ret = grub_zalloc (sizeof (*ret));
 	if (!ret)
 	  return NULL;
 	ret->protocol = proto;
-	ret->name = grub_strdup (name);
-	if (!ret->name)
+	if (server)
 	  {
-	    grub_free (ret);
-	    return NULL;
+	    ret->server = grub_strdup (server);
+	    if (!ret->server)
+	      {
+		grub_free (ret);
+		return NULL;
+	      }
 	  }
+	else
+	  ret->server = NULL;
 	ret->fs = &grub_net_fs;
+	ret->offset = 0;
+	ret->eof = 0;
 	return ret;
       }
   }
@@ -643,73 +696,69 @@ grub_net_fs_dir (grub_device_t device, const char *path __attribute__ ((unused))
 }
 
 static grub_err_t
-grub_net_fs_open (struct grub_file *file, const char *name)
+grub_net_fs_open (struct grub_file *file_out, const char *name)
 {
   grub_err_t err;
-  grub_net_network_level_address_t addr;
-  struct grub_net_network_level_interface *inf;
-  grub_net_network_level_address_t gateway;
-  grub_net_socket_t socket;
-  static int port = 25300;
-  const char *comma;
+  struct grub_file *file, *bufio;
 
-  comma = grub_strchr (file->device->net->name, ',');
-  if (!comma)
-    return grub_error (GRUB_ERR_NET_BAD_ADDRESS, "no separator");
+  file = grub_malloc (sizeof (*file));
+  if (!file)
+    return grub_errno;
 
-  err = grub_net_resolve_address (comma + 1, &addr);
+  grub_memcpy (file, file_out, sizeof (struct grub_file));
+  file->device->net->packs.first = NULL;
+  file->device->net->packs.last = NULL;
+  file->device->net->name = grub_strdup (name);
+  if (!file->device->net->name)
+    return grub_errno;
+
+  err = file->device->net->protocol->open (file, name);
   if (err)
     return err;
- 
-  err = grub_net_route_address (addr, &gateway, &inf);
-  if (err)
-    return err;
+  bufio = grub_bufio_open (file, 32768);
+  if (! bufio)
+    {
+      file->device->net->protocol->close (file);
+      grub_free (file->device->net->name);
+      grub_free (file);
+      return grub_errno;
+    }
 
-  socket = (grub_net_socket_t) grub_malloc (sizeof (*socket));
-  if (socket == NULL)
-    return grub_errno; 
-
-  socket->inf = inf;
-  socket->out_nla = addr;
-  socket->in_port = port++;
-  socket->status = 0;
-  socket->app = file->device->net->protocol;
-  socket->packs.first = NULL;
-  socket->packs.last = NULL;
-  file->device->net->socket = socket;
-  grub_net_socket_register (socket);
-
-  err = file->device->net->protocol->open (file,name);
-  if (err)
-    goto fail;
-  file->not_easily_seekable = 1;
-
+  grub_memcpy (file_out, bufio, sizeof (struct grub_file));
+  grub_free (bufio);
   return GRUB_ERR_NONE;
-fail:
-  grub_net_socket_unregister (socket);
-  grub_free (socket);
-  return err;
-
 }
 
 static grub_err_t
 grub_net_fs_close (grub_file_t file)
 {
-  grub_net_socket_t sock = file->device->net->socket;
-  while (sock->packs.first)
+  while (file->device->net->packs.first)
     {
-      grub_netbuff_free (sock->packs.first->nb);
-      grub_net_remove_packet (sock->packs.first);
+      grub_netbuff_free (file->device->net->packs.first->nb);
+      grub_net_remove_packet (file->device->net->packs.first);
     }
-  grub_net_socket_unregister (sock);
-  grub_free (sock);
+  file->device->net->protocol->close (file);
+  grub_free (file->device->net->name);
   return GRUB_ERR_NONE;
-
 }
 
 static void
 receive_packets (struct grub_net_card *card)
 {
+  if (card->num_ifaces == 0)
+    return;
+  if (!card->opened)
+    {
+      grub_err_t err = GRUB_ERR_NONE;
+      if (card->driver->open)
+	err = card->driver->open (card);
+      if (err)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  return;
+	}
+      card->opened = 1;
+    }
   while (1)
     {
       /* Maybe should be better have a fixed number of packets for each card
@@ -720,6 +769,7 @@ receive_packets (struct grub_net_card *card)
       if (!nb)
 	{
 	  grub_print_error ();
+	  card->last_poll = grub_get_time_ms ();
 	  return;
 	}
 
@@ -727,6 +777,7 @@ receive_packets (struct grub_net_card *card)
       if (actual < 0)
 	{
 	  grub_netbuff_free (nb);
+	  card->last_poll = grub_get_time_ms ();
 	  break;
 	}
       grub_net_recv_ethernet_packet (nb, card);
@@ -747,13 +798,27 @@ grub_net_poll_cards (unsigned time)
     }
 }
 
+static void
+grub_net_poll_cards_idle_real (void)
+{
+  struct grub_net_card *card;
+  FOR_NET_CARDS (card)
+  {
+    grub_uint64_t ctime = grub_get_time_ms ();
+
+    if (ctime < card->last_poll
+	|| ctime >= card->last_poll + card->idle_poll_delay_ms)
+      receive_packets (card);
+  }
+}
+
 /*  Read from the packets list*/
 static grub_ssize_t
-grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
+grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
 {
-  grub_net_socket_t sock = file->device->net->socket;
+  grub_net_t sock = file->device->net;
   struct grub_net_buff *nb;
-  char *ptr =  buf;
+  char *ptr = buf;
   grub_size_t amount, total = 0;
   int try = 0;
   while (try <= 3)
@@ -767,6 +832,7 @@ grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
 	    amount = len;
 	  len -= amount;
 	  total += amount;
+	  file->device->net->offset += amount;
 	  if (buf)
 	    {
 	      grub_memcpy (ptr, nb->data, amount);
@@ -783,7 +849,7 @@ grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
 	  if (!len)
 	    return total;
 	}
-      if (sock->status == 1)
+      if (!sock->eof)
 	{
 	  try++;
 	  grub_net_poll_cards (200);
@@ -794,454 +860,49 @@ grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
     return total;
 }
 
-/*  Read from the packets list*/
 static grub_err_t 
 grub_net_seek_real (struct grub_file *file, grub_off_t offset)
 {
-  grub_net_socket_t sock = file->device->net->socket;
-  struct grub_net_buff *nb;
-  grub_size_t len = offset - file->offset;
+  grub_size_t len = offset - file->device->net->offset;
 
   if (!len)
     return GRUB_ERR_NONE;
 
-  /* We cant seek backwards past the current packet.  */
-  if (file->offset > offset)
-    {  
-      nb = sock->packs.first->nb;
-      return grub_netbuff_push (nb, file->offset - offset);
+  if (file->device->net->offset > offset)
+    {
+      grub_err_t err;
+      while (file->device->net->packs.first)
+	{
+	  grub_netbuff_free (file->device->net->packs.first->nb);
+	  grub_net_remove_packet (file->device->net->packs.first);
+	}
+      file->device->net->protocol->close (file);
+
+      file->device->net->packs.first = NULL;
+      file->device->net->packs.last = NULL;
+      file->device->net->offset = 0;
+      file->device->net->eof = 0;
+      err = file->device->net->protocol->open (file, file->device->net->name);
+      if (err)
+	return err;
+      len = offset;
     }
 
-  grub_net_fs_read (file, NULL, len);
+  grub_net_fs_read_real (file, NULL, len);
   return GRUB_ERR_NONE;
 }
 
-static char *
-grub_env_write_readonly (struct grub_env_var *var __attribute__ ((unused)),
-			 const char *val __attribute__ ((unused)))
+static grub_ssize_t
+grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
 {
-  return NULL;
-}
-
-static void
-set_env_limn_ro (const char *intername, const char *suffix,
-		 char *value, grub_size_t len)
-{
-  char c;
-  char varname[sizeof ("net_") + grub_strlen (intername) + sizeof ("_")
-	       + grub_strlen (suffix)];
-  grub_snprintf (varname, sizeof (varname), "net_%s_%s", intername, suffix);
-  c = value[len];
-  value[len] = 0;
-  grub_env_set (varname, value);
-  value[len] = c;
-  grub_register_variable_hook (varname, 0, grub_env_write_readonly);
-}
-
-static void
-parse_dhcp_vendor (const char *name, void *vend, int limit)
-{
-  grub_uint8_t *ptr, *ptr0;
-
-  ptr = ptr0 = vend;
-
-  if (grub_be_to_cpu32 (*(grub_uint32_t *) ptr) != GRUB_NET_BOOTP_RFC1048_MAGIC)
-    return;
-  ptr = ptr + sizeof (grub_uint32_t);
-  while (ptr - ptr0 < limit)
+  if (file->offset != file->device->net->offset)
     {
-      grub_uint8_t tagtype;
-      grub_uint8_t taglength;
-
-      tagtype = *ptr++;
-
-      /* Pad tag.  */
-      if (tagtype == 0)
-	continue;
-
-      /* End tag.  */
-      if (tagtype == 0xff)
-	return;
-
-      taglength = *ptr++;
-
-      switch (tagtype)
-	{
-	case 12:
-	  set_env_limn_ro (name, "hostname", (char *) ptr, taglength);
-	  break;
-
-	case 15:
-	  set_env_limn_ro (name, "domain", (char *) ptr, taglength);
-	  break;
-
-	case 17:
-	  set_env_limn_ro (name, "rootpath", (char *) ptr, taglength);
-	  break;
-
-	case 18:
-	  set_env_limn_ro (name, "extensionspath", (char *) ptr, taglength);
-	  break;
-
-	  /* If you need any other options please contact GRUB
-	     developpement team.  */
-	}
-
-      ptr += taglength;
+      grub_err_t err;
+      err = grub_net_seek_real (file, file->offset);
+      if (err)
+	return err;
     }
-}
-
-#define OFFSET_OF(x, y) ((grub_uint8_t *)((y)->x) - (grub_uint8_t *)(y))
-
-struct grub_net_network_level_interface *
-grub_net_configure_by_dhcp_ack (const char *name,
-				const struct grub_net_card *card,
-				grub_net_interface_flags_t flags,
-				const struct grub_net_bootp_packet *bp,
-				grub_size_t size)
-{
-  grub_net_network_level_address_t addr;
-  grub_net_link_level_address_t hwaddr;
-  struct grub_net_network_level_interface *inter;
-
-  addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-  addr.ipv4 = bp->your_ip;
-
-  grub_memcpy (hwaddr.mac, bp->mac_addr,
-	       bp->hw_len < sizeof (hwaddr.mac) ? bp->hw_len
-	       : sizeof (hwaddr.mac));
-  hwaddr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
-
-  inter = grub_net_add_addr (name, card, addr, hwaddr, flags);
-  if (bp->gateway_ip != bp->server_ip)
-    {
-      grub_net_network_level_netaddress_t target;
-      grub_net_network_level_address_t gw;
-      char rname[grub_strlen (name) + sizeof ("_gw")];
-	  
-      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-      target.ipv4.base = bp->server_ip;
-      target.ipv4.masksize = 32;
-      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-      gw.ipv4 = bp->gateway_ip;
-      grub_snprintf (rname, sizeof (rname), "%s_gw", name);
-      grub_net_add_route_gw (rname, target, gw);
-    }
-  {
-    grub_net_network_level_netaddress_t target;
-    target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-    target.ipv4.base = bp->gateway_ip;
-    target.ipv4.masksize = 32;
-    grub_net_add_route (name, target, inter);
-  }
-
-  if (size > OFFSET_OF (boot_file, bp))
-    set_env_limn_ro (name, "boot_file", (char *) bp->boot_file,
-		     sizeof (bp->boot_file));
-  if (size > OFFSET_OF (server_name, bp))
-    set_env_limn_ro (name, "dhcp_server_name", (char *) bp->server_name,
-		     sizeof (bp->server_name));
-  if (size > OFFSET_OF (vendor, bp))
-    parse_dhcp_vendor (name, &bp->vendor, size - OFFSET_OF (vendor, bp));
-
-  inter->dhcp_ack = grub_malloc (size);
-  if (inter->dhcp_ack)
-    {
-      grub_memcpy (inter->dhcp_ack, bp, size);
-      inter->dhcp_acklen = size;
-    }
-  else
-    grub_errno = GRUB_ERR_NONE;
-
-  return inter;
-}
-
-void
-grub_net_process_dhcp (struct grub_net_buff *nb,
-		       const struct grub_net_card *card)
-{
-  char *name;
-  struct grub_net_network_level_interface *inf;
-
-  name = grub_xasprintf ("%s:dhcp", card->name);
-  if (!name)
-    {
-      grub_print_error ();
-      return;
-    }
-  grub_net_configure_by_dhcp_ack (name, card,
-				  0, (const struct grub_net_bootp_packet *) nb->data,
-				  (nb->tail - nb->data));
-  grub_free (name);
-  if (grub_errno)
-    grub_print_error ();
-  else
-    {
-      FOR_NET_NETWORK_LEVEL_INTERFACES(inf)
-	if (grub_memcmp (inf->name, card->name, grub_strlen (card->name)) == 0
-	    && grub_memcmp (inf->name + grub_strlen (card->name),
-			    ":dhcp_tmp", sizeof (":dhcp_tmp") - 1) == 0)
-	  {
-	    grub_net_network_level_interface_unregister (inf);
-	    break;
-	  }
-    }
-}
-
-static char
-hexdigit (grub_uint8_t val)
-{
-  if (val < 10)
-    return val + '0';
-  return val + 'a' - 10;
-}
-
-static grub_err_t
-grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
-		  int argc, char **args)
-{
-  struct grub_net_network_level_interface *inter;
-  int num;
-  grub_uint8_t *ptr;
-  grub_uint8_t taglength;
-
-  if (argc < 4)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "4 arguments expected");
-
-  FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
-    if (grub_strcmp (inter->name, args[1]) == 0)
-      break;
-
-  if (!inter)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       N_("unrecognised interface %s"), args[1]);
-
-  if (!inter->dhcp_ack)
-    return grub_error (GRUB_ERR_IO, N_("no DHCP info found"));
-
-  if (inter->dhcp_acklen <= OFFSET_OF (vendor, inter->dhcp_ack))
-    return grub_error (GRUB_ERR_IO, N_("no DHCP options found"));
-
-  num = grub_strtoul (args[2], 0, 0);
-  if (grub_errno)
-    return grub_errno;
-
-  ptr = inter->dhcp_ack->vendor;
-
-  if (grub_be_to_cpu32 (*(grub_uint32_t *) ptr)
-      != GRUB_NET_BOOTP_RFC1048_MAGIC)
-    return grub_error (GRUB_ERR_IO, N_("no DHCP options found"));
-  ptr = ptr + sizeof (grub_uint32_t);
-  while (1)
-    {
-      grub_uint8_t tagtype;
-
-      if (ptr >= ((grub_uint8_t *) inter->dhcp_ack) + inter->dhcp_acklen)
-	return grub_error (GRUB_ERR_IO, N_("no DHCP option %d found"), num);
-
-      tagtype = *ptr++;
-
-      /* Pad tag.  */
-      if (tagtype == 0)
-	continue;
-
-      /* End tag.  */
-      if (tagtype == 0xff)
-	return grub_error (GRUB_ERR_IO, N_("no DHCP option %d found"), num);
-
-      taglength = *ptr++;
-	
-      if (tagtype == num)
-	break;
-      ptr += taglength;
-    }
-
-  if (grub_strcmp (args[3], "string") == 0)
-    {
-      char *val = grub_malloc (taglength + 1);
-      if (!val)
-	return grub_errno;
-      grub_memcpy (val, ptr, taglength);
-      val[taglength] = 0;
-      if (args[0][0] == '-' && args[0][1] == 0)
-	grub_printf ("%s\n", val);
-      else
-	return grub_env_set (args[0], val);
-      return GRUB_ERR_NONE;
-    }
-
-  if (grub_strcmp (args[3], "number") == 0)
-    {
-      grub_uint64_t val = 0;
-      int i;
-      for (i = 0; i < taglength; i++)
-	val = (val << 8) | ptr[i];
-      if (args[0][0] == '-' && args[0][1] == 0)
-	grub_printf ("%llu\n", (unsigned long long) val);
-      else
-	{
-	  char valn[64];
-	  grub_printf (valn, sizeof (valn), "%lld\n", (unsigned long long) val);
-	  return grub_env_set (args[0], valn);
-	}
-      return GRUB_ERR_NONE;
-    }
-
-  if (grub_strcmp (args[3], "hex") == 0)
-    {
-      char *val = grub_malloc (2 * taglength + 1);
-      int i;
-      if (!val)
-	return grub_errno;
-      for (i = 0; i < taglength; i++)
-	{
-	  val[2 * i] = hexdigit (ptr[i] >> 4);
-	  val[2 * i + 1] = hexdigit (ptr[i] & 0xf);
-	}
-      val[2 * taglength] = 0;
-      if (args[0][0] == '-' && args[0][1] == 0)
-	grub_printf ("%s\n", val);
-      else
-	return grub_env_set (args[0], val);
-      return GRUB_ERR_NONE;
-    }
-
-  return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		     "unrecognised format specification %s", args[3]);
-}
-
-static grub_err_t
-grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
-		int argc, char **args)
-{
-  struct grub_net_card *card;
-  struct grub_net_network_level_interface *ifaces;
-  grub_size_t ncards = 0;
-  unsigned j = 0;
-  int interval;
-  grub_err_t err;
-
-  FOR_NET_CARDS (card)
-  {
-    if (argc > 0 && grub_strcmp (card->name, args[0]) != 0)
-      continue;
-    ncards++;
-  }
-
-  ifaces = grub_zalloc (ncards * sizeof (ifaces[0]));
-  if (!ifaces)
-    return grub_errno;
-
-  j = 0;
-  FOR_NET_CARDS (card)
-  {
-    if (argc > 0 && grub_strcmp (card->name, args[0]) != 0)
-      continue;
-    ifaces[j].card = card;
-    ifaces[j].next = &ifaces[j+1];
-    if (j)
-      ifaces[j].prev = &ifaces[j-1].next;
-    ifaces[j].name = grub_xasprintf ("%s:dhcp_tmp", card->name);
-    if (!ifaces[j].name)
-      {
-	unsigned i;
-	for (i = 0; i < j; i++)
-	  grub_free (ifaces[i].name);
-	grub_free (ifaces);
-	return grub_errno;
-      }
-    ifaces[j].address.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_PROMISC;
-    grub_memcpy (&ifaces[j].hwaddress, &card->default_address, 
-		 sizeof (ifaces[j].hwaddress));
-    j++;
-  }
-  ifaces[ncards - 1].next = grub_net_network_level_interfaces;
-  if (grub_net_network_level_interfaces)
-    grub_net_network_level_interfaces->prev = & ifaces[ncards - 1].next;
-  grub_net_network_level_interfaces = &ifaces[0];
-  ifaces[0].prev = &grub_net_network_level_interfaces;
-  for (interval = 200; interval < 10000; interval *= 2)
-    {
-      int done = 0;
-      for (j = 0; j < ncards; j++)
-	{
-	  struct grub_net_bootp_packet *pack;
-	  struct grub_datetime date;
-	  grub_int32_t t;
-	  struct grub_net_buff *nb;
-	  struct udphdr *udph;
-	  grub_net_network_level_address_t target;
-
-	  if (!ifaces[j].prev)
-	    continue;
-	  nb = grub_netbuff_alloc (sizeof (*pack));
-	  if (!nb)
-	    return grub_errno;
-	  err = grub_netbuff_reserve (nb, sizeof (*pack) + 64 + 128);
-	  if (err)
-	    return err;
-	  err = grub_netbuff_push (nb, sizeof (*pack) + 64);
-	  if (err)
-	    return err;
-	  pack = (void *) nb->data;
-	  done = 1;
-	  grub_memset (pack, 0, sizeof (*pack) + 64);
-	  pack->opcode = 1;
-	  pack->hw_type = 1;
-	  pack->hw_len = 6;
-	  err = grub_get_datetime (&date);
-	  if (err || !grub_datetime2unixtime (&date, &t))
-	    {
-	      grub_errno = GRUB_ERR_NONE;
-	      t = 0;
-	    }
-	  pack->ident = grub_cpu_to_be32 (t);
-	  pack->seconds = 0;//grub_cpu_to_be16 (t);
-
-	  grub_memcpy (&pack->mac_addr, &ifaces[j].hwaddress.mac, 6); 
-
-	  grub_netbuff_push (nb, sizeof (*udph));
-
-	  udph = (struct udphdr *) nb->data;
-	  udph->src = grub_cpu_to_be16 (68);
-	  udph->dst = grub_cpu_to_be16 (67);
-	  udph->chksum = 0;
-	  udph->len = grub_cpu_to_be16 (nb->tail - nb->data);
-
-	  target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	  target.ipv4 = 0xffffffff;
-
-	  err = grub_net_send_ip_packet (&ifaces[j], &target, nb);
-	  if (err)
-	    return err;
-	}
-      if (!done)
-	break;
-      grub_net_poll_cards (interval);
-    }
-
-  err = GRUB_ERR_NONE;
-  for (j = 0; j < ncards; j++)
-    {
-      if (!ifaces[j].prev)
-	continue;
-      grub_error_push ();
-      grub_net_network_level_interface_unregister (&ifaces[j]);
-      err = grub_error (GRUB_ERR_FILE_NOT_FOUND, "couldn't configure %s",
-			ifaces[j].card->name);
-    }
-
-  return err;
-}
-
-static void
-grub_grubnet_fini_real (void)
-{
-  struct grub_net_card *card;
-
-  FOR_NET_CARDS (card)
-    if (card->driver)
-      card->driver->fini (card);
+  return grub_net_fs_read_real (file, buf, len);
 }
 
 static struct grub_fs grub_net_fs =
@@ -1255,9 +916,32 @@ static struct grub_fs grub_net_fs =
     .uuid = NULL,
     .mtime = NULL,
   };
+
+static grub_err_t
+grub_net_fini_hw (int noreturn __attribute__ ((unused)))
+{
+  struct grub_net_card *card;
+  FOR_NET_CARDS (card) 
+    if (card->opened)
+      {
+	if (card->driver->close)
+	  card->driver->close (card);
+	card->opened = 0;
+      }
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_net_restore_hw (void)
+{
+  return GRUB_ERR_NONE;
+}
+
+static void *fini_hnd;
+
 static grub_command_t cmd_addaddr, cmd_deladdr, cmd_addroute, cmd_delroute;
-static grub_command_t cmd_lsroutes, cmd_lscards, cmd_getdhcp, cmd_bootp;
-static grub_command_t cmd_dhcp, cmd_lsaddr;
+static grub_command_t cmd_lsroutes, cmd_lscards;
+static grub_command_t cmd_lsaddr;
 
 GRUB_MOD_INIT(net)
 {
@@ -1279,24 +963,19 @@ GRUB_MOD_INIT(net)
 				       "", N_("list network cards"));
   cmd_lsaddr = grub_register_command ("net_ls_addr", grub_cmd_listaddrs,
 				       "", N_("list network addresses"));
-  cmd_bootp = grub_register_command ("net_bootp", grub_cmd_bootp,
-				     "[CARD]",
-				     N_("perform a bootp autoconfiguration"));
-  cmd_dhcp = grub_register_command ("net_dhcp", grub_cmd_bootp,
-				     "[CARD]",
-				     N_("perform a bootp autoconfiguration"));
-  cmd_getdhcp = grub_register_command ("net_get_dhcp_option", grub_cmd_dhcpopt,
-				       N_("VAR INTERFACE NUMBER DESCRIPTION"),
-				       N_("retrieve DHCP option and save it into VAR. If VAR is - then print the value."));
+  grub_bootp_init ();
 
   grub_fs_register (&grub_net_fs);
   grub_net_open = grub_net_open_real;
-  grub_file_net_seek = grub_net_seek_real;
-  grub_grubnet_fini = grub_grubnet_fini_real;
+  fini_hnd = grub_loader_register_preboot_hook (grub_net_fini_hw,
+						grub_net_restore_hw,
+						GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
+  grub_net_poll_cards_idle = grub_net_poll_cards_idle_real;
 }
 
 GRUB_MOD_FINI(net)
 {
+  grub_bootp_fini ();
   grub_unregister_command (cmd_addaddr);
   grub_unregister_command (cmd_deladdr);
   grub_unregister_command (cmd_addroute);
@@ -1304,9 +983,9 @@ GRUB_MOD_FINI(net)
   grub_unregister_command (cmd_lsroutes);
   grub_unregister_command (cmd_lscards);
   grub_unregister_command (cmd_lsaddr);
-  grub_unregister_command (cmd_getdhcp);
   grub_fs_unregister (&grub_net_fs);
   grub_net_open = NULL;
-  grub_file_net_seek = NULL;
-  grub_grubnet_fini = NULL;
+  grub_net_fini_hw (0);
+  grub_loader_unregister_preboot_hook (fini_hnd);
+  grub_net_poll_cards_idle = grub_net_poll_cards_idle_real;
 }

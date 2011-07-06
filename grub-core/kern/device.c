@@ -79,7 +79,7 @@ grub_device_close (grub_device_t device)
 
   if (device->net)
     {
-      grub_free (device->net->name);
+      grub_free (device->net->server);
       grub_free (device->net);
     }
 

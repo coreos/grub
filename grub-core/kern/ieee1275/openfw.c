@@ -22,16 +22,14 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/ieee1275/ieee1275.h>
-#include <grub/ieee1275/ofnet.h>
 #include <grub/net.h>
-#include <grub/net/tftp.h>
 
-grub_bootp_t (*grub_getbootp) (void);
 enum grub_ieee1275_parse_type
 {
   GRUB_PARSE_FILENAME,
   GRUB_PARSE_PARTITION,
-  GRUB_PARSE_DEVICE
+  GRUB_PARSE_DEVICE,
+  GRUB_PARSE_DEVICE_TYPE
 };
 
 /* Walk children of 'devpath', calling hook for each.  */
@@ -322,13 +320,8 @@ grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
 {
   char type[64]; /* XXX check size.  */
   char *device = grub_ieee1275_get_devname (path);
-  char *args = grub_ieee1275_get_devargs (path);
   char *ret = 0;
   grub_ieee1275_phandle_t dev;
-
-  if (!args)
-    /* Shouldn't happen.  */
-    return 0;
 
   /* We need to know what type of device it is in order to parse the full
      file path properly.  */
@@ -344,48 +337,84 @@ grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
       goto fail;
     }
 
-  if (!grub_strcmp ("block", type))
+  switch (ptype)
     {
-      /* The syntax of the device arguments is defined in the CHRP and PReP
-         IEEE1275 bindings: "[partition][,[filename]]".  */
-      char *comma = grub_strchr (args, ',');
+    case GRUB_PARSE_DEVICE:
+      ret = grub_strdup (device);
+      break;
+    case GRUB_PARSE_DEVICE_TYPE:
+      ret = grub_strdup (type);
+      break;
+    case GRUB_PARSE_FILENAME:
+      {
+	char *comma;
+	char *args;
 
-      if (ptype == GRUB_PARSE_FILENAME)
-	{
-	  if (comma)
-	    {
-	      char *filepath = comma + 1;
+	if (grub_strcmp ("block", type) != 0)
+	  goto unknown;
 
-	      /* Make sure filepath has leading backslash.  */
-	      if (filepath[0] != '\\')
-		ret = grub_xasprintf ("\\%s", filepath);
-	      else
-		ret = grub_strdup (filepath);
+	args = grub_ieee1275_get_devargs (path);
+	if (!args)
+	  /* Shouldn't happen.  */
+	  return 0;
+
+	/* The syntax of the device arguments is defined in the CHRP and PReP
+	   IEEE1275 bindings: "[partition][,[filename]]".  */
+	comma = grub_strchr (args, ',');
+
+	if (comma)
+	  {
+	    char *filepath = comma + 1;
+	    
+	    /* Make sure filepath has leading backslash.  */
+	    if (filepath[0] != '\\')
+	      ret = grub_xasprintf ("\\%s", filepath);
+	    else
+	      ret = grub_strdup (filepath);
 	    }
+	grub_free (args);
 	}
-      else if (ptype == GRUB_PARSE_PARTITION)
-        {
-	  if (!comma)
-	    ret = grub_strdup (args);
-	  else
-	    ret = grub_strndup (args, (grub_size_t)(comma - args));
-	}
-    }
+      break;
+    case GRUB_PARSE_PARTITION:
+      {
+	char *comma;
+	char *args;
 
-  else if (!grub_strcmp ("network", type))
-    {
-      if (ptype == GRUB_PARSE_DEVICE)
-        ret = grub_strdup(device);
-    }
-  else  
-    {
+	if (grub_strcmp ("block", type) != 0)
+	  goto unknown;
+
+	args = grub_ieee1275_get_devargs (path);
+	if (!args)
+	  /* Shouldn't happen.  */
+	  return 0;
+
+	comma = grub_strchr (args, ',');
+	if (!comma)
+	  ret = grub_strdup (args);
+	else
+	  ret = grub_strndup (args, (grub_size_t)(comma - args));
+	/* Consistently provide numbered partitions to GRUB.
+	   OpenBOOT traditionally uses alphabetical partition
+	   specifiers.  */
+	if (ret[0] >= 'a' && ret[0] <= 'z')
+	    ret[0] = '1' + (ret[0] - 'a');
+	grub_free (args);
+      }
+      break;
+    default:
+    unknown:
       grub_printf ("Unsupported type %s for device %s\n", type, device);
     }
 
 fail:
   grub_free (device);
-  grub_free (args);
   return ret;
+}
+
+char *
+grub_ieee1275_get_device_type (const char *path)
+{
+  return grub_ieee1275_parse_args (path, GRUB_PARSE_DEVICE_TYPE);
 }
 
 char *

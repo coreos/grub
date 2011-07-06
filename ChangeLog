@@ -1,3 +1,194 @@
+2011-07-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Unify sparc init with other ieee1275.
+
+	* grub-core/Makefile.core.def (kernel): Use kern/ieee1275/init.c
+	instead of kern/sparc64/ieee1275/init.c.
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options)
+	[__sparc__]: Set GRUB_IEEE1275_FLAG_NO_PARTITION_0.
+	* grub-core/kern/ieee1275/init.c [__sparc__]: Include
+	grub/machine/kernel.h.
+	(grub_ieee1275_original_stack) [__sparc__]: New variable.
+	(grub_claim_heap) [__sparc__]: Use sparc version.
+	(grub_machine_init): Moved args parsing to
+	(grub_parse_cmdline): ...this.
+	* grub-core/kern/sparc64/ieee1275/init.c: Removed.
+	* include/grub/offsets.h (GRUB_KERNEL_SPARC64_IEEE1275_MOD_GAP):
+	New definition.
+	(GRUB_KERNEL_SPARC64_IEEE1275_MOD_ALIGN): Likewise.
+
+	Move BOOTP to separate file.
+
+	* grub-core/Makefile.core.def (net): Add net/bootp.c.
+	* grub-core/net/net.c: Move all BOOTP functions to
+	* grub-core/net/bootp.c: ... here.
+
+	Use frame interface on PXE.
+
+	* grub-core/Makefile.core.def (pxecmd): Removed.
+	(pxe): Use net/drivers/i386/pc/pxe.c rather than net/i386/pc/pxe.c.
+	* grub-core/commands/i386/pc/pxecmd.c: Removed.
+	* grub-core/i386/pc/pxe.c: Moved from here ...
+	* grub-core/net/i386/pc/pxe.c: ... here. Rewritten.
+	* grub-core/net/net.c (grub_net_open_real): Handle old pxe syntax.
+	* include/grub/i386/pc/pxe.h (grub_pxe_unload): Removed.
+
+	EFI network support.
+
+	* grub-core/Makefile.core.def (efinet): New module.
+	* grub-core/disk/efi/efidisk.c (compare_device_paths): Moved from
+	here...
+	* grub-core/kern/efi/efi.c (grub_efi_compare_device_paths): ... here.
+	All users updated.
+	* grub-core/kern/efi/init.c (grub_efi_net_config): New variable.
+	(grub_machine_get_bootlocation): Call grub_efi_net_config if needed.
+	* grub-core/kern/x86_64/efi/callwrap.S (efi_wrap_7): New function.
+	* grub-core/net/drivers/efi/efinet.c: New file.
+	* include/grub/efi/efi.h (grub_efi_compare_device_paths): New proto.
+	(grub_efi_net_config): New extern var.
+
+	Various cleanups and bugfixes.
+
+	* grub-core/disk/efi/efidisk.c (grub_efidisk_open): Fix off-by-one
+	error.
+	(grub_efidisk_get_device_name): Unify similar codepaths. Accept whole
+	disk declared as partition.
+	* grub-core/disk/ieee1275/ofdisk.c (grub_ofdisk_open): Fix memory
+	leak on failure.
+	* grub-core/kern/dl.c (grub_dl_load_file): Fix memory leak.
+	* grub-core/kern/mm.c (grub_debug_malloc): Don't use unsupported %zx.
+	(grub_debug_zalloc): Likewise.
+	(grub_debug_realloc): Likewise.
+	(grub_debug_memalign): Likewise.
+	* grub-core/net/arp.c (grub_net_arp_receive): IPv4 is 4-byte wide.
+	Check that target is IPv4.
+	* grub-core/net/drivers/ieee1275/ofnet.c (grub_ofnet_findcards): Use
+	local-mac-address as fallback.
+	* grub-core/net/ethernet.c (grub_net_recv_ethernet_packet): Prevent
+	memory leak.
+	* grub-core/net/ip.c (ipchksum): Rename to ...
+	(grub_net_ip_chksum): ... this. All users updated.
+	(grub_net_recv_ip_packets): Special handling for DHCP.
+	* util/grub-mkimage.c (generate_image): Zero-out aout header.
+
+	Unify prefix handling
+
+	* grub-core/kern/efi/init.c (grub_efi_set_prefix): Revamped into ...
+	(grub_machine_get_bootlocation): ... this.
+	* grub-core/kern/emu/main.c (grub_machine_set_prefix): Revamped into ...
+	(grub_machine_get_bootlocation): ... this.
+	(grub_prefix): New variable.
+	(prefix): Removed.
+	(root_dev): New variable.
+	(dir): Likewise.
+	(main): Use new variables.
+	* grub-core/kern/i386/coreboot/init.c (grub_machine_set_prefix):
+	Revamped into ...
+	(grub_machine_get_bootlocation): ... this.
+	* grub-core/kern/i386/efi/init.c (grub_machine_set_prefix): Removed.
+	* grub-core/kern/i386/pc/init.c (make_install_device): Revamped into ...
+	(grub_machine_get_bootlocation): ... this.
+	(grub_machine_set_prefix): Removed.
+	* grub-core/kern/ia64/efi/init.c (grub_machine_set_prefix): Removed.
+	* grub-core/kern/ieee1275/init.c (grub_machine_set_prefix):
+	Revamped into ...
+	(grub_machine_get_bootlocation): ... this.
+	* grub-core/kern/main.c (grub_set_root_dev): Revamped into ...
+	(grub_set_prefix_and_root): ... this. All users updated.
+	* grub-core/kern/mips/init.c (grub_machine_set_prefix):
+	Revamped into ...
+	(grub_machine_get_bootlocation): ... this.
+	* include/grub/kernel.h (grub_machine_set_prefix): Removed.
+	(grub_machine_get_bootlocation): New proto.
+	* include/grub/i386/pc/kernel.h (grub_pc_net_config): New var.
+
+	Less intrusive and more reliable seek on network implementation.
+
+	* grub-core/kern/file.c (grub_file_net_seek): Removed.
+	(grub_file_seek): Don't call grub_file_net_seek.
+	* grub-core/net/net.c (grub_net_fs_read): Renamed to ...
+	(grub_net_fs_read_real): .. this.
+	(grub_net_seek_real): Use net->offset.
+	(grub_net_fs_read): Seek if necessary.
+
+	Unify IEEE1275 netwotk config with the other platforms.
+
+	* grub-core/kern/ieee1275/init.c (grub_ieee1275_net_config):
+	New variable.
+	(grub_machine_get_bootlocation): Support network.
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_parse_args):
+	Support type and device parsing.
+	(grub_ieee1275_get_device_type): New function.
+	* grub-core/net/drivers/ieee1275/ofnet.c (grub_getbootp_real): Revamped
+	into ...
+	(grub_ieee1275_net_config_real): ... this.
+	(grub_ofnet_probecards): Removed.
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Remove ofnet.h.
+	* include/grub/ieee1275/ofnet.h: Removed.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_net_config): NEw
+	extern var.
+	(grub_ieee1275_get_device_type): New function.
+
+	Unify network device closing across platforms and make more robust.
+
+	* grub-core/kern/ieee1275/init.c (grub_machine_fini): Don't call
+	grub_grubnet_fini.
+	* grub-core/net/ethernet.c (send_ethernet_packet): Open card if it isn't
+	already.
+	* grub-core/net/net.c (grub_net_network_level_interface_register):
+	Update num_ifaces.
+	(grub_net_card_unregister): Close all interfaces.
+	(receive_packets): Don't poll if no iterfaces are registered.
+	Open if necessary.
+	(grub_net_fini_hw): New function.
+	(grub_net_restore_hw): Likewise.
+	(fini_hnd): New variable.
+	(GRUB_MOD_INIT): Register preboot hook.
+	(GRUB_MOD_FINI): Run and unregister preboot hook.
+
+	Poll network cards when idle.
+
+	* grub-core/kern/term.c (grub_net_poll_cards_idle): New variable.
+	(grub_checkkey): Call grub_net_poll_cards_idle if it's not NULL.
+	* grub-core/net/net.c (receive_packets): Save last poll time.
+	(grub_net_poll_cards_idle_real): New function.
+	(GRUB_MOD_INIT): Register grub_net_poll_cards_idle.
+	(GRUB_MOD_FINI): Unregister grub_net_poll_cards_idle.
+	* include/grub/kernel.h (grub_poll_cards_idle): New extern variable.
+
+	Rename ofnet interfaces.
+
+	* grub-core/net/drivers/ieee1275/ofnet.c (find_alias): New function.
+	(grub_ofnet_findcards): Use ofnet_%s names.
+
+	* util/grub-mknetdir.in: Support for EFI and IEEE1275.
+
+	Cleanup socket opening.
+
+	* grub-core/net/net.c (grub_net_fs_open): Rewritten.
+	(grub_net_fs_close): Likewise.
+	(grub_net_fs_read_real): Use eof member.
+	* include/grub/net/udp.h (+grub_net_udp_open): New proto.
+	(+grub_net_udp_close): New inline function.
+
+	* include/grub/net/tftp.h: Moved to the top of ...
+	* grub-core/net/tftp.c: ... here.
+	* include/grub/net/ip.h: Moved mostly to the top of ...
+	* grub-core/net/ip.c: ... here.
+	* include/grub/net/ethernet.h: Moved mostly to the top of ...
+	* grub-core/net/ethernet.c: ... here.
+
+	* grub-core/kern/device.c (grub_device_close): Free device->net->server.
+
+	* grub-core/commands/probe.c (grub_cmd_probe): Use protocol name for
+	FS name.
+
+	* include/grub/net/ip.h (ipv4_ini): Removed.
+	(ipv4_fini): Likewise.
+
+	* include/grub/net/ip.h (grub_net_recv_ip_packets): New proto.
+	(grub_net_send_ip_packets): Likewise.
+
 2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/i386/qemu/mmap.c (grub_machine_mmap_init): Use new

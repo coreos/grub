@@ -129,27 +129,74 @@ grub_env_write_root (struct grub_env_var *var __attribute__ ((unused)),
   return grub_strdup (val);
 }
 
-/* Set the root device according to the dl prefix.  */
 static void
-grub_set_root_dev (void)
+grub_set_prefix_and_root (void)
 {
-  const char *prefix;
+  char *device = NULL;
+  char *path = NULL;
+  char *fwdevice = NULL;
+  char *fwpath = NULL;
 
   grub_register_variable_hook ("root", 0, grub_env_write_root);
 
-  prefix = grub_env_get ("prefix");
+  {
+    char *pptr = NULL;
+    if (grub_prefix[0] == '(')
+      {
+	pptr = grub_strrchr (grub_prefix, ')');
+	if (pptr)
+	  {
+	    device = grub_strndup (grub_prefix + 1, pptr - grub_prefix - 1);
+	    pptr++;
+	  }
+      }
+    if (!pptr)
+      pptr = grub_prefix;
+    if (pptr[0])
+      path = grub_strdup (pptr);
+  }
+  if ((!device || device[0] == ',' || !device[0]) || !path)
+    grub_machine_get_bootlocation (&fwdevice, &fwpath);
 
-  if (prefix)
+  if (!device && fwdevice)
+    device = fwdevice;
+  else if (fwdevice && (device[0] == ',' || !device[0]))
     {
-      char *dev;
+      /* We have a partition, but still need to fill in the drive.  */
+      char *comma, *new_device;
 
-      dev = grub_file_get_device_name (prefix);
-      if (dev)
+      comma = grub_strchr (fwdevice, ',');
+      if (comma)
 	{
-	  grub_env_set ("root", dev);
-	  grub_free (dev);
+	  char *drive = grub_strndup (fwdevice, comma - fwdevice);
+	  new_device = grub_xasprintf ("%s%s", drive, device);
+	  grub_free (drive);
 	}
+      else
+	new_device = grub_xasprintf ("%s%s", fwdevice, device);
+
+      grub_free (fwdevice);
+      grub_free (device);
+      device = new_device;
     }
+  if (fwpath && !path)
+    path = fwpath;
+  if (device)
+    {
+      char *prefix;
+    
+      prefix = grub_xasprintf ("(%s)%s", device, path ? : "");
+      if (prefix)
+	{
+	  grub_env_set ("prefix", prefix);
+	  grub_free (prefix);
+	}
+      grub_env_set ("root", device);
+    }
+
+  grub_free (device);
+  grub_free (path);
+  grub_print_error ();
 }
 
 /* Load the normal mode module and execute the normal mode if possible.  */
@@ -187,8 +234,7 @@ grub_main (void)
 
   /* It is better to set the root device as soon as possible,
      for convenience.  */
-  grub_machine_set_prefix ();
-  grub_set_root_dev ();
+  grub_set_prefix_and_root ();
   grub_env_export ("root");
   grub_env_export ("prefix");
 
