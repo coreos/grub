@@ -90,6 +90,9 @@ grub_machine_get_bootlocation (char **device, char **path);
 /* Register all the exported symbols. This is automatically generated.  */
 void grub_register_exported_symbols (void);
 
+extern void (*EXPORT_VAR(grub_net_poll_cards_idle)) (void);
+
+
 #if ! defined (ASM_FILE)
 extern char grub_prefix[];
 #endif

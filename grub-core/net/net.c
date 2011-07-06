@@ -33,6 +33,7 @@
 #include <grub/datetime.h>
 #include <grub/loader.h>
 #include <grub/bufio.h>
+#include <grub/kernel.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -809,6 +810,14 @@ grub_net_poll_cards (unsigned time)
     }
 }
 
+static void
+grub_net_poll_cards_idle_real (void)
+{
+  struct grub_net_card *card;
+  FOR_NET_CARDS (card)
+    receive_packets (card);
+}
+
 /*  Read from the packets list*/
 static grub_ssize_t
 grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
@@ -1452,6 +1461,7 @@ GRUB_MOD_INIT(net)
   fini_hnd = grub_loader_register_preboot_hook (grub_net_fini_hw,
 						grub_net_restore_hw,
 						GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
+  grub_net_poll_cards_idle = grub_net_poll_cards_idle_real;
 }
 
 GRUB_MOD_FINI(net)
@@ -1468,4 +1478,5 @@ GRUB_MOD_FINI(net)
   grub_net_open = NULL;
   grub_net_fini_hw (0);
   grub_loader_unregister_preboot_hook (fini_hnd);
+  grub_net_poll_cards_idle = grub_net_poll_cards_idle_real;
 }
