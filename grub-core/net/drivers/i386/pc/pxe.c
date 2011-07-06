@@ -260,15 +260,13 @@ grub_pxe_send (const struct grub_net_card *dev __attribute__ ((unused)),
   return 0;
 }
 
-static grub_err_t
+static void
 grub_pxe_close (const struct grub_net_card *dev __attribute__ ((unused)))
 {
   if (pxe_rm_entry)
     grub_pxe_call (GRUB_PXENV_UNDI_CLOSE,
 		   (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR,
 		   pxe_rm_entry);
-
-  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -322,7 +320,6 @@ grub_pc_net_config_real (char **device, char **path)
 GRUB_MOD_INIT(pxe)
 {
   struct grub_pxe_bangpxe *pxenv;
-  struct grub_pxe_undi_open *ou;
   struct grub_pxe_undi_info *ui;
   unsigned i;
 
