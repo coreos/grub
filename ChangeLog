@@ -1,5 +1,10 @@
 2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/qemu/mmap.c (grub_machine_mmap_init): Use new
+	grub_read_cmos prototype.
+
+2011-07-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	VGA text support in qemu-mips
 
 	* grub-core/Makefile.core.def (kernel): Add term/i386/pc/vga_text.c,
