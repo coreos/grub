@@ -1,5 +1,9 @@
 2011-07-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/POTFILES.in: Regenerate.
+
+2011-07-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Unify sparc init with other ieee1275.
 
 	* grub-core/Makefile.core.def (kernel): Use kern/ieee1275/init.c
