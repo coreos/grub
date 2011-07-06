@@ -444,13 +444,22 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	    continue;
 	  nb = grub_netbuff_alloc (sizeof (*pack));
 	  if (!nb)
-	    return grub_errno;
+	    {
+	      grub_netbuff_free (nb);
+	      return grub_errno;
+	    }
 	  err = grub_netbuff_reserve (nb, sizeof (*pack) + 64 + 128);
 	  if (err)
-	    return err;
+	    {
+	      grub_netbuff_free (nb);
+	      return err;
+	    }
 	  err = grub_netbuff_push (nb, sizeof (*pack) + 64);
 	  if (err)
-	    return err;
+	    {
+	      grub_netbuff_free (nb);
+	      return err;
+	    }
 	  pack = (void *) nb->data;
 	  done = 1;
 	  grub_memset (pack, 0, sizeof (*pack) + 64);
@@ -480,6 +489,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	  target.ipv4 = 0xffffffff;
 
 	  err = grub_net_send_ip_packet (&ifaces[j], &target, nb);
+	  grub_netbuff_free (nb);
 	  if (err)
 	    return err;
 	}
@@ -491,6 +501,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
   err = GRUB_ERR_NONE;
   for (j = 0; j < ncards; j++)
     {
+      grub_free (ifaces[j].name);
       if (!ifaces[j].prev)
 	continue;
       grub_error_push ();
@@ -499,6 +510,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 			ifaces[j].card->name);
     }
 
+  grub_free (ifaces);
   return err;
 }
 
