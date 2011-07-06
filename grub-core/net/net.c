@@ -725,6 +725,7 @@ grub_net_fs_open (struct grub_file *file_out, const char *name)
     }
 
   grub_memcpy (file_out, bufio, sizeof (struct grub_file));
+  grub_free (bufio);
   return GRUB_ERR_NONE;
 }
 
