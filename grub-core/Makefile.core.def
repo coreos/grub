@@ -818,6 +818,22 @@ module = {
 };
 
 module = {
+  name = cryptodisk;
+  common = disk/cryptodisk.c;
+};
+
+module = {
+  name = luks;
+  common = disk/luks.c;
+  common = disk/AFSplitter.c;
+};
+
+module = {
+  name = geli;
+  common = disk/geli.c;
+};
+
+module = {
   name = lvm;
   common = disk/lvm.c;
 };

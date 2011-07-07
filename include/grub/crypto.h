@@ -126,6 +126,9 @@ typedef struct gcry_cipher_spec
   gcry_cipher_decrypt_t decrypt;
   gcry_cipher_stencrypt_t stencrypt;
   gcry_cipher_stdecrypt_t stdecrypt;
+#ifdef GRUB_UTIL
+  const char *modname;
+#endif
   struct gcry_cipher_spec *next;
 } gcry_cipher_spec_t;
 
@@ -161,6 +164,9 @@ typedef struct gcry_md_spec
   grub_size_t contextsize; /* allocate this amount of context */
   /* Block size, needed for HMAC.  */
   grub_size_t blocksize;
+#ifdef GRUB_UTIL
+  const char *modname;
+#endif
   struct gcry_md_spec *next;
 } gcry_md_spec_t;
 
@@ -193,7 +199,7 @@ grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size);
 
 gcry_err_code_t
 grub_crypto_ecb_decrypt (grub_crypto_cipher_handle_t cipher,
-			 void *out, void *in, grub_size_t size);
+			 void *out, const void *in, grub_size_t size);
 
 gcry_err_code_t
 grub_crypto_ecb_encrypt (grub_crypto_cipher_handle_t cipher,
@@ -204,7 +210,7 @@ grub_crypto_cbc_encrypt (grub_crypto_cipher_handle_t cipher,
 			 void *iv_in);
 gcry_err_code_t
 grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
-			 void *out, void *in, grub_size_t size,
+			 void *out, const void *in, grub_size_t size,
 			 void *iv);
 void 
 grub_cipher_register (gcry_cipher_spec_t *cipher);
@@ -229,7 +235,8 @@ struct grub_crypto_hmac_handle *
 grub_crypto_hmac_init (const struct gcry_md_spec *md,
 		       const void *key, grub_size_t keylen);
 void
-grub_crypto_hmac_write (struct grub_crypto_hmac_handle *hnd, void *data,
+grub_crypto_hmac_write (struct grub_crypto_hmac_handle *hnd,
+			const void *data,
 			grub_size_t datalen);
 gcry_err_code_t
 grub_crypto_hmac_fini (struct grub_crypto_hmac_handle *hnd, void *out);
@@ -237,7 +244,7 @@ grub_crypto_hmac_fini (struct grub_crypto_hmac_handle *hnd, void *out);
 gcry_err_code_t
 grub_crypto_hmac_buffer (const struct gcry_md_spec *md,
 			 const void *key, grub_size_t keylen,
-			 void *data, grub_size_t datalen, void *out);
+			 const void *data, grub_size_t datalen, void *out);
 
 extern gcry_md_spec_t _gcry_digest_spec_md5;
 extern gcry_md_spec_t _gcry_digest_spec_sha1;
@@ -273,5 +280,11 @@ grub_password_get (char buf[], unsigned buf_size);
 #define GRUB_ACCESS_DENIED grub_error (GRUB_ERR_ACCESS_DENIED, "Access denied.")
 
 extern void (*grub_crypto_autoload_hook) (const char *name);
+
+#ifdef GRUB_UTIL
+void grub_gcry_init_all (void);
+void grub_gcry_fini_all (void);
+#endif
+
 
 #endif

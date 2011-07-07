@@ -21,6 +21,7 @@
 #define GRUB_BIOSDISK_MACHINE_UTIL_HEADER	1
 
 #include <grub/disk.h>
+#include <sys/types.h>
 
 void grub_util_biosdisk_init (const char *dev_map);
 void grub_util_biosdisk_fini (void);
@@ -30,5 +31,15 @@ int grub_util_biosdisk_is_present (const char *name);
 int grub_util_biosdisk_is_floppy (grub_disk_t disk);
 grub_err_t grub_util_biosdisk_flush (struct grub_disk *disk);
 void grub_util_pull_device (const char *osname);
+grub_err_t
+grub_util_fd_seek (int fd, const char *name, grub_uint64_t sector);
+ssize_t grub_util_fd_read (int fd, char *buf, size_t len);
+grub_err_t
+grub_cryptodisk_cheat_mount (const char *sourcedev, const char *cheat);
+void grub_util_cryptodisk_print_uuid (grub_disk_t disk);
+#if !defined(__MINGW32__)
+grub_uint64_t
+grub_util_get_fd_sectors (int fd, unsigned *log_secsize);
+#endif
 
 #endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */

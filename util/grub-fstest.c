@@ -299,6 +299,7 @@ static char **images = NULL;
 static int cmd = 0;
 static char *debug_str = NULL;
 static char **args = NULL;
+static int mount_crypt = 0;
 
 static void
 fstest (int n, char **args)
@@ -327,6 +328,15 @@ fstest (int n, char **args)
       grub_free (loop_name);
       grub_free (host_file);
     }
+
+  {
+    char *argv[2] = { "-a", NULL};
+    if (mount_crypt)
+      {
+	if (execute_command ("cryptomount", 1, argv))
+	  grub_util_error (_("cryptomount command fails: %s"), grub_errmsg);
+      }
+  }
 
   grub_lvm_fini ();
   grub_mdraid09_fini ();
@@ -397,6 +407,7 @@ static struct argp_option options[] = {
   {"length",    'n', "N",           0, N_("Handle N bytes in output file."),   2},
   {"diskcount", 'c', "N",           0, N_("N input files."),                   2},
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
+  {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
   {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("Print verbose messages."), 2},
   {0, 0, 0, 0, 0, 0}
 };
@@ -418,6 +429,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
     {
     case 'r':
       root = arg;
+      return 0;
+
+    case 'C':
+      mount_crypt = 1;
       return 0;
 
     case 's':
@@ -564,6 +579,7 @@ main (int argc, char *argv[])
 
   /* Initialize all modules. */
   grub_init_all ();
+  grub_gcry_init_all ();
 
   if (debug_str)
     grub_env_set ("debug", debug_str);
@@ -592,6 +608,7 @@ main (int argc, char *argv[])
   fstest (args_count - 1 - num_disks, args);
 
   /* Free resources.  */
+  grub_gcry_fini_all ();
   grub_fini_all ();
 
   return 0;

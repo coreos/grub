@@ -1,4 +1,93 @@
 2011-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-07-07  Michael Gorven  <michael@gorven.za.net>
+2011-07-07  Clemens Fruhwirth <clemens@endorphin.org>
+
+	LUKS and GELI support.
+
+	* Makefile.util.def (libgrubkern.a): Add grub-core/lib/crypto.c,
+	grub-core/disk/luks.c, grub-core/disk/geli.c,
+	grub-core/disk/cryptodisk.c, grub-core/disk/AFSplitter.c,
+	grub-core/lib/pbkdf2.c, grub-core/commands/extcmd.c,
+	grub-core/lib/arg.c.
+	(libgrubmods.a): Remove gcrypts cflags and cppflags.
+	Remove grub-core/commands/extcmd.c, grub-core/lib/arg.c,
+	grub-core/lib/crypto.c, grub-core/lib/libgcrypt-grub/cipher/sha512.c,
+	grub-core/lib/libgcrypt-grub/cipher/crc.c and grub-core/lib/pbkdf2.c.
+	(grub-bin2h): Add libgcry.a.
+	(grub-mkimage): Likewise.
+	(grub-mkrelpath): Likewise.
+	(grub-script-check): Likewise.
+	(grub-editenv): Likewise.
+	(grub-mkpasswd-pbkdf2): Likewise.
+	(grub-pe2elf): Likewise.
+	(grub-fstest): Likewise.
+	(grub-mkfont): Likewise.
+	(grub-mkdevicemap): Likewise.
+	(grub-probe): Likewise.
+	(grub-ofpath): Likewise.
+	(grub-mklayout): Likewise.
+	(example_unit_test): Likewise.
+	(grub-menulst2cfg): Likewise.
+	* autogen.sh (UTIL_DEFS): Add Makefile.utilgcry.def.
+	* grub-core/Makefile.core.def (cryptodisk): New module.
+	(luks): Likewise.
+	(geli): Likewise.
+	* grub-core/disk/AFSplitter.c: New file.
+	* grub-core/disk/cryptodisk.c: Likewise.
+	* grub-core/disk/geli.c: Likewise.
+	* grub-core/disk/luks.c: Likewise.
+	* grub-core/kern/emu/getroot.c (get_dm_uuid): New function based on
+	grub_util_is_lvm.
+	(grub_util_get_dm_abstraction): New function.
+	(grub_util_follow_gpart_up): Likewise.
+	(grub_util_get_geom_abstraction): Likewise.
+	(grub_util_get_dev_abstraction): Use new functions.
+	(grub_util_pull_device): Pull GELI and LUKS.
+	(grub_util_get_grub_dev): Handle LUKS and GELI.
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors): New function.
+	(grub_util_biosdisk_open): Use grub_util_get_fd_sectors.
+	(follow_geom_up): Removed.
+	(grub_util_fd_seek): New function.
+	(open_device): Use grub_util_fd_seek.
+	(nread): Rename to ..
+	(grub_util_fd_read): ... this. All users updated.
+	* grub-core/lib/crypto.c (grub_crypto_ecb_decrypt): A better prototype.
+	(grub_crypto_cbc_decrypt): Likewise.
+	(grub_crypto_hmac_write): Likewise.
+	(grub_crypto_hmac_buffer): Likewise.
+	(grub_password_get): Extend to util.
+	* include/grub/crypto.h (gcry_cipher_spec) [GRUB_UTIL]:
+	New member modname.
+	(gcry_md_spec) [GRUB_UTIL]: Likewise.
+	* include/grub/cryptodisk.h: New file.
+	* include/grub/disk.h (grub_disk_dev_id): Rename LUKS to CRYPTODISK.
+	* include/grub/emu/getroot.h (grub_dev_abstraction_types): Add
+	LUKS and GELI.
+	(grub_util_follow_gpart_up): New proto.
+	* include/grub/emu/hostdisk.h (grub_util_fd_seek): Likewise.
+	(grub_util_fd_read): Likewise.
+	(grub_cryptodisk_cheat_mount): Likewise.
+	(grub_util_cryptodisk_print_uuid): Likewise.
+	(grub_util_get_fd_sectors): Likewise.
+	* util/grub-fstest.c (mount_crypt): New var.
+	(fstest): Mount crypto if requested.
+	(options): New option -C.
+	(argp_parser): Parse -C.
+	(main): Init and fini gcry.
+	* util/grub-install.in: Support cryptodisk install.
+	* util/grub-mkconfig.in: Export GRUB_ENABLE_CRYPTODISK.
+	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Support
+	cryptodisk.
+	(prepare_grub_to_access_device): Likewise.
+	* util/grub-mkpasswd-pbkdf2.c (main): Use grub_password_get.
+	* util/grub-probe.c (probe_partmap): Support cryptodisk UUID probe.
+	(probe_cryptodisk_uuid): New function.
+	(probe_abstraction): Likewise.
+	(probe): Use new functions.
+	* util/import_gcry.py: Create Makefile.utilgcry.def.
+	Add modname member.
+
+2011-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Lazy device scanning.
 
