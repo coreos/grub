@@ -378,34 +378,43 @@ enumerate_disks (void)
 }
 
 static int
-grub_efidisk_iterate (int (*hook) (const char *name))
+grub_efidisk_iterate (int (*hook) (const char *name),
+		      grub_disk_pull_t pull)
 {
   struct grub_efidisk_data *d;
   char buf[16];
   int count;
 
-  for (d = fd_devices, count = 0; d; d = d->next, count++)
+  switch (pull)
     {
-      grub_snprintf (buf, sizeof (buf), "fd%d", count);
-      grub_dprintf ("efidisk", "iterating %s\n", buf);
-      if (hook (buf))
-	return 1;
-    }
+    case GRUB_DISK_PULL_NONE:
+      for (d = hd_devices, count = 0; d; d = d->next, count++)
+	{
+	  grub_snprintf (buf, sizeof (buf), "hd%d", count);
+	  grub_dprintf ("efidisk", "iterating %s\n", buf);
+	  if (hook (buf))
+	    return 1;
+	}
+      break;
+    case GRUB_DISK_PULL_REMOVABLE:
+      for (d = fd_devices, count = 0; d; d = d->next, count++)
+	{
+	  grub_snprintf (buf, sizeof (buf), "fd%d", count);
+	  grub_dprintf ("efidisk", "iterating %s\n", buf);
+	  if (hook (buf))
+	    return 1;
+	}
 
-  for (d = hd_devices, count = 0; d; d = d->next, count++)
-    {
-      grub_snprintf (buf, sizeof (buf), "hd%d", count);
-      grub_dprintf ("efidisk", "iterating %s\n", buf);
-      if (hook (buf))
-	return 1;
-    }
-
-  for (d = cd_devices, count = 0; d; d = d->next, count++)
-    {
-      grub_snprintf (buf, sizeof (buf), "cd%d", count);
-      grub_dprintf ("efidisk", "iterating %s\n", buf);
-      if (hook (buf))
-	return 1;
+      for (d = cd_devices, count = 0; d; d = d->next, count++)
+	{
+	  grub_snprintf (buf, sizeof (buf), "cd%d", count);
+	  grub_dprintf ("efidisk", "iterating %s\n", buf);
+	  if (hook (buf))
+	    return 1;
+	}
+      break;
+    default:
+      return 0;
     }
 
   return 0;
@@ -734,7 +743,9 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 
       sdp = dup_dp;
 
-      grub_efidisk_iterate (find_parent_disk);
+      grub_efidisk_iterate (find_parent_disk, GRUB_DISK_PULL_NONE);
+      if (!parent)
+	grub_efidisk_iterate (find_parent_disk, GRUB_DISK_PULL_REMOVABLE);
       grub_free (dup_dp);
 
       if (! parent)
@@ -774,7 +785,9 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 
       sdp = dp;
 
-      grub_efidisk_iterate (find_parent_disk);
+      grub_efidisk_iterate (find_parent_disk, GRUB_DISK_PULL_NONE);
+      if (!parent)
+	grub_efidisk_iterate (find_parent_disk, GRUB_DISK_PULL_REMOVABLE);
       if (!parent)
 	return NULL;
       device_name = grub_strdup (parent->name);

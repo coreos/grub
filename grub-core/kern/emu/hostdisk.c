@@ -214,7 +214,8 @@ find_free_slot (void)
 }
 
 static int
-grub_util_biosdisk_iterate (int (*hook) (const char *name))
+grub_util_biosdisk_iterate (int (*hook) (const char *name),
+			    grub_disk_pull_t pull)
 {
   unsigned i;
 

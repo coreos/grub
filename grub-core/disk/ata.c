@@ -374,7 +374,8 @@ grub_ata_real_open (int id, int bus)
 }
 
 static int
-grub_ata_iterate (int (*hook_in) (const char *name))
+grub_ata_iterate (int (*hook_in) (const char *name),
+		  grub_disk_pull_t pull)
 {
   auto int hook (int id, int bus);
   int hook (int id, int bus)
@@ -405,7 +406,7 @@ grub_ata_iterate (int (*hook_in) (const char *name))
   grub_ata_dev_t p;
   
   for (p = grub_ata_dev_list; p; p = p->next)
-    if (p->iterate && p->iterate (hook))
+    if (p->iterate && p->iterate (hook, pull))
       return 1;
   return 0;
 }
@@ -541,7 +542,8 @@ grub_atapi_open (int id, int bus, struct grub_scsi *scsi)
 }
 
 static int
-grub_atapi_iterate (int NESTED_FUNC_ATTR (*hook_in) (int id, int bus, int luns))
+grub_atapi_iterate (int NESTED_FUNC_ATTR (*hook_in) (int id, int bus, int luns),
+		    grub_disk_pull_t pull)
 {
   auto int hook (int id, int bus);
   int hook (int id, int bus)
@@ -569,7 +571,7 @@ grub_atapi_iterate (int NESTED_FUNC_ATTR (*hook_in) (int id, int bus, int luns))
   grub_ata_dev_t p;
   
   for (p = grub_ata_dev_list; p; p = p->next)
-    if (p->iterate && p->iterate (hook))
+    if (p->iterate && p->iterate (hook, pull))
       return 1;
   return 0;
 }

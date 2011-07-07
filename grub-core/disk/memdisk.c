@@ -30,8 +30,12 @@ static char *memdisk_addr;
 static grub_off_t memdisk_size = 0;
 
 static int
-grub_memdisk_iterate (int (*hook) (const char *name))
+grub_memdisk_iterate (int (*hook) (const char *name),
+		      grub_disk_pull_t pull)
 {
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
+
   return hook ("memdisk");
 }
 

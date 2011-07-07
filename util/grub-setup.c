@@ -32,7 +32,6 @@
 #include <grub/machine/kernel.h>
 #include <grub/term.h>
 #include <grub/i18n.h>
-#include <grub/util/raid.h>
 #include <grub/util/lvm.h>
 #ifdef GRUB_MACHINE_IEEE1275
 #include <grub/util/ofpath.h>
@@ -972,12 +971,12 @@ main (int argc, char *argv[])
       int i;
 
       if (arguments.device[0] == '/')
-	devicelist = grub_util_raid_getmembers (arguments.device);
+	devicelist = grub_util_raid_getmembers (arguments.device, 1);
       else
 	{
 	  char *devname;
 	  devname = xasprintf ("/dev/%s", dest_dev);
-	  devicelist = grub_util_raid_getmembers (dest_dev);
+	  devicelist = grub_util_raid_getmembers (dest_dev, 1);
 	  free (devname);
 	}
 

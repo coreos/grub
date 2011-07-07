@@ -51,6 +51,14 @@ struct grub_disk;
 struct grub_disk_memberlist;
 #endif
 
+typedef enum
+  { 
+    GRUB_DISK_PULL_NONE,
+    GRUB_DISK_PULL_REMOVABLE,
+    GRUB_DISK_PULL_RESCAN,
+    GRUB_DISK_PULL_MAX
+  } grub_disk_pull_t;
+
 /* Disk device.  */
 struct grub_disk_dev
 {
@@ -61,7 +69,8 @@ struct grub_disk_dev
   enum grub_disk_dev_id id;
 
   /* Call HOOK with each device name, until HOOK returns non-zero.  */
-  int (*iterate) (int (*hook) (const char *name));
+  int (*iterate) (int (*hook) (const char *name),
+		  grub_disk_pull_t pull);
 
   /* Open the device named NAME, and set up DISK.  */
   grub_err_t (*open) (const char *name, struct grub_disk *disk);

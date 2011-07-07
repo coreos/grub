@@ -1,3 +1,51 @@
+2011-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Lazy device scanning.
+
+	* Makefile.util.def (libgrubkern.a): Add grub-core/kern/emu/raid.c.
+	(grub-setup): Remove util/raid.c.
+	* grub-core/Makefile.core.def (kernel): Add kern/emu/raid.c on emu.
+	* grub-core/disk/lvm.c (scan_depth): New variable.
+	(grub_lvm_iterate): Rescan if necessary.
+	(find_lv): New function based on grub_lvm_open.
+	(grub_lvm_open): Use find_lv. Rescan on error.
+	(is_node_readable): New function.
+	(is_lv_readable): Likewise.
+	(grub_lvm_scan_device): Skip already found disks.
+	(do_lvm_scan): New function. Move grub_lvm_scan_device inside of it.
+	Stop if searched device is found and readable.
+	* grub-core/disk/raid.c (inscnt): New variable.
+	(scan_depth): Likewise.
+	(scan_devices): New function based on grub_raid_register. Abort if
+	looked for device is found.
+	(grub_raid_iterate): Rescan if needed.
+	(find_array): NEw function based on -grub_raid_open.
+	(grub_raid_open): Use find_array and rescan.
+	(insert_array): Set became_readable_at.
+	* grub-core/kern/disk.c (grub_disk_dev_iterate): Iterate though "pull.
+	* grub-core/kern/emu/getroot.c (grub_util_open_dm) [HAVE_DEVICE_MAPPER]:
+	New function.
+	(grub_util_is_lvm) [HAVE_DEVICE_MAPPER]: Use grub_util_open_dm.
+	(grub_util_pull_device): New function.
+	(grub_util_get_grub_dev): Call grub_util_pull_device.
+	* util/raid.c: Moved to ..
+	* grub-core/kern/emu/raid.c: ... here.
+	(grub_util_raid_getmembers): New parameter "bootable".
+	All users updated. Support 1.x.
+	* include/grub/ata.h (grub_ata_dev): Change iterate prototype.
+	All users updated.
+	* include/grub/disk.h (grub_disk_pull_t): New enum.
+	(grub_disk_dev): Change iterate prototype.
+	All users updated.
+	* include/grub/emu/getroot.h (grub_util_raid_getmembers) [__linux__]:
+	New proto.
+	* include/grub/emu/hostdisk.h (grub_util_pull_device): Likewise.
+	* include/grub/lvm.h (grub_lvm_lv): New members fullname and compatname.
+	* include/grub/raid.h (grub_raid_array): New member became_readable_at.
+	* include/grub/scsi.h (grub_scsi_dev): Change iterate prototype.
+	All users updated.
+	* include/grub/util/raid.h: Removed.
+
 2011-07-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* po/POTFILES.in: Regenerate.

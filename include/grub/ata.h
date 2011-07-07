@@ -22,6 +22,7 @@
 
 #include <grub/misc.h>
 #include <grub/symbol.h>
+#include <grub/disk.h>
 /* XXX: For now this only works on i386.  */
 #include <grub/cpu/io.h>
 
@@ -192,7 +193,8 @@ typedef struct grub_ata *grub_ata_t;
 struct grub_ata_dev
 {
   /* Call HOOK with each device name, until HOOK returns non-zero.  */
-  int (*iterate) (int (*hook) (int id, int bus));
+  int (*iterate) (int (*hook) (int id, int bus),
+		  grub_disk_pull_t pull);
 
   /* Open the device named NAME, and set up SCSI.  */
   grub_err_t (*open) (int id, int bus, struct grub_ata *scsi);

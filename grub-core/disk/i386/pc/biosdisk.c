@@ -284,37 +284,46 @@ grub_biosdisk_call_hook (int (*hook) (const char *name), int drive)
 }
 
 static int
-grub_biosdisk_iterate (int (*hook) (const char *name))
+grub_biosdisk_iterate (int (*hook) (const char *name),
+		       grub_disk_pull_t pull __attribute__ ((unused)))
 {
-  int drive;
   int num_floppies;
+  int drive;
 
   /* For hard disks, attempt to read the MBR.  */
-  for (drive = 0x80; drive < 0x90; drive++)
+  switch (pull)
     {
-      if (grub_biosdisk_rw_standard (0x02, drive, 0, 0, 1, 1,
-				     GRUB_MEMORY_MACHINE_SCRATCH_SEG) != 0)
+    case GRUB_DISK_PULL_NONE:
+      for (drive = 0x80; drive < 0x90; drive++)
 	{
-	  grub_dprintf ("disk", "Read error when probing drive 0x%2x\n", drive);
-	  break;
+	  if (grub_biosdisk_rw_standard (0x02, drive, 0, 0, 1, 1,
+					 GRUB_MEMORY_MACHINE_SCRATCH_SEG) != 0)
+	    {
+	      grub_dprintf ("disk", "Read error when probing drive 0x%2x\n", drive);
+	      break;
+	    }
+
+	  if (grub_biosdisk_call_hook (hook, drive))
+	    return 1;
+	}
+      return 0;
+
+    case GRUB_DISK_PULL_REMOVABLE:
+      if (cd_drive)
+	{
+	  if (grub_biosdisk_call_hook (hook, cd_drive))
+	    return 1;
 	}
 
-      if (grub_biosdisk_call_hook (hook, drive))
-	return 1;
+      /* For floppy disks, we can get the number safely.  */
+      num_floppies = grub_biosdisk_get_num_floppies ();
+      for (drive = 0; drive < num_floppies; drive++)
+	if (grub_biosdisk_call_hook (hook, drive))
+	  return 1;
+      return 0;
+    default:
+      return 0;
     }
-
-  if (cd_drive)
-    {
-      if (grub_biosdisk_call_hook (hook, cd_drive))
-      return 1;
-    }
-
-  /* For floppy disks, we can get the number safely.  */
-  num_floppies = grub_biosdisk_get_num_floppies ();
-  for (drive = 0; drive < num_floppies; drive++)
-    if (grub_biosdisk_call_hook (hook, drive))
-      return 1;
-
   return 0;
 }
 

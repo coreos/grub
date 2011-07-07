@@ -10,6 +10,7 @@ library = {
   common = grub-core/kern/device.c;
   common = grub-core/kern/disk.c;
   common = grub-core/kern/emu/getroot.c;
+  common = grub-core/kern/emu/raid.c;
   common = grub-core/kern/emu/hostdisk.c;
   common = grub-core/kern/emu/misc.c;
   common = grub-core/kern/emu/mm.c;
@@ -271,7 +272,6 @@ program = {
   installdir = sbin;
   mansection = 8;
   common = util/grub-setup.c;
-  common = util/raid.c;
   common = util/lvm.c;
   common = grub-core/lib/reed_solomon.c;
 

@@ -133,9 +133,12 @@ fail:
 
 
 static int
-grub_loopback_iterate (int (*hook) (const char *name))
+grub_loopback_iterate (int (*hook) (const char *name),
+		    grub_disk_pull_t pull)
 {
   struct grub_loopback *d;
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
   for (d = loopback_list; d; d = d->next)
     {
       if (hook (d->devname))

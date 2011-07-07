@@ -44,6 +44,8 @@ struct grub_lvm_pv {
 
 struct grub_lvm_lv {
   char *name;
+  char *fullname;
+  char *compatname;
   unsigned int number;
   unsigned int segment_count;
   grub_uint64_t size;

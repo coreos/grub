@@ -152,9 +152,14 @@ scan (void)
 }
 
 static int
-grub_ofdisk_iterate (int (*hook) (const char *name))
+grub_ofdisk_iterate (int (*hook) (const char *name),
+		     grub_disk_pull_t pull)
 {
   unsigned i;
+
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
+
   scan ();
   
   for (i = 0; i < ARRAY_SIZE (ofdisk_hash); i++)

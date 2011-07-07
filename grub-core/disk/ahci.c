@@ -453,9 +453,13 @@ grub_ahci_restore_hw (void)
 
 
 static int
-grub_ahci_iterate (int (*hook) (int id, int bus))
+grub_ahci_iterate (int (*hook) (int id, int bus),
+		  grub_disk_pull_t pull)
 {
   struct grub_ahci_device *dev;
+
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
 
   FOR_LIST_ELEMENTS(dev, grub_ahci_devices)
     if (hook (GRUB_SCSI_SUBSYSTEM_AHCI, dev->num))
