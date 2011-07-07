@@ -80,7 +80,7 @@ static grub_dl_t my_mod;
 
 static grub_err_t
 grub_cpio_find_file (struct grub_cpio_data *data, char **name,
-		     grub_uint32_t * ofs)
+		     grub_int32_t *mtime, grub_uint32_t * ofs)
 {
 #ifndef MODE_USTAR
       struct head hd;
@@ -93,6 +93,8 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 	return grub_error (GRUB_ERR_BAD_FS, "invalid cpio archive");
 
       data->size = (((grub_uint32_t) hd.filesize_1) << 16) + hd.filesize_2;
+      if (mtime)
+	*mtime = (((grub_uint32_t) hd.mtime_1) << 16) + hd.mtime_2;
 
       if (hd.namesize & 1)
 	hd.namesize++;
@@ -141,6 +143,8 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       data->dofs = data->hofs + GRUB_DISK_SECTOR_SIZE;
       *ofs = data->dofs + ((data->size + GRUB_DISK_SECTOR_SIZE - 1) &
 			   ~(GRUB_DISK_SECTOR_SIZE - 1));
+      if (mtime)
+	*mtime = grub_strtoul (hd.mtime, NULL, 8);
 #endif
   return GRUB_ERR_NONE;
 }
@@ -206,7 +210,9 @@ grub_cpio_dir (grub_device_t device, const char *path,
   data->hofs = 0;
   while (1)
     {
-      if (grub_cpio_find_file (data, &name, &ofs))
+      grub_int32_t mtime;
+
+      if (grub_cpio_find_file (data, &name, &mtime, &ofs))
 	goto fail;
 
       if (!ofs)
@@ -229,10 +235,11 @@ grub_cpio_dir (grub_device_t device, const char *path,
 	      struct grub_dirhook_info info;
 	      grub_memset (&info, 0, sizeof (info));
 	      info.dir = (p != NULL);
+	      info.mtime = mtime;
+	      info.mtimeset = 1;
 
 	      hook (name + len, &info);
-	      if (prev)
-		grub_free (prev);
+	      grub_free (prev);
 	      prev = name;
 	    }
 	  else
@@ -243,11 +250,8 @@ grub_cpio_dir (grub_device_t device, const char *path,
 
 fail:
 
-  if (prev)
-    grub_free (prev);
-
-  if (data)
-    grub_free (data);
+  grub_free (prev);
+  grub_free (data);
 
   grub_dl_unref (my_mod);
 
@@ -271,7 +275,7 @@ grub_cpio_open (grub_file_t file, const char *name)
   data->hofs = 0;
   while (1)
     {
-      if (grub_cpio_find_file (data, &fn, &ofs))
+      if (grub_cpio_find_file (data, &fn, NULL, &ofs))
 	goto fail;
 
       if (!ofs)
@@ -318,8 +322,7 @@ grub_cpio_open (grub_file_t file, const char *name)
 
 fail:
 
-  if (data)
-    grub_free (data);
+  grub_free (data);
 
   grub_dl_unref (my_mod);
 

@@ -86,6 +86,8 @@ grub_util_raid_getmembers (const char *name, int bootable)
 
   devicelist[j] = NULL;
 
+  close (fd);
+
   return devicelist;
 }
 

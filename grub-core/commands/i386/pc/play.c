@@ -192,7 +192,7 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
       file = grub_file_open (args[0]);
 
       if (! file)
-        return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+        return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", args[0]);
 
       if (grub_file_read (file, &tempo, sizeof (tempo)) != sizeof (tempo))
         {
@@ -227,7 +227,7 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
 
       if (*end)
         /* Was not a number either, assume it was supposed to be a file name.  */
-        return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+        return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", args[0]);
 
       grub_dprintf ("play","tempo = %d\n", tempo);
 

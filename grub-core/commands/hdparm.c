@@ -18,6 +18,7 @@
  */
 
 #include <grub/ata.h>
+#include <grub/scsi.h>
 #include <grub/disk.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
@@ -63,60 +64,64 @@ enum grub_ata_smart_commands
 static int quiet = 0;
 
 static grub_err_t
-grub_hdparm_do_ata_cmd (grub_disk_t disk, grub_uint8_t cmd,
+grub_hdparm_do_ata_cmd (grub_ata_t ata, grub_uint8_t cmd,
 			grub_uint8_t features, grub_uint8_t sectors,
 			void * buffer, int size)
 {
   struct grub_disk_ata_pass_through_parms apt;
   grub_memset (&apt, 0, sizeof (apt));
 
-  apt.taskfile[GRUB_ATA_REG_CMD] = cmd;
-  apt.taskfile[GRUB_ATA_REG_FEATURES] = features;
-  apt.taskfile[GRUB_ATA_REG_SECTORS] = sectors;
+  apt.taskfile.cmd = cmd;
+  apt.taskfile.features = features;
+  apt.taskfile.sectors = sectors;
+  apt.taskfile.disk = 0xE0;
+
   apt.buffer = buffer;
   apt.size = size;
 
-  if (grub_disk_ata_pass_through (disk, &apt))
+  if (ata->dev->readwrite (ata, &apt, 0))
     return grub_errno;
 
   return GRUB_ERR_NONE;
 }
 
 static int
-grub_hdparm_do_check_powermode_cmd (grub_disk_t disk)
+grub_hdparm_do_check_powermode_cmd (grub_ata_t ata)
 {
   struct grub_disk_ata_pass_through_parms apt;
   grub_memset (&apt, 0, sizeof (apt));
 
-  apt.taskfile[GRUB_ATA_REG_CMD] = GRUB_ATA_CMD_CHECK_POWER_MODE;
+  apt.taskfile.cmd = GRUB_ATA_CMD_CHECK_POWER_MODE;
+  apt.taskfile.disk = 0xE0;
 
-  if (grub_disk_ata_pass_through (disk, &apt))
+  if (ata->dev->readwrite (ata, &apt, 0))
     return -1;
 
-  return apt.taskfile[GRUB_ATA_REG_SECTORS];
+  return apt.taskfile.sectors;
 }
 
 static int
-grub_hdparm_do_smart_cmd (grub_disk_t disk, grub_uint8_t features)
+grub_hdparm_do_smart_cmd (grub_ata_t ata, grub_uint8_t features)
 {
   struct grub_disk_ata_pass_through_parms apt;
   grub_memset (&apt, 0, sizeof (apt));
 
-  apt.taskfile[GRUB_ATA_REG_CMD] = GRUB_ATA_CMD_SMART;
-  apt.taskfile[GRUB_ATA_REG_FEATURES] = features;
-  apt.taskfile[GRUB_ATA_REG_LBAMID]  = 0x4f;
-  apt.taskfile[GRUB_ATA_REG_LBAHIGH] = 0xc2;
+  apt.taskfile.cmd = GRUB_ATA_CMD_SMART;
+  apt.taskfile.features = features;
+  apt.taskfile.lba_mid  = 0x4f;
+  apt.taskfile.lba_high = 0xc2;
+  apt.taskfile.disk = 0xE0;
 
-  if (grub_disk_ata_pass_through (disk, &apt))
+  if (ata->dev->readwrite (ata, &apt, 0))
     return -1;
 
   if (features == GRUB_ATA_FEAT_SMART_STATUS)
     {
-      if (   apt.taskfile[GRUB_ATA_REG_LBAMID]  == 0x4f
-          && apt.taskfile[GRUB_ATA_REG_LBAHIGH] == 0xc2)
+      if (   apt.taskfile.lba_mid  == 0x4f
+          && apt.taskfile.lba_high == 0xc2)
 	return 0; /* Good SMART status.  */
-      else if (   apt.taskfile[GRUB_ATA_REG_LBAMID]  == 0xf4
-	       && apt.taskfile[GRUB_ATA_REG_LBAHIGH] == 0x2c)
+      else if (   apt.taskfile.lba_mid  == 0xf4
+	       && apt.taskfile.lba_high == 0x2c)
 	return 1; /* Bad SMART status.  */
       else
 	return -1;
@@ -126,12 +131,12 @@ grub_hdparm_do_smart_cmd (grub_disk_t disk, grub_uint8_t features)
 
 static grub_err_t
 grub_hdparm_simple_cmd (const char * msg,
-			grub_disk_t disk, grub_uint8_t cmd)
+			grub_ata_t ata, grub_uint8_t cmd)
 {
   if (! quiet && msg)
     grub_printf ("%s", msg);
 
-  grub_err_t err = grub_hdparm_do_ata_cmd (disk, cmd, 0, 0, NULL, 0);
+  grub_err_t err = grub_hdparm_do_ata_cmd (ata, cmd, 0, 0, NULL, 0);
 
   if (! quiet && msg)
     grub_printf ("%s\n", ! err ? "" : ": not supported");
@@ -140,7 +145,7 @@ grub_hdparm_simple_cmd (const char * msg,
 
 static grub_err_t
 grub_hdparm_set_val_cmd (const char * msg, int val,
-			 grub_disk_t disk, grub_uint8_t cmd,
+			 grub_ata_t ata, grub_uint8_t cmd,
 			 grub_uint8_t features, grub_uint8_t sectors)
 {
   if (! quiet && msg && *msg)
@@ -151,7 +156,7 @@ grub_hdparm_set_val_cmd (const char * msg, int val,
 	grub_printf ("Disable %s", msg);
     }
 
-  grub_err_t err = grub_hdparm_do_ata_cmd (disk, cmd, features, sectors,
+  grub_err_t err = grub_hdparm_do_ata_cmd (ata, cmd, features, sectors,
 					   NULL, 0);
 
   if (! quiet && msg)
@@ -275,6 +280,7 @@ static grub_err_t
 grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
 {
   struct grub_arg_list *state = ctxt->state;
+  struct grub_ata *ata;
 
   /* Check command line.  */
   if (argc != 1)
@@ -284,9 +290,6 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
   if (! (args[0][0] == '(' && args[0][len - 1] == ')'))
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "argument is not a device name");
   args[0][len - 1] = 0;
-
-  if (! grub_disk_ata_pass_through)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "ATA pass through not available");
 
   int i = 0;
   int apm          = get_int_arg (&state[i++]);
@@ -313,15 +316,37 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "partition not allowed");
     }
 
+  switch (disk->dev->id)
+    {
+    case GRUB_DISK_DEVICE_ATA_ID:
+      ata = disk->data;
+      break;
+    case GRUB_DISK_DEVICE_SCSI_ID:
+      if (((disk->id >> GRUB_SCSI_ID_SUBSYSTEM_SHIFT) & 0xFF)
+	  == GRUB_SCSI_SUBSYSTEM_PATA
+	  || (((disk->id >> GRUB_SCSI_ID_SUBSYSTEM_SHIFT) & 0xFF)
+	      == GRUB_SCSI_SUBSYSTEM_AHCI))
+	{
+	  ata = ((struct grub_scsi *) disk->data)->data;
+	  break;
+	}
+    default:
+      return grub_error (GRUB_ERR_IO, "not an ATA device");
+    }
+    
+
   /* Change settings.  */
   if (aam >= 0)
     grub_hdparm_set_val_cmd ("Automatic Acoustic Management", (aam ? aam : -1),
-      disk, GRUB_ATA_CMD_SET_FEATURES, (aam ? 0x42 : 0xc2), aam);
+			     ata, GRUB_ATA_CMD_SET_FEATURES,
+			     (aam ? 0x42 : 0xc2), aam);
 
   if (apm >= 0)
     grub_hdparm_set_val_cmd ("Advanced Power Management",
-      (apm != 255 ? apm : -1), disk, GRUB_ATA_CMD_SET_FEATURES,
-      (apm != 255 ? 0x05 : 0x85), (apm != 255 ? apm : 0));
+			     (apm != 255 ? apm : -1), ata,
+			     GRUB_ATA_CMD_SET_FEATURES,
+			     (apm != 255 ? 0x05 : 0x85),
+			     (apm != 255 ? apm : 0));
 
   if (standby_tout >= 0)
     {
@@ -332,28 +357,28 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
 	  grub_printf (")");
 	}
       /* The IDLE cmd sets disk to idle mode and configures standby timer.  */
-      grub_hdparm_set_val_cmd ("", -1, disk, GRUB_ATA_CMD_IDLE, 0, standby_tout);
+      grub_hdparm_set_val_cmd ("", -1, ata, GRUB_ATA_CMD_IDLE, 0, standby_tout);
     }
 
   if (enable_smart >= 0)
     {
       if (! quiet)
 	grub_printf ("%sable SMART operations", (enable_smart ? "En" : "Dis"));
-      int err = grub_hdparm_do_smart_cmd (disk, (enable_smart ?
+      int err = grub_hdparm_do_smart_cmd (ata, (enable_smart ?
 	          GRUB_ATA_FEAT_SMART_ENABLE : GRUB_ATA_FEAT_SMART_DISABLE));
       if (! quiet)
 	grub_printf ("%s\n", err ? ": not supported" : "");
     }
 
   if (sec_freeze)
-    grub_hdparm_simple_cmd ("Freeze security settings", disk,
+    grub_hdparm_simple_cmd ("Freeze security settings", ata,
                             GRUB_ATA_CMD_SECURITY_FREEZE_LOCK);
 
   /* Print/dump IDENTIFY.  */
   if (ident || dumpid)
     {
       char buf[GRUB_DISK_SECTOR_SIZE];
-      if (grub_hdparm_do_ata_cmd (disk, GRUB_ATA_CMD_IDENTIFY_DEVICE,
+      if (grub_hdparm_do_ata_cmd (ata, GRUB_ATA_CMD_IDENTIFY_DEVICE,
           0, 0, buf, sizeof (buf)))
 	grub_printf ("Cannot read ATA IDENTIFY data\n");
       else
@@ -369,7 +394,7 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
   if (power)
     {
       grub_printf ("Disk power mode is: ");
-      int mode = grub_hdparm_do_check_powermode_cmd (disk);
+      int mode = grub_hdparm_do_check_powermode_cmd (ata);
       if (mode < 0)
         grub_printf ("unknown\n");
       else
@@ -385,7 +410,7 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
     {
       if (! quiet)
 	grub_printf ("SMART status is: ");
-      int err = grub_hdparm_do_smart_cmd (disk, GRUB_ATA_FEAT_SMART_STATUS);
+      int err = grub_hdparm_do_smart_cmd (ata, GRUB_ATA_FEAT_SMART_STATUS);
       if (! quiet)
 	grub_printf ("%s\n", (err  < 0 ? "unknown" :
 	                      err == 0 ? "OK" : "*BAD*"));
@@ -394,11 +419,11 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
 
   /* Change power mode.  */
   if (standby_now)
-    grub_hdparm_simple_cmd ("Set disk to standby mode", disk,
+    grub_hdparm_simple_cmd ("Set disk to standby mode", ata,
 			    GRUB_ATA_CMD_STANDBY_IMMEDIATE);
 
   if (sleep_now)
-    grub_hdparm_simple_cmd ("Set disk to sleep mode", disk,
+    grub_hdparm_simple_cmd ("Set disk to sleep mode", ata,
 			    GRUB_ATA_CMD_SLEEP);
 
   grub_disk_close (disk);

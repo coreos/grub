@@ -185,6 +185,12 @@ grub_usb_device_initialize (grub_usb_device_t dev)
   for (i = 0; i < 8; i++)
     dev->config[i].descconf = NULL;
 
+  if (descdev->configcnt == 0)
+    {
+      err = GRUB_USB_ERR_BADDEVICE;
+      goto fail;
+    }    
+
   for (i = 0; i < descdev->configcnt; i++)
     {
       int pos;

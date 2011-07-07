@@ -220,9 +220,6 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
   /* Now scan visible mounts for the ones we're interested in.  */
   for (i = entry_len - 1; i >= 0; i--)
     {
-      if (entries[i].major != 0)
-	continue; /* not a virtual device */
-
       if (!*entries[i].device)
 	continue;
 
@@ -361,7 +358,7 @@ grub_find_device (const char *dir, dev_t dev)
 
       if (S_ISLNK (st.st_mode)) {
 #ifdef __linux__
-	if (strcmp (dir, "mapper") == 0) {
+	if (strcmp (dir, "mapper") == 0 || strcmp (dir, "/dev/mapper") == 0) {
 	  /* Follow symbolic links under /dev/mapper/; the canonical name
 	     may be something like /dev/dm-0, but the names under
 	     /dev/mapper/ are more human-readable and so we prefer them if
@@ -612,20 +609,31 @@ grub_guess_root_device (const char *dir)
 
   if (os_dev)
     {
-      if (stat (os_dev, &st) >= 0)
-	dev = st.st_rdev;
-      else
-	grub_util_error ("cannot stat `%s'", os_dev);
-      free (os_dev);
-    }
-  else
-    {
-      if (stat (dir, &st) >= 0)
-	dev = st.st_dev;
-      else
-	grub_util_error ("cannot stat `%s'", dir);
+      char *tmp = os_dev;
+      os_dev = canonicalize_file_name (os_dev);
+      free (tmp);
     }
 
+  if (os_dev)
+    {
+      int dm = (strncmp (os_dev, "/dev/dm-", sizeof ("/dev/dm-") - 1) == 0);
+      int root = (strcmp (os_dev, "/dev/root") == 0);
+      if (!dm && !root)
+	return os_dev;
+      if (stat (os_dev, &st) >= 0)
+	{
+	  free (os_dev);
+	  dev = st.st_rdev;
+	  return grub_find_device (dm ? "/dev/mapper" : "/dev", dev);
+	}
+      free (os_dev);
+    }
+
+  if (stat (dir, &st) < 0)
+    grub_util_error ("cannot stat `%s'", dir);
+
+  dev = st.st_dev;
+  
 #ifdef __CYGWIN__
   /* Cygwin specific function.  */
   os_dev = grub_find_device (dir, dev);

@@ -57,6 +57,7 @@ grub_chainloader_unload (void)
   grub_free (file_path);
   grub_free (cmdline);
   cmdline = 0;
+  file_path = 0;
 
   grub_dl_unref (my_mod);
   return GRUB_ERR_NONE;
@@ -68,7 +69,7 @@ grub_chainloader_boot (void)
   grub_efi_boot_services_t *b;
   grub_efi_status_t status;
   grub_efi_uintn_t exit_data_size;
-  grub_efi_char16_t *exit_data;
+  grub_efi_char16_t *exit_data = NULL;
 
   b = grub_efi_system_table->boot_services;
   status = efi_call_3 (b->start_image, image_handle, &exit_data_size, &exit_data);
@@ -95,7 +96,7 @@ grub_chainloader_boot (void)
   if (exit_data)
     efi_call_1 (b->free_pool, exit_data);
 
-  grub_chainloader_unload ();
+  grub_loader_unset ();
 
   return grub_errno;
 }
@@ -238,6 +239,11 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
   grub_efi_print_device_path (file_path);
 
   size = grub_file_size (file);
+  if (!size)
+    {
+      grub_error (GRUB_ERR_BAD_OS, "file is empty");
+      goto fail;
+    }
   pages = (((grub_efi_uintn_t) size + ((1 << 12) - 1)) >> 12);
 
   status = efi_call_4 (b->allocate_pages, GRUB_EFI_ALLOCATE_ANY_PAGES,
@@ -323,8 +329,7 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
   if (file)
     grub_file_close (file);
 
-  if (file_path)
-    grub_free (file_path);
+  grub_free (file_path);
 
   if (address)
     efi_call_2 (b->free_pages, address, pages);

@@ -41,9 +41,9 @@ struct grub_gui_list_impl
   int item_spacing;
   grub_font_t item_font;
   grub_font_t selected_item_font;
-  grub_gui_color_t item_color;
+  grub_video_rgba_color_t item_color;
   int selected_item_color_set;
-  grub_gui_color_t selected_item_color;
+  grub_video_rgba_color_t selected_item_color;
 
   int draw_scrollbar;
   int need_to_recreate_scrollbar;
@@ -269,13 +269,13 @@ draw_menu (list_impl_t self, int num_shown_items)
         (is_selected && self->selected_item_font
          ? self->selected_item_font
          : self->item_font);
-      grub_gui_color_t text_color =
+      grub_video_rgba_color_t text_color =
         ((is_selected && self->selected_item_color_set)
          ? self->selected_item_color
          : self->item_color);
       grub_font_draw_string (item_title,
                              font,
-                             grub_gui_map_color (text_color),
+                             grub_video_map_rgba_color (text_color),
                              sel_leftpad + self->icon_width + icon_text_space,
                              (item_top + (item_height - (ascent + descent))
                               / 2 + ascent));
@@ -431,7 +431,7 @@ list_set_property (void *vself, const char *name, const char *value)
     }
   else if (grub_strcmp (name, "item_color") == 0)
     {
-      grub_gui_parse_color (value, &self->item_color);
+      grub_video_parse_color (value, &self->item_color);
     }
   else if (grub_strcmp (name, "selected_item_color") == 0)
     {
@@ -441,7 +441,7 @@ list_set_property (void *vself, const char *name, const char *value)
         }
       else
         {
-          if (grub_gui_parse_color (value, &self->selected_item_color)
+          if (grub_video_parse_color (value, &self->selected_item_color)
               == GRUB_ERR_NONE)
             self->selected_item_color_set = 1;
         }
@@ -564,7 +564,7 @@ grub_gui_list_new (void)
 {
   list_impl_t self;
   grub_font_t default_font;
-  grub_gui_color_t default_fg_color;
+  grub_video_rgba_color_t default_fg_color;
 
   self = grub_zalloc (sizeof (*self));
   if (! self)
@@ -576,7 +576,7 @@ grub_gui_list_new (void)
   self->visible = 1;
 
   default_font = grub_font_get ("Unknown Regular 16");
-  default_fg_color = grub_gui_color_rgb (0, 0, 0);
+  default_fg_color = grub_video_rgba_color_rgb (0, 0, 0);
 
   self->icon_width = 32;
   self->icon_height = 32;

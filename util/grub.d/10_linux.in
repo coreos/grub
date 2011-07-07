@@ -21,7 +21,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
 libdir=@libdir@
-. ${libdir}/grub/grub-mkconfig_lib
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR=@localedir@
@@ -98,10 +98,21 @@ EOF
 EOF
   fi
 
-  if [ -z "${prepare_boot_cache}" ]; then
-    prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
+  cat << EOF
+	insmod gzio
+EOF
+
+  if [ x$dirname = x/ ]; then
+    if [ -z "${prepare_root_cache}" ]; then
+      prepare_root_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/")"
+    fi
+    printf '%s\n' "${prepare_root_cache}"
+  else
+    if [ -z "${prepare_boot_cache}" ]; then
+      prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
+    fi
+    printf '%s\n' "${prepare_boot_cache}"
   fi
-  printf '%s\n' "${prepare_boot_cache}"
   message="$(gettext_printf "Loading Linux %s ..." ${version})"
   cat << EOF
 	echo	'$message'
@@ -131,6 +142,7 @@ case x`uname -m` in
 esac
 
 prepare_boot_cache=
+prepare_root_cache=
 
 while [ "x$list" != "x" ] ; do
   linux=`version_find_latest $list`

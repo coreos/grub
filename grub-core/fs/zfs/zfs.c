@@ -51,6 +51,7 @@
 #include <grub/zfs/sa_impl.h>
 #include <grub/zfs/dsl_dir.h>
 #include <grub/zfs/dsl_dataset.h>
+#include <grub/deflate.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -163,13 +164,30 @@ struct grub_zfs_data
   grub_disk_addr_t vdev_phys_sector;
 };
 
+static grub_err_t 
+zlib_decompress (void *s, void *d,
+		 grub_size_t slen, grub_size_t dlen)
+{
+  if (grub_zlib_decompress (s, slen, 0, d, dlen) < 0)
+    return grub_errno;
+  return GRUB_ERR_NONE;
+}
+
 static decomp_entry_t decomp_table[ZIO_COMPRESS_FUNCTIONS] = {
   {"inherit", NULL},		/* ZIO_COMPRESS_INHERIT */
   {"on", lzjb_decompress},	/* ZIO_COMPRESS_ON */
   {"off", NULL},		/* ZIO_COMPRESS_OFF */
   {"lzjb", lzjb_decompress},	/* ZIO_COMPRESS_LZJB */
   {"empty", NULL},		/* ZIO_COMPRESS_EMPTY */
-  {"gzip", NULL},		/* ZIO_COMPRESS_GZIP */
+  {"gzip-1", zlib_decompress},  /* ZIO_COMPRESS_GZIP1 */
+  {"gzip-2", zlib_decompress},  /* ZIO_COMPRESS_GZIP2 */
+  {"gzip-3", zlib_decompress},  /* ZIO_COMPRESS_GZIP3 */
+  {"gzip-4", zlib_decompress},  /* ZIO_COMPRESS_GZIP4 */
+  {"gzip-5", zlib_decompress},  /* ZIO_COMPRESS_GZIP5 */
+  {"gzip-6", zlib_decompress},  /* ZIO_COMPRESS_GZIP6 */
+  {"gzip-7", zlib_decompress},  /* ZIO_COMPRESS_GZIP7 */
+  {"gzip-8", zlib_decompress},  /* ZIO_COMPRESS_GZIP8 */
+  {"gzip-9", zlib_decompress},  /* ZIO_COMPRESS_GZIP9 */
 };
 
 static grub_err_t zio_read_data (blkptr_t * bp, grub_zfs_endian_t endian,
@@ -527,7 +545,7 @@ zio_read (blkptr_t * bp, grub_zfs_endian_t endian, void **buf,
   *buf = NULL;
 
   checksum = (grub_zfs_to_cpu64((bp)->blk_prop, endian) >> 40) & 0xff;
-  comp = (grub_zfs_to_cpu64((bp)->blk_prop, endian)>>32) & 0x7;
+  comp = (grub_zfs_to_cpu64((bp)->blk_prop, endian)>>32) & 0xff;
   lsize = (BP_IS_HOLE(bp) ? 0 :
 	   (((grub_zfs_to_cpu64 ((bp)->blk_prop, endian) & 0xffff) + 1)
 	    << SPA_MINBLOCKSHIFT));

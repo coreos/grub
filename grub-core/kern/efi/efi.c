@@ -24,6 +24,7 @@
 #include <grub/efi/console_control.h>
 #include <grub/efi/pe32.h>
 #include <grub/machine/time.h>
+#include <grub/time.h>
 #include <grub/term.h>
 #include <grub/kernel.h>
 #include <grub/mm.h>
@@ -193,8 +194,8 @@ grub_efi_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
   return grub_error (GRUB_ERR_IO, "set_virtual_address_map failed");
 }
 
-grub_uint32_t
-grub_get_rtc (void)
+grub_uint64_t
+grub_rtc_get_time_ms (void)
 {
   grub_efi_time_t time;
   grub_efi_runtime_services_t *r;
@@ -204,9 +205,14 @@ grub_get_rtc (void)
     /* What is possible in this case?  */
     return 0;
 
-  return (((time.minute * 60 + time.second) * 1000
-	   + time.nanosecond / 1000000)
-	  * GRUB_TICKS_PER_SECOND / 1000);
+  return ((time.minute * 60 + time.second) * 1000
+	   + time.nanosecond / 1000000);
+}
+
+grub_uint32_t
+grub_get_rtc (void)
+{
+  return grub_rtc_get_time_ms ();
 }
 
 /* Search the mods section from the PE32/PE32+ image. This code uses
@@ -739,4 +745,52 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 
       dp = (grub_efi_device_path_t *) ((char *) dp + len);
     }
+}
+
+/* Compare device paths.  */
+int
+grub_efi_compare_device_paths (const grub_efi_device_path_t *dp1,
+			       const grub_efi_device_path_t *dp2)
+{
+  if (! dp1 || ! dp2)
+    /* Return non-zero.  */
+    return 1;
+
+  while (1)
+    {
+      grub_efi_uint8_t type1, type2;
+      grub_efi_uint8_t subtype1, subtype2;
+      grub_efi_uint16_t len1, len2;
+      int ret;
+
+      type1 = GRUB_EFI_DEVICE_PATH_TYPE (dp1);
+      type2 = GRUB_EFI_DEVICE_PATH_TYPE (dp2);
+
+      if (type1 != type2)
+	return (int) type2 - (int) type1;
+
+      subtype1 = GRUB_EFI_DEVICE_PATH_SUBTYPE (dp1);
+      subtype2 = GRUB_EFI_DEVICE_PATH_SUBTYPE (dp2);
+
+      if (subtype1 != subtype2)
+	return (int) subtype1 - (int) subtype2;
+
+      len1 = GRUB_EFI_DEVICE_PATH_LENGTH (dp1);
+      len2 = GRUB_EFI_DEVICE_PATH_LENGTH (dp2);
+
+      if (len1 != len2)
+	return (int) len1 - (int) len2;
+
+      ret = grub_memcmp (dp1, dp2, len1);
+      if (ret != 0)
+	return ret;
+
+      if (GRUB_EFI_END_ENTIRE_DEVICE_PATH (dp1))
+	break;
+
+      dp1 = (grub_efi_device_path_t *) ((char *) dp1 + len1);
+      dp2 = (grub_efi_device_path_t *) ((char *) dp2 + len2);
+    }
+
+  return 0;
 }

@@ -95,6 +95,20 @@ FUNCTION(efi_wrap_6)
 	addq $64, %rsp
 	ret
 
+FUNCTION(efi_wrap_7)
+	subq $96, %rsp
+	mov 96+16(%rsp), %rax
+	mov %rax, 48(%rsp)
+	mov 96+8(%rsp), %rax
+	mov %rax, 40(%rsp)
+	mov %r9, 32(%rsp)
+	mov %r8, %r9
+	mov %rcx, %r8
+	mov %rsi, %rcx
+	call *%rdi
+	addq $96, %rsp
+	ret
+
 FUNCTION(efi_wrap_10)
 	subq $96, %rsp
 	mov 96+40(%rsp), %rax

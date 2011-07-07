@@ -528,21 +528,15 @@ system (@pxref{Obtaining and Building GRUB}). You can do this either
 from the source tarball, or as a package for your OS.
 
 After you have done that, you need to install the boot loader on a
-drive (floppy or hard disk). There are two ways of doing that - either
-using the utility @command{grub-install} (@pxref{Invoking
-grub-install}) on a UNIX-like OS, or by running GRUB itself from a
-floppy. These are quite similar, however the utility might probe a
-wrong BIOS drive, so you should be careful.
-
-Also, if you install GRUB on a UNIX-like OS, please make sure that you
-have an emergency boot disk ready, so that you can rescue your computer
-if, by any chance, your hard drive becomes unusable (unbootable).
+drive (floppy or hard disk) by using the utility
+@command{grub-install} (@pxref{Invoking grub-install}) on a UNIX-like OS.
 
 GRUB comes with boot images, which are normally put in the directory
-@file{/usr/lib/grub/i386-pc}. Hereafter, the directory where GRUB images are
-initially placed (normally @file{/usr/lib/grub/i386-pc}) will be
+@file{/usr/lib/grub/<cpu>-<platform>} (for BIOS-based machines
+@file{/usr/lib/grub/i386-pc}). Hereafter, the directory where GRUB images are
+initially placed (normally @file{/usr/lib/grub/<cpu>-<platform>}) will be
 called the @dfn{image directory}, and the directory where the boot
-loader needs to find them (usually @file{/boot/grub}) will be called
+loader needs to find them (usually @file{/boot}) will be called
 the @dfn{boot directory}.
 
 @menu
@@ -556,27 +550,18 @@ the @dfn{boot directory}.
 @node Installing GRUB using grub-install
 @section Installing GRUB using grub-install
 
-@strong{Caution:} This procedure is definitely less safe, because
-there are several ways in which your computer can become
-unbootable. For example, most operating systems don't tell GRUB how to
-map BIOS drives to OS devices correctly---GRUB merely @dfn{guesses}
-the mapping. This will succeed in most cases, but not
-always. Therefore, GRUB provides you with a map file called the
-@dfn{device map}, which you must fix if it is wrong. @xref{Device
-map}, for more details.
-
 For information on where GRUB should be installed on PC BIOS platforms,
 @pxref{BIOS installation}.
 
-If you still do want to install GRUB under a UNIX-like OS (such
+In order to install GRUB under a UNIX-like OS (such
 as @sc{gnu}), invoke the program @command{grub-install} (@pxref{Invoking
 grub-install}) as the superuser (@dfn{root}).
 
 The usage is basically very simple. You only need to specify one
 argument to the program, namely, where to install the boot loader. The
-argument can be either a device file (like @samp{/dev/hda}) or a
-partition specified in GRUB's notation. For example, under Linux the
-following will install GRUB into the MBR of the first IDE disk:
+argument has to be either a device file (like @samp{/dev/hda}).
+For example, under Linux the following will install GRUB into the MBR
+of the first IDE disk:
 
 @example
 # @kbd{grub-install /dev/hda}
@@ -588,36 +573,21 @@ Likewise, under GNU/Hurd, this has the same effect:
 # @kbd{grub-install /dev/hd0}
 @end example
 
-But all the above examples assume that GRUB should use images under
-the root directory. If you want GRUB to use images under a directory
-other than the root directory, you need to specify the option
-@option{--root-directory}. The typical usage is that you create a GRUB
+But all the above examples assume that GRUB should put images under
+the @file{/boot} directory. If you want GRUB to put images under a directory
+other than @file{/boot}, you need to specify the option
+@option{--boot-directory}. The typical usage is that you create a GRUB
 boot floppy with a filesystem. Here is an example:
 
 @example
 @group
 # @kbd{mke2fs /dev/fd0}
 # @kbd{mount -t ext2 /dev/fd0 /mnt}
-# @kbd{grub-install --root-directory=/mnt fd0}
+# @kbd{mkdir /mnt/boot}
+# @kbd{grub-install --boot-directory=/mnt/boot /dev/fd0}
 # @kbd{umount /mnt}
 @end group
 @end example
-
-Another example is when you have a separate boot partition
-which is mounted at @file{/boot}. Since GRUB is a boot loader, it
-doesn't know anything about mountpoints at all. Thus, you need to run
-@command{grub-install} like this:
-
-@example
-# @kbd{grub-install --root-directory=/boot /dev/hda}
-@end example
-
-By the way, as noted above, it is quite difficult to guess BIOS drives
-correctly under a UNIX-like OS. Thus, @command{grub-install} will prompt
-you to check if it could really guess the correct mappings, after the
-installation. The format is defined in @ref{Device map}. Please be
-quite careful. If the output is wrong, it is unlikely that your
-computer will be able to boot with no problem.
 
 Some BIOSes have a bug of exposing the first partition of a USB drive as a
 floppy instead of exposing the USB drive as a hard disk (they call it
@@ -1199,8 +1169,14 @@ NetBSD.
 
 @item GRUB_CMDLINE_XEN
 @itemx GRUB_CMDLINE_XEN_DEFAULT
-As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
-Linux and Xen.
+The values of these options are appended to the values of
+@samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT} for Linux
+and Xen menu entries.
+
+@item GRUB_CMDLINE_LINUX_XEN_REPLACE
+@item GRUB_CMDLINE_LINUX_XEN_REPLACE_DEFAULT
+The values of these options replace the values of @samp{GRUB_CMDLINE_LINUX}
+and @samp{GRUB_CMDLINE_LINUX_DEFAULT} for Linux and Xen menu entries.
 
 @item GRUB_DISABLE_LINUX_UUID
 Normally, @command{grub-mkconfig} will generate menu entries that use
@@ -3966,6 +3942,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab BIOS    @tab Coreboot
 @item BIOS chainloading              @tab yes     @tab no (1)
 @item NTLDR                          @tab yes     @tab no (1)
+@item Freedos                        @tab yes     @tab no (1)
 @item FreeBSD bootloader             @tab yes     @tab crashes (1)
 @item 32-bit kFreeBSD                @tab yes     @tab crashes (2,6)
 @item 64-bit kFreeBSD                @tab yes     @tab crashes (2,6)
@@ -3990,6 +3967,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab Multiboot    @tab Qemu 
 @item BIOS chainloading              @tab no (1)       @tab no (1)
 @item NTLDR                          @tab no (1)       @tab no (1)
+@item FreeDOS                        @tab no (1)       @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)  @tab crashes (1)
 @item 32-bit kFreeBSD                @tab crashes (6)  @tab crashes (6)
 @item 64-bit kFreeBSD                @tab crashes (6)  @tab crashes (6)
@@ -4014,6 +3992,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab 32-bit EFI    @tab 64-bit EFI
 @item BIOS chainloading              @tab no (1)        @tab no (1)
 @item NTLDR                          @tab no (1)        @tab no (1)
+@item FreeDOS                        @tab no (1)        @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)   @tab crashes (1)
 @item 32-bit kFreeBSD                @tab headless      @tab headless
 @item 64-bit kFreeBSD                @tab headless      @tab headless
@@ -4038,6 +4017,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab IEEE1275
 @item BIOS chainloading              @tab no (1)
 @item NTLDR                          @tab no (1)
+@item FreeDOS                        @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)
 @item 32-bit kFreeBSD                @tab crashes (6)
 @item 64-bit kFreeBSD                @tab crashes (6)
@@ -4127,6 +4107,8 @@ device), then you can correct this and enter normal mode manually:
 @group
 # Inspect the current prefix (and other preset variables):
 set
+# Find out which devices are available:
+ls
 # Set to the correct value, which might be something like this:
 set prefix=(hd0,1)/grub
 set root=(hd0,1)
@@ -4193,15 +4175,28 @@ Print a summary of the command-line options and exit.
 @item --version
 Print the version number of GRUB and exit.
 
-@item --root-directory=@var{dir}
-Install GRUB images under the directory @var{dir} instead of the root
-directory. This option is useful when you want to install GRUB into a
-separate partition or a removable disk. Here is an example in which
-you have a separate @dfn{boot} partition which is mounted on
-@file{/boot}:
+@item --boot-directory=@var{dir}
+Install GRUB images under the directory @file{@var{dir}/grub/}
+This option is useful when you want to install GRUB into a
+separate partition or a removable disk.
+If this option is not specified then it defaults to @file{/boot}, so
 
 @example
-@kbd{grub-install --root-directory=/boot hd0}
+@kbd{grub-install /dev/sda}
+@end example
+
+is equivalent to
+
+@example
+@kbd{grub-install --boot-directory=/boot/ /dev/sda}
+@end example
+
+Here is an example in which you have a separate @dfn{boot} partition which is 
+mounted on
+@file{/mnt/boot}:
+
+@example
+@kbd{grub-install --boot-directory=/mnt/boot /dev/sdb}
 @end example
 
 @item --recheck
@@ -4335,11 +4330,11 @@ how to get the latest version.
 @end quotation
 
 GRUB is available from the GNU alpha archive site
-@uref{ftp://alpha.gnu.org/gnu/grub} or any of its mirrors. The file
+@uref{ftp://ftp.gnu.org/gnu/grub} or any of its mirrors. The file
 will be named grub-version.tar.gz. The current version is
 @value{VERSION}, so the file you should grab is:
 
-@uref{ftp://alpha.gnu.org/gnu/grub/grub-@value{VERSION}.tar.gz}
+@uref{ftp://ftp.gnu.org/gnu/grub/grub-@value{VERSION}.tar.gz}
 
 To unbundle GRUB use the instruction:
 

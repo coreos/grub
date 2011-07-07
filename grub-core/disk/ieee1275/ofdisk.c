@@ -152,9 +152,14 @@ scan (void)
 }
 
 static int
-grub_ofdisk_iterate (int (*hook) (const char *name))
+grub_ofdisk_iterate (int (*hook) (const char *name),
+		     grub_disk_pull_t pull)
 {
   unsigned i;
+
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
+
   scan ();
   
   for (i = 0; i < ARRAY_SIZE (ofdisk_hash); i++)
@@ -228,7 +233,8 @@ compute_dev_path (const char *name)
 }
 
 static grub_err_t
-grub_ofdisk_open (const char *name, grub_disk_t disk)
+grub_ofdisk_open (const char *name, grub_disk_t disk,
+		  grub_disk_pull_t pull __attribute__ ((unused)))
 {
   grub_ieee1275_phandle_t dev;
   char *devpath;
@@ -243,14 +249,24 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   grub_dprintf ("disk", "Opening `%s'.\n", devpath);
 
   if (grub_ieee1275_finddevice (devpath, &dev))
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read device properties");
+    {
+      grub_free (devpath);
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			 "can't read device properties");
+    }
 
   if (grub_ieee1275_get_property (dev, "device_type", prop, sizeof (prop),
 				  &actual))
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read the device type");
+    {
+      grub_free (devpath);
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read the device type");
+    }
 
   if (grub_strcmp (prop, "block"))
-    return grub_error (GRUB_ERR_BAD_DEVICE, "not a block device");
+    {
+      grub_free (devpath);
+      return grub_error (GRUB_ERR_BAD_DEVICE, "not a block device");
+    }
 
   /* XXX: There is no property to read the number of blocks.  There
      should be a property `#blocks', but it is not there.  Perhaps it

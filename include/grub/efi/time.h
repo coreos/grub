@@ -21,8 +21,7 @@
 
 #include <grub/symbol.h>
 
-/* This is destined to overflow when one hour passes by.  */
-#define GRUB_TICKS_PER_SECOND	((1UL << 31) / 60 / 60 * 2)
+#define GRUB_TICKS_PER_SECOND	1000
 
 /* Return the real time in ticks.  */
 grub_uint32_t EXPORT_FUNC (grub_get_rtc) (void);

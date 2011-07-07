@@ -26,6 +26,7 @@
 #include <grub/err.h>
 #include <grub/dl.h>
 #include <grub/charset.h>
+#include <grub/fat.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -50,52 +51,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 				 | GRUB_FAT_ATTR_DIRECTORY \
 				 | GRUB_FAT_ATTR_ARCHIVE \
 				 | GRUB_FAT_ATTR_VOLUME_ID)
-
-struct grub_fat_bpb
-{
-  grub_uint8_t jmp_boot[3];
-  grub_uint8_t oem_name[8];
-  grub_uint16_t bytes_per_sector;
-  grub_uint8_t sectors_per_cluster;
-  grub_uint16_t num_reserved_sectors;
-  grub_uint8_t num_fats;
-  grub_uint16_t num_root_entries;
-  grub_uint16_t num_total_sectors_16;
-  grub_uint8_t media;
-  grub_uint16_t sectors_per_fat_16;
-  grub_uint16_t sectors_per_track;
-  grub_uint16_t num_heads;
-  grub_uint32_t num_hidden_sectors;
-  grub_uint32_t num_total_sectors_32;
-  union
-  {
-    struct
-    {
-      grub_uint8_t num_ph_drive;
-      grub_uint8_t reserved;
-      grub_uint8_t boot_sig;
-      grub_uint32_t num_serial;
-      grub_uint8_t label[11];
-      grub_uint8_t fstype[8];
-    } __attribute__ ((packed)) fat12_or_fat16;
-    struct
-    {
-      grub_uint32_t sectors_per_fat_32;
-      grub_uint16_t extended_flags;
-      grub_uint16_t fs_version;
-      grub_uint32_t root_cluster;
-      grub_uint16_t fs_info;
-      grub_uint16_t backup_boot_sector;
-      grub_uint8_t reserved[12];
-      grub_uint8_t num_ph_drive;
-      grub_uint8_t reserved1;
-      grub_uint8_t boot_sig;
-      grub_uint32_t num_serial;
-      grub_uint8_t label[11];
-      grub_uint8_t fstype[8];
-    } __attribute__ ((packed)) fat32;
-  } __attribute__ ((packed)) version_specific;
-} __attribute__ ((packed));
 
 struct grub_fat_dir_entry
 {
@@ -610,6 +565,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 				const struct grub_dirhook_info *info))
 {
   char *dirname, *dirp;
+  char *origpath = NULL;
   int call_hook;
   int found = 0;
 
@@ -650,6 +606,10 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
       return 0;
     }
 
+  origpath = grub_strdup (path);
+  if (!origpath)
+    return 0;
+
   /* Extract a directory name.  */
   while (*path == '/')
     path++;
@@ -661,7 +621,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
       dirname = grub_malloc (len + 1);
       if (! dirname)
-	return 0;
+	goto fail;
 
       grub_memcpy (dirname, path, len);
       dirname[len] = '\0';
@@ -674,9 +634,11 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
   grub_fat_iterate_dir (disk, data, iter_hook);
   if (grub_errno == GRUB_ERR_NONE && ! found && !call_hook)
-    grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+    grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", origpath);
 
+ fail:
   grub_free (dirname);
+  grub_free (origpath);
 
   return found ? dirp : 0;
 }

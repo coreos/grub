@@ -26,6 +26,7 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 #include <grub/charset.h>
+#include <grub/datetime.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -545,8 +546,7 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
     }
 
 fail:
-  if (buf)
-    grub_free (buf);
+  grub_free (buf);
 
   return 0;
 }
@@ -885,6 +885,8 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 
 	      type = ((dirent.characteristics & GRUB_UDF_FID_CHAR_DIRECTORY) ?
 		      (GRUB_FSHELP_DIR) : (GRUB_FSHELP_REG));
+	      if (child->fe.icbtag.file_type == GRUB_UDF_ICBTAG_TYPE_SYMLINK)
+		type = GRUB_FSHELP_SYMLINK;
 
 	      if ((grub_udf_read_file (dir, 0, offset,
 				       dirent.file_ident_length,
@@ -912,6 +914,25 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
   return 0;
 }
 
+static char *
+grub_ufs_read_symlink (grub_fshelp_node_t node)
+{
+  grub_size_t sz = U64 (node->fe.file_size);
+  grub_uint8_t *raw;
+  char *ret;
+
+  if (sz < 4)
+    return NULL;
+  raw = grub_malloc (sz - 4);
+  if (!raw)
+    return NULL;
+  if (grub_udf_read_file (node, NULL, 4, sz - 4, (char *) raw) < 0)
+    return NULL;
+  ret = read_string (raw, sz - 4);
+  grub_free (raw);
+  return ret;
+}
+
 static grub_err_t
 grub_udf_dir (grub_device_t device, const char *path,
 	      int (*hook) (const char *filename,
@@ -930,8 +951,36 @@ grub_udf_dir (grub_device_t device, const char *path,
 				grub_fshelp_node_t node)
   {
       struct grub_dirhook_info info;
+      const struct grub_udf_timestamp *tstamp = NULL;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      if (U16 (node->fe.tag.tag_ident) == GRUB_UDF_TAG_IDENT_FE)
+	tstamp = &node->fe.modification_time;
+      else if (U16 (node->fe.tag.tag_ident) == GRUB_UDF_TAG_IDENT_EFE)
+	tstamp = &node->efe.modification_time;
+
+      if (tstamp && (U16 (tstamp->type_and_timezone) & 0xf000) == 0x1000)
+	{
+	  grub_int16_t tz;
+	  struct grub_datetime datetime;
+
+	  datetime.year = U16 (tstamp->year);
+	  datetime.month = tstamp->month;
+	  datetime.day = tstamp->day;
+	  datetime.hour = tstamp->hour;
+	  datetime.minute = tstamp->minute;
+	  datetime.second = tstamp->second;
+
+	  tz = U16 (tstamp->type_and_timezone) & 0xfff;
+	  if (tz & 0x800)
+	    tz |= 0xf000;
+	  if (tz == -2047)
+	    tz = 0;
+
+	  info.mtimeset = !!grub_datetime2unixtime (&datetime, &info.mtime);
+  
+	  info.mtime -= 60 * tz;
+	}
       grub_free (node);
       return hook (filename, &info);
   }
@@ -947,7 +996,8 @@ grub_udf_dir (grub_device_t device, const char *path,
 
   if (grub_fshelp_find_file (path, &rootnode,
 			     &foundnode,
-			     grub_udf_iterate_dir, 0, GRUB_FSHELP_DIR))
+			     grub_udf_iterate_dir, grub_ufs_read_symlink,
+			     GRUB_FSHELP_DIR))
     goto fail;
 
   grub_udf_iterate_dir (foundnode, iterate);
@@ -981,7 +1031,8 @@ grub_udf_open (struct grub_file *file, const char *name)
 
   if (grub_fshelp_find_file (name, &rootnode,
 			     &foundnode,
-			     grub_udf_iterate_dir, 0, GRUB_FSHELP_REG))
+			     grub_udf_iterate_dir, grub_ufs_read_symlink,
+			     GRUB_FSHELP_REG))
     goto fail;
 
   file->data = foundnode;

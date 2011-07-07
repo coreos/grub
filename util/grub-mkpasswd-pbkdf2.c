@@ -248,7 +248,7 @@ main (int argc, char *argv[])
   {
     FILE *f;
     size_t rd;
-    f = fopen ("/dev/random", "rb");
+    f = fopen ("/dev/urandom", "rb");
     if (!f)
       {
 	memset (pass1, 0, strlen (pass1));
@@ -270,7 +270,6 @@ main (int argc, char *argv[])
 	free (bufhex);
 	free (salthex);
 	free (salt);
-	fclose (f);
 	grub_util_error ("couldn't retrieve random data for salt");
       }
     fclose (f);

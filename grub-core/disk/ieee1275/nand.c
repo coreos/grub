@@ -32,7 +32,8 @@ struct grub_nand_data
 };
 
 static int
-grub_nand_iterate (int (*hook) (const char *name))
+grub_nand_iterate (int (*hook) (const char *name),
+		   grub_disk_pull_t pull)
 {
   auto int dev_iterate (struct grub_ieee1275_devalias *alias);
   int dev_iterate (struct grub_ieee1275_devalias *alias)
@@ -46,6 +47,9 @@ grub_nand_iterate (int (*hook) (const char *name))
       return 0;
     }
 
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
+
   return grub_devalias_iterate (dev_iterate);
 }
 
@@ -54,7 +58,8 @@ grub_nand_read (grub_disk_t disk, grub_disk_addr_t sector,
                 grub_size_t size, char *buf);
 
 static grub_err_t
-grub_nand_open (const char *name, grub_disk_t disk)
+grub_nand_open (const char *name, grub_disk_t disk,
+		grub_disk_pull_t pull __attribute__ ((unused)))
 {
   grub_ieee1275_ihandle_t dev_ihandle = 0;
   struct grub_nand_data *data = 0;

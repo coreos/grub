@@ -35,6 +35,7 @@ library = {
   common_nodist = grub_script.tab.h;
 
   common = grub-core/commands/blocklist.c;
+  common = grub-core/commands/testload.c;
   common = grub-core/commands/extcmd.c;
   common = grub-core/commands/ls.c;
   common = grub-core/disk/dmraid_nvidia.c;
@@ -61,11 +62,14 @@ library = {
   common = grub-core/fs/jfs.c;
   common = grub-core/fs/minix.c;
   common = grub-core/fs/minix2.c;
+  common = grub-core/fs/minix3.c;
   common = grub-core/fs/nilfs2.c;
   common = grub-core/fs/ntfs.c;
   common = grub-core/fs/ntfscomp.c;
   common = grub-core/fs/reiserfs.c;
+  common = grub-core/fs/romfs.c;
   common = grub-core/fs/sfs.c;
+  common = grub-core/fs/squash4.c;
   common = grub-core/fs/tar.c;
   common = grub-core/fs/udf.c;
   common = grub-core/fs/ufs2.c;
@@ -93,6 +97,7 @@ library = {
   common = grub-core/partmap/gpt.c;
   common = grub-core/partmap/msdos.c;
   common = grub-core/partmap/sun.c;
+  common = grub-core/partmap/dvh.c;
   common = grub-core/partmap/sunpc.c;
   common = grub-core/partmap/bsdlabel.c;
   common = grub-core/script/function.c;
@@ -101,6 +106,7 @@ library = {
   common = grub-core/script/script.c;
   common = grub-core/script/argv.c;
   common = grub-core/io/gzio.c;
+  common = grub-core/kern/ia64/dl_helper.c;
 };
 
 program = {
@@ -110,7 +116,7 @@ program = {
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
-  mansection = 1;
+  installdir = noinst;
 };
 
 program = {
@@ -283,6 +289,7 @@ program = {
 program = {
   name = grub-ofpathname;
   installdir = sbin;
+  mansection = 8;
   ieee1275 = util/ieee1275/grub-ofpathname.c;
   ieee1275 = util/ieee1275/ofpath.c;
 
@@ -383,7 +390,8 @@ script = {
   x86 = util/grub-mkrescue.in;
   powerpc_ieee1275 = util/powerpc/ieee1275/grub-mkrescue.in;
   enable = i386_pc;
-  enable = x86_efi;
+  enable = i386_efi;
+  enable = x86_64_efi;
   enable = i386_qemu;
   enable = i386_multiboot;
   enable = i386_coreboot;

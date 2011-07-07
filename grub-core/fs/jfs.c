@@ -155,6 +155,12 @@ struct grub_jfs_leaf_next_dirent
   grub_uint16_t namepart[15];
 } __attribute__ ((packed));
 
+struct grub_jfs_time
+{
+  grub_int32_t sec;
+  grub_int32_t nanosec;
+} __attribute__ ((packed));
+
 struct grub_jfs_inode
 {
   grub_uint32_t stamp;
@@ -164,7 +170,10 @@ struct grub_jfs_inode
   grub_uint64_t size;
   grub_uint8_t unused2[20];
   grub_uint32_t mode;
-  grub_uint8_t unused3[72];
+  struct grub_jfs_time atime;
+  struct grub_jfs_time ctime;
+  struct grub_jfs_time mtime;
+  grub_uint8_t unused3[48];
   grub_uint8_t unused4[96];
 
   union
@@ -690,7 +699,7 @@ grub_jfs_find_file (struct grub_jfs_data *data, const char *path)
     }
 
   grub_jfs_closedir (diro);
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
   return grub_errno;
 }
 
@@ -760,6 +769,8 @@ grub_jfs_dir (grub_device_t device, const char *path,
 
       info.dir = (grub_le_to_cpu32 (inode.mode)
 		  & GRUB_JFS_FILETYPE_MASK) == GRUB_JFS_FILETYPE_DIR;
+      info.mtimeset = 1;
+      info.mtime = grub_le_to_cpu32 (inode.mtime.sec);
       if (hook (diro->name, &info))
 	goto fail;
     }

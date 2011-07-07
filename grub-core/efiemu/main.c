@@ -193,7 +193,7 @@ grub_efiemu_load_file (const char *filename)
 
   file = grub_file_open (filename);
   if (! file)
-    return 0;
+    return grub_errno;
 
   err = grub_efiemu_mm_init ();
   if (err)

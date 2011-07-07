@@ -2348,6 +2348,8 @@ typedef Elf32_Xword Elf_Xword;
 
 #define ELF_ST_BIND(val)	ELF32_ST_BIND(val)
 #define ELF_ST_TYPE(val)	ELF32_ST_TYPE(val)
+#define ELF_ST_INFO(a,b)	ELF32_ST_INFO(a,b)
+
 #define ELF_R_SYM(val)		ELF32_R_SYM(val)
 #define ELF_R_TYPE(val)		ELF32_R_TYPE(val)
 #define ELF_R_INFO(sym, type)	ELF32_R_INFO(sym, type)
@@ -2369,6 +2371,7 @@ typedef Elf64_Xword Elf_Xword;
 
 #define ELF_ST_BIND(val)	ELF64_ST_BIND (val)
 #define ELF_ST_TYPE(val)	ELF64_ST_TYPE (val)
+#define ELF_ST_INFO(a,b)	ELF64_ST_INFO(a,b)
 #define ELF_R_SYM(val)		ELF64_R_SYM(val)
 #define ELF_R_TYPE(val)		ELF64_R_TYPE(val)
 #define ELF_R_INFO(sym, type)	ELF64_R_INFO(sym, type)

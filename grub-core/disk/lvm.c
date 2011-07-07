@@ -304,9 +304,9 @@ read_lv (struct grub_lvm_lv *lv, grub_disk_addr_t sector,
 	  /* This is a striped segment. We have to find the right PV
 	     similar to RAID0. */
 	  struct grub_lvm_node *stripe = seg->nodes;
-	  grub_uint32_t a, b;
+	  grub_uint64_t a, b;
 	  grub_uint64_t seg_offset; /* Offset of the segment in PV device.  */
-	  unsigned int stripenr;
+	  grub_uint64_t stripenr;
 
 	  offset = sector - ((grub_uint64_t) seg->start_extent
 			     * (grub_uint64_t) vg->extent_size);

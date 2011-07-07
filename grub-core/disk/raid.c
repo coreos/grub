@@ -358,7 +358,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
     case 10:
       {
         grub_disk_addr_t read_sector, far_ofs;
-	grub_uint32_t disknr, b, near, far, ofs;
+	grub_uint64_t disknr, b, near, far, ofs;
 
         read_sector = grub_divmod64 (sector, array->chunk_size, &b);
         far = ofs = near = 1;
@@ -464,7 +464,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
     case 6:
       {
 	grub_disk_addr_t read_sector;
-	grub_uint32_t b, p, n, disknr, e;
+	grub_uint64_t b, p, n, disknr, e;
 
         /* n = 1 for level 4 and 5, 2 for level 6.  */
         n = array->level / 3;
@@ -794,6 +794,49 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       grub_util_info ("Found array %s (%s)", array->name,
 		      scanner_name);
 #endif
+
+      {
+	int max_used_number = 0, len, need_new_name = 0;
+	int add_us = 0;
+	len = grub_strlen (array->name);
+	if (len && grub_isdigit (array->name[len-1]))
+	  add_us = 1;
+	for (p = array_list; p != NULL; p = p->next)
+	  {
+	    int cur_num;
+	    char *num, *end;
+	    if (grub_strncmp (p->name, array->name, len) != 0)
+	      continue;
+	    if (p->name[len] == 0)
+	      {
+		need_new_name = 1;
+		continue;
+	      }
+	    if (add_us && p->name[len] != '_')
+	      continue;
+	    if (add_us)
+	      num = p->name + len + 1;
+	    else
+	      num = p->name + len;
+	    if (!grub_isdigit (num[0]))
+	      continue;
+	    cur_num = grub_strtoull (num, &end, 10);
+	    if (end[0])
+	      continue;
+	    if (cur_num > max_used_number)
+	      max_used_number = cur_num;
+	  }
+	if (need_new_name)
+	  {
+	    char *tmp;
+	    tmp = grub_xasprintf ("%s%s%d", array->name, add_us ? "_" : "",
+				  max_used_number + 1);
+	    if (!tmp)
+	      return grub_errno;
+	    grub_free (array->name);
+	    array->name = tmp;
+	  }
+      }
 
       /* Add our new array to the list.  */
       array->next = array_list;

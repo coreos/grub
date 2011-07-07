@@ -297,6 +297,7 @@ check_sas (char *sysfs_path, int *tgt)
 
   free (path);
   free (p);
+  close (fd);
 }
 
 static void
@@ -419,6 +420,7 @@ int main(int argc, char **argv)
 
   of_path = grub_util_devname_to_ofpath (argv[1]);
   printf("%s\n", of_path);
+  free (of_path);
 
   return 0;
 }
