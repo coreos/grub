@@ -412,8 +412,7 @@ grub_ata_iterate (int (*hook_in) (const char *name),
 }
 
 static grub_err_t
-grub_ata_open (const char *name, grub_disk_t disk,
-	       grub_disk_pull_t pull __attribute__ ((unused)))
+grub_ata_open (const char *name, grub_disk_t disk)
 {
   unsigned id, bus;
   struct grub_ata *ata;

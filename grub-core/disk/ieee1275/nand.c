@@ -58,8 +58,7 @@ grub_nand_read (grub_disk_t disk, grub_disk_addr_t sector,
                 grub_size_t size, char *buf);
 
 static grub_err_t
-grub_nand_open (const char *name, grub_disk_t disk,
-		grub_disk_pull_t pull __attribute__ ((unused)))
+grub_nand_open (const char *name, grub_disk_t disk)
 {
   grub_ieee1275_ihandle_t dev_ihandle = 0;
   struct grub_nand_data *data = 0;

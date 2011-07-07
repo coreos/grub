@@ -454,8 +454,7 @@ get_device (struct grub_efidisk_data *devices, int num)
 }
 
 static grub_err_t
-grub_efidisk_open (const char *name, struct grub_disk *disk,
-		   grub_disk_pull_t pull __attribute__ ((unused)))
+grub_efidisk_open (const char *name, struct grub_disk *disk)
 {
   int num;
   struct grub_efidisk_data *d = 0;

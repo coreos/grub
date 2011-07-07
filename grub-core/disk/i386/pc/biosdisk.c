@@ -328,8 +328,7 @@ grub_biosdisk_iterate (int (*hook) (const char *name),
 }
 
 static grub_err_t
-grub_biosdisk_open (const char *name, grub_disk_t disk,
-		    grub_disk_pull_t pull __attribute__ ((unused)))
+grub_biosdisk_open (const char *name, grub_disk_t disk)
 {
   grub_uint64_t total_sectors = 0;
   int drive;

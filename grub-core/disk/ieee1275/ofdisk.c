@@ -233,8 +233,7 @@ compute_dev_path (const char *name)
 }
 
 static grub_err_t
-grub_ofdisk_open (const char *name, grub_disk_t disk,
-		  grub_disk_pull_t pull __attribute__ ((unused)))
+grub_ofdisk_open (const char *name, grub_disk_t disk)
 {
   grub_ieee1275_phandle_t dev;
   char *devpath;

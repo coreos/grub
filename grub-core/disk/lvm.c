@@ -181,8 +181,7 @@ find_lv (const char *name)
 static const char *scan_for = NULL;
 
 static grub_err_t
-grub_lvm_open (const char *name, grub_disk_t disk,
-	       grub_disk_pull_t pull)
+grub_lvm_open (const char *name, grub_disk_t disk)
 {
   struct grub_lvm_lv *lv = NULL;
   int explicit = 0;
@@ -192,8 +191,7 @@ grub_lvm_open (const char *name, grub_disk_t disk,
 
   lv = find_lv (name);
 
-  if (! lv && !scan_depth &&
-      pull == (explicit ? GRUB_DISK_PULL_RESCAN : GRUB_DISK_PULL_RESCAN_UNTYPED))
+  if (! lv && !scan_depth && explicit)
     {
       scan_for = name;
       scan_depth++;

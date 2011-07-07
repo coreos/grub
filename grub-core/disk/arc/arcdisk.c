@@ -79,7 +79,8 @@ arcdisk_hash_add (char *devpath)
 
 
 static int
-grub_arcdisk_iterate (int (*hook_in) (const char *name))
+grub_arcdisk_iterate (int (*hook_in) (const char *name),
+		      grub_disk_pull_t pull)
 {
   auto int hook (const char *name, const struct grub_arc_component *comp);
   int hook (const char *name, const struct grub_arc_component *comp)
@@ -90,6 +91,9 @@ grub_arcdisk_iterate (int (*hook_in) (const char *name))
       return 0;
     return hook_in (name);
   }
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
+
   return grub_arc_iterate_devs (hook, 1);
 }
 

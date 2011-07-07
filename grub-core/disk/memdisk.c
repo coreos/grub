@@ -40,8 +40,7 @@ grub_memdisk_iterate (int (*hook) (const char *name),
 }
 
 static grub_err_t
-grub_memdisk_open (const char *name, grub_disk_t disk,
-		   grub_disk_pull_t pull __attribute__ ((unused)))
+grub_memdisk_open (const char *name, grub_disk_t disk)
 {
   if (grub_strcmp (name, "memdisk"))
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a memdisk");

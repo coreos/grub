@@ -257,7 +257,7 @@ find_array (const char *name)
 }
 
 static grub_err_t
-grub_raid_open (const char *name, grub_disk_t disk, grub_disk_pull_t pull)
+grub_raid_open (const char *name, grub_disk_t disk)
 {
   struct grub_raid_array *array;
   unsigned n;
@@ -268,7 +268,7 @@ grub_raid_open (const char *name, grub_disk_t disk, grub_disk_pull_t pull)
 
   array = find_array (name);
 
-  if (! array && pull == GRUB_DISK_PULL_RESCAN)
+  if (! array)
     {
       scan_devices (name);
       if (grub_errno)

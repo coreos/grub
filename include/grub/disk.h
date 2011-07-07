@@ -56,7 +56,6 @@ typedef enum
     GRUB_DISK_PULL_NONE,
     GRUB_DISK_PULL_REMOVABLE,
     GRUB_DISK_PULL_RESCAN,
-    GRUB_DISK_PULL_RESCAN_UNTYPED,
     GRUB_DISK_PULL_MAX
   } grub_disk_pull_t;
 
@@ -74,8 +73,7 @@ struct grub_disk_dev
 		  grub_disk_pull_t pull);
 
   /* Open the device named NAME, and set up DISK.  */
-  grub_err_t (*open) (const char *name, struct grub_disk *disk,
-		      grub_disk_pull_t pull);
+  grub_err_t (*open) (const char *name, struct grub_disk *disk);
 
   /* Close the disk DISK.  */
   void (*close) (struct grub_disk *disk);

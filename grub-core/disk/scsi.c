@@ -371,8 +371,7 @@ grub_scsi_iterate (int (*hook) (const char *name),
 }
 
 static grub_err_t
-grub_scsi_open (const char *name, grub_disk_t disk,
-		grub_disk_pull_t pull __attribute__ ((unused)))
+grub_scsi_open (const char *name, grub_disk_t disk)
 {
   grub_scsi_dev_t p;
   grub_scsi_t scsi;
