@@ -1,3 +1,32 @@
+2011-07-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove getroot.c from core on emu platform.
+
+	* grub-core/Makefile.core.def (kernel): Remove kern/emu/getroot.c and
+	kern/emu/raid.c.
+	* grub-core/kern/emu/main.c (main): Don't try to guess root device. It's
+	useless.
+	* grub-core/kern/emu/misc.c (get_win32_path): Moved from here...
+	* util/getroot.c (get_win32_path): ... here.
+	* grub-core/kern/emu/misc.c (fini_libzfs): Moved from here...
+	* util/getroot.c (fini_libzfs): ... here.
+	* grub-core/kern/emu/misc.c (grub_get_libzfs_handle): Moved from here...
+	* util/getroot.c (grub_get_libzfs_handle): ... here.
+	* grub-core/kern/emu/misc.c (grub_find_zpool_from_dir):
+	Moved from here...
+	* util/getroot.c (grub_find_zpool_from_dir): ... here.
+	* grub-core/kern/emu/misc.c
+	(grub_make_system_path_relative_to_its_root): Moved from here...
+	* util/getroot.c (grub_make_system_path_relative_to_its_root): ... here.
+	* grub-core/kern/emu/getroot.c: Moved from here ...
+	* util/getroot.c: ... here. All users updated.
+	* grub-core/kern/emu/raid.c: Moved from here ...
+	* util/raid.c: ... here. All users updated.
+
+2011-07-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* po/POTFILES.in: Regenerate.
+
 2011-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix compilation on GNU/Linux.

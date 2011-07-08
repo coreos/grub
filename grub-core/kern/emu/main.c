@@ -111,7 +111,7 @@ usage (int status)
       "\n"
       "GRUB emulator.\n"
       "\n"
-      "  -r, --root-device=DEV     use DEV as the root device [default=guessed]\n"
+      "  -r, --root-device=DEV     use DEV as the root device [default=host]\n"
       "  -m, --device-map=FILE     use FILE as the device map [default=%s]\n"
       "  -d, --directory=DIR       use GRUB files in the directory DIR [default=%s]\n"
       "  -v, --verbose             print verbose messages\n"
@@ -204,24 +204,9 @@ main (int argc, char *argv[])
 
   /* Make sure that there is a root device.  */
   if (! root_dev)
-    {
-      char *device_name = grub_guess_root_device (dir);
-      if (! device_name)
-        grub_util_error ("cannot find a device for %s", dir);
+    root_dev = grub_strdup ("host");
 
-      root_dev = grub_util_get_grub_dev (device_name);
-      if (! root_dev)
-	{
-	  grub_util_info ("guessing the root device failed, because of `%s'",
-			  grub_errmsg);
-	  grub_util_error ("cannot guess the root device. Specify the option `--root-device'");
-	}
-    }
-
-  if (strcmp (root_dev, "host") == 0)
-    dir = xstrdup (dir);
-  else
-    dir = grub_make_system_path_relative_to_its_root (dir);
+  dir = xstrdup (dir);
 
   /* Start GRUB!  */
   if (setjmp (main_env) == 0)
