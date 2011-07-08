@@ -136,7 +136,7 @@ grub_priority_queue_new (grub_size_t elsize,
 
 /* Heap property: pq->cmp (element (pq, p), element (pq, parent (p))) <= 0. */
 grub_err_t
-grub_priority_queue_push (grub_priority_queue_t pq, void *el)
+grub_priority_queue_push (grub_priority_queue_t pq, const void *el)
 {
   grub_size_t p;
   if (pq->used == pq->allocated)

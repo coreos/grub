@@ -31,6 +31,6 @@ grub_priority_queue_t grub_priority_queue_new (grub_size_t elsize,
 void grub_priority_queue_destroy (grub_priority_queue_t pq);
 void *grub_priority_queue_top (grub_priority_queue_t pq);
 void grub_priority_queue_pop (grub_priority_queue_t pq);
-grub_err_t grub_priority_queue_push (grub_priority_queue_t pq, void *el);
+grub_err_t grub_priority_queue_push (grub_priority_queue_t pq, const void *el);
 
 #endif
