@@ -1668,6 +1668,11 @@ module = {
 };
 
 module = {
+  name = priority_queue;
+  common = lib/priority_queue.c;
+};
+
+module = {
   name = time;
   common = commands/time.c;
 };
