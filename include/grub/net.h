@@ -64,8 +64,7 @@ struct grub_net_card_driver
   void (*close) (const struct grub_net_card *dev);
   grub_err_t (*send) (const struct grub_net_card *dev,
 		      struct grub_net_buff *buf);
-  grub_ssize_t (*recv) (const struct grub_net_card *dev,
-			struct grub_net_buff *buf);
+  struct grub_net_buff * (*recv) (const struct grub_net_card *dev);
 };
 
 typedef struct grub_net_packet

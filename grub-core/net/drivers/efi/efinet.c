@@ -42,43 +42,65 @@ send_card_buffer (const struct grub_net_card *dev,
   return GRUB_ERR_NONE;
 }
 
-static grub_ssize_t
-get_card_packet (const struct grub_net_card *dev,
-		 struct grub_net_buff *nb)
+static struct grub_net_buff *
+get_card_packet (const struct grub_net_card *dev)
 {
   grub_efi_simple_network_t *net = dev->efi_net;
   grub_err_t err;
   grub_efi_status_t st;
-  grub_efi_uintn_t bufsize = 1500;
+  grub_efi_uintn_t bufsize = 1536;
+  struct grub_net_buff *nb;
 
-  err = grub_netbuff_clear (nb);
-  if (err)
-    return -1;
+  nb = grub_netbuff_alloc (bufsize);
+  if (!nb)
+    return NULL;
 
-  err = grub_netbuff_put (nb, 1500);
-  if (err)
-    return -1;
+  /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
+     by 4. So that IP header is aligned on 4 bytes. */
+  grub_netbuff_reserve (nb, 2);
+  if (!nb)
+    {
+      grub_netbuff_free (nb);
+      return NULL;
+    }
 
   st = efi_call_7 (net->receive, net, NULL, &bufsize,
 		   nb->data, NULL, NULL, NULL);
   if (st == GRUB_EFI_BUFFER_TOO_SMALL)
     {
-      err = grub_netbuff_put (nb, bufsize - 1500);
-      if (err)
-	return -1;
+      grub_netbuff_free (nb);
+
+      bufsize = ALIGN_UP (bufsize, 32);
+
+      nb = grub_netbuff_alloc (bufsize);
+      if (!nb)
+	return NULL;
+
+      /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
+	 by 4. So that IP header is aligned on 4 bytes. */
+      grub_netbuff_reserve (nb, 2);
+      if (!nb)
+	{
+	  grub_netbuff_free (nb);
+	  return NULL;
+	}
+
       st = efi_call_7 (net->receive, net, NULL, &bufsize,
 		       nb->data, NULL, NULL, NULL);
     }
   if (st != GRUB_EFI_SUCCESS)
     {
-      grub_netbuff_clear (nb);
-      return -1;
+      grub_netbuff_free (nb);
+      return NULL;
     }
-  err = grub_netbuff_unput (nb, (nb->tail - nb->data) - bufsize);
+  err = grub_netbuff_put (nb, bufsize);
   if (err)
-    return -1;
+    {
+      grub_netbuff_free (nb);
+      return NULL;
+    }
 
-  return bufsize;
+  return nb;
 }
 
 static struct grub_net_card_driver efidriver =

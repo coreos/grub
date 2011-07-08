@@ -43,19 +43,34 @@ send_card_buffer (const struct grub_net_card *dev __attribute__ ((unused)),
   return GRUB_ERR_NONE;
 }
 
-static grub_ssize_t
-get_card_packet (const struct grub_net_card *dev __attribute__ ((unused)),
-		 struct grub_net_buff *pack)
+static struct grub_net_buff *
+get_card_packet (const struct grub_net_card *dev __attribute__ ((unused)))
 {
   ssize_t actual;
+  struct grub_net_buff *nb;
 
-  grub_netbuff_clear (pack);
-  actual = read (fd, pack->data, 1500);
+  nb = grub_netbuff_alloc (1536);
+  if (!nb)
+    return NULL;
+
+  /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
+     by 4. So that IP header is aligned on 4 bytes. */
+  grub_netbuff_reserve (nb, 2);
+  if (!nb)
+    {
+      grub_netbuff_free (nb);
+      return NULL;
+    }
+
+  actual = read (fd, nb->data, 1536);
   if (actual < 0)
-    return -1;
-  grub_netbuff_put (pack, actual);
+    {
+      grub_netbuff_free (nb);
+      return NULL;
+    }
+  grub_netbuff_put (nb, actual);
 
-  return actual;
+  return nb;
 }
 
 static struct grub_net_card_driver emudriver = 

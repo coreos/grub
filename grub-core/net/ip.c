@@ -123,6 +123,9 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
   struct grub_net_network_level_interface *inf = NULL;
   grub_net_network_level_address_t source;
 
+  if (((grub_addr_t) nb->data) & 3)
+    grub_fatal ("unaligned %p\n", nb->data);
+
   if ((iph->verhdrlen >> 4) != 4)
     {
       grub_dprintf ("net", "Bad IP version: %d\n", (iph->verhdrlen >> 4));

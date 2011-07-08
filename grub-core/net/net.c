@@ -764,19 +764,10 @@ receive_packets (struct grub_net_card *card)
       /* Maybe should be better have a fixed number of packets for each card
 	 and just mark them as used and not used.  */ 
       struct grub_net_buff *nb;
-      grub_ssize_t actual;
-      nb = grub_netbuff_alloc (1500);
+
+      nb = card->driver->recv (card);
       if (!nb)
 	{
-	  grub_print_error ();
-	  card->last_poll = grub_get_time_ms ();
-	  return;
-	}
-
-      actual = card->driver->recv (card, nb);
-      if (actual < 0)
-	{
-	  grub_netbuff_free (nb);
 	  card->last_poll = grub_get_time_ms ();
 	  break;
 	}
