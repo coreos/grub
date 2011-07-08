@@ -136,6 +136,7 @@ grub_efinet_findcards (void)
       card->driver = &efidriver;
       card->flags = 0;
       card->default_address.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+      card->mtu = net->mode->max_packet_size;
       grub_memcpy (card->default_address.mac,
 		   net->mode->current_address,
 		   sizeof (card->default_address.mac));

@@ -97,6 +97,7 @@ struct grub_net_card
   int opened;
   unsigned idle_poll_delay_ms;
   grub_uint64_t last_poll;
+  grub_size_t mtu;
   union
   {
 #ifdef GRUB_MACHINE_EFI

@@ -345,6 +345,7 @@ GRUB_MOD_INIT(pxe)
   if (i == sizeof (grub_pxe_card.default_address.mac))
     grub_memcpy (grub_pxe_card.default_address.mac, ui->permanent_addr,
 		 sizeof (grub_pxe_card.default_address.mac));
+  grub_pxe_card.mtu = ui->mtu;
 
   grub_pxe_card.default_address.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
