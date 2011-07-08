@@ -1,3 +1,7 @@
+2011-07-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* po/POTFILES.in: Regenerate.
+
 2011-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix compilation on GNU/Linux.
