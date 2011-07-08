@@ -975,6 +975,7 @@ grub_util_pull_device (const char *os_dev)
   switch (ab)
     {
     case GRUB_DEV_ABSTRACTION_GELI:
+#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
       {
 	char *whole;
 	struct gmesh mesh;
@@ -1035,8 +1036,8 @@ grub_util_pull_device (const char *os_dev)
 
 	    grub_free (grdev);
 	  }
-
       }
+#endif
       break;
 
     case GRUB_DEV_ABSTRACTION_LVM:
@@ -1065,14 +1066,14 @@ grub_util_pull_device (const char *os_dev)
 		grub_util_pull_device (subdev);
 	      }
 	  }
-	if (ab == GRUB_DEV_ABSTRACTION_CRYPTO && lastsubdev)
+	if (ab == GRUB_DEV_ABSTRACTION_LUKS && lastsubdev)
 	  {
 	    char *grdev = grub_util_get_grub_dev (lastsubdev);
 	    dm_tree_free (tree);
 	    if (grdev)
 	      {
 		grub_err_t err;
-		err = grub_luks_cheat_mount (grdev, os_dev);
+		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
 		if (err)
 		  grub_util_error ("Can't mount crypto: %s", grub_errmsg);
 	      }
@@ -1141,6 +1142,7 @@ grub_util_get_grub_dev (const char *os_dev)
       break;
 
     case GRUB_DEV_ABSTRACTION_GELI:
+#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
       {
 	char *whole;
 	struct gmesh mesh;
@@ -1187,6 +1189,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	      }
 	  }
       }
+#endif
       break;
 
     case GRUB_DEV_ABSTRACTION_RAID:

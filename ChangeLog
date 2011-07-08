@@ -1,4 +1,14 @@
 2011-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix compilation on GNU/Linux.
+
+	* grub-core/kern/emu/getroot.c (grub_util_pull_device) [!FreeBSD]:
+	Disable geli.
+	(grub_util_get_grub_dev) [!FreeBSD]: Likewise.
+	(grub_util_pull_device) [HAVE_DEVICE_MAPPER]: Fix const and func name.
+	* grub-core/disk/cryptodisk.c (grub_cryptodisk_open): Fix proto.
+
+2011-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
 2011-07-07  Michael Gorven  <michael@gorven.za.net>
 2011-07-07  Clemens Fruhwirth <clemens@endorphin.org>
 

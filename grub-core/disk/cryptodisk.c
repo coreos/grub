@@ -413,8 +413,7 @@ grub_cryptodisk_iterate (int (*hook) (const char *name),
 }
 
 static grub_err_t
-grub_cryptodisk_open (const char *name, grub_disk_t disk,
-		grub_disk_pull_t pull __attribute__ ((unused)))
+grub_cryptodisk_open (const char *name, grub_disk_t disk)
 {
   grub_cryptodisk_t dev;
 
