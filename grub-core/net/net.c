@@ -781,6 +781,12 @@ receive_packets (struct grub_net_card *card)
 	  break;
 	}
       grub_net_recv_ethernet_packet (nb, card);
+      if (grub_errno)
+	{
+	  grub_dprintf ("net", "error receiving: %d: %s\n", grub_errno,
+			grub_errmsg);
+	  grub_errno = GRUB_ERR_NONE;
+	}
     }
   grub_print_error ();
 }

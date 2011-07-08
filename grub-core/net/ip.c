@@ -35,8 +35,15 @@ struct iphdr {
   grub_uint8_t protocol;
   grub_uint16_t chksum;
   grub_uint32_t src;
-  grub_uint32_t  dest;
+  grub_uint32_t dest;
 } __attribute__ ((packed)) ;
+
+enum
+{
+  DONT_FRAGMENT =  0x4000,
+  MORE_FRAGMENTS = 0x2000,
+  OFFSET_MASK =    0x1fff
+};
 
 struct ip6hdr
 {
@@ -116,9 +123,61 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
   struct grub_net_network_level_interface *inf = NULL;
   grub_net_network_level_address_t source;
 
-  err = grub_netbuff_pull (nb, sizeof (*iph));
+  if ((iph->verhdrlen >> 4) != 4)
+    {
+      grub_dprintf ("net", "Bad IP version: %d\n", (iph->verhdrlen >> 4));
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
+
+  if ((iph->verhdrlen & 0xf) < 5)
+    {
+      grub_dprintf ("net", "IP header too short: %d\n",
+		    (iph->verhdrlen & 0xf));
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
+
+  err = grub_netbuff_pull (nb, (iph->verhdrlen & 0xf) * sizeof (grub_uint32_t));
   if (err)
-    return err;
+    {
+      grub_netbuff_free (nb);
+      return err;
+    }
+
+  /* Check size*/
+  {
+    grub_size_t expected_size = grub_be_to_cpu16 (iph->len);
+    grub_size_t actual_size = (nb->tail - nb->data
+			       + (iph->verhdrlen & 0xf)
+			       * sizeof (grub_uint32_t));
+    if (actual_size > expected_size)
+      {
+	err = grub_netbuff_unput (nb, actual_size - expected_size);
+	if (err)
+	  {
+	    grub_netbuff_free (nb);
+	    return err;
+	  }
+      }
+    if (actual_size < expected_size)
+      {
+	grub_dprintf ("net", "Cut IP packet actual: %" PRIuGRUB_SIZE 
+		      ", expected %" PRIuGRUB_SIZE "\n", actual_size,
+		      expected_size);
+	grub_netbuff_free (nb);
+	return GRUB_ERR_NONE;
+      }
+  }
+
+  /* Fragmented packet. Bad.  */
+  if (((grub_be_to_cpu16 (iph->frags) & MORE_FRAGMENTS) != 0)
+      || (grub_be_to_cpu16 (iph->frags) & OFFSET_MASK) != 0)
+    {
+      /* FIXME. */
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
 
   /* DHCP needs special treatment since we don't know IP yet.  */
   {
@@ -136,21 +195,26 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
 		return err;
 	      grub_net_process_dhcp (nb, inf->card);
 	      grub_netbuff_free (nb);
+	      return GRUB_ERR_NONE;
 	    }
+	grub_netbuff_free (nb);
 	return GRUB_ERR_NONE;
       }
   }
 
+  FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
+  {
+    if (inf->card == card
+	&& inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+	&& inf->address.ipv4 == iph->dest
+	&& grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
+      break;
+  }
+ 
   if (!inf)
     {
-      FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
-      {
-	if (inf->card == card
-	    && inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
-	    && inf->address.ipv4 == iph->dest
-	    && grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
-	  break;
-      }
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
     }
 
   source.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
