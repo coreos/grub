@@ -112,10 +112,10 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 {
   grub_file_t file = f;
   struct tftphdr *tftph = (void *) nb->data;
-  char nbdata[512];
+  grub_uint8_t nbdata[512];
   tftp_data_t data = file->data;
   grub_err_t err;
-  char *ptr;
+  grub_uint8_t *ptr;
   struct grub_net_buff nb_ack;
 
   nb_ack.head = nbdata;
@@ -130,15 +130,11 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
       for (ptr = nb->data + sizeof (tftph->opcode); ptr < nb->tail;)
 	{
 	  if (grub_memcmp (ptr, "tsize\0", sizeof ("tsize\0") - 1) == 0)
-	    {
-	      data->file_size = grub_strtoul (ptr + sizeof ("tsize\0") - 1,
-					      0, 0);
-	    }
+	    data->file_size = grub_strtoul ((char *) ptr + sizeof ("tsize\0")
+					    - 1, 0, 0);
 	  if (grub_memcmp (ptr, "blksize\0", sizeof ("blksize\0") - 1) == 0)
-	    {
-	      data->block_size = grub_strtoul (ptr + sizeof ("blksize\0") - 1,
-					       0, 0);
-	    }
+	    data->block_size = grub_strtoul ((char *) ptr + sizeof ("blksize\0")
+					     - 1, 0, 0);
 	  while (ptr < nb->tail && *ptr)
 	    ptr++;
 	  ptr++;
@@ -210,7 +206,7 @@ tftp_open (struct grub_file *file, const char *filename)
   int i;
   int rrqlen;
   int hdrlen;
-  char open_data[1500];
+  grub_uint8_t open_data[1500];
   struct grub_net_buff nb;
   tftp_data_t data;
   grub_err_t err;
@@ -312,7 +308,7 @@ tftp_close (struct grub_file *file)
 
   if (data->sock)
     {
-      char nbdata[512];
+      grub_uint8_t nbdata[512];
       grub_err_t err;
       struct grub_net_buff nb_err;
       struct tftphdr *tftph;

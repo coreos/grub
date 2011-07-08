@@ -27,6 +27,10 @@
 #include <grub/mm.h>
 #include <grub/net/netbuff.h>
 
+#define GRUB_NET_MAX_LINK_HEADER_SIZE 64
+#define GRUB_NET_UDP_HEADER_SIZE 8
+#define GRUB_NET_OUR_IPV4_HEADER_SIZE 20
+
 typedef enum grub_link_level_protocol_id 
 {
   GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET

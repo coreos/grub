@@ -21,7 +21,6 @@
 #include <grub/mm.h>
 #include <grub/net/netbuff.h>
 
-
 grub_err_t
 grub_netbuff_put (struct grub_net_buff *nb, grub_size_t len)
 {
@@ -87,7 +86,7 @@ grub_netbuff_alloc (grub_size_t len)
     return NULL;
   nb = (struct grub_net_buff *) ((grub_uint8_t *) data + len);
   nb->head = nb->data = nb->tail = data;
-  nb->end = (char *) nb;
+  nb->end = (grub_uint8_t *) nb;
   return nb;
 }
 

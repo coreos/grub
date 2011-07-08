@@ -38,7 +38,7 @@ grub_net_arp_resolve (struct grub_net_network_level_interface *inf,
   struct grub_net_buff nb;
   struct arphdr *arp_header;
   grub_net_link_level_address_t target_hw_addr;
-  char *aux, arp_data[128];
+  grub_uint8_t *aux, arp_data[128];
   grub_err_t err;
   int i;
 
@@ -74,7 +74,7 @@ grub_net_arp_resolve (struct grub_net_network_level_interface *inf,
   arp_header->hln = 6;
   arp_header->pln = 4;
   arp_header->op = grub_cpu_to_be16 (ARP_REQUEST);
-  aux = (char *) arp_header + sizeof (*arp_header);
+  aux = (grub_uint8_t *) arp_header + sizeof (*arp_header);
   /* Sender hardware address.  */
   grub_memcpy (aux, &inf->hwaddress.mac, 6);
 

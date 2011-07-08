@@ -57,6 +57,8 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
   struct etherhdr *eth;
   grub_err_t err;
 
+  COMPILE_TIME_ASSERT (sizeof (*eth) < GRUB_NET_MAX_LINK_HEADER_SIZE);
+
   err = grub_netbuff_push (nb, sizeof (*eth));
   if (err)
     return err;

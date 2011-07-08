@@ -104,6 +104,13 @@ grub_priority_queue_top (grub_priority_queue_t pq)
   return element (pq, 0);
 }
 
+void
+grub_priority_queue_destroy (grub_priority_queue_t pq)
+{
+  grub_free (pq->els);
+  grub_free (pq);
+}
+
 grub_priority_queue_t
 grub_priority_queue_new (grub_size_t elsize,
 			 grub_comparator_t cmp)

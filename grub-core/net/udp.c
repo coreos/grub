@@ -110,6 +110,8 @@ grub_net_send_udp_packet (const grub_net_udp_socket_t socket,
   struct udphdr *udph;
   grub_err_t err;
 
+  COMPILE_TIME_ASSERT (GRUB_NET_UDP_HEADER_SIZE == sizeof (*udph));
+
   err = grub_netbuff_push (nb, sizeof (*udph));
   if (err)
     return err;

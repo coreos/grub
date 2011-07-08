@@ -8,14 +8,14 @@
 
 struct grub_net_buff
 {
-  /*Pointer to the start of the buffer*/
-  char *head;
-  /*Pointer to the data */
-  char *data;
-  /*Pointer to the tail */
-  char *tail;
-  /*Pointer to the end of the buffer*/
-  char *end;
+  /* Pointer to the start of the buffer.  */
+  grub_uint8_t *head;
+  /* Pointer to the data.  */
+  grub_uint8_t *data;
+  /* Pointer to the tail.  */
+  grub_uint8_t *tail;
+  /* Pointer to the end of the buffer.  */
+  grub_uint8_t *end;
 };
 
 grub_err_t grub_netbuff_put (struct grub_net_buff *net_buff ,grub_size_t len);
