@@ -488,7 +488,8 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	  target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
 	  target.ipv4 = 0xffffffff;
 
-	  err = grub_net_send_ip_packet (&ifaces[j], &target, nb);
+	  err = grub_net_send_ip_packet (&ifaces[j], &target, nb,
+					 GRUB_NET_IP_UDP);
 	  grub_netbuff_free (nb);
 	  if (err)
 	    return err;

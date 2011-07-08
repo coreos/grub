@@ -50,15 +50,20 @@ struct ip6hdr
 } __attribute__ ((packed));
 
 grub_uint16_t
-grub_net_ip_chksum (void *ipv, int len)
+grub_net_ip_chksum (void *ipv, grub_size_t len)
 {
   grub_uint16_t *ip = (grub_uint16_t *) ipv;
   grub_uint32_t sum = 0;
 
-  len >>= 1;
-  while (len--)
+  for (; len >= 2; len -= 2)
     {
       sum += grub_be_to_cpu16 (*(ip++));
+      if (sum > 0xFFFF)
+	sum -= 0xFFFF;
+    }
+  if (len)
+    {
+      sum += *((grub_uint8_t *) ip) << 8;
       if (sum > 0xFFFF)
 	sum -= 0xFFFF;
     }
@@ -69,7 +74,8 @@ grub_net_ip_chksum (void *ipv, int len)
 grub_err_t
 grub_net_send_ip_packet (struct grub_net_network_level_interface * inf,
 			 const grub_net_network_level_address_t * target,
-			 struct grub_net_buff * nb)
+			 struct grub_net_buff * nb,
+			 grub_net_ip_protocol_t proto)
 {
   struct iphdr *iph;
   static int id = 0x2400;
@@ -85,7 +91,7 @@ grub_net_send_ip_packet (struct grub_net_network_level_interface * inf,
   iph->ident = grub_cpu_to_be16 (++id);
   iph->frags = 0;
   iph->ttl = 0xff;
-  iph->protocol = 0x11;
+  iph->protocol = proto;
   iph->src = inf->address.ipv4;
   iph->dest = target->ipv4;
 
@@ -108,6 +114,7 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
   struct iphdr *iph = (struct iphdr *) nb->data;
   grub_err_t err;
   struct grub_net_network_level_interface *inf = NULL;
+  grub_net_network_level_address_t source;
 
   err = grub_netbuff_pull (nb, sizeof (*iph));
   if (err)
@@ -117,7 +124,7 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
   {
     struct udphdr *udph;
     udph = (struct udphdr *) nb->data;
-    if (iph->protocol == IP_UDP && grub_be_to_cpu16 (udph->dst) == 68)
+    if (iph->protocol == GRUB_NET_IP_UDP && grub_be_to_cpu16 (udph->dst) == 68)
       {
 	FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
 	  if (inf->card == card
@@ -146,10 +153,15 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
       }
     }
 
+  source.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+  source.ipv4 = iph->src;
+
   switch (iph->protocol)
     {
-    case IP_UDP:
-      return grub_net_recv_udp_packet (nb, inf);
+    case GRUB_NET_IP_UDP:
+      return grub_net_recv_udp_packet (nb, inf, &source);
+    case GRUB_NET_IP_ICMP:
+      return grub_net_recv_icmp_packet (nb, inf, &source);
     default:
       grub_netbuff_free (nb);
       break;

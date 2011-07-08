@@ -102,11 +102,11 @@ typedef struct tftp_data
   grub_uint64_t block;
   grub_uint32_t block_size;
   int have_oack;
-  grub_net_socket_t sock;
+  grub_net_udp_socket_t sock;
 } *tftp_data_t;
 
 static grub_err_t
-tftp_receive (grub_net_socket_t sock __attribute__ ((unused)),
+tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	      struct grub_net_buff *nb,
 	      void *f)
 {

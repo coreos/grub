@@ -196,40 +196,6 @@ struct grub_net_app_protocol
   grub_err_t (*close) (struct grub_file *file);
 };
 
-struct grub_net_socket
-{
-  struct grub_net_socket *next;
-
-  enum { GRUB_NET_SOCKET_START,
-	 GRUB_NET_SOCKET_ESTABLISHED,
-	 GRUB_NET_SOCKET_CLOSED } x_status;
-  int x_in_port;
-  int x_out_port;
-  grub_err_t (*recv_hook) (grub_net_socket_t sock, struct grub_net_buff *nb,
-			   void *recv);
-  void *recv_hook_data;
-  grub_net_network_level_address_t x_out_nla;
-  struct grub_net_network_level_interface *x_inf;
-};
-
-extern struct grub_net_socket *grub_net_sockets;
-
-static inline void
-grub_net_socket_register (grub_net_socket_t sock)
-{
-  grub_list_push (GRUB_AS_LIST_P (&grub_net_sockets),
-		  GRUB_AS_LIST (sock));
-}
-
-static inline void
-grub_net_socket_unregister (grub_net_socket_t sock)
-{
-  grub_list_remove (GRUB_AS_LIST_P (&grub_net_sockets),
-		    GRUB_AS_LIST (sock));
-}
-
-#define FOR_NET_SOCKETS(var) for (var = grub_net_sockets; var; var = var->next)
-
 typedef struct grub_net
 {
   char *server;
@@ -337,7 +303,7 @@ void
 grub_net_card_unregister (struct grub_net_card *card);
 
 #define FOR_NET_CARDS(var) for (var = grub_net_cards; var; var = var->next)
-#define FOR_NET_CARDS_SAFE(var, next) for (var = grub_net_cards, next = var->next; var; var = next, next = var->next)
+#define FOR_NET_CARDS_SAFE(var, next) for (var = grub_net_cards, next = (var ? var->next : 0); var; var = next, next = (var ? var->next : 0))
 
 
 struct grub_net_session *
@@ -426,7 +392,7 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target,
 extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
 #define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
 
-#define FOR_NET_NETWORK_LEVEL_INTERFACES_SAFE(var,next) for (var = grub_net_network_level_interfaces, next = var->next; var; var = next, next = var->next)
+#define FOR_NET_NETWORK_LEVEL_INTERFACES_SAFE(var,next) for (var = grub_net_network_level_interfaces, next = (var ? var->next : 0); var; var = next, next = (var ? var->next : 0))
 
 void
 grub_net_poll_cards (unsigned time);

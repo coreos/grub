@@ -21,13 +21,15 @@
 #include <grub/misc.h>
 #include <grub/net.h>
 
-enum
+typedef enum grub_net_ip_protocol
   {
-    IP_UDP =          0x11 /* UDP protocol */
-  };
-#define IP_BROADCAST    0xFFFFFFFF
+    GRUB_NET_IP_ICMP = 1,
+    GRUB_NET_IP_TCP = 6,
+    GRUB_NET_IP_UDP = 17
+  } grub_net_ip_protocol_t;
+#define GRUB_NET_IP_BROADCAST    0xFFFFFFFF
 
-grub_uint16_t grub_net_ip_chksum(void *ipv, int len);
+grub_uint16_t grub_net_ip_chksum(void *ipv, grub_size_t len);
 
 grub_err_t
 grub_net_recv_ip_packets (struct grub_net_buff *nb,
@@ -37,6 +39,16 @@ grub_net_recv_ip_packets (struct grub_net_buff *nb,
 grub_err_t
 grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
 			 const grub_net_network_level_address_t *target,
-			 struct grub_net_buff *nb);
+			 struct grub_net_buff *nb,
+			 grub_net_ip_protocol_t proto);
+
+grub_err_t 
+grub_net_recv_icmp_packet (struct grub_net_buff *nb,
+			   struct grub_net_network_level_interface *inf,
+			   const grub_net_network_level_address_t *src);
+grub_err_t
+grub_net_recv_udp_packet (struct grub_net_buff *nb,
+			  struct grub_net_network_level_interface *inf,
+			  const grub_net_network_level_address_t *src);
 
 #endif 
