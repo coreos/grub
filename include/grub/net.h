@@ -415,6 +415,9 @@ grub_net_network_level_interface_unregister (struct grub_net_network_level_inter
   inter->prev = 0;
 }
 
+void
+grub_net_tcp_retransmit (void);
+
 extern char *grub_net_default_server;
 
 #endif /* ! GRUB_NET_HEADER */

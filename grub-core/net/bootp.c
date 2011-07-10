@@ -473,7 +473,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	      t = 0;
 	    }
 	  pack->ident = grub_cpu_to_be32 (t);
-	  pack->seconds = 0;//grub_cpu_to_be16 (t);
+	  pack->seconds = grub_cpu_to_be16 (t);
 
 	  grub_memcpy (&pack->mac_addr, &ifaces[j].hwaddress.mac, 6); 
 
@@ -484,9 +484,11 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	  udph->dst = grub_cpu_to_be16 (67);
 	  udph->chksum = 0;
 	  udph->len = grub_cpu_to_be16 (nb->tail - nb->data);
-
 	  target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
 	  target.ipv4 = 0xffffffff;
+	  udph->chksum = grub_net_ip_transport_checksum (nb, GRUB_NET_IP_UDP,
+							 &ifaces[j].address,
+							 &target);
 
 	  err = grub_net_send_ip_packet (&ifaces[j], &target, nb,
 					 GRUB_NET_IP_UDP);

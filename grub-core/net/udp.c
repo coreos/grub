@@ -120,9 +120,12 @@ grub_net_send_udp_packet (const grub_net_udp_socket_t socket,
   udph->src = grub_cpu_to_be16 (socket->in_port);
   udph->dst = grub_cpu_to_be16 (socket->out_port);
 
-  /* No chechksum. */
   udph->chksum = 0;
   udph->len = grub_cpu_to_be16 (nb->tail - nb->data);
+
+  udph->chksum = grub_net_ip_transport_checksum (nb, GRUB_NET_IP_UDP,
+						 &socket->inf->address,
+						 &socket->out_nla);
 
   return grub_net_send_ip_packet (socket->inf, &(socket->out_nla), nb,
 				  GRUB_NET_IP_UDP);
@@ -136,26 +139,60 @@ grub_net_recv_udp_packet (struct grub_net_buff *nb,
   struct udphdr *udph;
   grub_net_udp_socket_t sock;
   grub_err_t err;
+
   udph = (struct udphdr *) nb->data;
-  err = grub_netbuff_pull (nb, sizeof (*udph));
-  if (err)
-    return err;
+  if (nb->tail - nb->data < (grub_ssize_t) sizeof (*udph))
+    {
+      grub_dprintf ("net", "UDP packet too short: %" PRIuGRUB_SIZE "\n",
+		    nb->tail - nb->data);
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
 
   FOR_UDP_SOCKETS (sock)
   {
     if (grub_be_to_cpu16 (udph->dst) == sock->in_port
-	&& inf == sock->inf && sock->recv_hook
+	&& inf == sock->inf
 	&& source->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
-	&& source->ipv4 == sock->out_nla.ipv4)
+	&& source->ipv4 == sock->out_nla.ipv4
+	&& (sock->status == GRUB_NET_SOCKET_START
+	    || grub_be_to_cpu16 (udph->src) == sock->out_port))
       {
+	if (udph->chksum)
+	  {
+	    grub_uint16_t chk, expected;
+	    chk = udph->chksum;
+	    udph->chksum = 0;
+	    expected = grub_net_ip_transport_checksum (nb, GRUB_NET_IP_UDP,
+						       &sock->out_nla,
+						       &sock->inf->address);
+	    if (expected != chk)
+	      {
+		grub_dprintf ("net", "Invalid UDP checksum. "
+			      "Expected %x, got %x\n",
+			      grub_be_to_cpu16 (expected),
+			      grub_be_to_cpu16 (chk));
+		grub_netbuff_free (nb);
+		return GRUB_ERR_NONE;
+	      }
+	    udph->chksum = chk;
+	  }
+
 	if (sock->status == GRUB_NET_SOCKET_START)
 	  {
 	    sock->out_port = grub_be_to_cpu16 (udph->src);
 	    sock->status = GRUB_NET_SOCKET_ESTABLISHED;
 	  }
 
+	err = grub_netbuff_pull (nb, sizeof (*udph));
+	if (err)
+	  return err;
+
 	/* App protocol remove its own reader.  */
-	sock->recv_hook (sock, nb, sock->recv_hook_data);
+	if (sock->recv_hook)
+	  sock->recv_hook (sock, nb, sock->recv_hook_data);
+	else
+	  grub_netbuff_free (nb);
 	return GRUB_ERR_NONE;
       }
   }

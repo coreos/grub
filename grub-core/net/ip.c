@@ -100,13 +100,13 @@ grub_net_ip_chksum (void *ipv, grub_size_t len)
   for (; len >= 2; len -= 2)
     {
       sum += grub_be_to_cpu16 (*(ip++));
-      if (sum > 0xFFFF)
+      if (sum >= 0xFFFF)
 	sum -= 0xFFFF;
     }
   if (len)
     {
       sum += *((grub_uint8_t *) ip) << 8;
-      if (sum > 0xFFFF)
+      if (sum >= 0xFFFF)
 	sum -= 0xFFFF;
     }
 
@@ -229,6 +229,13 @@ handle_dgram (struct grub_net_buff *nb,
   struct grub_net_network_level_interface *inf = NULL;
   grub_err_t err;
   grub_net_network_level_address_t source;
+  grub_net_network_level_address_t dest;
+
+  source.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+  source.ipv4 = src;
+
+  dest.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+  dest.ipv4 = dst;
 
   /* DHCP needs special treatment since we don't know IP yet.  */
   {
@@ -241,6 +248,27 @@ handle_dgram (struct grub_net_buff *nb,
 	      && inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV
 	      && grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
 	    {
+	      if (udph->chksum)
+		{
+		  grub_uint16_t chk, expected;
+		  chk = udph->chksum;
+		  udph->chksum = 0;
+		  expected = grub_net_ip_transport_checksum (nb,
+							     GRUB_NET_IP_UDP,
+							     &source,
+							     &dest);
+		  if (expected != chk)
+		    {
+		      grub_dprintf ("net", "Invalid UDP checksum. "
+				    "Expected %x, got %x\n", 
+				    grub_be_to_cpu16 (expected),
+				    grub_be_to_cpu16 (chk));
+		      grub_netbuff_free (nb);
+		      return GRUB_ERR_NONE;
+		    }
+		  udph->chksum = chk;
+		}
+
 	      err = grub_netbuff_pull (nb, sizeof (*udph));
 	      if (err)
 		return err;
@@ -268,13 +296,12 @@ handle_dgram (struct grub_net_buff *nb,
       return GRUB_ERR_NONE;
     }
 
-  source.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-  source.ipv4 = src;
-
   switch (proto)
     {
     case GRUB_NET_IP_UDP:
       return grub_net_recv_udp_packet (nb, inf, &source);
+    case GRUB_NET_IP_TCP:
+      return grub_net_recv_tcp_packet (nb, inf, &source);
     case GRUB_NET_IP_ICMP:
       return grub_net_recv_icmp_packet (nb, inf, &source);
     default:

@@ -793,6 +793,7 @@ grub_net_poll_cards (unsigned time)
       while ((grub_get_time_ms () - start_time) < time)	
 	receive_packets (card);
     }
+  grub_net_tcp_retransmit ();
 }
 
 static void
@@ -807,6 +808,7 @@ grub_net_poll_cards_idle_real (void)
 	|| ctime >= card->last_poll + card->idle_poll_delay_ms)
       receive_packets (card);
   }
+  grub_net_tcp_retransmit ();
 }
 
 /*  Read from the packets list*/

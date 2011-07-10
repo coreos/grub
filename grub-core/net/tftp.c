@@ -207,7 +207,6 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	      return GRUB_ERR_NONE;
 	    nb_top = *nb_top_p;
 	    tftph = (struct tftphdr *) nb_top->data;
-	    grub_refresh ();
 	    if (grub_be_to_cpu16 (tftph->u.data.block) >= data->block + 1)
 	      break;
 	    grub_priority_queue_pop (data->pq);
@@ -279,6 +278,7 @@ tftp_open (struct grub_file *file, const char *filename)
   struct grub_net_buff nb;
   tftp_data_t data;
   grub_err_t err;
+  grub_uint8_t *nbd;
 
   data = grub_zalloc (sizeof (*data));
   if (!data)
@@ -344,21 +344,11 @@ tftp_open (struct grub_file *file, const char *filename)
       return grub_errno;
     }
 
-  err = grub_net_send_udp_packet (data->sock, &nb);
-  if (err)
-    {
-      grub_net_udp_close (data->sock);
-      destroy_pq (data);
-      return err;
-    }
-
   /* Receive OACK packet.  */
+  nbd = nb.data;
   for (i = 0; i < 3; i++)
     {
-      grub_net_poll_cards (100);
-      if (data->have_oack)
-	break;
-      /* Retry.  */
+      nb.data = nbd;
       err = grub_net_send_udp_packet (data->sock, &nb);
       if (err)
 	{
@@ -366,6 +356,9 @@ tftp_open (struct grub_file *file, const char *filename)
 	  destroy_pq (data);
 	  return err;
 	}
+      grub_net_poll_cards (100);
+      if (data->have_oack)
+	break;
     }
 
   if (!data->have_oack)
