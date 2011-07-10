@@ -1,5 +1,10 @@
 2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/efi/efidisk.c (grub_efidisk_get_device_name): Fix
+	incorrect memory usage.
+
+2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Source grub-mkconfig_lib.
 
 2011-07-08  Vladimir Serbinenko  <phcoder@gmail.com>
