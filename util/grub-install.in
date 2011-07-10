@@ -59,6 +59,8 @@ update_nvram=yes
 removable=no
 efi_quiet=
 
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
+
 # Get GRUB_DISTRIBUTOR.
 if test -f "${sysconfdir}/default/grub" ; then
     . "${sysconfdir}/default/grub"
