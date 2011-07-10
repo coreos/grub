@@ -554,6 +554,8 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
 	    sock->unack_first = NULL;
 	    sock->unack_last = NULL;
 
+	    grub_netbuff_free (nb);
+
 	    return GRUB_ERR_NONE;
 	  }
 
