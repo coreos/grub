@@ -1,5 +1,9 @@
 2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/POTFILES.in: Regenerate.
+
+2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/efi/efidisk.c (grub_efidisk_get_device_name): Fix
 	incorrect memory usage.
 
