@@ -61,7 +61,8 @@ typedef enum
     GRUB_ERR_NET_NO_ROUTE,
     GRUB_ERR_NET_NO_ANSWER,
     GRUB_ERR_WAIT,
-    GRUB_ERR_BUG
+    GRUB_ERR_BUG,
+    GRUB_ERR_NET_PORT_CLOSED
   }
 grub_err_t;
 
