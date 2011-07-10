@@ -335,6 +335,12 @@ if [ x"$platform" = xefi ]; then
 	if test "x$install_device" != "x`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}"`"; then
 	    efidir="${bootdir}/efi"
 	fi
+    elif test -d "${bootdir}/EFI"; then
+	install_device="`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}/EFI"`"
+        # Is it a mount point?
+	if test "x$install_device" != "x`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}"`"; then
+	    efidir="${bootdir}/EFI"
+	fi
     elif test -n "$rootdir" && test "x$rootdir" != "x/"; then
         # The EFI System Partition may have been given directly using
         # --root-directory.

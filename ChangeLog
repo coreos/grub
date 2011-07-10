@@ -1,5 +1,9 @@
 2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Recognize ESP mounted at /boot/EFI.
+
+2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/POTFILES.in: Regenerate.
 
 2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
