@@ -36,7 +36,8 @@ grub_net_tcp_open (char *server,
 
 grub_err_t
 grub_net_send_tcp_packet (const grub_net_tcp_socket_t socket,
-			  struct grub_net_buff *nb);
+			  struct grub_net_buff *nb,
+			  int push);
 
 void
 grub_net_tcp_close (grub_net_tcp_socket_t sock);

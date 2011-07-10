@@ -41,7 +41,9 @@ enum
     TCP_FIN = 0x1,
     TCP_SYN = 0x2,
     TCP_RST = 0x4,
-    TCP_ACK = 0x10
+    TCP_PUSH = 0x8,
+    TCP_ACK = 0x10,
+    TCP_URG = 0x20,
   };
 
 struct grub_net_tcp_socket
@@ -460,10 +462,48 @@ grub_net_tcp_open (char *server,
 
 grub_err_t
 grub_net_send_tcp_packet (const grub_net_tcp_socket_t socket,
-			  struct grub_net_buff *nb)
+			  struct grub_net_buff *nb, int push)
 {
   struct tcphdr *tcph;
   grub_err_t err;
+  grub_ssize_t fraglen;
+  fraglen = (socket->inf->card->mtu - GRUB_NET_OUR_IPV4_HEADER_SIZE
+	     - sizeof (*tcph));
+
+  while (nb->tail - nb->data > fraglen)
+    {
+      struct grub_net_buff *nb2;
+
+      nb2 = grub_netbuff_alloc (fraglen + sizeof (*tcph)
+				+ GRUB_NET_OUR_IPV4_HEADER_SIZE
+				+ GRUB_NET_MAX_LINK_HEADER_SIZE);
+      if (!nb2)
+	return grub_errno;
+      err = grub_netbuff_reserve (nb2, GRUB_NET_MAX_LINK_HEADER_SIZE
+				  + GRUB_NET_OUR_IPV4_HEADER_SIZE);
+      if (err)
+	return err;
+      err = grub_netbuff_put (nb2, sizeof (*tcph));
+      if (err)
+	return err;
+
+      tcph = (struct tcphdr *) nb2->data;
+      tcph->ack = grub_cpu_to_be32 (0);
+      tcph->flags = grub_cpu_to_be16 ((5 << 12));
+      tcph->window = grub_cpu_to_be16 (socket->my_window);
+      tcph->urgent = 0;
+      err = grub_netbuff_put (nb2, fraglen);
+      if (err)
+	return err;
+      grub_memcpy (tcph + 1, nb->data, fraglen);
+      err = grub_netbuff_pull (nb, fraglen);
+      if (err)
+	return err;
+
+      err = tcp_send (nb2, socket);
+      if (err)
+	return err;
+    }
 
   err = grub_netbuff_push (nb, sizeof (*tcph));
   if (err)
@@ -471,7 +511,7 @@ grub_net_send_tcp_packet (const grub_net_tcp_socket_t socket,
 
   tcph = (struct tcphdr *) nb->data;
   tcph->ack = grub_cpu_to_be32 (0);
-  tcph->flags = grub_cpu_to_be16 ((5 << 12));
+  tcph->flags = grub_cpu_to_be16 ((5 << 12) | (push ? TCP_PUSH : 0));
   tcph->window = grub_cpu_to_be16 (socket->my_window);
   tcph->urgent = 0;
   return tcp_send (nb, socket);
