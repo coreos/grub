@@ -1,5 +1,9 @@
 2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/mips/kernel.h: Fix define conflict.
+
+2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/mips/cache_flush.S [GRUB_MACHINE_MIPS_LOONGSON]: Flush
 	all four ways.
 
