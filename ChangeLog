@@ -1,5 +1,9 @@
 2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/pata.c (grub_pata_readwrite): Add missing wait.
+
+2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/video.h: add missing EXPORT_FUND on
 	grub_video_edid_checksum and grub_video_edid_preferred_mode.
 

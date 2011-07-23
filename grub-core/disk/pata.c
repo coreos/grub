@@ -177,6 +177,10 @@ grub_pata_readwrite (struct grub_ata *disk,
   /* Start command. */
   grub_pata_regset (dev, GRUB_ATA_REG_CMD, parms->taskfile.cmd);
 
+  /* Wait for !BSY.  */
+  if (grub_pata_wait_not_busy (dev, GRUB_ATA_TOUT_DATA))
+    return grub_errno;
+
   /* Check status.  */
   grub_int8_t sts = grub_pata_regget (dev, GRUB_ATA_REG_STATUS);
   grub_dprintf ("pata", "status=0x%x\n", sts);
