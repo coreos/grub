@@ -26,7 +26,6 @@
 #include <grub/dl.h>
 #include <grub/file.h>
 #include <grub/priority_queue.h>
-#include <grub/term.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
