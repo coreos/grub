@@ -1610,6 +1610,11 @@ module = {
 };
 
 module = {
+  name = http;
+  common = net/http.c;
+};
+
+module = {
   name = ofnet;
   common = net/drivers/ieee1275/ofnet.c;
   enable = ieee1275;

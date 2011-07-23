@@ -27,9 +27,16 @@
 #include <grub/mm.h>
 #include <grub/net/netbuff.h>
 
-#define GRUB_NET_MAX_LINK_HEADER_SIZE 64
-#define GRUB_NET_UDP_HEADER_SIZE 8
-#define GRUB_NET_OUR_IPV4_HEADER_SIZE 20
+enum
+  {
+    GRUB_NET_MAX_LINK_HEADER_SIZE = 64,
+    GRUB_NET_UDP_HEADER_SIZE = 8,
+    GRUB_NET_TCP_HEADER_SIZE = 20,
+    GRUB_NET_OUR_IPV4_HEADER_SIZE = 20,
+    GRUB_NET_TCP_RESERVE_SIZE = GRUB_NET_TCP_HEADER_SIZE 
+    + GRUB_NET_OUR_IPV4_HEADER_SIZE
+    + GRUB_NET_MAX_LINK_HEADER_SIZE
+  };
 
 typedef enum grub_link_level_protocol_id 
 {

@@ -25,8 +25,8 @@
 
 #define TCP_SYN_RETRANSMISSION_TIMEOUT 1000
 #define TCP_SYN_RETRANSMISSION_COUNT 3
-#define TCP_RETRANSMISSION_TIMEOUT 10000
-#define TCP_RETRANSMISSION_COUNT 5
+#define TCP_RETRANSMISSION_TIMEOUT 1000
+#define TCP_RETRANSMISSION_COUNT 10
 
 struct unacked
 {
@@ -577,6 +577,7 @@ grub_net_send_tcp_packet (const grub_net_tcp_socket_t socket,
   struct tcphdr *tcph;
   grub_err_t err;
   grub_ssize_t fraglen;
+  COMPILE_TIME_ASSERT (sizeof (struct tcphdr) == GRUB_NET_TCP_HEADER_SIZE);
   fraglen = (socket->inf->card->mtu - GRUB_NET_OUR_IPV4_HEADER_SIZE
 	     - sizeof (*tcph));
 
