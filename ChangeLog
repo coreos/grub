@@ -1,3 +1,8 @@
+2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/cache_flush.S [GRUB_MACHINE_MIPS_LOONGSON]: Flush
+	all four ways.
+
 2011-07-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	Preferred resolution detection for VBE.
