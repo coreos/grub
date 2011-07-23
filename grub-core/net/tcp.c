@@ -708,12 +708,14 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
 	for (unack = sock->unack_first; unack; unack = next)
 	  {
 	    grub_uint32_t seqnr;
+	    struct tcphdr *unack_tcph;
 	    next = unack->next;
 	    seqnr = grub_be_to_cpu32 (((struct tcphdr *) unack->nb->data)
 				      ->seqnr);
-	    seqnr += (nb->tail - nb->data
-		      - (grub_be_to_cpu16 (tcph->flags) >> 12) * 4);
-	    if (grub_be_to_cpu16 (tcph->flags) & TCP_FIN)
+	    unack_tcph = (struct tcphdr *) unack->nb->data;
+	    seqnr += (unack->nb->tail - unack->nb->data
+		      - (grub_be_to_cpu16 (unack_tcph->flags) >> 12) * 4);
+	    if (grub_be_to_cpu16 (unack_tcph->flags) & TCP_FIN)
 	      seqnr++;
 
 	    if (seqnr > acked)
