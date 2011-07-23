@@ -486,8 +486,8 @@ grub_err_t EXPORT_FUNC (grub_video_set_active_render_target) (struct grub_video_
 
 grub_err_t grub_video_get_active_render_target (struct grub_video_render_target **target);
 
-grub_err_t grub_video_edid_checksum (struct grub_video_edid_info *edid_info);
-grub_err_t grub_video_edid_preferred_mode (struct grub_video_edid_info *edid_info,
+grub_err_t EXPORT_FUNC (grub_video_edid_checksum) (struct grub_video_edid_info *edid_info);
+grub_err_t EXPORT_FUNC (grub_video_edid_preferred_mode) (struct grub_video_edid_info *edid_info,
 					   unsigned int *width,
 					   unsigned int *height);
 
