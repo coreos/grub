@@ -1,5 +1,10 @@
 2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu.c (grub_menu_execute_entry): Fix NULL
+	dereference.
+
+2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/pata.c (grub_pata_readwrite): Add missing wait.
 
 2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
