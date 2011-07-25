@@ -1,6 +1,14 @@
 2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	Support ATA disks with non-4K sectors.
+	New script grub-mkstandalone.
+
+	* Makefile.util.def (grub-mkstandalone): New script.
+	* docs/man/grub-mkstandalone.h2m: New file.
+	* util/grub-mkstandalone.in: Likewise.
+
+2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support ATA disks with 4K sectors.
 
 	* include/grub/ata.h (grub_ata): New member log_sector_size.
 	* grub-core/disk/ata.c (grub_ata_dumpinfo): Show sector size.

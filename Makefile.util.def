@@ -413,6 +413,12 @@ script = {
 };
 
 script = {
+  mansection = 1;
+  name = grub-mkstandalone;
+  common = util/grub-mkstandalone.in;
+};
+
+script = {
   mansection = 8;
   installdir = sbin;
   name = grub-install;
