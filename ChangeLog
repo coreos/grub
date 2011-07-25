@@ -1,5 +1,14 @@
 2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support ATA disks with non-4K sectors.
+
+	* include/grub/ata.h (grub_ata): New member log_sector_size.
+	* grub-core/disk/ata.c (grub_ata_dumpinfo): Show sector size.
+	(grub_ata_identify): Read sector size.
+	(grub_ata_readwrite): Use log_sector_size rather than hardcoded value.
+
+2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Don't use uhci outside of x86.
 
 2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>

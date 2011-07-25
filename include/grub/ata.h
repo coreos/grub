@@ -170,6 +170,7 @@ struct grub_ata
 
   /* Sector count.  */
   grub_uint64_t size;
+  grub_uint32_t log_sector_size;
 
   /* CHS maximums.  */
   grub_uint16_t cylinders;
