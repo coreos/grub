@@ -504,7 +504,11 @@ if [ "x$disk_module" = xata ]; then
 fi
 
 if [ "x$disk_module" = xnative ]; then
-    disk_module="pata ahci ohci uhci usbms"
+    disk_module="pata ahci ohci"
+    if [ "x$target_cpu" = "xi386" ] || [ "x$target_cpu" = "xx86_64" ]; then
+	disk_module="$disk_module uhci"
+    fi
+    disk_module="$disk_module usbms"
 fi
 
 # The order in this list is critical.  Be careful when modifying it.
