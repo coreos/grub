@@ -1,4 +1,8 @@
-2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.in: Add missing quotes.
+
+2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/menu.c (grub_menu_execute_entry): Fix NULL
 	dereference.
