@@ -866,6 +866,9 @@ enable_grub_mkfont=yes
 else
 enable_grub_mkfont=no
 fi
+if test x"$enable_grub_mkfont" = xno && test "x$platform" = xloongson; then
+  AC_MSG_ERROR([loongson port needs grub-mkfont])
+fi
 AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
