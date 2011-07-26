@@ -1,3 +1,9 @@
+2011-07-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in: Don't source grub-mkconfig_lib until after
+	processing arguments (otherwise help2man fails when GRUB has not yet
+	been installed).
+
 2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	New script grub-mkstandalone.

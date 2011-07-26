@@ -59,8 +59,6 @@ update_nvram=yes
 removable=no
 efi_quiet=
 
-. ${libdir}/@PACKAGE@/grub-mkconfig_lib
-
 # Get GRUB_DISTRIBUTOR.
 if test -f "${sysconfdir}/default/grub" ; then
     . "${sysconfdir}/default/grub"
@@ -264,6 +262,8 @@ do
 	install_device="${option}" ;;
     esac
 done
+
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
     || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
