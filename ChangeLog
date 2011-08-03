@@ -1,3 +1,9 @@
+2011-08-03  Robert Millan  <rmh@gnu.org>
+
+	* include/grub/zfs/zap_leaf.h (typedef union zap_leaf_chunk): Mark
+	la_array as packed.
+	Reported by: Zachary Bedell
+
 2011-07-26  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac: The Loongson port requires grub-mkfont due to its
