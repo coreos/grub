@@ -298,6 +298,12 @@ get_ataraid_disk_name (char *name, int unit)
 {
   sprintf (name, "/dev/ar%d", unit);
 }
+
+static void
+get_mfi_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/mfid%d", unit);
+}
 #endif
 
 #ifdef __linux__
@@ -655,6 +661,19 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
       char name[20];
 
       get_ataraid_disk_name (name, i);
+      if (check_device_readable_unique (name))
+	{
+	  if (hook (name, 0))
+	    goto out;
+        }
+    }
+
+  /* LSI MegaRAID SAS.  */
+  for (i = 0; i < 32; i++)
+    {
+      char name[20];
+
+      get_mfi_disk_name (name, i);
       if (check_device_readable_unique (name))
 	{
 	  if (hook (name, 0))
