@@ -53,7 +53,7 @@ grub_err_t EXPORT_FUNC(grub_register_variable_hook) (const char *name,
 
 grub_err_t grub_env_context_open (void);
 grub_err_t grub_env_context_close (void);
-grub_err_t grub_env_export (const char *name);
+grub_err_t EXPORT_FUNC(grub_env_export) (const char *name);
 
 void grub_env_unset_menu (void);
 grub_menu_t grub_env_get_menu (void);

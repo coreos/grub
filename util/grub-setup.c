@@ -32,7 +32,6 @@
 #include <grub/machine/kernel.h>
 #include <grub/term.h>
 #include <grub/i18n.h>
-#include <grub/util/raid.h>
 #include <grub/util/lvm.h>
 #ifdef GRUB_MACHINE_IEEE1275
 #include <grub/util/ofpath.h>
@@ -49,6 +48,7 @@
 #include <grub/emu/getroot.h>
 #include "progname.h"
 #include <grub/reed_solomon.h>
+#include <grub/msdos_partition.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -177,7 +177,7 @@ static void
 setup (const char *dir,
        const char *boot_file, const char *core_file,
        const char *root, const char *dest, int must_embed, int force,
-       int fs_probe)
+       int fs_probe, int allow_floppy)
 {
   char *boot_path, *core_path, *core_path_dev, *core_path_dev_full;
   char *boot_img, *core_img;
@@ -313,23 +313,11 @@ setup (const char *dir,
     /* If DEST_DRIVE is a hard disk, enable the workaround, which is
        for buggy BIOSes which don't pass boot drive correctly. Instead,
        they pass 0x00 or 0x01 even when booted from 0x80.  */
-    if (!grub_util_biosdisk_is_floppy (dest_dev->disk))
+    if (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk))
       /* Replace the jmp (2 bytes) with double nop's.  */
       *boot_drive_check = 0x9090;
   }
 #endif
-
-  /* Clean out the blocklists.  */
-  block = first_block;
-  while (block->len)
-    {
-      grub_memset (block, 0, sizeof (block));
-
-      block--;
-
-      if ((char *) block <= core_img)
-	grub_util_error ("No terminator in the core image");
-    }
 
 #ifdef GRUB_MACHINE_PCBIOS
   {
@@ -351,6 +339,12 @@ setup (const char *dir,
     {
       if (p->parent != container)
 	return 0;
+      /* NetBSD and OpenBSD subpartitions have metadata inside a partition,
+	 so they are safe to ignore.
+       */
+      if (grub_strcmp (p->partmap->name, "netbsd") == 0
+	  || grub_strcmp (p->partmap->name, "openbsd") == 0)
+	return 0;
       if (dest_partmap == NULL)
 	{
 	  dest_partmap = p->partmap;
@@ -363,6 +357,15 @@ setup (const char *dir,
     }
 
     grub_partition_iterate (dest_dev->disk, identify_partmap);
+
+    if (container && grub_strcmp (container->partmap->name, "msdos") == 0
+	&& dest_partmap
+	&& (container->msdostype == GRUB_PC_PARTITION_TYPE_NETBSD
+	    || container->msdostype == GRUB_PC_PARTITION_TYPE_OPENBSD))
+      {
+	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
+	goto unable_to_embed;
+      }
 
     fs = grub_fs_probe (dest_dev);
     if (!fs)
@@ -395,9 +398,18 @@ setup (const char *dir,
       }
 #endif
 
+    /* Copy the partition table.  */
+    if (dest_partmap ||
+        (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk)))
+      memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
+
+    free (tmp_img);
+    
     if (! dest_partmap)
       {
-	grub_util_warn (_("Attempting to install GRUB to a partitionless disk.  This is a BAD idea."));
+	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
 	goto unable_to_embed;
       }
     if (multiple_partmaps || fs)
@@ -406,14 +418,6 @@ setup (const char *dir,
 	goto unable_to_embed;
       }
 
-    /* Copy the partition table.  */
-    if (dest_partmap)
-      memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
-	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
-	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
-
-    free (tmp_img);
-    
     if (!dest_partmap->embed)
       {
 	grub_util_warn ("Partition style '%s' doesn't support embeding",
@@ -432,6 +436,18 @@ setup (const char *dir,
 	grub_util_warn ("%s", grub_errmsg);
 	grub_errno = GRUB_ERR_NONE;
 	goto unable_to_embed;
+      }
+
+    /* Clean out the blocklists.  */
+    block = first_block;
+    while (block->len)
+      {
+	grub_memset (block, 0, sizeof (block));
+      
+	block--;
+
+	if ((char *) block <= core_img)
+	  grub_util_error ("No terminator in the core image");
       }
 
     save_first_sector (sectors[0] + grub_partition_get_start (container),
@@ -482,11 +498,17 @@ unable_to_embed:
     grub_util_error (_("embedding is not possible, but this is required when "
 		       "the root device is on a RAID array or LVM volume"));
 
+#ifdef GRUB_MACHINE_PCBIOS
+  if (dest_dev->disk->id != root_dev->disk->id)
+    grub_util_error (_("embedding is not possible, but this is required for "
+		       "cross-disk install"));
+#endif
+
   grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
 		    "setup by using blocklists.  However, blocklists are UNRELIABLE and "
 		    "their use is discouraged."));
   if (! force)
-    grub_util_error (_("if you really want blocklists, use --force"));
+    grub_util_error (_("will not proceed with blocklists"));
 
   /* The core image must be put on a filesystem unfortunately.  */
   grub_util_info ("will leave the core image on the filesystem");
@@ -497,9 +519,7 @@ unable_to_embed:
   core_path_dev = grub_make_system_path_relative_to_its_root (core_path_dev_full);
   free (core_path_dev_full);
 
-  /* It is a Good Thing to sync two times.  */
-  sync ();
-  sync ();
+  grub_util_biosdisk_flush (root_dev->disk);
 
 #define MAX_TRIES	5
 
@@ -560,7 +580,7 @@ unable_to_embed:
 	grub_util_info ("error message = %s", grub_errmsg);
 
       grub_errno = GRUB_ERR_NONE;
-      sync ();
+      grub_util_biosdisk_flush (root_dev->disk);
       sleep (1);
     }
 
@@ -651,8 +671,8 @@ unable_to_embed:
     grub_util_error ("%s", grub_errmsg);
 
 
-  /* Sync is a Good Thing.  */
-  sync ();
+  grub_util_biosdisk_flush (root_dev->disk);
+  grub_util_biosdisk_flush (dest_dev->disk);
 
   free (core_path);
   free (core_img);
@@ -678,6 +698,9 @@ static struct argp_option options[] = {
    N_("Do not probe for filesystems in DEVICE"), 0},
   {"verbose",     'v', 0,      0,
    N_("Print verbose messages."), 0},
+  {"allow-floppy", 'a', 0,      0,
+   N_("Make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes."), 0},
+
   { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -712,6 +735,7 @@ struct arguments
   char *root_dev;
   int  force;
   int  fs_probe;
+  int allow_floppy;
   char *device;
 };
 
@@ -737,6 +761,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
   switch (key)
     {
+      case 'a':
+        arguments->allow_floppy = 1;
+        break;
+
       case 'b':
         if (arguments->boot_file)
           free (arguments->boot_file);
@@ -814,7 +842,7 @@ Set up images to boot from DEVICE.\n\
 \n\
 You should not normally run this program directly.  Use grub-install instead.")
 "\v"N_("\
-DEVICE must be an OS device (e.g. /dev/sda1)."),
+DEVICE must be an OS device (e.g. /dev/sda)."),
   NULL, help_filter, NULL
 };
 
@@ -942,7 +970,15 @@ main (int argc, char *argv[])
       char **devicelist;
       int i;
 
-      devicelist = grub_util_raid_getmembers (dest_dev);
+      if (arguments.device[0] == '/')
+	devicelist = grub_util_raid_getmembers (arguments.device, 1);
+      else
+	{
+	  char *devname;
+	  devname = xasprintf ("/dev/%s", dest_dev);
+	  devicelist = grub_util_raid_getmembers (dest_dev, 1);
+	  free (devname);
+	}
 
       for (i = 0; devicelist[i]; i++)
         {
@@ -950,7 +986,8 @@ main (int argc, char *argv[])
                  arguments.boot_file ? : DEFAULT_BOOT_FILE,
                  arguments.core_file ? : DEFAULT_CORE_FILE,
                  root_dev, grub_util_get_grub_dev (devicelist[i]), 1,
-                 arguments.force, arguments.fs_probe);
+                 arguments.force, arguments.fs_probe,
+		 arguments.allow_floppy);
         }
     }
   else
@@ -959,7 +996,8 @@ main (int argc, char *argv[])
     setup (arguments.dir ? : DEFAULT_DIRECTORY,
            arguments.boot_file ? : DEFAULT_BOOT_FILE,
            arguments.core_file ? : DEFAULT_CORE_FILE,
-           root_dev, dest_dev, must_embed, arguments.force, arguments.fs_probe);
+           root_dev, dest_dev, must_embed, arguments.force,
+	   arguments.fs_probe, arguments.allow_floppy);
 
   /* Free resources.  */
   grub_fini_all ();

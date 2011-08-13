@@ -39,6 +39,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define MIN(a, b) \
   ({ typeof (a) _a = (a); \
      typeof (b) _b = (b); \
@@ -222,6 +224,7 @@ struct grub_fshelp_node
   grub_uint32_t block_number; /* 0 if node is not found.  */
   grub_uint16_t block_position;
   grub_uint64_t next_offset;
+  grub_int32_t mtime;
   enum grub_reiserfs_item_type type; /* To know how to read the header.  */
   struct grub_reiserfs_item_header header;
 };
@@ -868,6 +871,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                                         entry_v1_stat.rdev,
                                         entry_v1_stat.first_direct_byte);
 #endif
+			  entry_item->mtime = grub_le_to_cpu32 (entry_v1_stat.mtime);
                           if ((grub_le_to_cpu16 (entry_v1_stat.mode) & S_IFLNK)
                               == S_IFLNK)
                             entry_type = GRUB_FSHELP_SYMLINK;
@@ -914,6 +918,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                                         entry_v2_stat.blocks,
                                         entry_v2_stat.first_direct_byte);
 #endif
+			  entry_item->mtime = grub_le_to_cpu32 (entry_v2_stat.mtime);
                           if ((grub_le_to_cpu16 (entry_v2_stat.mode) & S_IFLNK)
                               == S_IFLNK)
                             entry_type = GRUB_FSHELP_SYMLINK;
@@ -1276,6 +1281,8 @@ grub_reiserfs_dir (grub_device_t device, const char *path,
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      info.mtimeset = 1;
+      info.mtime = node->mtime;
       grub_free (node);
       return hook (filename, &info);
     }

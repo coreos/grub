@@ -33,8 +33,8 @@ grub_script.yy.c: grub_script.yy.h
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 
 # For libgrub.a
-libgrub.pp: grub_script.tab.h grub_script.yy.h $(libgrub_a_SOURCES)
-	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgrub_a_CPPFLAGS) $(CPPFLAGS) \
+libgrub.pp: grub_script.tab.h grub_script.yy.h $(libgrubmods_a_SOURCES) $(libgrubkern_a_SOURCES)
+	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgrubmods_a_CPPFLAGS) $(libgrubkern_a_CPPFLAGS) $(CPPFLAGS) \
 	  -D'GRUB_MOD_INIT(x)=@MARKER@x@' $^ > $@ || (rm -f $@; exit 1)
 CLEANFILES += libgrub.pp
 
@@ -147,28 +147,28 @@ linux.init.i386: $(srcdir)/grub-core/tests/boot/linux.init-i386.S
 	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 multiboot.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
-	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -DTARGET_MULTIBOOT=1 -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
+	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -DTARGET_MULTIBOOT=1 -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
 
 kfreebsd.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
-	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
+	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
 
 kfreebsd.aout: kfreebsd.elf
 	$(OBJCOPY) -O a.out-i386-linux $< $@ -R .note.gnu.build-id
 
 pc-chainloader.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S
-	$(TARGET_CC) -o $@ $< -DTARGET_CHAINLOADER=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,-N -Wl,-Ttext,0x7c00 -m32
+	$(TARGET_CC) -o $@ $< -DTARGET_CHAINLOADER=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x7c00 -m32
 
 pc-chainloader.bin: pc-chainloader.elf
 	$(OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@;
 
 ntldr.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S
-	$(TARGET_CC) -o $@ $< -DTARGET_NTLDR=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,-N -Wl,-Ttext,0 -m32
+	$(TARGET_CC) -o $@ $< -DTARGET_NTLDR=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0 -m32
 
 ntldr.bin: ntldr.elf
 	$(OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@;
 
 multiboot2.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
-	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include -DTARGET_MULTIBOOT2=1
+	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include -DTARGET_MULTIBOOT2=1
 
 kfreebsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kfreebsd.init-x86_64.S
 	$(TARGET_CC) -o $@ $< -m64 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" && freebsd-brandelf -t FreeBSD $@
@@ -189,31 +189,31 @@ kopenbsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kbsd.init-x86_64.S
 	$(TARGET_CC) -o $@ $< -m64 -DTARGET_OPENBSD=1 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux-initramfs.i386: linux.init.i386 Makefile
-	TDIR=`mktemp -d`; cp $< $$TDIR/init; (cd $$TDIR; echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@; rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 linux-initramfs.x86_64: linux.init.x86_64 Makefile
-	TDIR=`mktemp -d`; cp $< $$TDIR/init; (cd $$TDIR; echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@; rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 kfreebsd-mfsroot.i386.img: kfreebsd.init.i386 Makefile
-	TDIR=`mktemp -d`; mkdir $$TDIR/dev; mkdir $$TDIR/sbin; cp $< $$TDIR/sbin/init; makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR; rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
 
 knetbsd.image.i386: knetbsd.init.i386 $(srcdir)/grub-core/tests/boot/kbsd.spec.txt
-	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
 
 kopenbsd.image.i386: kopenbsd.init.i386 $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt
-	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 128k -f 10 -o minfree=0,version=1 $@ $$TDIR && bsdlabel -f -R $@ $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt && rm -rf $$TDIR || rm -f $@
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 128k -f 10 -o minfree=0,version=1 $@ $$TDIR && bsdlabel -f -R $@ $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt && rm -rf $$TDIR || rm -f $@
 
 kopenbsd.image.x86_64: kopenbsd.init.x86_64 $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt
-	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 128k -f 10 -o minfree=0,version=1 $@ $$TDIR && bsdlabel -f -R $@ $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt && rm -rf $$TDIR || rm -f $@
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 128k -f 10 -o minfree=0,version=1 $@ $$TDIR && bsdlabel -f -R $@ $(srcdir)/grub-core/tests/boot/kopenbsdlabel.txt && rm -rf $$TDIR || rm -f $@
 
 knetbsd.miniroot-image.i386.img: knetbsd.image.i386 $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.i386
 	$(OBJCOPY) --add-section=miniroot=$< $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.i386 $@
 
 kfreebsd-mfsroot.x86_64.img: kfreebsd.init.x86_64 Makefile
-	TDIR=`mktemp -d`; mkdir $$TDIR/dev; mkdir $$TDIR/sbin; cp $< $$TDIR/sbin/init; makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR; rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
 
 knetbsd.image.x86_64: knetbsd.init.x86_64 $(srcdir)/grub-core/tests/boot/kbsd.spec.txt
-	TDIR=`mktemp -d` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -F $(srcdir)/grub-core/tests/boot/kbsd.spec.txt -t ffs -s 64k -f 10 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
 
 knetbsd.miniroot-image.x86_64.img: knetbsd.image.x86_64 $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.x86_64
 	$(OBJCOPY) --add-section=miniroot=$< $(GRUB_PAYLOADS_DIR)/knetbsd.miniroot.x86_64 $@

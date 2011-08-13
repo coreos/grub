@@ -31,7 +31,7 @@ struct load_spec
   char *modname;
 };
 
-struct load_spec *crypto_specs = NULL;
+static struct load_spec *crypto_specs = NULL;
 
 static void 
 grub_crypto_autoload (const char *name)

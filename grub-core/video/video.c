@@ -22,6 +22,8 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* The list of video adapters registered to system.  */
 grub_video_adapter_t grub_video_adapter_list = NULL;
 
@@ -372,6 +374,50 @@ grub_video_get_active_render_target (struct grub_video_render_target **target)
     return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
   return grub_video_adapter_active->get_active_render_target (target);
+}
+
+grub_err_t
+grub_video_edid_checksum (struct grub_video_edid_info *edid_info)
+{
+  const char *edid_bytes = (const char *) edid_info;
+  int i;
+  char checksum = 0;
+
+  /* Check EDID checksum.  */
+  for (i = 0; i < 128; ++i)
+    checksum += edid_bytes[i];
+
+  if (checksum != 0)
+    return grub_error (GRUB_ERR_BAD_DEVICE,
+		       "invalid EDID checksum %d", checksum);
+
+  grub_errno = GRUB_ERR_NONE;
+  return grub_errno;
+}
+
+grub_err_t
+grub_video_edid_preferred_mode (struct grub_video_edid_info *edid_info,
+				unsigned int *width, unsigned int *height)
+{
+  /* Bit 1 in the Feature Support field indicates that the first
+     Detailed Timing Description is the preferred timing mode.  */
+  if (edid_info->version == 1 /* we don't understand later versions */
+      && (edid_info->feature_support
+	  & GRUB_VIDEO_EDID_FEATURE_PREFERRED_TIMING_MODE)
+      && edid_info->detailed_timings[0].pixel_clock)
+    {
+      *width = edid_info->detailed_timings[0].horizontal_active_lo
+	       | (((unsigned int)
+		   (edid_info->detailed_timings[0].horizontal_hi & 0xf0))
+		  << 4);
+      *height = edid_info->detailed_timings[0].vertical_active_lo
+		| (((unsigned int)
+		    (edid_info->detailed_timings[0].vertical_hi & 0xf0))
+		   << 4);
+      return GRUB_ERR_NONE;
+    }
+
+  return grub_error (GRUB_ERR_BAD_DEVICE, "no preferred mode available");
 }
 
 /* Parse <width>x<height>[x<depth>]*/

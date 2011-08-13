@@ -50,8 +50,8 @@ grub_gfxmenu_view_new (const char *theme_path,
 {
   grub_gfxmenu_view_t view;
   grub_font_t default_font;
-  grub_gui_color_t default_fg_color;
-  grub_gui_color_t default_bg_color;
+  grub_video_rgba_color_t default_fg_color;
+  grub_video_rgba_color_t default_bg_color;
 
   view = grub_malloc (sizeof (*view));
   if (! view)
@@ -63,8 +63,8 @@ grub_gfxmenu_view_new (const char *theme_path,
   view->screen.height = height;
 
   default_font = grub_font_get ("Unknown Regular 16");
-  default_fg_color = grub_gui_color_rgb (0, 0, 0);
-  default_bg_color = grub_gui_color_rgb (255, 255, 255);
+  default_fg_color = grub_video_rgba_color_rgb (0, 0, 0);
+  default_bg_color = grub_video_rgba_color_rgb (255, 255, 255);
 
   view->canvas = 0;
 
@@ -131,7 +131,7 @@ redraw_background (grub_gfxmenu_view_t view,
     }
   else
     {
-      grub_video_fill_rect (grub_gui_map_color (view->desktop_color),
+      grub_video_fill_rect (grub_video_map_rgba_color (view->desktop_color),
                             bounds->x, bounds->y,
                             bounds->width, bounds->height);
     }
@@ -150,7 +150,7 @@ draw_title (grub_gfxmenu_view_t view)
   int y = 40 + grub_font_get_ascent (view->title_font);
   grub_font_draw_string (view->title_text,
                          view->title_font,
-                         grub_gui_map_color (view->title_color),
+                         grub_video_map_rgba_color (view->title_color),
                          x, y);
 }
 
@@ -244,13 +244,13 @@ draw_message (grub_gfxmenu_view_t view)
     return;
 
   grub_font_t font = view->message_font;
-  grub_video_color_t color = grub_gui_map_color (view->message_color);
+  grub_video_color_t color = grub_video_map_rgba_color (view->message_color);
 
   /* Border.  */
   grub_video_fill_rect (color,
                         f.x-1, f.y-1, f.width+2, f.height+2);
   /* Fill.  */
-  grub_video_fill_rect (grub_gui_map_color (view->message_bg_color),
+  grub_video_fill_rect (grub_video_map_rgba_color (view->message_bg_color),
                         f.x, f.y, f.width, f.height);
 
   /* Center the text. */
@@ -309,10 +309,8 @@ redraw_menu_visit (grub_gui_component_t component,
   view = userdata;
   if (component->ops->is_instance (component, "list"))
     {
-      grub_gui_list_t list;
       grub_video_rect_t bounds;
 
-      list = (grub_gui_list_t) component;
       component->ops->get_bounds (component, &bounds);
       grub_gfxmenu_view_redraw (view, &bounds);
     }

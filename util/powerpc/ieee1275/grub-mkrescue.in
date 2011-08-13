@@ -121,13 +121,13 @@ if [ "x${modules}" = "x" ] ; then
   modules=`cd ${input_dir}/ && ls *.mod`
 fi
 
-map_file=`mktemp`
+map_file=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 cat >${map_file} <<EOF
 # EXTN          XLate   CREATOR   TYPE     Comment
 grub.img        Raw     'UNIX'    'tbxi'   "bootstrap"
 EOF
 
-iso_dir=`mktemp -d`
+iso_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 boot_dir=${iso_dir}/boot/grub
 mkdir ${iso_dir}/boot
 mkdir ${boot_dir}

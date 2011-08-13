@@ -27,7 +27,7 @@ cmd='test_blockarg { true }'
 v=`echo "$cmd" | @builddir@/grub-shell`
 error_if_not "$v" '{ true }'
 
-tmp=`mktemp`
+tmp=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 cmd='test_blockarg { test_blockarg { true } }'
 echo "$cmd" | @builddir@/grub-shell >$tmp
 error_if_not "`head -n1 $tmp|tail -n1`" '{ test_blockarg { true } }'

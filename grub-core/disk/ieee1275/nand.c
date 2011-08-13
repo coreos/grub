@@ -23,6 +23,8 @@
 #include <grub/dl.h>
 #include <grub/ieee1275/ieee1275.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct grub_nand_data
 {
   grub_ieee1275_ihandle_t handle;
@@ -30,7 +32,8 @@ struct grub_nand_data
 };
 
 static int
-grub_nand_iterate (int (*hook) (const char *name))
+grub_nand_iterate (int (*hook) (const char *name),
+		   grub_disk_pull_t pull)
 {
   auto int dev_iterate (struct grub_ieee1275_devalias *alias);
   int dev_iterate (struct grub_ieee1275_devalias *alias)
@@ -43,6 +46,9 @@ grub_nand_iterate (int (*hook) (const char *name))
 
       return 0;
     }
+
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
 
   return grub_devalias_iterate (dev_iterate);
 }

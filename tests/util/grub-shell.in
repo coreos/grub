@@ -1,4 +1,5 @@
-#! /bin/sh -e
+#! /bin/sh
+set -e
 
 # Run GRUB script in a Qemu instance
 # Copyright (C) 2009,2010  Free Software Foundation, Inc.
@@ -107,23 +108,24 @@ for option in "$@"; do
 done
 
 if [ "x${source}" = x ] ; then
-    tmpfile=`mktemp`
+    tmpfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     while read REPLY; do
 	echo "$REPLY" >> ${tmpfile}
     done
     source=${tmpfile}
 fi
 
-cfgfile=`mktemp`
+cfgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 cat <<EOF >${cfgfile}
 grubshell=yes
 insmod serial
 serial
+terminfo serial dumb
 terminal_input serial
 terminal_output serial
 EOF
 
-rom_directory=`mktemp -d`
+rom_directory=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 
 for mod in ${modules}
 do
@@ -132,10 +134,12 @@ done
 
 cat <<EOF >>${cfgfile}
 source /boot/grub/testcase.cfg
+# Stop serial output to suppress "ACPI shutdown failed" error.
+terminal_output console
 halt
 EOF
 
-isofile=`mktemp`
+isofile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 if [ x$boot != xnet ]; then
     sh @builddir@/grub-mkrescue --grub-mkimage=${builddir}/grub-mkimage --output=${isofile} --override-directory=${builddir}/grub-core \
 	--rom-directory="${rom_directory}" \
@@ -161,7 +165,7 @@ if [ x$boot = xqemu ]; then
 fi
 
 if [ x$boot = xcoreboot ]; then
-    imgfile=`mktemp`
+    imgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     cp "${GRUB_COREBOOT_ROM}" "${imgfile}"
     "${GRUB_CBFSTOOL}" "${imgfile}" add-payload "${rom_directory}/coreboot.elf" fallback/payload
     bootdev="-bios ${imgfile}"
@@ -169,7 +173,7 @@ if [ x$boot = xcoreboot ]; then
 fi
 
 if [ x$boot = xnet ]; then
-    netdir=`mktemp -d`
+    netdir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     sh @builddir@/grub-mknetdir --grub-mkimage=${builddir}/grub-mkimage --override-directory=${builddir}/grub-core --net-directory=$netdir
     cp ${cfgfile} $netdir/boot/grub/grub.cfg
     cp ${source} $netdir/boot/grub/testcase.cfg

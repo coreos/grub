@@ -240,7 +240,7 @@ grub_cmdline_get (const char *prompt)
     grub_term_gotoxy (cl_term->term, cl_term->xpos, cl_term->ypos);
   }
 
-  void cl_set_pos_all ()
+  void cl_set_pos_all (void)
   {
     unsigned i;
     for (i = 0; i < nterms; i++)
@@ -500,8 +500,7 @@ grub_cmdline_get (const char *prompt)
 	case GRUB_TERM_CTRL | 'k':
 	  if (lpos < llen)
 	    {
-	      if (kill_buf)
-		grub_free (kill_buf);
+	      grub_free (kill_buf);
 
 	      kill_buf = grub_malloc ((llen - lpos + 1)
 				      * sizeof (grub_uint32_t));
@@ -566,8 +565,7 @@ grub_cmdline_get (const char *prompt)
 	    {
 	      grub_size_t n = lpos;
 
-	      if (kill_buf)
-		grub_free (kill_buf);
+	      grub_free (kill_buf);
 
 	      kill_buf = grub_malloc (n + 1);
 	      if (grub_errno)

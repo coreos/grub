@@ -24,6 +24,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 grub_cmd_source (grub_command_t cmd, int argc, char **args)
 {

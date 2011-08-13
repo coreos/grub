@@ -195,6 +195,11 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
 	chunk_size = s->sh_addr + s->sh_size;
     }
 
+  if (chunk_size < sizeof (e))
+    chunk_size = sizeof (e);
+  chunk_size += e.e_phnum * e.e_phentsize;
+  chunk_size += e.e_shnum * e.e_shentsize;
+
   {
     grub_relocator_chunk_t ch;
 
@@ -394,12 +399,10 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
   grub_err_t err;
   Elf_Ehdr e;
   Elf_Shdr *s, *symsh, *strsh;
-  char *shdr;
+  char *shdr = NULL;
   unsigned symsize, strsize;
-  Elf_Sym *sym;
   void *sym_chunk;
   grub_uint8_t *curload;
-  const char *str;
   grub_size_t chunk_size;
   Elf_Ehdr *e2;
   struct grub_netbsd_btinfo_symtab symtab;
@@ -473,7 +476,6 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
 
   if (grub_file_seek (file, symsh->sh_offset) == (grub_off_t) -1)
     return grub_errno;
-  sym = (Elf_Sym *) curload;
   if (grub_file_read (file, curload, symsize) != (grub_ssize_t) symsize)
     {
       if (! grub_errno)
@@ -484,7 +486,6 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
 
   if (grub_file_seek (file, strsh->sh_offset) == (grub_off_t) -1)
     return grub_errno;
-  str = (char *) curload;
   if (grub_file_read (file, curload, strsize) != (grub_ssize_t) strsize)
     {
       if (! grub_errno)
@@ -515,7 +516,7 @@ SUFFIX(grub_openbsd_find_ramdisk) (grub_file_t file,
     grub_err_t err;
     Elf_Ehdr e;
     Elf_Shdr *s;
-    char *shdr;
+    char *shdr = NULL;
     
     err = read_headers (file, &e, &shdr);
     if (err)

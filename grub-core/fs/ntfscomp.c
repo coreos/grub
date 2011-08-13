@@ -24,6 +24,8 @@
 #include <grub/fshelp.h>
 #include <grub/ntfs.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 decomp_nextvcn (struct grub_ntfs_comp *cc)
 {

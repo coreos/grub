@@ -106,14 +106,16 @@ struct grub_ntfs_bpb
   grub_uint16_t sectors_per_track;
   grub_uint16_t num_heads;
   grub_uint32_t num_hidden_sectors;
-  grub_uint32_t reserved_3[2];
+  grub_uint32_t reserved_3;
+  grub_uint8_t bios_drive;
+  grub_uint8_t reserved_4[3];
   grub_uint64_t num_total_sectors;
   grub_uint64_t mft_lcn;
   grub_uint64_t mft_mirr_lcn;
   grub_int8_t clusters_per_mft;
-  grub_int8_t reserved_4[3];
-  grub_int8_t clusters_per_index;
   grub_int8_t reserved_5[3];
+  grub_int8_t clusters_per_index;
+  grub_int8_t reserved_6[3];
   grub_uint64_t num_serial;
   grub_uint32_t checksum;
 } __attribute__ ((packed));
@@ -135,6 +137,7 @@ struct grub_fshelp_node
   struct grub_ntfs_data *data;
   char *buf;
   grub_uint64_t size;
+  grub_uint64_t mtime;
   grub_uint32_t ino;
   int inode_read;
   struct grub_ntfs_attr attr;

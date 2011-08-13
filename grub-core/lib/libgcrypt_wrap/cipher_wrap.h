@@ -25,6 +25,12 @@
 #include <grub/dl.h>
 #include <grub/crypto.h>
 
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN
+#else
+#undef WORDS_BIGENDIAN
+#endif
+
 #define __GNU_LIBRARY__
 
 #define DIM ARRAY_SIZE

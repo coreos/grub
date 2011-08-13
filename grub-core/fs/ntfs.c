@@ -26,6 +26,8 @@
 #include <grub/ntfs.h>
 #include <grub/charset.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_dl_t my_mod;
 
 ntfscomp_func_t grub_ntfscomp_func;
@@ -429,7 +431,7 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
   if (at->flags & AF_GPOS)
     {
       grub_disk_addr_t st0, st1;
-      grub_uint32_t m;
+      grub_uint64_t m;
 
       grub_divmod64 (ofs >> BLK_SHR, ctx->comp.spc, &m);
 
@@ -610,6 +612,10 @@ list_file (struct grub_ntfs_file *diro, char *pos,
 
 	  fdiro->data = diro->data;
 	  fdiro->ino = u32at (pos, 0);
+	  if (u64at (pos, 0x20) > u64at (pos, 0x28))
+	    fdiro->mtime = u64at (pos, 0x20);
+	  else
+	    fdiro->mtime = u64at (pos, 0x28);
 
 	  ustr = grub_malloc (ns * 4 + 1);
 	  if (ustr == NULL)
@@ -880,6 +886,10 @@ grub_ntfs_dir (grub_device_t device, const char *path,
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      info.mtimeset = 1;
+      info.mtime = grub_divmod64 (node->mtime, 10000000, 0) 
+	- 86400ULL * 365 * (1970 - 1601)
+	- 86400ULL * ((1970 - 1601) / 4) + 86400ULL * ((1970 - 1601) / 100);
       grub_free (node);
       return hook (filename, &info);
   }
@@ -1072,7 +1082,11 @@ grub_ntfs_uuid (grub_device_t device, char **uuid)
   data = grub_ntfs_mount (disk);
   if (data)
     {
+      char *ptr;
       *uuid = grub_xasprintf ("%016llx", (unsigned long long) data->uuid);
+      if (*uuid)
+	for (ptr = *uuid; *ptr; ptr++)
+	  *ptr = grub_toupper (*ptr);
     }
   else
     *uuid = NULL;

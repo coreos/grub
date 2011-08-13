@@ -58,7 +58,7 @@ struct legacy_command
   const char *longdesc;
 };
 
-struct legacy_command legacy_commands[] =
+static struct legacy_command legacy_commands[] =
   {
     {"blocklist", "blocklist '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Print the blocklist notation of the file FILE."},
@@ -116,7 +116,7 @@ struct legacy_command legacy_commands[] =
      " immediately starts over using the NUM entry (same numbering as the"
      " `default' command). This obviously won't help if the machine"
      " was rebooted by a kernel that GRUB loaded."},
-    {"find", "search -sf '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILENAME",
+    {"find", "search -f '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILENAME",
      "Search for the filename FILENAME in all of partitions and print the list of"
      " the devices which contain the file."},
     /* FIXME: fstest unsupported.  */
@@ -322,24 +322,23 @@ struct legacy_command legacy_commands[] =
 char *
 grub_legacy_escape (const char *in, grub_size_t len)
 {
-  const char *ptr;
-  char *ret, *outptr;
+  char *ptr;
+  char *ret;
+  char saved;
   int overhead = 0;
-  for (ptr = in; ptr < in + len && *ptr; ptr++)
-    if (*ptr == '\'' || *ptr == '\\')
-      overhead++;
+
+  for (ptr = (char*)in; ptr < in + len && *ptr; ptr++)
+    if (*ptr == '\'')
+      overhead += 3;
   ret = grub_malloc (ptr - in + overhead + 1);
   if (!ret)
     return NULL;
-  outptr = ret;
-  for (ptr = in; ptr < in + len && *ptr; ptr++)
-    {
-      if (*ptr == '\'' || *ptr == '\\')
-	*outptr++ = '\\';
-      
-      *outptr++ = *ptr;
-    }
-  *outptr++ = 0;
+
+  ptr = (char*)in;
+  saved = ptr[len];
+  ptr[len] = '\0';
+  grub_strchrsub (ret, ptr, '\'', "'\\''");
+  ptr[len] = saved;
   return ret;
 }
 
@@ -486,8 +485,12 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 
   if (legacy_commands[cmdnum].flags & FLAG_TERMINAL)
     {
-      int dumb = 0, no_echo = 0, no_edit = 0, lines = 24;
-      int console = 0, serial = 0, hercules = 0;
+      int dumb = 0, lines = 24;
+#ifdef TODO
+      int no_echo = 0, no_edit = 0;
+      int hercules = 0;
+#endif
+      int console = 0, serial = 0;
       /* Big enough for any possible resulting command. */
       char outbuf[256] = "";
       char *outptr;
@@ -497,13 +500,13 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		  " [console] [serial] [hercules]"*/
 	  if (grub_memcmp (ptr, "--dumb", sizeof ("--dumb") - 1) == 0)
 	    dumb = 1;
-
+#ifdef TODO
 	  if (grub_memcmp (ptr, "--no-echo", sizeof ("--no-echo") - 1) == 0)
 	    no_echo = 1;
 
 	  if (grub_memcmp (ptr, "--no-edit", sizeof ("--no-edit") - 1) == 0)
 	    no_edit = 1;
-
+#endif
 	  if (grub_memcmp (ptr, "--lines=", sizeof ("--lines=") - 1) == 0)
 	    {
 	      lines = grub_strtoul (ptr + sizeof ("--lines=") - 1, 0, 0);
@@ -519,10 +522,10 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 
 	  if (grub_memcmp (ptr, "serial", sizeof ("serial") - 1) == 0)
 	    serial = 1;
-
+#ifdef TODO
 	  if (grub_memcmp (ptr, "hercules", sizeof ("hercules") - 1) == 0)
 	    hercules = 1;
-
+#endif
 	  while (*ptr && !grub_isspace (*ptr))
 	    ptr++;
 	  while (*ptr && grub_isspace (*ptr))
@@ -618,12 +621,13 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		{
 		  for (; *ptr && grub_isspace (*ptr); ptr++);
 		  for (; *ptr && !grub_isspace (*ptr); ptr++)
-		    if (*ptr == '\\' || *ptr == '\'')
-		      overhead++;
+		    if (*ptr == '\'')
+		      overhead += 3;
 		  if (*ptr)
 		    ptr++;
 		  overhead += 3;
 		}
+		
 	      outptr0 = args[i] = grub_malloc (overhead + (ptr - curarg));
 	      if (!outptr0)
 		return NULL;
@@ -637,9 +641,15 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		  *outptr++ = '\'';
 		  for (; *ptr && !grub_isspace (*ptr); ptr++)
 		    {
-		      if (*ptr == '\\' || *ptr == '\'')
-			*outptr++ = '\\';
-		      *outptr++ = *ptr;
+		      if (*ptr == '\'')
+			{
+			  *outptr++ = '\'';
+			  *outptr++ = '\\';
+			  *outptr++ = '\'';
+			  *outptr++ = '\'';
+			}
+		      else
+			*outptr++ = *ptr;
 		    }
 		  *outptr++ = '\'';
 		  if (*ptr)
@@ -670,7 +680,10 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 	      int base = 10;
 	      brk = curarg;
 	      if (brk[0] == '0' && brk[1] == 'x')
-		base = 16;
+		{
+		  base = 16;
+		  brk += 2;
+		}
 	      else if (brk[0] == '0')
 		base = 8;
 	      for (; *brk && brk < curarg + curarglen; brk++)

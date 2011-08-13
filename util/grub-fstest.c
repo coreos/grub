@@ -54,12 +54,16 @@ execute_command (char *name, int n, char **args)
   return (cmd->func) (cmd, n, args);
 }
 
-#define CMD_LS          1
-#define CMD_CP          2
-#define CMD_CMP         3
-#define CMD_HEX         4
-#define CMD_CRC         6
-#define CMD_BLOCKLIST   7
+enum {
+  CMD_LS = 1,
+  CMD_CP,
+  CMD_CAT,
+  CMD_CMP,
+  CMD_HEX,
+  CMD_CRC,
+  CMD_BLOCKLIST,
+  CMD_TESTLOAD
+};
 
 #define BUF_SIZE  32256
 
@@ -111,7 +115,8 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
   file = grub_file_open (pathname);
   if (!file)
     {
-      grub_util_error (_("cannot open file %s"), pathname);
+      grub_util_error (_("cannot open file %s:%s"), pathname,
+		       grub_errmsg);
       return;
     }
 
@@ -182,6 +187,26 @@ cmd_cp (char *src, char *dest)
 }
 
 static void
+cmd_cat (char *src)
+{
+  auto int cat_hook (grub_off_t ofs, char *buf, int len);
+  int cat_hook (grub_off_t ofs, char *buf, int len)
+  {
+    (void) ofs;
+
+    if ((int) fwrite (buf, 1, len, stdout) != len)
+      {
+	grub_util_error (_("write error"));
+	return 1;
+      }
+
+    return 0;
+  }
+
+  read_file (src, cat_hook);
+}
+
+static void
 cmd_cmp (char *src, char *dest)
 {
   FILE *ff;
@@ -221,6 +246,14 @@ cmd_cmp (char *src, char *dest)
     grub_util_error (_("seek error"));
 
   read_file (src, cmp_hook);
+
+  {
+    grub_uint64_t pre;
+    pre = ftell (ff);
+    fseek (ff, 0, SEEK_END);
+    if (pre != ftell (ff))
+      grub_util_error (_("unexpected end of file"));
+  }
   fclose (ff);
 }
 
@@ -266,6 +299,7 @@ static char **images = NULL;
 static int cmd = 0;
 static char *debug_str = NULL;
 static char **args = NULL;
+static int mount_crypt = 0;
 
 static void
 fstest (int n, char **args)
@@ -295,6 +329,15 @@ fstest (int n, char **args)
       grub_free (host_file);
     }
 
+  {
+    char *argv[2] = { "-a", NULL};
+    if (mount_crypt)
+      {
+	if (execute_command ("cryptomount", 1, argv))
+	  grub_util_error (_("cryptomount command fails: %s"), grub_errmsg);
+      }
+  }
+
   grub_lvm_fini ();
   grub_mdraid09_fini ();
   grub_mdraid1x_fini ();
@@ -312,6 +355,9 @@ fstest (int n, char **args)
     case CMD_CP:
       cmd_cp (args[0], args[1]);
       break;
+    case CMD_CAT:
+      cmd_cat (args[0]);
+      break;
     case CMD_CMP:
       cmd_cmp (args[0], args[1]);
       break;
@@ -323,6 +369,9 @@ fstest (int n, char **args)
       break;
     case CMD_BLOCKLIST:
       execute_command ("blocklist", n, args);
+      grub_printf ("\n");
+    case CMD_TESTLOAD:
+      execute_command ("testload", n, args);
       grub_printf ("\n");
     }
     
@@ -347,6 +396,7 @@ static struct argp_option options[] = {
   {0,          0, 0      , OPTION_DOC, N_("Commands:"), 1},
   {N_("ls PATH"),  0, 0      , OPTION_DOC, N_("List files in PATH."), 1},
   {N_("cp FILE LOCAL"),  0, 0, OPTION_DOC, N_("Copy FILE to local file LOCAL."), 1},
+  {N_("cat FILE"), 0, 0      , OPTION_DOC, N_("Copy FILE to standard output."), 1},
   {N_("cmp FILE LOCAL"), 0, 0, OPTION_DOC, N_("Compare FILE with local file LOCAL."), 1},
   {N_("hex FILE"), 0, 0      , OPTION_DOC, N_("Hex dump FILE."), 1},
   {N_("crc FILE"), 0, 0     , OPTION_DOC, N_("Get crc32 checksum of FILE."), 1},
@@ -357,6 +407,7 @@ static struct argp_option options[] = {
   {"length",    'n', "N",           0, N_("Handle N bytes in output file."),   2},
   {"diskcount", 'c', "N",           0, N_("N input files."),                   2},
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
+  {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
   {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("Print verbose messages."), 2},
   {0, 0, 0, 0, 0, 0}
 };
@@ -378,6 +429,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
     {
     case 'r':
       root = arg;
+      return 0;
+
+    case 'C':
+      mount_crypt = 1;
       return 0;
 
     case 's':
@@ -459,6 +514,11 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	  cmd = CMD_CP;
           nparm = 2;
 	}
+      else if (!grub_strcmp (arg, "cat"))
+	{
+	  cmd = CMD_CAT;
+	  nparm = 1;
+	}
       else if (!grub_strcmp (arg, "cmp"))
 	{
 	  cmd = CMD_CMP;
@@ -477,6 +537,11 @@ argp_parser (int key, char *arg, struct argp_state *state)
       else if (!grub_strcmp (arg, "blocklist"))
 	{
 	  cmd = CMD_BLOCKLIST;
+          nparm = 1;
+	}
+      else if (!grub_strcmp (arg, "testload"))
+	{
+	  cmd = CMD_TESTLOAD;
           nparm = 1;
 	}
       else
@@ -514,6 +579,7 @@ main (int argc, char *argv[])
 
   /* Initialize all modules. */
   grub_init_all ();
+  grub_gcry_init_all ();
 
   if (debug_str)
     grub_env_set ("debug", debug_str);
@@ -542,6 +608,7 @@ main (int argc, char *argv[])
   fstest (args_count - 1 - num_disks, args);
 
   /* Free resources.  */
+  grub_gcry_fini_all ();
   grub_fini_all ();
 
   return 0;

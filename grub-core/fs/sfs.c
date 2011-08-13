@@ -26,6 +26,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* The common header for a block.  */
 struct grub_sfs_bheader
 {
@@ -66,7 +68,7 @@ struct grub_sfs_obj
       grub_uint32_t dir_objc;
     } dir __attribute__ ((packed));
   } file_dir;
-  grub_uint8_t unused3[4];
+  grub_uint32_t mtime;
   grub_uint8_t type;
   grub_uint8_t filename[1];
   grub_uint8_t comment[1];
@@ -119,6 +121,7 @@ struct grub_fshelp_node
   struct grub_sfs_data *data;
   int block;
   int size;
+  grub_uint32_t mtime;
 };
 
 /* Information about a "mounted" sfs filesystem.  */
@@ -149,7 +152,6 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
   struct grub_sfs_btree *tree;
   int i;
   int next;
-  int prev;
 
   treeblock = grub_malloc (data->blocksize);
   if (!block)
@@ -161,8 +163,6 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
   /* Handle this level in the btree.  */
   do
     {
-      prev = 0;
-
       grub_disk_read (data->disk, next, 0, data->blocksize, treeblock);
       if (grub_errno)
 	{
@@ -358,10 +358,12 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
   int pos;
 
   auto int NESTED_FUNC_ATTR grub_sfs_create_node (const char *name, int block,
-						  int size, int type);
+						  int size, int type,
+						  grub_uint32_t mtime);
 
   int NESTED_FUNC_ATTR grub_sfs_create_node (const char *name, int block,
-					     int size, int type)
+					     int size, int type,
+					     grub_uint32_t mtime)
     {
       node = grub_malloc (sizeof (*node));
       if (!node)
@@ -370,6 +372,7 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
       node->data = data;
       node->size = size;
       node->block = block;
+      node->mtime = mtime;
 
       return hook (name, type, node);
     }
@@ -429,7 +432,7 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
 
 	  if (grub_sfs_create_node (filename, block,
 				    grub_be_to_cpu32 (obj->file_dir.file.size),
-				    type))
+				    type, grub_be_to_cpu32 (obj->mtime)))
 	    {
 	      grub_free (objc_data);
 	      return 1;
@@ -528,6 +531,8 @@ grub_sfs_dir (grub_device_t device, const char *path,
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      info.mtime = node->mtime + 8 * 365 * 86400 + 86400 * 2;
+      info.mtimeset = 1;
       grub_free (node);
       return hook (filename, &info);
     }
@@ -582,6 +587,9 @@ static struct grub_fs grub_sfs_fs =
     .read = grub_sfs_read,
     .close = grub_sfs_close,
     .label = grub_sfs_label,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 0,
+#endif
     .next = 0
   };
 

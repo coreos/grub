@@ -24,6 +24,8 @@
 #include <grub/misc.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct grub_partition_map grub_msdos_partition_map;
 
 
@@ -90,8 +92,11 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 	{
 	  e = mbr.entries + p.index;
 
-	  p.start = p.offset + grub_le_to_cpu32 (e->start) - delta;
-	  p.len = grub_le_to_cpu32 (e->length);
+	  p.start = p.offset
+	    + (grub_le_to_cpu32 (e->start)
+	       << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)) - delta;
+	  p.len = grub_le_to_cpu32 (e->length)
+	    << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS);
 	  p.msdostype = e->type;
 
 	  grub_dprintf ("partition",
@@ -126,7 +131,9 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 
 	  if (grub_msdos_partition_is_extended (e->type))
 	    {
-	      p.offset = ext_offset + grub_le_to_cpu32 (e->start);
+	      p.offset = ext_offset
+		+ (grub_le_to_cpu32 (e->start)
+		   << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 	      if (! ext_offset)
 		ext_offset = p.offset;
 
@@ -204,8 +211,11 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 	  e = mbr.entries + i;
 
 	  if (!grub_msdos_partition_is_empty (e->type)
-	      && end > offset + grub_le_to_cpu32 (e->start))
-	    end = offset + grub_le_to_cpu32 (e->start);
+	      && end > offset
+	      + (grub_le_to_cpu32 (e->start)
+		 << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)))
+	    end = offset + (grub_le_to_cpu32 (e->start)
+			    << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 
 	  /* If this is a GPT partition, this MBR is just a dummy.  */
 	  if (e->type == GRUB_PC_PARTITION_TYPE_GPT_DISK && i == 0)
@@ -219,7 +229,9 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 
 	  if (grub_msdos_partition_is_extended (e->type))
 	    {
-	      offset = ext_offset + grub_le_to_cpu32 (e->start);
+	      offset = ext_offset 
+		+ (grub_le_to_cpu32 (e->start) 
+		   << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 	      if (! ext_offset)
 		ext_offset = offset;
 
@@ -232,10 +244,10 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 	break;
     }
 
-  if (end >= *nsectors + 1)
+  if (end >= *nsectors + 2)
     {
-      int i;
-      *nsectors = end - 1;
+      unsigned i;
+      *nsectors = end - 2;
       *sectors = grub_malloc (*nsectors * sizeof (**sectors));
       if (!*sectors)
 	return grub_errno;

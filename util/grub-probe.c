@@ -34,6 +34,8 @@
 #include <grub/env.h>
 #include <grub/raid.h>
 #include <grub/i18n.h>
+#include <grub/crypto.h>
+#include <grub/cryptodisk.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -54,6 +56,7 @@ enum {
   PRINT_DEVICE,
   PRINT_PARTMAP,
   PRINT_ABSTRACTION,
+  PRINT_CRYPTODISK_UUID
 };
 
 int print = PRINT_FS;
@@ -63,15 +66,49 @@ static void
 probe_partmap (grub_disk_t disk)
 {
   grub_partition_t part;
+  grub_disk_memberlist_t list = NULL, tmp;
 
   if (disk->partition == NULL)
     {
       grub_util_info ("no partition map found for %s", disk->name);
-      return;
     }
 
   for (part = disk->partition; part; part = part->parent)
-    printf ("%s\n", part->partmap->name);
+    printf ("%s ", part->partmap->name);
+
+  /* In case of LVM/RAID, check the member devices as well.  */
+  if (disk->dev->memberlist)
+    {
+      list = disk->dev->memberlist (disk);
+    }
+  while (list)
+    {
+      probe_partmap (list->disk);
+      tmp = list->next;
+      free (list);
+      list = tmp;
+    }
+}
+
+static void
+probe_cryptodisk_uuid (grub_disk_t disk)
+{
+  grub_disk_memberlist_t list = NULL, tmp;
+
+  /* In case of LVM/RAID, check the member devices as well.  */
+  if (disk->dev->memberlist)
+    {
+      list = disk->dev->memberlist (disk);
+    }
+  while (list)
+    {
+      probe_cryptodisk_uuid (list->disk);
+      tmp = list->next;
+      free (list);
+      list = tmp;
+    }
+  if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
+    grub_util_cryptodisk_print_uuid (disk);
 }
 
 static int
@@ -86,6 +123,42 @@ probe_raid_level (grub_disk_t disk)
     return -1;
 
   return ((struct grub_raid_array *) disk->data)->level;
+}
+
+static void
+probe_abstraction (grub_disk_t disk)
+{
+  grub_disk_memberlist_t list = NULL, tmp;
+  int raid_level;
+
+  if (disk->dev->memberlist)
+    list = disk->dev->memberlist (disk);
+  while (list)
+    {
+      probe_abstraction (list->disk);
+
+      tmp = list->next;
+      free (list);
+      list = tmp;
+    }
+
+  if (disk->dev->id == GRUB_DISK_DEVICE_LVM_ID)
+    printf ("lvm ");
+
+  if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
+    grub_util_cryptodisk_print_abstraction (disk);
+
+  raid_level = probe_raid_level (disk);
+  if (raid_level >= 0)
+    {
+      printf ("raid ");
+      if (disk->dev->raidname)
+	printf ("%s ", disk->dev->raidname (disk));
+    }
+  if (raid_level == 5)
+    printf ("raid5rec ");
+  if (raid_level == 6)
+    printf ("raid6rec ");
 }
 
 static void
@@ -136,87 +209,23 @@ probe (const char *path, char *device_name)
 
   if (print == PRINT_ABSTRACTION)
     {
-      grub_disk_memberlist_t list = NULL, tmp;
-      const int is_lvm = (dev->disk->dev->id == GRUB_DISK_DEVICE_LVM_ID);
-      int is_raid = 0;
-      int is_raid5 = 0;
-      int is_raid6 = 0;
-      int raid_level;
-
-      raid_level = probe_raid_level (dev->disk);
-      if (raid_level >= 0)
-	{
-	  is_raid = 1;
-	  is_raid5 |= (raid_level == 5);
-	  is_raid6 |= (raid_level == 6);
-	}
-
-      if ((is_lvm) && (dev->disk->dev->memberlist))
-	list = dev->disk->dev->memberlist (dev->disk);
-      while (list)
-	{
-	  raid_level = probe_raid_level (list->disk);
-	  if (raid_level >= 0)
-	    {
-	      is_raid = 1;
-	      is_raid5 |= (raid_level == 5);
-	      is_raid6 |= (raid_level == 6);
-	    }
-
-	  tmp = list->next;
-	  free (list);
-	  list = tmp;
-	}
-
-      if (is_raid)
-	{
-	  printf ("raid ");
-	  if (is_raid5)
-	    printf ("raid5rec ");
-	  if (is_raid6)
-	    printf ("raid6rec ");
-	  printf ("mdraid ");
-	}
-
-      if (is_lvm)
-	printf ("lvm ");
-
+      probe_abstraction (dev->disk);
       printf ("\n");
+      goto end;
+    }
 
+  if (print == PRINT_CRYPTODISK_UUID)
+    {
+      probe_cryptodisk_uuid (dev->disk);
+      printf ("\n");
       goto end;
     }
 
   if (print == PRINT_PARTMAP)
     {
-      grub_disk_memberlist_t list = NULL, tmp;
-
       /* Check if dev->disk itself is contained in a partmap.  */
       probe_partmap (dev->disk);
-
-      /* In case of LVM/RAID, check the member devices as well.  */
-      if (dev->disk->dev->memberlist)
-	list = dev->disk->dev->memberlist (dev->disk);
-      while (list)
-	{
-	  probe_partmap (list->disk);
-	  /* LVM on RAID  */
-	  if (list->disk->dev->memberlist)
-	    {
-	      grub_disk_memberlist_t sub_list;
-
-	      sub_list = list->disk->dev->memberlist (list->disk);
-	      while (sub_list)
-		{
-		  probe_partmap (sub_list->disk);
-		  tmp = sub_list->next;
-		  free (sub_list);
-		  sub_list = tmp;
-		}
-	    }
-	  tmp = list->next;
-	  free (list);
-	  list = tmp;
-	}
+      printf ("\n");
       goto end;
     }
 
@@ -285,8 +294,8 @@ Probe device information for a given path (or device, if the -d option is given)
 \n\
   -d, --device              given argument is a system device, not a path\n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
-  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction)\n\
-                            print filesystem module, GRUB drive, system device, partition map module or abstraction module [default=fs]\n\
+  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|cryptodisk_uuid)\n\
+                            print filesystem module, GRUB drive, system device, partition map module, abstraction module or CRYPTO UUID [default=fs]\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
   -v, --verbose             print verbose messages\n\
@@ -344,6 +353,8 @@ main (int argc, char *argv[])
 	      print = PRINT_PARTMAP;
 	    else if (!strcmp (optarg, "abstraction"))
 	      print = PRINT_ABSTRACTION;
+	    else if (!strcmp (optarg, "cryptodisk_uuid"))
+	      print = PRINT_CRYPTODISK_UUID;
 	    else
 	      usage (1);
 	    break;
@@ -389,6 +400,7 @@ main (int argc, char *argv[])
 
   /* Initialize all modules. */
   grub_init_all ();
+  grub_gcry_init_all ();
 
   grub_lvm_fini ();
   grub_mdraid09_fini ();
@@ -406,6 +418,7 @@ main (int argc, char *argv[])
     probe (argument, NULL);
 
   /* Free resources.  */
+  grub_gcry_fini_all ();
   grub_fini_all ();
   grub_util_biosdisk_fini ();
 

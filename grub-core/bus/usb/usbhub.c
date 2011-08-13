@@ -39,7 +39,7 @@ struct grub_usb_hub
   grub_usb_device_t dev;
 };
 
-struct grub_usb_hub *hubs;
+static struct grub_usb_hub *hubs;
 
 /* Add a device that currently has device number 0 and resides on
    CONTROLLER, the Hub reported that the device speed is SPEED.  */
@@ -110,7 +110,7 @@ static grub_usb_err_t
 grub_usb_add_hub (grub_usb_device_t dev)
 {
   struct grub_usb_usb_hubdesc hubdesc;
-  grub_err_t err;
+  grub_usb_err_t err;
   int i;
   
   err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
@@ -214,6 +214,8 @@ attach_root_port (struct grub_usb_hub *hub, int portno,
   if (err)
     return;
   hub->controller->dev->pending_reset = grub_get_time_ms () + 5000;
+
+  grub_millisleep (10);
 
   /* Enable the port and create a device.  */
   dev = grub_usb_hub_add_dev (hub->controller, speed);
@@ -350,8 +352,8 @@ poll_nonroot_hub (grub_usb_device_t dev)
 				  GRUB_USB_REQ_GET_STATUS,
 				  0, i, sizeof (status), (char *) &status);
 
-      grub_printf ("dev = %p, i = %d, status = %08x\n",
-                   dev, i, status);
+      grub_dprintf ("usb", "dev = %p, i = %d, status = %08x\n",
+		    dev, i, status);
 
       if (err)
 	continue;

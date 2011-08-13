@@ -27,12 +27,8 @@ libdir=@libdir@
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
-target_cpu=@target_cpu@
-platform=@platform@
 host_os=@host_os@
-pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 localedir=@datadir@/locale
-native_platform=@platform@
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 
 self=`basename $0`
@@ -49,6 +45,12 @@ debug=no
 debug_image=
 subdir=`echo /boot/grub | sed ${transform}`
 pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc
+ppc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/powerpc-ieee1275
+sparc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/sparc64-ieee1275
+i386_ieee1275_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-ieee1275
+efi32_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi
+efi64_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi
+itanium_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/ia64-efi
 
 # Usage: usage
 # Print the usage.
@@ -64,7 +66,7 @@ Install GRUB on your drive.
   --subdir=DIR            relative subdirectory on network server
   --grub-mkimage=FILE     use FILE as grub-mkimage
 
-$self copies GRUB images into net_directory/subdir/${target_cpu}-${platform}
+$self copies GRUB images into net_directory/subdir/target_cpu-platform
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -200,11 +202,20 @@ process_input_dir ()
        config_opt="-c ${grubdir}/load.cfg "
     fi
 
+    prefix="/${subdir}/${platform}";
     case "${platform}" in
     	 i386-pc) mkimage_target=i386-pc-pxe;
 	 	  netmodules="pxe";
-		  prefix="(pxe)/${subdir}/${platform}";
 		  ext=0 ;;
+    	 sparc64-ieee1275) mkimage_target=sparc64-ieee1275-aout;
+	 	  netmodules="ofnet";
+		  ext=img ;;
+    	 *-ieee1275) mkimage_target="${platform}";
+	 	  netmodules="ofnet";
+		  ext=elf ;;
+    	 *-efi) mkimage_target="${platform}";
+	 	  netmodules="efinet";
+		  ext=efi ;;
     	 *) echo Unsupported platform ${platform};
     	    exit 1;;
     esac
@@ -213,16 +224,35 @@ process_input_dir ()
 source ${subdir}/grub.cfg
 EOF
 
-    $grub_mkimage ${config_opt} -d "${input_dir}" -O ${mkimage_target} --output=${grubdir}/core.$ext --prefix=$prefix $modules $netmodules || exit 1
+    $grub_mkimage ${config_opt} -d "${input_dir}" -O ${mkimage_target} --output=${grubdir}/core.$ext --prefix=$prefix $modules $netmodules tftp || exit 1
     echo "Netboot directory for ${platform} created. Configure your DHCP server to point to ${subdir}/${platform}/core.$ext"
 }
 
 if [ "${override_dir}" = "" ] ; then
     if test -e "${pc_dir}" ; then
-        process_input_dir ${pc_dir} i386-pc
+        process_input_dir "${pc_dir}" i386-pc
+    fi
+    if test -e "${ppc_dir}" ; then
+        process_input_dir "${ppc_dir}" powerpc-ieee1275
+    fi
+    if test -e "${sparc_dir}" ; then
+        process_input_dir ${sparc_dir} sparc64-ieee1275
+    fi
+    if test -e "${i386_ieee1275_dir}" ; then
+        process_input_dir "${i386_ieee1275_dir}" i386-ieee1275
+    fi
+    if test -e "${efi32_dir}" ; then
+        process_input_dir "${efi32_dir}" i386-efi
+    fi
+    if test -e "${efi64_dir}" ; then
+        process_input_dir "${efi64_dir}" x86_64-efi
+    fi
+    if test -e "${itanium_dir}" ; then
+        process_input_dir "${itanium_dir}" ia64-efi
     fi
 else
-    process_input_dir ${override_dir} ${target_cpu}-${native_platform}
+    source "${override_dir}"/modinfo.sh
+    process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
 fi
 
 

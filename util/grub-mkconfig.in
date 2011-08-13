@@ -22,6 +22,7 @@ transform="@program_transform_name@"
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 sbindir=@sbindir@
+bindir=@bindir@
 libdir=@libdir@
 sysconfdir=@sysconfdir@
 PACKAGE_NAME=@PACKAGE_NAME@
@@ -35,8 +36,9 @@ grub_mkconfig_dir=${sysconfdir}/grub.d
 
 self=`basename $0`
 
-grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
-grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed "${transform}"`
+grub_probe=${sbindir}/`echo grub-probe | sed "${transform}"`
+grub_script_check="${bindir}/`echo grub-script-check | sed "${transform}"`"
 
 GRUB_PREFIX=`echo '/@bootdirname@/@grubdirname@' | sed "s,//*,/,g"`
 
@@ -93,7 +95,7 @@ do
     esac
 done
 
-. ${libdir}/grub/grub-mkconfig_lib
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 if [ "x$EUID" = "x" ] ; then
   EUID=`id -u`
@@ -168,20 +170,6 @@ fi
 
 for x in ${GRUB_TERMINAL_OUTPUT}; do
     if [ "x${x}" = "xgfxterm" ]; then
-        # If this platform supports gfxterm, try to use it.
-	if ! test -e ${GRUB_PREFIX}/gfxterm.mod ; then
-	    if [ "x$termoutdefault" != "x1" ]; then
-		echo "gfxterm isn't available on your platform" >&2 ; exit 1
-	    fi
-	    GRUB_TERMINAL_OUTPUT=
-	    break;
-	fi
-	if [ ! -s "${GRUB_PREFIX}/video.lst" ] ; then
-	    if [ "x$termoutdefault" != "x1" ]; then
-		echo "No suitable backend could be found for gfxterm." >&2 ; exit 1
-	    fi
-	    GRUB_TERMINAL_OUTPUT=
-	fi
 	if [ -n "$GRUB_FONT" ] ; then
 	    if is_path_readable_by_grub ${GRUB_FONT} > /dev/null ; then
 		GRUB_FONT_PATH=${GRUB_FONT}
@@ -251,14 +239,15 @@ export GRUB_DEFAULT \
   GRUB_CMDLINE_LINUX_DEFAULT \
   GRUB_CMDLINE_XEN \
   GRUB_CMDLINE_XEN_DEFAULT \
+  GRUB_CMDLINE_LINUX_XEN_REPLACE \
+  GRUB_CMDLINE_LINUX_XEN_REPLACE_DEFAULT \
   GRUB_CMDLINE_NETBSD \
   GRUB_CMDLINE_NETBSD_DEFAULT \
   GRUB_TERMINAL_INPUT \
   GRUB_TERMINAL_OUTPUT \
   GRUB_SERIAL_COMMAND \
   GRUB_DISABLE_LINUX_UUID \
-  GRUB_DISABLE_LINUX_RECOVERY \
-  GRUB_DISABLE_NETBSD_RECOVERY \
+  GRUB_DISABLE_RECOVERY \
   GRUB_VIDEO_BACKEND \
   GRUB_GFXMODE \
   GRUB_BACKGROUND \
@@ -267,6 +256,7 @@ export GRUB_DEFAULT \
   GRUB_DISABLE_OS_PROBER \
   GRUB_INIT_TUNE \
   GRUB_SAVEDEFAULT \
+  GRUB_ENABLE_CRYPTODISK \
   GRUB_BADRAM
 
 if test "x${grub_cfg}" != "x"; then
@@ -293,6 +283,8 @@ for i in ${grub_mkconfig_dir}/* ; do
   case "$i" in
     # emacsen backup files. FIXME: support other editors
     *~) ;;
+    # emacsen autosave files. FIXME: support other editors
+    \#*\#) ;;
     *)
       if grub_file_is_not_garbage "$i" && test -x "$i" ; then
         echo
@@ -305,7 +297,7 @@ for i in ${grub_mkconfig_dir}/* ; do
 done
 
 if test "x${grub_cfg}" != "x" ; then
-  if ! grub-script-check ${grub_cfg}.new; then
+  if ! ${grub_script_check} ${grub_cfg}.new; then
     echo "Syntax errors are detected in generated GRUB config file." >&2
     echo "Ensure that there are no errors in /etc/default/grub" >&2
     echo "and /etc/grub.d/* files or please file a bug report with" >&2

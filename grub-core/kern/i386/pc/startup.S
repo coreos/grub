@@ -151,8 +151,6 @@ LOCAL (codestart):
 	addl    $(GRUB_KERNEL_MACHINE_RAW_SIZE - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART), %edx
 	movl    reed_solomon_redundancy, %ecx
 	leal    _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART, %eax
-	testl   %edx, %edx
-	jz post_reed_solomon
 	call    EXT_C (grub_reed_solomon_recover)
 	jmp post_reed_solomon
 
@@ -224,6 +222,7 @@ multiboot_trampoline:
         movb    $0xFF, %dh
 	/* enter the usual booting */
 	call	prot_to_real
+	jmp     LOCAL (codestart)
 
 post_reed_solomon:
 
@@ -591,7 +590,7 @@ FUNCTION(grub_console_putchar)
 
 
 LOCAL(bypass_table):
-	.word 0x0100 | '\e',0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r'
+	.word 0x011b, 0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r'
 	.word 0x1c00 | '\n'
 LOCAL(bypass_table_end):
 
@@ -615,6 +614,7 @@ LOCAL(bypass_table_end):
 
 FUNCTION(grub_console_getkey)
 	pushl	%ebp
+	pushl   %edi
 
 	call	prot_to_real
 	.code16
@@ -644,15 +644,16 @@ FUNCTION(grub_console_getkey)
 	jz      1f
 
 	andl	%edx, %eax
-	cmp     %eax, 0x20
-	ja      2f
+	cmpl    $0x20, %eax
+	jae     2f
 	movl	%edx, %eax
-	leal    LOCAL(bypass_table), %esi
-	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) / 2), %ecx
-	repne cmpsw
+	leal    LOCAL(bypass_table), %edi
+	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) >> 1), %ecx
+	repne scasw 
 	jz      3f
 
-	addl    $('a' - 1 | GRUB_TERM_CTRL), %eax
+	andl	$0xff, %eax
+	addl    $(('a' - 1) | GRUB_TERM_CTRL), %eax
 	jmp     2f
 3:
 	andl    $0xff, %eax
@@ -661,7 +662,8 @@ FUNCTION(grub_console_getkey)
 1:	movl    %edx, %eax
 	shrl    $8, %eax
 	orl     $GRUB_TERM_EXTENDED, %eax
-2:	
+2:
+	popl    %edi
 	popl	%ebp
 	ret
 
@@ -817,6 +819,10 @@ FUNCTION(grub_console_setcursor)
 	DATA32	call	real_to_prot
 	.code32
 
+	cmp     %cl, %ch
+	jb      3f
+	movw    $0x0d0e, %cx
+3:	
 	movw	%cx, console_cursor_shape
 1:
 	/* set %cx to the designated cursor shape */
@@ -904,102 +910,4 @@ FUNCTION(grub_pxe_call)
 	popl	%ebp
 	ret
 
-FUNCTION(grub_bios_interrupt)
-	pushl    %ebp
-	pushl    %ecx
-	pushl    %eax
-	pushl    %ebx
-	pushl    %esi
-	pushl    %edi	
-	pushl    %edx
-	
-	movb     %al, intno
-	movl	 (%edx), %eax
-	movl	 %eax, LOCAL(bios_register_eax)
-	movw	 4(%edx), %ax
-	movw	 %ax, LOCAL(bios_register_es)
-	movw	 6(%edx), %ax
-	movw	 %ax, LOCAL(bios_register_ds)
-	movw	 8(%edx), %ax
-	movw	 %ax, LOCAL(bios_register_flags)
-
-	movl 	12(%edx), %ebx
-	movl 	16(%edx), %ecx
-	movl 	20(%edx), %edi
-	movl 	24(%edx), %esi
-	movl 	28(%edx), %edx
-
-	call    prot_to_real
-	.code16
-
-	mov	%ds, %ax
-	push	%ax
-
-	/* movw imm16, %ax*/
-	.byte	0xb8
-LOCAL(bios_register_es):
-	.short 	0
-	movw	%ax, %es
-	/* movw imm16, %ax*/
-	.byte	0xb8
-LOCAL(bios_register_ds):
-	.short 	0
-	movw	%ax, %ds
-
-	/* movw imm16, %ax*/
-	.byte	0xb8
-LOCAL(bios_register_flags):
-	.short 	0
-	push	%ax
-	popf
-
-	/* movl imm32, %eax*/
-	.byte	0x66, 0xb8
-LOCAL(bios_register_eax):
-	.long 	0
-	
-	/* int imm8.  */
-	.byte   0xcd
-intno:	
-	.byte   0
-
-	movl 	%eax, %cs:LOCAL(bios_register_eax)
-	movw	%ds, %ax
-	movw 	%ax, %cs:LOCAL(bios_register_ds)
-	pop 	%ax
-	mov	%ax, %ds
-	pushf
-	pop	%ax
-	movw	%ax, LOCAL(bios_register_flags)
-	mov 	%es, %ax
-	movw	%ax, LOCAL(bios_register_es)
-
-	DATA32  call	real_to_prot
-	.code32
-
-	popl    %eax
-
-	movl 	%ebx, 12(%eax)
-	movl 	%ecx, 16(%eax)
-	movl 	%edi, 20(%eax)
-	movl 	%esi, 24(%eax)
-	movl 	%edx, 28(%eax)
-
-	movl     %eax, %edx
-
-	movl	 LOCAL(bios_register_eax), %eax
-	movl	 %eax, (%edx)
-	movw	 LOCAL(bios_register_es), %ax
-	movw	 %ax, 4(%edx)
-	movw	 LOCAL(bios_register_ds), %ax
-	movw	 %ax, 6(%edx)
-	movw	 LOCAL(bios_register_flags), %ax
-	movw	 %ax, 8(%edx)
-
-	popl 	%edi
-	popl 	%esi
-	popl    %ebx
-	popl    %eax
-	popl    %ecx
-	popl    %ebp
-	ret
+#include "../int.S"

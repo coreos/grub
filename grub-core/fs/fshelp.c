@@ -22,7 +22,9 @@
 #include <grub/misc.h>
 #include <grub/disk.h>
 #include <grub/fshelp.h>
+#include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Lookup the node PATH.  The node ROOTNODE describes the root of the
    directory tree.  The node found is returned in FOUNDNODE, which is
@@ -195,7 +197,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  name = next;
 	}
 
-      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
     }
 
   if (!path || path[0] != '/')

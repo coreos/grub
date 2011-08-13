@@ -42,13 +42,22 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_PXE_ID,
     GRUB_DISK_DEVICE_SCSI_ID,
     GRUB_DISK_DEVICE_FILE_ID,
-    GRUB_DISK_DEVICE_LUKS_ID
+    GRUB_DISK_DEVICE_CRYPTODISK_ID,
+    GRUB_DISK_DEVICE_ARCDISK_ID,
   };
 
 struct grub_disk;
 #ifdef GRUB_UTIL
 struct grub_disk_memberlist;
 #endif
+
+typedef enum
+  { 
+    GRUB_DISK_PULL_NONE,
+    GRUB_DISK_PULL_REMOVABLE,
+    GRUB_DISK_PULL_RESCAN,
+    GRUB_DISK_PULL_MAX
+  } grub_disk_pull_t;
 
 /* Disk device.  */
 struct grub_disk_dev
@@ -60,7 +69,8 @@ struct grub_disk_dev
   enum grub_disk_dev_id id;
 
   /* Call HOOK with each device name, until HOOK returns non-zero.  */
-  int (*iterate) (int (*hook) (const char *name));
+  int (*iterate) (int (*hook) (const char *name),
+		  grub_disk_pull_t pull);
 
   /* Open the device named NAME, and set up DISK.  */
   grub_err_t (*open) (const char *name, struct grub_disk *disk);
@@ -78,6 +88,7 @@ struct grub_disk_dev
 
 #ifdef GRUB_UTIL
   struct grub_disk_memberlist *(*memberlist) (struct grub_disk *disk);
+  const char * (*raidname) (struct grub_disk *disk);
 #endif
 
   /* The next disk device.  */
@@ -98,6 +109,9 @@ struct grub_disk
 
   /* The total number of sectors.  */
   grub_uint64_t total_sectors;
+
+  /* Logarithm of sector size.  */
+  unsigned int log_sector_size;
 
   /* The id used by the disk cache manager.  */
   unsigned long id;
@@ -131,9 +145,10 @@ typedef struct grub_disk_memberlist *grub_disk_memberlist_t;
 /* The maximum number of disk caches.  */
 #define GRUB_DISK_CACHE_NUM	1021
 
-/* The size of a disk cache in sector units.  */
-#define GRUB_DISK_CACHE_SIZE	8
-#define GRUB_DISK_CACHE_BITS	3
+/* The size of a disk cache in 512B units. Must be at least as big as the
+   largest supported sector size, currently 16K.  */
+#define GRUB_DISK_CACHE_BITS	6
+#define GRUB_DISK_CACHE_SIZE	(1 << GRUB_DISK_CACHE_BITS)
 
 /* Return value of grub_disk_get_size() in case disk size is unknown. */
 #define GRUB_DISK_SIZE_UNKNOWN	 0xffffffffffffffffULL
@@ -167,17 +182,6 @@ EXPORT_FUNC(grub_disk_cache_get_performance) (unsigned long *hits, unsigned long
 
 extern void (* EXPORT_VAR(grub_disk_firmware_fini)) (void);
 extern int EXPORT_VAR(grub_disk_firmware_is_tainted);
-
-/* ATA pass through parameters and function.  */
-struct grub_disk_ata_pass_through_parms
-{
-  grub_uint8_t taskfile[8];
-  void * buffer;
-  int size;
-};
-
-extern grub_err_t (* EXPORT_VAR(grub_disk_ata_pass_through)) (grub_disk_t,
-		   struct grub_disk_ata_pass_through_parms *);
 
 #if defined (GRUB_UTIL) || defined (GRUB_MACHINE_EMU)
 void grub_lvm_init (void);

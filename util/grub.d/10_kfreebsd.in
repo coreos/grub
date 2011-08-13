@@ -21,7 +21,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
 libdir=@libdir@
-. ${libdir}/grub/grub-mkconfig_lib
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR=@localedir@
@@ -31,7 +31,7 @@ CLASS="--class os"
 case "${GRUB_DISTRIBUTOR}" in
   Debian)
 	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD"
-	CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]' | cut -d' ' -f1) --class gnu-kfreebsd --class gnu ${CLASS}"
+	CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr 'A-Z' 'a-z' | cut -d' ' -f1) --class gnu-kfreebsd --class gnu ${CLASS}"
   ;;
   *)
 	OS="FreeBSD"
@@ -68,19 +68,26 @@ kfreebsd_entry ()
 {
   os="$1"
   version="$2"
-  recovery="$3"	# not used yet
-  args="$4"	# not used yet
-  title="$(gettext_quoted "%s, with kFreeBSD %s")"
+  recovery="$3"
+  args="$4"
+  if ${recovery} ; then
+    title="$(gettext_quoted "%s, with kFreeBSD %s (recovery mode)")"
+  else
+    title="$(gettext_quoted "%s, with kFreeBSD %s")"
+  fi
   printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}"
-  save_default_entry | sed -e "s/^/\t/"
+  if ! ${recovery} ; then
+      save_default_entry | sed -e "s/^/\t/"
+  fi
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
 
   printf '%s\n' "${prepare_boot_cache}"
+  message="$(gettext_printf "Loading kernel of FreeBSD %s ..." ${version})"
   cat << EOF
-	echo			'$(printf "$(gettext_quoted "Loading kernel of FreeBSD %s ...")" ${version})'
-	kfreebsd		${rel_dirname}/${basename}
+	echo			'$message'
+	kfreebsd		${rel_dirname}/${basename} ${args}
 EOF
 
   if test -n "${devices}" ; then
@@ -103,7 +110,11 @@ EOF
     ;;
   esac
 
-  load_kfreebsd_module ${kfreebsd_fs} false
+  if [ x${kfreebsd_fs} = xufs ]; then
+	load_kfreebsd_module ${kfreebsd_fs} true
+  else
+	load_kfreebsd_module ${kfreebsd_fs} false
+  fi
 
   cat << EOF
 	set kFreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${kfreebsd_device}
@@ -172,7 +183,10 @@ while [ "x$list" != "x" ] ; do
     module_dir_rel=$(make_system_path_relative_to_its_root $module_dir)
   fi
 
-  kfreebsd_entry "${OS}" "${version}"
+  kfreebsd_entry "${OS}" "${version}" false
+  if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then
+    kfreebsd_entry "${OS}" "${version}" true "-s"
+  fi
 
   list=`echo $list | tr ' ' '\n' | grep -vx $kfreebsd | tr '\n' ' '`
 done

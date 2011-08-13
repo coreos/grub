@@ -84,12 +84,16 @@ void grub_machine_init (void);
 void EXPORT_FUNC(grub_machine_fini) (void);
 
 /* The machine-specific prefix initialization.  */
-void grub_machine_set_prefix (void);
+void
+grub_machine_get_bootlocation (char **device, char **path);
 
 /* Register all the exported symbols. This is automatically generated.  */
 void grub_register_exported_symbols (void);
 
-#if ! defined (ASM_FILE) && !defined (GRUB_MACHINE_EMU)
+extern void (*EXPORT_VAR(grub_net_poll_cards_idle)) (void);
+
+
+#if ! defined (ASM_FILE)
 extern char grub_prefix[];
 #endif
 

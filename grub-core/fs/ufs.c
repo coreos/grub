@@ -25,6 +25,8 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef MODE_UFS2
 #define GRUB_UFS_MAGIC		0x19540119
 #else
@@ -512,7 +514,7 @@ grub_ufs_find_file (struct grub_ufs_data *data, const char *path)
       pos += grub_le_to_cpu16 (dirent.direntlen);
     } while (pos < INODE_SIZE (data));
 
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
   return grub_errno;
 }
 
@@ -568,7 +570,6 @@ grub_ufs_dir (grub_device_t device, const char *path,
 			    const struct grub_dirhook_info *info))
 {
   struct grub_ufs_data *data;
-  struct grub_ufs_sblock *sblock;
   unsigned int pos = 0;
 
   data = grub_ufs_mount (device->disk);
@@ -578,8 +579,6 @@ grub_ufs_dir (grub_device_t device, const char *path,
   grub_ufs_read_inode (data, GRUB_UFS_INODE, 0);
   if (grub_errno)
     return grub_errno;
-
-  sblock = &data->sblock;
 
   if (!path || path[0] != '/')
     {
