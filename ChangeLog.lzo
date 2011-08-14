@@ -1,3 +1,7 @@
+2011-08-14  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/fs/btrfs.c: Some code style fixes.
+
 2001-08-14  Szymon Janc  <szymon@janc.net.pl>
 
 	Add helper functions for easier unaligned memory access.
