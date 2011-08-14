@@ -1,5 +1,18 @@
 2011-08-14  Szymon Janc <szymon@janc.net.pl>
 
+	Add support for LZO compression in btrfs.
+
+	* Makefile.util.def (libgrubmods.a): Add minilzo.c and add required flags
+	to cflags in cppflags. 
+	* Makefile.core.def (btrfs): Likewise.
+	* grub-core/fs/btrfs.c: Include minilzo.h.
+	(grub_btrfs_superblock): Add sectorsize, nodesize, leafsize, stripsize and
+	dummy5 field.
+	(GRUB_BTRFS_COMPRESSION_LZO): New define.
+	(grub_btrfs_extent_read): Add support for LZO compression type.
+
+2011-08-14  Szymon Janc <szymon@janc.net.pl>
+
 	* grub-core/fs/btrfs.c: Some code style fixes.
 
 2001-08-14  Szymon Janc  <szymon@janc.net.pl>

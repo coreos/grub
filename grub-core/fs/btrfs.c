@@ -26,6 +26,7 @@
 #include <grub/types.h>
 #include <grub/lib/crc.h>
 #include <grub/deflate.h>
+#include "minilzo.h"
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -51,10 +52,15 @@ struct grub_btrfs_superblock
   grub_uint64_t chunk_tree;
   grub_uint8_t dummy2[0x20];
   grub_uint64_t root_dir_objectid;
-  grub_uint8_t dummy3[0x41];
+  grub_uint8_t dummy3[0x8];
+  grub_uint32_t sectorsize;
+  grub_uint32_t nodesize;
+  grub_uint32_t leafsize;
+  grub_uint32_t stripsize;
+  grub_uint8_t dummy4[0x29];
   struct grub_btrfs_device this_device;
   char label[0x100];
-  grub_uint8_t dummy4[0x100];
+  grub_uint8_t dummy5[0x100];
   grub_uint8_t bootstrap_mapping[0x800];
 } __attribute__ ((packed));
 
@@ -216,6 +222,7 @@ struct grub_btrfs_extent_data
 
 #define GRUB_BTRFS_COMPRESSION_NONE 0
 #define GRUB_BTRFS_COMPRESSION_ZLIB 1
+#define GRUB_BTRFS_COMPRESSION_LZO  2
 
 #define GRUB_BTRFS_OBJECT_ID_CHUNK 0x100
 
@@ -954,7 +961,8 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	}
 
       if (data->extent->compression != GRUB_BTRFS_COMPRESSION_NONE
-	  && data->extent->compression != GRUB_BTRFS_COMPRESSION_ZLIB)
+	  && data->extent->compression != GRUB_BTRFS_COMPRESSION_ZLIB
+	  && data->extent->compression != GRUB_BTRFS_COMPRESSION_LZO)
 	{
 	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		      "compression type 0x%x not supported",
@@ -980,6 +988,42 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 		  != (grub_ssize_t) csize)
 		return -1;
 	    }
+	  else if (data->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
+	    {
+	      grub_uint32_t total_size, chunk_size;
+	      unsigned char *obuf;
+	      unsigned char *ibuf = (unsigned char *) data->extent->inl;
+	      lzo_uint ocnt = extoff + csize;
+	      int ret;
+
+	      obuf = grub_malloc (extoff + csize);
+	      if (!obuf)
+		return -1;
+
+	      total_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
+	      ibuf += sizeof (total_size);
+
+	      chunk_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
+	      ibuf += sizeof (chunk_size);
+
+	      /* Can we have multiple chunks in inline extent? */
+	      if (chunk_size + (sizeof (grub_uint32_t) * 2) != total_size)
+		{
+		  grub_free (obuf);
+		  return -1;
+		}
+
+	      ret = lzo1x_decompress_safe (ibuf, chunk_size, obuf, &ocnt, NULL);
+
+	      if (ret != LZO_E_OK)
+		{
+		  grub_free (obuf);
+		  return -1;
+		}
+
+	      grub_memcpy (buf, obuf + extoff, ocnt - extoff);
+	      grub_free (obuf);
+	    }
 	  else
 	    grub_memcpy (buf, data->extent->inl + extoff, csize);
 	  break;
@@ -989,9 +1033,10 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	      grub_memset (buf, 0, csize);
 	      break;
 	    }
-	  if (data->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
+
+	  if (data->extent->compression != GRUB_BTRFS_COMPRESSION_NONE)
 	    {
-	      char *tmp;
+	      void *tmp;
 	      grub_uint64_t zsize;
 	      zsize = grub_le_to_cpu64 (data->extent->compressed_size);
 	      tmp = grub_malloc (zsize);
@@ -1005,16 +1050,83 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 		  grub_free (tmp);
 		  return -1;
 		}
-	      if (grub_zlib_decompress (tmp, zsize, extoff +
-					grub_le_to_cpu64 (data->extent->offset),
-					buf, csize) != (grub_ssize_t) csize)
+
+	      if (data->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
 		{
+		  grub_ssize_t ret;
+
+		  ret = grub_zlib_decompress (tmp, zsize, extoff
+					    + grub_le_to_cpu64 (data->extent->offset),
+					    buf, csize);
+
 		  grub_free (tmp);
-		  return -1;
+
+		  if (ret != (grub_ssize_t) csize)
+		      return -1;
+
+		  break;
 		}
-	      grub_free (tmp);
-	      break;
-	    }
+	      else if (data->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
+		{
+		  grub_uint32_t total_size, chunk_size, usize = 0;
+		  grub_size_t off = extoff;
+		  unsigned char *chunk, *ibuf = tmp;
+		  char *obuf = buf;
+		  /* XXX Is this correct size from sblock?  */
+		  grub_uint32_t udata_size = grub_le_to_cpu32 (data->sblock.sectorsize);
+
+		  chunk = grub_malloc (udata_size);
+		  if (!chunk)
+		    {
+		      grub_free (tmp);
+		      return -1;
+		    }
+
+		  /* XXX Use this for some sanity checks while decompressing. */
+		  total_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
+		  ibuf += sizeof (total_size);
+
+		  chunk_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
+		  ibuf += sizeof (chunk_size);
+
+		  /* Jump to first chunk with requested data. */
+		  while (off >= udata_size)
+		    {
+		      chunk_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
+		      ibuf += sizeof (chunk_size);
+		      ibuf += chunk_size;
+		      off -= udata_size;
+		    }
+
+		  while (usize < csize)
+		    {
+		      chunk_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
+		      lzo_uint csize2 = udata_size;
+		      int diff;
+
+		      ibuf += sizeof (chunk_size);
+
+		      if (lzo1x_decompress_safe (ibuf, chunk_size, chunk, &csize2, NULL) != LZO_E_OK)
+			{
+			  grub_free (tmp);
+			  grub_free (chunk);
+			  return -1;
+			}
+
+		      diff = grub_min (csize2 - off, csize - usize);
+
+		      grub_memcpy (obuf, chunk + off, diff);
+		      obuf += diff;
+		      ibuf += chunk_size;
+		      usize += diff;
+		      off = 0;
+		    }
+
+		  grub_free (tmp);
+		  grub_free (chunk);
+		  break;
+		}
+	      }
 	  err = grub_btrfs_read_logical (data,
 					 grub_le_to_cpu64 (data->extent->laddr)
 					 + grub_le_to_cpu64 (data->extent->offset)
