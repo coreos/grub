@@ -1,3 +1,11 @@
+2001-08-14  Szymon Janc  <szymon@janc.net.pl>
+
+	Add helper functions for easier unaligned memory access.
+
+	* include/grub/types.h (grub_get_unaligned16): New function.
+	(grub_get_unaligned32): Likewise.
+	(grub_get_unaligned64): Likewise.
+
 2011-08-14  Szymon Janc  <szymon@janc.net.pl>
 
 	Import minilzo library for LZO decompression support.

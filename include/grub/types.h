@@ -222,4 +222,31 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 # define grub_cpu_to_le32_compile_time(x)	((grub_uint32_t) (x))
 #endif /* ! WORDS_BIGENDIAN */
 
+static inline grub_uint16_t grub_get_unaligned16(void *ptr)
+{
+  struct
+    {
+      grub_uint16_t d;
+    } __attribute__((packed)) *dd = ptr;
+    return dd->d;
+}
+
+static inline grub_uint32_t grub_get_unaligned32(void *ptr)
+{
+  struct
+    {
+      grub_uint32_t d;
+    } __attribute__((packed)) *dd = ptr;
+    return dd->d;
+}
+
+static inline grub_uint64_t grub_get_unaligned64(void *ptr)
+{
+  struct
+    {
+      grub_uint64_t d;
+    } __attribute__((packed)) *dd = ptr;
+    return dd->d;
+}
+
 #endif /* ! GRUB_TYPES_HEADER */
