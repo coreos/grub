@@ -1,0 +1,18 @@
+2011-08-14  Szymon Janc  <szymon@janc.net.pl>
+
+	Import minilzo library for LZO decompression support.
+
+	* grub-core/lib/minilzo/lzoconf.h: New file.
+	* grub-core/lib/minilzo/lzodefs.h: Likewise.
+	* grub-core/lib/minilzo/minilzo.c: Likewise.
+	* grub-core/lib/minilzo/minilzo.h: Likewise.
+	* include/grub/types.h (GRUB_UCHAR_MAX): New define.
+	(GRUB_USHRT_MAX): Likewise.
+	(GRUB_UINT_MAX): Likewise.
+	* grub-core/lib/posix_wrap/limits.h (USHRT_MAX): New define.
+	(UINT_MAX): Likewise.
+	(CHAR_BIT): Likewise.
+	* grub-core/lib/posix_wrap/sys/types.h (ULONG_MAX): Moved to
+	grub-core/lib/posix_wrap/limits.h
+	(UCHAR_MAX): Likewise.
+

@@ -24,9 +24,6 @@
 typedef grub_size_t size_t;
 typedef enum { false = 0, true = 1 } bool;
 
-#define ULONG_MAX GRUB_ULONG_MAX
-#define UCHAR_MAX 0xff
-
 typedef grub_uint8_t uint8_t;
 typedef grub_uint16_t uint16_t;
 typedef grub_uint32_t uint32_t;
