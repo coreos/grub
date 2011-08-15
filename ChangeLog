@@ -1,3 +1,11 @@
+2011-08-15  Mario Limonciello  <mario_limonciello@dell.com>
+2011-08-15  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-probe.c (probe): Canonicalise the path argument, fixing
+	use of "/path/.." as in grub-install for EFI as well as handling
+	symlinks correctly.
+	Fixes Debian bug #637768.
+
 2011-08-15  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-probe.c: Remove duplicate #include.

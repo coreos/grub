@@ -180,7 +180,10 @@ probe (const char *path, char *device_name)
 #endif
     }
   else
-    device_name = grub_guess_root_device (path);
+    {
+      grub_path = canonicalize_file_name (path);
+      device_name = grub_guess_root_device (grub_path);
+    }
 
   if (! device_name)
     grub_util_error ("cannot find a device for %s (is /dev mounted?)", path);
