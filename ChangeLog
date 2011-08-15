@@ -1,3 +1,7 @@
+2011-08-15  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-probe.c: Remove duplicate #include.
+
 2011-08-10  Robert Millan  <rmh@gnu.org>
 
 	Detect LSI MegaRAID SAS (`mfi') devices on GNU/kFreeBSD.
