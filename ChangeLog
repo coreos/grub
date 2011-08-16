@@ -1,5 +1,10 @@
 2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_iterate): Skip with
+	non-zero pull.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/jfs.c (grub_jfs_read_file): New parameter ino.
 	All users updated.
 	(grub_jfs_lookup_symlink): Use correct starting inode.
