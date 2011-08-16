@@ -1,5 +1,9 @@
 2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-setup.c (main): Add missing gcry initialisation.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't accept text modes on EFI when booting Linux.
 
 	* grub-core/loader/i386/linux.c (ACCEPTS_PURE_TEXT): New define.
