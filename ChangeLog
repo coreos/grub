@@ -1,5 +1,11 @@
 2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/jfs.c (grub_jfs_read_file): New parameter ino.
+	All users updated.
+	(grub_jfs_lookup_symlink): Use correct starting inode.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (main): Add missing gcry initialisation.
 
 2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
