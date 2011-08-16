@@ -45,15 +45,18 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #include <grub/efi/efi.h>
 #define HAS_VGA_TEXT 0
 #define DEFAULT_VIDEO_MODE "auto"
+#define ACCEPTS_PURE_TEXT 0
 #elif defined (GRUB_MACHINE_IEEE1275)
 #include <grub/ieee1275/ieee1275.h>
 #define HAS_VGA_TEXT 0
 #define DEFAULT_VIDEO_MODE "text"
+#define ACCEPTS_PURE_TEXT 1
 #else
 #include <grub/i386/pc/vbe.h>
 #include <grub/i386/pc/console.h>
 #define HAS_VGA_TEXT 1
 #define DEFAULT_VIDEO_MODE "text"
+#define ACCEPTS_PURE_TEXT 1
 #endif
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
@@ -483,12 +486,22 @@ grub_linux_boot (void)
       tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
       if (! tmp)
 	return grub_errno;
+#if ACCEPTS_PURE_TEXT
       err = grub_video_set_mode (tmp, 0, 0);
+#else
+      err = grub_video_set_mode (tmp, GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+#endif
       grub_free (tmp);
     }
   else
-    err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
-
+    {
+#if ACCEPTS_PURE_TEXT
+      err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
+#else
+      err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
+				 GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+#endif
+    }
   if (err)
     {
       grub_print_error ();
