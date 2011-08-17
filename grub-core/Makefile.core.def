@@ -1652,6 +1652,14 @@ module = {
 };
 
 module = {
+  name = lzopio;
+  common = io/lzopio.c;
+  common = lib/minilzo/minilzo.c;
+  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
+};
+
+module = {
   name = testload;
   common = commands/testload.c;
 };

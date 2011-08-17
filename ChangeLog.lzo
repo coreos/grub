@@ -1,3 +1,12 @@
+2011-08-17  Szymon Janc <szymon@janc.net.pl>
+
+	Add initial support for lzop files decompression.
+
+	* grub-core/Makefile.core.def (lzopio): New module.
+	* grub-core/io/lzopio.c: New file.
+	* include/grub/file.h (grub_file_filter_id): New compression filter
+	GRUB_FILE_FILTER_LZOPIO.
+
 2011-08-14  Szymon Janc <szymon@janc.net.pl>
 
 	Add support for LZO compression in btrfs.
