@@ -1,3 +1,7 @@
+2011-08-19  Szymon Janc <szymon@janc.net.pl>
+
+	* configure.ac: Fixed typo in --enable-cache-stats description.
+
 2010-10-05  Szymon Janc <szymon@janc.net.pl>
 
 	Make enable of disk cache statistics code configurable.

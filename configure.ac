@@ -719,7 +719,7 @@ AC_ARG_ENABLE([mm-debug],
 
 AC_ARG_ENABLE([cache-stats],
 	      AS_HELP_STRING([--enable-cache-stats],
-                             [enable disk cache statistics collection])])
+                             [enable disk cache statistics collection]))
 
 if test x$enable_cache_stats = xyes; then
   DISK_CACHE_STATS=1
