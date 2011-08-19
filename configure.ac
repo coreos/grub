@@ -412,23 +412,6 @@ if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
 fi
 
-if test "${target_cpu}-${platform}" = mipsel-loongson; then
-  AC_CACHE_CHECK([whether -march=loongson2f works], [grub_cv_cc_march_loongson2f], [
-    SAVE_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS -march=loongson2f"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-        [grub_cv_cc_march_loongson2f=yes],
-        [grub_cv_cc_march_loongson2f=no])
-    CFLAGS="$SAVE_CFLAGS"
-  ])
-
-  if test "x$grub_cv_cc_march_loongson2f" = xyes; then
-    TARGET_CFLAGS="$TARGET_CFLAGS -march=loongson2f"
-  else
-    TARGET_CFLAGS="$TARGET_CFLAGS -march=mips3"
-  fi
-fi
-
 grub_apple_target_cc
 if test x$grub_cv_apple_target_cc = xyes ; then
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS -DAPPLE_CC=1"
