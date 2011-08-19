@@ -269,8 +269,27 @@ grub_exit (void)
 void
 grub_reboot (void)
 {
-  grub_write_ec (GRUB_MACHINE_EC_COMMAND_REBOOT);
-
+  switch (grub_arch_machine)
+    {
+    case GRUB_ARCH_MACHINE_FULOONG2E:
+      grub_outb (grub_inb (0xbfe00104) & ~4, 0xbfe00104);
+      grub_outb (grub_inb (0xbfe00104) | 4, 0xbfe00104);
+      break;
+    case GRUB_ARCH_MACHINE_FULOONG2F:
+      {
+	grub_pci_device_t dev;
+	if (!grub_cs5536_find (&dev))
+	  break;
+	grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_RESET,
+			       grub_cs5536_read_msr (dev,
+						     GRUB_CS5536_MSR_DIVIL_RESET) 
+			       | 1);
+	break;
+      }
+    case GRUB_ARCH_MACHINE_YEELOONG:
+      grub_write_ec (GRUB_MACHINE_EC_COMMAND_REBOOT);
+      break;
+    }
   grub_millisleep (1500);
 
   grub_printf ("Reboot failed\n");

@@ -1,5 +1,10 @@
 2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mips/loongson/init.c (grub_reboot): Reboot Fuloong.
+	* include/grub/cs5536.h (GRUB_CS5536_MSR_DIVIL_RESET): New definition.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (kernel): Add video/radeon_fuloong2e.c on
 	loongson.
 	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Init
