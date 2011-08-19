@@ -35,6 +35,7 @@
 
 extern void grub_video_sm712_init (void);
 extern void grub_video_sis315pro_init (void);
+extern void grub_video_radeon_fuloong2e_init (void);
 extern void grub_video_init (void);
 extern void grub_bitmap_init (void);
 extern void grub_font_init (void);
@@ -206,6 +207,7 @@ grub_machine_init (void)
   grub_video_init ();
   grub_video_sm712_init ();
   grub_video_sis315pro_init ();
+  grub_video_radeon_fuloong2e_init ();
   grub_bitmap_init ();
   grub_font_init ();
   grub_gfxterm_init ();

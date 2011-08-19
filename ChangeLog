@@ -1,5 +1,15 @@
 2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (kernel): Add video/radeon_fuloong2e.c on
+	loongson.
+	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Init
+	video_radeon_fuloong2e.
+	* grub-core/video/radeon_fuloong2e.c: New file.
+	* include/grub/video.h (grub_video_id_t): Add new ID
+	GRUB_VIDEO_DRIVER_RADEON_FULOONG2E.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/mips/loongson.h (GRUB_CPU_LOONGSON_COP0_PRID): New
 	define.
 	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Check
