@@ -1,5 +1,20 @@
 2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix PCI iterating on functions >= 4.
+
+	* grub-core/bus/pci.c (grub_pci_iterate): Remove useless ghost skipping.
+	* include/grub/mips/loongson/pci.h (GRUB_LOONGSON_OHCI_GHOST_FUNCTION):
+	Removed.
+	(GRUB_LOONGSON_EHCI_GHOST_FUNCTION): Likewise.
+	(grub_pci_read): Fix bitmask.
+	(grub_pci_read_word): Likewise.
+	(grub_pci_read_byte): Likewise.
+	(grub_pci_write): Likewise.
+	(grub_pci_write_word): Likewise.
+	(grub_pci_write_byte): Likewise.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Don't impose march=loongson2f on loongson platform. (It
 	can still be specified in TARGET_CFLAGS)
 
