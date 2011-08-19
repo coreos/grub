@@ -109,7 +109,7 @@ argcont:
 	DO_PARSE (memsizestr, $s4)
 	DO_PARSE (highmemsizestr, $s5)
 	DO_CHECKT1 (pmon_yeeloong_verstr, GRUB_ARCH_MACHINE_YEELOONG)
-	DO_CHECKT1 (pmon_fuloong_verstr, GRUB_ARCH_MACHINE_FULOONG)
+	DO_CHECKT1 (pmon_fuloong2f_verstr, GRUB_ARCH_MACHINE_FULOONG2F)
 2:	
 	b argcont
 	 addiu $t0, $t0, 4	 
@@ -155,11 +155,12 @@ memsizestr:	.asciiz "memsize="
 highmemsizestr:	.asciiz "highmemsize="
 machtype_yeeloong_str1:	.asciiz "machtype=8.9"
 machtype_yeeloong_str2:	.asciiz "machtype=lemote-yeeloong-"
-machtype_fuloong_str:	.asciiz "machtype=lemote-fuloong-"
+machtype_fuloong2f_str:	.asciiz "machtype=lemote-fuloong-2f"
+machtype_fuloong2e_str:	.asciiz "machtype=lemote-fuloong-2e"
 pmon_yeeloong_str:	.asciiz "PMON_VER=LM8"
-pmon_fuloong_str:	.asciiz "PMON_VER=LM6"
+pmon_fuloong2f_str:	.asciiz "PMON_VER=LM6"
 pmon_yeeloong_verstr:	.asciiz "Version=LM8"
-pmon_fuloong_verstr:	.asciiz "Version=LM6"
+pmon_fuloong2f_verstr:	.asciiz "Version=LM6"
 	.p2align 2
 
 argdone:
@@ -173,8 +174,9 @@ argdone:
 	DO_CHECKA1 (machtype_yeeloong_str1, GRUB_ARCH_MACHINE_YEELOONG)
 	DO_CHECKA1 (machtype_yeeloong_str2, GRUB_ARCH_MACHINE_YEELOONG)
 	DO_CHECKA1 (pmon_yeeloong_str, GRUB_ARCH_MACHINE_YEELOONG)
-	DO_CHECKA1 (machtype_fuloong_str, GRUB_ARCH_MACHINE_FULOONG)
-	DO_CHECKA1 (pmon_fuloong_str, GRUB_ARCH_MACHINE_FULOONG)
+	DO_CHECKA1 (machtype_fuloong2f_str, GRUB_ARCH_MACHINE_FULOONG2F)
+	DO_CHECKA1 (machtype_fuloong2e_str, GRUB_ARCH_MACHINE_FULOONG2E)
+	DO_CHECKA1 (pmon_fuloong2f_str, GRUB_ARCH_MACHINE_FULOONG2F)
 	addiu $a0, $a0, -1
 	b argdone
   	 addiu $a1, $a1, 4

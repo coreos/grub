@@ -363,8 +363,8 @@ image = {
 };
 
 image = {
-  name = fwstart_fuloong;
-  mips_loongson = boot/mips/loongson/fuloong.S;
+  name = fwstart_fuloong2f;
+  mips_loongson = boot/mips/loongson/fuloong2f.S;
   objcopyflags = '-O binary';
   ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_loongson;

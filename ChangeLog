@@ -1,3 +1,32 @@
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Rename Fuloong into Fuloong 2F. Add new ID for Fuloong2E.
+
+	* grub-core/Makefile.core.def (fwstart_fuloong): Rename fwstart_fuloong
+	into fwstart_fuloong2f. Use boot/mips/loongson/fuloong2f.S.
+	* grub-core/boot/mips/loongson/fuloong.S: Rename to ...
+	* grub-core/boot/mips/loongson/fuloong2f.S: ... this.
+	(FULOONG): Rename to ...
+	(FULOONG2F): ... this. All users updated.
+	* grub-core/boot/mips/startup_raw.S (machtype_fuloong_str): Rename to
+	(machtype_fuloong2f_str): ... this.
+	(machtype_fuloong2e_str): New string.
+	Check for machtype_fuloong2e_str.
+	* grub-core/loader/mips/linux.c (loongson_machtypes)
+	[GRUB_MACHINE_MIPS_LOONGSON]: Add GRUB_ARCH_MACHINE_FULOONG2E.
+	* grub-core/term/serial.c (loongson_defserial)
+	[GRUB_MACHINE_MIPS_LOONGSON]: New array.
+	(grub_serial_register) [GRUB_MACHINE_MIPS_LOONGSON]: Use
+	loongson_defserial.
+	* include/grub/mips/loongson/kernel.h (GRUB_ARCH_MACHINE_FULOONG):
+	Rename to ...
+	(GRUB_ARCH_MACHINE_FULOONG2F): ... this.
+	(GRUB_ARCH_MACHINE_FULOONG2E): New const.
+	* util/grub-mkimage.c (image_target_desc): Rename IMAGE_FULOONG_FLASH
+	to IMAGE_FULOONG2F_FLASH. All users updated.
+	(image_targets): Rename images.
+	* util/grub-mkstandalone.in: Accept fuloong2f and fuloong2e.
+
 2011-08-19  Szymon Janc <szymon@janc.net.pl>
 
 	Make enable of disk cache statistics code configurable.

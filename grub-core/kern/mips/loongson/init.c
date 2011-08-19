@@ -213,7 +213,9 @@ grub_halt (void)
 {
   switch (grub_arch_machine)
     {
-    case GRUB_ARCH_MACHINE_FULOONG:
+    case GRUB_ARCH_MACHINE_FULOONG2E:
+      break;
+    case GRUB_ARCH_MACHINE_FULOONG2F:
       {
 	grub_pci_device_t dev;
 	grub_port_t p;

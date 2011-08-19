@@ -61,7 +61,7 @@ VARIABLE (grub_arch_highmemsize)
 	.long 0
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
 VARIABLE (grub_arch_machine)
-	.long GRUB_ARCH_MACHINE_FULOONG
+	.long GRUB_ARCH_MACHINE_FULOONG2F
 #endif
 cont:
 	/* Save our base.  */
