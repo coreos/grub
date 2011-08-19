@@ -210,6 +210,7 @@ grub_vprintf (const char *fmt, va_list args)
 	  buf[PREALLOC_SIZE - 2] = '.';
 	  buf[PREALLOC_SIZE - 1] = '.';
 	  buf[PREALLOC_SIZE] = 0;
+	  curbuf = buf;
 	}
       else
 	s = grub_vsnprintf_real (curbuf, s, fmt, ap2);

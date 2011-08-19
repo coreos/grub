@@ -1,5 +1,9 @@
 2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_vprintf): Fix a bug on malloc failure.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix PCI iterating on functions >= 4.
 
 	* grub-core/bus/pci.c (grub_pci_iterate): Remove useless ghost skipping.
