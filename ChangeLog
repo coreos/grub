@@ -1,5 +1,20 @@
 2011-08-19  Szymon Janc <szymon@janc.net.pl>
 
+	Make enable of disk cache statistics code configurable.
+
+	* configure.ac: --enable-cache-stats added.
+	* config.h.in (DISK_CACHE_STATS): New define.
+	* grub-core/Makefile.core.def (cacheinfo): New command.
+	* include/grub/disk.h(grub_disk_cache_get_performance): New function.
+	* grub-core/commands/cacheinfo.c: New file.
+	* grub-core/commands/minicmd.c (grub_rescue_cmd_info): Updated and
+	moved to cacheinfo.c.
+	* grub-core/kern/disk.c: Use DISK_CACHE_STATS to disable disk cache
+	debug code.
+	* include/grub/disk.h: Likewise.
+
+2011-08-19  Szymon Janc <szymon@janc.net.pl>
+
 	* Makefile.am (AUTOMAKE_OPTIONS): = Added -Wno-portability flag.
 	* grub-core/Makefile.am: Likewise.
 

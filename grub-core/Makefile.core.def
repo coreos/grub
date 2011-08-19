@@ -1669,3 +1669,9 @@ module = {
   name = time;
   common = commands/time.c;
 };
+
+module = {
+  name = cacheinfo;
+  common = commands/cacheinfo.c;
+  condition = COND_ENABLE_CACHE_STATS;
+};
