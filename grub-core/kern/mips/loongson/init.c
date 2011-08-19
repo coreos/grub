@@ -123,6 +123,23 @@ void
 grub_machine_init (void)
 {
   grub_addr_t modend;
+  grub_uint32_t prid;
+
+  asm volatile ("mfc0 %0, " GRUB_CPU_LOONGSON_COP0_PRID : "=r" (prid));
+
+  switch (prid)
+    {
+      /* Loongson 2E.  */
+    case 0x6302:
+      grub_arch_machine = GRUB_ARCH_MACHINE_FULOONG2E;
+      break;
+      /* Loongson 2F.  */
+    case 0x6303:
+      if (grub_arch_machine != GRUB_ARCH_MACHINE_FULOONG2F
+	  && grub_arch_machine != GRUB_ARCH_MACHINE_YEELOONG)
+	grub_arch_machine = GRUB_ARCH_MACHINE_YEELOONG;
+      break;
+    }
 
   /* FIXME: measure this.  */
   if (grub_arch_busclock == 0)

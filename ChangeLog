@@ -1,5 +1,13 @@
 2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/mips/loongson.h (GRUB_CPU_LOONGSON_COP0_PRID): New
+	define.
+	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Check
+	that PRID matches the detected subplatform and reset the subplatform
+	if it doesn't.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_vprintf): Fix a bug on malloc failure.
 
 2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
