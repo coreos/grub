@@ -68,6 +68,7 @@ enum {
 #define BUF_SIZE  32256
 
 static grub_disk_addr_t skip, leng;
+static int uncompress = 0;
 
 static void
 read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
@@ -111,7 +112,8 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
       return;
     }
 
-  grub_file_filter_disable_compression ();
+  if (uncompress == 0)
+    grub_file_filter_disable_compression ();
   file = grub_file_open (pathname);
   if (!file)
     {
@@ -409,6 +411,7 @@ static struct argp_option options[] = {
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
   {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
   {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("Print verbose messages."), 2},
+  {"uncompress", 'u', NULL, OPTION_ARG_OPTIONAL, N_("Uncompress data."), 2},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -467,6 +470,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
     case 'v':
       verbosity++;
+      return 0;
+
+    case 'u':
+      uncompress = 1;
       return 0;
 
     case ARGP_KEY_END:
