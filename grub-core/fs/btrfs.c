@@ -31,6 +31,7 @@
 GRUB_MOD_LICENSE ("GPLv3+");
 
 #define GRUB_BTRFS_SIGNATURE "_BHRfS_M"
+#define GRUB_BTRFS_LZO_BLOCK_SIZE 4096
 
 typedef grub_uint8_t grub_btrfs_checksum_t[0x20];
 typedef grub_uint16_t grub_btrfs_uuid_t[8];
@@ -52,15 +53,10 @@ struct grub_btrfs_superblock
   grub_uint64_t chunk_tree;
   grub_uint8_t dummy2[0x20];
   grub_uint64_t root_dir_objectid;
-  grub_uint8_t dummy3[0x8];
-  grub_uint32_t sectorsize;
-  grub_uint32_t nodesize;
-  grub_uint32_t leafsize;
-  grub_uint32_t stripsize;
-  grub_uint8_t dummy4[0x29];
+  grub_uint8_t dummy3[0x41];
   struct grub_btrfs_device this_device;
   char label[0x100];
-  grub_uint8_t dummy5[0x100];
+  grub_uint8_t dummy4[0x100];
   grub_uint8_t bootstrap_mapping[0x800];
 } __attribute__ ((packed));
 
@@ -884,6 +880,77 @@ grub_btrfs_read_inode (struct grub_btrfs_data *data,
   return grub_btrfs_read_logical (data, elemaddr, inode, sizeof (*inode));
 }
 
+static int
+grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
+			  char *obuf, grub_size_t osize)
+{
+  grub_uint32_t total_size, cblock_size;
+  unsigned char buf[GRUB_BTRFS_LZO_BLOCK_SIZE];
+
+  total_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
+  ibuf += sizeof (total_size);
+
+  if (isize < total_size)
+    return -1;
+
+  while (osize != 0)
+    {
+      lzo_uint usize = GRUB_BTRFS_LZO_BLOCK_SIZE;
+
+      cblock_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
+      ibuf += sizeof (cblock_size);
+
+      if (cblock_size > GRUB_BTRFS_LZO_BLOCK_SIZE)
+	return -1;
+
+      /* Jump forward to first block with requested data.  */
+      if (off >= GRUB_BTRFS_LZO_BLOCK_SIZE)
+	{
+	  off -= GRUB_BTRFS_LZO_BLOCK_SIZE;
+	  ibuf += cblock_size;
+	  continue;
+	}
+
+      /* First block partially filled with requested data. */
+      if (off > 0)
+	{
+	  if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, buf, &usize,
+	      NULL) != LZO_E_OK)
+	    return -1;
+
+	  grub_memcpy(obuf, buf + off, usize - off);
+
+	  osize -= usize - off;
+	  obuf += usize - off;
+	  ibuf += cblock_size;
+	  off = 0;
+	  continue;
+	}
+
+      /* 'Main' case, decompress whole block directly to output buffer.  */
+      if (osize >= GRUB_BTRFS_LZO_BLOCK_SIZE)
+	{
+	  if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size,
+	      (lzo_bytep)obuf, &usize, NULL) != LZO_E_OK)
+	    return -1;
+
+	  osize -= usize;
+	  obuf += usize;
+	  ibuf += cblock_size;
+	}
+      else /* Last possible block partially filled with requested data.  */
+	{
+	  if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, buf, &usize,
+	      NULL) != LZO_E_OK)
+	    return -1;
+
+	  grub_memcpy(obuf, buf, osize);
+	  break;
+	}
+    }
+  return 0;
+}
+
 static grub_ssize_t
 grub_btrfs_extent_read (struct grub_btrfs_data *data,
 			grub_uint64_t ino, grub_uint64_t tree,
@@ -990,39 +1057,11 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	    }
 	  else if (data->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
 	    {
-	      grub_uint32_t total_size, chunk_size;
-	      unsigned char *obuf;
-	      unsigned char *ibuf = (unsigned char *) data->extent->inl;
-	      lzo_uint ocnt = extoff + csize;
-	      int ret;
-
-	      obuf = grub_malloc (extoff + csize);
-	      if (!obuf)
+	      if (grub_btrfs_lzo_decompress(data->extent->inl, data->extsize -
+					   ((grub_uint8_t *) data->extent->inl
+					    - (grub_uint8_t *) data->extent),
+					   extoff, buf, csize) < 0)
 		return -1;
-
-	      total_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
-	      ibuf += sizeof (total_size);
-
-	      chunk_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
-	      ibuf += sizeof (chunk_size);
-
-	      /* Can we have multiple chunks in inline extent? */
-	      if (chunk_size + (sizeof (grub_uint32_t) * 2) != total_size)
-		{
-		  grub_free (obuf);
-		  return -1;
-		}
-
-	      ret = lzo1x_decompress_safe (ibuf, chunk_size, obuf, &ocnt, NULL);
-
-	      if (ret != LZO_E_OK)
-		{
-		  grub_free (obuf);
-		  return -1;
-		}
-
-	      grub_memcpy (buf, obuf + extoff, ocnt - extoff);
-	      grub_free (obuf);
 	    }
 	  else
 	    grub_memcpy (buf, data->extent->inl + extoff, csize);
@@ -1068,62 +1107,17 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 		}
 	      else if (data->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
 		{
-		  grub_uint32_t total_size, chunk_size, usize = 0;
-		  grub_size_t off = extoff;
-		  unsigned char *chunk, *ibuf = tmp;
-		  char *obuf = buf;
-		  /* XXX Is this correct size from sblock?  */
-		  grub_uint32_t udata_size = grub_le_to_cpu32 (data->sblock.sectorsize);
+		  int ret ;
 
-		  chunk = grub_malloc (udata_size);
-		  if (!chunk)
-		    {
-		      grub_free (tmp);
-		      return -1;
-		    }
+		  ret = grub_btrfs_lzo_decompress (tmp, zsize, extoff
+				    + grub_le_to_cpu64 (data->extent->offset),
+				    buf, csize);
 
-		  /* XXX Use this for some sanity checks while decompressing. */
-		  total_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
-		  ibuf += sizeof (total_size);
+		  grub_free(tmp);
 
-		  chunk_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
-		  ibuf += sizeof (chunk_size);
+		  if (ret < 0)
+		    return -1;
 
-		  /* Jump to first chunk with requested data. */
-		  while (off >= udata_size)
-		    {
-		      chunk_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
-		      ibuf += sizeof (chunk_size);
-		      ibuf += chunk_size;
-		      off -= udata_size;
-		    }
-
-		  while (usize < csize)
-		    {
-		      chunk_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
-		      lzo_uint csize2 = udata_size;
-		      int diff;
-
-		      ibuf += sizeof (chunk_size);
-
-		      if (lzo1x_decompress_safe (ibuf, chunk_size, chunk, &csize2, NULL) != LZO_E_OK)
-			{
-			  grub_free (tmp);
-			  grub_free (chunk);
-			  return -1;
-			}
-
-		      diff = grub_min (csize2 - off, csize - usize);
-
-		      grub_memcpy (obuf, chunk + off, diff);
-		      obuf += diff;
-		      ibuf += chunk_size;
-		      usize += diff;
-		      off = 0;
-		    }
-
-		  grub_free (tmp);
-		  grub_free (chunk);
 		  break;
 		}
 	      }
