@@ -1,5 +1,12 @@
 2011-08-20  Szymon Janc <szymon@janc.net.pl>
 
+	Add grub-fstest option to uncompress data for commands.
+
+	* util/grub-fstest.c (uncompress): New var.
+	(options): New option -u.
+
+2011-08-20  Szymon Janc <szymon@janc.net.pl>
+
 	* grub-core/loader/i386/linux.c (grub_linux_setup_video): Add
 	GRUB_VIDEO_DRIVER_RADEON_FULOONG2E to switch case statement.
 
