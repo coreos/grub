@@ -1,5 +1,13 @@
 2011-08-20  Szymon Janc <szymon@janc.net.pl>
 
+	Add support for adler32 checksuming.
+
+	* grub-core/lib/adler32.c: New file.
+	* Makefile.util.def (library): Add grub-core/lib/adler32.c to common.
+	* util/import_gcry.py (cryptolist): Add adler32.
+
+2011-08-20  Szymon Janc <szymon@janc.net.pl>
+
 	More work on LZO for btrfs support. Some fixes and code refactoring.
 
 	* grub-core/fs/btrfs.c (grub_btrfs_superblock): Removed sectorsize,

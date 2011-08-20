@@ -1687,3 +1687,8 @@ module = {
   common = commands/cacheinfo.c;
   condition = COND_ENABLE_CACHE_STATS;
 };
+
+module = {
+  name = adler32;
+  common = lib/adler32.c;
+};
