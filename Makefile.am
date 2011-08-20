@@ -1,4 +1,4 @@
-AUTOMAKE_OPTIONS = subdir-objects
+AUTOMAKE_OPTIONS = subdir-objects -Wno-portability
 
 DEPDIR = .deps-util
 SUBDIRS = grub-core/gnulib . grub-core po docs util/bash-completion.d

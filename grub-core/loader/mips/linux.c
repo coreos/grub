@@ -41,7 +41,8 @@ GRUB_MOD_LICENSE ("GPLv3+");
 const char loongson_machtypes[][60] =
   {
     [GRUB_ARCH_MACHINE_YEELOONG] = "machtype=lemote-yeeloong-2f-8.9inches",
-    [GRUB_ARCH_MACHINE_FULOONG]  = "machtype=lemote-fuloong-2f-unknown"
+    [GRUB_ARCH_MACHINE_FULOONG2F]  = "machtype=lemote-fuloong-2f-unknown",
+    [GRUB_ARCH_MACHINE_FULOONG2E]  = "machtype=lemote-fuloong-2e-unknown"
   };
 #endif
 

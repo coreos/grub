@@ -217,6 +217,9 @@ grub_util_biosdisk_iterate (int (*hook) (const char *name),
 {
   unsigned i;
 
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
+
   for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
     if (map[i].drive && hook (map[i].drive))
       return 1;

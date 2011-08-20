@@ -23,7 +23,8 @@
 #include <grub/cpu/kernel.h>
 
 #define GRUB_ARCH_MACHINE_YEELOONG 0
-#define GRUB_ARCH_MACHINE_FULOONG 1
+#define GRUB_ARCH_MACHINE_FULOONG2F 1
+#define GRUB_ARCH_MACHINE_FULOONG2E 2
 
 #ifndef ASM_FILE
 

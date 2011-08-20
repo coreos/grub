@@ -1,3 +1,133 @@
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/loongson/init.c (grub_reboot): Reboot Fuloong.
+	* include/grub/cs5536.h (GRUB_CS5536_MSR_DIVIL_RESET): New definition.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.core.def (kernel): Add video/radeon_fuloong2e.c on
+	loongson.
+	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Init
+	video_radeon_fuloong2e.
+	* grub-core/video/radeon_fuloong2e.c: New file.
+	* include/grub/video.h (grub_video_id_t): Add new ID
+	GRUB_VIDEO_DRIVER_RADEON_FULOONG2E.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/mips/loongson.h (GRUB_CPU_LOONGSON_COP0_PRID): New
+	define.
+	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Check
+	that PRID matches the detected subplatform and reset the subplatform
+	if it doesn't.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c (grub_vprintf): Fix a bug on malloc failure.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix PCI iterating on functions >= 4.
+
+	* grub-core/bus/pci.c (grub_pci_iterate): Remove useless ghost skipping.
+	* include/grub/mips/loongson/pci.h (GRUB_LOONGSON_OHCI_GHOST_FUNCTION):
+	Removed.
+	(GRUB_LOONGSON_EHCI_GHOST_FUNCTION): Likewise.
+	(grub_pci_read): Fix bitmask.
+	(grub_pci_read_word): Likewise.
+	(grub_pci_read_byte): Likewise.
+	(grub_pci_write): Likewise.
+	(grub_pci_write_word): Likewise.
+	(grub_pci_write_byte): Likewise.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Don't impose march=loongson2f on loongson platform. (It
+	can still be specified in TARGET_CFLAGS)
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Rename Fuloong into Fuloong 2F. Add new ID for Fuloong2E.
+
+	* grub-core/Makefile.core.def (fwstart_fuloong): Rename fwstart_fuloong
+	into fwstart_fuloong2f. Use boot/mips/loongson/fuloong2f.S.
+	* grub-core/boot/mips/loongson/fuloong.S: Rename to ...
+	* grub-core/boot/mips/loongson/fuloong2f.S: ... this.
+	(FULOONG): Rename to ...
+	(FULOONG2F): ... this. All users updated.
+	* grub-core/boot/mips/startup_raw.S (machtype_fuloong_str): Rename to
+	(machtype_fuloong2f_str): ... this.
+	(machtype_fuloong2e_str): New string.
+	Check for machtype_fuloong2e_str.
+	* grub-core/loader/mips/linux.c (loongson_machtypes)
+	[GRUB_MACHINE_MIPS_LOONGSON]: Add GRUB_ARCH_MACHINE_FULOONG2E.
+	* grub-core/term/serial.c (loongson_defserial)
+	[GRUB_MACHINE_MIPS_LOONGSON]: New array.
+	(grub_serial_register) [GRUB_MACHINE_MIPS_LOONGSON]: Use
+	loongson_defserial.
+	* include/grub/mips/loongson/kernel.h (GRUB_ARCH_MACHINE_FULOONG):
+	Rename to ...
+	(GRUB_ARCH_MACHINE_FULOONG2F): ... this.
+	(GRUB_ARCH_MACHINE_FULOONG2E): New const.
+	* util/grub-mkimage.c (image_target_desc): Rename IMAGE_FULOONG_FLASH
+	to IMAGE_FULOONG2F_FLASH. All users updated.
+	(image_targets): Rename images.
+	* util/grub-mkstandalone.in: Accept fuloong2f and fuloong2e.
+
+2011-08-19  Szymon Janc <szymon@janc.net.pl>
+
+	Make enable of disk cache statistics code configurable.
+
+	* configure.ac: --enable-cache-stats added.
+	* config.h.in (DISK_CACHE_STATS): New define.
+	* grub-core/Makefile.core.def (cacheinfo): New command.
+	* include/grub/disk.h(grub_disk_cache_get_performance): New function.
+	* grub-core/commands/cacheinfo.c: New file.
+	* grub-core/commands/minicmd.c (grub_rescue_cmd_info): Updated and
+	moved to cacheinfo.c.
+	* grub-core/kern/disk.c: Use DISK_CACHE_STATS to disable disk cache
+	debug code.
+	* include/grub/disk.h: Likewise.
+
+2011-08-19  Szymon Janc <szymon@janc.net.pl>
+
+	* Makefile.am (AUTOMAKE_OPTIONS): = Added -Wno-portability flag.
+	* grub-core/Makefile.am: Likewise.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_iterate): Skip with
+	non-zero pull.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/jfs.c (grub_jfs_read_file): New parameter ino.
+	All users updated.
+	(grub_jfs_lookup_symlink): Use correct starting inode.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (main): Add missing gcry initialisation.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't accept text modes on EFI when booting Linux.
+
+	* grub-core/loader/i386/linux.c (ACCEPTS_PURE_TEXT): New define.
+	(grub_linux_boot) [!ACCEPTS_PURE_TEXT]: Restrict to graphics modes.
+
+2011-08-15  Mario Limonciello  <mario_limonciello@dell.com>
+2011-08-15  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-probe.c (probe): Canonicalise the path argument, fixing
+	use of "/path/.." as in grub-install for EFI as well as handling
+	symlinks correctly.
+	Fixes Debian bug #637768.
+
+2011-08-15  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-probe.c: Remove duplicate #include.
+
 2011-08-10  Robert Millan  <rmh@gnu.org>
 
 	Detect LSI MegaRAID SAS (`mfi') devices on GNU/kFreeBSD.

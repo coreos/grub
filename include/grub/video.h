@@ -282,6 +282,7 @@ typedef enum grub_video_driver_id
     GRUB_VIDEO_DRIVER_BOCHS,
     GRUB_VIDEO_DRIVER_SDL,
     GRUB_VIDEO_DRIVER_SIS315PRO,
+    GRUB_VIDEO_DRIVER_RADEON_FULOONG2E,
   } grub_video_driver_id_t;
 
 typedef enum grub_video_adapter_prio

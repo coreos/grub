@@ -136,7 +136,7 @@ if [ "x$source_directory" = x ] ; then
     cpu="`echo $format | awk -F - '{ print $1; }'`"
     platform="`echo $format | awk -F - '{ print $2; }'`"
     case "$platform" in
-	yeeloong | fuloong)
+	yeeloong | fuloong | fuloong2f | fuloong2e)
 	    platform=loongson ;;
     esac
     case "$cpu-$platform" in

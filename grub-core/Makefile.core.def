@@ -180,6 +180,7 @@ kernel = {
   mips_loongson = term/serial.c;
   mips_loongson = video/sm712.c;
   mips_loongson = video/sis315pro.c;
+  mips_loongson = video/radeon_fuloong2e.c;
   extra_dist = video/sm712_init.c;
   mips_loongson = commands/keylayouts.c;
 
@@ -363,8 +364,8 @@ image = {
 };
 
 image = {
-  name = fwstart_fuloong;
-  mips_loongson = boot/mips/loongson/fuloong.S;
+  name = fwstart_fuloong2f;
+  mips_loongson = boot/mips/loongson/fuloong2f.S;
   objcopyflags = '-O binary';
   ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_loongson;
@@ -1679,4 +1680,10 @@ module = {
 module = {
   name = time;
   common = commands/time.c;
+};
+
+module = {
+  name = cacheinfo;
+  common = commands/cacheinfo.c;
+  condition = COND_ENABLE_CACHE_STATS;
 };

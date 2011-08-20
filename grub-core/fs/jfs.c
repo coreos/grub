@@ -614,7 +614,8 @@ grub_jfs_read_file (struct grub_jfs_data *data,
 /* Find the file with the pathname PATH on the filesystem described by
    DATA.  */
 static grub_err_t
-grub_jfs_find_file (struct grub_jfs_data *data, const char *path)
+grub_jfs_find_file (struct grub_jfs_data *data, const char *path,
+		    grub_uint32_t start_ino)
 {
   char fpath[grub_strlen (path)];
   char *name = fpath;
@@ -623,7 +624,7 @@ grub_jfs_find_file (struct grub_jfs_data *data, const char *path)
 
   grub_strncpy (fpath, path, grub_strlen (path) + 1);
 
-  if (grub_jfs_read_inode (data, GRUB_JFS_AGGR_INODE, &data->currinode))
+  if (grub_jfs_read_inode (data, start_ino, &data->currinode))
     return grub_errno;
 
   /* Skip the first slashes.  */
@@ -724,11 +725,7 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, grub_uint32_t ino)
   if (symlink[0] == '/')
     ino = 2;
 
-  /* Now load in the old inode.  */
-  if (grub_jfs_read_inode (data, ino, &data->currinode))
-    return grub_errno;
-
-  grub_jfs_find_file (data, symlink);
+  grub_jfs_find_file (data, symlink, ino);
   if (grub_errno)
     grub_error (grub_errno, "cannot follow symlink `%s'", symlink);
 
@@ -750,7 +747,7 @@ grub_jfs_dir (grub_device_t device, const char *path,
   if (!data)
     goto fail;
 
-  if (grub_jfs_find_file (data, path))
+  if (grub_jfs_find_file (data, path, GRUB_JFS_AGGR_INODE))
     goto fail;
 
   diro = grub_jfs_opendir (data, &data->currinode);
@@ -801,7 +798,7 @@ grub_jfs_open (struct grub_file *file, const char *name)
   if (!data)
     goto fail;
 
-  grub_jfs_find_file (data, name);
+  grub_jfs_find_file (data, name, GRUB_JFS_AGGR_INODE);
   if (grub_errno)
     goto fail;
 

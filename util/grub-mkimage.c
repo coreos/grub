@@ -67,7 +67,7 @@ struct image_target_desc
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
     IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
     IMAGE_LOONGSON_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
-    IMAGE_FULOONG_FLASH, IMAGE_I386_PC_PXE, IMAGE_MIPS_ARC,
+    IMAGE_FULOONG2F_FLASH, IMAGE_I386_PC_PXE, IMAGE_MIPS_ARC,
     IMAGE_QEMU_MIPS_FLASH
   } id;
   enum
@@ -298,10 +298,10 @@ struct image_target_desc image_targets[] =
     },
     {
       .dirname = "mipsel-loongson",
-      .names = { "mipsel-fuloong-flash", NULL },
+      .names = { "mipsel-fuloong2f-flash", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
-      .id = IMAGE_FULOONG_FLASH, 
+      .id = IMAGE_FULOONG2F_FLASH, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
       .prefix = GRUB_KERNEL_MIPS_LOONGSON_PREFIX,
       .prefix_end = GRUB_KERNEL_MIPS_LOONGSON_PREFIX_END,
@@ -321,6 +321,7 @@ struct image_target_desc image_targets[] =
     {
       .dirname = "mipsel-loongson",
       .names = { "mipsel-loongson-elf", "mipsel-yeeloong-elf",
+		 "mipsel-fuloong2f-elf", "mipsel-fuloong2e-elf",
 		 "mipsel-fuloong-elf", NULL },
       .voidp_sizeof = 4,
       .bigendian = 0,
@@ -1362,7 +1363,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       }
       break;
     case IMAGE_YEELOONG_FLASH:
-    case IMAGE_FULOONG_FLASH:
+    case IMAGE_FULOONG2F_FLASH:
     {
       char *rom_img;
       size_t rom_size;
@@ -1381,7 +1382,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
       /* None yet. */
-      const grub_uint8_t fuloong_fwstart_good_hash[512 / 8] = 
+      const grub_uint8_t fuloong2f_fwstart_good_hash[512 / 8] = 
 	{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1393,10 +1394,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	};
       const grub_uint8_t *fwstart_good_hash;
             
-      if (image_target->id == IMAGE_FULOONG_FLASH)
+      if (image_target->id == IMAGE_FULOONG2F_FLASH)
 	{
-	  fwstart_good_hash = fuloong_fwstart_good_hash;
-	  boot_path = grub_util_get_path (dir, "fwstart_fuloong.img");
+	  fwstart_good_hash = fuloong2f_fwstart_good_hash;
+	  boot_path = grub_util_get_path (dir, "fwstart_fuloong2f.img");
 	}
       else
 	{
