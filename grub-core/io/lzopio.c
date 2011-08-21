@@ -22,17 +22,15 @@
 #include <grub/file.h>
 #include <grub/fs.h>
 #include <grub/dl.h>
-
+#include <grub/crypto.h>
 #include "minilzo.h"
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
 #define LZOP_MAGIC "\x89\x4c\x5a\x4f\x00\x0d\x0a\x1a\x0a"
 #define LZOP_MAGIC_SIZE 9
-#define CHECK_SIZE 4
-#define NEW_LZO_LIB 0x0940
-#define MIN_HEADER_SIZE 0
-#define MAX_HEADER_SIZE 0
+#define LZOP_CHECK_SIZE 4
+#define LZOP_NEW_LIB 0x0940
 
 /* Header flags - copied from conf.h of LZOP source code.  */
 #define F_ADLER32_D	0x00000001L
@@ -64,8 +62,10 @@ struct block_header
 struct grub_lzopio
 {
   grub_file_t file;
-  int ucheck;			/* XXX Use gcry to validate checks.  */
-  int ccheck;
+  int has_ccheck;
+  int has_ucheck;
+  const gcry_md_spec_t *ucheck_fun;
+  const gcry_md_spec_t *ccheck_fun;
   grub_off_t saved_off;		/* Rounded down to block boundary.  */
   grub_off_t start_block_off;
   struct block_header block;
@@ -74,15 +74,16 @@ struct grub_lzopio
 typedef struct grub_lzopio *grub_lzopio_t;
 static struct grub_fs grub_lzopio_fs;
 
-/* Some helper functions. Memory allocated by those function is free either
- * on next read_block_header() or on close() so no risk of leaks. This makes
- * those function simpler.  */
+/* Some helper functions. On errors memory allocated by those function is free
+ * either on close() so no risk of leaks. This makes functions simpler.  */
 
 /* Read block header from file, after successful exit file points to
  * beginning of block data.  */
 static int
 read_block_header (struct grub_lzopio *lzopio)
 {
+  lzopio->saved_off += lzopio->block.usize;
+
   /* Free cached block data if any.  */
   grub_free (lzopio->block.udata);
   grub_free (lzopio->block.cdata);
@@ -113,26 +114,40 @@ read_block_header (struct grub_lzopio *lzopio)
 
   lzopio->block.csize = grub_be_to_cpu32 (lzopio->block.csize);
 
-  /* XXX Handle incompressible data case here rather than in uncompress_block.
-   * This will allow to handle switch of ccheck/ucheck easier and also
-   * make uncompress_block() a bit simpler.  */
+  /* Corrupted.  */
+  if (lzopio->block.csize > lzopio->block.usize)
+    return -1;
 
-  /* Read data checks.  */
-  if (lzopio->ucheck)
+  /* Read checksum of uncompressed data.  */
+  if (lzopio->has_ucheck)
     {
       if (grub_file_read (lzopio->file, &lzopio->block.ucheck,
 			  sizeof (lzopio->block.ucheck)) !=
 	  sizeof (lzopio->block.ucheck))
 	return -1;
+
+      lzopio->block.ucheck = grub_be_to_cpu32 (lzopio->block.ucheck);
     }
 
-  if (lzopio->ccheck)
+  /* Read checksum of compressed data.  */
+  if (lzopio->has_ccheck)
     {
-      if (grub_file_read (lzopio->file, &lzopio->block.ccheck,
-			  sizeof (lzopio->block.ccheck)) !=
-	  sizeof (lzopio->block.ccheck))
-	return -1;
+      /* Incompressible data block.  */
+      if (lzopio->block.csize == lzopio->block.usize)
+	{
+	  lzopio->block.ccheck = lzopio->block.ucheck;
+	}
+      else
+	{
+	  if (grub_file_read (lzopio->file, &lzopio->block.ccheck,
+			      sizeof (lzopio->block.ccheck)) !=
+	      sizeof (lzopio->block.ccheck))
+	    return -1;
+
+	  lzopio->block.ccheck = grub_be_to_cpu32 (lzopio->block.ccheck);
+	}
     }
+
   return 0;
 }
 
@@ -149,9 +164,19 @@ read_block_data (struct grub_lzopio *lzopio)
       != (grub_ssize_t) lzopio->block.csize)
     return -1;
 
-  if (lzopio->ccheck)
+  if (lzopio->ccheck_fun)
     {
-      /* XXX Validate data checksum here.  */
+      grub_uint8_t context[lzopio->ccheck_fun->contextsize];
+
+      lzopio->ccheck_fun->init (context);
+      lzopio->ccheck_fun->write (context, lzopio->block.cdata,
+				 lzopio->block.csize);
+      lzopio->ccheck_fun->final (context);
+
+      if (grub_memcmp
+	  (lzopio->ccheck_fun->read (context), &lzopio->block.ccheck,
+	   sizeof (lzopio->block.ccheck)) != 0)
+	return -1;
     }
 
   return 0;
@@ -159,7 +184,7 @@ read_block_data (struct grub_lzopio *lzopio)
 
 /* Read block data, uncompressed and also store it in memory.  */
 /* XXX Investigate possibility of in-place decompression to reduce memory
- * footprint.  */
+ * footprint. Or try to uncompress directly to buf if possible.  */
 static int
 uncompress_block (struct grub_lzopio *lzopio)
 {
@@ -168,35 +193,41 @@ uncompress_block (struct grub_lzopio *lzopio)
   if (read_block_data (lzopio) < 0)
     return -1;
 
-  if (lzopio->block.usize > lzopio->block.csize)
-    {
-      lzopio->block.udata = grub_malloc (lzopio->block.usize);
-      if (!lzopio->block.udata)
-	return -1;
-
-      if (lzo1x_decompress_safe (lzopio->block.cdata, lzopio->block.csize,
-				 lzopio->block.udata, &usize,
-				 NULL) != LZO_E_OK)
-	return -1;
-
-      if (lzopio->ucheck)
-	{
-	  /* XXX Validate data checksum here.  */
-	}
-
-      /* Compressed data can be free now.  */
-      grub_free (lzopio->block.cdata);
-      lzopio->block.cdata = NULL;
-    }
-  /* Incompressible block of data.  */
-  else if (lzopio->block.usize == lzopio->block.csize)
+  /* Incompressible data. */
+  if (lzopio->block.csize == lzopio->block.usize)
     {
       lzopio->block.udata = lzopio->block.cdata;
       lzopio->block.cdata = NULL;
     }
   else
     {
-      return -1;
+      lzopio->block.udata = grub_malloc (lzopio->block.usize);
+      if (!lzopio->block.udata)
+	return -1;
+
+      if (lzo1x_decompress_safe (lzopio->block.cdata, lzopio->block.csize,
+				 lzopio->block.udata, &usize, NULL)
+	  != LZO_E_OK)
+	return -1;
+
+      if (lzopio->ucheck_fun)
+	{
+	  grub_uint8_t context[lzopio->ucheck_fun->contextsize];
+
+	  lzopio->ucheck_fun->init (context);
+	  lzopio->ucheck_fun->write (context, lzopio->block.udata,
+				     lzopio->block.usize);
+	  lzopio->ucheck_fun->final (context);
+
+	  if (grub_memcmp
+	      (lzopio->ucheck_fun->read (context), &lzopio->block.ucheck,
+	       sizeof (lzopio->block.ucheck)) != 0)
+	    return -1;
+	}
+
+      /* Compressed data can be free now.  */
+      grub_free (lzopio->block.cdata);
+      lzopio->block.cdata = NULL;
     }
 
   return 0;
@@ -214,8 +245,6 @@ jump_block (struct grub_lzopio *lzopio)
       if (grub_file_seek (lzopio->file, off) == ((grub_off_t) - 1))
 	return -1;
     }
-
-  lzopio->saved_off += lzopio->block.usize;
 
   return read_block_header (lzopio);
 }
@@ -243,7 +272,7 @@ calculate_uncompressed_size (grub_file_t file)
   return 1;
 }
 
-/* XXX Do something with this function, it is insane now:) */
+/* XXX Do something with this function... */
 static int
 test_header (grub_file_t file)
 {
@@ -253,6 +282,7 @@ test_header (grub_file_t file)
   grub_uint8_t method, level, name_len;
   grub_uint32_t flags, mode, filter, mtime_lo, mtime_hi, checksum;
   unsigned char *name = NULL;
+  const gcry_md_spec_t *hcheck;
 
   if (grub_file_read (lzopio->file, magic, sizeof (magic)) != sizeof (magic))
     {
@@ -277,7 +307,7 @@ test_header (grub_file_t file)
 
   ver = grub_be_to_cpu16 (ver);
 
-  if (ver >= NEW_LZO_LIB)
+  if (ver >= LZOP_NEW_LIB)
     {
       /* Read version of lib needed to extract data.  */
       if (grub_file_read (lzopio->file, &ver_ext, sizeof (ver_ext)) !=
@@ -297,7 +327,7 @@ test_header (grub_file_t file)
       sizeof (method))
     goto CORRUPTED;
 
-  if (ver >= NEW_LZO_LIB)
+  if (ver >= LZOP_NEW_LIB)
     {
       if (grub_file_read (lzopio->file, &level, sizeof (level)) !=
 	  sizeof (level))
@@ -310,14 +340,33 @@ test_header (grub_file_t file)
   flags = grub_be_to_cpu32 (flags);
 
   if (flags & F_CRC32_D)
-    lzopio->ucheck = 1;
+    {
+      lzopio->has_ucheck = 1;
+      lzopio->ucheck_fun = grub_crypto_lookup_md_by_name ("crc32");
+    }
   else if (flags & F_ADLER32_D)
-    lzopio->ucheck = 2;
+    {
+      lzopio->has_ucheck = 1;
+      lzopio->ucheck_fun = grub_crypto_lookup_md_by_name ("adler32");
+    }
 
   if (flags & F_CRC32_C)
-    lzopio->ccheck = 1;
+    {
+      lzopio->has_ccheck = 1;
+      lzopio->ccheck_fun = grub_crypto_lookup_md_by_name ("crc32");
+    }
   else if (flags & F_ADLER32_C)
-    lzopio->ccheck = 2;
+    {
+      lzopio->has_ccheck = 1;
+      lzopio->ccheck_fun = grub_crypto_lookup_md_by_name ("adler32");
+    }
+
+  if (flags & F_H_CRC32)
+    hcheck = grub_crypto_lookup_md_by_name ("crc32");
+  else
+    hcheck = grub_crypto_lookup_md_by_name ("adler32");
+
+  hcheck++;
 
   if (flags & F_H_FILTER)
     {
@@ -333,7 +382,7 @@ test_header (grub_file_t file)
       sizeof (mtime_lo))
     goto CORRUPTED;
 
-  if (ver >= NEW_LZO_LIB)
+  if (ver >= LZOP_NEW_LIB)
     {
       if (grub_file_read (lzopio->file, &mtime_hi, sizeof (mtime_hi)) !=
 	  sizeof (mtime_hi))
@@ -374,8 +423,6 @@ test_header (grub_file_t file)
       if (calculate_uncompressed_size (file) < 0)
 	goto CORRUPTED;
 
-      lzopio->saved_off = 0;
-
       /* Get back to start block.  */
       grub_file_seek (lzopio->file, lzopio->start_block_off);
 
@@ -383,6 +430,7 @@ test_header (grub_file_t file)
       if (read_block_header (lzopio) < 0)
 	goto CORRUPTED;
 
+      lzopio->saved_off = 0;
       return 1;
     }
 
@@ -439,15 +487,17 @@ grub_lzopio_read (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_lzopio_t lzopio = file->data;
   grub_ssize_t ret = 0;
+  grub_off_t off;
 
   /* Backward seek before last read block.  */
   if (lzopio->saved_off > grub_file_tell (file))
     {
-      lzopio->saved_off = 0;
       grub_file_seek (lzopio->file, lzopio->start_block_off);
 
       if (read_block_header (lzopio) < 0)
 	goto CORRUPTED;
+
+      lzopio->saved_off = 0;
     }
 
   /* Forward to first block with requested data.  */
@@ -461,9 +511,10 @@ grub_lzopio_read (grub_file_t file, char *buf, grub_size_t len)
 	goto CORRUPTED;
     }
 
+  off = grub_file_tell (file) - lzopio->saved_off;
+
   while (len != 0 && lzopio->block.usize != 0)
     {
-      grub_off_t off = grub_file_tell (file) - lzopio->saved_off;
       long to_copy;
 
       /* Block not decompressed yet.  */
@@ -477,8 +528,9 @@ grub_lzopio_read (grub_file_t file, char *buf, grub_size_t len)
       len -= to_copy;
       buf += to_copy;
       ret += to_copy;
+      off = 0;
 
-      /* Read to next block if needed.  */
+      /* Read next block if needed.  */
       if (len > 0 && read_block_header (lzopio) < 0)
 	goto CORRUPTED;
     }
