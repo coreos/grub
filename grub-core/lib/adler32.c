@@ -102,7 +102,6 @@ update_adler32 (grub_uint32_t adler, const grub_uint8_t *buf, grub_size_t len)
 typedef struct
 {
   grub_uint32_t adler;
-  grub_uint8_t buf[4];
 }
 adler32_context;
 
@@ -126,7 +125,7 @@ static grub_uint8_t *
 adler32_read (void *context)
 {
   adler32_context *ctx = (adler32_context *) context;
-  return ctx->buf;
+  return (grub_uint8_t *) &ctx->adler;
 }
 
 static void
