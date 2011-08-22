@@ -59,7 +59,7 @@ typedef enum grub_file_filter_id
     GRUB_FILE_FILTER_LZOPIO,
     GRUB_FILE_FILTER_MAX,
     GRUB_FILE_FILTER_COMPRESSION_FIRST = GRUB_FILE_FILTER_GZIO,
-    GRUB_FILE_FILTER_COMPRESSION_LAST = GRUB_FILE_FILTER_XZIO,
+    GRUB_FILE_FILTER_COMPRESSION_LAST = GRUB_FILE_FILTER_LZOPIO,
   } grub_file_filter_id_t;
 
 typedef grub_file_t (*grub_file_filter_t) (grub_file_t in);

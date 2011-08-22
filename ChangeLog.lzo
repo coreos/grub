@@ -1,3 +1,8 @@
+2011-08-22  Szymon Janc <szymon@janc.net.pl>
+
+	* include/grub/file.h (grub_file_filter_id): Set
+	GRUB_FILE_FILTER_LZOPIO as GRUB_FILE_FILTER_COMPRESSION_LAST.
+
 2011-08-20  Szymon Janc <szymon@janc.net.pl>
 
 	Add support for adler32 checksuming.
