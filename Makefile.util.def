@@ -109,6 +109,7 @@ library = {
   common = grub-core/script/script.c;
   common = grub-core/script/argv.c;
   common = grub-core/io/gzio.c;
+  common = grub-core/io/lzopio.c;
   common = grub-core/kern/ia64/dl_helper.c;
   common = grub-core/lib/minilzo/minilzo.c;
 };

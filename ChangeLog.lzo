@@ -1,3 +1,8 @@
+2011-08-23  Szymon Janc <szymon@janc.net.pl>
+
+	* Makefile.util.def (libgrubmods.a): Add grub-core/io/lzopio.c to
+	common.
+
 2011-08-22  Szymon Janc <szymon@janc.net.pl>
 
 	* include/grub/file.h (grub_file_filter_id): Set
