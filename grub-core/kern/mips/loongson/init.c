@@ -188,7 +188,7 @@ grub_machine_init (void)
 	}
       else
 	{
-	  grub_arch_memsize = (totalmem >> 20);
+	  grub_arch_memsize = totalmem;
 	  grub_arch_highmemsize = 0;
 	}
 
