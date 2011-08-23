@@ -31,7 +31,17 @@
 GRUB_MOD_LICENSE ("GPLv3+");
 
 #define GRUB_BTRFS_SIGNATURE "_BHRfS_M"
+
+/* From http://www.oberhumer.com/opensource/lzo/lzofaq.php
+ * LZO will expand incompressible data by a little amount. I still haven't
+ * computed the exact values, but I suggest using these formulas for
+ * a worst-case expansion calculation:
+ *
+ * output_block_size = input_block_size + (input_block_size / 16) + 64 + 3
+ *  */
 #define GRUB_BTRFS_LZO_BLOCK_SIZE 4096
+#define GRUB_BTRFS_LZO_BLOCK_MAX_CSIZE (GRUB_BTRFS_LZO_BLOCK_SIZE + \
+				     (GRUB_BTRFS_LZO_BLOCK_SIZE / 16) + 64 + 3)
 
 typedef grub_uint8_t grub_btrfs_checksum_t[0x20];
 typedef grub_uint16_t grub_btrfs_uuid_t[8];
@@ -880,11 +890,11 @@ grub_btrfs_read_inode (struct grub_btrfs_data *data,
   return grub_btrfs_read_logical (data, elemaddr, inode, sizeof (*inode));
 }
 
-static int
+static grub_ssize_t
 grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
 			  char *obuf, grub_size_t osize)
 {
-  grub_uint32_t total_size, cblock_size;
+  grub_uint32_t total_size, cblock_size, uncompressed = 0;
   unsigned char buf[GRUB_BTRFS_LZO_BLOCK_SIZE];
 
   total_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
@@ -893,62 +903,54 @@ grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
   if (isize < total_size)
     return -1;
 
-  while (osize != 0)
+  /* Jump forward to first block with requested data.  */
+  while (off >= GRUB_BTRFS_LZO_BLOCK_SIZE)
+    {
+      cblock_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
+      ibuf += sizeof (cblock_size);
+
+      off -= GRUB_BTRFS_LZO_BLOCK_SIZE;
+      ibuf += cblock_size;
+    }
+
+  while (osize > 0)
     {
       lzo_uint usize = GRUB_BTRFS_LZO_BLOCK_SIZE;
 
       cblock_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
       ibuf += sizeof (cblock_size);
 
-      if (cblock_size > GRUB_BTRFS_LZO_BLOCK_SIZE)
-	return -1;
-
-      /* Jump forward to first block with requested data.  */
-      if (off >= GRUB_BTRFS_LZO_BLOCK_SIZE)
+      /* Block partially filled with requested data.  */
+      if (off > 0 || osize < GRUB_BTRFS_LZO_BLOCK_SIZE)
 	{
-	  off -= GRUB_BTRFS_LZO_BLOCK_SIZE;
-	  ibuf += cblock_size;
-	  continue;
-	}
+	  grub_size_t to_copy = grub_min(osize, GRUB_BTRFS_LZO_BLOCK_SIZE - off);
 
-      /* First block partially filled with requested data. */
-      if (off > 0)
-	{
 	  if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, buf, &usize,
 	      NULL) != LZO_E_OK)
 	    return -1;
 
-	  grub_memcpy(obuf, buf + off, usize - off);
+	  grub_memcpy(obuf, buf + off, to_copy);
 
-	  osize -= usize - off;
-	  obuf += usize - off;
+	  osize -= to_copy;
+	  uncompressed += to_copy;
+	  obuf += to_copy;
 	  ibuf += cblock_size;
 	  off = 0;
 	  continue;
 	}
 
       /* 'Main' case, decompress whole block directly to output buffer.  */
-      if (osize >= GRUB_BTRFS_LZO_BLOCK_SIZE)
-	{
-	  if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size,
-	      (lzo_bytep)obuf, &usize, NULL) != LZO_E_OK)
-	    return -1;
+      if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, (lzo_bytep)obuf,
+	  &usize, NULL) != LZO_E_OK)
+	return -1;
 
-	  osize -= usize;
-	  obuf += usize;
-	  ibuf += cblock_size;
-	}
-      else /* Last possible block partially filled with requested data.  */
-	{
-	  if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, buf, &usize,
-	      NULL) != LZO_E_OK)
-	    return -1;
-
-	  grub_memcpy(obuf, buf, osize);
-	  break;
-	}
+      osize -= usize;
+      uncompressed += usize;
+      obuf += usize;
+      ibuf += cblock_size;
     }
-  return 0;
+
+  return uncompressed;
 }
 
 static grub_ssize_t
@@ -1060,7 +1062,8 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	      if (grub_btrfs_lzo_decompress(data->extent->inl, data->extsize -
 					   ((grub_uint8_t *) data->extent->inl
 					    - (grub_uint8_t *) data->extent),
-					   extoff, buf, csize) < 0)
+					   extoff, buf, csize)
+		  != (grub_ssize_t) csize)
 		return -1;
 	    }
 	  else
@@ -1075,8 +1078,10 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 
 	  if (data->extent->compression != GRUB_BTRFS_COMPRESSION_NONE)
 	    {
-	      void *tmp;
+	      char *tmp;
 	      grub_uint64_t zsize;
+	      grub_ssize_t ret;
+
 	      zsize = grub_le_to_cpu64 (data->extent->compressed_size);
 	      tmp = grub_malloc (zsize);
 	      if (!tmp)
@@ -1091,36 +1096,23 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 		}
 
 	      if (data->extent->compression == GRUB_BTRFS_COMPRESSION_ZLIB)
-		{
-		  grub_ssize_t ret;
-
-		  ret = grub_zlib_decompress (tmp, zsize, extoff
-					    + grub_le_to_cpu64 (data->extent->offset),
-					    buf, csize);
-
-		  grub_free (tmp);
-
-		  if (ret != (grub_ssize_t) csize)
-		      return -1;
-
-		  break;
-		}
-	      else if (data->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
-		{
-		  int ret ;
-
-		  ret = grub_btrfs_lzo_decompress (tmp, zsize, extoff
+		ret = grub_zlib_decompress (tmp, zsize, extoff
 				    + grub_le_to_cpu64 (data->extent->offset),
 				    buf, csize);
+	      else if (data->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
+		ret = grub_btrfs_lzo_decompress (tmp, zsize, extoff
+				    + grub_le_to_cpu64 (data->extent->offset),
+				    buf, csize);
+	      else
+		ret = -1;
 
-		  grub_free(tmp);
+	      grub_free(tmp);
 
-		  if (ret < 0)
-		    return -1;
+	      if (ret != (grub_ssize_t) csize)
+		return -1;
 
-		  break;
-		}
-	      }
+	      break;
+	    }
 	  err = grub_btrfs_read_logical (data,
 					 grub_le_to_cpu64 (data->extent->laddr)
 					 + grub_le_to_cpu64 (data->extent->offset)
