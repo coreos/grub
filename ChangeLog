@@ -1,5 +1,9 @@
 2011-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/wildcard.c (make_regex): Handle @.
+
+2011-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Move cryptodisk logic to appropriate place.
 
 2011-08-21 Szymon Janc <szymon@janc.net.pl>
