@@ -894,7 +894,7 @@ static grub_ssize_t
 grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
 			  char *obuf, grub_size_t osize)
 {
-  grub_uint32_t total_size, cblock_size, uncompressed = 0;
+  grub_uint32_t total_size, cblock_size, ret = 0;
   unsigned char buf[GRUB_BTRFS_LZO_BLOCK_SIZE];
 
   total_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
@@ -909,6 +909,9 @@ grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
       cblock_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
       ibuf += sizeof (cblock_size);
 
+      if (cblock_size > GRUB_BTRFS_LZO_BLOCK_MAX_CSIZE)
+	return -1;
+
       off -= GRUB_BTRFS_LZO_BLOCK_SIZE;
       ibuf += cblock_size;
     }
@@ -920,6 +923,9 @@ grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
       cblock_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
       ibuf += sizeof (cblock_size);
 
+      if (cblock_size > GRUB_BTRFS_LZO_BLOCK_MAX_CSIZE)
+	return -1;
+
       /* Block partially filled with requested data.  */
       if (off > 0 || osize < GRUB_BTRFS_LZO_BLOCK_SIZE)
 	{
@@ -929,28 +935,29 @@ grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
 	      NULL) != LZO_E_OK)
 	    return -1;
 
+	  to_copy = grub_min(to_copy, usize);
 	  grub_memcpy(obuf, buf + off, to_copy);
 
 	  osize -= to_copy;
-	  uncompressed += to_copy;
+	  ret += to_copy;
 	  obuf += to_copy;
 	  ibuf += cblock_size;
 	  off = 0;
 	  continue;
 	}
 
-      /* 'Main' case, decompress whole block directly to output buffer.  */
+      /* Decompress whole block directly to output buffer.  */
       if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, (lzo_bytep)obuf,
 	  &usize, NULL) != LZO_E_OK)
 	return -1;
 
       osize -= usize;
-      uncompressed += usize;
+      ret += usize;
       obuf += usize;
       ibuf += cblock_size;
     }
 
-  return uncompressed;
+  return ret;
 }
 
 static grub_ssize_t
