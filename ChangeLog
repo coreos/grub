@@ -1,3 +1,9 @@
+2011-09-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (grub_file_is_not_garbage): Return 1 for
+	*/README* as well as README*.
+	Reported by: Axel Beckert.
+
 2011-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Handle the
