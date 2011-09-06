@@ -272,72 +272,60 @@ calculate_uncompressed_size (grub_file_t file)
   return 1;
 }
 
-/* XXX Do something with this function... */
+struct lzop_header
+{
+  grub_uint8_t magic[LZOP_MAGIC_SIZE];
+  grub_uint16_t lzop_version;
+  grub_uint16_t lib_version;
+  grub_uint16_t lib_version_ext;
+  grub_uint8_t method;
+  grub_uint8_t level;
+  grub_uint32_t flags;
+  /* grub_uint32_t filter; */ /* No filters support. Rarely used anyway.  */
+  grub_uint32_t mode;
+  grub_uint32_t mtime_lo;
+  grub_uint32_t mtime_hi;
+  grub_uint8_t name_len;
+} __attribute__ ((packed));
+
 static int
 test_header (grub_file_t file)
 {
   grub_lzopio_t lzopio = file->data;
-  unsigned char magic[LZOP_MAGIC_SIZE];
-  grub_uint16_t lzopver, ver, ver_ext;
-  grub_uint8_t method, level, name_len;
-  grub_uint32_t flags, mode, filter, mtime_lo, mtime_hi, checksum;
-  unsigned char *name = NULL;
+  struct lzop_header header;
+  grub_uint32_t flags, checksum;
   const gcry_md_spec_t *hcheck;
+  grub_uint8_t *context = NULL;
+  grub_uint8_t *name = NULL;
 
-  if (grub_file_read (lzopio->file, magic, sizeof (magic)) != sizeof (magic))
+  if (grub_file_read (lzopio->file, &header, sizeof (header)) != sizeof (header))
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE, "no lzop magic found");
       return 0;
     }
 
-  if (grub_memcmp (magic, LZOP_MAGIC, LZOP_MAGIC_SIZE) != 0)
+  if (grub_memcmp (header.magic, LZOP_MAGIC, LZOP_MAGIC_SIZE) != 0)
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE, "no lzop magic found");
       return 0;
     }
 
-  /* LZOP version.  */
-  if (grub_file_read (lzopio->file, &lzopver, sizeof (lzopver)) !=
-      sizeof (lzopver))
-    goto CORRUPTED;
-
-  /* LZO lib version.  */
-  if (grub_file_read (lzopio->file, &ver, sizeof (ver)) != sizeof (ver))
-    goto CORRUPTED;
-
-  ver = grub_be_to_cpu16 (ver);
-
-  if (ver >= LZOP_NEW_LIB)
+  if (grub_be_to_cpu16(header.lib_version) < LZOP_NEW_LIB)
     {
-      /* Read version of lib needed to extract data.  */
-      if (grub_file_read (lzopio->file, &ver_ext, sizeof (ver_ext)) !=
-	  sizeof (ver_ext))
-	goto CORRUPTED;
-
-      /* Too new version, should upgrade minilzo?  */
-      if (grub_be_to_cpu16 (ver_ext) > MINILZO_VERSION)
-	{
-	  grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
-		      "unsupported LZO version");
-	  return 0;
-	}
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
+		  "unsupported (too old) LZOP version");
+      return 0;
     }
 
-  if (grub_file_read (lzopio->file, &method, sizeof (method)) !=
-      sizeof (method))
-    goto CORRUPTED;
-
-  if (ver >= LZOP_NEW_LIB)
+  /* Too new version, should upgrade minilzo?  */
+  if (grub_be_to_cpu16 (header.lib_version_ext) > MINILZO_VERSION)
     {
-      if (grub_file_read (lzopio->file, &level, sizeof (level)) !=
-	  sizeof (level))
-	goto CORRUPTED;
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
+		  "unsupported (too new) LZO version");
+      return 0;
     }
 
-  if (grub_file_read (lzopio->file, &flags, sizeof (flags)) != sizeof (flags))
-    goto CORRUPTED;
-
-  flags = grub_be_to_cpu32 (flags);
+  flags = grub_be_to_cpu32 (header.flags);
 
   if (flags & F_CRC32_D)
     {
@@ -366,76 +354,73 @@ test_header (grub_file_t file)
   else
     hcheck = grub_crypto_lookup_md_by_name ("adler32");
 
-  hcheck++;
+  if (hcheck) {
+    context = grub_malloc(hcheck->contextsize);
+    if (! context)
+      return 0;
 
-  if (flags & F_H_FILTER)
+    hcheck->init(context);
+
+    /* MAGIC is not included in check calculation.  */
+    hcheck->write(context, &header.lzop_version, sizeof(header)- LZOP_MAGIC_SIZE);
+  }
+
+  if (header.name_len != 0)
     {
-      if (grub_file_read (lzopio->file, &filter, sizeof (filter)) !=
-	  sizeof (filter))
-	goto CORRUPTED;
-    }
-
-  if (grub_file_read (lzopio->file, &mode, sizeof (mode)) != sizeof (mode))
-    goto CORRUPTED;
-
-  if (grub_file_read (lzopio->file, &mtime_lo, sizeof (mtime_lo)) !=
-      sizeof (mtime_lo))
-    goto CORRUPTED;
-
-  if (ver >= LZOP_NEW_LIB)
-    {
-      if (grub_file_read (lzopio->file, &mtime_hi, sizeof (mtime_hi)) !=
-	  sizeof (mtime_hi))
-	goto CORRUPTED;
-    }
-
-  if (grub_file_read (lzopio->file, &name_len, sizeof (name_len)) !=
-      sizeof (name_len))
-    goto CORRUPTED;
-
-  if (name_len != 0)
-    {
-      name = grub_malloc (name_len);
-      if (!name)
-	return 0;
-
-      if (grub_file_read (lzopio->file, name, name_len) != name_len)
+      name = grub_malloc (header.name_len);
+      if (! name)
 	{
-	  grub_free (name);
+	  grub_free (context);
+	  return 0;
+	}
+
+      if (grub_file_read (lzopio->file, name, header.name_len) !=
+	  header.name_len)
+	{
+	  grub_free(name);
 	  goto CORRUPTED;
 	}
+
+      if (hcheck)
+	hcheck->write(context, name, header.name_len);
+
+      grub_free(name);
     }
+
+  if (hcheck)
+    hcheck->final(context);
 
   if (grub_file_read (lzopio->file, &checksum, sizeof (checksum)) !=
       sizeof (checksum))
-    {
-      grub_free (name);
+    goto CORRUPTED;
+
+  if (hcheck)
+  {
+    checksum = grub_cpu_to_be32(checksum);
+    if (memcmp(&checksum, hcheck->read(context), sizeof(checksum)) != 0)
       goto CORRUPTED;
-    }
+  }
 
-  grub_free (name);
+  lzopio->start_block_off = grub_file_tell (lzopio->file);
 
-  /* XXX Validate header checksum here.  */
-  if (checksum == checksum)
-    {
-      lzopio->start_block_off = grub_file_tell (lzopio->file);
+  if (calculate_uncompressed_size (file) < 0)
+    goto CORRUPTED;
 
-      if (calculate_uncompressed_size (file) < 0)
-	goto CORRUPTED;
+  /* Get back to start block.  */
+  grub_file_seek (lzopio->file, lzopio->start_block_off);
 
-      /* Get back to start block.  */
-      grub_file_seek (lzopio->file, lzopio->start_block_off);
+  /* Read first block - grub_lzopio_read() expects valid block.  */
+  if (read_block_header (lzopio) < 0)
+    goto CORRUPTED;
 
-      /* Read first block - grub_lzopio_read() expects valid block.  */
-      if (read_block_header (lzopio) < 0)
-	goto CORRUPTED;
-
-      lzopio->saved_off = 0;
-      return 1;
-    }
+  lzopio->saved_off = 0;
+  return 1;
 
 CORRUPTED:
   grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "lzop file corrupted");
+
+  grub_free(name);
+
   return 0;
 }
 
