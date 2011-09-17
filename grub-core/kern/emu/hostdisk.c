@@ -265,10 +265,13 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
 
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     if (ioctl (fd, DIOCGSECTORSIZE, &sector_size))
+      goto fail;
+# elif defined(__NetBSD__)
+    sector_size = label.d_secsize;
 # else
     if (ioctl (fd, BLKSSZGET, &sector_size))
-# endif
       goto fail;
+# endif
 
     if (sector_size & (sector_size - 1) || !sector_size)
       goto fail;

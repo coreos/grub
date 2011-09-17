@@ -1,3 +1,8 @@
+2011-09-17  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors) [__NetBSD__]:
+	Get sector size from disk label.
+
 2011-09-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig_lib.in (grub_file_is_not_garbage): Return 1 for
