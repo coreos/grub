@@ -1,5 +1,11 @@
 2011-09-17  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
+	* Makefile.util.def (grub-mkrelpath): Add LIBUTIL for getrawpartition(3)
+	on NetBSD.
+	* Makefile.util.def (grub-fstest): Likewise.
+
+2011-09-17  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors) [__NetBSD__]:
 	Get sector size from disk label.
 
