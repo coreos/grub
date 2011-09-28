@@ -1,3 +1,15 @@
+2011-09-28  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* include/grub/bsdlabel.h (grub_partition_bsd_disk_label): Add fields
+	type and packname.
+	* include/grub/i386/netbsd_bootinfo.h (NETBSD_BTINFO_BOOTDISK):
+	Resurrected.
+	(NETBSD_BTINFO_BOOTWEDGE): New definition.
+	(grub_netbsd_btinfo_bootwedge): New struct.
+	* grub-core/loader/i386/bsd.c (grub_netbsd_add_boot_disk_and_wedge):
+	New function.
+	(grub_cmd_netbsd): Call grub_netbsd_add_boot_disk_and_wedge.
+
 2011-09-28  Thomas Haller <thomas.haller@fen-net.de>
 
 	* grub-core/loader/multiboot_elfxx.c (Elf_Shdr): Set according to
