@@ -1841,6 +1841,9 @@ grub_util_biosdisk_is_floppy (grub_disk_t disk)
   struct stat st;
   int fd;
 
+  if (disk->dev != &grub_util_biosdisk_dev)
+    return 0;
+
   fd = open (map[disk->id].device, O_RDONLY);
   /* Shouldn't happen.  */
   if (fd == -1)
