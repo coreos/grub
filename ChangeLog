@@ -1,3 +1,13 @@
+2011-09-28  Andreas Born  <futur.andy@googlemail.com>
+
+	Fix incorrect identifiers in bash-completion.
+
+	* util/bash-completion.d/grub-completion.bash.in
+	(_grub_mkpasswd-pbkdf2): Rename to ...
+	(_grub_mkpasswd_pbkdf2): ... this. All users updated.
+	(_grub_script-check): Rename to ...
+	(_grub_script_check): ... this. All users updated.
+
 2011-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_is_floppy):
