@@ -1,3 +1,8 @@
+2011-09-29  Mads Kiilerich <mads@kiilerich.com>
+
+	* grub-core/Makefile.core.def (kernel): Add kern/i386/int.S to
+	extra_dist.
+
 2011-09-29  Mario Limonciello <mario_limonciello@dell.com>
 
 	* util/misc.c (grub_util_get_disk_size) [__MINGW32__]: Strip trailing

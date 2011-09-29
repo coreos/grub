@@ -219,6 +219,7 @@ kernel = {
 
   videoinkernel = commands/boot.c;
 
+  extra_dist = kern/i386/int.S;
   extra_dist = kern/i386/realmode.S;
   extra_dist = kern/i386/pc/lzma_decode.S;
   extra_dist = kern/mips/cache_flush.S;
