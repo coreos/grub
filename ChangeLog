@@ -1,3 +1,10 @@
+2011-09-29  Mario Limonciello <mario_limonciello@dell.com>
+
+	Remove extra declaration of sleep for mingw32.
+
+	* util/misc.c (sleep) [__MINGW32__]: Removed.
+	* include/grub/util/misc.h (sleep) [__MINGW32__]: Likewise.
+
 2011-09-28  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* include/grub/bsdlabel.h (grub_partition_bsd_disk_label): Add fields

@@ -316,11 +316,6 @@ int fsync (int fno __attribute__ ((unused)))
   return 0;
 }
 
-void sleep (int s)
-{
-  Sleep (s * 1000);
-}
-
 grub_int64_t
 grub_util_get_disk_size (char *name)
 {
