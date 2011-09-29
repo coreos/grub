@@ -224,7 +224,11 @@ char *
 canonicalize_file_name (const char *path)
 {
   char *ret;
-#ifdef PATH_MAX
+#ifdef __MINGW32__
+  ret = xmalloc (PATH_MAX);
+  if (!_fullpath (ret, path, PATH_MAX))
+    return NULL;
+#elif defined (PATH_MAX)
   ret = xmalloc (PATH_MAX);
   if (!realpath (path, ret))
     return NULL;
