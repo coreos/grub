@@ -55,6 +55,7 @@
 #ifdef __MINGW32__
 #include <windows.h>
 #include <winioctl.h>
+#include "dirname.h"
 #endif
 
 #ifdef GRUB_UTIL
@@ -322,6 +323,7 @@ grub_util_get_disk_size (char *name)
   HANDLE hd;
   grub_int64_t size = -1LL;
 
+  strip_trailing_slashes(name);
   hd = CreateFile (name, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                    0, OPEN_EXISTING, 0, 0);
 
