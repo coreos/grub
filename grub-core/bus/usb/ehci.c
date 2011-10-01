@@ -314,7 +314,6 @@ struct grub_ehci
 {
   volatile grub_uint32_t *iobase_ehcc;	/* Capability registers */
   volatile grub_uint32_t *iobase;	/* Operational registers */
-  grub_pci_address_t pcibase_eecp;	/* PCI extended capability registers base */
   struct grub_pci_dma_chunk *framelist_chunk;	/* Currently not used */
   volatile grub_uint32_t *framelist_virt;
   grub_uint32_t framelist_phys;
@@ -564,10 +563,6 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   /* Is there EECP ? */
   eecp_offset = (grub_ehci_ehcc_read32 (e, GRUB_EHCI_EHCC_CPARAMS)
 		 & GRUB_EHCI_EECP_MASK) >> GRUB_EHCI_EECP_SHIFT;
-  if (eecp_offset >= 0x40)	/* EECP offset valid in HCCPARAMS */
-    e->pcibase_eecp = grub_pci_make_address (dev, eecp_offset);
-  else
-    e->pcibase_eecp = 0;
 
   /* Check format of data structures requested by EHCI */
   /* XXX: In fact it is not used at any place, it is prepared for future
@@ -673,31 +668,41 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: QH/TD init. OK\n");
 
   /* Determine and change ownership. */
-  if (e->pcibase_eecp)		/* Ownership can be changed via EECP only */
+  /* EECP offset valid in HCCPARAMS */
+  /* Ownership can be changed via EECP only */
+  if (eecp_offset >= 0x40)	
     {
-      usblegsup = grub_pci_read (e->pcibase_eecp);
+      grub_pci_address_t pciaddr_eecp;
+      pciaddr_eecp = grub_pci_make_address (dev, eecp_offset);
+
+      usblegsup = grub_pci_read (pciaddr_eecp);
       if (usblegsup & GRUB_EHCI_BIOS_OWNED)
 	{
 	  grub_dprintf ("ehci",
 			"EHCI grub_ehci_pci_iter: EHCI owned by: BIOS\n");
 	  /* Ownership change - set OS_OWNED bit */
-	  grub_pci_write (e->pcibase_eecp, usblegsup | GRUB_EHCI_OS_OWNED);
+	  grub_pci_write (pciaddr_eecp, usblegsup | GRUB_EHCI_OS_OWNED);
 	  /* Ensure PCI register is written */
-	  grub_pci_read (e->pcibase_eecp);
+	  grub_pci_read (pciaddr_eecp);
 
 	  /* Wait for finish of ownership change, EHCI specification
 	   * doesn't say how long it can take... */
 	  maxtime = grub_get_time_ms () + 1000;
-	  while ((grub_pci_read (e->pcibase_eecp) & GRUB_EHCI_BIOS_OWNED)
+	  while ((grub_pci_read (pciaddr_eecp) & GRUB_EHCI_BIOS_OWNED)
 		 && (grub_get_time_ms () < maxtime));
-	  if (grub_pci_read (e->pcibase_eecp) & GRUB_EHCI_BIOS_OWNED)
+	  if (grub_pci_read (pciaddr_eecp) & GRUB_EHCI_BIOS_OWNED)
 	    {
 	      grub_dprintf ("ehci",
 			    "EHCI grub_ehci_pci_iter: EHCI change ownership timeout");
 	      /* Change ownership in "hard way" - reset BIOS ownership */
-	      grub_pci_write (e->pcibase_eecp, GRUB_EHCI_OS_OWNED);
+	      grub_pci_write (pciaddr_eecp, GRUB_EHCI_OS_OWNED);
 	      /* Ensure PCI register is written */
-	      grub_pci_read (e->pcibase_eecp);
+	      grub_pci_read (pciaddr_eecp);
+	      /* Disable SMI.  */
+	      pciaddr_eecp = grub_pci_make_address (dev, eecp_offset + 4);
+	      grub_pci_write (pciaddr_eecp, 0);
+	      /* Ensure PCI register is written */
+	      grub_pci_read (pciaddr_eecp);
 	    }
 	}
       else if (usblegsup & GRUB_EHCI_OS_OWNED)
@@ -710,9 +715,14 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
 	  /* XXX: What to do in this case ? Can it happen ?
 	   * Is code below correct ? */
 	  /* Ownership change - set OS_OWNED bit */
-	  grub_pci_write (e->pcibase_eecp, GRUB_EHCI_OS_OWNED);
+	  grub_pci_write (pciaddr_eecp, GRUB_EHCI_OS_OWNED);
 	  /* Ensure PCI register is written */
-	  grub_pci_read (e->pcibase_eecp);
+	  grub_pci_read (pciaddr_eecp);
+	  /* Disable SMI, just to be sure.  */
+	  pciaddr_eecp = grub_pci_make_address (dev, eecp_offset + 4);
+	  grub_pci_write (pciaddr_eecp, 0);
+	  /* Ensure PCI register is written */
+	  grub_pci_read (pciaddr_eecp);
 	}
     }
 
