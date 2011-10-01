@@ -1,3 +1,8 @@
+2011-08-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* gentpl.py: Use Autogen macros so that the output template file
+	(Makefile.tpl) size is reduced.
+
 2011-09-29  Mads Kiilerich <mads@kiilerich.com>
 
 	* grub-core/Makefile.core.def (kernel): Add kern/i386/int.S to
