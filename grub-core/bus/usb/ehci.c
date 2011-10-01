@@ -288,7 +288,7 @@ struct grub_ehci_td
   grub_uint32_t link_td;	/* pointer to next free/chained TD */
   grub_uint32_t size;
   grub_uint32_t pad[1];		/* padding to some multiple of 32 bytes */
-} __attribute__ ((packed));
+};
 
 /* EHCI Queue Head */
 /* Align to 32-byte boundaries */
@@ -305,7 +305,7 @@ struct grub_ehci_qh
   struct grub_ehci_td td_overlay;	/* TD overlay area = 64 bytes */
   /* EHCI driver part */
   grub_uint32_t pad[4];		/* padding to some multiple of 32 bytes */
-} __attribute__ ((packed));
+};
 
 /* EHCI Periodic Frame Span Traversal Node */
 /* Currently not supported */
