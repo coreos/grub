@@ -522,7 +522,9 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   e->framelist_chunk = NULL;
   e->td_chunk = NULL;
   e->qh_chunk = NULL;
-  e->iobase_ehcc = (grub_uint32_t *) (base & GRUB_EHCI_ADDR_MEM_MASK);
+  e->iobase_ehcc = grub_pci_device_map_range (dev,
+					      (base & GRUB_EHCI_ADDR_MEM_MASK),
+					      0x10);
 
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: iobase of EHCC: %08x\n",
 		(grub_uint32_t) e->iobase_ehcc);
