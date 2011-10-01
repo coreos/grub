@@ -285,7 +285,7 @@ struct grub_ehci_td
   /* 64-bits part */
   grub_uint32_t buffer_page_high[GRUB_EHCI_TD_BUF_PAGES];
   /* EHCI driver part */
-  grub_ehci_td_t link_td;	/* pointer to next free/chained TD */
+  grub_uint32_t link_td;	/* pointer to next free/chained TD */
   grub_uint32_t size;
   grub_uint32_t pad[1];		/* padding to some multiple of 32 bytes */
 } __attribute__ ((packed));
@@ -412,7 +412,7 @@ grub_ehci_phys2virt (grub_uint32_t phys, struct grub_pci_dma_chunk *chunk)
 }
 
 static inline grub_uint32_t
-grub_ehci_virt2phys (void *virt, struct grub_pci_dma_chunk *chunk)
+grub_ehci_virt2phys (volatile void *virt, struct grub_pci_dma_chunk *chunk)
 {
   if (!virt)
     return 0;
@@ -642,7 +642,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   /* Prepare chain of all TDs and set Terminate in all TDs */
   for (i = 0; i < (GRUB_EHCI_N_TD - 1); i++)
     {
-      e->td_virt[i].link_td = &e->td_virt[i + 1];
+      e->td_virt[i].link_td = e->td_phys + (i + 1) * sizeof (struct grub_ehci_td);
       e->td_virt[i].next_td = grub_cpu_to_le32 (GRUB_EHCI_TERMINATE);
       e->td_virt[i].alt_next_td = grub_cpu_to_le32 (GRUB_EHCI_TERMINATE);
     }
@@ -994,7 +994,8 @@ grub_ehci_alloc_td (struct grub_ehci *e)
     }
 
   ret = e->tdfree_virt;		/* Take current free TD */
-  e->tdfree_virt = (grub_ehci_td_t) ret->link_td;	/* Advance to next free TD in chain */
+  /* Advance to next free TD in chain */
+  e->tdfree_virt = grub_ehci_phys2virt (ret->link_td, e->td_chunk);
   ret->link_td = 0;		/* Reset link_td in allocated TD */
   return ret;
 }
@@ -1002,7 +1003,8 @@ grub_ehci_alloc_td (struct grub_ehci *e)
 static void
 grub_ehci_free_td (struct grub_ehci *e, grub_ehci_td_t td)
 {
-  td->link_td = e->tdfree_virt;	/* Chain new free TD & rest */
+  /* Chain new free TD & rest */
+  td->link_td = grub_ehci_virt2phys (e->tdfree_virt, e->td_chunk);
   e->tdfree_virt = td;		/* Change address of first free TD */
 }
 
@@ -1035,7 +1037,7 @@ grub_ehci_free_tds (struct grub_ehci *e, grub_ehci_td_t td,
 
       /* Unlink the TD */
       tdprev = td;
-      td = (grub_ehci_td_t) td->link_td;
+      td = grub_ehci_phys2virt (td->link_td, e->td_chunk);
 
       /* Free the TD.  */
       grub_ehci_free_td (e, tdprev);
@@ -1167,7 +1169,7 @@ grub_ehci_transaction (struct grub_ehci *e,
 		grub_le_to_cpu32 (td->buffer_page[3]),
 		grub_le_to_cpu32 (td->buffer_page[4]));
   grub_dprintf ("ehci", "link_td=%08x, size=%08x\n",
-		(grub_uint32_t) td->link_td, td->size);
+		td->link_td, td->size);
 
   return td;
 }
@@ -1263,9 +1265,9 @@ grub_ehci_setup_transfer (grub_usb_controller_t dev,
 	cdata->td_first_virt = td;
       else
 	{
-	  td_prev->link_td = td;
+	  td_prev->link_td = grub_ehci_virt2phys (td, e->td_chunk);
 	  td_prev->next_td =
-	    grub_cpu_to_le32 (grub_ehci_virt2phys ((void *) td, e->td_chunk));
+	    grub_cpu_to_le32 (grub_ehci_virt2phys (td, e->td_chunk));
 	}
       td_prev = td;
     }
