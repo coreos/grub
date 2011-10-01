@@ -40,13 +40,13 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Capability registers offsets */
 enum
-  {
-    GRUB_EHCI_EHCC_CAPLEN = 0x00,	/* byte */
-    GRUB_EHCI_EHCC_VERSION = 0x02,	/* word */
-    GRUB_EHCI_EHCC_SPARAMS = 0x04,	/* dword */
-    GRUB_EHCI_EHCC_CPARAMS = 0x08,	/* dword */
-    GRUB_EHCI_EHCC_PROUTE = 0x0c,	/* 60 bits */
-  };
+{
+  GRUB_EHCI_EHCC_CAPLEN = 0x00,	/* byte */
+  GRUB_EHCI_EHCC_VERSION = 0x02,	/* word */
+  GRUB_EHCI_EHCC_SPARAMS = 0x04,	/* dword */
+  GRUB_EHCI_EHCC_CPARAMS = 0x08,	/* dword */
+  GRUB_EHCI_EHCC_PROUTE = 0x0c,	/* 60 bits */
+};
 
 #define GRUB_EHCI_EECP_MASK     (0xff << 8)
 #define GRUB_EHCI_EECP_SHIFT    8
@@ -56,25 +56,25 @@ enum
 
 /* Capability register SPARAMS bits */
 enum
-  {
-    GRUB_EHCI_SPARAMS_N_PORTS = (0xf << 0),
-    GRUB_EHCI_SPARAMS_PPC = (1 << 4),	/* Power port control */
-    GRUB_EHCI_SPARAMS_PRR = (1 << 7),	/* Port routing rules */
-    GRUB_EHCI_SPARAMS_N_PCC = (0xf << 8),	/* No of ports per comp. */
-    GRUB_EHCI_SPARAMS_NCC = (0xf << 12),	/* No of com. controllers */
-    GRUB_EHCI_SPARAMS_P_IND = (1 << 16),	/* Port indicators present */
-    GRUB_EHCI_SPARAMS_DEBUG_P = (0xf << 20)	/* Debug port */
-  };
+{
+  GRUB_EHCI_SPARAMS_N_PORTS = (0xf << 0),
+  GRUB_EHCI_SPARAMS_PPC = (1 << 4),	/* Power port control */
+  GRUB_EHCI_SPARAMS_PRR = (1 << 7),	/* Port routing rules */
+  GRUB_EHCI_SPARAMS_N_PCC = (0xf << 8),	/* No of ports per comp. */
+  GRUB_EHCI_SPARAMS_NCC = (0xf << 12),	/* No of com. controllers */
+  GRUB_EHCI_SPARAMS_P_IND = (1 << 16),	/* Port indicators present */
+  GRUB_EHCI_SPARAMS_DEBUG_P = (0xf << 20)	/* Debug port */
+};
 
 #define GRUB_EHCI_MAX_N_PORTS     15	/* Max. number of ports */
 
 /* Capability register CPARAMS bits */
 enum
-  {
-    GRUB_EHCI_CPARAMS_64BIT = (1 << 0),
-    GRUB_EHCI_CPARAMS_PROG_FRAMELIST = (1 << 1),
-    GRUB_EHCI_CPARAMS_PARK_CAP = (1 << 2)
-  };
+{
+  GRUB_EHCI_CPARAMS_64BIT = (1 << 0),
+  GRUB_EHCI_CPARAMS_PROG_FRAMELIST = (1 << 1),
+  GRUB_EHCI_CPARAMS_PARK_CAP = (1 << 2)
+};
 
 #define GRUB_EHCI_N_FRAMELIST   1024
 #define GRUB_EHCI_N_QH  256
@@ -84,176 +84,175 @@ enum
 
 /* USBLEGSUP bits and related OS OWNED byte offset */
 enum
-  {
-    GRUB_EHCI_BIOS_OWNED = (1 << 16),
-    GRUB_EHCI_OS_OWNED = (1 << 24)
-  };
+{
+  GRUB_EHCI_BIOS_OWNED = (1 << 16),
+  GRUB_EHCI_OS_OWNED = (1 << 24)
+};
 
 /* Operational registers offsets */
 enum
-  {
-    GRUB_EHCI_COMMAND = 0x00,
-    GRUB_EHCI_STATUS = 0x04,
-    GRUB_EHCI_INTERRUPT = 0x08,
-    GRUB_EHCI_FRAME_INDEX = 0x0c,
-    GRUB_EHCI_64BIT_SEL = 0x10,
-    GRUB_EHCI_FL_BASE = 0x14,
-    GRUB_EHCI_CUR_AL_ADDR = 0x18,
-    GRUB_EHCI_CONFIG_FLAG = 0x40,
-    GRUB_EHCI_PORT_STAT_CMD = 0x44
-  };
+{
+  GRUB_EHCI_COMMAND = 0x00,
+  GRUB_EHCI_STATUS = 0x04,
+  GRUB_EHCI_INTERRUPT = 0x08,
+  GRUB_EHCI_FRAME_INDEX = 0x0c,
+  GRUB_EHCI_64BIT_SEL = 0x10,
+  GRUB_EHCI_FL_BASE = 0x14,
+  GRUB_EHCI_CUR_AL_ADDR = 0x18,
+  GRUB_EHCI_CONFIG_FLAG = 0x40,
+  GRUB_EHCI_PORT_STAT_CMD = 0x44
+};
 
 /* Operational register COMMAND bits */
 enum
-  {
-    GRUB_EHCI_CMD_RUNSTOP = (1 << 0),
-    GRUB_EHCI_CMD_HC_RESET = (1 << 1),
-    GRUB_EHCI_CMD_FL_SIZE = (3 << 2),
-    GRUB_EHCI_CMD_PS_ENABL = (1 << 4),
-    GRUB_EHCI_CMD_AS_ENABL = (1 << 5),
-    GRUB_EHCI_CMD_AS_ADV_D = (1 << 6),
-    GRUB_EHCI_CMD_L_HC_RES = (1 << 7),
-    GRUB_EHCI_CMD_AS_PARKM = (3 << 8),
-    GRUB_EHCI_CMD_AS_PARKE = (1 << 11),
-    GRUB_EHCI_CMD_INT_THRS = (0xff << 16)
-  };
+{
+  GRUB_EHCI_CMD_RUNSTOP = (1 << 0),
+  GRUB_EHCI_CMD_HC_RESET = (1 << 1),
+  GRUB_EHCI_CMD_FL_SIZE = (3 << 2),
+  GRUB_EHCI_CMD_PS_ENABL = (1 << 4),
+  GRUB_EHCI_CMD_AS_ENABL = (1 << 5),
+  GRUB_EHCI_CMD_AS_ADV_D = (1 << 6),
+  GRUB_EHCI_CMD_L_HC_RES = (1 << 7),
+  GRUB_EHCI_CMD_AS_PARKM = (3 << 8),
+  GRUB_EHCI_CMD_AS_PARKE = (1 << 11),
+  GRUB_EHCI_CMD_INT_THRS = (0xff << 16)
+};
 
 /* Operational register STATUS bits */
 enum
-  {
-    GRUB_EHCI_ST_INTERRUPT = (1 << 0),
-    GRUB_EHCI_ST_ERROR_INT = (1 << 1),
-    GRUB_EHCI_ST_PORT_CHG = (1 << 2),
-    GRUB_EHCI_ST_FL_ROLLOVR = (1 << 3),
-    GRUB_EHCI_ST_HS_ERROR = (1 << 4),
-    GRUB_EHCI_ST_AS_ADVANCE = (1 << 5),
-    GRUB_EHCI_ST_HC_HALTED = (1 << 12),
-    GRUB_EHCI_ST_RECLAM = (1 << 13),
-    GRUB_EHCI_ST_PS_STATUS = (1 << 14),
-    GRUB_EHCI_ST_AS_STATUS = (1 << 15)
-  };
+{
+  GRUB_EHCI_ST_INTERRUPT = (1 << 0),
+  GRUB_EHCI_ST_ERROR_INT = (1 << 1),
+  GRUB_EHCI_ST_PORT_CHG = (1 << 2),
+  GRUB_EHCI_ST_FL_ROLLOVR = (1 << 3),
+  GRUB_EHCI_ST_HS_ERROR = (1 << 4),
+  GRUB_EHCI_ST_AS_ADVANCE = (1 << 5),
+  GRUB_EHCI_ST_HC_HALTED = (1 << 12),
+  GRUB_EHCI_ST_RECLAM = (1 << 13),
+  GRUB_EHCI_ST_PS_STATUS = (1 << 14),
+  GRUB_EHCI_ST_AS_STATUS = (1 << 15)
+};
 
 /* Operational register PORT_STAT_CMD bits */
 enum
-  {
-    GRUB_EHCI_PORT_CONNECT =    (1<<0),
-    GRUB_EHCI_PORT_CONNECT_CH = (1<<1),
-    GRUB_EHCI_PORT_ENABLED =    (1<<2),
-    GRUB_EHCI_PORT_ENABLED_CH = (1<<3),
-    GRUB_EHCI_PORT_OVERCUR  =   (1<<4),
-    GRUB_EHCI_PORT_OVERCUR_CH = (1<<5),
-    GRUB_EHCI_PORT_RESUME =     (1<<6),
-    GRUB_EHCI_PORT_SUSPEND =    (1<<7),
-    GRUB_EHCI_PORT_RESET =      (1<<8),
-    GRUB_EHCI_PORT_LINE_STAT =  (3<<10),
-    GRUB_EHCI_PORT_POWER =      (1<<12),
-    GRUB_EHCI_PORT_OWNER =      (1<<13),
-    GRUB_EHCI_PORT_INDICATOR =  (3<<14),
-    GRUB_EHCI_PORT_TEST  =      (0xf<<16),
-    GRUB_EHCI_PORT_WON_CONN_E = (1<<20),
-    GRUB_EHCI_PORT_WON_DISC_E = (1<<21),
-    GRUB_EHCI_PORT_WON_OVER_E = (1<<22),
+{
+  GRUB_EHCI_PORT_CONNECT = (1 << 0),
+  GRUB_EHCI_PORT_CONNECT_CH = (1 << 1),
+  GRUB_EHCI_PORT_ENABLED = (1 << 2),
+  GRUB_EHCI_PORT_ENABLED_CH = (1 << 3),
+  GRUB_EHCI_PORT_OVERCUR = (1 << 4),
+  GRUB_EHCI_PORT_OVERCUR_CH = (1 << 5),
+  GRUB_EHCI_PORT_RESUME = (1 << 6),
+  GRUB_EHCI_PORT_SUSPEND = (1 << 7),
+  GRUB_EHCI_PORT_RESET = (1 << 8),
+  GRUB_EHCI_PORT_LINE_STAT = (3 << 10),
+  GRUB_EHCI_PORT_POWER = (1 << 12),
+  GRUB_EHCI_PORT_OWNER = (1 << 13),
+  GRUB_EHCI_PORT_INDICATOR = (3 << 14),
+  GRUB_EHCI_PORT_TEST = (0xf << 16),
+  GRUB_EHCI_PORT_WON_CONN_E = (1 << 20),
+  GRUB_EHCI_PORT_WON_DISC_E = (1 << 21),
+  GRUB_EHCI_PORT_WON_OVER_E = (1 << 22),
 
-    GRUB_EHCI_PORT_LINE_SE0 =   (0<<10),
-    GRUB_EHCI_PORT_LINE_K  =    (1<<10),
-    GRUB_EHCI_PORT_LINE_J =     (2<<10),
-    GRUB_EHCI_PORT_LINE_UNDEF = (3<<10),
-    GRUB_EHCI_PORT_LINE_LOWSP = GRUB_EHCI_PORT_LINE_K,	/* K state means low speed */
-    GRUB_EHCI_PORT_WMASK = ~(GRUB_EHCI_PORT_CONNECT_CH
-			     | GRUB_EHCI_PORT_ENABLED_CH
-			     | GRUB_EHCI_PORT_OVERCUR_CH)
-  };
+  GRUB_EHCI_PORT_LINE_SE0 = (0 << 10),
+  GRUB_EHCI_PORT_LINE_K = (1 << 10),
+  GRUB_EHCI_PORT_LINE_J = (2 << 10),
+  GRUB_EHCI_PORT_LINE_UNDEF = (3 << 10),
+  GRUB_EHCI_PORT_LINE_LOWSP = GRUB_EHCI_PORT_LINE_K,	/* K state means low speed */
+  GRUB_EHCI_PORT_WMASK = ~(GRUB_EHCI_PORT_CONNECT_CH
+			   | GRUB_EHCI_PORT_ENABLED_CH
+			   | GRUB_EHCI_PORT_OVERCUR_CH)
+};
 
 /* Operational register CONFIGFLAGS bits */
 enum
-  {
-    GRUB_EHCI_CF_EHCI_OWNER = (1<<0)
-  };
+{
+  GRUB_EHCI_CF_EHCI_OWNER = (1 << 0)
+};
 
 /* Queue Head & Transfer Descriptor constants */
 #define GRUB_EHCI_HPTR_OFF       5	/* Horiz. pointer bit offset */
 enum
-  {
-    GRUB_EHCI_HPTR_TYPE_MASK = (3<<1),
-    GRUB_EHCI_HPTR_TYPE_ITD = (0<<1),
-    GRUB_EHCI_HPTR_TYPE_QH  = (1<<1),
-    GRUB_EHCI_HPTR_TYPE_SITD = (2<<1),
-    GRUB_EHCI_HPTR_TYPE_FSTN = (3<<1)
-  };
+{
+  GRUB_EHCI_HPTR_TYPE_MASK = (3 << 1),
+  GRUB_EHCI_HPTR_TYPE_ITD = (0 << 1),
+  GRUB_EHCI_HPTR_TYPE_QH = (1 << 1),
+  GRUB_EHCI_HPTR_TYPE_SITD = (2 << 1),
+  GRUB_EHCI_HPTR_TYPE_FSTN = (3 << 1)
+};
 
 enum
-  {
-    GRUB_EHCI_C = (1<<27),
-    GRUB_EHCI_MAXPLEN_MASK = (0x7ff<<16),
-    GRUB_EHCI_H  =             (1<<15),
-    GRUB_EHCI_DTC =           (1<<14),
-    GRUB_EHCI_SPEED_MASK =    (3<<12),
-    GRUB_EHCI_SPEED_FULL = (0<<12),
-    GRUB_EHCI_SPEED_LOW = (1<<12),
-    GRUB_EHCI_SPEED_HIGH = (2<<12),
-    GRUB_EHCI_SPEED_RESERVED = (3<<12),
-    GRUB_EHCI_EP_NUM_MASK = (0xf<<8),
-    GRUB_EHCI_DEVADDR_MASK = 0x7f,
-    GRUB_EHCI_TARGET_MASK = (GRUB_EHCI_EP_NUM_MASK
-			     | GRUB_EHCI_DEVADDR_MASK)
-  };
+{
+  GRUB_EHCI_C = (1 << 27),
+  GRUB_EHCI_MAXPLEN_MASK = (0x7ff << 16),
+  GRUB_EHCI_H = (1 << 15),
+  GRUB_EHCI_DTC = (1 << 14),
+  GRUB_EHCI_SPEED_MASK = (3 << 12),
+  GRUB_EHCI_SPEED_FULL = (0 << 12),
+  GRUB_EHCI_SPEED_LOW = (1 << 12),
+  GRUB_EHCI_SPEED_HIGH = (2 << 12),
+  GRUB_EHCI_SPEED_RESERVED = (3 << 12),
+  GRUB_EHCI_EP_NUM_MASK = (0xf << 8),
+  GRUB_EHCI_DEVADDR_MASK = 0x7f,
+  GRUB_EHCI_TARGET_MASK = (GRUB_EHCI_EP_NUM_MASK | GRUB_EHCI_DEVADDR_MASK)
+};
 
 enum
-  {
-    GRUB_EHCI_MAXPLEN_OFF = 16,
-    GRUB_EHCI_SPEED_OFF = 12,
-    GRUB_EHCI_EP_NUM_OFF = 8
-  };
+{
+  GRUB_EHCI_MAXPLEN_OFF = 16,
+  GRUB_EHCI_SPEED_OFF = 12,
+  GRUB_EHCI_EP_NUM_OFF = 8
+};
 
 enum
-  {
-    GRUB_EHCI_MULT_MASK = (3<<30),
-    GRUB_EHCI_MULT_RESERVED = (0<<30),
-    GRUB_EHCI_MULT_ONE = (0<<30),
-    GRUB_EHCI_MULT_TWO = (0<<30),
-    GRUB_EHCI_MULT_THREE = (0<<30),
-    GRUB_EHCI_DEVPORT_MASK = (0x7f<<23),
-    GRUB_EHCI_HUBADDR_MASK = (0x7f<<16)
-  };
+{
+  GRUB_EHCI_MULT_MASK = (3 << 30),
+  GRUB_EHCI_MULT_RESERVED = (0 << 30),
+  GRUB_EHCI_MULT_ONE = (0 << 30),
+  GRUB_EHCI_MULT_TWO = (0 << 30),
+  GRUB_EHCI_MULT_THREE = (0 << 30),
+  GRUB_EHCI_DEVPORT_MASK = (0x7f << 23),
+  GRUB_EHCI_HUBADDR_MASK = (0x7f << 16)
+};
 
 enum
-  {
-    GRUB_EHCI_MULT_OFF = 30,
-    GRUB_EHCI_DEVPORT_OFF = 23,
-    GRUB_EHCI_HUBADDR_OFF = 16
-  };
+{
+  GRUB_EHCI_MULT_OFF = 30,
+  GRUB_EHCI_DEVPORT_OFF = 23,
+  GRUB_EHCI_HUBADDR_OFF = 16
+};
 
 #define GRUB_EHCI_TERMINATE      (1<<0)
 
 #define GRUB_EHCI_TOGGLE         (1<<31)
 
 enum
-  {
-    GRUB_EHCI_TOTAL_MASK = (0x7fff << 16),
-    GRUB_EHCI_CERR_MASK = (3<<10),
-    GRUB_EHCI_CERR_0  =      (0<<10),
-    GRUB_EHCI_CERR_1   =      (1<<10),
-    GRUB_EHCI_CERR_2    =     (2<<10),
-    GRUB_EHCI_CERR_3     =    (3<<10),
-    GRUB_EHCI_PIDCODE_OUT =   (0<<8),
-    GRUB_EHCI_PIDCODE_IN   =  (1<<8),
-    GRUB_EHCI_PIDCODE_SETUP = (2<<8),
-    GRUB_EHCI_STATUS_MASK  =  0xff,
-    GRUB_EHCI_STATUS_ACTIVE = (1<<7),
-    GRUB_EHCI_STATUS_HALTED = (1<<6),
-    GRUB_EHCI_STATUS_BUFERR = (1<<5),
-    GRUB_EHCI_STATUS_BABBLE = (1<<4),
-    GRUB_EHCI_STATUS_TRANERR = (1<<3),
-    GRUB_EHCI_STATUS_MISSDMF = (1<<2),
-    GRUB_EHCI_STATUS_SPLITST = (1<<1),
-    GRUB_EHCI_STATUS_PINGERR = (1<<0)
-  };
+{
+  GRUB_EHCI_TOTAL_MASK = (0x7fff << 16),
+  GRUB_EHCI_CERR_MASK = (3 << 10),
+  GRUB_EHCI_CERR_0 = (0 << 10),
+  GRUB_EHCI_CERR_1 = (1 << 10),
+  GRUB_EHCI_CERR_2 = (2 << 10),
+  GRUB_EHCI_CERR_3 = (3 << 10),
+  GRUB_EHCI_PIDCODE_OUT = (0 << 8),
+  GRUB_EHCI_PIDCODE_IN = (1 << 8),
+  GRUB_EHCI_PIDCODE_SETUP = (2 << 8),
+  GRUB_EHCI_STATUS_MASK = 0xff,
+  GRUB_EHCI_STATUS_ACTIVE = (1 << 7),
+  GRUB_EHCI_STATUS_HALTED = (1 << 6),
+  GRUB_EHCI_STATUS_BUFERR = (1 << 5),
+  GRUB_EHCI_STATUS_BABBLE = (1 << 4),
+  GRUB_EHCI_STATUS_TRANERR = (1 << 3),
+  GRUB_EHCI_STATUS_MISSDMF = (1 << 2),
+  GRUB_EHCI_STATUS_SPLITST = (1 << 1),
+  GRUB_EHCI_STATUS_PINGERR = (1 << 0)
+};
 
 enum
-    {
-      GRUB_EHCI_TOTAL_OFF = 16,
-      GRUB_EHCI_CERR_OFF = 10
-    };
+{
+  GRUB_EHCI_TOTAL_OFF = 16,
+  GRUB_EHCI_CERR_OFF = 10
+};
 
 #define GRUB_EHCI_BUFPTR_MASK    (0xfffff<<12)
 #define GRUB_EHCI_QHTDPTR_MASK   0xffffffe0
@@ -668,8 +667,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
     {
       e->qh_virt[i].qh_hptr =
 	grub_cpu_to_le32 ((grub_ehci_virt2phys ((void *) &e->qh_virt[i],
-						e->
-						qh_chunk) &
+						e->qh_chunk) &
 			   GRUB_EHCI_POINTER_MASK) | GRUB_EHCI_HPTR_TYPE_QH);
       e->qh_virt[i].td_overlay.next_td =
 	grub_cpu_to_le32 (GRUB_EHCI_TERMINATE);
