@@ -198,6 +198,11 @@ struct grub_usb_device
   grub_uint32_t statuschange;
 
   struct grub_usb_desc_endp *hub_endpoint;
+
+  /* EHCI Split Transfer information */
+  int port;
+
+  int hubaddr;
 };
 
 
