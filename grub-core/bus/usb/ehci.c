@@ -470,6 +470,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   grub_uint32_t usblegsup = 0;
   grub_uint64_t maxtime;
   grub_uint32_t n_ports;
+  grub_uint8_t caplen;
 
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: begin\n");
 
@@ -524,10 +525,10 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   e->qh_chunk = NULL;
   e->iobase_ehcc = grub_pci_device_map_range (dev,
 					      (base & GRUB_EHCI_ADDR_MEM_MASK),
-					      0x10);
+					      0x100);
 
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: iobase of EHCC: %08x\n",
-		(grub_uint32_t) e->iobase_ehcc);
+		(base & GRUB_EHCI_ADDR_MEM_MASK));
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: CAPLEN: %02x\n",
 		grub_ehci_ehcc_read8 (e, GRUB_EHCI_EHCC_CAPLEN));
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: VERSION: %04x\n",
@@ -538,13 +539,13 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
 		grub_ehci_ehcc_read32 (e, GRUB_EHCI_EHCC_CPARAMS));
 
   /* Determine base address of EHCI operational registers */
-  e->iobase = (grub_uint32_t *) ((grub_uint32_t) e->iobase_ehcc +
-				 (grub_uint32_t) grub_ehci_ehcc_read8 (e,
-								       GRUB_EHCI_EHCC_CAPLEN));
+  caplen = grub_ehci_ehcc_read8 (e, GRUB_EHCI_EHCC_CAPLEN);
+  e->iobase = (volatile grub_uint32_t *) 
+    ((grub_uint8_t *) e->iobase_ehcc + caplen);
 
   grub_dprintf ("ehci",
 		"EHCI grub_ehci_pci_iter: iobase of oper. regs: %08x\n",
-		(grub_uint32_t) e->iobase);
+		(base & GRUB_EHCI_ADDR_MEM_MASK) + caplen);
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: COMMAND: %08x\n",
 		grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: STATUS: %08x\n",
@@ -787,7 +788,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
 
   grub_dprintf ("ehci",
 		"EHCI grub_ehci_pci_iter: iobase of oper. regs: %08x\n",
-		(grub_uint32_t) e->iobase);
+		(base & GRUB_EHCI_ADDR_MEM_MASK));
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: COMMAND: %08x\n",
 		grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: STATUS: %08x\n",
