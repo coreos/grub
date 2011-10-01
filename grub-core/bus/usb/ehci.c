@@ -27,6 +27,7 @@
 #include <grub/cpu/io.h>
 #include <grub/time.h>
 #include <grub/loader.h>
+#include <grub/cs5536.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -455,7 +456,6 @@ static int NESTED_FUNC_ATTR
 grub_ehci_pci_iter (grub_pci_device_t dev,
 		    grub_pci_id_t pciid __attribute__ ((unused)))
 {
-  grub_pci_address_t addr;
   grub_uint8_t release;
   grub_uint32_t class_code;
   grub_uint32_t interf;
@@ -473,47 +473,67 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
 
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: begin\n");
 
-  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
-  class_code = grub_pci_read (addr) >> 8;
-  interf = class_code & 0xFF;
-  subclass = (class_code >> 8) & 0xFF;
-  class = class_code >> 16;
-
-  /* If this is not an EHCI controller, just return.  */
-  if (class != 0x0c || subclass != 0x03 || interf != 0x20)
-    return 0;
-
-  grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: class OK\n");
-
-  /* Check Serial Bus Release Number */
-  addr = grub_pci_make_address (dev, GRUB_EHCI_PCI_SBRN_REG);
-  release = grub_pci_read_byte (addr);
-  if (release != 0x20)
+  if (pciid == GRUB_CS5536_PCIID)
     {
-      grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: Wrong SBRN: %0x\n",
-		    release);
-      return 0;
+      grub_uint64_t basereg;
+
+      basereg = grub_cs5536_read_msr (dev, GRUB_CS5536_MSR_USB_EHCI_BASE);
+      if (!(basereg & GRUB_CS5536_MSR_USB_BASE_MEMORY_ENABLE))
+	{
+	  /* Shouldn't happen.  */
+	  grub_dprintf ("ehci", "No EHCI address is assigned\n");
+	  return 0;
+	}
+      base = (basereg & GRUB_CS5536_MSR_USB_BASE_ADDR_MASK);
+      basereg |= GRUB_CS5536_MSR_USB_BASE_BUS_MASTER;
+      basereg &= ~GRUB_CS5536_MSR_USB_BASE_PME_ENABLED;
+      basereg &= ~GRUB_CS5536_MSR_USB_BASE_PME_STATUS;
+      basereg &= ~GRUB_CS5536_MSR_USB_BASE_SMI_ENABLE;
+      grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_USB_EHCI_BASE, basereg);
     }
-
-  grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: bus rev. num. OK\n");
-
-  /* Determine EHCI EHCC registers base address.  */
-  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
-  base = grub_pci_read (addr);
-  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG1);
-  base_h = grub_pci_read (addr);
-  /* Stop if registers are mapped above 4G - GRUB does not currently
-   * work with registers mapped above 4G */
-  if (((base & GRUB_PCI_ADDR_MEM_TYPE_MASK) != GRUB_PCI_ADDR_MEM_TYPE_32)
-      && (base_h != 0))
+  else
     {
-      grub_dprintf ("ehci",
-		    "EHCI grub_ehci_pci_iter: registers above 4G are not supported\n");
-      return 1;
+      grub_pci_address_t addr;
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
+      class_code = grub_pci_read (addr) >> 8;
+      interf = class_code & 0xFF;
+      subclass = (class_code >> 8) & 0xFF;
+      class = class_code >> 16;
+
+      /* If this is not an EHCI controller, just return.  */
+      if (class != 0x0c || subclass != 0x03 || interf != 0x20)
+	return 0;
+
+      grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: class OK\n");
+
+      /* Check Serial Bus Release Number */
+      addr = grub_pci_make_address (dev, GRUB_EHCI_PCI_SBRN_REG);
+      release = grub_pci_read_byte (addr);
+      if (release != 0x20)
+	{
+	  grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: Wrong SBRN: %0x\n",
+			release);
+	  return 0;
+	}
+      grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: bus rev. num. OK\n");
+  
+      /* Determine EHCI EHCC registers base address.  */
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
+      base = grub_pci_read (addr);
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG1);
+      base_h = grub_pci_read (addr);
+      /* Stop if registers are mapped above 4G - GRUB does not currently
+       * work with registers mapped above 4G */
+      if (((base & GRUB_PCI_ADDR_MEM_TYPE_MASK) != GRUB_PCI_ADDR_MEM_TYPE_32)
+	  && (base_h != 0))
+	{
+	  grub_dprintf ("ehci",
+			"EHCI grub_ehci_pci_iter: registers above 4G are not supported\n");
+	  return 1;
+	}
+      
+      grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: 32-bit EHCI OK\n");
     }
-
-  grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: 32-bit EHCI OK\n");
-
 
   /* Allocate memory for the controller and fill basic values. */
   e = grub_zalloc (sizeof (*e));
@@ -670,7 +690,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   /* Determine and change ownership. */
   /* EECP offset valid in HCCPARAMS */
   /* Ownership can be changed via EECP only */
-  if (eecp_offset >= 0x40)	
+  if (pciid != GRUB_CS5536_PCIID && eecp_offset >= 0x40)	
     {
       grub_pci_address_t pciaddr_eecp;
       pciaddr_eecp = grub_pci_make_address (dev, eecp_offset);
