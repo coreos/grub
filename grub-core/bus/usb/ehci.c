@@ -402,20 +402,6 @@ grub_ehci_port_setbits (struct grub_ehci *e, grub_uint32_t port,
   grub_ehci_port_read (e, port);
 }
 
-static inline void *
-grub_ehci_phys2virt (grub_uint32_t phys, struct grub_pci_dma_chunk *chunk)
-{
-  return ((grub_uint8_t *) grub_dma_get_virt (chunk)
-	  + (phys - grub_dma_get_phys (chunk)));
-}
-
-static inline grub_uint32_t
-grub_ehci_virt2phys (volatile void *virt, struct grub_pci_dma_chunk *chunk)
-{
-  return (((grub_uint8_t *) virt - (grub_uint8_t *) grub_dma_get_virt (chunk))
-	  + grub_dma_get_phys (chunk));
-}
-
 /* Halt if EHCI HC not halted */
 static grub_err_t
 grub_ehci_halt (struct grub_ehci *e)
@@ -662,7 +648,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   for (i = 1; i < GRUB_EHCI_N_QH; i++)
     {
       e->qh_virt[i].qh_hptr =
-	grub_cpu_to_le32 ((grub_ehci_virt2phys (&e->qh_virt[i],
+	grub_cpu_to_le32 ((grub_dma_virt2phys (&e->qh_virt[i],
 						e->qh_chunk) &
 			   GRUB_EHCI_POINTER_MASK) | GRUB_EHCI_HPTR_TYPE_QH);
       e->qh_virt[i].td_overlay.next_td =
@@ -754,7 +740,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   /* Setup list address registers */
   grub_ehci_oper_write32 (e, GRUB_EHCI_FL_BASE, e->framelist_phys);
   grub_ehci_oper_write32 (e, GRUB_EHCI_CUR_AL_ADDR,
-			  grub_ehci_virt2phys (&e->qh_virt[1],
+			  grub_dma_virt2phys (&e->qh_virt[1],
 					       e->qh_chunk));
 
   /* Set ownership of root hub ports to EHCI */
@@ -966,12 +952,12 @@ grub_ehci_find_qh (struct grub_ehci *e, grub_usb_transfer_t transfer)
   grub_ehci_setup_qh (&qh[i], transfer);
   /* Linking - this new (last) QH will point to first QH */
   qh[i].qh_hptr = grub_cpu_to_le32 (GRUB_EHCI_HPTR_TYPE_QH
-				    | grub_ehci_virt2phys (&qh[1],
-							   e->qh_chunk));
+				    | grub_dma_virt2phys (&qh[1],
+							  e->qh_chunk));
   /* Linking - previous last QH will point to this new QH */
   qh[i - 1].qh_hptr = grub_cpu_to_le32 (GRUB_EHCI_HPTR_TYPE_QH
-					| grub_ehci_virt2phys (&qh[i],
-							       e->qh_chunk));
+					| grub_dma_virt2phys (&qh[i],
+							      e->qh_chunk));
 
   return &qh[i];
 }
@@ -991,7 +977,7 @@ grub_ehci_alloc_td (struct grub_ehci *e)
   ret = e->tdfree_virt;		/* Take current free TD */
   /* Advance to next free TD in chain */
   if (ret->link_td)
-    e->tdfree_virt = grub_ehci_phys2virt (ret->link_td, e->td_chunk);
+    e->tdfree_virt = grub_dma_phys2virt (ret->link_td, e->td_chunk);
   else
     e->tdfree_virt = NULL;
   ret->link_td = 0;		/* Reset link_td in allocated TD */
@@ -1003,7 +989,7 @@ grub_ehci_free_td (struct grub_ehci *e, grub_ehci_td_t td)
 {
   /* Chain new free TD & rest */
   if (e->tdfree_virt)
-    td->link_td = grub_ehci_virt2phys (e->tdfree_virt, e->td_chunk);
+    td->link_td = grub_dma_virt2phys (e->tdfree_virt, e->td_chunk);
   else
     td->link_td = 0;
   e->tdfree_virt = td;		/* Change address of first free TD */
@@ -1039,7 +1025,7 @@ grub_ehci_free_tds (struct grub_ehci *e, grub_ehci_td_t td,
       /* Unlink the TD */
       tdprev = td;
       if (td->link_td)
-	td = grub_ehci_phys2virt (td->link_td, e->td_chunk);
+	td = grub_dma_phys2virt (td->link_td, e->td_chunk);
       else
 	td = NULL;
 
@@ -1112,7 +1098,7 @@ grub_ehci_transaction (struct grub_ehci *e,
    * will not be really fetched because it is not active. But don't
    * forget, EHCI will try to fetch alternate TD every scan of AL
    * until QH is halted. */
-  td->alt_next_td = grub_cpu_to_le32 (grub_ehci_virt2phys (td_alt,
+  td->alt_next_td = grub_cpu_to_le32 (grub_dma_virt2phys (td_alt,
 							   e->td_chunk));
   /* token:
    * TOGGLE - according to toggle
@@ -1269,9 +1255,9 @@ grub_ehci_setup_transfer (grub_usb_controller_t dev,
 	cdata->td_first_virt = td;
       else
 	{
-	  td_prev->link_td = grub_ehci_virt2phys (td, e->td_chunk);
+	  td_prev->link_td = grub_dma_virt2phys (td, e->td_chunk);
 	  td_prev->next_td =
-	    grub_cpu_to_le32 (grub_ehci_virt2phys (td, e->td_chunk));
+	    grub_cpu_to_le32 (grub_dma_virt2phys (td, e->td_chunk));
 	}
       td_prev = td;
     }
@@ -1295,7 +1281,7 @@ grub_ehci_setup_transfer (grub_usb_controller_t dev,
     grub_cpu_to_le32 (GRUB_EHCI_TERMINATE);
   /* Link new TDs with QH via next_td */
   cdata->qh_virt->td_overlay.next_td =
-    grub_cpu_to_le32 (grub_ehci_virt2phys
+    grub_cpu_to_le32 (grub_dma_virt2phys
 		      (cdata->td_first_virt, e->td_chunk));
   /* Reset Active and Halted bits in QH to activate Advance Queue,
    * i.e. reset token */
@@ -1547,7 +1533,7 @@ grub_ehci_cancel_transfer (grub_usb_controller_t dev,
 
   /* Finaly we should return QH back to the AL... */
   e->qh_virt[i - 1].qh_hptr =
-    grub_cpu_to_le32 (grub_ehci_virt2phys
+    grub_cpu_to_le32 (grub_dma_virt2phys
 		      (cdata->qh_virt, e->qh_chunk));
   grub_free (cdata);
 
@@ -1745,7 +1731,7 @@ grub_ehci_restore_hw (void)
       /* Setup some EHCI registers and enable EHCI */
       grub_ehci_oper_write32 (e, GRUB_EHCI_FL_BASE, e->framelist_phys);
       grub_ehci_oper_write32 (e, GRUB_EHCI_CUR_AL_ADDR,
-			      grub_ehci_virt2phys (&e->qh_virt[1],
+			      grub_dma_virt2phys (&e->qh_virt[1],
 						   e->qh_chunk));
       grub_ehci_oper_write32 (e, GRUB_EHCI_COMMAND,
 			      GRUB_EHCI_CMD_RUNSTOP |
