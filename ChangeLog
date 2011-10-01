@@ -1,3 +1,8 @@
+2011-10-01  Ales Nesrsta <starous@volny.cz>
+
+	* grub-core/bus/usb/uhci.c: Changes made by Rock Cui - thanks!
+	(fixed problem related to using UHCI with coreboot).
+
 2011-08-25  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* gentpl.py: Use Autogen macros so that the output template file
