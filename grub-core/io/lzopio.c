@@ -166,7 +166,7 @@ read_block_data (struct grub_lzopio *lzopio)
 
   if (lzopio->ccheck_fun)
     {
-      grub_uint8_t context[lzopio->ccheck_fun->contextsize];
+      grub_uint64_t context[(lzopio->ccheck_fun->contextsize + 7) / 8];
 
       lzopio->ccheck_fun->init (context);
       lzopio->ccheck_fun->write (context, lzopio->block.cdata,
@@ -212,7 +212,7 @@ uncompress_block (struct grub_lzopio *lzopio)
 
       if (lzopio->ucheck_fun)
 	{
-	  grub_uint8_t context[lzopio->ucheck_fun->contextsize];
+	  grub_uint64_t context[(lzopio->ccheck_fun->contextsize + 7) / 8];
 
 	  lzopio->ucheck_fun->init (context);
 	  lzopio->ucheck_fun->write (context, lzopio->block.udata,
