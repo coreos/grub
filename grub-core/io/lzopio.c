@@ -23,7 +23,7 @@
 #include <grub/fs.h>
 #include <grub/dl.h>
 #include <grub/crypto.h>
-#include "minilzo.h"
+#include <minilzo.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 

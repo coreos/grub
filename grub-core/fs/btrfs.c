@@ -26,7 +26,7 @@
 #include <grub/types.h>
 #include <grub/lib/crc.h>
 #include <grub/deflate.h>
-#include "minilzo.h"
+#include <minilzo.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
