@@ -330,8 +330,8 @@ next (struct grub_btrfs_data *data,
   for (; desc->depth > 0; desc->depth--)
     {
       desc->data[desc->depth - 1].iter++;
-      if (desc->data[desc->depth - 1].iter <
-	  desc->data[desc->depth - 1].maxiter)
+      if (desc->data[desc->depth - 1].iter
+	  < desc->data[desc->depth - 1].maxiter)
 	break;
     }
   if (desc->depth == 0)
@@ -376,7 +376,7 @@ lower_bound (struct grub_btrfs_data *data,
 	     const struct grub_btrfs_key *key_in,
 	     struct grub_btrfs_key *key_out,
 	     grub_disk_addr_t root,
-	     grub_disk_addr_t * outaddr, grub_size_t * outsize,
+	     grub_disk_addr_t *outaddr, grub_size_t *outsize,
 	     struct grub_btrfs_leaf_descriptor *desc)
 {
   grub_disk_addr_t addr = root;
@@ -626,8 +626,8 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 			grub_le_to_cpu64 (key->offset),
 			grub_le_to_cpu64 (chunk->size));
 	  if (grub_le_to_cpu64 (key->offset) <= addr
-	      && addr <
-	      grub_le_to_cpu64 (key->offset) + grub_le_to_cpu64 (chunk->size))
+	      && addr < grub_le_to_cpu64 (key->offset)
+	      + grub_le_to_cpu64 (chunk->size))
 	    goto chunk_found;
 	  ptr += sizeof (*key) + sizeof (*chunk)
 	    + sizeof (struct grub_btrfs_chunk_stripe)
@@ -1007,8 +1007,8 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 
 	  data->extend = data->extstart + grub_le_to_cpu64 (data->extent->size);
 	  if (data->extent->type == GRUB_BTRFS_EXTENT_REGULAR
-	      && (char *) &data->extent + elemsize >=
-	      (char *) &data->extent->filled + sizeof (data->extent->filled))
+	      && (char *) &data->extent + elemsize
+	      >= (char *) &data->extent->filled + sizeof (data->extent->filled))
 	    data->extend =
 	      data->extstart + grub_le_to_cpu64 (data->extent->filled);
 
@@ -1113,7 +1113,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	      else
 		ret = -1;
 
-	      grub_free(tmp);
+	      grub_free (tmp);
 
 	      if (ret != (grub_ssize_t) csize)
 		return -1;
@@ -1142,7 +1142,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 static grub_err_t
 find_path (struct grub_btrfs_data *data,
 	   const char *path, struct grub_btrfs_key *key,
-	   grub_uint64_t * tree, grub_uint8_t * type)
+	   grub_uint64_t *tree, grub_uint8_t *type)
 {
   const char *slash = path;
   grub_err_t err;
@@ -1391,7 +1391,7 @@ find_path (struct grub_btrfs_data *data,
 static grub_err_t
 grub_btrfs_dir (grub_device_t device, const char *path,
 		int (*hook) (const char *filename,
-			     const struct grub_dirhook_info * info))
+			     const struct grub_dirhook_info *info))
 {
   struct grub_btrfs_data *data = grub_btrfs_mount (device);
   struct grub_btrfs_key key_in, key_out;
