@@ -256,7 +256,7 @@ calculate_uncompressed_size (grub_file_t file)
   grub_off_t usize_total = 0;
 
   if (read_block_header (lzopio) < 0)
-    return 0;
+    return -1;
 
   /* FIXME: Don't do this for not easily seekable files.  */
   while (lzopio->block.usize != 0)
@@ -264,12 +264,12 @@ calculate_uncompressed_size (grub_file_t file)
       usize_total += lzopio->block.usize;
 
       if (jump_block (lzopio) < 0)
-	return 0;
+	return -1;
     }
 
   file->size = usize_total;
 
-  return 1;
+  return 0;
 }
 
 struct lzop_header
