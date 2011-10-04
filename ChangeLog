@@ -1,3 +1,102 @@
+2011-10-01  Ales Nesrsta <starous@volny.cz>
+
+	* grub-core/bus/usb/uhci.c: Changes made by Rock Cui - thanks!
+	(fixed problem related to using UHCI with coreboot).
+
+2011-08-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* gentpl.py: Use Autogen macros so that the output template file
+	(Makefile.tpl) size is reduced.
+
+2011-09-29  Mads Kiilerich <mads@kiilerich.com>
+
+	* grub-core/Makefile.core.def (kernel): Add kern/i386/int.S to
+	extra_dist.
+
+2011-09-29  Mario Limonciello <mario_limonciello@dell.com>
+
+	* util/misc.c (grub_util_get_disk_size) [__MINGW32__]: Strip trailing
+	slashes on PHYSICALDRIVE%d paths when making Windows CreateFile calls.
+
+2011-09-29  Mario Limonciello <mario_limonciello@dell.com>
+
+	* grub-core/kern/emu/misc.c (canonicalize_file_name) [__MINGW32__]: Use
+	_fullpath.
+
+2011-09-29  Mario Limonciello <mario_limonciello@dell.com>
+
+	Remove extra declaration of sleep for mingw32.
+
+	* util/misc.c (sleep) [__MINGW32__]: Removed.
+	* include/grub/util/misc.h (sleep) [__MINGW32__]: Likewise.
+
+2011-09-28  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* include/grub/bsdlabel.h (grub_partition_bsd_disk_label): Add fields
+	type and packname.
+	* include/grub/i386/netbsd_bootinfo.h (NETBSD_BTINFO_BOOTDISK):
+	Resurrected.
+	(NETBSD_BTINFO_BOOTWEDGE): New definition.
+	(grub_netbsd_btinfo_bootwedge): New struct.
+	* grub-core/loader/i386/bsd.c (grub_netbsd_add_boot_disk_and_wedge):
+	New function.
+	(grub_cmd_netbsd): Call grub_netbsd_add_boot_disk_and_wedge.
+
+2011-09-28  Thomas Haller <thomas.haller@fen-net.de>
+
+	* grub-core/loader/multiboot_elfxx.c (Elf_Shdr): Set according to
+	loader.
+
+2011-09-28  Andreas Born  <futur.andy@googlemail.com>
+
+	Fix incorrect identifiers in bash-completion.
+
+	* util/bash-completion.d/grub-completion.bash.in
+	(_grub_mkpasswd-pbkdf2): Rename to ...
+	(_grub_mkpasswd_pbkdf2): ... this. All users updated.
+	(_grub_script-check): Rename to ...
+	(_grub_script_check): ... this. All users updated.
+
+2011-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_is_floppy):
+	Return 0 if disk isn't biosdisk.
+
+2011-09-17  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* Makefile.util.def (grub-mkrelpath): Add LIBUTIL for getrawpartition(3)
+	on NetBSD.
+	* Makefile.util.def (grub-fstest): Likewise.
+
+2011-09-17  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors) [__NetBSD__]:
+	Get sector size from disk label.
+
+2011-09-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (grub_file_is_not_garbage): Return 1 for
+	*/README* as well as README*.
+	Reported by: Axel Beckert.
+
+2011-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Handle the
+	case of less than 256 MiB of RAM.
+
+2011-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/wildcard.c (make_regex): Handle @.
+
+2011-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Move cryptodisk logic to appropriate place.
+
+2011-08-21 Szymon Janc <szymon@janc.net.pl>
+
+	* acinclude.m4: Use AC_LANG_PROGRAM macro to generate source code for
+	 AC_LANG_CONFTEST macros.
+
 2011-08-20  Szymon Janc <szymon@janc.net.pl>
 
 	Add grub-fstest option to uncompress data for commands.

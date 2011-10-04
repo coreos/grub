@@ -265,10 +265,13 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
 
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     if (ioctl (fd, DIOCGSECTORSIZE, &sector_size))
+      goto fail;
+# elif defined(__NetBSD__)
+    sector_size = label.d_secsize;
 # else
     if (ioctl (fd, BLKSSZGET, &sector_size))
-# endif
       goto fail;
+# endif
 
     if (sector_size & (sector_size - 1) || !sector_size)
       goto fail;
@@ -1837,6 +1840,9 @@ grub_util_biosdisk_is_floppy (grub_disk_t disk)
 {
   struct stat st;
   int fd;
+
+  if (disk->dev != &grub_util_biosdisk_dev)
+    return 0;
 
   fd = open (map[disk->id].device, O_RDONLY);
   /* Shouldn't happen.  */

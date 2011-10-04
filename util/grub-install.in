@@ -558,11 +558,6 @@ if [ "x${devabstraction_module}" = "x" ] ; then
              
           exit 1
         fi
-	if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
-	    for uuid in "`"${grub_probe}" --device "${device}" --target=cryptodisk_uuid`"; do
-		echo "cryptomount -u $uuid"
-	    done
-	fi
 
         echo "search.fs_uuid ${uuid} root " >> "${grubdir}/load.cfg"
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
@@ -577,6 +572,14 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	fi
     fi
 else
+    if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
+	for uuid in "`"${grub_probe}" --device "${grub_device}" --target=cryptodisk_uuid`"; do
+	    echo "cryptomount -u $uuid" >> "${grubdir}/load.cfg"
+	done
+    fi
+
+    config_opt="-c ${grubdir}/load.cfg "
+
     prefix_drive=`"$grub_probe" --device-map="${device_map}" --target=drive --device "${grub_device}"` || exit 1
 fi
 
