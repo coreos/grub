@@ -764,11 +764,11 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
 	grub_netbuff_free (nb);
 	return GRUB_ERR_NONE;
       }
-    if (sock->i_reseted)
+    if (sock->i_reseted && (nb->tail - nb->data
+			    - (grub_be_to_cpu16 (tcph->flags)
+			       >> 12) * sizeof (grub_uint32_t)) > 0)
       {
 	reset (sock);
-	grub_netbuff_free (nb);
-	return GRUB_ERR_NONE;
       }
 
     err = grub_priority_queue_push (sock->pq, &nb);
