@@ -204,6 +204,7 @@ struct grub_net_app_protocol
 		     int (*hook) (const char *filename,
 				  const struct grub_dirhook_info *info));
   grub_err_t (*open) (struct grub_file *file, const char *filename);
+  grub_err_t (*seek) (struct grub_file *file, grub_off_t off);
   grub_err_t (*close) (struct grub_file *file);
 };
 

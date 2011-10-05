@@ -56,7 +56,8 @@ struct grub_net_tcp_socket
   int in_port;
   int out_port;
   int errors;
-  int reseted;
+  int they_reseted;
+  int i_reseted;
   grub_uint32_t my_start_seq;
   grub_uint32_t my_cur_seq;
   grub_uint32_t their_start_seq;
@@ -153,7 +154,7 @@ error (grub_net_tcp_socket_t sock)
 {
   struct unacked *unack, *next;
 
-  if (sock->established && sock->error_hook)
+  if (sock->error_hook)
     sock->error_hook (sock, sock->hook_data);
 
   for (unack = sock->unack_first; unack; unack = next)
@@ -217,13 +218,17 @@ tcp_send (struct grub_net_buff *nb, grub_net_tcp_socket_t socket)
 }
 
 void
-grub_net_tcp_close (grub_net_tcp_socket_t sock)
+grub_net_tcp_close (grub_net_tcp_socket_t sock,
+		    int discard_received)
 {
   struct grub_net_buff *nb_fin;
   struct tcphdr *tcph_fin;
   grub_err_t err;
 
   sock->i_closed = 1;
+
+  if (discard_received != GRUB_NET_TCP_CONTINUE_RECEIVING)
+    sock->recv_hook = NULL;
 
   nb_fin = grub_netbuff_alloc (sizeof (*tcph_fin)
 			       + GRUB_NET_OUR_IPV4_HEADER_SIZE
@@ -254,6 +259,8 @@ grub_net_tcp_close (grub_net_tcp_socket_t sock)
   tcph_fin->window = grub_cpu_to_be16 (0);
   tcph_fin->urgent = 0;
   err = tcp_send (nb_fin, sock);
+  if (discard_received == GRUB_NET_TCP_ABORT)
+    sock->i_reseted = 1;
   if (err)
     {
       grub_netbuff_free (nb_fin);
@@ -264,7 +271,7 @@ grub_net_tcp_close (grub_net_tcp_socket_t sock)
 }
 
 static void
-ack (grub_net_tcp_socket_t sock)
+ack_real (grub_net_tcp_socket_t sock, int res)
 {
   struct grub_net_buff *nb_ack;
   struct tcphdr *tcph_ack;
@@ -291,9 +298,18 @@ ack (grub_net_tcp_socket_t sock)
       return;
     }
   tcph_ack = (void *) nb_ack->data;
-  tcph_ack->ack = grub_cpu_to_be32 (sock->their_cur_seq);
-  tcph_ack->flags = grub_cpu_to_be16 ((5 << 12) | TCP_ACK);
-  tcph_ack->window = grub_cpu_to_be16 (sock->my_window);
+  if (res)
+    {
+      tcph_ack->ack = grub_cpu_to_be32 (0);
+      tcph_ack->flags = grub_cpu_to_be16 ((5 << 12) | TCP_RST);
+      tcph_ack->window = grub_cpu_to_be16 (0);
+    }
+  else
+    {
+      tcph_ack->ack = grub_cpu_to_be32 (sock->their_cur_seq);
+      tcph_ack->flags = grub_cpu_to_be16 ((5 << 12) | TCP_ACK);
+      tcph_ack->window = grub_cpu_to_be16 (sock->my_window);
+    }
   tcph_ack->urgent = 0;
   tcph_ack->src = grub_cpu_to_be16 (sock->in_port);
   tcph_ack->dst = grub_cpu_to_be16 (sock->out_port);
@@ -303,6 +319,18 @@ ack (grub_net_tcp_socket_t sock)
       grub_dprintf ("net", "error acking socket\n");
       grub_errno = GRUB_ERR_NONE;
     }
+}
+
+static void
+ack (grub_net_tcp_socket_t sock)
+{
+  ack_real (sock, 0);
+}
+
+static void
+reset (grub_net_tcp_socket_t sock)
+{
+  ack_real (sock, 1);
 }
 
 void
@@ -434,6 +462,7 @@ grub_net_tcp_accept (grub_net_tcp_socket_t sock,
   tcph->flags = grub_cpu_to_be16 ((5 << 12) | TCP_SYN | TCP_ACK);
   tcph->window = grub_cpu_to_be16 (sock->my_window);
   tcph->urgent = 0;
+  sock->established = 1;
   tcp_socket_register (sock);
   err = tcp_send (nb_ack, sock);
   if (err)
@@ -555,7 +584,7 @@ grub_net_tcp_open (char *server,
     {
       grub_list_remove (GRUB_AS_LIST_P (&tcp_sockets),
 			GRUB_AS_LIST (socket));
-      if (socket->reseted)
+      if (socket->they_reseted)
 	grub_error (GRUB_ERR_NET_PORT_CLOSED, "port closed");
       else
 	grub_error (GRUB_ERR_NET_NO_ANSWER, "no answer");
@@ -693,7 +722,7 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
 
     if (grub_be_to_cpu16 (tcph->flags) & TCP_RST)
       {
-	sock->reseted = 1;
+	sock->they_reseted = 1;
 
 	error (sock);
 
@@ -725,13 +754,19 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
 	    grub_free (unack);
 	  }
 	sock->unack_first = unack;
-	if (!sock->unack_last)
+	if (!sock->unack_first)
 	  sock->unack_last = NULL;
       }
 
     if (grub_be_to_cpu32 (tcph->seqnr) < sock->their_cur_seq)
       {
 	ack (sock);
+	grub_netbuff_free (nb);
+	return GRUB_ERR_NONE;
+      }
+    if (sock->i_reseted)
+      {
+	reset (sock);
 	grub_netbuff_free (nb);
 	return GRUB_ERR_NONE;
       }

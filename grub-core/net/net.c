@@ -815,17 +815,17 @@ grub_net_poll_cards_idle_real (void)
 static grub_ssize_t
 grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
 {
-  grub_net_t sock = file->device->net;
+  grub_net_t net = file->device->net;
   struct grub_net_buff *nb;
   char *ptr = buf;
   grub_size_t amount, total = 0;
   int try = 0;
   while (try <= 3)
     {
-      while (sock->packs.first)
+      while (net->packs.first)
 	{
 	  try = 0;
-	  nb = sock->packs.first->nb;
+	  nb = net->packs.first->nb;
 	  amount = nb->tail - nb->data;
 	  if (amount > len)
 	    amount = len;
@@ -840,7 +840,7 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
 	  if (amount == (grub_size_t) (nb->tail - nb->data))
 	    {
 	      grub_netbuff_free (nb);
-	      grub_net_remove_packet (sock->packs.first);
+	      grub_net_remove_packet (net->packs.first);
 	    }
 	  else
 	    nb->data += amount;
@@ -848,7 +848,7 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
 	  if (!len)
 	    return total;
 	}
-      if (!sock->eof)
+      if (!net->eof)
 	{
 	  try++;
 	  grub_net_poll_cards (200);
@@ -856,39 +856,59 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
       else
 	return total;
     }
-    return total;
+  grub_error (GRUB_ERR_TIMEOUT, "timeout reading '%s'", net->name);
+  return -1;
+}
+
+static grub_off_t
+have_ahead (struct grub_file *file)
+{
+  grub_net_t net = file->device->net;
+  grub_off_t ret = net->offset;
+  struct grub_net_packet *pack;
+  for (pack = net->packs.first; pack; pack = pack->next)
+    ret += pack->nb->tail - pack->nb->data;
+  return ret;
 }
 
 static grub_err_t 
 grub_net_seek_real (struct grub_file *file, grub_off_t offset)
 {
-  grub_size_t len = offset - file->device->net->offset;
-
-  if (!len)
+  if (offset == file->device->net->offset)
     return GRUB_ERR_NONE;
 
-  if (file->device->net->offset > offset)
+  if (offset > file->device->net->offset)
     {
-      grub_err_t err;
-      while (file->device->net->packs.first)
+      if (!file->device->net->protocol->seek || have_ahead (file) >= offset)
 	{
-	  grub_netbuff_free (file->device->net->packs.first->nb);
-	  grub_net_remove_packet (file->device->net->packs.first);
+	  grub_net_fs_read_real (file, NULL,
+				 offset - file->device->net->offset);
+	  return grub_errno;
 	}
-      file->device->net->protocol->close (file);
-
-      file->device->net->packs.first = NULL;
-      file->device->net->packs.last = NULL;
-      file->device->net->offset = 0;
-      file->device->net->eof = 0;
-      err = file->device->net->protocol->open (file, file->device->net->name);
-      if (err)
-	return err;
-      len = offset;
+      return file->device->net->protocol->seek (file, offset);
     }
 
-  grub_net_fs_read_real (file, NULL, len);
-  return GRUB_ERR_NONE;
+  {
+    grub_err_t err;
+    if (file->device->net->protocol->seek)
+      return file->device->net->protocol->seek (file, offset);
+    while (file->device->net->packs.first)
+      {
+	grub_netbuff_free (file->device->net->packs.first->nb);
+	grub_net_remove_packet (file->device->net->packs.first);
+      }
+    file->device->net->protocol->close (file);
+
+    file->device->net->packs.first = NULL;
+    file->device->net->packs.last = NULL;
+    file->device->net->offset = 0;
+    file->device->net->eof = 0;
+    err = file->device->net->protocol->open (file, file->device->net->name);
+    if (err)
+      return err;
+    grub_net_fs_read_real (file, NULL, offset);
+    return grub_errno;
+  }
 }
 
 static grub_ssize_t

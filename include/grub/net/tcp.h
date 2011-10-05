@@ -53,8 +53,15 @@ grub_net_send_tcp_packet (const grub_net_tcp_socket_t socket,
 			  struct grub_net_buff *nb,
 			  int push);
 
+enum
+  {
+    GRUB_NET_TCP_CONTINUE_RECEIVING,
+    GRUB_NET_TCP_DISCARD,
+    GRUB_NET_TCP_ABORT
+  };
+
 void
-grub_net_tcp_close (grub_net_tcp_socket_t sock);
+grub_net_tcp_close (grub_net_tcp_socket_t sock, int discard_received);
 
 grub_err_t
 grub_net_tcp_accept (grub_net_tcp_socket_t sock,

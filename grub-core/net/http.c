@@ -42,7 +42,11 @@ typedef struct http_data
   grub_size_t current_line_len;
   int headers_recv;
   int first_line_recv;
+  int size_recv;
   grub_net_tcp_socket_t sock;
+  char *filename;
+  grub_err_t err;
+  char *errmsg;
 } *http_data_t;
 
 static grub_err_t
@@ -72,19 +76,25 @@ parse_line (http_data_t data, char *ptr, grub_size_t len)
 	{
 	case 200:
 	  break;
+	case 404:
+	  data->err = GRUB_ERR_FILE_NOT_FOUND;
+	  data->errmsg = grub_xasprintf ("file `%s' not found", data->filename);
+	  return GRUB_ERR_NONE;
 	default:
-	  return grub_error (GRUB_ERR_NET_UNKNOWN_ERROR,
-			     "unsupported HTTP error %d: %s",
-			     code, ptr);
+	  data->err = GRUB_ERR_NET_UNKNOWN_ERROR;
+	  data->errmsg = grub_xasprintf ("unsupported HTTP error %d: %s",
+					 code, ptr);
+	  return GRUB_ERR_NONE;
 	}
       data->first_line_recv = 1;
       return GRUB_ERR_NONE;
     }
   if (grub_memcmp (ptr, "Content-Length: ", sizeof ("Content-Length: ") - 1)
-      == 0)
+      == 0 && !data->size_recv)
     {
       ptr += sizeof ("Content-Length: ") - 1;
       data->file_size = grub_strtoull (ptr, &ptr, 10);
+      data->size_recv = 1;
       return GRUB_ERR_NONE;
     }
   return GRUB_ERR_NONE;  
@@ -98,10 +108,10 @@ http_err (grub_net_tcp_socket_t sock __attribute__ ((unused)),
   http_data_t data = file->data;
 
   if (data->sock)
-    grub_net_tcp_close (data->sock);
-  grub_free (data);
+    grub_net_tcp_close (data->sock, GRUB_NET_TCP_ABORT);
   if (data->current_line)
     grub_free (data->current_line);
+  grub_free (data);
   file->device->net->eof = 1;
 }
 
@@ -132,7 +142,7 @@ http_receive (grub_net_tcp_socket_t sock __attribute__ ((unused)),
       if (!t)
 	{
 	  grub_netbuff_free (nb);
-	  grub_net_tcp_close (data->sock);
+	  grub_net_tcp_close (data->sock, GRUB_NET_TCP_ABORT);
 	  return grub_errno;
 	}
 	      
@@ -151,7 +161,7 @@ http_receive (grub_net_tcp_socket_t sock __attribute__ ((unused)),
       data->current_line_len = 0;
       if (err)
 	{
-	  grub_net_tcp_close (data->sock);
+	  grub_net_tcp_close (data->sock, GRUB_NET_TCP_ABORT);
 	  grub_netbuff_free (nb);
 	  return err;
 	}
@@ -167,7 +177,7 @@ http_receive (grub_net_tcp_socket_t sock __attribute__ ((unused)),
 	  if (!data->current_line)
 	    {
 	      grub_netbuff_free (nb);
-	      grub_net_tcp_close (data->sock);
+	      grub_net_tcp_close (data->sock, GRUB_NET_TCP_ABORT);
 	      return grub_errno;
 	    }
 	  data->current_line_len = (char *) nb->tail - ptr;
@@ -178,7 +188,7 @@ http_receive (grub_net_tcp_socket_t sock __attribute__ ((unused)),
       err = parse_line (data, ptr, ptr2 - ptr);
       if (err)
 	{
-	  grub_net_tcp_close (data->sock);
+	  grub_net_tcp_close (data->sock, GRUB_NET_TCP_ABORT);
 	  grub_netbuff_free (nb);
 	  return err;
 	}
@@ -191,7 +201,7 @@ http_receive (grub_net_tcp_socket_t sock __attribute__ ((unused)),
       err = grub_netbuff_pull (nb, ptr - (char *) nb->data);
       if (err)
 	{
-	  grub_net_tcp_close (data->sock);
+	  grub_net_tcp_close (data->sock, GRUB_NET_TCP_ABORT);
 	  grub_netbuff_free (nb);
 	  return err;
 	}      
@@ -203,57 +213,51 @@ http_receive (grub_net_tcp_socket_t sock __attribute__ ((unused)),
 }
 
 static grub_err_t
-http_open (struct grub_file *file, const char *filename)
+http_establish (struct grub_file *file, grub_off_t offset, int initial)
 {
-  struct grub_net_buff *nb;
-  http_data_t data;
-  grub_err_t err;
+  http_data_t data = file->data;
   grub_uint8_t *ptr;
   int i;
-
-  data = grub_zalloc (sizeof (*data));
-  if (!data)
-    return grub_errno;
+  struct grub_net_buff *nb;
+  grub_err_t err;
 
   nb = grub_netbuff_alloc (GRUB_NET_TCP_RESERVE_SIZE
 			   + sizeof ("GET ") - 1
-			   + grub_strlen (filename)
+			   + grub_strlen (data->filename)
 			   + sizeof (" HTTP/1.1\r\nHost: ") - 1
 			   + grub_strlen (file->device->net->server)
 			   + sizeof ("\r\nUser-Agent: " PACKAGE_STRING
-				     "\r\n\r\n") - 1);
+				     "\r\n") - 1
+			   + sizeof ("Content-Range: bytes XXXXXXXXXXXXXXXXXXXX"
+				     "-XXXXXXXXXXXXXXXXXXXX/"
+				     "XXXXXXXXXXXXXXXXXXXX\r\n\r\n"));
   if (!nb)
-    {
-      grub_free (data);
-      return grub_errno;
-    }
+    return grub_errno;
 
   grub_netbuff_reserve (nb, GRUB_NET_TCP_RESERVE_SIZE);
   ptr = nb->tail;
   err = grub_netbuff_put (nb, sizeof ("GET ") - 1);
   if (err)
     {
-      grub_free (data);
       grub_netbuff_free (nb);
       return err;
     }
   grub_memcpy (ptr, "GET ", sizeof ("GET ") - 1);
 
   ptr = nb->tail;
-  err = grub_netbuff_put (nb, grub_strlen (filename));
+
+  err = grub_netbuff_put (nb, grub_strlen (data->filename));
   if (err)
     {
-      grub_free (data);
       grub_netbuff_free (nb);
       return err;
     }
-  grub_memcpy (ptr, filename, grub_strlen (filename));
+  grub_memcpy (ptr, data->filename, grub_strlen (data->filename));
 
   ptr = nb->tail;
   err = grub_netbuff_put (nb, sizeof (" HTTP/1.1\r\nHost: ") - 1);
   if (err)
     {
-      grub_free (data);
       grub_netbuff_free (nb);
       return err;
     }
@@ -264,7 +268,6 @@ http_open (struct grub_file *file, const char *filename)
   err = grub_netbuff_put (nb, grub_strlen (file->device->net->server));
   if (err)
     {
-      grub_free (data);
       grub_netbuff_free (nb);
       return err;
     }
@@ -273,19 +276,30 @@ http_open (struct grub_file *file, const char *filename)
 
   ptr = nb->tail;
   err = grub_netbuff_put (nb, 
-			  sizeof ("\r\nUser-Agent: " PACKAGE_STRING "\r\n\r\n")
+			  sizeof ("\r\nUser-Agent: " PACKAGE_STRING "\r\n")
 			  - 1);
   if (err)
     {
-      grub_free (data);
       grub_netbuff_free (nb);
       return err;
     }
-  grub_memcpy (ptr, "\r\nUser-Agent: " PACKAGE_STRING "\r\n\r\n",
-	       sizeof ("\r\nUser-Agent: " PACKAGE_STRING "\r\n\r\n") - 1);
-
-  file->not_easily_seekable = 1;
-  file->data = data;
+  grub_memcpy (ptr, "\r\nUser-Agent: " PACKAGE_STRING "\r\n",
+	       sizeof ("\r\nUser-Agent: " PACKAGE_STRING "\r\n") - 1);
+  if (!initial)
+    {
+      ptr = nb->tail;
+      grub_snprintf ((char *) ptr,
+		     sizeof ("Content-Range: bytes XXXXXXXXXXXXXXXXXXXX-"
+			     "XXXXXXXXXXXXXXXXXXXX/XXXXXXXXXXXXXXXXXXXX\r\n"
+			     "\r\n"),
+		     "Content-Range: bytes %" PRIuGRUB_UINT64_T "-%"
+		     PRIuGRUB_UINT64_T "/%" PRIuGRUB_UINT64_T "\r\n\r\n",
+		     offset, data->file_size - 1, data->file_size);
+      grub_netbuff_put (nb, grub_strlen ((char *) ptr));
+    }
+  ptr = nb->tail;
+  grub_netbuff_put (nb, 2);
+  grub_memcpy (ptr, "\r\n", 2);
 
   data->sock = grub_net_tcp_open (file->device->net->server,
 				  HTTP_PORT, http_receive,
@@ -293,7 +307,6 @@ http_open (struct grub_file *file, const char *filename)
 				  file);
   if (!data->sock)
     {
-      grub_free (data);
       grub_netbuff_free (nb);
       return grub_errno;
     }
@@ -303,8 +316,7 @@ http_open (struct grub_file *file, const char *filename)
   err = grub_net_send_tcp_packet (data->sock, nb, 1);
   if (err)
     {
-      grub_free (data);
-      grub_net_tcp_close (data->sock);
+      grub_net_tcp_close (data->sock, GRUB_NET_TCP_ABORT);
       return err;
     }
 
@@ -316,9 +328,81 @@ http_open (struct grub_file *file, const char *filename)
 
   if (!data->headers_recv)
     {
-      grub_net_tcp_close (data->sock);
+      grub_net_tcp_close (data->sock, GRUB_NET_TCP_ABORT);
+      if (data->err)
+	{
+	  char *str = data->errmsg;
+	  err = grub_error (data->err, "%s", str);
+	  grub_free (str);
+	  return data->err;
+	}
+      return grub_error (GRUB_ERR_TIMEOUT, "timeout opening http");
+    }
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+http_seek (struct grub_file *file, grub_off_t off)
+{
+  struct http_data *old_data, *data;
+  grub_err_t err;
+  old_data = file->data;
+  /* FIXME: Reuse socket?  */
+  grub_net_tcp_close (old_data->sock, GRUB_NET_TCP_ABORT);
+
+  while (file->device->net->packs.first)
+    grub_net_remove_packet (file->device->net->packs.first);
+
+  data = grub_zalloc (sizeof (*data));
+  if (!data)
+    return grub_errno;
+
+  data->file_size = old_data->file_size;
+  data->size_recv = 1;
+  data->filename = old_data->filename;
+  if (!data->filename)
+    {
       grub_free (data);
-      return grub_error (GRUB_ERR_TIMEOUT, "Time out opening http.");
+      return grub_errno;
+    }
+  grub_free (old_data);
+
+  err = http_establish (file, off, 0);
+  if (err)
+    {
+      grub_free (data->filename);
+      grub_free (data);
+      return err;
+    }
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+http_open (struct grub_file *file, const char *filename)
+{
+  grub_err_t err;
+  struct http_data *data;
+
+  data = grub_zalloc (sizeof (*data));
+  if (!data)
+    return grub_errno;
+
+  data->filename = grub_strdup (filename);
+  if (!data->filename)
+    {
+      grub_free (data);
+      return grub_errno;
+    }
+
+  file->not_easily_seekable = 0;
+  file->data = data;
+
+  err = http_establish (file, 0, 1);
+  if (err)
+    {
+      grub_free (data->filename);
+      grub_free (data);
+      return err;
     }
   file->size = data->file_size;
 
@@ -331,10 +415,10 @@ http_close (struct grub_file *file)
   http_data_t data = file->data;
 
   if (data->sock)
-    grub_net_tcp_close (data->sock);
-  grub_free (data);
+    grub_net_tcp_close (data->sock, GRUB_NET_TCP_ABORT);
   if (data->current_line)
     grub_free (data->current_line);
+  grub_free (data);
   return GRUB_ERR_NONE;
 }
 
@@ -342,7 +426,8 @@ static struct grub_net_app_protocol grub_http_protocol =
   {
     .name = "http",
     .open = http_open,
-    .close = http_close
+    .close = http_close,
+    .seek = http_seek
   };
 
 GRUB_MOD_INIT (http)
