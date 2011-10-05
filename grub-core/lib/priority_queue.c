@@ -19,6 +19,10 @@
 #ifndef TEST
 #include <grub/priority_queue.h>
 #include <grub/mm.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #else
 #include <stdlib.h>
 #include <stdio.h>
