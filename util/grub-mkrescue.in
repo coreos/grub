@@ -31,15 +31,15 @@ pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst 
 
 self=`basename $0`
 
-multiboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-multiboot
-coreboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-coreboot
-qemu_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-qemu
-pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc
-efi32_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi
-efi64_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi
+multiboot_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-multiboot"
+coreboot_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-coreboot"
+qemu_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-qemu"
+pc_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc"
+efi32_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi"
+efi64_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi"
 rom_directory=
 override_dir=
-grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
+grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 
 xorriso=xorriso
 

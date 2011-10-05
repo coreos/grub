@@ -263,6 +263,8 @@ do
     esac
 done
 
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
+
 if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
     || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
     echo "install_device not specified." 1>&2
@@ -332,6 +334,12 @@ if [ x"$platform" = xefi ]; then
         # Is it a mount point?
 	if test "x$install_device" != "x`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}"`"; then
 	    efidir="${bootdir}/efi"
+	fi
+    elif test -d "${bootdir}/EFI"; then
+	install_device="`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}/EFI"`"
+        # Is it a mount point?
+	if test "x$install_device" != "x`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}"`"; then
+	    efidir="${bootdir}/EFI"
 	fi
     elif test -n "$rootdir" && test "x$rootdir" != "x/"; then
         # The EFI System Partition may have been given directly using
@@ -496,7 +504,11 @@ if [ "x$disk_module" = xata ]; then
 fi
 
 if [ "x$disk_module" = xnative ]; then
-    disk_module="pata ahci ohci uhci usbms"
+    disk_module="pata ahci ohci"
+    if [ "x$target_cpu" = "xi386" ] || [ "x$target_cpu" = "xx86_64" ]; then
+	disk_module="$disk_module uhci"
+    fi
+    disk_module="$disk_module usbms"
 fi
 
 # The order in this list is critical.  Be careful when modifying it.
@@ -546,11 +558,6 @@ if [ "x${devabstraction_module}" = "x" ] ; then
              
           exit 1
         fi
-	if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
-	    for uuid in "`"${grub_probe}" --device "${device}" --target=cryptodisk_uuid`"; do
-		echo "cryptomount -u $uuid"
-	    done
-	fi
 
         echo "search.fs_uuid ${uuid} root " >> "${grubdir}/load.cfg"
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
@@ -565,6 +572,14 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	fi
     fi
 else
+    if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
+	for uuid in "`"${grub_probe}" --device "${grub_device}" --target=cryptodisk_uuid`"; do
+	    echo "cryptomount -u $uuid" >> "${grubdir}/load.cfg"
+	done
+    fi
+
+    config_opt="-c ${grubdir}/load.cfg "
+
     prefix_drive=`"$grub_probe" --device-map="${device_map}" --target=drive --device "${grub_device}"` || exit 1
 fi
 

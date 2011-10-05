@@ -175,6 +175,11 @@ grub_err_t EXPORT_FUNC(grub_disk_write) (grub_disk_t disk,
 
 grub_uint64_t EXPORT_FUNC(grub_disk_get_size) (grub_disk_t disk);
 
+#if DISK_CACHE_STATS
+void
+EXPORT_FUNC(grub_disk_cache_get_performance) (unsigned long *hits, unsigned long *misses);
+#endif
+
 extern void (* EXPORT_VAR(grub_disk_firmware_fini)) (void);
 extern int EXPORT_VAR(grub_disk_firmware_is_tainted);
 

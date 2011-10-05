@@ -1179,12 +1179,9 @@ grub_gzio_open (grub_file_t io)
       grub_free (gzio);
       grub_free (file);
       grub_file_seek (io, 0);
+      grub_errno = GRUB_ERR_NONE;
 
-      if (grub_errno == GRUB_ERR_BAD_FILE_TYPE)
-	{
-	  grub_errno = GRUB_ERR_NONE;
-	  return io;
-	}
+      return io;
     }
 
   return file;

@@ -21,7 +21,6 @@
 #include <grub/types.h>
 #include <grub/emu/misc.h>
 #include <grub/util/misc.h>
-#include <grub/util/misc.h>
 #include <grub/device.h>
 #include <grub/disk.h>
 #include <grub/file.h>
@@ -181,7 +180,10 @@ probe (const char *path, char *device_name)
 #endif
     }
   else
-    device_name = grub_guess_root_device (path);
+    {
+      grub_path = canonicalize_file_name (path);
+      device_name = grub_guess_root_device (grub_path);
+    }
 
   if (! device_name)
     grub_util_error ("cannot find a device for %s (is /dev mounted?)", path);

@@ -139,6 +139,7 @@ make_regex (const char *start, const char *end, regex_t *regexp)
 	case '.':
 	case '(':
 	case ')':
+	case '@':
 	  buffer[i++] = '\\';
 	  buffer[i++] = ch;
 	  break;

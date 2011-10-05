@@ -57,6 +57,7 @@ grub_ata_dumpinfo (struct grub_ata *dev, char *info)
     {
       grub_dprintf ("ata", "Addressing: %d\n", dev->addr);
       grub_dprintf ("ata", "Sectors: %lld\n", (unsigned long long) dev->size);
+      grub_dprintf ("ata", "Sector size: %u\n", 1U << dev->log_sector_size);
     }
 }
 
@@ -169,6 +170,21 @@ grub_ata_identify (struct grub_ata *dev)
     dev->size = grub_le_to_cpu32(*((grub_uint32_t *) &info16[60]));
   else
     dev->size = grub_le_to_cpu64(*((grub_uint64_t *) &info16[100]));
+
+  if (info16[106] & (1 << 12))
+    {
+      grub_uint32_t secsize;
+      secsize = grub_le_to_cpu32 (*((grub_uint32_t *) &info16[117]));
+      if (secsize & (secsize - 1) || !secsize
+	  || secsize > 1048576)
+	secsize = 256;
+      for (dev->log_sector_size = 0;
+	   (1U << dev->log_sector_size) < secsize;
+	   dev->log_sector_size++);
+      dev->log_sector_size++;
+    }
+  else
+    dev->log_sector_size = 9;
 
   /* Read CHS information.  */
   dev->cylinders = info16[1];
@@ -314,7 +330,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
       grub_ata_setaddress (ata, &parms, sector, batch, addressing);
       parms.taskfile.cmd = (! rw ? cmd : cmd_write);
       parms.buffer = buf;
-      parms.size = batch * GRUB_DISK_SECTOR_SIZE;
+      parms.size = batch << ata->log_sector_size;
       parms.write = rw;
       if (ata->dma)
 	parms.dma = 1;
@@ -322,9 +338,9 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
       err = ata->dev->readwrite (ata, &parms, 0);
       if (err)
 	return err;
-      if (parms.size != batch * GRUB_DISK_SECTOR_SIZE)
+      if (parms.size != batch << ata->log_sector_size)
 	return grub_error (GRUB_ERR_READ_ERROR, "incomplete read");
-      buf += GRUB_DISK_SECTOR_SIZE * batch;
+      buf += batch << ata->log_sector_size;
       sector += batch;
       nsectors += batch;
     }
@@ -433,6 +449,7 @@ grub_ata_open (const char *name, grub_disk_t disk)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not an ATA harddisk");
 
   disk->total_sectors = ata->size;
+  disk->log_sector_size = ata->log_sector_size;
 
   disk->id = grub_make_scsi_id (id, bus, 0);
 

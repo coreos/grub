@@ -22,12 +22,14 @@
 # define ELFCLASSXX	ELFCLASS32
 # define Elf_Ehdr	Elf32_Ehdr
 # define Elf_Phdr	Elf32_Phdr
+# define Elf_Shdr	Elf32_Shdr
 #elif defined(MULTIBOOT_LOAD_ELF64)
 # define XX		64
 # define E_MACHINE	MULTIBOOT_ELF64_MACHINE
 # define ELFCLASSXX	ELFCLASS64
 # define Elf_Ehdr	Elf64_Ehdr
 # define Elf_Phdr	Elf64_Phdr
+# define Elf_Shdr	Elf64_Shdr
 #else
 #error "I'm confused"
 #endif
@@ -223,3 +225,4 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 #undef ELFCLASSXX
 #undef Elf_Ehdr
 #undef Elf_Phdr
+#undef Elf_Shdr

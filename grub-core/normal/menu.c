@@ -232,7 +232,8 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
       grub_env_export ("chosen");
       grub_free (buf);
     }
-  for (ptr = def; *ptr; ptr++)
+
+  for (ptr = def; ptr && *ptr; ptr++)
     {
       if (ptr[0] == '>' && ptr[1] == '>')
 	{
@@ -242,10 +243,12 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
       if (ptr[0] == '>')
 	break;
     }
-  if (ptr[0] && ptr[1])
+
+  if (ptr && ptr[0] && ptr[1])
     grub_env_set ("default", ptr + 1);
   else
     grub_env_unset ("default");
+
   grub_script_execute_sourcecode (entry->sourcecode, entry->argc, entry->args);
 
   if (errs_before != grub_err_printed_errors)

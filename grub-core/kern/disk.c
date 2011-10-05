@@ -46,7 +46,7 @@ static struct grub_disk_cache grub_disk_cache_table[GRUB_DISK_CACHE_NUM];
 void (*grub_disk_firmware_fini) (void);
 int grub_disk_firmware_is_tainted;
 
-#if 0
+#if DISK_CACHE_STATS
 static unsigned long grub_disk_cache_hits;
 static unsigned long grub_disk_cache_misses;
 
@@ -119,13 +119,13 @@ grub_disk_cache_fetch (unsigned long dev_id, unsigned long disk_id,
       && cache->sector == sector)
     {
       cache->lock = 1;
-#if 0
+#if DISK_CACHE_STATS
       grub_disk_cache_hits++;
 #endif
       return cache->data;
     }
 
-#if 0
+#if DISK_CACHE_STATS
   grub_disk_cache_misses++;
 #endif
 

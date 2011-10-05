@@ -36,11 +36,33 @@ GRUB_MOD_LICENSE ("GPLv3+");
 typedef enum
   {
     GRUB_UHCI_REG_USBCMD = 0x00,
+    GRUB_UHCI_REG_USBINTR = 0x04,
     GRUB_UHCI_REG_FLBASEADD = 0x08,
     GRUB_UHCI_REG_PORTSC1 = 0x10,
-    GRUB_UHCI_REG_PORTSC2 = 0x12
+    GRUB_UHCI_REG_PORTSC2 = 0x12,
+    GRUB_UHCI_REG_USBLEGSUP = 0xc0
   } grub_uhci_reg_t;
 
+/* R/WC legacy support bits */
+#define GRUB_UHCI_LEGSUP_END_A20GATE (1 << 15)
+#define GRUB_UHCI_TRAP_BY_64H_WSTAT  (1 << 11)
+#define GRUB_UHCI_TRAP_BY_64H_RSTAT  (1 << 10)
+#define GRUB_UHCI_TRAP_BY_60H_WSTAT  (1 <<  9)
+#define GRUB_UHCI_TRAP_BY_60H_RSTAT  (1 <<  8)
+
+/* Reset all legacy support - clear all R/WC bits and all R/W bits */
+#define GRUB_UHCI_RESET_LEGSUP_SMI ( GRUB_UHCI_LEGSUP_END_A20GATE \
+                                     | GRUB_UHCI_TRAP_BY_64H_WSTAT \
+                                     | GRUB_UHCI_TRAP_BY_64H_RSTAT \
+                                     | GRUB_UHCI_TRAP_BY_60H_WSTAT \
+                                     | GRUB_UHCI_TRAP_BY_60H_RSTAT )
+
+/* Some UHCI commands */
+#define GRUB_UHCI_CMD_RUN_STOP (1 << 0)
+#define GRUB_UHCI_CMD_HCRESET  (1 << 1)
+#define GRUB_UHCI_CMD_MAXP     (1 << 7)
+
+/* Important bits in structures */
 #define GRUB_UHCI_LINK_TERMINATE	1
 #define GRUB_UHCI_LINK_QUEUE_HEAD	2
 
@@ -181,6 +203,11 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
   if (class != 0x0c || subclass != 0x03 || interf != 0x00)
     return 0;
 
+  /* Set bus master - needed for coreboot or broken BIOSes */
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+  grub_pci_write_word(addr,
+    GRUB_PCI_COMMAND_BUS_MASTER | grub_pci_read_word(addr));
+
   /* Determine IO base address.  */
   addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG4);
   base = grub_pci_read (addr);
@@ -194,6 +221,19 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
     return 1;
 
   u->iobase = base & GRUB_UHCI_IOMASK;
+
+  /* Reset PIRQ and SMI */
+  addr = grub_pci_make_address (dev, GRUB_UHCI_REG_USBLEGSUP);       
+  grub_pci_write_word(addr, GRUB_UHCI_RESET_LEGSUP_SMI);
+  /* Reset the HC */
+  grub_uhci_writereg16(u, GRUB_UHCI_REG_USBCMD, GRUB_UHCI_CMD_HCRESET); 
+  grub_millisleep(5);
+  /* Disable interrupts and commands (just to be safe) */
+  grub_uhci_writereg16(u, GRUB_UHCI_REG_USBINTR, 0);
+  /* Finish HC reset, HC remains disabled */
+  grub_uhci_writereg16(u, GRUB_UHCI_REG_USBCMD, 0);
+  /* Read back to be sure PCI write is done */
+  grub_uhci_readreg16(u, GRUB_UHCI_REG_USBCMD);
 
   /* Reserve a page for the frame list.  */
   u->framelist = grub_memalign (4096, 4096);
@@ -252,9 +292,6 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
   u->td[N_TD - 2].linkptr = 0;
   u->tdfree = u->td;
 
-  /* Make sure UHCI is disabled!  */
-  grub_uhci_writereg16 (u, GRUB_UHCI_REG_USBCMD, 0);
-
   /* Setup the frame list pointers.  Since no isochronous transfers
      are and will be supported, they all point to the (same!) queue
      head.  */
@@ -285,7 +322,8 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
   u->qh[N_QH - 1].linkptr = 1;
 
   /* Enable UHCI again.  */
-  grub_uhci_writereg16 (u, GRUB_UHCI_REG_USBCMD, 1 | (1 << 7));
+  grub_uhci_writereg16 (u, GRUB_UHCI_REG_USBCMD,
+                        GRUB_UHCI_CMD_RUN_STOP | GRUB_UHCI_CMD_MAXP);
 
   /* UHCI is initialized and ready for transfers.  */
   grub_dprintf ("uhci", "UHCI initialized\n");

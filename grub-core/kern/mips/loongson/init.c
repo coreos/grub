@@ -35,6 +35,7 @@
 
 extern void grub_video_sm712_init (void);
 extern void grub_video_sis315pro_init (void);
+extern void grub_video_radeon_fuloong2e_init (void);
 extern void grub_video_init (void);
 extern void grub_bitmap_init (void);
 extern void grub_font_init (void);
@@ -123,6 +124,23 @@ void
 grub_machine_init (void)
 {
   grub_addr_t modend;
+  grub_uint32_t prid;
+
+  asm volatile ("mfc0 %0, " GRUB_CPU_LOONGSON_COP0_PRID : "=r" (prid));
+
+  switch (prid)
+    {
+      /* Loongson 2E.  */
+    case 0x6302:
+      grub_arch_machine = GRUB_ARCH_MACHINE_FULOONG2E;
+      break;
+      /* Loongson 2F.  */
+    case 0x6303:
+      if (grub_arch_machine != GRUB_ARCH_MACHINE_FULOONG2F
+	  && grub_arch_machine != GRUB_ARCH_MACHINE_YEELOONG)
+	grub_arch_machine = GRUB_ARCH_MACHINE_YEELOONG;
+      break;
+    }
 
   /* FIXME: measure this.  */
   if (grub_arch_busclock == 0)
@@ -170,7 +188,7 @@ grub_machine_init (void)
 	}
       else
 	{
-	  grub_arch_memsize = (totalmem >> 20);
+	  grub_arch_memsize = totalmem;
 	  grub_arch_highmemsize = 0;
 	}
 
@@ -189,6 +207,7 @@ grub_machine_init (void)
   grub_video_init ();
   grub_video_sm712_init ();
   grub_video_sis315pro_init ();
+  grub_video_radeon_fuloong2e_init ();
   grub_bitmap_init ();
   grub_font_init ();
   grub_gfxterm_init ();
@@ -213,7 +232,9 @@ grub_halt (void)
 {
   switch (grub_arch_machine)
     {
-    case GRUB_ARCH_MACHINE_FULOONG:
+    case GRUB_ARCH_MACHINE_FULOONG2E:
+      break;
+    case GRUB_ARCH_MACHINE_FULOONG2F:
       {
 	grub_pci_device_t dev;
 	grub_port_t p;
@@ -248,8 +269,27 @@ grub_exit (void)
 void
 grub_reboot (void)
 {
-  grub_write_ec (GRUB_MACHINE_EC_COMMAND_REBOOT);
-
+  switch (grub_arch_machine)
+    {
+    case GRUB_ARCH_MACHINE_FULOONG2E:
+      grub_outb (grub_inb (0xbfe00104) & ~4, 0xbfe00104);
+      grub_outb (grub_inb (0xbfe00104) | 4, 0xbfe00104);
+      break;
+    case GRUB_ARCH_MACHINE_FULOONG2F:
+      {
+	grub_pci_device_t dev;
+	if (!grub_cs5536_find (&dev))
+	  break;
+	grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_RESET,
+			       grub_cs5536_read_msr (dev,
+						     GRUB_CS5536_MSR_DIVIL_RESET) 
+			       | 1);
+	break;
+      }
+    case GRUB_ARCH_MACHINE_YEELOONG:
+      grub_write_ec (GRUB_MACHINE_EC_COMMAND_REBOOT);
+      break;
+    }
   grub_millisleep (1500);
 
   grub_printf ("Reboot failed\n");

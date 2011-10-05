@@ -147,7 +147,7 @@ program = {
   ldadd = libgrubgcry.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 program = {
@@ -226,7 +226,7 @@ program = {
   ldadd = libgrubgcry.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 program = {
@@ -410,6 +410,12 @@ script = {
   enable = i386_multiboot;
   enable = i386_coreboot;
   enable = powerpc_ieee1275;
+};
+
+script = {
+  mansection = 1;
+  name = grub-mkstandalone;
+  common = util/grub-mkstandalone.in;
 };
 
 script = {

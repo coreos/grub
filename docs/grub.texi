@@ -1203,7 +1203,8 @@ listed in @file{/boot/grub/video.lst}.
 Set the resolution used on the @samp{gfxterm} graphical terminal.  Note that
 you can only use modes which your graphics card supports via VESA BIOS
 Extensions (VBE), so for example native LCD panel resolutions may not be
-available.  The default is @samp{640x480}.  @xref{gfxmode}.
+available.  The default is @samp{auto}, which tries to select a preferred
+resolution.  @xref{gfxmode}.
 
 @item GRUB_BACKGROUND
 Set a background image for use with the @samp{gfxterm} graphical terminal.

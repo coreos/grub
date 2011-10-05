@@ -9,6 +9,13 @@
 	subu $t1, $t3, $t2
 1:
 	cache 1, 0($t0)
+	/* All four ways.  */
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+	cache 1, 1($t0)
+	cache 1, 2($t0)
+	cache 1, 3($t0)
+#endif
+
 	addiu $t1, $t1, -0x4
 	bne $t1, $zero, 1b
 	 addiu $t0, $t0, 0x4

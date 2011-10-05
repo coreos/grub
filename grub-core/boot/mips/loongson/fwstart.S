@@ -26,7 +26,7 @@
 #include <grub/cs5536.h>
 #include <grub/smbus.h>
 
-#ifdef FULOONG
+#ifdef FULOONG2F
 #define GRUB_MACHINE_SERIAL_PORT GRUB_MACHINE_SERIAL_PORT2
 #define GRUB_MACHINE_SERIAL_DIVISOR_115200 GRUB_MACHINE_SERIAL_PORT2_DIVISOR_115200
 #else
@@ -43,10 +43,10 @@
 start:
 _start:
 __start:	
-	/* Put serial init as soon as possible.  But on Fuloong serial is past
-	   Geode, so on Fuloong we need Geode first.
+	/* Put serial init as soon as possible.  But on Fuloong2f serial is past
+	   Geode, so on Fuloong2f we need Geode first.
 	*/
-#ifndef FULOONG
+#ifndef FULOONG2F
 	bal serial_hw_init
 	 nop
 #endif
@@ -72,7 +72,7 @@ retry_cs5536:
 	bnel  $t2, $t3, 1b
 	 sll $t4, $t4, 1
 
-#ifndef FULOONG
+#ifndef FULOONG2F
 	bal message
 	 addiu $a0, $a0, %lo(cs5536_found)
 	bal printhex
@@ -95,7 +95,7 @@ retry_cs5536:
 	bal gpio_init
 	 nop
 
-#ifdef FULOONG
+#ifdef FULOONG2F
 	bal serial_hw_init
 	 nop
 #endif
@@ -130,7 +130,7 @@ retry_cs5536:
 	sb $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_CTRL3) ($t0)
 	sb $t1, %lo(GRUB_MACHINE_PCI_IO_BASE + GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_CTRL2) ($t0)
 
-	/* Yeeloong and Fuloong have only one memory slot.  */
+	/* Yeeloong and Fuloong2f have only one memory slot.  */
 	/* Output first byte on serial for debugging.  */
 	ori $a1, $zero, GRUB_SMB_RAM_START_ADDR
 	bal read_spd
@@ -252,7 +252,7 @@ gpio_init:
 	/* In: none. Out: none. Clobbered: $t0, $t1, $t2, $a0, $a1, $a2.  */
 serial_hw_init:
 	move $t2, $ra
-#ifdef FULOONG
+#ifdef FULOONG2F
 	lui $a0, %hi(GRUB_CS5536_MSR_DIVIL_LEG_IO)
 	addiu $a0, $a0, %lo(GRUB_CS5536_MSR_DIVIL_LEG_IO)
 	lui $a1, %hi (GRUB_CS5536_MSR_DIVIL_LEG_IO_UART2_COM3    \
@@ -471,7 +471,7 @@ regdump:
 	.quad 0x0100020200010101 /* 4 */
 	.quad 0x0a04030603050203 /* 6 */
 	.quad 0x0f0e040000010a0b /* 7 */
-#ifdef FULOONG
+#ifdef FULOONG2F
 	.quad 0x0000000100000001 /* 8 */
 #else
 	.quad 0x0000010200000102 /* 8 */
@@ -482,7 +482,7 @@ regdump:
 	.quad 0x002a3c0615000000 /* c */
 	.quad 0x002a002a002a002a /* d */
 	.quad 0x002a002a002a002a /* e */
-#ifdef FULOONG
+#ifdef FULOONG2F
 	.quad 0x00b40020005b0004 /* f */
 #else
 	.quad 0x00b40020006d0004 /* f */
@@ -503,7 +503,7 @@ regdump:
 
 /* Dump of GPIO connections. FIXME: Remove useless and macroify.  */
 gpio_dump:
-#ifdef FULOONG
+#ifdef FULOONG2F
 	.long 0xffff0000, 0x2eefd110, 0xffff0000, 0xffff0000
 	.long 0x2eefd110, 0xffff0000, 0x1000efff, 0xefff1000
 	.long 0x3df3c20c, 0xffff0000, 0xffff0000, 0xffff0000
@@ -740,8 +740,8 @@ continue:
 	lui $t0, %hi(cached_continue - 0x20000000)
 	addiu $t0, $t0, %lo(cached_continue - 0x20000000)
 	jr $t0
-#ifdef FULOONG
-	 addiu $a2, $zero, -(1 + GRUB_ARCH_MACHINE_FULOONG)
+#ifdef FULOONG2F
+	 addiu $a2, $zero, -(1 + GRUB_ARCH_MACHINE_FULOONG2F)
 #else
 	 addiu $a2, $zero, -(1 + GRUB_ARCH_MACHINE_YEELOONG)
 #endif

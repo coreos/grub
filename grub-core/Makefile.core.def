@@ -180,6 +180,7 @@ kernel = {
   mips_loongson = term/serial.c;
   mips_loongson = video/sm712.c;
   mips_loongson = video/sis315pro.c;
+  mips_loongson = video/radeon_fuloong2e.c;
   extra_dist = video/sm712_init.c;
   mips_loongson = commands/keylayouts.c;
 
@@ -218,6 +219,7 @@ kernel = {
 
   videoinkernel = commands/boot.c;
 
+  extra_dist = kern/i386/int.S;
   extra_dist = kern/i386/realmode.S;
   extra_dist = kern/i386/pc/lzma_decode.S;
   extra_dist = kern/mips/cache_flush.S;
@@ -363,8 +365,8 @@ image = {
 };
 
 image = {
-  name = fwstart_fuloong;
-  mips_loongson = boot/mips/loongson/fuloong.S;
+  name = fwstart_fuloong2f;
+  mips_loongson = boot/mips/loongson/fuloong2f.S;
   objcopyflags = '-O binary';
   ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_loongson;
@@ -398,11 +400,15 @@ module = {
 module = {
   name = usb;
   common = bus/usb/usb.c;
-  noemu = bus/usb/usbtrans.c;
-  noemu = bus/usb/usbhub.c;
-  enable = emu;
+  common = bus/usb/usbtrans.c;
+  common = bus/usb/usbhub.c;
   enable = usb;
-  emu_condition = COND_GRUB_EMU_USB;
+};
+
+module = {
+  name = emuusb;
+  common = bus/usb/usb.c;
+  condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -437,18 +443,22 @@ module = {
 
 module = {
   name = pci;
-  noemu = bus/pci.c;
-  emu = bus/emu/pci.c;
-  emu = commands/lspci.c;
+  common = bus/pci.c;
 
-  enable = emu;
   enable = i386_pc;
   enable = i386_efi;
   enable = x86_64_efi;
   enable = i386_ieee1275;
   enable = i386_coreboot;
   enable = i386_multiboot;
-  emu_condition = COND_GRUB_EMU_PCI;
+};
+
+module = {
+  name = emupci;
+  common = bus/emu/pci.c;
+  common = commands/lspci.c;
+
+  condition = COND_GRUB_EMU_PCI;
 };
 
 module = {
@@ -786,8 +796,6 @@ module = {
   name = usbtest;
   common = commands/usbtest.c;
   enable = usb;
-  enable = emu;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -901,8 +909,6 @@ module = {
   name = usbms;
   common = disk/usbms.c;
   enable = usb;
-  enable = emu;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -1444,9 +1450,7 @@ module = {
   common = term/serial.c;
   x86 = term/ns8250.c;
 
-  enable = emu;
   enable = x86;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -1680,4 +1684,10 @@ module = {
 module = {
   name = time;
   common = commands/time.c;
+};
+
+module = {
+  name = cacheinfo;
+  common = commands/cacheinfo.c;
+  condition = COND_ENABLE_CACHE_STATS;
 };

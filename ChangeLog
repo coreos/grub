@@ -1,3 +1,375 @@
+2011-10-01  Ales Nesrsta <starous@volny.cz>
+
+	* grub-core/bus/usb/uhci.c: Changes made by Rock Cui - thanks!
+	(fixed problem related to using UHCI with coreboot).
+
+2011-08-25  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* gentpl.py: Use Autogen macros so that the output template file
+	(Makefile.tpl) size is reduced.
+
+2011-09-29  Mads Kiilerich <mads@kiilerich.com>
+
+	* grub-core/Makefile.core.def (kernel): Add kern/i386/int.S to
+	extra_dist.
+
+2011-09-29  Mario Limonciello <mario_limonciello@dell.com>
+
+	* util/misc.c (grub_util_get_disk_size) [__MINGW32__]: Strip trailing
+	slashes on PHYSICALDRIVE%d paths when making Windows CreateFile calls.
+
+2011-09-29  Mario Limonciello <mario_limonciello@dell.com>
+
+	* grub-core/kern/emu/misc.c (canonicalize_file_name) [__MINGW32__]: Use
+	_fullpath.
+
+2011-09-29  Mario Limonciello <mario_limonciello@dell.com>
+
+	Remove extra declaration of sleep for mingw32.
+
+	* util/misc.c (sleep) [__MINGW32__]: Removed.
+	* include/grub/util/misc.h (sleep) [__MINGW32__]: Likewise.
+
+2011-09-28  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* include/grub/bsdlabel.h (grub_partition_bsd_disk_label): Add fields
+	type and packname.
+	* include/grub/i386/netbsd_bootinfo.h (NETBSD_BTINFO_BOOTDISK):
+	Resurrected.
+	(NETBSD_BTINFO_BOOTWEDGE): New definition.
+	(grub_netbsd_btinfo_bootwedge): New struct.
+	* grub-core/loader/i386/bsd.c (grub_netbsd_add_boot_disk_and_wedge):
+	New function.
+	(grub_cmd_netbsd): Call grub_netbsd_add_boot_disk_and_wedge.
+
+2011-09-28  Thomas Haller <thomas.haller@fen-net.de>
+
+	* grub-core/loader/multiboot_elfxx.c (Elf_Shdr): Set according to
+	loader.
+
+2011-09-28  Andreas Born  <futur.andy@googlemail.com>
+
+	Fix incorrect identifiers in bash-completion.
+
+	* util/bash-completion.d/grub-completion.bash.in
+	(_grub_mkpasswd-pbkdf2): Rename to ...
+	(_grub_mkpasswd_pbkdf2): ... this. All users updated.
+	(_grub_script-check): Rename to ...
+	(_grub_script_check): ... this. All users updated.
+
+2011-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_is_floppy):
+	Return 0 if disk isn't biosdisk.
+
+2011-09-17  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* Makefile.util.def (grub-mkrelpath): Add LIBUTIL for getrawpartition(3)
+	on NetBSD.
+	* Makefile.util.def (grub-fstest): Likewise.
+
+2011-09-17  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors) [__NetBSD__]:
+	Get sector size from disk label.
+
+2011-09-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (grub_file_is_not_garbage): Return 1 for
+	*/README* as well as README*.
+	Reported by: Axel Beckert.
+
+2011-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Handle the
+	case of less than 256 MiB of RAM.
+
+2011-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/wildcard.c (make_regex): Handle @.
+
+2011-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Move cryptodisk logic to appropriate place.
+
+2011-08-21 Szymon Janc <szymon@janc.net.pl>
+
+	* acinclude.m4: Use AC_LANG_PROGRAM macro to generate source code for
+	 AC_LANG_CONFTEST macros.
+
+2011-08-20  Szymon Janc <szymon@janc.net.pl>
+
+	Add grub-fstest option to uncompress data for commands.
+
+	* util/grub-fstest.c (uncompress): New var.
+	(options): New option -u.
+
+2011-08-20  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/loader/i386/linux.c (grub_linux_setup_video): Add
+	GRUB_VIDEO_DRIVER_RADEON_FULOONG2E to switch case statement.
+
+2011-08-20  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/io/gzio.c (grub_gzio_open): Always return original io if
+	file type was not recognized correctly (not gzip or corrupted).
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/loongson/init.c (grub_reboot): Reboot Fuloong.
+	* include/grub/cs5536.h (GRUB_CS5536_MSR_DIVIL_RESET): New definition.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.core.def (kernel): Add video/radeon_fuloong2e.c on
+	loongson.
+	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Init
+	video_radeon_fuloong2e.
+	* grub-core/video/radeon_fuloong2e.c: New file.
+	* include/grub/video.h (grub_video_id_t): Add new ID
+	GRUB_VIDEO_DRIVER_RADEON_FULOONG2E.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/mips/loongson.h (GRUB_CPU_LOONGSON_COP0_PRID): New
+	define.
+	* grub-core/kern/mips/loongson/init.c (grub_machine_init): Check
+	that PRID matches the detected subplatform and reset the subplatform
+	if it doesn't.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c (grub_vprintf): Fix a bug on malloc failure.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix PCI iterating on functions >= 4.
+
+	* grub-core/bus/pci.c (grub_pci_iterate): Remove useless ghost skipping.
+	* include/grub/mips/loongson/pci.h (GRUB_LOONGSON_OHCI_GHOST_FUNCTION):
+	Removed.
+	(GRUB_LOONGSON_EHCI_GHOST_FUNCTION): Likewise.
+	(grub_pci_read): Fix bitmask.
+	(grub_pci_read_word): Likewise.
+	(grub_pci_read_byte): Likewise.
+	(grub_pci_write): Likewise.
+	(grub_pci_write_word): Likewise.
+	(grub_pci_write_byte): Likewise.
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Don't impose march=loongson2f on loongson platform. (It
+	can still be specified in TARGET_CFLAGS)
+
+2011-08-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Rename Fuloong into Fuloong 2F. Add new ID for Fuloong2E.
+
+	* grub-core/Makefile.core.def (fwstart_fuloong): Rename fwstart_fuloong
+	into fwstart_fuloong2f. Use boot/mips/loongson/fuloong2f.S.
+	* grub-core/boot/mips/loongson/fuloong.S: Rename to ...
+	* grub-core/boot/mips/loongson/fuloong2f.S: ... this.
+	(FULOONG): Rename to ...
+	(FULOONG2F): ... this. All users updated.
+	* grub-core/boot/mips/startup_raw.S (machtype_fuloong_str): Rename to
+	(machtype_fuloong2f_str): ... this.
+	(machtype_fuloong2e_str): New string.
+	Check for machtype_fuloong2e_str.
+	* grub-core/loader/mips/linux.c (loongson_machtypes)
+	[GRUB_MACHINE_MIPS_LOONGSON]: Add GRUB_ARCH_MACHINE_FULOONG2E.
+	* grub-core/term/serial.c (loongson_defserial)
+	[GRUB_MACHINE_MIPS_LOONGSON]: New array.
+	(grub_serial_register) [GRUB_MACHINE_MIPS_LOONGSON]: Use
+	loongson_defserial.
+	* include/grub/mips/loongson/kernel.h (GRUB_ARCH_MACHINE_FULOONG):
+	Rename to ...
+	(GRUB_ARCH_MACHINE_FULOONG2F): ... this.
+	(GRUB_ARCH_MACHINE_FULOONG2E): New const.
+	* util/grub-mkimage.c (image_target_desc): Rename IMAGE_FULOONG_FLASH
+	to IMAGE_FULOONG2F_FLASH. All users updated.
+	(image_targets): Rename images.
+	* util/grub-mkstandalone.in: Accept fuloong2f and fuloong2e.
+
+2011-08-19  Szymon Janc <szymon@janc.net.pl>
+
+	Make enable of disk cache statistics code configurable.
+
+	* configure.ac: --enable-cache-stats added.
+	* config.h.in (DISK_CACHE_STATS): New define.
+	* grub-core/Makefile.core.def (cacheinfo): New command.
+	* include/grub/disk.h(grub_disk_cache_get_performance): New function.
+	* grub-core/commands/cacheinfo.c: New file.
+	* grub-core/commands/minicmd.c (grub_rescue_cmd_info): Updated and
+	moved to cacheinfo.c.
+	* grub-core/kern/disk.c: Use DISK_CACHE_STATS to disable disk cache
+	debug code.
+	* include/grub/disk.h: Likewise.
+
+2011-08-19  Szymon Janc <szymon@janc.net.pl>
+
+	* Makefile.am (AUTOMAKE_OPTIONS): = Added -Wno-portability flag.
+	* grub-core/Makefile.am: Likewise.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_iterate): Skip with
+	non-zero pull.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/jfs.c (grub_jfs_read_file): New parameter ino.
+	All users updated.
+	(grub_jfs_lookup_symlink): Use correct starting inode.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (main): Add missing gcry initialisation.
+
+2011-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't accept text modes on EFI when booting Linux.
+
+	* grub-core/loader/i386/linux.c (ACCEPTS_PURE_TEXT): New define.
+	(grub_linux_boot) [!ACCEPTS_PURE_TEXT]: Restrict to graphics modes.
+
+2011-08-15  Mario Limonciello  <mario_limonciello@dell.com>
+2011-08-15  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-probe.c (probe): Canonicalise the path argument, fixing
+	use of "/path/.." as in grub-install for EFI as well as handling
+	symlinks correctly.
+	Fixes Debian bug #637768.
+
+2011-08-15  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-probe.c: Remove duplicate #include.
+
+2011-08-10  Robert Millan  <rmh@gnu.org>
+
+	Detect LSI MegaRAID SAS (`mfi') devices on GNU/kFreeBSD.
+
+	* util/deviceiter.c [__FreeBSD_kernel__] (get_mfi_disk_name): New
+	function.
+	[__FreeBSD_kernel__] (grub_util_iterate_devices): Scan for mfi
+	(/dev/mfid[0-9]+) devices using get_mfi_disk_name().
+
+2011-08-03  Robert Millan  <rmh@gnu.org>
+
+	* include/grub/zfs/zap_leaf.h (typedef union zap_leaf_chunk): Mark
+	la_array as packed.
+	Reported by: Zachary Bedell
+
+2011-07-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: The Loongson port requires grub-mkfont due to its
+	use of -DUSE_ASCII_FAILBACK.  Raise an error if it is not going to
+	be built.
+
+2011-07-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.in: Don't source grub-mkconfig_lib until after
+	processing arguments (otherwise help2man fails when GRUB has not yet
+	been installed).
+
+2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	New script grub-mkstandalone.
+
+	* Makefile.util.def (grub-mkstandalone): New script.
+	* docs/man/grub-mkstandalone.h2m: New file.
+	* util/grub-mkstandalone.in: Likewise.
+
+2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support ATA disks with 4K sectors.
+
+	* include/grub/ata.h (grub_ata): New member log_sector_size.
+	* grub-core/disk/ata.c (grub_ata_dumpinfo): Show sector size.
+	(grub_ata_identify): Read sector size.
+	(grub_ata_readwrite): Use log_sector_size rather than hardcoded value.
+
+2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Don't use uhci outside of x86.
+
+2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.in: Add missing quotes.
+
+2011-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/menu.c (grub_menu_execute_entry): Fix NULL
+	dereference.
+
+2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/pata.c (grub_pata_readwrite): Add missing wait.
+
+2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/video.h: add missing EXPORT_FUND on
+	grub_video_edid_checksum and grub_video_edid_preferred_mode.
+
+2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/mips/kernel.h: Fix define conflict.
+
+2011-07-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/cache_flush.S [GRUB_MACHINE_MIPS_LOONGSON]: Flush
+	all four ways.
+
+2011-07-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	Preferred resolution detection for VBE.
+
+	* grub-core/video/video.c (grub_video_edid_checksum): New function.
+	(grub_video_edid_preferred_mode): Likewise.  Try EDID followed by
+	the Flat Panel extension, in line with the X.org VESA driver.
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_bios_get_flat_panel_info):
+	New function.
+	(grub_vbe_bios_get_ddc_capabilities): Likewise.
+	(grub_vbe_bios_read_edid): Likewise.
+	(grub_vbe_get_preferred_mode): Likewise.
+	(grub_video_vbe_setup): When the mode is "auto", try to get the
+	preferred mode from VBE, and use the largest mode that is no larger
+	than the preferred mode (some BIOSes expose a preferred mode that is
+	not in their mode list!).  If this fails, fall back to 640x480 as a
+	safe conservative choice.
+	(grub_video_vbe_get_edid): New function.
+	(grub_video_vbe_adapter): Add get_edid.
+	* include/grub/video.h (struct grub_vbe_edid_info): New structure.
+	(struct grub_video_adapter): Add get_edid.
+	(grub_video_edid_checksum): Add prototype.
+	(grub_video_edid_preferred_mode): Likewise.
+	* include/grub/i386/pc/vbe.h (struct grub_vbe_flat_panel_info): New
+	structure.
+
+	* grub-core/commands/videoinfo.c (print_edid): New function.
+	(grub_cmd_videoinfo): Print EDID if available.
+
+	* util/grub.d/00_header.in (GRUB_GFXMODE): Default to "auto".  This
+	is more appropriate on a wider range of platforms than 640x480.
+	* docs/grub.texi (Simple configuration): Update GRUB_GFXMODE
+	documentation.
+
+2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Recognize ESP mounted at /boot/EFI.
+
+2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* po/POTFILES.in: Regenerate.
+
+2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/efi/efidisk.c (grub_efidisk_get_device_name): Fix
+	incorrect memory usage.
+
+2011-07-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Source grub-mkconfig_lib.
+
 2011-07-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove getroot.c from core on emu platform.

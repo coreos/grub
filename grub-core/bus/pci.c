@@ -115,16 +115,6 @@ grub_pci_iterate (grub_pci_iteratefunc_t hook)
 		    continue;
 		}
 
-#ifdef GRUB_MACHINE_MIPS_LOONGSON
-	      /* Skip ghosts.  */
-	      if (id == GRUB_LOONGSON_OHCI_PCIID
-		  && dev.function == GRUB_LOONGSON_OHCI_GHOST_FUNCTION)
-		continue;
-	      if (id == GRUB_LOONGSON_EHCI_PCIID
-		  && dev.function == GRUB_LOONGSON_EHCI_GHOST_FUNCTION)
-		continue;
-#endif
-
 	      if (hook (dev, id))
 		return;
 
