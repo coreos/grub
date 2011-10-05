@@ -32,9 +32,13 @@ typedef enum grub_net_ip_protocol
 grub_uint16_t grub_net_ip_chksum(void *ipv, grub_size_t len);
 
 grub_err_t
-grub_net_recv_ip_packets (struct grub_net_buff *nb,
-			  const struct grub_net_card *card,
-			  const grub_net_link_level_address_t *hwaddress);
+grub_net_recv_ip4_packets (struct grub_net_buff *nb,
+			   const struct grub_net_card *card,
+			   const grub_net_link_level_address_t *hwaddress);
+grub_err_t
+grub_net_recv_ip6_packets (struct grub_net_buff *nb,
+			   const struct grub_net_card *card,
+			   const grub_net_link_level_address_t *hwaddress);
 
 grub_err_t
 grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,

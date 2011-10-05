@@ -131,26 +131,28 @@ grub_net_configure_by_dhcp_ack (const char *name,
   hwaddr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
   inter = grub_net_add_addr (name, card, addr, hwaddr, flags);
-  {
-    grub_net_network_level_netaddress_t target;
-    grub_net_network_level_address_t gw;
-    char rname[grub_strlen (name) + sizeof ("_gw")];
+  if (bp->gateway_ip)
+    {
+      grub_net_network_level_netaddress_t target;
+      grub_net_network_level_address_t gw;
+      char rname[grub_strlen (name) + sizeof (":gw")];
 	  
-    target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-    target.ipv4.base = bp->server_ip;
-    target.ipv4.masksize = 32;
-    gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-    gw.ipv4 = bp->gateway_ip;
-    grub_snprintf (rname, sizeof (rname), "%s_gw", name);
-    grub_net_add_route_gw (rname, target, gw);
-  }
-  {
-    grub_net_network_level_netaddress_t target;
-    target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-    target.ipv4.base = bp->gateway_ip;
-    target.ipv4.masksize = 32;
-    grub_net_add_route (name, target, inter);
-  }
+      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      target.ipv4.base = bp->server_ip;
+      target.ipv4.masksize = 32;
+      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      gw.ipv4 = bp->gateway_ip;
+      grub_snprintf (rname, sizeof (rname), "%s:gw", name);
+      grub_net_add_route_gw (rname, target, gw);
+    }
+  if (bp->gateway_ip || bp->server_ip)
+    {
+      grub_net_network_level_netaddress_t target;
+      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      target.ipv4.base = bp->gateway_ip ? bp->gateway_ip : bp->server_ip;
+      target.ipv4.masksize = 32;
+      grub_net_add_route (name, target, inter);
+    }
 
   if (size > OFFSET_OF (boot_file, bp))
     set_env_limn_ro (name, "boot_file", (char *) bp->boot_file,

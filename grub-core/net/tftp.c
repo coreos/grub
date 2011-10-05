@@ -167,6 +167,7 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
     case TFTP_OACK:
       data->block_size = TFTP_DEFAULTSIZE_PACKET;
       data->have_oack = 1; 
+      grub_printf ("OACK\n");
       for (ptr = nb->data + sizeof (tftph->opcode); ptr < nb->tail;)
 	{
 	  if (grub_memcmp (ptr, "tsize\0", sizeof ("tsize\0") - 1) == 0)
@@ -345,7 +346,7 @@ tftp_open (struct grub_file *file, const char *filename)
 
   /* Receive OACK packet.  */
   nbd = nb.data;
-  for (i = 0; i < 3; i++)
+  for (i = 0; i < GRUB_NET_TRIES; i++)
     {
       nb.data = nbd;
       err = grub_net_send_udp_packet (data->sock, &nb);
@@ -355,7 +356,7 @@ tftp_open (struct grub_file *file, const char *filename)
 	  destroy_pq (data);
 	  return err;
 	}
-      grub_net_poll_cards (100);
+      grub_net_poll_cards (GRUB_NET_INTERVAL);
       if (data->have_oack)
 	break;
     }

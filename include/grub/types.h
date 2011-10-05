@@ -98,13 +98,15 @@ typedef grub_uint64_t	grub_size_t;
 typedef grub_int64_t	grub_ssize_t;
 
 # if GRUB_CPU_SIZEOF_LONG == 8
-#  define PRIxGRUB_SIZE	"lx"
-#  define PRIxGRUB_ADDR	"lx"
-#  define PRIuGRUB_SIZE	"lu"
+#  define PRIxGRUB_SIZE	 "lx"
+#  define PRIxGRUB_ADDR	 "lx"
+#  define PRIuGRUB_SIZE	 "lu"
+#  define PRIdGRUB_SSIZE "ld"
 # else
-#  define PRIxGRUB_SIZE	"llx"
-#  define PRIxGRUB_ADDR	"llx"
-#  define PRIuGRUB_SIZE	"llu"
+#  define PRIxGRUB_SIZE	 "llx"
+#  define PRIxGRUB_ADDR	 "llx"
+#  define PRIuGRUB_SIZE  "llu"
+#  define PRIdGRUB_SSIZE "lld"
 # endif
 #else
 typedef grub_uint32_t	grub_addr_t;

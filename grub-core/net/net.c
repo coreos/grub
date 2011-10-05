@@ -131,9 +131,22 @@ match_net (const grub_net_network_level_netaddress_t *net,
       return 0;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
-	grub_int32_t mask = ((1 << net->ipv4.masksize) - 1) << (32 - net->ipv4.masksize);
+	grub_uint32_t mask = (0xffffffffU << (32 - net->ipv4.masksize));
 	return ((grub_be_to_cpu32 (net->ipv4.base) & mask)
 		== (grub_be_to_cpu32 (addr->ipv4) & mask));
+      }
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
+      {
+	grub_int64_t mask[2];
+	mask[1] = 0xffffffffffffffffULL << (128 - net->ipv6.masksize);
+	if (net->ipv6.masksize < 64)
+	  mask[0] = 0xffffffffffffffffULL;
+	else 
+	  mask[0] = 0xffffffffffffffffULL << (64 - net->ipv6.masksize);
+	return (((grub_be_to_cpu64 (net->ipv6.base[0]) & mask[0])
+		== (grub_be_to_cpu32 (addr->ipv6[0]) & mask[0]))
+		&& ((grub_be_to_cpu64 (net->ipv6.base[1]) & mask[1])
+		    == (grub_be_to_cpu32 (addr->ipv6[1]) & mask[1])));
       }
     }
   return 0;
@@ -249,6 +262,25 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target, char *buf)
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
       grub_strcpy (buf, "temporary");
       return;
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
+      {
+	char *ptr = buf;
+	grub_uint32_t n = grub_be_to_cpu32 (target->ipv6[0]);
+	int i;
+	for (i = 0; i < 4; i++)
+	  {
+	    grub_snprintf (ptr, 6, "%x:", (n >> (48 - 16 * i)) & 0xffff);
+	    ptr += grub_strlen (ptr); 
+	  }
+	n  = grub_be_to_cpu32 (target->ipv6[1]);
+	for (i = 0; i < 3; i++)
+	  {
+	    grub_snprintf (ptr, 6, "%x:", (n >> (48 - 16 * i)) & 0xffff);
+	    ptr += grub_strlen (ptr); 
+	  }
+	grub_snprintf (ptr, 5, "%x", n & 0xffff);
+	return;
+      }
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
 	grub_uint32_t n = grub_be_to_cpu32 (target->ipv4);
@@ -304,6 +336,27 @@ grub_net_hwaddr_cmp (const grub_net_link_level_address_t *a,
       return grub_memcmp (a->mac, b->mac, sizeof (a->mac));
     }
   grub_printf ("Unsupported hw address type %d\n", a->type);
+  return 1;
+}
+
+int
+grub_net_addr_cmp (const grub_net_network_level_address_t *a,
+		   const grub_net_network_level_address_t *b)
+{
+  if (a->type < b->type)
+    return -1;
+  if (a->type > b->type)
+    return +1;
+  switch (a->type)
+    {
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
+      return grub_memcmp (&a->ipv4, &b->ipv4, sizeof (a->ipv4));
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
+      return grub_memcmp (&a->ipv6, &b->ipv6, sizeof (a->ipv6));
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
+      return 0;
+    }
+  grub_printf ("Unsupported address type %d\n", a->type);
   return 1;
 }
 
@@ -374,6 +427,43 @@ grub_net_add_addr (const char *name,
   inter->dhcp_acklen = 0;
 
   grub_net_network_level_interface_register (inter);
+
+  if (addr.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
+    {
+      int mask = -1;
+      grub_uint32_t ip_cpu = grub_be_to_cpu32 (addr.ipv4);
+      if (!(ip_cpu & 0x80000000))
+	mask = 8;
+      else if (!(ip_cpu & 0x40000000))
+	mask = 16;
+      else if (!(ip_cpu & 0x20000000))
+	mask = 24;
+      else
+	mask = -1;
+      if (mask != -1)
+	{
+	  struct grub_net_route *route;
+
+	  route = grub_zalloc (sizeof (*route));
+	  if (!route)
+	    return NULL;
+
+	  route->name = grub_xasprintf ("%s:local", name);
+	  if (!route->name)
+	    {
+	      grub_free (route);
+	      return NULL;
+	    }
+
+	  route->target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+	  route->target.ipv4.base = grub_cpu_to_be32 (ip_cpu & (0xffffffff << (32 - mask)));
+	  route->target.ipv4.masksize = mask;
+	  route->is_gateway = 0;
+	  route->interface = inter;
+
+	  grub_net_route_register (route);
+	}
+    }
 
   return inter;
 }
@@ -532,7 +622,7 @@ print_net_address (const grub_net_network_level_netaddress_t *target)
     {
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
       grub_printf ("temporary\n");
-      break;
+      return;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
 	grub_uint32_t n = grub_be_to_cpu32 (target->ipv4.base);
@@ -541,6 +631,16 @@ print_net_address (const grub_net_network_level_netaddress_t *target)
 		     ((n >> 8) & 0xff),
 		     ((n >> 0) & 0xff),
 		     target->ipv4.masksize);
+      }
+      return;
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
+      {
+	char buf[GRUB_NET_MAX_STR_ADDR_LEN];
+	struct grub_net_network_level_address base;
+	base.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
+	grub_memcpy (&base.ipv6, &target->ipv6, 16);
+	grub_net_addr_to_str (&base, buf);
+	grub_printf ("%s/%d ", buf, target->ipv6.masksize);
       }
       return;
     }
@@ -764,6 +864,7 @@ receive_packets (struct grub_net_card *card)
       /* Maybe should be better have a fixed number of packets for each card
 	 and just mark them as used and not used.  */ 
       struct grub_net_buff *nb;
+      struct grub_net_buff *nb2;
 
       nb = card->driver->recv (card);
       if (!nb)
@@ -820,7 +921,7 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
   char *ptr = buf;
   grub_size_t amount, total = 0;
   int try = 0;
-  while (try <= 3)
+  while (try <= GRUB_NET_TRIES)
     {
       while (net->packs.first)
 	{
@@ -851,7 +952,7 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
       if (!net->eof)
 	{
 	  try++;
-	  grub_net_poll_cards (200);
+	  grub_net_poll_cards (GRUB_NET_INTERVAL);
 	}
       else
 	return total;

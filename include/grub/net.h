@@ -33,6 +33,7 @@ enum
     GRUB_NET_UDP_HEADER_SIZE = 8,
     GRUB_NET_TCP_HEADER_SIZE = 20,
     GRUB_NET_OUR_IPV4_HEADER_SIZE = 20,
+    GRUB_NET_OUR_IPV6_HEADER_SIZE = 40,
     GRUB_NET_TCP_RESERVE_SIZE = GRUB_NET_TCP_HEADER_SIZE 
     + GRUB_NET_OUR_IPV4_HEADER_SIZE
     + GRUB_NET_MAX_LINK_HEADER_SIZE
@@ -127,7 +128,8 @@ struct grub_net_network_level_interface;
 typedef enum grub_network_level_protocol_id 
 {
   GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV,
-  GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+  GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4,
+  GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6
 } grub_network_level_protocol_id_t;
 
 typedef struct grub_net_network_level_address
@@ -136,6 +138,7 @@ typedef struct grub_net_network_level_address
   union
   {
     grub_uint32_t ipv4;
+    grub_uint64_t ipv6[2];
   };
 } grub_net_network_level_address_t;
 
@@ -148,6 +151,10 @@ typedef struct grub_net_network_level_netaddress
       grub_uint32_t base;
       int masksize; 
     } ipv4;
+    struct {
+      grub_uint64_t base[2];
+      int masksize; 
+    } ipv6;
   };
 } grub_net_network_level_netaddress_t;
 
@@ -389,13 +396,17 @@ grub_net_process_dhcp (struct grub_net_buff *nb,
 int
 grub_net_hwaddr_cmp (const grub_net_link_level_address_t *a,
 		     const grub_net_link_level_address_t *b);
+int
+grub_net_addr_cmp (const grub_net_network_level_address_t *a,
+		   const grub_net_network_level_address_t *b);
 
 
 /*
-  Currently suppoerted adresses:
+  Currently supported adresses:
   IPv4:   XXX.XXX.XXX.XXX
+  IPv&:   XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX
  */
-#define GRUB_NET_MAX_STR_ADDR_LEN sizeof ("XXX.XXX.XXX.XXX")
+#define GRUB_NET_MAX_STR_ADDR_LEN sizeof ("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")
 
 void
 grub_net_addr_to_str (const grub_net_network_level_address_t *target,
@@ -427,5 +438,8 @@ void
 grub_net_tcp_retransmit (void);
 
 extern char *grub_net_default_server;
+
+#define GRUB_NET_TRIES 40
+#define GRUB_NET_INTERVAL 400
 
 #endif /* ! GRUB_NET_HEADER */

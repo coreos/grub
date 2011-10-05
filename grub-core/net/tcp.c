@@ -23,10 +23,10 @@
 #include <grub/time.h>
 #include <grub/priority_queue.h>
 
-#define TCP_SYN_RETRANSMISSION_TIMEOUT 1000
-#define TCP_SYN_RETRANSMISSION_COUNT 3
-#define TCP_RETRANSMISSION_TIMEOUT 1000
-#define TCP_RETRANSMISSION_COUNT 10
+#define TCP_SYN_RETRANSMISSION_TIMEOUT GRUB_NET_INTERVAL
+#define TCP_SYN_RETRANSMISSION_COUNT GRUB_NET_TRIES
+#define TCP_RETRANSMISSION_TIMEOUT GRUB_NET_INTERVAL
+#define TCP_RETRANSMISSION_COUNT GRUB_NET_TRIES
 
 struct unacked
 {
@@ -107,6 +107,15 @@ struct tcp_pseudohdr
   grub_uint8_t zero;
   grub_uint8_t proto;
   grub_uint16_t tcp_length;
+} __attribute__ ((packed));
+
+struct tcp6_pseudohdr
+{
+  grub_uint64_t src[2];
+  grub_uint64_t dst[2];
+  grub_uint32_t tcp_length;
+  grub_uint8_t zero[3];
+  grub_uint8_t proto;
 } __attribute__ ((packed));
 
 static struct grub_net_tcp_socket *tcp_sockets;
@@ -377,19 +386,39 @@ grub_net_ip_transport_checksum (struct grub_net_buff *nb,
 				const grub_net_network_level_address_t *src,
 				const grub_net_network_level_address_t *dst)
 {
-  struct tcp_pseudohdr ph;
   grub_uint16_t a, b;
   grub_uint32_t c;
-
   a = ~grub_be_to_cpu16 (grub_net_ip_chksum ((void *) nb->data,
 					     nb->tail - nb->data));
 
-  ph.src = src->ipv4;
-  ph.dst = dst->ipv4;
-  ph.zero = 0;
-  ph.tcp_length = grub_cpu_to_be16 (nb->tail - nb->data);
-  ph.proto = proto;
-  b = ~grub_be_to_cpu16 (grub_net_ip_chksum ((void *) &ph, sizeof (ph)));
+  switch (dst->type)
+    {
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
+      {
+	struct tcp_pseudohdr ph;
+	ph.src = src->ipv4;
+	ph.dst = dst->ipv4;
+	ph.zero = 0;
+	ph.tcp_length = grub_cpu_to_be16 (nb->tail - nb->data);
+	ph.proto = proto;
+	b = ~grub_be_to_cpu16 (grub_net_ip_chksum ((void *) &ph, sizeof (ph)));
+	break;
+      }
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
+      {
+	struct tcp6_pseudohdr ph;
+	grub_memcpy (ph.src, src->ipv6, sizeof (ph.src));
+	grub_memcpy (ph.dst, dst->ipv6, sizeof (ph.dst));
+	grub_memset (ph.zero, 0, sizeof (ph.zero));
+	ph.tcp_length = grub_cpu_to_be32 (nb->tail - nb->data);
+	ph.proto = proto;
+	b = ~grub_be_to_cpu16 (grub_net_ip_chksum ((void *) &ph, sizeof (ph)));
+	break;
+      }
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
+      b = 0;
+      break;
+    }
   c = (grub_uint32_t) a + (grub_uint32_t) b;
   if (c >= 0xffff)
     c -= 0xffff;

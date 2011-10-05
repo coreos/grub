@@ -47,16 +47,16 @@ enum
   OFFSET_MASK =    0x1fff
 };
 
-struct ip6hdr
-{
-  grub_uint8_t version:4, priority:4;
-  grub_uint8_t flow_lbl[3];
-  grub_uint16_t payload_len;
-  grub_uint8_t nexthdr;
-  grub_uint8_t hop_limit;
-  grub_uint8_t saddr[16];
-  grub_uint8_t daddr[16];
-} __attribute__ ((packed));
+typedef grub_uint64_t ip6addr[2];
+
+struct ip6hdr {
+  grub_uint32_t version_class_flow;
+  grub_uint16_t len;
+  grub_uint8_t protocol;
+  grub_uint8_t ttl;
+  ip6addr src;
+  ip6addr dest;
+} __attribute__ ((packed)) ;
 
 static int
 cmp (const void *a__, const void *b__)
@@ -179,11 +179,11 @@ send_fragmented (struct grub_net_network_level_interface * inf,
   return GRUB_ERR_NONE;
 }
 
-grub_err_t
-grub_net_send_ip_packet (struct grub_net_network_level_interface * inf,
-			 const grub_net_network_level_address_t * target,
-			 struct grub_net_buff * nb,
-			 grub_net_ip_protocol_t proto)
+static grub_err_t
+grub_net_send_ip4_packet (struct grub_net_network_level_interface * inf,
+			  const grub_net_network_level_address_t * target,
+			  struct grub_net_buff * nb,
+			  grub_net_ip_protocol_t proto)
 {
   struct iphdr *iph;
   grub_net_link_level_address_t ll_target_addr;
@@ -223,20 +223,13 @@ static grub_err_t
 handle_dgram (struct grub_net_buff *nb,
 	      const struct grub_net_card *card,
 	      const grub_net_link_level_address_t *hwaddress,
-	      grub_net_ip_protocol_t proto, grub_uint32_t src,
-	      grub_uint32_t dst)
+	      grub_net_ip_protocol_t proto,
+	      const grub_net_network_level_address_t *source,
+	      const grub_net_network_level_address_t *dest)
 {
   struct grub_net_network_level_interface *inf = NULL;
   grub_err_t err;
-  grub_net_network_level_address_t source;
-  grub_net_network_level_address_t dest;
-
-  source.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-  source.ipv4 = src;
-
-  dest.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-  dest.ipv4 = dst;
-
+  
   /* DHCP needs special treatment since we don't know IP yet.  */
   {
     struct udphdr *udph;
@@ -255,8 +248,8 @@ handle_dgram (struct grub_net_buff *nb,
 		  udph->chksum = 0;
 		  expected = grub_net_ip_transport_checksum (nb,
 							     GRUB_NET_IP_UDP,
-							     &source,
-							     &dest);
+							     source,
+							     dest);
 		  if (expected != chk)
 		    {
 		      grub_dprintf ("net", "Invalid UDP checksum. "
@@ -284,8 +277,7 @@ handle_dgram (struct grub_net_buff *nb,
   FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
   {
     if (inf->card == card
-	&& inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
-	&& inf->address.ipv4 == dst
+	&& grub_net_addr_cmp (&inf->address, dest) == 0
 	&& grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
       break;
   }
@@ -299,11 +291,11 @@ handle_dgram (struct grub_net_buff *nb,
   switch (proto)
     {
     case GRUB_NET_IP_UDP:
-      return grub_net_recv_udp_packet (nb, inf, &source);
+      return grub_net_recv_udp_packet (nb, inf, source);
     case GRUB_NET_IP_TCP:
-      return grub_net_recv_tcp_packet (nb, inf, &source);
+      return grub_net_recv_tcp_packet (nb, inf, source);
     case GRUB_NET_IP_ICMP:
-      return grub_net_recv_icmp_packet (nb, inf, &source);
+      return grub_net_recv_icmp_packet (nb, inf, source);
     default:
       grub_netbuff_free (nb);
       break;
@@ -339,9 +331,9 @@ free_old_fragments (void)
 }
 
 grub_err_t
-grub_net_recv_ip_packets (struct grub_net_buff * nb,
-			  const struct grub_net_card * card,
-			  const grub_net_link_level_address_t * hwaddress)
+grub_net_recv_ip4_packets (struct grub_net_buff * nb,
+			   const struct grub_net_card * card,
+			   const grub_net_link_level_address_t * hwaddress)
 {
   struct iphdr *iph = (struct iphdr *) nb->data;
   grub_err_t err;
@@ -365,8 +357,8 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
   if (nb->tail - nb->data < (grub_ssize_t) ((iph->verhdrlen & 0xf)
 					    * sizeof (grub_uint32_t)))
     {
-      grub_dprintf ("net", "IP packet too short: %d\n",
-		    (iph->verhdrlen & 0xf));
+      grub_dprintf ("net", "IP packet too short: %" PRIdGRUB_SSIZE "\n",
+		    (nb->tail - nb->data));
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
     }
@@ -398,6 +390,9 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
   if (((grub_be_to_cpu16 (iph->frags) & MORE_FRAGMENTS) == 0)
       && (grub_be_to_cpu16 (iph->frags) & OFFSET_MASK) == 0)
     {
+      grub_net_network_level_address_t source;
+      grub_net_network_level_address_t dest;
+
       err = grub_netbuff_pull (nb, ((iph->verhdrlen & 0xf)
 				    * sizeof (grub_uint32_t)));
       if (err)
@@ -405,8 +400,15 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
 	  grub_netbuff_free (nb);
 	  return err;
 	}
+
+      source.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      source.ipv4 = iph->src;
+
+      dest.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      dest.ipv4 = iph->dest;
+
       return handle_dgram (nb, card, hwaddress, iph->protocol,
-			   iph->src, iph->dest);
+			   &source, &dest);
     }
 
   for (prev = &reassembles, rsm = *prev; rsm; prev = &rsm->next, rsm = *prev)
@@ -469,6 +471,8 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
       grub_net_ip_protocol_t proto;
       grub_uint32_t src;
       grub_uint32_t dst;
+      grub_net_network_level_address_t source;
+      grub_net_network_level_address_t dest;
 
       nb_top_p = grub_priority_queue_top (rsm->pq);
       if (!nb_top_p)
@@ -524,8 +528,132 @@ grub_net_recv_ip_packets (struct grub_net_buff * nb,
 	}
       ret->data = ret->head = res;
       ret->tail = ret->end = res + res_len;
-      return handle_dgram (ret, card, hwaddress, proto, src, dst);
+
+      source.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      source.ipv4 = src;
+
+      dest.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      dest.ipv4 = dst;
+
+      return handle_dgram (ret, card, hwaddress, proto, &source, &dest);
     }
 
   return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_net_send_ip6_packet (struct grub_net_network_level_interface * inf,
+			  const grub_net_network_level_address_t * target,
+			  struct grub_net_buff * nb,
+			  grub_net_ip_protocol_t proto)
+{
+  struct ip6hdr *iph;
+  grub_net_link_level_address_t ll_target_addr;
+  grub_err_t err;
+
+  COMPILE_TIME_ASSERT (GRUB_NET_OUR_IPV6_HEADER_SIZE == sizeof (*iph));
+
+  /* Determine link layer target address via ARP.  */
+  err = grub_net_arp_resolve (inf, target, &ll_target_addr);
+  if (err)
+    return err;
+
+  if (nb->tail - nb->data + sizeof (struct iphdr) > inf->card->mtu)
+    return grub_error (GRUB_ERR_NET_PACKET_TOO_BIG, "packet too big");
+
+  grub_netbuff_push (nb, sizeof (*iph));
+  iph = (struct ip6hdr *) nb->data;
+
+  iph->version_class_flow = grub_cpu_to_be32 ((6 << 28));
+  iph->len = grub_cpu_to_be16 (nb->tail - nb->data) - sizeof (*iph);
+  iph->protocol = proto;
+  iph->ttl = 0xff;
+  grub_memcpy (&iph->src, inf->address.ipv6, sizeof (iph->src));
+  grub_memcpy (&iph->dest, target->ipv6, sizeof (iph->dest));
+
+  return send_ethernet_packet (inf, nb, ll_target_addr,
+			       GRUB_NET_ETHERTYPE_IP);
+}
+
+grub_err_t
+grub_net_send_ip_packet (struct grub_net_network_level_interface * inf,
+			 const grub_net_network_level_address_t * target,
+			 struct grub_net_buff * nb,
+			 grub_net_ip_protocol_t proto)
+{
+  switch (target->type)
+    {
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
+      return grub_net_send_ip4_packet (inf, target, nb, proto);
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
+      return grub_net_send_ip6_packet (inf, target, nb, proto);
+    default:
+      return grub_error (GRUB_ERR_BAD_ARGUMENT, "not an IP");
+    }
+
+}
+
+grub_err_t
+grub_net_recv_ip6_packets (struct grub_net_buff * nb,
+			   const struct grub_net_card * card,
+			   const grub_net_link_level_address_t * hwaddress)
+{
+  struct ip6hdr *iph = (struct ip6hdr *) nb->data;
+  grub_err_t err;
+  grub_net_network_level_address_t source;
+  grub_net_network_level_address_t dest;
+
+  if ((grub_be_to_cpu32 (iph->version_class_flow) >> 28) != 6)
+    {
+      grub_dprintf ("net", "Bad IP version: %d\n",
+		    (grub_be_to_cpu32 (iph->version_class_flow) >> 28));
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
+
+  if (nb->tail - nb->data < (grub_ssize_t) sizeof (*iph))
+    {
+      grub_dprintf ("net", "IP packet too short: %" PRIdGRUB_SSIZE "\n",
+		    nb->tail - nb->data);
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
+
+  err = grub_netbuff_pull (nb, sizeof (*iph));
+  if (err)
+    {
+      grub_netbuff_free (nb);
+      return err;
+    }
+
+  /* Check size.  */
+  {
+    grub_size_t expected_size = grub_be_to_cpu16 (iph->len);
+    grub_size_t actual_size = (nb->tail - nb->data);
+    if (actual_size > expected_size)
+      {
+	err = grub_netbuff_unput (nb, actual_size - expected_size);
+	if (err)
+	  {
+	    grub_netbuff_free (nb);
+	    return err;
+	  }
+      }
+    if (actual_size < expected_size)
+      {
+	grub_dprintf ("net", "Cut IP packet actual: %" PRIuGRUB_SIZE 
+		      ", expected %" PRIuGRUB_SIZE "\n", actual_size,
+		      expected_size);
+	grub_netbuff_free (nb);
+	return GRUB_ERR_NONE;
+      }
+  }
+
+  source.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
+  dest.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
+  grub_memcpy (source.ipv6, &iph->src, sizeof (source.ipv6));
+  grub_memcpy (dest.ipv6, &iph->src, sizeof (dest.ipv6));
+
+  return handle_dgram (nb, card, hwaddress, iph->protocol,
+		       &source, &dest);
 }
