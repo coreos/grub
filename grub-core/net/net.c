@@ -864,7 +864,6 @@ receive_packets (struct grub_net_card *card)
       /* Maybe should be better have a fixed number of packets for each card
 	 and just mark them as used and not used.  */ 
       struct grub_net_buff *nb;
-      struct grub_net_buff *nb2;
 
       nb = card->driver->recv (card);
       if (!nb)
