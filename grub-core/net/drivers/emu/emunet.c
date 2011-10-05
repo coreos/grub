@@ -28,6 +28,8 @@
 #include <unistd.h>
 #include <grub/term.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static int fd;
 
 static grub_err_t 
