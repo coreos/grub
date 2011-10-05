@@ -169,7 +169,7 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)))
 {
   struct grub_pxe_undi_isr *isr;
   static int in_progress = 0;
-  char *ptr, *end;
+  grub_uint8_t *ptr, *end;
   struct grub_net_buff *buf;
 
   isr = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
