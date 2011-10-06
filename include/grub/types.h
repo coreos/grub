@@ -116,6 +116,10 @@ typedef grub_int32_t	grub_ssize_t;
 # define PRIuGRUB_SIZE	"u"
 #endif
 
+#define GRUB_UCHAR_MAX 0xFF
+#define GRUB_USHRT_MAX 65535
+#define GRUB_UINT_MAX 4294967295U
+
 #if GRUB_CPU_SIZEOF_LONG == 8
 # define GRUB_ULONG_MAX 18446744073709551615UL
 # define GRUB_LONG_MAX 9223372036854775807L
@@ -217,5 +221,32 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 # define grub_cpu_to_le16_compile_time(x)	((grub_uint16_t) (x))
 # define grub_cpu_to_le32_compile_time(x)	((grub_uint32_t) (x))
 #endif /* ! WORDS_BIGENDIAN */
+
+static inline grub_uint16_t grub_get_unaligned16(void *ptr)
+{
+  struct
+    {
+      grub_uint16_t d;
+    } __attribute__((packed)) *dd = ptr;
+    return dd->d;
+}
+
+static inline grub_uint32_t grub_get_unaligned32(void *ptr)
+{
+  struct
+    {
+      grub_uint32_t d;
+    } __attribute__((packed)) *dd = ptr;
+    return dd->d;
+}
+
+static inline grub_uint64_t grub_get_unaligned64(void *ptr)
+{
+  struct
+    {
+      grub_uint64_t d;
+    } __attribute__((packed)) *dd = ptr;
+    return dd->d;
+}
 
 #endif /* ! GRUB_TYPES_HEADER */

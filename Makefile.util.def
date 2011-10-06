@@ -33,6 +33,8 @@ library = {
 
 library = {
   name = libgrubmods.a;
+  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(top_srcdir)/grub-core/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
 
   common_nodist = grub_script.tab.c;
   common_nodist = grub_script.yy.c;
@@ -89,6 +91,7 @@ library = {
   common = grub-core/lib/LzFind.c;
   common = grub-core/lib/LzmaEnc.c;
   common = grub-core/lib/crc.c;
+  common = grub-core/lib/adler32.c;
   common = grub-core/normal/datetime.c;
   common = grub-core/normal/misc.c;
   common = grub-core/partmap/acorn.c;
@@ -106,7 +109,9 @@ library = {
   common = grub-core/script/script.c;
   common = grub-core/script/argv.c;
   common = grub-core/io/gzio.c;
+  common = grub-core/io/lzopio.c;
   common = grub-core/kern/ia64/dl_helper.c;
+  common = grub-core/lib/minilzo/minilzo.c;
 };
 
 program = {

@@ -1,3 +1,48 @@
+2011-10-06  Szymon Janc <szymon@janc.net.pl>
+
+	Add support for LZO compression in GRUB:
+	- import of minilzo library, 
+	- LZO decompression for btrfs,
+	- lzop files decompression.
+
+	* grub-core/io/lzopio.c: New file.
+	* grub-core/lib/adler32.c: Likewise.
+	* grub-core/lib/minilzo/lzoconf.h: Likewise.
+	* grub-core/lib/minilzo/lzodefs.h: Likewise.
+	* grub-core/lib/minilzo/minilzo.c: Likewise.
+	* grub-core/lib/minilzo/minilzo.h: Likewise.
+	* Makefile.util.def (libgrubmods.a): Add grub-core/io/lzopio.c,
+	grub-core/lib/adler32.c, grub-core/io/lzopio.c,
+	grub-core/lib/minilzo/minilzo.c to common.
+	* Makefile.util.def (libgrubmods.a): Add flags required by minilzo to
+	cflags in cppflags.
+	* grub-core/Makefile.core.def (btrfs): Likewise.
+	* grub-core/Makefile.core.def (lzopio): New module.
+	(adler32): Likewise.
+	* grub-core/fs/btrfs.c: Include minilzo.h.
+	(GRUB_BTRFS_COMPRESSION_LZO): New define.
+	(GRUB_BTRFS_LZO_BLOCK_SIZE): Likewise.
+	(GRUB_BTRFS_LZO_BLOCK_MAX_CSIZE): Likewise.
+	(grub_btrfs_lzo_decompress): New function.
+	(grub_btrfs_extent_read): Add support for LZO compression type.
+	* include/grub/types.h (GRUB_UCHAR_MAX): New define.
+	(GRUB_USHRT_MAX): Likewise.
+	(GRUB_UINT_MAX): Likewise.
+	* grub-core/lib/posix_wrap/limits.h (USHRT_MAX): Likewise.
+	(UINT_MAX): Likewise.
+	(CHAR_BIT): Likewise.
+	* grub-core/lib/posix_wrap/sys/types.h (ULONG_MAX): Moved to
+	grub-core/lib/posix_wrap/limits.h
+	(UCHAR_MAX): Likewise.
+	* include/grub/file.h (grub_file_filter_id): New compression filter
+	GRUB_FILE_FILTER_LZOPIO.
+	* include/grub/file.h (grub_file_filter_id): Set
+	GRUB_FILE_FILTER_LZOPIO as GRUB_FILE_FILTER_COMPRESSION_LAST.
+	* include/grub/types.h (grub_get_unaligned16): New function.
+	(grub_get_unaligned32): Likewise.
+	(grub_get_unaligned64): Likewise.
+	* util/import_gcry.py (cryptolist): Add adler32.
+
 2011-10-01  Ales Nesrsta <starous@volny.cz>
 
 	* grub-core/bus/usb/uhci.c: Changes made by Rock Cui - thanks!
