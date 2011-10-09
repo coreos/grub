@@ -1,7 +1,7 @@
 /* getroot.c - Get root device */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2006,2007,2008,2009,2010,2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <grub/util/misc.h>
+#include <grub/util/lvm.h>
 #include <grub/cryptodisk.h>
 
 #ifdef HAVE_DEVICE_MAPPER
@@ -856,12 +857,14 @@ grub_util_get_geom_abstraction (const char *dev)
 int
 grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
 {
-#ifdef __linux__
-  enum grub_dev_abstraction_types ret;
-
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   /* User explicitly claims that this drive is visible by BIOS.  */
   if (grub_util_biosdisk_is_present (os_dev))
     return GRUB_DEV_ABSTRACTION_NONE;
+#endif
+
+#ifdef __linux__
+  enum grub_dev_abstraction_types ret;
 
   /* Check for LVM and LUKS.  */
   ret = grub_util_get_dm_abstraction (os_dev);
@@ -880,6 +883,10 @@ grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
   grub_util_info ("abstraction of %s is %s", os_dev, abs);
   if (abs && grub_strcasecmp (abs, "eli") == 0)
     return GRUB_DEV_ABSTRACTION_GELI;
+
+  /* Check for LVM.  */
+  if (!strncmp (os_dev, LVM_DEV_MAPPER_STRING, sizeof(LVM_DEV_MAPPER_STRING)-1))
+    return GRUB_DEV_ABSTRACTION_LVM;
 #endif
 
   /* No abstraction found.  */
@@ -1111,11 +1118,12 @@ grub_util_get_grub_dev (const char *os_dev)
 
   switch (grub_util_get_dev_abstraction (os_dev))
     {
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     case GRUB_DEV_ABSTRACTION_LVM:
 
       {
 	unsigned short i, len;
-	grub_size_t offset = sizeof ("/dev/mapper/") - 1;
+	grub_size_t offset = sizeof (LVM_DEV_MAPPER_STRING) - 1;
 
 	len = strlen (os_dev) - offset + 1;
 	grub_dev = xmalloc (len + sizeof ("lvm/"));
@@ -1191,7 +1199,9 @@ grub_util_get_grub_dev (const char *os_dev)
       }
 #endif
       break;
+#endif
 
+#ifdef __linux__
     case GRUB_DEV_ABSTRACTION_RAID:
 
       if (os_dev[7] == '_' && os_dev[8] == 'd')
@@ -1267,7 +1277,6 @@ grub_util_get_grub_dev (const char *os_dev)
       else
 	grub_util_error ("unknown kind of RAID device `%s'", os_dev);
 
-#ifdef __linux__
       {
 	char *mdadm_name = get_mdadm_uuid (os_dev);
 	struct stat st;
@@ -1292,9 +1301,8 @@ grub_util_get_grub_dev (const char *os_dev)
 	    free (mdadm_name);
 	  }
       }
-#endif /* __linux__ */
-
       break;
+#endif /* __linux__ */
 
     default:  /* GRUB_DEV_ABSTRACTION_NONE */
       grub_dev = grub_util_biosdisk_get_grub_dev (os_dev);

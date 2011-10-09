@@ -1,3 +1,23 @@
+2011-10-09  Robert Millan  <rmh@gnu.org>
+
+	LVM support for FreeBSD and GNU/kFreeBSD.
+
+	* util/lvm.c (grub_util_lvm_isvolume): Enable on FreeBSD and
+	GNU/kFreeBSD.
+	(LVM_DEV_MAPPER_STRING): Move from here ...
+	* include/grub/util/lvm.h (LVM_DEV_MAPPER_STRING): ... to here.
+	* util/getroot.c: Include `<grub/util/lvm.h>'.
+	(grub_util_get_dev_abstraction): Enable
+	grub_util_biosdisk_is_present() on FreeBSD and GNU/kFreeBSD.
+	Check for LVM abstraction on FreeBSD and GNU/kFreeBSD.
+	(grub_util_get_grub_dev): Replace "/dev/mapper/" with
+	`LVM_DEV_MAPPER_STRING'.  Enable LVM and mdRAID only on platforms that
+	support it.
+	* util/grub-setup.c (main): Check for LVM also on FreeBSD and
+	GNU/kFreeBSD.
+	* util/grub.d/10_kfreebsd.in: Load `geom_linux_lvm' kernel module
+	when LVM abstraction is required for ${GRUB_DEVICE}.
+
 2011-10-06  Szymon Janc <szymon@janc.net.pl>
 
 	Add support for LZO compression in GRUB:

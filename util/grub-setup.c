@@ -1,7 +1,7 @@
 /* grub-setup.c - make GRUB usable */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -954,10 +954,12 @@ main (int argc, char *argv[])
                       arguments.dir ? : DEFAULT_DIRECTORY);
     }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if (grub_util_lvm_isvolume (root_dev))
     must_embed = 1;
+#endif
 
+#ifdef __linux__
   if (root_dev[0] == 'm' && root_dev[1] == 'd'
       && ((root_dev[2] >= '0' && root_dev[2] <= '9') || root_dev[2] == '/'))
     {
