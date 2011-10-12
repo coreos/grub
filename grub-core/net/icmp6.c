@@ -182,7 +182,8 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 							   GRUB_NET_IP_ICMPV6,
 							   &inf->address,
 							   source);
-	err = grub_net_send_ip_packet (inf, source, nb_reply,
+	/* FIXME: gateway pings.  */
+	err = grub_net_send_ip_packet (inf, source, NULL, nb_reply,
 				       GRUB_NET_IP_ICMPV6);
 
       ping_fail:
@@ -288,7 +289,7 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 							   GRUB_NET_IP_ICMPV6,
 							   &inf->address,
 							   source);
-	err = grub_net_send_ip_packet (inf, source, nb_reply,
+	err = grub_net_send_ip_packet (inf, source, NULL, nb_reply,
 				       GRUB_NET_IP_ICMPV6);
 
       ndp_fail:
@@ -384,12 +385,19 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 		for (slaac = card->slaac_list; slaac; slaac = slaac->next)
 		  {
 		    grub_net_network_level_address_t addr;
+		    grub_net_network_level_netaddress_t netaddr;
+
 		    if (slaac->address.type
 			!= GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET)
 		      continue;
 		    addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
 		    addr.ipv6[0] = opt->prefix[0];
 		    addr.ipv6[1] = grub_net_ipv6_get_id (&slaac->address);
+		    netaddr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
+		    netaddr.ipv6.base[0] = opt->prefix[0];
+		    netaddr.ipv6.base[1] = 0;
+		    netaddr.ipv6.masksize = 64;
+
 		    FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
 		    {
 		      if (inf->card == card
@@ -408,9 +416,10 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 				+ sizeof (":XXXXXXXXXXXXXXXXXXXX")];
 		      grub_snprintf (name, sizeof (name), "%s:%d",
 				     slaac->name, slaac->slaac_counter++);
-		      grub_net_add_addr (name, 
-					 card, &addr,
-					 &slaac->address, 0);
+		      inf = grub_net_add_addr (name, 
+					       card, &addr,
+					       &slaac->address, 0);
+		      grub_net_add_route (name, netaddr, inf);
 		    }
 		  }
 	      }
@@ -435,7 +444,7 @@ grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
   struct neighbour_solicit *sol;
   struct icmp_header *icmphr;
   grub_net_network_level_address_t multicast;
-
+  grub_uint8_t *nbd;
   multicast.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
   multicast.ipv6[0] = grub_be_to_cpu64_compile_time (0xff02ULL << 48);
   multicast.ipv6[1] = (grub_be_to_cpu64_compile_time (0x01ff000000ULL)
@@ -467,7 +476,7 @@ grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
     goto fail;
 
   ohdr = (struct option_header *) nb->data;
-  ohdr->type = OPTION_TARGET_LINK_LAYER_ADDRESS;
+  ohdr->type = OPTION_SOURCE_LINK_LAYER_ADDRESS;
   ohdr->len = 1;
   err = grub_netbuff_push (nb, sizeof (*sol));  
   if (err)
@@ -482,14 +491,15 @@ grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
     goto fail;
 
   icmphr = (struct icmp_header *) nb->data;
-  icmphr->type = ICMP6_NEIGHBOUR_ADVERTISE;
+  icmphr->type = ICMP6_NEIGHBOUR_SOLICIT;
   icmphr->code = 0;
   icmphr->checksum = 0;
   icmphr->checksum = grub_net_ip_transport_checksum (nb,
 						     GRUB_NET_IP_ICMPV6,
 						     &inf->address,
 						     &multicast);
-  err = grub_net_send_ip_packet (inf, &multicast, nb,
+  nbd = nb->data;
+  err = grub_net_send_ip_packet (inf, &multicast, NULL, nb,
 				 GRUB_NET_IP_ICMPV6);
   if (err)
     goto fail;
@@ -501,7 +511,8 @@ grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
       grub_net_poll_cards (GRUB_NET_INTERVAL);
       if (grub_net_link_layer_resolve_check (inf, proto_addr))
 	break;
-      err = grub_net_send_ip_packet (inf, &multicast, nb,
+      nb->data = nbd;
+      err = grub_net_send_ip_packet (inf, &multicast, NULL, nb,
 				     GRUB_NET_IP_ICMPV6);
       if (err)
 	break;

@@ -181,9 +181,10 @@ send_fragmented (struct grub_net_network_level_interface * inf,
 }
 
 static grub_err_t
-grub_net_send_ip4_packet (struct grub_net_network_level_interface * inf,
-			  const grub_net_network_level_address_t * target,
-			  struct grub_net_buff * nb,
+grub_net_send_ip4_packet (struct grub_net_network_level_interface *inf,
+			  const grub_net_network_level_address_t *target,
+			  const grub_net_network_level_address_t *gw,
+			  struct grub_net_buff *nb,
 			  grub_net_ip_protocol_t proto)
 {
   struct iphdr *iph;
@@ -193,7 +194,7 @@ grub_net_send_ip4_packet (struct grub_net_network_level_interface * inf,
   COMPILE_TIME_ASSERT (GRUB_NET_OUR_IPV4_HEADER_SIZE == sizeof (*iph));
 
   /* Determine link layer target address via ARP.  */
-  err = grub_net_link_layer_resolve (inf, target, &ll_target_addr);
+  err = grub_net_link_layer_resolve (inf, gw ? : target, &ll_target_addr);
   if (err)
     return err;
 
@@ -578,9 +579,10 @@ grub_net_recv_ip4_packets (struct grub_net_buff * nb,
 }
 
 static grub_err_t
-grub_net_send_ip6_packet (struct grub_net_network_level_interface * inf,
-			  const grub_net_network_level_address_t * target,
-			  struct grub_net_buff * nb,
+grub_net_send_ip6_packet (struct grub_net_network_level_interface *inf,
+			  const grub_net_network_level_address_t *target,
+			  const grub_net_network_level_address_t *gw,
+			  struct grub_net_buff *nb,
 			  grub_net_ip_protocol_t proto)
 {
   struct ip6hdr *iph;
@@ -590,7 +592,7 @@ grub_net_send_ip6_packet (struct grub_net_network_level_interface * inf,
   COMPILE_TIME_ASSERT (GRUB_NET_OUR_IPV6_HEADER_SIZE == sizeof (*iph));
 
   /* Determine link layer target address via ARP.  */
-  err = grub_net_link_layer_resolve (inf, target, &ll_target_addr);
+  err = grub_net_link_layer_resolve (inf, gw ? : target, &ll_target_addr);
   if (err)
     return err;
 
@@ -612,17 +614,18 @@ grub_net_send_ip6_packet (struct grub_net_network_level_interface * inf,
 }
 
 grub_err_t
-grub_net_send_ip_packet (struct grub_net_network_level_interface * inf,
-			 const grub_net_network_level_address_t * target,
-			 struct grub_net_buff * nb,
+grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
+			 const grub_net_network_level_address_t *target,
+			 const grub_net_network_level_address_t *gw,
+			 struct grub_net_buff *nb,
 			 grub_net_ip_protocol_t proto)
 {
   switch (target->type)
     {
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
-      return grub_net_send_ip4_packet (inf, target, nb, proto);
+      return grub_net_send_ip4_packet (inf, target, gw, nb, proto);
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
-      return grub_net_send_ip6_packet (inf, target, nb, proto);
+      return grub_net_send_ip6_packet (inf, target, gw, nb, proto);
     default:
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "not an IP");
     }

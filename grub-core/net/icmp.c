@@ -106,7 +106,9 @@ grub_net_recv_icmp_packet (struct grub_net_buff *nb,
 	icmphr->checksum = 0;
 	icmphr->checksum = grub_net_ip_chksum ((void *) nb_reply->data,
 					       nb_reply->tail - nb_reply->data);
-	err = grub_net_send_ip_packet (inf, src, nb_reply, GRUB_NET_IP_ICMP);
+	/* FIXME: gateway pings.  */
+	err = grub_net_send_ip_packet (inf, src, NULL,
+				       nb_reply, GRUB_NET_IP_ICMP);
 
       ping_fail:
 	grub_netbuff_free (nb);

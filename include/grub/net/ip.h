@@ -52,6 +52,7 @@ grub_net_recv_ip_packets (struct grub_net_buff *nb,
 grub_err_t
 grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
 			 const grub_net_network_level_address_t *target,
+			 const grub_net_network_level_address_t *gw,
 			 struct grub_net_buff *nb,
 			 grub_net_ip_protocol_t proto);
 

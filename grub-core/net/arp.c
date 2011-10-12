@@ -58,6 +58,7 @@ grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
   int i;
   grub_size_t addrlen;
   grub_uint16_t etherpro;
+  grub_uint8_t *nbd;
 
   if (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
     {
@@ -99,6 +100,7 @@ grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
   grub_memcpy (aux, &proto_addr->ipv4, 4);
   grub_memset (&target_hw_addr.mac, 0xff, 6);
 
+  nbd = nb.data;
   send_ethernet_packet (inf, &nb, target_hw_addr, GRUB_NET_ETHERTYPE_ARP);
   for (i = 0; i < GRUB_NET_TRIES; i++)
     {
@@ -107,6 +109,7 @@ grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
       grub_net_poll_cards (GRUB_NET_INTERVAL);
       if (grub_net_link_layer_resolve_check (inf, proto_addr))
 	return GRUB_ERR_NONE;
+      nb.data = nbd;
       send_ethernet_packet (inf, &nb, target_hw_addr, GRUB_NET_ETHERTYPE_ARP);
     }
 
@@ -142,7 +145,7 @@ grub_net_arp_receive (struct grub_net_buff *nb,
     return GRUB_ERR_NONE;
 
   sender_hw_addr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
-  grub_memcpy (sender_hw_addr.mac, &sender_hardware_address,
+  grub_memcpy (sender_hw_addr.mac, sender_hardware_address,
 	       sizeof (sender_hw_addr.mac));
   grub_net_link_layer_add_address (card, &sender_addr, &sender_hw_addr, 1);
 

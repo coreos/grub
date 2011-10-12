@@ -493,7 +493,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 							 &ifaces[j].address,
 							 &target);
 
-	  err = grub_net_send_ip_packet (&ifaces[j], &target, nb,
+	  err = grub_net_send_ip_packet (&ifaces[j], &target, NULL, nb,
 					 GRUB_NET_IP_UDP);
 	  grub_netbuff_free (nb);
 	  if (err)

@@ -160,8 +160,6 @@ grub_net_link_layer_resolve (struct grub_net_network_level_interface *inf,
       return GRUB_ERR_NONE;
     }
 
-
-
   /* Check cache table.  */
   entry = link_layer_find_entry (proto_addr, inf->card);
   if (entry)
@@ -378,17 +376,22 @@ static int
 parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
 {
   grub_uint32_t newip = 0;
-  unsigned long t;
   int i;
   const char *ptr = val;
 
   for (i = 0; i < 4; i++)
     {
+      unsigned long t;
       t = grub_strtoul (ptr, (char **) &ptr, 0);
       if (grub_errno)
 	{
 	  grub_errno = GRUB_ERR_NONE;
 	  return 0;
+	}
+      if (*ptr != '.' && i == 0)
+	{
+	  newip = t;
+	  break;
 	}
       if (t & ~0xff)
 	return 0;
@@ -400,7 +403,56 @@ parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
     }
   *ip = grub_cpu_to_le32 (newip);
   if (rest)
-    *rest = ptr - 1;
+    *rest = (ptr - 1);
+  return 1;
+}
+
+static int
+parse_ip6 (const char *val, grub_uint64_t *ip, const char **rest)
+{
+  grub_uint16_t newip[8];
+  const char *ptr = val;
+  int word, quaddot = -1;
+
+  if (ptr[0] == ':' && ptr[1] != ':')
+    return 0;
+  if (ptr[0] == ':')
+    ptr++;
+
+  for (word = 0; word < 8; word++)
+    {
+      unsigned long t;
+      if (*ptr == ':')
+	{
+	  quaddot = word;
+	  word--;
+	  ptr++;
+	  continue;
+	}
+      t = grub_strtoul (ptr, (char **) &ptr, 16);
+      if (grub_errno)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  break;
+	}
+      if (t & ~0xffff)
+	return 0;
+      newip[word] = grub_cpu_to_be16 (t);
+      if (*ptr != ':')
+	break;
+      ptr++;
+    }
+  if (quaddot == -1 && word < 7)
+    return 0;
+  if (quaddot != -1)
+    {
+      grub_memmove (&newip[quaddot + 7 - word], &newip[quaddot],
+		    (word - quaddot + 1) * sizeof (newip[0]));
+      grub_memset (&newip[quaddot], 0, (7 - word) * sizeof (newip[0]));
+    }
+  grub_memcpy (ip, newip, 16);
+  if (rest)
+    *rest = ptr;
   return 1;
 }
 
@@ -422,16 +474,21 @@ match_net (const grub_net_network_level_netaddress_t *net,
       }
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
       {
-	grub_int64_t mask[2];
-	mask[1] = 0xffffffffffffffffULL << (128 - net->ipv6.masksize);
-	if (net->ipv6.masksize < 64)
-	  mask[0] = 0xffffffffffffffffULL;
+	grub_uint64_t mask[2];
+	if (net->ipv6.masksize <= 64)
+	  {
+	    mask[0] = 0xffffffffffffffffULL << (64 - net->ipv6.masksize);
+	    mask[1] = 0;
+	  }
 	else 
-	  mask[0] = 0xffffffffffffffffULL << (64 - net->ipv6.masksize);
+	  {
+	    mask[0] = 0xffffffffffffffffULL;
+	    mask[1] = 0xffffffffffffffffULL << (128 - net->ipv6.masksize);
+	  }
 	return (((grub_be_to_cpu64 (net->ipv6.base[0]) & mask[0])
-		== (grub_be_to_cpu32 (addr->ipv6[0]) & mask[0]))
+		== (grub_be_to_cpu64 (addr->ipv6[0]) & mask[0]))
 		&& ((grub_be_to_cpu64 (net->ipv6.base[1]) & mask[1])
-		    == (grub_be_to_cpu32 (addr->ipv6[1]) & mask[1])));
+		    == (grub_be_to_cpu64 (addr->ipv6[1]) & mask[1])));
       }
     }
   return 0;
@@ -441,9 +498,15 @@ grub_err_t
 grub_net_resolve_address (const char *name,
 			  grub_net_network_level_address_t *addr)
 {
-  if (parse_ip (name, &addr->ipv4, NULL))
+  const char *rest;
+  if (parse_ip (name, &addr->ipv4, &rest) && *rest == 0)
     {
       addr->type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      return GRUB_ERR_NONE;
+    }
+  if (parse_ip6 (name, addr->ipv6, &rest) && *rest == 0)
+    {
+      addr->type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
       return GRUB_ERR_NONE;
     }
   return grub_error (GRUB_ERR_NET_BAD_ADDRESS, N_("unrecognised address %s"),
@@ -460,12 +523,32 @@ grub_net_resolve_net_address (const char *name,
       addr->type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
       if (*rest == '/')
 	{
-	  addr->ipv4.masksize = grub_strtoul (rest + 1, NULL, 0);
-	  if (!grub_errno)
-	    return GRUB_ERR_NONE;	    
+	  addr->ipv4.masksize = grub_strtoul (rest + 1, (char **) &rest, 0);
+	  if (!grub_errno && *rest == 0)
+	    return GRUB_ERR_NONE;
+	  grub_errno = GRUB_ERR_NONE;
 	}
-      addr->ipv4.masksize = 32;
-      return GRUB_ERR_NONE;
+      else if (*rest == 0)
+	{
+	  addr->ipv4.masksize = 32;
+	  return GRUB_ERR_NONE;
+	}
+    }
+  if (parse_ip6 (name, addr->ipv6.base, &rest))
+    {
+      addr->type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
+      if (*rest == '/')
+	{
+	  addr->ipv6.masksize = grub_strtoul (rest + 1, (char **) &rest, 0);
+	  if (!grub_errno && *rest == 0)
+	    return GRUB_ERR_NONE;
+	  grub_errno = GRUB_ERR_NONE;
+	}
+      else if (*rest == 0)
+	{
+	  addr->ipv6.masksize = 128;
+	  return GRUB_ERR_NONE;
+	}
     }
   return grub_error (GRUB_ERR_NET_BAD_ADDRESS, N_("unrecognised address %s"),
 		     name);

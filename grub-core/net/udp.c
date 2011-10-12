@@ -34,7 +34,7 @@ struct grub_net_udp_socket
   grub_err_t (*recv_hook) (grub_net_udp_socket_t sock, struct grub_net_buff *nb,
 			   void *recv);
   void *recv_hook_data;
-  grub_net_network_level_address_t out_nla;
+  grub_net_network_level_address_t out_nla, gw;
   struct grub_net_network_level_interface *inf;
 };
 
@@ -76,9 +76,10 @@ grub_net_udp_open (char *server,
   if (err)
     return NULL;
 
-  if (addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
+  if (addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+      && addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "not a IPv4 address");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "not an IP address");
       return NULL;
     }
  
@@ -93,6 +94,7 @@ grub_net_udp_open (char *server,
   socket->out_port = out_port;
   socket->inf = inf;
   socket->out_nla = addr;
+  socket->gw = gateway;
   socket->in_port = in_port++;
   socket->status = GRUB_NET_SOCKET_START;
   socket->recv_hook = recv_hook;
@@ -127,8 +129,8 @@ grub_net_send_udp_packet (const grub_net_udp_socket_t socket,
 						 &socket->inf->address,
 						 &socket->out_nla);
 
-  return grub_net_send_ip_packet (socket->inf, &(socket->out_nla), nb,
-				  GRUB_NET_IP_UDP);
+  return grub_net_send_ip_packet (socket->inf, &(socket->out_nla),
+				  &(socket->gw), nb, GRUB_NET_IP_UDP);
 }
 
 grub_err_t
@@ -160,8 +162,7 @@ grub_net_recv_udp_packet (struct grub_net_buff *nb,
   {
     if (grub_be_to_cpu16 (udph->dst) == sock->in_port
 	&& inf == sock->inf
-	&& source->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
-	&& source->ipv4 == sock->out_nla.ipv4
+	&& grub_net_addr_cmp (source, &sock->out_nla) == 0
 	&& (sock->status == GRUB_NET_SOCKET_START
 	    || grub_be_to_cpu16 (udph->src) == sock->out_port))
       {

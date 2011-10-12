@@ -69,7 +69,7 @@ struct grub_net_tcp_socket
 			   void *recv);
   void (*error_hook) (grub_net_tcp_socket_t sock, void *recv);
   void *hook_data;
-  grub_net_network_level_address_t out_nla;
+  grub_net_network_level_address_t out_nla, gw;
   struct grub_net_network_level_interface *inf;
   grub_net_packets_t packs;
   grub_priority_queue_t pq;
@@ -216,8 +216,8 @@ tcp_send (struct grub_net_buff *nb, grub_net_tcp_socket_t socket)
 	socket->unack_last->next = unack;
     }
 
-  err = grub_net_send_ip_packet (socket->inf, &(socket->out_nla), nb,
-				 GRUB_NET_IP_TCP);
+  err = grub_net_send_ip_packet (socket->inf, &(socket->out_nla),
+				 &(socket->gw),nb, GRUB_NET_IP_TCP);
   if (err)
     return err;
   nb->data = nbd;
@@ -240,11 +240,11 @@ grub_net_tcp_close (grub_net_tcp_socket_t sock,
     sock->recv_hook = NULL;
 
   nb_fin = grub_netbuff_alloc (sizeof (*tcph_fin)
-			       + GRUB_NET_OUR_IPV4_HEADER_SIZE
+			       + GRUB_NET_OUR_MAX_IP_HEADER_SIZE
 			       + GRUB_NET_MAX_LINK_HEADER_SIZE);
   if (!nb_fin)
     return;
-  err = grub_netbuff_reserve (nb_fin, GRUB_NET_OUR_IPV4_HEADER_SIZE
+  err = grub_netbuff_reserve (nb_fin, GRUB_NET_OUR_MAX_IP_HEADER_SIZE
 			       + GRUB_NET_MAX_LINK_HEADER_SIZE);
   if (err)
     {
@@ -368,7 +368,8 @@ grub_net_tcp_retransmit (void)
 	unack->try_count++;
 	unack->last_try = ctime;
 	nbd = unack->nb->data;
-	err = grub_net_send_ip_packet (sock->inf, &(sock->out_nla), unack->nb,
+	err = grub_net_send_ip_packet (sock->inf, &(sock->out_nla),
+				       &(sock->gw), unack->nb,
 				       GRUB_NET_IP_TCP);
 	unack->nb->data = nbd;
 	if (err)
@@ -468,11 +469,11 @@ grub_net_tcp_accept (grub_net_tcp_socket_t sock,
   sock->error_hook = error_hook;
   sock->hook_data = hook_data;
   nb_ack = grub_netbuff_alloc (sizeof (*tcph)
-			       + GRUB_NET_OUR_IPV4_HEADER_SIZE
+			       + GRUB_NET_OUR_MAX_IP_HEADER_SIZE
 			       + GRUB_NET_MAX_LINK_HEADER_SIZE);
   if (!nb_ack)
     return grub_errno;
-  err = grub_netbuff_reserve (nb_ack, GRUB_NET_OUR_IPV4_HEADER_SIZE
+  err = grub_netbuff_reserve (nb_ack, GRUB_NET_OUR_MAX_IP_HEADER_SIZE
 			      + GRUB_NET_MAX_LINK_HEADER_SIZE);
   if (err)
     {
@@ -525,9 +526,10 @@ grub_net_tcp_open (char *server,
   if (err)
     return NULL;
 
-  if (addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
+  if (addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+      && addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "not a IPv4 address");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "not an IP address");
       return NULL;
     }
  
@@ -542,6 +544,7 @@ grub_net_tcp_open (char *server,
   socket->out_port = out_port;
   socket->inf = inf;
   socket->out_nla = addr;
+  socket->gw = gateway;
   socket->in_port = in_port++;
   socket->recv_hook = recv_hook;
   socket->error_hook = error_hook;
@@ -593,7 +596,8 @@ grub_net_tcp_open (char *server,
     {
       int j;
       nb->data = nbd;
-      err = grub_net_send_ip_packet (socket->inf, &(socket->out_nla), nb,
+      err = grub_net_send_ip_packet (socket->inf, &(socket->out_nla), 
+				     &(socket->gw), nb,
 				     GRUB_NET_IP_TCP);
       if (err)
 	{
@@ -636,20 +640,23 @@ grub_net_send_tcp_packet (const grub_net_tcp_socket_t socket,
   grub_err_t err;
   grub_ssize_t fraglen;
   COMPILE_TIME_ASSERT (sizeof (struct tcphdr) == GRUB_NET_TCP_HEADER_SIZE);
-  fraglen = (socket->inf->card->mtu - GRUB_NET_OUR_IPV4_HEADER_SIZE
-	     - sizeof (*tcph));
+  if (socket->out_nla.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
+    fraglen = (socket->inf->card->mtu - GRUB_NET_OUR_IPV4_HEADER_SIZE
+	       - sizeof (*tcph));
+  else
+    fraglen = 1280 - GRUB_NET_OUR_IPV6_HEADER_SIZE;
 
   while (nb->tail - nb->data > fraglen)
     {
       struct grub_net_buff *nb2;
 
       nb2 = grub_netbuff_alloc (fraglen + sizeof (*tcph)
-				+ GRUB_NET_OUR_IPV4_HEADER_SIZE
+				+ GRUB_NET_OUR_MAX_IP_HEADER_SIZE
 				+ GRUB_NET_MAX_LINK_HEADER_SIZE);
       if (!nb2)
 	return grub_errno;
       err = grub_netbuff_reserve (nb2, GRUB_NET_MAX_LINK_HEADER_SIZE
-				  + GRUB_NET_OUR_IPV4_HEADER_SIZE);
+				  + GRUB_NET_OUR_MAX_IP_HEADER_SIZE);
       if (err)
 	return err;
       err = grub_netbuff_put (nb2, sizeof (*tcph));
@@ -724,8 +731,7 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
     if (!(grub_be_to_cpu16 (tcph->dst) == sock->in_port
 	  && grub_be_to_cpu16 (tcph->src) == sock->out_port
 	  && inf == sock->inf
-	  && source->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
-	  && source->ipv4 == sock->out_nla.ipv4))
+	  && grub_net_addr_cmp (source, &sock->out_nla) == 0))
       continue;
     if (tcph->checksum)
       {
