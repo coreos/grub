@@ -87,6 +87,7 @@ struct reassemble
   grub_uint8_t *asm_buffer;
   grub_size_t total_len;
   grub_size_t cur_ptr;
+  grub_uint8_t ttl;
 };
 
 struct reassemble *reassembles;
@@ -192,7 +193,7 @@ grub_net_send_ip4_packet (struct grub_net_network_level_interface * inf,
   COMPILE_TIME_ASSERT (GRUB_NET_OUR_IPV4_HEADER_SIZE == sizeof (*iph));
 
   /* Determine link layer target address via ARP.  */
-  err = grub_net_arp_resolve (inf, target, &ll_target_addr);
+  err = grub_net_link_layer_resolve (inf, target, &ll_target_addr);
   if (err)
     return err;
 
@@ -225,10 +226,12 @@ handle_dgram (struct grub_net_buff *nb,
 	      const grub_net_link_level_address_t *hwaddress,
 	      grub_net_ip_protocol_t proto,
 	      const grub_net_network_level_address_t *source,
-	      const grub_net_network_level_address_t *dest)
+	      const grub_net_network_level_address_t *dest,
+	      grub_uint8_t ttl)
 {
   struct grub_net_network_level_interface *inf = NULL;
   grub_err_t err;
+  int multicast = 0;
   
   /* DHCP needs special treatment since we don't know IP yet.  */
   {
@@ -280,17 +283,39 @@ handle_dgram (struct grub_net_buff *nb,
 	&& grub_net_addr_cmp (&inf->address, dest) == 0
 	&& grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
       break;
+    /* Solicited node multicast.  */
+    if (inf->card == card
+	&& inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6
+	&& dest->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6
+	&& dest->ipv6[0] == grub_be_to_cpu64_compile_time (0xff02ULL << 48)
+	&& dest->ipv6[1] == (grub_be_to_cpu64_compile_time (0x01ff000000ULL)
+			     | (inf->address.ipv6[1]
+				& grub_be_to_cpu64_compile_time (0xffffff)))
+	&& hwaddress->type == GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET
+	&& hwaddress->mac[0] == 0x33 && hwaddress->mac[1] == 0x33
+	&& hwaddress->mac[2] == 0xff
+	&& hwaddress->mac[3] == ((grub_be_to_cpu64 (inf->address.ipv6[1]) 
+				  >> 16) & 0xff)
+	&& hwaddress->mac[4] == ((grub_be_to_cpu64 (inf->address.ipv6[1])
+				  >> 8) & 0xff)
+	&& hwaddress->mac[5] == ((grub_be_to_cpu64 (inf->address.ipv6[1])
+				  >> 0) & 0xff))
+      {
+	multicast = 1;
+	break;
+      }
   }
  
   if (!inf && !(dest->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6
-		&& dest->ipv6[0] == grub_be_to_cpu64 (0xff02ULL << 48)
-		&& dest->ipv6[1] == grub_be_to_cpu64 (1)))
+		&& dest->ipv6[0] == grub_be_to_cpu64_compile_time (0xff02ULL
+								   << 48)
+		&& dest->ipv6[1] == grub_be_to_cpu64_compile_time (1)))
     {
-      grub_dprintf ("net", "undirected dgram discarded: %x, %lx, %lx\n",
-		    dest->type, dest->ipv6[0], dest->ipv6[1]);
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
     }
+  if (multicast)
+    inf = NULL;
 
   switch (proto)
     {
@@ -301,7 +326,7 @@ handle_dgram (struct grub_net_buff *nb,
     case GRUB_NET_IP_ICMP:
       return grub_net_recv_icmp_packet (nb, inf, source);
     case GRUB_NET_IP_ICMPV6:
-      return grub_net_recv_icmp6_packet (nb, card, inf, source, dest);
+      return grub_net_recv_icmp6_packet (nb, card, inf, source, dest, ttl);
     default:
       grub_netbuff_free (nb);
       break;
@@ -414,7 +439,7 @@ grub_net_recv_ip4_packets (struct grub_net_buff * nb,
       dest.ipv4 = iph->dest;
 
       return handle_dgram (nb, card, hwaddress, iph->protocol,
-			   &source, &dest);
+			   &source, &dest, iph->ttl);
     }
 
   for (prev = &reassembles, rsm = *prev; rsm; prev = &rsm->next, rsm = *prev)
@@ -442,8 +467,10 @@ grub_net_recv_ip4_packets (struct grub_net_buff * nb,
       rsm->asm_buffer = 0;
       rsm->total_len = 0;
       rsm->cur_ptr = 0;
+      rsm->ttl = 0xff;
     }
-
+  if (rsm->ttl > iph->ttl)
+    rsm->ttl = iph->ttl;
   rsm->last_time = grub_get_time_ms ();
   free_old_fragments ();
 
@@ -479,6 +506,7 @@ grub_net_recv_ip4_packets (struct grub_net_buff * nb,
       grub_uint32_t dst;
       grub_net_network_level_address_t source;
       grub_net_network_level_address_t dest;
+      grub_uint8_t ttl;
 
       nb_top_p = grub_priority_queue_top (rsm->pq);
       if (!nb_top_p)
@@ -521,6 +549,7 @@ grub_net_recv_ip4_packets (struct grub_net_buff * nb,
       proto = rsm->proto;
       src = rsm->source;
       dst = rsm->dest;
+      ttl = rsm->ttl;
 
       rsm->asm_buffer = 0;
       res_len = rsm->total_len;
@@ -541,7 +570,8 @@ grub_net_recv_ip4_packets (struct grub_net_buff * nb,
       dest.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
       dest.ipv4 = dst;
 
-      return handle_dgram (ret, card, hwaddress, proto, &source, &dest);
+      return handle_dgram (ret, card, hwaddress, proto, &source, &dest,
+			   ttl);
     }
 
   return GRUB_ERR_NONE;
@@ -560,7 +590,7 @@ grub_net_send_ip6_packet (struct grub_net_network_level_interface * inf,
   COMPILE_TIME_ASSERT (GRUB_NET_OUR_IPV6_HEADER_SIZE == sizeof (*iph));
 
   /* Determine link layer target address via ARP.  */
-  err = grub_net_arp_resolve (inf, target, &ll_target_addr);
+  err = grub_net_link_layer_resolve (inf, target, &ll_target_addr);
   if (err)
     return err;
 
@@ -571,14 +601,14 @@ grub_net_send_ip6_packet (struct grub_net_network_level_interface * inf,
   iph = (struct ip6hdr *) nb->data;
 
   iph->version_class_flow = grub_cpu_to_be32 ((6 << 28));
-  iph->len = grub_cpu_to_be16 (nb->tail - nb->data) - sizeof (*iph);
+  iph->len = grub_cpu_to_be16 (nb->tail - nb->data - sizeof (*iph));
   iph->protocol = proto;
   iph->ttl = 0xff;
   grub_memcpy (&iph->src, inf->address.ipv6, sizeof (iph->src));
   grub_memcpy (&iph->dest, target->ipv6, sizeof (iph->dest));
 
   return send_ethernet_packet (inf, nb, ll_target_addr,
-			       GRUB_NET_ETHERTYPE_IP);
+			       GRUB_NET_ETHERTYPE_IP6);
 }
 
 grub_err_t
@@ -607,14 +637,6 @@ grub_net_recv_ip6_packets (struct grub_net_buff * nb,
   grub_err_t err;
   grub_net_network_level_address_t source;
   grub_net_network_level_address_t dest;
-
-  if ((grub_be_to_cpu32 (iph->version_class_flow) >> 28) != 6)
-    {
-      grub_dprintf ("net", "Bad IP version: %d\n",
-		    (grub_be_to_cpu32 (iph->version_class_flow) >> 28));
-      grub_netbuff_free (nb);
-      return GRUB_ERR_NONE;
-    }
 
   if (nb->tail - nb->data < (grub_ssize_t) sizeof (*iph))
     {
@@ -660,7 +682,7 @@ grub_net_recv_ip6_packets (struct grub_net_buff * nb,
   grub_memcpy (dest.ipv6, &iph->dest, sizeof (dest.ipv6));
 
   return handle_dgram (nb, card, hwaddress, iph->protocol,
-		       &source, &dest);
+		       &source, &dest, iph->ttl);
 }
 
 grub_err_t

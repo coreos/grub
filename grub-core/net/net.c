@@ -27,6 +27,7 @@
 #include <grub/command.h>
 #include <grub/env.h>
 #include <grub/net/ethernet.h>
+#include <grub/net/arp.h>
 #include <grub/net/ip.h>
 #include <grub/loader.h>
 #include <grub/bufio.h>
@@ -55,6 +56,144 @@ struct grub_net_network_level_interface *grub_net_network_level_interfaces = NUL
 struct grub_net_card *grub_net_cards = NULL;
 struct grub_net_network_level_protocol *grub_net_network_level_protocols = NULL;
 static struct grub_fs grub_net_fs;
+
+struct grub_net_link_layer_entry {
+  int avail;
+  grub_net_network_level_address_t nl_address;
+  grub_net_link_level_address_t ll_address;
+};
+
+#define LINK_LAYER_CACHE_SIZE 256
+
+static struct grub_net_link_layer_entry *
+link_layer_find_entry (const grub_net_network_level_address_t *proto,
+		       const struct grub_net_card *card)
+{
+  unsigned i;
+  if (!card->link_layer_table)
+    return NULL;
+  for (i = 0; i < LINK_LAYER_CACHE_SIZE; i++)
+    {
+      if (card->link_layer_table[i].avail == 1 
+	  && grub_net_addr_cmp (&card->link_layer_table[i].nl_address,
+				proto) == 0)
+	return &card->link_layer_table[i];
+    }
+  return NULL;
+}
+
+void
+grub_net_link_layer_add_address (struct grub_net_card *card,
+				 const grub_net_network_level_address_t *nl,
+				 const grub_net_link_level_address_t *ll,
+				 int override)
+{
+  struct grub_net_link_layer_entry *entry;
+
+  /* Check if the sender is in the cache table.  */
+  entry = link_layer_find_entry (nl, card);
+  /* Update sender hardware address.  */
+  if (entry && override)
+    grub_memcpy (&entry->ll_address, ll, sizeof (entry->ll_address));
+  if (entry)
+    return;
+
+  /* Add sender to cache table.  */
+  if (card->link_layer_table == NULL)
+    card->link_layer_table = grub_zalloc (LINK_LAYER_CACHE_SIZE
+					  * sizeof (card->link_layer_table[0]));
+  entry = &(card->link_layer_table[card->new_ll_entry]);
+  entry->avail = 1;
+  grub_memcpy (&entry->ll_address, ll, sizeof (entry->ll_address));
+  grub_memcpy (&entry->nl_address, nl, sizeof (entry->nl_address));
+  card->new_ll_entry++;
+  if (card->new_ll_entry == LINK_LAYER_CACHE_SIZE)
+    card->new_ll_entry = 0;
+}
+
+int
+grub_net_link_layer_resolve_check (struct grub_net_network_level_interface *inf,
+				   const grub_net_network_level_address_t *proto_addr)
+{
+  struct grub_net_link_layer_entry *entry;
+
+  if (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+      && proto_addr->ipv4 == 0xffffffff)
+    return 1;
+  entry = link_layer_find_entry (proto_addr, inf->card);
+  if (entry)
+    return 1;
+  return 0;
+}
+
+grub_err_t
+grub_net_link_layer_resolve (struct grub_net_network_level_interface *inf,
+			     const grub_net_network_level_address_t *proto_addr,
+			     grub_net_link_level_address_t *hw_addr)
+{
+  struct grub_net_link_layer_entry *entry;
+  grub_err_t err;
+
+  if ((proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
+       && proto_addr->ipv4 == 0xffffffff)
+      || proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV
+      || (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6
+	  && proto_addr->ipv6[0] == grub_be_to_cpu64_compile_time (0xff02ULL
+								   << 48)
+	  && proto_addr->ipv6[1] == (grub_be_to_cpu64_compile_time (1))))
+    {
+      hw_addr->type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+      grub_memset (hw_addr->mac, -1, 6);
+      return GRUB_ERR_NONE;
+    }
+
+  if (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6
+      && ((grub_be_to_cpu64 (proto_addr->ipv6[0]) >> 56) == 0xff))
+    {
+      hw_addr->type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+      hw_addr->mac[0] = 0x33;
+      hw_addr->mac[1] = 0x33;
+      hw_addr->mac[2] = ((grub_be_to_cpu64 (proto_addr->ipv6[1]) >> 24) & 0xff);
+      hw_addr->mac[3] = ((grub_be_to_cpu64 (proto_addr->ipv6[1]) >> 16) & 0xff);
+      hw_addr->mac[4] = ((grub_be_to_cpu64 (proto_addr->ipv6[1]) >> 8) & 0xff);
+      hw_addr->mac[5] = ((grub_be_to_cpu64 (proto_addr->ipv6[1]) >> 0) & 0xff);
+      return GRUB_ERR_NONE;
+    }
+
+
+
+  /* Check cache table.  */
+  entry = link_layer_find_entry (proto_addr, inf->card);
+  if (entry)
+    {
+      *hw_addr = entry->ll_address;
+      return GRUB_ERR_NONE;
+    }
+  switch (proto_addr->type)
+    {
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
+      err = grub_net_arp_send_request (inf, proto_addr);
+      break;
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
+      err = grub_net_icmp6_send_request (inf, proto_addr);
+      break;
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
+      return grub_error (GRUB_ERR_BUG, "shouldn't reach here");
+    default:
+      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			 "unsupported address type %d", proto_addr->type);
+    }
+  if (err)
+    return err;
+  entry = link_layer_find_entry (proto_addr, inf->card);
+  if (entry)
+    {
+      *hw_addr = entry->ll_address;
+      return GRUB_ERR_NONE;
+    }
+  return grub_error (GRUB_ERR_TIMEOUT, 
+		     "timeout: could not resolve hardware address");
+}
 
 void
 grub_net_card_unregister (struct grub_net_card *card)

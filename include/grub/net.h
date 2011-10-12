@@ -105,6 +105,8 @@ struct grub_net_slaac_mac_list
   char *name;
 };
 
+struct grub_net_link_layer_entry;
+
 struct grub_net_card
 {
   struct grub_net_card *next;
@@ -118,6 +120,8 @@ struct grub_net_card
   grub_uint64_t last_poll;
   grub_size_t mtu;
   struct grub_net_slaac_mac_list *slaac_list;
+  grub_ssize_t new_ll_entry;
+  struct grub_net_link_layer_entry *link_layer_table;
   union
   {
 #ifdef GRUB_MACHINE_EFI
@@ -454,6 +458,19 @@ grub_net_network_level_interface_unregister (struct grub_net_network_level_inter
 
 void
 grub_net_tcp_retransmit (void);
+
+void
+grub_net_link_layer_add_address (struct grub_net_card *card,
+				 const grub_net_network_level_address_t *nl,
+				 const grub_net_link_level_address_t *ll,
+				 int override);
+int
+grub_net_link_layer_resolve_check (struct grub_net_network_level_interface *inf,
+				   const grub_net_network_level_address_t *proto_addr);
+grub_err_t
+grub_net_link_layer_resolve (struct grub_net_network_level_interface *inf,
+			     const grub_net_network_level_address_t *proto_addr,
+			     grub_net_link_level_address_t *hw_addr);
 
 extern char *grub_net_default_server;
 

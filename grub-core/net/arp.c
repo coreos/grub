@@ -46,41 +46,10 @@ struct arphdr {
 } __attribute__ ((packed));
 
 
-struct arp_entry {
-  int avail;
-  grub_net_network_level_address_t nl_address;
-  grub_net_link_level_address_t ll_address;
-};
-
-static struct arp_entry arp_table[10];
-static grub_int8_t new_table_entry = -1;
-
-static void
-arp_init_table (void)
-{
-  grub_memset (arp_table, 0, sizeof (arp_table));
-  new_table_entry = 0;
-}
-
-static struct arp_entry *
-arp_find_entry (const grub_net_network_level_address_t *proto)
-{
-  unsigned i;
-  for (i = 0; i < ARRAY_SIZE (arp_table); i++)
-    {
-      if (arp_table[i].avail == 1 &&
-	  grub_net_addr_cmp (&arp_table[i].nl_address, proto) == 0)
-	return &(arp_table[i]);
-    }
-  return NULL;
-}
-
 grub_err_t
-grub_net_arp_resolve (struct grub_net_network_level_interface *inf,
-		      const grub_net_network_level_address_t *proto_addr,
-		      grub_net_link_level_address_t *hw_addr)
+grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
+			   const grub_net_network_level_address_t *proto_addr)
 {
-  struct arp_entry *entry;
   struct grub_net_buff nb;
   struct arphdr *arp_header;
   grub_net_link_level_address_t target_hw_addr;
@@ -90,31 +59,10 @@ grub_net_arp_resolve (struct grub_net_network_level_interface *inf,
   grub_size_t addrlen;
   grub_uint16_t etherpro;
 
-  if (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
-      && proto_addr->ipv4 == 0xffffffff)
-    {
-      hw_addr->type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
-      grub_memset (hw_addr->mac, -1, 6);
-      return GRUB_ERR_NONE;
-    }
-
-  /* Check cache table.  */
-  entry = arp_find_entry (proto_addr);
-  if (entry)
-    {
-      *hw_addr = entry->ll_address;
-      return GRUB_ERR_NONE;
-    }
-
   if (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
     {
       addrlen = 4;
       etherpro = GRUB_NET_ETHERTYPE_IP;
-    }
-  else if (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6)
-    {
-      addrlen = 16;
-      etherpro = GRUB_NET_ETHERTYPE_IP6;
     }
   else
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "unsupported address family");
@@ -141,45 +89,39 @@ grub_net_arp_resolve (struct grub_net_network_level_interface *inf,
 
   aux += 6;
   /* Sender protocol address */
-  if (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
-    grub_memcpy (aux, &inf->address.ipv4, 4);
-  else
-    grub_memcpy (aux, &inf->address.ipv6, 16);
+  grub_memcpy (aux, &inf->address.ipv4, 4);
   aux += addrlen;
   /* Target hardware address */
   for (i = 0; i < 6; i++)
     aux[i] = 0x00;
   aux += 6;
   /* Target protocol address */
-  if (proto_addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
-    grub_memcpy (aux, &proto_addr->ipv4, 4);
-  else
-    grub_memcpy (aux, &proto_addr->ipv6, 16);
+  grub_memcpy (aux, &proto_addr->ipv4, 4);
   grub_memset (&target_hw_addr.mac, 0xff, 6);
 
   send_ethernet_packet (inf, &nb, target_hw_addr, GRUB_NET_ETHERTYPE_ARP);
   for (i = 0; i < GRUB_NET_TRIES; i++)
     {
-      entry = arp_find_entry (proto_addr);
-      if (entry)
-	{
-	  grub_memcpy (hw_addr, &entry->ll_address, sizeof (*hw_addr));
-	  return GRUB_ERR_NONE;
-	}
+      if (grub_net_link_layer_resolve_check (inf, proto_addr))
+	return GRUB_ERR_NONE;
       grub_net_poll_cards (GRUB_NET_INTERVAL);
+      if (grub_net_link_layer_resolve_check (inf, proto_addr))
+	return GRUB_ERR_NONE;
+      send_ethernet_packet (inf, &nb, target_hw_addr, GRUB_NET_ETHERTYPE_ARP);
     }
 
-  return grub_error (GRUB_ERR_TIMEOUT, "timeout: could not resolve hardware address");
+  return GRUB_ERR_NONE;
 }
 
 grub_err_t
-grub_net_arp_receive (struct grub_net_buff *nb)
+grub_net_arp_receive (struct grub_net_buff *nb,
+		      struct grub_net_card *card)
 {
   struct arphdr *arp_header = (struct arphdr *) nb->data;
-  struct arp_entry *entry;
   grub_uint8_t *sender_hardware_address;
   grub_uint8_t *target_hardware_address;
   grub_net_network_level_address_t sender_addr, target_addr;
+  grub_net_link_level_address_t sender_hw_addr;
   struct grub_net_network_level_interface *inf;
   grub_uint8_t *sender_protocol_address, *target_protocol_address;
 
@@ -196,35 +138,13 @@ grub_net_arp_receive (struct grub_net_buff *nb)
       grub_memcpy (&sender_addr.ipv4, sender_protocol_address, 4);
       grub_memcpy (&target_addr.ipv4, target_protocol_address, 4);
     }
-  else if (grub_be_to_cpu16 (arp_header->pro) == GRUB_NET_ETHERTYPE_IP6 
-	   && arp_header->pln == 16)
-    {
-      sender_addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
-      target_addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-      grub_memcpy (&sender_addr.ipv6, sender_protocol_address, 16);
-      grub_memcpy (&target_addr.ipv6, target_protocol_address, 16);
-    }
   else
     return GRUB_ERR_NONE;
-    
-  /* Check if the sender is in the cache table.  */
-  entry = arp_find_entry (&sender_addr);
-  /* Update sender hardware address.  */
-  if (entry)
-    grub_memcpy (entry->ll_address.mac, sender_hardware_address, 6);
-  else
-    {
-      /* Add sender to cache table.  */
-      if (new_table_entry == -1)
-	arp_init_table ();
-      entry = &(arp_table[new_table_entry]);
-      entry->avail = 1;
-      entry->nl_address = sender_addr;
-      grub_memcpy (entry->ll_address.mac, sender_hardware_address, 6);
-      new_table_entry++;
-      if (new_table_entry == ARRAY_SIZE (arp_table))
-	new_table_entry = 0;
-    }
+
+  sender_hw_addr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+  grub_memcpy (sender_hw_addr.mac, &sender_hardware_address,
+	       sizeof (sender_hw_addr.mac));
+  grub_net_link_layer_add_address (card, &sender_addr, &sender_hw_addr, 1);
 
   FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
   {

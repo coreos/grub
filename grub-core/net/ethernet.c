@@ -80,8 +80,8 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
 }
 
 grub_err_t
-grub_net_recv_ethernet_packet (struct grub_net_buff * nb,
-			       struct grub_net_card * card)
+grub_net_recv_ethernet_packet (struct grub_net_buff *nb,
+			       struct grub_net_card *card)
 {
   struct etherhdr *eth;
   struct llchdr *llch;
@@ -118,7 +118,7 @@ grub_net_recv_ethernet_packet (struct grub_net_buff * nb,
     {
       /* ARP packet. */
     case GRUB_NET_ETHERTYPE_ARP:
-      grub_net_arp_receive (nb);
+      grub_net_arp_receive (nb, card);
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
       /* IP packet.  */

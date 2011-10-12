@@ -64,7 +64,8 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 			    struct grub_net_card *card,
 			    struct grub_net_network_level_interface *inf,
 			    const grub_net_network_level_address_t *source,
-			    const grub_net_network_level_address_t *dest);
+			    const grub_net_network_level_address_t *dest,
+			    grub_uint8_t ttl);
 grub_err_t
 grub_net_recv_udp_packet (struct grub_net_buff *nb,
 			  struct grub_net_network_level_interface *inf,
@@ -83,5 +84,8 @@ grub_net_ip_transport_checksum (struct grub_net_buff *nb,
 struct grub_net_network_level_interface *
 grub_net_ipv6_get_link_local (struct grub_net_card *card,
 			      const grub_net_link_level_address_t *hwaddr);
+grub_err_t
+grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
+			     const grub_net_network_level_address_t *proto_addr);
 
 #endif 
