@@ -130,7 +130,7 @@ grub_net_configure_by_dhcp_ack (const char *name,
 	       : sizeof (hwaddr.mac));
   hwaddr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
-  inter = grub_net_add_addr (name, card, addr, hwaddr, flags);
+  inter = grub_net_add_addr (name, card, &addr, &hwaddr, flags);
   if (bp->gateway_ip)
     {
       grub_net_network_level_netaddress_t target;
@@ -379,6 +379,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 		     "unrecognised format specification %s", args[3]);
 }
 
+/* FIXME: allow to specify mac address.  */
 static grub_err_t
 grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 		int argc, char **args)

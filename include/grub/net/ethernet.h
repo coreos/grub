@@ -36,6 +36,6 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
 		      grub_net_ethertype_t ethertype);
 grub_err_t 
 grub_net_recv_ethernet_packet (struct grub_net_buff *nb,
-			       const struct grub_net_card *card);
+			       struct grub_net_card *card);
 
 #endif 

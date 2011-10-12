@@ -27,6 +27,7 @@
 #include <grub/command.h>
 #include <grub/env.h>
 #include <grub/net/ethernet.h>
+#include <grub/net/ip.h>
 #include <grub/loader.h>
 #include <grub/bufio.h>
 #include <grub/kernel.h>
@@ -72,6 +73,151 @@ grub_net_card_unregister (struct grub_net_card *card)
 		    GRUB_AS_LIST (card));
 }
 
+static struct grub_net_slaac_mac_list *
+grub_net_ipv6_get_slaac (struct grub_net_card *card,
+			 const grub_net_link_level_address_t *hwaddr)
+{
+  struct grub_net_slaac_mac_list *slaac;
+  char *ptr;
+
+  for (slaac = card->slaac_list; slaac; slaac = slaac->next)
+    if (grub_net_hwaddr_cmp (&slaac->address, hwaddr) == 0)
+      return slaac;
+
+  slaac = grub_zalloc (sizeof (*slaac));
+  if (!slaac)
+    return NULL;
+
+  slaac->name = grub_malloc (grub_strlen (card->name)
+			     + GRUB_NET_MAX_STR_HWADDR_LEN
+			     + sizeof (":slaac"));
+  ptr = grub_stpcpy (slaac->name, card->name);
+  if (grub_net_hwaddr_cmp (&card->default_address, hwaddr) != 0)
+    {
+      ptr = grub_stpcpy (ptr, ":");
+      grub_net_hwaddr_to_str (hwaddr, ptr);
+      ptr += grub_strlen (ptr);
+    }
+  ptr = grub_stpcpy (ptr, ":slaac");
+
+  grub_memcpy (&slaac->address, hwaddr, sizeof (slaac->address));
+  slaac->next = card->slaac_list;
+  card->slaac_list = slaac;
+  return slaac;
+}
+
+struct grub_net_network_level_interface *
+grub_net_ipv6_get_link_local (struct grub_net_card *card,
+			      const grub_net_link_level_address_t *hwaddr)
+{
+  struct grub_net_network_level_interface *inf;
+  char name[grub_strlen (card->name)
+	    + GRUB_NET_MAX_STR_HWADDR_LEN
+	    + sizeof (":link")];
+  char *ptr;
+  grub_net_network_level_address_t addr;
+
+  addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
+  addr.ipv6[0] = grub_cpu_to_be64 (0xfe80ULL << 48);
+  addr.ipv6[1] = grub_net_ipv6_get_id (hwaddr);
+
+  FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
+  {
+    if (inf->card == card
+	&& grub_net_hwaddr_cmp (&inf->hwaddress, hwaddr) == 0
+	&& grub_net_addr_cmp (&inf->address, &addr) == 0)
+      return inf;
+  }
+
+  ptr = grub_stpcpy (name, card->name);
+  if (grub_net_hwaddr_cmp (&card->default_address, hwaddr) != 0)
+    {
+      ptr = grub_stpcpy (ptr, ":");
+      grub_net_hwaddr_to_str (hwaddr, ptr);
+      ptr += grub_strlen (ptr);
+    }
+  ptr = grub_stpcpy (ptr, ":link");
+  return grub_net_add_addr (name, card, &addr, hwaddr, 0);
+}
+
+/* FIXME: allow to specify mac address.  */
+static grub_err_t
+grub_cmd_ipv6_autoconf (struct grub_command *cmd __attribute__ ((unused)),
+			int argc, char **args)
+{
+  struct grub_net_card *card;
+  struct grub_net_network_level_interface **ifaces;
+  grub_size_t ncards = 0;
+  unsigned j = 0;
+  int interval;
+  grub_err_t err;
+  struct grub_net_slaac_mac_list **slaacs;
+
+  FOR_NET_CARDS (card)
+  {
+    if (argc > 0 && grub_strcmp (card->name, args[0]) != 0)
+      continue;
+    ncards++;
+  }
+
+  ifaces = grub_zalloc (ncards * sizeof (ifaces[0]));
+  slaacs = grub_zalloc (ncards * sizeof (slaacs[0]));
+  if (!ifaces || !slaacs)
+    {
+      grub_free (ifaces);
+      grub_free (slaacs);
+      return grub_errno;
+    }
+
+  FOR_NET_CARDS (card)
+  {
+    if (argc > 0 && grub_strcmp (card->name, args[0]) != 0)
+      continue;
+    ifaces[j] = grub_net_ipv6_get_link_local (card, &card->default_address);
+    if (!ifaces[j])
+      {
+	grub_free (ifaces);
+	grub_free (slaacs);
+	return grub_errno;
+      }
+    slaacs[j] = grub_net_ipv6_get_slaac (card, &card->default_address);
+    if (!slaacs[j])
+      {
+	grub_free (ifaces);
+	grub_free (slaacs);
+	return grub_errno;
+      }
+    j++;
+  }
+
+  for (interval = 200; interval < 10000; interval *= 2)
+    {
+      /* FIXME: send router solicitation.  */
+      int done = 1;
+      for (j = 0; j < ncards; j++)
+	{
+	  if (slaacs[j]->slaac_counter)
+	    continue;
+	  done = 0;
+	}
+      if (done)
+	break;
+      grub_net_poll_cards (interval);
+    }
+
+  err = GRUB_ERR_NONE;
+  for (j = 0; j < ncards; j++)
+    {
+      if (slaacs[j]->slaac_counter)
+	continue;
+      err = grub_error (GRUB_ERR_FILE_NOT_FOUND, "couldn't configure %s",
+			ifaces[j]->card->name);
+    }
+
+  grub_free (ifaces);
+  grub_free (slaacs);
+  return err;
+}
 
 static inline void
 grub_net_route_register (struct grub_net_route *route)
@@ -265,20 +411,22 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target, char *buf)
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
       {
 	char *ptr = buf;
-	grub_uint32_t n = grub_be_to_cpu32 (target->ipv6[0]);
+	grub_uint64_t n = grub_be_to_cpu64 (target->ipv6[0]);
 	int i;
 	for (i = 0; i < 4; i++)
 	  {
-	    grub_snprintf (ptr, 6, "%x:", (n >> (48 - 16 * i)) & 0xffff);
+	    grub_snprintf (ptr, 6, "%" PRIxGRUB_UINT64_T ":",
+			   (n >> (48 - 16 * i)) & 0xffff);
 	    ptr += grub_strlen (ptr); 
 	  }
-	n  = grub_be_to_cpu32 (target->ipv6[1]);
+	n  = grub_be_to_cpu64 (target->ipv6[1]);
 	for (i = 0; i < 3; i++)
 	  {
-	    grub_snprintf (ptr, 6, "%x:", (n >> (48 - 16 * i)) & 0xffff);
+	    grub_snprintf (ptr, 6, "%" PRIxGRUB_UINT64_T ":",
+			   (n >> (48 - 16 * i)) & 0xffff);
 	    ptr += grub_strlen (ptr); 
 	  }
-	grub_snprintf (ptr, 5, "%x", n & 0xffff);
+	grub_snprintf (ptr, 5, "%" PRIxGRUB_UINT64_T, n & 0xffff);
 	return;
       }
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
@@ -290,18 +438,13 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target, char *buf)
       }
       return;
     }
-  grub_printf ("Unknown address type %d\n", target->type);
+  grub_snprintf (buf, GRUB_NET_MAX_STR_ADDR_LEN,
+		 "Unknown address type %d", target->type);
 }
 
-/*
-  Currently suppoerted adresses:
-  ethernet:   XX:XX:XX:XX:XX:XX
- */
 
-#define MAX_STR_HWADDR_LEN (sizeof ("XX:XX:XX:XX:XX:XX"))
-
-static void
-hwaddr_to_str (const grub_net_link_level_address_t *addr, char *str)
+void
+grub_net_hwaddr_to_str (const grub_net_link_level_address_t *addr, char *str)
 {
   str[0] = 0;
   switch (addr->type)
@@ -312,7 +455,7 @@ hwaddr_to_str (const grub_net_link_level_address_t *addr, char *str)
 	unsigned i;
 	for (ptr = str, i = 0; i < ARRAY_SIZE (addr->mac); i++)
 	  {
-	    grub_snprintf (ptr, MAX_STR_HWADDR_LEN - (ptr - str),
+	    grub_snprintf (ptr, GRUB_NET_MAX_STR_HWADDR_LEN - (ptr - str),
 			   "%02x:", addr->mac[i] & 0xff);
 	    ptr += (sizeof ("XX:") - 1);
 	  }
@@ -380,9 +523,9 @@ static void
 grub_net_network_level_interface_register (struct grub_net_network_level_interface *inter)
 {
   {
-    char buf[MAX_STR_HWADDR_LEN];
+    char buf[GRUB_NET_MAX_STR_HWADDR_LEN];
     char name[grub_strlen (inter->name) + sizeof ("net__mac")];
-    hwaddr_to_str (&inter->hwaddress, buf);
+    grub_net_hwaddr_to_str (&inter->hwaddress, buf);
     grub_snprintf (name, sizeof (name), "net_%s_mac", inter->name);
     grub_env_set (name, buf);
     grub_register_variable_hook (name, 0, hwaddr_set_env);
@@ -408,8 +551,8 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
 struct grub_net_network_level_interface *
 grub_net_add_addr (const char *name, 
 		   struct grub_net_card *card,
-		   grub_net_network_level_address_t addr,
-		   grub_net_link_level_address_t hwaddress,
+		   const grub_net_network_level_address_t *addr,
+		   const grub_net_link_level_address_t *hwaddress,
 		   grub_net_interface_flags_t flags)
 {
   struct grub_net_network_level_interface *inter;
@@ -419,8 +562,8 @@ grub_net_add_addr (const char *name,
     return NULL;
 
   inter->name = grub_strdup (name);
-  grub_memcpy (&(inter->address), &addr, sizeof (inter->address));
-  grub_memcpy (&(inter->hwaddress), &hwaddress, sizeof (inter->hwaddress));
+  grub_memcpy (&(inter->address), addr, sizeof (inter->address));
+  grub_memcpy (&(inter->hwaddress), hwaddress, sizeof (inter->hwaddress));
   inter->flags = flags;
   inter->card = card;
   inter->dhcp_ack = NULL;
@@ -428,10 +571,10 @@ grub_net_add_addr (const char *name,
 
   grub_net_network_level_interface_register (inter);
 
-  if (addr.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
+  if (addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
     {
       int mask = -1;
-      grub_uint32_t ip_cpu = grub_be_to_cpu32 (addr.ipv4);
+      grub_uint32_t ip_cpu = grub_be_to_cpu32 (addr->ipv4);
       if (!(ip_cpu & 0x80000000))
 	mask = 8;
       else if (!(ip_cpu & 0x40000000))
@@ -498,7 +641,7 @@ grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
   if (card->flags & GRUB_NET_CARD_HWADDRESS_IMMUTABLE)
     flags |= GRUB_NET_INTERFACE_HWADDRESS_IMMUTABLE;
 
-  grub_net_add_addr (args[0], card, addr, card->default_address,
+  grub_net_add_addr (args[0], card, &addr, &card->default_address,
 		     flags);
   return grub_errno;
 }
@@ -685,8 +828,8 @@ grub_cmd_listcards (struct grub_command *cmd __attribute__ ((unused)),
   struct grub_net_card *card;
   FOR_NET_CARDS(card)
   {
-    char buf[MAX_STR_HWADDR_LEN];
-    hwaddr_to_str (&card->default_address, buf);
+    char buf[GRUB_NET_MAX_STR_HWADDR_LEN];
+    grub_net_hwaddr_to_str (&card->default_address, buf);
     grub_printf ("%s %s\n", card->name, buf);
   }
   return GRUB_ERR_NONE;
@@ -700,9 +843,9 @@ grub_cmd_listaddrs (struct grub_command *cmd __attribute__ ((unused)),
   struct grub_net_network_level_interface *inf;
   FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
   {
-    char bufh[MAX_STR_HWADDR_LEN];
+    char bufh[GRUB_NET_MAX_STR_HWADDR_LEN];
     char bufn[GRUB_NET_MAX_STR_ADDR_LEN];
-    hwaddr_to_str (&inf->hwaddress, bufh);
+    grub_net_hwaddr_to_str (&inf->hwaddress, bufh);
     grub_net_addr_to_str (&inf->address, bufn);
     grub_printf ("%s %s %s\n", inf->name, bufh, bufn);
   }
@@ -1060,13 +1203,18 @@ static void *fini_hnd;
 
 static grub_command_t cmd_addaddr, cmd_deladdr, cmd_addroute, cmd_delroute;
 static grub_command_t cmd_lsroutes, cmd_lscards;
-static grub_command_t cmd_lsaddr;
+static grub_command_t cmd_lsaddr, cmd_slaac;
 
 GRUB_MOD_INIT(net)
 {
   cmd_addaddr = grub_register_command ("net_add_addr", grub_cmd_addaddr,
 				       "SHORTNAME CARD ADDRESS [HWADDRESS]",
 				       N_("Add a network address."));
+  cmd_slaac = grub_register_command ("net_ipv6_autoconf",
+				     grub_cmd_ipv6_autoconf,
+				     "[CARD [HWADDRESS]]",
+				     N_("Perform an IPV6 autoconfiguration"));
+
   cmd_deladdr = grub_register_command ("net_del_addr", grub_cmd_deladdr,
 				       "SHORTNAME",
 				       N_("Delete a network address."));
@@ -1102,6 +1250,7 @@ GRUB_MOD_FINI(net)
   grub_unregister_command (cmd_lsroutes);
   grub_unregister_command (cmd_lscards);
   grub_unregister_command (cmd_lsaddr);
+  grub_unregister_command (cmd_slaac);
   grub_fs_unregister (&grub_net_fs);
   grub_net_open = NULL;
   grub_net_fini_hw (0);

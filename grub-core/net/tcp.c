@@ -695,6 +695,13 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
   grub_net_tcp_socket_t sock;
   grub_err_t err;
 
+  /* Ignore broadcast.  */
+  if (!inf)
+    {
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
+
   tcph = (struct tcphdr *) nb->data;
   if ((grub_be_to_cpu16 (tcph->flags) >> 12) < 5)
     {

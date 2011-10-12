@@ -97,6 +97,14 @@ typedef struct grub_net_packets
 #include <grub/efi/api.h>
 #endif
 
+struct grub_net_slaac_mac_list
+{
+  struct grub_net_slaac_mac_list *next;
+  grub_net_link_level_address_t address;
+  int slaac_counter;
+  char *name;
+};
+
 struct grub_net_card
 {
   struct grub_net_card *next;
@@ -109,6 +117,7 @@ struct grub_net_card
   unsigned idle_poll_delay_ms;
   grub_uint64_t last_poll;
   grub_size_t mtu;
+  struct grub_net_slaac_mac_list *slaac_list;
   union
   {
 #ifdef GRUB_MACHINE_EFI
@@ -282,8 +291,8 @@ grub_net_session_recv (struct grub_net_session *session, void *buf,
 struct grub_net_network_level_interface *
 grub_net_add_addr (const char *name,
 		   struct grub_net_card *card,
-		   grub_net_network_level_address_t addr,
-		   grub_net_link_level_address_t hwaddress,
+		   const grub_net_network_level_address_t *addr,
+		   const grub_net_link_level_address_t *hwaddress,
 		   grub_net_interface_flags_t flags);
 
 extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
@@ -404,13 +413,22 @@ grub_net_addr_cmp (const grub_net_network_level_address_t *a,
 /*
   Currently supported adresses:
   IPv4:   XXX.XXX.XXX.XXX
-  IPv&:   XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX
+  IPv6:   XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX
  */
 #define GRUB_NET_MAX_STR_ADDR_LEN sizeof ("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")
+
+/*
+  Currently suppoerted adresses:
+  ethernet:   XX:XX:XX:XX:XX:XX
+ */
+
+#define GRUB_NET_MAX_STR_HWADDR_LEN (sizeof ("XX:XX:XX:XX:XX:XX"))
 
 void
 grub_net_addr_to_str (const grub_net_network_level_address_t *target,
 		      char *buf);
+void
+grub_net_hwaddr_to_str (const grub_net_link_level_address_t *addr, char *str);
 
 extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
 #define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)

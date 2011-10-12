@@ -1603,6 +1603,7 @@ module = {
   common = net/udp.c;
   common = net/tcp.c;
   common = net/icmp.c;
+  common = net/icmp6.c;
   common = net/ethernet.c;
   common = net/arp.c;
   common = net/netbuff.c;

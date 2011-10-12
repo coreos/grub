@@ -25,13 +25,13 @@ struct icmp_header
   grub_uint8_t type;
   grub_uint8_t code;
   grub_uint16_t checksum;
-};
+} __attribute__ ((packed));
 
 struct ping_header
 {
   grub_uint16_t id;
   grub_uint16_t seq;
-};
+} __attribute__ ((packed));
 
 enum
   {
@@ -40,7 +40,7 @@ enum
   };
 
 grub_err_t
-grub_net_recv_icmp_packet (struct grub_net_buff * nb,
+grub_net_recv_icmp_packet (struct grub_net_buff *nb,
 			   struct grub_net_network_level_interface *inf,
 			   const grub_net_network_level_address_t *src)
 {
@@ -48,15 +48,28 @@ grub_net_recv_icmp_packet (struct grub_net_buff * nb,
   grub_err_t err;
   grub_uint16_t checksum;
 
+  /* Ignore broadcast.  */
+  if (!inf)
+    {
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
+
   icmph = (struct icmp_header *) nb->data;
 
   if (nb->tail - nb->data < (grub_ssize_t) sizeof (*icmph))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "ICMP packet too small");
+    {
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
 
   checksum = icmph->checksum;
   icmph->checksum = 0;
   if (checksum != grub_net_ip_chksum (nb->data, nb->tail - nb->data))
-    return GRUB_ERR_NONE;
+    {
+      icmph->checksum = checksum;
+      return GRUB_ERR_NONE;
+    }
   icmph->checksum = checksum;
 
   err = grub_netbuff_pull (nb, sizeof (*icmph));

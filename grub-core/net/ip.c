@@ -221,7 +221,7 @@ grub_net_send_ip4_packet (struct grub_net_network_level_interface * inf,
 
 static grub_err_t
 handle_dgram (struct grub_net_buff *nb,
-	      const struct grub_net_card *card,
+	      struct grub_net_card *card,
 	      const grub_net_link_level_address_t *hwaddress,
 	      grub_net_ip_protocol_t proto,
 	      const grub_net_network_level_address_t *source,
@@ -282,8 +282,12 @@ handle_dgram (struct grub_net_buff *nb,
       break;
   }
  
-  if (!inf)
+  if (!inf && !(dest->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6
+		&& dest->ipv6[0] == grub_be_to_cpu64 (0xff02ULL << 48)
+		&& dest->ipv6[1] == grub_be_to_cpu64 (1)))
     {
+      grub_dprintf ("net", "undirected dgram discarded: %x, %lx, %lx\n",
+		    dest->type, dest->ipv6[0], dest->ipv6[1]);
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
     }
@@ -296,6 +300,8 @@ handle_dgram (struct grub_net_buff *nb,
       return grub_net_recv_tcp_packet (nb, inf, source);
     case GRUB_NET_IP_ICMP:
       return grub_net_recv_icmp_packet (nb, inf, source);
+    case GRUB_NET_IP_ICMPV6:
+      return grub_net_recv_icmp6_packet (nb, card, inf, source, dest);
     default:
       grub_netbuff_free (nb);
       break;
@@ -330,9 +336,9 @@ free_old_fragments (void)
       }
 }
 
-grub_err_t
+static grub_err_t
 grub_net_recv_ip4_packets (struct grub_net_buff * nb,
-			   const struct grub_net_card * card,
+			   struct grub_net_card * card,
 			   const grub_net_link_level_address_t * hwaddress)
 {
   struct iphdr *iph = (struct iphdr *) nb->data;
@@ -590,12 +596,11 @@ grub_net_send_ip_packet (struct grub_net_network_level_interface * inf,
     default:
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "not an IP");
     }
-
 }
 
-grub_err_t
+static grub_err_t
 grub_net_recv_ip6_packets (struct grub_net_buff * nb,
-			   const struct grub_net_card * card,
+			   struct grub_net_card * card,
 			   const grub_net_link_level_address_t * hwaddress)
 {
   struct ip6hdr *iph = (struct ip6hdr *) nb->data;
@@ -652,8 +657,24 @@ grub_net_recv_ip6_packets (struct grub_net_buff * nb,
   source.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
   dest.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
   grub_memcpy (source.ipv6, &iph->src, sizeof (source.ipv6));
-  grub_memcpy (dest.ipv6, &iph->src, sizeof (dest.ipv6));
+  grub_memcpy (dest.ipv6, &iph->dest, sizeof (dest.ipv6));
 
   return handle_dgram (nb, card, hwaddress, iph->protocol,
 		       &source, &dest);
+}
+
+grub_err_t
+grub_net_recv_ip_packets (struct grub_net_buff * nb,
+			  struct grub_net_card * card,
+			  const grub_net_link_level_address_t * hwaddress)
+{
+  struct iphdr *iph = (struct iphdr *) nb->data;
+
+  if ((iph->verhdrlen >> 4) == 4)
+    return grub_net_recv_ip4_packets (nb, card, hwaddress);
+  if ((iph->verhdrlen >> 4) == 6)
+    return grub_net_recv_ip6_packets (nb, card, hwaddress);
+  grub_dprintf ("net", "Bad IP version: %d\n", (iph->verhdrlen >> 4));
+  grub_netbuff_free (nb);
+  return GRUB_ERR_NONE;
 }

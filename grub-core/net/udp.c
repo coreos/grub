@@ -140,6 +140,13 @@ grub_net_recv_udp_packet (struct grub_net_buff *nb,
   grub_net_udp_socket_t sock;
   grub_err_t err;
 
+  /* Ignore broadcast.  */
+  if (!inf)
+    {
+      grub_netbuff_free (nb);
+      return GRUB_ERR_NONE;
+    }
+
   udph = (struct udphdr *) nb->data;
   if (nb->tail - nb->data < (grub_ssize_t) sizeof (*udph))
     {

@@ -81,7 +81,7 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
 
 grub_err_t
 grub_net_recv_ethernet_packet (struct grub_net_buff * nb,
-			       const struct grub_net_card * card)
+			       struct grub_net_card * card)
 {
   struct etherhdr *eth;
   struct llchdr *llch;
@@ -123,11 +123,8 @@ grub_net_recv_ethernet_packet (struct grub_net_buff * nb,
       return GRUB_ERR_NONE;
       /* IP packet.  */
     case GRUB_NET_ETHERTYPE_IP:
-      grub_net_recv_ip4_packets (nb, card, &hwaddress);
-      return GRUB_ERR_NONE;
     case GRUB_NET_ETHERTYPE_IP6:
-      grub_net_recv_ip4_packets (nb, card, &hwaddress);
-      return GRUB_ERR_NONE;
+      return grub_net_recv_ip_packets (nb, card, &hwaddress);
     }
   grub_netbuff_free (nb);
   return GRUB_ERR_NONE;
