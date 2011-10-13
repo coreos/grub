@@ -35,6 +35,8 @@ grub_net_tcp_open (char *server,
 					    void *data),
 		   void (*error_hook) (grub_net_tcp_socket_t sock,
 				       void *data),
+		   void (*fin_hook) (grub_net_tcp_socket_t sock,
+				     void *data),
 		   void *hook_data);
 
 grub_net_tcp_listen_t
@@ -70,6 +72,8 @@ grub_net_tcp_accept (grub_net_tcp_socket_t sock,
 					      void *data),
 		     void (*error_hook) (grub_net_tcp_socket_t sock,
 					 void *data),
+		     void (*fin_hook) (grub_net_tcp_socket_t sock,
+				       void *data),
 		     void *hook_data);
 
 #endif

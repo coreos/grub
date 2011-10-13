@@ -79,6 +79,22 @@ parse_dhcp_vendor (const char *name, void *vend, int limit)
 
       switch (tagtype)
 	{
+	case 3:
+	  if (taglength == 4)
+	    {
+	      grub_net_network_level_netaddress_t target;
+	      grub_net_network_level_address_t gw;
+	      char rname[grub_strlen (name) + sizeof (":default")];
+	      
+	      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+	      target.ipv4.base = 0;
+	      target.ipv4.masksize = 0;
+	      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+	      grub_memcpy (&gw.ipv4, ptr, sizeof (gw.ipv4));
+	      grub_snprintf (rname, sizeof (rname), "%s:default", name);
+	      grub_net_add_route_gw (rname, target, gw);
+	    }
+	  break;
 	case 12:
 	  set_env_limn_ro (name, "hostname", (char *) ptr, taglength);
 	  break;

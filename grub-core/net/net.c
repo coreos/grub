@@ -469,6 +469,8 @@ match_net (const grub_net_network_level_netaddress_t *net,
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
 	grub_uint32_t mask = (0xffffffffU << (32 - net->ipv4.masksize));
+	if (net->ipv4.masksize == 0)
+	  mask = 0;
 	return ((grub_be_to_cpu32 (net->ipv4.base) & mask)
 		== (grub_be_to_cpu32 (addr->ipv4) & mask));
       }
@@ -554,6 +556,39 @@ grub_net_resolve_net_address (const char *name,
 		     name);
 }
 
+static int
+route_cmp (const struct grub_net_route *a, const struct grub_net_route *b)
+{
+  if (a == NULL && b == NULL)
+    return 0;
+  if (b == NULL)
+    return +1;
+  if (a == NULL)
+    return -1;
+  if (a->target.type < b->target.type)
+    return -1;
+  if (a->target.type > b->target.type)
+    return +1;
+  switch (a->target.type)
+    {
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
+      break;
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
+      if (a->target.ipv6.masksize > b->target.ipv6.masksize)
+	return +1;
+      if (a->target.ipv6.masksize < b->target.ipv6.masksize)
+	return -1;
+      break;
+    case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
+      if (a->target.ipv4.masksize > b->target.ipv4.masksize)
+	return +1;
+      if (a->target.ipv4.masksize < b->target.ipv4.masksize)
+	return -1;
+      break;
+    }
+  return 0;
+}
+
 grub_err_t
 grub_net_route_address (grub_net_network_level_address_t addr,
 			grub_net_network_level_address_t *gateway,
@@ -572,25 +607,27 @@ grub_net_route_address (grub_net_network_level_address_t addr,
 
   for (depth = 0; depth < routecnt + 2; depth++)
     {
+      struct grub_net_route *bestroute = NULL;
       FOR_NET_ROUTES(route)
       {
 	if (depth && prot != route->prot)
 	  continue;
 	if (!match_net (&route->target, &curtarget))
 	  continue;
-
-	if (route->is_gateway)
-	  {
-	    if (depth == 0)
-	      *gateway = route->gw;
-	    curtarget = route->gw;
-	    break;
-	  }
-	*interf = route->interface;
-	return GRUB_ERR_NONE;
+	if (route_cmp (route, bestroute) > 0)
+	  bestroute = route;
       }
-      if (route == NULL)
+      if (bestroute == NULL)
 	return grub_error (GRUB_ERR_NET_NO_ROUTE, "destination unreachable");
+
+      if (!bestroute->is_gateway)
+	{
+	  *interf = bestroute->interface;
+	  return GRUB_ERR_NONE;
+	}
+      if (depth == 0)
+	*gateway = bestroute->gw;
+      curtarget = bestroute->gw;
     }
 
   return grub_error (GRUB_ERR_NET_ROUTE_LOOP, "route loop detected");
@@ -1285,6 +1322,7 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
   char *ptr = buf;
   grub_size_t amount, total = 0;
   int try = 0;
+
   while (try <= GRUB_NET_TRIES)
     {
       while (net->packs.first)
