@@ -47,23 +47,26 @@ grub_uint16_t grub_net_ip_chksum(void *ipv, grub_size_t len);
 grub_err_t
 grub_net_recv_ip_packets (struct grub_net_buff *nb,
 			  struct grub_net_card *card,
-			  const grub_net_link_level_address_t *hwaddress);
+			  const grub_net_link_level_address_t *hwaddress,
+			  const grub_net_link_level_address_t *src_hwaddress);
 
 grub_err_t
 grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
 			 const grub_net_network_level_address_t *target,
-			 const grub_net_network_level_address_t *gw,
+			 const grub_net_link_level_address_t *ll_target_addr,
 			 struct grub_net_buff *nb,
 			 grub_net_ip_protocol_t proto);
 
 grub_err_t 
 grub_net_recv_icmp_packet (struct grub_net_buff *nb,
 			   struct grub_net_network_level_interface *inf,
+			   const grub_net_link_level_address_t *ll_src,
 			   const grub_net_network_level_address_t *src);
 grub_err_t
 grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 			    struct grub_net_card *card,
 			    struct grub_net_network_level_interface *inf,
+			    const grub_net_link_level_address_t *ll_src,
 			    const grub_net_network_level_address_t *source,
 			    const grub_net_network_level_address_t *dest,
 			    grub_uint8_t ttl);

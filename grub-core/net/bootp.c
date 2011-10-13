@@ -458,6 +458,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	  struct grub_net_buff *nb;
 	  struct udphdr *udph;
 	  grub_net_network_level_address_t target;
+	  grub_net_link_level_address_t ll_target;
 
 	  if (!ifaces[j].prev)
 	    continue;
@@ -505,11 +506,15 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	  udph->len = grub_cpu_to_be16 (nb->tail - nb->data);
 	  target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
 	  target.ipv4 = 0xffffffff;
+	  err = grub_net_link_layer_resolve (&ifaces[j], &target, &ll_target);
+	  if (err)
+	    return err;
+
 	  udph->chksum = grub_net_ip_transport_checksum (nb, GRUB_NET_IP_UDP,
 							 &ifaces[j].address,
 							 &target);
 
-	  err = grub_net_send_ip_packet (&ifaces[j], &target, NULL, nb,
+	  err = grub_net_send_ip_packet (&ifaces[j], &target, &ll_target, nb,
 					 GRUB_NET_IP_UDP);
 	  grub_netbuff_free (nb);
 	  if (err)

@@ -70,7 +70,8 @@ struct grub_net_tcp_socket
   void (*error_hook) (grub_net_tcp_socket_t sock, void *recv);
   void (*fin_hook) (grub_net_tcp_socket_t sock, void *recv);
   void *hook_data;
-  grub_net_network_level_address_t out_nla, gw;
+  grub_net_network_level_address_t out_nla;
+  grub_net_link_level_address_t ll_target_addr;
   struct grub_net_network_level_interface *inf;
   grub_net_packets_t packs;
   grub_priority_queue_t pq;
@@ -218,7 +219,8 @@ tcp_send (struct grub_net_buff *nb, grub_net_tcp_socket_t socket)
     }
 
   err = grub_net_send_ip_packet (socket->inf, &(socket->out_nla),
-				 &(socket->gw),nb, GRUB_NET_IP_TCP);
+				 &(socket->ll_target_addr), nb,
+				 GRUB_NET_IP_TCP);
   if (err)
     return err;
   nb->data = nbd;
@@ -392,7 +394,7 @@ grub_net_tcp_retransmit (void)
 	  }
 
 	err = grub_net_send_ip_packet (sock->inf, &(sock->out_nla),
-				       &(sock->gw), unack->nb,
+				       &(sock->ll_target_addr), unack->nb,
 				       GRUB_NET_IP_TCP);
 	unack->nb->data = nbd;
 	if (err)
@@ -552,6 +554,7 @@ grub_net_tcp_open (char *server,
   struct tcphdr *tcph;
   int i;
   grub_uint8_t *nbd;
+  grub_net_link_level_address_t ll_target_addr;
 
   err = grub_net_resolve_address (server, &addr);
   if (err)
@@ -568,6 +571,10 @@ grub_net_tcp_open (char *server,
   if (err)
     return NULL;
 
+  err = grub_net_link_layer_resolve (inf, &gateway, &ll_target_addr);
+  if (err)
+    return NULL;
+
   socket = grub_zalloc (sizeof (*socket));
   if (socket == NULL)
     return NULL; 
@@ -575,7 +582,7 @@ grub_net_tcp_open (char *server,
   socket->out_port = out_port;
   socket->inf = inf;
   socket->out_nla = addr;
-  socket->gw = gateway;
+  socket->ll_target_addr = ll_target_addr;
   socket->in_port = in_port++;
   socket->recv_hook = recv_hook;
   socket->error_hook = error_hook;
@@ -629,7 +636,7 @@ grub_net_tcp_open (char *server,
       int j;
       nb->data = nbd;
       err = grub_net_send_ip_packet (socket->inf, &(socket->out_nla), 
-				     &(socket->gw), nb,
+				     &(socket->ll_target_addr), nb,
 				     GRUB_NET_IP_TCP);
       if (err)
 	{

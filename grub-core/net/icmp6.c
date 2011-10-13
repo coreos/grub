@@ -103,6 +103,7 @@ grub_err_t
 grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 			    struct grub_net_card *card,
 			    struct grub_net_network_level_interface *inf,
+			    const grub_net_link_level_address_t *ll_src,
 			    const grub_net_network_level_address_t *source,
 			    const grub_net_network_level_address_t *dest,
 			    grub_uint8_t ttl)
@@ -182,8 +183,7 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 							   GRUB_NET_IP_ICMPV6,
 							   &inf->address,
 							   source);
-	/* FIXME: gateway pings.  */
-	err = grub_net_send_ip_packet (inf, source, NULL, nb_reply,
+	err = grub_net_send_ip_packet (inf, source, ll_src, nb_reply,
 				       GRUB_NET_IP_ICMPV6);
 
       ping_fail:
@@ -289,7 +289,7 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 							   GRUB_NET_IP_ICMPV6,
 							   &inf->address,
 							   source);
-	err = grub_net_send_ip_packet (inf, source, NULL, nb_reply,
+	err = grub_net_send_ip_packet (inf, source, ll_src, nb_reply,
 				       GRUB_NET_IP_ICMPV6);
 
       ndp_fail:
@@ -444,6 +444,7 @@ grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
   struct neighbour_solicit *sol;
   struct icmp_header *icmphr;
   grub_net_network_level_address_t multicast;
+  grub_net_link_level_address_t ll_multicast;
   grub_uint8_t *nbd;
   multicast.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
   multicast.ipv6[0] = grub_be_to_cpu64_compile_time (0xff02ULL << 48);
@@ -451,6 +452,10 @@ grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
 		       | (proto_addr->ipv6[1]
 			  & grub_be_to_cpu64_compile_time (0xffffff)));
   
+  err = grub_net_link_layer_resolve (inf, &multicast, &ll_multicast);
+  if (err)
+    return err;
+
   nb = grub_netbuff_alloc (sizeof (struct neighbour_solicit)
 			   + sizeof (struct option_header)
 			   + 6
@@ -499,7 +504,7 @@ grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
 						     &inf->address,
 						     &multicast);
   nbd = nb->data;
-  err = grub_net_send_ip_packet (inf, &multicast, NULL, nb,
+  err = grub_net_send_ip_packet (inf, &multicast, &ll_multicast, nb,
 				 GRUB_NET_IP_ICMPV6);
   if (err)
     goto fail;
@@ -512,7 +517,7 @@ grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
       if (grub_net_link_layer_resolve_check (inf, proto_addr))
 	break;
       nb->data = nbd;
-      err = grub_net_send_ip_packet (inf, &multicast, NULL, nb,
+      err = grub_net_send_ip_packet (inf, &multicast, &ll_multicast, nb,
 				     GRUB_NET_IP_ICMPV6);
       if (err)
 	break;

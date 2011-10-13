@@ -42,6 +42,7 @@ enum
 grub_err_t
 grub_net_recv_icmp_packet (struct grub_net_buff *nb,
 			   struct grub_net_network_level_interface *inf,
+			   const grub_net_link_level_address_t *ll_src,
 			   const grub_net_network_level_address_t *src)
 {
   struct icmp_header *icmph;
@@ -106,8 +107,7 @@ grub_net_recv_icmp_packet (struct grub_net_buff *nb,
 	icmphr->checksum = 0;
 	icmphr->checksum = grub_net_ip_chksum ((void *) nb_reply->data,
 					       nb_reply->tail - nb_reply->data);
-	/* FIXME: gateway pings.  */
-	err = grub_net_send_ip_packet (inf, src, NULL,
+	err = grub_net_send_ip_packet (inf, src, ll_src,
 				       nb_reply, GRUB_NET_IP_ICMP);
 
       ping_fail:

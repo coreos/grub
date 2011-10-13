@@ -34,7 +34,8 @@ struct grub_net_udp_socket
   grub_err_t (*recv_hook) (grub_net_udp_socket_t sock, struct grub_net_buff *nb,
 			   void *recv);
   void *recv_hook_data;
-  grub_net_network_level_address_t out_nla, gw;
+  grub_net_network_level_address_t out_nla;
+  grub_net_link_level_address_t ll_target_addr;
   struct grub_net_network_level_interface *inf;
 };
 
@@ -71,6 +72,7 @@ grub_net_udp_open (char *server,
   grub_net_network_level_address_t gateway;
   grub_net_udp_socket_t socket;
   static int in_port = 25300;
+  grub_net_link_level_address_t ll_target_addr;
 
   err = grub_net_resolve_address (server, &addr);
   if (err)
@@ -87,6 +89,10 @@ grub_net_udp_open (char *server,
   if (err)
     return NULL;
 
+  err = grub_net_link_layer_resolve (inf, &gateway, &ll_target_addr);
+  if (err)
+    return NULL;
+
   socket = grub_zalloc (sizeof (*socket));
   if (socket == NULL)
     return NULL; 
@@ -94,7 +100,7 @@ grub_net_udp_open (char *server,
   socket->out_port = out_port;
   socket->inf = inf;
   socket->out_nla = addr;
-  socket->gw = gateway;
+  socket->ll_target_addr = ll_target_addr;
   socket->in_port = in_port++;
   socket->status = GRUB_NET_SOCKET_START;
   socket->recv_hook = recv_hook;
@@ -130,7 +136,8 @@ grub_net_send_udp_packet (const grub_net_udp_socket_t socket,
 						 &socket->out_nla);
 
   return grub_net_send_ip_packet (socket->inf, &(socket->out_nla),
-				  &(socket->gw), nb, GRUB_NET_IP_UDP);
+				  &(socket->ll_target_addr), nb,
+				  GRUB_NET_IP_UDP);
 }
 
 grub_err_t
