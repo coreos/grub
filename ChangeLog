@@ -1,5 +1,23 @@
 2011-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix overflow with >2GiB file on HFS+. >4GiB wasn't tested.
+
+	* grub-core/fs/hfsplus.c (grub_hfsplus_btree): Use more appropriate
+	types.
+	(grub_hfsplus_btree_recoffset): Likewise.
+	(grub_hfsplus_btree_recptr): Likewise.
+	(grub_hfsplus_find_block): Likewise.
+	(grub_hfsplus_btree_search): Likewise.
+	(grub_hfsplus_read_block): Likewise.
+	(grub_hfsplus_read_file): Likewise.
+	(grub_hfsplus_mount): Likewise.
+	(grub_hfsplus_btree_iterate_node): Likewise.
+	(grub_hfsplus_btree_search): Likewise.
+	(grub_hfsplus_iterate_dir): Likewise.
+	(grub_hfsplus_read): A small code simplification.
+
+2011-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c
 	(convert_system_partition_to_system_disk): Don't assume that children
 	of mapper nodes are mapper nodes.
