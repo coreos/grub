@@ -137,6 +137,12 @@ grub_isdigit (int c)
 }
 
 static inline int
+grub_isxdigit (int c)
+{
+  return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
+static inline int
 grub_isalnum (int c)
 {
   return grub_isalpha (c) || grub_isdigit (c);

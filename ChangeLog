@@ -1,3 +1,12 @@
+2011-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/posix_wrap/ctype.h (isxdigit): Use grub_isxdigit.
+	* include/grub/misc.h (grub_isxdigit): New function.
+	* grub-core/video/colors.c (my_isxdigit): Removed. All users
+	switched to grub_isxdigit.
+	* grub-core/term/serial.c (grub_serial_find): Fix in case of port
+	number starting with a letter.
+
 2011-10-09  Robert Millan  <rmh@gnu.org>
 
 	LVM support for FreeBSD and GNU/kFreeBSD.
@@ -62,6 +71,12 @@
 	(grub_get_unaligned32): Likewise.
 	(grub_get_unaligned64): Likewise.
 	* util/import_gcry.py (cryptolist): Add adler32.
+
+2011-10-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.core.def: Eliminate rarely used emu_condition. This
+	in perspective decreases the complexity of build system and fixes
+	compilation right now.
 
 2011-10-01  Ales Nesrsta <starous@volny.cz>
 
