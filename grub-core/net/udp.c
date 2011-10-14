@@ -59,7 +59,7 @@ grub_net_udp_close (grub_net_udp_socket_t sock)
 }
 
 grub_net_udp_socket_t
-grub_net_udp_open (char *server,
+grub_net_udp_open (grub_net_network_level_address_t addr,
 		   grub_uint16_t out_port,
 		   grub_err_t (*recv_hook) (grub_net_udp_socket_t sock,
 					    struct grub_net_buff *nb,
@@ -67,16 +67,11 @@ grub_net_udp_open (char *server,
 		   void *recv_hook_data)
 {
   grub_err_t err;
-  grub_net_network_level_address_t addr;
   struct grub_net_network_level_interface *inf;
   grub_net_network_level_address_t gateway;
   grub_net_udp_socket_t socket;
   static int in_port = 25300;
   grub_net_link_level_address_t ll_target_addr;
-
-  err = grub_net_resolve_address (server, &addr);
-  if (err)
-    return NULL;
 
   if (addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
       && addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6)

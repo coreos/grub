@@ -1598,6 +1598,7 @@ module = {
 module = {
   name = net;
   common = net/net.c;
+  common = net/dns.c;
   common = net/bootp.c;
   common = net/ip.c;
   common = net/udp.c;

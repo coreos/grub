@@ -541,15 +541,12 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
   return err;
 }
 
-static grub_command_t cmd_dhcp, cmd_getdhcp, cmd_bootp;
+static grub_command_t cmd_getdhcp, cmd_bootp;
 
 void
 grub_bootp_init (void)
 {
   cmd_bootp = grub_register_command ("net_bootp", grub_cmd_bootp,
-				     "[CARD]",
-				     N_("perform a bootp autoconfiguration"));
-  cmd_dhcp = grub_register_command ("net_dhcp", grub_cmd_bootp,
 				     "[CARD]",
 				     N_("perform a bootp autoconfiguration"));
   cmd_getdhcp = grub_register_command ("net_get_dhcp_option", grub_cmd_dhcpopt,
@@ -561,6 +558,5 @@ void
 grub_bootp_fini (void)
 {
   grub_unregister_command (cmd_getdhcp);
-  grub_unregister_command (cmd_dhcp);
   grub_unregister_command (cmd_bootp);
 }

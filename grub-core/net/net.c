@@ -1491,6 +1491,7 @@ GRUB_MOD_INIT(net)
   cmd_lsaddr = grub_register_command ("net_ls_addr", grub_cmd_listaddrs,
 				       "", N_("list network addresses"));
   grub_bootp_init ();
+  grub_dns_init ();
 
   grub_fs_register (&grub_net_fs);
   grub_net_open = grub_net_open_real;
@@ -1503,6 +1504,7 @@ GRUB_MOD_INIT(net)
 GRUB_MOD_FINI(net)
 {
   grub_bootp_fini ();
+  grub_dns_fini ();
   grub_unregister_command (cmd_addaddr);
   grub_unregister_command (cmd_deladdr);
   grub_unregister_command (cmd_addroute);

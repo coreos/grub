@@ -279,6 +279,7 @@ tftp_open (struct grub_file *file, const char *filename)
   tftp_data_t data;
   grub_err_t err;
   grub_uint8_t *nbd;
+  grub_net_network_level_address_t addr;
 
   data = grub_zalloc (sizeof (*data));
   if (!data)
@@ -335,7 +336,14 @@ tftp_open (struct grub_file *file, const char *filename)
   if (!data->pq)
     return grub_errno;
 
-  data->sock = grub_net_udp_open (file->device->net->server,
+  err = grub_net_resolve_address (file->device->net->server, &addr);
+  if (err)
+    {
+      destroy_pq (data);
+      return err;
+    }
+
+  data->sock = grub_net_udp_open (addr,
 				  TFTP_SERVER_PORT, tftp_receive,
 				  file);
   if (!data->sock)

@@ -446,6 +446,9 @@ grub_net_poll_cards (unsigned time);
 void grub_bootp_init (void);
 void grub_bootp_fini (void);
 
+void grub_dns_init (void);
+void grub_dns_fini (void);
+
 static inline void
 grub_net_network_level_interface_unregister (struct grub_net_network_level_interface *inter)
 {
@@ -472,6 +475,13 @@ grub_err_t
 grub_net_link_layer_resolve (struct grub_net_network_level_interface *inf,
 			     const grub_net_network_level_address_t *proto_addr,
 			     grub_net_link_level_address_t *hw_addr);
+grub_err_t
+grub_net_dns_lookup (const char *name,
+		     const struct grub_net_network_level_address *servers,
+		     grub_size_t n_servers,
+		     grub_size_t *naddresses,
+		     struct grub_net_network_level_address **addresses,
+		     int cache);
 
 extern char *grub_net_default_server;
 

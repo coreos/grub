@@ -33,7 +33,7 @@ struct grub_net_udp_socket;
 typedef struct grub_net_udp_socket *grub_net_udp_socket_t;
 
 grub_net_udp_socket_t
-grub_net_udp_open (char *server,
+grub_net_udp_open (grub_net_network_level_address_t addr,
 		   grub_uint16_t out_port,
 		   grub_err_t (*recv_hook) (grub_net_udp_socket_t sock,
 					    struct grub_net_buff *nb,
