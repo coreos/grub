@@ -1416,7 +1416,7 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 		  if (tree)
 		    dm_tree_free (tree);
 		  free (path);
-		  char *ret = grub_find_device ("/dev/mapper",
+		  char *ret = grub_find_device ("/dev",
 						(major << 8) | minor);
 		  return ret;
 		}

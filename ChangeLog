@@ -1,5 +1,11 @@
 2011-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c
+	(convert_system_partition_to_system_disk): Don't assume that children
+	of mapper nodes are mapper nodes.
+
+2011-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/ctype.h (isxdigit): Use grub_isxdigit.
 	* include/grub/misc.h (grub_isxdigit): New function.
 	* grub-core/video/colors.c (my_isxdigit): Removed. All users
