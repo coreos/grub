@@ -1,3 +1,9 @@
+2011-10-15  Robert Millan  <rmh@gnu.org>
+
+	Fix build problem on FreeBSD and GNU/kFreeBSD.
+
+	* util/getroot.c [__FreeBSD_kernel__]: Include `<sys/mount.h>'.
+
 2011-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix overflow with >2GiB file on HFS+. >4GiB wasn't tested.
