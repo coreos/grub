@@ -1137,7 +1137,9 @@ grub_util_get_grub_dev (const char *os_dev)
       }
 
       break;
+#endif
 
+#ifdef __linux__
     case GRUB_DEV_ABSTRACTION_LUKS:
       {
 	char *uuid, *dash;
@@ -1152,9 +1154,10 @@ grub_util_get_grub_dev (const char *os_dev)
 	grub_free (uuid);
       }
       break;
+#endif
 
-    case GRUB_DEV_ABSTRACTION_GELI:
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
+    case GRUB_DEV_ABSTRACTION_GELI:
       {
 	char *whole;
 	struct gmesh mesh;
@@ -1201,7 +1204,6 @@ grub_util_get_grub_dev (const char *os_dev)
 	      }
 	  }
       }
-#endif
       break;
 #endif
 

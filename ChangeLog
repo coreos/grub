@@ -1,5 +1,9 @@
 2011-10-15  Robert Millan  <rmh@gnu.org>
 
+	* util/getroot.c (grub_util_get_grub_dev): Fix OS selection #ifdefs.
+
+2011-10-15  Robert Millan  <rmh@gnu.org>
+
 	Fix build problem on FreeBSD and GNU/kFreeBSD.
 
 	* util/getroot.c [__FreeBSD_kernel__]: Include `<sys/mount.h>'.
