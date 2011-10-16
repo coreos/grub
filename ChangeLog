@@ -1,5 +1,10 @@
 2011-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Check for __ctzdi2 and __ctzsi2.
+	* include/grub/libgcc.h: Include __ctzdi2 and __ctzsi2 if present.
+
+2011-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix few obvious type discrepancies.
 
 	* grub-core/fs/affs.c (grub_affs_read_file): Use grub_off_t for offset.
