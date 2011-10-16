@@ -628,7 +628,7 @@ grub_nilfs2_read_file (grub_fshelp_node_t node,
 							   sector,
 							   unsigned offset,
 							   unsigned length),
-		       int pos, grub_size_t len, char *buf)
+		       grub_off_t pos, grub_size_t len, char *buf)
 {
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_nilfs2_read_block,
@@ -866,7 +866,7 @@ grub_nilfs2_iterate_dir (grub_fshelp_node_t dir,
 				  enum grub_fshelp_filetype filetype,
 				  grub_fshelp_node_t node))
 {
-  unsigned int fpos = 0;
+  grub_off_t fpos = 0;
   struct grub_fshelp_node *diro = (struct grub_fshelp_node *) dir;
 
   if (!diro->inode_read)

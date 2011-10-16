@@ -160,7 +160,7 @@ static grub_ssize_t
 grub_affs_read_file (grub_fshelp_node_t node,
 		     void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 					unsigned offset, unsigned length),
-		     int pos, grub_size_t len, char *buf)
+		     grub_off_t pos, grub_size_t len, char *buf)
 {
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_affs_read_block,

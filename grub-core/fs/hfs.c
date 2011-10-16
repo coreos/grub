@@ -244,21 +244,23 @@ static grub_ssize_t
 grub_hfs_read_file (struct grub_hfs_data *data,
 		    void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 				       unsigned offset, unsigned length),
-		     int pos, grub_size_t len, char *buf)
+		    grub_off_t pos, grub_size_t len, char *buf)
 {
-  int i;
-  int blockcnt;
+  grub_off_t i;
+  grub_off_t blockcnt;
 
-  blockcnt = ((len + pos)
-	      + data->blksz - 1) / data->blksz;
+  blockcnt = grub_divmod64 (((len + pos)
+			     + data->blksz - 1), data->blksz, 0);
 
-  for (i = pos / data->blksz; i < blockcnt; i++)
+  for (i = grub_divmod64 (pos, data->blksz, 0); i < blockcnt; i++)
     {
-      int blknr;
-      int blockoff = pos % data->blksz;
-      int blockend = data->blksz;
+      grub_disk_addr_t blknr;
+      grub_off_t blockoff;
+      grub_off_t blockend = data->blksz;
 
       int skipfirst = 0;
+
+      grub_divmod64 (pos, data->blksz, &blockoff);
 
       blknr = grub_hfs_block (data, data->extents, data->fileid, i, 1);
       if (grub_errno)
@@ -267,7 +269,7 @@ grub_hfs_read_file (struct grub_hfs_data *data,
       /* Last block.  */
       if (i == blockcnt - 1)
 	{
-	  blockend = (len + pos) % data->blksz;
+	  grub_divmod64 ((len + pos), data->blksz, &blockend);
 
 	  /* The last portion is exactly EXT2_BLOCK_SIZE (data).  */
 	  if (! blockend)
@@ -275,7 +277,7 @@ grub_hfs_read_file (struct grub_hfs_data *data,
 	}
 
       /* First block.  */
-      if (i == pos / data->blksz)
+      if (i == grub_divmod64 (pos, data->blksz, 0))
 	{
 	  skipfirst = blockoff;
 	  blockend -= skipfirst;

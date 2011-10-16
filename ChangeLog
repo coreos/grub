@@ -1,5 +1,22 @@
 2011-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix few obvious type discrepancies.
+
+	* grub-core/fs/affs.c (grub_affs_read_file): Use grub_off_t for offset.
+	* grub-core/fs/afs.c (grub_afs_read_file): Likewise.
+	* grub-core/fs/fshelp.c (grub_fshelp_find_file): Remove leftover
+	variable.
+	* grub-core/fs/hfs.c (grub_hfs_read_file): Use grub_off_t for offset
+	and connected types.
+	* grub-core/fs/nilfs2.c (grub_nilfs2_read_file): Use grub_off_t for
+	offset.
+	(grub_nilfs2_iterate_dir): Use grub_off_t for fpos.
+	* grub-core/fs/sfs.c (grub_sfs_read_file): Use grub_off_t for offset.
+	* grub-core/fs/ufs.c (grub_ufs_read_file): Use grub_off_t for offset
+	and connected types.
+
+2011-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix python 3.x incompatibilities.
 
 	* gentpl.py: Put brackets around print strings.
