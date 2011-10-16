@@ -1,3 +1,18 @@
+2011-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/xfs.c (grub_xfs_inode): New field fork_offset.
+	(GRUB_XFS_INO_AGBITS): Make into inline function.
+	(GRUB_XFS_INO_INOINAG): Likewise.
+	(GRUB_XFS_INO_AG): Likewise.
+	(GRUB_XFS_FSB_TO_BLOCK): Likewise.
+	(GRUB_XFS_EXTENT_OFFSET): Likewise.
+	(GRUB_XFS_EXTENT_BLOCK): Likewise.
+	(GRUB_XFS_EXTENT_SIZE): Likewise.
+	(GRUB_XFS_ROUND_TO_DIRENT): Likewise.
+	(GRUB_XFS_NEXT_DIRENT): Likewise.
+	(grub_xfs_read_block): Rewrite the btree parsing. Fixes invalid BMAP.
+	(grub_xfs_read_file): Fix offset type.
+
 2011-10-15  Robert Millan  <rmh@gnu.org>
 
 	* util/getroot.c (grub_util_get_grub_dev): Fix OS selection #ifdefs.
