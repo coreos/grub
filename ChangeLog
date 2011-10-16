@@ -1,5 +1,13 @@
 2011-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix python 3.x incompatibilities.
+
+	* gentpl.py: Put brackets around print strings.
+	* util/import_gcry.py: Open explicitly as utf-8.
+	Use in instead of has_key.
+
+2011-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/xfs.c (grub_xfs_inode): New field fork_offset.
 	(GRUB_XFS_INO_AGBITS): Make into inline function.
 	(GRUB_XFS_INO_INOINAG): Likewise.

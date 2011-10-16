@@ -568,28 +568,28 @@ f = script_rules()
 g = data_rules()
 z = global_variable_initializers()
 
-print "[+ AutoGen5 template +]\n"
+print ("[+ AutoGen5 template +]\n")
 for p in GRUB_PLATFORMS:
-    print define_macro_for_platform_sources(p)
-    print define_macro_for_platform_nodist_sources(p)
+    print (define_macro_for_platform_sources(p))
+    print (define_macro_for_platform_nodist_sources(p))
     # print define_macro_for_platform_dependencies(p)
 
-    print define_macro_for_platform_startup(p)
-    print define_macro_for_platform_cflags(p)
-    print define_macro_for_platform_ldadd(p)
-    print define_macro_for_platform_ldflags(p)
-    print define_macro_for_platform_cppflags(p)
-    print define_macro_for_platform_ccasflags(p)
-    print define_macro_for_platform_stripflags(p)
-    print define_macro_for_platform_objcopyflags(p)
+    print (define_macro_for_platform_startup(p))
+    print (define_macro_for_platform_cflags(p))
+    print (define_macro_for_platform_ldadd(p))
+    print (define_macro_for_platform_ldflags(p))
+    print (define_macro_for_platform_cppflags(p))
+    print (define_macro_for_platform_ccasflags(p))
+    print (define_macro_for_platform_stripflags(p))
+    print (define_macro_for_platform_objcopyflags(p))
 
-    print define_macro_for_platform_conditionals_if_statement(p)
-    print define_macro_for_platform_conditionals_endif_statement(p)
+    print (define_macro_for_platform_conditionals_if_statement(p))
+    print (define_macro_for_platform_conditionals_endif_statement(p))
 # print z # initializer for all vars
-print a
-print b
-print c
-print d
-print e
-print f
-print g
+print (a)
+print (b)
+print (c)
+print (d)
+print (e)
+print (f)
+print (g)

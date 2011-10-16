@@ -20,6 +20,7 @@ import re
 import sys
 import os
 import datetime
+import codecs
 
 if len (sys.argv) < 3:
     print ("Usage: %s SOURCE DESTINATION" % sys.argv[0])
@@ -40,9 +41,9 @@ except:
     print ("WARNING: %s already exists" % cipher_dir_out)
 
 cipher_files = os.listdir (cipher_dir_in)
-conf = open (os.path.join ("grub-core", "Makefile.gcry.def"), "w")
+conf = codecs.open (os.path.join ("grub-core", "Makefile.gcry.def"), "w", "utf-8")
 conf.write ("AutoGen definitions Makefile.tpl;\n\n")
-confutil = open ("Makefile.utilgcry.def", "w")
+confutil = codecs.open ("Makefile.utilgcry.def", "w", "utf-8")
 confutil.write ("AutoGen definitions Makefile.tpl;\n\n")
 confutil.write ("library = {\n");
 confutil.write ("  name = libgrubgcry.a;\n");
@@ -69,7 +70,7 @@ mdblocksizes = {"_gcry_digest_spec_crc32" : 64,
                 "_gcry_digest_spec_tiger" : 64,
                 "_gcry_digest_spec_whirlpool" : 64}
 
-cryptolist = open (os.path.join (cipher_dir_out, "crypto.lst"), "w")
+cryptolist = codecs.open (os.path.join (cipher_dir_out, "crypto.lst"), "w", "utf-8")
 
 # rijndael is the only cipher using aliases. So no need for mangling, just
 # hardcode it
@@ -98,8 +99,8 @@ for cipher_file in cipher_files:
     nch = False
     if re.match (".*\.[ch]$", cipher_file):
         isc = re.match (".*\.c$", cipher_file)
-        f = open (infile, "r")
-        fw = open (outfile, "w")
+        f = codecs.open (infile, "r", "utf-8")
+        fw = codecs.open (outfile, "w", "utf-8")
         fw.write ("/* This file was automatically imported with \n")
         fw.write ("   import_gcry.py. Please don't modify it */\n")
         fw.write ("#include <grub/dl.h>\n")
@@ -125,6 +126,7 @@ for cipher_file in cipher_files:
                 isglue = True
             modname = "gcry_%s" % modname
         for line in f:
+            line = line
             if skip_statement:
                 if not re.search (";", line) is None:
                     skip_statement = False
@@ -151,7 +153,7 @@ for cipher_file in cipher_files:
                     fw.write ("    .modname = \"%s\",\n" % modname);
                     fw.write ("#endif\n");
                     if ismd:
-                        if not mdblocksizes.has_key (mdname):
+                        if not (mdname in mdblocksizes):
                             print ("ERROR: Unknown digest blocksize: %s\n"
                                    % mdname)
                             exit (1)
@@ -324,28 +326,28 @@ cryptolist.close ()
 chlog = "%s	* crypto.lst: New file.\n" % chlog
 
 outfile = os.path.join (cipher_dir_out, "types.h")
-fw=open (outfile, "w")
+fw=codecs.open (outfile, "w", "utf-8")
 fw.write ("#include <grub/types.h>\n")
 fw.write ("#include <cipher_wrap.h>\n")
 chlog = "%s	* types.h: New file.\n" % chlog
 fw.close ()
 
 outfile = os.path.join (cipher_dir_out, "memory.h")
-fw=open (outfile, "w")
+fw=codecs.open (outfile, "w", "utf-8")
 fw.write ("#include <cipher_wrap.h>\n")
 chlog = "%s	* memory.h: New file.\n" % chlog
 fw.close ()
 
 
 outfile = os.path.join (cipher_dir_out, "cipher.h")
-fw=open (outfile, "w")
+fw=codecs.open (outfile, "w", "utf-8")
 fw.write ("#include <grub/crypto.h>\n")
 fw.write ("#include <cipher_wrap.h>\n")
 chlog = "%s	* cipher.h: Likewise.\n" % chlog
 fw.close ()
 
 outfile = os.path.join (cipher_dir_out, "g10lib.h")
-fw=open (outfile, "w")
+fw=codecs.open (outfile, "w", "utf-8")
 fw.write ("#include <cipher_wrap.h>\n")
 chlog = "%s	* g10lib.h: Likewise.\n" % chlog
 fw.close ()
@@ -355,7 +357,7 @@ outfile = os.path.join (cipher_dir_out, "ChangeLog")
 
 conf.close ();
 
-initfile = open (os.path.join (cipher_dir_out, "init.c"), "w")
+initfile = codecs.open (os.path.join (cipher_dir_out, "init.c"), "w", "utf-8")
 for module in modules:
     initfile.write ("extern void grub_%s_init (void);\n" % module)
     initfile.write ("extern void grub_%s_fini (void);\n" % module)
@@ -380,8 +382,8 @@ confutil.write ("};\n");
 confutil.close ();
 
 
-f=open (infile, "r")
-fw=open (outfile, "w")
+f=codecs.open (infile, "r", "utf-8")
+fw=codecs.open (outfile, "w", "utf-8")
 dt = datetime.date.today ()
 fw.write ("%04d-%02d-%02d  Automatic import tool\n" % \
           (dt.year,dt.month, dt.day))
