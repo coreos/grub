@@ -218,7 +218,7 @@ grub_get_rtc (void)
 /* Search the mods section from the PE32/PE32+ image. This code uses
    a PE32 header, but should work with PE32+ as well.  */
 grub_addr_t
-grub_arch_modules_addr (void)
+grub_efi_modules_addr (void)
 {
   grub_efi_loaded_image_t *image;
   struct grub_pe32_header *header;

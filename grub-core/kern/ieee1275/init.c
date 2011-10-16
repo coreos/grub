@@ -256,9 +256,14 @@ grub_parse_cmdline (void)
 
 static grub_uint64_t ieee1275_get_time_ms (void);
 
+grub_addr_t grub_modbase;
+
 void
 grub_machine_init (void)
 {
+  grub_modbase = ALIGN_UP((grub_addr_t) _end 
+			  + GRUB_KERNEL_MACHINE_MOD_GAP,
+			  GRUB_KERNEL_MACHINE_MOD_ALIGN);
   grub_ieee1275_init ();
 
   grub_console_init_early ();
@@ -292,10 +297,4 @@ grub_uint32_t
 grub_get_rtc (void)
 {
   return ieee1275_get_time_ms ();
-}
-
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return ALIGN_UP((grub_addr_t) _end + GRUB_KERNEL_MACHINE_MOD_GAP, GRUB_KERNEL_MACHINE_MOD_ALIGN);
 }

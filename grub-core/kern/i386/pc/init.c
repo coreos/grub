@@ -129,6 +129,8 @@ compact_mem_regions (void)
       }
 }
 
+grub_addr_t grub_modbase;
+
 void
 grub_machine_init (void)
 {
@@ -136,6 +138,9 @@ grub_machine_init (void)
 #if 0
   int grub_lower_mem;
 #endif
+
+  grub_modbase = GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR
+    + (grub_kernel_image_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
 
   /* Initialize the console as early as possible.  */
   grub_console_init ();
@@ -205,12 +210,4 @@ grub_machine_fini (void)
 {
   grub_console_fini ();
   grub_stop_floppy ();
-}
-
-/* Return the end of the core image.  */
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR
-    + (grub_kernel_image_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
 }

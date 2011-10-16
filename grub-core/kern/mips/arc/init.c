@@ -125,12 +125,14 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
 }
 
 extern grub_uint32_t grub_total_modules_size;
+grub_addr_t grub_modbase;
 
 void
 grub_machine_init (void)
 {
   struct grub_arc_memory_descriptor *cur = NULL;
 
+  grub_modbase = GRUB_KERNEL_MIPS_ARC_LINK_ADDR - grub_total_modules_size;
   grub_console_init_early ();
 
   /* FIXME: measure this.  */
@@ -162,12 +164,6 @@ grub_machine_init (void)
   grub_console_init_lately ();
 
   grub_arcdisk_init ();
-}
-
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return GRUB_KERNEL_MIPS_ARC_LINK_ADDR - grub_total_modules_size;
 }
 
 void

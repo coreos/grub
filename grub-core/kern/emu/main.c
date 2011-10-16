@@ -53,11 +53,7 @@ static char *root_dev = NULL, *dir = NULL;
 
 int grub_no_autoload;
 
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return 0;
-}
+grub_addr_t grub_modbase = 0;
 
 void
 grub_reboot (void)

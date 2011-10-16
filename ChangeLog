@@ -1,5 +1,45 @@
 2011-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Replace grub_module_iterate with FOR_MODULES.
+
+	* grub-core/disk/memdisk.c (GRUB_MOD_INIT): Switched to new interface.
+	* grub-core/kern/efi/efi.c (grub_arch_modules_addr): Renamed to...
+	(grub_efi_modules_addr): ...this.
+	* grub-core/kern/efi/init.c (grub_modbase): New variable.
+	(grub_efi_init): Set grub_modbase.
+	* grub-core/kern/emu/main.c (grub_arch_modules_addr): Removed.
+	(grub_modbase): New variable.
+	* grub-core/kern/i386/coreboot/init.c (grub_arch_modules_addr): Removed.
+	(grub_modbase): New variable.
+	(grub_machine_init): Set grub_modbase.
+	* grub-core/kern/i386/pc/init.c (grub_arch_modules_addr): Removed.
+	(grub_modbase): New variable.
+	(grub_machine_init): Set grub_modbase.
+	* grub-core/kern/ieee1275/init.c (grub_arch_modules_addr): Removed.
+	(grub_modbase): New variable.
+	(grub_machine_init): Set grub_modbase.
+	* grub-core/kern/main.c (grub_module_iterate): Remove.
+	(grub_modules_get_end): Use grub_modbase.
+	(grub_load_modules): Use FOR_MODULES.
+	(grub_load_config): Likewise.
+	* grub-core/kern/mips/arc/init.c (grub_arch_modules_addr): Removed.
+	(grub_modbase): New variable.
+	(grub_machine_init): Set grub_modbase.
+	* grub-core/kern/mips/loongson/init.c (grub_arch_modules_addr): Removed.
+	(grub_modbase): New variable.
+	(grub_machine_init): Set grub_modbase.
+	* grub-core/kern/mips/qemu_mips/init.c (grub_arch_modules_addr):
+	Removed.
+	(grub_modbase): New variable.
+	(grub_machine_init): Set grub_modbase.
+	* include/grub/efi/efi.h (grub_efi_modules_addr): New declaration.
+	* include/grub/kernel.h (grub_arch_modules_addr): Removed.
+	(grub_module_iterate): Likewise.
+	(grub_modbase): New variable declaration.
+	(FOR_MODULES): New macro.
+
+2011-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Check for __ctzdi2 and __ctzsi2.
 	* include/grub/libgcc.h: Include __ctzdi2 and __ctzsi2 if present.
 

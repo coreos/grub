@@ -68,9 +68,15 @@ struct grub_module_info64
 #define grub_module_info grub_module_info32
 #endif
 
-extern grub_addr_t grub_arch_modules_addr (void);
+extern grub_addr_t EXPORT_VAR (grub_modbase);
 
-extern void EXPORT_FUNC(grub_module_iterate) (int (*hook) (struct grub_module_header *));
+#define FOR_MODULES(var)  for (\
+  var = grub_modbase ? (struct grub_module_header *) \
+    (grub_modbase + (((struct grub_module_info *) grub_modbase)->offset)) : 0;\
+  var && (grub_addr_t) var \
+    < (grub_modbase + (((struct grub_module_info *) grub_modbase)->size));    \
+  var = (struct grub_module_header *)					\
+    ((char *) var + ((struct grub_module_header *) var)->size))
 
 grub_addr_t grub_modules_get_end (void);
 

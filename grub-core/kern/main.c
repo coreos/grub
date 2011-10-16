@@ -30,45 +30,20 @@
 #include <grub/reader.h>
 #include <grub/parser.h>
 
-void
-grub_module_iterate (int (*hook) (struct grub_module_header *header))
-{
-  struct grub_module_info *modinfo;
-  struct grub_module_header *header;
-  grub_addr_t modbase;
-
-  modbase = grub_arch_modules_addr ();
-  modinfo = (struct grub_module_info *) modbase;
-
-  /* Check if there are any modules.  */
-  if ((modinfo == 0) || modinfo->magic != GRUB_MODULE_MAGIC)
-    return;
-
-  for (header = (struct grub_module_header *) (modbase + modinfo->offset);
-       header < (struct grub_module_header *) (modbase + modinfo->size);
-       header = (struct grub_module_header *) ((char *) header + header->size))
-    {
-      if (hook (header))
-	break;
-    }
-}
-
 /* This is actualy platform-independant but used only on loongson and sparc.  */
 #if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_SPARC64)
 grub_addr_t
 grub_modules_get_end (void)
 {
   struct grub_module_info *modinfo;
-  grub_addr_t modbase;
 
-  modbase = grub_arch_modules_addr ();
-  modinfo = (struct grub_module_info *) modbase;
+  modinfo = (struct grub_module_info *) grub_modbase;
 
   /* Check if there are any modules.  */
   if ((modinfo == 0) || modinfo->magic != GRUB_MODULE_MAGIC)
-    return modbase;
+    return grub_modbase;
 
-  return modbase + modinfo->size;
+  return grub_modbase + modinfo->size;
 }
 #endif
 
@@ -76,42 +51,36 @@ grub_modules_get_end (void)
 static void
 grub_load_modules (void)
 {
-  auto int hook (struct grub_module_header *);
-  int hook (struct grub_module_header *header)
-    {
-      /* Not an ELF module, skip.  */
-      if (header->type != OBJ_TYPE_ELF)
-        return 0;
+  struct grub_module_header *header;
+  FOR_MODULES (header)
+  {
+    /* Not an ELF module, skip.  */
+    if (header->type != OBJ_TYPE_ELF)
+      continue;
 
-      if (! grub_dl_load_core ((char *) header + sizeof (struct grub_module_header),
-			       (header->size - sizeof (struct grub_module_header))))
-	grub_fatal ("%s", grub_errmsg);
+    if (! grub_dl_load_core ((char *) header + sizeof (struct grub_module_header),
+			     (header->size - sizeof (struct grub_module_header))))
+      grub_fatal ("%s", grub_errmsg);
 
-      if (grub_errno)
-	grub_print_error ();
-
-      return 0;
-    }
-
-  grub_module_iterate (hook);
+    if (grub_errno)
+      grub_print_error ();
+  }
 }
 
 static void
 grub_load_config (void)
 {
-  auto int hook (struct grub_module_header *);
-  int hook (struct grub_module_header *header)
-    {
-      /* Not an embedded config, skip.  */
-      if (header->type != OBJ_TYPE_CONFIG)
-	return 0;
-
-      grub_parser_execute ((char *) header +
-			   sizeof (struct grub_module_header));
-      return 1;
-    }
-
-  grub_module_iterate (hook);
+  struct grub_module_header *header;
+  FOR_MODULES (header)
+  {
+    /* Not an embedded config, skip.  */
+    if (header->type != OBJ_TYPE_CONFIG)
+      continue;
+    
+    grub_parser_execute ((char *) header +
+			 sizeof (struct grub_module_header));
+    break;
+  }
 }
 
 /* Write hook for the environment variables of root. Remove surrounding
