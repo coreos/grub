@@ -26,7 +26,8 @@ enum
 {
   OBJ_TYPE_ELF,
   OBJ_TYPE_MEMDISK,
-  OBJ_TYPE_CONFIG
+  OBJ_TYPE_CONFIG,
+  OBJ_TYPE_PREFIX
 };
 
 /* The module header.  */
@@ -97,10 +98,5 @@ grub_machine_get_bootlocation (char **device, char **path);
 void grub_register_exported_symbols (void);
 
 extern void (*EXPORT_VAR(grub_net_poll_cards_idle)) (void);
-
-
-#if ! defined (ASM_FILE)
-extern char grub_prefix[];
-#endif
 
 #endif /* ! GRUB_KERNEL_HEADER */

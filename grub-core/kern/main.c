@@ -105,25 +105,32 @@ grub_set_prefix_and_root (void)
   char *path = NULL;
   char *fwdevice = NULL;
   char *fwpath = NULL;
+  char *prefix;
+  struct grub_module_header *header;
+
+  FOR_MODULES (header)
+    if (header->type == OBJ_TYPE_PREFIX)
+      prefix = (char *) header + sizeof (struct grub_module_header);
 
   grub_register_variable_hook ("root", 0, grub_env_write_root);
 
-  {
-    char *pptr = NULL;
-    if (grub_prefix[0] == '(')
-      {
-	pptr = grub_strrchr (grub_prefix, ')');
-	if (pptr)
-	  {
-	    device = grub_strndup (grub_prefix + 1, pptr - grub_prefix - 1);
-	    pptr++;
-	  }
-      }
-    if (!pptr)
-      pptr = grub_prefix;
-    if (pptr[0])
-      path = grub_strdup (pptr);
-  }
+  if (prefix)
+    {
+      char *pptr = NULL;
+      if (prefix[0] == '(')
+	{
+	  pptr = grub_strrchr (prefix, ')');
+	  if (pptr)
+	    {
+	      device = grub_strndup (prefix + 1, pptr - prefix - 1);
+	      pptr++;
+	    }
+	}
+      if (!pptr)
+	pptr = prefix;
+      if (pptr[0])
+	path = grub_strdup (pptr);
+    }
   if ((!device || device[0] == ',' || !device[0]) || !path)
     grub_machine_get_bootlocation (&fwdevice, &fwpath);
 
@@ -152,13 +159,13 @@ grub_set_prefix_and_root (void)
     path = fwpath;
   if (device)
     {
-      char *prefix;
+      char *prefix_set;
     
-      prefix = grub_xasprintf ("(%s)%s", device, path ? : "");
-      if (prefix)
+      prefix_set = grub_xasprintf ("(%s)%s", device, path ? : "");
+      if (prefix_set)
 	{
-	  grub_env_set ("prefix", prefix);
-	  grub_free (prefix);
+	  grub_env_set ("prefix", prefix_set);
+	  grub_free (prefix_set);
 	}
       grub_env_set ("root", device);
     }

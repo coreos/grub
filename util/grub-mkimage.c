@@ -77,8 +77,6 @@ struct image_target_desc
       PLATFORM_FLAGS_DECOMPRESSORS = 2,
       PLATFORM_FLAGS_MODULES_BEFORE_KERNEL = 4,
     } flags;
-  unsigned prefix;
-  unsigned prefix_end;
   unsigned raw_size;
   unsigned total_module_size;
   unsigned kernel_image_size;
@@ -110,8 +108,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_COREBOOT,
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_I386_COREBOOT_PREFIX,
-      .prefix_end = GRUB_KERNEL_I386_COREBOOT_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -133,8 +129,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_COREBOOT,
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_I386_MULTIBOOT_PREFIX,
-      .prefix_end = GRUB_KERNEL_I386_MULTIBOOT_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -156,8 +150,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_I386_PC, 
       .flags = PLATFORM_FLAGS_LZMA,
-      .prefix = GRUB_KERNEL_I386_PC_PREFIX,
-      .prefix_end = GRUB_KERNEL_I386_PC_PREFIX_END,
       .raw_size = GRUB_KERNEL_I386_PC_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE,
       .kernel_image_size = GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE,
@@ -175,8 +167,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_I386_PC_PXE, 
       .flags = PLATFORM_FLAGS_LZMA,
-      .prefix = GRUB_KERNEL_I386_PC_PREFIX,
-      .prefix_end = GRUB_KERNEL_I386_PC_PREFIX_END,
       .raw_size = GRUB_KERNEL_I386_PC_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE,
       .kernel_image_size = GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE,
@@ -194,8 +184,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_EFI,
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_I386_EFI_PREFIX,
-      .prefix_end = GRUB_KERNEL_I386_EFI_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -219,8 +207,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_I386_IEEE1275, 
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_I386_IEEE1275_PREFIX,
-      .prefix_end = GRUB_KERNEL_I386_IEEE1275_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -242,8 +228,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_QEMU, 
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_I386_QEMU_PREFIX,
-      .prefix_end = GRUB_KERNEL_I386_QEMU_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .compressed_size = TARGET_NO_FIELD,
@@ -261,8 +245,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0, 
       .id = IMAGE_EFI, 
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_X86_64_EFI_PREFIX,
-      .prefix_end = GRUB_KERNEL_X86_64_EFI_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -281,8 +263,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_YEELOONG_FLASH, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
-      .prefix = GRUB_KERNEL_MIPS_LOONGSON_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_LOONGSON_PREFIX_END,
       .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_LOONGSON_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
@@ -303,8 +283,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_FULOONG2F_FLASH, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
-      .prefix = GRUB_KERNEL_MIPS_LOONGSON_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_LOONGSON_PREFIX_END,
       .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_LOONGSON_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
@@ -327,8 +305,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_LOONGSON_ELF, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
-      .prefix = GRUB_KERNEL_MIPS_LOONGSON_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_LOONGSON_PREFIX_END,
       .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_LOONGSON_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
@@ -349,8 +325,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 1,
       .id = IMAGE_PPC, 
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_POWERPC_IEEE1275_PREFIX,
-      .prefix_end = GRUB_KERNEL_POWERPC_IEEE1275_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -372,8 +346,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 1, 
       .id = IMAGE_SPARC64_RAW,
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX,
-      .prefix_end = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX_END,
       .raw_size = GRUB_KERNEL_SPARC64_IEEE1275_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
       .kernel_image_size = GRUB_KERNEL_SPARC64_IEEE1275_KERNEL_IMAGE_SIZE,
@@ -391,8 +363,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 1,
       .id = IMAGE_SPARC64_AOUT,
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX,
-      .prefix_end = GRUB_KERNEL_SPARC64_IEEE1275_PREFIX_END,
       .raw_size = GRUB_KERNEL_SPARC64_IEEE1275_RAW_SIZE,
       .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
       .kernel_image_size = GRUB_KERNEL_SPARC64_IEEE1275_KERNEL_IMAGE_SIZE,
@@ -410,8 +380,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0, 
       .id = IMAGE_EFI, 
       .flags = PLATFORM_FLAGS_NONE,
-      .prefix = GRUB_KERNEL_IA64_EFI_PREFIX,
-      .prefix_end = GRUB_KERNEL_IA64_EFI_PREFIX_END,
       .raw_size = 0,
       .total_module_size = TARGET_NO_FIELD,
       .kernel_image_size = TARGET_NO_FIELD,
@@ -431,8 +399,6 @@ struct image_target_desc image_targets[] =
       .id = IMAGE_MIPS_ARC, 
       .flags = (PLATFORM_FLAGS_DECOMPRESSORS
 		| PLATFORM_FLAGS_MODULES_BEFORE_KERNEL),
-      .prefix = GRUB_KERNEL_MIPS_ARC_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_ARC_PREFIX_END,
       .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_ARC_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
@@ -453,8 +419,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_LOONGSON_ELF, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
-      .prefix = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END,
       .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
@@ -475,8 +439,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 1,
       .id = IMAGE_QEMU_MIPS_FLASH, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
-      .prefix = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END,
       .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
@@ -497,8 +459,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 0,
       .id = IMAGE_QEMU_MIPS_FLASH, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
-      .prefix = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END,
       .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
@@ -519,8 +479,6 @@ struct image_target_desc image_targets[] =
       .bigendian = 1,
       .id = IMAGE_LOONGSON_ELF, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
-      .prefix = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX,
-      .prefix_end = GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END,
       .raw_size = 0,
       .total_module_size = GRUB_KERNEL_MIPS_QEMU_MIPS_TOTAL_MODULE_SIZE,
       .compressed_size = TARGET_NO_FIELD,
@@ -797,6 +755,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   char *kernel_img, *core_img;
   size_t kernel_size, total_module_size, core_size, exec_size;
   size_t memdisk_size = 0, config_size = 0, config_size_pure = 0;
+  size_t prefix_size = 0;
   char *kernel_path;
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
@@ -833,6 +792,12 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       total_module_size += config_size + sizeof (struct grub_module_header);
     }
 
+  if (prefix)
+    {
+      prefix_size = ALIGN_ADDR (strlen (prefix) + 1);
+      total_module_size += prefix_size + sizeof (struct grub_module_header);
+    }
+
   for (p = path_list; p; p = p->next)
     total_module_size += (ALIGN_ADDR (grub_util_get_image_size (p->name))
 			  + sizeof (struct grub_module_header));
@@ -847,10 +812,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     kernel_img = load_image64 (kernel_path, &exec_size, &kernel_size, &bss_size,
 			       total_module_size, &start_address, &rel_section,
 			       &reloc_size, &align, image_target);
-
-  if (image_target->prefix + strlen (prefix) + 1 > image_target->prefix_end)
-    grub_util_error (_("prefix is too long"));
-  strcpy (kernel_img + image_target->prefix, prefix);
 
   if ((image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
       && (image_target->total_module_size != TARGET_NO_FIELD))
@@ -941,6 +902,21 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       grub_util_load_image (config_path, kernel_img + offset);
       *(kernel_img + offset + config_size_pure - 1) = 0;
       offset += config_size;
+    }
+
+  if (prefix)
+    {
+      struct grub_module_header *header;
+
+      header = (struct grub_module_header *) (kernel_img + offset);
+      memset (header, 0, sizeof (struct grub_module_header));
+      header->type = grub_host_to_target32 (OBJ_TYPE_PREFIX);
+      header->size = grub_host_to_target32 (prefix_size + sizeof (*header));
+      offset += sizeof (*header);
+
+      grub_memset (kernel_img + offset, 0, prefix_size);
+      grub_strcpy (kernel_img + offset, prefix);
+      offset += prefix_size;
     }
 
   grub_util_info ("kernel_img=%p, kernel_size=0x%x", kernel_img, kernel_size);

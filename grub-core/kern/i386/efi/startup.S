@@ -41,17 +41,6 @@ _start:
          *  This is a special data area 8 bytes from the beginning.
          */
 
-        . = _start + 0x8
-
-VARIABLE(grub_prefix)
-	/* to be filled by grub-mkimage */
-
-        /*
-         *  Leave some breathing room for the prefix.
-         */
-
-        . = _start + 0x50
-
 codestart:
 	/*
 	 *  EFI_SYSTEM_TABLE * and EFI_HANDLE are passed on the stack.

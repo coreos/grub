@@ -79,8 +79,6 @@ grub_machine_fini (void)
   grub_console_fini ();
 }
 
-char grub_prefix[64] = "";
-
 
 
 static struct option options[] =

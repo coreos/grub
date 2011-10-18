@@ -39,21 +39,6 @@ _start:
         . = _start + 0x6
         .byte   GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
 
-        /*
-         *  This is a special data area 8 bytes from the beginning.
-         */
-
-        . = _start + 0x8
-
-VARIABLE(grub_prefix)
-	/* to be filled by grub-mkimage */
-
-        /*
-         *  Leave some breathing room for the prefix.
-         */
-
-        . = _start + 0x50
-
 codestart:
 	movq	%rcx, EXT_C(grub_efi_image_handle)(%rip)
 	movq	%rdx, EXT_C(grub_efi_system_table)(%rip)

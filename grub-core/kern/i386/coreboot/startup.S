@@ -40,21 +40,6 @@ start:
 _start:
 	jmp codestart
 
-	/*
-	 *  This is a special data area at a fixed offset from the beginning.
-	 */
-
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX
-
-VARIABLE(grub_prefix)
-	/* to be filled by grub-mkimage */
-
-	/*
-	 *  Leave some breathing room for the prefix.
-	 */
-
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
-
 /*
  *  Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
  */

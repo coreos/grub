@@ -455,17 +455,6 @@ gate_a20_check_state:
  */
 	. = _start + GRUB_KERNEL_MACHINE_RAW_SIZE
 
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX
-VARIABLE(grub_prefix)
-	/* to be filled by grub-mkimage */
-
-	/*
-	 *  Leave some breathing room for the prefix.
-	 */
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
-
-
-
 /*
  * grub_exit()
  *

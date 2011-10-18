@@ -1,3 +1,57 @@
+2011-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Make grub_prefix into module to fix the arbitrary limit and save
+	some space.
+
+	* grub-core/kern/emu/main.c (grub_prefix): Removed.
+	* grub-core/kern/i386/coreboot/startup.S (grub_prefix): Likewise.
+	* grub-core/kern/i386/efi/startup.S (grub_prefix): Likewise.
+	* grub-core/kern/i386/ieee1275/startup.S (grub_prefix): Likewise.
+	* grub-core/kern/i386/pc/startup.S (grub_prefix): Likewise.
+	* grub-core/kern/i386/qemu/startup.S (grub_prefix): Likewise.
+	* grub-core/kern/ia64/efi/startup.S (grub_prefix): Likewise.
+	* grub-core/kern/mips/startup.S (grub_prefix): Likewise.
+	* grub-core/kern/powerpc/ieee1275/startup.S (grub_prefix): Likewise.
+	* grub-core/kern/sparc64/ieee1275/crt0.S (grub_prefix): Likewise.
+	* grub-core/kern/x86_64/efi/startup.S (grub_prefix): Likewise.
+	* include/grub/ia64/efi/kernel.h: Removed.
+	* include/grub/kernel.h: New module type OBJ_TYPE_PREFIX.
+	(grub_prefix): Removed.
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_PREFIX): Removed.
+	(GRUB_KERNEL_I386_PC_PREFIX_END): Likewise.
+	(GRUB_KERNEL_I386_QEMU_PREFIX): Likewise.
+	(GRUB_KERNEL_I386_QEMU_PREFIX_END): Likewise.
+	(GRUB_KERNEL_SPARC64_IEEE1275_PREFIX): Likewise.
+	(GRUB_KERNEL_SPARC64_IEEE1275_PREFIX_END): Likewise.
+	(GRUB_KERNEL_POWERPC_IEEE1275_PREFIX): Likewise.
+	(GRUB_KERNEL_POWERPC_IEEE1275_PREFIX_END): Likewise.
+	(GRUB_KERNEL_MIPS_LOONGSON_PREFIX): Likewise.
+	(GRUB_KERNEL_MIPS_LOONGSON_PREFIX_END): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX): Likewise.
+	(GRUB_KERNEL_MIPS_QEMU_MIPS_PREFIX_END): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_PREFIX): Likewise.
+	(GRUB_KERNEL_MIPS_ARC_PREFIX_END): Likewise.
+	(GRUB_KERNEL_I386_EFI_PREFIX): Likewise.
+	(GRUB_KERNEL_I386_EFI_PREFIX_END): Likewise.
+	(GRUB_KERNEL_IA64_EFI_PREFIX): Likewise.
+	(GRUB_KERNEL_IA64_EFI_PREFIX_END): Likewise.
+	(GRUB_KERNEL_X86_64_EFI_PREFIX): Likewise.
+	(GRUB_KERNEL_X86_64_EFI_PREFIX_END): Likewise.
+	(GRUB_KERNEL_I386_COREBOOT_PREFIX): Likewise.
+	(GRUB_KERNEL_I386_COREBOOT_PREFIX_END): Likewise.
+	(GRUB_KERNEL_I386_MULTIBOOT_PREFIX): Likewise.
+	(GRUB_KERNEL_I386_MULTIBOOT_PREFIX_END): Likewise.
+	(GRUB_KERNEL_I386_IEEE1275_PREFIX): Likewise.
+	(GRUB_KERNEL_I386_IEEE1275_PREFIX_END): Likewise.
+	(GRUB_KERNEL_MACHINE_PREFIX): Likewise.
+	(GRUB_KERNEL_MACHINE_PREFIX_END): Likewise.
+	* grub-core/kern/main.c (grub_set_prefix_and_root): Retrieve grub_prefix
+	from module.
+	* util/grub-mkimage.c (image_target_desc): Removed prefix and
+	prefix_end.
+	(image_targets): Likewise.
+	(generate_image): Put prefix as a module.
+
 2011-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Replace grub_module_iterate with FOR_MODULES.
