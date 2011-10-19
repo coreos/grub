@@ -1,5 +1,33 @@
 2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	ExFAT support.
+
+	* Makefile.util.def (libgrubmods.a): Add grub-core/fs/exfat.c.
+	* grub-core/Makefile.core.def (exfat): New module.
+	* grub-core/fs/exfat.c: New file.
+	* grub-core/fs/fat.c (GRUB_FAT_DIR_ENTRY_SIZE): Removed.
+	(GRUB_FAT_ATTR_*): Make into an enum.
+	(GRUB_FAT_ATTR_LONG_NAME) [MODE_EXFAT]: Removed.
+	(GRUB_FAT_ATTR_VALID) [MODE_EXFAT]: Remove GRUB_FAT_ATTR_VOLUME_ID.
+	(GRUB_FAT_ATTR_VOLUME_ID) [MODE_EXFAT]: Removed.
+	(GRUB_FAT_MAXFILE): Removed.
+	(grub_exfat_bpb) [MODE_EXFAT]: New struct.
+	(grub_current_fat_bpb_t): New type.
+	(grub_fat_dir_entry) [MODE_EXFAT]: New struct.
+	(grub_fat_dir_node) [MODE_EXFAT]: New struct.
+	(grub_fat_dir_node_t): New type.
+	(grub_fat_data) [MODE_EXFAT]: Remove root_sector and num_root_sectors.
+	(fat_log2) [MODE_EXFAT]: Removed.
+	(grub_fat_mount): Use grub_current_fat_bpb_t. Add some sanity checks.
+	(grub_fat_mount) [MODE_EXFAT]: Handle ExFAT.
+	(grub_fat_iterate_dir) [MODE_EXFAT]: New function.
+	(grub_fat_find_dir) [MODE_EXFAT]: Handle ExFAT.
+	(grub_fat_label) [MODE_EXFAT]: New function.
+	(grub_fat_fs) [MODE_EXFAT]: Set name to "exfat" and
+	reserved_first_sector to 0.
+
+2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move grub_reboot out of the kernel.
 
 	* grub-core/Makefile.core.def (reboot): Add platform-specific files.

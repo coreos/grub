@@ -1014,6 +1014,11 @@ module = {
 };
 
 module = {
+  name = exfat;
+  common = fs/exfat.c;
+};
+
+module = {
   name = fshelp;
   common = fs/fshelp.c;
 };
