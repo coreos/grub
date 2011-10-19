@@ -456,16 +456,6 @@ grub_ieee1275_encode_devname (const char *path)
   return encoding;
 }
 
-/* On i386, a firmware-independant grub_reboot() is provided by realmode.S.  */
-#ifndef __i386__
-void
-grub_reboot (void)
-{
-  grub_ieee1275_interpret ("reset-all", 0);
-  for (;;) ;
-}
-#endif
-
 /* Resolve aliases.  */
 char *
 grub_ieee1275_canonicalise_devname (const char *path)

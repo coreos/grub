@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,16 +16,12 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_KERNEL_MACHINE_HEADER
-#define GRUB_KERNEL_MACHINE_HEADER	1
+#include <grub/ieee1275/ieee1275.h>
+#include <grub/misc.h>
 
-#include <grub/symbol.h>
-
-#ifndef ASM_FILE
-
-void EXPORT_FUNC (grub_halt) (void);
-void grub_qemu_init_cirrus (void);
-
-#endif
-
-#endif /* ! GRUB_KERNEL_MACHINE_HEADER */
+void
+grub_reboot (void)
+{
+  grub_ieee1275_interpret ("reset-all", 0);
+  for (;;) ;
+}

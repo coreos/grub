@@ -82,4 +82,7 @@ int grub_device_mapper_supported (void);
 
 char *grub_find_root_device_from_mountinfo (const char *dir, char **relroot);
 
+void EXPORT_FUNC(grub_reboot) (void);
+
+
 #endif /* GRUB_EMU_MISC_H */

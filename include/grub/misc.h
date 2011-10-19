@@ -343,7 +343,7 @@ grub_div_roundup (unsigned int x, unsigned int y)
 }
 
 /* Reboot the machine.  */
-void EXPORT_FUNC (grub_reboot) (void) __attribute__ ((noreturn));
+void grub_reboot (void) __attribute__ ((noreturn));
 
 #ifdef GRUB_MACHINE_PCBIOS
 /* Halt the system, using APM if possible. If NO_APM is true, don't

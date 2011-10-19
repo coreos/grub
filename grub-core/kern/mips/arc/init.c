@@ -195,15 +195,3 @@ grub_exit (void)
   while (1);
 }
 
-void
-grub_reboot (void)
-{
-  GRUB_ARC_FIRMWARE_VECTOR->restart ();
-
-  grub_millisleep (1500);
-
-  grub_printf ("Reboot failed\n");
-  grub_refresh ();
-  while (1);
-}
-

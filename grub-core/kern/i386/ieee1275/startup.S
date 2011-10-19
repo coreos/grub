@@ -39,9 +39,3 @@ _start:
 	movl %eax, EXT_C(grub_ieee1275_entry_fn)
 	jmp EXT_C(grub_main)
 
-/*
- *  prot_to_real and associated structures (but NOT real_to_prot, that is
- *  only needed for BIOS gates).
- */
-#include "../realmode.S"
-

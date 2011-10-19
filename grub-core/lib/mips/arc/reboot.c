@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,16 +16,19 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_KERNEL_MACHINE_HEADER
-#define GRUB_KERNEL_MACHINE_HEADER	1
+#include <grub/arc/arc.h>
+#include <grub/misc.h>
+#include <grub/time.h>
+#include <grub/term.h>
 
-#include <grub/symbol.h>
+void
+grub_reboot (void)
+{
+  GRUB_ARC_FIRMWARE_VECTOR->restart ();
 
-#ifndef ASM_FILE
+  grub_millisleep (1500);
 
-void EXPORT_FUNC (grub_halt) (void);
-void grub_qemu_init_cirrus (void);
-
-#endif
-
-#endif /* ! GRUB_KERNEL_MACHINE_HEADER */
+  grub_printf ("Reboot failed\n");
+  grub_refresh ();
+  while (1);
+}

@@ -634,6 +634,20 @@ module = {
 };
 
 module = {
+  name = reboot;
+  i386 = lib/i386/reboot.c;
+  i386 = lib/i386/reboot_trampoline.S;
+  ia64_efi = lib/efi/reboot.c;
+  x86_64_efi = lib/efi/reboot.c;
+  powerpc_ieee1275 = lib/ieee1275/reboot.c;
+  sparc64_ieee1275 = lib/ieee1275/reboot.c;
+  mips_arc = lib/mips/arc/reboot.c;
+  mips_loongson = lib/mips/loongson/reboot.c;
+  mips_qemu_mips = lib/mips/qemu_mips/reboot.c;
+  common = commands/reboot.c;
+};
+
+module = {
   name = hashsum;
   common = commands/hashsum.c;
 };
@@ -731,11 +745,6 @@ module = {
 module = {
   name = read;
   common = commands/read.c;
-};
-
-module = {
-  name = reboot;
-  common = commands/reboot.c;
 };
 
 module = {

@@ -99,12 +99,6 @@ grub_halt (void)
   while (1);
 }
 
-void
-grub_reboot (void)
-{
-  while (1);
-}
-
 grub_err_t 
 grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {

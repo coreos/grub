@@ -1,3 +1,30 @@
+2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move grub_reboot out of the kernel.
+
+	* grub-core/Makefile.core.def (reboot): Add platform-specific files.
+	* grub-core/kern/efi/efi.c (grub_reboot): Moved to ...
+	* grub-core/lib/efi/reboot.c: ... here.
+	* grub-core/kern/i386/efi/startup.S: Remove including of realmode.S.
+	* grub-core/kern/i386/ieee1275/startup.S: Likewise.
+	* grub-core/kern/i386/pc/startup.S (grub_exit): Inline cold_reboot.
+	* grub-core/kern/i386/realmode.S (grub_reboot): Moved to...
+	* grub-core/lib/i386/reboot_trampoline.S: ... here.
+	* grub-core/kern/ieee1275/openfw.c (grub_reboot): Moved to...
+	* grub-core/lib/ieee1275/reboot.c: ... here.
+	* grub-core/kern/mips/arc/init.c (grub_reboot): Moved to...
+	* grub-core/lib/mips/arc/reboot.c: ... here.
+	* grub-core/kern/mips/loongson/init.c (grub_reboot): Moved to...
+	* grub-core/lib/mips/loongson/reboot.c: ...here.
+	* grub-core/kern/mips/qemu_mips/init.c (grub_reboot): Moved to...
+	* grub-core/lib/mips/qemu_mips/reboot.c: ... here.
+	* include/grub/emu/misc.h (grub_reboot): New function declaration.
+	* include/grub/i386/reboot.h: New file.
+	* include/grub/mips/loongson/ec.h: Fix includes.
+	* include/grub/mips/qemu_mips/kernel.h (grub_reboot): Removed.
+	* include/grub/misc.h (grub_reboot): Don't mark as kernel function.
+	* grub-core/lib/i386/reboot.c: New file.
+
 2011-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Make grub_prefix into module to fix the arbitrary limit and save

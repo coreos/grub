@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,16 +16,18 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_KERNEL_MACHINE_HEADER
-#define GRUB_KERNEL_MACHINE_HEADER	1
-
 #include <grub/symbol.h>
+#include <grub/i386/reboot.h>
 
-#ifndef ASM_FILE
+	.p2align 4
 
-void EXPORT_FUNC (grub_halt) (void);
-void grub_qemu_init_cirrus (void);
+VARIABLE(grub_reboot_start)
+	.code16
+	
+	/* set 0x472 to 0x0000 for cold boot (0x1234 for warm boot) */
+	movw	$0x0472, %di
+	movw	%ax, (%di)
+	ljmp	$0xf000, $0xfff0
 
-#endif
-
-#endif /* ! GRUB_KERNEL_MACHINE_HEADER */
+	.code32
+VARIABLE(grub_reboot_end)
