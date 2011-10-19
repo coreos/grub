@@ -19,7 +19,6 @@
 
 #include <config.h>
 #include <grub/symbol.h>
-#include <grub/boot.h>
 
 /*
  * x86_64 uses registry to pass parameters. Unfortunately, gcc and efi use

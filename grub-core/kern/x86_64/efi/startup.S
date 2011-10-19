@@ -19,7 +19,6 @@
 
 #include <config.h>
 #include <grub/symbol.h>
-#include <grub/boot.h>
 
         .file   "startup.S"
         .text
@@ -28,18 +27,6 @@
 
 start:
 _start:
-	jmp codestart
-
-        /*
-         *  Compatibility version number
-         *
-         *  These MUST be at byte offset 6 and 7 of the executable
-         *  DO NOT MOVE !!!
-         */
-        . = _start + 0x6
-        .byte   GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
-
-codestart:
 	movq	%rcx, EXT_C(grub_efi_image_handle)(%rip)
 	movq	%rdx, EXT_C(grub_efi_system_table)(%rip)
 

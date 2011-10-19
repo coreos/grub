@@ -19,7 +19,6 @@
 
 #include <config.h>
 #include <grub/symbol.h>
-#include <grub/boot.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <multiboot.h>

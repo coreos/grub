@@ -1,5 +1,21 @@
 2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Removed unused GRUB_BOOT_VERSION. Check for kernel version is better
+	done with a dedicated section.
+
+	* grub-core/boot/sparc64/ieee1275/boot.S: Remove GRUB_BOOT_VERSION.
+	Ensure the correct position of boot_path.
+	* grub-core/kern/i386/efi/startup.S: Remove GRUB_BOOT_VERSION.
+	* grub-core/kern/i386/pc/startup.S: Likewise. Ensure correct position of
+	other fields.
+	* grub-core/kern/x86_64/efi/startup.S: Remove GRUB_BOOT_VERSION.
+	* include/grub/boot.h: Removed. All references removed.
+	* include/grub/sparc64/ieee1275/boot.h (GRUB_BOOT_MACHINE_VER_MAJ):
+	Removed.
+	(GRUB_BOOT_MACHINE_BOOT_DEVPATH): Make it lower.
+
+2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Declare IEEE1275 as able to find out the disk
 	name.
 

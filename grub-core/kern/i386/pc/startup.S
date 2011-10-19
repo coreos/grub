@@ -43,7 +43,6 @@
 
 #include <config.h>
 #include <grub/symbol.h>
-#include <grub/boot.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
@@ -75,31 +74,27 @@ LOCAL (base):
 #else
 	ljmp $0, $ABS(LOCAL (codestart))
 #endif
-	/*
-	 *  Compatibility version number
-	 *
-	 *  These MUST be at byte offset 6 and 7 of the executable
-	 *  DO NOT MOVE !!!
-	 */
-	. = _start + 0x6
-	.byte	GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
 
 	/*
-	 *  This is a special data area 8 bytes from the beginning.
+	 *  This is a special data area.
 	 */
 
-	. = _start + 0x8
-
+	. = _start + GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE
 VARIABLE(grub_total_module_size)
 	.long	0
+	. = _start + GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE
 VARIABLE(grub_kernel_image_size)
 	.long	0
+	. = _start + GRUB_KERNEL_I386_PC_COMPRESSED_SIZE 
 VARIABLE(grub_compressed_size)
 	.long	0
+	. = _start + GRUB_KERNEL_I386_PC_INSTALL_DOS_PART
 VARIABLE(grub_install_dos_part)
 	.long	0xFFFFFFFF
+	. = _start + GRUB_KERNEL_I386_PC_INSTALL_BSD_PART
 VARIABLE(grub_install_bsd_part)
 	.long	0xFFFFFFFF
+	. = _start + GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY
 reed_solomon_redundancy:
 	.long	0
 
