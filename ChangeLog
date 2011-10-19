@@ -1,5 +1,10 @@
 2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_encode_devname):
+	Don't add the bogus brackets.
+
+2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	ExFAT support.
 
 	* Makefile.util.def (libgrubmods.a): Add grub-core/fs/exfat.c.

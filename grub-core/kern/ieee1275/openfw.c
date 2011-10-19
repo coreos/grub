@@ -445,10 +445,10 @@ grub_ieee1275_encode_devname (const char *path)
 	/* GRUB partition 1 is OF partition 0.  */
 	partno++;
 
-      encoding = grub_xasprintf ("(%s,%d)", device, partno);
+      encoding = grub_xasprintf ("%s,%d", device, partno);
     }
   else
-    encoding = grub_xasprintf ("(%s)", device);
+    encoding = grub_strdup (device);
 
   grub_free (partition);
   grub_free (device);
