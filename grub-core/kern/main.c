@@ -105,7 +105,7 @@ grub_set_prefix_and_root (void)
   char *path = NULL;
   char *fwdevice = NULL;
   char *fwpath = NULL;
-  char *prefix;
+  char *prefix = NULL;
   struct grub_module_header *header;
 
   FOR_MODULES (header)

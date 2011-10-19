@@ -1,5 +1,9 @@
 2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/main.c (grub_set_prefix_and_root): Init prefix.
+
+2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_encode_devname):
 	Don't add the bogus brackets.
 
