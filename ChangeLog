@@ -1,3 +1,8 @@
+2011-10-19  Szymon Janc <szymon@janc.net.pl>
+
+	* grub-core/bus/usb/uhci.c (grub_uhci_setup_transfer): Fix possible
+	NULL pointer dereference.
+
 2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Removed unused GRUB_BOOT_VERSION. Check for kernel version is better
