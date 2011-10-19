@@ -1,5 +1,10 @@
 2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Declare IEEE1275 as able to find out the disk
+	name.
+
+2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/main.c (grub_set_prefix_and_root): Init prefix.
 
 2011-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
