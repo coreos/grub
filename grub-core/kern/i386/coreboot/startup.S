@@ -38,21 +38,6 @@
 	.globl	start, _start
 start:
 _start:
-	jmp codestart
-
-/*
- *  Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
- */
-	.p2align	2	/* force 4-byte alignment */
-multiboot_header:
-	/* magic */
-	.long	0x1BADB002
-	/* flags */
-	.long	MULTIBOOT_MEMORY_INFO
-	/* checksum */
-	.long	-0x1BADB002 - MULTIBOOT_MEMORY_INFO
-
-codestart:
 #ifdef GRUB_MACHINE_MULTIBOOT
 	cmpl	$MULTIBOOT_BOOTLOADER_MAGIC, %eax
 	jne 0f
@@ -65,6 +50,18 @@ codestart:
 
 	/* jump to the main body of C code */
 	jmp EXT_C(grub_main)
+
+/*
+ *  Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
+ */
+	.p2align	2	/* force 4-byte alignment */
+multiboot_header:
+	/* magic */
+	.long	0x1BADB002
+	/* flags */
+	.long	MULTIBOOT_MEMORY_INFO
+	/* checksum */
+	.long	-0x1BADB002 - MULTIBOOT_MEMORY_INFO
 
 /*
  *  prot_to_real and associated structures (but NOT real_to_prot, that is

@@ -130,6 +130,7 @@ compact_mem_regions (void)
 }
 
 grub_addr_t grub_modbase;
+extern grub_uint8_t _start[], _edata[];
 
 void
 grub_machine_init (void)
@@ -140,7 +141,7 @@ grub_machine_init (void)
 #endif
 
   grub_modbase = GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR
-    + (grub_kernel_image_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
+    + ((_edata - _start) - GRUB_KERNEL_MACHINE_RAW_SIZE);
 
   /* Initialize the console as early as possible.  */
   grub_console_init ();

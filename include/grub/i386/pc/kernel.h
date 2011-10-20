@@ -29,9 +29,6 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 
-/* The size of kernel image.  */
-extern grub_int32_t grub_kernel_image_size;
-
 /* The total size of module images following the kernel.  */
 extern grub_int32_t grub_total_module_size;
 

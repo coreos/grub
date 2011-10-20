@@ -38,8 +38,9 @@
 #include <grub/machine/kernel.h>
 #endif
 
-extern char _start[];
-extern char _end[];
+extern grub_uint8_t _start[];
+extern grub_uint8_t _end[];
+extern grub_uint8_t _edata[];
 
 grub_uint32_t
 grub_get_rtc (void)
@@ -66,7 +67,7 @@ void
 grub_machine_init (void)
 {
 #ifdef GRUB_MACHINE_QEMU
-  grub_modbase = grub_core_entry_addr + grub_kernel_image_size;
+  grub_modbase = grub_core_entry_addr + (_edata - _start);
 
   grub_qemu_init_cirrus ();
 #endif

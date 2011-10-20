@@ -82,9 +82,6 @@ LOCAL (base):
 	. = _start + GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE
 VARIABLE(grub_total_module_size)
 	.long	0
-	. = _start + GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE
-VARIABLE(grub_kernel_image_size)
-	.long	0
 	. = _start + GRUB_KERNEL_I386_PC_COMPRESSED_SIZE 
 VARIABLE(grub_compressed_size)
 	.long	0
@@ -226,7 +223,7 @@ post_reed_solomon:
 	movl	$(_start + GRUB_KERNEL_MACHINE_RAW_SIZE), %esi
 	pushl	%edi
 	pushl	%esi
-	movl	EXT_C(grub_kernel_image_size), %ecx
+	movl	$(BSS_START_SYMBOL - _start), %ecx
 	addl	EXT_C(grub_total_module_size), %ecx
 	subl	$GRUB_KERNEL_MACHINE_RAW_SIZE, %ecx
 	pushl	%ecx

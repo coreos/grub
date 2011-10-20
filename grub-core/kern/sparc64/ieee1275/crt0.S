@@ -31,10 +31,6 @@ _start:
 
 VARIABLE(grub_total_module_size)
 	.word	0
-VARIABLE(grub_kernel_image_size)
-	.word	0
-VARIABLE(grub_compressed_size)
-	.word	0
 
 codestart:
 	/* Copy the modules past the end of the kernel image.

@@ -1,3 +1,40 @@
+2011-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove redundant grub_kernel_image_size.
+
+	* grub-core/kern/i386/coreboot/init.c (grub_machine_init): Use
+	_edata and _start.
+	* grub-core/kern/i386/coreboot/startup.S: Move multiboot header after
+	the small code. It moves it only by few bytes but simplifies the code.
+	* grub-core/kern/i386/pc/init.c (grub_machine_init): Use _edata and
+	_start.
+	* grub-core/kern/i386/pc/startup.S: Use _edata and _start.
+	(grub_kernel_image_size): Removed.
+	* grub-core/kern/i386/qemu/startup.S: Use _edata and _start.
+	(grub_kernel_image_size): Removed.
+	[APPLE_CC]: Remove apple compiler support. i386-qemu port can't be
+	compiled with Apple toolchain.
+	* grub-core/kern/sparc64/ieee1275/crt0.S: Remove leftover fields.
+	* include/grub/i386/pc/kernel.h (grub_kernel_image_size): Removed.
+	* include/grub/i386/qemu/kernel.h (grub_kernel_image_size): Removed.
+	(grub_total_module_size): Likewise.
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_KERNEL_IMAGE_SIZE):
+	Removed.
+	(GRUB_KERNEL_I386_PC_COMPRESSED_SIZE): Put it lower.
+	(GRUB_KERNEL_I386_PC_INSTALL_DOS_PART): Likewise.
+	(GRUB_KERNEL_I386_PC_INSTALL_BSD_PART): Likewise.
+	(GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY): Likewise.
+	(GRUB_KERNEL_I386_QEMU_KERNEL_IMAGE_SIZE): Removed.
+	(GRUB_KERNEL_SPARC64_IEEE1275_KERNEL_IMAGE_SIZE): Likewise.
+	(GRUB_KERNEL_SPARC64_IEEE1275_COMPRESSED_SIZE): Likewise.
+	* include/grub/sparc64/ieee1275/kernel.h (grub_kernel_image_size):
+	Removed.
+	(grub_total_module_size): Removed.
+	* util/grub-mkimage.c (image_target_desc): Remove image_size.
+	(image_targets): Likewise.
+	Set .compressed_size to no field on sparc.
+	(generate_image): Remove kernel_image_size handling.
+
 2011-10-19  Szymon Janc <szymon@janc.net.pl>
 
 	* grub-core/bus/usb/uhci.c (grub_uhci_setup_transfer): Fix possible
