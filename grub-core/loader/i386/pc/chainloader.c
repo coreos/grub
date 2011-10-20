@@ -18,7 +18,6 @@
  */
 
 #include <grub/loader.h>
-#include <grub/machine/loader.h>
 #include <grub/machine/chainloader.h>
 #include <grub/machine/memory.h>
 #include <grub/file.h>
@@ -39,12 +38,14 @@
 #include <grub/mm.h>
 #include <grub/fat.h>
 #include <grub/ntfs.h>
+#include <grub/i386/relocator.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_dl_t my_mod;
 static int boot_drive;
-static void *boot_part_addr;
+static grub_addr_t boot_part_addr;
+static struct grub_relocator *rel;
 
 typedef enum
   {
@@ -55,16 +56,29 @@ typedef enum
 static grub_err_t
 grub_chainloader_boot (void)
 {
+  struct grub_relocator16_state state = { 
+    .edx = boot_drive,
+    .esi = boot_part_addr,
+    .ds = 0,
+    .es = 0,
+    .fs = 0,
+    .gs = 0,
+    .ss = 0,
+    .cs = 0,
+    .sp = GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR,
+    .ip = GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR,
+    .a20 = 0
+  };
   grub_video_set_mode ("text", 0, 0);
-  grub_chainloader_real_boot (boot_drive, boot_part_addr);
 
-  /* Never reach here.  */
-  return GRUB_ERR_NONE;
+  return grub_relocator16_boot (rel, state);
 }
 
 static grub_err_t
 grub_chainloader_unload (void)
 {
+  grub_relocator_unload (rel);
+  rel = NULL;
   grub_dl_unref (my_mod);
   return GRUB_ERR_NONE;
 }
@@ -133,7 +147,12 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
   grub_uint16_t signature;
   grub_device_t dev;
   int drive = -1;
-  void *part_addr = 0;
+  grub_addr_t part_addr = 0;
+  grub_uint8_t *bs, *ptable;
+
+  rel = grub_relocator_new ();
+  if (!rel)
+    goto fail;
 
   grub_dl_ref (my_mod);
 
@@ -142,8 +161,25 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
   if (! file)
     goto fail;
 
+  {
+    grub_relocator_chunk_t ch;
+    grub_err_t err;
+
+    err = grub_relocator_alloc_chunk_addr (rel, &ch, 0x7C00,
+					   GRUB_DISK_SECTOR_SIZE);
+    if (err)
+      goto fail;
+    bs = get_virtual_current_address (ch);
+    err = grub_relocator_alloc_chunk_addr (rel, &ch,
+					   GRUB_MEMORY_MACHINE_PART_TABLE_ADDR,
+					   64);
+    if (err)
+      goto fail;
+    ptable = get_virtual_current_address (ch);
+  }
+
   /* Read the first block.  */
-  if (grub_file_read (file, (void *) 0x7C00, GRUB_DISK_SECTOR_SIZE)
+  if (grub_file_read (file, bs, GRUB_DISK_SECTOR_SIZE)
       != GRUB_DISK_SECTOR_SIZE)
     {
       if (grub_errno == GRUB_ERR_NONE)
@@ -153,7 +189,7 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
     }
 
   /* Check the signature.  */
-  signature = *((grub_uint16_t *) (0x7C00 + GRUB_DISK_SECTOR_SIZE - 2));
+  signature = *((grub_uint16_t *) (bs + GRUB_DISK_SECTOR_SIZE - 2));
   if (signature != grub_le_to_cpu16 (0xaa55)
       && ! (flags & GRUB_CHAINLOADER_FORCE))
     {
@@ -177,10 +213,9 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 	  if (p && grub_strcmp (p->partmap->name, "msdos") == 0)
 	    {
 	      disk->partition = p->parent;
-	      grub_disk_read (disk, p->offset, 446, 64,
-			      (void *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
-	      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
-				    + (p->index << 4));
+	      grub_disk_read (disk, p->offset, 446, 64, ptable);
+	      part_addr = (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
+			   + (p->index << 4));
 	      disk->partition = p;
 	    }
 	}
