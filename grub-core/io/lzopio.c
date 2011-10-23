@@ -397,7 +397,7 @@ test_header (grub_file_t file)
   if (hcheck)
   {
     checksum = grub_cpu_to_be32(checksum);
-    if (memcmp(&checksum, hcheck->read(context), sizeof(checksum)) != 0)
+    if (grub_memcmp (&checksum, hcheck->read(context), sizeof(checksum)) != 0)
       goto CORRUPTED;
   }
 
