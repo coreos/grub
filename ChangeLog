@@ -1,5 +1,14 @@
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fine grainely disable warnings on lexer. Remove Wno-error on it.
+
+	* grub-core/Makefile.core.def (normal): Remove -Wno-error.
+	* grub-core/script/lexer.c: Declare yytext_ptr to avoid having
+	yylex_strncpy.
+	* grub-core/script/yylex.l: Add fine-grained #pragma.
+
+2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/string.h (memcpy) [GRUB_UTIL]:
 	New inline function.
 	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h (memcpy) [GRUB_UTIL]:
