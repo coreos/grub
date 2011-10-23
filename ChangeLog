@@ -1,4 +1,10 @@
-2011-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Add datarootdir as per automake manual
+	suggestion.
+	* util/grub-mknetdir.in: Likewise.
+
+2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub.d/10_hurd.in: Add datarootdir as per automake manual
 	suggestion.
