@@ -485,7 +485,7 @@ grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
 			  + data->logical_sector_bits
 			  + GRUB_DISK_SECTOR_BITS);
   logical_cluster = offset >> logical_cluster_bits;
-  offset &= (1 << logical_cluster_bits) - 1;
+  offset &= (1ULL << logical_cluster_bits) - 1;
 
   if (logical_cluster < data->cur_cluster_num)
     {
@@ -631,9 +631,9 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
 		case 0xc0:
 		  node.first_cluster = grub_cpu_to_le32 (sec.type_specific.stream_extension.first_cluster);
 		  node.valid_size
-		    = grub_cpu_to_le32 (sec.type_specific.stream_extension.valid_size);
+		    = grub_cpu_to_le64 (sec.type_specific.stream_extension.valid_size);
 		  node.file_size
-		    = grub_cpu_to_le32 (sec.type_specific.stream_extension.file_size);
+		    = grub_cpu_to_le64 (sec.type_specific.stream_extension.file_size);
 		  node.have_stream = 1;
 		  break;
 		case 0xc1:
@@ -1025,6 +1025,8 @@ grub_fat_label (grub_device_t device, char **label)
   data = grub_fat_mount (disk);
   if (! data)
     return grub_errno;
+
+  *label = NULL;
 
   while (1)
     {

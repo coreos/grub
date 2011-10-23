@@ -1,5 +1,12 @@
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/fat.c (grub_fat_label) [MODE_EXFAT]: Set *label to 0
+	if no label is found.
+	(grub_fat_iterate_dir): Fix file size type.
+	(grub_fat_iterate_dir): Likewise.
+
+2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/reed_solomon.c (gf_invert): Declare as const and
 	save some space.
 	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_RAW_SIZE): Decrease.
