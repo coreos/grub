@@ -26,6 +26,7 @@ VARIABLE(grub_reboot_start)
 	
 	/* set 0x472 to 0x0000 for cold boot (0x1234 for warm boot) */
 	movw	$0x0472, %di
+	xorw	%ax, %ax
 	movw	%ax, (%di)
 	ljmp	$0xf000, $0xfff0
 

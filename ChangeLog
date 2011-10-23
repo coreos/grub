@@ -1,5 +1,11 @@
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/pc/startup.S (grub_exit): Add missing zeroing-out.
+	* grub-core/lib/i386/reboot_trampoline.S (grub_reboot_start):
+	Likewise.
+
+2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/io/lzopio.c (test_header): Fix incorrect memcmp instead of
 	grub_memcmp usage.
 

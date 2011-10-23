@@ -458,6 +458,7 @@ FUNCTION(grub_exit)
 	/* Tell the BIOS a boot failure. If this does not work, reboot.  */
 	int	$0x18
 	/* set 0x472 to 0x0000 for cold boot (0x1234 for warm boot) */
+	xorw	%ax, %ax
 	movw	$0x0472, %di
 	movw	%ax, (%di)
 	ljmp	$0xf000, $0xfff0
