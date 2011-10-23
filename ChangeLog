@@ -1,5 +1,9 @@
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/import_gcry.py: Automatically fix camellia.c and camellia.h.
+
+2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/import_gcry.py: Accept space between # and include.
 
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>

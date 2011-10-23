@@ -104,6 +104,20 @@ for cipher_file in cipher_files:
         fw.write ("/* This file was automatically imported with \n")
         fw.write ("   import_gcry.py. Please don't modify it */\n")
         fw.write ("#include <grub/dl.h>\n")
+        if cipher_file == "camellia.c":
+            fw.write ("#include \"camellia.h\"\n")
+        if cipher_file == "camellia.h":
+            fw.write ("#include <grub/misc.h>\n")
+            fw.write ("void camellia_setup128(const unsigned char *key, grub_uint32_t *subkey);\n")
+            fw.write ("void camellia_setup192(const unsigned char *key, grub_uint32_t *subkey);\n")
+            fw.write ("void camellia_setup256(const unsigned char *key, grub_uint32_t *subkey);\n")
+            fw.write ("void camellia_encrypt128(const grub_uint32_t *subkey, grub_uint32_t *io);\n")
+            fw.write ("void camellia_encrypt192(const grub_uint32_t *subkey, grub_uint32_t *io);\n")                      
+            fw.write ("void camellia_encrypt256(const grub_uint32_t *subkey, grub_uint32_t *io);\n")                      
+            fw.write ("void camellia_decrypt128(const grub_uint32_t *subkey, grub_uint32_t *io);\n")
+            fw.write ("void camellia_decrypt192(const grub_uint32_t *subkey, grub_uint32_t *io);\n")                      
+            fw.write ("void camellia_decrypt256(const grub_uint32_t *subkey, grub_uint32_t *io);\n")                      
+            fw.write ("#define memcpy grub_memcpy\n")
         # Whole libgcrypt is distributed under GPLv3+ or compatible
         if isc:
             fw.write ("GRUB_MOD_LICENSE (\"GPLv3+\");\n")
