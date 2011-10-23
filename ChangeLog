@@ -1,5 +1,12 @@
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/reed_solomon.c (gf_invert): Declare as const and
+	save some space.
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_RAW_SIZE): Decrease.
+	(GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART): Likewise.
+
+2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/import_gcry.py: Automatically fix camellia.c and camellia.h.
 
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>

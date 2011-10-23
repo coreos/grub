@@ -57,13 +57,13 @@ typedef grub_uint16_t gf_double_t;
 #define GF_POLYNOMIAL 0x1d
 #define GF_INVERT2 0x8e
 #if defined (STANDALONE) && !defined (TEST)
-static char *gf_invert __attribute__ ((section(".text"))) = (void *) 0x100000;
+static gf_single_t * const gf_invert __attribute__ ((section(".text"))) = (void *) 0x100000;
 static char *scratch __attribute__ ((section(".text"))) = (void *) 0x100100;
 #else
 #if defined (STANDALONE)
 static char *scratch;
 #endif
-static grub_uint8_t gf_invert[256];
+static gf_single_t gf_invert[256];
 #endif
 
 #define SECTOR_SIZE 512

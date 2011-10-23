@@ -35,9 +35,9 @@
 #define GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY	0x18
 
 /* The size of the first region which won't be compressed.  */
-#define GRUB_KERNEL_I386_PC_RAW_SIZE		0xcd0
+#define GRUB_KERNEL_I386_PC_RAW_SIZE		0xc70
 
-#define GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART 0x730
+#define GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART 0x6e0
 
 /* The segment where the kernel is loaded.  */
 #define GRUB_BOOT_I386_PC_KERNEL_SEG	0x800
