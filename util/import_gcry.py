@@ -189,10 +189,9 @@ for cipher_file in cipher_files:
                     continue
                 else:
                     fw.write (holdline)
-            m = re.match ("#include <.*>", line)
+            m = re.match ("# *include <(.*)>", line)
             if not m is None:
-                chmsg = "Removed including of %s" % \
-                m.group () [len ("#include <"):len (m.group ()) - 1]
+                chmsg = "Removed including of %s" % m.groups ()[0]
                 if nch:
                     chlognew = "%s\n	%s" % (chlognew, chmsg)
                 else:
