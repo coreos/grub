@@ -49,6 +49,7 @@
 #include "progname.h"
 #include <grub/reed_solomon.h>
 #include <grub/msdos_partition.h>
+#include <include/grub/crypto.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>

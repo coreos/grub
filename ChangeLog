@@ -1,5 +1,9 @@
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-setup.c: Add missing include.
+
+2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/ieee1275/grub-ofpathname.c: Add missing include.
 
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
