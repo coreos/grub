@@ -1,5 +1,15 @@
 2011-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/10_hurd.in: Add datarootdir as per automake manual
+	suggestion.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/10_netbsd.in: Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
+2011-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove redundant grub_kernel_image_size.
 
 	* grub-core/kern/i386/coreboot/init.c (grub_machine_init): Use
