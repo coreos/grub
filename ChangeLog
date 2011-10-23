@@ -1,5 +1,9 @@
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/setjmp.S [__ia64__]: Include ./ia64/longjmp.S.
+
+2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fine grainely disable warnings on lexer. Remove Wno-error on it.
 
 	* grub-core/Makefile.core.def (normal): Remove -Wno-error.
