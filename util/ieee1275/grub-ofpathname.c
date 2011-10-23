@@ -24,6 +24,8 @@
 
 #include "progname.h"
 
+#include <string.h>
+
 int main(int argc, char **argv)
 {
   char *of_path;
