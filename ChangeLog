@@ -1,5 +1,14 @@
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/posix_wrap/string.h (memcpy) [GRUB_UTIL]:
+	New inline function.
+	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h (memcpy) [GRUB_UTIL]:
+	Likewise.
+	(memset) [GRUB_UTIL]: Likewise.
+	(memcmp) [GRUB_UTIL]: Likewise.
+
+2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h (grub_memcpy): Declare grub_memcpy with static
 	inline function rather than a define.
 
