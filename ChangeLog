@@ -1,5 +1,15 @@
 2011-10-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix 2G limit on ZFS.
+
+	* grub-core/fs/zfs/zfs.c (zio_checksum_verify): Use more appropriate
+	types.
+	(uberblock_verify): Likewise.
+	(dmu_read): Likewise.
+	(grub_zfs_read): Likewise. Remove invalid cast.
+
+2011-10-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/jfs.c (grub_jfs_blkno): Use more appropriate types.
 	(grub_jfs_blkno): Fix incorrect shift.
 	(grub_jfs_read_file): Use more appropriate types.

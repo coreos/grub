@@ -242,7 +242,7 @@ static zio_checksum_info_t zio_checksum_table[ZIO_CHECKSUM_FUNCTIONS] = {
  */
 static grub_err_t
 zio_checksum_verify (zio_cksum_t zc, grub_uint32_t checksum,
-		     grub_zfs_endian_t endian, char *buf, int size)
+		     grub_zfs_endian_t endian, char *buf, grub_size_t size)
 {
   zio_eck_t *zec = (zio_eck_t *) (buf + size) - 1;
   zio_checksum_info_t *ci = &zio_checksum_table[checksum];
@@ -337,7 +337,7 @@ vdev_uberblock_compare (uberblock_t * ub1, uberblock_t * ub2)
  *
  */
 static grub_err_t
-uberblock_verify (uberblock_phys_t * ub, int offset)
+uberblock_verify (uberblock_phys_t * ub, grub_uint64_t offset)
 {
   uberblock_t *uber = &ub->ubp_uberblock;
   grub_err_t err;
@@ -620,7 +620,8 @@ static grub_err_t
 dmu_read (dnode_end_t * dn, grub_uint64_t blkid, void **buf, 
 	  grub_zfs_endian_t *endian_out, struct grub_zfs_data *data)
 {
-  int idx, level;
+  int level;
+  grub_off_t idx;
   blkptr_t *bp_array = dn->dn.dn_blkptr;
   int epbs = dn->dn.dn_indblkshift - SPA_BLKPTRSHIFT;
   blkptr_t *bp;
@@ -2266,7 +2267,7 @@ static grub_ssize_t
 grub_zfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_zfs_data *data = (struct grub_zfs_data *) file->data;
-  int blksz, movesize;
+  grub_size_t blksz, movesize;
   grub_size_t length;
   grub_size_t read;
   grub_err_t err;
@@ -2320,7 +2321,7 @@ grub_zfs_read (grub_file_t file, char *buf, grub_size_t len)
       data->file_start = blkid * blksz;
       data->file_end = data->file_start + blksz;
 
-      movesize = MIN (length, data->file_end - (int) file->offset - read);
+      movesize = MIN (length, data->file_end - file->offset - read);
 
       grub_memmove (buf, data->file_buf + file->offset + read
 		    - data->file_start, movesize);
