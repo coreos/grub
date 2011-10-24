@@ -1,3 +1,12 @@
+2011-10-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Minix FS fixes.
+
+	* grub-core/fs/minix.c (GRUB_MINIX_INODE_SIZE): Size is always 32-bit.
+	(grub_minix_inode) [!MODE_MINIX2 && !MODE_MINIX3]: Make size 32-bit.
+	Rename ctime to mtime. All users updated.
+	(grub_minix_get_file_block): Fix types and double indirect computations.
+
 2011-10-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/fat.c (grub_fat_label) [MODE_EXFAT]: Set *label to 0

@@ -63,7 +63,7 @@ typedef grub_uint16_t grub_minix_ino_t;
 #define grub_minix_le_to_cpu_ino grub_le_to_cpu16
 #endif
 
-#define GRUB_MINIX_INODE_SIZE(data) (grub_minix_le_to_cpu_n (data->inode.size))
+#define GRUB_MINIX_INODE_SIZE(data) (grub_le_to_cpu32 (data->inode.size))
 #define GRUB_MINIX_INODE_MODE(data) (grub_le_to_cpu16 (data->inode.mode))
 #define GRUB_MINIX_INODE_DIR_ZONES(data,blk) (grub_minix_le_to_cpu_n   \
 					      (data->inode.dir_zones[blk]))
@@ -133,15 +133,14 @@ struct grub_minix_inode
   grub_uint32_t indir_zone;
   grub_uint32_t double_indir_zone;
   grub_uint32_t unused;
-
 };
 #else
 struct grub_minix_inode
 {
   grub_uint16_t mode;
   grub_uint16_t uid;
-  grub_uint16_t size;
-  grub_uint32_t ctime;
+  grub_uint32_t size;
+  grub_uint32_t mtime;
   grub_uint8_t gid;
   grub_uint8_t nlinks;
   grub_uint16_t dir_zones[7];
@@ -168,15 +167,19 @@ static grub_dl_t my_mod;
 static grub_err_t grub_minix_find_file (struct grub_minix_data *data,
 					const char *path);
 
-static int
+static grub_minix_uintn_t
 grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
 {
-  int indir;
+  grub_minix_uintn_t indir;
+  const grub_uint32_t block_per_zone = (GRUB_MINIX_ZONESZ
+					/ GRUB_MINIX_INODE_BLKSZ (data));
 
-  auto int grub_get_indir (int, int);
+  auto grub_minix_uintn_t grub_get_indir (grub_minix_uintn_t,
+					  grub_minix_uintn_t);
 
   /* Read the block pointer in ZONE, on the offset NUM.  */
-  int grub_get_indir (int zone, int num)
+  grub_minix_uintn_t grub_get_indir (grub_minix_uintn_t zone,
+				     grub_minix_uintn_t num)
     {
       grub_minix_uintn_t indirn;
       grub_disk_read (data->disk,
@@ -192,21 +195,20 @@ grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
 
   /* Indirect block.  */
   blk -= GRUB_MINIX_INODE_DIR_BLOCKS;
-  if (blk < GRUB_MINIX_ZONESZ / GRUB_MINIX_INODE_BLKSZ (data))
+  if (blk < block_per_zone)
     {
       indir = grub_get_indir (GRUB_MINIX_INODE_INDIR_ZONE (data), blk);
       return indir;
     }
 
   /* Double indirect block.  */
-  blk -= GRUB_MINIX_ZONESZ / GRUB_MINIX_INODE_BLKSZ (data);
-  if (blk < (GRUB_MINIX_ZONESZ / GRUB_MINIX_INODE_BLKSZ (data))
-      * (GRUB_MINIX_ZONESZ / GRUB_MINIX_INODE_BLKSZ (data)))
+  blk -= block_per_zone;
+  if (blk < block_per_zone * block_per_zone)
     {
       indir = grub_get_indir (GRUB_MINIX_INODE_DINDIR_ZONE (data),
-			      blk / GRUB_MINIX_ZONESZ);
+			      blk / block_per_zone);
 
-      indir = grub_get_indir (indir, blk % GRUB_MINIX_ZONESZ);
+      indir = grub_get_indir (indir, blk % block_per_zone);
 
       return indir;
     }
@@ -536,11 +538,7 @@ grub_minix_dir (grub_device_t device, const char *path,
       info.dir = ((GRUB_MINIX_INODE_MODE (data)
 		   & GRUB_MINIX_IFDIR) == GRUB_MINIX_IFDIR);
       info.mtimeset = 1;
-#ifndef MODE_MINIX2
-      info.mtime = grub_le_to_cpu32 (data->inode.ctime);
-#else
       info.mtime = grub_le_to_cpu32 (data->inode.mtime);
-#endif
 
       if (hook (filename, &info) ? 1 : 0)
 	break;
