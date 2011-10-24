@@ -132,7 +132,7 @@ struct grub_minix_inode
   grub_uint32_t dir_zones[7];
   grub_uint32_t indir_zone;
   grub_uint32_t double_indir_zone;
-  grub_uint32_t unused;
+  grub_uint32_t triple_indir_zone;
 };
 #else
 struct grub_minix_inode
@@ -212,6 +212,20 @@ grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
 
       return indir;
     }
+
+#if defined (MODE_MINIX3) || defined (MODE_MINIX2)
+  blk -= block_per_zone * block_per_zone;
+  if (blk < ((grub_uint64_t) block_per_zone * (grub_uint64_t) block_per_zone
+	     * (grub_uint64_t) block_per_zone))
+    {
+      indir = grub_get_indir (grub_minix_le_to_cpu_n (data->inode.triple_indir_zone),
+			      (blk / block_per_zone) / block_per_zone);
+      indir = grub_get_indir (indir, (blk / block_per_zone) % block_per_zone);
+      indir = grub_get_indir (indir, blk % block_per_zone);
+
+      return indir;
+    }
+#endif
 
   /* This should never happen.  */
   grub_error (GRUB_ERR_OUT_OF_RANGE, "file bigger than maximum size");

@@ -1,5 +1,14 @@
 2011-10-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support triple indirect on minix2 and minix3.
+
+	* grub-core/fs/minix.c (grub_minix_inode) [MODE_MINIX2 || MODE_MINIX3]:
+	Declare triple_indir_zone.
+	(grub_minix_get_file_block) [MODE_MINIX2 || MODE_MINIX3]: Handle triple
+	indirect.
+
+2011-10-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Minix FS fixes.
 
 	* grub-core/fs/minix.c (GRUB_MINIX_INODE_SIZE): Size is always 32-bit.
