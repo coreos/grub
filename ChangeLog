@@ -1,5 +1,11 @@
 2011-10-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/jfs.c (grub_jfs_blkno): Use more appropriate types.
+	(grub_jfs_blkno): Fix incorrect shift.
+	(grub_jfs_read_file): Use more appropriate types.
+
+2011-10-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support triple indirect on minix2 and minix3.
 
 	* grub-core/fs/minix.c (grub_minix_inode) [MODE_MINIX2 || MODE_MINIX3]:

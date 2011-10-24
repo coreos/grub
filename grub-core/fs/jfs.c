@@ -253,11 +253,11 @@ static grub_int64_t
 grub_jfs_blkno (struct grub_jfs_data *data, struct grub_jfs_inode *inode,
 		grub_uint64_t blk)
 {
-  auto int getblk (struct grub_jfs_treehead *treehead,
-		   struct grub_jfs_tree_extent *extents);
+  auto grub_int64_t getblk (struct grub_jfs_treehead *treehead,
+			    struct grub_jfs_tree_extent *extents);
 
-  int getblk (struct grub_jfs_treehead *treehead,
-	      struct grub_jfs_tree_extent *extents)
+  grub_int64_t getblk (struct grub_jfs_treehead *treehead,
+		       struct grub_jfs_tree_extent *extents)
     {
       int found = -1;
       int i;
@@ -269,7 +269,7 @@ grub_jfs_blkno (struct grub_jfs_data *data, struct grub_jfs_inode *inode,
 	      /* Read the leafnode.  */
 	      if (grub_le_to_cpu32 (extents[i].offset2) <= blk
 		  && ((grub_le_to_cpu16 (extents[i].extent.length))
-		      + (extents[i].extent.length2 << 8)
+		      + (extents[i].extent.length2 << 16)
 		      + grub_le_to_cpu32 (extents[i].offset2)) > blk)
 		return (blk - grub_le_to_cpu32 (extents[i].offset2)
 			+ grub_le_to_cpu32 (extents[i].extent.blk2));
@@ -288,7 +288,7 @@ grub_jfs_blkno (struct grub_jfs_data *data, struct grub_jfs_inode *inode,
 	  } tree;
 
 	  if (grub_disk_read (data->disk,
-			      grub_le_to_cpu32 (extents[found].extent.blk2)
+			      ((grub_disk_addr_t) grub_le_to_cpu32 (extents[found].extent.blk2))
 			      << (grub_le_to_cpu16 (data->sblock.log2_blksz)
 				  - GRUB_DISK_SECTOR_BITS), 0,
 			      sizeof (tree), (char *) &tree))
@@ -558,10 +558,10 @@ static grub_ssize_t
 grub_jfs_read_file (struct grub_jfs_data *data,
 		    void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 				       unsigned offset, unsigned length),
-		    grub_uint64_t pos, grub_size_t len, char *buf)
+		    grub_off_t pos, grub_size_t len, char *buf)
 {
-  grub_uint64_t i;
-  grub_uint64_t blockcnt;
+  grub_off_t i;
+  grub_off_t blockcnt;
 
   blockcnt = (len + pos + grub_le_to_cpu32 (data->sblock.blksz) - 1)
     >> grub_le_to_cpu16 (data->sblock.log2_blksz);
