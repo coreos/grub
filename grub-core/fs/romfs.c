@@ -367,6 +367,7 @@ grub_romfs_open (struct grub_file *file, const char *name)
 
   file->size = grub_be_to_cpu32 (fdiro->file.size);
   file->data = fdiro;
+  return GRUB_ERR_NONE;
 
  fail:
   grub_free (data);

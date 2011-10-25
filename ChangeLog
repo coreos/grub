@@ -1,3 +1,7 @@
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/romfs.c (grub_romfs_open): Add missing return.
+
 2011-10-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix 2G limit on ZFS.
