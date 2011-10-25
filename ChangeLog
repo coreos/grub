@@ -1,5 +1,24 @@
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support multi-extent iso files.
+
+	* grub-core/fs/iso9660.c (grub_iso9660_data): Remove first_sector.
+	Add node.
+	(grub_fshelp_node): Revamp. All users updated.
+	(FLAG_*): New enum.
+	(read_node): New function.
+	(grub_iso9660_susp_iterate): Use read_node. Receive a node as argument.
+	All users updated.
+	(grub_iso9660_mount): Don't attempt to read sua when there is none.
+	(get_node_size): New function.
+	(grub_iso9660_iterate_dir): Use read_node. Agglomerate multi-extent
+	entries.
+	Fix memory leak on . and ..
+	(grub_iso9660_read): Use read_node.
+	(grub_iso9660_close): Free node.
+
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix tar 4G limit and handle paths containing dot.
 
 	* grub-core/fs/cpio.c (grub_cpio_data): Use grub_off_t for offsets.

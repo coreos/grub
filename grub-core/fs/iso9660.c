@@ -149,21 +149,27 @@ struct grub_iso9660_data
 {
   struct grub_iso9660_primary_voldesc voldesc;
   grub_disk_t disk;
-  unsigned int first_sector;
   int rockridge;
   int susp_skip;
   int joliet;
+  struct grub_fshelp_node *node;
 };
 
 struct grub_fshelp_node
 {
   struct grub_iso9660_data *data;
-  struct grub_iso9660_dir dirent;
-  unsigned int size;
-  unsigned int blk;
-  unsigned int dir_blk;
-  unsigned int dir_off;
+  grub_size_t have_dirents, alloc_dirents;
+  grub_off_t dir_off;
+  struct grub_iso9660_dir dirents[8];
 };
+
+enum
+  {
+    FLAG_TYPE_PLAIN = 0,
+    FLAG_TYPE_DIR = 2,
+    FLAG_TYPE = 3,
+    FLAG_MORE_EXTENTS = 0x80
+  };
 
 static grub_dl_t my_mod;
 
@@ -214,30 +220,69 @@ iso9660_to_unixtime2 (const struct grub_iso9660_date2 *i, grub_int32_t *nix)
   return 1;
 }
 
+static grub_err_t
+read_node (grub_fshelp_node_t node, grub_off_t off, grub_size_t len, char *buf)
+{
+  grub_size_t i = 0;
+
+  while (len > 0)
+    {
+      grub_size_t toread;
+      grub_err_t err;
+      while (i < node->have_dirents
+	     && off >= grub_le_to_cpu32 (node->dirents[i].size))
+	{
+	  off -= grub_le_to_cpu32 (node->dirents[i].size);
+	  i++;
+	}
+      if (i == node->have_dirents)
+	return grub_error (GRUB_ERR_OUT_OF_RANGE, "read out of range");
+      toread = grub_le_to_cpu32 (node->dirents[i].size);
+      if (toread > len)
+	toread = len;
+      err = grub_disk_read (node->data->disk,
+			    ((grub_disk_addr_t) grub_le_to_cpu32 (node->dirents[i].first_sector)) << GRUB_ISO9660_LOG2_BLKSZ,
+			    off, toread, buf);
+      if (err)
+	return err;
+      len -= toread;
+      off += toread;
+      buf += toread;
+    }
+  return GRUB_ERR_NONE;
+}
+
 /* Iterate over the susp entries, starting with block SUA_BLOCK on the
    offset SUA_POS with a size of SUA_SIZE bytes.  Hook is called for
    every entry.  */
 static grub_err_t
-grub_iso9660_susp_iterate (struct grub_iso9660_data *data,
-			   int sua_block, int sua_pos, int sua_size,
+grub_iso9660_susp_iterate (grub_fshelp_node_t node, grub_off_t off,
+			   grub_size_t sua_size,
 			   grub_err_t (*hook)
 			   (struct grub_iso9660_susp_entry *entry))
 {
   char *sua;
   struct grub_iso9660_susp_entry *entry;
+  grub_disk_addr_t ce_block;
+  int is_ce = 0;
 
   auto grub_err_t load_sua (void);
 
   /* Load a part of the System Usage Area.  */
   grub_err_t load_sua (void)
     {
+      grub_err_t err;
       sua = grub_malloc (sua_size);
       if (!sua)
 	return grub_errno;
 
-      if (grub_disk_read (data->disk, sua_block, sua_pos,
-			  sua_size, sua))
-	return grub_errno;
+      if (is_ce)
+	err = grub_disk_read (node->data->disk, ce_block, off,
+			      sua_size, sua);
+      else
+	err = read_node (node, off, sua_size, sua);
+      if (err)
+	return err;
 
       entry = (struct grub_iso9660_susp_entry *) sua;
       return 0;
@@ -259,10 +304,11 @@ grub_iso9660_susp_iterate (struct grub_iso9660_data *data,
 	{
 	  struct grub_iso9660_susp_ce *ce;
 
+	  is_ce = 1;
 	  ce = (struct grub_iso9660_susp_ce *) entry;
 	  sua_size = grub_le_to_cpu32 (ce->len);
-	  sua_pos = grub_le_to_cpu32 (ce->off);
-	  sua_block = grub_le_to_cpu32 (ce->blk) << GRUB_ISO9660_LOG2_BLKSZ;
+	  off = grub_le_to_cpu32 (ce->off);
+	  ce_block = grub_le_to_cpu32 (ce->blk) << GRUB_ISO9660_LOG2_BLKSZ;
 
 	  grub_free (sua);
 	  if (load_sua ())
@@ -383,6 +429,9 @@ grub_iso9660_mount (grub_disk_t disk)
 	     + (rootdir.namelen % 2) - 1);
   sua_size = rootdir.len - sua_pos;
 
+  if (!sua_size)
+    return data;
+
   sua = grub_malloc (sua_size);
   if (! sua)
     goto fail;
@@ -400,6 +449,14 @@ grub_iso9660_mount (grub_disk_t disk)
   /* Test if the SUSP protocol is used on this filesystem.  */
   if (grub_strncmp ((char *) entry->sig, "SP", 2) == 0)
     {
+      struct grub_fshelp_node rootnode;
+
+      rootnode.data = data;
+      rootnode.alloc_dirents = 0;
+      rootnode.have_dirents = 1;
+      rootnode.dir_off = 0;
+      rootnode.dirents[0] = data->voldesc.rootdir;
+
       /* The 2nd data byte stored how many bytes are skipped every time
 	 to get to the SUA (System Usage Area).  */
       data->susp_skip = entry->data[2];
@@ -407,9 +464,7 @@ grub_iso9660_mount (grub_disk_t disk)
 
       /* Iterate over the entries in the SUA area to detect
 	 extensions.  */
-      if (grub_iso9660_susp_iterate (data,
-				     (grub_le_to_cpu32 (data->voldesc.rootdir.first_sector)
-				      << GRUB_ISO9660_LOG2_BLKSZ),
+      if (grub_iso9660_susp_iterate (&rootnode,
 				     sua_pos, sua_size, susp_iterate))
 	goto fail;
     }
@@ -502,10 +557,10 @@ grub_iso9660_read_symlink (grub_fshelp_node_t node)
       return 0;
     }
 
-  sua_off = (sizeof (node->dirent) + node->dirent.namelen + 1
-	     - (node->dirent.namelen % 2)
+  sua_off = (sizeof (node->dirents[0]) + node->dirents[0].namelen + 1
+	     - (node->dirents[0].namelen % 2)
 	     + node->data->susp_skip);
-  sua_size = node->dirent.len - sua_off;
+  sua_size = node->dirents[0].len - sua_off;
 
   symlink = grub_malloc (1);
   if (!symlink)
@@ -513,8 +568,7 @@ grub_iso9660_read_symlink (grub_fshelp_node_t node)
 
   *symlink = '\0';
 
-  if (grub_iso9660_susp_iterate (node->data, node->dir_blk,
-				 node->dir_off + sua_off,
+  if (grub_iso9660_susp_iterate (node, node->dir_off + sua_off,
 				 sua_size, susp_iterate_sl))
     {
       grub_free (symlink);
@@ -524,6 +578,16 @@ grub_iso9660_read_symlink (grub_fshelp_node_t node)
   return symlink;
 }
 
+static grub_off_t
+get_node_size (grub_fshelp_node_t node)
+{
+  grub_off_t ret = 0;
+  grub_size_t i;
+
+  for (i = 0; i < node->have_dirents; i++)
+    ret += grub_le_to_cpu32 (node->dirents[i].size);
+  return ret;
+}
 
 static int
 grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
@@ -533,10 +597,11 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 				   grub_fshelp_node_t node))
 {
   struct grub_iso9660_dir dirent;
-  unsigned int offset = 0;
+  grub_off_t offset = 0;
   char *filename;
   int filename_alloc = 0;
   enum grub_fshelp_filetype type;
+  grub_off_t len;
 
   auto grub_err_t susp_iterate_dir (struct grub_iso9660_susp_entry *);
 
@@ -598,13 +663,11 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
       return 0;
     }
 
-  for (; offset < dir->size; offset += dirent.len)
+  len = get_node_size (dir);
+
+  for (; offset < len; offset += dirent.len)
     {
-      if (grub_disk_read (dir->data->disk,
-			  (dir->blk << GRUB_ISO9660_LOG2_BLKSZ)
-			  + offset / GRUB_DISK_SECTOR_SIZE,
-			  offset % GRUB_DISK_SECTOR_SIZE,
-			  sizeof (dirent), (char *) &dirent))
+      if (read_node (dir, offset, sizeof (dirent), (char *) &dirent))
 	return 0;
 
       /* The end of the block, skip to the next one.  */
@@ -629,39 +692,30 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	type = GRUB_FSHELP_UNKNOWN;
 
 	if (dir->data->rockridge
-	    && grub_iso9660_susp_iterate (dir->data,
-					  (dir->blk << GRUB_ISO9660_LOG2_BLKSZ)
-					  + (sua_off
-					     / GRUB_DISK_SECTOR_SIZE),
-					  sua_off % GRUB_DISK_SECTOR_SIZE,
-					  sua_size, susp_iterate_dir))
+	    && grub_iso9660_susp_iterate (dir, sua_off, sua_size,
+					  susp_iterate_dir))
 	  return 0;
 
 	/* Read the name.  */
-	if (grub_disk_read (dir->data->disk,
-			    (dir->blk << GRUB_ISO9660_LOG2_BLKSZ)
-			    + nameoffset / GRUB_DISK_SECTOR_SIZE,
-			    nameoffset % GRUB_DISK_SECTOR_SIZE,
-			    dirent.namelen, (char *) name))
+	if (read_node (dir, nameoffset, dirent.namelen, (char *) name))
 	  return 0;
 
 	node = grub_malloc (sizeof (struct grub_fshelp_node));
 	if (!node)
 	  return 0;
 
+	node->alloc_dirents = ARRAY_SIZE (node->dirents);
+	node->have_dirents = 1;
+
 	/* Setup a new node.  */
 	node->data = dir->data;
-	node->size = grub_le_to_cpu32 (dirent.size);
-	node->blk = grub_le_to_cpu32 (dirent.first_sector);
-	node->dir_blk = ((dir->blk << GRUB_ISO9660_LOG2_BLKSZ)
-			 + offset / GRUB_DISK_SECTOR_SIZE);
-	node->dir_off = offset % GRUB_DISK_SECTOR_SIZE;
+	node->dir_off = offset;
 
 	/* If the filetype was not stored using rockridge, use
 	   whatever is stored in the iso9660 filesystem.  */
 	if (type == GRUB_FSHELP_UNKNOWN)
 	  {
-	    if ((dirent.flags & 3) == 2)
+	    if ((dirent.flags & FLAG_TYPE) == FLAG_TYPE_DIR)
 	      type = GRUB_FSHELP_DIR;
 	    else
 	      type = GRUB_FSHELP_REG;
@@ -678,7 +732,10 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 
 	    /* . and .. */
 	    if (dirent.namelen == 1 && (name[0] == 0 || name[0] == 1))
-	      continue;
+	      {
+		grub_free (node);
+		continue;
+	      }
 	    else
 	      filename = name;
 	  }
@@ -701,7 +758,35 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
             filename_alloc = 1;
           }
 
-	node->dirent = dirent;
+	node->dirents[0] = dirent;
+	while (dirent.flags & FLAG_MORE_EXTENTS)
+	  {
+	    offset += dirent.len;
+	    if (read_node (dir, offset, sizeof (dirent), (char *) &dirent))
+	      {
+		if (filename_alloc)
+		  grub_free (filename);
+		grub_free (node);
+		return 0;
+	      }
+	    if (node->have_dirents >= node->alloc_dirents)
+	      {
+		struct grub_fshelp_node *new_node;
+		node->alloc_dirents *= 2;
+		new_node = grub_malloc (sizeof (struct grub_fshelp_node)
+				    + ((node->alloc_dirents
+				       - ARRAY_SIZE (node->dirents))
+				       * sizeof (node->dirents[0])));
+		if (!new_node)
+		  {
+		    if (filename_alloc)
+		      grub_free (filename);
+		    grub_free (node);
+		    return 0;
+		  }
+	      }
+	    node->dirents[node->have_dirents++] = dirent;
+	  }
 	if (hook (filename, type, node))
 	  {
 	    if (filename_alloc)
@@ -738,7 +823,7 @@ grub_iso9660_dir (grub_device_t device, const char *path,
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
-      info.mtimeset = !!iso9660_to_unixtime2 (&node->dirent.mtime, &info.mtime);
+      info.mtimeset = !!iso9660_to_unixtime2 (&node->dirents[0].mtime, &info.mtime);
 
       grub_free (node);
       return hook (filename, &info);
@@ -751,8 +836,10 @@ grub_iso9660_dir (grub_device_t device, const char *path,
     goto fail;
 
   rootnode.data = data;
-  rootnode.blk = grub_le_to_cpu32 (data->voldesc.rootdir.first_sector);
-  rootnode.size = grub_le_to_cpu32 (data->voldesc.rootdir.size);
+  rootnode.alloc_dirents = 0;
+  rootnode.have_dirents = 1;
+  rootnode.dir_off = 0;
+  rootnode.dirents[0] = data->voldesc.rootdir;
 
   /* Use the fshelp function to traverse the path.  */
   if (grub_fshelp_find_file (path, &rootnode,
@@ -792,8 +879,10 @@ grub_iso9660_open (struct grub_file *file, const char *name)
     goto fail;
 
   rootnode.data = data;
-  rootnode.blk = grub_le_to_cpu32 (data->voldesc.rootdir.first_sector);
-  rootnode.size = grub_le_to_cpu32 (data->voldesc.rootdir.size);
+  rootnode.alloc_dirents = 0;
+  rootnode.have_dirents = 1;
+  rootnode.dir_off = 0;
+  rootnode.dirents[0] = data->voldesc.rootdir;
 
   /* Use the fshelp function to traverse the path.  */
   if (grub_fshelp_find_file (name, &rootnode,
@@ -803,10 +892,9 @@ grub_iso9660_open (struct grub_file *file, const char *name)
 			     GRUB_FSHELP_REG))
     goto fail;
 
-  data->first_sector = foundnode->blk;
-
+  data->node = foundnode;
   file->data = data;
-  file->size = foundnode->size;
+  file->size = get_node_size (foundnode);
   file->offset = 0;
 
   return 0;
@@ -828,10 +916,7 @@ grub_iso9660_read (grub_file_t file, char *buf, grub_size_t len)
 
   /* XXX: The file is stored in as a single extent.  */
   data->disk->read_hook = file->read_hook;
-  grub_disk_read (data->disk,
-		  data->first_sector << GRUB_ISO9660_LOG2_BLKSZ,
-		  file->offset,
-		  len, buf);
+  read_node (data->node, file->offset, len, buf);
   data->disk->read_hook = NULL;
 
   if (grub_errno)
@@ -844,7 +929,10 @@ grub_iso9660_read (grub_file_t file, char *buf, grub_size_t len)
 static grub_err_t
 grub_iso9660_close (grub_file_t file)
 {
-  grub_free (file->data);
+  struct grub_iso9660_data *data =
+    (struct grub_iso9660_data *) file->data;
+  grub_free (data->node);
+  grub_free (data);
 
   grub_dl_unref (my_mod);
 
