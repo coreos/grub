@@ -1,5 +1,15 @@
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix symlink handling on iso9660.
+
+	* grub-core/fs/iso9660.c (grub_fshelp_node): Remove dir_off. Add symlink
+	All users updated.
+	(grub_iso9660_susp_iterate): Accept zero-size iterate.
+	(grub_iso9660_read_symlink): Moved most of code ...
+	(grub_iso9660_iterate_dir): ... here. Fill node->symlink.
+
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/bsd.c (grub_netbsd_add_boot_disk_and_wedge):
 	Use union to avoid breaking strict-aliasing rules.
 

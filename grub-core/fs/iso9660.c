@@ -159,7 +159,7 @@ struct grub_fshelp_node
 {
   struct grub_iso9660_data *data;
   grub_size_t have_dirents, alloc_dirents;
-  grub_off_t dir_off;
+  char *symlink;
   struct grub_iso9660_dir dirents[8];
 };
 
@@ -257,7 +257,7 @@ read_node (grub_fshelp_node_t node, grub_off_t off, grub_size_t len, char *buf)
    every entry.  */
 static grub_err_t
 grub_iso9660_susp_iterate (grub_fshelp_node_t node, grub_off_t off,
-			   grub_size_t sua_size,
+			   grub_ssize_t sua_size,
 			   grub_err_t (*hook)
 			   (struct grub_iso9660_susp_entry *entry))
 {
@@ -287,6 +287,9 @@ grub_iso9660_susp_iterate (grub_fshelp_node_t node, grub_off_t off,
       entry = (struct grub_iso9660_susp_entry *) sua;
       return 0;
     }
+
+  if (sua_size <= 0)
+    return GRUB_ERR_NONE;
 
   if (load_sua ())
     return grub_errno;
@@ -454,7 +457,7 @@ grub_iso9660_mount (grub_disk_t disk)
       rootnode.data = data;
       rootnode.alloc_dirents = 0;
       rootnode.have_dirents = 1;
-      rootnode.dir_off = 0;
+      rootnode.symlink = 0;
       rootnode.dirents[0] = data->voldesc.rootdir;
 
       /* The 2nd data byte stored how many bytes are skipped every time
@@ -480,102 +483,7 @@ grub_iso9660_mount (grub_disk_t disk)
 static char *
 grub_iso9660_read_symlink (grub_fshelp_node_t node)
 {
-  int sua_off;
-  int sua_size;
-  char *symlink = 0;
-  int addslash = 0;
-
-  auto void add_part (const char *part, int len);
-  auto grub_err_t susp_iterate_sl (struct grub_iso9660_susp_entry *);
-
-  /* Extend the symlink.  */
-  void add_part (const char *part, int len)
-    {
-      int size = grub_strlen (symlink);
-
-      symlink = grub_realloc (symlink, size + len + 1);
-      if (! symlink)
-	return;
-
-      grub_strncat (symlink, part, len);
-    }
-
-  /* Read in a symlink.  */
-  grub_err_t susp_iterate_sl (struct grub_iso9660_susp_entry *entry)
-    {
-      if (grub_strncmp ("SL", (char *) entry->sig, 2) == 0)
-	{
-	  unsigned int pos = 1;
-
-	  /* The symlink is not stored as a POSIX symlink, translate it.  */
-	  while (pos < grub_le_to_cpu32 (entry->len))
-	    {
-	      if (addslash)
-		{
-		  add_part ("/", 1);
-		  addslash = 0;
-		}
-
-	      /* The current position is the `Component Flag'.  */
-	      switch (entry->data[pos] & 30)
-		{
-		case 0:
-		  {
-		    /* The data on pos + 2 is the actual data, pos + 1
-		       is the length.  Both are part of the `Component
-		       Record'.  */
-		    add_part ((char *) &entry->data[pos + 2],
-			      entry->data[pos + 1]);
-		    if ((entry->data[pos] & 1))
-		      addslash = 1;
-
-		    break;
-		  }
-
-		case 2:
-		  add_part ("./", 2);
-		  break;
-
-		case 4:
-		  add_part ("../", 3);
-		  break;
-
-		case 8:
-		  add_part ("/", 1);
-		  break;
-		}
-	      /* In pos + 1 the length of the `Component Record' is
-		 stored.  */
-	      pos += entry->data[pos + 1] + 2;
-	    }
-
-	  /* Check if `grub_realloc' failed.  */
-	  if (grub_errno)
-	    return grub_errno;
-	}
-
-      return 0;
-    }
-
-  sua_off = (sizeof (node->dirents[0]) + node->dirents[0].namelen + 1
-	     - (node->dirents[0].namelen % 2)
-	     + node->data->susp_skip);
-  sua_size = node->dirents[0].len - sua_off;
-
-  symlink = grub_malloc (1);
-  if (!symlink)
-    return 0;
-
-  *symlink = '\0';
-
-  if (grub_iso9660_susp_iterate (node, node->dir_off + sua_off,
-				 sua_size, susp_iterate_sl))
-    {
-      grub_free (symlink);
-      return 0;
-    }
-
-  return symlink;
+  return node->symlink ? grub_strdup (node->symlink) : grub_strdup ("");
 }
 
 static grub_off_t
@@ -602,6 +510,23 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
   int filename_alloc = 0;
   enum grub_fshelp_filetype type;
   grub_off_t len;
+  char *symlink = 0;
+  int addslash = 0;
+
+  auto void add_part (const char *part, int len);
+
+  /* Extend the symlink.  */
+  void add_part (const char *part, int len2)
+    {
+      int size = symlink ? grub_strlen (symlink) : 0;
+
+      symlink = grub_realloc (symlink, size + len2 + 1);
+      if (! symlink)
+	return;
+
+      symlink[size] = 0;
+      grub_strncat (symlink, part, len2);
+    }
 
   auto grub_err_t susp_iterate_dir (struct grub_iso9660_susp_entry *);
 
@@ -659,6 +584,56 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	      type = GRUB_FSHELP_UNKNOWN;
 	    }
 	}
+      else if (grub_strncmp ("SL", (char *) entry->sig, 2) == 0)
+	{
+	  unsigned int pos = 1;
+
+	  /* The symlink is not stored as a POSIX symlink, translate it.  */
+	  while (pos + sizeof (*entry) < grub_le_to_cpu32 (entry->len))
+	    {
+	      if (addslash)
+		{
+		  add_part ("/", 1);
+		  addslash = 0;
+		}
+
+	      /* The current position is the `Component Flag'.  */
+	      switch (entry->data[pos] & 30)
+		{
+		case 0:
+		  {
+		    /* The data on pos + 2 is the actual data, pos + 1
+		       is the length.  Both are part of the `Component
+		       Record'.  */
+		    add_part ((char *) &entry->data[pos + 2],
+			      entry->data[pos + 1]);
+		    if ((entry->data[pos] & 1))
+		      addslash = 1;
+
+		    break;
+		  }
+
+		case 2:
+		  add_part ("./", 2);
+		  break;
+
+		case 4:
+		  add_part ("../", 3);
+		  break;
+
+		case 8:
+		  add_part ("/", 1);
+		  break;
+		}
+	      /* In pos + 1 the length of the `Component Record' is
+		 stored.  */
+	      pos += entry->data[pos + 1] + 2;
+	    }
+
+	  /* Check if `grub_realloc' failed.  */
+	  if (grub_errno)
+	    return grub_errno;
+	}
 
       return 0;
     }
@@ -667,6 +642,9 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 
   for (; offset < len; offset += dirent.len)
     {
+      symlink = 0;
+      addslash = 0;
+
       if (read_node (dir, offset, sizeof (dirent), (char *) &dirent))
 	return 0;
 
@@ -709,7 +687,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 
 	/* Setup a new node.  */
 	node->data = dir->data;
-	node->dir_off = offset;
+	node->symlink = symlink;
 
 	/* If the filetype was not stored using rockridge, use
 	   whatever is stored in the iso9660 filesystem.  */
@@ -838,7 +816,7 @@ grub_iso9660_dir (grub_device_t device, const char *path,
   rootnode.data = data;
   rootnode.alloc_dirents = 0;
   rootnode.have_dirents = 1;
-  rootnode.dir_off = 0;
+  rootnode.symlink = 0;
   rootnode.dirents[0] = data->voldesc.rootdir;
 
   /* Use the fshelp function to traverse the path.  */
@@ -881,7 +859,7 @@ grub_iso9660_open (struct grub_file *file, const char *name)
   rootnode.data = data;
   rootnode.alloc_dirents = 0;
   rootnode.have_dirents = 1;
-  rootnode.dir_off = 0;
+  rootnode.symlink = 0;
   rootnode.dirents[0] = data->voldesc.rootdir;
 
   /* Use the fshelp function to traverse the path.  */
