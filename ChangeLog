@@ -1,5 +1,10 @@
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/bsd.c (grub_netbsd_add_boot_disk_and_wedge):
+	Use union to avoid breaking strict-aliasing rules.
+
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support multi-extent iso files.
 
 	* grub-core/fs/iso9660.c (grub_iso9660_data): Remove first_sector.
