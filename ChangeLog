@@ -1,5 +1,9 @@
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/jfs.c (grub_jfs_sblock): Fix offset to volname.
+
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Read label on HFS+.
 
 	* grub-core/fs/hfsplus.c (grub_hfsplus_cmp_catkey_id): New function.

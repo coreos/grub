@@ -52,9 +52,9 @@ struct grub_jfs_sblock
   grub_uint32_t blksz;
   grub_uint16_t log2_blksz;
 
-  grub_uint8_t unused[71];
+  grub_uint8_t unused[79];
   grub_uint8_t volname[11];
-  grub_uint8_t unused2[32];
+  grub_uint8_t unused2[24];
   grub_uint8_t uuid[16];
 };
 
