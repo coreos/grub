@@ -1117,9 +1117,12 @@ grub_fat_uuid (grub_device_t device, char **uuid)
   data = grub_fat_mount (disk);
   if (data)
     {
+      char *ptr;
       *uuid = grub_xasprintf ("%04x-%04x",
 			     (grub_uint16_t) (data->uuid >> 16),
 			     (grub_uint16_t) data->uuid);
+      for (ptr = *uuid; ptr && *ptr; ptr++)
+	*ptr = grub_toupper (*ptr);
     }
   else
     *uuid = NULL;

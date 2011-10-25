@@ -1,5 +1,9 @@
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/fat.c (grub_fat_uuid): Make uppercase to match Linux.
+
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix symlink handling on iso9660.
 
 	* grub-core/fs/iso9660.c (grub_fshelp_node): Remove dir_off. Add symlink
