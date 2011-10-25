@@ -1,5 +1,25 @@
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix handling of uncompressed blocks on squashfs and break 4G limit.
+
+	* grub-core/fs/squash4.c (grub_squash_super): Add block_size. Remove
+	unused flags.
+	(grub_squash_inode): Add long_file and block_size.
+	(grub_squash_cache_inode): New struct.
+	(grub_squash_dirent): Make types into enum.
+	(SQUASH_TYPE_LONG_REGULAR): New type.
+	(grub_squash_frag_desc): Add field size.
+	(SQUASH_BLOCK_FLAGS): New enum.
+	(grub_squash_data): Use grub_squash_cache_inode.
+	(grub_fshelp_node): Make ino_chunk 64-bit.
+	(read_chunk): Minor argument change. All users updated.
+	(squash_mount): Use correct le_to_cpu.
+	(grub_squash_open): Handle LONG_REGULAR.
+	(direct_read): New function.
+	(grub_squash_read_data): Handle blocks correctly.
+
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/disk.c (grub_disk_read_small): Fix memory leak.
 
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
