@@ -1,5 +1,9 @@
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/disk.c (grub_disk_read_small): Fix memory leak.
+
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/romfs.c (grub_romfs_open): Add missing return.
 
 2011-10-24  Vladimir Serbinenko  <phcoder@gmail.com>

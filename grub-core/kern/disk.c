@@ -442,6 +442,7 @@ grub_disk_read_small (grub_disk_t disk, grub_disk_addr_t sector,
 	}
     }
 
+  grub_free (tmp_buf);
   grub_errno = GRUB_ERR_NONE;
 
   {
@@ -468,9 +469,11 @@ grub_disk_read_small (grub_disk_t disk, grub_disk_addr_t sector,
 	grub_error_push ();
 	grub_dprintf ("disk", "%s read failed\n", disk->name);
 	grub_error_pop ();
+	grub_free (tmp_buf);
 	return grub_errno;
       }
     grub_memcpy (buf, tmp_buf + offset, size);
+    grub_free (tmp_buf);
     return GRUB_ERR_NONE;
   }
 }
