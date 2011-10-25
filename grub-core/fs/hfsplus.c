@@ -553,6 +553,25 @@ grub_hfsplus_cmp_catkey (struct grub_hfsplus_key *keya,
   return diff;
 }
 
+/* Compare the on disk catalog key KEYA with the catalog key we are
+   looking for (KEYB).  */
+static int
+grub_hfsplus_cmp_catkey_id (struct grub_hfsplus_key *keya,
+			 struct grub_hfsplus_key_internal *keyb)
+{
+  struct grub_hfsplus_catkey *catkey_a = &keya->catkey;
+  struct grub_hfsplus_catkey_internal *catkey_b = &keyb->catkey;
+
+  /* Safe unsigned comparison */
+  grub_uint32_t aparent = grub_be_to_cpu32 (catkey_a->parent);
+  if (aparent > catkey_b->parent)
+    return 1;
+  if (aparent < catkey_b->parent)
+    return -1;
+
+  return 0;
+}
+
 /* Compare the on disk extent overflow key KEYA with the extent
    overflow key we are looking for (KEYB).  */
 static int
@@ -662,7 +681,8 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
 
       /* Read a node.  */
       if (grub_hfsplus_read_file (&btree->file, 0,
-				  (long)currnode * (long)btree->nodesize,
+				  (grub_disk_addr_t) currnode
+				  * (grub_disk_addr_t) btree->nodesize,
 				  btree->nodesize, (char *) node) <= 0)
 	{
 	  grub_free (node);
@@ -961,13 +981,66 @@ grub_hfsplus_dir (grub_device_t device, const char *path,
 
 
 static grub_err_t
-grub_hfsplus_label (grub_device_t device __attribute__((unused))
-		    , char **label __attribute__((unused)))
+grub_hfsplus_label (grub_device_t device, char **label)
 {
-  /* XXX: It's not documented how to read a label.  */
-  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		     "reading the label of a HFS+ "
-		     "partition is not implemented");
+  struct grub_hfsplus_data *data;
+  grub_disk_t disk = device->disk;
+  struct grub_hfsplus_catkey *catkey;
+  int i, label_len;
+  struct grub_hfsplus_key_internal intern;
+  struct grub_hfsplus_btnode *node;
+  grub_disk_addr_t ptr;
+
+  *label = 0;
+
+  data = grub_hfsplus_mount (disk);
+  if (!data)
+    return grub_errno;
+
+  /* Create a key that points to the label.  */
+  intern.catkey.parent = 1;
+  intern.catkey.name = "";
+
+  /* First lookup the first entry.  */
+  if (grub_hfsplus_btree_search (&data->catalog_tree, &intern,
+				 grub_hfsplus_cmp_catkey_id, &node, &ptr))
+    {
+      grub_free (data);
+      return 0;
+    }
+
+  catkey = (struct grub_hfsplus_catkey *)
+    grub_hfsplus_btree_recptr (&data->catalog_tree, node, 0);
+
+  label_len = grub_be_to_cpu16 (catkey->namelen);
+  for (i = 0; i < label_len; i++)
+    {
+      catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
+
+      /* If the name is obviously invalid, skip this node.  */
+      if (catkey->name[i] == 0)
+	return 0;
+    }
+
+  *label = grub_malloc (label_len + 1);
+  if (! *label)
+    return grub_errno;
+
+  if (! grub_utf16_to_utf8 ((grub_uint8_t *) (*label), catkey->name,
+			    label_len))
+    {
+      grub_free (node);
+      grub_free (*label);
+      grub_free (data);
+      *label = 0;
+      return grub_errno;
+    }
+  (*label)[label_len] = '\0';
+
+  grub_free (node);
+  grub_free (data);
+
+  return GRUB_ERR_NONE;
 }
 
 /* Get mtime.  */
