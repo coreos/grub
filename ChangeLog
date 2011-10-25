@@ -1,5 +1,9 @@
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ntfs.c (grub_ntfs_uuid): Fix a memory leak.
+
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/fat.c (grub_fat_uuid): Make uppercase to match Linux.
 
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>

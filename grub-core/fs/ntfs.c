@@ -1087,13 +1087,14 @@ grub_ntfs_uuid (grub_device_t device, char **uuid)
       if (*uuid)
 	for (ptr = *uuid; *ptr; ptr++)
 	  *ptr = grub_toupper (*ptr);
+      free_file (&data->mmft);
+      free_file (&data->cmft);
+      grub_free (data);
     }
   else
     *uuid = NULL;
 
   grub_dl_unref (my_mod);
-
-  grub_free (data);
 
   return grub_errno;
 }
