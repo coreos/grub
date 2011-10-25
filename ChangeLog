@@ -1,5 +1,16 @@
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix tar 4G limit and handle paths containing dot.
+
+	* grub-core/fs/cpio.c (grub_cpio_data): Use grub_off_t for offsets.
+	(canonicalize): New function.
+	(grub_cpio_find_file): Use canonicalize. Store offs in
+	grub_disk_addr_t.
+	(grub_cpio_dir): Use grub_disk_addr_t.
+	(grub_cpio_open): Likewise.
+
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix handling of uncompressed blocks on squashfs and break 4G limit.
 
 	* grub-core/fs/squash4.c (grub_squash_super): Add block_size. Remove

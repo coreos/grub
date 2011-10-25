@@ -71,80 +71,102 @@ struct head
 struct grub_cpio_data
 {
   grub_disk_t disk;
-  grub_uint32_t hofs;
-  grub_uint32_t dofs;
-  grub_uint32_t size;
+  grub_off_t hofs;
+  grub_off_t dofs;
+  grub_off_t size;
 };
 
 static grub_dl_t my_mod;
 
+static inline void
+canonicalize (char *name)
+{
+  char *iptr, *optr;
+  for (iptr = name, optr = name; *iptr; )
+    {
+      while (*iptr == '/')
+	iptr++;
+      if (iptr[0] == '.' && (iptr[1] == '/' || iptr[1] == 0))
+	{
+	  iptr += 2;
+	  continue;
+	}
+      while (*iptr && *iptr != '/')
+	*optr++ = *iptr++;
+      if (*iptr)
+	*optr++ = *iptr++;
+    }
+  *optr = 0;
+}
+
 static grub_err_t
 grub_cpio_find_file (struct grub_cpio_data *data, char **name,
-		     grub_int32_t *mtime, grub_uint32_t * ofs)
+		     grub_int32_t *mtime, grub_disk_addr_t * ofs)
 {
 #ifndef MODE_USTAR
-      struct head hd;
+  struct head hd;
 
-      if (grub_disk_read
-	  (data->disk, 0, data->hofs, sizeof (hd), &hd))
-	return grub_errno;
+  if (grub_disk_read (data->disk, 0, data->hofs, sizeof (hd), &hd))
+    return grub_errno;
 
-      if (hd.magic != MAGIC_BCPIO)
-	return grub_error (GRUB_ERR_BAD_FS, "invalid cpio archive");
+  if (hd.magic != MAGIC_BCPIO)
+    return grub_error (GRUB_ERR_BAD_FS, "invalid cpio archive");
 
-      data->size = (((grub_uint32_t) hd.filesize_1) << 16) + hd.filesize_2;
-      if (mtime)
-	*mtime = (((grub_uint32_t) hd.mtime_1) << 16) + hd.mtime_2;
+  data->size = (((grub_uint32_t) hd.filesize_1) << 16) + hd.filesize_2;
+  if (mtime)
+    *mtime = (((grub_uint32_t) hd.mtime_1) << 16) + hd.mtime_2;
 
-      if (hd.namesize & 1)
-	hd.namesize++;
+  if (hd.namesize & 1)
+    hd.namesize++;
 
-      if ((*name = grub_malloc (hd.namesize)) == NULL)
-	return grub_errno;
+  if ((*name = grub_malloc (hd.namesize)) == NULL)
+    return grub_errno;
 
-      if (grub_disk_read (data->disk, 0, data->hofs + sizeof (hd),
-			  hd.namesize, *name))
-	{
-	  grub_free (*name);
-	  return grub_errno;
-	}
+  if (grub_disk_read (data->disk, 0, data->hofs + sizeof (hd),
+		      hd.namesize, *name))
+    {
+      grub_free (*name);
+      return grub_errno;
+    }
 
-      if (data->size == 0 && hd.mode == 0 && hd.namesize == 11 + 1
-	  && ! grub_memcmp(*name, "TRAILER!!!", 11))
-	{
-	  *ofs = 0;
-	  return GRUB_ERR_NONE;
-	}
+  if (data->size == 0 && hd.mode == 0 && hd.namesize == 11 + 1
+      && ! grub_memcmp(*name, "TRAILER!!!", 11))
+    {
+      *ofs = 0;
+      return GRUB_ERR_NONE;
+    }
 
-      data->dofs = data->hofs + sizeof (hd) + hd.namesize;
-      *ofs = data->dofs + data->size;
-      if (data->size & 1)
-	(*ofs)++;
+  canonicalize (*name);
+
+  data->dofs = data->hofs + sizeof (hd) + hd.namesize;
+  *ofs = data->dofs + data->size;
+  if (data->size & 1)
+    (*ofs)++;
 #else
-      struct head hd;
+  struct head hd;
 
-      if (grub_disk_read
-	  (data->disk, 0, data->hofs, sizeof (hd), &hd))
-	return grub_errno;
+  if (grub_disk_read (data->disk, 0, data->hofs, sizeof (hd), &hd))
+    return grub_errno;
 
-      if (!hd.name[0])
-	{
-	  *ofs = 0;
-	  return GRUB_ERR_NONE;
-	}
+  if (!hd.name[0])
+    {
+      *ofs = 0;
+      return GRUB_ERR_NONE;
+    }
 
-      if (grub_memcmp (hd.magic, MAGIC_USTAR, sizeof (MAGIC_USTAR) - 1))
-	return grub_error (GRUB_ERR_BAD_FS, "invalid tar archive");
+  if (grub_memcmp (hd.magic, MAGIC_USTAR, sizeof (MAGIC_USTAR) - 1))
+    return grub_error (GRUB_ERR_BAD_FS, "invalid tar archive");
 
-      if ((*name = grub_strdup (hd.name)) == NULL)
-	return grub_errno;
+  if ((*name = grub_strdup (hd.name)) == NULL)
+    return grub_errno;
 
-      data->size = grub_strtoul (hd.size, NULL, 8);
-      data->dofs = data->hofs + GRUB_DISK_SECTOR_SIZE;
-      *ofs = data->dofs + ((data->size + GRUB_DISK_SECTOR_SIZE - 1) &
-			   ~(GRUB_DISK_SECTOR_SIZE - 1));
-      if (mtime)
-	*mtime = grub_strtoul (hd.mtime, NULL, 8);
+  data->size = grub_strtoull (hd.size, NULL, 8);
+  data->dofs = data->hofs + GRUB_DISK_SECTOR_SIZE;
+  *ofs = data->dofs + ((data->size + GRUB_DISK_SECTOR_SIZE - 1) &
+		       ~(GRUB_DISK_SECTOR_SIZE - 1));
+  if (mtime)
+    *mtime = grub_strtoul (hd.mtime, NULL, 8);
+  canonicalize (*name);
 #endif
   return GRUB_ERR_NONE;
 }
@@ -191,10 +213,10 @@ grub_cpio_dir (grub_device_t device, const char *path,
 			    const struct grub_dirhook_info *info))
 {
   struct grub_cpio_data *data;
-  grub_uint32_t ofs;
+  grub_disk_addr_t ofs;
   char *prev, *name;
   const char *np;
-  int len;
+  grub_size_t len;
 
   grub_dl_ref (my_mod);
 
@@ -230,7 +252,7 @@ grub_cpio_dir (grub_device_t device, const char *path,
 	  if (p)
 	    *p = 0;
 
-	  if ((!prev) || (grub_strcmp (prev, name) != 0))
+	  if (((!prev) || (grub_strcmp (prev, name) != 0)) && name[len] != 0)
 	    {
 	      struct grub_dirhook_info info;
 	      grub_memset (&info, 0, sizeof (info));
@@ -262,7 +284,7 @@ static grub_err_t
 grub_cpio_open (grub_file_t file, const char *name)
 {
   struct grub_cpio_data *data;
-  grub_uint32_t ofs;
+  grub_disk_addr_t ofs;
   char *fn;
   int i, j;
 
