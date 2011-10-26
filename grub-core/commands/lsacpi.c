@@ -25,6 +25,8 @@
 #include <grub/i18n.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static void
 print_strn (grub_uint8_t *str, grub_size_t len)
 {

@@ -24,7 +24,6 @@
 #include <grub/types.h>
 #include <grub/machine/ieee1275.h>
 
-/* Maps a device alias to a pathname.  */
 struct grub_ieee1275_devalias
 {
   char *name;
@@ -65,6 +64,11 @@ struct grub_ieee1275_common_hdr
 typedef grub_uint32_t grub_ieee1275_ihandle_t;
 typedef grub_uint32_t grub_ieee1275_phandle_t;
 
+extern void (*EXPORT_VAR(grub_ieee1275_net_config)) (const char *dev,
+						     char **device,
+						     char **path);
+
+/* Maps a device alias to a pathname.  */
 extern grub_ieee1275_phandle_t EXPORT_VAR(grub_ieee1275_chosen);
 extern grub_ieee1275_ihandle_t EXPORT_VAR(grub_ieee1275_mmu);
 extern int (* EXPORT_VAR(grub_ieee1275_entry_fn)) (void *);
@@ -106,6 +110,12 @@ enum grub_ieee1275_flag
 
   /* OLPC / XO firmware has the cursor ON/OFF routines.  */
   GRUB_IEEE1275_FLAG_HAS_CURSORONOFF,
+
+  /* Some PowerMacs claim to use 2 address cells but in fact use only 1. 
+     Other PowerMacs claim to use only 1 and really do so. Always assume
+     1 address cell is used on PowerMacs.
+   */
+  GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS,
 };
 
 extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);
@@ -185,11 +195,11 @@ EXPORT_FUNC(grub_ieee1275_map) (grub_addr_t phys, grub_addr_t virt,
 
 char *EXPORT_FUNC(grub_ieee1275_encode_devname) (const char *path);
 char *EXPORT_FUNC(grub_ieee1275_get_filename) (const char *path);
-
 int EXPORT_FUNC(grub_ieee1275_devices_iterate) (int (*hook)
 						(struct grub_ieee1275_devalias *
 						 alias));
-
+char *EXPORT_FUNC(grub_ieee1275_get_aliasdevname) (const char *path);
 char *EXPORT_FUNC(grub_ieee1275_canonicalise_devname) (const char *path);
+char *EXPORT_FUNC(grub_ieee1275_get_device_type) (const char *path);
 
 #endif /* ! GRUB_IEEE1275_HEADER */

@@ -50,6 +50,7 @@ extern grub_uint16_t grub_relocator16_gs;
 extern grub_uint16_t grub_relocator16_ss;
 extern grub_uint16_t grub_relocator16_sp;
 extern grub_uint32_t grub_relocator16_edx;
+extern grub_uint32_t grub_relocator16_ebx;
 
 extern grub_uint8_t grub_relocator32_start;
 extern grub_uint8_t grub_relocator32_end;
@@ -212,6 +213,7 @@ grub_relocator16_boot (struct grub_relocator *rel,
   grub_relocator16_ss = state.ss;
   grub_relocator16_sp = state.sp;
 
+  grub_relocator16_ebx = state.ebx;
   grub_relocator16_edx = state.edx;
 
   grub_memmove (get_virtual_current_address (ch), &grub_relocator16_start,

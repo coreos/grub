@@ -25,15 +25,14 @@
 static unsigned
 round_up_exp (unsigned v)
 {
+  COMPILE_TIME_ASSERT (sizeof (v) == 4);
+
   v--;
   v |= v >> 1;
   v |= v >> 2;
   v |= v >> 4;
   v |= v >> 8;
   v |= v >> 16;
-
-  if (sizeof (v) > 4)
-    v |= v >> 32;
 
   v++;
   v += (v == 0);

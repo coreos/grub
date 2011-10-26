@@ -43,7 +43,6 @@
 
 #include <config.h>
 #include <grub/symbol.h>
-#include <grub/boot.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
@@ -75,31 +74,24 @@ LOCAL (base):
 #else
 	ljmp $0, $ABS(LOCAL (codestart))
 #endif
-	/*
-	 *  Compatibility version number
-	 *
-	 *  These MUST be at byte offset 6 and 7 of the executable
-	 *  DO NOT MOVE !!!
-	 */
-	. = _start + 0x6
-	.byte	GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
 
 	/*
-	 *  This is a special data area 8 bytes from the beginning.
+	 *  This is a special data area.
 	 */
 
-	. = _start + 0x8
-
+	. = _start + GRUB_KERNEL_I386_PC_TOTAL_MODULE_SIZE
 VARIABLE(grub_total_module_size)
 	.long	0
-VARIABLE(grub_kernel_image_size)
-	.long	0
+	. = _start + GRUB_KERNEL_I386_PC_COMPRESSED_SIZE 
 VARIABLE(grub_compressed_size)
 	.long	0
+	. = _start + GRUB_KERNEL_I386_PC_INSTALL_DOS_PART
 VARIABLE(grub_install_dos_part)
 	.long	0xFFFFFFFF
+	. = _start + GRUB_KERNEL_I386_PC_INSTALL_BSD_PART
 VARIABLE(grub_install_bsd_part)
 	.long	0xFFFFFFFF
+	. = _start + GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY
 reed_solomon_redundancy:
 	.long	0
 
@@ -151,8 +143,6 @@ LOCAL (codestart):
 	addl    $(GRUB_KERNEL_MACHINE_RAW_SIZE - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART), %edx
 	movl    reed_solomon_redundancy, %ecx
 	leal    _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART, %eax
-	testl   %edx, %edx
-	jz post_reed_solomon
 	call    EXT_C (grub_reed_solomon_recover)
 	jmp post_reed_solomon
 
@@ -233,7 +223,7 @@ post_reed_solomon:
 	movl	$(_start + GRUB_KERNEL_MACHINE_RAW_SIZE), %esi
 	pushl	%edi
 	pushl	%esi
-	movl	EXT_C(grub_kernel_image_size), %ecx
+	movl	$(BSS_START_SYMBOL - _start), %ecx
 	addl	EXT_C(grub_total_module_size), %ecx
 	subl	$GRUB_KERNEL_MACHINE_RAW_SIZE, %ecx
 	pushl	%ecx
@@ -457,17 +447,6 @@ gate_a20_check_state:
  */
 	. = _start + GRUB_KERNEL_MACHINE_RAW_SIZE
 
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX
-VARIABLE(grub_prefix)
-	/* to be filled by grub-mkimage */
-
-	/*
-	 *  Leave some breathing room for the prefix.
-	 */
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
-
-
-
 /*
  * grub_exit()
  *
@@ -478,7 +457,11 @@ FUNCTION(grub_exit)
 	.code16
 	/* Tell the BIOS a boot failure. If this does not work, reboot.  */
 	int	$0x18
-	jmp	cold_reboot
+	/* set 0x472 to 0x0000 for cold boot (0x1234 for warm boot) */
+	xorw	%ax, %ax
+	movw	$0x0472, %di
+	movw	%ax, (%di)
+	ljmp	$0xf000, $0xfff0
 	.code32
 
 /*
@@ -650,7 +633,7 @@ FUNCTION(grub_console_getkey)
 	jae     2f
 	movl	%edx, %eax
 	leal    LOCAL(bypass_table), %edi
-	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) / 2), %ecx
+	movl    $((LOCAL(bypass_table_end) - LOCAL(bypass_table)) >> 1), %ecx
 	repne scasw 
 	jz      3f
 
@@ -912,102 +895,4 @@ FUNCTION(grub_pxe_call)
 	popl	%ebp
 	ret
 
-FUNCTION(grub_bios_interrupt)
-	pushl    %ebp
-	pushl    %ecx
-	pushl    %eax
-	pushl    %ebx
-	pushl    %esi
-	pushl    %edi	
-	pushl    %edx
-	
-	movb     %al, intno
-	movl	 (%edx), %eax
-	movl	 %eax, LOCAL(bios_register_eax)
-	movw	 4(%edx), %ax
-	movw	 %ax, LOCAL(bios_register_es)
-	movw	 6(%edx), %ax
-	movw	 %ax, LOCAL(bios_register_ds)
-	movw	 8(%edx), %ax
-	movw	 %ax, LOCAL(bios_register_flags)
-
-	movl 	12(%edx), %ebx
-	movl 	16(%edx), %ecx
-	movl 	20(%edx), %edi
-	movl 	24(%edx), %esi
-	movl 	28(%edx), %edx
-
-	call    prot_to_real
-	.code16
-
-	mov	%ds, %ax
-	push	%ax
-
-	/* movw imm16, %ax*/
-	.byte	0xb8
-LOCAL(bios_register_es):
-	.short 	0
-	movw	%ax, %es
-	/* movw imm16, %ax*/
-	.byte	0xb8
-LOCAL(bios_register_ds):
-	.short 	0
-	movw	%ax, %ds
-
-	/* movw imm16, %ax*/
-	.byte	0xb8
-LOCAL(bios_register_flags):
-	.short 	0
-	push	%ax
-	popf
-
-	/* movl imm32, %eax*/
-	.byte	0x66, 0xb8
-LOCAL(bios_register_eax):
-	.long 	0
-	
-	/* int imm8.  */
-	.byte   0xcd
-intno:	
-	.byte   0
-
-	movl 	%eax, %cs:LOCAL(bios_register_eax)
-	movw	%ds, %ax
-	movw 	%ax, %cs:LOCAL(bios_register_ds)
-	pop 	%ax
-	mov	%ax, %ds
-	pushf
-	pop	%ax
-	movw	%ax, LOCAL(bios_register_flags)
-	mov 	%es, %ax
-	movw	%ax, LOCAL(bios_register_es)
-
-	DATA32  call	real_to_prot
-	.code32
-
-	popl    %eax
-
-	movl 	%ebx, 12(%eax)
-	movl 	%ecx, 16(%eax)
-	movl 	%edi, 20(%eax)
-	movl 	%esi, 24(%eax)
-	movl 	%edx, 28(%eax)
-
-	movl     %eax, %edx
-
-	movl	 LOCAL(bios_register_eax), %eax
-	movl	 %eax, (%edx)
-	movw	 LOCAL(bios_register_es), %ax
-	movw	 %ax, 4(%edx)
-	movw	 LOCAL(bios_register_ds), %ax
-	movw	 %ax, 6(%edx)
-	movw	 LOCAL(bios_register_flags), %ax
-	movw	 %ax, 8(%edx)
-
-	popl 	%edi
-	popl 	%esi
-	popl    %ebx
-	popl    %eax
-	popl    %ecx
-	popl    %ebp
-	ret
+#include "../int.S"

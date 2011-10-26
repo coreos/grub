@@ -50,6 +50,15 @@ grub_emu_init (void)
   grub_no_autoload = 1;
 }
 
+#ifdef __ia64__
+void grub_arch_dl_get_tramp_got_size (const void *ehdr __attribute__ ((unused)),
+				      grub_size_t *tramp, grub_size_t *got)
+{
+  *tramp = 0;
+  *got = 0;
+}
+#endif
+
 #ifdef GRUB_LINKER_HAVE_INIT
 void
 grub_arch_dl_init_linker (void)

@@ -210,6 +210,7 @@ grub_vprintf (const char *fmt, va_list args)
 	  buf[PREALLOC_SIZE - 2] = '.';
 	  buf[PREALLOC_SIZE - 1] = '.';
 	  buf[PREALLOC_SIZE] = 0;
+	  curbuf = buf;
 	}
       else
 	s = grub_vsnprintf_real (curbuf, s, fmt, ap2);
@@ -597,23 +598,23 @@ grub_reverse (char *str)
 
 /* Divide N by D, return the quotient, and store the remainder in *R.  */
 grub_uint64_t
-grub_divmod64 (grub_uint64_t n, grub_uint32_t d, grub_uint32_t *r)
+grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
 {
   /* This algorithm is typically implemented by hardware. The idea
      is to get the highest bit in N, 64 times, by keeping
-     upper(N * 2^i) = upper((Q * 10 + M) * 2^i), where upper
+     upper(N * 2^i) = (Q * D + M), where upper
      represents the high 64 bits in 128-bits space.  */
   unsigned bits = 64;
-  unsigned long long q = 0;
-  unsigned m = 0;
+  grub_uint64_t q = 0;
+  grub_uint64_t m = 0;
 
   /* Skip the slow computation if 32-bit arithmetic is possible.  */
-  if (n < 0xffffffff)
+  if (n < 0xffffffff && d < 0xffffffff)
     {
       if (r)
-	*r = ((grub_uint32_t) n) % d;
+	*r = ((grub_uint32_t) n) % (grub_uint32_t) d;
 
-      return ((grub_uint32_t) n) / d;
+      return ((grub_uint32_t) n) / (grub_uint32_t) d;
     }
 
   while (bits--)
@@ -666,7 +667,7 @@ grub_lltoa (char *str, int c, unsigned long long n)
     /* BASE == 10 */
     do
       {
-	unsigned m;
+	grub_uint64_t m;
 
 	n = grub_divmod64 (n, 10, &m);
 	*p++ = m + '0';

@@ -43,6 +43,8 @@
 #include <grub/memory.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
 #endif

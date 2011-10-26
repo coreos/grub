@@ -27,6 +27,8 @@
 /* Linux RAID on disk structures and constants,
    copied from include/linux/raid/md_p.h.  */
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define RESERVED_BYTES			(64 * 1024)
 #define RESERVED_SECTORS		(RESERVED_BYTES / 512)
 
@@ -167,6 +169,7 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
   grub_uint64_t size;
   struct grub_raid_super_09 sb;
   grub_uint32_t *uuid;
+  grub_uint32_t level;
 
   /* The sector where the mdraid 0.90 superblock is stored, if available.  */
   size = grub_disk_get_size (disk);
@@ -178,46 +181,50 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
     return grub_errno;
 
   /* Look whether there is a mdraid 0.90 superblock.  */
-  if (sb.md_magic != SB_MAGIC)
+  if (grub_le_to_cpu32 (sb.md_magic) != SB_MAGIC)
     return grub_error (GRUB_ERR_OUT_OF_RANGE, "not 0.9x raid");
 
-  if (sb.major_version != 0 || sb.minor_version != 90)
+  if (grub_le_to_cpu32 (sb.major_version) != 0
+      || grub_le_to_cpu32 (sb.minor_version) != 90)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "unsupported RAID version: %d.%d",
-		       sb.major_version, sb.minor_version);
+		       grub_le_to_cpu32 (sb.major_version),
+		       grub_le_to_cpu32 (sb.minor_version));
 
   /* FIXME: Check the checksum.  */
 
+  level = grub_le_to_cpu32 (sb.level);
   /* Multipath.  */
-  if ((int) sb.level == -4)
-    sb.level = 1;
+  if ((int) level == -4)
+    level = 1;
 
-  if (sb.level != 0 && sb.level != 1 && sb.level != 4 &&
-      sb.level != 5 && sb.level != 6 && sb.level != 10)
+  if (level != 0 && level != 1 && level != 4 &&
+      level != 5 && level != 6 && level != 10)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "unsupported RAID level: %d", sb.level);
-  if (sb.this_disk.number == 0xffff || sb.this_disk.number == 0xfffe)
-    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		       "unsupported RAID level: %d", level);
+  if (grub_le_to_cpu32 (sb.this_disk.number) == 0xffff
+      || grub_le_to_cpu32 (sb.this_disk.number) == 0xfffe)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
 		       "spares aren't implemented");
 
   array->name = NULL;
-  array->number = sb.md_minor;
-  array->level = sb.level;
-  array->layout = sb.layout;
-  array->total_devs = sb.raid_disks;
-  array->disk_size = (sb.size) ? sb.size * 2 : sector;
-  array->chunk_size = sb.chunk_size >> 9;
-  array->index = sb.this_disk.number;
+  array->number = grub_le_to_cpu32 (sb.md_minor);
+  array->level = level;
+  array->layout = grub_le_to_cpu32 (sb.layout);
+  array->total_devs = grub_le_to_cpu32 (sb.raid_disks);
+  array->disk_size = (sb.size) ? grub_le_to_cpu32 (sb.size) * 2 : sector;
+  array->chunk_size = grub_le_to_cpu32 (sb.chunk_size) >> 9;
+  array->index = grub_le_to_cpu32 (sb.this_disk.number);
   array->uuid_len = 16;
   array->uuid = grub_malloc (16);
   if (!array->uuid)
       return grub_errno;
 
   uuid = (grub_uint32_t *) array->uuid;
-  uuid[0] = sb.set_uuid0;
-  uuid[1] = sb.set_uuid1;
-  uuid[2] = sb.set_uuid2;
-  uuid[3] = sb.set_uuid3;
+  uuid[0] = grub_swap_bytes32 (sb.set_uuid0);
+  uuid[1] = grub_swap_bytes32 (sb.set_uuid1);
+  uuid[2] = grub_swap_bytes32 (sb.set_uuid2);
+  uuid[3] = grub_swap_bytes32 (sb.set_uuid3);
 
   *start_sector = 0;
 

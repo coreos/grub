@@ -24,6 +24,8 @@
 
 #include "progname.h"
 
+#include <string.h>
+
 int main(int argc, char **argv)
 {
   char *of_path;
@@ -32,9 +34,14 @@ int main(int argc, char **argv)
 
   grub_util_init_nls ();
 
-  if (argc != 2)
+  if (argc != 2 || strcmp (argv[1], "--help") == 0)
     {
       printf("Usage: %s DEVICE\n", program_name);
+      return 1;
+    }
+  if (strcmp (argv[1], "--version") == 0)
+    {
+      printf ("%s\n", PACKAGE_STRING);
       return 1;
     }
 

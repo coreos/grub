@@ -24,6 +24,7 @@
 #include <grub/mm.h>
 #include <grub/script_sh.h>
 
+#define yytext_ptr char *
 #include "grub_script.tab.h"
 #include "grub_script.yy.h"
 
@@ -126,7 +127,7 @@ int
 grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
 			  const char *input)
 {
-  int len;
+  int len = 0;
   char *p = 0;
   char *line = 0;
   YY_BUFFER_STATE buffer;

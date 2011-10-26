@@ -22,6 +22,8 @@
 #include <grub/i18n.h>
 #include <grub/memory.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const char *names[] =
   {
     [GRUB_MEMORY_AVAILABLE] = "available", 

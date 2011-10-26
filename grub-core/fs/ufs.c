@@ -25,6 +25,8 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef MODE_UFS2
 #define GRUB_UFS_MAGIC		0x19540119
 #else
@@ -283,25 +285,28 @@ static grub_ssize_t
 grub_ufs_read_file (struct grub_ufs_data *data,
 		    void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 				       unsigned offset, unsigned length),
-		    int pos, grub_size_t len, char *buf)
+		    grub_off_t pos, grub_size_t len, char *buf)
 {
   struct grub_ufs_sblock *sblock = &data->sblock;
-  int i;
-  int blockcnt;
+  grub_off_t i;
+  grub_off_t blockcnt;
 
   /* Adjust len so it we can't read past the end of the file.  */
   if (len + pos > INODE_SIZE (data))
     len = INODE_SIZE (data) - pos;
 
-  blockcnt = (len + pos + UFS_BLKSZ (sblock) - 1) / UFS_BLKSZ (sblock);
+  blockcnt = grub_divmod64 ((len + pos + UFS_BLKSZ (sblock) - 1),
+			    UFS_BLKSZ (sblock), 0);
 
-  for (i = pos / UFS_BLKSZ (sblock); i < blockcnt; i++)
+  for (i = grub_divmod64 (pos, UFS_BLKSZ (sblock), 0); i < blockcnt; i++)
     {
-      int blknr;
-      int blockoff = pos % UFS_BLKSZ (sblock);
-      int blockend = UFS_BLKSZ (sblock);
+      grub_disk_addr_t blknr;
+      grub_off_t blockoff;
+      grub_off_t blockend = UFS_BLKSZ (sblock);
 
       int skipfirst = 0;
+
+      grub_divmod64 (pos, UFS_BLKSZ (sblock), &blockoff);
 
       blknr = grub_ufs_get_file_block (data, i);
       if (grub_errno)
@@ -310,14 +315,14 @@ grub_ufs_read_file (struct grub_ufs_data *data,
       /* Last block.  */
       if (i == blockcnt - 1)
 	{
-	  blockend = (len + pos) % UFS_BLKSZ (sblock);
+	  grub_divmod64 (len + pos, UFS_BLKSZ (sblock), &blockend);
 
 	  if (!blockend)
 	    blockend = UFS_BLKSZ (sblock);
 	}
 
       /* First block.  */
-      if (i == (pos / (int) UFS_BLKSZ (sblock)))
+      if (i == grub_divmod64 (pos, UFS_BLKSZ (sblock), 0))
 	{
 	  skipfirst = blockoff;
 	  blockend -= skipfirst;
@@ -512,7 +517,7 @@ grub_ufs_find_file (struct grub_ufs_data *data, const char *path)
       pos += grub_le_to_cpu16 (dirent.direntlen);
     } while (pos < INODE_SIZE (data));
 
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
   return grub_errno;
 }
 

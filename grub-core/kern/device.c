@@ -26,6 +26,8 @@
 #include <grub/env.h>
 #include <grub/partition.h>
 
+grub_net_t (*grub_net_open) (const char *name) = NULL;
+
 grub_device_t
 grub_device_open (const char *name)
 {
@@ -35,7 +37,7 @@ grub_device_open (const char *name)
   if (! name)
     {
       name = grub_env_get ("root");
-      if (*name == '\0')
+      if (name == NULL || *name == '\0')
 	{
 	  grub_error (GRUB_ERR_BAD_DEVICE, "no device is set");
 	  goto fail;
@@ -46,15 +48,19 @@ grub_device_open (const char *name)
   if (! dev)
     goto fail;
 
+  dev->net = NULL;
   /* Try to open a disk.  */
-  disk = grub_disk_open (name);
-  if (! disk)
-    goto fail;
+  dev->disk = grub_disk_open (name);
+  if (dev->disk)
+    return dev;
+  if (grub_net_open && grub_errno == GRUB_ERR_UNKNOWN_DEVICE)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      dev->net = grub_net_open (name); 
+    }
 
-  dev->disk = disk;
-  dev->net = 0;	/* FIXME */
-
-  return dev;
+  if (dev->net)
+    return dev;
 
  fail:
   if (disk)
@@ -70,6 +76,12 @@ grub_device_close (grub_device_t device)
 {
   if (device->disk)
     grub_disk_close (device->disk);
+
+  if (device->net)
+    {
+      grub_free (device->net->server);
+      grub_free (device->net);
+    }
 
   grub_free (device);
 

@@ -26,6 +26,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #ifdef MODE_BIGENDIAN
 #define GRUB_AFS_FSNAME_SUFFIX "_be"
 #else
@@ -334,7 +336,7 @@ static grub_ssize_t
 grub_afs_read_file (grub_fshelp_node_t node,
                     void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
                                                         unsigned offset, unsigned length),
-                    int pos, grub_size_t len, char *buf)
+                    grub_off_t pos, grub_size_t len, char *buf)
 {
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_afs_read_block,

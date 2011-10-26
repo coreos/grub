@@ -1,7 +1,7 @@
 /* deviceiter.c - iterate over system devices */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2011 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -285,6 +285,26 @@ get_scsi_disk_name (char *name, int unit)
   *name = 0;
 #endif
 }
+
+#ifdef __FreeBSD_kernel__
+static void
+get_ada_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/ada%d", unit);
+}
+
+static void
+get_ataraid_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/ar%d", unit);
+}
+
+static void
+get_mfi_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/mfid%d", unit);
+}
+#endif
 
 #ifdef __linux__
 static void
@@ -619,6 +639,48 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	    goto out;
 	}
     }
+
+#ifdef __FreeBSD_kernel__
+  /* IDE disks using ATA Direct Access driver.  */
+  if (get_kfreebsd_version () >= 800000)
+    for (i = 0; i < 96; i++)
+      {
+	char name[16];
+
+	get_ada_disk_name (name, i);
+	if (check_device_readable_unique (name))
+	  {
+	    if (hook (name, 0))
+	      goto out;
+	  }
+      }
+
+  /* ATARAID disks.  */
+  for (i = 0; i < 8; i++)
+    {
+      char name[20];
+
+      get_ataraid_disk_name (name, i);
+      if (check_device_readable_unique (name))
+	{
+	  if (hook (name, 0))
+	    goto out;
+        }
+    }
+
+  /* LSI MegaRAID SAS.  */
+  for (i = 0; i < 32; i++)
+    {
+      char name[20];
+
+      get_mfi_disk_name (name, i);
+      if (check_device_readable_unique (name))
+	{
+	  if (hook (name, 0))
+	    goto out;
+        }
+    }
+#endif
 
 #ifdef __linux__
   /* Virtio disks.  */

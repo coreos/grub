@@ -21,7 +21,8 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
 libdir=@libdir@
-. ${libdir}/grub/grub-mkconfig_lib
+datarootdir=@datarootdir@
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR=@localedir@
@@ -32,7 +33,7 @@ if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU/Linux
 else
   OS="${GRUB_DISTRIBUTOR} GNU/Linux"
-  CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]' | cut -d' ' -f1) ${CLASS}"
+  CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr 'A-Z' 'a-z' | cut -d' ' -f1) ${CLASS}"
 fi
 
 # loop-AES arranges things so that /dev/loop/X can be our root device, but
@@ -49,6 +50,14 @@ if [ "x${GRUB_DEVICE_UUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue"
   LINUX_ROOT_DEVICE=${GRUB_DEVICE}
 else
   LINUX_ROOT_DEVICE=UUID=${GRUB_DEVICE_UUID}
+fi
+
+if [ "x`${grub_probe} --device ${GRUB_DEVICE} --target=fs 2>/dev/null || true`" = xbtrfs ]; then
+  rootsubvol="`make_system_path_relative_to_its_root /`"
+  rootsubvol="${rootsubvol#/}"
+  if [ "x${rootsubvol}" != x ]; then
+    GRUB_CMDLINE_LINUX="rootflags=subvol=${rootsubvol} ${GRUB_CMDLINE_LINUX}"
+  fi
 fi
 
 linux_entry ()
@@ -73,8 +82,8 @@ linux_entry ()
       cat << EOF
 	load_video
 EOF
-      if grep -qx "CONFIG_FB_EFI=y" /boot/config-${version} 2> /dev/null \
-	  && grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" /boot/config-${version} 2> /dev/null; then
+      if grep -qx "CONFIG_FB_EFI=y" "${config}" 2> /dev/null \
+	  && grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" "${config}" 2> /dev/null; then
 	  cat << EOF
 	set gfxpayload=keep
 EOF
@@ -90,17 +99,30 @@ EOF
 EOF
   fi
 
-  if [ -z "${prepare_boot_cache}" ]; then
-    prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
-  fi
-  printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
-	echo	'$(printf "$(gettext_quoted "Loading Linux %s ...")" ${version})'
+	insmod gzio
+EOF
+
+  if [ x$dirname = x/ ]; then
+    if [ -z "${prepare_root_cache}" ]; then
+      prepare_root_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/")"
+    fi
+    printf '%s\n' "${prepare_root_cache}"
+  else
+    if [ -z "${prepare_boot_cache}" ]; then
+      prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
+    fi
+    printf '%s\n' "${prepare_boot_cache}"
+  fi
+  message="$(gettext_printf "Loading Linux %s ..." ${version})"
+  cat << EOF
+	echo	'$message'
 	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro ${args}
 EOF
   if test -n "${initrd}" ; then
+    message="$(gettext_printf "Loading initial ramdisk ...")"
     cat << EOF
-	echo	'$(gettext_quoted "Loading initial ramdisk ...")'
+	echo	'$message'
 	initrd	${rel_dirname}/${initrd}
 EOF
   fi
@@ -109,10 +131,19 @@ EOF
 EOF
 }
 
-list=`for i in /boot/vmlinuz-* /boot/vmlinux-* /vmlinuz-* /vmlinux-* ; do
-        if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
-      done`
+case x`uname -m` in
+    xi?86 | xx86_64)
+	list=`for i in /boot/vmlinuz-* /vmlinuz-* /boot/kernel-* ; do
+                  if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+              done` ;;
+    *) 
+	list=`for i in /boot/vmlinuz-* /boot/vmlinux-* /vmlinuz-* /vmlinux-* /boot/kernel-* ; do
+                  if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+	     done` ;;
+esac
+
 prepare_boot_cache=
+prepare_root_cache=
 
 while [ "x$list" != "x" ] ; do
   linux=`version_find_latest $list`
@@ -128,20 +159,27 @@ while [ "x$list" != "x" ] ; do
   for i in "initrd.img-${version}" "initrd-${version}.img" \
 	   "initrd-${version}" "initramfs-${version}.img" \
 	   "initrd.img-${alt_version}" "initrd-${alt_version}.img" \
-	   "initrd-${alt_version}" "initramfs-${alt_version}.img"; do
+	   "initrd-${alt_version}" "initramfs-${alt_version}.img" \
+	   "initramfs-genkernel-${version}" \
+	   "initramfs-genkernel-${alt_version}"; do
     if test -e "${dirname}/${i}" ; then
       initrd="$i"
       break
     fi
   done
 
-  initramfs=
-  for i in "config-${version}" "config-${alt_version}"; do
-    if test -e "${dirname}/${i}" ; then
-      initramfs=`grep CONFIG_INITRAMFS_SOURCE= "${dirname}/${i}" | cut -f2 -d= | tr -d \"`
+  config=
+  for i in "${dirname}/config-${version}" "${dirname}/config-${alt_version}" "/etc/kernels/kernel-config-${version}" ; do
+    if test -e "${i}" ; then
+      config="${i}"
       break
     fi
   done
+
+  initramfs=
+  if test -n "${config}" ; then
+      initramfs=`grep CONFIG_INITRAMFS_SOURCE= "${config}" | cut -f2 -d= | tr -d \"`
+  fi
 
   if test -n "${initrd}" ; then
     echo "Found initrd image: ${dirname}/${initrd}" >&2

@@ -1,4 +1,4 @@
-AUTOMAKE_OPTIONS = subdir-objects
+AUTOMAKE_OPTIONS = subdir-objects -Wno-portability
 
 DEPDIR=.deps-core
 
@@ -50,7 +50,7 @@ grub_script.yy.h: script/yylex.l
 grub_script.yy.c: grub_script.yy.h
 
 rs_decoder.S: $(srcdir)/lib/reed_solomon.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Os -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3
 
 kern/i386/pc/startup.S: $(builddir)/rs_decoder.S
 
@@ -78,7 +78,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/partition.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/term.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/mm_private.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/boot.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/net.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libgcc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/memory.h
 
@@ -99,10 +99,12 @@ endif
 
 if COND_i386_coreboot
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/i386/pc/int.h
 endif
 
 if COND_i386_multiboot
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/i386/pc/int.h
 endif
 
 if COND_i386_qemu
@@ -125,7 +127,39 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 endif
 
-if COND_mips_yeeloong
+if COND_ia64_efi
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/time.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
+endif
+
+if COND_mips
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/kernel.h
+endif
+
+if COND_mips_arc
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/arc/arc.h
+endif
+
+if COND_mips_qemu_mips
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap_scale.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/serial.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/lib/arg.h
+endif
+
+if COND_mips_loongson
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
@@ -143,6 +177,11 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/lib/arg.h
+endif
+
+if COND_mips_qemu_mips
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/memory.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 endif
 
 if COND_powerpc_ieee1275
@@ -163,6 +202,7 @@ endif
 if COND_emu
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/datetime.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/misc.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/export.h
 if COND_GRUB_EMU_SDL
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/sdl.h
 endif
@@ -303,8 +343,9 @@ platform_DATA += moddep.lst
 CLEANFILES += config.log syminfo.lst moddep.lst
 
 $(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT)
-	sh $^ $@
+	TARGET_OBJ2ELF=@TARGET_OBJ2ELF@ sh $^ $@
 platform_DATA += $(MOD_FILES)
+platform_DATA += modinfo.sh
 CLEANFILES += $(MOD_FILES)
 
 if COND_ENABLE_EFIEMU

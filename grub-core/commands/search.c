@@ -31,6 +31,8 @@
 #include <grub/disk.h>
 #include <grub/partition.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 void
 FUNC_NAME (const char *key, const char *var, int no_floppy,
 	   char **hints, unsigned nhints)

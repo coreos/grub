@@ -21,6 +21,8 @@
 #include <grub/misc.h>
 #include <grub/cmos.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 parse_args (int argc, char *argv[], int *byte, int *bit)
 {
@@ -44,12 +46,17 @@ grub_cmd_cmostest (struct grub_command *cmd __attribute__ ((unused)),
 {
   int byte, bit;
   grub_err_t err;
+  grub_uint8_t value;
 
   err = parse_args (argc, argv, &byte, &bit);
   if (err)
     return err;
 
-  if (grub_cmos_read (byte) & (1 << bit))
+  err = grub_cmos_read (byte, &value);
+  if (err)
+    return err;
+
+  if (value & (1 << bit))
     return GRUB_ERR_NONE;
 
   return grub_error (GRUB_ERR_TEST_FAILURE, "false");
@@ -61,13 +68,16 @@ grub_cmd_cmosclean (struct grub_command *cmd __attribute__ ((unused)),
 {
   int byte, bit;
   grub_err_t err;
+  grub_uint8_t value;
 
   err = parse_args (argc, argv, &byte, &bit);
   if (err)
     return err;
+  err = grub_cmos_read (byte, &value);
+  if (err)
+    return err;
 
-  grub_cmos_write (byte, grub_cmos_read (byte) & (~(1 << bit)));
-  return GRUB_ERR_NONE;
+  return grub_cmos_write (byte, value & (~(1 << bit)));
 }
 
 static grub_command_t cmd, cmd_clean;

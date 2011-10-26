@@ -53,6 +53,8 @@
 #include <grub/zfs/dsl_dataset.h>
 #include <grub/deflate.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define	ZPOOL_PROP_BOOTFS		"bootfs"
 
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
@@ -196,7 +198,7 @@ zlib_decompress (void *s, void *d,
   return GRUB_ERR_NONE;
 }
 
-decomp_entry_t decomp_table[ZIO_COMPRESS_FUNCTIONS] = {
+static decomp_entry_t decomp_table[ZIO_COMPRESS_FUNCTIONS] = {
   {"inherit", NULL},		/* ZIO_COMPRESS_INHERIT */
   {"on", lzjb_decompress},	/* ZIO_COMPRESS_ON */
   {"off", NULL},		/* ZIO_COMPRESS_OFF */
@@ -244,7 +246,7 @@ zio_checksum_off (const void *buf __attribute__ ((unused)),
 }
 
 /* Checksum Table and Values */
-zio_checksum_info_t zio_checksum_table[ZIO_CHECKSUM_FUNCTIONS] = {
+static zio_checksum_info_t zio_checksum_table[ZIO_CHECKSUM_FUNCTIONS] = {
   {NULL, 0, 0, "inherit"},
   {NULL, 0, 0, "on"},
   {zio_checksum_off, 0, 0, "off"},
@@ -265,7 +267,7 @@ zio_checksum_info_t zio_checksum_table[ZIO_CHECKSUM_FUNCTIONS] = {
  */
 static grub_err_t
 zio_checksum_verify (zio_cksum_t zc, grub_uint32_t checksum,
-		     grub_zfs_endian_t endian, char *buf, int size)
+		     grub_zfs_endian_t endian, char *buf, grub_size_t size)
 {
   zio_eck_t *zec = (zio_eck_t *) (buf + size) - 1;
   zio_checksum_info_t *ci = &zio_checksum_table[checksum];
@@ -360,7 +362,7 @@ vdev_uberblock_compare (uberblock_t * ub1, uberblock_t * ub2)
  *
  */
 static grub_err_t
-uberblock_verify (uberblock_phys_t * ub, int offset)
+uberblock_verify (uberblock_phys_t * ub, grub_uint64_t offset)
 {
   uberblock_t *uber = &ub->ubp_uberblock;
   grub_err_t err;
@@ -890,7 +892,7 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	  {
 	    grub_size_t csize;
 	    grub_uint64_t high;
-	    grub_uint32_t devn;
+	    grub_uint64_t devn;
 	    grub_err_t err;
 	    high = grub_divmod64 (sector + (asize > 2) + c, desc->n_children,
 				  &devn);
@@ -898,7 +900,8 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	    if (csize > len)
 	      csize = len;
 	    grub_dprintf ("zfs", "RAIDZ mapping 0x%" PRIxGRUB_UINT64_T
-			  "+%d+%u -> (0x%" PRIxGRUB_UINT64_T ", 0x%x)\n",
+			  "+%d+%u -> (0x%" PRIxGRUB_UINT64_T ", 0x%"
+			  PRIxGRUB_UINT64_T ")\n",
 			  sector,(asize > 2), c, high, devn);
 	    err = read_device (high << 9, &desc->children[devn],
 			       bsize, csize, buf);
@@ -1133,10 +1136,12 @@ static grub_err_t
 dmu_read (dnode_end_t * dn, grub_uint64_t blkid, void **buf, 
 	  grub_zfs_endian_t *endian_out, struct grub_zfs_data *data)
 {
-  int idx, level;
+  int level;
+  grub_off_t idx;
   blkptr_t *bp_array = dn->dn.dn_blkptr;
   int epbs = dn->dn.dn_indblkshift - SPA_BLKPTRSHIFT;
-  blkptr_t *bp, *tmpbuf = 0;
+  blkptr_t *bp;
+  void *tmpbuf = 0;
   grub_zfs_endian_t endian;
   grub_err_t err = GRUB_ERR_NONE;
 
@@ -1179,7 +1184,7 @@ dmu_read (dnode_end_t * dn, grub_uint64_t blkid, void **buf,
 	  break;
 	}
       grub_dprintf ("zfs", "endian = %d\n", endian);
-      err = zio_read (bp, endian, (void **) &tmpbuf, 0, data);
+      err = zio_read (bp, endian, &tmpbuf, 0, data);
       endian = (grub_zfs_to_cpu64 (bp->blk_prop, endian) >> 63) & 1;
       if (err)
 	break;
@@ -1369,7 +1374,6 @@ zap_leaf_lookup (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
 				name))
 	{
 	  struct zap_leaf_array *la;
-	  grub_uint8_t *ip;
 
 	  if (le->le_int_size != 8 || grub_zfs_to_cpu16 (le->le_value_length,
 							 endian) != 1)
@@ -1377,7 +1381,6 @@ zap_leaf_lookup (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
 
 	  /* get the uint64_t property value */
 	  la = &ZAP_LEAF_CHUNK (l, blksft, le->le_value_chunk).l_array;
-	  ip = la->la_array;
 
 	  *value = grub_be_to_cpu64 (la->la_array64);
 
@@ -1414,7 +1417,7 @@ static grub_err_t
 fzap_lookup (dnode_end_t * zap_dnode, zap_phys_t * zap,
 	     char *name, grub_uint64_t * value, struct grub_zfs_data *data)
 {
-  zap_leaf_phys_t *l;
+  void *l;
   grub_uint64_t hash, idx, blkid;
   int blksft = zfs_log2 (grub_zfs_to_cpu16 (zap_dnode->dn.dn_datablkszsec, 
 					    zap_dnode->endian) << DNODE_SHIFT);
@@ -1437,7 +1440,7 @@ fzap_lookup (dnode_end_t * zap_dnode, zap_phys_t * zap,
   /* Get the leaf block */
   if ((1U << blksft) < sizeof (zap_leaf_phys_t))
     return grub_error (GRUB_ERR_BAD_FS, "ZAP leaf is too small");
-  err = dmu_read (zap_dnode, blkid, (void **) &l, &leafendian, data);
+  err = dmu_read (zap_dnode, blkid, &l, &leafendian, data);
   if (err)
     return err;
 
@@ -1454,7 +1457,8 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
 	     struct grub_zfs_data *data)
 {
   zap_leaf_phys_t *l;
-  grub_uint64_t idx, blkid;
+  void *l_in;
+  grub_uint64_t idx, idx2, blkid;
   grub_uint16_t chunk;
   int blksft = zfs_log2 (grub_zfs_to_cpu16 (zap_dnode->dn.dn_datablkszsec, 
 					    zap_dnode->endian) << DNODE_SHIFT);
@@ -1477,13 +1481,19 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
       grub_error (GRUB_ERR_BAD_FS, "ZAP leaf is too small");
       return 0;
     }
-  for (idx = 0; idx < grub_zfs_to_cpu64 (zap->zap_num_leafs,
-					 zap_dnode->endian); idx++)
+  for (idx = 0; idx < (1ULL << zap->zap_ptrtbl.zt_shift); idx++)
     {
       blkid = grub_zfs_to_cpu64 (((grub_uint64_t *) zap)[idx + (1 << (blksft - 3 - 1))],
 					 zap_dnode->endian);
 
-      err = dmu_read (zap_dnode, blkid, (void **) &l, &endian, data);
+      for (idx2 = 0; idx2 < idx; idx2++)
+	if (blkid == ((grub_uint64_t *) zap)[idx2 + (1 << (blksft - 3 - 1))])
+	  break;
+      if (idx2 != idx)
+	continue;
+
+      err = dmu_read (zap_dnode, blkid, &l_in, &endian, data);
+      l = l_in;
       if (err)
 	{
 	  grub_errno = GRUB_ERR_NONE;
@@ -1612,7 +1622,7 @@ zap_iterate (dnode_end_t * zap_dnode,
     return 0;
   block_type = grub_zfs_to_cpu64 (*((grub_uint64_t *) zapbuf), endian);
 
-  grub_dprintf ("zfs", "zap read\n");
+  grub_dprintf ("zfs", "zap iterate\n");
 
   if (block_type == ZBT_MICRO)
     {
@@ -1649,7 +1659,7 @@ dnode_get (dnode_end_t * mdn, grub_uint64_t objnum, grub_uint8_t type,
   grub_uint64_t blkid, blksz;	/* the block id this object dnode is in */
   int epbs;			/* shift of number of dnodes in a block */
   int idx;			/* index within a block */
-  dnode_phys_t *dnbuf;
+  void *dnbuf;
   grub_err_t err;
   grub_zfs_endian_t endian;
 
@@ -1672,7 +1682,7 @@ dnode_get (dnode_end_t * mdn, grub_uint64_t objnum, grub_uint8_t type,
 
   grub_dprintf ("zfs", "endian = %d, blkid=%llx\n", mdn->endian, 
 		(unsigned long long) blkid);
-  err = dmu_read (mdn, blkid, (void **) &dnbuf, &endian, data);
+  err = dmu_read (mdn, blkid, &dnbuf, &endian, data);
   if (err)
     return err;
   grub_dprintf ("zfs", "alive\n");
@@ -1694,7 +1704,7 @@ dnode_get (dnode_end_t * mdn, grub_uint64_t objnum, grub_uint8_t type,
       data->dnode_endian = endian;
     }
 
-  grub_memmove (&(buf->dn), &dnbuf[idx], DNODE_SIZE);
+  grub_memmove (&(buf->dn), (dnode_phys_t *) dnbuf + idx, DNODE_SIZE);
   buf->endian = endian;
   if (type && buf->dn.dn_type != type) 
     return grub_error(GRUB_ERR_BAD_FS, "incorrect dnode type"); 
@@ -1831,52 +1841,53 @@ dnode_get_path (dnode_end_t * mdn, const char *path_in, dnode_end_t * dn,
       *path = ch;
       if (((grub_zfs_to_cpu64(((znode_phys_t *) DN_BONUS (&dnode_path->dn.dn))->zp_mode, dnode_path->dn.endian) >> 12) & 0xf) == 0xa)
 	{
+	  char *sym_value;
+	  grub_size_t avail_in_dnode;
+	  grub_size_t sym_sz;
+	  int free_symval = 0;
 	  char *oldpath = path, *oldpathbuf = path_buf;
-	  grub_size_t bonuslen;
-	  bonuslen = (grub_uint8_t *) (&dnode_path->dn.dn + 1)
-	    - (grub_uint8_t *) DN_BONUS (&dnode_path->dn.dn);
-	  if (bonuslen <= sizeof (znode_phys_t))
-	    err = grub_error (GRUB_ERR_BAD_FS,
-			      "incorrect or unsupported symlink");
-	  if (dnode_path->dn.dn.dn_flags & 1)
-	    {
-	      void *sbuf;
-	      grub_size_t ssize;
-	      err = zio_read (dnode_path->dn.dn.dn_blkptr,
-			      dnode_path->dn.endian, &sbuf,
-			      &ssize, data);
-	      if (err)
-		{
-		  grub_free (oldpathbuf);
-		  return err;
-		}
+	  sym_value = ((char *) DN_BONUS (&dnode_path->dn.dn) + sizeof (struct znode_phys));
+	  avail_in_dnode = (char *) (&dnode_path->dn + 1) - sym_value;
 
-	      path = path_buf = grub_malloc (ssize+ grub_strlen (oldpath) + 1);
-	      if (!path_buf)
-		{
-		  grub_free (oldpathbuf);
-		  grub_free (sbuf);
-		  return grub_errno;
-		}
-	      grub_memcpy (path, sbuf, ssize);
-	      path[ssize] = 0;
-	      grub_free (sbuf);
-	    }
-	  else
+	  sym_sz = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&dnode_path->dn.dn))->zp_size, dnode_path->dn.endian);
+
+	  if (sym_sz > avail_in_dnode - 8)
 	    {
-	      path = path_buf
-		= grub_malloc (bonuslen - sizeof (znode_phys_t)
-			       + grub_strlen (oldpath) + 1);
-	      if (!path_buf)
+	      grub_size_t block;
+	      grub_size_t blksz;
+	      blksz = (grub_zfs_to_cpu16 (dnode_path->dn.dn.dn_datablkszsec, 
+					 dnode_path->dn.endian)
+		       << SPA_MINBLOCKSHIFT);
+
+	      sym_value = grub_malloc (sym_sz);
+	      if (!sym_value)
+		return grub_errno;
+	      for (block = 0; block < (sym_sz + blksz - 1) / blksz; block++)
 		{
-		  grub_free (oldpathbuf);
-		  return grub_errno;
+		  void *t;
+		  grub_size_t movesize;
+
+		  err = dmu_read (&(dnode_path->dn), block, &t, 0, data);
+		  if (err)
+		    return err;
+
+		  movesize = MIN (sym_sz - block * blksz, blksz);
+
+		  grub_memcpy (sym_value + block * blksz, t, movesize);
+		  grub_free (t);
 		}
-	      grub_memcpy (path, (char *) DN_BONUS(&dnode_path->dn.dn)
-			   + sizeof (znode_phys_t),
-			   bonuslen - sizeof (znode_phys_t));
-	      path[bonuslen - sizeof (znode_phys_t)] = 0;
+	      free_symval = 1;
+	    }	    
+	  path = path_buf = grub_malloc (sym_sz + grub_strlen (oldpath) + 1);
+	  if (!path_buf)
+	    {
+	      grub_free (oldpathbuf);
+	      return grub_errno;
 	    }
+	  grub_memcpy (path, sym_value, sym_sz);
+	  if (free_symval)
+	    grub_free (sym_value);
+	  path [sym_sz] = 0;
 	  grub_memcpy (path + grub_strlen (path), oldpath, 
 		       grub_strlen (oldpath) + 1);
 	  
@@ -2037,7 +2048,7 @@ get_filesystem_dnode (dnode_end_t * mosmdn, char *fsname,
 static grub_err_t
 make_mdn (dnode_end_t * mdn, struct grub_zfs_data *data)
 {
-  objset_phys_t *osp;
+  void *osp;
   blkptr_t *bp;
   grub_size_t ospsize;
   grub_err_t err;
@@ -2045,7 +2056,7 @@ make_mdn (dnode_end_t * mdn, struct grub_zfs_data *data)
   grub_dprintf ("zfs", "endian = %d\n", mdn->endian);
 
   bp = &(((dsl_dataset_phys_t *) DN_BONUS (&mdn->dn))->ds_bp);
-  err = zio_read (bp, mdn->endian, (void **) &osp, &ospsize, data);
+  err = zio_read (bp, mdn->endian, &osp, &ospsize, data);
   if (err)
     return err;
   if (ospsize < OBJSET_PHYS_SIZE_V14)
@@ -2055,7 +2066,8 @@ make_mdn (dnode_end_t * mdn, struct grub_zfs_data *data)
     }
 
   mdn->endian = (grub_zfs_to_cpu64 (bp->blk_prop, mdn->endian)>>63) & 1;
-  grub_memmove ((char *) &(mdn->dn), (char *) &osp->os_meta_dnode, DNODE_SIZE);
+  grub_memmove ((char *) &(mdn->dn),
+		(char *) &((objset_phys_t *) osp)->os_meta_dnode, DNODE_SIZE);
   grub_free (osp);
   return GRUB_ERR_NONE;
 }
@@ -2633,7 +2645,7 @@ grub_zfs_open (struct grub_file *file, const char *fsfilename)
    */
   if (data->dnode.dn.dn_bonustype == DMU_OT_SA)
     {
-      sa_hdr_phys_t *sahdrp;
+      void *sahdrp;
       int hdrsize;
 
       if (data->dnode.dn.dn_bonuslen != 0)
@@ -2644,7 +2656,7 @@ grub_zfs_open (struct grub_file *file, const char *fsfilename)
 	{
 	  blkptr_t *bp = &data->dnode.dn.dn_spill;
 
-	  err = zio_read (bp, data->dnode.endian, (void **) &sahdrp, NULL, data);
+	  err = zio_read (bp, data->dnode.endian, &sahdrp, NULL, data);
 	  if (err)
 	    return err;
 	}
@@ -2653,7 +2665,7 @@ grub_zfs_open (struct grub_file *file, const char *fsfilename)
 	  return grub_error (GRUB_ERR_BAD_FS, "filesystem is corrupt");
 	}
 
-      hdrsize = SA_HDR_SIZE (sahdrp);
+      hdrsize = SA_HDR_SIZE (((sa_hdr_phys_t *) sahdrp));
       file->size = *(grub_uint64_t *) ((char *) sahdrp + hdrsize + SA_SIZE_OFFSET);
     }
   else
@@ -2675,7 +2687,7 @@ static grub_ssize_t
 grub_zfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_zfs_data *data = (struct grub_zfs_data *) file->data;
-  int blksz, movesize;
+  grub_size_t blksz, movesize;
   grub_size_t length;
   grub_size_t read;
   grub_err_t err;
@@ -2712,6 +2724,7 @@ grub_zfs_read (grub_file_t file, char *buf, grub_size_t len)
   read = 0;
   while (length)
     {
+      void *t;
       /*
        * Find requested blkid and the offset within that block.
        */
@@ -2719,15 +2732,16 @@ grub_zfs_read (grub_file_t file, char *buf, grub_size_t len)
       grub_free (data->file_buf);
       data->file_buf = 0;
 
-      err = dmu_read (&(data->dnode), blkid, (void **) &(data->file_buf),
+      err = dmu_read (&(data->dnode), blkid, &t,
 		      0, data);
+      data->file_buf = t;
       if (err)
 	return -1;
 
       data->file_start = blkid * blksz;
       data->file_end = data->file_start + blksz;
 
-      movesize = MIN (length, data->file_end - (int) file->offset - read);
+      movesize = MIN (length, data->file_end - file->offset - read);
 
       grub_memmove (buf, data->file_buf + file->offset + read
 		    - data->file_start, movesize);

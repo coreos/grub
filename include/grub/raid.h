@@ -42,6 +42,7 @@ struct grub_raid_array
   int number;              /* The device number, taken from md_minor so we
 			      are consistent with the device name in
 			      Linux. */
+  int became_readable_at;
   int level;               /* RAID levels, only 0, 1 or 5 at the moment. */
   int layout;              /* Layout for RAID 5/6.  */
   unsigned int total_devs; /* Total number of devices in the array. */
