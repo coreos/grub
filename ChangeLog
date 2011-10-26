@@ -1,4 +1,9 @@
-2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/datetime.h (grub_datetime2unixtime): Fix off-by-one
+	error.
+
+2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	ZFS fixes.
 

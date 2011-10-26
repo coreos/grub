@@ -86,13 +86,13 @@ grub_datetime2unixtime (const struct grub_datetime *datetime, grub_int32_t *nix)
      are bissextile*/
   /* Convenience: let's have 3 consecutive non-bissextile years
      at the beginning of the epoch. So count from 1971 instead of 1970 */
-  ret = SECPERYEAR + SECPERDAY;
+  ret = 2 * SECPERYEAR + SECPERDAY;
 
   /* Transform C divisions and modulos to mathematical ones */
-  y4 = (datetime->year - 1971) / 4;
-  if (datetime->year < 1971)
+  y4 = (datetime->year - 1972) / 4;
+  if (datetime->year < 1972)
     y4--;
-  ay = datetime->year - 1971 - 4 * y4;
+  ay = datetime->year - 1972 - 4 * y4;
   ret += y4 * SECPER4YEARS;
   ret += ay * SECPERYEAR;
 
