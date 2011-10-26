@@ -941,7 +941,7 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
 {
   zap_leaf_phys_t *l;
   void *l_in;
-  grub_uint64_t idx, blkid;
+  grub_uint64_t idx, idx2, blkid;
   grub_uint16_t chunk;
   int blksft = zfs_log2 (grub_zfs_to_cpu16 (zap_dnode->dn.dn_datablkszsec, 
 					    zap_dnode->endian) << DNODE_SHIFT);
@@ -964,9 +964,15 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
       grub_error (GRUB_ERR_BAD_FS, "ZAP leaf is too small");
       return 0;
     }
-  for (idx = 0; idx < zap->zap_ptrtbl.zt_numblks; idx++)
+  for (idx = 0; idx < (1ULL << zap->zap_ptrtbl.zt_shift); idx++)
     {
       blkid = ((grub_uint64_t *) zap)[idx + (1 << (blksft - 3 - 1))];
+
+      for (idx2 = 0; idx2 < idx; idx2++)
+	if (blkid == ((grub_uint64_t *) zap)[idx2 + (1 << (blksft - 3 - 1))])
+	  break;
+      if (idx2 != idx)
+	continue;
 
       err = dmu_read (zap_dnode, blkid, &l_in, &endian, data);
       l = l_in;
@@ -1093,7 +1099,7 @@ zap_iterate (dnode_end_t * zap_dnode,
     return 0;
   block_type = grub_zfs_to_cpu64 (*((grub_uint64_t *) zapbuf), endian);
 
-  grub_dprintf ("zfs", "zap read\n");
+  grub_dprintf ("zfs", "zap iterate\n");
 
   if (block_type == ZBT_MICRO)
     {
@@ -1310,22 +1316,55 @@ dnode_get_path (dnode_end_t * mdn, const char *path_in, dnode_end_t * dn,
 	break;
 
       *path = ch;
-#if 0
-      if (((grub_zfs_to_cpu64(((znode_phys_t *) DN_BONUS (&dnode_path->dn.dn))->zp_mode, dnode_path->dn.endian) >> 12) & 0xf) == 0xa && ch)
+      if (((grub_zfs_to_cpu64(((znode_phys_t *) DN_BONUS (&dnode_path->dn.dn))->zp_mode, dnode_path->dn.endian) >> 12) & 0xf) == 0xa)
 	{
+	  char *sym_value;
+	  grub_size_t avail_in_dnode;
+	  grub_size_t sym_sz;
+	  int free_symval = 0;
 	  char *oldpath = path, *oldpathbuf = path_buf;
-	  path = path_buf 
-	    = grub_malloc (sizeof (dnode_path->dn.dn.dn_bonus) 
-			   - sizeof (znode_phys_t) + grub_strlen (oldpath) + 1);
+	  sym_value = ((char *) DN_BONUS (&dnode_path->dn.dn) + sizeof (struct znode_phys));
+	  avail_in_dnode = (char *) (&dnode_path->dn + 1) - sym_value;
+
+	  sym_sz = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&dnode_path->dn.dn))->zp_size, dnode_path->dn.endian);
+
+	  if (sym_sz > avail_in_dnode - 8)
+	    {
+	      grub_size_t block;
+	      grub_size_t blksz;
+	      blksz = (grub_zfs_to_cpu16 (dnode_path->dn.dn.dn_datablkszsec, 
+					 dnode_path->dn.endian)
+		       << SPA_MINBLOCKSHIFT);
+
+	      sym_value = grub_malloc (sym_sz);
+	      if (!sym_value)
+		return grub_errno;
+	      for (block = 0; block < (sym_sz + blksz - 1) / blksz; block++)
+		{
+		  void *t;
+		  grub_size_t movesize;
+
+		  err = dmu_read (&(dnode_path->dn), block, &t, 0, data);
+		  if (err)
+		    return err;
+
+		  movesize = MIN (sym_sz - block * blksz, blksz);
+
+		  grub_memcpy (sym_value + block * blksz, t, movesize);
+		  grub_free (t);
+		}
+	      free_symval = 1;
+	    }	    
+	  path = path_buf = grub_malloc (sym_sz + grub_strlen (oldpath) + 1);
 	  if (!path_buf)
 	    {
 	      grub_free (oldpathbuf);
 	      return grub_errno;
 	    }
-	  grub_memcpy (path, 
-		       (char *) DN_BONUS(&dnode_path->dn.dn) + sizeof (znode_phys_t),
-		       sizeof (dnode_path->dn.dn.dn_bonus) - sizeof (znode_phys_t));
-	  path [sizeof (dnode_path->dn.dn.dn_bonus) - sizeof (znode_phys_t)] = 0;
+	  grub_memcpy (path, sym_value, sym_sz);
+	  if (free_symval)
+	    grub_free (sym_value);
+	  path [sym_sz] = 0;
 	  grub_memcpy (path + grub_strlen (path), oldpath, 
 		       grub_strlen (oldpath) + 1);
 	  
@@ -1343,7 +1382,6 @@ dnode_get_path (dnode_end_t * mdn, const char *path_in, dnode_end_t * dn,
 	      grub_free (dn_new);
 	    }
 	}
-#endif
     }
 
   if (!err)

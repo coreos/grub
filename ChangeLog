@@ -1,5 +1,13 @@
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	ZFS fixes.
+
+	* grub-core/fs/zfs/zfs.c (fzap_iterate): Fix handling of indexes
+	sharing the same block. Iterate over correct number of indices.
+	(dnode_get_path): Handle symlinks correctly.
+
+2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/jfs.c (grub_jfs_sblock): Fix offset to volname.
 
 2011-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
