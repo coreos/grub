@@ -1,5 +1,47 @@
 2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	ZFS multi-device and version 33 support.
+
+	* Makefile.util.def (libgrubkern): Add grub-core/fs/zfs/zfsinfo.c.
+	* grub-core/fs/zfs/zfs.c (grub_zfs_device_desc): New struct.
+	(grub_zfs_data): Add multidev-ice-related fields.
+	(zio_checksum_verify): Zero-pad printed values. Print checksum name.
+	(dva_get_offset): Make dva const.
+	(zfs_fetch_nvlist): New function.
+	(fill_vdev_info_real): Likewise.
+	(fill_vdev_info): Likewise.
+	(check_pool_label): Likewise.
+	(scan_disk): Likewise.
+	(scan_devices): Likewise.
+	(read_device): Likewise.
+	(read_dva): Likewise.
+	(zio_read_gang): Use read_dva.
+	(zio_read_data): Likewise.
+	(zap_leaf_lookup): Add missing endian conversion.
+	(zap_verify): Add missing endian conversion. All users updated.
+	(fzap_lookup): Likewise.
+	(fzap_iterate): Likewise.
+	(dnode_get_path): Handle SA bonus.
+	(nvlist_find_value): Make input const. All users updated.
+	(unmount_device): New function.
+	(zfs_unmount): Use unmount_device.
+	(zfs_mount): Use scan_disk.
+	(zfs_mtime): New function.
+	(grub_zfs_open): Handle system attributes.
+	(fill_fs_info): Likewise.
+	(grub_zfs_dir): Likewise.
+	(grub_zfs_fs): Add mtime.
+	* grub-core/fs/zfs/zfsinfo.c (print_vdev_info): Add missing return.
+	* include/grub/zfs/sa_impl.h (SA_TYPE_OFFSET): New definition.
+	(SA_MTIME_OFFSET): Likewise.
+	(SA_SYMLINK_OFFSET): Likewise.
+	* include/grub/zfs/zfs.h (SPA_VERSION): Increase to 33.
+	* util/grub-fstest.c (CMD_ZFSINFO): New enum value.
+	(fstest): Support zfsinfo.
+	(argp_parser): Likewise.
+
+2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/datetime.h (grub_datetime2unixtime): Fix off-by-one
 	error.
 

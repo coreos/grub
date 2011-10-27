@@ -62,9 +62,9 @@ enum {
   CMD_HEX,
   CMD_CRC,
   CMD_BLOCKLIST,
-  CMD_TESTLOAD
+  CMD_TESTLOAD,
+  CMD_ZFSINFO
 };
-
 #define BUF_SIZE  32256
 
 static grub_disk_addr_t skip, leng;
@@ -354,6 +354,9 @@ fstest (int n, char **args)
     case CMD_LS:
       execute_command ("ls", n, args);
       break;
+    case CMD_ZFSINFO:
+      execute_command ("zfsinfo", n, args);
+      break;
     case CMD_CP:
       cmd_cp (args[0], args[1]);
       break;
@@ -515,6 +518,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
       if (!grub_strcmp (arg, "ls"))
         {
           cmd = CMD_LS;
+        }
+      else if (!grub_strcmp (arg, "zfsinfo"))
+        {
+          cmd = CMD_ZFSINFO;
         }
       else if (!grub_strcmp (arg, "cp"))
 	{
