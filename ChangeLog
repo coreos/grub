@@ -1,5 +1,9 @@
 2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/ntfs.h: Add GRUB_NTFS_ prefix. All users updated.
+
+2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	fstest xnu_uuid subcommand.
 
 	* grub-core/commands/xnu_uuid.c (libgrubkrn): Add
