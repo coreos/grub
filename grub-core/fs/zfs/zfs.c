@@ -495,9 +495,9 @@ fill_vdev_info_real (struct grub_zfs_data *data,
 	  fill->vdev_phys_sector = insert->vdev_phys_sector;
 	  fill->current_uberblock = insert->current_uberblock;
 	  fill->original = insert->original;
+	  if (!data->device_original)
+	    data->device_original = fill;
 	}
-      if (!data->device_original)
-	data->device_original = fill;
 
       return GRUB_ERR_NONE;
     }
