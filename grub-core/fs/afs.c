@@ -210,7 +210,14 @@ struct grub_afs_inode
   grub_uint32_t unused;
   struct grub_afs_datastream stream;
   grub_uint32_t	pad[4];
-  grub_uint32_t small_data[1];
+  grub_uint8_t small_data[0];
+} __attribute__ ((packed));
+
+struct grub_afs_small_data_element_header
+{
+  grub_uint32_t type;
+  grub_uint16_t name_len;
+  grub_uint16_t value_len;
 } __attribute__ ((packed));
 
 struct grub_fshelp_node
@@ -229,6 +236,19 @@ struct grub_afs_data
 
 static grub_dl_t my_mod;
 
+static int
+grub_afs_iterate_dir (grub_fshelp_node_t dir,
+                      int NESTED_FUNC_ATTR
+                      (*hook) (const char *filename,
+                               enum grub_fshelp_filetype filetype,
+                               grub_fshelp_node_t node));
+static grub_ssize_t
+grub_afs_read_file (grub_fshelp_node_t node,
+                    void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
+                                                        unsigned offset, unsigned length),
+                    grub_off_t pos, grub_size_t len, char *buf);
+
+
 static grub_afs_off_t
 grub_afs_run_to_num (struct grub_afs_sblock *sb,
                      struct grub_afs_blockrun *run)
@@ -239,14 +259,86 @@ grub_afs_run_to_num (struct grub_afs_sblock *sb,
 
 static grub_err_t
 grub_afs_read_inode (struct grub_afs_data *data,
-                     grub_uint32_t ino, struct grub_afs_inode *inode)
+                     grub_uint64_t ino, struct grub_afs_inode *inode)
 {
   return grub_disk_read (data->disk,
                          ino *
                          (data->sblock.block_size >> GRUB_DISK_SECTOR_BITS),
-                         0, sizeof (struct grub_afs_inode),
-                         inode);
+                         0, data->sblock.block_size, inode);
 }
+
+#ifdef MODE_BFS
+static grub_ssize_t
+grub_afs_read_attribute (grub_fshelp_node_t node,
+			 const char *name, char *buf, grub_size_t len)
+{
+  grub_ssize_t read = -1;
+  auto int NESTED_FUNC_ATTR hook (const char *filename,
+				  enum grub_fshelp_filetype filetype
+				  __attribute__ ((unused)),
+				  grub_fshelp_node_t attr_node);
+	     
+  int NESTED_FUNC_ATTR hook (const char *filename,
+			     enum grub_fshelp_filetype filetype
+			     __attribute__ ((unused)),
+			     grub_fshelp_node_t attr_node)
+  {
+    if (grub_strcmp (filename, name) == 0)
+      {
+	read = grub_afs_read_file (attr_node, 0, 0, len, buf);
+	return 1;
+      }
+    return 0;
+  }
+  grub_uint8_t *ptr = node->inode.small_data;
+  grub_uint8_t *end = ((grub_uint8_t *) &node->inode
+		       + node->data->sblock.block_size);
+
+  while (ptr + sizeof (struct grub_afs_small_data_element_header) < end)
+    {
+      struct grub_afs_small_data_element_header *el;
+      char *el_name;
+      grub_uint8_t *data;
+      el = (struct grub_afs_small_data_element_header *) ptr;
+      if (el->name_len == 0)
+	break;
+      el_name = (char *) (el + 1);
+      data = (grub_uint8_t *) el_name + grub_afs_to_cpu16 (el->name_len) + 3;
+      ptr = data + grub_afs_to_cpu16 (el->value_len) + 1;
+      if (grub_memcmp (name, el_name, grub_afs_to_cpu16 (el->name_len)) == 0
+	  && name[el->name_len] == 0)
+	{
+	  grub_size_t copy;
+	  copy = len;
+	  if (grub_afs_to_cpu16 (el->value_len) > copy)
+	    copy = grub_afs_to_cpu16 (el->value_len);
+	  grub_memcpy (buf, data, copy);
+	  return copy;
+	}
+    }
+
+  {
+    struct grub_fshelp_node *fdiro;
+    
+    fdiro = grub_malloc (sizeof (struct grub_fshelp_node)
+			 + node->data->sblock.block_size
+			 - sizeof (struct grub_afs_inode));
+    if (! fdiro)
+      return -1;
+
+    fdiro->data = node->data;
+    if (grub_afs_read_inode (node->data,
+			     grub_afs_run_to_num (&node->data->sblock,
+						  &node->inode.attrib_dir),
+			     &fdiro->inode))
+      return -1;
+
+    grub_afs_iterate_dir (fdiro, hook);
+  }
+
+  return read;
+}
+#endif
 
 static grub_disk_addr_t
 grub_afs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
@@ -424,7 +516,9 @@ grub_afs_iterate_dir (grub_fshelp_node_t dir,
               struct grub_fshelp_node *fdiro;
               int mode, type;
 
-              fdiro = grub_malloc (sizeof (struct grub_fshelp_node));
+              fdiro = grub_malloc (sizeof (struct grub_fshelp_node)
+				   + dir->data->sblock.block_size
+				   - sizeof (struct grub_afs_inode));
               if (! fdiro)
                 return 0;
 
@@ -521,18 +615,31 @@ static struct grub_afs_data *
 grub_afs_mount (grub_disk_t disk)
 {
   struct grub_afs_data *data = 0;
-
-  data = grub_malloc (sizeof (struct grub_afs_data));
-  if (!data)
-    return 0;
+  struct grub_afs_sblock sb;
+  grub_err_t err;
 
   /* Read the superblock.  */
-  if (grub_disk_read (disk, GRUB_AFS_SBLOCK_SECTOR, 0,
-		      sizeof (struct grub_afs_sblock), &data->sblock))
-    goto fail;
+  err = grub_disk_read (disk, GRUB_AFS_SBLOCK_SECTOR, 0,
+			sizeof (struct grub_afs_sblock), &sb);
+  if (err)
+    {
+      if (err == GRUB_ERR_OUT_OF_RANGE)
+	grub_error (GRUB_ERR_BAD_FS, "not an " GRUB_AFS_FSNAME " filesystem");	
+      return NULL;
+    }
 
-  if (! grub_afs_validate_sblock (&data->sblock))
-    goto fail;
+  if (! grub_afs_validate_sblock (&sb))
+    {
+      grub_error (GRUB_ERR_BAD_FS, "not an " GRUB_AFS_FSNAME " filesystem");
+      return NULL;
+    }
+
+  data = grub_malloc (sizeof (struct grub_afs_data) + sb.block_size
+		      - sizeof (struct grub_afs_inode));
+  if (!data)
+    return NULL;
+
+  data->sblock = sb;
 
   data->diropen.data = data;
   data->inode = &data->diropen.inode;
@@ -681,6 +788,31 @@ grub_afs_label (grub_device_t device, char **label)
   return grub_errno;
 }
 
+#ifdef MODE_BFS
+static grub_err_t
+grub_afs_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_afs_data *data;
+  grub_disk_t disk = device->disk;
+  grub_uint64_t vid;
+  grub_ssize_t read;
+
+  *uuid = NULL;
+
+  data = grub_afs_mount (disk);
+  if (!data)
+    return grub_errno;
+  read = grub_afs_read_attribute (&data->diropen, "be:volume_id",
+				  (char *) &vid,
+				  sizeof (vid));
+  if (read == sizeof (vid))
+    *uuid = grub_xasprintf ("%" PRIxGRUB_UINT64_T, grub_afs_to_cpu64 (vid));
+
+  grub_free (data);
+
+  return grub_errno;
+}
+#endif
 
 static struct grub_fs grub_afs_fs = {
   .name = GRUB_AFS_FSNAME,
@@ -689,6 +821,9 @@ static struct grub_fs grub_afs_fs = {
   .read = grub_afs_read,
   .close = grub_afs_close,
   .label = grub_afs_label,
+#ifdef MODE_BFS
+  .uuid = grub_afs_uuid,
+#endif
   .next = 0
 };
 

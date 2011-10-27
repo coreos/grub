@@ -1,5 +1,18 @@
 2011-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support BFS (befs) UUID.
+
+	* grub-core/fs/afs.c (grub_afs_inode): Make small_data zero-size.
+	(grub_afs_small_data_element_header): New struct.
+	(grub_afs_read_inode): Read complete inode. Fix ino type while on it.
+	(grub_afs_read_attribute) [MODE_BFS]: New function.
+	(grub_afs_iterate_dir): Allocate for complete inode.
+	(grub_afs_mount): Likewise.
+	(grub_afs_uuid) [MODE_BFS]: New function.
+	(grub_afs_fs) [MODE_BFS]: Add .uuid.
+
+2011-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (read_device): Silence spurious warning.
 	(zfs_unmount): Fix memory leak.
 
