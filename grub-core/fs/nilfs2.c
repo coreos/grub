@@ -1117,7 +1117,7 @@ grub_nilfs2_uuid (grub_device_t device, char **uuid)
     {
       *uuid =
 	grub_xasprintf
-	("%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%0x-%02x%02x%02x%02x%02x%02x",
+	("%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
 	 data->sblock.s_uuid[0], data->sblock.s_uuid[1],
 	 data->sblock.s_uuid[2], data->sblock.s_uuid[3],
 	 data->sblock.s_uuid[4], data->sblock.s_uuid[5],

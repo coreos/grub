@@ -1,5 +1,9 @@
 2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/nilfs2.c (grub_nilfs2_uuid): Add missing field length.
+
+2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	ZFS multi-device and version 33 support.
 
 	* Makefile.util.def (libgrubkern): Add grub-core/fs/zfs/zfsinfo.c.
