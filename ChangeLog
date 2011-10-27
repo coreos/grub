@@ -1,5 +1,15 @@
 2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support NTFS reparse points.
+
+	* grub-core/fs/ntfs.c (list_file): Set symlink type when appropriate.
+	(symlink_descriptor): New struct.
+	(grub_ntfs_read_symlink): New function.
+	(grub_ntfs_iterate_dir): Use grub_ntfs_read_symlink.
+	(grub_ntfs_open): Likewise.
+
+2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/ntfs.h: Add GRUB_NTFS_ prefix. All users updated.
 
 2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>

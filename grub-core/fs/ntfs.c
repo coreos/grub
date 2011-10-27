@@ -609,6 +609,7 @@ list_file (struct grub_ntfs_file *diro, char *pos,
 	{
 	  enum grub_fshelp_filetype type;
 	  struct grub_ntfs_file *fdiro;
+	  grub_uint32_t attr;
 
 	  if (u16at (pos, 4))
 	    {
@@ -616,9 +617,13 @@ list_file (struct grub_ntfs_file *diro, char *pos,
 	      return 0;
 	    }
 
-	  type =
-	    (u32at (pos, 0x48) & GRUB_NTFS_ATTR_DIRECTORY) ? GRUB_FSHELP_DIR :
-	    GRUB_FSHELP_REG;
+	  attr = u32at (pos, 0x48);
+	  if (attr & GRUB_NTFS_ATTR_REPARSE)
+	    type = GRUB_FSHELP_SYMLINK;
+	  else if (attr & GRUB_NTFS_ATTR_DIRECTORY)
+	    type = GRUB_FSHELP_DIR;
+	  else
+	    type = GRUB_FSHELP_REG;
 
 	  fdiro = grub_zalloc (sizeof (struct grub_ntfs_file));
 	  if (!fdiro)
@@ -651,6 +656,101 @@ list_file (struct grub_ntfs_file *diro, char *pos,
       pos += u16at (pos, 8);
     }
   return 0;
+}
+
+struct symlink_descriptor
+{
+  grub_uint32_t type;
+  grub_uint32_t total_len;
+  grub_uint16_t off1;
+  grub_uint16_t len1;
+  grub_uint16_t off2;
+  grub_uint16_t len2;
+} __attribute__ ((packed));
+
+static char *
+grub_ntfs_read_symlink (grub_fshelp_node_t node)
+{
+  struct grub_ntfs_file *mft;
+  struct symlink_descriptor symdesc;
+  grub_err_t err;
+  grub_uint16_t *buf16;
+  char *buf, *end;
+  grub_size_t len;
+  grub_size_t i;
+  char *pa;
+  grub_size_t off;
+
+  mft = (struct grub_ntfs_file *) node;
+
+  mft->buf = grub_malloc (mft->data->mft_size << GRUB_NTFS_BLK_SHR);
+  if (mft->buf == NULL)
+    return NULL;
+
+  if (read_mft (mft->data, mft->buf, mft->ino))
+    return NULL;
+
+  pa = locate_attr (&mft->attr, mft, GRUB_NTFS_AT_SYMLINK);
+  if (pa == NULL)
+    {
+      grub_error (GRUB_ERR_BAD_FS, "no $SYMLINK in MFT 0x%X", mft->ino);
+      return NULL;
+    }
+
+  err = read_attr (&mft->attr, (char *) &symdesc, 0,
+		   sizeof (struct symlink_descriptor), 1, 0);
+  if (err)
+    return NULL;
+
+  switch (grub_cpu_to_le32 (symdesc.type))
+    {
+    case 0xa000000c:
+      off = sizeof (struct symlink_descriptor) + 4 + grub_cpu_to_le32 (symdesc.off1);
+      len = grub_cpu_to_le32 (symdesc.len1);
+      break;
+    case 0xa0000003:
+      off = sizeof (struct symlink_descriptor) + grub_cpu_to_le32 (symdesc.off1);
+      len = grub_cpu_to_le32 (symdesc.len1);
+      break;
+    default:
+      grub_error (GRUB_ERR_BAD_FS, "symlink type invalid (%x)",
+		  grub_cpu_to_le32 (symdesc.type));
+      grub_printf ("%d\n", __LINE__);
+      return NULL;
+    }
+
+  buf16 = grub_malloc (len);
+  if (!buf16)
+    return NULL;
+
+  err = read_attr (&mft->attr, (char *) buf16, off, len, 1, 0);
+  if (err)
+    return NULL;
+
+  buf = grub_malloc (len * 2 + 1);
+  if (!buf)
+    {
+      grub_free (buf16);
+      return NULL;
+    }
+
+  for (i = 0; i < len / 2; i++)
+    {
+      buf16[i] = grub_le_to_cpu16 (buf16[i]);
+      if (buf16[i] == '\\')
+	buf16[i] = '/';
+    }
+
+  end = (char *) grub_utf16_to_utf8 ((grub_uint8_t *) buf, buf16, len / 2);
+  *end = '\0';
+  /* Split the sequence to avoid GCC thinking that this is a trigraph.  */
+  if (grub_memcmp (buf, "/?" "?/", 4) == 0 && buf[5] == ':' && buf[6] == '/'
+      && grub_isalpha (buf[4]))
+    {
+      grub_memmove (buf, buf + 6, end - buf + 1 - 6);
+      end -= 6; 
+    }
+  return buf;
 }
 
 static int
@@ -915,7 +1015,7 @@ grub_ntfs_dir (grub_device_t device, const char *path,
     goto fail;
 
   grub_fshelp_find_file (path, &data->cmft, &fdiro, grub_ntfs_iterate_dir,
-			 0, GRUB_FSHELP_DIR);
+			 grub_ntfs_read_symlink, GRUB_FSHELP_DIR);
 
   if (grub_errno)
     goto fail;
@@ -953,7 +1053,7 @@ grub_ntfs_open (grub_file_t file, const char *name)
     goto fail;
 
   grub_fshelp_find_file (name, &data->cmft, &mft, grub_ntfs_iterate_dir,
-			 0, GRUB_FSHELP_REG);
+			 grub_ntfs_read_symlink, GRUB_FSHELP_REG);
 
   if (grub_errno)
     goto fail;
