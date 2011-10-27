@@ -63,7 +63,8 @@ enum {
   CMD_CRC,
   CMD_BLOCKLIST,
   CMD_TESTLOAD,
-  CMD_ZFSINFO
+  CMD_ZFSINFO,
+  CMD_XNU_UUID
 };
 #define BUF_SIZE  32256
 
@@ -378,6 +379,27 @@ fstest (int n, char **args)
     case CMD_TESTLOAD:
       execute_command ("testload", n, args);
       grub_printf ("\n");
+    case CMD_XNU_UUID:
+      {
+	grub_device_t dev;
+	grub_fs_t fs;
+	char *uuid = 0;
+	char *argv[3] = { "-l", NULL, NULL};
+	dev = grub_device_open (n ? args[0] : 0);
+	if (!dev)
+	  grub_util_error (grub_errmsg);
+	fs = grub_fs_probe (dev);
+	if (!fs)
+	  grub_util_error (grub_errmsg);
+	if (!fs->uuid)
+	  grub_util_error ("couldn't retrieve UUID");
+	if (fs->uuid (dev, &uuid))
+	  grub_util_error (grub_errmsg);
+	if (!uuid)
+	  grub_util_error ("couldn't retrieve UUID");
+	argv[1] = uuid;
+	execute_command ("xnu_uuid", 2, argv);	
+      }
     }
     
   for (i = 0; i < num_disks; i++)
@@ -406,6 +428,7 @@ static struct argp_option options[] = {
   {N_("hex FILE"), 0, 0      , OPTION_DOC, N_("Hex dump FILE."), 1},
   {N_("crc FILE"), 0, 0     , OPTION_DOC, N_("Get crc32 checksum of FILE."), 1},
   {N_("blocklist FILE"), 0, 0, OPTION_DOC, N_("Display blocklist of FILE."), 1},
+  {N_("xnu_uuid"), 0, 0, OPTION_DOC, N_("Compute XNU UUID of the device."), 1},
   
   {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."),                 2},
   {"skip",      's', "N",           0, N_("Skip N bytes from output file."),   2},
@@ -557,6 +580,11 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	{
 	  cmd = CMD_TESTLOAD;
           nparm = 1;
+	}
+      else if (grub_strcmp (arg, "xnu_uuid") == 0)
+	{
+	  cmd = CMD_XNU_UUID;
+	  nparm = 0;
 	}
       else
 	{

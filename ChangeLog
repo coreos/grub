@@ -1,5 +1,16 @@
 2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	fstest xnu_uuid subcommand.
+
+	* grub-core/commands/xnu_uuid.c (libgrubkrn): Add
+	grub-core/commands/xnu_uuid.c.
+	* util/grub-fstest.c (CMD_XNU_UUID): New enum value.
+	(fstest): Handle xnu_uuid.
+	(options): Document xnu_uuid.
+	(argp_parser): Parse xnu_uuid.
+
+2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/xnu_uuid.c (grub_cmd_xnu_uuid): Support
 	-l argument. Add newline at the end if printing.
 	(GRUB_MOD_INIT): Document -l.
