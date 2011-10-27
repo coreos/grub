@@ -1839,19 +1839,18 @@ dnode_get_path (dnode_end_t * mdn, const char *path_in, dnode_end_t * dn,
 	break;
 
       *path = ch;
-      if (((grub_zfs_to_cpu64(((znode_phys_t *) DN_BONUS (&dnode_path->dn.dn))->zp_mode, dnode_path->dn.endian) >> 12) & 0xf) == 0xa)
+      if (dnode_path->dn.dn.dn_bonustype == DMU_OT_ZNODE
+	  && ((grub_zfs_to_cpu64(((znode_phys_t *) DN_BONUS (&dnode_path->dn.dn))->zp_mode, dnode_path->dn.endian) >> 12) & 0xf) == 0xa)
 	{
 	  char *sym_value;
-	  grub_size_t avail_in_dnode;
 	  grub_size_t sym_sz;
 	  int free_symval = 0;
 	  char *oldpath = path, *oldpathbuf = path_buf;
 	  sym_value = ((char *) DN_BONUS (&dnode_path->dn.dn) + sizeof (struct znode_phys));
-	  avail_in_dnode = (char *) (&dnode_path->dn + 1) - sym_value;
 
 	  sym_sz = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&dnode_path->dn.dn))->zp_size, dnode_path->dn.endian);
 
-	  if (sym_sz > avail_in_dnode - 8)
+	  if (dnode_path->dn.dn.dn_flags & 1)
 	    {
 	      grub_size_t block;
 	      grub_size_t blksz;
@@ -1903,6 +1902,62 @@ dnode_get_path (dnode_end_t * mdn, const char *path_in, dnode_end_t * dn,
 	      dn_new = dnode_path;
 	      dnode_path = dn_new->next;
 	      grub_free (dn_new);
+	    }
+	}
+      if (dnode_path->dn.dn.dn_bonustype == DMU_OT_SA)
+	{
+	  void *sahdrp;
+	  int hdrsize;
+	  
+	  if (dnode_path->dn.dn.dn_bonuslen != 0)
+	    {
+	      sahdrp = DN_BONUS (&dnode_path->dn.dn);
+	    }
+	  else if (dnode_path->dn.dn.dn_flags & DNODE_FLAG_SPILL_BLKPTR)
+	    {
+	      blkptr_t *bp = &dnode_path->dn.dn.dn_spill;
+	      
+	      err = zio_read (bp, dnode_path->dn.endian, &sahdrp, NULL, data);
+	      if (err)
+		return err;
+	    }
+	  else
+	    {
+	      return grub_error (GRUB_ERR_BAD_FS, "filesystem is corrupt");
+	    }
+
+	  hdrsize = SA_HDR_SIZE (((sa_hdr_phys_t *) sahdrp));
+
+	  if (((grub_zfs_to_cpu64 (*(grub_uint64_t *) ((char *) sahdrp + hdrsize + SA_TYPE_OFFSET), dnode_path->dn.endian) >> 12) & 0xf) == 0xa)
+	    {
+	      char *sym_value = (char *) sahdrp + hdrsize + SA_SYMLINK_OFFSET;
+	      grub_size_t sym_sz = 
+		grub_zfs_to_cpu64 (*(grub_uint64_t *) ((char *) sahdrp + hdrsize + SA_SIZE_OFFSET), dnode_path->dn.endian);
+	      char *oldpath = path, *oldpathbuf = path_buf;
+	      path = path_buf = grub_malloc (sym_sz + grub_strlen (oldpath) + 1);
+	      if (!path_buf)
+		{
+		  grub_free (oldpathbuf);
+		  return grub_errno;
+		}
+	      grub_memcpy (path, sym_value, sym_sz);
+	      path [sym_sz] = 0;
+	      grub_memcpy (path + grub_strlen (path), oldpath, 
+			   grub_strlen (oldpath) + 1);
+	      
+	      grub_free (oldpathbuf);
+	      if (path[0] != '/')
+		{
+		  dn_new = dnode_path;
+		  dnode_path = dn_new->next;
+		  grub_free (dn_new);
+		}
+	      else while (dnode_path != root)
+		{
+		  dn_new = dnode_path;
+		  dnode_path = dn_new->next;
+		  grub_free (dn_new);
+		}
 	    }
 	}
     }
@@ -2666,12 +2721,14 @@ grub_zfs_open (struct grub_file *file, const char *fsfilename)
 	}
 
       hdrsize = SA_HDR_SIZE (((sa_hdr_phys_t *) sahdrp));
-      file->size = *(grub_uint64_t *) ((char *) sahdrp + hdrsize + SA_SIZE_OFFSET);
+      file->size = grub_zfs_to_cpu64 (*(grub_uint64_t *) ((char *) sahdrp + hdrsize + SA_SIZE_OFFSET), data->dnode.endian);
     }
-  else
+  else if (data->dnode.dn.dn_bonustype == DMU_OT_ZNODE)
     {
       file->size = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&data->dnode.dn))->zp_size, data->dnode.endian);
     }
+  else
+    return grub_error (GRUB_ERR_BAD_FS, "bad bonus type");
 
   file->data = data;
   file->offset = 0;
@@ -2830,8 +2887,39 @@ fill_fs_info (struct grub_dirhook_info *info,
       return;
     }
   
-  info->mtimeset = 1;
-  info->mtime = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&dn.dn))->zp_mtime[0], dn.endian);
+  if (dn.dn.dn_bonustype == DMU_OT_SA)
+    {
+      void *sahdrp;
+      int hdrsize;
+
+      if (dn.dn.dn_bonuslen != 0)
+	{
+	  sahdrp = (sa_hdr_phys_t *) DN_BONUS (&dn.dn);
+	}
+      else if (dn.dn.dn_flags & DNODE_FLAG_SPILL_BLKPTR)
+	{
+	  blkptr_t *bp = &dn.dn.dn_spill;
+
+	  err = zio_read (bp, dn.endian, &sahdrp, NULL, data);
+	  if (err)
+	    return;
+	}
+      else
+	{
+	  grub_error (GRUB_ERR_BAD_FS, "filesystem is corrupt");
+	  return;
+	}
+
+      hdrsize = SA_HDR_SIZE (((sa_hdr_phys_t *) sahdrp));
+      info->mtimeset = 1;
+      info->mtime = grub_zfs_to_cpu64 (*(grub_uint64_t *) ((char *) sahdrp + hdrsize + SA_MTIME_OFFSET), dn.endian);
+    }
+
+  if (dn.dn.dn_bonustype == DMU_OT_ZNODE)
+    {
+      info->mtimeset = 1;
+      info->mtime = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&dn.dn))->zp_mtime[0], dn.endian);
+    }
   return;
 }
 
@@ -2855,10 +2943,47 @@ grub_zfs_dir (grub_device_t device, const char *path,
     grub_memset (&info, 0, sizeof (info));
 
     dnode_get (&(data->mdn), val, 0, &dn, data);
-    info.mtimeset = 1;
-    info.mtime = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&dn.dn))->zp_mtime[0], dn.endian);
-    info.dir = (dn.dn.dn_type == DMU_OT_DIRECTORY_CONTENTS);
-    grub_dprintf ("zfs", "type=%d, name=%s\n", 
+
+    if (dn.dn.dn_bonustype == DMU_OT_SA)
+      {
+	void *sahdrp;
+	int hdrsize;
+
+	if (dn.dn.dn_bonuslen != 0)
+	  {
+	    sahdrp = (sa_hdr_phys_t *) DN_BONUS (&data->dnode.dn);
+	  }
+	else if (dn.dn.dn_flags & DNODE_FLAG_SPILL_BLKPTR)
+	  {
+	    blkptr_t *bp = &dn.dn.dn_spill;
+
+	    err = zio_read (bp, dn.endian, &sahdrp, NULL, data);
+	    if (err)
+	      {
+		grub_print_error ();
+		return 0;
+	      }
+	  }
+	else
+	  {
+	    grub_error (GRUB_ERR_BAD_FS, "filesystem is corrupt");
+	    grub_print_error ();
+	    return 0;
+	  }
+
+	hdrsize = SA_HDR_SIZE (((sa_hdr_phys_t *) sahdrp));
+	info.mtimeset = 1;
+	info.mtime = grub_zfs_to_cpu64 (*(grub_uint64_t *) ((char *) sahdrp + hdrsize + SA_MTIME_OFFSET), dn.endian);
+      }
+    
+    if (dn.dn.dn_bonustype == DMU_OT_ZNODE)
+      {	
+	info.mtimeset = 1;
+	info.mtime = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&dn.dn))->zp_mtime[0],
+					dn.endian);
+      }
+	info.dir = (dn.dn.dn_type == DMU_OT_DIRECTORY_CONTENTS);
+	grub_dprintf ("zfs", "type=%d, name=%s\n", 
 		  (int)dn.dn.dn_type, (char *)name);
     return hook (name, &info);
   }
