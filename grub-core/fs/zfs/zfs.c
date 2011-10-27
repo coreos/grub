@@ -865,7 +865,7 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
       }
     case DEVICE_MIRROR:
       {
-	grub_err_t err;
+	grub_err_t err = GRUB_ERR_NONE;
 	unsigned i;
 	if (desc->n_children <= 0)
 	  return grub_error (GRUB_ERR_BAD_FS,
@@ -2498,6 +2498,7 @@ zfs_unmount (struct grub_zfs_data *data)
   unsigned i;
   for (i = 0; i < data->n_devices_attached; i++)
     unmount_device (&data->devices_attached[i]);
+  grub_free (data->devices_attached);
   grub_free (data->dnode_buf);
   grub_free (data->dnode_mdn);
   grub_free (data->file_buf);

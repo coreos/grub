@@ -1,3 +1,8 @@
+2011-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c (read_device): Silence spurious warning.
+	(zfs_unmount): Fix memory leak.
+
 2011-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support NTFS reparse points.
