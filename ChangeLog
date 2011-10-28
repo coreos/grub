@@ -1,3 +1,8 @@
+2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/raid.c (scan_devices): Check partition.
+	* grub-core/disk/lvm.c (do_lvm_scan): Likewise.
+
 2011-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support BFS (befs) UUID.

@@ -23,6 +23,7 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/lvm.h>
+#include <grub/partition.h>
 
 #ifdef GRUB_UTIL
 #include <grub/emu/misc.h>
@@ -153,7 +154,11 @@ do_lvm_scan (const char *scan_for)
     for (vg = vg_list; vg; vg = vg->next)
       for (pv = vg->pvs; pv; pv = pv->next)
 	if (pv->disk && pv->disk->id == disk->id
-	    && pv->disk->dev->id == disk->dev->id)
+	    && pv->disk->dev->id == disk->dev->id
+	    && grub_partition_get_start (pv->disk->partition)
+	    == grub_partition_get_start (disk->partition)
+	    && grub_partition_get_len (pv->disk->partition)
+	    == grub_partition_get_len (disk->partition))
 	  {
 	    grub_disk_close (disk);
 	    return 0;
