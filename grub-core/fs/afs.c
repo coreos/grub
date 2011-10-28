@@ -41,7 +41,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #endif
 
 #define	GRUB_AFS_DIRECT_BLOCK_COUNT	12
-#define	GRUB_AFS_BLOCKS_PER_DI_RUN	4
+#define	GRUB_AFS_LOG_BLOCKS_PER_DI_RUN	2
 
 #ifdef MODE_BFS
 #define GRUB_AFS_SBLOCK_SECTOR 1
@@ -103,6 +103,7 @@ typedef grub_uint64_t grub_afs_off_t;
 typedef grub_uint64_t grub_afs_bigtime;
 typedef grub_uint64_t grub_afs_bvalue_t;
 
+#define GRUB_AFS_BLOCKRUN_LOG_SIZE 3
 struct grub_afs_blockrun
 {
   grub_uint32_t group;
@@ -262,8 +263,7 @@ grub_afs_read_inode (struct grub_afs_data *data,
                      grub_uint64_t ino, struct grub_afs_inode *inode)
 {
   return grub_disk_read (data->disk,
-                         ino *
-                         (data->sblock.block_size >> GRUB_DISK_SECTOR_BITS),
+                         ino << (data->sblock.block_shift - GRUB_DISK_SECTOR_BITS),
                          0, data->sblock.block_size, inode);
 }
 
@@ -340,13 +340,19 @@ grub_afs_read_attribute (grub_fshelp_node_t node,
 }
 #endif
 
+#ifdef MODE_BFS
+#define RANGE_SHIFT sb->block_shift
+#else
+#define RANGE_SHIFT 0
+#endif
+
 static grub_disk_addr_t
 grub_afs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   struct grub_afs_sblock *sb = &node->data->sblock;
   struct grub_afs_datastream *ds = &node->inode.stream;
 
-  if (fileblock < grub_afs_to_cpu64 (ds->max_direct_range))
+  if ((fileblock << RANGE_SHIFT) < grub_afs_to_cpu64 (ds->max_direct_range))
     {
       int i;
 
@@ -356,21 +362,24 @@ grub_afs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
             return grub_afs_run_to_num (sb, &ds->direct[i]) + fileblock;
           fileblock -= grub_afs_to_cpu16 (ds->direct[i].len);
         }
+      grub_error (GRUB_ERR_BAD_FS, "incorrect direct blocks");
+      return 0;
     }
-  else if (fileblock < grub_afs_to_cpu64 (ds->max_indirect_range))
+  else if ((fileblock << RANGE_SHIFT)
+	   < grub_afs_to_cpu64 (ds->max_indirect_range))
     {
-      int ptrs_per_blk = sb->block_size / sizeof (struct grub_afs_blockrun);
+      grub_size_t ptrs_per_blk = (1 << (sb->block_shift - GRUB_AFS_BLOCKRUN_LOG_SIZE));
       struct grub_afs_blockrun indir[ptrs_per_blk];
       grub_afs_off_t blk = grub_afs_run_to_num (sb, &ds->indirect);
       int i;
 
-      fileblock -= grub_afs_to_cpu64 (ds->max_direct_range);
+      fileblock -= grub_afs_to_cpu64 (ds->max_direct_range) >> RANGE_SHIFT;
       for (i = 0; i < ds->indirect.len; i++, blk++)
         {
-          int j;
+          grub_size_t j;
 
           if (grub_disk_read (node->data->disk,
-                              blk * (sb->block_size >> GRUB_DISK_SECTOR_BITS),
+                              blk << (sb->block_shift - GRUB_DISK_SECTOR_BITS),
                               0, sizeof (indir),
                               indir))
             return 0;
@@ -383,43 +392,47 @@ grub_afs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
               fileblock -= grub_afs_to_cpu16 (indir[j].len);
             }
         }
+      grub_error (GRUB_ERR_BAD_FS, "incorrect indirect blocks");
+      return 0;
     }
-  else
+  else if ((fileblock << RANGE_SHIFT) < grub_afs_to_cpu64 (ds->max_double_indirect_range))
     {
-      int ptrs_per_blk = sb->block_size / sizeof (struct grub_afs_blockrun);
+      grub_size_t ptrs_per_blk = (1 << (sb->block_shift - GRUB_AFS_BLOCKRUN_LOG_SIZE));
       struct grub_afs_blockrun indir[ptrs_per_blk];
-
+      grub_disk_addr_t off, dptr, dblk, idptr, idblk;
       /* ([idblk][idptr]) ([dblk][dptr]) [blk]  */
-      int cur_pos = fileblock - grub_afs_to_cpu64 (ds->max_indirect_range);
 
-      int dptr_size = GRUB_AFS_BLOCKS_PER_DI_RUN;
-      int dblk_size = dptr_size * ptrs_per_blk;
-      int idptr_size = dblk_size * GRUB_AFS_BLOCKS_PER_DI_RUN;
-      int idblk_size = idptr_size * ptrs_per_blk;
+      fileblock -= grub_afs_to_cpu64 (ds->max_indirect_range) >> RANGE_SHIFT;
 
-      int off = cur_pos % GRUB_AFS_BLOCKS_PER_DI_RUN;
-      int dptr = (cur_pos / dptr_size) % ptrs_per_blk;
-      int dblk = (cur_pos / dblk_size) % GRUB_AFS_BLOCKS_PER_DI_RUN;
-      int idptr = (cur_pos / idptr_size) % ptrs_per_blk;
-      int idblk = (cur_pos / idblk_size);
+      /* Divisions and modulo fixed number are optimised by compiler.  */
+      off = fileblock & ((1 << GRUB_AFS_LOG_BLOCKS_PER_DI_RUN) - 1);
+      dptr = fileblock >> GRUB_AFS_LOG_BLOCKS_PER_DI_RUN;
+      dblk = dptr >> (sb->block_shift - GRUB_AFS_BLOCKRUN_LOG_SIZE);
+      dptr &= ((1 << (sb->block_shift - GRUB_AFS_BLOCKRUN_LOG_SIZE)) - 1);
+      idptr = dblk >> GRUB_AFS_LOG_BLOCKS_PER_DI_RUN;
+      dblk &= ((1 << GRUB_AFS_LOG_BLOCKS_PER_DI_RUN) - 1);
+      idblk = idptr >> (sb->block_shift - GRUB_AFS_BLOCKRUN_LOG_SIZE);
+      idptr &= ((1 << (sb->block_shift - GRUB_AFS_BLOCKRUN_LOG_SIZE)) - 1);
 
       if (grub_disk_read (node->data->disk,
                           (grub_afs_run_to_num (sb, &ds->double_indirect)
-                           + idblk) *
-                          (sb->block_size >> GRUB_DISK_SECTOR_BITS),
+                           + idblk) << (sb->block_shift - GRUB_DISK_SECTOR_BITS),
                           0, sizeof (indir),
                           indir))
         return 0;
 
       if (grub_disk_read (node->data->disk,
-                          (grub_afs_run_to_num (sb, &indir[idptr]) + dblk) *
-                          (sb->block_size >> GRUB_DISK_SECTOR_BITS),
+                          (grub_afs_run_to_num (sb, &indir[idptr]) + dblk)
+			  << (sb->block_shift - GRUB_DISK_SECTOR_BITS),
                           0, sizeof (indir),
                           indir))
         return 0;
 
       return grub_afs_run_to_num (sb, &indir[dptr]) + off;
     }
+  
+  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+	      "triple-indirect on " GRUB_AFS_FSNAME " isn't supported");
 
   return 0;
 }
@@ -837,6 +850,8 @@ GRUB_MOD_INIT (afs_be)
 GRUB_MOD_INIT (afs)
 #endif
 {
+  COMPILE_TIME_ASSERT ((1 << GRUB_AFS_BLOCKRUN_LOG_SIZE)
+		       == sizeof (struct grub_afs_blockrun));
   grub_fs_register (&grub_afs_fs);
   my_mod = mod;
 }

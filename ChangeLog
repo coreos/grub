@@ -1,5 +1,18 @@
 2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Correct befs block counting logic.
+
+	* grub-core/fs/afs.c (GRUB_AFS_BLOCKS_PER_DI_RUN): Replaced with...
+	(GRUB_AFS_LOG_BLOCKS_PER_DI_RUN): ... this.
+	(GRUB_AFS_BLOCKRUN_LOG_SIZE): New definition.
+	(grub_afs_read_inode): Use block_shift.
+	(RANGE_SHIFT): New definition.
+	(grub_afs_read_block): Account for RANGE_SHIFT, emit errors on
+	unexpected conditions, use shifts and appropriate types.
+	(GRUB_MOD_INIT): Check the value of GRUB_AFS_BLOCKRUN_LOG_SIZE.
+
+2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/raid.c (scan_devices): Check partition.
 	* grub-core/disk/lvm.c (do_lvm_scan): Likewise.
 
