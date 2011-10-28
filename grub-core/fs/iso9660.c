@@ -347,17 +347,14 @@ grub_iso9660_convert_string (grub_uint16_t *us, int len)
   return p;
 }
 
-static struct grub_iso9660_data *
-grub_iso9660_mount (grub_disk_t disk)
+static grub_err_t
+set_rockridge (struct grub_iso9660_data *data)
 {
-  struct grub_iso9660_data *data = 0;
-  struct grub_iso9660_dir rootdir;
   int sua_pos;
   int sua_size;
   char *sua;
+  struct grub_iso9660_dir rootdir;
   struct grub_iso9660_susp_entry *entry;
-  struct grub_iso9660_primary_voldesc voldesc;
-  int block;
 
   auto grub_err_t susp_iterate (struct grub_iso9660_susp_entry *);
 
@@ -372,6 +369,67 @@ grub_iso9660_mount (grub_disk_t disk)
 	}
       return 0;
     }
+
+  data->rockridge = 0;
+
+  /* Read the system use area and test it to see if SUSP is
+     supported.  */
+  if (grub_disk_read (data->disk,
+		      (grub_le_to_cpu32 (data->voldesc.rootdir.first_sector)
+		       << GRUB_ISO9660_LOG2_BLKSZ), 0,
+		      sizeof (rootdir), (char *) &rootdir))
+    return grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
+
+  sua_pos = (sizeof (rootdir) + rootdir.namelen
+	     + (rootdir.namelen % 2) - 1);
+  sua_size = rootdir.len - sua_pos;
+
+  if (!sua_size)
+    return GRUB_ERR_NONE;
+
+  sua = grub_malloc (sua_size);
+  if (! sua)
+    return grub_errno;
+
+  if (grub_disk_read (data->disk,
+		      (grub_le_to_cpu32 (data->voldesc.rootdir.first_sector)
+		       << GRUB_ISO9660_LOG2_BLKSZ), sua_pos,
+		      sua_size, sua))
+    return grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
+
+  entry = (struct grub_iso9660_susp_entry *) sua;
+
+  /* Test if the SUSP protocol is used on this filesystem.  */
+  if (grub_strncmp ((char *) entry->sig, "SP", 2) == 0)
+    {
+      struct grub_fshelp_node rootnode;
+
+      rootnode.data = data;
+      rootnode.alloc_dirents = 0;
+      rootnode.have_dirents = 1;
+      rootnode.symlink = 0;
+      rootnode.dirents[0] = data->voldesc.rootdir;
+
+      /* The 2nd data byte stored how many bytes are skipped every time
+	 to get to the SUA (System Usage Area).  */
+      data->susp_skip = entry->data[2];
+      entry = (struct grub_iso9660_susp_entry *) ((char *) entry + entry->len);
+
+      /* Iterate over the entries in the SUA area to detect
+	 extensions.  */
+      if (grub_iso9660_susp_iterate (&rootnode,
+				     sua_pos, sua_size, susp_iterate))
+	return grub_errno;
+    }
+  return GRUB_ERR_NONE;
+}
+
+static struct grub_iso9660_data *
+grub_iso9660_mount (grub_disk_t disk)
+{
+  struct grub_iso9660_data *data = 0;
+  struct grub_iso9660_primary_voldesc voldesc;
+  int block;
 
   data = grub_zalloc (sizeof (struct grub_iso9660_data));
   if (! data)
@@ -400,9 +458,11 @@ grub_iso9660_mount (grub_disk_t disk)
         }
 
       if (voldesc.voldesc.type == GRUB_ISO9660_VOLDESC_PRIMARY)
-        copy_voldesc = 1;
-      else if ((voldesc.voldesc.type == GRUB_ISO9660_VOLDESC_SUPP) &&
-               (voldesc.escape[0] == 0x25) && (voldesc.escape[1] == 0x2f) &&
+	copy_voldesc = 1;
+      else if (!data->rockridge
+	       && (voldesc.voldesc.type == GRUB_ISO9660_VOLDESC_SUPP)
+	       && (voldesc.escape[0] == 0x25) && (voldesc.escape[1] == 0x2f)
+	       &&
                ((voldesc.escape[2] == 0x40) ||	/* UCS-2 Level 1.  */
                 (voldesc.escape[2] == 0x43) ||  /* UCS-2 Level 2.  */
                 (voldesc.escape[2] == 0x45)))	/* UCS-2 Level 3.  */
@@ -412,65 +472,15 @@ grub_iso9660_mount (grub_disk_t disk)
         }
 
       if (copy_voldesc)
-        grub_memcpy((char *) &data->voldesc, (char *) &voldesc,
-                    sizeof (struct grub_iso9660_primary_voldesc));
+	{
+	  grub_memcpy((char *) &data->voldesc, (char *) &voldesc,
+		      sizeof (struct grub_iso9660_primary_voldesc));
+	  if (set_rockridge (data))
+	    goto fail;
+	}
 
       block++;
     } while (voldesc.voldesc.type != GRUB_ISO9660_VOLDESC_END);
-
-  /* Read the system use area and test it to see if SUSP is
-     supported.  */
-  if (grub_disk_read (disk, (grub_le_to_cpu32 (data->voldesc.rootdir.first_sector)
-			     << GRUB_ISO9660_LOG2_BLKSZ), 0,
-		      sizeof (rootdir), (char *) &rootdir))
-    {
-      grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
-      goto fail;
-    }
-
-  sua_pos = (sizeof (rootdir) + rootdir.namelen
-	     + (rootdir.namelen % 2) - 1);
-  sua_size = rootdir.len - sua_pos;
-
-  if (!sua_size)
-    return data;
-
-  sua = grub_malloc (sua_size);
-  if (! sua)
-    goto fail;
-
-  if (grub_disk_read (disk, (grub_le_to_cpu32 (data->voldesc.rootdir.first_sector)
-			     << GRUB_ISO9660_LOG2_BLKSZ), sua_pos,
-		      sua_size, sua))
-    {
-      grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
-      goto fail;
-    }
-
-  entry = (struct grub_iso9660_susp_entry *) sua;
-
-  /* Test if the SUSP protocol is used on this filesystem.  */
-  if (grub_strncmp ((char *) entry->sig, "SP", 2) == 0)
-    {
-      struct grub_fshelp_node rootnode;
-
-      rootnode.data = data;
-      rootnode.alloc_dirents = 0;
-      rootnode.have_dirents = 1;
-      rootnode.symlink = 0;
-      rootnode.dirents[0] = data->voldesc.rootdir;
-
-      /* The 2nd data byte stored how many bytes are skipped every time
-	 to get to the SUA (System Usage Area).  */
-      data->susp_skip = entry->data[2];
-      entry = (struct grub_iso9660_susp_entry *) ((char *) entry + entry->len);
-
-      /* Iterate over the entries in the SUA area to detect
-	 extensions.  */
-      if (grub_iso9660_susp_iterate (&rootnode,
-				     sua_pos, sua_size, susp_iterate))
-	goto fail;
-    }
 
   return data;
 

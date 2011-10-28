@@ -1,5 +1,15 @@
 2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Prefer rockridge over Joliet.
+
+	* grub-core/fs/iso9660.c (grub_iso9660_mount): Move rockridge detection
+	to ...
+	(set_rockridge): ... here.
+	(grub_iso9660_mount): Check rockridge on the primary label when
+	discovering. Ignore Joliet if Rockridge is present.
+
+2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use shifts in nilfs2.
 
 	* grub-core/fs/nilfs2.c (LOG_INODE_SIZE): New definition.
