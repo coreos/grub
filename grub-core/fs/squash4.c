@@ -173,6 +173,7 @@ struct grub_squash_data
   struct grub_squash_super sb;
   struct grub_squash_cache_inode ino;
   grub_uint64_t fragments;
+  int log2_blksz;
 };
 
 struct grub_fshelp_node
@@ -267,7 +268,10 @@ squash_mount (grub_disk_t disk)
     grub_error (GRUB_ERR_BAD_FS, "not a squash4");
   if (err)
     return NULL;
-  if (grub_le_to_cpu32 (sb.magic) != SQUASH_MAGIC)
+  if (grub_le_to_cpu32 (sb.magic) != SQUASH_MAGIC
+      || grub_le_to_cpu32 (sb.block_size) == 0
+      || ((grub_le_to_cpu32 (sb.block_size) - 1)
+	  & grub_le_to_cpu32 (sb.block_size)))
     {
       grub_error (GRUB_ERR_BAD_FS, "not squash4");
       return NULL;
@@ -289,6 +293,10 @@ squash_mount (grub_disk_t disk)
   data->sb = sb;
   data->disk = disk;
   data->fragments = grub_le_to_cpu64 (frag);
+
+  for (data->log2_blksz = 0; 
+       (1U << data->log2_blksz) < grub_le_to_cpu32 (data->sb.block_size);
+       data->log2_blksz++);
 
   return data;
 }
@@ -528,10 +536,9 @@ direct_read (struct grub_squash_data *data,
 	  block_offset = ((char *) &ino->ino.file.block_size
 			  - (char *) &ino->ino);
 	}
-      total_blocks = grub_divmod64 (total_size
-				    + grub_le_to_cpu32 (data->sb.block_size) - 1,
-				    grub_le_to_cpu32 (data->sb.block_size),
-				    0);
+      total_blocks = ((total_size
+		      + grub_le_to_cpu32 (data->sb.block_size) - 1)
+		      >> data->log2_blksz);
       ino->block_sizes = grub_malloc (total_blocks
 				      * sizeof (ino->block_sizes[0]));
       ino->cumulated_block_sizes = grub_malloc (total_blocks
@@ -565,7 +572,7 @@ direct_read (struct grub_squash_data *data,
 
   if (a == 0)
     a = sizeof (struct grub_squash_super);
-  i = grub_divmod64 (off, grub_le_to_cpu32 (data->sb.block_size), 0);
+  i = off >> data->log2_blksz;
   cumulated_uncompressed_size = grub_le_to_cpu32 (data->sb.block_size)
     * (grub_disk_addr_t) i;
   while (cumulated_uncompressed_size < off + len)

@@ -1,5 +1,13 @@
 2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use shifts in squash4.
+
+	* grub-core/fs/squash4.c (grub_squash_data): New field log2_blksz.
+	(squash_mount): Check block size and take logarithm.
+	(direct_read): Use shifts.
+
+2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Correct befs block counting logic.
 
 	* grub-core/fs/afs.c (GRUB_AFS_BLOCKS_PER_DI_RUN): Replaced with...
