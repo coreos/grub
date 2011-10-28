@@ -1,5 +1,15 @@
 2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use shifts in minix filesystem.
+
+	* grub-core/fs/minix.c (GRUB_MINIX_ZONESZ): Use log_block_size.
+	(GRUB_MINIX_ZONE2SECT): Likewise.
+	(grub_minix_data): Replace block_size with log_block_size.
+	(grub_minix_read_file): Use shifts.
+	(grub_minix_mount): Check block size and take a logarithm.
+
+2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use shifts in squash4.
 
 	* grub-core/fs/squash4.c (grub_squash_data): New field log2_blksz.

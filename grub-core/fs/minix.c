@@ -76,11 +76,11 @@ typedef grub_uint16_t grub_minix_ino_t;
 #define GRUB_MINIX_LOG2_ZONESZ	(GRUB_MINIX_LOG2_BSIZE				\
 				 + grub_le_to_cpu16 (data->sblock.log2_zone_size))
 #endif
-#define GRUB_MINIX_ZONESZ	(data->block_size 				\
-				 << grub_le_to_cpu16 (data->sblock.log2_zone_size))
+#define GRUB_MINIX_ZONESZ	(1 << (data->log_block_size		\
+				       + grub_le_to_cpu16 (data->sblock.log2_zone_size)))
 
 #ifdef MODE_MINIX3
-#define GRUB_MINIX_ZONE2SECT(zone) ((zone) * (data->block_size / GRUB_DISK_SECTOR_SIZE))
+#define GRUB_MINIX_ZONE2SECT(zone) ((zone) << (data->log_block_size - GRUB_DISK_SECTOR_BITS))
 #else
 #define GRUB_MINIX_ZONE2SECT(zone) ((zone) << GRUB_MINIX_LOG2_ZONESZ)
 #endif
@@ -159,7 +159,7 @@ struct grub_minix_data
   int linknest;
   grub_disk_t disk;
   int filename_size;
-  grub_size_t block_size;
+  grub_size_t log_block_size;
 };
 
 static grub_dl_t my_mod;
@@ -251,14 +251,15 @@ grub_minix_read_file (struct grub_minix_data *data,
   if (len + pos > GRUB_MINIX_INODE_SIZE (data))
     len = GRUB_MINIX_INODE_SIZE (data) - pos;
 
-  blockcnt = grub_divmod64 ((len + pos + data->block_size - 1),
-			    data->block_size, 0);
-  posblock = grub_divmod64 (pos, data->block_size, &blockoff);
+  blockcnt = ((len + pos + (1 << data->log_block_size) - 1)
+	      >> data->log_block_size);
+  posblock = pos >> data->log_block_size;
+  blockoff = pos & ((1 << data->log_block_size) - 1);
 
   for (i = posblock; i < blockcnt; i++)
     {
       grub_disk_addr_t blknr;
-      grub_uint64_t blockend = data->block_size;
+      grub_uint64_t blockend = 1 << data->log_block_size;
       grub_off_t skipfirst = 0;
 
       blknr = grub_minix_get_file_block (data, i);
@@ -268,10 +269,10 @@ grub_minix_read_file (struct grub_minix_data *data,
       /* Last block.  */
       if (i == blockcnt - 1)
 	{
-	  grub_divmod64 (len + pos, data->block_size, &blockend);
+	  blockend = (len + pos) & ((1 << data->log_block_size) - 1);
 
 	  if (!blockend)
-	    blockend = data->block_size;
+	    blockend = 1 << data->log_block_size;
 	}
 
       /* First block.  */
@@ -289,7 +290,7 @@ grub_minix_read_file (struct grub_minix_data *data,
       if (grub_errno)
 	return -1;
 
-      buf += data->block_size - skipfirst;
+      buf += (1 << data->log_block_size) - skipfirst;
     }
 
   return len;
@@ -479,9 +480,14 @@ grub_minix_mount (grub_disk_t disk)
   data->disk = disk;
   data->linknest = 0;
 #ifdef MODE_MINIX3
-  data->block_size = grub_le_to_cpu16 (data->sblock.block_size);
+  if ((grub_le_to_cpu16 (data->sblock.block_size)
+       & (grub_le_to_cpu16 (data->sblock.block_size) - 1))
+      || grub_le_to_cpu16 (data->sblock.block_size) == 0)
+    goto fail;
+  for (data->log_block_size = 0; (1 << data->log_block_size)
+	 < grub_le_to_cpu16 (data->sblock.block_size); data->log_block_size++);
 #else
-  data->block_size = 1024U;
+  data->log_block_size = 10;
 #endif
 
   return data;
