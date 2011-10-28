@@ -1,5 +1,28 @@
 2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use shifts in nilfs2.
+
+	* grub-core/fs/nilfs2.c (LOG_INODE_SIZE): New definition.
+	(LOG_NILFS_DAT_ENTRY_SIZE): Likewise.
+	(grub_nilfs2_palloc_entries_per_group): Replace with ...
+	(grub_nilfs2_log_palloc_entries_per_group): ... this.
+	(grub_nilfs2_palloc_group): Use shifts and bitmasks.
+	(grub_nilfs2_entries_per_block): Replaced with ...
+	(grub_nilfs2_log_entries_per_block_log): ... this.
+	(grub_nilfs2_blocks_per_group): Replaced with ...
+	(grub_nilfs2_blocks_per_group_log): ... this.
+	(grub_nilfs2_blocks_per_desc_block): Replaced with ...
+	(grub_nilfs2_blocks_per_desc_block_log): ... this.
+	(grub_nilfs2_palloc_desc_block_offset): Replaced with ...
+	(grub_nilfs2_palloc_desc_block_offset_log): ... this.
+	(grub_nilfs2_palloc_entry_offset): Replaced ...
+	(grub_nilfs2_palloc_entry_offset_log): ... this. Use shifts.
+	(grub_nilfs2_dat_translate): Use shifts.
+	(grub_nilfs2_read_inode): Likewise.
+	(GRUB_MOD_INIT): Ensure that logs are correct.
+
+2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use shifts in minix filesystem.
 
 	* grub-core/fs/minix.c (GRUB_MINIX_ZONESZ): Use log_block_size.
