@@ -971,26 +971,6 @@ module = {
 };
 
 module = {
-  name = afs;
-  common = fs/afs.c;
-};
-
-module = {
-  name = afs_be;
-  common = fs/afs_be.c;
-};
-
-module = {
-  name = befs;
-  common = fs/befs.c;
-};
-
-module = {
-  name = befs_be;
-  common = fs/befs_be.c;
-};
-
-module = {
   name = btrfs;
   common = fs/btrfs.c;
   common = lib/crc.c;

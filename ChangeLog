@@ -1,3 +1,17 @@
+2011-10-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove afs and befs because of copyright problem.
+
+	* grub-core/fs/afs.c: Removed.
+	* grub-core/fs/afs_be.c: Removed.
+	* grub-core/fs/befs.c: Removed.
+	* grub-core/fs/befs_be.c: Removed.
+	* Makefile.util.def (libgrubkern): Remove afs, afs_be, befs and befs_be.
+	* grub-core/Makefile.core.def (afs): Removed.
+	(afs_be): Likewise.
+	(befs): Likewise.
+	(befs_be): Likewise.
+
 2011-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Prefer rockridge over Joliet.
