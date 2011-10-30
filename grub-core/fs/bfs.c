@@ -385,7 +385,7 @@ iterate_in_b_tree (grub_disk_t disk,
 				       grub_bfs_to_cpu16 (node.total_key_len),
 				       8) +
 			   grub_bfs_to_cpu16 (node.count_keys)
-			   * sizeof (grub_uint64_t),
+			   * sizeof (grub_uint16_t),
 			   &key_value, sizeof (grub_uint64_t), 0);
       if (err)
 	return 0;
