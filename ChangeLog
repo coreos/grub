@@ -1,5 +1,12 @@
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix iso9660 filename limitations and fix memory leaks.
+
+	* grub-core/fs/iso9660.c (set_rockridge): Free sua at the end.
+	(grub_iso9660_iterate_dir): Fix slash handling in symlinks.
+
+2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix JFS file name length limitations.
 
 	* grub-core/fs/jfs.c (grub_jfs_inode): Fix in-place symlink length.

@@ -395,7 +395,10 @@ set_rockridge (struct grub_iso9660_data *data)
 		      (grub_le_to_cpu32 (data->voldesc.rootdir.first_sector)
 		       << GRUB_ISO9660_LOG2_BLKSZ), sua_pos,
 		      sua_size, sua))
-    return grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
+    {
+      grub_free (sua);
+      return grub_error (GRUB_ERR_BAD_FS, "not a ISO9660 filesystem");
+    }
 
   entry = (struct grub_iso9660_susp_entry *) sua;
 
@@ -419,8 +422,12 @@ set_rockridge (struct grub_iso9660_data *data)
 	 extensions.  */
       if (grub_iso9660_susp_iterate (&rootnode,
 				     sua_pos, sua_size, susp_iterate))
-	return grub_errno;
+	{
+	  grub_free (sua);
+	  return grub_errno;
+	}
     }
+  grub_free (sua);
   return GRUB_ERR_NONE;
 }
 
@@ -516,12 +523,11 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 {
   struct grub_iso9660_dir dirent;
   grub_off_t offset = 0;
-  char *filename;
+  char *filename = 0;
   int filename_alloc = 0;
   enum grub_fshelp_filetype type;
   grub_off_t len;
   char *symlink = 0;
-  int addslash = 0;
 
   auto void add_part (const char *part, int len);
 
@@ -551,23 +557,30 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	    filename = ".";
 	  else if (entry->data[0] & GRUB_ISO9660_RR_DOTDOT)
 	    filename = "..";
-	  else
+	  else if (entry->len >= 5)
 	    {
 	      int size = 1;
-	      if (filename)
+	      char *old;
+	      size = entry->len - 5;
+	      old = filename;
+	      if (filename_alloc)
 		{
 		  size += grub_strlen (filename);
-		  grub_realloc (filename,
-				grub_strlen (filename)
-				+ entry->len);
+		  filename = grub_realloc (filename, size + 1);
 		}
 	      else
 		{
-		  size = entry->len - 5;
+		  filename_alloc = 1;
 		  filename = grub_zalloc (size + 1);
+		  filename[0] = 0;
+		}
+	      if (!filename)
+		{
+		  filename = old;
+		  return grub_errno;
 		}
 	      filename_alloc = 1;
-	      grub_strncpy (filename, (char *) &entry->data[1], size);
+	      grub_strncat (filename, (char *) &entry->data[1], size);
 	      filename[size] = '\0';
 	    }
 	}
@@ -601,12 +614,6 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	  /* The symlink is not stored as a POSIX symlink, translate it.  */
 	  while (pos + sizeof (*entry) < grub_le_to_cpu32 (entry->len))
 	    {
-	      if (addslash)
-		{
-		  add_part ("/", 1);
-		  addslash = 0;
-		}
-
 	      /* The current position is the `Component Flag'.  */
 	      switch (entry->data[pos] & 30)
 		{
@@ -615,10 +622,10 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 		    /* The data on pos + 2 is the actual data, pos + 1
 		       is the length.  Both are part of the `Component
 		       Record'.  */
+		    if (symlink && (entry->data[pos] & 1))
+		      add_part ("/", 1);
 		    add_part ((char *) &entry->data[pos + 2],
 			      entry->data[pos + 1]);
-		    if ((entry->data[pos] & 1))
-		      addslash = 1;
 
 		    break;
 		  }
@@ -653,7 +660,6 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
   for (; offset < len; offset += dirent.len)
     {
       symlink = 0;
-      addslash = 0;
 
       if (read_node (dir, offset, sizeof (dirent), (char *) &dirent))
 	return 0;
