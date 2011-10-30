@@ -1,5 +1,10 @@
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/mips/linux.c (loongson_machtypes): Fix fuloong type
+	string.
+
+2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Leverage BFS implementation to read AFS.
 
 	* Makefile.util.def (libgrubmods): Add afs.c.
