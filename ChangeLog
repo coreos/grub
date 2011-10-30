@@ -1,3 +1,8 @@
+2011-10-30  Yves Blusseau  <blusseau@zetam.org>
+
+	* po/POTFILES.in: Regenerate because of the removal of afs, afs_be, befs
+	and befs_be.
+
 2011-10-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove afs and befs because of copyright problem.
