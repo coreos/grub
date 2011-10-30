@@ -1,5 +1,19 @@
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle symlinks and long names on tar and cpio.
+
+	* grub-core/fs/cpio.c (ATTR_TYPE): New definition.
+	(ATTR_FILE): Likewise.
+	(ATTR_DIR): Likewise.
+	(ATTR_LNK): Likewise.
+	(grub_cpio_data) [MODE_USTAR]: New fields linkname and linkname_alloc.
+	(grub_cpio_find_file): Fill mode, handle linkname field as well as
+	L and K entries.
+	(grub_cpio_mount): Zero-fill data.
+	(handle_symlink): New function.
+
+2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix iso9660 filename limitations and fix memory leaks.
 
 	* grub-core/fs/iso9660.c (set_rockridge): Free sua at the end.
