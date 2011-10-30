@@ -971,6 +971,11 @@ module = {
 };
 
 module = {
+  name = bfs;
+  common = fs/bfs.c;
+};
+
+module = {
   name = btrfs;
   common = fs/btrfs.c;
   common = lib/crc.c;

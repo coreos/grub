@@ -1,5 +1,13 @@
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	BFS implementation based on the specification.
+
+	* grub-core/fs/bfs.c: New file.
+	* Makefile.util.def (libgrubmods): Add bfs.c.
+	* grub-core/Makefile.core.def (bfs): New module.
+
+2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-fstest.c (cmd_cp): Clarify error message.
 	(cmd_cmp): Likewise.
 
