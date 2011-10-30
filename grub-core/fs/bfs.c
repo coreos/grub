@@ -146,7 +146,8 @@ read_extent (grub_disk_t disk,
   return grub_disk_read (disk, ((grub_bfs_to_cpu32 (in->ag)
 				 << grub_bfs_to_cpu32 (sb->log2_ag_size))
 				+ grub_bfs_to_cpu16 (in->start) + off)
-			 << (grub_bfs_to_cpu32 (sb->log2_bsize) - 9), byteoff,
+			 << (grub_bfs_to_cpu32 (sb->log2_bsize)
+			     - GRUB_DISK_SECTOR_BITS), byteoff,
 			 len, buf);
 }
 
@@ -383,7 +384,8 @@ iterate_in_b_tree (grub_disk_t disk,
 			   + ALIGN_UP (sizeof (node) +
 				       grub_bfs_to_cpu16 (node.total_key_len),
 				       8) +
-			   grub_bfs_to_cpu16 (node.count_keys) * 2,
+			   grub_bfs_to_cpu16 (node.count_keys)
+			   * sizeof (grub_uint64_t),
 			   &key_value, sizeof (grub_uint64_t), 0);
       if (err)
 	return 0;
@@ -415,7 +417,8 @@ iterate_in_b_tree (grub_disk_t disk,
 					 grub_bfs_to_cpu16 (node.
 							    total_key_len),
 					 8), keylen_idx,
-			     grub_bfs_to_cpu16 (node.count_keys) * 2, 0);
+			     grub_bfs_to_cpu16 (node.count_keys)
+			     * sizeof (grub_uint16_t), 0);
 	if (err)
 	  return 0;
 	err = read_bfs_file (disk, sb, ino, node_off
@@ -423,9 +426,11 @@ iterate_in_b_tree (grub_disk_t disk,
 					 grub_bfs_to_cpu16 (node.
 							    total_key_len),
 					 8) +
-			     grub_bfs_to_cpu16 (node.count_keys) * 2,
+			     grub_bfs_to_cpu16 (node.count_keys)
+			     * sizeof (grub_uint16_t),
 			     key_values,
-			     grub_bfs_to_cpu16 (node.count_keys) * 8, 0);
+			     grub_bfs_to_cpu16 (node.count_keys)
+			     * sizeof (grub_uint64_t), 0);
 	if (err)
 	  return 0;
 
@@ -434,6 +439,8 @@ iterate_in_b_tree (grub_disk_t disk,
 	    char c;
 	    start = end;
 	    end = grub_bfs_to_cpu16 (keylen_idx[i]);
+	    if (grub_bfs_to_cpu16 (node.total_key_len) <= end)
+	      end = grub_bfs_to_cpu16 (node.total_key_len);
 	    c = key_data[end];
 	    key_data[end] = 0;
 	    if (hook (key_data + start, grub_bfs_to_cpu64 (key_values[i])))
@@ -490,7 +497,8 @@ find_in_b_tree (grub_disk_t disk,
 			     ALIGN_UP (sizeof (node) +
 				       grub_bfs_to_cpu16 (node.total_key_len),
 				       8), keylen_idx,
-			     grub_bfs_to_cpu16 (node.count_keys) * 2, 0);
+			     grub_bfs_to_cpu16 (node.count_keys)
+			     * sizeof (grub_uint16_t), 0);
 	if (err)
 	  return err;
 	err = read_bfs_file (disk, sb, ino, node_off
@@ -498,9 +506,11 @@ find_in_b_tree (grub_disk_t disk,
 					 grub_bfs_to_cpu16 (node.
 							    total_key_len),
 					 8) +
-			     grub_bfs_to_cpu16 (node.count_keys) * 2,
+			     grub_bfs_to_cpu16 (node.count_keys)
+			     * sizeof (grub_uint16_t),
 			     key_values,
-			     grub_bfs_to_cpu16 (node.count_keys) * 8, 0);
+			     grub_bfs_to_cpu16 (node.count_keys)
+			     * sizeof (grub_uint64_t), 0);
 	if (err)
 	  return err;
 
@@ -561,7 +571,8 @@ hop_level (grub_disk_t disk,
     return err;
 
   return grub_disk_read (disk, res
-			 << (grub_bfs_to_cpu32 (sb->log2_bsize) - 9), 0,
+			 << (grub_bfs_to_cpu32 (sb->log2_bsize)
+			     - GRUB_DISK_SECTOR_BITS), 0,
 			 grub_bfs_to_cpu32 (sb->bsize), (char *) ino);
 }
 
@@ -718,7 +729,8 @@ grub_bfs_dir (grub_device_t device, const char *path,
     struct grub_dirhook_info info;
 
     err2 = grub_disk_read (device->disk, value
-			   << (grub_bfs_to_cpu32 (sb.log2_bsize) - 9), 0,
+			   << (grub_bfs_to_cpu32 (sb.log2_bsize)
+			       - GRUB_DISK_SECTOR_BITS), 0,
 			   grub_bfs_to_cpu32 (sb.bsize), (char *) ino.raw);
     if (err2)
       {
@@ -877,7 +889,8 @@ read_bfs_attr (grub_disk_t disk,
       if (err)
 	return -1;
       grub_disk_read (disk, res
-		      << (grub_bfs_to_cpu32 (sb->log2_bsize) - 9), 0,
+		      << (grub_bfs_to_cpu32 (sb->log2_bsize)
+			  - GRUB_DISK_SECTOR_BITS), 0,
 		      grub_bfs_to_cpu32 (sb->bsize), (char *) &ino2);
       read = grub_bfs_to_cpu64 (ino2.ino.size);
       if (read > len)
@@ -916,7 +929,7 @@ grub_bfs_uuid (grub_device_t device, char **uuid)
     if (err)
       return err;
     if (read_bfs_attr (device->disk, &sb, &ino.ino, "be:volume_id",
-		       &vid, 8) == 8)
+		       &vid, sizeof (vid)) == sizeof (vid))
       *uuid =
 	grub_xasprintf ("%016" PRIxGRUB_UINT64_T, grub_bfs_to_cpu64 (vid));
   }

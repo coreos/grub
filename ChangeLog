@@ -1,5 +1,9 @@
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/bfs.c: MAcroify and add some necessary sanity checks.
+
+2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/bfs.c: Run indent.
 
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
