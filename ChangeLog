@@ -1,5 +1,9 @@
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/bfs.c: Run indent.
+
+2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	BFS implementation based on the specification.
 
 	* grub-core/fs/bfs.c: New file.

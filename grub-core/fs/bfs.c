@@ -141,15 +141,12 @@ static grub_err_t
 read_extent (grub_disk_t disk,
 	     const struct grub_bfs_superblock *sb,
 	     const struct grub_bfs_extent *in,
-	     grub_off_t off,
-	     grub_off_t byteoff,
-	     void *buf, grub_size_t len)
+	     grub_off_t off, grub_off_t byteoff, void *buf, grub_size_t len)
 {
   return grub_disk_read (disk, ((grub_bfs_to_cpu32 (in->ag)
 				 << grub_bfs_to_cpu32 (sb->log2_ag_size))
 				+ grub_bfs_to_cpu16 (in->start) + off)
-			 << (grub_bfs_to_cpu32 (sb->log2_bsize) - 9)
-			 , byteoff,
+			 << (grub_bfs_to_cpu32 (sb->log2_bsize) - 9), byteoff,
 			 len, buf);
 }
 
@@ -159,13 +156,15 @@ read_bfs_file (grub_disk_t disk,
 	       const struct grub_bfs_inode *ino,
 	       grub_off_t off, void *buf, grub_size_t len,
 	       void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-						   unsigned offset, unsigned length))
+						   unsigned offset,
+						   unsigned length))
 {
   if (len == 0)
     return GRUB_ERR_NONE;
 
   if (off + len > grub_bfs_to_cpu64 (ino->size))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "attempt to read past the end of file");
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       "attempt to read past the end of file");
 
   if (off < grub_bfs_to_cpu64 (ino->max_direct_range))
     {
@@ -210,11 +209,10 @@ read_bfs_file (grub_disk_t disk,
       grub_err_t err;
       grub_uint64_t pos = grub_bfs_to_cpu64 (ino->max_direct_range);
       nentries = (grub_bfs_to_cpu16 (ino->indirect.len)
-		  << (grub_bfs_to_cpu32 (sb->log2_bsize)
-		      - LOG_EXTENT_SIZE));
+		  << (grub_bfs_to_cpu32 (sb->log2_bsize) - LOG_EXTENT_SIZE));
       entries = grub_malloc (nentries << LOG_EXTENT_SIZE);
       if (!entries)
-	return grub_errno; 
+	return grub_errno;
       err = read_extent (disk, sb, &ino->indirect, 0, 0,
 			 entries, nentries << LOG_EXTENT_SIZE);
       for (i = 0; i < nentries; i++)
@@ -260,8 +258,7 @@ read_bfs_file (grub_disk_t disk,
     grub_off_t last_l1n = ~0ULL;
     grub_err_t err;
     nl1_entries = (grub_bfs_to_cpu16 (ino->double_indirect.len)
-		   << (grub_bfs_to_cpu32 (sb->log2_bsize)
-		       - LOG_EXTENT_SIZE));
+		   << (grub_bfs_to_cpu32 (sb->log2_bsize) - LOG_EXTENT_SIZE));
     l1_entries = grub_malloc (nl1_entries << LOG_EXTENT_SIZE);
     if (!l1_entries)
       return grub_errno;
@@ -271,7 +268,7 @@ read_bfs_file (grub_disk_t disk,
     if (!l2_entries)
       {
 	grub_free (l1_entries);
-	return grub_errno; 
+	return grub_errno;
       }
     err = read_extent (disk, sb, &ino->double_indirect, 0, 0,
 		       l1_entries, nl1_entries << LOG_EXTENT_SIZE);
@@ -289,17 +286,17 @@ read_bfs_file (grub_disk_t disk,
 	grub_off_t double_indirect_offset;
 	double_indirect_offset = off
 	  - grub_bfs_to_cpu64 (ino->max_indirect_range);
-	boff = (double_indirect_offset 
+	boff = (double_indirect_offset
 		& ((1 << (grub_bfs_to_cpu32 (sb->log2_bsize)
 			  + DOUBLE_INDIRECT_SHIFT)) - 1));
 	l2n = ((double_indirect_offset >> (grub_bfs_to_cpu32 (sb->log2_bsize)
 					   + DOUBLE_INDIRECT_SHIFT))
 	       & ((1 << (grub_bfs_to_cpu32 (sb->log2_bsize) - LOG_EXTENT_SIZE
-			 + DOUBLE_INDIRECT_SHIFT))
-		  - 1));
-	l1n = (double_indirect_offset >> (2 * grub_bfs_to_cpu32 (sb->log2_bsize)
-					  - LOG_EXTENT_SIZE
-					  + 2 * DOUBLE_INDIRECT_SHIFT));
+			 + DOUBLE_INDIRECT_SHIFT)) - 1));
+	l1n =
+	  (double_indirect_offset >>
+	   (2 * grub_bfs_to_cpu32 (sb->log2_bsize) - LOG_EXTENT_SIZE +
+	    2 * DOUBLE_INDIRECT_SHIFT));
 	if (l1n > nl1_entries)
 	  {
 	    grub_free (l1_entries);
@@ -383,9 +380,10 @@ iterate_in_b_tree (grub_disk_t disk,
       if (err)
 	return 0;
       err = read_bfs_file (disk, sb, ino, node_off
-			   + ALIGN_UP (sizeof (node) + grub_bfs_to_cpu16 (node.total_key_len),
-				       8)
-			   + grub_bfs_to_cpu16 (node.count_keys) * 2,
+			   + ALIGN_UP (sizeof (node) +
+				       grub_bfs_to_cpu16 (node.total_key_len),
+				       8) +
+			   grub_bfs_to_cpu16 (node.count_keys) * 2,
 			   &key_value, sizeof (grub_uint64_t), 0);
       if (err)
 	return 0;
@@ -395,7 +393,7 @@ iterate_in_b_tree (grub_disk_t disk,
 
   while (1)
     {
-      struct grub_bfs_btree_node node;   
+      struct grub_bfs_btree_node node;
       err = read_bfs_file (disk, sb, ino, node_off, &node, sizeof (node), 0);
       if (err)
 	return 0;
@@ -406,24 +404,28 @@ iterate_in_b_tree (grub_disk_t disk,
 	unsigned i;
 	grub_uint16_t start = 0, end = 0;
 
-	err = read_bfs_file (disk, sb, ino, node_off + sizeof (node), key_data,
-			     grub_bfs_to_cpu16 (node.total_key_len), 0);
+	err =
+	  read_bfs_file (disk, sb, ino, node_off + sizeof (node), key_data,
+			 grub_bfs_to_cpu16 (node.total_key_len), 0);
 	if (err)
 	  return 0;
 	key_data[grub_bfs_to_cpu16 (node.total_key_len)] = 0;
-	err = read_bfs_file (disk, sb, ino, node_off 
-			     + ALIGN_UP (sizeof (node) + grub_bfs_to_cpu16 (node.total_key_len),
-					 8),
-			     keylen_idx, grub_bfs_to_cpu16 (node.count_keys)
-			     * 2, 0);
+	err = read_bfs_file (disk, sb, ino, node_off
+			     + ALIGN_UP (sizeof (node) +
+					 grub_bfs_to_cpu16 (node.
+							    total_key_len),
+					 8), keylen_idx,
+			     grub_bfs_to_cpu16 (node.count_keys) * 2, 0);
 	if (err)
 	  return 0;
 	err = read_bfs_file (disk, sb, ino, node_off
-			     + ALIGN_UP (sizeof (node) + grub_bfs_to_cpu16 (node.total_key_len),
-					 8)
-			     + grub_bfs_to_cpu16 (node.count_keys) * 2,
-			     key_values, grub_bfs_to_cpu16 (node.count_keys)
-			     * 8, 0);
+			     + ALIGN_UP (sizeof (node) +
+					 grub_bfs_to_cpu16 (node.
+							    total_key_len),
+					 8) +
+			     grub_bfs_to_cpu16 (node.count_keys) * 2,
+			     key_values,
+			     grub_bfs_to_cpu16 (node.count_keys) * 8, 0);
 	if (err)
 	  return 0;
 
@@ -449,7 +451,7 @@ static grub_err_t
 find_in_b_tree (grub_disk_t disk,
 		const struct grub_bfs_superblock *sb,
 		const struct grub_bfs_inode *ino, const char *name,
-		grub_uint64_t *res)
+		grub_uint64_t * res)
 {
   struct grub_bfs_btree_header head;
   grub_err_t err;
@@ -464,7 +466,7 @@ find_in_b_tree (grub_disk_t disk,
   level = grub_bfs_to_cpu32 (head.level) - 1;
   while (1)
     {
-      struct grub_bfs_btree_node node;   
+      struct grub_bfs_btree_node node;
       err = read_bfs_file (disk, sb, ino, node_off, &node, sizeof (node), 0);
       if (err)
 	return err;
@@ -477,26 +479,28 @@ find_in_b_tree (grub_disk_t disk,
 	grub_uint64_t key_values[grub_bfs_to_cpu16 (node.count_keys)];
 	unsigned i;
 	grub_uint16_t start = 0, end = 0;
-	err = read_bfs_file (disk, sb, ino, node_off + sizeof (node), key_data,
-			     grub_bfs_to_cpu16 (node.total_key_len), 0);
+	err =
+	  read_bfs_file (disk, sb, ino, node_off + sizeof (node), key_data,
+			 grub_bfs_to_cpu16 (node.total_key_len), 0);
 	if (err)
 	  return err;
 	key_data[grub_bfs_to_cpu16 (node.total_key_len)] = 0;
-	err = read_bfs_file (disk, sb, ino, node_off 
-			     + 
-			     ALIGN_UP (sizeof (node) +grub_bfs_to_cpu16 (node.total_key_len),
-				       8),
-			     keylen_idx, grub_bfs_to_cpu16 (node.count_keys)
-			     * 2, 0);
+	err = read_bfs_file (disk, sb, ino, node_off
+			     +
+			     ALIGN_UP (sizeof (node) +
+				       grub_bfs_to_cpu16 (node.total_key_len),
+				       8), keylen_idx,
+			     grub_bfs_to_cpu16 (node.count_keys) * 2, 0);
 	if (err)
 	  return err;
-	err = read_bfs_file (disk, sb, ino, node_off 
-			     
-			     + ALIGN_UP (sizeof (node) + grub_bfs_to_cpu16 (node.total_key_len),
-					 8)
-			     + grub_bfs_to_cpu16 (node.count_keys) * 2,
-			     key_values, grub_bfs_to_cpu16 (node.count_keys)
-			     * 8, 0);
+	err = read_bfs_file (disk, sb, ino, node_off
+			     + ALIGN_UP (sizeof (node) +
+					 grub_bfs_to_cpu16 (node.
+							    total_key_len),
+					 8) +
+			     grub_bfs_to_cpu16 (node.count_keys) * 2,
+			     key_values,
+			     grub_bfs_to_cpu16 (node.count_keys) * 8, 0);
 	if (err)
 	  return err;
 
@@ -544,8 +548,7 @@ find_in_b_tree (grub_disk_t disk,
 static grub_err_t
 hop_level (grub_disk_t disk,
 	   const struct grub_bfs_superblock *sb,
-	   struct grub_bfs_inode *ino,
-	   const char *name)
+	   struct grub_bfs_inode *ino, const char *name)
 {
   grub_err_t err;
   grub_uint64_t res;
@@ -564,13 +567,13 @@ hop_level (grub_disk_t disk,
 
 static grub_err_t
 find_file (const char *path, grub_disk_t disk,
-	   const struct grub_bfs_superblock *sb,
-	   struct grub_bfs_inode *ino)
+	   const struct grub_bfs_superblock *sb, struct grub_bfs_inode *ino)
 {
   char *ptr, *ptr2;
   char *alloc = NULL;
   grub_err_t err;
-  union {
+  union
+  {
     struct grub_bfs_inode ino;
     grub_uint8_t raw[grub_bfs_to_cpu32 (sb->bsize)];
   } old_ino;
@@ -619,7 +622,6 @@ find_file (const char *path, grub_disk_t disk,
 	    {
 	      grub_size_t symsize = grub_bfs_to_cpu64 (ino->size);
 	      alloc = grub_malloc ((ptr2 ? grub_strlen (ptr2) : 0)
-
 				   + symsize + 1);
 	      if (!alloc)
 		{
@@ -627,8 +629,7 @@ find_file (const char *path, grub_disk_t disk,
 		  return grub_errno;
 		}
 	      grub_free (old_alloc);
-	      err = read_bfs_file (disk, sb, ino,
-				   0, alloc, symsize, 0);
+	      err = read_bfs_file (disk, sb, ino, 0, alloc, symsize, 0);
 	      if (err)
 		{
 		  grub_free (alloc);
@@ -638,7 +639,7 @@ find_file (const char *path, grub_disk_t disk,
 	    }
 	  else
 	    {
-	      alloc = grub_malloc ((ptr2 ? grub_strlen (ptr2) : 0) 
+	      alloc = grub_malloc ((ptr2 ? grub_strlen (ptr2) : 0)
 				   + sizeof (ino->inplace_link) + 1);
 	      if (!alloc)
 		{
@@ -653,7 +654,7 @@ find_file (const char *path, grub_disk_t disk,
 	  if (alloc[0] == '/')
 	    {
 	      err = read_extent (disk, sb, &sb->root_dir, 0, 0, ino,
-				     grub_bfs_to_cpu32 (sb->bsize));
+				 grub_bfs_to_cpu32 (sb->bsize));
 	      if (err)
 		{
 		  grub_free (alloc);
@@ -683,8 +684,7 @@ static grub_err_t
 mount (grub_disk_t disk, struct grub_bfs_superblock *sb)
 {
   grub_err_t err;
-  err = grub_disk_read (disk, 1, 0,
-			sizeof (*sb), sb);
+  err = grub_disk_read (disk, 1, 0, sizeof (*sb), sb);
   if (err == GRUB_ERR_OUT_OF_RANGE)
     return grub_error (GRUB_ERR_BAD_FS, "not a BFS filesystem");
   if (err)
@@ -692,7 +692,7 @@ mount (grub_disk_t disk, struct grub_bfs_superblock *sb)
   if (grub_bfs_to_cpu32 (sb->magic1) != SUPER_BLOCK_MAGIC1
       || grub_bfs_to_cpu32 (sb->magic2) != SUPER_BLOCK_MAGIC2
       || grub_bfs_to_cpu32 (sb->magic3) != SUPER_BLOCK_MAGIC3
-      || (grub_bfs_to_cpu32 (sb->bsize) 
+      || (grub_bfs_to_cpu32 (sb->bsize)
 	  != (1U << grub_bfs_to_cpu32 (sb->log2_bsize))))
     return grub_error (GRUB_ERR_BAD_FS, "not a BFS filesystem");
   return GRUB_ERR_NONE;
@@ -701,7 +701,7 @@ mount (grub_disk_t disk, struct grub_bfs_superblock *sb)
 static grub_err_t
 grub_bfs_dir (grub_device_t device, const char *path,
 	      int (*hook_in) (const char *filename,
-			   const struct grub_dirhook_info *info))
+			      const struct grub_dirhook_info * info))
 {
   struct grub_bfs_superblock sb;
   grub_err_t err;
@@ -710,21 +710,21 @@ grub_bfs_dir (grub_device_t device, const char *path,
   int hook (const char *name, grub_uint64_t value)
   {
     grub_err_t err2;
-    union {
+    union
+    {
       struct grub_bfs_inode ino;
       grub_uint8_t raw[grub_bfs_to_cpu32 (sb.bsize)];
     } ino;
     struct grub_dirhook_info info;
 
     err2 = grub_disk_read (device->disk, value
-			   << (grub_bfs_to_cpu32 (sb.log2_bsize) - 9)
-			   , 0,
+			   << (grub_bfs_to_cpu32 (sb.log2_bsize) - 9), 0,
 			   grub_bfs_to_cpu32 (sb.bsize), (char *) ino.raw);
     if (err2)
       {
 	grub_print_error ();
 	return 0;
-      }	
+      }
 
     info.mtimeset = 1;
     info.mtime = grub_bfs_to_cpu64 (ino.ino.mtime) >> 16;
@@ -736,7 +736,8 @@ grub_bfs_dir (grub_device_t device, const char *path,
     return err;
 
   {
-    union {
+    union
+    {
       struct grub_bfs_inode ino;
       grub_uint8_t raw[grub_bfs_to_cpu32 (sb.bsize)];
     } ino;
@@ -762,7 +763,8 @@ grub_bfs_open (struct grub_file *file, const char *name)
     return err;
 
   {
-    union {
+    union
+    {
       struct grub_bfs_inode ino;
       grub_uint8_t raw[grub_bfs_to_cpu32 (sb.bsize)];
     } ino;
@@ -799,10 +801,9 @@ grub_bfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_err_t err;
   struct grub_bfs_data *data = file->data;
-  
+
   err = read_bfs_file (file->device->disk, &data->sb,
-		       data->ino,
-		       file->offset, buf, len, file->read_hook);
+		       data->ino, file->offset, buf, len, file->read_hook);
   if (err)
     return -1;
   return len;
@@ -828,12 +829,10 @@ static grub_ssize_t
 read_bfs_attr (grub_disk_t disk,
 	       const struct grub_bfs_superblock *sb,
 	       const struct grub_bfs_inode *ino,
-	       const char *name,
-	       void *buf, grub_size_t len)
+	       const char *name, void *buf, grub_size_t len)
 {
   grub_uint8_t *ptr = (grub_uint8_t *) ino->small_data;
-  grub_uint8_t *end = ((grub_uint8_t *) ino
-		       + grub_bfs_to_cpu32 (sb->bsize));
+  grub_uint8_t *end = ((grub_uint8_t *) ino + grub_bfs_to_cpu32 (sb->bsize));
 
   while (ptr + sizeof (struct grub_bfs_small_data_element_header) < end)
     {
@@ -859,36 +858,36 @@ read_bfs_attr (grub_disk_t disk,
     }
 
   if (ino->attr.len != 0)
-  {
-    union {
-      struct grub_bfs_inode ino;
-      grub_uint8_t raw[grub_bfs_to_cpu32 (sb->bsize)];
-    } ino2;
-    grub_size_t read;
-    grub_err_t err;
-    grub_uint64_t res;
+    {
+      union
+      {
+	struct grub_bfs_inode ino;
+	grub_uint8_t raw[grub_bfs_to_cpu32 (sb->bsize)];
+      } ino2;
+      grub_size_t read;
+      grub_err_t err;
+      grub_uint64_t res;
 
-    err = read_extent (disk, sb, &ino->attr, 0, 0, ino2.raw,
-		       grub_bfs_to_cpu32 (sb->bsize));
-    if (err)
-      return -1;
+      err = read_extent (disk, sb, &ino->attr, 0, 0, ino2.raw,
+			 grub_bfs_to_cpu32 (sb->bsize));
+      if (err)
+	return -1;
 
-    err = find_in_b_tree (disk, sb, &ino2.ino, name, &res);
-    if (err)
-      return -1;
-    grub_disk_read (disk, res
-		    << (grub_bfs_to_cpu32 (sb->log2_bsize) - 9)
-		    , 0,
-		    grub_bfs_to_cpu32 (sb->bsize), (char *) &ino2);
-    read = grub_bfs_to_cpu64 (ino2.ino.size);
-    if (read > len)
-      read = len;
+      err = find_in_b_tree (disk, sb, &ino2.ino, name, &res);
+      if (err)
+	return -1;
+      grub_disk_read (disk, res
+		      << (grub_bfs_to_cpu32 (sb->log2_bsize) - 9), 0,
+		      grub_bfs_to_cpu32 (sb->bsize), (char *) &ino2);
+      read = grub_bfs_to_cpu64 (ino2.ino.size);
+      if (read > len)
+	read = len;
 
-    err = read_bfs_file (disk, sb, &ino2.ino, 0, buf, read, 0);
-    if (err)
-      return -1;
-    return read;
-  }
+      err = read_bfs_file (disk, sb, &ino2.ino, 0, buf, read, 0);
+      if (err)
+	return -1;
+      return read;
+    }
   return -1;
 }
 
@@ -905,7 +904,8 @@ grub_bfs_uuid (grub_device_t device, char **uuid)
     return err;
 
   {
-    union {
+    union
+    {
       struct grub_bfs_inode ino;
       grub_uint8_t raw[grub_bfs_to_cpu32 (sb.bsize)];
     } ino;
@@ -917,7 +917,8 @@ grub_bfs_uuid (grub_device_t device, char **uuid)
       return err;
     if (read_bfs_attr (device->disk, &sb, &ino.ino, "be:volume_id",
 		       &vid, 8) == 8)
-      *uuid = grub_xasprintf ("%016" PRIxGRUB_UINT64_T, grub_bfs_to_cpu64 (vid));
+      *uuid =
+	grub_xasprintf ("%016" PRIxGRUB_UINT64_T, grub_bfs_to_cpu64 (vid));
   }
   return GRUB_ERR_NONE;
 }
@@ -938,7 +939,8 @@ static struct grub_fs grub_bfs_fs = {
 
 GRUB_MOD_INIT (bfs)
 {
-  COMPILE_TIME_ASSERT (1 << LOG_EXTENT_SIZE == sizeof (struct grub_bfs_extent));
+  COMPILE_TIME_ASSERT (1 << LOG_EXTENT_SIZE ==
+		       sizeof (struct grub_bfs_extent));
   grub_fs_register (&grub_bfs_fs);
 }
 
