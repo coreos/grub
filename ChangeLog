@@ -1,5 +1,14 @@
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix JFS file name length limitations.
+
+	* grub-core/fs/jfs.c (grub_jfs_inode): Fix in-place symlink length.
+	(grub_jfs_diropen): Fix maximum filename length.
+	(grub_jfs_getent): Fix filename length.
+	(grub_jfs_lookup_symlink): Fix size checks.
+
+2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/mips/linux.c (loongson_machtypes): Fix fuloong type
 	string.
 

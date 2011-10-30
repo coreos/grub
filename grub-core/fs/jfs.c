@@ -205,7 +205,7 @@ struct grub_jfs_inode
     struct
     {
       grub_uint8_t unused[32];
-      grub_uint8_t path[128];
+      grub_uint8_t path[256];
     } symlink;
   } __attribute__ ((packed));
 } __attribute__ ((packed));
@@ -238,7 +238,10 @@ struct grub_jfs_diropen
   struct grub_jfs_leaf_next_dirent *next_leaf;
 
   /* The filename and inode of the last read dirent.  */
-  char name[255];
+  /* On-disk name is at most 255 UTF-16 codepoints.
+     Every UTF-16 codepoint is at most 4 UTF-8 bytes.
+   */
+  char name[256 * 4 + 1];
   grub_uint32_t ino;
 } __attribute__ ((packed));
 
@@ -479,7 +482,7 @@ grub_jfs_getent (struct grub_jfs_diropen *diro)
   struct grub_jfs_leaf_next_dirent *next_leaf;
   int len;
   int nextent;
-  grub_uint16_t filename[255];
+  grub_uint16_t filename[256];
 
   auto void addstr (grub_uint16_t *uname, int ulen);
 
@@ -708,14 +711,14 @@ grub_jfs_find_file (struct grub_jfs_data *data, const char *path,
 static grub_err_t
 grub_jfs_lookup_symlink (struct grub_jfs_data *data, grub_uint32_t ino)
 {
-  grub_uint64_t size = grub_le_to_cpu64 (data->currinode.size);
+  grub_size_t size = grub_le_to_cpu64 (data->currinode.size);
   char symlink[size + 1];
 
   if (++data->linknest > GRUB_JFS_MAX_SYMLNK_CNT)
     return grub_error (GRUB_ERR_SYMLINK_LOOP, "too deep nesting of symlinks");
 
-  if (size <= 128)
-    grub_strncpy (symlink, (char *) (data->currinode.symlink.path), 128);
+  if (size <= sizeof (data->currinode.symlink.path))
+    grub_strncpy (symlink, (char *) (data->currinode.symlink.path), size);
   else if (grub_jfs_read_file (data, 0, 0, size, symlink) < 0)
     return grub_errno;
 
