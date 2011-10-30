@@ -182,7 +182,8 @@ cmd_cp (char *src, char *dest)
   ff = fopen (dest, "wb");
   if (ff == NULL)
     {
-      grub_util_error (_("open error"));
+      grub_util_error (_("OS file %s open error: %s"), dest,
+		       strerror (errno));
       return;
     }
   read_file (src, cp_hook);
@@ -241,7 +242,8 @@ cmd_cmp (char *src, char *dest)
   ff = fopen (dest, "rb");
   if (ff == NULL)
     {
-      grub_util_error (_("open error"));
+      grub_util_error (_("OS file %s open error: %s"), dest,
+		       strerror (errno));
       return;
     }
 

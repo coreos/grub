@@ -1,3 +1,8 @@
+2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-fstest.c (cmd_cp): Clarify error message.
+	(cmd_cmp): Likewise.
+
 2011-10-30  Yves Blusseau  <blusseau@zetam.org>
 
 	* po/POTFILES.in: Regenerate because of the removal of afs, afs_be, befs
