@@ -971,6 +971,11 @@ module = {
 };
 
 module = {
+  name = afs;
+  common = fs/afs.c;
+};
+
+module = {
   name = bfs;
   common = fs/bfs.c;
 };

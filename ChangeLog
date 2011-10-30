@@ -1,6 +1,15 @@
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* grub-core/fs/bfs.c: MAcroify and add some necessary sanity checks.
+	Leverage BFS implementation to read AFS.
+
+	* Makefile.util.def (libgrubmods): Add afs.c.
+	* grub-core/Makefile.core.def (afs): New module
+	* grub-core/fs/afs.c: New file.
+	* grub-core/fs/bfs.c [MODE_AFS]: Adapt for AFS.
+
+2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/bfs.c: Macroify and add some necessary sanity checks.
 
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 

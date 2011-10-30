@@ -55,6 +55,7 @@ library = {
   common = grub-core/disk/raid6_recover.c;
   common = grub-core/disk/raid.c;
   common = grub-core/fs/affs.c;
+  common = grub-core/fs/afs.c;
   common = grub-core/fs/bfs.c;
   common = grub-core/fs/btrfs.c;
   common = grub-core/fs/cpio.c;

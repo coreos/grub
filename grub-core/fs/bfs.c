@@ -31,11 +31,29 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#ifdef MODE_AFS
+#define BTREE_ALIGN 4
+#define SUPERBLOCK  2
+#else
+#define BTREE_ALIGN 8
+#define SUPERBLOCK  1
+#endif
+
 #define grub_bfs_to_cpu16 grub_le_to_cpu16
 #define grub_bfs_to_cpu32 grub_le_to_cpu32
 #define grub_bfs_to_cpu64 grub_le_to_cpu64
 
+#ifdef MODE_AFS
+#define grub_bfs_to_cpu_treehead grub_bfs_to_cpu32
+#else
+#define grub_bfs_to_cpu_treehead grub_bfs_to_cpu16
+#endif
+
+#ifdef MODE_AFS
+#define SUPER_BLOCK_MAGIC1 0x41465331
+#else
 #define SUPER_BLOCK_MAGIC1 0x42465331
+#endif
 #define SUPER_BLOCK_MAGIC2 0xdd121031
 #define SUPER_BLOCK_MAGIC3 0x15b6830e
 #define POINTER_INVALID 0xffffffffffffffffULL
@@ -76,7 +94,11 @@ struct grub_bfs_inode
   grub_uint8_t unused[20];
   grub_uint32_t mode;
   grub_uint32_t flags;
+#ifdef MODE_AFS
+  grub_uint8_t unused2[12];
+#else
   grub_uint8_t unused2[8];
+#endif
   grub_uint64_t mtime;
   grub_uint8_t unused3[8];
   struct grub_bfs_extent attr;
@@ -115,10 +137,17 @@ struct grub_bfs_small_data_element_header
 struct grub_bfs_btree_header
 {
   grub_uint32_t magic;
+#ifdef MODE_AFS
+  grub_uint64_t root;
+  grub_uint32_t level;
+  grub_uint32_t node_size;
+  grub_uint32_t unused;
+#else
   grub_uint32_t node_size;
   grub_uint32_t level;
   grub_uint32_t unused;
   grub_uint64_t root;
+#endif
   grub_uint32_t unused2[2];
 } __attribute__ ((packed));
 
@@ -127,8 +156,13 @@ struct grub_bfs_btree_node
   grub_uint64_t unused;
   grub_uint64_t right;
   grub_uint64_t overflow;
+#ifdef MODE_AFS
+  grub_uint32_t count_keys;
+  grub_uint32_t total_key_len;
+#else
   grub_uint16_t count_keys;
   grub_uint16_t total_key_len;
+#endif
 } __attribute__ ((packed));
 
 struct grub_bfs_data
@@ -143,13 +177,29 @@ read_extent (grub_disk_t disk,
 	     const struct grub_bfs_extent *in,
 	     grub_off_t off, grub_off_t byteoff, void *buf, grub_size_t len)
 {
+#ifdef MODE_AFS
   return grub_disk_read (disk, ((grub_bfs_to_cpu32 (in->ag)
-				 << grub_bfs_to_cpu32 (sb->log2_ag_size))
-				+ grub_bfs_to_cpu16 (in->start) + off)
-			 << (grub_bfs_to_cpu32 (sb->log2_bsize)
-			     - GRUB_DISK_SECTOR_BITS), byteoff,
-			 len, buf);
+				 << (grub_bfs_to_cpu32 (sb->log2_ag_size)
+				     - GRUB_DISK_SECTOR_BITS))
+				+ ((grub_bfs_to_cpu16 (in->start) + off)
+				   << (grub_bfs_to_cpu32 (sb->log2_bsize)
+				       - GRUB_DISK_SECTOR_BITS))),
+			 byteoff, len, buf);
+#else
+  return grub_disk_read (disk, (((grub_bfs_to_cpu32 (in->ag)
+				  << grub_bfs_to_cpu32 (sb->log2_ag_size))
+				 + grub_bfs_to_cpu16 (in->start) + off)
+				<< (grub_bfs_to_cpu32 (sb->log2_bsize)
+				    - GRUB_DISK_SECTOR_BITS)),
+			 byteoff, len, buf);
+#endif
 }
+
+#ifdef MODE_AFS
+#define RANGE_SHIFT grub_bfs_to_cpu32 (sb->log2_bsize)
+#else
+#define RANGE_SHIFT 0
+#endif
 
 static grub_err_t
 read_bfs_file (grub_disk_t disk,
@@ -167,7 +217,7 @@ read_bfs_file (grub_disk_t disk,
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
 		       "attempt to read past the end of file");
 
-  if (off < grub_bfs_to_cpu64 (ino->max_direct_range))
+  if (off < (grub_bfs_to_cpu64 (ino->max_direct_range) << RANGE_SHIFT))
     {
       unsigned i;
       grub_uint64_t pos = 0;
@@ -199,16 +249,17 @@ read_bfs_file (grub_disk_t disk,
 	}
     }
 
-  if (off < grub_bfs_to_cpu64 (ino->max_direct_range))
+  if (off < (grub_bfs_to_cpu64 (ino->max_direct_range) << RANGE_SHIFT))
     return grub_error (GRUB_ERR_BAD_FS, "incorrect direct blocks");
 
-  if (off < grub_bfs_to_cpu64 (ino->max_indirect_range))
+  if (off < (grub_bfs_to_cpu64 (ino->max_indirect_range) << RANGE_SHIFT))
     {
       unsigned i;
       struct grub_bfs_extent *entries;
       grub_size_t nentries;
       grub_err_t err;
-      grub_uint64_t pos = grub_bfs_to_cpu64 (ino->max_direct_range);
+      grub_uint64_t pos = (grub_bfs_to_cpu64 (ino->max_direct_range)
+			   << RANGE_SHIFT);
       nentries = (grub_bfs_to_cpu16 (ino->indirect.len)
 		  << (grub_bfs_to_cpu32 (sb->log2_bsize) - LOG_EXTENT_SIZE));
       entries = grub_malloc (nentries << LOG_EXTENT_SIZE);
@@ -250,7 +301,7 @@ read_bfs_file (grub_disk_t disk,
       grub_free (entries);
     }
 
-  if (off < grub_bfs_to_cpu64 (ino->max_indirect_range))
+  if (off < (grub_bfs_to_cpu64 (ino->max_indirect_range) << RANGE_SHIFT))
     return grub_error (GRUB_ERR_BAD_FS, "incorrect indirect blocks");
 
   {
@@ -382,11 +433,12 @@ iterate_in_b_tree (grub_disk_t disk,
 	return 0;
       err = read_bfs_file (disk, sb, ino, node_off
 			   + ALIGN_UP (sizeof (node) +
-				       grub_bfs_to_cpu16 (node.total_key_len),
-				       8) +
-			   grub_bfs_to_cpu16 (node.count_keys)
-			   * sizeof (grub_uint16_t),
-			   &key_value, sizeof (grub_uint64_t), 0);
+				       grub_bfs_to_cpu_treehead (node.
+								 total_key_len),
+				       BTREE_ALIGN) +
+			   grub_bfs_to_cpu_treehead (node.count_keys) *
+			   sizeof (grub_uint16_t), &key_value,
+			   sizeof (grub_uint64_t), 0);
       if (err)
 	return 0;
 
@@ -400,47 +452,46 @@ iterate_in_b_tree (grub_disk_t disk,
       if (err)
 	return 0;
       {
-	char key_data[grub_bfs_to_cpu16 (node.total_key_len) + 1];
-	grub_uint16_t keylen_idx[grub_bfs_to_cpu16 (node.count_keys)];
-	grub_uint64_t key_values[grub_bfs_to_cpu16 (node.count_keys)];
+	char key_data[grub_bfs_to_cpu_treehead (node.total_key_len) + 1];
+	grub_uint16_t keylen_idx[grub_bfs_to_cpu_treehead (node.count_keys)];
+	grub_uint64_t key_values[grub_bfs_to_cpu_treehead (node.count_keys)];
 	unsigned i;
 	grub_uint16_t start = 0, end = 0;
 
 	err =
 	  read_bfs_file (disk, sb, ino, node_off + sizeof (node), key_data,
-			 grub_bfs_to_cpu16 (node.total_key_len), 0);
+			 grub_bfs_to_cpu_treehead (node.total_key_len), 0);
 	if (err)
 	  return 0;
-	key_data[grub_bfs_to_cpu16 (node.total_key_len)] = 0;
+	key_data[grub_bfs_to_cpu_treehead (node.total_key_len)] = 0;
 	err = read_bfs_file (disk, sb, ino, node_off
 			     + ALIGN_UP (sizeof (node) +
-					 grub_bfs_to_cpu16 (node.
-							    total_key_len),
-					 8), keylen_idx,
-			     grub_bfs_to_cpu16 (node.count_keys)
-			     * sizeof (grub_uint16_t), 0);
+					 grub_bfs_to_cpu_treehead
+					 (node.total_key_len), BTREE_ALIGN),
+			     keylen_idx,
+			     grub_bfs_to_cpu_treehead (node.count_keys) *
+			     sizeof (grub_uint16_t), 0);
 	if (err)
 	  return 0;
 	err = read_bfs_file (disk, sb, ino, node_off
 			     + ALIGN_UP (sizeof (node) +
-					 grub_bfs_to_cpu16 (node.
-							    total_key_len),
-					 8) +
-			     grub_bfs_to_cpu16 (node.count_keys)
-			     * sizeof (grub_uint16_t),
-			     key_values,
-			     grub_bfs_to_cpu16 (node.count_keys)
-			     * sizeof (grub_uint64_t), 0);
+					 grub_bfs_to_cpu_treehead
+					 (node.total_key_len),
+					 BTREE_ALIGN) +
+			     grub_bfs_to_cpu_treehead (node.count_keys) *
+			     sizeof (grub_uint16_t), key_values,
+			     grub_bfs_to_cpu_treehead (node.count_keys) *
+			     sizeof (grub_uint64_t), 0);
 	if (err)
 	  return 0;
 
-	for (i = 0; i < grub_bfs_to_cpu16 (node.count_keys); i++)
+	for (i = 0; i < grub_bfs_to_cpu_treehead (node.count_keys); i++)
 	  {
 	    char c;
 	    start = end;
 	    end = grub_bfs_to_cpu16 (keylen_idx[i]);
-	    if (grub_bfs_to_cpu16 (node.total_key_len) <= end)
-	      end = grub_bfs_to_cpu16 (node.total_key_len);
+	    if (grub_bfs_to_cpu_treehead (node.total_key_len) <= end)
+	      end = grub_bfs_to_cpu_treehead (node.total_key_len);
 	    c = key_data[end];
 	    key_data[end] = 0;
 	    if (hook (key_data + start, grub_bfs_to_cpu64 (key_values[i])))
@@ -481,47 +532,47 @@ find_in_b_tree (grub_disk_t disk,
 	return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found",
 			   name);
       {
-	char key_data[grub_bfs_to_cpu16 (node.total_key_len) + 1];
-	grub_uint16_t keylen_idx[grub_bfs_to_cpu16 (node.count_keys)];
-	grub_uint64_t key_values[grub_bfs_to_cpu16 (node.count_keys)];
+	char key_data[grub_bfs_to_cpu_treehead (node.total_key_len) + 1];
+	grub_uint16_t keylen_idx[grub_bfs_to_cpu_treehead (node.count_keys)];
+	grub_uint64_t key_values[grub_bfs_to_cpu_treehead (node.count_keys)];
 	unsigned i;
 	grub_uint16_t start = 0, end = 0;
 	err =
 	  read_bfs_file (disk, sb, ino, node_off + sizeof (node), key_data,
-			 grub_bfs_to_cpu16 (node.total_key_len), 0);
+			 grub_bfs_to_cpu_treehead (node.total_key_len), 0);
 	if (err)
 	  return err;
-	key_data[grub_bfs_to_cpu16 (node.total_key_len)] = 0;
+	key_data[grub_bfs_to_cpu_treehead (node.total_key_len)] = 0;
 	err = read_bfs_file (disk, sb, ino, node_off
 			     +
 			     ALIGN_UP (sizeof (node) +
-				       grub_bfs_to_cpu16 (node.total_key_len),
-				       8), keylen_idx,
-			     grub_bfs_to_cpu16 (node.count_keys)
-			     * sizeof (grub_uint16_t), 0);
+				       grub_bfs_to_cpu_treehead (node.
+								 total_key_len),
+				       BTREE_ALIGN), keylen_idx,
+			     grub_bfs_to_cpu_treehead (node.count_keys) *
+			     sizeof (grub_uint16_t), 0);
 	if (err)
 	  return err;
 	err = read_bfs_file (disk, sb, ino, node_off
 			     + ALIGN_UP (sizeof (node) +
-					 grub_bfs_to_cpu16 (node.
-							    total_key_len),
-					 8) +
-			     grub_bfs_to_cpu16 (node.count_keys)
-			     * sizeof (grub_uint16_t),
-			     key_values,
-			     grub_bfs_to_cpu16 (node.count_keys)
-			     * sizeof (grub_uint64_t), 0);
+					 grub_bfs_to_cpu_treehead
+					 (node.total_key_len),
+					 BTREE_ALIGN) +
+			     grub_bfs_to_cpu_treehead (node.count_keys) *
+			     sizeof (grub_uint16_t), key_values,
+			     grub_bfs_to_cpu_treehead (node.count_keys) *
+			     sizeof (grub_uint64_t), 0);
 	if (err)
 	  return err;
 
-	for (i = 0; i < grub_bfs_to_cpu16 (node.count_keys); i++)
+	for (i = 0; i < grub_bfs_to_cpu_treehead (node.count_keys); i++)
 	  {
 	    int cmp;
 	    char c;
 	    start = end;
 	    end = grub_bfs_to_cpu16 (keylen_idx[i]);
-	    if (grub_bfs_to_cpu16 (node.total_key_len) <= end)
-	      end = grub_bfs_to_cpu16 (node.total_key_len);
+	    if (grub_bfs_to_cpu_treehead (node.total_key_len) <= end)
+	      end = grub_bfs_to_cpu_treehead (node.total_key_len);
 	    c = key_data[end];
 	    key_data[end] = 0;
 	    cmp = grub_strcmp (key_data + start, name);
@@ -537,7 +588,7 @@ find_in_b_tree (grub_disk_t disk,
 		break;
 	      }
 	  }
-	if (i < grub_bfs_to_cpu16 (node.count_keys))
+	if (i < grub_bfs_to_cpu_treehead (node.count_keys))
 	  {
 	    level--;
 	    continue;
@@ -629,7 +680,9 @@ find_file (const char *path, grub_disk_t disk,
 				 "too deep nesting of symlinks");
 	    }
 
+#ifndef MODE_AFS
 	  if (grub_bfs_to_cpu32 (ino->flags) & LONG_SYMLINK)
+#endif
 	    {
 	      grub_size_t symsize = grub_bfs_to_cpu64 (ino->size);
 	      alloc = grub_malloc ((ptr2 ? grub_strlen (ptr2) : 0)
@@ -648,6 +701,7 @@ find_file (const char *path, grub_disk_t disk,
 		}
 	      alloc[symsize] = 0;
 	    }
+#ifndef MODE_AFS
 	  else
 	    {
 	      alloc = grub_malloc ((ptr2 ? grub_strlen (ptr2) : 0)
@@ -662,6 +716,7 @@ find_file (const char *path, grub_disk_t disk,
 			   sizeof (ino->inplace_link));
 	      alloc[sizeof (ino->inplace_link)] = 0;
 	    }
+#endif
 	  if (alloc[0] == '/')
 	    {
 	      err = read_extent (disk, sb, &sb->root_dir, 0, 0, ino,
@@ -695,9 +750,15 @@ static grub_err_t
 mount (grub_disk_t disk, struct grub_bfs_superblock *sb)
 {
   grub_err_t err;
-  err = grub_disk_read (disk, 1, 0, sizeof (*sb), sb);
+  err = grub_disk_read (disk, SUPERBLOCK, 0, sizeof (*sb), sb);
   if (err == GRUB_ERR_OUT_OF_RANGE)
-    return grub_error (GRUB_ERR_BAD_FS, "not a BFS filesystem");
+    return grub_error (GRUB_ERR_BAD_FS, 
+#ifdef MODE_AFS
+		       "not an AFS filesystem"
+#else
+		       "not a BFS filesystem"
+#endif
+		       );
   if (err)
     return err;
   if (grub_bfs_to_cpu32 (sb->magic1) != SUPER_BLOCK_MAGIC1
@@ -705,7 +766,13 @@ mount (grub_disk_t disk, struct grub_bfs_superblock *sb)
       || grub_bfs_to_cpu32 (sb->magic3) != SUPER_BLOCK_MAGIC3
       || (grub_bfs_to_cpu32 (sb->bsize)
 	  != (1U << grub_bfs_to_cpu32 (sb->log2_bsize))))
-    return grub_error (GRUB_ERR_BAD_FS, "not a BFS filesystem");
+    return grub_error (GRUB_ERR_BAD_FS, 
+#ifdef MODE_AFS
+		       "not an AFS filesystem"
+#else
+		       "not a BFS filesystem"
+#endif
+		       );
   return GRUB_ERR_NONE;
 }
 
@@ -739,7 +806,12 @@ grub_bfs_dir (grub_device_t device, const char *path,
       }
 
     info.mtimeset = 1;
+#ifdef MODE_AFS
+    info.mtime =
+      grub_divmod64 (grub_bfs_to_cpu64 (ino.ino.mtime), 1000000, 0);
+#else
     info.mtime = grub_bfs_to_cpu64 (ino.ino.mtime) >> 16;
+#endif
     info.dir = ((grub_bfs_to_cpu32 (ino.ino.mode) & ATTR_TYPE) == ATTR_DIR);
     return hook_in (name, &info);
   }
@@ -785,7 +857,7 @@ grub_bfs_open (struct grub_file *file, const char *name)
     if (err)
       return err;
     if (((grub_bfs_to_cpu32 (ino.ino.mode) & ATTR_TYPE) != ATTR_REG))
-      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
 
     data = grub_zalloc (sizeof (struct grub_bfs_data)
 			+ grub_bfs_to_cpu32 (sb.bsize));
@@ -837,6 +909,7 @@ grub_bfs_label (grub_device_t device, char **label)
   return GRUB_ERR_NONE;
 }
 
+#ifndef MODE_AFS
 static grub_ssize_t
 read_bfs_attr (grub_disk_t disk,
 	       const struct grub_bfs_superblock *sb,
@@ -935,29 +1008,43 @@ grub_bfs_uuid (grub_device_t device, char **uuid)
   }
   return GRUB_ERR_NONE;
 }
-
+#endif
 
 static struct grub_fs grub_bfs_fs = {
+#ifdef MODE_AFS
+  .name = "afs",
+#else
   .name = "bfs",
+#endif
   .dir = grub_bfs_dir,
   .open = grub_bfs_open,
   .read = grub_bfs_read,
   .close = grub_bfs_close,
   .label = grub_bfs_label,
+#ifndef MODE_AFS
   .uuid = grub_bfs_uuid,
+#endif
 #ifdef GRUB_UTIL
   .reserved_first_sector = 1,
 #endif
 };
 
+#ifdef MODE_AFS
+GRUB_MOD_INIT (afs)
+#else
 GRUB_MOD_INIT (bfs)
+#endif
 {
   COMPILE_TIME_ASSERT (1 << LOG_EXTENT_SIZE ==
 		       sizeof (struct grub_bfs_extent));
   grub_fs_register (&grub_bfs_fs);
 }
 
+#ifdef MODE_AFS
+GRUB_MOD_FINI (afs)
+#else
 GRUB_MOD_FINI (bfs)
+#endif
 {
   grub_fs_unregister (&grub_bfs_fs);
 }
