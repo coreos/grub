@@ -705,8 +705,6 @@ grub_ufs_close (grub_file_t file)
   return GRUB_ERR_NONE;
 }
 
-
-#ifdef MODE_UFS2
 static grub_err_t
 grub_ufs_label (grub_device_t device, char **label)
 {
@@ -726,7 +724,6 @@ grub_ufs_label (grub_device_t device, char **label)
 
   return grub_errno;
 }
-#endif
 
 static grub_err_t
 grub_ufs_uuid (grub_device_t device, char **uuid)
@@ -790,9 +787,7 @@ static struct grub_fs grub_ufs_fs =
     .open = grub_ufs_open,
     .read = grub_ufs_read,
     .close = grub_ufs_close,
-#ifdef MODE_UFS2
     .label = grub_ufs_label,
-#endif
     .uuid = grub_ufs_uuid,
     .mtime = grub_ufs_mtime,
     .next = 0

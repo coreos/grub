@@ -1,5 +1,12 @@
 2011-10-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Read label on UFS1.
+
+	* grub-core/fs/ufs.c (grub_ufs_label): Remove MODE_UFS2 condition.
+	(grub_ufs_fs): Always set .label.
+
+2011-10-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use shifts in UFS.
 
 	* grub-core/fs/ufs.c (UFS_LOG_BLKSZ): New macro.
