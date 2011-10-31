@@ -992,6 +992,12 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	      grub_error (GRUB_ERR_BAD_FS, "extent not found");
 	      return -1;
 	    }
+	  if ((grub_ssize_t) elemsize < ((char *) &data->extent->inl
+					 - (char *) data->extent))
+	    {
+	      grub_error (GRUB_ERR_BAD_FS, "extent descriptor is too short");
+	      return -1;
+	    }
 	  data->extstart = grub_le_to_cpu64 (key_out.offset);
 	  data->extsize = elemsize;
 	  data->extent = grub_malloc (elemsize);
@@ -1012,12 +1018,10 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	    data->extend =
 	      data->extstart + grub_le_to_cpu64 (data->extent->filled);
 
-	  grub_dprintf ("btrfs", "extent 0x%" PRIxGRUB_UINT64_T "+0x%"
-			PRIxGRUB_UINT64_T " (0x%"
-			PRIxGRUB_UINT64_T ")\n",
+	  grub_dprintf ("btrfs", "regular extent 0x%" PRIxGRUB_UINT64_T "+0x%"
+			PRIxGRUB_UINT64_T "\n",
 			grub_le_to_cpu64 (key_out.offset),
-			grub_le_to_cpu64 (data->extent->size),
-			grub_le_to_cpu64 (data->extent->filled));
+			grub_le_to_cpu64 (data->extent->size));
 	  if (data->extend <= pos)
 	    {
 	      grub_error (GRUB_ERR_BAD_FS, "extent not found");
@@ -1309,7 +1313,6 @@ find_path (struct grub_btrfs_data *data,
 	  grub_memcpy (tmp + grub_le_to_cpu64 (inode.size), path,
 		       grub_strlen (path) + 1);
 	  grub_free (path_alloc);
-	  grub_free (origpath);
 	  path = path_alloc = tmp;
 	  if (path[0] == '/')
 	    {
@@ -1385,6 +1388,8 @@ find_path (struct grub_btrfs_data *data,
     }
 
   grub_free (direl);
+  grub_free (origpath);
+  grub_free (path_alloc);
   return GRUB_ERR_NONE;
 }
 
