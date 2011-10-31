@@ -1,5 +1,14 @@
 2011-10-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use shifts in UFS.
+
+	* grub-core/fs/ufs.c (UFS_LOG_BLKSZ): New macro.
+	(grub_ufs_data): New field log2_blksz.
+	(grub_ufs_read_file): Use shifts.
+	(grub_ufs_mount): Check block size and logarithm it.
+
+2011-10-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ufs.c (grub_ufs_lookup_symlink): Fix handling of
 	long symlinks.
 

@@ -50,6 +50,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Calculate in which group the inode can be found.  */
 #define UFS_BLKSZ(sblock) (grub_le_to_cpu32 (sblock->bsize))
+#define UFS_LOG_BLKSZ(sblock) (data->log2_blksz)
 
 #define INODE(data,field) data->inode.  field
 #ifdef MODE_UFS2
@@ -214,6 +215,7 @@ struct grub_ufs_data
   struct grub_ufs_inode inode;
   int ino;
   int linknest;
+  int log2_blksz;
 };
 
 static grub_dl_t my_mod;
@@ -295,10 +297,9 @@ grub_ufs_read_file (struct grub_ufs_data *data,
   if (len + pos > INODE_SIZE (data))
     len = INODE_SIZE (data) - pos;
 
-  blockcnt = grub_divmod64 ((len + pos + UFS_BLKSZ (sblock) - 1),
-			    UFS_BLKSZ (sblock), 0);
+  blockcnt = (len + pos + UFS_BLKSZ (sblock) - 1) >> UFS_LOG_BLKSZ (sblock);
 
-  for (i = grub_divmod64 (pos, UFS_BLKSZ (sblock), 0); i < blockcnt; i++)
+  for (i = pos >> UFS_LOG_BLKSZ (sblock); i < blockcnt; i++)
     {
       grub_disk_addr_t blknr;
       grub_off_t blockoff;
@@ -306,7 +307,7 @@ grub_ufs_read_file (struct grub_ufs_data *data,
 
       int skipfirst = 0;
 
-      grub_divmod64 (pos, UFS_BLKSZ (sblock), &blockoff);
+      blockoff = pos & (UFS_BLKSZ (sblock) - 1);
 
       blknr = grub_ufs_get_file_block (data, i);
       if (grub_errno)
@@ -315,14 +316,14 @@ grub_ufs_read_file (struct grub_ufs_data *data,
       /* Last block.  */
       if (i == blockcnt - 1)
 	{
-	  grub_divmod64 (len + pos, UFS_BLKSZ (sblock), &blockend);
+	  blockend = (len + pos) & (UFS_BLKSZ (sblock) - 1);
 
 	  if (!blockend)
 	    blockend = UFS_BLKSZ (sblock);
 	}
 
       /* First block.  */
-      if (i == grub_divmod64 (pos, UFS_BLKSZ (sblock), 0))
+      if (i == (pos >> UFS_LOG_BLKSZ (sblock)))
 	{
 	  skipfirst = blockoff;
 	  blockend -= skipfirst;
@@ -536,8 +537,16 @@ grub_ufs_mount (grub_disk_t disk)
       if (grub_errno)
 	goto fail;
 
-      if (grub_le_to_cpu32 (data->sblock.magic) == GRUB_UFS_MAGIC)
+      /* No need to byteswap bsize in this check. It works the same on both
+	 endiannesses.  */
+      if (grub_le_to_cpu32 (data->sblock.magic) == GRUB_UFS_MAGIC
+	  && data->sblock.bsize != 0
+	  && ((data->sblock.bsize & (data->sblock.bsize - 1)) == 0))
 	{
+	  for (data->log2_blksz = 0; 
+	       (1U << data->log2_blksz) < grub_le_to_cpu32 (data->sblock.bsize);
+	       data->log2_blksz++);
+
 	  data->disk = disk;
 	  data->linknest = 0;
 	  return data;
