@@ -1,3 +1,8 @@
+2011-10-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/ufs.c (grub_ufs_lookup_symlink): Fix handling of
+	long symlinks.
+
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Handle symlinks and long names on tar and cpio.
@@ -11,6 +16,9 @@
 	L and K entries.
 	(grub_cpio_mount): Zero-fill data.
 	(handle_symlink): New function.
+	(grub_cpio_dir): Handle symlinks.
+	(grub_cpio_open): Likewise.
+	(grub_cpio_close) [MODE_USTAR]: Free linkname.
 
 2011-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 

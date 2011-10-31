@@ -394,21 +394,16 @@ grub_ufs_read_inode (struct grub_ufs_data *data, int ino, char *inode)
 static grub_err_t
 grub_ufs_lookup_symlink (struct grub_ufs_data *data, int ino)
 {
-  char symlink[INODE_SIZE (data)];
+  char symlink[INODE_SIZE (data) + 1];
 
   if (++data->linknest > GRUB_UFS_MAX_SYMLNK_CNT)
     return grub_error (GRUB_ERR_SYMLINK_LOOP, "too deep nesting of symlinks");
 
-  if (INODE_NBLOCKS (data) == 0)
+  if (INODE_SIZE (data) <= sizeof (data->inode.symlink))
     grub_strcpy (symlink, (char *) INODE (data, symlink));
   else
-    {
-      grub_disk_read (data->disk,
-		      (INODE_DIRBLOCKS (data, 0)
-		       << grub_le_to_cpu32 (data->sblock.log2_blksz)),
-		      0, INODE_SIZE (data), symlink);
-      symlink[INODE_SIZE (data)] = '\0';
-    }
+    grub_ufs_read_file (data, 0, 0, INODE_SIZE (data), symlink);
+  symlink[INODE_SIZE (data)] = '\0';
 
   /* The symlink is an absolute path, go back to the root inode.  */
   if (symlink[0] == '/')
