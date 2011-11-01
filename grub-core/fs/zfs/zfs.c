@@ -152,6 +152,7 @@ struct grub_zfs_device_desc
 
   /* Valid only for RAIDZ.  */
   unsigned nparity;
+  unsigned ashift;
 
   /* Valid only for leaf devices.  */
   grub_device_t dev;
@@ -516,6 +517,9 @@ fill_vdev_info_real (struct grub_zfs_data *data,
 	  if (!grub_zfs_nvlist_lookup_uint64 (nvlist, "nparity", &par))
 	    return grub_error (GRUB_ERR_BAD_FS, "couldn't find raidz parity");
 	  fill->nparity = par;
+	  if (!grub_zfs_nvlist_lookup_uint64 (nvlist, "ashift", &par))
+	    return grub_error (GRUB_ERR_BAD_FS, "couldn't find raidz ashift");
+	  fill->ashift = par;
 	}
 
       nelm = grub_zfs_nvlist_lookup_nvlist_array_get_nelm (nvlist, ZPOOL_CONFIG_CHILDREN);
@@ -882,38 +886,76 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
       }
     case DEVICE_RAIDZ:
       {
-	grub_uint64_t sector;
-	grub_uint32_t bsize;
 	unsigned c = 0;
+	grub_uint64_t high;
+	grub_uint64_t devn;
+	grub_uint64_t redundancy_strip = 0, m;
+	grub_uint64_t redundancy_strip2 = 0;
+	grub_uint32_t s;
 
-	bsize = (asize + desc->nparity) / desc->n_children;
-	sector = offset >> 9;
+	/* (4,1) -> 2, (3,1) -> 1 */
+	if (desc->nparity == 1)
+	  s = asize + desc->n_children - 2;
+	else
+	  s = asize + desc->n_children - 3;
+	high = grub_divmod64 ((offset >> desc->ashift),
+			      desc->n_children, &m);
+
+	if (desc->nparity == 1)
+	  {
+	    redundancy_strip = m;
+	    redundancy_strip += ((offset >> (desc->ashift + 11)) & 1);
+	    if (redundancy_strip == desc->n_children)
+	      redundancy_strip = 0;
+	    redundancy_strip2 = redundancy_strip;
+	  }
+	else
+	  {
+	    redundancy_strip = m;
+	    redundancy_strip2 = m + 1;
+	    if (redundancy_strip2 == desc->n_children)
+	      redundancy_strip2 = 0;
+	  }
+	grub_dprintf ("zfs", "rs = %x, %llx\n",
+		      (int) redundancy_strip,
+		      (unsigned long long) high);
 	while (len > 0)
 	  {
 	    grub_size_t csize;
-	    grub_uint64_t high;
-	    grub_uint64_t devn;
+	    grub_uint32_t bsize;
 	    grub_err_t err;
-	    high = grub_divmod64 (sector + (asize > 2) + c, desc->n_children,
-				  &devn);
-	    csize = bsize << 9;
+	    bsize = s / desc->n_children;
+	      
+	    while (1)
+	      {
+		high = grub_divmod64 ((offset >> desc->ashift) + c,
+				      desc->n_children, &devn);
+		if (devn != redundancy_strip && devn != redundancy_strip2)
+		  break;
+		c++;
+	      }
+	    csize = bsize << desc->ashift;
 	    if (csize > len)
 	      csize = len;
+
 	    grub_dprintf ("zfs", "RAIDZ mapping 0x%" PRIxGRUB_UINT64_T
-			  "+%d+%u -> (0x%" PRIxGRUB_UINT64_T ", 0x%"
+			  "+%u (%d, %d) -> (0x%" PRIxGRUB_UINT64_T ", 0x%"
 			  PRIxGRUB_UINT64_T ")\n",
-			  sector,(asize > 2), c, high, devn);
-	    err = read_device (high << 9, &desc->children[devn],
+			  offset >> desc->ashift, c, asize, bsize, high,
+			  devn);
+	    err = read_device ((high << desc->ashift)
+			       | (offset & ((1 << desc->ashift) - 1)),
+			       &desc->children[devn],
 			       bsize, csize, buf);
 	    if (err)
 	      return err;
 	    c++;
+	    s--;
 	    buf = (char *) buf + csize;
 	    len -= csize;
 	  }
-	return GRUB_ERR_NONE;	    
       }
-      return GRUB_ERR_NONE;
+      return GRUB_ERR_NONE;	    
     }
   return grub_error (GRUB_ERR_BAD_FS, "unsupported device type");
 }

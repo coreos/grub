@@ -1,3 +1,11 @@
+2011-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix RAIDZ(2).
+
+	* grub-core/fs/zfs/zfs.c (grub_zfs_device_desc): New member ashift.
+	(fill_vdev_info_real): Set ashift.
+	(read_device): Rewrite RAIDZ part based on reverse engineering.
+
 2011-10-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/btrfs.c (grub_btrfs_extent_read): Add sanity check and
