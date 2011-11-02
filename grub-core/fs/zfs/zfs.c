@@ -850,6 +850,14 @@ scan_devices (struct grub_zfs_data *data)
   return GRUB_ERR_NONE;
 }
 
+static inline void
+xor (grub_uint64_t *a, const grub_uint64_t *b, grub_size_t s)
+{
+  s /= sizeof (grub_uint64_t);
+  while (s--)
+    *a++ ^= *b++;
+}
+
 static grub_err_t
 read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	     grub_size_t len, void *buf)
@@ -889,40 +897,26 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	unsigned c = 0;
 	grub_uint64_t high;
 	grub_uint64_t devn;
-	grub_uint64_t redundancy_strip = 0, m;
-	grub_uint64_t redundancy_strip2 = 0;
-	grub_uint32_t s;
+	grub_uint64_t m;
+	grub_uint32_t s, orig_s;
+	void *orig_buf = buf;
+	grub_size_t orig_len = len;
+	void *recovery_buf = NULL;
+	grub_size_t recovery_len = 0;
 
 	if (desc->nparity < 1 || desc->nparity > 2)
 	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, 
 			     "raidz%d is not supported", desc->nparity);
 
-	s = (((len + (1 << desc->ashift) - 1) >> desc->ashift)
-	     + (desc->n_children - desc->nparity) - 1);
+	orig_s = (((len + (1 << desc->ashift) - 1) >> desc->ashift)
+		  + (desc->n_children - desc->nparity) - 1);
+	s = orig_s;
 
 	high = grub_divmod64 ((offset >> desc->ashift),
 			      desc->n_children, &m);
 
-
-	switch (desc->nparity)
-	  {
-	  case 1:
-	    redundancy_strip = m;
-	    redundancy_strip += ((offset >> (desc->ashift + 11)) & 1);
-	    if (redundancy_strip == desc->n_children)
-	      redundancy_strip = 0;
-	    redundancy_strip2 = redundancy_strip;
-	    break;
-	  case 2:
-	    redundancy_strip = m;
-	    redundancy_strip2 = m + 1;
-	    if (redundancy_strip2 == desc->n_children)
-	      redundancy_strip2 = 0;
-	    break;
-	  }
-	grub_dprintf ("zfs", "rs = %x, %llx\n",
-		      (int) redundancy_strip,
-		      (unsigned long long) high);
+	if (desc->nparity == 2)
+	  c = 2;
 	while (len > 0)
 	  {
 	    grub_size_t csize;
@@ -930,15 +924,12 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	    grub_err_t err;
 	    bsize = s / (desc->n_children - desc->nparity);
 
-	    while (1)
-	      {
-		high = grub_divmod64 ((offset >> desc->ashift) + c,
-				      desc->n_children, &devn);
-		if (devn != redundancy_strip && devn != redundancy_strip2)
-		  break;
-		c++;
-	      }
+	    if (desc->nparity == 1
+		&& ((offset >> (desc->ashift + 11)) & 1) == c)
+	      c++;
 
+	    high = grub_divmod64 ((offset >> desc->ashift) + c,
+				  desc->n_children, &devn);
 	    csize = bsize << desc->ashift;
 	    if (csize > len)
 	      csize = len;
@@ -953,6 +944,13 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 			       | (offset & ((1 << desc->ashift) - 1)),
 			       &desc->children[devn],
 			       csize, buf);
+	    /* No raidz2 recovery yet.  */
+	    if (err && recovery_len == 0)
+	      {
+		recovery_buf = buf;
+		recovery_len = csize;
+		grub_errno = err = 0;
+	      }
 	    if (err)
 	      return err;
 
@@ -961,8 +959,42 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	    buf = (char *) buf + csize;
 	    len -= csize;
 	  }
+	if (recovery_buf)
+	  {
+	    grub_err_t err;
+	    high = grub_divmod64 ((offset >> desc->ashift)
+				  + 
+				  ((desc->nparity == 1)
+				   && ((offset >> (desc->ashift + 11)) & 1)),
+				  desc->n_children, &devn);
+	    err = read_device ((high << desc->ashift)
+			       | (offset & ((1 << desc->ashift) - 1)),
+			       &desc->children[devn],
+			       recovery_len, recovery_buf);
+	    if (err)
+	      return err;
+	    buf = orig_buf;
+	    len = orig_len;
+	    s = orig_s;
+	    while (len > 0)
+	      {
+		grub_size_t csize;
+		csize = ((s / (desc->n_children - desc->nparity))
+			 << desc->ashift);
+		if (csize > len)
+		  csize = len;
+
+		if (buf != recovery_buf)
+		  xor (recovery_buf, buf,
+		       csize < recovery_len ? csize : recovery_len);
+
+		s--;
+		buf = (char *) buf + csize;
+		len -= csize;
+	      }	    
+	  }
+	return GRUB_ERR_NONE;
       }
-      return GRUB_ERR_NONE;	    
     }
   return grub_error (GRUB_ERR_BAD_FS, "unsupported device type");
 }
