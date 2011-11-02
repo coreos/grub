@@ -1,3 +1,10 @@
+2011-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix RAIDZ(2) for >= 5 devices.
+
+	* grub-core/fs/zfs/zfs.c (read_device): Fix length formula. Remove
+	asize argument. All users updated.
+
 2011-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix RAIDZ(2).

@@ -852,7 +852,7 @@ scan_devices (struct grub_zfs_data *data)
 
 static grub_err_t
 read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
-	     grub_uint32_t asize, grub_size_t len, void *buf)
+	     grub_size_t len, void *buf)
 {
   switch (desc->type)
     {
@@ -876,7 +876,7 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 			     "non-positive number of mirror children");
 	for (i = 0; i < desc->n_children; i++)
 	  {
-	    err = read_device (offset, &desc->children[i], asize,
+	    err = read_device (offset, &desc->children[i],
 			       len, buf);
 	    if (!err)
 	      break;
@@ -893,28 +893,32 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	grub_uint64_t redundancy_strip2 = 0;
 	grub_uint32_t s;
 
-	/* (4,1) -> 2, (3,1) -> 1 */
-	if (desc->nparity == 1)
-	  s = asize + desc->n_children - 2;
-	else
-	  s = asize + desc->n_children - 3;
+	if (desc->nparity < 1 || desc->nparity > 2)
+	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, 
+			     "raidz%d is not supported", desc->nparity);
+
+	s = (((len + (1 << desc->ashift) - 1) >> desc->ashift)
+	     + (desc->n_children - desc->nparity) - 1);
+
 	high = grub_divmod64 ((offset >> desc->ashift),
 			      desc->n_children, &m);
 
-	if (desc->nparity == 1)
+
+	switch (desc->nparity)
 	  {
+	  case 1:
 	    redundancy_strip = m;
 	    redundancy_strip += ((offset >> (desc->ashift + 11)) & 1);
 	    if (redundancy_strip == desc->n_children)
 	      redundancy_strip = 0;
 	    redundancy_strip2 = redundancy_strip;
-	  }
-	else
-	  {
+	    break;
+	  case 2:
 	    redundancy_strip = m;
 	    redundancy_strip2 = m + 1;
 	    if (redundancy_strip2 == desc->n_children)
 	      redundancy_strip2 = 0;
+	    break;
 	  }
 	grub_dprintf ("zfs", "rs = %x, %llx\n",
 		      (int) redundancy_strip,
@@ -924,8 +928,8 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	    grub_size_t csize;
 	    grub_uint32_t bsize;
 	    grub_err_t err;
-	    bsize = s / desc->n_children;
-	      
+	    bsize = s / (desc->n_children - desc->nparity);
+
 	    while (1)
 	      {
 		high = grub_divmod64 ((offset >> desc->ashift) + c,
@@ -934,21 +938,24 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 		  break;
 		c++;
 	      }
+
 	    csize = bsize << desc->ashift;
 	    if (csize > len)
 	      csize = len;
 
 	    grub_dprintf ("zfs", "RAIDZ mapping 0x%" PRIxGRUB_UINT64_T
-			  "+%u (%d, %d) -> (0x%" PRIxGRUB_UINT64_T ", 0x%"
+			  "+%u (%" PRIxGRUB_SIZE ", %" PRIxGRUB_UINT32_T
+			  ") -> (0x%" PRIxGRUB_UINT64_T ", 0x%"
 			  PRIxGRUB_UINT64_T ")\n",
-			  offset >> desc->ashift, c, asize, bsize, high,
+			  offset >> desc->ashift, c, len, bsize, high,
 			  devn);
 	    err = read_device ((high << desc->ashift)
 			       | (offset & ((1 << desc->ashift) - 1)),
 			       &desc->children[devn],
-			       bsize, csize, buf);
+			       csize, buf);
 	    if (err)
 	      return err;
+
 	    c++;
 	    s--;
 	    buf = (char *) buf + csize;
@@ -976,8 +983,7 @@ read_dva (const dva_t *dva,
       for (i = 0; i < data->n_devices_attached; i++)
 	if (data->devices_attached[i].id == DVA_GET_VDEV (dva))
 	  {
-	    err = read_device (offset, &data->devices_attached[i],
-			       dva->dva_word[0] & 0xffffff, len, buf);
+	    err = read_device (offset, &data->devices_attached[i], len, buf);
 	    if (!err)
 	      return GRUB_ERR_NONE;
 	    break;
