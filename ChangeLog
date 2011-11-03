@@ -1,3 +1,8 @@
+2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gettext/gettext.c (grub_gettext_init_ext): Exit if local is
+	NULL.
+
 2011-11-03  crocket <crockabiscuit@gmail.com>
 
 	* util/grub.d/10_linux.in: Add Slackware initrd naming.
