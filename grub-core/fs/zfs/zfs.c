@@ -904,7 +904,7 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	void *recovery_buf = NULL;
 	grub_size_t recovery_len = 0;
 
-	if (desc->nparity < 1 || desc->nparity > 2)
+	if (desc->nparity < 1 || desc->nparity > 3)
 	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, 
 			     "raidz%d is not supported", desc->nparity);
 
@@ -914,9 +914,10 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 
 	high = grub_divmod64 ((offset >> desc->ashift),
 			      desc->n_children, &m);
-
 	if (desc->nparity == 2)
 	  c = 2;
+	if (desc->nparity == 3)
+	  c = 3;
 	while (len > 0)
 	  {
 	    grub_size_t csize;

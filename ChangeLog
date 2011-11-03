@@ -1,3 +1,7 @@
+2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c (read_device): Support raidz3.
+
 2011-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/zfs/zfs.c (read_device): Add ability to sustain a single
