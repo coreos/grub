@@ -1152,7 +1152,7 @@ grub_nilfs2_mtime (grub_device_t device, grub_int32_t * tm)
   if (!data)
     *tm = 0;
   else
-    *tm = (grub_int32_t) grub_le_to_cpu64 (data->sblock.s_mtime);
+    *tm = (grub_int32_t) grub_le_to_cpu64 (data->sblock.s_wtime);
 
   grub_dl_unref (my_mod);
 
