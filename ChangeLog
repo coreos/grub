@@ -1,5 +1,10 @@
 2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ufs.c (grub_ufs_mtime) [MODE_UFS2]: Check mtime field
+	as well.
+
+2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make reiserfs label retrieval similar to other *_label functions.
 
 	* grub-core/fs/reiserfs.c (grub_reiserfs_superblock): New field label.

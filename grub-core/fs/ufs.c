@@ -761,11 +761,13 @@ grub_ufs_mtime (grub_device_t device, grub_int32_t *tm)
   if (!data)
     *tm = 0;
   else
+    {
+      *tm = grub_le_to_cpu32 (data->sblock.mtime);
 #ifdef MODE_UFS2
-    *tm = grub_le_to_cpu64 (data->sblock.mtime2);
-#else
-    *tm = grub_le_to_cpu32 (data->sblock.mtime);
+      if (*tm < (grub_int64_t) grub_le_to_cpu64 (data->sblock.mtime2))
+	*tm = grub_le_to_cpu64 (data->sblock.mtime2);
 #endif
+    }
 
   grub_dl_unref (my_mod);
 
