@@ -1,3 +1,7 @@
+2011-11-03  Philipp Matthias Hahn <pmhahn@debian.org>
+
+	* util/grub-mkrescue.in: Fix handling xorriso option.
+
 2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/gettext/gettext.c (grub_gettext_init_ext): Exit if local is
