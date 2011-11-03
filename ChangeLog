@@ -1,5 +1,19 @@
 2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make reiserfs label retrieval similar to other *_label functions.
+
+	* grub-core/fs/reiserfs.c (grub_reiserfs_superblock): New field label.
+	(REISERFS_MAX_LABEL_LENGTH): Removed.
+	(REISERFS_LABEL_OFFSET): Likewise.
+	(grub_reiserfs_label): Rewritten.
+
+2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/nilfs2.c (grub_nilfs2_mtime): Use correct superblock
+	field.
+
+2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (read_device): Support raidz3.
 
 2011-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
