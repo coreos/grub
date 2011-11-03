@@ -1,3 +1,7 @@
+2011-11-03  crocket <crockabiscuit@gmail.com>
+
+	* util/grub.d/10_linux.in: Add Slackware initrd naming.
+
 2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	XZ CRC64 and SHA256 support.
