@@ -1,5 +1,33 @@
 2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	XZ CRC64 and SHA256 support.
+
+	* Makefile.util.def (libgrubmods): Add crc64.c.
+	* grub-core/Makefile.core.def (crc64): New module.
+	* grub-core/lib/crc64.c: New file.
+	* grub-core/lib/xzembed/xz_dec_stream.c (xz_dec_hash)
+	[!GRUB_EMBED_DECOMPRESSOR]: Rename crc32_context to hash_context.
+	Fix the type.
+	(MAX_HASH_SIZE): New define.
+	(xz_dec) [!GRUB_EMBED_DECOMPRESSOR]: Add generic hash fields.
+	(dec_block) [!GRUB_EMBED_DECOMPRESSOR]: Handle non-crc32 hashes.
+	(index_update) [!GRUB_EMBED_DECOMPRESSOR]: Likewise.
+	(dec_index) [!GRUB_EMBED_DECOMPRESSOR]: Likewise.
+	(crc32_validate) [!GRUB_EMBED_DECOMPRESSOR]: Rename to ...
+	(hash_validate) [!GRUB_EMBED_DECOMPRESSOR]: ... this.
+	Handle non-crc32 hashes.
+	(hashes) [!GRUB_EMBED_DECOMPRESSOR]: New variable.
+	(dec_stream_header): Handle non-crc32 hashes.
+	(dec_stream_footer): Likewise.
+	(dec_block_header): Likewise.
+	(dec_main): Likewise.
+	(xz_dec_init): Likewise.
+	(xz_dec_reset): Likewise.
+	(xz_dec_end): Likewise.
+	* util/import_gcry.py: Add CRC64 line.
+
+2011-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ufs.c (grub_ufs_mtime) [MODE_UFS2]: Check mtime field
 	as well.
 

@@ -1698,3 +1698,8 @@ module = {
   name = adler32;
   common = lib/adler32.c;
 };
+
+module = {
+  name = crc64;
+  common = lib/crc64.c;
+};

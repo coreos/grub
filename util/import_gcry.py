@@ -83,6 +83,7 @@ cryptolist.write ("AES-192: gcry_rijndael\n");
 cryptolist.write ("AES-256: gcry_rijndael\n");
 
 cryptolist.write ("ADLER32: adler32\n");
+cryptolist.write ("CRC64: crc64\n");
 
 for cipher_file in cipher_files:
     infile = os.path.join (cipher_dir_in, cipher_file)
