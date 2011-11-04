@@ -1448,7 +1448,8 @@ dmu_read (dnode_end_t * dn, grub_uint64_t blkid, void **buf,
  */
 static grub_err_t
 mzap_lookup (mzap_phys_t * zapobj, grub_zfs_endian_t endian,
-	     int objsize, char *name, grub_uint64_t * value)
+	     int objsize, char *name, grub_uint64_t * value,
+	     int case_insensitive)
 {
   int i, chunks;
   mzap_ent_phys_t *mzap_ent = zapobj->mz_chunk;
@@ -1456,7 +1457,8 @@ mzap_lookup (mzap_phys_t * zapobj, grub_zfs_endian_t endian,
   chunks = objsize / MZAP_ENT_LEN - 1;
   for (i = 0; i < chunks; i++)
     {
-      if (grub_strcmp (mzap_ent[i].mze_name, name) == 0)
+      if (case_insensitive ? (grub_strcasecmp (mzap_ent[i].mze_name, name) == 0)
+	  : (grub_strcmp (mzap_ent[i].mze_name, name) == 0))
 	{
 	  *value = grub_zfs_to_cpu64 (mzap_ent[i].mze_value, endian);
 	  return GRUB_ERR_NONE;
@@ -1489,7 +1491,8 @@ mzap_iterate (mzap_phys_t * zapobj, grub_zfs_endian_t endian, int objsize,
 }
 
 static grub_uint64_t
-zap_hash (grub_uint64_t salt, const char *name)
+zap_hash (grub_uint64_t salt, const char *name,
+	  int case_insensitive)
 {
   static grub_uint64_t table[256];
   const grub_uint8_t *cp;
@@ -1507,8 +1510,12 @@ zap_hash (grub_uint64_t salt, const char *name)
 	}
     }
 
-  for (cp = (const grub_uint8_t *) name; (c = *cp) != '\0'; cp++)
-    crc = (crc >> 8) ^ table[(crc ^ c) & 0xFF];
+  if (case_insensitive)
+    for (cp = (const grub_uint8_t *) name; (c = *cp) != '\0'; cp++)
+      crc = (crc >> 8) ^ table[(crc ^ grub_toupper (c)) & 0xFF];
+  else
+    for (cp = (const grub_uint8_t *) name; (c = *cp) != '\0'; cp++)
+      crc = (crc >> 8) ^ table[(crc ^ c) & 0xFF];
 
   /*
    * Only use 28 bits, since we need 4 bits in the cookie for the
@@ -1526,10 +1533,34 @@ zap_hash (grub_uint64_t salt, const char *name)
  * array_len is actual len in bytes (not encoded le_value_length).
  * buf is null-terminated.
  */
+
+static inline int
+name_cmp (const char *s1, const char *s2, grub_size_t n,
+	  int case_insensitive)
+{
+  const char *t1 = (const char *) s1;
+  const char *t2 = (const char *) s2;
+
+  if (!case_insensitive)
+    return grub_memcmp (t1, t2, n);
+      
+  while (n--)
+    {
+      if (grub_toupper (*t1) != grub_toupper (*t2))
+	  return (int) grub_toupper (*t1) - (int) grub_toupper (*t2);
+	  
+      t1++;
+      t2++;
+    }
+
+  return 0;
+}
+
 /* XXX */
 static int
 zap_leaf_array_equal (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
-		      int blksft, int chunk, int array_len, const char *buf)
+		      int blksft, int chunk, int array_len, const char *buf,
+		      int case_insensitive)
 {
   int bseen = 0;
 
@@ -1541,7 +1572,8 @@ zap_leaf_array_equal (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
       if (chunk >= ZAP_LEAF_NUMCHUNKS (blksft))
 	return (0);
 
-      if (grub_memcmp (la->la_array, buf + bseen, toread) != 0)
+      if (name_cmp ((char *) la->la_array, buf + bseen, toread,
+		    case_insensitive) != 0)
 	break;
       chunk = grub_zfs_to_cpu16 (la->la_next, endian);
       bseen += toread;
@@ -1582,7 +1614,8 @@ zap_leaf_array_get (zap_leaf_phys_t * l, grub_zfs_endian_t endian, int blksft,
 static grub_err_t
 zap_leaf_lookup (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
 		 int blksft, grub_uint64_t h,
-		 const char *name, grub_uint64_t * value)
+		 const char *name, grub_uint64_t * value,
+		 int case_insensitive)
 {
   grub_uint16_t chunk;
   struct zap_leaf_entry *le;
@@ -1614,7 +1647,7 @@ zap_leaf_lookup (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
       if (zap_leaf_array_equal (l, endian, blksft, 
 				grub_zfs_to_cpu16 (le->le_name_chunk,endian),
 				grub_zfs_to_cpu16 (le->le_name_length, endian),
-				name))
+				name, case_insensitive))
 	{
 	  struct zap_leaf_array *la;
 
@@ -1658,7 +1691,8 @@ zap_verify (zap_phys_t *zap, grub_zfs_endian_t endian)
 /* XXX */
 static grub_err_t
 fzap_lookup (dnode_end_t * zap_dnode, zap_phys_t * zap,
-	     char *name, grub_uint64_t * value, struct grub_zfs_data *data)
+	     char *name, grub_uint64_t * value, struct grub_zfs_data *data,
+	     int case_insensitive)
 {
   void *l;
   grub_uint64_t hash, idx, blkid;
@@ -1671,7 +1705,7 @@ fzap_lookup (dnode_end_t * zap_dnode, zap_phys_t * zap,
   if (err)
     return err;
 
-  hash = zap_hash (zap->zap_salt, name);
+  hash = zap_hash (zap->zap_salt, name, case_insensitive);
 
   /* get block id from index */
   if (zap->zap_ptrtbl.zt_numblks != 0)
@@ -1687,7 +1721,8 @@ fzap_lookup (dnode_end_t * zap_dnode, zap_phys_t * zap,
   if (err)
     return err;
 
-  err = zap_leaf_lookup (l, leafendian, blksft, hash, name, value);
+  err = zap_leaf_lookup (l, leafendian, blksft, hash, name, value,
+			 case_insensitive);
   grub_free (l);
   return err;
 }
@@ -1806,7 +1841,7 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
  */
 static grub_err_t
 zap_lookup (dnode_end_t * zap_dnode, char *name, grub_uint64_t * val,
-	    struct grub_zfs_data *data)
+	    struct grub_zfs_data *data, int case_insensitive)
 {
   grub_uint64_t block_type;
   int size;
@@ -1829,7 +1864,8 @@ zap_lookup (dnode_end_t * zap_dnode, char *name, grub_uint64_t * val,
   if (block_type == ZBT_MICRO)
     {
       grub_dprintf ("zfs", "micro zap\n");
-      err = (mzap_lookup (zapbuf, endian, size, name, val));
+      err = mzap_lookup (zapbuf, endian, size, name, val,
+			 case_insensitive);
       grub_dprintf ("zfs", "returned %d\n", err);      
       grub_free (zapbuf);
       return err;
@@ -1838,7 +1874,8 @@ zap_lookup (dnode_end_t * zap_dnode, char *name, grub_uint64_t * val,
     {
       grub_dprintf ("zfs", "fat zap\n");
       /* this is a fat zap */
-      err = (fzap_lookup (zap_dnode, zapbuf, name, val, data));
+      err = fzap_lookup (zap_dnode, zapbuf, name, val, data,
+			 case_insensitive);
       grub_dprintf ("zfs", "returned %d\n", err);      
       grub_free (zapbuf);
       return err;
@@ -1964,9 +2001,9 @@ dnode_get (dnode_end_t * mdn, grub_uint64_t objnum, grub_uint8_t type,
  */
 static grub_err_t
 dnode_get_path (dnode_end_t * mdn, const char *path_in, dnode_end_t * dn,
-		struct grub_zfs_data *data)
+		struct grub_zfs_data *data, int *case_insensitive)
 {
-  grub_uint64_t objnum, version;
+  grub_uint64_t objnum, version, insensitivity;
   char *cname, ch;
   grub_err_t err = GRUB_ERR_NONE;
   char *path, *path_buf;
@@ -1991,19 +2028,31 @@ dnode_get_path (dnode_end_t * mdn, const char *path_in, dnode_end_t * dn,
       return err;
     }
 
-  err = zap_lookup (&(dnode_path->dn), ZPL_VERSION_STR, &version, data);
+  err = zap_lookup (&(dnode_path->dn), ZPL_VERSION_STR, &version,
+		    data, 0);
   if (err)
     {
       grub_free (dn_new);
       return err;
     }
+
   if (version > ZPL_VERSION)
     {
       grub_free (dn_new);
       return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "too new ZPL version");
     }
-  
-  err = zap_lookup (&(dnode_path->dn), ZFS_ROOT_OBJ, &objnum, data);
+
+  err = zap_lookup (&(dnode_path->dn), "casesensitivity", &insensitivity,
+		    data, 0);
+  if (err == GRUB_ERR_FILE_NOT_FOUND)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      insensitivity = 0;
+    }
+  if (case_insensitive)
+    *case_insensitive = insensitivity;
+
+  err = zap_lookup (&(dnode_path->dn), ZFS_ROOT_OBJ, &objnum, data, 0);
   if (err)
     {
       grub_free (dn_new);
@@ -2064,7 +2113,7 @@ dnode_get_path (dnode_end_t * mdn, const char *path_in, dnode_end_t * dn,
 	  grub_free (path_buf);
 	  return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
 	}
-      err = zap_lookup (&(dnode_path->dn), cname, &objnum, data);
+      err = zap_lookup (&(dnode_path->dn), cname, &objnum, data, insensitivity);
       if (err)
 	break;
 
@@ -2296,7 +2345,7 @@ get_filesystem_dnode (dnode_end_t * mosmdn, char *fsname,
 
   grub_dprintf ("zfs", "alive\n");
 
-  err = zap_lookup (mdn, DMU_POOL_ROOT_DATASET, &objnum, data);
+  err = zap_lookup (mdn, DMU_POOL_ROOT_DATASET, &objnum, data, 0);
   if (err)
     return err;
 
@@ -2331,7 +2380,7 @@ get_filesystem_dnode (dnode_end_t * mosmdn, char *fsname,
       if (err)
 	return err;
 
-      err = zap_lookup (mdn, cname, &objnum, data);
+      err = zap_lookup (mdn, cname, &objnum, data, 0);
       if (err)
 	return err;
 
@@ -2374,7 +2423,7 @@ make_mdn (dnode_end_t * mdn, struct grub_zfs_data *data)
 static grub_err_t
 dnode_get_fullpath (const char *fullpath, dnode_end_t * mdn,
 		    grub_uint64_t *mdnobj, dnode_end_t * dn, int *isfs,
-		    struct grub_zfs_data *data)
+		    struct grub_zfs_data *data, int *case_insensitive)
 {
   char *fsname, *snapname;
   const char *ptr_at, *filename;
@@ -2452,7 +2501,7 @@ dnode_get_fullpath (const char *fullpath, dnode_end_t * mdn,
       err = dnode_get (&(data->mos), snapobj, 
 		       DMU_OT_DSL_DS_SNAP_MAP, mdn, data);
       if (!err)
-	err = zap_lookup (mdn, snapname, &headobj, data);
+	err = zap_lookup (mdn, snapname, &headobj, data, 0);
       if (!err)
 	err = dnode_get (&(data->mos), headobj, DMU_OT_DSL_DATASET, mdn, data);
       if (err)
@@ -2476,7 +2525,7 @@ dnode_get_fullpath (const char *fullpath, dnode_end_t * mdn,
       grub_free (snapname);      
       return GRUB_ERR_NONE;
     }
-  err = dnode_get_path (mdn, filename, dn, data);
+  err = dnode_get_path (mdn, filename, dn, data, case_insensitive);
   grub_free (fsname);
   grub_free (snapname);
   return err;
@@ -2916,7 +2965,7 @@ grub_zfs_open (struct grub_file *file, const char *fsfilename)
     return grub_errno;
 
   err = dnode_get_fullpath (fsfilename, &(data->mdn), 0,
-			    &(data->dnode), &isfs, data);
+			    &(data->dnode), &isfs, data, NULL);
   if (err)
     {
       zfs_unmount (data);
@@ -3080,7 +3129,7 @@ grub_zfs_getmdnobj (grub_device_t dev, const char *fsfilename,
     return grub_errno;
 
   err = dnode_get_fullpath (fsfilename, &(data->mdn), mdnobj,
-			    &(data->dnode), &isfs, data);
+			    &(data->dnode), &isfs, data, NULL);
   zfs_unmount (data);
   return err;
 }
@@ -3118,7 +3167,7 @@ fill_fs_info (struct grub_dirhook_info *info,
       return;
     }
   
-  err = zap_lookup (&dn, ZFS_ROOT_OBJ, &objnum, data);
+  err = zap_lookup (&dn, ZFS_ROOT_OBJ, &objnum, data, 0);
   if (err)
     {
       grub_dprintf ("zfs", "failed here\n");
@@ -3175,6 +3224,7 @@ grub_zfs_dir (grub_device_t device, const char *path,
   struct grub_zfs_data *data;
   grub_err_t err;
   int isfs;
+  int case_insensitive = 0;
   auto int NESTED_FUNC_ATTR iterate_zap (const char *name, grub_uint64_t val);
   auto int NESTED_FUNC_ATTR iterate_zap_fs (const char *name, 
 					    grub_uint64_t val);
@@ -3219,6 +3269,7 @@ grub_zfs_dir (grub_device_t device, const char *path,
 	hdrsize = SA_HDR_SIZE (((sa_hdr_phys_t *) sahdrp));
 	info.mtimeset = 1;
 	info.mtime = grub_zfs_to_cpu64 (*(grub_uint64_t *) ((char *) sahdrp + hdrsize + SA_MTIME_OFFSET), dn.endian);
+	info.case_insensitive = case_insensitive;
       }
     
     if (dn.dn.dn_bonustype == DMU_OT_ZNODE)
@@ -3273,7 +3324,8 @@ grub_zfs_dir (grub_device_t device, const char *path,
   data = zfs_mount (device);
   if (! data)
     return grub_errno;
-  err = dnode_get_fullpath (path, &(data->mdn), 0, &(data->dnode), &isfs, data);
+  err = dnode_get_fullpath (path, &(data->mdn), 0, &(data->dnode), &isfs, data,
+			    &case_insensitive);
   if (err)
     {
       zfs_unmount (data);

@@ -1,5 +1,24 @@
 2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support case-insensitive ZFS subvolumes.
+
+	* grub-core/fs/zfs/zfs.c (mzap_lookup): New parameter case_insensitive.
+	All users updated.
+	(zap_hash): Likewise.
+	(name_cmp): New function.
+	(zap_leaf_array_equal): New parameter case_insensitive.
+	All users updated.
+	(zap_leaf_lookup): Likewise.
+	(fzap_lookup): Likewise.
+	(zap_lookup): Likewise.
+	(dnode_get_path): New parameter case_insensitive. Retrieve case
+	sensitiviness of a volume. All users updated.
+	(dnode_get_fullpath): New parameter case_insensitive.
+	All users updated.
+	(grub_zfs_dir): Set info.case_insensitiveness.
+
+2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support second redundancy strip on raidz(2,3).
 
 	* grub-core/fs/zfs/zfs.c (powx): New array.
