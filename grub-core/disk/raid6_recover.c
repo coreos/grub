@@ -122,7 +122,7 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
         {
           if ((array->members[pos].device) &&
               (! grub_disk_read (array->members[pos].device,
-				 array->members[i].start_sector + sector,
+				 array->members[pos].start_sector + sector,
 				 0, size, buf)))
             {
               grub_raid_block_xor (pbuf, buf, size);
@@ -154,7 +154,7 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
       /* One bad device */
       if ((array->members[p].device) &&
           (! grub_disk_read (array->members[p].device,
-			     array->members[i].start_sector + sector,
+			     array->members[p].start_sector + sector,
 			     0, size, buf)))
         {
           grub_raid_block_xor (buf, pbuf, size);
@@ -169,7 +169,7 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
 
       grub_errno = GRUB_ERR_NONE;
       if (grub_disk_read (array->members[q].device,
-			  array->members[i].start_sector + sector, 0, size, buf))
+			  array->members[q].start_sector + sector, 0, size, buf))
         goto quit;
 
       grub_raid_block_xor (buf, qbuf, size);
@@ -188,14 +188,14 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
         }
 
       if (grub_disk_read (array->members[p].device,
-			  array->members[i].start_sector + sector,
+			  array->members[p].start_sector + sector,
 			  0, size, buf))
         goto quit;
 
       grub_raid_block_xor (pbuf, buf, size);
 
       if (grub_disk_read (array->members[q].device,
-			  array->members[i].start_sector + sector,
+			  array->members[q].start_sector + sector,
 			  0, size, buf))
         goto quit;
 

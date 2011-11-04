@@ -1,5 +1,10 @@
 2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/raid6_recover.c (grub_raid6_recover): Get start_sector
+	for the right device.
+
+2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/kernel.h (grub_module_header): Make type into uint32 as
 	expected by grub-mkimage and it's more clear since there is no implicit
 	padding.
