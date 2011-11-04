@@ -1,3 +1,9 @@
+2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/raid.c (scan_devices): Don't derference NULL on whole
+	disk.
+	* grub-core/disk/lvm.c (do_lvm_scan): Likewise.
+
 2011-11-03  Philipp Matthias Hahn <pmhahn@debian.org>
 
 	* util/grub-mkrescue.in: Fix handling xorriso option.

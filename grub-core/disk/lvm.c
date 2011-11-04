@@ -157,8 +157,8 @@ do_lvm_scan (const char *scan_for)
 	    && pv->disk->dev->id == disk->dev->id
 	    && grub_partition_get_start (pv->disk->partition)
 	    == grub_partition_get_start (disk->partition)
-	    && grub_partition_get_len (pv->disk->partition)
-	    == grub_partition_get_len (disk->partition))
+	    && grub_disk_get_size (pv->disk)
+	    == grub_disk_get_size (disk))
 	  {
 	    grub_disk_close (disk);
 	    return 0;

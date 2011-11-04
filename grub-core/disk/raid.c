@@ -123,8 +123,8 @@ scan_devices (const char *arname)
 		&& m->device->dev->id == m->device->dev->id
 		&& grub_partition_get_start (m->device->partition)
 		== grub_partition_get_start (disk->partition)
-		&& grub_partition_get_len (m->device->partition)
-		== grub_partition_get_len (disk->partition))
+		&& grub_disk_get_size (m->device)
+		== grub_disk_get_size (disk))
 	      {
 		grub_disk_close (disk);
 		return 0;
