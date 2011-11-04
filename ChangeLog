@@ -1,5 +1,13 @@
 2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support third redundancy strip on raidz3.
+
+	* grub-core/fs/zfs/zfs.c (recovery): Add Gauss for general case.
+	Return error on singularity. All users updated.
+	(read_device): Don't stop on 3rd failure on raidz3.
+
+2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support case-insensitive ZFS subvolumes.
 
 	* grub-core/fs/zfs/zfs.c (mzap_lookup): New parameter case_insensitive.

@@ -893,14 +893,15 @@ gf_mul (grub_uint8_t a, grub_uint8_t b)
   return powx[powx_inv[a] + powx_inv[b]];
 }
 
-static inline void
+static inline grub_err_t
 recovery (grub_uint8_t *bufs[4], grub_size_t s, const int nbufs,
 	  const unsigned *powers,
 	  const int *idx)
 {
+  grub_dprintf ("zfs", "recovering %u bufers\n", nbufs);
   /* Now we have */
   /* b_i = sum (r_j* (x ** (powers[i] * idx[j])))*/
-  /* Since nbufs <= 3 let's be lazy. */
+  /* Let's invert the matrix in question. */
   switch (nbufs)
     {
       /* Easy: r_0 = bufs[0] / (x << (powers[i] * idx[j])).  */
@@ -909,39 +910,126 @@ recovery (grub_uint8_t *bufs[4], grub_size_t s, const int nbufs,
 	int add;
 	grub_uint8_t *a;
 	if (powers[0] == 0 || idx[0] == 0)
-	  return;
+	  return GRUB_ERR_NONE;
 	add = 255 - ((powers[0] * idx[0]) % 255);
 	for (a = bufs[0]; s--; a++)
 	  if (*a)
 	    *a = powx[powx_inv[*a] + add];
-	return;
+	return GRUB_ERR_NONE;
       }
-      /* b_0 = r_0 * (x ** (powers[0] * idx[0])) + r_1 * (x ** (powers[0] * idx[1]))
-	 b_1 = r_0 * (x ** (powers[1] * idx[0])) + r_1 * (x ** (powers[1] * idx[1]))
-       */
+      /* Case 2x2: Let's use the determinant formula.  */
     case 2:
       {
 	grub_uint8_t det, det_inv;
-	grub_uint8_t det0, det1;
+	grub_uint8_t matrixinv[2][2];
 	unsigned i;
 	/* The determinant is: */
 	det = (powx[(powers[0] * idx[0] + powers[1] * idx[1]) % 255]
 	       ^ powx[(powers[0] * idx[1] + powers[1] * idx[0]) % 255]);
+	if (det == 0)
+	  return grub_error (GRUB_ERR_BAD_FS, "singular recovery matrix");
 	det_inv = powx[255 - powx_inv[det]];
+	matrixinv[0][0] = gf_mul (powx[(powers[1] * idx[1]) % 255], det_inv);
+	matrixinv[1][1] = gf_mul (powx[(powers[0] * idx[0]) % 255], det_inv);
+	matrixinv[0][1] = gf_mul (powx[(powers[0] * idx[1]) % 255], det_inv);
+	matrixinv[1][0] = gf_mul (powx[(powers[1] * idx[0]) % 255], det_inv);
 	for (i = 0; i < s; i++)
 	  {
-	    det0 = (gf_mul (bufs[0][i], powx[(powers[1] * idx[1]) % 255])
-		    ^ gf_mul (bufs[1][i], powx[(powers[0] * idx[1]) % 255]));
-	    det1 = (gf_mul (bufs[0][i], powx[(powers[1] * idx[0]) % 255])
-		    ^ gf_mul (bufs[1][i], powx[(powers[0] * idx[0]) % 255]));
+	    grub_uint8_t b0, b1;
+	    b0 = bufs[0][i];
+	    b1 = bufs[1][i];
 
-	    bufs[0][i] = gf_mul (det0, det_inv);
-	    bufs[1][i] = gf_mul (det1, det_inv);
+	    bufs[0][i] = (gf_mul (b0, matrixinv[0][0])
+			  ^ gf_mul (b1, matrixinv[0][1]));
+	    bufs[1][i] = (gf_mul (b0, matrixinv[1][0])
+			  ^ gf_mul (b1, matrixinv[1][1]));
 	  }
-	break;
+	return GRUB_ERR_NONE;
       }
-    }
-      
+      /* Otherwise use Gauss.  */
+    default:
+      {
+	grub_uint8_t matrix1[nbufs][nbufs], matrix2[nbufs][nbufs];
+	int i, j, k;
+
+	for (i = 0; i < nbufs; i++)
+	  for (j = 0; j < nbufs; j++)
+	    matrix1[i][j] = powx[(powers[i] * idx[j]) % 255];
+	for (i = 0; i < nbufs; i++)
+	  for (j = 0; j < nbufs; j++)
+	    matrix2[i][j] = 0;
+	for (i = 0; i < nbufs; i++)
+	    matrix2[i][i] = 1;
+
+	for (i = 0; i < nbufs; i++)
+	  {
+	    grub_uint8_t mul;
+	    for (j = i; j < nbufs; j++)	    
+	      if (matrix1[i][j])
+		break;
+	    if (j == nbufs)
+	      return grub_error (GRUB_ERR_BAD_FS, "singular recovery matrix");
+	    if (j != i)
+	      {
+		int xchng;
+		xchng = j;
+		for (j = 0; j < nbufs; j++)
+		  {
+		    grub_uint8_t t;
+		    t = matrix1[xchng][j];
+		    matrix1[xchng][j] = matrix1[i][j];
+		    matrix1[i][j] = t;
+		  }
+		for (j = 0; j < nbufs; j++)
+		  {
+		    grub_uint8_t t;
+		    t = matrix2[xchng][j];
+		    matrix2[xchng][j] = matrix2[i][j];
+		    matrix2[i][j] = t;
+		  }
+	      }
+	    mul = powx[255 - powx_inv[matrix1[i][i]]];
+	    for (j = 0; j < nbufs; j++)
+	      matrix1[i][j] = gf_mul (matrix1[i][j], mul);
+	    for (j = 0; j < nbufs; j++)
+	      matrix2[i][j] = gf_mul (matrix2[i][j], mul);
+	    for (j = i + 1; j < nbufs; j++)
+	      {
+		mul = matrix1[j][i];
+		for (k = 0; k < nbufs; k++)
+		  matrix1[j][k] ^= gf_mul (matrix1[i][k], mul);
+		for (k = 0; k < nbufs; k++)
+		  matrix2[j][k] ^= gf_mul (matrix2[i][k], mul);
+	      }
+	  }
+	for (i = nbufs - 1; i >= 0; i--)
+	  {
+	    for (j = 0; j < i; j++)
+	      {
+		grub_uint8_t mul;
+		mul = matrix1[j][i];
+		for (k = 0; k < nbufs; k++)
+		  matrix1[j][k] ^= gf_mul (matrix1[i][k], mul);
+		for (k = 0; k < nbufs; k++)
+		  matrix2[j][k] ^= gf_mul (matrix2[i][k], mul);
+	      }
+	  }
+
+	for (i = 0; i < (int) s; i++)
+	  {
+	    grub_uint8_t b[nbufs];
+	    for (j = 0; j < nbufs; j++)
+	      b[j] = bufs[j][i];
+	    for (j = 0; j < nbufs; j++)
+	      {
+		bufs[j][i] = 0;
+		for (k = 0; k < nbufs; k++)
+		  bufs[j][i] ^= gf_mul (matrix2[j][k], b[k]);
+	      }
+	  }
+	return GRUB_ERR_NONE;
+      }
+    }      
 }
 
 static grub_err_t
@@ -1040,10 +1128,7 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 			       | (offset & ((1 << desc->ashift) - 1)),
 			       &desc->children[devn],
 			       csize, buf);
-	    /* No raidz3 recovery yet.  */
-	    if (err
-		&& failed_devices < desc->nparity
-		&& failed_devices < 2)
+	    if (err && failed_devices < desc->nparity)
 	      {
 		recovery_buf[failed_devices] = buf;
 		recovery_len[failed_devices] = csize;
@@ -1066,6 +1151,7 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	    unsigned cur_redundancy_pow = 0;
 	    unsigned n_redundancy = 0;
 	    unsigned i, j;
+	    grub_err_t err;
 
 	    /* Compute mul. x**s has a period of 255.  */
 	    if (powx[0] == 0)
@@ -1088,7 +1174,6 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 		 n_redundancy < failed_devices;
 		 cur_redundancy_pow++)
 	      {
-		grub_err_t err;
 		high = grub_divmod64 ((offset >> desc->ashift)
 				      + cur_redundancy_pow
 				      + ((desc->nparity == 1)
@@ -1151,10 +1236,15 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 		grub_uint8_t *tmp_recovery_buf[4];
 		for (j = 0; j < i; j++)
 		  tmp_recovery_buf[j] = recovery_buf[j] + recovery_len[j] - 1;
-		recovery (tmp_recovery_buf, 1, i, redundancy_pow, recovery_idx);
+		err = recovery (tmp_recovery_buf, 1, i, redundancy_pow,
+				recovery_idx);
+		if (err)
+		  return err;
 	      }
-	    recovery (recovery_buf, recovery_len[failed_devices - 1],
-		      failed_devices, redundancy_pow, recovery_idx);
+	    err = recovery (recovery_buf, recovery_len[failed_devices - 1],
+			    failed_devices, redundancy_pow, recovery_idx);
+	    if (err)
+	      return err;
 	  }
 	return GRUB_ERR_NONE;
       }
