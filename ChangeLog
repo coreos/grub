@@ -1,5 +1,17 @@
 2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support second redundancy strip on raidz(2,3).
+
+	* grub-core/fs/zfs/zfs.c (powx): New array.
+	(powx_inv): Likewise.
+	(poly): New const.
+	(xor_out): New function.
+	(gf_mul): Likewise.
+	(recovery): Likewise.
+	(read_device): Use second redundancy strip.
+
+2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use a power of generator representation of GF(256) multiplication group
 	to save space time and complexity.
 

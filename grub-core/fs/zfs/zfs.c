@@ -858,6 +858,92 @@ xor (grub_uint64_t *a, const grub_uint64_t *b, grub_size_t s)
     *a++ ^= *b++;
 }
 
+/* x**y.  */
+static grub_uint8_t powx[255 * 2];
+/* Such an s that x**s = y */
+static int powx_inv[256];
+static const grub_uint8_t poly = 0x1d;
+
+/* perform the operation a ^= b * (x ** (known_idx * recovery_pow) ) */
+static inline void
+xor_out (void *a_in, const void *b_in, grub_size_t s,
+	 int known_idx, int recovery_pow)
+{
+  int add;
+  grub_uint8_t *a = a_in;
+  const grub_uint8_t *b = b_in;
+
+  /* Simple xor.  */
+  if (known_idx == 0 || recovery_pow == 0)
+    {
+      xor (a_in, b_in, s);
+      return;
+    }
+  add = (known_idx * recovery_pow) % 255;
+  for (;s--; b++, a++)
+    if (*b)
+      *a ^= powx[powx_inv[*b] + add];
+}
+
+static inline grub_uint8_t
+gf_mul (grub_uint8_t a, grub_uint8_t b)
+{
+  if (a == 0 || b == 0)
+    return 0;
+  return powx[powx_inv[a] + powx_inv[b]];
+}
+
+static inline void
+recovery (grub_uint8_t *bufs[4], grub_size_t s, const int nbufs,
+	  const unsigned *powers,
+	  const int *idx)
+{
+  /* Now we have */
+  /* b_i = sum (r_j* (x ** (powers[i] * idx[j])))*/
+  /* Since nbufs <= 3 let's be lazy. */
+  switch (nbufs)
+    {
+      /* Easy: r_0 = bufs[0] / (x << (powers[i] * idx[j])).  */
+    case 1:
+      {
+	int add;
+	grub_uint8_t *a;
+	if (powers[0] == 0 || idx[0] == 0)
+	  return;
+	add = 255 - ((powers[0] * idx[0]) % 255);
+	for (a = bufs[0]; s--; a++)
+	  if (*a)
+	    *a = powx[powx_inv[*a] + add];
+	return;
+      }
+      /* b_0 = r_0 * (x ** (powers[0] * idx[0])) + r_1 * (x ** (powers[0] * idx[1]))
+	 b_1 = r_0 * (x ** (powers[1] * idx[0])) + r_1 * (x ** (powers[1] * idx[1]))
+       */
+    case 2:
+      {
+	grub_uint8_t det, det_inv;
+	grub_uint8_t det0, det1;
+	unsigned i;
+	/* The determinant is: */
+	det = (powx[(powers[0] * idx[0] + powers[1] * idx[1]) % 255]
+	       ^ powx[(powers[0] * idx[1] + powers[1] * idx[0]) % 255]);
+	det_inv = powx[255 - powx_inv[det]];
+	for (i = 0; i < s; i++)
+	  {
+	    det0 = (gf_mul (bufs[0][i], powx[(powers[1] * idx[1]) % 255])
+		    ^ gf_mul (bufs[1][i], powx[(powers[0] * idx[1]) % 255]));
+	    det1 = (gf_mul (bufs[0][i], powx[(powers[1] * idx[0]) % 255])
+		    ^ gf_mul (bufs[1][i], powx[(powers[0] * idx[0]) % 255]));
+
+	    bufs[0][i] = gf_mul (det0, det_inv);
+	    bufs[1][i] = gf_mul (det1, det_inv);
+	  }
+	break;
+      }
+    }
+      
+}
+
 static grub_err_t
 read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	     grub_size_t len, void *buf)
@@ -901,8 +987,11 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	grub_uint32_t s, orig_s;
 	void *orig_buf = buf;
 	grub_size_t orig_len = len;
-	void *recovery_buf = NULL;
-	grub_size_t recovery_len = 0;
+	grub_uint8_t *recovery_buf[4];
+	grub_size_t recovery_len[4];
+	int recovery_idx[4];
+	unsigned failed_devices = 0;
+	int idx, orig_idx;
 
 	if (desc->nparity < 1 || desc->nparity > 3)
 	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, 
@@ -918,6 +1007,12 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	  c = 2;
 	if (desc->nparity == 3)
 	  c = 3;
+	if (((len + (1 << desc->ashift) - 1) >> desc->ashift)
+	    >= (desc->n_children - desc->nparity))
+	  idx = (desc->n_children - desc->nparity - 1);
+	else
+	  idx = ((len + (1 << desc->ashift) - 1) >> desc->ashift) - 1;
+	orig_idx = idx;
 	while (len > 0)
 	  {
 	    grub_size_t csize;
@@ -945,38 +1040,84 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 			       | (offset & ((1 << desc->ashift) - 1)),
 			       &desc->children[devn],
 			       csize, buf);
-	    /* No raidz2 recovery yet.  */
-	    if (err && recovery_len == 0)
+	    /* No raidz3 recovery yet.  */
+	    if (err
+		&& failed_devices < desc->nparity
+		&& failed_devices < 2)
 	      {
-		recovery_buf = buf;
-		recovery_len = csize;
+		recovery_buf[failed_devices] = buf;
+		recovery_len[failed_devices] = csize;
+		recovery_idx[failed_devices] = idx;
+		failed_devices++;
 		grub_errno = err = 0;
 	      }
 	    if (err)
 	      return err;
 
 	    c++;
+	    idx--;
 	    s--;
 	    buf = (char *) buf + csize;
 	    len -= csize;
 	  }
-	if (recovery_buf)
+	if (failed_devices)
 	  {
-	    grub_err_t err;
-	    high = grub_divmod64 ((offset >> desc->ashift)
-				  + 
-				  ((desc->nparity == 1)
-				   && ((offset >> (desc->ashift + 11)) & 1)),
-				  desc->n_children, &devn);
-	    err = read_device ((high << desc->ashift)
-			       | (offset & ((1 << desc->ashift) - 1)),
-			       &desc->children[devn],
-			       recovery_len, recovery_buf);
-	    if (err)
-	      return err;
+	    unsigned redundancy_pow[4];
+	    unsigned cur_redundancy_pow = 0;
+	    unsigned n_redundancy = 0;
+	    unsigned i, j;
+
+	    /* Compute mul. x**s has a period of 255.  */
+	    if (powx[0] == 0)
+	      {
+		grub_uint8_t cur = 1;
+		for (i = 0; i < 255; i++)
+		  {
+		    powx[i] = cur;
+		    powx[i + 255] = cur;
+		    powx_inv[cur] = i;
+		    if (cur & 0x80)
+		      cur = (cur << 1) ^ poly;
+		    else
+		      cur <<= 1;
+		  }
+	      }
+
+	    /* Read redundancy data.  */
+	    for (n_redundancy = 0, cur_redundancy_pow = 0;
+		 n_redundancy < failed_devices;
+		 cur_redundancy_pow++)
+	      {
+		grub_err_t err;
+		high = grub_divmod64 ((offset >> desc->ashift)
+				      + cur_redundancy_pow
+				      + ((desc->nparity == 1)
+					 && ((offset >> (desc->ashift + 11))
+					     & 1)),
+				      desc->n_children, &devn);
+		err = read_device ((high << desc->ashift)
+				   | (offset & ((1 << desc->ashift) - 1)),
+				   &desc->children[devn],
+				   recovery_len[n_redundancy],
+				   recovery_buf[n_redundancy]);
+		/* Ignore error if we may still have enough devices.  */
+		if (err && n_redundancy + desc->nparity - cur_redundancy_pow - 1
+		    >= failed_devices)
+		  {
+		    grub_errno = GRUB_ERR_NONE;
+		    continue;
+		  }
+		if (err)
+		  return err;
+		redundancy_pow[n_redundancy] = cur_redundancy_pow;
+		n_redundancy++;
+	      }
+	    /* Now xor-our the parts we already know.  */
 	    buf = orig_buf;
 	    len = orig_len;
 	    s = orig_s;
+	    idx = orig_idx;
+
 	    while (len > 0)
 	      {
 		grub_size_t csize;
@@ -985,14 +1126,35 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 		if (csize > len)
 		  csize = len;
 
-		if (buf != recovery_buf)
-		  xor (recovery_buf, buf,
-		       csize < recovery_len ? csize : recovery_len);
+		for (j = 0; j < failed_devices; j++)
+		  if (buf == recovery_buf[j])
+		    break;
+
+		if (j == failed_devices)
+		  for (j = 0; j < failed_devices; j++)
+		    xor_out (recovery_buf[j], buf,
+			     csize < recovery_len[j] ? csize : recovery_len[j],
+			     idx, redundancy_pow[j]);
 
 		s--;
 		buf = (char *) buf + csize;
 		len -= csize;
-	      }	    
+		idx--;
+	      }
+	    for (i = 0; i < failed_devices 
+		   && recovery_len[i] == recovery_len[0];
+		 i++);
+	    /* Since the chunks have variable length handle the last block
+	       separately.  */
+	    if (i != failed_devices)
+	      {
+		grub_uint8_t *tmp_recovery_buf[4];
+		for (j = 0; j < i; j++)
+		  tmp_recovery_buf[j] = recovery_buf[j] + recovery_len[j] - 1;
+		recovery (tmp_recovery_buf, 1, i, redundancy_pow, recovery_idx);
+	      }
+	    recovery (recovery_buf, recovery_len[failed_devices - 1],
+		      failed_devices, redundancy_pow, recovery_idx);
 	  }
 	return GRUB_ERR_NONE;
       }
