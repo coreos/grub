@@ -1,5 +1,20 @@
 2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use a power of generator representation of GF(256) multiplication group
+	to save space time and complexity.
+
+	* grub-core/disk/raid6_recover.c (raid6_table1): Removed.
+	(raid6_table2): Likewise.
+	(powx): New array.
+	(powx_inv): Likewise.
+	(poly): New const.
+	(grub_raid_block_mul): Replace with ...
+	(grub_raid_block_mulx): ...this.
+	(grub_raid6_init_table): Rewritten.
+	(grub_raid6_recover): Use power of generator representation.
+
+2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/raid6_recover.c (grub_raid6_recover): Get start_sector
 	for the right device.
 
