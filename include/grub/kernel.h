@@ -34,7 +34,7 @@ enum
 struct grub_module_header
 {
   /* The type of object.  */
-  grub_uint8_t type;
+  grub_uint32_t type;
   /* The size of object (including this header).  */
   grub_uint32_t size;
 };
