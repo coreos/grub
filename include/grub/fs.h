@@ -25,6 +25,10 @@
 #include <grub/types.h>
 
 #include <grub/list.h>
+/* For embedding types.  */
+#ifdef GRUB_UTIL
+#include <grub/partition.h>
+#endif
 
 /* Forward declaration is required, because of mutual reference.  */
 struct grub_file;
@@ -74,6 +78,11 @@ struct grub_fs
   grub_err_t (*mtime) (grub_device_t device, grub_int32_t *timebuf);
 
 #ifdef GRUB_UTIL
+  /* Determine sectors available for embedding.  */
+  grub_err_t (*embed) (grub_device_t device, unsigned int *nsectors,
+		       grub_embed_type_t embed_type,
+		       grub_disk_addr_t **sectors);
+
   /* Whether this filesystem reserves first sector for DOS-style boot.  */
   int reserved_first_sector;
 #endif

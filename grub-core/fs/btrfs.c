@@ -1596,6 +1596,35 @@ grub_btrfs_label (grub_device_t device, char **label)
   return grub_errno;
 }
 
+#ifdef GRUB_UTIL
+static grub_err_t
+grub_btrfs_embed (grub_device_t device __attribute__ ((unused)),
+		  unsigned int *nsectors,
+		  grub_embed_type_t embed_type,
+		  grub_disk_addr_t **sectors)
+{
+  unsigned i;
+
+  if (embed_type != GRUB_EMBED_PCBIOS)
+    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		       "BtrFS curently supports only PC-BIOS embedding");
+
+  if (64 * 2 - 1 < *nsectors)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       "Your core.img is unusually large.  "
+		       "It won't fit in the embedding area.");
+
+  *nsectors = 64 * 2 - 1;
+  *sectors = grub_malloc (*nsectors * sizeof (**sectors));
+  if (!*sectors)
+    return grub_errno;
+  for (i = 0; i < *nsectors; i++)
+    (*sectors)[i] = i + 1;
+
+  return GRUB_ERR_NONE;
+}
+#endif
+
 static struct grub_fs grub_btrfs_fs = {
   .name = "btrfs",
   .dir = grub_btrfs_dir,
@@ -1605,6 +1634,7 @@ static struct grub_fs grub_btrfs_fs = {
   .uuid = grub_btrfs_uuid,
   .label = grub_btrfs_label,
 #ifdef GRUB_UTIL
+  .embed = grub_btrfs_embed,
   .reserved_first_sector = 1,
 #endif
 };

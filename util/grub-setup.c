@@ -408,29 +408,44 @@ setup (const char *dir,
 
     free (tmp_img);
     
-    if (! dest_partmap)
+    if (! dest_partmap && ! fs)
       {
 	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
 	goto unable_to_embed;
       }
-    if (multiple_partmaps || fs)
+    if (multiple_partmaps || (dest_partmap && fs))
       {
 	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
 	goto unable_to_embed;
       }
 
-    if (!dest_partmap->embed)
+    if (dest_partmap && !dest_partmap->embed)
       {
 	grub_util_warn ("Partition style '%s' doesn't support embeding",
 			dest_partmap->name);
 	goto unable_to_embed;
       }
 
+    if (fs && !fs->embed)
+      {
+	grub_util_warn ("File system '%s' doesn't support embeding",
+			fs->name);
+	goto unable_to_embed;
+      }
+
     nsec = core_sectors;
-    err = dest_partmap->embed (dest_dev->disk, &nsec,
-			       GRUB_EMBED_PCBIOS, &sectors);
-    if (nsec > 2 * core_sectors)
-      nsec = 2 * core_sectors;
+    if (dest_partmap)
+      err = dest_partmap->embed (dest_dev->disk, &nsec,
+				 GRUB_EMBED_PCBIOS, &sectors);
+    else
+      err = fs->embed (dest_dev, &nsec,
+		       GRUB_EMBED_PCBIOS, &sectors);
+    if (!err && nsec < core_sectors)
+      {
+	err = grub_error (GRUB_ERR_OUT_OF_RANGE,
+			  "Your embedding area is unusually small.  "
+			  "core.img won't fit in it.");
+      }
     
     if (err)
       {
@@ -438,6 +453,9 @@ setup (const char *dir,
 	grub_errno = GRUB_ERR_NONE;
 	goto unable_to_embed;
       }
+
+    if (nsec > 2 * core_sectors)
+      nsec = 2 * core_sectors;
 
     /* Clean out the blocklists.  */
     block = first_block;

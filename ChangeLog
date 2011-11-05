@@ -1,5 +1,15 @@
 2011-11-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support BtrFS embedding.
+
+	* grub-core/fs/btrfs.c (grub_btrfs_embed) [GRUB_UTIL]: New function.
+	(grub_btrfs_fs) [GRUB_UTIL]: Set embed.
+	* include/grub/fs.h (grub_fs) [GRUB_UTIL]: New field embed.
+	* util/grub-setup.c (setup): Use fs embedding if available.
+	Add additional sanity check.
+
+2011-11-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Fix condition for config_opt.
 
 2011-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
