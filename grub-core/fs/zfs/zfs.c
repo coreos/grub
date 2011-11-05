@@ -199,6 +199,39 @@ zlib_decompress (void *s, void *d,
   return GRUB_ERR_NONE;
 }
 
+static grub_err_t 
+zle_decompress (void *s, void *d,
+		grub_size_t slen, grub_size_t dlen)
+{
+  grub_uint8_t *iptr, *optr;
+  grub_size_t clen;
+  for (iptr = s, optr = d; iptr < (grub_uint8_t *) s + slen
+	 && optr < (grub_uint8_t *) d + dlen;)
+    {
+      if (*iptr & 0x80)
+	clen = ((*iptr) & 0x7f) + 0x41;
+      else
+	clen = ((*iptr) & 0x3f) + 1;
+      if ((grub_ssize_t) clen > (grub_uint8_t *) d + dlen - optr)
+	clen = (grub_uint8_t *) d + dlen - optr;
+      if (*iptr & 0x40 || *iptr & 0x80)
+	{
+	  grub_memset (optr, 0, clen);
+	  iptr++;
+	  optr += clen;
+	  continue;
+	}
+      if ((grub_ssize_t) clen > (grub_uint8_t *) s + slen - iptr - 1)
+	clen = (grub_uint8_t *) s + slen - iptr - 1;
+      grub_memcpy (optr, iptr + 1, clen);
+      optr += clen;
+      iptr += clen + 1;
+    }
+  if (optr < (grub_uint8_t *) d + dlen)
+    grub_memset (optr, 0, (grub_uint8_t *) d + dlen - optr);
+  return GRUB_ERR_NONE;
+}
+
 static decomp_entry_t decomp_table[ZIO_COMPRESS_FUNCTIONS] = {
   {"inherit", NULL},		/* ZIO_COMPRESS_INHERIT */
   {"on", lzjb_decompress},	/* ZIO_COMPRESS_ON */
@@ -214,6 +247,7 @@ static decomp_entry_t decomp_table[ZIO_COMPRESS_FUNCTIONS] = {
   {"gzip-7", zlib_decompress},  /* ZIO_COMPRESS_GZIP7 */
   {"gzip-8", zlib_decompress},  /* ZIO_COMPRESS_GZIP8 */
   {"gzip-9", zlib_decompress},  /* ZIO_COMPRESS_GZIP9 */
+  {"zle", zle_decompress},      /* ZIO_COMPRESS_ZLE   */
 };
 
 static grub_err_t zio_read_data (blkptr_t * bp, grub_zfs_endian_t endian,

@@ -1,5 +1,13 @@
 2011-11-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support zle compression on ZFS.
+
+	* grub-core/fs/zfs/zfs.c (zle_decompress): New function.
+	(decomp_table): Add zle.
+	* include/grub/zfs/zio.h (zio_compress): Add zle.
+
+2011-11-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support BtrFS embedding.
 
 	* grub-core/fs/btrfs.c (grub_btrfs_embed) [GRUB_UTIL]: New function.
