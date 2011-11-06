@@ -26,6 +26,7 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 #include <grub/err.h>
+#include <grub/mm.h>
 
 typedef enum 
   {
@@ -191,8 +192,11 @@ grub_crypto_cipher_set_key (grub_crypto_cipher_handle_t cipher,
 			    const unsigned char *key,
 			    unsigned keylen);
 
-void
-grub_crypto_cipher_close (grub_crypto_cipher_handle_t cipher);
+static inline void
+grub_crypto_cipher_close (grub_crypto_cipher_handle_t cipher)
+{
+  grub_free (cipher);
+}
 
 void
 grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size);
@@ -203,7 +207,7 @@ grub_crypto_ecb_decrypt (grub_crypto_cipher_handle_t cipher,
 
 gcry_err_code_t
 grub_crypto_ecb_encrypt (grub_crypto_cipher_handle_t cipher,
-			 void *out, void *in, grub_size_t size);
+			 void *out, const void *in, grub_size_t size);
 gcry_err_code_t
 grub_crypto_cbc_encrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, void *in, grub_size_t size,
@@ -251,11 +255,13 @@ extern gcry_md_spec_t _gcry_digest_spec_sha1;
 extern gcry_md_spec_t _gcry_digest_spec_sha256;
 extern gcry_md_spec_t _gcry_digest_spec_sha512;
 extern gcry_md_spec_t _gcry_digest_spec_crc32;
+extern gcry_cipher_spec_t _gcry_cipher_spec_aes;
 #define GRUB_MD_MD5 ((const gcry_md_spec_t *) &_gcry_digest_spec_md5)
 #define GRUB_MD_SHA1 ((const gcry_md_spec_t *) &_gcry_digest_spec_sha1)
 #define GRUB_MD_SHA256 ((const gcry_md_spec_t *) &_gcry_digest_spec_sha256)
 #define GRUB_MD_SHA512 ((const gcry_md_spec_t *) &_gcry_digest_spec_sha512)
 #define GRUB_MD_CRC32 ((const gcry_md_spec_t *) &_gcry_digest_spec_crc32)
+#define GRUB_CIPHER_AES ((const gcry_cipher_spec_t *) &_gcry_cipher_spec_aes)
 
 /* Implement PKCS#5 PBKDF2 as per RFC 2898.  The PRF to use is HMAC variant
    of digest supplied by MD.  Inputs are the password P of length PLEN,

@@ -24,6 +24,14 @@
 
 #include <grub/err.h>
 #include <grub/disk.h>
+#include <grub/crypto.h>
+
+typedef enum grub_zfs_endian
+  {
+    GRUB_ZFS_UNKNOWN_ENDIAN = -2,
+    GRUB_ZFS_LITTLE_ENDIAN = -1,
+    GRUB_ZFS_BIG_ENDIAN = 0
+  } grub_zfs_endian_t;
 
 /*
  * On-disk version number.
@@ -121,5 +129,25 @@ char *grub_zfs_nvlist_lookup_nvlist_array (const char *nvlist,
 					   grub_size_t index);
 int grub_zfs_nvlist_lookup_nvlist_array_get_nelm (const char *nvlist,
 						  const char *name);
+grub_err_t
+grub_zfs_add_key (grub_uint8_t *key_in,
+		  grub_size_t keylen,
+		  int passphrase);
+
+extern grub_err_t (*grub_zfs_decrypt) (grub_crypto_cipher_handle_t cipher,
+				       grub_uint64_t algo,
+				       void *nonce,
+				       char *buf, grub_size_t size,
+				       const grub_uint32_t *expected_mac,
+				       grub_zfs_endian_t endian);
+
+struct grub_zfs_key;
+
+extern grub_crypto_cipher_handle_t (*grub_zfs_load_key) (const struct grub_zfs_key *key,
+							 grub_size_t keysize,
+							 grub_uint64_t salt,
+							 grub_uint64_t algo);
+
+
 
 #endif	/* ! GRUB_ZFS_HEADER */

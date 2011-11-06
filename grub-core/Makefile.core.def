@@ -1117,6 +1117,11 @@ module = {
 };
 
 module = {
+  name = zfscrypt;
+  common = fs/zfs/zfscrypt.c;
+};
+
+module = {
   name = zfsinfo;
   common = fs/zfs/zfsinfo.c;
 };

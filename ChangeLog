@@ -1,3 +1,40 @@
+2011-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	ZFS crypto support.
+
+	* Makefile.util.def (libgrubmods): Add grub-core/fs/zfs/zfscrypt.c.
+	* grub-core/Makefile.core.def (zfscrypt): New module.
+	* grub-core/fs/zfs/zfs.c (subvolume): New structure.
+	(grub_zfs_data): Replace mdn with subvol. Put case_insensitivity inside
+	it. All users updated.
+	(grub_zfs_decrypt): New var.
+	(grub_zfs_load_key): Likewise.
+	(zio_checksum_functions): Add SHA256+MAC.
+	(zio_checksum_verify): Handle incomplete comparison due to MAC.
+	(zio_read): Handle encrypted blocks.
+	(zap_verify): Remove incorrect check.
+	(fzap_iterate): Handle non-standard fzap.
+	(zap_iterate): Likewise.
+	(zap_iterate_u64): New function.
+	(dnode_get_fullpath): Load keys.
+	* grub-core/fs/zfs/zfscrypt.c: New file.
+	* grub-core/lib/crypto.c (grub_crypto_cipher_close): Removed.
+	(grub_crypto_ecb_encrypt): Make input const.
+	* include/grub/crypto.h (grub_crypto_cipher_close): Inline.
+	(grub_crypto_ecb_encrypt): Make input const.
+	(GRUB_CIPHER_AES): New macro.
+	* include/grub/zfs/dmu.h (dmu_object_type): Add DMU_OT_DSL_KEYCHAIN.
+	* include/grub/zfs/dsl_dir.h (dsl_dir_phys): Add keychain.
+	* include/grub/zfs/spa.h (grub_zfs_endian): Moved from here ...
+	* include/grub/zfs/zfs.h (grub_zfs_endian): ... here. Added GURB_ZFS_
+	prefix. All users updated.
+	(grub_zfs_add_key): New proto.
+	(grub_zfs_decrypt): Likewise.
+	(grub_zfs_load_key): Likewise.
+	* include/grub/zfs/zio.h (zio_checksum): Add SHA256+MAC.
+	* util/grub-fstest.c (options): Add -K option.
+	(argp_parser): Likewise.
+
 2011-11-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support zle compression on ZFS.
