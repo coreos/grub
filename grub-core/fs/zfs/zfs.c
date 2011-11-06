@@ -125,29 +125,6 @@ static grub_dl_t my_mod;
 #define	NBBY	8
 #endif
 
-enum grub_zfs_algo
-  {
-    GRUB_ZFS_ALGO_CCM,
-    GRUB_ZFS_ALGO_GCM,
-  };
-
-struct grub_zfs_key
-{
-  grub_uint64_t algo;
-  grub_uint8_t enc_nonce[13];
-  grub_uint8_t unused[3];
-  grub_uint8_t enc_key[48];
-  grub_uint8_t unknown_purpose_nonce[13];
-  grub_uint8_t unused2[3];
-  grub_uint8_t unknown_purpose_key[48];
-};
-
-struct grub_zfs_wrap_key
-{
-  struct grub_zfs_wrap_key *next;
-  grub_uint64_t key[GRUB_ZFS_MAX_KEYLEN / 8];
-};
-
 extern grub_err_t lzjb_decompress (void *, void *, grub_size_t, grub_size_t);
 
 typedef grub_err_t zfs_decomp_func_t (void *s_start, void *d_start,
@@ -222,20 +199,13 @@ struct grub_zfs_data
   grub_uint64_t guid;
 };
 
-static struct grub_zfs_wrap_key *zfs_wrap_keys;
-
-grub_err_t
-grub_zfs_add_key (grub_uint8_t *key_in)
-{
-  struct grub_zfs_wrap_key *key;
-  key = grub_malloc (sizeof (*key));
-  if (!key)
-    return grub_errno;
-  grub_memcpy (key->key, key_in, GRUB_ZFS_MAX_KEYLEN);
-  key->next = zfs_wrap_keys;
-  zfs_wrap_keys = key;
-  return GRUB_ERR_NONE;
-}
+grub_err_t (*grub_zfs_decrypt) (grub_crypto_cipher_handle_t cipher,
+				void *nonce,
+				char *buf, grub_size_t size,
+				const grub_uint32_t *expected_mac,
+				grub_zfs_endian_t endian) = NULL;
+grub_crypto_cipher_handle_t (*grub_zfs_load_key) (const struct grub_zfs_key *key,
+						  grub_size_t keysize) = NULL;
 
 static grub_err_t 
 zlib_decompress (void *s, void *d,
@@ -409,14 +379,16 @@ static int
 vdev_uberblock_compare (uberblock_t * ub1, uberblock_t * ub2)
 {
   grub_zfs_endian_t ub1_endian, ub2_endian;
-  if (grub_zfs_to_cpu64 (ub1->ub_magic, LITTLE_ENDIAN) == UBERBLOCK_MAGIC)
-    ub1_endian = LITTLE_ENDIAN;
+  if (grub_zfs_to_cpu64 (ub1->ub_magic, GRUB_ZFS_LITTLE_ENDIAN)
+      == UBERBLOCK_MAGIC)
+    ub1_endian = GRUB_ZFS_LITTLE_ENDIAN;
   else
-    ub1_endian = BIG_ENDIAN;
-  if (grub_zfs_to_cpu64 (ub2->ub_magic, LITTLE_ENDIAN) == UBERBLOCK_MAGIC)
-    ub2_endian = LITTLE_ENDIAN;
+    ub1_endian = GRUB_ZFS_BIG_ENDIAN;
+  if (grub_zfs_to_cpu64 (ub2->ub_magic, GRUB_ZFS_LITTLE_ENDIAN)
+      == UBERBLOCK_MAGIC)
+    ub2_endian = GRUB_ZFS_LITTLE_ENDIAN;
   else
-    ub2_endian = BIG_ENDIAN;
+    ub2_endian = GRUB_ZFS_BIG_ENDIAN;
 
   if (grub_zfs_to_cpu64 (ub1->ub_txg, ub1_endian) 
       < grub_zfs_to_cpu64 (ub2->ub_txg, ub2_endian))
@@ -448,20 +420,23 @@ uberblock_verify (uberblock_phys_t * ub, grub_uint64_t offset)
 {
   uberblock_t *uber = &ub->ubp_uberblock;
   grub_err_t err;
-  grub_zfs_endian_t endian = UNKNOWN_ENDIAN;
+  grub_zfs_endian_t endian = GRUB_ZFS_UNKNOWN_ENDIAN;
   zio_cksum_t zc;
 
-  if (grub_zfs_to_cpu64 (uber->ub_magic, LITTLE_ENDIAN) == UBERBLOCK_MAGIC
-      && grub_zfs_to_cpu64 (uber->ub_version, LITTLE_ENDIAN) > 0 
-      && grub_zfs_to_cpu64 (uber->ub_version, LITTLE_ENDIAN) <= SPA_VERSION)
-    endian = LITTLE_ENDIAN;
+  if (grub_zfs_to_cpu64 (uber->ub_magic, GRUB_ZFS_LITTLE_ENDIAN)
+      == UBERBLOCK_MAGIC
+      && grub_zfs_to_cpu64 (uber->ub_version, GRUB_ZFS_LITTLE_ENDIAN) > 0 
+      && grub_zfs_to_cpu64 (uber->ub_version, GRUB_ZFS_LITTLE_ENDIAN)
+      <= SPA_VERSION)
+    endian = GRUB_ZFS_LITTLE_ENDIAN;
 
-  if (grub_zfs_to_cpu64 (uber->ub_magic, BIG_ENDIAN) == UBERBLOCK_MAGIC
-      && grub_zfs_to_cpu64 (uber->ub_version, BIG_ENDIAN) > 0 
-      && grub_zfs_to_cpu64 (uber->ub_version, BIG_ENDIAN) <= SPA_VERSION)
-    endian = BIG_ENDIAN;
+  if (grub_zfs_to_cpu64 (uber->ub_magic, GRUB_ZFS_BIG_ENDIAN) == UBERBLOCK_MAGIC
+      && grub_zfs_to_cpu64 (uber->ub_version, GRUB_ZFS_BIG_ENDIAN) > 0 
+      && grub_zfs_to_cpu64 (uber->ub_version, GRUB_ZFS_BIG_ENDIAN)
+      <= SPA_VERSION)
+    endian = GRUB_ZFS_BIG_ENDIAN;
 
-  if (endian == UNKNOWN_ENDIAN)
+  if (endian == GRUB_ZFS_UNKNOWN_ENDIAN)
     return grub_error (GRUB_ERR_BAD_FS, "invalid uberblock magic");
 
   grub_memset (&zc, 0, sizeof (zc));
@@ -1382,7 +1357,7 @@ zio_read_gang (blkptr_t * bp, grub_zfs_endian_t endian, dva_t * dva, void *buf,
   zio_gb = grub_malloc (SPA_GANGBLOCKSIZE);
   if (!zio_gb)
     return grub_errno;
-  grub_dprintf ("zfs", endian == LITTLE_ENDIAN ? "little-endian gang\n"
+  grub_dprintf ("zfs", endian == GRUB_ZFS_LITTLE_ENDIAN ? "little-endian gang\n"
 		:"big-endian gang\n");
 
   err = read_dva (dva, endian, data, zio_gb, SPA_GANGBLOCKSIZE);
@@ -1457,57 +1432,6 @@ zio_read_data (blkptr_t * bp, grub_zfs_endian_t endian, void *buf,
   return err;
 }
 
-static grub_err_t
-grub_ccm_decrypt (grub_crypto_cipher_handle_t cipher,
-		  grub_uint8_t *out, const grub_uint8_t *in,
-		  grub_size_t psize,
-		  void *mac_out, const void *nonce,
-		  unsigned l, unsigned m)
-{
-  grub_uint8_t iv[16];
-  grub_uint8_t mul[16];
-  grub_uint32_t mac[4];
-  unsigned i, j;
-  grub_err_t err;
-
-  grub_memcpy (iv + 1, nonce, 15 - l);
-
-  iv[0] = (l - 1) | (((m-2) / 2) << 3);
-  for (j = 0; j < l; j++)
-    iv[15 - j] = psize >> (8 * j);
-  err = grub_crypto_ecb_encrypt (cipher, mac, iv, 16);
-  if (err)
-    return err;
-
-  iv[0] = l - 1;
-
-  for (i = 0; i < (psize + 15) / 16; i++)
-    {
-      grub_size_t csize;
-      csize = 16;
-      if (csize > psize - 16 * i)
-	csize = psize - 16 * i;
-      for (j = 0; j < l; j++)
-	iv[15 - j] = (i + 1) >> (8 * j);
-      err = grub_crypto_ecb_encrypt (cipher, mul, iv, 16);
-      if (err)
-	return err;
-      grub_crypto_xor (out + 16 * i, in + 16 * i, mul, csize);
-      grub_crypto_xor (mac, mac, out + 16 * i, csize);
-      err = grub_crypto_ecb_encrypt (cipher, mac, mac, 16);
-      if (err)
-	return err;
-    }
-  for (j = 0; j < l; j++)
-    iv[15 - j] = 0;
-  err = grub_crypto_ecb_encrypt (cipher, mul, iv, 16);
-  if (err)
-    return err;
-  if (mac_out)
-    grub_crypto_xor (mac_out, mac, mul, m);
-  return GRUB_ERR_NONE;
-}
-
 /*
  * Read in a block of data, verify its checksum, decompress if needed,
  * and put the uncompressed data in buf.
@@ -1575,41 +1499,18 @@ zio_read (blkptr_t *bp, grub_zfs_endian_t endian, void **buf,
 
   if (encrypted)
     {
-      grub_uint32_t mac[4];
-      unsigned i;
-      grub_uint32_t sw[4];
-      
-      grub_memcpy (sw, &(bp)->blk_dva[encrypted], 16);
-      for (i = 0; i < 4; i++)
-	sw[i] = grub_cpu_to_be32 (grub_zfs_to_cpu32 (sw[i], endian));
-
-      if (!data->subvol.cipher)
-	{
-	  grub_free (compbuf);
-	  *buf = NULL;
-	  return grub_error (GRUB_ERR_ACCESS_DENIED,
-			     "no decryption key available");;
-	}
-      err = grub_ccm_decrypt (data->subvol.cipher,
-			      (grub_uint8_t *) compbuf,
-			      (grub_uint8_t *) compbuf,
-			      psize, mac,
-			      sw + 1, 3, 12);
+      if (!grub_zfs_decrypt)
+	err = grub_error (GRUB_ERR_BAD_FS, "zfscrypto module not loaded");
+      else
+	err = grub_zfs_decrypt (data->subvol.cipher, &(bp)->blk_dva[encrypted],
+				compbuf, psize, ((grub_uint32_t *) &zc + 5),
+				endian);
       if (err)
 	{
 	  grub_free (compbuf);
 	  *buf = NULL;
 	  return err;
 	}
-
-      for (i = 0; i < 3; i++)
-	if (grub_zfs_to_cpu32 (((grub_uint32_t *) &zc + 5)[i], endian)
-	    != grub_be_to_cpu32 (mac[i]))
-	  {
-	    grub_free (compbuf);
-	    *buf = NULL;
-	    return grub_error (GRUB_ERR_BAD_FS, "MAC verification failed");
-	  }
     }
 
   if (comp != ZIO_COMPRESS_OFF)
@@ -2767,76 +2668,14 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 					grub_size_t nelem,
 					grub_size_t elemsize)
   {
-    const struct grub_zfs_key *key = val_in;
-    unsigned keylen;
-    struct grub_zfs_wrap_key *wrap_key;
-
-    if (elemsize != 1 || nelem != sizeof (*key))
+    if (elemsize != 1)
       {
-	grub_dprintf ("zfs", "Unexpected key length %" PRIuGRUB_SIZE 
-		      " x %" PRIuGRUB_SIZE "\n", nelem, elemsize);
+	grub_dprintf ("zfs", "Unexpected key element size %" PRIuGRUB_SIZE "\n",
+		      elemsize);
 	return 0;
       }
 
-    if (grub_memcmp (key->enc_key + 32, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 16)
-	== 0)
-      keylen = 16;
-    else if (grub_memcmp (key->enc_key + 40, "\0\0\0\0\0\0\0\0", 8) == 0)
-      keylen = 24;
-    else
-      keylen = 32;
-
-    for (wrap_key = zfs_wrap_keys; wrap_key; wrap_key = wrap_key->next)
-      {
-	grub_crypto_cipher_handle_t cipher;
-	grub_uint8_t decrypted[32], mac[32];
-	cipher = grub_crypto_cipher_open (GRUB_CIPHER_AES);
-	if (!cipher)
-	  {
-	    grub_errno = GRUB_ERR_NONE;
-	    return 0;
-	  }
-	err = grub_crypto_cipher_set_key (cipher,
-					  (const grub_uint8_t *) wrap_key->key,
-					  keylen);
-	if (err)
-	  {
-	    grub_errno = GRUB_ERR_NONE;
-	    continue;
-	  }
-
-	err = grub_ccm_decrypt (cipher, decrypted, key->unknown_purpose_key, 32,
-				mac, key->unknown_purpose_nonce, 2, 16);
-	if (err || (grub_crypto_memcmp (mac, key->unknown_purpose_key + 32, 16)
-		    != 0))
-	  {
-	    grub_dprintf ("zfs", "key loading failed\n");
-	    grub_errno = GRUB_ERR_NONE;
-	    continue;
-	  }
-
-	err = grub_ccm_decrypt (cipher, decrypted, key->enc_key, keylen, mac,
-				key->enc_nonce, 2, 16);
-	if (err || grub_crypto_memcmp (mac, key->enc_key + keylen, 16) != 0)
-	  {
-	    grub_dprintf ("zfs", "key loading failed\n");
-	    grub_errno = GRUB_ERR_NONE;
-	    continue;
-	  }
-	subvol->cipher = grub_crypto_cipher_open (GRUB_CIPHER_AES);
-	if (!subvol->cipher)
-	  {
-	    grub_errno = GRUB_ERR_NONE;
-	    continue;
-	  }
-	err = grub_crypto_cipher_set_key (subvol->cipher, decrypted, keylen);
-	if (err)
-	  {
-	    grub_errno = GRUB_ERR_NONE;
-	    continue;
-	  }
-	return 0;
-      }
+    subvol->cipher = grub_zfs_load_key (val_in, nelem);
     return 0;
   }
 
@@ -2904,7 +2743,7 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
   grub_dprintf ("zfs", "endian = %d\n", subvol->mdn.endian);
 
   keychainobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&dn->dn))->keychain, dn->endian);
-  if (keychainobj)
+  if (grub_zfs_load_key && keychainobj)
     {
       dnode_end_t keychain_dn;
       err = dnode_get (&(data->mos), keychainobj, DMU_OT_DSL_KEYCHAIN,
@@ -2917,7 +2756,6 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 	}
       zap_iterate (&keychain_dn, iterate_zap_key, data);
     }
-
 
   if (snapname)
     {
@@ -3221,6 +3059,7 @@ zfs_unmount (struct grub_zfs_data *data)
   grub_free (data->dnode_buf);
   grub_free (data->dnode_mdn);
   grub_free (data->file_buf);
+  grub_crypto_cipher_close (data->subvol.cipher);
   grub_free (data);
 }
 
@@ -3236,7 +3075,7 @@ zfs_mount (grub_device_t dev)
   grub_err_t err;
   objset_phys_t *osp = 0;
   grub_size_t ospsize;
-  grub_zfs_endian_t ub_endian = UNKNOWN_ENDIAN;
+  grub_zfs_endian_t ub_endian = GRUB_ZFS_UNKNOWN_ENDIAN;
   uberblock_t *ub;
 
   if (! dev->disk)
@@ -3267,8 +3106,8 @@ zfs_mount (grub_device_t dev)
 
   ub = &(data->current_uberblock);
   ub_endian = (grub_zfs_to_cpu64 (ub->ub_magic, 
-				  LITTLE_ENDIAN) == UBERBLOCK_MAGIC 
-	       ? LITTLE_ENDIAN : BIG_ENDIAN);
+				  GRUB_ZFS_LITTLE_ENDIAN) == UBERBLOCK_MAGIC 
+	       ? GRUB_ZFS_LITTLE_ENDIAN : GRUB_ZFS_BIG_ENDIAN);
 
   err = zio_read (&ub->ub_rootbp, ub_endian,
 		  (void **) &osp, &ospsize, data);
@@ -3357,7 +3196,7 @@ static grub_err_t
 zfs_mtime (grub_device_t device, grub_int32_t *mt)
 {
   struct grub_zfs_data *data;
-  grub_zfs_endian_t ub_endian = UNKNOWN_ENDIAN;
+  grub_zfs_endian_t ub_endian = GRUB_ZFS_UNKNOWN_ENDIAN;
   uberblock_t *ub;
 
   *mt = 0;
@@ -3368,8 +3207,8 @@ zfs_mtime (grub_device_t device, grub_int32_t *mt)
 
   ub = &(data->current_uberblock);
   ub_endian = (grub_zfs_to_cpu64 (ub->ub_magic, 
-				  LITTLE_ENDIAN) == UBERBLOCK_MAGIC 
-	       ? LITTLE_ENDIAN : BIG_ENDIAN);
+				  GRUB_ZFS_LITTLE_ENDIAN) == UBERBLOCK_MAGIC 
+	       ? GRUB_ZFS_LITTLE_ENDIAN : GRUB_ZFS_BIG_ENDIAN);
 
   *mt = grub_zfs_to_cpu64 (ub->ub_timestamp, ub_endian);
   zfs_unmount (data);
