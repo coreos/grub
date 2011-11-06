@@ -167,7 +167,12 @@ struct subvolume
   dnode_end_t mdn;
   grub_uint64_t obj;
   grub_uint64_t case_insensitive;
-  grub_crypto_cipher_handle_t cipher;
+  grub_size_t nkeys;
+  struct
+  {
+    grub_crypto_cipher_handle_t cipher;
+    grub_uint64_t txg;
+  } *keyring;
 };
 
 struct grub_zfs_data
@@ -1503,9 +1508,37 @@ zio_read (blkptr_t *bp, grub_zfs_endian_t endian, void **buf,
       if (!grub_zfs_decrypt)
 	err = grub_error (GRUB_ERR_BAD_FS, "zfscrypt module not loaded");
       else
-	err = grub_zfs_decrypt (data->subvol.cipher, &(bp)->blk_dva[encrypted],
-				compbuf, psize, ((grub_uint32_t *) &zc + 5),
-				endian);
+	{
+	  unsigned i, besti = 0;
+	  grub_uint64_t bestval = 0;
+	  for (i = 0; i < data->subvol.nkeys; i++)
+	    if (data->subvol.keyring[i].txg <= grub_zfs_to_cpu64 (bp->blk_birth,
+								  endian)
+		&& data->subvol.keyring[i].txg > bestval)
+	      {
+		besti = i;
+		bestval = data->subvol.keyring[i].txg;
+	      }
+	  if (bestval == 0)
+	    {
+	      grub_free (compbuf);
+	      *buf = NULL;
+	      grub_dprintf ("zfs", "no key for txg %" PRIxGRUB_UINT64_T "\n",
+			    grub_zfs_to_cpu64 (bp->blk_birth,
+					       endian));
+	      return grub_error (GRUB_ERR_BAD_FS, "no key found in keychain");
+	    }
+	  grub_dprintf ("zfs", "using key %u (%" PRIxGRUB_UINT64_T 
+			", %p) for txg %" PRIxGRUB_UINT64_T "\n",
+			besti, data->subvol.keyring[besti].txg,
+			data->subvol.keyring[besti].cipher,
+			grub_zfs_to_cpu64 (bp->blk_birth,
+					   endian));
+	  err = grub_zfs_decrypt (data->subvol.keyring[besti].cipher,
+				  &(bp)->blk_dva[encrypted],
+				  compbuf, psize, ((grub_uint32_t *) &zc + 5),
+				  endian);
+	}
       if (err)
 	{
 	  grub_free (compbuf);
@@ -1896,7 +1929,9 @@ fzap_lookup (dnode_end_t * zap_dnode, zap_phys_t * zap,
 /* XXX */
 static int
 fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
-	      int NESTED_FUNC_ATTR (*hook) (const char *name,
+	      grub_size_t name_elem_length,
+	      int NESTED_FUNC_ATTR (*hook) (const void *name,
+					    grub_size_t name_length,
 					    const void *val_in,
 					    grub_size_t nelem,
 					    grub_size_t elemsize), 
@@ -1971,18 +2006,19 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
 	    if (le->le_type != ZAP_CHUNK_ENTRY)
 	      continue;
 
-	    buf = grub_malloc (grub_zfs_to_cpu16 (le->le_name_length, endian) 
-			       + 1);
+	    buf = grub_malloc (grub_zfs_to_cpu16 (le->le_name_length, endian)
+			       * name_elem_length + 1);
 	    if (zap_leaf_array_get (l, endian, blksft,
 				    grub_zfs_to_cpu16 (le->le_name_chunk,
 						       endian),
 				    grub_zfs_to_cpu16 (le->le_name_length,
-						       endian), buf))
+						       endian)
+				    * name_elem_length, buf))
 	      {
 		grub_free (buf);
 		continue;
 	      }
-	    buf[le->le_name_length] = 0;
+	    buf[le->le_name_length * name_elem_length] = 0;
 
 	    val_length = ((int) le->le_value_length
 			  * (int) le->le_int_size);
@@ -1997,7 +2033,8 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
 		continue;
 	      }
 
-	    if (hook (buf, val, le->le_value_length, le->le_int_size))
+	    if (hook (buf, le->le_name_length,
+		      val, le->le_value_length, le->le_int_size))
 	      return 1;
 	    grub_free (buf);
 	    grub_free (val);
@@ -2069,12 +2106,14 @@ zap_iterate_u64 (dnode_end_t * zap_dnode,
   int ret;
   grub_zfs_endian_t endian;
 
-  auto int NESTED_FUNC_ATTR transform (const char *name,
+  auto int NESTED_FUNC_ATTR transform (const void *name,
+				       grub_size_t namelen,
 				       const void *val_in,
 				       grub_size_t nelem,
 				       grub_size_t elemsize);
 
-  int NESTED_FUNC_ATTR transform (const char *name,
+  int NESTED_FUNC_ATTR transform (const void *name,
+				  grub_size_t namelen __attribute__ ((unused)),
 				  const void *val_in,
 				  grub_size_t nelem,
 				  grub_size_t elemsize)
@@ -2104,7 +2143,7 @@ zap_iterate_u64 (dnode_end_t * zap_dnode,
     {
       grub_dprintf ("zfs", "fat zap\n");
       /* this is a fat zap */
-      ret = fzap_iterate (zap_dnode, zapbuf, transform, data);
+      ret = fzap_iterate (zap_dnode, zapbuf, 1, transform, data);
       grub_free (zapbuf);
       return ret;
     }
@@ -2114,7 +2153,9 @@ zap_iterate_u64 (dnode_end_t * zap_dnode,
 
 static int
 zap_iterate (dnode_end_t * zap_dnode, 
-	     int NESTED_FUNC_ATTR (*hook) (const char *name,
+	     grub_size_t nameelemlen,
+	     int NESTED_FUNC_ATTR (*hook) (const void *name,
+					   grub_size_t namelen,
 					   const void *val_in,
 					   grub_size_t nelem,
 					   grub_size_t elemsize),
@@ -2145,7 +2186,7 @@ zap_iterate (dnode_end_t * zap_dnode,
     {
       grub_dprintf ("zfs", "fat zap\n");
       /* this is a fat zap */
-      ret = fzap_iterate (zap_dnode, zapbuf, hook, data);
+      ret = fzap_iterate (zap_dnode, zapbuf, nameelemlen, hook, data);
       grub_free (zapbuf);
       return ret;
     }
@@ -2660,17 +2701,41 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
   grub_uint64_t keychainobj;
   grub_uint64_t salt;
   grub_err_t err;
+  int keyn = 0;
 
-
-  auto int NESTED_FUNC_ATTR iterate_zap_key (const char *name,
-					     const void *val_in,
-					     grub_size_t nelem,
-					     grub_size_t elemsize);
-  int NESTED_FUNC_ATTR iterate_zap_key (const char *name __attribute__ ((unused)),
-					const void *val_in,
-					grub_size_t nelem,
-					grub_size_t elemsize)
+  auto int NESTED_FUNC_ATTR count_zap_keys (const void *name,
+					  grub_size_t namelen,
+					  const void *val_in,
+					  grub_size_t nelem,
+					  grub_size_t elemsize);
+  int NESTED_FUNC_ATTR count_zap_keys (const void *name __attribute__ ((unused)),
+				       grub_size_t namelen __attribute__ ((unused)),
+				       const void *val_in __attribute__ ((unused)),
+				       grub_size_t nelem __attribute__ ((unused)),
+				       grub_size_t elemsize __attribute__ ((unused)))
   {
+    subvol->nkeys++;
+    return 0;
+  }
+
+  auto int NESTED_FUNC_ATTR load_zap_key (const void *name,
+					  grub_size_t namelen,
+					  const void *val_in,
+					  grub_size_t nelem,
+					  grub_size_t elemsize);
+  int NESTED_FUNC_ATTR load_zap_key (const void *name,
+				     grub_size_t namelen,
+				     const void *val_in,
+				     grub_size_t nelem,
+				     grub_size_t elemsize)
+  {
+    if (namelen != 1)
+      {
+	grub_dprintf ("zfs", "Unexpected key index size %" PRIuGRUB_SIZE "\n",
+		      namelen);
+	return 0;
+      }
+
     if (elemsize != 1)
       {
 	grub_dprintf ("zfs", "Unexpected key element size %" PRIuGRUB_SIZE "\n",
@@ -2678,7 +2743,9 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 	return 0;
       }
 
-    subvol->cipher = grub_zfs_load_key (val_in, nelem, salt);
+    subvol->keyring[keyn].txg = grub_be_to_cpu64 (*(grub_uint64_t *) name);
+    subvol->keyring[keyn].cipher = grub_zfs_load_key (val_in, nelem, salt);
+    keyn++;
     return 0;
   }
 
@@ -2782,7 +2849,16 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 	  grub_free (snapname);
 	  return err;
 	}
-      zap_iterate (&keychain_dn, iterate_zap_key, data);
+      subvol->nkeys = 0;
+      zap_iterate (&keychain_dn, 8, count_zap_keys, data);
+      subvol->keyring = grub_zalloc (subvol->nkeys * sizeof (subvol->keyring[0]));
+      if (!subvol->keyring)
+	{
+	  grub_free (fsname);
+	  grub_free (snapname);
+	  return err;
+	}
+      zap_iterate (&keychain_dn, 8, load_zap_key, data);
     }
 
   if (snapname)
@@ -3087,7 +3163,9 @@ zfs_unmount (struct grub_zfs_data *data)
   grub_free (data->dnode_buf);
   grub_free (data->dnode_mdn);
   grub_free (data->file_buf);
-  grub_crypto_cipher_close (data->subvol.cipher);
+  for (i = 0; i < data->subvol.nkeys; i++)
+    grub_crypto_cipher_close (data->subvol.keyring[i].cipher);
+  grub_free (data->subvol.keyring);
   grub_free (data);
 }
 
