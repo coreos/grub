@@ -121,5 +121,7 @@ char *grub_zfs_nvlist_lookup_nvlist_array (const char *nvlist,
 					   grub_size_t index);
 int grub_zfs_nvlist_lookup_nvlist_array_get_nelm (const char *nvlist,
 						  const char *name);
+grub_err_t grub_zfs_add_key (grub_uint8_t *key_in);
+#define GRUB_ZFS_MAX_KEYLEN 32
 
 #endif	/* ! GRUB_ZFS_HEADER */

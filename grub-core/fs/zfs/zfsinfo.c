@@ -21,10 +21,12 @@
 #include <grub/device.h>
 #include <grub/file.h>
 #include <grub/command.h>
+#include <grub/extcmd.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/dl.h>
 #include <grub/env.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -389,14 +391,78 @@ grub_cmd_zfs_bootfs (grub_command_t cmd __attribute__ ((unused)), int argc,
   return GRUB_ERR_NONE;
 }
 
+static const struct grub_arg_option options[] =
+  {
+    {"raw", 'r', 0, N_("Assume input is raw."), 0, 0},
+    {"hex", 'h', 0, N_("Assume input is hex."), 0, 0},
+    {"passphrase", 'p', 0, N_("Assume input is passphrase."), 0, 0},
+    {0, 0, 0, 0, 0, 0}
+  };
+
+static grub_err_t
+grub_cmd_zfs_key (grub_extcmd_context_t ctxt, int argc, char **args)
+{
+  grub_uint8_t buf[1024];
+  grub_ssize_t real_size;
+
+  if (argc > 0)
+    {
+      grub_file_t file;
+      file = grub_file_open (args[0]);
+      if (!file)
+	return grub_errno;
+      real_size = grub_file_read (file, buf, 1024);
+      if (real_size < 0)
+	return grub_errno;
+    }
+  if (ctxt->state[0].set
+      || (argc > 0 && !ctxt->state[1].set && !ctxt->state[2].set))
+    {
+      grub_err_t err;
+      if (real_size < GRUB_ZFS_MAX_KEYLEN)
+	grub_memset (buf + real_size, 0, GRUB_ZFS_MAX_KEYLEN - real_size);
+      err = grub_zfs_add_key (buf);
+      if (err)
+	return err;
+      return GRUB_ERR_NONE;
+    }
+
+  if (ctxt->state[1].set)
+    {
+      int i;
+      grub_err_t err;
+      if (real_size < 2 * GRUB_ZFS_MAX_KEYLEN)
+	grub_memset (buf + real_size, '0', 2 * GRUB_ZFS_MAX_KEYLEN - real_size);
+      for (i = 0; i < GRUB_ZFS_MAX_KEYLEN; i++)
+	{
+	  char c1 = grub_tolower (buf[2 * i]) - '0';
+	  char c2 = grub_tolower (buf[2 * i + 1]) - '0';
+	  if (c1 > 9)
+	    c1 += '0' - 'a' + 10;
+	  if (c2 > 9)
+	    c2 += '0' - 'a' + 10;
+	  buf[i] = (c1 << 4) | c2;
+	}
+      err = grub_zfs_add_key (buf);
+      if (err)
+	return err;
+      return GRUB_ERR_NONE;
+    }
+  return GRUB_ERR_NONE;
+}
 
 static grub_command_t cmd_info, cmd_bootfs;
+static grub_extcmd_t cmd_key;
 
 GRUB_MOD_INIT (zfsinfo)
 {
   cmd_info = grub_register_command ("zfsinfo", grub_cmd_zfsinfo,
 				    "zfsinfo DEVICE",
 				    "Print ZFS info about DEVICE.");
+  cmd_key = grub_register_extcmd ("zfskey", grub_cmd_zfs_key, 0,
+				  "zfskey [-h|-p|-r] [FILE]",
+				  "Import ZFS wrapping key stored in FILE.",
+				  options);
   cmd_bootfs = grub_register_command ("zfs-bootfs", grub_cmd_zfs_bootfs,
 				      "zfs-bootfs FILESYSTEM [VARIABLE]",
 				      "Print ZFS-BOOTFSOBJ or set it to VARIABLE");
@@ -406,4 +472,5 @@ GRUB_MOD_FINI (zfsinfo)
 {
   grub_unregister_command (cmd_info);
   grub_unregister_command (cmd_bootfs);
+  grub_unregister_extcmd (cmd_key);
 }

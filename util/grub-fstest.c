@@ -33,6 +33,7 @@
 #include <grub/crypto.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/zfs/zfs.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -438,6 +439,7 @@ static struct argp_option options[] = {
   {"diskcount", 'c', "N",           0, N_("N input files."),                   2},
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
   {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
+  {"zfs-key-file",      'K', N_("KEY_FILENAME"), 0, N_("Load zfs crypto key."),                 2},
   {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("Print verbose messages."), 2},
   {"uncompress", 'u', NULL, OPTION_ARG_OPTIONAL, N_("Uncompress data."), 2},
   {0, 0, 0, 0, 0, 0}
@@ -460,6 +462,30 @@ argp_parser (int key, char *arg, struct argp_state *state)
     {
     case 'r':
       root = arg;
+      return 0;
+
+    case 'K':
+      {
+	FILE *f;
+	ssize_t real_size;
+	grub_uint8_t buf[GRUB_ZFS_MAX_KEYLEN];
+	f = fopen (arg, "rb");
+	if (!f)
+	  {
+	    printf ("Error loading file %s: %s\n", arg, strerror (errno));
+	    return 0;
+	  }
+	real_size = fread (buf, 1, GRUB_ZFS_MAX_KEYLEN, f);
+	if (real_size < 0)
+	  {
+	    printf ("Error loading file %s: %s\n", arg, strerror (errno));
+	    fclose (f);
+	    return 0;
+	  }
+	if (real_size < GRUB_ZFS_MAX_KEYLEN)
+	  grub_memset (buf + real_size, 0, GRUB_ZFS_MAX_KEYLEN - real_size);
+	grub_zfs_add_key (buf);
+      }
       return 0;
 
     case 'C':

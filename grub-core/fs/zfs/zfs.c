@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2009,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2009,2010,2011  Free Software Foundation, Inc.
  *  Copyright 2010  Sun Microsystems, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
@@ -142,6 +142,12 @@ struct grub_zfs_key
   grub_uint8_t unknown_purpose_key[48];
 };
 
+struct grub_zfs_wrap_key
+{
+  struct grub_zfs_wrap_key *next;
+  grub_uint64_t key[GRUB_ZFS_MAX_KEYLEN / 8];
+};
+
 extern grub_err_t lzjb_decompress (void *, void *, grub_size_t, grub_size_t);
 
 typedef grub_err_t zfs_decomp_func_t (void *s_start, void *d_start,
@@ -215,6 +221,21 @@ struct grub_zfs_data
   int mounted;
   grub_uint64_t guid;
 };
+
+static struct grub_zfs_wrap_key *zfs_wrap_keys;
+
+grub_err_t
+grub_zfs_add_key (grub_uint8_t *key_in)
+{
+  struct grub_zfs_wrap_key *key;
+  key = grub_malloc (sizeof (*key));
+  if (!key)
+    return grub_errno;
+  grub_memcpy (key->key, key_in, GRUB_ZFS_MAX_KEYLEN);
+  key->next = zfs_wrap_keys;
+  zfs_wrap_keys = key;
+  return GRUB_ERR_NONE;
+}
 
 static grub_err_t 
 zlib_decompress (void *s, void *d,
@@ -2747,9 +2768,8 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 					grub_size_t elemsize)
   {
     const struct grub_zfs_key *key = val_in;
-    grub_crypto_cipher_handle_t cipher;
-    grub_uint8_t wrapping_key[32], decrypted[32], mac[32];
     unsigned keylen;
+    struct grub_zfs_wrap_key *wrap_key;
 
     if (elemsize != 1 || nelem != sizeof (*key))
       {
@@ -2766,51 +2786,57 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
     else
       keylen = 32;
 
-    grub_memset (wrapping_key, 0, sizeof (wrapping_key));
+    for (wrap_key = zfs_wrap_keys; wrap_key; wrap_key = wrap_key->next)
+      {
+	grub_crypto_cipher_handle_t cipher;
+	grub_uint8_t decrypted[32], mac[32];
+	cipher = grub_crypto_cipher_open (GRUB_CIPHER_AES);
+	if (!cipher)
+	  {
+	    grub_errno = GRUB_ERR_NONE;
+	    return 0;
+	  }
+	err = grub_crypto_cipher_set_key (cipher,
+					  (const grub_uint8_t *) wrap_key->key,
+					  keylen);
+	if (err)
+	  {
+	    grub_errno = GRUB_ERR_NONE;
+	    continue;
+	  }
 
-    cipher = grub_crypto_cipher_open (GRUB_CIPHER_AES);
-    if (!cipher)
-      {
-	grub_errno = GRUB_ERR_NONE;
-	return 0;
-      }
-    err = grub_crypto_cipher_set_key (cipher, wrapping_key, keylen);
-    if (err)
-      {
-	grub_errno = GRUB_ERR_NONE;
-	return 0;
-      }
+	err = grub_ccm_decrypt (cipher, decrypted, key->unknown_purpose_key, 32,
+				mac, key->unknown_purpose_nonce, 2, 16);
+	if (err || (grub_crypto_memcmp (mac, key->unknown_purpose_key + 32, 16)
+		    != 0))
+	  {
+	    grub_dprintf ("zfs", "key loading failed\n");
+	    grub_errno = GRUB_ERR_NONE;
+	    continue;
+	  }
 
-    err = grub_ccm_decrypt (cipher, decrypted, key->unknown_purpose_key, 32,
-			    mac, key->unknown_purpose_nonce, 2, 16);
-    if (err || grub_crypto_memcmp (mac, key->unknown_purpose_key + 32, 16) != 0)
-      {
-	grub_dprintf ("zfs", "key loading failed\n");
-	grub_errno = GRUB_ERR_NONE;
+	err = grub_ccm_decrypt (cipher, decrypted, key->enc_key, keylen, mac,
+				key->enc_nonce, 2, 16);
+	if (err || grub_crypto_memcmp (mac, key->enc_key + keylen, 16) != 0)
+	  {
+	    grub_dprintf ("zfs", "key loading failed\n");
+	    grub_errno = GRUB_ERR_NONE;
+	    continue;
+	  }
+	subvol->cipher = grub_crypto_cipher_open (GRUB_CIPHER_AES);
+	if (!subvol->cipher)
+	  {
+	    grub_errno = GRUB_ERR_NONE;
+	    continue;
+	  }
+	err = grub_crypto_cipher_set_key (subvol->cipher, decrypted, keylen);
+	if (err)
+	  {
+	    grub_errno = GRUB_ERR_NONE;
+	    continue;
+	  }
 	return 0;
       }
-
-    err = grub_ccm_decrypt (cipher, decrypted, key->enc_key, keylen, mac,
-			    key->enc_nonce, 2, 16);
-    if (err || grub_crypto_memcmp (mac, key->enc_key + keylen, 16) != 0)
-      {
-	grub_dprintf ("zfs", "key loading failed\n");
-	grub_errno = GRUB_ERR_NONE;
-	return 0;
-      }
-    subvol->cipher = grub_crypto_cipher_open (GRUB_CIPHER_AES);
-    if (!subvol->cipher)
-      {
-	grub_errno = GRUB_ERR_NONE;
-	return 0;
-      }
-    err = grub_crypto_cipher_set_key (subvol->cipher, decrypted, keylen);
-    if (err)
-      {
-	grub_errno = GRUB_ERR_NONE;
-	return 0;
-      }
-    
     return 0;
   }
 
