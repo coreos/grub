@@ -1479,6 +1479,7 @@ zio_read (blkptr_t *bp, grub_zfs_endian_t endian, void **buf,
 
   if (comp != ZIO_COMPRESS_OFF)
     {
+      /* It's not really necessary to align to 16, just for safety.  */
       compbuf = grub_malloc (ALIGN_UP (psize, 16));
       if (! compbuf)
 	return grub_errno;
@@ -1877,9 +1878,6 @@ zap_verify (zap_phys_t *zap, grub_zfs_endian_t endian)
 {
   if (grub_zfs_to_cpu64 (zap->zap_magic, endian) != (grub_uint64_t) ZAP_MAGIC)
     return grub_error (GRUB_ERR_BAD_FS, "bad ZAP magic");
-
-  /*  if (zap->zap_flags != 0)
-      return grub_error (GRUB_ERR_BAD_FS, "bad ZAP flags");*/
 
   if (zap->zap_salt == 0)
     return grub_error (GRUB_ERR_BAD_FS, "bad ZAP salt");
