@@ -64,19 +64,27 @@ struct grub_zfs_key
 struct grub_zfs_wrap_key
 {
   struct grub_zfs_wrap_key *next;
-  grub_uint64_t key[GRUB_ZFS_MAX_KEYLEN / 8];
+  grub_size_t keylen;
+  int is_passphrase;
+  grub_uint64_t key[0];
 };
 
 static struct grub_zfs_wrap_key *zfs_wrap_keys;
 
 grub_err_t
-grub_zfs_add_key (grub_uint8_t *key_in)
+grub_zfs_add_key (grub_uint8_t *key_in,
+		  grub_size_t keylen,
+		  int passphrase)
 {
   struct grub_zfs_wrap_key *key;
-  key = grub_malloc (sizeof (*key));
+  if (!passphrase && keylen > 32)
+    keylen = 32;
+  key = grub_malloc (sizeof (*key) + keylen);
   if (!key)
     return grub_errno;
-  grub_memcpy (key->key, key_in, GRUB_ZFS_MAX_KEYLEN);
+  key->is_passphrase = passphrase;
+  key->keylen = keylen;
+  grub_memcpy (key->key, key_in, keylen);
   key->next = zfs_wrap_keys;
   zfs_wrap_keys = key;
   return GRUB_ERR_NONE;
@@ -168,7 +176,8 @@ grub_zfs_decrypt_real (grub_crypto_cipher_handle_t cipher, void *nonce,
 
 static grub_crypto_cipher_handle_t
 grub_zfs_load_key_real (const struct grub_zfs_key *key,
-			grub_size_t keysize)
+			grub_size_t keysize,
+			grub_uint64_t salt)
 {
   unsigned keylen;
   struct grub_zfs_wrap_key *wrap_key;
@@ -192,15 +201,25 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
   for (wrap_key = zfs_wrap_keys; wrap_key; wrap_key = wrap_key->next)
     {
       grub_crypto_cipher_handle_t cipher;
-      grub_uint8_t decrypted[32], mac[32];
+      grub_uint8_t decrypted[32], mac[32], wrap_key_real[32];
       cipher = grub_crypto_cipher_open (GRUB_CIPHER_AES);
       if (!cipher)
 	{
 	  grub_errno = GRUB_ERR_NONE;
 	  return 0;
 	}
-      err = grub_crypto_cipher_set_key (cipher,
-					(const grub_uint8_t *) wrap_key->key,
+      grub_memset (wrap_key_real, 0, sizeof (wrap_key_real));
+      if (!wrap_key->is_passphrase)
+	grub_memcpy(wrap_key_real, wrap_key->key,
+		    wrap_key->keylen < keylen ? wrap_key->keylen : keylen);
+      else
+	grub_crypto_pbkdf2 (GRUB_MD_SHA1,
+			    (const grub_uint8_t *) wrap_key->key,
+			    wrap_key->keylen,
+			    (const grub_uint8_t *) &salt, sizeof (salt),
+			    1000, wrap_key_real, keylen);
+		    
+      err = grub_crypto_cipher_set_key (cipher, wrap_key_real,
 					keylen);
       if (err)
 	{
@@ -268,25 +287,19 @@ grub_cmd_zfs_key (grub_extcmd_context_t ctxt, int argc, char **args)
       if (real_size < 0)
 	return grub_errno;
     }
-  if (ctxt->state[0].set
-      || (argc > 0 && !ctxt->state[1].set && !ctxt->state[2].set))
+  else
     {
-      grub_err_t err;
-      if (real_size < GRUB_ZFS_MAX_KEYLEN)
-	grub_memset (buf + real_size, 0, GRUB_ZFS_MAX_KEYLEN - real_size);
-      err = grub_zfs_add_key (buf);
-      if (err)
-	return err;
-      return GRUB_ERR_NONE;
+      grub_printf ("Enter ZFS password: ");
+      if (!grub_password_get ((char *) buf, 1023))
+	return grub_errno;
+      real_size = grub_strlen ((char *) buf);
     }
 
   if (ctxt->state[1].set)
     {
       int i;
       grub_err_t err;
-      if (real_size < 2 * GRUB_ZFS_MAX_KEYLEN)
-	grub_memset (buf + real_size, '0', 2 * GRUB_ZFS_MAX_KEYLEN - real_size);
-      for (i = 0; i < GRUB_ZFS_MAX_KEYLEN; i++)
+      for (i = 0; i < real_size / 2; i++)
 	{
 	  char c1 = grub_tolower (buf[2 * i]) - '0';
 	  char c2 = grub_tolower (buf[2 * i + 1]) - '0';
@@ -296,12 +309,16 @@ grub_cmd_zfs_key (grub_extcmd_context_t ctxt, int argc, char **args)
 	    c2 += '0' - 'a' + 10;
 	  buf[i] = (c1 << 4) | c2;
 	}
-      err = grub_zfs_add_key (buf);
+      err = grub_zfs_add_key (buf, real_size / 2, 0);
       if (err)
 	return err;
       return GRUB_ERR_NONE;
     }
-  return GRUB_ERR_NONE;
+
+  return grub_zfs_add_key (buf, real_size,
+			   ctxt->state[2].set
+			   || (argc == 0 && !ctxt->state[0].set
+			       && !ctxt->state[1].set));
 }
 
 static grub_extcmd_t cmd_key;

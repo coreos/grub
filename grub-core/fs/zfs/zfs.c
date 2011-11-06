@@ -205,7 +205,8 @@ grub_err_t (*grub_zfs_decrypt) (grub_crypto_cipher_handle_t cipher,
 				const grub_uint32_t *expected_mac,
 				grub_zfs_endian_t endian) = NULL;
 grub_crypto_cipher_handle_t (*grub_zfs_load_key) (const struct grub_zfs_key *key,
-						  grub_size_t keysize) = NULL;
+						  grub_size_t keysize,
+						  grub_uint64_t salt) = NULL;
 
 static grub_err_t 
 zlib_decompress (void *s, void *d,
@@ -1500,7 +1501,7 @@ zio_read (blkptr_t *bp, grub_zfs_endian_t endian, void **buf,
   if (encrypted)
     {
       if (!grub_zfs_decrypt)
-	err = grub_error (GRUB_ERR_BAD_FS, "zfscrypto module not loaded");
+	err = grub_error (GRUB_ERR_BAD_FS, "zfscrypt module not loaded");
       else
 	err = grub_zfs_decrypt (data->subvol.cipher, &(bp)->blk_dva[encrypted],
 				compbuf, psize, ((grub_uint32_t *) &zc + 5),
@@ -2657,7 +2658,9 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
   const char *ptr_at, *filename;
   grub_uint64_t headobj;
   grub_uint64_t keychainobj;
+  grub_uint64_t salt;
   grub_err_t err;
+
 
   auto int NESTED_FUNC_ATTR iterate_zap_key (const char *name,
 					     const void *val_in,
@@ -2675,7 +2678,7 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 	return 0;
       }
 
-    subvol->cipher = grub_zfs_load_key (val_in, nelem);
+    subvol->cipher = grub_zfs_load_key (val_in, nelem, salt);
     return 0;
   }
 
@@ -2745,7 +2748,32 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
   keychainobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&dn->dn))->keychain, dn->endian);
   if (grub_zfs_load_key && keychainobj)
     {
-      dnode_end_t keychain_dn;
+      dnode_end_t keychain_dn, props_dn;
+      grub_uint64_t propsobj;
+      propsobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&dn->dn))->dd_props_zapobj, dn->endian);
+
+      err = dnode_get (&(data->mos), propsobj, DMU_OT_DSL_PROPS,
+		       &props_dn, data);
+      if (err)
+	{
+	  grub_free (fsname);
+	  grub_free (snapname);
+	  return err;
+	}
+
+      err = zap_lookup (&props_dn, "salt", &salt, data, 0);
+      if (err == GRUB_ERR_FILE_NOT_FOUND)
+	{
+	  err = 0;
+	  grub_errno = 0;
+	  salt = 0;
+	}
+      if (err)
+	{
+	  grub_dprintf ("zfs", "failed here\n");
+	  return err;
+	}
+
       err = dnode_get (&(data->mos), keychainobj, DMU_OT_DSL_KEYCHAIN,
 		       &keychain_dn, data);
       if (err)

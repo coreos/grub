@@ -129,8 +129,10 @@ char *grub_zfs_nvlist_lookup_nvlist_array (const char *nvlist,
 					   grub_size_t index);
 int grub_zfs_nvlist_lookup_nvlist_array_get_nelm (const char *nvlist,
 						  const char *name);
-grub_err_t grub_zfs_add_key (grub_uint8_t *key_in);
-#define GRUB_ZFS_MAX_KEYLEN 32
+grub_err_t
+grub_zfs_add_key (grub_uint8_t *key_in,
+		  grub_size_t keylen,
+		  int passphrase);
 
 extern grub_err_t (*grub_zfs_decrypt) (grub_crypto_cipher_handle_t cipher,
 				       void *nonce,
@@ -141,7 +143,8 @@ extern grub_err_t (*grub_zfs_decrypt) (grub_crypto_cipher_handle_t cipher,
 struct grub_zfs_key;
 
 extern grub_crypto_cipher_handle_t (*grub_zfs_load_key) (const struct grub_zfs_key *key,
-							 grub_size_t keysize);
+							 grub_size_t keysize,
+							 grub_uint64_t salt);
 
 
 
