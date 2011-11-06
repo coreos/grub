@@ -172,6 +172,7 @@ struct subvolume
   {
     grub_crypto_cipher_handle_t cipher;
     grub_uint64_t txg;
+    grub_uint64_t algo;
   } *keyring;
 };
 
@@ -205,13 +206,15 @@ struct grub_zfs_data
 };
 
 grub_err_t (*grub_zfs_decrypt) (grub_crypto_cipher_handle_t cipher,
+				grub_uint64_t algo,
 				void *nonce,
 				char *buf, grub_size_t size,
 				const grub_uint32_t *expected_mac,
 				grub_zfs_endian_t endian) = NULL;
 grub_crypto_cipher_handle_t (*grub_zfs_load_key) (const struct grub_zfs_key *key,
 						  grub_size_t keysize,
-						  grub_uint64_t salt) = NULL;
+						  grub_uint64_t salt,
+						  grub_uint64_t algo) = NULL;
 
 static grub_err_t 
 zlib_decompress (void *s, void *d,
@@ -1535,6 +1538,7 @@ zio_read (blkptr_t *bp, grub_zfs_endian_t endian, void **buf,
 			grub_zfs_to_cpu64 (bp->blk_birth,
 					   endian));
 	  err = grub_zfs_decrypt (data->subvol.keyring[besti].cipher,
+				  data->subvol.keyring[besti].algo,
 				  &(bp)->blk_dva[encrypted],
 				  compbuf, psize, ((grub_uint32_t *) &zc + 5),
 				  endian);
@@ -2744,7 +2748,9 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
       }
 
     subvol->keyring[keyn].txg = grub_be_to_cpu64 (*(grub_uint64_t *) name);
-    subvol->keyring[keyn].cipher = grub_zfs_load_key (val_in, nelem, salt);
+    subvol->keyring[keyn].algo = grub_le_to_cpu64 (*(grub_uint64_t *) val_in);
+    subvol->keyring[keyn].cipher = grub_zfs_load_key (val_in, nelem, salt,
+						      subvol->keyring[keyn].algo);
     keyn++;
     return 0;
   }

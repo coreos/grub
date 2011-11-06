@@ -135,6 +135,7 @@ grub_zfs_add_key (grub_uint8_t *key_in,
 		  int passphrase);
 
 extern grub_err_t (*grub_zfs_decrypt) (grub_crypto_cipher_handle_t cipher,
+				       grub_uint64_t algo,
 				       void *nonce,
 				       char *buf, grub_size_t size,
 				       const grub_uint32_t *expected_mac,
@@ -144,7 +145,8 @@ struct grub_zfs_key;
 
 extern grub_crypto_cipher_handle_t (*grub_zfs_load_key) (const struct grub_zfs_key *key,
 							 grub_size_t keysize,
-							 grub_uint64_t salt);
+							 grub_uint64_t salt,
+							 grub_uint64_t algo);
 
 
 

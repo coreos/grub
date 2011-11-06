@@ -141,8 +141,132 @@ grub_ccm_decrypt (grub_crypto_cipher_handle_t cipher,
   return GRUB_ERR_NONE;
 }
 
+static void
+grub_gcm_mul_x (grub_uint8_t *a)
+{
+  int i;
+  int c = 0, d = 0;
+  for (i = 0; i < 16; i++)
+    {
+      c = a[i] & 0x1;
+      a[i] = (a[i] >> 1) | (d << 7);
+      d = c;
+    }
+  if (d)
+    a[0] ^= 0xe1;
+}
+
+static void
+grub_gcm_mul (grub_uint8_t *a, const grub_uint8_t *b)
+{
+  grub_uint8_t res[16], bs[16];
+  int i;
+  grub_memcpy (bs, b, 16);
+  grub_memset (res, 0, 16);
+  for (i = 0; i < 128; i++)
+    {
+      if ((a[i / 8] << (i % 8)) & 0x80)
+	grub_crypto_xor (res, res, bs, 16);
+      grub_gcm_mul_x (bs);
+    }
+ 
+  grub_memcpy (a, res, 16);
+}
+
 static grub_err_t
-grub_zfs_decrypt_real (grub_crypto_cipher_handle_t cipher, void *nonce,
+grub_gcm_decrypt (grub_crypto_cipher_handle_t cipher,
+		  grub_uint8_t *out, const grub_uint8_t *in,
+		  grub_size_t psize,
+		  void *mac_out, const void *nonce,
+		  unsigned nonce_len, unsigned m)
+{
+  grub_uint8_t iv[16];
+  grub_uint8_t mul[16];
+  grub_uint8_t mac[16], h[16], mac_xor[16];
+  unsigned i, j;
+  grub_err_t err;
+
+  grub_memset (mac, 0, sizeof (mac));
+
+  err = grub_crypto_ecb_encrypt (cipher, h, mac, 16);
+  if (err)
+    return err;
+
+  if (nonce_len == 12)
+    {
+      grub_memcpy (iv, nonce, 12);
+      iv[12] = 0;
+      iv[13] = 0;
+      iv[14] = 0;
+      iv[15] = 1;
+    }
+  else
+    {
+      grub_memset (iv, 0, sizeof (iv));
+      grub_memcpy (iv, nonce, nonce_len);
+      grub_gcm_mul (iv, h);
+      iv[15] ^= nonce_len * 8;
+      grub_gcm_mul (iv, h);
+    }
+
+  err = grub_crypto_ecb_encrypt (cipher, mac_xor, iv, 16);
+  if (err)
+    return err;
+
+  for (i = 0; i < (psize + 15) / 16; i++)
+    {
+      grub_size_t csize;
+      csize = 16;
+      if (csize > psize - 16 * i)
+	csize = psize - 16 * i;
+      for (j = 0; j < 4; j++)
+	{
+	  iv[15 - j]++;
+	  if (iv[15 - j] != 0)
+	    break;
+	}
+      grub_crypto_xor (mac, mac, in + 16 * i, csize);
+      grub_gcm_mul (mac, h);
+      err = grub_crypto_ecb_encrypt (cipher, mul, iv, 16);
+      if (err)
+	return err;
+      grub_crypto_xor (out + 16 * i, in + 16 * i, mul, csize);
+    }
+  for (j = 0; j < 8; j++)
+    mac[15 - j] ^= ((psize * 8) >> (8 * j));
+  grub_gcm_mul (mac, h);
+
+  if (mac_out)
+    grub_crypto_xor (mac_out, mac, mac_xor, m);
+
+  return GRUB_ERR_NONE;
+}
+
+
+static grub_err_t
+algo_decrypt (grub_crypto_cipher_handle_t cipher, grub_uint64_t algo,
+	      grub_uint8_t *out, const grub_uint8_t *in,
+	      grub_size_t psize,
+	      void *mac_out, const void *nonce,
+	      unsigned l, unsigned m)
+{
+  switch (algo)
+    {
+    case 0:
+      return grub_ccm_decrypt (cipher, out, in, psize, mac_out, nonce, l, m);
+    case 1:
+      return grub_gcm_decrypt (cipher, out, in, psize, mac_out, nonce,
+			       15 - l, m);
+    default:
+      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "algorithm %" 
+			 PRIuGRUB_UINT64_T " is not supported yet", algo);
+    }
+}
+
+static grub_err_t
+grub_zfs_decrypt_real (grub_crypto_cipher_handle_t cipher, 
+		       grub_uint64_t algo,
+		       void *nonce,
 		       char *buf, grub_size_t size,
 		       const grub_uint32_t *expected_mac,
 		       grub_zfs_endian_t endian)
@@ -159,11 +283,11 @@ grub_zfs_decrypt_real (grub_crypto_cipher_handle_t cipher, void *nonce,
   if (!cipher)
     return grub_error (GRUB_ERR_ACCESS_DENIED,
 		       "no decryption key available");;
-  err = grub_ccm_decrypt (cipher,
-			  (grub_uint8_t *) buf,
-			  (grub_uint8_t *) buf,
-			  size, mac,
-			  sw + 1, 3, 12);
+  err = algo_decrypt (cipher, algo,
+		      (grub_uint8_t *) buf,
+		      (grub_uint8_t *) buf,
+		      size, mac,
+		      sw + 1, 3, 12);
   if (err)
     return err;
   
@@ -177,7 +301,8 @@ grub_zfs_decrypt_real (grub_crypto_cipher_handle_t cipher, void *nonce,
 static grub_crypto_cipher_handle_t
 grub_zfs_load_key_real (const struct grub_zfs_key *key,
 			grub_size_t keysize,
-			grub_uint64_t salt)
+			grub_uint64_t salt,
+			grub_uint64_t algo)
 {
   unsigned keylen;
   struct grub_zfs_wrap_key *wrap_key;
@@ -227,8 +352,8 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
 	  continue;
 	}
       
-      err = grub_ccm_decrypt (cipher, decrypted, key->unknown_purpose_key, 32,
-			      mac, key->unknown_purpose_nonce, 2, 16);
+      err = algo_decrypt (cipher, algo, decrypted, key->unknown_purpose_key, 32,
+			  mac, key->unknown_purpose_nonce, 2, 16);
       if (err || (grub_crypto_memcmp (mac, key->unknown_purpose_key + 32, 16)
 		  != 0))
 	{
@@ -237,8 +362,8 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
 	  continue;
 	}
 
-      err = grub_ccm_decrypt (cipher, decrypted, key->enc_key, keylen, mac,
-			      key->enc_nonce, 2, 16);
+      err = algo_decrypt (cipher, algo, decrypted, key->enc_key, keylen, mac,
+			  key->enc_nonce, 2, 16);
       if (err || grub_crypto_memcmp (mac, key->enc_key + keylen, 16) != 0)
 	{
 	  grub_dprintf ("zfs", "key loading failed\n");
