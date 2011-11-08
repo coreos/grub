@@ -154,6 +154,7 @@ case "$host_os" in
   linux*)			host_kernel=linux ;;
   freebsd* | kfreebsd*-gnu)	host_kernel=kfreebsd ;;
   netbsd*)			host_kernel=netbsd ;;
+  solaris*)			host_kernel=illumos ;;
   cygwin)			host_kernel=windows ;;
 esac
 
@@ -974,6 +975,7 @@ AM_CONDITIONAL([COND_HOST_LINUX], [test x$host_kernel = xlinux])
 AM_CONDITIONAL([COND_HOST_NETBSD], [test x$host_kernel = xnetbsd])
 AM_CONDITIONAL([COND_HOST_WINDOWS], [test x$host_kernel = xwindows])
 AM_CONDITIONAL([COND_HOST_KFREEBSD], [test x$host_kernel = xkfreebsd])
+AM_CONDITIONAL([COND_HOST_ILLUMOS], [test x$host_kernel = xillumos])
 
 AM_CONDITIONAL([COND_MAN_PAGES], [test x$cross_compiling = xno -a x$HELP2MAN != x])
 AM_CONDITIONAL([COND_GRUB_EMU_USB], [test x$enable_grub_emu_usb = xyes])

@@ -368,6 +368,13 @@ script = {
 };
 
 script = {
+  name = '10_illumos';
+  common = util/grub.d/10_illumos.in;
+  installdir = grubconf;
+  condition = COND_HOST_ILLUMOS;
+};
+
+script = {
   name = '10_netbsd';
   common = util/grub.d/10_netbsd.in;
   installdir = grubconf;

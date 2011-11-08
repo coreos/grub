@@ -98,6 +98,10 @@ struct hd_geometry
 # define FLOPPY_MAJOR	2
 #endif
 
+#if defined (__sun__)
+# include <sys/dkio.h>
+#endif
+
 #if defined(__APPLE__)
 # include <sys/disk.h>
 #endif
@@ -252,11 +256,11 @@ grub_util_biosdisk_iterate (int (*hook) (const char *name),
 grub_uint64_t
 grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
 {
-#if defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
-  defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
 # if defined(__NetBSD__)
   struct disklabel label;
-# else
+# elif defined (__sun__)
+  struct dk_minfo minfo;
+#else
   unsigned long long nr;
 # endif
   unsigned sector_size, log_sector_size;
@@ -265,7 +269,11 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
   if (fstat (fd, &st) < 0)
     grub_util_error ("fstat failed");
 
-# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
+#if defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
+  defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) \
+  || defined (__sun__)
+
+# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) || defined (__sun__)
   if (! S_ISCHR (st.st_mode))
 # else
   if (! S_ISBLK (st.st_mode))
@@ -279,6 +287,8 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
 # elif defined(__NetBSD__)
     configure_device_driver (fd);
     if (ioctl (fd, DIOCGDINFO, &label) == -1)
+# elif defined (__sun__)
+    if (!ioctl (fd, DKIOCGMEDIAINFO, &minfo))
 # else
     if (ioctl (fd, BLKGETSIZE64, &nr))
 # endif
@@ -287,13 +297,14 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     if (ioctl (fd, DIOCGSECTORSIZE, &sector_size))
       goto fail;
+# elif defined(__sun__)
+    sector_size = minfo.dki_lbsize;
 # elif defined(__NetBSD__)
     sector_size = label.d_secsize;
 # else
     if (ioctl (fd, BLKSSZGET, &sector_size))
       goto fail;
 # endif
-
     if (sector_size & (sector_size - 1) || !sector_size)
       goto fail;
     for (log_sector_size = 0;
@@ -307,6 +318,8 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
     return nr;
 # elif defined(__NetBSD__)
     return label.d_secperunit;
+# elif defined (__sun__)
+    return minfo.dki_capacity;
 # else
     if (nr & ((1 << log_sector_size) - 1))
       grub_util_error ("unaligned device size");
@@ -315,10 +328,14 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
 # endif
 
  fail:
+
   /* In GNU/Hurd, stat() will return the right size.  */
 #elif !defined (__GNU__)
 # warning "No special routine to get the size of a block device is implemented for your OS. This is not possibly fatal."
 #endif
+
+  sector_size = 512;
+  log_sector_size = 9;
 
   if (log_secsize)
    *log_secsize = 9;
@@ -419,12 +436,14 @@ find_partition_start (const char *dev)
   return out;
 }
 
-#elif defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO)
+#elif defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO) || defined (__sun__)
 static grub_disk_addr_t
 find_partition_start (const char *dev)
 {
   int fd;
-# if !defined(HAVE_DIOCGDINFO)
+#ifdef __sun__
+  struct extpart_info pinfo;
+# elif !defined(HAVE_DIOCGDINFO)
   struct hd_geometry hdg;
 # else /* defined(HAVE_DIOCGDINFO) */
   struct disklabel label;
@@ -511,7 +530,9 @@ devmapper_fail:
       return 0;
     }
 
-# if !defined(HAVE_DIOCGDINFO)
+#if defined(__sun__)
+  if (ioctl (fd, DKIOCEXTPARTINFO, &pinfo))
+# elif !defined(HAVE_DIOCGDINFO)
   if (ioctl (fd, HDIO_GETGEO, &hdg))
 # else /* defined(HAVE_DIOCGDINFO) */
 #  if defined(__NetBSD__)
@@ -532,7 +553,9 @@ devmapper_fail:
 
   close (fd);
 
-# if !defined(HAVE_DIOCGDINFO)
+#ifdef __sun__
+  return pinfo.p_start;
+# elif !defined(HAVE_DIOCGDINFO)
   return hdg.start;
 # else /* defined(HAVE_DIOCGDINFO) */
   if (dev[0])
@@ -1568,11 +1591,36 @@ devmapper_out:
     }
   return path;
 
+#elif defined (__sun__)
+  char *colon = grub_strrchr (os_dev, ':');
+  if (grub_memcmp (os_dev, "/devices", sizeof ("/devices") - 1) == 0
+      && colon)
+    {
+      char *ret = xmalloc (colon - os_dev + sizeof (":q,raw"));
+      grub_memcpy (ret, os_dev, colon - os_dev);
+      grub_memcpy (ret + (colon - os_dev), ":q,raw", sizeof (":q,raw"));
+      return ret;
+    }
+  else
+    return xstrdup (os_dev);
 #else
 # warning "The function `convert_system_partition_to_system_disk' might not work on your OS correctly."
   return xstrdup (os_dev);
 #endif
 }
+
+#if defined(__sun__)
+static int
+device_is_wholedisk (const char *os_dev)
+{
+  if (grub_memcmp (os_dev, "/devices/", sizeof ("/devices/") - 1) != 0)
+    return 1;
+  if (grub_memcmp (os_dev + strlen (os_dev) - (sizeof (":q,raw") - 1),
+		   ":q,raw", (sizeof (":q,raw") - 1)) == 0)
+    return 1;
+  return 0;
+}
+#endif
 
 #if defined(__linux__) || defined(__CYGWIN__)
 static int
@@ -1700,14 +1748,14 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 		   convert_system_partition_to_system_disk (os_dev, &st)) == 0)
     return make_device_name (drive, -1, -1);
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) || defined (__sun__)
   if (! S_ISCHR (st.st_mode))
 #else
   if (! S_ISBLK (st.st_mode))
 #endif
     return make_device_name (drive, -1, -1);
 
-#if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined (__sun__)
 
   /* Linux counts partitions uniformly, whether a BSD partition or a DOS
      partition, so mapping them to GRUB devices is not trivial.
@@ -1747,7 +1795,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
     name = make_device_name (drive, -1, -1);
 
-# if !defined(HAVE_DIOCGDINFO)
+# if !defined(HAVE_DIOCGDINFO) && !defined(__sun__)
     if (MAJOR (st.st_rdev) == FLOPPY_MAJOR)
       return name;
 # else /* defined(HAVE_DIOCGDINFO) */

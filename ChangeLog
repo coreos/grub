@@ -1,5 +1,22 @@
 2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Illumos support.
+
+	* Makefile.util.def (10_illumos): New script.
+	* configure.ac: Set COND_HOST_ILLUMOS.
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors) [__sun__]:
+	Support Illumos calls.
+	(find_partition_start) [__sun__]: Likewise.
+	(convert_system_partition_to_system_disk) [__sun__]: Likewise.
+	(device_is_wholedisk) [__sun__]: Handle Illumos naming scheme.
+	(grub_util_biosdisk_get_grub_dev) [__sun__]: Handle Illumos.
+	* util/getroot.c (find_root_device_from_libzfs) [__sun__]: Return raw
+	device.
+	* util/grub-probe.c (probe) [__sun__]: Do character check.
+	* util/grub.d/10_illumos.in: New file.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support escaped commas in hostdisk.
 
 	* grub-core/kern/emu/hostdisk.c (unescape_cmp): New function.

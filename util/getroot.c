@@ -61,6 +61,11 @@
 # include <grub/util/libnvpair.h>
 #endif
 
+#ifdef __sun__
+# include <sys/types.h>
+# include <sys/mkdev.h>
+#endif
+
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/emu/misc.h>
@@ -289,7 +294,19 @@ find_root_device_from_libzfs (const char *dir)
 	struct stat st;
 	if (stat (device, &st) == 0)
 	  {
-	    device = xstrdup (device);
+#ifdef __sun__
+	    if (grub_memcmp (device, "/dev/dsk/", sizeof ("/dev/dsk/") - 1)
+		== 0)
+	      device = xasprintf ("/dev/rdsk/%s",
+				  device + sizeof ("/dev/dsk/") - 1);
+	    else if (grub_memcmp (device, "/devices", sizeof ("/devices") - 1)
+		     == 0
+		     && grub_memcmp (device + strlen (device) - 4,
+				     ",raw", 4) != 0)
+	      device = xasprintf ("%s,raw", device);
+	    else
+#endif
+	      device = xstrdup (device);
 	    break;
 	  }
 
