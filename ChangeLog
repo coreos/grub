@@ -1,5 +1,14 @@
 2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix ZFS crypto error types.
+
+	* grub-core/fs/zfs/zfscrypt.c (grub_ccm_decrypt): Fix return type.
+	(grub_gcm_decrypt): Likewise.
+	(grub_zfs_load_key_real): Fix error code type. Handle possible error
+	from PBKDF2.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Illumos support.
 
 	* Makefile.util.def (10_illumos): New script.

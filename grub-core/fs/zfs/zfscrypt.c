@@ -90,7 +90,7 @@ grub_zfs_add_key (grub_uint8_t *key_in,
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t
+static gcry_err_code_t
 grub_ccm_decrypt (grub_crypto_cipher_handle_t cipher,
 		  grub_uint8_t *out, const grub_uint8_t *in,
 		  grub_size_t psize,
@@ -101,7 +101,7 @@ grub_ccm_decrypt (grub_crypto_cipher_handle_t cipher,
   grub_uint8_t mul[16];
   grub_uint32_t mac[4];
   unsigned i, j;
-  grub_err_t err;
+  gcry_err_code_t err;
 
   grub_memcpy (iv + 1, nonce, 15 - l);
 
@@ -173,7 +173,7 @@ grub_gcm_mul (grub_uint8_t *a, const grub_uint8_t *b)
   grub_memcpy (a, res, 16);
 }
 
-static grub_err_t
+static gcry_err_code_t
 grub_gcm_decrypt (grub_crypto_cipher_handle_t cipher,
 		  grub_uint8_t *out, const grub_uint8_t *in,
 		  grub_size_t psize,
@@ -184,7 +184,7 @@ grub_gcm_decrypt (grub_crypto_cipher_handle_t cipher,
   grub_uint8_t mul[16];
   grub_uint8_t mac[16], h[16], mac_xor[16];
   unsigned i, j;
-  grub_err_t err;
+  gcry_err_code_t err;
 
   grub_memset (mac, 0, sizeof (mac));
 
@@ -243,7 +243,7 @@ grub_gcm_decrypt (grub_crypto_cipher_handle_t cipher,
 }
 
 
-static grub_err_t
+static gcry_err_code_t
 algo_decrypt (grub_crypto_cipher_handle_t cipher, grub_uint64_t algo,
 	      grub_uint8_t *out, const grub_uint8_t *in,
 	      grub_size_t psize,
@@ -307,7 +307,6 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
   unsigned keylen;
   struct grub_zfs_wrap_key *wrap_key;
   grub_crypto_cipher_handle_t ret = NULL;
-  grub_err_t err;
 
   if (keysize != sizeof (*key))
     {
@@ -327,6 +326,7 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
     {
       grub_crypto_cipher_handle_t cipher;
       grub_uint8_t decrypted[32], mac[32], wrap_key_real[32];
+      gcry_err_code_t err;
       cipher = grub_crypto_cipher_open (GRUB_CIPHER_AES);
       if (!cipher)
 	{
@@ -334,15 +334,21 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
 	  return 0;
 	}
       grub_memset (wrap_key_real, 0, sizeof (wrap_key_real));
+      err = 0;
       if (!wrap_key->is_passphrase)
 	grub_memcpy(wrap_key_real, wrap_key->key,
 		    wrap_key->keylen < keylen ? wrap_key->keylen : keylen);
       else
-	grub_crypto_pbkdf2 (GRUB_MD_SHA1,
-			    (const grub_uint8_t *) wrap_key->key,
-			    wrap_key->keylen,
-			    (const grub_uint8_t *) &salt, sizeof (salt),
-			    1000, wrap_key_real, keylen);
+	err = grub_crypto_pbkdf2 (GRUB_MD_SHA1,
+				  (const grub_uint8_t *) wrap_key->key,
+				  wrap_key->keylen,
+				  (const grub_uint8_t *) &salt, sizeof (salt),
+				  1000, wrap_key_real, keylen);
+      if (err)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
 		    
       err = grub_crypto_cipher_set_key (cipher, wrap_key_real,
 					keylen);
