@@ -1,5 +1,12 @@
 2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/LzmaEnc.c (LzmaEnc_CodeOneBlock): Remove set but not
+	used variable.
+	* grub-core/kern/ia64/dl_helper.c (grub_ia64_dl_get_tramp_got_size):
+	Likewise.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix potential problem with calling zfs_to_cpu and cpu_to_be in a row.
 
 	* grub-core/fs/zfs/zfscrypt.c (grub_zfs_decrypt_real): Use explicit
