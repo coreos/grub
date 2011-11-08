@@ -160,7 +160,7 @@ while [ "x$list" != "x" ] ; do
 			# zpool name
 			kfreebsd_device=$(grub-probe -t fs_label --device ${GRUB_DEVICE})
 			# filesystem name (empty string for the main filesystem)
-			kfreebsd_device="${kfreebsd_device}$(grub-mkrelpath / | sed -e "s,/*@$,,")"
+			kfreebsd_device="${kfreebsd_device}$(${grub_mkrelpath} / | sed -e "s,/*@$,,")"
     ;;
     *)
 	  kfreebsd_device=${kfreebsd_fs}id/${GRUB_DEVICE_UUID}

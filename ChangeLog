@@ -1,5 +1,9 @@
 2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/10_kfreebsd.in: Use ${grub_mkrelpath} not grub-mkrelpath.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (zap_iterate): Remove set but not used
 	variable.
 
