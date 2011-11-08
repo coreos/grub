@@ -233,7 +233,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
   unsigned i;
   Elf_Shdr *s;
   grub_size_t tsize = 0, talign = 1;
-#ifdef __ia64__
+#if defined (__ia64__) || defined (__powerpc__)
   grub_size_t tramp;
   grub_size_t got;
 #endif
@@ -248,9 +248,9 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	talign = s->sh_addralign;
     }
 
-#ifdef __ia64__
+#if defined (__ia64__) || defined (__powerpc__)
   grub_arch_dl_get_tramp_got_size (e, &tramp, &got);
-  tramp *= GRUB_IA64_DL_TRAMP_SIZE;
+  tramp *= GRUB_ARCH_DL_TRAMP_SIZE;
   got *= sizeof (grub_uint64_t);
   tsize += ALIGN_UP (tramp, GRUB_ARCH_DL_TRAMP_ALIGN);
   if (talign < GRUB_ARCH_DL_TRAMP_ALIGN)
@@ -269,6 +269,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
   mod->base = grub_memalign (talign, tsize);
   if (!mod->base)
     return grub_errno;
+  mod->sz = tsize;
   ptr = mod->base;
 
 #ifdef GRUB_MACHINE_EMU
@@ -316,7 +317,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	  mod->segment = seg;
 	}
     }
-#ifdef __ia64__
+#if defined (__ia64__) || defined (__powerpc__)
   ptr = (char *) ALIGN_UP ((grub_addr_t) ptr, GRUB_ARCH_DL_TRAMP_ALIGN);
   mod->tramp = ptr;
   ptr += tramp;
@@ -575,15 +576,9 @@ grub_dl_unref (grub_dl_t mod)
 static void
 grub_dl_flush_cache (grub_dl_t mod)
 {
-  grub_dl_segment_t seg;
-
-  for (seg = mod->segment; seg; seg = seg->next) {
-    if (seg->size) {
-      grub_dprintf ("modules", "flushing 0x%lx bytes at %p\n",
-		    (unsigned long) seg->size, seg->addr);
-      grub_arch_sync_caches (seg->addr, seg->size);
-    }
-  }
+  grub_dprintf ("modules", "flushing 0x%lx bytes at %p\n",
+		(unsigned long) mod->sz, mod->base);
+  grub_arch_sync_caches (mod->base, mod->sz);
 }
 
 /* Load a module from core memory.  */

@@ -1,3 +1,26 @@
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support trampoline jumps on powerpc.
+
+	* grub-core/kern/dl.c (grub_dl_load_segments) [__powerpc__]: Follow
+	__ia64__ path.
+	(grub_dl_load_segments): Set mod->sz.
+	(grub_dl_flush_cache): Flush whole space occupied by module, not just
+	segments.
+	* grub-core/kern/ia64/dl.c (nopm): Make const while on it.
+	(jump): Likewise.
+	* grub-core/kern/powerpc/dl.c (grub_arch_dl_get_tramp_got_size): New
+	function.
+	(trampoline): New struct.
+	(trampoline_template): New const.
+	(grub_arch_dl_relocate_symbols): Create trampolines on overflow.
+	* include/grub/dl.h (grub_dl): Add sz element.
+	[__powerpc__]: Follow __ia64__.
+	(GRUB_ARCH_DL_TRAMP_ALIGN): Define on ppc.
+	(GRUB_ARCH_DL_GOT_ALIGN): Likewise.
+	(GRUB_ARCH_DL_TRAMP_SIZE): Likewise.
+	(grub_arch_dl_get_tramp_got_size) [__powerpc__]: New proto.
+
 2011-11-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	ZFS crypto support.
