@@ -185,6 +185,27 @@ configure_device_driver (int fd)
 #endif /* defined(__NetBSD__) */
 
 static int
+unescape_cmp (const char *a, const char *b_escaped)
+{
+  while (*a || *b_escaped)
+    {
+      if (*b_escaped == '\\' && b_escaped[1] != 0)
+	b_escaped++;
+      if (*a < *b_escaped)
+	return -1;
+      if (*a > *b_escaped)
+	return +1;
+      a++;
+      b_escaped++;
+    }
+  if (*a)
+    return +1;
+  if (*b_escaped)
+    return -1;
+  return 0;
+}
+
+static int
 find_grub_drive (const char *name)
 {
   unsigned int i;
@@ -192,7 +213,7 @@ find_grub_drive (const char *name)
   if (name)
     {
       for (i = 0; i < ARRAY_SIZE (map); i++)
-	if (map[i].drive && ! strcmp (map[i].drive, name))
+	if (map[i].drive && unescape_cmp (map[i].drive, name) == 0)
 	  return i;
     }
 
@@ -1140,25 +1161,28 @@ grub_util_biosdisk_fini (void)
 static char *
 make_device_name (int drive, int dos_part, int bsd_part)
 {
-  char *ret;
-  char *dos_part_str = NULL;
-  char *bsd_part_str = NULL;
+  char *ret, *ptr, *end;
+  const char *iptr;
 
+  ret = xmalloc (strlen (map[drive].drive) * 2 
+		 + sizeof (",XXXXXXXXXXXXXXXXXXXXXXXXXX"
+			   ",XXXXXXXXXXXXXXXXXXXXXXXXXX"));
+  end = (ret + strlen (map[drive].drive) * 2 
+	 + sizeof (",XXXXXXXXXXXXXXXXXXXXXXXXXX"
+		   ",XXXXXXXXXXXXXXXXXXXXXXXXXX"));
+  ptr = ret;
+  for (iptr = map[drive].drive; *iptr; iptr++)
+    {
+      if (*iptr == ',')
+	*ptr++ = '\\';
+      *ptr++ = *iptr;
+    }
+  *ptr = 0;
   if (dos_part >= 0)
-    dos_part_str = xasprintf (",%d", dos_part + 1);
-
+    snprintf (ptr, end - ptr, ",%d", dos_part + 1);
+  ptr += strlen (ptr);
   if (bsd_part >= 0)
-    bsd_part_str = xasprintf (",%d", bsd_part + 1);
-
-  ret = xasprintf ("%s%s%s", map[drive].drive,
-                   dos_part_str ? : "",
-                   bsd_part_str ? : "");
-
-  if (dos_part_str)
-    free (dos_part_str);
-
-  if (bsd_part_str)
-    free (bsd_part_str);
+    snprintf (ptr, end - ptr, ",%d", bsd_part + 1); 
 
   return ret;
 }
