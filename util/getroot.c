@@ -790,56 +790,6 @@ grub_util_get_dm_abstraction (const char *os_dev)
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include <libgeom.h>
 
-/* FIXME: geom actually gives us the whole container hierarchy.
-   It can be used more efficiently than this.  */
-void
-grub_util_follow_gpart_up (const char *name, grub_disk_addr_t *off_out, char **name_out)
-{
-  struct gmesh mesh;
-  struct gclass *class;
-  int error;
-  struct ggeom *geom;
-
-  grub_util_info ("following geom '%s'", name);
-
-  error = geom_gettree (&mesh);
-  if (error != 0)
-    grub_util_error ("couldn't open geom");
-
-  LIST_FOREACH (class, &mesh.lg_class, lg_class)
-    if (strcasecmp (class->lg_name, "part") == 0)
-      break;
-  if (!class)
-    grub_util_error ("couldn't open geom part");
-
-  LIST_FOREACH (geom, &class->lg_geom, lg_geom)
-    { 
-      struct gprovider *provider;
-      LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
-	if (strcmp (provider->lg_name, name) == 0)
-	  {
-	    char *name_tmp = xstrdup (geom->lg_name);
-	    grub_disk_addr_t off = 0;
-	    struct gconfig *config;
-	    grub_util_info ("geom '%s' has parent '%s'", name, geom->lg_name);
-
-	    grub_util_follow_gpart_up (name_tmp, &off, name_out);
-	    free (name_tmp);
-	    LIST_FOREACH (config, &provider->lg_config, lg_config)
-	      if (strcasecmp (config->lg_name, "start") == 0)
-		off += strtoull (config->lg_val, 0, 10);
-	    if (off_out)
-	      *off_out = off;
-	    return;
-	  }
-    }
-  grub_util_info ("geom '%s' has no parent", name);
-  if (name_out)
-    *name_out = xstrdup (name);
-  if (off_out)
-    *off_out = 0;
-}
-
 static const char *
 grub_util_get_geom_abstraction (const char *dev)
 {

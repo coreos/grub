@@ -1,5 +1,15 @@
 2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix FreeBSD compilation.
+
+	* grub-core/disk/geli.c (GRUB_MD_SHA256) [GRUB_UTIL]: Redefine in a way
+	to avoid circular dependency.
+	(GRUB_MD_SHA512) [GRUB_UTIL]: Likewise.
+	* util/getroot.c (grub_util_follow_gpart_up): Move from here...
+	* grub-core/kern/emu/hostdisk.c (+grub_util_follow_gpart_up): ... here.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix ZFS crypto error types.
 
 	* grub-core/fs/zfs/zfscrypt.c (grub_ccm_decrypt): Fix return type.

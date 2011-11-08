@@ -58,6 +58,38 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+/* Dirty trick to solve circular dependency.  */
+#ifdef GRUB_UTIL
+
+#include <grub/util/misc.h>
+
+#undef GRUB_MD_SHA256
+#undef GRUB_MD_SHA512
+
+static const gcry_md_spec_t *
+grub_md_sha256_real (void)
+{
+  const gcry_md_spec_t *ret;
+  ret = grub_crypto_lookup_md_by_name ("sha256");
+  if (!ret)
+    grub_util_error ("Coulnd't load sha256");
+  return ret;
+}
+
+static const gcry_md_spec_t *
+grub_md_sha512_real (void)
+{
+  const gcry_md_spec_t *ret;
+  ret = grub_crypto_lookup_md_by_name ("sha512");
+  if (!ret)
+    grub_util_error ("Coulnd't load sha512");
+  return ret;
+}
+
+#define GRUB_MD_SHA256 grub_md_sha256_real()
+#define GRUB_MD_SHA512 grub_md_sha512_real()
+#endif
+
 struct grub_geli_key
 {
   grub_uint8_t iv_key[64];
