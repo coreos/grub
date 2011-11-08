@@ -277,8 +277,9 @@ grub_zfs_decrypt_real (grub_crypto_cipher_handle_t cipher,
   grub_err_t err;
       
   grub_memcpy (sw, nonce, 16);
-  for (i = 0; i < 4; i++)
-    sw[i] = grub_cpu_to_be32 (grub_zfs_to_cpu32 (sw[i], endian));
+  if (endian != GRUB_ZFS_BIG_ENDIAN)
+    for (i = 0; i < 4; i++)
+      sw[i] = grub_swap_bytes32 (sw[i]);
 
   if (!cipher)
     return grub_error (GRUB_ERR_ACCESS_DENIED,
