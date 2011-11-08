@@ -49,7 +49,7 @@ struct tbl_alias
   char *name;
 };
 
-struct tbl_alias table_aliases[] =
+static struct tbl_alias table_aliases[] =
   {
     {GRUB_EFI_ACPI_20_TABLE_GUID, "ACPI_20"},
     {GRUB_EFI_ACPI_TABLE_GUID, "ACPI"},
@@ -219,7 +219,7 @@ struct property_descriptor
   void *data;
 };
 
-struct grub_xnu_devprop_device_descriptor *devices = 0;
+static struct grub_xnu_devprop_device_descriptor *devices = 0;
 
 grub_err_t
 grub_xnu_devprop_remove_property (struct grub_xnu_devprop_device_descriptor *dev,
@@ -452,11 +452,11 @@ grub_cpu_xnu_fill_devprop (void)
     }
 
   devprop = grub_xnu_create_value (&(efikey->first_child), "device-properties");
-  if (devprop)
-    {
-      devprop->data = grub_malloc (total_length);
-      devprop->datasize = total_length;
-    }
+  if (!devprop)
+    return grub_errno;
+
+  devprop->data = grub_malloc (total_length);
+  devprop->datasize = total_length;
 
   ptr = devprop->data;
   head = ptr;

@@ -57,13 +57,13 @@ typedef grub_uint16_t gf_double_t;
 #define GF_POLYNOMIAL 0x1d
 #define GF_INVERT2 0x8e
 #if defined (STANDALONE) && !defined (TEST)
-static char *gf_invert __attribute__ ((section(".text"))) = (void *) 0x100000;
+static gf_single_t * const gf_invert __attribute__ ((section(".text"))) = (void *) 0x100000;
 static char *scratch __attribute__ ((section(".text"))) = (void *) 0x100100;
 #else
 #if defined (STANDALONE)
 static char *scratch;
 #endif
-static grub_uint8_t gf_invert[256];
+static gf_single_t gf_invert[256];
 #endif
 
 #define SECTOR_SIZE 512
@@ -265,6 +265,27 @@ rs_recover (gf_single_t *m, grub_size_t s, grub_size_t rs)
 
   syndroms (m, s, rs, sy);
 
+  for (i = 0; i < (int) rs; i++)
+    if (sy[i] != 0)
+      break;
+
+  /* No error detected.  */
+  if (i == (int) rs)
+    {
+#ifndef STANDALONE
+      free (sigma);
+      free (errpot);
+      free (errpos);
+      free (sy);
+#else
+      scratch -= rs2 * sizeof (gf_single_t);
+      scratch -= rs2 * sizeof (gf_single_t);
+      scratch -= rs2 * sizeof (int);
+      scratch -= rs * sizeof (gf_single_t);
+#endif
+      return;
+    }
+
   {
     gf_single_t *eq;
 
@@ -274,14 +295,6 @@ rs_recover (gf_single_t *m, grub_size_t s, grub_size_t rs)
     eq = (void *) scratch;
     scratch += rs2 * (rs2 + 1) * sizeof (gf_single_t);
 #endif
-
-    for (i = 0; i < (int) rs; i++)
-      if (sy[i] != 0)
-	break;
-
-    /* No error detected.  */
-    if (i == (int) rs)
-      return;
 
     for (i = 0; i < (int) rs2; i++)
       for (j = 0; j < (int) rs2 + 1; j++)
@@ -504,6 +517,7 @@ main (int argc, char **argv)
   rs = s / 3;
   buf = xmalloc (s + rs + SECTOR_SIZE);
   fread (buf, 1, s, in);
+  fclose (in);
 
   grub_reed_solomon_add_redundancy (buf, s, rs);
 

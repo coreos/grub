@@ -31,6 +31,7 @@ PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 platform=@platform@
 host_os=@host_os@
+datarootdir=@datarootdir@
 pkglibdir="${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`"
 localedir="@datadir@/locale"
 
@@ -64,7 +65,7 @@ if test -f "${sysconfdir}/default/grub" ; then
     . "${sysconfdir}/default/grub"
 fi
 
-bootloader_id="$(echo "$GRUB_DISTRIBUTOR" | tr '[A-Z]' '[a-z]' | cut -d' ' -f1)"
+bootloader_id="$(echo "$GRUB_DISTRIBUTOR" | tr 'A-Z' 'a-z' | cut -d' ' -f1)"
 if test -z "$bootloader_id"; then
     bootloader_id=grub
 fi
@@ -74,7 +75,7 @@ if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
 elif [ "${platform}" = "ieee1275" ] || [ "${platform}" = "efi" ] ; then
     disk_module=
 else
-    disk_module=ata
+    disk_module=native
 fi
 
 # Usage: usage
@@ -111,7 +112,7 @@ Install GRUB on your drive.
 EOF
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     cat <<EOF
-  --disk-module=MODULE    disk module to use
+  --disk-module=MODULE    disk module to use (biosdisk or native)
 EOF
 fi
 if [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ] ; then
@@ -263,11 +264,18 @@ do
     esac
 done
 
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
+
 if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
     || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
     echo "install_device not specified." 1>&2
     usage
     exit 1
+fi
+
+if ! ([ "${target_cpu}-${platform}" = "i386-pc" ] \
+    || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
+    install_device=
 fi
 
 # If the debugging feature is enabled, print commands.
@@ -328,6 +336,12 @@ if [ x"$platform" = xefi ]; then
 	if test "x$install_device" != "x`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}"`"; then
 	    efidir="${bootdir}/efi"
 	fi
+    elif test -d "${bootdir}/EFI"; then
+	install_device="`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}/EFI"`"
+        # Is it a mount point?
+	if test "x$install_device" != "x`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}"`"; then
+	    efidir="${bootdir}/EFI"
+	fi
     elif test -n "$rootdir" && test "x$rootdir" != "x/"; then
         # The EFI System Partition may have been given directly using
         # --root-directory.
@@ -362,7 +376,7 @@ if [ x"$platform" = xefi ]; then
 	    case "$target_cpu" in
 		i386)
 		    efi_file=BOOTIA32.EFI ;;
-		x86-64)
+		x86_64)
 		    efi_file=BOOTX64.EFI ;;
 	    # GRUB does not yet support these architectures, but they're defined
 	    # by the specification so we include them here to ease future
@@ -376,7 +390,7 @@ if [ x"$platform" = xefi ]; then
 	    case "$target_cpu" in
 		i386)
 		    efi_file=grubia32.efi ;;
-		x86-64)
+		x86_64)
 		    efi_file=grubx64.efi ;;
 	 # GRUB does not yet support these architectures, but they're defined
  	 # by the specification so we include them here to ease future
@@ -451,6 +465,8 @@ for dir in "${localedir}"/*; do
     fi
 done
 
+is_path_readable_by_grub "${grubdir}" || (echo "${grubdir}" not readable 1>&2 ; exit 1)
+
 # Write device to a variable so we don't have to traverse /dev every time.
 grub_device="`"$grub_probe" --device-map="${device_map}" --target=device "${grubdir}"`" || exit 1
 
@@ -462,7 +478,8 @@ fi
 fs_module="`"$grub_probe" --device-map="${device_map}" --target=fs --device "${grub_device}"`"
 if test "x$fs_module" = x ; then
     echo "Auto-detection of a filesystem of ${grub_device} failed." 1>&2
-    echo "Please report this together with the output of \"$grub_probe --device-map=\"${device_map}\" --target=fs -v ${grubdir}\" to <bug-grub@gnu.org>" 1>&2
+    echo "Try with --recheck." 1>&2
+    echo "If the problem persists please report this together with the output of \"$grub_probe --device-map=\"${device_map}\" --target=fs -v ${grubdir}\" to <bug-grub@gnu.org>" 1>&2
     exit 1
 fi
 
@@ -482,6 +499,18 @@ done
 
 # Device abstraction module, if any (lvm, raid).
 devabstraction_module="`"$grub_probe" --device-map="${device_map}" --target=abstraction --device "${grub_device}"`"
+
+if [ "x$disk_module" = xata ]; then
+    disk_module=pata
+fi
+
+if [ "x$disk_module" = xnative ]; then
+    disk_module="pata ahci ohci"
+    if [ "x$target_cpu" = "xi386" ] || [ "x$target_cpu" = "xx86_64" ]; then
+	disk_module="$disk_module uhci"
+    fi
+    disk_module="$disk_module usbms"
+fi
 
 # The order in this list is critical.  Be careful when modifying it.
 modules="$modules $disk_module"
@@ -516,28 +545,26 @@ if [ "x${devabstraction_module}" = "x" ] ; then
     # Strip partition number
     grub_partition="`echo "${grub_drive}" | sed -e 's/^[^,]*[,)]//; s/)$//'`"
     grub_drive="`echo "${grub_drive}" | sed -e s/,[a-z0-9,]*//g`"
-    if [ "$disk_module" = ata ] ; then
+    if ([ "x$disk_module" != x ] && [ "x$disk_module" != xbiosdisk ]) || [ "x${grub_drive}" != "x${install_drive}" ] || ([ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]); then
         # generic method (used on coreboot and ata mod)
         uuid="`"$grub_probe" --device-map="${device_map}" --target=fs_uuid --device "${grub_device}"`"
         if [ "x${uuid}" = "x" ] ; then
-          echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          if [ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]; then
+             echo "UUID needed with $platform, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          elif [ "$disk_module" = ata ]; then
+             echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          else
+             echo "UUID needed with cross-disk installs, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          fi
+             
           exit 1
         fi
+
         echo "search.fs_uuid ${uuid} root " >> "${grubdir}/load.cfg"
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
 	config_opt="-c ${grubdir}/load.cfg "
         modules="$modules search_fs_uuid"
-    elif [ "x${grub_drive}" != "x${install_drive}" ] ; then
-        uuid="`"$grub_probe" --device-map="${device_map}" --target=fs_uuid --device "${grub_device}"`"
-        if [ "x${uuid}" = "x" ] ; then
-          echo "You attempted a cross-disk install, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
-          exit 1
-        fi
-        echo "search.fs_uuid ${uuid} root " >> ${grubdir}/load.cfg
-	echo 'set prefix=($root)'"${relative_grubdir}" >> ${grubdir}/load.cfg
-	config_opt="-c ${grubdir}/load.cfg "
-        modules="$modules search_fs_uuid"
-    elif [ "x$platform" = xefi ] || [ "x$platform" = xpc ]; then
+    elif [ "x$platform" = xefi ] || [ "x$platform" = xpc ] || [ "x$platform" = xieee1275 ]; then
         # we need to hardcode the partition number in the core image's prefix.
 	if [ x"$grub_partition" = x ]; then
             prefix_drive="()"
@@ -546,18 +573,25 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	fi
     fi
 else
+    if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
+	for uuid in "`"${grub_probe}" --device "${grub_device}" --target=cryptodisk_uuid`"; do
+	    echo "cryptomount -u $uuid" >> "${grubdir}/load.cfg"
+	done
+	config_opt="-c ${grubdir}/load.cfg "
+    fi
+
     prefix_drive=`"$grub_probe" --device-map="${device_map}" --target=drive --device "${grub_device}"` || exit 1
 fi
 
 case "${target_cpu}-${platform}" in
     sparc64-ieee1275) mkimage_target=sparc64-ieee1275-raw ;;
-    mips-yeeloong) mkimage_target=mipsel-yeeloong-elf ;;
+    mipsel-loongson) mkimage_target=mipsel-loongson-elf ;;
     *) mkimage_target="${target_cpu}-${platform}" ;;
 esac
 
 case "${target_cpu}-${platform}" in
     i386-efi | x86_64-efi) imgext=efi ;;
-    mips-yeeloong | i386-coreboot | i386-multiboot | i386-ieee1275 \
+    mipsel-loongson | i386-coreboot | i386-multiboot | i386-ieee1275 \
 	| powerpc-ieee1275) imgext=elf ;;
     *) imgext=img ;;
 esac
@@ -566,7 +600,7 @@ esac
 "$grub_mkimage" ${config_opt} -d "${pkglibdir}" -O ${mkimage_target} --output="${grubdir}/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
 
 # Backward-compatibility kludges
-if [ "${target_cpu}-${platform}" = "mips-yeeloong" ]; then
+if [ "${target_cpu}-${platform}" = "mipsel-loongson" ]; then
     cp "${grubdir}/core.${imgext}" "${bootdir}"/grub.elf
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
     cp "${grubdir}/core.${imgext}" "${grubdir}/grub"
@@ -616,8 +650,15 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	    exit 1
 	}
     fi
+elif [ x"${target_cpu}-${platform}" = xmips-arc ]; then
+    dvhtool -d "${install_device}" --unix-to-vh "{grubdir}/core.${imgext}" grub
+    echo "You will have to set SystemPartition and OSLoader manually."
 elif [ x"$platform" = xefi ]; then
     cp "${grubdir}/core.${imgext}" "${efidir}/${efi_file}"
+    # For old macs. Suggested by Peter Jones.
+    if [ x$target_cpu = xi386 ]; then
+	cp "${grubdir}/core.${imgext}" "${efidir}/boot.efi"
+    fi
 
     # Try to make this image bootable using the EFI Boot Manager, if available.
     efibootmgr="`which efibootmgr`"

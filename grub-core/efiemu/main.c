@@ -32,6 +32,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* System table. Two version depending on mode */
 grub_efi_system_table32_t *grub_efiemu_system_table32 = 0;
 grub_efi_system_table64_t *grub_efiemu_system_table64 = 0;
@@ -191,7 +193,7 @@ grub_efiemu_load_file (const char *filename)
 
   file = grub_file_open (filename);
   if (! file)
-    return 0;
+    return grub_errno;
 
   err = grub_efiemu_mm_init ();
   if (err)

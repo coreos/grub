@@ -61,6 +61,6 @@ void *EXPORT_FUNC(grub_loader_register_preboot_hook) (grub_err_t (*preboot_func)
 					 grub_loader_preboot_hook_prio_t prio);
 
 /* Unregister given preboot hook. */
-void grub_loader_unregister_preboot_hook (void *hnd);
+void EXPORT_FUNC (grub_loader_unregister_preboot_hook) (void *hnd);
 
 #endif /* ! GRUB_LOADER_HEADER */

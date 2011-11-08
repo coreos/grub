@@ -22,6 +22,9 @@
 #include <grub/misc.h>
 #include <grub/cache.h>
 #include <grub/memory.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 struct grub_relocator
 {
@@ -77,10 +80,10 @@ struct grub_relocator_fw_leftover
   grub_uint8_t freebytes[GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT / 8];
 };
 
-struct grub_relocator_fw_leftover *leftovers;
+static struct grub_relocator_fw_leftover *leftovers;
 #endif
 
-struct grub_relocator_extra_block *extra_blocks;
+static struct grub_relocator_extra_block *extra_blocks;
 
 void *
 get_virtual_current_address (grub_relocator_chunk_t in)
@@ -134,9 +137,10 @@ allocate_regstart (grub_phys_addr_t addr, grub_size_t size, grub_mm_region_t rb,
   grub_addr_t newreg_size, newreg_presize;
   grub_mm_header_t new_header;
   grub_mm_header_t hb = (grub_mm_header_t) (rb + 1);
-  
-  grub_dprintf ("relocator", "ra = %p, rb = %p\n", regancestor, rb);
 
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF  
+  grub_dprintf ("relocator", "ra = %p, rb = %p\n", regancestor, rb);
+#endif
   newreg_start = ALIGN_UP (newreg_raw_start, GRUB_MM_ALIGN);
   newreg_presize = newreg_start - newreg_raw_start;
   newreg_size = rb->size - (newreg_start - (grub_addr_t) rb);
@@ -179,11 +183,12 @@ allocate_regstart (grub_phys_addr_t addr, grub_size_t size, grub_mm_region_t rb,
 	  if ((void *) h < (void *) (newreg + 1))
 	    grub_fatal ("Failed to adjust memory region: %p, %p, %p, %p, %p",
 			newreg, newreg->first, h, hp, hb);
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
 	  if ((void *) h == (void *) (newreg + 1))
 	    grub_dprintf ("relocator",
 			  "Free start memory region: %p, %p, %p, %p, %p",
 			  newreg, newreg->first, h, hp, hb);
-
+#endif
 	  hp = h;
 	  h = h->next;
 	}
@@ -200,10 +205,12 @@ allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
   struct grub_mm_header *foll = NULL;
   grub_addr_t vaddr = (grub_addr_t) hb + (paddr - grub_vtop (hb));
 
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
   grub_dprintf ("relocator", "inreg paddr = 0x%lx, size = %lu,"
 		" hb = %p, hbp = %p, rb = %p, vaddr = 0x%lx\n",
 		(unsigned long) paddr, (unsigned long) size, hb, hbp,
 		rb, (unsigned long) vaddr);
+#endif
     
   if (ALIGN_UP (vaddr + size, GRUB_MM_ALIGN) + GRUB_MM_ALIGN
       <= (grub_addr_t) (hb + hb->size))
@@ -211,8 +218,10 @@ allocate_inreg (grub_phys_addr_t paddr, grub_size_t size,
       foll = (void *) ALIGN_UP (vaddr + size, GRUB_MM_ALIGN);
       foll->magic = GRUB_MM_FREE_MAGIC;
       foll->size = hb + hb->size - foll;
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
       grub_dprintf ("relocator", "foll = %p, foll->size = %lu\n", foll,
 		    (unsigned long) foll->size);
+#endif
     }
 
   if (vaddr - (grub_addr_t) hb >= sizeof (*hb))
@@ -756,6 +765,9 @@ malloc_in_range (struct grub_relocator *rel,
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
     int fwin = 0, fwb = 0, fwlefto = 0;
 #endif
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
+    int last_lo = 0;
+#endif
     int last_start = 0;
     for (j = 0; j < N; j++)
       {
@@ -819,9 +831,11 @@ malloc_in_range (struct grub_relocator *rel,
 		      fend
 			= ALIGN_UP (alloc_end,
 				    GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT);
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF  
 		      grub_dprintf ("relocator", "requesting %lx-%lx\n",
 				    (unsigned long) fstart,
 				    (unsigned long) fend);
+#endif
 		      /* The failure here can be very expensive.  */
 		      if (!grub_relocator_firmware_alloc_region (fstart, 
 								 fend - fstart))
@@ -844,7 +858,7 @@ malloc_in_range (struct grub_relocator *rel,
 		      unsigned offend = alloc_end
 			% GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT;
 		      struct grub_relocator_fw_leftover *lo
-			= events[last_start].leftover;
+			= events[last_lo].leftover;
 		      lo->freebytes[offstart / 8]
 			&= ((1 << (8 - (start % 8))) - 1);
 		      grub_memset (lo->freebytes + (offstart + 7) / 8, 0,
@@ -899,6 +913,7 @@ malloc_in_range (struct grub_relocator *rel,
 #if GRUB_RELOCATOR_HAVE_LEFTOVERS
 	  case REG_LEFTOVER_START:
 	    fwlefto++;
+	    last_lo = j;
 	    break;
 
 	  case REG_LEFTOVER_END:
@@ -998,7 +1013,8 @@ malloc_in_range (struct grub_relocator *rel,
 			curschu->extra = ne;
 		      }
 		  }
-#if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
+
+#if GRUB_RELOCATOR_HAVE_LEFTOVERS
 		if (!oom && typepre == CHUNK_TYPE_FIRMWARE)
 		  {
 		    grub_addr_t fstart, fend;
@@ -1010,7 +1026,6 @@ malloc_in_range (struct grub_relocator *rel,
 		      = ALIGN_UP (alloc_end,
 				  GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT);
 
-#if GRUB_RELOCATOR_HAVE_LEFTOVERS
 		    {
 		      struct grub_relocator_fw_leftover *lo1 = NULL;
 		      struct grub_relocator_fw_leftover *lo2 = NULL;
@@ -1070,10 +1085,8 @@ malloc_in_range (struct grub_relocator *rel,
 		      curschu->pre = lo1;
 		      curschu->post = lo2;
 		    }
-#endif
 		  }
 
-#if GRUB_RELOCATOR_HAVE_LEFTOVERS
 		if (typepre == CHUNK_TYPE_LEFTOVER)
 		  {
 		    curschu->pre = events[last_start].leftover;
@@ -1081,7 +1094,6 @@ malloc_in_range (struct grub_relocator *rel,
 		  }
 #endif
 
-#endif
 		if (!oom)
 		  cural++;
 		else
@@ -1282,23 +1294,8 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel,
   chunk->srcv = grub_map_memory (chunk->src, chunk->size);
   *out = chunk;
 #ifdef DEBUG_RELOCATOR
-  {
-    grub_mm_region_t r;
-    grub_mm_header_t p;
-    grub_memset (chunk->srcv, 0xfa, chunk->size);
-    for (r = grub_mm_base; r; r = r->next)
-      {
-	p = r->first;
-	do
-	  {
-	    if ((grub_addr_t) p < (grub_addr_t) (r + 1)
-		|| (grub_addr_t) p >= (grub_addr_t) (r + 1) + r->size)
-	      grub_fatal (__FILE__ ":%d: out of range pointer: %p\n", __LINE__, p);
-	    p = p->next;
-	  }
-	while (p != r->first);
-      }
-  }
+  grub_memset (chunk->srcv, 0xfa, chunk->size);
+  grub_mm_check ();
 #endif
   return GRUB_ERR_NONE;
 }
@@ -1423,10 +1420,16 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 	break;
     }
 
+  grub_dprintf ("relocator", "relocators_size=%ld\n",
+		(unsigned long) rel->relocators_size);
+
   if (chunk->src < chunk->target)
     rel->relocators_size += grub_relocator_backward_size;
   if (chunk->src > chunk->target)
     rel->relocators_size += grub_relocator_forward_size;
+
+  grub_dprintf ("relocator", "relocators_size=%ld\n",
+		(unsigned long) rel->relocators_size);
 
   chunk->size = size;
   chunk->next = rel->chunks;
@@ -1436,24 +1439,8 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
   chunk->srcv = grub_map_memory (chunk->src, chunk->size);
   *out = chunk;
 #ifdef DEBUG_RELOCATOR
-  {
-    grub_mm_region_t r;
-    grub_mm_header_t p;
-
-    grub_memset (chunk->srcv, 0xfa, chunk->size);
-    for (r = grub_mm_base; r; r = r->next)
-      {
-	p = r->first;
-	do
-	  {
-	    if ((grub_addr_t) p < (grub_addr_t) (r + 1)
-		|| (grub_addr_t) p >= (grub_addr_t) (r + 1) + r->size)
-	      grub_fatal (__FILE__ "%d: out of range pointer: %p\n", __LINE__, p);
-	    p = p->next;
-	  }
-	while (p != r->first);
-      }
-  }
+  grub_memset (chunk->srcv, 0xfa, chunk->size);
+  grub_mm_check ();
 #endif
   return GRUB_ERR_NONE;
 }

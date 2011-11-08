@@ -1,5 +1,6 @@
-#! /bin/sh -e
-#
+#! /bin/sh
+set -e
+
 # Copyright (C) 2010 Free Software Foundation, Inc.
 #
 # This gensymlist.sh is free software; the author
@@ -52,8 +53,8 @@ fi
 rm -f $t1 $t2
 
 if test x@TARGET_APPLE_CC@ != x1; then
-	if ! test -z "@TARGET_OBJ2ELF@"; then
-	    ./@TARGET_OBJ2ELF@ $tmpfile || exit 1
+	if ! test -z "${TARGET_OBJ2ELF}"; then
+	    ./${TARGET_OBJ2ELF} $tmpfile || exit 1
 	fi
 	if test x@platform@ != xemu; then
 	    @STRIP@ --strip-unneeded \

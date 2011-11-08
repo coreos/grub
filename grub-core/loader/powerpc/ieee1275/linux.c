@@ -29,6 +29,8 @@
 #include <grub/memory.h>
 #include <grub/lib/cmdline.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define ELF32_LOADMASK (0xc0000000UL)
 #define ELF64_LOADMASK (0xc000000000000000ULL)
 
@@ -152,7 +154,8 @@ grub_linux_load32 (grub_elf_t elf)
   Elf32_Addr base_addr;
   grub_addr_t seg_addr;
   grub_uint32_t align;
-  int offset;
+  grub_uint32_t offset;
+  Elf32_Addr entry;
 
   linux_size = grub_elf32_size (elf, &base_addr, &align);
   if (linux_size == 0)
@@ -160,9 +163,12 @@ grub_linux_load32 (grub_elf_t elf)
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
   linux_size += 0x100000;
 
-  offset = elf->ehdr.ehdr32.e_entry - base_addr;
+  /* Linux's entry point incorrectly contains a virtual address.  */
+  entry = elf->ehdr.ehdr32.e_entry & ~ELF32_LOADMASK;
+
   /* Linux's incorrectly contains a virtual address.  */
   base_addr &= ~ELF32_LOADMASK;
+  offset = entry - base_addr;
 
   /* On some systems, firmware occupies the memory we're trying to use.
    * Happily, Linux can be loaded anywhere (it relocates itself).  Iterate
@@ -196,7 +202,8 @@ grub_linux_load64 (grub_elf_t elf)
   Elf64_Addr base_addr;
   grub_addr_t seg_addr;
   grub_uint64_t align;
-  int offset;
+  grub_uint64_t offset;
+  Elf64_Addr entry;
 
   linux_size = grub_elf64_size (elf, &base_addr, &align);
   if (linux_size == 0)
@@ -204,9 +211,10 @@ grub_linux_load64 (grub_elf_t elf)
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
   linux_size += 0x100000;
 
-  offset = elf->ehdr.ehdr64.e_entry - base_addr;
-  /* Linux's incorrectly contains a virtual address.  */
   base_addr &= ~ELF64_LOADMASK;
+  entry = elf->ehdr.ehdr64.e_entry & ~ELF64_LOADMASK;
+  offset = entry - base_addr;
+  /* Linux's incorrectly contains a virtual address.  */
 
   /* On some systems, firmware occupies the memory we're trying to use.
    * Happily, Linux can be loaded anywhere (it relocates itself).  Iterate

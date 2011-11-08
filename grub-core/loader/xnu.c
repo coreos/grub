@@ -34,6 +34,8 @@
 #include <grub/env.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #if defined (__i386) && !defined (GRUB_MACHINE_EFI)
 #include <grub/autoefi.h>
 #endif
@@ -1429,7 +1431,7 @@ grub_cmd_xnu_resume (grub_command_t cmd __attribute__ ((unused)),
 #endif
 
 void
-grub_xnu_lock ()
+grub_xnu_lock (void)
 {
   if (!locked)
     grub_dl_ref (my_mod);
@@ -1437,7 +1439,7 @@ grub_xnu_lock ()
 }
 
 void
-grub_xnu_unlock ()
+grub_xnu_unlock (void)
 {
   if (locked)
     grub_dl_unref (my_mod);

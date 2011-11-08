@@ -28,6 +28,8 @@
 #include <grub/err.h>
 #include <grub/term.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static int cd_drive = 0;
 static int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap);
 
@@ -282,37 +284,46 @@ grub_biosdisk_call_hook (int (*hook) (const char *name), int drive)
 }
 
 static int
-grub_biosdisk_iterate (int (*hook) (const char *name))
+grub_biosdisk_iterate (int (*hook) (const char *name),
+		       grub_disk_pull_t pull __attribute__ ((unused)))
 {
-  int drive;
   int num_floppies;
+  int drive;
 
   /* For hard disks, attempt to read the MBR.  */
-  for (drive = 0x80; drive < 0x90; drive++)
+  switch (pull)
     {
-      if (grub_biosdisk_rw_standard (0x02, drive, 0, 0, 1, 1,
-				     GRUB_MEMORY_MACHINE_SCRATCH_SEG) != 0)
+    case GRUB_DISK_PULL_NONE:
+      for (drive = 0x80; drive < 0x90; drive++)
 	{
-	  grub_dprintf ("disk", "Read error when probing drive 0x%2x\n", drive);
-	  break;
+	  if (grub_biosdisk_rw_standard (0x02, drive, 0, 0, 1, 1,
+					 GRUB_MEMORY_MACHINE_SCRATCH_SEG) != 0)
+	    {
+	      grub_dprintf ("disk", "Read error when probing drive 0x%2x\n", drive);
+	      break;
+	    }
+
+	  if (grub_biosdisk_call_hook (hook, drive))
+	    return 1;
+	}
+      return 0;
+
+    case GRUB_DISK_PULL_REMOVABLE:
+      if (cd_drive)
+	{
+	  if (grub_biosdisk_call_hook (hook, cd_drive))
+	    return 1;
 	}
 
-      if (grub_biosdisk_call_hook (hook, drive))
-	return 1;
+      /* For floppy disks, we can get the number safely.  */
+      num_floppies = grub_biosdisk_get_num_floppies ();
+      for (drive = 0; drive < num_floppies; drive++)
+	if (grub_biosdisk_call_hook (hook, drive))
+	  return 1;
+      return 0;
+    default:
+      return 0;
     }
-
-  if (cd_drive)
-    {
-      if (grub_biosdisk_call_hook (hook, cd_drive))
-      return 1;
-    }
-
-  /* For floppy disks, we can get the number safely.  */
-  num_floppies = grub_biosdisk_get_num_floppies ();
-  for (drive = 0; drive < num_floppies; drive++)
-    if (grub_biosdisk_call_hook (hook, drive))
-      return 1;
-
   return 0;
 }
 
@@ -338,7 +349,8 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
   if ((cd_drive) && (drive == cd_drive))
     {
       data->flags = GRUB_BIOSDISK_FLAG_LBA | GRUB_BIOSDISK_FLAG_CDROM;
-      data->sectors = 32;
+      data->sectors = 8;
+      disk->log_sector_size = 11;
       /* TODO: get the correct size.  */
       total_sectors = GRUB_DISK_SIZE_UNKNOWN;
     }
@@ -346,6 +358,8 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
     {
       /* HDD */
       int version;
+
+      disk->log_sector_size = 9;
 
       version = grub_biosdisk_check_int13_extensions (drive);
       if (version)
@@ -367,6 +381,15 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
                    correctly but returns zero. So if it is zero, compute
                    it by C/H/S returned by the LBA BIOS call.  */
                 total_sectors = drp->cylinders * drp->heads * drp->sectors;
+	      if (drp->bytes_per_sector
+		  && !(drp->bytes_per_sector & (drp->bytes_per_sector - 1))
+		  && drp->bytes_per_sector >= 512
+		  && drp->bytes_per_sector <= 16384)
+		{
+		  for (disk->log_sector_size = 0;
+		       (1 << disk->log_sector_size) < drp->bytes_per_sector;
+		       disk->log_sector_size++);
+		}
 	    }
 	}
     }
@@ -429,7 +452,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 
       dap = (struct grub_biosdisk_dap *) (GRUB_MEMORY_MACHINE_SCRATCH_ADDR
 					  + (data->sectors
-					     << GRUB_DISK_SECTOR_BITS));
+					     << disk->log_sector_size));
       dap->length = sizeof (*dap);
       dap->reserved = 0;
       dap->blocks = size;
@@ -442,9 +465,6 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 
 	  if (cmd)
 	    return grub_error (GRUB_ERR_WRITE_ERROR, "can\'t write to cdrom");
-
-	  dap->blocks = ALIGN_UP (dap->blocks, 4) >> 2;
-	  dap->block >>= 2;
 
 	  for (i = 0; i < GRUB_BIOSDISK_CDROM_RETRY_COUNT; i++)
             if (! grub_biosdisk_rw_int13_extensions (0x42, data->drive, dap))
@@ -501,10 +521,12 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 
 /* Return the number of sectors which can be read safely at a time.  */
 static grub_size_t
-get_safe_sectors (grub_disk_addr_t sector, grub_uint32_t sectors)
+get_safe_sectors (grub_disk_t disk, grub_disk_addr_t sector)
 {
   grub_size_t size;
-  grub_uint32_t offset;
+  grub_uint64_t offset;
+  struct grub_biosdisk_data *data = disk->data;
+  grub_uint32_t sectors = data->sectors;
 
   /* OFFSET = SECTOR % SECTORS */
   grub_divmod64 (sector, sectors, &offset);
@@ -512,8 +534,8 @@ get_safe_sectors (grub_disk_addr_t sector, grub_uint32_t sectors)
   size = sectors - offset;
 
   /* Limit the max to 0x7f because of Phoenix EDD.  */
-  if (size > 0x7f)
-    size = 0x7f;
+  if (size > ((0x7fU << GRUB_DISK_SECTOR_BITS) >> disk->log_sector_size))
+    size = ((0x7fU << GRUB_DISK_SECTOR_BITS) >> disk->log_sector_size);
 
   return size;
 }
@@ -522,21 +544,11 @@ static grub_err_t
 grub_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 		    grub_size_t size, char *buf)
 {
-  struct grub_biosdisk_data *data = disk->data;
-
   while (size)
     {
       grub_size_t len;
-      grub_size_t cdoff = 0;
 
-      len = get_safe_sectors (sector, data->sectors);
-
-      if (data->flags & GRUB_BIOSDISK_FLAG_CDROM)
-	{
-	  cdoff = (sector & 3) << GRUB_DISK_SECTOR_BITS;
-	  len = ALIGN_UP (sector + len, 4) - (sector & ~3);
-	  sector &= ~3;
-	}
+      len = get_safe_sectors (disk, sector);
 
       if (len > size)
 	len = size;
@@ -545,9 +557,10 @@ grub_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 			    GRUB_MEMORY_MACHINE_SCRATCH_SEG))
 	return grub_errno;
 
-      grub_memcpy (buf, (void *) (GRUB_MEMORY_MACHINE_SCRATCH_ADDR + cdoff),
-		   len << GRUB_DISK_SECTOR_BITS);
-      buf += len << GRUB_DISK_SECTOR_BITS;
+      grub_memcpy (buf, (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR,
+		   len << disk->log_sector_size);
+
+      buf += len << disk->log_sector_size;
       sector += len;
       size -= len;
     }
@@ -568,18 +581,18 @@ grub_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
     {
       grub_size_t len;
 
-      len = get_safe_sectors (sector, data->sectors);
+      len = get_safe_sectors (disk, sector);
       if (len > size)
 	len = size;
 
       grub_memcpy ((void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR, buf,
-		   len << GRUB_DISK_SECTOR_BITS);
+		   len << disk->log_sector_size);
 
       if (grub_biosdisk_rw (GRUB_BIOSDISK_WRITE, disk, sector, len,
 			    GRUB_MEMORY_MACHINE_SCRATCH_SEG))
 	return grub_errno;
 
-      buf += len << GRUB_DISK_SECTOR_BITS;
+      buf += len << disk->log_sector_size;
       sector += len;
       size -= len;
     }

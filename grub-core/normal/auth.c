@@ -34,7 +34,7 @@ struct grub_auth_user
   int authenticated;
 };
 
-struct grub_auth_user *users = NULL;
+static struct grub_auth_user *users = NULL;
 
 grub_err_t
 grub_auth_register_authentication (const char *user,

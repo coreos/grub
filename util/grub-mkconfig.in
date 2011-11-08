@@ -95,7 +95,7 @@ do
     esac
 done
 
-. ${libdir}/grub/grub-mkconfig_lib
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 if [ "x$EUID" = "x" ] ; then
   EUID=`id -u`
@@ -239,6 +239,8 @@ export GRUB_DEFAULT \
   GRUB_CMDLINE_LINUX_DEFAULT \
   GRUB_CMDLINE_XEN \
   GRUB_CMDLINE_XEN_DEFAULT \
+  GRUB_CMDLINE_LINUX_XEN_REPLACE \
+  GRUB_CMDLINE_LINUX_XEN_REPLACE_DEFAULT \
   GRUB_CMDLINE_NETBSD \
   GRUB_CMDLINE_NETBSD_DEFAULT \
   GRUB_TERMINAL_INPUT \
@@ -254,6 +256,7 @@ export GRUB_DEFAULT \
   GRUB_DISABLE_OS_PROBER \
   GRUB_INIT_TUNE \
   GRUB_SAVEDEFAULT \
+  GRUB_ENABLE_CRYPTODISK \
   GRUB_BADRAM
 
 if test "x${grub_cfg}" != "x"; then
@@ -280,6 +283,8 @@ for i in ${grub_mkconfig_dir}/* ; do
   case "$i" in
     # emacsen backup files. FIXME: support other editors
     *~) ;;
+    # emacsen autosave files. FIXME: support other editors
+    \#*\#) ;;
     *)
       if grub_file_is_not_garbage "$i" && test -x "$i" ; then
         echo

@@ -25,6 +25,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_efi_guid_t acpi_guid = GRUB_EFI_ACPI_TABLE_GUID;
 static grub_efi_guid_t acpi2_guid = GRUB_EFI_ACPI_20_TABLE_GUID;
 static grub_efi_guid_t smbios_guid = GRUB_EFI_SMBIOS_TABLE_GUID;

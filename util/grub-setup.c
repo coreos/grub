@@ -1,7 +1,7 @@
 /* grub-setup.c - make GRUB usable */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,7 +32,6 @@
 #include <grub/machine/kernel.h>
 #include <grub/term.h>
 #include <grub/i18n.h>
-#include <grub/util/raid.h>
 #include <grub/util/lvm.h>
 #ifdef GRUB_MACHINE_IEEE1275
 #include <grub/util/ofpath.h>
@@ -50,6 +49,7 @@
 #include "progname.h"
 #include <grub/reed_solomon.h>
 #include <grub/msdos_partition.h>
+#include <include/grub/crypto.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -399,37 +399,53 @@ setup (const char *dir,
       }
 #endif
 
-    if (! dest_partmap)
-      {
-	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
-	goto unable_to_embed;
-      }
-    if (multiple_partmaps || fs)
-      {
-	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
-	goto unable_to_embed;
-      }
-
     /* Copy the partition table.  */
-    if (dest_partmap)
+    if (dest_partmap ||
+        (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk)))
       memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
 	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
 	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
 
     free (tmp_img);
     
-    if (!dest_partmap->embed)
+    if (! dest_partmap && ! fs)
+      {
+	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
+	goto unable_to_embed;
+      }
+    if (multiple_partmaps || (dest_partmap && fs))
+      {
+	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
+	goto unable_to_embed;
+      }
+
+    if (dest_partmap && !dest_partmap->embed)
       {
 	grub_util_warn ("Partition style '%s' doesn't support embeding",
 			dest_partmap->name);
 	goto unable_to_embed;
       }
 
+    if (fs && !fs->embed)
+      {
+	grub_util_warn ("File system '%s' doesn't support embeding",
+			fs->name);
+	goto unable_to_embed;
+      }
+
     nsec = core_sectors;
-    err = dest_partmap->embed (dest_dev->disk, &nsec,
-			       GRUB_EMBED_PCBIOS, &sectors);
-    if (nsec > 2 * core_sectors)
-      nsec = 2 * core_sectors;
+    if (dest_partmap)
+      err = dest_partmap->embed (dest_dev->disk, &nsec,
+				 GRUB_EMBED_PCBIOS, &sectors);
+    else
+      err = fs->embed (dest_dev, &nsec,
+		       GRUB_EMBED_PCBIOS, &sectors);
+    if (!err && nsec < core_sectors)
+      {
+	err = grub_error (GRUB_ERR_OUT_OF_RANGE,
+			  "Your embedding area is unusually small.  "
+			  "core.img won't fit in it.");
+      }
     
     if (err)
       {
@@ -437,6 +453,9 @@ setup (const char *dir,
 	grub_errno = GRUB_ERR_NONE;
 	goto unable_to_embed;
       }
+
+    if (nsec > 2 * core_sectors)
+      nsec = 2 * core_sectors;
 
     /* Clean out the blocklists.  */
     block = first_block;
@@ -519,9 +538,7 @@ unable_to_embed:
   core_path_dev = grub_make_system_path_relative_to_its_root (core_path_dev_full);
   free (core_path_dev_full);
 
-  /* It is a Good Thing to sync two times.  */
-  sync ();
-  sync ();
+  grub_util_biosdisk_flush (root_dev->disk);
 
 #define MAX_TRIES	5
 
@@ -582,7 +599,7 @@ unable_to_embed:
 	grub_util_info ("error message = %s", grub_errmsg);
 
       grub_errno = GRUB_ERR_NONE;
-      sync ();
+      grub_util_biosdisk_flush (root_dev->disk);
       sleep (1);
     }
 
@@ -673,8 +690,8 @@ unable_to_embed:
     grub_util_error ("%s", grub_errmsg);
 
 
-  /* Sync is a Good Thing.  */
-  sync ();
+  grub_util_biosdisk_flush (root_dev->disk);
+  grub_util_biosdisk_flush (dest_dev->disk);
 
   free (core_path);
   free (core_img);
@@ -895,6 +912,7 @@ main (int argc, char *argv[])
 
   /* Initialize all modules. */
   grub_init_all ();
+  grub_gcry_init_all ();
 
   grub_lvm_fini ();
   grub_mdraid09_fini ();
@@ -955,10 +973,12 @@ main (int argc, char *argv[])
                       arguments.dir ? : DEFAULT_DIRECTORY);
     }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if (grub_util_lvm_isvolume (root_dev))
     must_embed = 1;
+#endif
 
+#ifdef __linux__
   if (root_dev[0] == 'm' && root_dev[1] == 'd'
       && ((root_dev[2] >= '0' && root_dev[2] <= '9') || root_dev[2] == '/'))
     {
@@ -972,7 +992,15 @@ main (int argc, char *argv[])
       char **devicelist;
       int i;
 
-      devicelist = grub_util_raid_getmembers (dest_dev);
+      if (arguments.device[0] == '/')
+	devicelist = grub_util_raid_getmembers (arguments.device, 1);
+      else
+	{
+	  char *devname;
+	  devname = xasprintf ("/dev/%s", dest_dev);
+	  devicelist = grub_util_raid_getmembers (dest_dev, 1);
+	  free (devname);
+	}
 
       for (i = 0; devicelist[i]; i++)
         {

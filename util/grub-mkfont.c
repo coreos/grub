@@ -859,7 +859,7 @@ void
 write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 {
   FILE *file;
-  grub_uint32_t leng, data;
+  grub_uint32_t leng;
   char style_name[20], *font_name;
   int offset;
   struct grub_glyph_info *cur;
@@ -959,12 +959,14 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   for (cur = font_info->glyphs_sorted;
        cur < font_info->glyphs_sorted + font_info->num_glyphs; cur++)
     {
-      data = grub_cpu_to_be32 (cur->char_code);
-      grub_util_write_image ((char *) &data, 4, file);
-      data = 0;
-      grub_util_write_image ((char *) &data, 1, file);
-      data = grub_cpu_to_be32 (offset);
-      grub_util_write_image ((char *) &data, 4, file);
+      grub_uint32_t data32;
+      grub_uint8_t data8;
+      data32 = grub_cpu_to_be32 (cur->char_code);
+      grub_util_write_image ((char *) &data32, 4, file);
+      data8 = 0;
+      grub_util_write_image ((char *) &data8, 1, file);
+      data32 = grub_cpu_to_be32 (offset);
+      grub_util_write_image ((char *) &data32, 4, file);
       offset += 10 + cur->bitmap_size;
     }
 
@@ -976,6 +978,7 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   for (cur = font_info->glyphs_sorted;
        cur < font_info->glyphs_sorted + font_info->num_glyphs; cur++)
     {
+      grub_uint16_t data;
       data = grub_cpu_to_be16 (cur->width);
       grub_util_write_image ((char *) &data, 2, file);
       data = grub_cpu_to_be16 (cur->height);

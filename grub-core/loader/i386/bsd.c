@@ -33,6 +33,10 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 #include <grub/ns8250.h>
+#include <grub/bsdlabel.h>
+#include <grub/crypto.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #include <grub/video.h>
 #ifdef GRUB_MACHINE_PCBIOS
@@ -65,7 +69,7 @@ static void *kern_chunk_src;
 static grub_uint32_t bootflags;
 static int is_elf_kernel, is_64bit;
 static grub_uint32_t openbsd_root;
-struct grub_relocator *relocator = NULL;
+static struct grub_relocator *relocator = NULL;
 static struct grub_openbsd_ramdisk_descriptor openbsd_ramdisk;
 
 struct bsd_tag
@@ -944,6 +948,88 @@ grub_netbsd_add_modules (void)
   return err;
 }
 
+/*
+ * Adds NetBSD bootinfo bootdisk and bootwedge.  The partition identified
+ * in these bootinfo fields is the root device.
+ */
+static void
+grub_netbsd_add_boot_disk_and_wedge (void)
+{
+  grub_device_t dev;
+  grub_disk_t disk;
+  grub_partition_t part;
+  grub_uint32_t biosdev;
+  grub_uint32_t partmapsector;
+  union {
+    grub_uint64_t raw[GRUB_DISK_SECTOR_SIZE / 8];
+    struct grub_partition_bsd_disk_label label;
+  } buf;
+  grub_uint8_t *hash;
+  grub_uint64_t ctx[(GRUB_MD_MD5->contextsize + 7) / 8];
+
+  dev = grub_device_open (0);
+  if (! (dev && dev->disk && dev->disk->partition))
+    goto fail;
+
+  disk = dev->disk;
+  part = disk->partition;
+
+  if (disk->dev && disk->dev->id == GRUB_DISK_DEVICE_BIOSDISK_ID)
+    biosdev = (grub_uint32_t) disk->id & 0xff;
+  else
+    biosdev = 0xff;
+
+  /* Absolute sector of the partition map describing this partition.  */
+  partmapsector = grub_partition_get_start (part->parent) + part->offset;
+
+  disk->partition = part->parent;
+  if (grub_disk_read (disk, part->offset, 0, GRUB_DISK_SECTOR_SIZE, buf.raw)
+      != GRUB_ERR_NONE)
+    goto fail;
+  disk->partition = part;
+
+  /* Fill bootwedge.  */
+  {
+    struct grub_netbsd_btinfo_bootwedge biw;
+
+    grub_memset (&biw, 0, sizeof (biw));
+    biw.biosdev = biosdev;
+    biw.startblk = grub_partition_get_start (part);
+    biw.nblks = part->len;
+    biw.matchblk = partmapsector;
+    biw.matchnblks = 1;
+
+    GRUB_MD_MD5->init (&ctx);
+    GRUB_MD_MD5->write (&ctx, buf.raw, GRUB_DISK_SECTOR_SIZE);
+    GRUB_MD_MD5->final (&ctx);
+    hash = GRUB_MD_MD5->read (&ctx);
+    memcpy (biw.matchhash, hash, 16);
+
+    grub_bsd_add_meta (NETBSD_BTINFO_BOOTWEDGE, &biw, sizeof (biw));
+  }
+
+  /* Fill bootdisk if this a NetBSD disk label.  */
+  if (part->partmap != NULL &&
+      (grub_strcmp (part->partmap->name, "netbsd") == 0) &&
+      buf.label.magic == grub_cpu_to_le32 (GRUB_PC_PARTITION_BSD_LABEL_MAGIC))
+    {
+      struct grub_netbsd_btinfo_bootdisk bid;
+
+      grub_memset (&bid, 0, sizeof (bid));
+      bid.labelsector = partmapsector;
+      bid.label.type = buf.label.type;
+      bid.label.checksum = buf.label.checksum;
+      memcpy (bid.label.packname, buf.label.packname, 16);
+      bid.biosdev = biosdev;
+      bid.partition = part->number;
+      grub_bsd_add_meta (NETBSD_BTINFO_BOOTDISK, &bid, sizeof (bid));
+    }
+
+fail:
+  if (dev)
+    grub_device_close (dev);
+}
+
 static grub_err_t
 grub_netbsd_boot (void)
 {
@@ -1320,6 +1406,11 @@ grub_bsd_load (int argc, char *argv[])
     goto fail;
 
   relocator = grub_relocator_new ();
+  if (!relocator)
+    {
+      grub_file_close (file);
+      goto fail;
+    }
 
   elf = grub_elf_file (file);
   if (elf)
@@ -1341,7 +1432,7 @@ grub_bsd_load (int argc, char *argv[])
 fail:
 
   if (grub_errno != GRUB_ERR_NONE)
-    grub_dl_unref (my_mod);
+    grub_dl_unref (my_mod);	
 
   return grub_errno;
 }
@@ -1599,6 +1690,8 @@ grub_cmd_netbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 
 	  grub_bsd_add_meta (NETBSD_BTINFO_CONSOLE, &cons, sizeof (cons));
 	}
+
+      grub_netbsd_add_boot_disk_and_wedge ();
 
       grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 0);
     }

@@ -62,11 +62,10 @@ ofdisk_hash_find (const char *devpath)
 }
 
 static struct ofdisk_hash_ent *
-ofdisk_hash_add (char *devpath)
+ofdisk_hash_add_real (char *devpath)
 {
+  struct ofdisk_hash_ent *p;
   struct ofdisk_hash_ent **head = &ofdisk_hash[ofdisk_hash_fn(devpath)];
-  struct ofdisk_hash_ent *p, *pcan;
-  char *curcan;
 
   p = grub_malloc(sizeof (*p));
   if (!p)
@@ -76,17 +75,27 @@ ofdisk_hash_add (char *devpath)
   p->next = *head;
   p->shortest = 0;
   *head = p;
+  return p;
+}
 
-  curcan = grub_ieee1275_canonicalise_devname (devpath);
+static struct ofdisk_hash_ent *
+ofdisk_hash_add (char *devpath, char *curcan)
+{
+  struct ofdisk_hash_ent *p, *pcan;
+
+  p = ofdisk_hash_add_real (devpath);
+
+  grub_dprintf ("disk", "devpath = %s, canonical = %s\n", devpath, curcan);
+
   if (!curcan)
     {
-      grub_errno = GRUB_ERR_NONE;
+      p->shortest = devpath;
       return p;
     }
 
   pcan = ofdisk_hash_find (curcan);
   if (!pcan)
-    pcan = ofdisk_hash_add (curcan);
+    pcan = ofdisk_hash_add_real (curcan);
   else
     grub_free (curcan);
 
@@ -118,17 +127,22 @@ scan (void)
 	return 0;
 
       grub_dprintf ("disk", "disk name = %s\n", alias->name);
+      grub_dprintf ("disk", "disk name = %s, path = %s\n", alias->name,
+		    alias->path);
 
-      op = ofdisk_hash_find (alias->path);
+      op = ofdisk_hash_find (alias->name);
       if (!op)
 	{
 	  char *name = grub_strdup (alias->name);
-	  if (!name)
+	  char *can = grub_strdup (alias->path);
+	  if (!name || !can)
 	    {
 	      grub_errno = GRUB_ERR_NONE;
+	      grub_free (name);
+	      grub_free (can);
 	      return 0;
 	    }
-	  op = ofdisk_hash_add (name);
+	  op = ofdisk_hash_add (name, can);
 	}
       return 0;
     }
@@ -138,9 +152,14 @@ scan (void)
 }
 
 static int
-grub_ofdisk_iterate (int (*hook) (const char *name))
+grub_ofdisk_iterate (int (*hook) (const char *name),
+		     grub_disk_pull_t pull)
 {
   unsigned i;
+
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
+
   scan ();
   
   for (i = 0; i < ARRAY_SIZE (ofdisk_hash); i++)
@@ -229,14 +248,24 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   grub_dprintf ("disk", "Opening `%s'.\n", devpath);
 
   if (grub_ieee1275_finddevice (devpath, &dev))
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read device properties");
+    {
+      grub_free (devpath);
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			 "can't read device properties");
+    }
 
   if (grub_ieee1275_get_property (dev, "device_type", prop, sizeof (prop),
 				  &actual))
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read the device type");
+    {
+      grub_free (devpath);
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't read the device type");
+    }
 
   if (grub_strcmp (prop, "block"))
-    return grub_error (GRUB_ERR_BAD_DEVICE, "not a block device");
+    {
+      grub_free (devpath);
+      return grub_error (GRUB_ERR_BAD_DEVICE, "not a block device");
+    }
 
   /* XXX: There is no property to read the number of blocks.  There
      should be a property `#blocks', but it is not there.  Perhaps it
@@ -247,7 +276,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
     struct ofdisk_hash_ent *op;
     op = ofdisk_hash_find (devpath);
     if (!op)
-      op = ofdisk_hash_add (devpath);
+      op = ofdisk_hash_add (devpath, NULL);
     else
       grub_free (devpath);
     if (!op)
