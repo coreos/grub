@@ -1,5 +1,10 @@
 2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (read_dva): Issue an error if read failed
+	with no error set.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/LzmaEnc.c (LzmaEnc_CodeOneBlock): Remove set but not
 	used variable.
 	* grub-core/kern/ia64/dl_helper.c (grub_ia64_dl_get_tramp_got_size):

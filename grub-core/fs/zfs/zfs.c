@@ -1324,7 +1324,7 @@ read_dva (const dva_t *dva,
 {
   grub_uint64_t offset;
   unsigned i;
-  grub_err_t err;
+  grub_err_t err = 0;
   int try = 0;
   offset = dva_get_offset (dva, endian);
 
@@ -1344,6 +1344,9 @@ read_dva (const dva_t *dva,
       if (err)
 	return err;
     }
+  if (!err)
+    return grub_error (GRUB_ERR_BAD_FS, "unknown device %d",
+		       (int) DVA_GET_VDEV (dva));
   return err;
 }
 
