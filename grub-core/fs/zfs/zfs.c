@@ -2164,14 +2164,12 @@ zap_iterate (dnode_end_t * zap_dnode,
 	     struct grub_zfs_data *data)
 {
   grub_uint64_t block_type;
-  int size;
   void *zapbuf;
   grub_err_t err;
   int ret;
   grub_zfs_endian_t endian;
 
   /* Read in the first block of the zap object data. */
-  size = grub_zfs_to_cpu16 (zap_dnode->dn.dn_datablkszsec, zap_dnode->endian) << SPA_MINBLOCKSHIFT;
   err = dmu_read (zap_dnode, 0, &zapbuf, &endian, data);
   if (err)
     return 0;

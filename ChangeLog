@@ -1,5 +1,10 @@
 2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (zap_iterate): Remove set but not used
+	variable.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support trampoline jumps on powerpc.
 
 	* grub-core/kern/dl.c (grub_dl_load_segments) [__powerpc__]: Follow
