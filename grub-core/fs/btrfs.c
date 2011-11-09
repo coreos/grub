@@ -1415,22 +1415,28 @@ grub_btrfs_dir (grub_device_t device, const char *path,
 
   err = find_path (data, path, &key_in, &tree, &type);
   if (err)
-    return err;
+    {
+      grub_btrfs_unmount (data);
+      return err;
+    }
   if (type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY)
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+    {
+      grub_btrfs_unmount (data);
+      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+    }
 
   err = lower_bound (data, &key_in, &key_out, tree, &elemaddr, &elemsize, &desc);
   if (err)
-    return err;
+    {
+      grub_btrfs_unmount (data);
+      return err;
+    }
   if (key_out.type != GRUB_BTRFS_ITEM_TYPE_DIR_ITEM
       || key_out.object_id != key_in.object_id)
     {
       r = next (data, &desc, &elemaddr, &elemsize, &key_out);
       if (r <= 0)
-	{
-	  free_iterator (&desc);
-	  return -r;
-	}
+	goto out;
     }
   do
     {
@@ -1448,14 +1454,17 @@ grub_btrfs_dir (grub_device_t device, const char *path,
 	  direl = grub_malloc (allocated + 1);
 	  if (!direl)
 	    {
-	      free_iterator (&desc);
-	      return grub_errno;
+	      r = -grub_errno;
+	      break;
 	    }
 	}
 
       err = grub_btrfs_read_logical (data, elemaddr, direl, elemsize);
       if (err)
-	return err;
+	{
+	  r = -err;
+	  break;
+	}
 
       for (cdirel = direl;
 	   (grub_uint8_t *) cdirel - (grub_uint8_t *) direl

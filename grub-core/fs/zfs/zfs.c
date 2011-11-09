@@ -781,9 +781,11 @@ check_pool_label (struct grub_zfs_data *data,
     err = fill_vdev_info (data, nv, diskdesc);
     if (err)
       {
+	grub_free (nv);
 	grub_free (nvlist);
 	return err;
       }
+    grub_free (nv);
   }
   grub_dprintf ("zfs", "check 10 passed\n");
 

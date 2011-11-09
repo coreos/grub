@@ -1048,7 +1048,10 @@ grub_fat_label (grub_device_t device, char **label)
 	  grub_size_t chc;
 	  *label = grub_malloc (11 * 4 + 1);
 	  if (!*label)
-	    return grub_errno;
+	    {
+	      grub_free (data);
+	      return grub_errno;
+	    }
 	  chc = dir.type_specific.volume_label.character_count;
 	  if (chc > ARRAY_SIZE (dir.type_specific.volume_label.str))
 	    chc = ARRAY_SIZE (dir.type_specific.volume_label.str);
@@ -1057,6 +1060,7 @@ grub_fat_label (grub_device_t device, char **label)
 	}
     }
 
+  grub_free (data);
   return grub_errno;
 }
 

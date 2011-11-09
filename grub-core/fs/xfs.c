@@ -771,10 +771,13 @@ grub_xfs_open (struct grub_file *file, const char *name)
     }
 
   if (fdiro != &data->diropen)
-    grub_memcpy (&data->diropen, fdiro,
-		 sizeof (struct grub_fshelp_node)
-		 - sizeof (struct grub_xfs_inode)
-		 + (1 << data->sblock.log2_inode));
+    {
+      grub_memcpy (&data->diropen, fdiro,
+		   sizeof (struct grub_fshelp_node)
+		   - sizeof (struct grub_xfs_inode)
+		   + (1 << data->sblock.log2_inode));
+      grub_free (fdiro);
+    }
 
   file->size = grub_be_to_cpu64 (data->diropen.inode.size);
   file->data = data;

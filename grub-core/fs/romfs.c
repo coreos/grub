@@ -397,7 +397,10 @@ grub_romfs_read (grub_file_t file, char *buf, grub_size_t len)
 static grub_err_t
 grub_romfs_close (grub_file_t file)
 {
-  grub_free (file->data);
+  struct grub_fshelp_node *data = file->data;
+
+  grub_free (data->data);
+  grub_free (data);
 
   return GRUB_ERR_NONE;
 }
@@ -432,6 +435,7 @@ grub_romfs_label (grub_device_t device, char **label)
       return err;
     }
   (*label)[data->first_file - sizeof (struct grub_romfs_superblock)] = 0;
+  grub_free (data);
   return GRUB_ERR_NONE;
 }
 

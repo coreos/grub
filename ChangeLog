@@ -1,5 +1,26 @@
 2011-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix several memory leaks.
+
+	* grub-core/fs/btrfs.c (grub_btrfs_dir): Fix memory leak.
+	* grub-core/fs/cpio.c (grub_cpio_find_file): Likewise.
+	(grub_cpio_dir): Likewise.
+	* grub-core/fs/fat.c (grub_fat_label): Likewise.
+	* grub-core/fs/jfs.c (grub_jfs_label): Likewise.
+	* grub-core/fs/romfs.c (grub_romfs_close): Likewise.
+	(grub_romfs_label): Likewise.
+	* grub-core/fs/squash4.c (squash_mount): Use zalloc for safety.
+	(squash_unmount): New function.
+	(grub_squash_dir): Fix memory leak.
+	(grub_squash_open): Likewise.
+	(grub_squash_read): Likewise.
+	(grub_squash_mtime): Likewise.
+	* grub-core/fs/xfs.c (grub_xfs_open): Likewise.
+	* grub-core/fs/zfs/zfs.c (check_pool_label): Likewise.
+	* util/grub-fstest.c (fstest): Likewise.
+
+2011-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h (grub_strncat): Fix the order of conditionals to
 	avoid accessing beyond the array.
 

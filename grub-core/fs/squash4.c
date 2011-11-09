@@ -287,7 +287,7 @@ squash_mount (grub_disk_t disk)
   if (err)
     return NULL;
 
-  data = grub_malloc (sizeof (*data));
+  data = grub_zalloc (sizeof (*data));
   if (!data)
     return NULL;
   data->sb = sb;
@@ -418,6 +418,15 @@ make_root_node (struct grub_squash_data *data, struct grub_fshelp_node *root)
 		    grub_cpu_to_le16 (data->sb.root_ino_offset));
 }
 
+static void
+squash_unmount (struct grub_squash_data *data)
+{
+  grub_free (data->ino.cumulated_block_sizes);
+  grub_free (data->ino.block_sizes);
+  grub_free (data);
+}
+
+
 static grub_err_t
 grub_squash_dir (grub_device_t device, const char *path,
 	       int (*hook) (const char *filename,
@@ -436,6 +445,7 @@ grub_squash_dir (grub_device_t device, const char *path,
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
       info.mtimeset = 1;
       info.mtime = grub_le_to_cpu32 (node->ino.mtime);
+      grub_free (node);
       return hook (filename, &info);
     }
 
@@ -457,7 +467,7 @@ grub_squash_dir (grub_device_t device, const char *path,
   if (!grub_errno)
     grub_squash_iterate_dir (fdiro, iterate);
 
-  grub_free (data);
+  squash_unmount (data);
 
   return grub_errno;
 }
@@ -482,7 +492,7 @@ grub_squash_open (struct grub_file *file, const char *name)
 			 grub_squash_read_symlink, GRUB_FSHELP_REG);
   if (grub_errno)
     {
-      grub_free (data);
+      squash_unmount (data);
       return grub_errno;
     }
 
@@ -498,6 +508,8 @@ grub_squash_open (struct grub_file *file, const char *name)
     file->size = grub_le_to_cpu64 (fdiro->ino.long_file.size);
   else
     file->size = grub_le_to_cpu32 (fdiro->ino.file.size);
+
+  grub_free (fdiro);
 
   return GRUB_ERR_NONE;
 }
@@ -664,7 +676,7 @@ grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
 static grub_err_t
 grub_squash_close (grub_file_t file)
 {
-  grub_free (file->data);
+  squash_unmount (file->data);
   return GRUB_ERR_NONE;
 }
 
@@ -677,7 +689,7 @@ grub_squash_mtime (grub_device_t dev, grub_int32_t *tm)
   if (! data)
     return grub_errno;
   *tm = grub_le_to_cpu32 (data->sb.creation_time);
-  grub_free (data);
+  squash_unmount (data);
   return GRUB_ERR_NONE;
 } 
 

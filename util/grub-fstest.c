@@ -401,7 +401,9 @@ fstest (int n, char **args)
 	if (!uuid)
 	  grub_util_error ("couldn't retrieve UUID");
 	argv[1] = uuid;
-	execute_command ("xnu_uuid", 2, argv);	
+	execute_command ("xnu_uuid", 2, argv);
+	grub_free (uuid);
+	grub_device_close (dev);
       }
     }
     
