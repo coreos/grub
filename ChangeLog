@@ -1,3 +1,25 @@
+2011-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Several AFFS fixes.
+
+	* grub-core/fs/affs.c (grub_affs_bblock): Replace flags with version.
+	(GRUB_AFFS_FLAG_FFS): Removed.
+	(GRUB_AFFS_SYMLINK_SIZE): Likewise.
+	(GRUB_AFFS_FILETYPE_DIR): Make positive and unsigned.
+	(GRUB_AFFS_FILETYPE_DIR), (GRUB_AFFS_FILETYPE_REG): Fix a mix-up.
+	(grub_fshelp_node): Make block 32-bit.
+	Add block_cache and last_block_cache.
+	(grub_affs_read_block): Fill and use block cache.
+	(grub_affs_read_file): Removed.
+	(grub_affs_mount): Zero-fill node. Fix version check. Don't reread
+	boot block.
+	(grub_affs_read_symlink): Fix symlink size. Add a \0 at the end for
+	safety.
+	(grub_affs_iterate_dir): Use more appropriate types. Zero-fill allocated
+	space.
+	(grub_affs_close): Free block cache.
+	(grub_affs_read): Use grub_fshelp_read_file directly.
+
 2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/zfs/zfs.c (read_dva): Issue an error if read failed
