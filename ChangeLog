@@ -1,5 +1,9 @@
 2011-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add missing -mXX to TARGET_CPPFLAGS.
+
+2011-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Several AFFS fixes.
 
 	* grub-core/fs/affs.c (grub_affs_bblock): Replace flags with version.
