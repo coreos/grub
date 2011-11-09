@@ -87,7 +87,7 @@ grub_strncat (char *dest, const char *src, int c)
   while (*p)
     p++;
 
-  while ((*p = *src) != '\0' && c--)
+  while (c-- && (*p = *src) != '\0')
     {
       p++;
       src++;
