@@ -1,5 +1,15 @@
 2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove local keyword.
+
+	* util/grub-mkconfig_lib.in (version_test_numeric): Remove local.
+	(version_test_gt): Likewise.
+	(version_find_latest): Likewise.
+	(gettext_printf): Likewise.
+	* util/grub.d/10_windows.in (get_os_name_from_boot_ini): Likewise.
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (zfs_mount): Fix spurious warning.
 
 2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
