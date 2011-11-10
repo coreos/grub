@@ -1,3 +1,8 @@
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i386/netbsd_bootinfo.h (grub_netbsd_btinfo_bootwedge):
+	Fix declaration.
+
 2011-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix several memory leaks.
