@@ -559,9 +559,9 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	    filename = "..";
 	  else if (entry->len >= 5)
 	    {
-	      int size = 1;
+	      grub_size_t size = 1, csize = 1;
 	      char *old;
-	      size = entry->len - 5;
+	      csize = size = entry->len - 5;
 	      old = filename;
 	      if (filename_alloc)
 		{
@@ -580,7 +580,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 		  return grub_errno;
 		}
 	      filename_alloc = 1;
-	      grub_strncat (filename, (char *) &entry->data[1], size);
+	      grub_strncat (filename, (char *) &entry->data[1], csize);
 	      filename[size] = '\0';
 	    }
 	}
