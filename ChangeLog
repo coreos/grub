@@ -1,3 +1,15 @@
+2011-11-10  Shea Levy  <slevy@tieronedesign.com>
+
+	Allow all modules to perform serial IO
+
+	* grub-core/term-serial.c (grub_serial_find): Remove static qualifier
+	* include/grub/serial.h (grub_serial_port_configure): New inline
+	function.
+	(grub_serial_port_fetch): Likewise.
+	(grub_serial_port_put): Likewise.
+	(grub_serial_port_fini): Likewise.
+	(grub_serial_find): New proto.
+
 2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Put symlink at the end of the node and fix a potential

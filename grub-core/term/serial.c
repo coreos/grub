@@ -125,7 +125,7 @@ static struct grub_term_output grub_serial_term_output =
 
 
 
-static struct grub_serial_port *
+struct grub_serial_port *
 grub_serial_find (char *name)
 {
   struct grub_serial_port *port;
