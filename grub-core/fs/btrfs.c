@@ -734,12 +734,11 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 				      &low);
 
 	      high = grub_divmod64 (middle,
-				    grub_le_to_cpu16 (chunk->nsubstripes),
+				    grub_le_to_cpu16 (chunk->nstripes)
+				    / grub_le_to_cpu16 (chunk->nsubstripes),
 				    &stripen);
-	      stripen *= grub_le_to_cpu16 (chunk->nstripes)
-		/ grub_le_to_cpu16 (chunk->nsubstripes);
-	      redundancy = grub_le_to_cpu16 (chunk->nstripes)
-		/ grub_le_to_cpu16 (chunk->nsubstripes);
+	      stripen *= grub_le_to_cpu16 (chunk->nsubstripes);
+	      redundancy = grub_le_to_cpu16 (chunk->nsubstripes);
 	      stripe_offset = low + grub_le_to_cpu64 (chunk->stripe_length)
 		* high;
 	      csize = grub_le_to_cpu64 (chunk->stripe_length) - low;
