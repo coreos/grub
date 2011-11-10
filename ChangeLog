@@ -1,5 +1,9 @@
 2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (zfs_mount): Fix spurious warning.
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix ZFS memory and resource leaks.
 
 	* grub-core/fs/zfs/zfs.c (fill_vdev_info_real): New paramter inserted.
