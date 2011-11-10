@@ -1,5 +1,19 @@
 2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix ZFS memory and resource leaks.
+
+	* grub-core/fs/zfs/zfs.c (fill_vdev_info_real): New paramter inserted.
+	All users updated.
+	Free type on exit.
+	(fill_vdev_info): New parameter inserted. All users updated.
+	(check_pool_label): Likewise.
+	(scan_disk): Likewise.
+	(scan_devices): Close non-inserted disks.
+	(fzap_iterate): Free l.
+	(unmount_device): Free children descripto memory.
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Fix grub_strncat
 	argument (access out of bounds).
 
