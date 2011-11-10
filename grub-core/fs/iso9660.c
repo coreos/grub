@@ -159,8 +159,9 @@ struct grub_fshelp_node
 {
   struct grub_iso9660_data *data;
   grub_size_t have_dirents, alloc_dirents;
-  char *symlink;
+  int have_symlink;
   struct grub_iso9660_dir dirents[8];
+  char symlink[0];
 };
 
 enum
@@ -408,9 +409,9 @@ set_rockridge (struct grub_iso9660_data *data)
       struct grub_fshelp_node rootnode;
 
       rootnode.data = data;
-      rootnode.alloc_dirents = 0;
+      rootnode.alloc_dirents = ARRAY_SIZE (rootnode.dirents);
       rootnode.have_dirents = 1;
-      rootnode.symlink = 0;
+      rootnode.have_symlink = 0;
       rootnode.dirents[0] = data->voldesc.rootdir;
 
       /* The 2nd data byte stored how many bytes are skipped every time
@@ -500,7 +501,10 @@ grub_iso9660_mount (grub_disk_t disk)
 static char *
 grub_iso9660_read_symlink (grub_fshelp_node_t node)
 {
-  return node->symlink ? grub_strdup (node->symlink) : grub_strdup ("");
+  return node->have_symlink 
+    ? grub_strdup (node->symlink
+		   + (node->have_dirents) * sizeof (node->dirents[0])
+		   - sizeof (node->dirents)) : grub_strdup ("");
 }
 
 static grub_off_t
@@ -703,7 +707,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 
 	/* Setup a new node.  */
 	node->data = dir->data;
-	node->symlink = symlink;
+	node->have_symlink = 0;
 
 	/* If the filetype was not stored using rockridge, use
 	   whatever is stored in the iso9660 filesystem.  */
@@ -767,10 +771,11 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	      {
 		struct grub_fshelp_node *new_node;
 		node->alloc_dirents *= 2;
-		new_node = grub_malloc (sizeof (struct grub_fshelp_node)
-				    + ((node->alloc_dirents
-				       - ARRAY_SIZE (node->dirents))
-				       * sizeof (node->dirents[0])));
+		new_node = grub_realloc (node, 
+					 sizeof (struct grub_fshelp_node)
+					 + ((node->alloc_dirents
+					     - ARRAY_SIZE (node->dirents))
+					    * sizeof (node->dirents[0])));
 		if (!new_node)
 		  {
 		    if (filename_alloc)
@@ -778,8 +783,36 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 		    grub_free (node);
 		    return 0;
 		  }
+		node = new_node;
 	      }
 	    node->dirents[node->have_dirents++] = dirent;
+	  }
+	if (symlink)
+	  {
+	    if ((node->alloc_dirents - node->have_dirents)
+		* sizeof (node->dirents[0]) < grub_strlen (symlink) + 1)
+	      {
+		struct grub_fshelp_node *new_node;
+		new_node = grub_realloc (node,
+					 sizeof (struct grub_fshelp_node)
+					 + ((node->alloc_dirents
+					     - ARRAY_SIZE (node->dirents))
+					    * sizeof (node->dirents[0]))
+					 + grub_strlen (symlink) + 1);
+		if (!new_node)
+		  {
+		    if (filename_alloc)
+		      grub_free (filename);
+		    grub_free (node);
+		    return 0;
+		  }
+		node = new_node;
+	      }
+	    node->have_symlink = 1;
+	    grub_strcpy (node->symlink
+			 + node->have_dirents * sizeof (node->dirents[0])
+			 - sizeof (node->dirents), symlink);
+	    grub_free (symlink);
 	  }
 	if (hook (filename, type, node))
 	  {
@@ -832,7 +865,7 @@ grub_iso9660_dir (grub_device_t device, const char *path,
   rootnode.data = data;
   rootnode.alloc_dirents = 0;
   rootnode.have_dirents = 1;
-  rootnode.symlink = 0;
+  rootnode.have_symlink = 0;
   rootnode.dirents[0] = data->voldesc.rootdir;
 
   /* Use the fshelp function to traverse the path.  */
@@ -875,7 +908,7 @@ grub_iso9660_open (struct grub_file *file, const char *name)
   rootnode.data = data;
   rootnode.alloc_dirents = 0;
   rootnode.have_dirents = 1;
-  rootnode.symlink = 0;
+  rootnode.have_symlink = 0;
   rootnode.dirents[0] = data->voldesc.rootdir;
 
   /* Use the fshelp function to traverse the path.  */

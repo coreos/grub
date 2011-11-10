@@ -1,5 +1,19 @@
 2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Put symlink at the end of the node and fix a potential
+	memory corruption.
+
+	* grub-core/fs/iso9660.c (grub_fshelp_node): New field have_symlink.
+	Make symlink into an array.
+	(set_rockridge): Set have_symlink and alloc_dirents.
+	(grub_iso9660_read_symlink): Use new layout.
+	(grub_iso9660_iterate_dir): Fix memory corruption.
+	Use new layout.
+	(grub_iso9660_dir): Set have_symlink.
+	(grub_iso9660_open): Likewise.
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove local keyword.
 
 	* util/grub-mkconfig_lib.in (version_test_numeric): Remove local.
