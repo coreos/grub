@@ -136,7 +136,7 @@ grub_cmd_probe (grub_extcmd_context_t ctxt, int argc, char **args)
 	return err;
       if (! label)
 	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			   "uuid for this FS isn't supported yet");
+			   "label for this FS isn't supported yet");
 
       if (state[0].set)
 	grub_env_set (state[0].arg, label);

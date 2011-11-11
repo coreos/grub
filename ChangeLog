@@ -1,3 +1,7 @@
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/probe.c (grub_cmd_probe): Fix error message.
+
 2011-11-10  Shea Levy  <slevy@tieronedesign.com>
 
 	Allow all modules to perform serial IO
