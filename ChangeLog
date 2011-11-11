@@ -1,5 +1,11 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/efiemu/mm.c (grub_efiemu_mmap_fill): Change printf into
+	dprintf.
+	* grub-core/font/font.c (grub_font_load): Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-macho2img.c: Add comment concerning gettext.
 	* grub-core/lib/legacy_parse.c: Likewise.
 
