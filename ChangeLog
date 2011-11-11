@@ -1,5 +1,10 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/x86_64/dl.c (grub_arch_dl_relocate_symbols): Issue
+	an error and not a fatal on unrecognised relocation types.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_parse_args):
 	Issue error rather than printf on unknown arguments.
 
