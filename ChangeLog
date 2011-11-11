@@ -1,5 +1,13 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support %1$d syntax.
+
+	* tests/printf_unit_test.c: New file.
+	* Makefile.util.def (printf_test): New test.
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Support %1$d syntax.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/hook/datehook.c (grub_read_hook_datetime): Small stylistic
 	fix.
 
