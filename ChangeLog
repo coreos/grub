@@ -1,3 +1,8 @@
+2011-11-11  Robert Millan  <rmh@gnu.org>
+
+	* util/getroot.c (grub_util_get_geom_abstraction): Remove
+	__attribute__((unused)) from `os_dev', which *is* being used.
+
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Replace grub_fatal with normal errors in i386 linux loader.

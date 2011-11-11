@@ -826,7 +826,7 @@ grub_util_get_geom_abstraction (const char *dev)
 #endif
 
 int
-grub_util_get_dev_abstraction (const char *os_dev __attribute__((unused)))
+grub_util_get_dev_abstraction (const char *os_dev)
 {
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   /* User explicitly claims that this drive is visible by BIOS.  */
