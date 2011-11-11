@@ -145,7 +145,7 @@ grub_mini_cmd_lsmod (struct grub_command *cmd __attribute__ ((unused)),
 {
   grub_dl_t mod;
 
-  grub_printf ("Name\tRef Count\tDependencies\n");
+  grub_printf_ (N_("Name\tRef Count\tDependencies\n"));
   FOR_DL_MODULES (mod)
   {
     grub_dl_dep_t dep;

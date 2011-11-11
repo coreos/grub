@@ -28,6 +28,7 @@
 #include <grub/mm.h>
 #include <grub/video.h>
 #include <grub/i386/pc/int.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -993,15 +994,15 @@ grub_video_vbe_get_info_and_fini (struct grub_video_mode_info *mode_info,
 static void
 grub_video_vbe_print_adapter_specific_info (void)
 {
-  grub_printf ("  VBE info:   version: %d.%d  OEM software rev: %d.%d\n",
-	       controller_info.version >> 8,
-               controller_info.version & 0xFF,
-               controller_info.oem_software_rev >> 8,
-               controller_info.oem_software_rev & 0xFF);
-
+  grub_printf_ (N_("  VBE info:   version: %d.%d  OEM software rev: %d.%d\n"),
+		controller_info.version >> 8,
+		controller_info.version & 0xFF,
+		controller_info.oem_software_rev >> 8,
+		controller_info.oem_software_rev & 0xFF);
+  
   /* The total_memory field is in 64 KiB units.  */
-  grub_printf ("              total memory: %d KiB\n",
-               (controller_info.total_memory << 16) / 1024);
+  grub_printf_ (N_("              total memory: %d KiB\n"),
+		(controller_info.total_memory << 16) / 1024);
 }
 
 static struct grub_video_adapter grub_video_vbe_adapter =

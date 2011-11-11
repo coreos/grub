@@ -226,7 +226,7 @@ grub_util_get_geli_uuid (const char *dev)
 
   uuid = xmalloc (GRUB_MD_SHA256->mdlen * 2 + 1);
   if (grub_util_fd_read (fd, (void *) &hdr, 512) < 0)
-    grub_util_error ("couldn't read ELI metadata");
+    grub_util_error (_("couldn't read ELI metadata"));
 	  
   COMPILE_TIME_ASSERT (sizeof (header) <= 512);
   header = (void *) &hdr;
@@ -235,7 +235,7 @@ grub_util_get_geli_uuid (const char *dev)
   if (grub_memcmp (header->magic, GELI_MAGIC, sizeof (GELI_MAGIC))
       || grub_le_to_cpu32 (header->version) > 5
       || grub_le_to_cpu32 (header->version) < 1)
-    grub_util_error ("wrong ELI magic or version");
+    grub_util_error (_("wrong ELI magic or version"));
 
   err = make_uuid ((void *) &hdr, uuid);
   if (err)
@@ -418,15 +418,15 @@ recover_key (grub_disk_t source, grub_cryptodisk_t dev)
   keysize = grub_le_to_cpu16 (header.keylen) / 8;
   grub_memset (zero, 0, sizeof (zero));
 
-  grub_printf ("Attempting to decrypt master key...\n");
+  grub_puts_ (N_("Attempting to decrypt master key..."));
 
   /* Get the passphrase from the user.  */
   tmp = NULL;
   if (source->partition)
     tmp = grub_partition_get_name (source->partition);
-  grub_printf ("Enter passphrase for %s%s%s (%s): ", source->name,
-	       source->partition ? "," : "", tmp ? : "",
-	       dev->uuid);
+  grub_printf_ (N_("Enter passphrase for %s%s%s (%s): "), source->name,
+		source->partition ? "," : "", tmp ? : "",
+		dev->uuid);
   grub_free (tmp);
   if (!grub_password_get (passphrase, MAX_PASSPHRASE))
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "Passphrase not supplied");
@@ -513,7 +513,7 @@ recover_key (grub_disk_t source, grub_cryptodisk_t dev)
 
       if (grub_memcmp (candidate_key.hmac, key_hmac, dev->hash->mdlen) != 0)
 	continue;
-      grub_printf ("Slot %d opened\n", i);
+      grub_printf_ (N_("Slot %d opened\n"), i);
 
       /* Set the master key.  */
       if (!dev->rekey)

@@ -1,5 +1,56 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/acpihalt.c: Gettextized.
+	* grub-core/commands/cacheinfo.c: Likewise.
+	* grub-core/commands/cmp.c: Likewise.
+	* grub-core/commands/efi/loadbios.c: Likewise.
+	* grub-core/commands/gptsync.c: Likewise.
+	* grub-core/commands/ieee1275/suspend.c: Likewise.
+	* grub-core/commands/legacycfg.c: Likewise.
+	* grub-core/commands/memrw.c: Likewise.
+	* grub-core/commands/minicmd.c: Likewise.
+	* grub-core/commands/parttool.c: Likewise.
+	* grub-core/commands/time.c: Likewise.
+	* grub-core/commands/videoinfo.c: Likewise.
+	* grub-core/disk/geli.c: Likewise.
+	* grub-core/disk/i386/pc/biosdisk.c: Likewise.
+	* grub-core/disk/luks.c: Likewise.
+	* grub-core/disk/lvm.c: Likewise.
+	* grub-core/font/font_cmd.c: Likewise.
+	* grub-core/fs/zfs/zfscrypt.c: Likewise.
+	* grub-core/fs/zfs/zfsinfo.c: Likewise.
+	* grub-core/gfxmenu/view.c: Likewise.
+	* grub-core/kern/emu/hostdisk.c: Likewise.
+	* grub-core/kern/emu/main.c: Likewise.
+	* grub-core/kern/emu/misc.c: Likewise.
+	* grub-core/kern/emu/mm.c: Likewise.
+	* grub-core/kern/mips/arc/init.c: Likewise.
+	* grub-core/kern/mips/loongson/init.c: Likewise.
+	* grub-core/kern/partition.c: Likewise.
+	* grub-core/lib/i386/halt.c: Likewise.
+	* grub-core/lib/mips/arc/reboot.c: Likewise.
+	* grub-core/lib/mips/loongson/reboot.c: Likewise.
+	* grub-core/loader/i386/pc/chainloader.c: Likewise.
+	* grub-core/loader/i386/xnu.c: Likewise.
+	* grub-core/loader/multiboot.c: Likewise.
+	* grub-core/net/bootp.c: Likewise.
+	* grub-core/net/net.c: Likewise.
+	* grub-core/normal/term.c: Likewise.
+	* grub-core/partmap/bsdlabel.c: Likewise.
+	* grub-core/parttool/msdospart.c: Likewise.
+	* grub-core/term/gfxterm.c: Likewise.
+	* grub-core/term/terminfo.c: Likewise.
+	* grub-core/video/i386/pc/vbe.c: Likewise.
+	* util/grub-menulst2cfg.c: Likewise.
+	* util/grub-mkdevicemap.c: Likewise.
+	* util/grub-mklayout.c: Likewise.
+	* util/grub-mkrelpath.c: Likewise.
+	* util/grub-script-check.c: Likewise.
+	* util/ieee1275/grub-ofpathname.c: Likewise.
+	* util/resolve.c: Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support %1$d syntax.
 
 	* tests/printf_unit_test.c: New file.

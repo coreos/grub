@@ -606,7 +606,7 @@ print_terminfo (void)
   };
   struct grub_term_output *cur;
 
-  grub_printf ("Current terminfo types: \n");
+  grub_puts_ (N_("Current terminfo types:"));
   for (cur = terminfo_outputs; cur;
        cur = ((struct grub_terminfo_output_state *) cur->data)->next)
     grub_printf ("%s: %s\t%s\n", cur->name,

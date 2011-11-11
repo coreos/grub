@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 
   if (argc != 2 || strcmp (argv[1], "--help") == 0)
     {
-      printf("Usage: %s DEVICE\n", program_name);
+      printf(_("Usage: %s DEVICE\n"), program_name);
       return 1;
     }
   if (strcmp (argv[1], "--version") == 0)

@@ -269,7 +269,7 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
   struct stat st;
 
   if (fstat (fd, &st) < 0)
-    grub_util_error ("fstat failed");
+    grub_util_error (_("fstat failed"));
 
 #if defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
   defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) \
@@ -324,7 +324,7 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
     return minfo.dki_capacity;
 # else
     if (nr & ((1 << log_sector_size) - 1))
-      grub_util_error ("unaligned device size");
+      grub_util_error (_("unaligned device size"));
 
     return (nr >> log_sector_size);
 # endif
@@ -373,7 +373,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     size = grub_util_get_disk_size (map[drive].device);
 
     if (size % 512)
-      grub_util_error ("unaligned device size");
+      grub_util_error (_("unaligned device size"));
 
     disk->total_sectors = size >> 9;
 
@@ -442,13 +442,13 @@ grub_util_follow_gpart_up (const char *name, grub_disk_addr_t *off_out, char **n
 
   error = geom_gettree (&mesh);
   if (error != 0)
-    grub_util_error ("couldn't open geom");
+    grub_util_error (_("couldn't open geom"));
 
   LIST_FOREACH (class, &mesh.lg_class, lg_class)
     if (strcasecmp (class->lg_name, "part") == 0)
       break;
   if (!class)
-    grub_util_error ("couldn't open geom part");
+    grub_util_error (_("couldn't open geom part"));
 
   LIST_FOREACH (geom, &class->lg_geom, lg_geom)
     { 
@@ -1144,18 +1144,18 @@ read_device_map (const char *dev_map)
 	continue;
 
       if (*p != '(')
-	show_error ("No open parenthesis found");
+	show_error (_("No open parenthesis found"));
 
       p++;
       /* Find a free slot.  */
       drive = find_free_slot ();
       if (drive < 0)
-	show_error ("Map table size exceeded");
+	show_error (_("Map table size exceeded"));
 
       e = p;
       p = strchr (p, ')');
       if (! p)
-	show_error ("No close parenthesis found");
+	show_error (_("No close parenthesis found"));
 
       map[drive].drive = xmalloc (p - e + sizeof ('\0'));
       strncpy (map[drive].drive, e, p - e + sizeof ('\0'));
@@ -1167,7 +1167,7 @@ read_device_map (const char *dev_map)
 	p++;
 
       if (*p == '\0')
-	show_error ("No filename found");
+	show_error (_("No filename found"));
 
       /* NUL-terminate the filename.  */
       e = p;
@@ -1196,7 +1196,7 @@ read_device_map (const char *dev_map)
 	{
 	  map[drive].device = xmalloc (PATH_MAX);
 	  if (! realpath (p, map[drive].device))
-	    grub_util_error ("cannot get the real path of `%s'", p);
+	    grub_util_error (_("cannot get the real path of `%s'"), p);
 	}
       else
 #endif

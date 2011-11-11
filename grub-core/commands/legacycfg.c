@@ -723,7 +723,7 @@ grub_cmd_legacy_check_password (struct grub_command *mycmd __attribute__ ((unuse
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments expected");
-  grub_printf ("Enter password:");
+  grub_puts_ (N_("Enter password: "));
   if (!grub_password_get (entered, GRUB_AUTH_MAX_PASSLEN))
     return GRUB_ACCESS_DENIED;
 

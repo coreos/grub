@@ -24,6 +24,7 @@
 #include <grub/misc.h>
 #include <grub/lvm.h>
 #include <grub/partition.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_UTIL
 #include <grub/emu/misc.h>
@@ -775,7 +776,7 @@ grub_lvm_memberlist (grub_disk_t disk)
     for (pv = lv->vg->pvs; pv; pv = pv->next)
       {
 	if (!pv->disk)
-	  grub_util_error ("Couldn't find PV %s. Check your device.map",
+	  grub_util_error (_("Couldn't find PV %s. Check your device.map"),
 			   pv->name);
 	tmp = grub_malloc (sizeof (*tmp));
 	tmp->disk = pv->disk;

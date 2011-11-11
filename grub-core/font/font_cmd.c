@@ -49,7 +49,7 @@ lsfonts_command (grub_command_t cmd __attribute__ ((unused)),
 {
   struct grub_font_node *node;
 
-  grub_printf ("Loaded fonts:\n");
+  grub_puts_ (N_("Loaded fonts:"));
   for (node = grub_font_list; node; node = node->next)
     {
       grub_font_t font = node->value;

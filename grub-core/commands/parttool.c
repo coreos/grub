@@ -37,9 +37,9 @@ static struct grub_parttool *parts = 0;
 static int curhandle = 0;
 static grub_dl_t mymod;
 static char helpmsg[] =
-  "Perform COMMANDS on partition.\n"
-  "Use \"parttool PARTITION help\" for the list "
-  "of available commands.";
+  N_("Perform COMMANDS on partition.\n"
+     "Use \"parttool PARTITION help\" for the list "
+     "of available commands.");
 
 int
 grub_parttool_register(const char *part_name,
@@ -128,7 +128,7 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
 		  break;
 
 		case GRUB_PARTTOOL_ARG_VAL:
-		  grub_printf ("=VAL");
+		  grub_xputs (_("=VAL"));
 		  spacing -= 4;
 		  break;
 
@@ -137,18 +137,18 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
 		}
 	      while (spacing-- > 0)
 		grub_printf (" ");
-	      grub_printf ("%s\n", curarg->desc);
+	      grub_puts_ (curarg->desc);
 	    }
 	}
     if (! found)
-      grub_printf ("Sorry no parttool is available for %s\n",
+      grub_printf_ (N_("Sorry no parttool is available for %s\n"),
 		   dev->disk->partition->partmap->name);
     return GRUB_ERR_NONE;
   }
 
   if (argc < 1)
     {
-      grub_printf ("%s\n", helpmsg);
+      grub_puts_ (helpmsg);
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "too few arguments");
     }
 

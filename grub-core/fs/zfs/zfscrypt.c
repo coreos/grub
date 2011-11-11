@@ -421,7 +421,7 @@ grub_cmd_zfs_key (grub_extcmd_context_t ctxt, int argc, char **args)
     }
   else
     {
-      grub_printf ("Enter ZFS password: ");
+      grub_xputs (_("Enter ZFS password: "));
       if (!grub_password_get ((char *) buf, 1023))
 	return grub_errno;
       real_size = grub_strlen ((char *) buf);
@@ -460,8 +460,8 @@ GRUB_MOD_INIT(zfscrypt)
   grub_zfs_decrypt = grub_zfs_decrypt_real;
   grub_zfs_load_key = grub_zfs_load_key_real;
   cmd_key = grub_register_extcmd ("zfskey", grub_cmd_zfs_key, 0,
-				  "zfskey [-h|-p|-r] [FILE]",
-				  "Import ZFS wrapping key stored in FILE.",
+				  N_("[-h|-p|-r] [FILE]"),
+				  N_("Import ZFS wrapping key stored in FILE."),
 				  options);
 }
 
