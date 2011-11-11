@@ -455,7 +455,7 @@ grub_cmd_zfs_key (grub_extcmd_context_t ctxt, int argc, char **args)
 
 static grub_extcmd_t cmd_key;
 
-GRUB_MOD_INIT(zfscrypto)
+GRUB_MOD_INIT(zfscrypt)
 {
   grub_zfs_decrypt = grub_zfs_decrypt_real;
   grub_zfs_load_key = grub_zfs_load_key_real;
@@ -465,7 +465,7 @@ GRUB_MOD_INIT(zfscrypto)
 				  options);
 }
 
-GRUB_MOD_FINI(zfscrypto)
+GRUB_MOD_FINI(zfscrypt)
 {
   grub_zfs_decrypt = 0;
   grub_zfs_load_key = 0;

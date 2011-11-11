@@ -1,5 +1,10 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfscrypt.c (GRUB_MOD_INIT), (GRUB_MOD_FINI):
+	Fix module name.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c (grub_ntfs_read_symlink): Stylistic fix. Remove
 	leftover debug printf.
 
