@@ -1615,7 +1615,7 @@ grub_btrfs_embed (grub_device_t device __attribute__ ((unused)),
 
   if (embed_type != GRUB_EMBED_PCBIOS)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "BtrFS curently supports only PC-BIOS embedding");
+		       "BtrFS currently supports only PC-BIOS embedding");
 
   if (64 * 2 - 1 < *nsectors)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,

@@ -1,5 +1,9 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/btrfs.c (grub_btrfs_embed): Spelling fix.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/efiemu/main.c (grub_efiemu_register_configuration_table):
 	A stylistic fix.
 
