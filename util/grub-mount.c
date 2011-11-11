@@ -32,6 +32,7 @@
 #include <grub/lib/hexdump.h>
 #include <grub/crypto.h>
 #include <grub/command.h>
+#include <grub/zfs/zfs.h>
 #include <grub/i18n.h>
 #include <fuse/fuse.h>
 
@@ -51,6 +52,7 @@ static char *debug_str = NULL;
 static char **fuse_args = NULL;
 static int fuse_argc = 0;
 static int num_disks = 0;
+static int mount_crypt = 0;
 
 static grub_err_t
 execute_command (char *name, int n, char **args)
@@ -333,6 +335,13 @@ fuse_init (void)
       grub_free (host_file);
     }
 
+  if (mount_crypt)
+    {
+      char *argv[2] = { "-a", NULL};
+      if (execute_command ("cryptomount", 1, argv))
+	grub_util_error (_("cryptomount command fails: %s"), grub_errmsg);
+    }
+
   grub_lvm_fini ();
   grub_mdraid09_fini ();
   grub_mdraid1x_fini ();
@@ -378,6 +387,8 @@ fuse_init (void)
 static struct argp_option options[] = {  
   {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."),                 2},
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
+  {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
+  {"zfs-key",      'K', N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
   {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("Print verbose messages."), 2},
   {0, 0, 0, 0, 0, 0}
 };
@@ -399,6 +410,42 @@ argp_parser (int key, char *arg, struct argp_state *state)
     {
     case 'r':
       root = arg;
+      return 0;
+
+    case 'K':
+      if (strcmp (arg, "prompt") == 0)
+	{
+	  char buf[1024];	  
+	  grub_printf ("Enter ZFS password: ");
+	  if (grub_password_get (buf, 1023))
+	    {
+	      grub_zfs_add_key ((grub_uint8_t *) buf, grub_strlen (buf), 1);
+	    }
+	}
+      else
+	{
+	  FILE *f;
+	  ssize_t real_size;
+	  grub_uint8_t buf[1024];
+	  f = fopen (arg, "rb");
+	  if (!f)
+	    {
+	      printf ("Error loading file %s: %s\n", arg, strerror (errno));
+	      return 0;
+	    }
+	  real_size = fread (buf, 1, 1024, f);
+	  if (real_size < 0)
+	    {
+	      printf ("Error loading file %s: %s\n", arg, strerror (errno));
+	      fclose (f);
+	      return 0;
+	    }
+	  grub_zfs_add_key (buf, real_size, 0);
+	}
+      return 0;
+
+    case 'C':
+      mount_crypt = 1;
       return 0;
 
     case 'd':

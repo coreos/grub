@@ -246,6 +246,7 @@ program = {
   common = grub-core/disk/host.c;
 
   ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) -lfuse';
