@@ -363,7 +363,7 @@ uninstall_int13_handler (void)
 static int
 grub_get_root_biosnumber_drivemap (void)
 {
-  char *biosnum;
+  const char *biosnum;
   int ret = -1;
   grub_device_t dev;
 

@@ -26,7 +26,7 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-static char *grub_datetime_names[] =
+static const char *grub_datetime_names[] =
 {
   "YEAR",
   "MONTH",
@@ -37,7 +37,7 @@ static char *grub_datetime_names[] =
   "WEEKDAY",
 };
 
-static char *
+static const char *
 grub_read_hook_datetime (struct grub_env_var *var,
                          const char *val __attribute__ ((unused)))
 {

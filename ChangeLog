@@ -1,5 +1,25 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add const keyword to grub_env_get and gettextize week days.
+
+	* grub-core/hook/datehook.c (grub_datetime_names): Make const.
+	(grub_read_hook_datetime): Return const char *.
+	* grub-core/kern/env.c (grub_env_get): Return const char *. All users
+	updated.
+	* grub-core/normal/datetime.c (grub_weekday_names): Make const.
+	Mark for gettext.
+	(grub_get_weekday_name): Return const char *. Call gettext.
+	* grub-core/script/argv.c (grub_script_argv_append): Receive const
+	char * and len as the argument. All users updated.
+	(grub_script_argv_split_append): Receive const char *.
+	* include/grub/datetime.h (grub_get_weekday_name): Update proto.
+	* include/grub/env.h (grub_env_get): Likewise.
+	(grub_env_read_hook_t): Return const char *.
+	* include/grub/script_sh.h (grub_script_argv_append): Update proto.
+	(grub_script_argv_split_append): Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/main.c (grub_normal_execute): Remove leftover call.
 
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>

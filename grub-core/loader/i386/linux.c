@@ -320,7 +320,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   void *framebuffer;
   grub_err_t err;
   grub_video_driver_id_t driver_id;
-  char *gfxlfbvar = grub_env_get ("gfxpayloadforcelfb");
+  const char *gfxlfbvar = grub_env_get ("gfxpayloadforcelfb");
 
   driver_id = grub_video_get_driver_id ();
 
@@ -418,14 +418,15 @@ grub_linux_boot (void)
   struct linux_kernel_params *params;
   int e820_num;
   grub_err_t err = 0;
-  char *modevar, *tmp;
+  const char *modevar;
+  char *tmp;
   struct grub_relocator32_state state;
 
   params = real_mode_mem;
 
 #ifdef GRUB_MACHINE_IEEE1275
   {
-    char *bootpath;
+    const char *bootpath;
     grub_ssize_t len;
 
     bootpath = grub_env_get ("root");

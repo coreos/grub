@@ -344,7 +344,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	int bsd_part = -1;
 	{
 	  grub_device_t dev;
-	  char *hdbiasstr;
+	  const char *hdbiasstr;
 	  int hdbias = 0;
 	  hdbiasstr = grub_env_get ("legacy_hdbias");
 	  if (hdbiasstr)

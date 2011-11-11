@@ -700,7 +700,7 @@ grub_cpu_xnu_fill_devicetree (void)
     return grub_errno;
 
   /* First see if user supplies the value. */
-  char *fsbvar = grub_env_get ("fsb");
+  const char *fsbvar = grub_env_get ("fsb");
   if (! fsbvar)
     *((grub_uint64_t *) curval->data) = 0;
   else

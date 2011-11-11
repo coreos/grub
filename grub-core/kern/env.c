@@ -132,7 +132,7 @@ grub_env_set (const char *name, const char *val)
   return grub_errno;
 }
 
-char *
+const char *
 grub_env_get (const char *name)
 {
   struct grub_env_var *var;
