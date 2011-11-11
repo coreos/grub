@@ -216,6 +216,8 @@ grub_vprintf (const char *fmt, va_list args)
 	s = grub_vsnprintf_real (curbuf, s, fmt, ap2);
     }
 
+  va_end (ap2);
+
   grub_xputs (curbuf);
 
   if (curbuf != buf)
@@ -911,6 +913,9 @@ grub_xvasprintf (const char *fmt, va_list ap)
 	return NULL;
 
       s = grub_vsnprintf_real (ret, as, fmt, ap2);
+
+      va_end (ap2);
+
       if (s <= as)
 	return ret;
 

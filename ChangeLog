@@ -1,5 +1,10 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_vprintf): Add missing va_end.
+	(grub_xvasprintf): Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add const keyword to grub_env_get and gettextize week days.
 
 	* grub-core/hook/datehook.c (grub_datetime_names): Make const.
