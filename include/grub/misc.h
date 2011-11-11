@@ -113,7 +113,53 @@ int EXPORT_FUNC(grub_strncmp) (const char *s1, const char *s2, grub_size_t n);
 char *EXPORT_FUNC(grub_strchr) (const char *s, int c);
 char *EXPORT_FUNC(grub_strrchr) (const char *s, int c);
 int EXPORT_FUNC(grub_strword) (const char *s, const char *w);
-char *EXPORT_FUNC(grub_strstr) (const char *haystack, const char *needle);
+
+/* Copied from gnulib.
+   Written by Bruno Haible <bruno@clisp.org>, 2005. */
+static inline char *
+grub_strstr (const char *haystack, const char *needle)
+{
+  /* Be careful not to look at the entire extent of haystack or needle
+     until needed.  This is useful because of these two cases:
+       - haystack may be very long, and a match of needle found early,
+       - needle may be very long, and not even a short initial segment of
+       needle may be found in haystack.  */
+  if (*needle != '\0')
+    {
+      /* Speed up the following searches of needle by caching its first
+	 character.  */
+      char b = *needle++;
+
+      for (;; haystack++)
+	{
+	  if (*haystack == '\0')
+	    /* No match.  */
+	    return 0;
+	  if (*haystack == b)
+	    /* The first character matches.  */
+	    {
+	      const char *rhaystack = haystack + 1;
+	      const char *rneedle = needle;
+
+	      for (;; rhaystack++, rneedle++)
+		{
+		  if (*rneedle == '\0')
+		    /* Found a match.  */
+		    return (char *) haystack;
+		  if (*rhaystack == '\0')
+		    /* No match.  */
+		    return 0;
+		  if (*rhaystack != *rneedle)
+		    /* Nothing in this round.  */
+		    break;
+		}
+	    }
+	}
+    }
+  else
+    return (char *) haystack;
+}
+
 int EXPORT_FUNC(grub_isspace) (int c);
 int EXPORT_FUNC(grub_isprint) (int c);
 

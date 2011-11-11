@@ -312,52 +312,6 @@ grub_strrchr (const char *s, int c)
   return p;
 }
 
-/* Copied from gnulib.
-   Written by Bruno Haible <bruno@clisp.org>, 2005. */
-char *
-grub_strstr (const char *haystack, const char *needle)
-{
-  /* Be careful not to look at the entire extent of haystack or needle
-     until needed.  This is useful because of these two cases:
-       - haystack may be very long, and a match of needle found early,
-       - needle may be very long, and not even a short initial segment of
-       needle may be found in haystack.  */
-  if (*needle != '\0')
-    {
-      /* Speed up the following searches of needle by caching its first
-	 character.  */
-      char b = *needle++;
-
-      for (;; haystack++)
-	{
-	  if (*haystack == '\0')
-	    /* No match.  */
-	    return NULL;
-	  if (*haystack == b)
-	    /* The first character matches.  */
-	    {
-	      const char *rhaystack = haystack + 1;
-	      const char *rneedle = needle;
-
-	      for (;; rhaystack++, rneedle++)
-		{
-		  if (*rneedle == '\0')
-		    /* Found a match.  */
-		    return (char *) haystack;
-		  if (*rhaystack == '\0')
-		    /* No match.  */
-		    return NULL;
-		  if (*rhaystack != *rneedle)
-		    /* Nothing in this round.  */
-		    break;
-		}
-	    }
-	}
-    }
-  else
-    return (char *) haystack;
-}
-
 int
 grub_strword (const char *haystack, const char *needle)
 {
