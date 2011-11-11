@@ -1,5 +1,10 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_parse_args):
+	Issue error rather than printf on unknown arguments.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/ieee1275.c (grub_ieee1275_set_property):
 	Make buf a const.
 
