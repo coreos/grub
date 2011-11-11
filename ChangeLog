@@ -1,5 +1,10 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/ieee1275.c (grub_ieee1275_set_property):
+	Make buf a const.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfscrypt.c (GRUB_MOD_INIT), (GRUB_MOD_FINI):
 	Fix module name.
 

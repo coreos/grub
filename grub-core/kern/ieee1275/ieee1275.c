@@ -532,7 +532,7 @@ grub_ieee1275_release (grub_addr_t addr, grub_size_t size)
 
 int
 grub_ieee1275_set_property (grub_ieee1275_phandle_t phandle,
-			    const char *propname, void *buf,
+			    const char *propname, const void *buf,
 			    grub_size_t size, grub_ssize_t *actual)
 {
   struct set_property_args
