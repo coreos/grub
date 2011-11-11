@@ -1,5 +1,9 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/main.c (grub_normal_execute): Remove leftover call.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_strstr): Moved from here ...
 	* include/grub/misc.h (grub_strstr): ... here. Make static and inline.
 
