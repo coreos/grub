@@ -1,5 +1,10 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_set_property):
+	Fix prototype.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix mips compilation.
 
 	* grub-core/lib/xzembed/xz_dec_stream.c (xz_dec): Restrict hash_id to
