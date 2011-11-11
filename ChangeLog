@@ -1,5 +1,14 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Replace grub_fatal with normal errors in i386 linux loader.
+
+	* grub-core/loader/i386/linux.c (find_efi_mmap_size): Return 0 on error.
+	(allocate_pages): Check find_efi_mmap_size return value.
+	(grub_e820_add_region): Return error.
+	(grub_linux_boot): Check mmap return value.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/acpihalt.c: Gettextized.
 	* grub-core/commands/cacheinfo.c: Likewise.
 	* grub-core/commands/cmp.c: Likewise.

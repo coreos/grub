@@ -130,7 +130,10 @@ find_efi_mmap_size (void)
       grub_free (mmap);
 
       if (ret < 0)
-	grub_fatal ("cannot get memory map");
+	{
+	  grub_error (GRUB_ERR_IO, "cannot get memory map");
+	  return 0;
+	}
       else if (ret > 0)
 	break;
 
@@ -198,6 +201,8 @@ allocate_pages (grub_size_t prot_size)
 
 #ifdef GRUB_MACHINE_EFI
   efi_mmap_size = find_efi_mmap_size ();
+  if (efi_mmap_size == 0)
+    return grub_errno;
 #endif
 
   grub_dprintf ("linux", "real_size = %x, prot_size = %x, mmap_size = %x\n",
@@ -291,7 +296,7 @@ allocate_pages (grub_size_t prot_size)
   return err;
 }
 
-static void
+static grub_err_t
 grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
                       grub_uint64_t start, grub_uint64_t size,
                       grub_uint32_t type)
@@ -299,7 +304,10 @@ grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
   int n = *e820_num;
 
   if (n >= GRUB_E820_MAX_ENTRY)
-    grub_fatal ("Too many e820 memory map entries");
+    {
+      return grub_error (GRUB_ERR_OUT_OF_RANGE,
+			 "Too many e820 memory map entries");
+    }
 
   if ((n > 0) && (e820_map[n - 1].addr + e820_map[n - 1].size == start) &&
       (e820_map[n - 1].type == type))
@@ -311,6 +319,7 @@ grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
       e820_map[n].type = type;
       (*e820_num)++;
     }
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -446,37 +455,38 @@ grub_linux_boot (void)
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, 
 			     grub_memory_type_t type)
     {
+      grub_uint32_t e820_type;
       switch (type)
         {
         case GRUB_MEMORY_AVAILABLE:
-	  grub_e820_add_region (params->e820_map, &e820_num,
-				addr, size, GRUB_E820_RAM);
+	  e820_type = GRUB_E820_RAM;
 	  break;
 
         case GRUB_MEMORY_ACPI:
-	  grub_e820_add_region (params->e820_map, &e820_num,
-				addr, size, GRUB_E820_ACPI);
+	  e820_type = GRUB_E820_ACPI;
 	  break;
 
         case GRUB_MEMORY_NVS:
-	  grub_e820_add_region (params->e820_map, &e820_num,
-				addr, size, GRUB_E820_NVS);
+	  e820_type = GRUB_E820_NVS;
 	  break;
 
         case GRUB_MEMORY_BADRAM:
-	  grub_e820_add_region (params->e820_map, &e820_num,
-				addr, size, GRUB_E820_BADRAM);
+	  e820_type = GRUB_E820_BADRAM;
 	  break;
 
         default:
-          grub_e820_add_region (params->e820_map, &e820_num,
-                                addr, size, GRUB_E820_RESERVED);
+          e820_type = GRUB_E820_RESERVED;
         }
+      if (grub_e820_add_region (params->e820_map, &e820_num,
+				addr, size, e820_type))
+	return 1;
+
       return 0;
     }
 
   e820_num = 0;
-  grub_mmap_iterate (hook);
+  if (grub_mmap_iterate (hook))
+    return grub_errno;
   params->mmap_size = e820_num;
 
   modevar = grub_env_get ("gfxpayload");
