@@ -5,6 +5,15 @@
 
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/dl.h (GRUB_ARCH_DL_TRAMP_SIZE) [__ia64__]: Add back
+	forgotten define.
+	(GRUB_ARCH_DL_GOT_ALIGN) [__ia64__]: Redefine in terms of
+	GRUB_IA64_DL_GOT_ALIGN.
+	(GRUB_ARCH_DL_TRAMP_ALIGN) [__ia64__]: Redefine in terms of
+	GRUB_IA64_DL_TRAMP_ALIGN.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Replace grub_fatal with normal errors in i386 linux loader.
 
 	* grub-core/loader/i386/linux.c (find_efi_mmap_size): Return 0 on error.
