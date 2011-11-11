@@ -50,7 +50,7 @@ grub_read_hook_datetime (struct grub_env_var *var,
       int i;
 
       for (i = 0; i < 7; i++)
-        if (! grub_strcmp (var->name, grub_datetime_names[i]))
+        if (grub_strcmp (var->name, grub_datetime_names[i]) == 0)
           {
             int n;
 
