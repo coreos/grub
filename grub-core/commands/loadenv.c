@@ -43,7 +43,7 @@ open_envblk_file (char *filename)
 
   if (! filename)
     {
-      char *prefix;
+      const char *prefix;
 
       prefix = grub_env_get ("prefix");
       if (prefix)
@@ -346,7 +346,7 @@ grub_cmd_save_env (grub_extcmd_context_t ctxt, int argc, char **args)
 
   while (argc)
     {
-      char *value;
+      const char *value;
 
       value = grub_env_get (args[0]);
       if (value)

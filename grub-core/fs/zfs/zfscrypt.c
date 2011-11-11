@@ -277,8 +277,9 @@ grub_zfs_decrypt_real (grub_crypto_cipher_handle_t cipher,
   grub_err_t err;
       
   grub_memcpy (sw, nonce, 16);
-  for (i = 0; i < 4; i++)
-    sw[i] = grub_cpu_to_be32 (grub_zfs_to_cpu32 (sw[i], endian));
+  if (endian != GRUB_ZFS_BIG_ENDIAN)
+    for (i = 0; i < 4; i++)
+      sw[i] = grub_swap_bytes32 (sw[i]);
 
   if (!cipher)
     return grub_error (GRUB_ERR_ACCESS_DENIED,
@@ -420,7 +421,7 @@ grub_cmd_zfs_key (grub_extcmd_context_t ctxt, int argc, char **args)
     }
   else
     {
-      grub_printf ("Enter ZFS password: ");
+      grub_xputs (_("Enter ZFS password: "));
       if (!grub_password_get ((char *) buf, 1023))
 	return grub_errno;
       real_size = grub_strlen ((char *) buf);
@@ -454,17 +455,17 @@ grub_cmd_zfs_key (grub_extcmd_context_t ctxt, int argc, char **args)
 
 static grub_extcmd_t cmd_key;
 
-GRUB_MOD_INIT(zfscrypto)
+GRUB_MOD_INIT(zfscrypt)
 {
   grub_zfs_decrypt = grub_zfs_decrypt_real;
   grub_zfs_load_key = grub_zfs_load_key_real;
   cmd_key = grub_register_extcmd ("zfskey", grub_cmd_zfs_key, 0,
-				  "zfskey [-h|-p|-r] [FILE]",
-				  "Import ZFS wrapping key stored in FILE.",
+				  N_("[-h|-p|-r] [FILE]"),
+				  N_("Import ZFS wrapping key stored in FILE."),
 				  options);
 }
 
-GRUB_MOD_FINI(zfscrypto)
+GRUB_MOD_FINI(zfscrypt)
 {
   grub_zfs_decrypt = 0;
   grub_zfs_load_key = 0;

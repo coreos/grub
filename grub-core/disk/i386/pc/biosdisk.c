@@ -27,6 +27,7 @@
 #include <grub/misc.h>
 #include <grub/err.h>
 #include <grub/term.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -625,7 +626,7 @@ GRUB_MOD_INIT(biosdisk)
 
   if (grub_disk_firmware_is_tainted)
     {
-      grub_printf ("Firmware is marked as tainted, refusing to initialize.\n");
+      grub_puts_ (N_("Firmware is marked as tainted, refusing to initialize."));
       return;
     }
   grub_disk_firmware_fini = grub_disk_biosdisk_fini;

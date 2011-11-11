@@ -891,6 +891,8 @@ grub_jfs_label (grub_device_t device, char **label)
   else
     *label = 0;
 
+  grub_free (data);
+
   return grub_errno;
 }
 

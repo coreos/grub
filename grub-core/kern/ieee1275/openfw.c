@@ -403,7 +403,8 @@ grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
       break;
     default:
     unknown:
-      grub_printf ("Unsupported type %s for device %s\n", type, device);
+      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		  "unsupported type %s for device %s", type, device);
     }
 
 fail:

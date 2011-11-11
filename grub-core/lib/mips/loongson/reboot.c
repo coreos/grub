@@ -24,6 +24,7 @@
 #include <grub/cs5536.h>
 #include <grub/time.h>
 #include <grub/term.h>
+#include <grub/i18n.h>
 
 void
 grub_reboot (void)
@@ -51,7 +52,7 @@ grub_reboot (void)
     }
   grub_millisleep (1500);
 
-  grub_printf ("Reboot failed\n");
+  grub_puts_ (N_("Reboot failed"));
   grub_refresh ();
   while (1);
 }

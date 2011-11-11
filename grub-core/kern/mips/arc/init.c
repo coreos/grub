@@ -33,6 +33,7 @@
 #include <grub/term.h>
 #include <grub/arc/arc.h>
 #include <grub/offsets.h>
+#include <grub/i18n.h>
 
 const char *type_names[] = {
 #ifdef GRUB_CPU_WORDS_BIGENDIAN
@@ -178,7 +179,7 @@ grub_halt (void)
 
   grub_millisleep (1500);
 
-  grub_printf ("Shutdown failed\n");
+  grub_puts_ (N_("Shutdown failed"));
   grub_refresh ();
   while (1);
 }
@@ -190,7 +191,7 @@ grub_exit (void)
 
   grub_millisleep (1500);
 
-  grub_printf ("Exit failed\n");
+  grub_puts_ (N_("Exit failed"));
   grub_refresh ();
   while (1);
 }

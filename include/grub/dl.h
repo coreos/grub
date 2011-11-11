@@ -178,8 +178,9 @@ grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got);
 
 #if defined (__ia64__)
-#define GRUB_ARCH_DL_TRAMP_ALIGN 16
-#define GRUB_ARCH_DL_GOT_ALIGN 16
+#define GRUB_ARCH_DL_TRAMP_ALIGN GRUB_IA64_DL_TRAMP_ALIGN
+#define GRUB_ARCH_DL_GOT_ALIGN GRUB_IA64_DL_GOT_ALIGN
+#define GRUB_ARCH_DL_TRAMP_SIZE GRUB_IA64_DL_TRAMP_SIZE
 #define grub_arch_dl_get_tramp_got_size grub_ia64_dl_get_tramp_got_size
 #else
 void

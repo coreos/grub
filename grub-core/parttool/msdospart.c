@@ -27,6 +27,7 @@
 #include <grub/disk.h>
 #include <grub/partition.h>
 #include <grub/parttool.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv2+");
 
@@ -35,7 +36,7 @@ static int type_table_handle = -1;
 
 static struct grub_parttool_argdesc grub_pcpart_bootargs[] =
 {
-  {"boot", "Make partition active", GRUB_PARTTOOL_ARG_BOOL},
+  {"boot", N_("Make partition active"), GRUB_PARTTOOL_ARG_BOOL},
   {0, 0, 0}
 };
 
@@ -65,12 +66,12 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
       for (i = 0; i < 4; i++)
 	mbr.entries[i].flag = 0x0;
       mbr.entries[index].flag = 0x80;
-      grub_printf ("Partition %d is active now. \n", index);
+      grub_printf_ (N_("Partition %d is active now. \n"), index);
     }
   else
     {
       mbr.entries[index].flag = 0x0;
-      grub_printf ("Cleared active flag on %d. \n", index);
+      grub_printf (N_("Cleared active flag on %d. \n"), index);
     }
 
    /* Write the MBR.  */
@@ -83,8 +84,8 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
 
 static struct grub_parttool_argdesc grub_pcpart_typeargs[] =
 {
-  {"type", "Change partition type", GRUB_PARTTOOL_ARG_VAL},
-  {"hidden", "Make partition hidden", GRUB_PARTTOOL_ARG_BOOL},
+  {"type", N_("Change partition type"), GRUB_PARTTOOL_ARG_VAL},
+  {"hidden", N_("Make partition hidden"), GRUB_PARTTOOL_ARG_BOOL},
   {0, 0, 0}
 };
 
@@ -129,7 +130,7 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
     }
 
   mbr.entries[index].type = type;
-  grub_printf ("Setting partition type to 0x%x\n", type);
+  grub_printf_ (N_("Setting partition type to 0x%x\n"), type);
 
    /* Write the parttable.  */
   grub_disk_write (dev->disk, part->offset, 0,

@@ -946,16 +946,16 @@ static grub_command_t cmd_lsaddr;
 GRUB_MOD_INIT(net)
 {
   cmd_addaddr = grub_register_command ("net_add_addr", grub_cmd_addaddr,
-				       "SHORTNAME CARD ADDRESS [HWADDRESS]",
+				       N_("SHORTNAME CARD ADDRESS [HWADDRESS]"),
 				       N_("Add a network address."));
   cmd_deladdr = grub_register_command ("net_del_addr", grub_cmd_deladdr,
-				       "SHORTNAME",
+				       N_("SHORTNAME"),
 				       N_("Delete a network address."));
   cmd_addroute = grub_register_command ("net_add_route", grub_cmd_addroute,
-					"SHORTNAME NET [INTERFACE| gw GATEWAY]",
+					N_("SHORTNAME NET [INTERFACE| gw GATEWAY]"),
 					N_("Add a network route."));
   cmd_delroute = grub_register_command ("net_del_route", grub_cmd_delroute,
-					"SHORTNAME",
+					N_("SHORTNAME"),
 					N_("Delete a network route."));
   cmd_lsroutes = grub_register_command ("net_ls_routes", grub_cmd_listroutes,
 					"", N_("list network routes"));

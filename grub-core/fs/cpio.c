@@ -147,6 +147,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       && grub_memcmp(*name, "TRAILER!!!", 11) == 0)
     {
       *ofs = 0;
+      grub_free (*name);
       return GRUB_ERR_NONE;
     }
 
@@ -481,6 +482,8 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 		}
 	    }
 	}
+      else
+	grub_free (name);
       data->hofs = ofs;
     }
 

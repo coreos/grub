@@ -450,7 +450,8 @@ grub_freebsd_list_modules (void)
 {
   struct bsd_tag *tag;
 
-  grub_printf ("  %-18s  %-18s%14s%14s\n", "name", "type", "addr", "size");
+  grub_printf ("  %-18s  %-18s%14s%14s\n", _("name"), _("type"), _("addr"),
+	       _("size"));
 
   for (tag = tags; tag; tag = tag->next)
     {
@@ -515,7 +516,8 @@ grub_netbsd_list_modules (void)
 {
   struct netbsd_module *mod;
 
-  grub_printf ("  %-18s%14s%14s%14s\n", "name", "type", "addr", "size");
+  grub_printf ("  %-18s%14s%14s%14s\n", _("name"), _("type"), _("addr"),
+	       _("size"));
 
   for (mod = netbsd_mods; mod; mod = mod->next)
     grub_printf ("  %-18s  0x%08x  0x%08x  0x%08x", mod->mod.name,
@@ -1050,7 +1052,7 @@ grub_netbsd_boot (void)
   if (err)
     {
       grub_print_error ();
-      grub_printf ("Booting however\n");
+      grub_puts_ (N_("Booting in blind mode"));
       grub_errno = GRUB_ERR_NONE;
     }
 
@@ -2061,7 +2063,7 @@ GRUB_MOD_INIT (bsd)
 
   cmd_openbsd_ramdisk = grub_register_command ("kopenbsd_ramdisk",
 					       grub_cmd_openbsd_ramdisk, 0,
-					       "Load kOpenBSD ramdisk. ");
+					       N_("Load kOpenBSD ramdisk."));
 
   my_mod = mod;
 }

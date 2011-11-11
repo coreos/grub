@@ -705,17 +705,18 @@ grub_ntfs_read_symlink (grub_fshelp_node_t node)
   switch (grub_cpu_to_le32 (symdesc.type))
     {
     case 0xa000000c:
-      off = sizeof (struct symlink_descriptor) + 4 + grub_cpu_to_le32 (symdesc.off1);
+      off = (sizeof (struct symlink_descriptor) + 4
+	     + grub_cpu_to_le32 (symdesc.off1));
       len = grub_cpu_to_le32 (symdesc.len1);
       break;
     case 0xa0000003:
-      off = sizeof (struct symlink_descriptor) + grub_cpu_to_le32 (symdesc.off1);
+      off = (sizeof (struct symlink_descriptor)
+	     + grub_cpu_to_le32 (symdesc.off1));
       len = grub_cpu_to_le32 (symdesc.len1);
       break;
     default:
       grub_error (GRUB_ERR_BAD_FS, "symlink type invalid (%x)",
 		  grub_cpu_to_le32 (symdesc.type));
-      grub_printf ("%d\n", __LINE__);
       return NULL;
     }
 

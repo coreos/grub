@@ -703,7 +703,7 @@ compress_kernel (struct image_target_desc *image_target, char *kernel_img,
 
  if (image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS
      && (comp != COMPRESSION_NONE))
-   grub_util_error ("unknown compression %d\n", comp);
+   grub_util_error (_("unknown compression %d\n"), comp);
 
   *core_img = xmalloc (kernel_size);
   memcpy (*core_img, kernel_img, kernel_size);
@@ -945,7 +945,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	  name = "none_decompress.img";
 	  break;
 	default:
-	  grub_util_error ("unknown compression %d\n", comp);
+	  grub_util_error (_("unknown compression %d\n"), comp);
 	}
       
       decompress_path = grub_util_get_path (dir, name);
@@ -1301,7 +1301,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	boot_path = grub_util_get_path (dir, "diskboot.img");
 	boot_size = grub_util_get_image_size (boot_path);
 	if (boot_size != GRUB_DISK_SECTOR_SIZE)
-	  grub_util_error ("diskboot.img is not one sector size");
+	  grub_util_error (_("diskboot.img is not one sector size"));
 
 	boot_img = grub_util_read_image (boot_path);
 
@@ -1366,11 +1366,11 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       GRUB_MD_SHA512->final (context);
       if (grub_memcmp (GRUB_MD_SHA512->read (context), fwstart_good_hash,
 		       GRUB_MD_SHA512->mdlen) != 0)
-	grub_util_warn ("fwstart.img doesn't match the known good version. "
-			"Proceed at your own risk");
+	grub_util_warn (_("fwstart.img doesn't match the known good version. "
+			  "proceed at your own risk"));
 
       if (core_size + boot_size > 512 * 1024)
-	grub_util_error ("firmware image is too big");
+	grub_util_error (_("firmware image is too big"));
       rom_size = 512 * 1024;
 
       rom_img = xmalloc (rom_size);
@@ -1394,7 +1394,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       size_t rom_size;
 
       if (core_size > 512 * 1024)
-	grub_util_error ("firmware image is too big");
+	grub_util_error (_("firmware image is too big"));
       rom_size = 512 * 1024;
 
       rom_img = xmalloc (rom_size);
@@ -1762,7 +1762,7 @@ main (int argc, char *argv[])
 		    image_target = &image_targets[i];
 	      if (!image_target)
 		{
-		  printf ("unknown target format %s\n", optarg);
+		  printf (_("unknown target format %s\n"), optarg);
 		  usage (1);
 		}
 	      break;
@@ -1803,14 +1803,14 @@ main (int argc, char *argv[])
 #ifdef HAVE_LIBLZMA
 		comp = COMPRESSION_XZ;
 #else
-		grub_util_error ("grub-mkimage is compiled without XZ support",
+		grub_util_error (_("grub-mkimage is compiled without XZ support"),
 				 optarg);
 #endif
 	      }
 	    else if (grub_strcmp (optarg, "none") == 0)
 	      comp = COMPRESSION_NONE;
 	    else
-	      grub_util_error ("Unknown compression format %s", optarg);
+	      grub_util_error (_("Unknown compression format %s"), optarg);
 	    break;
 
 	  case 'h':
@@ -1840,7 +1840,7 @@ main (int argc, char *argv[])
 
   if (!image_target)
     {
-      printf ("Target format not specified (use the -O option).\n");
+      printf (_("Target format not specified (use the -O option).\n"));
       usage (1);
     }
 

@@ -231,7 +231,7 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
       return grub_errno;
     }
 
-  grub_printf ("New MBR is written to '%s'\n", args[0]);
+  grub_printf_ (N_("New MBR is written to '%s'\n"), args[0]);
 
   return GRUB_ERR_NONE;
 }

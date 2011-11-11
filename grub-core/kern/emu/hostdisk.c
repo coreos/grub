@@ -94,6 +94,8 @@ struct hd_geometry
 # include <sys/disk.h> /* DIOCGMEDIASIZE */
 # include <sys/param.h>
 # include <sys/sysctl.h>
+# include <sys/mount.h>
+#include <libgeom.h>
 # define MAJOR(dev) major(dev)
 # define FLOPPY_MAJOR	2
 #endif
@@ -267,7 +269,7 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
   struct stat st;
 
   if (fstat (fd, &st) < 0)
-    grub_util_error ("fstat failed");
+    grub_util_error (_("fstat failed"));
 
 #if defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
   defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) \
@@ -322,7 +324,7 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
     return minfo.dki_capacity;
 # else
     if (nr & ((1 << log_sector_size) - 1))
-      grub_util_error ("unaligned device size");
+      grub_util_error (_("unaligned device size"));
 
     return (nr >> log_sector_size);
 # endif
@@ -371,7 +373,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     size = grub_util_get_disk_size (map[drive].device);
 
     if (size % 512)
-      grub_util_error ("unaligned device size");
+      grub_util_error (_("unaligned device size"));
 
     disk->total_sectors = size >> 9;
 
@@ -423,7 +425,58 @@ grub_util_device_is_mapped (const char *dev)
 #endif /* HAVE_DEVICE_MAPPER */
 }
 
+
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
+
+/* FIXME: geom actually gives us the whole container hierarchy.
+   It can be used more efficiently than this.  */
+void
+grub_util_follow_gpart_up (const char *name, grub_disk_addr_t *off_out, char **name_out)
+{
+  struct gmesh mesh;
+  struct gclass *class;
+  int error;
+  struct ggeom *geom;
+
+  grub_util_info ("following geom '%s'", name);
+
+  error = geom_gettree (&mesh);
+  if (error != 0)
+    grub_util_error (_("couldn't open geom"));
+
+  LIST_FOREACH (class, &mesh.lg_class, lg_class)
+    if (strcasecmp (class->lg_name, "part") == 0)
+      break;
+  if (!class)
+    grub_util_error (_("couldn't open geom part"));
+
+  LIST_FOREACH (geom, &class->lg_geom, lg_geom)
+    { 
+      struct gprovider *provider;
+      LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
+	if (strcmp (provider->lg_name, name) == 0)
+	  {
+	    char *name_tmp = xstrdup (geom->lg_name);
+	    grub_disk_addr_t off = 0;
+	    struct gconfig *config;
+	    grub_util_info ("geom '%s' has parent '%s'", name, geom->lg_name);
+
+	    grub_util_follow_gpart_up (name_tmp, &off, name_out);
+	    free (name_tmp);
+	    LIST_FOREACH (config, &provider->lg_config, lg_config)
+	      if (strcasecmp (config->lg_name, "start") == 0)
+		off += strtoull (config->lg_val, 0, 10);
+	    if (off_out)
+	      *off_out = off;
+	    return;
+	  }
+    }
+  grub_util_info ("geom '%s' has no parent", name);
+  if (name_out)
+    *name_out = xstrdup (name);
+  if (off_out)
+    *off_out = 0;
+}
 
 static grub_disk_addr_t
 find_partition_start (const char *dev)
@@ -1091,18 +1144,18 @@ read_device_map (const char *dev_map)
 	continue;
 
       if (*p != '(')
-	show_error ("No open parenthesis found");
+	show_error (_("No open parenthesis found"));
 
       p++;
       /* Find a free slot.  */
       drive = find_free_slot ();
       if (drive < 0)
-	show_error ("Map table size exceeded");
+	show_error (_("Map table size exceeded"));
 
       e = p;
       p = strchr (p, ')');
       if (! p)
-	show_error ("No close parenthesis found");
+	show_error (_("No close parenthesis found"));
 
       map[drive].drive = xmalloc (p - e + sizeof ('\0'));
       strncpy (map[drive].drive, e, p - e + sizeof ('\0'));
@@ -1114,7 +1167,7 @@ read_device_map (const char *dev_map)
 	p++;
 
       if (*p == '\0')
-	show_error ("No filename found");
+	show_error (_("No filename found"));
 
       /* NUL-terminate the filename.  */
       e = p;
@@ -1143,7 +1196,7 @@ read_device_map (const char *dev_map)
 	{
 	  map[drive].device = xmalloc (PATH_MAX);
 	  if (! realpath (p, map[drive].device))
-	    grub_util_error ("cannot get the real path of `%s'", p);
+	    grub_util_error (_("cannot get the real path of `%s'"), p);
 	}
       else
 #endif

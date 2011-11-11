@@ -42,14 +42,14 @@ get_os_name_from_boot_ini ()
     sort | uniq | wc -l`" = 1 || return 1
 
   # Search 'default=PARTITION'
-  local part=`sed -n 's,^default=,,p' "$1" | sed 's,\\\\,/,g;s,[ \t\r]*$,,;1q'`
-  test -n "$part" || return 1
+  get_os_name_from_boot_ini_part=`sed -n 's,^default=,,p' "$1" | sed 's,\\\\,/,g;s,[ \t\r]*$,,;1q'`
+  test -n "$get_os_name_from_boot_ini_part" || return 1
 
   # Search 'PARTITION="NAME" ...'
-  local name=`sed -n 's,\\\\,/,g;s,^'"$part"'="\([^"]*\)".*$,\1,p' "$1" | sed 1q`
-  test -n "$name" || return 1
+  get_os_name_from_boot_ini_name=`sed -n 's,\\\\,/,g;s,^'"$get_os_name_from_boot_ini_part"'="\([^"]*\)".*$,\1,p' "$1" | sed 1q`
+  test -n "$get_os_name_from_boot_ini_name" || return 1
 
-  echo "$name"
+  echo "$get_os_name_from_boot_ini_name"
 }
 
 

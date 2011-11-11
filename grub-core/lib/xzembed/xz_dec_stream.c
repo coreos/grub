@@ -78,9 +78,9 @@ struct xz_dec {
 #ifndef GRUB_EMBED_DECOMPRESSOR
         const gcry_md_spec_t *hash;
         const gcry_md_spec_t *crc32;
+	grub_uint8_t hash_id;
 #endif
 	grub_size_t hash_size;
-	grub_uint8_t hash_id;
 
 	/* True if we are operating in single-call mode. */
 	bool single_call;
@@ -428,8 +428,7 @@ static enum xz_ret hash_validate(struct xz_dec *s, struct xz_buf *b,
 	return XZ_STREAM_END;
 }
 
-#ifndef GRUB_EMBED_DECOMPRESSOR
-static struct
+static const struct
 {
 	const char *name;
 	grub_size_t size;
@@ -438,7 +437,6 @@ static struct
 	[0x04] = { "CRC64", 8},
 	[0x0A] = { "SHA256", 32},
 };
-#endif
 
 /* Decode the Stream Header field (the first 12 bytes of the .xz Stream). */
 static enum xz_ret dec_stream_header(struct xz_dec *s)
@@ -470,9 +468,9 @@ static enum xz_ret dec_stream_header(struct xz_dec *s)
 	}
 #endif
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	/*
-	 * Decode the Stream Flags field. Of integrity checks, we support
-	 * only none (Check ID = 0) and CRC32 (Check ID = 1).
+	 * Decode the Stream Flags field.
 	 */
 	if (s->temp.buf[HEADER_MAGIC_SIZE] != 0
 	    || s->temp.buf[HEADER_MAGIC_SIZE + 1] >= ARRAY_SIZE (hashes)
@@ -482,7 +480,6 @@ static enum xz_ret dec_stream_header(struct xz_dec *s)
 
 	s->hash_id = s->temp.buf[HEADER_MAGIC_SIZE + 1];
 
-#ifndef GRUB_EMBED_DECOMPRESSOR
 	if (s->crc32)
 	{
 		s->crc32_context = kmalloc(s->crc32->contextsize, GFP_KERNEL);
@@ -530,17 +527,15 @@ static enum xz_ret dec_stream_header(struct xz_dec *s)
 			s->hash->init(s->index.hash.hash_context);
  			s->hash->init(s->block.hash.hash_context);
 		}
-#else
-		s->hash = 0;
-#endif
-#if 1
 		if (!s->hash)
 			return XZ_OPTIONS_ERROR;
 #endif
 	}
 	else
 	{
+#ifndef GRUB_EMBED_DECOMPRESSOR
 		s->hash = 0;
+#endif
 		s->hash_size = 0;
 	}
 
@@ -589,8 +584,10 @@ static enum xz_ret dec_stream_footer(struct xz_dec *s)
 	if ((s->index.size >> 2) != get_le32(s->temp.buf + 4))
 		return XZ_DATA_ERROR;
 
+#ifndef GRUB_EMBED_DECOMPRESSOR
 	if (s->temp.buf[8] != 0 || s->temp.buf[9] != s->hash_id)
 		return XZ_DATA_ERROR;
+#endif
 
 	/*
 	 * Use XZ_STREAM_END instead of XZ_OK to be more convenient

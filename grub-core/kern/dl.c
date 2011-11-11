@@ -697,7 +697,7 @@ grub_dl_load (const char *name)
 {
   char *filename;
   grub_dl_t mod;
-  char *grub_dl_dir = grub_env_get ("prefix");
+  const char *grub_dl_dir = grub_env_get ("prefix");
 
   mod = grub_dl_get (name);
   if (mod)

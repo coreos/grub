@@ -404,7 +404,8 @@ grub_efiemu_mmap_fill (void)
 					  GRUB_EFI_ACPI_MEMORY_NVS);
 
 	default:
-	  grub_printf ("Unknown memory type %d. Assuming unusable\n", type);
+	  grub_dprintf ("efiemu",
+			"Unknown memory type %d. Assuming unusable\n", type);
 	case GRUB_MEMORY_RESERVED:
 	  return grub_efiemu_add_to_mmap (addr, size,
 					  GRUB_EFI_UNUSABLE_MEMORY);

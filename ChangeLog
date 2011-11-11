@@ -1,3 +1,365 @@
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/efi/fixvideo.c: Gettextize.
+	* grub-core/commands/hashsum.c: Likewise.
+	* grub-core/commands/i386/cmostest.c: Likewise.
+	* grub-core/commands/i386/pc/drivemap.c: Likewise.
+	* grub-core/commands/i386/pc/lsapm.c: Likewise.
+	* grub-core/commands/i386/pc/sendkey.c: Likewise.
+	* grub-core/commands/lsmmap.c: Likewise.
+	* grub-core/commands/menuentry.c: Likewise.
+	* grub-core/commands/mips/loongson/lsspd.c: Likewise.
+	* grub-core/commands/setpci.c: Likewise.
+	* grub-core/loader/i386/bsd.c: Likewise.
+	* grub-core/loader/i386/linux.c: Likewise.
+	* util/getroot.c: Likewise.
+	* util/grub-editenv.c: Likewise.
+	* util/grub-fstest.c: Likewise.
+	* util/grub-mkfont.c: Likewise.
+	* util/grub-mkimage.c: Likewise.
+	* util/grub-mkpasswd-pbkdf2.c: Likewise.
+	* util/grub-pe2elf.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/grub-setup.c: Likewise.
+	* util/ieee1275/ofpath.c: Likewise.
+	* util/misc.c: Likewise.
+	* util/raid.c: Likewise.
+
+2011-11-11  Robert Millan  <rmh@gnu.org>
+
+	* util/getroot.c (grub_util_get_geom_abstraction): Remove
+	__attribute__((unused)) from `os_dev', which *is* being used.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/dl.h (GRUB_ARCH_DL_TRAMP_SIZE) [__ia64__]: Add back
+	forgotten define.
+	(GRUB_ARCH_DL_GOT_ALIGN) [__ia64__]: Redefine in terms of
+	GRUB_IA64_DL_GOT_ALIGN.
+	(GRUB_ARCH_DL_TRAMP_ALIGN) [__ia64__]: Redefine in terms of
+	GRUB_IA64_DL_TRAMP_ALIGN.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Replace grub_fatal with normal errors in i386 linux loader.
+
+	* grub-core/loader/i386/linux.c (find_efi_mmap_size): Return 0 on error.
+	(allocate_pages): Check find_efi_mmap_size return value.
+	(grub_e820_add_region): Return error.
+	(grub_linux_boot): Check mmap return value.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/acpihalt.c: Gettextized.
+	* grub-core/commands/cacheinfo.c: Likewise.
+	* grub-core/commands/cmp.c: Likewise.
+	* grub-core/commands/efi/loadbios.c: Likewise.
+	* grub-core/commands/gptsync.c: Likewise.
+	* grub-core/commands/ieee1275/suspend.c: Likewise.
+	* grub-core/commands/legacycfg.c: Likewise.
+	* grub-core/commands/memrw.c: Likewise.
+	* grub-core/commands/minicmd.c: Likewise.
+	* grub-core/commands/parttool.c: Likewise.
+	* grub-core/commands/time.c: Likewise.
+	* grub-core/commands/videoinfo.c: Likewise.
+	* grub-core/disk/geli.c: Likewise.
+	* grub-core/disk/i386/pc/biosdisk.c: Likewise.
+	* grub-core/disk/luks.c: Likewise.
+	* grub-core/disk/lvm.c: Likewise.
+	* grub-core/font/font_cmd.c: Likewise.
+	* grub-core/fs/zfs/zfscrypt.c: Likewise.
+	* grub-core/fs/zfs/zfsinfo.c: Likewise.
+	* grub-core/gfxmenu/view.c: Likewise.
+	* grub-core/kern/emu/hostdisk.c: Likewise.
+	* grub-core/kern/emu/main.c: Likewise.
+	* grub-core/kern/emu/misc.c: Likewise.
+	* grub-core/kern/emu/mm.c: Likewise.
+	* grub-core/kern/mips/arc/init.c: Likewise.
+	* grub-core/kern/mips/loongson/init.c: Likewise.
+	* grub-core/kern/partition.c: Likewise.
+	* grub-core/lib/i386/halt.c: Likewise.
+	* grub-core/lib/mips/arc/reboot.c: Likewise.
+	* grub-core/lib/mips/loongson/reboot.c: Likewise.
+	* grub-core/loader/i386/pc/chainloader.c: Likewise.
+	* grub-core/loader/i386/xnu.c: Likewise.
+	* grub-core/loader/multiboot.c: Likewise.
+	* grub-core/net/bootp.c: Likewise.
+	* grub-core/net/net.c: Likewise.
+	* grub-core/normal/term.c: Likewise.
+	* grub-core/partmap/bsdlabel.c: Likewise.
+	* grub-core/parttool/msdospart.c: Likewise.
+	* grub-core/term/gfxterm.c: Likewise.
+	* grub-core/term/terminfo.c: Likewise.
+	* grub-core/video/i386/pc/vbe.c: Likewise.
+	* util/grub-menulst2cfg.c: Likewise.
+	* util/grub-mkdevicemap.c: Likewise.
+	* util/grub-mklayout.c: Likewise.
+	* util/grub-mkrelpath.c: Likewise.
+	* util/grub-script-check.c: Likewise.
+	* util/ieee1275/grub-ofpathname.c: Likewise.
+	* util/resolve.c: Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support %1$d syntax.
+
+	* tests/printf_unit_test.c: New file.
+	* Makefile.util.def (printf_test): New test.
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Support %1$d syntax.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/hook/datehook.c (grub_read_hook_datetime): Small stylistic
+	fix.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/efiemu/mm.c (grub_efiemu_mmap_fill): Change printf into
+	dprintf.
+	* grub-core/font/font.c (grub_font_load): Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-macho2img.c: Add comment concerning gettext.
+	* grub-core/lib/legacy_parse.c: Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c (grub_vprintf): Add missing va_end.
+	(grub_xvasprintf): Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add const keyword to grub_env_get and gettextize week days.
+
+	* grub-core/hook/datehook.c (grub_datetime_names): Make const.
+	(grub_read_hook_datetime): Return const char *.
+	* grub-core/kern/env.c (grub_env_get): Return const char *. All users
+	updated.
+	* grub-core/normal/datetime.c (grub_weekday_names): Make const.
+	Mark for gettext.
+	(grub_get_weekday_name): Return const char *. Call gettext.
+	* grub-core/script/argv.c (grub_script_argv_append): Receive const
+	char * and len as the argument. All users updated.
+	(grub_script_argv_split_append): Receive const char *.
+	* include/grub/datetime.h (grub_get_weekday_name): Update proto.
+	* include/grub/env.h (grub_env_get): Likewise.
+	(grub_env_read_hook_t): Return const char *.
+	* include/grub/script_sh.h (grub_script_argv_append): Update proto.
+	(grub_script_argv_split_append): Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/main.c (grub_normal_execute): Remove leftover call.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c (grub_strstr): Moved from here ...
+	* include/grub/misc.h (grub_strstr): ... here. Make static and inline.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_set_property):
+	Fix prototype.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix mips compilation.
+
+	* grub-core/lib/xzembed/xz_dec_stream.c (xz_dec): Restrict hash_id to
+	normal decoder.
+	(hashes): Use in embed decoder as well (for sizes).
+	(dec_stream_header): Fix embed decompressor logic.
+	(dec_stream_footer): Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/x86_64/dl.c (grub_arch_dl_relocate_symbols): Issue
+	an error and not a fatal on unrecognised relocation types.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_parse_args):
+	Issue error rather than printf on unknown arguments.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/ieee1275/ieee1275.c (grub_ieee1275_set_property):
+	Make buf a const.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfscrypt.c (GRUB_MOD_INIT), (GRUB_MOD_FINI):
+	Fix module name.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/ntfs.c (grub_ntfs_read_symlink): Stylistic fix. Remove
+	leftover debug printf.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/btrfs.c (grub_btrfs_embed): Spelling fix.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/efiemu/main.c (grub_efiemu_register_configuration_table):
+	A stylistic fix.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/probe.c (grub_cmd_probe): Fix error message.
+
+2011-11-10  Shea Levy  <slevy@tieronedesign.com>
+
+	Allow all modules to perform serial IO
+
+	* grub-core/term-serial.c (grub_serial_find): Remove static qualifier
+	* include/grub/serial.h (grub_serial_port_configure): New inline
+	function.
+	(grub_serial_port_fetch): Likewise.
+	(grub_serial_port_put): Likewise.
+	(grub_serial_port_fini): Likewise.
+	(grub_serial_find): New proto.
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Put symlink at the end of the node and fix a potential
+	memory corruption.
+
+	* grub-core/fs/iso9660.c (grub_fshelp_node): New field have_symlink.
+	Make symlink into an array.
+	(set_rockridge): Set have_symlink and alloc_dirents.
+	(grub_iso9660_read_symlink): Use new layout.
+	(grub_iso9660_iterate_dir): Fix memory corruption.
+	Use new layout.
+	(grub_iso9660_dir): Set have_symlink.
+	(grub_iso9660_open): Likewise.
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove local keyword.
+
+	* util/grub-mkconfig_lib.in (version_test_numeric): Remove local.
+	(version_test_gt): Likewise.
+	(version_find_latest): Likewise.
+	(gettext_printf): Likewise.
+	* util/grub.d/10_windows.in (get_os_name_from_boot_ini): Likewise.
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c (zfs_mount): Fix spurious warning.
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix ZFS memory and resource leaks.
+
+	* grub-core/fs/zfs/zfs.c (fill_vdev_info_real): New paramter inserted.
+	All users updated.
+	Free type on exit.
+	(fill_vdev_info): New parameter inserted. All users updated.
+	(check_pool_label): Likewise.
+	(scan_disk): Likewise.
+	(scan_devices): Close non-inserted disks.
+	(fzap_iterate): Free l.
+	(unmount_device): Free children descripto memory.
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Fix grub_strncat
+	argument (access out of bounds).
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/btrfs.c (grub_btrfs_read_logical): Fix RAID10 logic for
+	>= 6 drives.
+
+2011-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i386/netbsd_bootinfo.h (grub_netbsd_btinfo_bootwedge):
+	Fix declaration.
+
+2011-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix several memory leaks.
+
+	* grub-core/fs/btrfs.c (grub_btrfs_dir): Fix memory leak.
+	* grub-core/fs/cpio.c (grub_cpio_find_file): Likewise.
+	(grub_cpio_dir): Likewise.
+	* grub-core/fs/fat.c (grub_fat_label): Likewise.
+	* grub-core/fs/jfs.c (grub_jfs_label): Likewise.
+	* grub-core/fs/romfs.c (grub_romfs_close): Likewise.
+	(grub_romfs_label): Likewise.
+	* grub-core/fs/squash4.c (squash_mount): Use zalloc for safety.
+	(squash_unmount): New function.
+	(grub_squash_dir): Fix memory leak.
+	(grub_squash_open): Likewise.
+	(grub_squash_read): Likewise.
+	(grub_squash_mtime): Likewise.
+	* grub-core/fs/xfs.c (grub_xfs_open): Likewise.
+	* grub-core/fs/zfs/zfs.c (check_pool_label): Likewise.
+	* util/grub-fstest.c (fstest): Likewise.
+
+2011-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/misc.h (grub_strncat): Fix the order of conditionals to
+	avoid accessing beyond the array.
+
+2011-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Add missing -mXX to TARGET_CPPFLAGS.
+
+2011-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Several AFFS fixes.
+
+	* grub-core/fs/affs.c (grub_affs_bblock): Replace flags with version.
+	(GRUB_AFFS_FLAG_FFS): Removed.
+	(GRUB_AFFS_SYMLINK_SIZE): Likewise.
+	(GRUB_AFFS_FILETYPE_DIR): Make positive and unsigned.
+	(GRUB_AFFS_FILETYPE_DIR), (GRUB_AFFS_FILETYPE_REG): Fix a mix-up.
+	(grub_fshelp_node): Make block 32-bit.
+	Add block_cache and last_block_cache.
+	(grub_affs_read_block): Fill and use block cache.
+	(grub_affs_read_file): Removed.
+	(grub_affs_mount): Zero-fill node. Fix version check. Don't reread
+	boot block.
+	(grub_affs_read_symlink): Fix symlink size. Add a \0 at the end for
+	safety.
+	(grub_affs_iterate_dir): Use more appropriate types. Zero-fill allocated
+	space.
+	(grub_affs_close): Free block cache.
+	(grub_affs_read): Use grub_fshelp_read_file directly.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c (read_dva): Issue an error if read failed
+	with no error set.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/LzmaEnc.c (LzmaEnc_CodeOneBlock): Remove set but not
+	used variable.
+	* grub-core/kern/ia64/dl_helper.c (grub_ia64_dl_get_tramp_got_size):
+	Likewise.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix potential problem with calling zfs_to_cpu and cpu_to_be in a row.
+
+	* grub-core/fs/zfs/zfscrypt.c (grub_zfs_decrypt_real): Use explicit
+	byteswap when needed.
+
+2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix FreeBSD compilation.
+
+	* grub-core/disk/geli.c (GRUB_MD_SHA256) [GRUB_UTIL]: Redefine in a way
+	to avoid circular dependency.
+	(GRUB_MD_SHA512) [GRUB_UTIL]: Likewise.
+	* util/getroot.c (grub_util_follow_gpart_up): Move from here...
+	* grub-core/kern/emu/hostdisk.c (+grub_util_follow_gpart_up): ... here.
+
 2011-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix ZFS crypto error types.

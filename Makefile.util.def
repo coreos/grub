@@ -676,6 +676,21 @@ program = {
 };
 
 program = {
+  testcase;
+  name = printf_test;
+  common = tests/printf_unit_test.c;
+  common = tests/lib/unit_test.c;
+  common = grub-core/kern/list.c;
+  common = grub-core/kern/misc.c;
+  common = grub-core/tests/lib/test.c;
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+};
+
+program = {
   name = grub-menulst2cfg;
   mansection = 1;
   common = util/grub-menulst2cfg.c;

@@ -294,7 +294,7 @@ grub_mofile_open_lang (const char *locale_dir, const char *locale)
 static void
 grub_gettext_init_ext (const char *locale)
 {
-  char *locale_dir;
+  const char *locale_dir;
 
   if (!locale)
     return;

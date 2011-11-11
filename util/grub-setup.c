@@ -125,8 +125,8 @@ write_rootdev (char *core_img, grub_device_t root_dev,
 	    if (root_dev->disk->partition->parent)
 	      {
 		if (root_dev->disk->partition->parent->parent)
-		  grub_util_error ("Installing on doubly nested partitions is "
-				   "not supported");
+		  grub_util_error (_("Installing on doubly nested partitions "
+				     "is not supported"));
 		dos_part = root_dev->disk->partition->parent->number;
 		bsd_part = root_dev->disk->partition->number;
 	      }
@@ -283,22 +283,22 @@ setup (const char *dir,
   grub_util_info ("Opening root");
   root_dev = grub_device_open (root);
   if (! root_dev)
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
   grub_util_info ("Opening dest");
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
   grub_util_info ("setting the root device to `%s'", root);
   if (grub_env_set ("root", root) != GRUB_ERR_NONE)
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
 #ifdef GRUB_MACHINE_PCBIOS
   /* Read the original sector from the disk.  */
   tmp_img = xmalloc (GRUB_DISK_SECTOR_SIZE);
   if (grub_disk_read (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE, tmp_img))
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 #endif
 
 #ifdef GRUB_MACHINE_PCBIOS
@@ -421,14 +421,14 @@ setup (const char *dir,
 
     if (dest_partmap && !dest_partmap->embed)
       {
-	grub_util_warn ("Partition style '%s' doesn't support embeding",
+	grub_util_warn (_("Partition style '%s' doesn't support embeding"),
 			dest_partmap->name);
 	goto unable_to_embed;
       }
 
     if (fs && !fs->embed)
       {
-	grub_util_warn ("File system '%s' doesn't support embeding",
+	grub_util_warn (_("File system '%s' doesn't support embeding"),
 			fs->name);
 	goto unable_to_embed;
       }
@@ -443,13 +443,13 @@ setup (const char *dir,
     if (!err && nsec < core_sectors)
       {
 	err = grub_error (GRUB_ERR_OUT_OF_RANGE,
-			  "Your embedding area is unusually small.  "
-			  "core.img won't fit in it.");
+			  N_("Your embedding area is unusually small.  "
+			     "core.img won't fit in it."));
       }
     
     if (err)
       {
-	grub_util_warn ("%s", grub_errmsg);
+	grub_util_warn ("%s", _(grub_errmsg));
 	grub_errno = GRUB_ERR_NONE;
 	goto unable_to_embed;
       }
@@ -466,7 +466,7 @@ setup (const char *dir,
 	block--;
 
 	if ((char *) block <= core_img)
-	  grub_util_error ("No terminator in the core image");
+	  grub_util_error (_("No terminator in the core image"));
       }
 
     save_first_sector (sectors[0] + grub_partition_get_start (container),
@@ -626,7 +626,7 @@ unable_to_embed:
   grub_file_filter_disable_compression ();
   file = grub_file_open (core_path_dev);
   if (! file)
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
   file->read_hook = save_first_sector;
   if (grub_file_read (file, tmp_img, GRUB_DISK_SECTOR_SIZE)
@@ -687,8 +687,7 @@ unable_to_embed:
   /* Write the boot image onto the disk.  */
   if (grub_disk_write (dest_dev->disk, BOOT_SECTOR,
 		       0, GRUB_DISK_SECTOR_SIZE, boot_img))
-    grub_util_error ("%s", grub_errmsg);
-
+    grub_util_error ("%s", _(grub_errmsg));
 
   grub_util_biosdisk_flush (root_dev->disk);
   grub_util_biosdisk_flush (dest_dev->disk);

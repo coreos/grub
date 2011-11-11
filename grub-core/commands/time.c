@@ -47,8 +47,8 @@ grub_cmd_time (grub_command_t ctxt __attribute__ ((unused)),
   (cmd->func) (cmd, argc - 1, &args[1]);
   end = grub_get_time_ms ();
 
-  grub_printf ("Elapsed time: %d.%03d seconds \n", (end - start) / 1000,
-	       (end - start) % 1000);
+  grub_printf_ (N_("Elapsed time: %d.%03d seconds \n"), (end - start) / 1000,
+		(end - start) % 1000);
 
   return grub_errno;
 }

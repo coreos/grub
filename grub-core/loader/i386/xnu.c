@@ -700,7 +700,7 @@ grub_cpu_xnu_fill_devicetree (void)
     return grub_errno;
 
   /* First see if user supplies the value. */
-  char *fsbvar = grub_env_get ("fsb");
+  const char *fsbvar = grub_env_get ("fsb");
   if (! fsbvar)
     *((grub_uint64_t *) curval->data) = 0;
   else
@@ -1018,7 +1018,7 @@ grub_xnu_boot (void)
     {
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
-      grub_printf ("Booting in blind mode\n");
+      grub_puts_ (N_("Booting in blind mode"));
 
       bootparams->lfb_mode = 0;
       bootparams->lfb_width = 0;

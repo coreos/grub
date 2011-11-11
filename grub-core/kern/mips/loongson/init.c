@@ -31,6 +31,7 @@
 #include <grub/cs5536.h>
 #include <grub/term.h>
 #include <grub/cpu/memory.h>
+#include <grub/i18n.h>
 
 extern void grub_video_sm712_init (void);
 extern void grub_video_sis315pro_init (void);
@@ -254,7 +255,7 @@ grub_halt (void)
       break;
     }
 
-  grub_printf ("Shutdown failed\n");
+  grub_puts_ (N_("Shutdown failed"));
   grub_refresh ();
   while (1);
 }
