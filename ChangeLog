@@ -1,5 +1,15 @@
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix mips compilation.
+
+	* grub-core/lib/xzembed/xz_dec_stream.c (xz_dec): Restrict hash_id to
+	normal decoder.
+	(hashes): Use in embed decoder as well (for sizes).
+	(dec_stream_header): Fix embed decompressor logic.
+	(dec_stream_footer): Likewise.
+
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/x86_64/dl.c (grub_arch_dl_relocate_symbols): Issue
 	an error and not a fatal on unrecognised relocation types.
 
