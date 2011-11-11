@@ -395,11 +395,11 @@ fstest (int n, char **args)
 	if (!fs)
 	  grub_util_error (grub_errmsg);
 	if (!fs->uuid)
-	  grub_util_error ("couldn't retrieve UUID");
+	  grub_util_error (_("couldn't retrieve UUID"));
 	if (fs->uuid (dev, &uuid))
 	  grub_util_error (grub_errmsg);
 	if (!uuid)
-	  grub_util_error ("couldn't retrieve UUID");
+	  grub_util_error (_("couldn't retrieve UUID"));
 	argv[1] = uuid;
 	execute_command ("xnu_uuid", 2, argv);
 	grub_free (uuid);
@@ -470,7 +470,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
       if (strcmp (arg, "prompt") == 0)
 	{
 	  char buf[1024];	  
-	  grub_printf ("Enter ZFS password: ");
+	  grub_puts_ (N_("Enter ZFS password: "));
 	  if (grub_password_get (buf, 1023))
 	    {
 	      grub_zfs_add_key ((grub_uint8_t *) buf, grub_strlen (buf), 1);
@@ -484,13 +484,13 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	f = fopen (arg, "rb");
 	if (!f)
 	  {
-	    printf ("Error loading file %s: %s\n", arg, strerror (errno));
+	    printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
 	    return 0;
 	  }
 	real_size = fread (buf, 1, 1024, f);
 	if (real_size < 0)
 	  {
-	    printf ("Error loading file %s: %s\n", arg, strerror (errno));
+	    printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
 	    fclose (f);
 	    return 0;
 	  }

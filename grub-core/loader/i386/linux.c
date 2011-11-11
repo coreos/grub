@@ -517,7 +517,7 @@ grub_linux_boot (void)
   if (err)
     {
       grub_print_error ();
-      grub_printf ("Booting however\n");
+      grub_puts_ (N_("Booting in blind mode"));
       grub_errno = GRUB_ERR_NONE;
     }
 
@@ -793,7 +793,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	  vid_mode = GRUB_LINUX_VID_MODE_EXTENDED;
 	else if (grub_strcmp (val, "ask") == 0)
 	  {
-	    grub_printf ("Legacy `ask' parameter no longer supported.\n");
+	    grub_puts_ (N_("Legacy `ask' parameter no longer supported."));
 
 	    /* We usually would never do this in a loader, but "vga=ask" means user
 	       requested interaction, so it can't hurt to request keyboard input.  */
@@ -809,9 +809,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	  case 0:
 	  case GRUB_LINUX_VID_MODE_NORMAL:
 	    grub_env_set ("gfxpayload", "text");
-	    grub_printf ("%s is deprecated. "
-			 "Use set gfxpayload=text before "
-			 "linux command instead.\n",
+	    grub_printf_ (N_("%s is deprecated. "
+			     "Use set gfxpayload=text before "
+			     "linux command instead.\n"),
 			 argv[i]);
 	    break;
 
@@ -819,9 +819,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	  case GRUB_LINUX_VID_MODE_EXTENDED:
 	    /* FIXME: support 80x50 text. */
 	    grub_env_set ("gfxpayload", "text");
-	    grub_printf ("%s is deprecated. "
-			 "Use set gfxpayload=text before "
-			 "linux command instead.\n",
+	    grub_printf_ (N_("%s is deprecated. "
+			     "Use set gfxpayload=text before "
+			     "linux command instead.\n"),
 			 argv[i]);
 	    break;
 	  default:
@@ -830,9 +830,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		vid_mode > GRUB_VESA_MODE_TABLE_END)
 	      {
 		grub_env_set ("gfxpayload", "text");
-		grub_printf ("%s is deprecated. Mode %d isn't recognized. "
-			     "Use set gfxpayload=WIDTHxHEIGHT[xDEPTH] before "
-			     "linux command instead.\n",
+		grub_printf_ (N_("%s is deprecated. Mode %d isn't recognized. "
+				 "Use set gfxpayload=WIDTHxHEIGHT[xDEPTH] "
+				 "before linux command instead.\n"),
 			     argv[i], vid_mode);
 		break;
 	      }
@@ -847,9 +847,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	    if (! buf)
 	      goto fail;
 
-	    grub_printf ("%s is deprecated. "
-			 "Use set gfxpayload=%s before "
-			 "linux command instead.\n",
+	    grub_printf_ (N_("%s is deprecated. "
+			     "Use set gfxpayload=%s before "
+			     "linux command instead.\n"),
 			 argv[i], buf);
 	    err = grub_env_set ("gfxpayload", buf);
 	    grub_free (buf);

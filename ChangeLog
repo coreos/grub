@@ -1,3 +1,30 @@
+2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/efi/fixvideo.c: Gettextize.
+	* grub-core/commands/hashsum.c: Likewise.
+	* grub-core/commands/i386/cmostest.c: Likewise.
+	* grub-core/commands/i386/pc/drivemap.c: Likewise.
+	* grub-core/commands/i386/pc/lsapm.c: Likewise.
+	* grub-core/commands/i386/pc/sendkey.c: Likewise.
+	* grub-core/commands/lsmmap.c: Likewise.
+	* grub-core/commands/menuentry.c: Likewise.
+	* grub-core/commands/mips/loongson/lsspd.c: Likewise.
+	* grub-core/commands/setpci.c: Likewise.
+	* grub-core/loader/i386/bsd.c: Likewise.
+	* grub-core/loader/i386/linux.c: Likewise.
+	* util/getroot.c: Likewise.
+	* util/grub-editenv.c: Likewise.
+	* util/grub-fstest.c: Likewise.
+	* util/grub-mkfont.c: Likewise.
+	* util/grub-mkimage.c: Likewise.
+	* util/grub-mkpasswd-pbkdf2.c: Likewise.
+	* util/grub-pe2elf.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/grub-setup.c: Likewise.
+	* util/ieee1275/ofpath.c: Likewise.
+	* util/misc.c: Likewise.
+	* util/raid.c: Likewise.
+
 2011-11-11  Robert Millan  <rmh@gnu.org>
 
 	* util/getroot.c (grub_util_get_geom_abstraction): Remove

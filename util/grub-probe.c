@@ -173,10 +173,10 @@ probe (const char *path, char *device_name)
     {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__sun__)
       if (! grub_util_check_char_device (device_name))
-        grub_util_error ("%s is not a character device", device_name);
+        grub_util_error (_("%s is not a character device"), device_name);
 #else
       if (! grub_util_check_block_device (device_name))
-        grub_util_error ("%s is not a block device", device_name);
+        grub_util_error (_("%s is not a block device"), device_name);
 #endif
     }
   else
@@ -186,7 +186,7 @@ probe (const char *path, char *device_name)
     }
 
   if (! device_name)
-    grub_util_error ("cannot find a device for %s (is /dev mounted?)", path);
+    grub_util_error (_("cannot find a device for %s (is /dev mounted?)"), path);
 
   if (print == PRINT_DEVICE)
     {
@@ -196,7 +196,8 @@ probe (const char *path, char *device_name)
 
   drive_name = grub_util_get_grub_dev (device_name);
   if (! drive_name)
-    grub_util_error ("cannot find a GRUB drive for %s.  Check your device.map", device_name);
+    grub_util_error (_("cannot find a GRUB drive for %s.  Check your device.map"),
+		     device_name);
 
   if (print == PRINT_DRIVE)
     {
@@ -207,7 +208,7 @@ probe (const char *path, char *device_name)
   grub_util_info ("opening %s", drive_name);
   dev = grub_device_open (drive_name);
   if (! dev)
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
   if (print == PRINT_ABSTRACTION)
     {
@@ -233,7 +234,7 @@ probe (const char *path, char *device_name)
 
   fs = grub_fs_probe (dev);
   if (! fs)
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
   if (print == PRINT_FS)
     {
@@ -243,7 +244,7 @@ probe (const char *path, char *device_name)
     {
       char *uuid;
       if (! fs->uuid)
-	grub_util_error ("%s does not support UUIDs", fs->name);
+	grub_util_error (_("%s does not support UUIDs"), fs->name);
 
       if (fs->uuid (dev, &uuid) != GRUB_ERR_NONE)
 	grub_util_error ("%s", grub_errmsg);
@@ -254,10 +255,10 @@ probe (const char *path, char *device_name)
     {
       char *label;
       if (! fs->label)
-	grub_util_error ("%s does not support labels", fs->name);
+	grub_util_error (_("%s does not support labels"), fs->name);
 
       if (fs->label (dev, &label) != GRUB_ERR_NONE)
-	grub_util_error ("%s", grub_errmsg);
+	grub_util_error ("%s", _(grub_errmsg));
 
       printf ("%s\n", label);
     }
@@ -287,9 +288,9 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try `%s --help' for more information.\n", program_name);
+	     _("Try `%s --help' for more information.\n"), program_name);
   else
-    printf ("\
+    printf (_("\
 Usage: %s [OPTION]... [PATH|DEVICE]\n\
 \n\
 Probe device information for a given path (or device, if the -d option is given).\n\
@@ -303,7 +304,7 @@ Probe device information for a given path (or device, if the -d option is given)
   -v, --verbose             print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-", program_name,
+"), program_name,
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 
   exit (status);
@@ -385,13 +386,13 @@ main (int argc, char *argv[])
   /* Obtain ARGUMENT.  */
   if (optind >= argc)
     {
-      fprintf (stderr, "No path or device is specified.\n");
+      fprintf (stderr, _("No path or device is specified.\n"));
       usage (1);
     }
 
   if (optind + 1 != argc)
     {
-      fprintf (stderr, "Unknown extra argument `%s'.\n", argv[optind + 1]);
+      fprintf (stderr, _("Unknown extra argument `%s'.\n"), argv[optind + 1]);
       usage (1);
     }
 

@@ -35,6 +35,7 @@
 #include <grub/util/misc.h>
 #include <grub/util/lvm.h>
 #include <grub/cryptodisk.h>
+#include <grub/i18n.h>
 
 #ifdef HAVE_DEVICE_MAPPER
 # include <libdevmapper.h>
@@ -454,7 +455,7 @@ grub_find_device (const char *dir, dev_t dev)
 		continue;
 
 	  if (chdir (saved_cwd) < 0)
-	    grub_util_error ("cannot restore the original directory");
+	    grub_util_error (_("cannot restore the original directory"));
 
 	  free (saved_cwd);
 	  closedir (dp);
@@ -463,7 +464,7 @@ grub_find_device (const char *dir, dev_t dev)
     }
 
   if (chdir (saved_cwd) < 0)
-    grub_util_error ("cannot restore the original directory");
+    grub_util_error (_("cannot restore the original directory"));
 
   free (saved_cwd);
   closedir (dp);
@@ -581,17 +582,17 @@ grub_guess_root_device (const char *dir)
 			       &data, &data_len);
 
   if (num_ints < 1)
-    grub_util_error ("Storage info for `%s' does not include type", dir);
+    grub_util_error (_("Storage info for `%s' does not include type"), dir);
   if (ints[0] != STORAGE_DEVICE)
-    grub_util_error ("Filesystem of `%s' is not stored on local disk", dir);
+    grub_util_error (_("Filesystem of `%s' is not stored on local disk"), dir);
 
   if (num_ints < 5)
-    grub_util_error ("Storage info for `%s' does not include name", dir);
+    grub_util_error (_("Storage info for `%s' does not include name"), dir);
   name_len = ints[4];
   if (name_len < data_len)
-    grub_util_error ("Bogus name length for storage info for `%s'", dir);
+    grub_util_error (_("Bogus name length for storage info for `%s'"), dir);
   if (data[name_len - 1] != '\0')
-    grub_util_error ("Storage name for `%s' not NUL-terminated", dir);
+    grub_util_error (_("Storage name for `%s' not NUL-terminated"), dir);
 
   os_dev = xmalloc (strlen ("/dev/") + data_len);
   memcpy (os_dev, "/dev/", strlen ("/dev/"));
@@ -653,7 +654,7 @@ grub_guess_root_device (const char *dir)
     }
 
   if (stat (dir, &st) < 0)
-    grub_util_error ("cannot stat `%s'", dir);
+    grub_util_error (_("cannot stat `%s'"), dir);
 
   dev = st.st_dev;
   
@@ -692,7 +693,7 @@ grub_util_open_dm (const char *os_dev, struct dm_tree **tree,
   *tree = dm_tree_create ();
   if (! *tree)
     {
-      grub_printf ("Failed to create tree\n");
+      grub_puts_ (N_("Failed to create tree"));
       grub_dprintf ("hostdisk", "dm_tree_create failed\n");
       return 0;
     }
@@ -808,7 +809,7 @@ grub_util_get_geom_abstraction (const char *dev)
 
   error = geom_gettree (&mesh);
   if (error != 0)
-    grub_util_error ("couldn't open geom");
+    grub_util_error (_("couldn't open geom"));
 
   LIST_FOREACH (class, &mesh.lg_class, lg_class)
     {
@@ -874,13 +875,14 @@ get_mdadm_uuid (const char *os_dev)
 
   if (pipe (mdadm_pipe) < 0)
     {
-      grub_util_warn ("Unable to create pipe for mdadm: %s", strerror (errno));
+      grub_util_warn (_("Unable to create pipe for mdadm: %s"),
+		      strerror (errno));
       return NULL;
     }
 
   mdadm_pid = fork ();
   if (mdadm_pid < 0)
-    grub_util_warn ("Unable to fork mdadm: %s", strerror (errno));
+    grub_util_warn (_("Unable to fork mdadm: %s"), strerror (errno));
   else if (mdadm_pid == 0)
     {
       /* Child.  */
@@ -911,7 +913,7 @@ get_mdadm_uuid (const char *os_dev)
       mdadm = fdopen (mdadm_pipe[0], "r");
       if (! mdadm)
 	{
-	  grub_util_warn ("Unable to open stream from mdadm: %s",
+	  grub_util_warn (_("Unable to open stream from mdadm: %s"),
 			  strerror (errno));
 	  goto out;
 	}
@@ -971,7 +973,7 @@ grub_util_pull_device (const char *os_dev)
 
 	error = geom_gettree (&mesh);
 	if (error != 0)
-	  grub_util_error ("couldn't open geom");
+	  grub_util_error (_("couldn't open geom"));
 
 	LIST_FOREACH (class, &mesh.lg_class, lg_class)
 	  {
@@ -989,7 +991,7 @@ grub_util_pull_device (const char *os_dev)
 		      LIST_FOREACH (consumer, &geom->lg_consumer, lg_consumer)
 			break;
 		      if (!consumer)
-			grub_util_error ("couldn't find geli consumer");
+			grub_util_error (_("couldn't find geli consumer"));
 		      fname = xasprintf ("/dev/%s", consumer->lg_provider->lg_name);
 		      grub_util_info ("consumer %s", consumer->lg_provider->lg_name);
 		      lastsubdev = consumer->lg_provider->lg_name;
@@ -1009,7 +1011,7 @@ grub_util_pull_device (const char *os_dev)
 		grub_err_t err;
 		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
 		if (err)
-		  grub_util_error ("Can't mount crypto: %s", grub_errmsg);
+		  grub_util_error (_("Can't mount crypto: %s"), _(grub_errmsg));
 	      }
 
 	    grub_free (grdev);
@@ -1053,7 +1055,7 @@ grub_util_pull_device (const char *os_dev)
 		grub_err_t err;
 		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
 		if (err)
-		  grub_util_error ("Can't mount crypto: %s", grub_errmsg);
+		  grub_util_error (_("Can't mount crypto: %s"), _(grub_errmsg));
 	      }
 	    grub_free (grdev);
 	  }
@@ -1141,7 +1143,7 @@ grub_util_get_grub_dev (const char *os_dev)
 
 	error = geom_gettree (&mesh);
 	if (error != 0)
-	  grub_util_error ("couldn't open geom");
+	  grub_util_error (_("couldn't open geom"));
 
 	LIST_FOREACH (class, &mesh.lg_class, lg_class)
 	  {
@@ -1159,11 +1161,11 @@ grub_util_get_grub_dev (const char *os_dev)
 		      LIST_FOREACH (consumer, &geom->lg_consumer, lg_consumer)
 			break;
 		      if (!consumer)
-			grub_util_error ("couldn't find geli consumer");
+			grub_util_error (_("couldn't find geli consumer"));
 		      fname = xasprintf ("/dev/%s", consumer->lg_provider->lg_name);
 		      uuid = grub_util_get_geli_uuid (fname);
 		      if (!uuid)
-			grub_util_error ("couldn't retrieve geli UUID");
+			grub_util_error (_("couldn't retrieve geli UUID"));
 		      grub_dev = xasprintf ("cryptouuid/%s", uuid);
 		      free (fname);
 		      free (uuid);
@@ -1248,7 +1250,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	  free (p);
 	}
       else
-	grub_util_error ("unknown kind of RAID device `%s'", os_dev);
+	grub_util_error (_("unknown kind of RAID device `%s'"), os_dev);
 
       {
 	char *mdadm_name = get_mdadm_uuid (os_dev);
@@ -1290,7 +1292,7 @@ grub_util_check_block_device (const char *blk_dev)
   struct stat st;
 
   if (stat (blk_dev, &st) < 0)
-    grub_util_error ("cannot stat `%s'", blk_dev);
+    grub_util_error (_("cannot stat `%s'"), blk_dev);
 
   if (S_ISBLK (st.st_mode))
     return (blk_dev);
@@ -1304,7 +1306,7 @@ grub_util_check_char_device (const char *blk_dev)
   struct stat st;
 
   if (stat (blk_dev, &st) < 0)
-    grub_util_error ("cannot stat `%s'", blk_dev);
+    grub_util_error (_("cannot stat `%s'"), blk_dev);
 
   if (S_ISCHR (st.st_mode))
     return (blk_dev);
@@ -1320,7 +1322,7 @@ get_win32_path (const char *path)
 {
   char winpath[PATH_MAX];
   if (cygwin_conv_path (CCP_POSIX_TO_WIN_A, path, winpath, sizeof(winpath)))
-    grub_util_error ("cygwin_conv_path() failed");
+    grub_util_error (_("cygwin_conv_path() failed"));
 
   int len = strlen (winpath);
   int offs = (len > 2 && winpath[1] == ':' ? 2 : 0);
@@ -1438,7 +1440,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
   /* canonicalize.  */
   p = canonicalize_file_name (path);
   if (p == NULL)
-    grub_util_error ("failed to get canonical path of %s", path);
+    grub_util_error (_("failed to get canonical path of %s"), path);
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   /* For ZFS sub-pool filesystems, could be extended to others (btrfs?).  */
@@ -1453,7 +1455,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
   free (p);
 
   if (stat (buf, &st) < 0)
-    grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
+    grub_util_error (_("cannot stat %s: %s"), buf, strerror (errno));
 
   buf2 = xstrdup (buf);
   num = st.st_dev;
@@ -1465,14 +1467,14 @@ grub_make_system_path_relative_to_its_root (const char *path)
       p = strrchr (buf, '/');
       if (p == NULL)
 	/* This should never happen.  */
-	grub_util_error ("FIXME: no / in buf. (make_system_path_relative_to_its_root)");
+	grub_util_error (_("FIXME: no / in buf. (make_system_path_relative_to_its_root)"));
       if (p != buf)
 	*p = 0;
       else
 	*++p = 0;
 
       if (stat (buf, &st) < 0)
-	grub_util_error ("cannot stat %s: %s", buf, strerror (errno));
+	grub_util_error (_("cannot stat %s: %s"), buf, strerror (errno));
 
       /* buf is another filesystem; we found it.  */
       if (st.st_dev != num)

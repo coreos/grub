@@ -178,11 +178,11 @@ list_mappings (void)
   /* Show: list mappings.  */
   if (! map_head)
     {
-      grub_printf ("No drives have been remapped\n");
+      grub_puts_ (N_("No drives have been remapped"));
       return GRUB_ERR_NONE;
     }
 
-  grub_printf ("OS disk #num ------> GRUB/BIOS device\n");
+  grub_puts_ (N_("OS disk #num ------> GRUB/BIOS device"));
   drivemap_node_t *curnode = map_head;
   while (curnode)
     {

@@ -23,6 +23,7 @@
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/cs5536.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -38,43 +39,44 @@ grub_cmd_lsspd (grub_command_t cmd __attribute__ ((unused)),
 
   if (!grub_cs5536_find (&dev))
     {
-      grub_printf ("No CS5536 found\n");
+      grub_puts_ (N_("No CS5536 found"));
       return GRUB_ERR_NONE;
     }
-  grub_printf ("CS5536 at %d:%d.%d\n", grub_pci_get_bus (dev),
-	       grub_pci_get_device (dev), grub_pci_get_function (dev));
+  grub_printf_ (N_("CS5536 at %d:%d.%d\n"), grub_pci_get_bus (dev),
+		grub_pci_get_device (dev), grub_pci_get_function (dev));
   
   err = grub_cs5536_init_smbus (dev, 0x7fff, &smbbase);
   if (err)
     return err;
 
-  grub_printf ("SMB base = 0x%x\n", smbbase);
+  grub_printf_ (N_("SMB base = 0x%x\n"), smbbase);
 
   for (i = GRUB_SMB_RAM_START_ADDR;
        i < GRUB_SMB_RAM_START_ADDR + GRUB_SMB_RAM_NUM_MAX; i++)
     {
       struct grub_smbus_spd spd;
       grub_memset (&spd, 0, sizeof (spd));
-      grub_printf ("Device %d\n", i);
+      grub_printf_ (N_("Device %d\n"), i);
       err = grub_cs5536_read_spd (smbbase, i, &spd);
       if (err)
 	{
 	  grub_print_error ();
 	  continue;
 	}
-      grub_printf ("Written SPD bytes: %d B.\n", spd.written_size);
-      grub_printf ("Total flash size: %d B.\n", 1 << spd.log_total_flash_size);
+      grub_printf_ (N_("Written SPD bytes: %d B.\n"), spd.written_size);
+      grub_printf_ (N_("Total flash size: %d B.\n"),
+		    1 << spd.log_total_flash_size);
       if (spd.memory_type == GRUB_SMBUS_SPD_MEMORY_TYPE_DDR2)
 	{
 	  char str[sizeof (spd.ddr2.part_number) + 1];
-	  grub_printf ("Memory type: DDR2.\n");
+	  grub_puts_ (N_("Memory type: DDR2."));
 	  grub_memcpy (str, spd.ddr2.part_number,
 		       sizeof (spd.ddr2.part_number));
 	  str[sizeof (spd.ddr2.part_number)] = 0;
-	  grub_printf ("Part no: %s.\n", str);
+	  grub_printf_ (N_("Part no: %s.\n"), str);
 	}
       else
-	grub_printf ("Memory type: Unknown.\n");
+	grub_puts_ (N_("Memory type: Unknown."));
     }
 
   return GRUB_ERR_NONE;
@@ -85,7 +87,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(lsspd)
 {
   cmd = grub_register_command ("lsspd", grub_cmd_lsspd, 0,
-			       "Print Memory information.");
+			       N_("Print Memory information."));
 }
 
 GRUB_MOD_FINI(lsspd)

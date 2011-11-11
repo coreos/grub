@@ -141,7 +141,7 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
       grub_file_close (file);
       if (err)
 	{
-	  grub_printf ("%s: READ ERROR\n", p);
+	  grub_printf_ (N_("%s: READ ERROR\n"), p);
 	  if (!keep)
 	    {
 	      grub_file_close (hashlist);
@@ -155,7 +155,7 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 	}
       if (grub_crypto_memcmp (expected, actual, hash->mdlen) != 0)
 	{
-	  grub_printf ("%s: HASH MISMATCH\n", p);
+	  grub_printf_ (N_("%s: HASH MISMATCH\n"), p);
 	  if (!keep)
 	    {
 	      grub_file_close (hashlist);
@@ -166,7 +166,7 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 	  mismatch++;
 	  continue;	  
 	}
-      grub_printf ("%s: OK\n", p);
+      grub_printf_ (N_("%s: OK\n"), p);
     }
   if (mismatch || unread)
     return grub_error (GRUB_ERR_TEST_FAILURE,
@@ -257,8 +257,8 @@ static grub_extcmd_t cmd, cmd_md5, cmd_sha1, cmd_sha256, cmd_sha512, cmd_crc;
 GRUB_MOD_INIT(hashsum)
 {
   cmd = grub_register_extcmd ("hashsum", grub_cmd_hashsum, 0,
-			      "hashsum -h HASH [-c FILE [-p PREFIX]] "
-			      "[FILE1 [FILE2 ...]]",
+			      N_("-h HASH [-c FILE [-p PREFIX]] "
+				 "[FILE1 [FILE2 ...]]"),
 			      N_("Compute or check hash checksum."),
 			      options);
   cmd_md5 = grub_register_extcmd ("md5sum", grub_cmd_hashsum, 0,

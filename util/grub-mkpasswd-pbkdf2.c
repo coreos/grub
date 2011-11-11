@@ -46,16 +46,17 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
+    fprintf (stderr, _("Try `%s --help' for more information.\n"),
+	     program_name);
   else
-    printf ("\
+    printf (_("\
 Usage: %s [OPTIONS]\n\
 \nOptions:\n\
      -c number, --iteration-count=number  Number of PBKDF2 iterations\n\
      -l number, --buflen=number           Length of generated hash\n\
      -s number, --salt=number             Length of salt\n\
 \n\
-Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
+Report bugs to <%s>.\n"), program_name, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -135,12 +136,12 @@ main (int argc, char *argv[])
 
   bufhex = malloc (buflen * 2 + 1);
   if (!bufhex)
-    grub_util_error ("out of memory");
+    grub_util_error (_("out of memory"));
   buf = malloc (buflen);
   if (!buf)
     {
       free (bufhex);
-      grub_util_error ("out of memory");
+      grub_util_error (_("out of memory"));
     }
 
   salt = malloc (saltlen);
@@ -148,7 +149,7 @@ main (int argc, char *argv[])
     {
       free (bufhex);
       free (buf);
-      grub_util_error ("out of memory");
+      grub_util_error (_("out of memory"));
     }
   salthex = malloc (saltlen * 2 + 1);
   if (!salthex)
@@ -156,26 +157,26 @@ main (int argc, char *argv[])
       free (salt);
       free (bufhex);
       free (buf);
-      grub_util_error ("out of memory");
+      grub_util_error (_("out of memory"));
     }
   
-  printf ("Enter password: ");
+  printf ("%s", _("Enter password: "));
   if (!grub_password_get (pass1, GRUB_AUTH_MAX_PASSLEN))
     {
       free (buf);
       free (bufhex);
       free (salthex);
       free (salt);
-      grub_util_error ("failure to read password");
+      grub_util_error (_("failure to read password"));
     }
-  printf ("\nReenter password: ");
+  printf ("\n%s", _("Reenter password: "));
   if (!grub_password_get (pass2, GRUB_AUTH_MAX_PASSLEN))
     {
       free (buf);
       free (bufhex);
       free (salthex);
       free (salt);
-      grub_util_error ("failure to read password");
+      grub_util_error (_("failure to read password"));
     }
 
   if (strcmp (pass1, pass2) != 0)
@@ -186,12 +187,12 @@ main (int argc, char *argv[])
       free (bufhex);
       free (salthex);
       free (salt);
-      grub_util_error ("passwords don't match");
+      grub_util_error (_("passwords don't match"));
     }
   memset (pass2, 0, sizeof (pass2));
 
 #if ! defined (__linux__) && ! defined (__FreeBSD__)
-  printf ("WARNING: your random generator isn't known to be secure\n");
+  printf ("%s", _("WARNING: your random generator isn't known to be secure\n"));
 #endif
 
   {
@@ -206,7 +207,7 @@ main (int argc, char *argv[])
 	free (salthex);
 	free (salt);
 	fclose (f);
-	grub_util_error ("couldn't retrieve random data for salt");
+	grub_util_error (_("couldn't retrieve random data for salt"));
       }
     rd = fread (salt, 1, saltlen, f);
     if (rd != saltlen)
@@ -217,7 +218,7 @@ main (int argc, char *argv[])
 	free (bufhex);
 	free (salthex);
 	free (salt);
-	grub_util_error ("couldn't retrieve random data for salt");
+	grub_util_error (_("couldn't retrieve random data for salt"));
       }
     fclose (f);
   }
@@ -238,13 +239,13 @@ main (int argc, char *argv[])
       memset (salthex, 0, 2 * saltlen);
       free (salt);
       free (salthex);
-      grub_util_error ("cryptographic error number %d", gcry_err);
+      grub_util_error (_("cryptographic error number %d"), gcry_err);
     }
 
   hexify (bufhex, buf, buflen);
   hexify (salthex, salt, saltlen);
 
-  printf ("Your PBKDF2 is grub.pbkdf2.sha512.%d.%s.%s\n",
+  printf (_("Your PBKDF2 is grub.pbkdf2.sha512.%d.%s.%s\n"),
 	  count, salthex, bufhex);
   memset (buf, 0, buflen);
   memset (bufhex, 0, 2 * buflen);
