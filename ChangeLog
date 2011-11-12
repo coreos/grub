@@ -1,5 +1,14 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix MIPS compilation.
+
+	* grub-core/boot/mips/startup_raw.S: Use GRUB_DECOMPRESSOR_*
+	* include/grub/offsets.h: Rename decompressor fields from
+	GRUB_KERNEL_* to GRUB_DECOMPRESSOR_*.
+	* util/grub-mkimage.c (image_targets): Use new names.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Defer multiboot device parsing until we're in compressed part.
 
 	* grub-core/boot/i386/pc/lnxboot.S: Remove setting dos_part and
