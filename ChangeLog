@@ -1,5 +1,9 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (find_system_device): Fix a memory leak.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/lvm.h (grub_lvm_pv): Correct start type.
 
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>

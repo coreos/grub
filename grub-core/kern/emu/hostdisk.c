@@ -1751,7 +1751,10 @@ find_system_device (const char *os_dev, struct stat *st, int convert, int add)
       }
 
   if (!add)
-    return -1;
+    {
+      free (os_disk);
+      return -1;
+    }
 
   if (i == ARRAY_SIZE (map))
     grub_util_error (_("device count exceeds limit"));
