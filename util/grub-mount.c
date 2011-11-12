@@ -416,7 +416,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
       if (strcmp (arg, "prompt") == 0)
 	{
 	  char buf[1024];	  
-	  grub_printf ("Enter ZFS password: ");
+	  grub_printf ("%s", _("Enter ZFS password: "));
 	  if (grub_password_get (buf, 1023))
 	    {
 	      grub_zfs_add_key ((grub_uint8_t *) buf, grub_strlen (buf), 1);
@@ -430,13 +430,13 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	  f = fopen (arg, "rb");
 	  if (!f)
 	    {
-	      printf ("Error loading file %s: %s\n", arg, strerror (errno));
+	      printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
 	      return 0;
 	    }
 	  real_size = fread (buf, 1, 1024, f);
 	  if (real_size < 0)
 	    {
-	      printf ("Error loading file %s: %s\n", arg, strerror (errno));
+	      printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
 	      fclose (f);
 	      return 0;
 	    }
@@ -507,7 +507,7 @@ main (int argc, char *argv[])
   argp_parse (&argp, argc, argv, 0, 0, 0);
   
   if (num_disks < 2)
-    grub_util_error ("need an image and mountpoint");
+    grub_util_error (_("need an image and mountpoint"));
   fuse_args = xrealloc (fuse_args, (fuse_argc + 2) * sizeof (fuse_args[0]));
   fuse_args[fuse_argc] = images[num_disks - 1];
   fuse_argc++;
