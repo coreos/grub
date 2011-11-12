@@ -34,7 +34,7 @@ kernel = {
   ia64_efi_stripflags = '--strip-unneeded -K start -R .note -R .comment';
 
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
-  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x8200';
+  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x9000';
 
   i386_qemu_ldflags        = '$(TARGET_IMG_LDFLAGS)';
   i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),0x8200';
@@ -354,6 +354,15 @@ image = {
   ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;
+};
+
+image = {
+  name = lzma_decompress;
+  i386_pc = boot/i386/pc/startup_raw.S;
+
+  objcopyflags = '-O binary';
+  ldflags = '-Wl,-Ttext,0x8200';
+  enable = i386_pc;
 };
 
 image = {

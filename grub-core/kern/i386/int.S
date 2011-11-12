@@ -47,7 +47,7 @@ FUNCTION(grub_bios_interrupt)
 	movl 	24(%edx), %esi
 	movl 	28(%edx), %edx
 
-	call    prot_to_real
+	PROT_TO_REAL
 	.code16
 	pushf
 	cli
@@ -98,7 +98,7 @@ intno:
 	movw	%ax, LOCAL(bios_register_es)
 
 	popf
-	DATA32  call	real_to_prot
+	REAL_TO_PROT
 	.code32
 
 	popl    %eax

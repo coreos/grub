@@ -1,5 +1,21 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use decompressors framework on i386-pc. It increases core size
+	by 46 bytes but improves compatibility and maintainability.
+
+	* grub-core/Makefile.core.def (lzma_decompress): New image.
+	(kernel): Add i386_pc_ldflags.
+	* grub-core/kern/i386/pc/startup.S: Move intial part to ..
+	* grub-core/boot/i386/pc/startup_raw.S: ... here. Pass pointers
+	to real_to_prot, prot_to_real and device info.
+	* include/grub/offsets.h: Renamed decompressor offsets.
+	* util/grub-mkimage.c (grub_compression_t): New cmpression lzma.
+	(image_target_desc): Remove raw_size and rename decompressor fields.
+	(compress_kernel): Handle lzma.
+	(generate_image): Handle decompressors on i386-pc.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Add -fno-asynchronous-unwind-tables.
 
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>

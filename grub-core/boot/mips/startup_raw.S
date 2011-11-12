@@ -38,13 +38,13 @@ start:
 	bal codestart
 	 nop
 base:	
-	. = _start + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
+	. = _start + GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE
 compressed_size:
 	.long 0
-	. = _start + GRUB_KERNEL_MACHINE_UNCOMPRESSED_SIZE
+	. = _start + GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE
 uncompressed_size:
 	.long 0
-	. = _start + GRUB_KERNEL_MACHINE_UNCOMPRESSED_ADDR
+	. = _start + GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_ADDR
 uncompressed_addr:
 	.long 0
 codestart:
