@@ -564,7 +564,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
 	config_opt="-c ${grubdir}/load.cfg "
         modules="$modules search_fs_uuid"
-    elif [ "x$platform" = xefi ] || [ "x$platform" = xpc ] || [ "x$platform" = xieee1275 ]; then
+    else
         # we need to hardcode the partition number in the core image's prefix.
 	if [ x"$grub_partition" = x ]; then
             prefix_drive="()"

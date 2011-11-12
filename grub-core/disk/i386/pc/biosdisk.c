@@ -622,7 +622,8 @@ grub_disk_biosdisk_fini (void)
 GRUB_MOD_INIT(biosdisk)
 {
   struct grub_biosdisk_cdrp *cdrp
-        = (struct grub_biosdisk_cdrp *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+    = (struct grub_biosdisk_cdrp *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+  grub_uint8_t boot_drive;
 
   if (grub_disk_firmware_is_tainted)
     {
@@ -634,15 +635,16 @@ GRUB_MOD_INIT(biosdisk)
   grub_memset (cdrp, 0, sizeof (*cdrp));
   cdrp->size = sizeof (*cdrp);
   cdrp->media_type = 0xFF;
-  if ((! grub_biosdisk_get_cdinfo_int13_extensions (grub_boot_drive, cdrp)) &&
-      ((cdrp->media_type & GRUB_BIOSDISK_CDTYPE_MASK)
-       == GRUB_BIOSDISK_CDTYPE_NO_EMUL))
+  boot_drive = (grub_boot_device >> 24);
+  if ((! grub_biosdisk_get_cdinfo_int13_extensions (boot_drive, cdrp))
+      && ((cdrp->media_type & GRUB_BIOSDISK_CDTYPE_MASK)
+	  == GRUB_BIOSDISK_CDTYPE_NO_EMUL))
     cd_drive = cdrp->drive_no;
   /* Since diskboot.S rejects devices over 0x90 it must be a CD booted with
      cdboot.S
    */
-  if (grub_boot_drive >= 0x90)
-    cd_drive = grub_boot_drive;
+  if (boot_drive >= 0x90)
+    cd_drive = boot_drive;
 
   grub_disk_dev_register (&grub_biosdisk_dev);
 }

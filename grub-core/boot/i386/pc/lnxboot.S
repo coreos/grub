@@ -205,11 +205,6 @@ real_code_2:
 2:
 	call	LOCAL(move_memory)
 
-	movsbl	%dh, %eax
-	movl	%eax, %ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART)
-	movsbl	(reg_edx + 2 - start), %eax
-	movl	%eax, %ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART)
-
 	movb	$0xFF, %dh
 
 	ljmp	$(DATA_ADDR >> 4), $0

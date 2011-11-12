@@ -1,5 +1,37 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Defer multiboot device parsing until we're in compressed part.
+
+	* grub-core/boot/i386/pc/lnxboot.S: Remove setting dos_part and
+	bsd_part. setdevice has fallen into disuse.
+	* grub-core/boot/i386/pc/startup_raw.S (dos_part): Removed.
+	(bsd_part): Likewise.
+	(boot_dev): New variable.
+	(multiboot_trampoline): Don't parse multiboot device.
+	Pass multiboot device in %edx.
+	* grub-core/disk/i386/pc/biosdisk.c (GRUB_MOD_INIT): Parse
+	grub_boot_device.
+	* grub-core/kern/i386/pc/init.c (grub_machine_get_bootlocation):
+	Likewise.
+	* grub-core/kern/i386/pc/startup.S: Save edx.
+	(grub_boot_drive): Removed.
+	(grub_install_dos_part): Likewise.
+	(grub_install_bsd_part): Likewise.
+	(grub_boot_device): New variable.
+	* include/grub/i386/pc/kernel.h (grub_install_dos_part): Removed.
+	(grub_install_bsd_part): Likewise.
+	(grub_boot_drive): Likewise.
+	(grub_boot_device): New variable.
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_INSTALL_DOS_PART):
+	Removed.
+	(GRUB_KERNEL_I386_PC_INSTALL_BSD_PART): Likewise.
+	(GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY): Moved lower.
+	(GRUB_KERNEL_MACHINE_INSTALL_BSD_PART): Removed.
+	(GRUB_KERNEL_MACHINE_INSTALL_DOS_PART): Likewise.
+	* util/grub-install.in: Remove redundant condition.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix bug introduced by previous commit.
 
 	* grub-core/boot/i386/pc/startup_raw.S: Compute RS start correctly.

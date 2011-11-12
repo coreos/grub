@@ -84,7 +84,6 @@ struct image_target_desc
   grub_uint16_t elf_target;
   unsigned section_align;
   signed vaddr_offset;
-  unsigned install_dos_part, install_bsd_part;
   grub_uint64_t link_addr;
   unsigned mod_gap, mod_align;
   grub_compression_t default_compression;
@@ -113,8 +112,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_I386_COREBOOT_LINK_ADDR,
       .elf_target = EM_386,
       .link_align = 4,
@@ -134,8 +131,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_I386_COREBOOT_LINK_ADDR,
       .elf_target = EM_386,
       .link_align = 4,
@@ -155,8 +150,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = GRUB_KERNEL_I386_PC_INSTALL_DOS_PART,
-      .install_bsd_part = GRUB_KERNEL_I386_PC_INSTALL_BSD_PART,
       .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
     },
     {
@@ -172,8 +165,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = GRUB_KERNEL_I386_PC_INSTALL_DOS_PART,
-      .install_bsd_part = GRUB_KERNEL_I386_PC_INSTALL_BSD_PART,
       .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
     },
     {
@@ -194,8 +185,6 @@ struct image_target_desc image_targets[] =
 				+ sizeof (struct grub_pe32_optional_header)
 				+ 4 * sizeof (struct grub_pe32_section_table),
 				GRUB_PE32_SECTION_ALIGNMENT),
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .pe_target = GRUB_PE32_MACHINE_I386,
       .elf_target = EM_386,
     },
@@ -212,8 +201,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_I386_IEEE1275_LINK_ADDR,
       .elf_target = EM_386,
       .mod_gap = GRUB_KERNEL_I386_IEEE1275_MOD_GAP,
@@ -233,8 +220,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_I386_QEMU_LINK_ADDR
     },
     {
@@ -250,8 +235,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = GRUB_PE32_SECTION_ALIGNMENT,
       .vaddr_offset = EFI64_HEADER_SIZE,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .pe_target = GRUB_PE32_MACHINE_X86_64,
       .elf_target = EM_X86_64,
     },
@@ -268,8 +251,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_MIPS_LOONGSON_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_LOONGSON_LINK_ALIGN,
@@ -288,8 +269,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_MIPS_LOONGSON_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_LOONGSON_LINK_ALIGN,
@@ -310,8 +289,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_MIPS_LOONGSON_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_LOONGSON_LINK_ALIGN,
@@ -330,8 +307,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_POWERPC_IEEE1275_LINK_ADDR,
       .elf_target = EM_PPC,
       .mod_gap = GRUB_KERNEL_POWERPC_IEEE1275_MOD_GAP,
@@ -351,8 +326,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
     },
     {
@@ -368,8 +341,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
     },
     {
@@ -385,8 +356,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = GRUB_PE32_SECTION_ALIGNMENT,
       .vaddr_offset = EFI64_HEADER_SIZE,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .pe_target = GRUB_PE32_MACHINE_IA64,
       .elf_target = EM_IA_64,
     },
@@ -404,8 +373,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_MIPS_ARC_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_ARC_LINK_ALIGN,
@@ -424,8 +391,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN,
@@ -444,8 +409,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN,
@@ -464,8 +427,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN,
@@ -484,8 +445,6 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = GRUB_KERNEL_MIPS_LOONGSON_UNCOMPRESSED_ADDR,
       .section_align = 1,
       .vaddr_offset = 0,
-      .install_dos_part = TARGET_NO_FIELD,
-      .install_bsd_part = TARGET_NO_FIELD,
       .link_addr = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN,
@@ -988,17 +947,6 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       free (core_img);
       core_img = full_img;
       core_size = full_size;
-    }
-
-  /* If we included a drive in our prefix, let GRUB know it doesn't have to
-     prepend the drive told by BIOS.  */
-  if (image_target->install_dos_part != TARGET_NO_FIELD
-      && image_target->install_bsd_part != TARGET_NO_FIELD && prefix[0] == '(')
-    {
-      *((grub_int32_t *) (core_img + image_target->install_dos_part))
-	= grub_host_to_target32 (-2);
-      *((grub_int32_t *) (core_img + image_target->install_bsd_part))
-	= grub_host_to_target32 (-2);
     }
 
   switch (image_target->id)

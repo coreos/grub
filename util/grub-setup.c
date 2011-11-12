@@ -101,55 +101,11 @@ write_rootdev (char *core_img, grub_device_t root_dev,
 {
 #ifdef GRUB_MACHINE_PCBIOS
   {
-    grub_int32_t *install_dos_part, *install_bsd_part;
-    grub_int32_t dos_part, bsd_part;
     grub_uint8_t *boot_drive;
     grub_disk_addr_t *kernel_sector;
     boot_drive = (grub_uint8_t *) (boot_img + GRUB_BOOT_MACHINE_BOOT_DRIVE);
     kernel_sector = (grub_disk_addr_t *) (boot_img
 					  + GRUB_BOOT_MACHINE_KERNEL_SECTOR);
-
-
-    install_dos_part = (grub_int32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
-					 + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART);
-    install_bsd_part = (grub_int32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
-					 + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART);
-
-    /* If we hardcoded drive as part of prefix, we don't want to
-       override the current setting.  */
-    if (*install_dos_part != -2)
-      {
-	/* Embed information about the installed location.  */
-	if (root_dev->disk->partition)
-	  {
-	    if (root_dev->disk->partition->parent)
-	      {
-		if (root_dev->disk->partition->parent->parent)
-		  grub_util_error (_("Installing on doubly nested partitions "
-				     "is not supported"));
-		dos_part = root_dev->disk->partition->parent->number;
-		bsd_part = root_dev->disk->partition->number;
-	      }
-	    else
-	      {
-		dos_part = root_dev->disk->partition->number;
-		bsd_part = -1;
-	      }
-	  }
-	else
-	  dos_part = bsd_part = -1;
-      }
-    else
-      {
-	dos_part = grub_le_to_cpu32 (*install_dos_part);
-	bsd_part = grub_le_to_cpu32 (*install_bsd_part);
-      }
-
-    grub_util_info ("dos partition is %d, bsd partition is %d",
-		    dos_part, bsd_part);
-
-    *install_dos_part = grub_cpu_to_le32 (dos_part);
-    *install_bsd_part = grub_cpu_to_le32 (bsd_part);
 
     /* FIXME: can this be skipped?  */
     *boot_drive = 0xFF;

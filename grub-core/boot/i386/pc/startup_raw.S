@@ -57,13 +57,6 @@ LOCAL(compressed_size):
 LOCAL(uncompressed_size):
 	.long 0
 
-	. = _start + GRUB_KERNEL_I386_PC_INSTALL_DOS_PART
-LOCAL(dos_part):
-	.long	0xFFFFFFFF
-	. = _start + GRUB_KERNEL_I386_PC_INSTALL_BSD_PART
-LOCAL(bsd_part):
-	.long	0xFFFFFFFF
-
 	. = _start + GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY
 reed_solomon_redundancy:
 	.long	0
@@ -72,8 +65,10 @@ reed_solomon_redundancy:
  *  This is the area for all of the special variables.
  */
 
+LOCAL(boot_dev):
+	.byte	0xFF, 0xFF, 0xFF
 LOCAL(boot_drive):
-	.byte	0
+	.byte	0x00
 
 /* the real mode code continues... */
 LOCAL (codestart):
@@ -164,28 +159,12 @@ multiboot_entry:
 
 multiboot_trampoline:
 	/* fill the boot information */
-	movl	%edx, %eax
-	shrl	$8, %eax
-	xorl	%ebx, %ebx
-	cmpb	$0xFF, %ah
-	je	1f
-	movb	%ah, %bl
-	movl	%ebx, LOCAL(dos_part)
-1:
-	cmpb	$0xFF, %al
-	je	2f
-	movb	%al, %bl
-	movl	%ebx, LOCAL(bsd_part)
-2:
+	movl	%edx, LOCAL(boot_dev)
 	shrl	$24, %edx
-	movb	%dl, LOCAL(boot_drive)
-        movb    $0xFF, %dh
-	movl    $GRUB_MEMORY_MACHINE_PROT_STACK, %esp
 	/* enter the usual booting */
 	call	prot_to_real
 	.code16
 	jmp     LOCAL (codestart)
-
 	.code32
 
 post_reed_solomon:
@@ -201,9 +180,7 @@ post_reed_solomon:
 	popl	%esi
 #endif
 
-	movb	LOCAL(boot_drive), %dl
-	movl	LOCAL(dos_part), %eax
-	movl	LOCAL(bsd_part), %ebx
+	movl	LOCAL(boot_dev), %edx
 	movl	$prot_to_real, %edi
 	movl	$real_to_prot, %ecx
 	jmp	*%esi

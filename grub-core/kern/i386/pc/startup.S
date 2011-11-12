@@ -82,8 +82,6 @@ LOCAL(cont):
 	movsb
 #endif
 
-	movl	%eax, %esi
-
 	/* clean out the bss */
 	movl	$BSS_START_SYMBOL, %edi
 
@@ -97,9 +95,7 @@ LOCAL(cont):
 	rep
 	stosb
 
-	movl	%esi, EXT_C(grub_install_dos_part)
-	movb	%dl, EXT_C(grub_boot_drive)
-	movl	%ebx, EXT_C(grub_install_bsd_part)
+	movl	%edx, EXT_C(grub_boot_device)
 
 	/*
 	 *  Call the start of main body of C code.
@@ -182,9 +178,5 @@ FUNCTION(grub_pxe_call)
 #include "../int.S"
 
 	.bss
-VARIABLE(grub_boot_drive)
-	.byte	0
-VARIABLE(grub_install_dos_part)
-	.long	0xFFFFFFFF
-VARIABLE(grub_install_bsd_part)
-	.long	0xFFFFFFFF
+VARIABLE(grub_boot_device)
+	.long	0
