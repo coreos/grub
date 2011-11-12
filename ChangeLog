@@ -1,5 +1,12 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support ZFS embedding.
+
+	* grub-core/fs/zfs/zfs.c (grub_zfs_embed): New function.
+	(grub_zfs_fs): Register grub_zfs_embed.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix MIPS compilation.
 
 	* grub-core/boot/mips/startup_raw.S: Use GRUB_DECOMPRESSOR_*

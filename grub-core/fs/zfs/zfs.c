@@ -3806,6 +3806,35 @@ grub_zfs_dir (grub_device_t device, const char *path,
   return grub_errno;
 }
 
+#ifdef GRUB_UTIL
+static grub_err_t
+grub_zfs_embed (grub_device_t device __attribute__ ((unused)),
+		unsigned int *nsectors,
+		grub_embed_type_t embed_type,
+		grub_disk_addr_t **sectors)
+{
+  unsigned i;
+
+  if (embed_type != GRUB_EMBED_PCBIOS)
+    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		       "ZFS currently supports only PC-BIOS embedding");
+
+ if ((VDEV_BOOT_SIZE >> GRUB_DISK_SECTOR_BITS) < *nsectors)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       "Your core.img is unusually large.  "
+		       "It won't fit in the embedding area.");
+
+  *nsectors = (VDEV_BOOT_SIZE >> GRUB_DISK_SECTOR_BITS);
+  *sectors = grub_malloc (*nsectors * sizeof (**sectors));
+  if (!*sectors)
+    return grub_errno;
+  for (i = 0; i < *nsectors; i++)
+    (*sectors)[i] = i + (VDEV_BOOT_OFFSET >> GRUB_DISK_SECTOR_BITS);
+
+  return GRUB_ERR_NONE;
+}
+#endif
+
 static struct grub_fs grub_zfs_fs = {
   .name = "zfs",
   .dir = grub_zfs_dir,
@@ -3815,6 +3844,10 @@ static struct grub_fs grub_zfs_fs = {
   .label = zfs_label,
   .uuid = zfs_uuid,
   .mtime = zfs_mtime,
+#ifdef GRUB_UTIL
+  .embed = grub_zfs_embed,
+  .reserved_first_sector = 1,
+#endif
   .next = 0
 };
 
