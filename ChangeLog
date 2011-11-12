@@ -1,5 +1,11 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix bug introduced by previous commit.
+
+	* grub-core/boot/i386/pc/startup_raw.S: Compute RS start correctly.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use decompressors framework on i386-pc. It increases core size
 	by 46 bytes but improves compatibility and maintainability.
 

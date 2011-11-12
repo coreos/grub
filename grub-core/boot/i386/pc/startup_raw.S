@@ -107,7 +107,7 @@ LOCAL (codestart):
 	call	grub_gate_a20
 
 	movl	LOCAL(compressed_size), %edx
-	addl    $(LOCAL(decompressor_end) - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART), %edx
+	addl    $(LOCAL(decompressor_end) - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART - _start), %edx
 	movl    reed_solomon_redundancy, %ecx
 	leal    _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART, %eax
 	call    EXT_C (grub_reed_solomon_recover)
