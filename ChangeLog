@@ -1,5 +1,36 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move assembly code to C by using intwrap. It increases core size
+	by 88 bytes but improves compatibility and maintainability.
+
+	* grub-core/kern/i386/pc/startup.S (grub_console_putchar): Moved to ...
+	* grub-core/term/i386/pc/console.c (grub_console_putchar_real):
+	... here. Translated to C.
+	* grub-core/kern/i386/pc/startup.S (grub_console_getkey): Moved to ...
+	* grub-core/term/i386/pc/console.c (grub_console_getkey):
+	... here. Translated to C.
+	* grub-core/kern/i386/pc/startup.S (grub_console_getxy): Moved to ...
+	* grub-core/term/i386/pc/console.c (grub_console_getxy):
+	... here. Translated to C.
+	* grub-core/kern/i386/pc/startup.S (grub_console_gotoxy): Moved to ...
+	* grub-core/term/i386/pc/console.c (grub_console_gotoxy):
+	... here. Translated to C.
+	* grub-core/kern/i386/pc/startup.S (grub_console_cls): Moved to ...
+	* grub-core/term/i386/pc/console.c (grub_console_cls):
+	... here. Translated to C.
+	* grub-core/kern/i386/pc/startup.S (grub_console_setcursor): Moved to ..
+	* grub-core/term/i386/pc/console.c (grub_console_setcursor):
+	... here. Translated to C.
+	* grub-core/kern/i386/pc/startup.S (grub_get_rtc): Moved to ..
+	* grub-core/kern/i386/pc/init.c (grub_get_rtc): ... here.
+	Translated to C.
+	* grub-core/term/i386/pc/console.c (int10_9): New function.
+	(grub_console_putchar): Likewise.
+	* include/grub/i386/pc/console.h: Removed the not anymore shared
+	functions.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move grub_chainloader_real_boot out of the kernel.
 
 	* grub-core/Makefile.am: Remove machine/loader.h.

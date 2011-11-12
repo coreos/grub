@@ -47,6 +47,22 @@ static int num_regions;
 
 void (*grub_pc_net_config) (char **device, char **path);
 
+/*
+ *	return the real time in ticks, of which there are about
+ *	18-20 per second
+ */
+grub_uint32_t
+grub_get_rtc (void)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x1a, &regs);
+
+  return (regs.ecx << 16) | (regs.edx & 0xffff);
+}
+
 void
 grub_machine_get_bootlocation (char **device, char **path)
 {
