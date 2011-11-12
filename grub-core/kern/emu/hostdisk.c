@@ -1781,6 +1781,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 {
   struct stat st;
   int drive;
+  char *sys_disk;
 
   grub_util_info ("Looking for %s", os_dev);
 
@@ -1800,9 +1801,13 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       return 0;
     }
 
-  if (grub_strcmp (os_dev,
-		   convert_system_partition_to_system_disk (os_dev, &st)) == 0)
-    return make_device_name (drive, -1, -1);
+  sys_disk = convert_system_partition_to_system_disk (os_dev, &st);
+  if (grub_strcmp (os_dev, sys_disk) == 0)
+    {
+      free (sys_disk);
+      return make_device_name (drive, -1, -1);
+    }
+  free (sys_disk);
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) || defined (__sun__)
   if (! S_ISCHR (st.st_mode))
@@ -1914,6 +1919,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     if (partname == NULL)
       {
 	grub_disk_close (disk);
+	grub_util_info ("cannot find the partition of `%s'", os_dev);
 	grub_error (GRUB_ERR_BAD_DEVICE,
 		    "cannot find the partition of `%s'", os_dev);
 	return 0;

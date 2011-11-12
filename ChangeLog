@@ -1,5 +1,11 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev):
+	Fix a memory leak.
+	(grub_util_biosdisk_get_grub_dev): Add a useful debug info.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (find_system_device): Fix a memory leak.
 
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
