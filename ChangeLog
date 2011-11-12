@@ -1,5 +1,10 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/gpt.c (gpt_partition_map_embed): Restore
+	disk->partiton for safety.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev):
 	Fix a memory leak.
 	(grub_util_biosdisk_get_grub_dev): Add a useful debug info.

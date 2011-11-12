@@ -140,11 +140,17 @@ gpt_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 					   const grub_partition_t p)
   {
     struct grub_gpt_partentry gptdata;
+    grub_partition_t p2;
 
+    p2 = disk->partition;
     disk->partition = p->parent;
     if (grub_disk_read (disk, p->offset, p->index,
 			sizeof (gptdata), &gptdata))
-      return 0;
+      {
+	disk->partition = p2;
+	return 0;
+      }
+    disk->partition = p2;
 
     /* If there's an embed region, it is in a dedicated partition.  */
     if (! grub_memcmp (&gptdata.type, &grub_gpt_partition_type_bios_boot, 16))
