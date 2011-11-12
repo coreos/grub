@@ -413,6 +413,23 @@ if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
 fi
 
+# By default, GCC 4.6 generates .eh_frame sections containing unwind
+# information in some cases where it previously did not. GRUB doesn't need
+# these and they just use up vital space. Restore the old compiler
+# behaviour.
+AC_CACHE_CHECK([whether -fno-asynchronous-unwind-tables works], [grub_cv_cc_fno_asynchronous_unwind_tables], [
+  SAVE_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -fno-dwarf2-cfi-asm"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+      [grub_cv_cc_fno_asynchronous_unwind_tables=yes],
+      [grub_cv_cc_fno_asynchronous_unwind_tables=no])
+  CFLAGS="$SAVE_CFLAGS"
+])
+
+if test "x$grub_cv_cc_fno_asynchronous_unwind_tables" = xyes; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-asynchronous-unwind-tables"
+fi
+
 grub_apple_target_cc
 if test x$grub_cv_apple_target_cc = xyes ; then
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS -DAPPLE_CC=1"

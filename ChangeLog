@@ -1,5 +1,9 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add -fno-asynchronous-unwind-tables.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move assembly code to C by using intwrap. It increases core size
 	by 88 bytes but improves compatibility and maintainability.
 
