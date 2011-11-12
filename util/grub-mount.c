@@ -281,7 +281,26 @@ fuse_readdir (const char *path, void *buf,
 		      const struct grub_dirhook_info *info);
   int call_fill (const char *filename, const struct grub_dirhook_info *info)
   {
-    fill (buf, filename, NULL, 0);
+    struct stat st;
+    grub_memset (&st, 0, sizeof (st));
+    st.st_mode = info->dir ? (0555 | S_IFDIR) : (0444 | S_IFREG);
+    if (!info->dir)
+      {
+	grub_file_t file;
+	char *tmp;
+	tmp = xasprintf ("%s/%s", path, filename);
+	file = grub_file_open (tmp);
+	free (tmp);
+	if (! file)
+	  return translate_error ();
+	st.st_size = file->size;
+	grub_file_close (file);
+      }
+    st.st_blksize = 512;
+    st.st_blocks = (st.st_size + 511) >> 9;
+    st.st_atime = st.st_mtime = st.st_ctime
+      = info->mtimeset ? info->mtime : 0;
+    fill (buf, filename, &st, 0);
     return 0;
   }
 
