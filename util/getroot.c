@@ -129,6 +129,27 @@ struct mountinfo_entry
    can't deal with the multiple-device case yet, but in the meantime, we can
    at least cope with the single-device case by scanning
    /proc/self/mountinfo.  */
+static void
+unescape (char *str)
+{
+  char *optr;
+  const char *iptr;
+  for (iptr = optr = str; *iptr; optr++)
+    {
+      if (iptr[0] == '\\' && iptr[1] >= '0' && iptr[1] < '8'
+	  && iptr[2] >= '0' && iptr[2] < '8'
+	  && iptr[3] >= '0' && iptr[3] < '8')
+	{
+	  *optr = (((iptr[1] - '0') << 6) | ((iptr[2] - '0') << 3)
+		   | (iptr[3] - '0'));
+	  iptr += 4;
+	}
+      else
+	*optr = *iptr++;
+    }
+  *optr = 0;
+}
+
 char *
 grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
 {
@@ -164,6 +185,9 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
 		  &entry.id, &parent_entry.id, &entry.major, &entry.minor,
 		  entry.enc_root, entry.enc_path, &count) < 6)
 	continue;
+
+      unescape (entry.enc_root);
+      unescape (entry.enc_path);
 
       enc_path_len = strlen (entry.enc_path);
       /* Check that enc_path is a prefix of dir.  The prefix must either be

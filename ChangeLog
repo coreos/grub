@@ -1,5 +1,12 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix spaces handling in proc/self/mountinfo.
+
+	* util/getroot.c (unescape): New function.
+	(grub_find_root_device_from_mountinfo): Use unescape.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support ZFS embedding.
 
 	* grub-core/fs/zfs/zfs.c (grub_zfs_embed): New function.
