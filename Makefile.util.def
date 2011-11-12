@@ -238,6 +238,22 @@ program = {
 };
 
 program = {
+  name = grub-mount;
+  mansection = 1;
+  common_nodist = grub_fstest_init.c;
+  common = util/grub-mount.c;
+  common = grub-core/kern/emu/hostfs.c;
+  common = grub-core/disk/host.c;
+
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) -lfuse';
+  condition = COND_GRUB_MOUNT;
+};
+
+program = {
   name = grub-mkfont;
   mansection = 1;
   common = util/grub-mkfont.c;

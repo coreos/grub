@@ -1,3 +1,12 @@
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+2011-11-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (grub-mount): New util.
+	* .bzrignore: Add grub-mount.
+	* configure.ac: Check for fuse and enable grub-mount if available.
+	* docs/man/grub-mount.h2m: New file.
+	* util/grub-mount.c: Likewise.
+
 2011-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/efi/fixvideo.c: Gettextize.

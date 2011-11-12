@@ -48,6 +48,7 @@ grub-kbdcomp
 grub-macho2img
 grub-menulst2cfg
 grub-mk*
+grub-mount
 grub-pe2elf
 grub-probe
 grub_probe_init.c
