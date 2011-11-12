@@ -49,6 +49,7 @@ grub_reboot (void)
   state.sp = 0;
   state.cs = segment;
   state.ip = 0;
+  state.a20 = 0;
 
   grub_stop_floppy ();
   

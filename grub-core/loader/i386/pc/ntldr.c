@@ -54,7 +54,8 @@ grub_ntldr_boot (void)
     .gs = 0,
     .ss = 0,
     .sp = 0x7c00,
-    .edx = edx
+    .edx = edx,
+    .a20 = 1
   };
   grub_video_set_mode ("text", 0, 0);
 

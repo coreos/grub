@@ -465,31 +465,6 @@ FUNCTION(grub_exit)
 	.code32
 
 /*
- *  void grub_chainloader_real_boot (int drive, void *part_addr)
- *
- *  This starts another boot loader.
- */
-
-FUNCTION(grub_chainloader_real_boot)
-	pushl	%edx
-	pushl	%eax
-
-	/* Turn off Gate A20 */
-	xorl	%eax, %eax
-	call	grub_gate_a20
-
-	/* set up to pass boot drive */
-	popl	%edx
-
-	/* ESI must point to a partition table entry */
-	popl	%esi
-
-	call	prot_to_real
-	.code16
-	ljmp	$0, $GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR
-	.code32
-
-/*
  * void grub_console_putchar (int c)
  *
  * Put the character C on the console. Because GRUB wants to write a

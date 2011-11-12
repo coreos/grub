@@ -1,4 +1,24 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move grub_chainloader_real_boot out of the kernel.
+
+	* grub-core/Makefile.am: Remove machine/loader.h.
+	* grub-core/kern/i386/pc/startup.S (grub_chainloader_real_boot):
+	Removed.
+	* grub-core/lib/i386/relocator.c (grub_relocator16_esi): New extern
+	variable.
+	(grub_relocator16_keep_a20_enabled): Likewise.
+	(grub_relocator16_boot): Fill new variables.
+	* grub-core/lib/i386/relocator16.S: Add gate a20 handling.
+	* grub-core/loader/i386/pc/chainloader.c (grub_chainloader_boot): Use
+	relocator.
+	(grub_chainloader_unload): Likewise.
+	(grub_chainloader_cmd): Likewise.
+	* include/grub/i386/pc/loader.h: Removed.
+	* include/grub/i386/relocator.h (grub_relocator16_state): Add a20
+	and esi. All initialisers updated.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 2011-11-12  Colin Watson  <cjwatson@ubuntu.com>
 
 	* Makefile.util.def (grub-mount): New util.

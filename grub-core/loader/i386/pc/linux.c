@@ -18,7 +18,6 @@
  */
 
 #include <grub/loader.h>
-#include <grub/machine/loader.h>
 #include <grub/file.h>
 #include <grub/err.h>
 #include <grub/device.h>
@@ -61,6 +60,7 @@ grub_linux16_boot (void)
   state.sp = GRUB_LINUX_SETUP_STACK;
   state.cs = segment + 0x20;
   state.ip = 0;
+  state.a20 = 1;
 
   grub_video_set_mode ("text", 0, 0);
 
