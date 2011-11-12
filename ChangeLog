@@ -1,5 +1,9 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/lvm.h (grub_lvm_pv): Correct start type.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix spaces handling in proc/self/mountinfo.
 
 	* util/getroot.c (unescape): New function.

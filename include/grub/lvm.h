@@ -38,7 +38,7 @@ struct grub_lvm_pv {
   char id[GRUB_LVM_ID_STRLEN+1];
   char *name;
   grub_disk_t disk;
-  int start; /* Sector number where the data area starts. */
+  grub_disk_addr_t start; /* Sector number where the data area starts. */
   struct grub_lvm_pv *next;
 };
 
