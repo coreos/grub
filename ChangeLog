@@ -1,5 +1,9 @@
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/gpt.c (gpt_partition_map_embed): Fix spelling.
+
+2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/partmap/gpt.c (gpt_partition_map_embed): Restore
 	disk->partiton for safety.
 

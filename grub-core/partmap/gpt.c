@@ -165,7 +165,7 @@ gpt_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 
   if (embed_type != GRUB_EMBED_PCBIOS)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "GPT curently supports only PC-BIOS embedding");
+		       "GPT currently supports only PC-BIOS embedding");
 
   err = gpt_partition_map_iterate (disk, find_usable_region);
   if (err)
