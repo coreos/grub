@@ -1,5 +1,21 @@
 2011-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Plan9 support.
+
+	* Makefile.util.def (libgrubmods): Add
+	grub-core/partmap/plan.c.
+	* docs/grub.texi: Notice Plan9 support.
+	* grub-core/Makefile.core.def (plan9): New module.
+	(part_plan): Likewise.
+	* grub-core/loader/i386/pc/plan9.c: New file.
+	* grub-core/partmap/plan.c: Likewise.
+	* include/grub/msdos_partition.h (GRUB_PC_PARTITION_TYPE_PLAN9): New
+	define.
+	(GRUB_PC_PARTITION_TYPE_LINUX_SWAP): Likewise.
+	* include/grub/mm.h (grub_extend_alloc): New inline function.
+
+2011-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make Reed-Solomon faster by using power of generator representation of
 	GF(256)*.
 

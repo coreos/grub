@@ -1266,6 +1266,13 @@ module = {
 };
 
 module = {
+  name = plan9;
+  i386_pc = loader/i386/pc/plan9.c;
+  enable = i386_pc;
+};
+
+
+module = {
   name = linux16;
   i386_pc = loader/i386/pc/linux.c;
   i386_pc = lib/cmdline.c;
@@ -1431,6 +1438,11 @@ module = {
 module = {
   name = part_sun;
   common = partmap/sun.c;
+};
+
+module = {
+  name = part_plan;
+  common = partmap/plan.c;
 };
 
 module = {
