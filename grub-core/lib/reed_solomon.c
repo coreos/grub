@@ -29,7 +29,6 @@
 #ifdef TEST
 typedef unsigned int grub_size_t;
 typedef unsigned char grub_uint8_t;
-typedef unsigned short grub_uint16_t;
 #else
 #include <grub/types.h>
 #include <grub/reed_solomon.h>
@@ -42,7 +41,6 @@ typedef unsigned short grub_uint16_t;
 #ifdef TEST
 typedef unsigned int grub_size_t;
 typedef unsigned char grub_uint8_t;
-typedef unsigned short grub_uint16_t;
 #else
 #include <grub/types.h>
 #include <grub/misc.h>
@@ -53,65 +51,72 @@ grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs);
 
 #define GF_SIZE 8
 typedef grub_uint8_t gf_single_t;
-typedef grub_uint16_t gf_double_t;
 #define GF_POLYNOMIAL 0x1d
 #define GF_INVERT2 0x8e
 #if defined (STANDALONE) && !defined (TEST)
-static gf_single_t * const gf_invert __attribute__ ((section(".text"))) = (void *) 0x100000;
-static char *scratch __attribute__ ((section(".text"))) = (void *) 0x100100;
+static gf_single_t * const gf_powx __attribute__ ((section(".text"))) = (void *) 0x100000;
+static gf_single_t * const gf_powx_inv __attribute__ ((section(".text"))) = (void *) 0x100200;
+
+static char *scratch __attribute__ ((section(".text"))) = (void *) 0x100300;
 #else
 #if defined (STANDALONE)
 static char *scratch;
 #endif
-static gf_single_t gf_invert[256];
+static gf_single_t gf_powx[255 * 2];
+static gf_single_t gf_powx_inv[256];
 #endif
 
 #define SECTOR_SIZE 512
 #define MAX_BLOCK_SIZE (200 * SECTOR_SIZE)
 
 static gf_single_t
-gf_reduce (gf_double_t a)
-{
-  int i;
-  for (i = GF_SIZE - 1; i >= 0; i--)
-    if (a & (1ULL << (i + GF_SIZE)))
-      a ^= (((gf_double_t) GF_POLYNOMIAL) << i);
-  return a & ((1ULL << GF_SIZE) - 1);
-}
-
-static gf_single_t
 gf_mul (gf_single_t a, gf_single_t b)
 {
-  gf_double_t res = 0;
-  int i;
-  for (i = 0; i < GF_SIZE; i++)
-    if (b & (1 << i))
-      res ^= ((gf_double_t) a) << i;
-  return gf_reduce (res);
+  if (a == 0 || b == 0)
+    return 0;
+  return gf_powx[(int) gf_powx_inv[a] + (int) gf_powx_inv[b]];
+}
+
+static inline gf_single_t
+gf_invert (gf_single_t a)
+{
+  return gf_powx[255 - (int) gf_powx_inv[a]];
 }
 
 static void
-init_inverts (void)
+init_powx (void)
 {
-  gf_single_t a = 1, ai = 1;
-  do
+  int i;
+  grub_uint8_t cur = 1;
+
+  for (i = 0; i < 255; i++)
     {
-      a = gf_mul (a, 2);
-      ai = gf_mul (ai, GF_INVERT2);
-      gf_invert[a] = ai;
+      gf_powx[i] = cur;
+      gf_powx[i + 255] = cur;
+      gf_powx_inv[cur] = i;
+      if (cur & (1ULL << (GF_SIZE - 1)))
+	cur = (cur << 1) ^ GF_POLYNOMIAL;
+      else
+	cur <<= 1;
     }
-  while (a != 1);
 }
 
 static gf_single_t
 pol_evaluate (gf_single_t *pol, grub_size_t degree, gf_single_t x)
 {
   int i;
-  gf_single_t xn = 1, s = 0;
+  gf_single_t s = 0;
+  int log_xn = 0, log_x;
+  if (x == 0)
+    return pol[0];
+  log_x = gf_powx_inv[x];
   for (i = degree; i >= 0; i--)
     {
-      s ^= gf_mul (pol[i], xn);
-      xn = gf_mul (x, xn);
+      if (pol[i])
+	s ^= gf_powx[(int) gf_powx_inv[pol[i]] + log_xn];
+      log_xn += log_x;
+      if (log_xn >= ((1 << GF_SIZE) - 1))
+	log_xn -= ((1 << GF_SIZE) - 1);
     }
   return s;
 }
@@ -120,7 +125,7 @@ pol_evaluate (gf_single_t *pol, grub_size_t degree, gf_single_t x)
 static void
 rs_encode (gf_single_t *data, grub_size_t s, grub_size_t rs)
 {
-  gf_single_t *rs_polynomial, a = 1;
+  gf_single_t *rs_polynomial;
   int i, j;
   gf_single_t *m;
   m = xmalloc ((s + rs) * sizeof (gf_single_t));
@@ -132,16 +137,14 @@ rs_encode (gf_single_t *data, grub_size_t s, grub_size_t rs)
   /* Multiply with X - a^r */
   for (j = 0; j < rs; j++)
     {
-      if (a & (1 << (GF_SIZE - 1)))
-	{
-	  a <<= 1;
-	  a ^= GF_POLYNOMIAL;
-	}
-      else
-	a <<= 1;
       for (i = 0; i < rs; i++)
-	rs_polynomial[i] = rs_polynomial[i + 1] ^ gf_mul (a, rs_polynomial[i]);
-      rs_polynomial[rs] = gf_mul (a, rs_polynomial[rs]);
+	if (rs_polynomial[i])
+	  rs_polynomial[i] = (rs_polynomial[i + 1]
+			      ^ gf_powx[j + (int) gf_powx_inv[rs_polynomial[i]]]);
+	else
+	  rs_polynomial[i] = rs_polynomial[i + 1];
+      if (rs_polynomial[rs])
+	rs_polynomial[rs] = gf_powx[j + (int) gf_powx_inv[rs_polynomial[rs]]];
     }
   for (j = 0; j < s; j++)
     if (m[j])
@@ -190,7 +193,7 @@ gauss_eliminate (gf_single_t *eq, int n, int m, int *chosen)
       if (nzidx == m)
 	continue;
       chosen[i] = nzidx;
-      r = gf_invert [eq[i * (m + 1) + nzidx]];
+      r = gf_invert (eq[i * (m + 1) + nzidx]);
       for (j = 0; j < m + 1; j++)
 	eq[i * (m + 1) + j] = gf_mul (eq[i * (m + 1) + j], r);
       for (j = i + 1; j < n; j++)
@@ -437,6 +440,8 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
   if (!rs)
     return;
 
+  init_powx ();
+
   while (s > 0)
     {
       grub_size_t tt;
@@ -468,9 +473,7 @@ grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs)
   if (!rs)
     return;
 
-#if defined (STANDALONE)
-  init_inverts ();
-#endif
+  init_powx ();
 
   while (s > 0)
     {
@@ -500,12 +503,15 @@ main (int argc, char **argv)
   grub_size_t s, rs;
   char *buf;
 
+  grub_memset (gf_powx, 0xee, sizeof (gf_powx));
+  grub_memset (gf_powx_inv, 0xdd, sizeof (gf_powx_inv));
+
 #ifdef STANDALONE
   scratch = xmalloc (1048576);
 #endif
 
 #ifndef STANDALONE
-  init_inverts ();
+  init_powx ();
 #endif
 
   in = fopen ("tst.bin", "rb");
@@ -514,7 +520,7 @@ main (int argc, char **argv)
   fseek (in, 0, SEEK_END);
   s = ftell (in);
   fseek (in, 0, SEEK_SET);
-  rs = s / 3;
+  rs = 0x7007;
   buf = xmalloc (s + rs + SECTOR_SIZE);
   fread (buf, 1, s, in);
   fclose (in);
@@ -524,8 +530,9 @@ main (int argc, char **argv)
   out = fopen ("tst_rs.bin", "wb");
   fwrite (buf, 1, s + rs, out);
   fclose (out);
-
+#if 0
   grub_memset (buf + 512 * 15, 0, 512);
+#endif
 
   out = fopen ("tst_dam.bin", "wb");
   fwrite (buf, 1, s + rs, out);

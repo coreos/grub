@@ -1,3 +1,25 @@
+2011-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Make Reed-Solomon faster by using power of generator representation of
+	GF(256)*.
+
+	* grub-core/lib/reed_solomon.c (grub_uint16_t) [TEST]: Removed.
+	(gf_double_t): Likewise.
+	(gf_invert): Removed.
+	(gf_powx): New array.
+	(gf_powx_inv): Likewise.
+	(scratch): Move higher.
+	(gf_reduce): Removed.
+	(gf_mul): Use powx.
+	(gf_invert): Likewise.
+	(init_inverts): Replaced with ...
+	(init_powx): ...this. All users updated.
+	(pol_evaluate): Replace multiplications with additions.
+	(rs_encode): Likewise.
+	(gauss_eliminate): Call gf_invert.
+	(grub_reed_solomon_add_redundancy): Call init_powx.
+	(grub_reed_solomon_recover): Call init_powx unconditionally.
+
 2011-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/partmap/gpt.c (gpt_partition_map_embed): Fix spelling.
