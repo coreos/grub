@@ -78,8 +78,7 @@ grub_plan9_boot (void)
     .edi = 0,
     .esp = 0,
     .ebp = 0,
-    .esi = 0,
-    .a20 = 1
+    .esi = 0
   };
   grub_video_set_mode ("text", 0, 0);
 
