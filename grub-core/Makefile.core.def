@@ -18,6 +18,18 @@ script = {
   common = modinfo.sh.in;
 };
 
+script = {
+  installdir = noinst;
+  name = gmodule.pl;
+  common = gmodule.pl.in;
+};
+
+script = {
+  installdir = noinst;
+  name = gdb_grub;
+  common = gdb_grub.in;
+};
+
 kernel = {
   name = kernel;
 

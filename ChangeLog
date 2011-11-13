@@ -1,3 +1,12 @@
+2011-11-13  Lubomir Kundrak  <lkundrak@redhat.com>
+
+	Add facility to debug GRUB with gdb under qemu.
+
+	* grub-core/gdb_grub.in: New file.
+	* grub-core/gmodule.pl.in: Likewise.
+	* grub-core/Makefile.core.def (gmodule.pl): New script.
+	(gdb_grub): Likewise.
+
 2011-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mount.c (argp_parser): Accept relative pathes.
