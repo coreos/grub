@@ -562,14 +562,9 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
   if (args_count < num_disks)
     {
-      if (arg[0] != '/')
-	{
-	  fprintf (stderr, "%s", _("Must use absolute path.\n"));
-	  argp_usage (state);
-	}
       if (args_count == 0)
 	images = xmalloc (num_disks * sizeof (images[0]));
-      images[args_count] = xstrdup (arg);
+      images[args_count] = canonicalize_file_name (arg);
       args_count++;
       return 0;
     }

@@ -1,5 +1,10 @@
 2011-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mount.c (argp_parser): Accept relative pathes.
+	* util/grub-fstest.c (argp_parser): Likewise.
+
+2011-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Plan9 support.
 
 	* Makefile.util.def (libgrubmods): Add

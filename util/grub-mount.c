@@ -489,13 +489,8 @@ argp_parser (int key, char *arg, struct argp_state *state)
       return 0;
     }
 
-  if (arg[0] != '/')
-    {
-      fprintf (stderr, "%s", _("Must use absolute path.\n"));
-      argp_usage (state);
-    }
   images = xrealloc (images, (num_disks + 1) * sizeof (images[0]));
-  images[num_disks] = xstrdup (arg);
+  images[num_disks] = canonicalize_file_name (arg);
   num_disks++;
 
   return 0;
