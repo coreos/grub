@@ -29,6 +29,7 @@ struct grub_term_output *grub_term_outputs;
 struct grub_term_input *grub_term_inputs;
 
 void (*grub_term_poll_usb) (void) = NULL;
+void (*grub_net_poll_cards_idle) (void) = NULL;
 
 /* Put a Unicode character.  */
 static void
@@ -90,6 +91,9 @@ grub_checkkey (void)
 
   if (grub_term_poll_usb)
     grub_term_poll_usb ();
+
+  if (grub_net_poll_cards_idle)
+    grub_net_poll_cards_idle ();
 
   FOR_ACTIVE_TERM_INPUTS(term)
   {

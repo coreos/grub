@@ -62,13 +62,25 @@ grub_relocator_firmware_fill_events (struct grub_relocator_mmap_event *events)
        (char *) desc < ((char *) descs + mmapsize);
        desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
     {
+      grub_uint64_t start = desc->physical_start;
+      grub_uint64_t end = desc->physical_start + (desc->num_pages << 12);
+
+      /* post-4G addresses are never supported on 32-bit EFI. 
+	 Moreover it has been reported that some 64-bit EFI contrary to the
+	 spec don't map post-4G pages. So if you enable post-4G allocations,
+	 map pages manually or check that they are mapped.
+       */
+      if (end >= 0x100000000ULL)
+	end = 0x100000000ULL;
+      if (end <= start)
+	continue;
       if (desc->type != GRUB_EFI_CONVENTIONAL_MEMORY)
 	continue;
       events[counter].type = REG_FIRMWARE_START;
-      events[counter].pos = desc->physical_start;
+      events[counter].pos = start;
       counter++;
       events[counter].type = REG_FIRMWARE_END;
-      events[counter].pos = desc->physical_start + (desc->num_pages << 12);
+      events[counter].pos = end;
       counter++;      
     }
 
@@ -84,6 +96,9 @@ grub_relocator_firmware_alloc_region (grub_addr_t start, grub_size_t size)
 
   if (grub_efi_is_finished)
     return 1;
+
+  grub_dprintf ("relocator", "EFI alloc: %llx, %llx\n",
+		(unsigned long long) start, (unsigned long long) size);
 
   b = grub_efi_system_table->boot_services;
   status = efi_call_4 (b->allocate_pages, GRUB_EFI_ALLOCATE_ADDRESS,

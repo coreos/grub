@@ -49,15 +49,11 @@
 static jmp_buf main_env;
 
 /* Store the prefix specified by an argument.  */
-static char *prefix = NULL;
+static char *root_dev = NULL, *dir = NULL;
 
 int grub_no_autoload;
 
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return 0;
-}
+grub_addr_t grub_modbase = 0;
 
 void
 grub_reboot (void)
@@ -71,11 +67,10 @@ grub_machine_init (void)
 }
 
 void
-grub_machine_set_prefix (void)
+grub_machine_get_bootlocation (char **device, char **path)
 {
-  grub_env_set ("prefix", prefix);
-  free (prefix);
-  prefix = 0;
+  *device = root_dev;
+  *path = dir;
 }
 
 void
@@ -103,14 +98,14 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try `%s --help' for more information.\n", program_name);
+	     _("Try `%s --help' for more information.\n"), program_name);
   else
     printf (
-      "Usage: %s [OPTION]...\n"
+    _("Usage: %s [OPTION]...\n"
       "\n"
       "GRUB emulator.\n"
       "\n"
-      "  -r, --root-device=DEV     use DEV as the root device [default=guessed]\n"
+      "  -r, --root-device=DEV     use DEV as the root device [default=host]\n"
       "  -m, --device-map=FILE     use FILE as the device map [default=%s]\n"
       "  -d, --directory=DIR       use GRUB files in the directory DIR [default=%s]\n"
       "  -v, --verbose             print verbose messages\n"
@@ -118,7 +113,7 @@ usage (int status)
       "  -h, --help                display this message and exit\n"
       "  -V, --version             print version information and exit\n"
       "\n"
-      "Report bugs to <%s>.\n", program_name, DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+      "Report bugs to <%s>.\n"), program_name, DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
   return status;
 }
 
@@ -132,22 +127,24 @@ void grub_emu_init (void);
 int
 main (int argc, char *argv[])
 {
-  char *root_dev = 0;
-  char *dir = DEFAULT_DIRECTORY;
   char *dev_map = DEFAULT_DEVICE_MAP;
   volatile int hold = 0;
   int opt;
 
   set_program_name (argv[0]);
 
+  dir = xstrdup (DEFAULT_DIRECTORY);
+
   while ((opt = getopt_long (argc, argv, "r:d:m:vH:hV", options, 0)) != -1)
     switch (opt)
       {
       case 'r':
-        root_dev = optarg;
+	free (root_dev);
+        root_dev = xstrdup (optarg);
         break;
       case 'd':
-        dir = optarg;
+	free (dir);
+        dir = xstrdup (optarg);
         break;
       case 'm':
         dev_map = optarg;
@@ -169,13 +166,13 @@ main (int argc, char *argv[])
 
   if (optind < argc)
     {
-      fprintf (stderr, "Unknown extra argument `%s'.\n", argv[optind]);
+      fprintf (stderr, _("Unknown extra argument `%s'.\n"), argv[optind]);
       return usage (1);
     }
 
   /* Wait until the ARGS.HOLD variable is cleared by an attached debugger. */
   if (hold && verbosity > 0)
-    printf ("Run \"gdb %s %d\", and set ARGS.HOLD to zero.\n",
+    printf (_("Run \"gdb %s %d\", and set ARGS.HOLD to zero.\n"),
             program_name, (int) getpid ());
   while (hold)
     {
@@ -201,27 +198,9 @@ main (int argc, char *argv[])
 
   /* Make sure that there is a root device.  */
   if (! root_dev)
-    {
-      char *device_name = grub_guess_root_device (dir);
-      if (! device_name)
-        grub_util_error ("cannot find a device for %s", dir);
+    root_dev = grub_strdup ("host");
 
-      root_dev = grub_util_get_grub_dev (device_name);
-      if (! root_dev)
-	{
-	  grub_util_info ("guessing the root device failed, because of `%s'",
-			  grub_errmsg);
-	  grub_util_error ("cannot guess the root device. Specify the option `--root-device'");
-	}
-    }
-
-  if (strcmp (root_dev, "host") == 0)
-    dir = xstrdup (dir);
-  else
-    dir = grub_make_system_path_relative_to_its_root (dir);
-  prefix = xmalloc (strlen (root_dev) + 2 + strlen (dir) + 1);
-  sprintf (prefix, "(%s)%s", root_dev, dir);
-  free (dir);
+  dir = xstrdup (dir);
 
   /* Start GRUB!  */
   if (setjmp (main_env) == 0)

@@ -29,6 +29,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* cat FILE */
 static grub_err_t
 grub_mini_cmd_cat (struct grub_command *cmd __attribute__ ((unused)),
@@ -88,26 +90,6 @@ grub_mini_cmd_help (struct grub_command *cmd __attribute__ ((unused)),
   return 0;
 }
 
-#if 0
-static void
-grub_rescue_cmd_info (void)
-{
-  extern void grub_disk_cache_get_performance (unsigned long *,
-					       unsigned long *);
-  unsigned long hits, misses;
-
-  grub_disk_cache_get_performance (&hits, &misses);
-  grub_printf ("Disk cache: hits = %u, misses = %u ", hits, misses);
-  if (hits + misses)
-    {
-      unsigned long ratio = hits * 10000 / (hits + misses);
-      grub_printf ("(%u.%u%%)\n", ratio / 100, ratio % 100);
-    }
-  else
-    grub_printf ("(N/A)\n");
-}
-#endif
-
 /* dump ADDRESS [SIZE] */
 static grub_err_t
 grub_mini_cmd_dump (struct grub_command *cmd __attribute__ ((unused)),
@@ -163,7 +145,7 @@ grub_mini_cmd_lsmod (struct grub_command *cmd __attribute__ ((unused)),
 {
   grub_dl_t mod;
 
-  grub_printf ("Name\tRef Count\tDependencies\n");
+  grub_printf_ (N_("Name\tRef Count\tDependencies\n"));
   FOR_DL_MODULES (mod)
   {
     grub_dl_dep_t dep;

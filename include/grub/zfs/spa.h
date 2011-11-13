@@ -20,26 +20,24 @@
 #ifndef GRUB_ZFS_SPA_HEADER
 #define	GRUB_ZFS_SPA_HEADER 1
 
-typedef enum grub_zfs_endian
-  {
-    UNKNOWN_ENDIAN = -2,
-    LITTLE_ENDIAN = -1,
-    BIG_ENDIAN = 0
-  } grub_zfs_endian_t;
-
-#define grub_zfs_to_cpu16(x,a) (((a) == BIG_ENDIAN) ? grub_be_to_cpu16(x) \
+#define grub_zfs_to_cpu16(x,a) (((a) == GRUB_ZFS_BIG_ENDIAN) ? \
+				grub_be_to_cpu16(x)	       \
 				: grub_le_to_cpu16(x))
-#define grub_cpu_to_zfs16(x,a) (((a) == BIG_ENDIAN) ? grub_cpu_to_be16(x) \
+#define grub_cpu_to_zfs16(x,a) (((a) == GRUB_ZFS_BIG_ENDIAN) ? \
+				grub_cpu_to_be16(x)	       \
 				: grub_cpu_to_le16(x))
 
-#define grub_zfs_to_cpu32(x,a) (((a) == BIG_ENDIAN) ? grub_be_to_cpu32(x) \
+#define grub_zfs_to_cpu32(x,a) (((a) == GRUB_ZFS_BIG_ENDIAN) ? \
+				grub_be_to_cpu32(x)	       \
 				: grub_le_to_cpu32(x))
-#define grub_cpu_to_zfs32(x,a) (((a) == BIG_ENDIAN) ? grub_cpu_to_be32(x) \
+#define grub_cpu_to_zfs32(x,a) (((a) == GRUB_ZFS_BIG_ENDIAN) ? \
+				grub_cpu_to_be32(x)	       \
 				: grub_cpu_to_le32(x))
 
-#define grub_zfs_to_cpu64(x,a) (((a) == BIG_ENDIAN) ? grub_be_to_cpu64(x) \
+#define grub_zfs_to_cpu64(x,a) (((a) == GRUB_ZFS_BIG_ENDIAN) \
+				? grub_be_to_cpu64(x)	     \
 				: grub_le_to_cpu64(x))
-#define grub_cpu_to_zfs64(x,a) (((a) == BIG_ENDIAN) ? grub_cpu_to_be64(x) \
+#define grub_cpu_to_zfs64(x,a) (((a) == GRUB_ZFS_BIG_ENDIAN) ? grub_cpu_to_be64(x) \
 				: grub_cpu_to_le64(x))
 
 /*

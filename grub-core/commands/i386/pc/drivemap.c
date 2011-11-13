@@ -29,6 +29,7 @@
 #include <grub/memory.h>
 #include <grub/machine/memory.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Real mode IVT slot (seg:off far pointer) for interrupt 0x13.  */
 static grub_uint32_t *const int13slot = UINT_TO_PTR (4 * 0x13);
@@ -177,11 +178,11 @@ list_mappings (void)
   /* Show: list mappings.  */
   if (! map_head)
     {
-      grub_printf ("No drives have been remapped\n");
+      grub_puts_ (N_("No drives have been remapped"));
       return GRUB_ERR_NONE;
     }
 
-  grub_printf ("OS disk #num ------> GRUB/BIOS device\n");
+  grub_puts_ (N_("OS disk #num ------> GRUB/BIOS device"));
   drivemap_node_t *curnode = map_head;
   while (curnode)
     {
@@ -362,7 +363,7 @@ uninstall_int13_handler (void)
 static int
 grub_get_root_biosnumber_drivemap (void)
 {
-  char *biosnum;
+  const char *biosnum;
   int ret = -1;
   grub_device_t dev;
 

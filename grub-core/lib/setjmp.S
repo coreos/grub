@@ -8,6 +8,9 @@
 #include "./mips/setjmp.S"
 #elif defined(__powerpc__)
 #include "./powerpc/setjmp.S"
+#elif defined(__ia64__)
+#include "./ia64/setjmp.S"
+#include "./ia64/longjmp.S"
 #else
-#error "Unknwon target cpu type"
+#error "Unknown target cpu type"
 #endif

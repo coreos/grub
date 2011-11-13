@@ -28,6 +28,8 @@
 #include <grub/kernel.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /*
    .mo file information from:
    http://www.gnu.org/software/autoconf/manual/gettext/MO-Files.html .
@@ -49,7 +51,7 @@ struct grub_gettext_msg
   const char *translated;
 };
 
-struct grub_gettext_msg *grub_gettext_msg_list = NULL;
+static struct grub_gettext_msg *grub_gettext_msg_list = NULL;
 
 #define GETTEXT_MAGIC_NUMBER 		0
 #define GETTEXT_FILE_FORMAT		4
@@ -292,7 +294,10 @@ grub_mofile_open_lang (const char *locale_dir, const char *locale)
 static void
 grub_gettext_init_ext (const char *locale)
 {
-  char *locale_dir;
+  const char *locale_dir;
+
+  if (!locale)
+    return;
 
   locale_dir = grub_env_get ("locale_dir");
   if (locale_dir == NULL)
@@ -368,8 +373,6 @@ grub_cmd_translate (grub_command_t cmd __attribute__ ((unused)),
 
 GRUB_MOD_INIT (gettext)
 {
-  (void) mod;			/* To stop warning.  */
-
   const char *lang;
 
   lang = grub_env_get ("lang");

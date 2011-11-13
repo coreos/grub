@@ -18,16 +18,22 @@
 
 #include <grub/dl.h>
 #include <grub/i386/vga_common.h>
-#include <grub/i386/io.h>
+#include <grub/cpu/io.h>
 #include <grub/types.h>
 #include <grub/vga.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #define COLS	80
 #define ROWS	25
 
 static int grub_curr_x, grub_curr_y;
 
+#ifdef __mips__
+#define VGA_TEXT_SCREEN		((grub_uint16_t *) 0xb00b8000)
+#else
 #define VGA_TEXT_SCREEN		((grub_uint16_t *) 0xb8000)
+#endif
 
 static void
 screen_write_char (int x, int y, short c)

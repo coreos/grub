@@ -33,7 +33,11 @@ loadfont_command (grub_command_t cmd __attribute__ ((unused)),
 
   while (argc--)
     if (grub_font_load (*args++) != 0)
-      return GRUB_ERR_BAD_FONT;
+      {
+	if (!grub_errno)
+	  return grub_error (GRUB_ERR_BAD_FONT, "invalid font");
+	return grub_errno;
+      }
 
   return GRUB_ERR_NONE;
 }
@@ -45,7 +49,7 @@ lsfonts_command (grub_command_t cmd __attribute__ ((unused)),
 {
   struct grub_font_node *node;
 
-  grub_printf ("Loaded fonts:\n");
+  grub_puts_ (N_("Loaded fonts:"));
   for (node = grub_font_list; node; node = node->next)
     {
       grub_font_t font = node->value;

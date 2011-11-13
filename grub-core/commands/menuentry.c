@@ -28,13 +28,13 @@
 static const struct grub_arg_option options[] =
   {
     {"class", 1, GRUB_ARG_OPTION_REPEATABLE,
-     N_("Menu entry type."), "STRING", ARG_TYPE_STRING},
+     N_("Menu entry type."), N_("STRING"), ARG_TYPE_STRING},
     {"users", 2, 0,
-     N_("Users allowed to boot this entry."), "USERNAME", ARG_TYPE_STRING},
+     N_("Users allowed to boot this entry."), N_("USERNAME"), ARG_TYPE_STRING},
     {"hotkey", 3, 0,
-     N_("Keyboard key for this entry."), "KEY", ARG_TYPE_STRING},
+     N_("Keyboard key for this entry."), N_("KEY"), ARG_TYPE_STRING},
     {"source", 4, 0,
-     N_("Menu entry definition as a string."), "STRING", ARG_TYPE_STRING},
+     N_("Menu entry definition as a string."), N_("STRING"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -91,7 +91,7 @@ grub_normal_add_menu_entry (int argc, const char **args, char **classes,
   if (! menu_sourcecode)
     return grub_errno;
 
-  if (classes)
+  if (classes && classes[0])
     {
       int i;
       for (i = 0; classes[i]; i++); /* count # of menuentry classes */
@@ -255,7 +255,8 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
 
   if (! ctxt->script)
     return grub_normal_add_menu_entry (argc, (const char **) args,
-				       ctxt->state[0].args, ctxt->state[1].arg,
+				       (ctxt->state[0].set ? ctxt->state[0].args
+					: NULL), ctxt->state[1].arg,
 				       ctxt->state[2].arg, 0,
 				       ctxt->state[3].arg,
 				       ctxt->extcmd->cmd->name[0] == 's');

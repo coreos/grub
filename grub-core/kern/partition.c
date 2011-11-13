@@ -20,6 +20,7 @@
 #include <grub/mm.h>
 #include <grub/partition.h>
 #include <grub/disk.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_UTIL
 #include <grub/util/misc.h>
@@ -47,7 +48,7 @@ grub_partition_check_containment (const grub_disk_t disk,
       grub_dprintf ("partition", "sub-partition %s%d of (%s,%s) ends after parent.\n",
 		    part->partmap->name, part->number + 1, disk->name, partname);
 #ifdef GRUB_UTIL
-      grub_util_warn ("Discarding improperly nested partition (%s,%s,%s%d)",
+      grub_util_warn (_("Discarding improperly nested partition (%s,%s,%s%d)"),
 		      disk->name, partname, part->partmap->name, part->number + 1);
 #endif
       grub_free (partname);

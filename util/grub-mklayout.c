@@ -60,6 +60,8 @@ static struct console_grub_equivalence console_grub_equivalences_shift[] = {
   {"KP_8", '8'},
   {"KP_9", '9'},
   {"KP_Period", '.'},
+
+  {NULL, '\0'}
 };
 
 static struct console_grub_equivalence console_grub_equivalences_unshift[] = {
@@ -74,6 +76,8 @@ static struct console_grub_equivalence console_grub_equivalences_unshift[] = {
   {"KP_8", GRUB_TERM_KEY_UP},
   {"KP_9", GRUB_TERM_KEY_PPAGE},
   {"KP_Period", GRUB_TERM_KEY_DC},
+
+  {NULL, '\0'}
 };
 
 static struct console_grub_equivalence console_grub_equivalences_common[] = {
@@ -256,16 +260,17 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
+    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
   else
-    printf ("\
-Usage: %s [OPTIONS] LAYOUT\n\
-  -o, --output		set output base name file. Default is LAYOUT.gkb\n\
+    printf (_("\
+Usage: %s [OPTIONS]\n\
+  -i, --input		set input filename. Default is STDIN\n\
+  -o, --output		set output filename. Default is STDOUT\n\
   -h, --help		display this message and exit.\n\
   -V, --version		print version information and exit.\n\
   -v, --verbose		print verbose messages.\n\
 \n\
-Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
+Report bugs to <%s>.\n"), program_name, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -295,7 +300,7 @@ lookup (char *code, int shift)
     if (strcmp (code, console_grub_equivalences_common[i].layout) == 0)
       return console_grub_equivalences_common[i].grub;
 
-  fprintf (stderr, "Unknown key %s\n", code);
+  fprintf (stderr, _("Unknown key %s\n"), code);
 
   return '\0';
 }
@@ -391,7 +396,7 @@ write_keymaps (FILE *in, FILE *out)
 	  if (keycode_usb == 0
 	      || keycode_usb >= GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
 	    {
-	      fprintf (stderr, "Unknown keycode 0x%02x\n", keycode_linux);
+	      fprintf (stderr, _("Unknown keycode 0x%02x\n"), keycode_linux);
 	      continue;
 	    }
 	  if (keycode_usb < GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
@@ -409,7 +414,7 @@ write_keymaps (FILE *in, FILE *out)
 
   if (ok == 0)
     {
-      fprintf (stderr, "ERROR: no keycodes found. Check output of %s.\n",
+      fprintf (stderr, _("ERROR: no keycodes found. Check output of %s.\n"),
 	       CKBCOMP);
       exit (1);
     }
@@ -474,7 +479,7 @@ main (int argc, char *argv[])
     in = stdin;
 
   if (!in)
-    grub_util_error ("Couldn't open input file: %s\n", strerror (errno));
+    grub_util_error (_("Couldn't open input file: %s\n"), strerror (errno));
 
   if (outfile_name)
     out = fopen (outfile_name, "wb");
@@ -485,7 +490,7 @@ main (int argc, char *argv[])
     {
       if (in != stdin)
 	fclose (in);
-      grub_util_error ("Couldn't open output file: %s\n", strerror (errno));
+      grub_util_error (_("Couldn't open output file: %s\n"), strerror (errno));
     }
 
   write_keymaps (in, out);

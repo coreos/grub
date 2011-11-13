@@ -23,6 +23,8 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* List of bitmap readers registered to system.  */
 static grub_video_bitmap_reader_t bitmap_readers_list;
 
@@ -177,7 +179,7 @@ match_extension (const char *filename, const char *ext)
 
   pos -= ext_len;
 
-  return grub_strcmp (filename + pos, ext) == 0;
+  return grub_strcasecmp (filename + pos, ext) == 0;
 }
 
 /* Loads bitmap using registered bitmap readers.  */

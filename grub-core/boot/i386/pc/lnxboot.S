@@ -19,7 +19,6 @@
 
 #include <config.h>
 #include <grub/symbol.h>
-#include <grub/boot.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <multiboot.h>
@@ -178,8 +177,13 @@ real_code_2:
 	pushw	%es
 	popw	%ds
 
+#if GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART + 4 < 0x200
 	movl	$0x200, %ecx
 	addl	%ecx, %esi
+#else
+	movl	$(GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART + 4), %ecx
+	addl	$0x200, %esi
+#endif
 	movl	$DATA_ADDR, %edi
 
 	call	LOCAL(move_memory)
@@ -195,16 +199,11 @@ real_code_2:
 
 1:
 
-	movl	%ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE), %ecx
-	addl	$(GRUB_KERNEL_MACHINE_RAW_SIZE - 0x200), %ecx
+	movl	%ss:(DATA_ADDR + GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE), %ecx
+	addl	$((0x9000 - 0x8200) - (GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART + 4)), %ecx
 
 2:
 	call	LOCAL(move_memory)
-
-	movsbl	%dh, %eax
-	movl	%eax, %ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART)
-	movsbl	(reg_edx + 2 - start), %eax
-	movl	%eax, %ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART)
 
 	movb	$0xFF, %dh
 

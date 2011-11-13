@@ -1,7 +1,7 @@
 /* grub-setup.c - make GRUB usable */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,7 +32,6 @@
 #include <grub/machine/kernel.h>
 #include <grub/term.h>
 #include <grub/i18n.h>
-#include <grub/util/raid.h>
 #include <grub/util/lvm.h>
 #ifdef GRUB_MACHINE_IEEE1275
 #include <grub/util/ofpath.h>
@@ -49,6 +48,8 @@
 #include <grub/emu/getroot.h>
 #include "progname.h"
 #include <grub/reed_solomon.h>
+#include <grub/msdos_partition.h>
+#include <include/grub/crypto.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -100,55 +101,11 @@ write_rootdev (char *core_img, grub_device_t root_dev,
 {
 #ifdef GRUB_MACHINE_PCBIOS
   {
-    grub_int32_t *install_dos_part, *install_bsd_part;
-    grub_int32_t dos_part, bsd_part;
     grub_uint8_t *boot_drive;
     grub_disk_addr_t *kernel_sector;
     boot_drive = (grub_uint8_t *) (boot_img + GRUB_BOOT_MACHINE_BOOT_DRIVE);
     kernel_sector = (grub_disk_addr_t *) (boot_img
 					  + GRUB_BOOT_MACHINE_KERNEL_SECTOR);
-
-
-    install_dos_part = (grub_int32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
-					 + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART);
-    install_bsd_part = (grub_int32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
-					 + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART);
-
-    /* If we hardcoded drive as part of prefix, we don't want to
-       override the current setting.  */
-    if (*install_dos_part != -2)
-      {
-	/* Embed information about the installed location.  */
-	if (root_dev->disk->partition)
-	  {
-	    if (root_dev->disk->partition->parent)
-	      {
-		if (root_dev->disk->partition->parent->parent)
-		  grub_util_error ("Installing on doubly nested partitions is "
-				   "not supported");
-		dos_part = root_dev->disk->partition->parent->number;
-		bsd_part = root_dev->disk->partition->number;
-	      }
-	    else
-	      {
-		dos_part = root_dev->disk->partition->number;
-		bsd_part = -1;
-	      }
-	  }
-	else
-	  dos_part = bsd_part = -1;
-      }
-    else
-      {
-	dos_part = grub_le_to_cpu32 (*install_dos_part);
-	bsd_part = grub_le_to_cpu32 (*install_bsd_part);
-      }
-
-    grub_util_info ("dos partition is %d, bsd partition is %d",
-		    dos_part, bsd_part);
-
-    *install_dos_part = grub_cpu_to_le32 (dos_part);
-    *install_bsd_part = grub_cpu_to_le32 (bsd_part);
 
     /* FIXME: can this be skipped?  */
     *boot_drive = 0xFF;
@@ -282,22 +239,22 @@ setup (const char *dir,
   grub_util_info ("Opening root");
   root_dev = grub_device_open (root);
   if (! root_dev)
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
   grub_util_info ("Opening dest");
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
   grub_util_info ("setting the root device to `%s'", root);
   if (grub_env_set ("root", root) != GRUB_ERR_NONE)
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
 #ifdef GRUB_MACHINE_PCBIOS
   /* Read the original sector from the disk.  */
   tmp_img = xmalloc (GRUB_DISK_SECTOR_SIZE);
   if (grub_disk_read (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE, tmp_img))
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 #endif
 
 #ifdef GRUB_MACHINE_PCBIOS
@@ -339,6 +296,12 @@ setup (const char *dir,
     {
       if (p->parent != container)
 	return 0;
+      /* NetBSD and OpenBSD subpartitions have metadata inside a partition,
+	 so they are safe to ignore.
+       */
+      if (grub_strcmp (p->partmap->name, "netbsd") == 0
+	  || grub_strcmp (p->partmap->name, "openbsd") == 0)
+	return 0;
       if (dest_partmap == NULL)
 	{
 	  dest_partmap = p->partmap;
@@ -351,6 +314,15 @@ setup (const char *dir,
     }
 
     grub_partition_iterate (dest_dev->disk, identify_partmap);
+
+    if (container && grub_strcmp (container->partmap->name, "msdos") == 0
+	&& dest_partmap
+	&& (container->msdostype == GRUB_PC_PARTITION_TYPE_NETBSD
+	    || container->msdostype == GRUB_PC_PARTITION_TYPE_OPENBSD))
+      {
+	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
+	goto unable_to_embed;
+      }
 
     fs = grub_fs_probe (dest_dev);
     if (!fs)
@@ -383,44 +355,63 @@ setup (const char *dir,
       }
 #endif
 
-    if (! dest_partmap)
-      {
-	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
-	goto unable_to_embed;
-      }
-    if (multiple_partmaps || fs)
-      {
-	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
-	goto unable_to_embed;
-      }
-
     /* Copy the partition table.  */
-    if (dest_partmap)
+    if (dest_partmap ||
+        (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk)))
       memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
 	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
 	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
 
     free (tmp_img);
     
-    if (!dest_partmap->embed)
+    if (! dest_partmap && ! fs)
       {
-	grub_util_warn ("Partition style '%s' doesn't support embeding",
+	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
+	goto unable_to_embed;
+      }
+    if (multiple_partmaps || (dest_partmap && fs))
+      {
+	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
+	goto unable_to_embed;
+      }
+
+    if (dest_partmap && !dest_partmap->embed)
+      {
+	grub_util_warn (_("Partition style '%s' doesn't support embeding"),
 			dest_partmap->name);
 	goto unable_to_embed;
       }
 
+    if (fs && !fs->embed)
+      {
+	grub_util_warn (_("File system '%s' doesn't support embeding"),
+			fs->name);
+	goto unable_to_embed;
+      }
+
     nsec = core_sectors;
-    err = dest_partmap->embed (dest_dev->disk, &nsec,
-			       GRUB_EMBED_PCBIOS, &sectors);
-    if (nsec > 2 * core_sectors)
-      nsec = 2 * core_sectors;
+    if (dest_partmap)
+      err = dest_partmap->embed (dest_dev->disk, &nsec,
+				 GRUB_EMBED_PCBIOS, &sectors);
+    else
+      err = fs->embed (dest_dev, &nsec,
+		       GRUB_EMBED_PCBIOS, &sectors);
+    if (!err && nsec < core_sectors)
+      {
+	err = grub_error (GRUB_ERR_OUT_OF_RANGE,
+			  N_("Your embedding area is unusually small.  "
+			     "core.img won't fit in it."));
+      }
     
     if (err)
       {
-	grub_util_warn ("%s", grub_errmsg);
+	grub_util_warn ("%s", _(grub_errmsg));
 	grub_errno = GRUB_ERR_NONE;
 	goto unable_to_embed;
       }
+
+    if (nsec > 2 * core_sectors)
+      nsec = 2 * core_sectors;
 
     /* Clean out the blocklists.  */
     block = first_block;
@@ -431,7 +422,7 @@ setup (const char *dir,
 	block--;
 
 	if ((char *) block <= core_img)
-	  grub_util_error ("No terminator in the core image");
+	  grub_util_error (_("No terminator in the core image"));
       }
 
     save_first_sector (sectors[0] + grub_partition_get_start (container),
@@ -503,9 +494,7 @@ unable_to_embed:
   core_path_dev = grub_make_system_path_relative_to_its_root (core_path_dev_full);
   free (core_path_dev_full);
 
-  /* It is a Good Thing to sync two times.  */
-  sync ();
-  sync ();
+  grub_util_biosdisk_flush (root_dev->disk);
 
 #define MAX_TRIES	5
 
@@ -566,7 +555,7 @@ unable_to_embed:
 	grub_util_info ("error message = %s", grub_errmsg);
 
       grub_errno = GRUB_ERR_NONE;
-      sync ();
+      grub_util_biosdisk_flush (root_dev->disk);
       sleep (1);
     }
 
@@ -593,7 +582,7 @@ unable_to_embed:
   grub_file_filter_disable_compression ();
   file = grub_file_open (core_path_dev);
   if (! file)
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
   file->read_hook = save_first_sector;
   if (grub_file_read (file, tmp_img, GRUB_DISK_SECTOR_SIZE)
@@ -654,11 +643,10 @@ unable_to_embed:
   /* Write the boot image onto the disk.  */
   if (grub_disk_write (dest_dev->disk, BOOT_SECTOR,
 		       0, GRUB_DISK_SECTOR_SIZE, boot_img))
-    grub_util_error ("%s", grub_errmsg);
+    grub_util_error ("%s", _(grub_errmsg));
 
-
-  /* Sync is a Good Thing.  */
-  sync ();
+  grub_util_biosdisk_flush (root_dev->disk);
+  grub_util_biosdisk_flush (dest_dev->disk);
 
   free (core_path);
   free (core_img);
@@ -879,6 +867,7 @@ main (int argc, char *argv[])
 
   /* Initialize all modules. */
   grub_init_all ();
+  grub_gcry_init_all ();
 
   grub_lvm_fini ();
   grub_mdraid09_fini ();
@@ -939,10 +928,12 @@ main (int argc, char *argv[])
                       arguments.dir ? : DEFAULT_DIRECTORY);
     }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if (grub_util_lvm_isvolume (root_dev))
     must_embed = 1;
+#endif
 
+#ifdef __linux__
   if (root_dev[0] == 'm' && root_dev[1] == 'd'
       && ((root_dev[2] >= '0' && root_dev[2] <= '9') || root_dev[2] == '/'))
     {
@@ -956,7 +947,15 @@ main (int argc, char *argv[])
       char **devicelist;
       int i;
 
-      devicelist = grub_util_raid_getmembers (dest_dev);
+      if (arguments.device[0] == '/')
+	devicelist = grub_util_raid_getmembers (arguments.device, 1);
+      else
+	{
+	  char *devname;
+	  devname = xasprintf ("/dev/%s", dest_dev);
+	  devicelist = grub_util_raid_getmembers (dest_dev, 1);
+	  free (devname);
+	}
 
       for (i = 0; devicelist[i]; i++)
         {

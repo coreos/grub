@@ -47,7 +47,8 @@ static grub_uint32_t eip = 0xffffffff;
 static const struct grub_arg_option options[] =
   {
     {"map", 'm', GRUB_ARG_OPTION_REPEATABLE,
-     N_("Override guessed mapping of Plan9 devices."), "GRUBDEVICE=PLAN9DEVICE",
+     N_("Override guessed mapping of Plan9 devices."), 
+     N_("GRUBDEVICE=PLAN9DEVICE"),
      ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
@@ -77,7 +78,8 @@ grub_plan9_boot (void)
     .edi = 0,
     .esp = 0,
     .ebp = 0,
-    .esi = 0
+    .esi = 0,
+    .a20 = 1
   };
   grub_video_set_mode ("text", 0, 0);
 

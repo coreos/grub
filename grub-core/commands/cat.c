@@ -25,6 +25,8 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] =
   {
     {"dos", -1, 0, N_("Accept DOS-style CR/NL line endings."), 0, 0},

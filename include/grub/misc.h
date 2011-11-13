@@ -49,13 +49,18 @@
 #define COMPILE_TIME_ASSERT(cond) switch (0) { case 1: case !(cond): ; }
 
 #define grub_dprintf(condition, fmt, args...) grub_real_dprintf(GRUB_FILE, __LINE__, condition, fmt, ## args)
-/* XXX: If grub_memmove is too slow, we must implement grub_memcpy.  */
-#define grub_memcpy(d,s,n)	grub_memmove ((d), (s), (n))
 
 void *EXPORT_FUNC(grub_memmove) (void *dest, const void *src, grub_size_t n);
 char *EXPORT_FUNC(grub_strcpy) (char *dest, const char *src);
 char *EXPORT_FUNC(grub_strncpy) (char *dest, const char *src, int c);
 char *EXPORT_FUNC(grub_stpcpy) (char *dest, const char *src);
+
+/* XXX: If grub_memmove is too slow, we must implement grub_memcpy.  */
+static inline void *
+grub_memcpy (void *dest, const void *src, grub_size_t n)
+{
+  return grub_memmove (dest, src, n);
+}
 
 static inline char *
 grub_strcat (char *dest, const char *src)
@@ -82,7 +87,7 @@ grub_strncat (char *dest, const char *src, int c)
   while (*p)
     p++;
 
-  while ((*p = *src) != '\0' && c--)
+  while (c-- && (*p = *src) != '\0')
     {
       p++;
       src++;
@@ -108,7 +113,53 @@ int EXPORT_FUNC(grub_strncmp) (const char *s1, const char *s2, grub_size_t n);
 char *EXPORT_FUNC(grub_strchr) (const char *s, int c);
 char *EXPORT_FUNC(grub_strrchr) (const char *s, int c);
 int EXPORT_FUNC(grub_strword) (const char *s, const char *w);
-char *EXPORT_FUNC(grub_strstr) (const char *haystack, const char *needle);
+
+/* Copied from gnulib.
+   Written by Bruno Haible <bruno@clisp.org>, 2005. */
+static inline char *
+grub_strstr (const char *haystack, const char *needle)
+{
+  /* Be careful not to look at the entire extent of haystack or needle
+     until needed.  This is useful because of these two cases:
+       - haystack may be very long, and a match of needle found early,
+       - needle may be very long, and not even a short initial segment of
+       needle may be found in haystack.  */
+  if (*needle != '\0')
+    {
+      /* Speed up the following searches of needle by caching its first
+	 character.  */
+      char b = *needle++;
+
+      for (;; haystack++)
+	{
+	  if (*haystack == '\0')
+	    /* No match.  */
+	    return 0;
+	  if (*haystack == b)
+	    /* The first character matches.  */
+	    {
+	      const char *rhaystack = haystack + 1;
+	      const char *rneedle = needle;
+
+	      for (;; rhaystack++, rneedle++)
+		{
+		  if (*rneedle == '\0')
+		    /* Found a match.  */
+		    return (char *) haystack;
+		  if (*rhaystack == '\0')
+		    /* No match.  */
+		    return 0;
+		  if (*rhaystack != *rneedle)
+		    /* Nothing in this round.  */
+		    break;
+		}
+	    }
+	}
+    }
+  else
+    return (char *) haystack;
+}
+
 int EXPORT_FUNC(grub_isspace) (int c);
 int EXPORT_FUNC(grub_isprint) (int c);
 
@@ -134,6 +185,12 @@ static inline int
 grub_isdigit (int c)
 {
   return (c >= '0' && c <= '9');
+}
+
+static inline int
+grub_isxdigit (int c)
+{
+  return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
 
 static inline int
@@ -288,7 +345,8 @@ char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args) __attribute__
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
-					  grub_uint32_t d, grub_uint32_t *r);
+					  grub_uint64_t d,
+					  grub_uint64_t *r);
 
 #if NEED_ENABLE_EXECUTE_STACK && !defined(GRUB_UTIL)
 void EXPORT_FUNC(__enable_execute_stack) (void *addr);
@@ -336,7 +394,7 @@ grub_div_roundup (unsigned int x, unsigned int y)
 }
 
 /* Reboot the machine.  */
-void EXPORT_FUNC (grub_reboot) (void) __attribute__ ((noreturn));
+void grub_reboot (void) __attribute__ ((noreturn));
 
 #ifdef GRUB_MACHINE_PCBIOS
 /* Halt the system, using APM if possible. If NO_APM is true, don't
@@ -352,6 +410,5 @@ extern int EXPORT_VAR(grub_no_autoload);
 #else
 #define grub_no_autoload 0
 #endif
-
 
 #endif /* ! GRUB_MISC_HEADER */

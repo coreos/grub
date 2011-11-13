@@ -77,7 +77,7 @@ grub_memalign (grub_size_t align, grub_size_t size)
 #else
   (void) align;
   (void) size;
-  grub_util_error ("grub_memalign is not supported");
+  grub_util_error (_("grub_memalign is not supported"));
 #endif
 
   if (!p)

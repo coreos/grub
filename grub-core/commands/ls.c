@@ -31,6 +31,9 @@
 #include <grub/extcmd.h>
 #include <grub/datetime.h>
 #include <grub/i18n.h>
+#include <grub/net.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 static const struct grub_arg_option options[] =
   {
@@ -58,6 +61,22 @@ grub_ls_list_devices (int longlist)
 
   grub_device_iterate (grub_ls_print_devices);
   grub_xputs ("\n");
+
+#ifndef GRUB_UTIL
+  {
+    grub_net_app_level_t proto;
+    int first = 1;
+    FOR_NET_APP_LEVEL (proto)
+    {
+      if (first)
+	grub_puts_ (N_ ("Network protocols:"));
+      first = 0;
+      grub_printf ("%s ", proto->name);
+    }
+    grub_xputs ("\n");
+  }
+#endif
+
   grub_refresh ();
 
   return 0;
@@ -132,11 +151,12 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 
 	      if (units)
 		{
-		  grub_uint32_t whole, fraction;
+		  grub_uint64_t whole, fraction;
 
 		  whole = grub_divmod64 (fsize, 100, &fraction);
 		  grub_snprintf (buf, sizeof (buf),
-				 "%u.%02u%c", whole, fraction,
+				 "%" PRIuGRUB_UINT64_T
+				 ".%02" PRIuGRUB_UINT64_T "%c", whole, fraction,
 				 grub_human_sizes[units]);
 		  grub_printf ("%-12s", buf);
 		}

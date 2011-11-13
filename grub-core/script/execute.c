@@ -193,7 +193,7 @@ grub_script_env_get (const char *name, grub_script_arg_type_t type)
 
   if (! grub_env_special (name))
     {
-      char *v = grub_env_get (name);
+      const char *v = grub_env_get (name);
       if (v && v[0])
 	{
 	  if (type == GRUB_SCRIPT_ARG_TYPE_VAR)
@@ -202,20 +202,20 @@ grub_script_env_get (const char *name, grub_script_arg_type_t type)
 		goto fail;
 	    }
 	  else
-	    if (grub_script_argv_append (&result, v))
+	    if (grub_script_argv_append (&result, v, grub_strlen (v)))
 	      goto fail;
 	}
     }
   else if (! scope)
     {
-      if (grub_script_argv_append (&result, 0))
+      if (grub_script_argv_append (&result, 0, 0))
 	goto fail;
     }
   else if (grub_strcmp (name, "#") == 0)
     {
       char buffer[ERRNO_DIGITS_MAX + 1];
       grub_snprintf (buffer, sizeof (buffer), "%u", scope->argv.argc);
-      if (grub_script_argv_append (&result, buffer))
+      if (grub_script_argv_append (&result, buffer, grub_strlen (buffer)))
 	goto fail;
     }
   else if (grub_strcmp (name, "*") == 0)
@@ -231,10 +231,11 @@ grub_script_env_get (const char *name, grub_script_arg_type_t type)
 	  }
 	else
 	  {
-	    if (i != 0 && grub_script_argv_append (&result, " "))
+	    if (i != 0 && grub_script_argv_append (&result, " ", 1))
 	      goto fail;
 
-	    if (grub_script_argv_append (&result, scope->argv.args[i]))
+	    if (grub_script_argv_append (&result, scope->argv.args[i],
+					 grub_strlen (scope->argv.args[i])))
 	      goto fail;
 	  }
     }
@@ -251,7 +252,8 @@ grub_script_env_get (const char *name, grub_script_arg_type_t type)
 		goto fail;
 	    }
 	  else
-	    if (grub_script_argv_append (&result, scope->argv.args[i]))
+	    if (grub_script_argv_append (&result, scope->argv.args[i],
+					 grub_strlen (scope->argv.args[i])))
 	      goto fail;
 	}
     }
@@ -270,7 +272,9 @@ grub_script_env_get (const char *name, grub_script_arg_type_t type)
 		goto fail;
 	    }
 	  else
-	    if (grub_script_argv_append (&result, scope->argv.args[num - 1]))
+	    if (grub_script_argv_append (&result, scope->argv.args[num - 1],
+					 grub_strlen (scope->argv.args[num - 1])
+					 ))
 	      goto fail;
 	}
     }
@@ -309,7 +313,7 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
     char *p = 0;
 
     if (! grub_wildcard_translator || escape_type == 0)
-      return grub_script_argv_append (&result, s);
+      return grub_script_argv_append (&result, s, grub_strlen (s));
 
     if (escape_type > 0)
       p = grub_wildcard_translator->escape (s);
@@ -319,7 +323,7 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
     if (! p)
       return 1;
 
-    r = grub_script_argv_append (&result, p);
+    r = grub_script_argv_append (&result, p, grub_strlen (p));
     grub_free (p);
     return r;
   }
@@ -344,7 +348,8 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 
 		  if (arg->type == GRUB_SCRIPT_ARG_TYPE_VAR)
 		    {
-		      if (grub_script_argv_append (&result, values[i]))
+		      if (grub_script_argv_append (&result, values[i],
+						   grub_strlen (values[i])))
 			goto fail;
 		    }
 		  else
@@ -359,16 +364,18 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 	      break;
 
 	    case GRUB_SCRIPT_ARG_TYPE_BLOCK:
-	      if (grub_script_argv_append (&result, "{") ||
-		  grub_script_argv_append (&result, arg->str) ||
-		  grub_script_argv_append (&result, "}"))
+	      if (grub_script_argv_append (&result, "{", 1)
+		  || grub_script_argv_append (&result, arg->str,
+					      grub_strlen (arg->str))
+		  || grub_script_argv_append (&result, "}", 1))
 		goto fail;
 	      result.script = arg->script;
 	      break;
 
 	    case GRUB_SCRIPT_ARG_TYPE_TEXT:
 	      if (grub_strlen (arg->str) &&
-		  grub_script_argv_append (&result, arg->str))
+		  grub_script_argv_append (&result, arg->str,
+					   grub_strlen (arg->str)))
 		goto fail;
 	      break;
 
@@ -680,7 +687,7 @@ grub_err_t
 grub_script_execute_cmdif (struct grub_script_cmd *cmd)
 {
   int ret;
-  char *result;
+  const char *result;
   struct grub_script_cmdif *cmdif = (struct grub_script_cmdif *) cmd;
 
   /* Check if the commands results in a true or a false.  The value is

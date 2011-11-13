@@ -33,6 +33,8 @@
 #include <grub/disk.h>
 #include <grub/partition.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 legacy_file (const char *filename)
 {
@@ -83,9 +85,13 @@ legacy_file (const char *filename)
       {
 	char *oldname = NULL;
 	char *newsuffix;
+	char *ptr;
+
+	for (ptr = buf; *ptr && grub_isspace (*ptr); ptr++);
 
 	oldname = entryname;
-	parsed = grub_legacy_parse (buf, &entryname, &newsuffix);
+	parsed = grub_legacy_parse (ptr, &entryname, &newsuffix);
+	grub_free (buf);
 	buf = NULL;
 	if (newsuffix)
 	  {
@@ -209,7 +215,7 @@ grub_cmd_legacy_source (struct grub_command *cmd,
       grub_menu_t menu;
       menu = grub_env_get_menu ();
       if (menu && menu->size)
-	grub_show_menu (menu, 1);
+	grub_show_menu (menu, 1, 0);
       if (!extractor)
 	grub_env_context_close ();
     }
@@ -338,7 +344,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	int bsd_part = -1;
 	{
 	  grub_device_t dev;
-	  char *hdbiasstr;
+	  const char *hdbiasstr;
 	  int hdbias = 0;
 	  hdbiasstr = grub_env_get ("legacy_hdbias");
 	  if (hdbiasstr)
@@ -717,7 +723,7 @@ grub_cmd_legacy_check_password (struct grub_command *mycmd __attribute__ ((unuse
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments expected");
-  grub_printf ("Enter password:");
+  grub_puts_ (N_("Enter password: "));
   if (!grub_password_get (entered, GRUB_AUTH_MAX_PASSLEN))
     return GRUB_ACCESS_DENIED;
 
@@ -765,12 +771,12 @@ GRUB_MOD_INIT(legacycfg)
     = grub_register_command ("extract_legacy_entries_source",
 			     grub_cmd_legacy_source,
 			     N_("FILE"),
-			     N_("Parse legacy config in same context taking onl entries"));
+			     N_("Parse legacy config in same context taking only menu entries"));
   cmd_configfile_extract
     = grub_register_command ("extract_legacy_entries_configfile",
 			     grub_cmd_legacy_source,
 			     N_("FILE"),
-			     N_("Parse legacy config in new context taking onl entries"));
+			     N_("Parse legacy config in new context taking only menu entries"));
 
   cmd_kernel = grub_register_command ("legacy_kernel",
 				      grub_cmd_legacy_kernel,

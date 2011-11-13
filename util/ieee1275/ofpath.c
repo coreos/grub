@@ -23,6 +23,7 @@
 #include <grub/types.h>
 #include <grub/util/misc.h>
 #include <grub/util/ofpath.h>
+#include <grub/i18n.h>
 #endif
 
 #include <limits.h>
@@ -53,6 +54,7 @@ grub_util_error (const char *fmt, ...)
   exit (1);
 }
 
+#define _(x) x
 #endif
 
 static void
@@ -106,7 +108,7 @@ find_obppath(char *of_path, const char *sysfs_path_orig)
 	{
 	  kill_trailing_dir(sysfs_path);
 	  if (!strcmp(sysfs_path, "/sys"))
-	    grub_util_error("'obppath' not found in parent dirs of %s",
+	    grub_util_error(_("'obppath' not found in parent dirs of %s"),
 			    sysfs_path_orig);
 	  continue;
 	}
@@ -131,12 +133,12 @@ block_device_get_sysfs_path_and_link(const char *devicenode,
   snprintf(sysfs_path, sysfs_path_len, "/sys/block/%s", devicenode);
 
   if (!realpath (sysfs_path, rpath))
-    grub_util_error ("cannot get the real path of `%s'", sysfs_path);
+    grub_util_error (_("cannot get the real path of `%s'"), sysfs_path);
 
   strcat(rpath, "/device");
 
   if (!realpath (rpath, sysfs_path))
-    grub_util_error ("cannot get the real path of `%s'", rpath);
+    grub_util_error (_("cannot get the real path of `%s'"), rpath);
 
   free (rpath);
 }
@@ -247,12 +249,12 @@ vendor_is_ATA(const char *path)
   snprintf(buf, PATH_MAX, "%s/vendor", path);
   fd = open(buf, O_RDONLY);
   if (fd < 0)
-    grub_util_error ("cannot open 'vendor' node of `%s'", path);
+    grub_util_error (_("cannot open 'vendor' node of `%s'"), path);
 
   memset(buf, 0, PATH_MAX);
   err = read(fd, buf, PATH_MAX);
   if (err < 0)
-    grub_util_error ("cannot read 'vendor' node of `%s'", path);
+    grub_util_error (_("cannot read 'vendor' node of `%s'"), path);
 
   close(fd);
 
@@ -288,7 +290,7 @@ check_sas (char *sysfs_path, int *tgt)
 
   fd = open(path, O_RDONLY);
   if (fd < 0)
-    grub_util_error("cannot open SAS PHY ID `%s'\n", path);
+    grub_util_error(_("cannot open SAS PHY ID `%s'\n"), path);
 
   memset (phy, 0, sizeof (phy));
   read (fd, phy, sizeof (phy));
@@ -297,6 +299,7 @@ check_sas (char *sysfs_path, int *tgt)
 
   free (path);
   free (p);
+  close (fd);
 }
 
 static void
@@ -375,10 +378,10 @@ grub_util_devname_to_ofpath (const char *devname)
   name_buf = xmalloc (PATH_MAX);
   name_buf = realpath (devname, name_buf);
   if (! name_buf)
-    grub_util_error ("cannot get the real path of `%s'", devname);
+    grub_util_error (_("cannot get the real path of `%s'"), devname);
 
-  device = get_basename (devname);
-  devnode = strip_trailing_digits (devname);
+  device = get_basename (name_buf);
+  devnode = strip_trailing_digits (name_buf);
   devicenode = strip_trailing_digits (device);
 
   ofpath = xmalloc (OF_PATH_MAX);
@@ -391,6 +394,13 @@ grub_util_devname_to_ofpath (const char *devname)
   else if (device[0] == 'v' && device[1] == 'd' && device[2] == 'i'
 	   && device[3] == 's' && device[4] == 'k')
     of_path_of_vdisk(ofpath, name_buf, device, devnode, devicenode);
+  else if (device[0] == 'f' && device[1] == 'd'
+	   && device[2] == '0' && device[3] == '\0')
+    /* All the models I've seen have a devalias "floppy".
+       New models have no floppy at all. */
+    strcpy (ofpath, "floppy");
+  else
+    grub_util_error (_("unknown device type %s\n"), device);
 
   free (devnode);
   free (devicenode);
@@ -406,12 +416,13 @@ int main(int argc, char **argv)
 
   if (argc != 2)
     {
-      printf("Usage: grub-ofpathname DEVICE\n");
+      printf(_("Usage: %s DEVICE\n"), argv[0]);
       return 1;
     }
 
   of_path = grub_util_devname_to_ofpath (argv[1]);
   printf("%s\n", of_path);
+  free (of_path);
 
   return 0;
 }
