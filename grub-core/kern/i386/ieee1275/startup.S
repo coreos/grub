@@ -17,7 +17,7 @@
  */
 
 #include <grub/symbol.h>
-#include <grub/machine/memory.h>
+#include <grub/offsets.h>
 #include <grub/cpu/linux.h>
 #include <multiboot.h>
 #include <multiboot2.h>
@@ -36,30 +36,6 @@
 
 start:
 _start:
-	jmp codestart
-
-	/*
-	 *  This is a special data area at a fixed offset from the beginning.
-	 */
-
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX
-
-VARIABLE(grub_prefix)
-	/* to be filled by grub-mkimage */
-
-	/*
-	 *  Leave some breathing room for the prefix.
-	 */
-
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
-
-codestart:
 	movl %eax, EXT_C(grub_ieee1275_entry_fn)
 	jmp EXT_C(grub_main)
-
-/*
- *  prot_to_real and associated structures (but NOT real_to_prot, that is
- *  only needed for BIOS gates).
- */
-#include "../realmode.S"
 

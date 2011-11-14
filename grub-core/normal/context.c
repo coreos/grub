@@ -31,8 +31,8 @@ struct menu_pointer
   struct menu_pointer *prev;
 };
 
-struct menu_pointer initial_menu;
-struct menu_pointer *current_menu = &initial_menu;
+static struct menu_pointer initial_menu;
+static struct menu_pointer *current_menu = &initial_menu;
 
 void
 grub_env_unset_menu (void)
@@ -52,8 +52,8 @@ grub_env_set_menu (grub_menu_t nmenu)
   current_menu->menu = nmenu;
 }
 
-grub_err_t
-grub_env_context_open (int export)
+static grub_err_t
+grub_env_new_context (int export_all)
 {
   struct grub_env_context *context;
   int i;
@@ -78,21 +78,34 @@ grub_env_context_open (int export)
       struct grub_env_var *var;
 
       for (var = context->prev->vars[i]; var; var = var->next)
-	{
-	  if (export && var->global)
-	    {
-	      if (grub_env_set (var->name, var->value) != GRUB_ERR_NONE)
-		{
-		  grub_env_context_close ();
-		  return grub_errno;
-		}
-	      grub_env_export (var->name);
-	      grub_register_variable_hook (var->name, var->read_hook, var->write_hook);
-	    }
-	}
+	if (var->global || export_all)
+	  {
+	    if (grub_env_set (var->name, var->value) != GRUB_ERR_NONE)
+	      {
+		grub_env_context_close ();
+		return grub_errno;
+	      }
+	    grub_env_export (var->name);
+	    grub_register_variable_hook (var->name, var->read_hook, var->write_hook);
+	  }
     }
 
   return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_env_context_open (void)
+{
+  return grub_env_new_context (0);
+}
+
+int grub_extractor_level = 0;
+
+grub_err_t
+grub_env_extractor_open (int source)
+{
+  grub_extractor_level++;
+  return grub_env_new_context (source);
 }
 
 grub_err_t
@@ -133,23 +146,34 @@ grub_env_context_close (void)
 }
 
 grub_err_t
-grub_env_export (const char *name)
+grub_env_extractor_close (int source)
 {
-  struct grub_env_var *var;
+  grub_menu_t menu = NULL;
+  grub_menu_entry_t *last;
+  grub_err_t err;
 
-  var = grub_env_find (name);
-  if (! var)
+  if (source)
     {
-      grub_err_t err;
-      
-      err = grub_env_set (name, "");
-      if (err)
-	return err;
-      var = grub_env_find (name);
-    }    
-  var->global = 1;
+      menu = grub_env_get_menu ();
+      grub_env_unset_menu ();
+    }
+  err = grub_env_context_close ();
 
-  return GRUB_ERR_NONE;
+  if (source)
+    {
+      grub_menu_t menu2;
+      menu2 = grub_env_get_menu ();
+      
+      last = &menu2->entry_list;
+      while (*last)
+	last = &(*last)->next;
+      
+      *last = menu->entry_list;
+      menu2->size += menu->size;
+    }
+
+  grub_extractor_level--;
+  return err;
 }
 
 static grub_command_t export_cmd;
@@ -173,9 +197,6 @@ grub_cmd_export (struct grub_command *cmd __attribute__ ((unused)),
 void
 grub_context_init (void)
 {
-  grub_env_export ("root");
-  grub_env_export ("prefix");
-
   export_cmd = grub_register_command ("export", grub_cmd_export,
 				      N_("ENVVAR [ENVVAR] ..."),
 				      N_("Export variables."));

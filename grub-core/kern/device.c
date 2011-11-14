@@ -26,6 +26,8 @@
 #include <grub/env.h>
 #include <grub/partition.h>
 
+grub_net_t (*grub_net_open) (const char *name) = NULL;
+
 grub_device_t
 grub_device_open (const char *name)
 {
@@ -35,7 +37,7 @@ grub_device_open (const char *name)
   if (! name)
     {
       name = grub_env_get ("root");
-      if (*name == '\0')
+      if (name == NULL || *name == '\0')
 	{
 	  grub_error (GRUB_ERR_BAD_DEVICE, "no device is set");
 	  goto fail;
@@ -46,15 +48,19 @@ grub_device_open (const char *name)
   if (! dev)
     goto fail;
 
+  dev->net = NULL;
   /* Try to open a disk.  */
-  disk = grub_disk_open (name);
-  if (! disk)
-    goto fail;
+  dev->disk = grub_disk_open (name);
+  if (dev->disk)
+    return dev;
+  if (grub_net_open && grub_errno == GRUB_ERR_UNKNOWN_DEVICE)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      dev->net = grub_net_open (name); 
+    }
 
-  dev->disk = disk;
-  dev->net = 0;	/* FIXME */
-
-  return dev;
+  if (dev->net)
+    return dev;
 
  fail:
   if (disk)
@@ -70,6 +76,12 @@ grub_device_close (grub_device_t device)
 {
   if (device->disk)
     grub_disk_close (device->disk);
+
+  if (device->net)
+    {
+      grub_free (device->net->server);
+      grub_free (device->net);
+    }
 
   grub_free (device);
 
@@ -135,28 +147,28 @@ grub_device_iterate (int (*hook) (const char *name))
 
   int iterate_partition (grub_disk_t disk, const grub_partition_t partition)
     {
-      char *partition_name;
       struct part_ent *p;
-
-      partition_name = grub_partition_get_name (partition);
-      if (! partition_name)
-	return 1;
+      char *part_name;
 
       p = grub_malloc (sizeof (*p));
       if (!p)
 	{
-	  grub_free (partition_name);
 	  return 1;
 	}
 
-      p->name = grub_xasprintf ("%s,%s", disk->name, partition_name);
-      if (!p->name)
+      part_name = grub_partition_get_name (partition);
+      if (!part_name)
 	{
-	  grub_free (partition_name);
 	  grub_free (p);
 	  return 1;
 	}
-      grub_free (partition_name);
+      p->name = grub_xasprintf ("%s,%s", disk->name, part_name);
+      grub_free (part_name);
+      if (!p->name)
+	{
+	  grub_free (p);
+	  return 1;
+	}
 
       p->next = ents;
       ents = p;

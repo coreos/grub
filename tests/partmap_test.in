@@ -1,5 +1,6 @@
-#! /bin/sh -e
-#
+#! /bin/sh
+set -e
+
 # Copyright (C) 2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
@@ -15,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
-parted=/sbin/parted
+parted=parted
 grubshell=@builddir@/grub-shell
 
 create_disk_image () {
@@ -51,8 +52,8 @@ list_parts () {
     echo
 }
 
-imgfile=`mktemp`
-outfile=`mktemp`
+imgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
+outfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 
 #
 # MSDOS partition types

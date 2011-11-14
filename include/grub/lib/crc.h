@@ -20,6 +20,6 @@
 #ifndef GRUB_CRC_H
 #define GRUB_CRC_H	1
 
-grub_uint32_t grub_getcrc32 (grub_uint32_t crc, void *buf, int size);
+grub_uint32_t grub_getcrc32c (grub_uint32_t crc, const void *buf, int size);
 
 #endif /* ! GRUB_CRC_H */

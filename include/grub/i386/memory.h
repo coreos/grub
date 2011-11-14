@@ -30,6 +30,14 @@
 
 #ifndef ASM_FILE
 
+#define GRUB_MMAP_MALLOC_LOW 1
+
+#include <grub/types.h>
+
+grub_uint64_t grub_mmap_get_upper (void);
+grub_uint64_t grub_mmap_get_lower (void);
+grub_uint64_t grub_mmap_get_post64 (void);
+
 typedef grub_addr_t grub_phys_addr_t;
 
 static inline grub_phys_addr_t

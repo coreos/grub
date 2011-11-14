@@ -24,67 +24,42 @@
 #include <grub/misc.h>
 #include <grub/raid.h>
 
-static grub_uint8_t raid6_table1[256][256];
-static grub_uint8_t raid6_table2[256][256];
+GRUB_MOD_LICENSE ("GPLv3+");
+
+/* x**y.  */
+static grub_uint8_t powx[255 * 2];
+/* Such an s that x**s = y */
+static int powx_inv[256];
+static const grub_uint8_t poly = 0x1d;
 
 static void
-grub_raid_block_mul (grub_uint8_t mul, char *buf, int size)
+grub_raid_block_mulx (int mul, char *buf, int size)
 {
   int i;
   grub_uint8_t *p;
 
   p = (grub_uint8_t *) buf;
   for (i = 0; i < size; i++, p++)
-    *p = raid6_table1[mul][*p];
+    if (*p)
+      *p = powx[mul + powx_inv[*p]];
 }
 
 static void
 grub_raid6_init_table (void)
 {
-  int i, j;
+  int i;
 
-  for (i = 0; i < 256; i++)
-    raid6_table1[i][1] = raid6_table1[1][i] = i;
-
-  for (i = 2; i < 256; i++)
-    for (j = i; j < 256; j++)
-      {
-        int n;
-        grub_uint8_t c;
-
-        n = i >> 1;
-
-        c = raid6_table1[n][j];
-        c = (c << 1) ^ ((c & 0x80) ? 0x1d : 0);
-        if (i & 1)
-          c ^= j;
-
-        raid6_table1[j][i] = raid6_table1[i][j] = c;
-      }
-
-  raid6_table2[0][0] = 1;
-  for (i = 1; i < 256; i++)
-    raid6_table2[i][i] = raid6_table1[raid6_table2[i - 1][i - 1]][2];
-
-  for (i = 0; i < 254; i++)
-    for (j = 0; j < 254; j++)
-      {
-        grub_uint8_t c, n;
-        int k;
-
-        if (i == j)
-          continue;
-
-        k = i - j;
-        if (k < 0)
-          k += 255;
-
-        c = n = raid6_table2[k][k] ^ 1;
-        for (k = 0; k < 253; k++)
-          c = raid6_table1[c][n];
-
-        raid6_table2[i][j] = raid6_table1[raid6_table2[255 - j][255 - j]][c];
-      }
+  grub_uint8_t cur = 1;
+  for (i = 0; i < 255; i++)
+    {
+      powx[i] = cur;
+      powx[i + 255] = cur;
+      powx_inv[cur] = i;
+      if (cur & 0x80)
+	cur = (cur << 1) ^ poly;
+      else
+	cur <<= 1;
+    }
 }
 
 static grub_err_t
@@ -118,11 +93,13 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
         bad1 = i;
       else
         {
-          if ((array->device[pos]) &&
-              (! grub_disk_read (array->device[pos], sector, 0, size, buf)))
+          if ((array->members[pos].device) &&
+              (! grub_disk_read (array->members[pos].device,
+				 array->members[pos].start_sector + sector,
+				 0, size, buf)))
             {
               grub_raid_block_xor (pbuf, buf, size);
-              grub_raid_block_mul (raid6_table2[i][i], buf, size);
+              grub_raid_block_mulx (i, buf, size);
               grub_raid_block_xor (qbuf, buf, size);
             }
           else
@@ -148,53 +125,60 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
   if (bad2 < 0)
     {
       /* One bad device */
-      if ((array->device[p]) &&
-          (! grub_disk_read (array->device[p], sector, 0, size, buf)))
+      if ((array->members[p].device) &&
+          (! grub_disk_read (array->members[p].device,
+			     array->members[p].start_sector + sector,
+			     0, size, buf)))
         {
           grub_raid_block_xor (buf, pbuf, size);
           goto quit;
         }
 
-      if (! array->device[q])
+      if (! array->members[q].device)
         {
           grub_error (GRUB_ERR_READ_ERROR, "not enough disk to restore");
           goto quit;
         }
 
       grub_errno = GRUB_ERR_NONE;
-      if (grub_disk_read (array->device[q], sector, 0, size, buf))
+      if (grub_disk_read (array->members[q].device,
+			  array->members[q].start_sector + sector, 0, size, buf))
         goto quit;
 
       grub_raid_block_xor (buf, qbuf, size);
-      grub_raid_block_mul (raid6_table2[255 - bad1][255 - bad1], buf,
+      grub_raid_block_mulx (255 - bad1, buf,
                            size);
     }
   else
     {
       /* Two bad devices */
-      grub_uint8_t c;
+      int c;
 
-      if ((! array->device[p]) || (! array->device[q]))
+      if ((! array->members[p].device) || (! array->members[q].device))
         {
           grub_error (GRUB_ERR_READ_ERROR, "not enough disk to restore");
           goto quit;
         }
 
-      if (grub_disk_read (array->device[p], sector, 0, size, buf))
+      if (grub_disk_read (array->members[p].device,
+			  array->members[p].start_sector + sector,
+			  0, size, buf))
         goto quit;
 
       grub_raid_block_xor (pbuf, buf, size);
 
-      if (grub_disk_read (array->device[q], sector, 0, size, buf))
+      if (grub_disk_read (array->members[q].device,
+			  array->members[q].start_sector + sector,
+			  0, size, buf))
         goto quit;
 
       grub_raid_block_xor (qbuf, buf, size);
 
-      c = raid6_table2[bad2][bad1];
-      grub_raid_block_mul (c, qbuf, size);
+      c = (255 - bad1 + (255 - powx_inv[(powx[bad2 - bad1 + 255] ^ 1)])) % 255;
+      grub_raid_block_mulx (c, qbuf, size);
 
-      c = raid6_table1[raid6_table2[bad2][bad2]][c];
-      grub_raid_block_mul (c, pbuf, size);
+      c = (bad2 + c) % 255;
+      grub_raid_block_mulx (c, pbuf, size);
 
       grub_raid_block_xor (pbuf, qbuf, size);
       grub_memcpy (buf, pbuf, size);

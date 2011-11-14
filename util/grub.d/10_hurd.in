@@ -20,7 +20,8 @@ set -e
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
-. ${libdir}/grub/grub-mkconfig_lib
+datarootdir=@datarootdir@
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 CLASS="--class gnu --class os"
 
@@ -28,7 +29,7 @@ if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU
 else
   OS="${GRUB_DISTRIBUTOR} GNU/Hurd"
-  CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]' | cut -d' ' -f1) ${CLASS}"
+  CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr 'A-Z' 'a-z' | cut -d' ' -f1) ${CLASS}"
 fi
 
 at_least_one=false
@@ -81,14 +82,16 @@ do
 menuentry "${OS} ${KERNEL}" ${CLASS} {
 EOF
   prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
+  message="$(gettext_printf "Loading GNU Mach ...")"
   cat << EOF
-	echo		'$(gettext_quoted "Loading GNU Mach ...")'
+	echo		'$message'
 	multiboot	${kernel} root=device:${GRUB_DEVICE#/dev/}
 EOF
   save_default_entry | sed -e "s/^/\t/"
   prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/"
+  message="$(gettext_printf "Loading the Hurd ...")"
   cat << EOF
-	echo		'$(gettext_quoted "Loading the Hurd ...")'
+	echo		'$message'
 	module		/hurd/${hurd_fs}.static ${hurd_fs} --readonly \\
 			--multiboot-command-line='\${kernel-command-line}' \\
 			--host-priv-port='\${host-port}' \\
@@ -103,14 +106,15 @@ EOF
 menuentry "${OS} ${KERNEL} (recovery mode)" ${CLASS} {
 EOF
   prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
+  message="$(gettext_printf "Loading GNU Mach ...")"
   cat << EOF
-	echo		'$(gettext_quoted "Loading GNU Mach ...")'
+	echo		'$message'
 	multiboot	${kernel} root=device:${GRUB_DEVICE#/dev/} -s
 EOF
-  save_default_entry | sed -e "s/^/\t/"
   prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/"
+  message="$(gettext_printf "Loading the Hurd ...")"
   cat << EOF
-	echo		'$(gettext_quoted "Loading the Hurd ...")'
+	echo		'$message'
 	module		/hurd/${hurd_fs}.static ${hurd_fs} \\
 			--multiboot-command-line='\${kernel-command-line}' \\
 			--host-priv-port='\${host-port}' \\

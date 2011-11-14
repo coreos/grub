@@ -30,17 +30,18 @@
 #include <grub/term.h>
 #include <grub/mm.h>
 #include <grub/lib/hexdump.h>
-#include <grub/lib/crc.h>
+#include <grub/crypto.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/zfs/zfs.h>
 
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <getopt.h>
 
 #include "progname.h"
+#include "argp.h"
 
 static grub_err_t
 execute_command (char *name, int n, char **args)
@@ -49,21 +50,27 @@ execute_command (char *name, int n, char **args)
 
   cmd = grub_command_find (name);
   if (! cmd)
-    grub_util_error ("can\'t find command %s", name);
+    grub_util_error (_("can\'t find command %s"), name);
 
   return (cmd->func) (cmd, n, args);
 }
 
-#define CMD_LS          1
-#define CMD_CP          2
-#define CMD_CMP         3
-#define CMD_HEX         4
-#define CMD_CRC         6
-#define CMD_BLOCKLIST   7
-
+enum {
+  CMD_LS = 1,
+  CMD_CP,
+  CMD_CAT,
+  CMD_CMP,
+  CMD_HEX,
+  CMD_CRC,
+  CMD_BLOCKLIST,
+  CMD_TESTLOAD,
+  CMD_ZFSINFO,
+  CMD_XNU_UUID
+};
 #define BUF_SIZE  32256
 
 static grub_disk_addr_t skip, leng;
+static int uncompress = 0;
 
 static void
 read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
@@ -78,7 +85,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
 
       dev = grub_device_open (0);
       if ((! dev) || (! dev->disk))
-        grub_util_error ("can\'t open device");
+        grub_util_error (_("can\'t open device"));
 
       grub_util_info ("total sectors : %lld",
                       (unsigned long long) dev->disk->total_sectors);
@@ -93,7 +100,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
           len = (leng > BUF_SIZE) ? BUF_SIZE : leng;
 
           if (grub_disk_read (dev->disk, 0, skip, len, buf))
-            grub_util_error ("disk read fails at offset %lld, length %d",
+            grub_util_error (_("disk read fails at offset %lld, length %d"),
                              skip, len);
 
           if (hook (skip, buf, len))
@@ -107,11 +114,13 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
       return;
     }
 
-  grub_file_filter_disable_compression ();
+  if (uncompress == 0)
+    grub_file_filter_disable_compression ();
   file = grub_file_open (pathname);
   if (!file)
     {
-      grub_util_error ("cannot open file %s", pathname);
+      grub_util_error (_("cannot open file %s:%s"), pathname,
+		       grub_errmsg);
       return;
     }
 
@@ -119,7 +128,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
 
   if (skip > file->size)
     {
-      grub_util_error ("invalid skip value %lld", (unsigned long long) skip);
+      grub_util_error (_("invalid skip value %lld"), (unsigned long long) skip);
       return;
     }
 
@@ -137,7 +146,8 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
       sz = grub_file_read (file, buf, (len > BUF_SIZE) ? BUF_SIZE : len);
       if (sz < 0)
 	{
-	  grub_util_error ("read error at offset %llu: %s", ofs, grub_errmsg);
+	  grub_util_error (_("read error at offset %llu: %s"), ofs,
+			   grub_errmsg);
 	  break;
 	}
 
@@ -163,7 +173,7 @@ cmd_cp (char *src, char *dest)
 
     if ((int) fwrite (buf, 1, len, ff) != len)
       {
-	grub_util_error ("write error");
+	grub_util_error (_("write error"));
 	return 1;
       }
 
@@ -173,11 +183,32 @@ cmd_cp (char *src, char *dest)
   ff = fopen (dest, "wb");
   if (ff == NULL)
     {
-      grub_util_error ("open error");
+      grub_util_error (_("OS file %s open error: %s"), dest,
+		       strerror (errno));
       return;
     }
   read_file (src, cp_hook);
   fclose (ff);
+}
+
+static void
+cmd_cat (char *src)
+{
+  auto int cat_hook (grub_off_t ofs, char *buf, int len);
+  int cat_hook (grub_off_t ofs, char *buf, int len)
+  {
+    (void) ofs;
+
+    if ((int) fwrite (buf, 1, len, stdout) != len)
+      {
+	grub_util_error (_("write error"));
+	return 1;
+      }
+
+    return 0;
+  }
+
+  read_file (src, cat_hook);
 }
 
 static void
@@ -191,7 +222,7 @@ cmd_cmp (char *src, char *dest)
   {
     if ((int) fread (buf_1, 1, len, ff) != len)
       {
-	grub_util_error ("read error at offset %llu: %s", ofs, grub_errmsg);
+	grub_util_error (_("read error at offset %llu: %s"), ofs, grub_errmsg);
 	return 1;
       }
 
@@ -202,7 +233,7 @@ cmd_cmp (char *src, char *dest)
 	for (i = 0; i < len; i++, ofs++)
 	  if (buf_1[i] != buf[i])
 	    {
-	      grub_util_error ("compare fail at offset %llu", ofs);
+	      grub_util_error (_("compare fail at offset %llu"), ofs);
 	      return 1;
 	    }
       }
@@ -212,14 +243,23 @@ cmd_cmp (char *src, char *dest)
   ff = fopen (dest, "rb");
   if (ff == NULL)
     {
-      grub_util_error ("open error");
+      grub_util_error (_("OS file %s open error: %s"), dest,
+		       strerror (errno));
       return;
     }
 
   if ((skip) && (fseeko (ff, skip, SEEK_SET)))
-    grub_util_error ("seek error");
+    grub_util_error (_("seek error"));
 
   read_file (src, cmp_hook);
+
+  {
+    grub_uint64_t pre;
+    pre = ftell (ff);
+    fseek (ff, 0, SEEK_END);
+    if (pre != ftell (ff))
+      grub_util_error (_("unexpected end of file"));
+  }
   fclose (ff);
 }
 
@@ -239,23 +279,36 @@ cmd_hex (char *pathname)
 static void
 cmd_crc (char *pathname)
 {
-  grub_uint32_t crc = 0;
+  grub_uint8_t crc32_context[GRUB_MD_CRC32->contextsize];
+  GRUB_MD_CRC32->init(crc32_context);
 
   auto int crc_hook (grub_off_t ofs, char *buf, int len);
   int crc_hook (grub_off_t ofs, char *buf, int len)
   {
     (void) ofs;
 
-    crc = grub_getcrc32 (crc, buf, len);
+    GRUB_MD_CRC32->write(crc32_context, buf, len);
     return 0;
   }
 
   read_file (pathname, crc_hook);
-  printf ("%08x\n", crc);
+  GRUB_MD_CRC32->final(crc32_context);
+  printf ("%08x\n",
+      grub_be_to_cpu32(*(grub_uint32_t*)GRUB_MD_CRC32->read(crc32_context)));
 }
 
+static char *root = NULL;
+static int args_count = 0;
+static int nparm = 0;
+static int num_disks = 1;
+static char **images = NULL;
+static int cmd = 0;
+static char *debug_str = NULL;
+static char **args = NULL;
+static int mount_crypt = 0;
+
 static void
-fstest (char **images, int num_disks, int cmd, int n, char **args)
+fstest (int n, char **args)
 {
   char *host_file;
   char *loop_name;
@@ -276,17 +329,28 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
       argv[1] = host_file;
 
       if (execute_command ("loopback", 2, argv))
-        grub_util_error ("loopback command fails");
+        grub_util_error (_("loopback command fails"));
 
       grub_free (loop_name);
       grub_free (host_file);
     }
 
+  {
+    char *argv[2] = { "-a", NULL};
+    if (mount_crypt)
+      {
+	if (execute_command ("cryptomount", 1, argv))
+	  grub_util_error (_("cryptomount command fails: %s"), grub_errmsg);
+      }
+  }
+
   grub_lvm_fini ();
-  grub_mdraid_fini ();
+  grub_mdraid09_fini ();
+  grub_mdraid1x_fini ();
   grub_raid_fini ();
   grub_raid_init ();
-  grub_mdraid_init ();
+  grub_mdraid09_init ();
+  grub_mdraid1x_init ();
   grub_lvm_init ();
 
   switch (cmd)
@@ -294,8 +358,14 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
     case CMD_LS:
       execute_command ("ls", n, args);
       break;
+    case CMD_ZFSINFO:
+      execute_command ("zfsinfo", n, args);
+      break;
     case CMD_CP:
       cmd_cp (args[0], args[1]);
+      break;
+    case CMD_CAT:
+      cmd_cat (args[0]);
       break;
     case CMD_CMP:
       cmd_cmp (args[0], args[1]);
@@ -309,6 +379,32 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
     case CMD_BLOCKLIST:
       execute_command ("blocklist", n, args);
       grub_printf ("\n");
+    case CMD_TESTLOAD:
+      execute_command ("testload", n, args);
+      grub_printf ("\n");
+    case CMD_XNU_UUID:
+      {
+	grub_device_t dev;
+	grub_fs_t fs;
+	char *uuid = 0;
+	char *argv[3] = { "-l", NULL, NULL};
+	dev = grub_device_open (n ? args[0] : 0);
+	if (!dev)
+	  grub_util_error (grub_errmsg);
+	fs = grub_fs_probe (dev);
+	if (!fs)
+	  grub_util_error (grub_errmsg);
+	if (!fs->uuid)
+	  grub_util_error (_("couldn't retrieve UUID"));
+	if (fs->uuid (dev, &uuid))
+	  grub_util_error (grub_errmsg);
+	if (!uuid)
+	  grub_util_error (_("couldn't retrieve UUID"));
+	argv[1] = uuid;
+	execute_command ("xnu_uuid", 2, argv);
+	grub_free (uuid);
+	grub_device_close (dev);
+      }
     }
     
   for (i = 0; i < num_disks; i++)
@@ -328,205 +424,237 @@ fstest (char **images, int num_disks, int cmd, int n, char **args)
     }
 }
 
-static struct option options[] = {
-  {"root", required_argument, 0, 'r'},
-  {"skip", required_argument, 0, 's'},
-  {"length", required_argument, 0, 'n'},
-  {"diskcount", required_argument, 0, 'c'},
-  {"debug", required_argument, 0, 'd'},
-  {"help", no_argument, 0, 'h'},
-  {"version", no_argument, 0, 'V'},
-  {"verbose", no_argument, 0, 'v'},
-  {0, 0, 0, 0}
+static struct argp_option options[] = {
+  {0,          0, 0      , OPTION_DOC, N_("Commands:"), 1},
+  {N_("ls PATH"),  0, 0      , OPTION_DOC, N_("List files in PATH."), 1},
+  {N_("cp FILE LOCAL"),  0, 0, OPTION_DOC, N_("Copy FILE to local file LOCAL."), 1},
+  {N_("cat FILE"), 0, 0      , OPTION_DOC, N_("Copy FILE to standard output."), 1},
+  {N_("cmp FILE LOCAL"), 0, 0, OPTION_DOC, N_("Compare FILE with local file LOCAL."), 1},
+  {N_("hex FILE"), 0, 0      , OPTION_DOC, N_("Hex dump FILE."), 1},
+  {N_("crc FILE"), 0, 0     , OPTION_DOC, N_("Get crc32 checksum of FILE."), 1},
+  {N_("blocklist FILE"), 0, 0, OPTION_DOC, N_("Display blocklist of FILE."), 1},
+  {N_("xnu_uuid"), 0, 0, OPTION_DOC, N_("Compute XNU UUID of the device."), 1},
+  
+  {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."),                 2},
+  {"skip",      's', "N",           0, N_("Skip N bytes from output file."),   2},
+  {"length",    'n', "N",           0, N_("Handle N bytes in output file."),   2},
+  {"diskcount", 'c', "N",           0, N_("N input files."),                   2},
+  {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
+  {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
+  {"zfs-key",      'K', N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
+  {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("Print verbose messages."), 2},
+  {"uncompress", 'u', NULL, OPTION_ARG_OPTIONAL, N_("Uncompress data."), 2},
+  {0, 0, 0, 0, 0, 0}
 };
 
+/* Print the version information.  */
 static void
-usage (int status)
+print_version (FILE *stream, struct argp_state *state)
 {
-  if (status)
-    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
-  else
-    printf ("\
-Usage: %s [OPTION]... IMAGE_PATH COMMANDS\n\
-\n\
-Debug tool for filesystem driver.\n\
-\nCommands:\n\
-  ls PATH                   list files in PATH\n\
-  cp FILE LOCAL             copy FILE to local file LOCAL\n\
-  cmp FILE LOCAL            compare FILE with local file LOCAL\n\
-  hex FILE                  Hex dump FILE\n\
-  crc FILE                  Get crc32 checksum of FILE\n\
-  blocklist FILE            display blocklist of FILE\n\
-\nOptions:\n\
-  -r, --root=DEVICE_NAME    set root device\n\
-  -s, --skip=N              skip N bytes from output file\n\
-  -n, --length=N            handle N bytes in output file\n\
-  -c, --diskcount=N         N input files\n\
-  -d, --debug=S             Set debug environment variable\n\
-  -h, --help                display this message and exit\n\
-  -V, --version             print version information and exit\n\
-  -v, --verbose             print verbose messages\n\
-\n\
-Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
-
-  exit (status);
+  fprintf (stream, "%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 }
+void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
+
+error_t 
+argp_parser (int key, char *arg, struct argp_state *state)
+{
+  char *p;
+
+  switch (key)
+    {
+    case 'r':
+      root = arg;
+      return 0;
+
+    case 'K':
+      if (strcmp (arg, "prompt") == 0)
+	{
+	  char buf[1024];	  
+	  grub_puts_ (N_("Enter ZFS password: "));
+	  if (grub_password_get (buf, 1023))
+	    {
+	      grub_zfs_add_key ((grub_uint8_t *) buf, grub_strlen (buf), 1);
+	    }
+	}
+      else
+      {
+	FILE *f;
+	ssize_t real_size;
+	grub_uint8_t buf[1024];
+	f = fopen (arg, "rb");
+	if (!f)
+	  {
+	    printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
+	    return 0;
+	  }
+	real_size = fread (buf, 1, 1024, f);
+	if (real_size < 0)
+	  {
+	    printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
+	    fclose (f);
+	    return 0;
+	  }
+	grub_zfs_add_key (buf, real_size, 0);
+      }
+      return 0;
+
+    case 'C':
+      mount_crypt = 1;
+      return 0;
+
+    case 's':
+      skip = grub_strtoul (arg, &p, 0);
+      if (*p == 's')
+	skip <<= GRUB_DISK_SECTOR_BITS;
+      return 0;
+
+    case 'n':
+      leng = grub_strtoul (arg, &p, 0);
+      if (*p == 's')
+	leng <<= GRUB_DISK_SECTOR_BITS;
+      return 0;
+
+    case 'c':
+      num_disks = grub_strtoul (arg, NULL, 0);
+      if (num_disks < 1)
+	{
+	  fprintf (stderr, "%s", _("Invalid disk count.\n"));
+	  argp_usage (state);
+	}
+      if (args_count != 0)
+	{
+	  fprintf (stderr, "%s", _("Disk count must precede disks list.\n"));
+	  argp_usage (state);
+	}
+      return 0;
+
+    case 'd':
+      debug_str = arg;
+      return 0;
+
+    case 'v':
+      verbosity++;
+      return 0;
+
+    case 'u':
+      uncompress = 1;
+      return 0;
+
+    case ARGP_KEY_END:
+      if (args_count < num_disks)
+	{
+	  fprintf (stderr, "%s", _("No command is specified.\n"));
+	  argp_usage (state);
+	}
+      if (args_count - 1 - num_disks < nparm)
+	{
+	  fprintf (stderr, "%s", _("Not enough parameters to command.\n"));
+	  argp_usage (state);
+	}
+      return 0;
+
+    case ARGP_KEY_ARG:
+      break;
+
+    default:
+      return ARGP_ERR_UNKNOWN;
+    }
+
+  if (args_count < num_disks)
+    {
+      if (args_count == 0)
+	images = xmalloc (num_disks * sizeof (images[0]));
+      images[args_count] = canonicalize_file_name (arg);
+      args_count++;
+      return 0;
+    }
+
+  if (args_count == num_disks)
+    {
+      if (!grub_strcmp (arg, "ls"))
+        {
+          cmd = CMD_LS;
+        }
+      else if (!grub_strcmp (arg, "zfsinfo"))
+        {
+          cmd = CMD_ZFSINFO;
+        }
+      else if (!grub_strcmp (arg, "cp"))
+	{
+	  cmd = CMD_CP;
+          nparm = 2;
+	}
+      else if (!grub_strcmp (arg, "cat"))
+	{
+	  cmd = CMD_CAT;
+	  nparm = 1;
+	}
+      else if (!grub_strcmp (arg, "cmp"))
+	{
+	  cmd = CMD_CMP;
+          nparm = 2;
+	}
+      else if (!grub_strcmp (arg, "hex"))
+	{
+	  cmd = CMD_HEX;
+          nparm = 1;
+	}
+      else if (!grub_strcmp (arg, "crc"))
+	{
+	  cmd = CMD_CRC;
+          nparm = 1;
+	}
+      else if (!grub_strcmp (arg, "blocklist"))
+	{
+	  cmd = CMD_BLOCKLIST;
+          nparm = 1;
+	}
+      else if (!grub_strcmp (arg, "testload"))
+	{
+	  cmd = CMD_TESTLOAD;
+          nparm = 1;
+	}
+      else if (grub_strcmp (arg, "xnu_uuid") == 0)
+	{
+	  cmd = CMD_XNU_UUID;
+	  nparm = 0;
+	}
+      else
+	{
+	  fprintf (stderr, _("Invalid command %s.\n"), arg);
+	  argp_usage (state);
+	}
+      args_count++;
+      return 0;
+    }
+
+  args[args_count - 1 - num_disks] = xstrdup (arg);
+  args_count++;
+  return 0;
+}
+
+struct argp argp = {
+  options, argp_parser, N_("IMAGE_PATH COMMANDS"),
+  N_("Debug tool for filesystem driver."), 
+  NULL, NULL, NULL
+};
 
 int
 main (int argc, char *argv[])
 {
-  char *debug_str = NULL, *root = NULL, *default_root, *alloc_root;
-  int i, cmd, num_opts, image_index, num_disks = 1;
+  char *default_root, *alloc_root;
 
   set_program_name (argv[0]);
 
   grub_util_init_nls ();
 
-  /* Find the first non option entry.  */
-  for (num_opts = 1; num_opts < argc; num_opts++)
-    if (argv[num_opts][0] == '-')
-      {
-        if ((argv[num_opts][2] == 0) && (num_opts < argc - 1) &&
-            ((argv[num_opts][1] == 'r') ||
-             (argv[num_opts][1] == 's') ||
-             (argv[num_opts][1] == 'n') ||
-             (argv[num_opts][1] == 'c') ||
-             (argv[num_opts][1] == 'd')))
-            num_opts++;
-      }
-    else
-      break;
+  args = xmalloc (argc * sizeof (args[0]));
 
-  /* Check for options.  */
-  while (1)
-    {
-      int c = getopt_long (num_opts, argv, "r:s:n:c:d:hVv", options, 0);
-      char *p;
-
-      if (c == -1)
-	break;
-      else
-	switch (c)
-	  {
-	  case 'r':
-	    root = optarg;
-	    break;
-
-	  case 's':
-	    skip = grub_strtoul (optarg, &p, 0);
-            if (*p == 's')
-              skip <<= GRUB_DISK_SECTOR_BITS;
-	    break;
-
-	  case 'n':
-	    leng = grub_strtoul (optarg, &p, 0);
-            if (*p == 's')
-              leng <<= GRUB_DISK_SECTOR_BITS;
-	    break;
-
-          case 'c':
-            num_disks = grub_strtoul (optarg, NULL, 0);
-            if (num_disks < 1)
-              {
-                fprintf (stderr, "Invalid disk count.\n");
-                usage (1);
-              }
-            break;
-
-          case 'd':
-            debug_str = optarg;
-            break;
-
-	  case 'h':
-	    usage (0);
-	    break;
-
-	  case 'V':
-	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
-	    return 0;
-
-	  case 'v':
-	    verbosity++;
-	    break;
-
-	  default:
-	    usage (1);
-	    break;
-	  }
-    }
-
-  /* Obtain PATH.  */
-  if (optind + num_disks - 1 >= argc)
-    {
-      fprintf (stderr, "Not enough pathname.\n");
-      usage (1);
-    }
-
-  image_index = optind;
-  for (i = 0; i < num_disks; i++, optind++)
-    if (argv[optind][0] != '/')
-      {
-        fprintf (stderr, "Must use absolute path.\n");
-        usage (1);
-      }
-
-  cmd = 0;
-  if (optind < argc)
-    {
-      int nparm = 0;
-
-      if (!grub_strcmp (argv[optind], "ls"))
-        {
-          cmd = CMD_LS;
-        }
-      else if (!grub_strcmp (argv[optind], "cp"))
-	{
-	  cmd = CMD_CP;
-          nparm = 2;
-	}
-      else if (!grub_strcmp (argv[optind], "cmp"))
-	{
-	  cmd = CMD_CMP;
-          nparm = 2;
-	}
-      else if (!grub_strcmp (argv[optind], "hex"))
-	{
-	  cmd = CMD_HEX;
-          nparm = 1;
-	}
-      else if (!grub_strcmp (argv[optind], "crc"))
-	{
-	  cmd = CMD_CRC;
-          nparm = 1;
-	}
-      else if (!grub_strcmp (argv[optind], "blocklist"))
-	{
-	  cmd = CMD_BLOCKLIST;
-          nparm = 1;
-	}
-      else
-	{
-	  fprintf (stderr, "Invalid command %s.\n", argv[optind]);
-	  usage (1);
-	}
-
-      if (optind + 1 + nparm > argc)
-	{
-	  fprintf (stderr, "Invalid parameter for command %s.\n",
-		   argv[optind]);
-	  usage (1);
-	}
-
-      optind++;
-    }
-  else
-    {
-      fprintf (stderr, "No command is specified.\n");
-      usage (1);
-    }
+  argp_parse (&argp, argc, argv, 0, 0, 0);
 
   /* Initialize all modules. */
   grub_init_all ();
+  grub_gcry_init_all ();
 
   if (debug_str)
     grub_env_set ("debug", debug_str);
@@ -552,9 +680,10 @@ main (int argc, char *argv[])
     free (alloc_root);
 
   /* Do it.  */
-  fstest (argv + image_index, num_disks, cmd, argc - optind, argv + optind);
+  fstest (args_count - 1 - num_disks, args);
 
   /* Free resources.  */
+  grub_gcry_fini_all ();
   grub_fini_all ();
 
   return 0;

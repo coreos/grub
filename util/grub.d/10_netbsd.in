@@ -21,16 +21,71 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
 libdir=@libdir@
-. ${libdir}/grub/grub-mkconfig_lib
+datarootdir=@datarootdir@
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR=@localedir@
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
-  OS=NetBSD
+  OS="NetBSD"
 else
   OS="${GRUB_DISTRIBUTOR} NetBSD"
 fi
+
+netbsd_load_fs_module ()
+{
+  loader="$1"	# "knetbsd" or "multiboot"
+  kernel="$2"	# absolute path to the kernel file
+
+  case $(zcat -f "${kernel}" | file -bL - | cut -d , -f 2 | tr -d ' ') in
+    Intel80386)
+      karch="i386"
+      ;;
+    x86-64)
+      karch="amd64"
+      ;;
+    *)
+      return
+      ;;
+  esac
+
+  case $(${grub_probe} --target=fs -d ${GRUB_DEVICE}) in
+    ext2)
+      kmod="ext2fs"
+      ;;
+    fat)
+      kmod="msdosfs"
+      ;;
+    ntfs)
+      kmod="ntfs"
+      ;;
+    ufs*)
+      kmod="ffs"
+      ;;
+    *)
+      return
+      ;;
+  esac
+
+  kversion=$(zcat -f "${kernel}" | strings | sed -n -e '/^@(#)NetBSD/ { s/^@(#)NetBSD \([0-9\.]*\) .*$/\1/g ; p ; q ; }')
+  kmodule="/stand/${karch}/${kversion}/modules/${kmod}/${kmod}.kmod"
+
+  if test -z "$karch" -o -z "$kversion" -o ! -f "${kmodule}"; then
+    return
+  fi
+
+  kmodule_rel=$(make_system_path_relative_to_its_root "$kmodule") || return
+  prepare_grub_to_access_device $(${grub_probe} -t device "${kmodule}") | sed -e 's,^,	,'
+  case "${loader}" in
+    knetbsd)
+      printf "\tknetbsd_module_elf %s\n" "${kmodule_rel}"
+      ;;
+    multiboot)
+      printf "\tmodule %s\n" "${kmodule_rel}"
+      ;;
+  esac
+}
 
 netbsd_entry ()
 {
@@ -59,6 +114,9 @@ netbsd_entry ()
         "${kernel}" "${kernel}" "${kroot_device}" "${GRUB_CMDLINE_NETBSD} ${args}"
       ;;
   esac
+
+  netbsd_load_fs_module "${loader}" "${kernel}"
+
   printf "}\n"
 }
 
@@ -72,15 +130,14 @@ for k in $(ls -t /netbsd*) ; do
   if ! grub_file_is_not_garbage "$k" ; then
     continue
   fi
-  if ! ((file -bL "$k" | grep -q "${pattern}") ||
-        (zcat "$k" | file -bL - | grep -q "${pattern}")) 2>/dev/null ; then
+  if ! (zcat -f "$k" | file -bL - | grep -q "${pattern}") 2>/dev/null ; then
     continue
   fi
 
   echo "Found NetBSD kernel: $k" >&2
   netbsd_entry "knetbsd"   "$k" false "${GRUB_CMDLINE_NETBSD_DEFAULT}"
   netbsd_entry "multiboot" "$k" false "${GRUB_CMDLINE_NETBSD_DEFAULT}"
-  if [ "x${GRUB_DISABLE_NETBSD_RECOVERY}" != "xtrue" ]; then
+  if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then
     netbsd_entry "knetbsd"   "$k" true "-s"
     netbsd_entry "multiboot" "$k" true "-s"
   fi

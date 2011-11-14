@@ -1,4 +1,4 @@
-/* minicmd.c - commands for the rescue mode */
+/* testload.c - load the same file in multiple ways */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003,2005,2006,2007,2009,2010  Free Software Foundation, Inc.
@@ -28,6 +28,8 @@
 #include <grub/loader.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_err_t
 grub_cmd_testload (struct grub_command *cmd __attribute__ ((unused)),

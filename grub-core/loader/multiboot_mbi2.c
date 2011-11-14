@@ -16,10 +16,11 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/memory.h>
 #include <grub/memory.h>
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/biosnum.h>
+#include <grub/machine/apm.h>
+#include <grub/machine/memory.h>
 #endif
 #include <grub/multiboot.h>
 #include <grub/cpu/multiboot.h>
@@ -31,6 +32,11 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/video.h>
+#include <grub/acpi.h>
+
+#if defined (GRUB_MACHINE_EFI)
+#include <grub/efi/efi.h>
+#endif
 
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
 #include <grub/i386/pc/vbe.h>
@@ -48,7 +54,7 @@ struct module
   int cmdline_size;
 };
 
-struct module *modules, *modules_last;
+static struct module *modules, *modules_last;
 static grub_size_t cmdline_size;
 static grub_size_t total_modcmd;
 static unsigned modcnt;
@@ -138,11 +144,15 @@ grub_multiboot_load (grub_file_t file)
 	      case MULTIBOOT_TAG_TYPE_BOOTDEV:
 	      case MULTIBOOT_TAG_TYPE_MMAP:
 	      case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
-		break;
-
 	      case MULTIBOOT_TAG_TYPE_VBE:
 	      case MULTIBOOT_TAG_TYPE_ELF_SECTIONS:
 	      case MULTIBOOT_TAG_TYPE_APM:
+	      case MULTIBOOT_TAG_TYPE_EFI32:
+	      case MULTIBOOT_TAG_TYPE_EFI64:
+	      case MULTIBOOT_TAG_TYPE_ACPI_OLD:
+	      case MULTIBOOT_TAG_TYPE_ACPI_NEW:
+		break;
+
 	      default:
 		grub_free (buffer);
 		return grub_error (GRUB_ERR_UNKNOWN_OS,
@@ -265,6 +275,22 @@ grub_multiboot_load (grub_file_t file)
 }
 
 static grub_size_t
+acpiv2_size (void)
+{
+#if GRUB_MACHINE_HAS_ACPI
+  struct grub_acpi_rsdp_v20 *p = grub_acpi_get_rsdpv2 ();
+
+  if (!p)
+    return 0;
+
+  return ALIGN_UP (sizeof (struct multiboot_tag_old_acpi)
+		   + p->length, MULTIBOOT_TAG_ALIGN);
+#else
+  return 0;
+#endif
+}
+
+static grub_size_t
 grub_multiboot_get_mbi_size (void)
 {
   return 2 * sizeof (grub_uint32_t) + sizeof (struct multiboot_tag)
@@ -273,13 +299,22 @@ grub_multiboot_get_mbi_size (void)
     + (sizeof (struct multiboot_tag_string)
        + ALIGN_UP (sizeof (PACKAGE_STRING), MULTIBOOT_TAG_ALIGN))
     + (modcnt * sizeof (struct multiboot_tag_module) + total_modcmd)
-    + sizeof (struct multiboot_tag_basic_meminfo)
+    + ALIGN_UP (sizeof (struct multiboot_tag_basic_meminfo),
+		MULTIBOOT_TAG_ALIGN)
     + ALIGN_UP (sizeof (struct multiboot_tag_bootdev), MULTIBOOT_TAG_ALIGN)
-    + sizeof (struct multiboot_tag_elf_sections)
-    + elf_sec_entsize * elf_sec_num
-    + (sizeof (struct multiboot_tag_mmap) + grub_get_multiboot_mmap_count ()
-       * sizeof (struct multiboot_mmap_entry))
-    + sizeof (struct multiboot_tag_vbe) + MULTIBOOT_TAG_ALIGN - 1;
+    + ALIGN_UP (sizeof (struct multiboot_tag_elf_sections), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (elf_sec_entsize * elf_sec_num, MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP ((sizeof (struct multiboot_tag_mmap)
+		 + grub_get_multiboot_mmap_count ()
+		 * sizeof (struct multiboot_mmap_entry)), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (sizeof (struct multiboot_tag_framebuffer), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (sizeof (struct multiboot_tag_efi32), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (sizeof (struct multiboot_tag_efi64), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (sizeof (struct multiboot_tag_old_acpi)
+		+ sizeof (struct grub_acpi_rsdp_v10), MULTIBOOT_TAG_ALIGN)
+    + acpiv2_size ()
+    + sizeof (struct multiboot_tag_vbe) + MULTIBOOT_TAG_ALIGN - 1
+    + sizeof (struct multiboot_tag_apm) + MULTIBOOT_TAG_ALIGN - 1;
 }
 
 /* Fill previously allocated Multiboot mmap.  */
@@ -288,29 +323,31 @@ grub_fill_multiboot_mmap (struct multiboot_tag_mmap *tag)
 {
   struct multiboot_mmap_entry *mmap_entry = tag->entries;
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				  grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
+			     grub_memory_type_t type)
     {
       mmap_entry->addr = addr;
       mmap_entry->len = size;
       switch (type)
 	{
-	case GRUB_MACHINE_MEMORY_AVAILABLE:
+	case GRUB_MEMORY_AVAILABLE:
  	  mmap_entry->type = MULTIBOOT_MEMORY_AVAILABLE;
  	  break;
 
-#ifdef GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE
-	case GRUB_MACHINE_MEMORY_ACPI_RECLAIMABLE:
+	case GRUB_MEMORY_ACPI:
  	  mmap_entry->type = MULTIBOOT_MEMORY_ACPI_RECLAIMABLE;
  	  break;
-#endif
 
-#ifdef GRUB_MACHINE_MEMORY_NVS
-	case GRUB_MACHINE_MEMORY_NVS:
+	case GRUB_MEMORY_NVS:
  	  mmap_entry->type = MULTIBOOT_MEMORY_NVS;
  	  break;
-#endif	  
-	  
+
+	case GRUB_MEMORY_BADRAM:
+ 	  mmap_entry->type = MULTIBOOT_MEMORY_BADRAM;
+ 	  break;
+
  	default:
  	  mmap_entry->type = MULTIBOOT_MEMORY_RESERVED;
  	  break;
@@ -328,6 +365,54 @@ grub_fill_multiboot_mmap (struct multiboot_tag_mmap *tag)
 
   grub_mmap_iterate (hook);
 }
+
+#if defined (GRUB_MACHINE_PCBIOS)
+static void
+fill_vbe_tag (struct multiboot_tag_vbe *tag)
+{
+  grub_vbe_status_t status;
+  void *scratch = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+
+  tag->type = MULTIBOOT_TAG_TYPE_VBE;
+  tag->size = 0;
+    
+  status = grub_vbe_bios_get_controller_info (scratch);
+  if (status != GRUB_VBE_STATUS_OK)
+    return;
+  
+  grub_memcpy (&tag->vbe_control_info, scratch,
+	       sizeof (struct grub_vbe_info_block));
+  
+  status = grub_vbe_bios_get_mode (scratch);
+  tag->vbe_mode = *(grub_uint32_t *) scratch;
+  if (status != GRUB_VBE_STATUS_OK)
+    return;
+
+  /* get_mode_info isn't available for mode 3.  */
+  if (tag->vbe_mode == 3)
+    {
+      struct grub_vbe_mode_info_block *mode_info = (void *) &tag->vbe_mode_info;
+      grub_memset (mode_info, 0,
+		   sizeof (struct grub_vbe_mode_info_block));
+      mode_info->memory_model = GRUB_VBE_MEMORY_MODEL_TEXT;
+      mode_info->x_resolution = 80;
+      mode_info->y_resolution = 25;
+    }
+  else
+    {
+      status = grub_vbe_bios_get_mode_info (tag->vbe_mode, scratch);
+      if (status != GRUB_VBE_STATUS_OK)
+	return;
+      grub_memcpy (&tag->vbe_mode_info, scratch,
+		   sizeof (struct grub_vbe_mode_info_block));
+    }      
+  grub_vbe_bios_get_pm_interface (&tag->vbe_interface_seg,
+				  &tag->vbe_interface_off,
+				  &tag->vbe_interface_len);
+
+  tag->size = sizeof (*tag);
+}
+#endif
 
 static grub_err_t
 retrieve_video_parameters (grub_uint8_t **ptrorig)
@@ -417,6 +502,16 @@ retrieve_video_parameters (grub_uint8_t **ptrorig)
     return GRUB_ERR_NONE;
 #endif
 
+#if GRUB_MACHINE_HAS_VBE
+  {
+    struct multiboot_tag_vbe *tag_vbe = (struct multiboot_tag_vbe *) *ptrorig;
+
+    fill_vbe_tag (tag_vbe);
+
+    *ptrorig += ALIGN_UP (tag_vbe->size, MULTIBOOT_TAG_ALIGN);
+  }
+#endif
+
   err = grub_video_get_info_and_fini (&mode_info, &framebuffer);
   if (err)
     return err;
@@ -482,7 +577,7 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
 
   err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
 					  0, 0xffffffff - bufsize,
-					  bufsize, 4,
+					  bufsize, MULTIBOOT_TAG_ALIGN,
 					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     return err;
@@ -514,6 +609,31 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
     grub_memcpy (tag->string, PACKAGE_STRING, sizeof (PACKAGE_STRING));
     ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
   }
+
+#ifdef GRUB_MACHINE_PCBIOS
+  {
+    struct grub_apm_info info;
+    if (grub_apm_get_info (&info))
+      {
+	struct multiboot_tag_apm *tag = (struct multiboot_tag_apm *) ptrorig;
+
+	tag->type = MULTIBOOT_TAG_TYPE_APM;
+	tag->size = sizeof (struct multiboot_tag_apm); 
+
+	tag->cseg = info.cseg;
+	tag->offset = info.offset;
+	tag->cseg_16 = info.cseg_16;
+	tag->dseg = info.dseg;
+	tag->flags = info.flags;
+	tag->cseg_len = info.cseg_len;
+	tag->dseg_len = info.dseg_len;
+	tag->cseg_16_len = info.cseg_16_len;
+	tag->version = info.version;
+
+	ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+      }
+  }
+#endif
 
   {
     unsigned i;
@@ -584,7 +704,55 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
 	grub_errno = GRUB_ERR_NONE;
       }
   }
-  
+
+#if defined (GRUB_MACHINE_EFI) && defined (__x86_64__)
+  {
+    struct multiboot_tag_efi64 *tag = (struct multiboot_tag_efi64 *) ptrorig;
+    tag->type = MULTIBOOT_TAG_TYPE_EFI64;
+    tag->size = sizeof (*tag);
+    tag->pointer = (grub_addr_t) grub_efi_system_table;
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+  }
+#endif
+
+#if defined (GRUB_MACHINE_EFI) && defined (__i386__)
+  {
+    struct multiboot_tag_efi32 *tag = (struct multiboot_tag_efi32 *) ptrorig;
+    tag->type = MULTIBOOT_TAG_TYPE_EFI32;
+    tag->size = sizeof (*tag);
+    tag->pointer = (grub_addr_t) grub_efi_system_table;
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+  }
+#endif
+
+#if GRUB_MACHINE_HAS_ACPI
+  {
+    struct multiboot_tag_old_acpi *tag = (struct multiboot_tag_old_acpi *)
+      ptrorig;
+    struct grub_acpi_rsdp_v10 *a = grub_acpi_get_rsdpv1 ();
+    if (a)
+      {
+	tag->type = MULTIBOOT_TAG_TYPE_ACPI_OLD;
+	tag->size = sizeof (*tag) + sizeof (*a);
+	grub_memcpy (tag->rsdp, a, sizeof (*a));
+	ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+      }
+  }
+
+  {
+    struct multiboot_tag_new_acpi *tag = (struct multiboot_tag_new_acpi *)
+      ptrorig;
+    struct grub_acpi_rsdp_v20 *a = grub_acpi_get_rsdpv2 ();
+    if (a)
+      {
+	tag->type = MULTIBOOT_TAG_TYPE_ACPI_NEW;
+	tag->size = sizeof (*tag) + a->length;
+	grub_memcpy (tag->rsdp, a, a->length);
+	ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN);
+      }
+  }
+#endif
+
   {
     struct multiboot_tag *tag = (struct multiboot_tag *) ptrorig;
     tag->type = MULTIBOOT_TAG_TYPE_END;

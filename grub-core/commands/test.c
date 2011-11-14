@@ -27,6 +27,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* A simple implementation for signed numbers. */
 static int
 grub_strtosl (char *arg, char **end, int base)
@@ -423,8 +425,10 @@ GRUB_MOD_INIT(test)
 {
   cmd_1 = grub_register_command ("[", grub_cmd_test,
 				 N_("EXPRESSION ]"), N_("Evaluate an expression."));
+  cmd_1->flags |= GRUB_COMMAND_FLAG_EXTRACTOR;
   cmd_2 = grub_register_command ("test", grub_cmd_test,
 				 N_("EXPRESSION"), N_("Evaluate an expression."));
+  cmd_2->flags |= GRUB_COMMAND_FLAG_EXTRACTOR;
 }
 
 GRUB_MOD_FINI(test)

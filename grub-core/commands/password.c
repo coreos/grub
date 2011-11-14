@@ -26,6 +26,8 @@
 #include <grub/dl.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_dl_t my_mod;
 
 static grub_err_t
@@ -40,26 +42,22 @@ check_password (const char *user, const char *entered,
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t
-grub_cmd_password (grub_command_t cmd __attribute__ ((unused)),
-		   int argc, char **args)
+grub_err_t
+grub_normal_set_password (const char *user, const char *password)
 {
   grub_err_t err;
   char *pass;
   int copylen;
 
-  if (argc != 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "two arguments expected");
-
   pass = grub_zalloc (GRUB_AUTH_MAX_PASSLEN);
   if (!pass)
     return grub_errno;
-  copylen = grub_strlen (args[1]);
+  copylen = grub_strlen (password);
   if (copylen >= GRUB_AUTH_MAX_PASSLEN)
     copylen = GRUB_AUTH_MAX_PASSLEN - 1;
-  grub_memcpy (pass, args[1], copylen);
+  grub_memcpy (pass, password, copylen);
 
-  err = grub_auth_register_authentication (args[0], check_password, pass);
+  err = grub_auth_register_authentication (user, check_password, pass);
   if (err)
     {
       grub_free (pass);
@@ -67,6 +65,15 @@ grub_cmd_password (grub_command_t cmd __attribute__ ((unused)),
     }
   grub_dl_ref (my_mod);
   return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_cmd_password (grub_command_t cmd __attribute__ ((unused)),
+		   int argc, char **args)
+{
+  if (argc != 2)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "two arguments expected");
+  return grub_normal_set_password (args[0], args[1]);
 }
 
 static grub_command_t cmd;

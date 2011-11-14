@@ -30,6 +30,7 @@ typedef struct grub_usb_controller_dev *grub_usb_controller_dev_t;
 typedef enum
   {
     GRUB_USB_ERR_NONE,
+    GRUB_USB_ERR_WAIT,
     GRUB_USB_ERR_INTERNAL,
     GRUB_USB_ERR_STALL,
     GRUB_USB_ERR_DATA,
@@ -37,7 +38,8 @@ typedef enum
     GRUB_USB_ERR_BABBLE,
     GRUB_USB_ERR_TIMEOUT,
     GRUB_USB_ERR_BITSTUFF,
-    GRUB_USB_ERR_UNRECOVERABLE
+    GRUB_USB_ERR_UNRECOVERABLE,
+    GRUB_USB_ERR_BADDEVICE
   } grub_usb_err_t;
 
 typedef enum
@@ -47,14 +49,6 @@ typedef enum
     GRUB_USB_SPEED_FULL,
     GRUB_USB_SPEED_HIGH
   } grub_usb_speed_t;
-
-enum
-  {
-    GRUB_USB_REQTYPE_CLASS_INTERFACE_OUT = 0x21,
-    GRUB_USB_REQTYPE_VENDOR_OUT = 0x40,
-    GRUB_USB_REQTYPE_CLASS_INTERFACE_IN = 0xa1,
-    GRUB_USB_REQTYPE_VENDOR_IN = 0xc0
-  };
 
 /* Call HOOK with each device, until HOOK returns non-zero.  */
 int grub_usb_iterate (int (*hook) (grub_usb_device_t dev));
@@ -97,6 +91,7 @@ grub_usb_err_t
 grub_usb_root_hub (grub_usb_controller_t controller);
 
 
+
 /* XXX: All handled by libusb for now.  */
 struct grub_usb_controller_dev
 {
@@ -105,9 +100,15 @@ struct grub_usb_controller_dev
 
   int (*iterate) (int (*hook) (grub_usb_controller_t dev));
 
-  grub_usb_err_t (*transfer) (grub_usb_controller_t dev,
-			      grub_usb_transfer_t transfer,
-			      int timeout, grub_size_t *actual);
+  grub_usb_err_t (*setup_transfer) (grub_usb_controller_t dev,
+				    grub_usb_transfer_t transfer);
+
+  grub_usb_err_t (*check_transfer) (grub_usb_controller_t dev,
+				    grub_usb_transfer_t transfer,
+				    grub_size_t *actual);
+
+  grub_usb_err_t (*cancel_transfer) (grub_usb_controller_t dev,
+				     grub_usb_transfer_t transfer);
 
   int (*hubports) (grub_usb_controller_t dev);
 
@@ -116,6 +117,9 @@ struct grub_usb_controller_dev
 
   grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port, int *changed);
 
+  /* Per controller flag - port reset pending, don't do another reset */
+  grub_uint64_t pending_reset;
+  
   /* The next host controller.  */
   struct grub_usb_controller_dev *next;
 };
@@ -181,11 +185,19 @@ struct grub_usb_device
   /* Used by libusb wrapper.  Schedulded for removal. */
   void *data;
 
+  /* Hub information.  */
+
   /* Array of children for a hub.  */
   grub_usb_device_t *children;
 
   /* Number of hub ports.  */
   unsigned nports;
+
+  grub_usb_transfer_t hub_transfer;
+
+  grub_uint32_t statuschange;
+
+  struct grub_usb_desc_endp *hub_endpoint;
 };
 
 
@@ -266,5 +278,12 @@ grub_usb_err_t
 grub_usb_bulk_read_extended (grub_usb_device_t dev,
 			     int endpoint, grub_size_t size, char *data,
 			     int timeout, grub_size_t *actual);
+grub_usb_transfer_t
+grub_usb_bulk_read_background (grub_usb_device_t dev,
+			      int endpoint, grub_size_t size, void *data);
+grub_usb_err_t
+grub_usb_check_transfer (grub_usb_transfer_t trans, grub_size_t *actual);
+void
+grub_usb_cancel_transfer (grub_usb_transfer_t trans);
 
 #endif /* GRUB_USB_H */

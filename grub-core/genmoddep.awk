@@ -11,23 +11,28 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# Read defined symbols from stdin.
+# Read symbols' info from stdin.
 BEGIN {
+  error = 0
+  lineno = 0;
   while (getline <"/dev/stdin") {
-    symtab[$1] = $2
-  }
-}
-
-# The rest is undefined symbols.
-{
-  module = $2
-
-  if ($1 in symtab) {
-    modtab[module] = modtab[module] " " symtab[$1];
-  }
-  else if ($1 != "__gnu_local_gp") {
-    printf "%s in %s is not defined\n", $1, module >"/dev/stderr";
-    error++;
+    lineno++;
+    if ($1 == "defined") {
+      symtab[$3] = $2;
+      modtab[$2] = "" modtab[$2]
+    } else if ($1 == "undefined") {
+      if ($3 in symtab)
+	modtab[$2] = modtab[$2] " " symtab[$3];
+      else if ($3 != "__gnu_local_gp") {
+	printf "%s in %s is not defined\n", $3, $2 >"/dev/stderr";
+	error++;
+      }
+    }
+    else {
+      printf "error: %u: unrecognized input format\n", lineno;
+      error++;
+      break;
+    }
   }
 }
 

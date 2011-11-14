@@ -21,6 +21,7 @@
 #include <grub/machine/time.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
+#include <grub/offsets.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/dl.h>
@@ -37,8 +38,9 @@
 #include <grub/machine/kernel.h>
 #endif
 
-extern char _start[];
-extern char _end[];
+extern grub_uint8_t _start[];
+extern grub_uint8_t _end[];
+extern grub_uint8_t _edata[];
 
 grub_uint32_t
 grub_get_rtc (void)
@@ -55,17 +57,27 @@ grub_exit (void)
     grub_cpu_idle ();
 }
 
+#ifdef GRUB_MACHINE_QEMU
+grub_addr_t grub_modbase;
+#else
+grub_addr_t grub_modbase = ALIGN_UP((grub_addr_t) _end, GRUB_KERNEL_MACHINE_MOD_ALIGN);
+#endif
+
 void
 grub_machine_init (void)
 {
 #ifdef GRUB_MACHINE_QEMU
+  grub_modbase = grub_core_entry_addr + (_edata - _start);
+
   grub_qemu_init_cirrus ();
 #endif
   /* Initialize the console as early as possible.  */
   grub_vga_text_init ();
 
-  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t, grub_uint64_t, 
+				       grub_memory_type_t);
+  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t size,
+				  grub_memory_type_t type)
   {
 #if GRUB_CPU_SIZEOF_VOID_P == 4
     /* Restrict ourselves to 32-bit memory space.  */
@@ -75,7 +87,7 @@ grub_machine_init (void)
       size = GRUB_ULONG_MAX - addr;
 #endif
 
-    if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
+    if (type != GRUB_MEMORY_AVAILABLE)
       return 0;
 
     /* Avoid the lower memory.  */
@@ -104,10 +116,9 @@ grub_machine_init (void)
 }
 
 void
-grub_machine_set_prefix (void)
+grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
+			       char **path __attribute__ ((unused)))
 {
-  /* Initialize the prefix.  */
-  grub_env_set ("prefix", grub_prefix);
 }
 
 void
@@ -115,15 +126,4 @@ grub_machine_fini (void)
 {
   grub_vga_text_fini ();
   grub_stop_floppy ();
-}
-
-/* Return the end of the core image.  */
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-#ifdef GRUB_MACHINE_QEMU
-  return grub_core_entry_addr + grub_kernel_image_size;
-#else
-  return ALIGN_UP((grub_addr_t) _end, GRUB_KERNEL_MACHINE_MOD_ALIGN);
-#endif
 }

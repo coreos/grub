@@ -17,11 +17,15 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
+
 #include <grub/types.h>
 #include <grub/macho.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+/* Please don't internationalise this file. It's pointless.  */
 
 /* XXX: this file assumes particular Mach-O layout and does no checks. */
 /* However as build system ensures correct usage of this tool this

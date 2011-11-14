@@ -25,25 +25,12 @@
 #define NEXT_MEMORY_DESCRIPTOR(desc, size)	\
   ((grub_efi_memory_descriptor_t *) ((char *) (desc) + (size)))
 
-#define BYTES_TO_PAGES(bytes)	((bytes) >> 12)
+#define BYTES_TO_PAGES(bytes)	(((bytes) + 0xfff) >> 12)
 #define PAGES_TO_BYTES(pages)	((pages) << 12)
 
 /* The size of a memory map obtained from the firmware. This must be
    a multiplier of 4KB.  */
 #define MEMORY_MAP_SIZE	0x3000
-
-/* Maintain the list of allocated pages.  */
-struct allocated_page
-{
-  grub_efi_physical_address_t addr;
-  grub_efi_uint64_t num_pages;
-};
-
-#define ALLOCATED_PAGES_SIZE	0x1000
-#define MAX_ALLOCATED_PAGES	\
-  (ALLOCATED_PAGES_SIZE / sizeof (struct allocated_page))
-
-static struct allocated_page *allocated_pages = 0;
 
 /* The minimum and maximum heap size for GRUB itself.  */
 #define MIN_HEAP_SIZE	0x100000
@@ -65,13 +52,13 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
   grub_efi_status_t status;
   grub_efi_boot_services_t *b;
 
-#if GRUB_TARGET_SIZEOF_VOID_P < 8
+#if 1
   /* Limit the memory access to less than 4GB for 32-bit platforms.  */
   if (address > 0xffffffff)
     return 0;
 #endif
 
-#if GRUB_TARGET_SIZEOF_VOID_P < 8 || defined (MCMODEL_SMALL)
+#if 1
   if (address == 0)
     {
       type = GRUB_EFI_ALLOCATE_MAX_ADDRESS;
@@ -102,22 +89,6 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
 	return 0;
     }
 
-  if (allocated_pages)
-    {
-      unsigned i;
-
-      for (i = 0; i < MAX_ALLOCATED_PAGES; i++)
-	if (allocated_pages[i].addr == 0)
-	  {
-	    allocated_pages[i].addr = address;
-	    allocated_pages[i].num_pages = pages;
-	    break;
-	  }
-
-      if (i == MAX_ALLOCATED_PAGES)
-	grub_fatal ("too many page allocations");
-    }
-
   return (void *) ((grub_addr_t) address);
 }
 
@@ -127,20 +98,6 @@ grub_efi_free_pages (grub_efi_physical_address_t address,
 		     grub_efi_uintn_t pages)
 {
   grub_efi_boot_services_t *b;
-
-  if (allocated_pages
-      && ((grub_efi_physical_address_t) ((grub_addr_t) allocated_pages)
-	  != address))
-    {
-      unsigned i;
-
-      for (i = 0; i < MAX_ALLOCATED_PAGES; i++)
-	if (allocated_pages[i].addr == address)
-	  {
-	    allocated_pages[i].addr = 0;
-	    break;
-	  }
-    }
 
   b = grub_efi_system_table->boot_services;
   efi_call_2 (b->free_pages, address, pages);
@@ -294,7 +251,7 @@ filter_memory_map (grub_efi_memory_descriptor_t *memory_map,
        desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
     {
       if (desc->type == GRUB_EFI_CONVENTIONAL_MEMORY
-#if GRUB_TARGET_SIZEOF_VOID_P < 8 || defined (MCMODEL_SMALL)
+#if 1
 	  && desc->physical_start <= 0xffffffff
 #endif
 	  && desc->physical_start + PAGES_TO_BYTES (desc->num_pages) > 0x100000
@@ -310,7 +267,7 @@ filter_memory_map (grub_efi_memory_descriptor_t *memory_map,
 	      desc->physical_start = 0x100000;
 	    }
 
-#if GRUB_TARGET_SIZEOF_VOID_P < 8 || defined (MCMODEL_SMALL)
+#if 1
 	  if (BYTES_TO_PAGES (filtered_desc->physical_start)
 	      + filtered_desc->num_pages
 	      > BYTES_TO_PAGES (0x100000000LL))
@@ -422,14 +379,6 @@ grub_efi_mm_init (void)
   grub_efi_uint64_t required_pages;
   int mm_status;
 
-  /* First of all, allocate pages to maintain allocations.  */
-  allocated_pages
-    = grub_efi_allocate_pages (0, BYTES_TO_PAGES (ALLOCATED_PAGES_SIZE));
-  if (! allocated_pages)
-    grub_fatal ("cannot allocate memory");
-
-  grub_memset (allocated_pages, 0, ALLOCATED_PAGES_SIZE);
-
   /* Prepare a memory region to store two memory maps.  */
   memory_map = grub_efi_allocate_pages (0,
 					2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
@@ -446,6 +395,9 @@ grub_efi_mm_init (void)
       grub_efi_free_pages
 	((grub_efi_physical_address_t) ((grub_addr_t) memory_map),
 	 2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
+
+      /* Freeing/allocating operations may increase memory map size.  */
+      map_size += desc_size * 32;
 
       memory_map = grub_efi_allocate_pages (0, 2 * BYTES_TO_PAGES (map_size));
       if (! memory_map)
@@ -498,25 +450,4 @@ grub_efi_mm_init (void)
   /* Release the memory maps.  */
   grub_efi_free_pages ((grub_addr_t) memory_map,
 		       2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
-}
-
-void
-grub_efi_mm_fini (void)
-{
-  if (allocated_pages)
-    {
-      unsigned i;
-
-      for (i = 0; i < MAX_ALLOCATED_PAGES; i++)
-	{
-	  struct allocated_page *p;
-
-	  p = allocated_pages + i;
-	  if (p->addr != 0)
-	    grub_efi_free_pages ((grub_addr_t) p->addr, p->num_pages);
-	}
-
-      grub_efi_free_pages ((grub_addr_t) allocated_pages,
-			   BYTES_TO_PAGES (ALLOCATED_PAGES_SIZE));
-    }
 }

@@ -60,6 +60,10 @@ grub_ieee1275_find_options (void)
   int is_olpc = 0;
   int is_qemu = 0;
 
+#ifdef __sparc__
+  grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0);
+#endif
+
   grub_ieee1275_finddevice ("/", &root);
   grub_ieee1275_finddevice ("/options", &options);
   grub_ieee1275_finddevice ("/openprom", &openprom);
@@ -83,6 +87,9 @@ grub_ieee1275_find_options (void)
 				   tmp,	sizeof (tmp), 0);
   if (rc >= 0 && !grub_strcmp (tmp, "Emulated PC"))
     is_qemu = 1;
+
+  if (grub_strncmp (tmp, "PowerMac", sizeof ("PowerMac") - 1) == 0)
+    grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS);
 
   if (is_smartfirmware)
     {

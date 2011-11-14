@@ -25,6 +25,8 @@
 #include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_uint8_t grub_gpt_magic[8] =
   {
     0x45, 0x46, 0x49, 0x20, 0x50, 0x41, 0x52, 0x54
@@ -124,9 +126,9 @@ gpt_partition_map_iterate (grub_disk_t disk,
 
 #ifdef GRUB_UTIL
 static grub_err_t
-gpt_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
+gpt_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 			 grub_embed_type_t embed_type,
-			 grub_disk_addr_t *sectors)
+			 grub_disk_addr_t **sectors)
 {
   grub_disk_addr_t start = 0, len = 0;
   unsigned i;
@@ -138,11 +140,17 @@ gpt_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 					   const grub_partition_t p)
   {
     struct grub_gpt_partentry gptdata;
+    grub_partition_t p2;
 
+    p2 = disk->partition;
     disk->partition = p->parent;
     if (grub_disk_read (disk, p->offset, p->index,
 			sizeof (gptdata), &gptdata))
-      return 0;
+      {
+	disk->partition = p2;
+	return 0;
+      }
+    disk->partition = p2;
 
     /* If there's an embed region, it is in a dedicated partition.  */
     if (! grub_memcmp (&gptdata.type, &grub_gpt_partition_type_bios_boot, 16))
@@ -157,7 +165,7 @@ gpt_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 
   if (embed_type != GRUB_EMBED_PCBIOS)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "GPT curently supports only PC-BIOS embedding");
+		       "GPT currently supports only PC-BIOS embedding");
 
   err = gpt_partition_map_iterate (disk, find_usable_region);
   if (err)
@@ -168,13 +176,17 @@ gpt_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 		       "This GPT partition label has no BIOS Boot Partition;"
 		       " embedding won't be possible!");
 
-  if (len < nsectors)
+  if (len < *nsectors)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
 		       "Your BIOS Boot Partition is too small;"
 		       " embedding won't be possible!");
 
-  for (i = 0; i < nsectors; i++)
-    sectors[i] = start + i;
+  *nsectors = len;
+  *sectors = grub_malloc (*nsectors * sizeof (**sectors));
+  if (!*sectors)
+    return grub_errno;
+  for (i = 0; i < *nsectors; i++)
+    (*sectors)[i] = start + i;
 
   return GRUB_ERR_NONE;
 }

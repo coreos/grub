@@ -109,7 +109,9 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
                     break;
 
                   default:
-                    grub_fatal ("Unrecognized relocation: %d\n", ELF_R_TYPE (rel->r_info));
+		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+				       "this relocation (%d) is not implemented yet",
+				       ELF_R_TYPE (rel->r_info));
 		  }
 	      }
 	  }

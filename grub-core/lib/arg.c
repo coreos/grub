@@ -144,6 +144,9 @@ grub_arg_show_help (grub_extcmd_t cmd)
 		}
 	    }
 
+	  if (spacing < 0)
+	    spacing = 3;
+
 	  while (spacing--)
 	    grub_xputs (" ");
 
@@ -257,7 +260,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
       char *option = 0;
 
       /* No option is used.  */
-      if ((num && GRUB_COMMAND_OPTIONS_AT_START)
+      if ((num && (cmd->cmd->flags & GRUB_COMMAND_OPTIONS_AT_START))
 	  || arg[0] != '-' || grub_strlen (arg) == 1)
 	{
 	  if (add_arg (arg) != 0)
@@ -337,16 +340,19 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	    }
 
 	  option = grub_strchr (arg, '=');
-	  if (option) {
-	    arglen = option - arg - 2;
-	    option++;
-	  } else {
+	  if (option)
+	    {
+	      arglen = option - arg - 2;
+	      option++;
+	    }
+	  else
 	    arglen = grub_strlen (arg) - 2;
-	    if (argv[curarg + 1])
-	      option = argv[curarg + 1][0] == '-' ? 0 : argv[++curarg];
-	  }
 
 	  opt = find_long (cmd->options, arg + 2, arglen);
+
+	  if (!option && argv[curarg + 1] && argv[curarg + 1][0] != '-'
+	      && opt->type != ARG_TYPE_NONE)
+	    option = argv[++curarg];
 
 	  if (!opt && (cmd->cmd->flags & GRUB_COMMAND_ACCEPT_DASH))
 	    {

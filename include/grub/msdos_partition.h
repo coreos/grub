@@ -22,6 +22,8 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 #include <grub/err.h>
+#include <grub/disk.h>
+#include <grub/partition.h>
 
 /* The signature.  */
 #define GRUB_PC_PARTITION_SIGNATURE		0xaa55
@@ -40,9 +42,11 @@
 #define GRUB_PC_PARTITION_TYPE_FAT32_LBA	0xc
 #define GRUB_PC_PARTITION_TYPE_FAT16_LBA	0xe
 #define GRUB_PC_PARTITION_TYPE_WIN95_EXTENDED	0xf
+#define GRUB_PC_PARTITION_TYPE_PLAN9            0x39
 #define GRUB_PC_PARTITION_TYPE_EZD		0x55
 #define GRUB_PC_PARTITION_TYPE_MINIX		0x80
 #define GRUB_PC_PARTITION_TYPE_LINUX_MINIX	0x81
+#define GRUB_PC_PARTITION_TYPE_LINUX_SWAP	0x82
 #define GRUB_PC_PARTITION_TYPE_EXT2FS		0x83
 #define GRUB_PC_PARTITION_TYPE_LINUX_EXTENDED	0x85
 #define GRUB_PC_PARTITION_TYPE_VSTAFS		0x9e
@@ -113,5 +117,10 @@ grub_msdos_partition_is_extended (int type)
 	  || type == GRUB_PC_PARTITION_TYPE_WIN95_EXTENDED
 	  || type == GRUB_PC_PARTITION_TYPE_LINUX_EXTENDED);
 }
+
+grub_err_t
+grub_partition_msdos_iterate (grub_disk_t disk,
+			      int (*hook) (grub_disk_t disk,
+					   const grub_partition_t partition));
 
 #endif /* ! GRUB_PC_PARTITION_HEADER */

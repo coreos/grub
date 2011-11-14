@@ -27,6 +27,8 @@
 #include <grub/search.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] =
   {
     {"file",		'f', 0, N_("Search devices by a file."), 0, 0},
@@ -90,7 +92,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(search)
 {
   cmd =
-    grub_register_extcmd ("search", grub_cmd_search, 0,
+    grub_register_extcmd ("search", grub_cmd_search, GRUB_COMMAND_FLAG_EXTRACTOR,
 			  N_("[-f|-l|-u|-s|-n] [--hint HINT [--hint HINT] ...]"
 			     " NAME"),
 			  N_("Search devices by file, filesystem label"

@@ -25,7 +25,6 @@
 #include <grub/misc.h>
 #include <grub/acpi.h>
 #include <grub/mm.h>
-#include <grub/machine/memory.h>
 #include <grub/memory.h>
 #include <grub/i18n.h>
 
@@ -33,6 +32,8 @@
 #include <grub/efi/efi.h>
 #include <grub/efi/api.h>
 #endif
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 static const struct grub_arg_option options[] = {
   {"exclude", 'x', 0,
@@ -151,10 +152,10 @@ grub_acpi_create_ebda (void)
   auto int NESTED_FUNC_ATTR find_hook (grub_uint64_t, grub_uint64_t,
 				       grub_uint32_t);
   int NESTED_FUNC_ATTR find_hook (grub_uint64_t start, grub_uint64_t size,
-				  grub_uint32_t type)
+				  grub_memory_type_t type)
   {
     grub_uint64_t end = start + size;
-    if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
+    if (type != GRUB_MEMORY_AVAILABLE)
       return 0;
     if (end > 0x100000)
       end = 0x100000;
@@ -180,7 +181,7 @@ grub_acpi_create_ebda (void)
 		       "couldn't find space for the new EBDA");
 
   mmapregion = grub_mmap_register (PTR_TO_UINT64 (targetebda), ebda_len,
-				   GRUB_MACHINE_MEMORY_RESERVED);
+				   GRUB_MEMORY_RESERVED);
   if (! mmapregion)
     return grub_errno;
 
@@ -704,7 +705,7 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 
   playground = playground_ptr
     = grub_mmap_malign_and_register (1, playground_size, &mmapregion,
-				     GRUB_MACHINE_MEMORY_ACPI, 0);
+				     GRUB_MEMORY_ACPI, 0);
 
   if (! playground)
     {

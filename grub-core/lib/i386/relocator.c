@@ -50,6 +50,10 @@ extern grub_uint16_t grub_relocator16_gs;
 extern grub_uint16_t grub_relocator16_ss;
 extern grub_uint16_t grub_relocator16_sp;
 extern grub_uint32_t grub_relocator16_edx;
+extern grub_uint32_t grub_relocator16_ebx;
+extern grub_uint32_t grub_relocator16_esi;
+
+extern grub_uint16_t grub_relocator16_keep_a20_enabled;
 
 extern grub_uint8_t grub_relocator32_start;
 extern grub_uint8_t grub_relocator32_end;
@@ -194,7 +198,8 @@ grub_relocator16_boot (struct grub_relocator *rel,
   void *relst;
   grub_relocator_chunk_t ch;
 
-  err = grub_relocator_alloc_chunk_align (rel, &ch, 0,
+  /* Put it higher than the byte it checks for A20 check.  */
+  err = grub_relocator_alloc_chunk_align (rel, &ch, 0x8010,
 					  0xa0000 - RELOCATOR_SIZEOF (16),
 					  RELOCATOR_SIZEOF (16), 16,
 					  GRUB_RELOCATOR_PREFERENCE_NONE);
@@ -212,7 +217,11 @@ grub_relocator16_boot (struct grub_relocator *rel,
   grub_relocator16_ss = state.ss;
   grub_relocator16_sp = state.sp;
 
+  grub_relocator16_ebx = state.ebx;
   grub_relocator16_edx = state.edx;
+  grub_relocator16_esi = state.esi;
+
+  grub_relocator16_keep_a20_enabled = state.a20;
 
   grub_memmove (get_virtual_current_address (ch), &grub_relocator16_start,
 		RELOCATOR_SIZEOF (16));

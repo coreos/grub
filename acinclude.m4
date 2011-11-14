@@ -58,17 +58,14 @@ else
 fi
 
 if $EGREP '(^|[^_[:alnum]])_func' conftest.s >/dev/null 2>&1; then
+  HAVE_ASM_USCORE=1
   grub_cv_asm_uscore=yes
 else
+  HAVE_ASM_USCORE=0
   grub_cv_asm_uscore=no
 fi
 
 rm -f conftest*])
-
-if test "x$grub_cv_asm_uscore" = xyes; then
-  AC_DEFINE_UNQUOTED([HAVE_ASM_USCORE], $grub_cv_asm_uscore,
-    [Define if C symbols get an underscore after compilation])
-fi
 
 AC_MSG_RESULT([$grub_cv_asm_uscore])
 ])
@@ -237,42 +234,10 @@ else
   grub_tmp_data32="data32;"
 fi
 
-AC_DEFINE_UNQUOTED([ADDR32], $grub_tmp_addr32,
-  [Define it to \"addr32\" or \"addr32;\" to make GAS happy])
-AC_DEFINE_UNQUOTED([DATA32], $grub_tmp_data32,
-  [Define it to \"data32\" or \"data32;\" to make GAS happy])
+ADDR32=$grub_tmp_addr32
+DATA32=$grub_tmp_data32
 
 AC_MSG_RESULT([$grub_cv_i386_asm_prefix_requirement])])
-
-
-dnl Older versions of GAS require that absolute indirect calls/jumps are
-dnl not prefixed with `*', while later versions warn if not prefixed.
-AC_DEFUN([grub_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK],
-[AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING(dnl
-[whether an absolute indirect call/jump must not be prefixed with an asterisk])
-AC_CACHE_VAL(grub_cv_i386_asm_absolute_without_asterisk,
-[cat > conftest.s <<\EOF
-	lcall	*(offset)
-offset:
-	.long	0
-	.word	0
-EOF
-
-if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -c conftest.s]) && test -s conftest.o; then
-  grub_cv_i386_asm_absolute_without_asterisk=no
-else
-  grub_cv_i386_asm_absolute_without_asterisk=yes
-fi
-
-rm -f conftest*])
-
-if test "x$grub_cv_i386_asm_absolute_without_asterisk" = xyes; then
-  AC_DEFINE([ABSOLUTE_WITHOUT_ASTERISK], 1,
-	    [Define it if GAS requires that absolute indirect calls/jumps are not prefixed with an asterisk])
-fi
-
-AC_MSG_RESULT([$grub_cv_i386_asm_absolute_without_asterisk])])
 
 
 dnl Check what symbol is defined as a bss start symbol.
@@ -306,14 +271,12 @@ AC_CACHE_VAL(grub_cv_check_uscore_edata_symbol,
 
 AC_MSG_RESULT([$grub_cv_check_uscore_edata_symbol])
 
-AH_TEMPLATE([BSS_START_SYMBOL], [Define it to one of __bss_start, edata and _edata])
-
 if test "x$grub_cv_check_uscore_uscore_bss_start_symbol" = xyes; then
-  AC_DEFINE([BSS_START_SYMBOL], [__bss_start])
+  BSS_START_SYMBOL=__bss_start
 elif test "x$grub_cv_check_edata_symbol" = xyes; then
-  AC_DEFINE([BSS_START_SYMBOL], [edata])
+  BSS_START_SYMBOL=edata
 elif test "x$grub_cv_check_uscore_edata_symbol" = xyes; then
-  AC_DEFINE([BSS_START_SYMBOL], [_edata])
+  BSS_START_SYMBOL=_edata
 else
   AC_MSG_ERROR([none of __bss_start, edata or _edata is defined])
 fi
@@ -341,12 +304,10 @@ AC_CACHE_VAL(grub_cv_check_uscore_end_symbol,
 
 AC_MSG_RESULT([$grub_cv_check_uscore_end_symbol])
 
-AH_TEMPLATE([END_SYMBOL], [Define it to either end or _end])
-
 if test "x$grub_cv_check_end_symbol" = xyes; then
-  AC_DEFINE([END_SYMBOL], [end])
+  END_SYMBOL=end
 elif test "x$grub_cv_check_uscore_end_symbol" = xyes; then
-  AC_DEFINE([END_SYMBOL], [_end])
+  END_SYMBOL=_end
 else
   AC_MSG_ERROR([neither end nor _end is defined])
 fi
@@ -355,24 +316,24 @@ fi
 dnl Check if the C compiler generates calls to `__enable_execute_stack()'.
 AC_DEFUN([grub_CHECK_ENABLE_EXECUTE_STACK],[
 AC_MSG_CHECKING([whether `$CC' generates calls to `__enable_execute_stack()'])
-AC_LANG_CONFTEST([[
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[
 void f (int (*p) (void));
 void g (int i)
 {
   int nestedfunc (void) { return i; }
   f (nestedfunc);
 }
-]])
+]])])
 if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -S conftest.c]) && test -s conftest.s; then
   true
 else
   AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
 fi
 if grep __enable_execute_stack conftest.s >/dev/null 2>&1; then
-  AC_DEFINE([NEED_ENABLE_EXECUTE_STACK], 1,
-	    [Define to 1 if GCC generates calls to __enable_execute_stack()])
+  NEED_ENABLE_EXECUTE_STACK=1
   AC_MSG_RESULT([yes])
 else
+  NEED_ENABLE_EXECUTE_STACK=0
   AC_MSG_RESULT([no])
 fi
 rm -f conftest*
@@ -385,7 +346,9 @@ AC_DEFUN([grub_CHECK_STACK_PROTECTOR],[
 ssp_possible=yes]
 AC_MSG_CHECKING([whether `$CC' accepts `-fstack-protector'])
 # Is this a reliable test case?
-AC_LANG_CONFTEST([[void foo (void) { volatile char a[8]; a[3]; }]])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[
+void foo (void) { volatile char a[8]; a[3]; }
+]])])
 [# `$CC -c -o ...' might not be portable.  But, oh, well...  Is calling
 # `ac_compile' like this correct, after all?
 if eval "$ac_compile -S -fstack-protector -o conftest.s" 2> /dev/null; then]
@@ -403,7 +366,9 @@ AC_DEFUN([grub_CHECK_STACK_ARG_PROBE],[
 [# Smashing stack arg probe.
 sap_possible=yes]
 AC_MSG_CHECKING([whether `$CC' accepts `-mstack-arg-probe'])
-AC_LANG_CONFTEST([[void foo (void) { volatile char a[8]; a[3]; }]])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[
+void foo (void) { volatile char a[8]; a[3]; }
+]])])
 [if eval "$ac_compile -S -mstack-arg-probe -o conftest.s" 2> /dev/null; then]
   AC_MSG_RESULT([yes])
   [# Should we clear up other files as well, having called `AC_LANG_CONFTEST'?
@@ -438,7 +403,7 @@ AC_DEFUN([grub_CHECK_PIE],[
 pie_possible=yes]
 AC_MSG_CHECKING([whether `$CC' has `-fPIE' as default])
 # Is this a reliable test case?
-AC_LANG_CONFTEST([[
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[
 #ifdef __PIE__
 int main() {
 	return 0;
@@ -446,7 +411,7 @@ int main() {
 #else
 #error NO __PIE__ DEFINED
 #endif
-]])
+]])])
 
 [# `$CC -c -o ...' might not be portable.  But, oh, well...  Is calling
 # `ac_compile' like this correct, after all?

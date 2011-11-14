@@ -26,6 +26,10 @@
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/memory.h>
+#include <grub/lib/cmdline.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_dl_t my_mod;
 
@@ -181,8 +185,10 @@ alloc_phys (grub_addr_t size)
 {
   grub_addr_t ret = (grub_addr_t) -1;
 
-  auto int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len __attribute__((unused)), grub_uint32_t type);
-  int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len __attribute__((unused)), grub_uint32_t type)
+  auto int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len,
+				    grub_memory_type_t type);
+  int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len,
+			       grub_memory_type_t type)
   {
     grub_addr_t end = addr + len;
 
@@ -244,7 +250,7 @@ grub_linux_load64 (grub_elf_t elf)
   linux_entry = elf->ehdr.ehdr64.e_entry;
   linux_addr = 0x40004000;
   off = 0x4000;
-  linux_size = grub_elf64_size (elf, 0);
+  linux_size = grub_elf64_size (elf, 0, 0);
   if (linux_size == 0)
     return grub_errno;
 
@@ -292,9 +298,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file = 0;
   grub_elf_t elf = 0;
-  int i;
   int size;
-  char *dest;
 
   grub_dl_ref (my_mod);
 
@@ -330,23 +334,16 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto out;
     }
 
-  size = sizeof ("BOOT_IMAGE=") + grub_strlen (argv[0]);
-  for (i = 0; i < argc; i++)
-    size += grub_strlen (argv[i]) + 1;
+  size = grub_loader_cmdline_size(argc, argv);
 
-  linux_args = grub_malloc (size);
+  linux_args = grub_malloc (size + sizeof (LINUX_IMAGE));
   if (! linux_args)
     goto out;
 
-  /* Specify the boot file.  */
-  dest = grub_stpcpy (linux_args, "BOOT_IMAGE=");
-  dest = grub_stpcpy (dest, argv[0]);
-
-  for (i = 1; i < argc; i++)
-    {
-      *dest++ = ' ';
-      dest = grub_stpcpy (dest, argv[i]);
-    }
+  /* Create kernel command line.  */
+  grub_memcpy (linux_args, LINUX_IMAGE, sizeof (LINUX_IMAGE));
+  grub_create_loader_cmdline (argc, argv, linux_args + sizeof (LINUX_IMAGE) - 1,
+			      size);
 
 out:
   if (elf)

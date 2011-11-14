@@ -19,7 +19,7 @@
 #ifndef GRUB_POSIX_LOCALCHARSET_H
 #define GRUB_POSIX_LOCALCHARSET_H	1
 
-static inline char *
+static inline const char *
 locale_charset (void)
 {
   return "UTF-8";

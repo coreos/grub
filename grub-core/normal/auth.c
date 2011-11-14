@@ -34,7 +34,7 @@ struct grub_auth_user
   int authenticated;
 };
 
-struct grub_auth_user *users = NULL;
+static struct grub_auth_user *users = NULL;
 
 grub_err_t
 grub_auth_register_authentication (const char *user,
@@ -161,7 +161,7 @@ grub_username_get (char buf[], unsigned buf_size)
 
   while (1)
     {
-      key = GRUB_TERM_ASCII_CHAR (grub_getkey ()); 
+      key = grub_getkey (); 
       if (key == '\n' || key == '\r')
 	break;
 
@@ -201,7 +201,6 @@ grub_auth_check_authentication (const char *userlist)
 {
   char login[1024];
   struct grub_auth_user *cur = NULL;
-  grub_err_t err;
   static unsigned long punishment_delay = 1;
   char entered[GRUB_AUTH_MAX_PASSLEN];
   struct grub_auth_user *user;
@@ -233,7 +232,7 @@ grub_auth_check_authentication (const char *userlist)
   if (!cur || ! cur->callback)
     goto access_denied;
 
-  err = cur->callback (login, entered, cur->arg);
+  cur->callback (login, entered, cur->arg);
   if (is_authenticated (userlist))
     {
       punishment_delay = 1;
@@ -247,4 +246,28 @@ grub_auth_check_authentication (const char *userlist)
     punishment_delay *= 2;
 
   return GRUB_ACCESS_DENIED;
+}
+
+static grub_err_t
+grub_cmd_authenticate (struct grub_command *cmd __attribute__ ((unused)),
+		       int argc, char **args)
+{
+  return grub_auth_check_authentication ((argc >= 1) ? args[0] : "");
+}
+
+static grub_command_t cmd;
+
+void
+grub_normal_auth_init (void)
+{
+  cmd = grub_register_command ("authenticate",
+			       grub_cmd_authenticate,
+			       N_("[USERLIST]"), N_("Authenticate users"));
+
+}
+
+void
+grub_normal_auth_fini (void)
+{
+  grub_unregister_command (cmd);
 }

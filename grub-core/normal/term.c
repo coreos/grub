@@ -24,6 +24,7 @@
 #include <grub/env.h>
 #include <grub/normal.h>
 #include <grub/charset.h>
+#include <grub/i18n.h>
 
 struct term_state
 {
@@ -42,16 +43,8 @@ static struct term_state *term_states = NULL;
 /* If the more pager is active.  */
 static int grub_more;
 
-static int grub_normal_char_counter = 0;
-
 static void
 putcode_real (grub_uint32_t code, struct grub_term_output *term);
-
-int
-grub_normal_get_char_counter (void)
-{
-  return grub_normal_char_counter;
-}
 
 void
 grub_normal_reset_more (void)
@@ -71,7 +64,9 @@ print_more (void)
 
   pos = grub_term_save_pos ();
 
-  grub_utf8_to_ucs4_alloc ("--MORE--", &unicode_str,
+  /* TRANSLATORS: This has to fit on one line.  It's ok to include few
+     words but don't write poems.  */
+  grub_utf8_to_ucs4_alloc (_("--MORE--"), &unicode_str,
 			   &unicode_last_position);
 
   if (!unicode_str)
@@ -99,16 +94,16 @@ print_more (void)
   grub_term_restore_pos (pos);
   grub_free (pos);
 
-  /* Scroll one lines or an entire page, depending on the key.  */
+  /* Scroll one line or an entire page, depending on the key.  */
 
   if (key == '\r' || key =='\n')
-    grub_normal_reset_more ();
-  else
     {
       static struct term_state *state;
       for (state = term_states; state; state = state->next)
-	state->num_lines -= 2;
+	state->num_lines--;
     }
+  else
+    grub_normal_reset_more ();
 }
 
 void
@@ -384,8 +379,8 @@ read_terminal_list (const char *prefix)
       if (! cur->modname)
 	{
 	  grub_errno = GRUB_ERR_NONE;
-	  grub_free (cur);
 	  grub_free (cur->name);
+	  grub_free (cur);
 	  continue;
 	}
       cur->next = *target;
@@ -408,8 +403,6 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term)
       .combining = 0,
       .estimated_width = 1
     };
-
-  grub_normal_char_counter++;
 
   if (c->base == '\t' && term->getxy)
     {
@@ -525,14 +518,16 @@ print_ucs4_terminal (const grub_uint32_t * str,
 		     const grub_uint32_t * last_position,
 		     int margin_left, int margin_right,
 		     struct grub_term_output *term,
-		     struct term_state *state)
+		     struct term_state *state,
+		     int dry_run)
 {
   const grub_uint32_t *ptr;
-  grub_ssize_t startwidth = get_startwidth (term, margin_left);
+  grub_ssize_t startwidth = dry_run ? 0 : get_startwidth (term, margin_left);
   grub_ssize_t line_width = startwidth;
   grub_ssize_t lastspacewidth = 0;
   grub_ssize_t max_width = get_maxwidth (term, margin_left, margin_right);
   const grub_uint32_t *line_start = str, *last_space = str - 1;
+  int lines = 0;
 
   for (ptr = str; ptr < last_position; ptr++)
     {
@@ -562,7 +557,7 @@ print_ucs4_terminal (const grub_uint32_t * str,
 	  if (line_width > max_width && last_space > line_start)
 	    ptr = last_space;
 	  else if (line_width > max_width 
-		   && line_start == str && startwidth != 0)
+		   && line_start == str && line_width - lastspacewidth < max_width - 5)
 	    {
 	      ptr = str;
 	      lastspacewidth = startwidth;
@@ -570,50 +565,59 @@ print_ucs4_terminal (const grub_uint32_t * str,
 	  else
 	    lastspacewidth = line_width - last_width;
 
-	  for (ptr2 = line_start; ptr2 < ptr; ptr2++)
-	    {
-	      /* Skip combining characters on non-UTF8 terminals.  */
-	      if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
-		  != GRUB_TERM_CODE_TYPE_UTF8_LOGICAL
-		  && grub_unicode_get_comb_type (*ptr2)
-		  != GRUB_UNICODE_COMB_NONE)
-		continue;
-	      putcode_real (*ptr2, term);
-	    }
+	  lines++;
 
-	  grub_print_spaces (term, margin_right);
-	  grub_putcode ('\n', term);
-	  if (state && ++state->num_lines
-	      >= (grub_ssize_t) grub_term_height (term) - 2)
+	  if (!dry_run)
 	    {
-	      state->backlog_ucs4 = (ptr == last_space || *ptr == '\n') 
-		? ptr + 1 : ptr;
-	      state->backlog_len = last_position - state->backlog_ucs4;
-	      return 1;
+	      for (ptr2 = line_start; ptr2 < ptr; ptr2++)
+		{
+		  /* Skip combining characters on non-UTF8 terminals.  */
+		  if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
+		      != GRUB_TERM_CODE_TYPE_UTF8_LOGICAL
+		      && grub_unicode_get_comb_type (*ptr2)
+		      != GRUB_UNICODE_COMB_NONE)
+		    continue;
+		  putcode_real (*ptr2, term);
+		}
+
+	      grub_print_spaces (term, margin_right);
+	      grub_putcode ('\n', term);
+	      if (state && ++state->num_lines
+		  >= (grub_ssize_t) grub_term_height (term) - 2)
+		{
+		  state->backlog_ucs4 = (ptr == last_space || *ptr == '\n') 
+		    ? ptr + 1 : ptr;
+		  state->backlog_len = last_position - state->backlog_ucs4;
+		  return 1;
+		}
 	    }
 
 	  line_width -= lastspacewidth;
-	  grub_print_spaces (term, margin_left);
+	  if (!dry_run)
+	    grub_print_spaces (term, margin_left);
 	  if (ptr == last_space || *ptr == '\n')
 	    ptr++;
 	  line_start = ptr;
 	}
     }
 
-  {
-    const grub_uint32_t *ptr2;
-    for (ptr2 = line_start; ptr2 < last_position; ptr2++)
-      {
-	/* Skip combining characters on non-UTF8 terminals.  */
-	if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
-	    != GRUB_TERM_CODE_TYPE_UTF8_LOGICAL
-	    && grub_unicode_get_comb_type (*ptr2)
-	    != GRUB_UNICODE_COMB_NONE)
-	  continue;
-	putcode_real (*ptr2, term);
-      }
-  }
-  return 0;
+  if (line_start < last_position)
+    lines++;
+  if (!dry_run)
+    {
+      const grub_uint32_t *ptr2;
+      for (ptr2 = line_start; ptr2 < last_position; ptr2++)
+	{
+	  /* Skip combining characters on non-UTF8 terminals.  */
+	  if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
+	      != GRUB_TERM_CODE_TYPE_UTF8_LOGICAL
+	      && grub_unicode_get_comb_type (*ptr2)
+	      != GRUB_UNICODE_COMB_NONE)
+	    continue;
+	  putcode_real (*ptr2, term);
+	}
+    }
+  return dry_run ? lines : 0;
 }
 
 static struct term_state *
@@ -682,7 +686,7 @@ print_backlog (struct grub_term_output *term,
       int ret;
       ret = print_ucs4_terminal (state->backlog_ucs4,
 				 state->backlog_ucs4 + state->backlog_len,
-				 margin_left, margin_right, term, state);
+				 margin_left, margin_right, term, state, 0);
       if (!ret)
 	{
 	  grub_free (state->free);
@@ -716,15 +720,19 @@ static int
 print_ucs4_real (const grub_uint32_t * str,
 		 const grub_uint32_t * last_position,
 		 int margin_left, int margin_right,
-		 struct grub_term_output *term, int backlog)
+		 struct grub_term_output *term, int backlog,
+		 int dry_run)
 {
   struct term_state *state = NULL;
 
-  if (backlog)
-    state = find_term_state (term);
+  if (!dry_run)
+    {
+      if (backlog)
+	state = find_term_state (term);
 
-  if (((term->getxy (term) >> 8) & 0xff) < margin_left)
-    grub_print_spaces (term, margin_left - ((term->getxy (term) >> 8) & 0xff));
+      if (((term->getxy (term) >> 8) & 0xff) < margin_left)
+	grub_print_spaces (term, margin_left - ((term->getxy (term) >> 8) & 0xff));
+    }
 
   if ((term->flags & GRUB_TERM_CODE_TYPE_MASK) 
       == GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS
@@ -753,16 +761,30 @@ print_ucs4_real (const grub_uint32_t * str,
 	  grub_print_error ();
 	  return 0;
 	}
-      ret = put_glyphs_terminal (visual, visual_len, margin_left, margin_right,
-				 term, state);
-      if (!ret)
-	grub_free (visual);
+      if (dry_run)
+	{
+	  struct grub_unicode_glyph *vptr;
+	  ret = 0;
+	  for (vptr = visual; vptr < visual + visual_len; vptr++)
+	    if (vptr->base == '\n')
+	      ret++;
+	  if (visual_len && visual[visual_len - 1].base != '\n')
+	    ret++;
+	  grub_free (visual);
+	}
       else
-	state->free = visual;
+	{
+	  ret = put_glyphs_terminal (visual, visual_len, margin_left,
+				     margin_right, term, state);
+	  if (!ret)
+	    grub_free (visual);
+	  else
+	    state->free = visual;
+	}
       return ret;
     }
   return print_ucs4_terminal (str, last_position, margin_left, margin_right,
-			      term, state);
+			      term, state, dry_run);
 }
 
 void
@@ -772,9 +794,18 @@ grub_print_ucs4 (const grub_uint32_t * str,
 		 struct grub_term_output *term)
 {
   print_ucs4_real (str, last_position, margin_left, margin_right,
-		   term, 0);
+		   term, 0, 0);
 }
 
+int
+grub_ucs4_count_lines (const grub_uint32_t * str,
+		       const grub_uint32_t * last_position,
+		       int margin_left, int margin_right,
+		       struct grub_term_output *term)
+{
+  return print_ucs4_real (str, last_position, margin_left, margin_right,
+			  term, 0, 1);
+}
 
 void
 grub_xputs_normal (const char *str)
@@ -823,7 +854,7 @@ grub_xputs_normal (const char *str)
   {
     int cur;
     cur = print_ucs4_real (unicode_str, unicode_last_position, 0, 0,
-			   term, grub_more);
+			   term, grub_more, 0);
     if (cur)
       backlog = 1;
   }

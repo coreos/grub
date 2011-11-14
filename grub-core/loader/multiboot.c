@@ -20,18 +20,16 @@
 /*
  *  FIXME: The following features from the Multiboot specification still
  *         need to be implemented:
- *  - VBE support
- *  - symbol table
  *  - drives table
  *  - ROM configuration table
- *  - APM table
+ *  - SMBIOS tables
+ *  - Networking information
  */
 
 #include <grub/loader.h>
 #include <grub/command.h>
 #include <grub/multiboot.h>
 #include <grub/cpu/multiboot.h>
-#include <grub/machine/memory.h>
 #include <grub/elf.h>
 #include <grub/aout.h>
 #include <grub/file.h>
@@ -44,6 +42,8 @@
 #include <grub/video.h>
 #include <grub/memory.h>
 #include <grub/i18n.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
@@ -73,7 +73,7 @@ grub_get_multiboot_mmap_count (void)
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
 			     grub_uint64_t size __attribute__ ((unused)),
-			     grub_uint32_t type __attribute__ ((unused)))
+			     grub_memory_type_t type __attribute__ ((unused)))
     {
       count++;
       return 0;
@@ -182,7 +182,7 @@ grub_multiboot_set_console (int console_type, int accepted_consoles,
       if (console_required)
 	return grub_error (GRUB_ERR_BAD_OS,
 			   "OS requires a console but none is available");
-      grub_printf ("WARNING: no console will be available to OS");
+      grub_puts_ (N_("WARNING: no console will be available to OS"));
       accepts_video = 0;
       accepts_ega_text = 0;
       return GRUB_ERR_NONE;

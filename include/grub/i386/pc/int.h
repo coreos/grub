@@ -20,6 +20,7 @@
 #define GRUB_INTERRUPT_MACHINE_HEADER	1
 
 #include <grub/symbol.h>
+#include <grub/types.h>
 
 struct grub_bios_int_registers
 {
@@ -44,7 +45,12 @@ struct grub_bios_int_registers
 #define  GRUB_CPU_INT_FLAGS_INTERRUPT 0x200
 #define  GRUB_CPU_INT_FLAGS_DIRECTION 0x400
 #define  GRUB_CPU_INT_FLAGS_OVERFLOW  0x800
+#ifdef GRUB_MACHINE_PCBIOS
 #define  GRUB_CPU_INT_FLAGS_DEFAULT   GRUB_CPU_INT_FLAGS_INTERRUPT
+#else
+#define  GRUB_CPU_INT_FLAGS_DEFAULT   0
+#endif
+
 
 void EXPORT_FUNC (grub_bios_interrupt) (grub_uint8_t intno,
 					struct grub_bios_int_registers *regs);

@@ -24,19 +24,30 @@
 #include <grub/misc.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct grub_partition_map grub_msdos_partition_map;
 
 
-static grub_err_t
-pc_partition_map_iterate (grub_disk_t disk,
-			  int (*hook) (grub_disk_t disk,
-				       const grub_partition_t partition))
+grub_err_t
+grub_partition_msdos_iterate (grub_disk_t disk,
+			      int (*hook) (grub_disk_t disk,
+					   const grub_partition_t partition))
 {
   struct grub_partition p;
   struct grub_msdos_partition_mbr mbr;
   int labeln = 0;
   grub_disk_addr_t lastaddr;
   grub_disk_addr_t ext_offset;
+  grub_disk_addr_t delta = 0;
+
+  if (disk->partition && disk->partition->partmap == &grub_msdos_partition_map)
+    {
+      if (disk->partition->msdostype == GRUB_PC_PARTITION_TYPE_LINUX_MINIX)
+	delta = disk->partition->start;
+      else
+	return grub_error (GRUB_ERR_BAD_PART_TABLE, "no embedding supported");
+    }
 
   p.offset = 0;
   ext_offset = 0;
@@ -81,8 +92,12 @@ pc_partition_map_iterate (grub_disk_t disk,
 	{
 	  e = mbr.entries + p.index;
 
-	  p.start = p.offset + grub_le_to_cpu32 (e->start);
-	  p.len = grub_le_to_cpu32 (e->length);
+	  p.start = p.offset
+	    + (grub_le_to_cpu32 (e->start)
+	       << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)) - delta;
+	  p.len = grub_le_to_cpu32 (e->length)
+	    << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS);
+	  p.msdostype = e->type;
 
 	  grub_dprintf ("partition",
 			"partition %d: flag 0x%x, type 0x%x, start 0x%llx, len 0x%llx\n",
@@ -116,7 +131,9 @@ pc_partition_map_iterate (grub_disk_t disk,
 
 	  if (grub_msdos_partition_is_extended (e->type))
 	    {
-	      p.offset = ext_offset + grub_le_to_cpu32 (e->start);
+	      p.offset = ext_offset
+		+ (grub_le_to_cpu32 (e->start)
+		   << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 	      if (! ext_offset)
 		ext_offset = p.offset;
 
@@ -135,9 +152,9 @@ pc_partition_map_iterate (grub_disk_t disk,
 
 #ifdef GRUB_UTIL
 static grub_err_t
-pc_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
+pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 			grub_embed_type_t embed_type,
-			grub_disk_addr_t *sectors)
+			grub_disk_addr_t **sectors)
 {
   grub_disk_addr_t end = ~0ULL;
   struct grub_msdos_partition_mbr mbr;
@@ -194,8 +211,11 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 	  e = mbr.entries + i;
 
 	  if (!grub_msdos_partition_is_empty (e->type)
-	      && end > offset + grub_le_to_cpu32 (e->start))
-	    end = offset + grub_le_to_cpu32 (e->start);
+	      && end > offset
+	      + (grub_le_to_cpu32 (e->start)
+		 << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)))
+	    end = offset + (grub_le_to_cpu32 (e->start)
+			    << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 
 	  /* If this is a GPT partition, this MBR is just a dummy.  */
 	  if (e->type == GRUB_PC_PARTITION_TYPE_GPT_DISK && i == 0)
@@ -209,7 +229,9 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 
 	  if (grub_msdos_partition_is_extended (e->type))
 	    {
-	      offset = ext_offset + grub_le_to_cpu32 (e->start);
+	      offset = ext_offset 
+		+ (grub_le_to_cpu32 (e->start) 
+		   << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 	      if (! ext_offset)
 		ext_offset = offset;
 
@@ -222,11 +244,15 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 	break;
     }
 
-  if (end >= nsectors + 1)
+  if (end >= *nsectors + 2)
     {
-      int i;
-      for (i = 0; i < nsectors; i++)
-	sectors[i] = 1 + i;
+      unsigned i;
+      *nsectors = end - 2;
+      *sectors = grub_malloc (*nsectors * sizeof (**sectors));
+      if (!*sectors)
+	return grub_errno;
+      for (i = 0; i < *nsectors; i++)
+	(*sectors)[i] = 1 + i;
       return GRUB_ERR_NONE;
     }
 
@@ -235,7 +261,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 		       "This msdos-style partition label has no "
 		       "post-MBR gap; embedding won't be possible!");
 
-  if (nsectors > 62)
+  if (*nsectors > 62)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
 		       "Your core.img is unusually large.  "
 		       "It won't fit in the embedding area.");
@@ -251,7 +277,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int nsectors,
 static struct grub_partition_map grub_msdos_partition_map =
   {
     .name = "msdos",
-    .iterate = pc_partition_map_iterate,
+    .iterate = grub_partition_msdos_iterate,
 #ifdef GRUB_UTIL
     .embed = pc_partition_map_embed
 #endif

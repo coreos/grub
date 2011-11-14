@@ -139,6 +139,7 @@ make_regex (const char *start, const char *end, regex_t *regexp)
 	case '.':
 	case '(':
 	case ')':
+	case '@':
 	  buffer[i++] = '\\';
 	  buffer[i++] = ch;
 	  break;
@@ -255,8 +256,7 @@ match_devices (const regex_t *regexp, int noparts)
   for (i = 0; devs && devs[i]; i++)
     grub_free (devs[i]);
 
-  if (devs)
-    grub_free (devs);
+  grub_free (devs);
 
   return 0;
 }
@@ -266,7 +266,6 @@ match_files (const char *prefix, const char *suffix, const char *end,
 	     const regex_t *regexp)
 {
   int i;
-  int error;
   char **files;
   unsigned nfile;
   char *dir;
@@ -288,6 +287,8 @@ match_files (const char *prefix, const char *suffix, const char *end,
     grub_dprintf ("expand", "matching: %s in %s\n", name, dir);
     if (regexec (regexp, name, 0, 0, 0))
       return 0;
+
+    grub_dprintf ("expand", "matched\n");
 
     buffer = grub_xasprintf ("%s%s", dir, name);
     if (! buffer)
@@ -341,20 +342,17 @@ match_files (const char *prefix, const char *suffix, const char *end,
 
  fail:
 
-  if (dir)
-    grub_free (dir);
+  grub_free (dir);
 
   for (i = 0; files && files[i]; i++)
     grub_free (files[i]);
 
-  if (files)
-    grub_free (files);
+  grub_free (files);
 
   if (dev)
     grub_device_close (dev);
 
-  if (device_name)
-    grub_free (device_name);
+  grub_free (device_name);
 
   grub_error_pop ();
   return 0;
@@ -424,8 +422,6 @@ wildcard_expand (const char *s, char ***strs)
   while (*start)
     {
       split_path (start, &noregexop, &regexop);
-      if (noregexop >= regexop) /* no more wildcards */
-	break;
 
       if (make_regex (noregexop, regexop, &regexp))
 	goto fail;
@@ -440,9 +436,7 @@ wildcard_expand (const char *s, char ***strs)
 
 	  else if (*start == '/') /* no device part */
 	    {
-	      char **r;
-	      unsigned n;
-	      char *root;
+	      const char *root;
 	      char *prefix;
 
 	      root = grub_env_get ("root");

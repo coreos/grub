@@ -21,12 +21,16 @@
 #define _GRUB_MEMORY_MACHINE_LB_HEADER      1
 
 #include <grub/symbol.h>
-#include <grub/i386/pc/memory.h>
 
 #ifndef ASM_FILE
 #include <grub/err.h>
 #include <grub/types.h>
+#include <grub/memory.h>
 #endif
+
+#define GRUB_MEMORY_MACHINE_SCRATCH_ADDR	0x68000
+#define GRUB_MEMORY_MACHINE_SCRATCH_SEG	(GRUB_MEMORY_MACHINE_SCRATCH_ADDR >> 4)
+#define GRUB_MEMORY_MACHINE_SCRATCH_SIZE	0x10000
 
 #define GRUB_MEMORY_MACHINE_LOWER_USABLE		0x9fc00		/* 640 kiB - 1 kiB */
 
@@ -35,36 +39,21 @@
 
 #ifndef ASM_FILE
 
-struct grub_linuxbios_table_header
-{
-  char signature[4];
-  grub_uint32_t size;
-};
-typedef struct grub_linuxbios_table_header *grub_linuxbios_table_header_t;
-
-struct grub_linuxbios_table_item
-{
-#define GRUB_LINUXBIOS_MEMBER_UNUSED		0x00
-#define GRUB_LINUXBIOS_MEMBER_MEMORY		0x01
-#define GRUB_LINUXBIOS_MEMBER_LINK              0x11
-  grub_uint32_t tag;
-  grub_uint32_t size;
-};
-typedef struct grub_linuxbios_table_item *grub_linuxbios_table_item_t;
-
-struct grub_linuxbios_mem_region
-{
-  grub_uint64_t addr;
-  grub_uint64_t size;
-#define GRUB_MACHINE_MEMORY_AVAILABLE		1
-  grub_uint32_t type;
-};
-typedef struct grub_linuxbios_mem_region *mem_region_t;
-
 void grub_machine_mmap_init (void);
 
-grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate)
-     (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
+static inline grub_err_t
+grub_machine_mmap_register (grub_uint64_t start __attribute__ ((unused)),
+			    grub_uint64_t size __attribute__ ((unused)),
+			    int type __attribute__ ((unused)),
+			    int handle __attribute__ ((unused)))
+{
+  return GRUB_ERR_NONE;
+}
+static inline grub_err_t
+grub_machine_mmap_unregister (int handle  __attribute__ ((unused)))
+{
+  return GRUB_ERR_NONE;
+}
 
 #endif
 

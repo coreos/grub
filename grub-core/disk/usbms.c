@@ -24,6 +24,8 @@
 #include <grub/scsicmd.h>
 #include <grub/misc.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_USBMS_DIRECTION_BIT	7
 
 /* The USB Mass Storage Command Block Wrapper.  */
@@ -70,7 +72,11 @@ static int first_available_slot = 0;
 static grub_err_t
 grub_usbms_reset (grub_usb_device_t dev, int interface)
 {
-  return grub_usb_control_msg (dev, 0x21, 255, 0, interface, 0, 0);
+  grub_usb_err_t u;
+  u = grub_usb_control_msg (dev, 0x21, 255, 0, interface, 0, 0);
+  if (u)
+    return grub_error (GRUB_ERR_IO, "USB error %d", u);
+  return GRUB_ERR_NONE;
 }
 
 static void
@@ -205,16 +211,20 @@ grub_usbms_attach (grub_usb_device_t usbdev, int configno, int interfno)
 
 
 static int
-grub_usbms_iterate (int (*hook) (int bus, int luns))
+grub_usbms_iterate (int NESTED_FUNC_ATTR (*hook) (int id, int bus, int luns),
+		    grub_disk_pull_t pull)
 {
   unsigned i;
+
+  if (pull != GRUB_DISK_PULL_NONE)
+    return 0;
 
   grub_usb_poll_devices ();
 
   for (i = 0; i < ARRAY_SIZE (grub_usbms_devices); i++)
     if (grub_usbms_devices[i])
       {
-	if (hook (i, grub_usbms_devices[i]->luns))
+	if (hook (GRUB_SCSI_SUBSYSTEM_USBMS, i, grub_usbms_devices[i]->luns))
 	  return 1;
       }
 
@@ -384,8 +394,12 @@ grub_usbms_write (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 }
 
 static grub_err_t
-grub_usbms_open (int devnum, struct grub_scsi *scsi)
+grub_usbms_open (int id, int devnum, struct grub_scsi *scsi)
 {
+  if (id != GRUB_SCSI_SUBSYSTEM_USBMS)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+		       "not USB Mass Storage device");
+
   grub_usb_poll_devices ();
 
   if (!grub_usbms_devices[devnum])
@@ -400,15 +414,13 @@ grub_usbms_open (int devnum, struct grub_scsi *scsi)
 
 static struct grub_scsi_dev grub_usbms_dev =
   {
-    .name = "usb",
-    .id = GRUB_SCSI_SUBSYSTEM_USBMS,
     .iterate = grub_usbms_iterate,
     .open = grub_usbms_open,
     .read = grub_usbms_read,
     .write = grub_usbms_write
   };
 
-struct grub_usb_attach_desc attach_hook =
+static struct grub_usb_attach_desc attach_hook =
 {
   .class = GRUB_USB_CLASS_MASS_STORAGE,
   .hook = grub_usbms_attach

@@ -16,12 +16,12 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/memory.h>
+#include <grub/memory.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/types.h>
 
 grub_err_t
-grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
+grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
   grub_ieee1275_phandle_t root;
   grub_ieee1275_phandle_t memory;
@@ -50,6 +50,12 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "couldn't examine /memory/available property");
 
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS))
+    {
+      address_cells = 1;
+      size_cells = 1;
+    }
+
   /* Decode each entry and call `hook'.  */
   i = 0;
   available_size /= sizeof (grub_uint32_t);
@@ -66,7 +72,7 @@ grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uin
       if (size_cells == 2)
 	size = (size << 32) | available[i++];
 
-      if (hook (address, size, GRUB_MACHINE_MEMORY_AVAILABLE))
+      if (hook (address, size, GRUB_MEMORY_AVAILABLE))
 	break;
     }
 

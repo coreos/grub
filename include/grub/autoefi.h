@@ -34,17 +34,6 @@ static inline grub_err_t grub_autoefi_prepare (void)
 {
   return GRUB_ERR_NONE;
 };
-# define GRUB_AUTOEFI_MEMORY_AVAILABLE GRUB_MACHINE_MEMORY_AVAILABLE
-# define GRUB_AUTOEFI_MEMORY_RESERVED GRUB_MACHINE_MEMORY_RESERVED
-# ifdef GRUB_MACHINE_MEMORY_ACPI
-#  define GRUB_AUTOEFI_MEMORY_ACPI GRUB_MACHINE_MEMORY_ACPI
-# endif
-# ifdef GRUB_MACHINE_MEMORY_NVS
-#  define GRUB_AUTOEFI_MEMORY_NVS GRUB_MACHINE_MEMORY_NVS
-# endif
-# ifdef GRUB_MACHINE_MEMORY_CODE
-#  define GRUB_AUTOEFI_MEMORY_CODE GRUB_MACHINE_MEMORY_CODE
-# endif
 # define SYSTEM_TABLE_SIZEOF(x) (sizeof(grub_efi_system_table->x))
 # define SYSTEM_TABLE_VAR(x) ((void *)&(grub_efi_system_table->x))
 # define SYSTEM_TABLE_PTR(x) ((void *)(grub_efi_system_table->x))
@@ -61,11 +50,6 @@ static inline grub_err_t grub_autoefi_prepare (void)
 # define grub_autoefi_mmap_iterate grub_efiemu_mmap_iterate
 # define grub_autoefi_prepare grub_efiemu_prepare
 # define grub_autoefi_set_virtual_address_map grub_efiemu_set_virtual_address_map
-# define GRUB_AUTOEFI_MEMORY_AVAILABLE GRUB_EFIEMU_MEMORY_AVAILABLE
-# define GRUB_AUTOEFI_MEMORY_RESERVED GRUB_EFIEMU_MEMORY_RESERVED
-# define GRUB_AUTOEFI_MEMORY_ACPI GRUB_EFIEMU_MEMORY_ACPI
-# define GRUB_AUTOEFI_MEMORY_NVS GRUB_EFIEMU_MEMORY_NVS
-# define GRUB_AUTOEFI_MEMORY_CODE GRUB_EFIEMU_MEMORY_CODE
 # define SYSTEM_TABLE_SIZEOF GRUB_EFIEMU_SYSTEM_TABLE_SIZEOF
 # define SYSTEM_TABLE_VAR GRUB_EFIEMU_SYSTEM_TABLE_VAR
 # define SYSTEM_TABLE_PTR GRUB_EFIEMU_SYSTEM_TABLE_PTR

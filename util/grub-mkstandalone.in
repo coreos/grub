@@ -1,0 +1,189 @@
+#! /bin/sh
+set -e
+
+# Make GRUB rescue image
+# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+#
+# GRUB is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GRUB is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+
+# Initialize some variables.
+transform="@program_transform_name@"
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+libdir=@libdir@
+PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_TARNAME=@PACKAGE_TARNAME@
+PACKAGE_VERSION=@PACKAGE_VERSION@
+pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
+
+self=`basename $0`
+
+source_dirrectory=
+compression=auto
+format=
+grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
+source=
+
+# Usage: usage
+# Print the usage.
+usage () {
+    cat <<EOF
+Usage: $self [OPTION] SOURCE...
+Make GRUB rescue image.
+
+  -h, --help              print this message and exit
+  -v, --version           print the version information and exit
+  -o, --output=FILE       save output in FILE [required]
+  -d, --directory=DIR     use images and modules under DIR [default=%s/@platform@]
+  -O, --format=FORMAT     generate an image in format
+                          available formats: %s
+  -C, --compression=(xz|none|auto)  choose the compression to use
+  --modules=MODULES       pre-load specified modules MODULES
+  --grub-mkimage=FILE     use FILE as grub-mkimage
+
+$self generates a standalone image (containing all modules) in the selected format
+
+Report bugs to <bug-grub@gnu.org>.
+EOF
+}
+
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
+# Check the arguments.
+while test $# -gt 0
+do
+    option=$1
+    shift
+
+    case "$option" in
+    -h | --help)
+	usage
+	exit 0 ;;
+    -v | --version)
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
+	exit 0 ;;
+
+    --modules)
+        modules=`argument $option "$@"`; shift ;;
+    --modules=*)
+	modules=`echo "$option" | sed 's/--modules=//'` ;;
+
+    -o | --output)
+	output_image=`argument $option "$@"`; shift ;;
+    --output=*)
+	output_image=`echo "$option" | sed 's/--output=//'` ;;
+
+    --directory | -d)
+        source_directory=`argument $option "$@"`; shift ;;
+    --directory=*)
+	source_directory=`echo "$option" | sed 's/--rom-directory=//'` ;;
+
+    --grub-mkimage)
+	grub_mkimage=`argument $option "$@"`; shift ;;
+    --grub-mkimage=*)
+	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+
+    --compression | -C)
+	compression=`argument $option "$@"`; shift ;;
+    --compression=*)
+        compression=`echo "${option}/" | sed 's/--xorriso=//'` ;;
+
+    --format | -O)
+	format=`argument $option "$@"`; shift ;;
+    --format=*)
+        format=`echo "${option}/" | sed 's/--xorriso=//'` ;;
+
+    *)
+	source="${source} ${option} $@"; break ;;
+    esac
+done
+
+if [ "x${output_image}" = x ] ; then
+  echo "output file must be given" >&2
+  usage
+  exit 1
+fi
+
+if [ "x${format}" = x ] ; then
+  echo "format must be given" >&2
+  usage
+  exit 1
+fi
+
+if [ "x$source_directory" = x ] ; then
+    cpu="`echo $format | awk -F - '{ print $1; }'`"
+    platform="`echo $format | awk -F - '{ print $2; }'`"
+    case "$platform" in
+	yeeloong | fuloong | fuloong2f | fuloong2e)
+	    platform=loongson ;;
+    esac
+    case "$cpu-$platform" in
+	mips-loongson)
+	    cpu=mipsel ;;
+    esac
+    source_directory="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/$cpu-$platform"
+fi
+
+set $grub_mkimage dummy
+if test -f "$1"; then
+    :
+else
+    echo "$1: Not found." 1>&2
+    exit 1
+fi
+
+memdisk_dir="`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+mkdir -p "${memdisk_dir}"/boot/grub
+
+for file in "${source_directory}/"*.mod "${source_directory}/"efiemu32.o "${source_directory}/"efiemu64.o; do
+    if test -f "$file"; then
+        cp -f "$file" "${memdisk_dir}"/boot/grub/
+    fi
+done
+for file in ${pkglib_DATA}; do
+    if test -f "${source_directory}/${file}"; then
+        cp -f "${source_directory}/${file}" "${memdisk_dir}"/boot/grub/
+    fi
+done
+
+mkdir -p "${memdisk_dir}"/boot/grub/locale
+for file in "${source_directory}"/po/*.mo; do
+    if test -f "$file"; then
+	cp -f "$file" "${memdisk_dir}"/boot/grub/locale/
+    fi
+done
+
+for file in $source; do
+    cp -f "$file" "${memdisk_dir}"/"$file";
+done
+
+memdisk_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
+
+(cd "${memdisk_dir}"; tar -cf - * $source) > "${memdisk_img}"
+rm -rf "${memdisk_dir}"
+$grub_mkimage -O "${format}" -C "$compression" -d "${source_directory}" -m "${memdisk_img}" -o "$output_image" --prefix='(memdisk)/boot/grub' memdisk tar $modules
+rm -rf "${memdisk_img}"
+
+exit 0

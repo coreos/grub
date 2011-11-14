@@ -30,9 +30,14 @@
 #include <grub/term.h>
 #include <grub/terminfo.h>
 #include <grub/tparm.h>
-#include <grub/command.h>
+#include <grub/extcmd.h>
 #include <grub/i18n.h>
 #include <grub/time.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
+
+#define ANSI_C0 0x9b
+#define ANSI_C0_STR "\x9b"
 
 static struct grub_term_output *terminfo_outputs;
 
@@ -118,6 +123,20 @@ grub_terminfo_set_current (struct grub_term_output *term,
       data->cursor_on         = grub_strdup ("\e[?25h");
       data->cursor_off        = grub_strdup ("\e[?25l");
       data->setcolor          = grub_strdup ("\e[3%p1%dm\e[4%p2%dm");
+      return grub_errno;
+    }
+
+  if (grub_strcmp ("arc", str) == 0)
+    {
+      data->name              = grub_strdup ("arc");
+      data->gotoxy            = grub_strdup (ANSI_C0_STR "%i%p1%d;%p2%dH");
+      data->cls               = grub_strdup (ANSI_C0_STR "2J");
+      data->reverse_video_on  = grub_strdup (ANSI_C0_STR "7m");
+      data->reverse_video_off = grub_strdup (ANSI_C0_STR "0m");
+      data->cursor_on         = 0;
+      data->cursor_off        = 0;
+      data->setcolor          = grub_strdup (ANSI_C0_STR "3%p1%dm"
+					     ANSI_C0_STR "4%p2%dm");
       return grub_errno;
     }
 
@@ -358,7 +377,14 @@ grub_terminfo_putchar (struct grub_term_output *term,
   data->put (term, c->base);
 }
 
-#define ANSI_C0 0x9b
+grub_uint16_t
+grub_terminfo_getwh (struct grub_term_output *term)
+{
+  struct grub_terminfo_output_state *data
+    = (struct grub_terminfo_output_state *) term->data;
+
+  return (data->width << 8) | data->height;
+}
 
 static void
 grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
@@ -394,6 +420,8 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
       /* Backspace: Ctrl-h.  */
       if (c == 0x7f)
 	c = '\b'; 
+      if (c < 0x20 && c != '\t' && c!= '\b' && c != '\n' && c != '\r')
+	c = GRUB_TERM_CTRL | (c - 1 + 'a');
       *len = 1;
       keys[0] = c;
       return;
@@ -403,35 +431,44 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
     static struct
     {
       char key;
-      char ascii;
+      unsigned ascii;
     }
     three_code_table[] =
       {
-	{'4', GRUB_TERM_DC},
-	{'A', GRUB_TERM_UP},
-	{'B', GRUB_TERM_DOWN},
-	{'C', GRUB_TERM_RIGHT},
-	{'D', GRUB_TERM_LEFT},
-	{'F', GRUB_TERM_END},
-	{'H', GRUB_TERM_HOME},
-	{'K', GRUB_TERM_END},
-	{'P', GRUB_TERM_DC},
-	{'?', GRUB_TERM_PPAGE},
-	{'/', GRUB_TERM_NPAGE}
+	{'4', GRUB_TERM_KEY_DC},
+	{'A', GRUB_TERM_KEY_UP},
+	{'B', GRUB_TERM_KEY_DOWN},
+	{'C', GRUB_TERM_KEY_RIGHT},
+	{'D', GRUB_TERM_KEY_LEFT},
+	{'F', GRUB_TERM_KEY_END},
+	{'H', GRUB_TERM_KEY_HOME},
+	{'K', GRUB_TERM_KEY_END},
+	{'P', GRUB_TERM_KEY_DC},
+	{'?', GRUB_TERM_KEY_PPAGE},
+	{'/', GRUB_TERM_KEY_NPAGE},
+	{'@', GRUB_TERM_KEY_INSERT},
       };
 
     static struct
     {
       char key;
-      char ascii;
+      unsigned ascii;
     }
     four_code_table[] =
       {
-	{'1', GRUB_TERM_HOME},
-	{'3', GRUB_TERM_DC},
-	{'5', GRUB_TERM_PPAGE},
-	{'6', GRUB_TERM_NPAGE}
+	{'1', GRUB_TERM_KEY_HOME},
+	{'3', GRUB_TERM_KEY_DC},
+	{'5', GRUB_TERM_KEY_PPAGE},
+	{'6', GRUB_TERM_KEY_NPAGE}
       };
+    char fx_key[] = 
+      { 'P', 'Q', 'w', 'x', 't', 'u',
+        'q', 'r', 'p', 'M', 'A', 'B' };
+    unsigned fx_code[] = 
+	{ GRUB_TERM_KEY_F1, GRUB_TERM_KEY_F2, GRUB_TERM_KEY_F3,
+	  GRUB_TERM_KEY_F4, GRUB_TERM_KEY_F5, GRUB_TERM_KEY_F6,
+	  GRUB_TERM_KEY_F7, GRUB_TERM_KEY_F8, GRUB_TERM_KEY_F9,
+	  GRUB_TERM_KEY_F10, GRUB_TERM_KEY_F11, GRUB_TERM_KEY_F12 };
     unsigned i;
 
     if (c == '\e')
@@ -452,37 +489,55 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 	  return;
 	}
 
-    for (i = 0; i < ARRAY_SIZE (four_code_table); i++)
-      if (four_code_table[i].key == c)
+    switch (c)
+      {
+      case 'O':
+	CONTINUE_READ;
+	for (i = 0; i < ARRAY_SIZE (fx_key); i++)
+	  if (fx_key[i] == c)
+	    {
+	      keys[0] = fx_code[i];
+	      *len = 1;
+	      return;
+	    }
+	return;
+
+      case '0':
 	{
+	  int num = 0;
 	  CONTINUE_READ;
-	  if (c != '~')
+	  if (c != '0' && c != '1')
 	    return;
-	  keys[0] = three_code_table[i].ascii;
+	  num = (c - '0') * 10;
+	  CONTINUE_READ;
+	  if (c < '0' || c > '9')
+	    return;
+	  num += (c - '0');
+	  if (num == 0 || num > 12)
+	    return;
+	  CONTINUE_READ;
+	  if (c != 'q')
+	    return;
+	  keys[0] = fx_code[num - 1];
 	  *len = 1;
 	  return;
-	}
-    return;
+	}	  
+
+      default:
+	for (i = 0; i < ARRAY_SIZE (four_code_table); i++)
+	  if (four_code_table[i].key == c)
+	    {
+	      CONTINUE_READ;
+	      if (c != '~')
+		return;
+	      keys[0] = three_code_table[i].ascii;
+	      *len = 1;
+	      return;
+	    }
+	return;
+      }
   }
 #undef CONTINUE_READ
-}
-
-/* The terminfo version of checkkey.  */
-int
-grub_terminfo_checkkey (struct grub_term_input *termi)
-{
-  struct grub_terminfo_input_state *data
-    = (struct grub_terminfo_input_state *) (termi->data);
-  if (data->npending)
-    return data->input_buf[0];
-
-  grub_terminfo_readkey (termi, data->input_buf,
-			 &data->npending, data->readkey);
-
-  if (data->npending)
-    return data->input_buf[0];
-
-  return -1;
 }
 
 /* The terminfo version of getkey.  */
@@ -491,15 +546,24 @@ grub_terminfo_getkey (struct grub_term_input *termi)
 {
   struct grub_terminfo_input_state *data
     = (struct grub_terminfo_input_state *) (termi->data);
-  int ret;
-  while (! data->npending)
-    grub_terminfo_readkey (termi, data->input_buf, &data->npending,
-			   data->readkey);
+  if (data->npending)
+    {
+      data->npending--;
+      grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
+      return data->input_buf[0];
+    }
 
-  ret = data->input_buf[0];
-  data->npending--;
-  grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
-  return ret;
+  grub_terminfo_readkey (termi, data->input_buf,
+			 &data->npending, data->readkey);
+
+  if (data->npending)
+    {
+      data->npending--;
+      grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
+      return data->input_buf[0];
+    }
+
+  return GRUB_TERM_NO_KEY;
 }
 
 grub_err_t
@@ -509,6 +573,13 @@ grub_terminfo_input_init (struct grub_term_input *termi)
     = (struct grub_terminfo_input_state *) (termi->data);
   data->npending = 0;
 
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_terminfo_output_init (struct grub_term_output *term)
+{
+  grub_terminfo_cls (term);
   return GRUB_ERR_NONE;
 }
 
@@ -535,7 +606,7 @@ print_terminfo (void)
   };
   struct grub_term_output *cur;
 
-  grub_printf ("Current terminfo types: \n");
+  grub_puts_ (N_("Current terminfo types:"));
   for (cur = terminfo_outputs; cur;
        cur = ((struct grub_terminfo_output_state *) cur->data)->next)
     grub_printf ("%s: %s\t%s\n", cur->name,
@@ -546,85 +617,96 @@ print_terminfo (void)
   return GRUB_ERR_NONE;
 }
 
+static const struct grub_arg_option options[] =
+{
+  {"ascii", 'a', 0, N_("Terminal is ASCII-only [default]."),  0, ARG_TYPE_NONE},
+  {"utf8",  'u', 0, N_("Terminal is logical-ordered UTF-8."), 0, ARG_TYPE_NONE},
+  {"visual-utf8", 'v', 0, N_("Terminal is visually-ordered UTF-8."), 0,
+   ARG_TYPE_NONE},
+  {"geometry", 'g', 0, N_("Terminal has given geometry."),
+   N_("WIDTHxHEIGHT."), ARG_TYPE_STRING},
+  {0, 0, 0, 0, 0, 0}
+};
+
+enum
+  {
+    OPTION_ASCII,
+    OPTION_UTF8,
+    OPTION_VISUAL_UTF8,
+    OPTION_GEOMETRY
+  };
+
 static grub_err_t
-grub_cmd_terminfo (grub_command_t cmd __attribute__ ((unused)),
-		   int argc, char **args)
+grub_cmd_terminfo (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_term_output *cur;
   int encoding = GRUB_TERM_CODE_TYPE_ASCII;
-  int i;
-  char *name = NULL, *type = NULL;
+  struct grub_arg_list *state = ctxt->state;
+  int w = 0, h = 0;
 
   if (argc == 0)
     return print_terminfo ();
 
-  for (i = 0; i < argc; i++)
+  if (state[OPTION_ASCII].set)
+    encoding = GRUB_TERM_CODE_TYPE_ASCII;
+
+  if (state[OPTION_UTF8].set)
+    encoding = GRUB_TERM_CODE_TYPE_UTF8_LOGICAL;
+
+  if (state[OPTION_VISUAL_UTF8].set)
+    encoding = GRUB_TERM_CODE_TYPE_UTF8_VISUAL;
+
+  if (state[OPTION_GEOMETRY].set)
     {
-      if (grub_strcmp (args[i], "-a") == 0
-	  || grub_strcmp (args[i], "--ascii") == 0)
-	{
-	  encoding = GRUB_TERM_CODE_TYPE_ASCII;
-	  continue;
-	}
-      if (grub_strcmp (args[i], "-u") == 0
-	  || grub_strcmp (args[i], "--utf8") == 0)
-	{
-	  encoding = GRUB_TERM_CODE_TYPE_UTF8_LOGICAL;
-	  continue;
-	}
-      if (grub_strcmp (args[i], "-v") == 0
-	  || grub_strcmp (args[i], "--visual-utf8") == 0)
-	{
-	  encoding = GRUB_TERM_CODE_TYPE_UTF8_VISUAL;
-	  continue;
-	}
-      if (!name)
-	{
-	  name = args[i];
-	  continue;
-	}
-      if (!type)
-	{
-	  type = args[i];
-	  continue;
-	}
-
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many parameters");
+      char *ptr = state[OPTION_GEOMETRY].arg;
+      w = grub_strtoul (ptr, &ptr, 0);
+      if (grub_errno)
+	return grub_errno;
+      if (*ptr != 'x')
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   "incorrect geometry specification");
+      ptr++;
+      h = grub_strtoul (ptr, &ptr, 0);
+      if (grub_errno)
+	return grub_errno;
     }
-
-  if (name == NULL)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too few parameters");
 
   for (cur = terminfo_outputs; cur;
        cur = ((struct grub_terminfo_output_state *) cur->data)->next)
-    if (grub_strcmp (name, cur->name) == 0)
+    if (grub_strcmp (args[0], cur->name) == 0)
       {
 	cur->flags = (cur->flags & ~GRUB_TERM_CODE_TYPE_MASK) | encoding;
-	if (!type)
+
+	if (w && h)
+	  {
+	    struct grub_terminfo_output_state *data
+	      = (struct grub_terminfo_output_state *) cur->data;
+	    data->width = w;
+	    data->height = h;
+	  }
+
+	if (argc == 1)
 	  return GRUB_ERR_NONE;
 
-	return grub_terminfo_set_current (cur, type);
+	return grub_terminfo_set_current (cur, args[1]);
       }
+
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		     "no terminal %s found or it's not handled by terminfo",
-		     name);
+		     args[0]);
 }
 
-static grub_command_t cmd;
+static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(terminfo)
 {
-  cmd = grub_register_command ("terminfo", grub_cmd_terminfo,
-			       N_("[[-a|-u|-v] TERM [TYPE]]"),
-			       N_("Set terminfo type of TERM  to TYPE.\n"
-				  "-a, --ascii            Terminal is ASCII-only [default].\n"
-				  "-u, --utf8             Terminal is logical-ordered UTF-8.\n"
-				  "-v, --visual-utf8      Terminal is visually-ordered UTF-8.")
-
-			       );
+  cmd = grub_register_extcmd ("terminfo", grub_cmd_terminfo, 0,
+			      N_("[[-a|-u|-v] [-g WxH] TERM [TYPE]]"),
+			      N_("Set terminfo type of TERM  to TYPE.\n"),
+			      options);
 }
 
 GRUB_MOD_FINI(terminfo)
 {
-  grub_unregister_command (cmd);
+  grub_unregister_extcmd (cmd);
 }

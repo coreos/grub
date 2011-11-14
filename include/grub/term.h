@@ -19,19 +19,45 @@
 #ifndef GRUB_TERM_HEADER
 #define GRUB_TERM_HEADER	1
 
+#define GRUB_TERM_NO_KEY        0
+
 /* Internal codes used by GRUB to represent terminal input.  */
-#define GRUB_TERM_LEFT		2
-#define GRUB_TERM_RIGHT		6
-#define GRUB_TERM_UP		16
-#define GRUB_TERM_DOWN		14
-#define GRUB_TERM_HOME		1
-#define GRUB_TERM_END		5
-#define GRUB_TERM_DC		4
-#define GRUB_TERM_PPAGE		7
-#define GRUB_TERM_NPAGE		3
+/* Only for keys otherwise not having shifted modification.  */
+#define GRUB_TERM_SHIFT         0x01000000
+#define GRUB_TERM_CTRL          0x02000000
+#define GRUB_TERM_ALT           0x04000000
+
+/* Keys without associated character.  */
+#define GRUB_TERM_EXTENDED      0x00800000
+#define GRUB_TERM_KEY_MASK      0x00ffffff
+
+#define GRUB_TERM_KEY_LEFT      (GRUB_TERM_EXTENDED | 0x4b)
+#define GRUB_TERM_KEY_RIGHT     (GRUB_TERM_EXTENDED | 0x4d)
+#define GRUB_TERM_KEY_UP        (GRUB_TERM_EXTENDED | 0x48)
+#define GRUB_TERM_KEY_DOWN      (GRUB_TERM_EXTENDED | 0x50)
+#define GRUB_TERM_KEY_HOME      (GRUB_TERM_EXTENDED | 0x47)
+#define GRUB_TERM_KEY_END       (GRUB_TERM_EXTENDED | 0x4f)
+#define GRUB_TERM_KEY_DC        (GRUB_TERM_EXTENDED | 0x53)
+#define GRUB_TERM_KEY_PPAGE     (GRUB_TERM_EXTENDED | 0x49)
+#define GRUB_TERM_KEY_NPAGE     (GRUB_TERM_EXTENDED | 0x51)
+#define GRUB_TERM_KEY_F1        (GRUB_TERM_EXTENDED | 0x3b)
+#define GRUB_TERM_KEY_F2        (GRUB_TERM_EXTENDED | 0x3c)
+#define GRUB_TERM_KEY_F3        (GRUB_TERM_EXTENDED | 0x3d)
+#define GRUB_TERM_KEY_F4        (GRUB_TERM_EXTENDED | 0x3e)
+#define GRUB_TERM_KEY_F5        (GRUB_TERM_EXTENDED | 0x3f)
+#define GRUB_TERM_KEY_F6        (GRUB_TERM_EXTENDED | 0x40)
+#define GRUB_TERM_KEY_F7        (GRUB_TERM_EXTENDED | 0x41)
+#define GRUB_TERM_KEY_F8        (GRUB_TERM_EXTENDED | 0x42)
+#define GRUB_TERM_KEY_F9        (GRUB_TERM_EXTENDED | 0x43)
+#define GRUB_TERM_KEY_F10       (GRUB_TERM_EXTENDED | 0x44)
+#define GRUB_TERM_KEY_F11       (GRUB_TERM_EXTENDED | 0x57)
+#define GRUB_TERM_KEY_F12       (GRUB_TERM_EXTENDED | 0x58)
+#define GRUB_TERM_KEY_INSERT    (GRUB_TERM_EXTENDED | 0x52)
+#define GRUB_TERM_KEY_CENTER    (GRUB_TERM_EXTENDED | 0x4c)
+
 #define GRUB_TERM_ESC		'\e'
 #define GRUB_TERM_TAB		'\t'
-#define GRUB_TERM_BACKSPACE	8
+#define GRUB_TERM_BACKSPACE	'\b'
 
 #ifndef ASM_FILE
 
@@ -86,9 +112,15 @@ grub_term_color_state;
 
 
 /* Bitmasks for modifier keys returned by grub_getkeystatus.  */
-#define GRUB_TERM_STATUS_SHIFT	(1 << 0)
-#define GRUB_TERM_STATUS_CTRL	(1 << 1)
-#define GRUB_TERM_STATUS_ALT	(1 << 2)
+#define GRUB_TERM_STATUS_RSHIFT	(1 << 0)
+#define GRUB_TERM_STATUS_LSHIFT	(1 << 1)
+#define GRUB_TERM_STATUS_RCTRL	(1 << 2)
+#define GRUB_TERM_STATUS_RALT	(1 << 3)
+#define GRUB_TERM_STATUS_SCROLL	(1 << 4)
+#define GRUB_TERM_STATUS_NUM	(1 << 5)
+#define GRUB_TERM_STATUS_CAPS	(1 << 6)
+#define GRUB_TERM_STATUS_LCTRL	(1 << 8)
+#define GRUB_TERM_STATUS_LALT	(1 << 9)
 
 /* Menu-related geometrical constants.  */
 
@@ -108,9 +140,6 @@ grub_term_color_state;
 /* The X position of the left border.  */
 #define GRUB_TERM_LEFT_BORDER_X	GRUB_TERM_MARGIN
 
-/* The number of lines of messages at the bottom.  */
-#define GRUB_TERM_MESSAGE_HEIGHT	8
-
 /* The Y position of the first entry.  */
 #define GRUB_TERM_FIRST_ENTRY_Y	(GRUB_TERM_TOP_BORDER_Y + 1)
 
@@ -128,10 +157,7 @@ struct grub_term_input
   /* Clean up the terminal.  */
   grub_err_t (*fini) (struct grub_term_input *term);
 
-  /* Check if any input character is available.  */
-  int (*checkkey) (struct grub_term_input *term);
-
-  /* Get a character.  */
+  /* Get a character if any input character is available. Otherwise return -1  */
   int (*getkey) (struct grub_term_input *term);
 
   /* Get keyboard modifier status.  */
@@ -223,6 +249,14 @@ grub_term_register_input (const char *name __attribute__ ((unused)),
 }
 
 static inline void
+grub_term_register_input_inactive (const char *name __attribute__ ((unused)),
+				   grub_term_input_t term)
+{
+  grub_list_push (GRUB_AS_LIST_P (&grub_term_inputs_disabled),
+		  GRUB_AS_LIST (term));
+}
+
+static inline void
 grub_term_register_input_active (const char *name __attribute__ ((unused)),
 				 grub_term_input_t term)
 {
@@ -244,6 +278,14 @@ grub_term_register_output (const char *name __attribute__ ((unused)),
 	grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs),
 			GRUB_AS_LIST (term));
     }
+}
+
+static inline void
+grub_term_register_output_inactive (const char *name __attribute__ ((unused)),
+				    grub_term_output_t term)
+{
+  grub_list_push (GRUB_AS_LIST_P (&grub_term_outputs_disabled),
+		  GRUB_AS_LIST (term));
 }
 
 static inline void
@@ -279,7 +321,6 @@ grub_term_unregister_output (grub_term_output_t term)
 void grub_putcode (grub_uint32_t code, struct grub_term_output *term);
 int EXPORT_FUNC(grub_getkey) (void);
 int EXPORT_FUNC(grub_checkkey) (void);
-int EXPORT_FUNC(grub_getkeystatus) (void);
 void grub_cls (void);
 void EXPORT_FUNC(grub_refresh) (void);
 void grub_puts_terminal (const char *str, struct grub_term_output *term);
@@ -309,29 +350,6 @@ static inline int
 grub_term_entry_width (struct grub_term_output *term)
 {
   return grub_term_border_width (term) - 2 - GRUB_TERM_MARGIN * 2 - 1;
-}
-
-/* The height of the border.  */
-
-static inline unsigned
-grub_term_border_height (struct grub_term_output *term)
-{
-  return grub_term_height (term) - GRUB_TERM_TOP_BORDER_Y
-    - GRUB_TERM_MESSAGE_HEIGHT;
-}
-
-/* The number of entries shown at a time.  */
-static inline int
-grub_term_num_entries (struct grub_term_output *term)
-{
-  return grub_term_border_height (term) - 2;
-}
-
-static inline int
-grub_term_cursor_x (struct grub_term_output *term)
-{
-  return (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term) 
-	  - GRUB_TERM_MARGIN - 1);
 }
 
 static inline grub_uint16_t
@@ -461,8 +479,8 @@ grub_print_spaces (struct grub_term_output *term, int number_spaces)
 
 extern void (*EXPORT_VAR (grub_term_poll_usb)) (void);
 
-/* For convenience.  */
-#define GRUB_TERM_ASCII_CHAR(c)	((c) & 0xff)
+#define GRUB_TERM_REPEAT_PRE_INTERVAL 400
+#define GRUB_TERM_REPEAT_INTERVAL 50
 
 #endif /* ! ASM_FILE */
 

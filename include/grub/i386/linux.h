@@ -41,7 +41,6 @@
 #define GRUB_LINUX_VID_MODE_ASK		0xFFFD
 #define GRUB_LINUX_VID_MODE_VESA_START	0x0300
 
-#define GRUB_LINUX_SETUP_MOVE_SIZE	0x9100
 #define GRUB_LINUX_CL_MAGIC		0xA33F
 
 #ifdef __x86_64__
@@ -68,7 +67,7 @@
 #define GRUB_E820_RESERVED   2
 #define GRUB_E820_ACPI       3
 #define GRUB_E820_NVS        4
-#define GRUB_E820_EXEC_CODE  5
+#define GRUB_E820_BADRAM     5
 
 #define GRUB_E820_MAX_ENTRY  128
 
@@ -79,9 +78,13 @@ struct grub_e820_mmap
   grub_uint32_t type;
 } __attribute__((packed));
 
-#define GRUB_VIDEO_LINUX_TYPE_TEXT	0x01
-#define GRUB_VIDEO_LINUX_TYPE_VESA	0x23    /* VESA VGA in graphic mode.  */
-#define GRUB_VIDEO_LINUX_TYPE_SIMPLE	0x70    /* Linear framebuffer without any additional functions.  */
+enum
+  {
+    GRUB_VIDEO_LINUX_TYPE_TEXT = 0x01,
+    GRUB_VIDEO_LINUX_TYPE_VESA = 0x23,    /* VESA VGA in graphic mode.  */
+    GRUB_VIDEO_LINUX_TYPE_EFIFB = 0x70,    /* EFI Framebuffer.  */
+    GRUB_VIDEO_LINUX_TYPE_SIMPLE = 0x70    /* Linear framebuffer without any additional functions.  */
+  };
 
 /* For the Linux/i386 boot protocol version 2.03.  */
 struct linux_kernel_header
@@ -126,6 +129,10 @@ struct linux_kernel_header
   grub_uint16_t pad1;			/* Unused */
   grub_uint32_t cmd_line_ptr;		/* Points to the kernel command line */
   grub_uint32_t initrd_addr_max;        /* Highest address for initrd */
+  grub_uint32_t kernel_alignment;
+  grub_uint8_t relocatable;
+  grub_uint8_t pad[3];
+  grub_uint32_t cmdline_size;
 } __attribute__ ((packed));
 
 /* Boot parameters for Linux based on 2.6.12. This is used by the setup

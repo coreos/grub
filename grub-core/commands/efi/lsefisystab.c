@@ -1,4 +1,4 @@
-/* systab.c  - Display EFI systab.  */
+/* lsefisystab.c  - Display EFI systab.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2008  Free Software Foundation, Inc.
@@ -18,11 +18,14 @@
  */
 #include <grub/types.h>
 #include <grub/mm.h>
+#include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/normal.h>
 #include <grub/charset.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 struct guid_mapping
 {

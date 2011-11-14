@@ -17,6 +17,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
+
 #include <stdio.h>
 #include <grub/util/misc.h>
 #include <grub/emu/misc.h>
@@ -36,9 +38,9 @@ static void
 usage (int status)
 {
   if (status)
-    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
+    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
   else
-    printf ("\
+    printf (_("\
 Usage: %s [OPTIONS] PATH\n\
 \n\
 Make a system path relative to its root.\n\
@@ -47,7 +49,7 @@ Options:\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
 \n\
-Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
+Report bugs to <%s>.\n"), program_name, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -87,13 +89,13 @@ main (int argc, char *argv[])
 
   if (optind >= argc)
     {
-      fprintf (stderr, "No path is specified.\n");
+      fprintf (stderr, _("No path is specified.\n"));
       usage (1);
     }
 
   if (optind + 1 != argc)
     {
-      fprintf (stderr, "Unknown extra argument `%s'.\n", argv[optind + 1]);
+      fprintf (stderr, _("Unknown extra argument `%s'.\n"), argv[optind + 1]);
       usage (1);
     }
 

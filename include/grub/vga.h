@@ -19,7 +19,12 @@
 #ifndef GRUB_VGA_HEADER
 #define GRUB_VGA_HEADER	1
 
+#ifndef GRUB_MACHINE_MIPS_QEMU_MIPS
 #include <grub/pci.h>
+#else
+#include <grub/cpu/io.h>
+#define GRUB_MACHINE_PCI_IO_BASE  0xb4000000
+#endif
 
 enum
   {
@@ -84,8 +89,8 @@ enum
   {
     GRUB_VGA_IO_MISC_COLOR = 0x01,
     GRUB_VGA_IO_MISC_ENABLE_VRAM_ACCESS = 0x02,
-    GRUB_VGA_IO_MISC_EXTERNAL_CLOCK_0 = 0x08,
     GRUB_VGA_IO_MISC_28MHZ = 0x04,
+    GRUB_VGA_IO_MISC_EXTERNAL_CLOCK_0 = 0x08,
     GRUB_VGA_IO_MISC_UPPER_64K = 0x20,
     GRUB_VGA_IO_MISC_NEGATIVE_HORIZ_POLARITY = 0x40,
     GRUB_VGA_IO_MISC_NEGATIVE_VERT_POLARITY = 0x80,
@@ -290,9 +295,22 @@ static inline void
 grub_vga_write_arx (grub_uint8_t val, grub_uint8_t addr)
 {
   grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_INPUT_STATUS1_REGISTER);
+  grub_inb (GRUB_MACHINE_PCI_IO_BASE + 0x3ba);
+
   grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_ARX);
   grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_ARX_READ);
   grub_outb (val, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_ARX);
+}
+
+static inline grub_uint8_t
+grub_vga_read_arx (grub_uint8_t addr)
+{
+  grub_uint8_t val;
+  grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_INPUT_STATUS1_REGISTER);
+  grub_outb (addr, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_ARX);
+  val = grub_inb (GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_ARX_READ);
+  grub_outb (val, GRUB_MACHINE_PCI_IO_BASE + GRUB_VGA_IO_ARX);
+  return val;
 }
 
 struct grub_video_hw_config

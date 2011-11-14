@@ -24,6 +24,9 @@
 #include <grub/script_sh.h>
 #include "grub_script.tab.h"
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+
 #define yyfree    grub_lexer_yyfree
 #define yyalloc   grub_lexer_yyalloc
 #define yyrealloc grub_lexer_yyrealloc
@@ -70,6 +73,8 @@ static void  copy_string (struct grub_parser_param *, const char *,
 %}
 
 %top{
+
+#include <config.h>
 
 #include <sys/types.h>
 
@@ -159,7 +164,6 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
 "}"             { RECORD; return GRUB_PARSER_TOKEN_RBR;       }
 "[["            { RECORD; return GRUB_PARSER_TOKEN_RSQBR2;    }
 "]]"            { RECORD; return GRUB_PARSER_TOKEN_LSQBR2;    }
-"time"          { RECORD; return GRUB_PARSER_TOKEN_TIME;      }
 "case"          { RECORD; return GRUB_PARSER_TOKEN_CASE;      }
 "do"            { RECORD; return GRUB_PARSER_TOKEN_DO;        }
 "done"          { RECORD; return GRUB_PARSER_TOKEN_DONE;      }
@@ -353,8 +357,7 @@ grub_lexer_unput (const char *text, yyscan_t yyscanner)
 {
   struct grub_lexer_param *lexerstate = yyget_extra (yyscanner)->lexerstate;
 
-  if (lexerstate->prefix)
-    grub_free (lexerstate->prefix);
+  grub_free (lexerstate->prefix);
 
   lexerstate->prefix = grub_strdup (text);
   if (! lexerstate->prefix)

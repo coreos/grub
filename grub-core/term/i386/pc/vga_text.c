@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007, 2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2007, 2008, 2010  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,27 +18,33 @@
 
 #include <grub/dl.h>
 #include <grub/i386/vga_common.h>
-#include <grub/i386/io.h>
+#include <grub/cpu/io.h>
 #include <grub/types.h>
 #include <grub/vga.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #define COLS	80
 #define ROWS	25
 
 static int grub_curr_x, grub_curr_y;
 
-#define VGA_TEXT_SCREEN		0xb8000
+#ifdef __mips__
+#define VGA_TEXT_SCREEN		((grub_uint16_t *) 0xb00b8000)
+#else
+#define VGA_TEXT_SCREEN		((grub_uint16_t *) 0xb8000)
+#endif
 
 static void
 screen_write_char (int x, int y, short c)
 {
-  ((short *) VGA_TEXT_SCREEN)[y * COLS + x] = c;
+  VGA_TEXT_SCREEN[y * COLS + x] = c;
 }
 
 static short
 screen_read_char (int x, int y)
 {
-  return ((short *) VGA_TEXT_SCREEN)[y * COLS + x];
+  return VGA_TEXT_SCREEN[y * COLS + x];
 }
 
 static void
@@ -120,7 +126,7 @@ grub_vga_text_cls (struct grub_term_output *term)
 {
   int i;
   for (i = 0; i < ROWS * COLS; i++)
-    ((short *) VGA_TEXT_SCREEN)[i] = ' ' | (grub_console_cur_color << 8);
+    VGA_TEXT_SCREEN[i] = ' ' | (grub_console_cur_color << 8);
   grub_vga_text_gotoxy (term, 0, 0);
 }
 

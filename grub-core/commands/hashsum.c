@@ -26,6 +26,8 @@
 #include <grub/normal.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] = {
   {"hash", 'h', 0, N_("Specify hash to use."), N_("HASH"), ARG_TYPE_STRING},
   {"check", 'c', 0, N_("Check hash list file."), N_("FILE"), ARG_TYPE_STRING},
@@ -36,11 +38,13 @@ static const struct grub_arg_option options[] = {
   {0, 0, 0, 0, 0, 0}
 };
 
-struct { const char *name; const char *hashname; } aliases[] = 
+static struct { const char *name; const char *hashname; } aliases[] = 
   {
     {"sha256sum", "sha256"},
     {"sha512sum", "sha512"},
+    {"sha1sum", "sha1"},
     {"md5sum", "md5"},
+    {"crc", "crc32"},
   };
 
 static inline int
@@ -137,7 +141,7 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
       grub_file_close (file);
       if (err)
 	{
-	  grub_printf ("%s: READ ERROR\n", p);
+	  grub_printf_ (N_("%s: READ ERROR\n"), p);
 	  if (!keep)
 	    {
 	      grub_file_close (hashlist);
@@ -151,7 +155,7 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 	}
       if (grub_crypto_memcmp (expected, actual, hash->mdlen) != 0)
 	{
-	  grub_printf ("%s: HASH MISMATCH\n", p);
+	  grub_printf_ (N_("%s: HASH MISMATCH\n"), p);
 	  if (!keep)
 	    {
 	      grub_file_close (hashlist);
@@ -162,7 +166,7 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 	  mismatch++;
 	  continue;	  
 	}
-      grub_printf ("%s: OK\n", p);
+      grub_printf_ (N_("%s: OK\n"), p);
     }
   if (mismatch || unread)
     return grub_error (GRUB_ERR_TEST_FAILURE,
@@ -248,26 +252,37 @@ grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
   return GRUB_ERR_NONE;
 }
 
-static grub_extcmd_t cmd, cmd_md5, cmd_sha256, cmd_sha512;
+static grub_extcmd_t cmd, cmd_md5, cmd_sha1, cmd_sha256, cmd_sha512, cmd_crc;
 
 GRUB_MOD_INIT(hashsum)
 {
   cmd = grub_register_extcmd ("hashsum", grub_cmd_hashsum, 0,
-			      "hashsum -h HASH [-c FILE [-p PREFIX]] "
-			      "[FILE1 [FILE2 ...]]",
-			      "Compute or check hash checksum.",
+			      N_("-h HASH [-c FILE [-p PREFIX]] "
+				 "[FILE1 [FILE2 ...]]"),
+			      N_("Compute or check hash checksum."),
 			      options);
   cmd_md5 = grub_register_extcmd ("md5sum", grub_cmd_hashsum, 0,
 				  N_("[-c FILE [-p PREFIX]] "
 				     "[FILE1 [FILE2 ...]]"),
 				  N_("Compute or check hash checksum."),
 				  options);
+  cmd_sha1 = grub_register_extcmd ("sha1sum", grub_cmd_hashsum, 0,
+				   N_("[-c FILE [-p PREFIX]] "
+				      "[FILE1 [FILE2 ...]]"),
+				   N_("Compute or check hash checksum."),
+				   options);
   cmd_sha256 = grub_register_extcmd ("sha256sum", grub_cmd_hashsum, 0,
 				     N_("[-c FILE [-p PREFIX]] "
 					"[FILE1 [FILE2 ...]]"),
-				     "Compute or check hash checksum.",
+				     N_("Compute or check hash checksum."),
 				     options);
   cmd_sha512 = grub_register_extcmd ("sha512sum", grub_cmd_hashsum, 0,
+				     N_("[-c FILE [-p PREFIX]] "
+					"[FILE1 [FILE2 ...]]"),
+				     N_("Compute or check hash checksum."),
+				     options);
+
+  cmd_crc = grub_register_extcmd ("crc", grub_cmd_hashsum, 0,
 				     N_("[-c FILE [-p PREFIX]] "
 					"[FILE1 [FILE2 ...]]"),
 				     N_("Compute or check hash checksum."),
@@ -278,6 +293,8 @@ GRUB_MOD_FINI(hashsum)
 {
   grub_unregister_extcmd (cmd);
   grub_unregister_extcmd (cmd_md5);
+  grub_unregister_extcmd (cmd_sha1);
   grub_unregister_extcmd (cmd_sha256);
   grub_unregister_extcmd (cmd_sha512);
+  grub_unregister_extcmd (cmd_crc);
 }

@@ -79,21 +79,9 @@ static void
 draw (grub_gfxmenu_box_t self, int x, int y)
 {
   int height_n;
-  int height_s;
-  int height_e;
-  int height_w;
-  int width_n;
-  int width_s;
-  int width_e;
   int width_w;
 
   height_n = get_height (self->scaled_pixmaps[BOX_PIXMAP_N]);
-  height_s = get_height (self->scaled_pixmaps[BOX_PIXMAP_S]);
-  height_e = get_height (self->scaled_pixmaps[BOX_PIXMAP_E]);
-  height_w = get_height (self->scaled_pixmaps[BOX_PIXMAP_W]);
-  width_n = get_width (self->scaled_pixmaps[BOX_PIXMAP_N]);
-  width_s = get_width (self->scaled_pixmaps[BOX_PIXMAP_S]);
-  width_e = get_width (self->scaled_pixmaps[BOX_PIXMAP_E]);
   width_w = get_width (self->scaled_pixmaps[BOX_PIXMAP_W]);
 
   /* Draw sides.  */
@@ -188,6 +176,13 @@ set_content_size (grub_gfxmenu_box_t self,
   /* Scale the center area. */
   if (scale_pixmap(self, BOX_PIXMAP_CENTER, width, height) != GRUB_ERR_NONE)
     return;
+}
+
+static int
+get_border_width (grub_gfxmenu_box_t self)
+{
+  return (get_width (self->raw_pixmaps[BOX_PIXMAP_E])
+	  + get_width (self->raw_pixmaps[BOX_PIXMAP_W]));
 }
 
 static int
@@ -300,6 +295,8 @@ grub_gfxmenu_create_box (const char *pixmaps_prefix,
 
   box->draw = draw;
   box->set_content_size = set_content_size;
+  box->get_border_width = get_border_width;
+
   box->get_left_pad = get_left_pad;
   box->get_top_pad = get_top_pad;
   box->get_right_pad = get_right_pad;

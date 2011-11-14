@@ -19,9 +19,11 @@
 #ifndef GRUB_EMU_MISC_H
 #define GRUB_EMU_MISC_H 1
 
+#include <config.h>
+#include <stdarg.h>
+
 #include <grub/symbol.h>
 #include <grub/types.h>
-#include <grub/util/libzfs.h>
 
 #ifdef __CYGWIN__
 # include <sys/fcntl.h>
@@ -32,9 +34,9 @@
 
 #ifdef __NetBSD__
 /* NetBSD uses /boot for its boot block.  */
-# define DEFAULT_DIRECTORY	"/grub"
+# define DEFAULT_DIRECTORY	"/"GRUB_DIR_NAME
 #else
-# define DEFAULT_DIRECTORY	"/boot/grub"
+# define DEFAULT_DIRECTORY	"/"GRUB_BOOT_DIR_NAME"/"GRUB_DIR_NAME
 #endif
 
 #define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
@@ -52,6 +54,8 @@ void grub_find_zpool_from_dir (const char *dir,
 
 char *grub_make_system_path_relative_to_its_root (const char *path)
   __attribute__ ((warn_unused_result));
+int
+grub_util_device_is_mapped (const char *dev);
 
 void * EXPORT_FUNC(xmalloc) (grub_size_t size) __attribute__ ((warn_unused_result));
 void * EXPORT_FUNC(xrealloc) (void *ptr, grub_size_t size) __attribute__ ((warn_unused_result));
@@ -76,6 +80,9 @@ extern char * canonicalize_file_name (const char *path);
 int grub_device_mapper_supported (void);
 #endif
 
-libzfs_handle_t *grub_get_libzfs_handle (void);
+char *grub_find_root_device_from_mountinfo (const char *dir, char **relroot);
+
+void EXPORT_FUNC(grub_reboot) (void);
+
 
 #endif /* GRUB_EMU_MISC_H */

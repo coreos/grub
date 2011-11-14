@@ -240,7 +240,7 @@ grub_cmdline_get (const char *prompt)
     grub_term_gotoxy (cl_term->term, cl_term->xpos, cl_term->ypos);
   }
 
-  void cl_set_pos_all ()
+  void cl_set_pos_all (void)
   {
     unsigned i;
     for (i = 0; i < nterms; i++)
@@ -388,16 +388,18 @@ grub_cmdline_get (const char *prompt)
 
   grub_refresh ();
 
-  while ((key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != '\n' && key != '\r')
+  while ((key = grub_getkey ()) != '\n' && key != '\r')
     {
       switch (key)
 	{
-	case 1:	/* Ctrl-a */
+	case GRUB_TERM_CTRL | 'a':
+	case GRUB_TERM_KEY_HOME:
 	  lpos = 0;
 	  cl_set_pos_all ();
 	  break;
 
-	case 2:	/* Ctrl-b */
+	case GRUB_TERM_CTRL | 'b':
+	case GRUB_TERM_KEY_LEFT:
 	  if (lpos > 0)
 	    {
 	      lpos--;
@@ -405,12 +407,14 @@ grub_cmdline_get (const char *prompt)
 	    }
 	  break;
 
-	case 5:	/* Ctrl-e */
+	case GRUB_TERM_CTRL | 'e':
+	case GRUB_TERM_KEY_END:
 	  lpos = llen;
 	  cl_set_pos_all ();
 	  break;
 
-	case 6:	/* Ctrl-f */
+	case GRUB_TERM_CTRL | 'f':
+	case GRUB_TERM_KEY_RIGHT:
 	  if (lpos < llen)
 	    {
 	      lpos++;
@@ -418,7 +422,8 @@ grub_cmdline_get (const char *prompt)
 	    }
 	  break;
 
-	case 9:	/* Ctrl-i or TAB */
+	case GRUB_TERM_CTRL | 'i':
+	case '\t':
 	  {
 	    int restore;
 	    char *insertu8;
@@ -492,11 +497,10 @@ grub_cmdline_get (const char *prompt)
 	  }
 	  break;
 
-	case 11:	/* Ctrl-k */
+	case GRUB_TERM_CTRL | 'k':
 	  if (lpos < llen)
 	    {
-	      if (kill_buf)
-		grub_free (kill_buf);
+	      grub_free (kill_buf);
 
 	      kill_buf = grub_malloc ((llen - lpos + 1)
 				      * sizeof (grub_uint32_t));
@@ -516,7 +520,8 @@ grub_cmdline_get (const char *prompt)
 	    }
 	  break;
 
-	case 14:	/* Ctrl-n */
+	case GRUB_TERM_CTRL | 'n':
+	case GRUB_TERM_KEY_DOWN:
 	  {
 	    grub_uint32_t *hist;
 
@@ -534,7 +539,9 @@ grub_cmdline_get (const char *prompt)
 
 	    break;
 	  }
-	case 16:	/* Ctrl-p */
+
+	case GRUB_TERM_KEY_UP:
+	case GRUB_TERM_CTRL | 'p':
 	  {
 	    grub_uint32_t *hist;
 
@@ -553,13 +560,12 @@ grub_cmdline_get (const char *prompt)
 	  }
 	  break;
 
-	case 21:	/* Ctrl-u */
+	case GRUB_TERM_CTRL | 'u':
 	  if (lpos > 0)
 	    {
 	      grub_size_t n = lpos;
 
-	      if (kill_buf)
-		grub_free (kill_buf);
+	      grub_free (kill_buf);
 
 	      kill_buf = grub_malloc (n + 1);
 	      if (grub_errno)
@@ -579,7 +585,7 @@ grub_cmdline_get (const char *prompt)
 	    }
 	  break;
 
-	case 25:	/* Ctrl-y */
+	case GRUB_TERM_CTRL | 'y':
 	  if (kill_buf)
 	    cl_insert (kill_buf);
 	  break;
@@ -598,7 +604,8 @@ grub_cmdline_get (const char *prompt)
             break;
 	  /* fall through */
 
-	case 4:	/* Ctrl-d */
+	case GRUB_TERM_CTRL | 'd':
+	case GRUB_TERM_KEY_DC:
 	  if (lpos < llen)
 	    cl_delete (1);
 	  break;

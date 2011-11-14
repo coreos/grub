@@ -28,6 +28,8 @@
 #include <grub/kernel.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /*
    .mo file information from:
    http://www.gnu.org/software/autoconf/manual/gettext/MO-Files.html .
@@ -49,7 +51,7 @@ struct grub_gettext_msg
   const char *translated;
 };
 
-struct grub_gettext_msg *grub_gettext_msg_list = NULL;
+static struct grub_gettext_msg *grub_gettext_msg_list = NULL;
 
 #define GETTEXT_MAGIC_NUMBER 		0
 #define GETTEXT_FILE_FORMAT		4
@@ -261,11 +263,41 @@ grub_mofile_open (const char *filename)
   return fd_mo;
 }
 
+/* Returning grub_file_t would be more natural, but grub_mofile_open assigns
+   to fd_mo anyway ...  */
 static void
-grub_gettext_init_ext (const char *lang)
+grub_mofile_open_lang (const char *locale_dir, const char *locale)
 {
   char *mo_file;
-  char *locale_dir;
+
+  /* mo_file e.g.: /boot/grub/locale/ca.mo   */
+
+  mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, locale);
+  if (!mo_file)
+    return;
+
+  fd_mo = grub_mofile_open (mo_file);
+
+  /* Will try adding .gz as well.  */
+  if (fd_mo == NULL)
+    {
+      char *mo_file_old;
+      mo_file_old = mo_file;
+      mo_file = grub_xasprintf ("%s.gz", mo_file);
+      grub_free (mo_file_old);
+      if (!mo_file)
+	return;
+      fd_mo = grub_mofile_open (mo_file);
+    }
+}
+
+static void
+grub_gettext_init_ext (const char *locale)
+{
+  const char *locale_dir;
+
+  if (!locale)
+    return;
 
   locale_dir = grub_env_get ("locale_dir");
   if (locale_dir == NULL)
@@ -276,22 +308,21 @@ grub_gettext_init_ext (const char *lang)
 
   fd_mo = NULL;
 
-  /* mo_file e.g.: /boot/grub/locale/ca.mo   */
+  grub_mofile_open_lang (locale_dir, locale);
 
-  mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, lang);
-  if (!mo_file)
-    return;
-
-  fd_mo = grub_mofile_open (mo_file);
-
-  /* Will try adding .gz as well.  */
+  /* ll_CC didn't work, so try ll.  */
   if (fd_mo == NULL)
     {
-      grub_free (mo_file);
-      mo_file = grub_xasprintf ("%s.gz", mo_file);
-      if (!mo_file)
-	return;
-      fd_mo = grub_mofile_open (mo_file);
+      char *lang = grub_strdup (locale);
+      char *underscore = grub_strchr (lang, '_');
+
+      if (underscore)
+	{
+	  *underscore = '\0';
+	  grub_mofile_open_lang (locale_dir, lang);
+	}
+
+      grub_free (lang);
     }
 
   if (fd_mo)
@@ -342,8 +373,6 @@ grub_cmd_translate (grub_command_t cmd __attribute__ ((unused)),
 
 GRUB_MOD_INIT (gettext)
 {
-  (void) mod;			/* To stop warning.  */
-
   const char *lang;
 
   lang = grub_env_get ("lang");

@@ -25,6 +25,12 @@
 #include <grub/dl.h>
 #include <grub/crypto.h>
 
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN
+#else
+#undef WORDS_BIGENDIAN
+#endif
+
 #define __GNU_LIBRARY__
 
 #define DIM ARRAY_SIZE
@@ -81,6 +87,25 @@ fips_mode (void)
   return 0;
 }
 
-#define memset grub_memset
+#ifdef GRUB_UTIL
+static inline void *
+memcpy (void *dest, const void *src, grub_size_t n)
+{
+  return grub_memcpy (dest, src, n);
+}
+
+static inline void *
+memset (void *s, int c, grub_size_t n)
+{
+  return grub_memset (s, c, n);
+}
+
+static inline int
+memcmp (const void *s1, const void *s2, grub_size_t n)
+{
+  return grub_memcmp (s1, s2, n);
+}
+#endif
+
 
 #endif

@@ -24,6 +24,8 @@
  * See <http://www.7-zip.org>, for more information about LZMA.
  */
 
+#include <config.h>
+
 #include <stdio.h>
 #include <string.h>
 
@@ -1992,13 +1994,15 @@ static SRes LzmaEnc_CodeOneBlock(CLzmaEnc *p, Bool useLimits, UInt32 maxPackSize
 static SRes LzmaEnc_Alloc(CLzmaEnc *p, UInt32 keepWindowSize, ISzAlloc *alloc, ISzAlloc *allocBig)
 {
   UInt32 beforeSize = kNumOpts;
+#ifdef COMPRESS_MF_MT
   Bool btMode;
+#endif
   if (!RangeEnc_Alloc(&p->rc, alloc))
     return SZ_ERROR_MEM;
+#ifdef COMPRESS_MF_MT
   btMode = (p->matchFinderBase.btMode != 0);
-  #ifdef COMPRESS_MF_MT
   p->mtMode = (p->multiThread && !p->fastMode && btMode);
-  #endif
+#endif
 
   {
     unsigned lclp = p->lc + p->lp;
