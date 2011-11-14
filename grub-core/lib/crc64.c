@@ -21,6 +21,8 @@
 #include <grub/dl.h>
 #include <grub/crypto.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_uint64_t crc64_table [256];
 
 static void

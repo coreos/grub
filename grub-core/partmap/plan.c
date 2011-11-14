@@ -25,6 +25,8 @@
 #include <grub/types.h>
 #include <grub/err.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static struct grub_partition_map grub_plan_partition_map;
 
 static grub_err_t
