@@ -1741,3 +1741,13 @@ module = {
   name = crc64;
   common = lib/crc64.c;
 };
+
+module = {
+  name = gdb;
+  common = gdb/cstub.c;
+  common = gdb/gdb.c;
+  i386 = gdb/i386/idt.c;
+  i386 = gdb/i386/machdep.S;
+  i386 = gdb/i386/signal.c;
+  enable = i386;
+};  

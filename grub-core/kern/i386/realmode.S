@@ -117,6 +117,12 @@ gdt:
 gdtdesc:
 	.word	0x27			/* limit */
 	.long	gdt			/* addr */
+realidt:
+	.word 0
+	.long 0
+protidt:
+	.word 0
+	.long 0
 
 /*
  *  These next two routines, "real_to_prot" and "prot_to_real" are structured
@@ -168,6 +174,9 @@ protcseg:
 	/* zero %eax */
 	xorl	%eax, %eax
 
+	sidt realidt
+	lidt protidt
+
 	/* return on the old (or initialized) stack! */
 	ret
 /*
@@ -193,6 +202,9 @@ protcseg:
 prot_to_real:
 	/* just in case, set GDT */
 	lgdt	gdtdesc
+
+	sidt    protidt
+	lidt    realidt
 
 	/* save the protected mode stack */
 	movl	%esp, %eax
