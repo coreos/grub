@@ -25,7 +25,8 @@
 #define BOOTDEV_REG			%l6
 #define PIC_REG				%l7
 
-#define	SCRATCH_PAD			0x10000
+#define	SCRATCH_PAD_BOOT		0x5000
+#define	SCRATCH_PAD_DISKBOOT		0x4000
 
 #define GET_ABS(symbol, reg)	\
 	add	PIC_REG, (symbol - pic_base), reg
@@ -44,15 +45,20 @@
 
 #define GRUB_BOOT_MACHINE_BOOT_DEVPATH_END 0x80
 
-#define GRUB_BOOT_MACHINE_KERNEL_SECTOR 0x88
+#define GRUB_BOOT_MACHINE_KERNEL_BYTE 0x80
 
 #define GRUB_BOOT_MACHINE_CODE_END \
 	(0x1fc - GRUB_BOOT_AOUT_HEADER_SIZE)
 
-#define GRUB_BOOT_MACHINE_LIST_SIZE	12
-
-#define GRUB_BOOT_MACHINE_IMAGE_ADDRESS	0x200000
-
 #define GRUB_BOOT_MACHINE_KERNEL_ADDR 0x4200
+
+#ifndef ASM_FILE
+/* This is the blocklist used in the diskboot image.  */
+struct grub_boot_blocklist
+{
+  grub_uint64_t start;
+  grub_uint32_t len;
+} __attribute__ ((packed));
+#endif
 
 #endif /* ! BOOT_MACHINE_HEADER */

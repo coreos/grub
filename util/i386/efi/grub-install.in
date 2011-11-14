@@ -31,10 +31,14 @@ target_cpu=@target_cpu@
 platform=@platform@
 host_os=@host_os@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
+localedir=@datadir@/locale
+
+self=`basename $0`
 
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+grub_editenv=${bindir}/`echo grub-editenv | sed ${transform}`
 rootdir=
 grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
@@ -48,7 +52,7 @@ debug=no
 # Print the usage.
 usage () {
     cat <<EOF
-Usage: grub-install [OPTION]
+Usage: $self [OPTION]
 Install GRUB on your EFI partition.
 
   -h, --help              print this message and exit
@@ -62,32 +66,63 @@ Install GRUB on your EFI partition.
   --no-floppy             do not probe any floppy drive
   --recheck               probe a device map even if it already exists
 
-grub-install copies GRUB images into the DIR/boot directory specified by
+$self copies GRUB images into the DIR/boot directory specified by
 --root-directory.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      echo "$0: option requires an argument -- '$opt'" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
 # Check the arguments.
-for option in "$@"; do
+while test $# -gt 0
+do
+    option=$1
+    shift
+
     case "$option" in
     -h | --help)
 	usage
 	exit 0 ;;
     -v | --version)
-	echo "grub-install (GNU GRUB ${PACKAGE_VERSION})"
+	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
+
+    --modules)
+        modules=`argument $option "$@"`; shift ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+
+    --root-directory)
+	rootdir=`argument $option "$@"`; shift ;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
+
+    --grub-mkimage)
+	grub_mkimage=`argument $option "$@"`; shift ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+
+    --grub-mkdevicemap)
+	grub_mkdevicemap=`argument $option "$@"`; shift ;;
     --grub-mkdevicemap=*)
 	grub_mkdevicemap=`echo "$option" | sed 's/--grub-mkdevicemap=//'` ;;
+
+    --grub-probe)
+	grub_probe=`argument $option "$@"`; shift ;;
     --grub-probe=*)
 	grub_probe=`echo "$option" | sed 's/--grub-probe=//'` ;;
+
     --no-floppy)
 	no_floppy="--no-floppy" ;;
     --recheck)
@@ -143,8 +178,7 @@ else
 fi
 
 # Create the GRUB directory if it is not present.
-test -d "$bootdir" || mkdir "$bootdir" || exit 1
-test -d "$grubdir" || mkdir "$grubdir" || exit 1
+mkdir -p "$grubdir" || exit 1
 
 # If --recheck is specified, remove the device map, if present.
 if test $recheck = yes; then
@@ -179,6 +213,18 @@ for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst; do
     cp -f $file ${grubdir} || exit 1
 done
 
+# Copy gettext files
+mkdir -p ${grubdir}/locale/
+for dir in ${localedir}/*; do
+    if test -f "$dir/LC_MESSAGES/grub.mo"; then
+        cp -f "$dir/LC_MESSAGES/grub.mo" "${grubdir}/locale/${dir##*/}.mo"
+    fi
+done
+
+if ! test -f ${grubdir}/grubenv; then
+    $grub_editenv ${grubdir}/grubenv create
+fi
+
 # Create the core image. First, auto-detect the filesystem module.
 fs_module=`$grub_probe --target=fs --device-map=${device_map} ${grubdir}`
 if test "x$fs_module" = xfat; then :; else
@@ -189,7 +235,10 @@ fi
 # Then the partition map module.  In order to support partition-less media,
 # this command is allowed to fail (--target=fs already grants us that the
 # filesystem will be accessible).
-partmap_module=`$grub_probe --target=partmap --device-map=${device_map} ${grubdir} 2> /dev/null`
+partmap_module=
+for x in `$grub_probe --target=partmap --device-map=${device_map} ${grubdir} 2> /dev/null`; do
+   partmap_module="$partmap_module part_$x";
+done
 
 # Device abstraction module, if any (lvm, raid).
 devabstraction_module=`$grub_probe --target=abstraction --device-map=${device_map} ${grubdir}`
@@ -197,13 +246,13 @@ devabstraction_module=`$grub_probe --target=abstraction --device-map=${device_ma
 # The order in this list is critical.  Be careful when modifying it.
 modules="$modules $fs_module $partmap_module $devabstraction_module"
 
-$grub_mkimage --output=${grubdir}/grub.efi $modules || exit 1
+$grub_mkimage -p "" -O ${target_cpu}-efi --output=${grubdir}/grub.efi $modules || exit 1
 
 # Prompt the user to check if the device map is correct.
 echo "Installation finished. No error reported."
 echo "This is the contents of the device map $device_map."
 echo "Check if this is correct or not. If any of the lines is incorrect,"
-echo "fix it and re-run the script \`grub-install'."
+echo "fix it and re-run the script \`$self'."
 echo
 
 cat $device_map

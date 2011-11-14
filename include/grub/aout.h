@@ -16,6 +16,38 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*-
+ * Copyright (c) 1992, 1993
+ *      The Regents of the University of California.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 4. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *      from: @(#)exec.h        8.1 (Berkeley) 6/11/93
+ * $FreeBSD$
+ */
+
 #ifndef GRUB_AOUT_HEADER
 #define GRUB_AOUT_HEADER 1
 
@@ -70,6 +102,7 @@ union grub_aout_header
 #define AOUT_MID_I386		134	/* i386 BSD binary */
 #define AOUT_MID_SPARC		138	/* sparc */
 #define	AOUT_MID_HP200		200	/* hp200 (68010) BSD binary */
+#define	AOUT_MID_SUN            0x103
 #define	AOUT_MID_HP300		300	/* hp300 (68020+68881) BSD binary */
 #define	AOUT_MID_HPUX		0x20C	/* hp200/300 HP-UX binary */
 #define	AOUT_MID_HPUX800	0x20B	/* hp800 HP-UX binary */
@@ -82,10 +115,14 @@ union grub_aout_header
 #define AOUT_GETMID(header) ((header).a_midmag >> 16) & 0x03ff)
 #define AOUT_GETFLAG(header) ((header).a_midmag >> 26) & 0x3f)
 
+#ifndef GRUB_UTIL
+
 int EXPORT_FUNC(grub_aout_get_type) (union grub_aout_header *header);
 
 grub_err_t EXPORT_FUNC(grub_aout_load) (grub_file_t file, int offset,
-                                        grub_addr_t load_addr, int load_size,
-                                        grub_addr_t bss_end_addr);
+                                        void *load_addr, int load_size,
+                                        grub_size_t bss_size);
+
+#endif
 
 #endif /* ! GRUB_AOUT_HEADER */

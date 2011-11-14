@@ -19,6 +19,7 @@
 
 /* We only support RAID on Linux.  */
 #ifdef __linux__
+#include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/raid.h>
 
@@ -50,7 +51,7 @@ grub_util_getdiskname (int major, int minor)
   else if (major == SCSI_DISK0_MAJOR)
     sprintf (name, "/dev/sd%c", 'a' + minor / 16);
   else
-    grub_util_error ("Unknown device number: %d, %d", major, minor);
+    grub_util_error ("unknown device number: %d, %d", major, minor);
 
   return name;
 }
@@ -72,7 +73,7 @@ grub_util_raid_getmembers (char *name)
   fd = open (devname, O_RDONLY);
 
   if (fd == -1)
-    grub_util_error ("Can't open %s: %s", devname, strerror (errno));
+    grub_util_error ("can't open %s: %s", devname, strerror (errno));
 
   free (devname);
 
@@ -81,7 +82,7 @@ grub_util_raid_getmembers (char *name)
     grub_util_error ("ioctl RAID_VERSION error: %s", strerror (errno));
 
   if (version.major != 0 || version.minor != 90)
-    grub_util_error ("Unsupported RAID version: %d.%d",
+    grub_util_error ("unsupported RAID version: %d.%d",
 		     version.major, version.minor);
 
   ret = ioctl (fd, GET_ARRAY_INFO, &info);

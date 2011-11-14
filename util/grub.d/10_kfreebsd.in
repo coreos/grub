@@ -1,7 +1,8 @@
-#! /bin/sh -e
+#! /bin/sh
+set -e
 
 # grub-mkconfig helper script.
-# Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
+# Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,14 +23,46 @@ bindir=@bindir@
 libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
 
-. ${bindir}/gettext.sh
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR=@localedir@
 
+CLASS="--class os"
+
 case "${GRUB_DISTRIBUTOR}" in
-  Debian)	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD" ;;
-  *)		OS="FreeBSD" ;;
+  Debian)
+	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD"
+	CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr '[A-Z]' '[a-z]' | cut -d' ' -f1) --class gnu-kfreebsd --class gnu ${CLASS}"
+  ;;
+  *)
+	OS="FreeBSD"
+	CLASS="--class freebsd --class bsd ${CLASS}"
+  ;;
 esac
+
+load_kfreebsd_module ()
+{
+  mod="$1"
+  allow_fail="$2"
+
+  if ! test -e "${module_dir}/${mod}.ko" ; then
+    if [ "${allow_fail}" = "true" ] ; then
+      # Return silently
+      return
+    else
+      # Print an error and fail.
+      ls "${module_dir}/${mod}.ko" > /dev/null
+    fi
+  fi
+
+  if [ -z "${prepare_module_dir_cache}" ]; then
+    prepare_module_dir_cache="$(prepare_grub_to_access_device $(grub-probe -t device "${module_dir}") | sed -e "s/^/\t/")"
+  fi
+
+  printf '%s\n' "${prepare_module_dir_cache}"
+  cat << EOF
+	kfreebsd_module_elf	${module_dir_rel}/${mod}.ko
+EOF
+}
 
 kfreebsd_entry ()
 {
@@ -37,30 +70,43 @@ kfreebsd_entry ()
   version="$2"
   recovery="$3"	# not used yet
   args="$4"	# not used yet
-  title="$(gettext "%s, with kFreeBSD %s")"
-  printf "menuentry \"${title}\" {\n" "${os}" "${version}"
+  title="$(gettext_quoted "%s, with kFreeBSD %s")"
+  printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}"
+  save_default_entry | sed -e "s/^/\t/"
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
+
   printf '%s\n' "${prepare_boot_cache}"
   cat << EOF
-	kfreebsd			${rel_dirname}/${basename}
+	echo			'$(printf "$(gettext_quoted "Loading kernel of FreeBSD %s ...")" ${version})'
+	kfreebsd		${rel_dirname}/${basename}
 EOF
 
   if test -n "${devices}" ; then
     cat << EOF
-	kfreebsd_loadenv		${devices_rel_dirname}/${devices_basename}
+	kfreebsd_loadenv	${devices_rel_dirname}/${devices_basename}
 EOF
   fi
 
-  if test -n "${acpi_ko}" ; then
-    cat << EOF
-	kfreebsd_module_elf	${acpi_ko_rel_dirname}/${acpi_ko_basename}
+  load_kfreebsd_module acpi true
+
+  case "${kfreebsd_fs}" in
+    zfs)
+      load_kfreebsd_module opensolaris false
+
+      ls "${dirname}/zfs/zpool.cache" > /dev/null
+      printf '%s\n' "${prepare_boot_cache}"
+  cat << EOF
+	kfreebsd_module		${rel_dirname}/zfs/zpool.cache type=/boot/zfs/zpool.cache
 EOF
-  fi
+    ;;
+  esac
+
+  load_kfreebsd_module ${kfreebsd_fs} false
 
   cat << EOF
-	set kFreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${GRUB_DEVICE}
+	set kFreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${kfreebsd_device}
 	set kFreeBSD.vfs.root.mountfrom.options=rw
 }
 EOF
@@ -86,26 +132,35 @@ while [ "x$list" != "x" ] ; do
   fi
 
   case ${GRUB_FS} in
-    ufs1 | ufs2)        kfreebsd_fs=ufs ;;
-    *)                  kfreebsd_fs=${GRUB_FS} ;;
+    ufs1 | ufs2)	kfreebsd_fs=ufs ;;
+    ext2)		kfreebsd_fs=ext2fs ;;
+    *)			kfreebsd_fs=${GRUB_FS} ;;
+  esac
+
+  case ${GRUB_FS} in
+    zfs)
+			# zpool name
+			kfreebsd_device=$(grub-probe -t fs_label --device ${GRUB_DEVICE})
+			# filesystem name (empty string for the main filesystem)
+			kfreebsd_device="${kfreebsd_device}$(grub-mkrelpath / | sed -e "s,/*@$,,")"
+    ;;
+    *)			kfreebsd_device=${GRUB_DEVICE} ;;
   esac
 
   version=`echo $basename | sed -e "s,^[^0-9]*-,,g;s/\.gz$//g"`
   alt_version=`echo $version | sed -e "s,\.old$,,g"`
 
-  acpi_ko=
-  for i in "/lib/modules/${version}/acpi.ko" "/lib/modules/${alt_version}/acpi.ko" \
-      "/boot/kernel/acpi.ko"; do
+  module_dir=
+  for i in "/lib/modules/${version}" "/lib/modules/${alt_version}" \
+      "/boot/kernel"; do
     if test -e "$i" ; then
-      acpi_ko="$i"
+      module_dir="$i"
       break
     fi
   done
-  if test -n "${acpi_ko}" ; then
-    echo "Found ACPI module: ${acpi_ko}" >&2
-    acpi_ko_basename=`basename ${acpi_ko}`
-    acpi_ko_dirname=`dirname ${acpi_ko}`
-    acpi_ko_rel_dirname=`make_system_path_relative_to_its_root $acpi_ko_dirname`
+  if test -n "${module_dir}" ; then
+    echo "Found kernel module directory: ${module_dir}" >&2
+    module_dir_rel=$(make_system_path_relative_to_its_root $module_dir)
   fi
 
   kfreebsd_entry "${OS}" "${version}"

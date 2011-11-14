@@ -1,5 +1,5 @@
 # Helper library for grub-mkconfig
-# Copyright (C) 2007,2008,2009  Free Software Foundation, Inc.
+# Copyright (C) 2007,2008,2009,2010  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,6 +31,12 @@ if test "x$grub_mkrelpath" = x; then
   grub_mkrelpath=${bindir}/`echo grub-mkrelpath | sed ${transform}`
 fi
 
+if $(which gettext >/dev/null 2>/dev/null) ; then
+  gettext="gettext"
+else
+  gettext="echo"
+fi
+
 grub_warn ()
 {
   echo "Warning: $@" >&2
@@ -38,21 +44,7 @@ grub_warn ()
 
 make_system_path_relative_to_its_root ()
 {
-  path="`${grub_mkrelpath} $1`"
-
-  case "`uname 2>/dev/null`" in
-    CYGWIN*)
-      # Cygwin: Check if regular or emulated mount.
-      if [ -z "$dir" ] || [ "`stat -c %D "$dir/.."`" != 620000 ] ; then
-        # Reached some mount point not below /cygdrive.
-        # GRUB does not know Cygwin's emulated mounts,
-        # convert to Win32 path and remove drive letter.
-        path=`cygpath -m "$path" | sed -n 's,^[A-Za-z]:,,p'`
-        test ! -z "$path" || return 1
-      fi ;;
-  esac
-
-  echo "$path"
+  ${grub_mkrelpath} $1
 }
 
 is_path_readable_by_grub ()
@@ -94,6 +86,15 @@ convert_system_path_to_grub_path ()
   echo ${drive}${relative_path}
 }
 
+save_default_entry ()
+{
+  if [ "x${GRUB_SAVEDEFAULT}" = "xtrue" ] ; then
+    cat << EOF
+savedefault
+EOF
+  fi
+}
+
 prepare_grub_to_access_device ()
 {
   device=$1
@@ -104,6 +105,11 @@ prepare_grub_to_access_device ()
     echo "insmod ${module}"
   done
 
+  partmap="`${grub_probe} --device ${device} --target=partmap`"
+  for module in ${partmap} ; do
+    echo "insmod part_${module}"
+  done
+
   fs="`${grub_probe} --device ${device} --target=fs`"
   for module in ${fs} ; do
     echo "insmod ${module}"
@@ -111,9 +117,9 @@ prepare_grub_to_access_device ()
 
   # If there's a filesystem UUID that GRUB is capable of identifying, use it;
   # otherwise set root as per value in device.map.
-  echo "set root=`${grub_probe} --device ${device} --target=drive`"
+  echo "set root='`${grub_probe} --device ${device} --target=drive`'"
   if fs_uuid="`${grub_probe} --device ${device} --target=fs_uuid 2> /dev/null`" ; then
-    echo "search --no-floppy --fs-uuid --set ${fs_uuid}"
+    echo "search --no-floppy --fs-uuid --set=root ${fs_uuid}"
   fi
 }
 
@@ -122,6 +128,7 @@ grub_file_is_not_garbage ()
   if test -f "$1" ; then
     case "$1" in
       *.dpkg-*) return 1 ;; # debian dpkg
+      README*)  return 1 ;; # documentation
     esac
   else
     return 1
@@ -178,4 +185,20 @@ version_find_latest ()
     fi
   done
   echo "$a"
+}
+
+gettext_quoted () {
+  $gettext "$@" | sed "s/'/'\\\\''/g"
+}
+
+uses_abstraction () {
+  device=$1
+
+  abstraction="`${grub_probe} --device ${device} --target=abstraction`"
+  for module in ${abstraction}; do
+    if test "x${module}" = "x$2"; then
+      return 0
+    fi
+  done
+  return 1
 }

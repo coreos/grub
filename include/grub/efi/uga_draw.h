@@ -32,7 +32,7 @@ enum grub_efi_uga_blt_operation
   GRUB_EFI_UGA_VIDEO_TO_BLT,
   GRUB_EFI_UGA_BLT_TO_VIDEO,
   GRUB_EFI_UGA_VIDEO_TO_VIDEO,
-  GRUB_EFI_UGA_GLT_MAX
+  GRUB_EFI_UGA_BLT_MAX
 };
 
 struct grub_efi_uga_pixel

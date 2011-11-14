@@ -89,8 +89,8 @@ grub_video_fb_blit_bitmap (struct grub_video_bitmap *bitmap,
 
 grub_err_t
 grub_video_fb_blit_render_target (struct grub_video_fbrender_target *source,
-                                   enum grub_video_blit_operators oper,
-                                   int x, int y, int offset_x, int offset_y,
+				  enum grub_video_blit_operators oper,
+				  int x, int y, int offset_x, int offset_y,
 				  unsigned int width, unsigned int height);
 
 grub_err_t
@@ -114,5 +114,23 @@ grub_video_fb_get_active_render_target (struct grub_video_fbrender_target **targ
 
 grub_err_t
 grub_video_fb_set_active_render_target (struct grub_video_fbrender_target *target);
+
+typedef grub_err_t
+(*grub_video_fb_doublebuf_update_screen_t) (struct grub_video_fbrender_target *front,
+					  struct grub_video_fbrender_target *back);
+
+typedef grub_err_t (*grub_video_fb_set_page_t) (int page);
+
+grub_err_t
+grub_video_fb_setup (unsigned int mode_type, unsigned int mode_mask,
+		     struct grub_video_mode_info *mode_info,
+		     volatile void *page0_ptr,
+		     grub_video_fb_set_page_t set_page_in,
+		     volatile void *page1_ptr);
+grub_err_t
+grub_video_fb_swap_buffers (void);
+grub_err_t
+grub_video_fb_get_info_and_fini (struct grub_video_mode_info *mode_info,
+				 void **framebuf);
 
 #endif /* ! GRUB_VIDEO_FB_HEADER */

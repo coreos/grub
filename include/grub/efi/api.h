@@ -1,7 +1,7 @@
 /* efi.h - declare EFI types and functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -108,6 +108,109 @@
   { 0xeb9d2d31, 0x2d88, 0x11d3, \
     { 0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
   }
+
+#define GRUB_EFI_SAL_TABLE_GUID \
+  { 0xeb9d2d32, 0x2d88, 0x11d3, \
+      { 0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
+  }
+
+#define GRUB_EFI_HCDP_TABLE_GUID \
+  { 0xf951938d, 0x620b, 0x42ef, \
+      { 0x82, 0x79, 0xa8, 0x4b, 0x79, 0x61, 0x78, 0x98 } \
+  }
+
+struct grub_efi_sal_system_table
+{
+  grub_uint32_t signature;
+  grub_uint32_t total_table_len;
+  grub_uint16_t sal_rev;
+  grub_uint16_t entry_count;
+  grub_uint8_t checksum;
+  grub_uint8_t reserved1[7];
+  grub_uint16_t sal_a_version;
+  grub_uint16_t sal_b_version;
+  grub_uint8_t oem_id[32];
+  grub_uint8_t product_id[32];
+  grub_uint8_t reserved2[8];
+  grub_uint8_t entries[0];
+};
+
+enum
+  {
+    GRUB_EFI_SAL_SYSTEM_TABLE_TYPE_ENTRYPOINT_DESCRIPTOR = 0,
+    GRUB_EFI_SAL_SYSTEM_TABLE_TYPE_MEMORY_DESCRIPTOR = 1,
+    GRUB_EFI_SAL_SYSTEM_TABLE_TYPE_PLATFORM_FEATURES = 2,
+    GRUB_EFI_SAL_SYSTEM_TABLE_TYPE_TRANSLATION_REGISTER_DESCRIPTOR = 3,
+    GRUB_EFI_SAL_SYSTEM_TABLE_TYPE_PURGE_TRANSLATION_COHERENCE = 4,
+    GRUB_EFI_SAL_SYSTEM_TABLE_TYPE_AP_WAKEUP = 5
+  };
+
+struct grub_efi_sal_system_table_entrypoint_descriptor
+{
+  grub_uint8_t type;
+  grub_uint8_t pad[7];
+  grub_uint64_t pal_proc_addr;
+  grub_uint64_t sal_proc_addr;
+  grub_uint64_t global_data_ptr;
+  grub_uint64_t reserved[2];
+};
+
+struct grub_efi_sal_system_table_memory_descriptor
+{
+  grub_uint8_t type;
+  grub_uint8_t sal_used;
+  grub_uint8_t attr;
+  grub_uint8_t ar;
+  grub_uint8_t attr_mask;
+  grub_uint8_t mem_type;
+  grub_uint8_t usage;
+  grub_uint8_t unknown;
+  grub_uint64_t addr;
+  grub_uint64_t len;
+  grub_uint64_t unknown2;
+};
+
+struct grub_efi_sal_system_table_platform_features
+{
+  grub_uint8_t type;
+  grub_uint8_t flags;
+  grub_uint8_t reserved[14];
+};
+
+struct grub_efi_sal_system_table_translation_register_descriptor
+{
+  grub_uint8_t type;
+  grub_uint8_t register_type;
+  grub_uint8_t register_number;
+  grub_uint8_t reserved[5];
+  grub_uint64_t addr;
+  grub_uint64_t page_size;
+  grub_uint64_t reserver;
+};
+
+struct grub_efi_sal_system_table_purge_translation_coherence
+{
+  grub_uint8_t type;
+  grub_uint8_t reserved[3];  
+  grub_uint32_t ndomains;
+  grub_uint64_t coherence;
+};
+
+struct grub_efi_sal_system_table_ap_wakeup
+{
+  grub_uint8_t type;
+  grub_uint8_t mechanism;
+  grub_uint8_t reserved[6];
+  grub_uint64_t vector;
+};
+
+enum
+  {
+    GRUB_EFI_SAL_SYSTEM_TABLE_PLATFORM_FEATURE_BUSLOCK = 1,
+    GRUB_EFI_SAL_SYSTEM_TABLE_PLATFORM_FEATURE_IRQREDIRECT = 2,
+    GRUB_EFI_SAL_SYSTEM_TABLE_PLATFORM_FEATURE_IPIREDIRECT = 4,
+    GRUB_EFI_SAL_SYSTEM_TABLE_PLATFORM_FEATURE_ITCDRIFT = 8,
+  };
 
 /* Enumerations.  */
 enum grub_efi_timer_delay
@@ -583,6 +686,16 @@ struct grub_efi_protocol_device_path
   grub_efi_guid_t guid;
 };
 typedef struct grub_efi_protocol_device_path grub_efi_protocol_device_path_t;
+
+#define GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE		6
+
+struct grub_efi_piwg_device_path
+{
+  grub_efi_device_path_t header;
+  grub_efi_guid_t guid __attribute__ ((packed));
+};
+typedef struct grub_efi_piwg_device_path grub_efi_piwg_device_path_t;
+
 
 /* BIOS Boot Specification Device Path.  */
 #define GRUB_EFI_BIOS_DEVICE_PATH_TYPE			5

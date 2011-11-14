@@ -32,6 +32,12 @@ typedef enum
     GRUB_ATA_LBA48
   } grub_ata_addressing_t;
 
+#define GRUB_ATA_CH0_PORT1 0x1f0
+#define GRUB_ATA_CH1_PORT1 0x170
+
+#define GRUB_ATA_CH0_PORT2 0x3f6
+#define GRUB_ATA_CH1_PORT2 0x376
+
 #define GRUB_ATA_REG_DATA	0
 #define GRUB_ATA_REG_ERROR	1
 #define GRUB_ATA_REG_FEATURES	1
@@ -98,8 +104,8 @@ struct grub_ata_device
 
   /* IO addresses on which the registers for this device can be
      found.  */
-  int ioaddress;
-  int ioaddress2;
+  grub_port_t ioaddress;
+  grub_port_t ioaddress2;
 
   /* Two devices can be connected to a single cable.  Use this field
      to select device 0 (commonly known as "master") or device 1
