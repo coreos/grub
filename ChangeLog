@@ -1,3 +1,10 @@
+2011-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/adler32.c: Add missing license specification.
+	* grub-core/lib/crc64.c: Likewise.
+	* grub-core/loader/i386/pc/plan9.c: Likewise.
+	* grub-core/partmap/plan.c: Likewise.
+
 2011-11-13  Lubomir Kundrak  <lkundrak@redhat.com>
 
 	Add facility to debug GRUB with gdb under qemu.

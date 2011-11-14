@@ -21,6 +21,8 @@
 #include <grub/dl.h>
 #include <grub/crypto.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* Based on adler32() from adler32.c of zlib-1.2.5 library. */
 
 #define BASE 65521UL
