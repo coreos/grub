@@ -26,6 +26,8 @@
 
 #define MAX_STACK_FRAME 102400
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct idt_descriptor
 {
   grub_uint16_t limit;
@@ -51,31 +53,22 @@ void grub_interrupt_handler_real (void *ret, void *ebp);
 static void
 print_address (void *addr)
 {
-  const char *name;
-  int section;
-  grub_off_t off;
-  auto int hook (grub_dl_t mod);
-  int hook (grub_dl_t mod)
+  grub_dl_t mod;
+
+  FOR_DL_MODULES (mod)
   {
     grub_dl_segment_t segment;
     for (segment = mod->segment; segment; segment = segment->next)
       if (segment->addr <= addr && (grub_uint8_t *) segment->addr
 	  + segment->size > (grub_uint8_t *) addr)
 	{
-	  name = mod->name;
-	  section = segment->section;
-	  off = (grub_uint8_t *) addr - (grub_uint8_t *) segment->addr;
-	  return 1;
+	  grub_printf ("%s.%x+%" PRIxGRUB_SIZE, mod->name, segment->section,
+		       (grub_uint8_t *) addr - (grub_uint8_t *) segment->addr);
+	  return;
 	}
-    return 0;
   }
 
-  name = NULL;
-  grub_dl_iterate (hook);
-  if (name)
-    grub_printf ("%s.%x+%lx", name, section, (unsigned long) off);
-  else
-    grub_printf ("%p", addr);
+  grub_printf ("%p", addr);
 }
 
 void
