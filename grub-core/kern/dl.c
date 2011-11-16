@@ -729,7 +729,6 @@ int
 grub_dl_unload (grub_dl_t mod)
 {
   grub_dl_dep_t dep, depn;
-  grub_dl_segment_t seg, segn;
 
   if (mod->ref_count > 0)
     return 0;
@@ -749,13 +748,7 @@ grub_dl_unload (grub_dl_t mod)
       grub_free (dep);
     }
 
-  for (seg = mod->segment; seg; seg = segn)
-    {
-      segn = seg->next;
-      grub_free (seg->addr);
-      grub_free (seg);
-    }
-
+  grub_free (mod->base);
   grub_free (mod->name);
 #ifdef GRUB_MODULES_MACHINE_READONLY
   grub_free (mod->symtab);
