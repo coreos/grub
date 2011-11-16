@@ -1,5 +1,9 @@
 2011-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/dl.c (grub_dl_load_segments): Fix alignment handling.
+
+2011-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/dl.c (grub_dl_unload): Fix freeing segments.
 
 2011-11-16  Vladimir Serbinenko  <phcoder@gmail.com>

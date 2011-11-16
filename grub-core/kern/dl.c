@@ -243,7 +243,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
        i < e->e_shnum;
        i++, s = (Elf_Shdr *)((char *) s + e->e_shentsize))
     {
-      tsize += ALIGN_UP (s->sh_size, s->sh_addralign);
+      tsize = ALIGN_UP (tsize, s->sh_addralign) + s->sh_size;
       if (talign < s->sh_addralign)
 	talign = s->sh_addralign;
     }
