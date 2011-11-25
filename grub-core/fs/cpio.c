@@ -404,13 +404,15 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 {
   struct grub_cpio_data *data;
   grub_disk_addr_t ofs;
-  char *prev, *name, *path;
+  char *prev, *name, *path, *ptr;
   grub_size_t len;
   int symlinknest = 0;
 
   path = grub_strdup (path_in + 1);
   if (!path)
     return grub_errno;
+  for (ptr = path + grub_strlen (path) - 1; ptr >= path && *ptr == '/'; ptr--)
+    *ptr = 0;
 
   grub_dl_ref (my_mod);
 
@@ -443,14 +445,14 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 	  char *p, *n;
 
 	  n = name + len;
-	  if (*n == '/')
+	  while (*n == '/')
 	    n++;
 
-	  p = grub_strchr (name + len, '/');
+	  p = grub_strchr (n, '/');
 	  if (p)
 	    *p = 0;
 
-	  if (((!prev) || (grub_strcmp (prev, name) != 0)) && name[len] != 0)
+	  if (((!prev) || (grub_strcmp (prev, n) != 0)) && *n != 0)
 	    {
 	      struct grub_dirhook_info info;
 	      grub_memset (&info, 0, sizeof (info));
@@ -458,7 +460,7 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 	      info.mtime = mtime;
 	      info.mtimeset = 1;
 
-	      hook (name + len, &info);
+	      hook (n, &info);
 	      grub_free (prev);
 	      prev = name;
 	    }

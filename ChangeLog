@@ -1,3 +1,7 @@
+2011-11-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/cpio.c (grub_cpio_dir): Handle subdirs correctly.
+
 2011-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/dl.c (grub_dl_load_segments): Fix alignment handling.
