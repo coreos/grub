@@ -1,3 +1,9 @@
+2011-11-25  Robert Millan  <rmh@gnu.org>
+
+	* util/getroot.c [HAVE_LIMITS_H]: Include `<limits.h>'.
+	(find_root_device_from_libzfs): Add zpool output parser to be used
+	as fallback when libzfs isn't available.
+
 2011-11-25  Seth Goldberg <seth.goldberg@oracle.com>
 
 	* po/Makefile.in.in: Add missing escape-continuation.

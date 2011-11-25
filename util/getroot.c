@@ -32,6 +32,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 #include <grub/util/misc.h>
 #include <grub/util/lvm.h>
 #include <grub/cryptodisk.h>
@@ -273,7 +276,6 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
 
 #endif /* __linux__ */
 
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 static char *
 find_root_device_from_libzfs (const char *dir)
 {
@@ -285,6 +287,7 @@ find_root_device_from_libzfs (const char *dir)
   if (! poolname)
     return NULL;
 
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   {
     zpool_handle_t *zpool;
     libzfs_handle_t *libzfs;
@@ -340,6 +343,61 @@ find_root_device_from_libzfs (const char *dir)
 
     zpool_close (zpool);
   }
+#else
+  {
+    char *cmd;
+    FILE *fp;
+    int ret;
+    char *line;
+    size_t len;
+    int st;
+
+    char name[PATH_MAX], state[256], readlen[256], writelen[256], cksum[256], notes[256];
+    unsigned int dummy;
+
+    asprintf (&cmd, "zpool status %s", poolname);
+    fp = popen (cmd, "r");
+    free (cmd);
+
+    st = 0;
+    while (st < 3)
+      {
+	line = NULL;
+	ret = getline (&line, &len, fp);
+	if (ret == -1)
+	  goto fail;
+	
+	if (sscanf (line, " %s %256s %256s %256s %256s %256s", name, state, readlen, writelen, cksum, notes) >= 5)
+	  switch (st)
+	    {
+	    case 0:
+	      if (!strcmp (name, "NAME")
+		  && !strcmp (state, "STATE")
+		  && !strcmp (readlen, "READ")
+		  && !strcmp (writelen, "WRITE")
+		  && !strcmp (cksum, "CKSUM"))
+		st++;
+	      break;
+	    case 1:
+	      if (!strcmp (name, poolname))
+		st++;
+	      break;
+	    case 2:
+	      if (strcmp (name, "mirror") && !sscanf (name, "mirror-%u", &dummy)
+		  && !sscanf (name, "raidz%u", &dummy)
+		  && !strcmp (state, "ONLINE"))
+		st++;
+	      break;
+	    }
+	
+	free (line);
+      }
+    asprintf (&device, "/dev/%s", name);
+
+ fail:
+    pclose (fp);
+  }
+#endif
 
   free (poolname);
   if (poolfs)
@@ -347,7 +405,6 @@ find_root_device_from_libzfs (const char *dir)
 
   return device;
 }
-#endif
 
 #ifdef __MINGW32__
 
@@ -650,10 +707,8 @@ grub_guess_root_device (const char *dir)
     os_dev = grub_find_root_device_from_mountinfo (dir, NULL);
 #endif /* __linux__ */
 
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   if (!os_dev)
     os_dev = find_root_device_from_libzfs (dir);
-#endif
 
   if (os_dev)
     {
@@ -1383,7 +1438,6 @@ grub_get_libzfs_handle (void)
 }
 #endif /* HAVE_LIBZFS */
 
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 /* ZFS has similar problems to those of btrfs (see above).  */
 void
 grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
@@ -1444,7 +1498,6 @@ grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
   else
     *poolfs = xstrdup ("");
 }
-#endif
 
 /* This function never prints trailing slashes (so that its output
    can be appended a slash unconditionally).  */
@@ -1456,23 +1509,18 @@ grub_make_system_path_relative_to_its_root (const char *path)
   uintptr_t offset = 0;
   dev_t num;
   size_t len;
-
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   char *poolfs = NULL;
-#endif
 
   /* canonicalize.  */
   p = canonicalize_file_name (path);
   if (p == NULL)
     grub_util_error (_("failed to get canonical path of %s"), path);
 
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   /* For ZFS sub-pool filesystems, could be extended to others (btrfs?).  */
   {
     char *dummy;
     grub_find_zpool_from_dir (p, &dummy, &poolfs);
   }
-#endif
 
   len = strlen (p) + 1;
   buf = xstrdup (p);
@@ -1524,10 +1572,8 @@ grub_make_system_path_relative_to_its_root (const char *path)
 	      }
 #endif
 	      free (buf2);
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 	      if (poolfs)
 		return xasprintf ("/%s/@", poolfs);
-#endif
 	      return xstrdup ("");
 	    }
 	  else
@@ -1584,14 +1630,12 @@ grub_make_system_path_relative_to_its_root (const char *path)
       len--;
     }
 
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
   if (poolfs)
     {
       ret = xasprintf ("/%s/@%s", poolfs, buf3);
       free (buf3);
     }
   else
-#endif
     ret = buf3;
 
   return ret;
