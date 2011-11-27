@@ -1,3 +1,8 @@
+2011-11-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c (recovery): Fix spelling.
+	(read_device): Fix size calculation.
+
 2011-11-25  Robert Millan  <rmh@gnu.org>
 
 	* util/getroot.c [HAVE_LIMITS_H]: Include `<limits.h>'.

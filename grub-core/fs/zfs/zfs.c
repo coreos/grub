@@ -1001,7 +1001,7 @@ recovery (grub_uint8_t *bufs[4], grub_size_t s, const int nbufs,
 	  const unsigned *powers,
 	  const int *idx)
 {
-  grub_dprintf ("zfs", "recovering %u bufers\n", nbufs);
+  grub_dprintf ("zfs", "recovering %u buffers\n", nbufs);
   /* Now we have */
   /* b_i = sum (r_j* (x ** (powers[i] * idx[j])))*/
   /* Let's invert the matrix in question. */
@@ -1338,8 +1338,8 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	      {
 		grub_uint8_t *tmp_recovery_buf[4];
 		for (j = 0; j < i; j++)
-		  tmp_recovery_buf[j] = recovery_buf[j] + recovery_len[j] - 1;
-		err = recovery (tmp_recovery_buf, 1, i, redundancy_pow,
+		  tmp_recovery_buf[j] = recovery_buf[j] + recovery_len[failed_devices - 1];
+		err = recovery (tmp_recovery_buf, recovery_len[0] - recovery_len[failed_devices - 1], i, redundancy_pow,
 				recovery_idx);
 		if (err)
 		  return err;
