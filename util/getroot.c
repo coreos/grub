@@ -355,7 +355,7 @@ find_root_device_from_libzfs (const char *dir)
     char name[PATH_MAX], state[256], readlen[256], writelen[256], cksum[256], notes[256];
     unsigned int dummy;
 
-    asprintf (&cmd, "zpool status %s", poolname);
+    cmd = xasprintf ("zpool status %s", poolname);
     fp = popen (cmd, "r");
     free (cmd);
 
@@ -392,7 +392,7 @@ find_root_device_from_libzfs (const char *dir)
 	
 	free (line);
       }
-    asprintf (&device, "/dev/%s", name);
+    device = xasprintf ("/dev/%s", name);
 
  fail:
     pclose (fp);

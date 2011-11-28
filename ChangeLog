@@ -1,3 +1,7 @@
+2011-11-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/getroot.c (find_root_device_from_libzfs): Use xasprintf.
+
 2011-11-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/zfs/zfs.c (recovery): Fix spelling.
