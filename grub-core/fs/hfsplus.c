@@ -181,7 +181,7 @@ enum grub_hfsplus_filetype
 struct grub_hfsplus_catkey_internal
 {
   grub_uint32_t parent;
-  char *name;
+  const char *name;
 };
 
 /* Internal representation of an extent overflow key.  */

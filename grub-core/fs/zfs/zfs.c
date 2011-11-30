@@ -131,9 +131,25 @@ typedef grub_err_t zfs_decomp_func_t (void *s_start, void *d_start,
 				      grub_size_t s_len, grub_size_t d_len);
 typedef struct decomp_entry
 {
-  char *name;
+  const char *name;
   zfs_decomp_func_t *decomp_func;
 } decomp_entry_t;
+
+/*
+ * Signature for checksum functions.
+ */
+typedef void zio_checksum_t(const void *data, grub_uint64_t size, 
+			    grub_zfs_endian_t endian, zio_cksum_t *zcp);
+
+/*
+ * Information about each checksum function.
+ */
+typedef struct zio_checksum_info {
+	zio_checksum_t	*ci_func; /* checksum function for each byteorder */
+	int		ci_correctable;	/* number of correctable bits	*/
+	int		ci_eck;		/* uses zio embedded checksum? */
+	const char		*ci_name;	/* descriptive name */
+} zio_checksum_info_t;
 
 typedef struct dnode_end
 {
@@ -1933,8 +1949,8 @@ zap_verify (zap_phys_t *zap, grub_zfs_endian_t endian)
 /* XXX */
 static grub_err_t
 fzap_lookup (dnode_end_t * zap_dnode, zap_phys_t * zap,
-	     char *name, grub_uint64_t * value, struct grub_zfs_data *data,
-	     int case_insensitive)
+	     const char *name, grub_uint64_t * value,
+	     struct grub_zfs_data *data, int case_insensitive)
 {
   void *l;
   grub_uint64_t hash, idx, blkid;
@@ -2096,7 +2112,7 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
  *
  */
 static grub_err_t
-zap_lookup (dnode_end_t * zap_dnode, char *name, grub_uint64_t * val,
+zap_lookup (dnode_end_t * zap_dnode, const char *name, grub_uint64_t *val,
 	    struct grub_zfs_data *data, int case_insensitive)
 {
   grub_uint64_t block_type;

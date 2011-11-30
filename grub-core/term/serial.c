@@ -126,7 +126,7 @@ static struct grub_term_output grub_serial_term_output =
 
 
 struct grub_serial_port *
-grub_serial_find (char *name)
+grub_serial_find (const char *name)
 {
   struct grub_serial_port *port;
 
@@ -157,7 +157,7 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
   char pname[40];
-  char *name = NULL;
+  const char *name = NULL;
   struct grub_serial_port *port;
   struct grub_serial_config config;
   grub_err_t err;

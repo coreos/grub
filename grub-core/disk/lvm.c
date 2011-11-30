@@ -44,7 +44,7 @@ static int is_lv_readable (struct grub_lvm_lv *lv);
    at the number.  In case STR is not found, *P will be NULL and the
    return value will be 0.  */
 static int
-grub_lvm_getvalue (char **p, char *str)
+grub_lvm_getvalue (char **p, const char *str)
 {
   *p = grub_strstr (*p, str);
   if (! *p)
@@ -69,7 +69,7 @@ grub_lvm_checkvalue (char **p, char *str, char *tmpl)
 #endif
 
 static int
-grub_lvm_check_flag (char *p, char *str, char *flag)
+grub_lvm_check_flag (char *p, const char *str, const char *flag)
 {
   int len_str = grub_strlen (str), len_flag = grub_strlen (flag);
   while (1)

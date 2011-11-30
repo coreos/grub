@@ -402,7 +402,7 @@ adjust_file (const char *in, grub_size_t len)
 }
 
 static int
-check_option (const char *a, char *b, grub_size_t len)
+check_option (const char *a, const char *b, grub_size_t len)
 {
   if (grub_strlen (b) != len)
     return 0;

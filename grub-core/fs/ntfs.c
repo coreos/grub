@@ -47,7 +47,7 @@ static grub_dl_t my_mod;
 grub_ntfscomp_func_t grub_ntfscomp_func;
 
 static grub_err_t
-fixup (struct grub_ntfs_data *data, char *buf, int len, char *magic)
+fixup (struct grub_ntfs_data *data, char *buf, int len, const char *magic)
 {
   int ss;
   char *pu;

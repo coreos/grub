@@ -206,7 +206,7 @@ grub_bsd_get_device (grub_uint32_t * biosdev,
 }
 
 grub_err_t
-grub_bsd_add_meta (grub_uint32_t type, void *data, grub_uint32_t len)
+grub_bsd_add_meta (grub_uint32_t type, const void *data, grub_uint32_t len)
 {
   struct bsd_tag *newtag;
 
@@ -383,10 +383,11 @@ grub_bsd_add_mmap (void)
 }
 
 grub_err_t
-grub_freebsd_add_meta_module (char *filename, char *type, int argc, char **argv,
+grub_freebsd_add_meta_module (const char *filename, const char *type,
+			      int argc, char **argv,
 			      grub_addr_t addr, grub_uint32_t size)
 {
-  char *name;
+  const char *name;
   name = grub_strrchr (filename, '/');
   if (name)
     name++;
@@ -1806,7 +1807,7 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
   grub_file_t file = 0;
   int modargc;
   char **modargv;
-  char *type;
+  const char *type;
   grub_err_t err;
   void *src;
 

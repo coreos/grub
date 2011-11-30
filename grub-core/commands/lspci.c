@@ -29,7 +29,7 @@ struct grub_pci_classname
 {
   int class;
   int subclass;
-  char *desc;
+  const char *desc;
 };
 
 static const struct grub_pci_classname grub_pci_classes[] =

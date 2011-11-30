@@ -1,3 +1,66 @@
+2011-11-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add missing const qualifiers.
+
+	* grub-core/commands/i386/pc/sendkey.c (keysym): Add missing const.
+	* grub-core/commands/lspci.c (grub_pci_classname): Likewise.
+	* grub-core/commands/menuentry.c (hotkey_aliases): Likewise.
+	* grub-core/disk/lvm.c (grub_lvm_getvalue): Likewise.
+	(grub_lvm_check_flag): Likewise.
+	* grub-core/efiemu/i386/coredetect.c
+	(grub_efiemu_get_default_core_name): Likewise
+	* grub-core/efiemu/main.c (grub_efiemu_autocore): Likewise.
+	* grub-core/fs/hfsplus.c (grub_hfsplus_catkey_internal): Likewise.
+	* grub-core/fs/ntfs.c (fixup): Likewise.
+	* grub-core/fs/xfs.c (grub_xfs_iterate_dir): Likewise.
+	* grub-core/fs/zfs/zfs.c (decomp_entry): Likewise.
+	(fzap_lookup): Likewise.
+	(zap_lookup): Likewise.
+	* grub-core/gnulib/regcomp.c (init_dfa): Likewise.
+	* grub-core/lib/legacy_parse.c (check_option): Likewise.
+	* grub-core/lib/posix_wrap/langinfo.h (nl_langinfo): Likewise.
+	* grub-core/loader/i386/bsd.c (grub_bsd_add_meta): Likewise.
+	(grub_freebsd_add_meta_module): Likewise.
+	(grub_cmd_freebsd_module): Likewise.
+	* grub-core/loader/i386/xnu.c (tbl_alias): Likewise.
+	* grub-core/loader/xnu.c (grub_xnu_register_memory): Likewise.
+	(grub_xnu_writetree_get_size): Likewise.
+	(grub_xnu_writetree_toheap_real): Likewise.
+	(grub_xnu_find_key): Likewise.
+	(grub_xnu_create_key): Likewise.
+	(grub_xnu_create_value): Likewise.
+	(grub_xnu_register_memory): Likewise.
+	(grub_xnu_check_os_bundle_required): Likewise.
+	(grub_xnu_scan_dir_for_kexts): Likewise.
+	(grub_xnu_load_kext_from_dir): Likewise.
+	* grub-core/normal/color.c (color_list): Likewise.
+	* grub-core/normal/completion.c (current_word): Likewise.
+	* grub-core/normal/menu_entry.c (insert_string): Likewise.
+	* grub-core/term/serial.c (grub_serial_find): Likewise.
+	* grub-core/term/tparm.c (grub_terminfo_tparm): Likewise.
+	* include/grub/efiemu/efiemu.h (grub_efiemu_get_default_core_name):
+	Likewise.
+	* include/grub/i386/bsd.h (grub_bsd_add_meta): Likewise.
+	(grub_freebsd_add_meta_module): Likewise.
+	* include/grub/lib/arg.h (grub_arg_option): Likewise.
+	* include/grub/net.h (grub_net_card_driver): Likewise.
+	(grub_net_card): Likewise.
+	(grub_net_app_protocol): Likewise.
+	* include/grub/parttool.h (grub_parttool_argdesc): Likewise.
+	* include/grub/serial.h (grub_serial_find): Likewise.
+	* include/grub/tparm.h (grub_terminfo_tparm): Likewise.
+	* include/grub/xnu.h (grub_xnu_create_key): Likewise.
+	(grub_xnu_create_value): Likewise.
+	(grub_xnu_find_key): Likewise.
+	(grub_xnu_scan_dir_for_kexts): Likewise.
+	(grub_xnu_load_kext_from_dir): Likewise.
+
+	* include/grub/zfs/zio_checksum.h (zio_checksum_t): Moved from here ...
+	* grub-core/fs/zfs/zfs.c (zio_checksum_t): ...here.
+	* include/grub/zfs/zio_checksum.h (zio_checksum_info):
+	Moved from here ...
+	* grub-core/fs/zfs/zfs.c (zio_checksum_info): ... here. Added missing const.
+
 2011-11-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/getroot.c (find_root_device_from_libzfs): Use xasprintf.

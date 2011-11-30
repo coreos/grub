@@ -227,7 +227,7 @@ grub_efiemu_autocore (void)
 {
   const char *prefix;
   char *filename;
-  char *suffix;
+  const char *suffix;
   grub_err_t err;
 
   if (grub_efiemu_sizeof_uintn_t () != 0)

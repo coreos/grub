@@ -451,9 +451,9 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 				grub_fshelp_node_t node))
 {
   struct grub_fshelp_node *diro = (struct grub_fshelp_node *) dir;
-  auto int NESTED_FUNC_ATTR call_hook (grub_uint64_t ino, char *filename);
+  auto int NESTED_FUNC_ATTR call_hook (grub_uint64_t ino, const char *filename);
 
-  int NESTED_FUNC_ATTR call_hook (grub_uint64_t ino, char *filename)
+  int NESTED_FUNC_ATTR call_hook (grub_uint64_t ino, const char *filename)
     {
       struct grub_fshelp_node *fdiro;
 

@@ -40,7 +40,7 @@ static const struct grub_arg_option options[] =
 
 static struct
 {
-  char *name;
+  const char *name;
   int key;
 } hotkey_aliases[] =
   {

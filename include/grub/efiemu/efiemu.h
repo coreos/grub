@@ -272,7 +272,7 @@ grub_err_t grub_efiemu_write_value (void * addr, grub_uint32_t value,
 grub_err_t grub_efiemu_write_sym_markers (void);
 grub_err_t grub_efiemu_pnvram (void);
 grub_err_t grub_efiemu_prepare (void);
-char *grub_efiemu_get_default_core_name (void);
+const char *grub_efiemu_get_default_core_name (void);
 void grub_efiemu_pnvram_cmd_unregister (void);
 grub_err_t grub_efiemu_autocore (void);
 grub_err_t grub_efiemu_crc32 (void);

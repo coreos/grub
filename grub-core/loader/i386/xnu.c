@@ -46,7 +46,7 @@ grub_uint32_t grub_xnu_entry_point, grub_xnu_arg1, grub_xnu_stack;
 struct tbl_alias
 {
   grub_efi_guid_t guid;
-  char *name;
+  const char *name;
 };
 
 static struct tbl_alias table_aliases[] =
