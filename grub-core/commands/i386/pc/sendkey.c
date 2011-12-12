@@ -365,7 +365,7 @@ grub_cmd_sendkey (grub_extcmd_context_t ctxt, int argc, char **args)
 }
 
 static grub_extcmd_t cmd;
-static void *preboot_hook;
+static struct grub_preboot *preboot_hook;
 
 GRUB_MOD_INIT (sendkey)
 {

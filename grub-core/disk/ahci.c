@@ -706,7 +706,7 @@ static struct grub_ata_dev grub_ahci_dev =
 
 
 
-static void *fini_hnd;
+static struct grub_preboot *fini_hnd;
 
 GRUB_MOD_INIT(ahci)
 {

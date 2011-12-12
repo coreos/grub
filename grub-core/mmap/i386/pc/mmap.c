@@ -191,7 +191,7 @@ grub_machine_mmap_register (grub_uint64_t start __attribute__ ((unused)),
 			    int handle  __attribute__ ((unused)))
 {
   grub_err_t err;
-  static void *preb_handle = 0;
+  static struct grub_preboot *preb_handle = 0;
 
   err = malloc_hook ();
   if (err)

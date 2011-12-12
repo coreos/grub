@@ -1426,7 +1426,7 @@ static struct grub_usb_controller_dev usb_controller =
   .detect_dev = grub_ohci_detect_dev
 };
 
-static void *fini_hnd;
+static struct grub_preboot *fini_hnd;
 
 GRUB_MOD_INIT(ohci)
 {

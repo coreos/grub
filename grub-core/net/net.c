@@ -937,7 +937,7 @@ grub_net_restore_hw (void)
   return GRUB_ERR_NONE;
 }
 
-static void *fini_hnd;
+static struct grub_preboot *fini_hnd;
 
 static grub_command_t cmd_addaddr, cmd_deladdr, cmd_addroute, cmd_delroute;
 static grub_command_t cmd_lsroutes, cmd_lscards;
