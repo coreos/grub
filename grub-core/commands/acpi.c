@@ -138,6 +138,7 @@ iszero (grub_uint8_t *reg, int size)
   return 1;
 }
 
+#if defined (__i386__) || defined (__x86_64__)
 grub_err_t
 grub_acpi_create_ebda (void)
 {
@@ -297,6 +298,7 @@ grub_acpi_create_ebda (void)
 
   return GRUB_ERR_NONE;
 }
+#endif
 
 /* Create tables common to ACPIv1 and ACPIv2+ */
 static void
@@ -463,7 +465,6 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
   struct grub_arg_list *state = ctxt->state;
   struct grub_acpi_rsdp_v10 *rsdp;
   struct efiemu_acpi_table *cur, *t;
-  grub_err_t err;
   int i, mmapregion;
   int numoftables;
 
@@ -732,13 +733,20 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
     }
   acpi_tables = 0;
 
-  if (! state[9].set && (err = grub_acpi_create_ebda ()))
+#if defined (__i386__) || defined (__x86_64__)
+  if (! state[9].set)
     {
-      rsdpv1_new = 0;
-      rsdpv2_new = 0;
-      grub_mmap_free_and_unregister (mmapregion);
-      return err;
+      grub_err_t err;
+      err = grub_acpi_create_ebda ();
+      if (err)
+	{
+	  rsdpv1_new = 0;
+	  rsdpv2_new = 0;
+	  grub_mmap_free_and_unregister (mmapregion);
+	  return err;
+	}
     }
+#endif
 
 #ifdef GRUB_MACHINE_EFI
   {

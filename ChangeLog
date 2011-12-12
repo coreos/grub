@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/acpi.c (grub_acpi_create_ebda) [!x86]: Disable.
+	(grub_cmd_acpi) [!x86]: Disable EBDA.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Enable UTF8 in gnulib regexp.
 
 	* config.h.in (RE_ENABLE_I18N) [!GRUB_UTIL]: New define.
