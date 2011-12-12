@@ -1,5 +1,14 @@
 2011-12-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/charset.h (GRUB_MAX_UTF8_PER_UTF16): New const.
+	* grub-core/fs/hfsplus.c (grub_hfsplus_catkey_internal): Change to
+	UTF-16-BE. All users updated.
+	(grub_hfsplus_cmp_catkey): Fix unicode handling.
+	(grub_hfsplus_iterate_dir): Likewise.
+	(grub_hfsplus_label): Likewise.
+
+2011-12-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ahci.c (grub_ahci_pciinit): Fix compat condition.
 
 2011-11-30  Vladimir Serbinenko  <phcoder@gmail.com>
