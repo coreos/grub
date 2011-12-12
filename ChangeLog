@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/ohci.c (grub_ohci_check_transfer): Add an unsigned
+	specification.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/loader.h (grub_loader_register_preboot_hook):
 	Use struct preboot * and not void * for handle. All users updated.
 	(grub_loader_unregister_preboot_hook): Likewise.

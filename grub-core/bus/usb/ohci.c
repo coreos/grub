@@ -1152,8 +1152,8 @@ grub_ohci_check_transfer (grub_usb_controller_t dev,
     return parse_halt (dev, transfer, actual);
 
   /* Finished ED detection */
-  if ( (grub_le_to_cpu32 (cdata->ed_virt->td_head) & ~0xf) ==
-       (grub_le_to_cpu32 (cdata->ed_virt->td_tail) & ~0xf) ) /* Empty ED */
+  if ( (grub_le_to_cpu32 (cdata->ed_virt->td_head) & ~0xfU) ==
+       (grub_le_to_cpu32 (cdata->ed_virt->td_tail) & ~0xfU) ) /* Empty ED */
     {
       /* Check the HALT bit */
       /* It looks like nonsense - it was tested previously...
