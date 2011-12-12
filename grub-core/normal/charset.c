@@ -60,6 +60,51 @@
 #include "widthspec.h"
 #endif
 
+int
+grub_utf8_process (grub_uint8_t c, grub_uint32_t *code, int *count)
+{
+  if (*count)
+    {
+      if ((c & GRUB_UINT8_2_LEADINGBITS) != GRUB_UINT8_1_LEADINGBIT)
+	{
+	  /* invalid */
+	  return 0;
+	}
+      else
+	{
+	  *code <<= 6;
+	  *code |= (c & GRUB_UINT8_6_TRAILINGBITS);
+	  (*count)--;
+	  return 1;
+	}
+    }
+
+  if ((c & GRUB_UINT8_1_LEADINGBIT) == 0)
+    {
+      *code = c;
+      return 1;
+    }
+  if ((c & GRUB_UINT8_3_LEADINGBITS) == GRUB_UINT8_2_LEADINGBITS)
+    {
+      *count = 1;
+      *code = c & GRUB_UINT8_5_TRAILINGBITS;
+      return 1;
+    }
+  if ((c & GRUB_UINT8_4_LEADINGBITS) == GRUB_UINT8_3_LEADINGBITS)
+    {
+      *count = 2;
+      *code = c & GRUB_UINT8_4_TRAILINGBITS;
+      return 1;
+    }
+  if ((c & GRUB_UINT8_5_LEADINGBITS) == GRUB_UINT8_4_LEADINGBITS)
+    {
+      *count = 3;
+      *code = c & GRUB_UINT8_3_TRAILINGBITS;
+      return 1;
+    }
+  return 0;
+}
+
 grub_ssize_t
 grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 		    const grub_uint8_t *src, grub_size_t srcsize,
@@ -74,70 +119,80 @@ grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 
   while (srcsize && destsize)
     {
-      grub_uint32_t c = *src++;
+      grub_uint8_t c = *src++;
       if (srcsize != (grub_size_t)-1)
 	srcsize--;
-      if (count)
+      if (!grub_utf8_process (c, &code, &count))
+	return -1;
+      if (count != 0)
+	continue;
+      if (code == 0)
+	break;
+      if (destsize < 2 && code >= GRUB_UCS2_LIMIT)
+	break;
+      if (code >= GRUB_UCS2_LIMIT)
 	{
-	  if ((c & GRUB_UINT8_2_LEADINGBITS) != GRUB_UINT8_1_LEADINGBIT)
-	    {
-	      /* invalid */
-	      return -1;
-	    }
-	  else
-	    {
-	      code <<= 6;
-	      code |= (c & GRUB_UINT8_6_TRAILINGBITS);
-	      count--;
-	    }
+	  *p++ = GRUB_UTF16_UPPER_SURROGATE (code);
+	  *p++ = GRUB_UTF16_LOWER_SURROGATE (code);
+	  destsize -= 2;
 	}
       else
 	{
-	  if (c == 0)
-	    break;
-
-	  if ((c & GRUB_UINT8_1_LEADINGBIT) == 0)
-	    code = c;
-	  else if ((c & GRUB_UINT8_3_LEADINGBITS) == GRUB_UINT8_2_LEADINGBITS)
-	    {
-	      count = 1;
-	      code = c & GRUB_UINT8_5_TRAILINGBITS;
-	    }
-	  else if ((c & GRUB_UINT8_4_LEADINGBITS) == GRUB_UINT8_3_LEADINGBITS)
-	    {
-	      count = 2;
-	      code = c & GRUB_UINT8_4_TRAILINGBITS;
-	    }
-	  else if ((c & GRUB_UINT8_5_LEADINGBITS) == GRUB_UINT8_4_LEADINGBITS)
-	    {
-	      count = 3;
-	      code = c & GRUB_UINT8_3_TRAILINGBITS;
-	    }
-	  else
-	    return -1;
-	}
-
-      if (count == 0)
-	{
-	  if (destsize < 2 && code >= GRUB_UCS2_LIMIT)
-	    break;
-	  if (code >= GRUB_UCS2_LIMIT)
-	    {
-	      *p++ = GRUB_UTF16_UPPER_SURROGATE (code);
-	      *p++ = GRUB_UTF16_LOWER_SURROGATE (code);
-	      destsize -= 2;
-	    }
-	  else
-	    {
-	      *p++ = code;
-	      destsize--;
-	    }
+	  *p++ = code;
+	  destsize--;
 	}
     }
 
   if (srcend)
     *srcend = src;
   return p - dest;
+}
+
+/* Returns -2 if not enough space, -1 on invalid character.  */
+grub_ssize_t
+grub_encode_utf8_character (grub_uint8_t *dest, grub_uint8_t *destend,
+			    grub_uint32_t code)
+{
+  if (dest >= destend)
+    return -2;
+  if (code <= 0x007F)
+    {
+      *dest++ = code;
+      return 1;
+    }
+  if (code <= 0x07FF)
+    {
+      if (dest + 1 >= destend)
+	return -2;
+      *dest++ = (code >> 6) | 0xC0;
+      *dest++ = (code & 0x3F) | 0x80;
+      return 2;
+    }
+  if ((code >= 0xDC00 && code <= 0xDFFF)
+      || (code >= 0xD800 && code <= 0xDBFF))
+    {
+      /* No surrogates in UCS-4... */
+      return -1;
+    }
+  if (code < 0x10000)
+    {
+      if (dest + 2 >= destend)
+	return -2;
+      *dest++ = (code >> 12) | 0xE0;
+      *dest++ = ((code >> 6) & 0x3F) | 0x80;
+      *dest++ = (code & 0x3F) | 0x80;
+      return 3;
+    }
+  {
+    if (dest + 3 >= destend)
+      return -2;
+    *dest++ = (code >> 18) | 0xF0;
+    *dest++ = ((code >> 12) & 0x3F) | 0x80;
+    *dest++ = ((code >> 6) & 0x3F) | 0x80;
+    *dest++ = (code & 0x3F) | 0x80;
+    return 4;
+  }
+
 }
 
 /* Convert UCS-4 to UTF-8.  */
@@ -151,39 +206,17 @@ grub_ucs4_to_utf8 (grub_uint32_t *src, grub_size_t size,
   while (size-- && dest < destend)
     {
       grub_uint32_t code = *src++;
-
-      if (code <= 0x007F)
-	*dest++ = code;
-      else if (code <= 0x07FF)
+      grub_ssize_t s;
+      s = grub_encode_utf8_character (dest, destend,
+				      code);
+      if (s == -2)
+	break;
+      if (s == -1)
 	{
-	  if (dest + 1 >= destend)
-	    break;
-	  *dest++ = (code >> 6) | 0xC0;
-	  *dest++ = (code & 0x3F) | 0x80;
-	}
-      else if ((code >= 0xDC00 && code <= 0xDFFF)
-	       || (code >= 0xD800 && code <= 0xDBFF))
-	{
-	  /* No surrogates in UCS-4... */
 	  *dest++ = '?';
+	  continue;
 	}
-      else if (code < 0x10000)
-	{
-	  if (dest + 2 >= destend)
-	    break;
-	  *dest++ = (code >> 12) | 0xE0;
-	  *dest++ = ((code >> 6) & 0x3F) | 0x80;
-	  *dest++ = (code & 0x3F) | 0x80;
-	}
-      else
-	{
-	  if (dest + 3 >= destend)
-	    break;
-	  *dest++ = (code >> 18) | 0xF0;
-	  *dest++ = ((code >> 12) & 0x3F) | 0x80;
-	  *dest++ = ((code >> 6) & 0x3F) | 0x80;
-	  *dest++ = (code & 0x3F) | 0x80;
-	}
+      dest += s;
     }
   *dest = 0;
 }

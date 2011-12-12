@@ -1,5 +1,25 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Enable UTF8 in gnulib regexp.
+
+	* config.h.in (RE_ENABLE_I18N) [!GRUB_UTIL]: New define.
+	* grub-core/lib/posix_wrap/ctype.h (islower): Use grub_islower.
+	(isupper): Use grub_isupper.
+	(isascii): New inline function.
+	* grub-core/lib/posix_wrap/wchar.h: Replace dummy with real contents.
+	* grub-core/lib/posix_wrap/wctype.h: Likewise.
+	* grub-core/normal/charset.c (grub_utf8_process): New function.
+	(grub_utf8_to_utf16): Use grub_utf8_process.
+	(grub_encode_utf8_character): New function.
+	(grub_ucs4_to_utf8): Use grub_encode_utf8_character.
+	* include/grub/charset.h (grub_utf8_process): New declaration.
+	(grub_encode_utf8_character): Likewise.
+	* include/grub/misc.h (grub_islower): New inline function.
+	(grub_isupper): Likewise.
+	(grub_strchrsub): Moved down to fix the definitions.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/ohci.c (grub_ohci_check_transfer): Add an unsigned
 	specification.
 

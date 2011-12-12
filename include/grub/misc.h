@@ -176,6 +176,18 @@ grub_isalpha (int c)
 }
 
 static inline int
+grub_islower (int c)
+{
+  return (c >= 'a' && c <= 'z');
+}
+
+static inline int
+grub_isupper (int c)
+{
+  return (c >= 'A' && c <= 'Z');
+}
+
+static inline int
 grub_isgraph (int c)
 {
   return (c >= '!' && c <= '~');
@@ -250,27 +262,6 @@ grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
   return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
 }
 
-/* Replace all `ch' characters of `input' with `with' and copy the
-   result into `output'; return EOS address of `output'. */
-static inline char *
-grub_strchrsub (char *output, const char *input, char ch, const char *with)
-{
-  grub_size_t grub_strlen (const char *s);
-  while (*input)
-    {
-      if (*input == ch)
-	{
-	  grub_strcpy (output, with);
-	  output += grub_strlen (with);
-	  input++;
-	  continue;
-	}
-      *output++ = *input++;
-    }
-  *output = '\0';
-  return output;
-}
-
 unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);
 unsigned long long EXPORT_FUNC(grub_strtoull) (const char *str, char **end, int base);
 
@@ -316,6 +307,26 @@ void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
 grub_size_t EXPORT_FUNC(grub_strlen) (const char *s) __attribute__ ((warn_unused_result));
 int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 int EXPORT_FUNC(grub_printf_) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+
+/* Replace all `ch' characters of `input' with `with' and copy the
+   result into `output'; return EOS address of `output'. */
+static inline char *
+grub_strchrsub (char *output, const char *input, char ch, const char *with)
+{
+  while (*input)
+    {
+      if (*input == ch)
+	{
+	  grub_strcpy (output, with);
+	  output += grub_strlen (with);
+	  input++;
+	  continue;
+	}
+      *output++ = *input++;
+    }
+  *output = '\0';
+  return output;
+}
 
 extern void (*EXPORT_VAR (grub_xputs)) (const char *str);
 

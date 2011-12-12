@@ -126,11 +126,22 @@ grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize);
 
 int grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
 			     grub_uint32_t **last_position);
+
+/* Process one character from UTF8 sequence. 
+   At beginning set *code = 0, *count = 0. Returns 0 on failure and
+   1 on success. *count holds the number of trailing bytes.  */
+int
+grub_utf8_process (grub_uint8_t c, grub_uint32_t *code, int *count);
+
 void
 grub_ucs4_to_utf8 (grub_uint32_t *src, grub_size_t size,
 		   grub_uint8_t *dest, grub_size_t destsize);
 grub_size_t grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 			       const grub_uint8_t *src, grub_size_t srcsize,
 			       const grub_uint8_t **srcend);
+/* Returns -2 if not enough space, -1 on invalid character.  */
+grub_ssize_t
+grub_encode_utf8_character (grub_uint8_t *dest, grub_uint8_t *destend,
+			    grub_uint32_t code);
 
 #endif
