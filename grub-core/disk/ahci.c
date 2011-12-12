@@ -305,7 +305,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
   else
     grub_dprintf ("ahci", "AHCI is already in OS mode\n");
 
-  if (~(hba->global_control & GRUB_AHCI_HBA_GLOBAL_CONTROL_AHCI_EN))
+  if (!(hba->global_control & GRUB_AHCI_HBA_GLOBAL_CONTROL_AHCI_EN))
     grub_dprintf ("ahci", "AHCI is in compat mode. Switching\n");
   else
     grub_dprintf ("ahci", "AHCI is in AHCI mode.\n");

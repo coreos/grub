@@ -1,3 +1,7 @@
+2011-12-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ahci.c (grub_ahci_pciinit): Fix compat condition.
+
 2011-11-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add missing const qualifiers.
