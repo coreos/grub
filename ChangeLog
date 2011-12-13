@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/xfs.c (grub_xfs_iterate_dir): Use grub_get_unaligned16
+	to get freetag and skip.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/nilfs2.c (grub_nilfs2_btree_node): Add zero-size keys
 	array.
 	(grub_nilfs2_btree_node_dkeys): Ensure return pointer alignment.

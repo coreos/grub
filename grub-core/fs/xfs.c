@@ -589,18 +589,18 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 			  - (int) sizeof (struct grub_xfs_dir2_entry)))
 	      {
 		struct grub_xfs_dir2_entry *direntry;
-		grub_uint16_t *freetag;
+		grub_uint8_t *freetag;
 		char *filename;
 
 		direntry = (struct grub_xfs_dir2_entry *) &dirblock[pos];
-		freetag = (grub_uint16_t *) direntry;
+		freetag = (grub_uint8_t *) direntry;
 
-		if (*freetag == 0XFFFF)
+		if (grub_get_unaligned16 (freetag) == 0XFFFF)
 		  {
-		    grub_uint16_t *skip = (grub_uint16_t *) (freetag + 1);
+		    grub_uint8_t *skip = (freetag + sizeof (grub_uint16_t));
 
 		    /* This entry is not used, go to the next one.  */
-		    pos += grub_be_to_cpu16 (*skip);
+		    pos += grub_be_to_cpu16 (grub_get_unaligned16 (skip));
 
 		    continue;
 		  }
