@@ -1,5 +1,15 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/types.h (grub_properly_aligned_t): New type.
+	(GRUB_PROPERLY_ALIGNED_ARRAY): New macro.
+	(grub_get_unaligned16): Add explicit casts.
+	(grub_get_unaligned32): Likewise.
+	(grub_get_unaligned64): Likewise.
+	(grub_set_unaligned16): New function.
+	(grub_set_unaligned32): Likewise.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/datetime.c (grub_weekday_names): Make const.
 
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>

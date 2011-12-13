@@ -140,6 +140,10 @@ typedef grub_int32_t	grub_ssize_t;
 #define PTR_TO_UINT32(x) ((grub_uint32_t)(grub_uint64_t)(x))
 #endif
 
+typedef grub_uint64_t grub_properly_aligned_t;
+
+#define GRUB_PROPERLY_ALIGNED_ARRAY(name, size) grub_properly_aligned_t name[(size + sizeof (grub_properly_aligned_t) - 1) / sizeof (grub_properly_aligned_t)]
+
 /* The type for representing a file offset.  */
 typedef grub_uint64_t	grub_off_t;
 
@@ -222,31 +226,57 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 # define grub_cpu_to_le32_compile_time(x)	((grub_uint32_t) (x))
 #endif /* ! WORDS_BIGENDIAN */
 
-static inline grub_uint16_t grub_get_unaligned16(void *ptr)
+static inline grub_uint16_t grub_get_unaligned16 (const void *ptr)
 {
-  struct
-    {
-      grub_uint16_t d;
-    } __attribute__((packed)) *dd = ptr;
-    return dd->d;
+  struct grub_unaligned_uint16_t
+  {
+    grub_uint16_t d;
+  } __attribute__ ((packed));
+  const struct grub_unaligned_uint16_t *dd
+    = (const struct grub_unaligned_uint16_t *) ptr;
+  return dd->d;
 }
 
-static inline grub_uint32_t grub_get_unaligned32(void *ptr)
+static inline void grub_set_unaligned16 (void *ptr, grub_uint16_t val)
 {
-  struct
-    {
-      grub_uint32_t d;
-    } __attribute__((packed)) *dd = ptr;
-    return dd->d;
+  struct grub_unaligned_uint16_t
+  {
+    grub_uint16_t d;
+  } __attribute__ ((packed));
+  struct grub_unaligned_uint16_t *dd = (struct grub_unaligned_uint16_t *) ptr;
+  dd->d = val;
 }
 
-static inline grub_uint64_t grub_get_unaligned64(void *ptr)
+static inline grub_uint32_t grub_get_unaligned32 (const void *ptr)
 {
-  struct
-    {
-      grub_uint64_t d;
-    } __attribute__((packed)) *dd = ptr;
-    return dd->d;
+  struct grub_unaligned_uint32_t
+  {
+    grub_uint32_t d;
+  } __attribute__ ((packed));
+  const struct grub_unaligned_uint32_t *dd
+    = (const struct grub_unaligned_uint32_t *) ptr;
+  return dd->d;
+}
+
+static inline void grub_set_unaligned32 (void *ptr, grub_uint32_t val)
+{
+  struct grub_unaligned_uint32_t
+  {
+    grub_uint32_t d;
+  } __attribute__ ((packed));
+  struct grub_unaligned_uint32_t *dd = (struct grub_unaligned_uint32_t *) ptr;
+  dd->d = val;
+}
+
+static inline grub_uint64_t grub_get_unaligned64 (const void *ptr)
+{
+  struct grub_unaligned_uint64_t
+  {
+    grub_uint64_t d;
+  } __attribute__ ((packed));
+  const struct grub_unaligned_uint64_t *dd
+    = (const struct grub_unaligned_uint64_t *)ptr;
+  return dd->d;
 }
 
 #endif /* ! GRUB_TYPES_HEADER */
