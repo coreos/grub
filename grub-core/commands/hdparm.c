@@ -165,22 +165,20 @@ grub_hdparm_set_val_cmd (const char * msg, int val,
 }
 
 static const char *
-le16_to_char (char *dest, const grub_uint16_t * src16, unsigned bytes)
+le16_to_char (grub_uint16_t *dest, const grub_uint16_t * src16, unsigned bytes)
 {
-  grub_uint16_t * dest16 = (grub_uint16_t *) dest;
   unsigned i;
   for (i = 0; i < bytes / 2; i++)
-    dest16[i] = grub_be_to_cpu16 (src16[i]);
-  return dest;
+    dest[i] = grub_be_to_cpu16 (src16[i]);
+  dest[i] = 0;
+  return (char *) dest;
 }
 
 static void
-grub_hdparm_print_identify (const char * idbuf)
+grub_hdparm_print_identify (const grub_uint16_t * idw)
 {
-  const grub_uint16_t * idw = (const grub_uint16_t *) idbuf;
-
   /* Print identity strings.  */
-  char tmp[40];
+  grub_uint16_t tmp[21];
   grub_printf ("Model:    \"%.40s\"\n", le16_to_char (tmp, &idw[27], 40));
   grub_printf ("Firmware: \"%.8s\"\n",  le16_to_char (tmp, &idw[23], 8));
   grub_printf ("Serial:   \"%.20s\"\n", le16_to_char (tmp, &idw[10], 20));
@@ -377,7 +375,7 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
   /* Print/dump IDENTIFY.  */
   if (ident || dumpid)
     {
-      char buf[GRUB_DISK_SECTOR_SIZE];
+      grub_uint16_t buf[GRUB_DISK_SECTOR_SIZE / 2];
       if (grub_hdparm_do_ata_cmd (ata, GRUB_ATA_CMD_IDENTIFY_DEVICE,
           0, 0, buf, sizeof (buf)))
 	grub_printf ("Cannot read ATA IDENTIFY data\n");
@@ -386,7 +384,7 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
 	  if (ident)
 	    grub_hdparm_print_identify (buf);
 	  if (dumpid)
-	    hexdump (0, buf, sizeof (buf));
+	    hexdump (0, (char *) buf, sizeof (buf));
 	}
     }
 

@@ -29,29 +29,27 @@ static grub_ata_dev_t grub_ata_dev_list;
 
 /* Byteorder has to be changed before strings can be read.  */
 static void
-grub_ata_strncpy (char *dst, char *src, grub_size_t len)
+grub_ata_strncpy (grub_uint16_t *dst16, grub_uint16_t *src16, grub_size_t len)
 {
-  grub_uint16_t *src16 = (grub_uint16_t *) src;
-  grub_uint16_t *dst16 = (grub_uint16_t *) dst;
   unsigned int i;
 
   for (i = 0; i < len / 2; i++)
     *(dst16++) = grub_be_to_cpu16 (*(src16++));
-  dst[len] = '\0';
+  dst16[i] = 0;
 }
 
 static void
-grub_ata_dumpinfo (struct grub_ata *dev, char *info)
+grub_ata_dumpinfo (struct grub_ata *dev, grub_uint16_t *info)
 {
-  char text[41];
+  grub_uint16_t text[21];
 
   /* The device information was read, dump it for debugging.  */
-  grub_ata_strncpy (text, info + 20, 20);
-  grub_dprintf ("ata", "Serial: %s\n", text);
-  grub_ata_strncpy (text, info + 46, 8);
-  grub_dprintf ("ata", "Firmware: %s\n", text);
-  grub_ata_strncpy (text, info + 54, 40);
-  grub_dprintf ("ata", "Model: %s\n", text);
+  grub_ata_strncpy (text, info + 10, 20);
+  grub_dprintf ("ata", "Serial: %s\n", (char *) text);
+  grub_ata_strncpy (text, info + 23, 8);
+  grub_dprintf ("ata", "Firmware: %s\n", (char *) text);
+  grub_ata_strncpy (text, info + 27, 40);
+  grub_dprintf ("ata", "Model: %s\n", (char *) text);
 
   if (! dev->atapi)
     {
@@ -65,7 +63,7 @@ static grub_err_t
 grub_atapi_identify (struct grub_ata *dev)
 {
   struct grub_disk_ata_pass_through_parms parms;
-  char *info;
+  grub_uint16_t *info;
   grub_err_t err;
 
   info = grub_malloc (GRUB_DISK_SECTOR_SIZE);
@@ -105,17 +103,19 @@ static grub_err_t
 grub_ata_identify (struct grub_ata *dev)
 {
   struct grub_disk_ata_pass_through_parms parms;
-  char *info;
+  grub_uint64_t *info64;
+  grub_uint32_t *info32;
   grub_uint16_t *info16;
   grub_err_t err;
 
-  info = grub_malloc (GRUB_DISK_SECTOR_SIZE);
-  if (! info)
+  info64 = grub_malloc (GRUB_DISK_SECTOR_SIZE);
+  info32 = (grub_uint32_t *) info64;
+  info16 = (grub_uint16_t *) info64;
+  if (! info16)
     return grub_errno;
 
-  info16 = (grub_uint16_t *) info;
   grub_memset (&parms, 0, sizeof (parms));
-  parms.buffer = info;
+  parms.buffer = info16;
   parms.size = GRUB_DISK_SECTOR_SIZE;
   parms.taskfile.disk = 0xE0;
 
@@ -126,7 +126,7 @@ grub_ata_identify (struct grub_ata *dev)
   if (err || parms.size != GRUB_DISK_SECTOR_SIZE)
     {
       grub_uint8_t sts = parms.taskfile.status;
-      grub_free (info);
+      grub_free (info16);
       grub_errno = GRUB_ERR_NONE;
       if ((sts & (GRUB_ATA_STATUS_BUSY | GRUB_ATA_STATUS_DRQ
 	  | GRUB_ATA_STATUS_ERR)) == GRUB_ATA_STATUS_ERR
@@ -167,14 +167,14 @@ grub_ata_identify (struct grub_ata *dev)
 
   /* Determine the amount of sectors.  */
   if (dev->addr != GRUB_ATA_LBA48)
-    dev->size = grub_le_to_cpu32(*((grub_uint32_t *) &info16[60]));
+    dev->size = grub_le_to_cpu32 (info32[30]);
   else
-    dev->size = grub_le_to_cpu64(*((grub_uint64_t *) &info16[100]));
+    dev->size = grub_le_to_cpu64 (info64[25]);
 
   if (info16[106] & (1 << 12))
     {
       grub_uint32_t secsize;
-      secsize = grub_le_to_cpu32 (*((grub_uint32_t *) &info16[117]));
+      secsize = grub_le_to_cpu32 (grub_get_unaligned32 (&info16[117]));
       if (secsize & (secsize - 1) || !secsize
 	  || secsize > 1048576)
 	secsize = 256;
@@ -191,9 +191,9 @@ grub_ata_identify (struct grub_ata *dev)
   dev->heads = info16[3];
   dev->sectors_per_track = info16[6];
 
-  grub_ata_dumpinfo (dev, info);
+  grub_ata_dumpinfo (dev, info16);
 
-  grub_free(info);
+  grub_free (info16);
 
   return 0;
 }

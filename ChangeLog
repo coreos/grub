@@ -1,5 +1,18 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/hdparm.c (le16_to_char): Make src and dest uint16 *
+	to ensure alignment.
+	(grub_hdparm_print_identify): Make argument uint16 * to ensure
+	alignment. Ensure tmp alignment.
+	(grub_cmd_hdparm): Ensure buf alignment.
+	* grub-core/disk/ata.c (grub_ata_strncpy): Make src and dest uint16 *
+	to ensure alignment.
+	(grub_ata_dumpinfo): Ensure text alignment.
+	(grub_atapi_identify): Preserve alignment invariant.
+	(grub_ata_identify): Likewise. Use grub_get_unaligned32 when necessary.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/emu/misc.h (xasprintf): Add missing format attribute.
 	* include/grub/mips/kernel.h (grub_halt): Remove redundant declaration.
 	* include/grub/mips/qemu_mips/kernel.h (grub_halt): Likewise.
