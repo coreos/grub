@@ -302,6 +302,7 @@ grub_net_add_addr (const char *name,
 		   grub_net_interface_flags_t flags);
 
 extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
+#define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
 
 extern grub_net_app_level_t grub_net_app_level_list;
 
@@ -422,9 +423,6 @@ grub_net_hwaddr_cmp (const grub_net_link_level_address_t *a,
 void
 grub_net_addr_to_str (const grub_net_network_level_address_t *target,
 		      char *buf);
-
-extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
-#define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
 
 #define FOR_NET_NETWORK_LEVEL_INTERFACES_SAFE(var,next) for (var = grub_net_network_level_interfaces, next = var->next; var; var = next, next = var->next)
 

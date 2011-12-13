@@ -1,5 +1,11 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/net.h (grub_net_network_level_interfaces): Remove
+	redundant declaration.
+	(FOR_NET_NETWORK_LEVEL_INTERFACES): Move to appropriate place.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/hdparm.c (le16_to_char): Make src and dest uint16 *
 	to ensure alignment.
 	(grub_hdparm_print_identify): Make argument uint16 * to ensure
