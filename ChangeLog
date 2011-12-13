@@ -1,5 +1,33 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (DVA_OFFSET_TO_PHYS_SECTOR): Make into inline
+	function.
+	(ZAP_HASH_IDX): Likewise.
+	(ZAP_LEAF_HASH_SHIFT): Likewise.
+	(ZAP_LEAF_HASH_NUMENTRIES): Likewise.
+	(LEAF_HASH): Likewise.
+	(ZAP_LEAF_NUMCHUNKS): Likewise.
+	(ZAP_LEAF_CHUNK): Likewise. Changed pointer arithmetic to preserve
+	alignment invariants. Return pointer. All users updated.
+	(ZAP_LEAF_ENTRY): Make into inline function.
+	(NBBY): Removed.
+	(xor): LIkewise.
+	(xor_out): Use grub_crypto_xor.
+	(dnode_get_path): Use grub_get_unaligned.
+	(nvlist_find_value): Likewise.
+	(grub_zfs_nvlist_lookup_uint64): Likewise.
+	(grub_zfs_nvlist_lookup_string): Likewise.
+	(get_nvlist_size): Likewise.
+	(grub_zfs_open): Likewise.
+	(fill_fs_info): Likewise.
+	(grub_zfs_dir): Likewise.
+	* include/grub/zfs/zap_leaf.h (zap_leaf_phys): Adapt to preserve
+	alignment invariants.
+	* include/grub/zfs/zio.h (zio_eck_t): Mark as packed as it's not
+	necessarily aligned.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/netbuff.c (grub_netbuff_alloc): Ensure proper alignment.
 
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
