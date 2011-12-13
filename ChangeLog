@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/romfs.c (grub_romfs_iterate_dir): Properly align
+	name for checksum and fix allocation algorithm.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/types.h (grub_properly_aligned_t): New type.
 	(GRUB_PROPERLY_ALIGNED_ARRAY): New macro.
 	(grub_get_unaligned16): Add explicit casts.
