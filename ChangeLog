@@ -1,5 +1,9 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/raid.c (scan_devices): Fix condition.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/drivers/ieee1275/ofnet.c (bootp_response_properties):
 	Make name a const ptr.
 

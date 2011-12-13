@@ -120,7 +120,7 @@ scan_devices (const char *arname)
 	  struct grub_raid_member *m;
 	  for (m = arr->members; m < arr->members + arr->nr_devs; m++)
 	    if (m->device && m->device->id == disk->id
-		&& m->device->dev->id == m->device->dev->id
+		&& m->device->dev->id == disk->dev->id
 		&& grub_partition_get_start (m->device->partition)
 		== grub_partition_get_start (disk->partition)
 		&& grub_disk_get_size (m->device)
