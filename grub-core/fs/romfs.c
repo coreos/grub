@@ -112,7 +112,7 @@ grub_romfs_mount (grub_device_t dev)
   if (err)
     return NULL;
   for (ptr = sb.sb.label; (void *) ptr < (void *) (&sb + 1)
-	 && ptr < sb.d + grub_be_to_cpu32 (sb.sb.total_size); ptr++)
+	 && ptr - sb.d < (grub_ssize_t) grub_be_to_cpu32 (sb.sb.total_size); ptr++)
     if (!*ptr)
       break;
   if ((void *) ptr == &sb + 1)
@@ -124,7 +124,7 @@ grub_romfs_mount (grub_device_t dev)
 	if (err)
 	  return NULL;
 	for (ptr = sb.d; (void *) ptr < (void *) (&sb + 1)
-	       && ptr < sb.d + grub_be_to_cpu32 (sb.sb.total_size); ptr++)
+	       && ptr - sb.d < (grub_ssize_t) grub_be_to_cpu32 (sb.sb.total_size); ptr++)
 	  if (!*ptr)
 	    break;
       }

@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/romfs.c (grub_romfs_mount): Fix pointer comparison
+	overflow.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/squash4.c (grub_squash_inode): Fix field sizes.
 	(grub_squash_dirent_header): Likewise.
 	(read_chunk): Don't double swap.
