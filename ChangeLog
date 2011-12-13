@@ -1,5 +1,11 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/sun.c (grub_sun_is_valid): make argument uint16_t *
+	to ensure alignment.
+	(sun_partition_map_iterate): Make `block' a union to ensure alignment.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c (u16at): Make into inline function.
 	Handle unaligned pointers.
 	(u32at): Likewise.
