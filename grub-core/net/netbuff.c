@@ -78,6 +78,8 @@ grub_netbuff_alloc (grub_size_t len)
   struct grub_net_buff *nb;
   void *data;
 
+  COMPILE_TIME_ASSERT (NETBUFF_ALIGN % sizeof (grub_properly_aligned_t) == 0);
+
   if (len < NETBUFFMINLEN)
     len = NETBUFFMINLEN;
 
@@ -85,7 +87,8 @@ grub_netbuff_alloc (grub_size_t len)
   data = grub_memalign (NETBUFF_ALIGN, len + sizeof (*nb));
   if (!data)
     return NULL;
-  nb = (struct grub_net_buff *) ((grub_uint8_t *) data + len);
+  nb = (struct grub_net_buff *) ((grub_properly_aligned_t *) data
+				 + len / sizeof (grub_properly_aligned_t));
   nb->head = nb->data = nb->tail = data;
   nb->end = (char *) nb;
   return nb;

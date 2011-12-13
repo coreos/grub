@@ -1,5 +1,9 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/netbuff.c (grub_netbuff_alloc): Ensure proper alignment.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Change pointer
 	arithmetic to conserve alignment invariants.
 
