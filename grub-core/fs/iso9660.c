@@ -533,10 +533,12 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
   grub_off_t len;
   char *symlink = 0;
 
-  auto void add_part (const char *part, int len);
-
   /* Extend the symlink.  */
-  void add_part (const char *part, int len2)
+  auto inline void  __attribute__ ((always_inline)) add_part (const char *part,
+							      int len2);
+
+  auto inline void  __attribute__ ((always_inline)) add_part (const char *part,
+							      int len2)
     {
       int size = symlink ? grub_strlen (symlink) : 0;
 

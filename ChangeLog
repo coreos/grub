@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Force inlining of
+	add_part to workaround compiler bug.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/kernel.h (FOR_MODULES): Preserve alignment invariants.
 
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
