@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Change pointer
+	arithmetic to conserve alignment invariants.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/efiemu/efiemu.h (grub_efiemu_get_memory_map): Remove
 	redundant declaration.
 	(grub_efiemu_mm_obtain_request): Likewise.

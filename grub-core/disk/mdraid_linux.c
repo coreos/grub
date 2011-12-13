@@ -216,11 +216,11 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
   array->chunk_size = grub_le_to_cpu32 (sb.chunk_size) >> 9;
   array->index = grub_le_to_cpu32 (sb.this_disk.number);
   array->uuid_len = 16;
-  array->uuid = grub_malloc (16);
+  uuid = grub_malloc (16);
+  array->uuid = (char *) uuid;
   if (!array->uuid)
       return grub_errno;
 
-  uuid = (grub_uint32_t *) array->uuid;
   uuid[0] = grub_swap_bytes32 (sb.set_uuid0);
   uuid[1] = grub_swap_bytes32 (sb.set_uuid1);
   uuid[2] = grub_swap_bytes32 (sb.set_uuid2);
