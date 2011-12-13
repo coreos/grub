@@ -1,5 +1,9 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Fix fmt2 parsing.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/videotest.c (grub_cmd_videotest): Check that
 	allocation succeeded.
 

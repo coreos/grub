@@ -749,6 +749,12 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
       while (*fmt && grub_isdigit (*fmt))
 	fmt++;
 
+      if (*fmt && *fmt =='.')
+	fmt++;
+
+      while (*fmt && grub_isdigit (*fmt))
+	fmt++;
+
       p = fmt;
 
       if (*fmt && *fmt == '$')
