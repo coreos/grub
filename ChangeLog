@@ -1,5 +1,13 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/hfsplus.c (grub_hfsplus_btree_recoffset): Handle the
+	case of aunaligned recptr.
+	(grub_hfsplus_read_block): Declare extoverflow as key to ensure
+	alignment.
+	(grub_hfsplus_btree_search): Handle unaligned index.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/xfs.c (grub_xfs_iterate_dir): Use grub_get_unaligned16
 	to get freetag and skip.
 

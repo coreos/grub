@@ -251,10 +251,9 @@ grub_hfsplus_btree_recoffset (struct grub_hfsplus_btree *btree,
 			   struct grub_hfsplus_btnode *node, int index)
 {
   char *cnode = (char *) node;
-  grub_uint16_t *recptr;
-  recptr = (grub_uint16_t *) (&cnode[btree->nodesize
-				     - index * sizeof (grub_uint16_t) - 2]);
-  return grub_be_to_cpu16 (*recptr);
+  void *recptr;
+  recptr = (&cnode[btree->nodesize - index * sizeof (grub_uint16_t) - 2]);
+  return grub_be_to_cpu16 (grub_get_unaligned16 (recptr));
 }
 
 /* Return a pointer to the record with the index INDEX, in the node
@@ -315,7 +314,7 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   while (1)
     {
       struct grub_hfsplus_extkey *key;
-      struct grub_hfsplus_extkey_internal extoverflow;
+      struct grub_hfsplus_key_internal extoverflow;
       grub_disk_addr_t blk;
       grub_off_t ptr;
 
@@ -343,11 +342,11 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 	}
 
       /* Set up the key to look for in the extent overflow file.  */
-      extoverflow.fileid = node->fileid;
-      extoverflow.start = fileblock - blksleft;
+      extoverflow.extkey.fileid = node->fileid;
+      extoverflow.extkey.start = fileblock - blksleft;
 
       if (grub_hfsplus_btree_search (&node->data->extoverflow_tree,
-				     (struct grub_hfsplus_key_internal *) &extoverflow,
+				     &extoverflow,
 				     grub_hfsplus_cmp_extkey, &nnode, &ptr))
 	{
 	  grub_error (GRUB_ERR_READ_ERROR,
@@ -697,7 +696,7 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
 	    }
 	  else if (nodedesc->type == GRUB_HFSPLUS_BTNODE_TYPE_INDEX)
 	    {
-	      grub_uint32_t *pointer;
+	      void *pointer;
 
 	      /* The place where the key could have been found didn't
 		 contain the key.  This means that the previous match
@@ -709,10 +708,10 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
 		 that we are looking for.  The last match that is
 		 found will be used to locate the child which can
 		 contain the record.  */
-	      pointer = (grub_uint32_t *) ((char *) currkey
-					   + grub_be_to_cpu16 (currkey->keylen)
-					   + 2);
-	      currnode = grub_be_to_cpu32 (*pointer);
+	      pointer = ((char *) currkey
+			 + grub_be_to_cpu16 (currkey->keylen)
+			 + 2);
+	      currnode = grub_be_to_cpu32 (grub_get_unaligned32 (pointer));
 	      match = 1;
 	    }
 	}
