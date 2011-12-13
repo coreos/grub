@@ -80,7 +80,8 @@ struct grub_squash_inode
       grub_uint32_t dummy;
       grub_uint32_t chunk;
       grub_uint32_t fragment;
-      grub_uint32_t offset;
+      grub_uint16_t offset;
+      grub_uint16_t dummy2;
       grub_uint32_t size;
       grub_uint32_t block_size[0];
     }  __attribute__ ((packed)) file;
@@ -90,8 +91,9 @@ struct grub_squash_inode
       grub_uint64_t size;
       grub_uint32_t dummy2[3];
       grub_uint32_t fragment;
-      grub_uint32_t offset;
-      grub_uint32_t dummy3;
+      grub_uint16_t offset;
+      grub_uint16_t dummy3;
+      grub_uint32_t dummy4;
       grub_uint32_t block_size[0];
     }  __attribute__ ((packed)) long_file;
     struct {
@@ -99,8 +101,9 @@ struct grub_squash_inode
       grub_uint32_t chunk;
       grub_uint32_t dummy2;
       grub_uint16_t size;
-      grub_uint32_t offset;
+      grub_uint16_t offset;
       grub_uint16_t dummy3;
+      grub_uint16_t dummy4;
     } __attribute__ ((packed)) dir;
     struct {
       grub_uint64_t dummy;
@@ -124,7 +127,8 @@ struct grub_squash_dirent_header
 {
   /* Actually the value is the number of elements - 1.  */
   grub_uint32_t nelems;
-  grub_uint64_t ino_chunk;
+  grub_uint32_t ino_chunk;
+  grub_uint32_t dummy;
 } __attribute__ ((packed));
 
 struct grub_squash_dirent
@@ -186,10 +190,8 @@ struct grub_fshelp_node
 
 static grub_err_t
 read_chunk (struct grub_squash_data *data, void *buf, grub_size_t len,
-	    grub_uint64_t chunk, grub_off_t offset)
+	    grub_uint64_t chunk_start, grub_off_t offset)
 {
-  grub_uint64_t chunk_start;
-  chunk_start = grub_le_to_cpu64 (chunk);
   while (len > 0)
     {
       grub_uint64_t csize;
@@ -335,7 +337,7 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
   unsigned i;
 
   /* FIXME: why - 3 ? */
-  endoff = grub_le_to_cpu32 (dir->ino.dir.size) + off - 3;
+  endoff = grub_le_to_cpu16 (dir->ino.dir.size) + off - 3;
 
   while (off < endoff)
     {
@@ -348,7 +350,7 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
       if (err)
 	return 0;
       off += sizeof (dh);
-      for (i = 0; i < (unsigned) grub_le_to_cpu16 (dh.nelems) + 1; i++)
+      for (i = 0; i < (unsigned) grub_le_to_cpu32 (dh.nelems) + 1; i++)
 	{
 	  char *buf;
 	  int r;
@@ -594,7 +596,8 @@ direct_read (struct grub_squash_data *data,
       read = grub_le_to_cpu32 (data->sb.block_size) - boff;
       if (read > len)
 	read = len;
-      if (!(ino->block_sizes[i] & SQUASH_BLOCK_UNCOMPRESSED))
+      if (!(ino->block_sizes[i]
+	    & grub_cpu_to_le32_compile_time (SQUASH_BLOCK_UNCOMPRESSED)))
 	err = grub_zlib_disk_read (data->disk,
 				   ino->cumulated_block_sizes[i] + a,
 				   boff, buf, read);

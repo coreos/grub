@@ -1,5 +1,12 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/squash4.c (grub_squash_inode): Fix field sizes.
+	(grub_squash_dirent_header): Likewise.
+	(read_chunk): Don't double swap.
+	(grub_squash_iterate_dir): Fix swap sizes.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/jfs.c (grub_jfs_getent): Handle UTF16 endianness.
 
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
