@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/main.c (main): Add missing const qualifier.
+	* grub-core/loader/efi/appleloader.c (devdata): Likewise.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Unify and improve RAID and crypto xor.
 
 	* grub-core/disk/raid.c (grub_raid_block_xor): Removed. All users

@@ -127,7 +127,7 @@ void grub_emu_init (void);
 int
 main (int argc, char *argv[])
 {
-  char *dev_map = DEFAULT_DEVICE_MAP;
+  const char *dev_map = DEFAULT_DEVICE_MAP;
   volatile int hold = 0;
   int opt;
 
