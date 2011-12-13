@@ -1,5 +1,12 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mips/qemu_mips/init.c (grub_at_keyboard_init): Remove
+	redundant declaration.
+	(grub_serial_init): Likewise.
+	(grub_terminfo_init): Likewise.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (DVA_OFFSET_TO_PHYS_SECTOR): Make into inline
 	function.
 	(ZAP_HASH_IDX): Likewise.
