@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/list.h: Explicitly cast return of grub_bad_type_cast
+	to match types.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/hfsplus.c (grub_hfsplus_btree_recoffset): Handle the
 	case of aunaligned recptr.
 	(grub_hfsplus_read_block): Declare extoverflow as key to ensure

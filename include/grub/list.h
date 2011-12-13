@@ -54,11 +54,11 @@ grub_bad_type_cast_real (int line, const char *file)
 
 #define GRUB_AS_LIST(ptr) \
   (GRUB_FIELD_MATCH (ptr, grub_list_t, next) ? \
-   (grub_list_t) ptr : grub_bad_type_cast ())
+   (grub_list_t) ptr : (grub_list_t) grub_bad_type_cast ())
 
 #define GRUB_AS_LIST_P(pptr) \
   (GRUB_FIELD_MATCH (*pptr, grub_list_t, next) ? \
-   (grub_list_t *) (void *) pptr : grub_bad_type_cast ())
+   (grub_list_t *) (void *) pptr : (grub_list_t *) grub_bad_type_cast ())
 
 struct grub_named_list
 {
@@ -73,12 +73,12 @@ void * EXPORT_FUNC(grub_named_list_find) (grub_named_list_t head,
 #define GRUB_AS_NAMED_LIST(ptr) \
   ((GRUB_FIELD_MATCH (ptr, grub_named_list_t, next) && \
     GRUB_FIELD_MATCH (ptr, grub_named_list_t, name))? \
-   (grub_named_list_t) ptr : grub_bad_type_cast ())
+   (grub_named_list_t) ptr : (grub_named_list_t) grub_bad_type_cast ())
 
 #define GRUB_AS_NAMED_LIST_P(pptr) \
   ((GRUB_FIELD_MATCH (*pptr, grub_named_list_t, next) && \
     GRUB_FIELD_MATCH (*pptr, grub_named_list_t, name))? \
-   (grub_named_list_t *) (void *) pptr : grub_bad_type_cast ())
+   (grub_named_list_t *) (void *) pptr : (grub_named_list_t *) grub_bad_type_cast ())
 
 #define GRUB_PRIO_LIST_PRIO_MASK	0xff
 #define GRUB_PRIO_LIST_FLAG_ACTIVE	0x100
@@ -106,12 +106,14 @@ grub_prio_list_remove (grub_prio_list_t *head, grub_prio_list_t item)
   ((GRUB_FIELD_MATCH (ptr, grub_prio_list_t, next) && \
     GRUB_FIELD_MATCH (ptr, grub_prio_list_t, name) && \
     GRUB_FIELD_MATCH (ptr, grub_prio_list_t, prio))? \
-   (grub_prio_list_t) ptr : grub_bad_type_cast ())
+   (grub_prio_list_t) ptr \
+   : (grub_prio_list_t) grub_bad_type_cast ())
 
 #define GRUB_AS_PRIO_LIST_P(pptr) \
   ((GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, next) && \
     GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, name) && \
-    GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, prio))? \
-   (grub_prio_list_t *) (void *) pptr : grub_bad_type_cast ())
+    GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, prio)) ? \
+   (grub_prio_list_t *) (void *) pptr \
+   : (grub_prio_list_t *) grub_bad_type_cast ())
 
 #endif /* ! GRUB_LIST_HEADER */
