@@ -1,5 +1,15 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/ieee1275.c (grub_ieee1275_finddevice): Make
+	first argument a const pointer.
+	* grub-core/kern/ieee1275/openfw.c (grub_children_iterate): Likewise.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_finddevice): Update
+	proto.
+	(grub_children_iterate): Likewise.
+	(grub_machine_mmap_iterate): Remove redundant declaration.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/acpi.c (grub_acpi_create_ebda) [!x86]: Disable.
 	(grub_cmd_acpi) [!x86]: Disable EBDA.
 

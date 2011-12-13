@@ -27,7 +27,7 @@
 
 
 int
-grub_ieee1275_finddevice (char *name, grub_ieee1275_phandle_t *phandlep)
+grub_ieee1275_finddevice (const char *name, grub_ieee1275_phandle_t *phandlep)
 {
   struct find_device_args
   {

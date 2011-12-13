@@ -34,7 +34,7 @@ enum grub_ieee1275_parse_type
 
 /* Walk children of 'devpath', calling hook for each.  */
 int
-grub_children_iterate (char *devpath,
+grub_children_iterate (const char *devpath,
 		       int (*hook) (struct grub_ieee1275_devalias *alias))
 {
   grub_ieee1275_phandle_t dev;
