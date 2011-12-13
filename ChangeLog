@@ -1,5 +1,12 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/nilfs2.c (grub_nilfs2_btree_node): Add zero-size keys
+	array.
+	(grub_nilfs2_btree_node_dkeys): Ensure return pointer alignment.
+	(grub_nilfs2_btree_lookup): Ensure buffer alignment.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ext2.c (grub_ext4_find_leaf): MAke buf as pointer to
 	properly aligned memory.
 	(grub_ext2_read_block): Ensure buffer alignment.

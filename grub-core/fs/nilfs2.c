@@ -208,6 +208,7 @@ struct grub_nilfs2_btree_node
   grub_uint8_t bn_level;
   grub_uint16_t bn_nchildren;
   grub_uint32_t bn_pad;
+  grub_uint64_t keys[0];
 };
 
 struct grub_nilfs2_palloc_group_desc
@@ -399,9 +400,9 @@ grub_nilfs2_btree_get_level (struct grub_nilfs2_btree_node *node)
 static inline grub_uint64_t *
 grub_nilfs2_btree_node_dkeys (struct grub_nilfs2_btree_node *node)
 {
-  return (grub_uint64_t *) ((char *) (node + 1) +
-			    ((node->bn_flags & NILFS_BTREE_NODE_ROOT) ?
-			     0 : NILFS_BTREE_NODE_EXTRA_PAD_SIZE));
+  return (node->keys +
+	  ((node->bn_flags & NILFS_BTREE_NODE_ROOT) ?
+	   0 : (NILFS_BTREE_NODE_EXTRA_PAD_SIZE / sizeof (grub_uint64_t))));
 }
 
 static inline grub_uint64_t
@@ -502,7 +503,7 @@ grub_nilfs2_btree_lookup (struct grub_nilfs2_data *data,
 			  grub_uint64_t key, int need_translate)
 {
   struct grub_nilfs2_btree_node *node;
-  unsigned char block[NILFS2_BLOCK_SIZE (data)];
+  GRUB_PROPERLY_ALIGNED_ARRAY (block, NILFS2_BLOCK_SIZE (data));
   grub_uint64_t ptr;
   int level, found, index;
 
