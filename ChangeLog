@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/pata.c (grub_pata_pio_read): Handle unaligned buffer.
+	(grub_pata_pio_write): Likewise.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add noreturn attributes and remove unreachable code.
 
 	* grub-core/bus/cs5536.c (grub_cs5536_smbus_wait): Remove unreachable
