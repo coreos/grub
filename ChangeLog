@@ -1,5 +1,11 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ext2.c (grub_ext4_find_leaf): MAke buf as pointer to
+	properly aligned memory.
+	(grub_ext2_read_block): Ensure buffer alignment.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/romfs.c (grub_romfs_iterate_dir): Properly align
 	name for checksum and fix allocation algorithm.
 
