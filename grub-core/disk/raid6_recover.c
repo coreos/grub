@@ -23,6 +23,7 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/raid.h>
+#include <grub/crypto.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -98,9 +99,9 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
 				 array->members[pos].start_sector + sector,
 				 0, size, buf)))
             {
-              grub_raid_block_xor (pbuf, buf, size);
+              grub_crypto_xor (pbuf, pbuf, buf, size);
               grub_raid_block_mulx (i, buf, size);
-              grub_raid_block_xor (qbuf, buf, size);
+              grub_crypto_xor (qbuf, qbuf, buf, size);
             }
           else
             {
@@ -130,7 +131,7 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
 			     array->members[p].start_sector + sector,
 			     0, size, buf)))
         {
-          grub_raid_block_xor (buf, pbuf, size);
+          grub_crypto_xor (buf, buf, pbuf, size);
           goto quit;
         }
 
@@ -145,7 +146,7 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
 			  array->members[q].start_sector + sector, 0, size, buf))
         goto quit;
 
-      grub_raid_block_xor (buf, qbuf, size);
+      grub_crypto_xor (buf, buf, qbuf, size);
       grub_raid_block_mulx (255 - bad1, buf,
                            size);
     }
@@ -165,14 +166,14 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
 			  0, size, buf))
         goto quit;
 
-      grub_raid_block_xor (pbuf, buf, size);
+      grub_crypto_xor (pbuf, pbuf, buf, size);
 
       if (grub_disk_read (array->members[q].device,
 			  array->members[q].start_sector + sector,
 			  0, size, buf))
         goto quit;
 
-      grub_raid_block_xor (qbuf, buf, size);
+      grub_crypto_xor (qbuf, qbuf, buf, size);
 
       c = (255 - bad1 + (255 - powx_inv[(powx[bad2 - bad1 + 255] ^ 1)])) % 255;
       grub_raid_block_mulx (c, qbuf, size);
@@ -180,7 +181,7 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
       c = (bad2 + c) % 255;
       grub_raid_block_mulx (c, pbuf, size);
 
-      grub_raid_block_xor (pbuf, qbuf, size);
+      grub_crypto_xor (pbuf, pbuf, qbuf, size);
       grub_memcpy (buf, pbuf, size);
     }
 

@@ -1,5 +1,15 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Unify and improve RAID and crypto xor.
+
+	* grub-core/disk/raid.c (grub_raid_block_xor): Removed. All users
+	changed to grub_crypto_xor
+	* grub-core/lib/crypto.c (grub_crypto_xor): Moved from here ...
+	* include/grub/crypto.h (grub_crypto_xor): ... here. Inlined.
+	Use bigger types when possible.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/raid.c (scan_devices): Fix condition.
 
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
