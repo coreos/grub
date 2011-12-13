@@ -317,7 +317,7 @@ struct grub_udf_partmap
       grub_uint8_t ident[62];
     } type2;
   };
-};
+} __attribute__ ((packed));
 
 struct grub_udf_lvd
 {
