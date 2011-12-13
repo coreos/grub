@@ -241,7 +241,7 @@ struct grub_jfs_diropen
   /* On-disk name is at most 255 UTF-16 codepoints.
      Every UTF-16 codepoint is at most 4 UTF-8 bytes.
    */
-  char name[256 * 4 + 1];
+  char name[256 * GRUB_MAX_UTF8_PER_UTF16 + 1];
   grub_uint32_t ino;
 } __attribute__ ((packed));
 

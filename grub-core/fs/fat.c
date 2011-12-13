@@ -589,7 +589,7 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
   char *filename;
 
   unibuf = grub_malloc (15 * 256 * 2);
-  filename = grub_malloc (15 * 256 * 4 + 1);
+  filename = grub_malloc (15 * 256 * GRUB_MAX_UTF8_PER_UTF16 + 1);
 
   while (1)
     {
@@ -696,7 +696,7 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
     return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
 
   /* Allocate space enough to hold a long name.  */
-  filename = grub_malloc (0x40 * 13 * 4 + 1);
+  filename = grub_malloc (0x40 * 13 * GRUB_MAX_UTF8_PER_UTF16 + 1);
   unibuf = (grub_uint16_t *) grub_malloc (0x40 * 13 * 2);
   if (! filename || ! unibuf)
     {

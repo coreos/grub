@@ -820,7 +820,7 @@ read_string (grub_uint8_t *raw, grub_size_t sz)
       for (i = 0; i < utf16len; i++)
 	utf16[i] = (raw[2 * i + 1] << 8) | raw[2*i + 2];
     }
-  ret = grub_malloc (utf16len * 3 + 1);
+  ret = grub_malloc (utf16len * GRUB_MAX_UTF8_PER_UTF16 + 1);
   if (ret)
     *grub_utf16_to_utf8 ((grub_uint8_t *) ret, utf16, utf16len) = '\0';
   grub_free (utf16);
