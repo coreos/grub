@@ -111,10 +111,13 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
                       (((grub_int32_t) ((value - (Elf_Addr) addr) >> 2)) &
                        0x3FFFFFFF);
                     break;
+                  case R_SPARC_HH22: /* 9 V-imm22 */
+                    *addr = (*addr & 0xFFC00000) | ((value >> 42) & 0x3FFFFF);
+                    break;
+                  case R_SPARC_HM10: /* 12 T-simm13 */
+                    *addr = (*addr & 0xFFFFFC00) | ((value >> 32) & 0x3FF);
+                    break;
                   case R_SPARC_HI22: /* 9 V-imm22 */
-                    if (((grub_int32_t) value) & 0xFF00000000)
-                      return grub_error (GRUB_ERR_BAD_MODULE,
-                                         "high address out of 22 bits range");
                     *addr = (*addr & 0xFFC00000) | ((value >> 10) & 0x3FFFFF);
                     break;
                   case R_SPARC_LO10: /* 12 T-simm13 */

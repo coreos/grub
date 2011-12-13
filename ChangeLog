@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/sparc64/dl.c (grub_arch_dl_relocate_symbols): Support
+	HH22 and HM10 relocations.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_vsnprintf_real): Fix fmt2 parsing.
 
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
