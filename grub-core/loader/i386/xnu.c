@@ -226,7 +226,7 @@ grub_xnu_devprop_remove_property (struct grub_xnu_devprop_device_descriptor *dev
 				  char *name)
 {
   struct property_descriptor *prop;
-  prop = grub_named_list_find (GRUB_AS_NAMED_LIST_P (&dev->properties), name);
+  prop = grub_named_list_find (GRUB_AS_NAMED_LIST (dev->properties), name);
   if (!prop)
     return GRUB_ERR_NONE;
 
