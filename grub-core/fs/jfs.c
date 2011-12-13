@@ -490,7 +490,7 @@ grub_jfs_getent (struct grub_jfs_diropen *diro)
   void addstr (grub_uint16_t *name, int ulen)
     {
       while (ulen--)
-	filename[strpos++] = *(name++);
+	filename[strpos++] = grub_le_to_cpu16 (*(name++));
     }
 
   /* The last node, read in more.  */
