@@ -405,12 +405,18 @@ grub_div_roundup (unsigned int x, unsigned int y)
 }
 
 /* Reboot the machine.  */
+#if defined (GRUB_MACHINE_EMU) || defined (GRUB_MACHINE_QEMU_MIPS)
+void EXPORT_FUNC(grub_reboot) (void) __attribute__ ((noreturn));
+#else
 void grub_reboot (void) __attribute__ ((noreturn));
+#endif
 
 #ifdef GRUB_MACHINE_PCBIOS
 /* Halt the system, using APM if possible. If NO_APM is true, don't
  * use APM even if it is available.  */
 void grub_halt (int no_apm) __attribute__ ((noreturn));
+#elif defined (__mips__)
+void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
 #else
 void grub_halt (void) __attribute__ ((noreturn));
 #endif
