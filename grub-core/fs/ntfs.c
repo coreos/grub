@@ -34,15 +34,23 @@ static grub_dl_t my_mod;
 
 #define grub_fshelp_node grub_ntfs_file 
 
-#define valueat(buf,ofs,type)	*((type*)(((char*)buf)+ofs))
+static inline grub_uint16_t
+u16at (void *ptr, grub_size_t ofs)
+{
+  return grub_le_to_cpu16 (grub_get_unaligned16 ((char *) ptr + ofs));
+}
 
-#define u16at(buf,ofs)	grub_le_to_cpu16(valueat(buf,ofs,grub_uint16_t))
-#define u32at(buf,ofs)	grub_le_to_cpu32(valueat(buf,ofs,grub_uint32_t))
-#define u64at(buf,ofs)	grub_le_to_cpu64(valueat(buf,ofs,grub_uint64_t))
+static inline grub_uint32_t
+u32at (void *ptr, grub_size_t ofs)
+{
+  return grub_le_to_cpu32 (grub_get_unaligned32 ((char *) ptr + ofs));
+}
 
-#define v16at(buf,ofs)	valueat(buf,ofs,grub_uint16_t)
-#define v32at(buf,ofs)	valueat(buf,ofs,grub_uint32_t)
-#define v64at(buf,ofs)	valueat(buf,ofs,grub_uint64_t)
+static inline grub_uint64_t
+u64at (void *ptr, grub_size_t ofs)
+{
+  return grub_le_to_cpu64 (grub_get_unaligned64 ((char *) ptr + ofs));
+}
 
 grub_ntfscomp_func_t grub_ntfscomp_func;
 
@@ -70,7 +78,8 @@ fixup (struct grub_ntfs_data *data, char *buf, int len, const char *magic)
       pu += 2;
       if (u16at (buf, 0) != us)
 	return grub_error (GRUB_ERR_BAD_FS, "fixup signature not match");
-      v16at (buf, 0) = v16at (pu, 0);
+      buf[0] = pu[0];
+      buf[1] = pu[1];
       ss--;
     }
 
@@ -131,11 +140,11 @@ find_attr (struct grub_ntfs_attr *at, unsigned char attr)
 	      if (at->flags & GRUB_NTFS_AF_MMFT)
 		{
 		  if ((grub_disk_read
-		       (at->mft->data->disk, v32at (at->attr_cur, 0x10), 0,
+		       (at->mft->data->disk, u32at (at->attr_cur, 0x10), 0,
 			512, at->emft_buf))
 		      ||
 		      (grub_disk_read
-		       (at->mft->data->disk, v32at (at->attr_cur, 0x14), 0,
+		       (at->mft->data->disk, u32at (at->attr_cur, 0x14), 0,
 			512, at->emft_buf + 512)))
 		    return NULL;
 
@@ -228,8 +237,11 @@ find_attr (struct grub_ntfs_attr *at, unsigned char attr)
 	  at->flags |= GRUB_NTFS_AF_GPOS;
 	  at->attr_cur = at->attr_nxt;
 	  pa = at->attr_cur;
-	  v32at (pa, 0x10) = at->mft->data->mft_start;
-	  v32at (pa, 0x14) = at->mft->data->mft_start + 1;
+	  grub_set_unaligned32 ((char *) pa + 0x10,
+				grub_cpu_to_le32 (at->mft->data->mft_start));
+	  grub_set_unaligned32 ((char *) pa + 0x14,
+				grub_cpu_to_le32 (at->mft->data->mft_start
+						  + 1));
 	  pa = at->attr_nxt + u16at (pa, 4);
 	  while (pa < at->attr_end)
 	    {
@@ -459,8 +471,8 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
 	    return grub_errno;
 	  st1 = ctx->curr_lcn * ctx->comp.spc;
 	}
-      v32at (dest, 0) = st0;
-      v32at (dest, 4) = st1;
+      grub_set_unaligned32 (dest, grub_cpu_to_le32 (st0));
+      grub_set_unaligned32 (dest + 4, grub_cpu_to_le32 (st1));
       return 0;
     }
 
@@ -636,12 +648,18 @@ list_file (struct grub_ntfs_file *diro, char *pos,
 	  else
 	    fdiro->mtime = u64at (pos, 0x28);
 
-	  ustr = grub_malloc (ns * 4 + 1);
+	  ustr = grub_malloc (ns * GRUB_MAX_UTF8_PER_UTF16 + 1);
 	  if (ustr == NULL)
 	    return 0;
-	  *grub_utf16_to_utf8 ((grub_uint8_t *) ustr, (grub_uint16_t *) np,
-			       ns) = '\0';
+	  {
+	    grub_uint16_t tmp[ns];
+	    int i;
+	    for (i = 0; i < ns; i++)
+	      tmp[i] = grub_le_to_cpu16 (grub_get_unaligned16 ((char *) np
+							       + 2 * i));
 
+	    *grub_utf16_to_utf8 ((grub_uint8_t *) ustr, tmp, ns) = '\0';
+	  }
           if (namespace)
             type |= GRUB_FSHELP_CASE_INSENSITIVE;
 
@@ -1163,8 +1181,14 @@ grub_ntfs_label (grub_device_t device, char **label)
       len = u32at (pa, 0x10) / 2;
       buf = grub_malloc (len * 4 + 1);
       pa += u16at (pa, 0x14);
-      *grub_utf16_to_utf8 ((grub_uint8_t *) buf, (grub_uint16_t *) pa, len) =
-	'\0';
+      {
+	grub_uint16_t tmp[len];
+	int i;
+	for (i = 0; i < len; i++)
+	  tmp[i] = grub_le_to_cpu16 (grub_get_unaligned16 (pa + 2 * i));
+	*grub_utf16_to_utf8 ((grub_uint8_t *) buf, tmp, len) =
+	  '\0';
+      }
       *label = buf;
     }
 

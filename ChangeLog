@@ -1,5 +1,17 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ntfs.c (u16at): Make into inline function.
+	Handle unaligned pointers.
+	(u32at): Likewise.
+	(u64at): Likewise.
+	(fixup): Use byte access instead of v16at.
+	(find_attr): Fix imporper usage of v32at.
+	(read_data): Likewise.
+	(list_file): Handle byte-swapping and unaligned strings.
+	(grub_ntfs_label): Likewise.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/udf.c (grub_udf_partmap): Add packed attribute
 	as it's not necessarily aligned.
 
