@@ -1,5 +1,24 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add noreturn attributes and remove unreachable code.
+
+	* grub-core/bus/cs5536.c (grub_cs5536_smbus_wait): Remove unreachable
+	code.
+	* grub-core/commands/halt.c (grub_cmd_halt): Remove unreachable
+	code. Mark as noreturn.
+	* grub-core/commands/minicmd.c (grub_mini_cmd_exit): Likewise.
+	* grub-core/commands/reboot.c (grub_cmd_reboot): Likewise.
+	* grub-core/disk/efi/efidisk.c (grub_efidisk_get_device_name): Remove
+	unreachable code.
+	* grub-core/kern/main.c (grub_main): Mark as noreturn.
+	* grub-core/kern/rescue_reader.c (grub_rescue_run): Likewise.
+	* grub-core/lib/posix_wrap/stdlib.h (abort): Likewise.
+	* grub-core/normal/menu.c (run_menu): Remove unreachable code.
+	* include/grub/kernel.h (grub_main): Mark as noreturn.
+	* include/grub/reader.h (grub_rescue_run): Likewise.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/i386/qemu/memory.h (grub_machine_mmap_init): Remove
 	redundant declaration.
 

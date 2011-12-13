@@ -190,7 +190,7 @@ grub_load_normal_mode (void)
 }
 
 /* The main routine.  */
-void
+void __attribute__ ((noreturn))
 grub_main (void)
 {
   /* First of all, initialize the machine.  */

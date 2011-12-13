@@ -666,7 +666,6 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
     }
 
   /* Never reach here.  */
-  return -1;
 }
 
 /* Callback invoked immediately before a menu entry is executed.  */

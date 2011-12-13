@@ -165,13 +165,13 @@ grub_mini_cmd_lsmod (struct grub_command *cmd __attribute__ ((unused)),
 }
 
 /* exit */
-static grub_err_t
+static grub_err_t __attribute__ ((noreturn))
 grub_mini_cmd_exit (struct grub_command *cmd __attribute__ ((unused)),
 		    int argc __attribute__ ((unused)),
 		    char *argv[] __attribute__ ((unused)))
 {
   grub_exit ();
-  return 0;
+  /* Not reached.  */
 }
 
 static grub_command_t cmd_cat, cmd_help;

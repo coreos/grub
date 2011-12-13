@@ -791,6 +791,4 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
       grub_disk_close (parent);
       return device_name;
     }
-
-  return 0;
 }

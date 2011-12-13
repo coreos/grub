@@ -82,7 +82,7 @@ extern grub_addr_t EXPORT_VAR (grub_modbase);
 grub_addr_t grub_modules_get_end (void);
 
 /* The start point of the C code.  */
-void grub_main (void);
+void grub_main (void) __attribute__ ((noreturn));
 
 /* The machine-specific initialization. This must initialize memory.  */
 void grub_machine_init (void);
