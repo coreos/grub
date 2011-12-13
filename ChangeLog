@@ -1,5 +1,9 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/datetime.c (grub_weekday_names): Make const.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/udf.c (read_string): Macroify GRUB_MAX_UTF8_PER_UTF16.
 	* grub-core/fs/jfs.c (grub_jfs_diropen): Likewise.
 	* grub-core/fs/fat.c (grub_fat_iterate_dir): Likewise.

@@ -20,7 +20,7 @@
 #include <grub/datetime.h>
 #include <grub/i18n.h>
 
-static const char *grub_weekday_names[] =
+static const char *const grub_weekday_names[] =
 {
   N_("Sunday"),
   N_("Monday"),
