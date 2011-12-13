@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/hfs.c (grub_hfs_find_node): Handle unaligned keys.
+	(grub_hfs_iterate_dir): Likewise.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix video on platforms where unaligned access is forbidden.
 	Make several optimisations while on it.
 

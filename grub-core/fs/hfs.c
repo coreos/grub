@@ -750,10 +750,7 @@ grub_hfs_find_node (struct grub_hfs_data *data, char *key,
 	 entry.  In case of a non-leaf mode it will be used to lookup
 	 the rest of the tree.  */
       if (cmp <= 0)
-	{
-	  grub_uint32_t *node = (grub_uint32_t *) rec->data;
-	  found = grub_be_to_cpu32 (*node);
-	}
+	found = grub_be_to_cpu32 (grub_get_unaligned32 (rec->data));
       else /* The key can not be found in the tree. */
 	return 1;
 
@@ -817,7 +814,7 @@ grub_hfs_iterate_dir (struct grub_hfs_data *data, grub_uint32_t root_idx,
       struct grub_hfs_catalog_key *ckey = rec->key;
 
       if (grub_hfs_cmp_catkeys (rec->key, (void *) &key) <= 0)
-	found = grub_be_to_cpu32 (*(grub_uint32_t *) rec->data);
+	found = grub_be_to_cpu32 (grub_get_unaligned32 (rec->data));
 
       if (hnd->type == 0xFF && ckey->strlen > 0)
 	{
