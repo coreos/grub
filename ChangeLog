@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/drivers/ieee1275/ofnet.c (bootp_response_properties):
+	Make name a const ptr.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/ieee1275.c (grub_ieee1275_finddevice): Make
 	first argument a const pointer.
 	* grub-core/kern/ieee1275/openfw.c (grub_children_iterate): Likewise.

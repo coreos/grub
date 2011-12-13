@@ -106,7 +106,7 @@ static struct grub_net_card_driver ofdriver =
 
 static const struct
 {
-  char *name;
+  const char *name;
   int offset;
 }
 
