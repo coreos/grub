@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/at_keyboard.c (set_scancodes): Fix preprocessor
+	conditionals.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/main.c (main): Add missing const qualifier.
 	* grub-core/loader/efi/appleloader.c (devdata): Likewise.
 
