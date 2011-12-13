@@ -1,5 +1,13 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_add_elfsyms):
+	Reserve alignment invariants.
+	(grub_multiboot_load): Likewise.
+	(retrieve_video_parameters): Likewise.
+	(grub_multiboot_make_mbi): Likewise.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/xnu.c (grub_xnu_devprop_remove_property): Fix
 	incorrect pointer.
 
