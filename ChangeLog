@@ -1,5 +1,9 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/kernel.h (FOR_MODULES): Preserve alignment invariants.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_add_elfsyms):
 	Reserve alignment invariants.
 	(grub_multiboot_load): Likewise.
