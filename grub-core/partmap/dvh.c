@@ -49,13 +49,13 @@ static struct grub_partition_map grub_dvh_partition_map;
 
 /* Verify checksum (true=ok).  */
 static int
-grub_dvh_is_valid (struct grub_dvh_block *label)
+grub_dvh_is_valid (grub_uint32_t *label)
 {
   grub_uint32_t *pos;
   grub_uint32_t sum = 0;
 
-  for (pos = (grub_uint32_t *) label;
-       pos < (grub_uint32_t *) (label + 1);
+  for (pos = label;
+       pos < (label + sizeof (struct grub_dvh_block) / 4);
        pos++)
     sum += *pos;
 
@@ -68,7 +68,11 @@ dvh_partition_map_iterate (grub_disk_t disk,
 					const grub_partition_t partition))
 {
   struct grub_partition p;
-  struct grub_dvh_block block;
+  union
+  {
+    struct grub_dvh_block dvh;
+    grub_uint32_t raw[0];
+  } block;
   unsigned partnum;
   grub_err_t err;
 
@@ -78,24 +82,24 @@ dvh_partition_map_iterate (grub_disk_t disk,
   if (err)
     return err;
 
-  if (DVH_MAGIC != grub_be_to_cpu32 (block.magic))
+  if (DVH_MAGIC != grub_be_to_cpu32 (block.dvh.magic))
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "not a dvh partition table");
 
-  if (! grub_dvh_is_valid (&block))
+  if (! grub_dvh_is_valid (block.raw))
       return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid checksum");
   
   /* Maybe another error value would be better, because partition
      table _is_ recognized but invalid.  */
-  for (partnum = 0; partnum < ARRAY_SIZE (block.parts); partnum++)
+  for (partnum = 0; partnum < ARRAY_SIZE (block.dvh.parts); partnum++)
     {
-      if (block.parts[partnum].length == 0)
+      if (block.dvh.parts[partnum].length == 0)
 	continue;
 
       if (partnum == 10)
 	continue;
 
-      p.start = grub_be_to_cpu32 (block.parts[partnum].start);
-      p.len = grub_be_to_cpu32 (block.parts[partnum].length);
+      p.start = grub_be_to_cpu32 (block.dvh.parts[partnum].start);
+      p.len = grub_be_to_cpu32 (block.dvh.parts[partnum].length);
       p.number = p.index = partnum;
       if (hook (disk, &p))
 	break;
