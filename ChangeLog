@@ -1,5 +1,50 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix video on platforms where unaligned access is forbidden.
+	Make several optimisations while on it.
+
+	* grub-core/video/fb/fbblit.c (grub_video_fbblit_replace_directN):
+	Optimise and use GRUB_VIDEO_FB_ADVANCE_POINTER.
+	(grub_video_fbblit_replace_32bit_1bit): Likewise.
+	(grub_video_fbblit_replace_24bit_1bit) [!GRUB_HAVE_UNALIGNED_ACCESS]:
+	Disable.
+	(grub_video_fbblit_replace_16bit_1bit):
+	Optimise and use GRUB_VIDEO_FB_ADVANCE_POINTER.
+	(grub_video_fbblit_replace_8bit_1bit): Likewise.
+	(grub_video_fbblit_replace_BGRX8888_RGBX8888): Likewise.
+	(grub_video_fbblit_replace_BGRX8888_RGB888): Likewise.
+	(grub_video_fbblit_replace_BGR888_RGBX8888): Likewise.
+	(grub_video_fbblit_replace_BGR888_RGBX8888): Likewise.
+	(grub_video_fbblit_replace_BGR888_RGB888): Likewise.
+	(grub_video_fbblit_replace_RGBX8888_RGB88): Likewise.
+	(grub_video_fbblit_replace_RGB888_RGBX888): Likewise.
+	(grub_video_fbblit_replace_RGB888_RGBX8888): Likewise.
+	(grub_video_fbblit_replace_index_RGBX8888): Likewise.
+	(grub_video_fbblit_replace_index_RGB888): Likewise.
+	(grub_video_fbblit_blend_BGRA8888_RGBA8888): Likewise.
+	(grub_video_fbblit_blend_BGR888_RGBA8888): Likewise.
+	(grub_video_fbblit_blend_RGBA8888_RGBA8888): Likewise.
+	(grub_video_fbblit_blend_RGB888_RGBA8888): Likewise.
+	(grub_video_fbblit_blend_index_RGBA8888): Likewise.
+	(grub_video_fbblit_blend_XXXA8888_1bit): Likewise.
+	(grub_video_fbblit_blend_XXX888_1bit) [!GRUB_HAVE_UNALIGNED_ACCESS]:
+	Disable.
+	(grub_video_fbblit_blend_XXX565_1bit):
+	Optimise and use GRUB_VIDEO_FB_ADVANCE_POINTER.
+	* grub-core/video/fb/fbfill.c (grub_video_fbfill_direct32): Likewise.
+	* grub-core/video/fb/fbutil.c (grub_video_fb_get_video_ptr): Return
+	void *.
+	* grub-core/video/fb/video_fb.c (common_blitter)
+	[!GRUB_HAVE_UNALIGNED_ACCESS]: Skip disabled blitters.
+	(grub_video_fb_create_render_target_from_pointer)
+	[!GRUB_HAVE_UNALIGNED_ACCESS]: Check alignment.
+	* include/grub/fbutil.h (grub_video_fb_get_video_ptr): Return void *.
+	* include/grub/i386/types.h (GRUB_HAVE_UNALIGNED_ACCESS): New
+	definition.
+	* include/grub/x86_64/types.h (GRUB_HAVE_UNALIGNED_ACCESS): Likewise.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/sparc64/dl.c (grub_arch_dl_relocate_symbols): Support
 	HH22 and HM10 relocations.
 
