@@ -200,15 +200,9 @@ grub_efiemu_register_configuration_table (grub_efi_guid_t guid,
 int grub_efiemu_request_memalign (grub_size_t align, grub_size_t size,
 				  grub_efi_memory_type_t type);
 void *grub_efiemu_mm_obtain_request (int handle);
-int grub_efiemu_get_memory_map (grub_efi_uintn_t *memory_map_size,
-				grub_efi_memory_descriptor_t *memory_map,
-				grub_efi_uintn_t *map_key,
-				grub_efi_uintn_t *descriptor_size,
-				grub_efi_uint32_t *descriptor_version);
 grub_err_t grub_efiemu_mm_unload (void);
 grub_err_t grub_efiemu_mm_do_alloc (void);
 grub_err_t grub_efiemu_mm_init (void);
-void *grub_efiemu_mm_obtain_request (int handle);
 void grub_efiemu_mm_return_request (int handle);
 grub_efi_memory_type_t grub_efiemu_mm_get_type (int handle);
 
@@ -271,7 +265,6 @@ grub_err_t grub_efiemu_write_value (void * addr, grub_uint32_t value,
 				    int minus_handle, int ptv_needed, int size);
 grub_err_t grub_efiemu_write_sym_markers (void);
 grub_err_t grub_efiemu_pnvram (void);
-grub_err_t grub_efiemu_prepare (void);
 const char *grub_efiemu_get_default_core_name (void);
 void grub_efiemu_pnvram_cmd_unregister (void);
 grub_err_t grub_efiemu_autocore (void);

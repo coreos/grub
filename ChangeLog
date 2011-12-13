@@ -1,5 +1,12 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/efiemu/efiemu.h (grub_efiemu_get_memory_map): Remove
+	redundant declaration.
+	(grub_efiemu_mm_obtain_request): Likewise.
+	(grub_efiemu_prepare): Likewise.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/list.h: Explicitly cast return of grub_bad_type_cast
 	to match types.
 
