@@ -1,5 +1,10 @@
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/videotest.c (grub_cmd_videotest): Check that
+	allocation succeeded.
+
+2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/iso9660.c (grub_iso9660_convert_string): Make first
 	argument a u8 pointer. All users updated.
 	Handle unaligned buffers.
