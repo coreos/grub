@@ -1,5 +1,38 @@
 2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/efi/api.h (grub_efi_memory_descriptor): Add packed
+	attribute as the structure isn't guaranteed to be properly aligned.
+	(grub_efi_pci_device_path): Likewise.
+	(grub_efi_pccard_device_path): Likewise.
+	(grub_efi_memory_mapped_device_path): Likewise. Additionaly explicitly
+	specify the size of `memory_type'.
+	(grub_efi_vendor_device_path): Likewise.
+	(grub_efi_controller_device_path): Likewise.
+	(grub_efi_acpi_device_path): Likewise.
+	(grub_efi_expanded_acpi_device_path): Likewise.
+	(grub_efi_atapi_device_path): Likewise.
+	(grub_efi_scsi_device_path): Likewise.
+	(grub_efi_fibre_channel_device_path): Likewise.
+	(grub_efi_1394_device_path): Likewise.
+	(grub_efi_usb_device_path): Likewise.
+	(grub_efi_usb_class_device_path): Likewise.
+	(grub_efi_i2o_device_path): Likewise.
+	(grub_efi_mac_address_device_path): Likewise.
+	(grub_efi_ipv4_device_path): Likewise.
+	(grub_efi_ipv6_device_path): Likewise.
+	(grub_efi_infiniband_device_path): Likewise.
+	(grub_efi_uart_device_path): Likewise.
+	(grub_efi_vendor_messaging_device_path): Likewise.
+	(grub_efi_hard_drive_device_path): Likewise.
+	(grub_efi_cdrom_device_path): Likewise.
+	(grub_efi_vendor_media_device_path): Likewise.
+	(grub_efi_file_path_device_path): Likewise.
+	(grub_efi_protocol_device_path): Likewise.
+	(grub_efi_piwg_device_path): Likewise.
+	(grub_efi_bios_device_path): Likewise.
+
+2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/charset.h (grub_utf16_to_utf8): Make src a const pointer.
 	(grub_ucs4_to_utf8_alloc): Likewise.
 	(grub_ucs4_to_utf8): Likewise.
