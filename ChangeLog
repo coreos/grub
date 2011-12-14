@@ -1,6 +1,14 @@
 2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* grub-core/gfxmenu/gui_list.c (draw_menu): Don't use set in if.
+	* grub-core/gfxmenu/widget-box.c (get_left_pad): Take corners into
+	account.
+	(get_top_pad): Likewise.
+	(get_right_pad): Likewise.
+	(get_bottom_pad): Likewise.
+
+2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gfxmenu/gui_list.c (draw_menu): Don't use assignment in if.
 
 2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
