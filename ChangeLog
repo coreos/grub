@@ -1,5 +1,9 @@
 2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gfxmenu/gui_list.c (draw_menu): Don't use set in if.
+
+2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/efi/api.h (grub_efi_memory_descriptor): Add packed
 	attribute as the structure isn't guaranteed to be properly aligned.
 	(grub_efi_pci_device_path): Likewise.
