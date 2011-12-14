@@ -142,7 +142,7 @@ typedef grub_int32_t	grub_ssize_t;
 
 typedef grub_uint64_t grub_properly_aligned_t;
 
-#define GRUB_PROPERLY_ALIGNED_ARRAY(name, size) grub_properly_aligned_t name[(size + sizeof (grub_properly_aligned_t) - 1) / sizeof (grub_properly_aligned_t)]
+#define GRUB_PROPERLY_ALIGNED_ARRAY(name, size) grub_properly_aligned_t name[((size) + sizeof (grub_properly_aligned_t) - 1) / sizeof (grub_properly_aligned_t)]
 
 /* The type for representing a file offset.  */
 typedef grub_uint64_t	grub_off_t;
