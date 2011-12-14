@@ -1,5 +1,13 @@
 2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/charset.h (grub_utf16_to_utf8): Make src a const pointer.
+	(grub_ucs4_to_utf8_alloc): Likewise.
+	(grub_ucs4_to_utf8): Likewise.
+	* grub-core/normal/charset.c (grub_ucs4_to_utf8): Likewise.
+	(grub_ucs4_to_utf8_alloc): Likewise.
+
+2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	AFFS never uses unicode.
 
 	* include/grub/charset.h (GRUB_MAX_UTF8_PER_LATIN1): New const.

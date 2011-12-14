@@ -51,7 +51,7 @@ grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 
 /* Convert UTF-16 to UTF-8.  */
 static inline grub_uint8_t *
-grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
+grub_utf16_to_utf8 (grub_uint8_t *dest, const grub_uint16_t *src,
 		    grub_size_t size)
 {
   grub_uint32_t code_high = 0;
@@ -141,7 +141,7 @@ grub_latin1_to_utf8 (grub_uint8_t *dest, const grub_uint8_t *src,
 }
 
 /* Convert UCS-4 to UTF-8.  */
-char *grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size);
+char *grub_ucs4_to_utf8_alloc (const grub_uint32_t *src, grub_size_t size);
 
 int
 grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize);
@@ -156,7 +156,7 @@ int
 grub_utf8_process (grub_uint8_t c, grub_uint32_t *code, int *count);
 
 void
-grub_ucs4_to_utf8 (grub_uint32_t *src, grub_size_t size,
+grub_ucs4_to_utf8 (const grub_uint32_t *src, grub_size_t size,
 		   grub_uint8_t *dest, grub_size_t destsize);
 grub_size_t grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 			       const grub_uint8_t *src, grub_size_t srcsize,

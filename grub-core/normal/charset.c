@@ -197,7 +197,7 @@ grub_encode_utf8_character (grub_uint8_t *dest, grub_uint8_t *destend,
 
 /* Convert UCS-4 to UTF-8.  */
 void
-grub_ucs4_to_utf8 (grub_uint32_t *src, grub_size_t size,
+grub_ucs4_to_utf8 (const grub_uint32_t *src, grub_size_t size,
 		   grub_uint8_t *dest, grub_size_t destsize)
 {
   /* Keep last char for \0.  */
@@ -223,10 +223,10 @@ grub_ucs4_to_utf8 (grub_uint32_t *src, grub_size_t size,
 
 /* Convert UCS-4 to UTF-8.  */
 char *
-grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size)
+grub_ucs4_to_utf8_alloc (const grub_uint32_t *src, grub_size_t size)
 {
   grub_size_t remaining;
-  grub_uint32_t *ptr;
+  const grub_uint32_t *ptr;
   grub_size_t cnt = 0;
   grub_uint8_t *ret;
 
