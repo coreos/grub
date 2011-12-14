@@ -25,6 +25,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/fshelp.h>
+#include <grub/charset.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -292,15 +293,15 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
   struct grub_affs_data *data = dir->data;
   grub_uint32_t *hashtable;
 
-  auto int NESTED_FUNC_ATTR grub_affs_create_node (const char *name, 
-						   grub_uint32_t block,
+  auto int NESTED_FUNC_ATTR grub_affs_create_node (grub_uint32_t block,
 						   const struct grub_affs_file *fil);
 
-  int NESTED_FUNC_ATTR grub_affs_create_node (const char *name,
-					      grub_uint32_t block,
+  int NESTED_FUNC_ATTR grub_affs_create_node (grub_uint32_t block,
 					      const struct grub_affs_file *fil)
     {
       int type;
+      grub_uint8_t name_u8[sizeof (fil->name) * GRUB_MAX_UTF8_PER_LATIN1 + 1];
+
       node = grub_zalloc (sizeof (*node));
       if (!node)
 	{
@@ -322,7 +323,10 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
       node->di = *fil;
       node->parent = dir;
 
-      if (hook (name, type, node))
+      *grub_latin1_to_utf8 (name_u8, fil->name,
+			    grub_min (fil->namelen, sizeof (fil->name))) = '\0';
+      
+      if (hook ((char *) name_u8, type, node))
 	{
 	  grub_free (hashtable);
 	  return 1;
@@ -377,9 +381,7 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
 	  if (grub_errno)
 	    goto fail;
 
-	  file.name[file.namelen] = '\0';
-
-	  if (grub_affs_create_node ((char *) (file.name), next, &file))
+	  if (grub_affs_create_node (next, &file))
 	    return 1;
 
 	  next = grub_be_to_cpu32 (file.next);

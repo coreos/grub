@@ -118,6 +118,28 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
   return dest;
 }
 
+#define GRUB_MAX_UTF8_PER_LATIN1 2
+
+/* Convert Latin1 to UTF-8.  */
+static inline grub_uint8_t *
+grub_latin1_to_utf8 (grub_uint8_t *dest, const grub_uint8_t *src,
+		     grub_size_t size)
+{
+  while (size--)
+    {
+      if (!(*src & 0x80))
+	*dest++ = *src;
+      else
+	{
+	  *dest++ = (*src >> 6) | 0xC0;
+	  *dest++ = (*src & 0x3F) | 0x80;
+	}
+      src++;
+    }
+
+  return dest;
+}
+
 /* Convert UCS-4 to UTF-8.  */
 char *grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size);
 

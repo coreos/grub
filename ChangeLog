@@ -1,3 +1,11 @@
+2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	AFFS never uses unicode.
+
+	* include/grub/charset.h (GRUB_MAX_UTF8_PER_LATIN1): New const.
+	(grub_latin1_to_utf8): New inline function.
+	* grub-core/fs/affs.c (grub_affs_iterate_dir): Convert latin1 to UTF8.
+
 2011-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/romfs.c (grub_romfs_mount): Fix pointer comparison
