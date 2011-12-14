@@ -1,5 +1,9 @@
 2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/kernel.h (FOR_MODULES): Make it a bit faster.
+
+2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/types.h (GRUB_PROPERLY_ALIGNED_ARRAY): Add missing
 	brackets.
 
