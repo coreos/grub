@@ -1,5 +1,16 @@
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt/cipher/serpent.c (serpent_key_prepare): Fix
+	misaligned access.
+	(serpent_setkey): Likewise.
+	(serpent_encrypt_internal): Likewise.
+	(serpent_decrypt_internal): Likewise.
+	(serpent_encrypt): Don't put an alignment-increasing cast.
+	(serpent_decrypt): Likewise.
+	(serpent_test): Likewise.
+
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/multiboot.c (grub_cmd_module): Fix target address.
 
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
