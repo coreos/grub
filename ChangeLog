@@ -1,5 +1,10 @@
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/bsdXX.c (grub_freebsd_load_elfmodule): Fix
+	current address calculation.
+
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/reed_solomon.c (decode_block): Allocate on heap and not
 	stack.
 	(encode_block): Likewise.

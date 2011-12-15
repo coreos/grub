@@ -244,16 +244,16 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
 	curload = module + s->sh_addr + s->sh_size;
     }
 
-  load (file, UINT_TO_PTR (module), 0, sizeof (e));
+  load (file, (grub_uint8_t *) chunk_src + module - *kern_end, 0, sizeof (e));
   if (curload < module + sizeof (e))
     curload = module + sizeof (e);
 
-  load (file, UINT_TO_PTR (curload), e.e_shoff,
+  load (file, (grub_uint8_t *) chunk_src + curload - *kern_end, e.e_shoff,
 	e.e_shnum * e.e_shentsize);
   e.e_shoff = curload - module;
   curload +=  e.e_shnum * e.e_shentsize;
 
-  load (file, UINT_TO_PTR (curload), e.e_phoff,
+  load (file, (grub_uint8_t *) chunk_src + curload - *kern_end, e.e_phoff,
 	e.e_phnum * e.e_phentsize);
   e.e_phoff = curload - module;
   curload +=  e.e_phnum * e.e_phentsize;
