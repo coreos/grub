@@ -169,7 +169,7 @@ grub_efiemu_write_value (void *addr, grub_uint32_t value, int plus_handle,
       else
 	ptv_rels[ptv_written].plustype = 0;
 
-      ptv_rels[ptv_written].addr = PTR_TO_UINT64 (addr);
+      ptv_rels[ptv_written].addr = (grub_addr_t) addr;
       ptv_rels[ptv_written].size = size;
       ptv_written++;
 
@@ -179,10 +179,10 @@ grub_efiemu_write_value (void *addr, grub_uint32_t value, int plus_handle,
 
   /* Compute the value */
   if (minus_handle)
-    value -= PTR_TO_UINT32 (grub_efiemu_mm_obtain_request (minus_handle));
+    value -= (grub_addr_t) grub_efiemu_mm_obtain_request (minus_handle);
 
   if (plus_handle)
-    value += PTR_TO_UINT32 (grub_efiemu_mm_obtain_request (plus_handle));
+    value += (grub_addr_t) grub_efiemu_mm_obtain_request (plus_handle);
 
   /* Write the value */
   switch (size)
@@ -248,16 +248,16 @@ grub_efiemu_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
       switch (cur_relloc->size)
 	{
 	case 8:
-	  *((grub_uint64_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  *((grub_uint64_t *) (grub_addr_t) cur_relloc->addr) += corr;
 	  break;
 	case 4:
-	  *((grub_uint32_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  *((grub_uint32_t *) (grub_addr_t) cur_relloc->addr) += corr;
 	  break;
 	case 2:
-	  *((grub_uint16_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  *((grub_uint16_t *) (grub_addr_t) cur_relloc->addr) += corr;
 	  break;
 	case 1:
-	  *((grub_uint8_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  *((grub_uint8_t *) (grub_addr_t) cur_relloc->addr) += corr;
 	  break;
 	}
     }

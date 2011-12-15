@@ -38,13 +38,13 @@ start:
 	bal codestart
 	 nop
 base:	
-	. = _start + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
+	. = _start + GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE
 compressed_size:
 	.long 0
-	. = _start + GRUB_KERNEL_MACHINE_UNCOMPRESSED_SIZE
+	. = _start + GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE
 uncompressed_size:
 	.long 0
-	. = _start + GRUB_KERNEL_MACHINE_UNCOMPRESSED_ADDR
+	. = _start + GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_ADDR
 uncompressed_addr:
 	.long 0
 codestart:
@@ -240,9 +240,9 @@ cmdlinedone:
 	subu $a0, $a0, $t0
 	addu $a0, $a0, $s0
 
-	lw $a1, (GRUB_KERNEL_MACHINE_UNCOMPRESSED_ADDR - BASE_ADDR)($s0)
-	lw $a2, (GRUB_KERNEL_MACHINE_COMPRESSED_SIZE - BASE_ADDR)($s0)
-	lw $a3, (GRUB_KERNEL_MACHINE_UNCOMPRESSED_SIZE - BASE_ADDR)($s0)
+	lw $a1, (GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_ADDR - BASE_ADDR)($s0)
+	lw $a2, (GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE - BASE_ADDR)($s0)
+	lw $a3, (GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE - BASE_ADDR)($s0)
 	move $s1, $a1
 
 	/* $a0 contains source compressed address, $a1 is destination,

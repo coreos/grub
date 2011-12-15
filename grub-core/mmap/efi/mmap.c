@@ -272,7 +272,7 @@ grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)),
   overlays = curover;
   *handle = curover->handle;
 
-  return UINT_TO_PTR (curover->address);
+  return (void *) (grub_addr_t) curover->address;
 }
 
 void

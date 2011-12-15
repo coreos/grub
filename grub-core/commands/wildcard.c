@@ -436,7 +436,7 @@ wildcard_expand (const char *s, char ***strs)
 
 	  else if (*start == '/') /* no device part */
 	    {
-	      char *root;
+	      const char *root;
 	      char *prefix;
 
 	      root = grub_env_get ("root");

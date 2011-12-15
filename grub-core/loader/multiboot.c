@@ -182,7 +182,7 @@ grub_multiboot_set_console (int console_type, int accepted_consoles,
       if (console_required)
 	return grub_error (GRUB_ERR_BAD_OS,
 			   "OS requires a console but none is available");
-      grub_printf ("WARNING: no console will be available to OS");
+      grub_puts_ (N_("WARNING: no console will be available to OS"));
       accepts_video = 0;
       accepts_ega_text = 0;
       return GRUB_ERR_NONE;
@@ -309,7 +309,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
 	return err;
       }
     module = get_virtual_current_address (ch);
-    target = (grub_addr_t) get_virtual_current_address (ch);
+    target = get_physical_target_address (ch);
   }
 
   err = grub_multiboot_add_module (target, size, argc - 1, argv + 1);

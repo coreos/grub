@@ -33,6 +33,7 @@
 #include <grub/crypto.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/zfs/zfs.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -62,9 +63,10 @@ enum {
   CMD_HEX,
   CMD_CRC,
   CMD_BLOCKLIST,
-  CMD_TESTLOAD
+  CMD_TESTLOAD,
+  CMD_ZFSINFO,
+  CMD_XNU_UUID
 };
-
 #define BUF_SIZE  32256
 
 static grub_disk_addr_t skip, leng;
@@ -181,7 +183,8 @@ cmd_cp (char *src, char *dest)
   ff = fopen (dest, "wb");
   if (ff == NULL)
     {
-      grub_util_error (_("open error"));
+      grub_util_error (_("OS file %s open error: %s"), dest,
+		       strerror (errno));
       return;
     }
   read_file (src, cp_hook);
@@ -240,7 +243,8 @@ cmd_cmp (char *src, char *dest)
   ff = fopen (dest, "rb");
   if (ff == NULL)
     {
-      grub_util_error (_("open error"));
+      grub_util_error (_("OS file %s open error: %s"), dest,
+		       strerror (errno));
       return;
     }
 
@@ -354,6 +358,9 @@ fstest (int n, char **args)
     case CMD_LS:
       execute_command ("ls", n, args);
       break;
+    case CMD_ZFSINFO:
+      execute_command ("zfsinfo", n, args);
+      break;
     case CMD_CP:
       cmd_cp (args[0], args[1]);
       break;
@@ -375,6 +382,29 @@ fstest (int n, char **args)
     case CMD_TESTLOAD:
       execute_command ("testload", n, args);
       grub_printf ("\n");
+    case CMD_XNU_UUID:
+      {
+	grub_device_t dev;
+	grub_fs_t fs;
+	char *uuid = 0;
+	char *argv[3] = { "-l", NULL, NULL};
+	dev = grub_device_open (n ? args[0] : 0);
+	if (!dev)
+	  grub_util_error (grub_errmsg);
+	fs = grub_fs_probe (dev);
+	if (!fs)
+	  grub_util_error (grub_errmsg);
+	if (!fs->uuid)
+	  grub_util_error (_("couldn't retrieve UUID"));
+	if (fs->uuid (dev, &uuid))
+	  grub_util_error (grub_errmsg);
+	if (!uuid)
+	  grub_util_error (_("couldn't retrieve UUID"));
+	argv[1] = uuid;
+	execute_command ("xnu_uuid", 2, argv);
+	grub_free (uuid);
+	grub_device_close (dev);
+      }
     }
     
   for (i = 0; i < num_disks; i++)
@@ -403,6 +433,7 @@ static struct argp_option options[] = {
   {N_("hex FILE"), 0, 0      , OPTION_DOC, N_("Hex dump FILE."), 1},
   {N_("crc FILE"), 0, 0     , OPTION_DOC, N_("Get crc32 checksum of FILE."), 1},
   {N_("blocklist FILE"), 0, 0, OPTION_DOC, N_("Display blocklist of FILE."), 1},
+  {N_("xnu_uuid"), 0, 0, OPTION_DOC, N_("Compute XNU UUID of the device."), 1},
   
   {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."),                 2},
   {"skip",      's', "N",           0, N_("Skip N bytes from output file."),   2},
@@ -410,6 +441,7 @@ static struct argp_option options[] = {
   {"diskcount", 'c', "N",           0, N_("N input files."),                   2},
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
   {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
+  {"zfs-key",      'K', N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
   {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("Print verbose messages."), 2},
   {"uncompress", 'u', NULL, OPTION_ARG_OPTIONAL, N_("Uncompress data."), 2},
   {0, 0, 0, 0, 0, 0}
@@ -432,6 +464,38 @@ argp_parser (int key, char *arg, struct argp_state *state)
     {
     case 'r':
       root = arg;
+      return 0;
+
+    case 'K':
+      if (strcmp (arg, "prompt") == 0)
+	{
+	  char buf[1024];	  
+	  grub_puts_ (N_("Enter ZFS password: "));
+	  if (grub_password_get (buf, 1023))
+	    {
+	      grub_zfs_add_key ((grub_uint8_t *) buf, grub_strlen (buf), 1);
+	    }
+	}
+      else
+      {
+	FILE *f;
+	ssize_t real_size;
+	grub_uint8_t buf[1024];
+	f = fopen (arg, "rb");
+	if (!f)
+	  {
+	    printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
+	    return 0;
+	  }
+	real_size = fread (buf, 1, 1024, f);
+	if (real_size < 0)
+	  {
+	    printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
+	    fclose (f);
+	    return 0;
+	  }
+	grub_zfs_add_key (buf, real_size, 0);
+      }
       return 0;
 
     case 'C':
@@ -498,14 +562,9 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
   if (args_count < num_disks)
     {
-      if (arg[0] != '/')
-	{
-	  fprintf (stderr, "%s", _("Must use absolute path.\n"));
-	  argp_usage (state);
-	}
       if (args_count == 0)
 	images = xmalloc (num_disks * sizeof (images[0]));
-      images[args_count] = xstrdup (arg);
+      images[args_count] = canonicalize_file_name (arg);
       args_count++;
       return 0;
     }
@@ -515,6 +574,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
       if (!grub_strcmp (arg, "ls"))
         {
           cmd = CMD_LS;
+        }
+      else if (!grub_strcmp (arg, "zfsinfo"))
+        {
+          cmd = CMD_ZFSINFO;
         }
       else if (!grub_strcmp (arg, "cp"))
 	{
@@ -550,6 +613,11 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	{
 	  cmd = CMD_TESTLOAD;
           nparm = 1;
+	}
+      else if (grub_strcmp (arg, "xnu_uuid") == 0)
+	{
+	  cmd = CMD_XNU_UUID;
+	  nparm = 0;
 	}
       else
 	{

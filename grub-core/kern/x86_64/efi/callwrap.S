@@ -19,14 +19,13 @@
 
 #include <config.h>
 #include <grub/symbol.h>
-#include <grub/boot.h>
 
 /*
  * x86_64 uses registry to pass parameters. Unfortunately, gcc and efi use
  * different call conversion, so we need to do some conversion.
  *
  * gcc:
- *   %rdi,  %esi,  %rdx,  %rcx, %r8, %r9, 8(%rsp), 16(%rsp), ...
+ *   %rdi,  %rsi,  %rdx,  %rcx, %r8, %r9, 8(%rsp), 16(%rsp), ...
  *
  * efi:
  *   %rcx,  %rdx,  %r8,  %r9,  32(%rsp), 40(%rsp), 48(%rsp), ...

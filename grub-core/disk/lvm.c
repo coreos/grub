@@ -1,7 +1,7 @@
 /* lvm.c - module to read Logical Volumes.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009,2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/lvm.h>
+#include <grub/partition.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_UTIL
 #include <grub/emu/misc.h>
@@ -42,7 +44,7 @@ static int is_lv_readable (struct grub_lvm_lv *lv);
    at the number.  In case STR is not found, *P will be NULL and the
    return value will be 0.  */
 static int
-grub_lvm_getvalue (char **p, char *str)
+grub_lvm_getvalue (char **p, const char *str)
 {
   *p = grub_strstr (*p, str);
   if (! *p)
@@ -67,7 +69,7 @@ grub_lvm_checkvalue (char **p, char *str, char *tmpl)
 #endif
 
 static int
-grub_lvm_check_flag (char *p, char *str, char *flag)
+grub_lvm_check_flag (char *p, const char *str, const char *flag)
 {
   int len_str = grub_strlen (str), len_flag = grub_strlen (flag);
   while (1)
@@ -153,7 +155,11 @@ do_lvm_scan (const char *scan_for)
     for (vg = vg_list; vg; vg = vg->next)
       for (pv = vg->pvs; pv; pv = pv->next)
 	if (pv->disk && pv->disk->id == disk->id
-	    && pv->disk->dev->id == disk->dev->id)
+	    && pv->disk->dev->id == disk->dev->id
+	    && grub_partition_get_start (pv->disk->partition)
+	    == grub_partition_get_start (disk->partition)
+	    && grub_disk_get_size (pv->disk)
+	    == grub_disk_get_size (disk))
 	  {
 	    grub_disk_close (disk);
 	    return 0;
@@ -770,7 +776,7 @@ grub_lvm_memberlist (grub_disk_t disk)
     for (pv = lv->vg->pvs; pv; pv = pv->next)
       {
 	if (!pv->disk)
-	  grub_util_error ("Couldn't find PV %s. Check your device.map",
+	  grub_util_error (_("Couldn't find PV %s. Check your device.map"),
 			   pv->name);
 	tmp = grub_malloc (sizeof (*tmp));
 	tmp->disk = pv->disk;

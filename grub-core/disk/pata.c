@@ -116,12 +116,13 @@ grub_pata_wait (void)
 static void
 grub_pata_pio_read (struct grub_pata_device *dev, char *buf, grub_size_t size)
 { 
-  grub_uint16_t *buf16 = (grub_uint16_t *) buf;
   unsigned int i;
 
   /* Read in the data, word by word.  */
   for (i = 0; i < size / 2; i++)
-    buf16[i] = grub_le_to_cpu16 (grub_inw(dev->ioaddress + GRUB_ATA_REG_DATA));
+    grub_set_unaligned16 (buf + 2 * i,
+			  grub_le_to_cpu16 (grub_inw(dev->ioaddress
+						     + GRUB_ATA_REG_DATA)));
   if (size & 1)
     buf[size - 1] = (char) grub_le_to_cpu16 (grub_inw (dev->ioaddress
 						       + GRUB_ATA_REG_DATA));
@@ -130,12 +131,11 @@ grub_pata_pio_read (struct grub_pata_device *dev, char *buf, grub_size_t size)
 static void
 grub_pata_pio_write (struct grub_pata_device *dev, char *buf, grub_size_t size)
 {
-  grub_uint16_t *buf16 = (grub_uint16_t *) buf;
   unsigned int i;
 
   /* Write the data, word by word.  */
   for (i = 0; i < size / 2; i++)
-    grub_outw(grub_cpu_to_le16 (buf16[i]), dev->ioaddress + GRUB_ATA_REG_DATA);
+    grub_outw(grub_cpu_to_le16 (grub_get_unaligned16 (buf + 2 * i)), dev->ioaddress + GRUB_ATA_REG_DATA);
 }
 
 /* ATA pass through support, used by hdparm.mod.  */

@@ -72,7 +72,7 @@ struct grub_net_card;
 struct grub_net_card_driver
 {
   struct grub_net_card_driver *next;
-  char *name;
+  const char *name;
   grub_err_t (*open) (const struct grub_net_card *dev);
   void (*close) (const struct grub_net_card *dev);
   grub_err_t (*send) (const struct grub_net_card *dev,
@@ -111,7 +111,7 @@ struct grub_net_link_layer_entry;
 struct grub_net_card
 {
   struct grub_net_card *next;
-  char *name;
+  const char *name;
   struct grub_net_card_driver *driver;
   grub_net_link_level_address_t default_address;
   grub_net_card_flags_t flags;
@@ -220,7 +220,7 @@ typedef struct grub_net_socket *grub_net_socket_t;
 struct grub_net_app_protocol 
 {
   struct grub_net_app_protocol *next;
-  char *name;
+  const char *name;
   grub_err_t (*dir) (grub_device_t device, const char *path,
 		     int (*hook) (const char *filename,
 				  const struct grub_dirhook_info *info));
@@ -301,6 +301,7 @@ grub_net_add_addr (const char *name,
 		   grub_net_interface_flags_t flags);
 
 extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
+#define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
 
 extern grub_net_app_level_t grub_net_app_level_list;
 

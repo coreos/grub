@@ -29,6 +29,7 @@ PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 host_os=@host_os@
 localedir=@datadir@/locale
+datarootdir=@datarootdir@
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 
 self=`basename $0`

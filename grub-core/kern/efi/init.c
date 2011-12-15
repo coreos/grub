@@ -26,9 +26,12 @@
 #include <grub/mm.h>
 #include <grub/kernel.h>
 
+grub_addr_t grub_modbase;
+
 void
 grub_efi_init (void)
 {
+  grub_modbase = grub_efi_modules_addr ();
   /* First of all, initialize the console so that GRUB can display
      messages.  */
   grub_console_init ();

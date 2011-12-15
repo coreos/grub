@@ -851,7 +851,7 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
 {
   __re_size_t table_size;
 #ifndef _LIBC
-  char *codeset_name;
+  const char *codeset_name;
 #endif
 #ifdef RE_ENABLE_I18N
   size_t max_i18n_object_size = MAX (sizeof (wchar_t), sizeof (wctype_t));

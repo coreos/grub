@@ -20,6 +20,7 @@ import re
 import sys
 import os
 import datetime
+import codecs
 
 if len (sys.argv) < 3:
     print ("Usage: %s SOURCE DESTINATION" % sys.argv[0])
@@ -40,9 +41,9 @@ except:
     print ("WARNING: %s already exists" % cipher_dir_out)
 
 cipher_files = os.listdir (cipher_dir_in)
-conf = open (os.path.join ("grub-core", "Makefile.gcry.def"), "w")
+conf = codecs.open (os.path.join ("grub-core", "Makefile.gcry.def"), "w", "utf-8")
 conf.write ("AutoGen definitions Makefile.tpl;\n\n")
-confutil = open ("Makefile.utilgcry.def", "w")
+confutil = codecs.open ("Makefile.utilgcry.def", "w", "utf-8")
 confutil.write ("AutoGen definitions Makefile.tpl;\n\n")
 confutil.write ("library = {\n");
 confutil.write ("  name = libgrubgcry.a;\n");
@@ -69,7 +70,7 @@ mdblocksizes = {"_gcry_digest_spec_crc32" : 64,
                 "_gcry_digest_spec_tiger" : 64,
                 "_gcry_digest_spec_whirlpool" : 64}
 
-cryptolist = open (os.path.join (cipher_dir_out, "crypto.lst"), "w")
+cryptolist = codecs.open (os.path.join (cipher_dir_out, "crypto.lst"), "w", "utf-8")
 
 # rijndael is the only cipher using aliases. So no need for mangling, just
 # hardcode it
@@ -80,6 +81,9 @@ cryptolist.write ("AES128: gcry_rijndael\n");
 cryptolist.write ("AES-128: gcry_rijndael\n");
 cryptolist.write ("AES-192: gcry_rijndael\n");
 cryptolist.write ("AES-256: gcry_rijndael\n");
+
+cryptolist.write ("ADLER32: adler32\n");
+cryptolist.write ("CRC64: crc64\n");
 
 for cipher_file in cipher_files:
     infile = os.path.join (cipher_dir_in, cipher_file)
@@ -96,11 +100,23 @@ for cipher_file in cipher_files:
     nch = False
     if re.match (".*\.[ch]$", cipher_file):
         isc = re.match (".*\.c$", cipher_file)
-        f = open (infile, "r")
-        fw = open (outfile, "w")
+        f = codecs.open (infile, "r", "utf-8")
+        fw = codecs.open (outfile, "w", "utf-8")
         fw.write ("/* This file was automatically imported with \n")
         fw.write ("   import_gcry.py. Please don't modify it */\n")
         fw.write ("#include <grub/dl.h>\n")
+        if cipher_file == "camellia.h":
+            fw.write ("#include <grub/misc.h>\n")
+            fw.write ("void camellia_setup128(const unsigned char *key, grub_uint32_t *subkey);\n")
+            fw.write ("void camellia_setup192(const unsigned char *key, grub_uint32_t *subkey);\n")
+            fw.write ("void camellia_setup256(const unsigned char *key, grub_uint32_t *subkey);\n")
+            fw.write ("void camellia_encrypt128(const grub_uint32_t *subkey, grub_uint32_t *io);\n")
+            fw.write ("void camellia_encrypt192(const grub_uint32_t *subkey, grub_uint32_t *io);\n")                      
+            fw.write ("void camellia_encrypt256(const grub_uint32_t *subkey, grub_uint32_t *io);\n")                      
+            fw.write ("void camellia_decrypt128(const grub_uint32_t *subkey, grub_uint32_t *io);\n")
+            fw.write ("void camellia_decrypt192(const grub_uint32_t *subkey, grub_uint32_t *io);\n")                      
+            fw.write ("void camellia_decrypt256(const grub_uint32_t *subkey, grub_uint32_t *io);\n")                      
+            fw.write ("#define memcpy grub_memcpy\n")
         # Whole libgcrypt is distributed under GPLv3+ or compatible
         if isc:
             fw.write ("GRUB_MOD_LICENSE (\"GPLv3+\");\n")
@@ -123,6 +139,7 @@ for cipher_file in cipher_files:
                 isglue = True
             modname = "gcry_%s" % modname
         for line in f:
+            line = line
             if skip_statement:
                 if not re.search (";", line) is None:
                     skip_statement = False
@@ -149,7 +166,7 @@ for cipher_file in cipher_files:
                     fw.write ("    .modname = \"%s\",\n" % modname);
                     fw.write ("#endif\n");
                     if ismd:
-                        if not mdblocksizes.has_key (mdname):
+                        if not (mdname in mdblocksizes):
                             print ("ERROR: Unknown digest blocksize: %s\n"
                                    % mdname)
                             exit (1)
@@ -173,8 +190,10 @@ for cipher_file in cipher_files:
             if hold:
                 hold = False
                 # We're optimising for size.
-                if not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer|tripledes_set2keys|do_tripledes_set_extra_info)", line) is None:
+                if not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer|tripledes_set2keys|do_tripledes_set_extra_info|_gcry_rmd160_mixblock|serpent_test)", line) is None:
                     skip = True
+                    if not re.match ("serpent_test", line) is None:
+                        fw.write ("static const char *serpent_test (void) { return 0; }\n");
                     fname = re.match ("[a-zA-Z0-9_]*", line).group ()
                     chmsg = "(%s): Removed." % fname
                     if nch:
@@ -185,10 +204,9 @@ for cipher_file in cipher_files:
                     continue
                 else:
                     fw.write (holdline)
-            m = re.match ("#include <.*>", line)
+            m = re.match ("# *include <(.*)>", line)
             if not m is None:
-                chmsg = "Removed including of %s" % \
-                m.group () [len ("#include <"):len (m.group ()) - 1]
+                chmsg = "Removed including of %s" % m.groups ()[0]
                 if nch:
                     chlognew = "%s\n	%s" % (chlognew, chmsg)
                 else:
@@ -322,28 +340,28 @@ cryptolist.close ()
 chlog = "%s	* crypto.lst: New file.\n" % chlog
 
 outfile = os.path.join (cipher_dir_out, "types.h")
-fw=open (outfile, "w")
+fw=codecs.open (outfile, "w", "utf-8")
 fw.write ("#include <grub/types.h>\n")
 fw.write ("#include <cipher_wrap.h>\n")
 chlog = "%s	* types.h: New file.\n" % chlog
 fw.close ()
 
 outfile = os.path.join (cipher_dir_out, "memory.h")
-fw=open (outfile, "w")
+fw=codecs.open (outfile, "w", "utf-8")
 fw.write ("#include <cipher_wrap.h>\n")
 chlog = "%s	* memory.h: New file.\n" % chlog
 fw.close ()
 
 
 outfile = os.path.join (cipher_dir_out, "cipher.h")
-fw=open (outfile, "w")
+fw=codecs.open (outfile, "w", "utf-8")
 fw.write ("#include <grub/crypto.h>\n")
 fw.write ("#include <cipher_wrap.h>\n")
 chlog = "%s	* cipher.h: Likewise.\n" % chlog
 fw.close ()
 
 outfile = os.path.join (cipher_dir_out, "g10lib.h")
-fw=open (outfile, "w")
+fw=codecs.open (outfile, "w", "utf-8")
 fw.write ("#include <cipher_wrap.h>\n")
 chlog = "%s	* g10lib.h: Likewise.\n" % chlog
 fw.close ()
@@ -353,7 +371,7 @@ outfile = os.path.join (cipher_dir_out, "ChangeLog")
 
 conf.close ();
 
-initfile = open (os.path.join (cipher_dir_out, "init.c"), "w")
+initfile = codecs.open (os.path.join (cipher_dir_out, "init.c"), "w", "utf-8")
 for module in modules:
     initfile.write ("extern void grub_%s_init (void);\n" % module)
     initfile.write ("extern void grub_%s_fini (void);\n" % module)
@@ -378,8 +396,8 @@ confutil.write ("};\n");
 confutil.close ();
 
 
-f=open (infile, "r")
-fw=open (outfile, "w")
+f=codecs.open (infile, "r", "utf-8")
+fw=codecs.open (outfile, "w", "utf-8")
 dt = datetime.date.today ()
 fw.write ("%04d-%02d-%02d  Automatic import tool\n" % \
           (dt.year,dt.month, dt.day))

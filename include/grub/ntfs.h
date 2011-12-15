@@ -20,79 +20,87 @@
 #ifndef GRUB_NTFS_H
 #define GRUB_NTFS_H	1
 
-#define FILE_MFT      0
-#define FILE_MFTMIRR  1
-#define FILE_LOGFILE  2
-#define FILE_VOLUME   3
-#define FILE_ATTRDEF  4
-#define FILE_ROOT     5
-#define FILE_BITMAP   6
-#define FILE_BOOT     7
-#define FILE_BADCLUS  8
-#define FILE_QUOTA    9
-#define FILE_UPCASE  10
+enum
+  {
+    GRUB_NTFS_FILE_MFT     =  0,
+    GRUB_NTFS_FILE_MFTMIRR =  1,
+    GRUB_NTFS_FILE_LOGFILE =  2,
+    GRUB_NTFS_FILE_VOLUME  =  3,
+    GRUB_NTFS_FILE_ATTRDEF =  4,
+    GRUB_NTFS_FILE_ROOT    =  5,
+    GRUB_NTFS_FILE_BITMAP  =  6,
+    GRUB_NTFS_FILE_BOOT    =  7,
+    GRUB_NTFS_FILE_BADCLUS =  8,
+    GRUB_NTFS_FILE_QUOTA   =  9,
+    GRUB_NTFS_FILE_UPCASE  = 10,
+  };
 
-#define AT_STANDARD_INFORMATION	0x10
-#define AT_ATTRIBUTE_LIST	0x20
-#define AT_FILENAME		0x30
-#define AT_OBJECT_ID		0x40
-#define AT_SECURITY_DESCRIPTOR	0x50
-#define AT_VOLUME_NAME		0x60
-#define AT_VOLUME_INFORMATION	0x70
-#define AT_DATA			0x80
-#define AT_INDEX_ROOT		0x90
-#define AT_INDEX_ALLOCATION	0xA0
-#define AT_BITMAP		0xB0
-#define AT_SYMLINK		0xC0
-#define AT_EA_INFORMATION	0xD0
-#define AT_EA			0xE0
+enum
+  {
+    GRUB_NTFS_AT_STANDARD_INFORMATION = 0x10,
+    GRUB_NTFS_AT_ATTRIBUTE_LIST       = 0x20,
+    GRUB_NTFS_AT_FILENAME             = 0x30,
+    GRUB_NTFS_AT_OBJECT_ID            = 0x40,
+    GRUB_NTFS_AT_SECURITY_DESCRIPTOR  = 0x50,
+    GRUB_NTFS_AT_VOLUME_NAME          = 0x60,
+    GRUB_NTFS_AT_VOLUME_INFORMATION   = 0x70,
+    GRUB_NTFS_AT_DATA                 = 0x80,
+    GRUB_NTFS_AT_INDEX_ROOT           = 0x90,
+    GRUB_NTFS_AT_INDEX_ALLOCATION     = 0xA0,
+    GRUB_NTFS_AT_BITMAP               = 0xB0,
+    GRUB_NTFS_AT_SYMLINK              = 0xC0,
+    GRUB_NTFS_AT_EA_INFORMATION	      = 0xD0,
+    GRUB_NTFS_AT_EA                   = 0xE0,
+  };
 
-#define ATTR_READ_ONLY		0x1
-#define ATTR_HIDDEN		0x2
-#define ATTR_SYSTEM		0x4
-#define ATTR_ARCHIVE		0x20
-#define ATTR_DEVICE		0x40
-#define ATTR_NORMAL		0x80
-#define ATTR_TEMPORARY		0x100
-#define ATTR_SPARSE		0x200
-#define ATTR_REPARSE		0x400
-#define ATTR_COMPRESSED		0x800
-#define ATTR_OFFLINE		0x1000
-#define ATTR_NOT_INDEXED	0x2000
-#define ATTR_ENCRYPTED		0x4000
-#define ATTR_DIRECTORY		0x10000000
-#define ATTR_INDEX_VIEW		0x20000000
+enum
+  {
+    GRUB_NTFS_ATTR_READ_ONLY   = 0x1,
+    GRUB_NTFS_ATTR_HIDDEN      = 0x2,
+    GRUB_NTFS_ATTR_SYSTEM      = 0x4,
+    GRUB_NTFS_ATTR_ARCHIVE     = 0x20,
+    GRUB_NTFS_ATTR_DEVICE      = 0x40,
+    GRUB_NTFS_ATTR_NORMAL      = 0x80,
+    GRUB_NTFS_ATTR_TEMPORARY   = 0x100,
+    GRUB_NTFS_ATTR_SPARSE      = 0x200,
+    GRUB_NTFS_ATTR_REPARSE     = 0x400,
+    GRUB_NTFS_ATTR_COMPRESSED  = 0x800,
+    GRUB_NTFS_ATTR_OFFLINE     = 0x1000,
+    GRUB_NTFS_ATTR_NOT_INDEXED = 0x2000,
+    GRUB_NTFS_ATTR_ENCRYPTED   = 0x4000,
+    GRUB_NTFS_ATTR_DIRECTORY   = 0x10000000,
+    GRUB_NTFS_ATTR_INDEX_VIEW  = 0x20000000
+  };
 
-#define FLAG_COMPRESSED		1
-#define FLAG_ENCRYPTED		0x4000
-#define FLAG_SPARSE		0x8000
+enum
+  {
+    GRUB_NTFS_FLAG_COMPRESSED		= 1,
+    GRUB_NTFS_FLAG_ENCRYPTED		= 0x4000,
+    GRUB_NTFS_FLAG_SPARSE		= 0x8000
+  };
 
-#define BLK_SHR		GRUB_DISK_SECTOR_BITS
+#define GRUB_NTFS_BLK_SHR		GRUB_DISK_SECTOR_BITS
 
-#define MAX_MFT		(1024 >> BLK_SHR)
-#define MAX_IDX		(16384 >> BLK_SHR)
+#define GRUB_NTFS_MAX_MFT		(1024 >> GRUB_NTFS_BLK_SHR)
+#define GRUB_NTFS_MAX_IDX		(16384 >> GRUB_NTFS_BLK_SHR)
 
-#define COM_LEN		4096
-#define COM_LOG_LEN	12
-#define COM_SEC		(COM_LEN >> BLK_SHR)
+#define GRUB_NTFS_COM_LEN		4096
+#define GRUB_NTFS_COM_LOG_LEN	12
+#define GRUB_NTFS_COM_SEC		(GRUB_NTFS_COM_LEN >> GRUB_NTFS_BLK_SHR)
 
-#define AF_ALST		1
-#define AF_MMFT		2
-#define AF_GPOS		4
+enum
+  {
+    GRUB_NTFS_AF_ALST		= 1,
+    GRUB_NTFS_AF_MMFT		= 2,
+    GRUB_NTFS_AF_GPOS		= 4,
+  };
 
-#define RF_COMP		1
-#define RF_CBLK		2
-#define RF_BLNK		4
-
-#define valueat(buf,ofs,type)	*((type*)(((char*)buf)+ofs))
-
-#define u16at(buf,ofs)	grub_le_to_cpu16(valueat(buf,ofs,grub_uint16_t))
-#define u32at(buf,ofs)	grub_le_to_cpu32(valueat(buf,ofs,grub_uint32_t))
-#define u64at(buf,ofs)	grub_le_to_cpu64(valueat(buf,ofs,grub_uint64_t))
-
-#define v16at(buf,ofs)	valueat(buf,ofs,grub_uint16_t)
-#define v32at(buf,ofs)	valueat(buf,ofs,grub_uint32_t)
-#define v64at(buf,ofs)	valueat(buf,ofs,grub_uint64_t)
+enum
+  {
+    GRUB_NTFS_RF_COMP		= 1,
+    GRUB_NTFS_RF_CBLK		= 2,
+    GRUB_NTFS_RF_BLNK		= 4
+  };
 
 struct grub_ntfs_bpb
 {
@@ -120,8 +128,6 @@ struct grub_ntfs_bpb
   grub_uint32_t checksum;
 } __attribute__ ((packed));
 
-#define grub_ntfs_file grub_fshelp_node
-
 struct grub_ntfs_attr
 {
   int flags;
@@ -132,7 +138,7 @@ struct grub_ntfs_attr
   struct grub_ntfs_file *mft;
 };
 
-struct grub_fshelp_node
+struct grub_ntfs_file
 {
   struct grub_ntfs_data *data;
   char *buf;
@@ -174,13 +180,15 @@ struct grub_ntfs_rlst
   struct grub_ntfs_comp comp;
 };
 
-typedef grub_err_t (*ntfscomp_func_t) (struct grub_ntfs_attr * at, char *dest,
-				       grub_uint32_t ofs, grub_uint32_t len,
-				       struct grub_ntfs_rlst * ctx,
-				       grub_uint32_t vcn);
+typedef grub_err_t (*grub_ntfscomp_func_t) (struct grub_ntfs_attr * at,
+					    char *dest,
+					    grub_uint32_t ofs,
+					    grub_uint32_t len,
+					    struct grub_ntfs_rlst * ctx,
+					    grub_uint32_t vcn);
 
-extern ntfscomp_func_t EXPORT_VAR (grub_ntfscomp_func);
+extern grub_ntfscomp_func_t grub_ntfscomp_func;
 
-grub_err_t EXPORT_FUNC(grub_ntfs_read_run_list) (struct grub_ntfs_rlst *ctx);
+grub_err_t grub_ntfs_read_run_list (struct grub_ntfs_rlst *ctx);
 
 #endif /* ! GRUB_NTFS_H */

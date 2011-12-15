@@ -28,19 +28,19 @@
 static const struct grub_arg_option options[] =
   {
     {"class", 1, GRUB_ARG_OPTION_REPEATABLE,
-     N_("Menu entry type."), "STRING", ARG_TYPE_STRING},
+     N_("Menu entry type."), N_("STRING"), ARG_TYPE_STRING},
     {"users", 2, 0,
-     N_("Users allowed to boot this entry."), "USERNAME", ARG_TYPE_STRING},
+     N_("Users allowed to boot this entry."), N_("USERNAME"), ARG_TYPE_STRING},
     {"hotkey", 3, 0,
-     N_("Keyboard key for this entry."), "KEY", ARG_TYPE_STRING},
+     N_("Keyboard key for this entry."), N_("KEY"), ARG_TYPE_STRING},
     {"source", 4, 0,
-     N_("Menu entry definition as a string."), "STRING", ARG_TYPE_STRING},
+     N_("Menu entry definition as a string."), N_("STRING"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
 static struct
 {
-  char *name;
+  const char *name;
   int key;
 } hotkey_aliases[] =
   {

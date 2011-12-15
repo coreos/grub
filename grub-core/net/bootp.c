@@ -547,7 +547,7 @@ void
 grub_bootp_init (void)
 {
   cmd_bootp = grub_register_command ("net_bootp", grub_cmd_bootp,
-				     "[CARD]",
+				     N_("[CARD]"),
 				     N_("perform a bootp autoconfiguration"));
   cmd_getdhcp = grub_register_command ("net_get_dhcp_option", grub_cmd_dhcpopt,
 				       N_("VAR INTERFACE NUMBER DESCRIPTION"),

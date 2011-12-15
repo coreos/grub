@@ -211,14 +211,6 @@ grub_video_get_named_color (const char *name,
   return 0;
 }
 
-static __inline int
-my_isxdigit (char c)
-{
-  return ((c >= '0' && c <= '9')
-          || (c >= 'a' && c <= 'f')
-          || (c >= 'A' && c <= 'F'));
-}
-
 static int
 parse_hex_color_component (const char *s, unsigned start, unsigned end)
 {
@@ -267,7 +259,7 @@ grub_video_parse_color (const char *s, grub_video_rgba_color_t *color)
       /* Count the hexits to determine the format.  */
       int hexits = 0;
       const char *end = s;
-      while (my_isxdigit (*end))
+      while (grub_isxdigit (*end))
         {
           end++;
           hexits++;

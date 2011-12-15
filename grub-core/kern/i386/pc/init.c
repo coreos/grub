@@ -47,14 +47,35 @@ static int num_regions;
 
 void (*grub_pc_net_config) (char **device, char **path);
 
+/*
+ *	return the real time in ticks, of which there are about
+ *	18-20 per second
+ */
+grub_uint32_t
+grub_get_rtc (void)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x1a, &regs);
+
+  return (regs.ecx << 16) | (regs.edx & 0xffff);
+}
+
 void
 grub_machine_get_bootlocation (char **device, char **path)
 {
   char *ptr;
+  grub_uint8_t boot_drive, dos_part, bsd_part;
+
+  boot_drive = (grub_boot_device >> 24);
+  dos_part = (grub_boot_device >> 16);
+  bsd_part = (grub_boot_device >> 8);
 
   /* No hardcoded root partition - make it from the boot drive and the
      partition number encoded at the install time.  */
-  if (grub_boot_drive == GRUB_BOOT_MACHINE_PXE_DL)
+  if (boot_drive == GRUB_BOOT_MACHINE_PXE_DL)
     {
       if (grub_pc_net_config)
 	grub_pc_net_config (device, path);
@@ -66,18 +87,18 @@ grub_machine_get_bootlocation (char **device, char **path)
   *device = grub_malloc (DEV_SIZE);
   ptr = *device;
   grub_snprintf (*device, DEV_SIZE,
-		 "%cd%u", (grub_boot_drive & 0x80) ? 'h' : 'f',
-		 grub_boot_drive & 0x7f);
+		 "%cd%u", (boot_drive & 0x80) ? 'h' : 'f',
+		 boot_drive & 0x7f);
   ptr += grub_strlen (ptr);
 
-  if (grub_install_dos_part >= 0)
+  if (dos_part != 0xff)
     grub_snprintf (ptr, DEV_SIZE - (ptr - *device),
-		   ",%u", grub_install_dos_part + 1);
+		   ",%u", dos_part + 1);
   ptr += grub_strlen (ptr);
 
-  if (grub_install_bsd_part >= 0)
+  if (bsd_part != 0xff)
     grub_snprintf (ptr, DEV_SIZE - (ptr - *device), ",%u",
-		   grub_install_bsd_part + 1);
+		   bsd_part + 1);
   ptr += grub_strlen (ptr);
   *ptr = 0;
 }
@@ -129,6 +150,9 @@ compact_mem_regions (void)
       }
 }
 
+grub_addr_t grub_modbase;
+extern grub_uint8_t _start[], _edata[];
+
 void
 grub_machine_init (void)
 {
@@ -136,6 +160,8 @@ grub_machine_init (void)
 #if 0
   int grub_lower_mem;
 #endif
+
+  grub_modbase = GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR + (_edata - _start);
 
   /* Initialize the console as early as possible.  */
   grub_console_init ();
@@ -205,12 +231,4 @@ grub_machine_fini (void)
 {
   grub_console_fini ();
   grub_stop_floppy ();
-}
-
-/* Return the end of the core image.  */
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR
-    + (grub_kernel_image_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
 }

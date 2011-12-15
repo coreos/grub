@@ -206,7 +206,7 @@ grub_bsd_get_device (grub_uint32_t * biosdev,
 }
 
 grub_err_t
-grub_bsd_add_meta (grub_uint32_t type, void *data, grub_uint32_t len)
+grub_bsd_add_meta (grub_uint32_t type, const void *data, grub_uint32_t len)
 {
   struct bsd_tag *newtag;
 
@@ -383,10 +383,11 @@ grub_bsd_add_mmap (void)
 }
 
 grub_err_t
-grub_freebsd_add_meta_module (char *filename, char *type, int argc, char **argv,
+grub_freebsd_add_meta_module (const char *filename, const char *type,
+			      int argc, char **argv,
 			      grub_addr_t addr, grub_uint32_t size)
 {
-  char *name;
+  const char *name;
   name = grub_strrchr (filename, '/');
   if (name)
     name++;
@@ -450,7 +451,8 @@ grub_freebsd_list_modules (void)
 {
   struct bsd_tag *tag;
 
-  grub_printf ("  %-18s  %-18s%14s%14s\n", "name", "type", "addr", "size");
+  grub_printf ("  %-18s  %-18s%14s%14s\n", _("name"), _("type"), _("addr"),
+	       _("size"));
 
   for (tag = tags; tag; tag = tag->next)
     {
@@ -515,7 +517,8 @@ grub_netbsd_list_modules (void)
 {
   struct netbsd_module *mod;
 
-  grub_printf ("  %-18s%14s%14s%14s\n", "name", "type", "addr", "size");
+  grub_printf ("  %-18s%14s%14s%14s\n", _("name"), _("type"), _("addr"),
+	       _("size"));
 
   for (mod = netbsd_mods; mod; mod = mod->next)
     grub_printf ("  %-18s  0x%08x  0x%08x  0x%08x", mod->mod.name,
@@ -960,8 +963,10 @@ grub_netbsd_add_boot_disk_and_wedge (void)
   grub_partition_t part;
   grub_uint32_t biosdev;
   grub_uint32_t partmapsector;
-  struct grub_partition_bsd_disk_label *label;
-  grub_uint64_t buf[GRUB_DISK_SECTOR_SIZE / 8];
+  union {
+    grub_uint64_t raw[GRUB_DISK_SECTOR_SIZE / 8];
+    struct grub_partition_bsd_disk_label label;
+  } buf;
   grub_uint8_t *hash;
   grub_uint64_t ctx[(GRUB_MD_MD5->contextsize + 7) / 8];
 
@@ -981,7 +986,8 @@ grub_netbsd_add_boot_disk_and_wedge (void)
   partmapsector = grub_partition_get_start (part->parent) + part->offset;
 
   disk->partition = part->parent;
-  if (grub_disk_read (disk, part->offset, 0, GRUB_DISK_SECTOR_SIZE, buf) != GRUB_ERR_NONE)
+  if (grub_disk_read (disk, part->offset, 0, GRUB_DISK_SECTOR_SIZE, buf.raw)
+      != GRUB_ERR_NONE)
     goto fail;
   disk->partition = part;
 
@@ -997,7 +1003,7 @@ grub_netbsd_add_boot_disk_and_wedge (void)
     biw.matchnblks = 1;
 
     GRUB_MD_MD5->init (&ctx);
-    GRUB_MD_MD5->write (&ctx, buf, GRUB_DISK_SECTOR_SIZE);
+    GRUB_MD_MD5->write (&ctx, buf.raw, GRUB_DISK_SECTOR_SIZE);
     GRUB_MD_MD5->final (&ctx);
     hash = GRUB_MD_MD5->read (&ctx);
     memcpy (biw.matchhash, hash, 16);
@@ -1006,18 +1012,17 @@ grub_netbsd_add_boot_disk_and_wedge (void)
   }
 
   /* Fill bootdisk if this a NetBSD disk label.  */
-  label = (struct grub_partition_bsd_disk_label *) &buf;
   if (part->partmap != NULL &&
       (grub_strcmp (part->partmap->name, "netbsd") == 0) &&
-      label->magic == grub_cpu_to_le32 (GRUB_PC_PARTITION_BSD_LABEL_MAGIC))
+      buf.label.magic == grub_cpu_to_le32 (GRUB_PC_PARTITION_BSD_LABEL_MAGIC))
     {
       struct grub_netbsd_btinfo_bootdisk bid;
 
       grub_memset (&bid, 0, sizeof (bid));
       bid.labelsector = partmapsector;
-      bid.label.type = label->type;
-      bid.label.checksum = label->checksum;
-      memcpy (bid.label.packname, label->packname, 16);
+      bid.label.type = buf.label.type;
+      bid.label.checksum = buf.label.checksum;
+      memcpy (bid.label.packname, buf.label.packname, 16);
       bid.biosdev = biosdev;
       bid.partition = part->number;
       grub_bsd_add_meta (NETBSD_BTINFO_BOOTDISK, &bid, sizeof (bid));
@@ -1048,7 +1053,7 @@ grub_netbsd_boot (void)
   if (err)
     {
       grub_print_error ();
-      grub_printf ("Booting however\n");
+      grub_puts_ (N_("Booting in blind mode"));
       grub_errno = GRUB_ERR_NONE;
     }
 
@@ -1802,7 +1807,7 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
   grub_file_t file = 0;
   int modargc;
   char **modargv;
-  char *type;
+  const char *type;
   grub_err_t err;
   void *src;
 
@@ -2059,7 +2064,7 @@ GRUB_MOD_INIT (bsd)
 
   cmd_openbsd_ramdisk = grub_register_command ("kopenbsd_ramdisk",
 					       grub_cmd_openbsd_ramdisk, 0,
-					       "Load kOpenBSD ramdisk. ");
+					       N_("Load kOpenBSD ramdisk."));
 
   my_mod = mod;
 }

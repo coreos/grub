@@ -34,7 +34,7 @@ enum grub_ieee1275_parse_type
 
 /* Walk children of 'devpath', calling hook for each.  */
 int
-grub_children_iterate (char *devpath,
+grub_children_iterate (const char *devpath,
 		       int (*hook) (struct grub_ieee1275_devalias *alias))
 {
   grub_ieee1275_phandle_t dev;
@@ -403,7 +403,8 @@ grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
       break;
     default:
     unknown:
-      grub_printf ("Unsupported type %s for device %s\n", type, device);
+      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		  "unsupported type %s for device %s", type, device);
     }
 
 fail:
@@ -445,26 +446,16 @@ grub_ieee1275_encode_devname (const char *path)
 	/* GRUB partition 1 is OF partition 0.  */
 	partno++;
 
-      encoding = grub_xasprintf ("(%s,%d)", device, partno);
+      encoding = grub_xasprintf ("%s,%d", device, partno);
     }
   else
-    encoding = grub_xasprintf ("(%s)", device);
+    encoding = grub_strdup (device);
 
   grub_free (partition);
   grub_free (device);
 
   return encoding;
 }
-
-/* On i386, a firmware-independant grub_reboot() is provided by realmode.S.  */
-#ifndef __i386__
-void
-grub_reboot (void)
-{
-  grub_ieee1275_interpret ("reset-all", 0);
-  for (;;) ;
-}
-#endif
 
 /* Resolve aliases.  */
 char *

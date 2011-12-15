@@ -112,7 +112,7 @@ grub_romfs_mount (grub_device_t dev)
   if (err)
     return NULL;
   for (ptr = sb.sb.label; (void *) ptr < (void *) (&sb + 1)
-	 && ptr < sb.d + grub_be_to_cpu32 (sb.sb.total_size); ptr++)
+	 && ptr - sb.d < (grub_ssize_t) grub_be_to_cpu32 (sb.sb.total_size); ptr++)
     if (!*ptr)
       break;
   if ((void *) ptr == &sb + 1)
@@ -124,7 +124,7 @@ grub_romfs_mount (grub_device_t dev)
 	if (err)
 	  return NULL;
 	for (ptr = sb.d; (void *) ptr < (void *) (&sb + 1)
-	       && ptr < sb.d + grub_be_to_cpu32 (sb.sb.total_size); ptr++)
+	       && ptr - sb.d < (grub_ssize_t) grub_be_to_cpu32 (sb.sb.total_size); ptr++)
 	  if (!*ptr)
 	    break;
       }
@@ -166,17 +166,18 @@ grub_romfs_iterate_dir (grub_fshelp_node_t dir,
 {
   grub_disk_addr_t caddr;
   struct grub_romfs_file_header hdr;
-  grub_size_t a = 0;
-  char *name = NULL;
   unsigned nptr;
   unsigned i, j;
+  grub_size_t a = 0;
+  grub_properly_aligned_t *name = NULL;
+
   for (caddr = dir->data_addr; caddr;
        caddr = grub_be_to_cpu32 (hdr.next_file) & ~(GRUB_ROMFS_ALIGN - 1))
     {
       grub_disk_addr_t naddr = caddr + sizeof (hdr);
       grub_uint32_t csum = 0;
       enum grub_fshelp_filetype filetype = GRUB_FSHELP_UNKNOWN;
-      struct grub_fshelp_node *node;
+      struct grub_fshelp_node *node = NULL;
       grub_err_t err;
 
       err = grub_disk_read (dir->data->disk, caddr >> GRUB_DISK_SECTOR_BITS,
@@ -189,9 +190,9 @@ grub_romfs_iterate_dir (grub_fshelp_node_t dir,
 	}
       for (nptr = 0; ; nptr++, naddr += 16)
 	{
-	  if (a >= nptr)
+	  if (a <= nptr)
 	    {
-	      char *on;
+	      grub_properly_aligned_t *on;
 	      a = 2 * (nptr + 1);
 	      on = name;
 	      name = grub_realloc (name, a * 16);
@@ -201,13 +202,14 @@ grub_romfs_iterate_dir (grub_fshelp_node_t dir,
 		  return 1;
 		}
 	    }
+	  COMPILE_TIME_ASSERT (16 % sizeof (name[0]) == 0);
 	  err = grub_disk_read (dir->data->disk, naddr >> GRUB_DISK_SECTOR_BITS,
 				naddr & (GRUB_DISK_SECTOR_SIZE - 1),
-				16, name + 16 * nptr);
+				16, name + (16 / sizeof (name[0])) * nptr);
 	  if (err)
 	    return 1;
 	  for (j = 0; j < 16; j++)
-	    if (!name[16 * nptr + j])
+	    if (!((char *) name)[16 * nptr + j])
 	      break;
 	  if (j != 16)
 	    break;
@@ -292,7 +294,7 @@ grub_romfs_iterate_dir (grub_fshelp_node_t dir,
 	  }
 	}
 
-      if (hook (name, filetype, node))
+      if (hook ((char *) name, filetype, node))
 	{
 	  grub_free (name);
 	  return 1;
@@ -367,6 +369,7 @@ grub_romfs_open (struct grub_file *file, const char *name)
 
   file->size = grub_be_to_cpu32 (fdiro->file.size);
   file->data = fdiro;
+  return GRUB_ERR_NONE;
 
  fail:
   grub_free (data);
@@ -396,7 +399,10 @@ grub_romfs_read (grub_file_t file, char *buf, grub_size_t len)
 static grub_err_t
 grub_romfs_close (grub_file_t file)
 {
-  grub_free (file->data);
+  struct grub_fshelp_node *data = file->data;
+
+  grub_free (data->data);
+  grub_free (data);
 
   return GRUB_ERR_NONE;
 }
@@ -431,6 +437,7 @@ grub_romfs_label (grub_device_t device, char **label)
       return err;
     }
   (*label)[data->first_file - sizeof (struct grub_romfs_superblock)] = 0;
+  grub_free (data);
   return GRUB_ERR_NONE;
 }
 

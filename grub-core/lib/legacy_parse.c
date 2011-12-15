@@ -59,6 +59,9 @@ struct legacy_command
   const char *longdesc;
 };
 
+/* Help texts are kept here mostly for reference. They are never shown. So
+   no need to gettextize.
+ */
 static struct legacy_command legacy_commands[] =
   {
     {"blocklist", "blocklist '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
@@ -412,7 +415,7 @@ adjust_file (const char *in, grub_size_t len)
 }
 
 static int
-check_option (const char *a, char *b, grub_size_t len)
+check_option (const char *a, const char *b, grub_size_t len)
 {
   if (grub_strlen (b) != len)
     return 0;

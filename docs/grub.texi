@@ -3943,6 +3943,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab BIOS    @tab Coreboot
 @item BIOS chainloading              @tab yes     @tab no (1)
 @item NTLDR                          @tab yes     @tab no (1)
+@item Plan9                          @tab yes     @tab no (1)
 @item Freedos                        @tab yes     @tab no (1)
 @item FreeBSD bootloader             @tab yes     @tab crashes (1)
 @item 32-bit kFreeBSD                @tab yes     @tab crashes (2,6)
@@ -3968,6 +3969,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab Multiboot    @tab Qemu 
 @item BIOS chainloading              @tab no (1)       @tab no (1)
 @item NTLDR                          @tab no (1)       @tab no (1)
+@item Plan9                          @tab no (1)       @tab no (1)
 @item FreeDOS                        @tab no (1)       @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)  @tab crashes (1)
 @item 32-bit kFreeBSD                @tab crashes (6)  @tab crashes (6)
@@ -3993,6 +3995,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab 32-bit EFI    @tab 64-bit EFI
 @item BIOS chainloading              @tab no (1)        @tab no (1)
 @item NTLDR                          @tab no (1)        @tab no (1)
+@item Plan9                          @tab no (1)        @tab no (1)
 @item FreeDOS                        @tab no (1)        @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)   @tab crashes (1)
 @item 32-bit kFreeBSD                @tab headless      @tab headless
@@ -4018,6 +4021,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab IEEE1275
 @item BIOS chainloading              @tab no (1)
 @item NTLDR                          @tab no (1)
+@item Plan9                          @tab no (1)
 @item FreeDOS                        @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)
 @item 32-bit kFreeBSD                @tab crashes (6)

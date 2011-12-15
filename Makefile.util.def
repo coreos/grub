@@ -33,6 +33,8 @@ library = {
 
 library = {
   name = libgrubmods.a;
+  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(top_srcdir)/grub-core/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
 
   common_nodist = grub_script.tab.c;
   common_nodist = grub_script.yy.c;
@@ -41,6 +43,7 @@ library = {
   common_nodist = grub_script.tab.h;
 
   common = grub-core/commands/blocklist.c;
+  common = grub-core/commands/xnu_uuid.c;
   common = grub-core/commands/testload.c;
   common = grub-core/commands/ls.c;
   common = grub-core/disk/dmraid_nvidia.c;
@@ -52,14 +55,13 @@ library = {
   common = grub-core/disk/raid6_recover.c;
   common = grub-core/disk/raid.c;
   common = grub-core/fs/affs.c;
-  common = grub-core/fs/afs_be.c;
   common = grub-core/fs/afs.c;
-  common = grub-core/fs/befs_be.c;
-  common = grub-core/fs/befs.c;
+  common = grub-core/fs/bfs.c;
   common = grub-core/fs/btrfs.c;
   common = grub-core/fs/cpio.c;
   common = grub-core/fs/ext2.c;
   common = grub-core/fs/fat.c;
+  common = grub-core/fs/exfat.c;
   common = grub-core/fs/fshelp.c;
   common = grub-core/fs/hfs.c;
   common = grub-core/fs/hfsplus.c;
@@ -80,7 +82,9 @@ library = {
   common = grub-core/fs/ufs2.c;
   common = grub-core/fs/ufs.c;
   common = grub-core/fs/xfs.c;
+  common = grub-core/fs/zfs/zfscrypt.c;
   common = grub-core/fs/zfs/zfs.c;
+  common = grub-core/fs/zfs/zfsinfo.c;
   common = grub-core/fs/zfs/zfs_lzjb.c;
   common = grub-core/fs/zfs/zfs_sha256.c;
   common = grub-core/fs/zfs/zfs_fletcher.c;
@@ -89,6 +93,8 @@ library = {
   common = grub-core/lib/LzFind.c;
   common = grub-core/lib/LzmaEnc.c;
   common = grub-core/lib/crc.c;
+  common = grub-core/lib/adler32.c;
+  common = grub-core/lib/crc64.c;
   common = grub-core/normal/datetime.c;
   common = grub-core/normal/misc.c;
   common = grub-core/partmap/acorn.c;
@@ -97,6 +103,7 @@ library = {
   common = grub-core/partmap/gpt.c;
   common = grub-core/partmap/msdos.c;
   common = grub-core/partmap/sun.c;
+  common = grub-core/partmap/plan.c;
   common = grub-core/partmap/dvh.c;
   common = grub-core/partmap/sunpc.c;
   common = grub-core/partmap/bsdlabel.c;
@@ -106,7 +113,9 @@ library = {
   common = grub-core/script/script.c;
   common = grub-core/script/argv.c;
   common = grub-core/io/gzio.c;
+  common = grub-core/io/lzopio.c;
   common = grub-core/kern/ia64/dl_helper.c;
+  common = grub-core/lib/minilzo/minilzo.c;
 };
 
 program = {
@@ -227,6 +236,22 @@ program = {
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+};
+
+program = {
+  name = grub-mount;
+  mansection = 1;
+  common_nodist = grub_fstest_init.c;
+  common = util/grub-mount.c;
+  common = grub-core/kern/emu/hostfs.c;
+  common = grub-core/disk/host.c;
+
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) -lfuse';
+  condition = COND_GRUB_MOUNT;
 };
 
 program = {
@@ -357,6 +382,13 @@ script = {
   common = util/grub.d/10_kfreebsd.in;
   installdir = grubconf;
   condition = COND_HOST_KFREEBSD;
+};
+
+script = {
+  name = '10_illumos';
+  common = util/grub.d/10_illumos.in;
+  installdir = grubconf;
+  condition = COND_HOST_ILLUMOS;
 };
 
 script = {
@@ -638,6 +670,21 @@ program = {
   common = grub-core/kern/misc.c;
   common = grub-core/tests/lib/test.c;
   cflags = -Wno-format;
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+};
+
+program = {
+  testcase;
+  name = printf_test;
+  common = tests/printf_unit_test.c;
+  common = tests/lib/unit_test.c;
+  common = grub-core/kern/list.c;
+  common = grub-core/kern/misc.c;
+  common = grub-core/tests/lib/test.c;
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
   ldadd = libgrubkern.a;

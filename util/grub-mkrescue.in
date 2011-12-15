@@ -129,7 +129,7 @@ do
     --xorriso)
 	xorriso=`argument $option "$@"`; shift ;;
     --xorriso=*)
-        xorriso=`echo "${option}/" | sed 's/--xorriso=//'` ;;
+        xorriso=`echo "${option}" | sed 's/--xorriso=//'` ;;
 
     *)
 	source="${source} ${option} $@"; break ;;

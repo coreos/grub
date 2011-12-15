@@ -79,7 +79,7 @@ grub_menu_get_entry (grub_menu_t menu, int no)
 int
 grub_menu_get_timeout (void)
 {
-  char *val;
+  const char *val;
   int timeout;
 
   val = grub_env_get ("timeout");
@@ -124,7 +124,7 @@ grub_menu_set_timeout (int timeout)
 static int
 get_and_remove_first_entry_number (const char *name)
 {
-  char *val;
+  const char *val;
   char *tail;
   int entry;
 
@@ -666,7 +666,6 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
     }
 
   /* Never reach here.  */
-  return -1;
 }
 
 /* Callback invoked immediately before a menu entry is executed.  */

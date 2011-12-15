@@ -149,7 +149,8 @@ grub_efiemu_register_configuration_table (grub_efi_guid_t guid,
  if (! get_table && ! data)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "you must set at least get_table or data");
-  if ((err = grub_efiemu_unregister_configuration_table (guid)))
+ err = grub_efiemu_unregister_configuration_table (guid);
+  if (err)
     return err;
 
   tbl = (struct grub_efiemu_configuration_table *) grub_malloc (sizeof (*tbl));
@@ -226,7 +227,7 @@ grub_efiemu_autocore (void)
 {
   const char *prefix;
   char *filename;
-  char *suffix;
+  const char *suffix;
   grub_err_t err;
 
   if (grub_efiemu_sizeof_uintn_t () != 0)

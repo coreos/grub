@@ -24,6 +24,9 @@
 #include <grub/script_sh.h>
 #include "grub_script.tab.h"
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+
 #define yyfree    grub_lexer_yyfree
 #define yyalloc   grub_lexer_yyalloc
 #define yyrealloc grub_lexer_yyrealloc

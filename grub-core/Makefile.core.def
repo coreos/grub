@@ -18,6 +18,18 @@ script = {
   common = modinfo.sh.in;
 };
 
+script = {
+  installdir = noinst;
+  name = gmodule.pl;
+  common = gmodule.pl.in;
+};
+
+script = {
+  installdir = noinst;
+  name = gdb_grub;
+  common = gdb_grub.in;
+};
+
 kernel = {
   name = kernel;
 
@@ -34,7 +46,7 @@ kernel = {
   ia64_efi_stripflags = '--strip-unneeded -K start -R .note -R .comment';
 
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
-  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x8200';
+  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x9000';
 
   i386_qemu_ldflags        = '$(TARGET_IMG_LDFLAGS)';
   i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),0x8200';
@@ -357,6 +369,15 @@ image = {
 };
 
 image = {
+  name = lzma_decompress;
+  i386_pc = boot/i386/pc/startup_raw.S;
+
+  objcopyflags = '-O binary';
+  ldflags = '-Wl,-Ttext,0x8200';
+  enable = i386_pc;
+};
+
+image = {
   name = fwstart;
   mips_loongson = boot/mips/loongson/fwstart.S;
   objcopyflags = '-O binary';
@@ -634,6 +655,20 @@ module = {
 };
 
 module = {
+  name = reboot;
+  i386 = lib/i386/reboot.c;
+  i386 = lib/i386/reboot_trampoline.S;
+  ia64_efi = lib/efi/reboot.c;
+  x86_64_efi = lib/efi/reboot.c;
+  powerpc_ieee1275 = lib/ieee1275/reboot.c;
+  sparc64_ieee1275 = lib/ieee1275/reboot.c;
+  mips_arc = lib/mips/arc/reboot.c;
+  mips_loongson = lib/mips/loongson/reboot.c;
+  mips_qemu_mips = lib/mips/qemu_mips/reboot.c;
+  common = commands/reboot.c;
+};
+
+module = {
   name = hashsum;
   common = commands/hashsum.c;
 };
@@ -731,11 +766,6 @@ module = {
 module = {
   name = read;
   common = commands/read.c;
-};
-
-module = {
-  name = reboot;
-  common = commands/reboot.c;
 };
 
 module = {
@@ -967,24 +997,16 @@ module = {
 };
 
 module = {
-  name = afs_be;
-  common = fs/afs_be.c;
-};
-
-module = {
-  name = befs;
-  common = fs/befs.c;
-};
-
-module = {
-  name = befs_be;
-  common = fs/befs_be.c;
+  name = bfs;
+  common = fs/bfs.c;
 };
 
 module = {
   name = btrfs;
   common = fs/btrfs.c;
   common = lib/crc.c;
+  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
 };
 
 module = {
@@ -1000,6 +1022,11 @@ module = {
 module = {
   name = fat;
   common = fs/fat.c;
+};
+
+module = {
+  name = exfat;
+  common = fs/exfat.c;
 };
 
 module = {
@@ -1108,6 +1135,11 @@ module = {
   common = fs/zfs/zfs_lzjb.c;
   common = fs/zfs/zfs_sha256.c;
   common = fs/zfs/zfs_fletcher.c;
+};
+
+module = {
+  name = zfscrypt;
+  common = fs/zfs/zfscrypt.c;
 };
 
 module = {
@@ -1246,6 +1278,13 @@ module = {
 };
 
 module = {
+  name = plan9;
+  i386_pc = loader/i386/pc/plan9.c;
+  enable = i386_pc;
+};
+
+
+module = {
   name = linux16;
   i386_pc = loader/i386/pc/linux.c;
   i386_pc = lib/cmdline.c;
@@ -1379,7 +1418,7 @@ module = {
   extra_dist = script/yylex.l;
   extra_dist = script/parser.y;
 
-  cflags = '$(CFLAGS_POSIX) -Wno-error';
+  cflags = '$(CFLAGS_POSIX)';
   cppflags = '$(CPPFLAGS_POSIX)';
 };
 
@@ -1411,6 +1450,11 @@ module = {
 module = {
   name = part_sun;
   common = partmap/sun.c;
+};
+
+module = {
+  name = part_plan;
+  common = partmap/plan.c;
 };
 
 module = {
@@ -1662,6 +1706,14 @@ module = {
 };
 
 module = {
+  name = lzopio;
+  common = io/lzopio.c;
+  common = lib/minilzo/minilzo.c;
+  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
+};
+
+module = {
   name = testload;
   common = commands/testload.c;
 };
@@ -1692,4 +1744,14 @@ module = {
   name = cacheinfo;
   common = commands/cacheinfo.c;
   condition = COND_ENABLE_CACHE_STATS;
+};
+
+module = {
+  name = adler32;
+  common = lib/adler32.c;
+};
+
+module = {
+  name = crc64;
+  common = lib/crc64.c;
 };

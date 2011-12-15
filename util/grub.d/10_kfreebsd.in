@@ -2,7 +2,7 @@
 set -e
 
 # grub-mkconfig helper script.
-# Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+# Copyright (C) 2006,2007,2008,2009,2010,2011  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
 libdir=@libdir@
+datarootdir=@datarootdir@
 . ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 export TEXTDOMAIN=@PACKAGE@
@@ -98,6 +99,12 @@ EOF
 
   load_kfreebsd_module acpi true
 
+  for abstraction in dummy $(grub-probe -t abstraction --device ${GRUB_DEVICE}) ; do
+    case $abstraction in
+      lvm) load_kfreebsd_module geom_linux_lvm false ;;
+    esac
+  done
+
   case "${kfreebsd_fs}" in
     zfs)
       load_kfreebsd_module opensolaris false
@@ -153,7 +160,7 @@ while [ "x$list" != "x" ] ; do
 			# zpool name
 			kfreebsd_device=$(grub-probe -t fs_label --device ${GRUB_DEVICE})
 			# filesystem name (empty string for the main filesystem)
-			kfreebsd_device="${kfreebsd_device}$(grub-mkrelpath / | sed -e "s,/*@$,,")"
+			kfreebsd_device="${kfreebsd_device}$(${grub_mkrelpath} / | sed -e "s,/*@$,,")"
     ;;
     *)
 	  kfreebsd_device=${kfreebsd_fs}id/${GRUB_DEVICE_UUID}

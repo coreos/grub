@@ -50,7 +50,7 @@ grub_size_t grub_xnu_heap_size = 0;
 struct grub_relocator *grub_xnu_relocator;
 
 static grub_err_t
-grub_xnu_register_memory (char *prefix, int *suffix,
+grub_xnu_register_memory (const char *prefix, int *suffix,
 			  grub_addr_t addr, grub_size_t size);
 grub_err_t
 grub_xnu_heap_malloc (int size, void **src, grub_addr_t *target)
@@ -103,7 +103,8 @@ grub_xnu_free_devtree (struct grub_xnu_devtree_key *cur)
 
 /* Compute the size of device tree in xnu format. */
 static grub_size_t
-grub_xnu_writetree_get_size (struct grub_xnu_devtree_key *start, char *name)
+grub_xnu_writetree_get_size (struct grub_xnu_devtree_key *start,
+			     const char *name)
 {
   grub_size_t ret;
   struct grub_xnu_devtree_key *cur;
@@ -134,7 +135,8 @@ grub_xnu_writetree_get_size (struct grub_xnu_devtree_key *start, char *name)
 /* Write devtree in XNU format at curptr assuming the head is named NAME.*/
 static void *
 grub_xnu_writetree_toheap_real (void *curptr,
-				struct grub_xnu_devtree_key *start, char *name)
+				struct grub_xnu_devtree_key *start,
+				const char *name)
 {
   struct grub_xnu_devtree_key *cur;
   int nkeys = 0, nvals = 0;
@@ -249,7 +251,7 @@ grub_xnu_writetree_toheap (grub_addr_t *target, grub_size_t *size)
 
 /* Find a key or value in parent key. */
 struct grub_xnu_devtree_key *
-grub_xnu_find_key (struct grub_xnu_devtree_key *parent, char *name)
+grub_xnu_find_key (struct grub_xnu_devtree_key *parent, const char *name)
 {
   struct grub_xnu_devtree_key *cur;
   for (cur = parent; cur; cur = cur->next)
@@ -259,7 +261,7 @@ grub_xnu_find_key (struct grub_xnu_devtree_key *parent, char *name)
 }
 
 struct grub_xnu_devtree_key *
-grub_xnu_create_key (struct grub_xnu_devtree_key **parent, char *name)
+grub_xnu_create_key (struct grub_xnu_devtree_key **parent, const char *name)
 {
   struct grub_xnu_devtree_key *ret;
   ret = grub_xnu_find_key (*parent, name);
@@ -285,7 +287,7 @@ grub_xnu_create_key (struct grub_xnu_devtree_key **parent, char *name)
 }
 
 struct grub_xnu_devtree_key *
-grub_xnu_create_value (struct grub_xnu_devtree_key **parent, char *name)
+grub_xnu_create_value (struct grub_xnu_devtree_key **parent, const char *name)
 {
   struct grub_xnu_devtree_key *ret;
   ret = grub_xnu_find_key (*parent, name);
@@ -562,7 +564,7 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
 /* Register a memory in a memory map under name PREFIXSUFFIX
    and increment SUFFIX. */
 static grub_err_t
-grub_xnu_register_memory (char *prefix, int *suffix,
+grub_xnu_register_memory (const char *prefix, int *suffix,
 			  grub_addr_t addr, grub_size_t size)
 {
   struct grub_xnu_devtree_key *chosen;
@@ -918,7 +920,8 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
 /* Returns true if the kext should be loaded according to plist
    and osbundlereq. Also fill BINNAME. */
 static int
-grub_xnu_check_os_bundle_required (char *plistname, char *osbundlereq,
+grub_xnu_check_os_bundle_required (char *plistname,
+				   const char *osbundlereq,
 				   char **binname)
 {
   grub_file_t file;
@@ -1033,7 +1036,7 @@ grub_xnu_check_os_bundle_required (char *plistname, char *osbundlereq,
 
 /* Load all loadable kexts placed under DIRNAME and matching OSBUNDLEREQUIRED */
 grub_err_t
-grub_xnu_scan_dir_for_kexts (char *dirname, char *osbundlerequired,
+grub_xnu_scan_dir_for_kexts (char *dirname, const char *osbundlerequired,
 			     int maxrecursion)
 {
   grub_device_t dev;
@@ -1099,7 +1102,7 @@ grub_xnu_scan_dir_for_kexts (char *dirname, char *osbundlerequired,
 
 /* Load extension DIRNAME. (extensions are directories in xnu) */
 grub_err_t
-grub_xnu_load_kext_from_dir (char *dirname, char *osbundlerequired,
+grub_xnu_load_kext_from_dir (char *dirname, const char *osbundlerequired,
 			     int maxrecursion)
 {
   grub_device_t dev;

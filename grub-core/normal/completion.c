@@ -28,7 +28,7 @@
 #include <grub/extcmd.h>
 
 /* The current word.  */
-static char *current_word;
+static const char *current_word;
 
 /* The matched string.  */
 static char *match;

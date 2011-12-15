@@ -24,6 +24,7 @@
 #include <grub/mm.h>
 #include <grub/script_sh.h>
 
+#define yytext_ptr char *
 #include "grub_script.tab.h"
 #include "grub_script.yy.h"
 

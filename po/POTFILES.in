@@ -127,10 +127,6 @@
 ./grub-core/font/font.c
 ./grub-core/font/font_cmd.c
 ./grub-core/fs/affs.c
-./grub-core/fs/afs_be.c
-./grub-core/fs/afs.c
-./grub-core/fs/befs_be.c
-./grub-core/fs/befs.c
 ./grub-core/fs/btrfs.c
 ./grub-core/fs/cpio.c
 ./grub-core/fs/ext2.c

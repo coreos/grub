@@ -53,11 +53,7 @@ static char *root_dev = NULL, *dir = NULL;
 
 int grub_no_autoload;
 
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return 0;
-}
+grub_addr_t grub_modbase = 0;
 
 void
 grub_reboot (void)
@@ -83,8 +79,6 @@ grub_machine_fini (void)
   grub_console_fini ();
 }
 
-char grub_prefix[64] = "";
-
 
 
 static struct option options[] =
@@ -104,10 +98,10 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try `%s --help' for more information.\n", program_name);
+	     _("Try `%s --help' for more information.\n"), program_name);
   else
     printf (
-      "Usage: %s [OPTION]...\n"
+    _("Usage: %s [OPTION]...\n"
       "\n"
       "GRUB emulator.\n"
       "\n"
@@ -119,7 +113,7 @@ usage (int status)
       "  -h, --help                display this message and exit\n"
       "  -V, --version             print version information and exit\n"
       "\n"
-      "Report bugs to <%s>.\n", program_name, DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
+      "Report bugs to <%s>.\n"), program_name, DEFAULT_DEVICE_MAP, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
   return status;
 }
 
@@ -133,7 +127,7 @@ void grub_emu_init (void);
 int
 main (int argc, char *argv[])
 {
-  char *dev_map = DEFAULT_DEVICE_MAP;
+  const char *dev_map = DEFAULT_DEVICE_MAP;
   volatile int hold = 0;
   int opt;
 
@@ -172,13 +166,13 @@ main (int argc, char *argv[])
 
   if (optind < argc)
     {
-      fprintf (stderr, "Unknown extra argument `%s'.\n", argv[optind]);
+      fprintf (stderr, _("Unknown extra argument `%s'.\n"), argv[optind]);
       return usage (1);
     }
 
   /* Wait until the ARGS.HOLD variable is cleared by an attached debugger. */
   if (hold && verbosity > 0)
-    printf ("Run \"gdb %s %d\", and set ARGS.HOLD to zero.\n",
+    printf (_("Run \"gdb %s %d\", and set ARGS.HOLD to zero.\n"),
             program_name, (int) getpid ());
   while (hold)
     {

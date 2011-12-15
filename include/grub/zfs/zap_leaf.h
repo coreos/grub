@@ -69,7 +69,8 @@ typedef struct zap_leaf_phys {
 	 * with the ZAP_LEAF_CHUNK() macro.
 	 */
 
-	grub_uint16_t l_hash[1];
+	grub_uint16_t l_hash[0];
+        grub_properly_aligned_t l_entries[0];
 } zap_leaf_phys_t;
 
 typedef union zap_leaf_chunk {

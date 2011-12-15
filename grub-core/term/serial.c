@@ -125,8 +125,8 @@ static struct grub_term_output grub_serial_term_output =
 
 
 
-static struct grub_serial_port *
-grub_serial_find (char *name)
+struct grub_serial_port *
+grub_serial_find (const char *name)
 {
   struct grub_serial_port *port;
 
@@ -136,7 +136,7 @@ grub_serial_find (char *name)
 
 #ifndef GRUB_MACHINE_EMU
   if (!port && grub_memcmp (name, "port", sizeof ("port") - 1) == 0
-      && grub_isdigit (name [sizeof ("port") - 1]))
+      && grub_isxdigit (name [sizeof ("port") - 1]))
     {
       name = grub_serial_ns8250_add_port (grub_strtoul (&name[sizeof ("port") - 1],
 							0, 16));
@@ -157,7 +157,7 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
   char pname[40];
-  char *name = NULL;
+  const char *name = NULL;
   struct grub_serial_port *port;
   struct grub_serial_config config;
   grub_err_t err;

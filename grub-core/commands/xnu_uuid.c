@@ -51,9 +51,17 @@ grub_cmd_xnu_uuid (grub_command_t cmd __attribute__ ((unused)),
   char uuid_string[sizeof ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")];
   char *ptr;
   grub_uint8_t ctx[GRUB_MD_MD5->contextsize];
+  int low = 0;
 
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "UUID required");
+
+  if (argc > 1 && grub_strcmp (args[0], "-l") == 0)
+    {
+      low = 1;
+      argc--;
+      args++;
+    }
 
   serial = grub_cpu_to_be64 (grub_strtoull (args[0], 0, 16));
 
@@ -75,10 +83,11 @@ grub_cmd_xnu_uuid (grub_command_t cmd __attribute__ ((unused)),
 		(unsigned int) xnu_uuid[10], (unsigned int) xnu_uuid[11],
 		(unsigned int) xnu_uuid[12], (unsigned int) xnu_uuid[13],
 		(unsigned int) xnu_uuid[14], (unsigned int) xnu_uuid[15]);
-  for (ptr = uuid_string; *ptr; ptr++)
-    *ptr = grub_toupper (*ptr);
+  if (!low)
+    for (ptr = uuid_string; *ptr; ptr++)
+      *ptr = grub_toupper (*ptr);
   if (argc == 1)
-    grub_printf ("%s", uuid_string);
+    grub_printf ("%s\n", uuid_string);
   if (argc > 1)
     grub_env_set (args[1], uuid_string);
 
@@ -91,9 +100,10 @@ static grub_command_t cmd;
 GRUB_MOD_INIT (xnu_uuid)
 {
   cmd = grub_register_command ("xnu_uuid", grub_cmd_xnu_uuid,
-			       N_("GRUBUUID [VARNAME]"),
+			       N_("[-l] GRUBUUID [VARNAME]"),
 			       N_("Transform 64-bit UUID to format "
-			       "suitable for XNU."));
+				  "suitable for XNU. If -l is given keep "
+				  "it lowercase as done by blkid."));
 }
 
 GRUB_MOD_FINI (xnu_uuid)

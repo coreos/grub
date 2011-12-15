@@ -19,6 +19,10 @@
 #ifndef GRUB_EC_MACHINE_HEADER
 #define GRUB_EC_MACHINE_HEADER	1
 
+#include <grub/types.h>
+#include <grub/cpu/io.h>
+#include <grub/pci.h>
+
 #define GRUB_MACHINE_EC_MAGIC_PORT1 0x381
 #define GRUB_MACHINE_EC_MAGIC_PORT2 0x382
 #define GRUB_MACHINE_EC_DATA_PORT 0x383

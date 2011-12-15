@@ -31,6 +31,7 @@ PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 platform=@platform@
 host_os=@host_os@
+datarootdir=@datarootdir@
 pkglibdir="${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`"
 localedir="@datadir@/locale"
 
@@ -544,11 +545,11 @@ if [ "x${devabstraction_module}" = "x" ] ; then
     # Strip partition number
     grub_partition="`echo "${grub_drive}" | sed -e 's/^[^,]*[,)]//; s/)$//'`"
     grub_drive="`echo "${grub_drive}" | sed -e s/,[a-z0-9,]*//g`"
-    if ([ "x$disk_module" != x ] && [ "x$disk_module" != xbiosdisk ]) || [ "x${grub_drive}" != "x${install_drive}" ] || ([ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${target_cpu}-${platform}" != x"sparc64-ieee1275" ]); then
+    if ([ "x$disk_module" != x ] && [ "x$disk_module" != xbiosdisk ]) || [ "x${grub_drive}" != "x${install_drive}" ] || ([ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]); then
         # generic method (used on coreboot and ata mod)
         uuid="`"$grub_probe" --device-map="${device_map}" --target=fs_uuid --device "${grub_device}"`"
         if [ "x${uuid}" = "x" ] ; then
-          if [ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${target_cpu}-${platform}" != x"sparc64-ieee1275" ]; then
+          if [ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]; then
              echo "UUID needed with $platform, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
           elif [ "$disk_module" = ata ]; then
              echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
@@ -563,7 +564,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
 	config_opt="-c ${grubdir}/load.cfg "
         modules="$modules search_fs_uuid"
-    elif [ "x$platform" = xefi ] || [ "x$platform" = xpc ]; then
+    else
         # we need to hardcode the partition number in the core image's prefix.
 	if [ x"$grub_partition" = x ]; then
             prefix_drive="()"
@@ -576,9 +577,8 @@ else
 	for uuid in "`"${grub_probe}" --device "${grub_device}" --target=cryptodisk_uuid`"; do
 	    echo "cryptomount -u $uuid" >> "${grubdir}/load.cfg"
 	done
+	config_opt="-c ${grubdir}/load.cfg "
     fi
-
-    config_opt="-c ${grubdir}/load.cfg "
 
     prefix_drive=`"$grub_probe" --device-map="${device_map}" --target=drive --device "${grub_device}"` || exit 1
 fi

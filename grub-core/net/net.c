@@ -1459,7 +1459,7 @@ grub_net_restore_hw (void)
   return GRUB_ERR_NONE;
 }
 
-static void *fini_hnd;
+static struct grub_preboot *fini_hnd;
 
 static grub_command_t cmd_addaddr, cmd_deladdr, cmd_addroute, cmd_delroute;
 static grub_command_t cmd_lsroutes, cmd_lscards;
@@ -1468,7 +1468,7 @@ static grub_command_t cmd_lsaddr, cmd_slaac;
 GRUB_MOD_INIT(net)
 {
   cmd_addaddr = grub_register_command ("net_add_addr", grub_cmd_addaddr,
-				       "SHORTNAME CARD ADDRESS [HWADDRESS]",
+				       N_("SHORTNAME CARD ADDRESS [HWADDRESS]"),
 				       N_("Add a network address."));
   cmd_slaac = grub_register_command ("net_ipv6_autoconf",
 				     grub_cmd_ipv6_autoconf,
@@ -1476,13 +1476,13 @@ GRUB_MOD_INIT(net)
 				     N_("Perform an IPV6 autoconfiguration"));
 
   cmd_deladdr = grub_register_command ("net_del_addr", grub_cmd_deladdr,
-				       "SHORTNAME",
+				       N_("SHORTNAME"),
 				       N_("Delete a network address."));
   cmd_addroute = grub_register_command ("net_add_route", grub_cmd_addroute,
-					"SHORTNAME NET [INTERFACE| gw GATEWAY]",
+					N_("SHORTNAME NET [INTERFACE| gw GATEWAY]"),
 					N_("Add a network route."));
   cmd_delroute = grub_register_command ("net_del_route", grub_cmd_delroute,
-					"SHORTNAME",
+					N_("SHORTNAME"),
 					N_("Delete a network route."));
   cmd_lsroutes = grub_register_command ("net_ls_routes", grub_cmd_listroutes,
 					"", N_("list network routes"));

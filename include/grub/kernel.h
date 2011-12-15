@@ -26,14 +26,15 @@ enum
 {
   OBJ_TYPE_ELF,
   OBJ_TYPE_MEMDISK,
-  OBJ_TYPE_CONFIG
+  OBJ_TYPE_CONFIG,
+  OBJ_TYPE_PREFIX
 };
 
 /* The module header.  */
 struct grub_module_header
 {
   /* The type of object.  */
-  grub_uint8_t type;
+  grub_uint32_t type;
   /* The size of object (including this header).  */
   grub_uint32_t size;
 };
@@ -68,14 +69,20 @@ struct grub_module_info64
 #define grub_module_info grub_module_info32
 #endif
 
-extern grub_addr_t grub_arch_modules_addr (void);
+extern grub_addr_t EXPORT_VAR (grub_modbase);
 
-extern void EXPORT_FUNC(grub_module_iterate) (int (*hook) (struct grub_module_header *));
+#define FOR_MODULES(var)  for (\
+  var = grub_modbase ? (struct grub_module_header *) \
+    (grub_modbase + (((struct grub_module_info *) grub_modbase)->offset)) : 0;\
+  var && (grub_addr_t) var \
+    < (grub_modbase + (((struct grub_module_info *) grub_modbase)->size));    \
+  var = (struct grub_module_header *)					\
+    ((grub_uint32_t *) var + ((struct grub_module_header *) var)->size / 4))
 
 grub_addr_t grub_modules_get_end (void);
 
 /* The start point of the C code.  */
-void grub_main (void);
+void grub_main (void) __attribute__ ((noreturn));
 
 /* The machine-specific initialization. This must initialize memory.  */
 void grub_machine_init (void);
@@ -91,10 +98,5 @@ grub_machine_get_bootlocation (char **device, char **path);
 void grub_register_exported_symbols (void);
 
 extern void (*EXPORT_VAR(grub_net_poll_cards_idle)) (void);
-
-
-#if ! defined (ASM_FILE)
-extern char grub_prefix[];
-#endif
 
 #endif /* ! GRUB_KERNEL_HEADER */

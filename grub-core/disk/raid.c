@@ -23,6 +23,7 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/raid.h>
+#include <grub/partition.h>
 #ifdef GRUB_UTIL
 #include <grub/util/misc.h>
 #endif
@@ -119,7 +120,11 @@ scan_devices (const char *arname)
 	  struct grub_raid_member *m;
 	  for (m = arr->members; m < arr->members + arr->nr_devs; m++)
 	    if (m->device && m->device->id == disk->id
-		&& m->device->dev->id == m->device->dev->id)
+		&& m->device->dev->id == disk->dev->id
+		&& grub_partition_get_start (m->device->partition)
+		== grub_partition_get_start (disk->partition)
+		&& grub_disk_get_size (m->device)
+		== grub_disk_get_size (disk))
 	      {
 		grub_disk_close (disk);
 		return 0;
@@ -325,23 +330,6 @@ static void
 grub_raid_close (grub_disk_t disk __attribute ((unused)))
 {
   return;
-}
-
-void
-grub_raid_block_xor (char *buf1, const char *buf2, int size)
-{
-  grub_size_t *p1;
-  const grub_size_t *p2;
-
-  p1 = (grub_size_t *) buf1;
-  p2 = (const grub_size_t *) buf2;
-  size /= GRUB_CPU_SIZEOF_VOID_P;
-
-  while (size)
-    {
-      *(p1++) ^= *(p2++);
-      size--;
-    }
 }
 
 static grub_err_t

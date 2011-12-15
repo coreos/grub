@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,12 +16,12 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_BOOT_HEADER
-#define GRUB_BOOT_HEADER	1
+#include <grub/ieee1275/ieee1275.h>
+#include <grub/misc.h>
 
-#define GRUB_BOOT_VERSION_MAJOR	4
-#define GRUB_BOOT_VERSION_MINOR	0
-#define GRUB_BOOT_VERSION	((GRUB_BOOT_VERSION_MINOR << 8) \
-					| GRUB_BOOT_VERSION_MAJOR)
-
-#endif /* ! GRUB_BOOT_HEADER */
+void
+grub_reboot (void)
+{
+  grub_ieee1275_interpret ("reset-all", 0);
+  for (;;) ;
+}

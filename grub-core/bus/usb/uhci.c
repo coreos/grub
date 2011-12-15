@@ -544,8 +544,11 @@ grub_uhci_setup_transfer (grub_usb_controller_t dev,
 	{
 	  grub_size_t actual = 0;
 	  /* Terminate and free.  */
-	  td_prev->linkptr2 = 0;
-	  td_prev->linkptr = 1;
+	  if (td_prev)
+	    {
+	      td_prev->linkptr2 = 0;
+	      td_prev->linkptr = 1;
+	    }
 
 	  if (cdata->td_first)
 	    grub_free_queue (u, cdata->qh, cdata->td_first, NULL, &actual);

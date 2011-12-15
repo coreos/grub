@@ -46,7 +46,7 @@ realloc (void *ptr, grub_size_t size)
   return grub_realloc (ptr, size);
 }
 
-static inline void
+static inline void __attribute__ ((noreturn))
 abort (void)
 {
   grub_abort ();
