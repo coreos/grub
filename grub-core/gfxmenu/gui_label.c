@@ -94,14 +94,16 @@ label_paint (void *vself, const grub_video_rect_t *region)
   if (self->align == align_left)
     left_x = 0;
   else if (self->align == align_center)
-    left_x = ((self->bounds.width
-               - grub_font_get_string_width (self->font, self->text))
-             ) / 2;
+    left_x = (self->bounds.width
+	      - grub_font_get_string_width (self->font, self->text)) / 2;
   else if (self->align == align_right)
     left_x = (self->bounds.width
               - grub_font_get_string_width (self->font, self->text));
   else
     return;   /* Invalid alignment.  */
+
+  if (left_x < 0 || left_x > (int) self->bounds.width)
+    left_x = 0;
 
   grub_video_rect_t vpsave;
   grub_gui_set_viewport (&self->bounds, &vpsave);

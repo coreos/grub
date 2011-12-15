@@ -1,5 +1,10 @@
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gfxmenu/gui_label.c (label_paint): Handle the case
+	text_width > available width a bit more gracefully.
+
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/bsdXX.c (grub_freebsd_load_elfmodule): Fix
 	current address calculation.
 
