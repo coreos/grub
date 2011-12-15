@@ -1,5 +1,9 @@
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/multiboot.c (grub_cmd_module): Fix target address.
+
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Replace UINT_TO_PTR and PTR_TO_UINT with explicit grub_addr_t casts.
 
 	* include/grub/types.h (UINT_TO_PTR): Removed. All users switched to
