@@ -1,5 +1,10 @@
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c (generate_image): Clean multiboot header to avoid
+	confusing ipxe.
+
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/libgcrypt/cipher/md4.c (transform) [WORDS_BIGENDIAN]:
 	Add missing const attribute.
 	* grub-core/lib/libgcrypt/cipher/md5.c (transform) [WORDS_BIGENDIAN]:

@@ -32,6 +32,7 @@
 #include <grub/crypto.h>
 #include <grub/dl.h>
 #include <time.h>
+#include <multiboot.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -971,6 +972,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	  {
 	    char *pxeboot_path, *pxeboot_img;
 	    size_t pxeboot_size;
+	    grub_uint32_t *ptr;
 	    
 	    pxeboot_path = grub_util_get_path (dir, "pxeboot.img");
 	    pxeboot_size = grub_util_get_image_size (pxeboot_path);
@@ -979,6 +981,18 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	    grub_util_write_image (pxeboot_img, pxeboot_size, out);
 	    free (pxeboot_img);
 	    free (pxeboot_path);
+
+	    /* Remove Multiboot header to avoid confusing ipxe.  */
+	    for (ptr = (grub_uint32_t *) core_img;
+		 ptr < (grub_uint32_t *) (core_img + MULTIBOOT_SEARCH); ptr++)
+	      if (*ptr == grub_host_to_target32 (MULTIBOOT_HEADER_MAGIC)
+		  && grub_target_to_host32 (ptr[0])
+		  + grub_target_to_host32 (ptr[1])
+		  + grub_target_to_host32 (ptr[2]) == 0)
+		{
+		  *ptr = 0;
+		  break;
+		}
 	  }
 
 	boot_path = grub_util_get_path (dir, "diskboot.img");
