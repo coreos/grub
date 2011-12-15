@@ -1,5 +1,12 @@
 2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/reed_solomon.c (init_powx): Set gf_powx_inv[0] just to
+	be deterministic.
+	(syndroms): Compute 0 syndrom.
+	(rs_recover): Use 0 syndrom.
+
+2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/kernel.h (FOR_MODULES): Make it a bit faster.
 
 2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>

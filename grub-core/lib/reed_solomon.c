@@ -89,6 +89,7 @@ init_powx (void)
   int i;
   grub_uint8_t cur = 1;
 
+  gf_powx_inv[0] = 0;
   for (i = 0; i < 255; i++)
     {
       gf_powx[i] = cur;
@@ -165,7 +166,8 @@ syndroms (gf_single_t *m, grub_size_t s, grub_size_t rs,
 {
   gf_single_t xn = 1;
   unsigned i;
-  for (i = 0; i < rs; i++)
+  sy[0] = pol_evaluate (m, s + rs - 1, xn);
+  for (i = 1; i < rs; i++)
     {
       if (xn & (1 << (GF_SIZE - 1)))
 	{
@@ -344,7 +346,7 @@ rs_recover (gf_single_t *m, grub_size_t s, grub_size_t rs)
 #endif
 
     for (j = 0; j < errnum; j++)
-      eq[j] = errpot[j];
+      eq[j] = 1;
     eq[errnum] = sy[0];
     for (i = 1; i < (int) rs; i++)
       {
@@ -530,7 +532,7 @@ main (int argc, char **argv)
   out = fopen ("tst_rs.bin", "wb");
   fwrite (buf, 1, s + rs, out);
   fclose (out);
-#if 0
+#if 1
   grub_memset (buf + 512 * 15, 0, 512);
 #endif
 
