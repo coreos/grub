@@ -105,8 +105,6 @@ for cipher_file in cipher_files:
         fw.write ("/* This file was automatically imported with \n")
         fw.write ("   import_gcry.py. Please don't modify it */\n")
         fw.write ("#include <grub/dl.h>\n")
-        if cipher_file == "camellia.c":
-            fw.write ("#include \"camellia.h\"\n")
         if cipher_file == "camellia.h":
             fw.write ("#include <grub/misc.h>\n")
             fw.write ("void camellia_setup128(const unsigned char *key, grub_uint32_t *subkey);\n")

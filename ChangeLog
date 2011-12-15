@@ -1,5 +1,10 @@
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/import_gcry.py: Don't add include camellia.h to camellia.c. It's
+	already there.
+
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (generate_image): Clean multiboot header to avoid
 	confusing ipxe.
 
