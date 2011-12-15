@@ -412,7 +412,7 @@ grub_net_ip_transport_checksum (struct grub_net_buff *nb,
 				const grub_net_network_level_address_t *src,
 				const grub_net_network_level_address_t *dst)
 {
-  grub_uint16_t a, b;
+  grub_uint16_t a, b = 0;
   grub_uint32_t c;
   a = ~grub_be_to_cpu16 (grub_net_ip_chksum ((void *) nb->data,
 					     nb->tail - nb->data));
