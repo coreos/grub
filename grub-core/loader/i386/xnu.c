@@ -734,18 +734,18 @@ grub_cpu_xnu_fill_devicetree (void)
 #else
       if (SIZEOF_OF_UINTN == 4)
 	{
-	  ptr = UINT_TO_PTR (((grub_efiemu_configuration_table32_t *)
-			      SYSTEM_TABLE_PTR (configuration_table))[i]
-			     .vendor_table);
+	  ptr = (void *) (grub_addr_t) ((grub_efiemu_configuration_table32_t *)
+					SYSTEM_TABLE_PTR (configuration_table))[i]
+	    .vendor_table;
 	  guid =
 	    ((grub_efiemu_configuration_table32_t *)
 	     SYSTEM_TABLE_PTR (configuration_table))[i].vendor_guid;
 	}
       else
 	{
-	  ptr = UINT_TO_PTR (((grub_efiemu_configuration_table64_t *)
-			      SYSTEM_TABLE_PTR (configuration_table))[i]
-			     .vendor_table);
+	  ptr = (void *) (grub_addr_t) ((grub_efiemu_configuration_table64_t *)
+					SYSTEM_TABLE_PTR (configuration_table))[i]
+	    .vendor_table;
 	  guid =
 	    ((grub_efiemu_configuration_table64_t *)
 	     SYSTEM_TABLE_PTR (configuration_table))[i].vendor_guid;
@@ -786,9 +786,9 @@ grub_cpu_xnu_fill_devicetree (void)
       if (! curval->data)
 	return grub_errno;
       if (SIZEOF_OF_UINTN == 4)
-	*((grub_uint32_t *)curval->data) = PTR_TO_UINT32 (ptr);
+	*((grub_uint32_t *) curval->data) = (grub_addr_t) ptr;
       else
-	*((grub_uint64_t *)curval->data) = PTR_TO_UINT64 (ptr);
+	*((grub_uint64_t *) curval->data) = (grub_addr_t) ptr;
 
       /* Create alias. */
       for (j = 0; j < sizeof (table_aliases) / sizeof (table_aliases[0]); j++)
@@ -821,10 +821,10 @@ grub_cpu_xnu_fill_devicetree (void)
     return grub_errno;
   if (SIZEOF_OF_UINTN == 4)
     *((grub_uint32_t *) curval->data)
-      = PTR_TO_UINT32 (SYSTEM_TABLE_PTR (runtime_services));
+      = (grub_addr_t) SYSTEM_TABLE_PTR (runtime_services);
   else
     *((grub_uint64_t *) curval->data)
-      = PTR_TO_UINT64 (SYSTEM_TABLE_PTR (runtime_services));
+      = (grub_addr_t) SYSTEM_TABLE_PTR (runtime_services);
 
   return GRUB_ERR_NONE;
 }
@@ -939,7 +939,7 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
   params->lfb_depth = mode_info.bpp;
   params->lfb_line_len = mode_info.pitch;
 
-  params->lfb_base = PTR_TO_UINT32 (framebuffer);
+  params->lfb_base = (grub_addr_t) framebuffer;
   params->lfb_mode = bitmap ? GRUB_XNU_VIDEO_SPLASH 
     : GRUB_XNU_VIDEO_TEXT_IN_VIDEO;
 
@@ -1057,7 +1057,7 @@ grub_xnu_boot (void)
   if (err)
     return err;
 
-  bootparams->efi_system_table = PTR_TO_UINT32 (grub_autoefi_system_table);
+  bootparams->efi_system_table = (grub_addr_t) grub_autoefi_system_table;
 
   firstruntimepage = (((grub_addr_t) grub_xnu_heap_target_start
 		       + grub_xnu_heap_size + GRUB_XNU_PAGESIZE - 1)
@@ -1077,11 +1077,11 @@ grub_xnu_boot (void)
 	  curdesc->virtual_start = curruntimepage << 12;
 	  curruntimepage += curdesc->num_pages;
 	  if (curdesc->physical_start
-	      <= PTR_TO_UINT64 (grub_autoefi_system_table)
+	      <= (grub_addr_t) grub_autoefi_system_table
 	      && curdesc->physical_start + (curdesc->num_pages << 12)
-	      > PTR_TO_UINT64 (grub_autoefi_system_table))
+	      > (grub_addr_t) grub_autoefi_system_table)
 	    bootparams->efi_system_table
-	      = PTR_TO_UINT64 (grub_autoefi_system_table)
+	      = (grub_addr_t) grub_autoefi_system_table
 	      - curdesc->physical_start + curdesc->virtual_start;
 	  if (SIZEOF_OF_UINTN == 8 && grub_xnu_is_64bit)
 	    curdesc->virtual_start |= 0xffffff8000000000ULL;

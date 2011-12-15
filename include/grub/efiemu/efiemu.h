@@ -114,9 +114,9 @@ extern grub_efi_system_table64_t *grub_efiemu_system_table64;
 					   : (grub_efiemu_system_table32->x \
 					      = (y)))
 #define GRUB_EFIEMU_SYSTEM_TABLE_PTR(x) ((grub_efiemu_sizeof_uintn_t () == 8)\
-					 ? UINT_TO_PTR \
+					 ? (void *) (grub_addr_t)	\
 					 (grub_efiemu_system_table64->x) \
-					 : UINT_TO_PTR \
+					 : (void *) (grub_addr_t) \
 					 (grub_efiemu_system_table32->x))
 #define GRUB_EFIEMU_SYSTEM_TABLE_VAR(x) ((grub_efiemu_sizeof_uintn_t () == 8) \
 					 ? (void *) \

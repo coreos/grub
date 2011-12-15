@@ -101,8 +101,8 @@ preboot (int noreturn __attribute__ ((unused)))
   grub_memcpy (hooktarget, &grub_machine_mmaphook_start,
 	       &grub_machine_mmaphook_end - &grub_machine_mmaphook_start);
 
-  *((grub_uint16_t *) 0x4a) = PTR_TO_UINT32 (hooktarget) >> 4;
-  *((grub_uint16_t *) 0x56) = PTR_TO_UINT32 (hooktarget) >> 4;
+  *((grub_uint16_t *) 0x4a) = ((grub_addr_t) hooktarget) >> 4;
+  *((grub_uint16_t *) 0x56) = ((grub_addr_t) hooktarget) >> 4;
   *((grub_uint16_t *) 0x48) = &grub_machine_mmaphook_int12
     - &grub_machine_mmaphook_start;
   *((grub_uint16_t *) 0x54) = &grub_machine_mmaphook_int15

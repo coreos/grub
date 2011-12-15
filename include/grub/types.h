@@ -130,16 +130,6 @@ typedef grub_int32_t	grub_ssize_t;
 # define GRUB_LONG_MIN (-2147483647L - 1)
 #endif
 
-#if GRUB_CPU_SIZEOF_VOID_P == 4
-#define UINT_TO_PTR(x) ((void*)(grub_uint32_t)(x))
-#define PTR_TO_UINT64(x) ((grub_uint64_t)(grub_uint32_t)(x))
-#define PTR_TO_UINT32(x) ((grub_uint32_t)(x))
-#else
-#define UINT_TO_PTR(x) ((void*)(grub_uint64_t)(x))
-#define PTR_TO_UINT64(x) ((grub_uint64_t)(x))
-#define PTR_TO_UINT32(x) ((grub_uint32_t)(grub_uint64_t)(x))
-#endif
-
 typedef grub_uint64_t grub_properly_aligned_t;
 
 #define GRUB_PROPERLY_ALIGNED_ARRAY(name, size) grub_properly_aligned_t name[((size) + sizeof (grub_properly_aligned_t) - 1) / sizeof (grub_properly_aligned_t)]

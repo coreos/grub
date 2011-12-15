@@ -1,5 +1,14 @@
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Replace UINT_TO_PTR and PTR_TO_UINT with explicit grub_addr_t casts.
+
+	* include/grub/types.h (UINT_TO_PTR): Removed. All users switched to
+	grub_addr_t casts.
+	(PTR_TO_UINT64): Likewise.
+	(PTR_TO_UINT32): Likewise.
+
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (generate_image): Decrease the higher limit
 	because of stack.
 	* util/grub-setup.c (setup): Don't add redundancy past the higher load
