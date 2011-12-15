@@ -341,6 +341,6 @@ gate_a20_check_state:
 #include "lzma_decode.S"
 #endif
 
-	.p2align 2
+	.p2align 4
 
 LOCAL(decompressor_end):
