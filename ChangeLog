@@ -1,5 +1,14 @@
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt/cipher/md4.c (transform) [WORDS_BIGENDIAN]:
+	Add missing const attribute.
+	* grub-core/lib/libgcrypt/cipher/md5.c (transform) [WORDS_BIGENDIAN]:
+	Likewise.
+	* grub-core/lib/libgcrypt/cipher/rmd160.c (transform) [WORDS_BIGENDIAN]:
+	Likewise.
+
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/libgcrypt/cipher/serpent.c (serpent_key_prepare): Fix
 	misaligned access.
 	(serpent_setkey): Likewise.
