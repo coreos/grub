@@ -1,3 +1,15 @@
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/boot/i386/pc/startup_raw.S: Move realmode routines to
+	non-RS part to avoid RS messing with GDT.
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART):
+	Increase to suit in realmode routines.
+
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/i386/realmode.S: Increase alignment.
+	* grub-core/boot/i386/pc/startup_raw.S: Likewise.
+
 2011-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/reed_solomon.c (init_powx): Set gf_powx_inv[0] just to

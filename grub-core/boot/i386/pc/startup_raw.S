@@ -108,6 +108,8 @@ LOCAL (codestart):
 	call    EXT_C (grub_reed_solomon_recover)
 	jmp	post_reed_solomon
 
+#include "../../../kern/i386/realmode.S"
+
 #include <rs_decoder.S>
 
 	.text
@@ -184,8 +186,6 @@ post_reed_solomon:
 	movl	$prot_to_real, %edi
 	movl	$real_to_prot, %ecx
 	jmp	*%esi
-
-#include "../../../kern/i386/realmode.S"
 
 /*
  * grub_gate_a20(int on)
