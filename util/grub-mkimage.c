@@ -958,10 +958,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	char *boot_path, *boot_img;
 	size_t boot_size;
 
-	if (GRUB_KERNEL_I386_PC_LINK_ADDR + core_size > GRUB_MEMORY_I386_PC_UPPER)
-	  grub_util_error (_("core image is too big (%p > %p)"),
+	if (GRUB_KERNEL_I386_PC_LINK_ADDR + core_size > 0x78000)
+	  grub_util_error (_("core image is too big (0x%x > 0x%x)"),
 			   GRUB_KERNEL_I386_PC_LINK_ADDR + core_size,
-			   GRUB_MEMORY_I386_PC_UPPER);
+			   0x78000);
 
 	num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
 	if (num > 0xffff)

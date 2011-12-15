@@ -412,6 +412,10 @@ setup (const char *dir,
 
     if (nsec > 2 * core_sectors)
       nsec = 2 * core_sectors;
+    if (nsec > ((0x78000 - GRUB_KERNEL_I386_PC_LINK_ADDR)
+		>> GRUB_DISK_SECTOR_BITS))
+      nsec = ((0x78000 - GRUB_KERNEL_I386_PC_LINK_ADDR)
+	      >> GRUB_DISK_SECTOR_BITS);
 
     /* Clean out the blocklists.  */
     block = first_block;
