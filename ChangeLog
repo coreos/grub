@@ -1,5 +1,11 @@
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/reed_solomon.c (decode_block): Allocate on heap and not
+	stack.
+	(encode_block): Likewise.
+
+2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/i386/pc/startup_raw.S: Clear direction flag for
 	certainety.
 

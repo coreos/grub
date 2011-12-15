@@ -390,11 +390,18 @@ decode_block (gf_single_t *ptr, grub_size_t s,
     {
       grub_size_t ds = (s + SECTOR_SIZE - 1 - i) / SECTOR_SIZE;
       grub_size_t rr = (rs + SECTOR_SIZE - 1 - i) / SECTOR_SIZE;
-      gf_single_t m[ds + rr];
+      gf_single_t *m;
 
       /* Nothing to do.  */
       if (!ds || !rr)
 	continue;
+
+#ifndef STANDALONE
+      m = xmalloc (ds + rr);
+#else
+      m = (gf_single_t *) scratch;
+      scratch += ds + rr;
+#endif
 
       for (j = 0; j < (int) ds; j++)
 	m[j] = ptr[SECTOR_SIZE * j + i];
@@ -405,6 +412,12 @@ decode_block (gf_single_t *ptr, grub_size_t s,
 
       for (j = 0; j < (int) ds; j++)
 	ptr[SECTOR_SIZE * j + i] = m[j];
+
+#ifndef STANDALONE
+      free (m);
+#else
+      scratch -= ds + rr;
+#endif
     }
 }
 
@@ -418,12 +431,18 @@ encode_block (gf_single_t *ptr, grub_size_t s,
     {
       grub_size_t ds = (s + SECTOR_SIZE - 1 - i) / SECTOR_SIZE;
       grub_size_t rr = (rs + SECTOR_SIZE - 1 - i) / SECTOR_SIZE;
-      gf_single_t m[ds + rr];
+      gf_single_t *m;
+
+      if (!ds || !rr)
+	continue;
+
+      m = xmalloc (ds + rr);
       for (j = 0; j < ds; j++)
 	m[j] = ptr[SECTOR_SIZE * j + i];
       rs_encode (m, ds, rr);
       for (j = 0; j < rr; j++)      
 	rptr[SECTOR_SIZE * j + i] = m[j + ds];
+      free (m);
     }
 }
 #endif
