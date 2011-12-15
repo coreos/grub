@@ -190,8 +190,10 @@ for cipher_file in cipher_files:
             if hold:
                 hold = False
                 # We're optimising for size.
-                if not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer|tripledes_set2keys|do_tripledes_set_extra_info)", line) is None:
+                if not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer|tripledes_set2keys|do_tripledes_set_extra_info|_gcry_rmd160_mixblock|serpent_test)", line) is None:
                     skip = True
+                    if not re.match ("serpent_test", line) is None:
+                        fw.write ("static const char *serpent_test (void) { return 0; }\n");
                     fname = re.match ("[a-zA-Z0-9_]*", line).group ()
                     chmsg = "(%s): Removed." % fname
                     if nch:
