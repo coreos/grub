@@ -396,6 +396,18 @@ struct grub_net_bootp_packet
 #define	GRUB_NET_BOOTP_RFC1048_MAGIC_2	0x53
 #define	GRUB_NET_BOOTP_RFC1048_MAGIC_3	0x63
 
+enum
+  {
+    GRUB_NET_BOOTP_PAD = 0x00,
+    GRUB_NET_BOOTP_ROUTER = 0x03,
+    GRUB_NET_BOOTP_DNS = 0x06,
+    GRUB_NET_BOOTP_HOSTNAME = 0x0c,
+    GRUB_NET_BOOTP_DOMAIN = 0x0f,
+    GRUB_NET_BOOTP_ROOT_PATH = 0x11,
+    GRUB_NET_BOOTP_EXTENSIONS_PATH = 0x12,
+    GRUB_NET_BOOTP_END = 0xff
+  };
+
 struct grub_net_network_level_interface *
 grub_net_configure_by_dhcp_ack (const char *name,
 				struct grub_net_card *card,

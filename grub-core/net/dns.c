@@ -674,15 +674,15 @@ grub_dns_init (void)
 {
   cmd = grub_register_command ("net_nslookup", grub_cmd_nslookup,
 			       "ADDRESS DNSSERVER",
-			       N_("perform a DNS lookup"));
+			       N_("Perform a DNS lookup"));
   cmd_add = grub_register_command ("net_add_dns", grub_cmd_add_dns,
 				   "DNSSERVER",
-				   N_("add a DNS server"));
+				   N_("Add a DNS server"));
   cmd_del = grub_register_command ("net_del_dns", grub_cmd_del_dns,
 				   "DNSSERVER",
-				   N_("remove a DNS server"));
-  cmd_list = grub_register_command ("net_del_dns", grub_cmd_list_dns,
-				   NULL, N_("remove a DNS server"));
+				   N_("Remove a DNS server"));
+  cmd_list = grub_register_command ("net_ls_dns", grub_cmd_list_dns,
+				   NULL, N_("List DNS servers"));
 }
 
 void

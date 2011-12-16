@@ -68,18 +68,18 @@ parse_dhcp_vendor (const char *name, void *vend, int limit)
       tagtype = *ptr++;
 
       /* Pad tag.  */
-      if (tagtype == 0)
+      if (tagtype == GRUB_NET_BOOTP_PAD)
 	continue;
 
       /* End tag.  */
-      if (tagtype == 0xff)
+      if (tagtype == GRUB_NET_BOOTP_END)
 	return;
 
       taglength = *ptr++;
 
       switch (tagtype)
 	{
-	case 3:
+	case GRUB_NET_BOOTP_ROUTER:
 	  if (taglength == 4)
 	    {
 	      grub_net_network_level_netaddress_t target;
@@ -95,19 +95,32 @@ parse_dhcp_vendor (const char *name, void *vend, int limit)
 	      grub_net_add_route_gw (rname, target, gw);
 	    }
 	  break;
-	case 12:
+	case GRUB_NET_BOOTP_DNS:
+	  {
+	    int i;
+	    for (i = 0; i < taglength / 4; i++)
+	      {
+		struct grub_net_network_level_address s;
+		s.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+		s.ipv4 = grub_get_unaligned32 (ptr);
+		grub_net_add_dns_server (&s);
+		ptr += 4;
+	      }
+	  }
+	  break;
+	case GRUB_NET_BOOTP_HOSTNAME:
 	  set_env_limn_ro (name, "hostname", (char *) ptr, taglength);
 	  break;
 
-	case 15:
+	case GRUB_NET_BOOTP_DOMAIN:
 	  set_env_limn_ro (name, "domain", (char *) ptr, taglength);
 	  break;
 
-	case 17:
+	case GRUB_NET_BOOTP_ROOT_PATH:
 	  set_env_limn_ro (name, "rootpath", (char *) ptr, taglength);
 	  break;
 
-	case 18:
+	case GRUB_NET_BOOTP_EXTENSIONS_PATH:
 	  set_env_limn_ro (name, "extensionspath", (char *) ptr, taglength);
 	  break;
 
