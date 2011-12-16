@@ -1,3 +1,8 @@
+2011-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/i386/pc/drivemap.c (int13slot): Replace
+	UINT_TO_PTR with cast.
+
 2011-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/import_gcry.py: Skip _gcry_rmd160_mixblock and serpent_test. We
