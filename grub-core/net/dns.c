@@ -21,15 +21,20 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 #include <grub/err.h>
+#include <grub/time.h>
 
 struct dns_cache_element
 {
   char *name;
   grub_size_t naddresses;
   struct grub_net_network_level_address *addresses;
-  struct grub_net_network_level_address *source;
   grub_uint64_t limit_time;
 };
+
+#define DNS_CACHE_SIZE 1021
+#define DNS_HASH_BASE 423
+
+static struct dns_cache_element dns_cache[DNS_CACHE_SIZE];
 
 struct dns_header
 {
@@ -67,7 +72,24 @@ struct recv_data
   grub_uint16_t id;
   int dns_err;
   char *name;
+  const char *oname;
 };
+
+static inline int
+hash (const char *str)
+{
+  int v = 0, xn = 1;
+  const char *ptr;
+  for (ptr = str; *ptr; )
+    {
+      v = (v + xn * *ptr);
+      xn = (DNS_HASH_BASE * xn) % DNS_CACHE_SIZE;
+      ptr++;
+      if (((ptr - str) & 0x3ff) == 0)
+	v %= DNS_CACHE_SIZE;
+    }
+  return v % DNS_CACHE_SIZE;
+}
 
 static int
 check_name_real (const grub_uint8_t *name_at, const grub_uint8_t *head,
@@ -172,6 +194,7 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
   grub_uint8_t *ptr, *reparse_ptr;
   int redirect_cnt = 0;
   char *redirect_save = NULL;
+  grub_uint32_t ttl_all = ~0U;
 
   head = (struct dns_header *) nb->data;
   ptr = (grub_uint8_t *) (head + 1);
@@ -255,8 +278,8 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	ignored = 1;
       for (j = 0; j < 4; j++)
 	{
-	  ttl >>= 8;
-	  ttl = *ptr++ << 28;
+	  ttl <<= 8;
+	  ttl |= *ptr++;
 	}
       length = *ptr++ << 8;
       length |= *ptr++;
@@ -268,52 +291,81 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	  return GRUB_ERR_NONE;
 	}
       if (!ignored)
-	switch (class)
-	  {
-	  case DNS_CLASS_A:
-	    if (length != 4)
+	{
+	  if (ttl_all > ttl)
+	    ttl_all = ttl;
+	  switch (class)
+	    {
+	    case DNS_CLASS_A:
+	      if (length != 4)
+		break;
+	      (*data->addresses)[*data->naddresses].type
+		= GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+	      grub_memcpy (&(*data->addresses)[*data->naddresses].ipv4,
+			   ptr, 4);
+	      (*data->naddresses)++;
 	      break;
-	    (*data->addresses)[*data->naddresses].type
-	      = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	    grub_memcpy (&(*data->addresses)[*data->naddresses].ipv4,
-			 ptr, 4);
-	    (*data->naddresses)++;
-	    break;
-	  case DNS_CLASS_AAAA:
-	    if (length != 16)
+	    case DNS_CLASS_AAAA:
+	      if (length != 16)
+		break;
+	      (*data->addresses)[*data->naddresses].type
+		= GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
+	      grub_memcpy (&(*data->addresses)[*data->naddresses].ipv6,
+			   ptr, 16);
+	      (*data->naddresses)++;
 	      break;
-	    (*data->addresses)[*data->naddresses].type
-	      = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
-	    grub_memcpy (&(*data->addresses)[*data->naddresses].ipv6,
-		       ptr, 16);
-	    (*data->naddresses)++;
-	    break;
-	  case DNS_CLASS_CNAME:
-	    if (!(redirect_cnt & (redirect_cnt - 1)))
-	      {
-		grub_free (redirect_save);
-		redirect_save = data->name;
-	      }
-	    else
-	      grub_free (data->name);
-	    redirect_cnt++;
-	    data->name = get_name (ptr, nb->data, nb->tail);
-	    if (!data->name)
-	      {
-		data->dns_err = 1;
-		grub_errno = 0;
-		return GRUB_ERR_NONE;
-	      }
-	    grub_dprintf ("dns", "CNAME %s\n", data->name);
-	    if (grub_strcmp (redirect_save, data->name) == 0)
-	      {
-		data->dns_err = 1;
-		grub_free (redirect_save);
-		return GRUB_ERR_NONE;
-	      }
-	    goto reparse;
+	    case DNS_CLASS_CNAME:
+	      if (!(redirect_cnt & (redirect_cnt - 1)))
+		{
+		  grub_free (redirect_save);
+		  redirect_save = data->name;
+		}
+	      else
+		grub_free (data->name);
+	      redirect_cnt++;
+	      data->name = get_name (ptr, nb->data, nb->tail);
+	      if (!data->name)
+		{
+		  data->dns_err = 1;
+		  grub_errno = 0;
+		  return GRUB_ERR_NONE;
+		}
+	      grub_dprintf ("dns", "CNAME %s\n", data->name);
+	      if (grub_strcmp (redirect_save, data->name) == 0)
+		{
+		  data->dns_err = 1;
+		  grub_free (redirect_save);
+		  return GRUB_ERR_NONE;
+		}
+	      goto reparse;
+	    }
 	}
       ptr += length;
+    }
+  if (ttl_all && *data->naddresses && data->cache)
+    {
+      int h;
+      grub_dprintf ("dns", "caching for %d seconds\n", ttl_all);
+      h = hash (data->oname);
+      grub_free (dns_cache[h].name);
+      dns_cache[h].name = 0;
+      grub_free (dns_cache[h].addresses);
+      dns_cache[h].addresses = 0;
+      dns_cache[h].name = grub_strdup (data->oname);
+      dns_cache[h].naddresses = *data->naddresses;
+      dns_cache[h].addresses = grub_malloc (*data->naddresses
+					    * sizeof (dns_cache[h].addresses[0]));
+      dns_cache[h].limit_time = grub_get_time_ms () + 1000 * ttl_all;
+      if (!dns_cache[h].addresses || !dns_cache[h].name)
+	{
+	  grub_free (dns_cache[h].name);
+	  dns_cache[h].name = 0;
+	  grub_free (dns_cache[h].addresses);
+	  dns_cache[h].addresses = 0;
+	}
+      grub_memcpy (dns_cache[h].addresses, *data->addresses,
+		   *data->naddresses
+		   * sizeof (dns_cache[h].addresses[0]));
     }
   grub_netbuff_free (nb);
   grub_free (redirect_save);
@@ -338,17 +390,34 @@ grub_net_dns_lookup (const char *name,
   static grub_uint16_t id = 1;
   grub_err_t err = GRUB_ERR_NONE;
   struct recv_data data = {naddresses, addresses, cache,
-			   grub_cpu_to_be16 (id++), 0, 0};
+			   grub_cpu_to_be16 (id++), 0, 0, name};
   grub_uint8_t *nbd;
   int have_server = 0;
+
+  *naddresses = 0;
+  if (cache)
+    {
+      int h;
+      h = hash (name);
+      if (dns_cache[h].name && grub_strcmp (dns_cache[h].name, name) == 0
+	  && grub_get_time_ms () < dns_cache[h].limit_time)
+	{
+	  grub_dprintf ("dns", "retrieved from cache\n");
+	  *addresses = grub_malloc (dns_cache[h].naddresses
+				    * sizeof ((*addresses)[0]));
+	  if (!*addresses)
+	    return grub_errno;
+	  *naddresses = dns_cache[h].naddresses;
+	  grub_memcpy (*addresses, dns_cache[h].addresses,
+		       dns_cache[h].naddresses
+		       * sizeof ((*addresses)[0]));
+	  return GRUB_ERR_NONE;
+	}
+    }
 
   data.name = grub_strdup (name);
   if (!data.name)
     return grub_errno;
-
-  *naddresses = 0;
-  /*  if (cache && cache_lookup (name, servers, n_servers, addresses))
-      return GRUB_ERR_NONE;*/
 
   nb = grub_netbuff_alloc (GRUB_NET_OUR_MAX_IP_HEADER_SIZE
 			   + GRUB_NET_MAX_LINK_HEADER_SIZE
