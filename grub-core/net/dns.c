@@ -66,21 +66,33 @@ struct recv_data
   int cache;
   grub_uint16_t id;
   int dns_err;
-  const char *name;
+  char *name;
 };
 
 static int
-check_name (const grub_uint8_t *name_at, const grub_uint8_t *head,
-	    const grub_uint8_t *tail, const char *check_with)
+check_name_real (const grub_uint8_t *name_at, const grub_uint8_t *head,
+		 const grub_uint8_t *tail, const char *check_with,
+		 int *length, char *set)
 {
   const char *readable_ptr = check_with;
   const grub_uint8_t *ptr;
+  char *optr = set;
   int bytes_processed = 0;
+  if (length)
+    *length = 0;
   for (ptr = name_at; ptr < tail && bytes_processed < tail - head + 2; )
     {
       /* End marker.  */
       if (!*ptr)
-	return (*readable_ptr == 0);
+	{
+	  if (length && *length)
+	    (*length)--;
+	  if (optr && optr != set)
+	    optr--;
+	  if (optr)
+	    *optr = 0;
+	  return !readable_ptr || (*readable_ptr == 0);
+	}
       if (*ptr & 0xc0)
 	{
 	  bytes_processed += 2;
@@ -89,21 +101,65 @@ check_name (const grub_uint8_t *name_at, const grub_uint8_t *head,
 	  ptr = head + (((ptr[0] & 0x3f) << 8) | ptr[1]);
 	  continue;
 	}
-      if (grub_memcmp (ptr + 1, readable_ptr, *ptr) != 0)
+      if (readable_ptr && grub_memcmp (ptr + 1, readable_ptr, *ptr) != 0)
 	return 0;
       if (grub_memchr (ptr + 1, 0, *ptr) 
 	  || grub_memchr (ptr + 1, '.', *ptr))
 	return 0;
-      if (readable_ptr[*ptr] != '.' && readable_ptr[*ptr] != 0)
+      if (readable_ptr)
+	readable_ptr += *ptr;
+      if (readable_ptr && *readable_ptr != '.' && *readable_ptr != 0)
 	return 0;
       bytes_processed += *ptr + 1;
-      readable_ptr += *ptr;
-      if (*readable_ptr)
+      if (length)
+	*length += *ptr + 1;
+      if (optr)
+	{
+	  grub_memcpy (optr, ptr + 1, *ptr);
+	  optr += *ptr;
+	}
+      if (optr)
+	*optr++ = '.';
+      if (readable_ptr && *readable_ptr)
 	readable_ptr++;
       ptr += *ptr + 1;
     }
   return 0;
 }
+
+static int
+check_name (const grub_uint8_t *name_at, const grub_uint8_t *head,
+	    const grub_uint8_t *tail, const char *check_with)
+{
+  return check_name_real (name_at, head, tail, check_with, NULL, NULL);
+}
+
+static char *
+get_name (const grub_uint8_t *name_at, const grub_uint8_t *head,
+	  const grub_uint8_t *tail)
+{
+  int length;
+  char *ret;
+
+  if (!check_name_real (name_at, head, tail, NULL, &length, NULL))
+    return NULL;
+  ret = grub_malloc (length + 1);
+  if (!ret)
+    return NULL;
+  if (!check_name_real (name_at, head, tail, NULL, NULL, ret))
+    {
+      grub_free (ret);
+      return NULL;
+    }
+  return ret;
+}
+
+enum
+  {
+    DNS_CLASS_A = 1,
+    DNS_CLASS_CNAME = 5,
+    DNS_CLASS_AAAA = 28
+  };
 
 static grub_err_t 
 recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
@@ -113,7 +169,9 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
   struct dns_header *head;
   struct recv_data *data = data_;
   int i, j;
-  grub_uint8_t *ptr;
+  grub_uint8_t *ptr, *reparse_ptr;
+  int redirect_cnt = 0;
+  char *redirect_save = NULL;
 
   head = (struct dns_header *) nb->data;
   ptr = (grub_uint8_t *) (head + 1);
@@ -161,10 +219,12 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
     }
-  for (i = 0; i < grub_cpu_to_be16 (head->ancount); i++)
+  reparse_ptr = ptr;
+ reparse:
+  for (i = 0, ptr = reparse_ptr; i < grub_cpu_to_be16 (head->ancount); i++)
     {
       int ignored = 0;
-      int is_ipv6 = 0;
+      grub_uint8_t class;
       grub_uint32_t ttl = 0;
       grub_uint16_t length;
       if (ptr >= nb->tail)
@@ -188,11 +248,7 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	}
       if (*ptr++ != 0)
 	ignored = 1;
-      if (*ptr != 1 && *ptr != 28)
-	ignored = 1;
-      if (*ptr == 28)
-	is_ipv6 = 1;
-      ptr++;
+      class = *ptr++;
       if (*ptr++ != 0)
 	ignored = 1;
       if (*ptr++ != 1)
@@ -211,25 +267,56 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	  grub_netbuff_free (nb);
 	  return GRUB_ERR_NONE;
 	}
-      if (!ignored && !is_ipv6 && length == 4)
-	{
-	  (*data->addresses)[*data->naddresses].type
-	    = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	  grub_memcpy (&(*data->addresses)[*data->naddresses].ipv4,
-		       ptr, 4);
-	  (*data->naddresses)++;
-	}
-      if (!ignored && is_ipv6 && length == 16)
-	{
-	  (*data->addresses)[*data->naddresses].type
-	    = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
-	  grub_memcpy (&(*data->addresses)[*data->naddresses].ipv6,
+      if (!ignored)
+	switch (class)
+	  {
+	  case DNS_CLASS_A:
+	    if (length != 4)
+	      break;
+	    (*data->addresses)[*data->naddresses].type
+	      = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+	    grub_memcpy (&(*data->addresses)[*data->naddresses].ipv4,
+			 ptr, 4);
+	    (*data->naddresses)++;
+	    break;
+	  case DNS_CLASS_AAAA:
+	    if (length != 16)
+	      break;
+	    (*data->addresses)[*data->naddresses].type
+	      = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
+	    grub_memcpy (&(*data->addresses)[*data->naddresses].ipv6,
 		       ptr, 16);
-	  (*data->naddresses)++;
+	    (*data->naddresses)++;
+	    break;
+	  case DNS_CLASS_CNAME:
+	    if (!(redirect_cnt & (redirect_cnt - 1)))
+	      {
+		grub_free (redirect_save);
+		redirect_save = data->name;
+	      }
+	    else
+	      grub_free (data->name);
+	    redirect_cnt++;
+	    data->name = get_name (ptr, nb->data, nb->tail);
+	    if (!data->name)
+	      {
+		data->dns_err = 1;
+		grub_errno = 0;
+		return GRUB_ERR_NONE;
+	      }
+	    grub_dprintf ("dns", "CNAME %s\n", data->name);
+	    if (grub_strcmp (redirect_save, data->name) == 0)
+	      {
+		data->dns_err = 1;
+		grub_free (redirect_save);
+		return GRUB_ERR_NONE;
+	      }
+	    goto reparse;
 	}
       ptr += length;
     }
   grub_netbuff_free (nb);
+  grub_free (redirect_save);
   return GRUB_ERR_NONE;
 }
 
@@ -251,9 +338,13 @@ grub_net_dns_lookup (const char *name,
   static grub_uint16_t id = 1;
   grub_err_t err = GRUB_ERR_NONE;
   struct recv_data data = {naddresses, addresses, cache,
-			   grub_cpu_to_be16 (id++), 0, name};
+			   grub_cpu_to_be16 (id++), 0, 0};
   grub_uint8_t *nbd;
   int have_server = 0;
+
+  data.name = grub_strdup (name);
+  if (!data.name)
+    return grub_errno;
 
   *naddresses = 0;
   /*  if (cache && cache_lookup (name, servers, n_servers, addresses))
@@ -266,7 +357,10 @@ grub_net_dns_lookup (const char *name,
 			   + grub_strlen (name) + 2 + 4
 			   + 2 + 4);
   if (!nb)
-    return grub_errno;
+    {
+      grub_free (data.name);
+      return grub_errno;
+    }
   grub_netbuff_reserve (nb, GRUB_NET_OUR_MAX_IP_HEADER_SIZE
 			+ GRUB_NET_MAX_LINK_HEADER_SIZE
 			+ GRUB_NET_UDP_HEADER_SIZE);
@@ -281,8 +375,11 @@ grub_net_dns_lookup (const char *name,
       if (!dot)
 	dot = iptr + grub_strlen (iptr);
       if ((dot - iptr) >= 64)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "domain component is too long");
+	{
+	  grub_free (data.name);
+	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			     "domain component is too long");
+	}
       *optr = (dot - iptr);
       optr++;
       grub_memcpy (optr, iptr, dot - iptr);
@@ -365,9 +462,11 @@ grub_net_dns_lookup (const char *name,
       grub_net_poll_cards (200);
     }
  out:
+  grub_free (data.name);
   grub_netbuff_free (nb);
   for (j = 0; j < send_servers; j++)
     grub_net_udp_close (sockets[j]);
+  
   if (*data.naddresses)
     return GRUB_ERR_NONE;
   if (data.dns_err)
