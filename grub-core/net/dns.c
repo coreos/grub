@@ -35,6 +35,41 @@ struct dns_cache_element
 #define DNS_HASH_BASE 423
 
 static struct dns_cache_element dns_cache[DNS_CACHE_SIZE];
+static struct grub_net_network_level_address *dns_servers;
+static grub_size_t dns_nservers, dns_servers_alloc;
+
+grub_err_t
+grub_net_add_dns_server (const struct grub_net_network_level_address *s)
+{
+  if (dns_servers_alloc <= dns_nservers)
+    {
+      int na = dns_servers_alloc * 2;
+      struct grub_net_network_level_address *ns;
+      if (na < 8)
+	na = 8;
+      ns = grub_malloc (na * sizeof (ns[0]));
+      if (!ns)
+	return grub_errno;
+      dns_servers_alloc = na;
+      dns_servers = ns;
+    }
+  dns_servers[dns_nservers++] = *s;
+  return GRUB_ERR_NONE;
+}
+
+void
+grub_net_remove_dns_server (const struct grub_net_network_level_address *s)
+{
+  grub_size_t i;
+  for (i = 0; i < dns_nservers; i++)
+    if (grub_net_addr_cmp (s, &dns_servers[i]) == 0)
+      break;
+  if (i < dns_nservers)
+    {
+      dns_servers[i] = dns_servers[dns_nservers - 1];
+      dns_nservers--;
+    }
+}
 
 struct dns_header
 {
@@ -394,6 +429,15 @@ grub_net_dns_lookup (const char *name,
   grub_uint8_t *nbd;
   int have_server = 0;
 
+  if (!servers)
+    {
+      servers = dns_servers;
+      n_servers = dns_nservers;
+    }
+
+  if (!n_servers)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no DNS servers");
+
   *naddresses = 0;
   if (cache)
     {
@@ -572,10 +616,58 @@ grub_cmd_nslookup (struct grub_command *cmd __attribute__ ((unused)),
       grub_net_addr_to_str (&addresses[i], buf);
       grub_printf ("%s\n", buf);
     }
+  grub_free (addresses);
   return GRUB_ERR_NONE;
 }
 
-static grub_command_t cmd;
+static grub_err_t
+grub_cmd_list_dns (struct grub_command *cmd __attribute__ ((unused)),
+		   int argc __attribute__ ((unused)),
+		   char **args __attribute__ ((unused)))
+{
+  grub_size_t i;
+  for (i = 0; i < dns_nservers; i++)
+    {
+      char buf[GRUB_NET_MAX_STR_ADDR_LEN];
+      grub_net_addr_to_str (&dns_servers[i], buf);
+      grub_printf ("%s\n", buf);
+    }
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_cmd_add_dns (struct grub_command *cmd __attribute__ ((unused)),
+		  int argc, char **args)
+{
+  grub_err_t err;
+  struct grub_net_network_level_address server;
+
+  if (argc != 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "1 argument expected");
+  err = grub_net_resolve_address (args[0], &server);
+  if (err)
+    return err;
+
+  return grub_net_add_dns_server (&server);
+}
+
+static grub_err_t
+grub_cmd_del_dns (struct grub_command *cmd __attribute__ ((unused)),
+		  int argc, char **args)
+{
+  grub_err_t err;
+  struct grub_net_network_level_address server;
+
+  if (argc != 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "1 argument expected");
+  err = grub_net_resolve_address (args[1], &server);
+  if (err)
+    return err;
+
+  return grub_net_add_dns_server (&server);
+}
+
+static grub_command_t cmd, cmd_add, cmd_del, cmd_list;
 
 void
 grub_dns_init (void)
@@ -583,10 +675,21 @@ grub_dns_init (void)
   cmd = grub_register_command ("net_nslookup", grub_cmd_nslookup,
 			       "ADDRESS DNSSERVER",
 			       N_("perform a DNS lookup"));
+  cmd_add = grub_register_command ("net_add_dns", grub_cmd_add_dns,
+				   "DNSSERVER",
+				   N_("add a DNS server"));
+  cmd_del = grub_register_command ("net_del_dns", grub_cmd_del_dns,
+				   "DNSSERVER",
+				   N_("remove a DNS server"));
+  cmd_list = grub_register_command ("net_del_dns", grub_cmd_list_dns,
+				   NULL, N_("remove a DNS server"));
 }
 
 void
 grub_dns_fini (void)
 {
   grub_unregister_command (cmd);
+  grub_unregister_command (cmd_add);
+  grub_unregister_command (cmd_del);
+  grub_unregister_command (cmd_list);
 }

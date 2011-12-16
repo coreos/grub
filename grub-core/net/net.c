@@ -501,6 +501,10 @@ grub_net_resolve_address (const char *name,
 			  grub_net_network_level_address_t *addr)
 {
   const char *rest;
+  grub_err_t err;
+  grub_size_t naddresses;
+  struct grub_net_network_level_address *addresses;
+
   if (parse_ip (name, &addr->ipv4, &rest) && *rest == 0)
     {
       addr->type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
@@ -511,8 +515,16 @@ grub_net_resolve_address (const char *name,
       addr->type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
       return GRUB_ERR_NONE;
     }
-  return grub_error (GRUB_ERR_NET_BAD_ADDRESS, N_("unrecognised address %s"),
-		     name);
+  err = grub_net_dns_lookup (name, 0, 0, &naddresses, &addresses, 1);
+  if (err)
+    return err;
+  if (!naddresses)
+    grub_error (GRUB_ERR_NET_BAD_ADDRESS, N_("unresolvable address %s"),
+		name);
+  /* FIXME: use other results as well.  */
+  *addr = addresses[0];
+  grub_free (addresses);
+  return GRUB_ERR_NONE;
 }
 
 grub_err_t
