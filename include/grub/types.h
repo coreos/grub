@@ -98,13 +98,15 @@ typedef grub_uint64_t	grub_size_t;
 typedef grub_int64_t	grub_ssize_t;
 
 # if GRUB_CPU_SIZEOF_LONG == 8
-#  define PRIxGRUB_SIZE	"lx"
-#  define PRIxGRUB_ADDR	"lx"
-#  define PRIuGRUB_SIZE	"lu"
+#  define PRIxGRUB_SIZE	 "lx"
+#  define PRIxGRUB_ADDR	 "lx"
+#  define PRIuGRUB_SIZE	 "lu"
+#  define PRIdGRUB_SSIZE "ld"
 # else
-#  define PRIxGRUB_SIZE	"llx"
-#  define PRIxGRUB_ADDR	"llx"
-#  define PRIuGRUB_SIZE	"llu"
+#  define PRIxGRUB_SIZE	 "llx"
+#  define PRIxGRUB_ADDR	 "llx"
+#  define PRIuGRUB_SIZE  "llu"
+#  define PRIdGRUB_SSIZE "lld"
 # endif
 #else
 typedef grub_uint32_t	grub_addr_t;
@@ -114,6 +116,7 @@ typedef grub_int32_t	grub_ssize_t;
 # define PRIxGRUB_SIZE	"x"
 # define PRIxGRUB_ADDR	"x"
 # define PRIuGRUB_SIZE	"u"
+# define PRIdGRUB_SSIZE	"d"
 #endif
 
 #define GRUB_UCHAR_MAX 0xFF
@@ -149,6 +152,18 @@ typedef grub_uint64_t	grub_disk_addr_t;
 
 #define grub_swap_bytes16_compile_time(x) ((((x) & 0xff) << 8) | (((x) & 0xff00) >> 8))
 #define grub_swap_bytes32_compile_time(x) ((((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) & 0xff0000) >> 8) | (((x) & 0xff000000UL) >> 24))
+#define grub_swap_bytes64_compile_time(x)	\
+({ \
+   grub_uint64_t _x = (x); \
+   (grub_uint64_t) ((_x << 56) \
+                    | ((_x & (grub_uint64_t) 0xFF00ULL) << 40) \
+                    | ((_x & (grub_uint64_t) 0xFF0000ULL) << 24) \
+                    | ((_x & (grub_uint64_t) 0xFF000000ULL) << 8) \
+                    | ((_x & (grub_uint64_t) 0xFF00000000ULL) >> 8) \
+                    | ((_x & (grub_uint64_t) 0xFF0000000000ULL) >> 24) \
+                    | ((_x & (grub_uint64_t) 0xFF000000000000ULL) >> 40) \
+                    | (_x >> 56)); \
+})
 
 #if defined(__GNUC__) && (__GNUC__ > 3) && (__GNUC__ > 4 || __GNUC_MINOR__ >= 3)
 static inline grub_uint32_t grub_swap_bytes32(grub_uint32_t x)
@@ -197,6 +212,10 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 # define grub_be_to_cpu16(x)	((grub_uint16_t) (x))
 # define grub_be_to_cpu32(x)	((grub_uint32_t) (x))
 # define grub_be_to_cpu64(x)	((grub_uint64_t) (x))
+# define grub_cpu_to_be16_compile_time(x)	((grub_uint16_t) (x))
+# define grub_cpu_to_be32_compile_time(x)	((grub_uint32_t) (x))
+# define grub_cpu_to_be64_compile_time(x)	((grub_uint64_t) (x))
+# define grub_be_to_cpu64_compile_time(x)	((grub_uint64_t) (x))
 # define grub_cpu_to_le32_compile_time(x)	grub_swap_bytes32_compile_time(x)
 # define grub_cpu_to_le16_compile_time(x)	grub_swap_bytes16_compile_time(x)
 #else /* ! WORDS_BIGENDIAN */
@@ -212,8 +231,13 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 # define grub_be_to_cpu16(x)	grub_swap_bytes16(x)
 # define grub_be_to_cpu32(x)	grub_swap_bytes32(x)
 # define grub_be_to_cpu64(x)	grub_swap_bytes64(x)
+# define grub_cpu_to_be16_compile_time(x)	grub_swap_bytes16_compile_time(x)
+# define grub_cpu_to_be32_compile_time(x)	grub_swap_bytes32_compile_time(x)
+# define grub_cpu_to_be64_compile_time(x)	grub_swap_bytes64_compile_time(x)
+# define grub_be_to_cpu64_compile_time(x)	grub_swap_bytes64_compile_time(x)
 # define grub_cpu_to_le16_compile_time(x)	((grub_uint16_t) (x))
 # define grub_cpu_to_le32_compile_time(x)	((grub_uint32_t) (x))
+
 #endif /* ! WORDS_BIGENDIAN */
 
 static inline grub_uint16_t grub_get_unaligned16 (const void *ptr)

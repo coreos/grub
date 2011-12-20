@@ -370,6 +370,20 @@ void EXPORT_FUNC (__deregister_frame_info) (void);
 
 /* Inline functions.  */
 
+static inline char *
+grub_memchr (const void *p, int c, grub_size_t len)
+{
+  const char *s = p;
+  const char *e = s + len;
+
+  for (; s < e; s++)
+    if (*s == c)
+      return (char *) s;
+
+  return 0;
+}
+
+
 static inline unsigned int
 grub_abs (int x)
 {

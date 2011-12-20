@@ -1301,7 +1301,9 @@ struct grub_efi_simple_network
   void (*statistics) (void);
   void (*mcastiptomac) (void);
   void (*nvdata) (void);
-  void (*getstatus) (void);
+  grub_efi_status_t (*get_status) (struct grub_efi_simple_network *this,
+				   grub_uint32_t *int_status,
+				   void **txbuf);
   grub_efi_status_t (*transmit) (struct grub_efi_simple_network *this,
 				 grub_efi_uintn_t header_size,
 				 grub_efi_uintn_t buffer_size,

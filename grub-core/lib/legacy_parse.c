@@ -42,7 +42,8 @@ struct legacy_command
     TYPE_BOOL,
     TYPE_INT,
     TYPE_REST_VERBATIM,
-    TYPE_VBE_MODE
+    TYPE_VBE_MODE,
+    TYPE_WITH_CONFIGFILE_OPTION
   } argt[4];
   enum {
     FLAG_IGNORE_REST        =  0x001,
@@ -67,7 +68,13 @@ static struct legacy_command legacy_commands[] =
      "Print the blocklist notation of the file FILE."},
     {"boot", "boot\n", NULL, 0, 0, {}, 0, 0,
      "Boot the OS/chain-loader which has been loaded."},
-    /* FIXME: bootp unsupported.  */
+    {"bootp", "net_bootp; net_ls_addr; if [ x%s = x--with-configfile ]; then "
+     "if net_get_dhcp_option configfile_name pxe 150 string; then "
+     "configfile $configfile_name; fi; fi\n", NULL, 0, 1,
+     {TYPE_WITH_CONFIGFILE_OPTION}, FLAG_IGNORE_REST, "[--with-configfile]",
+     "Initialize a network device via BOOTP. If the option `--with-configfile'"
+     " is given, try to load a configuration file specified by the 150 vendor"
+     " tag."},
     {"cat", "cat '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Print the contents of the file FILE."},
     {"chainloader", "chainloader %s '%s'\n", NULL, 0,
@@ -105,7 +112,13 @@ static struct legacy_command legacy_commands[] =
      "[NUM | `saved']",
      "Set the default entry to entry number NUM (if not specified, it is"
      " 0, the first entry) or the entry number saved by savedefault."},
-    /* FIXME: dhcp unsupported.  */
+    {"dhcp", "net_bootp; net_ls_addr; if [ x%s = x--with-configfile ]; then "
+     "if net_get_dhcp_option configfile_name pxe 150 string; then "
+     "configfile $configfile_name; fi; fi\n", NULL, 0, 1,
+     {TYPE_WITH_CONFIGFILE_OPTION}, FLAG_IGNORE_REST, "[--with-configfile]",
+     "Initialize a network device via BOOTP. If the option `--with-configfile'"
+     " is given, try to load a configuration file specified by the 150 vendor"
+     " tag."},
     {"displayapm", "lsapm\n", NULL, 0, 0, {}, 0, 0,
      "Display APM BIOS information."},
     {"displaymem", "lsmmap\n", NULL, 0, 0, {}, 0, 0, 
@@ -414,6 +427,8 @@ is_option (enum arg_type opt, const char *curarg, grub_size_t len)
 {
   switch (opt)
     {
+    case TYPE_WITH_CONFIGFILE_OPTION:
+      return check_option (curarg, "--with-configfile", len);
     case TYPE_NOAPM_OPTION:
       return check_option (curarg, "--no-apm", len);
     case TYPE_FORCE_OPTION:
@@ -665,6 +680,7 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 	  case TYPE_VERBATIM:
 	    args[i] = grub_legacy_escape (curarg, curarglen);
 	    break;
+	  case TYPE_WITH_CONFIGFILE_OPTION:
 	  case TYPE_FORCE_OPTION:
 	  case TYPE_NOAPM_OPTION:
 	  case TYPE_TYPE_OR_NOMEM_OPTION:
@@ -759,6 +775,7 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
       case TYPE_FILE:
       case TYPE_REST_VERBATIM:
       case TYPE_VERBATIM:
+      case TYPE_WITH_CONFIGFILE_OPTION:
       case TYPE_FORCE_OPTION:
       case TYPE_NOAPM_OPTION:
       case TYPE_TYPE_OR_NOMEM_OPTION:

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010,2011  Free Software Foundation, Inc.
+ *  Copyright (C) 2011 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,16 +16,21 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_NET_ARP_HEADER
-#define GRUB_NET_ARP_HEADER	1
+#ifndef GRUB_PRIORITY_QUEUE_HEADER
+#define GRUB_PRIORITY_QUEUE_HEADER 1
+
 #include <grub/misc.h>
-#include <grub/net.h>
+#include <grub/err.h>
 
-extern grub_err_t grub_net_arp_receive (struct grub_net_buff *nb,
-					struct grub_net_card *card);
+struct grub_priority_queue;
+typedef struct grub_priority_queue *grub_priority_queue_t;
+typedef int (*grub_comparator_t) (const void *a, const void *b);
 
-grub_err_t
-grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
-			   const grub_net_network_level_address_t *proto_addr);
+grub_priority_queue_t grub_priority_queue_new (grub_size_t elsize,
+					       grub_comparator_t cmp);
+void grub_priority_queue_destroy (grub_priority_queue_t pq);
+void *grub_priority_queue_top (grub_priority_queue_t pq);
+void grub_priority_queue_pop (grub_priority_queue_t pq);
+grub_err_t grub_priority_queue_push (grub_priority_queue_t pq, const void *el);
 
-#endif 
+#endif

@@ -1642,9 +1642,13 @@ module = {
 module = {
   name = net;
   common = net/net.c;
+  common = net/dns.c;
   common = net/bootp.c;
   common = net/ip.c;
   common = net/udp.c;
+  common = net/tcp.c;
+  common = net/icmp.c;
+  common = net/icmp6.c;
   common = net/ethernet.c;
   common = net/arp.c;
   common = net/netbuff.c;
@@ -1653,6 +1657,11 @@ module = {
 module = {
   name = tftp;
   common = net/tftp.c;
+};
+
+module = {
+  name = http;
+  common = net/http.c;
 };
 
 module = {
@@ -1719,6 +1728,11 @@ module = {
   name = keylayouts;
   common = commands/keylayouts.c;
   enable = videomodules;
+};
+
+module = {
+  name = priority_queue;
+  common = lib/priority_queue.c;
 };
 
 module = {

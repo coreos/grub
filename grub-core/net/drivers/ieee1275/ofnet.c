@@ -28,7 +28,6 @@ struct grub_ofnetcard_data
 {
   char *path;
   grub_ieee1275_ihandle_t handle;
-  grub_uint32_t mtu;
 };
 
 static grub_err_t
@@ -74,25 +73,35 @@ send_card_buffer (const struct grub_net_card *dev, struct grub_net_buff *pack)
   return GRUB_ERR_NONE;
 }
 
-static grub_ssize_t
-get_card_packet (const struct grub_net_card *dev, struct grub_net_buff *nb)
+static struct grub_net_buff *
+get_card_packet (const struct grub_net_card *dev)
 {
   grub_ssize_t actual;
   int rc;
   struct grub_ofnetcard_data *data = dev->data;
   grub_uint64_t start_time;
+  struct grub_net_buff *nb;
 
-  grub_netbuff_clear (nb);
+  nb = grub_netbuff_alloc (dev->mtu + 64);
+  /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
+     by 4. So that IP header is aligned on 4 bytes. */
+  grub_netbuff_reserve (nb, 2);
+  if (!nb)
+    {
+      grub_netbuff_free (nb);
+      return NULL;
+    }
   start_time = grub_get_time_ms ();
   do
-    rc = grub_ieee1275_read (data->handle, nb->data, data->mtu, &actual);
+    rc = grub_ieee1275_read (data->handle, nb->data, dev->mtu + 64, &actual);
   while ((actual <= 0 || rc < 0) && (grub_get_time_ms () - start_time < 200));
   if (actual)
     {
       grub_netbuff_put (nb, actual);
-      return actual;
+      return nb;
     }
-  return -1;
+  grub_netbuff_free (nb);
+  return NULL;
 }
 
 static struct grub_net_card_driver ofdriver =
@@ -228,12 +237,15 @@ grub_ofnet_findcards (void)
 
 	grub_ieee1275_finddevice (ofdata->path, &devhandle);
 
-	if (grub_ieee1275_get_integer_property
-	    (devhandle, "max-frame-size", &(ofdata->mtu),
-	     sizeof (ofdata->mtu), 0))
-	  {
-	    ofdata->mtu = 1500;
-	  }
+	{
+	  grub_uint32_t t;
+	  if (grub_ieee1275_get_integer_property (devhandle,
+						  "max-frame-size", &t,
+						  sizeof (t), 0))
+	    card->mtu = 1500;
+	  else
+	    card->mtu = t;
+	}
 
 	if (grub_ieee1275_get_property (devhandle, "mac-address",
 					&(lla.mac), 6, 0)

@@ -52,10 +52,12 @@ grub_err_t
 send_ethernet_packet (struct grub_net_network_level_interface *inf,
 		      struct grub_net_buff *nb,
 		      grub_net_link_level_address_t target_addr,
-		      grub_uint16_t ethertype)
+		      grub_net_ethertype_t ethertype)
 {
   struct etherhdr *eth;
   grub_err_t err;
+
+  COMPILE_TIME_ASSERT (sizeof (*eth) < GRUB_NET_MAX_LINK_HEADER_SIZE);
 
   err = grub_netbuff_push (nb, sizeof (*eth));
   if (err)
@@ -78,14 +80,15 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
 }
 
 grub_err_t
-grub_net_recv_ethernet_packet (struct grub_net_buff * nb,
-			       const struct grub_net_card * card)
+grub_net_recv_ethernet_packet (struct grub_net_buff *nb,
+			       struct grub_net_card *card)
 {
   struct etherhdr *eth;
   struct llchdr *llch;
   struct snaphdr *snaph;
-  grub_uint16_t type;
+  grub_net_ethertype_t type;
   grub_net_link_level_address_t hwaddress;
+  grub_net_link_level_address_t src_hwaddress;
   grub_err_t err;
 
   eth = (struct etherhdr *) nb->data;
@@ -111,19 +114,20 @@ grub_net_recv_ethernet_packet (struct grub_net_buff * nb,
 
   hwaddress.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
   grub_memcpy (hwaddress.mac, eth->dst, sizeof (hwaddress.mac));
+  src_hwaddress.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+  grub_memcpy (src_hwaddress.mac, eth->src, sizeof (src_hwaddress.mac));
 
-  /* ARP packet. */
-  if (type == GRUB_NET_ETHERTYPE_ARP)
+  switch (type)
     {
-      grub_net_arp_receive (nb);
+      /* ARP packet. */
+    case GRUB_NET_ETHERTYPE_ARP:
+      grub_net_arp_receive (nb, card);
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
-    }
-  /* IP packet.  */
-  if (type == GRUB_NET_ETHERTYPE_IP)
-    {
-      grub_net_recv_ip_packets (nb, card, &hwaddress);
-      return GRUB_ERR_NONE;
+      /* IP packet.  */
+    case GRUB_NET_ETHERTYPE_IP:
+    case GRUB_NET_ETHERTYPE_IP6:
+      return grub_net_recv_ip_packets (nb, card, &hwaddress, &src_hwaddress);
     }
   grub_netbuff_free (nb);
   return GRUB_ERR_NONE;

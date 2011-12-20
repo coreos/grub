@@ -1,3 +1,153 @@
+2011-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	IPv6, TCP, HTTP, ICMP and DNS support. Several cleanups and bugfixes.
+
+	* grub-core/Makefile.core.def (net): Add net/dns.c, net/tcp.c,
+	net/icmp.c and net/icmp6.c.
+	(http): New module.
+	(priority_queue): Likewise.
+	* grub-core/io/bufio.c: Rewritten.
+	* grub-core/lib/legacy_parse.c (legacy_command): New argument type
+	TYPE_WITH_CONFIGFILE_OPTION.
+	(legacy_commands): Add bootp and dhcp.
+	(is_option): Handle TYPE_WITH_CONFIGFILE_OPTION.
+	(grub_legacy_parse): Likewise.
+	* grub-core/lib/priority_queue.c: New file.
+	* grub-core/net/arp.c: Add missing license header.
+	(arp_find_entry): Removed.
+	(arp_find_entry): Likewise.
+	(grub_net_arp_resolve): Rename to ...
+	(grub_net_arp_send_request): ...this.
+	(grub_net_arp_receive): New card argument.
+	* grub-core/net/bootp.c (parse_dhcp_vendor): Clean up.
+	Set router and DNS server.
+	(grub_net_configure_by_dhcp_ack): Handle routing information.
+	(grub_cmd_bootp): Set checksum.
+	(grub_bootp_init): Remove net_dhcp.
+	* grub-core/net/dns.c: New file.
+	* grub-core/net/drivers/efi/efinet.c (send_card_buffer): Wait for
+	completion.
+	(get_card_packet): Handle allocation.
+	(grub_efinet_findcards): Set mtu.
+	* grub-core/net/drivers/emu/emunet.c: Add missing license header.
+	(get_card_packet): Handle allocation.
+	(emucard): Set mtu.
+	* grub-core/net/drivers/i386/pc/pxe.c (grub_pxe_recv): Handle allocation
+	(GRUB_MOD_INIT): Set mtu.
+	* grub-core/net/drivers/ieee1275/ofnet.c (grub_ofnetcard_data): Remove
+	mtu.
+	(get_card_packet): Handle allocation.
+	(grub_ofnet_findcards): Set mtu.
+	* grub-core/net/ethernet.c (send_ethernet_packet): Add compile time
+	assert.
+	(grub_net_recv_ethernet_packet): Handle IPv6.
+	* grub-core/net/http.c: New file.
+	* grub-core/net/icmp.c: Likewise.
+	* grub-core/net/icmp6.c: Likewise.
+	* grub-core/net/ip.c (ip6addr): New type.
+	(ip6hdr): Likewise.
+	(reassemble): Likewise.
+	(cmp): New function.
+	(reassembles): New variable.
+	(grub_net_ip_chksum): Handle 0xffff sum and unaligned buffers.
+	(id): New variable.
+	(send_fragmented): New function.
+	(grub_net_send_ip_packet): Rename to ...
+	(grub_net_send_ip4_packet): ... this. Send fragmented if needed.
+	Handle non-UDP.
+	(grub_net_recv_ip_packets): Rename to ...
+	(handle_dgram): ... this. Check checksum. Handle non-UDP.
+	(free_rsm): New function.
+	(free_old_fragments): Likewise.
+	(grub_net_recv_ip4_packets): New function.
+	(grub_net_send_ip6_packet): Likewise.
+	(grub_net_send_ip_packet): Likewise.
+	(grub_net_recv_ip6_packets): Likewise.
+	(grub_net_recv_ip_packets): Likewise.
+	* grub-core/net/net.c (grub_net_link_layer_entry): New struct.
+	(LINK_LAYER_CACHE_SIZE): New const.
+	(link_layer_find_entry): New function.
+	(grub_net_link_layer_add_address): Likewise.
+	(grub_net_link_layer_resolve_check): Likewise.
+	(grub_net_link_layer_resolve): Likewise.
+	(grub_net_ipv6_get_slaac): Likewise.
+	(grub_net_ipv6_get_link_local): Likewise.
+	(grub_cmd_ipv6_autoconf): Likewise.
+	(parse_ip): Handle one number representation.
+	(parse_ip6): New functoion.
+	(match_net): Handle IPv6.
+	(grub_net_resolve_address): Handle IPv6 and DNS.
+	(grub_net_resolve_net_address): Handle IPv6.
+	(route_cmp): New function.
+	(grub_net_route_address): Find best route.
+	(grub_net_addr_to_str): Handle IPv6.
+	(grub_net_addr_cmp): New function.
+	(grub_net_add_addr): Register local route.
+	(print_net_address): Handle net address.
+	(grub_net_poll_cards): Retransmit TCP.
+	(grub_net_poll_cards_idle_real): Likewise.
+	(have_ahead): New function.
+	(grub_net_seek_real): Use underlying seek.
+	(GRUB_MOD_INIT): Register net_ipv6_autoconf and init dns.
+	* grub-core/net/tcp.c: New file.
+	* grub-core/net/tftp.c (tftp_data): Add priority_queue.
+	(cmp): New function.
+	(ack): Likewise.
+	(tftp_receive): Handle unordered input.
+	(destroy_pq): New function.
+	(tftp_close): Close pq.
+	* grub-core/net/udp.c: Put missing license header.
+	(grub_net_udp_socket): New function.
+	(udp_socket_register): Likewise.
+	(grub_net_udp_close): Likewise.
+	(grub_net_recv_udp_packet): Check checksum.
+	* include/grub/efi/api.h (grub_efi_simple_network): Add status.
+	* include/grub/misc.h (grub_memchr): New function.
+	* include/grub/net.h (GRUB_NET_*_SIZE): New enum.
+	(grub_net_card_driver): Return buf in recv.
+	(grub_net_slaac_mac_list): New struct.
+	(grub_network_level_protocol_id): Add ipv6.
+	(grub_net_network_level_addr): Likewise.
+	(grub_net_network_level_net_addr): Likewise.
+	(grub_net_app_protocol): Add seek.
+	(grub_net_socket): Removed.
+	(grub_net_sockets): Likewise.
+	(grub_net_socket_register): Likewise.
+	(grub_net_socket_unregister): Likewise.
+	(FOR_NET_SOCKETS): Likewise.
+	(grub_net_add_addr): Add const.
+	(GRUB_NET_BOOTP_*): New enum.
+	(grub_net_addr_cmp): New proto.
+	(GRUB_NET_MAX_STR_ADDR_LEN): Take IPV6 into account.
+	(GRUB_NET_MAX_STR_HWADDR_LEN): New define.
+	(grub_net_hwaddr_to_str): NEw proto.
+	(FOR_NET_NETWORK_LEVEL_INTERFACES): New macro.
+	(FOR_NET_NETWORK_LEVEL_INTERFACES_SAFE): Handle NULL.
+	(grub_dns_init): New proto.
+	(grub_dns_fini): Likewise.
+	(grub_net_tcp_retransmit): Likewise.
+	(grub_net_link_layer_add_address): Likewise.
+	(grub_net_link_layer_resolve_check): Likewise.
+	(grub_net_link_layer_resolve): Likewise.
+	(grub_net_dns_lookup): Likewise.
+	(grub_net_add_dns_server): Likewise.
+	(grub_net_remove_dns_server): Likewise.
+	(GRUB_NET_TRIES): New const.
+	(GRUB_NET_INTERVAL): Likewise.
+	* include/grub/net/arp.h: Mostly rewritten.
+	* include/grub/net/ethernet.h (grub_net_ethertype_t): New enum.
+	* include/grub/net/ip.h: Mostly rewritten.
+	* include/grub/net/netbuff.h: Indent.
+	* include/grub/net/tcp.h: New file.
+	* include/grub/net/udp.h: Mostly rewritten.
+	* include/grub/priority_queue.h: New file.
+	* include/grub/types.h (PRIdGRUB_SSIZE): New define.
+	(grub_swap_bytes64_compile_time): Likewise.
+	(grub_cpu_to_be16_compile_time): Likewise.
+	(grub_cpu_to_be32_compile_time): Likewise.
+	(grub_cpu_to_be64_compile_time): Likewise.
+	(grub_be_to_cpu64_compile_time): Likewise.
+
 2011-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/i386/pc/drivemap.c (int13slot): Replace
