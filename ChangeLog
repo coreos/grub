@@ -1,4 +1,8 @@
-2011-12-19  Keshav P R  <the.ridikulus.rat@gmail.com>
+2011-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Loopback booting): New section.
+
+2011-12-22  Keshav P R  <the.ridikulus.rat@gmail.com>
 
 	* util/grub-mkstandalone.in: Fix minor typo errors.
 
