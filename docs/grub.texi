@@ -89,6 +89,7 @@ This edition documents version @value{VERSION}.
 * Interface::                   The menu and the command-line
 * Environment::                 GRUB environment variables
 * Commands::                    The list of available builtin commands
+* Internationalisation::        Topics relating to language support
 * Security::                    Authentication and authorisation
 * Supported kernels::           The list of supported kernels
 * Troubleshooting::             Error messages produced by GRUB
@@ -3893,6 +3894,65 @@ Unset the environment variable @var{envvar}.
 
 This command is not yet implemented for GRUB 2, although it is planned.
 
+@node Internationalisation
+@chapter Charset
+GRUB uses UTF-8 internally other than in rendering where some GRUB-specific
+appropriate representation is used. All text files (including config) are
+assumed to be encoded in UTF-8.
+
+@chapter Filesystems
+NTFS, JFS, UDF, HFS+, exFAT, long filesnames in FAT, Joliet part of
+ISO9660 are treated as UTF-16 as per specification. BFS is read as UTF-8,
+again according to specification. BtrFS, cpio, tar, squash4, minix, minix2,
+minix3, ROMFS, ReiserFS, XFS, ext2, ext3, ext4, FAT (short names),
+ISO9660 (plain and RockRidge), nilfs2, UFS1, UFS2 and ZFS are assumed
+to be UTF-8. This might be false on systems configured with legacy charset
+but as long as the charset used is superset of ASCII you should be able to
+access ASCII-named files. And it's recommended to configure your system to use
+UTF-8 to access the filesystem, convmv may help with migration. AFFS and HFS
+never use unicode and GRUB assumes them to be in Latin1 and MacRoman
+respectively. NTFS, HFS+, FAT and exFAT are case-insensitive however no
+attempt is performed at case conversion of international characters so e.g.
+a file named lowercase greek alpha is treated as different from the one named
+as uppercase alpha. Also similar to POSIX systems GRUB make no attempt at check
+of canonical equivalence so a file name u-diaresis is treated as distinct from
+u+combining diaresis. This however means that in order to access file on
+HFS+ its name must be specified in normalisation form D. On ZFS subvolumes
+marked as case insensitive files containing lowercase international characters
+are inaccessible.
+
+@chapter Output terminal
+Firmware output console ``console'' on ARC and IEEE1275 are limited to ASCII.
+BIOS firmware console and VGA text are limited to ASCII and some pseudographics.
+None of above mentioned is appropriate for displaying international and any
+unsupported character is replaced with question mark except pseudographics
+which we attempt to approximate with ASCII. EFI console on the other hand
+nominally supports UTF-16 but actual language coverage depends on firmware and
+may be very limited. The encoding used on serial can be chosen with
+@command{terminfo} as either ASCII, UTF-8 or ``visual UTF-8''. Last one is
+against the specification but results in correct rendering of right-to-left
+on some readers which don't have own bidi implementation. When using gfxterm
+or gfxmenu GRUB itself is responsible for rendering the text. In this case
+GRUB is limited by loaded fonts. If fonts contain all required characters
+then bidirectional text, cursive variants and combining marks other than
+enclosing ones. Ligatures aren't supported though. This should cover
+European, Middle Eastern (if you don't mind lack of la-alef ligature in
+Arabic) and East Asian scripts. Notable unsupported scripts are Brahmic family
+and derived as well as Mongolian and Tifinagh. If you can complete either of
+two lists or, better, propose a patch to improve rendering, please contact
+developper team.
+
+@chapter Input terminal
+Firmware console on BIOS, IEEE1275 and ARC doesn't allow you to enter non-ASCII
+characters. EFI specification allows for such but author is unaware of any
+actual implementations. Serial input is currently limited for latin1 (unlikely
+to change). Own keyboard implementations (at_keyboard and usb_keyboard) can
+support any characters but work on one-char-per-keystroke. So no dead keys or
+advanced input method. Also there is no keymap change hotkey. In practice it
+makes difficult to enter any text using non-Latin alphabet.
+
+@chapter Gettext
+GRUB supports being translated. For this you need to have language *.mo files in $prefix/locale, load gettext module and set ``lang'' variable.
 
 @node Security
 @chapter Authentication and authorisation
