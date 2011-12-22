@@ -31,7 +31,7 @@ pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst 
 
 self=`basename $0`
 
-source_dirrectory=
+source_directory=
 compression=auto
 format=
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
@@ -86,7 +86,7 @@ do
 	exit 0 ;;
 
     --modules)
-        modules=`argument $option "$@"`; shift ;;
+	modules=`argument $option "$@"`; shift ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
 
@@ -96,9 +96,9 @@ do
 	output_image=`echo "$option" | sed 's/--output=//'` ;;
 
     --directory | -d)
-        source_directory=`argument $option "$@"`; shift ;;
+	source_directory=`argument $option "$@"`; shift ;;
     --directory=*)
-	source_directory=`echo "$option" | sed 's/--rom-directory=//'` ;;
+	source_directory=`echo "$option" | sed 's/--directory=//'` ;;
 
     --grub-mkimage)
 	grub_mkimage=`argument $option "$@"`; shift ;;
@@ -108,12 +108,12 @@ do
     --compression | -C)
 	compression=`argument $option "$@"`; shift ;;
     --compression=*)
-        compression=`echo "${option}/" | sed 's/--xorriso=//'` ;;
+	compression=`echo "${option}" | sed 's/--compression=//'` ;;
 
     --format | -O)
 	format=`argument $option "$@"`; shift ;;
     --format=*)
-        format=`echo "${option}/" | sed 's/--xorriso=//'` ;;
+	format=`echo "${option}" | sed 's/--format=//'` ;;
 
     *)
 	source="${source} ${option} $@"; break ;;
@@ -162,6 +162,7 @@ for file in "${source_directory}/"*.mod "${source_directory}/"efiemu32.o "${sour
         cp -f "$file" "${memdisk_dir}"/boot/grub/
     fi
 done
+
 for file in ${pkglib_DATA}; do
     if test -f "${source_directory}/${file}"; then
         cp -f "${source_directory}/${file}" "${memdisk_dir}"/boot/grub/

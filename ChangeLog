@@ -1,3 +1,7 @@
+2011-12-19  Keshav P R  <the.ridikulus.rat@gmail.com>
+
+	* util/grub-mkstandalone.in: Fix minor typo errors.
+
 2011-12-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	IPv6, TCP, HTTP, ICMP and DNS support. Several cleanups and bugfixes.
