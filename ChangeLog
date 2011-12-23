@@ -1,5 +1,11 @@
 2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/reed_solomon.c (grub_reed_solomon_add_redundancy): Add
+	an assert.
+	* util/grub-setup.c (setup): Likewise.
+
+2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/i386/pc/startup_raw.S: Add missing argument for
 	_LzmaDecodeA.
 
