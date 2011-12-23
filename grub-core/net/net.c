@@ -934,6 +934,8 @@ grub_cmd_delroute (struct grub_command *cmd __attribute__ ((unused)),
 	*prev = route->next;
 	grub_free (route->name);
 	grub_free (route);
+	if (!*prev)
+	  break;
       }
 
   return GRUB_ERR_NONE;

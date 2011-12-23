@@ -1,3 +1,7 @@
+2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/net/net.c (grub_cmd_delroute): Add missing out condition.
+
 2011-12-23  Seth Goldberg <seth.goldberg@oracle.com>
 
 	* grub-core/Makefile.core.def (lzma_decompress): Add missing
