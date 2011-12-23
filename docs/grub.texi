@@ -341,11 +341,17 @@ devices, partitions, and files in a directory depending on context.
 @item Support multiple filesystem types
 Support multiple filesystem types transparently, plus a useful explicit
 blocklist notation. The currently supported filesystem types are @dfn{Amiga
-Fast FileSystem (AFFS)}, @dfn{AtheOS fs}, @dfn{BeFS}, @dfn{cpio}, @dfn{Linux
-ext2/ext3/ext4}, @dfn{DOS FAT12/FAT16/FAT32}, @dfn{HFS}, @dfn{HFS+},
-@dfn{ISO9660}, @dfn{JFS}, @dfn{Minix fs}, @dfn{nilfs2}, @dfn{NTFS},
-@dfn{ReiserFS}, @dfn{Amiga Smart FileSystem (SFS)}, @dfn{tar}, @dfn{UDF},
-@dfn{BSD UFS/UFS2}, and @dfn{XFS}. @xref{Filesystem}, for more information.
+Fast FileSystem (AFFS)}, @dfn{AtheOS fs}, @dfn{BeFS},
+@dfn{BtrFS} (including raid0, raid1, raid10, gzip and lzo),
+@dfn{cpio} (little- and big-endian bin, odc and newc variants),
+@dfn{Linux ext2/ext3/ext4}, @dfn{DOS FAT12/FAT16/FAT32}, @dfn{exFAT}, @dfn{HFS},
+@dfn{HFS+}, @dfn{ISO9660} (including Joliet, Rock-ridge and multi-chunk files),
+@dfn{JFS}, @dfn{Minix fs} (versions 1, 2 and 3), @dfn{nilfs2},
+@dfn{NTFS} (including compression), @dfn{ReiserFS}, @dfn{ROMFS},
+@dfn{Amiga Smart FileSystem (SFS)}, @dfn{Squash4}, @dfn{tar}, @dfn{UDF},
+@dfn{BSD UFS/UFS2}, @dfn{XFS}, and @dfn{ZFS} (including lzjb, gzip,
+zle, mirror, stripe, raidz1/2/3 and encryption in AES-CCM and AES-GCM).
+@xref{Filesystem}, for more information.
 
 @item Support automatic decompression
 Can decompress files which were compressed by @command{gzip} or
@@ -2230,42 +2236,64 @@ you see the files in a device or use the command @command{search}
 The device syntax is like this:
 
 @example
-@code{(@var{device}[,@var{part-num}][,@var{bsd-subpart-letter}])}
+@code{(@var{device}[,@var{partmap-name1}@var{part-num1}[,@var{partmap-name2}@var{part-num2}[,...]]])}
 @end example
 
-@samp{[]} means the parameter is optional. @var{device} should be
-either @samp{fd} or @samp{hd} followed by a digit, like @samp{fd0}.
-But you can also set @var{device} to a hexadecimal or a decimal number
-which is a BIOS drive number, so the following are equivalent:
+@samp{[]} means the parameter is optional. @var{device} depends on the disk
+driver in use. BIOS and EFI disks use either @samp{fd} or @samp{hd} followed
+by a digit, like @samp{fd0}, or @samp{cd}.
+AHCI, PATA (ata), crypto, USB use the name of driver followed by a number.
+Memdisk and host are limited to one disk and so it's refered just by driver
+name.
+RAID (md), ofdisk (ieee1275), LVM (lv) and arcdisk (arc) use intrinsic name
+of disk prefixed by driver name. Conflicts are solved by suffixing a number
+if necessarry. Commas need to be escaped.
+Loopback uses whatever name specified to @command{loopback} command.
+For crypto and RAID (md) additionally you can use the syntax
+<driver name>uuid/<uuid>
 
 @example
+(fd0)
 (hd0)
-(0x80)
-(128)
+(cd)
+(ahci0)
+(ata0)
+(crypto0)
+(usb0)
+(cryptouuid/123456789abcdef0123456789abcdef0)
+(mduuid/123456789abcdef0123456789abcdef0)
+(lv/system-root)
+(md/myraid)
+(md/0)
+(ieee1275/disk)
+(memdisk)
+(host)
+(myloop)
 @end example
 
 @var{part-num} represents the partition number of @var{device}, starting
-from one for primary partitions and from five for extended partitions,
-and @var{bsd-subpart-letter} represents the BSD disklabel subpartition,
-such as @samp{a} or @samp{e}.
-
-A shortcut for specifying BSD subpartitions is
-@code{(@var{device},@var{bsd-subpart-letter})}, in this case, GRUB
-searches for the first PC partition containing a BSD disklabel, then
-finds the subpartition @var{bsd-subpart-letter}. Here is an example:
-
-@example
-(hd0,a)
-@end example
+from one. @var{partname} is optional but is recommended since disk may have
+several top-level partmaps. Specifying third and later component you can access
+to subpartitions.
 
 The syntax @samp{(hd0)} represents using the entire disk (or the
 MBR when installing GRUB), while the syntax @samp{(hd0,1)}
 represents using the first partition of the disk (or the boot sector
 of the partition when installing GRUB).
 
-If you enabled the network support, the special drive @samp{(pxe)} is
-also available. Before using the network drive, you must initialize the
-network. @xref{Network}, for more information.
+@example
+(hd0,msdos1)
+(hd0,msdos1,msdos5)
+(hd0,msdos1,bsd3)
+(hd0,netbsd1)
+(hd0,gpt1)
+(hd0,1,3)
+@end example
+
+If you enabled the network support, the special drives @samp{(tftp)},
+@samp{(http)} and so on ars also available.
+Before using the network drive, you must initialize the network.
+@xref{Network}, for more information.
 
 If you boot GRUB from a CD-ROM, @samp{(cd)} is available. @xref{Making
 a GRUB bootable CD-ROM}, for details.

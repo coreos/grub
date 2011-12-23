@@ -1,5 +1,9 @@
 2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Filesystems): Update.
+
+2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support odc, newc and bigendian cpio formats.
 
 	* Makefile.util.def (libgrubmods): Add odc.c, newc.c and cpio_be.c.
