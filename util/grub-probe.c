@@ -67,7 +67,7 @@ enum {
   PRINT_COMPATIBILITY_HINT
 };
 
-int print = PRINT_FS;
+static int print = PRINT_FS;
 static unsigned int argument_is_device = 0;
 
 static void
@@ -253,7 +253,11 @@ static void
 print_full_name (const char *drive, grub_device_t dev)
 {
   if (dev->disk->partition)
-    printf ("%s,%s", drive, grub_partition_get_name (dev->disk->partition));
+    {
+      char *pname = grub_partition_get_name (dev->disk->partition);
+      printf ("%s,%s", drive, pname);
+      free (pname);
+    }
   else
     printf ("%s", drive);
 } 
@@ -347,14 +351,17 @@ probe (const char *path, char *device_name)
   if (print == PRINT_HINT_STR)
     {
       const char *orig_path = grub_util_devname_to_ofpath (device_name);
-      char *ofpath = escape_of_path (orig_path);
       char *biosname, *bare, *efi;
       const char *map;
 
-      printf ("--hint-ieee1275=");
-      print_full_name (ofpath, dev);
-      printf (" ");
-      free (ofpath);
+      if (orig_path)
+	{
+	  char *ofpath = escape_of_path (orig_path);
+	  printf ("--hint-ieee1275=");
+	  print_full_name (ofpath, dev);
+	  printf (" ");
+	  free (ofpath);
+	}
 
       biosname = guess_bios_drive (device_name);
       if (biosname)
@@ -381,7 +388,7 @@ probe (const char *path, char *device_name)
 	  print_full_name (bare, dev);
 	  printf (" ");
 	}
-      free (biosname);
+      free (bare);
 
       /* FIXME: Add ARC hint.  */
 
@@ -404,7 +411,8 @@ probe (const char *path, char *device_name)
       map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
       if (map)
 	{
-	  printf ("%s\n", map);
+	  print_full_name (map, dev);
+	  printf ("\n");
 	  goto end;
 	}
       biosname = guess_bios_drive (device_name);

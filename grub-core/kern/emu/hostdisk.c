@@ -1940,6 +1940,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
     name = grub_xasprintf ("%s,%s", disk->name, partname);
     free (partname);
+    grub_disk_close (disk);
     return name;
   }
 

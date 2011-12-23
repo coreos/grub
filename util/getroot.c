@@ -1159,7 +1159,7 @@ grub_util_pull_device (const char *os_dev)
       return;
 
     default:  /* GRUB_DEV_ABSTRACTION_NONE */
-      grub_util_biosdisk_get_grub_dev (os_dev);
+      free (grub_util_biosdisk_get_grub_dev (os_dev));
       return;
     }
 }
