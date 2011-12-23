@@ -242,10 +242,7 @@ program = {
 
   common = util/grub-mkdevicemap.c;
   common = util/deviceiter.c;
-  nosparc64 = util/devicemap.c;
-
-  sparc64_ieee1275 = util/ieee1275/ofpath.c;
-  sparc64_ieee1275 = util/ieee1275/devicemap.c;
+  common = util/devicemap.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
@@ -258,6 +255,7 @@ program = {
   installdir = sbin;
   mansection = 8;
   common = util/grub-probe.c;
+  common = util/ieee1275/ofpath.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;

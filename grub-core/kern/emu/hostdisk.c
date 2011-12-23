@@ -132,6 +132,7 @@ struct
 {
   char *drive;
   char *device;
+  int device_map;
 } map[256];
 
 struct grub_util_biosdisk_data
@@ -140,6 +141,7 @@ struct grub_util_biosdisk_data
   int access_mode;
   int fd;
   int is_disk;
+  int device_map;
 };
 
 #ifdef __linux__
@@ -242,6 +244,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   data->access_mode = 0;
   data->fd = -1;
   data->is_disk = 0;
+  data->device_map = map[drive].device_map;
 
   /* Get the size.  */
 #if defined(__MINGW32__)
@@ -1015,6 +1018,12 @@ read_device_map (const char *dev_map)
       grub_util_error ("%s:%d: %s", dev_map, lineno, msg);
     }
 
+  if (dev_map[0] == '\0')
+    {
+      grub_util_info (_("no device.map"));
+      return;
+    }
+
   fp = fopen (dev_map, "r");
   if (! fp)
     {
@@ -1055,6 +1064,7 @@ read_device_map (const char *dev_map)
       map[drive].drive = xmalloc (p - e + sizeof ('\0'));
       strncpy (map[drive].drive, e, p - e + sizeof ('\0'));
       map[drive].drive[p - e] = '\0';
+      map[drive].device_map = 1;
 
       p++;
       /* Skip leading spaces.  */
@@ -1623,7 +1633,10 @@ find_system_device (const char *os_dev, struct stat *st, int convert, int add)
     grub_util_error (_("device count exceeds limit"));
 
   map[i].device = os_disk;
-  map[i].drive = xstrdup (os_disk);
+  map[i].drive = xmalloc (sizeof ("hostdisk/") + strlen (os_disk));
+  strcpy (map[i].drive, "hostdisk/");
+  strcpy (map[i].drive + sizeof ("hostdisk/") - 1, os_disk);
+  map[i].device_map = 0;
 
   return i;
 }
@@ -1816,6 +1829,14 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 # warning "The function `grub_util_biosdisk_get_grub_dev' might not work on your OS correctly."
   return make_device_name (drive, -1, -1);
 #endif
+}
+
+const char *
+grub_util_biosdisk_get_compatibility_hint (grub_disk_t disk)
+{
+  if (disk->dev != &grub_util_biosdisk_dev || map[disk->id].device_map)
+    return disk->name;
+  return 0;
 }
 
 const char *

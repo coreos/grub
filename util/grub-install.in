@@ -50,7 +50,6 @@ modules=
 install_device=
 no_floppy=
 force_lba=
-recheck=no
 debug=no
 debug_image=
 
@@ -106,7 +105,6 @@ Install GRUB on your drive.
   --no-floppy             do not probe any floppy drive
   --allow-floppy          Make the drive also bootable as floppy 
                           (default for fdX devices). May break on some BIOSes.
-  --recheck               probe a device map even if it already exists
   --force                 install even if problems are detected
 EOF
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
@@ -218,7 +216,7 @@ do
     --no-floppy)
 	no_floppy="--no-floppy" ;;
     --recheck)
-	recheck=yes ;;
+	    ;;
     --removable)
 	removable=yes ;;
 
@@ -408,27 +406,17 @@ fi
 # Create the GRUB directory if it is not present.
 mkdir -p "$grubdir" || exit 1
 
-# If --recheck is specified, remove the device map, if present.
-if test $recheck = yes; then
-    rm -f "$device_map"
-fi
-
 # Create the device map file if it is not present.
 if test -f "$device_map"; then
-    :
+    # Make sure that there is no duplicated entry.
+    tmp=`sed -n '/^([fh]d[0-9]*)/s/\(^(.*)\).*/\1/p' "$device_map" \
+	| sort | uniq -d | sed -n 1p`
+    if test -n "$tmp"; then
+	echo "The drive $tmp is defined multiple times in the device map $device_map" 1>&2
+	exit 1
+    fi
 else
-    # Create a safe temporary file.
-    test -n "$mklog" && log_file=`$mklog`
-
-    "$grub_mkdevicemap" "--device-map=$device_map" $no_floppy || exit 1
-fi
-
-# Make sure that there is no duplicated entry.
-tmp=`sed -n '/^([fh]d[0-9]*)/s/\(^(.*)\).*/\1/p' "$device_map" \
-    | sort | uniq -d | sed -n 1p`
-if test -n "$tmp"; then
-    echo "The drive $tmp is defined multiple times in the device map $device_map" 1>&2
-    exit 1
+    device_map=
 fi
 
 # Copy the GRUB images to the GRUB directory.
@@ -536,7 +524,22 @@ if [ "x${devabstraction_module}" = "x" ] ; then
              
           exit 1
         fi
-        echo "search.fs_uuid ${uuid} root " >> "${grubdir}/load.cfg"
+
+	if [ x"$disk_module" != x ] && [ x"$disk_module" != xbiosdisk ]; then
+            hints="`"$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device "${grub_device}"`"
+	elif [ x"$platform" = xpc ]; then
+            hints="`"$grub_probe" --device-map="${device_map}" --target=bios_hints --device "${grub_device}"`"
+	elif [ x"$platform" = xefi ]; then
+            hints="`"$grub_probe" --device-map="${device_map}" --target=efi_hints --device "${grub_device}"`"
+	elif [ x"$platform" = xieee1275 ]; then
+            hints="`"$grub_probe" --device-map="${device_map}" --target=ieee1275_hints --device "${grub_device}"`"
+	elif [ x"$platform" = xloongson ] || [ x"$platform" = xqemu ] || [ x"$platform" = xcoreboot ] || [ x"$platform" = xmultiboot ] || [ x"$platform" = xqemu-mips ]; then
+            hints="`"$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device "${grub_device}"`"
+	else
+            echo "No hints available for your platform. Expect reduced performance"
+	    hints=
+        fi
+        echo "search.fs_uuid ${uuid} root $hints " >> "${grubdir}/load.cfg"
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
 	config_opt="-c ${grubdir}/load.cfg "
         modules="$modules search_fs_uuid"

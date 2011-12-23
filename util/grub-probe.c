@@ -34,6 +34,8 @@
 #include <grub/env.h>
 #include <grub/raid.h>
 #include <grub/i18n.h>
+#include <grub/emu/misc.h>
+#include <grub/util/ofpath.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -54,6 +56,13 @@ enum {
   PRINT_DEVICE,
   PRINT_PARTMAP,
   PRINT_ABSTRACTION,
+  PRINT_HINT_STR,
+  PRINT_BIOS_HINT,
+  PRINT_IEEE1275_HINT,
+  PRINT_BAREMETAL_HINT,
+  PRINT_EFI_HINT,
+  PRINT_ARC_HINT,
+  PRINT_COMPATIBILITY_HINT
 };
 
 int print = PRINT_FS;
@@ -87,6 +96,131 @@ probe_raid_level (grub_disk_t disk)
 
   return ((struct grub_raid_array *) disk->data)->level;
 }
+
+/* Since OF path names can have "," characters in them, and GRUB
+   internally uses "," to indicate partitions (unlike OF which uses
+   ":" for this purpose) we escape such commas.  */
+static char *
+escape_of_path (const char *orig_path)
+{
+  char *new_path, *d, c;
+  const char *p;
+
+  if (!strchr (orig_path, ','))
+    return (char *) orig_path;
+
+  new_path = xmalloc (strlen (orig_path) * 2 + sizeof ("ieee1275/"));
+
+  p = orig_path;
+  grub_strcpy (new_path, "ieee1275/");
+  d = new_path + sizeof ("ieee1275/") - 1;
+  while ((c = *p++) != '\0')
+    {
+      if (c == ',')
+	*d++ = '\\';
+      *d++ = c;
+    }
+
+  free ((char *) orig_path);
+
+  return new_path;
+}
+
+static char *
+guess_bios_drive (const char *orig_path)
+{
+  char *canon;
+  char *ptr;
+  canon = canonicalize_file_name (orig_path);
+  if (!canon)
+    return NULL;
+  ptr = strrchr (orig_path, '/');
+  if (ptr)
+    ptr++;
+  else
+    ptr = canon;
+  if ((ptr[0] == 's' || ptr[0] == 'h') && ptr[1] == 'd')
+    {
+      int num = ptr[2] - 'a';
+      free (canon);
+      return xasprintf ("hd%d", num);
+    }
+  if (ptr[0] == 'f' && ptr[1] == 'd')
+    {
+      int num = atoi (ptr + 2);
+      free (canon);
+      return xasprintf ("fd%d", num);
+    }
+  free (canon);
+  return NULL;
+}
+
+static char *
+guess_efi_drive (const char *orig_path)
+{
+  char *canon;
+  char *ptr;
+  canon = canonicalize_file_name (orig_path);
+  if (!canon)
+    return NULL;
+  ptr = strrchr (orig_path, '/');
+  if (ptr)
+    ptr++;
+  else
+    ptr = canon;
+  if ((ptr[0] == 's' || ptr[0] == 'h') && ptr[1] == 'd')
+    {
+      int num = ptr[2] - 'a';
+      free (canon);
+      return xasprintf ("hd%d", num);
+    }
+  if (ptr[0] == 'f' && ptr[1] == 'd')
+    {
+      int num = atoi (ptr + 2);
+      free (canon);
+      return xasprintf ("fd%d", num);
+    }
+  free (canon);
+  return NULL;
+}
+
+static char *
+guess_baremetal_drive (const char *orig_path)
+{
+  char *canon;
+  char *ptr;
+  canon = canonicalize_file_name (orig_path);
+  if (!canon)
+    return NULL;
+  ptr = strrchr (orig_path, '/');
+  if (ptr)
+    ptr++;
+  else
+    ptr = canon;
+  if (ptr[0] == 'h' && ptr[1] == 'd')
+    {
+      int num = ptr[2] - 'a';
+      free (canon);
+      return xasprintf ("ata%d", num);
+    }
+  if (ptr[0] == 's' && ptr[1] == 'd')
+    {
+      int num = ptr[2] - 'a';
+      free (canon);
+      return xasprintf ("ahci%d", num);
+    }
+  free (canon);
+  return NULL;
+}
+
+static void
+print_full_name (const char *drive, grub_device_t dev)
+{
+  if (dev->disk->partition)
+    printf ("%s,%s", drive, grub_partition_get_name (dev->disk->partition));
+  else
+    printf ("%s", drive);
+} 
 
 static void
 probe (const char *path, char *device_name)
@@ -133,6 +267,173 @@ probe (const char *path, char *device_name)
   dev = grub_device_open (drive_name);
   if (! dev)
     grub_util_error ("%s", grub_errmsg);
+
+  if (print == PRINT_HINT_STR)
+    {
+      const char *orig_path = grub_util_devname_to_ofpath (device_name);
+      char *ofpath = escape_of_path (orig_path);
+      char *biosname, *bare, *efi;
+      const char *map;
+
+      printf ("--hint-ieee1275=");
+      print_full_name (ofpath, dev);
+      printf (" ");
+      free (ofpath);
+
+      biosname = guess_bios_drive (device_name);
+      if (biosname)
+	{
+	  printf ("--hint-bios=");
+	  print_full_name (biosname, dev);
+	  printf (" ");
+	}
+      free (biosname);
+
+      efi = guess_efi_drive (device_name);
+      if (efi)
+	{
+	  printf ("--hint-efi=");
+	  print_full_name (efi, dev);
+	  printf (" ");
+	}
+      free (efi);
+
+      bare = guess_baremetal_drive (device_name);
+      if (bare)
+	{
+	  printf ("--hint-baremetal=");
+	  print_full_name (bare, dev);
+	  printf (" ");
+	}
+      free (biosname);
+
+      /* FIXME: Add ARC hint.  */
+
+      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+      if (map)
+	{
+	  printf ("--hint=");
+	  print_full_name (map, dev);
+	  printf (" ");
+	}
+      printf ("\n");
+
+      goto end;
+    }
+
+  if (print == PRINT_COMPATIBILITY_HINT)
+    {
+      const char *map;
+      char *biosname;
+      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+      if (map)
+	{
+	  printf ("%s\n", map);
+	  goto end;
+	}
+      biosname = guess_bios_drive (device_name);
+      if (biosname)
+	print_full_name (biosname, dev);
+      printf ("\n");
+      free (biosname);
+      goto end;
+    }
+
+  if (print == PRINT_BIOS_HINT)
+    {
+      char *biosname;
+      biosname = guess_bios_drive (device_name);
+      if (biosname)
+	print_full_name (biosname, dev);
+      printf ("\n");
+      free (biosname);
+      goto end;
+    }
+  if (print == PRINT_IEEE1275_HINT)
+    {
+      const char *orig_path = grub_util_devname_to_ofpath (device_name);
+      char *ofpath = escape_of_path (orig_path);
+      const char *map;
+
+      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+      if (map)
+	{
+	  printf (" ");
+	  print_full_name (map, dev);
+	}
+
+      printf (" ");
+      print_full_name (ofpath, dev);
+
+      printf ("\n");
+      free (ofpath);
+      goto end;
+    }
+  if (print == PRINT_EFI_HINT)
+    {
+      char *biosname;
+      char *name;
+      const char *map;
+      biosname = guess_efi_drive (device_name);
+
+      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+      if (map)
+	{
+	  printf (" ");
+	  print_full_name (map, dev);
+	}
+      if (biosname)
+	{
+	  printf (" ");
+	  print_full_name (biosname, dev);
+	}
+
+      printf ("\n");
+      free (biosname);
+      goto end;
+    }
+
+  if (print == PRINT_BAREMETAL_HINT)
+    {
+      char *biosname;
+      char *name;
+      const char *map;
+
+      biosname = guess_baremetal_drive (device_name);
+
+      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+      if (map)
+	{
+	  printf (" ");
+	  print_full_name (map, dev);
+	}
+      if (biosname)
+	{
+	  printf (" ");
+	  print_full_name (biosname, dev);
+	}
+
+      printf ("\n");
+      free (biosname);
+      goto end;
+    }
+
+  if (print == PRINT_ARC_HINT)
+    {
+      const char *map;
+
+      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+      if (map)
+	{
+	  printf (" ");
+	  print_full_name (map, dev);
+	}
+      printf ("\n");
+
+      /* FIXME */
+
+      goto end;
+    }
 
   if (print == PRINT_ABSTRACTION)
     {
@@ -348,6 +649,20 @@ main (int argc, char *argv[])
 	      print = PRINT_PARTMAP;
 	    else if (!strcmp (optarg, "abstraction"))
 	      print = PRINT_ABSTRACTION;
+	    else if (!strcmp (optarg, "hints_string"))
+	      print = PRINT_HINT_STR;
+	    else if (!strcmp (optarg, "bios_hints"))
+	      print = PRINT_BIOS_HINT;
+	    else if (!strcmp (optarg, "ieee1275_hints"))
+	      print = PRINT_IEEE1275_HINT;
+	    else if (!strcmp (optarg, "baremetal_hints"))
+	      print = PRINT_BAREMETAL_HINT;
+	    else if (!strcmp (optarg, "efi_hints"))
+	      print = PRINT_EFI_HINT;
+	    else if (!strcmp (optarg, "arc_hints"))
+	      print = PRINT_ARC_HINT;
+	    else if (!strcmp (optarg, "compatibility_hint"))
+	      print = PRINT_COMPATIBILITY_HINT;
 	    else
 	      usage (1);
 	    break;
