@@ -108,6 +108,15 @@ canonicalize (char *name)
   *optr = 0;
 }
 
+static inline unsigned long long
+read_number (const char *str, grub_size_t size)
+{
+  long long ret = 0;
+  while (size-- && *str >= '0' && *str <= '7')
+    ret = (ret << 3) | (*str++ & ~'0');
+  return ret;
+}
+
 static grub_err_t
 grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 		     grub_int32_t *mtime, grub_disk_addr_t *ofs,
@@ -178,7 +187,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       if (hd.typeflag == 'L')
 	{
 	  grub_err_t err;
-	  grub_size_t namesize = grub_strtoull (hd.size, NULL, 8);
+	  grub_size_t namesize = read_number (hd.size, sizeof (hd.size));
 	  *name = grub_malloc (namesize + 1);
 	  if (*name == NULL)
 	    return grub_errno;
@@ -198,7 +207,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       if (hd.typeflag == 'K')
 	{
 	  grub_err_t err;
-	  grub_size_t linksize = grub_strtoull (hd.size, NULL, 8);
+	  grub_size_t linksize = read_number (hd.size, sizeof (hd.size));
 	  if (data->linkname_alloc < linksize + 1)
 	    {
 	      char *n;
@@ -230,15 +239,15 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 	    return grub_errno;
 	}
 
-      data->size = grub_strtoull (hd.size, NULL, 8);
+      data->size = read_number (hd.size, sizeof (hd.size));
       data->dofs = data->hofs + GRUB_DISK_SECTOR_SIZE;
       *ofs = data->dofs + ((data->size + GRUB_DISK_SECTOR_SIZE - 1) &
 			   ~(GRUB_DISK_SECTOR_SIZE - 1));
       if (mtime)
-	*mtime = grub_strtoul (hd.mtime, NULL, 8);
+	*mtime = read_number (hd.mtime, sizeof (hd.mtime));
       if (mode)
 	{
-	  *mode = grub_strtoul (hd.mode, NULL, 8);
+	  *mode = read_number (hd.mode, sizeof (hd.mode));
 	  switch (hd.typeflag)
 	    {
 	    case '2':

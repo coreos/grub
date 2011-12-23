@@ -1,5 +1,12 @@
 2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix handling of tar numbers occupying the whole field.
+
+	* grub-core/fs/cpio.c (read_number): New function.
+	(grub_cpio_find_file): Use read_number instead of strtoull.
+
+2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/cpio.c (grub_cpio_find_file): Fix handling of names
 	occupying the whole field size.
 
