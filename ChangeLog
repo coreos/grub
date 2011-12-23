@@ -1,5 +1,13 @@
 2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (ESCAPED_PATH_MAX): New define.
+	(mountinfo_entry): Increase the field size to take escaping into
+	account.
+	(find_root_device_from_libzfs): Add one byte to size of strings for
+	security.
+
+2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/reed_solomon.c (grub_reed_solomon_add_redundancy): Add
 	an assert.
 	* util/grub-setup.c (setup): Likewise.

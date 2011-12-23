@@ -117,12 +117,13 @@ xgetcwd (void)
 
 #ifdef __linux__
 
+#define ESCAPED_PATH_MAX (4 * PATH_MAX)
 struct mountinfo_entry
 {
   int id;
   int major, minor;
-  char enc_root[PATH_MAX], enc_path[PATH_MAX];
-  char fstype[PATH_MAX], device[PATH_MAX];
+  char enc_root[ESCAPED_PATH_MAX + 1], enc_path[ESCAPED_PATH_MAX + 1];
+  char fstype[ESCAPED_PATH_MAX + 1], device[ESCAPED_PATH_MAX + 1];
 };
 
 /* Statting something on a btrfs filesystem always returns a virtual device
@@ -352,7 +353,8 @@ find_root_device_from_libzfs (const char *dir)
     size_t len;
     int st;
 
-    char name[PATH_MAX], state[256], readlen[256], writelen[256], cksum[256], notes[256];
+    char name[PATH_MAX + 1], state[257], readlen[257], writelen[257];
+    char cksum[257], notes[257];
     unsigned int dummy;
 
     cmd = xasprintf ("zpool status %s", poolname);
@@ -367,7 +369,8 @@ find_root_device_from_libzfs (const char *dir)
 	if (ret == -1)
 	  goto fail;
 	
-	if (sscanf (line, " %s %256s %256s %256s %256s %256s", name, state, readlen, writelen, cksum, notes) >= 5)
+	if (sscanf (line, " %s %256s %256s %256s %256s %256s",
+		    name, state, readlen, writelen, cksum, notes) >= 5)
 	  switch (st)
 	    {
 	    case 0:
