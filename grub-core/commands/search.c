@@ -164,17 +164,20 @@ FUNC_NAME (const char *key, const char *var, int no_floppy,
 	    dev = grub_device_open (hints[i]);
 	    if (!dev)
 	      {
-		*end = ',';
+		if (!*end)
+		  *end = ',';
 		continue;
 	      }
 	    if (!dev->disk)
 	      {
 		grub_device_close (dev);
-		*end = ',';
+		if (!*end)
+		  *end = ',';
 		continue;
 	      }
 	    ret = grub_partition_iterate (dev->disk, part_hook);
-	    *end = ',';
+	    if (!*end)
+	      *end = ',';
 	    grub_device_close (dev);
 	    if (ret)
 	      return;
