@@ -26,6 +26,10 @@
 #endif
 
 #ifndef STANDALONE
+#include <assert.h>
+#endif
+
+#ifndef STANDALONE
 #ifdef TEST
 typedef unsigned int grub_size_t;
 typedef unsigned char grub_uint8_t;
@@ -456,6 +460,10 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
   grub_size_t rs = redundancy;
   gf_single_t *ptr = buffer;
   gf_single_t *rptr = ptr + s;
+  void *tmp;
+
+  tmp = xmalloc (data_size);
+  grub_memcpy (tmp, buffer, data_size);
 
   /* Nothing to do.  */
   if (!rs)
@@ -481,6 +489,9 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
       s -= cs;
       rs -= crs;
     }
+
+  assert (grub_memcmp (tmp, buffer, data_size) == 0);
+  free (tmp);
 }
 #endif
 

@@ -448,10 +448,14 @@ setup (const char *dir,
 			+ GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY)
       = grub_host_to_target32 (nsec * GRUB_DISK_SECTOR_SIZE - core_size);
 
+    void *tmp = xmalloc (core_size);
+    grub_memcpy (tmp, core_img, core_size);
     grub_reed_solomon_add_redundancy (core_img + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART + GRUB_DISK_SECTOR_SIZE,
 				      core_size - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART - GRUB_DISK_SECTOR_SIZE,
 				      nsec * GRUB_DISK_SECTOR_SIZE
 				      - core_size);
+    assert (grub_memcmp (tmp, core_img, core_size) == 0);
+    free (tmp);
 
     /* Make sure that the second blocklist is a terminator.  */
     block = first_block - 1;
