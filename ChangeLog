@@ -1,3 +1,7 @@
+2011-12-23  Lukas Anzinger <l.anzinger@gmail.com>
+
+	* util/grub-mkconfig_lib.in (version_test_gt): Fix variable names.
+
 2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/net/net.c (grub_cmd_delroute): Add missing out condition.
