@@ -1,3 +1,8 @@
+2011-12-23  Seth Goldberg <seth.goldberg@oracle.com>
+
+	* grub-core/Makefile.core.def (lzma_decompress): Add missing
+	TARGET_IMG_LDFLAGS.
+
 2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/getroot.c (ESCAPED_PATH_MAX): New define.
