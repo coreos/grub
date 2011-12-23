@@ -179,7 +179,10 @@ post_reed_solomon:
 	pushl	%edi
 	movl	LOCAL (uncompressed_size), %ecx
 	leal	(%edi, %ecx), %ebx
+	/* Don't remove this push: it's an argument.  */
+	push 	%ecx
 	call	_LzmaDecodeA
+	pop	%ecx
 	/* _LzmaDecodeA clears DF, so no need to run cld */
 	popl	%esi
 #endif

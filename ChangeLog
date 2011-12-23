@@ -1,3 +1,8 @@
+2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/boot/i386/pc/startup_raw.S: Add missing argument for
+	_LzmaDecodeA.
+
 2011-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (Internationalisation): New section.
