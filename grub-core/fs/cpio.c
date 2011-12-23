@@ -225,7 +225,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 
       if (!have_longname)
 	{
-	  *name = grub_strdup (hd.name);
+	  *name = grub_strndup (hd.name, sizeof (hd.name));
 	  if (*name == NULL)
 	    return grub_errno;
 	}
