@@ -1,5 +1,36 @@
 2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support odc, newc and bigendian cpio formats.
+
+	* Makefile.util.def (libgrubmods): Add odc.c, newc.c and cpio_be.c.
+	* grub-core/Makefile.core.def (newc): New module.
+	(odc): Likewise.
+	(cpio_be): Likewise.
+	* grub-core/fs/cpio.c (ALIGN_CPIO): New macro.
+	(MAGIC): Likewise.
+	(MAGIC2): Likewise.
+	(head) [MODE_ODC]: Adapt for the format.
+	(head) [MODE_NEWC]: Likewise.
+	(head) [!MODE_*]: Write fields of interest as arrays.
+	(MAGIC_USTAR): Removed.
+	(read_number) [MODE_NEWC]: Change to hex.
+	(read_number) [!MODE_*]: Parse binary arrays.
+	(grub_cpio_find_file): Factor out the code for better structure and
+	always use read_number.
+	(grub_cpio_mount): Use MAGIC and MAGIC2.
+	(grub_cpio_dir): Exit on first hook non-0 return.
+	(grub_cpio_fs) [MODE_ODC]: Set name to odc.
+	(grub_cpio_fs) [MODE_NEWC]: Set name to newc.
+	(GRUB_MOD_INIT) [MODE_ODC]: Set name to odc.
+	(GRUB_MOD_INIT) [MODE_NEWC]: Set name to newc.
+	(GRUB_MOD_FINI) [MODE_ODC]: Set name to odc.
+	(GRUB_MOD_FINI) [MODE_NEWC]: Set name to newc.
+	* grub-core/fs/newc.c: New file.
+	* grub-core/fs/odc.c: Likewise.
+	* grub-core/fs/cpio_be.c: Likewise.
+
+2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix handling of tar numbers occupying the whole field.
 
 	* grub-core/fs/cpio.c (read_number): New function.

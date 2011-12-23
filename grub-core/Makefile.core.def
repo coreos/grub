@@ -1015,6 +1015,21 @@ module = {
 };
 
 module = {
+  name = cpio_be;
+  common = fs/cpio_be.c;
+};
+
+module = {
+  name = newc;
+  common = fs/newc.c;
+};
+
+module = {
+  name = odc;
+  common = fs/odc.c;
+};
+
+module = {
   name = ext2;
   common = fs/ext2.c;
 };
