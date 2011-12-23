@@ -62,7 +62,7 @@ make_device_map (const char *device_map, int floppy_disks)
     fp = fopen (device_map, "w");
 
   if (! fp)
-    grub_util_error ("cannot open %s", device_map);
+    grub_util_error (_("cannot open %s"), device_map);
 
   grub_util_iterate_devices (process_device, floppy_disks);
 
@@ -86,9 +86,9 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try `%s --help' for more information.\n", program_name);
+	     _("Try `%s --help' for more information.\n"), program_name);
   else
-    printf ("\
+    printf (_("\
 Usage: %s [OPTION]...\n\
 \n\
 Generate a device map file automatically.\n\
@@ -101,7 +101,7 @@ Generate a device map file automatically.\n\
   -v, --verbose             print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-", program_name,
+"), program_name,
 	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 
   exit (status);

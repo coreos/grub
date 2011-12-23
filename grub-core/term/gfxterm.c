@@ -131,6 +131,7 @@ static unsigned int bitmap_width;
 static unsigned int bitmap_height;
 static struct grub_video_bitmap *bitmap;
 static int blend_text_bg;
+static grub_video_rgba_color_t default_bg_color = { 0, 0, 0, 0 };
 
 static struct grub_dirty_region dirty_region;
 
@@ -266,7 +267,8 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
 
   grub_video_set_active_render_target (render_target);
 
-  virtual_screen.bg_color_display = grub_video_map_rgba(0, 0, 0, 0);
+  virtual_screen.bg_color_display =
+    grub_video_map_rgba_color (default_bg_color);
 
   /* Clear out text buffer. */
   for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
@@ -338,8 +340,8 @@ grub_gfxterm_fullscreen (void)
   double_redraw = mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
     && !(mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
 
-  /* Make sure screen is black.  */
-  color = grub_video_map_rgb (0, 0, 0);
+  /* Make sure screen is set to the default background color.  */
+  color = grub_video_map_rgba_color (default_bg_color);
   grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
   if (double_redraw)
     {
@@ -1109,7 +1111,10 @@ grub_gfxterm_set_repaint_callback (grub_gfxterm_repaint_callback_t func)
 
 static const struct grub_arg_option background_image_cmd_options[] =
   {
-    {"mode", 'm', 0, "Background image mode.", "stretch|normal",
+    /* TRANSLATORS: note that GRUB will accept only original keywords stretch
+       and normal, not the translated ones. So please put both in translation
+       e.g. stretch=(%STRETCH%)|normal(=%NORMAL).  */
+    {"mode", 'm', 0, N_("Background image mode."), N_("stretch|normal"),
      ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
@@ -1189,7 +1194,6 @@ static grub_err_t
 grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
                                    int argc, char **args)
 {
-  grub_video_rgba_color_t color;
   struct grub_video_render_target *old_target;
 
   if (argc != 1)
@@ -1199,7 +1203,7 @@ grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
   if (grub_video_get_info (NULL) != GRUB_ERR_NONE)
     return grub_errno;
 
-  if (grub_video_parse_color (args[0], &color) != GRUB_ERR_NONE)
+  if (grub_video_parse_color (args[0], &default_bg_color) != GRUB_ERR_NONE)
     return grub_errno;
 
   /* Destroy existing background bitmap if loaded.  */
@@ -1216,9 +1220,10 @@ grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
      compatible with the text layer.  */
   grub_video_get_active_render_target (&old_target);
   grub_video_set_active_render_target (text_layer);
-  virtual_screen.bg_color = grub_video_map_rgba_color (color);
+  virtual_screen.bg_color = grub_video_map_rgba_color (default_bg_color);
   grub_video_set_active_render_target (old_target);
-  virtual_screen.bg_color_display = grub_video_map_rgba_color (color);
+  virtual_screen.bg_color_display =
+    grub_video_map_rgba_color (default_bg_color);
   blend_text_bg = 1;
 
   /* Mark whole screen as dirty.  */

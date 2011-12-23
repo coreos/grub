@@ -56,11 +56,13 @@ typedef enum {
 } grub_loader_preboot_hook_prio_t;
 
 /* Register a preboot hook. */
-void *EXPORT_FUNC(grub_loader_register_preboot_hook) (grub_err_t (*preboot_func) (int noret),
-					 grub_err_t (*preboot_rest_func) (void),
-					 grub_loader_preboot_hook_prio_t prio);
+struct grub_preboot;
+
+struct grub_preboot *EXPORT_FUNC(grub_loader_register_preboot_hook) (grub_err_t (*preboot_func) (int noret),
+								     grub_err_t (*preboot_rest_func) (void),
+								     grub_loader_preboot_hook_prio_t prio);
 
 /* Unregister given preboot hook. */
-void grub_loader_unregister_preboot_hook (void *hnd);
+void EXPORT_FUNC (grub_loader_unregister_preboot_hook) (struct grub_preboot *hnd);
 
 #endif /* ! GRUB_LOADER_HEADER */

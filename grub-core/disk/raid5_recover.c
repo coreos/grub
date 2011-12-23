@@ -23,6 +23,7 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/raid.h>
+#include <grub/crypto.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -57,7 +58,7 @@ grub_raid5_recover (struct grub_raid_array *array, int disknr,
           return err;
         }
 
-      grub_raid_block_xor (buf, buf2, size);
+      grub_crypto_xor (buf, buf2, buf2, size);
     }
 
   grub_free (buf2);

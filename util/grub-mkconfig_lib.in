@@ -63,9 +63,21 @@ is_path_readable_by_grub ()
 
   # ... or if we can't figure out the abstraction module, for example if
   # memberlist fails on an LVM volume group.
-  if ${grub_probe} -t abstraction $path > /dev/null 2>&1 ; then : ; else
+  if abstractions="`"${grub_probe}" -t abstraction "$path"`" 2>&1 ; then 
+      :
+  else
     return 1
   fi
+
+  if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
+      return 0
+  fi
+  
+  for abstraction in $abstractions; do
+      if [ "x$abstraction" = xcryptodisk ]; then
+	  return 1
+      fi
+  done
 
   return 0
 }
@@ -105,12 +117,6 @@ prepare_grub_to_access_device ()
 {
   device="$1"
 
-  # Abstraction modules aren't auto-loaded.
-  abstraction="`"${grub_probe}" --device "${device}" --target=abstraction`"
-  for module in ${abstraction} ; do
-    echo "insmod ${module}"
-  done
-
   partmap="`"${grub_probe}" --device "${device}" --target=partmap`"
   for module in ${partmap} ; do
     case "${module}" in
@@ -121,10 +127,22 @@ prepare_grub_to_access_device ()
     esac
   done
 
+  # Abstraction modules aren't auto-loaded.
+  abstraction="`"${grub_probe}" --device "${device}" --target=abstraction`"
+  for module in ${abstraction} ; do
+    echo "insmod ${module}"
+  done
+
   fs="`"${grub_probe}" --device "${device}" --target=fs`"
   for module in ${fs} ; do
     echo "insmod ${module}"
   done
+
+  if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
+      for uuid in "`"${grub_probe}" --device "${device}" --target=cryptodisk_uuid`"; do
+	  echo "cryptomount -u $uuid"
+      done
+  fi
 
   # If there's a filesystem UUID that GRUB is capable of identifying, use it;
   # otherwise set root as per value in device.map.
@@ -144,7 +162,7 @@ grub_file_is_not_garbage ()
   if test -f "$1" ; then
     case "$1" in
       *.dpkg-*) return 1 ;; # debian dpkg
-      README*)  return 1 ;; # documentation
+      README*|*/README*)  return 1 ;; # documentation
     esac
   else
     return 1
@@ -154,21 +172,21 @@ grub_file_is_not_garbage ()
 
 version_test_numeric ()
 {
-  local a="$1"
-  local cmp="$2"
-  local b="$3"
-  if [ "$a" = "$b" ] ; then
-    case "$cmp" in
+  version_test_numeric_a="$1"
+  version_test_numeric_cmp="$2"
+  version_test_numeric_b="$3"
+  if [ "$version_test_numeric_a" = "$version_test_numeric_b" ] ; then
+    case "$version_test_numeric_cmp" in
       ge|eq|le) return 0 ;;
       gt|lt) return 1 ;;
     esac
   fi
-  if [ "$cmp" = "lt" ] ; then
-    c="$a"
-    a="$b"
-    b="$c"
+  if [ "$version_test_numeric_cmp" = "lt" ] ; then
+    version_test_numeric_c="$version_test_numeric_a"
+    version_test_numeric_a="$version_test_numeric_b"
+    version_test_numeric_b="$version_test_numeric_c"
   fi
-  if (echo "$a" ; echo "$b") | sort -n | head -n 1 | grep -qx "$b" ; then
+  if (echo "$version_test_numeric_a" ; echo "$version_test_numeric_b") | sort -n | head -n 1 | grep -qx "$version_test_numeric_b" ; then
     return 0
   else
     return 1
@@ -177,30 +195,30 @@ version_test_numeric ()
 
 version_test_gt ()
 {
-  local a="`echo "$1" | sed -e "s/[^-]*-//"`"
-  local b="`echo "$2" | sed -e "s/[^-]*-//"`"
-  local cmp=gt
-  if [ "x$b" = "x" ] ; then
+  version_test_gt_a="`echo "$1" | sed -e "s/[^-]*-//"`"
+  version_test_gt_b="`echo "$2" | sed -e "s/[^-]*-//"`"
+  version_test_gt_cmp=gt
+  if [ "x$version_test_gt_b" = "x" ] ; then
     return 0
   fi
-  case "$a:$b" in
+  case "$version_test_gt_a:$version_test_gt_b" in
     *.old:*.old) ;;
-    *.old:*) a="`echo -n "$a" | sed -e 's/\.old$//'`" ; cmp=gt ;;
-    *:*.old) b="`echo -n "$b" | sed -e 's/\.old$//'`" ; cmp=ge ;;
+    *.old:*) version_test_gt_a="`echo -n "$version_test_gt_a" | sed -e 's/\.old$//'`" ; version_test_gt_cmp=gt ;;
+    *:*.old) version_test_gt_b="`echo -n "$version_test_gt_b" | sed -e 's/\.old$//'`" ; version_test_gt_cmp=ge ;;
   esac
-  version_test_numeric "$a" "$cmp" "$b"
+  version_test_numeric "$version_test_gt_a" "$version_test_gt_cmp" "$version_test_gt_b"
   return "$?"
 }
 
 version_find_latest ()
 {
-  local a=""
+  version_find_latest_a=""
   for i in "$@" ; do
-    if version_test_gt "$i" "$a" ; then
-      a="$i"
+    if version_test_gt "$i" "$version_find_latest_a" ; then
+      version_find_latest_a="$i"
     fi
   done
-  echo "$a"
+  echo "$version_find_latest_a"
 }
 
 # One layer of quotation is eaten by "", the second by sed, and the third by
@@ -214,9 +232,9 @@ gettext_quoted () {
 # remaining arguments to printf.  This is a useful abbreviation and tends to
 # be easier to type.
 gettext_printf () {
-  local format="$1"
+  gettext_printf_format="$1"
   shift
-  printf "$(gettext_quoted "$format")" "$@"
+  printf "$(gettext_quoted "$gettext_printf_format")" "$@"
 }
 
 uses_abstraction () {

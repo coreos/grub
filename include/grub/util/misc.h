@@ -47,7 +47,6 @@ void grub_util_write_image_at (const void *img, size_t size, off_t offset,
 
 void sync (void);
 int fsync (int fno);
-void sleep(int s);
 
 grub_int64_t grub_util_get_disk_size (char *name);
 

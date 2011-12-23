@@ -16,15 +16,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_KERNEL_MACHINE_HEADER
-#define GRUB_KERNEL_MACHINE_HEADER	1
+#ifndef GRUB_KERNEL_CPU_HEADER
+#define GRUB_KERNEL_CPU_HEADER	1
 
 #include <grub/symbol.h>
-
-#ifndef ASM_FILE
-
-void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
-
-#endif
 
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */

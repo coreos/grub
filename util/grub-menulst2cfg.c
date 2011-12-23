@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <grub/util/misc.h>
 #include <grub/misc.h>
+#include <grub/i18n.h>
 
 int
 main (int argc, char **argv)
@@ -37,7 +38,7 @@ main (int argc, char **argv)
 
   if (argc >= 2 && argv[1][0] == '-')
     {
-      fprintf (stdout, "Usage: %s [INFILE [OUTFILE]]\n", argv[0]);
+      fprintf (stdout, _("Usage: %s [INFILE [OUTFILE]]\n"), argv[0]);
       return 0;
     }
 
@@ -46,7 +47,7 @@ main (int argc, char **argv)
       in = fopen (argv[1], "r");
       if (!in)
 	{
-	  fprintf (stderr, "Couldn't open %s for reading: %s\n",
+	  fprintf (stderr, _("Couldn't open %s for reading: %s\n"),
 		   argv[1], strerror (errno));
 	  return 1;
 	}
@@ -61,7 +62,7 @@ main (int argc, char **argv)
 	{					
 	  if (in != stdin)
 	    fclose (in);
-	  fprintf (stderr, "Couldn't open %s for writing: %s\n",
+	  fprintf (stderr, _("Couldn't open %s for writing: %s\n"),
 		   argv[2], strerror (errno));
 	  return 1;
 	}

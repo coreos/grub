@@ -125,8 +125,8 @@ static struct grub_term_output grub_serial_term_output =
 
 
 
-static struct grub_serial_port *
-grub_serial_find (char *name)
+struct grub_serial_port *
+grub_serial_find (const char *name)
 {
   struct grub_serial_port *port;
 
@@ -136,7 +136,7 @@ grub_serial_find (char *name)
 
 #ifndef GRUB_MACHINE_EMU
   if (!port && grub_memcmp (name, "port", sizeof ("port") - 1) == 0
-      && grub_isdigit (name [sizeof ("port") - 1]))
+      && grub_isxdigit (name [sizeof ("port") - 1]))
     {
       name = grub_serial_ns8250_add_port (grub_strtoul (&name[sizeof ("port") - 1],
 							0, 16));
@@ -157,7 +157,7 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
   char pname[40];
-  char *name = NULL;
+  const char *name = NULL;
   struct grub_serial_port *port;
   struct grub_serial_config config;
   grub_err_t err;
@@ -239,6 +239,15 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
   return GRUB_ERR_NONE;
 }
 
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+const char loongson_defserial[][6] =
+  {
+    [GRUB_ARCH_MACHINE_YEELOONG] = "com0",
+    [GRUB_ARCH_MACHINE_FULOONG2F]  = "com2",
+    [GRUB_ARCH_MACHINE_FULOONG2E]  = "com1"
+  };
+#endif
+
 grub_err_t
 grub_serial_register (struct grub_serial_port *port)
 {
@@ -301,9 +310,18 @@ grub_serial_register (struct grub_serial_port *port)
   port->term_out = out;
   grub_terminfo_output_register (out, "vt100");
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
-  if (grub_strcmp (port->name, 
-		   (grub_arch_machine == GRUB_ARCH_MACHINE_YEELOONG)
-		   ? "com0" : "com2") == 0)
+  if (grub_strcmp (port->name, loongson_defserial[grub_arch_machine]) == 0)
+    {
+      grub_term_register_input_active ("serial_*", in);
+      grub_term_register_output_active ("serial_*", out);
+    }
+  else
+    {
+      grub_term_register_input_inactive ("serial_*", in);
+      grub_term_register_output_inactive ("serial_*", out);
+    }
+#elif defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+  if (grub_strcmp (port->name, "com0") == 0)
     {
       grub_term_register_input_active ("serial_*", in);
       grub_term_register_output_active ("serial_*", out);

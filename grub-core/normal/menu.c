@@ -79,7 +79,7 @@ grub_menu_get_entry (grub_menu_t menu, int no)
 int
 grub_menu_get_timeout (void)
 {
-  char *val;
+  const char *val;
   int timeout;
 
   val = grub_env_get ("timeout");
@@ -124,7 +124,7 @@ grub_menu_set_timeout (int timeout)
 static int
 get_and_remove_first_entry_number (const char *name)
 {
-  char *val;
+  const char *val;
   char *tail;
   int entry;
 
@@ -232,7 +232,8 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
       grub_env_export ("chosen");
       grub_free (buf);
     }
-  for (ptr = def; *ptr; ptr++)
+
+  for (ptr = def; ptr && *ptr; ptr++)
     {
       if (ptr[0] == '>' && ptr[1] == '>')
 	{
@@ -242,10 +243,12 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
       if (ptr[0] == '>')
 	break;
     }
-  if (ptr[0] && ptr[1])
+
+  if (ptr && ptr[0] && ptr[1])
     grub_env_set ("default", ptr + 1);
   else
     grub_env_unset ("default");
+
   grub_script_execute_sourcecode (entry->sourcecode, entry->argc, entry->args);
 
   if (errs_before != grub_err_printed_errors)
@@ -663,7 +666,6 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
     }
 
   /* Never reach here.  */
-  return -1;
 }
 
 /* Callback invoked immediately before a menu entry is executed.  */

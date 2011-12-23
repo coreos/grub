@@ -245,6 +245,7 @@ draw_menu (list_impl_t self, int num_shown_items)
        visible_index++, menu_index++)
     {
       int is_selected = (menu_index == self->view->selected);
+      struct grub_video_bitmap *icon;
 
       if (is_selected)
         {
@@ -256,8 +257,8 @@ draw_menu (list_impl_t self, int num_shown_items)
                         item_top - sel_toppad);
         }
 
-      struct grub_video_bitmap *icon;
-      if ((icon = get_item_icon (self, menu_index)) != 0)
+      icon = get_item_icon (self, menu_index);
+      if (icon != 0)
         grub_video_blit_bitmap (icon, GRUB_VIDEO_BLIT_BLEND,
                                 sel_leftpad,
                                 item_top + (item_height - self->icon_height) / 2,

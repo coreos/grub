@@ -163,18 +163,6 @@ grub_exit (void)
   for (;;) ;
 }
 
-/* On i386, a firmware-independant grub_reboot() is provided by realmode.S.  */
-#ifndef __i386__
-void
-grub_reboot (void)
-{
-  grub_efi_fini ();
-  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
-              GRUB_EFI_RESET_COLD, GRUB_EFI_SUCCESS, 0, NULL);
-  for (;;) ;
-}
-#endif
-
 grub_err_t
 grub_efi_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
 				  grub_efi_uintn_t descriptor_size,
@@ -218,7 +206,7 @@ grub_get_rtc (void)
 /* Search the mods section from the PE32/PE32+ image. This code uses
    a PE32 header, but should work with PE32+ as well.  */
 grub_addr_t
-grub_arch_modules_addr (void)
+grub_efi_modules_addr (void)
 {
   grub_efi_loaded_image_t *image;
   struct grub_pe32_header *header;
@@ -745,4 +733,52 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 
       dp = (grub_efi_device_path_t *) ((char *) dp + len);
     }
+}
+
+/* Compare device paths.  */
+int
+grub_efi_compare_device_paths (const grub_efi_device_path_t *dp1,
+			       const grub_efi_device_path_t *dp2)
+{
+  if (! dp1 || ! dp2)
+    /* Return non-zero.  */
+    return 1;
+
+  while (1)
+    {
+      grub_efi_uint8_t type1, type2;
+      grub_efi_uint8_t subtype1, subtype2;
+      grub_efi_uint16_t len1, len2;
+      int ret;
+
+      type1 = GRUB_EFI_DEVICE_PATH_TYPE (dp1);
+      type2 = GRUB_EFI_DEVICE_PATH_TYPE (dp2);
+
+      if (type1 != type2)
+	return (int) type2 - (int) type1;
+
+      subtype1 = GRUB_EFI_DEVICE_PATH_SUBTYPE (dp1);
+      subtype2 = GRUB_EFI_DEVICE_PATH_SUBTYPE (dp2);
+
+      if (subtype1 != subtype2)
+	return (int) subtype1 - (int) subtype2;
+
+      len1 = GRUB_EFI_DEVICE_PATH_LENGTH (dp1);
+      len2 = GRUB_EFI_DEVICE_PATH_LENGTH (dp2);
+
+      if (len1 != len2)
+	return (int) len1 - (int) len2;
+
+      ret = grub_memcmp (dp1, dp2, len1);
+      if (ret != 0)
+	return ret;
+
+      if (GRUB_EFI_END_ENTIRE_DEVICE_PATH (dp1))
+	break;
+
+      dp1 = (grub_efi_device_path_t *) ((char *) dp1 + len1);
+      dp2 = (grub_efi_device_path_t *) ((char *) dp2 + len2);
+    }
+
+  return 0;
 }

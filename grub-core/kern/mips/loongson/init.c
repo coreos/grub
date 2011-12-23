@@ -30,11 +30,12 @@
 #include <grub/mips/loongson.h>
 #include <grub/cs5536.h>
 #include <grub/term.h>
-#include <grub/machine/ec.h>
 #include <grub/cpu/memory.h>
+#include <grub/i18n.h>
 
 extern void grub_video_sm712_init (void);
 extern void grub_video_sis315pro_init (void);
+extern void grub_video_radeon_fuloong2e_init (void);
 extern void grub_video_init (void);
 extern void grub_bitmap_init (void);
 extern void grub_font_init (void);
@@ -123,6 +124,23 @@ void
 grub_machine_init (void)
 {
   grub_addr_t modend;
+  grub_uint32_t prid;
+
+  asm volatile ("mfc0 %0, " GRUB_CPU_LOONGSON_COP0_PRID : "=r" (prid));
+
+  switch (prid)
+    {
+      /* Loongson 2E.  */
+    case 0x6302:
+      grub_arch_machine = GRUB_ARCH_MACHINE_FULOONG2E;
+      break;
+      /* Loongson 2F.  */
+    case 0x6303:
+      if (grub_arch_machine != GRUB_ARCH_MACHINE_FULOONG2F
+	  && grub_arch_machine != GRUB_ARCH_MACHINE_YEELOONG)
+	grub_arch_machine = GRUB_ARCH_MACHINE_YEELOONG;
+      break;
+    }
 
   /* FIXME: measure this.  */
   if (grub_arch_busclock == 0)
@@ -170,7 +188,7 @@ grub_machine_init (void)
 	}
       else
 	{
-	  grub_arch_memsize = (totalmem >> 20);
+	  grub_arch_memsize = totalmem;
 	  grub_arch_highmemsize = 0;
 	}
 
@@ -189,6 +207,7 @@ grub_machine_init (void)
   grub_video_init ();
   grub_video_sm712_init ();
   grub_video_sis315pro_init ();
+  grub_video_radeon_fuloong2e_init ();
   grub_bitmap_init ();
   grub_font_init ();
   grub_gfxterm_init ();
@@ -213,7 +232,9 @@ grub_halt (void)
 {
   switch (grub_arch_machine)
     {
-    case GRUB_ARCH_MACHINE_FULOONG:
+    case GRUB_ARCH_MACHINE_FULOONG2E:
+      break;
+    case GRUB_ARCH_MACHINE_FULOONG2F:
       {
 	grub_pci_device_t dev;
 	grub_port_t p;
@@ -234,7 +255,7 @@ grub_halt (void)
       break;
     }
 
-  grub_printf ("Shutdown failed\n");
+  grub_puts_ (N_("Shutdown failed"));
   grub_refresh ();
   while (1);
 }
@@ -245,22 +266,6 @@ grub_exit (void)
   grub_halt ();
 }
 
-void
-grub_reboot (void)
-{
-  grub_write_ec (GRUB_MACHINE_EC_COMMAND_REBOOT);
-
-  grub_millisleep (1500);
-
-  grub_printf ("Reboot failed\n");
-  grub_refresh ();
-  while (1);
-}
-
 extern char _end[];
+grub_addr_t grub_modbase = (grub_addr_t) _end;
 
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return (grub_addr_t) _end;
-}

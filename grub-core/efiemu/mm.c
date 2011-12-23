@@ -201,10 +201,10 @@ efiemu_alloc_requests (void)
 	- (requested_memory[reqorder[i]] % GRUB_EFIEMU_PAGESIZE);
       if (align_overhead == GRUB_EFIEMU_PAGESIZE)
 	align_overhead = 0;
-      curptr = ((grub_uint8_t *)curptr) + align_overhead;
+      curptr = ((grub_uint8_t *) curptr) + align_overhead;
 
       /* Add the region to memory map */
-      grub_efiemu_add_to_mmap (PTR_TO_UINT64 (typestart),
+      grub_efiemu_add_to_mmap ((grub_addr_t) typestart,
 			       curptr - typestart, reqorder[i]);
     }
 
@@ -404,7 +404,8 @@ grub_efiemu_mmap_fill (void)
 					  GRUB_EFI_ACPI_MEMORY_NVS);
 
 	default:
-	  grub_printf ("Unknown memory type %d. Assuming unusable\n", type);
+	  grub_dprintf ("efiemu",
+			"Unknown memory type %d. Assuming unusable\n", type);
 	case GRUB_MEMORY_RESERVED:
 	  return grub_efiemu_add_to_mmap (addr, size,
 					  GRUB_EFI_UNUSABLE_MEMORY);

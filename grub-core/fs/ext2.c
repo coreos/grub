@@ -337,7 +337,7 @@ grub_ext2_blockgroup (struct grub_ext2_data *data, int group,
 }
 
 static struct grub_ext4_extent_header *
-grub_ext4_find_leaf (struct grub_ext2_data *data, char *buf,
+grub_ext4_find_leaf (struct grub_ext2_data *data, grub_properly_aligned_t *buf,
                      struct grub_ext4_extent_header *ext_block,
                      grub_uint32_t fileblock)
 {
@@ -387,7 +387,7 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
   if (grub_le_to_cpu32(inode->flags) & EXT4_EXTENTS_FLAG)
     {
-      char buf[EXT2_BLOCK_SIZE(data)];
+      GRUB_PROPERLY_ALIGNED_ARRAY (buf, EXT2_BLOCK_SIZE(data));
       struct grub_ext4_extent_header *leaf;
       struct grub_ext4_extent *ext;
       int i;

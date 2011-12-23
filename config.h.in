@@ -36,6 +36,10 @@
 #define NEED_ENABLE_EXECUTE_STACK @NEED_ENABLE_EXECUTE_STACK@
 /* Define to 1 if GCC generates calls to __register_frame_info().  */
 #define NEED_REGISTER_FRAME_INFO @NEED_REGISTER_FRAME_INFO@
+/* Define to 1 to enable disk cache statistics.  */
+#define DISK_CACHE_STATS @DISK_CACHE_STATS@
+
+#define RE_ENABLE_I18N 1
 
 #if defined(__i386__)
 #define NESTED_FUNC_ATTR __attribute__ ((__regparm__ (1)))

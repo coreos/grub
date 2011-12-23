@@ -317,7 +317,7 @@ struct grub_udf_partmap
       grub_uint8_t ident[62];
     } type2;
   };
-};
+} __attribute__ ((packed));
 
 struct grub_udf_lvd
 {
@@ -546,8 +546,7 @@ grub_udf_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
     }
 
 fail:
-  if (buf)
-    grub_free (buf);
+  grub_free (buf);
 
   return 0;
 }
@@ -821,7 +820,7 @@ read_string (grub_uint8_t *raw, grub_size_t sz)
       for (i = 0; i < utf16len; i++)
 	utf16[i] = (raw[2 * i + 1] << 8) | raw[2*i + 2];
     }
-  ret = grub_malloc (utf16len * 3 + 1);
+  ret = grub_malloc (utf16len * GRUB_MAX_UTF8_PER_UTF16 + 1);
   if (ret)
     *grub_utf16_to_utf8 ((grub_uint8_t *) ret, utf16, utf16len) = '\0';
   grub_free (utf16);

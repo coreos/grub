@@ -89,6 +89,7 @@ This edition documents version @value{VERSION}.
 * Interface::                   The menu and the command-line
 * Environment::                 GRUB environment variables
 * Commands::                    The list of available builtin commands
+* Internationalisation::        Topics relating to language support
 * Security::                    Authentication and authorisation
 * Supported kernels::           The list of supported kernels
 * Troubleshooting::             Error messages produced by GRUB
@@ -340,11 +341,17 @@ devices, partitions, and files in a directory depending on context.
 @item Support multiple filesystem types
 Support multiple filesystem types transparently, plus a useful explicit
 blocklist notation. The currently supported filesystem types are @dfn{Amiga
-Fast FileSystem (AFFS)}, @dfn{AtheOS fs}, @dfn{BeFS}, @dfn{cpio}, @dfn{Linux
-ext2/ext3/ext4}, @dfn{DOS FAT12/FAT16/FAT32}, @dfn{HFS}, @dfn{HFS+},
-@dfn{ISO9660}, @dfn{JFS}, @dfn{Minix fs}, @dfn{nilfs2}, @dfn{NTFS},
-@dfn{ReiserFS}, @dfn{Amiga Smart FileSystem (SFS)}, @dfn{tar}, @dfn{UDF},
-@dfn{BSD UFS/UFS2}, and @dfn{XFS}. @xref{Filesystem}, for more information.
+Fast FileSystem (AFFS)}, @dfn{AtheOS fs}, @dfn{BeFS},
+@dfn{BtrFS} (including raid0, raid1, raid10, gzip and lzo),
+@dfn{cpio} (little- and big-endian bin, odc and newc variants),
+@dfn{Linux ext2/ext3/ext4}, @dfn{DOS FAT12/FAT16/FAT32}, @dfn{exFAT}, @dfn{HFS},
+@dfn{HFS+}, @dfn{ISO9660} (including Joliet, Rock-ridge and multi-chunk files),
+@dfn{JFS}, @dfn{Minix fs} (versions 1, 2 and 3), @dfn{nilfs2},
+@dfn{NTFS} (including compression), @dfn{ReiserFS}, @dfn{ROMFS},
+@dfn{Amiga Smart FileSystem (SFS)}, @dfn{Squash4}, @dfn{tar}, @dfn{UDF},
+@dfn{BSD UFS/UFS2}, @dfn{XFS}, and @dfn{ZFS} (including lzjb, gzip,
+zle, mirror, stripe, raidz1/2/3 and encryption in AES-CCM and AES-GCM).
+@xref{Filesystem}, for more information.
 
 @item Support automatic decompression
 Can decompress files which were compressed by @command{gzip} or
@@ -784,6 +791,7 @@ magic.
 
 @menu
 * General boot methods::        How to boot OSes with GRUB generally
+* Loopback booting::            Notes on booting from loopbacks
 * OS-specific notes::           Notes on some operating systems
 @end menu
 
@@ -855,6 +863,31 @@ required.  @xref{DOS/Windows}.
 
 Chain-loading is only supported on PC BIOS and EFI platforms.
 
+@node Loopback booting
+@section Loopback booting
+GRUB is able to read from an image (be it one of CD or HDD) stored on
+any of its accessible storages (refer to @pxref{loopback} command).
+However the OS itself should be able to find its root. This usually
+involves running a userspace program running before the real root
+is discovered. This is achieved by GRUB loading a specially made
+small image and passing it as ramdisk to the kernel. This is achieved
+by commands @command{kfreebsd_module}, @command{knetbsd_module_elf},
+@command{kopenbsd_ramdisk}, @command{initrd} (@pxref{initrd}),
+@command{initrd16} (@pxref{initrd}), @command{multiboot_module},
+@command{multiboot2_module} or @command{xnu_ramdisk}
+depending on the loader. Note that for knetbsd the image must be put
+inside miniroot.kmod and the whole miniroot.kmod has to be loaded. In
+kopenbsd payload this is disabled by default. Aditionally behaviour of
+initial ramdisk depends on command line options. Several distributors provide
+the image for this purpose or it's integrated in their standard ramdisk and
+activated by special option. Consult your kernel and distribution manual for
+more details. Other loaders like appleloader, chainloader (BIOS, EFI, coreboot),
+freedos, ntldr and plan9 provide no possibility of loading initial ramdisk and
+as far as author is aware the payloads in question don't support either initial
+ramdisk or discovering loopback boot in other way and as such not bootable this
+way. Please consider alternative boot methods like copying all files
+from the image to actual partition. Consult your OS documentation for
+more details
 
 @node OS-specific notes
 @section Some caveats on OS-specific issues
@@ -1203,7 +1236,8 @@ listed in @file{/boot/grub/video.lst}.
 Set the resolution used on the @samp{gfxterm} graphical terminal.  Note that
 you can only use modes which your graphics card supports via VESA BIOS
 Extensions (VBE), so for example native LCD panel resolutions may not be
-available.  The default is @samp{640x480}.  @xref{gfxmode}.
+available.  The default is @samp{auto}, which tries to select a preferred
+resolution.  @xref{gfxmode}.
 
 @item GRUB_BACKGROUND
 Set a background image for use with the @samp{gfxterm} graphical terminal.
@@ -2202,42 +2236,64 @@ you see the files in a device or use the command @command{search}
 The device syntax is like this:
 
 @example
-@code{(@var{device}[,@var{part-num}][,@var{bsd-subpart-letter}])}
+@code{(@var{device}[,@var{partmap-name1}@var{part-num1}[,@var{partmap-name2}@var{part-num2}[,...]]])}
 @end example
 
-@samp{[]} means the parameter is optional. @var{device} should be
-either @samp{fd} or @samp{hd} followed by a digit, like @samp{fd0}.
-But you can also set @var{device} to a hexadecimal or a decimal number
-which is a BIOS drive number, so the following are equivalent:
+@samp{[]} means the parameter is optional. @var{device} depends on the disk
+driver in use. BIOS and EFI disks use either @samp{fd} or @samp{hd} followed
+by a digit, like @samp{fd0}, or @samp{cd}.
+AHCI, PATA (ata), crypto, USB use the name of driver followed by a number.
+Memdisk and host are limited to one disk and so it's refered just by driver
+name.
+RAID (md), ofdisk (ieee1275), LVM (lv) and arcdisk (arc) use intrinsic name
+of disk prefixed by driver name. Conflicts are solved by suffixing a number
+if necessarry. Commas need to be escaped.
+Loopback uses whatever name specified to @command{loopback} command.
+For crypto and RAID (md) additionally you can use the syntax
+<driver name>uuid/<uuid>
 
 @example
+(fd0)
 (hd0)
-(0x80)
-(128)
+(cd)
+(ahci0)
+(ata0)
+(crypto0)
+(usb0)
+(cryptouuid/123456789abcdef0123456789abcdef0)
+(mduuid/123456789abcdef0123456789abcdef0)
+(lv/system-root)
+(md/myraid)
+(md/0)
+(ieee1275/disk)
+(memdisk)
+(host)
+(myloop)
 @end example
 
 @var{part-num} represents the partition number of @var{device}, starting
-from one for primary partitions and from five for extended partitions,
-and @var{bsd-subpart-letter} represents the BSD disklabel subpartition,
-such as @samp{a} or @samp{e}.
-
-A shortcut for specifying BSD subpartitions is
-@code{(@var{device},@var{bsd-subpart-letter})}, in this case, GRUB
-searches for the first PC partition containing a BSD disklabel, then
-finds the subpartition @var{bsd-subpart-letter}. Here is an example:
-
-@example
-(hd0,a)
-@end example
+from one. @var{partname} is optional but is recommended since disk may have
+several top-level partmaps. Specifying third and later component you can access
+to subpartitions.
 
 The syntax @samp{(hd0)} represents using the entire disk (or the
 MBR when installing GRUB), while the syntax @samp{(hd0,1)}
 represents using the first partition of the disk (or the boot sector
 of the partition when installing GRUB).
 
-If you enabled the network support, the special drive @samp{(pxe)} is
-also available. Before using the network drive, you must initialize the
-network. @xref{Network}, for more information.
+@example
+(hd0,msdos1)
+(hd0,msdos1,msdos5)
+(hd0,msdos1,bsd3)
+(hd0,netbsd1)
+(hd0,gpt1)
+(hd0,1,3)
+@end example
+
+If you enabled the network support, the special drives @samp{(tftp)},
+@samp{(http)} and so on ars also available.
+Before using the network drive, you must initialize the network.
+@xref{Network}, for more information.
 
 If you boot GRUB from a CD-ROM, @samp{(cd)} is available. @xref{Making
 a GRUB bootable CD-ROM}, for details.
@@ -3866,6 +3922,65 @@ Unset the environment variable @var{envvar}.
 
 This command is not yet implemented for GRUB 2, although it is planned.
 
+@node Internationalisation
+@chapter Charset
+GRUB uses UTF-8 internally other than in rendering where some GRUB-specific
+appropriate representation is used. All text files (including config) are
+assumed to be encoded in UTF-8.
+
+@chapter Filesystems
+NTFS, JFS, UDF, HFS+, exFAT, long filesnames in FAT, Joliet part of
+ISO9660 are treated as UTF-16 as per specification. BFS is read as UTF-8,
+again according to specification. BtrFS, cpio, tar, squash4, minix, minix2,
+minix3, ROMFS, ReiserFS, XFS, ext2, ext3, ext4, FAT (short names),
+ISO9660 (plain and RockRidge), nilfs2, UFS1, UFS2 and ZFS are assumed
+to be UTF-8. This might be false on systems configured with legacy charset
+but as long as the charset used is superset of ASCII you should be able to
+access ASCII-named files. And it's recommended to configure your system to use
+UTF-8 to access the filesystem, convmv may help with migration. AFFS and HFS
+never use unicode and GRUB assumes them to be in Latin1 and MacRoman
+respectively. NTFS, HFS+, FAT and exFAT are case-insensitive however no
+attempt is performed at case conversion of international characters so e.g.
+a file named lowercase greek alpha is treated as different from the one named
+as uppercase alpha. Also similar to POSIX systems GRUB make no attempt at check
+of canonical equivalence so a file name u-diaresis is treated as distinct from
+u+combining diaresis. This however means that in order to access file on
+HFS+ its name must be specified in normalisation form D. On ZFS subvolumes
+marked as case insensitive files containing lowercase international characters
+are inaccessible.
+
+@chapter Output terminal
+Firmware output console ``console'' on ARC and IEEE1275 are limited to ASCII.
+BIOS firmware console and VGA text are limited to ASCII and some pseudographics.
+None of above mentioned is appropriate for displaying international and any
+unsupported character is replaced with question mark except pseudographics
+which we attempt to approximate with ASCII. EFI console on the other hand
+nominally supports UTF-16 but actual language coverage depends on firmware and
+may be very limited. The encoding used on serial can be chosen with
+@command{terminfo} as either ASCII, UTF-8 or ``visual UTF-8''. Last one is
+against the specification but results in correct rendering of right-to-left
+on some readers which don't have own bidi implementation. When using gfxterm
+or gfxmenu GRUB itself is responsible for rendering the text. In this case
+GRUB is limited by loaded fonts. If fonts contain all required characters
+then bidirectional text, cursive variants and combining marks other than
+enclosing ones. Ligatures aren't supported though. This should cover
+European, Middle Eastern (if you don't mind lack of la-alef ligature in
+Arabic) and East Asian scripts. Notable unsupported scripts are Brahmic family
+and derived as well as Mongolian and Tifinagh. If you can complete either of
+two lists or, better, propose a patch to improve rendering, please contact
+developper team.
+
+@chapter Input terminal
+Firmware console on BIOS, IEEE1275 and ARC doesn't allow you to enter non-ASCII
+characters. EFI specification allows for such but author is unaware of any
+actual implementations. Serial input is currently limited for latin1 (unlikely
+to change). Own keyboard implementations (at_keyboard and usb_keyboard) can
+support any characters but work on one-char-per-keystroke. So no dead keys or
+advanced input method. Also there is no keymap change hotkey. In practice it
+makes difficult to enter any text using non-Latin alphabet.
+
+@chapter Gettext
+GRUB supports being translated. For this you need to have language *.mo files in $prefix/locale, load gettext module and set ``lang'' variable.
 
 @node Security
 @chapter Authentication and authorisation
@@ -3942,6 +4057,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab BIOS    @tab Coreboot
 @item BIOS chainloading              @tab yes     @tab no (1)
 @item NTLDR                          @tab yes     @tab no (1)
+@item Plan9                          @tab yes     @tab no (1)
 @item Freedos                        @tab yes     @tab no (1)
 @item FreeBSD bootloader             @tab yes     @tab crashes (1)
 @item 32-bit kFreeBSD                @tab yes     @tab crashes (2,6)
@@ -3967,6 +4083,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab Multiboot    @tab Qemu 
 @item BIOS chainloading              @tab no (1)       @tab no (1)
 @item NTLDR                          @tab no (1)       @tab no (1)
+@item Plan9                          @tab no (1)       @tab no (1)
 @item FreeDOS                        @tab no (1)       @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)  @tab crashes (1)
 @item 32-bit kFreeBSD                @tab crashes (6)  @tab crashes (6)
@@ -3992,6 +4109,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab 32-bit EFI    @tab 64-bit EFI
 @item BIOS chainloading              @tab no (1)        @tab no (1)
 @item NTLDR                          @tab no (1)        @tab no (1)
+@item Plan9                          @tab no (1)        @tab no (1)
 @item FreeDOS                        @tab no (1)        @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)   @tab crashes (1)
 @item 32-bit kFreeBSD                @tab headless      @tab headless
@@ -4017,6 +4135,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item                                @tab IEEE1275
 @item BIOS chainloading              @tab no (1)
 @item NTLDR                          @tab no (1)
+@item Plan9                          @tab no (1)
 @item FreeDOS                        @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)
 @item 32-bit kFreeBSD                @tab crashes (6)
@@ -4330,11 +4449,11 @@ how to get the latest version.
 @end quotation
 
 GRUB is available from the GNU alpha archive site
-@uref{ftp://alpha.gnu.org/gnu/grub} or any of its mirrors. The file
+@uref{ftp://ftp.gnu.org/gnu/grub} or any of its mirrors. The file
 will be named grub-version.tar.gz. The current version is
 @value{VERSION}, so the file you should grab is:
 
-@uref{ftp://alpha.gnu.org/gnu/grub/grub-@value{VERSION}.tar.gz}
+@uref{ftp://ftp.gnu.org/gnu/grub/grub-@value{VERSION}.tar.gz}
 
 To unbundle GRUB use the instruction:
 

@@ -33,6 +33,8 @@
 #include <grub/mm.h>
 #include <grub/cpu/relocator.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_dl_t my_mod;
 static struct grub_relocator *rel;
 static grub_uint32_t ebx = 0xffffffff;
@@ -54,7 +56,8 @@ grub_freedos_boot (void)
     .ss = GRUB_FREEDOS_STACK_SEGMENT,
     .sp = GRUB_FREEDOS_STACK_POINTER,
     .ebx = ebx,
-    .edx = 0
+    .edx = 0,
+    .a20 = 1
   };
   grub_video_set_mode ("text", 0, 0);
 

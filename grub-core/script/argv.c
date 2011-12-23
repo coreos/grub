@@ -66,7 +66,8 @@ grub_script_argv_make (struct grub_script_argv *argv, int argc, char **args)
   struct grub_script_argv r = { 0, 0, 0 };
 
   for (i = 0; i < argc; i++)
-    if (grub_script_argv_next (&r) || grub_script_argv_append (&r, args[i]))
+    if (grub_script_argv_next (&r)
+	|| grub_script_argv_append (&r, args[i], grub_strlen (args[i])))
       {
 	grub_script_argv_free (&r);
 	return 1;
@@ -99,23 +100,23 @@ grub_script_argv_next (struct grub_script_argv *argv)
 
 /* Append `s' to the last argument.  */
 int
-grub_script_argv_append (struct grub_script_argv *argv, const char *s)
+grub_script_argv_append (struct grub_script_argv *argv, const char *s,
+			 grub_size_t slen)
 {
-  int a;
-  int b;
+  grub_size_t a;
   char *p = argv->args[argv->argc - 1];
 
   if (! s)
     return 0;
 
   a = p ? grub_strlen (p) : 0;
-  b = grub_strlen (s);
 
-  p = grub_realloc (p, round_up_exp ((a + b + 1) * sizeof (char)));
+  p = grub_realloc (p, round_up_exp ((a + slen + 1) * sizeof (char)));
   if (! p)
     return 1;
 
-  grub_strcpy (p + a, s);
+  grub_memcpy (p + a, s, slen);
+  p[a+slen] = 0;
   argv->args[argv->argc - 1] = p;
 
   return 0;
@@ -123,10 +124,9 @@ grub_script_argv_append (struct grub_script_argv *argv, const char *s)
 
 /* Split `s' and append words as multiple arguments.  */
 int
-grub_script_argv_split_append (struct grub_script_argv *argv, char *s)
+grub_script_argv_split_append (struct grub_script_argv *argv, const char *s)
 {
-  char ch;
-  char *p;
+  const char *p;
   int errors = 0;
 
   if (! s)
@@ -138,10 +138,7 @@ grub_script_argv_split_append (struct grub_script_argv *argv, char *s)
       while (*s && ! grub_isspace (*s))
 	s++;
 
-      ch = *s;
-      *s = '\0';
-      errors += grub_script_argv_append (argv, p);
-      *s = ch;
+      errors += grub_script_argv_append (argv, p, s - p);
 
       while (*s && grub_isspace (*s))
 	s++;

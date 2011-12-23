@@ -24,7 +24,6 @@
 #include <grub/types.h>
 #include <grub/machine/ieee1275.h>
 
-/* Maps a device alias to a pathname.  */
 struct grub_ieee1275_devalias
 {
   char *name;
@@ -65,6 +64,11 @@ struct grub_ieee1275_common_hdr
 typedef grub_uint32_t grub_ieee1275_ihandle_t;
 typedef grub_uint32_t grub_ieee1275_phandle_t;
 
+extern void (*EXPORT_VAR(grub_ieee1275_net_config)) (const char *dev,
+						     char **device,
+						     char **path);
+
+/* Maps a device alias to a pathname.  */
 extern grub_ieee1275_phandle_t EXPORT_VAR(grub_ieee1275_chosen);
 extern grub_ieee1275_ihandle_t EXPORT_VAR(grub_ieee1275_mmu);
 extern int (* EXPORT_VAR(grub_ieee1275_entry_fn)) (void *);
@@ -121,7 +125,7 @@ extern void EXPORT_FUNC(grub_ieee1275_set_flag) (enum grub_ieee1275_flag flag);
 
 
 void EXPORT_FUNC(grub_ieee1275_init) (void);
-int EXPORT_FUNC(grub_ieee1275_finddevice) (char *name,
+int EXPORT_FUNC(grub_ieee1275_finddevice) (const char *name,
 					   grub_ieee1275_phandle_t *phandlep);
 int EXPORT_FUNC(grub_ieee1275_get_property) (grub_ieee1275_phandle_t phandle,
 					     const char *property, void *buf,
@@ -169,7 +173,8 @@ int EXPORT_FUNC(grub_ieee1275_claim) (grub_addr_t addr, grub_size_t size,
 				      unsigned int align, grub_addr_t *result);
 int EXPORT_FUNC(grub_ieee1275_release) (grub_addr_t addr, grub_size_t size);
 int EXPORT_FUNC(grub_ieee1275_set_property) (grub_ieee1275_phandle_t phandle,
-					     const char *propname, void *buf,
+					     const char *propname,
+					     const void *buf,
 					     grub_size_t size,
 					     grub_ssize_t *actual);
 int EXPORT_FUNC(grub_ieee1275_set_color) (grub_ieee1275_ihandle_t ihandle,
@@ -179,10 +184,8 @@ int EXPORT_FUNC(grub_ieee1275_milliseconds) (grub_uint32_t *msecs);
 
 int EXPORT_FUNC(grub_devalias_iterate)
      (int (*hook) (struct grub_ieee1275_devalias *alias));
-int EXPORT_FUNC(grub_children_iterate) (char *devpath,
+int EXPORT_FUNC(grub_children_iterate) (const char *devpath,
      int (*hook) (struct grub_ieee1275_devalias *alias));
-grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate)
-     (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
 int EXPORT_FUNC(grub_claimmap) (grub_addr_t addr, grub_size_t size);
 
 int
@@ -191,11 +194,11 @@ EXPORT_FUNC(grub_ieee1275_map) (grub_addr_t phys, grub_addr_t virt,
 
 char *EXPORT_FUNC(grub_ieee1275_encode_devname) (const char *path);
 char *EXPORT_FUNC(grub_ieee1275_get_filename) (const char *path);
-
 int EXPORT_FUNC(grub_ieee1275_devices_iterate) (int (*hook)
 						(struct grub_ieee1275_devalias *
 						 alias));
-
+char *EXPORT_FUNC(grub_ieee1275_get_aliasdevname) (const char *path);
 char *EXPORT_FUNC(grub_ieee1275_canonicalise_devname) (const char *path);
+char *EXPORT_FUNC(grub_ieee1275_get_device_type) (const char *path);
 
 #endif /* ! GRUB_IEEE1275_HEADER */

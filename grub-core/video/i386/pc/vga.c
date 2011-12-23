@@ -18,8 +18,7 @@
 
 #define grub_video_render_target grub_video_fbrender_target
 
-#include <grub/machine/vga.h>
-#include <grub/machine/int.h>
+#include <grub/i386/pc/int.h>
 #include <grub/machine/console.h>
 #include <grub/cpu/io.h>
 #include <grub/mm.h>
@@ -34,7 +33,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 #define VGA_WIDTH	640
 #define VGA_HEIGHT	350
-#define VGA_MEM		((grub_uint8_t *) GRUB_MEMORY_MACHINE_VGA_ADDR)
+#define VGA_MEM		((grub_uint8_t *) 0xa0000)
 #define PAGE_OFFSET(x)	((x) * (VGA_WIDTH * VGA_HEIGHT / 8))
 
 static unsigned char text_mode;

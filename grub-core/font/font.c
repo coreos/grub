@@ -608,7 +608,7 @@ grub_font_load (const char *filename)
 
   if (!font->name)
     {
-      grub_printf ("Note: Font has no name.\n");
+      grub_dprintf ("font", "Font has no name.\n");
       font->name = grub_strdup ("Unknown");
     }
 

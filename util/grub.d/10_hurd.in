@@ -20,7 +20,8 @@ set -e
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
-. ${libdir}/grub/grub-mkconfig_lib
+datarootdir=@datarootdir@
+. ${libdir}/@PACKAGE@/grub-mkconfig_lib
 
 CLASS="--class gnu --class os"
 

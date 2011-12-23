@@ -26,8 +26,6 @@
 
 #define GRUB_LOONGSON_OHCI_PCIID 0x00351033
 #define GRUB_LOONGSON_EHCI_PCIID 0x00e01033
-#define GRUB_LOONGSON_OHCI_GHOST_FUNCTION 4
-#define GRUB_LOONGSON_EHCI_GHOST_FUNCTION 5
 
 #define GRUB_PCI_NUM_BUS        1
 #define GRUB_PCI_NUM_DEVICES    16
@@ -66,7 +64,7 @@ grub_pci_read (grub_pci_address_t addr)
 {
   GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   return *(volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONFSPACE
-				      | (addr & 0x03ff));
+				      | (addr & 0x07ff));
 }
 
 static inline grub_uint16_t
@@ -74,7 +72,7 @@ grub_pci_read_word (grub_pci_address_t addr)
 {
   GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   return *(volatile grub_uint16_t *) (GRUB_MACHINE_PCI_CONFSPACE
-				      | (addr & 0x03ff));
+				      | (addr & 0x07ff));
 }
 
 static inline grub_uint8_t
@@ -82,7 +80,7 @@ grub_pci_read_byte (grub_pci_address_t addr)
 {
   GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   return *(volatile grub_uint8_t *) (GRUB_MACHINE_PCI_CONFSPACE
-				     | (addr & 0x03ff));
+				     | (addr & 0x07ff));
 }
 
 static inline void
@@ -90,7 +88,7 @@ grub_pci_write (grub_pci_address_t addr, grub_uint32_t data)
 {
   GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   *(volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONFSPACE
-			       | (addr & 0x03ff)) = data;
+			       | (addr & 0x07ff)) = data;
 }
 
 static inline void
@@ -98,7 +96,7 @@ grub_pci_write_word (grub_pci_address_t addr, grub_uint16_t data)
 {
   GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   *(volatile grub_uint16_t *) (GRUB_MACHINE_PCI_CONFSPACE
-			       | (addr & 0x03ff)) = data;
+			       | (addr & 0x07ff)) = data;
 }
 
 static inline void
@@ -106,7 +104,7 @@ grub_pci_write_byte (grub_pci_address_t addr, grub_uint8_t data)
 {
   GRUB_MACHINE_PCI_CONF_CTRL_REG = 1 << ((addr >> 11) & 0xf);
   *(volatile grub_uint8_t *) (GRUB_MACHINE_PCI_CONFSPACE
-			      | (addr & 0x03ff)) = data;
+			      | (addr & 0x07ff)) = data;
 }
 
 volatile void *

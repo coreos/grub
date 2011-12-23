@@ -90,6 +90,9 @@ static const char grub_module_name_##name[] \
 #ifndef ASM_FILE
 #define GRUB_MOD_LICENSE(license)	\
   static char grub_module_license[] __attribute__ ((section (GRUB_MOD_SECTION (module_license)), used)) = "LICENSE=" license;
+#define GRUB_MOD_DEP(name)	\
+static const char grub_module_depend_##name[] \
+ __attribute__((section(GRUB_MOD_SECTION(moddeps)), __used__)) = #name
 #else
 #define GRUB_MOD_LICENSE(license)	\
   .section GRUB_MOD_SECTION(module_license), "a";	\
@@ -133,11 +136,12 @@ struct grub_dl
   Elf_Sym *symtab;
   void (*init) (struct grub_dl *mod);
   void (*fini) (void);
-#ifdef __ia64__
+#if defined (__ia64__) || defined (__powerpc__)
   void *got;
   void *tramp;
 #endif
   void *base;
+  grub_size_t sz;
   struct grub_dl *next;
 };
 typedef struct grub_dl *grub_dl_t;
@@ -173,10 +177,21 @@ void
 grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got);
 
-#ifdef __ia64__
-#define GRUB_ARCH_DL_TRAMP_ALIGN 16
-#define GRUB_ARCH_DL_GOT_ALIGN 16
+#if defined (__ia64__)
+#define GRUB_ARCH_DL_TRAMP_ALIGN GRUB_IA64_DL_TRAMP_ALIGN
+#define GRUB_ARCH_DL_GOT_ALIGN GRUB_IA64_DL_GOT_ALIGN
+#define GRUB_ARCH_DL_TRAMP_SIZE GRUB_IA64_DL_TRAMP_SIZE
 #define grub_arch_dl_get_tramp_got_size grub_ia64_dl_get_tramp_got_size
+#else
+void
+grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
+				 grub_size_t *got);
+#endif
+
+#ifdef __powerpc__
+#define GRUB_ARCH_DL_TRAMP_SIZE 16
+#define GRUB_ARCH_DL_TRAMP_ALIGN 4
+#define GRUB_ARCH_DL_GOT_ALIGN 4
 #endif
 
 #endif

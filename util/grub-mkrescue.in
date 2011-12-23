@@ -31,15 +31,15 @@ pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst 
 
 self=`basename $0`
 
-multiboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-multiboot
-coreboot_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-coreboot
-qemu_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-qemu
-pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc
-efi32_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi
-efi64_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi
+multiboot_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-multiboot"
+coreboot_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-coreboot"
+qemu_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-qemu"
+pc_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc"
+efi32_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi"
+efi64_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi"
 rom_directory=
 override_dir=
-grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
+grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 
 xorriso=xorriso
 
@@ -129,7 +129,7 @@ do
     --xorriso)
 	xorriso=`argument $option "$@"`; shift ;;
     --xorriso=*)
-        xorriso=`echo "${option}/" | sed 's/--xorriso=//'` ;;
+        xorriso=`echo "${option}" | sed 's/--xorriso=//'` ;;
 
     *)
 	source="${source} ${option} $@"; break ;;
@@ -275,7 +275,7 @@ if test -e "${pc_dir}" ; then
 fi
 
 # build multiboot core.img
-make_image "${multiboot_dir}" i386-multiboot "${iso9660_dir}/boot/multiboot.img" "ata at_keyboard"
+make_image "${multiboot_dir}" i386-multiboot "${iso9660_dir}/boot/multiboot.img" "pata ahci at_keyboard"
 
 if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
     efi_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
@@ -296,11 +296,11 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
     grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img"
 fi
 
-make_image "${qemu_dir}" i386-qemu "${iso9660_dir}/boot/qemu.img" "ata at_keyboard"
+make_image "${qemu_dir}" i386-qemu "${iso9660_dir}/boot/qemu.img" "pata at_keyboard"
 if [ -e "${iso9660_dir}/boot/qemu.img" ] && [ -d "${rom_directory}" ]; then
     cp "${iso9660_dir}/boot/qemu.img" "${rom_directory}/qemu.img"
 fi
-make_image "${coreboot_dir}" i386-coreboot "${iso9660_dir}/boot/coreboot.elf" "ata at_keyboard"
+make_image "${coreboot_dir}" i386-coreboot "${iso9660_dir}/boot/coreboot.elf" "pata ahci at_keyboard"
 if [ -e "${iso9660_dir}/boot/coreboot.elf" ] && [ -d "${rom_directory}" ]; then
     cp "${iso9660_dir}/boot/coreboot.elf" "${rom_directory}/coreboot.elf"
 fi

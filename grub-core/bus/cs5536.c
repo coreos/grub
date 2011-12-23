@@ -97,8 +97,6 @@ grub_cs5536_smbus_wait (grub_port_t smbbase)
       if (grub_get_time_ms () > start + 40)
 	return grub_error (GRUB_ERR_IO, "SM stalled");
     }
-
-  return GRUB_ERR_NONE;
 }
 
 grub_err_t
@@ -281,7 +279,7 @@ grub_cs5536_init_geode (grub_pci_device_t dev)
 			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE0
 			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_RTC_ENABLE1);
       break;
-    case GRUB_ARCH_MACHINE_FULOONG:
+    case GRUB_ARCH_MACHINE_FULOONG2F:
       grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_LEG_IO,
 			     GRUB_CS5536_MSR_DIVIL_LEG_IO_UART2_COM3
 			     | GRUB_CS5536_MSR_DIVIL_LEG_IO_UART1_COM1

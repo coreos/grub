@@ -60,7 +60,7 @@ grub_util_device_is_mapped (const char *dev);
 void * EXPORT_FUNC(xmalloc) (grub_size_t size) __attribute__ ((warn_unused_result));
 void * EXPORT_FUNC(xrealloc) (void *ptr, grub_size_t size) __attribute__ ((warn_unused_result));
 char * EXPORT_FUNC(xstrdup) (const char *str) __attribute__ ((warn_unused_result));
-char * EXPORT_FUNC(xasprintf) (const char *fmt, ...) __attribute__ ((warn_unused_result));
+char * EXPORT_FUNC(xasprintf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2))) __attribute__ ((warn_unused_result));
 
 void EXPORT_FUNC(grub_util_warn) (const char *fmt, ...);
 void EXPORT_FUNC(grub_util_info) (const char *fmt, ...);

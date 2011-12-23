@@ -154,6 +154,7 @@ case "$host_os" in
   linux*)			host_kernel=linux ;;
   freebsd* | kfreebsd*-gnu)	host_kernel=kfreebsd ;;
   netbsd*)			host_kernel=netbsd ;;
+  solaris*)			host_kernel=illumos ;;
   cygwin)			host_kernel=windows ;;
 esac
 
@@ -412,21 +413,21 @@ if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
 fi
 
-if test "${target_cpu}-${platform}" = mipsel-loongson; then
-  AC_CACHE_CHECK([whether -march=loongson2f works], [grub_cv_cc_march_loongson2f], [
-    SAVE_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS -march=loongson2f"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-        [grub_cv_cc_march_loongson2f=yes],
-        [grub_cv_cc_march_loongson2f=no])
-    CFLAGS="$SAVE_CFLAGS"
-  ])
+# By default, GCC 4.6 generates .eh_frame sections containing unwind
+# information in some cases where it previously did not. GRUB doesn't need
+# these and they just use up vital space. Restore the old compiler
+# behaviour.
+AC_CACHE_CHECK([whether -fno-asynchronous-unwind-tables works], [grub_cv_cc_fno_asynchronous_unwind_tables], [
+  SAVE_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -fno-dwarf2-cfi-asm"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+      [grub_cv_cc_fno_asynchronous_unwind_tables=yes],
+      [grub_cv_cc_fno_asynchronous_unwind_tables=no])
+  CFLAGS="$SAVE_CFLAGS"
+])
 
-  if test "x$grub_cv_cc_march_loongson2f" = xyes; then
-    TARGET_CFLAGS="$TARGET_CFLAGS -march=loongson2f"
-  else
-    TARGET_CFLAGS="$TARGET_CFLAGS -march=mips3"
-  fi
+if test "x$grub_cv_cc_fno_asynchronous_unwind_tables" = xyes; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-asynchronous-unwind-tables"
 fi
 
 grub_apple_target_cc
@@ -480,6 +481,7 @@ if test "x$target_m32" = x1; then
   # Force 32-bit mode.
   TARGET_CFLAGS="$TARGET_CFLAGS -m32"
   TARGET_CCASFLAGS="$TARGET_CCASFLAGS -m32"
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -m32"
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m32"
   TARGET_MODULE_FORMAT="elf32"
 fi
@@ -488,6 +490,7 @@ if test "x$target_m64" = x1; then
   # Force 64-bit mode.
   TARGET_CFLAGS="$TARGET_CFLAGS -m64"
   TARGET_CCASFLAGS="$TARGET_CCASFLAGS -m64"
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -m64"
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m64"
   TARGET_MODULE_FORMAT="elf64"
 fi
@@ -604,7 +607,7 @@ CFLAGS="$CFLAGS -Wl,--defsym,abort=main"
 fi
 
 # Check for libgcc symbols
-AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x __ia64_trampoline __udivsi3 __umoddi3 __udivdi3 __divsi3 __modsi3 __umodsi3 __moddi3 __divdi3)
+AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x __ia64_trampoline __udivsi3 __umoddi3 __udivdi3 __divsi3 __modsi3 __umodsi3 __moddi3 __divdi3 __ctzdi2 __ctzsi2)
 
 if test "x$TARGET_APPLE_CC" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib"
@@ -716,6 +719,17 @@ AC_ARG_ENABLE([mm-debug],
                              [include memory manager debugging]),
               [AC_DEFINE([MM_DEBUG], [1],
                          [Define to 1 if you enable memory manager debugging.])])
+
+AC_ARG_ENABLE([cache-stats],
+	      AS_HELP_STRING([--enable-cache-stats],
+                             [enable disk cache statistics collection]))
+
+if test x$enable_cache_stats = xyes; then
+  DISK_CACHE_STATS=1
+else
+  DISK_CACHE_STATS=0
+fi
+AC_SUBST([DISK_CACHE_STATS])
 
 AC_ARG_ENABLE([grub-emu-usb],
 	      [AS_HELP_STRING([--enable-grub-emu-usb],
@@ -866,9 +880,43 @@ enable_grub_mkfont=yes
 else
 enable_grub_mkfont=no
 fi
+if test x"$enable_grub_mkfont" = xno && test "x$platform" = xloongson; then
+  AC_MSG_ERROR([loongson port needs grub-mkfont])
+fi
 AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
+
+AC_ARG_ENABLE([grub-mount],
+	      [AS_HELP_STRING([--enable-grub-mount],
+                             [build and install the `grub-mount' utility (default=guessed)])])
+if test x"$enable_grub_mount" = xno ; then
+  grub_mount_excuse="explicitly disabled"
+fi
+
+if test x"$grub_mount_excuse" = x ; then
+  AC_CHECK_LIB([fuse], [fuse_main_real], [],
+               [grub_mount_excuse="need FUSE library"])
+fi
+
+if test x"$grub_mount_excuse" = x ; then
+  # Check for fuse headers.
+  SAVED_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=26"
+  AC_CHECK_HEADERS([fuse/fuse.h], [],
+  	[grub_mount_excuse=["need FUSE headers"]])
+  CPPFLAGS="$SAVED_CPPFLAGS"
+fi
+
+if test x"$enable_grub_mount" = xyes && test x"$grub_mount_excuse" != x ; then
+  AC_MSG_ERROR([grub-mount was explicitly requested but can't be compiled])
+fi
+if test x"$grub_mount_excuse" = x ; then
+enable_grub_mount=yes
+else
+enable_grub_mount=no
+fi
+AC_SUBST([enable_grub_mount])
 
 AC_ARG_ENABLE([device-mapper],
               [AS_HELP_STRING([--enable-device-mapper],
@@ -977,16 +1025,19 @@ AM_CONDITIONAL([COND_HOST_LINUX], [test x$host_kernel = xlinux])
 AM_CONDITIONAL([COND_HOST_NETBSD], [test x$host_kernel = xnetbsd])
 AM_CONDITIONAL([COND_HOST_WINDOWS], [test x$host_kernel = xwindows])
 AM_CONDITIONAL([COND_HOST_KFREEBSD], [test x$host_kernel = xkfreebsd])
+AM_CONDITIONAL([COND_HOST_ILLUMOS], [test x$host_kernel = xillumos])
 
 AM_CONDITIONAL([COND_MAN_PAGES], [test x$cross_compiling = xno -a x$HELP2MAN != x])
 AM_CONDITIONAL([COND_GRUB_EMU_USB], [test x$enable_grub_emu_usb = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_SDL], [test x$enable_grub_emu_sdl = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_PCI], [test x$enable_grub_emu_pci = xyes])
 AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
+AM_CONDITIONAL([COND_GRUB_MOUNT], [test x$enable_grub_mount = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
 AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
 AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
+AM_CONDITIONAL([COND_ENABLE_CACHE_STATS], [test x$DISK_CACHE_STATS = x1])
 
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
 AM_CONDITIONAL([COND_CYGWIN], [test x$host_os = xcygwin])
@@ -1053,6 +1104,11 @@ echo With memory debugging: Yes
 else
 echo With memory debugging: No
 fi
+if [ x"$enable_cache_stats" = xyes ]; then
+echo With disk cache statistics: Yes
+else
+echo With disk cache statistics: No
+fi
 if [ x"$efiemu_excuse" = x ]; then
 echo efiemu runtime: Yes
 else
@@ -1062,6 +1118,11 @@ if [ x"$grub_mkfont_excuse" = x ]; then
 echo grub-mkfont: Yes
 else
 echo grub-mkfont: No "($grub_mkfont_excuse)"
+fi
+if [ x"$grub_mount_excuse" = x ]; then
+echo grub-mount: Yes
+else
+echo grub-mount: No "($grub_mount_excuse)"
 fi
 echo "*******************************************************"
 ]

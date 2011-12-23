@@ -38,13 +38,13 @@ start:
 	bal codestart
 	 nop
 base:	
-	. = _start + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE
+	. = _start + GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE
 compressed_size:
 	.long 0
-	. = _start + GRUB_KERNEL_MACHINE_UNCOMPRESSED_SIZE
+	. = _start + GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE
 uncompressed_size:
 	.long 0
-	. = _start + GRUB_KERNEL_MACHINE_UNCOMPRESSED_ADDR
+	. = _start + GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_ADDR
 uncompressed_addr:
 	.long 0
 codestart:
@@ -54,8 +54,22 @@ codestart:
 	/* Parse arguments. Has to be done before relocation.
 	So need to do it in asm.  */
 #ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
+	lui $t0, %hi (((16 << 20) - 264 + 4) | 0x80000000)
+	lw $t1, %lo (((16 << 20) - 264 + 4) | 0x80000000) ($t0)
+
+	lui $t2, 0x1234
+	ori $t2, 0x5678
+
+	bne $t1, $t2, 1f
+	 nop
+
 	lui $t0, %hi (((16 << 20) - 264) | 0x80000000)
-	lw $s4, %lo (((16 << 20) - 264) | 0x80000000) ($t0)
+	b 2f
+	 lw $s4, %lo (((16 << 20) - 264) | 0x80000000) ($t0)
+	
+1:
+	li $s4, 0
+2:	
 #endif
 
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
@@ -95,7 +109,7 @@ argcont:
 	DO_PARSE (memsizestr, $s4)
 	DO_PARSE (highmemsizestr, $s5)
 	DO_CHECKT1 (pmon_yeeloong_verstr, GRUB_ARCH_MACHINE_YEELOONG)
-	DO_CHECKT1 (pmon_fuloong_verstr, GRUB_ARCH_MACHINE_FULOONG)
+	DO_CHECKT1 (pmon_fuloong2f_verstr, GRUB_ARCH_MACHINE_FULOONG2F)
 2:	
 	b argcont
 	 addiu $t0, $t0, 4	 
@@ -141,11 +155,12 @@ memsizestr:	.asciiz "memsize="
 highmemsizestr:	.asciiz "highmemsize="
 machtype_yeeloong_str1:	.asciiz "machtype=8.9"
 machtype_yeeloong_str2:	.asciiz "machtype=lemote-yeeloong-"
-machtype_fuloong_str:	.asciiz "machtype=lemote-fuloong-"
+machtype_fuloong2f_str:	.asciiz "machtype=lemote-fuloong-2f"
+machtype_fuloong2e_str:	.asciiz "machtype=lemote-fuloong-2e"
 pmon_yeeloong_str:	.asciiz "PMON_VER=LM8"
-pmon_fuloong_str:	.asciiz "PMON_VER=LM6"
+pmon_fuloong2f_str:	.asciiz "PMON_VER=LM6"
 pmon_yeeloong_verstr:	.asciiz "Version=LM8"
-pmon_fuloong_verstr:	.asciiz "Version=LM6"
+pmon_fuloong2f_verstr:	.asciiz "Version=LM6"
 	.p2align 2
 
 argdone:
@@ -159,8 +174,9 @@ argdone:
 	DO_CHECKA1 (machtype_yeeloong_str1, GRUB_ARCH_MACHINE_YEELOONG)
 	DO_CHECKA1 (machtype_yeeloong_str2, GRUB_ARCH_MACHINE_YEELOONG)
 	DO_CHECKA1 (pmon_yeeloong_str, GRUB_ARCH_MACHINE_YEELOONG)
-	DO_CHECKA1 (machtype_fuloong_str, GRUB_ARCH_MACHINE_FULOONG)
-	DO_CHECKA1 (pmon_fuloong_str, GRUB_ARCH_MACHINE_FULOONG)
+	DO_CHECKA1 (machtype_fuloong2f_str, GRUB_ARCH_MACHINE_FULOONG2F)
+	DO_CHECKA1 (machtype_fuloong2e_str, GRUB_ARCH_MACHINE_FULOONG2E)
+	DO_CHECKA1 (pmon_fuloong2f_str, GRUB_ARCH_MACHINE_FULOONG2F)
 	addiu $a0, $a0, -1
 	b argdone
   	 addiu $a1, $a1, 4
@@ -224,9 +240,9 @@ cmdlinedone:
 	subu $a0, $a0, $t0
 	addu $a0, $a0, $s0
 
-	lw $a1, (GRUB_KERNEL_MACHINE_UNCOMPRESSED_ADDR - BASE_ADDR)($s0)
-	lw $a2, (GRUB_KERNEL_MACHINE_COMPRESSED_SIZE - BASE_ADDR)($s0)
-	lw $a3, (GRUB_KERNEL_MACHINE_UNCOMPRESSED_SIZE - BASE_ADDR)($s0)
+	lw $a1, (GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_ADDR - BASE_ADDR)($s0)
+	lw $a2, (GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE - BASE_ADDR)($s0)
+	lw $a3, (GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE - BASE_ADDR)($s0)
 	move $s1, $a1
 
 	/* $a0 contains source compressed address, $a1 is destination,

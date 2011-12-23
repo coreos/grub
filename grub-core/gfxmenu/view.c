@@ -36,6 +36,7 @@
 #include <grub/gfxmenu_view.h>
 #include <grub/gui_string_util.h>
 #include <grub/icon_manager.h>
+#include <grub/i18n.h>
 
 static void
 init_terminal (grub_gfxmenu_view_t view);
@@ -77,7 +78,7 @@ grub_gfxmenu_view_new (const char *theme_path,
   view->desktop_image = 0;
   view->desktop_color = default_bg_color;
   view->terminal_box = grub_gfxmenu_create_box (0, 0);
-  view->title_text = grub_strdup ("GRUB Boot Menu");
+  view->title_text = grub_strdup (_("GRUB Boot Menu"));
   view->progress_message_text = 0;
   view->theme_path = 0;
 
