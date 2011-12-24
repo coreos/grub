@@ -1,3 +1,32 @@
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Account for possible escaped comma in device
+	name.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/ieee1275/ofpath.c (of_path_of_ide): Fix address for secondary
+	channel.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/ieee1275/openfw.c (grub_devalias_iterate): Fix
+	allocation and zero-setting.
+	(grub_ieee1275_get_devname): Check that alias is complete.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/disk.c (grub_disk_read): Fix hook calling for
+	unaligned segments.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Add ieee1275/
+	prefix.
+	(grub_ofdisk_open): Check and discard ieee1275 prefix.
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_encode_devname):
+	Add ieee1275 prefix.
+
 2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (Filesystems): Update.

@@ -245,7 +245,7 @@ of_path_of_ide(char *of_path,
   p = get_basename (sysfs_path);
   sscanf(p, "%d.%d", &chan, &devno);
 
-  ret = __of_path_common(of_path, sysfs_path, device, devno);
+  ret = __of_path_common(of_path, sysfs_path, device, 2 * chan + devno);
 
   free (sysfs_path);
   return ret;

@@ -164,7 +164,7 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 	 strings, so we will add a NULL byte at the end explicitly.  */
       pathlen += 1;
 
-      devpath = grub_malloc (pathlen);
+      devpath = grub_malloc (pathlen + 1);
       if (! devpath)
 	{
 	  grub_free (devtype);
@@ -173,12 +173,15 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 	}
 
       if (grub_ieee1275_get_property (aliases, aliasname, devpath, pathlen,
-				      &actual))
+				      &actual) || actual < 0)
 	{
 	  grub_dprintf ("devalias", "get_property (%s) failed\n", aliasname);
 	  goto nextprop;
 	}
-      devpath [actual] = '\0';
+      if (actual > pathlen)
+	actual = pathlen;
+      devpath[actual] = '\0';
+      devpath[pathlen] = '\0';
 
       if (grub_ieee1275_finddevice (devpath, &dev))
 	{
@@ -294,7 +297,8 @@ grub_ieee1275_get_devname (const char *path)
   int match_alias (struct grub_ieee1275_devalias *curalias)
     {
       /* briQ firmware can change capitalization in /chosen/bootpath.  */
-      if (! grub_strncasecmp (curalias->path, path, pathlen))
+      if (grub_strncasecmp (curalias->path, path, pathlen) == 0
+	  && curalias->path[pathlen] == 0)
         {
 	  newpath = grub_strdup (curalias->name);
 	  return 1;
@@ -446,7 +450,7 @@ grub_ieee1275_encode_devname (const char *path)
 	/* GRUB partition 1 is OF partition 0.  */
 	partno++;
 
-      encoding = grub_xasprintf ("%s,%d", device, partno);
+      encoding = grub_xasprintf ("ieee1275/%s,%d", device, partno);
     }
   else
     encoding = grub_strdup (device);

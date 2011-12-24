@@ -199,10 +199,10 @@ grub_ofdisk_iterate (int (*hook) (const char *name),
 	    continue;
 
 	  {
-	    char buffer[sizeof ("ieee1275/") + grub_strlen (env->shortest)];
+	    char buffer[sizeof ("ieee1275/") + grub_strlen (ent->shortest)];
 	    char *ptr;
 	    ptr = grub_stpcpy (buffer, "ieee1275/");
-	    grub_strcpy (ptr, env->shortest);
+	    grub_strcpy (ptr, ent->shortest);
 	    if (hook (buffer))
 	      return 1;
 	  }
@@ -247,7 +247,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   char prop[64];
   grub_ssize_t actual;
 
-  if (grub_strncmp (devpath, "ieee1275/", sizeof ("ieee1275/") - 1) != 0)
+  if (grub_strncmp (name, "ieee1275/", sizeof ("ieee1275/") - 1) != 0)
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 			 "not IEEE1275 device");
   devpath = compute_dev_path (name + sizeof ("ieee1275/") - 1);
