@@ -1,5 +1,10 @@
 2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/ofpath.c (of_path_of_ide): Fix address for secondary
+	channel.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/openfw.c (grub_devalias_iterate): Fix
 	allocation and zero-setting.
 	(grub_ieee1275_get_devname): Check that alias is complete.
