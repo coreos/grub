@@ -1,5 +1,17 @@
 2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make HFS implementation to use MacRoman.
+
+	* grub-core/fs/hfs.c (MAX_UTF8_PER_MAC_ROMAN): New define.
+	(macroman): New const array.
+	(macroman_to_utf8): New function.
+	(utf8_to_macroman): Likewise.
+	(grub_hfs_find_dir): Use utf8_to_macroman.
+	(grub_hfs_dir): Use macroman_to_utf8.
+	Set case_insensitive.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Filesystems): Add IEEE1275 full-path example.
 
 2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
