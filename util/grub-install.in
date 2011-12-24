@@ -51,6 +51,7 @@ modules=
 install_device=
 no_floppy=
 force_lba=
+recheck=no
 debug=no
 debug_image=
 
@@ -106,6 +107,7 @@ Install GRUB on your drive.
   --no-floppy             do not probe any floppy drive
   --allow-floppy          Make the drive also bootable as floppy 
                           (default for fdX devices). May break on some BIOSes.
+  --recheck               delete device map if it already exists
   --force                 install even if problems are detected
 EOF
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
@@ -217,7 +219,7 @@ do
     --no-floppy)
 	no_floppy="--no-floppy" ;;
     --recheck)
-	    ;;
+	recheck=yes ;;
     --removable)
 	removable=yes ;;
 
@@ -414,6 +416,11 @@ fi
 
 # Create the GRUB directory if it is not present.
 mkdir -p "$grubdir" || exit 1
+
+# If --recheck is specified, remove the device map, if present.
+if test $recheck = yes; then
+    rm -f "$device_map"
+fi
 
 # Create the device map file if it is not present.
 if test -f "$device_map"; then
