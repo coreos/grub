@@ -1,3 +1,11 @@
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Add ieee1275/
+	prefix.
+	(grub_ofdisk_open): Check and discard ieee1275 prefix.
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_encode_devname):
+	Add ieee1275 prefix.
+
 2011-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (Filesystems): Update.
