@@ -1,5 +1,11 @@
 2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/openfw.c (grub_devalias_iterate): Fix
+	allocation and zero-setting.
+	(grub_ieee1275_get_devname): Check that alias is complete.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/disk.c (grub_disk_read): Fix hook calling for
 	unaligned segments.
 
