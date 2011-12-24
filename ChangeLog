@@ -1,5 +1,10 @@
 2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h (WORDS_BIGENDIAN):
+	Restructure to avoid warning.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Account for possible escaped comma in device
 	name.
 
