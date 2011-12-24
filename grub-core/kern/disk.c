@@ -607,12 +607,13 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
       while (l)
 	{
-	  (disk->read_hook) (s, o,
-			     ((l > GRUB_DISK_SECTOR_SIZE)
-			      ? GRUB_DISK_SECTOR_SIZE
-			      : l));
+	  grub_size_t cl;
+	  cl = GRUB_DISK_SECTOR_SIZE - o;
+	  if (cl > l)
+	    cl = l;
+	  (disk->read_hook) (s, o, cl);
 	  s++;
-	  l -= GRUB_DISK_SECTOR_SIZE - o;
+	  l -= cl;
 	  o = 0;
 	}
     }

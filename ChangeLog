@@ -1,5 +1,10 @@
 2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/disk.c (grub_disk_read): Fix hook calling for
+	unaligned segments.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Add ieee1275/
 	prefix.
 	(grub_ofdisk_open): Check and discard ieee1275 prefix.
