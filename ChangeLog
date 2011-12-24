@@ -1,5 +1,10 @@
 2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Account for possible escaped comma in device
+	name.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/ieee1275/ofpath.c (of_path_of_ide): Fix address for secondary
 	channel.
 
