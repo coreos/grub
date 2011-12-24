@@ -1,5 +1,9 @@
 2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Filesystems): Add IEEE1275 full-path example.
+
+2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Integrate hints into autogeneration scripts.
 
 	* docs/grub.texi (Filesystems): Add a hostdisk example.

@@ -2267,6 +2267,7 @@ For crypto and RAID (md) additionally you can use the syntax
 (md/myraid)
 (md/0)
 (ieee1275/disk2)
+(ieee1275//pci@@1f\,0/ide@@d/disk@@2)
 (memdisk)
 (host)
 (myloop)
