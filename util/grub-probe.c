@@ -156,6 +156,7 @@ escape_of_path (const char *orig_path)
 	*d++ = '\\';
       *d++ = c;
     }
+  *d = 0;
 
   free ((char *) orig_path);
 
@@ -350,16 +351,17 @@ probe (const char *path, char *device_name)
 
   if (print == PRINT_HINT_STR)
     {
-      const char *orig_path = grub_util_devname_to_ofpath (device_name);
+      const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
+      const char *orig_path = grub_util_devname_to_ofpath (osdev);
       char *biosname, *bare, *efi;
       const char *map;
 
       if (orig_path)
 	{
 	  char *ofpath = escape_of_path (orig_path);
-	  printf ("--hint-ieee1275=");
+	  printf ("--hint-ieee1275='");
 	  print_full_name (ofpath, dev);
-	  printf (" ");
+	  printf ("' ");
 	  free (ofpath);
 	}
 
@@ -395,9 +397,9 @@ probe (const char *path, char *device_name)
       map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
       if (map)
 	{
-	  printf ("--hint=");
+	  printf ("--hint='");
 	  print_full_name (map, dev);
-	  printf (" ");
+	  printf ("' ");
 	}
       printf ("\n");
 
@@ -435,7 +437,8 @@ probe (const char *path, char *device_name)
     }
   if (print == PRINT_IEEE1275_HINT)
     {
-      const char *orig_path = grub_util_devname_to_ofpath (device_name);
+      const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
+      const char *orig_path = grub_util_devname_to_ofpath (osdev);
       char *ofpath = escape_of_path (orig_path);
       const char *map;
 
