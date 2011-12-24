@@ -85,8 +85,8 @@ trim_newline (char *path)
 
 #define OF_PATH_MAX	256
 
-static void
-find_obppath(char *of_path, const char *sysfs_path_orig)
+static int
+find_obppath (char *of_path, const char *sysfs_path_orig)
 {
   char *sysfs_path, *path;
 
@@ -108,8 +108,14 @@ find_obppath(char *of_path, const char *sysfs_path_orig)
 	{
 	  kill_trailing_dir(sysfs_path);
 	  if (!strcmp(sysfs_path, "/sys"))
-	    grub_util_error(_("'obppath' not found in parent dirs of %s"),
-			    sysfs_path_orig);
+	    {
+	      grub_util_info (_("'obppath' not found in parent dirs of %s,"
+				" no IEEE1275 name discovery"),
+			      sysfs_path_orig);
+	      free (path);
+	      free (sysfs_path);
+	      return 1;
+	    }
 	  continue;
 	}
       memset(of_path, 0, OF_PATH_MAX);
@@ -122,6 +128,7 @@ find_obppath(char *of_path, const char *sysfs_path_orig)
 
   free (path);
   free (sysfs_path);
+  return 0;
 }
 
 static void
@@ -159,14 +166,15 @@ trailing_digits (const char *p)
   return end + 1;
 }
 
-static void
+static int
 __of_path_common(char *of_path, char *sysfs_path,
 		 const char *device, int devno)
 {
   const char *digit_string;
   char disk[64];
 
-  find_obppath(of_path, sysfs_path);
+  if (find_obppath(of_path, sysfs_path))
+    return 1;
 
   digit_string = trailing_digits (device);
   if (*digit_string == '\0')
@@ -181,6 +189,7 @@ __of_path_common(char *of_path, char *sysfs_path,
       sprintf(disk, "/disk@%d:%c", devno, 'a' + (part - 1));
     }
   strcat(of_path, disk);
+  return 0;
 }
 
 static char *
@@ -198,7 +207,7 @@ get_basename(char *p)
   return ret;
 }
 
-static void
+static int
 of_path_of_vdisk(char *of_path,
 		 const char *devname __attribute__((unused)),
 		 const char *device,
@@ -207,18 +216,20 @@ of_path_of_vdisk(char *of_path,
 {
   char *sysfs_path, *p;
   int devno, junk;
+  int ret;
 
   sysfs_path = xmalloc (PATH_MAX);
   block_device_get_sysfs_path_and_link(devicenode,
 				       sysfs_path, PATH_MAX);
   p = get_basename (sysfs_path);
   sscanf(p, "vdc-port-%d-%d", &devno, &junk);
-  __of_path_common(of_path, sysfs_path, device, devno);
+  ret = __of_path_common(of_path, sysfs_path, device, devno);
 
   free (sysfs_path);
+  return ret;
 }
 
-static void
+static int
 of_path_of_ide(char *of_path,
 	       const char *devname __attribute__((unused)), const char *device,
 	       const char *devnode __attribute__((unused)),
@@ -226,6 +237,7 @@ of_path_of_ide(char *of_path,
 {
   char *sysfs_path, *p;
   int chan, devno;
+  int ret;
 
   sysfs_path = xmalloc (PATH_MAX);
   block_device_get_sysfs_path_and_link(devicenode,
@@ -233,9 +245,10 @@ of_path_of_ide(char *of_path,
   p = get_basename (sysfs_path);
   sscanf(p, "%d.%d", &chan, &devno);
 
-  __of_path_common(of_path, sysfs_path, device, 2 * chan + devno);
+  ret = __of_path_common(of_path, sysfs_path, device, 2 * chan + devno);
 
   free (sysfs_path);
+  return ret;
 }
 
 static int
@@ -258,10 +271,13 @@ vendor_is_ATA(const char *path)
 
   close(fd);
 
-  free (buf);
-
   if (!strncmp(buf, "ATA", 3))
-    return 1;
+    {
+      free (buf);
+      return 1;
+    }
+
+  free (buf);
   return 0;
 }
 
@@ -302,7 +318,7 @@ check_sas (char *sysfs_path, int *tgt)
   close (fd);
 }
 
-static void
+static int
 of_path_of_scsi(char *of_path,
 		const char *devname __attribute__((unused)), const char *device,
 		const char *devnode __attribute__((unused)),
@@ -311,6 +327,7 @@ of_path_of_scsi(char *of_path,
   const char *p, *digit_string, *disk_name;
   int host, bus, tgt, lun;
   char *sysfs_path, disk[64];
+  int ret;
 
   sysfs_path = xmalloc (PATH_MAX);
 
@@ -322,13 +339,15 @@ of_path_of_scsi(char *of_path,
 
   if (vendor_is_ATA(sysfs_path))
     {
-      __of_path_common(of_path, sysfs_path, device, tgt);
+      ret = __of_path_common(of_path, sysfs_path, device, tgt);
       free (sysfs_path);
-      return;
+      return ret;
     }
 
-  find_obppath(of_path, sysfs_path);
+  ret = find_obppath(of_path, sysfs_path);
   free (sysfs_path);
+  if (ret)
+    return 1;
 
   if (strstr (of_path, "qlc"))
     strcat (of_path, "/fp@0,0");
@@ -351,6 +370,7 @@ of_path_of_scsi(char *of_path,
       sprintf(disk, "/%s@%x,%d:%c", disk_name, tgt, lun, 'a' + (part - 1));
     }
   strcat(of_path, disk);
+  return 0;
 }
 
 static char *
@@ -374,6 +394,7 @@ char *
 grub_util_devname_to_ofpath (const char *devname)
 {
   char *name_buf, *device, *devnode, *devicenode, *ofpath;
+  int ret;
 
   name_buf = xmalloc (PATH_MAX);
   name_buf = realpath (devname, name_buf);
@@ -387,24 +408,36 @@ grub_util_devname_to_ofpath (const char *devname)
   ofpath = xmalloc (OF_PATH_MAX);
 
   if (device[0] == 'h' && device[1] == 'd')
-    of_path_of_ide(ofpath, name_buf, device, devnode, devicenode);
+    ret = of_path_of_ide(ofpath, name_buf, device, devnode, devicenode);
   else if (device[0] == 's'
 	   && (device[1] == 'd' || device[1] == 'r'))
-    of_path_of_scsi(ofpath, name_buf, device, devnode, devicenode);
+    ret = of_path_of_scsi(ofpath, name_buf, device, devnode, devicenode);
   else if (device[0] == 'v' && device[1] == 'd' && device[2] == 'i'
 	   && device[3] == 's' && device[4] == 'k')
-    of_path_of_vdisk(ofpath, name_buf, device, devnode, devicenode);
+    ret = of_path_of_vdisk(ofpath, name_buf, device, devnode, devicenode);
   else if (device[0] == 'f' && device[1] == 'd'
 	   && device[2] == '0' && device[3] == '\0')
     /* All the models I've seen have a devalias "floppy".
        New models have no floppy at all. */
-    strcpy (ofpath, "floppy");
+    {
+      strcpy (ofpath, "floppy");
+      ret = 0;
+    }
   else
-    grub_util_error (_("unknown device type %s\n"), device);
+    {
+      grub_util_warn (_("unknown device type %s\n"), device);
+      return NULL;
+    }
 
   free (devnode);
   free (devicenode);
   free (name_buf);
+
+  if (ret)
+    {
+      free (ofpath);
+      return NULL;
+    }
 
   return ofpath;
 }

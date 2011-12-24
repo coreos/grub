@@ -723,6 +723,8 @@ GRUB_MOD_INIT (tar)
 GRUB_MOD_INIT (odc)
 #elif defined (MODE_NEWC)
 GRUB_MOD_INIT (newc)
+#elif defined (MODE_BIGENDIAN)
+GRUB_MOD_INIT (cpio_be)
 #else
 GRUB_MOD_INIT (cpio)
 #endif
@@ -737,6 +739,8 @@ GRUB_MOD_FINI (tar)
 GRUB_MOD_FINI (odc)
 #elif defined (MODE_NEWC)
 GRUB_MOD_FINI (newc)
+#elif defined (MODE_BIGENDIAN)
+GRUB_MOD_FINI (cpio_be)
 #else
 GRUB_MOD_FINI (cpio)
 #endif

@@ -2249,8 +2249,9 @@ RAID (md), ofdisk (ieee1275), LVM (lv) and arcdisk (arc) use intrinsic name
 of disk prefixed by driver name. Conflicts are solved by suffixing a number
 if necessarry. Commas need to be escaped.
 Loopback uses whatever name specified to @command{loopback} command.
+Hostdisk uses names specified in device.map or hostdisk/<OS NAME>.
 For crypto and RAID (md) additionally you can use the syntax
-<driver name>uuid/<uuid>
+<driver name>uuid/<uuid>.
 
 @example
 (fd0)
@@ -2265,10 +2266,11 @@ For crypto and RAID (md) additionally you can use the syntax
 (lv/system-root)
 (md/myraid)
 (md/0)
-(ieee1275/disk)
+(ieee1275/disk2)
 (memdisk)
 (host)
 (myloop)
+(hostdisk//dev/sda)
 @end example
 
 @var{part-num} represents the partition number of @var{device}, starting

@@ -36,7 +36,6 @@ grub_mkconfig_dir=${sysconfdir}/grub.d
 
 self=`basename $0`
 
-grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed "${transform}"`
 grub_probe=${sbindir}/`echo grub-probe | sed "${transform}"`
 grub_script_check="${bindir}/`echo grub-script-check | sed "${transform}"`"
 
@@ -118,14 +117,6 @@ if [ "$EUID" != 0 ] ; then
   fi
 fi
 
-set $grub_mkdevicemap dummy
-if test -f "$1"; then
-    :
-else
-    echo "$1: Not found." 1>&2
-    exit 1
-fi
-
 set $grub_probe dummy
 if test -f "$1"; then
     :
@@ -135,10 +126,6 @@ else
 fi
 
 mkdir -p ${GRUB_PREFIX}
-
-if test -e ${GRUB_PREFIX}/device.map ; then : ; else
-  ${grub_mkdevicemap}
-fi
 
 # Device containing our userland.  Typically used for root= parameter.
 GRUB_DEVICE="`${grub_probe} --target=device /`"

@@ -146,9 +146,14 @@ prepare_grub_to_access_device ()
 
   # If there's a filesystem UUID that GRUB is capable of identifying, use it;
   # otherwise set root as per value in device.map.
-  echo "set root='`"${grub_probe}" --device "${device}" --target=drive`'"
+  echo "set root='`"${grub_probe}" --device "${device}" --target=compatibility_hint`'"
   if fs_uuid="`"${grub_probe}" --device "${device}" --target=fs_uuid 2> /dev/null`" ; then
-    echo "search --no-floppy --fs-uuid --set=root ${fs_uuid}"
+    hints="`"${grub_probe}" --device "${device}" --target=hints_string 2> /dev/null`"
+    echo "if [ x\$feature_platform_search_hint = xy ]; then"
+    echo "  search --no-floppy --fs-uuid --set=root ${hints} ${fs_uuid}"
+    echo "else"
+    echo "  search --no-floppy --fs-uuid --set=root ${fs_uuid}"
+    echo "fi"
   fi
 }
 
