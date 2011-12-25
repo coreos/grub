@@ -107,7 +107,9 @@ static grub_ssize_t
 grub_bufio_read (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_size_t res = 0;
+  grub_off_t next_buf;
   grub_bufio_t bufio = file->data;
+  grub_ssize_t really_read;
 
   if (file->size == GRUB_FILE_SIZE_UNKNOWN)
     file->size = bufio->file->size;
@@ -130,22 +132,19 @@ grub_bufio_read (grub_file_t file, char *buf, grub_size_t len)
 
       buf += n;
     }
-  if (! len)
+  if (len == 0)
     return res;
 
   /* Need to read some more.  */
-  bufio->buffer_at = grub_divmod64 (file->offset + res + len, bufio->block_size,
-				    0) * bufio->block_size;
-
+  next_buf = (file->offset + res + len - 1) & ~((grub_off_t) bufio->block_size - 1);
   /* Now read between file->offset + res and bufio->buffer_at.  */
-  if (file->offset + res < bufio->buffer_at)
+  if (file->offset + res < next_buf)
     {
       grub_size_t read_now;
-      grub_ssize_t really_read;
-      read_now = bufio->buffer_at - (file->offset + res);
+      read_now = next_buf - (file->offset + res);
       grub_file_seek (bufio->file, file->offset + res);
       really_read = grub_file_read (bufio->file, buf, read_now);
-      if (grub_errno)
+      if (really_read < 0)
 	return -1;
       if (file->size == GRUB_FILE_SIZE_UNKNOWN)
 	file->size = bufio->file->size;
@@ -168,24 +167,21 @@ grub_bufio_read (grub_file_t file, char *buf, grub_size_t len)
     }
 
   /* Read into buffer.  */
-  grub_file_seek (bufio->file, bufio->buffer_at);
-  bufio->buffer_len = grub_file_read (bufio->file, bufio->buffer,
-				      bufio->block_size);
-  if (grub_errno)
+  grub_file_seek (bufio->file, next_buf);
+  really_read = grub_file_read (bufio->file, bufio->buffer,
+				bufio->block_size);
+  if (really_read < 0)
     return -1;
+  bufio->buffer_at = next_buf;
+  bufio->buffer_len = really_read;
+
   if (file->size == GRUB_FILE_SIZE_UNKNOWN)
     file->size = bufio->file->size;
 
-  if (len < bufio->buffer_len)
-    {
-      grub_memcpy (buf, &bufio->buffer[0], len);
-      res += len;
-    }
-  else
-    {
-      grub_memcpy (buf, &bufio->buffer[0], bufio->buffer_len);
-      res += bufio->buffer_len;
-    }
+  if (len > bufio->buffer_len)
+    len = bufio->buffer_len;
+  grub_memcpy (buf, &bufio->buffer[file->offset + res - next_buf], len);
+  res += len;
 
   return res;
 }

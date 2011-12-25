@@ -1,5 +1,9 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/io/bufio.c (grub_bufio_read): Fix handling of corner cases.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Filesystems): Mention AFS.
 
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
