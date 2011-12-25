@@ -367,9 +367,9 @@ unpack_join (void)
       grub_errno = GRUB_ERR_NONE;
       return;
     }
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    for (i = cur->start; i <= cur->end
-	     && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    for (i = cur->start; i < cur->start + (unsigned) cur->len
+	   && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
       join_types[i] = cur->join_type;
 }
 
@@ -387,9 +387,9 @@ unpack_bidi (void)
       grub_errno = GRUB_ERR_NONE;
       return;
     }
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    for (i = cur->start; i <= cur->end
-	     && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    for (i = cur->start; i < cur->start + (unsigned) cur->len
+	   && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
       if (cur->bidi_mirror)
 	bidi_types[i] = cur->bidi_type | 0x80;
       else
@@ -407,8 +407,8 @@ get_bidi_type (grub_uint32_t c)
   if (bidi_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
     return bidi_types[c] & 0x7f;
 
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    if (cur->start <= c && c < cur->start + (unsigned) cur->len)
       return cur->bidi_type;
 
   return GRUB_BIDI_TYPE_L;
@@ -425,8 +425,8 @@ get_join_type (grub_uint32_t c)
   if (join_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
     return join_types[c];
 
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    if (cur->start <= c && c < cur->start + (unsigned) cur->len)
       return cur->join_type;
 
   return GRUB_JOIN_TYPE_NONJOINING;
@@ -443,8 +443,8 @@ is_mirrored (grub_uint32_t c)
   if (bidi_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
     return !!(bidi_types[c] & 0x80);
 
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    if (cur->start <= c && c < cur->start + (unsigned) cur->len)
       return cur->bidi_mirror;
 
   return 0;
@@ -461,8 +461,8 @@ grub_unicode_get_comb_type (grub_uint32_t c)
       unsigned i;
       comb_types = grub_zalloc (GRUB_UNICODE_MAX_CACHED_CHAR);
       if (comb_types)
-	for (cur = grub_unicode_compact; cur->end; cur++)
-	  for (i = cur->start; i <= cur->end
+	for (cur = grub_unicode_compact; cur->len; cur++)
+	  for (i = cur->start; i < cur->start + (unsigned) cur->len
 		 && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
 	    comb_types[i] = cur->comb_type;
       else
@@ -472,8 +472,8 @@ grub_unicode_get_comb_type (grub_uint32_t c)
   if (comb_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
     return comb_types[c];
 
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    if (cur->start <= c && c < cur->start + (unsigned) cur->len)
       return cur->comb_type;
 
   return GRUB_UNICODE_COMB_NONE;

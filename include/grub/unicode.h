@@ -31,12 +31,12 @@ struct grub_unicode_bidi_pair
 
 struct grub_unicode_compact_range
 {
-  grub_uint32_t start:21;
-  grub_uint32_t end:21;
-  grub_uint8_t bidi_type:5;
-  grub_uint8_t comb_type;
-  grub_uint8_t bidi_mirror:1;
-  grub_uint8_t join_type:3;
+  unsigned start:21;
+  unsigned len:9;
+  unsigned bidi_type:5;
+  unsigned comb_type:8;
+  unsigned bidi_mirror:1;
+  unsigned join_type:3;
 } __attribute__ ((packed));
 
 /* Old-style Arabic shaping. Used for "visual UTF-8" and
