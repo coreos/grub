@@ -1,5 +1,9 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* unicode: Import Unicode 6.0 data.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/gfxterm.c (grub_gfxterm_putchar): Don't set values
 	outside of range.
 
