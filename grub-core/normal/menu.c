@@ -387,7 +387,7 @@ menu_init (int entry, grub_menu_t menu, int nested)
     grub_err_t err;
 
     if (grub_strcmp (term->name, "gfxterm") == 0 && gfxmenu)
-      break;
+      continue;
 
     err = grub_menu_try_text (term, entry, menu, nested);
     if(!err)
