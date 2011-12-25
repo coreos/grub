@@ -480,12 +480,18 @@ grub_minix_mount (grub_disk_t disk)
   data->disk = disk;
   data->linknest = 0;
 #ifdef MODE_MINIX3
-  if ((grub_le_to_cpu16 (data->sblock.block_size)
-       & (grub_le_to_cpu16 (data->sblock.block_size) - 1))
-      || grub_le_to_cpu16 (data->sblock.block_size) == 0)
-    goto fail;
-  for (data->log_block_size = 0; (1 << data->log_block_size)
-	 < grub_le_to_cpu16 (data->sblock.block_size); data->log_block_size++);
+  /* These tests are endian-independent. No need to byteswap.  */
+  if (data->sblock.block_size == 0xffff)
+    data->log_block_size = 10;
+  else
+    {
+      if ((data->sblock.block_size & (data->sblock.block_size - 1))
+	  || data->sblock.block_size == 0)
+	goto fail;
+      for (data->log_block_size = 0; (1 << data->log_block_size)
+	     < grub_le_to_cpu16 (data->sblock.block_size);
+	   data->log_block_size++);
+    }
 #else
   data->log_block_size = 10;
 #endif

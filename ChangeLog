@@ -1,5 +1,11 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/minix.c (grub_minix_mount) [MODE_MINIX3]: Treat 0xffff
+	as 1024 in block size field. Found on one of my test images.
+	Small optimisation while on it.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Filesystems): Mention SFS as Latin1 filesystem.
 	* grub-core/fs/sfs.c (grub_sfs_mount): Fix a memory leak while on it.
 	(grub_sfs_iterate_dir): Convert Latin1 to UTF8. Stylistic and
