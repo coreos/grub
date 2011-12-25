@@ -526,6 +526,7 @@ grub_affs_label (grub_device_t device, char **label)
   data = grub_affs_mount (disk);
   if (data)
     {
+      grub_size_t len;
       /* The rootblock maps quite well on a file header block, it's
 	 something we can use here.  */
       grub_disk_read (data->disk, grub_be_to_cpu32 (data->bblock.rootblock),
@@ -535,7 +536,10 @@ grub_affs_label (grub_device_t device, char **label)
       if (grub_errno)
 	return 0;
 
-      *label = grub_strndup ((char *) (file.name), file.namelen);
+      len = grub_min (file.namelen, sizeof (file.name));
+      *label = grub_malloc (len * GRUB_MAX_UTF8_PER_LATIN1 + 1);
+      if (*label)
+	*grub_latin1_to_utf8 ((grub_uint8_t *) *label, file.name, len) = '\0';
     }
   else
     *label = 0;

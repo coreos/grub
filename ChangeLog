@@ -1,5 +1,9 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/affs.c (grub_affs_label): Interpret label as latin1.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu.c (menu_init): Don't stop menu init at gfxterm.
 
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
