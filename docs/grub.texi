@@ -3932,7 +3932,7 @@ appropriate representation is used. All text files (including config) are
 assumed to be encoded in UTF-8.
 
 @chapter Filesystems
-NTFS, JFS, UDF, HFS+, exFAT, long filesnames in FAT, Joliet part of
+NTFS, JFS, UDF, HFS+, exFAT, long filenames in FAT, Joliet part of
 ISO9660 are treated as UTF-16 as per specification. BFS is read as UTF-8,
 again according to specification. BtrFS, cpio, tar, squash4, minix, minix2,
 minix3, ROMFS, ReiserFS, XFS, ext2, ext3, ext4, FAT (short names),
@@ -3942,15 +3942,20 @@ but as long as the charset used is superset of ASCII you should be able to
 access ASCII-named files. And it's recommended to configure your system to use
 UTF-8 to access the filesystem, convmv may help with migration. AFFS and HFS
 never use unicode and GRUB assumes them to be in Latin1 and MacRoman
-respectively. NTFS, HFS+, FAT and exFAT are case-insensitive however no
-attempt is performed at case conversion of international characters so e.g.
-a file named lowercase greek alpha is treated as different from the one named
-as uppercase alpha. Also similar to POSIX systems GRUB make no attempt at check
-of canonical equivalence so a file name u-diaresis is treated as distinct from
-u+combining diaresis. This however means that in order to access file on
-HFS+ its name must be specified in normalisation form D. On ZFS subvolumes
-marked as case insensitive files containing lowercase international characters
-are inaccessible.
+respectively. GRUB handles filesystem case-insensitivity however no attempt
+is performed at case conversion of international characters so e.g. a file
+named lowercase greek alpha is treated as different from the one named
+as uppercase alpha. The filesystems in questions are NTFS (except POSIX
+namespace), HFS+ (by default), FAT, exFAT
+and ZFS (configurable on per-subvolume basis by property ``casesensitivity'',
+default sensitive). On ZFS subvolumes marked as case insensitive files
+containing lowercase international characters are inaccessible.
+Also like all supported filesystems except HFS+ and ZFS (configurable on
+per-subvolume basis by property ``normalization'', default none) GRUB makes
+no attempt at check of canonical equivalence so a file name u-diaresis is
+treated as distinct from u+combining diaresis. This however means that in
+order to access file on HFS+ its name must be specified in normalisation form D.
+On normalized ZFS subvolumes filenames out of normalisation are inaccessible.
 
 @chapter Output terminal
 Firmware output console ``console'' on ARC and IEEE1275 are limited to ASCII.
@@ -3984,6 +3989,17 @@ makes difficult to enter any text using non-Latin alphabet.
 
 @chapter Gettext
 GRUB supports being translated. For this you need to have language *.mo files in $prefix/locale, load gettext module and set ``lang'' variable.
+
+@chapter Regexp
+Regexps work on unicode characters, however no attempt at checking cannonical
+equivalence has been made. Moreover the classes like [:alpha:] match only
+ASCII subset.
+
+@chapter Other
+IEEE1275 aliases are matched case-insensitively except non-ASCII which is
+matched as binary. Similar behaviour is for matching OSBundleRequired.
+Since IEEE1275 aliases and OSBundleRequired don't contain any non-ASCII it
+should never be a problem in practice.
 
 @node Security
 @chapter Authentication and authorisation

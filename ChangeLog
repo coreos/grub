@@ -1,6 +1,12 @@
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Filesystems): Clarify restrictions.
+	(Regexp): Mention non-Unicode regexp behaviour.
+	(Other): Mention non-Unicode matching behaviour.
+
 2011-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	Make HFS implementation to use MacRoman.
+	Make HFS implementation use MacRoman.
 
 	* grub-core/fs/hfs.c (MAX_UTF8_PER_MAC_ROMAN): New define.
 	(macroman): New const array.
