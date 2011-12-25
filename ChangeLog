@@ -1,5 +1,13 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/charset.c (grub_ucs4_to_utf8): Small stylistic fix.
+	(grub_bidi_line_logical_to_visual): Skip tags. They are deprecated.
+	* include/grub/unicode.h (GRUB_UNICODE_TAG_START): New enum value.
+	(GRUB_UNICODE_TAG_END): Likewise.
+	(GRUB_UNICODE_LAST_VALID): Likewise.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/unicode.h (grub_unicode_compact_range): Replace end with
 	len and make it smaller. All users updated.
 	* util/import_unicode.py: Put length and not end character.

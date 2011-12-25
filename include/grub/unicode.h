@@ -206,8 +206,11 @@ enum
     GRUB_UNICODE_BLACK_LEFT_TRIANGLE       = 0x25c4,
     GRUB_UNICODE_VARIATION_SELECTOR_1      = 0xfe00,
     GRUB_UNICODE_VARIATION_SELECTOR_16     = 0xfe0f,
+    GRUB_UNICODE_TAG_START                 = 0xe0000,
+    GRUB_UNICODE_TAG_END                   = 0xe007f,
     GRUB_UNICODE_VARIATION_SELECTOR_17     = 0xe0100,
-    GRUB_UNICODE_VARIATION_SELECTOR_256    = 0xe01ef
+    GRUB_UNICODE_VARIATION_SELECTOR_256    = 0xe01ef,
+    GRUB_UNICODE_LAST_VALID                = 0x10ffff
   };
 
 extern struct grub_unicode_compact_range grub_unicode_compact[];

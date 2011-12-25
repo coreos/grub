@@ -213,8 +213,7 @@ grub_ucs4_to_utf8 (const grub_uint32_t *src, grub_size_t size,
     {
       grub_uint32_t code = *src++;
       grub_ssize_t s;
-      s = grub_encode_utf8_character (dest, destend,
-				      code);
+      s = grub_encode_utf8_character (dest, destend, code);
       if (s == -2)
 	break;
       if (s == -1)
@@ -905,6 +904,10 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 	    lptr++;
 	    continue;
 	  }
+
+	/* The tags: deprecated, never used.  */
+	if (*lptr >= GRUB_UNICODE_TAG_START && *lptr <= GRUB_UNICODE_TAG_END)
+	  continue;
 
 	p = grub_unicode_aglomerate_comb (lptr, logical + logical_len - lptr, 
 					  &visual[visual_len]);
