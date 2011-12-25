@@ -1,6 +1,11 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	Avoid cutting in the middle of UTF-8 string.
+	* grub-core/term/gfxterm.c (grub_gfxterm_putchar): Don't set values
+	outside of range.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Avoid cutting in the middle of UTF-8 character.
 
 	* include/grub/charset.h (grub_getend): New function.
 	* grub-core/script/function.c (grub_script_function_find): Use

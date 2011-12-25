@@ -893,7 +893,9 @@ grub_gfxterm_putchar (struct grub_term_output *term,
         {
           unsigned i;
 
-          for (i = 1; i < char_width; i++)
+          for (i = 1; i < char_width && p + i < 
+		 virtual_screen.text_buffer + virtual_screen.columns
+		 * virtual_screen.rows; i++)
             {
 	      grub_free (p[i].code);
               p[i].code = grub_unicode_glyph_from_code (' ');
