@@ -1,5 +1,11 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/hfs.c (grub_hfs_dir): Cap keylen to actually available
+	space to avoid overflows.
+	(grub_hfs_label): Convert from macroman to UTF-8.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/affs.c (grub_affs_label): Interpret label as latin1.
 
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
