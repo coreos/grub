@@ -1,5 +1,14 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid cutting in the middle of UTF-8 string.
+
+	* include/grub/charset.h (grub_getend): New function.
+	* grub-core/script/function.c (grub_script_function_find): Use
+	grub_getend.
+	* grub-core/normal/completion.c (add_completion): Likewise.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/charset.c (grub_ucs4_to_utf8): Small stylistic fix.
 	(grub_bidi_line_logical_to_visual): Skip tags. They are deprecated.
 	* include/grub/unicode.h (GRUB_UNICODE_TAG_START): New enum value.

@@ -26,6 +26,7 @@
 #include <grub/file.h>
 #include <grub/parser.h>
 #include <grub/extcmd.h>
+#include <grub/charset.h>
 
 /* The current word.  */
 static const char *current_word;
@@ -86,6 +87,7 @@ add_completion (const char *completion, const char *extra,
 		s++;
 		t++;
 	      }
+	    s = match + grub_getend (match, s);
 
 	    *s = '\0';
 	  }

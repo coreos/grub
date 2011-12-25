@@ -49,6 +49,32 @@ grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 		    const grub_uint8_t *src, grub_size_t srcsize,
 		    const grub_uint8_t **srcend);
 
+/* Determine the last position where the UTF-8 string [beg, end) can
+   be safely cut. */
+static inline grub_size_t
+grub_getend (const char *beg, const char *end)
+{
+  const char *ptr;
+  for (ptr = end - 1; ptr >= beg; ptr--)
+    if ((*ptr & GRUB_UINT8_2_LEADINGBITS) != GRUB_UINT8_1_LEADINGBIT)
+      break;
+  if (ptr < beg)
+    return 0;
+  if ((*ptr & GRUB_UINT8_1_LEADINGBIT) == 0)
+    return ptr + 1 - beg;
+  if ((*ptr & GRUB_UINT8_3_LEADINGBITS) == GRUB_UINT8_2_LEADINGBITS
+      && ptr + 2 <= end)
+    return ptr + 2 - beg;
+  if ((*ptr & GRUB_UINT8_4_LEADINGBITS) == GRUB_UINT8_3_LEADINGBITS
+      && ptr + 3 <= end)
+    return ptr + 3 - beg;
+  if ((*ptr & GRUB_UINT8_5_LEADINGBITS) == GRUB_UINT8_4_LEADINGBITS
+      && ptr + 4 <= end)
+    return ptr + 4 - beg;
+  /* Invalid character or incomplete. Cut before it.  */
+  return ptr - beg;
+}
+
 /* Convert UTF-16 to UTF-8.  */
 static inline grub_uint8_t *
 grub_utf16_to_utf8 (grub_uint8_t *dest, const grub_uint16_t *src,
