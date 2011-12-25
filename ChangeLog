@@ -1,5 +1,14 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Filesystems): Mention SFS as Latin1 filesystem.
+	* grub-core/fs/sfs.c (grub_sfs_mount): Fix a memory leak while on it.
+	(grub_sfs_iterate_dir): Convert Latin1 to UTF8. Stylistic and
+	performance fixes while on it.
+	(grub_sfs_close): Fix memory leak while on it.
+	(grub_sfs_label): Convert Latin1 to UTF-8.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/hfs.c (grub_hfs_dir): Cap keylen to actually available
 	space to avoid overflows.
 	(grub_hfs_label): Convert from macroman to UTF-8.
