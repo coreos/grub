@@ -76,6 +76,8 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, const grub_uint16_t *src,
 	    {
 	      /* Error...  */
 	      *dest++ = '?';
+	      /* *src may be valid. Don't eat it.  */
+	      src--;
 	    }
 
 	  code_high = 0;

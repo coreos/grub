@@ -1,5 +1,17 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make better Unicode-compliant and unify some UTF-8 code pathes.
+
+	* grub-core/normal/charset.c (grub_utf8_to_utf16): Don't eat possibly
+	valid character.
+	(grub_is_valid_utf8): Use grub_utf8_process.
+	Check resulting code range.
+	(grub_utf8_to_ucs4): Use grub_utf8_process.
+	* include/grub/charset.h (grub_utf16_to_utf8): Don't eat up a possibly
+	valid character.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/io/bufio.c (grub_bufio_read): Fix handling of corner cases.
 
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>

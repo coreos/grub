@@ -119,11 +119,17 @@ grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 
   while (srcsize && destsize)
     {
-      grub_uint8_t c = *src++;
+      int was_count = count;
       if (srcsize != (grub_size_t)-1)
 	srcsize--;
-      if (!grub_utf8_process (c, &code, &count))
-	return -1;
+      if (!grub_utf8_process (*src++, &code, &count))
+	{
+	  code = '?';
+	  count = 0;
+	  /* Character c may be valid, don't eat it.  */
+	  if (was_count)
+	    src--;
+	}
       if (count != 0)
 	continue;
       if (code == 0)
@@ -263,53 +269,21 @@ grub_ucs4_to_utf8_alloc (const grub_uint32_t *src, grub_size_t size)
 int
 grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize)
 {
-  grub_uint32_t code = 0;
   int count = 0;
+  grub_uint32_t code = 0;
 
   while (srcsize)
     {
-      grub_uint32_t c = *src++;
       if (srcsize != (grub_size_t)-1)
 	srcsize--;
-      if (count)
-	{
-	  if ((c & 0xc0) != 0x80)
-	    {
-	      /* invalid */
-	      return 0;
-	    }
-	  else
-	    {
-	      code <<= 6;
-	      code |= (c & 0x3f);
-	      count--;
-	    }
-	}
-      else
-	{
-	  if (c == 0)
-	    break;
-
-	  if ((c & 0x80) == 0x00)
-	    code = c;
-	  else if ((c & 0xe0) == 0xc0)
-	    {
-	      count = 1;
-	      code = c & 0x1f;
-	    }
-	  else if ((c & 0xf0) == 0xe0)
-	    {
-	      count = 2;
-	      code = c & 0x0f;
-	    }
-	  else if ((c & 0xf8) == 0xf0)
-	    {
-	      count = 3;
-	      code = c & 0x07;
-	    }
-	  else
-	    return 0;
-	}
+      if (!grub_utf8_process (*src++, &code, &count))
+	return 0;
+      if (count != 0)
+	continue;
+      if (code == 0)
+	return 1;
+      if (code > GRUB_UNICODE_LAST_VALID)
+	return 0;
     }
 
   return 1;
@@ -355,63 +329,23 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 
   while (srcsize && destsize)
     {
-      grub_uint32_t c = *src++;
+      int was_count = count;
       if (srcsize != (grub_size_t)-1)
 	srcsize--;
-      if (count)
+      if (!grub_utf8_process (*src++, &code, &count))
 	{
-	  if ((c & 0xc0) != 0x80)
-	    {
-	      /* invalid */
-	      code = '?';
-	      /* Character c may be valid, don't eat it.  */
-	      src--;
-	      if (srcsize != (grub_size_t)-1)
-		srcsize++;
-	      count = 0;
-	    }
-	  else
-	    {
-	      code <<= 6;
-	      code |= (c & 0x3f);
-	      count--;
-	    }
+	  code = '?';
+	  count = 0;
+	  /* Character c may be valid, don't eat it.  */
+	  if (was_count)
+	    src--;
 	}
-      else
-	{
-	  if (c == 0)
-	    break;
-
-	  if ((c & 0x80) == 0x00)
-	    code = c;
-	  else if ((c & 0xe0) == 0xc0)
-	    {
-	      count = 1;
-	      code = c & 0x1f;
-	    }
-	  else if ((c & 0xf0) == 0xe0)
-	    {
-	      count = 2;
-	      code = c & 0x0f;
-	    }
-	  else if ((c & 0xf8) == 0xf0)
-	    {
-	      count = 3;
-	      code = c & 0x07;
-	    }
-	  else
-	    {
-	      /* invalid */
-	      code = '?';
-	      count = 0;
-	    }
-	}
-
-      if (count == 0)
-	{
-	  *p++ = code;
-	  destsize--;
-	}
+      if (count != 0)
+	continue;
+      if (code == 0)
+	break;
+      *p++ = code;
+      destsize--;
     }
 
   if (srcend)
