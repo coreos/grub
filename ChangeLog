@@ -1,5 +1,9 @@
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Filesystems): Mention AFS.
+
+2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Filesystems): Clarify restrictions.
 	(Regexp): Mention non-Unicode regexp behaviour.
 	(Other): Mention non-Unicode matching behaviour.

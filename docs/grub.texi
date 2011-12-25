@@ -3933,9 +3933,9 @@ assumed to be encoded in UTF-8.
 
 @chapter Filesystems
 NTFS, JFS, UDF, HFS+, exFAT, long filenames in FAT, Joliet part of
-ISO9660 are treated as UTF-16 as per specification. BFS is read as UTF-8,
-again according to specification. BtrFS, cpio, tar, squash4, minix, minix2,
-minix3, ROMFS, ReiserFS, XFS, ext2, ext3, ext4, FAT (short names),
+ISO9660 are treated as UTF-16 as per specification. AFS and BFS are read
+as UTF-8, again according to specification. BtrFS, cpio, tar, squash4, minix,
+minix2, minix3, ROMFS, ReiserFS, XFS, ext2, ext3, ext4, FAT (short names),
 ISO9660 (plain and RockRidge), nilfs2, UFS1, UFS2 and ZFS are assumed
 to be UTF-8. This might be false on systems configured with legacy charset
 but as long as the charset used is superset of ASCII you should be able to
