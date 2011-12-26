@@ -34,7 +34,7 @@ library = {
 library = {
   name = libgrubmods.a;
   cflags = '$(CFLAGS_POSIX) -Wno-undef';
-  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(top_srcdir)/grub-core/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
+  cppflags = '-I$(top_srcdir)/grub-core/lib/minilzo -I$(srcdir)/grub-core/lib/xzembed -DMINILZO_HAVE_CONFIG_H';
 
   common_nodist = grub_script.tab.c;
   common_nodist = grub_script.yy.c;
@@ -119,6 +119,9 @@ library = {
   common = grub-core/io/lzopio.c;
   common = grub-core/kern/ia64/dl_helper.c;
   common = grub-core/lib/minilzo/minilzo.c;
+  common = grub-core/lib/xzembed/xz_dec_bcj.c;
+  common = grub-core/lib/xzembed/xz_dec_lzma2.c;
+  common = grub-core/lib/xzembed/xz_dec_stream.c;
 };
 
 program = {

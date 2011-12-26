@@ -26,6 +26,10 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 #include <grub/deflate.h>
+#include <minilzo.h>
+
+#include "xz.h"
+#include "xz_stream.h"
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -53,7 +57,9 @@ struct grub_squash_super
   grub_uint32_t dummy1;
   grub_uint32_t creation_time;
   grub_uint32_t block_size;
-  grub_uint64_t dummy3;
+  grub_uint32_t dummy2;
+  grub_uint16_t compression;
+  grub_uint16_t dummy3;
   grub_uint64_t dummy4;
   grub_uint16_t root_ino_offset;
   grub_uint32_t root_ino_chunk;
@@ -74,39 +80,43 @@ struct grub_squash_inode
   grub_uint16_t type;
   grub_uint16_t dummy[3];
   grub_uint32_t mtime;
+  grub_uint32_t dummy2;
   union
   {
     struct {
-      grub_uint32_t dummy;
       grub_uint32_t chunk;
       grub_uint32_t fragment;
       grub_uint16_t offset;
-      grub_uint16_t dummy2;
+      grub_uint16_t dummy;
       grub_uint32_t size;
       grub_uint32_t block_size[0];
     }  __attribute__ ((packed)) file;
     struct {
-      grub_uint32_t dummy;
       grub_uint64_t chunk;
       grub_uint64_t size;
-      grub_uint32_t dummy2[3];
+      grub_uint32_t dummy1[3];
       grub_uint32_t fragment;
       grub_uint16_t offset;
-      grub_uint16_t dummy3;
-      grub_uint32_t dummy4;
+      grub_uint16_t dummy2;
+      grub_uint32_t dummy3;
       grub_uint32_t block_size[0];
     }  __attribute__ ((packed)) long_file;
     struct {
-      grub_uint32_t dummy1;
       grub_uint32_t chunk;
-      grub_uint32_t dummy2;
+      grub_uint32_t dummy;
       grub_uint16_t size;
       grub_uint16_t offset;
-      grub_uint16_t dummy3;
-      grub_uint16_t dummy4;
     } __attribute__ ((packed)) dir;
     struct {
-      grub_uint64_t dummy;
+      grub_uint32_t dummy1;
+      grub_uint32_t size;
+      grub_uint32_t chunk;
+      grub_uint32_t dummy2;
+      grub_uint16_t dummy3;
+      grub_uint16_t offset;
+    } __attribute__ ((packed)) long_dir;
+    struct {
+      grub_uint32_t dummy;
       grub_uint32_t namelen;
       char name[0];
     } __attribute__ ((packed)) symlink;
@@ -146,6 +156,7 @@ enum
     SQUASH_TYPE_DIR = 1,
     SQUASH_TYPE_REGULAR = 2,
     SQUASH_TYPE_SYMLINK = 3,
+    SQUASH_TYPE_LONG_DIR = 8,
     SQUASH_TYPE_LONG_REGULAR = 9,
   };
 
@@ -169,7 +180,16 @@ enum
     SQUASH_BLOCK_UNCOMPRESSED = 0x1000000
   };
 
+enum
+  {
+    COMPRESSION_ZLIB = 1,
+    COMPRESSION_LZO = 3,
+    COMPRESSION_XZ = 4,
+  };
+
+
 #define SQUASH_CHUNK_SIZE 0x2000
+#define XZBUFSIZ 0x2000
 
 struct grub_squash_data
 {
@@ -178,6 +198,12 @@ struct grub_squash_data
   struct grub_squash_cache_inode ino;
   grub_uint64_t fragments;
   int log2_blksz;
+  grub_size_t blksz;
+  grub_ssize_t (*decompress) (char *inbuf, grub_size_t insize, grub_off_t off,
+			      char *outbuf, grub_size_t outsize,
+			      struct grub_squash_data *data);
+  struct xz_dec *xzdec;
+  char *xzbuf;
 };
 
 struct grub_fshelp_node
@@ -242,8 +268,8 @@ read_chunk (struct grub_squash_data *data, void *buf, grub_size_t len,
 	      return err;
 	    }
 
-	  if (grub_zlib_decompress (tmp, bsize, offset,
-				    buf, csize) < 0)
+	  if (data->decompress (tmp, bsize, offset,
+				buf, csize, data) < 0)
 	    {
 	      grub_free (tmp);
 	      return grub_errno;
@@ -255,6 +281,94 @@ read_chunk (struct grub_squash_data *data, void *buf, grub_size_t len,
       buf = (char *) buf + csize;
     }
   return GRUB_ERR_NONE;
+}
+
+static grub_ssize_t
+zlib_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
+		 char *outbuf, grub_size_t outsize,
+		 struct grub_squash_data *data __attribute__ ((unused)))
+{
+  return grub_zlib_decompress (inbuf, insize, off, outbuf, outsize);
+}
+
+static grub_ssize_t
+lzo_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
+		char *outbuf, grub_size_t len, struct grub_squash_data *data)
+{
+  lzo_uint usize = data->blksz;
+  grub_uint8_t *udata;
+
+  udata = grub_malloc (data->blksz);
+  if (!udata)
+    return -1;
+
+  if (lzo1x_decompress_safe ((grub_uint8_t *) inbuf,
+			     insize, udata, &usize, NULL) != LZO_E_OK)
+    {
+      grub_free (udata);
+      return -1;
+    }
+  grub_memcpy (outbuf, udata + off, len);
+  grub_free (udata);
+  return len;
+}
+
+static grub_ssize_t
+xz_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
+	       char *outbuf, grub_size_t len, struct grub_squash_data *data)
+{
+  grub_size_t ret;
+  grub_off_t pos = 0;
+  struct xz_buf buf;
+
+  xz_dec_reset (data->xzdec);
+  buf.in = (grub_uint8_t *) inbuf;
+  buf.in_pos = 0;
+  buf.in_size = insize;
+  buf.out = (grub_uint8_t *) data->xzbuf;
+  buf.out_pos = 0;
+  buf.out_size = XZBUFSIZ;
+
+  while (len)
+    {
+      enum xz_ret xzret;
+      
+      buf.out_pos = 0;
+
+      xzret = xz_dec_run (data->xzdec, &buf);
+
+      if (xzret != XZ_OK && xzret != XZ_STREAM_END)
+	{
+	  grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "invalid xz chunk");
+	  return -1;
+	}
+      if (pos + buf.out_pos >= off)
+	{
+	  grub_ssize_t outoff = pos - off;
+	  grub_size_t l;
+	  if (outoff >= 0)
+	    {
+	      l = buf.out_pos;
+	      if (l > len)
+		l = len;
+	      grub_memcpy (outbuf + outoff, buf.out, l);
+	    }
+	  else
+	    {
+	      outoff = -outoff;
+	      l = buf.out_pos - outoff;
+	      if (l > len)
+		l = len;
+	      grub_memcpy (outbuf, buf.out + outoff, l);
+	    }
+	  ret += l;
+	  len -= l;
+	}
+      pos += buf.out_pos;
+      if (xzret == XZ_STREAM_END)
+	break;
+    }
+  return ret;
 }
 
 static struct grub_squash_data *
@@ -270,10 +384,9 @@ squash_mount (grub_disk_t disk)
     grub_error (GRUB_ERR_BAD_FS, "not a squash4");
   if (err)
     return NULL;
-  if (grub_le_to_cpu32 (sb.magic) != SQUASH_MAGIC
-      || grub_le_to_cpu32 (sb.block_size) == 0
-      || ((grub_le_to_cpu32 (sb.block_size) - 1)
-	  & grub_le_to_cpu32 (sb.block_size)))
+  if (sb.magic != grub_cpu_to_le32_compile_time (SQUASH_MAGIC)
+      || sb.block_size == 0
+      || ((sb.block_size - 1) & sb.block_size))
     {
       grub_error (GRUB_ERR_BAD_FS, "not squash4");
       return NULL;
@@ -296,8 +409,40 @@ squash_mount (grub_disk_t disk)
   data->disk = disk;
   data->fragments = grub_le_to_cpu64 (frag);
 
+  switch (sb.compression)
+    {
+    case grub_cpu_to_le16 (COMPRESSION_ZLIB):
+      data->decompress = zlib_decompress;
+      break;
+    case grub_cpu_to_le16 (COMPRESSION_LZO):
+      data->decompress = lzo_decompress;
+      break;
+    case grub_cpu_to_le16 (COMPRESSION_XZ):
+      data->decompress = xz_decompress;
+      data->xzbuf = grub_malloc (XZBUFSIZ);
+      if (!data->xzbuf)
+	{
+	  grub_free (data);
+	  return NULL;
+	}
+      data->xzdec = xz_dec_init (1 << 16);
+      if (!data->xzdec)
+	{
+	  grub_free (data->xzbuf);
+	  grub_free (data);
+	  return NULL;
+	}
+      break;
+    default:
+      grub_free (data);
+      grub_error (GRUB_ERR_BAD_FS, "unsupported compression %d",
+		  grub_le_to_cpu16 (sb.compression));
+      return NULL;
+    }
+
+  data->blksz = grub_le_to_cpu32 (data->sb.block_size);
   for (data->log2_blksz = 0; 
-       (1U << data->log2_blksz) < grub_le_to_cpu32 (data->sb.block_size);
+       (1U << data->log2_blksz) < data->blksz;
        data->log2_blksz++);
 
   return data;
@@ -332,12 +477,29 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 				  enum grub_fshelp_filetype filetype,
 				  grub_fshelp_node_t node))
 {
-  grub_uint32_t off = grub_le_to_cpu16 (dir->ino.dir.offset);
+  grub_uint32_t off;
   grub_uint32_t endoff;
+  grub_uint64_t chunk;
   unsigned i;
 
   /* FIXME: why - 3 ? */
-  endoff = grub_le_to_cpu16 (dir->ino.dir.size) + off - 3;
+  switch (dir->ino.type)
+    {
+    case grub_cpu_to_le16_compile_time (SQUASH_TYPE_DIR):
+      off = grub_le_to_cpu16 (dir->ino.dir.offset);
+      endoff = grub_le_to_cpu16 (dir->ino.dir.size) + off - 3;
+      chunk = grub_le_to_cpu32 (dir->ino.dir.chunk);
+      break;
+    case grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_DIR):
+      off = grub_le_to_cpu16 (dir->ino.long_dir.offset);
+      endoff = grub_le_to_cpu16 (dir->ino.long_dir.size) + off - 3;
+      chunk = grub_le_to_cpu32 (dir->ino.long_dir.chunk);
+      break;
+    default:
+      grub_error (GRUB_ERR_BAD_FS, "unexpected ino type 0x%x",
+		  grub_le_to_cpu16 (dir->ino.type));
+      return 0;
+    }
 
   while (off < endoff)
     {
@@ -346,7 +508,7 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 
       err = read_chunk (dir->data, &dh, sizeof (dh),
 			grub_le_to_cpu64 (dir->data->sb.diroffset)
-			+ grub_le_to_cpu32 (dir->ino.dir.chunk), off);
+			+ chunk, off);
       if (err)
 	return 0;
       off += sizeof (dh);
@@ -361,7 +523,7 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 
 	  err = read_chunk (dir->data, &di, sizeof (di),
 			    grub_le_to_cpu64 (dir->data->sb.diroffset)
-			    + grub_le_to_cpu32 (dir->ino.dir.chunk), off);
+			    + chunk, off);
 	  if (err)
 	    return 0;
 	  off += sizeof (di);
@@ -379,7 +541,7 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 	  err = read_chunk (dir->data, buf,
 			    grub_le_to_cpu16 (di.namelen) + 1,
 			    grub_le_to_cpu64 (dir->data->sb.diroffset)
-			    + grub_le_to_cpu32 (dir->ino.dir.chunk), off);
+			    + chunk, off);
 	  if (err)
 	    return 0;
 
@@ -416,13 +578,16 @@ make_root_node (struct grub_squash_data *data, struct grub_fshelp_node *root)
  
  return read_chunk (data, &root->ino, sizeof (root->ino),
 		    grub_le_to_cpu64 (data->sb.inodeoffset) 
-		    + grub_le_to_cpu16 (data->sb.root_ino_chunk),
+		    + grub_le_to_cpu32 (data->sb.root_ino_chunk),
 		    grub_cpu_to_le16 (data->sb.root_ino_offset));
 }
 
 static void
 squash_unmount (struct grub_squash_data *data)
 {
+  if (data->xzdec)
+    xz_dec_end (data->xzdec);
+  grub_free (data->xzbuf);
   grub_free (data->ino.cumulated_block_sizes);
   grub_free (data->ino.block_sizes);
   grub_free (data);
@@ -505,11 +670,22 @@ grub_squash_open (struct grub_file *file, const char *name)
   data->ino.ino_chunk = fdiro->ino_chunk;
   data->ino.ino_offset = fdiro->ino_offset;
 
-  if (fdiro->ino.type
-      == grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR))
-    file->size = grub_le_to_cpu64 (fdiro->ino.long_file.size);
-  else
-    file->size = grub_le_to_cpu32 (fdiro->ino.file.size);
+  switch (fdiro->ino.type)
+    {
+    case grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR):
+      file->size = grub_le_to_cpu64 (fdiro->ino.long_file.size);
+      break;
+    case grub_cpu_to_le16_compile_time (SQUASH_TYPE_REGULAR):
+      file->size = grub_le_to_cpu32 (fdiro->ino.file.size);
+      break;
+    default:
+      {
+	grub_uint16_t type = grub_le_to_cpu16 (fdiro->ino.type);
+	grub_free (fdiro);
+	squash_unmount (data);
+	return grub_error (GRUB_ERR_BAD_FS, "unexpected ino type 0x%x", type);
+      }
+    }
 
   grub_free (fdiro);
 
@@ -527,32 +703,35 @@ direct_read (struct grub_squash_data *data,
   grub_size_t i;
   grub_size_t origlen = len;
 
-  if (ino->ino.type == grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR))
-    a = grub_le_to_cpu64 (ino->ino.long_file.chunk);
-  else
-    a = grub_le_to_cpu32 (ino->ino.file.chunk);
+  switch (ino->ino.type)
+    {
+    case grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR):
+      a = grub_le_to_cpu64 (ino->ino.long_file.chunk);
+      break;
+    case grub_cpu_to_le16_compile_time (SQUASH_TYPE_REGULAR):
+      a = grub_le_to_cpu32 (ino->ino.file.chunk);
+      break;
+    }
 
   if (!ino->block_sizes)
     {
       grub_off_t total_size;
       grub_size_t total_blocks;
       grub_size_t block_offset;
-      if (ino->ino.type
-	  == grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR))
+      switch (ino->ino.type)
 	{
+	case grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR):
 	  total_size = grub_le_to_cpu64 (ino->ino.long_file.size);
 	  block_offset = ((char *) &ino->ino.long_file.block_size
 			  - (char *) &ino->ino);
-	}
-      else
-	{
+	  break;
+	case grub_cpu_to_le16_compile_time (SQUASH_TYPE_REGULAR):
 	  total_size = grub_le_to_cpu32 (ino->ino.file.size);
 	  block_offset = ((char *) &ino->ino.file.block_size
 			  - (char *) &ino->ino);
+	  break;
 	}
-      total_blocks = ((total_size
-		      + grub_le_to_cpu32 (data->sb.block_size) - 1)
-		      >> data->log2_blksz);
+      total_blocks = ((total_size + data->blksz - 1) >> data->log2_blksz);
       ino->block_sizes = grub_malloc (total_blocks
 				      * sizeof (ino->block_sizes[0]));
       ino->cumulated_block_sizes = grub_malloc (total_blocks
@@ -587,20 +766,42 @@ direct_read (struct grub_squash_data *data,
   if (a == 0)
     a = sizeof (struct grub_squash_super);
   i = off >> data->log2_blksz;
-  cumulated_uncompressed_size = grub_le_to_cpu32 (data->sb.block_size)
-    * (grub_disk_addr_t) i;
+  cumulated_uncompressed_size = data->blksz * (grub_disk_addr_t) i;
   while (cumulated_uncompressed_size < off + len)
     {
       grub_size_t boff, read;
       boff = off - cumulated_uncompressed_size;
-      read = grub_le_to_cpu32 (data->sb.block_size) - boff;
+      read = data->blksz - boff;
       if (read > len)
 	read = len;
       if (!(ino->block_sizes[i]
 	    & grub_cpu_to_le32_compile_time (SQUASH_BLOCK_UNCOMPRESSED)))
-	err = grub_zlib_disk_read (data->disk,
-				   ino->cumulated_block_sizes[i] + a,
-				   boff, buf, read);
+	{
+	  char *block;
+	  block = grub_malloc (data->blksz);
+	  if (!block)
+	    return -1;
+	  err = grub_disk_read (data->disk,
+				(ino->cumulated_block_sizes[i] + a)
+				>> GRUB_DISK_SECTOR_BITS,
+				(ino->cumulated_block_sizes[i] + a)
+				& (GRUB_DISK_SECTOR_SIZE - 1),
+				data->blksz, block);
+	  if (err)
+	    {
+	      grub_free (block);
+	      return -1;
+	    }
+	  if (data->decompress (block, data->blksz, boff, buf, read, data)
+	      != (grub_ssize_t) read)
+	    {
+	      grub_free (block);
+	      if (!grub_errno)
+		grub_error (GRUB_ERR_BAD_FS, "incorrect compressed chunk");
+	      return -1;
+	    }
+	  grub_free (block);
+	}
       else
 	err = grub_disk_read (data->disk, 
 			      (ino->cumulated_block_sizes[i] + a + boff)
@@ -631,15 +832,16 @@ grub_squash_read_data (struct grub_squash_data *data,
   int compressed = 0;
   struct grub_squash_frag_desc frag;
 
-  if (ino->ino.type == grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR))
+  switch (ino->ino.type)
     {
+    case grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR):
       a = grub_le_to_cpu64 (ino->ino.long_file.chunk);
       fragment = grub_le_to_cpu32 (ino->ino.long_file.fragment);
-    }
-  else
-    {
+      break;
+    case grub_cpu_to_le16_compile_time (SQUASH_TYPE_REGULAR):
       a = grub_le_to_cpu32 (ino->ino.file.chunk);
       fragment = grub_le_to_cpu32 (ino->ino.file.fragment);
+      break;
     }
 
   if (fragment == 0xffffffff)
@@ -658,12 +860,37 @@ grub_squash_read_data (struct grub_squash_data *data,
   
   /* FIXME: cache uncompressed chunks.  */
   if (compressed)
-    err = grub_zlib_disk_read (data->disk, a, b, buf, len);
+    {
+      char *block;
+      block = grub_malloc (data->blksz);
+      if (!block)
+	return -1;
+      err = grub_disk_read (data->disk,
+			    a >> GRUB_DISK_SECTOR_BITS,
+			    a & (GRUB_DISK_SECTOR_SIZE - 1),
+			    data->blksz, block);
+      if (err)
+	{
+	  grub_free (block);
+	  return -1;
+	}
+      if (data->decompress (block, data->blksz, b, buf, len, data)
+	  != (grub_ssize_t) len)
+	{
+	  grub_free (block);
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_BAD_FS, "incorrect compressed chunk");
+	  return -1;
+	}
+      grub_free (block);
+    }
   else
-    err = grub_disk_read (data->disk, (a + b) >> GRUB_DISK_SECTOR_BITS,
+    {
+      err = grub_disk_read (data->disk, (a + b) >> GRUB_DISK_SECTOR_BITS,
 			  (a + b) & (GRUB_DISK_SECTOR_SIZE - 1), len, buf);
-  if (err)
-    return -1;
+      if (err)
+	return -1;
+    }
   return len;
 }
 

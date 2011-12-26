@@ -1,5 +1,38 @@
 2011-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Various squash4 fixes and LZO and XZ support.
+
+	* Makefile.util.def (libgrubmods.a): Add xzembed directory to cppflags.
+	Add xzembed source files.
+	* grub-core/Makefile.core.def (squash4): Add xzembed and minilzo flags.
+	* grub-core/fs/squash4.c (grub_squash_super): New field compression.
+	(grub_squash_inode): New subtype long_dir.
+	(SQUASH_TYPE_LONG_DIR): New inode type.
+	(COMPRESSION): New enum.
+	(XZBUFSIZ): New const.
+	(grub_squash_data): New fields blksz, decompress, xzdec, xzbuf.
+	(read_chunk): Use data->decompress.
+	(zlib_decompress): New function.
+	(lzo_decompress): Likewise.
+	(xz_decompress): Likewise.
+	(squash_mount): Set new data fields.
+	(grub_squash_iterate_dir): Handle long dir.
+	(squash_unmount): Free xzdec and xzbuf.
+	(grub_squash_open): Check ino type.
+	(direct_read): Stylistic fixes. Use data->decompress.
+	(grub_squash_read_data): Likewise.
+	* grub-core/io/gzio.c (grub_gzio): Remove disk_input.
+	(get_byte): Likewise.
+	(grub_zlib_disk_read): Removed.
+	* grub-core/lib/posix_wrap/sys/types.h (ssize_t): New type.
+	(GRUB_POSIX_BOOL_DEFINED): New define.
+	* grub-core/lib/posix_wrap/unistd.h: Include sys/types.h.
+	* grub-core/lib/xzembed/xz.h: Addmissing includes.
+	[!GRUB_POSIX_BOOL_DEFINED]: Define bool.
+	* include/grub/deflate.h (grub_zlib_disk_read): Removed.
+
+2011-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't override more informative errors.
 
 	* grub-core/commands/acpi.c (grub_cmd_acpi): Don't override errors.
