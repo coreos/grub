@@ -353,7 +353,9 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, (void *) addr, size) != size)
     {
       grub_ieee1275_release (addr, size);
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+		    argv[0]);
       goto fail;
     }
 

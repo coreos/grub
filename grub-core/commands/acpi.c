@@ -649,15 +649,17 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 	{
 	  grub_file_close (file);
 	  free_tables ();
-	  return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			     "couldn't read file %s", args[i]);
+	  return grub_errno;
 	}
 
       if (grub_file_read (file, buf, size) != (int) size)
 	{
 	  grub_file_close (file);
 	  free_tables ();
-	  return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[i]);
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+			args[i]);
+	  return grub_errno;
 	}
       grub_file_close (file);
 

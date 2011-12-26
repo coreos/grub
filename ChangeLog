@@ -1,3 +1,33 @@
+2011-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't override more informative errors.
+
+	* grub-core/commands/acpi.c (grub_cmd_acpi): Don't override errors.
+	* grub-core/font/font.c (open_section): Likewise.
+	* grub-core/loader/i386/bsd.c (grub_bsd_load_aout): New argument
+	filename. Don't override errors.
+	(grub_cmd_openbsd_ramdisk): Don't override errors.
+	* grub-core/loader/i386/linux.c (grub_cmd_linux): Likewise.
+	(grub_cmd_initrd): Likewise.
+	* grub-core/loader/i386/pc/linux.c (grub_cmd_linux): Likewise.
+	(grub_cmd_initrd): Likewise.
+	* grub-core/loader/ia64/efi/linux.c (grub_load_elf64): Likewise.
+	(grub_cmd_linux): Likewise.
+	(grub_cmd_initrd): Likewise.
+	(grub_cmd_payload): Likewise.
+	* grub-core/loader/mips/linux.c (grub_cmd_initrd): Likewise.
+	* grub-core/loader/multiboot.c (grub_cmd_multiboot): Likewise.
+	(grub_cmd_module): Likewise.
+	* grub-core/loader/powerpc/ieee1275/linux.c (grub_cmd_initrd): Likewise.
+	* grub-core/loader/sparc64/ieee1275/linux.c (grub_cmd_initrd): Likewise.
+	* grub-core/loader/xnu.c (grub_xnu_load_driver): Likewise.
+	(grub_cmd_xnu_mkext): Likewise.
+	(grub_cmd_xnu_ramdisk): Likewise.
+	(grub_xnu_check_os_bundle_required): Likewise.
+	(grub_xnu_load_kext_from_dir): Likewise.
+	(grub_cmd_xnu_kextdir): Likewise.
+	* grub-core/loader/xnu_resume.c (grub_xnu_resume): Likewise.
+
 2011-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/minix.c (grub_minix_mount) [MODE_MINIX3]: Treat 0xffff

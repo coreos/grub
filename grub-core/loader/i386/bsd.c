@@ -1159,7 +1159,7 @@ grub_bsd_unload (void)
 }
 
 static grub_err_t
-grub_bsd_load_aout (grub_file_t file)
+grub_bsd_load_aout (grub_file_t file, const char *filename)
 {
   grub_addr_t load_addr, load_end;
   int ofs, align_page;
@@ -1171,7 +1171,12 @@ grub_bsd_load_aout (grub_file_t file)
     return grub_errno;
 
   if (grub_file_read (file, &ah, sizeof (ah)) != sizeof (ah))
-    return grub_error (GRUB_ERR_READ_ERROR, "cannot read the a.out header");
+    {
+      if (!grub_errno)
+	grub_error (GRUB_ERR_READ_ERROR, N_("premature end of file %s"),
+		    filename);
+      return grub_errno;
+    }
 
   if (grub_aout_get_type (&ah) != AOUT_TYPE_AOUT32)
     return grub_error (GRUB_ERR_BAD_OS, "invalid a.out header");
@@ -1426,7 +1431,7 @@ grub_bsd_load (int argc, char *argv[])
     {
       is_elf_kernel = 0;
       grub_errno = 0;
-      grub_bsd_load_aout (file);
+      grub_bsd_load_aout (file, argv[0]);
       grub_file_close (file);
     }
 
@@ -2000,8 +2005,7 @@ grub_cmd_openbsd_ramdisk (grub_command_t cmd __attribute__ ((unused)),
 
   file = grub_file_open (args[0]);
   if (! file)
-    return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "couldn't load ramdisk");
+    return grub_errno;
 
   size = grub_file_size (file);
 
@@ -2017,8 +2021,9 @@ grub_cmd_openbsd_ramdisk (grub_command_t cmd __attribute__ ((unused)),
       != (grub_ssize_t) (size))
     {
       grub_file_close (file);
-      grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS, "couldn't read file %s", args[0]);
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"), args[0]);
+      return grub_errno;
     }
   grub_memset (openbsd_ramdisk.target + size, 0,
 	       openbsd_ramdisk.max_size - size);

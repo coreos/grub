@@ -30,6 +30,7 @@
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 #include <grub/elf.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -377,7 +378,7 @@ grub_linux_unload (void)
 }
 
 static grub_err_t
-grub_load_elf64 (grub_file_t file, void *buffer)
+grub_load_elf64 (grub_file_t file, void *buffer, const char *filename)
 {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr *) buffer;
   Elf64_Phdr *phdr;
@@ -472,11 +473,15 @@ grub_load_elf64 (grub_file_t file, void *buffer)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "invalid offset in program header");
 
-	  if (grub_file_read (file, (void *)(phdr->p_paddr + reloc_offset),
+	  if (grub_file_read (file, (void *) (phdr->p_paddr + reloc_offset),
 			      phdr->p_filesz)
               != (grub_ssize_t) phdr->p_filesz)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "couldn't read segment from file");
+	    {
+	      if (!grub_errno)
+		grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+			    filename);
+	      return grub_errno;
+	    }
 	  
           if (phdr->p_filesz < phdr->p_memsz)
 	    grub_memset
@@ -515,13 +520,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   file = grub_file_open (argv[0]);
   if (! file)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
-      goto fail;
-    }
+    goto fail;
 
   len = grub_file_read (file, buffer, sizeof (buffer));
-  if (len < (grub_ssize_t)sizeof (Elf64_Ehdr))
+  if (len < (grub_ssize_t) sizeof (Elf64_Ehdr))
     {
       grub_error (GRUB_ERR_BAD_OS, "File too small");
       goto fail;
@@ -529,7 +531,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   grub_printf ("Loading linux: %s\n", argv[0]);
 
-  if (grub_load_elf64 (file, buffer))
+  if (grub_load_elf64 (file, buffer, argv[0]))
     goto fail;
 
   len = sizeof("BOOT_IMAGE=") + 8;
@@ -611,9 +613,11 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 	       (grub_uint64_t)initrd_mem, initrd_size);
 
   if (grub_file_read (file, initrd_mem, initrd_size) 
-      != (grub_ssize_t)initrd_size)
+      != (grub_ssize_t) initrd_size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+		    argv[0]);
       goto fail;
     }
  fail:
@@ -659,7 +663,9 @@ grub_cmd_payload  (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, base, size) != size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+		    argv[0]);
       goto fail;
     }
 

@@ -226,7 +226,7 @@ grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
 
   file = grub_file_open (argv[0]);
   if (! file)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
+    return grub_errno;
 
   grub_dl_ref (my_mod);
 
@@ -322,7 +322,10 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, module, size) != size)
     {
       grub_file_close (file);
-      return grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+		    argv[0]);
+      return grub_errno;
     }
 
   grub_file_close (file);
