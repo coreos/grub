@@ -411,13 +411,13 @@ squash_mount (grub_disk_t disk)
 
   switch (sb.compression)
     {
-    case grub_cpu_to_le16 (COMPRESSION_ZLIB):
+    case grub_cpu_to_le16_compile_time (COMPRESSION_ZLIB):
       data->decompress = zlib_decompress;
       break;
-    case grub_cpu_to_le16 (COMPRESSION_LZO):
+    case grub_cpu_to_le16_compile_time (COMPRESSION_LZO):
       data->decompress = lzo_decompress;
       break;
-    case grub_cpu_to_le16 (COMPRESSION_XZ):
+    case grub_cpu_to_le16_compile_time (COMPRESSION_XZ):
       data->decompress = xz_decompress;
       data->xzbuf = grub_malloc (XZBUFSIZ);
       if (!data->xzbuf)
@@ -699,7 +699,7 @@ direct_read (struct grub_squash_data *data,
 {
   grub_err_t err;
   grub_off_t cumulated_uncompressed_size = 0;
-  grub_uint64_t a;
+  grub_uint64_t a = 0;
   grub_size_t i;
   grub_size_t origlen = len;
 
@@ -715,9 +715,9 @@ direct_read (struct grub_squash_data *data,
 
   if (!ino->block_sizes)
     {
-      grub_off_t total_size;
+      grub_off_t total_size = 0;
       grub_size_t total_blocks;
-      grub_size_t block_offset;
+      grub_size_t block_offset = 0;
       switch (ino->ino.type)
 	{
 	case grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR):
@@ -827,8 +827,8 @@ grub_squash_read_data (struct grub_squash_data *data,
 		       grub_off_t off, char *buf, grub_size_t len)
 {
   grub_err_t err;
-  grub_uint64_t a, b;
-  grub_uint32_t fragment;
+  grub_uint64_t a = 0, b;
+  grub_uint32_t fragment = 0;
   int compressed = 0;
   struct grub_squash_frag_desc frag;
 

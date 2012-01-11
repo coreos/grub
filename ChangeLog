@@ -1,5 +1,12 @@
 2011-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/squash4.c (squash_mount): Mark endian conversion in
+	case statements as compile-time one.
+	(direct_read): Prevent spurious warnings.
+	(grub_squash_read_data): Likewise.
+
+2011-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Various squash4 fixes and LZO and XZ support.
 
 	* Makefile.util.def (libgrubmods.a): Add xzembed directory to cppflags.
