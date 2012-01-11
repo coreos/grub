@@ -1,5 +1,11 @@
 2012-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/affs.c (grub_affs_bblock): Revert flags.
+	(GRUB_AFFS_FLAG_FFS): Put back where it was.
+	(grub_affs_mount): Revert the correct version checking.
+
+2012-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Unicode): Mention several other unsupported features.
 
 2011-12-26  Vladimir Serbinenko  <phcoder@gmail.com>

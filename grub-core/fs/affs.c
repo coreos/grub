@@ -33,10 +33,14 @@ GRUB_MOD_LICENSE ("GPLv3+");
 struct grub_affs_bblock
 {
   grub_uint8_t type[3];
-  grub_uint8_t version;
+  grub_uint8_t flags;
   grub_uint32_t checksum;
   grub_uint32_t rootblock;
 } __attribute__ ((packed));
+
+/* Set if the filesystem is a AFFS filesystem.  Otherwise this is an
+   OFS filesystem.  */
+#define GRUB_AFFS_FLAG_FFS	1
 
 /* The affs rootblock.  */
 struct grub_affs_rblock
@@ -192,7 +196,7 @@ grub_affs_mount (grub_disk_t disk)
     }
 
   /* Test if the filesystem is a OFS filesystem.  */
-  if (data->bblock.version < 1)
+  if (! (data->bblock.flags & GRUB_AFFS_FLAG_FFS))
     {
       grub_error (GRUB_ERR_BAD_FS, "OFS not yet supported");
       goto fail;
