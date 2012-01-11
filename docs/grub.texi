@@ -3971,10 +3971,14 @@ on some readers which don't have own bidi implementation. When using gfxterm
 or gfxmenu GRUB itself is responsible for rendering the text. In this case
 GRUB is limited by loaded fonts. If fonts contain all required characters
 then bidirectional text, cursive variants and combining marks other than
-enclosing ones. Ligatures aren't supported though. This should cover
-European, Middle Eastern (if you don't mind lack of la-alef ligature in
-Arabic) and East Asian scripts. Notable unsupported scripts are Brahmic family
-and derived as well as Mongolian and Tifinagh. If you can complete either of
+enclosing, half (e.g. left half tilde or combining overline) and double ones.
+Ligatures aren't supported though. This should cover European, Middle Eastern
+(if you don't mind lack of lam-alif ligature in Arabic) and East Asian scripts.
+Notable unsupported scripts are Brahmic family and derived as well as
+Mongolian, Tifinagh, Korean Jamo (precomposed characters have no problem)
+and tonal writing (2e5-2e9). GRUB also ignores deprecated (as specified
+in Unicode) characters (e.g. tags). GRUB also doesn't handle so called
+``annotation characters'' If you can complete either of
 two lists or, better, propose a patch to improve rendering, please contact
 developper team.
 

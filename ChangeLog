@@ -1,3 +1,7 @@
+2012-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Unicode): Mention several other unsupported features.
+
 2011-12-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/squash4.c (squash_mount): Mark endian conversion in
