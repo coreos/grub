@@ -1,5 +1,14 @@
 2012-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix handling of wide characters in gfxterm.
+
+	* grub-core/term/gfxterm.c (grub_colored_char): Remove width and index.
+	(clear_char): Likewise.
+	(paint_char): Skip code == NULL chars.
+	(grub_gfxterm_putchar): Set code = NULL on "shadowed" positions.
+
+2012-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/charset.c: Move comment to right place.
 
 2012-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
