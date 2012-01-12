@@ -1,3 +1,7 @@
+2012-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/charset.c: Move comment to right place.
+
 2012-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/affs.c (grub_affs_bblock): Revert flags.

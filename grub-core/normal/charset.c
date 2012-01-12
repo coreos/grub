@@ -42,13 +42,6 @@
   Most underline diacritics aren't displayed in gfxterm
  */
 
-/* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
-   bytes (if SRCSIZE is -1, it is ignored) in length to a UTF-16 string.
-   Return the number of characters converted. DEST must be able to hold
-   at least DESTSIZE characters. If an invalid sequence is found, return -1.
-   If SRCEND is not NULL, then *SRCEND is set to the next byte after the
-   last byte used in SRC.  */
-
 #include <grub/charset.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
@@ -67,6 +60,7 @@ grub_utf8_process (grub_uint8_t c, grub_uint32_t *code, int *count)
     {
       if ((c & GRUB_UINT8_2_LEADINGBITS) != GRUB_UINT8_1_LEADINGBIT)
 	{
+	  *count = 0;
 	  /* invalid */
 	  return 0;
 	}
@@ -105,6 +99,12 @@ grub_utf8_process (grub_uint8_t c, grub_uint32_t *code, int *count)
   return 0;
 }
 
+/* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
+   bytes (if SRCSIZE is -1, it is ignored) in length to a UTF-16 string.
+   Return the number of characters converted. DEST must be able to hold
+   at least DESTSIZE characters. If an invalid sequence is found, return -1.
+   If SRCEND is not NULL, then *SRCEND is set to the next byte after the
+   last byte used in SRC.  */
 grub_ssize_t
 grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 		    const grub_uint8_t *src, grub_size_t srcsize,
