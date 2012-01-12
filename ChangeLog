@@ -1,3 +1,7 @@
+2012-01-12  Seth Goldberg <seth.goldberg@oracle.com>
+
+	* grub-core/lib/arg.c (grub_arg_parse): Fix NULL pointer dereference.
+
 2012-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix handling of wide characters in gfxterm.

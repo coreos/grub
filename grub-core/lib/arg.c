@@ -332,7 +332,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	  opt = find_long (cmd->options, arg + 2, arglen);
 
 	  if (!option && argv[curarg + 1] && argv[curarg + 1][0] != '-'
-	      && opt->type != ARG_TYPE_NONE)
+	      && opt && opt->type != ARG_TYPE_NONE)
 	    option = argv[++curarg];
 
 	  if (!opt && (cmd->cmd->flags & GRUB_COMMAND_ACCEPT_DASH))
