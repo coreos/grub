@@ -1,3 +1,9 @@
+2012-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/30_os-prober.in: Fix occurence of grub-probe instead of
+	grub_probe.
+	Reported by: adamwill
+
 2012-01-12  Seth Goldberg <seth.goldberg@oracle.com>
 
 	* grub-core/lib/arg.c (grub_arg_parse): Fix NULL pointer dereference.

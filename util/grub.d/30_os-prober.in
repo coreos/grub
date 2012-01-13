@@ -168,7 +168,7 @@ EOF
       done
     ;;
     macosx)
-      OSXUUID="`grub-probe --target=fs_uuid --device ${DEVICE} 2> /dev/null`"
+      OSXUUID="`${grub_probe} --target=fs_uuid --device ${DEVICE} 2> /dev/null`"
       osx_entry xnu_kernel 32
       osx_entry xnu_kernel64 64
     ;;
