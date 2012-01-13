@@ -1,5 +1,14 @@
 2012-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix efiemu.
+
+	* grub-core/efiemu/runtime/efiemu.c: explicitly include right
+	cpu/types.h.
+	(efiemu_set_virtual_address_map): Remove UINT_TO_PTR.
+	* configure.ac: Fix efiemu check.
+
+2012-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/30_os-prober.in: Fix occurence of grub-probe instead of
 	grub_probe.
 	Reported by: adamwill

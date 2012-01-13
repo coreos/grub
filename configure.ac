@@ -477,6 +477,40 @@ case "${host_os}" in
 esac
 AC_MSG_RESULT([$TARGET_OBJ2ELF])
 
+
+AC_ARG_ENABLE([efiemu],
+	      [AS_HELP_STRING([--enable-efiemu],
+                             [build and install the efiemu runtimes (default=guessed)])])
+if test x"$enable_efiemu" = xno ; then
+  efiemu_excuse="explicitly disabled"
+fi
+if test x"$target_cpu" != xi386 ; then
+  efiemu_excuse="only available on i386"
+fi
+if test x"$platform" = xefi ; then
+  efiemu_excuse="not available on efi"
+fi
+if test x"$efiemu_excuse" = x ; then
+  AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_efiemu, [
+    CFLAGS="$CFLAGS -m64 -mcmodel=large -mno-red-zone -nostdlib"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		      [grub_cv_cc_efiemu=yes],
+		      [grub_cv_cc_efiemu=no])
+  ])
+  if test x$grub_cv_cc_efiemu = xno; then
+     efiemu_excuse="cannot compile with -m64 -mcmodel=large -mno-red-zone -nostdlib"
+  fi
+fi
+if test x"$enable_efiemu" = xyes && test x"$efiemu_excuse" != x ; then
+  AC_MSG_ERROR([efiemu runtime was explicitly requested but can't be compiled])
+fi
+if test x"$efiemu_excuse" = x ; then
+enable_efiemu=yes
+else
+enable_efiemu=no
+fi
+AC_SUBST([enable_efiemu])
+
 if test "x$target_m32" = x1; then
   # Force 32-bit mode.
   TARGET_CFLAGS="$TARGET_CFLAGS -m32"
@@ -635,39 +669,6 @@ if test "x$target_cpu" = xi386; then
   grub_I386_ASM_PREFIX_REQUIREMENT
   grub_I386_ASM_ADDR32
 fi
-
-AC_ARG_ENABLE([efiemu],
-	      [AS_HELP_STRING([--enable-efiemu],
-                             [build and install the efiemu runtimes (default=guessed)])])
-if test x"$enable_efiemu" = xno ; then
-  efiemu_excuse="explicitly disabled"
-fi
-if test x"$target_cpu" != xi386 ; then
-  efiemu_excuse="only available on i386"
-fi
-if test x"$platform" = xefi ; then
-  efiemu_excuse="not available on efi"
-fi
-if test x"$efiemu_excuse" = x ; then
-  AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_efiemu, [
-    CFLAGS="$CFLAGS -m64 -mcmodel=large -mno-red-zone -nostdlib"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		      [grub_cv_cc_efiemu=yes],
-		      [grub_cv_cc_efiemu=no])
-  ])
-  if test x$grub_cv_cc_efiemu = xno; then
-     efiemu_excuse="cannot compile with -m64 -mcmodel=large -mno-red-zone -nostdlib"
-  fi
-fi
-if test x"$enable_efiemu" = xyes && test x"$efiemu_excuse" != x ; then
-  AC_MSG_ERROR([efiemu runtime was explicitly requested but can't be compiled])
-fi
-if test x"$efiemu_excuse" = x ; then
-enable_efiemu=yes
-else
-enable_efiemu=no
-fi
-AC_SUBST([enable_efiemu])
 
 if test "$platform" != emu; then
 AC_CACHE_CHECK([whether -nostdinc -isystem works], [grub_cv_cc_isystem], [
