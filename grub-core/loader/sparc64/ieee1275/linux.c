@@ -445,8 +445,9 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   initrd_size = size;
 
  fail:
-  if (file)
-    grub_file_close (file);
+  for (i = 0; i < nfiles; i++)
+    grub_file_close (files[i]);
+  grub_free (files);
 
   return grub_errno;
 }

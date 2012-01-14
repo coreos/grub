@@ -478,10 +478,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 					    GRUB_RELOCATOR_PREFERENCE_NONE);
 
     if (err)
-      {
-	grub_file_close (file);
-	return err;
-      }
+      goto fail;
     initrd_src = get_virtual_current_address (ch);
     initrd_dest = get_physical_target_address (ch) | 0x80000000;
   }
@@ -507,10 +504,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 			  " rd_size=0x%" PRIxGRUB_ADDR, params,
 			  initrd_dest, size);
     if (!tmp)
-      {
-	grub_file_close (file);
-	return grub_errno;
-      }
+      goto fail;
     grub_free (params);
     params = tmp;
   }
@@ -532,9 +526,12 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   initrd_loaded = 1;
 
-  grub_file_close (file);
+ fail:
+  for (i = 0; i < nfiles; i++)
+    grub_file_close (files[i]);
+  grub_free (files);
 
-  return GRUB_ERR_NONE;
+  return grub_errno;
 }
 
 static grub_command_t cmd_linux, cmd_initrd;

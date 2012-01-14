@@ -618,7 +618,6 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     }
   grub_printf ("\n");
 
-  initrd_size = grub_file_size (file);
   initrd_pages = (page_align (initrd_size) >> 12);
   initrd_mem = grub_efi_allocate_pages (0, initrd_pages);
   if (! initrd_mem)
