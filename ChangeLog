@@ -1,5 +1,10 @@
 2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/posix_wrap/stdlib.h (MB_CUR_MAX): Moved from here ...
+	* grub-core/lib/posix_wrap/wchar.h (MB_CUR_MAX): ... here. Value fixed.
+
+2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/fshelp.c (grub_fshelp_find_file): Use grub_strcasecmp
 	rather than a hack for grub_strncasemap.
 

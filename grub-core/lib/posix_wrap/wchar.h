@@ -28,8 +28,6 @@ enum
     WEOF = -1
   };
 
-#define MB_LEN_MAX 4
-
 /* UCS-4.  */
 typedef grub_int32_t wchar_t;
 
@@ -37,6 +35,10 @@ typedef struct mbstate {
   grub_uint32_t code;
   int count;
 } mbstate_t;
+
+/* UTF-8. */
+#define MB_CUR_MAX 4
+#define MB_LEN_MAX 4
 
 static inline size_t
 mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)

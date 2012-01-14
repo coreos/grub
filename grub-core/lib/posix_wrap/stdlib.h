@@ -52,6 +52,4 @@ abort (void)
   grub_abort ();
 }
 
-#define MB_CUR_MAX 6
-
 #endif
