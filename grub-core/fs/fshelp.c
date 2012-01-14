@@ -84,7 +84,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  if (filetype == GRUB_FSHELP_UNKNOWN ||
               (grub_strcmp (name, filename) &&
                (! (filetype & GRUB_FSHELP_CASE_INSENSITIVE) ||
-                grub_strncasecmp (name, filename, GRUB_LONG_MAX))))
+                grub_strcasecmp (name, filename))))
 	    {
 	      grub_free (node);
 	      return 0;
