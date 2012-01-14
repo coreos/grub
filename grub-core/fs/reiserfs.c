@@ -1351,21 +1351,25 @@ grub_reiserfs_uuid (grub_device_t device, char **uuid)
 
   grub_dl_ref (my_mod);
 
+  *uuid = NULL;
   data = grub_reiserfs_mount (disk);
   if (data)
     {
-      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-			     grub_be_to_cpu16 (data->superblock.uuid[0]),
-			     grub_be_to_cpu16 (data->superblock.uuid[1]),
-			     grub_be_to_cpu16 (data->superblock.uuid[2]),
-			     grub_be_to_cpu16 (data->superblock.uuid[3]),
-			     grub_be_to_cpu16 (data->superblock.uuid[4]),
-			     grub_be_to_cpu16 (data->superblock.uuid[5]),
-			     grub_be_to_cpu16 (data->superblock.uuid[6]),
-			     grub_be_to_cpu16 (data->superblock.uuid[7]));
+      unsigned i;
+      for (i = 0; i < ARRAY_SIZE (data->superblock.uuid); i++)
+	if (data->superblock.uuid[i])
+	  break;
+      if (i < ARRAY_SIZE (data->superblock.uuid))
+	*uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+				grub_be_to_cpu16 (data->superblock.uuid[0]),
+				grub_be_to_cpu16 (data->superblock.uuid[1]),
+				grub_be_to_cpu16 (data->superblock.uuid[2]),
+				grub_be_to_cpu16 (data->superblock.uuid[3]),
+				grub_be_to_cpu16 (data->superblock.uuid[4]),
+				grub_be_to_cpu16 (data->superblock.uuid[5]),
+				grub_be_to_cpu16 (data->superblock.uuid[6]),
+				grub_be_to_cpu16 (data->superblock.uuid[7]));
     }
-  else
-    *uuid = NULL;
 
   grub_dl_unref (my_mod);
 

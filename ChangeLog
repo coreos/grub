@@ -1,5 +1,10 @@
 2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/reiserfs.c (grub_reiserfs_uuid): Reject 0-uuid as
+	created when no uuid support is compiled into mkfs.reiser.
+
+2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/hfs.c (macroman_to_utf8): Convert / to :.
 	(utf8_to_macroman): Do the opposite.
 	* grub-core/fs/hfsplus.c (grub_hfsplus_iterate_dir): Convert / to :.
