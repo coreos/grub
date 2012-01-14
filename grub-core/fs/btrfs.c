@@ -928,13 +928,17 @@ grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
       /* Block partially filled with requested data.  */
       if (off > 0 || osize < GRUB_BTRFS_LZO_BLOCK_SIZE)
 	{
-	  grub_size_t to_copy = grub_min(osize, GRUB_BTRFS_LZO_BLOCK_SIZE - off);
+	  grub_size_t to_copy = GRUB_BTRFS_LZO_BLOCK_SIZE - off;
+
+	  if (to_copy > osize)
+	    to_copy = osize;
 
 	  if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, buf, &usize,
 	      NULL) != LZO_E_OK)
 	    return -1;
 
-	  to_copy = grub_min(to_copy, usize);
+	  if (to_copy > usize)
+	    to_copy = usize;
 	  grub_memcpy(obuf, buf + off, to_copy);
 
 	  osize -= to_copy;

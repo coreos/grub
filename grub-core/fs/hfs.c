@@ -1150,10 +1150,14 @@ grub_hfs_dir (grub_device_t device, const char *path,
       struct grub_hfs_catalog_key *ckey = rec->key;
       char fname[sizeof (ckey->str) * MAX_UTF8_PER_MAC_ROMAN + 1] = { 0 };
       struct grub_dirhook_info info;
+      grub_size_t len;
+
       grub_memset (&info, 0, sizeof (info));
 
-      macroman_to_utf8 (fname, ckey->str, grub_min (ckey->strlen,
-						    sizeof (ckey->str)));
+      len = ckey->strlen;
+      if (len > sizeof (ckey->str))
+	len = sizeof (ckey->str);
+      macroman_to_utf8 (fname, ckey->str, len);
 
       info.case_insensitive = 1;
 
@@ -1272,8 +1276,9 @@ grub_hfs_label (grub_device_t device, char **label)
 
   if (data)
     {
-      grub_size_t len = grub_min (sizeof (data->sblock.volname) - 1,
-				  data->sblock.volname[0]);
+      grub_size_t len = data->sblock.volname[0];
+      if (len > sizeof (data->sblock.volname) - 1)
+	len = sizeof (data->sblock.volname) - 1;
       *label = grub_malloc (len * MAX_UTF8_PER_MAC_ROMAN + 1);
       if (*label)
 	macroman_to_utf8 (*label, data->sblock.volname + 1,

@@ -1,3 +1,28 @@
+2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Eliminate grub_min/grub_max prone to overflow usage.
+
+	* grub-core/bus/usb/usbhub.c (grub_usb_add_hub): Eliminate grub_min.
+	(poll_nonroot_hub): Likewise.
+	* grub-core/fs/affs.c (grub_affs_iterate_dir): Likewise.
+	(grub_affs_label): Likewise.
+	* grub-core/fs/btrfs.c (grub_btrfs_lzo_decompress): Likewise.
+	* grub-core/fs/hfs.c (grub_hfs_dir): Likewise.
+	(grub_hfs_label): Likewise.
+	* grub-core/fs/hfsplus.c (grub_hfsplus_cmp_catkey): Likewise.
+	* grub-core/fs/zfs/zfs.c (MIN): Remove.
+	(zap_leaf_array_equal): Use grub_size. Remove MIN.
+	(zap_leaf_array_get): Likewise.
+	(dnode_get_path): Likewise.
+	* grub-core/io/lzopio.c (grub_lzopio_read): Eliminate grub_min.
+	* grub-core/io/xzio.c (grub_xzio_read): Likewise.
+	* grub-core/script/execute.c (grub_script_break): Likewise.
+	* grub-core/script/lexer.c (grub_script_lexer_record): Eliminate
+	grub_max.
+	* grub-core/script/yylex.l (grub_lexer_yyrealloc): Likewise.
+	* include/grub/misc.h (grub_min): Removed.
+	(grub_max): Likewise.
+
 2012-01-14  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* grub-core/fs/ext2.c (grub_ext2_iterate_dir): Ignore entries with

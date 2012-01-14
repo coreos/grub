@@ -500,14 +500,16 @@ grub_lzopio_read (grub_file_t file, char *buf, grub_size_t len)
 
   while (len != 0 && lzopio->block.usize != 0)
     {
-      long to_copy;
+      grub_size_t to_copy;
 
       /* Block not decompressed yet.  */
       if (!lzopio->block.udata && uncompress_block (lzopio) < 0)
 	goto CORRUPTED;
 
       /* Copy requested data into buffer.  */
-      to_copy = grub_min (lzopio->block.usize - off, len);
+      to_copy = lzopio->block.usize - off;
+      if (to_copy > len)
+	to_copy = len;
       grub_memcpy (buf, lzopio->block.udata + off, to_copy);
 
       len -= to_copy;

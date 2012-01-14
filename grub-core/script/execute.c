@@ -82,7 +82,9 @@ grub_script_break (grub_command_t cmd, int argc, char *argv[])
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad break");
 
   is_continue = grub_strcmp (cmd->name, "break") ? 1 : 0;
-  active_breaks = grub_min (active_loops, count);
+  active_breaks = count;
+  if (active_breaks > active_loops)
+    active_breaks = active_loops;
   return GRUB_ERR_NONE;
 }
 

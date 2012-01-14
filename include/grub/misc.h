@@ -393,24 +393,6 @@ grub_abs (int x)
     return (unsigned int) x;
 }
 
-static inline long
-grub_min (long x, long y)
-{
-  if (x < y)
-    return x;
-  else
-    return y;
-}
-
-static inline long
-grub_max (long x, long y)
-{
-  if (x > y)
-    return x;
-  else
-    return y;
-}
-
 /* Rounded-up division */
 static inline unsigned int
 grub_div_roundup (unsigned int x, unsigned int y)

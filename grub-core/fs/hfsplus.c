@@ -520,6 +520,7 @@ grub_hfsplus_cmp_catkey (struct grub_hfsplus_key *keya,
   struct grub_hfsplus_catkey *catkey_a = &keya->catkey;
   struct grub_hfsplus_catkey_internal *catkey_b = &keyb->catkey;
   int diff;
+  grub_size_t len;
 
   /* Safe unsigned comparison */
   grub_uint32_t aparent = grub_be_to_cpu32 (catkey_a->parent);
@@ -528,10 +529,11 @@ grub_hfsplus_cmp_catkey (struct grub_hfsplus_key *keya,
   if (aparent < catkey_b->parent)
     return -1;
 
+  len = grub_be_to_cpu16 (catkey_a->namelen);
+  if (len > catkey_b->namelen)
+    len = catkey_b->namelen;
   diff = grub_memcmp (catkey_a->name, catkey_b->name,
-		      grub_min (grub_be_to_cpu16 (catkey_a->namelen),
-				catkey_b->namelen)
-		      * sizeof (catkey_a->name[0]));
+		      len * sizeof (catkey_a->name[0]));
   if (diff == 0)
     diff = grub_be_to_cpu16 (catkey_a->namelen) - catkey_b->namelen;
 

@@ -58,8 +58,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 #define	ZPOOL_PROP_BOOTFS		"bootfs"
 
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
-
 /*
  * For nvlist manipulation. (from nvpair.h)
  */
@@ -1842,18 +1840,21 @@ name_cmp (const char *s1, const char *s2, grub_size_t n,
 /* XXX */
 static int
 zap_leaf_array_equal (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
-		      int blksft, int chunk, int array_len, const char *buf,
-		      int case_insensitive)
+		      int blksft, int chunk, grub_size_t array_len,
+		      const char *buf, int case_insensitive)
 {
-  int bseen = 0;
+  grub_size_t bseen = 0;
 
   while (bseen < array_len)
     {
       struct zap_leaf_array *la = &ZAP_LEAF_CHUNK (l, blksft, chunk)->l_array;
-      int toread = MIN (array_len - bseen, ZAP_LEAF_ARRAY_BYTES);
+      grub_size_t toread = array_len - bseen;
+
+      if (toread > ZAP_LEAF_ARRAY_BYTES)
+	toread = ZAP_LEAF_ARRAY_BYTES;
 
       if (chunk >= ZAP_LEAF_NUMCHUNKS (blksft))
-	return (0);
+	return 0;
 
       if (name_cmp ((char *) la->la_array, buf + bseen, toread,
 		    case_insensitive) != 0)
@@ -1867,14 +1868,17 @@ zap_leaf_array_equal (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
 /* XXX */
 static grub_err_t
 zap_leaf_array_get (zap_leaf_phys_t * l, grub_zfs_endian_t endian, int blksft, 
-		    int chunk, int array_len, char *buf)
+		    int chunk, grub_size_t array_len, char *buf)
 {
-  int bseen = 0;
+  grub_size_t bseen = 0;
 
   while (bseen < array_len)
     {
       struct zap_leaf_array *la = &ZAP_LEAF_CHUNK (l, blksft, chunk)->l_array;
-      int toread = MIN (array_len - bseen, ZAP_LEAF_ARRAY_BYTES);
+      grub_size_t toread = array_len - bseen;
+
+      if (toread > ZAP_LEAF_ARRAY_BYTES)
+	toread = ZAP_LEAF_ARRAY_BYTES;
 
       if (chunk >= ZAP_LEAF_NUMCHUNKS (blksft))
 	/* Don't use grub_error because this error is to be ignored.  */
@@ -2516,7 +2520,9 @@ dnode_get_path (struct subvolume *subvol, const char *path_in, dnode_end_t *dn,
 		  if (err)
 		    return err;
 
-		  movesize = MIN (sym_sz - block * blksz, blksz);
+		  movesize = sym_sz - block * blksz;
+		  if (movesize > blksz)
+		    movesize = blksz;
 
 		  grub_memcpy (sym_value + block * blksz, t, movesize);
 		  grub_free (t);

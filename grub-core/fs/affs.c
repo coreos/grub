@@ -305,6 +305,7 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
     {
       int type;
       grub_uint8_t name_u8[sizeof (fil->name) * GRUB_MAX_UTF8_PER_LATIN1 + 1];
+      grub_size_t len;
 
       node = grub_zalloc (sizeof (*node));
       if (!node)
@@ -327,8 +328,10 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
       node->di = *fil;
       node->parent = dir;
 
-      *grub_latin1_to_utf8 (name_u8, fil->name,
-			    grub_min (fil->namelen, sizeof (fil->name))) = '\0';
+      len = fil->namelen;
+      if (len > sizeof (fil->name))
+	len = sizeof (fil->name);
+      *grub_latin1_to_utf8 (name_u8, fil->name, len) = '\0';
       
       if (hook ((char *) name_u8, type, node))
 	{
@@ -540,7 +543,9 @@ grub_affs_label (grub_device_t device, char **label)
       if (grub_errno)
 	return 0;
 
-      len = grub_min (file.namelen, sizeof (file.name));
+      len = file.namelen;
+      if (len > sizeof (file.name))
+	len = sizeof (file.name);
       *label = grub_malloc (len * GRUB_MAX_UTF8_PER_LATIN1 + 1);
       if (*label)
 	*grub_latin1_to_utf8 ((grub_uint8_t *) *label, file.name, len) = '\0';
