@@ -1004,6 +1004,12 @@ macroman_to_utf8 (char *to, const grub_uint8_t *from, grub_size_t len)
 
   for (iptr = from; iptr < from + len && *iptr; iptr++)
     {
+      /* Translate '/' to ':' as per HFS spec.  */
+      if (*iptr == '/')
+	{
+	  *optr++ = ':';
+	  continue;
+	}	
       if (!(*iptr & 0x80))
 	{
 	  *optr++ = *iptr;
@@ -1024,6 +1030,13 @@ utf8_to_macroman (grub_uint8_t *to, const char *from)
   while (*iptr && optr < end)
     {
       int i, clen;
+      /* Translate ':' to '/' as per HFS spec.  */
+      if (*iptr == ':')
+	{
+	  *optr++ = '/';
+	  iptr++;
+	  continue;
+	}	
       if (!(*iptr & 0x80))
 	{
 	  *optr++ = *iptr++;

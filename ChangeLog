@@ -1,5 +1,11 @@
 2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/hfs.c (macroman_to_utf8): Convert / to :.
+	(utf8_to_macroman): Do the opposite.
+	* grub-core/fs/hfsplus.c (grub_hfsplus_iterate_dir): Convert / to :.
+
+2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Refise build qemu_mips w/o unifont.
 
 2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>

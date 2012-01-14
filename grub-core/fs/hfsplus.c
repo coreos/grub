@@ -789,6 +789,9 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 	{
 	  catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
 
+	  if (catkey->name[i] == '/')
+	    catkey->name[i] = ':';
+
 	  /* If the name is obviously invalid, skip this node.  */
 	  if (catkey->name[i] == 0)
 	    return 0;
@@ -799,7 +802,11 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 
       /* Restore the byte order to what it was previously.  */
       for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
-	catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
+	{
+	  if (catkey->name[i] == ':')
+	    catkey->name[i] = '/';
+	  catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
+	}
 
       /* hfs+ is case insensitive.  */
       if (! dir->data->case_sensitive)
