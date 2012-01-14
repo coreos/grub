@@ -1,5 +1,9 @@
 2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/datetime.h (grub_datetime2unixtime): Fix offset.
+
+2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/stdlib.h (MB_CUR_MAX): Moved from here ...
 	* grub-core/lib/posix_wrap/wchar.h (MB_CUR_MAX): ... here. Value fixed.
 
