@@ -131,8 +131,7 @@ scan_devices (const char *arname)
 	      }
 	}
 
-      if ((disk->total_sectors != GRUB_ULONG_MAX) &&
-	  (! raid->detect (disk, &array, &start_sector)) &&
+      if ((! raid->detect (disk, &array, &start_sector)) &&
 	  (! insert_array (disk, &array, start_sector, raid->name,
 			   raid)))
 	return 0;

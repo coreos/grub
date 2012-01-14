@@ -100,8 +100,10 @@ grub_dmraid_nv_detect (grub_disk_t disk, struct grub_raid_array *array,
   if (disk->partition)
     return grub_error (GRUB_ERR_OUT_OF_RANGE, "skip partition");
 
-  sector = grub_disk_get_size (disk) - 2;
-
+  sector = grub_disk_get_size (disk);
+  if (sector == GRUB_DISK_SIZE_UNKNOWN)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, "not raid");
+  sector -= 2;
   if (grub_disk_read (disk, sector, 0, sizeof (sb), &sb))
     return grub_errno;
 

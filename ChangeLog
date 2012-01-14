@@ -1,5 +1,11 @@
 2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Skip
+	disks with unknown size.
+	* grub-core/disk/raid.c (scan_devices): Allow disks with unknown sizes.
+
+2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove defines pertaining to arbitrary limits not affecting GRUB
 	anymore.
 
