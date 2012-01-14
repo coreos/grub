@@ -1,5 +1,9 @@
 2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Refise build qemu_mips w/o unifont.
+
+2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Eliminate grub_min/grub_max prone to overflow usage.
 
 	* grub-core/bus/usb/usbhub.c (grub_usb_add_hub): Eliminate grub_min.

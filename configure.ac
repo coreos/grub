@@ -234,7 +234,7 @@ for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
   done
 done
 
-if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xloongson ); then
+if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips); then
    AC_MSG_ERROR([qemu and loongson ports need unifont])
 fi
 
