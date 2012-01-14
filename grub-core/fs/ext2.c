@@ -685,7 +685,7 @@ grub_ext2_iterate_dir (grub_fshelp_node_t dir,
       if (dirent.direntlen == 0)
         return 0;
 
-      if (dirent.namelen != 0)
+      if (dirent.inode != 0 && dirent.namelen != 0)
 	{
 	  char filename[dirent.namelen + 1];
 	  struct grub_fshelp_node *fdiro;

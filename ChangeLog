@@ -1,3 +1,8 @@
+2012-01-14  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* grub-core/fs/ext2.c (grub_ext2_iterate_dir): Ignore entries with
+	direct.inode = 0.
+
 2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/posix_wrap/wctype.h (CHARCLASS_NAME_MAX): New define.
