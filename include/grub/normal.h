@@ -28,9 +28,6 @@
 #include <grub/command.h>
 #include <grub/file.h>
 
-/* The maximum size of a command-line.  */
-#define GRUB_MAX_CMDLINE	1600
-
 /* The standard left and right margin for some messages.  */
 #define STANDARD_MARGIN 6
 

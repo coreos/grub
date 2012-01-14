@@ -157,9 +157,6 @@
 #define GRUB_PXE_BOOTP_SIZE	(312 + 236)	/* DHCP standard vendor field size.  */
 #endif
 
-#define GRUB_PXE_MIN_BLKSIZE	512
-#define GRUB_PXE_MAX_BLKSIZE	1432
-
 #define GRUB_PXE_TFTP_PORT	69
 
 #define GRUB_PXE_ERR_LEN	0xFFFFFFFF

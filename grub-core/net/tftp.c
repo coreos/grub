@@ -41,7 +41,6 @@ enum
 enum
   {
     TFTP_DEFAULTSIZE_PACKET = 512,
-    TFTP_MAX_PACKET = 1432
   };
 
 enum
@@ -81,7 +80,7 @@ struct tftphdr {
     grub_int8_t rrq[TFTP_DEFAULTSIZE_PACKET];
     struct {
       grub_uint16_t block;
-      grub_int8_t download[TFTP_MAX_PACKET];
+      grub_int8_t download[0];
     } data;
     struct {
       grub_uint16_t block;

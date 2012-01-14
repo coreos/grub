@@ -49,7 +49,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 /* nilfs btree node level. */
 #define NILFS_BTREE_LEVEL_DATA          0
 #define NILFS_BTREE_LEVEL_NODE_MIN      (NILFS_BTREE_LEVEL_DATA + 1)
-#define NILFS_BTREE_LEVEL_MAX           14
 
 /* nilfs 1st super block posission from beginning of the partition
    in 512 block size */

@@ -1,5 +1,28 @@
 2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove defines pertaining to arbitrary limits not affecting GRUB
+	anymore.
+
+	* grub-core/fs/ext2.c (EXT2_PATH_MAX): Removed.
+	(EXT2_MAX_SYMLINKCNT): Likewise.
+	* grub-core/fs/nilfs2.c (NILFS_BTREE_LEVEL_MAX): Likewise.
+	* grub-core/net/tftp.c (TFTP_MAX_PACKET): Likewise.
+	* include/grub/i386/pc/pxe.h (GRUB_PXE_MIN_BLKSIZE): Likewise.
+	(GRUB_PXE_MAX_BLKSIZE): Likewise.
+	* include/grub/normal.h (GRUB_MAX_CMDLINE): Likewise.
+	* include/grub/zfs/dnode.h (DN_MAX_INDBLKSHIFT): Likewise.
+	(DN_MAX_OBJECT_SHIFT): Likewise.
+	(DN_MAX_OFFSET_SHIFT): Likewise.
+	(DN_MAX_OBJECT): Likewise.
+	(DNODES_PER_LEVEL_SHIFT): Likewise.
+	* include/grub/zfs/spa.h (SPA_MAXBLOCKSHIFT): Likewise.
+	(SPA_MAXBLOCKSIZE): Likewise.
+	(SPA_BLOCKSIZES): Likewise.
+	* include/grub/zfs/zap_impl.h (MZAP_MAX_BLKSHIFT): Likewise.
+	(MZAP_MAX_BLKSZ): Likewise.
+
+2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (grub_zfs_read): Remove useless alloc and
 	handle NULL appropriately.
 	Remove MIN.
