@@ -29,6 +29,8 @@ typedef enum { GRUB_CTYPE_INVALID,
 	       GRUB_CTYPE_GRAPH, GRUB_CTYPE_PUNCT, GRUB_CTYPE_XDIGIT,
 	       GRUB_CTYPE_MAX} wctype_t;
 
+#define CHARCLASS_NAME_MAX (sizeof ("xdigit") - 1)
+
 static inline wctype_t
 wctype (const char *name)
 {
