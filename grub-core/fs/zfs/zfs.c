@@ -3509,14 +3509,6 @@ grub_zfs_read (grub_file_t file, char *buf, grub_size_t len)
   grub_size_t read;
   grub_err_t err;
 
-  if (data->file_buf == NULL)
-    {
-      data->file_buf = grub_malloc (SPA_MAXBLOCKSIZE);
-      if (!data->file_buf)
-	return -1;
-      data->file_start = data->file_end = 0;
-    }
-
   /*
    * If offset is in memory, move it into the buffer provided and return.
    */
@@ -3553,12 +3545,18 @@ grub_zfs_read (grub_file_t file, char *buf, grub_size_t len)
 		      0, data);
       data->file_buf = t;
       if (err)
-	return -1;
+	{
+	  data->file_buf = NULL;
+	  data->file_start = data->file_end = 0;
+	  return -1;
+	}
 
       data->file_start = blkid * blksz;
       data->file_end = data->file_start + blksz;
 
-      movesize = MIN (length, data->file_end - file->offset - read);
+      movesize = data->file_end - file->offset - read;
+      if (movesize > length)
+	movesize = length;
 
       grub_memmove (buf, data->file_buf + file->offset + read
 		    - data->file_start, movesize);

@@ -1,3 +1,9 @@
+2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c (grub_zfs_read): Remove useless alloc and
+	handle NULL appropriately.
+	Remove MIN.
+
 2012-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix efiemu.
