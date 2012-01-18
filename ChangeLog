@@ -1,5 +1,12 @@
 2012-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make XZ compression parameters dependent on target and not host CPU.
+
+	* configure.ac: Define GRUB_TARGET_CPU_XYZ series.
+	* grub-core/lib/xzembed/xz_config.h: Use GRUB_TARGET_CPU_XYZ.
+
+2012-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/powerpc/dl.c (grub_arch_dl_get_tramp_got_size): Remove
 	set but not used variable.
 
