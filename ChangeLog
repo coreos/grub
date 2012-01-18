@@ -1,5 +1,11 @@
 2012-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/datetime.h (grub_get_datetime_cmos): Don't define in
+	GRUB_UTIL.
+	(grub_set_datetime_cmos): Likewise.
+
+2012-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make XZ compression parameters dependent on target and not host CPU.
 
 	* configure.ac: Define GRUB_TARGET_CPU_XYZ series.
