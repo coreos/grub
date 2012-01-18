@@ -1,5 +1,12 @@
 2012-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support powerpc with GCC that defines __PPC__ but not __powerpc__.
+
+	* config.h.in (__powerpc__) [__PPC__ && !__powerpc__]: New definition.
+	* grub-core/lib/setjmp.S: Treat __PPC__ as equivalent to __powerpc__.
+
+2012-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/datetime.h (grub_get_datetime_cmos): Don't define in
 	GRUB_UTIL.
 	(grub_set_datetime_cmos): Likewise.

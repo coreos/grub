@@ -2,6 +2,9 @@
 #undef _FILE_OFFSET_BITS
 #define _LARGEFILE_SOURCE
 #define _FILE_OFFSET_BITS 64
+#if defined(__PPC__) && !defined(__powerpc__)
+#define __powerpc__ 1
+#endif
 #if defined (GRUB_UTIL) || !defined (GRUB_MACHINE)
 #include <config-util.h>
 #define NESTED_FUNC_ATTR
