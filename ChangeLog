@@ -1,3 +1,8 @@
+2012-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/powerpc/dl.c (grub_arch_dl_get_tramp_got_size): Remove
+	set but not used variable.
+
 2012-01-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/reiserfs.c (grub_reiserfs_uuid): Reject 0-uuid as

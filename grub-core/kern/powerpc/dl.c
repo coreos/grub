@@ -43,7 +43,6 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 {
   const Elf_Ehdr *e = ehdr;
   const Elf_Shdr *s;
-  Elf_Word entsize;
   unsigned i;
 
   *tramp = 0;
@@ -58,8 +57,6 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 
   if (i == e->e_shnum)
     return;
-
-  entsize = s->sh_entsize;
 
   for (i = 0, s = (const Elf_Shdr *) ((const char *) e + e->e_shoff);
        i < e->e_shnum;
