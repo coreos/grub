@@ -30,7 +30,7 @@
 
 #ifndef ASM_FILE
 
-extern grub_uint32_t grub_arch_memsize;
+extern grub_uint32_t grub_arch_memsize __attribute__ ((section(".text")));
 
 static inline grub_err_t
 grub_machine_mmap_register (grub_uint64_t start __attribute__ ((unused)),

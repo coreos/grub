@@ -1,3 +1,14 @@
+2012-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/arc/init.c (grub_total_modules_size): Mark as
+	being in .text to avoid dprel references.
+	* include/grub/mips/loongson/kernel.h (grub_arch_machine): Likewise.
+	* include/grub/mips/loongson/memory.h (grub_arch_memsize): Likewise.
+	(grub_arch_highmemsize): Likewise.
+	* include/grub/mips/loongson/time.h (grub_arch_busclock): Likewise.
+	* include/grub/mips/qemu_mips/memory.h (grub_arch_memsize): Likewise.
+	* include/grub/mips/time.h (grub_arch_cpuclock): Likewise.
+
 2012-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support powerpc with GCC that defines __PPC__ but not __powerpc__.

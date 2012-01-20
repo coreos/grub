@@ -125,7 +125,7 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
     }
 }
 
-extern grub_uint32_t grub_total_modules_size;
+extern grub_uint32_t grub_total_modules_size __attribute__ ((section(".text")));
 grub_addr_t grub_modbase;
 
 void

@@ -22,6 +22,6 @@
 #include <grub/symbol.h>
 #include <grub/cpu/time.h>
 
-extern grub_uint32_t EXPORT_VAR (grub_arch_busclock);
+extern grub_uint32_t EXPORT_VAR (grub_arch_busclock) __attribute__ ((section(".text")));
 
 #endif /* ! KERNEL_MACHINE_TIME_HEADER */
