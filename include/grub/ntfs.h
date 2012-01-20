@@ -81,7 +81,7 @@ enum
 
 #define GRUB_NTFS_BLK_SHR		GRUB_DISK_SECTOR_BITS
 
-#define GRUB_NTFS_MAX_MFT		(1024 >> GRUB_NTFS_BLK_SHR)
+#define GRUB_NTFS_MAX_MFT		(4096 >> GRUB_NTFS_BLK_SHR)
 #define GRUB_NTFS_MAX_IDX		(16384 >> GRUB_NTFS_BLK_SHR)
 
 #define GRUB_NTFS_COM_LEN		4096
@@ -157,7 +157,6 @@ struct grub_ntfs_data
   grub_uint32_t mft_size;
   grub_uint32_t idx_size;
   grub_uint32_t spc;
-  grub_uint32_t blocksize;
   grub_uint32_t mft_start;
   grub_uint64_t uuid;
 };

@@ -1,5 +1,14 @@
 2012-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support 4K-sector NTFS.
+
+	* include/grub/ntfs.h (GRUB_NTFS_MAX_MFT): Increase to 8.
+	(grub_ntfs_data): Remove blocksize.
+	* grub-core/fs/ntfs.c (fixup): Fix size comparison.
+	Remove data argument. All users updated.
+
+2012-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/mips/arc/init.c (grub_total_modules_size): Mark as
 	being in .text to avoid dprel references.
 	* include/grub/mips/loongson/kernel.h (grub_arch_machine): Likewise.

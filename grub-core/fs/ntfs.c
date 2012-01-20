@@ -55,26 +55,26 @@ u64at (void *ptr, grub_size_t ofs)
 grub_ntfscomp_func_t grub_ntfscomp_func;
 
 static grub_err_t
-fixup (struct grub_ntfs_data *data, char *buf, int len, const char *magic)
+fixup (char *buf, int len, const char *magic)
 {
   int ss;
   char *pu;
   grub_uint16_t us;
 
+  COMPILE_TIME_ASSERT ((1 << GRUB_NTFS_BLK_SHR) == GRUB_DISK_SECTOR_SIZE);
+
   if (grub_memcmp (buf, magic, 4))
     return grub_error (GRUB_ERR_BAD_FS, "%s label not found", magic);
 
   ss = u16at (buf, 6) - 1;
-  if (ss * (int) data->blocksize != len * GRUB_DISK_SECTOR_SIZE)
-    return grub_error (GRUB_ERR_BAD_FS, "size not match",
-		       ss * (int) data->blocksize,
-		       len * GRUB_DISK_SECTOR_SIZE);
+  if (ss != len)
+    return grub_error (GRUB_ERR_BAD_FS, "size not match");
   pu = buf + u16at (buf, 4);
   us = u16at (pu, 0);
   buf -= 2;
   while (ss > 0)
     {
-      buf += data->blocksize;
+      buf += GRUB_DISK_SECTOR_SIZE;
       pu += 2;
       if (u16at (buf, 0) != us)
 	return grub_error (GRUB_ERR_BAD_FS, "fixup signature not match");
@@ -148,9 +148,7 @@ find_attr (struct grub_ntfs_attr *at, unsigned char attr)
 			512, at->emft_buf + 512)))
 		    return NULL;
 
-		  if (fixup
-		      (at->mft->data, at->emft_buf, at->mft->data->mft_size,
-		       "FILE"))
+		  if (fixup (at->emft_buf, at->mft->data->mft_size, "FILE"))
 		    return NULL;
 		}
 	      else
@@ -542,7 +540,7 @@ read_mft (struct grub_ntfs_data *data, char *buf, grub_uint32_t mftno)
       (&data->mmft.attr, buf, mftno * ((grub_disk_addr_t) data->mft_size << GRUB_NTFS_BLK_SHR),
        data->mft_size << GRUB_NTFS_BLK_SHR, 0, 0))
     return grub_error (GRUB_ERR_BAD_FS, "read MFT 0x%X fails", mftno);
-  return fixup (data, buf, data->mft_size, "FILE");
+  return fixup (buf, data->mft_size, "FILE");
 }
 
 static grub_err_t
@@ -901,7 +899,7 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
 	      if ((read_attr
 		   (at, indx, i * (mft->data->idx_size << GRUB_NTFS_BLK_SHR),
 		    (mft->data->idx_size << GRUB_NTFS_BLK_SHR), 0, 0))
-		  || (fixup (mft->data, indx, mft->data->idx_size, "INDX")))
+		  || (fixup (indx, mft->data->idx_size, "INDX")))
 		goto done;
 	      ret = list_file (mft, &indx[0x18 + u16at (indx, 0x18)], hook);
 	      if (ret)
@@ -946,8 +944,9 @@ grub_ntfs_mount (grub_disk_t disk)
   if (grub_memcmp ((char *) &bpb.oem_name, "NTFS", 4))
     goto fail;
 
-  data->blocksize = grub_le_to_cpu16 (bpb.bytes_per_sector);
-  data->spc = bpb.sectors_per_cluster * (data->blocksize >> GRUB_NTFS_BLK_SHR);
+  data->spc = (bpb.sectors_per_cluster
+	       * (grub_le_to_cpu16 (bpb.bytes_per_sector)
+		  >> GRUB_NTFS_BLK_SHR));
 
   if (bpb.clusters_per_mft > 0)
     data->mft_size = data->spc * bpb.clusters_per_mft;
@@ -977,7 +976,7 @@ grub_ntfs_mount (grub_disk_t disk)
 
   data->uuid = grub_le_to_cpu64 (bpb.num_serial);
 
-  if (fixup (data, data->mmft.buf, data->mft_size, "FILE"))
+  if (fixup (data->mmft.buf, data->mft_size, "FILE"))
     goto fail;
 
   if (!locate_attr (&data->mmft.attr, &data->mmft, GRUB_NTFS_AT_DATA))
