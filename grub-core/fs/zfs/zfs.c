@@ -192,6 +192,7 @@ struct grub_zfs_device_desc
   enum { DEVICE_LEAF, DEVICE_MIRROR, DEVICE_RAIDZ } type;
   grub_uint64_t id;
   grub_uint64_t guid;
+  unsigned ashift;
 
   /* Valid only for non-leafs.  */
   unsigned n_children;
@@ -199,7 +200,6 @@ struct grub_zfs_device_desc
 
   /* Valid only for RAIDZ.  */
   unsigned nparity;
-  unsigned ashift;
 
   /* Valid only for leaf devices.  */
   grub_device_t dev;
@@ -466,12 +466,12 @@ vdev_uberblock_compare (uberblock_t * ub1, uberblock_t * ub2)
  * Three pieces of information are needed to verify an uberblock: the magic
  * number, the version number, and the checksum.
  *
- * Currently Implemented: version number, magic number
- * Need to Implement: checksum
+ * Currently Implemented: version number, magic number, checksum
  *
  */
 static grub_err_t
-uberblock_verify (uberblock_phys_t * ub, grub_uint64_t offset)
+uberblock_verify (uberblock_phys_t * ub, grub_uint64_t offset,
+		  grub_size_t s)
 {
   uberblock_t *uber = &ub->ubp_uberblock;
   grub_err_t err;
@@ -498,7 +498,7 @@ uberblock_verify (uberblock_phys_t * ub, grub_uint64_t offset)
 
   zc.zc_word[0] = grub_cpu_to_zfs64 (offset, endian);
   err = zio_checksum_verify (zc, ZIO_CHECKSUM_LABEL, endian,
-			     (char *) ub, UBERBLOCK_SIZE);
+			     (char *) ub, s);
 
   return err;
 }
@@ -510,28 +510,37 @@ uberblock_verify (uberblock_phys_t * ub, grub_uint64_t offset)
  *    Failure - NULL
  */
 static uberblock_phys_t *
-find_bestub (uberblock_phys_t * ub_array, grub_disk_addr_t sector)
+find_bestub (uberblock_phys_t * ub_array,
+	     const struct grub_zfs_device_desc *desc)
 {
-  uberblock_phys_t *ubbest = NULL;
+  uberblock_phys_t *ubbest = NULL, *ubptr;
   int i;
   grub_disk_addr_t offset;
   grub_err_t err = GRUB_ERR_NONE;
+  int ub_shift;
 
-  for (i = 0; i < (VDEV_UBERBLOCK_RING >> VDEV_UBERBLOCK_SHIFT); i++)
+  ub_shift = desc->ashift;
+  if (ub_shift < VDEV_UBERBLOCK_SHIFT)
+    ub_shift = VDEV_UBERBLOCK_SHIFT;
+
+  for (i = 0; i < (VDEV_UBERBLOCK_RING >> ub_shift); i++)
     {
-      offset = (sector << SPA_MINBLOCKSHIFT) + VDEV_PHYS_SIZE
-	+ (i << VDEV_UBERBLOCK_SHIFT);
+      offset = (desc->vdev_phys_sector << SPA_MINBLOCKSHIFT) + VDEV_PHYS_SIZE
+	+ (i << ub_shift);
 
-      err = uberblock_verify (&ub_array[i], offset);
+      ubptr = (uberblock_phys_t *) ((grub_properly_aligned_t *) ub_array
+				    + ((i << ub_shift)
+				       / sizeof (grub_properly_aligned_t)));
+      err = uberblock_verify (ubptr, offset, 1 << ub_shift);
       if (err)
 	{
 	  grub_errno = GRUB_ERR_NONE;
 	  continue;
 	}
       if (ubbest == NULL 
-	  || vdev_uberblock_compare (&(ub_array[i].ubp_uberblock),
+	  || vdev_uberblock_compare (&(ubptr->ubp_uberblock),
 				     &(ubbest->ubp_uberblock)) > 0)
-	ubbest = &ub_array[i];
+	ubbest = ubptr;
     }
   if (!ubbest)
     grub_errno = err;
@@ -582,7 +591,8 @@ fill_vdev_info_real (struct grub_zfs_data *data,
 		     const char *nvlist,
 		     struct grub_zfs_device_desc *fill,
 		     struct grub_zfs_device_desc *insert,
-		     int *inserted)
+		     int *inserted,
+		     unsigned ashift)
 {
   char *type;
 
@@ -603,6 +613,19 @@ fill_vdev_info_real (struct grub_zfs_data *data,
       return grub_error (GRUB_ERR_BAD_FS, "couldn't find vdev id");
     }
 
+  {
+    grub_uint64_t par;
+    if (grub_zfs_nvlist_lookup_uint64 (nvlist, "ashift", &par))
+      fill->ashift = par;
+    else if (ashift != 0xffffffff)
+      fill->ashift = ashift;
+    else
+      {
+	grub_free (type);
+	return grub_error (GRUB_ERR_BAD_FS, "couldn't find ashift");
+      }
+  }
+
   if (grub_strcmp (type, VDEV_TYPE_DISK) == 0
       || grub_strcmp (type, VDEV_TYPE_FILE) == 0)
     {
@@ -616,6 +639,7 @@ fill_vdev_info_real (struct grub_zfs_data *data,
 	  fill->original = insert->original;
 	  if (!data->device_original)
 	    data->device_original = fill;
+	  insert->ashift = fill->ashift;
 	  *inserted = 1;
 	}
 
@@ -641,12 +665,6 @@ fill_vdev_info_real (struct grub_zfs_data *data,
 	      return grub_error (GRUB_ERR_BAD_FS, "couldn't find raidz parity");
 	    }
 	  fill->nparity = par;
-	  if (!grub_zfs_nvlist_lookup_uint64 (nvlist, "ashift", &par))
-	    {
-	      grub_free (type);
-	      return grub_error (GRUB_ERR_BAD_FS, "couldn't find raidz ashift");
-	    }
-	  fill->ashift = par;
 	}
 
       nelm = grub_zfs_nvlist_lookup_nvlist_array_get_nelm (nvlist,
@@ -675,7 +693,7 @@ fill_vdev_info_real (struct grub_zfs_data *data,
 	    (nvlist, ZPOOL_CONFIG_CHILDREN, i);
 
 	  err = fill_vdev_info_real (data, child, &fill->children[i], insert,
-				     inserted);
+				     inserted, fill->ashift);
 
 	  grub_free (child);
 
@@ -710,7 +728,7 @@ fill_vdev_info (struct grub_zfs_data *data,
   for (i = 0; i < data->n_devices_attached; i++)
     if (data->devices_attached[i].id == id)
       return fill_vdev_info_real (data, nvlist, &data->devices_attached[i],
-				  diskdesc, inserted);
+				  diskdesc, inserted, 0xffffffff);
 
   data->n_devices_attached++;
   if (data->n_devices_attached > data->n_devices_allocated)
@@ -733,7 +751,7 @@ fill_vdev_info (struct grub_zfs_data *data,
 
   return fill_vdev_info_real (data, nvlist,
 			      &data->devices_attached[data->n_devices_attached - 1],
-			      diskdesc, inserted);
+			      diskdesc, inserted, 0xffffffff);
 }
 
 /*
@@ -908,7 +926,8 @@ scan_disk (grub_device_t dev, struct grub_zfs_data *data,
       desc.vdev_phys_sector
 	= label * (sizeof (vdev_label_t) >> SPA_MINBLOCKSHIFT)
 	+ ((VDEV_SKIP_SIZE + VDEV_BOOT_HEADER_SIZE) >> SPA_MINBLOCKSHIFT)
-	+ (label < VDEV_LABELS / 2 ? 0 : grub_disk_get_size (dev->disk)
+	+ (label < VDEV_LABELS / 2 ? 0 : 
+	   ALIGN_DOWN (grub_disk_get_size (dev->disk), sizeof (vdev_label_t))
 	   - VDEV_LABELS * (sizeof (vdev_label_t) >> SPA_MINBLOCKSHIFT));
 
       /* Read in the uberblock ring (128K). */
@@ -922,7 +941,14 @@ scan_disk (grub_device_t dev, struct grub_zfs_data *data,
 	}
       grub_dprintf ("zfs", "label ok %d\n", label);
 
-      ubbest = find_bestub (ub_array, desc.vdev_phys_sector);
+      err = check_pool_label (data, &desc, inserted);
+      if (err || !*inserted)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  continue;
+	}
+
+      ubbest = find_bestub (ub_array, &desc);
       if (!ubbest)
 	{
 	  grub_dprintf ("zfs", "No uberblock found\n");
@@ -936,12 +962,6 @@ scan_disk (grub_device_t dev, struct grub_zfs_data *data,
 	grub_memmove (&(data->current_uberblock),
 		      &ubbest->ubp_uberblock, sizeof (uberblock_t));
 
-      err = check_pool_label (data, &desc, inserted);
-      if (err)
-	{
-	  grub_errno = GRUB_ERR_NONE;
-	  continue;
-	}
 #if 0
       if (find_best_root &&
 	  vdev_uberblock_compare (&ubbest->ubp_uberblock,

@@ -298,7 +298,7 @@ fi
 
 # Check for functions and headers.
 AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf getextmntent)
-AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h sys/mnttab.h sys/mkdev.h)
+AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h sys/mnttab.h sys/mkdev.h limits.h)
 
 AC_CHECK_MEMBERS([struct statfs.f_fstypename],,,[$ac_includes_default
 #include <sys/param.h>

@@ -524,9 +524,11 @@ malloc_in_range (struct grub_relocator *rel,
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
   for (r = grub_mm_base; r; r = r->next)
     {
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
       grub_dprintf ("relocator", "Blocking at 0x%lx-0x%lx\n",
 		    (unsigned long) r - r->pre_size, 
 		    (unsigned long) (r + 1) + r->size);
+#endif
       events[N].type = FIRMWARE_BLOCK_START;
       events[N].pos = (grub_addr_t) r - r->pre_size;
       N++;
@@ -538,8 +540,10 @@ malloc_in_range (struct grub_relocator *rel,
     struct grub_relocator_extra_block *cur;
     for (cur = extra_blocks; cur; cur = cur->next)
       {
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
 	grub_dprintf ("relocator", "Blocking at 0x%lx-0x%lx\n",
 		      (unsigned long) cur->start, (unsigned long) cur->end);
+#endif
 	events[N].type = FIRMWARE_BLOCK_START;
 	events[N].pos = cur->start;
 	N++;

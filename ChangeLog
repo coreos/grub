@@ -1,3 +1,7 @@
+2012-01-22  Mario Limonciello <mario_limonciello@dell.com>
+
+	* configure.ac: Add back in test for limits.h.
+
 2012-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support 4K-sector NTFS.
