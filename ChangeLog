@@ -1,4 +1,15 @@
 2012-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-01-22  Zachary Bedell <pendorbound@gmail.com>
+2012-01-22  Richard Laager <rlaager@wiktel.com>
+
+	* grub-core/fs/zfs/zfs.c (uberblock_verify): New parameter size.
+	All users updated.
+	(find_bestub): Determine correct size.
+	(fill_vdev_info_real): Fill ashift. New argument. All users updated.
+	(scan_disk): Align the size down.
+	Call check pool before find_bestub to have ashift.
+
+2012-01-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/relocator.c (malloc_in_range): Remove couple of
 	dprintf in no-malloc zone.
