@@ -1,3 +1,11 @@
+2012-01-23  Paulo de Rezende Pinatti <ppinatti@linux.vnet.ibm.com>
+2012-01-23  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-01-23  pfsmorigo
+
+	* util/grub-install.in: Support dd'in into PreP partition.
+	* util/grub-probe.c (probe): Support discovering partition type.
+	(main): Support -t msdos_parttype.
+
 2012-01-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/crypto.c (grub_crypto_autoload): Prevent

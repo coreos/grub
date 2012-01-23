@@ -64,7 +64,8 @@ enum {
   PRINT_BAREMETAL_HINT,
   PRINT_EFI_HINT,
   PRINT_ARC_HINT,
-  PRINT_COMPATIBILITY_HINT
+  PRINT_COMPATIBILITY_HINT,
+  PRINT_MSDOS_PARTTYPE
 };
 
 static int print = PRINT_FS;
@@ -544,6 +545,16 @@ probe (const char *path, char *device_name)
       goto end;
     }
 
+  if (print == PRINT_MSDOS_PARTTYPE)
+    {
+      if (dev->disk->partition
+	  && strcmp(dev->disk->partition->partmap->name, "msdos") == 0)
+        printf ("%02x", dev->disk->partition->msdostype);
+
+      printf ("\n");
+      goto end;
+    }
+
   fs = grub_fs_probe (dev);
   if (! fs)
     grub_util_error ("%s", _(grub_errmsg));
@@ -609,7 +620,7 @@ Probe device information for a given path (or device, if the -d option is given)
 \n\
   -d, --device              given argument is a system device, not a path\n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
-  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|cryptodisk_uuid)\n\
+  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|cryptodisk_uuid|msdos_parttype)\n\
                             print filesystem module, GRUB drive, system device, partition map module, abstraction module or CRYPTO UUID [default=fs]\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
@@ -670,6 +681,8 @@ main (int argc, char *argv[])
 	      print = PRINT_ABSTRACTION;
 	    else if (!strcmp (optarg, "cryptodisk_uuid"))
 	      print = PRINT_CRYPTODISK_UUID;
+	    else if (!strcmp (optarg, "msdos_parttype"))
+	      print = PRINT_MSDOS_PARTTYPE;
 	    else if (!strcmp (optarg, "hints_string"))
 	      print = PRINT_HINT_STR;
 	    else if (!strcmp (optarg, "bios_hints"))

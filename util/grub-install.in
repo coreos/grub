@@ -274,7 +274,8 @@ if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
 fi
 
 if ! ([ "${target_cpu}-${platform}" = "i386-pc" ] \
-    || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
+    || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] \
+    || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]); then
     install_device=
 fi
 
@@ -653,6 +654,29 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 
         # Point boot-device at the new grub install
 	boot_device="$ofpath:$partno,"`"$grub_mkrelpath" "${grubdir}/core.${imgext}" | sed 's,/,\\\\,g'`
+
+        # If a install device is defined, copy the core.elf to PReP partition. 
+	if  [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ] \
+	    && [ -n "${install_device}" ]; then
+            if [ "$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t msdos_parttype)" != "41" ]; then
+		echo "The chosen partition is not a PReP partition."
+		exit 1
+            fi
+
+            if [ "$(file -s "${install_device}" -b | awk '{ print $1 }')" = ELF ] || [ $(cmp /dev/zero "${install_device}" &>/dev/null) ]; then
+            # Change boot device to the harddisk root
+		boot_device="$ofpath"
+		dd if="${grubdir}/core.${imgext}" of="${install_device}" status=noxfer || {
+		    echo "Failed to copy Grub to the PReP partition."
+		    exit 1
+		}
+            else
+		echo "The PReP partition is not empty. If you are sure you want to use it, run dd to clear it:"
+		echo "  dd if=/dev/zero of=${install_device}"
+		exit 1
+            fi
+	fi
+
 	"$nvsetenv" boot-device "$boot_device" || {
 	    echo "$nvsetenv failed."
 	    echo "You will have to set boot-device manually.  At the Open Firmware prompt, type:"
