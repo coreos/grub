@@ -499,12 +499,6 @@ script = {
 };
 
 script = {
-  name = update-grub_lib;
-  common = util/update-grub_lib.in;
-  installdir = noinst;
-};
-
-script = {
   name = grub-kbdcomp;
   common = util/grub-kbdcomp.in;
 };

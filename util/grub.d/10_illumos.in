@@ -17,15 +17,13 @@ set -e
 # You should have received a copy of the GNU General Public License
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-bindir=@bindir@
-libdir=@libdir@
-datarootdir=@datarootdir@
-. ${libdir}/@PACKAGE@/grub-mkconfig_lib
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
+. "@datadir@/@PACKAGE@/grub-mkconfig_lib"
 
 export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR=@localedir@
+export TEXTDOMAINDIR="@localedir@"
 
 CLASS="--class os"
 

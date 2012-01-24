@@ -19,13 +19,13 @@ set -e
 
 transform="@program_transform_name@"
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
 locale_dir=`echo ${GRUB_PREFIX}/locale | sed ${transform}`
 grub_lang=`echo $LANG | cut -d . -f 1`
 
-. ${libdir}/@PACKAGE@/grub-mkconfig_lib
+. "@datadir@/@PACKAGE@/grub-mkconfig_lib"
 
 # Do this as early as possible, since other commands might depend on it.
 # (e.g. the `loadfont' command might need lvm or raid modules)
@@ -112,7 +112,7 @@ for x in ${GRUB_TERMINAL_INPUT} ${GRUB_TERMINAL_OUTPUT}; do
 done
 
 if [ "x$serial" = x1 ]; then
-    if ! test -e ${GRUB_PREFIX}/serial.mod ; then
+    if ! test -e "${GRUB_PREFIX}/serial.mod" ; then
 	echo "Serial terminal not available on this platform." >&2 ; exit 1
     fi
 

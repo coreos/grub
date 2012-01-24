@@ -18,12 +18,14 @@ set -e
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
 # Initialize some variables.
+
 transform="@program_transform_name@"
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-bindir=@bindir@
-libdir=@libdir@
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
+bindir="@bindir@"
+libdir="@libdir@"
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@

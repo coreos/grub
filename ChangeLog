@@ -1,4 +1,36 @@
-2012-01-14  Seth Goldberg <seth.goldberg@oracle.com>
+2012-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Handle newer autotools. Add some missing quotes while on it.
+
+	* Makefile.am (pkglib_DATA): Remove update-grub_lib.
+	(pkglib_DATA): Move grub-mkconfig_lib from here ...
+	(pkgdata_DATA): ... here.
+	* Makefile.util.def (update-grub_lib): Removed.
+	* conf/Makefile.common (pkglib_DATA): Removed.
+	(pkglib_SCRIPTS): Likewise.
+	(pkgdata_DATA): New variable.
+	* tests/util/grub-shell-tester.in: Replace pkglib with pkgdata where
+	needed.
+	Add missing quotes.
+	Remove unused variable while on it.
+	* tests/util/grub-shell.in: Likewise.
+	* util/grub-install.in: Likewise.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub-mknetdir.in: Likewise.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub-mkstandalone.in: Likewise.
+	* util/grub.d/00_header.in: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/grub.d/10_illumos.in: Likewise.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/10_netbsd.in: Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+	* util/update-grub_lib.in: Removed.
+
+2012-01-24  Seth Goldberg <seth.goldberg@oracle.com>
 
 	* grub-core/net/drivers/i386/pc/pxe.c (grub_pxe_recv): Relax checks as
 	a workaround for intel problem.
