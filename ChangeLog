@@ -1,3 +1,8 @@
+2012-01-14  Seth Goldberg <seth.goldberg@oracle.com>
+
+	* grub-core/net/drivers/i386/pc/pxe.c (grub_pxe_recv): Relax checks as
+	a workaround for intel problem.
+
 2012-01-23  Paulo de Rezende Pinatti <ppinatti@linux.vnet.ibm.com>
 2012-01-23  Vladimir Serbinenko  <phcoder@gmail.com>
 2012-01-23  pfsmorigo

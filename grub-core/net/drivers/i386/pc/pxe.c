@@ -179,7 +179,11 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)))
       grub_memset (isr, 0, sizeof (*isr));
       isr->func_flag = GRUB_PXE_ISR_IN_START;
       grub_pxe_call (GRUB_PXENV_UNDI_ISR, isr, pxe_rm_entry);
-      if (isr->status || isr->func_flag != GRUB_PXE_ISR_OUT_OURS)
+      /* Normally according to the specification we should also check
+	 that isr->func_flag != GRUB_PXE_ISR_OUT_OURS but unfortunately it
+	 breaks on intel cards.
+       */
+      if (isr->status)
 	{
 	  in_progress = 0;
 	  return NULL;
