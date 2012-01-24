@@ -1,5 +1,28 @@
 2012-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use static allocation rather than scratch pointer in reed_solomon.
+	It decreases its size significantly and avoids a variable in .text.
+
+	* grub-core/lib/reed_solomon.c (scratch): Removed.
+	(chosenstat): New const or static array.
+	(sigma): Likewise.
+	(errpot): Likewise.
+	(errpos): Likewise.
+	(sy): Likewise.
+	(mstat): Likewise.
+	(errvals): Likewise.
+	(eqstat): Likewise.
+	(pol_evaluate): Replace x with log_x argument. All users updated.
+	(syndroms): Removed.
+	(gauss_solve): Use statically allocated arrays.
+	(rs_recover): Likewise.
+	Calculate syndroms directly.
+	(decode_block): Use statically allocated arrays.
+	(grub_reed_solomon_add_redundancy) [TEST]: Fix -DTEST compilation.
+	(main) [TEST]: Allow -DTEST -DSTANDALONE.
+
+2012-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Eliminate fixed limit on reed solomon decoder length.
 
 	* grub-core/boot/i386/pc/lnxboot.S: Scan for multiboot signature
