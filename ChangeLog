@@ -1,5 +1,12 @@
 2012-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/wildcard.c (match_files): Handle filenames
+	without explicit device.
+	(wildcard_expand): Don't add explicit device if not already present.
+	* tests/grub_script_echo1.in: Add a new expansion test.
+
+2012-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Replace single-linked with double-linked lists. It results in more
 	compact and more efficient code.
 
