@@ -1,5 +1,17 @@
 2012-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Replace single-linked with double-linked lists. It results in more
+	compact and more efficient code.
+
+	* grub-core/kern/list.c (grub_list_push): Moved from here ...
+	* include/grub/list.h (grub_list_push): ... to here. Set prev.
+	(grub_list_remove): Moved from here ...
+	* include/grub/list.h (grub_list_remove): ... here. Use and set prev.
+	(grub_prio_list_insert): Set prev.
+	* include/grub/list.h (grub_list): Add prev. All users updated.
+
+2012-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle newer autotools. Add some missing quotes while on it.
 
 	* Makefile.am (pkglib_DATA): Remove update-grub_lib.

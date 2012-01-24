@@ -40,6 +40,7 @@ char *grub_net_default_server;
 struct grub_net_route
 {
   struct grub_net_route *next;
+  struct grub_net_route **prev;
   grub_net_network_level_netaddress_t target;
   char *name;
   struct grub_net_network_level_protocol *prot;
@@ -206,8 +207,7 @@ grub_net_card_unregister (struct grub_net_card *card)
 	card->driver->close (card);
       card->opened = 0;
     }
-  grub_list_remove (GRUB_AS_LIST_P (&grub_net_cards),
-		    GRUB_AS_LIST (card));
+  grub_list_remove (GRUB_AS_LIST (card));
 }
 
 static struct grub_net_slaac_mac_list *
@@ -366,8 +366,7 @@ grub_net_route_register (struct grub_net_route *route)
 static inline void
 grub_net_route_unregister (struct grub_net_route *route)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&grub_net_routes),
-		    GRUB_AS_LIST (route));
+  grub_list_remove (GRUB_AS_LIST (route));
 }
 
 #define FOR_NET_ROUTES(var) for (var = grub_net_routes; var; var = var->next)

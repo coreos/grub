@@ -63,6 +63,7 @@ struct grub_serial_config
 struct grub_serial_port
 {
   struct grub_serial_port *next;
+  struct grub_serial_port **prev;
   char *name;
   struct grub_serial_driver *driver;
   struct grub_serial_config config;

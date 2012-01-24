@@ -72,6 +72,7 @@ struct grub_net_card;
 struct grub_net_card_driver
 {
   struct grub_net_card_driver *next;
+  struct grub_net_card_driver **prev;
   const char *name;
   grub_err_t (*open) (const struct grub_net_card *dev);
   void (*close) (const struct grub_net_card *dev);
@@ -101,6 +102,7 @@ typedef struct grub_net_packets
 struct grub_net_slaac_mac_list
 {
   struct grub_net_slaac_mac_list *next;
+  struct grub_net_slaac_mac_list **prev;
   grub_net_link_level_address_t address;
   int slaac_counter;
   char *name;
@@ -111,6 +113,7 @@ struct grub_net_link_layer_entry;
 struct grub_net_card
 {
   struct grub_net_card *next;
+  struct grub_net_card **prev;
   const char *name;
   struct grub_net_card_driver *driver;
   grub_net_link_level_address_t default_address;
@@ -220,6 +223,7 @@ typedef struct grub_net_socket *grub_net_socket_t;
 struct grub_net_app_protocol 
 {
   struct grub_net_app_protocol *next;
+  struct grub_net_app_protocol **prev;
   const char *name;
   grub_err_t (*dir) (grub_device_t device, const char *path,
 		     int (*hook) (const char *filename,
@@ -317,8 +321,7 @@ grub_net_app_level_register (grub_net_app_level_t proto)
 static inline void
 grub_net_app_level_unregister (grub_net_app_level_t proto)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&grub_net_app_level_list),
-		    GRUB_AS_LIST (proto));
+  grub_list_remove (GRUB_AS_LIST (proto));
 }
 
 #define FOR_NET_APP_LEVEL(var) FOR_LIST_ELEMENTS((var), \

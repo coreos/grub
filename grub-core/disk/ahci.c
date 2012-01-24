@@ -121,6 +121,7 @@ enum
 struct grub_ahci_device
 {
   struct grub_ahci_device *next;
+  struct grub_ahci_device **prev;
   volatile struct grub_ahci_hba *hba;
   int port;
   int num;

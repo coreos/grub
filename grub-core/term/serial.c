@@ -350,7 +350,7 @@ grub_serial_unregister (struct grub_serial_port *port)
   if (port->term_out)
     grub_term_unregister_output (port->term_out);
 
-  grub_list_remove (GRUB_AS_LIST_P (&grub_serial_ports), GRUB_AS_LIST (port));
+  grub_list_remove (GRUB_AS_LIST (port));
 }
 
 void

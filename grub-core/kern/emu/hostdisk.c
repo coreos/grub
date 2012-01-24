@@ -635,6 +635,7 @@ devmapper_fail:
 struct linux_partition_cache
 {
   struct linux_partition_cache *next;
+  struct linux_partition_cache **prev;
   char *dev;
   unsigned long start;
   int partno;

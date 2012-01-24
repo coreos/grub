@@ -46,6 +46,7 @@ static const char *(*grub_gettext_original) (const char *s);
 struct grub_gettext_msg
 {
   struct grub_gettext_msg *next;
+  struct grub_gettext_msg *prev;
   const char *name;
 
   const char *translated;

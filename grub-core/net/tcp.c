@@ -31,6 +31,7 @@
 struct unacked
 {
   struct unacked *next;
+  struct unacked **prev;
   struct grub_net_buff *nb;
   grub_uint64_t last_try;
   int try_count;
@@ -49,6 +50,7 @@ enum
 struct grub_net_tcp_socket
 {
   struct grub_net_tcp_socket *next;
+  struct grub_net_tcp_socket **prev;
 
   int established;
   int i_closed;
@@ -80,6 +82,7 @@ struct grub_net_tcp_socket
 struct grub_net_tcp_listen
 {
   struct grub_net_tcp_listen *next;
+  struct grub_net_tcp_listen **prev;
 
   grub_uint16_t port;
   const struct grub_net_network_level_interface *inf;
@@ -149,8 +152,7 @@ grub_net_tcp_listen (grub_uint16_t port,
 void
 grub_net_tcp_stop_listen (grub_net_tcp_listen_t listen)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&tcp_listens),
-		    GRUB_AS_LIST (listen));
+  grub_list_remove (GRUB_AS_LIST (listen));
 }
 
 static inline void
@@ -640,8 +642,7 @@ grub_net_tcp_open (char *server,
 				     GRUB_NET_IP_TCP);
       if (err)
 	{
-	  grub_list_remove (GRUB_AS_LIST_P (&tcp_sockets),
-			    GRUB_AS_LIST (socket));
+	  grub_list_remove (GRUB_AS_LIST (socket));
 	  grub_free (socket);
 	  grub_netbuff_free (nb);
 	  return NULL;
@@ -654,8 +655,7 @@ grub_net_tcp_open (char *server,
     }
   if (!socket->established)
     {
-      grub_list_remove (GRUB_AS_LIST_P (&tcp_sockets),
-			GRUB_AS_LIST (socket));
+      grub_list_remove (GRUB_AS_LIST (socket));
       if (socket->they_reseted)
 	grub_error (GRUB_ERR_NET_PORT_CLOSED, "port closed");
       else

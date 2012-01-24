@@ -58,6 +58,7 @@ static struct tbl_alias table_aliases[] =
 struct grub_xnu_devprop_device_descriptor
 {
   struct grub_xnu_devprop_device_descriptor *next;
+  struct grub_xnu_devprop_device_descriptor **prev;
   struct property_descriptor *properties;
   struct grub_efi_device_path *path;
   int pathlen;
@@ -212,6 +213,7 @@ guessfsb (void)
 struct property_descriptor
 {
   struct property_descriptor *next;
+  struct property_descriptor **prev;
   grub_uint8_t *name;
   grub_uint16_t *name16;
   int name16len;
@@ -234,7 +236,7 @@ grub_xnu_devprop_remove_property (struct grub_xnu_devprop_device_descriptor *dev
   grub_free (prop->name16);
   grub_free (prop->data);
 
-  grub_list_remove (GRUB_AS_LIST_P (&dev->properties), GRUB_AS_LIST (prop));
+  grub_list_remove (GRUB_AS_LIST (prop));
 
   return GRUB_ERR_NONE;
 }
@@ -245,7 +247,7 @@ grub_xnu_devprop_remove_device (struct grub_xnu_devprop_device_descriptor *dev)
   void *t;
   struct property_descriptor *prop;
 
-  grub_list_remove (GRUB_AS_LIST_P (&devices), GRUB_AS_LIST (dev));
+  grub_list_remove (GRUB_AS_LIST (dev));
 
   for (prop = dev->properties; prop; )
     {

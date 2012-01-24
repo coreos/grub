@@ -59,6 +59,7 @@ typedef gcry_err_code_t
 struct grub_cryptodisk
 {
   struct grub_cryptodisk *next;
+  struct grub_cryptodisk **prev;
 
   char *source;
   grub_disk_addr_t offset;
@@ -96,6 +97,7 @@ typedef struct grub_cryptodisk *grub_cryptodisk_t;
 struct grub_cryptodisk_dev
 {
   struct grub_cryptodisk_dev *next;
+  struct grub_cryptodisk_dev **prev;
 
   grub_cryptodisk_t (*scan) (grub_disk_t disk, const char *check_uuid,
 			     int boot_only);
@@ -116,7 +118,7 @@ grub_cryptodisk_dev_register (grub_cryptodisk_dev_t cr)
 static inline void
 grub_cryptodisk_dev_unregister (grub_cryptodisk_dev_t cr)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&grub_cryptodisk_list), GRUB_AS_LIST (cr));
+  grub_list_remove (GRUB_AS_LIST (cr));
 }
 
 #define FOR_CRYPTODISK_DEVS(var) FOR_LIST_ELEMENTS((var), (grub_cryptodisk_list))

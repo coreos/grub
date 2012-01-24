@@ -49,6 +49,7 @@ struct grub_command
 {
   /* The next element.  */
   struct grub_command *next;
+  struct grub_command **prev;
 
   /* The name.  */
   const char *name;

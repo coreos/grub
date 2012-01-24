@@ -298,6 +298,7 @@ struct grub_video_adapter
 {
   /* The next video adapter.  */
   struct grub_video_adapter *next;
+  struct grub_video_adapter **prev;
 
   /* The video adapter name.  */
   const char *name;
@@ -398,8 +399,7 @@ grub_video_register (grub_video_adapter_t adapter)
 static inline void
 grub_video_unregister (grub_video_adapter_t adapter)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&grub_video_adapter_list),
-		    GRUB_AS_LIST (adapter));
+  grub_list_remove (GRUB_AS_LIST (adapter));
 }
 
 #define FOR_VIDEO_ADAPTERS(var) FOR_LIST_ELEMENTS((var), (grub_video_adapter_list))

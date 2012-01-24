@@ -27,11 +27,27 @@
 struct grub_list
 {
   struct grub_list *next;
+  struct grub_list **prev;
 };
 typedef struct grub_list *grub_list_t;
 
-void EXPORT_FUNC(grub_list_push) (grub_list_t *head, grub_list_t item);
-void EXPORT_FUNC(grub_list_remove) (grub_list_t *head, grub_list_t item);
+static inline void
+grub_list_push (grub_list_t *head, grub_list_t item)
+{
+  item->prev = head;
+  if (*head)
+    (*head)->prev = &item->next;
+  item->next = *head;
+  *head = item;
+}
+
+static inline void
+grub_list_remove (grub_list_t item)
+{
+  *item->prev = item->next;
+  if (item->next)
+    item->next->prev = item->prev;
+}
 
 #define FOR_LIST_ELEMENTS(var, list) for ((var) = (list); (var); (var) = (var)->next)
 
@@ -53,16 +69,17 @@ grub_bad_type_cast_real (int line, const char *file)
   ((char *) &(ptr)->field == (char *) &((type) (ptr))->field)
 
 #define GRUB_AS_LIST(ptr) \
-  (GRUB_FIELD_MATCH (ptr, grub_list_t, next) ? \
+  (GRUB_FIELD_MATCH (ptr, grub_list_t, next) && GRUB_FIELD_MATCH (ptr, grub_list_t, prev) ? \
    (grub_list_t) ptr : (grub_list_t) grub_bad_type_cast ())
 
 #define GRUB_AS_LIST_P(pptr) \
-  (GRUB_FIELD_MATCH (*pptr, grub_list_t, next) ? \
+  (GRUB_FIELD_MATCH (*pptr, grub_list_t, next) && GRUB_FIELD_MATCH (*pptr, grub_list_t, prev) ? \
    (grub_list_t *) (void *) pptr : (grub_list_t *) grub_bad_type_cast ())
 
 struct grub_named_list
 {
   struct grub_named_list *next;
+  struct grub_named_list **prev;
   char *name;
 };
 typedef struct grub_named_list *grub_named_list_t;
@@ -71,13 +88,15 @@ void * EXPORT_FUNC(grub_named_list_find) (grub_named_list_t head,
 					  const char *name);
 
 #define GRUB_AS_NAMED_LIST(ptr) \
-  ((GRUB_FIELD_MATCH (ptr, grub_named_list_t, next) && \
-    GRUB_FIELD_MATCH (ptr, grub_named_list_t, name))? \
+  ((GRUB_FIELD_MATCH (ptr, grub_named_list_t, next) \
+    && GRUB_FIELD_MATCH (ptr, grub_named_list_t, prev)	\
+    && GRUB_FIELD_MATCH (ptr, grub_named_list_t, name))? \
    (grub_named_list_t) ptr : (grub_named_list_t) grub_bad_type_cast ())
 
 #define GRUB_AS_NAMED_LIST_P(pptr) \
-  ((GRUB_FIELD_MATCH (*pptr, grub_named_list_t, next) && \
-    GRUB_FIELD_MATCH (*pptr, grub_named_list_t, name))? \
+  ((GRUB_FIELD_MATCH (*pptr, grub_named_list_t, next) \
+    && GRUB_FIELD_MATCH (*pptr, grub_named_list_t, prev)   \
+    && GRUB_FIELD_MATCH (*pptr, grub_named_list_t, name))? \
    (grub_named_list_t *) (void *) pptr : (grub_named_list_t *) grub_bad_type_cast ())
 
 #define GRUB_PRIO_LIST_PRIO_MASK	0xff
@@ -86,6 +105,7 @@ void * EXPORT_FUNC(grub_named_list_find) (grub_named_list_t head,
 struct grub_prio_list
 {
   struct grub_prio_list *next;
+  struct grub_prio_list **prev;
   char *name;
   int prio;
 };
@@ -95,24 +115,26 @@ void EXPORT_FUNC(grub_prio_list_insert) (grub_prio_list_t *head,
 					 grub_prio_list_t item);
 
 static inline void
-grub_prio_list_remove (grub_prio_list_t *head, grub_prio_list_t item)
+grub_prio_list_remove (grub_prio_list_t item)
 {
   if ((item->prio & GRUB_PRIO_LIST_FLAG_ACTIVE) && (item->next))
     item->next->prio |= GRUB_PRIO_LIST_FLAG_ACTIVE;
-  grub_list_remove (GRUB_AS_LIST_P (head), GRUB_AS_LIST (item));
+  grub_list_remove (GRUB_AS_LIST (item));
 }
 
 #define GRUB_AS_PRIO_LIST(ptr) \
-  ((GRUB_FIELD_MATCH (ptr, grub_prio_list_t, next) && \
-    GRUB_FIELD_MATCH (ptr, grub_prio_list_t, name) && \
-    GRUB_FIELD_MATCH (ptr, grub_prio_list_t, prio))? \
+  ((GRUB_FIELD_MATCH (ptr, grub_prio_list_t, next)  \
+    && GRUB_FIELD_MATCH (ptr, grub_prio_list_t, prev) \
+    && GRUB_FIELD_MATCH (ptr, grub_prio_list_t, name) \
+    && GRUB_FIELD_MATCH (ptr, grub_prio_list_t, prio))? \
    (grub_prio_list_t) ptr \
    : (grub_prio_list_t) grub_bad_type_cast ())
 
 #define GRUB_AS_PRIO_LIST_P(pptr) \
-  ((GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, next) && \
-    GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, name) && \
-    GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, prio)) ? \
+  ((GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, next) \
+    && GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, prev) \
+    && GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, name) \
+    && GRUB_FIELD_MATCH (*pptr, grub_prio_list_t, prio)) ? \
    (grub_prio_list_t *) (void *) pptr \
    : (grub_prio_list_t *) grub_bad_type_cast ())
 

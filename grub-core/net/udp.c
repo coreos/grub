@@ -25,6 +25,7 @@
 struct grub_net_udp_socket
 {
   struct grub_net_udp_socket *next;
+  struct grub_net_udp_socket **prev;
 
   enum { GRUB_NET_SOCKET_START,
 	 GRUB_NET_SOCKET_ESTABLISHED,
@@ -53,8 +54,7 @@ udp_socket_register (grub_net_udp_socket_t sock)
 void
 grub_net_udp_close (grub_net_udp_socket_t sock)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&udp_sockets),
-		    GRUB_AS_LIST (sock));
+  grub_list_remove (GRUB_AS_LIST (sock));
   grub_free (sock);
 }
 
