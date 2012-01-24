@@ -444,14 +444,22 @@ setup (const char *dir,
 						  + GRUB_DISK_SECTOR_SIZE
 						  - sizeof (*block));
 
+    grub_size_t no_rs_length;
     *(grub_uint32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
 			+ GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY)
       = grub_host_to_target32 (nsec * GRUB_DISK_SECTOR_SIZE - core_size);
+    no_rs_length = grub_target_to_host16 
+      (*(grub_uint16_t *) (core_img
+			   + GRUB_DISK_SECTOR_SIZE
+			   + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH));
+
+    if (no_rs_length == 0xffff)
+      grub_util_error ("core.img version mismatch");
 
     void *tmp = xmalloc (core_size);
     grub_memcpy (tmp, core_img, core_size);
-    grub_reed_solomon_add_redundancy (core_img + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART + GRUB_DISK_SECTOR_SIZE,
-				      core_size - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART - GRUB_DISK_SECTOR_SIZE,
+    grub_reed_solomon_add_redundancy (core_img + no_rs_length + GRUB_DISK_SECTOR_SIZE,
+				      core_size - no_rs_length - GRUB_DISK_SECTOR_SIZE,
 				      nsec * GRUB_DISK_SECTOR_SIZE
 				      - core_size);
     assert (grub_memcmp (tmp, core_img, core_size) == 0);

@@ -177,20 +177,21 @@ real_code_2:
 	pushw	%es
 	popw	%ds
 
-#if GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART + 4 < 0x200
-	movl	$0x200, %ecx
-	addl	%ecx, %esi
-#else
-	movl	$(GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART + 4), %ecx
+	movl	$0x1000, %ecx
 	addl	$0x200, %esi
-#endif
 	movl	$DATA_ADDR, %edi
 
 	call	LOCAL(move_memory)
 
 	/* Check for multiboot signature.  */
-	cmpl	$MULTIBOOT_HEADER_MAGIC, %ss:(DATA_ADDR + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART)
+	movl	$DATA_ADDR, %edi
+3:
+	movl	%ss:(%edi), %eax
+	cmpl	$MULTIBOOT_HEADER_MAGIC, %eax
 	jz	1f
+	addl	$4, %edi
+	cmpl	$(DATA_ADDR + 0x1000), %edi
+	jne     3b
 
 	movl	(ramdisk_image - start), %esi
 	movl	(ramdisk_size - start), %ecx
@@ -199,8 +200,9 @@ real_code_2:
 
 1:
 
+	movl	$(DATA_ADDR + 0x1000), %edi
 	movl	%ss:(DATA_ADDR + GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE), %ecx
-	addl	$((0x9000 - 0x8200) - (GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART + 4)), %ecx
+	addl	$(0x9000 - 0x8200), %ecx
 
 2:
 	call	LOCAL(move_memory)

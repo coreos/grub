@@ -1,5 +1,20 @@
 2012-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Eliminate fixed limit on reed solomon decoder length.
+
+	* grub-core/boot/i386/pc/lnxboot.S: Scan for multiboot signature
+	rather than hardcoding the address.
+	* grub-core/boot/i386/pc/startup_raw.S: Add new data field
+	no_reed_solomon_length.
+	Move gate_a20 to no-reed-solomon part.
+	Don't force a particular size of no reed-solomon part.
+	* include/grub/offsets.h (GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART):
+	Removed.
+	(GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH): New define.
+	* util/grub-setup.c (setup): Read no_rs_length from the image itself.
+
+2012-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/wildcard.c (match_files): Handle filenames
 	without explicit device.
 	(wildcard_expand): Don't add explicit device if not already present.
