@@ -24,6 +24,7 @@
 
 static grub_arc_fileno_t last_handle = 0;
 static char *last_path = NULL;
+static int handle_writable = 0;
 
 static int lnum = 0;
 
@@ -100,11 +101,12 @@ grub_arcdisk_iterate (int (*hook_in) (const char *name),
 #define RAW_SUFFIX "partition(10)"
 
 static grub_err_t
-reopen (const char *name)
+reopen (const char *name, int writable)
 {
   grub_arc_fileno_t handle;
 
-  if (last_path && grub_strcmp (last_path, name) == 0)
+  if (last_path && grub_strcmp (last_path, name) == 0
+      && (!writable || handle_writable))
     {
       grub_dprintf ("arcdisk", "using already opened %s\n", name);
       return GRUB_ERR_NONE;
@@ -115,12 +117,16 @@ reopen (const char *name)
       grub_free (last_path);
       last_path = NULL;
       last_handle = 0;
+      handle_writable = 0;
     }
-  if (GRUB_ARC_FIRMWARE_VECTOR->open (name, 0, &handle))
+  if (GRUB_ARC_FIRMWARE_VECTOR->open (name,
+				      writable ? GRUB_ARC_FILE_ACCESS_OPEN_RW
+				      : GRUB_ARC_FILE_ACCESS_OPEN_RO, &handle))
     {
       grub_dprintf ("arcdisk", "couldn't open %s\n", name);
       return grub_error (GRUB_ERR_IO, "couldn't open %s", name);
     }
+  handle_writable = writable;
   last_path = grub_strdup (name);
   if (!last_path)
     return grub_errno;
@@ -180,7 +186,7 @@ grub_arcdisk_open (const char *name, grub_disk_t disk)
   if (!hash)
     return grub_errno;
 
-  err = reopen (fullname);
+  err = reopen (fullname, 0);
   if (err)
     return err;
 
@@ -234,7 +240,7 @@ grub_arcdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   grub_uint64_t totl = size << 9;
   grub_arc_err_t r;
 
-  err = reopen (disk->data);
+  err = reopen (disk->data, 0);
   if (err)
     return err;
   r = GRUB_ARC_FIRMWARE_VECTOR->seek (last_handle, &pos, 0);
@@ -258,12 +264,36 @@ grub_arcdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 }
 
 static grub_err_t
-grub_arcdisk_write (grub_disk_t disk __attribute ((unused)),
-		   grub_disk_addr_t sector __attribute ((unused)),
-		   grub_size_t size __attribute ((unused)),
-		   const char *buf __attribute ((unused)))
+grub_arcdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
+		    grub_size_t size, const char *buf)
 {
-  return GRUB_ERR_NOT_IMPLEMENTED_YET;
+  grub_err_t err;
+  grub_uint64_t pos = sector << 9;
+  unsigned long count;
+  grub_uint64_t totl = size << 9;
+  grub_arc_err_t r;
+
+  err = reopen (disk->data, 1);
+  if (err)
+    return err;
+  r = GRUB_ARC_FIRMWARE_VECTOR->seek (last_handle, &pos, 0);
+  if (r)
+    {
+      grub_dprintf ("arcdisk", "seek to 0x%" PRIxGRUB_UINT64_T " failed: %ld\n",
+		    pos, r);
+      return grub_error (GRUB_ERR_IO, "couldn't seek");
+    }
+
+  while (totl)
+    {
+      if (GRUB_ARC_FIRMWARE_VECTOR->write (last_handle, buf,
+					   totl, &count))
+	return grub_error (GRUB_ERR_WRITE_ERROR, "write failed");
+      totl -= count;
+      buf += count;
+    }
+
+  return GRUB_ERR_NONE;
 }
 
 static struct grub_disk_dev grub_arcdisk_dev =

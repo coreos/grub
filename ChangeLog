@@ -1,5 +1,16 @@
 2012-01-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	ARC disk write support.
+
+	* grub-core/disk/arc/arcdisk.c (handle_writable): New var.
+	(reopen): New argument writable. All users updated.
+	Handle required access mode.
+	(grub_arcdisk_write): Implement.
+	* include/grub/arc/arc.h (grub_arc_file_access): New enum.
+	(grub_arc_firmware_vector): Make buffer to write a const buffer.
+
+2012-01-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/btrfs.c (grub_btrfs_device): New field size.
 	(read_sblock): Don't attempt to read superblocks outside the disk size.
 
