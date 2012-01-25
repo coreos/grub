@@ -1,5 +1,17 @@
 2012-01-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	IEEE1275 disk write support.
+
+	* grub-core/kern/ieee1275/ieee1275.c (grub_ieee1275_write): Make buffer
+	const void *.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_write): Likewise.
+	* grub-core/disk/ieee1275/ofdisk.c (grub_ofdisk_read): Move open
+	and seek loginc to ...
+	(grub_ofdisk_prepare): ... here.
+	(grub_ofdisk_write): Implement.
+
+2012-01-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	ARC disk write support.
 
 	* grub-core/disk/arc/arcdisk.c (handle_writable): New var.

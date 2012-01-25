@@ -148,7 +148,7 @@ int EXPORT_FUNC(grub_ieee1275_instance_to_path)
      (grub_ieee1275_ihandle_t ihandle, char *path, grub_size_t len,
       grub_ssize_t *actual);
 int EXPORT_FUNC(grub_ieee1275_write) (grub_ieee1275_ihandle_t ihandle,
-				      void *buffer, grub_size_t len,
+				      const void *buffer, grub_size_t len,
 				      grub_ssize_t *actualp);
 int EXPORT_FUNC(grub_ieee1275_read) (grub_ieee1275_ihandle_t ihandle,
 				     void *buffer, grub_size_t len,

@@ -311,10 +311,9 @@ grub_ofdisk_close (grub_disk_t disk)
 }
 
 static grub_err_t
-grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
-		  grub_size_t size, char *buf)
+grub_ofdisk_prepare (grub_disk_t disk, grub_disk_addr_t sector)
 {
-  grub_ssize_t status, actual;
+  grub_ssize_t status;
   unsigned long long pos;
 
   if (disk->data != last_devpath)
@@ -343,15 +342,28 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
       last_devpath = disk->data;      
     }
 
-  pos = sector * 512UL;
+  pos = sector << GRUB_DISK_SECTOR_BITS;
 
   grub_ieee1275_seek (last_ihandle, pos, &status);
   if (status < 0)
     return grub_error (GRUB_ERR_READ_ERROR,
 		       "seek error, can't seek block %llu",
 		       (long long) sector);
-  grub_ieee1275_read (last_ihandle, buf, size * 512UL, &actual);
-  if (actual != (grub_ssize_t) (size * 512UL))
+  return 0;
+}
+
+static grub_err_t
+grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
+		  grub_size_t size, char *buf)
+{
+  grub_err_t err;
+  grub_ssize_t actual;
+  err = grub_ofdisk_prepare (disk, sector);
+  if (err)
+    return err;
+  grub_ieee1275_read (last_ihandle, buf, size  << GRUB_DISK_SECTOR_BITS,
+		      &actual);
+  if (actual != (grub_ssize_t) (size  << GRUB_DISK_SECTOR_BITS))
     return grub_error (GRUB_ERR_READ_ERROR, "read error on block: %llu",
 		       (long long) sector);
 
@@ -359,12 +371,21 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 }
 
 static grub_err_t
-grub_ofdisk_write (grub_disk_t disk __attribute ((unused)),
-		   grub_disk_addr_t sector __attribute ((unused)),
-		   grub_size_t size __attribute ((unused)),
-		   const char *buf __attribute ((unused)))
+grub_ofdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
+		   grub_size_t size, const char *buf)
 {
-  return GRUB_ERR_NOT_IMPLEMENTED_YET;
+  grub_err_t err;
+  grub_ssize_t actual;
+  err = grub_ofdisk_prepare (disk, sector);
+  if (err)
+    return err;
+  grub_ieee1275_write (last_ihandle, buf, size  << GRUB_DISK_SECTOR_BITS,
+		       &actual);
+  if (actual != (grub_ssize_t) (size << GRUB_DISK_SECTOR_BITS))
+    return grub_error (GRUB_ERR_WRITE_ERROR, "write error on block: %llu",
+		       (long long) sector);
+
+  return 0;
 }
 
 static struct grub_disk_dev grub_ofdisk_dev =
