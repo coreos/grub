@@ -1,5 +1,10 @@
 2012-01-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/nilfs2.c (grub_nilfs2_load_sb): Use device size from
+	first superblock to find the second one when possible.
+
+2012-01-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Fix an ARC bug.
 	Print a warning if no platform-specific setup is available.
 
