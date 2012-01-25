@@ -276,7 +276,8 @@ fi
 
 if ! ([ "${target_cpu}-${platform}" = "i386-pc" ] \
     || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] \
-    || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]); then
+    || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]
+    || [ "${target_cpu}-${platform}" = "mips-arc" ]); then
     install_device=
 fi
 
@@ -727,6 +728,8 @@ elif [ x"$platform" = xefi ]; then
 		-L "$bootloader_id" -l "\\EFI\\$efi_distributor\\$efi_file"
 	fi
     fi
+else
+    echo "WARNING: no platform-specific install was performed"
 fi
 
 echo "Installation finished. No error reported."

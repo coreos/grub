@@ -1,3 +1,8 @@
+2012-01-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Fix an ARC bug.
+	Print a warning if no platform-specific setup is available.
+
 2012-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Use static allocation rather than scratch pointer in reed_solomon.
