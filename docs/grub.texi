@@ -91,6 +91,8 @@ This edition documents version @value{VERSION}.
 * Commands::                    The list of available builtin commands
 * Internationalisation::        Topics relating to language support
 * Security::                    Authentication and authorisation
+* Platform limitations::        The list of platform-specific limitations
+* Platform-specific operations:: Platform-specific operations
 * Supported kernels::           The list of supported kernels
 * Troubleshooting::             Error messages produced by GRUB
 * Invoking grub-install::       How to use the GRUB installer
@@ -4072,6 +4074,167 @@ adding @kbd{set superusers=} and @kbd{password} or @kbd{password_pbkdf2}
 commands.
 
 
+@node Platform limitations
+@chapter Platform limitations
+
+GRUB2 is designed to be portable and is actually ported across platforms. We
+try to keep all platforms at the level. Unfortunately some platforms are better
+supported than others. This is detailed in current and 2 following sections.
+
+ARC platform is unable to change datetime (firmware doesn't seem to provide a
+function for it).
+EMU has similar limitation.
+
+Console charset refers only to firmware-assisted console. gfxterm is always
+Unicode (see Internationalisation section for its limitations). Serial is
+configurable to UTF-8 or ASCII (see Internationalisation). In case of qemu
+and coreboot ports the refered console is vga_text. Loongson always uses
+gfxterm.
+
+Most limited one is ASCII. CP437 provides additionally pseudographics.
+GRUB2 doesn't use any language characters from CP437 as often CP437 is replaced
+by national encoding compatible only in pseudographics.
+Unicode is the most versatile charset which supports many languages. However
+the actual console may be much more limited depending on firmware
+
+On BIOS network is supported only if the image is loaded through network.
+On sparc64 GRUB is unable to determine which server it was booted from.
+
+On platforms not having direct serial support (as indicated in the line serial)
+you can still redirect firmware console to serial if it allows so.
+
+Direct ATA/AHCI support allows to circumvent various firmware limitations but
+isn't needed for normal operation except on baremetal ports.
+
+AT keyboard support allows keyboard layout remapping and support for keys not
+available through firmware. It isn't needed for normal operation except
+baremetal ports.
+
+USB support provides benefits similar to ATA (for USB disks) or AT (for USB
+keyboards). In addition it allows USBserial.
+
+Chainloading refers to the ability to load another bootloader through the same protocol
+
+Hints allow faster disk discovery by already knowing in advance which is the disk in
+question. On some platforms hints are correct unless you move the disk between boots.
+On other platforms it's just an educated guess.
+Note that hint failure results in just reduced performance, not a failure
+
+BadRAM is the ability to mark some of the RAM as ``bad''. Note: due to protocol
+limitations mips-loongson (with Linux protocol)
+and mips-qemu_mips can use only memory up to first hole.
+
+@multitable @columnfractions .20 .20 .20 .20 .20
+@item                    @tab BIOS    @tab Coreboot @tab Multiboot    @tab Qemu 
+@item video              @tab yes     @tab yes      @tab yes          @tab yes
+@item console charset    @tab CP437   @tab CP437    @tab CP437        @tab CP437
+@item network            @tab yes (*) @tab no       @tab no           @tab no
+@item serial             @tab yes     @tab yes      @tab yes          @tab yes
+@item ATA/AHCI           @tab yes     @tab yes      @tab yes          @tab yes
+@item AT keyboard        @tab yes     @tab yes      @tab yes          @tab yes
+@item USB                @tab yes     @tab yes      @tab yes          @tab yes
+@item chainloader        @tab local   @tab yes      @tab yes          @tab no
+@item cpuid              @tab partial @tab partial  @tab partial      @tab partial
+@item hints              @tab guess   @tab guess    @tab guess        @tab guess
+@item PCI                @tab yes     @tab yes      @tab yes          @tab yes
+@item badram             @tab yes     @tab yes      @tab yes          @tab yes
+@item compression        @tab always  @tab pointless @tab no           @tab no
+@item exit               @tab yes     @tab no       @tab no           @tab no
+@end multitable
+
+@multitable @columnfractions .20 .20 .20 .20 .20
+@item                    @tab ia32 EFI    @tab amd64 EFI @tab ia32 IEEE1275 @tab Itanium
+@item video              @tab yes         @tab yes       @tab no            @tab no
+@item console charset    @tab Unicode     @tab Unicode   @tab ASCII         @tab Unicode
+@item network            @tab yes         @tab yes       @tab yes           @tab yes
+@item serial             @tab yes         @tab yes       @tab yes           @tab no
+@item ATA/AHCI           @tab yes         @tab yes       @tab yes           @tab no
+@item AT keyboard        @tab yes         @tab yes       @tab yes           @tab no
+@item USB                @tab yes         @tab yes       @tab yes           @tab no
+@item chainloader        @tab local       @tab local     @tab no            @tab local
+@item cpuid              @tab partial     @tab partial   @tab partial       @tab no
+@item hints              @tab guess       @tab guess     @tab good          @tab guess
+@item PCI                @tab yes         @tab yes       @tab yes           @tab no
+@item badram             @tab yes         @tab yes       @tab no            @tab yes
+@item compression        @tab no          @tab no        @tab no            @tab no
+@item exit               @tab yes         @tab yes       @tab yes           @tab yes
+@end multitable
+
+@multitable @columnfractions .20 .20 .20 .20 .20
+@item                    @tab Loongson    @tab sparc64 @tab Powerpc @tab ARC
+@item video              @tab yes         @tab no      @tab yes     @tab no
+@item console charset    @tab N/A         @tab ASCII   @tab ASCII   @tab ASCII
+@item network            @tab no          @tab yes (*) @tab yes     @tab no
+@item serial             @tab yes         @tab no      @tab no      @tab no
+@item ATA/AHCI           @tab yes         @tab no      @tab no      @tab no
+@item AT keyboard        @tab yes         @tab no      @tab no      @tab no
+@item USB                @tab yes         @tab no      @tab no      @tab no
+@item chainloader        @tab yes         @tab no      @tab no      @tab no
+@item cpuid              @tab no          @tab no      @tab no      @tab no
+@item hints              @tab good        @tab good    @tab good    @tab no
+@item PCI                @tab yes         @tab no      @tab no      @tab no
+@item badram             @tab yes (*)     @tab no      @tab no      @tab no
+@item compression        @tab configurable @tab no     @tab no      @tab configurable
+@item exit               @tab no          @tab yes     @tab yes     @tab yes
+@end multitable
+
+@multitable @columnfractions .20 .20 .20 .20 .20
+@item                    @tab MIPS qemu @tab emu
+@item video              @tab no        @tab no
+@item console charset    @tab CP437     @tab ASCII
+@item network            @tab no        @tab yes
+@item serial             @tab yes       @tab no
+@item ATA/AHCI           @tab yes       @tab no
+@item AT keyboard        @tab yes       @tab no
+@item USB                @tab N/A       @tab yes
+@item chainloader        @tab yes       @tab no
+@item cpuid              @tab no        @tab no
+@item hints              @tab guess     @tab no
+@item PCI                @tab no        @tab no
+@item badram             @tab yes (*)   @tab no
+@item compression        @tab configurable @tab no
+@item exit               @tab no        @tab yes
+@end multitable
+
+@node Platform-specific operations
+@chapter Outline
+
+Some platforms have features which allows to implement
+some commands useless or not implementable on others.
+
+Quick summary:
+
+Information retrieval:
+
+@itemize
+@item mipsel-loongson: lsspd
+@item mips-arc: lsdev
+@item efi: lsefisystab, lssal, lsefimmap
+@item i386-pc: lsapm
+@item acpi-enabled (i386-pc, i386-coreboot, i386-multiboot, *-efi): lsacpi
+@end itemize
+
+Workarounds for platform-specific issues:
+@itemize
+@item i386-efi/x86_64-efi: loadbios, fixvideo
+@item acpi-enabled (i386-pc, i386-coreboot, i386-multiboot, *-efi):
+    acpi (override ACPI tables)
+@item i386-pc: drivemap
+@item i386-pc: sendkey
+@end itemize
+
+Advanced operations for power users:
+@itemize
+@item x86: iorw (direct access to I/O ports)
+@end itemize
+
+Miscelaneous:
+@itemize
+@item cmos (x86-*, ieee1275, mips-qemu_mips, mips-loongson): cmostest
+    (used on some laptops to check for special power-on key)
+@item i386-pc: play
+@end itemize
+
 @node Supported kernels
 @chapter Supported boot targets
 
@@ -4129,7 +4292,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @end multitable
 
 @multitable @columnfractions .50 .22 .22
-@item                                @tab 32-bit EFI    @tab 64-bit EFI
+@item                                @tab ia32 EFI      @tab amd64 EFI
 @item BIOS chainloading              @tab no (1)        @tab no (1)
 @item NTLDR                          @tab no (1)        @tab no (1)
 @item Plan9                          @tab no (1)        @tab no (1)
@@ -4155,7 +4318,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @end multitable
 
 @multitable @columnfractions .50 .22 .22
-@item                                @tab IEEE1275
+@item                                @tab ia32 IEEE1275
 @item BIOS chainloading              @tab no (1)
 @item NTLDR                          @tab no (1)
 @item Plan9                          @tab no (1)
@@ -4189,7 +4352,8 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item Requires ACPI
 @end enumerate
 
-PowerPC and Sparc ports support only Linux. MIPS port supports Linux and multiboot2.
+PowerPC, IA64 and Sparc64 ports support only Linux. MIPS port supports Linux
+and multiboot2.
 
 @chapter Boot tests
 

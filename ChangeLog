@@ -1,5 +1,11 @@
 2012-01-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Platform limitations): New section.
+	(Platform-specific operations): Likewise.
+	* docs/grub-dev.texi (Porting): Likewise.
+
+2012-01-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	IEEE1275 disk write support.
 
 	* grub-core/kern/ieee1275/ieee1275.c (grub_ieee1275_write): Make buffer

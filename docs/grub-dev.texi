@@ -77,6 +77,7 @@ This edition documents version @value{VERSION}.
 * Finding your way around::
 * Coding style::
 * Contributing Changes::
+* Porting::
 * Error Handling::
 * CIA::
 * BIOS port memory map::
@@ -446,6 +447,315 @@ right to the repository, both for a legal reason and for a technical reason.
 If your intention is to just get started, please do not submit a inclusion
 request. Instead, please subscribe to the mailing list, and communicate first
 (e.g. sending a patch, asking a question, commenting on another message...).
+
+@node Porting
+@chapter Porting
+
+GRUB2 is designed to be easily portable accross platforms. But because of the
+nature of bootloader every new port must be done separately. Here is how I did
+MIPS (loongson and ARC) and Xen ports. Note than this is more of suggestions,
+not absolute truth.
+
+First of all grab any architecture specifications you can find in public
+(please avoid NDA).
+
+First stage is ``Hello world''. I've done it outside of GRUB for simplicity.
+Your task is to have a small program which is loadable as bootloader and
+clearly shows its presence to you. If you have easily accessible console
+you can just print a message. If you have a mapped framebuffer you know address
+of, you can draw a square. If you have a debug facility, just hanging without
+crashing might be enough. For the first stage you can choose to load the
+bootloader across the network since format for network image is often easier
+than for local boot and it skips the need of small intermediary stages and
+nvram handling. Additionally you can often have a good idea of the needed
+format by running ``file'' on any netbootable executable for given platform.
+
+This program should probably have 2 parts: an assembler and C one. Assembler one
+handles BSS cleaning and other needed setup (on some platforms you may need
+to switch modes or copy the executable to its definitive position). So your code
+may look like (x86 assembly for illustration purposes)
+
+@example
+        .globl _start
+_start:
+	movl	$_bss_start, %edi
+	movl	$_end, %ecx
+	subl	%edi, %ecx
+	xorl	%eax, %eax
+	cld
+	rep
+	stosb
+        call main
+@end example
+
+@example
+
+static const char msg[] = "Hello, world";
+
+void
+putchar (int c)
+@{
+  ...
+@}
+
+void
+main (void)
+@{
+  const char *ptr = msg;
+  while (*ptr)
+    putchar (*ptr++);
+  while (1);
+@}
+@end example
+
+Sometimes you need a third file: assembly stubs for ABI-compatibility.
+
+Once this file is functional it's time to move it into GRUB2. The startup
+assembly file goes to grub-core/kern/$cpu/$platform/startup.S. You should also
+include grub/symbol.h and replace call to entry point with call to
+EXT_C(grub_main). The C file goes to grub-core/kern/$cpu/$platform/init.c
+and its entry point is renamed to void grub_machine_init (void). Keep final
+infinite loop for now. Stubs file if any goes to
+grub-core/kern/$cpu/$platform/callwrap.S. Sometimes either $cpu or $platform
+is dropped if file is used on several cpus respectivelyplatforms.
+Check those locations if they already have what you're looking for.
+
+Then modify in configure.ac the following parts:
+
+CPU names:
+
+@example
+case "$target_cpu" in
+  i[[3456]]86)	target_cpu=i386 ;;
+  amd64)	target_cpu=x86_64 ;;
+  sparc)	target_cpu=sparc64 ;;
+  s390x)	target_cpu=s390 ;;
+  ...
+esac
+@end example
+
+Sometimes CPU have additional architecture names which don't influence booting.
+You might want to have some canonical name to avoid having bunch of identical
+platforms with different names.
+
+NOTE: it doesn't influence compile optimisations which depend solely on
+chosen compiler and compile options.
+
+@example
+if test "x$with_platform" = x; then
+  case "$target_cpu"-"$target_vendor" in
+    i386-apple) platform=efi ;;
+    i386-*) platform=pc ;;
+    x86_64-apple) platform=efi ;;
+    x86_64-*) platform=pc ;;
+    powerpc-*) platform=ieee1275 ;;
+    ...
+  esac
+else
+  ...
+fi
+@end example
+
+This part deals with guessing the platform from CPU and vendor. Sometimes you
+need to use 32-bit mode for booting even if OS runs in 64-bit one. If so add
+your platform to:
+
+@example
+case "$target_cpu"-"$platform" in
+  x86_64-efi) ;;
+  x86_64-emu) ;;
+  x86_64-*) target_cpu=i386 ;;
+  powerpc64-ieee1275) target_cpu=powerpc ;;
+esac
+@end example
+
+Add your platform to the list of supported ones:
+
+@example
+case "$target_cpu"-"$platform" in
+  i386-efi) ;;
+  x86_64-efi) ;;
+  i386-pc) ;;
+  i386-multiboot) ;;
+  i386-coreboot) ;;
+  ...
+esac
+@end example
+
+If explicit -m32 or -m64 is needed add it to:
+
+@example
+case "$target_cpu" in
+  i386 | powerpc) target_m32=1 ;;
+  x86_64 | sparc64) target_m64=1 ;;
+esac
+@end example
+
+Finally you need to add a conditional to the following block:
+
+@example
+AM_CONDITIONAL([COND_mips_arc], [test x$target_cpu = xmips -a x$platform = xarc])
+AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
+AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
+@end example
+
+Next stop is gentpl.py. You need to add your platform to the list of supported
+ones (sorry that this list is duplicated):
+
+@example
+GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
+                   "i386_multiboot", "i386_ieee1275", "x86_64_efi",
+                   "mips_loongson", "sparc64_ieee1275",
+                   "powerpc_ieee1275", "mips_arc", "ia64_efi",
+                   "mips_qemu_mips", "s390_mainframe" ]
+@end example
+
+You may also want already to add new platform to one or several of available
+groups. In particular we always have a group for each CPU even when only
+one platform for given CPU is available.
+
+Then comes grub-core/Makefile.core.def. In the block ``kernel'' you'll need
+to define ldflags for your platform ($cpu_$platform_ldflags). You also need to
+declare startup asm file ($cpu_$platform_startup) as well as any other files
+(e.g. init.c and callwrap.S) (e.g. $cpu_$platform = kern/$cpu/$platform/init.c).
+At this stage you will also need to add dummy dl.c and cache.S with functions
+grub_err_t grub_arch_dl_check_header (void *ehdr), grub_err_t
+grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr) (dl.c) and
+void grub_arch_sync_caches (void *address, grub_size_t len) (cache.S). They
+won't be used for now.
+
+You will need to create directory include/$cpu/$platform and a file
+include/$cpu/types.h. The later folowing this template:
+
+@example
+#ifndef GRUB_TYPES_CPU_HEADER
+#define GRUB_TYPES_CPU_HEADER	1
+
+/* The size of void *.  */
+#define GRUB_TARGET_SIZEOF_VOID_P	4
+
+/* The size of long.  */
+#define GRUB_TARGET_SIZEOF_LONG		4
+
+/* mycpu is big-endian.  */
+#define GRUB_TARGET_WORDS_BIGENDIAN	1
+/* Alternatively: mycpu is little-endian.  */
+#undef GRUB_TARGET_WORDS_BIGENDIAN
+
+#endif /* ! GRUB_TYPES_CPU_HEADER */
+@end example
+
+You will also need to add a dummy file to datetime and setjmp modules to
+avoid any of it having no files. It can be just completely empty at this stage.
+
+You'll need to make grub-mkimage.c (util/grub_mkimage.c) aware of the needed
+format. For most commonly used formats like ELF, PE, aout or raw the support
+is already present and you'll need to make it follow the existant code paths
+for your platform adding adjustments if necessary. When done compile:
+
+@example
+./autogen.sh
+./configure --target=$cpu --with-platform=$platform TARGET_CC=.. OBJCOPY=... STRIP=...
+make > /dev/null
+@end example
+
+And create image
+
+@example
+./grub-mkimage -d grub-core -O $format_id -o test.img
+@end example
+
+And it's time to test your test.img.
+
+If it works next stage is to have heap, console and timer.
+
+To have the heap working you need to determine which regions are suitable for
+heap usage, allocate them from firmware and map (if applicable). Then call
+grub_mm_init_region (vois *start, grub_size_t s) for every of this region.
+As a shortcut for early port you can allocate right after _end or have
+a big static array for heap. If you do you'll probably need to come back to
+this later. As for output console you should distinguish between an array of
+text, terminfo or graphics-based console. Many of real-world examples don't
+fit perfectly into any of these categories but one of the models is easier
+to be used as base. In second and third case you should add your platform to 
+terminfokernel respectively videoinkernel group. A good example of array of
+text is i386-pc (kern/i386/pc/init.c and term/i386/pc/console.c).
+Of terminfo is ieee1275 (kern/ieee1275/init.c and term/ieee1275/console.c).
+Of video is loongson (kern/mips/loongson/init.c). Note that terminfo has
+to be inited in 2 stages: one before (to get at least rudimentary console
+as early as possible) and another after the heap (to get full-featured console).
+For the input there are string of keys, terminfo and direct hardware. For string
+of keys look at i386-pc (same files), for termino ieee1275 (same files) and for
+hardware loongson (kern/mips/loongson/init.c and term/at_keyboard.c).
+
+For the timer you'll need to call grub_install_get_time_ms (...) with as sole
+argument a function returning a grub_uint64_t of a number of milliseconds
+elapsed since arbitrary point in the past.
+
+Once these steps accomplished you can remove the inifinite loop and you should
+be able to get to the minimal console. Next step is to have module loading
+working. For this you'll need to fill kern/$cpu/dl.c and kern/$cpu/cache.S
+with real handling of relocations and respectively the real sync of I and D
+caches. Also you'll need to decide where in the image to store the modules.
+Usual way is to have it concatenated at the end. In this case you'll need to
+modify startup.S to copy modules out of bss to let's say ALIGN_UP (_end, 8)
+before cleaning out bss. You'll probably find useful to add total_module_size
+field to startup.S. In init.c you need to set grub_modbase to the address
+where modules can be found. You may need grub_modules_get_end () to avoid
+declaring the space occupied by modules as usable for heap. You can test modules
+with:
+
+@example
+./grub-mkimage -d grub-core -O $format_id -o test.img hello
+@end example
+
+and then running ``hello'' in the shell.
+
+Once this works, you should think of implementing disk access. Look around
+disk/ for examples.
+
+Then, very importantly, you probably need to implement the actual loader
+(examples available in loader/)
+
+Last step to have minimally usable port is to add support to grub-install to
+put GRUB in a place where firmware or platform will pick it up.
+
+Next steps are: filling datetime.c, setjmp.S, network (net/drivers),
+video (video/), halt (lib/), reboot (lib/).
+
+Please add your platform to Platform limitations and Supported kernels chapter
+in user documentation and mention any steps you skipped which result in reduced
+features or performance. Here is the quick checklist of features. Some of them
+are less important than others and skipping them is completely ok, just needs
+to be mentioned in user documentation.
+
+Checklist:
+@itemize
+@item Is heap big enough?
+@item Which charset is supported by console?
+@item Does platform have disk driver?
+@item Do you have network card support?
+@item Are you able to retrieve datetime (with date)?
+@item Are you able to set datetime (with date)?
+@item Is serial supported?
+@item Do you have direct disk support?
+@item Do you have direct keyboard support?
+@item Do you have USB support?
+@item Do you support loading through network?
+@item Do you support loading from disk?
+@item Do you support chainloading?
+@item Do you support network chainloading?
+@item Does cpuid command supports checking all
+CPU features that the user might want conditionalise on
+(64-bit mode, hypervisor,...)
+@item Do you support hints? How reliable are they?
+@item Does platform have ACPI? If so do ``acpi'' and ``lsacpi'' modules work?
+@item Do any of platform-specific operations mentioned in the relevant section of
+user manual makes sense on your platform?
+@item Does your platform support PCI? If so is there an appropriate driver for
+GRUB?
+@item Do you support badram?
+@end itemize
 
 @node Error Handling
 @chapter Error Handling
