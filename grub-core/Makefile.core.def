@@ -792,7 +792,7 @@ module = {
 module = {
   name = setpci;
   common = commands/setpci.c;
-  enable = x86;
+  enable = pci;
 };
 
 module = {

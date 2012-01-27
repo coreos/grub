@@ -1,5 +1,9 @@
 2012-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (setpci): Enable on all PCI platforms.
+
+2012-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (nvlist_find_value): Check that we don't go
 	pastthe end.
 
