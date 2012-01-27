@@ -1,3 +1,8 @@
+2012-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Add missing \.
+	Reported by: gentoofan
+
 2012-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/squash4.c (xz_decompress): Fix return value.

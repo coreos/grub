@@ -276,7 +276,7 @@ fi
 
 if ! ([ "${target_cpu}-${platform}" = "i386-pc" ] \
     || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] \
-    || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]
+    || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ] \
     || [ "${target_cpu}-${platform}" = "mips-arc" ]); then
     install_device=
 fi
