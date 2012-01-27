@@ -1,5 +1,10 @@
 2012-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (nvlist_find_value): Check that we don't go
+	pastthe end.
+
+2012-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Add missing \.
 	Reported by: gentoofan
 

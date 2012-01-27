@@ -3039,12 +3039,12 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
  */
 
 static int
-nvlist_find_value (const char *nvlist, const char *name,
+nvlist_find_value (const char *nvlist_in, const char *name,
 		   int valtype, char **val,
 		   grub_size_t *size_out, grub_size_t *nelm_out)
 {
   int name_len, type, encode_size;
-  const char *nvpair, *nvp_name;
+  const char *nvpair, *nvp_name, *nvlist = nvlist_in;
 
   /* Verify if the 1st and 2nd byte in the nvlist are valid. */
   /* NOTE: independently of what endianness header announces all 
@@ -3067,6 +3067,13 @@ nvlist_find_value (const char *nvlist, const char *name,
     {
       int nelm;
 
+      if (nvlist + 4 * 4 >= nvlist_in + VDEV_PHYS_SIZE)
+	{
+	  grub_dprintf ("zfs", "nvlist overflow\n");
+	  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
+	  return 0;
+	}
+
       nvpair = nvlist + 4 * 2;	/* skip the encode/decode size */
 
       name_len = grub_be_to_cpu32 (grub_get_unaligned32 (nvpair));
@@ -3074,6 +3081,15 @@ nvlist_find_value (const char *nvlist, const char *name,
 
       nvp_name = nvpair;
       nvpair = nvpair + ((name_len + 3) & ~3);	/* align */
+
+      if (nvpair + 8 >= nvlist_in + VDEV_PHYS_SIZE
+	  || encode_size < 0
+	  || nvpair + 8 + encode_size > nvlist_in + VDEV_PHYS_SIZE)
+	{
+	  grub_dprintf ("zfs", "nvlist overflow\n");
+	  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
+	  return 0;
+	}
 
       type = grub_be_to_cpu32 (grub_get_unaligned32 (nvpair));
       nvpair += 4;
