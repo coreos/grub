@@ -1,4 +1,10 @@
-2012-01-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/squash4.c (xz_decompress): Fix return value.
+	(direct_read): Use correct compressed size.
+	(grub_squash_read_data): Likewise.
+
+2012-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (Platform limitations): New section.
 	(Platform-specific operations): Likewise.

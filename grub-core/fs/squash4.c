@@ -317,7 +317,7 @@ static grub_ssize_t
 xz_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
 	       char *outbuf, grub_size_t len, struct grub_squash_data *data)
 {
-  grub_size_t ret;
+  grub_size_t ret = 0;
   grub_off_t pos = 0;
   struct xz_buf buf;
 
@@ -778,7 +778,9 @@ direct_read (struct grub_squash_data *data,
 	    & grub_cpu_to_le32_compile_time (SQUASH_BLOCK_UNCOMPRESSED)))
 	{
 	  char *block;
-	  block = grub_malloc (data->blksz);
+	  grub_size_t csize;
+	  csize = grub_le_to_cpu32 (ino->block_sizes[i]) & ~SQUASH_BLOCK_FLAGS;
+	  block = grub_malloc (csize);
 	  if (!block)
 	    return -1;
 	  err = grub_disk_read (data->disk,
@@ -786,13 +788,13 @@ direct_read (struct grub_squash_data *data,
 				>> GRUB_DISK_SECTOR_BITS,
 				(ino->cumulated_block_sizes[i] + a)
 				& (GRUB_DISK_SECTOR_SIZE - 1),
-				data->blksz, block);
+				csize, block);
 	  if (err)
 	    {
 	      grub_free (block);
 	      return -1;
 	    }
-	  if (data->decompress (block, data->blksz, boff, buf, read, data)
+	  if (data->decompress (block, csize, boff, buf, read, data)
 	      != (grub_ssize_t) read)
 	    {
 	      grub_free (block);
@@ -862,19 +864,19 @@ grub_squash_read_data (struct grub_squash_data *data,
   if (compressed)
     {
       char *block;
-      block = grub_malloc (data->blksz);
+      block = grub_malloc (frag.size);
       if (!block)
 	return -1;
       err = grub_disk_read (data->disk,
 			    a >> GRUB_DISK_SECTOR_BITS,
 			    a & (GRUB_DISK_SECTOR_SIZE - 1),
-			    data->blksz, block);
+			    frag.size, block);
       if (err)
 	{
 	  grub_free (block);
 	  return -1;
 	}
-      if (data->decompress (block, data->blksz, b, buf, len, data)
+      if (data->decompress (block, frag.size, b, buf, len, data)
 	  != (grub_ssize_t) len)
 	{
 	  grub_free (block);
