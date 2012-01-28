@@ -1,3 +1,14 @@
+2012-01-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Simplify root device discover and don't fail when trying to open
+	incorrect devices.
+
+	* grub-core/disk/efi/efidisk.c (get_diskname_from_path_real): New
+	function.
+	(get_diskname_from_path): Likewise.
+	(grub_efidisk_get_device_name): Use get_diskname_from_path instead
+	of iterating.
+
 2012-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/Makefile.core.def (setpci): Enable on all PCI platforms.

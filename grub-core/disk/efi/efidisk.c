@@ -664,38 +664,52 @@ grub_efidisk_get_device_handle (grub_disk_t disk)
   return 0;
 }
 
+#define NEEDED_BUFLEN sizeof ("XdXXXXXXXXXX")
+static inline int
+get_diskname_from_path_real (const grub_efi_device_path_t *path,
+			     struct grub_efidisk_data *head,
+			     char *buf)
+{
+  int count = 0;
+  struct grub_efidisk_data *d;
+  for (d = head, count = 0; d; d = d->next, count++)
+    if (grub_efi_compare_device_paths (d->device_path, path) == 0)
+      {
+	grub_snprintf (buf, NEEDED_BUFLEN - 1, "d%d", count);
+	return 1;
+      }
+  return 0;
+}
+
+static inline int
+get_diskname_from_path (const grub_efi_device_path_t *path,
+			char *buf)
+{
+  if (get_diskname_from_path_real (path, hd_devices, buf + 1))
+    {
+      buf[0] = 'h';
+      return 1;
+    }
+
+  if (get_diskname_from_path_real (path, fd_devices, buf + 1))
+    {
+      buf[0] = 'f';
+      return 1;
+    }
+
+  if (get_diskname_from_path_real (path, cd_devices, buf + 1))
+    {
+      buf[0] = 'c';
+      return 1;
+    }
+  return 0;
+}
+
 char *
 grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 {
-  grub_efi_device_path_t *dp, *ldp, *sdp;
-  /* This is a hard disk partition.  */
-  grub_disk_t parent = 0;
-  auto int find_parent_disk (const char *name);
-
-  /* Find the disk which is the parent of a given hard disk partition.  */
-  int find_parent_disk (const char *name)
-  {
-    grub_disk_t disk;
-
-    disk = grub_disk_open (name);
-    if (! disk)
-      return 1;
-
-    if (disk->dev->id == GRUB_DISK_DEVICE_EFIDISK_ID)
-      {
-	struct grub_efidisk_data *d;
-
-	d = disk->data;
-	if (grub_efi_compare_device_paths (d->device_path, sdp) == 0)
-	  {
-	    parent = disk;
-	    return 1;
-	  }
-      }
-
-    grub_disk_close (disk);
-    return 0;
-  }
+  grub_efi_device_path_t *dp, *ldp;
+  char device_name[NEEDED_BUFLEN];
 
   dp = grub_efi_get_device_path (handle);
   if (! dp)
@@ -710,9 +724,11 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 	  == GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE))
     {
       char *partition_name = NULL;
-      char *device_name;
+      char *dev_name;
       grub_efi_device_path_t *dup_dp, *dup_ldp;
       grub_efi_hard_drive_device_path_t hd;
+      grub_disk_t parent = 0;
+
       auto int find_partition (grub_disk_t disk, const grub_partition_t part);
 
       /* Find the identical partition.  */
@@ -741,11 +757,9 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
       dup_ldp->length[0] = sizeof (*dup_ldp);
       dup_ldp->length[1] = 0;
 
-      sdp = dup_dp;
-
-      grub_efidisk_iterate (find_parent_disk, GRUB_DISK_PULL_NONE);
-      if (!parent)
-	grub_efidisk_iterate (find_parent_disk, GRUB_DISK_PULL_REMOVABLE);
+      if (!get_diskname_from_path (dup_dp, device_name))
+	return 0;
+      parent = grub_disk_open (device_name);
       grub_free (dup_dp);
 
       if (! parent)
@@ -756,7 +770,7 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
       if (hd.partition_start == 0
 	  && hd.partition_size == grub_disk_get_size (parent))
 	{
-	  device_name = grub_strdup (parent->name);
+	  dev_name = grub_strdup (parent->name);
 	}
       else
 	{
@@ -768,27 +782,18 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 	      return 0;
 	    }
 
-	  device_name = grub_xasprintf ("%s,%s", parent->name, partition_name);
+	  dev_name = grub_xasprintf ("%s,%s", parent->name, partition_name);
 	  grub_free (partition_name);
 	}
       grub_disk_close (parent);
 
-      return device_name;
+      return dev_name;
     }
   else
     {
       /* This should be an entire disk.  */
-      char *device_name = 0;
-
-      sdp = dp;
-
-      grub_efidisk_iterate (find_parent_disk, GRUB_DISK_PULL_NONE);
-      if (!parent)
-	grub_efidisk_iterate (find_parent_disk, GRUB_DISK_PULL_REMOVABLE);
-      if (!parent)
-	return NULL;
-      device_name = grub_strdup (parent->name);
-      grub_disk_close (parent);
-      return device_name;
+      if (!get_diskname_from_path (dp, device_name))
+	return 0;
+      return grub_strdup (device_name);
     }
 }
