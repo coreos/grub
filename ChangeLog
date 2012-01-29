@@ -1,5 +1,9 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/posix_wrap/string.h (memchr): New function.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/POTFILES.in: Regenerate.
 
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
