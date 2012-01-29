@@ -177,7 +177,7 @@ grub_disk_cache_store (unsigned long dev_id, unsigned long disk_id,
 
 
 
-static grub_disk_dev_t grub_disk_dev_list;
+grub_disk_dev_t grub_disk_dev_list;
 
 void
 grub_disk_dev_register (grub_disk_dev_t dev)
@@ -197,20 +197,6 @@ grub_disk_dev_unregister (grub_disk_dev_t dev)
         *p = q->next;
 	break;
       }
-}
-
-int
-grub_disk_dev_iterate (int (*hook) (const char *name))
-{
-  grub_disk_dev_t p;
-  grub_disk_pull_t pull;
-
-  for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
-    for (p = grub_disk_dev_list; p; p = p->next)
-      if (p->iterate && (p->iterate) (hook, pull))
-	return 1;
-
-  return 0;
 }
 
 /* Return the location of the first ',', if any, which is not

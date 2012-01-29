@@ -22,7 +22,7 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/misc.h>
-#include <grub/raid.h>
+#include <grub/diskfilter.h>
 #include <grub/crypto.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
@@ -64,7 +64,7 @@ grub_raid6_init_table (void)
 }
 
 static grub_err_t
-grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
+grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
                     char *buf, grub_disk_addr_t sector, int size)
 {
   int i, q, pos;
@@ -81,26 +81,29 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
     goto quit;
 
   q = p + 1;
-  if (q == (int) array->total_devs)
+  if (q == (int) array->node_count)
     q = 0;
 
   pos = q + 1;
-  if (pos == (int) array->total_devs)
+  if (pos == (int) array->node_count)
     pos = 0;
 
-  for (i = 0; i < (int) array->total_devs - 2; i++)
+  for (i = 0; i < (int) array->node_count - 2; i++)
     {
+      int c;
+      if (array->layout & GRUB_RAID_LAYOUT_MUL_FROM_POS)
+	c = pos;
+      else
+	c = i;
       if (pos == disknr)
-        bad1 = i;
+        bad1 = c;
       else
         {
-          if ((array->members[pos].device) &&
-              (! grub_disk_read (array->members[pos].device,
-				 array->members[pos].start_sector + sector,
-				 0, size, buf)))
+          if (! grub_diskfilter_read_node (&array->nodes[pos], sector,
+					   size >> GRUB_DISK_SECTOR_BITS, buf))
             {
               grub_crypto_xor (pbuf, pbuf, buf, size);
-              grub_raid_block_mulx (i, buf, size);
+              grub_raid_block_mulx (c, buf, size);
               grub_crypto_xor (qbuf, qbuf, buf, size);
             }
           else
@@ -109,13 +112,13 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
               if (bad2 >= 0)
                 goto quit;
 
-              bad2 = i;
+              bad2 = c;
               grub_errno = GRUB_ERR_NONE;
             }
         }
 
       pos++;
-      if (pos == (int) array->total_devs)
+      if (pos == (int) array->node_count)
         pos = 0;
     }
 
@@ -126,24 +129,16 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
   if (bad2 < 0)
     {
       /* One bad device */
-      if ((array->members[p].device) &&
-          (! grub_disk_read (array->members[p].device,
-			     array->members[p].start_sector + sector,
-			     0, size, buf)))
+      if ((! grub_diskfilter_read_node (&array->nodes[p], sector,
+					size >> GRUB_DISK_SECTOR_BITS, buf)))
         {
           grub_crypto_xor (buf, buf, pbuf, size);
           goto quit;
         }
 
-      if (! array->members[q].device)
-        {
-          grub_error (GRUB_ERR_READ_ERROR, "not enough disk to restore");
-          goto quit;
-        }
-
       grub_errno = GRUB_ERR_NONE;
-      if (grub_disk_read (array->members[q].device,
-			  array->members[q].start_sector + sector, 0, size, buf))
+      if (grub_diskfilter_read_node (&array->nodes[q], sector,
+				     size >> GRUB_DISK_SECTOR_BITS, buf))
         goto quit;
 
       grub_crypto_xor (buf, buf, qbuf, size);
@@ -155,22 +150,14 @@ grub_raid6_recover (struct grub_raid_array *array, int disknr, int p,
       /* Two bad devices */
       int c;
 
-      if ((! array->members[p].device) || (! array->members[q].device))
-        {
-          grub_error (GRUB_ERR_READ_ERROR, "not enough disk to restore");
-          goto quit;
-        }
-
-      if (grub_disk_read (array->members[p].device,
-			  array->members[p].start_sector + sector,
-			  0, size, buf))
+      if (grub_diskfilter_read_node (&array->nodes[p], sector,
+				     size >> GRUB_DISK_SECTOR_BITS, buf))
         goto quit;
 
       grub_crypto_xor (pbuf, pbuf, buf, size);
 
-      if (grub_disk_read (array->members[q].device,
-			  array->members[q].start_sector + sector,
-			  0, size, buf))
+      if (grub_diskfilter_read_node (&array->nodes[q], sector,
+				     size >> GRUB_DISK_SECTOR_BITS, buf))
         goto quit;
 
       grub_crypto_xor (qbuf, qbuf, buf, size);

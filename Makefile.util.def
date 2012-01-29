@@ -29,6 +29,9 @@ library = {
   common = grub-core/lib/pbkdf2.c;
   common = grub-core/commands/extcmd.c;
   common = grub-core/lib/arg.c;
+  common = grub-core/disk/ldm.c;
+  common = grub-core/disk/diskfilter.c;
+  common = grub-core/partmap/gpt.c;
 };
 
 library = {
@@ -53,7 +56,6 @@ library = {
   common = grub-core/disk/mdraid1x_linux.c;
   common = grub-core/disk/raid5_recover.c;
   common = grub-core/disk/raid6_recover.c;
-  common = grub-core/disk/raid.c;
   common = grub-core/fs/affs.c;
   common = grub-core/fs/afs.c;
   common = grub-core/fs/bfs.c;
@@ -103,7 +105,6 @@ library = {
   common = grub-core/partmap/acorn.c;
   common = grub-core/partmap/amiga.c;
   common = grub-core/partmap/apple.c;
-  common = grub-core/partmap/gpt.c;
   common = grub-core/partmap/msdos.c;
   common = grub-core/partmap/sun.c;
   common = grub-core/partmap/plan.c;

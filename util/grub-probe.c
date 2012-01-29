@@ -31,7 +31,7 @@
 #include <grub/emu/getroot.h>
 #include <grub/term.h>
 #include <grub/env.h>
-#include <grub/raid.h>
+#include <grub/diskfilter.h>
 #include <grub/i18n.h>
 #include <grub/emu/misc.h>
 #include <grub/util/ofpath.h>
@@ -128,10 +128,15 @@ probe_raid_level (grub_disk_t disk)
   if (!disk)
     return -1;
 
-  if (disk->dev->id != GRUB_DISK_DEVICE_RAID_ID)
+  if (disk->dev->id != GRUB_DISK_DEVICE_DISKFILTER_ID)
     return -1;
 
-  return ((struct grub_raid_array *) disk->data)->level;
+  if (disk->name[0] != 'm' || disk->name[1] != 'd')
+    return -1;
+
+  if (!((struct grub_diskfilter_lv *) disk->data)->segments)
+    return -1;
+  return ((struct grub_diskfilter_lv *) disk->data)->segments->type;
 }
 
 /* Since OF path names can have "," characters in them, and GRUB
@@ -281,8 +286,13 @@ probe_abstraction (grub_disk_t disk)
       list = tmp;
     }
 
-  if (disk->dev->id == GRUB_DISK_DEVICE_LVM_ID)
+  if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID
+      && grub_memcmp (disk->name, "lvm/", sizeof ("lvm/") - 1) == 0)
     printf ("lvm ");
+
+  if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID
+      && grub_memcmp (disk->name, "ldm/", sizeof ("ldm/") - 1) == 0)
+    printf ("ldm ");
 
   if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
     grub_util_cryptodisk_print_abstraction (disk);
@@ -747,8 +757,8 @@ main (int argc, char *argv[])
   grub_lvm_fini ();
   grub_mdraid09_fini ();
   grub_mdraid1x_fini ();
-  grub_raid_fini ();
-  grub_raid_init ();
+  grub_diskfilter_fini ();
+  grub_diskfilter_init ();
   grub_mdraid09_init ();
   grub_mdraid1x_init ();
   grub_lvm_init ();

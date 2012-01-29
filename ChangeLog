@@ -1,3 +1,140 @@
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Merge common RAID and LVM logic to an abstract diskfilter.
+	Add LDM support using the same framework.
+
+	* Makefile.util.def (libgrubkern): Add grub-core/disk/ldm.c,
+	grub-core/disk/diskfilter.c and grub-core/partmap/gpt.c.
+	(libgrubmods): Remove grub-core/disk/raid.c and
+	grub-core/partmap/gpt.c.
+	* grub-core/Makefile.core.def (ldm): New module.
+	(raid): Renamed to diskfilter. All users updated.
+	* grub-core/disk/raid.c: Moved to ...
+	* grub-core/disk/diskfilter.c: ... here.
+	* grub-core/disk/diskfilter.c: Rename grub_raid_ to grub_diskfilter_.
+	(lv_num): New var.
+	(find_array): Renamed to ...
+	(find_lv): ... this. Support multi-LV. Skip nameless LVs
+	(grub_is_array_readable): Renamed to ...
+	(grub_is_lv_readable): ... this. Support multinode hierarchy.
+	(insert_array): New argument id.
+	(is_node_readable): New function.
+	(scan_device): Rename to ...
+	(scan_disk): .. this. Restrict to one disk.
+	(scan_devices): New function.
+	(grub_diskfilter_iterate): Support multi-LV.
+	Skip invisible and nameless LVs.
+	(grub_diskfilter_memberlist): Support multi-LV.
+	(grub_diskfilter_read_node): New function.
+	(grub_raid_read): Most of logic moved to ...
+	(read_segment): ... here
+	(read_lv): New function.
+	(grub_diskfilter_get_vg_by_uuid): New function.
+	(grub_diskfilter_make_raid): Likewise.
+	* grub-core/disk/ldm.c: New file.
+	* grub-core/disk/lvm.c (vg_list): Removed.
+	(lv_count): Likewise.
+	(scan_depth): Likewise.
+	(is_lv_readable): Likewise.
+	(grub_lvm_getvalue): Advance pointer past the number.
+	(find_lv): Removed.
+	(do_lvm_scan): Refactored into ...
+	(grub_lvm_detect): ... this. Support raid.
+	(grub_lvm_iterate): Removed.
+	(grub_lvm_memberlist): Likewise.
+	(grub_lvm_open): Likewise.
+	(grub_lvm_close): Likewise.
+	(read_lv): Likewise.
+	(read_node): Likewise.
+	(is_node_readable): Likewise.
+	(is_lv_readable): Likewise.
+	(grub_lvm_read): Likewise.
+	(grub_lvm_write): Likewise.
+	(grub_lvm_dev): Use diskfilter
+	(GRUB_MOD_INIT): Likewise.
+	(GRUB_MOD_FINI): Likewise.
+	* grub-core/disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Use
+	new interface.
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Likewise.
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Likewise.
+	* grub-core/disk/raid5_recover.c (grub_raid5_recover): Use
+	grub_diskfilter_read_node.
+	Fix a bug with xor.
+	* grub-core/disk/raid6_recover.c (grub_raid6_recover): Use
+	grub_diskfilter_read_node.
+	Support GRUB_RAID_LAYOUT_MUL_FROM_POS.
+	* grub-core/kern/disk.c (grub_disk_dev_list): Make global.
+	(grub_disk_dev_iterate): Move from here...
+	* include/grub/disk.h (grub_disk_dev_iterate): ... to here. Inlined.
+	* grub-core/kern/emu/hostdisk.c (grub_hostdisk_find_partition_start):
+	Make global.
+	(grub_hostdisk_find_partition_start): Likewise.
+	(grub_hostdisk_os_dev_to_grub_drive): New function.
+	(grub_util_biosdisk_get_osdev): Check that disk is biosdisk.
+	* grub-core/kern/emu/hostdisk.c (make_device_name): Move to ...
+	* util/getroot.c (make_device_name): ... here.
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_dm_node_linear_info):
+	Move to ...
+	* util/getroot.c (grub_util_get_dm_node_linear_info): ...here.
+	* grub-core/kern/emu/hostdisk.c
+	(convert_system_partition_to_system_disk): Move to ...
+	* util/getroot.c (convert_system_partition_to_system_disk): ...here.
+	* grub-core/kern/emu/hostdisk.c (device_is_wholedisk): Move to ...
+	* util/getroot.c (device_is_wholedisk): ... here.
+	* grub-core/kern/emu/hostdisk.c (find_system_device): Move to ...
+	* util/getroot.c (find_system_device): ... here.
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_is_present):
+	Move to ...
+	* util/getroot.c (grub_util_biosdisk_is_present): ...here.
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_get_grub_dev):
+	Move to ...
+	* util/getroot.c (grub_util_biosdisk_get_grub_dev): ... here.
+	Handle LDM.
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_is_floppy):
+	Move to ...
+	* util/getroot.c (grub_util_biosdisk_is_floppy): ... here.
+	* grub-core/partmap/gpt.c (grub_gpt_partition_map_iterate): Made global.
+	* include/grub/disk.h (grub_disk_dev_id): Replaced RAID and LVM with
+	DISKFILTER.
+	* include/grub/raid.h: Renamed to ...
+	* include/grub/diskfilter.h: ... this.
+	* include/grub/diskfilter.h: Rename grub_raid_* to grub_diskfilter_*
+	(GRUB_RAID_LAYOUT_*): Make into array.
+	(GRUB_RAID_LAYOUT_MUL_FROM_POS): New value.
+	(grub_diskfilter_vg): New struct.
+	(grub_diskfilter_pv_id): Likewise.
+	(grub_raid_member): Removed.
+	(grub_raid_array): Likewise.
+	(grub_diskfilter_pv): New struct.
+	(grub_diskfilter_lv): Likewise.
+	(grub_diskfilter_segment): Likewise.
+	(grub_diskfilter_node): Likewise.
+	(grub_diskfilter_get_vg_by_uuid): New proto.
+	(grub_raid_register): Inline.
+	(grub_diskfilter_unregister): Likewise.
+	(grub_diskfilter_make_raid): New proto.
+	(grub_diskfilter_vg_register): Likewise.
+	(grub_diskfilter_read_node): Likewise.
+	(grub_diskfilter_get_pv_from_disk) [GRUB_UTIL]: Likewise.
+	* include/grub/emu/hostdisk.h (grub_util_get_ldm): New proto.
+	(grub_util_is_ldm): Likewise.
+	(grub_util_ldm_embed) [GRUB_UTIL]: Likewise.
+	(grub_hostdisk_find_partition_start): Likewise.
+	(grub_hostdisk_os_dev_to_grub_drive): Likewise.
+	* include/grub/gpt_partition.h (GRUB_GPT_PARTITION_TYPE_LDM):
+	New definition.
+	(grub_gpt_partition_map_iterate): New proto.
+	* include/grub/lvm.h (grub_lvm_vg): Removed.
+	(grub_lvm_pv): Likewise.
+	(grub_lvm_lv): Likewise.
+	(grub_lvm_segment): Likewise.
+	(grub_lvm_node): Likewise.
+	* util/getroot.c [...]
+	* util/grub-probe.c (probe_raid_level): Handle diskfilter.
+	(probe_abstraction): Likewise.
+	* util/grub-setup.c (setup): Remove must_embed. Support LDM.
+	(main): Remove dead logic.
+
 2012-01-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Simplify root device discover and don't fail when trying to open

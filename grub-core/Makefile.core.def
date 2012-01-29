@@ -875,6 +875,11 @@ module = {
 };
 
 module = {
+  name = ldm;
+  common = disk/ldm.c;
+};
+
+module = {
   name = mdraid09;
   common = disk/mdraid_linux.c;
 };
@@ -885,8 +890,8 @@ module = {
 };
 
 module = {
-  name = raid;
-  common = disk/raid.c;
+  name = diskfilter;
+  common = disk/diskfilter.c;
 };
 
 module = {

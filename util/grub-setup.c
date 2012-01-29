@@ -133,7 +133,7 @@ write_rootdev (char *core_img, grub_device_t root_dev,
 static void
 setup (const char *dir,
        const char *boot_file, const char *core_file,
-       const char *root, const char *dest, int must_embed, int force,
+       const char *root, const char *dest, int force,
        int fs_probe, int allow_floppy)
 {
   char *boot_path, *core_path, *core_path_dev, *core_path_dev_full;
@@ -281,6 +281,7 @@ setup (const char *dir,
     grub_partition_map_t dest_partmap = NULL;
     grub_partition_t container = dest_dev->disk->partition;
     int multiple_partmaps = 0;
+    int is_ldm;
     grub_err_t err;
     grub_disk_addr_t *sectors;
     int i;
@@ -328,6 +329,8 @@ setup (const char *dir,
     if (!fs)
       grub_errno = GRUB_ERR_NONE;
 
+    is_ldm = grub_util_is_ldm (dest_dev->disk);
+
 #ifdef GRUB_MACHINE_PCBIOS
     if (fs_probe)
       {
@@ -352,6 +355,17 @@ setup (const char *dir,
 			     "result in FILESYSTEM DESTRUCTION if valuable data is overwritten "
 			     "by grub-setup (--skip-fs-probe disables this "
 			     "check, use at your own risk)"), dest_dev->disk->name, dest_partmap->name);
+	if (is_ldm && dest_partmap && strcmp (dest_partmap->name, "msdos") != 0
+	    && strcmp (dest_partmap->name, "gpt") != 0)
+	  grub_util_error (_("%s appears to contain a %s partition map and "
+			     "LDM which isn't known to be a safe combination."
+			     "  Installing GRUB there could "
+			     "result in FILESYSTEM DESTRUCTION if valuable data"
+			     " is overwritten "
+			     "by grub-setup (--skip-fs-probe disables this "
+			     "check, use at your own risk)"),
+			   dest_dev->disk->name, dest_partmap->name);
+
       }
 #endif
 
@@ -364,14 +378,14 @@ setup (const char *dir,
 
     free (tmp_img);
     
-    if (! dest_partmap && ! fs)
+    if (! dest_partmap && ! fs && !is_ldm)
       {
 	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
 	goto unable_to_embed;
       }
-    if (multiple_partmaps || (dest_partmap && fs))
+    if (multiple_partmaps || (dest_partmap && fs) || (is_ldm && fs))
       {
-	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
+	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels.  This is not supported yet."));
 	goto unable_to_embed;
       }
 
@@ -390,7 +404,10 @@ setup (const char *dir,
       }
 
     nsec = core_sectors;
-    if (dest_partmap)
+    if (is_ldm)
+      err = grub_util_ldm_embed (dest_dev->disk, &nsec,
+				 GRUB_EMBED_PCBIOS, &sectors);
+    else if (dest_partmap)
       err = dest_partmap->embed (dest_dev->disk, &nsec,
 				 GRUB_EMBED_PCBIOS, &sectors);
     else
@@ -485,14 +502,16 @@ setup (const char *dir,
 
 unable_to_embed:
 
-  if (must_embed)
-    grub_util_error (_("embedding is not possible, but this is required when "
-		       "the root device is on a RAID array or LVM volume"));
-
 #ifdef GRUB_MACHINE_PCBIOS
-  if (dest_dev->disk->id != root_dev->disk->id)
+  if (dest_dev->disk->id != root_dev->disk->id
+      || dest_dev->disk->dev->id != root_dev->disk->dev->id)
     grub_util_error (_("embedding is not possible, but this is required for "
-		       "cross-disk install"));
+		       "cross-disk, RAID and LVM install"));
+#else
+  if (dest_dev->disk->dev->id != root_dev->disk->dev->id)
+    grub_util_error (_("embedding is not possible, but this is required for "
+		       "RAID and LVM install"));
+
 #endif
 
   grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
@@ -853,7 +872,6 @@ main (int argc, char *argv[])
 {
   char *root_dev = NULL;
   char *dest_dev = NULL;
-  int must_embed = 0;
   struct arguments arguments;
 
   set_program_name (argv[0]);
@@ -888,8 +906,8 @@ main (int argc, char *argv[])
   grub_lvm_fini ();
   grub_mdraid09_fini ();
   grub_mdraid1x_fini ();
-  grub_raid_fini ();
-  grub_raid_init ();
+  grub_diskfilter_fini ();
+  grub_diskfilter_init ();
   grub_mdraid09_init ();
   grub_mdraid1x_init ();
   grub_lvm_init ();
@@ -944,53 +962,12 @@ main (int argc, char *argv[])
                       arguments.dir ? : DEFAULT_DIRECTORY);
     }
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-  if (grub_util_lvm_isvolume (root_dev))
-    must_embed = 1;
-#endif
-
-#ifdef __linux__
-  if (root_dev[0] == 'm' && root_dev[1] == 'd'
-      && ((root_dev[2] >= '0' && root_dev[2] <= '9') || root_dev[2] == '/'))
-    {
-      /* FIXME: we can avoid this on RAID1.  */
-      must_embed = 1;
-    }
-
-  if (dest_dev[0] == 'm' && dest_dev[1] == 'd'
-      && ((dest_dev[2] >= '0' && dest_dev[2] <= '9') || dest_dev[2] == '/'))
-    {
-      char **devicelist;
-      int i;
-
-      if (arguments.device[0] == '/')
-	devicelist = grub_util_raid_getmembers (arguments.device, 1);
-      else
-	{
-	  char *devname;
-	  devname = xasprintf ("/dev/%s", dest_dev);
-	  devicelist = grub_util_raid_getmembers (dest_dev, 1);
-	  free (devname);
-	}
-
-      for (i = 0; devicelist[i]; i++)
-        {
-          setup (arguments.dir ? : DEFAULT_DIRECTORY,
-                 arguments.boot_file ? : DEFAULT_BOOT_FILE,
-                 arguments.core_file ? : DEFAULT_CORE_FILE,
-                 root_dev, grub_util_get_grub_dev (devicelist[i]), 1,
-                 arguments.force, arguments.fs_probe,
-		 arguments.allow_floppy);
-        }
-    }
-  else
-#endif
-    /* Do the real work.  */
-    setup (arguments.dir ? : DEFAULT_DIRECTORY,
-           arguments.boot_file ? : DEFAULT_BOOT_FILE,
-           arguments.core_file ? : DEFAULT_CORE_FILE,
-           root_dev, dest_dev, must_embed, arguments.force,
-	   arguments.fs_probe, arguments.allow_floppy);
+  /* Do the real work.  */
+  setup (arguments.dir ? : DEFAULT_DIRECTORY,
+	 arguments.boot_file ? : DEFAULT_BOOT_FILE,
+	 arguments.core_file ? : DEFAULT_CORE_FILE,
+	 root_dev, dest_dev, arguments.force,
+	 arguments.fs_probe, arguments.allow_floppy);
 
   /* Free resources.  */
   grub_fini_all ();
