@@ -1,5 +1,9 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/completion.c (iterate_dev): Close the disk.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Cryptodisk write support.
 
 	* grub-core/disk/cryptodisk.c (grub_crypto_pcbc_encrypt): New function.
