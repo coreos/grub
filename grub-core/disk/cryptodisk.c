@@ -128,6 +128,29 @@ grub_crypto_pcbc_decrypt (grub_crypto_cipher_handle_t cipher,
   return GPG_ERR_NO_ERROR;
 }
 
+static gcry_err_code_t
+grub_crypto_pcbc_encrypt (grub_crypto_cipher_handle_t cipher,
+			  void *out, void *in, grub_size_t size,
+			  void *iv)
+{
+  grub_uint8_t *inptr, *outptr, *end;
+  grub_uint8_t ivt[cipher->cipher->blocksize];
+  if (!cipher->cipher->decrypt)
+    return GPG_ERR_NOT_SUPPORTED;
+  if (size % cipher->cipher->blocksize != 0)
+    return GPG_ERR_INV_ARG;
+  end = (grub_uint8_t *) in + size;
+  for (inptr = in, outptr = out; inptr < end;
+       inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
+    {
+      grub_memcpy (ivt, inptr, cipher->cipher->blocksize);
+      grub_crypto_xor (outptr, outptr, iv, cipher->cipher->blocksize);
+      cipher->cipher->encrypt (cipher->ctx, outptr, inptr);
+      grub_crypto_xor (iv, ivt, outptr, cipher->cipher->blocksize);
+    }
+  return GPG_ERR_NO_ERROR;
+}
+
 struct lrw_sector
 {
   grub_uint8_t low[GRUB_CRYPTODISK_GF_BYTES];
@@ -189,17 +212,18 @@ lrw_xor (const struct lrw_sector *sec,
 		   dev->lrw_precalc, sec->low_byte * GRUB_CRYPTODISK_GF_BYTES);
 }
 
-gcry_err_code_t
-grub_cryptodisk_decrypt (struct grub_cryptodisk *dev,
-			 grub_uint8_t * data, grub_size_t len,
-			 grub_disk_addr_t sector)
+static gcry_err_code_t
+grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
+			   grub_uint8_t * data, grub_size_t len,
+			   grub_disk_addr_t sector, int encrypt)
 {
   grub_size_t i;
   gcry_err_code_t err;
 
   /* The only mode without IV.  */
   if (dev->mode == GRUB_CRYPTODISK_MODE_ECB && !dev->rekey)
-    return grub_crypto_ecb_decrypt (dev->cipher, data, data, len);
+    return (encrypt ? grub_crypto_ecb_encrypt (dev->cipher, data, data, len)
+	    : grub_crypto_ecb_decrypt (dev->cipher, data, data, len));
 
   for (i = 0; i < len; i += (1U << dev->log_sector_size))
     {
@@ -269,15 +293,23 @@ grub_cryptodisk_decrypt (struct grub_cryptodisk *dev,
       switch (dev->mode)
 	{
 	case GRUB_CRYPTODISK_MODE_CBC:
-	  err = grub_crypto_cbc_decrypt (dev->cipher, data + i, data + i,
-					 (1U << dev->log_sector_size), iv);
+	  if (encrypt)
+	    err = grub_crypto_cbc_encrypt (dev->cipher, data + i, data + i,
+					   (1U << dev->log_sector_size), iv);
+	  else
+	    err = grub_crypto_cbc_decrypt (dev->cipher, data + i, data + i,
+					   (1U << dev->log_sector_size), iv);
 	  if (err)
 	    return err;
 	  break;
 
 	case GRUB_CRYPTODISK_MODE_PCBC:
-	  err = grub_crypto_pcbc_decrypt (dev->cipher, data + i, data + i,
-					  (1U << dev->log_sector_size), iv);
+	  if (encrypt)
+	    err = grub_crypto_pcbc_encrypt (dev->cipher, data + i, data + i,
+					    (1U << dev->log_sector_size), iv);
+	  else
+	    err = grub_crypto_pcbc_decrypt (dev->cipher, data + i, data + i,
+					    (1U << dev->log_sector_size), iv);
 	  if (err)
 	    return err;
 	  break;
@@ -294,9 +326,14 @@ grub_cryptodisk_decrypt (struct grub_cryptodisk *dev,
 	      {
 		grub_crypto_xor (data + i + j, data + i + j, iv,
 				 dev->cipher->cipher->blocksize);
-		err = grub_crypto_ecb_decrypt (dev->cipher, data + i + j, 
-					       data + i + j,
-					       dev->cipher->cipher->blocksize);
+		if (encrypt)
+		  err = grub_crypto_ecb_encrypt (dev->cipher, data + i + j, 
+						 data + i + j,
+						 dev->cipher->cipher->blocksize);
+		else
+		  err = grub_crypto_ecb_decrypt (dev->cipher, data + i + j, 
+						 data + i + j,
+						 dev->cipher->cipher->blocksize);
 		if (err)
 		  return err;
 		grub_crypto_xor (data + i + j, data + i + j, iv,
@@ -312,17 +349,26 @@ grub_cryptodisk_decrypt (struct grub_cryptodisk *dev,
 	    generate_lrw_sector (&sec, dev, (grub_uint8_t *) iv);
 	    lrw_xor (&sec, dev, data + i);
 
-	    err = grub_crypto_ecb_decrypt (dev->cipher, data + i, 
-					   data + i,
-					   (1U << dev->log_sector_size));
+	    if (encrypt)
+	      err = grub_crypto_ecb_encrypt (dev->cipher, data + i, 
+					     data + i,
+					     (1U << dev->log_sector_size));
+	    else
+	      err = grub_crypto_ecb_decrypt (dev->cipher, data + i, 
+					     data + i,
+					     (1U << dev->log_sector_size));
 	    if (err)
 	      return err;
 	    lrw_xor (&sec, dev, data + i);
 	  }
 	  break;
 	case GRUB_CRYPTODISK_MODE_ECB:
-	  grub_crypto_ecb_decrypt (dev->cipher, data + i, data + i,
-				   (1U << dev->log_sector_size));
+	  if (encrypt)
+	    grub_crypto_ecb_encrypt (dev->cipher, data + i, data + i,
+				     (1U << dev->log_sector_size));
+	  else
+	    grub_crypto_ecb_decrypt (dev->cipher, data + i, data + i,
+				     (1U << dev->log_sector_size));
 	  break;
 	default:
 	  return GPG_ERR_NOT_IMPLEMENTED;
@@ -330,6 +376,14 @@ grub_cryptodisk_decrypt (struct grub_cryptodisk *dev,
       sector++;
     }
   return GPG_ERR_NO_ERROR;
+}
+
+gcry_err_code_t
+grub_cryptodisk_decrypt (struct grub_cryptodisk *dev,
+			 grub_uint8_t * data, grub_size_t len,
+			 grub_disk_addr_t sector)
+{
+  return grub_cryptodisk_endecrypt (dev, data, len, sector, 0);
 }
 
 gcry_err_code_t
@@ -526,19 +580,61 @@ grub_cryptodisk_read (grub_disk_t disk, grub_disk_addr_t sector,
       grub_dprintf ("cryptodisk", "grub_disk_read failed with error %d\n", err);
       return err;
     }
-  gcry_err = grub_cryptodisk_decrypt (dev, (grub_uint8_t *) buf,
-				      size << disk->log_sector_size,
-				      sector);
+  gcry_err = grub_cryptodisk_endecrypt (dev, (grub_uint8_t *) buf,
+					size << disk->log_sector_size,
+					sector, 0);
   return grub_crypto_gcry_error (gcry_err);
 }
 
 static grub_err_t
-grub_cryptodisk_write (grub_disk_t disk __attribute ((unused)),
-		 grub_disk_addr_t sector __attribute ((unused)),
-		 grub_size_t size __attribute ((unused)),
-		 const char *buf __attribute ((unused)))
+grub_cryptodisk_write (grub_disk_t disk, grub_disk_addr_t sector,
+		       grub_size_t size, const char *buf)
 {
-  return GRUB_ERR_NOT_IMPLEMENTED_YET;
+  grub_cryptodisk_t dev = (grub_cryptodisk_t) disk->data;
+  gcry_err_code_t gcry_err;
+  char *tmp;
+  grub_err_t err;
+
+#ifdef GRUB_UTIL
+  if (dev->cheat)
+    {
+      err = grub_util_fd_seek (dev->cheat_fd, dev->cheat,
+			       sector << disk->log_sector_size);
+      if (err)
+	return err;
+      if (grub_util_fd_write (dev->cheat_fd, buf, size << disk->log_sector_size)
+	  != (ssize_t) (size << disk->log_sector_size))
+	return grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'",
+			   dev->cheat);
+      return GRUB_ERR_NONE;
+    }
+#endif
+
+  tmp = grub_malloc (size << disk->log_sector_size);
+  if (!tmp)
+    return grub_errno;
+  grub_memcpy (tmp, buf, size << disk->log_sector_size);
+
+  grub_dprintf ("cryptodisk",
+		"Writing %" PRIuGRUB_SIZE " sectors to sector 0x%"
+		PRIxGRUB_UINT64_T " with offset of %" PRIuGRUB_UINT64_T "\n",
+		size, sector, dev->offset);
+
+  gcry_err = grub_cryptodisk_endecrypt (dev, (grub_uint8_t *) tmp,
+					size << disk->log_sector_size,
+					sector, 1);
+  if (gcry_err)
+    {
+      grub_free (tmp);
+      return grub_crypto_gcry_error (gcry_err);
+    }
+
+  err = grub_disk_write (dev->source_disk,
+			  (sector << (disk->log_sector_size
+				      - GRUB_DISK_SECTOR_BITS)) + dev->offset,
+			  0, size << disk->log_sector_size, tmp);
+  grub_free (tmp);
+  return err;
 }
 
 #ifdef GRUB_UTIL

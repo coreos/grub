@@ -958,8 +958,8 @@ grub_util_fd_read (int fd, char *buf, size_t len)
 
 /* Write LEN bytes from BUF to FD. Return less than or equal to zero if an
    error occurs, otherwise return LEN.  */
-static ssize_t
-nwrite (int fd, const char *buf, size_t len)
+ssize_t
+grub_util_fd_write (int fd, const char *buf, size_t len)
 {
   ssize_t size = len;
 
@@ -1062,7 +1062,7 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
   if (fd < 0)
     return grub_errno;
 
-  if (nwrite (fd, buf, size << disk->log_sector_size)
+  if (grub_util_fd_write (fd, buf, size << disk->log_sector_size)
       != (ssize_t) (size << disk->log_sector_size))
     grub_error (GRUB_ERR_WRITE_ERROR, "cannot write to `%s'", map[disk->id].device);
 

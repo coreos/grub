@@ -1,5 +1,17 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Cryptodisk write support.
+
+	* grub-core/disk/cryptodisk.c (grub_crypto_pcbc_encrypt): New function.
+	(grub_cryptodisk_decrypt): Moved logic to ...
+	(grub_cryptodisk_endecrypt): ...this. New argument "encrypt".
+	(grub_cryptodisk_write): Implement.
+	* grub-core/kern/emu/hostdisk.c (nwrite): Rename to ...
+	(grub_util_fd_write): ... this. Make global.
+	* include/grub/emu/hostdisk.h (grub_util_fd_write): New proto.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/list.h (grub_list_remove): Don't crash if element is
 	removed twice.
 
