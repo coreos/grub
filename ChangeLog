@@ -1,5 +1,10 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/powerpc/ieee1275/util/biosdisk.h: Remove.
+	* include/grub/powerpc/ieee1275/biosdisk.h: Likewise.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/cpio.c (handle_symlink): Fix a bug.
 
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
