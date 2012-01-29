@@ -1,5 +1,12 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gnulib/regcomp.c (regerror): Don't use abort on
+	unexpected error.
+	(optimize_utf8): Likewise.
+	* grub-core/lib/posix_wrap/stdlib.h (abort): Removed.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/i386/pc/lnxboot.S: Use
 	GRUB_DECOMPRESSOR_MAX_DECOMPRESSOR_SIZE.
 	* grub-core/boot/i386/pc/startup_raw.S: Ensure about boot_dev

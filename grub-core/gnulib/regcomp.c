@@ -555,7 +555,7 @@ regerror (int errcode, const regex_t *_Restrict_ preg,
        to this routine.  If we are given anything else, or if other regex
        code generates an invalid error code, then the program has a bug.
        Dump core so we can fix it.  */
-    abort ();
+    msg = "unknown regexp error";
 
   msg = gettext (__re_error_msgid + __re_error_msgid_idx[errcode]);
 
@@ -1119,7 +1119,7 @@ optimize_utf8 (re_dfa_t *dfa)
 	}
 	break;
       default:
-	abort ();
+	break;
       }
 
   if (mb_chars || has_period)
