@@ -1,5 +1,9 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/POTFILES.in: Regenerate.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/assert.h (assert_real): Replace grub_fatal
 	with grub_printf to avoid unnecessary fatal failure.
 

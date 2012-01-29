@@ -89,6 +89,7 @@
 ./grub-core/disk/arc/arcdisk.c
 ./grub-core/disk/ata.c
 ./grub-core/disk/cryptodisk.c
+./grub-core/disk/diskfilter.c
 ./grub-core/disk/dmraid_nvidia.c
 ./grub-core/disk/efi/efidisk.c
 ./grub-core/disk/geli.c
@@ -96,6 +97,7 @@
 ./grub-core/disk/i386/pc/biosdisk.c
 ./grub-core/disk/ieee1275/nand.c
 ./grub-core/disk/ieee1275/ofdisk.c
+./grub-core/disk/ldm.c
 ./grub-core/disk/loopback.c
 ./grub-core/disk/luks.c
 ./grub-core/disk/lvm.c
@@ -105,7 +107,6 @@
 ./grub-core/disk/pata.c
 ./grub-core/disk/raid5_recover.c
 ./grub-core/disk/raid6_recover.c
-./grub-core/disk/raid.c
 ./grub-core/disk/scsi.c
 ./grub-core/disk/usbms.c
 ./grub-core/efiemu/i386/coredetect.c
@@ -496,7 +497,7 @@
 ./grub-core/term/i386/pc/console.c
 ./grub-core/term/i386/pc/vga_text.c
 ./grub-core/term/i386/vga_common.c
-./grub-core/term/ieee1275/ofconsole.c
+./grub-core/term/ieee1275/console.c
 ./grub-core/term/ns8250.c
 ./grub-core/term/serial.c
 ./grub-core/term/terminfo.c
