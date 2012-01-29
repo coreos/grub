@@ -1,5 +1,10 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/partition.c (grub_partition_get_name): Simplify logic
+	and improve performance.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_encode_devname): Fix
 	missing ieee1275/ prefix on whole disk.
 
