@@ -40,6 +40,7 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_SCSI_ID,
     GRUB_DISK_DEVICE_CRYPTODISK_ID,
     GRUB_DISK_DEVICE_ARCDISK_ID,
+    GRUB_DISK_DEVICE_HOSTDISK_ID,
   };
 
 struct grub_disk;

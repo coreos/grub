@@ -1107,8 +1107,8 @@ grub_util_biosdisk_close (struct grub_disk *disk)
 
 static struct grub_disk_dev grub_util_biosdisk_dev =
   {
-    .name = "biosdisk",
-    .id = GRUB_DISK_DEVICE_BIOSDISK_ID,
+    .name = "hostdisk",
+    .id = GRUB_DISK_DEVICE_HOSTDISK_ID,
     .iterate = grub_util_biosdisk_iterate,
     .open = grub_util_biosdisk_open,
     .close = grub_util_biosdisk_close,

@@ -658,6 +658,7 @@ grub_cryptodisk_memberlist (grub_disk_t disk)
 static void
 cryptodisk_cleanup (void)
 {
+#if 0
   grub_cryptodisk_t dev = cryptodisk_list;
   grub_cryptodisk_t tmp;
 
@@ -671,6 +672,7 @@ cryptodisk_cleanup (void)
       grub_free (dev);
       dev = tmp;
     }
+#endif
 }
 
 grub_err_t

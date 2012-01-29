@@ -1,5 +1,18 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_util_get_dm_node_linear_info): Fix memory leak.
+	* grub-core/disk/cryptodisk.c (cryptodisk_cleanup): Disable for
+	now to avoid double free.
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_dev): Rename to
+	hostdisk.
+	* include/grub/disk.h (grub_disk_dev_id): New id HOSTDISK.
+	* util/grub-probe.c (escape_of_path): Always return a new copy.
+	(print_full_name): Escape path.
+	(probe): Don't call grub_util_devname_to_ofpath on NULL.
+	Fix hints on abstractions.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device):
 	Don't add "root" line if no compatibility hont is available.
 	Suggested by: Seth Goldberg.

@@ -1246,33 +1246,48 @@ grub_util_get_dm_node_linear_info (const char *dev,
     return 0;
   
   if (!dm_task_set_name(dmt, dev))
-    return 0;
+    {
+      dm_task_destroy (dmt);
+      return 0;
+    }
   dm_task_no_open_count(dmt);
   if (!dm_task_run(dmt))
-    return 0;
+    {
+      dm_task_destroy (dmt);
+      return 0;
+    }
   next = dm_get_next_target(dmt, next, &start, &length,
 			    &target, &params);
   if (grub_strcmp (target, "linear") != 0)
-    return 0;
+    {
+      dm_task_destroy (dmt);
+      return 0;
+    }
   major = grub_strtoul (params, &ptr, 10);
   if (grub_errno)
     {
+      dm_task_destroy (dmt);
       grub_errno = GRUB_ERR_NONE;
       return 0;
     }
   if (*ptr != ':')
-    return 0;
+    {
+      dm_task_destroy (dmt);
+      return 0;
+    }
   ptr++;
   minor = grub_strtoul (ptr, 0, 10);
   if (grub_errno)
     {
       grub_errno = GRUB_ERR_NONE;
+      dm_task_destroy (dmt);
       return 0;
     }
   if (maj)
     *maj = major;
   if (min)
     *min = minor;
+  dm_task_destroy (dmt);
   return 1;
 }
 #endif

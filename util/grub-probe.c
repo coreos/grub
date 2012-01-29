@@ -149,7 +149,7 @@ escape_of_path (const char *orig_path)
   const char *p;
 
   if (!strchr (orig_path, ','))
-    return (char *) orig_path;
+    return (char *) xstrdup (orig_path);
 
   new_path = xmalloc (strlen (orig_path) * 2 + sizeof ("ieee1275/"));
 
@@ -259,14 +259,16 @@ guess_baremetal_drive (const char *orig_path)
 static void
 print_full_name (const char *drive, grub_device_t dev)
 {
+  char *dname = escape_of_path (drive);
   if (dev->disk->partition)
     {
       char *pname = grub_partition_get_name (dev->disk->partition);
-      printf ("%s,%s", drive, pname);
+      printf ("%s,%s", dname, pname);
       free (pname);
     }
   else
-    printf ("%s", drive);
+    printf ("%s", dname);
+  free (dname);
 } 
 
 static void
@@ -363,17 +365,15 @@ probe (const char *path, char *device_name)
   if (print == PRINT_HINT_STR)
     {
       const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
-      const char *orig_path = grub_util_devname_to_ofpath (osdev);
+      const char *ofpath = osdev ? grub_util_devname_to_ofpath (osdev) : 0;
       char *biosname, *bare, *efi;
       const char *map;
 
-      if (orig_path)
+      if (ofpath)
 	{
-	  char *ofpath = escape_of_path (orig_path);
 	  printf ("--hint-ieee1275='");
 	  print_full_name (ofpath, dev);
 	  printf ("' ");
-	  free (ofpath);
 	}
 
       biosname = guess_bios_drive (device_name);
@@ -417,6 +417,16 @@ probe (const char *path, char *device_name)
       goto end;
     }
 
+  if ((print == PRINT_COMPATIBILITY_HINT || print == PRINT_BIOS_HINT
+       || print == PRINT_IEEE1275_HINT || print == PRINT_BAREMETAL_HINT
+       || print == PRINT_EFI_HINT || print == PRINT_ARC_HINT)
+      && dev->disk->dev->id != GRUB_DISK_DEVICE_HOSTDISK_ID)
+    {
+      print_full_name (dev->disk->name, dev);
+      printf ("\n");
+      goto end;
+    }
+
   if (print == PRINT_COMPATIBILITY_HINT)
     {
       const char *map;
@@ -449,8 +459,7 @@ probe (const char *path, char *device_name)
   if (print == PRINT_IEEE1275_HINT)
     {
       const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
-      const char *orig_path = grub_util_devname_to_ofpath (osdev);
-      char *ofpath = escape_of_path (orig_path);
+      const char *ofpath = grub_util_devname_to_ofpath (osdev);
       const char *map;
 
       map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
@@ -460,11 +469,13 @@ probe (const char *path, char *device_name)
 	  print_full_name (map, dev);
 	}
 
-      printf (" ");
-      print_full_name (ofpath, dev);
+      if (ofpath)
+	{
+	  printf (" ");
+	  print_full_name (ofpath, dev);
+	}
 
       printf ("\n");
-      free (ofpath);
       goto end;
     }
   if (print == PRINT_EFI_HINT)
