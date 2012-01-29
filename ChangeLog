@@ -1,5 +1,10 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/list.h (grub_list_remove): Don't crash if element is
+	removed twice.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Rename ofconsole to console.
 
 	* grub-core/commands/terminal.c (handle_command): Handle ofconsole

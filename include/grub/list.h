@@ -44,9 +44,12 @@ grub_list_push (grub_list_t *head, grub_list_t item)
 static inline void
 grub_list_remove (grub_list_t item)
 {
-  *item->prev = item->next;
+  if (item->prev)
+    *item->prev = item->next;
   if (item->next)
     item->next->prev = item->prev;
+  item->next = 0;
+  item->prev = 0;
 }
 
 #define FOR_LIST_ELEMENTS(var, list) for ((var) = (list); (var); (var) = (var)->next)
