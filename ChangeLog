@@ -1,5 +1,24 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Eliminate ofpath limits and possible overflows.
+
+	* util/ieee1275/ofpath.c (grub_util_info) [STANDALONE]: New function.
+	(OF_PATH_MAX): Removed.
+	(MAX_DISK_CAT): New const.
+	(find_obppath): Use allocated rather than preallocated buffer.
+	Return result. Argument of_path removed. All users updated.
+	Add missing fdstat.
+	(xrealpath): New function.
+	(block_device_get_sysfs_path_and_link): Remove sysfs argument.
+	Allocate rather than use preallocated buffer. All users updated.
+	(__of_path_common): Use allocated rather than preallocatecd buffer.
+	Return result. Argument of_path removed. All users updated.
+	(vendor_is_ATA): Read only needed part form the file.
+	(check_sas): Allocate depending on contents rather than fixed.
+	(main) [STANDALONE]: Handle NULL result.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/completion.c (iterate_dev): Close the disk.
 
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
