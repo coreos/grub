@@ -202,7 +202,7 @@ real_code_2:
 
 	movl	$(DATA_ADDR + 0x1000), %edi
 	movl	%ss:(DATA_ADDR + GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE), %ecx
-	addl	$(0x9000 - 0x8200), %ecx
+	addl	$GRUB_DECOMPRESSOR_I386_PC_MAX_DECOMPRESSOR_SIZE, %ecx
 
 2:
 	call	LOCAL(move_memory)

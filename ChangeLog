@@ -1,5 +1,15 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/i386/pc/lnxboot.S: Use
+	GRUB_DECOMPRESSOR_MAX_DECOMPRESSOR_SIZE.
+	* grub-core/boot/i386/pc/startup_raw.S: Ensure about boot_dev
+	location.
+	* include/grub/offsets.h (GRUB_DECOMPRESSOR_I386_PC_BOOT_DEVICE): New
+	definition.
+	(GRUB_DECOMPRESSOR_I386_PC_MAX_DECOMPRESSOR_SIZE): Likewise.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_util_get_dm_node_linear_info): Fix memory leak.
 	* grub-core/disk/cryptodisk.c (cryptodisk_cleanup): Disable for
 	now to avoid double free.

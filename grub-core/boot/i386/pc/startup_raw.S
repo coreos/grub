@@ -66,7 +66,7 @@ reed_solomon_redundancy:
 /*
  *  This is the area for all of the special variables.
  */
-
+	. = _start + GRUB_DECOMPRESSOR_I386_PC_BOOT_DEVICE
 LOCAL(boot_dev):
 	.byte	0xFF, 0xFF, 0xFF
 LOCAL(boot_drive):
