@@ -1,5 +1,12 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-pe2elf.c (ehdr): Make static.
+	(shdr): Likewise.
+	(num_sections): Likewise.
+	(offset): Likewise.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Eliminate ofpath limits and possible overflows.
 
 	* util/ieee1275/ofpath.c (grub_util_info) [STANDALONE]: New function.
