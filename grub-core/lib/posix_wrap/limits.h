@@ -26,6 +26,9 @@
 #define UINT_MAX GRUB_UINT_MAX
 #define ULONG_MAX GRUB_ULONG_MAX
 
+#define SHRT_MAX GRUB_SHRT_MAX
+#define INT_MAX GRUB_INT_MAX
+
 #define CHAR_BIT 8
 
 #endif

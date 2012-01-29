@@ -1,5 +1,22 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/posix_wrap/limits.h (SHRT_MAX): New define.
+	(INT_MAX): Likewise.
+	* grub-core/lib/posix_wrap/stdio.h (snprintf): New function.
+	* grub-core/lib/posix_wrap/stdlib.h (abs): Likewise.
+	* grub-core/lib/posix_wrap/string.h (memcmp): Likewise.
+	(strcpy): Likewise.
+	(strstr): Likewise.
+	(strchr): Likewise.
+	(strncpy): Likewise.
+	(strcat): Likewise.
+	(strncat): Likewise.
+	(strcoll): Likewise.
+	* include/grub/types.h (GRUB_SHRT_MAX): New define.
+	(GRUB_INT_MAX): Likewise.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gnulib/regcomp.c (regerror): Don't use abort on
 	unexpected error.
 	(optimize_utf8): Likewise.

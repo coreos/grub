@@ -46,4 +46,10 @@ realloc (void *ptr, grub_size_t size)
   return grub_realloc (ptr, size);
 }
 
+static inline int
+abs (int c)
+{
+  return (c >= 0) ? c : -c;
+}
+
 #endif
