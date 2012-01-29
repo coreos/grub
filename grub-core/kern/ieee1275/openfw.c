@@ -453,7 +453,7 @@ grub_ieee1275_encode_devname (const char *path)
       encoding = grub_xasprintf ("ieee1275/%s,%d", device, partno);
     }
   else
-    encoding = grub_strdup (device);
+    encoding = grub_xasprintf ("ieee1275/%s", device);
 
   grub_free (partition);
   grub_free (device);
