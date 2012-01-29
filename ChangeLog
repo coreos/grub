@@ -1,5 +1,10 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/posix_wrap/assert.h (assert_real): Replace grub_fatal
+	with grub_printf to avoid unnecessary fatal failure.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/limits.h (SHRT_MAX): New define.
 	(INT_MAX): Likewise.
 	* grub-core/lib/posix_wrap/stdio.h (snprintf): New function.
