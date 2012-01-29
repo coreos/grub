@@ -673,7 +673,9 @@ grub_cmd_terminfo (grub_extcmd_context_t ctxt, int argc, char **args)
 
   for (cur = terminfo_outputs; cur;
        cur = ((struct grub_terminfo_output_state *) cur->data)->next)
-    if (grub_strcmp (args[0], cur->name) == 0)
+    if (grub_strcmp (args[0], cur->name) == 0
+	|| (grub_strcmp (args[0], "ofconsole") == 0
+	    && grub_strcmp ("console", cur->name) == 0))
       {
 	cur->flags = (cur->flags & ~GRUB_TERM_CODE_TYPE_MASK) | encoding;
 

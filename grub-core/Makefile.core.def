@@ -113,7 +113,7 @@ kernel = {
   ieee1275 = kern/ieee1275/ieee1275.c;
   ieee1275 = kern/ieee1275/mmap.c;
   ieee1275 = kern/ieee1275/openfw.c;
-  ieee1275 = term/ieee1275/ofconsole.c;
+  ieee1275 = term/ieee1275/console.c;
   ieee1275 = kern/ieee1275/init.c;
 
   terminfoinkernel = term/terminfo.c;

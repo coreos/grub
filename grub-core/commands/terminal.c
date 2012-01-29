@@ -95,11 +95,15 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
       while (1)
        {
          for (term = *disabled; term; term = term->next)
-           if (grub_strcmp (args[i], term->name) == 0)
+           if (grub_strcmp (args[i], term->name) == 0
+	       || (grub_strcmp (args[i], "ofconsole") == 0
+		   && grub_strcmp ("console", term->name) == 0))
              break;
          if (term == 0)
            for (term = *enabled; term; term = term->next)
-             if (grub_strcmp (args[i], term->name) == 0)
+             if (grub_strcmp (args[i], term->name) == 0
+		 || (grub_strcmp (args[i], "ofconsole") == 0
+		     && grub_strcmp ("console", term->name) == 0))
                break;
          if (term)
            break;
@@ -108,6 +112,8 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
                               args[i]);
          for (aut = autoloads; aut; aut = aut->next)
            if (grub_strcmp (args[i], aut->name) == 0
+	       || (grub_strcmp (args[i], "ofconsole") == 0
+		   && grub_strcmp ("console", aut->name) == 0)
 	       || (aut->name[0] && aut->name[grub_strlen (aut->name) - 1] == '*'
 		   && grub_memcmp (args[i], aut->name,
 				   grub_strlen (aut->name) - 1) == 0))
@@ -131,7 +137,9 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
       for (i = 1; i < argc; i++)
        {
          for (term = *disabled; term; term = term->next)
-           if (grub_strcmp (args[i], term->name) == 0)
+           if (grub_strcmp (args[i], term->name) == 0
+	       || (grub_strcmp (args[i], "ofconsole") == 0
+		   && grub_strcmp ("console", term->name) == 0))
              break;
          if (term)
            {
@@ -150,7 +158,9 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
       for (i = 1; i < argc; i++)
        {
          for (term = *enabled; term; term = term->next)
-           if (grub_strcmp (args[i], term->name) == 0)
+           if (grub_strcmp (args[i], term->name) == 0
+	       || (grub_strcmp (args[i], "ofconsole") == 0
+		   && grub_strcmp ("console", term->name) == 0))
              break;
          if (term)
            {
@@ -168,7 +178,9 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
   for (i = 0; i < argc; i++)
     {
       for (term = *disabled; term; term = term->next)
-       if (grub_strcmp (args[i], term->name) == 0)
+       if (grub_strcmp (args[i], term->name) == 0
+	   || (grub_strcmp (args[i], "ofconsole") == 0
+	       && grub_strcmp ("console", term->name) == 0))
          break;
       if (term)
        {
@@ -186,7 +198,9 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
       {
        next = term->next;
        for (i = 0; i < argc; i++)
-         if (grub_strcmp (args[i], term->name) == 0)
+         if (grub_strcmp (args[i], term->name) == 0
+	     || (grub_strcmp (args[i], "ofconsole") == 0
+		 && grub_strcmp ("console", term->name) == 0))
            break;
        if (i == argc)
          {

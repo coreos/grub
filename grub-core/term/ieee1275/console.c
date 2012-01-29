@@ -1,4 +1,4 @@
-/*  ofconsole.c -- Open Firmware console for GRUB.  */
+/*  console.c -- Open Firmware console for GRUB.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
@@ -29,7 +29,7 @@
 static grub_ieee1275_ihandle_t stdout_ihandle;
 static grub_ieee1275_ihandle_t stdin_ihandle;
 
-extern struct grub_terminfo_output_state grub_ofconsole_terminfo_output;
+extern struct grub_terminfo_output_state grub_console_terminfo_output;
 
 struct color
 {
@@ -74,7 +74,7 @@ readkey (struct grub_term_input *term __attribute__ ((unused)))
 }
 
 static void
-grub_ofconsole_dimensions (void)
+grub_console_dimensions (void)
 {
   grub_ieee1275_ihandle_t options;
   grub_ssize_t lval;
@@ -90,7 +90,7 @@ grub_ofconsole_dimensions (void)
 
 	  if (! grub_ieee1275_get_property (options, "screen-#columns",
 					    val, lval, 0))
-	    grub_ofconsole_terminfo_output.width
+	    grub_console_terminfo_output.width
 	      = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
       if (! grub_ieee1275_get_property_length (options, "screen-#rows", &lval)
@@ -99,20 +99,20 @@ grub_ofconsole_dimensions (void)
 	  char val[lval];
 	  if (! grub_ieee1275_get_property (options, "screen-#rows",
 					    val, lval, 0))
-	    grub_ofconsole_terminfo_output.height
+	    grub_console_terminfo_output.height
 	      = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
     }
 
   /* Use a small console by default.  */
-  if (! grub_ofconsole_terminfo_output.width)
-    grub_ofconsole_terminfo_output.width = 80;
-  if (! grub_ofconsole_terminfo_output.height)
-    grub_ofconsole_terminfo_output.height = 24;
+  if (! grub_console_terminfo_output.width)
+    grub_console_terminfo_output.width = 80;
+  if (! grub_console_terminfo_output.height)
+    grub_console_terminfo_output.height = 24;
 }
 
 static void
-grub_ofconsole_setcursor (struct grub_term_output *term,
+grub_console_setcursor (struct grub_term_output *term,
 			  int on)
 {
   grub_terminfo_setcursor (term, on);
@@ -128,7 +128,7 @@ grub_ofconsole_setcursor (struct grub_term_output *term,
 }
 
 static grub_err_t
-grub_ofconsole_init_input (struct grub_term_input *term)
+grub_console_init_input (struct grub_term_input *term)
 {
   grub_ssize_t actual;
 
@@ -141,7 +141,7 @@ grub_ofconsole_init_input (struct grub_term_input *term)
 }
 
 static grub_err_t
-grub_ofconsole_init_output (struct grub_term_output *term)
+grub_console_init_output (struct grub_term_output *term)
 {
   grub_ssize_t actual;
 
@@ -168,7 +168,7 @@ grub_ofconsole_init_output (struct grub_term_output *term)
       grub_terminfo_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
     }
 
-  grub_ofconsole_dimensions ();
+  grub_console_dimensions ();
 
   grub_terminfo_output_init (term);
 
@@ -177,39 +177,39 @@ grub_ofconsole_init_output (struct grub_term_output *term)
 
 
 
-struct grub_terminfo_input_state grub_ofconsole_terminfo_input =
+struct grub_terminfo_input_state grub_console_terminfo_input =
   {
     .readkey = readkey
   };
 
-struct grub_terminfo_output_state grub_ofconsole_terminfo_output =
+struct grub_terminfo_output_state grub_console_terminfo_output =
   {
     .put = put,
     .width = 80,
     .height = 24
   };
 
-static struct grub_term_input grub_ofconsole_term_input =
+static struct grub_term_input grub_console_term_input =
   {
-    .name = "ofconsole",
-    .init = grub_ofconsole_init_input,
+    .name = "console",
+    .init = grub_console_init_input,
     .getkey = grub_terminfo_getkey,
-    .data = &grub_ofconsole_terminfo_input
+    .data = &grub_console_terminfo_input
   };
 
-static struct grub_term_output grub_ofconsole_term_output =
+static struct grub_term_output grub_console_term_output =
   {
-    .name = "ofconsole",
-    .init = grub_ofconsole_init_output,
+    .name = "console",
+    .init = grub_console_init_output,
     .putchar = grub_terminfo_putchar,
     .getxy = grub_terminfo_getxy,
     .getwh = grub_terminfo_getwh,
     .gotoxy = grub_terminfo_gotoxy,
     .cls = grub_terminfo_cls,
     .setcolorstate = grub_terminfo_setcolorstate,
-    .setcursor = grub_ofconsole_setcursor,
+    .setcursor = grub_console_setcursor,
     .flags = GRUB_TERM_CODE_TYPE_ASCII,
-    .data = &grub_ofconsole_terminfo_output,
+    .data = &grub_console_terminfo_output,
     .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
     .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
@@ -220,8 +220,8 @@ void grub_terminfo_init (void);
 void
 grub_console_init_early (void)
 {
-  grub_term_register_input ("ofconsole", &grub_ofconsole_term_input);
-  grub_term_register_output ("ofconsole", &grub_ofconsole_term_output);
+  grub_term_register_input ("console", &grub_console_term_input);
+  grub_term_register_output ("console", &grub_console_term_output);
 }
 
 void
@@ -235,15 +235,15 @@ grub_console_init_lately (void)
     type = "ieee1275";
 
   grub_terminfo_init ();
-  grub_terminfo_output_register (&grub_ofconsole_term_output, type);
+  grub_terminfo_output_register (&grub_console_term_output, type);
 }
 
 void
 grub_console_fini (void)
 {
-  grub_term_unregister_input (&grub_ofconsole_term_input);
-  grub_term_unregister_output (&grub_ofconsole_term_output);
-  grub_terminfo_output_unregister (&grub_ofconsole_term_output);
+  grub_term_unregister_input (&grub_console_term_input);
+  grub_term_unregister_output (&grub_console_term_output);
+  grub_terminfo_output_unregister (&grub_console_term_output);
 
   grub_terminfo_fini ();
 }

@@ -1,5 +1,18 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Rename ofconsole to console.
+
+	* grub-core/commands/terminal.c (handle_command): Handle ofconsole
+	as sysnonym to console.
+	* grub-core/term/ieee1275/ofconsole.c: Renamed to ..
+	* grub-core/term/ieee1275/console.c: ... this. All users updated.
+	Rename grub_ofconsole_ to grub_console_. All users updated
+	(grub_console_term_output): Rename "ofconsole" to "console".
+	* grub-core/term/terminfo.c (grub_cmd_terminfo): Handle "ofconsole"
+	as "console".
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/pc/plan9.c (grub_cmd_plan9): Remove PXE
 	handling.
 	* include/grub/disk.h (grub_disk_dev_id): Remove obsolete
