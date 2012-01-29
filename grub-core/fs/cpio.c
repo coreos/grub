@@ -470,7 +470,7 @@ handle_symlink (struct grub_cpio_data *data,
   if (prefixlen)
     {
       grub_memcpy (target, *name, prefixlen);
-      target[prefixlen] = '/';
+      target[prefixlen-1] = '/';
     }
   ptr = target + prefixlen + size;
   ptr = grub_stpcpy (ptr, rest);

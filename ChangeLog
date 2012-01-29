@@ -1,5 +1,9 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/cpio.c (handle_symlink): Fix a bug.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Merge common RAID and LVM logic to an abstract diskfilter.
 	Add LDM support using the same framework.
 
