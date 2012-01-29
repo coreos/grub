@@ -1,5 +1,13 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/pc/plan9.c (grub_cmd_plan9): Remove PXE
+	handling.
+	* include/grub/disk.h (grub_disk_dev_id): Remove obsolete
+	GRUB_DISK_DEVICE_UUID_ID, GRUB_DISK_DEVICE_PXE_ID and
+	GRUB_DISK_DEVICE_FILE_ID.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/partition.c (grub_partition_get_name): Simplify logic
 	and improve performance.
 

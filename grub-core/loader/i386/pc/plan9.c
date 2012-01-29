@@ -260,7 +260,6 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
 	default:
 
 	  /* Not sure how to handle those. */
-	case GRUB_DISK_DEVICE_PXE_ID:
 	case GRUB_DISK_DEVICE_NAND_ID:
 	  if (!file_disk)
 	    {
