@@ -1,5 +1,11 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device):
+	Don't add "root" line if no compatibility hont is available.
+	Suggested by: Seth Goldberg.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/ata.h (grub_ata): Add a new element maxbuffer.
 	* grub-core/disk/ata.c (grub_ata_readwrite): Limit to ata->maxbuffer.
 	* grub-core/disk/pata.c (grub_pata_open): Set ata->maxbuffer.
