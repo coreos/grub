@@ -693,6 +693,7 @@ grub_ahci_open (int id, int devnum, struct grub_ata *ata)
 
   ata->data = dev;
   ata->dma = 1;
+  ata->maxbuffer = GRUB_AHCI_PRDT_MAX_CHUNK_LENGTH;
   ata->present = &dev->present;
 
   return GRUB_ERR_NONE;

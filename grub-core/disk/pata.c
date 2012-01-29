@@ -484,6 +484,7 @@ grub_pata_open (int id, int devnum, struct grub_ata *ata)
 
   ata->data = devfnd;
   ata->dma = 0;
+  ata->maxbuffer = 256 * 512;
   ata->present = &devfnd->present;
 
   return GRUB_ERR_NONE;

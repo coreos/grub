@@ -1,5 +1,12 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/ata.h (grub_ata): Add a new element maxbuffer.
+	* grub-core/disk/ata.c (grub_ata_readwrite): Limit to ata->maxbuffer.
+	* grub-core/disk/pata.c (grub_pata_open): Set ata->maxbuffer.
+	* grub-core/disk/ahci.c (grub_ahci_open): Likewise.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/zfs/dnode.h (DN_MIN_INDBLKSHIFT): Removed.
 
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>

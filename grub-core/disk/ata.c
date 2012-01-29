@@ -278,6 +278,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
   grub_ata_addressing_t addressing = ata->addr;
   grub_size_t batch;
   int cmd, cmd_write;
+  grub_size_t nsectors = 0;
 
   grub_dprintf("ata", "grub_ata_readwrite (size=%llu, rw=%d)\n",
 	       (unsigned long long) size, rw);
@@ -314,9 +315,11 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	  cmd = GRUB_ATA_CMD_READ_SECTORS;
 	  cmd_write = GRUB_ATA_CMD_WRITE_SECTORS;
 	}
-    }    
+    }
 
-  grub_size_t nsectors = 0;
+  if (batch > (ata->maxbuffer >> ata->log_sector_size))
+    batch = (ata->maxbuffer >> ata->log_sector_size);
+
   while (nsectors < size)
     {
       struct grub_disk_ata_pass_through_parms parms;
