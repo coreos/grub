@@ -1,5 +1,9 @@
 2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/zfs/dnode.h (DN_MIN_INDBLKSHIFT): Removed.
+
+2012-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-pe2elf.c (ehdr): Make static.
 	(shdr): Likewise.
 	(num_sections): Likewise.
