@@ -1,5 +1,14 @@
 2012-01-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	SCSI write support (for usbms mainly).
+
+	* grub-core/disk/scsi.c (grub_scsi_write10): Uncomment. Make buffer
+	a const pointer.
+	(grub_scsi_write): Implement.
+	* include/grub/scsi.h (grub_scsi_dev): Make write buffer a const pointer
+
+2012-01-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/io/lzopio.c (uncompress_block): Fix use of incorrect
 	variable.
 

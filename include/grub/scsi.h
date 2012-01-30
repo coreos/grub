@@ -69,7 +69,7 @@ struct grub_scsi_dev
   /* Write SIZE  bytes from BUF to  the device SCSI  after sending the
      command CMD of size CMDSIZE.  */
   grub_err_t (*write) (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
-		       grub_size_t size, char *buf);
+		       grub_size_t size, const char *buf);
 
   /* The next scsi device.  */
   struct grub_scsi_dev *next;

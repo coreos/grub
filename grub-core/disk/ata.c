@@ -537,7 +537,7 @@ grub_atapi_write (struct grub_scsi *scsi __attribute__((unused)),
 		  grub_size_t cmdsize __attribute__((unused)),
 		  char *cmd __attribute__((unused)),
 		  grub_size_t size __attribute__((unused)),
-		  char *buf __attribute__((unused)))
+		  const char *buf __attribute__((unused)))
 {
   // XXX: scsi.mod does not use write yet.
   return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "ATAPI write not implemented");

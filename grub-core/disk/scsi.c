@@ -253,12 +253,11 @@ grub_scsi_read12 (grub_disk_t disk, grub_disk_addr_t sector,
   return err;
 }
 
-#if 0
 /* Send a SCSI request for DISK: write the data stored in BUF to SIZE
    sectors starting with SECTOR.  */
 static grub_err_t
 grub_scsi_write10 (grub_disk_t disk, grub_disk_addr_t sector,
-		   grub_size_t size, char *buf)
+		   grub_size_t size, const char *buf)
 {
   grub_scsi_t scsi;
   struct grub_scsi_write10 wr;
@@ -286,6 +285,8 @@ grub_scsi_write10 (grub_disk_t disk, grub_disk_addr_t sector,
 
   return err;
 }
+
+#if 0
 
 /* Send a SCSI request for DISK: write the data stored in BUF to SIZE
    sectors starting with SECTOR.  */
@@ -595,13 +596,38 @@ grub_scsi_write (grub_disk_t disk __attribute((unused)),
 		 grub_size_t size __attribute((unused)),
 		 const char *buf __attribute((unused)))
 {
-#if 0
-  /* XXX: Not tested yet!  */
+  grub_scsi_t scsi;
 
-  /* XXX: This should depend on the device type?  */
-  return grub_scsi_write10 (disk, sector, size, buf);
-#endif
-  return GRUB_ERR_NOT_IMPLEMENTED_YET;
+  scsi = disk->data;
+
+  if (scsi->devtype == grub_scsi_devtype_cdrom)
+    return grub_error (GRUB_ERR_IO, "no CD burning");
+
+  while (size)
+    {
+      /* PATA doesn't support more than 32K reads.
+	 Not sure about AHCI and USB. If it's confirmed that either of
+	 them can do bigger reads reliably this value can be moved to 'scsi'
+	 structure.  */
+      grub_size_t len = 32768 >> disk->log_sector_size;
+      grub_err_t err;
+      if (len > size)
+	len = size;
+      /* Depending on the type, select a read function.  */
+      switch (scsi->devtype)
+	{
+	case grub_scsi_devtype_direct:
+	  err = grub_scsi_write10 (disk, sector, len, buf);
+	  if (err)
+	    return err;
+	  break;
+	}
+      size -= len;
+      sector += len;
+      buf += len << disk->log_sector_size;
+    }
+
+  return GRUB_ERR_NONE;
 }
 
 
