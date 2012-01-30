@@ -253,6 +253,38 @@ grub_scsi_read12 (grub_disk_t disk, grub_disk_addr_t sector,
   return err;
 }
 
+/* Send a SCSI request for DISK: read SIZE sectors starting with
+   sector SECTOR to BUF.  */
+static grub_err_t
+grub_scsi_read16 (grub_disk_t disk, grub_disk_addr_t sector,
+		  grub_size_t size, char *buf)
+{
+  grub_scsi_t scsi;
+  struct grub_scsi_read16 rd;
+  grub_err_t err;
+  grub_err_t err_sense;
+
+  scsi = disk->data;
+
+  rd.opcode = grub_scsi_cmd_read16;
+  rd.lun = scsi->lun << GRUB_SCSI_LUN_SHIFT;
+  rd.lba = grub_cpu_to_be64 (sector);
+  rd.size = grub_cpu_to_be32 (size);
+  rd.reserved = 0;
+  rd.control = 0;
+
+  err = scsi->dev->read (scsi, sizeof (rd), (char *) &rd, size * scsi->blocksize, buf);
+
+  /* Each SCSI command should be followed by Request Sense.
+     If not so, many devices STALLs or definitely freezes. */
+  err_sense = grub_scsi_request_sense (scsi);
+  if (err_sense != GRUB_ERR_NONE)
+  	grub_errno = err;
+  /* err_sense is ignored for now and Request Sense Data also... */
+
+  return err;
+}
+
 /* Send a SCSI request for DISK: write the data stored in BUF to SIZE
    sectors starting with SECTOR.  */
 static grub_err_t
@@ -320,6 +352,39 @@ grub_scsi_write12 (grub_disk_t disk, grub_disk_addr_t sector,
   return err;
 }
 #endif
+
+/* Send a SCSI request for DISK: write the data stored in BUF to SIZE
+   sectors starting with SECTOR.  */
+static grub_err_t
+grub_scsi_write16 (grub_disk_t disk, grub_disk_addr_t sector,
+		   grub_size_t size, const char *buf)
+{
+  grub_scsi_t scsi;
+  struct grub_scsi_write16 wr;
+  grub_err_t err;
+  grub_err_t err_sense;
+
+  scsi = disk->data;
+
+  wr.opcode = grub_scsi_cmd_write16;
+  wr.lun = scsi->lun << GRUB_SCSI_LUN_SHIFT;
+  wr.lba = grub_cpu_to_be64 (sector);
+  wr.size = grub_cpu_to_be32 (size);
+  wr.reserved = 0;
+  wr.control = 0;
+
+  err = scsi->dev->write (scsi, sizeof (wr), (char *) &wr, size * scsi->blocksize, buf);
+
+  /* Each SCSI command should be followed by Request Sense.
+     If not so, many devices STALLs or definitely freezes. */
+  err_sense = grub_scsi_request_sense (scsi);
+  if (err_sense != GRUB_ERR_NONE)
+  	grub_errno = err;
+  /* err_sense is ignored for now and Request Sense Data also... */
+
+  return err;
+}
+
 
 
 static int
@@ -540,13 +605,19 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
       switch (scsi->devtype)
 	{
 	case grub_scsi_devtype_direct:
-	  err = grub_scsi_read10 (disk, sector, len, buf);
+	  if (sector >> 32)
+	    err = grub_scsi_read16 (disk, sector, len, buf);
+	  else
+	    err = grub_scsi_read10 (disk, sector, len, buf);
 	  if (err)
 	    return err;
 	  break;
 
 	case grub_scsi_devtype_cdrom:
-	  err = grub_scsi_read12 (disk, sector, len, buf);
+	  if (sector >> 32)
+	    err = grub_scsi_read16 (disk, sector, len, buf);
+	  else
+	    err = grub_scsi_read12 (disk, sector, len, buf);
 	  if (err)
 	    return err;
 	  break;
@@ -617,7 +688,10 @@ grub_scsi_write (grub_disk_t disk __attribute((unused)),
       switch (scsi->devtype)
 	{
 	case grub_scsi_devtype_direct:
-	  err = grub_scsi_write10 (disk, sector, len, buf);
+	  if (sector >> 32)
+	    err = grub_scsi_write16 (disk, sector, len, buf);
+	  else
+	    err = grub_scsi_write10 (disk, sector, len, buf);
 	  if (err)
 	    return err;
 	  break;

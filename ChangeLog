@@ -1,5 +1,17 @@
 2012-01-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	SCSI >2TiB support.
+
+	* grub-core/disk/scsi.c (grub_scsi_read16): New function.
+	(grub_scsi_write16): Likewise.
+	(grub_scsi_read): Use read16 when necessary.
+	(grub_scsi_write): Likewise.
+	* include/grub/scsicmd.h (grub_scsi_read16): New struct.
+	(grub_scsi_write16): Likewise.
+	(grub_scsi_cmd_t): Add READ16 and WRITE16.
+
+2012-01-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	SCSI write support (for usbms mainly).
 
 	* grub-core/disk/scsi.c (grub_scsi_write10): Uncomment. Make buffer

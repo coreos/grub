@@ -124,6 +124,16 @@ struct grub_scsi_read12
   grub_uint8_t control;
 } __attribute__((packed));
 
+struct grub_scsi_read16
+{
+  grub_uint8_t opcode;
+  grub_uint8_t lun;
+  grub_uint64_t lba;
+  grub_uint32_t size;
+  grub_uint8_t reserved;
+  grub_uint8_t control;
+} __attribute__((packed));
+
 struct grub_scsi_write10
 {
   grub_uint8_t opcode;
@@ -145,6 +155,16 @@ struct grub_scsi_write12
   grub_uint8_t control;
 } __attribute__((packed));
 
+struct grub_scsi_write16
+{
+  grub_uint8_t opcode;
+  grub_uint8_t lun;
+  grub_uint64_t lba;
+  grub_uint32_t size;
+  grub_uint8_t reserved;
+  grub_uint8_t control;
+} __attribute__((packed));
+
 typedef enum
   {
     grub_scsi_cmd_test_unit_ready = 0x00,
@@ -153,6 +173,8 @@ typedef enum
     grub_scsi_cmd_read_capacity = 0x25,
     grub_scsi_cmd_read10 = 0x28,
     grub_scsi_cmd_write10 = 0x2a,
+    grub_scsi_cmd_read16 = 0x88,
+    grub_scsi_cmd_write16 = 0x8a,
     grub_scsi_cmd_read12 = 0xa8,
     grub_scsi_cmd_write12 = 0xaa,
   } grub_scsi_cmd_t;
