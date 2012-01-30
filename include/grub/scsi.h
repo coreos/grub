@@ -94,11 +94,11 @@ struct grub_scsi
   /* Set to 0 when not removable, 1 when removable.  */
   int removable;
 
-  /* Size of the device in blocks.  */
-  int size;
+  /* Size of the device in blocks - 1.  */
+  grub_uint64_t last_block;
 
   /* Size of one block.  */
-  int blocksize;
+  grub_uint32_t blocksize;
 
   /* Device-specific data.  */
   void *data;

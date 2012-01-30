@@ -153,14 +153,14 @@ grub_scsi_inquiry (grub_scsi_t scsi)
 
 /* Read the capacity and block size of SCSI.  */
 static grub_err_t
-grub_scsi_read_capacity (grub_scsi_t scsi)
+grub_scsi_read_capacity10 (grub_scsi_t scsi)
 {
-  struct grub_scsi_read_capacity rc;
-  struct grub_scsi_read_capacity_data rcd;
+  struct grub_scsi_read_capacity10 rc;
+  struct grub_scsi_read_capacity10_data rcd;
   grub_err_t err;
   grub_err_t err_sense;
 
-  rc.opcode = grub_scsi_cmd_read_capacity;
+  rc.opcode = grub_scsi_cmd_read_capacity10;
   rc.lun = scsi->lun << GRUB_SCSI_LUN_SHIFT;
   rc.logical_block_addr = 0;
   rc.reserved1 = 0;
@@ -182,7 +182,42 @@ grub_scsi_read_capacity (grub_scsi_t scsi)
   if (err)
     return err;
 
-  scsi->size = grub_be_to_cpu32 (rcd.size);
+  scsi->last_block = grub_be_to_cpu32 (rcd.last_block);
+  scsi->blocksize = grub_be_to_cpu32 (rcd.blocksize);
+
+  return GRUB_ERR_NONE;
+}
+
+/* Read the capacity and block size of SCSI.  */
+static grub_err_t
+grub_scsi_read_capacity16 (grub_scsi_t scsi)
+{
+  struct grub_scsi_read_capacity16 rc;
+  struct grub_scsi_read_capacity16_data rcd;
+  grub_err_t err;
+  grub_err_t err_sense;
+
+  rc.opcode = grub_scsi_cmd_read_capacity16;
+  rc.lun = (scsi->lun << GRUB_SCSI_LUN_SHIFT) | 0x10;
+  rc.logical_block_addr = 0;
+  rc.alloc_len = grub_cpu_to_be32 (sizeof (rcd));
+  rc.PMI = 0;
+  rc.control = 0;
+	
+  err = scsi->dev->read (scsi, sizeof (rc), (char *) &rc,
+			 sizeof (rcd), (char *) &rcd);
+
+  /* Each SCSI command should be followed by Request Sense.
+     If not so, many devices STALLs or definitely freezes. */
+  err_sense = grub_scsi_request_sense (scsi);
+  if (err_sense != GRUB_ERR_NONE)
+  	grub_errno = err;
+/* err_sense is ignored for now and Request Sense Data also... */
+
+  if (err)
+    return err;
+
+  scsi->last_block = grub_be_to_cpu64 (rcd.last_block);
   scsi->blocksize = grub_be_to_cpu32 (rcd.blocksize);
 
   return GRUB_ERR_NONE;
@@ -541,15 +576,26 @@ grub_scsi_open (const char *name, grub_disk_t disk)
       grub_errno = GRUB_ERR_NONE;
 
       /* Read capacity of media */
-      err = grub_scsi_read_capacity (scsi);
+      err = grub_scsi_read_capacity10 (scsi);
       if (err)
 	{
 	  grub_free (scsi);
-	  grub_dprintf ("scsi", "READ CAPACITY failed\n");
+	  grub_dprintf ("scsi", "READ CAPACITY10 failed\n");
 	  return err;
 	}
 
-      disk->total_sectors = scsi->size;
+      if (scsi->last_block == 0xffffffff)
+	{
+	  err = grub_scsi_read_capacity16 (scsi);
+	  if (err)
+	    {
+	      grub_free (scsi);
+	      grub_dprintf ("scsi", "READ CAPACITY16 failed\n");
+	      return err;
+	    }
+	}
+
+      disk->total_sectors = scsi->last_block + 1;
       if (scsi->blocksize & (scsi->blocksize - 1) || !scsi->blocksize)
 	{
 	  grub_free (scsi);
@@ -557,11 +603,11 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 			     scsi->blocksize);
 	}
       for (disk->log_sector_size = 0;
-	   (1 << disk->log_sector_size) < scsi->blocksize;
+	   (1U << disk->log_sector_size) < scsi->blocksize;
 	   disk->log_sector_size++);
 
-      grub_dprintf ("scsi", "blocks=%u, blocksize=%u\n",
-		    scsi->size, scsi->blocksize);
+      grub_dprintf ("scsi", "last_block=%" PRIuGRUB_UINT64_T ", blocksize=%u\n",
+		    scsi->last_block, scsi->blocksize);
       grub_dprintf ("scsi", "Disk total sectors = %llu\n",
 		    (unsigned long long) disk->total_sectors);
 

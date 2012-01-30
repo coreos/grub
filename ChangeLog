@@ -1,5 +1,25 @@
 2012-01-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/scsi.c (grub_scsi_read_capacity): Renamed to ...
+	(grub_scsi_read_capacity10): ... this.
+	(grub_scsi_read_capacity16): New function.
+	(grub_scsi_open): Use read_capacity16 if read_capacity10 returned
+	0xffffffff.
+	Fix off-by-one error.
+	* include/grub/scsi.h (grub_scsi): Rename size to last_block and make it
+	64-bit unsigned.
+	* include/grub/scsicmd.h (grub_scsi_read_capacity): Rename to ...
+	(grub_scsi_read_capacity10): ... this.
+	(grub_scsi_read_capacity_data): Rename to ...
+	(grub_scsi_read_capacity10_data): ... this. Rename size to last_block.
+	(grub_scsi_read_capacity16): New struct.
+	(grub_scsi_read_capacity16_data): Likewise.
+	(grub_scsi_cmd_t): Rename grub_scsi_cmd_read_capacity to
+	grub_scsi_cmd_read_capacity10.
+	New command grub_scsi_cmd_read_capacity16.
+
+2012-01-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	SCSI >2TiB support.
 
 	* grub-core/disk/scsi.c (grub_scsi_read16): New function.
