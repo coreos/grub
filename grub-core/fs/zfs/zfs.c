@@ -2754,7 +2754,7 @@ get_filesystem_dnode (dnode_end_t * mosmdn, char *fsname,
 	break;
 
       cname = fsname;
-      while (*fsname && !grub_isspace (*fsname) && *fsname != '/')
+      while (*fsname && *fsname != '/')
 	fsname++;
       ch = *fsname;
       *fsname = 0;

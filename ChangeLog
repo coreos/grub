@@ -1,5 +1,10 @@
 2012-01-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (get_filesystem_dnode): Support space in
+	subvolume name (by removing a bogus and useless check).
+
+2012-01-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ext2.c (grub_ext2_label): Fix field size. Change to
 	sizeof while on it.
 
