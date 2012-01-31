@@ -244,11 +244,6 @@ grub_fat_mount (grub_disk_t disk)
   if (grub_memcmp ((const char *) bpb.oem_name, "EXFAT   ",
 		   sizeof (bpb.oem_name)) != 0)
     goto fail;    
-#else
-  if (grub_strncmp((const char *) bpb.version_specific.fat12_or_fat16.fstype, "FAT12", 5)
-      && grub_strncmp((const char *) bpb.version_specific.fat12_or_fat16.fstype, "FAT16", 5)
-      && grub_strncmp((const char *) bpb.version_specific.fat32.fstype, "FAT32", 5))
-    goto fail;
 #endif
 
   /* Get the sizes of logical sectors and clusters.  */
