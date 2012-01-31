@@ -1,5 +1,9 @@
 2012-01-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Unicode): Mention identifier and space limitations.
+
+2012-01-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/jfs.c (grub_jfs_sblock): Make volname a char array.
 	Add new member volname2.
 	(grub_jfs_label): Use volname2 if available.

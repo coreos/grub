@@ -4006,6 +4006,14 @@ IEEE1275 aliases are matched case-insensitively except non-ASCII which is
 matched as binary. Similar behaviour is for matching OSBundleRequired.
 Since IEEE1275 aliases and OSBundleRequired don't contain any non-ASCII it
 should never be a problem in practice.
+Case-sensitive identifiers are matched as raw strings, no canonical
+equivalence check is performed. Case-insenstive identifiers are matched
+as RAW but additionally [a-z] is equivalent to [A-Z]. GRUB-defined
+identifiers use only ASCII and so should user-defined ones.
+Identifiers containing non-ASCII may work but aren't supported.
+Only the ASCII space characters (space U+0020, tab U+000b, CR U+000d and
+LF U+000a) are recognised. Other unicode space characters aren't a valid
+field separator.
 
 @node Security
 @chapter Authentication and authorisation
