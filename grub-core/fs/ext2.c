@@ -892,7 +892,8 @@ grub_ext2_label (grub_device_t device, char **label)
 
   data = grub_ext2_mount (disk);
   if (data)
-    *label = grub_strndup (data->sblock.volume_name, 14);
+    *label = grub_strndup (data->sblock.volume_name,
+			   sizeof (data->sblock.volume_name));
   else
     *label = NULL;
 
