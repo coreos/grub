@@ -126,8 +126,7 @@ struct grub_nilfs2_super_block
   grub_uint16_t s_checkpoint_size;
   grub_uint16_t s_segment_usage_size;
   grub_uint8_t s_uuid[16];
-  char s_volume_name[16];
-  char s_last_mounted[64];
+  char s_volume_name[80];
   grub_uint32_t s_c_interval;
   grub_uint32_t s_c_block_max;
   grub_uint32_t s_reserved[192];
@@ -1099,7 +1098,8 @@ grub_nilfs2_label (grub_device_t device, char **label)
 
   data = grub_nilfs2_mount (disk);
   if (data)
-    *label = grub_strndup (data->sblock.s_volume_name, 14);
+    *label = grub_strndup (data->sblock.s_volume_name,
+			   sizeof (data->sblock.s_volume_name));
   else
     *label = NULL;
 
