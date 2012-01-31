@@ -115,23 +115,26 @@ grub_romfs_mount (grub_device_t dev)
 	 && ptr - sb.d < (grub_ssize_t) grub_be_to_cpu32 (sb.sb.total_size); ptr++)
     if (!*ptr)
       break;
-  if ((void *) ptr == &sb + 1)
-    for (sec++; ; sec++)
-      {
-	err = grub_disk_read (dev->disk, sec, 0, sizeof (sb), &sb);
-	if (err == GRUB_ERR_OUT_OF_RANGE)
-	  err = grub_errno = GRUB_ERR_BAD_FS;
-	if (err)
-	  return NULL;
-	for (ptr = sb.d; (void *) ptr < (void *) (&sb + 1)
-	       && ptr - sb.d < (grub_ssize_t) grub_be_to_cpu32 (sb.sb.total_size); ptr++)
-	  if (!*ptr)
-	    break;
-      }
+  while ((void *) ptr == &sb + 1)
+    {
+      sec++;
+      err = grub_disk_read (dev->disk, sec, 0, sizeof (sb), &sb);
+      if (err == GRUB_ERR_OUT_OF_RANGE)
+	err = grub_errno = GRUB_ERR_BAD_FS;
+      if (err)
+	return NULL;
+      for (ptr = sb.d; (void *) ptr < (void *) (&sb + 1)
+	     && (ptr - sb.d + (sec << GRUB_DISK_SECTOR_BITS)
+		 < grub_be_to_cpu32 (sb.sb.total_size));
+	   ptr++)
+	if (!*ptr)
+	  break;
+    }
   data = grub_malloc (sizeof (*data));
   if (!data)
     return NULL;
-  data->first_file = ALIGN_UP (ptr - sb.d, GRUB_ROMFS_ALIGN) + sec * 512;
+  data->first_file = ALIGN_UP (ptr + 1 - sb.d, GRUB_ROMFS_ALIGN)
+    + (sec << GRUB_DISK_SECTOR_BITS);
   data->disk = dev->disk;
   return data;
 }
