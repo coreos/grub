@@ -53,9 +53,10 @@ struct grub_jfs_sblock
   grub_uint16_t log2_blksz;
 
   grub_uint8_t unused[79];
-  grub_uint8_t volname[11];
+  char volname[11];
   grub_uint8_t unused2[24];
   grub_uint8_t uuid[16];
+  char volname2[16];
 };
 
 struct grub_jfs_extent
@@ -887,7 +888,14 @@ grub_jfs_label (grub_device_t device, char **label)
   data = grub_jfs_mount (device->disk);
 
   if (data)
-    *label = grub_strndup ((char *) (data->sblock.volname), 11);
+    {
+      if (data->sblock.volname2[0])
+	*label = grub_strndup (data->sblock.volname2,
+			       sizeof (data->sblock.volname2));
+      else
+	*label = grub_strndup (data->sblock.volname,
+			       sizeof (data->sblock.volname));
+    }
   else
     *label = 0;
 
