@@ -122,8 +122,7 @@ struct grub_fat_dir_entry
     }  __attribute__ ((packed))  file_name;
     struct {
       grub_uint8_t character_count;
-      grub_uint16_t str[11];
-      grub_uint8_t reserved[8];
+      grub_uint16_t str[15];
     }  __attribute__ ((packed))  volume_label;
   }  __attribute__ ((packed)) type_specific;
 } __attribute__ ((packed));
@@ -1046,7 +1045,8 @@ grub_fat_label (grub_device_t device, char **label)
       if (dir.entry_type == 0x83)
 	{
 	  grub_size_t chc;
-	  *label = grub_malloc (11 * 4 + 1);
+	  *label = grub_malloc (ARRAY_SIZE (dir.type_specific.volume_label.str)
+				* GRUB_MAX_UTF8_PER_UTF16 + 1);
 	  if (!*label)
 	    {
 	      grub_free (data);
