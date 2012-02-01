@@ -44,6 +44,11 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+/*
+  Mostly based on following article: 
+  https://blogs.oracle.com/darren/entry/zfs_encryption_what_is_on
+ */
+
 enum grub_zfs_algo
   {
     GRUB_ZFS_ALGO_CCM,

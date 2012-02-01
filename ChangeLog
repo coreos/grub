@@ -1,5 +1,9 @@
 2012-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfscrypt.c: Add link to documentation.
+
+2012-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/videotest.c (grub_cmd_videotest): Fix subset
 	symbol.
 	Reported by: NODA, Kai <nodakai>.
