@@ -104,13 +104,13 @@ add_value_to_slot_21 (grub_addr_t addr, grub_uint32_t value)
     }
 }
 
-static grub_uint8_t nopm[5] =
+static const grub_uint8_t nopm[5] =
   {
     /* [MLX]       nop.m 0x0 */
     0x05, 0x00, 0x00, 0x00, 0x01
   };
 
-static grub_uint8_t jump[0x20] =
+static const grub_uint8_t jump[0x20] =
   {
     /* ld8 r16=[r15],8 */
     0x02, 0x80, 0x20, 0x1e, 0x18, 0x14,

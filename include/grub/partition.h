@@ -38,6 +38,7 @@ struct grub_partition_map
 {
   /* The next partition map type.  */
   struct grub_partition_map *next;
+  struct grub_partition_map **prev;
 
   /* The name of the partition map type.  */
   const char *name;
@@ -106,8 +107,7 @@ grub_partition_map_register (grub_partition_map_t partmap)
 static inline void
 grub_partition_map_unregister (grub_partition_map_t partmap)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&grub_partition_map_list),
-		    GRUB_AS_LIST (partmap));
+  grub_list_remove (GRUB_AS_LIST (partmap));
 }
 
 #define FOR_PARTITION_MAPS(var) FOR_LIST_ELEMENTS((var), (grub_partition_map_list))

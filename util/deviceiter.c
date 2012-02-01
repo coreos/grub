@@ -369,6 +369,7 @@ get_xvd_disk_name (char *name, int unit)
 static struct seen_device
 {
   struct seen_device *next;
+  struct seen_device **prev;
   const char *name;
 } *seen;
 

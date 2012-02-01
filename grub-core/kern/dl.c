@@ -233,7 +233,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
   unsigned i;
   Elf_Shdr *s;
   grub_size_t tsize = 0, talign = 1;
-#ifdef __ia64__
+#if defined (__ia64__) || defined (__powerpc__)
   grub_size_t tramp;
   grub_size_t got;
 #endif
@@ -243,14 +243,14 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
        i < e->e_shnum;
        i++, s = (Elf_Shdr *)((char *) s + e->e_shentsize))
     {
-      tsize += ALIGN_UP (s->sh_size, s->sh_addralign);
+      tsize = ALIGN_UP (tsize, s->sh_addralign) + s->sh_size;
       if (talign < s->sh_addralign)
 	talign = s->sh_addralign;
     }
 
-#ifdef __ia64__
+#if defined (__ia64__) || defined (__powerpc__)
   grub_arch_dl_get_tramp_got_size (e, &tramp, &got);
-  tramp *= GRUB_IA64_DL_TRAMP_SIZE;
+  tramp *= GRUB_ARCH_DL_TRAMP_SIZE;
   got *= sizeof (grub_uint64_t);
   tsize += ALIGN_UP (tramp, GRUB_ARCH_DL_TRAMP_ALIGN);
   if (talign < GRUB_ARCH_DL_TRAMP_ALIGN)
@@ -269,6 +269,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
   mod->base = grub_memalign (talign, tsize);
   if (!mod->base)
     return grub_errno;
+  mod->sz = tsize;
   ptr = mod->base;
 
 #ifdef GRUB_MACHINE_EMU
@@ -316,7 +317,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	  mod->segment = seg;
 	}
     }
-#ifdef __ia64__
+#if defined (__ia64__) || defined (__powerpc__)
   ptr = (char *) ALIGN_UP ((grub_addr_t) ptr, GRUB_ARCH_DL_TRAMP_ALIGN);
   mod->tramp = ptr;
   ptr += tramp;
@@ -575,15 +576,9 @@ grub_dl_unref (grub_dl_t mod)
 static void
 grub_dl_flush_cache (grub_dl_t mod)
 {
-  grub_dl_segment_t seg;
-
-  for (seg = mod->segment; seg; seg = seg->next) {
-    if (seg->size) {
-      grub_dprintf ("modules", "flushing 0x%lx bytes at %p\n",
-		    (unsigned long) seg->size, seg->addr);
-      grub_arch_sync_caches (seg->addr, seg->size);
-    }
-  }
+  grub_dprintf ("modules", "flushing 0x%lx bytes at %p\n",
+		(unsigned long) mod->sz, mod->base);
+  grub_arch_sync_caches (mod->base, mod->sz);
 }
 
 /* Load a module from core memory.  */
@@ -702,7 +697,7 @@ grub_dl_load (const char *name)
 {
   char *filename;
   grub_dl_t mod;
-  char *grub_dl_dir = grub_env_get ("prefix");
+  const char *grub_dl_dir = grub_env_get ("prefix");
 
   mod = grub_dl_get (name);
   if (mod)
@@ -734,7 +729,6 @@ int
 grub_dl_unload (grub_dl_t mod)
 {
   grub_dl_dep_t dep, depn;
-  grub_dl_segment_t seg, segn;
 
   if (mod->ref_count > 0)
     return 0;
@@ -754,13 +748,7 @@ grub_dl_unload (grub_dl_t mod)
       grub_free (dep);
     }
 
-  for (seg = mod->segment; seg; seg = segn)
-    {
-      segn = seg->next;
-      grub_free (seg->addr);
-      grub_free (seg);
-    }
-
+  grub_free (mod->base);
   grub_free (mod->name);
 #ifdef GRUB_MODULES_MACHINE_READONLY
   grub_free (mod->symtab);

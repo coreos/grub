@@ -340,7 +340,7 @@ grub_usb_register_attach_hook_class (struct grub_usb_attach_desc *desc)
 void
 grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&attach_hooks), GRUB_AS_LIST (desc));  
+  grub_list_remove (GRUB_AS_LIST (desc));  
 }
 
 

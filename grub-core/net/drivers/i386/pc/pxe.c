@@ -164,14 +164,13 @@ grub_pxe_scan (void)
   return bangpxe;
 }
 
-static grub_ssize_t 
-grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)),
-	       struct grub_net_buff *buf)
+static struct grub_net_buff *
+grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)))
 {
   struct grub_pxe_undi_isr *isr;
   static int in_progress = 0;
-  char *ptr, *end;
-  int len;
+  grub_uint8_t *ptr, *end;
+  struct grub_net_buff *buf;
 
   isr = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
 
@@ -180,10 +179,14 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)),
       grub_memset (isr, 0, sizeof (*isr));
       isr->func_flag = GRUB_PXE_ISR_IN_START;
       grub_pxe_call (GRUB_PXENV_UNDI_ISR, isr, pxe_rm_entry);
-      if (isr->status || isr->func_flag != GRUB_PXE_ISR_OUT_OURS)
+      /* Normally according to the specification we should also check
+	 that isr->func_flag != GRUB_PXE_ISR_OUT_OURS but unfortunately it
+	 breaks on intel cards.
+       */
+      if (isr->status)
 	{
 	  in_progress = 0;
-	  return -1;
+	  return NULL;
 	}
       grub_memset (isr, 0, sizeof (*isr));
       isr->func_flag = GRUB_PXE_ISR_IN_PROCESS;
@@ -201,17 +204,27 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)),
       if (isr->status || isr->func_flag == GRUB_PXE_ISR_OUT_DONE)
 	{
 	  in_progress = 0;
-	  return -1;
+	  return NULL;
 	}
       grub_memset (isr, 0, sizeof (*isr));
       isr->func_flag = GRUB_PXE_ISR_IN_GET_NEXT;
       grub_pxe_call (GRUB_PXENV_UNDI_ISR, isr, pxe_rm_entry);
     }
 
-  grub_netbuff_put (buf, isr->frame_len);
+  buf = grub_netbuff_alloc (isr->frame_len);
+  if (!buf)
+    return NULL;
+  /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
+     by 4. So that IP header is aligned on 4 bytes. */
+  grub_netbuff_reserve (buf, 2);
+  if (!buf)
+    {
+      grub_netbuff_free (buf);
+      return NULL;
+    }
   ptr = buf->data;
   end = ptr + isr->frame_len;
-  len = isr->frame_len;
+  grub_netbuff_put (buf, isr->frame_len);
   grub_memcpy (ptr, LINEAR (isr->buffer), isr->buffer_len);
   ptr += isr->buffer_len;
   while (ptr < end)
@@ -222,7 +235,8 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)),
       if (isr->status || isr->func_flag != GRUB_PXE_ISR_OUT_RECEIVE)
 	{
 	  in_progress = 1;
-	  return -1;
+	  grub_netbuff_free (buf);
+	  return NULL;
 	}
 
       grub_memcpy (ptr, LINEAR (isr->buffer), isr->buffer_len);
@@ -230,7 +244,7 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)),
     }
   in_progress = 1;
 
-  return len;
+  return buf;
 }
 
 static grub_err_t 
@@ -345,6 +359,7 @@ GRUB_MOD_INIT(pxe)
   if (i == sizeof (grub_pxe_card.default_address.mac))
     grub_memcpy (grub_pxe_card.default_address.mac, ui->permanent_addr,
 		 sizeof (grub_pxe_card.default_address.mac));
+  grub_pxe_card.mtu = ui->mtu;
 
   grub_pxe_card.default_address.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 

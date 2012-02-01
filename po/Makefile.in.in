@@ -165,7 +165,7 @@ $(DOMAIN).pot-update: $(POTFILES) $(srcdir)/POTFILES.in $(srcdir)/POTFILES-shell
 	      --package-version='@VERSION@' \
 	      --msgid-bugs-address="$$msgid_bugs_address" \
 	    ;; \
-	esac
+	esac; \
 	case `$(XGETTEXT) --version | sed 1q | sed -e 's,^[^0-9]*,,'` in \
 	  '' | 0.[0-9] | 0.[0-9].* | 0.1[0-5] | 0.1[0-5].* | 0.16 | 0.16.[0-1]*) \
 	    $(XGETTEXT) --default-domain=$(DOMAIN) --directory=$(top_srcdir) \
@@ -187,7 +187,7 @@ $(DOMAIN).pot-update: $(POTFILES) $(srcdir)/POTFILES.in $(srcdir)/POTFILES-shell
 	      --join-existing --language=Shell \
 	      --keyword=gettext_quoted --keyword=gettext_printf \
 	    ;; \
-	esac
+	esac ; \
 	test ! -f $(DOMAIN).po || { \
 	  sed -f grub.d.sed < $(DOMAIN).po > $(DOMAIN).1po && \
 	  mv $(DOMAIN).1po $(DOMAIN).po; \

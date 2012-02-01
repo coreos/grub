@@ -18,6 +18,18 @@ script = {
   common = modinfo.sh.in;
 };
 
+script = {
+  installdir = noinst;
+  name = gmodule.pl;
+  common = gmodule.pl.in;
+};
+
+script = {
+  installdir = noinst;
+  name = gdb_grub;
+  common = gdb_grub.in;
+};
+
 kernel = {
   name = kernel;
 
@@ -34,7 +46,7 @@ kernel = {
   ia64_efi_stripflags = '--strip-unneeded -K start -R .note -R .comment';
 
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
-  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x8200';
+  i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x9000';
 
   i386_qemu_ldflags        = '$(TARGET_IMG_LDFLAGS)';
   i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),0x8200';
@@ -101,7 +113,7 @@ kernel = {
   ieee1275 = kern/ieee1275/ieee1275.c;
   ieee1275 = kern/ieee1275/mmap.c;
   ieee1275 = kern/ieee1275/openfw.c;
-  ieee1275 = term/ieee1275/ofconsole.c;
+  ieee1275 = term/ieee1275/console.c;
   ieee1275 = kern/ieee1275/init.c;
 
   terminfoinkernel = term/terminfo.c;
@@ -357,6 +369,15 @@ image = {
 };
 
 image = {
+  name = lzma_decompress;
+  i386_pc = boot/i386/pc/startup_raw.S;
+
+  objcopyflags = '-O binary';
+  ldflags = '$(TARGET_IMG_LDFLAGS) -Wl,-Ttext,0x8200';
+  enable = i386_pc;
+};
+
+image = {
   name = fwstart;
   mips_loongson = boot/mips/loongson/fwstart.S;
   objcopyflags = '-O binary';
@@ -400,11 +421,15 @@ module = {
 module = {
   name = usb;
   common = bus/usb/usb.c;
-  noemu = bus/usb/usbtrans.c;
-  noemu = bus/usb/usbhub.c;
-  enable = emu;
+  common = bus/usb/usbtrans.c;
+  common = bus/usb/usbhub.c;
   enable = usb;
-  emu_condition = COND_GRUB_EMU_USB;
+};
+
+module = {
+  name = emuusb;
+  common = bus/usb/usb.c;
+  condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -445,18 +470,22 @@ module = {
 
 module = {
   name = pci;
-  noemu = bus/pci.c;
-  emu = bus/emu/pci.c;
-  emu = commands/lspci.c;
+  common = bus/pci.c;
 
-  enable = emu;
   enable = i386_pc;
   enable = i386_efi;
   enable = x86_64_efi;
   enable = i386_ieee1275;
   enable = i386_coreboot;
   enable = i386_multiboot;
-  emu_condition = COND_GRUB_EMU_PCI;
+};
+
+module = {
+  name = emupci;
+  common = bus/emu/pci.c;
+  common = commands/lspci.c;
+
+  condition = COND_GRUB_EMU_PCI;
 };
 
 module = {
@@ -632,6 +661,20 @@ module = {
 };
 
 module = {
+  name = reboot;
+  i386 = lib/i386/reboot.c;
+  i386 = lib/i386/reboot_trampoline.S;
+  ia64_efi = lib/efi/reboot.c;
+  x86_64_efi = lib/efi/reboot.c;
+  powerpc_ieee1275 = lib/ieee1275/reboot.c;
+  sparc64_ieee1275 = lib/ieee1275/reboot.c;
+  mips_arc = lib/mips/arc/reboot.c;
+  mips_loongson = lib/mips/loongson/reboot.c;
+  mips_qemu_mips = lib/mips/qemu_mips/reboot.c;
+  common = commands/reboot.c;
+};
+
+module = {
   name = hashsum;
   common = commands/hashsum.c;
 };
@@ -732,11 +775,6 @@ module = {
 };
 
 module = {
-  name = reboot;
-  common = commands/reboot.c;
-};
-
-module = {
   name = search;
   common = commands/search_wrap.c;
   extra_dist = commands/search.c;
@@ -760,7 +798,7 @@ module = {
 module = {
   name = setpci;
   common = commands/setpci.c;
-  enable = x86;
+  enable = pci;
 };
 
 module = {
@@ -794,8 +832,6 @@ module = {
   name = usbtest;
   common = commands/usbtest.c;
   enable = usb;
-  enable = emu;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -845,6 +881,11 @@ module = {
 };
 
 module = {
+  name = ldm;
+  common = disk/ldm.c;
+};
+
+module = {
   name = mdraid09;
   common = disk/mdraid_linux.c;
 };
@@ -855,8 +896,8 @@ module = {
 };
 
 module = {
-  name = raid;
-  common = disk/raid.c;
+  name = diskfilter;
+  common = disk/diskfilter.c;
 };
 
 module = {
@@ -909,8 +950,6 @@ module = {
   name = usbms;
   common = disk/usbms.c;
   enable = usb;
-  enable = emu;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -969,29 +1008,36 @@ module = {
 };
 
 module = {
-  name = afs_be;
-  common = fs/afs_be.c;
-};
-
-module = {
-  name = befs;
-  common = fs/befs.c;
-};
-
-module = {
-  name = befs_be;
-  common = fs/befs_be.c;
+  name = bfs;
+  common = fs/bfs.c;
 };
 
 module = {
   name = btrfs;
   common = fs/btrfs.c;
   common = lib/crc.c;
+  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
 };
 
 module = {
   name = cpio;
   common = fs/cpio.c;
+};
+
+module = {
+  name = cpio_be;
+  common = fs/cpio_be.c;
+};
+
+module = {
+  name = newc;
+  common = fs/newc.c;
+};
+
+module = {
+  name = odc;
+  common = fs/odc.c;
 };
 
 module = {
@@ -1002,6 +1048,11 @@ module = {
 module = {
   name = fat;
   common = fs/fat.c;
+};
+
+module = {
+  name = exfat;
+  common = fs/exfat.c;
 };
 
 module = {
@@ -1077,6 +1128,8 @@ module = {
 module = {
   name = squash4;
   common = fs/squash4.c;
+  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -I$(srcdir)/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
 };
 
 module = {
@@ -1110,6 +1163,11 @@ module = {
   common = fs/zfs/zfs_lzjb.c;
   common = fs/zfs/zfs_sha256.c;
   common = fs/zfs/zfs_fletcher.c;
+};
+
+module = {
+  name = zfscrypt;
+  common = fs/zfs/zfscrypt.c;
 };
 
 module = {
@@ -1248,6 +1306,13 @@ module = {
 };
 
 module = {
+  name = plan9;
+  i386_pc = loader/i386/pc/plan9.c;
+  enable = i386_pc;
+};
+
+
+module = {
   name = linux16;
   i386_pc = loader/i386/pc/linux.c;
   i386_pc = lib/cmdline.c;
@@ -1381,7 +1446,7 @@ module = {
   extra_dist = script/yylex.l;
   extra_dist = script/parser.y;
 
-  cflags = '$(CFLAGS_POSIX) -Wno-error';
+  cflags = '$(CFLAGS_POSIX)';
   cppflags = '$(CPPFLAGS_POSIX)';
 };
 
@@ -1413,6 +1478,11 @@ module = {
 module = {
   name = part_sun;
   common = partmap/sun.c;
+};
+
+module = {
+  name = part_plan;
+  common = partmap/plan.c;
 };
 
 module = {
@@ -1452,9 +1522,7 @@ module = {
   common = term/serial.c;
   x86 = term/ns8250.c;
 
-  enable = emu;
   enable = x86;
-  emu_condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -1602,9 +1670,13 @@ module = {
 module = {
   name = net;
   common = net/net.c;
+  common = net/dns.c;
   common = net/bootp.c;
   common = net/ip.c;
   common = net/udp.c;
+  common = net/tcp.c;
+  common = net/icmp.c;
+  common = net/icmp6.c;
   common = net/ethernet.c;
   common = net/arp.c;
   common = net/netbuff.c;
@@ -1613,6 +1685,11 @@ module = {
 module = {
   name = tftp;
   common = net/tftp.c;
+};
+
+module = {
+  name = http;
+  common = net/http.c;
 };
 
 module = {
@@ -1657,6 +1734,14 @@ module = {
 };
 
 module = {
+  name = lzopio;
+  common = io/lzopio.c;
+  common = lib/minilzo/minilzo.c;
+  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
+};
+
+module = {
   name = testload;
   common = commands/testload.c;
 };
@@ -1674,6 +1759,11 @@ module = {
 };
 
 module = {
+  name = priority_queue;
+  common = lib/priority_queue.c;
+};
+
+module = {
   name = time;
   common = commands/time.c;
 };
@@ -1682,4 +1772,14 @@ module = {
   name = cacheinfo;
   common = commands/cacheinfo.c;
   condition = COND_ENABLE_CACHE_STATS;
+};
+
+module = {
+  name = adler32;
+  common = lib/adler32.c;
+};
+
+module = {
+  name = crc64;
+  common = lib/crc64.c;
 };

@@ -177,7 +177,7 @@ grub_disk_cache_store (unsigned long dev_id, unsigned long disk_id,
 
 
 
-static grub_disk_dev_t grub_disk_dev_list;
+grub_disk_dev_t grub_disk_dev_list;
 
 void
 grub_disk_dev_register (grub_disk_dev_t dev)
@@ -197,20 +197,6 @@ grub_disk_dev_unregister (grub_disk_dev_t dev)
         *p = q->next;
 	break;
       }
-}
-
-int
-grub_disk_dev_iterate (int (*hook) (const char *name))
-{
-  grub_disk_dev_t p;
-  grub_disk_pull_t pull;
-
-  for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
-    for (p = grub_disk_dev_list; p; p = p->next)
-      if (p->iterate && (p->iterate) (hook, pull))
-	return 1;
-
-  return 0;
 }
 
 /* Return the location of the first ',', if any, which is not
@@ -442,6 +428,7 @@ grub_disk_read_small (grub_disk_t disk, grub_disk_addr_t sector,
 	}
     }
 
+  grub_free (tmp_buf);
   grub_errno = GRUB_ERR_NONE;
 
   {
@@ -468,9 +455,11 @@ grub_disk_read_small (grub_disk_t disk, grub_disk_addr_t sector,
 	grub_error_push ();
 	grub_dprintf ("disk", "%s read failed\n", disk->name);
 	grub_error_pop ();
+	grub_free (tmp_buf);
 	return grub_errno;
       }
     grub_memcpy (buf, tmp_buf + offset, size);
+    grub_free (tmp_buf);
     return GRUB_ERR_NONE;
   }
 }
@@ -604,12 +593,13 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
       while (l)
 	{
-	  (disk->read_hook) (s, o,
-			     ((l > GRUB_DISK_SECTOR_SIZE)
-			      ? GRUB_DISK_SECTOR_SIZE
-			      : l));
+	  grub_size_t cl;
+	  cl = GRUB_DISK_SECTOR_SIZE - o;
+	  if (cl > l)
+	    cl = l;
+	  (disk->read_hook) (s, o, cl);
 	  s++;
-	  l -= GRUB_DISK_SECTOR_SIZE - o;
+	  l -= cl;
 	  o = 0;
 	}
     }

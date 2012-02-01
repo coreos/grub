@@ -29,6 +29,7 @@ struct grub_test
 {
   /* The next test.  */
   struct grub_test *next;
+  struct grub_test **prev;
 
   /* The test name.  */
   char *name;

@@ -41,7 +41,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 const char loongson_machtypes[][60] =
   {
     [GRUB_ARCH_MACHINE_YEELOONG] = "machtype=lemote-yeeloong-2f-8.9inches",
-    [GRUB_ARCH_MACHINE_FULOONG2F]  = "machtype=lemote-fuloong-2f-unknown",
+    [GRUB_ARCH_MACHINE_FULOONG2F]  = "machtype=lemote-fuloong-2f-box",
     [GRUB_ARCH_MACHINE_FULOONG2E]  = "machtype=lemote-fuloong-2e-unknown"
   };
 #endif
@@ -435,11 +435,14 @@ static grub_err_t
 grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
-  grub_file_t file = 0;
-  grub_ssize_t size;
+  grub_file_t *files = 0;
+  grub_size_t size = 0;
   void *initrd_src;
   grub_addr_t initrd_dest;
   grub_err_t err;
+  int i;
+  int nfiles = 0;
+  grub_uint8_t *ptr;
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
@@ -448,14 +451,21 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load Linux first.");
 
   if (initrd_loaded)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "only one initrd can be loaded.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "only one initrd command can be issued.");
 
-  grub_file_filter_disable_compression ();
-  file = grub_file_open (argv[0]);
-  if (! file)
-    return grub_errno;
+  files = grub_zalloc (argc * sizeof (files[0]));
+  if (!files)
+    goto fail;
 
-  size = grub_file_size (file);
+  for (i = 0; i < argc; i++)
+    {
+      grub_file_filter_disable_compression ();
+      files[i] = grub_file_open (argv[i]);
+      if (! files[i])
+	goto fail;
+      nfiles++;
+      size += grub_file_size (files[i]);
+    }
 
   {
     grub_relocator_chunk_t ch;
@@ -468,20 +478,23 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 					    GRUB_RELOCATOR_PREFERENCE_NONE);
 
     if (err)
-      {
-	grub_file_close (file);
-	return err;
-      }
+      goto fail;
     initrd_src = get_virtual_current_address (ch);
     initrd_dest = get_physical_target_address (ch) | 0x80000000;
   }
 
-  if (grub_file_read (file, initrd_src, size) != size)
+  ptr = initrd_src;
+  for (i = 0; i < nfiles; i++)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
-      grub_file_close (file);
-
-      return grub_errno;
+      grub_ssize_t cursize = grub_file_size (files[i]);
+      if (grub_file_read (files[i], ptr, cursize) != cursize)
+	{
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			argv[i]);
+	  goto fail;
+	}
+      ptr += cursize;
     }
 
 #ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
@@ -491,10 +504,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 			  " rd_size=0x%" PRIxGRUB_ADDR, params,
 			  initrd_dest, size);
     if (!tmp)
-      {
-	grub_file_close (file);
-	return grub_errno;
-      }
+      goto fail;
     grub_free (params);
     params = tmp;
   }
@@ -516,9 +526,12 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   initrd_loaded = 1;
 
-  grub_file_close (file);
+ fail:
+  for (i = 0; i < nfiles; i++)
+    grub_file_close (files[i]);
+  grub_free (files);
 
-  return GRUB_ERR_NONE;
+  return grub_errno;
 }
 
 static grub_command_t cmd_linux, cmd_initrd;

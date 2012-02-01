@@ -18,9 +18,6 @@ extern void grub_video_init (void);
 extern void grub_bitmap_init (void);
 extern void grub_font_init (void);
 extern void grub_gfxterm_init (void);
-extern void grub_at_keyboard_init (void);
-extern void grub_serial_init (void);
-extern void grub_terminfo_init (void);
 extern void grub_keylayouts_init (void);
 extern void grub_boot_init (void);
 extern void grub_vga_text_init (void);
@@ -99,12 +96,6 @@ grub_halt (void)
   while (1);
 }
 
-void
-grub_reboot (void)
-{
-  while (1);
-}
-
 grub_err_t 
 grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
@@ -113,9 +104,5 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
 }
 
 extern char _end[];
+grub_addr_t grub_modbase = (grub_addr_t) _end;
 
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return (grub_addr_t) _end;
-}

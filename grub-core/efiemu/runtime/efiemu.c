@@ -21,6 +21,12 @@
    As it emulates only runtime serviceit isn't able
    to chainload EFI bootloader on non-EFI system (TODO) */
 
+#ifdef __i386__
+#include <grub/i386/types.h>
+#else
+#include <grub/x86_64/types.h>
+#endif
+
 #include <grub/symbol.h>
 #include <grub/types.h>
 #include <grub/efi/api.h>
@@ -369,16 +375,16 @@ grub_efi_status_t EFI_FUNC
       switch (cur_relloc->size)
 	{
 	case 8:
-	  *((grub_uint64_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  *((grub_uint64_t *) (grub_addr_t) cur_relloc->addr) += corr;
 	  break;
 	case 4:
-	  *((grub_uint32_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  *((grub_uint32_t *) (grub_addr_t) cur_relloc->addr) += corr;
 	  break;
 	case 2:
-	  *((grub_uint16_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  *((grub_uint16_t *) (grub_addr_t) cur_relloc->addr) += corr;
 	  break;
 	case 1:
-	  *((grub_uint8_t *) UINT_TO_PTR (cur_relloc->addr)) += corr;
+	  *((grub_uint8_t *) (grub_addr_t) cur_relloc->addr) += corr;
 	  break;
 	}
     }

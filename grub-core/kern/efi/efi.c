@@ -163,18 +163,6 @@ grub_exit (void)
   for (;;) ;
 }
 
-/* On i386, a firmware-independant grub_reboot() is provided by realmode.S.  */
-#ifndef __i386__
-void
-grub_reboot (void)
-{
-  grub_efi_fini ();
-  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
-              GRUB_EFI_RESET_COLD, GRUB_EFI_SUCCESS, 0, NULL);
-  for (;;) ;
-}
-#endif
-
 grub_err_t
 grub_efi_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
 				  grub_efi_uintn_t descriptor_size,
@@ -218,7 +206,7 @@ grub_get_rtc (void)
 /* Search the mods section from the PE32/PE32+ image. This code uses
    a PE32 header, but should work with PE32+ as well.  */
 grub_addr_t
-grub_arch_modules_addr (void)
+grub_efi_modules_addr (void)
 {
   grub_efi_loaded_image_t *image;
   struct grub_pe32_header *header;

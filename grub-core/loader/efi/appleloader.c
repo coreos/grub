@@ -126,7 +126,7 @@ static struct piwg_full_device_path devpath_6 = MAKE_PIWG_PATH (0xffcc4000,
 
 struct devdata
 {
-  char *model;
+  const char *model;
   grub_efi_device_path_t *devpath;
 };
 

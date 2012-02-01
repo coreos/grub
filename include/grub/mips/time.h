@@ -26,7 +26,7 @@
 /* Return the real time in ticks.  */
 grub_uint64_t EXPORT_FUNC (grub_get_rtc) (void);
 
-extern grub_uint32_t EXPORT_VAR (grub_arch_cpuclock);
+extern grub_uint32_t EXPORT_VAR (grub_arch_cpuclock) __attribute__ ((section(".text")));
 #endif
 
 static inline void

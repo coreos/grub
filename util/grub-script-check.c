@@ -51,9 +51,9 @@ usage (int status)
 {
   if (status)
     fprintf (stderr,
-	     "Try ``%s --help'' for more information.\n", program_name);
+	     _("Try ``%s --help'' for more information.\n"), program_name);
   else
-    printf ("\
+    printf (_("\
 Usage: %s [PATH]\n\
 \n\
 Checks GRUB script configuration file for syntax errors.\n\
@@ -63,7 +63,7 @@ Checks GRUB script configuration file for syntax errors.\n\
   -v, --verbose             print the script as it is being processed\n\
 \n\
 Report bugs to <%s>.\n\
-", program_name,
+"), program_name,
 	    PACKAGE_BUGREPORT);
   exit (status);
 }
@@ -157,7 +157,7 @@ main (int argc, char *argv[])
     }
   else if (optind + 1 != argc)
     {
-      fprintf (stderr, "Unknown extra argument `%s'.\n", argv[optind + 1]);
+      fprintf (stderr, _("Unknown extra argument `%s'.\n"), argv[optind + 1]);
       usage (1);
     }
   else
@@ -193,7 +193,7 @@ main (int argc, char *argv[])
 
   if (found_input && script == 0)
     {
-      fprintf (stderr, "error: line no: %u\n", lineno);
+      fprintf (stderr, _("error: line no: %u\n"), lineno);
       return 1;
     }
 

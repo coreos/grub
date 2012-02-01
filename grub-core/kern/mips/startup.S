@@ -40,17 +40,6 @@ start:
 VARIABLE(grub_total_modules_size)
 	.long 0
 
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX
-
-VARIABLE(grub_prefix)
-
-	/* to be filled by grub-mkimage */
-
-	/*
-	 *  Leave some breathing room for the prefix.
-	 */
-
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END
 VARIABLE (grub_arch_busclock)
 	.long 0
 VARIABLE (grub_arch_cpuclock)

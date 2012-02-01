@@ -182,7 +182,7 @@ grub_multiboot_set_console (int console_type, int accepted_consoles,
       if (console_required)
 	return grub_error (GRUB_ERR_BAD_OS,
 			   "OS requires a console but none is available");
-      grub_printf ("WARNING: no console will be available to OS");
+      grub_puts_ (N_("WARNING: no console will be available to OS"));
       accepts_video = 0;
       accepts_ega_text = 0;
       return GRUB_ERR_NONE;
@@ -226,7 +226,7 @@ grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
 
   file = grub_file_open (argv[0]);
   if (! file)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "couldn't open file");
+    return grub_errno;
 
   grub_dl_ref (my_mod);
 
@@ -309,7 +309,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
 	return err;
       }
     module = get_virtual_current_address (ch);
-    target = (grub_addr_t) get_virtual_current_address (ch);
+    target = get_physical_target_address (ch);
   }
 
   err = grub_multiboot_add_module (target, size, argc - 1, argv + 1);
@@ -322,7 +322,10 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, module, size) != size)
     {
       grub_file_close (file);
-      return grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+		    argv[0]);
+      return grub_errno;
     }
 
   grub_file_close (file);

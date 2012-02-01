@@ -30,8 +30,8 @@
 #include <grub/mips/loongson.h>
 #include <grub/cs5536.h>
 #include <grub/term.h>
-#include <grub/machine/ec.h>
 #include <grub/cpu/memory.h>
+#include <grub/i18n.h>
 
 extern void grub_video_sm712_init (void);
 extern void grub_video_sis315pro_init (void);
@@ -255,7 +255,7 @@ grub_halt (void)
       break;
     }
 
-  grub_printf ("Shutdown failed\n");
+  grub_puts_ (N_("Shutdown failed"));
   grub_refresh ();
   while (1);
 }
@@ -266,41 +266,6 @@ grub_exit (void)
   grub_halt ();
 }
 
-void
-grub_reboot (void)
-{
-  switch (grub_arch_machine)
-    {
-    case GRUB_ARCH_MACHINE_FULOONG2E:
-      grub_outb (grub_inb (0xbfe00104) & ~4, 0xbfe00104);
-      grub_outb (grub_inb (0xbfe00104) | 4, 0xbfe00104);
-      break;
-    case GRUB_ARCH_MACHINE_FULOONG2F:
-      {
-	grub_pci_device_t dev;
-	if (!grub_cs5536_find (&dev))
-	  break;
-	grub_cs5536_write_msr (dev, GRUB_CS5536_MSR_DIVIL_RESET,
-			       grub_cs5536_read_msr (dev,
-						     GRUB_CS5536_MSR_DIVIL_RESET) 
-			       | 1);
-	break;
-      }
-    case GRUB_ARCH_MACHINE_YEELOONG:
-      grub_write_ec (GRUB_MACHINE_EC_COMMAND_REBOOT);
-      break;
-    }
-  grub_millisleep (1500);
-
-  grub_printf ("Reboot failed\n");
-  grub_refresh ();
-  while (1);
-}
-
 extern char _end[];
+grub_addr_t grub_modbase = (grub_addr_t) _end;
 
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return (grub_addr_t) _end;
-}

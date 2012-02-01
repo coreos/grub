@@ -63,6 +63,12 @@ void EXPORT_FUNC (__divsi3) (void);
 # ifdef HAVE___MODSI3
 void EXPORT_FUNC (__modsi3) (void);
 # endif
+# ifdef HAVE___CTZDI2
+void EXPORT_FUNC (__ctzdi2) (void);
+# endif
+# ifdef HAVE___CTZSI2
+void EXPORT_FUNC (__ctzsi2) (void);
+# endif
 #endif
 
 # ifdef HAVE___IA64_TRAMPOLINE

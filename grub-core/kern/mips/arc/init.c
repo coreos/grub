@@ -33,6 +33,7 @@
 #include <grub/term.h>
 #include <grub/arc/arc.h>
 #include <grub/offsets.h>
+#include <grub/i18n.h>
 
 const char *type_names[] = {
 #ifdef GRUB_CPU_WORDS_BIGENDIAN
@@ -124,13 +125,15 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
     }
 }
 
-extern grub_uint32_t grub_total_modules_size;
+extern grub_uint32_t grub_total_modules_size __attribute__ ((section(".text")));
+grub_addr_t grub_modbase;
 
 void
 grub_machine_init (void)
 {
   struct grub_arc_memory_descriptor *cur = NULL;
 
+  grub_modbase = GRUB_KERNEL_MIPS_ARC_LINK_ADDR - grub_total_modules_size;
   grub_console_init_early ();
 
   /* FIXME: measure this.  */
@@ -164,12 +167,6 @@ grub_machine_init (void)
   grub_arcdisk_init ();
 }
 
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return GRUB_KERNEL_MIPS_ARC_LINK_ADDR - grub_total_modules_size;
-}
-
 void
 grub_machine_fini (void)
 {
@@ -182,7 +179,7 @@ grub_halt (void)
 
   grub_millisleep (1500);
 
-  grub_printf ("Shutdown failed\n");
+  grub_puts_ (N_("Shutdown failed"));
   grub_refresh ();
   while (1);
 }
@@ -194,19 +191,7 @@ grub_exit (void)
 
   grub_millisleep (1500);
 
-  grub_printf ("Exit failed\n");
-  grub_refresh ();
-  while (1);
-}
-
-void
-grub_reboot (void)
-{
-  GRUB_ARC_FIRMWARE_VECTOR->restart ();
-
-  grub_millisleep (1500);
-
-  grub_printf ("Reboot failed\n");
+  grub_puts_ (N_("Exit failed"));
   grub_refresh ();
   while (1);
 }

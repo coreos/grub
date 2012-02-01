@@ -31,6 +31,8 @@
 
 #include "progname.h"
 
+/* Please don't internationalise this file. It's pointless.  */
+
 static struct option options[] = {
   {"help", no_argument, 0, 'h'},
   {"version", no_argument, 0, 'V'},
@@ -84,6 +86,8 @@ Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 #define STRTAB_SECTION	9
 
 #define REL_SECTION	10
+
+/* 10 normal section + up to 4 relocation (.text, .rdata, .data, .symtab).  */
 #define MAX_SECTIONS    16
 
 #define STRTAB_BLOCK	256
@@ -91,10 +95,10 @@ Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 static char *strtab;
 static int strtab_max, strtab_len;
 
-Elf32_Ehdr ehdr;
-Elf32_Shdr shdr[MAX_SECTIONS];
-int num_sections;
-grub_uint32_t offset;
+static Elf32_Ehdr ehdr;
+static Elf32_Shdr shdr[MAX_SECTIONS];
+static int num_sections;
+static grub_uint32_t offset;
 
 static int
 insert_string (const char *name)

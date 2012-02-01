@@ -42,13 +42,3 @@ _start:
 	br.ret.sptk.few rp
 
 	.endp _start
-
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX
-VARIABLE(grub_prefix)
-	.byte 0
-	/* to be filled by grub-mkimage */
-
-	/*
-	 *  Leave some breathing room for the prefix.
-	 */
-	. = _start + GRUB_KERNEL_MACHINE_PREFIX_END

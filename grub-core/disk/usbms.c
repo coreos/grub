@@ -388,9 +388,9 @@ grub_usbms_read (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 
 static grub_err_t
 grub_usbms_write (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
-		  grub_size_t size, char *buf)
+		  grub_size_t size, const char *buf)
 {
-  return grub_usbms_transfer (scsi, cmdsize, cmd, size, buf, 1);
+  return grub_usbms_transfer (scsi, cmdsize, cmd, size, (char *) buf, 1);
 }
 
 static grub_err_t

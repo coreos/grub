@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,12 +16,10 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_LOADER_MACHINE_HEADER
-#define GRUB_LOADER_MACHINE_HEADER	1
+#include <grub/misc.h>
 
-#include <grub/symbol.h>
-
-/* This is an asm part of the chainloader.  */
-void EXPORT_FUNC(grub_chainloader_real_boot) (int drive, void *part_addr) __attribute__ ((noreturn));
-
-#endif /* ! GRUB_LOADER_MACHINE_HEADER */
+void
+grub_reboot (void)
+{
+  while (1);
+}

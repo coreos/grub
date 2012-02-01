@@ -269,6 +269,7 @@ typedef int (*grub_usb_attach_hook_class) (grub_usb_device_t usbdev,
 struct grub_usb_attach_desc
 {
   struct grub_usb_attach_desc *next;
+  struct grub_usb_attach_desc **prev;
   int class;
   grub_usb_attach_hook_class hook;
 };

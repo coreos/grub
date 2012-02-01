@@ -274,7 +274,6 @@ grub_normal_execute (const char *config, int nested, int batch)
       prefix = grub_env_get ("prefix");
       read_lists (prefix);
       grub_register_variable_hook ("prefix", NULL, read_lists_hook);
-      grub_command_execute ("parser.grub", 0, 0);
     }
 
   if (config)
@@ -474,7 +473,7 @@ static grub_command_t cmd_clear;
 
 static void (*grub_xputs_saved) (const char *str);
 static const char *features[] = {
-  "feature_chainloader_bpb", "feature_ntldr"
+  "feature_chainloader_bpb", "feature_ntldr", "feature_platform_search_hint"
 };
 
 GRUB_MOD_INIT(normal)

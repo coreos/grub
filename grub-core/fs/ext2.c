@@ -21,10 +21,6 @@
 #define	EXT2_MAGIC		0xEF53
 /* Amount of indirect blocks in an inode.  */
 #define INDIRECT_BLOCKS		12
-/* Maximum length of a pathname.  */
-#define EXT2_PATH_MAX		4096
-/* Maximum nesting of symlinks, used to prevent a loop.  */
-#define	EXT2_MAX_SYMLINKCNT	8
 
 /* The good old revision and the default inode size.  */
 #define EXT2_GOOD_OLD_REVISION		0
@@ -337,7 +333,7 @@ grub_ext2_blockgroup (struct grub_ext2_data *data, int group,
 }
 
 static struct grub_ext4_extent_header *
-grub_ext4_find_leaf (struct grub_ext2_data *data, char *buf,
+grub_ext4_find_leaf (struct grub_ext2_data *data, grub_properly_aligned_t *buf,
                      struct grub_ext4_extent_header *ext_block,
                      grub_uint32_t fileblock)
 {
@@ -387,7 +383,7 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
   if (grub_le_to_cpu32(inode->flags) & EXT4_EXTENTS_FLAG)
     {
-      char buf[EXT2_BLOCK_SIZE(data)];
+      GRUB_PROPERLY_ALIGNED_ARRAY (buf, EXT2_BLOCK_SIZE(data));
       struct grub_ext4_extent_header *leaf;
       struct grub_ext4_extent *ext;
       int i;
@@ -689,7 +685,7 @@ grub_ext2_iterate_dir (grub_fshelp_node_t dir,
       if (dirent.direntlen == 0)
         return 0;
 
-      if (dirent.namelen != 0)
+      if (dirent.inode != 0 && dirent.namelen != 0)
 	{
 	  char filename[dirent.namelen + 1];
 	  struct grub_fshelp_node *fdiro;
@@ -896,7 +892,8 @@ grub_ext2_label (grub_device_t device, char **label)
 
   data = grub_ext2_mount (disk);
   if (data)
-    *label = grub_strndup (data->sblock.volume_name, 14);
+    *label = grub_strndup (data->sblock.volume_name,
+			   sizeof (data->sblock.volume_name));
   else
     *label = NULL;
 

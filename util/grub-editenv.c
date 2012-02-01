@@ -115,26 +115,26 @@ create_envblk_file (const char *name)
 
   buf = malloc (DEFAULT_ENVBLK_SIZE);
   if (! buf)
-    grub_util_error ("out of memory");
+    grub_util_error (_("out of memory"));
 
   namenew = xasprintf ("%s.new", name);
   fp = fopen (namenew, "wb");
   if (! fp)
-    grub_util_error ("cannot open the file %s", namenew);
+    grub_util_error (_("cannot open the file %s"), namenew);
 
   memcpy (buf, GRUB_ENVBLK_SIGNATURE, sizeof (GRUB_ENVBLK_SIGNATURE) - 1);
   memset (buf + sizeof (GRUB_ENVBLK_SIGNATURE) - 1, '#',
           DEFAULT_ENVBLK_SIZE - sizeof (GRUB_ENVBLK_SIGNATURE) + 1);
 
   if (fwrite (buf, 1, DEFAULT_ENVBLK_SIZE, fp) != DEFAULT_ENVBLK_SIZE)
-    grub_util_error ("cannot write to the file %s", namenew);
+    grub_util_error (_("cannot write to the file %s"), namenew);
 
   fsync (fileno (fp));
   free (buf);
   fclose (fp);
 
   if (rename (namenew, name) < 0)
-    grub_util_error ("cannot rename the file %s to %s", namenew, name);
+    grub_util_error (_("cannot rename the file %s to %s"), namenew, name);
   free (namenew);
 }
 
@@ -153,29 +153,29 @@ open_envblk_file (const char *name)
       create_envblk_file (name);
       fp = fopen (name, "rb");
       if (! fp)
-        grub_util_error ("cannot open the file %s", name);
+        grub_util_error (_("cannot open the file %s"), name);
     }
 
   if (fseek (fp, 0, SEEK_END) < 0)
-    grub_util_error ("cannot seek the file %s", name);
+    grub_util_error (_("cannot seek the file %s"), name);
 
   size = (size_t) ftell (fp);
 
   if (fseek (fp, 0, SEEK_SET) < 0)
-    grub_util_error ("cannot seek the file %s", name);
+    grub_util_error (_("cannot seek the file %s"), name);
 
   buf = malloc (size);
   if (! buf)
-    grub_util_error ("out of memory");
+    grub_util_error (_("out of memory"));
 
   if (fread (buf, 1, size, fp) != size)
-    grub_util_error ("cannot read the file %s", name);
+    grub_util_error (_("cannot read the file %s"), name);
 
   fclose (fp);
 
   envblk = grub_envblk_open (buf, size);
   if (! envblk)
-    grub_util_error ("invalid environment block");
+    grub_util_error (_("invalid environment block"));
 
   return envblk;
 }
@@ -204,11 +204,11 @@ write_envblk (const char *name, grub_envblk_t envblk)
 
   fp = fopen (name, "wb");
   if (! fp)
-    grub_util_error ("cannot open the file %s", name);
+    grub_util_error (_("cannot open the file %s"), name);
 
   if (fwrite (grub_envblk_buffer (envblk), 1, grub_envblk_size (envblk), fp)
       != grub_envblk_size (envblk))
-    grub_util_error ("cannot write to the file %s", name);
+    grub_util_error (_("cannot write to the file %s"), name);
 
   fsync (fileno (fp));
   fclose (fp);
@@ -226,12 +226,12 @@ set_variables (const char *name, int argc, char *argv[])
 
       p = strchr (argv[0], '=');
       if (! p)
-        grub_util_error ("invalid parameter %s", argv[0]);
+        grub_util_error (_("invalid parameter %s"), argv[0]);
 
       *(p++) = 0;
 
       if (! grub_envblk_set (envblk, argv[0], p))
-        grub_util_error ("environment block too small");
+        grub_util_error (_("environment block too small"));
 
       argc--;
       argv++;

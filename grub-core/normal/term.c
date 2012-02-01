@@ -24,6 +24,7 @@
 #include <grub/env.h>
 #include <grub/normal.h>
 #include <grub/charset.h>
+#include <grub/i18n.h>
 
 struct term_state
 {
@@ -63,7 +64,9 @@ print_more (void)
 
   pos = grub_term_save_pos ();
 
-  grub_utf8_to_ucs4_alloc ("--MORE--", &unicode_str,
+  /* TRANSLATORS: This has to fit on one line.  It's ok to include few
+     words but don't write poems.  */
+  grub_utf8_to_ucs4_alloc (_("--MORE--"), &unicode_str,
 			   &unicode_last_position);
 
   if (!unicode_str)

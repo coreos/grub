@@ -56,7 +56,8 @@ grub_freedos_boot (void)
     .ss = GRUB_FREEDOS_STACK_SEGMENT,
     .sp = GRUB_FREEDOS_STACK_POINTER,
     .ebx = ebx,
-    .edx = 0
+    .edx = 0,
+    .a20 = 1
   };
   grub_video_set_mode ("text", 0, 0);
 

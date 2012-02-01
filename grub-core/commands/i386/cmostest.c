@@ -20,6 +20,7 @@
 #include <grub/command.h>
 #include <grub/misc.h>
 #include <grub/cmos.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -86,11 +87,11 @@ static grub_command_t cmd, cmd_clean;
 GRUB_MOD_INIT(cmostest)
 {
   cmd = grub_register_command ("cmostest", grub_cmd_cmostest,
-			       "cmostest BYTE:BIT",
-			       "Test bit at BYTE:BIT in CMOS.");
+			       N_("BYTE:BIT"),
+			       N_("Test bit at BYTE:BIT in CMOS."));
   cmd_clean = grub_register_command ("cmosclean", grub_cmd_cmosclean,
-				     "cmosclean BYTE:BIT",
-				     "Clean bit at BYTE:BIT in CMOS.");
+				     N_("BYTE:BIT"),
+				     N_("Clean bit at BYTE:BIT in CMOS."));
 }
 
 GRUB_MOD_FINI(cmostest)

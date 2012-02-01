@@ -18,7 +18,6 @@
  */
 
 #include <grub/loader.h>
-#include <grub/machine/loader.h>
 #include <grub/file.h>
 #include <grub/err.h>
 #include <grub/device.h>
@@ -61,6 +60,7 @@ grub_linux16_boot (void)
   state.sp = GRUB_LINUX_SETUP_STACK;
   state.cs = segment + 0x20;
   state.ip = 0;
+  state.a20 = 1;
 
   grub_video_set_mode ("text", 0, 0);
 
@@ -108,7 +108,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, &lh, sizeof (lh)) != sizeof (lh))
     {
-      grub_error (GRUB_ERR_READ_ERROR, "cannot read the Linux header");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_READ_ERROR, N_("premature end of file %s"),
+		    argv[0]);
       goto fail;
     }
 
@@ -283,7 +285,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   len = real_size + GRUB_DISK_SECTOR_SIZE - sizeof (lh);
   if (grub_file_read (file, grub_linux_real_chunk + sizeof (lh), len) != len)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+		    argv[0]);
       goto fail;
     }
 
@@ -321,8 +325,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   len = grub_linux16_prot_size;
   if (grub_file_read (file, grub_linux_prot_chunk, grub_linux16_prot_size)
-      != (grub_ssize_t) grub_linux16_prot_size)
-    grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
+      != (grub_ssize_t) grub_linux16_prot_size && !grub_errno)
+    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+		argv[0]);
 
   if (grub_errno == GRUB_ERR_NONE)
     {
@@ -349,13 +354,15 @@ static grub_err_t
 grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
-  grub_file_t file = 0;
-  grub_ssize_t size;
+  grub_file_t *files = 0;
+  grub_size_t size = 0;
   grub_addr_t addr_max, addr_min;
   struct linux_kernel_header *lh;
   grub_uint8_t *initrd_chunk;
   grub_addr_t initrd_addr;
   grub_err_t err;
+  int i, nfiles = 0;
+  grub_uint8_t *ptr;
 
   if (argc == 0)
     {
@@ -403,12 +410,19 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   addr_min = GRUB_LINUX_BZIMAGE_ADDR + grub_linux16_prot_size;
 
-  grub_file_filter_disable_compression ();
-  file = grub_file_open (argv[0]);
-  if (!file)
+  files = grub_zalloc (argc * sizeof (files[0]));
+  if (!files)
     goto fail;
 
-  size = grub_file_size (file);
+  for (i = 0; i < argc; i++)
+    {
+      grub_file_filter_disable_compression ();
+      files[i] = grub_file_open (argv[i]);
+      if (! files[i])
+	goto fail;
+      nfiles++;
+      size += grub_file_size (files[i]);
+    }
 
   {
     grub_relocator_chunk_t ch;
@@ -422,18 +436,28 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     initrd_addr = get_physical_target_address (ch);
   }
 
-  if (grub_file_read (file, initrd_chunk, size) != size)
+  ptr = initrd_chunk;
+  
+  for (i = 0; i < nfiles; i++)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
-      goto fail;
+      grub_ssize_t cursize = grub_file_size (files[i]);
+      if (grub_file_read (files[i], ptr, cursize) != cursize)
+	{
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			argv[i]);
+	  goto fail;
+	}
+      ptr += cursize;
     }
 
   lh->ramdisk_image = initrd_addr;
   lh->ramdisk_size = size;
 
  fail:
-  if (file)
-    grub_file_close (file);
+  for (i = 0; i < nfiles; i++)
+    grub_file_close (files[i]);
+  grub_free (files);
 
   return grub_errno;
 }

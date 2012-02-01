@@ -24,6 +24,7 @@
 #include <grub/mm.h>
 #include <grub/script_sh.h>
 
+#define yytext_ptr char *
 #include "grub_script.tab.h"
 #include "grub_script.yy.h"
 
@@ -106,7 +107,9 @@ grub_script_lexer_record (struct grub_parser_param *parser, char *str)
   if (lexer->recordpos + len + 1 > lexer->recordlen)
     {
       old = lexer->recording;
-      lexer->recordlen = grub_max (len, lexer->recordlen) * 2;
+      if (lexer->recordlen < len)
+	lexer->recordlen = len;
+      lexer->recordlen *= 2;
       lexer->recording = grub_realloc (lexer->recording, lexer->recordlen);
       if (!lexer->recording)
 	{

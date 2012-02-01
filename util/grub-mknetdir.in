@@ -19,21 +19,20 @@
 # Initialize some variables.
 transform="@program_transform_name@"
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-sbindir=@sbindir@
-bindir=@bindir@
-libdir=@libdir@
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
+bindir="@bindir@"
+libdir="@libdir@"
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 host_os=@host_os@
-localedir=@datadir@/locale
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 
 self=`basename $0`
 
-grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
+grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 rootdir=/srv/tftp
 grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
@@ -44,13 +43,13 @@ recheck=no
 debug=no
 debug_image=
 subdir=`echo /boot/grub | sed ${transform}`
-pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc
-ppc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/powerpc-ieee1275
-sparc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/sparc64-ieee1275
-i386_ieee1275_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-ieee1275
-efi32_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi
-efi64_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi
-itanium_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/ia64-efi
+pc_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc"
+ppc_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/powerpc-ieee1275"
+sparc_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/sparc64-ieee1275"
+i386_ieee1275_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-ieee1275"
+efi32_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi"
+efi64_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi"
+itanium_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/ia64-efi"
 
 # Usage: usage
 # Print the usage.
@@ -172,12 +171,12 @@ process_input_dir ()
     config_opt=
     mkdir -p "$grubdir" || exit 1
 
-    for file in ${grubdir}/*.mod ${grubdir}/*.lst ${grubdir}/*.img ${grubdir}/efiemu??.o; do
-	if test -f $file && [ "`basename $file`" != menu.lst ]; then
-	    rm -f $file || exit 1
+    for file in "${grubdir}"/*.mod "${grubdir}"/*.lst "${grubdir}"/*.img "${grubdir}"/efiemu??.o; do
+	if test -f "$file" && [ "`basename $file`" != menu.lst ]; then
+	    rm -f "$file" || exit 1
 	fi
     done
-    for file in ${input_dir}/*.mod; do
+    for file in "${input_dir}"/*.mod; do
         if test -f "$file"; then
             cp -f "$file" "$grubdir/"
         fi
@@ -224,7 +223,7 @@ process_input_dir ()
 source ${subdir}/grub.cfg
 EOF
 
-    $grub_mkimage ${config_opt} -d "${input_dir}" -O ${mkimage_target} --output=${grubdir}/core.$ext --prefix=$prefix $modules $netmodules tftp || exit 1
+    "$grub_mkimage" ${config_opt} -d "${input_dir}" -O ${mkimage_target} "--output=${grubdir}/core.$ext" "--prefix=$prefix" $modules $netmodules tftp || exit 1
     echo "Netboot directory for ${platform} created. Configure your DHCP server to point to ${subdir}/${platform}/core.$ext"
 }
 

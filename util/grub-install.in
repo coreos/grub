@@ -21,6 +21,7 @@ transform="@program_transform_name@"
 
 prefix="@prefix@"
 exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
 sbindir="@sbindir@"
 bindir="@bindir@"
 libdir="@libdir@"
@@ -32,6 +33,7 @@ target_cpu=@target_cpu@
 platform=@platform@
 host_os=@host_os@
 pkglibdir="${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`"
+datadir="@datadir@"
 localedir="@datadir@/locale"
 
 self="`basename $0`"
@@ -106,7 +108,7 @@ Install GRUB on your drive.
   --no-floppy             do not probe any floppy drive
   --allow-floppy          Make the drive also bootable as floppy 
                           (default for fdX devices). May break on some BIOSes.
-  --recheck               probe a device map even if it already exists
+  --recheck               delete device map if it already exists
   --force                 install even if problems are detected
 EOF
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
@@ -263,7 +265,7 @@ do
     esac
 done
 
-. ${libdir}/@PACKAGE@/grub-mkconfig_lib
+. "${datadir}/@PACKAGE@/grub-mkconfig_lib"
 
 if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
     || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
@@ -273,7 +275,9 @@ if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
 fi
 
 if ! ([ "${target_cpu}-${platform}" = "i386-pc" ] \
-    || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
+    || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] \
+    || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ] \
+    || [ "${target_cpu}-${platform}" = "mips-arc" ]); then
     install_device=
 fi
 
@@ -423,20 +427,15 @@ fi
 
 # Create the device map file if it is not present.
 if test -f "$device_map"; then
-    :
+    # Make sure that there is no duplicated entry.
+    tmp=`sed -n '/^([fh]d[0-9]*)/s/\(^(.*)\).*/\1/p' "$device_map" \
+	| sort | uniq -d | sed -n 1p`
+    if test -n "$tmp"; then
+	echo "The drive $tmp is defined multiple times in the device map $device_map" 1>&2
+	exit 1
+    fi
 else
-    # Create a safe temporary file.
-    test -n "$mklog" && log_file=`$mklog`
-
-    "$grub_mkdevicemap" "--device-map=$device_map" $no_floppy || exit 1
-fi
-
-# Make sure that there is no duplicated entry.
-tmp=`sed -n '/^([fh]d[0-9]*)/s/\(^(.*)\).*/\1/p' "$device_map" \
-    | sort | uniq -d | sed -n 1p`
-if test -n "$tmp"; then
-    echo "The drive $tmp is defined multiple times in the device map $device_map" 1>&2
-    exit 1
+    device_map=
 fi
 
 # Copy the GRUB images to the GRUB directory.
@@ -537,18 +536,18 @@ if [ "x${devabstraction_module}" = "x" ] ; then
       else
         install_drive="`"$grub_probe" --device-map="${device_map}" --target=drive --device "${install_device}"`" || exit 1
       fi
-      install_drive="`echo "${install_drive}" | sed -e s/,[a-z0-9,]*//g`"
+      install_drive="`echo "${install_drive}" | sed -e 's/^(\(\([^,\\\\]\|\\\\\\\\\|\\\\,\)*\)\(\(,[a-zA-Z0-9]*\)*\))$/\1/'`"
     fi
     grub_drive="`"$grub_probe" --device-map="${device_map}" --target=drive --device "${grub_device}"`" || exit 1
 
     # Strip partition number
-    grub_partition="`echo "${grub_drive}" | sed -e 's/^[^,]*[,)]//; s/)$//'`"
-    grub_drive="`echo "${grub_drive}" | sed -e s/,[a-z0-9,]*//g`"
-    if ([ "x$disk_module" != x ] && [ "x$disk_module" != xbiosdisk ]) || [ "x${grub_drive}" != "x${install_drive}" ] || ([ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${target_cpu}-${platform}" != x"sparc64-ieee1275" ]); then
+    grub_partition="`echo "${grub_drive}" | sed -e 's/^(\(\([^,\\\\]\|\\\\\\\\\|\\\\,\)*\)\(\(,[a-zA-Z0-9]*\)*\))$/\3/'`"
+    grub_drive="`echo "${grub_drive}" | sed -e 's/^(\(\([^,\\\\]\|\\\\\\\\\|\\\\,\)*\)\(\(,[a-zA-Z0-9]*\)*\))$/\1/'`"
+    if ([ "x$disk_module" != x ] && [ "x$disk_module" != xbiosdisk ]) || [ "x${grub_drive}" != "x${install_drive}" ] || ([ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]); then
         # generic method (used on coreboot and ata mod)
         uuid="`"$grub_probe" --device-map="${device_map}" --target=fs_uuid --device "${grub_device}"`"
         if [ "x${uuid}" = "x" ] ; then
-          if [ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${target_cpu}-${platform}" != x"sparc64-ieee1275" ]; then
+          if [ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]; then
              echo "UUID needed with $platform, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
           elif [ "$disk_module" = ata ]; then
              echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
@@ -559,16 +558,31 @@ if [ "x${devabstraction_module}" = "x" ] ; then
           exit 1
         fi
 
-        echo "search.fs_uuid ${uuid} root " >> "${grubdir}/load.cfg"
+	if [ x"$disk_module" != x ] && [ x"$disk_module" != xbiosdisk ]; then
+            hints="`"$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device "${grub_device}"`"
+	elif [ x"$platform" = xpc ]; then
+            hints="`"$grub_probe" --device-map="${device_map}" --target=bios_hints --device "${grub_device}"`"
+	elif [ x"$platform" = xefi ]; then
+            hints="`"$grub_probe" --device-map="${device_map}" --target=efi_hints --device "${grub_device}"`"
+	elif [ x"$platform" = xieee1275 ]; then
+            hints="`"$grub_probe" --device-map="${device_map}" --target=ieee1275_hints --device "${grub_device}"`"
+	elif [ x"$platform" = xloongson ] || [ x"$platform" = xqemu ] || [ x"$platform" = xcoreboot ] || [ x"$platform" = xmultiboot ] || [ x"$platform" = xqemu-mips ]; then
+            hints="`"$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device "${grub_device}"`"
+	else
+            echo "No hints available for your platform. Expect reduced performance"
+	    hints=
+        fi
+        echo "search.fs_uuid ${uuid} root $hints " >> "${grubdir}/load.cfg"
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
 	config_opt="-c ${grubdir}/load.cfg "
         modules="$modules search_fs_uuid"
-    elif [ "x$platform" = xefi ] || [ "x$platform" = xpc ]; then
+    else
         # we need to hardcode the partition number in the core image's prefix.
 	if [ x"$grub_partition" = x ]; then
             prefix_drive="()"
 	else
-            prefix_drive="(,$grub_partition)"
+            # Comma is already there
+            prefix_drive="($grub_partition)"
 	fi
     fi
 else
@@ -576,9 +590,8 @@ else
 	for uuid in "`"${grub_probe}" --device "${grub_device}" --target=cryptodisk_uuid`"; do
 	    echo "cryptomount -u $uuid" >> "${grubdir}/load.cfg"
 	done
+	config_opt="-c ${grubdir}/load.cfg "
     fi
-
-    config_opt="-c ${grubdir}/load.cfg "
 
     prefix_drive=`"$grub_probe" --device-map="${device_map}" --target=drive --device "${grub_device}"` || exit 1
 fi
@@ -643,6 +656,29 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 
         # Point boot-device at the new grub install
 	boot_device="$ofpath:$partno,"`"$grub_mkrelpath" "${grubdir}/core.${imgext}" | sed 's,/,\\\\,g'`
+
+        # If a install device is defined, copy the core.elf to PReP partition. 
+	if  [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ] \
+	    && [ -n "${install_device}" ]; then
+            if [ "$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t msdos_parttype)" != "41" ]; then
+		echo "The chosen partition is not a PReP partition."
+		exit 1
+            fi
+
+            if [ "$(file -s "${install_device}" -b | awk '{ print $1 }')" = ELF ] || [ $(cmp /dev/zero "${install_device}" &>/dev/null) ]; then
+            # Change boot device to the harddisk root
+		boot_device="$ofpath"
+		dd if="${grubdir}/core.${imgext}" of="${install_device}" status=noxfer || {
+		    echo "Failed to copy Grub to the PReP partition."
+		    exit 1
+		}
+            else
+		echo "The PReP partition is not empty. If you are sure you want to use it, run dd to clear it:"
+		echo "  dd if=/dev/zero of=${install_device}"
+		exit 1
+            fi
+	fi
+
 	"$nvsetenv" boot-device "$boot_device" || {
 	    echo "$nvsetenv failed."
 	    echo "You will have to set boot-device manually.  At the Open Firmware prompt, type:"
@@ -692,6 +728,8 @@ elif [ x"$platform" = xefi ]; then
 		-L "$bootloader_id" -l "\\EFI\\$efi_distributor\\$efi_file"
 	fi
     fi
+else
+    echo "WARNING: no platform-specific install was performed"
 fi
 
 echo "Installation finished. No error reported."

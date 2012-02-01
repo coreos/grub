@@ -117,7 +117,7 @@ xmalloc (grub_size_t size)
 
   p = malloc (size);
   if (! p)
-    grub_util_error ("out of memory");
+    grub_util_error (_("out of memory"));
 
   return p;
 }
@@ -127,7 +127,7 @@ xrealloc (void *ptr, grub_size_t size)
 {
   ptr = realloc (ptr, size);
   if (! ptr)
-    grub_util_error ("out of memory");
+    grub_util_error (_("out of memory"));
 
   return ptr;
 }
@@ -185,7 +185,7 @@ xasprintf (const char *fmt, ...)
   if (vasprintf (&result, fmt, ap) < 0)
     { 
       if (errno == ENOMEM)
-        grub_util_error ("out of memory");
+        grub_util_error (_("out of memory"));
       return NULL;
     }
   

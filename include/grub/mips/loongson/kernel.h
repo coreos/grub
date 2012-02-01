@@ -28,7 +28,7 @@
 
 #ifndef ASM_FILE
 
-extern grub_uint32_t EXPORT_VAR (grub_arch_machine);
+extern grub_uint32_t EXPORT_VAR (grub_arch_machine) __attribute__ ((section(".text")));
 
 #endif
 

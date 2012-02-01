@@ -46,6 +46,7 @@ static const char *(*grub_gettext_original) (const char *s);
 struct grub_gettext_msg
 {
   struct grub_gettext_msg *next;
+  struct grub_gettext_msg *prev;
   const char *name;
 
   const char *translated;
@@ -294,7 +295,10 @@ grub_mofile_open_lang (const char *locale_dir, const char *locale)
 static void
 grub_gettext_init_ext (const char *locale)
 {
-  char *locale_dir;
+  const char *locale_dir;
+
+  if (!locale)
+    return;
 
   locale_dir = grub_env_get ("locale_dir");
   if (locale_dir == NULL)
@@ -370,8 +374,6 @@ grub_cmd_translate (grub_command_t cmd __attribute__ ((unused)),
 
 GRUB_MOD_INIT (gettext)
 {
-  (void) mod;			/* To stop warning.  */
-
   const char *lang;
 
   lang = grub_env_get ("lang");

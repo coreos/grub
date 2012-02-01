@@ -21,10 +21,4 @@
 
 #include <grub/symbol.h>
 
-#ifndef ASM_FILE
-
-void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
-
-#endif
-
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */

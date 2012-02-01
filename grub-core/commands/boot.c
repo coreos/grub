@@ -31,17 +31,17 @@ static grub_err_t (*grub_loader_boot_func) (void);
 static grub_err_t (*grub_loader_unload_func) (void);
 static int grub_loader_noreturn;
 
-struct grub_preboot_t
+struct grub_preboot
 {
   grub_err_t (*preboot_func) (int);
   grub_err_t (*preboot_rest_func) (void);
   grub_loader_preboot_hook_prio_t prio;
-  struct grub_preboot_t *next;
-  struct grub_preboot_t *prev;
+  struct grub_preboot *next;
+  struct grub_preboot *prev;
 };
 
 static int grub_loader_loaded;
-static struct grub_preboot_t *preboots_head = 0,
+static struct grub_preboot *preboots_head = 0,
   *preboots_tail = 0;
 
 int
@@ -51,18 +51,18 @@ grub_loader_is_loaded (void)
 }
 
 /* Register a preboot hook. */
-void *
+struct grub_preboot *
 grub_loader_register_preboot_hook (grub_err_t (*preboot_func) (int noreturn),
 				   grub_err_t (*preboot_rest_func) (void),
 				   grub_loader_preboot_hook_prio_t prio)
 {
-  struct grub_preboot_t *cur, *new_preboot;
+  struct grub_preboot *cur, *new_preboot;
 
   if (! preboot_func && ! preboot_rest_func)
     return 0;
 
-  new_preboot = (struct grub_preboot_t *)
-    grub_malloc (sizeof (struct grub_preboot_t));
+  new_preboot = (struct grub_preboot *)
+    grub_malloc (sizeof (struct grub_preboot));
   if (! new_preboot)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "hook not added");
@@ -96,9 +96,9 @@ grub_loader_register_preboot_hook (grub_err_t (*preboot_func) (int noreturn),
 }
 
 void
-grub_loader_unregister_preboot_hook (void *hnd)
+grub_loader_unregister_preboot_hook (struct grub_preboot *hnd)
 {
-  struct grub_preboot_t *preb = hnd;
+  struct grub_preboot *preb = hnd;
 
   if (preb->next)
     preb->next->prev = preb->prev;
@@ -143,7 +143,7 @@ grub_err_t
 grub_loader_boot (void)
 {
   grub_err_t err = GRUB_ERR_NONE;
-  struct grub_preboot_t *cur;
+  struct grub_preboot *cur;
 
   if (! grub_loader_loaded)
     return grub_error (GRUB_ERR_NO_KERNEL, "no loaded kernel");

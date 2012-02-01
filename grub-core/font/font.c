@@ -250,8 +250,7 @@ open_section (grub_file_t file, struct font_file_section *section)
     }
   else if (retval < 0)
     {
-      grub_error (GRUB_ERR_BAD_FONT,
-		  "font format error: can't read section name");
+      /* Read error.  */
       return 1;
     }
 
@@ -265,8 +264,7 @@ open_section (grub_file_t file, struct font_file_section *section)
     }
   else if (retval < 0)
     {
-      grub_error (GRUB_ERR_BAD_FONT,
-		  "font format error: can't read section length");
+      /* Read error.  */
       return 1;
     }
 
@@ -608,7 +606,7 @@ grub_font_load (const char *filename)
 
   if (!font->name)
     {
-      grub_printf ("Note: Font has no name.\n");
+      grub_dprintf ("font", "Font has no name.\n");
       font->name = grub_strdup ("Unknown");
     }
 

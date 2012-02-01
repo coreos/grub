@@ -326,10 +326,15 @@ match_files (const char *prefix, const char *suffix, const char *end,
   if (! fs)
     goto fail;
 
-  path = grub_strchr (dir, ')');
-  if (! path)
-    goto fail;
-  path++;
+  if (dir[0] == '(')
+    {
+      path = grub_strchr (dir, ')');
+      if (!path)
+	goto fail;
+      path++;
+    }
+  else
+    path = dir;
 
   if (fs->dir (dev, path, match))
     goto fail;
@@ -431,25 +436,8 @@ wildcard_expand (const char *s, char ***strs)
 	  if (start == noregexop) /* device part has regexop */
 	    paths = match_devices (&regexp, *start != '(');
 
-	  else if (*start == '(') /* device part explicit wo regexop */
+	  else  /* device part explicit wo regexop */
 	    paths = match_files ("", start, noregexop, &regexp);
-
-	  else if (*start == '/') /* no device part */
-	    {
-	      char *root;
-	      char *prefix;
-
-	      root = grub_env_get ("root");
-	      if (! root)
-		goto fail;
-
-	      prefix = grub_xasprintf ("(%s)", root);
-	      if (! prefix)
-		goto fail;
-
-	      paths = match_files (prefix, start, noregexop, &regexp);
-	      grub_free (prefix);
-	    }
 	}
       else
 	{

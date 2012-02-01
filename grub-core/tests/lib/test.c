@@ -24,6 +24,7 @@ struct grub_test_failure
 {
   /* The next failure.  */
   struct grub_test_failure *next;
+  struct grub_test_failure **prev;
 
   /* The test source file name.  */
   char *file;
@@ -124,7 +125,7 @@ grub_test_unregister (const char *name)
 
   if (test)
     {
-      grub_list_remove (GRUB_AS_LIST_P (&grub_test_list), GRUB_AS_LIST (test));
+      grub_list_remove (GRUB_AS_LIST (test));
 
       if (test->name)
 	grub_free (test->name);

@@ -1,7 +1,6 @@
-/* biosdisk.h - emulate biosdisk */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2011  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,11 +16,19 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_BIOSDISK_MACHINE_UTIL_HEADER
-#define GRUB_BIOSDISK_MACHINE_UTIL_HEADER	1
+#include <grub/symbol.h>
+#include <grub/i386/reboot.h>
 
-void grub_util_biosdisk_init (const char *dev_map);
-void grub_util_biosdisk_fini (void);
-char *grub_util_biosdisk_get_grub_dev (const char *os_dev);
+	.p2align 4
 
-#endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */
+VARIABLE(grub_reboot_start)
+	.code16
+	
+	/* set 0x472 to 0x0000 for cold boot (0x1234 for warm boot) */
+	movw	$0x0472, %di
+	xorw	%ax, %ax
+	movw	%ax, (%di)
+	ljmp	$0xf000, $0xfff0
+
+	.code32
+VARIABLE(grub_reboot_end)

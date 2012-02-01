@@ -266,9 +266,9 @@ grub_xzio_read (grub_file_t file, char *buf, grub_size_t len)
 
   while (len > 0)
     {
-      xzio->buf.out_size = grub_min (file->offset + ret + len - current_offset,
-				     XZBUFSIZ);
-
+      xzio->buf.out_size = file->offset + ret + len - current_offset;
+      if (xzio->buf.out_size > XZBUFSIZ)
+	xzio->buf.out_size = XZBUFSIZ;
       /* Feed input.  */
       if (xzio->buf.in_pos == xzio->buf.in_size)
 	{

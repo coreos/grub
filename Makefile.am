@@ -101,8 +101,7 @@ CLEANFILES += widthspec.h
 # Install config.h into platformdir
 platform_HEADERS = config.h
 
-pkglib_DATA += grub-mkconfig_lib
-pkglib_DATA += update-grub_lib
+pkgdata_DATA += grub-mkconfig_lib
 
 
 if COND_i386_coreboot

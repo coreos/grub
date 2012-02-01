@@ -317,7 +317,7 @@ update_screen_all (struct screen *screen,
 }
 
 static int
-insert_string (struct screen *screen, char *s, int update)
+insert_string (struct screen *screen, const char *s, int update)
 {
   int region_start = screen->num_lines;
   int region_column = 0;
@@ -397,7 +397,7 @@ insert_string (struct screen *screen, char *s, int update)
       else
 	{
 	  /* All but LF.  */
-	  char *p;
+	  const char *p;
 	  struct line *current_linep;
 	  int size;
 	  int orig_num[screen->nterms], new_num[screen->nterms];

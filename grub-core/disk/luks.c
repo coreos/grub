@@ -316,7 +316,7 @@ luks_recover_key (grub_disk_t source,
   if (err)
     return err;
 
-  grub_printf ("Attempting to decrypt master key...\n");
+  grub_puts_ (N_("Attempting to decrypt master key..."));
   keysize = grub_be_to_cpu32 (header.keyBytes);
 
   for (i = 0; i < ARRAY_SIZE (header.keyblock); i++)
@@ -332,7 +332,7 @@ luks_recover_key (grub_disk_t source,
   tmp = NULL;
   if (source->partition)
     tmp = grub_partition_get_name (source->partition);
-  grub_printf ("Enter passphrase for %s%s%s (%s): ", source->name,
+  grub_printf_ (N_("Enter passphrase for %s%s%s (%s): "), source->name,
 	       source->partition ? "," : "", tmp ? : "",
 	       dev->uuid);
   grub_free (tmp);
@@ -434,7 +434,7 @@ luks_recover_key (grub_disk_t source,
 	  continue;
 	}
 
-      grub_printf ("Slot %d opened\n", i);
+      grub_printf_ (N_("Slot %d opened\n"), i);
 
       /* Set the master key.  */
       gcry_err = grub_cryptodisk_setkey (dev, candidate_key, keysize); 

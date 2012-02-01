@@ -74,6 +74,8 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
     grub_video_create_render_target (&text_layer, width, height,
 				     GRUB_VIDEO_MODE_TYPE_RGB
 				     | GRUB_VIDEO_MODE_TYPE_ALPHA);
+    if (!text_layer)
+      goto fail;
 
     grub_video_set_active_render_target (text_layer);
 
@@ -190,6 +192,11 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
     grub_printf("color %d: %08x\n", i, palette[i]);
 
   grub_errno = GRUB_ERR_NONE;
+  return grub_errno;
+
+ fail:
+  grub_video_delete_render_target (text_layer);
+  grub_video_restore ();
   return grub_errno;
 }
 

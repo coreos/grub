@@ -31,6 +31,7 @@ struct grub_term_autoload *grub_term_output_autoload = NULL;
 struct abstract_terminal
 {
   struct abstract_terminal *next;
+  struct abstract_terminal *prev;
   const char *name;
   grub_err_t (*init) (struct abstract_terminal *term);
   grub_err_t (*fini) (struct abstract_terminal *term);
@@ -94,11 +95,15 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
       while (1)
        {
          for (term = *disabled; term; term = term->next)
-           if (grub_strcmp (args[i], term->name) == 0)
+           if (grub_strcmp (args[i], term->name) == 0
+	       || (grub_strcmp (args[i], "ofconsole") == 0
+		   && grub_strcmp ("console", term->name) == 0))
              break;
          if (term == 0)
            for (term = *enabled; term; term = term->next)
-             if (grub_strcmp (args[i], term->name) == 0)
+             if (grub_strcmp (args[i], term->name) == 0
+		 || (grub_strcmp (args[i], "ofconsole") == 0
+		     && grub_strcmp ("console", term->name) == 0))
                break;
          if (term)
            break;
@@ -107,6 +112,8 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
                               args[i]);
          for (aut = autoloads; aut; aut = aut->next)
            if (grub_strcmp (args[i], aut->name) == 0
+	       || (grub_strcmp (args[i], "ofconsole") == 0
+		   && grub_strcmp ("console", aut->name) == 0)
 	       || (aut->name[0] && aut->name[grub_strlen (aut->name) - 1] == '*'
 		   && grub_memcmp (args[i], aut->name,
 				   grub_strlen (aut->name) - 1) == 0))
@@ -130,14 +137,16 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
       for (i = 1; i < argc; i++)
        {
          for (term = *disabled; term; term = term->next)
-           if (grub_strcmp (args[i], term->name) == 0)
+           if (grub_strcmp (args[i], term->name) == 0
+	       || (grub_strcmp (args[i], "ofconsole") == 0
+		   && grub_strcmp ("console", term->name) == 0))
              break;
          if (term)
            {
               if (term->init && term->init (term) != GRUB_ERR_NONE)
                 return grub_errno;
 
-             grub_list_remove (GRUB_AS_LIST_P (disabled), GRUB_AS_LIST (term));
+             grub_list_remove (GRUB_AS_LIST (term));
              grub_list_push (GRUB_AS_LIST_P (enabled), GRUB_AS_LIST (term));
            }
        }
@@ -149,14 +158,16 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
       for (i = 1; i < argc; i++)
        {
          for (term = *enabled; term; term = term->next)
-           if (grub_strcmp (args[i], term->name) == 0)
+           if (grub_strcmp (args[i], term->name) == 0
+	       || (grub_strcmp (args[i], "ofconsole") == 0
+		   && grub_strcmp ("console", term->name) == 0))
              break;
          if (term)
            {
              if (!term->next && term == *enabled)
                return grub_error (GRUB_ERR_BAD_ARGUMENT,
                                   "can't remove the last terminal");
-             grub_list_remove (GRUB_AS_LIST_P (enabled), GRUB_AS_LIST (term));
+             grub_list_remove (GRUB_AS_LIST (term));
              if (term->fini)
                term->fini (term);
              grub_list_push (GRUB_AS_LIST_P (disabled), GRUB_AS_LIST (term));
@@ -167,14 +178,16 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
   for (i = 0; i < argc; i++)
     {
       for (term = *disabled; term; term = term->next)
-       if (grub_strcmp (args[i], term->name) == 0)
+       if (grub_strcmp (args[i], term->name) == 0
+	   || (grub_strcmp (args[i], "ofconsole") == 0
+	       && grub_strcmp ("console", term->name) == 0))
          break;
       if (term)
        {
          if (term->init && term->init (term) != GRUB_ERR_NONE)
            return grub_errno;
 
-         grub_list_remove (GRUB_AS_LIST_P (disabled), GRUB_AS_LIST (term));
+         grub_list_remove (GRUB_AS_LIST (term));
          grub_list_push (GRUB_AS_LIST_P (enabled), GRUB_AS_LIST (term));
        }       
     }
@@ -185,14 +198,16 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
       {
        next = term->next;
        for (i = 0; i < argc; i++)
-         if (grub_strcmp (args[i], term->name) == 0)
+         if (grub_strcmp (args[i], term->name) == 0
+	     || (grub_strcmp (args[i], "ofconsole") == 0
+		 && grub_strcmp ("console", term->name) == 0))
            break;
        if (i == argc)
          {
            if (!term->next && term == *enabled)
              return grub_error (GRUB_ERR_BAD_ARGUMENT,
                                 "can't remove the last terminal");
-           grub_list_remove (GRUB_AS_LIST_P (enabled), GRUB_AS_LIST (term));
+           grub_list_remove (GRUB_AS_LIST (term));
            if (term->fini)
              term->fini (term);
            grub_list_push (GRUB_AS_LIST_P (disabled), GRUB_AS_LIST (term));
@@ -208,6 +223,7 @@ grub_cmd_terminal_input (grub_command_t cmd __attribute__ ((unused)),
 			 int argc, char **args)
 {
   (void) GRUB_FIELD_MATCH (grub_term_inputs, struct abstract_terminal *, next);
+  (void) GRUB_FIELD_MATCH (grub_term_inputs, struct abstract_terminal *, prev);
   (void) GRUB_FIELD_MATCH (grub_term_inputs, struct abstract_terminal *, name);
   (void) GRUB_FIELD_MATCH (grub_term_inputs, struct abstract_terminal *, init);
   (void) GRUB_FIELD_MATCH (grub_term_inputs, struct abstract_terminal *, fini);
@@ -224,6 +240,7 @@ grub_cmd_terminal_output (grub_command_t cmd __attribute__ ((unused)),
                          int argc, char **args)
 {
   (void) GRUB_FIELD_MATCH (grub_term_outputs, struct abstract_terminal *, next);
+  (void) GRUB_FIELD_MATCH (grub_term_outputs, struct abstract_terminal *, prev);
   (void) GRUB_FIELD_MATCH (grub_term_outputs, struct abstract_terminal *, name);
   (void) GRUB_FIELD_MATCH (grub_term_outputs, struct abstract_terminal *, init);
   (void) GRUB_FIELD_MATCH (grub_term_outputs, struct abstract_terminal *, fini);

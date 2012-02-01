@@ -52,7 +52,6 @@ grub_register_command_prio (const char *name,
 void
 grub_unregister_command (grub_command_t cmd)
 {
-  grub_prio_list_remove (GRUB_AS_PRIO_LIST_P (&grub_command_list),
-			 GRUB_AS_PRIO_LIST (cmd));
+  grub_prio_list_remove (GRUB_AS_PRIO_LIST (cmd));
   grub_free (cmd);
 }

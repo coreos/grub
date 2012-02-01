@@ -54,12 +54,6 @@ struct grub_colored_char
   /* Color values.  */
   grub_video_color_t fg_color;
   grub_video_color_t bg_color;
-
-  /* The width of this character minus one.  */
-  unsigned char width;
-
-  /* The column index of this character.  */
-  unsigned char index;
 };
 
 struct grub_virtual_screen
@@ -187,8 +181,6 @@ clear_char (struct grub_colored_char *c)
     grub_errno = GRUB_ERR_NONE;
   c->fg_color = virtual_screen.fg_color;
   c->bg_color = virtual_screen.bg_color;
-  c->width = 0;
-  c->index = 0;
 }
 
 static void
@@ -621,7 +613,8 @@ paint_char (unsigned cx, unsigned cy)
   p = (virtual_screen.text_buffer
        + cx + (cy * virtual_screen.columns));
 
-  p -= p->index;
+  if (!p->code)
+    return;
 
   /* Get glyph for character.  */
   glyph = grub_font_construct_glyph (virtual_screen.font, p->code);
@@ -885,22 +878,18 @@ grub_gfxterm_putchar (struct grub_term_output *term,
 	grub_errno = GRUB_ERR_NONE;
       p->fg_color = virtual_screen.fg_color;
       p->bg_color = virtual_screen.bg_color;
-      p->width = char_width - 1;
-      p->index = 0;
 
       /* If we have large glyph, add fixup info.  */
       if (char_width > 1)
         {
           unsigned i;
 
-          for (i = 1; i < char_width; i++)
+          for (i = 1; i < char_width && p + i < 
+		 virtual_screen.text_buffer + virtual_screen.columns
+		 * virtual_screen.rows; i++)
             {
 	      grub_free (p[i].code);
-              p[i].code = grub_unicode_glyph_from_code (' ');
-	      if (!p[i].code)
-		grub_errno = GRUB_ERR_NONE;
-              p[i].width = char_width - 1;
-              p[i].index = i;
+              p[i].code = NULL;
             }
         }
 
@@ -1111,7 +1100,10 @@ grub_gfxterm_set_repaint_callback (grub_gfxterm_repaint_callback_t func)
 
 static const struct grub_arg_option background_image_cmd_options[] =
   {
-    {"mode", 'm', 0, "Background image mode.", "stretch|normal",
+    /* TRANSLATORS: note that GRUB will accept only original keywords stretch
+       and normal, not the translated ones. So please put both in translation
+       e.g. stretch=(%STRETCH%)|normal(=%NORMAL).  */
+    {"mode", 'm', 0, N_("Background image mode."), N_("stretch|normal"),
      ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };

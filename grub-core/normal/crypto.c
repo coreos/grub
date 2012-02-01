@@ -38,7 +38,14 @@ grub_crypto_autoload (const char *name)
 {
   struct load_spec *cur;
   grub_dl_t mod;
-  
+  static int depth = 0;
+
+  /* Some bufio of filesystems may want some crypto modules.
+     It may result in infinite recursion. Hence this check.  */
+  if (depth)
+    return;
+  depth++;
+
   for (cur = crypto_specs; cur; cur = cur->next)
     if (grub_strcasecmp (name, cur->name) == 0)
       {
@@ -47,6 +54,7 @@ grub_crypto_autoload (const char *name)
 	  grub_dl_ref (mod);
 	grub_errno = GRUB_ERR_NONE;
       }
+  depth--;
 }
 
 static void 

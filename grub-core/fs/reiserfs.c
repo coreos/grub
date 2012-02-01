@@ -57,8 +57,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define REISERFS_MAGIC_DESC_BLOCK "ReIsErLB"
 /* If the 3rd bit of an item state is set, then it's visible.  */
 #define GRUB_REISERFS_VISIBLE_MASK ((grub_uint16_t) 0x04)
-#define REISERFS_MAX_LABEL_LENGTH 16
-#define REISERFS_LABEL_OFFSET 0x64
 
 #define S_IFLNK 0xA000
 
@@ -109,6 +107,7 @@ struct grub_reiserfs_superblock
   grub_uint32_t inode_generation;
   grub_uint8_t unused[4];
   grub_uint16_t uuid[8];
+  char label[16];
 } __attribute__ ((packed));
 
 struct grub_reiserfs_journal_header
@@ -1323,14 +1322,24 @@ grub_reiserfs_dir (grub_device_t device, const char *path,
 static grub_err_t
 grub_reiserfs_label (grub_device_t device, char **label)
 {
-  *label = grub_malloc (REISERFS_MAX_LABEL_LENGTH);
-  if (*label)
+  struct grub_reiserfs_data *data;
+  grub_disk_t disk = device->disk;
+
+  grub_dl_ref (my_mod);
+
+  data = grub_reiserfs_mount (disk);
+  if (data)
     {
-      grub_disk_read (device->disk,
-                      REISERFS_SUPER_BLOCK_OFFSET / GRUB_DISK_SECTOR_SIZE,
-                      REISERFS_LABEL_OFFSET, REISERFS_MAX_LABEL_LENGTH,
-                      *label);
+      *label = grub_strndup (data->superblock.label,
+			     sizeof (data->superblock.label));
     }
+  else
+    *label = NULL;
+
+  grub_dl_unref (my_mod);
+
+  grub_free (data);
+
   return grub_errno;
 }
 
@@ -1342,21 +1351,25 @@ grub_reiserfs_uuid (grub_device_t device, char **uuid)
 
   grub_dl_ref (my_mod);
 
+  *uuid = NULL;
   data = grub_reiserfs_mount (disk);
   if (data)
     {
-      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-			     grub_be_to_cpu16 (data->superblock.uuid[0]),
-			     grub_be_to_cpu16 (data->superblock.uuid[1]),
-			     grub_be_to_cpu16 (data->superblock.uuid[2]),
-			     grub_be_to_cpu16 (data->superblock.uuid[3]),
-			     grub_be_to_cpu16 (data->superblock.uuid[4]),
-			     grub_be_to_cpu16 (data->superblock.uuid[5]),
-			     grub_be_to_cpu16 (data->superblock.uuid[6]),
-			     grub_be_to_cpu16 (data->superblock.uuid[7]));
+      unsigned i;
+      for (i = 0; i < ARRAY_SIZE (data->superblock.uuid); i++)
+	if (data->superblock.uuid[i])
+	  break;
+      if (i < ARRAY_SIZE (data->superblock.uuid))
+	*uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+				grub_be_to_cpu16 (data->superblock.uuid[0]),
+				grub_be_to_cpu16 (data->superblock.uuid[1]),
+				grub_be_to_cpu16 (data->superblock.uuid[2]),
+				grub_be_to_cpu16 (data->superblock.uuid[3]),
+				grub_be_to_cpu16 (data->superblock.uuid[4]),
+				grub_be_to_cpu16 (data->superblock.uuid[5]),
+				grub_be_to_cpu16 (data->superblock.uuid[6]),
+				grub_be_to_cpu16 (data->superblock.uuid[7]));
     }
-  else
-    *uuid = NULL;
 
   grub_dl_unref (my_mod);
 

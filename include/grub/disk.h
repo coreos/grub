@@ -32,18 +32,15 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_OFDISK_ID,
     GRUB_DISK_DEVICE_LOOPBACK_ID,
     GRUB_DISK_DEVICE_EFIDISK_ID,
-    GRUB_DISK_DEVICE_RAID_ID,
-    GRUB_DISK_DEVICE_LVM_ID,
+    GRUB_DISK_DEVICE_DISKFILTER_ID,
     GRUB_DISK_DEVICE_HOST_ID,
     GRUB_DISK_DEVICE_ATA_ID,
     GRUB_DISK_DEVICE_MEMDISK_ID,
     GRUB_DISK_DEVICE_NAND_ID,
-    GRUB_DISK_DEVICE_UUID_ID,
-    GRUB_DISK_DEVICE_PXE_ID,
     GRUB_DISK_DEVICE_SCSI_ID,
-    GRUB_DISK_DEVICE_FILE_ID,
     GRUB_DISK_DEVICE_CRYPTODISK_ID,
     GRUB_DISK_DEVICE_ARCDISK_ID,
+    GRUB_DISK_DEVICE_HOSTDISK_ID,
   };
 
 struct grub_disk;
@@ -95,6 +92,8 @@ struct grub_disk_dev
   struct grub_disk_dev *next;
 };
 typedef struct grub_disk_dev *grub_disk_dev_t;
+
+extern grub_disk_dev_t EXPORT_VAR (grub_disk_dev_list);
 
 struct grub_partition;
 
@@ -158,7 +157,19 @@ void grub_disk_cache_invalidate_all (void);
 
 void EXPORT_FUNC(grub_disk_dev_register) (grub_disk_dev_t dev);
 void EXPORT_FUNC(grub_disk_dev_unregister) (grub_disk_dev_t dev);
-int EXPORT_FUNC(grub_disk_dev_iterate) (int (*hook) (const char *name));
+static inline int
+grub_disk_dev_iterate (int (*hook) (const char *name))
+{
+  grub_disk_dev_t p;
+  grub_disk_pull_t pull;
+
+  for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
+    for (p = grub_disk_dev_list; p; p = p->next)
+      if (p->iterate && (p->iterate) (hook, pull))
+	return 1;
+
+  return 0;
+}
 
 grub_disk_t EXPORT_FUNC(grub_disk_open) (const char *name);
 void EXPORT_FUNC(grub_disk_close) (grub_disk_t disk);
@@ -185,13 +196,15 @@ extern int EXPORT_VAR(grub_disk_firmware_is_tainted);
 
 #if defined (GRUB_UTIL) || defined (GRUB_MACHINE_EMU)
 void grub_lvm_init (void);
+void grub_ldm_init (void);
 void grub_mdraid09_init (void);
 void grub_mdraid1x_init (void);
-void grub_raid_init (void);
+void grub_diskfilter_init (void);
 void grub_lvm_fini (void);
+void grub_ldm_fini (void);
 void grub_mdraid09_fini (void);
 void grub_mdraid1x_fini (void);
-void grub_raid_fini (void);
+void grub_diskfilter_fini (void);
 #endif
 
 #endif /* ! GRUB_DISK_HEADER */

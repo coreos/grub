@@ -61,7 +61,6 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
       char fpath[grub_strlen (currpath) + 1];
       char *name = fpath;
       char *next;
-      //  unsigned int pos = 0;
       enum grub_fshelp_filetype type = GRUB_FSHELP_DIR;
       grub_fshelp_node_t currnode = currroot;
       grub_fshelp_node_t oldnode = currroot;
@@ -85,7 +84,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  if (filetype == GRUB_FSHELP_UNKNOWN ||
               (grub_strcmp (name, filename) &&
                (! (filetype & GRUB_FSHELP_CASE_INSENSITIVE) ||
-                grub_strncasecmp (name, filename, GRUB_LONG_MAX))))
+                grub_strcasecmp (name, filename))))
 	    {
 	      grub_free (node);
 	      return 0;
