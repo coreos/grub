@@ -1,3 +1,8 @@
+2012-02-01  Seth Goldberg <seth.goldberg@oracle.com>
+
+	* grub-core/normal/context.c (grub_env_extractor_close): Don't crash
+	if no submenu is present.
+
 2012-02-01  Aleš Nesrsta <starous@volny.cz>
 
 	CBI support.

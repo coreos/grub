@@ -159,7 +159,7 @@ grub_env_extractor_close (int source)
     }
   err = grub_env_context_close ();
 
-  if (source)
+  if (source && menu)
     {
       grub_menu_t menu2;
       menu2 = grub_env_get_menu ();
