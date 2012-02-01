@@ -1,4 +1,25 @@
 2012-02-01  Aleš Nesrsta <starous@volny.cz>
+
+	CBI support.
+
+	* include/grub/usb.h (grub_usbms_protocol_t): New values
+	GRUB_USBMS_PROTOCOL_CB and GRUB_USBMS_PROTOCOL_CBI.
+	* grub-core/disk/usbms.c (GRUB_USBMS_CBI_CMD_SIZE): New define.
+	(GRUB_USBMS_CBI_ADSC_REQ): Likewise.
+	(grub_usbms_dev): Add subclass, protocol and intrpt.
+	Remove in_maxsz and out_maxsz.
+	(grub_usbms_reset): Rename to ...
+	(grub_usbms_bo_reset): .. this.
+	(grub_usbms_cbi_cmd): New function.
+	(grub_usbms_cbi_reset): Likewise.
+	(grub_usbms_reset): Likewise.
+	(grub_usbms_attach): Recognize cbi. Same subclass and protocol.
+	(grub_usbms_transfer): Rename to ...
+	(grub_usbms_transfer_bo): ... this.
+	(grub_usbms_transfer_cbi): Likewise.
+	(grub_usbms_transfer): Likewise.
+
+2012-02-01  Aleš Nesrsta <starous@volny.cz>
 2012-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	EHCI support. All of the credit goes to Aleš Nesrsta. I've just added
