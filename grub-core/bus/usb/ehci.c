@@ -403,7 +403,7 @@ grub_ehci_port_setbits (struct grub_ehci *e, grub_uint32_t port,
 }
 
 /* Halt if EHCI HC not halted */
-static grub_err_t
+static grub_usb_err_t
 grub_ehci_halt (struct grub_ehci *e)
 {
   grub_uint64_t maxtime;
@@ -422,14 +422,14 @@ grub_ehci_halt (struct grub_ehci *e)
 	     && (grub_get_time_ms () < maxtime));
       if ((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
 	   & GRUB_EHCI_ST_HC_HALTED) == 0)
-	return GRUB_ERR_TIMEOUT;
+	return GRUB_USB_ERR_TIMEOUT;
     }
 
-  return GRUB_ERR_NONE;
+  return GRUB_USB_ERR_NONE;
 }
 
 /* EHCI HC reset */
-static grub_err_t
+static grub_usb_err_t
 grub_ehci_reset (struct grub_ehci *e)
 {
   grub_uint64_t maxtime;
@@ -446,9 +446,9 @@ grub_ehci_reset (struct grub_ehci *e)
 	 && (grub_get_time_ms () < maxtime));
   if ((grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND)
        & GRUB_EHCI_CMD_HC_RESET) != 0)
-    return GRUB_ERR_TIMEOUT;
+    return GRUB_USB_ERR_TIMEOUT;
 
-  return GRUB_ERR_NONE;
+  return GRUB_USB_ERR_NONE;
 }
 
 /* PCI iteration function... */
@@ -529,7 +529,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
 	{
 	  grub_dprintf ("ehci",
 			"EHCI grub_ehci_pci_iter: registers above 4G are not supported\n");
-	  return 1;
+	  return 0;
 	}
       
       grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: 32-bit EHCI OK\n");
@@ -834,7 +834,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: CONFIG_FLAG: %08x\n",
 		grub_ehci_oper_read32 (e, GRUB_EHCI_CONFIG_FLAG));
 
-  return 1;
+  return 0;
 
 fail:
   if (e)
@@ -848,7 +848,7 @@ fail:
     }
   grub_free (e);
 
-  return 1;
+  return 0;
 }
 
 static int
