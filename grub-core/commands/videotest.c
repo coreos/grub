@@ -116,13 +116,13 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
        U+03C4      Greek tau                      CF 84
        U+00E4      lowercase letter a with umlaut C3 A4
        U+2124      set 'Z' symbol (integers)      E2 84 A4
-       U+2287      subset symbol                  E2 8A 87
+       U+2286      subset symbol                  E2 8A 86
        U+211D      set 'R' symbol (real numbers)  E2 84 9D  */
 
     str =
       "Unicode test: happy\xE2\x98\xBA \xC2\xA3 5.00"
       " \xC2\xA1\xCF\x84\xC3\xA4u! "
-      " \xE2\x84\xA4\xE2\x8A\x87\xE2\x84\x9D";
+      " \xE2\x84\xA4\xE2\x8A\x86\xE2\x84\x9D";
     color = grub_video_map_rgb (128, 128, 255);
 
     /* All characters in the string exist in the 'Fixed 20' (10x20) font.  */

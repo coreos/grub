@@ -1,5 +1,11 @@
 2012-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/videotest.c (grub_cmd_videotest): Fix subset
+	symbol.
+	Reported by: NODA, Kai <nodakai>.
+
+2012-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix ehci on amd64.
 
 	* grub-core/bus/usb/usbhub.c (grub_usb_hub_add_dev): Use %p to print
