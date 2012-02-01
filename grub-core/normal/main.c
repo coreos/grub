@@ -33,6 +33,8 @@
 #include <grub/charset.h>
 #include <grub/script_sh.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
 static int nested_level = 0;
@@ -272,7 +274,6 @@ grub_normal_execute (const char *config, int nested, int batch)
       prefix = grub_env_get ("prefix");
       read_lists (prefix);
       grub_register_variable_hook ("prefix", NULL, read_lists_hook);
-      grub_command_execute ("parser.grub", 0, 0);
     }
 
   if (config)
@@ -287,7 +288,7 @@ grub_normal_execute (const char *config, int nested, int batch)
     {
       if (menu && menu->size)
 	{
-	  grub_show_menu (menu, nested);
+	  grub_show_menu (menu, nested, 0);
 	  if (nested)
 	    grub_normal_free_menu (menu);
 	}
@@ -471,9 +472,14 @@ grub_mini_cmd_clear (struct grub_command *cmd __attribute__ ((unused)),
 static grub_command_t cmd_clear;
 
 static void (*grub_xputs_saved) (const char *str);
+static const char *features[] = {
+  "feature_chainloader_bpb", "feature_ntldr", "feature_platform_search_hint"
+};
 
 GRUB_MOD_INIT(normal)
 {
+  unsigned i;
+
   /* Previously many modules depended on gzio. Be nice to user and load it.  */
   grub_dl_load ("gzio");
 
@@ -496,6 +502,7 @@ GRUB_MOD_INIT(normal)
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
   grub_register_variable_hook ("pager", 0, grub_env_write_pager);
+  grub_env_export ("pager");
 
   /* Register a command "normal" for the rescue mode.  */
   grub_register_command ("normal", grub_cmd_normal,
@@ -514,6 +521,12 @@ GRUB_MOD_INIT(normal)
   /* Set default color names.  */
   grub_env_set ("color_normal", "white/black");
   grub_env_set ("color_highlight", "black/white");
+
+  for (i = 0; i < ARRAY_SIZE (features); i++)
+    {
+      grub_env_set (features[i], "y");
+      grub_env_export (features[i]);
+    }
 }
 
 GRUB_MOD_FINI(normal)

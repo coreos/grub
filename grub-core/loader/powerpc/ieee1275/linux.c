@@ -26,6 +26,10 @@
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/memory.h>
+#include <grub/lib/cmdline.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #define ELF32_LOADMASK (0xc0000000UL)
 #define ELF64_LOADMASK (0xc000000000000000ULL)
@@ -44,6 +48,51 @@ static char *linux_args;
 
 typedef void (*kernel_entry_t) (void *, unsigned long, int (void *),
 				unsigned long, unsigned long);
+
+static grub_addr_t
+grub_linux_claimmap_iterate (grub_addr_t target, grub_size_t size,
+			     grub_size_t align)
+{
+  grub_addr_t found_addr = (grub_addr_t) -1;
+
+  auto int NESTED_FUNC_ATTR alloc_mem (grub_uint64_t addr, grub_uint64_t len,
+				       grub_memory_type_t type);
+  int NESTED_FUNC_ATTR alloc_mem (grub_uint64_t addr, grub_uint64_t len,
+				  grub_memory_type_t type)
+  {
+    grub_uint64_t end = addr + len;
+    addr = ALIGN_UP (addr, align);
+    target = ALIGN_UP (target, align);
+
+    /* Target above the memory chunk.  */
+    if (type != GRUB_MEMORY_AVAILABLE || target > end)
+      return 0;
+
+    /* Target inside the memory chunk.  */
+    if (target >= addr && target < end && size <= end - target)
+      {
+	if (grub_claimmap (target, size) == GRUB_ERR_NONE)
+	  {
+	    found_addr = target;
+	    return 1;
+	  }
+      }
+    /* Target below the memory chunk.  */
+    if (target < addr && addr + size <= end)
+      {
+	if (grub_claimmap (addr, size) == GRUB_ERR_NONE)
+	  {
+	    found_addr = addr;
+	    return 1;
+	  }
+      }
+    return 0;
+  }
+
+  grub_machine_mmap_iterate (alloc_mem);
+
+  return found_addr;
+}
 
 static grub_err_t
 grub_linux_boot (void)
@@ -102,33 +151,33 @@ grub_linux_unload (void)
 static grub_err_t
 grub_linux_load32 (grub_elf_t elf)
 {
+  Elf32_Addr base_addr;
+  grub_addr_t seg_addr;
+  grub_uint32_t align;
+  grub_uint32_t offset;
   Elf32_Addr entry;
-  int found_addr = 0;
 
-  /* Linux's entry point incorrectly contains a virtual address.  */
-  entry = elf->ehdr.ehdr32.e_entry & ~ELF32_LOADMASK;
-  if (entry == 0)
-    entry = 0x01400000;
-
-  linux_size = grub_elf32_size (elf, 0);
+  linux_size = grub_elf32_size (elf, &base_addr, &align);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
   linux_size += 0x100000;
 
+  /* Linux's entry point incorrectly contains a virtual address.  */
+  entry = elf->ehdr.ehdr32.e_entry & ~ELF32_LOADMASK;
+
+  /* Linux's incorrectly contains a virtual address.  */
+  base_addr &= ~ELF32_LOADMASK;
+  offset = entry - base_addr;
+
   /* On some systems, firmware occupies the memory we're trying to use.
    * Happily, Linux can be loaded anywhere (it relocates itself).  Iterate
    * until we find an open area.  */
-  for (linux_addr = entry; linux_addr < entry + 200 * 0x100000; linux_addr += 0x100000)
-    {
-      grub_dprintf ("loader", "Attempting to claim at 0x%x, size 0x%x.\n",
-		    linux_addr, linux_size);
-      found_addr = grub_claimmap (linux_addr, linux_size);
-      if (found_addr != -1)
-	break;
-    }
-  if (found_addr == -1)
+  seg_addr = grub_linux_claimmap_iterate (base_addr & ~ELF32_LOADMASK, linux_size, align);
+  if (seg_addr == (grub_addr_t) -1)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't claim memory");
+
+  linux_addr = seg_addr + offset;
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -141,9 +190,7 @@ grub_linux_load32 (grub_elf_t elf)
 	}
       *do_load = 1;
 
-      /* Linux's program headers incorrectly contain virtual addresses.
-       * Translate those to physical, and offset to the area we claimed.  */
-      *addr = (phdr->p_paddr & ~ELF32_LOADMASK) + linux_addr;
+      *addr = (phdr->p_paddr - base_addr) + seg_addr;
       return 0;
     }
   return grub_elf32_load (elf, offset_phdr, 0, 0);
@@ -152,33 +199,31 @@ grub_linux_load32 (grub_elf_t elf)
 static grub_err_t
 grub_linux_load64 (grub_elf_t elf)
 {
+  Elf64_Addr base_addr;
+  grub_addr_t seg_addr;
+  grub_uint64_t align;
+  grub_uint64_t offset;
   Elf64_Addr entry;
-  int found_addr = 0;
 
-  /* Linux's entry point incorrectly contains a virtual address.  */
-  entry = elf->ehdr.ehdr64.e_entry & ~ELF64_LOADMASK;
-  if (entry == 0)
-    entry = 0x01400000;
-
-  linux_size = grub_elf64_size (elf, 0);
+  linux_size = grub_elf64_size (elf, &base_addr, &align);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
   linux_size += 0x100000;
 
+  base_addr &= ~ELF64_LOADMASK;
+  entry = elf->ehdr.ehdr64.e_entry & ~ELF64_LOADMASK;
+  offset = entry - base_addr;
+  /* Linux's incorrectly contains a virtual address.  */
+
   /* On some systems, firmware occupies the memory we're trying to use.
    * Happily, Linux can be loaded anywhere (it relocates itself).  Iterate
    * until we find an open area.  */
-  for (linux_addr = entry; linux_addr < entry + 200 * 0x100000; linux_addr += 0x100000)
-    {
-      grub_dprintf ("loader", "Attempting to claim at 0x%x, size 0x%x.\n",
-		    linux_addr, linux_size);
-      found_addr = grub_claimmap (linux_addr, linux_size);
-      if (found_addr != -1)
-	break;
-    }
-  if (found_addr == -1)
+  seg_addr = grub_linux_claimmap_iterate (base_addr & ~ELF64_LOADMASK, linux_size, align);
+  if (seg_addr == (grub_addr_t) -1)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't claim memory");
+
+  linux_addr = seg_addr + offset;
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -190,9 +235,8 @@ grub_linux_load64 (grub_elf_t elf)
 	  return 0;
 	}
       *do_load = 1;
-      /* Linux's program headers incorrectly contain virtual addresses.
-       * Translate those to physical, and offset to the area we claimed.  */
-      *addr = (phdr->p_paddr & ~ELF64_LOADMASK) + linux_addr;
+
+      *addr = (phdr->p_paddr - base_addr) + seg_addr;
       return 0;
     }
   return grub_elf64_load (elf, offset_phdr, 0, 0);
@@ -203,9 +247,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
 {
   grub_elf_t elf = 0;
-  int i;
   int size;
-  char *dest;
 
   grub_dl_ref (my_mod);
 
@@ -240,23 +282,15 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto out;
     }
 
-  size = sizeof ("BOOT_IMAGE=") + grub_strlen (argv[0]);
-  for (i = 0; i < argc; i++)
-    size += grub_strlen (argv[i]) + 1;
-
-  linux_args = grub_malloc (size);
+  size = grub_loader_cmdline_size(argc, argv);
+  linux_args = grub_malloc (size + sizeof (LINUX_IMAGE));
   if (! linux_args)
     goto out;
 
-  /* Specify the boot file.  */
-  dest = grub_stpcpy (linux_args, "BOOT_IMAGE=");
-  dest = grub_stpcpy (dest, argv[0]);
-
-  for (i = 1; i < argc; i++)
-    {
-      *dest++ = ' ';
-      dest = grub_stpcpy (dest, argv[i]);
-    }
+  /* Create kernel command line.  */
+  grub_memcpy (linux_args, LINUX_IMAGE, sizeof (LINUX_IMAGE));
+  grub_create_loader_cmdline (argc, argv, linux_args + sizeof (LINUX_IMAGE) - 1,
+			      size);
 
 out:
 
@@ -283,11 +317,13 @@ static grub_err_t
 grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
-  grub_file_t file = 0;
-  grub_ssize_t size;
+  grub_file_t *files = 0;
+  grub_size_t size = 0;
   grub_addr_t first_addr;
   grub_addr_t addr;
-  int found_addr = 0;
+  int i;
+  int nfiles = 0;
+  grub_uint8_t *ptr;
 
   if (argc == 0)
     {
@@ -301,46 +337,52 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_file_filter_disable_compression ();
-  file = grub_file_open (argv[0]);
-  if (! file)
+  files = grub_zalloc (argc * sizeof (files[0]));
+  if (!files)
     goto fail;
 
+  for (i = 0; i < argc; i++)
+    {
+      grub_file_filter_disable_compression ();
+      files[i] = grub_file_open (argv[i]);
+      if (! files[i])
+	goto fail;
+      nfiles++;
+      size += grub_file_size (files[i]);
+    }
+
   first_addr = linux_addr + linux_size;
-  size = grub_file_size (file);
 
   /* Attempt to claim at a series of addresses until successful in
      the same way that grub_rescue_cmd_linux does.  */
-  for (addr = first_addr; addr < first_addr + 200 * 0x100000; addr += 0x100000)
-    {
-      grub_dprintf ("loader", "Attempting to claim at 0x%x, size 0x%x.\n",
-		    addr, size);
-      found_addr = grub_claimmap (addr, size);
-      if (found_addr != -1)
-	break;
-    }
-
-  if (found_addr == -1)
-    {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot claim memory");
-      goto fail;
-    }
+  addr = grub_linux_claimmap_iterate (first_addr, size, 0x100000);
+  if (addr == (grub_addr_t) -1)
+     goto fail;
 
   grub_dprintf ("loader", "Loading initrd at 0x%x, size 0x%x\n", addr, size);
 
-  if (grub_file_read (file, (void *) addr, size) != size)
+  ptr = (void *) addr;
+  for (i = 0; i < nfiles; i++)
     {
-      grub_ieee1275_release (addr, size);
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
-      goto fail;
+      grub_ssize_t cursize = grub_file_size (files[i]);
+      if (grub_file_read (files[i], ptr, cursize) != cursize)
+	{
+	  grub_ieee1275_release (addr, size);
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			argv[i]);
+	  goto fail;
+	}
+      ptr += cursize;
     }
 
   initrd_addr = addr;
   initrd_size = size;
 
  fail:
-  if (file)
-    grub_file_close (file);
+  for (i = 0; i < nfiles; i++)
+    grub_file_close (files[i]);
+  grub_free (files);
 
   return grub_errno;
 }

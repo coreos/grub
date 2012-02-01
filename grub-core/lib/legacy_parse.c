@@ -42,7 +42,8 @@ struct legacy_command
     TYPE_BOOL,
     TYPE_INT,
     TYPE_REST_VERBATIM,
-    TYPE_VBE_MODE
+    TYPE_VBE_MODE,
+    TYPE_WITH_CONFIGFILE_OPTION
   } argt[4];
   enum {
     FLAG_IGNORE_REST        =  0x001,
@@ -58,13 +59,22 @@ struct legacy_command
   const char *longdesc;
 };
 
-struct legacy_command legacy_commands[] =
+/* Help texts are kept here mostly for reference. They are never shown. So
+   no need to gettextize.
+ */
+static struct legacy_command legacy_commands[] =
   {
     {"blocklist", "blocklist '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Print the blocklist notation of the file FILE."},
     {"boot", "boot\n", NULL, 0, 0, {}, 0, 0,
      "Boot the OS/chain-loader which has been loaded."},
-    /* FIXME: bootp unsupported.  */
+    {"bootp", "net_bootp; net_ls_addr; if [ x%s = x--with-configfile ]; then "
+     "if net_get_dhcp_option configfile_name pxe 150 string; then "
+     "configfile $configfile_name; fi; fi\n", NULL, 0, 1,
+     {TYPE_WITH_CONFIGFILE_OPTION}, FLAG_IGNORE_REST, "[--with-configfile]",
+     "Initialize a network device via BOOTP. If the option `--with-configfile'"
+     " is given, try to load a configuration file specified by the 150 vendor"
+     " tag."},
     {"cat", "cat '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Print the contents of the file FILE."},
     {"chainloader", "chainloader %s '%s'\n", NULL, 0,
@@ -102,7 +112,13 @@ struct legacy_command legacy_commands[] =
      "[NUM | `saved']",
      "Set the default entry to entry number NUM (if not specified, it is"
      " 0, the first entry) or the entry number saved by savedefault."},
-    /* FIXME: dhcp unsupported.  */
+    {"dhcp", "net_bootp; net_ls_addr; if [ x%s = x--with-configfile ]; then "
+     "if net_get_dhcp_option configfile_name pxe 150 string; then "
+     "configfile $configfile_name; fi; fi\n", NULL, 0, 1,
+     {TYPE_WITH_CONFIGFILE_OPTION}, FLAG_IGNORE_REST, "[--with-configfile]",
+     "Initialize a network device via BOOTP. If the option `--with-configfile'"
+     " is given, try to load a configuration file specified by the 150 vendor"
+     " tag."},
     {"displayapm", "lsapm\n", NULL, 0, 0, {}, 0, 0,
      "Display APM BIOS information."},
     {"displaymem", "lsmmap\n", NULL, 0, 0, {}, 0, 0, 
@@ -116,7 +132,7 @@ struct legacy_command legacy_commands[] =
      " immediately starts over using the NUM entry (same numbering as the"
      " `default' command). This obviously won't help if the machine"
      " was rebooted by a kernel that GRUB loaded."},
-    {"find", "search -sf '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILENAME",
+    {"find", "search -f '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILENAME",
      "Search for the filename FILENAME in all of partitions and print the list of"
      " the devices which contain the file."},
     /* FIXME: fstest unsupported.  */
@@ -322,24 +338,23 @@ struct legacy_command legacy_commands[] =
 char *
 grub_legacy_escape (const char *in, grub_size_t len)
 {
-  const char *ptr;
-  char *ret, *outptr;
+  char *ptr;
+  char *ret;
+  char saved;
   int overhead = 0;
-  for (ptr = in; ptr < in + len && *ptr; ptr++)
-    if (*ptr == '\'' || *ptr == '\\')
-      overhead++;
+
+  for (ptr = (char*)in; ptr < in + len && *ptr; ptr++)
+    if (*ptr == '\'')
+      overhead += 3;
   ret = grub_malloc (ptr - in + overhead + 1);
   if (!ret)
     return NULL;
-  outptr = ret;
-  for (ptr = in; ptr < in + len && *ptr; ptr++)
-    {
-      if (*ptr == '\'' || *ptr == '\\')
-	*outptr++ = '\\';
-      
-      *outptr++ = *ptr;
-    }
-  *outptr++ = 0;
+
+  ptr = (char*)in;
+  saved = ptr[len];
+  ptr[len] = '\0';
+  grub_strchrsub (ret, ptr, '\'', "'\\''");
+  ptr[len] = saved;
   return ret;
 }
 
@@ -400,7 +415,7 @@ adjust_file (const char *in, grub_size_t len)
 }
 
 static int
-check_option (const char *a, char *b, grub_size_t len)
+check_option (const char *a, const char *b, grub_size_t len)
 {
   if (grub_strlen (b) != len)
     return 0;
@@ -412,6 +427,8 @@ is_option (enum arg_type opt, const char *curarg, grub_size_t len)
 {
   switch (opt)
     {
+    case TYPE_WITH_CONFIGFILE_OPTION:
+      return check_option (curarg, "--with-configfile", len);
     case TYPE_NOAPM_OPTION:
       return check_option (curarg, "--no-apm", len);
     case TYPE_FORCE_OPTION:
@@ -486,8 +503,12 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 
   if (legacy_commands[cmdnum].flags & FLAG_TERMINAL)
     {
-      int dumb = 0, no_echo = 0, no_edit = 0, lines = 24;
-      int console = 0, serial = 0, hercules = 0;
+      int dumb = 0, lines = 24;
+#ifdef TODO
+      int no_echo = 0, no_edit = 0;
+      int hercules = 0;
+#endif
+      int console = 0, serial = 0;
       /* Big enough for any possible resulting command. */
       char outbuf[256] = "";
       char *outptr;
@@ -497,13 +518,13 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		  " [console] [serial] [hercules]"*/
 	  if (grub_memcmp (ptr, "--dumb", sizeof ("--dumb") - 1) == 0)
 	    dumb = 1;
-
+#ifdef TODO
 	  if (grub_memcmp (ptr, "--no-echo", sizeof ("--no-echo") - 1) == 0)
 	    no_echo = 1;
 
 	  if (grub_memcmp (ptr, "--no-edit", sizeof ("--no-edit") - 1) == 0)
 	    no_edit = 1;
-
+#endif
 	  if (grub_memcmp (ptr, "--lines=", sizeof ("--lines=") - 1) == 0)
 	    {
 	      lines = grub_strtoul (ptr + sizeof ("--lines=") - 1, 0, 0);
@@ -519,10 +540,10 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 
 	  if (grub_memcmp (ptr, "serial", sizeof ("serial") - 1) == 0)
 	    serial = 1;
-
+#ifdef TODO
 	  if (grub_memcmp (ptr, "hercules", sizeof ("hercules") - 1) == 0)
 	    hercules = 1;
-
+#endif
 	  while (*ptr && !grub_isspace (*ptr))
 	    ptr++;
 	  while (*ptr && grub_isspace (*ptr))
@@ -618,12 +639,13 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		{
 		  for (; *ptr && grub_isspace (*ptr); ptr++);
 		  for (; *ptr && !grub_isspace (*ptr); ptr++)
-		    if (*ptr == '\\' || *ptr == '\'')
-		      overhead++;
+		    if (*ptr == '\'')
+		      overhead += 3;
 		  if (*ptr)
 		    ptr++;
 		  overhead += 3;
 		}
+		
 	      outptr0 = args[i] = grub_malloc (overhead + (ptr - curarg));
 	      if (!outptr0)
 		return NULL;
@@ -637,9 +659,15 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 		  *outptr++ = '\'';
 		  for (; *ptr && !grub_isspace (*ptr); ptr++)
 		    {
-		      if (*ptr == '\\' || *ptr == '\'')
-			*outptr++ = '\\';
-		      *outptr++ = *ptr;
+		      if (*ptr == '\'')
+			{
+			  *outptr++ = '\'';
+			  *outptr++ = '\\';
+			  *outptr++ = '\'';
+			  *outptr++ = '\'';
+			}
+		      else
+			*outptr++ = *ptr;
 		    }
 		  *outptr++ = '\'';
 		  if (*ptr)
@@ -652,6 +680,7 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 	  case TYPE_VERBATIM:
 	    args[i] = grub_legacy_escape (curarg, curarglen);
 	    break;
+	  case TYPE_WITH_CONFIGFILE_OPTION:
 	  case TYPE_FORCE_OPTION:
 	  case TYPE_NOAPM_OPTION:
 	  case TYPE_TYPE_OR_NOMEM_OPTION:
@@ -670,7 +699,10 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 	      int base = 10;
 	      brk = curarg;
 	      if (brk[0] == '0' && brk[1] == 'x')
-		base = 16;
+		{
+		  base = 16;
+		  brk += 2;
+		}
 	      else if (brk[0] == '0')
 		base = 8;
 	      for (; *brk && brk < curarg + curarglen; brk++)
@@ -743,6 +775,7 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
       case TYPE_FILE:
       case TYPE_REST_VERBATIM:
       case TYPE_VERBATIM:
+      case TYPE_WITH_CONFIGFILE_OPTION:
       case TYPE_FORCE_OPTION:
       case TYPE_NOAPM_OPTION:
       case TYPE_TYPE_OR_NOMEM_OPTION:

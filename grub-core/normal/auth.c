@@ -28,13 +28,14 @@
 struct grub_auth_user
 {
   struct grub_auth_user *next;
+  struct grub_auth_user **prev;
   char *name;
   grub_auth_callback_t callback;
   void *arg;
   int authenticated;
 };
 
-struct grub_auth_user *users = NULL;
+static struct grub_auth_user *users = NULL;
 
 grub_err_t
 grub_auth_register_authentication (const char *user,
@@ -73,7 +74,7 @@ grub_auth_unregister_authentication (const char *user)
   if (!cur->authenticated)
     {
       grub_free (cur->name);
-      grub_list_remove (GRUB_AS_LIST_P (&users), GRUB_AS_LIST (cur));
+      grub_list_remove (GRUB_AS_LIST (cur));
       grub_free (cur);
     }
   else
@@ -121,7 +122,7 @@ grub_auth_deauthenticate (const char *user)
   if (!cur->callback)
     {
       grub_free (cur->name);
-      grub_list_remove (GRUB_AS_LIST_P (&users), GRUB_AS_LIST (cur));
+      grub_list_remove (GRUB_AS_LIST (cur));
       grub_free (cur);
     }
   else
@@ -201,7 +202,6 @@ grub_auth_check_authentication (const char *userlist)
 {
   char login[1024];
   struct grub_auth_user *cur = NULL;
-  grub_err_t err;
   static unsigned long punishment_delay = 1;
   char entered[GRUB_AUTH_MAX_PASSLEN];
   struct grub_auth_user *user;
@@ -233,7 +233,7 @@ grub_auth_check_authentication (const char *userlist)
   if (!cur || ! cur->callback)
     goto access_denied;
 
-  err = cur->callback (login, entered, cur->arg);
+  cur->callback (login, entered, cur->arg);
   if (is_authenticated (userlist))
     {
       punishment_delay = 1;

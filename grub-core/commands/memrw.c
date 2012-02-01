@@ -23,13 +23,15 @@
 #include <grub/env.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_extcmd_t cmd_read_byte, cmd_read_word, cmd_read_dword;
 static grub_command_t cmd_write_byte, cmd_write_word, cmd_write_dword;
 
 static const struct grub_arg_option options[] =
   {
     {0, 'v', 0, N_("Save read value into variable VARNAME."),
-     "VARNAME", ARG_TYPE_STRING},
+     N_("VARNAME"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 

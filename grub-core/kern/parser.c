@@ -123,7 +123,7 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
 
   void add_var (grub_parser_state_t newstate)
   {
-    char *val;
+    const char *val;
 
     /* Check if a variable was being read in and the end of the name
        was reached.  */

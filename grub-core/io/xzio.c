@@ -24,6 +24,8 @@
 #include <grub/fs.h>
 #include <grub/dl.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #include "xz.h"
 #include "xz_stream.h"
 
@@ -46,7 +48,7 @@ static struct grub_fs grub_xzio_fs;
 
 static grub_size_t
 decode_vli (const grub_uint8_t buf[], grub_size_t size_max,
-	    grub_uint64_t * num)
+	    grub_uint64_t *num)
 {
   if (size_max == 0)
     return 0;
@@ -69,7 +71,7 @@ decode_vli (const grub_uint8_t buf[], grub_size_t size_max,
 }
 
 static grub_ssize_t
-read_vli (grub_file_t file, grub_uint64_t * num)
+read_vli (grub_file_t file, grub_uint64_t *num)
 {
   grub_uint8_t buf[VLI_MAX_DIGITS];
   grub_ssize_t read;
@@ -90,6 +92,8 @@ static int
 test_header (grub_file_t file)
 {
   grub_xzio_t xzio = file->data;
+  enum xz_ret ret;
+
   xzio->buf.in_size = grub_file_read (xzio->file, xzio->inbuf,
 				      STREAM_HEADER_SIZE);
 
@@ -99,7 +103,7 @@ test_header (grub_file_t file)
       return 0;
     }
 
-  enum xz_ret ret = xz_dec_run (xzio->dec, &xzio->buf);
+  ret = xz_dec_run (xzio->dec, &xzio->buf);
 
   if (ret == XZ_FORMAT_ERROR)
     {
@@ -130,8 +134,8 @@ test_footer (grub_file_t file)
   grub_uint64_t records;
 
   grub_file_seek (xzio->file, xzio->file->size - FOOTER_MAGIC_SIZE);
-  if (grub_file_read (xzio->file, footer, FOOTER_MAGIC_SIZE) !=
-      FOOTER_MAGIC_SIZE
+  if (grub_file_read (xzio->file, footer, FOOTER_MAGIC_SIZE)
+      != FOOTER_MAGIC_SIZE
       || grub_memcmp (footer, FOOTER_MAGIC, FOOTER_MAGIC_SIZE) != 0)
     goto ERROR;
 
@@ -148,8 +152,8 @@ test_footer (grub_file_t file)
 		  xzio->file->size - XZ_STREAM_FOOTER_SIZE - backsize);
 
   /* Test index marker.  */
-  if (grub_file_read (xzio->file, &imarker, sizeof (imarker)) !=
-      sizeof (imarker) && imarker != 0x00)
+  if (grub_file_read (xzio->file, &imarker, sizeof (imarker))
+      != sizeof (imarker) && imarker != 0x00)
     goto ERROR;
 
   if (read_vli (xzio->file, &records) <= 0)
@@ -200,7 +204,7 @@ grub_xzio_open (grub_file_t io)
   file->read_hook = 0;
   file->fs = &grub_xzio_fs;
   file->size = GRUB_FILE_SIZE_UNKNOWN;
-  file->not_easly_seekable = 1;
+  file->not_easily_seekable = 1;
 
   if (grub_file_tell (xzio->file) != 0)
     grub_file_seek (xzio->file, 0);
@@ -222,7 +226,8 @@ grub_xzio_open (grub_file_t io)
   xzio->buf.out_pos = 0;
   xzio->buf.out_size = XZBUFSIZ;
 
-  if (!test_header (file) || !(grub_file_seekable (io) && test_footer (file)))
+  /* FIXME: don't test footer on not easily seekable files.  */
+  if (!test_header (file) || !test_footer (file))
     {
       grub_errno = GRUB_ERR_NONE;
       grub_file_seek (io, 0);
@@ -261,9 +266,9 @@ grub_xzio_read (grub_file_t file, char *buf, grub_size_t len)
 
   while (len > 0)
     {
-      xzio->buf.out_size = grub_min (file->offset + ret + len - current_offset,
-				     XZBUFSIZ);
-
+      xzio->buf.out_size = file->offset + ret + len - current_offset;
+      if (xzio->buf.out_size > XZBUFSIZ)
+	xzio->buf.out_size = XZBUFSIZ;
       /* Feed input.  */
       if (xzio->buf.in_pos == xzio->buf.in_size)
 	{

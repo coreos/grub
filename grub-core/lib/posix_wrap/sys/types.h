@@ -22,14 +22,26 @@
 #include <grub/misc.h>
 
 typedef grub_size_t size_t;
+typedef grub_ssize_t ssize_t;
+#ifndef GRUB_POSIX_BOOL_DEFINED
 typedef enum { false = 0, true = 1 } bool;
-
-#define ULONG_MAX GRUB_ULONG_MAX
-#define UCHAR_MAX 0xff
+#define GRUB_POSIX_BOOL_DEFINED 1
+#endif
 
 typedef grub_uint8_t uint8_t;
 typedef grub_uint16_t uint16_t;
 typedef grub_uint32_t uint32_t;
 typedef grub_uint64_t uint64_t;
+
+typedef grub_int8_t int8_t;
+typedef grub_int16_t int16_t;
+typedef grub_int32_t int32_t;
+typedef grub_int64_t int64_t;
+
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN
+#else
+#undef WORDS_BIGENDIAN
+#endif
 
 #endif

@@ -79,21 +79,9 @@ static void
 draw (grub_gfxmenu_box_t self, int x, int y)
 {
   int height_n;
-  int height_s;
-  int height_e;
-  int height_w;
-  int width_n;
-  int width_s;
-  int width_e;
   int width_w;
 
   height_n = get_height (self->scaled_pixmaps[BOX_PIXMAP_N]);
-  height_s = get_height (self->scaled_pixmaps[BOX_PIXMAP_S]);
-  height_e = get_height (self->scaled_pixmaps[BOX_PIXMAP_E]);
-  height_w = get_height (self->scaled_pixmaps[BOX_PIXMAP_W]);
-  width_n = get_width (self->scaled_pixmaps[BOX_PIXMAP_N]);
-  width_s = get_width (self->scaled_pixmaps[BOX_PIXMAP_S]);
-  width_e = get_width (self->scaled_pixmaps[BOX_PIXMAP_E]);
   width_w = get_width (self->scaled_pixmaps[BOX_PIXMAP_W]);
 
   /* Draw sides.  */
@@ -191,27 +179,74 @@ set_content_size (grub_gfxmenu_box_t self,
 }
 
 static int
+get_border_width (grub_gfxmenu_box_t self)
+{
+  return (get_width (self->raw_pixmaps[BOX_PIXMAP_E])
+	  + get_width (self->raw_pixmaps[BOX_PIXMAP_W]));
+}
+
+static int
 get_left_pad (grub_gfxmenu_box_t self)
 {
-  return get_width (self->raw_pixmaps[BOX_PIXMAP_W]);
+  int v, c;
+
+  v = get_width (self->raw_pixmaps[BOX_PIXMAP_W]);
+  c = get_width (self->raw_pixmaps[BOX_PIXMAP_NW]);
+  if (c > v)
+    v = c;
+  c = get_width (self->raw_pixmaps[BOX_PIXMAP_SW]);
+  if (c > v)
+    v = c;
+
+  return v;
 }
 
 static int
 get_top_pad (grub_gfxmenu_box_t self)
 {
-  return get_height (self->raw_pixmaps[BOX_PIXMAP_N]);
+  int v, c;
+
+  v = get_height (self->raw_pixmaps[BOX_PIXMAP_N]);
+  c = get_height (self->raw_pixmaps[BOX_PIXMAP_NW]);
+  if (c > v)
+    v = c;
+  c = get_height (self->raw_pixmaps[BOX_PIXMAP_NE]);
+  if (c > v)
+    v = c;
+
+  return v;
 }
 
 static int
 get_right_pad (grub_gfxmenu_box_t self)
 {
-  return get_width (self->raw_pixmaps[BOX_PIXMAP_E]);
+  int v, c;
+
+  v = get_width (self->raw_pixmaps[BOX_PIXMAP_E]);
+  c = get_width (self->raw_pixmaps[BOX_PIXMAP_NE]);
+  if (c > v)
+    v = c;
+  c = get_width (self->raw_pixmaps[BOX_PIXMAP_SE]);
+  if (c > v)
+    v = c;
+
+  return v;
 }
 
 static int
 get_bottom_pad (grub_gfxmenu_box_t self)
 {
-  return get_height (self->raw_pixmaps[BOX_PIXMAP_S]);
+  int v, c;
+
+  v = get_height (self->raw_pixmaps[BOX_PIXMAP_S]);
+  c = get_height (self->raw_pixmaps[BOX_PIXMAP_SW]);
+  if (c > v)
+    v = c;
+  c = get_height (self->raw_pixmaps[BOX_PIXMAP_SE]);
+  if (c > v)
+    v = c;
+
+  return v;
 }
 
 static void
@@ -300,6 +335,8 @@ grub_gfxmenu_create_box (const char *pixmaps_prefix,
 
   box->draw = draw;
   box->set_content_size = set_content_size;
+  box->get_border_width = get_border_width;
+
   box->get_left_pad = get_left_pad;
   box->get_top_pad = get_top_pad;
   box->get_right_pad = get_right_pad;

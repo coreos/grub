@@ -24,6 +24,9 @@
 #include <grub/script_sh.h>
 #include "grub_script.tab.h"
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+
 #define yyfree    grub_lexer_yyfree
 #define yyalloc   grub_lexer_yyalloc
 #define yyrealloc grub_lexer_yyrealloc
@@ -161,7 +164,6 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
 "}"             { RECORD; return GRUB_PARSER_TOKEN_RBR;       }
 "[["            { RECORD; return GRUB_PARSER_TOKEN_RSQBR2;    }
 "]]"            { RECORD; return GRUB_PARSER_TOKEN_LSQBR2;    }
-"time"          { RECORD; return GRUB_PARSER_TOKEN_TIME;      }
 "case"          { RECORD; return GRUB_PARSER_TOKEN_CASE;      }
 "do"            { RECORD; return GRUB_PARSER_TOKEN_DO;        }
 "done"          { RECORD; return GRUB_PARSER_TOKEN_DONE;      }
@@ -314,14 +316,16 @@ grub_lexer_yyrealloc (void *ptr, yy_size_t size,
 
 static void copy_string (struct grub_parser_param *parser, const char *str, unsigned hint)
 {
-  int size;
+  grub_size_t size;
   char *ptr;
   unsigned len;
 
   len = hint ? hint : grub_strlen (str);
   if (parser->lexerstate->used + len >= parser->lexerstate->size)
     {
-      size = grub_max (len, parser->lexerstate->size) * 2;
+      size = len * 2;
+      if (size < parser->lexerstate->size * 2)
+        size = parser->lexerstate->size * 2;
       ptr = grub_realloc (parser->lexerstate->text, size);
       if (!ptr)
         {
@@ -355,8 +359,7 @@ grub_lexer_unput (const char *text, yyscan_t yyscanner)
 {
   struct grub_lexer_param *lexerstate = yyget_extra (yyscanner)->lexerstate;
 
-  if (lexerstate->prefix)
-    grub_free (lexerstate->prefix);
+  grub_free (lexerstate->prefix);
 
   lexerstate->prefix = grub_strdup (text);
   if (! lexerstate->prefix)

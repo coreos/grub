@@ -311,11 +311,13 @@ grub_memalign (grub_size_t align, grub_size_t size)
       count++;
       goto again;
 
+#if 0
     case 1:
       /* Unload unneeded modules.  */
       grub_dl_unload_unneeded ();
       count++;
       goto again;
+#endif
 
     default:
       break;
@@ -513,7 +515,7 @@ grub_debug_malloc (const char *file, int line, grub_size_t size)
   void *ptr;
 
   if (grub_mm_debug)
-    grub_printf ("%s:%d: malloc (0x%zx) = ", file, line, size);
+    grub_printf ("%s:%d: malloc (0x%" PRIxGRUB_SIZE ") = ", file, line, size);
   ptr = grub_malloc (size);
   if (grub_mm_debug)
     grub_printf ("%p\n", ptr);
@@ -526,7 +528,7 @@ grub_debug_zalloc (const char *file, int line, grub_size_t size)
   void *ptr;
 
   if (grub_mm_debug)
-    grub_printf ("%s:%d: zalloc (0x%zx) = ", file, line, size);
+    grub_printf ("%s:%d: zalloc (0x%" PRIxGRUB_SIZE ") = ", file, line, size);
   ptr = grub_zalloc (size);
   if (grub_mm_debug)
     grub_printf ("%p\n", ptr);
@@ -545,7 +547,7 @@ void *
 grub_debug_realloc (const char *file, int line, void *ptr, grub_size_t size)
 {
   if (grub_mm_debug)
-    grub_printf ("%s:%d: realloc (%p, 0x%zx) = ", file, line, ptr, size);
+    grub_printf ("%s:%d: realloc (%p, 0x%" PRIxGRUB_SIZE ") = ", file, line, ptr, size);
   ptr = grub_realloc (ptr, size);
   if (grub_mm_debug)
     grub_printf ("%p\n", ptr);
@@ -559,8 +561,8 @@ grub_debug_memalign (const char *file, int line, grub_size_t align,
   void *ptr;
 
   if (grub_mm_debug)
-    grub_printf ("%s:%d: memalign (0x%zx, 0x%zx) = ",
-		 file, line, align, size);
+    grub_printf ("%s:%d: memalign (0x%" PRIxGRUB_SIZE  ", 0x%" PRIxGRUB_SIZE  
+		 ") = ", file, line, align, size);
   ptr = grub_memalign (align, size);
   if (grub_mm_debug)
     grub_printf ("%p\n", ptr);

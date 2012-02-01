@@ -27,6 +27,8 @@
 #include <grub/script_sh.h>
 #include <regex.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static const struct grub_arg_option options[] =
   {
     { "set", 's', GRUB_ARG_OPTION_REPEATABLE,
@@ -87,7 +89,6 @@ set_matches (char **varnames, char *str, grub_size_t nmatches,
 static grub_err_t
 grub_cmd_regexp (grub_extcmd_context_t ctxt, int argc, char **args)
 {
-  int argn = 0;
   regex_t regex;
   int ret;
   grub_size_t s;

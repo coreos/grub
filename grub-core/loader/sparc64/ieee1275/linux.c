@@ -27,6 +27,9 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 #include <grub/memory.h>
+#include <grub/lib/cmdline.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_dl_t my_mod;
 
@@ -247,7 +250,7 @@ grub_linux_load64 (grub_elf_t elf)
   linux_entry = elf->ehdr.ehdr64.e_entry;
   linux_addr = 0x40004000;
   off = 0x4000;
-  linux_size = grub_elf64_size (elf, 0);
+  linux_size = grub_elf64_size (elf, 0, 0);
   if (linux_size == 0)
     return grub_errno;
 
@@ -295,9 +298,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file = 0;
   grub_elf_t elf = 0;
-  int i;
   int size;
-  char *dest;
 
   grub_dl_ref (my_mod);
 
@@ -333,23 +334,16 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto out;
     }
 
-  size = sizeof ("BOOT_IMAGE=") + grub_strlen (argv[0]);
-  for (i = 0; i < argc; i++)
-    size += grub_strlen (argv[i]) + 1;
+  size = grub_loader_cmdline_size(argc, argv);
 
-  linux_args = grub_malloc (size);
+  linux_args = grub_malloc (size + sizeof (LINUX_IMAGE));
   if (! linux_args)
     goto out;
 
-  /* Specify the boot file.  */
-  dest = grub_stpcpy (linux_args, "BOOT_IMAGE=");
-  dest = grub_stpcpy (dest, argv[0]);
-
-  for (i = 1; i < argc; i++)
-    {
-      *dest++ = ' ';
-      dest = grub_stpcpy (dest, argv[i]);
-    }
+  /* Create kernel command line.  */
+  grub_memcpy (linux_args, LINUX_IMAGE, sizeof (LINUX_IMAGE));
+  grub_create_loader_cmdline (argc, argv, linux_args + sizeof (LINUX_IMAGE) - 1,
+			      size);
 
 out:
   if (elf)
@@ -377,11 +371,14 @@ static grub_err_t
 grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
-  grub_file_t file = 0;
-  grub_ssize_t size;
+  grub_file_t *files = 0;
+  grub_size_t size = 0;
   grub_addr_t paddr;
   grub_addr_t addr;
   int ret;
+  int i;
+  int nfiles = 0;
+  grub_uint8_t *ptr;
 
   if (argc == 0)
     {
@@ -395,13 +392,21 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_file_filter_disable_compression ();
-  file = grub_file_open (argv[0]);
-  if (! file)
+  files = grub_zalloc (argc * sizeof (files[0]));
+  if (!files)
     goto fail;
 
+  for (i = 0; i < argc; i++)
+    {
+      grub_file_filter_disable_compression ();
+      files[i] = grub_file_open (argv[i]);
+      if (! files[i])
+	goto fail;
+      nfiles++;
+      size += grub_file_size (files[i]);
+    }
+
   addr = 0x60000000;
-  size = grub_file_size (file);
 
   paddr = alloc_phys (size);
   if (paddr == (grub_addr_t) -1)
@@ -421,10 +426,18 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_dprintf ("loader", "Loading initrd at vaddr 0x%lx, paddr 0x%lx, size 0x%lx\n",
 		addr, paddr, size);
 
-  if (grub_file_read (file, (void *) addr, size) != size)
+  ptr = (void *) addr;
+  for (i = 0; i < nfiles; i++)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
-      goto fail;
+      grub_ssize_t cursize = grub_file_size (files[i]);
+      if (grub_file_read (files[i], ptr, cursize) != cursize)
+	{
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			argv[i]);
+	  goto fail;
+	}
+      ptr += cursize;
     }
 
   initrd_addr = addr;
@@ -432,8 +445,9 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   initrd_size = size;
 
  fail:
-  if (file)
-    grub_file_close (file);
+  for (i = 0; i < nfiles; i++)
+    grub_file_close (files[i]);
+  grub_free (files);
 
   return grub_errno;
 }

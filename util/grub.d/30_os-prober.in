@@ -17,11 +17,11 @@ set -e
 # You should have received a copy of the GNU General Public License
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
 
-. ${libdir}/grub/grub-mkconfig_lib
+. "@datadir@/@PACKAGE@/grub-mkconfig_lib"
 
 if [ "x${GRUB_DISABLE_OS_PROBER}" = "xtrue" ]; then
   exit 0
@@ -111,7 +111,7 @@ EOF
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
 
       case ${LONGNAME} in
-	Windows\ Vista*|Windows\ 7*)
+	Windows\ Vista*|Windows\ 7*|Windows\ Server\ 2008*)
 	;;
 	*)
 	  cat << EOF
@@ -168,7 +168,7 @@ EOF
       done
     ;;
     macosx)
-      OSXUUID="`grub-probe --target=fs_uuid --device ${DEVICE} 2> /dev/null`"
+      OSXUUID="`${grub_probe} --target=fs_uuid --device ${DEVICE} 2> /dev/null`"
       osx_entry xnu_kernel 32
       osx_entry xnu_kernel64 64
     ;;

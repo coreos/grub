@@ -20,15 +20,17 @@
 
 #include <grub/err.h>
 #include <grub/machine/memory.h>
-#include <grub/machine/vga.h>
-#include <grub/machine/vbe.h>
+#include <grub/i386/pc/vbe.h>
 #include <grub/video_fb.h>
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/video.h>
-#include <grub/machine/int.h>
+#include <grub/i386/pc/int.h>
+#include <grub/i18n.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 static int vbe_detected = -1;
 
@@ -273,6 +275,56 @@ grub_vbe_bios_get_pm_interface (grub_uint16_t *segment, grub_uint16_t *offset,
   return regs.eax & 0xffff;
 }
 
+/* Call VESA BIOS 0x4f11 to get flat panel information, return status.  */
+static grub_vbe_status_t
+grub_vbe_bios_get_flat_panel_info (struct grub_vbe_flat_panel_info *flat_panel_info)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x4f11;
+  regs.ebx = 0x0001;
+  regs.es = (((grub_addr_t) flat_panel_info) & 0xffff0000) >> 4;
+  regs.edi = ((grub_addr_t) flat_panel_info) & 0xffff;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f15 to get DDC availability, return status.  */
+static grub_vbe_status_t
+grub_vbe_bios_get_ddc_capabilities (grub_uint8_t *level)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x4f15;
+  regs.ebx = 0x0000;
+  regs.ecx = 0x0000;
+  regs.es = 0x0000;
+  regs.edi = 0x0000;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+
+  *level = regs.ebx & 0xff;
+  return regs.eax & 0xffff;
+}
+
+/* Call VESA BIOS 0x4f15 to read EDID information, return status.  */
+static grub_vbe_status_t
+grub_vbe_bios_read_edid (struct grub_video_edid_info *edid_info)
+{
+  struct grub_bios_int_registers regs;
+
+  regs.eax = 0x4f15;
+  regs.ebx = 0x0001;
+  regs.ecx = 0x0000;
+  regs.edx = 0x0000;
+  regs.es = (((grub_addr_t) edid_info) & 0xffff0000) >> 4;
+  regs.edi = ((grub_addr_t) edid_info) & 0xffff;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+  return regs.eax & 0xffff;
+}
+
 
 grub_err_t
 grub_vbe_probe (struct grub_vbe_info_block *info_block)
@@ -327,6 +379,61 @@ grub_vbe_probe (struct grub_vbe_info_block *info_block)
   return GRUB_ERR_NONE;
 }
 
+static grub_err_t
+grub_video_vbe_get_edid (struct grub_video_edid_info *edid_info)
+{
+  struct grub_video_edid_info *edid_info_lowmem;
+
+  /* Use low memory scratch area as temporary storage for VESA BIOS calls.  */
+  edid_info_lowmem =
+    (struct grub_video_edid_info *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+  grub_memset (edid_info_lowmem, 0, sizeof (*edid_info_lowmem));
+
+  if (grub_vbe_bios_read_edid (edid_info_lowmem) != GRUB_VBE_STATUS_OK)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "EDID information not available");
+
+  grub_memcpy (edid_info, edid_info_lowmem, sizeof (*edid_info));
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
+{
+  grub_vbe_status_t status;
+  grub_uint8_t ddc_level;
+  struct grub_video_edid_info edid_info;
+  struct grub_vbe_flat_panel_info *flat_panel_info;
+
+  /* Use low memory scratch area as temporary storage for VESA BIOS calls.  */
+  flat_panel_info = (struct grub_vbe_flat_panel_info *)
+    (GRUB_MEMORY_MACHINE_SCRATCH_ADDR + sizeof (struct grub_video_edid_info));
+  grub_memset (flat_panel_info, 0, sizeof (*flat_panel_info));
+
+  if (controller_info.version >= 0x200
+      && (grub_vbe_bios_get_ddc_capabilities (&ddc_level) & 0xff)
+	 == GRUB_VBE_STATUS_OK)
+    {
+      if (grub_video_vbe_get_edid (&edid_info) == GRUB_ERR_NONE
+	  && grub_video_edid_checksum (&edid_info) == GRUB_ERR_NONE
+	  && grub_video_edid_preferred_mode (&edid_info, width, height)
+	      == GRUB_ERR_NONE)
+	return GRUB_ERR_NONE;
+
+      grub_errno = GRUB_ERR_NONE;
+    }
+
+  status = grub_vbe_bios_get_flat_panel_info (flat_panel_info);
+  if (status == GRUB_VBE_STATUS_OK)
+    {
+      *width = flat_panel_info->horizontal_size;
+      *height = flat_panel_info->vertical_size;
+      return GRUB_ERR_NONE;
+    }
+
+  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "cannot get preferred mode");
+}
+
 grub_err_t
 grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
 			 struct grub_vbe_mode_info_block *vbe_mode_info)
@@ -375,7 +482,7 @@ grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
   if (vbe_mode < 0x100)
     {
       /* If this is not a VESA mode, guess address.  */
-      framebuffer.ptr = (grub_uint8_t *) GRUB_MEMORY_MACHINE_VGA_ADDR;
+      framebuffer.ptr = (grub_uint8_t *) 0xa0000;
     }
   else
     {
@@ -688,17 +795,35 @@ grub_video_vbe_iterate (int (*hook) (const struct grub_video_mode_info *info))
 
 static grub_err_t
 grub_video_vbe_setup (unsigned int width, unsigned int height,
-                      unsigned int mode_type, unsigned int mode_mask)
+                      grub_video_mode_type_t mode_type, 
+		      grub_video_mode_type_t mode_mask)
 {
   grub_uint16_t *p;
   struct grub_vbe_mode_info_block vbe_mode_info;
   struct grub_vbe_mode_info_block best_vbe_mode_info;
   grub_uint32_t best_vbe_mode = 0;
   int depth;
+  int preferred_mode = 0;
 
   /* Decode depth from mode_type.  If it is zero, then autodetect.  */
   depth = (mode_type & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK)
           >> GRUB_VIDEO_MODE_TYPE_DEPTH_POS;
+
+  if (width == 0 && height == 0)
+    {
+      grub_vbe_get_preferred_mode (&width, &height);
+      if (grub_errno == GRUB_ERR_NONE)
+	preferred_mode = 1;
+      else
+	{
+	  /* Fall back to 640x480.  This is conservative, but the largest
+	     mode supported by the graphics card may not be safe for the
+	     display device.  */
+	  grub_errno = GRUB_ERR_NONE;
+	  width = 640;
+	  height = 480;
+	}
+    }
 
   /* Walk thru mode list and try to find matching mode.  */
   for (p = vbe_mode_list; *p != 0xFFFF; p++)
@@ -742,10 +867,21 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
 	/* Unsupported bitdepth . */
         continue;
 
-      if (((vbe_mode_info.x_resolution != width)
-	   || (vbe_mode_info.y_resolution != height)) && width != 0 && height != 0)
-        /* Non matching resolution.  */
-        continue;
+      if (preferred_mode)
+	{
+	  if (vbe_mode_info.x_resolution > width
+	      || vbe_mode_info.y_resolution > height)
+	    /* Resolution exceeds that of preferred mode.  */
+	    continue;
+	}
+      else
+	{
+	  if (((vbe_mode_info.x_resolution != width)
+	       || (vbe_mode_info.y_resolution != height))
+	      && width != 0 && height != 0)
+	    /* Non matching resolution.  */
+	    continue;
+	}
 
       /* Check if user requested RGB or index color mode.  */
       if ((mode_mask & GRUB_VIDEO_MODE_TYPE_COLOR_MASK) != 0)
@@ -858,15 +994,15 @@ grub_video_vbe_get_info_and_fini (struct grub_video_mode_info *mode_info,
 static void
 grub_video_vbe_print_adapter_specific_info (void)
 {
-  grub_printf ("  VBE info:   version: %d.%d  OEM software rev: %d.%d\n",
-	       controller_info.version >> 8,
-               controller_info.version & 0xFF,
-               controller_info.oem_software_rev >> 8,
-               controller_info.oem_software_rev & 0xFF);
-
+  grub_printf_ (N_("  VBE info:   version: %d.%d  OEM software rev: %d.%d\n"),
+		controller_info.version >> 8,
+		controller_info.version & 0xFF,
+		controller_info.oem_software_rev >> 8,
+		controller_info.oem_software_rev & 0xFF);
+  
   /* The total_memory field is in 64 KiB units.  */
-  grub_printf ("              total memory: %d KiB\n",
-               (controller_info.total_memory << 16) / 1024);
+  grub_printf_ (N_("              total memory: %d KiB\n"),
+		(controller_info.total_memory << 16) / 1024);
 }
 
 static struct grub_video_adapter grub_video_vbe_adapter =
@@ -899,6 +1035,7 @@ static struct grub_video_adapter grub_video_vbe_adapter =
     .set_active_render_target = grub_video_fb_set_active_render_target,
     .get_active_render_target = grub_video_fb_get_active_render_target,
     .iterate = grub_video_vbe_iterate,
+    .get_edid = grub_video_vbe_get_edid,
     .print_adapter_specific_info = grub_video_vbe_print_adapter_specific_info,
 
     .next = 0

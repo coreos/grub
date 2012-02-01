@@ -39,6 +39,8 @@
 #include <grub/types.h>
 #include <grub/fshelp.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 #define MIN(a, b) \
   ({ typeof (a) _a = (a); \
      typeof (b) _b = (b); \
@@ -55,8 +57,6 @@
 #define REISERFS_MAGIC_DESC_BLOCK "ReIsErLB"
 /* If the 3rd bit of an item state is set, then it's visible.  */
 #define GRUB_REISERFS_VISIBLE_MASK ((grub_uint16_t) 0x04)
-#define REISERFS_MAX_LABEL_LENGTH 16
-#define REISERFS_LABEL_OFFSET 0x64
 
 #define S_IFLNK 0xA000
 
@@ -107,6 +107,7 @@ struct grub_reiserfs_superblock
   grub_uint32_t inode_generation;
   grub_uint8_t unused[4];
   grub_uint16_t uuid[8];
+  char label[16];
 } __attribute__ ((packed));
 
 struct grub_reiserfs_journal_header
@@ -222,6 +223,7 @@ struct grub_fshelp_node
   grub_uint32_t block_number; /* 0 if node is not found.  */
   grub_uint16_t block_position;
   grub_uint64_t next_offset;
+  grub_int32_t mtime;
   enum grub_reiserfs_item_type type; /* To know how to read the header.  */
   struct grub_reiserfs_item_header header;
 };
@@ -868,6 +870,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                                         entry_v1_stat.rdev,
                                         entry_v1_stat.first_direct_byte);
 #endif
+			  entry_item->mtime = grub_le_to_cpu32 (entry_v1_stat.mtime);
                           if ((grub_le_to_cpu16 (entry_v1_stat.mode) & S_IFLNK)
                               == S_IFLNK)
                             entry_type = GRUB_FSHELP_SYMLINK;
@@ -914,6 +917,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                                         entry_v2_stat.blocks,
                                         entry_v2_stat.first_direct_byte);
 #endif
+			  entry_item->mtime = grub_le_to_cpu32 (entry_v2_stat.mtime);
                           if ((grub_le_to_cpu16 (entry_v2_stat.mode) & S_IFLNK)
                               == S_IFLNK)
                             entry_type = GRUB_FSHELP_SYMLINK;
@@ -1276,6 +1280,8 @@ grub_reiserfs_dir (grub_device_t device, const char *path,
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      info.mtimeset = 1;
+      info.mtime = node->mtime;
       grub_free (node);
       return hook (filename, &info);
     }
@@ -1316,14 +1322,24 @@ grub_reiserfs_dir (grub_device_t device, const char *path,
 static grub_err_t
 grub_reiserfs_label (grub_device_t device, char **label)
 {
-  *label = grub_malloc (REISERFS_MAX_LABEL_LENGTH);
-  if (*label)
+  struct grub_reiserfs_data *data;
+  grub_disk_t disk = device->disk;
+
+  grub_dl_ref (my_mod);
+
+  data = grub_reiserfs_mount (disk);
+  if (data)
     {
-      grub_disk_read (device->disk,
-                      REISERFS_SUPER_BLOCK_OFFSET / GRUB_DISK_SECTOR_SIZE,
-                      REISERFS_LABEL_OFFSET, REISERFS_MAX_LABEL_LENGTH,
-                      *label);
+      *label = grub_strndup (data->superblock.label,
+			     sizeof (data->superblock.label));
     }
+  else
+    *label = NULL;
+
+  grub_dl_unref (my_mod);
+
+  grub_free (data);
+
   return grub_errno;
 }
 
@@ -1335,21 +1351,25 @@ grub_reiserfs_uuid (grub_device_t device, char **uuid)
 
   grub_dl_ref (my_mod);
 
+  *uuid = NULL;
   data = grub_reiserfs_mount (disk);
   if (data)
     {
-      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-			     grub_be_to_cpu16 (data->superblock.uuid[0]),
-			     grub_be_to_cpu16 (data->superblock.uuid[1]),
-			     grub_be_to_cpu16 (data->superblock.uuid[2]),
-			     grub_be_to_cpu16 (data->superblock.uuid[3]),
-			     grub_be_to_cpu16 (data->superblock.uuid[4]),
-			     grub_be_to_cpu16 (data->superblock.uuid[5]),
-			     grub_be_to_cpu16 (data->superblock.uuid[6]),
-			     grub_be_to_cpu16 (data->superblock.uuid[7]));
+      unsigned i;
+      for (i = 0; i < ARRAY_SIZE (data->superblock.uuid); i++)
+	if (data->superblock.uuid[i])
+	  break;
+      if (i < ARRAY_SIZE (data->superblock.uuid))
+	*uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+				grub_be_to_cpu16 (data->superblock.uuid[0]),
+				grub_be_to_cpu16 (data->superblock.uuid[1]),
+				grub_be_to_cpu16 (data->superblock.uuid[2]),
+				grub_be_to_cpu16 (data->superblock.uuid[3]),
+				grub_be_to_cpu16 (data->superblock.uuid[4]),
+				grub_be_to_cpu16 (data->superblock.uuid[5]),
+				grub_be_to_cpu16 (data->superblock.uuid[6]),
+				grub_be_to_cpu16 (data->superblock.uuid[7]));
     }
-  else
-    *uuid = NULL;
 
   grub_dl_unref (my_mod);
 

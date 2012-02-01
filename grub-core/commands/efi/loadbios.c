@@ -25,6 +25,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_efi_guid_t acpi_guid = GRUB_EFI_ACPI_TABLE_GUID;
 static grub_efi_guid_t acpi2_guid = GRUB_EFI_ACPI_20_TABLE_GUID;
 static grub_efi_guid_t smbios_guid = GRUB_EFI_SMBIOS_TABLE_GUID;
@@ -47,7 +49,7 @@ enable_rom_area (void)
   rom_ptr = (grub_uint32_t *) VBIOS_ADDR;
   if (*rom_ptr != BLANK_MEM)
     {
-      grub_printf ("ROM image is present.\n");
+      grub_puts_ (N_("ROM image is present."));
       return 0;
     }
 
@@ -65,7 +67,7 @@ enable_rom_area (void)
   *rom_ptr = 0;
   if (*rom_ptr != 0)
     {
-      grub_printf ("Can\'t enable ROM area.\n");
+      grub_puts_ (N_("Can\'t enable ROM area."));
       return 0;
     }
 
@@ -207,7 +209,7 @@ GRUB_MOD_INIT(loadbios)
 					0, N_("Fake BIOS."));
 
   cmd_loadbios = grub_register_command ("loadbios", grub_cmd_loadbios,
-					"BIOS_DUMP [INT10_DUMP]",
+					N_("BIOS_DUMP [INT10_DUMP]"),
 					N_("Load BIOS dump."));
 }
 

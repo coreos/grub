@@ -31,6 +31,8 @@
 
 #include "progname.h"
 
+/* Please don't internationalise this file. It's pointless.  */
+
 static struct option options[] = {
   {"help", no_argument, 0, 'h'},
   {"version", no_argument, 0, 'V'},
@@ -79,24 +81,27 @@ Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
 #define BSS_SECTION	4
 #define MODNAME_SECTION	5
 #define MODDEPS_SECTION	6
-#define SYMTAB_SECTION	7
-#define STRTAB_SECTION	8
+#define MODLICENSE_SECTION	7
+#define SYMTAB_SECTION	8
+#define STRTAB_SECTION	9
 
-#define REL_SECTION	9
-#define MAX_SECTIONS	12
+#define REL_SECTION	10
+
+/* 10 normal section + up to 4 relocation (.text, .rdata, .data, .symtab).  */
+#define MAX_SECTIONS    16
 
 #define STRTAB_BLOCK	256
 
 static char *strtab;
 static int strtab_max, strtab_len;
 
-Elf32_Ehdr ehdr;
-Elf32_Shdr shdr[MAX_SECTIONS];
-int num_sections;
-grub_uint32_t offset;
+static Elf32_Ehdr ehdr;
+static Elf32_Shdr shdr[MAX_SECTIONS];
+static int num_sections;
+static grub_uint32_t offset;
 
 static int
-insert_string (char *name)
+insert_string (const char *name)
 {
   int len, result;
 
@@ -124,6 +129,8 @@ write_section_data (FILE* fp, char *image,
 {
   int *section_map;
   int i;
+  char *pe_strtab = (image + pe_chdr->symtab_offset
+		     + pe_chdr->num_symbols * sizeof (struct grub_pe32_symbol));
 
   section_map = xmalloc ((pe_chdr->num_sections + 1) * sizeof (int));
   section_map[0] = 0;
@@ -131,31 +138,42 @@ write_section_data (FILE* fp, char *image,
   for (i = 0; i < pe_chdr->num_sections; i++, pe_shdr++)
     {
       grub_uint32_t idx;
+      const char *name = pe_shdr->name;
 
-      if (! strcmp (pe_shdr->name, ".text"))
+      if (name[0] == '/' && isdigit (name[1]))
+      {
+        char t[sizeof (pe_shdr->name) + 1];
+        memcpy (t, name, sizeof (pe_shdr->name));
+        t[sizeof (pe_shdr->name)] = 0;
+        name = pe_strtab + atoi (t + 1);
+      }
+
+      if (! strcmp (name, ".text"))
         {
           idx = TEXT_SECTION;
           shdr[idx].sh_flags = SHF_ALLOC | SHF_EXECINSTR;
         }
-      else if (! strcmp (pe_shdr->name, ".rdata"))
+      else if (! strcmp (name, ".rdata"))
         {
           idx = RDATA_SECTION;
           shdr[idx].sh_flags = SHF_ALLOC;
         }
-      else if (! strcmp (pe_shdr->name, ".data"))
+      else if (! strcmp (name, ".data"))
         {
           idx = DATA_SECTION;
           shdr[idx].sh_flags = SHF_ALLOC | SHF_WRITE;
         }
-      else if (! strcmp (pe_shdr->name, ".bss"))
+      else if (! strcmp (name, ".bss"))
         {
           idx = BSS_SECTION;
           shdr[idx].sh_flags = SHF_ALLOC | SHF_WRITE;
         }
-      else if (! strcmp (pe_shdr->name, ".modname"))
+      else if (! strcmp (name, ".modname"))
         idx = MODNAME_SECTION;
-      else if (! strcmp (pe_shdr->name, ".moddeps"))
+      else if (! strcmp (name, ".moddeps"))
         idx = MODDEPS_SECTION;
+      else if (strcmp (name, ".module_license") == 0)
+        idx = MODLICENSE_SECTION;
       else
         {
           section_map[i + 1] = -1;
@@ -181,14 +199,14 @@ write_section_data (FILE* fp, char *image,
 
       if (pe_shdr->relocations_offset)
         {
-          char name[5 + strlen (pe_shdr->name)];
+          char relname[5 + strlen (name)];
 
           if (num_sections >= MAX_SECTIONS)
             grub_util_error ("too many sections");
 
-          sprintf (name, ".rel%s", pe_shdr->name);
+          sprintf (relname, ".rel%s", name);
 
-          shdr[num_sections].sh_name = insert_string (name);
+          shdr[num_sections].sh_name = insert_string (relname);
           shdr[num_sections].sh_link = i;
           shdr[num_sections].sh_info = idx;
 
@@ -197,7 +215,7 @@ write_section_data (FILE* fp, char *image,
           num_sections++;
         }
       else
-        shdr[idx].sh_name = insert_string (pe_shdr->name);
+        shdr[idx].sh_name = insert_string (name);
     }
 
   return section_map;
@@ -337,7 +355,7 @@ write_symbol_table (FILE* fp, char *image,
       else
         bind = STB_LOCAL;
 
-      if ((type != STT_FUNC) && (pe_symtab->num_aux))
+      if ((pe_symtab->type != GRUB_PE32_DT_FUNCTION) && (pe_symtab->num_aux))
         {
           if (! pe_symtab->value)
             type = STT_SECTION;

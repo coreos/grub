@@ -63,6 +63,7 @@ struct grub_serial_config
 struct grub_serial_port
 {
   struct grub_serial_port *next;
+  struct grub_serial_port **prev;
   char *name;
   struct grub_serial_driver *driver;
   struct grub_serial_config config;
@@ -72,7 +73,11 @@ struct grub_serial_port
    */
   union
   {
-    grub_port_t port;
+    struct
+    {
+      grub_port_t port;
+      int broken;
+    };
     struct
     {
       grub_usb_device_t usbdev;
@@ -92,13 +97,39 @@ grub_err_t EXPORT_FUNC(grub_serial_register) (struct grub_serial_port *port);
 
 void EXPORT_FUNC(grub_serial_unregister) (struct grub_serial_port *port);
 
+  /* Convenience functions to perform primitive operations on a port.  */
+static inline grub_err_t
+grub_serial_port_configure (struct grub_serial_port *port,
+			    struct grub_serial_config *config)
+{
+  return port->driver->configure (port, config);
+}
+
+static inline int
+grub_serial_port_fetch (struct grub_serial_port *port)
+{
+  return port->driver->fetch (port);
+}
+
+static inline void
+grub_serial_port_put (struct grub_serial_port *port, const int c)
+{
+  port->driver->put (port, c);
+}
+
+static inline void
+grub_serial_port_fini (struct grub_serial_port *port)
+{
+  port->driver->fini (port);
+}
+
   /* Set default settings.  */
 static inline grub_err_t
 grub_serial_config_defaults (struct grub_serial_port *port)
 {
   struct grub_serial_config config =
     {
-#ifdef GRUB_MACHINE_MIPS_YEELOONG
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
       .speed = 115200,
 #else
       .speed = 9600,
@@ -113,6 +144,7 @@ grub_serial_config_defaults (struct grub_serial_port *port)
 
 void grub_ns8250_init (void);
 char *grub_serial_ns8250_add_port (grub_port_t port);
+struct grub_serial_port *grub_serial_find (const char *name);
 extern struct grub_serial_driver grub_ns8250_driver;
 void EXPORT_FUNC(grub_serial_unregister_driver) (struct grub_serial_driver *driver);
 

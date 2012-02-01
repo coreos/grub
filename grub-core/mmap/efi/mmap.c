@@ -194,7 +194,6 @@ grub_mmap_unregister (int handle)
 {
   struct overlay *curover, *prevover;
   grub_efi_boot_services_t *b;
-  grub_efi_status_t status;
 
   b = grub_efi_system_table->boot_services;
 
@@ -204,7 +203,7 @@ grub_mmap_unregister (int handle)
     {
       if (curover->handle == handle)
 	{
-	  status = efi_call_2 (b->free_pages, curover->address, curover->pages);
+	  efi_call_2 (b->free_pages, curover->address, curover->pages);
 	  if (prevover != 0)
 	    prevover->next = curover->next;
 	  else
@@ -273,7 +272,7 @@ grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)),
   overlays = curover;
   *handle = curover->handle;
 
-  return UINT_TO_PTR (curover->address);
+  return (void *) (grub_addr_t) curover->address;
 }
 
 void

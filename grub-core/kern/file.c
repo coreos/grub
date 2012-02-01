@@ -20,9 +20,12 @@
 #include <grub/misc.h>
 #include <grub/err.h>
 #include <grub/file.h>
+#include <grub/net.h>
 #include <grub/mm.h>
 #include <grub/fs.h>
 #include <grub/device.h>
+
+void (*EXPORT_VAR (grub_grubnet_fini)) (void);
 
 grub_file_filter_t grub_file_filters_all[GRUB_FILE_FILTER_MAX];
 grub_file_filter_t grub_file_filters_enabled[GRUB_FILE_FILTER_MAX];
@@ -68,7 +71,7 @@ grub_file_open (const char *name)
     goto fail;
 
   /* Get the file part of NAME.  */
-  file_name = grub_strchr (name, ')');
+  file_name = (name[0] == '(') ? grub_strchr (name, ')') : NULL;
   if (file_name)
     file_name++;
   else
@@ -148,7 +151,6 @@ grub_file_read (grub_file_t file, void *buf, grub_size_t len)
 
   if (len == 0)
     return 0;
-
   res = (file->fs->read) (file, buf, len);
   if (res > 0)
     file->offset += res;
@@ -179,8 +181,9 @@ grub_file_seek (grub_file_t file, grub_off_t offset)
 		  "attempt to seek outside of the file");
       return -1;
     }
-
+  
   old = file->offset;
   file->offset = offset;
+    
   return old;
 }

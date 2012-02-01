@@ -46,10 +46,10 @@ grub_uint32_t grub_xnu_entry_point, grub_xnu_arg1, grub_xnu_stack;
 struct tbl_alias
 {
   grub_efi_guid_t guid;
-  char *name;
+  const char *name;
 };
 
-struct tbl_alias table_aliases[] =
+static struct tbl_alias table_aliases[] =
   {
     {GRUB_EFI_ACPI_20_TABLE_GUID, "ACPI_20"},
     {GRUB_EFI_ACPI_TABLE_GUID, "ACPI"},
@@ -58,6 +58,7 @@ struct tbl_alias table_aliases[] =
 struct grub_xnu_devprop_device_descriptor
 {
   struct grub_xnu_devprop_device_descriptor *next;
+  struct grub_xnu_devprop_device_descriptor **prev;
   struct property_descriptor *properties;
   struct grub_efi_device_path *path;
   int pathlen;
@@ -212,6 +213,7 @@ guessfsb (void)
 struct property_descriptor
 {
   struct property_descriptor *next;
+  struct property_descriptor **prev;
   grub_uint8_t *name;
   grub_uint16_t *name16;
   int name16len;
@@ -219,14 +221,14 @@ struct property_descriptor
   void *data;
 };
 
-struct grub_xnu_devprop_device_descriptor *devices = 0;
+static struct grub_xnu_devprop_device_descriptor *devices = 0;
 
 grub_err_t
 grub_xnu_devprop_remove_property (struct grub_xnu_devprop_device_descriptor *dev,
 				  char *name)
 {
   struct property_descriptor *prop;
-  prop = grub_named_list_find (GRUB_AS_NAMED_LIST_P (&dev->properties), name);
+  prop = grub_named_list_find (GRUB_AS_NAMED_LIST (dev->properties), name);
   if (!prop)
     return GRUB_ERR_NONE;
 
@@ -234,7 +236,7 @@ grub_xnu_devprop_remove_property (struct grub_xnu_devprop_device_descriptor *dev
   grub_free (prop->name16);
   grub_free (prop->data);
 
-  grub_list_remove (GRUB_AS_LIST_P (&dev->properties), GRUB_AS_LIST (prop));
+  grub_list_remove (GRUB_AS_LIST (prop));
 
   return GRUB_ERR_NONE;
 }
@@ -245,7 +247,7 @@ grub_xnu_devprop_remove_device (struct grub_xnu_devprop_device_descriptor *dev)
   void *t;
   struct property_descriptor *prop;
 
-  grub_list_remove (GRUB_AS_LIST_P (&devices), GRUB_AS_LIST (dev));
+  grub_list_remove (GRUB_AS_LIST (dev));
 
   for (prop = dev->properties; prop; )
     {
@@ -452,11 +454,11 @@ grub_cpu_xnu_fill_devprop (void)
     }
 
   devprop = grub_xnu_create_value (&(efikey->first_child), "device-properties");
-  if (devprop)
-    {
-      devprop->data = grub_malloc (total_length);
-      devprop->datasize = total_length;
-    }
+  if (!devprop)
+    return grub_errno;
+
+  devprop->data = grub_malloc (total_length);
+  devprop->datasize = total_length;
 
   ptr = devprop->data;
   head = ptr;
@@ -700,7 +702,7 @@ grub_cpu_xnu_fill_devicetree (void)
     return grub_errno;
 
   /* First see if user supplies the value. */
-  char *fsbvar = grub_env_get ("fsb");
+  const char *fsbvar = grub_env_get ("fsb");
   if (! fsbvar)
     *((grub_uint64_t *) curval->data) = 0;
   else
@@ -734,18 +736,18 @@ grub_cpu_xnu_fill_devicetree (void)
 #else
       if (SIZEOF_OF_UINTN == 4)
 	{
-	  ptr = UINT_TO_PTR (((grub_efiemu_configuration_table32_t *)
-			      SYSTEM_TABLE_PTR (configuration_table))[i]
-			     .vendor_table);
+	  ptr = (void *) (grub_addr_t) ((grub_efiemu_configuration_table32_t *)
+					SYSTEM_TABLE_PTR (configuration_table))[i]
+	    .vendor_table;
 	  guid =
 	    ((grub_efiemu_configuration_table32_t *)
 	     SYSTEM_TABLE_PTR (configuration_table))[i].vendor_guid;
 	}
       else
 	{
-	  ptr = UINT_TO_PTR (((grub_efiemu_configuration_table64_t *)
-			      SYSTEM_TABLE_PTR (configuration_table))[i]
-			     .vendor_table);
+	  ptr = (void *) (grub_addr_t) ((grub_efiemu_configuration_table64_t *)
+					SYSTEM_TABLE_PTR (configuration_table))[i]
+	    .vendor_table;
 	  guid =
 	    ((grub_efiemu_configuration_table64_t *)
 	     SYSTEM_TABLE_PTR (configuration_table))[i].vendor_guid;
@@ -786,9 +788,9 @@ grub_cpu_xnu_fill_devicetree (void)
       if (! curval->data)
 	return grub_errno;
       if (SIZEOF_OF_UINTN == 4)
-	*((grub_uint32_t *)curval->data) = PTR_TO_UINT32 (ptr);
+	*((grub_uint32_t *) curval->data) = (grub_addr_t) ptr;
       else
-	*((grub_uint64_t *)curval->data) = PTR_TO_UINT64 (ptr);
+	*((grub_uint64_t *) curval->data) = (grub_addr_t) ptr;
 
       /* Create alias. */
       for (j = 0; j < sizeof (table_aliases) / sizeof (table_aliases[0]); j++)
@@ -821,10 +823,10 @@ grub_cpu_xnu_fill_devicetree (void)
     return grub_errno;
   if (SIZEOF_OF_UINTN == 4)
     *((grub_uint32_t *) curval->data)
-      = PTR_TO_UINT32 (SYSTEM_TABLE_PTR (runtime_services));
+      = (grub_addr_t) SYSTEM_TABLE_PTR (runtime_services);
   else
     *((grub_uint64_t *) curval->data)
-      = PTR_TO_UINT64 (SYSTEM_TABLE_PTR (runtime_services));
+      = (grub_addr_t) SYSTEM_TABLE_PTR (runtime_services);
 
   return GRUB_ERR_NONE;
 }
@@ -939,7 +941,7 @@ grub_xnu_set_video (struct grub_xnu_boot_params *params)
   params->lfb_depth = mode_info.bpp;
   params->lfb_line_len = mode_info.pitch;
 
-  params->lfb_base = PTR_TO_UINT32 (framebuffer);
+  params->lfb_base = (grub_addr_t) framebuffer;
   params->lfb_mode = bitmap ? GRUB_XNU_VIDEO_SPLASH 
     : GRUB_XNU_VIDEO_TEXT_IN_VIDEO;
 
@@ -951,10 +953,11 @@ grub_err_t
 grub_xnu_boot (void)
 {
   struct grub_xnu_boot_params *bootparams;
+  void *bp_in;
   grub_addr_t bootparams_target;
   grub_err_t err;
   grub_efi_uintn_t memory_map_size = 0;
-  grub_efi_memory_descriptor_t *memory_map;
+  void *memory_map;
   grub_addr_t memory_map_target;
   grub_efi_uintn_t map_key = 0;
   grub_efi_uintn_t descriptor_size = 0;
@@ -1006,9 +1009,10 @@ grub_xnu_boot (void)
 
   /* Relocate the boot parameters to heap. */
   err = grub_xnu_heap_malloc (sizeof (*bootparams),
-			      (void **) &bootparams, &bootparams_target);
+			      &bp_in, &bootparams_target);
   if (err)
     return err;
+  bootparams = bp_in;
 
   /* Set video. */
   err = grub_xnu_set_video (bootparams);
@@ -1016,7 +1020,7 @@ grub_xnu_boot (void)
     {
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
-      grub_printf ("Booting in blind mode\n");
+      grub_puts_ (N_("Booting in blind mode"));
 
       bootparams->lfb_mode = 0;
       bootparams->lfb_width = 0;
@@ -1035,7 +1039,7 @@ grub_xnu_boot (void)
      memory map growth.  */
   memory_map_size += 20 * descriptor_size;
   err = grub_xnu_heap_malloc (memory_map_size,
-			      (void **) &memory_map, &memory_map_target);
+			      &memory_map, &memory_map_target);
   if (err)
     return err;
 
@@ -1055,7 +1059,7 @@ grub_xnu_boot (void)
   if (err)
     return err;
 
-  bootparams->efi_system_table = PTR_TO_UINT32 (grub_autoefi_system_table);
+  bootparams->efi_system_table = (grub_addr_t) grub_autoefi_system_table;
 
   firstruntimepage = (((grub_addr_t) grub_xnu_heap_target_start
 		       + grub_xnu_heap_size + GRUB_XNU_PAGESIZE - 1)
@@ -1075,11 +1079,11 @@ grub_xnu_boot (void)
 	  curdesc->virtual_start = curruntimepage << 12;
 	  curruntimepage += curdesc->num_pages;
 	  if (curdesc->physical_start
-	      <= PTR_TO_UINT64 (grub_autoefi_system_table)
+	      <= (grub_addr_t) grub_autoefi_system_table
 	      && curdesc->physical_start + (curdesc->num_pages << 12)
-	      > PTR_TO_UINT64 (grub_autoefi_system_table))
+	      > (grub_addr_t) grub_autoefi_system_table)
 	    bootparams->efi_system_table
-	      = PTR_TO_UINT64 (grub_autoefi_system_table)
+	      = (grub_addr_t) grub_autoefi_system_table
 	      - curdesc->physical_start + curdesc->virtual_start;
 	  if (SIZEOF_OF_UINTN == 8 && grub_xnu_is_64bit)
 	    curdesc->virtual_start |= 0xffffff8000000000ULL;
@@ -1109,7 +1113,7 @@ grub_xnu_boot (void)
   grub_xnu_arg1 = bootparams_target;
 
   grub_autoefi_set_virtual_address_map (memory_map_size, descriptor_size,
-					descriptor_version,memory_map);
+					descriptor_version, memory_map);
 
   state.eip = grub_xnu_entry_point;
   state.eax = grub_xnu_arg1;

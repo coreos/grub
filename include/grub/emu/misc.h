@@ -24,7 +24,6 @@
 
 #include <grub/symbol.h>
 #include <grub/types.h>
-#include <grub/util/libzfs.h>
 
 #ifdef __CYGWIN__
 # include <sys/fcntl.h>
@@ -55,11 +54,13 @@ void grub_find_zpool_from_dir (const char *dir,
 
 char *grub_make_system_path_relative_to_its_root (const char *path)
   __attribute__ ((warn_unused_result));
+int
+grub_util_device_is_mapped (const char *dev);
 
 void * EXPORT_FUNC(xmalloc) (grub_size_t size) __attribute__ ((warn_unused_result));
 void * EXPORT_FUNC(xrealloc) (void *ptr, grub_size_t size) __attribute__ ((warn_unused_result));
 char * EXPORT_FUNC(xstrdup) (const char *str) __attribute__ ((warn_unused_result));
-char * EXPORT_FUNC(xasprintf) (const char *fmt, ...) __attribute__ ((warn_unused_result));
+char * EXPORT_FUNC(xasprintf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2))) __attribute__ ((warn_unused_result));
 
 void EXPORT_FUNC(grub_util_warn) (const char *fmt, ...);
 void EXPORT_FUNC(grub_util_info) (const char *fmt, ...);
@@ -79,6 +80,6 @@ extern char * canonicalize_file_name (const char *path);
 int grub_device_mapper_supported (void);
 #endif
 
-libzfs_handle_t *grub_get_libzfs_handle (void);
+char *grub_find_root_device_from_mountinfo (const char *dir, char **relroot);
 
 #endif /* GRUB_EMU_MISC_H */

@@ -24,6 +24,8 @@
 #include <grub/usb.h>
 #include <grub/usbserial.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 enum
   {
     GRUB_FTDI_MODEM_CTRL = 0x01,

@@ -245,8 +245,9 @@ void grub_script_mem_free (struct grub_script_mem *mem);
 void grub_script_argv_free    (struct grub_script_argv *argv);
 int grub_script_argv_make     (struct grub_script_argv *argv, int argc, char **args);
 int grub_script_argv_next     (struct grub_script_argv *argv);
-int grub_script_argv_append   (struct grub_script_argv *argv, const char *s);
-int grub_script_argv_split_append (struct grub_script_argv *argv, char *s);
+int grub_script_argv_append   (struct grub_script_argv *argv, const char *s,
+			       grub_size_t slen);
+int grub_script_argv_split_append (struct grub_script_argv *argv, const char *s);
 
 struct grub_script_arglist *
 grub_script_create_arglist (struct grub_parser_param *state);

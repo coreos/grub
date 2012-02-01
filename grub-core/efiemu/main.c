@@ -32,6 +32,8 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* System table. Two version depending on mode */
 grub_efi_system_table32_t *grub_efiemu_system_table32 = 0;
 grub_efi_system_table64_t *grub_efiemu_system_table64 = 0;
@@ -147,7 +149,8 @@ grub_efiemu_register_configuration_table (grub_efi_guid_t guid,
  if (! get_table && ! data)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "you must set at least get_table or data");
-  if ((err = grub_efiemu_unregister_configuration_table (guid)))
+ err = grub_efiemu_unregister_configuration_table (guid);
+  if (err)
     return err;
 
   tbl = (struct grub_efiemu_configuration_table *) grub_malloc (sizeof (*tbl));
@@ -191,7 +194,7 @@ grub_efiemu_load_file (const char *filename)
 
   file = grub_file_open (filename);
   if (! file)
-    return 0;
+    return grub_errno;
 
   err = grub_efiemu_mm_init ();
   if (err)
@@ -224,7 +227,7 @@ grub_efiemu_autocore (void)
 {
   const char *prefix;
   char *filename;
-  char *suffix;
+  const char *suffix;
   grub_err_t err;
 
   if (grub_efiemu_sizeof_uintn_t () != 0)
@@ -266,10 +269,12 @@ grub_efiemu_prepare (void)
   if (prepared)
     return GRUB_ERR_NONE;
 
+  err = grub_efiemu_autocore ();
+  if (err)
+    return err;
+
   grub_dprintf ("efiemu", "Preparing %d-bit efiemu\n",
 		8 * grub_efiemu_sizeof_uintn_t ());
-
-  err = grub_efiemu_autocore ();
 
   /* Create NVRAM. */
   grub_efiemu_pnvram ();

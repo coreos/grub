@@ -555,7 +555,7 @@ regerror (int errcode, const regex_t *_Restrict_ preg,
        to this routine.  If we are given anything else, or if other regex
        code generates an invalid error code, then the program has a bug.
        Dump core so we can fix it.  */
-    abort ();
+    msg = "unknown regexp error";
 
   msg = gettext (__re_error_msgid + __re_error_msgid_idx[errcode]);
 
@@ -851,7 +851,7 @@ init_dfa (re_dfa_t *dfa, size_t pat_len)
 {
   __re_size_t table_size;
 #ifndef _LIBC
-  char *codeset_name;
+  const char *codeset_name;
 #endif
 #ifdef RE_ENABLE_I18N
   size_t max_i18n_object_size = MAX (sizeof (wchar_t), sizeof (wctype_t));
@@ -1119,7 +1119,7 @@ optimize_utf8 (re_dfa_t *dfa)
 	}
 	break;
       default:
-	abort ();
+	break;
       }
 
   if (mb_chars || has_period)

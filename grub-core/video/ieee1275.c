@@ -27,6 +27,8 @@
 #include <grub/video_fb.h>
 #include <grub/ieee1275/ieee1275.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 /* Only 8-bit indexed color is supported for now.  */
 
 static unsigned old_width, old_height;

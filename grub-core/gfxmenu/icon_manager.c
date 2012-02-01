@@ -257,7 +257,7 @@ grub_gfxmenu_icon_manager_get_icon (grub_gfxmenu_icon_manager_t mgr,
 
   /* Try each class in succession.  */
   icon = 0;
-  for (c = entry->classes->next; c && ! icon; c = c->next)
+  for (c = entry->classes; c && ! icon; c = c->next)
     icon = get_icon_by_class (mgr, c->name);
   return icon;
 }

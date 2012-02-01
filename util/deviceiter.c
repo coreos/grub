@@ -1,7 +1,7 @@
 /* deviceiter.c - iterate over system devices */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2011 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -286,6 +286,26 @@ get_scsi_disk_name (char *name, int unit)
 #endif
 }
 
+#ifdef __FreeBSD_kernel__
+static void
+get_ada_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/ada%d", unit);
+}
+
+static void
+get_ataraid_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/ar%d", unit);
+}
+
+static void
+get_mfi_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/mfid%d", unit);
+}
+#endif
+
 #ifdef __linux__
 static void
 get_virtio_disk_name (char *name, int unit)
@@ -349,6 +369,7 @@ get_xvd_disk_name (char *name, int unit)
 static struct seen_device
 {
   struct seen_device *next;
+  struct seen_device **prev;
   const char *name;
 } *seen;
 
@@ -485,12 +506,15 @@ compare_devices (const void *a, const void *b)
 {
   const struct device *left = (const struct device *) a;
   const struct device *right = (const struct device *) b;
-  int ret;
-  ret = strcmp (left->kernel, right->kernel);
-  if (ret)
-    return ret;
-  else
-    return strcmp (left->stable, right->stable);
+
+  if (left->kernel && right->kernel)
+    {
+      int ret = strcmp (left->kernel, right->kernel);
+      if (ret)
+	return ret;
+    }
+
+  return strcmp (left->stable, right->stable);
 }
 #endif /* __linux__ */
 
@@ -533,6 +557,10 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	   necessary.  */
 	for (entry = readdir (dir); entry; entry = readdir (dir))
 	  {
+	    /* Skip current and parent directory entries.  */
+	    if (strcmp (entry->d_name, ".") == 0 ||
+		strcmp (entry->d_name, "..") == 0)
+	      continue;
 	    /* Skip partition entries.  */
 	    if (strstr (entry->d_name, "-part"))
 	      continue;
@@ -601,7 +629,7 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 #endif /* __linux__ */
 
   /* IDE disks.  */
-  for (i = 0; i < 26; i++)
+  for (i = 0; i < 96; i++)
     {
       char name[16];
 
@@ -612,6 +640,48 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 	    goto out;
 	}
     }
+
+#ifdef __FreeBSD_kernel__
+  /* IDE disks using ATA Direct Access driver.  */
+  if (get_kfreebsd_version () >= 800000)
+    for (i = 0; i < 96; i++)
+      {
+	char name[16];
+
+	get_ada_disk_name (name, i);
+	if (check_device_readable_unique (name))
+	  {
+	    if (hook (name, 0))
+	      goto out;
+	  }
+      }
+
+  /* ATARAID disks.  */
+  for (i = 0; i < 8; i++)
+    {
+      char name[20];
+
+      get_ataraid_disk_name (name, i);
+      if (check_device_readable_unique (name))
+	{
+	  if (hook (name, 0))
+	    goto out;
+        }
+    }
+
+  /* LSI MegaRAID SAS.  */
+  for (i = 0; i < 32; i++)
+    {
+      char name[20];
+
+      get_mfi_disk_name (name, i);
+      if (check_device_readable_unique (name))
+	{
+	  if (hook (name, 0))
+	    goto out;
+        }
+    }
+#endif
 
 #ifdef __linux__
   /* Virtio disks.  */
@@ -655,7 +725,7 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 #endif /* __linux__ */
 
   /* The rest is SCSI disks.  */
-  for (i = 0; i < 26; i++)
+  for (i = 0; i < 48; i++)
     {
       char name[16];
 

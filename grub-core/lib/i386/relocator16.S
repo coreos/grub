@@ -93,6 +93,85 @@ LOCAL(segment):
 	.word	0
 
 LOCAL(cont3):
+
+	/* movw imm16, %ax.  */
+	.byte	0xb8
+VARIABLE(grub_relocator16_keep_a20_enabled)
+	.word	0
+	test	%ax, %ax
+	jnz	LOCAL(gate_a20_done)
+
+	/* first of all, test if already in a good state */
+	call	LOCAL(gate_a20_check_state)
+	testb	%al, %al
+	jz	LOCAL(gate_a20_done)
+
+	/* second, try a BIOS call */
+	movw	$0x2400, %ax
+	int	$0x15
+
+	call	LOCAL(gate_a20_check_state)
+	testb	%al, %al
+	jz	LOCAL(gate_a20_done)
+
+	/*
+	 * In macbook, the keyboard test would hang the machine, so we move
+	 * this forward.
+	 */
+	/* fourth, try the system control port A */
+	inb	$0x92
+	andb	$(~0x03), %al
+	outb	$0x92
+
+	/* When turning off Gate A20, do not check the state strictly,
+	   because a failure is not fatal usually, and Gate A20 is always
+	   on some modern machines.  */
+	jmp	LOCAL(gate_a20_done)
+
+LOCAL(gate_a20_check_state):
+	/* iterate the checking for a while */
+	movw	$100, %cx
+1:
+	call	3f
+	testb	%al, %al
+	jz	2f
+	loop	1b
+2:
+	ret
+
+3:
+	xorw    %ax, %ax
+	movw    %ax, %ds
+	decw    %ax
+	movw    %ax, %es
+	xorw    %ax, %ax
+
+	movw	$0x8000, %ax
+	/* compare the byte at ADDR with that at 0x100000 + ADDR */
+	movw    %ax, %si
+	addw    $0x10, %ax
+	movw    %ax, %di
+
+	/* save the original byte in DL */
+	movb	%ds:(%si), %dl
+	movb	%es:(%di), %al
+	/* try to set one less value at ADDR */
+	movb	%al, %dh
+	decb	%dh
+	movb	%dh, %ds:(%si)
+	/* serialize */
+	outb	%al, $0x80
+	outb	%al, $0x80
+	/* obtain the value at 0x100000 + ADDR in CH */
+	movb	%es:(%di), %dh
+	/* this result is 1 if A20 is on or 0 if it is off */
+	subb	%dh, %al
+	xorb	$1, %al
+	/* restore the original */
+	movb	%dl, %es:(%di)
+	ret
+
+LOCAL(gate_a20_done):
 	/* we are in real mode now
 	 * set up the real mode segment registers : DS, SS, ES
 	 */
@@ -130,13 +209,24 @@ VARIABLE(grub_relocator16_ss)
 	.byte	0xb8
 VARIABLE(grub_relocator16_sp)
 	.word	0
-	movw	%ax, %ss
+	movzwl	%ax, %esp
+
+	/* movw imm32, %eax.  */
+	.byte	0x66, 0xb8
+VARIABLE(grub_relocator16_esi)
+	.long	0
+	movl	%eax, %esi
 
 	/* movw imm32, %edx.  */
 	.byte	0x66, 0xba
 VARIABLE(grub_relocator16_edx)
 	.long	0
-	
+
+	/* movw imm32, %ebx.  */
+	.byte	0x66, 0xbb
+VARIABLE(grub_relocator16_ebx)
+	.long	0
+
 	/* Cleared direction flag is of no problem with any current
 	   payload and makes this implementation easier.  */
 	cld

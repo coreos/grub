@@ -36,6 +36,8 @@
 #define GRUB_UINT8_5_TRAILINGBITS 0x1f
 #define GRUB_UINT8_6_TRAILINGBITS 0x3f
 
+#define GRUB_MAX_UTF8_PER_UTF16 4
+
 #define GRUB_UCS2_LIMIT 0x10000
 #define GRUB_UTF16_UPPER_SURROGATE(code) \
   (0xD800 + ((((code) - GRUB_UCS2_LIMIT) >> 12) & 0xfff))
@@ -47,9 +49,35 @@ grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 		    const grub_uint8_t *src, grub_size_t srcsize,
 		    const grub_uint8_t **srcend);
 
+/* Determine the last position where the UTF-8 string [beg, end) can
+   be safely cut. */
+static inline grub_size_t
+grub_getend (const char *beg, const char *end)
+{
+  const char *ptr;
+  for (ptr = end - 1; ptr >= beg; ptr--)
+    if ((*ptr & GRUB_UINT8_2_LEADINGBITS) != GRUB_UINT8_1_LEADINGBIT)
+      break;
+  if (ptr < beg)
+    return 0;
+  if ((*ptr & GRUB_UINT8_1_LEADINGBIT) == 0)
+    return ptr + 1 - beg;
+  if ((*ptr & GRUB_UINT8_3_LEADINGBITS) == GRUB_UINT8_2_LEADINGBITS
+      && ptr + 2 <= end)
+    return ptr + 2 - beg;
+  if ((*ptr & GRUB_UINT8_4_LEADINGBITS) == GRUB_UINT8_3_LEADINGBITS
+      && ptr + 3 <= end)
+    return ptr + 3 - beg;
+  if ((*ptr & GRUB_UINT8_5_LEADINGBITS) == GRUB_UINT8_4_LEADINGBITS
+      && ptr + 4 <= end)
+    return ptr + 4 - beg;
+  /* Invalid character or incomplete. Cut before it.  */
+  return ptr - beg;
+}
+
 /* Convert UTF-16 to UTF-8.  */
 static inline grub_uint8_t *
-grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
+grub_utf16_to_utf8 (grub_uint8_t *dest, const grub_uint16_t *src,
 		    grub_size_t size)
 {
   grub_uint32_t code_high = 0;
@@ -74,6 +102,8 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
 	    {
 	      /* Error...  */
 	      *dest++ = '?';
+	      /* *src may be valid. Don't eat it.  */
+	      src--;
 	    }
 
 	  code_high = 0;
@@ -97,9 +127,16 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
 	      /* Error... */
 	      *dest++ = '?';
 	    }
-	  else
+	  else if (code < 0x10000)
 	    {
 	      *dest++ = (code >> 12) | 0xE0;
+	      *dest++ = ((code >> 6) & 0x3F) | 0x80;
+	      *dest++ = (code & 0x3F) | 0x80;
+	    }
+	  else
+	    {
+	      *dest++ = (code >> 18) | 0xF0;
+	      *dest++ = ((code >> 12) & 0x3F) | 0x80;
 	      *dest++ = ((code >> 6) & 0x3F) | 0x80;
 	      *dest++ = (code & 0x3F) | 0x80;
 	    }
@@ -109,19 +146,52 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
   return dest;
 }
 
+#define GRUB_MAX_UTF8_PER_LATIN1 2
+
+/* Convert Latin1 to UTF-8.  */
+static inline grub_uint8_t *
+grub_latin1_to_utf8 (grub_uint8_t *dest, const grub_uint8_t *src,
+		     grub_size_t size)
+{
+  while (size--)
+    {
+      if (!(*src & 0x80))
+	*dest++ = *src;
+      else
+	{
+	  *dest++ = (*src >> 6) | 0xC0;
+	  *dest++ = (*src & 0x3F) | 0x80;
+	}
+      src++;
+    }
+
+  return dest;
+}
+
 /* Convert UCS-4 to UTF-8.  */
-char *grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size);
+char *grub_ucs4_to_utf8_alloc (const grub_uint32_t *src, grub_size_t size);
 
 int
 grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize);
 
 int grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
 			     grub_uint32_t **last_position);
+
+/* Process one character from UTF8 sequence. 
+   At beginning set *code = 0, *count = 0. Returns 0 on failure and
+   1 on success. *count holds the number of trailing bytes.  */
+int
+grub_utf8_process (grub_uint8_t c, grub_uint32_t *code, int *count);
+
 void
-grub_ucs4_to_utf8 (grub_uint32_t *src, grub_size_t size,
+grub_ucs4_to_utf8 (const grub_uint32_t *src, grub_size_t size,
 		   grub_uint8_t *dest, grub_size_t destsize);
 grub_size_t grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 			       const grub_uint8_t *src, grub_size_t srcsize,
 			       const grub_uint8_t **srcend);
+/* Returns -2 if not enough space, -1 on invalid character.  */
+grub_ssize_t
+grub_encode_utf8_character (grub_uint8_t *dest, grub_uint8_t *destend,
+			    grub_uint32_t code);
 
 #endif
