@@ -601,8 +601,8 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   e->framelist_phys = grub_dma_get_phys (e->framelist_chunk);
   grub_memset ((void *) e->framelist_virt, 0, 4096);
 
-  grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: framelist mem=0x%08x. OK\n",
-		(grub_uint32_t) e->framelist_virt);
+  grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: framelist mem=%p. OK\n",
+		e->framelist_virt);
 
   /* Allocate memory for the QHs and register it in "e".  */
   e->qh_chunk = grub_memalign_dma32 (4096,
@@ -615,8 +615,8 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   grub_memset ((void *) e->qh_virt, 0,
 	       sizeof (struct grub_ehci_qh) * GRUB_EHCI_N_QH);
 
-  grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: QH mem=0x%08x. OK\n",
-		(grub_uint32_t) e->qh_virt);
+  grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: QH mem=%p. OK\n",
+		e->qh_virt);
 
   /* Allocate memory for the TDs and register it in "e".  */
   e->td_chunk = grub_memalign_dma32 (4096,
@@ -629,8 +629,8 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   grub_memset ((void *) e->td_virt, 0,
 	       sizeof (struct grub_ehci_td) * GRUB_EHCI_N_TD);
 
-  grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: TD mem=0x%08x. OK\n",
-		(grub_uint32_t) e->td_virt);
+  grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: TD mem=%p. OK\n",
+		e->td_virt);
 
   /* Setup all frame list pointers. Since no isochronous transfers
      are supported, they all point to the (same!) queue
@@ -928,8 +928,8 @@ grub_ehci_setup_qh (grub_ehci_qh_t qh, grub_usb_transfer_t transfer)
     & GRUB_EHCI_HUBADDR_MASK;
   qh->ep_cap = grub_cpu_to_le32 (ep_cap);
 
-  grub_dprintf ("ehci", "setup_qh: qh=%08x, not changed: qh_hptr=%08x\n",
-		(grub_uint32_t) qh, grub_le_to_cpu32 (qh->qh_hptr));
+  grub_dprintf ("ehci", "setup_qh: qh=%p, not changed: qh_hptr=%08x\n",
+		qh, grub_le_to_cpu32 (qh->qh_hptr));
   grub_dprintf ("ehci", "setup_qh: ep_char=%08x, ep_cap=%08x\n",
 		ep_char, ep_cap);
   grub_dprintf ("ehci", "setup_qh: end\n");
@@ -962,9 +962,10 @@ grub_ehci_find_qh (struct grub_ehci *e, grub_usb_transfer_t transfer)
       if (!qh[i].ep_char)
 	break;			/* Found first not-allocated QH, finish */
       if (target == (qh[i].ep_char & mask))
-	{			/* Found proper existing (and linked) QH, do setup of QH */
-	  grub_dprintf ("ehci", "find_qh: found, i=%d, QH=%08x\n",
-			i, (grub_uint32_t) & qh[i]);
+	{		
+	  /* Found proper existing (and linked) QH, do setup of QH */
+	  grub_dprintf ("ehci", "find_qh: found, i=%d, QH=%p\n",
+			i, &qh[i]);
 	  grub_ehci_setup_qh (&qh[i], transfer);
 	  return &qh[i];
 	}
@@ -976,8 +977,8 @@ grub_ehci_find_qh (struct grub_ehci *e, grub_usb_transfer_t transfer)
       grub_dprintf ("ehci", "find_qh: end - no free QH\n");
       return NULL;
     }
-  grub_dprintf ("ehci", "find_qh: new, i=%d, QH=%08x\n",
-		i, (grub_uint32_t) & qh[i]);
+  grub_dprintf ("ehci", "find_qh: new, i=%d, QH=%p\n",
+		i, &qh[i]);
   /* Currently we simply take next (current) QH in array, no allocation
    * function is used. It should be no problem until we will need to
    * de-allocate QHs of unplugged devices. */
@@ -1178,7 +1179,7 @@ grub_ehci_transaction (struct grub_ehci *e,
   /* Remember data size for future use... */
   td->size = (grub_uint32_t) size;
 
-  grub_dprintf ("ehci", "td=%08x\n", (grub_uint32_t) td);
+  grub_dprintf ("ehci", "td=%p\n", td);
   grub_dprintf ("ehci", "HW: next_td=%08x, alt_next_td=%08x\n",
 		grub_le_to_cpu32 (td->next_td),
 		grub_le_to_cpu32 (td->alt_next_td));
@@ -1203,6 +1204,7 @@ struct grub_ehci_transfer_controller_data
   grub_ehci_td_t td_first_virt;
   grub_ehci_td_t td_alt_virt;
   grub_ehci_td_t td_last_virt;
+  grub_uint32_t td_last_phys;
 };
 
 static grub_usb_err_t
@@ -1297,16 +1299,17 @@ grub_ehci_setup_transfer (grub_usb_controller_t dev,
 
   /* Remember last TD */
   cdata->td_last_virt = td;
+  cdata->td_last_phys = grub_dma_virt2phys (td, e->td_chunk);
   /* Last TD should not have set alternate TD */
   cdata->td_last_virt->alt_next_td = grub_cpu_to_le32 (GRUB_EHCI_TERMINATE);
 
-  grub_dprintf ("ehci", "setup_transfer: cdata=%08x, qh=%08x\n",
-		(grub_uint32_t) cdata, (grub_uint32_t) cdata->qh_virt);
-  grub_dprintf ("ehci", "setup_transfer: td_first=%08x, td_alt=%08x\n",
-		(grub_uint32_t) cdata->td_first_virt,
-		(grub_uint32_t) cdata->td_alt_virt);
-  grub_dprintf ("ehci", "setup_transfer: td_last=%08x\n",
-		(grub_uint32_t) cdata->td_last_virt);
+  grub_dprintf ("ehci", "setup_transfer: cdata=%p, qh=%p\n",
+		cdata,cdata->qh_virt);
+  grub_dprintf ("ehci", "setup_transfer: td_first=%p, td_alt=%p\n",
+		cdata->td_first_virt,
+		cdata->td_alt_virt);
+  grub_dprintf ("ehci", "setup_transfer: td_last=%p\n",
+		cdata->td_last_virt);
 
   /* Start transfer: */
   /* Unlink possible alternate pointer in QH */
@@ -1449,9 +1452,9 @@ grub_ehci_check_transfer (grub_usb_controller_t dev,
   grub_uint32_t token;
 
   grub_dprintf ("ehci",
-		"check_transfer: EHCI STATUS=%08x, cdata=%08x, qh=%08x\n",
+		"check_transfer: EHCI STATUS=%08x, cdata=%p, qh=%p\n",
 		grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS),
-		(grub_uint32_t) cdata, (grub_uint32_t) cdata->qh_virt);
+		cdata, cdata->qh_virt);
   grub_dprintf ("ehci", "check_transfer: qh_hptr=%08x, ep_char=%08x\n",
 		grub_le_to_cpu32 (cdata->qh_virt->qh_hptr),
 		grub_le_to_cpu32 (cdata->qh_virt->ep_char));
@@ -1486,7 +1489,7 @@ grub_ehci_check_transfer (grub_usb_controller_t dev,
       if ((grub_le_to_cpu32 (cdata->qh_virt->td_overlay.next_td)
 	   & GRUB_EHCI_TERMINATE) &&
 	  ((grub_le_to_cpu32 (cdata->qh_virt->td_current)
-	    & GRUB_EHCI_QHTDPTR_MASK) == (grub_uint32_t) cdata->td_last_virt))
+	    & GRUB_EHCI_QHTDPTR_MASK) == cdata->td_last_phys))
 	/* Normal finish */
 	return grub_ehci_parse_success (dev, transfer, actual);
       else if ((token & GRUB_EHCI_TOTAL_MASK) != 0)
@@ -1597,9 +1600,8 @@ grub_ehci_portstatus (grub_usb_controller_t dev,
   grub_dprintf ("ehci", "portstatus: EHCI STATUS: %08x\n",
 		grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS));
   grub_dprintf ("ehci",
-		"portstatus: begin, iobase=0x%02x, port=%d, status=0x%02x\n",
-		(grub_uint32_t) e->iobase, port, grub_ehci_port_read (e,
-								      port));
+		"portstatus: begin, iobase=%p, port=%d, status=0x%02x\n",
+		e->iobase, port, grub_ehci_port_read (e, port));
 
   /* In any case we need to disable port:
    * - if enable==false - we should disable port
@@ -1674,8 +1676,8 @@ grub_ehci_detect_dev (grub_usb_controller_t dev, int port, int *changed)
 
   grub_dprintf ("ehci", "detect_dev: EHCI STATUS: %08x\n",
 		grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS));
-  grub_dprintf ("ehci", "detect_dev: iobase=0x%02x, port=%d, status=0x%02x\n",
-		(grub_uint32_t) e->iobase, port, status);
+  grub_dprintf ("ehci", "detect_dev: iobase=%p, port=%d, status=0x%02x\n",
+		e->iobase, port, status);
 
   /* Connect Status Change bit - it detects change of connection */
   if (status & GRUB_EHCI_PORT_CONNECT_CH)

@@ -101,10 +101,10 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller,
   dev->initialized = 1;
   grub_usb_devs[i] = dev;
 
-  grub_dprintf ("usb", "Added new usb device: %08x, addr=%d\n",
-    (grub_uint32_t)dev, i);
+  grub_dprintf ("usb", "Added new usb device: %p, addr=%d\n",
+		dev, i);
   grub_dprintf ("usb", "speed=%d, port=%d, hubaddr=%d\n",
-    speed, port, hubaddr);
+		speed, port, hubaddr);
 
   /* Wait "recovery interval", spec. says 2ms */
   grub_millisleep (2);

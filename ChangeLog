@@ -1,3 +1,21 @@
+2012-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix ehci on amd64.
+
+	* grub-core/bus/usb/usbhub.c (grub_usb_hub_add_dev): Use %p to print
+	pointers.
+	* grub-core/bus/usb/ehci.c (grub_ehci_pci_iter): Likewise.
+	(grub_ehci_setup_qh): Likewise.
+	(grub_ehci_find_qh): Likewise.
+	(grub_ehci_transaction): Likewise.
+	(grub_ehci_setup_transfer): Likewise.
+	(grub_ehci_check_transfer): Likewise.
+	(grub_ehci_portstatus): Likewise.
+	(grub_ehci_detect_dev): Likewise.
+	(grub_ehci_transfer_controller_data): New field td_last_phys.
+	(grub_ehci_setup_transfer): Fill td_last_phys.
+	(grub_ehci_check_transfer): Use td_last_phys.
+
 2012-02-01  Seth Goldberg <seth.goldberg@oracle.com>
 
 	* grub-core/normal/context.c (grub_env_extractor_close): Don't crash
