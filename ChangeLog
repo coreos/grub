@@ -1,3 +1,20 @@
+2012-02-01  Aleš Nesrsta <starous@volny.cz>
+2012-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	EHCI support. All of the credit goes to Aleš Nesrsta. I've just added
+	the support for the CS5536 modification thereos and few bugfixes.
+
+	* grub-core/Makefile.core.def (ehci): New module.
+	* grub-core/bus/usb/ehci.c: New file.
+	* grub-core/bus/usb/usbhub.c (grub_usb_hub_add_dev): New arguments
+	port and hubaddr. All users updated.
+	Save port and hubaddr into dev structure.
+	* include/grub/cs5536.h (GRUB_CS5536_MSR_USB_BASE_SMI_ENABLE): New
+	define.
+	* include/grub/pci.h (grub_dma_phys2virt): New function.
+	(grub_dma_virt2phys): Likewise.
+	* include/grub/usb.h (grub_usb_device): New members port and hubaddr.
+
 2012-01-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/fat.c (grub_fat_mount) [!MODE_EXFAT]: Remove fstype

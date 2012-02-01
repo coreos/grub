@@ -463,6 +463,12 @@ module = {
 };
 
 module = {
+  name = ehci;
+  common = bus/usb/ehci.c;
+  enable = pci;
+};
+
+module = {
   name = pci;
   common = bus/pci.c;
 
