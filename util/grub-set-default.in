@@ -24,6 +24,7 @@ exec_prefix=@exec_prefix@
 bindir=@bindir@
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
+datarootdir="@datarootdir@"
 datadir="@datadir@"
 
 self=`basename $0`

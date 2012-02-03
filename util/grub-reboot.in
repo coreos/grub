@@ -24,6 +24,7 @@ exec_prefix=@exec_prefix@
 bindir=@bindir@
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
+datarootdir="@datarootdir@"
 datadir="@datadir@"
 
 self=`basename $0`
@@ -38,7 +39,7 @@ grubdir=`echo "/@bootdirname@/@grubdirname@" | sed 's,//*,/,g'`
 # Usage: usage
 # Print the usage.
 usage () {
-    gettext_printf "Usage: %s [OPTION] entry" "$self"
+    gettext_printf "Usage: %s [OPTION] entry\n" "$self"
     gettext "Set the default boot entry for GRUB, for the next boot only."; echo
     echo
     printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"

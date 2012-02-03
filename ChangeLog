@@ -1,5 +1,13 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-reboot.in: Add missing datarootdir.
+	Add missing newline.
+	* util/grub-set-default.in: Add missing datarootdir.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Add missing newline.
+	* util/grub-mkrescue.in: Likewise.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/30_os-prober.in: Fix TRANSLATORS comment.
 
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -46,7 +46,7 @@ usage () {
     printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
     printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     echo
-    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by: %s" "genisoimage -help" "$self"
+    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by: %s\n" "genisoimage -help" "$self"
     echo
     gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }
