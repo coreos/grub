@@ -62,8 +62,7 @@ usage () {
     printf "  --xorriso=%-14s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as xorriso [optional]")"
     printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     echo
-    gettext_printf "%s generates a bootable rescue image with specified source files, source
-directories, or mkisofs options listed by: xorriso -as mkisofs -help" "$self"
+    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by: %s" "xorriso -as mkisofs -help" "$self"
     echo
     gettext "Option -- switches to native xorriso command mode."; echo
     echo

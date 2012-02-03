@@ -1,5 +1,11 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.in: Use same message as
+	util/powerpc/ieee1275/grub-mkrescue.in with %s in place of command
+	for better translations.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/powerpc/ieee1275/grub-mkrescue.in: Gettextize. Unify the command
 	options with generic grub-mkrescue.in with the goal of future
 	merge.
