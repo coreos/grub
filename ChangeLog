@@ -1,5 +1,10 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-kbdcomp.in: Add decent help and gettextize.
+	* docs/man/grub-kbdcomp.h2m: New file.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Migrate grub-mkimage.c to argp.
 
 	* Makefile.util.def (grub-mkimage): Add util/argp_common.c.
