@@ -1907,6 +1907,23 @@ device_is_wholedisk (const char *os_dev)
 #endif /* defined(__FreeBSD__) || defined(__FreeBSD_kernel__) */
 
 char *
+grub_util_get_os_disk (const char *os_dev)
+{
+  struct stat st;
+
+  grub_util_info ("Looking for %s", os_dev);
+
+  if (stat (os_dev, &st) < 0)
+    {
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot stat `%s'", os_dev);
+      grub_util_info ("cannot stat `%s'", os_dev);
+      return 0;
+    }
+
+  return convert_system_partition_to_system_disk (os_dev, &st);
+}
+
+char *
 grub_util_biosdisk_get_grub_dev (const char *os_dev)
 {
   struct stat st;

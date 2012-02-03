@@ -40,7 +40,6 @@ self="`basename $0`"
 
 grub_setup="${sbindir}/`echo grub-setup | sed ${transform}`"
 grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
-grub_mkdevicemap="${sbindir}/`echo grub-mkdevicemap | sed ${transform}`"
 grub_probe="${sbindir}/`echo grub-probe | sed ${transform}`"
 grub_editenv="${bindir}/`echo grub-editenv | sed ${transform}`"
 grub_mkrelpath="${bindir}/`echo grub-mkrelpath | sed ${transform}`"
@@ -101,7 +100,6 @@ usage () {
     printf "  --grub-setup=%-11s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-setup")"
     printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     printf "  --grub-mkrelpath=%-7s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkrelpath")"
-    printf "  --grub-mkdevicemap=%-5s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkdevicemap")"
     printf "  --grub-probe=%-11s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-probe")"
     printf "  --no-floppy             %s\n" "$(gettext "do not probe any floppy drive")"
     printf "  --allow-floppy          %s\n" "$(gettext "Make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes.")"
@@ -197,10 +195,11 @@ do
     --grub-mkrelpath=*)
 	grub_mkrelpath="`echo "$option" | sed 's/--grub-mkrelpath=//'`" ;;
 
+       # Ignore: for compatibility
     --grub-mkdevicemap)
-	grub_mkdevicemap="`argument "$option" "$@"`"; shift;;
+	shift;;
     --grub-mkdevicemap=*)
-	grub_mkdevicemap="`echo "$option" | sed 's/--grub-mkdevicemap=//'`" ;;
+	;;
 
     --grub-probe)
 	    grub_probe="`argument "$option" "$@"`"; shift;;
@@ -310,35 +309,27 @@ else
     exit 1
 fi
 
-set "$grub_mkdevicemap" dummy
-if test -f "$1"; then
-    :
-else
-    echo "$1: Not found." 1>&2
-    exit 1
-fi
-
 if [ x"$platform" = xefi ]; then
     # Find the EFI System Partition.
     efidir=
     if test -d "${bootdir}/efi"; then
-	install_device="`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}/efi"`"
+	install_device="`"$grub_probe" --target=device --device-map= "${bootdir}/efi"`"
         # Is it a mount point?
-	if test "x$install_device" != "x`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}"`"; then
+	if test "x$install_device" != "x`"$grub_probe" --target=device --device-map= "${bootdir}"`"; then
 	    efidir="${bootdir}/efi"
 	fi
     elif test -d "${bootdir}/EFI"; then
-	install_device="`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}/EFI"`"
+	install_device="`"$grub_probe" --target=device --device-map= "${bootdir}/EFI"`"
         # Is it a mount point?
-	if test "x$install_device" != "x`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${bootdir}"`"; then
+	if test "x$install_device" != "x`"$grub_probe" --target=device --device-map= "${bootdir}"`"; then
 	    efidir="${bootdir}/EFI"
 	fi
     elif test -n "$rootdir" && test "x$rootdir" != "x/"; then
         # The EFI System Partition may have been given directly using
         # --root-directory.
-	install_device="`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${rootdir}"`"
+	install_device="`"$grub_probe" --target=device --device-map= "${rootdir}"`"
         # Is it a mount point?
-	if test "x$install_device" != "x`"$grub_mkdevicemap" --device-map=/dev/stdout | "$grub_probe" --target=device --device-map=/dev/stdin "${rootdir}/.."`"; then
+	if test "x$install_device" != "x`"$grub_probe" --target=device --device-map= "${rootdir}/.."`"; then
 	    efidir="${rootdir}"
 	fi
     fi
@@ -705,12 +696,11 @@ elif [ x"$platform" = xefi ]; then
         # fiddle about with grub-probe to get hold of this reasonably reliably.
         # Use fresh device map text to avoid any problems with stale data, since
         # all we need here is a one-to-one mapping.
-	clean_devmap="$($grub_mkdevicemap --device-map=/dev/stdout)"
-	efidir_drive="$(echo "$clean_devmap" | "$grub_probe" --device-map="${device_map}" --target=drive --device-map=/dev/stdin "$efidir")"
-	if test -z "$efidir_drive"; then
+	efidir_drive="$("$grub_probe" --target=drive --device-map= "$efidir")"
+	efidir_disk="$("$grub_probe" --target=disk --device-map= "$efidir")"
+	if test -z "$efidir_drive" || test -z "$efidir_disk"; then
 	    echo "Can't find GRUB drive for $efidir; unable to create EFI Boot Manager entry." >&2
 	else
-	    efidir_disk="$(echo "$clean_devmap" | grep "^$(echo "$efidir_drive" | sed 's/,[^)]*//')" | cut -f2)"
 	    efidir_part="$(echo "$efidir_drive" | sed 's/^([^,]*,[^0-9]*//; s/[^0-9].*//')"
 	    efibootmgr $efi_quiet -c -d "$efidir_disk" -p "$efidir_part" -w \
 		-L "$bootloader_id" -l "\\EFI\\$efi_distributor\\$efi_file"

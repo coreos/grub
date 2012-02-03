@@ -66,7 +66,8 @@ enum {
   PRINT_EFI_HINT,
   PRINT_ARC_HINT,
   PRINT_COMPATIBILITY_HINT,
-  PRINT_MSDOS_PARTTYPE
+  PRINT_MSDOS_PARTTYPE,
+  PRINT_DISK
 };
 
 static int print = PRINT_FS;
@@ -338,6 +339,23 @@ probe (const char *path, char **device_names, char delim)
       for (curdev = device_names; *curdev; curdev++)
 	{
 	  printf ("%s", *curdev);
+	  putchar (delim);
+	}
+      return;
+    }
+
+  if (print == PRINT_DISK)
+    {
+      for (curdev = device_names; *curdev; curdev++)
+	{
+	  char *disk;
+	  disk = grub_util_get_os_disk (*curdev);
+	  if (!disk)
+	    {
+	      grub_print_error ();
+	      continue;
+	    }
+	  printf ("%s", disk);
 	  putchar (delim);
 	}
       return;
@@ -753,6 +771,8 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	print = PRINT_ARC_HINT;
       else if (!strcmp (arg, "compatibility_hint"))
 	print = PRINT_COMPATIBILITY_HINT;
+      else if (!strcmp (arg, "disk"))
+	print = PRINT_DISK;
       else
 	argp_usage (state);
       break;

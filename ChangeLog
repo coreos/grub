@@ -1,5 +1,18 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.util.def (grub-mkdevicemap): Removed.
+	* include/grub/emu/hostdisk.h (grub_util_get_os_disk): New proto.
+	* include/grub/util/deviceiter.h: Removed.
+	* util/deviceiter.c: Likewise.
+	* util/getroot.c (grub_util_get_os_disk): New function.
+	* util/grub-install.in: Remove grub-mkdevicemap. Use -t disk as
+	replacement for EFI.
+	* util/grub-mkdevicemap.c: Removed.
+	* util/grub-probe.c (probe): Handle PRINT_DISK.
+	(argp_parser): Handle -t disk.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkfont.c: Migrate to argp.
 	* util/grub-mklayout.c: Likewise.
 	* util/grub-mkpasswd-pbkdf2.c: Likewise.

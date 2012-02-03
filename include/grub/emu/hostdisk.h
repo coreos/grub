@@ -61,4 +61,7 @@ grub_uint64_t
 grub_util_get_fd_sectors (int fd, unsigned *log_secsize);
 #endif
 
+char *
+grub_util_get_os_disk (const char *os_dev);
+
 #endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */
