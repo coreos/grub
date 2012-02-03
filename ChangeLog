@@ -1,3 +1,8 @@
+2012-02-03  Mark Wooding <mdw@distorted.org.uk>
+
+	* util/grub-mkconfig.in: Use umask rather than chmod to create
+	grub.cfg.new to avoid insecure grub.cfg.
+
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
         * grub-core/commands/ls.c: Gettextize.

@@ -248,13 +248,10 @@ export GRUB_DEFAULT \
   GRUB_BADRAM
 
 if test "x${grub_cfg}" != "x"; then
-  rm -f ${grub_cfg}.new
-  exec > ${grub_cfg}.new
-
-  # Allow this to fail, since /boot/grub/ might need to be fatfs to support some
-  # firmware implementations (e.g. OFW or EFI).
-  chmod 400 ${grub_cfg}.new || grub_warn "$(gettext_printf "Could not make %s \
-readable by only root. This means that if the generated config contains a password it is readable by everyone" "${grub_cfg}.new")"
+  rm -f "${grub_cfg}.new"
+  oldumask=$(umask); umask 077
+  exec > "${grub_cfg}.new"
+  umask $oldumask
 fi
 gettext "Generating grub.cfg ..." >&2
 echo >&2
