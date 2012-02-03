@@ -180,6 +180,149 @@ xgetcwd (void)
   return path;
 }
 
+static char **
+find_root_devices_from_poolname (char *poolname)
+{
+  char **devices = 0;
+  size_t ndevices = 0;
+  size_t devices_allocated = 0;
+
+#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
+  zpool_handle_t *zpool;
+  libzfs_handle_t *libzfs;
+  nvlist_t *config, *vdev_tree;
+  nvlist_t **children, **path;
+  unsigned int nvlist_count;
+  unsigned int i;
+  char *device = 0;
+
+  libzfs = grub_get_libzfs_handle ();
+  if (! libzfs)
+    return NULL;
+
+  zpool = zpool_open (libzfs, poolname);
+  config = zpool_get_config (zpool, NULL);
+
+  if (nvlist_lookup_nvlist (config, "vdev_tree", &vdev_tree) != 0)
+    error (1, errno, "nvlist_lookup_nvlist (\"vdev_tree\")");
+
+  if (nvlist_lookup_nvlist_array (vdev_tree, "children", &children, &nvlist_count) != 0)
+    error (1, errno, "nvlist_lookup_nvlist_array (\"children\")");
+  assert (nvlist_count > 0);
+
+  while (nvlist_lookup_nvlist_array (children[0], "children",
+				     &children, &nvlist_count) == 0)
+    assert (nvlist_count > 0);
+
+  for (i = 0; i < nvlist_count; i++)
+    {
+      if (nvlist_lookup_string (children[i], "path", &device) != 0)
+	error (1, errno, "nvlist_lookup_string (\"path\")");
+
+      struct stat st;
+      if (stat (device, &st) == 0)
+	{
+#ifdef __sun__
+	  if (grub_memcmp (device, "/dev/dsk/", sizeof ("/dev/dsk/") - 1)
+	      == 0)
+	    device = xasprintf ("/dev/rdsk/%s",
+				device + sizeof ("/dev/dsk/") - 1);
+	  else if (grub_memcmp (device, "/devices", sizeof ("/devices") - 1)
+		   == 0
+		   && grub_memcmp (device + strlen (device) - 4,
+				   ",raw", 4) != 0)
+	    device = xasprintf ("%s,raw", device);
+	  else
+#endif
+	    device = xstrdup (device);
+	  if (ndevices >= devices_allocated)
+	    {
+	      devices_allocated = 2 * (devices_allocated + 8);
+	      devices = xrealloc (devices, sizeof (devices[0])
+				  * devices_allocated);
+	    }
+	  devices[ndevices++] = device;
+	}
+
+      device = NULL;
+    }
+
+  zpool_close (zpool);
+#else
+  char *cmd;
+  FILE *fp;
+  int ret;
+  char *line;
+  size_t len;
+  int st;
+
+  char name[PATH_MAX + 1], state[257], readlen[257], writelen[257];
+  char cksum[257], notes[257];
+  unsigned int dummy;
+
+  cmd = xasprintf ("zpool status %s", poolname);
+  fp = popen (cmd, "r");
+  free (cmd);
+
+  st = 0;
+  while (1)
+    {
+      line = NULL;
+      ret = getline (&line, &len, fp);
+      if (ret == -1)
+	break;
+	
+      if (sscanf (line, " %s %256s %256s %256s %256s %256s",
+		  name, state, readlen, writelen, cksum, notes) >= 5)
+	switch (st)
+	  {
+	  case 0:
+	    if (!strcmp (name, "NAME")
+		&& !strcmp (state, "STATE")
+		&& !strcmp (readlen, "READ")
+		&& !strcmp (writelen, "WRITE")
+		&& !strcmp (cksum, "CKSUM"))
+	      st++;
+	    break;
+	  case 1:
+	    if (!strcmp (name, poolname))
+	      st++;
+	    break;
+	  case 2:
+	    if (strcmp (name, "mirror") && !sscanf (name, "mirror-%u", &dummy)
+		&& !sscanf (name, "raidz%u", &dummy)
+		&& !strcmp (state, "ONLINE"))
+	      {
+		char *tmp;
+		if (ndevices >= devices_allocated)
+		  {
+		    devices_allocated = 2 * (devices_allocated + 8);
+		    devices = xrealloc (devices, sizeof (devices[0])
+					* devices_allocated);
+		  }
+		devices[ndevices++] = xasprintf ("/dev/%s", name);
+	      }
+	    break;
+	  }
+	
+      free (line);
+    }
+
+  pclose (fp);
+#endif
+  if (devices)
+    {
+      if (ndevices >= devices_allocated)
+	{
+	  devices_allocated = 2 * (devices_allocated + 8);
+	  devices = xrealloc (devices, sizeof (devices[0])
+			      * devices_allocated);
+	}
+      devices[ndevices++] = 0;
+    }
+  return devices;
+}
+
 #ifdef __linux__
 
 #define ESCAPED_PATH_MAX (4 * PATH_MAX)
@@ -219,13 +362,13 @@ unescape (char *str)
   *optr = 0;
 }
 
-char *
-grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
+static char **
+grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
 {
   FILE *fp;
   char *buf = NULL;
   size_t len = 0;
-  char *ret = NULL;
+  char **ret = NULL;
   int entry_len = 0, entry_max = 4;
   struct mountinfo_entry *entries;
   struct mountinfo_entry parent_entry = { 0, 0, 0, "", "", "", "" };
@@ -328,9 +471,33 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
       if (!*entries[i].device)
 	continue;
 
-      ret = strdup (entries[i].device);
-      if (relroot)
-	*relroot = strdup (entries[i].enc_root);
+      if (grub_strcmp (entries[i].fstype, "fuse.zfs") == 0)
+	{
+	  char *slash;
+	  slash = strchr (entries[i].device, '/');
+	  if (slash)
+	    *slash = 0;
+	  ret = find_root_devices_from_poolname (entries[i].device);
+	  if (slash)
+	    *slash = '/';
+	  if (relroot)
+	    {
+	      if (!slash)
+		*relroot = xasprintf ("/@%s", entries[i].enc_root);
+	      else if (strchr (slash + 1, '@'))
+		*relroot = xasprintf ("/%s%s", slash + 1, entries[i].enc_root);
+	      else
+		*relroot = xasprintf ("/%s@%s", slash + 1, entries[i].enc_root);
+	    }
+	}
+      else
+	{
+	  ret = xmalloc (2 * sizeof (ret[0]));
+	  ret[0] = strdup (entries[i].device);
+	  ret[1] = 0;
+	  if (relroot)
+	    *relroot = strdup (entries[i].enc_root);
+	}
       break;
     }
 
@@ -342,10 +509,10 @@ grub_find_root_device_from_mountinfo (const char *dir, char **relroot)
 
 #endif /* __linux__ */
 
-static char *
-find_root_device_from_libzfs (const char *dir)
+static char **
+find_root_devices_from_libzfs (const char *dir)
 {
-  char *device = NULL;
+  char **device = NULL;
   char *poolname;
   char *poolfs;
 
@@ -353,119 +520,7 @@ find_root_device_from_libzfs (const char *dir)
   if (! poolname)
     return NULL;
 
-#if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
-  {
-    zpool_handle_t *zpool;
-    libzfs_handle_t *libzfs;
-    nvlist_t *config, *vdev_tree;
-    nvlist_t **children, **path;
-    unsigned int nvlist_count;
-    unsigned int i;
-
-    libzfs = grub_get_libzfs_handle ();
-    if (! libzfs)
-      return NULL;
-
-    zpool = zpool_open (libzfs, poolname);
-    config = zpool_get_config (zpool, NULL);
-
-    if (nvlist_lookup_nvlist (config, "vdev_tree", &vdev_tree) != 0)
-      error (1, errno, "nvlist_lookup_nvlist (\"vdev_tree\")");
-
-    if (nvlist_lookup_nvlist_array (vdev_tree, "children", &children, &nvlist_count) != 0)
-      error (1, errno, "nvlist_lookup_nvlist_array (\"children\")");
-    assert (nvlist_count > 0);
-
-    while (nvlist_lookup_nvlist_array (children[0], "children",
-				       &children, &nvlist_count) == 0)
-      assert (nvlist_count > 0);
-
-    for (i = 0; i < nvlist_count; i++)
-      {
-	if (nvlist_lookup_string (children[i], "path", &device) != 0)
-	  error (1, errno, "nvlist_lookup_string (\"path\")");
-
-	struct stat st;
-	if (stat (device, &st) == 0)
-	  {
-#ifdef __sun__
-	    if (grub_memcmp (device, "/dev/dsk/", sizeof ("/dev/dsk/") - 1)
-		== 0)
-	      device = xasprintf ("/dev/rdsk/%s",
-				  device + sizeof ("/dev/dsk/") - 1);
-	    else if (grub_memcmp (device, "/devices", sizeof ("/devices") - 1)
-		     == 0
-		     && grub_memcmp (device + strlen (device) - 4,
-				     ",raw", 4) != 0)
-	      device = xasprintf ("%s,raw", device);
-	    else
-#endif
-	      device = xstrdup (device);
-	    break;
-	  }
-
-	device = NULL;
-      }
-
-    zpool_close (zpool);
-  }
-#else
-  {
-    char *cmd;
-    FILE *fp;
-    int ret;
-    char *line;
-    size_t len;
-    int st;
-
-    char name[PATH_MAX + 1], state[257], readlen[257], writelen[257];
-    char cksum[257], notes[257];
-    unsigned int dummy;
-
-    cmd = xasprintf ("zpool status %s", poolname);
-    fp = popen (cmd, "r");
-    free (cmd);
-
-    st = 0;
-    while (st < 3)
-      {
-	line = NULL;
-	ret = getline (&line, &len, fp);
-	if (ret == -1)
-	  goto fail;
-	
-	if (sscanf (line, " %s %256s %256s %256s %256s %256s",
-		    name, state, readlen, writelen, cksum, notes) >= 5)
-	  switch (st)
-	    {
-	    case 0:
-	      if (!strcmp (name, "NAME")
-		  && !strcmp (state, "STATE")
-		  && !strcmp (readlen, "READ")
-		  && !strcmp (writelen, "WRITE")
-		  && !strcmp (cksum, "CKSUM"))
-		st++;
-	      break;
-	    case 1:
-	      if (!strcmp (name, poolname))
-		st++;
-	      break;
-	    case 2:
-	      if (strcmp (name, "mirror") && !sscanf (name, "mirror-%u", &dummy)
-		  && !sscanf (name, "raidz%u", &dummy)
-		  && !strcmp (state, "ONLINE"))
-		st++;
-	      break;
-	    }
-	
-	free (line);
-      }
-    device = xasprintf ("/dev/%s", name);
-
- fail:
-    pclose (fp);
-  }
-#endif
+  device = find_root_devices_from_poolname (poolname);
 
   free (poolname);
   if (poolfs)
@@ -706,10 +761,10 @@ grub_find_device (const char *path, dev_t dev)
 
 #endif /* __CYGWIN__ */
 
-char *
-grub_guess_root_device (const char *dir)
+char **
+grub_guess_root_devices (const char *dir)
 {
-  char *os_dev = NULL;
+  char **os_dev = NULL;
 #ifdef __GNU__
   file_t file;
   mach_port_t *ports;
@@ -743,9 +798,11 @@ grub_guess_root_device (const char *dir)
   if (data[name_len - 1] != '\0')
     grub_util_error (_("Storage name for `%s' not NUL-terminated"), dir);
 
-  os_dev = xmalloc (strlen ("/dev/") + data_len);
-  memcpy (os_dev, "/dev/", strlen ("/dev/"));
-  memcpy (os_dev + strlen ("/dev/"), data, data_len);
+  os_dev = xmalloc (2 * sizeof (os_dev[0]));
+  os_dev[0] = xmalloc (strlen ("/dev/") + data_len);
+  memcpy (os_dev[0], "/dev/", strlen ("/dev/"));
+  memcpy (os_dev[0] + strlen ("/dev/"), data, data_len);
+  os_dev[1] = 0;
 
   if (ports && num_ports > 0)
     {
@@ -772,48 +829,56 @@ grub_guess_root_device (const char *dir)
 
 #ifdef __linux__
   if (!os_dev)
-    os_dev = grub_find_root_device_from_mountinfo (dir, NULL);
+    os_dev = grub_find_root_devices_from_mountinfo (dir, NULL);
 #endif /* __linux__ */
 
   if (!os_dev)
-    os_dev = find_root_device_from_libzfs (dir);
+    os_dev = find_root_devices_from_libzfs (dir);
 
   if (os_dev)
     {
-      char *tmp = os_dev;
-      os_dev = canonicalize_file_name (os_dev);
-      free (tmp);
-    }
-
-  if (os_dev)
-    {
-      int dm = (strncmp (os_dev, "/dev/dm-", sizeof ("/dev/dm-") - 1) == 0);
-      int root = (strcmp (os_dev, "/dev/root") == 0);
-      if (!dm && !root)
-	return os_dev;
-      if (stat (os_dev, &st) >= 0)
+      char **cur;
+      for (cur = os_dev; *cur; cur++)
 	{
-	  free (os_dev);
+	  char *tmp = *cur;
+	  int root, dm;
+	  *cur = canonicalize_file_name (*cur);
+	  free (tmp);
+	  root = (strcmp (*cur, "/dev/root") == 0);
+	  dm = (strncmp (*cur, "/dev/dm-", sizeof ("/dev/dm-") - 1) == 0);
+	  if (!dm && !root)
+	    continue;
+	  if (stat (*cur, &st) < 0)
+	    break;
+	  free (*cur);
 	  dev = st.st_rdev;
-	  return grub_find_device (dm ? "/dev/mapper" : "/dev", dev);
+	  *cur = grub_find_device (dm ? "/dev/mapper" : "/dev", dev);
 	}
+      if (!*cur)
+	return os_dev;
+      for (cur = os_dev; *cur; cur++)
+	free (*cur);
       free (os_dev);
+      os_dev = 0;
     }
 
   if (stat (dir, &st) < 0)
     grub_util_error (_("cannot stat `%s'"), dir);
 
   dev = st.st_dev;
+
+  os_dev = xmalloc (2 * sizeof (os_dev[0]));
   
 #ifdef __CYGWIN__
   /* Cygwin specific function.  */
-  os_dev = grub_find_device (dir, dev);
+  os_dev[0] = grub_find_device (dir, dev);
 
 #else
 
   /* This might be truly slow, but is there any better way?  */
-  os_dev = grub_find_device ("/dev", dev);
+  os_dev[0] = grub_find_device ("/dev", dev);
 #endif
+  os_dev[1] = 0;
 #endif /* !__GNU__ */
 
   return os_dev;
@@ -2412,7 +2477,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
 #ifdef __linux__
 	      {
 		char *bind;
-		grub_free (grub_find_root_device_from_mountinfo (buf2, &bind));
+		grub_free (grub_find_root_devices_from_mountinfo (buf2, &bind));
 		if (bind && bind[0] && bind[1])
 		  {
 		    buf3 = bind;
@@ -2445,7 +2510,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
 #ifdef __linux__
   {
     char *bind;
-    grub_free (grub_find_root_device_from_mountinfo (buf2, &bind));
+    grub_free (grub_find_root_devices_from_mountinfo (buf2, &bind));
     if (bind && bind[0] && bind[1])
       {
 	char *temp = buf3;

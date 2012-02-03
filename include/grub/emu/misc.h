@@ -80,6 +80,4 @@ extern char * canonicalize_file_name (const char *path);
 int grub_device_mapper_supported (void);
 #endif
 
-char *grub_find_root_device_from_mountinfo (const char *dir, char **relroot);
-
 #endif /* GRUB_EMU_MISC_H */

@@ -133,15 +133,16 @@ write_rootdev (char *core_img, grub_device_t root_dev,
 static void
 setup (const char *dir,
        const char *boot_file, const char *core_file,
-       const char *root, const char *dest, int force,
+       const char *dest, int force,
        int fs_probe, int allow_floppy)
 {
   char *boot_path, *core_path, *core_path_dev, *core_path_dev_full;
   char *boot_img, *core_img;
+  char *root = 0;
   size_t boot_size, core_size;
   grub_uint16_t core_sectors;
-  grub_device_t root_dev, dest_dev;
-  struct grub_boot_blocklist *first_block, *block;
+  grub_device_t root_dev = 0, dest_dev;
+  struct grub_boot_blocklist *first_block, *block, *last_block;
   char *tmp_img;
   int i;
   grub_disk_addr_t first_sector;
@@ -235,16 +236,55 @@ setup (const char *dir,
 						- sizeof (*block));
   grub_util_info ("root is `%s', dest is `%s'", root, dest);
 
-  /* Open the root device and the destination device.  */
-  grub_util_info ("Opening root");
-  root_dev = grub_device_open (root);
-  if (! root_dev)
-    grub_util_error ("%s", _(grub_errmsg));
-
   grub_util_info ("Opening dest");
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
     grub_util_error ("%s", _(grub_errmsg));
+
+  {
+    char **root_devices = grub_guess_root_devices (dir);
+    char **cur;
+    int found = 0;
+
+    for (cur = root_devices; *cur; cur++)
+      {
+	char *drive;
+	grub_device_t try_dev;
+
+	drive = grub_util_get_grub_dev (*cur);
+	if (!drive)
+	  continue;
+	try_dev = grub_device_open (drive);
+	if (! try_dev)
+	  continue;
+	if (!found && try_dev->disk->id == dest_dev->disk->id
+	    && try_dev->disk->dev->id == dest_dev->disk->dev->id)
+	  {
+	    if (root_dev)
+	      grub_device_close (root_dev);
+	    free (root);
+	    root_dev = try_dev;
+	    root = drive;
+	    found = 1;
+	    continue;
+	  }
+	if (!root_dev)
+	  {
+	    root_dev = try_dev;
+	    root = drive;
+	    continue;
+	  }
+	grub_device_close (try_dev);	
+	free (drive);
+      }
+    if (!root_dev)
+      {
+	grub_util_error ("guessing the root device failed, because of `%s'",
+			 grub_errmsg);
+      }
+    grub_util_info ("guessed root_dev `%s' from "
+		    "dir `%s'", root_dev->disk->name, dir);
+  }
 
   grub_util_info ("setting the root device to `%s'", root);
   if (grub_env_set ("root", root) != GRUB_ERR_NONE)
@@ -636,11 +676,12 @@ unable_to_embed:
     boot_devpath = (char *) (boot_img
 			     + GRUB_BOOT_AOUT_HEADER_SIZE
 			     + GRUB_BOOT_MACHINE_BOOT_DEVPATH);
-    if (file->device->disk->id != dest_dev->disk->id)
+    if (dest_dev->disk->id != root_dev->disk->id
+	|| dest_dev->disk->dev->id != root_dev->disk->dev->id)
       {
 	const char *dest_ofpath;
 	dest_ofpath
-	  = grub_util_devname_to_ofpath (grub_util_biosdisk_get_osdev (file->device->disk));
+	  = grub_util_devname_to_ofpath (grub_util_biosdisk_get_osdev (root_dev->disk));
 	grub_util_info ("dest_ofpath is `%s'", dest_ofpath);
 	strncpy (boot_devpath, dest_ofpath, GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
 		 - GRUB_BOOT_MACHINE_BOOT_DEVPATH - 1);
@@ -741,7 +782,6 @@ struct arguments
   char *core_file;
   char *dir;
   char *dev_map;
-  char *root_dev;
   int  force;
   int  fs_probe;
   int allow_floppy;
@@ -800,13 +840,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
           free (arguments->dev_map);
 
         arguments->dev_map = xstrdup (arg);
-        break;
-
-      case 'r':
-        if (arguments->root_dev)
-          free (arguments->root_dev);
-
-        arguments->root_dev = xstrdup (arg);
         break;
 
       case 'f':
@@ -935,38 +968,11 @@ main (int argc, char *argv[])
       grub_util_info ("Using `%s' as GRUB device", dest_dev);
     }
 
-  if (arguments.root_dev)
-    {
-      root_dev = get_device_name (arguments.root_dev);
-
-      if (! root_dev)
-        grub_util_error (_("invalid root device `%s'"), arguments.root_dev);
-
-      root_dev = xstrdup (root_dev);
-    }
-  else
-    {
-      char *root_device =
-        grub_guess_root_device (arguments.dir ? : DEFAULT_DIRECTORY);
-
-      root_dev = grub_util_get_grub_dev (root_device);
-      if (! root_dev)
-	{
-	  grub_util_info ("guessing the root device failed, because of `%s'",
-			  grub_errmsg);
-          grub_util_error (_("cannot guess the root device. Specify the option "
-                             "`--root-device'"));
-	}
-      grub_util_info ("guessed root device `%s' and root_dev `%s' from "
-                      "dir `%s'", root_device, root_dev,
-                      arguments.dir ? : DEFAULT_DIRECTORY);
-    }
-
   /* Do the real work.  */
   setup (arguments.dir ? : DEFAULT_DIRECTORY,
 	 arguments.boot_file ? : DEFAULT_BOOT_FILE,
 	 arguments.core_file ? : DEFAULT_CORE_FILE,
-	 root_dev, dest_dev, arguments.force,
+	 dest_dev, arguments.force,
 	 arguments.fs_probe, arguments.allow_floppy);
 
   /* Free resources.  */
@@ -976,7 +982,6 @@ main (int argc, char *argv[])
   free (arguments.boot_file);
   free (arguments.core_file);
   free (arguments.dir);
-  free (arguments.root_dev);
   free (arguments.dev_map);
   free (arguments.device);
   free (root_dev);

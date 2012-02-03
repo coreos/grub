@@ -1,3 +1,30 @@
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support install on multi-device filesystems.
+
+	* include/grub/emu/getroot.h (grub_guess_root_device): Renamed to ...
+	(grub_guess_root_devices): ...this. Return char **. All users updated.
+	* include/grub/emu/misc.h (grub_find_root_device_from_mountinfo):
+	Removed.
+	* util/getroot.c (find_root_device_from_libzfs): Moved pool logic to ...
+	(find_root_devices_from_poolname): ... here.
+	(grub_find_root_devices_from_mountinfo): Return char **. Make static.
+	Support zfs-fuse.
+	(grub_guess_root_device): Rename to ...
+	(grub_guess_root_devices): ... this. Return char **. All users updated.
+	* util/grub-install.in: Handle multi-device filesystems.
+	* util/grub-probe.c (probe). Make device_names a char **. Add delim
+	argument. All users updated.
+	Handle multi-device filesystems.
+	Use 'delim' as separator.
+	Remove device check to allow filesystems on file.
+	(main): Support -0 argument. Handle multi-device.
+	* util/grub-setup.c (setup): Remove root argument. Handle multi-device.
+	Fix a cross-device check while on it.
+	(arguments): Remove root_dev.
+	(argp_parser): Remove -r.
+	(main): Remove root_dev.
+
 2012-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/zfs/zfscrypt.c: Add link to documentation.

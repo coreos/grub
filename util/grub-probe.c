@@ -313,307 +313,342 @@ probe_abstraction (grub_disk_t disk)
 }
 
 static void
-probe (const char *path, char *device_name)
+probe (const char *path, char **device_names, char delim)
 {
-  char *drive_name = NULL;
+  char **drives_names = NULL;
+  char **curdev, **curdrive;
   char *grub_path = NULL;
-  char *filebuf_via_grub = NULL, *filebuf_via_sys = NULL;
-  grub_device_t dev = NULL;
-  grub_fs_t fs;
+  int ndev = 0;
 
-  if (path == NULL)
-    {
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__sun__)
-      if (! grub_util_check_char_device (device_name))
-        grub_util_error (_("%s is not a character device"), device_name);
-#else
-      if (! grub_util_check_block_device (device_name))
-        grub_util_error (_("%s is not a block device"), device_name);
-#endif
-    }
-  else
+  if (path != NULL)
     {
       grub_path = canonicalize_file_name (path);
-      device_name = grub_guess_root_device (grub_path);
+      device_names = grub_guess_root_devices (grub_path);
+      free (grub_path);
     }
 
-  if (! device_name)
+  if (! device_names)
     grub_util_error (_("cannot find a device for %s (is /dev mounted?)"), path);
 
   if (print == PRINT_DEVICE)
     {
-      printf ("%s\n", device_name);
-      goto end;
-    }
-
-  drive_name = grub_util_get_grub_dev (device_name);
-  if (! drive_name)
-    grub_util_error (_("cannot find a GRUB drive for %s.  Check your device.map"),
-		     device_name);
-
-  if (print == PRINT_DRIVE)
-    {
-      printf ("(%s)\n", drive_name);
-      goto end;
-    }
-
-  grub_util_info ("opening %s", drive_name);
-  dev = grub_device_open (drive_name);
-  if (! dev)
-    grub_util_error ("%s", _(grub_errmsg));
-
-  if (print == PRINT_HINT_STR)
-    {
-      const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
-      const char *ofpath = osdev ? grub_util_devname_to_ofpath (osdev) : 0;
-      char *biosname, *bare, *efi;
-      const char *map;
-
-      if (ofpath)
+      for (curdev = device_names; *curdev; curdev++)
 	{
-	  printf ("--hint-ieee1275='");
-	  print_full_name (ofpath, dev);
-	  printf ("' ");
+	  printf ("%s", *curdev);
+	  putchar (delim);
 	}
-
-      biosname = guess_bios_drive (device_name);
-      if (biosname)
-	{
-	  printf ("--hint-bios=");
-	  print_full_name (biosname, dev);
-	  printf (" ");
-	}
-      free (biosname);
-
-      efi = guess_efi_drive (device_name);
-      if (efi)
-	{
-	  printf ("--hint-efi=");
-	  print_full_name (efi, dev);
-	  printf (" ");
-	}
-      free (efi);
-
-      bare = guess_baremetal_drive (device_name);
-      if (bare)
-	{
-	  printf ("--hint-baremetal=");
-	  print_full_name (bare, dev);
-	  printf (" ");
-	}
-      free (bare);
-
-      /* FIXME: Add ARC hint.  */
-
-      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
-      if (map)
-	{
-	  printf ("--hint='");
-	  print_full_name (map, dev);
-	  printf ("' ");
-	}
-      printf ("\n");
-
-      goto end;
+      return;
     }
 
-  if ((print == PRINT_COMPATIBILITY_HINT || print == PRINT_BIOS_HINT
-       || print == PRINT_IEEE1275_HINT || print == PRINT_BAREMETAL_HINT
-       || print == PRINT_EFI_HINT || print == PRINT_ARC_HINT)
-      && dev->disk->dev->id != GRUB_DISK_DEVICE_HOSTDISK_ID)
+  for (curdev = device_names; *curdev; curdev++)
     {
-      print_full_name (dev->disk->name, dev);
-      printf ("\n");
-      goto end;
+      grub_util_pull_device (*curdev);
+      ndev++;
     }
+  
+  drives_names = xmalloc (sizeof (drives_names[0]) * (ndev + 1)); 
 
-  if (print == PRINT_COMPATIBILITY_HINT)
+  for (curdev = device_names, curdrive = drives_names; *curdev; curdev++,
+       curdrive++)
     {
-      const char *map;
-      char *biosname;
-      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
-      if (map)
-	{
-	  print_full_name (map, dev);
-	  printf ("\n");
-	  goto end;
-	}
-      biosname = guess_bios_drive (device_name);
-      if (biosname)
-	print_full_name (biosname, dev);
-      printf ("\n");
-      free (biosname);
-      goto end;
+      *curdrive = grub_util_get_grub_dev (*curdev);
+      if (! *curdrive)
+	grub_util_error (_("cannot find a GRUB drive for %s.  Check your device.map"),
+			 *curdev);
     }
+  *curdrive = 0;
 
-  if (print == PRINT_BIOS_HINT)
+  if (print == PRINT_FS || print == PRINT_FS_UUID
+      || print == PRINT_FS_LABEL)
     {
-      char *biosname;
-      biosname = guess_bios_drive (device_name);
-      if (biosname)
-	print_full_name (biosname, dev);
-      printf ("\n");
-      free (biosname);
-      goto end;
-    }
-  if (print == PRINT_IEEE1275_HINT)
-    {
-      const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
-      const char *ofpath = grub_util_devname_to_ofpath (osdev);
-      const char *map;
+      grub_device_t dev = NULL;
+      grub_fs_t fs;
 
-      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
-      if (map)
-	{
-	  printf (" ");
-	  print_full_name (map, dev);
-	}
-
-      if (ofpath)
-	{
-	  printf (" ");
-	  print_full_name (ofpath, dev);
-	}
-
-      printf ("\n");
-      goto end;
-    }
-  if (print == PRINT_EFI_HINT)
-    {
-      char *biosname;
-      char *name;
-      const char *map;
-      biosname = guess_efi_drive (device_name);
-
-      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
-      if (map)
-	{
-	  printf (" ");
-	  print_full_name (map, dev);
-	}
-      if (biosname)
-	{
-	  printf (" ");
-	  print_full_name (biosname, dev);
-	}
-
-      printf ("\n");
-      free (biosname);
-      goto end;
-    }
-
-  if (print == PRINT_BAREMETAL_HINT)
-    {
-      char *biosname;
-      char *name;
-      const char *map;
-
-      biosname = guess_baremetal_drive (device_name);
-
-      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
-      if (map)
-	{
-	  printf (" ");
-	  print_full_name (map, dev);
-	}
-      if (biosname)
-	{
-	  printf (" ");
-	  print_full_name (biosname, dev);
-	}
-
-      printf ("\n");
-      free (biosname);
-      goto end;
-    }
-
-  if (print == PRINT_ARC_HINT)
-    {
-      const char *map;
-
-      map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
-      if (map)
-	{
-	  printf (" ");
-	  print_full_name (map, dev);
-	}
-      printf ("\n");
-
-      /* FIXME */
-
-      goto end;
-    }
-
-  if (print == PRINT_ABSTRACTION)
-    {
-      probe_abstraction (dev->disk);
-      printf ("\n");
-      goto end;
-    }
-
-  if (print == PRINT_CRYPTODISK_UUID)
-    {
-      probe_cryptodisk_uuid (dev->disk);
-      printf ("\n");
-      goto end;
-    }
-
-  if (print == PRINT_PARTMAP)
-    {
-      /* Check if dev->disk itself is contained in a partmap.  */
-      probe_partmap (dev->disk);
-      printf ("\n");
-      goto end;
-    }
-
-  if (print == PRINT_MSDOS_PARTTYPE)
-    {
-      if (dev->disk->partition
-	  && strcmp(dev->disk->partition->partmap->name, "msdos") == 0)
-        printf ("%02x", dev->disk->partition->msdostype);
-
-      printf ("\n");
-      goto end;
-    }
-
-  fs = grub_fs_probe (dev);
-  if (! fs)
-    grub_util_error ("%s", _(grub_errmsg));
-
-  if (print == PRINT_FS)
-    {
-      printf ("%s\n", fs->name);
-    }
-  else if (print == PRINT_FS_UUID)
-    {
-      char *uuid;
-      if (! fs->uuid)
-	grub_util_error (_("%s does not support UUIDs"), fs->name);
-
-      if (fs->uuid (dev, &uuid) != GRUB_ERR_NONE)
-	grub_util_error ("%s", grub_errmsg);
-
-      printf ("%s\n", uuid);
-    }
-  else if (print == PRINT_FS_LABEL)
-    {
-      char *label;
-      if (! fs->label)
-	grub_util_error (_("%s does not support labels"), fs->name);
-
-      if (fs->label (dev, &label) != GRUB_ERR_NONE)
+      grub_util_info ("opening %s", drives_names[0]);
+      dev = grub_device_open (drives_names[0]);
+      if (! dev)
+	grub_util_error ("%s", _(grub_errmsg));
+      
+      fs = grub_fs_probe (dev);
+      if (! fs)
 	grub_util_error ("%s", _(grub_errmsg));
 
-      printf ("%s\n", label);
+      if (print == PRINT_FS)
+	{
+	  printf ("%s", fs->name);
+	  putchar (delim);
+	}
+      else if (print == PRINT_FS_UUID)
+	{
+	  char *uuid;
+	  if (! fs->uuid)
+	    grub_util_error (_("%s does not support UUIDs"), fs->name);
+
+	  if (fs->uuid (dev, &uuid) != GRUB_ERR_NONE)
+	    grub_util_error ("%s", grub_errmsg);
+
+	  printf ("%s", uuid);
+	  putchar (delim);
+	}
+      else if (print == PRINT_FS_LABEL)
+	{
+	  char *label;
+	  if (! fs->label)
+	    grub_util_error (_("%s does not support labels"), fs->name);
+
+	  if (fs->label (dev, &label) != GRUB_ERR_NONE)
+	    grub_util_error ("%s", _(grub_errmsg));
+
+	  printf ("%s", label);
+	  putchar (delim);
+	}
+      goto end;
+    }
+
+  for (curdrive = drives_names, curdev = device_names; *curdrive;
+       curdrive++, curdev++)
+    {
+      grub_device_t dev = NULL;
+
+      grub_util_info ("opening %s", *curdrive);
+      dev = grub_device_open (*curdrive);
+      if (! dev)
+	grub_util_error ("%s", _(grub_errmsg));
+
+      if (print == PRINT_HINT_STR)
+	{
+	  const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
+	  const char *ofpath = osdev ? grub_util_devname_to_ofpath (osdev) : 0;
+	  char *biosname, *bare, *efi;
+	  const char *map;
+
+	  if (ofpath)
+	    {
+	      printf ("--hint-ieee1275='");
+	      print_full_name (ofpath, dev);
+	      printf ("' ");
+	    }
+
+	  biosname = guess_bios_drive (*curdev);
+	  if (biosname)
+	    {
+	      printf ("--hint-bios=");
+	      print_full_name (biosname, dev);
+	      printf (" ");
+	    }
+	  free (biosname);
+
+	  efi = guess_efi_drive (*curdev);
+	  if (efi)
+	    {
+	      printf ("--hint-efi=");
+	      print_full_name (efi, dev);
+	      printf (" ");
+	    }
+	  free (efi);
+
+	  bare = guess_baremetal_drive (*curdev);
+	  if (bare)
+	    {
+	      printf ("--hint-baremetal=");
+	      print_full_name (bare, dev);
+	      printf (" ");
+	    }
+	  free (bare);
+
+	  /* FIXME: Add ARC hint.  */
+
+	  map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+	  if (map)
+	    {
+	      printf ("--hint='");
+	      print_full_name (map, dev);
+	      printf ("' ");
+	    }
+	  printf ("\n");
+
+	  grub_device_close (dev);
+	  continue;
+	}
+      
+      if ((print == PRINT_COMPATIBILITY_HINT || print == PRINT_BIOS_HINT
+	   || print == PRINT_IEEE1275_HINT || print == PRINT_BAREMETAL_HINT
+	   || print == PRINT_EFI_HINT || print == PRINT_ARC_HINT)
+	  && dev->disk->dev->id != GRUB_DISK_DEVICE_HOSTDISK_ID)
+	{
+	  print_full_name (dev->disk->name, dev);
+	  putchar (delim);
+	  continue;
+	}
+
+      if (print == PRINT_COMPATIBILITY_HINT)
+	{
+	  const char *map;
+	  char *biosname;
+	  map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+	  if (map)
+	    {
+	      print_full_name (map, dev);
+	      putchar (delim);
+	      grub_device_close (dev);
+	      /* Compatibility hint is one device only.  */
+	      break;
+	    }
+	  biosname = guess_bios_drive (*curdev);
+	  if (biosname)
+	    {
+	      print_full_name (biosname, dev);
+	      putchar (delim);
+	    }
+	  free (biosname);
+	  grub_device_close (dev);
+	  /* Compatibility hint is one device only.  */
+	  if (biosname)
+	    break;
+	  continue;
+	}
+
+      if (print == PRINT_BIOS_HINT)
+	{
+	  char *biosname;
+	  biosname = guess_bios_drive (*curdev);
+	  if (biosname)
+	    {
+	      print_full_name (biosname, dev);
+	      putchar (delim);
+	    }
+	  free (biosname);
+	  grub_device_close (dev);
+	  continue;
+	}
+      if (print == PRINT_IEEE1275_HINT)
+	{
+	  const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
+	  const char *ofpath = grub_util_devname_to_ofpath (osdev);
+	  const char *map;
+
+	  map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+	  if (map)
+	    {
+	      print_full_name (map, dev);
+	      putchar (delim);
+	    }
+
+	  if (ofpath)
+	    {
+	      print_full_name (ofpath, dev);
+	      putchar (delim);
+	    }
+
+	  grub_device_close (dev);
+	  continue;
+	}
+      if (print == PRINT_EFI_HINT)
+	{
+	  char *biosname;
+	  char *name;
+	  const char *map;
+	  biosname = guess_efi_drive (*curdev);
+
+	  map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+	  if (map)
+	    {
+	      print_full_name (map, dev);
+	      putchar (delim);
+	    }
+	  if (biosname)
+	    {
+	      print_full_name (biosname, dev);
+	      putchar (delim);
+	    }
+
+	  free (biosname);
+	  grub_device_close (dev);
+	  continue;
+	}
+
+      if (print == PRINT_BAREMETAL_HINT)
+	{
+	  char *biosname;
+	  char *name;
+	  const char *map;
+
+	  biosname = guess_baremetal_drive (*curdev);
+
+	  map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+	  if (map)
+	    {
+	      print_full_name (map, dev);
+	      putchar (delim);
+	    }
+	  if (biosname)
+	    {
+	      print_full_name (biosname, dev);
+	      putchar (delim);
+	    }
+
+	  free (biosname);
+	  grub_device_close (dev);
+	  continue;
+	}
+
+      if (print == PRINT_ARC_HINT)
+	{
+	  const char *map;
+
+	  map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
+	  if (map)
+	    {
+	      print_full_name (map, dev);
+	      putchar (delim);
+	    }
+
+	  /* FIXME */
+	  grub_device_close (dev);
+	  continue;
+	}
+
+      if (print == PRINT_ABSTRACTION)
+	{
+	  probe_abstraction (dev->disk);
+	  putchar (delim);
+	  grub_device_close (dev);
+	  continue;
+	}
+
+      if (print == PRINT_CRYPTODISK_UUID)
+	{
+	  probe_cryptodisk_uuid (dev->disk);
+	  putchar (delim);
+	  grub_device_close (dev);
+	  continue;
+	}
+
+      if (print == PRINT_PARTMAP)
+	{
+	  /* Check if dev->disk itself is contained in a partmap.  */
+	  probe_partmap (dev->disk);
+	  putchar (delim);
+	  grub_device_close (dev);
+	  continue;
+	}
+
+      if (print == PRINT_MSDOS_PARTTYPE)
+	{
+	  if (dev->disk->partition
+	      && strcmp(dev->disk->partition->partmap->name, "msdos") == 0)
+	    printf ("%02x", dev->disk->partition->msdostype);
+
+	  putchar (delim);
+	  grub_device_close (dev);
+	  continue;
+	}
     }
 
  end:
-  if (dev)
-    grub_device_close (dev);
-  free (grub_path);
-  free (filebuf_via_grub);
-  free (filebuf_via_sys);
-  free (drive_name);
+  for (curdrive = drives_names; *curdrive; curdrive++)
+    free (*curdrive);
+  free (drives_names);
 }
 
 static struct option options[] =
@@ -658,7 +693,8 @@ int
 main (int argc, char *argv[])
 {
   char *dev_map = 0;
-  char *argument;
+  int zero_delim = 0;
+  char delim;
 
   set_program_name (argv[0]);
 
@@ -667,7 +703,7 @@ main (int argc, char *argv[])
   /* Check for options.  */
   while (1)
     {
-      int c = getopt_long (argc, argv, "dm:t:hVv", options, 0);
+      int c = getopt_long (argc, argv, "dm:t:hVv0", options, 0);
 
       if (c == -1)
 	break;
@@ -726,6 +762,10 @@ main (int argc, char *argv[])
 	    usage (0);
 	    break;
 
+	  case '0':
+	    zero_delim = 1;
+	    break;
+
 	  case 'V':
 	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
@@ -750,13 +790,11 @@ main (int argc, char *argv[])
       usage (1);
     }
 
-  if (optind + 1 != argc)
+  if (optind + 1 != argc && !argument_is_device)
     {
       fprintf (stderr, _("Unknown extra argument `%s'.\n"), argv[optind + 1]);
       usage (1);
     }
-
-  argument = argv[optind];
 
   /* Initialize the emulated biosdisk driver.  */
   grub_util_biosdisk_init (dev_map ? : DEFAULT_DEVICE_MAP);
@@ -774,11 +812,28 @@ main (int argc, char *argv[])
   grub_mdraid1x_init ();
   grub_lvm_init ();
 
+  if (print == PRINT_COMPATIBILITY_HINT || print == PRINT_BIOS_HINT
+      || print == PRINT_IEEE1275_HINT || print == PRINT_BAREMETAL_HINT
+      || print == PRINT_EFI_HINT || print == PRINT_ARC_HINT)
+    delim = ' ';
+  else
+    delim = '\n';
+
+  if (zero_delim)
+    delim = '\0';
+
   /* Do it.  */
   if (argument_is_device)
-    probe (NULL, argument);
+    probe (NULL, argv + optind, delim);
   else
-    probe (argument, NULL);
+    probe (argv[optind], NULL, delim);
+
+  if (!zero_delim && (print == PRINT_COMPATIBILITY_HINT
+		      || print == PRINT_BIOS_HINT
+		      || print == PRINT_IEEE1275_HINT
+		      || print == PRINT_BAREMETAL_HINT
+		      || print == PRINT_EFI_HINT || print == PRINT_ARC_HINT))
+    putchar ('\n');
 
   /* Free resources.  */
   grub_gcry_fini_all ();

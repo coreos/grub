@@ -473,7 +473,7 @@ if ! test -f "${grubdir}"/grubenv; then
 fi
 
 # Create the core image. First, auto-detect the filesystem module.
-fs_module="`"$grub_probe" --device-map="${device_map}" --target=fs --device "${grub_device}"`"
+fs_module="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=fs --device `"
 if test "x$fs_module" = x ; then
     echo "Auto-detection of a filesystem of ${grub_device} failed." 1>&2
     echo "Try with --recheck." 1>&2
@@ -485,7 +485,7 @@ fi
 # this command is allowed to fail (--target=fs already grants us that the
 # filesystem will be accessible).
 partmap_module=
-for x in `"$grub_probe" --device-map="${device_map}" --target=partmap --device "${grub_device}" 2> /dev/null`; do
+for x in `echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=partmap --device 2> /dev/null`; do
    case "$x" in
        netbsd | openbsd) 
 	   partmap_module="$partmap_module part_bsd";;
@@ -496,7 +496,7 @@ for x in `"$grub_probe" --device-map="${device_map}" --target=partmap --device "
 done
 
 # Device abstraction module, if any (lvm, raid).
-devabstraction_module="`"$grub_probe" --device-map="${device_map}" --target=abstraction --device "${grub_device}"`"
+devabstraction_module="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=abstraction --device`"
 
 if [ "x$disk_module" = xata ]; then
     disk_module=pata
@@ -538,14 +538,14 @@ if [ "x${devabstraction_module}" = "x" ] ; then
       fi
       install_drive="`echo "${install_drive}" | sed -e 's/^(\(\([^,\\\\]\|\\\\\\\\\|\\\\,\)*\)\(\(,[a-zA-Z0-9]*\)*\))$/\1/'`"
     fi
-    grub_drive="`"$grub_probe" --device-map="${device_map}" --target=drive --device "${grub_device}"`" || exit 1
+    grub_drive="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=drive --device`" || exit 1
 
     # Strip partition number
     grub_partition="`echo "${grub_drive}" | sed -e 's/^(\(\([^,\\\\]\|\\\\\\\\\|\\\\,\)*\)\(\(,[a-zA-Z0-9]*\)*\))$/\3/'`"
     grub_drive="`echo "${grub_drive}" | sed -e 's/^(\(\([^,\\\\]\|\\\\\\\\\|\\\\,\)*\)\(\(,[a-zA-Z0-9]*\)*\))$/\1/'`"
     if ([ "x$disk_module" != x ] && [ "x$disk_module" != xbiosdisk ]) || [ "x${grub_drive}" != "x${install_drive}" ] || ([ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]); then
         # generic method (used on coreboot and ata mod)
-        uuid="`"$grub_probe" --device-map="${device_map}" --target=fs_uuid --device "${grub_device}"`"
+        uuid="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=fs_uuid --device`"
         if [ "x${uuid}" = "x" ] ; then
           if [ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]; then
              echo "UUID needed with $platform, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
@@ -559,15 +559,15 @@ if [ "x${devabstraction_module}" = "x" ] ; then
         fi
 
 	if [ x"$disk_module" != x ] && [ x"$disk_module" != xbiosdisk ]; then
-            hints="`"$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device "${grub_device}"`"
+            hints="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device`"
 	elif [ x"$platform" = xpc ]; then
-            hints="`"$grub_probe" --device-map="${device_map}" --target=bios_hints --device "${grub_device}"`"
+            hints="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=bios_hints --device`"
 	elif [ x"$platform" = xefi ]; then
-            hints="`"$grub_probe" --device-map="${device_map}" --target=efi_hints --device "${grub_device}"`"
+            hints="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=efi_hints --device`"
 	elif [ x"$platform" = xieee1275 ]; then
-            hints="`"$grub_probe" --device-map="${device_map}" --target=ieee1275_hints --device "${grub_device}"`"
+            hints="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=ieee1275_hints --device`"
 	elif [ x"$platform" = xloongson ] || [ x"$platform" = xqemu ] || [ x"$platform" = xcoreboot ] || [ x"$platform" = xmultiboot ] || [ x"$platform" = xqemu-mips ]; then
-            hints="`"$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device "${grub_device}"`"
+            hints="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device`"
 	else
             echo "No hints available for your platform. Expect reduced performance"
 	    hints=
@@ -587,7 +587,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
     fi
 else
     if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
-	for uuid in "`"${grub_probe}" --device "${grub_device}" --target=cryptodisk_uuid`"; do
+	for uuid in "`echo "${grub_device}" | xargs "${grub_probe}"  --target=cryptodisk_uuid --device`"; do
 	    echo "cryptomount -u $uuid" >> "${grubdir}/load.cfg"
 	done
 	config_opt="-c ${grubdir}/load.cfg "
