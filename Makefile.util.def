@@ -160,6 +160,7 @@ program = {
   mansection = 1;
 
   common = util/grub-mkrelpath.c;
+  common = util/argp_common.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -173,6 +174,7 @@ program = {
   mansection = 1;
 
   common = util/grub-script-check.c;
+  common = util/argp_common.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -199,6 +201,7 @@ program = {
   mansection = 1;
 
   common = util/grub-mkpasswd-pbkdf2.c;
+  common = util/argp_common.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -268,6 +271,7 @@ program = {
   mansection = 1;
   common = util/grub-mkfont.c;
   common = grub-core/unidata.c;
+  common = util/argp_common.c;
 
   cflags = '$(freetype_cflags)';
 
@@ -302,6 +306,7 @@ program = {
   mansection = 8;
   common = util/grub-probe.c;
   common = util/ieee1275/ofpath.c;
+  common = util/argp_common.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;

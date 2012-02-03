@@ -1,5 +1,14 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkfont.c: Migrate to argp.
+	* util/grub-mklayout.c: Likewise.
+	* util/grub-mkpasswd-pbkdf2.c: Likewise.
+	* util/grub-mkrelpath.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	* util/grub-script-check.c: Likewise.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-reboot.in: Add missing datarootdir.
 	Add missing newline.
 	* util/grub-set-default.in: Add missing datarootdir.

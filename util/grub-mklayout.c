@@ -23,23 +23,31 @@
 #include <grub/term.h>
 #include <grub/keyboard_layouts.h>
 
+#define _GNU_SOURCE	1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
+#include <argp.h>
 #include <unistd.h>
 #include <errno.h>
 
 #include "progname.h"
 
-#define CKBCOMP "ckbcomp"
+struct arguments
+{
+  char *input;
+  char *output;
+  int verbosity;
+};
 
-static struct option options[] = {
-  {"output", required_argument, 0, 'o'},
-  {"help", no_argument, 0, 'h'},
-  {"version", no_argument, 0, 'V'},
-  {"verbose", no_argument, 0, 'v'},
-  {0, 0, 0, 0}
+static struct argp_option options[] = {
+  {"input",  'i', N_("FILE"), 0,
+   N_("set input filename. Default is STDIN"), 0},
+  {"output",  'o', N_("FILE"), 0,
+   N_("set output filename. Default is STDOUT"), 0},
+  {"verbose",     'v', 0,      0, N_("Print verbose messages."), 0},
+  { 0, 0, 0, 0, 0, 0 }
 };
 
 struct console_grub_equivalence
@@ -264,11 +272,6 @@ usage (int status)
   else
     printf (_("\
 Usage: %s [OPTIONS]\n\
-  -i, --input		set input filename. Default is STDIN\n\
-  -o, --output		set output filename. Default is STDOUT\n\
-  -h, --help		display this message and exit.\n\
-  -V, --version		print version information and exit.\n\
-  -v, --verbose		print verbose messages.\n\
 \n\
 Report bugs to <%s>.\n"), program_name, PACKAGE_BUGREPORT);
 
@@ -414,8 +417,7 @@ write_keymaps (FILE *in, FILE *out)
 
   if (ok == 0)
     {
-      fprintf (stderr, _("ERROR: no keycodes found. Check output of %s.\n"),
-	       CKBCOMP);
+      fprintf (stderr, "%s", _("ERROR: no keycodes found. Check the input.\n"));
       exit (1);
     }
 
@@ -424,65 +426,68 @@ write_keymaps (FILE *in, FILE *out)
   write_file (out, &layout);
 }
 
+static error_t
+argp_parser (int key, char *arg, struct argp_state *state)
+{
+  /* Get the input argument from argp_parse, which we
+     know is a pointer to our arguments structure. */
+  struct arguments *arguments = state->input;
+
+  char *p;
+
+  switch (key)
+    {
+    case 'i':
+      arguments->input = xstrdup (arg);
+      break;
+
+    case 'o':
+      arguments->output = xstrdup (arg);
+      break;
+
+    case 'v':
+      arguments->verbosity++;
+      break;
+
+    default:
+      return ARGP_ERR_UNKNOWN;
+    }
+
+  return 0;
+}
+
+static struct argp argp = {
+  options, argp_parser, N_("[OPTIONS]"),
+  N_("Generate GRUB keyboard layout from Linux console one."),
+  NULL, NULL, NULL
+};
+
 int
 main (int argc, char *argv[])
 {
-  int verbosity;
-  char *infile_name = NULL;
-  char *outfile_name = NULL;
   FILE *in, *out;
+  struct arguments arguments;
 
   set_program_name (argv[0]);
 
-  verbosity = 0;
-
   /* Check for options.  */
-  while (1)
+  memset (&arguments, 0, sizeof (struct arguments));
+  if (argp_parse (&argp, argc, argv, 0, 0, &arguments) != 0)
     {
-      int c = getopt_long (argc, argv, "o:i:hVv", options, 0);
-
-      if (c == -1)
-	break;
-      else
-	switch (c)
-	  {
-	  case 'h':
-	    usage (0);
-	    break;
-
-	  case 'i':
-	    infile_name = optarg;
-	    break;
-
-	  case 'o':
-	    outfile_name = optarg;
-	    break;
-
-	  case 'V':
-	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME,
-		    PACKAGE_VERSION);
-	    return 0;
-
-	  case 'v':
-	    verbosity++;
-	    break;
-
-	  default:
-	    usage (1);
-	    break;
-	  }
+      fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
+      exit(1);
     }
 
-  if (infile_name)
-    in = fopen (infile_name, "r");
+  if (arguments.input)
+    in = fopen (arguments.input, "r");
   else
     in = stdin;
 
   if (!in)
     grub_util_error (_("Couldn't open input file: %s\n"), strerror (errno));
 
-  if (outfile_name)
-    out = fopen (outfile_name, "wb");
+  if (arguments.output)
+    out = fopen (arguments.output, "wb");
   else
     out = stdout;
 

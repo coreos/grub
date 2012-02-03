@@ -43,9 +43,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <assert.h>
 
 #define _GNU_SOURCE	1
-#include <getopt.h>
+#include <argp.h>
 
 #include "progname.h"
 
@@ -663,153 +664,169 @@ probe (const char *path, char **device_names, char delim)
   free (drives_names);
 }
 
-static struct option options[] =
-  {
-    {"device", no_argument, 0, 'd'},
-    {"device-map", required_argument, 0, 'm'},
-    {"target", required_argument, 0, 't'},
-    {"help", no_argument, 0, 'h'},
-    {"version", no_argument, 0, 'V'},
-    {"verbose", no_argument, 0, 'v'},
-    {0, 0, 0, 0}
-  };
+static struct argp_option options[] = {
+  {"device",  'd', 0, 0,
+   N_("given argument is a system device, not a path"), 0},
+  {"device-map",  'm', N_("FILE"), 0,
+   N_("use FILE as the device map [default=%s]"), 0},
+  {"target",  't', "(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|cryptodisk_uuid|msdos_parttype)", 0,
+   N_("print filesystem module, GRUB drive, system device, partition map module, abstraction module or CRYPTO UUID [default=fs]"), 0},
+  {"verbose",     'v', 0,      0, N_("Print verbose messages."), 0},
+  { 0, 0, 0, 0, 0, 0 }
+};
 
-static void
-usage (int status)
+
+static char *
+help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 {
-  if (status)
-    fprintf (stderr,
-	     _("Try `%s --help' for more information.\n"), program_name);
-  else
-    printf (_("\
-Usage: %s [OPTION]... [PATH|DEVICE]\n\
-\n\
-Probe device information for a given path (or device, if the -d option is given).\n\
-\n\
-  -d, --device              given argument is a system device, not a path\n\
-  -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
-  -t, --target=(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|cryptodisk_uuid|msdos_parttype)\n\
-                            print filesystem module, GRUB drive, system device, partition map module, abstraction module or CRYPTO UUID [default=fs]\n\
-  -h, --help                display this message and exit\n\
-  -V, --version             print version information and exit\n\
-  -v, --verbose             print verbose messages\n\
-\n\
-Report bugs to <%s>.\n\
-"), program_name,
-	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
+  switch (key)
+    {
+      case 'm':
+        return xasprintf (text, DEFAULT_DEVICE_MAP);
 
-  exit (status);
+      default:
+        return (char *) text;
+    }
 }
+
+struct arguments
+{
+  char **devices;
+  size_t device_max;
+  size_t ndevices;
+  char *dev_map;
+  int zero_delim;
+};
+
+static error_t
+argp_parser (int key, char *arg, struct argp_state *state)
+{
+  /* Get the input argument from argp_parse, which we
+     know is a pointer to our arguments structure. */
+  struct arguments *arguments = state->input;
+
+  char *p;
+
+  switch (key)
+    {
+    case 'd':
+      argument_is_device = 1;
+      break;
+
+    case 'm':
+      if (arguments->dev_map)
+	free (arguments->dev_map);
+
+      arguments->dev_map = xstrdup (arg);
+      break;
+
+    case 't':
+      if (!strcmp (arg, "fs"))
+	print = PRINT_FS;
+      else if (!strcmp (arg, "fs_uuid"))
+	print = PRINT_FS_UUID;
+      else if (!strcmp (arg, "fs_label"))
+	print = PRINT_FS_LABEL;
+      else if (!strcmp (arg, "drive"))
+	print = PRINT_DRIVE;
+      else if (!strcmp (arg, "device"))
+	print = PRINT_DEVICE;
+      else if (!strcmp (arg, "partmap"))
+	print = PRINT_PARTMAP;
+      else if (!strcmp (arg, "abstraction"))
+	print = PRINT_ABSTRACTION;
+      else if (!strcmp (arg, "cryptodisk_uuid"))
+	print = PRINT_CRYPTODISK_UUID;
+      else if (!strcmp (arg, "msdos_parttype"))
+	print = PRINT_MSDOS_PARTTYPE;
+      else if (!strcmp (arg, "hints_string"))
+	print = PRINT_HINT_STR;
+      else if (!strcmp (arg, "bios_hints"))
+	print = PRINT_BIOS_HINT;
+      else if (!strcmp (arg, "ieee1275_hints"))
+	print = PRINT_IEEE1275_HINT;
+      else if (!strcmp (arg, "baremetal_hints"))
+	print = PRINT_BAREMETAL_HINT;
+      else if (!strcmp (arg, "efi_hints"))
+	print = PRINT_EFI_HINT;
+      else if (!strcmp (arg, "arc_hints"))
+	print = PRINT_ARC_HINT;
+      else if (!strcmp (arg, "compatibility_hint"))
+	print = PRINT_COMPATIBILITY_HINT;
+      else
+	argp_usage (state);
+      break;
+
+    case '0':
+      arguments->zero_delim = 1;
+      break;
+
+    case 'v':
+      verbosity++;
+      break;
+
+    case ARGP_KEY_NO_ARGS:
+      fprintf (stderr, "%s", _("No path or device is specified.\n"));
+      argp_usage (state);
+      break;
+
+    case ARGP_KEY_ARG:
+      assert (arguments->ndevices < arguments->device_max);
+      arguments->devices[arguments->ndevices++] = xstrdup(arg);
+      break;
+
+    default:
+      return ARGP_ERR_UNKNOWN;
+    }
+  return 0;
+}
+
+static struct argp argp = {
+  options, argp_parser, N_("[OPTION]... [PATH|DEVICE]"),
+  N_("\
+Probe device information for a given path (or device, if the -d option is given)."),
+  NULL, help_filter, NULL
+};
 
 int
 main (int argc, char *argv[])
 {
-  char *dev_map = 0;
-  int zero_delim = 0;
   char delim;
+  struct arguments arguments;
 
   set_program_name (argv[0]);
 
   grub_util_init_nls ();
 
-  /* Check for options.  */
-  while (1)
+  memset (&arguments, 0, sizeof (struct arguments));
+  arguments.device_max = argc + 1;
+  arguments.devices = xmalloc ((arguments.device_max + 1)
+			       * sizeof (arguments.devices[0]));
+  memset (arguments.devices, 0, (arguments.device_max + 1)
+	  * sizeof (arguments.devices[0]));
+
+  /* Parse our arguments */
+  if (argp_parse (&argp, argc, argv, 0, 0, &arguments) != 0)
     {
-      int c = getopt_long (argc, argv, "dm:t:hVv0", options, 0);
-
-      if (c == -1)
-	break;
-      else
-	switch (c)
-	  {
-	  case 'd':
-	    argument_is_device = 1;
-	    break;
-
-	  case 'm':
-	    if (dev_map)
-	      free (dev_map);
-
-	    dev_map = xstrdup (optarg);
-	    break;
-
-	  case 't':
-	    if (!strcmp (optarg, "fs"))
-	      print = PRINT_FS;
-	    else if (!strcmp (optarg, "fs_uuid"))
-	      print = PRINT_FS_UUID;
-	    else if (!strcmp (optarg, "fs_label"))
-	      print = PRINT_FS_LABEL;
-	    else if (!strcmp (optarg, "drive"))
-	      print = PRINT_DRIVE;
-	    else if (!strcmp (optarg, "device"))
-	      print = PRINT_DEVICE;
-	    else if (!strcmp (optarg, "partmap"))
-	      print = PRINT_PARTMAP;
-	    else if (!strcmp (optarg, "abstraction"))
-	      print = PRINT_ABSTRACTION;
-	    else if (!strcmp (optarg, "cryptodisk_uuid"))
-	      print = PRINT_CRYPTODISK_UUID;
-	    else if (!strcmp (optarg, "msdos_parttype"))
-	      print = PRINT_MSDOS_PARTTYPE;
-	    else if (!strcmp (optarg, "hints_string"))
-	      print = PRINT_HINT_STR;
-	    else if (!strcmp (optarg, "bios_hints"))
-	      print = PRINT_BIOS_HINT;
-	    else if (!strcmp (optarg, "ieee1275_hints"))
-	      print = PRINT_IEEE1275_HINT;
-	    else if (!strcmp (optarg, "baremetal_hints"))
-	      print = PRINT_BAREMETAL_HINT;
-	    else if (!strcmp (optarg, "efi_hints"))
-	      print = PRINT_EFI_HINT;
-	    else if (!strcmp (optarg, "arc_hints"))
-	      print = PRINT_ARC_HINT;
-	    else if (!strcmp (optarg, "compatibility_hint"))
-	      print = PRINT_COMPATIBILITY_HINT;
-	    else
-	      usage (1);
-	    break;
-
-	  case 'h':
-	    usage (0);
-	    break;
-
-	  case '0':
-	    zero_delim = 1;
-	    break;
-
-	  case 'V':
-	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
-	    return 0;
-
-	  case 'v':
-	    verbosity++;
-	    break;
-
-	  default:
-	    usage (1);
-	    break;
-	  }
+      fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
+      exit(1);
     }
 
   if (verbosity > 1)
     grub_env_set ("debug", "all");
 
   /* Obtain ARGUMENT.  */
-  if (optind >= argc)
+  if (arguments.ndevices != 1 && !argument_is_device)
     {
-      fprintf (stderr, "%s", _("No path or device is specified.\n"));
-      usage (1);
-    }
-
-  if (optind + 1 != argc && !argument_is_device)
-    {
+      char *program = xstrdup(program_name);
       fprintf (stderr, _("Unknown extra argument `%s'.\n"), argv[optind + 1]);
-      usage (1);
+      argp_help (&argp, stderr, ARGP_HELP_STD_USAGE, program);
+      free (program);
+      exit(1);
     }
 
   /* Initialize the emulated biosdisk driver.  */
-  grub_util_biosdisk_init (dev_map ? : DEFAULT_DEVICE_MAP);
+  grub_util_biosdisk_init (arguments.dev_map ? : DEFAULT_DEVICE_MAP);
 
   /* Initialize all modules. */
   grub_init_all ();
@@ -831,20 +848,21 @@ main (int argc, char *argv[])
   else
     delim = '\n';
 
-  if (zero_delim)
+  if (arguments.zero_delim)
     delim = '\0';
 
   /* Do it.  */
   if (argument_is_device)
-    probe (NULL, argv + optind, delim);
+    probe (NULL, arguments.devices, delim);
   else
-    probe (argv[optind], NULL, delim);
+    probe (arguments.devices[0], NULL, delim);
 
-  if (!zero_delim && (print == PRINT_COMPATIBILITY_HINT
-		      || print == PRINT_BIOS_HINT
-		      || print == PRINT_IEEE1275_HINT
-		      || print == PRINT_BAREMETAL_HINT
-		      || print == PRINT_EFI_HINT || print == PRINT_ARC_HINT))
+  if (!arguments.zero_delim && (print == PRINT_COMPATIBILITY_HINT
+				|| print == PRINT_BIOS_HINT
+				|| print == PRINT_IEEE1275_HINT
+				|| print == PRINT_BAREMETAL_HINT
+				|| print == PRINT_EFI_HINT
+				|| print == PRINT_ARC_HINT))
     putchar ('\n');
 
   /* Free resources.  */
@@ -852,7 +870,14 @@ main (int argc, char *argv[])
   grub_fini_all ();
   grub_util_biosdisk_fini ();
 
-  free (dev_map);
+  {
+    size_t i;
+    for (i = 0; i < arguments.ndevices; i++)
+      free (arguments.devices[i]);
+  }
+  free (arguments.devices);
+
+  free (arguments.dev_map);
 
   return 0;
 }
