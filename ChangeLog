@@ -1,3 +1,13 @@
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/xnu.c (grub_cmd_devprop_load): Fix error
+	message.
+	* grub-core/video/radeon_fuloong2e.c
+	(grub_video_radeon_fuloong2e_setup): Likewise.
+	* grub-core/video/sis315pro.c (grub_video_sis315pro_setup): Likewise.
+	* grub-core/video/video.c (grub_video_set_mode): Don't override
+	standard out of memory message.
+
 2012-02-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	NetBSD disk wedge support.

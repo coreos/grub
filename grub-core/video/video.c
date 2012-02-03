@@ -503,8 +503,7 @@ grub_video_set_mode (const char *modestring,
   next_mode = modevar;
 
   if (! modevar)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		       "couldn't allocate space for local modevar copy");
+    return grub_errno;
 
   if (grub_memcmp (next_mode, "keep", sizeof ("keep")) == 0
       || grub_memcmp (next_mode, "keep,", sizeof ("keep,") - 1) == 0

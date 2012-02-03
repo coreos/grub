@@ -539,7 +539,7 @@ grub_cmd_devprop_load (grub_command_t cmd __attribute__ ((unused)),
   file = grub_file_open (args[0]);
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "couldn't load device-propertie dump");
+		       "couldn't load device-properties dump");
   size = grub_file_size (file);
   buf = grub_malloc (size);
   if (!buf)

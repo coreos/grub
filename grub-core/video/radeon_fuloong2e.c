@@ -98,7 +98,7 @@ grub_video_radeon_fuloong2e_setup (unsigned int width, unsigned int height,
   if ((width != 640 && width != 0) || (height != 480 && height != 0)
       || (depth != 16 && depth != 0))
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "Only 1024x600x16 is supported");
+		       "Only 640x480x16 is supported");
 
   grub_pci_iterate (find_card);
   if (!found)
