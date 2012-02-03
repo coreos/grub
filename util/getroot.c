@@ -291,9 +291,11 @@ find_root_devices_from_poolname (char *poolname)
 	  case 2:
 	    if (strcmp (name, "mirror") && !sscanf (name, "mirror-%u", &dummy)
 		&& !sscanf (name, "raidz%u", &dummy)
+		&& !sscanf (name, "raidz1%u", &dummy)
+		&& !sscanf (name, "raidz2%u", &dummy)
+		&& !sscanf (name, "raidz3%u", &dummy)
 		&& !strcmp (state, "ONLINE"))
 	      {
-		char *tmp;
 		if (ndevices >= devices_allocated)
 		  {
 		    devices_allocated = 2 * (devices_allocated + 8);
@@ -512,7 +514,7 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
 static char **
 find_root_devices_from_libzfs (const char *dir)
 {
-  char **device = NULL;
+  char **devices = NULL;
   char *poolname;
   char *poolfs;
 
@@ -520,13 +522,13 @@ find_root_devices_from_libzfs (const char *dir)
   if (! poolname)
     return NULL;
 
-  device = find_root_devices_from_poolname (poolname);
+  devices = find_root_devices_from_poolname (poolname);
 
   free (poolname);
   if (poolfs)
     free (poolfs);
 
-  return device;
+  return devices;
 }
 
 #ifdef __MINGW32__
@@ -799,9 +801,9 @@ grub_guess_root_devices (const char *dir)
     grub_util_error (_("Storage name for `%s' not NUL-terminated"), dir);
 
   os_dev = xmalloc (2 * sizeof (os_dev[0]));
-  os_dev[0] = xmalloc (strlen ("/dev/") + data_len);
-  memcpy (os_dev[0], "/dev/", strlen ("/dev/"));
-  memcpy (os_dev[0] + strlen ("/dev/"), data, data_len);
+  os_dev[0] = xmalloc (sizeof ("/dev/") - 1 + data_len);
+  memcpy (os_dev[0], "/dev/", sizeof ("/dev/") - 1);
+  memcpy (os_dev[0] + sizeof ("/dev/") - 1, data, data_len);
   os_dev[1] = 0;
 
   if (ports && num_ports > 0)
@@ -842,7 +844,12 @@ grub_guess_root_devices (const char *dir)
 	{
 	  char *tmp = *cur;
 	  int root, dm;
-	  *cur = canonicalize_file_name (*cur);
+	  *cur = canonicalize_file_name (tmp);
+	  if (*cur == NULL)
+	    {
+	      grub_util_error (_("failed to get canonical path of %s"), tmp);
+	      break;
+	    }
 	  free (tmp);
 	  root = (strcmp (*cur, "/dev/root") == 0);
 	  dm = (strncmp (*cur, "/dev/dm-", sizeof ("/dev/dm-") - 1) == 0);

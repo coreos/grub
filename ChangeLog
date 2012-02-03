@@ -1,3 +1,11 @@
+2012-02-03  Richard Laager <rlaager@wiktel.com>
+
+	* util/getroot.c (find_root_devices_from_libzfs): Fix compilation error.
+	(grub_guess_root_devices): Replace strlen with sizeof.
+	Avoid crash.
+	(find_root_devices_from_poolname): Remove unused variable.
+	Handle raidzN.
+
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support install on multi-device filesystems.
