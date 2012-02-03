@@ -1,5 +1,12 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/search_file.c (SEARCH_TARGET): Remove obsolete
+	macro.
+	* grub-core/commands/search_label.c (SEARCH_TARGET): Likewise.
+	* grub-core/commands/search_uuid.c (SEARCH_TARGET): Likewise.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkstandalone.in: Fix help messages. Gettextize.
 	* util/grub-install.in: Gettextize.
 	* util/grub-mkconfig.in: Likewise.
