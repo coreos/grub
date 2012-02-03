@@ -1365,7 +1365,7 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 	  break;
 	}
 
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
     }
   while (0);
 

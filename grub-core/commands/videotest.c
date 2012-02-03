@@ -208,7 +208,7 @@ static grub_command_t cmd_vbe;
 GRUB_MOD_INIT(videotest)
 {
   cmd = grub_register_command ("videotest", grub_cmd_videotest,
-			       "[WxH]",
+			       N_("[WxH]"),
 			       N_("Test video subsystem in mode WxH."));
 #ifdef GRUB_MACHINE_PCBIOS
   cmd_vbe = grub_register_command ("vbetest", grub_cmd_videotest,

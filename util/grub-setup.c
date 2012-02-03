@@ -511,7 +511,7 @@ setup (const char *dir,
 			   + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH));
 
     if (no_rs_length == 0xffff)
-      grub_util_error ("core.img version mismatch");
+      grub_util_error (_("core.img version mismatch"));
 
     void *tmp = xmalloc (core_size);
     grub_memcpy (tmp, core_img, core_size);

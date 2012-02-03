@@ -676,7 +676,8 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target, char *buf)
   switch (target->type)
     {
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
-      grub_strcpy (buf, "temporary");
+      /* TRANSLATORS: it refers to the network address.  */
+      grub_strcpy (buf, _("temporary"));
       return;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
       {
@@ -732,7 +733,7 @@ grub_net_hwaddr_to_str (const grub_net_link_level_address_t *addr, char *str)
       return;
       }
     }
-  grub_printf ("Unsupported hw address type %d\n", addr->type);
+  grub_printf (_("Unsupported hw address type %d\n"), addr->type);
 }
 
 int
@@ -748,7 +749,7 @@ grub_net_hwaddr_cmp (const grub_net_link_level_address_t *a,
     case GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET:
       return grub_memcmp (a->mac, b->mac, sizeof (a->mac));
     }
-  grub_printf ("Unsupported hw address type %d\n", a->type);
+  grub_printf (_("Unsupported hw address type %d\n"), a->type);
   return 1;
 }
 
@@ -769,7 +770,7 @@ grub_net_addr_cmp (const grub_net_network_level_address_t *a,
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
       return 0;
     }
-  grub_printf ("Unsupported address type %d\n", a->type);
+  grub_printf (_("Unsupported address type %d\n"), a->type);
   return 1;
 }
 
@@ -1036,7 +1037,8 @@ print_net_address (const grub_net_network_level_netaddress_t *target)
   switch (target->type)
     {
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
-      grub_printf ("temporary\n");
+      /* TRANSLATORS: it refers to the network address.  */
+      grub_printf ("%s\n", _("temporary"));
       return;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4:
       {
@@ -1059,7 +1061,7 @@ print_net_address (const grub_net_network_level_netaddress_t *target)
       }
       return;
     }
-  grub_printf ("Unknown address type %d\n", target->type);
+  grub_printf (_("Unknown address type %d\n"), target->type);
 }
 
 static void

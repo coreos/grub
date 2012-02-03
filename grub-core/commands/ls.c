@@ -168,7 +168,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	  grub_free (pathname);
 	}
       else
-	grub_printf ("%-12s", "DIR");
+	grub_printf ("%-12s", _("DIR"));
 
       if (info->mtimeset)
 	{

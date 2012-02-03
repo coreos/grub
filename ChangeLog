@@ -1,5 +1,25 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+        * grub-core/commands/ls.c: Gettextize.
+        * grub-core/commands/setpci.c: Likewise.
+        * grub-core/commands/videotest.c: Likewise.
+        * grub-core/disk/geli.c: Likewise.
+        * grub-core/kern/mm.c: Likewise.
+        * grub-core/lib/relocator.c: Likewise.
+        * grub-core/loader/efi/appleloader.c: Likewise.
+        * grub-core/loader/i386/xnu.c: Likewise.
+        * grub-core/loader/ia64/efi/linux.c: Likewise.
+        * grub-core/loader/xnu.c: Likewise.
+        * grub-core/net/dns.c: Likewise.
+        * grub-core/net/net.c: Likewise.
+        * grub-core/script/lexer.c: Likewise.
+        * grub-core/script/parser.y: Likewise.
+        * grub-core/script/yylex.l: Likewise.
+        * util/getroot.c: Likewise.
+        * util/grub-setup.c: Likewise.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/reiserfs.c (grub_reiserfs_get_item): Use proper error
 	number.
 

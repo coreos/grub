@@ -23,6 +23,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/script_sh.h>
+#include <grub/i18n.h>
 
 #define yytext_ptr char *
 #include "grub_script.tab.h"
@@ -140,7 +141,7 @@ grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
 
   if (! lexerstate->getline && ! input)
     {
-      grub_script_yyerror (parserstate, "unexpected end of file");
+      grub_script_yyerror (parserstate, N_("unexpected end of file"));
       return 1;
     }
 
@@ -170,7 +171,7 @@ grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
 
   if (! line)
     {
-      grub_script_yyerror (parserstate, "out of memory");
+      grub_script_yyerror (parserstate, N_("out of memory"));
       return 1;
     }
 

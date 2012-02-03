@@ -1383,7 +1383,7 @@ grub_xnu_bitmap_mode_t grub_xnu_bitmap_mode;
 
 static const struct grub_arg_option xnu_splash_cmd_options[] =
   {
-    {"mode", 'm', 0, "Background image mode.", "stretch|normal",
+    {"mode", 'm', 0, N_("Background image mode."), N_("stretch|normal"),
      ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
@@ -1460,8 +1460,8 @@ GRUB_MOD_INIT(xnu)
 				       N_("DIRECTORY [OSBundleRequired]"),
 				       N_("Load XNU extension directory."));
   cmd_ramdisk = grub_register_command ("xnu_ramdisk", grub_cmd_xnu_ramdisk, 0,
-				       "Load XNU ramdisk. "
-				       "It will be seen as md0.");
+				       N_("Load XNU ramdisk. "
+					  "It will be seen as md0."));
   cmd_splash = grub_register_extcmd ("xnu_splash",
 				     grub_cmd_xnu_splash, 0, 0,
 				     N_("Load a splash image for XNU."),

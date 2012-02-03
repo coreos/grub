@@ -324,7 +324,7 @@ grub_memalign (grub_size_t align, grub_size_t size)
     }
 
  fail:
-  grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
+  grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
   return 0;
 }
 

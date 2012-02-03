@@ -611,7 +611,7 @@ grub_find_device (const char *dir, dev_t dev)
 	  if (res)
 	    {
 	      if (chdir (saved_cwd) < 0)
-		grub_util_error ("cannot restore the original directory");
+		grub_util_error (_("cannot restore the original directory"));
 
 	      free (saved_cwd);
 	      closedir (dp);
@@ -1991,7 +1991,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	if (grub_errno == GRUB_ERR_UNKNOWN_DEVICE)
 	  {
 	    grub_util_warn
-	      ("disk does not exist, so falling back to partition device %s",
+	      (_("disk does not exist, so falling back to partition device %s"),
 	       os_dev);
 
 	    drive = find_system_device (os_dev, &st, 0, 1);

@@ -72,7 +72,7 @@ grub_md_sha256_real (void)
   const gcry_md_spec_t *ret;
   ret = grub_crypto_lookup_md_by_name ("sha256");
   if (!ret)
-    grub_util_error ("Coulnd't load sha256");
+    grub_util_error (_("Coulnd't load sha256"));
   return ret;
 }
 
@@ -82,7 +82,7 @@ grub_md_sha512_real (void)
   const gcry_md_spec_t *ret;
   ret = grub_crypto_lookup_md_by_name ("sha512");
   if (!ret)
-    grub_util_error ("Coulnd't load sha512");
+    grub_util_error (_("Coulnd't load sha512"));
   return ret;
 }
 

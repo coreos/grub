@@ -138,14 +138,14 @@ query_fpswa (void)
 			      NULL, &size, &fpswa_image);
   if (status != GRUB_EFI_SUCCESS)
     {
-      grub_printf("Could not locate FPSWA driver\n");
+      grub_printf (_("Could not locate FPSWA driver\n"));
       return;
     }
   status = bs->handle_protocol (fpswa_image,
 				(void *)&fpswa_protocol, (void *)&fpswa);
   if (status != GRUB_EFI_SUCCESS)
     {
-      grub_printf ("Fpswa protocol not able find the interface\n");
+      grub_printf (_("Fpswa protocol not able find the interface\n"));
       return;
     } 
 }
@@ -750,13 +750,13 @@ grub_cmd_relocate (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_printf ("relocate is %s\n", vals[relocate]);
+      grub_printf (_("relocate is %s\n"), vals[relocate]);
       return GRUB_ERR_NONE;
     }
   else if (argc == 1)
     {
       if (kernel_mem != NULL)
-	grub_printf ("Warning: kernel already loaded!\n");
+	grub_printf (_("Warning: kernel already loaded!\n"));
       for (i = 0; i < sizeof (vals)/sizeof(vals[0]); i++)
 	if (grub_strcmp (argv[0], vals[i]) == 0)
 	  {
@@ -778,14 +778,12 @@ grub_cmd_fpswa (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[] __attribute__((unused)))
 {
   if (argc != 0)
-    {
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "Arguments not expected");
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Arguments not expected");
   query_fpswa ();
   if (fpswa == NULL)
-    grub_printf ("No FPSWA loaded\n");
+    grub_printf (_("No FPSWA loaded\n"));
   else
-    grub_printf ("FPSWA revision: %x\n", fpswa->revision);
+    grub_printf (_("FPSWA revision: %x\n"), fpswa->revision);
   return GRUB_ERR_NONE;
 }
 
@@ -794,21 +792,21 @@ static grub_command_t cmd_linux, cmd_initrd, cmd_payload, cmd_relocate, cmd_fpsw
 GRUB_MOD_INIT(linux)
 {
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     "FILE [ARGS...]", "Load Linux.");
+				     N_("FILE [ARGS...]"), N_("Load Linux."));
   
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      "FILE", "Load initrd.");
+				      N_("FILE"), N_("Load initrd."));
 
   cmd_payload = grub_register_command ("payload", grub_cmd_payload,
-				       "FILE [ARGS...]",
-				       "Load an additional file.");
+				       N_("FILE [ARGS...]"),
+				       N_("Load an additional file."));
 
   cmd_relocate = grub_register_command ("relocate", grub_cmd_relocate,
-					"[on|off|force]",
-					"Set relocate feature.");
+					N_("[on|off|force]"),
+					N_("Set relocate feature."));
 
   cmd_fpswa = grub_register_command ("fpswa", grub_cmd_fpswa,
-				     "", "Display FPSWA version.");
+				     "", N_("Display FPSWA version."));
 
   my_mod = mod;
 }
