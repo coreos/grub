@@ -1,5 +1,10 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/reiserfs.c (grub_reiserfs_get_item): Use proper error
+	number.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ldm.c (grub_util_ldm_embed): Correct error message.
 
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>

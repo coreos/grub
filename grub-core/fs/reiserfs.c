@@ -479,19 +479,19 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
 
   if (! data)
     {
-      grub_error (GRUB_ERR_TEST_FAILURE, "data is NULL");
+      grub_error (GRUB_ERR_BAD_FS, "data is NULL");
       goto fail;
     }
 
   if (! key)
     {
-      grub_error (GRUB_ERR_TEST_FAILURE, "key is NULL");
+      grub_error (GRUB_ERR_BAD_FS, "key is NULL");
       goto fail;
     }
 
   if (! item)
     {
-      grub_error (GRUB_ERR_TEST_FAILURE, "item is NULL");
+      grub_error (GRUB_ERR_BAD_FS, "item is NULL");
       goto fail;
     }
 
@@ -520,7 +520,7 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
       if (current_level >= previous_level)
         {
           grub_dprintf ("reiserfs_tree", "level loop detected, aborting\n");
-          grub_error (GRUB_ERR_FILE_READ_ERROR, "level loop");
+          grub_error (GRUB_ERR_BAD_FS, "level loop");
           goto fail;
         }
       previous_level = current_level;
