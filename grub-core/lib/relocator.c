@@ -23,6 +23,7 @@
 #include <grub/cache.h>
 #include <grub/memory.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 

@@ -1,5 +1,10 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mm.c: Add missing include of i18n.h
+	* grub-core/lib/relocator.c: Likewise.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/ia64/efi/linux.c (find_mmap_size): Replace fatal with
 	error.
 	(allocate_pages): Check return value.

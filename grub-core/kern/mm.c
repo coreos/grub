@@ -65,6 +65,7 @@
 #include <grub/types.h>
 #include <grub/disk.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 #include <grub/mm_private.h>
 
 #ifdef MM_DEBUG
