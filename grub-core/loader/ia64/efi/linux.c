@@ -175,7 +175,10 @@ find_mmap_size (void)
       grub_free (mmap);
       
       if (ret < 0)
-	grub_fatal ("cannot get memory map");
+	{
+	  grub_error (GRUB_ERR_IO, "cannot get memory map");
+	  return 0;
+	}
       else if (ret > 0)
 	break;
 
@@ -243,6 +246,8 @@ allocate_pages (grub_uint64_t align, grub_uint64_t size_pages,
   size = size_pages << 12;
 
   mmap_size = find_mmap_size ();
+  if (!mmap_size)
+    return 0;
 
     /* Read the memory map temporarily, to find free space.  */
   mmap = grub_malloc (mmap_size);
@@ -251,7 +256,10 @@ allocate_pages (grub_uint64_t align, grub_uint64_t size_pages,
 
   tmp_mmap_size = mmap_size;
   if (grub_efi_get_memory_map (&tmp_mmap_size, mmap, 0, &desc_size, 0) <= 0)
-    grub_fatal ("cannot get memory map");
+    {
+      grub_error (GRUB_ERR_IO, "cannot get memory map");
+      goto fail;
+    }
 
   mmap_end = NEXT_MEMORY_DESCRIPTOR (mmap, tmp_mmap_size);
   
@@ -279,7 +287,10 @@ allocate_pages (grub_uint64_t align, grub_uint64_t size_pages,
 	continue;
       mem = grub_efi_allocate_pages (aligned_start, size_pages);
       if (! mem)
-	grub_fatal ("cannot allocate pages");
+	{
+	  grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate memory");
+	  goto fail;
+	}
       break;
     }
 
@@ -309,10 +320,10 @@ set_boot_param_console (void)
       != GRUB_EFI_SUCCESS)
     return;
 
-  grub_dprintf("linux",
-	       "Console info: cols=%lu rows=%lu x=%u y=%u\n",
-	       cols, rows,
-	       conout->mode->cursor_column, conout->mode->cursor_row);
+  grub_dprintf ("linux",
+		"Console info: cols=%lu rows=%lu x=%u y=%u\n",
+		cols, rows,
+		conout->mode->cursor_column, conout->mode->cursor_row);
   
   boot_param->console_info.num_cols = cols;
   boot_param->console_info.num_rows = rows;
@@ -340,17 +351,17 @@ grub_linux_boot (void)
 
   set_boot_param_console ();
 
-  grub_printf ("Jump to %016lx\n", entry);
-
-  grub_machine_fini ();
+  grub_dprintf ("linux", "Jump to %016lx\n", entry);
 
   /* MDT.
      Must be done after grub_machine_fini because map_key is used by
      exit_boot_services.  */
   mmap_size = find_mmap_size ();
+  if (! mmap_size)
+    return grub_errno;
   mmap_buf = grub_efi_allocate_pages (0, page_align (mmap_size) >> 12);
   if (! mmap_buf)
-    grub_fatal ("cannot allocate memory map");
+    return grub_error (GRUB_ERR_IO, "cannot allocate memory map");
   err = grub_efi_finish_boot_services (&mmap_size, mmap_buf, &map_key,
 				       &desc_size, &desc_version);
   if (err)
@@ -448,8 +459,8 @@ grub_load_elf64 (grub_file_t file, void *buffer, const char *filename)
       if (kernel_mem)
 	{
 	  reloc_offset = (grub_uint64_t)kernel_mem - low_addr;
-	  grub_printf ("  Relocated at %p (offset=%016lx)\n",
-		       kernel_mem, reloc_offset);
+	  grub_dprintf ("linux", "  Relocated at %p (offset=%016lx)\n",
+			kernel_mem, reloc_offset);
 	  entry += reloc_offset;
 	}
     }
@@ -464,11 +475,11 @@ grub_load_elf64 (grub_file_t file, void *buffer, const char *filename)
 			     + i * ehdr->e_phentsize);
       if (phdr->p_type == PT_LOAD)
         {
-	  grub_printf ("  [paddr=%lx load=%lx memsz=%08lx "
-		       "off=%lx flags=%x]\n",
-		       phdr->p_paddr, phdr->p_paddr + reloc_offset,
-		       phdr->p_memsz, phdr->p_offset, phdr->p_flags);
-
+	  grub_dprintf ("linux", "  [paddr=%lx load=%lx memsz=%08lx "
+			"off=%lx flags=%x]\n",
+			phdr->p_paddr, phdr->p_paddr + reloc_offset,
+			phdr->p_memsz, phdr->p_offset, phdr->p_flags);
+	  
 	  if (grub_file_seek (file, phdr->p_offset) == (grub_off_t)-1)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "invalid offset in program header");
@@ -529,7 +540,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_printf ("Loading linux: %s\n", argv[0]);
+  grub_dprintf ("linux", "Loading linux: %s\n", argv[0]);
 
   if (grub_load_elf64 (file, buffer, argv[0]))
     goto fail;
@@ -605,7 +616,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     goto fail;
 
   initrd_size = 0;
-  grub_printf ("Loading initrd: ");
+  grub_dprintf ("linux", "Loading initrd\n");
   for (i = 0; i < argc; i++)
     {
       grub_file_filter_disable_compression ();
@@ -614,17 +625,19 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 	goto fail;
       nfiles++;
       initrd_size += grub_file_size (files[i]);
-      grub_printf ("%c%s\n", i == 0 ? ' ' : '+', argv[i]);
+      grub_dprintf ("linux", "File %d: %s\n", i, argv[i]);
     }
-  grub_printf ("\n");
 
   initrd_pages = (page_align (initrd_size) >> 12);
   initrd_mem = grub_efi_allocate_pages (0, initrd_pages);
   if (! initrd_mem)
-    grub_fatal ("cannot allocate pages");
+    {
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate pages");
+      goto fail;
+    }
   
-  grub_printf ("  [addr=0x%lx, size=0x%lx]\n",
-	       (grub_uint64_t)initrd_mem, initrd_size);
+  grub_dprintf ("linux", "[addr=0x%lx, size=0x%lx]\n",
+		(grub_uint64_t) initrd_mem, initrd_size);
 
   ptr = initrd_mem;
   for (i = 0; i < nfiles; i++)
@@ -678,8 +691,8 @@ grub_cmd_payload  (grub_command_t cmd __attribute__ ((unused)),
   if (! base)
     goto fail;
 
-  grub_printf ("Payload %s [addr=%lx + %lx]\n",
-	       argv[0], (grub_uint64_t)base, size);
+  grub_dprintf ("linux", "Payload %s [addr=%lx + %lx]\n",
+		argv[0], (grub_uint64_t)base, size);
 
   if (grub_file_read (file, base, size) != size)
     {

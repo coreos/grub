@@ -1,5 +1,20 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/ia64/efi/linux.c (find_mmap_size): Replace fatal with
+	error.
+	(allocate_pages): Check return value.
+	Replace fatal with error.
+	(grub_linux_boot): Replace printf with dprintf.
+	Check find_mmap_size return value.
+	Replace fatal with error.
+	Don't call grub_machine_fini.
+	(grub_load_elf64): Replace printf with dprintf.
+	(grub_cmd_linux): Likewise.
+	(grub_cmd_initrd): Likewise.
+	(grub_cmd_payload): Likewise.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/xnu.c (grub_cmd_devprop_load): Fix error
 	message.
 	* grub-core/video/radeon_fuloong2e.c
