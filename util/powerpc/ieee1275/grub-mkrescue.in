@@ -38,21 +38,17 @@ grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 # Usage: usage
 # Print the usage.
 usage () {
-    cat <<EOF
-Usage: $self [OPTION] output_image
-Make GRUB rescue image.
-
-  -h, --help              print this message and exit
-  -v, --version           print the version information and exit
-  --modules=MODULES       pre-load specified modules MODULES
-  --pkglibdir=DIR         use images from directory DIR
-                          default: ${pkglibdir}
-  --grub-mkimage=FILE     use FILE as grub-mkimage
-
-$self generates a bootable rescue CD image for PowerMac and CHRP.
-
-Report bugs to <bug-grub@gnu.org>.
-EOF
+    gettext_printf "Usage: %s [OPTION] SOURCE...\n" "$self"
+    gettext "Make GRUB rescue image."; echo
+    echo
+    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
+    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
+    printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    echo
+    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by: %s" "genisoimage -help" "$self"
+    echo
+    gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }
 
 argument () {
@@ -60,13 +56,16 @@ argument () {
   shift
 
   if test $# -eq 0; then
-      echo "$0: option requires an argument -- '$opt'" 1>&2
+      gettext_printf "%s: option requires an argument -- '%s'\n" "$0" "$opt" 1>&2
       exit 1
   fi
   echo $1
 }
 
 input_dir=${pkglibdir}
+
+source=
+output_image=
 
 # Check the arguments.
 while test $# -gt 0
@@ -87,28 +86,23 @@ do
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
 
-    --pkglibdir)
+    --override-directory)
 	input_dir=`argument $option "$@"`; shift ;;
-    --pkglibdir=*)
-	input_dir=`echo "$option" | sed 's/--pkglibdir=//'` ;;
+    --override-directory=*)
+	input_dir=`echo "$option" | sed 's/--override-directory=//'` ;;
 
     --grub-mkimage)
 	grub_mkimage=`argument $option "$@"`; shift ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
 
-    -*)
-	echo "Unrecognized option \`$option'" 1>&2
-	usage
-	exit 1
-	;;
+    -o | --output)
+	output_image=`argument $option "$@"`; shift ;;
+    --output=*)
+	output_image=`echo "$option" | sed 's/--output=//'` ;;
+
     *)
-	if test "x$output_image" != x; then
-	    echo "Unrecognized option \`$option'" 1>&2
-	    usage
-	    exit 1
-	fi
-	output_image="${option}" ;;
+	source="${source} ${option} $@"; break ;;
     esac
 done
 
@@ -135,7 +129,7 @@ core_img=${boot_dir}/grub.img
 ${grub_mkimage} -O powerpc-ieee1275 -n -d ${input_dir}/ -o ${core_img} ${modules}
 genisoimage -hfs -part -no-desktop -r -J -o ${output_image} \
  -map ${map_file} -hfs-bless ${boot_dir} -chrp-boot -sysid PPC \
- ${iso_dir}
+ ${iso_dir} ${source}
 
 rm -rf ${iso_dir}
 rm -f ${map_file}
