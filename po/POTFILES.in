@@ -5,6 +5,7 @@
 ./grub-core/bus/cs5536.c
 ./grub-core/bus/emu/pci.c
 ./grub-core/bus/pci.c
+./grub-core/bus/usb/ehci.c
 ./grub-core/bus/usb/emu/usb.c
 ./grub-core/bus/usb/ohci.c
 ./grub-core/bus/usb/serial/common.c
@@ -535,15 +536,14 @@
 ./tests/example_unit_test.c
 ./tests/lib/unit_test.c
 ./tests/printf_unit_test.c
+./util/argp_common.c
 ./util/bin2h.c
-./util/deviceiter.c
 ./util/devicemap.c
 ./util/getroot.c
 ./util/grub-editenv.c
 ./util/grub-fstest.c
 ./util/grub-macho2img.c
 ./util/grub-menulst2cfg.c
-./util/grub-mkdevicemap.c
 ./util/grub-mkfont.c
 ./util/grub-mkimage.c
 ./util/grub-mkimagexx.c

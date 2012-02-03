@@ -1,5 +1,10 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/POTFILES.in: Regenerate.
+	* util/grub-install.in: Gettextize the strings missed in first pass.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.util.def (grub-mkdevicemap): Removed.
 	* include/grub/emu/hostdisk.h (grub_util_get_os_disk): New proto.
 	* include/grub/util/deviceiter.h: Removed.

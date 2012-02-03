@@ -131,7 +131,7 @@ argument () {
   shift
 
   if test $# -eq 0; then
-      echo "$0: option requires an argument -- '$opt'" 1>&2
+      gettext_printf "%s: option requires an argument -- '%s'" "$0" "$opt" 1>&2
       exit 1
   fi
   echo "$1"
@@ -240,13 +240,14 @@ do
         setup_force="--force" ;;
 
     -*)
-	echo "Unrecognized option \`$option'" 1>&2
+	gettext_printf "Unrecognized option \`%s'\n" "$option" 1>&2
 	usage
 	exit 1
 	;;
     *)
 	if test "x$install_device" != x; then
-	    echo "More than one install_devices?" 1>&2
+	    gettext "More than one install_devices?" 1>&2
+	    echo 1>&2
 	    usage
 	    exit 1
 	fi
@@ -256,7 +257,8 @@ done
 
 if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
     || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then
-    echo "install_device not specified." 1>&2
+    gettext "Install device isn't specified." 1>&2
+    echo 1>&2
     usage
     exit 1
 fi
@@ -337,7 +339,7 @@ if [ x"$platform" = xefi ]; then
     if test -n "$efidir"; then
 	efi_fs=`"$grub_probe" --target=fs "--device-map=${device_map}" "${efidir}"`
 	if test "x$efi_fs" = xfat; then :; else
-	    echo "${efidir} doesn't look like an EFI partition." 1>&2
+	    gettext_printf "%s doesn't look like an EFI partition.\n" "${efidir}" 1>&2
 	    efidir=
 	fi
     fi
@@ -410,7 +412,7 @@ if test -f "$device_map"; then
     tmp=`sed -n '/^([fh]d[0-9]*)/s/\(^(.*)\).*/\1/p' "$device_map" \
 	| sort | uniq -d | sed -n 1p`
     if test -n "$tmp"; then
-	echo "The drive $tmp is defined multiple times in the device map $device_map" 1>&2
+	gettext_printf "The drive %s is defined multiple times in the device map %s\n" "$tmp" "$device_map" 1>&2
 	exit 1
     fi
 else
@@ -454,9 +456,10 @@ fi
 # Create the core image. First, auto-detect the filesystem module.
 fs_module="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=fs --device `"
 if test "x$fs_module" = x ; then
-    echo "Auto-detection of a filesystem of ${grub_device} failed." 1>&2
-    echo "Try with --recheck." 1>&2
-    echo "If the problem persists please report this together with the output of \"$grub_probe --device-map=\"${device_map}\" --target=fs -v ${grubdir}\" to <bug-grub@gnu.org>" 1>&2
+    gettext_printf "Auto-detection of a filesystem of %s failed.\n" "${grub_device}" 1>&2
+    gettext "Try with --recheck." 1>&2
+    echo 1>&2
+    gettext_printf "If the problem persists please report this together with the output of %s to <%s>" "\"$grub_probe --device-map=\"${device_map}\" --target=fs -v ${grubdir}\"" "bug-grub@gnu.org" 1>&2
     exit 1
 fi
 
@@ -527,11 +530,11 @@ if [ "x${devabstraction_module}" = "x" ] ; then
         uuid="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=fs_uuid --device`"
         if [ "x${uuid}" = "x" ] ; then
           if [ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]; then
-             echo "UUID needed with $platform, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+             gettext_printf "UUID needed with $platform, but the filesystem containing %s does not support UUIDs.\n" "${grubdir}" 1>&2
           elif [ "$disk_module" = ata ]; then
-             echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+             gettext_printf "UUID needed with ata mod, but the filesystem containing %s does not support UUIDs.\n" "${grubdir}" 1>&2
           else
-             echo "UUID needed with cross-disk installs, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+             gettext_printf "UUID needed with cross-disk installs, but the filesystem containing %s does not support UUIDs.\n" "${grubdir}" 1>&2
           fi
              
           exit 1
@@ -548,7 +551,8 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	elif [ x"$platform" = xloongson ] || [ x"$platform" = xqemu ] || [ x"$platform" = xcoreboot ] || [ x"$platform" = xmultiboot ] || [ x"$platform" = xqemu-mips ]; then
             hints="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device`"
 	else
-            echo "No hints available for your platform. Expect reduced performance"
+            gettext "No hints available for your platform. Expect reduced performance" 1>&2
+	    echo 1>&2
 	    hints=
         fi
         echo "search.fs_uuid ${uuid} root $hints " >> "${grubdir}/load.cfg"
@@ -628,8 +632,7 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	dev="`echo $grub_device | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`"
 	partno="`echo $grub_device | sed -e 's/.*[^0-9]\([0-9]\+\)$/\1/'`"
 	ofpath="`$ofpathname $dev`" || {
-	    echo "Couldn't find Open Firmware device tree path for $dev."
-	    echo "You will have to set boot-device manually."
+	    gettext_printf "Couldn't find Open Firmware device tree path for %s.\nYou will have to set boot-device manually.\n" "$dev" 1>&2
 	    exit 1
 	}
 
@@ -640,7 +643,8 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	if  [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ] \
 	    && [ -n "${install_device}" ]; then
             if [ "$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t msdos_parttype)" != "41" ]; then
-		echo "The chosen partition is not a PReP partition."
+		gettext "The chosen partition is not a PReP partition." 1>&2
+		echo 1>&2
 		exit 1
             fi
 
@@ -648,26 +652,30 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
             # Change boot device to the harddisk root
 		boot_device="$ofpath"
 		dd if="${grubdir}/core.${imgext}" of="${install_device}" status=noxfer || {
-		    echo "Failed to copy Grub to the PReP partition."
+		    gettext "Failed to copy Grub to the PReP partition." 1>&2
+		    echo 1>&2
 		    exit 1
 		}
             else
-		echo "The PReP partition is not empty. If you are sure you want to use it, run dd to clear it:"
+		gettext "The PReP partition is not empty. If you are sure you want to use it, run dd to clear it:" 1>&2
+		echo 1>&2
 		echo "  dd if=/dev/zero of=${install_device}"
 		exit 1
             fi
 	fi
 
 	"$nvsetenv" boot-device "$boot_device" || {
-	    echo "$nvsetenv failed."
-	    echo "You will have to set boot-device manually.  At the Open Firmware prompt, type:"
-	    echo "  setenv boot-device $boot_device"
+	    gettext_printf "%s failed.\n" "$nvsetenv" 1>&2
+	    gettext "You will have to set boot-device manually.  At the Open Firmware prompt, type:" 1>&2
+	    echo 1>&2
+	    echo "  setenv boot-device $boot_device" 1>&2
 	    exit 1
 	}
     fi
 elif [ x"${target_cpu}-${platform}" = xmips-arc ]; then
     dvhtool -d "${install_device}" --unix-to-vh "{grubdir}/core.${imgext}" grub
-    echo "You will have to set SystemPartition and OSLoader manually."
+    gettext "You will have to set SystemPartition and OSLoader manually." 1>&2
+    echo 1>&2
 elif [ x"$platform" = xefi ]; then
     cp "${grubdir}/core.${imgext}" "${efidir}/${efi_file}"
     # For old macs. Suggested by Peter Jones.
@@ -699,7 +707,7 @@ elif [ x"$platform" = xefi ]; then
 	efidir_drive="$("$grub_probe" --target=drive --device-map= "$efidir")"
 	efidir_disk="$("$grub_probe" --target=disk --device-map= "$efidir")"
 	if test -z "$efidir_drive" || test -z "$efidir_disk"; then
-	    echo "Can't find GRUB drive for $efidir; unable to create EFI Boot Manager entry." >&2
+	    gettext_printf "Can't find GRUB drive for %s; unable to create EFI Boot Manager entry.\n" "$efidir" >&2
 	else
 	    efidir_part="$(echo "$efidir_drive" | sed 's/^([^,]*,[^0-9]*//; s/[^0-9].*//')"
 	    efibootmgr $efi_quiet -c -d "$efidir_disk" -p "$efidir_part" -w \
@@ -707,10 +715,12 @@ elif [ x"$platform" = xefi ]; then
 	fi
     fi
 else
-    echo "WARNING: no platform-specific install was performed"
+    gettext "WARNING: no platform-specific install was performed" 1>&2
+    echo 1>&2
 fi
 
-echo "Installation finished. No error reported."
+gettext "Installation finished. No error reported." 1>&2
+echo 1>&2
 
 # Bye.
 exit 0
