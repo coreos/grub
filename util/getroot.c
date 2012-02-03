@@ -846,10 +846,7 @@ grub_guess_root_devices (const char *dir)
 	  int root, dm;
 	  *cur = canonicalize_file_name (tmp);
 	  if (*cur == NULL)
-	    {
-	      grub_util_error (_("failed to get canonical path of %s"), tmp);
-	      break;
-	    }
+	    grub_util_error (_("failed to get canonical path of %s"), tmp);
 	  free (tmp);
 	  root = (strcmp (*cur, "/dev/root") == 0);
 	  dm = (strncmp (*cur, "/dev/dm-", sizeof ("/dev/dm-") - 1) == 0);

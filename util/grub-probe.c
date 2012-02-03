@@ -323,6 +323,8 @@ probe (const char *path, char **device_names, char delim)
   if (path != NULL)
     {
       grub_path = canonicalize_file_name (path);
+      if (! grub_path)
+	grub_util_error (_("failed to get canonical path of %s"), path);
       device_names = grub_guess_root_devices (grub_path);
       free (grub_path);
     }
@@ -357,6 +359,16 @@ probe (const char *path, char **device_names, char delim)
 			 *curdev);
     }
   *curdrive = 0;
+
+  if (print == PRINT_DRIVE)
+    {
+      for (curdrive = drives_names; *curdrive; curdrive++)
+	{
+	  printf ("(%s)", *curdrive);
+	  putchar (delim);
+	}
+      goto end;
+    }
 
   if (print == PRINT_FS || print == PRINT_FS_UUID
       || print == PRINT_FS_LABEL)

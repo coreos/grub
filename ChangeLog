@@ -1,5 +1,11 @@
 2012-02-03  Richard Laager <rlaager@wiktel.com>
 
+	* util/grub-probe.c (probe): Don't crash on canonicalize_file_name
+	failure.
+	Put back lost PRINT_DRIVE.
+
+2012-02-03  Richard Laager <rlaager@wiktel.com>
+
 	* util/getroot.c (find_root_devices_from_libzfs): Fix compilation error.
 	(grub_guess_root_devices): Replace strlen with sizeof.
 	Avoid crash.
