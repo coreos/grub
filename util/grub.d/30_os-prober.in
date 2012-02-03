@@ -43,7 +43,7 @@ osx_entry() {
         # TRANSLATORS: it refers to kernel architecture (32-bit)
 	bitstr="$(gettext "(32-bit)")"
     else
-        # TRANSLATORS: it refers to kernel architecture (32-bit)
+        # TRANSLATORS: it refers to kernel architecture (64-bit)
 	bitstr="$(gettext "(64-bit)")"
     fi
     # TRANSLATORS: it refers on the OS residing on device %s

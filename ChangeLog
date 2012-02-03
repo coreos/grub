@@ -1,5 +1,9 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/30_os-prober.in: Fix TRANSLATORS comment.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-kbdcomp.in: Add decent help and gettextize.
 	* docs/man/grub-kbdcomp.h2m: New file.
 
