@@ -89,7 +89,7 @@ main (int argc, char *argv[])
 
   if (optind >= argc)
     {
-      fprintf (stderr, _("No path is specified.\n"));
+      fprintf (stderr, "%s", _("No path is specified.\n"));
       usage (1);
     }
 

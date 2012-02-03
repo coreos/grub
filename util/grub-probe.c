@@ -798,7 +798,7 @@ main (int argc, char *argv[])
   /* Obtain ARGUMENT.  */
   if (optind >= argc)
     {
-      fprintf (stderr, _("No path or device is specified.\n"));
+      fprintf (stderr, "%s", _("No path or device is specified.\n"));
       usage (1);
     }
 

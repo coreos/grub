@@ -1821,7 +1821,7 @@ main (int argc, char *argv[])
 
   if (!image_target)
     {
-      printf (_("Target format not specified (use the -O option).\n"));
+      printf ("%s", _("Target format not specified (use the -O option).\n"));
       usage (1);
     }
 
