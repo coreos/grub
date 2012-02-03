@@ -100,6 +100,7 @@ struct hd_geometry
 # define HAVE_DIOCGDINFO
 # include <sys/ioctl.h>
 # include <sys/disklabel.h>    /* struct disklabel */
+# include <sys/disk.h>    /* struct dkwedge_info */
 #else /* !defined(__NetBSD__) && !defined(__FreeBSD__) && !defined(__FreeBSD_kernel__) */
 # undef HAVE_DIOCGDINFO
 #endif /* defined(__NetBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) */
@@ -483,6 +484,9 @@ grub_hostdisk_find_partition_start (const char *dev)
 # elif !defined(HAVE_DIOCGDINFO)
   struct hd_geometry hdg;
 # else /* defined(HAVE_DIOCGDINFO) */
+#  if defined(__NetBSD__)
+  struct dkwedge_info dkw;
+#  endif /* defined(__NetBSD__) */
   struct disklabel label;
   int p_index;
 # endif /* !defined(HAVE_DIOCGDINFO) */
@@ -574,6 +578,12 @@ devmapper_fail:
 # else /* defined(HAVE_DIOCGDINFO) */
 #  if defined(__NetBSD__)
   configure_device_driver (fd);
+  /* First handle the case of disk wedges.  */
+  if (ioctl (fd, DIOCGWEDGEINFO, &dkw) == 0)
+    {
+      close (fd);
+      return (grub_disk_addr_t) dkw.dkw_offset;
+    }
 #  endif /* defined(__NetBSD__) */
   if (ioctl (fd, DIOCGDINFO, &label) == -1)
 # endif /* !defined(HAVE_DIOCGDINFO) */

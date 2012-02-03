@@ -1,3 +1,12 @@
+2012-02-03  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	NetBSD disk wedge support.
+
+	* grub-core/kern/emu/hostdisk.c (grub_hostdisk_find_partition_start)
+	[__NetBSD__]: Handle NetBSD disk wedges.
+	* util/getroot.c (convert_system_partition_to_system_disk)
+	[__NetBSD__]: Likewise.
+
 2012-02-03  Mark Wooding <mdw@distorted.org.uk>
 
 	* util/grub-mkconfig.in: Use umask rather than chmod to create

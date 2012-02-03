@@ -124,6 +124,7 @@
 # define HAVE_DIOCGDINFO
 # include <sys/ioctl.h>
 # include <sys/disklabel.h>    /* struct disklabel */
+# include <sys/disk.h>    /* struct dkwedge_info */
 #else /* !defined(__NetBSD__) && !defined(__FreeBSD__) && !defined(__FreeBSD_kernel__) */
 # undef HAVE_DIOCGDINFO
 #endif /* defined(__NetBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) */
@@ -1714,12 +1715,44 @@ devmapper_out:
   return path;
 
 #elif defined(__NetBSD__)
-  /* NetBSD uses "/dev/r[a-z]+[0-9][a-z]".  */
-  char *path = xstrdup (os_dev);
-  if (strncmp ("/dev/r", path, sizeof("/dev/r") - 1) == 0 &&
-      (path[sizeof("/dev/r") - 1] >= 'a' && path[sizeof("/dev/r") - 1] <= 'z') &&
-      strncmp ("fd", path + sizeof("/dev/r") - 1, sizeof("fd") - 1) != 0)    /* not a floppy device name */
+  int rawpart = -1;
+# ifdef HAVE_GETRAWPARTITION
+  rawpart = getrawpartition();
+# endif /* HAVE_GETRAWPARTITION */
+  if (rawpart < 0)
+    return xstrdup (os_dev);
+
+  /* NetBSD disk wedges are of the form "/dev/rdk.*".  */
+  if (strncmp ("/dev/rdk", os_dev, sizeof("/dev/rdk") - 1) == 0)
     {
+      struct dkwedge_info dkw;
+      int fd;
+
+      fd = open (os_dev, O_RDONLY);
+      if (fd == -1)
+	{
+	  grub_error (GRUB_ERR_BAD_DEVICE,
+		      "cannot open `%s' while attempting to get disk wedge info", os_dev);
+	  return xstrdup (os_dev);
+	}
+      /* We don't call configure_device_driver since this isn't a floppy device name.  */
+      if (ioctl (fd, DIOCGWEDGEINFO, &dkw) == -1)
+	{
+	  grub_error (GRUB_ERR_BAD_DEVICE,
+		      "cannot get disk wedge info of `%s'", os_dev);
+	  close (fd);
+	  return xstrdup (os_dev);
+	}
+      close (fd);
+      return xasprintf ("/dev/r%s%c", dkw.dkw_parent, 'a' + rawpart);
+    }
+
+  /* NetBSD (disk label) partitions are of the form "/dev/r[a-z]+[0-9][a-z]".  */
+  if (strncmp ("/dev/r", os_dev, sizeof("/dev/r") - 1) == 0 &&
+      (os_dev[sizeof("/dev/r") - 1] >= 'a' && os_dev[sizeof("/dev/r") - 1] <= 'z') &&
+      strncmp ("fd", os_dev + sizeof("/dev/r") - 1, sizeof("fd") - 1) != 0)    /* not a floppy device name */
+    {
+      char *path = xstrdup (os_dev);
       char *p;
       for (p = path + sizeof("/dev/r"); *p >= 'a' && *p <= 'z'; p++);
       if (grub_isdigit(*p))
@@ -1729,16 +1762,13 @@ devmapper_out:
 	    {
 	      /* path matches the required regular expression and
 		 p points to its last character.  */
-	      int rawpart = -1;
-# ifdef HAVE_GETRAWPARTITION
-	      rawpart = getrawpartition();
-# endif /* HAVE_GETRAWPARTITION */
-	      if (rawpart >= 0)
-		*p = 'a' + rawpart;
+	      *p = 'a' + rawpart;
 	    }
-        }
+	}
+      return path;
     }
-  return path;
+
+  return xstrdup (os_dev);
 
 #elif defined (__sun__)
   char *colon = grub_strrchr (os_dev, ':');
