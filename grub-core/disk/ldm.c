@@ -917,7 +917,7 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
 
   if (embed_type != GRUB_EMBED_PCBIOS)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "GPT curently supports only PC-BIOS embedding");
+		       "LDM curently supports only PC-BIOS embedding");
   if (disk->partition)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND, "disk isn't LDM");
   pv = grub_diskfilter_get_pv_from_disk (disk, &vg);

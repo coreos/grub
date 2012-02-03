@@ -1,5 +1,9 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ldm.c (grub_util_ldm_embed): Correct error message.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/search_file.c (SEARCH_TARGET): Remove obsolete
 	macro.
 	* grub-core/commands/search_label.c (SEARCH_TARGET): Likewise.
