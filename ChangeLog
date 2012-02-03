@@ -1,5 +1,19 @@
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Migrate grub-mkimage.c to argp.
+
+	* Makefile.util.def (grub-mkimage): Add util/argp_common.c.
+	(grub-setup): Likewise.
+	* util/grub-setup.c (print_version): Move to ...
+	* util/argp_common.c (print_version): ... here.
+	* util/grub-setup.c (argp_program_version_hook): Move to ...
+	* util/argp_common.c (argp_program_version_hook): ... here.
+	* util/grub-setup.c (argp_parser): Add exit (1) on fatal error for
+	safety.
+	* util/grub-mkimage.c (main): Migrate to argp.
+
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Use same message as
 	util/powerpc/ieee1275/grub-mkrescue.in with %s in place of command
 	for better translations.

@@ -746,8 +746,7 @@ static struct argp_option options[] = {
    N_("Install even if problems are detected"), 0},
   {"skip-fs-probe",'s',0,      0,
    N_("Do not probe for filesystems in DEVICE"), 0},
-  {"verbose",     'v', 0,      0,
-   N_("Print verbose messages."), 0},
+  {"verbose",     'v', 0,      0, N_("Print verbose messages."), 0},
   {"allow-floppy", 'a', 0,      0,
    N_("Make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes."), 0},
 
@@ -787,17 +786,6 @@ struct arguments
   int allow_floppy;
   char *device;
 };
-
-/* Print the version information.  */
-static void
-print_version (FILE *stream, struct argp_state *state)
-{
-  fprintf (stream, "%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
-}
-void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
-
-/* Set the bug report address */
-const char *argp_program_bug_address = "<"PACKAGE_BUGREPORT">";
 
 static error_t
 argp_parser (int key, char *arg, struct argp_state *state)
@@ -868,6 +856,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
       case ARGP_KEY_NO_ARGS:
           fprintf (stderr, "%s", _("No device is specified.\n"));
           argp_usage (state);
+	  exit (1);
           break;
 
       default:

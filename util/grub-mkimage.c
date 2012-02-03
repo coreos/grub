@@ -42,7 +42,7 @@
 #include <grub/efi/pe32.h>
 
 #define _GNU_SOURCE	1
-#include <getopt.h>
+#include <argp.h>
 
 #include "progname.h"
 
@@ -1631,227 +1631,240 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 
 
-static struct option options[] =
-  {
-    {"directory", required_argument, 0, 'd'},
-    {"prefix", required_argument, 0, 'p'},
-    {"memdisk", required_argument, 0, 'm'},
-    {"font", required_argument, 0, 'f'},
-    {"config", required_argument, 0, 'c'},
-    {"output", required_argument, 0, 'o'},
-    {"note", no_argument, 0, 'n'},
-    {"format", required_argument, 0, 'O'},
-    {"compression", required_argument, 0, 'C'},
-    {"help", no_argument, 0, 'h'},
-    {"version", no_argument, 0, 'V'},
-    {"verbose", no_argument, 0, 'v'},
-    {0, 0, 0, 0}
-  };
+static struct argp_option options[] = {
+  {"directory",  'd', N_("DIR"), 0, N_("use images and modules under DIR [default=%s/@platform@]"), 0},
+  {"prefix",  'p', N_("DIR"), 0, N_("set grub_prefix directory [default=%s]"), 0},
+  {"memdisk",  'm', N_("FILE"), 0, N_("embed FILE as a memdisk image"), 0},
+  {"config",   'c', N_("FILE"), 0, N_("embed FILE as boot config"), 0},
+  {"note",   'n', 0, 0, N_("add NOTE segment for CHRP Open Firmware"), 0},
+  {"output",  'o', N_("FILE"), 0, N_("output a generated image to FILE [default=stdout]"), 0},
+  {"format",  'O', N_("FORMAT"), 0, N_("generate an image in format.\navailable formats: %s"), 0},
+  {"compression",  'C', "(xz|none|auto)", 0, N_("choose the compression to use"), 0},
+  {"verbose",     'v', 0,      0, N_("Print verbose messages."), 0},
+  { 0, 0, 0, 0, 0, 0 }
+};
 
-static void
-usage (int status)
+static char *
+help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 {
-  if (status)
-    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
-  else
+  switch (key)
     {
-      int format_len = 0;
-      char *formats;
-      char *ptr;
-      unsigned i;
-      for (i = 0; i < ARRAY_SIZE (image_targets); i++)
-	format_len += strlen (image_targets[i].names[0]) + 2;
-      ptr = formats = xmalloc (format_len);
-      for (i = 0; i < ARRAY_SIZE (image_targets); i++)
-	{
-	  strcpy (ptr, image_targets[i].names[0]);
-	  ptr += strlen (image_targets[i].names[0]);
-	  *ptr++ = ',';
-	  *ptr++ = ' ';
-	}
-      ptr[-2] = 0;
-
-      printf (_("\
-Usage: %s [OPTION]... [MODULES]\n\
-\n\
-Make a bootable image of GRUB.\n\
-\n\
-  -d, --directory=DIR     use images and modules under DIR [default=%s/@platform@]\n\
-  -p, --prefix=DIR        set grub_prefix directory [default=%s]\n\
-  -m, --memdisk=FILE      embed FILE as a memdisk image\n\
-  -c, --config=FILE       embed FILE as boot config\n\
-  -n, --note              add NOTE segment for CHRP Open Firmware\n\
-  -o, --output=FILE       output a generated image to FILE [default=stdout]\n\
-  -O, --format=FORMAT     generate an image in format\n\
-                          available formats: %s\n\
-  -C, --compression=(xz|none|auto)  choose the compression to use\n\
-  -h, --help              display this message and exit\n\
-  -V, --version           print version information and exit\n\
-  -v, --verbose           print verbose messages\n\
-\n\
-Report bugs to <%s>.\n\
-"), 
-	      program_name, GRUB_PKGLIBROOTDIR, DEFAULT_DIRECTORY,
-	      formats,
-	      PACKAGE_BUGREPORT);
-      free (formats);
+    case 'd':
+      return xasprintf (text, GRUB_PKGLIBROOTDIR);
+    case 'p':
+      return xasprintf (text, DEFAULT_DIRECTORY);
+    case 'O':
+      {
+	int format_len = 0;
+	char *formats;
+	char *ptr;
+	char *ret;
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE (image_targets); i++)
+	  format_len += strlen (image_targets[i].names[0]) + 2;
+	ptr = formats = xmalloc (format_len);
+	for (i = 0; i < ARRAY_SIZE (image_targets); i++)
+	  {
+	    strcpy (ptr, image_targets[i].names[0]);
+	    ptr += strlen (image_targets[i].names[0]);
+	    *ptr++ = ',';
+	    *ptr++ = ' ';
+	  }
+	ptr[-2] = 0;
+	ret = xasprintf (text, formats);
+	free (formats);
+	return ret;
+      }
+    default:
+      return (char *) text;
     }
-  exit (status);
 }
+
+struct arguments
+{
+  size_t nmodules;
+  size_t modules_max;
+  char **modules;
+  char *output;
+  char *dir;
+  char *prefix;
+  char *memdisk;
+  char *font;
+  char *config;
+  int note;
+  struct image_target_desc *image_target;
+  grub_compression_t comp;
+};
+
+static error_t
+argp_parser (int key, char *arg, struct argp_state *state)
+{
+  /* Get the input argument from argp_parse, which we
+     know is a pointer to our arguments structure. */
+  struct arguments *arguments = state->input;
+
+  char *p;
+
+  switch (key)
+    {
+    case 'o':
+      if (arguments->output)
+	free (arguments->output);
+
+      arguments->output = xstrdup (arg);
+      break;
+
+    case 'O':
+      {
+	unsigned i, j;
+	for (i = 0; i < ARRAY_SIZE (image_targets); i++)
+	  for (j = 0; image_targets[i].names[j]
+		 && j < ARRAY_SIZE (image_targets[i].names); j++)
+	    if (strcmp (arg, image_targets[i].names[j]) == 0)
+	      arguments->image_target = &image_targets[i];
+	if (!arguments->image_target)
+	  {
+	    printf (_("unknown target format %s\n"), arg);
+	    argp_usage (state);
+	    exit (1);
+	  }
+	break;
+      }
+    case 'd':
+      if (arguments->dir)
+	free (arguments->dir);
+
+      arguments->dir = xstrdup (arg);
+      break;
+
+    case 'n':
+      arguments->note = 1;
+      break;
+
+    case 'm':
+      if (arguments->memdisk)
+	free (arguments->memdisk);
+
+      arguments->memdisk = xstrdup (arg);
+
+      if (arguments->prefix)
+	free (arguments->prefix);
+
+      arguments->prefix = xstrdup ("(memdisk)/boot/grub");
+      break;
+
+    case 'c':
+      if (arguments->config)
+	free (arguments->config);
+
+      arguments->config = xstrdup (arg);
+      break;
+
+    case 'C':
+      if (grub_strcmp (arg, "xz") == 0)
+	{
+#ifdef HAVE_LIBLZMA
+	  arguments->comp = COMPRESSION_XZ;
+#else
+	  grub_util_error (_("grub-mkimage is compiled without XZ support"));
+#endif
+	}
+      else if (grub_strcmp (arg, "none") == 0)
+	arguments->comp = COMPRESSION_NONE;
+      else
+	grub_util_error (_("Unknown compression format %s"), arg);
+      break;
+
+    case 'p':
+      if (arguments->prefix)
+	free (arguments->prefix);
+
+      arguments->prefix = xstrdup (arg);
+      break;
+
+    case 'v':
+      verbosity++;
+      break;
+    case ARGP_KEY_ARG:
+      assert (arguments->nmodules < arguments->modules_max);
+      arguments->modules[arguments->nmodules++] = xstrdup(arg);
+      break;
+
+    default:
+      return ARGP_ERR_UNKNOWN;
+    }
+  return 0;
+}
+
+static struct argp argp = {
+  options, argp_parser, N_("[OPTION]... [MODULES]"),
+  N_("Make a bootable image of GRUB."),
+  NULL, help_filter, NULL
+};
 
 int
 main (int argc, char *argv[])
 {
-  char *output = NULL;
-  char *dir = NULL;
-  char *prefix = NULL;
-  char *memdisk = NULL;
-  char *font = NULL;
-  char *config = NULL;
   FILE *fp = stdout;
-  int note = 0;
-  struct image_target_desc *image_target = NULL;
-  grub_compression_t comp = COMPRESSION_AUTO;
+  struct arguments arguments;
 
   set_program_name (argv[0]);
 
   grub_util_init_nls ();
 
-  while (1)
+  memset (&arguments, 0, sizeof (struct arguments));
+  arguments.comp = COMPRESSION_AUTO;
+  arguments.modules_max = argc + 1;
+  arguments.modules = xmalloc ((arguments.modules_max + 1)
+			     * sizeof (arguments.modules[0]));
+  memset (arguments.modules, 0, (arguments.modules_max + 1)
+	  * sizeof (arguments.modules[0]));
+
+  if (argp_parse (&argp, argc, argv, 0, 0, &arguments) != 0)
     {
-      int c = getopt_long (argc, argv, "d:p:m:c:o:O:f:C:hVvn", options, 0);
-
-      if (c == -1)
-	break;
-      else
-	switch (c)
-	  {
-	  case 'o':
-	    if (output)
-	      free (output);
-
-	    output = xstrdup (optarg);
-	    break;
-
-	  case 'O':
-	    {
-	      unsigned i, j;
-	      for (i = 0; i < ARRAY_SIZE (image_targets); i++)
-		for (j = 0; image_targets[i].names[j]
-		       && j < ARRAY_SIZE (image_targets[i].names); j++)
-		  if (strcmp (optarg, image_targets[i].names[j]) == 0)
-		    image_target = &image_targets[i];
-	      if (!image_target)
-		{
-		  printf (_("unknown target format %s\n"), optarg);
-		  usage (1);
-		}
-	      break;
-	    }
-	  case 'd':
-	    if (dir)
-	      free (dir);
-
-	    dir = xstrdup (optarg);
-	    break;
-
-	  case 'n':
-	    note = 1;
-	    break;
-
-	  case 'm':
-	    if (memdisk)
-	      free (memdisk);
-
-	    memdisk = xstrdup (optarg);
-
-	    if (prefix)
-	      free (prefix);
-
-	    prefix = xstrdup ("(memdisk)/boot/grub");
-	    break;
-
-	  case 'c':
-	    if (config)
-	      free (config);
-
-	    config = xstrdup (optarg);
-	    break;
-
-	  case 'C':
-	    if (grub_strcmp (optarg, "xz") == 0)
-	      {
-#ifdef HAVE_LIBLZMA
-		comp = COMPRESSION_XZ;
-#else
-		grub_util_error (_("grub-mkimage is compiled without XZ support"),
-				 optarg);
-#endif
-	      }
-	    else if (grub_strcmp (optarg, "none") == 0)
-	      comp = COMPRESSION_NONE;
-	    else
-	      grub_util_error (_("Unknown compression format %s"), optarg);
-	    break;
-
-	  case 'h':
-	    usage (0);
-	    break;
-
-	  case 'p':
-	    if (prefix)
-	      free (prefix);
-
-	    prefix = xstrdup (optarg);
-	    break;
-
-	  case 'V':
-	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
-	    return 0;
-
-	  case 'v':
-	    verbosity++;
-	    break;
-
-	  default:
-	    usage (1);
-	    break;
-	  }
+      fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
+      exit(1);
     }
 
-  if (!image_target)
+  if (!arguments.image_target)
     {
+      char *program = xstrdup(program_name);
       printf ("%s", _("Target format not specified (use the -O option).\n"));
-      usage (1);
+      argp_help (&argp, stderr, ARGP_HELP_STD_USAGE, program);
+      free (program);
+      exit(1);
     }
 
-  if (output)
+  if (arguments.output)
     {
-      fp = fopen (output, "wb");
+      fp = fopen (arguments.output, "wb");
       if (! fp)
-	grub_util_error (_("cannot open %s"), output);
-      free (output);
+	grub_util_error (_("cannot open %s"), arguments.output);
+      free (arguments.output);
     }
 
-  if (!dir)
+  if (!arguments.dir)
     {
-      dir = xmalloc (sizeof (GRUB_PKGLIBROOTDIR)
-		     + grub_strlen (image_target->dirname) + 1);
-      memcpy (dir, GRUB_PKGLIBROOTDIR, sizeof (GRUB_PKGLIBROOTDIR) - 1);
-      *(dir + sizeof (GRUB_PKGLIBROOTDIR) - 1) = '/';
-      strcpy (dir + sizeof (GRUB_PKGLIBROOTDIR), image_target->dirname);
+      arguments.dir = xmalloc (sizeof (GRUB_PKGLIBROOTDIR)
+			       + grub_strlen (arguments.image_target->dirname)
+			       + 1);
+      memcpy (arguments.dir, GRUB_PKGLIBROOTDIR,
+	      sizeof (GRUB_PKGLIBROOTDIR) - 1);
+      *(arguments.dir + sizeof (GRUB_PKGLIBROOTDIR) - 1) = '/';
+      strcpy (arguments.dir + sizeof (GRUB_PKGLIBROOTDIR),
+	      arguments.image_target->dirname);
     }
 
-  generate_image (dir, prefix ? : DEFAULT_DIRECTORY, fp,
-		  argv + optind, memdisk, config,
-		  image_target, note, comp);
+  generate_image (arguments.dir, arguments.prefix ? : DEFAULT_DIRECTORY, fp,
+		  arguments.modules, arguments.memdisk, arguments.config,
+		  arguments.image_target, arguments.note, arguments.comp);
 
   fflush (fp);
   fsync (fileno (fp));
   fclose (fp);
 
-  if (dir)
-    free (dir);
+  if (arguments.dir)
+    free (arguments.dir);
 
   return 0;
 }
