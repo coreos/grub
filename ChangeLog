@@ -1,3 +1,26 @@
+2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkstandalone.in: Fix help messages. Gettextize.
+	* util/grub-install.in: Gettextize.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub-mkconfig_lib.in: Replace gettext with echo -n and not echo
+	if not available.
+	(grub_warn): Gettextize.
+	* util/grub-mknetdir.in: Gettextize.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub-mkstandalone.in: Likewise.
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+	* util/grub.d/00_header.in: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/10_netbsd.in: Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+	* po/POTFILES-shell.in: Regenerate.
+
 2012-02-03  Richard Laager <rlaager@wiktel.com>
 
 	* util/grub-mkimage.c (main): Fix format-security warning.

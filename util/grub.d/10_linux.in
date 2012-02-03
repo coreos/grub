@@ -146,7 +146,7 @@ prepare_root_cache=
 
 while [ "x$list" != "x" ] ; do
   linux=`version_find_latest $list`
-  echo "Found linux image: $linux" >&2
+  gettext_printf "Found linux image: %s\n" "$linux" >&2
   basename=`basename $linux`
   dirname=`dirname $linux`
   rel_dirname=`make_system_path_relative_to_its_root $dirname`
@@ -181,7 +181,7 @@ while [ "x$list" != "x" ] ; do
   fi
 
   if test -n "${initrd}" ; then
-    echo "Found initrd image: ${dirname}/${initrd}" >&2
+    gettext_printf "Found initrd image: %s\n" "${dirname}/${initrd}" >&2
   elif test -z "${initramfs}" ; then
     # "UUID=" magic is parsed by initrd or initramfs.  Since there's
     # no initrd or builtin initramfs, it can't work here.

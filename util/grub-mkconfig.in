@@ -42,19 +42,19 @@ grub_script_check="${bindir}/`echo grub-script-check | sed "${transform}"`"
 
 GRUB_PREFIX=`echo '/@bootdirname@/@grubdirname@' | sed "s,//*,/,g"`
 
+. "${datadir}/@PACKAGE@/grub-mkconfig_lib"
+
 # Usage: usage
 # Print the usage.
 usage () {
-    cat <<EOF
-Usage: $self [OPTION]
-Generate a grub config file
-
-  -o, --output=FILE       output generated config to FILE [default=stdout]
-  -h, --help              print this message and exit
-  -v, --version           print the version information and exit
-
-Report bugs to <bug-grub@gnu.org>.
-EOF
+    gettext_printf "Usage: %s [OPTION]\n" "$self"
+    gettext "Generate a grub config file"; echo
+    echo
+    printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "output generated config to FILE [default=stdout]")"
+    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
+    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
+    echo
+    gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }
 
 argument () {
@@ -62,7 +62,7 @@ argument () {
   shift
 
   if test $# -eq 0; then
-      echo "$0: option requires an argument -- '$opt'" 1>&2
+      gettext_printf "%s: option requires an argument -- '%s'" "$0" "$opt" 1>&2
       exit 1
   fi
   echo $1
@@ -87,7 +87,7 @@ do
 	grub_cfg=`echo "$option" | sed 's/--output=//'`
 	;;
     -*)
-	echo "Unrecognized option \`$option'" 1>&2
+	gettext_printf "Unrecognized option \`%s'\n" "$option" 1>&2
 	usage
 	exit 1
 	;;
@@ -113,7 +113,7 @@ if [ "$EUID" != 0 ] ; then
       done ;;
   esac
   if [ $root != t ] ; then
-    echo "$self: You must run this as root" >&2
+    gettext_printf "%s: You must run this as root\n" "$self" >&2
     exit 1
   fi
 fi
@@ -122,7 +122,7 @@ set $grub_probe dummy
 if test -f "$1"; then
     :
 else
-    echo "$1: Not found." 1>&2
+    gettext_print "%s: Not found.\n" "$1" 1>&2
     exit 1
 fi
 
@@ -184,7 +184,7 @@ for x in ${GRUB_TERMINAL_OUTPUT}; do
 	fi
 	if [ -z "${GRUB_FONT_PATH}" ] ; then
 	    if [ "x$termoutdefault" != "x1" ]; then
-		echo "No font for gfxterm found." >&2 ; exit 1
+		gettext "No font for gfxterm found." >&2; echo >&2 ; exit 1
 	    fi
 	    GRUB_TERMINAL_OUTPUT=
 	fi
@@ -253,10 +253,11 @@ if test "x${grub_cfg}" != "x"; then
 
   # Allow this to fail, since /boot/grub/ might need to be fatfs to support some
   # firmware implementations (e.g. OFW or EFI).
-  chmod 400 ${grub_cfg}.new || grub_warn "Could not make ${grub_cfg}.new readable by only root.\
-  This means that if the generated config contains a password it is readable by everyone"
+  chmod 400 ${grub_cfg}.new || grub_warn "$(gettext_printf "Could not make %s \
+readable by only root. This means that if the generated config contains a password it is readable by everyone" "${grub_cfg}.new")"
 fi
-echo "Generating grub.cfg ..." >&2
+gettext "Generating grub.cfg ..." >&2
+echo >&2
 
 cat << EOF
 #
@@ -286,14 +287,15 @@ done
 
 if test "x${grub_cfg}" != "x" ; then
   if ! ${grub_script_check} ${grub_cfg}.new; then
-    echo "Syntax errors are detected in generated GRUB config file." >&2
-    echo "Ensure that there are no errors in /etc/default/grub" >&2
-    echo "and /etc/grub.d/* files or please file a bug report with" >&2
-    echo "${grub_cfg}.new file attached." >&2
+    gettext_printf "Syntax errors are detected in generated GRUB config file.
+Ensure that there are no errors in /etc/default/grub
+and /etc/grub.d/* files or please file a bug report with
+%s file attached." "${grub_cfg}.new" >&2
   else
     # none of the children aborted with error, install the new grub.cfg
     mv -f ${grub_cfg}.new ${grub_cfg}
   fi
 fi
 
-echo "done" >&2
+gettext "done" >&2
+echo >&2

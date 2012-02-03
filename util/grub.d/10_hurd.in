@@ -41,7 +41,8 @@ for i in /boot/gnumach* ; do
     basename=`basename $i`
     dirname=`dirname $i`
     rel_dirname=`make_system_path_relative_to_its_root $dirname`
-    echo "Found GNU Mach: $i" >&2
+    gettext_printf "Found GNU Mach: %s" "$i" >&2
+    echo >&2
     kernels="${kernels} ${rel_dirname}/${basename}"
     at_least_one=true
   fi
@@ -55,7 +56,8 @@ esac
 
 for i in /hurd/${hurd_fs}.static /hurd/exec ; do
   if test -e "$i" ; then
-    echo "Found Hurd module: $i" >&2
+    gettext_printf "Found Hurd module: %s" "$i" >&2
+    echo >&2
     at_least_one=true
   else
     all_of_them=false
@@ -68,7 +70,8 @@ if ${at_least_one} ; then : ; else
 fi
 
 if ${all_of_them} && test -e /lib/ld.so.1 ; then : ; else
-  echo "Some Hurd stuff found, but not enough to boot." >&2
+  gettext "Some Hurd stuff found, but not enough to boot." >&2
+  echo >&2
   exit 1
 fi
 

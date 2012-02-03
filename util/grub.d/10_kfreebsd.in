@@ -135,7 +135,7 @@ prepare_boot_cache=
 
 while [ "x$list" != "x" ] ; do
   kfreebsd=`version_find_latest $list`
-  echo "Found kernel of FreeBSD: $kfreebsd" >&2
+  gettext_printf "Found kernel of FreeBSD: %s\n" "$kfreebsd" >&2
   basename=`basename $kfreebsd`
   dirname=`dirname $kfreebsd`
   rel_dirname=`make_system_path_relative_to_its_root $dirname`
@@ -184,7 +184,7 @@ while [ "x$list" != "x" ] ; do
     fi
   done
   if test -n "${module_dir}" ; then
-    echo "Found kernel module directory: ${module_dir}" >&2
+    gettext_printf "Found kernel module directory: %s\n" "${module_dir}" >&2
     module_dir_rel=$(make_system_path_relative_to_its_root $module_dir)
   fi
 

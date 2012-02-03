@@ -32,14 +32,16 @@ if test "x$grub_mkrelpath" = x; then
 fi
 
 if $(which gettext >/dev/null 2>/dev/null) ; then
-  gettext="gettext"
+  :
 else
-  gettext="echo"
+  gettext () {
+     echo -n "$@"
+  }
 fi
 
 grub_warn ()
 {
-  echo "Warning: $@" >&2
+  echo "$(gettext "Warning:")" "$@" >&2
 }
 
 make_system_path_relative_to_its_root ()
@@ -228,7 +230,7 @@ version_find_latest ()
 # printf; so this turns ' into \'.  Note that you must use the output of
 # this function in a printf format string.
 gettext_quoted () {
-  "$gettext" "$@" | sed "s/'/'\\\\\\\\''/g"
+  gettext "$@" | sed "s/'/'\\\\\\\\''/g"
 }
 
 # Run the first argument through gettext_quoted, and then pass that and all

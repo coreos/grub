@@ -29,6 +29,7 @@ libdir="@libdir@"
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
+datadir="@datadir@"
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 
 self=`basename $0`
@@ -45,29 +46,29 @@ grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 
 xorriso=xorriso
 
+. "${datadir}/@PACKAGE@/grub-mkconfig_lib"
+
 # Usage: usage
 # Print the usage.
 usage () {
-    cat <<EOF
-Usage: $self [OPTION] SOURCE...
-Make GRUB rescue image.
-
-  -h, --help              print this message and exit
-  -v, --version           print the version information and exit
-  -o, --output=FILE       save output in FILE [required]
-  --modules=MODULES       pre-load specified modules MODULES
-  --rom-directory=DIR     save rom images in DIR [optional]
-  --xorriso=FILE          use FILE as xorriso [optional]
-  --grub-mkimage=FILE     use FILE as grub-mkimage
-
-$self generates a bootable rescue image with specified source files, source
-directories, or mkisofs options listed by: xorriso -as mkisofs -help
-
-Option -- switches to native xorriso command mode.
-
-Report bugs to <bug-grub@gnu.org>.
-Mail xorriso support requests to <bug-xorriso@gnu.org>.
-EOF
+    gettext_printf "Usage: %s [OPTION] SOURCE...\n" "$self"
+    gettext "Make GRUB rescue image."; echo
+    echo
+    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
+    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
+    printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "save output in FILE [required]")"
+    printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    printf "  --rom-directory=%-8s%s\n" "$(gettext "DIR")" "$(gettext "save rom images in DIR [optional]")"
+    printf "  --xorriso=%-14s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as xorriso [optional]")"
+    printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    echo
+    gettext_printf "%s generates a bootable rescue image with specified source files, source
+directories, or mkisofs options listed by: xorriso -as mkisofs -help" "$self"
+    echo
+    gettext "Option -- switches to native xorriso command mode."; echo
+    echo
+    gettext "Report bugs to <bug-grub@gnu.org>."; echo
+    gettext "Mail xorriso support requests to <bug-xorriso@gnu.org>."; echo
 }
 
 argument () {
@@ -75,7 +76,7 @@ argument () {
   shift
 
   if test $# -eq 0; then
-      echo "$0: option requires an argument -- '$opt'" 1>&2
+      gettext_printf "%s: option requires an argument -- '%s'\n" "$0" "$opt" 1>&2
       exit 1
   fi
   echo $1
@@ -139,7 +140,8 @@ do
 done
 
 if [ "x${output_image}" = x ] ; then
-  echo "output file must be given" >&2
+  gettext "output file must be given" >&2
+  echo >&2
   usage
   exit 1
 fi
@@ -148,7 +150,7 @@ set $grub_mkimage dummy
 if test -f "$1"; then
     :
 else
-    echo "$1: Not found." 1>&2
+    gettext_printf "%s: Not found.\n" "$1" 1>&2
     exit 1
 fi
 
@@ -187,7 +189,7 @@ make_image ()
 	return;
     fi
 
-    echo "Enabling $2 support ..."
+    gettext_printf "Enabling %s support ...\n" "$2"
 
     memdisk_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     memdisk_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
@@ -255,7 +257,7 @@ grub_mkisofs_arguments="${grub_mkisofs_arguments} --modification-date=$(echo ${i
 
 # build BIOS core.img
 if test -e "${pc_dir}" ; then
-    echo "Enabling BIOS support ..."
+    gettext_printf "Enabling %s support ...\n" "BIOS"
     core_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     $grub_mkimage -O i386-pc -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
         iso9660 biosdisk

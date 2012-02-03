@@ -39,8 +39,17 @@ if [ -z "${OSPROBED}" ] ; then
 fi
 
 osx_entry() {
+    if [ x$2 = x32 ]; then
+        # TRANSLATORS: it refers to kernel architecture (32-bit)
+	bitstr="$(gettext "(32-bit)")"
+    else
+        # TRANSLATORS: it refers to kernel architecture (32-bit)
+	bitstr="$(gettext "(64-bit)")"
+    fi
+    # TRANSLATORS: it refers on the OS residing on device %s
+    onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
         cat << EOF
-menuentry "${LONGNAME} (${2}-bit) (on ${DEVICE})" --class osx --class darwin --class os {
+menuentry "${LONGNAME} $bitstr $onstr" --class osx --class darwin --class os {
 EOF
 	save_default_entry | sed -e "s/^/\t/"
 	prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
@@ -99,13 +108,14 @@ for OS in ${OSPROBED} ; do
     LONGNAME="${LABEL}"
   fi
 
-  echo "Found ${LONGNAME} on ${DEVICE}" >&2
+  gettext_printf "Found %s on %s\n" "${LONGNAME}" "${DEVICE}" >&2
 
   case ${BOOT} in
     chain)
 
+	  onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
       cat << EOF
-menuentry "${LONGNAME} (on ${DEVICE})" --class windows --class os {
+menuentry "${LONGNAME} $onstr" --class windows --class os {
 EOF
       save_default_entry | sed -e "s/^/\t/"
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
@@ -146,8 +156,9 @@ EOF
 	  LINITRD="${LINITRD#/boot}"
 	fi
 
+	onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
         cat << EOF
-menuentry "${LLABEL} (on ${DEVICE})" --class gnu-linux --class gnu --class os {
+menuentry "${LLABEL} $onstr" --class gnu-linux --class gnu --class os {
 EOF
 	save_default_entry | sed -e "s/^/\t/"
 	if [ -z "${prepare_boot_cache}" ]; then
@@ -173,8 +184,9 @@ EOF
       osx_entry xnu_kernel64 64
     ;;
     hurd)
+      onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
       cat << EOF
-menuentry "${LONGNAME} (on ${DEVICE})" --class hurd --class gnu --class os {
+menuentry "${LONGNAME} $onstr" --class hurd --class gnu --class os {
 EOF
       save_default_entry | sed -e "s/^/\t/"
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
@@ -198,7 +210,8 @@ EOF
 EOF
     ;;
     *)
-      echo "  ${LONGNAME} is not yet supported by grub-mkconfig." >&2
+      echo -n "  "
+      gettext_printf "%s is not yet supported by grub-mkconfig.\n" "${LONGNAME}" >&2
     ;;
   esac
 done

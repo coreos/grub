@@ -29,6 +29,7 @@ PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 host_os=@host_os@
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
+datadir="@datadir@"
 
 self=`basename $0`
 
@@ -51,24 +52,24 @@ efi32_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi"
 efi64_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi"
 itanium_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/ia64-efi"
 
+. "${datadir}/@PACKAGE@/grub-mkconfig_lib"
+
 # Usage: usage
 # Print the usage.
 usage () {
-    cat <<EOF
-Usage: $self [OPTION] install_device
-Install GRUB on your drive.
-
-  -h, --help              print this message and exit
-  -v, --version           print the version information and exit
-  --modules=MODULES       pre-load specified modules MODULES
-  --net-directory=DIR     root directory of TFTP server
-  --subdir=DIR            relative subdirectory on network server
-  --grub-mkimage=FILE     use FILE as grub-mkimage
-
-$self copies GRUB images into net_directory/subdir/target_cpu-platform
-
-Report bugs to <bug-grub@gnu.org>.
-EOF
+    gettext_printf "Usage: %s [OPTION] install_device\n" "$self"
+    gettext; echo "Install GRUB on your drive."; echo
+    echo
+    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
+    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
+    printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    printf "  --net-directory=%-8s%s\n" "$(gettext "DIR")" "$(gettext "root directory of TFTP server")"
+    printf "  --subdir=%-15s%s\n" "$(gettext "DIR")" "$(gettext "relative subdirectory on network server")"
+    printf "  --grub-mkimage=%-9s%s" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    echo
+    gettext_printf "%s copies GRUB images into net_directory/subdir/target_cpu-platform\n" "$self" 
+    echo
+    gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }
 
 argument () {
@@ -76,7 +77,7 @@ argument () {
   shift
 
   if test $# -eq 0; then
-      echo "$0: option requires an argument -- '$opt'" 1>&2
+      gettext_printf "%s: option requires an argument -- '%s'\n" "$0" "$opt" 1>&2
       exit 1
   fi
   echo $1
@@ -138,7 +139,7 @@ do
 	;;
 
     -*)
-	echo "Unrecognized option \`$option'" 1>&2
+	gettext_printf "Unrecognized option \`%s'\n" "$option" 1>&2
 	usage
 	exit 1
 	;;
@@ -156,7 +157,7 @@ set $grub_mkimage dummy
 if test -f "$1"; then
     :
 else
-    echo "$1: Not found." 1>&2
+    gettext_printf "%s: Not found.\n" "$1" 1>&2
     exit 1
 fi
 
@@ -215,7 +216,7 @@ process_input_dir ()
     	 *-efi) mkimage_target="${platform}";
 	 	  netmodules="efinet";
 		  ext=efi ;;
-    	 *) echo Unsupported platform ${platform};
+    	 *) gettext_printf "Unsupported platform %s\n" ${platform};
     	    exit 1;;
     esac
 
@@ -224,7 +225,7 @@ source ${subdir}/grub.cfg
 EOF
 
     "$grub_mkimage" ${config_opt} -d "${input_dir}" -O ${mkimage_target} "--output=${grubdir}/core.$ext" "--prefix=$prefix" $modules $netmodules tftp || exit 1
-    echo "Netboot directory for ${platform} created. Configure your DHCP server to point to ${subdir}/${platform}/core.$ext"
+    gettext_printf "Netboot directory for %s created. Configure your DHCP server to point to %s\n" "${platform}" "${subdir}/${platform}/core.$ext"
 }
 
 if [ "${override_dir}" = "" ] ; then
