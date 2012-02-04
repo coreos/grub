@@ -242,11 +242,11 @@ grub_efiemu_autocore (void)
 
   suffix = grub_efiemu_get_default_core_name ();
 
-  filename = grub_xasprintf ("%s/%s", prefix, suffix);
+  filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM "/%s",
+			     prefix, suffix);
   if (! filename)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       "couldn't allocate temporary space");
-
 
   err = grub_efiemu_load_file (filename);
   grub_free (filename);

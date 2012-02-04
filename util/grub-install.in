@@ -400,6 +400,7 @@ fi
 
 # Create the GRUB directory if it is not present.
 mkdir -p "$grubdir" || exit 1
+mkdir -p "$grubdir/${target_cpu}-$platform" || exit 1
 
 # If --recheck is specified, remove the device map, if present.
 if test $recheck = yes; then
@@ -420,18 +421,18 @@ else
 fi
 
 # Copy the GRUB images to the GRUB directory.
-for file in "${grubdir}"/*.mod "${grubdir}"/*.lst "${grubdir}"/*.img "${grubdir}"/efiemu??.o; do
+for file in "${grubdir}"/*.mod "${grubdir}"/*.lst "${grubdir}"/*.img "${grubdir}"/efiemu??.o "${grubdir}"/${target_cpu}-$platform/*.mod "${grubdir}"/${target_cpu}-$platform/*.lst "${grubdir}"/${target_cpu}-$platform/*.img "${grubdir}"/${target_cpu}-$platform/efiemu??.o; do
     if test -f "$file" && [ "`basename $file`" != menu.lst ]; then
 	rm -f "$file" || exit 1
     fi
 done
 for file in "${pkglibdir}"/*.mod "${pkglibdir}"/*.lst; do
-    cp -f "$file" "${grubdir}" || exit 1
+    cp -f "$file" "${grubdir}/${target_cpu}-$platform" || exit 1
 done
 if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
     for file in "${pkglibdir}"/*.img "${pkglibdir}"/efiemu??.o; do
 	if test -f "$file"; then
-	    cp -f "$file" "${grubdir}" || exit 1
+	    cp -f "$file" "${grubdir}/${target_cpu}-$platform" || exit 1
 	fi
     done
 fi
@@ -444,7 +445,7 @@ for dir in "${localedir}"/*; do
     fi
 done
 
-is_path_readable_by_grub "${grubdir}" || (echo "${grubdir}" not readable 1>&2 ; exit 1)
+is_path_readable_by_grub "${grubdir}/${target_cpu}-$platform" || (echo "${grubdir}" not readable 1>&2 ; exit 1)
 
 # Write device to a variable so we don't have to traverse /dev every time.
 grub_device="`"$grub_probe" --device-map="${device_map}" --target=device "${grubdir}"`" || exit 1
@@ -504,11 +505,11 @@ fi
 prefix_drive=
 config_opt=
 
-rm -f "${grubdir}/load.cfg"
+rm -f "${grubdir}/${target_cpu}-$platform/load.cfg"
 
 if [ "x${debug_image}" != x ]; then
-    echo "set debug='${debug_image}'" >> "${grubdir}/load.cfg"
-    config_opt="-c ${grubdir}/load.cfg "
+    echo "set debug='${debug_image}'" >> "${grubdir}/${target_cpu}-$platform/load.cfg"
+    config_opt="-c ${grubdir}/${target_cpu}-$platform/load.cfg "
 fi
 
 if [ "x${devabstraction_module}" = "x" ] ; then
@@ -555,9 +556,9 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	    echo 1>&2
 	    hints=
         fi
-        echo "search.fs_uuid ${uuid} root $hints " >> "${grubdir}/load.cfg"
-	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/load.cfg"
-	config_opt="-c ${grubdir}/load.cfg "
+        echo "search.fs_uuid ${uuid} root $hints " >> "${grubdir}/${target_cpu}-$platform/load.cfg"
+	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/${target_cpu}-$platform/load.cfg"
+	config_opt="-c ${grubdir}/${target_cpu}-$platform/load.cfg "
         modules="$modules search_fs_uuid"
     else
         # we need to hardcode the partition number in the core image's prefix.
@@ -571,9 +572,9 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 else
     if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
 	for uuid in "`echo "${grub_device}" | xargs "${grub_probe}"  --target=cryptodisk_uuid --device`"; do
-	    echo "cryptomount -u $uuid" >> "${grubdir}/load.cfg"
+	    echo "cryptomount -u $uuid" >> "${grubdir}/${target_cpu}-$platform/load.cfg"
 	done
-	config_opt="-c ${grubdir}/load.cfg "
+	config_opt="-c ${grubdir}/${target_cpu}-$platform/load.cfg "
     fi
 
     prefix_drive=`"$grub_probe" --device-map="${device_map}" --target=drive --device "${grub_device}"` || exit 1
@@ -593,22 +594,22 @@ case "${target_cpu}-${platform}" in
 esac
 
 
-"$grub_mkimage" ${config_opt} -d "${pkglibdir}" -O ${mkimage_target} --output="${grubdir}/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
+"$grub_mkimage" ${config_opt} -d "${pkglibdir}" -O ${mkimage_target} --output="${grubdir}/${target_cpu}-$platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
 
 # Backward-compatibility kludges
 if [ "${target_cpu}-${platform}" = "mipsel-loongson" ]; then
-    cp "${grubdir}/core.${imgext}" "${bootdir}"/grub.elf
+    cp "${grubdir}/${target_cpu}-$platform/core.${imgext}" "${bootdir}"/grub.elf
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
-    cp "${grubdir}/core.${imgext}" "${grubdir}/grub"
+    cp "${grubdir}/${target_cpu}-$platform/core.${imgext}" "${grubdir}/grub"
 elif [ "${target_cpu}-${platform}" = "i386-efi" ] || [ "${target_cpu}-${platform}" = "x86_64-efi" ]; then
-    "$grub_mkimage" ${config_opt} -d "${pkglibdir}" -O ${mkimage_target} --output="${grubdir}/grub.efi" --prefix="" $modules || exit 1
+    "$grub_mkimage" ${config_opt} -d "${pkglibdir}" -O ${mkimage_target} --output="${grubdir}/${target_cpu}-$platform/grub.efi" --prefix="" $modules || exit 1
 fi
 
 
 # Perform the platform-dependent install
 if [ "${target_cpu}-${platform}" = "i386-pc" ] || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ] ; then
     # Now perform the installation.
-    "$grub_setup" ${allow_floppy} ${setup_verbose} ${setup_force} --directory="${grubdir}" \
+    "$grub_setup" ${allow_floppy} ${setup_verbose} ${setup_force} --directory="${grubdir}/${target_cpu}-$platform" \
 	--device-map="${device_map}" "${install_device}" || exit 1
 elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ]; then
     if [ x"$update_nvram" = xyes ]; then
@@ -637,7 +638,7 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	}
 
         # Point boot-device at the new grub install
-	boot_device="$ofpath:$partno,"`"$grub_mkrelpath" "${grubdir}/core.${imgext}" | sed 's,/,\\\\,g'`
+	boot_device="$ofpath:$partno,"`"$grub_mkrelpath" "${grubdir}/${target_cpu}-$platform/core.${imgext}" | sed 's,/,\\\\,g'`
 
         # If a install device is defined, copy the core.elf to PReP partition. 
 	if  [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ] \
@@ -651,7 +652,7 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
             if [ "$(file -s "${install_device}" -b | awk '{ print $1 }')" = ELF ] || [ $(cmp /dev/zero "${install_device}" &>/dev/null) ]; then
             # Change boot device to the harddisk root
 		boot_device="$ofpath"
-		dd if="${grubdir}/core.${imgext}" of="${install_device}" status=noxfer || {
+		dd if="${grubdir}/${target_cpu}-$platform/core.${imgext}" of="${install_device}" status=noxfer || {
 		    gettext "Failed to copy Grub to the PReP partition." 1>&2
 		    echo 1>&2
 		    exit 1
@@ -673,14 +674,14 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	}
     fi
 elif [ x"${target_cpu}-${platform}" = xmips-arc ]; then
-    dvhtool -d "${install_device}" --unix-to-vh "{grubdir}/core.${imgext}" grub
+    dvhtool -d "${install_device}" --unix-to-vh "{grubdir}/${target_cpu}-$platform/core.${imgext}" grub
     gettext "You will have to set SystemPartition and OSLoader manually." 1>&2
     echo 1>&2
 elif [ x"$platform" = xefi ]; then
-    cp "${grubdir}/core.${imgext}" "${efidir}/${efi_file}"
+    cp "${grubdir}/${target_cpu}-$platform/core.${imgext}" "${efidir}/${efi_file}"
     # For old macs. Suggested by Peter Jones.
     if [ x$target_cpu = xi386 ]; then
-	cp "${grubdir}/core.${imgext}" "${efidir}/boot.efi"
+	cp "${grubdir}/${target_cpu}-$platform/core.${imgext}" "${efidir}/boot.efi"
     fi
 
     # Try to make this image bootable using the EFI Boot Manager, if available.

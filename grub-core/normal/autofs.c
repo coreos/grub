@@ -57,7 +57,8 @@ read_fs_list (const char *prefix)
     {
       char *filename;
 
-      filename = grub_xasprintf ("%s/fs.lst", prefix);
+      filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM
+				 "/fs.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;

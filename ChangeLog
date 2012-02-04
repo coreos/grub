@@ -1,5 +1,28 @@
 2012-02-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move platform-dependent files from $prefix to $prefix/$platform.
+
+	* config.h.in (GRUB_TARGET_CPU): New definition.
+	(GRUB_PLATFORM): Likewise.
+	* configure.ac: Define GRUB_TARGET_CPU and GRUB_PLATFORM.
+	* grub-core/commands/parttool.c (grub_cmd_parttool): Update dir.
+	* grub-core/efiemu/main.c (grub_efiemu_autocore): Likewise.
+	* grub-core/kern/dl.c (grub_dl_load): Likewise.
+	* grub-core/normal/autofs.c (read_fs_list): Likewise.
+	* grub-core/normal/crypto.c (read_crypto_list): Likewise.
+	* grub-core/normal/dyncmd.c (read_command_list): Likewise.
+	* grub-core/normal/term.c (read_terminal_list): Likewise.
+	* grub-core/gettext/gettext.c (grub_mofile_open_lang): Use
+	$prefix/locale.
+	(grub_gettext_init_ext): Likewise.
+	* grub-core/normal/main.c (GRUB_MOD_INIT): Define grub_cpu and
+	grub_platform.
+	* util/grub-install.in: Update directories.
+	* util/grub-mknetdir.in: Likewise.
+	* util/grub-mkrescue.in: Likewise.
+
+2012-02-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/openfw.c (grub_claimmap): Change to
 	grub_error framework. All users updated.
 

@@ -77,7 +77,8 @@ read_command_list (const char *prefix)
     {
       char *filename;
 
-      filename = grub_xasprintf ("%s/command.lst", prefix);
+      filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM
+				 "/command.lst", prefix);
       if (filename)
 	{
 	  grub_file_t file;

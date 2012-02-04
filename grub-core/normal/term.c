@@ -308,7 +308,8 @@ read_terminal_list (const char *prefix)
       return;
     }
   
-  filename = grub_xasprintf ("%s/terminal.lst", prefix);
+  filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM
+			     "/terminal.lst", prefix);
   if (!filename)
     {
       grub_errno = GRUB_ERR_NONE;

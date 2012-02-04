@@ -185,7 +185,8 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
       {
 	char *filename;
 
-	filename = grub_xasprintf ("%s/parttool.lst", prefix);
+	filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM
+				   "/parttool.lst", prefix);
 	if (filename)
 	  {
 	    grub_file_t file;

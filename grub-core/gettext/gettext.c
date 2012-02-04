@@ -286,14 +286,14 @@ grub_mofile_open (const char *filename)
 /* Returning grub_file_t would be more natural, but grub_mofile_open assigns
    to fd_mo anyway ...  */
 static grub_err_t
-grub_mofile_open_lang (const char *locale_dir, const char *locale)
+grub_mofile_open_lang (const char *part1, const char *part2, const char *locale)
 {
   char *mo_file;
   grub_err_t err;
 
   /* mo_file e.g.: /boot/grub/locale/ca.mo   */
 
-  mo_file = grub_xasprintf ("%s/%s.mo", locale_dir, locale);
+  mo_file = grub_xasprintf ("%s%s/%s.mo", part1, part2, locale);
   if (!mo_file)
     return grub_errno;
 
@@ -317,20 +317,23 @@ grub_mofile_open_lang (const char *locale_dir, const char *locale)
 static grub_err_t
 grub_gettext_init_ext (const char *locale)
 {
-  const char *locale_dir;
+  const char *part1, *part2;
   grub_err_t err;
 
   if (!locale)
     return 0;
 
-  locale_dir = grub_env_get ("locale_dir");
-  if (locale_dir == NULL)
+  part1 = grub_env_get ("locale_dir");
+  part2 = "";
+  if (!part1)
     {
-      grub_dprintf ("gettext", "locale_dir variable is not set up.\n");
-      return 0;
+      part1 = grub_env_get ("prefix");
+      if (!part1)
+	return 0;
+      part2 = "/locale";
     }
 
-  err = grub_mofile_open_lang (locale_dir, locale);
+  err = grub_mofile_open_lang (part1, part2, locale);
 
   /* ll_CC didn't work, so try ll.  */
   if (err)
@@ -342,7 +345,7 @@ grub_gettext_init_ext (const char *locale)
 	{
 	  *underscore = '\0';
 	  grub_errno = GRUB_ERR_NONE;
-	  err = grub_mofile_open_lang (locale_dir, lang);
+	  err = grub_mofile_open_lang (part1, part2, lang);
 	}
 
       grub_free (lang);

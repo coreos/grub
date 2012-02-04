@@ -160,20 +160,20 @@ process_input_dir ()
 {
     input_dir="$1"
     platform="$2"
-    mkdir -p ${iso9660_dir}/boot/grub/${platform}
+    mkdir -p "${iso9660_dir}/boot/grub/${platform}"
     for file in "${input_dir}/"*.mod "${input_dir}/"efiemu32.o "${input_dir}/"efiemu64.o; do
         if test -f "$file"; then
-            cp -f "$file" ${iso9660_dir}/boot/grub/${platform}/
+            cp -f "$file" "${iso9660_dir}/boot/grub/${platform}/"
         fi
     done
     for file in ${pkglib_DATA}; do
 	if test -f "${input_dir}/${file}"; then
-            cp -f "${input_dir}/${file}" ${iso9660_dir}/boot/grub/${platform}/
+            cp -f "${input_dir}/${file}" "${iso9660_dir}/boot/grub/${platform}/"
 	fi
     done
 
-    mkdir -p ${iso9660_dir}/boot/grub/locale
-    for file in ${input_dir}/po/*.mo; do
+    mkdir -p "${iso9660_dir}/boot/grub/locale"
+    for file in "${input_dir}"/po/*.mo; do
         if test -f "$file"; then
 	    cp -f "$file" ${iso9660_dir}/boot/grub/locale/
 	fi
@@ -190,26 +190,25 @@ make_image ()
 
     gettext_printf "Enabling %s support ...\n" "$2"
 
-    memdisk_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-    memdisk_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-    mkdir -p ${memdisk_dir}/boot/grub
+    memdisk_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+    memdisk_dir="`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+    mkdir -p "${memdisk_dir}/boot/grub"
 
-    cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
+    (cat << EOF
 search --fs-uuid --set=root ${iso_uuid}
-set prefix=(\${root})/boot/grub/${platform}
-source \$prefix/grub.cfg
+set prefix=(\${root})/boot/grub
 EOF
-    (for i in $(cat ${source_directory}/partmap.lst) ${modules} ; do
+    for i in $(cat "${source_directory}/partmap.lst") ${modules} ; do
         echo "insmod $i"
     done ; \
-    echo "source /boot/grub/grub.cfg") \
-    > ${iso9660_dir}/boot/grub/${platform}/grub.cfg
+    echo "source \$prefix/grub.cfg") \
+    > "${memdisk_dir}/boot/grub/grub.cfg"
 
     (cd "${memdisk_dir}"; tar -cf - boot) > "${memdisk_img}"
-    rm -rf ${memdisk_dir}
-    $grub_mkimage -O ${platform} -d "${source_directory}" -m "${memdisk_img}" -o "$3" --prefix='(memdisk)/boot/grub' \
+    rm -rf "${memdisk_dir}"
+    "$grub_mkimage" -O ${platform} -d "${source_directory}" -m "${memdisk_img}" -o "$3" --prefix='(memdisk)/boot/grub' \
         search iso9660 configfile normal memdisk tar $4
-    rm -rf ${memdisk_img}
+    rm -rf "${memdisk_img}"
 }
 
 if [ "${override_dir}" = "" ] ; then
@@ -257,21 +256,21 @@ grub_mkisofs_arguments="${grub_mkisofs_arguments} --modification-date=$(echo ${i
 # build BIOS core.img
 if test -e "${pc_dir}" ; then
     gettext_printf "Enabling %s support ...\n" "BIOS"
-    core_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-    $grub_mkimage -O i386-pc -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
-        iso9660 biosdisk
-    cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
+    load_cfg="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`"
+    core_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
 
-    embed_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-    cat ${pc_dir}/boot.img ${core_img} > ${embed_img}
-
-    rm -f ${core_img}
-
-    (for i in $(cat ${pc_dir}/partmap.lst) ${modules} ; do
+    (for i in $(cat "${pc_dir}/partmap.lst") ${modules} ; do
         echo "insmod $i"
-    done ; \
-    echo "source /boot/grub/grub.cfg") \
-    > ${iso9660_dir}/boot/grub/i386-pc/grub.cfg
+    done ;) > "${load_cfg}"
+
+    "$grub_mkimage" -O i386-pc -d "${pc_dir}/" -o "${core_img}" -c "$load_cfg" --prefix=/boot/grub \
+        iso9660 biosdisk
+    cat "${pc_dir}/cdboot.img" "${core_img}" > "${iso9660_dir}/boot/grub/i386-pc/eltorito.img"
+
+    embed_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+    cat "${pc_dir}/boot.img" "${core_img}" > "${embed_img}"
+
+    rm -f $"{core_img}"
 
     grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-info-table \
 		--embedded-boot ${embed_img}"
@@ -309,9 +308,9 @@ if [ -e "${iso9660_dir}/boot/coreboot.elf" ] && [ -d "${rom_directory}" ]; then
 fi
 
 # build iso image
-"${xorriso}" -as mkisofs -graft-points ${grub_mkisofs_arguments} --protective-msdos-label -o ${output_image} -r ${iso9660_dir} --sort-weight 0 / --sort-weight 1 /boot ${source}
-rm -rf ${iso9660_dir}
+"${xorriso}" -as mkisofs -graft-points ${grub_mkisofs_arguments} --protective-msdos-label -o "${output_image}" -r "${iso9660_dir}" --sort-weight 0 / --sort-weight 1 /boot ${source}
+rm -rf "${iso9660_dir}"
 
-rm -f ${embed_img}
+rm -f "${embed_img}"
 
 exit 0

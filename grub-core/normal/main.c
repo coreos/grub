@@ -527,6 +527,10 @@ GRUB_MOD_INIT(normal)
       grub_env_set (features[i], "y");
       grub_env_export (features[i]);
     }
+  grub_env_set ("grub_cpu", GRUB_TARGET_CPU);
+  grub_env_export ("grub_cpu");
+  grub_env_set ("grub_platform", GRUB_PLATFORM);
+  grub_env_export ("grub_platform");
 }
 
 GRUB_MOD_FINI(normal)

@@ -86,7 +86,8 @@ read_crypto_list (const char *prefix)
       return;
     }
   
-  filename = grub_xasprintf ("%s/crypto.lst", prefix);
+  filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM
+			     "/crypto.lst", prefix);
   if (!filename)
     {
       grub_errno = GRUB_ERR_NONE;

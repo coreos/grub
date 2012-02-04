@@ -42,6 +42,9 @@
 /* Define to 1 to enable disk cache statistics.  */
 #define DISK_CACHE_STATS @DISK_CACHE_STATS@
 
+#define GRUB_TARGET_CPU "@GRUB_TARGET_CPU@"
+#define GRUB_PLATFORM "@GRUB_PLATFORM@"
+
 #define RE_ENABLE_I18N 1
 
 #if defined(__i386__)
