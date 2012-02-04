@@ -161,7 +161,7 @@ grub_script_return (grub_command_t cmd __attribute__((unused)),
 
   if (argc == 0)
     {
-      char *t;
+      const char *t;
       function_return = 1;
       t = grub_env_get ("?");
       if (!t)
