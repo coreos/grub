@@ -255,7 +255,7 @@ grub_ieee1275_map (grub_addr_t phys, grub_addr_t virt, grub_size_t size,
   return args.catch_result;
 }
 
-int
+grub_err_t
 grub_claimmap (grub_addr_t addr, grub_size_t size)
 {
   if (grub_ieee1275_claim (addr, size, 0, 0))
@@ -264,13 +264,13 @@ grub_claimmap (grub_addr_t addr, grub_size_t size)
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_REAL_MODE)
       && grub_ieee1275_map (addr, addr, size, 0x00))
     {
-      grub_printf ("map failed: address 0x%llx, size 0x%llx\n",
-		   (long long) addr, (long long) size);
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "map failed: address 0x%llx, size 0x%llx\n",
+		  (long long) addr, (long long) size);
       grub_ieee1275_release (addr, size);
-      return -1;
+      return grub_errno;
     }
 
-  return 0;
+  return GRUB_ERR_NONE;
 }
 
 /* Get the device arguments of the Open Firmware node name `path'.  */

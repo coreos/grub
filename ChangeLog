@@ -1,5 +1,10 @@
 2012-02-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/openfw.c (grub_claimmap): Change to
+	grub_error framework. All users updated.
+
+2012-02-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gettext/gettext.c: Mostly rewritten to avoid using
 	lists (by always binsearching), improve caching (cache strings
 	used for binsearch, not only results), improve

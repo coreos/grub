@@ -192,11 +192,11 @@ grub_claim_heap (void)
 
     if (len)
       {
+	grub_err_t err;
 	/* Claim and use it.  */
-	if (grub_claimmap (addr, len) < 0)
-	  return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			     "failed to claim heap at 0x%llx, len 0x%llx",
-			     addr, len);
+	err = grub_claimmap (addr, len);
+	if (err)
+	  return err;
 	grub_mm_init_region ((void *) (grub_addr_t) addr, len);
       }
 

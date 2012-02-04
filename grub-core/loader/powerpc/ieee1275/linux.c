@@ -76,6 +76,7 @@ grub_linux_claimmap_iterate (grub_addr_t target, grub_size_t size,
 	    found_addr = target;
 	    return 1;
 	  }
+	grub_print_error ();
       }
     /* Target below the memory chunk.  */
     if (target < addr && addr + size <= end)
@@ -85,6 +86,7 @@ grub_linux_claimmap_iterate (grub_addr_t target, grub_size_t size,
 	    found_addr = addr;
 	    return 1;
 	  }
+	grub_print_error ();
       }
     return 0;
   }
