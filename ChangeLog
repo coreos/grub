@@ -1,3 +1,9 @@
+2012-02-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/script/execute.c (grub_script_return): Fix potential
+	NULL-dereference.
+	Reported by: Jim Meyering.
+
 2012-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* po/POTFILES.in: Regenerate.

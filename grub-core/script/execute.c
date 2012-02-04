@@ -161,8 +161,12 @@ grub_script_return (grub_command_t cmd __attribute__((unused)),
 
   if (argc == 0)
     {
+      char *t;
       function_return = 1;
-      return grub_strtoul (grub_env_get ("?"), NULL, 10);
+      t = grub_env_get ("?");
+      if (!t)
+	return GRUB_ERR_NONE;
+      return grub_strtoul (t, NULL, 10);
     }
 
   n = grub_strtoul (argv[0], &p, 10);
