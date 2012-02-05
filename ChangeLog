@@ -1,3 +1,8 @@
+2012-02-05  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* grub-core/disk/diskfilter.c (grub_diskfilter_make_raid): Return
+	NULL when the argument `level' has an unexpected value.
+
 2012-02-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Move platform-dependent files from $prefix to $prefix/$platform.

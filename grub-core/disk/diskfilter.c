@@ -837,6 +837,9 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
     case 6:
       totsize = (nmemb - level / 3) * disk_size;
       break;
+
+    default:
+      return NULL;
     }
 
   array = grub_diskfilter_get_vg_by_uuid (uuidlen, uuid);
