@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include <grub/emu/misc.h>
 #include <grub/util/misc.h>
@@ -241,7 +242,7 @@ grub_util_resolve_dependencies (const char *prefix,
   path = grub_util_get_path (prefix, dep_list_file);
   fp = fopen (path, "r");
   if (! fp)
-    grub_util_error (_("cannot open %s"), path);
+    grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
 
   free (path);
   dep_list = read_dep_list (fp);

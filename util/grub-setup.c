@@ -709,9 +709,10 @@ unable_to_embed:
   grub_util_info ("opening the core image `%s'", core_path);
   fp = fopen (core_path, "r+b");
   if (! fp)
-    grub_util_error (_("cannot open `%s'"), core_path);
+    grub_util_error (_("cannot open `%s': %s"), core_path,
+		     strerror (errno));
 
-  grub_util_write_image (core_img, GRUB_DISK_SECTOR_SIZE * 2, fp);
+  grub_util_write_image (core_img, GRUB_DISK_SECTOR_SIZE * 2, fp, core_path);
   fclose (fp);
 
  finish:

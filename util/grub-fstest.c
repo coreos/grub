@@ -173,7 +173,8 @@ cmd_cp (char *src, char *dest)
 
     if ((int) fwrite (buf, 1, len, ff) != len)
       {
-	grub_util_error (_("write error"));
+	grub_util_error (_("cannot write to the file `%s': %s"),
+			 dest, strerror (errno));
 	return 1;
       }
 
@@ -201,7 +202,8 @@ cmd_cat (char *src)
 
     if ((int) fwrite (buf, 1, len, stdout) != len)
       {
-	grub_util_error (_("write error"));
+	grub_util_error (_("cannot write to the stdout: %s"),
+			 strerror (errno));
 	return 1;
       }
 
@@ -249,7 +251,8 @@ cmd_cmp (char *src, char *dest)
     }
 
   if ((skip) && (fseeko (ff, skip, SEEK_SET)))
-    grub_util_error (_("seek error"));
+    grub_util_error (_("cannot seek the file `%s': %s"), dest,
+		     strerror (errno));
 
   read_file (src, cmp_hook);
 

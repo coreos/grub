@@ -1,5 +1,52 @@
 2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Improve and unify messages.
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors): Add argument
+	name. All users updated.
+	Print filename in error.
+	(read_device_map): Print filename in error.
+	* util/getroot.c (grub_guess_root_devices): Print filename in error.
+	(grub_util_get_os_disk): Likewise.
+	(grub_util_biosdisk_get_grub_dev): Likewise.
+	(grub_util_check_block_device): Likewise.
+	(grub_util_check_char_device): Likewise.
+	(grub_make_system_path_relative_to_its_root): Likewise.
+	* util/grub-editenv.c (create_envblk_file): Likewise.
+	(open_envblk_file): Likewise.
+	(write_envblk): Likewise.
+	* util/grub-fstest.c (cmd_cp): Likewise.
+	(cmd_cat): Likewise.
+	(cmd_cmp): Likewise.
+	* util/grub-menulst2cfg.c (main): Likewise.
+	* util/grub-mkfont.c (write_font_ascii_bitmap): Likewise.
+	(write_font_width_spec): Likewise.
+	(write_font_pf2): Likewise.
+	* util/grub-mkimage.c (generate_image): New argument outname.
+	All users updated.
+	Remove unreacheable message.
+	(options): Unify messages.
+	(help_filter): Likewise.
+	* util/grub-mklayout.c (usage): Removed (unused).
+	(main): Print filename in error.
+	* util/grub-mkrescue.in: Fix wrong quoting.
+	* util/grub-setup.c (setup): Print filename in error.
+	* util/ieee1275/ofpath.c (vendor_is_ATA): Likewise.
+	(check_sas): Likewise.
+	* util/misc.c (grub_util_get_fp_size): Removed.
+	(grub_util_get_image_size): Print filename in error.
+	(grub_util_read_at): Removed.
+	(grub_util_read_image): Print filename in error.
+	(grub_util_load_image): Likewise.
+	(grub_util_write_image_at): New argument filename. All users updated.
+	Print filename in error.
+	(grub_util_write_image): New argument filename. All users updated.
+	Print filename in error.
+	* util/raid.c (grub_util_raid_getmembers): Print filename in error.
+	* util/resolve.c (grub_util_resolve_dependencies): Likewise.
+
+2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (pxechain): New module.
 	* grub-core/loader/i386/pc/pxechainloader.c: New file.
 	* grub-core/net/drivers/i386/pc/pxe.c (grub_pxe_get_cached): New

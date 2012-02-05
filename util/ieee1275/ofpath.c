@@ -294,15 +294,15 @@ vendor_is_ATA(const char *path)
 
   bufname = xmalloc (path_size);
 
-  snprintf(bufname, path_size, "%s/vendor", path);
-  fd = open(bufname, O_RDONLY);
+  snprintf (bufname, path_size, "%s/vendor", path);
+  fd = open (bufname, O_RDONLY);
   if (fd < 0)
-    grub_util_error (_("cannot open 'vendor' node of `%s'"), path);
+    grub_util_error (_("cannot open `%s': %s"), bufname, strerror (errno));
 
   memset(bufcont, 0, sizeof (bufcont));
   err = read(fd, bufcont, sizeof (bufcont));
   if (err < 0)
-    grub_util_error (_("cannot read 'vendor' node of `%s'"), path);
+    grub_util_error (_("cannot open `%s': %s"), bufname, strerror (errno));
 
   close(fd);
   free (bufname);
@@ -336,9 +336,9 @@ check_sas (char *sysfs_path, int *tgt)
   path = xmalloc (path_size);
   snprintf (path, path_size, "%s/sas_device:%s/phy_identifier", p, ed);
 
-  fd = open(path, O_RDONLY);
+  fd = open (path, O_RDONLY);
   if (fd < 0)
-    grub_util_error(_("cannot open SAS PHY ID `%s'\n"), path);
+    grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
 
   memset (phy, 0, sizeof (phy));
   read (fd, phy, sizeof (phy));

@@ -270,7 +270,7 @@ if test -e "${pc_dir}" ; then
     embed_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
     cat "${pc_dir}/boot.img" "${core_img}" > "${embed_img}"
 
-    rm -f $"{core_img}"
+    rm -f "${core_img}"
 
     grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-info-table \
 		--embedded-boot ${embed_img}"

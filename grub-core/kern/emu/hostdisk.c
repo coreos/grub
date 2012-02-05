@@ -240,7 +240,7 @@ grub_util_biosdisk_iterate (int (*hook) (const char *name),
 
 #if !defined(__MINGW32__)
 grub_uint64_t
-grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
+grub_util_get_fd_sectors (int fd, const char *name, unsigned *log_secsize)
 {
 # if defined(__NetBSD__)
   struct disklabel label;
@@ -253,7 +253,7 @@ grub_util_get_fd_sectors (int fd, unsigned *log_secsize)
   struct stat st;
 
   if (fstat (fd, &st) < 0)
-    grub_util_error (_("fstat failed"));
+    grub_util_error (_("cannot stat `%s': %s"), name, strerror (errno));
 
 #if defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
   defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) \
@@ -374,7 +374,8 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     if (fd == -1)
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "cannot open `%s' while attempting to get disk size", map[drive].device);
 
-    disk->total_sectors = grub_util_get_fd_sectors (fd, &disk->log_sector_size);
+    disk->total_sectors = grub_util_get_fd_sectors (fd, map[drive].device,
+						    &disk->log_sector_size);
 
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
     if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
@@ -1143,14 +1144,14 @@ read_device_map (const char *dev_map)
 
   if (dev_map[0] == '\0')
     {
-      grub_util_info (_("no device.map"));
+      grub_util_info ("no device.map");
       return;
     }
 
   fp = fopen (dev_map, "r");
   if (! fp)
     {
-      grub_util_info (_("cannot open `%s'"), dev_map);
+      grub_util_info (_("cannot open `%s': %s"), dev_map, strerror (errno));
       return;
     }
 

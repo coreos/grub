@@ -695,7 +695,8 @@ struct fixup_block_list
 #undef MKIMAGE_ELF64
 
 static void
-generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
+generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
+		char *mods[],
 		char *memdisk_path, char *config_path,
 		struct image_target_desc *image_target, int note,
 		grub_compression_t comp)
@@ -959,15 +960,13 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	char *boot_path, *boot_img;
 	size_t boot_size;
 
-	if (GRUB_KERNEL_I386_PC_LINK_ADDR + core_size > 0x78000)
+	if (GRUB_KERNEL_I386_PC_LINK_ADDR + core_size > 0x78000
+	    || (core_size > (0xffff << GRUB_DISK_SECTOR_BITS)))
 	  grub_util_error (_("core image is too big (0x%x > 0x%x)"),
 			   GRUB_KERNEL_I386_PC_LINK_ADDR + core_size,
 			   0x78000);
 
 	num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
-	if (num > 0xffff)
-	  grub_util_error (_("the core image is too big"));
-
 	if (image_target->id == IMAGE_I386_PC_PXE)
 	  {
 	    char *pxeboot_path, *pxeboot_img;
@@ -978,7 +977,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	    pxeboot_size = grub_util_get_image_size (pxeboot_path);
 	    pxeboot_img = grub_util_read_image (pxeboot_path);
 	    
-	    grub_util_write_image (pxeboot_img, pxeboot_size, out);
+	    grub_util_write_image (pxeboot_img, pxeboot_size, out,
+				   outname);
 	    free (pxeboot_img);
 	    free (pxeboot_path);
 
@@ -1016,7 +1016,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 					    + (GRUB_DISK_SECTOR_SIZE >> 4)));
 	}
 
-	grub_util_write_image (boot_img, boot_size, out);
+	grub_util_write_image (boot_img, boot_size, out, outname);
 	free (boot_img);
 	free (boot_path);
       }
@@ -1290,7 +1290,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 			     - GRUB_BOOT_SPARC64_IEEE1275_LIST_SIZE + 8))
 	  = grub_host_to_target32 (num);
 
-	grub_util_write_image (boot_img, boot_size, out);
+	grub_util_write_image (boot_img, boot_size, out, outname);
 	free (boot_img);
 	free (boot_path);
       }
@@ -1616,7 +1616,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       break;
     }
 
-  grub_util_write_image (core_img, core_size, out);
+  grub_util_write_image (core_img, core_size, out, outname);
   free (core_img);
   free (kernel_path);
 
@@ -1632,15 +1632,15 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 
 static struct argp_option options[] = {
-  {"directory",  'd', N_("DIR"), 0, N_("use images and modules under DIR [default=%s/@platform@]"), 0},
+  {"directory",  'd', N_("DIR"), 0, N_("use images and modules under DIR [default=%s/<platform>]"), 0},
   {"prefix",  'p', N_("DIR"), 0, N_("set grub_prefix directory [default=%s]"), 0},
   {"memdisk",  'm', N_("FILE"), 0, N_("embed FILE as a memdisk image"), 0},
   {"config",   'c', N_("FILE"), 0, N_("embed FILE as boot config"), 0},
   {"note",   'n', 0, 0, N_("add NOTE segment for CHRP Open Firmware"), 0},
   {"output",  'o', N_("FILE"), 0, N_("output a generated image to FILE [default=stdout]"), 0},
-  {"format",  'O', N_("FORMAT"), 0, N_("generate an image in format.\navailable formats: %s"), 0},
+  {"format",  'O', N_("FORMAT"), 0, 0, 0},
   {"compression",  'C', "(xz|none|auto)", 0, N_("choose the compression to use"), 0},
-  {"verbose",     'v', 0,      0, N_("Print verbose messages."), 0},
+  {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -1671,7 +1671,8 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 	    *ptr++ = ' ';
 	  }
 	ptr[-2] = 0;
-	ret = xasprintf (text, formats);
+	ret = xasprintf ("%s\n%s %s", _("generate an image in format"),
+			 _("available formats:"), formats);
 	free (formats);
 	return ret;
       }
@@ -1829,7 +1830,7 @@ main (int argc, char *argv[])
   if (!arguments.image_target)
     {
       char *program = xstrdup(program_name);
-      printf ("%s", _("Target format not specified (use the -O option).\n"));
+      printf ("%s\n", _("Target format not specified (use the -O option)."));
       argp_help (&argp, stderr, ARGP_HELP_STD_USAGE, program);
       free (program);
       exit(1);
@@ -1839,7 +1840,8 @@ main (int argc, char *argv[])
     {
       fp = fopen (arguments.output, "wb");
       if (! fp)
-	grub_util_error (_("cannot open %s"), arguments.output);
+	grub_util_error (_("cannot open `%s': %s"), arguments.output,
+			 strerror (errno));
       free (arguments.output);
     }
 
@@ -1856,6 +1858,7 @@ main (int argc, char *argv[])
     }
 
   generate_image (arguments.dir, arguments.prefix ? : DEFAULT_DIRECTORY, fp,
+		  arguments.output,
 		  arguments.modules, arguments.memdisk, arguments.config,
 		  arguments.image_target, arguments.note, arguments.comp);
 

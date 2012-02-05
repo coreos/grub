@@ -84,20 +84,6 @@ grub_util_get_path (const char *dir, const char *file)
 }
 
 size_t
-grub_util_get_fp_size (FILE *fp)
-{
-  struct stat st;
-
-  if (fflush (fp) == EOF)
-    grub_util_error (_("fflush failed"));
-
-  if (fstat (fileno (fp), &st) == -1)
-    grub_util_error (_("fstat failed"));
-
-  return st.st_size;
-}
-
-size_t
 grub_util_get_image_size (const char *path)
 {
   struct stat st;
@@ -105,19 +91,9 @@ grub_util_get_image_size (const char *path)
   grub_util_info ("getting the size of %s", path);
 
   if (stat (path, &st) == -1)
-    grub_util_error (_("cannot stat %s"), path);
+    grub_util_error (_("cannot stat `%s': %s"), path, strerror (errno));
 
   return st.st_size;
-}
-
-void
-grub_util_read_at (void *img, size_t size, off_t offset, FILE *fp)
-{
-  if (fseeko (fp, offset, SEEK_SET) == -1)
-    grub_util_error (_("seek failed"));
-
-  if (fread (img, 1, size, fp) != size)
-    grub_util_error (_("read failed"));
 }
 
 char *
@@ -134,9 +110,12 @@ grub_util_read_image (const char *path)
 
   fp = fopen (path, "rb");
   if (! fp)
-    grub_util_error (_("cannot open %s"), path);
+    grub_util_error (_("cannot open `%s': %s"), path,
+		     strerror (errno));
 
-  grub_util_read_at (img, size, 0, fp);
+  if (fread (img, 1, size, fp) != size)
+    grub_util_error (_("cannot read the file `%s': %s"), path,
+		     strerror (errno));
 
   fclose (fp);
 
@@ -155,30 +134,41 @@ grub_util_load_image (const char *path, char *buf)
 
   fp = fopen (path, "rb");
   if (! fp)
-    grub_util_error (_("cannot open %s"), path);
+    grub_util_error (_("cannot open `%s': %s"), path,
+		     strerror (errno));
 
   if (fread (buf, 1, size, fp) != size)
-    grub_util_error (_("cannot read %s"), path);
+    grub_util_error (_("cannot read the file `%s': %s"), path,
+		     strerror (errno));
 
   fclose (fp);
 }
 
 void
-grub_util_write_image_at (const void *img, size_t size, off_t offset, FILE *out)
+grub_util_write_image_at (const void *img, size_t size, off_t offset, FILE *out,
+			  const char *name)
 {
   grub_util_info ("writing 0x%x bytes at offset 0x%x", size, offset);
   if (fseeko (out, offset, SEEK_SET) == -1)
-    grub_util_error (_("seek failed"));
+    grub_util_error (_("cannot seek the file `%s': %s"),
+		     name, strerror (errno));
   if (fwrite (img, 1, size, out) != size)
-    grub_util_error (_("write failed"));
+    grub_util_error (_("cannot write to the file `%s': %s"),
+		     name, strerror (errno));
 }
 
 void
-grub_util_write_image (const char *img, size_t size, FILE *out)
+grub_util_write_image (const char *img, size_t size, FILE *out,
+		       const char *name)
 {
   grub_util_info ("writing 0x%x bytes", size);
   if (fwrite (img, 1, size, out) != size)
-    grub_util_error (_("write failed"));
+    if (!name)
+      grub_util_error (_("cannot write to the stdout: %s"),
+		       strerror (errno));
+    else
+      grub_util_error (_("cannot write to the file `%s': %s"),
+		       name, strerror (errno));
 }
 
 char *

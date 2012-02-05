@@ -868,7 +868,7 @@ grub_guess_root_devices (const char *dir)
     }
 
   if (stat (dir, &st) < 0)
-    grub_util_error (_("cannot stat `%s'"), dir);
+    grub_util_error (_("cannot stat `%s': %s"), dir, strerror (errno));
 
   dev = st.st_dev;
 
@@ -1915,8 +1915,10 @@ grub_util_get_os_disk (const char *os_dev)
 
   if (stat (os_dev, &st) < 0)
     {
-      grub_error (GRUB_ERR_BAD_DEVICE, "cannot stat `%s'", os_dev);
-      grub_util_info ("cannot stat `%s'", os_dev);
+      const char *errstr = strerror (errno); 
+      grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot stat `%s': %s"),
+		  os_dev, errstr);
+      grub_util_info (_("cannot stat `%s': %s"), os_dev, errstr);
       return 0;
     }
 
@@ -1934,8 +1936,10 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
   if (stat (os_dev, &st) < 0)
     {
-      grub_error (GRUB_ERR_BAD_DEVICE, "cannot stat `%s'", os_dev);
-      grub_util_info ("cannot stat `%s'", os_dev);
+      const char *errstr = strerror (errno); 
+      grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot stat `%s': %s"), os_dev,
+		  errstr);
+      grub_util_info (_("cannot stat `%s': %s"), os_dev, errstr);
       return 0;
     }
 
@@ -2337,7 +2341,8 @@ grub_util_check_block_device (const char *blk_dev)
   struct stat st;
 
   if (stat (blk_dev, &st) < 0)
-    grub_util_error (_("cannot stat `%s'"), blk_dev);
+    grub_util_error (_("cannot stat `%s': %s"), blk_dev,
+		     strerror (errno));
 
   if (S_ISBLK (st.st_mode))
     return (blk_dev);
@@ -2351,7 +2356,7 @@ grub_util_check_char_device (const char *blk_dev)
   struct stat st;
 
   if (stat (blk_dev, &st) < 0)
-    grub_util_error (_("cannot stat `%s'"), blk_dev);
+    grub_util_error (_("cannot stat `%s': %s"), blk_dev, strerror (errno));
 
   if (S_ISCHR (st.st_mode))
     return (blk_dev);
@@ -2493,7 +2498,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
   free (p);
 
   if (stat (buf, &st) < 0)
-    grub_util_error (_("cannot stat %s: %s"), buf, strerror (errno));
+    grub_util_error (_("cannot stat `%s': %s"), buf, strerror (errno));
 
   buf2 = xstrdup (buf);
   num = st.st_dev;
@@ -2512,7 +2517,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
 	*++p = 0;
 
       if (stat (buf, &st) < 0)
-	grub_util_error (_("cannot stat %s: %s"), buf, strerror (errno));
+	grub_util_error (_("cannot stat `%s': %s"), buf, strerror (errno));
 
       /* buf is another filesystem; we found it.  */
       if (st.st_dev != num)

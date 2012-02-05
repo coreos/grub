@@ -648,31 +648,33 @@ add_font (struct grub_font_info *font_info, FT_Face face, int nocut)
     }
 }
 
-void
-write_string_section (char *name, char *str, int* offset, FILE* file)
+static void
+write_string_section (char *name, char *str, int* offset, FILE *file,
+		      const char *filename)
 {
   grub_uint32_t leng, leng_be32;
 
   leng = strlen (str) + 1;
   leng_be32 = grub_cpu_to_be32 (leng);
 
-  grub_util_write_image (name, 4, file);
-  grub_util_write_image ((char *) &leng_be32, 4, file);
-  grub_util_write_image (str, leng, file);
+  grub_util_write_image (name, 4, file, filename);
+  grub_util_write_image ((char *) &leng_be32, 4, file, filename);
+  grub_util_write_image (str, leng, file, filename);
 
   *offset += 8 + leng;
 }
 
-void
-write_be16_section (char *name, grub_uint16_t data, int* offset, FILE* file)
+static void
+write_be16_section (char *name, grub_uint16_t data, int* offset, FILE *file,
+		    const char *filename)
 {
   grub_uint32_t leng;
 
   leng = grub_cpu_to_be32 (2);
   data = grub_cpu_to_be16 (data);
-  grub_util_write_image (name, 4, file);
-  grub_util_write_image ((char *) &leng, 4, file);
-  grub_util_write_image ((char *) &data, 2, file);
+  grub_util_write_image (name, 4, file, filename);
+  grub_util_write_image ((char *) &leng, 4, file, filename);
+  grub_util_write_image ((char *) &data, 2, file, filename);
 
   *offset += 10;
 }
@@ -758,7 +760,8 @@ write_font_ascii_bitmap (struct grub_font_info *font_info, char *output_file)
   
   file = fopen (output_file, "wb");
   if (! file)
-    grub_util_error (_("Can\'t write to file %s."), output_file);
+    grub_util_error (_("cannot write to the file `%s': %s"), output_file,
+		     strerror (errno));
 
   int correct_size;
   for (glyph = font_info->glyphs_sorted, num = 0; num < font_info->num_glyphs;
@@ -794,7 +797,8 @@ write_font_width_spec (struct grub_font_info *font_info, char *output_file)
   
   file = fopen (output_file, "wb");
   if (! file)
-    grub_util_error (_("Can\'t write to file %s."), output_file);
+    grub_util_error (_("cannot write to the file `%s': %s"), output_file,
+		     strerror (errno));
 
   for (glyph = font_info->glyphs_sorted;
        glyph < font_info->glyphs_sorted + font_info->num_glyphs; glyph++)
@@ -817,15 +821,17 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 
   file = fopen (output_file, "wb");
   if (! file)
-    grub_util_error (_("Can\'t write to file %s."), output_file);
+    grub_util_error (_("cannot write to the file `%s': %s"), output_file,
+		     strerror (errno));
 
   offset = 0;
 
   leng = grub_cpu_to_be32 (4);
   grub_util_write_image (FONT_FORMAT_SECTION_NAMES_FILE,
-  			 sizeof(FONT_FORMAT_SECTION_NAMES_FILE) - 1, file);
-  grub_util_write_image ((char *) &leng, 4, file);
-  grub_util_write_image (FONT_FORMAT_PFF2_MAGIC, 4, file);
+  			 sizeof(FONT_FORMAT_SECTION_NAMES_FILE) - 1, file,
+			 output_file);
+  grub_util_write_image ((char *) &leng, 4, file, output_file);
+  grub_util_write_image (FONT_FORMAT_PFF2_MAGIC, 4, file, output_file);
   offset += 12;
 
   if (! font_info->name)
@@ -848,24 +854,24 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 			 font_info->size);
 
   write_string_section (FONT_FORMAT_SECTION_NAMES_FONT_NAME,
-  			font_name, &offset, file);
+  			font_name, &offset, file, output_file);
   write_string_section (FONT_FORMAT_SECTION_NAMES_FAMILY,
-  			font_info->name, &offset, file);
+  			font_info->name, &offset, file, output_file);
   write_string_section (FONT_FORMAT_SECTION_NAMES_WEIGHT,
 			(font_info->style & FT_STYLE_FLAG_BOLD) ?
 			"bold" : "normal",
-			&offset, file);
+			&offset, file, output_file);
   write_string_section (FONT_FORMAT_SECTION_NAMES_SLAN,
 			(font_info->style & FT_STYLE_FLAG_ITALIC) ?
 			"italic" : "normal",
-			&offset, file);
+			&offset, file, output_file);
 
   write_be16_section (FONT_FORMAT_SECTION_NAMES_POINT_SIZE,
-  		      font_info->size, &offset, file);
+  		      font_info->size, &offset, file, output_file);
   write_be16_section (FONT_FORMAT_SECTION_NAMES_MAX_CHAR_WIDTH,
-  		      font_info->max_width, &offset, file);
+  		      font_info->max_width, &offset, file, output_file);
   write_be16_section (FONT_FORMAT_SECTION_NAMES_MAX_CHAR_HEIGHT,
-  		      font_info->max_height, &offset, file);
+  		      font_info->max_height, &offset, file, output_file);
 
   if (! font_info->desc)
     {
@@ -884,9 +890,9 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
     }
 
   write_be16_section (FONT_FORMAT_SECTION_NAMES_ASCENT,
-  		      font_info->asce, &offset, file);
+  		      font_info->asce, &offset, file, output_file);
   write_be16_section (FONT_FORMAT_SECTION_NAMES_DESCENT,
-  		      font_info->desc, &offset, file);
+  		      font_info->desc, &offset, file, output_file);
 
   if (font_verbosity > 0)
     {
@@ -903,8 +909,8 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   leng = grub_cpu_to_be32 (font_info->num_glyphs * 9);
   grub_util_write_image (FONT_FORMAT_SECTION_NAMES_CHAR_INDEX,
   			 sizeof(FONT_FORMAT_SECTION_NAMES_CHAR_INDEX) - 1,
-			 file);
-  grub_util_write_image ((char *) &leng, 4, file);
+			 file, output_file);
+  grub_util_write_image ((char *) &leng, 4, file, output_file);
   offset += 8 + font_info->num_glyphs * 9 + 8;
 
   for (cur = font_info->glyphs_sorted;
@@ -913,41 +919,43 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
       grub_uint32_t data32;
       grub_uint8_t data8;
       data32 = grub_cpu_to_be32 (cur->char_code);
-      grub_util_write_image ((char *) &data32, 4, file);
+      grub_util_write_image ((char *) &data32, 4, file, output_file);
       data8 = 0;
-      grub_util_write_image ((char *) &data8, 1, file);
+      grub_util_write_image ((char *) &data8, 1, file, output_file);
       data32 = grub_cpu_to_be32 (offset);
-      grub_util_write_image ((char *) &data32, 4, file);
+      grub_util_write_image ((char *) &data32, 4, file, output_file);
       offset += 10 + cur->bitmap_size;
     }
 
   leng = 0xffffffff;
   grub_util_write_image (FONT_FORMAT_SECTION_NAMES_DATA,
-  			 sizeof(FONT_FORMAT_SECTION_NAMES_DATA) - 1, file);
-  grub_util_write_image ((char *) &leng, 4, file);
+  			 sizeof(FONT_FORMAT_SECTION_NAMES_DATA) - 1,
+			 file, output_file);
+  grub_util_write_image ((char *) &leng, 4, file, output_file);
 
   for (cur = font_info->glyphs_sorted;
        cur < font_info->glyphs_sorted + font_info->num_glyphs; cur++)
     {
       grub_uint16_t data;
       data = grub_cpu_to_be16 (cur->width);
-      grub_util_write_image ((char *) &data, 2, file);
+      grub_util_write_image ((char *) &data, 2, file, output_file);
       data = grub_cpu_to_be16 (cur->height);
-      grub_util_write_image ((char *) &data, 2, file);
+      grub_util_write_image ((char *) &data, 2, file, output_file);
       data = grub_cpu_to_be16 (cur->x_ofs);
-      grub_util_write_image ((char *) &data, 2, file);
+      grub_util_write_image ((char *) &data, 2, file, output_file);
       data = grub_cpu_to_be16 (cur->y_ofs);
-      grub_util_write_image ((char *) &data, 2, file);
+      grub_util_write_image ((char *) &data, 2, file, output_file);
       data = grub_cpu_to_be16 (cur->device_width);
-      grub_util_write_image ((char *) &data, 2, file);
-      grub_util_write_image ((char *) &cur->bitmap[0], cur->bitmap_size, file);
+      grub_util_write_image ((char *) &data, 2, file, output_file);
+      grub_util_write_image ((char *) &cur->bitmap[0], cur->bitmap_size,
+			     file, output_file);
     }
 
   fclose (file);
 }
 
 static struct argp_option options[] = {
-  {"output",  'o', N_("FILE"), 0, N_("set output file"), 0},
+  {"output",  'o', N_("FILE"), 0, N_("save output in FILE [required]"), 0},
   {"ascii-bitmaps",  0x102, 0, 0, N_("save only the ASCII bitmaps"), 0},
   {"width-spec",  0x103, 0, 0, N_("create width summary file"), 0},
   {"index",  'i', N_("NUM"), 0, N_("set face index"), 0},

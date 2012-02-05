@@ -265,20 +265,6 @@ static grub_uint8_t linux_to_usb_map[128] = {
 }; 
 
 static void
-usage (int status)
-{
-  if (status)
-    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
-  else
-    printf (_("\
-Usage: %s [OPTIONS]\n\
-\n\
-Report bugs to <%s>.\n"), program_name, PACKAGE_BUGREPORT);
-
-  exit (status);
-}
-
-static void
 add_special_keys (struct grub_keyboard_layout *layout)
 {
   (void) layout;
@@ -484,7 +470,8 @@ main (int argc, char *argv[])
     in = stdin;
 
   if (!in)
-    grub_util_error (_("Couldn't open input file: %s\n"), strerror (errno));
+    grub_util_error (_("cannot open `%s': %s"), arguments.input ? : "stdin",
+		     strerror (errno));
 
   if (arguments.output)
     out = fopen (arguments.output, "wb");
@@ -495,7 +482,8 @@ main (int argc, char *argv[])
     {
       if (in != stdin)
 	fclose (in);
-      grub_util_error (_("Couldn't open output file: %s\n"), strerror (errno));
+      grub_util_error (_("cannot open `%s': %s"), arguments.output ? : "stdout",
+		       strerror (errno));
     }
 
   write_keymaps (in, out);
