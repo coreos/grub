@@ -1143,7 +1143,7 @@ main (int argc, char *argv[])
     }
 
   if (! arguments.output_file)
-    grub_util_error (_("no output file is specified"));
+    grub_util_error (_("output file must be specified"));
 
   if (FT_Init_FreeType (&ft_lib))
     grub_util_error (_("FT_Init_FreeType fails"));

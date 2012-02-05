@@ -47,7 +47,7 @@ static struct argp_option options[] = {
    N_("Delete variables."), 0},
 
   {0,         0, 0, OPTION_DOC, N_("Options:"), -1},
-  {"verbose", 'v', 0, 0, N_("Print verbose messages."), 0},
+  {"verbose", 'v', 0, 0, N_("print verbose messages."), 0},
 
   { 0, 0, 0, 0, 0, 0 }
 };

@@ -689,7 +689,7 @@ static struct argp_option options[] = {
    N_("use FILE as the device map [default=%s]"), 0},
   {"target",  't', "(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|cryptodisk_uuid|msdos_parttype)", 0,
    N_("print filesystem module, GRUB drive, system device, partition map module, abstraction module or CRYPTO UUID [default=fs]"), 0},
-  {"verbose",     'v', 0,      0, N_("Print verbose messages."), 0},
+  {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };
 

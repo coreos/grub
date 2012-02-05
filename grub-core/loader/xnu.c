@@ -739,7 +739,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile)
 	{
 	  grub_file_close (infoplist);
 	  if (!grub_errno)
-	    grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s: "),
+	    grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
 			infoplistname);
 	  return grub_errno;
 	}

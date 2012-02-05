@@ -781,26 +781,26 @@ GRUB_MOD_INIT(legacycfg)
   cmd_kernel = grub_register_command ("legacy_kernel",
 				      grub_cmd_legacy_kernel,
 				      N_("[--no-mem-option] [--type=TYPE] FILE [ARG ...]"),
-				      N_("Simulate grub-legacy kernel command"));
+				      N_("Simulate grub-legacy `kernel' command"));
 
   cmd_initrd = grub_register_command ("legacy_initrd",
 				      grub_cmd_legacy_initrd,
 				      N_("FILE [ARG ...]"),
-				      N_("Simulate grub-legacy initrd command"));
+				      N_("Simulate grub-legacy `initrd' command"));
   cmd_initrdnounzip = grub_register_command ("legacy_initrd_nounzip",
 					     grub_cmd_legacy_initrdnounzip,
 					     N_("FILE [ARG ...]"),
-					     N_("Simulate grub-legacy modulenounzip command"));
+					     N_("Simulate grub-legacy `modulenounzip' command"));
 
   cmd_password = grub_register_command ("legacy_password",
 					grub_cmd_legacy_password,
 					N_("[--md5] PASSWD [FILE]"),
-					N_("Simulate grub-legacy password command"));
+					N_("Simulate grub-legacy `password' command"));
 
   cmd_check_password = grub_register_command ("legacy_check_password",
 					      grub_cmd_legacy_check_password,
 					      N_("[--md5] PASSWD [FILE]"),
-					      N_("Simulate grub-legacy password command in menuentry mode"));
+					      N_("Simulate grub-legacy `password' command in menuentry mode"));
 
 }
 

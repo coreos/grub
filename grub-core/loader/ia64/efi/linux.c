@@ -815,7 +815,7 @@ GRUB_MOD_INIT(linux)
 				       N_("Load an additional file."));
 
   cmd_relocate = grub_register_command ("relocate", grub_cmd_relocate,
-					N_("[on|off|force]"),
+					"[on|off|force]",
 					N_("Set relocate feature."));
 
   cmd_fpswa = grub_register_command ("fpswa", grub_cmd_fpswa,

@@ -31,7 +31,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static const struct grub_arg_option options[] = {
   {"hash", 'h', 0, N_("Specify hash to use."), N_("HASH"), ARG_TYPE_STRING},
   {"check", 'c', 0, N_("Check hash list file."), N_("FILE"), ARG_TYPE_STRING},
-  {"prefix", 'p', 0, N_("Base directory for hash list."), N_("DIRECTORY"),
+  {"prefix", 'p', 0, N_("Base directory for hash list."), N_("DIR"),
    ARG_TYPE_STRING},
   {"keep-going", 'k', 0, N_("Don't stop after first error."), 0, 0},
   {"uncompress", 'u', 0, N_("Uncompress file before checksumming."), 0, 0},

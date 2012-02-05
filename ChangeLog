@@ -1,5 +1,39 @@
 2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Clarify and unify messages.
+
+	* grub-core/commands/hashsum.c (options): Unify messages.
+	* grub-core/commands/keystatus.c (GRUB_MOD_INIT): Don't mark a
+	literal-only message as translatable.
+	* grub-core/commands/lsacpi.c (GRUB_MOD_INIT): Likewise.
+	* grub-core/loader/ia64/efi/linux.c (GRUB_MOD_INIT): Likewise.
+	* grub-core/commands/legacycfg.c (GRUB_MOD_INIT): Add quoting around
+	commands.
+	* grub-core/commands/menuentry.c (options): Clarify that it's a keyboard
+	key, not the key used to unlock. Clarify what it's used for.
+	* grub-core/kern/emu/hostdisk.c (read_device_map): Unify error message.
+	* grub-core/loader/xnu.c (grub_xnu_load_driver): Remove erroneous colon.
+	* grub-core/script/main.c (GRUB_MOD_INIT): Clarify [n] to be [NUM].
+	* util/grub-editenv.c (options): Unify "verbose" message.
+	* util/grub-fstest.c (read_file): Unify error message.
+	(fstest): Add quotes around commands.
+	(options): Unify "verbose" message.
+	* util/grub-install.in: Add quotes around variable name.
+	* util/grub-kbdcomp.in: Unify error message.
+	* util/grub-mkfont.c (main): Likewise.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub-mklayout.c (options): Unify "verbose" message.
+	* util/grub-mkstandalone.in: Unify help and verbose messages.
+	* util/grub-mount.c (options): Unify "verbose" message.
+	* util/grub-probe.c (options): Likewise.
+	* util/grub-script-check.c (options): Likewise.
+	* util/grub-setup.c (setup): Unify no-terminator message.
+	(options): Use DEVICE and not DEV.
+	Unify "verbose" message.
+	* util/ieee1275/ofpath.c (xrealpath): Unify error message.
+
+2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Improve and unify messages.
 
 	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors): Add argument

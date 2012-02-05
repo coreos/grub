@@ -157,7 +157,7 @@ xrealpath (const char *in)
   out = realpath (in, NULL);
 #endif
   if (!out)
-    grub_util_error (_("cannot get the real path of `%s'"), in);
+    grub_util_error (_("failed to get canonical path of %s"), in);
   return out;
 }
 

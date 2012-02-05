@@ -46,7 +46,7 @@ static struct argp_option options[] = {
    N_("set input filename. Default is STDIN"), 0},
   {"output",  'o', N_("FILE"), 0,
    N_("set output filename. Default is STDOUT"), 0},
-  {"verbose",     'v', 0,      0, N_("Print verbose messages."), 0},
+  {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };
 

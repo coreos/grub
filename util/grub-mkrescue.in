@@ -139,7 +139,7 @@ do
 done
 
 if [ "x${output_image}" = x ] ; then
-  gettext "output file must be given" >&2
+  gettext "output file must be specified" >&2
   echo >&2
   usage
   exit 1

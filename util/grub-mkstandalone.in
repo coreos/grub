@@ -52,7 +52,7 @@ usage () {
     printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
     printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
     printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "save output in FILE [required]")"
-    dir_msg="$(gettext_printf "use images and modules under DIR  [default=%s/<platform>]" "${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})")"
+    dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})")"
     printf "  -d, --directory=%-8s%s\n" \
 	"DIR" "$dir_msg"
     printf     "  -O, --format=%-11s%s" "$(gettext "FORMAT")" "$(gettext "generate an image in format")"; echo
@@ -135,7 +135,7 @@ if [ "x${output_image}" = x ] ; then
 fi
 
 if [ "x${format}" = x ] ; then
-  gettext "format must be specified" >&2
+  gettext "Target format not specified (use the -O option)." >&2
   echo >&2
   exit 1
 fi

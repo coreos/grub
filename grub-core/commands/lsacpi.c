@@ -240,7 +240,7 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(lsapi)
 {
-  cmd = grub_register_extcmd ("lsacpi", grub_cmd_lsacpi, 0, N_("[-1|-2]"),
+  cmd = grub_register_extcmd ("lsacpi", grub_cmd_lsacpi, 0, "[-1|-2]",
 			      N_("Show ACPI information."), options);
 }
 

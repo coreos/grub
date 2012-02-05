@@ -119,7 +119,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
   file = grub_file_open (pathname);
   if (!file)
     {
-      grub_util_error (_("cannot open file %s:%s"), pathname,
+      grub_util_error (_("cannot open `%s': %s"), pathname,
 		       grub_errmsg);
       return;
     }
@@ -184,7 +184,7 @@ cmd_cp (char *src, char *dest)
   ff = fopen (dest, "wb");
   if (ff == NULL)
     {
-      grub_util_error (_("OS file %s open error: %s"), dest,
+      grub_util_error (_("cannot open OS file `%s': %s"), dest,
 		       strerror (errno));
       return;
     }
@@ -332,7 +332,7 @@ fstest (int n, char **args)
       argv[1] = host_file;
 
       if (execute_command ("loopback", 2, argv))
-        grub_util_error (_("loopback command fails"));
+        grub_util_error (_("\`loopback' command fails: %s"), grub_errmsg);
 
       grub_free (loop_name);
       grub_free (host_file);
@@ -343,7 +343,7 @@ fstest (int n, char **args)
     if (mount_crypt)
       {
 	if (execute_command ("cryptomount", 1, argv))
-	  grub_util_error (_("cryptomount command fails: %s"), grub_errmsg);
+	  grub_util_error (_("\`cryptomount' command fails: %s"), grub_errmsg);
       }
   }
 
@@ -447,7 +447,7 @@ static struct argp_option options[] = {
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
   {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
   {"zfs-key",      'K', N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
-  {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("Print verbose messages."), 2},
+  {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("print verbose messages."), 2},
   {"uncompress", 'u', NULL, OPTION_ARG_OPTIONAL, N_("Uncompress data."), 2},
   {0, 0, 0, 0, 0, 0}
 };

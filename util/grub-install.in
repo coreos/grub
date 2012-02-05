@@ -109,7 +109,7 @@ if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     printf "  --disk-module=%-10s%s\n" "$(gettext "MODULE")" "$(gettext "disk module to use (biosdisk or native)")"
 fi
 if [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${platform}" = "powerpc-ieee1275" ] ; then
-    printf "  --no-nvram              %s\n" "$(gettext "don't update the boot-device NVRAM variable")"
+    printf "  --no-nvram              %s\n" "$(gettext "don't update the \`boot-device' NVRAM variable")"
 fi
 if [ "${platform}" = "efi" ]; then
 
@@ -633,7 +633,7 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	dev="`echo $grub_device | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`"
 	partno="`echo $grub_device | sed -e 's/.*[^0-9]\([0-9]\+\)$/\1/'`"
 	ofpath="`$ofpathname $dev`" || {
-	    gettext_printf "Couldn't find Open Firmware device tree path for %s.\nYou will have to set boot-device manually.\n" "$dev" 1>&2
+	    gettext_printf "Couldn't find Open Firmware device tree path for %s.\nYou will have to set \`boot-device' variable manually.\n" "$dev" 1>&2
 	    exit 1
 	}
 
@@ -666,8 +666,9 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	fi
 
 	"$nvsetenv" boot-device "$boot_device" || {
-	    gettext_printf "%s failed.\n" "$nvsetenv" 1>&2
-	    gettext "You will have to set boot-device manually.  At the Open Firmware prompt, type:" 1>&2
+	    # TRANSLATORS: The %s will be replaced by an external program name.
+	    gettext_printf "\`%s' failed.\n" "$nvsetenv" 1>&2
+	    gettext "You will have to set \`boot-device' variable manually.  At the Open Firmware prompt, type:" 1>&2
 	    echo 1>&2
 	    echo "  setenv boot-device $boot_device" 1>&2
 	    exit 1

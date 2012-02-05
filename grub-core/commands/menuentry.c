@@ -32,7 +32,7 @@ static const struct grub_arg_option options[] =
     {"users", 2, 0,
      N_("Users allowed to boot this entry."), N_("USERNAME"), ARG_TYPE_STRING},
     {"hotkey", 3, 0,
-     N_("Keyboard key for this entry."), N_("KEY"), ARG_TYPE_STRING},
+     N_("Keyboard key to quickly boot this entry."), N_("KEYBOARD_KEY"), ARG_TYPE_STRING},
     {"source", 4, 0,
      N_("Menu entry definition as a string."), N_("STRING"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}

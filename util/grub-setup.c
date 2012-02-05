@@ -483,7 +483,7 @@ setup (const char *dir,
 	block--;
 
 	if ((char *) block <= core_img)
-	  grub_util_error (_("No terminator in the core image"));
+	  grub_util_error (_("no terminator in the core image"));
       }
 
     save_first_sector (sectors[0] + grub_partition_get_start (container),
@@ -741,13 +741,13 @@ static struct argp_option options[] = {
    N_("Use GRUB files in the directory DIR [default=%s]"), 0},
   {"device-map",  'm', N_("FILE"), 0,
    N_("Use FILE as the device map [default=%s]"), 0},
-  {"root-device", 'r', N_("DEV"),  0,
+  {"root-device", 'r', N_("DEVICE"),  0,
    N_("Use DEV as the root device [default=guessed]"), 0},
   {"force",       'f', 0,      0,
    N_("Install even if problems are detected"), 0},
   {"skip-fs-probe",'s',0,      0,
    N_("Do not probe for filesystems in DEVICE"), 0},
-  {"verbose",     'v', 0,      0, N_("Print verbose messages."), 0},
+  {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   {"allow-floppy", 'a', 0,      0,
    N_("Make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes."), 0},
 

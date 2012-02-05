@@ -45,7 +45,7 @@ struct arguments
 };
 
 static struct argp_option options[] = {
-  {"verbose",     'v', 0,      0, N_("Print verbose messages."), 0},
+  {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };
 
