@@ -1332,6 +1332,12 @@ module = {
 };
 
 module = {
+  name = pxechain;
+  i386_pc = loader/i386/pc/pxechainloader.c;
+  enable = i386_pc;
+};
+
+module = {
   name = multiboot2;
   cppflags = "-DGRUB_USE_MULTIBOOT2";
 

@@ -284,6 +284,9 @@ int EXPORT_FUNC(grub_pxe_call) (int func, void * data, grub_uint32_t pxe_rm_entr
 
 extern struct grub_pxe_bangpxe *grub_pxe_pxenv;
 
+void *
+grub_pxe_get_cached (grub_uint16_t type);
+
 #endif
 
 #endif /* GRUB_CPU_PXE_H */

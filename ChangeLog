@@ -1,5 +1,14 @@
 2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (pxechain): New module.
+	* grub-core/loader/i386/pc/pxechainloader.c: New file.
+	* grub-core/net/drivers/i386/pc/pxe.c (grub_pxe_get_cached): New
+	function.
+	(grub_pc_net_config_real): Use grub_pxe_get_cached.
+	* include/grub/i386/pc/pxe.h (grub_pxe_get_cached): New proto.
+
+2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/err.c (GRUB_MAX_ERRMSG): Move to ...
 	* include/grub/err.h (GRUB_MAX_ERRMSG): ... here.
 	* include/grub/err.h (grub_error_saved): New struct.

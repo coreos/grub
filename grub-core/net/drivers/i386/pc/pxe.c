@@ -311,20 +311,29 @@ struct grub_net_card grub_pxe_card =
   .name = "pxe"
 };
 
-static void
-grub_pc_net_config_real (char **device, char **path)
+void *
+grub_pxe_get_cached (grub_uint16_t type)
 {
-  struct grub_net_bootp_packet *bp;
   struct grub_pxenv_get_cached_info ci;
-  ci.packet_type = GRUB_PXENV_PACKET_TYPE_DHCP_ACK;
+  ci.packet_type = type;
   ci.buffer = 0;
   ci.buffer_size = 0;
   grub_pxe_call (GRUB_PXENV_GET_CACHED_INFO, &ci, pxe_rm_entry);
   if (ci.status)
+    return 0;
+
+  return LINEAR (ci.buffer);
+}
+
+static void
+grub_pc_net_config_real (char **device, char **path)
+{
+  struct grub_net_bootp_packet *bp;
+
+  bp = grub_pxe_get_cached (GRUB_PXENV_PACKET_TYPE_DHCP_ACK);
+
+  if (!bp)
     return;
-
-  bp = LINEAR (ci.buffer);
-
   grub_net_configure_by_dhcp_ack ("pxe", &grub_pxe_card, 0,
 				  bp, GRUB_PXE_BOOTP_SIZE,
 				  1, device, path);
