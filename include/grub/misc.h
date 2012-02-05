@@ -424,4 +424,19 @@ extern int EXPORT_VAR(grub_no_autoload);
 #define grub_no_autoload 0
 #endif
 
+static inline void
+grub_error_save (struct grub_error_saved *save)
+{
+  grub_memcpy (save->errmsg, grub_errmsg, sizeof (save->errmsg));
+  save->grub_errno = grub_errno;
+  save->grub_errno = GRUB_ERR_NONE;
+}
+
+static inline void
+grub_error_load (const struct grub_error_saved *save)
+{
+  grub_memcpy (grub_errmsg, save->errmsg, sizeof (grub_errmsg));
+  grub_errno = save->grub_errno;
+}
+
 #endif /* ! GRUB_MISC_HEADER */

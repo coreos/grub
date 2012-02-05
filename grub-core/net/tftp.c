@@ -102,6 +102,7 @@ typedef struct tftp_data
   grub_uint64_t block;
   grub_uint32_t block_size;
   int have_oack;
+  struct grub_error_saved save_err;
   grub_net_udp_socket_t sock;
   grub_priority_queue_t pq;
 } *tftp_data_t;
@@ -181,6 +182,7 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
       data->block = 0;
       grub_netbuff_free (nb);
       err = ack (data->sock, 0);
+      grub_error_save (&data->save_err);
       if (err)
 	return err;
       return GRUB_ERR_NONE;
@@ -246,8 +248,11 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
       }
       return GRUB_ERR_NONE;
     case TFTP_ERROR:
+      data->have_oack = 1;
       grub_netbuff_free (nb);
-      return grub_error (GRUB_ERR_IO, (char *) tftph->u.err.errmsg);
+      grub_error (GRUB_ERR_IO, (char *) tftph->u.err.errmsg);
+      grub_error_save (&data->save_err);
+      return GRUB_ERR_NONE;
     default:
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
@@ -368,11 +373,16 @@ tftp_open (struct grub_file *file, const char *filename)
     }
 
   if (!data->have_oack)
+    grub_error (GRUB_ERR_TIMEOUT, "Time out opening tftp.");
+  else
+    grub_error_load (&data->save_err);
+  if (grub_errno)
     {
       grub_net_udp_close (data->sock);
       destroy_pq (data);
-      return grub_error (GRUB_ERR_TIMEOUT, "Time out opening tftp.");
+      return grub_errno;
     }
+
   file->size = data->file_size;
 
   return GRUB_ERR_NONE;

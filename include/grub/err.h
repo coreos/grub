@@ -22,6 +22,8 @@
 
 #include <grub/symbol.h>
 
+#define GRUB_MAX_ERRMSG		256
+
 typedef enum
   {
     GRUB_ERR_NONE = 0,
@@ -70,8 +72,14 @@ typedef enum
   }
 grub_err_t;
 
+struct grub_error_saved
+{
+  grub_err_t grub_errno;
+  char errmsg[GRUB_MAX_ERRMSG];
+};
+
 extern grub_err_t EXPORT_VAR(grub_errno);
-extern char EXPORT_VAR(grub_errmsg)[];
+extern char EXPORT_VAR(grub_errmsg)[GRUB_MAX_ERRMSG];
 
 grub_err_t EXPORT_FUNC(grub_error) (grub_err_t n, const char *fmt, ...);
 void EXPORT_FUNC(grub_fatal) (const char *fmt, ...) __attribute__ ((noreturn));

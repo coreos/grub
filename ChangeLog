@@ -1,5 +1,20 @@
 2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/err.c (GRUB_MAX_ERRMSG): Move to ...
+	* include/grub/err.h (GRUB_MAX_ERRMSG): ... here.
+	* include/grub/err.h (grub_error_saved): New struct.
+	(grub_errmsg): Make array size explicit.
+	* include/grub/misc.h (grub_error_save): New function.
+	(grub_error_load): Likewise.
+	* grub-core/kern/err.c (grub_error_stack_items): Use grub_error_saved.
+	(grub_error_push): Update `errno' member name.
+	(grub_error_pop): Likewise
+	* grub-core/net/tftp.c (tftp_data): New member save_err.
+	(tftp_receive): Save error.
+	(tftp_open): Restore error.
+
+2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/i386/relocator16.S (grub_relocator16_start): Move switch
 	to real mode down to execute A20-related code in protected mode as
 	intended.
