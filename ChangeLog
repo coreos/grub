@@ -1,5 +1,11 @@
 2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/minicmd.c (GRUB_MOD_INIT): Add missing SIZE
+	argument.
+	* util/grub-fstest.c (options): Add missing DEVICE part.
+
+2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Clarify and unify messages.
 
 	* grub-core/commands/hashsum.c (options): Unify messages.
