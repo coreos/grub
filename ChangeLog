@@ -1,3 +1,9 @@
+2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/i386/relocator16.S (grub_relocator16_start): Move switch
+	to real mode down to execute A20-related code in protected mode as
+	intended.
+
 2012-02-05  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* grub-core/disk/diskfilter.c (grub_diskfilter_make_raid): Return

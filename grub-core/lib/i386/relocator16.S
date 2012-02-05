@@ -63,37 +63,6 @@ VARIABLE(grub_relocator16_start)
 	andl	$(~GRUB_MEMORY_CPU_CR4_PAE_ON), %eax
 	movl	%eax, %cr4
 
-	/* Update other registers. */
-	movl	$PSEUDO_REAL_DSEG, %eax
-	movl	%eax, %ds
-	movl	%eax, %es
-	movl	%eax, %fs
-	movl	%eax, %gs
-	movl	%eax, %ss
-
-	movl 	%esi, %eax
-	shrl	$4, %eax
-	movw	%ax, (LOCAL (segment) - LOCAL (base)) (%esi, 1)
-	
-	/* jump to a 16 bit segment */
-	ljmp	$PSEUDO_REAL_CSEG, $(LOCAL (cont2) - LOCAL(base))
-LOCAL(cont2):
-	.code16
-
-	/* clear the PE bit of CR0 */
-	movl	%cr0, %eax
-	andl 	$(~GRUB_MEMORY_CPU_CR0_PE_ON), %eax
-	movl	%eax, %cr0
-
-	/* flush prefetch queue, reload %cs */
-	/* ljmp  */
-	.byte	0xea
-	.word 	LOCAL(cont3)-LOCAL(base)
-LOCAL(segment):
-	.word	0
-
-LOCAL(cont3):
-
 	/* movw imm16, %ax.  */
 	.byte	0xb8
 VARIABLE(grub_relocator16_keep_a20_enabled)
@@ -172,6 +141,37 @@ LOCAL(gate_a20_check_state):
 	ret
 
 LOCAL(gate_a20_done):
+	/* Update other registers. */
+	movl	$PSEUDO_REAL_DSEG, %eax
+	movl	%eax, %ds
+	movl	%eax, %es
+	movl	%eax, %fs
+	movl	%eax, %gs
+	movl	%eax, %ss
+
+	movl 	%esi, %eax
+	shrl	$4, %eax
+	movw	%ax, (LOCAL (segment) - LOCAL (base)) (%esi, 1)
+	
+	/* jump to a 16 bit segment */
+	ljmp	$PSEUDO_REAL_CSEG, $(LOCAL (cont2) - LOCAL(base))
+LOCAL(cont2):
+	.code16
+
+	/* clear the PE bit of CR0 */
+	movl	%cr0, %eax
+	andl 	$(~GRUB_MEMORY_CPU_CR0_PE_ON), %eax
+	movl	%eax, %cr0
+
+	/* flush prefetch queue, reload %cs */
+	/* ljmp  */
+	.byte	0xea
+	.word 	LOCAL(cont3)-LOCAL(base)
+LOCAL(segment):
+	.word	0
+
+LOCAL(cont3):
+
 	/* we are in real mode now
 	 * set up the real mode segment registers : DS, SS, ES
 	 */
