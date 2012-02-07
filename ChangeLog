@@ -1,3 +1,11 @@
+2012-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/i386/relocator16.S: Revert moving A20 code into PM
+	part. Instead setup the correct stack in RM.
+	* grub-core/lib/i386/relocator.c (grub_relocator16_boot): Reserve place
+	for stack.
+	* include/grub/i386/relocator_private.h: New file.
+
 2012-02-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/minicmd.c (GRUB_MOD_INIT): Add missing SIZE
