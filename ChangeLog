@@ -1,5 +1,10 @@
 2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mknetdir.in: Use . rather than source for POSIX
+	compatibility.
+
+2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-probe.c (main): Fix trailing space in compatibility hint.
 
 2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>

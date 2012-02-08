@@ -251,7 +251,7 @@ if [ "${override_dir}" = "" ] ; then
         process_input_dir "${itanium_dir}" ia64-efi
     fi
 else
-    source "${override_dir}"/modinfo.sh
+    . "${override_dir}"/modinfo.sh
     process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
 fi
 
