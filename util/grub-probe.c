@@ -861,7 +861,7 @@ main (int argc, char *argv[])
   grub_mdraid1x_init ();
   grub_lvm_init ();
 
-  if (print == PRINT_COMPATIBILITY_HINT || print == PRINT_BIOS_HINT
+  if (print == PRINT_BIOS_HINT
       || print == PRINT_IEEE1275_HINT || print == PRINT_BAREMETAL_HINT
       || print == PRINT_EFI_HINT || print == PRINT_ARC_HINT)
     delim = ' ';
@@ -877,8 +877,7 @@ main (int argc, char *argv[])
   else
     probe (arguments.devices[0], NULL, delim);
 
-  if (!arguments.zero_delim && (print == PRINT_COMPATIBILITY_HINT
-				|| print == PRINT_BIOS_HINT
+  if (!arguments.zero_delim && (print == PRINT_BIOS_HINT
 				|| print == PRINT_IEEE1275_HINT
 				|| print == PRINT_BAREMETAL_HINT
 				|| print == PRINT_EFI_HINT

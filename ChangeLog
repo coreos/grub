@@ -1,5 +1,9 @@
 2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-probe.c (main): Fix trailing space in compatibility hint.
+
+2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/partition.c (grub_partition_get_name): Fix uninited
 	variable.
 
