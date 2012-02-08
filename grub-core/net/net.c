@@ -1509,7 +1509,6 @@ GRUB_MOD_INIT(net)
   grub_bootp_init ();
   grub_dns_init ();
 
-  grub_fs_register (&grub_net_fs);
   grub_net_open = grub_net_open_real;
   fini_hnd = grub_loader_register_preboot_hook (grub_net_fini_hw,
 						grub_net_restore_hw,

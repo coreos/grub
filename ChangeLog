@@ -1,5 +1,9 @@
 2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/net.c (GRUB_MOD_INIT): Don't register netfs.
+
+2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/partition.c (grub_partition_get_name): Fix reverse
 	iteration of partitions.
 
