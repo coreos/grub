@@ -224,7 +224,7 @@ char *
 grub_partition_get_name (const grub_partition_t partition)
 {
   char *out = 0, *ptr;
-  grub_size_t needlen;
+  grub_size_t needlen = 0;
   grub_partition_t part;
   if (!partition)
     return grub_strdup ("");

@@ -1,5 +1,10 @@
 2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/partition.c (grub_partition_get_name): Fix uninited
+	variable.
+
+2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/hdparm.c (grub_cmd_hdparm): Accept device name
 	without quotes.
 
