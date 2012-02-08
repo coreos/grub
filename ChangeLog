@@ -1,5 +1,10 @@
 2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/hdparm.c (grub_cmd_hdparm): Accept device name
+	without quotes.
+
+2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/net.c (GRUB_MOD_INIT): Don't register netfs.
 
 2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -275,19 +275,25 @@ static int get_int_arg (const struct grub_arg_list *state)
 }
 
 static grub_err_t
-grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
+grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
   struct grub_ata *ata;
+  const char *diskname;
 
   /* Check command line.  */
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing device name argument");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
-  grub_size_t len = grub_strlen (args[0]);
-  if (! (args[0][0] == '(' && args[0][len - 1] == ')'))
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "argument is not a device name");
-  args[0][len - 1] = 0;
+  if (args[0][0] == '(')
+    {
+      grub_size_t len = grub_strlen (args[0]);
+      if (args[0][len - 1] == ')')
+	args[0][len - 1] = 0;
+      diskname = &args[0][1];
+    }
+  else
+    diskname = &args[0][0];
 
   int i = 0;
   int apm          = get_int_arg (&state[i++]);
@@ -304,7 +310,7 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
   quiet            = state[i++].set;
 
   /* Open disk.  */
-  grub_disk_t disk = grub_disk_open (&args[0][1]);
+  grub_disk_t disk = grub_disk_open (diskname);
   if (! disk)
     return grub_errno;
 
