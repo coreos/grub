@@ -224,22 +224,33 @@ char *
 grub_partition_get_name (const grub_partition_t partition)
 {
   char *out = 0, *ptr;
-  grub_size_t needlen = 0;
+  grub_size_t needlen;
   grub_partition_t part;
+  if (!partition)
+    return grub_strdup ("");
   for (part = partition; part; part = part->parent)
     /* Even on 64-bit machines this buffer is enough to hold
        longest number.  */
-    needlen += grub_strlen (part->partmap->name) + 27;
-  out = grub_malloc (needlen);
+    needlen += grub_strlen (part->partmap->name) + 1 + 27;
+  out = grub_malloc (needlen + 1);
   if (!out)
     return NULL;
 
-  ptr = out;
+  ptr = out + needlen;
+  *ptr = 0;
   for (part = partition; part; part = part->parent)
     {
-      grub_snprintf (ptr, needlen - (out - ptr), "%s%d", part->partmap->name,
-		     part->number + 1);
-      ptr += grub_strlen (ptr);
+      char buf[27];
+      grub_size_t len;
+      grub_snprintf (buf, sizeof (buf), "%d", part->number + 1);
+      len = grub_strlen (buf);
+      ptr -= len;
+      grub_memcpy (ptr, buf, len);
+      len = grub_strlen (part->partmap->name);
+      ptr -= len;
+      grub_memcpy (ptr, part->partmap->name, len);
+      *--ptr = ',';
     }
+  grub_memmove (out, ptr + 1, out + needlen - ptr);
   return out;
 }

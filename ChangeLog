@@ -1,5 +1,10 @@
 2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/partition.c (grub_partition_get_name): Fix reverse
+	iteration of partitions.
+
+2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Improve gettext support. Stylistic fixes and error handling fixes while
 	on it.
 
