@@ -30,11 +30,12 @@ static const struct grub_arg_option options[] =
     {"class", 1, GRUB_ARG_OPTION_REPEATABLE,
      N_("Menu entry type."), N_("STRING"), ARG_TYPE_STRING},
     {"users", 2, 0,
-     N_("Users allowed to boot this entry."), N_("USERNAME"), ARG_TYPE_STRING},
+     N_("List of users allowed to boot this entry."), N_("USERNAME[,USERNAME]"),
+     ARG_TYPE_STRING},
     {"hotkey", 3, 0,
      N_("Keyboard key to quickly boot this entry."), N_("KEYBOARD_KEY"), ARG_TYPE_STRING},
     {"source", 4, 0,
-     N_("Menu entry definition as a string."), N_("STRING"), ARG_TYPE_STRING},
+     N_("Use STRING as menu entry body."), N_("STRING"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 

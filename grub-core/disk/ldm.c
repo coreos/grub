@@ -23,6 +23,7 @@
 #include <grub/misc.h>
 #include <grub/diskfilter.h>
 #include <grub/gpt_partition.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_UTIL
 #include <grub/emu/misc.h>
@@ -919,10 +920,10 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "LDM curently supports only PC-BIOS embedding");
   if (disk->partition)
-    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "disk isn't LDM");
+    return grub_error (GRUB_ERR_BUG, "disk isn't LDM");
   pv = grub_diskfilter_get_pv_from_disk (disk, &vg);
   if (!pv)
-    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "disk isn't LDM");
+    return grub_error (GRUB_ERR_BUG, "disk isn't LDM");
   for (lv = vg->lvs; lv; lv = lv->next)
     {
       struct grub_diskfilter_lv *comp;
@@ -961,8 +962,8 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
 #endif
       if (lv->size < *nsectors)
 	return grub_error (GRUB_ERR_OUT_OF_RANGE,
-			   "Your LDM embed Partition is too small;"
-			   " embedding won't be possible!");
+			   N_("your LDM embed Partition is too small;"
+			      " embedding won't be possible"));
       *nsectors = lv->size;
       *sectors = grub_malloc (*nsectors * sizeof (**sectors));
       if (!*sectors)
@@ -975,8 +976,8 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
     }
 
   return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		     "This LDM no Embedding Partition;"
-		     " embedding won't be possible!");
+		     N_("this LDM has no Embedding Partition;"
+			" embedding won't be possible"));
 }
 #endif
 

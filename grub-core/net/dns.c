@@ -602,7 +602,7 @@ grub_cmd_nslookup (struct grub_command *cmd __attribute__ ((unused)),
   grub_size_t naddresses, i;
   struct grub_net_network_level_address *addresses;
   if (argc != 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "2 arguments expected");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("two arguments expected"));
   err = grub_net_resolve_address (args[1], &server);
   if (err)
     return err;
@@ -643,7 +643,7 @@ grub_cmd_add_dns (struct grub_command *cmd __attribute__ ((unused)),
   struct grub_net_network_level_address server;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "1 argument expected");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
   err = grub_net_resolve_address (args[0], &server);
   if (err)
     return err;
@@ -659,7 +659,7 @@ grub_cmd_del_dns (struct grub_command *cmd __attribute__ ((unused)),
   struct grub_net_network_level_address server;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "1 argument expected");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
   err = grub_net_resolve_address (args[1], &server);
   if (err)
     return err;

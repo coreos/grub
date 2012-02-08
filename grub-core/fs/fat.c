@@ -27,6 +27,7 @@
 #include <grub/dl.h>
 #include <grub/charset.h>
 #include <grub/fat.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -687,7 +688,7 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
   grub_ssize_t offset = -sizeof(dir);
 
   if (! (data->attr & GRUB_FAT_ATTR_DIRECTORY))
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+    return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 
   /* Allocate space enough to hold a long name.  */
   filename = grub_malloc (0x40 * 13 * GRUB_MAX_UTF8_PER_UTF16 + 1);
@@ -864,7 +865,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
   if (! (data->attr & GRUB_FAT_ATTR_DIRECTORY))
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       return 0;
     }
 
@@ -896,7 +897,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
   grub_fat_iterate_dir (disk, data, iter_hook);
   if (grub_errno == GRUB_ERR_NONE && ! found && !call_hook)
-    grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", origpath);
+    grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), origpath);
 
  fail:
   grub_free (dirname);
@@ -972,7 +973,7 @@ grub_fat_open (grub_file_t file, const char *name)
 
   if (data->attr & GRUB_FAT_ATTR_DIRECTORY)
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a file");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a regular file"));
       goto fail;
     }
 
@@ -1086,7 +1087,7 @@ grub_fat_label (grub_device_t device, char **label)
 
   if (! (data->attr & GRUB_FAT_ATTR_DIRECTORY))
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       return 0;
     }
 

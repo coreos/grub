@@ -28,6 +28,7 @@
 #include <grub/disk.h>
 #include <grub/dl.h>
 #include <grub/types.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -529,7 +530,7 @@ find_in_b_tree (grub_disk_t disk,
       if (err)
 	return err;
       if (node.count_keys == 0)
-	return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found",
+	return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"),
 			   name);
       {
 	char key_data[grub_bfs_to_cpu_treehead (node.total_key_len) + 1];
@@ -600,7 +601,7 @@ find_in_b_tree (grub_disk_t disk,
 	    level--;
 	    continue;
 	  }
-	return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found",
+	return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"),
 			   name);
       }
     }
@@ -615,7 +616,7 @@ hop_level (grub_disk_t disk,
   grub_uint64_t res;
 
   if (((grub_bfs_to_cpu32 (ino->mode) & ATTR_TYPE) != ATTR_DIR))
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+    return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 
   err = find_in_b_tree (disk, sb, ino, name, &res);
   if (err)
@@ -677,7 +678,7 @@ find_file (const char *path, grub_disk_t disk,
 	    {
 	      grub_free (alloc);
 	      return grub_error (GRUB_ERR_SYMLINK_LOOP,
-				 "too deep nesting of symlinks");
+				 N_("too deep nesting of symlinks"));
 	    }
 
 #ifndef MODE_AFS
@@ -829,7 +830,7 @@ grub_bfs_dir (grub_device_t device, const char *path,
     if (err)
       return err;
     if (((grub_bfs_to_cpu32 (ino.ino.mode) & ATTR_TYPE) != ATTR_DIR))
-      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
     iterate_in_b_tree (device->disk, &sb, &ino.ino, hook);
   }
 
@@ -857,7 +858,7 @@ grub_bfs_open (struct grub_file *file, const char *name)
     if (err)
       return err;
     if (((grub_bfs_to_cpu32 (ino.ino.mode) & ATTR_TYPE) != ATTR_REG))
-      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
+      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a regular file"));
 
     data = grub_zalloc (sizeof (struct grub_bfs_data)
 			+ grub_bfs_to_cpu32 (sb.bsize));

@@ -29,7 +29,7 @@ loadfont_command (grub_command_t cmd __attribute__ ((unused)),
 		  char **args)
 {
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no font specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   while (argc--)
     if (grub_font_load (*args++) != 0)

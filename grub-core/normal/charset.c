@@ -105,7 +105,7 @@ grub_utf8_process (grub_uint8_t c, grub_uint32_t *code, int *count)
    at least DESTSIZE characters. If an invalid sequence is found, return -1.
    If SRCEND is not NULL, then *SRCEND is set to the next byte after the
    last byte used in SRC.  */
-grub_ssize_t
+grub_size_t
 grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 		    const grub_uint8_t *src, grub_size_t srcsize,
 		    const grub_uint8_t **srcend)

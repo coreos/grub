@@ -47,7 +47,7 @@ static const struct grub_arg_option options[] = {
   {"sleep",           'Y', 0, N_("Set drive to sleep mode."), 0, ARG_TYPE_NONE},
   {"identify",        'i', 0, N_("Print drive identity and settings."),
 			      0, ARG_TYPE_NONE},
-  {"dumpid",          'I', 0, N_("Dump contents of ATA IDENTIFY sector."),
+  {"dumpid",          'I', 0, N_("Show raw contents of ATA IDENTIFY sector."),
 			       0, ARG_TYPE_NONE},
   {"smart",            -1, 0, N_("Disable/enable SMART (0/1)."), 0, ARG_TYPE_INT},
   {"quiet",           'q', 0, N_("Do not print messages."), 0, ARG_TYPE_NONE},

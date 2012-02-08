@@ -31,7 +31,7 @@ if test "x$grub_mkrelpath" = x; then
   grub_mkrelpath="${bindir}/`echo grub-mkrelpath | sed "${transform}"`"
 fi
 
-if $(which gettext >/dev/null 2>/dev/null) ; then
+if which gettext >/dev/null 2>/dev/null; then
   :
 else
   gettext () {

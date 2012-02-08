@@ -173,7 +173,7 @@ cmd_cp (char *src, char *dest)
 
     if ((int) fwrite (buf, 1, len, ff) != len)
       {
-	grub_util_error (_("cannot write to the file `%s': %s"),
+	grub_util_error (_("cannot write to `%s': %s"),
 			 dest, strerror (errno));
 	return 1;
       }
@@ -251,7 +251,7 @@ cmd_cmp (char *src, char *dest)
     }
 
   if ((skip) && (fseeko (ff, skip, SEEK_SET)))
-    grub_util_error (_("cannot seek the file `%s': %s"), dest,
+    grub_util_error (_("cannot seek `%s': %s"), dest,
 		     strerror (errno));
 
   read_file (src, cmp_hook);
@@ -332,7 +332,7 @@ fstest (int n, char **args)
       argv[1] = host_file;
 
       if (execute_command ("loopback", 2, argv))
-        grub_util_error (_("\`loopback' command fails: %s"), grub_errmsg);
+        grub_util_error (_("`loopback' command fails: %s"), grub_errmsg);
 
       grub_free (loop_name);
       grub_free (host_file);
@@ -343,7 +343,7 @@ fstest (int n, char **args)
     if (mount_crypt)
       {
 	if (execute_command ("cryptomount", 1, argv))
-	  grub_util_error (_("\`cryptomount' command fails: %s"), grub_errmsg);
+	  grub_util_error (_("`cryptomount' command fails: %s"), grub_errmsg);
       }
   }
 
@@ -435,7 +435,7 @@ static struct argp_option options[] = {
   {N_("cp FILE LOCAL"),  0, 0, OPTION_DOC, N_("Copy FILE to local file LOCAL."), 1},
   {N_("cat FILE"), 0, 0      , OPTION_DOC, N_("Copy FILE to standard output."), 1},
   {N_("cmp FILE LOCAL"), 0, 0, OPTION_DOC, N_("Compare FILE with local file LOCAL."), 1},
-  {N_("hex FILE"), 0, 0      , OPTION_DOC, N_("Hex dump FILE."), 1},
+  {N_("hex FILE"), 0, 0      , OPTION_DOC, N_("Show contents of FILE in hex."), 1},
   {N_("crc FILE"), 0, 0     , OPTION_DOC, N_("Get crc32 checksum of FILE."), 1},
   {N_("blocklist FILE"), 0, 0, OPTION_DOC, N_("Display blocklist of FILE."), 1},
   {N_("xnu_uuid DEVICE"), 0, 0, OPTION_DOC, N_("Compute XNU UUID of the device."), 1},
@@ -443,10 +443,12 @@ static struct argp_option options[] = {
   {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."),                 2},
   {"skip",      's', "N",           0, N_("Skip N bytes from output file."),   2},
   {"length",    'n', "N",           0, N_("Handle N bytes in output file."),   2},
-  {"diskcount", 'c', "N",           0, N_("N input files."),                   2},
+  {"diskcount", 'c', "N",           0, N_("Specify the number of input files."),                   2},
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
   {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
-  {"zfs-key",      'K', N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
+  {"zfs-key",      'K',
+   /* TRANSLATORS: "prompt" is a keyword.  */
+   N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
   {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("print verbose messages."), 2},
   {"uncompress", 'u', NULL, OPTION_ARG_OPTIONAL, N_("Uncompress data."), 2},
   {0, 0, 0, 0, 0, 0}
@@ -489,13 +491,17 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	f = fopen (arg, "rb");
 	if (!f)
 	  {
-	    printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
+	    printf (_("%s: error:"), program_name);
+	    printf (_("cannot open `%s': %s"), arg, strerror (errno));
+	    printf ("\n");
 	    return 0;
 	  }
 	real_size = fread (buf, 1, 1024, f);
 	if (real_size < 0)
 	  {
-	    printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
+	    printf (_("%s: error:"), program_name);
+	    printf (_("cannot read `%s': %s"), arg, strerror (errno));
+	    printf ("\n");
 	    fclose (f);
 	    return 0;
 	  }
@@ -528,6 +534,9 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	}
       if (args_count != 0)
 	{
+	  /* TRANSLATORS: disk count is optional but if it's there it must
+	     be before disk list. So please don't imply disk count as mandatory.
+	   */
 	  fprintf (stderr, "%s", _("Disk count must precede disks list.\n"));
 	  argp_usage (state);
 	}

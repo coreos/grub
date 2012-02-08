@@ -24,6 +24,7 @@
 #include <grub/disk.h>
 #include <grub/dl.h>
 #include <grub/types.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -398,7 +399,7 @@ grub_ufs_lookup_symlink (struct grub_ufs_data *data, int ino)
   char symlink[INODE_SIZE (data) + 1];
 
   if (++data->linknest > GRUB_UFS_MAX_SYMLNK_CNT)
-    return grub_error (GRUB_ERR_SYMLINK_LOOP, "too deep nesting of symlinks");
+    return grub_error (GRUB_ERR_SYMLINK_LOOP, N_("too deep nesting of symlinks"));
 
   if (INODE_SIZE (data) <= sizeof (data->inode.symlink))
     grub_strcpy (symlink, (char *) INODE (data, symlink));
@@ -415,8 +416,6 @@ grub_ufs_lookup_symlink (struct grub_ufs_data *data, int ino)
     return grub_errno;
 
   grub_ufs_find_file (data, symlink);
-  if (grub_errno)
-    grub_error (grub_errno, "cannot follow symlink `%s'", symlink);
 
   return grub_errno;
 }
@@ -504,7 +503,7 @@ grub_ufs_find_file (struct grub_ufs_data *data, const char *path)
 	      }
 
 	    if ((INODE_MODE(data) & GRUB_UFS_ATTR_TYPE) != GRUB_UFS_ATTR_DIR)
-	      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+	      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 
 	    continue;
 	  }
@@ -513,7 +512,7 @@ grub_ufs_find_file (struct grub_ufs_data *data, const char *path)
       pos += grub_le_to_cpu16 (dirent.direntlen);
     } while (pos < INODE_SIZE (data));
 
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
+  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
   return grub_errno;
 }
 
@@ -589,7 +588,7 @@ grub_ufs_dir (grub_device_t device, const char *path,
 
   if (!path || path[0] != '/')
     {
-      grub_error (GRUB_ERR_BAD_FILENAME, "bad filename");
+      grub_error (GRUB_ERR_BAD_FILENAME, N_("invalid file name `%s'"), path);
       return grub_errno;
     }
 
@@ -599,7 +598,7 @@ grub_ufs_dir (grub_device_t device, const char *path,
 
   if ((INODE_MODE (data) & GRUB_UFS_ATTR_TYPE) != GRUB_UFS_ATTR_DIR)
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       goto fail;
     }
 
@@ -669,7 +668,7 @@ grub_ufs_open (struct grub_file *file, const char *name)
 
   if (!name || name[0] != '/')
     {
-      grub_error (GRUB_ERR_BAD_FILENAME, "bad filename");
+      grub_error (GRUB_ERR_BAD_FILENAME, N_("invalid file name `%s'"), name);
       return grub_errno;
     }
 

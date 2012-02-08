@@ -157,8 +157,8 @@ read_command_list (const char *prefix)
 						   GRUB_COMMAND_FLAG_BLOCKS
 						   | GRUB_COMMAND_FLAG_EXTCMD
 						   | GRUB_COMMAND_FLAG_DYNCMD,
-						   0, N_("not loaded"), 0,
-						   prio);
+						   0, N_("module isn't loaded"),
+						   0, prio);
 		  if (! cmd)
 		    {
 		      grub_free (name);

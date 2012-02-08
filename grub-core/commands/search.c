@@ -277,7 +277,7 @@ grub_cmd_do_search (grub_command_t cmd __attribute__ ((unused)), int argc,
 		    char **args)
 {
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no argument specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   FUNC_NAME (args[0], argc == 1 ? 0 : args[1], 0, (args + 2),
 	     argc > 2 ? argc - 2 : 0);

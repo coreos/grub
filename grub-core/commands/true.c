@@ -46,9 +46,13 @@ GRUB_MOD_INIT(true)
 {
   cmd_true =
     grub_register_command ("true", grub_cmd_true,
+			   /* TRANSLATORS: it's imperative, not
+			      infinitive.  */
 			   0, N_("Do nothing, successfully."));
   cmd_false =
     grub_register_command ("false", grub_cmd_false,
+			   /* TRANSLATORS: it's imperative, not
+			      infinitive.  */
 			   0, N_("Do nothing, unsuccessfully."));
 }
 

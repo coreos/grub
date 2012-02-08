@@ -53,6 +53,7 @@
 #include <grub/zfs/dsl_dataset.h>
 #include <grub/deflate.h>
 #include <grub/crypto.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -1766,7 +1767,7 @@ mzap_lookup (mzap_phys_t * zapobj, grub_zfs_endian_t endian,
 	}
     }
 
-  return grub_error (GRUB_ERR_FILE_NOT_FOUND, "couldn't find %s", name);
+  return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), name);
 }
 
 static int
@@ -1971,7 +1972,7 @@ zap_leaf_lookup (zap_leaf_phys_t * l, grub_zfs_endian_t endian,
 	}
     }
 
-  return grub_error (GRUB_ERR_FILE_NOT_FOUND, "couldn't find %s", name);
+  return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), name);
 }
 
 
@@ -2487,7 +2488,7 @@ dnode_get_path (struct subvolume *subvol, const char *path_in, dnode_end_t *dn,
       if (dnode_path->dn.dn.dn_type != DMU_OT_DIRECTORY_CONTENTS)
 	{
 	  grub_free (path_buf);
-	  return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+	  return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 	}
       err = zap_lookup (&(dnode_path->dn), cname, &objnum,
 			data, subvol->case_insensitive);
@@ -3483,14 +3484,14 @@ grub_zfs_open (struct grub_file *file, const char *fsfilename)
   if (isfs)
     {
       zfs_unmount (data);
-      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "Missing @ or / separator");
+      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("missing `%c' symbol"), '@');
     }
 
   /* We found the dnode for this file. Verify if it is a plain file. */
   if (data->dnode.dn.dn_type != DMU_OT_PLAIN_FILE_CONTENTS) 
     {
       zfs_unmount (data);
-      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a file");
+      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a regular file"));
     }
 
   /* get the file size and set the file position to 0 */
@@ -3882,7 +3883,7 @@ grub_zfs_dir (grub_device_t device, const char *path,
       if (data->dnode.dn.dn_type != DMU_OT_DIRECTORY_CONTENTS)
 	{
 	  zfs_unmount (data);
-	  return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+	  return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 	}
       zap_iterate_u64 (&(data->dnode), iterate_zap, data);
     }
@@ -3905,8 +3906,8 @@ grub_zfs_embed (grub_device_t device __attribute__ ((unused)),
 
  if ((VDEV_BOOT_SIZE >> GRUB_DISK_SECTOR_BITS) < *nsectors)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "Your core.img is unusually large.  "
-		       "It won't fit in the embedding area.");
+		       N_("your core.img is unusually large.  "
+			  "It won't fit in the embedding area"));
 
   *nsectors = (VDEV_BOOT_SIZE >> GRUB_DISK_SECTOR_BITS);
   *sectors = grub_malloc (*nsectors * sizeof (**sectors));

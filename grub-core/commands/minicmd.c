@@ -41,7 +41,7 @@ grub_mini_cmd_cat (struct grub_command *cmd __attribute__ ((unused)),
   grub_ssize_t size;
 
   if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   file = grub_file_open (argv[0]);
   if (! file)
@@ -187,7 +187,7 @@ GRUB_MOD_INIT(minicmd)
 			   0, N_("Show this message."));
   cmd_dump =
     grub_register_command ("dump", grub_mini_cmd_dump,
-			   N_("ADDR [SIZE]"), N_("Dump memory."));
+			   N_("ADDR [SIZE]"), N_("Show memory contents."));
   cmd_rmmod =
     grub_register_command ("rmmod", grub_mini_cmd_rmmod,
 			   N_("MODULE"), N_("Remove a module."));

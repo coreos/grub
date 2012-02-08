@@ -130,12 +130,6 @@ scale_pixmap (grub_gfxmenu_box_t self, int i, int w, int h)
       if (w != 0 && h != 0)
         grub_video_bitmap_create_scaled (scaled, w, h, raw,
                                          GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
-      if (grub_errno != GRUB_ERR_NONE)
-        {
-          grub_error_push ();
-          grub_error (grub_errno,
-                      "failed to scale bitmap for styled box pixmap #%d", i);
-        }
     }
 
   return grub_errno;

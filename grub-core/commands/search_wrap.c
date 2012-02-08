@@ -158,7 +158,7 @@ grub_cmd_search (grub_extcmd_context_t ctxt, int argc, char **args)
       break;
 
   if (argc == j)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no argument specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   if (state[SEARCH_SET].set)
     var = state[SEARCH_SET].arg ? state[SEARCH_SET].arg : "root";

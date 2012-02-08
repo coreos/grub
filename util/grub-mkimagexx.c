@@ -389,7 +389,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 				  *target, offset);
 		  break;
 		default:
-		  grub_util_error ("unknown relocation type 0x%x",
+		  grub_util_error (_("relocation 0x%x is not implemented yet"),
 				   ELF_R_TYPE (info));
 		  break;
 		}
@@ -432,7 +432,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  }
 
 		default:
-		  grub_util_error ("unknown relocation type %d",
+		  grub_util_error (_("relocation 0x%x is not implemented yet"),
 				   ELF_R_TYPE (info));
 		  break;
 		}
@@ -505,7 +505,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  break;
 
 		default:
-		  grub_util_error ("unknown relocation type 0x%x",
+		  grub_util_error (_("relocation 0x%x is not implemented yet"),
 		  		   ELF_R_TYPE (info));
 		  break;
 		}
@@ -730,7 +730,7 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 #endif
 		  break;
 		default:
-		  grub_util_error ("unknown relocation type 0x%x",
+		  grub_util_error (_("relocation 0x%x is not implemented yet"),
 		  		   ELF_R_TYPE (info));
 		  break;
 		}

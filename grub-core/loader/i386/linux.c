@@ -639,7 +639,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto fail;
     }
 
@@ -650,7 +650,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, &lh, sizeof (lh)) != sizeof (lh))
     {
       if (!grub_errno)
-	grub_error (GRUB_ERR_READ_ERROR, N_("premature end of file %s"),
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
 		    argv[0]);
       goto fail;
     }
@@ -720,7 +720,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, (char *) real_mode_mem + sizeof (lh), len) != len)
     {
       if (!grub_errno)
-	grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
 		    argv[0]);
       goto fail;
     }
@@ -913,7 +913,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   len = prot_size;
   if (grub_file_read (file, prot_mode_mem, len) != len && !grub_errno)
-    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+    grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
 		argv[0]);
 
   if (grub_errno == GRUB_ERR_NONE)
@@ -953,13 +953,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto fail;
     }
 
   if (! loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("you need to load the kernel first"));
       goto fail;
     }
 

@@ -242,7 +242,7 @@ alloc_phys (grub_addr_t size)
 }
 
 static grub_err_t
-grub_linux_load64 (grub_elf_t elf)
+grub_linux_load64 (grub_elf_t elf, const char *filename)
 {
   grub_addr_t off, paddr, base;
   int ret;
@@ -250,7 +250,7 @@ grub_linux_load64 (grub_elf_t elf)
   linux_entry = elf->ehdr.ehdr64.e_entry;
   linux_addr = 0x40004000;
   off = 0x4000;
-  linux_size = grub_elf64_size (elf, 0, 0);
+  linux_size = grub_elf64_size (elf, filename, 0, 0);
   if (linux_size == 0)
     return grub_errno;
 
@@ -289,7 +289,7 @@ grub_linux_load64 (grub_elf_t elf)
       *addr = (phdr->p_paddr - base) + (linux_addr - off);
       return 0;
     }
-  return grub_elf64_load (elf, offset_phdr, 0, 0);
+  return grub_elf64_load (elf, filename, offset_phdr, 0, 0);
 }
 
 static grub_err_t
@@ -304,7 +304,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto out;
     }
 
@@ -312,14 +312,14 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (!file)
     goto out;
 
-  elf = grub_elf_file (file);
+  elf = grub_elf_file (file, argv[0]);
   if (! elf)
     goto out;
 
   if (elf->ehdr.ehdr32.e_type != ET_EXEC)
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "this ELF file is not of the right type");
+		  N_("this ELF file is not of the right type"));
       goto out;
     }
 
@@ -327,10 +327,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_unset ();
 
   if (grub_elf_is_elf64 (elf))
-    grub_linux_load64 (elf);
+    grub_linux_load64 (elf, argv[0]);
   else
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "unknown ELF class");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("invalid arch dependent ELF magic"));
       goto out;
     }
 
@@ -382,13 +382,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto fail;
     }
 
   if (!loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("you need to load the kernel first"));
       goto fail;
     }
 

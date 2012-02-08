@@ -178,7 +178,7 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
       {
 	if (adapter->init ())
 	  {
-	    grub_puts_ (N_("  Failed"));
+	    grub_puts_ (N_("  Failed to initialize video adapter"));
 	    grub_errno = GRUB_ERR_NONE;
 	    continue;
 	  }

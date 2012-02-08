@@ -22,6 +22,7 @@
 #include <grub/mm.h>
 #include <grub/term.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_UTIL
 #include <termios.h>

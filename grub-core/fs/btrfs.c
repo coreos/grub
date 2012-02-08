@@ -27,6 +27,7 @@
 #include <grub/lib/crc.h>
 #include <grub/deflate.h>
 #include <minilzo.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -1204,7 +1205,7 @@ find_path (struct grub_btrfs_data *data,
 	{
 	  grub_free (path_alloc);
 	  grub_free (origpath);
-	  return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+	  return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 	}
 
       key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
@@ -1223,7 +1224,7 @@ find_path (struct grub_btrfs_data *data,
 	{
 	  grub_free (direl);
 	  grub_free (path_alloc);
-	  err = grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", origpath);
+	  err = grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), origpath);
 	  grub_free (origpath);
 	  return err;
 	}
@@ -1267,7 +1268,7 @@ find_path (struct grub_btrfs_data *data,
 	{
 	  grub_free (direl);
 	  grub_free (path_alloc);
-	  err = grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", origpath);
+	  err = grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), origpath);
 	  grub_free (origpath);
 	  return err;
 	}
@@ -1285,7 +1286,7 @@ find_path (struct grub_btrfs_data *data,
 	      grub_free (path_alloc);
 	      grub_free (origpath);
 	      return grub_error (GRUB_ERR_SYMLINK_LOOP,
-				 "too deep nesting of symlinks");
+				 N_("too deep nesting of symlinks"));
 	    }
 
 	  err = grub_btrfs_read_inode (data, &inode,
@@ -1355,7 +1356,7 @@ find_path (struct grub_btrfs_data *data,
 	      {
 		grub_free (direl);
 		grub_free (path_alloc);
-		err = grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", origpath);
+		err = grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), origpath);
 		grub_free (origpath);
 		return err;
 	      }
@@ -1378,7 +1379,7 @@ find_path (struct grub_btrfs_data *data,
 	    {
 	      grub_free (direl);
 	      grub_free (path_alloc);
-	      err = grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", origpath);
+	      err = grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), origpath);
 	      grub_free (origpath);
 	      return err;
 	    }
@@ -1430,7 +1431,7 @@ grub_btrfs_dir (grub_device_t device, const char *path,
   if (type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY)
     {
       grub_btrfs_unmount (data);
-      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
     }
 
   err = lower_bound (data, &key_in, &key_out, tree, &elemaddr, &elemsize, &desc);
@@ -1535,7 +1536,7 @@ grub_btrfs_open (struct grub_file *file, const char *name)
   if (type != GRUB_BTRFS_DIR_ITEM_TYPE_REGULAR)
     {
       grub_btrfs_unmount (data);
-      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
+      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a regular file"));
     }
 
   data->inode = key_in.object_id;
@@ -1628,8 +1629,8 @@ grub_btrfs_embed (grub_device_t device __attribute__ ((unused)),
 
   if (64 * 2 - 1 < *nsectors)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "Your core.img is unusually large.  "
-		       "It won't fit in the embedding area.");
+		       N_("your core.img is unusually large.  "
+			  "It won't fit in the embedding area"));
 
   *nsectors = 64 * 2 - 1;
   *sectors = grub_malloc (*nsectors * sizeof (**sectors));

@@ -408,7 +408,7 @@ recover_key (grub_disk_t source, grub_cryptodisk_t dev)
 
   sector = grub_disk_get_size (source);
   if (sector == GRUB_DISK_SIZE_UNKNOWN || sector == 0)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "not a geli");
+    return grub_error (GRUB_ERR_BUG, "not a geli");
 
   /* Read the GELI header.  */
   err = grub_disk_read (source, sector - 1, 0, sizeof (header), &header);

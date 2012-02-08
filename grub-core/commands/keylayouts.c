@@ -207,7 +207,7 @@ grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
     {
       const char *prefix = grub_env_get ("prefix");
       if (!prefix)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "No prefix set");	
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("variable `%s' isn't set"), "prefix");	
       filename = grub_xasprintf ("%s/layouts/%s.gkb", prefix, argv[0]);
       if (!filename)
 	return grub_errno;
@@ -222,7 +222,8 @@ grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
   if (grub_file_read (file, magic, sizeof (magic)) != sizeof (magic))
     {
       if (!grub_errno)
-	grub_error (GRUB_ERR_BAD_ARGUMENT, "file is too short");
+	grub_error (GRUB_ERR_BAD_ARGUMENT, N_("premature end of file %s"),
+		    filename);
       goto fail;
     }
 
@@ -236,7 +237,8 @@ grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
   if (grub_file_read (file, &version, sizeof (version)) != sizeof (version))
     {
       if (!grub_errno)
-	grub_error (GRUB_ERR_BAD_ARGUMENT, "file is too short");
+	grub_error (GRUB_ERR_BAD_ARGUMENT, N_("premature end of file %s"),
+		    filename);
       goto fail;
     }
 
@@ -253,7 +255,8 @@ grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
   if (grub_file_read (file, newmap, sizeof (*newmap)) != sizeof (*newmap))
     {
       if (!grub_errno)
-	grub_error (GRUB_ERR_BAD_ARGUMENT, "file is too short");
+	grub_error (GRUB_ERR_BAD_ARGUMENT, N_("premature end of file %s"),
+		    filename);
       goto fail;
     }
 

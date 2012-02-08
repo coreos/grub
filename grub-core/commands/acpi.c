@@ -41,8 +41,8 @@ static const struct grub_arg_option options[] = {
    0, ARG_TYPE_STRING},
   {"load-only", 'n', 0,
    N_("Load only tables specified by comma-separated list."), 0, ARG_TYPE_STRING},
-  {"v1", '1', 0, N_("Expose v1 tables."), 0, ARG_TYPE_NONE},
-  {"v2", '2', 0, N_("Expose v2 and v3 tables."), 0, ARG_TYPE_NONE},
+  {"v1", '1', 0, N_("Export version 1 tables to the OS."), 0, ARG_TYPE_NONE},
+  {"v2", '2', 0, N_("Export version 2 and version 3 tables to the OS."), 0, ARG_TYPE_NONE},
   {"oemid", 'o', 0, N_("Set OEMID of RSDP, XSDT and RSDT."), 0, ARG_TYPE_STRING},
   {"oemtable", 't', 0,
    N_("Set OEMTABLE ID of RSDP, XSDT and RSDT."), 0, ARG_TYPE_STRING},
@@ -553,8 +553,7 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 		      free_tables ();
 		      grub_free (exclude);
 		      grub_free (load_only);
-		      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-					 "couldn't allocate table");
+		      return grub_errno;
 		    }
 		  grub_memcpy (table_dsdt, dsdt, dsdt->length);
 		}
@@ -580,8 +579,7 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 	      free_tables ();
 	      grub_free (exclude);
 	      grub_free (load_only);
-	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "couldn't allocate table structure");
+	      return grub_errno;
 	    }
 	  table->size = curtable->length;
 	  table->addr = grub_malloc (table->size);
@@ -589,8 +587,7 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 	  if (! table->addr)
 	    {
 	      free_tables ();
-	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "couldn't allocate table");
+	      return grub_errno;
 	    }
 	  table->next = acpi_tables;
 	  acpi_tables = table;
@@ -633,7 +630,7 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
       if (! file)
 	{
 	  free_tables ();
-	  return grub_error (GRUB_ERR_BAD_OS, "couldn't open file %s", args[i]);
+	  return grub_errno;
 	}
 
       size = grub_file_size (file);
@@ -641,7 +638,8 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 	{
 	  grub_file_close (file);
 	  free_tables ();
-	  return grub_error (GRUB_ERR_BAD_OS, "file %s is too small", args[i]);
+	  return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+			     args[i]);
 	}
 
       buf = (char *) grub_malloc (size);
@@ -678,8 +676,7 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 	  if (! table)
 	    {
 	      free_tables ();
-	      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-				 "couldn't allocate table structure");
+	      return grub_errno;
 	    }
 
 	  table->size = size;
@@ -771,7 +768,7 @@ GRUB_MOD_INIT(acpi)
 {
   cmd = grub_register_extcmd ("acpi", grub_cmd_acpi, 0,
 			      N_("[-1|-2] [--exclude=TABLE1,TABLE2|"
-			      "--load-only=table1,table2] FILE1"
+			      "--load-only=TABLE1,TABLE2] FILE1"
 			      " [FILE2] [...]"),
 			      N_("Load host ACPI tables and tables "
 			      "specified by arguments."),

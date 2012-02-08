@@ -212,7 +212,7 @@ grub_mmap_unregister (int handle)
 	  return GRUB_ERR_NONE;
 	}
     }
-  return grub_error (GRUB_ERR_BAD_ARGUMENT, "handle %d not found", handle);
+  return grub_error (GRUB_ERR_BUG, "handle %d not found", handle);
 }
 
 /* Result is always page-aligned. */

@@ -85,7 +85,7 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
 static struct grub_parttool_argdesc grub_pcpart_typeargs[] =
 {
   {"type", N_("Change partition type"), GRUB_PARTTOOL_ARG_VAL},
-  {"hidden", N_("Make partition hidden"), GRUB_PARTTOOL_ARG_BOOL},
+  {"hidden", N_("Set `hidden' flag in partition type"), GRUB_PARTTOOL_ARG_BOOL},
   {0, 0, 0}
 };
 

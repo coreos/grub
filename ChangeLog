@@ -1,3 +1,8 @@
+2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Improve gettext support. Stylistic fixes and error handling fixes while
+	on it.
+
 2012-02-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/i386/relocator16.S: Revert moving A20 code into PM

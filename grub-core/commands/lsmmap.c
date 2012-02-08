@@ -26,13 +26,13 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static const char *names[] =
   {
-    [GRUB_MEMORY_AVAILABLE] = N_("available"),
-    [GRUB_MEMORY_RESERVED] = N_("reserved"),
-    [GRUB_MEMORY_ACPI] = N_("ACPI reclamaible"),
-    [GRUB_MEMORY_NVS] = N_("ACPI non-volatile storage"),
-    [GRUB_MEMORY_BADRAM] = N_("BadRAM"),
-    [GRUB_MEMORY_CODE] = N_("firmware code"),
-    [GRUB_MEMORY_HOLE] = N_("hole")
+    [GRUB_MEMORY_AVAILABLE] = N_("available RAM"),
+    [GRUB_MEMORY_RESERVED] = N_("reserved RAM"),
+    [GRUB_MEMORY_ACPI] = N_("ACPI reclaimable RAM"),
+    [GRUB_MEMORY_NVS] = N_("ACPI non-volatile storage RAM"),
+    [GRUB_MEMORY_BADRAM] = N_("faulty RAM (BadRAM)"),
+    [GRUB_MEMORY_CODE] = N_("RAM holding firmware code"),
+    [GRUB_MEMORY_HOLE] = N_("Address range not associated with RAM")
   };
 
 static grub_err_t

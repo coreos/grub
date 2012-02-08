@@ -114,7 +114,7 @@ main (int argc, char *argv[])
     .buflen = 64,
     .saltlen = 64
   };
-  char *bufhex, *salthex;
+  char *bufhex, *salthex, *result;
   gcry_err_code_t gcry_err;
   grub_uint8_t *buf, *salt;
   ssize_t nr;
@@ -243,8 +243,14 @@ main (int argc, char *argv[])
   hexify (bufhex, buf, arguments.buflen);
   hexify (salthex, salt, arguments.saltlen);
 
-  printf (_("Your PBKDF2 is grub.pbkdf2.sha512.%d.%s.%s\n"),
-	  arguments.count, salthex, bufhex);
+  result = xmalloc (sizeof ("grub.pbkdf2.sha512.XXXXXXXXXXXXXXXXXXX.S.S")
+		    + arguments.buflen * 2 + arguments.saltlen * 2);
+  snprintf (result, sizeof ("grub.pbkdf2.sha512.XXXXXXXXXXXXXXXXXXX.S.S")
+	    + arguments.buflen * 2 + arguments.saltlen * 2,
+	    "grub.pbkdf2.sha512.%d.%s.%s",
+	    arguments.count, salthex, bufhex);
+
+  printf (_("PBKDF2 hash of your password is %s\n"), result);
   memset (buf, 0, arguments.buflen);
   memset (bufhex, 0, 2 * arguments.buflen);
   free (buf);

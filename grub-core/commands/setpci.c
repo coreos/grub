@@ -179,7 +179,7 @@ grub_cmd_setpci (grub_extcmd_context_t ctxt, int argc, char **argv)
       if (grub_errno)
 	return grub_errno;
       if (*ptr != ':')
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "Colon expected.");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("missing `%c' symbol"), ':');
       ptr++;
       pciid_check_value |= (grub_strtoul (ptr, (char **) &ptr, 16) & 0xffff)
 	<< 16;
@@ -210,7 +210,7 @@ grub_cmd_setpci (grub_extcmd_context_t ctxt, int argc, char **argv)
       if (grub_errno)
 	return grub_errno;
       if (*ptr != ':')
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "Colon expected.");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("missing `%c' symbol"), ':');
       ptr++;
       optr = ptr;
       device = grub_strtoul (ptr, (char **) &ptr, 16);
@@ -238,11 +238,8 @@ grub_cmd_setpci (grub_extcmd_context_t ctxt, int argc, char **argv)
 
   write_mask = 0;
 
-  if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Command expected.");
-
-  if (argc > 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Only one command is supported.");
+  if (argc != 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   ptr = argv[0];
 
@@ -257,7 +254,7 @@ grub_cmd_setpci (grub_extcmd_context_t ctxt, int argc, char **argv)
       regsize = 0;
       regaddr = grub_strtoul (ptr, (char **) &ptr, 16);
       if (grub_errno)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "Unknown register");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown register");
     }
   else
     {
@@ -298,7 +295,7 @@ grub_cmd_setpci (grub_extcmd_context_t ctxt, int argc, char **argv)
 
   if (!regsize)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "Unknown register size.");
+		       "unknown register size");
 
   write_mask = 0;
   if (*ptr == '=')
@@ -321,7 +318,7 @@ grub_cmd_setpci (grub_extcmd_context_t ctxt, int argc, char **argv)
 
   if (write_mask && varname)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "Option -v isn't valid for writes.");
+		       "option -v isn't valid for writes");
 
   grub_pci_iterate (grub_setpci_iter);
   return GRUB_ERR_NONE;

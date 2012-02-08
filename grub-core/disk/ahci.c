@@ -543,10 +543,10 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
 	       (unsigned long long) parms->cmdsize);
 
   if (parms->cmdsize != 0 && parms->cmdsize != 12 && parms->cmdsize != 16)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "incorrect ATAPI command size");
+    return grub_error (GRUB_ERR_BUG, "incorrect ATAPI command size");
 
   if (parms->size > GRUB_AHCI_PRDT_MAX_CHUNK_LENGTH)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too big data buffer");
+    return grub_error (GRUB_ERR_BUG, "too big data buffer");
 
   bufc = grub_memalign_dma32 (1024, parms->size + (parms->size & 1));
 
@@ -626,7 +626,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
 		      dev->hba->ports[dev->port].command_issue,
 		      dev->hba->ports[dev->port].intstatus,
 		      dev->hba->ports[dev->port].task_file_data);
-	err = grub_error (GRUB_ERR_IO, "AHCI transfer timeouted");
+	err = grub_error (GRUB_ERR_IO, "AHCI transfer timed out");
 	break;
       }
 

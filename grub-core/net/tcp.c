@@ -565,7 +565,7 @@ grub_net_tcp_open (char *server,
   if (addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
       && addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "not an IP address");
+      grub_error (GRUB_ERR_BUG, "not an IP address");
       return NULL;
     }
  

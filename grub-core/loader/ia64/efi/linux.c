@@ -134,18 +134,19 @@ query_fpswa (void)
   
   bs = grub_efi_system_table->boot_services;
   status = bs->locate_handle (GRUB_EFI_BY_PROTOCOL,
-			      (void *)&fpswa_protocol,
+			      (void *) &fpswa_protocol,
 			      NULL, &size, &fpswa_image);
   if (status != GRUB_EFI_SUCCESS)
     {
-      grub_printf (_("Could not locate FPSWA driver\n"));
+      grub_printf ("%s\n", _("Could not locate FPSWA driver"));
       return;
     }
   status = bs->handle_protocol (fpswa_image,
-				(void *)&fpswa_protocol, (void *)&fpswa);
+				(void *) &fpswa_protocol, (void *) &fpswa);
   if (status != GRUB_EFI_SUCCESS)
     {
-      grub_printf (_("Fpswa protocol not able find the interface\n"));
+      grub_printf ("%s\n",
+		   _("FPSWA protocol wasn't able to find the interface"));
       return;
     } 
 }
@@ -481,8 +482,7 @@ grub_load_elf64 (grub_file_t file, void *buffer, const char *filename)
 			phdr->p_memsz, phdr->p_offset, phdr->p_flags);
 	  
 	  if (grub_file_seek (file, phdr->p_offset) == (grub_off_t)-1)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "invalid offset in program header");
+	    return grub_errno;
 
 	  if (grub_file_read (file, (void *) (phdr->p_paddr + reloc_offset),
 			      phdr->p_filesz)
@@ -525,7 +525,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto fail;
     }
 
@@ -536,7 +536,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   len = grub_file_read (file, buffer, sizeof (buffer));
   if (len < (grub_ssize_t) sizeof (Elf64_Ehdr))
     {
-      grub_error (GRUB_ERR_BAD_OS, "File too small");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    argv[0]);
       goto fail;
     }
 
@@ -601,13 +603,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No filename specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto fail;
     }
   
   if (! loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("you need to load the kernel first"));
       goto fail;
     }
 
@@ -671,14 +673,14 @@ grub_cmd_payload  (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto fail;
     }
 
   if (!boot_param)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, 
-		  "You need to load the kernel first");
+		  N_("you need to load the kernel first"));
       goto fail;
     }
 

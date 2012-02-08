@@ -63,18 +63,18 @@ for drv in $drives ; do
 
   # Check for Vista bootmgr.
   if [ -f "$dir"/bootmgr -a -f "$dir"/boot/bcd ] ; then
-    OS="$(gettext_quoted "Windows Vista bootmgr")"
+    OS="$(gettext_quoted "Windows Vista/7 (loader)")"
 
   # Check for NTLDR.
   elif [ -f "$dir"/ntldr -a -f "$dir"/ntdetect.com -a -f "$dir"/boot.ini ] ; then
-    OS=`get_os_name_from_boot_ini "$dir"/boot.ini` || OS="$(gettext_quoted "Windows NT/2000/XP loader")"
+    OS=`get_os_name_from_boot_ini "$dir"/boot.ini` || OS="$(gettext_quoted "Windows NT/2000/XP (loader)")"
     needmap=t
 
   else
     continue
   fi
 
-  # Get boot /dev/ice.
+  # Get boot device.
   dev=`${grub_probe} -t device "$dir" 2>/dev/null` || continue
 
   gettext_printf "Found %s on %s (%s)\n" "$OS" "$drv" "$dev" >&2

@@ -179,7 +179,7 @@ grub_net_link_layer_resolve (struct grub_net_network_level_interface *inf,
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
       return grub_error (GRUB_ERR_BUG, "shouldn't reach here");
     default:
-      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+      return grub_error (GRUB_ERR_BUG,
 			 "unsupported address type %d", proto_addr->type);
     }
   if (err)
@@ -563,7 +563,8 @@ grub_net_resolve_net_address (const char *name,
 	  return GRUB_ERR_NONE;
 	}
     }
-  return grub_error (GRUB_ERR_NET_BAD_ADDRESS, N_("unrecognised address %s"),
+  return grub_error (GRUB_ERR_NET_BAD_ADDRESS,
+		     N_("unrecognised network address `%s'"),
 		     name);
 }
 
@@ -1002,7 +1003,7 @@ grub_cmd_addroute (struct grub_command *cmd __attribute__ ((unused)),
   grub_net_network_level_netaddress_t target;
   if (argc < 3)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       N_("At least 3 arguments are expected"));
+		       N_("three arguments expected"));
 
   grub_net_resolve_net_address  (args[1], &target);
   
@@ -1026,7 +1027,7 @@ grub_cmd_addroute (struct grub_command *cmd __attribute__ ((unused)),
 
       if (!inter)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   N_("unrecognised interface %s"), args[2]);
+			   N_("unrecognised network interface `%s'"), args[2]);
       return grub_net_add_route (args[0], target, inter);
     }
 }
@@ -1208,7 +1209,7 @@ grub_net_fs_dir (grub_device_t device, const char *path __attribute__ ((unused))
 			    const struct grub_dirhook_info *info) __attribute__ ((unused)))
 {
   if (!device->net)
-    return grub_error (GRUB_ERR_BAD_FS, "invalid extent");
+    return grub_error (GRUB_ERR_BUG, "invalid net device");
   return GRUB_ERR_NONE;
 }
 

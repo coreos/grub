@@ -64,10 +64,7 @@ grub_loader_register_preboot_hook (grub_err_t (*preboot_func) (int noreturn),
   new_preboot = (struct grub_preboot *)
     grub_malloc (sizeof (struct grub_preboot));
   if (! new_preboot)
-    {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "hook not added");
-      return 0;
-    }
+    return 0;
 
   new_preboot->preboot_func = preboot_func;
   new_preboot->preboot_rest_func = preboot_rest_func;
@@ -146,7 +143,8 @@ grub_loader_boot (void)
   struct grub_preboot *cur;
 
   if (! grub_loader_loaded)
-    return grub_error (GRUB_ERR_NO_KERNEL, "no loaded kernel");
+    return grub_error (GRUB_ERR_NO_KERNEL,
+		       N_("you need to load the kernel first"));
 
   if (grub_loader_noreturn)
     grub_machine_fini ();

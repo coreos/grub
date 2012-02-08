@@ -1186,7 +1186,7 @@ grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
   struct grub_video_render_target *old_target;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing operand");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   /* Check that we have video adapter active.  */
   if (grub_video_get_info (NULL) != GRUB_ERR_NONE)

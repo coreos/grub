@@ -38,7 +38,7 @@ static struct grub_loopback *loopback_list;
 
 static const struct grub_arg_option options[] =
   {
-    {"delete", 'd', 0, N_("Delete the loopback device entry."), 0, 0},
+    {"delete", 'd', 0, N_("Delete the specified loopback drive."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -86,7 +86,7 @@ grub_cmd_loopback (grub_extcmd_context_t ctxt, int argc, char **args)
       return delete_loopback (args[0]);
 
   if (argc < 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   file = grub_file_open (args[1]);
   if (! file)
@@ -224,7 +224,7 @@ GRUB_MOD_INIT(loopback)
 {
   cmd = grub_register_extcmd ("loopback", grub_cmd_loopback, 0,
 			      N_("[-d] DEVICENAME FILE."),
-			      N_("Make a device of a file."), options);
+			      N_("Make a virtual drive from a file."), options);
   grub_disk_dev_register (&grub_loopback_dev);
 }
 

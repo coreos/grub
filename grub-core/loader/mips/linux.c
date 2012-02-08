@@ -132,7 +132,8 @@ grub_linux_unload (void)
 }
 
 static grub_err_t
-grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
+grub_linux_load32 (grub_elf_t elf, const char *filename,
+		   void **extra_mem, grub_size_t extra_size)
 {
   Elf32_Addr base;
   int extraoff;
@@ -141,7 +142,7 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr32.e_entry;
 
-  linux_size = grub_elf32_size (elf, &base, 0);
+  linux_size = grub_elf32_size (elf, filename, &base, 0);
   if (linux_size == 0)
     return grub_errno;
   target_addr = base;
@@ -183,11 +184,12 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
       *addr = (grub_addr_t) (phdr->p_paddr - base + playground);
       return 0;
     }
-  return grub_elf32_load (elf, offset_phdr, 0, 0);
+  return grub_elf32_load (elf, filename, offset_phdr, 0, 0);
 }
 
 static grub_err_t
-grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
+grub_linux_load64 (grub_elf_t elf, const char *filename,
+		   void **extra_mem, grub_size_t extra_size)
 {
   Elf64_Addr base;
   int extraoff;
@@ -196,7 +198,7 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr64.e_entry;
 
-  linux_size = grub_elf64_size (elf, &base, 0);
+  linux_size = grub_elf64_size (elf, filename, &base, 0);
   if (linux_size == 0)
     return grub_errno;
   target_addr = base;
@@ -237,7 +239,7 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
       *addr = (grub_addr_t) (phdr->p_paddr - base + playground);
       return 0;
     }
-  return grub_elf64_load (elf, offset_phdr, 0, 0);
+  return grub_elf64_load (elf, filename, offset_phdr, 0, 0);
 }
 
 static grub_err_t
@@ -259,7 +261,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 #endif
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   elf = grub_elf_open (argv[0]);
   if (! elf)
@@ -269,7 +271,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_elf_close (elf);
       return grub_error (GRUB_ERR_UNKNOWN_OS,
-			 "this ELF file is not of the right type\n");
+			 N_("this ELF file is not of the right type"));
     }
 
   /* Release the previously used memory.  */
@@ -314,12 +316,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 #endif
 
   if (grub_elf_is_elf32 (elf))
-    err = grub_linux_load32 (elf, &extra, size);
+    err = grub_linux_load32 (elf, argv[0], &extra, size);
   else
   if (grub_elf_is_elf64 (elf))
-    err = grub_linux_load64 (elf, &extra, size);
+    err = grub_linux_load64 (elf, argv[0], &extra, size);
   else
-    err = grub_error (GRUB_ERR_BAD_FILE_TYPE, "unknown ELF class");
+    err = grub_error (GRUB_ERR_BAD_OS, N_("invalid arch dependent ELF magic"));
 
   grub_elf_close (elf);
 
@@ -445,10 +447,10 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_uint8_t *ptr;
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   if (!loaded)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load Linux first.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("you need to load the kernel first"));
 
   if (initrd_loaded)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "only one initrd command can be issued.");

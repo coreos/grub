@@ -23,6 +23,7 @@
 #include <grub/efiemu/efiemu.h>
 #include <grub/cpu/efiemu.h>
 #include <grub/elf.h>
+#include <grub/i18n.h>
 
 /* ELF symbols and their values */
 static struct grub_efiemu_elf_sym *grub_efiemu_elfsyms = 0;
@@ -193,7 +194,7 @@ grub_efiemu_count_symbols (const Elf_Ehdr *e)
       break;
 
   if (i == e->e_shnum)
-    return grub_error (GRUB_ERR_BAD_OS, "no symbol table");
+    return grub_error (GRUB_ERR_BAD_OS, N_("no symbol table"));
 
   grub_efiemu_nelfsyms = (unsigned) s->sh_size / (unsigned) s->sh_entsize;
   grub_efiemu_elfsyms = (struct grub_efiemu_elf_sym *)
@@ -230,7 +231,7 @@ grub_efiemu_resolve_symbols (grub_efiemu_segment_t segs, Elf_Ehdr *e)
       break;
 
   if (i == e->e_shnum)
-    return grub_error (GRUB_ERR_BAD_OS, "no symbol table");
+    return grub_error (GRUB_ERR_BAD_OS, N_("no symbol table"));
 
   sym = (Elf_Sym *) ((char *) e + s->sh_offset);
   size = s->sh_size;
@@ -328,7 +329,7 @@ SUFFIX (grub_efiemu_loadcore_init) (void *core, grub_size_t core_size,
   grub_err_t err;
 
   if (e->e_type != ET_REL)
-    return grub_error (GRUB_ERR_BAD_MODULE, "invalid ELF file type");
+    return grub_error (GRUB_ERR_BAD_MODULE, N_("this ELF file is not of the right type"));
 
   /* Make sure that every section is within the core.  */
   if ((grub_size_t) core_size < e->e_shoff + e->e_shentsize * e->e_shnum)

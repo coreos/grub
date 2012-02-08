@@ -1633,10 +1633,11 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
 
 static struct argp_option options[] = {
   {"directory",  'd', N_("DIR"), 0, N_("use images and modules under DIR [default=%s/<platform>]"), 0},
-  {"prefix",  'p', N_("DIR"), 0, N_("set grub_prefix directory [default=%s]"), 0},
+  {"prefix",  'p', N_("DIR"), 0, N_("set prefix directory [default=%s]"), 0},
   {"memdisk",  'm', N_("FILE"), 0, N_("embed FILE as a memdisk image"), 0},
-  {"config",   'c', N_("FILE"), 0, N_("embed FILE as boot config"), 0},
-  {"note",   'n', 0, 0, N_("add NOTE segment for CHRP Open Firmware"), 0},
+  {"config",   'c', N_("FILE"), 0, N_("embed FILE as an early config"), 0},
+  /* TRANSLATORS: NOTE is a name of segment.  */
+  {"note",   'n', 0, 0, N_("add NOTE segment for CHRP IEEE1275"), 0},
   {"output",  'o', N_("FILE"), 0, N_("output a generated image to FILE [default=stdout]"), 0},
   {"format",  'O', N_("FORMAT"), 0, 0, 0},
   {"compression",  'C', "(xz|none|auto)", 0, N_("choose the compression to use"), 0},

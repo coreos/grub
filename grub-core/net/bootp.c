@@ -310,7 +310,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 
   if (!inter)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       N_("unrecognised interface %s"), args[1]);
+		       N_("unrecognised network interface `%s'"), args[1]);
 
   if (!inter->dhcp_ack)
     return grub_error (GRUB_ERR_IO, N_("no DHCP info found"));

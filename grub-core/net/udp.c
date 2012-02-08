@@ -76,7 +76,7 @@ grub_net_udp_open (grub_net_network_level_address_t addr,
   if (addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4
       && addr.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "not an IP address");
+      grub_error (GRUB_ERR_BUG, "not an IP address");
       return NULL;
     }
  

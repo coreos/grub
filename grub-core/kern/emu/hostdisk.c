@@ -372,7 +372,8 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
     fd = open (map[drive].device, O_RDONLY);
     if (fd == -1)
-      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "cannot open `%s' while attempting to get disk size", map[drive].device);
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("cannot open `%s': %s"),
+			 map[drive].device, strerror (errno));
 
     disk->total_sectors = grub_util_get_fd_sectors (fd, map[drive].device,
 						    &disk->log_sector_size);
@@ -428,13 +429,19 @@ grub_util_follow_gpart_up (const char *name, grub_disk_addr_t *off_out, char **n
 
   error = geom_gettree (&mesh);
   if (error != 0)
+    /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
+       Usually left untranslated.
+     */
     grub_util_error (_("couldn't open geom"));
 
   LIST_FOREACH (class, &mesh.lg_class, lg_class)
     if (strcasecmp (class->lg_name, "part") == 0)
       break;
   if (!class)
-    grub_util_error (_("couldn't open geom part"));
+    /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
+       Usually left untranslated.
+     */
+    grub_util_error (_("couldn't find geom `part' class"));
 
   LIST_FOREACH (geom, &class->lg_geom, lg_geom)
     { 
@@ -563,12 +570,8 @@ devmapper_fail:
   fd = open (dev, O_RDONLY);
   if (fd == -1)
     {
-      grub_error (GRUB_ERR_BAD_DEVICE,
-# if !defined(HAVE_DIOCGDINFO)
-		  "cannot open `%s' while attempting to get disk geometry", dev);
-# else /* defined(HAVE_DIOCGDINFO) */
-		  "cannot open `%s' while attempting to get disk label", dev);
-# endif /* !defined(HAVE_DIOCGDINFO) */
+      grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot open `%s': %s"),
+		  dev, strerror (errno));
       return 0;
     }
 
@@ -736,9 +739,8 @@ grub_util_fd_seek (int fd, const char *name, grub_uint64_t off)
 
   offset = (loff_t) off;
   if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
-    {
-      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", name);
-    }
+    return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
+		       name, strerror (errno));
   return GRUB_ERR_NONE;
 }
 #else
@@ -748,7 +750,8 @@ grub_util_fd_seek (int fd, const char *name, grub_uint64_t off)
   off_t offset = (off_t) off;
 
   if (lseek (fd, offset, SEEK_SET) != offset)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", name);
+    return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
+		       name, strerror (errno));
   return 0;
 }
 #endif
@@ -842,7 +845,8 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 	fd = open (dev, flags);
 	if (fd < 0)
 	  {
-	    grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", dev);
+	    grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot open `%s': %s"),
+			dev, strerror (errno));
 	    return -1;
 	  }
 
@@ -922,7 +926,8 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 
   if (fd < 0)
     {
-      grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' in open_device()", map[disk->id].device);
+      grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot open `%s': %s"),
+		  map[disk->id].device, strerror (errno));
       return -1;
     }
 #endif /* ! __linux__ */
@@ -1030,7 +1035,8 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
       if (grub_util_fd_read (fd, buf, (1 << disk->log_sector_size))
 	  != (1 << disk->log_sector_size))
 	{
-	  grub_error (GRUB_ERR_READ_ERROR, "cannot read `%s'", map[disk->id].device);
+	  grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
+		      map[disk->id].device, strerror (errno));
 	  return grub_errno;
 	}
 
@@ -1041,7 +1047,8 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
   if (grub_util_fd_read (fd, buf, size << disk->log_sector_size)
       != (ssize_t) (size << disk->log_sector_size))
-    grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'", map[disk->id].device);
+    grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
+		map[disk->id].device, strerror (errno));
 
   return grub_errno;
 }
@@ -1075,7 +1082,8 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 
   if (grub_util_fd_write (fd, buf, size << disk->log_sector_size)
       != (ssize_t) (size << disk->log_sector_size))
-    grub_error (GRUB_ERR_WRITE_ERROR, "cannot write to `%s'", map[disk->id].device);
+    grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write to `%s': %s"),
+		map[disk->id].device, strerror (errno));
 
   return grub_errno;
 }
@@ -1172,7 +1180,11 @@ read_device_map (const char *dev_map)
 	continue;
 
       if (*p != '(')
-	show_error (_("No open parenthesis found"));
+	{
+	  char *tmp;
+	  tmp = xasprintf (_("missing `%c' symbol"), '(');
+	  show_error (tmp);
+	}
 
       p++;
       /* Find a free slot.  */
@@ -1183,7 +1195,11 @@ read_device_map (const char *dev_map)
       e = p;
       p = strchr (p, ')');
       if (! p)
-	show_error (_("No close parenthesis found"));
+	{
+	  char *tmp;
+	  tmp = xasprintf (_("missing `%c' symbol"), ')');
+	  show_error (tmp);
+	}
 
       map[drive].drive = xmalloc (p - e + sizeof ('\0'));
       strncpy (map[drive].drive, e, p - e + sizeof ('\0'));
@@ -1196,7 +1212,7 @@ read_device_map (const char *dev_map)
 	p++;
 
       if (*p == '\0')
-	show_error (_("No filename found"));
+	show_error (_("filename expected"));
 
       /* NUL-terminate the filename.  */
       e = p;

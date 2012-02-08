@@ -235,7 +235,7 @@ grub_terminfo_gotoxy (struct grub_term_output *term,
 
   if (x > grub_term_width (term) || y > grub_term_height (term))
     {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "invalid point (%u,%u)", x, y);
+      grub_error (GRUB_ERR_BUG, "invalid point (%u,%u)", x, y);
       return;
     }
 
@@ -599,10 +599,10 @@ print_terminfo (void)
     [GRUB_TERM_CODE_TYPE_UTF8_LOGICAL >> GRUB_TERM_CODE_TYPE_SHIFT]
     = _("UTF-8"),
     [GRUB_TERM_CODE_TYPE_UTF8_VISUAL >> GRUB_TERM_CODE_TYPE_SHIFT]
-    = _("UTF-8 visual"),
+    = _("visually-ordered UTF-8"),
     [GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS >> GRUB_TERM_CODE_TYPE_SHIFT]
     = "Glyph descriptors",
-    _("Unknown"), _("Unknown"), _("Unknown")
+    _("Unknown encoding"), _("Unknown encoding"), _("Unknown encoding")
   };
   struct grub_term_output *cur;
 
@@ -623,7 +623,7 @@ static const struct grub_arg_option options[] =
   {"utf8",  'u', 0, N_("Terminal is logical-ordered UTF-8."), 0, ARG_TYPE_NONE},
   {"visual-utf8", 'v', 0, N_("Terminal is visually-ordered UTF-8."), 0,
    ARG_TYPE_NONE},
-  {"geometry", 'g', 0, N_("Terminal has given geometry."),
+  {"geometry", 'g', 0, N_("Terminal has specified geometry."),
    N_("WIDTHxHEIGHT."), ARG_TYPE_STRING},
   {0, 0, 0, 0, 0, 0}
 };

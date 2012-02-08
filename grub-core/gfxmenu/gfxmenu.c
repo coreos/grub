@@ -36,6 +36,7 @@
 #include <grub/gfxmenu_model.h>
 #include <grub/gfxmenu_view.h>
 #include <grub/time.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -58,7 +59,8 @@ grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
 
   theme_path = grub_env_get ("theme");
   if (! theme_path)
-    return grub_error (GRUB_ERR_FILE_NOT_FOUND, "no theme specified");
+    return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("variable `%s' isn't set"),
+		       "theme");
 
   instance = grub_zalloc (sizeof (*instance));
   if (!instance)

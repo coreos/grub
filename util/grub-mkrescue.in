@@ -52,7 +52,7 @@ xorriso=xorriso
 # Print the usage.
 usage () {
     gettext_printf "Usage: %s [OPTION] SOURCE...\n" "$self"
-    gettext "Make GRUB rescue image."; echo
+    gettext "Make GRUB CDROM, disk, pendrive and floppy bootable image."; echo
     echo
     printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
     printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
@@ -62,7 +62,7 @@ usage () {
     printf "  --xorriso=%-14s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as xorriso [optional]")"
     printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     echo
-    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by: %s\n" "xorriso -as mkisofs -help" "$self"
+    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by the output of \`%s'\n" "xorriso -as mkisofs -help" "$self"
     echo
     gettext "Option -- switches to native xorriso command mode."; echo
     echo

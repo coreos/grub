@@ -49,7 +49,6 @@ grubdir="`echo "/@bootdirname@/@grubdirname@" | sed 's,//*,/,g'`"
 modules=
 
 install_device=
-no_floppy=
 force_lba=
 recheck=no
 debug=no
@@ -101,7 +100,6 @@ usage () {
     printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     printf "  --grub-mkrelpath=%-7s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkrelpath")"
     printf "  --grub-probe=%-11s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-probe")"
-    printf "  --no-floppy             %s\n" "$(gettext "do not probe any floppy drive")"
     printf "  --allow-floppy          %s\n" "$(gettext "Make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes.")"
     printf "  --recheck               %s\n" "$(gettext "delete device map if it already exists")"
     printf "  --force                 %s\n" "$(gettext "install even if problems are detected")"
@@ -207,7 +205,7 @@ do
 	grub_probe="`echo "$option" | sed 's/--grub-probe=//'`" ;;
 
     --no-floppy)
-	no_floppy="--no-floppy" ;;
+	;;
     --recheck)
 	recheck=yes ;;
     --removable)
@@ -535,6 +533,8 @@ if [ "x${devabstraction_module}" = "x" ] ; then
           elif [ "$disk_module" = ata ]; then
              gettext_printf "UUID needed with ata mod, but the filesystem containing %s does not support UUIDs.\n" "${grubdir}" 1>&2
           else
+	      # TRANSLATORS: cross-disk refers to /boot being on one disk
+	      # but MBR on another. 
              gettext_printf "UUID needed with cross-disk installs, but the filesystem containing %s does not support UUIDs.\n" "${grubdir}" 1>&2
           fi
              
@@ -633,7 +633,7 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	dev="`echo $grub_device | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`"
 	partno="`echo $grub_device | sed -e 's/.*[^0-9]\([0-9]\+\)$/\1/'`"
 	ofpath="`$ofpathname $dev`" || {
-	    gettext_printf "Couldn't find Open Firmware device tree path for %s.\nYou will have to set \`boot-device' variable manually.\n" "$dev" 1>&2
+	    gettext_printf "Couldn't find IEEE1275 device tree path for %s.\nYou will have to set \`boot-device' variable manually.\n" "$dev" 1>&2
 	    exit 1
 	}
 
@@ -668,7 +668,7 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	"$nvsetenv" boot-device "$boot_device" || {
 	    # TRANSLATORS: The %s will be replaced by an external program name.
 	    gettext_printf "\`%s' failed.\n" "$nvsetenv" 1>&2
-	    gettext "You will have to set \`boot-device' variable manually.  At the Open Firmware prompt, type:" 1>&2
+	    gettext "You will have to set \`boot-device' variable manually.  At the IEEE1275 prompt, type:" 1>&2
 	    echo 1>&2
 	    echo "  setenv boot-device $boot_device" 1>&2
 	    exit 1

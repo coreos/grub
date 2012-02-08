@@ -773,7 +773,7 @@ grub_cmd_jpegtest (grub_command_t cmd __attribute__ ((unused)),
   struct grub_video_bitmap *bitmap = 0;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("file name expected"));
 
   grub_video_reader_jpeg (&bitmap, args[0]);
   if (grub_errno != GRUB_ERR_NONE)

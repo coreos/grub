@@ -45,31 +45,32 @@ print_state (char *nvlist, int tab)
   int isok = 1;
 
   print_tabs (tab);
-  grub_xputs (_("State: "));
 
   if (grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_REMOVED, &ival))
     {
-      grub_xputs (_("removed "));
+      grub_puts_ (N_("Virtual device is removed"));
       isok = 0;
     }
 
   if (grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_FAULTED, &ival))
     {
-      grub_xputs (_("faulted "));
+      grub_puts_ (N_("Virtual device is faulted"));
       isok = 0;
     }
 
   if (grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_OFFLINE, &ival))
     {
-      grub_xputs (_("offline "));
+      grub_puts_ (N_("Virtual device is offline"));
       isok = 0;
     }
 
   if (grub_zfs_nvlist_lookup_uint64 (nvlist, ZPOOL_CONFIG_FAULTED, &ival))
-    grub_xputs (_("degraded "));
+    /* TRANSLATORS: degraded doesn't mean broken but that some of
+       component are missing but virtual device as whole is still usable.  */
+    grub_puts_ (N_("Virtual device is degraded"));
 
   if (isok)
-    grub_xputs (_("online"));
+    grub_puts_ (N_("Virtual device is online"));
   grub_xputs ("\n");
 
   return GRUB_ERR_NONE;
@@ -85,7 +86,7 @@ print_vdev_info (char *nvlist, int tab)
   if (!type)
     {
       print_tabs (tab);
-      grub_puts_ (N_("Incorrect VDEV: no type available"));
+      grub_puts_ (N_("Incorrect virtual device: no type available"));
       return grub_errno;
     }
 
@@ -96,7 +97,7 @@ print_vdev_info (char *nvlist, int tab)
       char *devid = 0;
 
       print_tabs (tab);
-      grub_puts_ (N_("Leaf VDEV"));
+      grub_puts_ (N_("Leaf virtual device (file or disk)"));
 
       print_state (nvlist, tab);
 
@@ -137,10 +138,10 @@ print_vdev_info (char *nvlist, int tab)
       print_tabs (tab);
       if (nelm <= 0)
 	{
-	  grub_puts_ (N_("Incorrect mirror VDEV"));
+	  grub_puts_ (N_("Incorrect mirror"));
 	  return GRUB_ERR_NONE;
 	}
-      grub_printf_ (N_("Mirror VDEV with %d children\n"), nelm);
+      grub_printf_ (N_("Mirror with %d children\n"), nelm);
       print_state (nvlist, tab);
       for (i = 0; i < nelm; i++)
 	{
@@ -152,11 +153,11 @@ print_vdev_info (char *nvlist, int tab)
 	  print_tabs (tab);
 	  if (!child)
 	    {
-	      grub_printf_ (N_("Mirror VDEV element %d isn't correct\n"), i);
+	      grub_printf_ (N_("Mirror element %d isn't correct\n"), i);
 	      continue;
 	    }
 
-	  grub_printf_ (N_("Mirror VDEV element %d:\n"), i);
+	  grub_printf_ (N_("Mirror element %d:\n"), i);
 	  print_vdev_info (child, tab + 1);
 
 	  grub_free (child);
@@ -165,7 +166,7 @@ print_vdev_info (char *nvlist, int tab)
     }
 
   print_tabs (tab);
-  grub_printf_ (N_("Unknown VDEV type: %s\n"), type);
+  grub_printf_ (N_("Unknown virtual device type: %s\n"), type);
 
   return GRUB_ERR_NONE;
 }
@@ -298,7 +299,7 @@ grub_cmd_zfsinfo (grub_command_t cmd __attribute__ ((unused)), int argc,
   nv = grub_zfs_nvlist_lookup_nvlist (nvlist, ZPOOL_CONFIG_VDEV_TREE);
 
   if (!nv)
-    grub_puts_ (N_("No vdev tree available"));
+    grub_puts_ (N_("No virtual device tree available"));
   else
     print_vdev_info (nv, 1);
 

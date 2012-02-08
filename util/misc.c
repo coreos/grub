@@ -114,7 +114,7 @@ grub_util_read_image (const char *path)
 		     strerror (errno));
 
   if (fread (img, 1, size, fp) != size)
-    grub_util_error (_("cannot read the file `%s': %s"), path,
+    grub_util_error (_("cannot read `%s': %s"), path,
 		     strerror (errno));
 
   fclose (fp);
@@ -138,7 +138,7 @@ grub_util_load_image (const char *path, char *buf)
 		     strerror (errno));
 
   if (fread (buf, 1, size, fp) != size)
-    grub_util_error (_("cannot read the file `%s': %s"), path,
+    grub_util_error (_("cannot read `%s': %s"), path,
 		     strerror (errno));
 
   fclose (fp);
@@ -150,10 +150,10 @@ grub_util_write_image_at (const void *img, size_t size, off_t offset, FILE *out,
 {
   grub_util_info ("writing 0x%x bytes at offset 0x%x", size, offset);
   if (fseeko (out, offset, SEEK_SET) == -1)
-    grub_util_error (_("cannot seek the file `%s': %s"),
+    grub_util_error (_("cannot seek `%s': %s"),
 		     name, strerror (errno));
   if (fwrite (img, 1, size, out) != size)
-    grub_util_error (_("cannot write to the file `%s': %s"),
+    grub_util_error (_("cannot write to `%s': %s"),
 		     name, strerror (errno));
 }
 
@@ -163,12 +163,14 @@ grub_util_write_image (const char *img, size_t size, FILE *out,
 {
   grub_util_info ("writing 0x%x bytes", size);
   if (fwrite (img, 1, size, out) != size)
-    if (!name)
-      grub_util_error (_("cannot write to the stdout: %s"),
-		       strerror (errno));
-    else
-      grub_util_error (_("cannot write to the file `%s': %s"),
-		       name, strerror (errno));
+    {
+      if (!name)
+	grub_util_error (_("cannot write to the stdout: %s"),
+			 strerror (errno));
+      else
+	grub_util_error (_("cannot write to `%s': %s"),
+			 name, strerror (errno));
+    }
 }
 
 char *

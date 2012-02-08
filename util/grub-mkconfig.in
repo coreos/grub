@@ -184,7 +184,7 @@ for x in ${GRUB_TERMINAL_OUTPUT}; do
 	fi
 	if [ -z "${GRUB_FONT_PATH}" ] ; then
 	    if [ "x$termoutdefault" != "x1" ]; then
-		gettext "No font for gfxterm found." >&2; echo >&2 ; exit 1
+		gettext "No font for video terminal found." >&2; echo >&2 ; exit 1
 	    fi
 	    GRUB_TERMINAL_OUTPUT=
 	fi

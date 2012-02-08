@@ -50,7 +50,7 @@ grub_cmd_testload (struct grub_command *cmd __attribute__ ((unused)),
     }
 
   if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   file = grub_file_open (argv[0]);
   if (! file)

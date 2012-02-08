@@ -1209,14 +1209,14 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel,
   grub_phys_addr_t min_addr = 0, max_addr;
 
   if (target > ~size)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "address is out of range");
+    return grub_error (GRUB_ERR_BUG, "address is out of range");
 
   adjust_limits (rel, &min_addr, &max_addr, target, target);
 
   for (chunk = rel->chunks; chunk; chunk = chunk->next)
     if ((chunk->target <= target && target < chunk->target + chunk->size)
 	|| (target <= chunk->target && chunk->target < target + size))
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "overlap detected");
+      return grub_error (GRUB_ERR_BUG, "overlap detected");
 
   chunk = grub_malloc (sizeof (struct grub_relocator_chunk));
   if (!chunk)
@@ -1256,7 +1256,7 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel,
 
       grub_dprintf ("relocator", "not allocated\n");
       grub_free (chunk);
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
     }
   while (0);
 
@@ -1486,7 +1486,7 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
   if (!malloc_in_range (rel, 0, ~(grub_addr_t)0 - rel->relocators_size + 1,
 			grub_relocator_align,
 			rel->relocators_size, &movers_chunk, 1, 1))
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
   movers_chunk.srcv = rels = rels0
     = grub_map_memory (movers_chunk.src, movers_chunk.size);
 

@@ -25,7 +25,7 @@
 
 #include <grub/i386/relocator.h>
 #include <grub/relocator_private.h>
-#include <grub/cpu/relocator_private.h>
+#include <grub/i386/relocator_private.h>
 
 extern grub_uint8_t grub_relocator_forward_start;
 extern grub_uint8_t grub_relocator_forward_end;

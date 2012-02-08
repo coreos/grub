@@ -23,6 +23,7 @@
 #include <grub/disk.h>
 #include <grub/fshelp.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -128,7 +129,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  if (type != GRUB_FSHELP_DIR)
 	    {
 	      free_node (currnode);
-	      return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+	      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 	    }
 
 	  /* Iterate over the directory.  */
@@ -152,7 +153,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 		  free_node (currnode);
 		  free_node (oldnode);
 		  return grub_error (GRUB_ERR_SYMLINK_LOOP,
-                                     "too deep nesting of symlinks");
+                                     N_("too deep nesting of symlinks"));
 		}
 
 	      symlink = read_symlink (currnode);
@@ -196,12 +197,12 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  name = next;
 	}
 
-      return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
+      return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
     }
 
   if (!path || path[0] != '/')
     {
-      grub_error (GRUB_ERR_BAD_FILENAME, "bad filename");
+      grub_error (GRUB_ERR_BAD_FILENAME, N_("invalid file name `%s'"), path);
       return grub_errno;
     }
 
@@ -211,9 +212,9 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 
   /* Check if the node that was found was of the expected type.  */
   if (expecttype == GRUB_FSHELP_REG && foundtype != expecttype)
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
+    return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a regular file"));
   else if (expecttype == GRUB_FSHELP_DIR && foundtype != expecttype)
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+    return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 
   return 0;
 }

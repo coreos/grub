@@ -22,6 +22,7 @@
 #include <grub/mm.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/ieee1275/ofdisk.h>
+#include <grub/i18n.h>
 
 static char *last_devpath;
 static grub_ieee1275_ihandle_t last_ihandle;
@@ -273,7 +274,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   if (grub_strcmp (prop, "block"))
     {
       grub_free (devpath);
-      return grub_error (GRUB_ERR_BAD_DEVICE, "not a block device");
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a block device");
     }
 
   /* XXX: There is no property to read the number of blocks.  There
@@ -364,8 +365,10 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   grub_ieee1275_read (last_ihandle, buf, size  << GRUB_DISK_SECTOR_BITS,
 		      &actual);
   if (actual != (grub_ssize_t) (size  << GRUB_DISK_SECTOR_BITS))
-    return grub_error (GRUB_ERR_READ_ERROR, "read error on block: %llu",
-		       (long long) sector);
+    return grub_error (GRUB_ERR_READ_ERROR, N_("failure reading sector 0x%llx "
+					       " from `%s'"),
+		       (unsigned long long) sector,
+		       disk->name);
 
   return 0;
 }
@@ -382,8 +385,10 @@ grub_ofdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
   grub_ieee1275_write (last_ihandle, buf, size  << GRUB_DISK_SECTOR_BITS,
 		       &actual);
   if (actual != (grub_ssize_t) (size << GRUB_DISK_SECTOR_BITS))
-    return grub_error (GRUB_ERR_WRITE_ERROR, "write error on block: %llu",
-		       (long long) sector);
+    return grub_error (GRUB_ERR_WRITE_ERROR, N_("failure writing sector 0x%llx "
+						" from `%s'"),
+		       (unsigned long long) sector,
+		       disk->name);
 
   return 0;
 }

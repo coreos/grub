@@ -44,7 +44,7 @@
 #define GRUB_UTF16_LOWER_SURROGATE(code) \
   (0xDC00 + (((code) - GRUB_UCS2_LIMIT) & 0xfff))
 
-grub_ssize_t
+grub_size_t
 grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 		    const grub_uint8_t *src, grub_size_t srcsize,
 		    const grub_uint8_t **srcend);

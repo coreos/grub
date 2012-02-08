@@ -38,6 +38,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/fshelp.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -477,6 +478,7 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
   grub_uint16_t previous_level = ~0;
   struct grub_reiserfs_item_header *item_headers = 0;
 
+#if 0
   if (! data)
     {
       grub_error (GRUB_ERR_BAD_FS, "data is NULL");
@@ -494,6 +496,7 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
       grub_error (GRUB_ERR_BAD_FS, "item is NULL");
       goto fail;
     }
+#endif
 
   block_size = grub_le_to_cpu16 (data->superblock.block_size);
   block_number = grub_le_to_cpu32 (data->superblock.root_block);
@@ -725,8 +728,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
 
   if (item->type != GRUB_REISERFS_DIRECTORY)
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE,
-                  "grub_reiserfs_iterate_dir called on a non-directory item");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       goto fail;
     }
   block_size = grub_le_to_cpu16 (data->superblock.block_size);
@@ -754,7 +756,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
 #if 0
       if (grub_le_to_cpu16 (block_header->level) != 1)
         {
-          grub_error (GRUB_ERR_TEST_FAILURE,
+          grub_error (GRUB_ERR_BAD_FS,
                       "reiserfs: block %d is not a leaf block",
                       block_number);
           goto fail;

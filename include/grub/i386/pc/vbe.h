@@ -221,8 +221,6 @@ grub_vbe_status_t grub_vbe_bios_getset_dac_palette_width (int set, int *width);
 #define grub_vbe_bios_set_dac_palette_width(width)	grub_vbe_bios_getset_dac_palette_width(1, (width))
 
 grub_err_t grub_vbe_probe (struct grub_vbe_info_block *info_block);
-grub_err_t grub_vbe_set_video_mode (grub_uint32_t mode,
-                                    struct grub_vbe_mode_info_block *mode_info);
 grub_err_t grub_vbe_get_video_mode (grub_uint32_t *mode);
 grub_err_t grub_vbe_get_video_mode_info (grub_uint32_t mode,
                                          struct grub_vbe_mode_info_block *mode_info);

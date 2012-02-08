@@ -620,7 +620,7 @@ grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
       return grub_net_send_ip6_packet (inf, target, ll_target_addr, nb, proto);
     default:
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "not an IP");
+      return grub_error (GRUB_ERR_BUG, "not an IP");
     }
 }
 

@@ -24,6 +24,7 @@
 #include <grub/dl.h>
 #include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -173,13 +174,13 @@ gpt_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 
   if (len == 0)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "This GPT partition label has no BIOS Boot Partition;"
-		       " embedding won't be possible!");
+		       N_("this GPT partition label has no BIOS Boot Partition;"
+			  " embedding won't be possible"));
 
   if (len < *nsectors)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "Your BIOS Boot Partition is too small;"
-		       " embedding won't be possible!");
+		       N_("your BIOS Boot Partition is too small;"
+			  " embedding won't be possible"));
 
   *nsectors = len;
   *sectors = grub_malloc (*nsectors * sizeof (**sectors));

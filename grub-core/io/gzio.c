@@ -42,6 +42,7 @@
 #include <grub/file.h>
 #include <grub/dl.h>
 #include <grub/deflate.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -193,10 +194,7 @@ test_gzip_header (grub_file_t file)
   if (grub_file_read (gzio->file, &hdr, 10) != 10
       || ((hdr.magic != GZIP_MAGIC)
 	  && (hdr.magic != OLD_GZIP_MAGIC)))
-    {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "no gzip magic found");
-      return 0;
-    }
+    return 0;
 
   /*
    *  This does consistency checking on the header data.  If a
@@ -211,10 +209,7 @@ test_gzip_header (grub_file_t file)
 			    grub_le_to_cpu16 (extra_len))))
       || ((hdr.flags & ORIG_NAME) && eat_field (gzio->file, -1))
       || ((hdr.flags & COMMENT) && eat_field (gzio->file, -1)))
-    {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "unsupported gzip format");
-      return 0;
-    }
+    return 0;
 
   gzio->data_offset = grub_file_tell (gzio->file);
 
@@ -222,10 +217,7 @@ test_gzip_header (grub_file_t file)
   {
     grub_file_seek (gzio->file, grub_file_size (gzio->file) - 4);
     if (grub_file_read (gzio->file, &orig_len, 4) != 4)
-      {
-	grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
-	return 0;
-      }
+      return 0;
     /* FIXME: this does not handle files whose original size is over 4GB.
        But how can we know the real original size?  */
     file->size = grub_le_to_cpu32 (orig_len);
@@ -402,7 +394,7 @@ gzio_seek (grub_gzio_t gzio, grub_off_t off)
     {
       if (off > gzio->mem_input_size)
 	grub_error (GRUB_ERR_OUT_OF_RANGE,
-		    "attempt to seek outside of the file");
+		    N_("attempt to seek outside of the file"));
       else
 	gzio->mem_input_off = off;
     }
@@ -1158,10 +1150,10 @@ grub_gzio_open (grub_file_t io)
 
   if (! test_gzip_header (file))
     {
+      grub_errno = GRUB_ERR_NONE;
       grub_free (gzio);
       grub_free (file);
       grub_file_seek (io, 0);
-      grub_errno = GRUB_ERR_NONE;
 
       return io;
     }

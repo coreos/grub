@@ -23,6 +23,7 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -258,17 +259,17 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 
   if (end <= 1)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "This msdos-style partition label has no "
-		       "post-MBR gap; embedding won't be possible!");
+		       N_("this msdos-style partition label has no "
+			  "post-MBR gap; embedding won't be possible"));
 
   if (*nsectors > 62)
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "Your core.img is unusually large.  "
-		       "It won't fit in the embedding area.");
+		       N_("your core.img is unusually large.  "
+			  "It won't fit in the embedding area"));
 
   return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		     "Your embedding area is unusually small.  "
-		     "core.img won't fit in it.");
+		     N_("your embedding area is unusually small.  "
+			"core.img won't fit in it."));
 }
 #endif
 

@@ -801,7 +801,7 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
       len = grub_strlen (corig);
       if (!slash)
 	{
-	  grub_error (GRUB_ERR_BAD_ARGUMENT, "bad color specification %s",
+	  grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid color specification `%s'",
 		      args[0]);
 	  return NULL;
 	}

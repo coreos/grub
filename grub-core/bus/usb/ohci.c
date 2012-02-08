@@ -294,13 +294,15 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
                 o->hcca_chunk, o->hcca, o->hcca_addr);
 
   /* Reserve memory for ctrl EDs.  */
-  o->ed_ctrl_chunk = grub_memalign_dma32 (16, sizeof(struct grub_ohci_ed)*GRUB_OHCI_CTRL_EDS);
+  o->ed_ctrl_chunk = grub_memalign_dma32 (16, sizeof(struct grub_ohci_ed)
+					  * GRUB_OHCI_CTRL_EDS);
   if (! o->ed_ctrl_chunk)
     goto fail;
   o->ed_ctrl = grub_dma_get_virt (o->ed_ctrl_chunk);
   o->ed_ctrl_addr = grub_dma_get_phys (o->ed_ctrl_chunk);
   /* Preset EDs */
-  grub_memset ((void*)o->ed_ctrl, 0, sizeof(struct grub_ohci_ed) * GRUB_OHCI_CTRL_EDS);
+  grub_memset ((void *) o->ed_ctrl, 0, sizeof (struct grub_ohci_ed)
+	       * GRUB_OHCI_CTRL_EDS);
   for (j=0; j < GRUB_OHCI_CTRL_EDS; j++)
     o->ed_ctrl[j].target = grub_cpu_to_le32 (1 << 14); /* skip */
     
@@ -308,7 +310,8 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
                 o->ed_ctrl_chunk, o->ed_ctrl, o->ed_ctrl_addr);
 
   /* Reserve memory for bulk EDs.  */
-  o->ed_bulk_chunk = grub_memalign_dma32 (16, sizeof(struct grub_ohci_ed)*GRUB_OHCI_BULK_EDS);
+  o->ed_bulk_chunk = grub_memalign_dma32 (16, sizeof (struct grub_ohci_ed)
+					  * GRUB_OHCI_BULK_EDS);
   if (! o->ed_bulk_chunk)
     goto fail;
   o->ed_bulk = grub_dma_get_virt (o->ed_bulk_chunk);

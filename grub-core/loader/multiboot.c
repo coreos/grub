@@ -159,14 +159,15 @@ grub_multiboot_unload (void)
 
 /* Load ELF32 or ELF64.  */
 grub_err_t
-grub_multiboot_load_elf (grub_file_t file, void *buffer)
+grub_multiboot_load_elf (grub_file_t file, const char *filename,
+			 void *buffer)
 {
   if (grub_multiboot_is_elf32 (buffer))
-    return grub_multiboot_load_elf32 (file, buffer);
+    return grub_multiboot_load_elf32 (file, filename, buffer);
   else if (grub_multiboot_is_elf64 (buffer))
-    return grub_multiboot_load_elf64 (file, buffer);
+    return grub_multiboot_load_elf64 (file, filename, buffer);
 
-  return grub_error (GRUB_ERR_UNKNOWN_OS, "unknown ELF class");
+  return grub_error (GRUB_ERR_UNKNOWN_OS, N_("invalid arch dependent ELF magic"));
 }
 
 grub_err_t
@@ -222,7 +223,7 @@ grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_unset ();
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   file = grub_file_open (argv[0]);
   if (! file)
@@ -239,7 +240,7 @@ grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
   if (!grub_multiboot_relocator)
     goto fail;
 
-  err = grub_multiboot_load (file);
+  err = grub_multiboot_load (file, argv[0]);
   if (err)
     goto fail;
 
@@ -273,7 +274,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
   int nounzip = 0;
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   if (grub_strcmp (argv[0], "--nounzip") == 0)
     {
@@ -283,11 +284,11 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
     }
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   if (!grub_multiboot_relocator)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "you need to load the multiboot kernel first");
+		       N_("you need to load the kernel first"));
 
   if (nounzip)
     grub_file_filter_disable_compression ();

@@ -24,6 +24,7 @@
 #include <grub/disk.h>
 #include <grub/dl.h>
 #include <grub/types.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -332,7 +333,7 @@ grub_minix_lookup_symlink (struct grub_minix_data *data, int ino)
   char symlink[GRUB_MINIX_INODE_SIZE (data) + 1];
 
   if (++data->linknest > GRUB_MINIX_MAX_SYMLNK_CNT)
-    return grub_error (GRUB_ERR_SYMLINK_LOOP, "too deep nesting of symlinks");
+    return grub_error (GRUB_ERR_SYMLINK_LOOP, N_("too deep nesting of symlinks"));
 
   if (grub_minix_read_file (data, 0, 0,
 			    GRUB_MINIX_INODE_SIZE (data), symlink) < 0)
@@ -349,8 +350,6 @@ grub_minix_lookup_symlink (struct grub_minix_data *data, int ino)
     return grub_errno;
 
   grub_minix_find_file (data, symlink);
-  if (grub_errno)
-    grub_error (grub_errno, "cannot follow symlink `%s'", symlink);
 
   return grub_errno;
 }
@@ -433,7 +432,7 @@ grub_minix_find_file (struct grub_minix_data *data, const char *path)
 
      	  if ((GRUB_MINIX_INODE_MODE (data)
 	       & GRUB_MINIX_IFDIR) != GRUB_MINIX_IFDIR)
-	    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+	    return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 
 	  continue;
 	}
@@ -441,7 +440,7 @@ grub_minix_find_file (struct grub_minix_data *data, const char *path)
       pos += sizeof (ino) + data->filename_size;
     } while (pos < GRUB_MINIX_INODE_SIZE (data));
 
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
+  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
   return grub_errno;
 }
 
@@ -532,7 +531,7 @@ grub_minix_dir (grub_device_t device, const char *path,
 
   if ((GRUB_MINIX_INODE_MODE (data) & GRUB_MINIX_IFDIR) != GRUB_MINIX_IFDIR)
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       goto fail;
     }
 
@@ -600,7 +599,7 @@ grub_minix_open (struct grub_file *file, const char *name)
 
   if (!name || name[0] != '/')
     {
-      grub_error (GRUB_ERR_BAD_FILENAME, "bad filename");
+      grub_error (GRUB_ERR_BAD_FILENAME, N_("invalid file name `%s'"), name);
       return grub_errno;
     }
 

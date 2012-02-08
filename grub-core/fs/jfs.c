@@ -25,6 +25,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/charset.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -403,7 +404,7 @@ grub_jfs_opendir (struct grub_jfs_data *data, struct grub_jfs_inode *inode)
   if (!((grub_le_to_cpu32 (inode->mode)
 	 & GRUB_JFS_FILETYPE_MASK) == GRUB_JFS_FILETYPE_DIR))
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       return 0;
     }
 
@@ -704,7 +705,7 @@ grub_jfs_find_file (struct grub_jfs_data *data, const char *path,
     }
 
   grub_jfs_closedir (diro);
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
+  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
   return grub_errno;
 }
 
@@ -716,7 +717,7 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, grub_uint32_t ino)
   char symlink[size + 1];
 
   if (++data->linknest > GRUB_JFS_MAX_SYMLNK_CNT)
-    return grub_error (GRUB_ERR_SYMLINK_LOOP, "too deep nesting of symlinks");
+    return grub_error (GRUB_ERR_SYMLINK_LOOP, N_("too deep nesting of symlinks"));
 
   if (size <= sizeof (data->currinode.symlink.path))
     grub_strncpy (symlink, (char *) (data->currinode.symlink.path), size);
@@ -730,8 +731,6 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, grub_uint32_t ino)
     ino = 2;
 
   grub_jfs_find_file (data, symlink, ino);
-  if (grub_errno)
-    grub_error (grub_errno, "cannot follow symlink `%s'", symlink);
 
   return grub_errno;
 }
@@ -810,7 +809,7 @@ grub_jfs_open (struct grub_file *file, const char *name)
   if (! ((grub_le_to_cpu32 (data->currinode.mode)
 	  & GRUB_JFS_FILETYPE_MASK) == GRUB_JFS_FILETYPE_REG))
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a regular file"));
       goto fail;
     }
 

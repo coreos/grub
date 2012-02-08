@@ -22,6 +22,7 @@
 #include <grub/misc.h>
 #include <grub/efiemu/efiemu.h>
 #include <grub/efiemu/runtime.h>
+#include <grub/i18n.h>
 
 static int ptv_written = 0;
 static int ptv_alloc = 0;
@@ -69,7 +70,7 @@ grub_efiemu_request_symbols (int num)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "symbols have already been allocated");
   if (num < 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+    return grub_error (GRUB_ERR_BUG,
 		       "can't request negative symbols");
   ptv_requested += num;
   return GRUB_ERR_NONE;
@@ -88,7 +89,7 @@ grub_efiemu_resolve_symbol (const char *name, int *handle, grub_off_t *off)
 	return GRUB_ERR_NONE;
       }
   grub_dprintf ("efiemu", "%s not found\n", name);
-  return grub_error (GRUB_ERR_BAD_OS, "symbol %s isn't found", name);
+  return grub_error (GRUB_ERR_BAD_OS, N_("symbol `%s' not found"), name);
 }
 
 /* Register symbol named NAME in memory handle HANDLE at offset OFF */
@@ -99,7 +100,7 @@ grub_efiemu_register_symbol (const char *name, int handle, grub_off_t off)
   cur = (struct grub_efiemu_sym *) grub_malloc (sizeof (*cur));
   grub_dprintf ("efiemu", "registering symbol '%s'\n", name);
   if (!cur)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't register symbol");
+    return grub_errno;
   cur->name = grub_strdup (name);
   cur->next = efiemu_syms;
   cur->handle = handle;
@@ -153,7 +154,7 @@ grub_efiemu_write_value (void *addr, grub_uint32_t value, int plus_handle,
 	= grub_efiemu_mm_obtain_request (ptv_handle);
 
       if (ptv_needed && ptv_written >= ptv_alloc)
-	return grub_error (GRUB_ERR_OUT_OF_MEMORY,
+	return grub_error (GRUB_ERR_BUG,
 			   "your module didn't declare efiemu "
 			   " relocators correctly");
 
@@ -200,7 +201,7 @@ grub_efiemu_write_value (void *addr, grub_uint32_t value, int plus_handle,
       *((grub_uint8_t *) addr) = value;
       break;
     default:
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "wrong symbol size");
+      return grub_error (GRUB_ERR_BUG, "wrong symbol size");
     }
 
   return GRUB_ERR_NONE;

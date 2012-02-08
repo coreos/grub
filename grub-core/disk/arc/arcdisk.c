@@ -21,6 +21,7 @@
 #include <grub/disk.h>
 #include <grub/mm.h>
 #include <grub/arc/arc.h>
+#include <grub/i18n.h>
 
 static grub_arc_fileno_t last_handle = 0;
 static char *last_path = NULL;
@@ -255,7 +256,11 @@ grub_arcdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
     {
       if (GRUB_ARC_FIRMWARE_VECTOR->read (last_handle, buf,
 					  totl, &count))
-	return grub_error (GRUB_ERR_READ_ERROR, "read failed");
+	return grub_error (GRUB_ERR_READ_ERROR,
+			   N_("failure reading sector 0x%llx "
+						   " from `%s'"),
+			   (unsigned long long) sector,
+			   disk->name);
       totl -= count;
       buf += count;
     }
@@ -288,7 +293,10 @@ grub_arcdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
     {
       if (GRUB_ARC_FIRMWARE_VECTOR->write (last_handle, buf,
 					   totl, &count))
-	return grub_error (GRUB_ERR_WRITE_ERROR, "write failed");
+	return grub_error (GRUB_ERR_WRITE_ERROR, N_("failure writing sector 0x%llx "
+						   " from `%s'"),
+			   (unsigned long long) sector,
+			   disk->name);
       totl -= count;
       buf += count;
     }

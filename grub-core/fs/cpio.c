@@ -22,6 +22,7 @@
 #include <grub/misc.h>
 #include <grub/disk.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -564,7 +565,7 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 		  if (++symlinknest == 8)
 		    {
 		      grub_error (GRUB_ERR_SYMLINK_LOOP,
-				  "too deep nesting of symlinks");
+				  N_("too deep nesting of symlinks"));
 		      goto fail;
 		    }
 		  ofs = 0;
@@ -622,7 +623,7 @@ grub_cpio_open (grub_file_t file, const char *name_in)
 
       if (!ofs)
 	{
-	  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+	  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), name_in);
 	  break;
 	}
 
@@ -638,7 +639,7 @@ grub_cpio_open (grub_file_t file, const char *name_in)
 	  if (++symlinknest == 8)
 	    {
 	      grub_error (GRUB_ERR_SYMLINK_LOOP,
-			  "too deep nesting of symlinks");
+			  N_("too deep nesting of symlinks"));
 	      goto fail;
 	    }
 	  goto no_match;

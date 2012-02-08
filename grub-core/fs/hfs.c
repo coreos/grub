@@ -28,6 +28,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/hfs.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -1079,7 +1080,7 @@ grub_hfs_find_dir (struct grub_hfs_data *data, const char *path,
 
   if (path[0] != '/')
     {
-      grub_error (GRUB_ERR_BAD_FILENAME, "bad filename");
+      grub_error (GRUB_ERR_BAD_FILENAME, N_("invalid file name `%s'"), path);
       return 0;
     }
 
@@ -1096,7 +1097,7 @@ grub_hfs_find_dir (struct grub_hfs_data *data, const char *path,
       grub_ssize_t slen;
       if (fdrec.frec.type != GRUB_HFS_FILETYPE_DIR)
 	{
-	  grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+	  grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 	  goto fail;
 	}
 
@@ -1114,7 +1115,7 @@ grub_hfs_find_dir (struct grub_hfs_data *data, const char *path,
       slen = utf8_to_macroman (key.str, path);
       if (slen < 0)
 	{
-	  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
+	  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
 	  goto fail;
 	}
       key.strlen = slen;
@@ -1123,7 +1124,7 @@ grub_hfs_find_dir (struct grub_hfs_data *data, const char *path,
       if (! grub_hfs_find_node (data, (char *) &key, data->cat_root,
 				0, (char *) &fdrec.frec, sizeof (fdrec.frec)))
 	{
-	  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", origpath);
+	  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), origpath);
 	  goto fail;
 	}
 
@@ -1207,7 +1208,7 @@ grub_hfs_dir (grub_device_t device, const char *path,
 
   if (frec.type != GRUB_HFS_FILETYPE_DIR)
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       goto fail;
     }
 
@@ -1243,7 +1244,7 @@ grub_hfs_open (struct grub_file *file, const char *name)
   if (frec.type != GRUB_HFS_FILETYPE_FILE)
     {
       grub_free (data);
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a file");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a regular file"));
       grub_dl_unref (my_mod);
       return grub_errno;
     }

@@ -194,7 +194,7 @@ grub_cmd_legacy_source (struct grub_command *cmd,
   grub_err_t ret;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   extractor = (cmd->name[0] == 'e');
   new_env = (cmd->name[extractor ? (sizeof ("extract_legacy_entries_") - 1)
@@ -299,7 +299,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
     }
 
   if (argc < 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "filename required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   cutargs = grub_malloc (sizeof (cutargs[0]) * (argc - 1));
   cutargc = argc - 1;
@@ -481,7 +481,7 @@ grub_cmd_legacy_initrd (struct grub_command *mycmd __attribute__ ((unused)),
     }
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		     "no kernel with module support is loaded in legacy way");
+		     "you need to load the kernel first");
 }
 
 static grub_err_t
@@ -517,7 +517,7 @@ grub_cmd_legacy_initrdnounzip (struct grub_command *mycmd __attribute__ ((unused
     }
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		     "no kernel with module support is loaded in legacy way");
+		     "you need to load the kernel first");
 }
 
 static grub_err_t
@@ -696,7 +696,7 @@ grub_cmd_legacy_password (struct grub_command *mycmd __attribute__ ((unused)),
   struct legacy_md5_password *pw = NULL;
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments expected");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
   if (args[0][0] != '-' || args[0][1] != '-')
     return grub_normal_set_password ("legacy", args[0]);
 
@@ -722,7 +722,7 @@ grub_cmd_legacy_check_password (struct grub_command *mycmd __attribute__ ((unuse
   char entered[GRUB_AUTH_MAX_PASSLEN];
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "arguments expected");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
   grub_puts_ (N_("Enter password: "));
   if (!grub_password_get (entered, GRUB_AUTH_MAX_PASSLEN))
     return GRUB_ACCESS_DENIED;

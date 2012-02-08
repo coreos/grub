@@ -32,7 +32,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static const struct grub_arg_option options[] =
   {
     { "set", 's', GRUB_ARG_OPTION_REPEATABLE,
-      N_("Variable names to update with matches."),
+      N_("Store matched component NUMBER in VARNAME."),
       N_("[NUMBER:]VARNAME"), ARG_TYPE_STRING },
     { 0, 0, 0, 0, 0, 0 }
   };
@@ -42,7 +42,6 @@ set_matches (char **varnames, char *str, grub_size_t nmatches,
 	     regmatch_t *matches)
 {
   int i;
-  char ch;
   char *p;
   char *q;
   grub_err_t err;
@@ -51,6 +50,7 @@ set_matches (char **varnames, char *str, grub_size_t nmatches,
   auto void setvar (char *v, regmatch_t *m);
   void setvar (char *v, regmatch_t *m)
   {
+    char ch;
     ch = str[m->rm_eo];
     str[m->rm_eo] = '\0';
     err = grub_env_set (v, str + m->rm_so);
@@ -59,7 +59,8 @@ set_matches (char **varnames, char *str, grub_size_t nmatches,
 
   for (i = 0; varnames && varnames[i]; i++)
     {
-      if (! (p = grub_strchr (varnames[i], ':')))
+      p = grub_strchr (varnames[i], ':');
+      if (! p)
 	{
 	  /* varname w/o index defaults to 1 */
 	  if (nmatches < 2 || matches[1].rm_so == -1)
@@ -97,7 +98,7 @@ grub_cmd_regexp (grub_extcmd_context_t ctxt, int argc, char **args)
   regmatch_t *matches = 0;
 
   if (argc != 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "2 arguments expected");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("two arguments expected"));
 
   ret = regcomp (&regex, args[0], REG_EXTENDED);
   if (ret)

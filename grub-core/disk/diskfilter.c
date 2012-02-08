@@ -249,8 +249,8 @@ grub_diskfilter_memberlist (grub_disk_t disk)
     for (pv = lv->vg->pvs; pv; pv = pv->next)
       {
 	if (!pv->disk)
-	  grub_util_error (_("Couldn't find PV %s. Check your device.map"),
-			   pv->name);
+	  grub_util_error (_("Couldn't find physical volume `%s'."
+			     " Check your device.map"), pv->name);
 	tmp = grub_malloc (sizeof (*tmp));
 	tmp->disk = pv->disk;
 	tmp->next = list;

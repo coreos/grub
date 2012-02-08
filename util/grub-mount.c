@@ -407,7 +407,9 @@ static struct argp_option options[] = {
   {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."),                 2},
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
   {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
-  {"zfs-key",      'K', N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
+  {"zfs-key",      'K',
+   /* TRANSLATORS: "prompt" is a keyword.  */
+   N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
   {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("print verbose messages."), 2},
   {0, 0, 0, 0, 0, 0}
 };
@@ -449,13 +451,18 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	  f = fopen (arg, "rb");
 	  if (!f)
 	    {
-	      printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
+	      printf (_("%s: error:"), program_name);
+	      printf (_("cannot open `%s': %s"), arg, strerror (errno));
+	      printf ("\n");
 	      return 0;
 	    }
 	  real_size = fread (buf, 1, 1024, f);
 	  if (real_size < 0)
 	    {
-	      printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
+	      printf (_("%s: error:"), program_name);
+	      printf (_("cannot read `%s': %s"), arg,
+		      strerror (errno));
+	      printf ("\n");
 	      fclose (f);
 	      return 0;
 	    }

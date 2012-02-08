@@ -431,14 +431,14 @@ setup (const char *dir,
 
     if (dest_partmap && !dest_partmap->embed)
       {
-	grub_util_warn (_("Partition style '%s' doesn't support embeding"),
+	grub_util_warn (_("Partition style '%s' doesn't support embedding"),
 			dest_partmap->name);
 	goto unable_to_embed;
       }
 
     if (fs && !fs->embed)
       {
-	grub_util_warn (_("File system '%s' doesn't support embeding"),
+	grub_util_warn (_("File system '%s' doesn't support embedding"),
 			fs->name);
 	goto unable_to_embed;
       }
@@ -542,16 +542,17 @@ setup (const char *dir,
 
 unable_to_embed:
 
-#ifdef GRUB_MACHINE_PCBIOS
-  if (dest_dev->disk->id != root_dev->disk->id
-      || dest_dev->disk->dev->id != root_dev->disk->dev->id)
-    grub_util_error (_("embedding is not possible, but this is required for "
-		       "cross-disk, RAID and LVM install"));
-#else
   if (dest_dev->disk->dev->id != root_dev->disk->dev->id)
     grub_util_error (_("embedding is not possible, but this is required for "
 		       "RAID and LVM install"));
 
+#ifdef GRUB_MACHINE_PCBIOS
+  if (dest_dev->disk->id != root_dev->disk->id
+      || dest_dev->disk->dev->id != root_dev->disk->dev->id)
+    /* TRANSLATORS: cross-disk refers to /boot being on one disk
+       but MBR on another.  */
+    grub_util_error (_("embedding is not possible, but this is required for "
+		       "cross-disk install"));
 #endif
 
   grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
@@ -740,11 +741,9 @@ static struct argp_option options[] = {
   {"directory",   'd', N_("DIR"),  0,
    N_("Use GRUB files in the directory DIR [default=%s]"), 0},
   {"device-map",  'm', N_("FILE"), 0,
-   N_("Use FILE as the device map [default=%s]"), 0},
-  {"root-device", 'r', N_("DEVICE"),  0,
-   N_("Use DEV as the root device [default=guessed]"), 0},
+   N_("use FILE as the device map [default=%s]"), 0},
   {"force",       'f', 0,      0,
-   N_("Install even if problems are detected"), 0},
+   N_("install even if problems are detected"), 0},
   {"skip-fs-probe",'s',0,      0,
    N_("Do not probe for filesystems in DEVICE"), 0},
   {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},

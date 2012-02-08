@@ -21,6 +21,7 @@
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -440,7 +441,7 @@ parse_modespec (const char *current_mode, int *width, int *height, int *depth)
   param = grub_strchr(param, 'x');
   if (param == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "Invalid mode: %s\n",
+		       N_("invalid video mode specification `%s'"),
 		       current_mode);
 
   param++;
@@ -448,7 +449,7 @@ parse_modespec (const char *current_mode, int *width, int *height, int *depth)
   *width = grub_strtoul (value, 0, 0);
   if (grub_errno != GRUB_ERR_NONE)
       return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			 "Invalid mode: %s\n",
+			 N_("invalid video mode specification `%s'"),
 			 current_mode);
   
   /* Find height value.  */
@@ -459,7 +460,7 @@ parse_modespec (const char *current_mode, int *width, int *height, int *depth)
       *height = grub_strtoul (value, 0, 0);
       if (grub_errno != GRUB_ERR_NONE)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "Invalid mode: %s\n",
+			   N_("invalid video mode specification `%s'"),
 			   current_mode);
     }
   else
@@ -470,7 +471,7 @@ parse_modespec (const char *current_mode, int *width, int *height, int *depth)
       *height = grub_strtoul (value, 0, 0);
       if (grub_errno != GRUB_ERR_NONE)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "Invalid mode: %s\n",
+			   N_("invalid video mode specification `%s'"),
 			   current_mode);
       
       /* Convert color depth value.  */
@@ -478,7 +479,7 @@ parse_modespec (const char *current_mode, int *width, int *height, int *depth)
       *depth = grub_strtoul (value, 0, 0);
       if (grub_errno != GRUB_ERR_NONE)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "Invalid mode: %s\n",
+			   N_("invalid video mode specification `%s'"),
 			   current_mode);
     }
   return GRUB_ERR_NONE;

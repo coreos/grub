@@ -192,13 +192,15 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
       file = grub_file_open (args[0]);
 
       if (! file)
-        return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", args[0]);
+        return grub_errno;
 
       if (grub_file_read (file, &tempo, sizeof (tempo)) != sizeof (tempo))
         {
           grub_file_close (file);
-          return grub_error (GRUB_ERR_FILE_READ_ERROR,
-                             "file doesn't even contains a full tempo record");
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			args[0]);
+          return grub_errno;
         }
 
       tempo = grub_le_to_cpu32 (tempo);
@@ -227,7 +229,7 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
 
       if (*end)
         /* Was not a number either, assume it was supposed to be a file name.  */
-        return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", args[0]);
+        return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), args[0]);
 
       grub_dprintf ("play","tempo = %d\n", tempo);
 

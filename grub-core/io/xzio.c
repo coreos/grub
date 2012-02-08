@@ -98,24 +98,15 @@ test_header (grub_file_t file)
 				      STREAM_HEADER_SIZE);
 
   if (xzio->buf.in_size != STREAM_HEADER_SIZE)
-    {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "no xz magic found");
-      return 0;
-    }
+    return 0;
 
   ret = xz_dec_run (xzio->dec, &xzio->buf);
 
   if (ret == XZ_FORMAT_ERROR)
-    {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "no xz magic found");
-      return 0;
-    }
+    return 0;
 
   if (ret != XZ_OK)
-    {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "not supported xz options");
-      return 0;
-    }
+    return 0;
 
   return 1;
 }
@@ -174,7 +165,6 @@ test_footer (grub_file_t file)
   return 1;
 
 ERROR:
-  grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "bad footer magic");
   return 0;
 }
 

@@ -128,7 +128,7 @@ create_envblk_file (const char *name)
           DEFAULT_ENVBLK_SIZE - sizeof (GRUB_ENVBLK_SIGNATURE) + 1);
 
   if (fwrite (buf, 1, DEFAULT_ENVBLK_SIZE, fp) != DEFAULT_ENVBLK_SIZE)
-    grub_util_error (_("cannot write to the file `%s': %s"), namenew,
+    grub_util_error (_("cannot write to `%s': %s"), namenew,
 		     strerror (errno));
 
   fsync (fileno (fp));
@@ -160,13 +160,13 @@ open_envblk_file (const char *name)
     }
 
   if (fseek (fp, 0, SEEK_END) < 0)
-    grub_util_error (_("cannot seek the file `%s': %s"), name,
+    grub_util_error (_("cannot seek `%s': %s"), name,
 		     strerror (errno));
 
   size = (size_t) ftell (fp);
 
   if (fseek (fp, 0, SEEK_SET) < 0)
-    grub_util_error (_("cannot seek the file `%s': %s"), name,
+    grub_util_error (_("cannot seek `%s': %s"), name,
 		     strerror (errno));
 
   buf = malloc (size);
@@ -174,7 +174,7 @@ open_envblk_file (const char *name)
     grub_util_error (_("out of memory"));
 
   if (fread (buf, 1, size, fp) != size)
-    grub_util_error (_("cannot read the file `%s': %s"), name,
+    grub_util_error (_("cannot read `%s': %s"), name,
 		     strerror (errno));
 
   fclose (fp);
@@ -215,7 +215,7 @@ write_envblk (const char *name, grub_envblk_t envblk)
 
   if (fwrite (grub_envblk_buffer (envblk), 1, grub_envblk_size (envblk), fp)
       != grub_envblk_size (envblk))
-    grub_util_error (_("cannot write to the file `%s': %s"), name,
+    grub_util_error (_("cannot write to `%s': %s"), name,
 		     strerror (errno));
 
   fsync (fileno (fp));

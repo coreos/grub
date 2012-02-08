@@ -22,6 +22,7 @@
 #include <grub/gui_string_util.h>
 #include <grub/misc.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 

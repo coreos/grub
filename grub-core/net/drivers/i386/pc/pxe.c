@@ -23,6 +23,7 @@
 #include <grub/file.h>
 #include <grub/misc.h>
 #include <grub/env.h>
+#include <grub/i18n.h>
 
 #include <grub/machine/pxe.h>
 #include <grub/machine/int.h>
@@ -269,8 +270,7 @@ grub_pxe_send (const struct grub_net_card *dev __attribute__ ((unused)),
 
   grub_pxe_call (GRUB_PXENV_UNDI_TRANSMIT, trans, pxe_rm_entry);
   if (trans->status)
-    return grub_error (GRUB_ERR_IO, "PXE send failed (status 0x%x)",
-		       trans->status);
+    return grub_error (GRUB_ERR_IO, N_("couldn't send network packet"));
   return 0;
 }
 

@@ -67,7 +67,7 @@ grub_cmd_sleep (grub_extcmd_context_t ctxt, int argc, char **args)
   int n;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing operand");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   n = grub_strtoul (args[0], 0, 10);
 

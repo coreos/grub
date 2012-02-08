@@ -41,7 +41,7 @@ static const struct grub_arg_option options[] =
   {
     {"uuid", 'u', 0, N_("Mount by UUID."), 0, 0},
     {"all", 'a', 0, N_("Mount all."), 0, 0},
-    {"boot", 'b', 0, N_("Mount all volumes marked as boot."), 0, 0},
+    {"boot", 'b', 0, N_("Mount all volumes with `boot' flag set."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -501,7 +501,7 @@ grub_cryptodisk_open (const char *name, grub_disk_t disk)
       if (dev->cheat_fd == -1)
 	dev->cheat_fd = open (dev->cheat, O_RDONLY);
       if (dev->cheat_fd == -1)
-	return grub_error (GRUB_ERR_IO, "couldn't open %s: %s",
+	return grub_error (GRUB_ERR_IO, N_("cannot open `%s': %s"),
 			   dev->cheat, strerror (errno));
     }
 #endif
@@ -560,8 +560,8 @@ grub_cryptodisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	return err;
       if (grub_util_fd_read (dev->cheat_fd, buf, size << disk->log_sector_size)
 	  != (ssize_t) (size << disk->log_sector_size))
-	return grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'",
-			   dev->cheat);
+	return grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
+			   dev->cheat, strerror (errno));
       return GRUB_ERR_NONE;
     }
 #endif
@@ -604,8 +604,8 @@ grub_cryptodisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	return err;
       if (grub_util_fd_write (dev->cheat_fd, buf, size << disk->log_sector_size)
 	  != (ssize_t) (size << disk->log_sector_size))
-	return grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'",
-			   dev->cheat);
+	return grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
+			   dev->cheat, strerror (errno));
       return GRUB_ERR_NONE;
     }
 #endif

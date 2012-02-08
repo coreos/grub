@@ -109,7 +109,7 @@ grub_normal_print_device_info (const char *name)
 	    }
 	}
       else
-	grub_printf ("%s", _("Not a known filesystem"));
+	grub_printf ("%s", _("No known filesystem detected"));
 
       if (dev->disk->partition)
 	grub_printf (_(" - Partition start at %llu"),

@@ -22,6 +22,7 @@
 #include <grub/time.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -39,17 +40,17 @@ send_card_buffer (const struct grub_net_card *dev,
   st = efi_call_7 (net->transmit, net, 0, (pack->tail - pack->data),
 		   pack->data, NULL, NULL, NULL);
   if (st != GRUB_EFI_SUCCESS)
-    return grub_error (GRUB_ERR_IO, "couldn't send network packet");
+    return grub_error (GRUB_ERR_IO, N_("couldn't send network packet"));
   while (1)
     {
       void *txbuf = NULL;
       st = efi_call_3 (net->get_status, net, 0, &txbuf);
       if (st != GRUB_EFI_SUCCESS)
-	return grub_error (GRUB_ERR_IO, "couldn't send network packet");
+	return grub_error (GRUB_ERR_IO, N_("couldn't send network packet"));
       if (txbuf)
 	return GRUB_ERR_NONE;
       if (limit_time < grub_get_time_ms ())
-	return grub_error (GRUB_ERR_TIMEOUT, "couldn't send network packet");
+	return grub_error (GRUB_ERR_TIMEOUT, N_("couldn't send network packet"));
     }
 }
 

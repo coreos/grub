@@ -910,7 +910,7 @@ grub_util_open_dm (const char *os_dev, struct dm_tree **tree,
   *tree = dm_tree_create ();
   if (! *tree)
     {
-      grub_puts_ (N_("Failed to create tree"));
+      grub_puts_ (N_("Failed to create `device-mapper' tree"));
       grub_dprintf ("hostdisk", "dm_tree_create failed\n");
       return 0;
     }
@@ -1026,6 +1026,9 @@ grub_util_get_geom_abstraction (const char *dev)
 
   error = geom_gettree (&mesh);
   if (error != 0)
+    /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
+       Usually left untranslated.
+     */
     grub_util_error (_("couldn't open geom"));
 
   LIST_FOREACH (class, &mesh.lg_class, lg_class)
@@ -1190,6 +1193,9 @@ grub_util_pull_device (const char *os_dev)
 
 	error = geom_gettree (&mesh);
 	if (error != 0)
+	  /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
+	     Usually left untranslated.
+	  */
 	  grub_util_error (_("couldn't open geom"));
 
 	LIST_FOREACH (class, &mesh.lg_class, lg_class)
@@ -1228,7 +1234,8 @@ grub_util_pull_device (const char *os_dev)
 		grub_err_t err;
 		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
 		if (err)
-		  grub_util_error (_("Can't mount crypto: %s"), _(grub_errmsg));
+		  grub_util_error (_("can't mount crypto volume `%s': %s"),
+				   lastsubdev, _(grub_errmsg));
 	      }
 
 	    grub_free (grdev);
@@ -1272,7 +1279,8 @@ grub_util_pull_device (const char *os_dev)
 		grub_err_t err;
 		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
 		if (err)
-		  grub_util_error (_("Can't mount crypto: %s"), _(grub_errmsg));
+		  grub_util_error (_("can't mount crypto volume `%s': %s"),
+				   lastsubdev, _(grub_errmsg));
 	      }
 	    grub_free (grdev);
 	  }
@@ -1732,7 +1740,8 @@ devmapper_out:
       if (fd == -1)
 	{
 	  grub_error (GRUB_ERR_BAD_DEVICE,
-		      "cannot open `%s' while attempting to get disk wedge info", os_dev);
+		      N_("cannot open `%s': %s"), os_dev,
+		      strerror (errno));
 	  return xstrdup (os_dev);
 	}
       /* We don't call configure_device_driver since this isn't a floppy device name.  */
@@ -1944,14 +1953,6 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     }
 
   drive = find_system_device (os_dev, &st, 1, 1);
-  if (!drive)
-    {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		  "no mapping exists for `%s'", os_dev);
-      grub_util_info ("no mapping exists for `%s'", os_dev);
-      return 0;
-    }
-
   sys_disk = convert_system_partition_to_system_disk (os_dev, &st);
   if (grub_strcmp (os_dev, sys_disk) == 0)
     {
@@ -2046,13 +2047,6 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	       os_dev);
 
 	    drive = find_system_device (os_dev, &st, 0, 1);
-	    if (!drive)
-	      {
-		grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-			    "no mapping exists for `%s'", os_dev);
-		return 0;
-	      }
-
 	    return make_device_name (drive, -1, -1);
 	  }
 	else
@@ -2192,6 +2186,9 @@ grub_util_get_grub_dev (const char *os_dev)
 
 	error = geom_gettree (&mesh);
 	if (error != 0)
+	  /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
+	     Usually left untranslated.
+	  */
 	  grub_util_error (_("couldn't open geom"));
 
 	LIST_FOREACH (class, &mesh.lg_class, lg_class)

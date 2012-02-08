@@ -66,7 +66,7 @@ grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
       etherpro = GRUB_NET_ETHERTYPE_IP;
     }
   else
-    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "unsupported address family");
+    return grub_error (GRUB_ERR_BUG, "unsupported address family");
 
   /* Build a request packet.  */
   nb.head = arp_data;

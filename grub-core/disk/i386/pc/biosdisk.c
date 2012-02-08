@@ -472,7 +472,10 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	      break;
 
 	  if (i == GRUB_BIOSDISK_CDROM_RETRY_COUNT)
-	    return grub_error (GRUB_ERR_READ_ERROR, "cdrom read error");
+	    return grub_error (GRUB_ERR_READ_ERROR, N_("failure reading sector 0x%llx "
+						       " from `%s'"),
+			       (unsigned long long) sector,
+			       disk->name);
 	}
       else
         if (grub_biosdisk_rw_int13_extensions (cmd + 0x42, data->drive, dap))
@@ -502,7 +505,9 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
       coff = head / data->heads;
 
       if (coff >= data->cylinders)
-	return grub_error (GRUB_ERR_OUT_OF_RANGE, "%s out of disk", disk->name);
+	return grub_error (GRUB_ERR_OUT_OF_RANGE,
+			   N_("attempt to read or write outside of disk `%s'"),
+			   disk->name);
 
       if (grub_biosdisk_rw_standard (cmd + 0x02, data->drive,
 				     coff, hoff, soff, size, segment))
@@ -510,9 +515,15 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  switch (cmd)
 	    {
 	    case GRUB_BIOSDISK_READ:
-	      return grub_error (GRUB_ERR_READ_ERROR, "%s read error", disk->name);
+	      return grub_error (GRUB_ERR_READ_ERROR, N_("failure reading sector 0x%llx "
+							 " from `%s'"),
+				 (unsigned long long) sector,
+				 disk->name);
 	    case GRUB_BIOSDISK_WRITE:
-	      return grub_error (GRUB_ERR_WRITE_ERROR, "%s write error", disk->name);
+	      return grub_error (GRUB_ERR_WRITE_ERROR, N_("failure writing sector 0x%llx "
+							  " from `%s'"),
+				 (unsigned long long) sector,
+				 disk->name);
 	    }
 	}
     }
@@ -627,7 +638,8 @@ GRUB_MOD_INIT(biosdisk)
 
   if (grub_disk_firmware_is_tainted)
     {
-      grub_puts_ (N_("Firmware is marked as tainted, refusing to initialize."));
+      grub_puts_ (N_("Native disk drivers are in use. "
+		     "Refusing to use firmware disk interface."));
       return;
     }
   grub_disk_firmware_fini = grub_disk_biosdisk_fini;

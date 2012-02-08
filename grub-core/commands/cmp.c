@@ -40,7 +40,7 @@ grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
   char *buf2 = 0;
 
   if (argc != 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "two arguments required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("two arguments expected"));
 
   grub_printf_ (N_("Compare file `%s' with `%s':\n"), args[0],
 		args[1]);

@@ -591,7 +591,7 @@ add_font (struct grub_font_info *font_info, FT_Face face, int nocut)
 	  grub_uint32_t feattag
 	    = grub_be_to_cpu32 (features->features[i].feature_tag);
 	  if (feature->params)
-	    printf (_("WARNING: unsupported feature parameters: %x\n"),
+	    printf (_("WARNING: unsupported font feature parameters: %x\n"),
 		    grub_be_to_cpu16 (feature->params));
 	  switch (feattag)
 	    {
@@ -621,7 +621,8 @@ add_font (struct grub_font_info *font_info, FT_Face face, int nocut)
 		for (j = 0; j < 4; j++)
 		  if (!grub_isgraph (str[j]))
 		    str[j] = '?';
-		printf (_("Unknown gsub feature 0x%x (%s)\n"), feattag, str);
+		printf (_("Unknown gsub font feature 0x%x (%s)\n"),
+			feattag, str);
 	      }
 	    }
 	}
@@ -692,8 +693,8 @@ print_glyphs (struct grub_font_info *font_info)
       int x, y, xmax, xmin, ymax, ymin;
       grub_uint8_t *bitmap, mask;
 
-      printf (_("\nGlyph #%d, U+%04x\n"), num, glyph->char_code);
-      printf (_("Width %d, Height %d, X offset %d, Y offset %d, Device width %d\n"),
+      printf ("\nGlyph #%d, U+%04x\n", num, glyph->char_code);
+      printf ("Width %d, Height %d, X offset %d, Y offset %d, Device width %d\n",
 	      glyph->width, glyph->height, glyph->x_ofs, glyph->y_ofs,
 	      glyph->device_width);
 
@@ -760,7 +761,7 @@ write_font_ascii_bitmap (struct grub_font_info *font_info, char *output_file)
   
   file = fopen (output_file, "wb");
   if (! file)
-    grub_util_error (_("cannot write to the file `%s': %s"), output_file,
+    grub_util_error (_("cannot write to `%s': %s"), output_file,
 		     strerror (errno));
 
   int correct_size;
@@ -797,7 +798,7 @@ write_font_width_spec (struct grub_font_info *font_info, char *output_file)
   
   file = fopen (output_file, "wb");
   if (! file)
-    grub_util_error (_("cannot write to the file `%s': %s"), output_file,
+    grub_util_error (_("cannot write to `%s': %s"), output_file,
 		     strerror (errno));
 
   for (glyph = font_info->glyphs_sorted;
@@ -821,7 +822,7 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 
   file = fopen (output_file, "wb");
   if (! file)
-    grub_util_error (_("cannot write to the file `%s': %s"), output_file,
+    grub_util_error (_("cannot write to `%s': %s"), output_file,
 		     strerror (errno));
 
   offset = 0;
@@ -961,7 +962,7 @@ static struct argp_option options[] = {
   {"index",  'i', N_("NUM"), 0, N_("set face index"), 0},
   {"range",  'r', N_("FROM-TO[,FROM-TO]"), 0, N_("set font range"), 0},
   {"name",  'n', N_("NAME"), 0, N_("set font family name"), 0},
-  {"size",  's', N_("STR"), 0, N_("set font size"), 0},
+  {"size",  's', N_("SIZE"), 0, N_("set font size"), 0},
   {"desc",  'd', N_("NUM"), 0, N_("set font descent"), 0},
   {"asce",  'c', N_("NUM"), 0, N_("set font ascent"), 0},
   {"bold",  'b', 0, 0, N_("convert to bold font"), 0},
@@ -1128,7 +1129,7 @@ main (int argc, char *argv[])
   if (arguments.file_format == ASCII_BITMAPS
       && arguments.font_info.num_range > 0)
     {
-      grub_util_error (_("Option --ascii-bitmaps doesn't accept ranges (use ASCII)."));
+      grub_util_error (_("Option --ascii-bitmaps doesn't accept ranges (it always uses ASCII)."));
       return 1;
     }
   else if (arguments.file_format == ASCII_BITMAPS)

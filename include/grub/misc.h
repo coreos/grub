@@ -285,7 +285,7 @@ grub_strtol (const char *str, char **end, int base)
     {
       if (magnitude > (unsigned long) GRUB_LONG_MAX + 1)
         {
-          grub_error (GRUB_ERR_OUT_OF_RANGE, "negative overflow");
+          grub_error (GRUB_ERR_OUT_OF_RANGE, "overflow is detected");
           return GRUB_LONG_MIN;
         }
       return -((long) magnitude);
@@ -294,7 +294,7 @@ grub_strtol (const char *str, char **end, int base)
     {
       if (magnitude > GRUB_LONG_MAX)
         {
-          grub_error (GRUB_ERR_OUT_OF_RANGE, "positive overflow");
+          grub_error (GRUB_ERR_OUT_OF_RANGE, "overflow is detected");
           return GRUB_LONG_MAX;
         }
       return (long) magnitude;

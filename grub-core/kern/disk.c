@@ -24,6 +24,7 @@
 #include <grub/misc.h>
 #include <grub/time.h>
 #include <grub/file.h>
+#include <grub/i18n.h>
 
 #define	GRUB_CACHE_TIMEOUT	2
 
@@ -263,7 +264,8 @@ grub_disk_open (const char *name)
 
   if (! dev)
     {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such disk");
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("disk `%s' not found"),
+		  name);
       goto fail;
     }
   if (disk->log_sector_size > GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS
@@ -360,7 +362,8 @@ grub_disk_adjust_range (grub_disk_t disk, grub_disk_addr_t *sector,
       if (*sector >= len
 	  || len - *sector < ((*offset + size + GRUB_DISK_SECTOR_SIZE - 1)
 			      >> GRUB_DISK_SECTOR_BITS))
-	return grub_error (GRUB_ERR_OUT_OF_RANGE, "out of partition");
+	return grub_error (GRUB_ERR_OUT_OF_RANGE,
+			   N_("attempt to read or write outside of partition"));
 
       *sector += start;
     }
@@ -371,7 +374,8 @@ grub_disk_adjust_range (grub_disk_t disk, grub_disk_addr_t *sector,
 	  >> GRUB_DISK_SECTOR_BITS) > (disk->total_sectors
 				       << (disk->log_sector_size
 					   - GRUB_DISK_SECTOR_BITS)) - *sector))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "out of disk");
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       N_("attempt to read or write outside of disk `%s'"), disk->name);
 
   return GRUB_ERR_NONE;
 }

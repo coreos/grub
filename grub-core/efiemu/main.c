@@ -121,11 +121,9 @@ grub_efiemu_register_prepare_hook (grub_err_t (*hook) (void *data),
 				   void *data)
 {
   struct grub_efiemu_prepare_hook *nhook;
-  if (! hook)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "you must supply the hook");
   nhook = (struct grub_efiemu_prepare_hook *) grub_malloc (sizeof (*nhook));
   if (! nhook)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't prepare hook");
+    return grub_errno;
   nhook->hook = hook;
   nhook->unload = unload;
   nhook->data = data;
@@ -146,16 +144,13 @@ grub_efiemu_register_configuration_table (grub_efi_guid_t guid,
   struct grub_efiemu_configuration_table *tbl;
   grub_err_t err;
 
- if (! get_table && ! data)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "you must set at least get_table or data");
  err = grub_efiemu_unregister_configuration_table (guid);
   if (err)
     return err;
 
   tbl = (struct grub_efiemu_configuration_table *) grub_malloc (sizeof (*tbl));
   if (! tbl)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't register table");
+    return grub_errno;
 
   tbl->guid = guid;
   tbl->get_table = get_table;
@@ -201,7 +196,7 @@ grub_efiemu_load_file (const char *filename)
     {
       grub_file_close (file);
       grub_efiemu_unload ();
-      return grub_error (grub_errno, "couldn't init memory management");
+      return grub_errno;
     }
 
   grub_dprintf ("efiemu", "mm initialized\n");
@@ -237,16 +232,14 @@ grub_efiemu_autocore (void)
 
   if (! prefix)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       "couldn't find efiemu core because prefix "
-		       "isn't set");
+		       N_("variable `%s' isn't set"), "prefix");
 
   suffix = grub_efiemu_get_default_core_name ();
 
   filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM "/%s",
 			     prefix, suffix);
   if (! filename)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		       "couldn't allocate temporary space");
+    return grub_errno;
 
   err = grub_efiemu_load_file (filename);
   grub_free (filename);
@@ -297,7 +290,7 @@ grub_cmd_efiemu_load (grub_command_t cmd __attribute__ ((unused)),
   grub_efiemu_unload ();
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "filename required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   err = grub_efiemu_load_file (args[0]);
   if (err)

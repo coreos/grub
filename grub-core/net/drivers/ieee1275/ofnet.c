@@ -21,6 +21,7 @@
 #include <grub/dl.h>
 #include <grub/net.h>
 #include <grub/time.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -69,7 +70,7 @@ send_card_buffer (const struct grub_net_card *dev, struct grub_net_buff *pack)
 				pack->tail - pack->data, &actual);
 
   if (status)
-    return grub_error (GRUB_ERR_IO, "Couldn't send network packet.");
+    return grub_error (GRUB_ERR_IO, N_("couldn't send network packet"));
   return GRUB_ERR_NONE;
 }
 

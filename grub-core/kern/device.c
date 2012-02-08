@@ -25,6 +25,7 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/partition.h>
+#include <grub/i18n.h>
 
 grub_net_t (*grub_net_open) (const char *name) = NULL;
 
@@ -39,7 +40,7 @@ grub_device_open (const char *name)
       name = grub_env_get ("root");
       if (name == NULL || *name == '\0')
 	{
-	  grub_error (GRUB_ERR_BAD_DEVICE, "no device is set");
+	  grub_error (GRUB_ERR_BAD_DEVICE,  N_("variable `%s' isn't set"), "root");
 	  goto fail;
 	}
     }

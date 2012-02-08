@@ -26,6 +26,7 @@
 #include <grub/dl.h>
 #include <grub/file.h>
 #include <grub/priority_queue.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -373,7 +374,7 @@ tftp_open (struct grub_file *file, const char *filename)
     }
 
   if (!data->have_oack)
-    grub_error (GRUB_ERR_TIMEOUT, "Time out opening tftp.");
+    grub_error (GRUB_ERR_TIMEOUT, N_("time out opening `%s'"), filename);
   else
     grub_error_load (&data->save_err);
   if (grub_errno)

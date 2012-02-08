@@ -49,14 +49,15 @@ grub_cmd_lsspd (grub_command_t cmd __attribute__ ((unused)),
   if (err)
     return err;
 
-  grub_printf_ (N_("SMB base = 0x%x\n"), smbbase);
+  grub_printf_ (N_("System management bus controller I/O space is at 0x%x\n"),
+		smbbase);
 
   for (i = GRUB_SMB_RAM_START_ADDR;
        i < GRUB_SMB_RAM_START_ADDR + GRUB_SMB_RAM_NUM_MAX; i++)
     {
       struct grub_smbus_spd spd;
       grub_memset (&spd, 0, sizeof (spd));
-      grub_printf_ (N_("Device %d\n"), i);
+      grub_printf_ (N_("RAM slot number %d\n"), i);
       err = grub_cs5536_read_spd (smbbase, i, &spd);
       if (err)
 	{

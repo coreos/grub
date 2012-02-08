@@ -421,6 +421,7 @@
 ./grub-core/loader/i386/pc/linux.c
 ./grub-core/loader/i386/pc/ntldr.c
 ./grub-core/loader/i386/pc/plan9.c
+./grub-core/loader/i386/pc/pxechainloader.c
 ./grub-core/loader/i386/xnu.c
 ./grub-core/loader/ia64/efi/linux.c
 ./grub-core/loader/macho32.c

@@ -299,31 +299,17 @@ test_header (grub_file_t file)
   grub_uint8_t *name = NULL;
 
   if (grub_file_read (lzopio->file, &header, sizeof (header)) != sizeof (header))
-    {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "no lzop magic found");
-      return 0;
-    }
+    return 0;
 
   if (grub_memcmp (header.magic, LZOP_MAGIC, LZOP_MAGIC_SIZE) != 0)
-    {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "no lzop magic found");
-      return 0;
-    }
+    return 0;
 
   if (grub_be_to_cpu16(header.lib_version) < LZOP_NEW_LIB)
-    {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
-		  "unsupported (too old) LZOP version");
-      return 0;
-    }
+    return 0;
 
   /* Too new version, should upgrade minilzo?  */
   if (grub_be_to_cpu16 (header.lib_version_ext) > MINILZO_VERSION)
-    {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
-		  "unsupported (too new) LZO version");
-      return 0;
-    }
+    return 0;
 
   flags = grub_be_to_cpu32 (header.flags);
 
@@ -417,8 +403,6 @@ test_header (grub_file_t file)
   return 1;
 
 CORRUPTED:
-  grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "lzop file corrupted");
-
   grub_free(name);
 
   return 0;

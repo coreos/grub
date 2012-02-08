@@ -26,7 +26,7 @@
 
 #define PSEUDO_REAL_DSEG 0x20
 
-#include <grub/cpu/relocator_private.h>
+#include <grub/i386/relocator_private.h>
 
 #include "relocator_common.S"
 	

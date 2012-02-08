@@ -151,7 +151,7 @@ grub_linux_unload (void)
 }
 
 static grub_err_t
-grub_linux_load32 (grub_elf_t elf)
+grub_linux_load32 (grub_elf_t elf, const char *filename)
 {
   Elf32_Addr base_addr;
   grub_addr_t seg_addr;
@@ -159,7 +159,7 @@ grub_linux_load32 (grub_elf_t elf)
   grub_uint32_t offset;
   Elf32_Addr entry;
 
-  linux_size = grub_elf32_size (elf, &base_addr, &align);
+  linux_size = grub_elf32_size (elf, filename, &base_addr, &align);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -195,11 +195,11 @@ grub_linux_load32 (grub_elf_t elf)
       *addr = (phdr->p_paddr - base_addr) + seg_addr;
       return 0;
     }
-  return grub_elf32_load (elf, offset_phdr, 0, 0);
+  return grub_elf32_load (elf, filename, offset_phdr, 0, 0);
 }
 
 static grub_err_t
-grub_linux_load64 (grub_elf_t elf)
+grub_linux_load64 (grub_elf_t elf, const char *filename)
 {
   Elf64_Addr base_addr;
   grub_addr_t seg_addr;
@@ -207,7 +207,7 @@ grub_linux_load64 (grub_elf_t elf)
   grub_uint64_t offset;
   Elf64_Addr entry;
 
-  linux_size = grub_elf64_size (elf, &base_addr, &align);
+  linux_size = grub_elf64_size (elf, filename, &base_addr, &align);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -241,7 +241,7 @@ grub_linux_load64 (grub_elf_t elf)
       *addr = (phdr->p_paddr - base_addr) + seg_addr;
       return 0;
     }
-  return grub_elf64_load (elf, offset_phdr, 0, 0);
+  return grub_elf64_load (elf, filename, offset_phdr, 0, 0);
 }
 
 static grub_err_t
@@ -255,7 +255,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto out;
     }
 
@@ -266,7 +266,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (elf->ehdr.ehdr32.e_type != ET_EXEC && elf->ehdr.ehdr32.e_type != ET_DYN)
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "this ELF file is not of the right type");
+		  N_("this ELF file is not of the right type"));
       goto out;
     }
 
@@ -274,13 +274,13 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_unset ();
 
   if (grub_elf_is_elf32 (elf))
-    grub_linux_load32 (elf);
+    grub_linux_load32 (elf, argv[0]);
   else
   if (grub_elf_is_elf64 (elf))
-    grub_linux_load64 (elf);
+    grub_linux_load64 (elf, argv[0]);
   else
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "unknown ELF class");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("invalid arch dependent ELF magic"));
       goto out;
     }
 
@@ -329,13 +329,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto fail;
     }
 
   if (!loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("you need to load the kernel first"));
       goto fail;
     }
 

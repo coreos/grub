@@ -425,7 +425,8 @@ probe (const char *path, char **device_names, char delim)
 	{
 	  char *label;
 	  if (! fs->label)
-	    grub_util_error (_("%s does not support labels"), fs->name);
+	    grub_util_error (_("filesystem `%s' does not support labels"),
+			     fs->name);
 
 	  if (fs->label (dev, &label) != GRUB_ERR_NONE)
 	    grub_util_error ("%s", _(grub_errmsg));
@@ -688,11 +689,10 @@ static struct argp_option options[] = {
   {"device-map",  'm', N_("FILE"), 0,
    N_("use FILE as the device map [default=%s]"), 0},
   {"target",  't', "(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|cryptodisk_uuid|msdos_parttype)", 0,
-   N_("print filesystem module, GRUB drive, system device, partition map module, abstraction module or CRYPTO UUID [default=fs]"), 0},
+   N_("print filesystem module, GRUB drive, system device, partition map module, abstraction module or cryptographic container UUID [default=fs]"), 0},
   {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };
-
 
 static char *
 help_filter (int key, const char *text, void *input __attribute__ ((unused)))

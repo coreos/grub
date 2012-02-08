@@ -81,16 +81,20 @@ grub_err_t grub_freebsd_load_elfmodule_obj64 (struct grub_relocator *relocator,
 					      grub_addr_t *kern_end);
 grub_err_t grub_freebsd_load_elf_meta32 (struct grub_relocator *relocator,
 					 grub_file_t file,
+					 const char *filename,
 					 grub_addr_t *kern_end);
 grub_err_t grub_freebsd_load_elf_meta64 (struct grub_relocator *relocator,
 					 grub_file_t file,
+					 const char *filename,
 					 grub_addr_t *kern_end);
 
 grub_err_t grub_netbsd_load_elf_meta32 (struct grub_relocator *relocator,
 					grub_file_t file,
+					const char *filename,
 					grub_addr_t *kern_end);
 grub_err_t grub_netbsd_load_elf_meta64 (struct grub_relocator *relocator,
 					grub_file_t file,
+					const char *filename,
 					grub_addr_t *kern_end);
 
 grub_err_t grub_bsd_add_meta (grub_uint32_t type, 
@@ -107,10 +111,12 @@ struct grub_openbsd_ramdisk_descriptor
 };
 
 grub_err_t grub_openbsd_find_ramdisk32 (grub_file_t file,
+					const char *filename,
 					grub_addr_t kern_start,
 					void *kern_chunk_src,
 					struct grub_openbsd_ramdisk_descriptor *desc);
 grub_err_t grub_openbsd_find_ramdisk64 (grub_file_t file,
+					const char *filename,
 					grub_addr_t kern_start,
 					void *kern_chunk_src,
 					struct grub_openbsd_ramdisk_descriptor *desc);

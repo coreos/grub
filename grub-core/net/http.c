@@ -25,6 +25,7 @@
 #include <grub/mm.h>
 #include <grub/dl.h>
 #include <grub/file.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -400,7 +401,7 @@ http_establish (struct grub_file *file, grub_off_t offset, int initial)
 	  grub_free (str);
 	  return data->err;
 	}
-      return grub_error (GRUB_ERR_TIMEOUT, "timeout opening http");
+      return grub_error (GRUB_ERR_TIMEOUT, N_("time out opening `%s'"), data->filename);
     }
   return GRUB_ERR_NONE;
 }

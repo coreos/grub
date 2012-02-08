@@ -289,7 +289,7 @@ lookup (char *code, int shift)
     if (strcmp (code, console_grub_equivalences_common[i].layout) == 0)
       return console_grub_equivalences_common[i].grub;
 
-  fprintf (stderr, _("Unknown key %s\n"), code);
+  fprintf (stderr, _("Unknown keyboard scan identifier %s\n"), code);
 
   return '\0';
 }
@@ -385,7 +385,7 @@ write_keymaps (FILE *in, FILE *out)
 	  if (keycode_usb == 0
 	      || keycode_usb >= GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
 	    {
-	      fprintf (stderr, _("Unknown keycode 0x%02x\n"), keycode_linux);
+	      fprintf (stderr, _("Unknown keyboard scan code 0x%02x\n"), keycode_linux);
 	      continue;
 	    }
 	  if (keycode_usb < GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
@@ -403,7 +403,7 @@ write_keymaps (FILE *in, FILE *out)
 
   if (ok == 0)
     {
-      fprintf (stderr, "%s", _("ERROR: no keycodes found. Check the input.\n"));
+      fprintf (stderr, "%s", _("ERROR: no valid keyboard layout found. Check the input.\n"));
       exit (1);
     }
 

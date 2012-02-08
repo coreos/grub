@@ -76,7 +76,7 @@ grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
 }
 
 grub_err_t
-grub_multiboot_load (grub_file_t file)
+grub_multiboot_load (grub_file_t file, const char *filename)
 {
   grub_properly_aligned_t *buffer;
   grub_ssize_t len;
@@ -255,7 +255,7 @@ grub_multiboot_load (grub_file_t file)
     }
   else
     {
-      err = grub_multiboot_load_elf (file, buffer);
+      err = grub_multiboot_load_elf (file, filename, buffer);
       if (err)
 	{
 	  grub_free (buffer);
