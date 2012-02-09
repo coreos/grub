@@ -1,5 +1,10 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/cpio.c (grub_cpio_dir): Fix a bug with multiple listing.
+	Explicitly init restart while on it.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/wchar.h (mbrtowc): Set pwc to zero to avoid
 	uninited variable.
 

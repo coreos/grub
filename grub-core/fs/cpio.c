@@ -539,7 +539,7 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 	  if (p)
 	    *p = 0;
 
-	  if (((!prev) || (grub_strcmp (prev, n) != 0)) && *n != 0)
+	  if (((!prev) || (grub_strcmp (prev, name) != 0)) && *n != 0)
 	    {
 	      struct grub_dirhook_info info;
 	      grub_memset (&info, 0, sizeof (info));
@@ -554,7 +554,7 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 	    }
 	  else
 	    {
-	      int restart;
+	      int restart = 0;
 	      err = handle_symlink (data, name, &path, mode, &restart);
 	      grub_free (name);
 	      if (err)
