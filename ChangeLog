@@ -1,5 +1,15 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/ehci.c (grub_ehci_ehcc_read32): Restructure to
+	conserve alignment invariants.
+	(grub_ehci_ehcc_read16): Likewise.
+	(grub_ehci_oper_read32): Likewise.
+	(grub_ehci_oper_write32): Likewise.
+	(grub_ehci_pci_iter) [!GRUB_HAVE_UNALIGNED_ACCESS]: Check alignment.
+	Conserve alignment invariants.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/full.c (grub_emu_post_init): Remove raid reinit.
 	* include/grub/disk.h [GRUB_MACHINE_EMU]: Remove now useless LVM/RAID
 	declarations.

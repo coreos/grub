@@ -337,24 +337,22 @@ static inline grub_uint32_t
 grub_ehci_ehcc_read32 (struct grub_ehci *e, grub_uint32_t addr)
 {
   return
-    grub_le_to_cpu32 (*
-		      ((volatile grub_uint32_t *) ((char *) e->iobase_ehcc +
-						   addr)));
+    grub_le_to_cpu32 (*((volatile grub_uint32_t *) e->iobase_ehcc +
+		       (addr / sizeof (grub_uint32_t))));
 }
 
 static inline grub_uint16_t
 grub_ehci_ehcc_read16 (struct grub_ehci *e, grub_uint32_t addr)
 {
   return
-    grub_le_to_cpu16 (*
-		      ((volatile grub_uint16_t *) ((char *) e->iobase_ehcc +
-						   addr)));
+    grub_le_to_cpu16 (*((volatile grub_uint16_t *) e->iobase_ehcc +
+		       (addr / sizeof (grub_uint16_t))));
 }
 
 static inline grub_uint8_t
 grub_ehci_ehcc_read8 (struct grub_ehci *e, grub_uint32_t addr)
 {
-  return *((volatile grub_uint8_t *) ((char *) e->iobase_ehcc + addr));
+  return *((volatile grub_uint8_t *) e->iobase_ehcc + addr);
 }
 
 /* Operational registers access functions */
@@ -363,15 +361,15 @@ grub_ehci_oper_read32 (struct grub_ehci *e, grub_uint32_t addr)
 {
   return
     grub_le_to_cpu32 (*
-		      ((volatile grub_uint32_t *) ((char *) e->iobase +
-						   addr)));
+		      ((volatile grub_uint32_t *) e->iobase +
+		       (addr / sizeof (grub_uint32_t))));
 }
 
 static inline void
 grub_ehci_oper_write32 (struct grub_ehci *e, grub_uint32_t addr,
 			grub_uint32_t value)
 {
-  *((volatile grub_uint32_t *) ((char *) e->iobase + addr)) =
+  *((volatile grub_uint32_t *) e->iobase + (addr / sizeof (grub_uint32_t))) =
     grub_cpu_to_le32 (value);
 }
 
@@ -559,8 +557,18 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
 
   /* Determine base address of EHCI operational registers */
   caplen = grub_ehci_ehcc_read8 (e, GRUB_EHCI_EHCC_CAPLEN);
+#ifndef GRUB_HAVE_UNALIGNED_ACCESS
+  if (caplen & (sizeof (grub_uint32_t) - 1))
+    {
+      grub_dprintf ("ehci", "Unaligned caplen\n");
+      return 0;
+    }
+  e->iobase = ((volatile grub_uint32_t *) e->iobase_ehcc
+	       + (caplen / sizeof (grub_uint32_t)));
+#else  
   e->iobase = (volatile grub_uint32_t *) 
     ((grub_uint8_t *) e->iobase_ehcc + caplen);
+#endif
 
   grub_dprintf ("ehci",
 		"EHCI grub_ehci_pci_iter: iobase of oper. regs: %08x\n",
