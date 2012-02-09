@@ -1,5 +1,11 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c (image_targets): Set default_compression to lzma
+	on i386-pc target.
+	(argp_parser): Accept "auto" as compression specification.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix `help' with unloaded modules.
 
 	* include/grub/normal.h (grub_dyncmd_get_cmd): New proto.

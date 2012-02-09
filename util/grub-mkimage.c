@@ -151,7 +151,8 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
+      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR,
+      .default_compression = COMPRESSION_LZMA
     },
     {
       .dirname = "i386-pc",
@@ -166,7 +167,8 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
+      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR,
+      .default_compression = COMPRESSION_LZMA
     },
     {
       .dirname = "i386-efi",
@@ -1773,6 +1775,8 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	}
       else if (grub_strcmp (arg, "none") == 0)
 	arguments->comp = COMPRESSION_NONE;
+      else if (grub_strcmp (arg, "auto") == 0)
+	arguments->comp = COMPRESSION_AUTO;
       else
 	grub_util_error (_("Unknown compression format %s"), arg);
       break;
