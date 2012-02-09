@@ -776,7 +776,7 @@ re_compile_internal (regex_t *preg, const char * pattern, size_t length,
       if (dfa == NULL)
 	return REG_ESPACE;
       preg->allocated = sizeof (re_dfa_t);
-      preg->buffer = (unsigned char *) dfa;
+      preg->buffer = dfa;
     }
   preg->used = sizeof (re_dfa_t);
 

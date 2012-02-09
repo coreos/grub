@@ -1,5 +1,12 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gnulib/regex.h (re_pattern_buffer): Declare buffer as
+	re_dfa_t to avoid breaking alignment invariants.
+	* grub-core/gnulib/regex_internal.h (re_dfa_t): Moved to ...
+	* grub-core/gnulib/regex.h (re_dfa_t): ... here.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/xnu.c (grub_xnu_boot): Fix printf.
 	* grub-core/loader/ia64/efi/linux.c (grub_cmd_fpswa): Likewise.
 
