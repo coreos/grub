@@ -1,5 +1,31 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove "payload" command in ia64 Linux loader since I couldn't
+	find any evidence of it being used for anything.
+	Replace "relocate" command with an environment variable
+
+	* grub-core/loader/ia64/efi/linux.c (ia64_boot_param): Remove extra
+	fields.
+	(ia64_boot_payload): Removed.
+	(last_payload): Likewise.
+	(RELOCATE_OFF): Likewise.
+	(RELOCATE_ON): Likewise.
+	(RELOCATE_FORCE): Likewise.
+	(relocate): Likewise.
+	(free_pages): Don't free payloads.
+	(grub_load_elf64): Use common error messages.
+	Use "linux_relocate" variable.
+	Increase the space after boot_params.
+	(grub_cmd_payload): Removed.
+	(grub_cmd_relocate): Likewise.
+	(grub_cmd_fpswa): Improve messages.
+	(cmd_payload): Removed.
+	(cmd_relocate): Likewise.
+	(GRUB_MOD_INIT): Don't register "payload" and "relocate".
+	(GRUB_MOD_FINI): Don't unregister "payload" and "relocate".
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Convert UHCI to DMA framework.
 
 	* grub-core/bus/usb/uhci.c (grub_uhci): Add chunk and phys members.
