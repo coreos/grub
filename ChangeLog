@@ -1,5 +1,10 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/xnu.c (grub_xnu_boot): Fix printf.
+	* grub-core/loader/ia64/efi/linux.c (grub_cmd_fpswa): Likewise.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/qemu/mmap.c (grub_machine_mmap_init):
 	Fix declaration.
 

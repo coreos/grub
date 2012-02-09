@@ -1001,7 +1001,7 @@ grub_xnu_boot (void)
 
   if (debug && (grub_strword (debug, "all") || grub_strword (debug, "xnu")))
     {
-      grub_printf (_("Press any key to launch xnu\n"));
+      grub_puts_ (N_("Press any key to launch xnu"));
       grub_getkey ();
     }
 

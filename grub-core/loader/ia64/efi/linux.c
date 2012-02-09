@@ -637,7 +637,7 @@ grub_cmd_fpswa (grub_command_t cmd __attribute__ ((unused)),
 {
   query_fpswa ();
   if (fpswa == NULL)
-    grub_printf (_("No FPSWA found\n"));
+    grub_puts_ (N_("No FPSWA found"));
   else
     grub_printf (_("FPSWA revision: %x\n"), fpswa->revision);
   return GRUB_ERR_NONE;
