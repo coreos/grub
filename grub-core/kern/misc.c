@@ -370,11 +370,13 @@ grub_strtoul (const char *str, char **end, int base)
   unsigned long long num;
 
   num = grub_strtoull (str, end, base);
+#if GRUB_CPU_SIZEOF_LONG != 8
   if (num > ~0UL)
     {
       grub_error (GRUB_ERR_OUT_OF_RANGE, "overflow is detected");
       return ~0UL;
     }
+#endif
 
   return (unsigned long) num;
 }

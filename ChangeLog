@@ -1,5 +1,14 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/lsacpi.c (disp_acpi_xsdt_table): #if'-out the
+	checks which are always false on some platforms.
+	(grub_cmd_lsacpi): Likewise.
+	* grub-core/kern/misc.c (grub_strtoul): Likewise.
+	* grub-core/loader/multiboot.c (grub_multiboot_set_video_mode):
+	Likewise.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (read_segment): Renome unreachable code.
 	* grub-core/net/ip.c (grub_net_recv_ip4_packets): Likewise.
 

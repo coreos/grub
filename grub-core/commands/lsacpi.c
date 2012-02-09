@@ -132,11 +132,13 @@ disp_acpi_xsdt_table (struct grub_acpi_table_header *t)
   desc = (grub_uint64_t *) (t + 1);
   for (; len > 0; desc++, len -= sizeof (*desc))
     {
-      if (sizeof (grub_addr_t) == 4 && *desc >= (1ULL << 32))
+#if GRUB_CPU_SIZEOF_VOID_P == 4
+      if (*desc >= (1ULL << 32))
 	{
 	  grub_printf ("Unreachable table\n");
 	  continue;
 	}
+#endif
       t = (struct grub_acpi_table_header *) (grub_addr_t) *desc;
 
       if (t == NULL)
@@ -222,9 +224,11 @@ grub_cmd_lsacpi (struct grub_extcmd_context *ctxt,
 	grub_printf ("No RSDPv2\n");
       else
 	{
-	  if (sizeof (grub_addr_t) == 4 && rsdp2->xsdt_addr >= (1ULL << 32))
-	      grub_printf ("Unreachable RSDPv2\n");
+#if GRUB_CPU_SIZEOF_VOID_P == 4
+	  if (rsdp2->xsdt_addr >= (1ULL << 32))
+	    grub_printf ("Unreachable RSDPv2\n");
 	  else
+#endif
 	    {
 	      grub_printf ("RSDPv2 signature:");
 	      disp_acpi_rsdpv2 (rsdp2);
