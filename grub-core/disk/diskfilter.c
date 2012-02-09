@@ -501,7 +501,6 @@ read_segment (struct grub_diskfilter_segment *seg, grub_disk_addr_t sector,
 	      }
 	  }
       }
-      return GRUB_ERR_NONE;
 
     case GRUB_DISKFILTER_RAID4:
     case GRUB_DISKFILTER_RAID5:

@@ -1,5 +1,10 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (read_segment): Renome unreachable code.
+	* grub-core/net/ip.c (grub_net_recv_ip4_packets): Likewise.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gnulib/regex.h (re_pattern_buffer): Declare buffer as
 	re_dfa_t to avoid breaking alignment invariants.
 	* grub-core/gnulib/regex_internal.h (re_dfa_t): Moved to ...

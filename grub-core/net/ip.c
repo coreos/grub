@@ -574,8 +574,6 @@ grub_net_recv_ip4_packets (struct grub_net_buff *nb,
 			   hwaddress, proto, &source, &dest,
 			   ttl);
     }
-
-  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
