@@ -23,8 +23,9 @@
 #include <grub/usb.h>
 #include <grub/usbtrans.h>
 #include <grub/pci.h>
-#include <grub/i386/io.h>
+#include <grub/cpu/io.h>
 #include <grub/time.h>
+#include <grub/cpu/pci.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -125,13 +126,19 @@ typedef volatile struct grub_uhci_qh *grub_uhci_qh_t;
 struct grub_uhci
 {
   int iobase;
-  grub_uint32_t *framelist;
+  volatile grub_uint32_t *framelist_virt;
+  grub_uint32_t framelist_phys;
+  struct grub_pci_dma_chunk *framelist_chunk;
 
   /* N_QH Queue Heads.  */
-  grub_uhci_qh_t qh;
+  struct grub_pci_dma_chunk *qh_chunk;
+  volatile grub_uhci_qh_t qh_virt;
+  grub_uint32_t qh_phys;
 
   /* N_TD Transfer Descriptors.  */
-  grub_uhci_td_t td;
+  struct grub_pci_dma_chunk *td_chunk;
+  volatile grub_uhci_td_t td_virt;
+  grub_uint32_t td_phys;
 
   /* Free Transfer Descriptors.  */
   grub_uhci_td_t tdfree;
@@ -236,90 +243,71 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
   grub_uhci_readreg16(u, GRUB_UHCI_REG_USBCMD);
 
   /* Reserve a page for the frame list.  */
-  u->framelist = grub_memalign (4096, 4096);
-  if (! u->framelist)
+  u->framelist_chunk = grub_memalign_dma32 (4096, 4096);
+  if (! u->framelist_chunk)
     goto fail;
+  u->framelist_virt = grub_dma_get_virt (u->framelist_chunk);
+  u->framelist_phys = grub_dma_get_phys (u->framelist_chunk);
 
-  grub_dprintf ("uhci", "class=0x%02x 0x%02x interface 0x%02x base=0x%x framelist=%p\n",
-		class, subclass, interf, u->iobase, u->framelist);
-
-  /* The framelist pointer of UHCI is only 32 bits, make sure this
-     code works on on 64 bits architectures.  */
-#if GRUB_CPU_SIZEOF_VOID_P == 8
-  if ((grub_uint64_t) u->framelist >> 32)
-    {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		  "allocated frame list memory not <4GB");
-      goto fail;
-    }
-#endif
+  grub_dprintf ("uhci",
+		"class=0x%02x 0x%02x interface 0x%02x base=0x%x framelist=%p\n",
+		class, subclass, interf, u->iobase, u->framelist_virt);
 
   /* The QH pointer of UHCI is only 32 bits, make sure this
      code works on on 64 bits architectures.  */
-  u->qh = (grub_uhci_qh_t) grub_memalign (4096, sizeof(struct grub_uhci_qh)*N_QH);
-  if (! u->qh)
+  u->qh_chunk = grub_memalign_dma32 (4096, sizeof(struct grub_uhci_qh) * N_QH);
+  if (! u->qh_chunk)
     goto fail;
-
-#if GRUB_CPU_SIZEOF_VOID_P == 8
-  if ((grub_uint64_t) u->qh >> 32)
-    {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "allocated QH memory not <4GB");
-      goto fail;
-    }
-#endif
+  u->qh_virt = grub_dma_get_virt (u->qh_chunk);
+  u->qh_phys = grub_dma_get_phys (u->qh_chunk);
 
   /* The TD pointer of UHCI is only 32 bits, make sure this
      code works on on 64 bits architectures.  */
-  u->td = (grub_uhci_td_t) grub_memalign (4096, sizeof(struct grub_uhci_td)*N_TD);
-  if (! u->td)
+  u->td_chunk = grub_memalign_dma32 (4096, sizeof(struct grub_uhci_td) * N_TD);
+  if (! u->td_chunk)
     goto fail;
-
-#if GRUB_CPU_SIZEOF_VOID_P == 8
-  if ((grub_uint64_t) u->td >> 32)
-    {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "allocated TD memory not <4GB");
-      goto fail;
-    }
-#endif
+  u->td_virt = grub_dma_get_virt (u->td_chunk);
+  u->td_phys = grub_dma_get_phys (u->td_chunk);
 
   grub_dprintf ("uhci", "QH=%p, TD=%p\n",
-		u->qh, u->td);
+		u->qh_virt, u->td_virt);
 
   /* Link all Transfer Descriptors in a list of available Transfer
      Descriptors.  */
   for (i = 0; i < N_TD; i++)
-    u->td[i].linkptr = (grub_uint32_t) (grub_addr_t) &u->td[i + 1];
-  u->td[N_TD - 2].linkptr = 0;
-  u->tdfree = u->td;
+    u->td_virt[i].linkptr = u->td_phys + (i + 1) * sizeof(struct grub_uhci_td);
+  u->td_virt[N_TD - 2].linkptr = 0;
+  u->tdfree = u->td_virt;
 
   /* Setup the frame list pointers.  Since no isochronous transfers
      are and will be supported, they all point to the (same!) queue
      head.  */
-  fp = (grub_uint32_t) (grub_addr_t) u->qh & (~15);
+  fp = u->qh_phys & (~15);
   /* Mark this as a queue head.  */
   fp |= 2;
   for (i = 0; i < 1024; i++)
-    u->framelist[i] = fp;
+    u->framelist_virt[i] = fp;
   /* Program the framelist address into the UHCI controller.  */
-  grub_uhci_writereg32 (u, GRUB_UHCI_REG_FLBASEADD,
-			(grub_uint32_t) (grub_addr_t) u->framelist);
+  grub_uhci_writereg32 (u, GRUB_UHCI_REG_FLBASEADD, u->framelist_phys);
 
   /* Make the Queue Heads point to each other.  */
   for (i = 0; i < N_QH; i++)
     {
       /* Point to the next QH.  */
-      u->qh[i].linkptr = (grub_uint32_t) (grub_addr_t) (&u->qh[i + 1]) & (~15);
+      u->qh_virt[i].linkptr = ((u->qh_phys
+				+ (i + 1) * sizeof(struct grub_uhci_qh))
+			  & (~15));
 
       /* This is a QH.  */
-      u->qh[i].linkptr |= GRUB_UHCI_LINK_QUEUE_HEAD;
+      u->qh_virt[i].linkptr |= GRUB_UHCI_LINK_QUEUE_HEAD;
 
       /* For the moment, do not point to a Transfer Descriptor.  These
 	 are set at transfer time, so just terminate it.  */
-      u->qh[i].elinkptr = 1;
+      u->qh_virt[i].elinkptr = 1;
     }
 
   /* The last Queue Head should terminate.  */
-  u->qh[N_QH - 1].linkptr = 1;
+  u->qh_virt[N_QH - 1].linkptr = 1;
 
   /* Enable UHCI again.  */
   grub_uhci_writereg16 (u, GRUB_UHCI_REG_USBCMD,
@@ -352,8 +340,8 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
  fail:
   if (u)
     {
-      grub_free ((void *) u->qh);
-      grub_free (u->framelist);
+      grub_dma_free (u->qh_chunk);
+      grub_dma_free (u->framelist_chunk);
     }
   grub_free (u);
 
@@ -376,7 +364,7 @@ grub_alloc_td (struct grub_uhci *u)
     return NULL;
 
   ret = u->tdfree;
-  u->tdfree = (grub_uhci_td_t) (grub_addr_t) u->tdfree->linkptr;
+  u->tdfree = grub_dma_phys2virt (u->tdfree->linkptr, u->td_chunk);
 
   return ret;
 }
@@ -384,7 +372,7 @@ grub_alloc_td (struct grub_uhci *u)
 static void
 grub_free_td (struct grub_uhci *u, grub_uhci_td_t td)
 {
-  td->linkptr = (grub_uint32_t) (grub_addr_t) u->tdfree;
+  td->linkptr = grub_dma_virt2phys (u->tdfree, u->td_chunk);
   u->tdfree = td;
 }
 
@@ -394,7 +382,7 @@ grub_free_queue (struct grub_uhci *u, grub_uhci_qh_t qh, grub_uhci_td_t td,
 {
   int i; /* Index of TD in transfer */
 
-  u->qh_busy[qh - u->qh] = 0;
+  u->qh_busy[qh - u->qh_virt] = 0;
 
   *actual = 0;
   
@@ -411,7 +399,7 @@ grub_free_queue (struct grub_uhci *u, grub_uhci_qh_t qh, grub_uhci_td_t td,
       
       /* Unlink the queue.  */
       tdprev = td;
-      td = (grub_uhci_td_t) (grub_addr_t) td->linkptr2;
+      td = grub_dma_phys2virt (td->linkptr2, u->td_chunk);
 
       /* Free the TD.  */
       grub_free_td (u, tdprev);
@@ -439,7 +427,7 @@ grub_alloc_qh (struct grub_uhci *u,
       if (!u->qh_busy[i])
 	break;
     }
-  qh = &u->qh[i];
+  qh = &u->qh_virt[i];
   if (i == N_QH)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY,
@@ -447,7 +435,7 @@ grub_alloc_qh (struct grub_uhci *u,
       return NULL;
     }
 
-  u->qh_busy[qh - u->qh] = 1;
+  u->qh_busy[qh - u->qh_virt] = 1;
 
   return qh;
 }
@@ -561,8 +549,8 @@ grub_uhci_setup_transfer (grub_usb_controller_t dev,
 	cdata->td_first = td;
       else
 	{
-	  td_prev->linkptr2 = (grub_uint32_t) (grub_addr_t) td;
-	  td_prev->linkptr = (grub_uint32_t) (grub_addr_t) td;
+	  td_prev->linkptr2 = grub_dma_virt2phys (td, u->td_chunk);
+	  td_prev->linkptr = grub_dma_virt2phys (td, u->td_chunk);
 	  td_prev->linkptr |= 4;
 	}
       td_prev = td;
@@ -574,7 +562,7 @@ grub_uhci_setup_transfer (grub_usb_controller_t dev,
 
   /* Link it into the queue and terminate.  Now the transaction can
      take place.  */
-  cdata->qh->elinkptr = (grub_uint32_t) (grub_addr_t) cdata->td_first;
+  cdata->qh->elinkptr = grub_dma_virt2phys (cdata->td_first, u->td_chunk);
 
   grub_dprintf ("uhci", "initiate transaction\n");
 
@@ -594,7 +582,7 @@ grub_uhci_check_transfer (grub_usb_controller_t dev,
 
   *actual = 0;
 
-  errtd = (grub_uhci_td_t) (grub_addr_t) (cdata->qh->elinkptr & ~0x0f);
+  errtd = grub_dma_phys2virt (cdata->qh->elinkptr & ~0x0f, u->qh_chunk);
   
   grub_dprintf ("uhci", ">t status=0x%02x data=0x%02x td=%p\n",
 		errtd->ctrl_status, errtd->buffer & (~15), errtd);

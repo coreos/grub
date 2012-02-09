@@ -1,5 +1,17 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Convert UHCI to DMA framework.
+
+	* grub-core/bus/usb/uhci.c (grub_uhci): Add chunk and phys members.
+	(grub_uhci_pci_iter): Fill new members
+	(grub_alloc_td): Use P2V and V2P functions.
+	(grub_free_queue): Likewise.
+	(grub_alloc_qh): Likewise.
+	(grub_uhci_setup_transfer): Likewise.
+	(grub_uhci_check_transfer): Likewise.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/colors.c (grub_video_parse_color): Fix error message.
 	Remove assignment in if while on it.
 
