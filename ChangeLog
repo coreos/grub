@@ -1,5 +1,10 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostfs.c (grub_hostfs_close):
+	Remove unused variable.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/efiemu/loadcore_common.c (grub_efiemu_loadcore_load):
 	Remove set in if.
 

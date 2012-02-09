@@ -164,7 +164,6 @@ grub_hostfs_read (grub_file_t file, char *buf, grub_size_t len)
 static grub_err_t
 grub_hostfs_close (grub_file_t file)
 {
-  FILE *f;
   struct grub_hostfs_data *data;
 
   data = file->data;
