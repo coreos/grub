@@ -1,5 +1,9 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/net.h: Remove double declarations.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove "payload" command in ia64 Linux loader since I couldn't
 	find any evidence of it being used for anything.
 	Replace "relocate" command with an environment variable

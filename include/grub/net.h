@@ -306,6 +306,8 @@ grub_net_add_addr (const char *name,
 
 extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
 #define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
+#define FOR_NET_NETWORK_LEVEL_INTERFACES_SAFE(var,next) for (var = grub_net_network_level_interfaces, next = (var ? var->next : 0); var; var = next, next = (var ? var->next : 0))
+
 
 extern grub_net_app_level_t grub_net_app_level_list;
 
@@ -450,11 +452,6 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target,
 		      char *buf);
 void
 grub_net_hwaddr_to_str (const grub_net_link_level_address_t *addr, char *str);
-
-extern struct grub_net_network_level_interface *grub_net_network_level_interfaces;
-#define FOR_NET_NETWORK_LEVEL_INTERFACES(var) for (var = grub_net_network_level_interfaces; var; var = var->next)
-
-#define FOR_NET_NETWORK_LEVEL_INTERFACES_SAFE(var,next) for (var = grub_net_network_level_interfaces, next = (var ? var->next : 0); var; var = next, next = (var ? var->next : 0))
 
 void
 grub_net_poll_cards (unsigned time);
