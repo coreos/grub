@@ -1,5 +1,11 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/full.c (grub_emu_post_init): Remove raid reinit.
+	* include/grub/disk.h [GRUB_MACHINE_EMU]: Remove now useless LVM/RAID
+	declarations.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostfs.c (grub_hostfs_close):
 	Remove unused variable.
 

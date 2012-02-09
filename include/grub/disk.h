@@ -194,7 +194,7 @@ EXPORT_FUNC(grub_disk_cache_get_performance) (unsigned long *hits, unsigned long
 extern void (* EXPORT_VAR(grub_disk_firmware_fini)) (void);
 extern int EXPORT_VAR(grub_disk_firmware_is_tainted);
 
-#if defined (GRUB_UTIL) || defined (GRUB_MACHINE_EMU)
+#if defined (GRUB_UTIL)
 void grub_lvm_init (void);
 void grub_ldm_init (void);
 void grub_mdraid09_init (void);
