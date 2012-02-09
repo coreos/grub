@@ -1,5 +1,10 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/qemu/mmap.c (grub_machine_mmap_init):
+	Fix declaration.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/ehci.c (grub_ehci_ehcc_read32): Restructure to
 	conserve alignment invariants.
 	(grub_ehci_ehcc_read16): Likewise.
