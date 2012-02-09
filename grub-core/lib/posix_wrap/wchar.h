@@ -51,6 +51,9 @@ mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
       n = 1;
     }
 
+  if (pwc)
+    *pwc = 0;
+
   for (ptr = s; ptr < s + n; ptr++)
     {
       if (!grub_utf8_process (*ptr, &ps->code, &ps->count))

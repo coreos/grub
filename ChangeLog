@@ -1,3 +1,8 @@
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/posix_wrap/wchar.h (mbrtowc): Set pwc to zero to avoid
+	uninited variable.
+
 2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mknetdir.in: Use . rather than source for POSIX
