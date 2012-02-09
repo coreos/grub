@@ -154,6 +154,8 @@ if [ "x$source_directory" = x ] ; then
     source_directory="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/$cpu-$platform"
 fi
 
+. "${source_directory}"/modinfo.sh
+
 set $grub_mkimage dummy
 if test -f "$1"; then
     :
@@ -163,17 +165,17 @@ else
 fi
 
 memdisk_dir="`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
-mkdir -p "${memdisk_dir}"/boot/grub
+mkdir -p "${memdisk_dir}"/boot/grub/"${grub_modinfo_target_cpu}-${grub_modinfo_platform}"
 
 for file in "${source_directory}/"*.mod "${source_directory}/"efiemu32.o "${source_directory}/"efiemu64.o; do
     if test -f "$file"; then
-        cp -f "$file" "${memdisk_dir}"/boot/grub/
+        cp -f "$file" "${memdisk_dir}"/boot/grub/"${grub_modinfo_target_cpu}-${grub_modinfo_platform}"
     fi
 done
 
 for file in ${pkglib_DATA}; do
     if test -f "${source_directory}/${file}"; then
-        cp -f "${source_directory}/${file}" "${memdisk_dir}"/boot/grub/
+        cp -f "${source_directory}/${file}" "${memdisk_dir}"/boot/grub/"${grub_modinfo_target_cpu}-${grub_modinfo_platform}"
     fi
 done
 

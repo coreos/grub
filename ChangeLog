@@ -1,5 +1,9 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkstandalone.in: Fix modules directory.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (image_targets): Set default_compression to lzma
 	on i386-pc target.
 	(argp_parser): Accept "auto" as compression specification.
