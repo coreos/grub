@@ -1,5 +1,10 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/multiboot_elfxx.c (grub_multiboot_load_elf): Fix
+	incorrect nesting of #if's.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/lsacpi.c (disp_acpi_xsdt_table): #if'-out the
 	checks which are always false on some platforms.
 	(grub_cmd_lsacpi): Likewise.
