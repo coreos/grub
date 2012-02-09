@@ -1,5 +1,10 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/colors.c (grub_video_parse_color): Fix error message.
+	Remove assignment in if while on it.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkstandalone.in: Fix modules directory.
 
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
