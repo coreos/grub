@@ -27,6 +27,32 @@
 #include <grub/script_sh.h>
 #include <grub/i18n.h>
 
+grub_command_t
+grub_dyncmd_get_cmd (grub_command_t cmd)
+{
+  grub_extcmd_t extcmd = cmd->data;
+  char *modname;
+  char *name;
+  grub_dl_t mod;
+
+  modname = extcmd->data;
+  mod = grub_dl_load (modname);
+  if (!mod)
+    return NULL;
+
+  grub_free (modname);
+  grub_dl_ref (mod);
+
+  name = (char *) cmd->name;
+  grub_unregister_extcmd (extcmd);
+
+  cmd = grub_command_find (name);
+
+  grub_free (name);
+
+  return cmd;
+}
+
 static grub_err_t
 grub_dyncmd_dispatcher (struct grub_extcmd_context *ctxt,
 			int argc, char **args)
@@ -36,35 +62,32 @@ grub_dyncmd_dispatcher (struct grub_extcmd_context *ctxt,
   grub_err_t ret;
   grub_extcmd_t extcmd = ctxt->extcmd;
   grub_command_t cmd = extcmd->cmd;
+  char *name;
 
   modname = extcmd->data;
   mod = grub_dl_load (modname);
-  if (mod)
+  if (!mod)
+    return grub_errno;
+
+  grub_free (modname);
+  grub_dl_ref (mod);
+
+  name = (char *) cmd->name;
+  grub_unregister_extcmd (extcmd);
+
+  cmd = grub_command_find (name);
+  if (cmd)
     {
-      char *name;
-
-      grub_free (modname);
-      grub_dl_ref (mod);
-
-      name = (char *) cmd->name;
-      grub_unregister_extcmd (extcmd);
-
-      cmd = grub_command_find (name);
-      if (cmd)
-	{
-	  if (cmd->flags & GRUB_COMMAND_FLAG_BLOCKS &&
-	      cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
-	    ret = grub_extcmd_dispatcher (cmd, argc, args, ctxt->script);
-	  else
-	    ret = (cmd->func) (cmd, argc, args);
-	}
+      if (cmd->flags & GRUB_COMMAND_FLAG_BLOCKS &&
+	  cmd->flags & GRUB_COMMAND_FLAG_EXTCMD)
+	ret = grub_extcmd_dispatcher (cmd, argc, args, ctxt->script);
       else
-	ret = grub_errno;
-
-      grub_free (name);
+	ret = (cmd->func) (cmd, argc, args);
     }
   else
     ret = grub_errno;
+
+  grub_free (name);
 
   return ret;
 }

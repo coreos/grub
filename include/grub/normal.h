@@ -132,4 +132,7 @@ void grub_normal_free_menu (grub_menu_t menu);
 void grub_normal_auth_init (void);
 void grub_normal_auth_fini (void);
 
+grub_command_t
+grub_dyncmd_get_cmd (grub_command_t cmd);
+
 #endif /* ! GRUB_NORMAL_HEADER */

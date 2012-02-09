@@ -1,5 +1,15 @@
 2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix `help' with unloaded modules.
+
+	* include/grub/normal.h (grub_dyncmd_get_cmd): New proto.
+	* grub-core/normal/dyncmd.c (grub_dyncmd_get_cmd): New function.
+	(grub_dyncmd_dispatcher): Small stylistic fix.
+	* grub-core/commands/help.c (grub_cmd_help): Load missing modules when
+	explicit help is requested.
+
+2012-02-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/cpio.c (grub_cpio_dir): Fix a bug with multiple listing.
 	Explicitly init restart while on it.
 
