@@ -1,5 +1,11 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/legacycfg.c (grub_cmd_legacy_kernel):
+	Avoid improper use of strings.
+	(grub_cmd_legacy_initrdnounzip): Likewise.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/emu/misc.h (grub_util_warn): Add missing format
 	attribute.
 	(grub_util_info): Likewise.
