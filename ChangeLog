@@ -1,5 +1,10 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h: Avoid evaluationg NEED_ENABLE_EXECUTE_STACK and
+	NEED_REGISTER_FRAME_INFO in GRUB_UTIL.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/partmap/bsdlabel.c (iterate_real): Fix freeing of static
 	buffer.
 
