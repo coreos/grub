@@ -596,7 +596,7 @@ compress_kernel_lzma (char *kernel_img, size_t kernel_size,
 		  kernel_size,
 		  &props, out_props, &out_props_size,
 		  0, NULL, &g_Alloc, &g_Alloc) != SZ_OK)
-    grub_util_error (_("cannot compress the kernel image"));
+    grub_util_error ("%s", _("cannot compress the kernel image"));
 }
 
 #ifdef HAVE_LIBLZMA
@@ -697,8 +697,8 @@ struct fixup_block_list
 #undef MKIMAGE_ELF64
 
 static void
-generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
-		char *mods[],
+generate_image (const char *dir, const char *prefix,
+		FILE *out, const char *outname, char *mods[],
 		char *memdisk_path, char *config_path,
 		struct image_target_desc *image_target, int note,
 		grub_compression_t comp)
@@ -735,7 +735,8 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
   if (memdisk_path)
     {
       memdisk_size = ALIGN_UP(grub_util_get_image_size (memdisk_path), 512);
-      grub_util_info ("the size of memory disk is 0x%x", memdisk_size);
+      grub_util_info ("the size of memory disk is 0x%llx",
+		      (unsigned long long) memdisk_size);
       total_module_size += memdisk_size + sizeof (struct grub_module_header);
     }
 
@@ -743,7 +744,8 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
     {
       config_size_pure = grub_util_get_image_size (config_path) + 1;
       config_size = ALIGN_ADDR (config_size_pure);
-      grub_util_info ("the size of config file is 0x%x", config_size);
+      grub_util_info ("the size of config file is 0x%llx",
+		      (unsigned long long) config_size);
       total_module_size += config_size + sizeof (struct grub_module_header);
     }
 
@@ -757,7 +759,8 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
     total_module_size += (ALIGN_ADDR (grub_util_get_image_size (p->name))
 			  + sizeof (struct grub_module_header));
 
-  grub_util_info ("the total module size is 0x%x", total_module_size);
+  grub_util_info ("the total module size is 0x%llx",
+		  (unsigned long long) total_module_size);
 
   if (image_target->voidp_sizeof == 4)
     kernel_img = load_image32 (kernel_path, &exec_size, &kernel_size, &bss_size,
@@ -874,12 +877,13 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
       offset += prefix_size;
     }
 
-  grub_util_info ("kernel_img=%p, kernel_size=0x%x", kernel_img, kernel_size);
+  grub_util_info ("kernel_img=%p, kernel_size=0x%llx", kernel_img,
+		  (unsigned long long) kernel_size);
   compress_kernel (image_target, kernel_img, kernel_size + total_module_size,
 		   &core_img, &core_size, comp);
   free (kernel_img);
 
-  grub_util_info ("the core size is 0x%x", core_size);
+  grub_util_info ("the core size is 0x%llx", (unsigned long long) core_size);
 
   if (!(image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS) 
       && image_target->total_module_size != TARGET_NO_FIELD)
@@ -915,7 +919,7 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
       if ((image_target->id == IMAGE_I386_PC
 	   || image_target->id == IMAGE_I386_PC_PXE)
 	  && decompress_size > GRUB_KERNEL_I386_PC_LINK_ADDR - 0x8200)
-	grub_util_error (_("Decompressor is too big"));
+	grub_util_error ("%s", _("Decompressor is too big"));
 
       if (image_target->decompressor_compressed_size != TARGET_NO_FIELD)
 	*((grub_uint32_t *) (decompress_img
@@ -1053,8 +1057,8 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
 			    image_target->section_align);
 	pe_img = xmalloc (reloc_addr + reloc_size);
 	memset (pe_img, 0, header_size);
-	memcpy (pe_img + header_size, core_img, core_size);
-	memcpy (pe_img + reloc_addr, rel_section, reloc_size);
+	memcpy ((char *) pe_img + header_size, core_img, core_size);
+	memcpy ((char *) pe_img + reloc_addr, rel_section, reloc_size);
 	header = pe_img;
 
 	/* The magic.  */
@@ -1265,7 +1269,7 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
 	aout_head->a_text = grub_host_to_target32 (core_size);
 	aout_head->a_entry
 	  = grub_host_to_target32 (GRUB_BOOT_SPARC64_IEEE1275_IMAGE_ADDRESS);
-	memcpy (aout_img + sizeof (*aout_head), core_img, core_size);
+	memcpy ((char *) aout_img + sizeof (*aout_head), core_img, core_size);
 
 	free (core_img);
 	core_img = aout_img;
@@ -1284,7 +1288,7 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
 	boot_path = grub_util_get_path (dir, "diskboot.img");
 	boot_size = grub_util_get_image_size (boot_path);
 	if (boot_size != GRUB_DISK_SECTOR_SIZE)
-	  grub_util_error (_("diskboot.img is not one sector size"));
+	  grub_util_error ("%s", _("diskboot.img is not one sector size"));
 
 	boot_img = grub_util_read_image (boot_path);
 
@@ -1349,11 +1353,12 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
       GRUB_MD_SHA512->final (context);
       if (grub_memcmp (GRUB_MD_SHA512->read (context), fwstart_good_hash,
 		       GRUB_MD_SHA512->mdlen) != 0)
-	grub_util_warn (_("fwstart.img doesn't match the known good version. "
+	grub_util_warn ("%s",
+			_("fwstart.img doesn't match the known good version. "
 			  "proceed at your own risk"));
 
       if (core_size + boot_size > 512 * 1024)
-	grub_util_error (_("firmware image is too big"));
+	grub_util_error ("%s", _("firmware image is too big"));
       rom_size = 512 * 1024;
 
       rom_img = xmalloc (rom_size);
@@ -1377,7 +1382,7 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
       size_t rom_size;
 
       if (core_size > 512 * 1024)
-	grub_util_error (_("firmware image is too big"));
+	grub_util_error ("%s", _("firmware image is too big"));
       rom_size = 512 * 1024;
 
       rom_img = xmalloc (rom_size);
@@ -1584,21 +1589,21 @@ generate_image (const char *dir, char *prefix, FILE *out, const char *outname,
 	if (note)
 	  {
 	    int note_size = sizeof (struct grub_ieee1275_note);
-	    struct grub_ieee1275_note *note = (struct grub_ieee1275_note *) 
+	    struct grub_ieee1275_note *note_ptr = (struct grub_ieee1275_note *) 
 	      (elf_img + program_size + header_size);
 
 	    grub_util_info ("adding CHRP NOTE segment");
 
-	    note->header.namesz = grub_host_to_target32 (sizeof (GRUB_IEEE1275_NOTE_NAME));
-	    note->header.descsz = grub_host_to_target32 (note_size);
-	    note->header.type = grub_host_to_target32 (GRUB_IEEE1275_NOTE_TYPE);
-	    strcpy (note->header.name, GRUB_IEEE1275_NOTE_NAME);
-	    note->descriptor.real_mode = grub_host_to_target32 (0xffffffff);
-	    note->descriptor.real_base = grub_host_to_target32 (0x00c00000);
-	    note->descriptor.real_size = grub_host_to_target32 (0xffffffff);
-	    note->descriptor.virt_base = grub_host_to_target32 (0xffffffff);
-	    note->descriptor.virt_size = grub_host_to_target32 (0xffffffff);
-	    note->descriptor.load_base = grub_host_to_target32 (0x00004000);
+	    note_ptr->header.namesz = grub_host_to_target32 (sizeof (GRUB_IEEE1275_NOTE_NAME));
+	    note_ptr->header.descsz = grub_host_to_target32 (note_size);
+	    note_ptr->header.type = grub_host_to_target32 (GRUB_IEEE1275_NOTE_TYPE);
+	    strcpy (note_ptr->header.name, GRUB_IEEE1275_NOTE_NAME);
+	    note_ptr->descriptor.real_mode = grub_host_to_target32 (0xffffffff);
+	    note_ptr->descriptor.real_base = grub_host_to_target32 (0x00c00000);
+	    note_ptr->descriptor.real_size = grub_host_to_target32 (0xffffffff);
+	    note_ptr->descriptor.virt_base = grub_host_to_target32 (0xffffffff);
+	    note_ptr->descriptor.virt_size = grub_host_to_target32 (0xffffffff);
+	    note_ptr->descriptor.load_base = grub_host_to_target32 (0x00004000);
 
 	    phdr++;
 	    phdr->p_type = grub_host_to_target32 (PT_NOTE);
@@ -1707,8 +1712,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
      know is a pointer to our arguments structure. */
   struct arguments *arguments = state->input;
 
-  char *p;
-
   switch (key)
     {
     case 'o':
@@ -1770,7 +1773,8 @@ argp_parser (int key, char *arg, struct argp_state *state)
 #ifdef HAVE_LIBLZMA
 	  arguments->comp = COMPRESSION_XZ;
 #else
-	  grub_util_error (_("grub-mkimage is compiled without XZ support"));
+	  grub_util_error ("%s",
+			   _("grub-mkimage is compiled without XZ support"));
 #endif
 	}
       else if (grub_strcmp (arg, "none") == 0)

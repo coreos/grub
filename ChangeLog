@@ -1,5 +1,24 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c (compress_kernel_lzma): Respect format security.
+	(generate_image): Make prefix a const char *.
+	Fix format specifications. Respect format security.
+	Avoid void * arithmetics.
+	Avoid shadowing.
+	(argp_parser): Remove unused variable. Respect format security.
+	* util/grub-mkimagexx.c (relocate_symbols): Avoid shadowing.
+	(count_funcs) [!MKIMAGE_ELF64]: #if-out.
+	(count_funcs): Remove unused variable.
+	(relocate_addresses): Fix format specification.
+	Disable x86-64 with elf32. Remove unused variables.
+	(add_fixup_entry): Avoid shadowing.
+	(make_reloc_section): Fix format specification.
+	Use assert.
+	(locate_sections): Fix format specifications.
+	(load_image): Avoid shadowing.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (setup): Remove unused variable. Avoid shadowing.
 	Fix format specifications. Respect format security.
 	Don't translate already translated grub_errmsg.
