@@ -612,7 +612,8 @@ grub_find_device (const char *dir, dev_t dev)
 	  if (res)
 	    {
 	      if (chdir (saved_cwd) < 0)
-		grub_util_error (_("cannot restore the original directory"));
+		grub_util_error ("%s",
+				 _("cannot restore the original directory"));
 
 	      free (saved_cwd);
 	      closedir (dp);
@@ -662,7 +663,7 @@ grub_find_device (const char *dir, dev_t dev)
 		continue;
 
 	  if (chdir (saved_cwd) < 0)
-	    grub_util_error (_("cannot restore the original directory"));
+	    grub_util_error ("%s", _("cannot restore the original directory"));
 
 	  free (saved_cwd);
 	  closedir (dp);
@@ -671,7 +672,7 @@ grub_find_device (const char *dir, dev_t dev)
     }
 
   if (chdir (saved_cwd) < 0)
-    grub_util_error (_("cannot restore the original directory"));
+    grub_util_error ("%s", _("cannot restore the original directory"));
 
   free (saved_cwd);
   closedir (dp);
@@ -1143,7 +1144,6 @@ get_mdadm_uuid (const char *os_dev)
 	  if (strncmp (buf, "MD_UUID=", sizeof ("MD_UUID=") - 1) == 0)
 	    {
 	      char *name_start, *ptri, *ptro;
-	      size_t name_len;
 
 	      free (name);
 	      name_start = buf + sizeof ("MD_UUID=") - 1;
@@ -1235,7 +1235,7 @@ grub_util_pull_device (const char *os_dev)
 		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
 		if (err)
 		  grub_util_error (_("can't mount crypto volume `%s': %s"),
-				   lastsubdev, _(grub_errmsg));
+				   lastsubdev, grub_errmsg);
 	      }
 
 	    grub_free (grdev);
@@ -1280,7 +1280,7 @@ grub_util_pull_device (const char *os_dev)
 		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
 		if (err)
 		  grub_util_error (_("can't mount crypto volume `%s': %s"),
-				   lastsubdev, _(grub_errmsg));
+				   lastsubdev, grub_errmsg);
 	      }
 	    grub_free (grdev);
 	  }
@@ -1800,7 +1800,6 @@ devmapper_out:
 static const char *
 find_system_device (const char *os_dev, struct stat *st, int convert, int add)
 {
-  unsigned int i;
   char *os_disk;
   const char *drive;
 
@@ -2138,7 +2137,7 @@ grub_util_get_grub_dev (const char *os_dev)
     case GRUB_DEV_ABSTRACTION_LVM:
 
       {
-	unsigned short i, len;
+	unsigned short len;
 	grub_size_t offset = sizeof (LVM_DEV_MAPPER_STRING) - 1;
 
 	len = strlen (os_dev) - offset + 1;
@@ -2300,7 +2299,6 @@ grub_util_get_grub_dev (const char *os_dev)
 
       {
 	char *mdadm_name = get_mdadm_uuid (os_dev);
-	struct stat st;
 
 	if (mdadm_name)
 	  {
@@ -2507,7 +2505,8 @@ grub_make_system_path_relative_to_its_root (const char *path)
       p = strrchr (buf, '/');
       if (p == NULL)
 	/* This should never happen.  */
-	grub_util_error (_("FIXME: no / in buf. (make_system_path_relative_to_its_root)"));
+	grub_util_error ("%s",
+			 _("FIXME: no / in buf. (make_system_path_relative_to_its_root)"));
       if (p != buf)
 	*p = 0;
       else

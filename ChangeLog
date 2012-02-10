@@ -1,5 +1,15 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_find_device): Respect format security.
+	(get_mdadm_uuid): Remove unused variable.
+	(grub_util_pull_device): Dont call gettext on already translated
+	grub_errmsg.
+	(find_system_device): Remove unused variable.
+	(grub_util_get_grub_dev): Likewise.
+	(grub_make_system_path_relative_to_its_root): Respect format security.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-fstest.c (execute_command): Make first argument
 	a const char *.
 	(read_file): Avoid shadowing.
