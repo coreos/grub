@@ -31,6 +31,9 @@ PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 datadir="@datadir@"
+if [ "x$pkgdatadir" = x ]; then
+    pkgdatadir="${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`"
+fi
 
 self=`basename $0`
 
@@ -40,7 +43,7 @@ format=
 grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 source=
 
-. "${datadir}/@PACKAGE@/grub-mkconfig_lib"
+. "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage
 # Print the usage.

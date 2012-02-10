@@ -1,3 +1,20 @@
+2012-02-10  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	Source grub-mkconfig_lib from the build directory at build time.
+	Suggested by: Vladimir Serbinenko.
+
+	* gentpl.py (manpage): Set pkgdatadir to $(builddir) on help2man call.
+	* util/grub-install.in: Define pkgdatadir if not already set, and source
+	grub-mkconfig_lib from there.
+	* util/grub-kbdcomp.in: Likewise.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub-mknetdir.in: Likewise.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub-mkstandalone.in: Likewise.
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Likewise.
+
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Increase warning level.

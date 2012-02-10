@@ -31,7 +31,9 @@ PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 host_os=@host_os@
 datadir="@datadir@"
-pkgdatadir="${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`"
+if [ "x$pkgdatadir" = x ]; then
+    pkgdatadir="${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`"
+fi
 grub_cfg=""
 grub_mkconfig_dir="${sysconfdir}"/grub.d
 
@@ -42,7 +44,7 @@ grub_script_check="${bindir}/`echo grub-script-check | sed "${transform}"`"
 
 GRUB_PREFIX=`echo '/@bootdirname@/@grubdirname@' | sed "s,//*,/,g"`
 
-. "${datadir}/@PACKAGE@/grub-mkconfig_lib"
+. "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage
 # Print the usage.
@@ -94,8 +96,6 @@ do
     # Explicitly ignore non-option arguments, for compatibility.
     esac
 done
-
-. "${datadir}/@PACKAGE@/grub-mkconfig_lib"
 
 if [ "x$EUID" = "x" ] ; then
   EUID=`id -u`

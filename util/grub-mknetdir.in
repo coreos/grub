@@ -30,6 +30,9 @@ PACKAGE_VERSION=@PACKAGE_VERSION@
 host_os=@host_os@
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 datadir="@datadir@"
+if [ "x$pkgdatadir" = x ]; then
+    pkgdatadir="${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`"
+fi
 
 self=`basename $0`
 
@@ -52,7 +55,7 @@ efi32_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi"
 efi64_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi"
 itanium_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/ia64-efi"
 
-. "${datadir}/@PACKAGE@/grub-mkconfig_lib"
+. "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage
 # Print the usage.

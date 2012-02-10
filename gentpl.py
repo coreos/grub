@@ -465,7 +465,7 @@ def manpage():
     r += gvar_add("man_MANS", "[+ name +].[+ mansection +]\n")
     r += rule("[+ name +].[+ mansection +]", "[+ name +]", """
 chmod a+x [+ name +]
-PATH=$(builddir):$$PATH $(HELP2MAN) --section=[+ mansection +] -i $(top_srcdir)/docs/man/[+ name +].h2m -o $@ [+ name +]
+PATH=$(builddir):$$PATH pkgdatadir=$(builddir) $(HELP2MAN) --section=[+ mansection +] -i $(top_srcdir)/docs/man/[+ name +].h2m -o $@ [+ name +]
 """)
     r += gvar_add("CLEANFILES", "[+ name +].[+ mansection +]")
     r += "endif\n"
