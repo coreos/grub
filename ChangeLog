@@ -1,5 +1,12 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-setup.c (setup): Remove unused variable. Avoid shadowing.
+	Fix format specifications. Respect format security.
+	Don't translate already translated grub_errmsg.
+	(argp_parser): Remove unused variable
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrelpath.c (argp_parser): Remove unused variable.
 
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>

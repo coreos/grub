@@ -142,9 +142,8 @@ setup (const char *dir,
   size_t boot_size, core_size;
   grub_uint16_t core_sectors;
   grub_device_t root_dev = 0, dest_dev;
-  struct grub_boot_blocklist *first_block, *block, *last_block;
+  struct grub_boot_blocklist *first_block, *block;
   char *tmp_img;
-  int i;
   grub_disk_addr_t first_sector;
 #ifdef GRUB_MACHINE_PCBIOS
   grub_uint16_t current_segment
@@ -165,11 +164,11 @@ setup (const char *dir,
 					   unsigned offset,
 					   unsigned length)
     {
-      grub_util_info ("the first sector is <%llu,%u,%u>",
+      grub_util_info ("the first sector is <%" PRIuGRUB_UINT64_T ",%u,%u>",
 		      sector, offset, length);
 
       if (offset != 0 || length != GRUB_DISK_SECTOR_SIZE)
-	grub_util_error (_("the first sector of the core file is not sector-aligned"));
+	grub_util_error ("%s", _("the first sector of the core file is not sector-aligned"));
 
       first_sector = sector;
     }
@@ -180,15 +179,19 @@ setup (const char *dir,
     {
       struct grub_boot_blocklist *prev = block + 1;
 
-      grub_util_info ("saving <%llu,%u,%u>", sector, offset, length);
+      grub_util_info ("saving <%" PRIuGRUB_UINT64_T ",%u,%u>",
+		      sector, offset, length);
 
       if (offset != 0 || last_length != GRUB_DISK_SECTOR_SIZE)
-	grub_util_error (_("non-sector-aligned data is found in the core file"));
+	grub_util_error ("%s", _("non-sector-aligned data is found in the core file"));
 
       if (block != first_block
 	  && (grub_target_to_host64 (prev->start)
 	      + grub_target_to_host16 (prev->len)) == sector)
-	prev->len = grub_host_to_target16 (grub_target_to_host16 (prev->len) + 1);
+	{
+	  grub_uint16_t t = grub_target_to_host16 (prev->len) + 1;
+	  prev->len = grub_host_to_target16 (t);
+	}
       else
 	{
 	  block->start = grub_host_to_target64 (sector);
@@ -199,7 +202,7 @@ setup (const char *dir,
 
 	  block--;
 	  if (block->len)
-	    grub_util_error (_("the sectors of the core file are too fragmented"));
+	    grub_util_error ("%s", _("the sectors of the core file are too fragmented"));
 	}
 
       last_length = length;
@@ -239,7 +242,7 @@ setup (const char *dir,
   grub_util_info ("Opening dest");
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
-    grub_util_error ("%s", _(grub_errmsg));
+    grub_util_error ("%s", grub_errmsg);
 
   {
     char **root_devices = grub_guess_root_devices (dir);
@@ -288,13 +291,13 @@ setup (const char *dir,
 
   grub_util_info ("setting the root device to `%s'", root);
   if (grub_env_set ("root", root) != GRUB_ERR_NONE)
-    grub_util_error ("%s", _(grub_errmsg));
+    grub_util_error ("%s", grub_errmsg);
 
 #ifdef GRUB_MACHINE_PCBIOS
   /* Read the original sector from the disk.  */
   tmp_img = xmalloc (GRUB_DISK_SECTOR_SIZE);
   if (grub_disk_read (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE, tmp_img))
-    grub_util_error ("%s", _(grub_errmsg));
+    grub_util_error ("%s", grub_errmsg);
 #endif
 
 #ifdef GRUB_MACHINE_PCBIOS
@@ -361,7 +364,7 @@ setup (const char *dir,
 	&& (container->msdostype == GRUB_PC_PARTITION_TYPE_NETBSD
 	    || container->msdostype == GRUB_PC_PARTITION_TYPE_OPENBSD))
       {
-	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
+	grub_util_warn ("%s", _("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
 	goto unable_to_embed;
       }
 
@@ -420,12 +423,12 @@ setup (const char *dir,
     
     if (! dest_partmap && ! fs && !is_ldm)
       {
-	grub_util_warn (_("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
+	grub_util_warn ("%s", _("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
 	goto unable_to_embed;
       }
     if (multiple_partmaps || (dest_partmap && fs) || (is_ldm && fs))
       {
-	grub_util_warn (_("Attempting to install GRUB to a disk with multiple partition labels.  This is not supported yet."));
+	grub_util_warn ("%s", _("Attempting to install GRUB to a disk with multiple partition labels.  This is not supported yet."));
 	goto unable_to_embed;
       }
 
@@ -462,7 +465,7 @@ setup (const char *dir,
     
     if (err)
       {
-	grub_util_warn ("%s", _(grub_errmsg));
+	grub_util_warn ("%s", grub_errmsg);
 	grub_errno = GRUB_ERR_NONE;
 	goto unable_to_embed;
       }
@@ -483,7 +486,7 @@ setup (const char *dir,
 	block--;
 
 	if ((char *) block <= core_img)
-	  grub_util_error (_("no terminator in the core image"));
+	  grub_util_error ("%s", _("no terminator in the core image"));
       }
 
     save_first_sector (sectors[0] + grub_partition_get_start (container),
@@ -511,7 +514,7 @@ setup (const char *dir,
 			   + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH));
 
     if (no_rs_length == 0xffff)
-      grub_util_error (_("core.img version mismatch"));
+      grub_util_error ("%s", _("core.img version mismatch"));
 
     void *tmp = xmalloc (core_size);
     grub_memcpy (tmp, core_img, core_size);
@@ -538,28 +541,28 @@ setup (const char *dir,
 
     goto finish;
   }
-#endif
 
 unable_to_embed:
+#endif
 
   if (dest_dev->disk->dev->id != root_dev->disk->dev->id)
-    grub_util_error (_("embedding is not possible, but this is required for "
-		       "RAID and LVM install"));
+    grub_util_error ("%s", _("embedding is not possible, but this is required for "
+			     "RAID and LVM install"));
 
 #ifdef GRUB_MACHINE_PCBIOS
   if (dest_dev->disk->id != root_dev->disk->id
       || dest_dev->disk->dev->id != root_dev->disk->dev->id)
     /* TRANSLATORS: cross-disk refers to /boot being on one disk
        but MBR on another.  */
-    grub_util_error (_("embedding is not possible, but this is required for "
-		       "cross-disk install"));
+    grub_util_error ("%s", _("embedding is not possible, but this is required for "
+			     "cross-disk install"));
 #endif
 
-  grub_util_warn (_("Embedding is not possible.  GRUB can only be installed in this "
-		    "setup by using blocklists.  However, blocklists are UNRELIABLE and "
-		    "their use is discouraged."));
+  grub_util_warn ("%s", _("Embedding is not possible.  GRUB can only be installed in this "
+			  "setup by using blocklists.  However, blocklists are UNRELIABLE and "
+			  "their use is discouraged."));
   if (! force)
-    grub_util_error (_("will not proceed with blocklists"));
+    grub_util_error ("%s", _("will not proceed with blocklists"));
 
   /* The core image must be put on a filesystem unfortunately.  */
   grub_util_info ("will leave the core image on the filesystem");
@@ -573,70 +576,72 @@ unable_to_embed:
   grub_util_biosdisk_flush (root_dev->disk);
 
 #define MAX_TRIES	5
+  {
+    int i;
+    for (i = 0; i < MAX_TRIES; i++)
+      {
+	grub_util_info ((i == 0) ? _("attempting to read the core image `%s' from GRUB")
+			: _("attempting to read the core image `%s' from GRUB again"),
+			core_path_dev);
 
-  for (i = 0; i < MAX_TRIES; i++)
-    {
-      grub_util_info ((i == 0) ? _("attempting to read the core image `%s' from GRUB")
-		      : _("attempting to read the core image `%s' from GRUB again"),
-		      core_path_dev);
+	grub_disk_cache_invalidate_all ();
 
-      grub_disk_cache_invalidate_all ();
-
-      grub_file_filter_disable_compression ();
-      file = grub_file_open (core_path_dev);
-      if (file)
-	{
-	  if (grub_file_size (file) != core_size)
-	    grub_util_info ("succeeded in opening the core image but the size is different (%d != %d)",
-			    (int) grub_file_size (file), (int) core_size);
-	  else if (grub_file_read (file, tmp_img, core_size)
-		   != (grub_ssize_t) core_size)
-	    grub_util_info ("succeeded in opening the core image but cannot read %d bytes",
-			    (int) core_size);
-	  else if (memcmp (core_img, tmp_img, core_size) != 0)
-	    {
+	grub_file_filter_disable_compression ();
+	file = grub_file_open (core_path_dev);
+	if (file)
+	  {
+	    if (grub_file_size (file) != core_size)
+	      grub_util_info ("succeeded in opening the core image but the size is different (%d != %d)",
+			      (int) grub_file_size (file), (int) core_size);
+	    else if (grub_file_read (file, tmp_img, core_size)
+		     != (grub_ssize_t) core_size)
+	      grub_util_info ("succeeded in opening the core image but cannot read %d bytes",
+			      (int) core_size);
+	    else if (memcmp (core_img, tmp_img, core_size) != 0)
+	      {
 #if 0
-	      FILE *dump;
-	      FILE *dump2;
+		FILE *dump;
+		FILE *dump2;
 
-	      dump = fopen ("dump.img", "wb");
-	      if (dump)
-		{
-		  fwrite (tmp_img, 1, core_size, dump);
-		  fclose (dump);
-		}
+		dump = fopen ("dump.img", "wb");
+		if (dump)
+		  {
+		    fwrite (tmp_img, 1, core_size, dump);
+		    fclose (dump);
+		  }
 
-	      dump2 = fopen ("dump2.img", "wb");
-	      if (dump2)
-		{
-		  fwrite (core_img, 1, core_size, dump2);
-		  fclose (dump2);
-		}
+		dump2 = fopen ("dump2.img", "wb");
+		if (dump2)
+		  {
+		    fwrite (core_img, 1, core_size, dump2);
+		    fclose (dump2);
+		  }
 
 #endif
-	      grub_util_info ("succeeded in opening the core image but the data is different");
-	    }
-	  else
-	    {
-	      grub_file_close (file);
-	      break;
-	    }
+		grub_util_info ("succeeded in opening the core image but the data is different");
+	      }
+	    else
+	      {
+		grub_file_close (file);
+		break;
+	      }
 
-	  grub_file_close (file);
-	}
-      else
-	grub_util_info ("couldn't open the core image");
+	    grub_file_close (file);
+	  }
+	else
+	  grub_util_info ("couldn't open the core image");
 
-      if (grub_errno)
-	grub_util_info ("error message = %s", grub_errmsg);
+	if (grub_errno)
+	  grub_util_info ("error message = %s", grub_errmsg);
 
-      grub_errno = GRUB_ERR_NONE;
-      grub_util_biosdisk_flush (root_dev->disk);
-      sleep (1);
-    }
+	grub_errno = GRUB_ERR_NONE;
+	grub_util_biosdisk_flush (root_dev->disk);
+	sleep (1);
+      }
 
-  if (i == MAX_TRIES)
-    grub_util_error (_("cannot read `%s' correctly"), core_path_dev);
+    if (i == MAX_TRIES)
+      grub_util_error (_("cannot read `%s' correctly"), core_path_dev);
+  }
 
   /* Clean out the blocklists.  */
   block = first_block;
@@ -651,25 +656,25 @@ unable_to_embed:
       block--;
 
       if ((char *) block <= core_img)
-	grub_util_error (_("no terminator in the core image"));
+	grub_util_error ("%s", _("no terminator in the core image"));
     }
 
   /* Now read the core image to determine where the sectors are.  */
   grub_file_filter_disable_compression ();
   file = grub_file_open (core_path_dev);
   if (! file)
-    grub_util_error ("%s", _(grub_errmsg));
+    grub_util_error ("%s", grub_errmsg);
 
   file->read_hook = save_first_sector;
   if (grub_file_read (file, tmp_img, GRUB_DISK_SECTOR_SIZE)
       != GRUB_DISK_SECTOR_SIZE)
-    grub_util_error (_("failed to read the first sector of the core image"));
+    grub_util_error ("%s", _("failed to read the first sector of the core image"));
 
   block = first_block;
   file->read_hook = save_blocklists;
   if (grub_file_read (file, tmp_img, core_size - GRUB_DISK_SECTOR_SIZE)
       != (grub_ssize_t) core_size - GRUB_DISK_SECTOR_SIZE)
-    grub_util_error (_("failed to read the rest sectors of the core image"));
+    grub_util_error ("%s", _("failed to read the rest sectors of the core image"));
 
 #ifdef GRUB_MACHINE_IEEE1275
   {
@@ -716,12 +721,14 @@ unable_to_embed:
   grub_util_write_image (core_img, GRUB_DISK_SECTOR_SIZE * 2, fp, core_path);
   fclose (fp);
 
+#ifdef GRUB_MACHINE_PCBIOS
  finish:
+#endif
 
   /* Write the boot image onto the disk.  */
   if (grub_disk_write (dest_dev->disk, BOOT_SECTOR,
 		       0, GRUB_DISK_SECTOR_SIZE, boot_img))
-    grub_util_error ("%s", _(grub_errmsg));
+    grub_util_error ("%s", grub_errmsg);
 
   grub_util_biosdisk_flush (root_dev->disk);
   grub_util_biosdisk_flush (dest_dev->disk);
@@ -793,8 +800,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
   /* Get the input argument from argp_parse, which we
      know is a pointer to our arguments structure. */
   struct arguments *arguments = state->input;
-
-  char *p;
 
   switch (key)
     {
