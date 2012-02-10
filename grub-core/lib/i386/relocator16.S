@@ -105,7 +105,7 @@ VARIABLE(grub_relocator16_keep_a20_enabled)
 
 	movw    %cs, %ax
 	movw    %ax, %ss 
-	leaw    EXT_C(grub_relocator16_end) + GRUB_RELOCATOR16_STACK_SIZE, %sp
+	leaw    EXT_C(grub_relocator16_end) - LOCAL(base) + GRUB_RELOCATOR16_STACK_SIZE, %sp
 
 	/* second, try a BIOS call */
 	movw	$0x2400, %ax

@@ -1,5 +1,10 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/i386/relocator16.S: Fix incorrect use of absolute
+	address.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/legacycfg.c (grub_cmd_legacy_kernel):
 	Avoid improper use of strings.
 	(grub_cmd_legacy_initrdnounzip): Likewise.
