@@ -209,7 +209,7 @@ grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
 
 struct grub_lexer_param *
 grub_script_lexer_init (struct grub_parser_param *parser, char *script,
-			grub_reader_getline_t getline)
+			grub_reader_getline_t arg_getline)
 {
   struct grub_lexer_param *lexerstate;
 
@@ -225,7 +225,7 @@ grub_script_lexer_init (struct grub_parser_param *parser, char *script,
       return 0;
     }
 
-  lexerstate->getline = getline;	/* rest are all zeros already */
+  lexerstate->getline = arg_getline;	/* rest are all zeros already */
   if (yylex_init (&lexerstate->yyscanner))
     {
       grub_free (lexerstate->text);
