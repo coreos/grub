@@ -215,14 +215,14 @@ lrw_xor (const struct lrw_sector *sec,
 static gcry_err_code_t
 grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 			   grub_uint8_t * data, grub_size_t len,
-			   grub_disk_addr_t sector, int encrypt)
+			   grub_disk_addr_t sector, int do_encrypt)
 {
   grub_size_t i;
   gcry_err_code_t err;
 
   /* The only mode without IV.  */
   if (dev->mode == GRUB_CRYPTODISK_MODE_ECB && !dev->rekey)
-    return (encrypt ? grub_crypto_ecb_encrypt (dev->cipher, data, data, len)
+    return (do_encrypt ? grub_crypto_ecb_encrypt (dev->cipher, data, data, len)
 	    : grub_crypto_ecb_decrypt (dev->cipher, data, data, len));
 
   for (i = 0; i < len; i += (1U << dev->log_sector_size))
@@ -293,7 +293,7 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
       switch (dev->mode)
 	{
 	case GRUB_CRYPTODISK_MODE_CBC:
-	  if (encrypt)
+	  if (do_encrypt)
 	    err = grub_crypto_cbc_encrypt (dev->cipher, data + i, data + i,
 					   (1U << dev->log_sector_size), iv);
 	  else
@@ -304,7 +304,7 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 	  break;
 
 	case GRUB_CRYPTODISK_MODE_PCBC:
-	  if (encrypt)
+	  if (do_encrypt)
 	    err = grub_crypto_pcbc_encrypt (dev->cipher, data + i, data + i,
 					    (1U << dev->log_sector_size), iv);
 	  else
@@ -326,7 +326,7 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 	      {
 		grub_crypto_xor (data + i + j, data + i + j, iv,
 				 dev->cipher->cipher->blocksize);
-		if (encrypt)
+		if (do_encrypt)
 		  err = grub_crypto_ecb_encrypt (dev->cipher, data + i + j, 
 						 data + i + j,
 						 dev->cipher->cipher->blocksize);
@@ -349,7 +349,7 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 	    generate_lrw_sector (&sec, dev, (grub_uint8_t *) iv);
 	    lrw_xor (&sec, dev, data + i);
 
-	    if (encrypt)
+	    if (do_encrypt)
 	      err = grub_crypto_ecb_encrypt (dev->cipher, data + i, 
 					     data + i,
 					     (1U << dev->log_sector_size));
@@ -363,7 +363,7 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 	  }
 	  break;
 	case GRUB_CRYPTODISK_MODE_ECB:
-	  if (encrypt)
+	  if (do_encrypt)
 	    grub_crypto_ecb_encrypt (dev->cipher, data + i, data + i,
 				     (1U << dev->log_sector_size));
 	  else
