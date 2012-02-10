@@ -1,5 +1,12 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/LzFind.c (MatchFinder_GetIndexByte): Rename index to
+	curindex to avoid shadowing.
+	Make static.
+	(MatchFinder_GetNumAvailableBytes): Make static.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/squash4.c (direct_read): Rename read to curread to
 	avoid shadowing.
 
