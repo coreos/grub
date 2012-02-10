@@ -1,5 +1,9 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/import_gcry.py: Include grub/crypto.h in init.c.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (compress_kernel_lzma): Respect format security.
 	(generate_image): Make prefix a const char *.
 	Fix format specifications. Respect format security.

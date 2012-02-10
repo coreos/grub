@@ -372,6 +372,7 @@ outfile = os.path.join (cipher_dir_out, "ChangeLog")
 conf.close ();
 
 initfile = codecs.open (os.path.join (cipher_dir_out, "init.c"), "w", "utf-8")
+initfile.write ("#include <grub/crypto.h>\n")
 for module in modules:
     initfile.write ("extern void grub_%s_init (void);\n" % module)
     initfile.write ("extern void grub_%s_fini (void);\n" % module)
