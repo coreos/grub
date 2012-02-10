@@ -46,8 +46,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
      know is a pointer to our arguments structure. */
   struct arguments *arguments = state->input;
 
-  char *p;
-
   switch (key)
     {
     case ARGP_KEY_ARG:
