@@ -769,11 +769,11 @@ direct_read (struct grub_squash_data *data,
   cumulated_uncompressed_size = data->blksz * (grub_disk_addr_t) i;
   while (cumulated_uncompressed_size < off + len)
     {
-      grub_size_t boff, read;
+      grub_size_t boff, curread;
       boff = off - cumulated_uncompressed_size;
-      read = data->blksz - boff;
-      if (read > len)
-	read = len;
+      curread = data->blksz - boff;
+      if (curread > len)
+	curread = len;
       if (!(ino->block_sizes[i]
 	    & grub_cpu_to_le32_compile_time (SQUASH_BLOCK_UNCOMPRESSED)))
 	{
@@ -794,8 +794,8 @@ direct_read (struct grub_squash_data *data,
 	      grub_free (block);
 	      return -1;
 	    }
-	  if (data->decompress (block, csize, boff, buf, read, data)
-	      != (grub_ssize_t) read)
+	  if (data->decompress (block, csize, boff, buf, curread, data)
+	      != (grub_ssize_t) curread)
 	    {
 	      grub_free (block);
 	      if (!grub_errno)
@@ -810,12 +810,12 @@ direct_read (struct grub_squash_data *data,
 			      >> GRUB_DISK_SECTOR_BITS,
 			      (ino->cumulated_block_sizes[i] + a + boff)
 			      & (GRUB_DISK_SECTOR_SIZE - 1),
-			      read, buf);
+			      curread, buf);
       if (err)
 	return -1;
-      off += read;
-      len -= read;
-      buf += read;
+      off += curread;
+      len -= curread;
+      buf += curread;
       cumulated_uncompressed_size += grub_le_to_cpu32 (data->sb.block_size);
       i++;
     }

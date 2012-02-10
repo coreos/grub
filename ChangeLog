@@ -1,5 +1,10 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/squash4.c (direct_read): Rename read to curread to
+	avoid shadowing.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/cryptodisk.c (grub_cryptodisk_endecrypt): Rename
 	argument from encrypt to do_encrypt to avoid shadowing.
 
