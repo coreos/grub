@@ -1,5 +1,13 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-editenv.c (argp_parser): Make static.
+	(create_envblk_file): Use xmalloc.
+	(open_envblk_file): Likewise.
+	Resepect format security.
+	(set_variables): Respect format security.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_find_device): Respect format security.
 	(get_mdadm_uuid): Remove unused variable.
 	(grub_util_pull_device): Dont call gettext on already translated

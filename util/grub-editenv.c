@@ -63,7 +63,7 @@ void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
 /* Set the bug report address */
 const char *argp_program_bug_address = "<"PACKAGE_BUGREPORT">";
 
-error_t argp_parser (int key, char *arg, struct argp_state *state)
+static error_t argp_parser (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
@@ -113,9 +113,7 @@ create_envblk_file (const char *name)
   char *buf;
   char *namenew;
 
-  buf = malloc (DEFAULT_ENVBLK_SIZE);
-  if (! buf)
-    grub_util_error (_("out of memory"));
+  buf = xmalloc (DEFAULT_ENVBLK_SIZE);
 
   namenew = xasprintf ("%s.new", name);
   fp = fopen (namenew, "wb");
@@ -169,9 +167,7 @@ open_envblk_file (const char *name)
     grub_util_error (_("cannot seek `%s': %s"), name,
 		     strerror (errno));
 
-  buf = malloc (size);
-  if (! buf)
-    grub_util_error (_("out of memory"));
+  buf = xmalloc (size);
 
   if (fread (buf, 1, size, fp) != size)
     grub_util_error (_("cannot read `%s': %s"), name,
@@ -181,7 +177,7 @@ open_envblk_file (const char *name)
 
   envblk = grub_envblk_open (buf, size);
   if (! envblk)
-    grub_util_error (_("invalid environment block"));
+    grub_util_error ("%s", _("invalid environment block"));
 
   return envblk;
 }
@@ -239,7 +235,7 @@ set_variables (const char *name, int argc, char *argv[])
       *(p++) = 0;
 
       if (! grub_envblk_set (envblk, argv[0], p))
-        grub_util_error (_("environment block too small"));
+        grub_util_error ("%s", _("environment block too small"));
 
       argc--;
       argv++;
