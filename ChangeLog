@@ -1,5 +1,20 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkfont.c (grub_font_info): Make name a const char *.
+	(add_pixel): Make static.
+	(add_font): Likewise.
+	(write_string_section): Make name and str a const char *.
+	(write_be16_section): Make name a const char *.
+	(print_glyphs): Make static.
+	(write_font_ascii_bitmap): Likewise.
+	(write_font_width_spec): Likewise.
+	(write_font_pf2): Likewise.
+	(argp_parser): Remove unused variable.
+	Respect format security.
+	(main): Avoid shadowing. Respect format security.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-editenv.c (argp_parser): Make static.
 	(create_envblk_file): Use xmalloc.
 	(open_envblk_file): Likewise.
