@@ -832,7 +832,6 @@ grub_util_get_ldm (grub_disk_t disk, grub_disk_addr_t start)
   struct grub_diskfilter_pv *pv = NULL;
   struct grub_diskfilter_vg *vg = NULL;
   struct grub_diskfilter_lv *res, *lv;
-  int i;
 
   pv = grub_diskfilter_get_pv_from_disk (disk, &vg);
 
@@ -927,7 +926,6 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
   for (lv = vg->lvs; lv; lv = lv->next)
     {
       struct grub_diskfilter_lv *comp;
-      struct grub_ldm_partition *part;
 
       if (!lv->visible || !lv->fullname)
 	continue;
