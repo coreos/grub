@@ -148,7 +148,8 @@ void
 grub_util_write_image_at (const void *img, size_t size, off_t offset, FILE *out,
 			  const char *name)
 {
-  grub_util_info ("writing 0x%x bytes at offset 0x%x", size, offset);
+  grub_util_info ("writing 0x%" PRIxGRUB_SIZE " bytes at offset 0x%llx",
+		  size, (unsigned long long) offset);
   if (fseeko (out, offset, SEEK_SET) == -1)
     grub_util_error (_("cannot seek `%s': %s"),
 		     name, strerror (errno));
@@ -161,7 +162,7 @@ void
 grub_util_write_image (const char *img, size_t size, FILE *out,
 		       const char *name)
 {
-  grub_util_info ("writing 0x%x bytes", size);
+  grub_util_info ("writing 0x%" PRIxGRUB_SIZE " bytes", size);
   if (fwrite (img, 1, size, out) != size)
     {
       if (!name)
@@ -171,12 +172,6 @@ grub_util_write_image (const char *img, size_t size, FILE *out,
 	grub_util_error (_("cannot write to `%s': %s"),
 			 name, strerror (errno));
     }
-}
-
-char *
-grub_script_execute_argument_to_string (struct grub_script_arg *arg __attribute__ ((unused)))
-{
-  return 0;
 }
 
 grub_err_t
@@ -210,24 +205,12 @@ grub_script_execute_cmdwhile (struct grub_script_cmd *cmd __attribute__ ((unused
 }
 
 grub_err_t
-grub_script_execute_menuentry (struct grub_script_cmd *cmd __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
 grub_script_execute (struct grub_script *script)
 {
   if (script == 0 || script->cmd == 0)
     return 0;
 
   return script->cmd->exec (script->cmd);
-}
-
-void
-grub_putchar (int c)
-{
-  putchar (c);
 }
 
 int
