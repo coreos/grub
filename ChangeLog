@@ -1,5 +1,12 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/emu/misc.h (grub_util_warn): Add missing format
+	attribute.
+	(grub_util_info): Likewise.
+	(grub_util_error): Likewise.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mount.c (fuse_init): Avoid improper use of strings.
 	* util/grub-fstest.c (fstest): Likewise.
 
