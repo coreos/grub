@@ -72,7 +72,7 @@ grub_md_sha256_real (void)
   const gcry_md_spec_t *ret;
   ret = grub_crypto_lookup_md_by_name ("sha256");
   if (!ret)
-    grub_util_error (_("Coulnd't load sha256"));
+    grub_util_error ("%s", _("Coulnd't load sha256"));
   return ret;
 }
 
@@ -82,7 +82,7 @@ grub_md_sha512_real (void)
   const gcry_md_spec_t *ret;
   ret = grub_crypto_lookup_md_by_name ("sha512");
   if (!ret)
-    grub_util_error (_("Coulnd't load sha512"));
+    grub_util_error ("%s", _("Coulnd't load sha512"));
   return ret;
 }
 
@@ -226,7 +226,7 @@ grub_util_get_geli_uuid (const char *dev)
 
   uuid = xmalloc (GRUB_MD_SHA256->mdlen * 2 + 1);
   if (grub_util_fd_read (fd, (void *) &hdr, 512) < 0)
-    grub_util_error (_("couldn't read ELI metadata"));
+    grub_util_error ("%s", _("couldn't read ELI metadata"));
 	  
   COMPILE_TIME_ASSERT (sizeof (header) <= 512);
   header = (void *) &hdr;
@@ -235,7 +235,7 @@ grub_util_get_geli_uuid (const char *dev)
   if (grub_memcmp (header->magic, GELI_MAGIC, sizeof (GELI_MAGIC))
       || grub_le_to_cpu32 (header->version) > 5
       || grub_le_to_cpu32 (header->version) < 1)
-    grub_util_error (_("wrong ELI magic or version"));
+    grub_util_error ("%s", _("wrong ELI magic or version"));
 
   err = make_uuid ((void *) &hdr, uuid);
   if (err)

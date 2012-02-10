@@ -1,5 +1,17 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/geli.c (grub_md_sha256_real): Respect format security.
+	(grub_md_sha512_real): Likewise.
+	(grub_util_get_geli_uuid): Likewise.
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors): Likewise.
+	(grub_util_biosdisk_open): Fix format specification.
+	Respect format security.
+	* grub-core/kern/emu/misc.c (xmalloc): Respect format security.
+	(xrealloc): Likewise.
+	(xasprintf): Likewise.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/import_gcry.py: Include grub/crypto.h in init.c.
 
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -308,7 +308,7 @@ grub_util_get_fd_sectors (int fd, const char *name, unsigned *log_secsize)
     return minfo.dki_capacity;
 # else
     if (nr & ((1 << log_sector_size) - 1))
-      grub_util_error (_("unaligned device size"));
+      grub_util_error ("%s", _("unaligned device size"));
 
     return (nr >> log_sector_size);
 # endif
@@ -387,7 +387,8 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
     close (fd);
 
-    grub_util_info ("the size of %s is %llu", name, disk->total_sectors);
+    grub_util_info ("the size of %s is %" PRIuGRUB_UINT64_T,
+		    name, disk->total_sectors);
 
     return GRUB_ERR_NONE;
   }
@@ -771,7 +772,7 @@ grub_hostdisk_os_dev_to_grub_drive (const char *os_disk, int add)
     return NULL;
 
   if (i == ARRAY_SIZE (map))
-    grub_util_error (_("device count exceeds limit"));
+    grub_util_error ("%s", _("device count exceeds limit"));
 
   map[i].device = xstrdup (os_disk);
   map[i].drive = xmalloc (sizeof ("hostdisk/") + strlen (os_disk));
