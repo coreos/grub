@@ -1,5 +1,28 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/bsdlabel.c (iterate_real): Fix freeing of static
+	buffer.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/LzmaEnc.c (LzmaEnc_FastPosInit): Made static.
+	(LzmaEnc_SaveState): Removed (unused).
+	(LzmaEnc_RestoreState): Likewise.
+	(LzmaEnc_InitPriceTables): Made static.
+	(LzmaEnc_Construct): Likewise.
+	(LzmaEnc_FreeLits): Likewise.
+	(LzmaEnc_Destruct): Likewise.
+	(LzmaEnc_Init): Likewise.
+	(LzmaEnc_InitPrices): Likewise.
+	(LzmaEnc_Finish): Likewise.
+	(LzmaEnc_PrepareForLzma2): Removed (unused).
+	(LzmaEnc_MemPrepare): Likewise.
+	(LzmaEnc_GetNumAvailableBytes): Likewise.
+	(LzmaEnc_GetCurBuf): Likewise.
+	(LzmaEnc_CodeOneMemBlock): Likewise.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ldm.c (grub_util_get_ldm): Remove unused variables.
 	(grub_util_ldm_embed): Likewise.
 
@@ -8,7 +31,7 @@
 	* util/grub-editenv.c (print_var): Rename name to varname to
 	avoid shadowing.
 	(main): Rename index to curindex to avoid shadowing.
-	MAke filename a const char *.
+	Make filename a const char *.
 
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
