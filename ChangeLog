@@ -1,5 +1,10 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-script-check.c (argp_parser): Remove unused variable.
+	(main): Rename read to curread to avoid shadowing.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/misc.c (grub_util_write_image_at): Fix format specification.
 	(grub_util_write_image): Likewise.
 	(grub_script_execute_argument_to_string): Removed (unused).

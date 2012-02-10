@@ -56,8 +56,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
      know is a pointer to our arguments structure. */
   struct arguments *arguments = state->input;
 
-  char *p;
-
   switch (key)
     {
     case 'v':
@@ -102,10 +100,10 @@ main (int argc, char *argv[])
     int i;
     char *cmdline = 0;
     size_t len = 0;
-    ssize_t read;
+    ssize_t curread;
 
-    read = getline(&cmdline, &len, (file ?: stdin));
-    if (read == -1)
+    curread = getline(&cmdline, &len, (file ?: stdin));
+    if (curread == -1)
       {
 	*line = 0;
 	grub_errno = GRUB_ERR_READ_ERROR;
