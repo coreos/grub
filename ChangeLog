@@ -1,5 +1,11 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/symbol.h (EXT_C) [GRUB_UTIL]: Removed.
+	(FUNCTION) [GRUB_UTIL]: Likewise.
+	(VARIABLE) [GRUB_UTIL]: Likewise.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h: Avoid evaluationg NEED_ENABLE_EXECUTE_STACK and
 	NEED_REGISTER_FRAME_INFO in GRUB_UTIL.
 
