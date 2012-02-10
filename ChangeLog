@@ -1,5 +1,10 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mount.c (fuse_init): Avoid improper use of strings.
+	* util/grub-fstest.c (fstest): Likewise.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/geli.c (grub_md_sha256_real): Respect format security.
 	(grub_md_sha512_real): Likewise.
 	(grub_util_get_geli_uuid): Likewise.

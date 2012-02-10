@@ -342,12 +342,13 @@ fstest (int n)
     }
 
   {
-    char *argv[2] = { "-a", NULL};
     if (mount_crypt)
       {
+	char *argv[2] = { xstrdup ("-a"), NULL};
 	if (execute_command ("cryptomount", 1, argv))
 	  grub_util_error (_("`cryptomount' command fails: %s"),
 			   grub_errmsg);
+	free (argv[0]);
       }
   }
 
@@ -396,7 +397,7 @@ fstest (int n)
 	grub_device_t dev;
 	grub_fs_t fs;
 	char *uuid = 0;
-	char *argv[3] = { "-l", NULL, NULL};
+	char *argv[3] = { xstrdup ("-l"), NULL, NULL};
 	dev = grub_device_open (n ? args[0] : 0);
 	if (!dev)
 	  grub_util_error ("%s", grub_errmsg);
@@ -411,6 +412,7 @@ fstest (int n)
 	  grub_util_error ("%s", _("couldn't retrieve UUID"));
 	argv[1] = uuid;
 	execute_command ("xnu_uuid", 2, argv);
+	grub_free (argv[0]);
 	grub_free (uuid);
 	grub_device_close (dev);
       }
@@ -424,12 +426,13 @@ fstest (int n)
       if (!loop_name)
 	grub_util_error ("%s", grub_errmsg);
 
-      argv[0] = "-d";      
+      argv[0] = xstrdup ("-d");
       argv[1] = loop_name;
 
       execute_command ("loopback", 2, argv);
 
       grub_free (loop_name);
+      grub_free (argv[0]);
     }
 }
 

@@ -356,9 +356,10 @@ fuse_init (void)
 
   if (mount_crypt)
     {
-      char *argv[2] = { "-a", NULL};
+      char *argv[2] = { xstrdup ("-a"), NULL};
       if (execute_command ("cryptomount", 1, argv))
 	grub_util_error (_("cryptomount command fails: %s"), grub_errmsg);
+      free (argv[0]);
     }
 
   grub_lvm_fini ();
@@ -392,11 +393,12 @@ fuse_init (void)
       if (!loop_name)
 	grub_util_error ("%s", grub_errmsg);
 
-      argv[0] = "-d";      
+      argv[0] = xstrdup ("-d");
       argv[1] = loop_name;
 
       execute_command ("loopback", 2, argv);
 
+      grub_free (argv[0]);
       grub_free (loop_name);
     }
 
