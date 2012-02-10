@@ -1,5 +1,12 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-probe.c (probe): Don't call gettext on already translated
+	grub_errmsg.
+	Remove unused variables.
+	(argp_parser): Remove unused variable.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-script-check.c (argp_parser): Remove unused variable.
 	(main): Rename read to curread to avoid shadowing.
 

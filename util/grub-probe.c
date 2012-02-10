@@ -398,11 +398,11 @@ probe (const char *path, char **device_names, char delim)
       grub_util_info ("opening %s", drives_names[0]);
       dev = grub_device_open (drives_names[0]);
       if (! dev)
-	grub_util_error ("%s", _(grub_errmsg));
+	grub_util_error ("%s", grub_errmsg);
       
       fs = grub_fs_probe (dev);
       if (! fs)
-	grub_util_error ("%s", _(grub_errmsg));
+	grub_util_error ("%s", grub_errmsg);
 
       if (print == PRINT_FS)
 	{
@@ -429,7 +429,7 @@ probe (const char *path, char **device_names, char delim)
 			     fs->name);
 
 	  if (fs->label (dev, &label) != GRUB_ERR_NONE)
-	    grub_util_error ("%s", _(grub_errmsg));
+	    grub_util_error ("%s", grub_errmsg);
 
 	  printf ("%s", label);
 	  putchar (delim);
@@ -445,7 +445,7 @@ probe (const char *path, char **device_names, char delim)
       grub_util_info ("opening %s", *curdrive);
       dev = grub_device_open (*curdrive);
       if (! dev)
-	grub_util_error ("%s", _(grub_errmsg));
+	grub_util_error ("%s", grub_errmsg);
 
       if (print == PRINT_HINT_STR)
 	{
@@ -578,7 +578,6 @@ probe (const char *path, char **device_names, char delim)
       if (print == PRINT_EFI_HINT)
 	{
 	  char *biosname;
-	  char *name;
 	  const char *map;
 	  biosname = guess_efi_drive (*curdev);
 
@@ -602,7 +601,6 @@ probe (const char *path, char **device_names, char delim)
       if (print == PRINT_BAREMETAL_HINT)
 	{
 	  char *biosname;
-	  char *name;
 	  const char *map;
 
 	  biosname = guess_baremetal_drive (*curdev);
@@ -722,8 +720,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
   /* Get the input argument from argp_parse, which we
      know is a pointer to our arguments structure. */
   struct arguments *arguments = state->input;
-
-  char *p;
 
   switch (key)
     {
