@@ -304,7 +304,7 @@ endif
 
 BOOTCHECKS += bootcheck-kfreebsd-aout
 
-BOOTCHECKS += bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64
+#BOOTCHECKS += bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64
 
 BOOTCHECKS += bootcheck-multiboot bootcheck-multiboot2
 

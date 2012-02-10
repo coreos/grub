@@ -30,6 +30,8 @@
 
 #include "sm712_init.c"
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 #define GRUB_SM712_TOTAL_MEMORY_SPACE  0x700400
 #define GRUB_SM712_REG_BASE 0x700000
 #define GRUB_SM712_PCIID 0x0712126f

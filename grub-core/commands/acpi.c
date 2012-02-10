@@ -33,6 +33,8 @@
 #include <grub/efi/api.h>
 #endif
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 GRUB_MOD_LICENSE ("GPLv3+");
 
 static const struct grub_arg_option options[] = {

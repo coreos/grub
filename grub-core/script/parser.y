@@ -29,6 +29,8 @@
 #define YYENABLE_NLS    0
 
 #include "grub_script.tab.h"
+
+#pragma GCC diagnostic ignored "-Wunreachable-code"
 %}
 
 %union {

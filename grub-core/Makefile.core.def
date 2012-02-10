@@ -348,7 +348,7 @@ image = {
   mips_qemu_mips_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
   mips_arc_ldflags = '-static-libgcc -Wl,-Ttext,0x8bc00000';
   ldadd = '-lgcc';
-  cflags = '-static-libgcc';
+  cflags = '-Wno-unreachable-code -static-libgcc';
   enable = mips;
 };
 
@@ -1452,7 +1452,7 @@ module = {
   extra_dist = script/yylex.l;
   extra_dist = script/parser.y;
 
-  cflags = '$(CFLAGS_POSIX)';
+  cflags = '$(CFLAGS_POSIX) -Wno-redundant-decls';
   cppflags = '$(CPPFLAGS_POSIX)';
 };
 
@@ -1737,13 +1737,14 @@ module = {
   common = lib/xzembed/xz_dec_lzma2.c;
   common = lib/xzembed/xz_dec_stream.c;
   cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed';
+  cflags='-Wno-unreachable-code';
 };
 
 module = {
   name = lzopio;
   common = io/lzopio.c;
   common = lib/minilzo/minilzo.c;
-  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cflags = '$(CFLAGS_POSIX) -Wno-undef -Wno-redundant-decls -Wno-error';
   cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
 };
 

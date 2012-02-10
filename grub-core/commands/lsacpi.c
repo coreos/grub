@@ -25,6 +25,8 @@
 #include <grub/i18n.h>
 #include <grub/dl.h>
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 GRUB_MOD_LICENSE ("GPLv3+");
 
 static void

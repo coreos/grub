@@ -23,6 +23,8 @@
 #include <grub/err.h>
 #include <grub/mm.h>
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 void
 grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got)

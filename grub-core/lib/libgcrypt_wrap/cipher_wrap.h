@@ -88,6 +88,7 @@ fips_mode (void)
 }
 
 #ifdef GRUB_UTIL
+#pragma GCC diagnostic ignored "-Wshadow"
 static inline void *
 memcpy (void *dest, const void *src, grub_size_t n)
 {
@@ -105,6 +106,7 @@ memcmp (const void *s1, const void *s2, grub_size_t n)
 {
   return grub_memcmp (s1, s2, n);
 }
+#pragma GCC diagnostic error "-Wshadow"
 #endif
 
 

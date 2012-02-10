@@ -31,6 +31,8 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 /* For frequencies.  */
 #include <grub/machine/time.h>
 

@@ -1,5 +1,46 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Increase warning level.
+
+	* conf/Makefile.common (CFLAGS_GNULIB): Add -Wno-redundant-decls
+	-Wno-unreachable-code -Wno-conversion -Wno-old-style-definition.
+	* configure.ac (HOST_CFLAGS): Add bunch of -W arguments.
+	(TARGET_CFLAGS): Likewise.
+	(HOST_CFLAGS): Add -Werror unless --disable-werror is activated.
+	* grub-core/Makefile.core.def (decompressor_xz): Add
+	-Wno-unreachable-code.
+	(normal): Add -Wno-redundant-decls.
+	(xzio): Add -Wno-unreachable-code.
+	(lzopio): Add -Wno-redundant-decls -Wno-error.
+	* grub-core/commands/acpi.c: Add exception to -Wcast-align.
+	* grub-core/commands/lsacpi.c: Add exception to -Wcast-align.
+	* grub-core/gensymlist.sh: Add exception to -Wmissing-format-attribute.
+	* grub-core/kern/dl.c: Add exception to -Wcast-align.
+	* grub-core/kern/efi/efi.c (grub_efi_modules_addr): Likewise.
+	* grub-core/kern/i386/coreboot/init.c: Add exception to
+	-Wsuggest-attribute=noreturn.
+	* grub-core/kern/ia64/dl.c: Add exception to -Wcast-align.
+	* grub-core/kern/ia64/dl_helper.c: Likewise.
+	* grub-core/kern/mips/dl.c: Likewise.
+	* grub-core/kern/sparc64/dl.c: Likewise.
+	* grub-core/lib/LzmaEnc.c: Add exception to -Wshadow.
+	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h (memcpy): Likewise.
+	(memcmp): Likewise.
+	* grub-core/lib/pbkdf2.c: Add exception to -Wunreachable-code.
+	* grub-core/loader/ia64/efi/linux.c: Add exception to -Wcast-align.
+	* grub-core/loader/mips/linux.c: Likewise.
+	* grub-core/loader/multiboot_elfxx.c: Likewise.
+	* grub-core/script/parser.y: Add exception to -Wunreachable-code.
+	* grub-core/video/sm712.c: Add exception to -Wcast-align.
+	* util/import_gcry.py: Add -Wno-cast-align to modules checked by hand.
+	* grub-core/font/font.c (grub_font_loader_init): Add explicit cast and
+	fixme.
+	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Likewise.
+	* grub-core/kern/i386/multiboot_mmap.c (grub_machine_mmap_init):
+	Fix prototype.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/i386/relocator16.S: Fix incorrect use of absolute
 	address.
 

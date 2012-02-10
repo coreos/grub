@@ -49,6 +49,8 @@ grub_arch_dl_check_header (void *ehdr)
   return GRUB_ERR_NONE;
 }
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 /* Relocate symbols.  */
 grub_err_t
 grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)

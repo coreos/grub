@@ -39,6 +39,8 @@
 #define CONCAT(a,b)	CONCAT_(a, b)
 #define CONCAT_(a,b)	a ## b
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 /* Check if BUFFER contains ELF32 (or ELF64).  */
 static int
 CONCAT(grub_multiboot_is_elf, XX) (void *buffer)

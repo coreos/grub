@@ -323,7 +323,11 @@ for cipher_file in cipher_files:
             for src in modfiles.split():
                 conf.write ("  common = %s;\n" % src)
                 confutil.write ("  common = grub-core/%s;\n" % src)
-            conf.write ("  cflags = '$(CFLAGS_GCRY)';\n");
+            if modname == "gcry_rijndael" or modname == "gcry_md4" or modname == "gcry_md5" or modname == "gcry_rmd160" or modname == "gcry_sha1" or modname == "gcry_sha256" or modname == "gcry_sha512" or modname == "gcry_tiger":
+                # Alignment checked by hand
+                conf.write ("  cflags = '$(CFLAGS_GCRY) -Wno-cast-align';\n");
+            else:
+                conf.write ("  cflags = '$(CFLAGS_GCRY)';\n");
             conf.write ("  cppflags = '$(CPPFLAGS_GCRY)';\n");
             conf.write ("};\n\n")
         elif isc and cipher_file != "camellia.c":

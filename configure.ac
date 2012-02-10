@@ -373,7 +373,9 @@ LDFLAGS="$TARGET_LDFLAGS"
 LIBS=""
 
 # debug flags.
-TARGET_CFLAGS="$TARGET_CFLAGS -Wall -W -Wshadow -Wpointer-arith -Wmissing-prototypes -Wundef -Wstrict-prototypes -g"
+WARN_FLAGS="-Wall -W -Wshadow -Wold-style-declaration -Wold-style-definition -Wpointer-arith -Wmissing-prototypes -Wundef -Wextra -Waddress -Warray-bounds -Wattributes -Wbuiltin-macro-redefined -Wcast-align -Wchar-subscripts -Wclobbered -Wcomment -Wcoverage-mismatch -Wdeprecated -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wempty-body -Wendif-labels -Wfloat-equal -Wformat-contains-nul -Wformat-extra-args -Wformat-security -Wformat-y2k -Wignored-qualifiers -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Winit-self -Winline -Wint-to-pointer-cast -Winvalid-pch -Wunsafe-loop-optimizations -Wlogical-op -Wmain -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-noreturn -Wmudflap -Wmultichar -Wnonnull -Woverflow -Wpacked-bitfield-compat -Wparentheses -Wpointer-arith -Wpointer-to-int-cast -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstack-protector -Wstrict-aliasing -Wstrict-overflow -Wswitch -Wsync-nand -Wtrigraphs  -Wtype-limits -Wundef -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value  -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings -Wmissing-declarations -Wmissing-parameter-type  -Wmissing-prototypes -Wnested-externs -Wstrict-prototypes -Wpointer-sign"
+HOST_CFLAGS="$HOST_CFLAGS $WARN_FLAGS"
+TARGET_CFLAGS="$TARGET_CFLAGS $WARN_FLAGS -g -Wredundant-decls"
 TARGET_CCASFLAGS="$TARGET_CCASFLAGS -g"
 
 # Force no alignment to save space on i386.
@@ -592,6 +594,7 @@ AC_ARG_ENABLE([werror],
                              [do not use -Werror when building GRUB])])
 if test x"$enable_werror" != xno ; then
   TARGET_CFLAGS="$TARGET_CFLAGS -Werror"
+  HOST_CFLAGS="$HOST_CFLAGS -Werror"
 fi
 
 TARGET_CPP="$TARGET_CC -E"

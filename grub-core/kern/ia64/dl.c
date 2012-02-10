@@ -39,6 +39,8 @@ grub_arch_dl_check_header (void *ehdr)
   return GRUB_ERR_NONE;
 }
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 #define MASK20 ((1 << 20) - 1)
 #define MASK19 ((1 << 19) - 1)
 

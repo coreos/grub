@@ -44,6 +44,8 @@
 
 
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 grub_dl_t grub_dl_head = 0;
 
 static grub_err_t

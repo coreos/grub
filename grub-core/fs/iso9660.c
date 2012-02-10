@@ -560,10 +560,11 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	{
 	  /* The flags are stored at the data position 0, here the
 	     filename type is stored.  */
+	  /* FIXME: Fix this slightly improper cast.  */
 	  if (entry->data[0] & GRUB_ISO9660_RR_DOT)
-	    filename = ".";
+	    filename = (char *) ".";
 	  else if (entry->data[0] & GRUB_ISO9660_RR_DOTDOT)
-	    filename = "..";
+	    filename = (char *) "..";
 	  else if (entry->len >= 5)
 	    {
 	      grub_size_t size = 1, csize = 1;

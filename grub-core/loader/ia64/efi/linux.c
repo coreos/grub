@@ -35,6 +35,8 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 #define ALIGN_MIN (256*1024*1024)
 
 #define GRUB_ELF_SEARCH 1024

@@ -203,6 +203,8 @@ grub_get_rtc (void)
   return grub_rtc_get_time_ms ();
 }
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 /* Search the mods section from the PE32/PE32+ image. This code uses
    a PE32 header, but should work with PE32+ as well.  */
 grub_addr_t
@@ -245,6 +247,8 @@ grub_efi_modules_addr (void)
 
   return (grub_addr_t) info;
 }
+
+#pragma GCC diagnostic error "-Wcast-align"
 
 char *
 grub_efi_get_filename (grub_efi_device_path_t *dp)
