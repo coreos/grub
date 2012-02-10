@@ -191,10 +191,10 @@ list_variables (const char *name)
 {
   grub_envblk_t envblk;
 
-  auto int print_var (const char *name, const char *value);
-  int print_var (const char *name, const char *value)
+  auto int print_var (const char *varname, const char *value);
+  int print_var (const char *varname, const char *value)
     {
-      printf ("%s=%s\n", name, value);
+      printf ("%s=%s\n", varname, value);
       return 0;
     }
 
@@ -270,34 +270,34 @@ unset_variables (const char *name, int argc, char *argv[])
 int
 main (int argc, char *argv[])
 {
-  char *filename;
+  const char *filename;
   char *command;
-  int index, arg_count;
+  int curindex, arg_count;
 
   set_program_name (argv[0]);
 
   grub_util_init_nls ();
 
   /* Parse our arguments */
-  if (argp_parse (&argp, argc, argv, 0, &index, 0) != 0)
+  if (argp_parse (&argp, argc, argv, 0, &curindex, 0) != 0)
     {
       fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
       exit(1);
     }
 
-  arg_count = argc - index;
+  arg_count = argc - curindex;
 
   if (arg_count == 1)
     {
       filename = DEFAULT_ENVBLK_PATH;
-      command  = argv[index++];
+      command  = argv[curindex++];
     }
   else
     {
-      filename = argv[index++];
+      filename = argv[curindex++];
       if (strcmp (filename, "-") == 0)
         filename = DEFAULT_ENVBLK_PATH;
-      command  = argv[index++];
+      command  = argv[curindex++];
     }
 
   if (strcmp (command, "create") == 0)
@@ -305,9 +305,9 @@ main (int argc, char *argv[])
   else if (strcmp (command, "list") == 0)
     list_variables (filename);
   else if (strcmp (command, "set") == 0)
-    set_variables (filename, argc - index, argv + index);
+    set_variables (filename, argc - curindex, argv + curindex);
   else if (strcmp (command, "unset") == 0)
-    unset_variables (filename, argc - index, argv + index);
+    unset_variables (filename, argc - curindex, argv + curindex);
   else
     {
       char *program = xstrdup(program_name);

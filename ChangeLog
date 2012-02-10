@@ -1,5 +1,12 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-editenv.c (print_var): Rename name to varname to
+	avoid shadowing.
+	(main): Rename index to curindex to avoid shadowing.
+	MAke filename a const char *.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/lexer.c (grub_script_lexer_init): Rename getline
 	to arg_getline to avoid shadowing.
 
