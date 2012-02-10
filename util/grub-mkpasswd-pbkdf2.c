@@ -57,8 +57,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
      know is a pointer to our arguments structure. */
   struct arguments *arguments = state->input;
 
-  char *p;
-
   switch (key)
     {
     case 'c':
@@ -117,7 +115,6 @@ main (int argc, char *argv[])
   char *bufhex, *salthex, *result;
   gcry_err_code_t gcry_err;
   grub_uint8_t *buf, *salt;
-  ssize_t nr;
   char pass1[GRUB_AUTH_MAX_PASSLEN];
   char pass2[GRUB_AUTH_MAX_PASSLEN];
 
@@ -132,31 +129,10 @@ main (int argc, char *argv[])
       exit(1);
     }
 
-  bufhex = malloc (arguments.buflen * 2 + 1);
-  if (!bufhex)
-    grub_util_error (_("out of memory"));
-  buf = malloc (arguments.buflen);
-  if (!buf)
-    {
-      free (bufhex);
-      grub_util_error (_("out of memory"));
-    }
-
-  salt = malloc (arguments.saltlen);
-  if (!salt)
-    {
-      free (bufhex);
-      free (buf);
-      grub_util_error (_("out of memory"));
-    }
-  salthex = malloc (arguments.saltlen * 2 + 1);
-  if (!salthex)
-    {
-      free (salt);
-      free (bufhex);
-      free (buf);
-      grub_util_error (_("out of memory"));
-    }
+  bufhex = xmalloc (arguments.buflen * 2 + 1);
+  buf = xmalloc (arguments.buflen);
+  salt = xmalloc (arguments.saltlen);
+  salthex = xmalloc (arguments.saltlen * 2 + 1);
   
   printf ("%s", _("Enter password: "));
   if (!grub_password_get (pass1, GRUB_AUTH_MAX_PASSLEN))
@@ -165,7 +141,7 @@ main (int argc, char *argv[])
       free (bufhex);
       free (salthex);
       free (salt);
-      grub_util_error (_("failure to read password"));
+      grub_util_error ("%s", _("failure to read password"));
     }
   printf ("\n%s", _("Reenter password: "));
   if (!grub_password_get (pass2, GRUB_AUTH_MAX_PASSLEN))
@@ -174,7 +150,7 @@ main (int argc, char *argv[])
       free (bufhex);
       free (salthex);
       free (salt);
-      grub_util_error (_("failure to read password"));
+      grub_util_error ("%s", _("failure to read password"));
     }
 
   if (strcmp (pass1, pass2) != 0)
@@ -185,7 +161,7 @@ main (int argc, char *argv[])
       free (bufhex);
       free (salthex);
       free (salt);
-      grub_util_error (_("passwords don't match"));
+      grub_util_error ("%s", _("passwords don't match"));
     }
   memset (pass2, 0, sizeof (pass2));
 
@@ -205,7 +181,7 @@ main (int argc, char *argv[])
 	free (salthex);
 	free (salt);
 	fclose (f);
-	grub_util_error (_("couldn't retrieve random data for salt"));
+	grub_util_error ("%s", _("couldn't retrieve random data for salt"));
       }
     rd = fread (salt, 1, arguments.saltlen, f);
     if (rd != arguments.saltlen)
@@ -216,7 +192,7 @@ main (int argc, char *argv[])
 	free (bufhex);
 	free (salthex);
 	free (salt);
-	grub_util_error (_("couldn't retrieve random data for salt"));
+	grub_util_error ("%s", _("couldn't retrieve random data for salt"));
       }
     fclose (f);
   }

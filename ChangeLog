@@ -1,5 +1,10 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkpasswd-pbkdf2.c (argp_parser): Remove unused variable.
+	(main): Likewise. Use xmalloc. Respect format security.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mklayout.c (console_grub_equivalence): Make "layout"
 	a const char *.
 	(argp_parser): Remove unused variable.
