@@ -44,7 +44,7 @@
 #include "progname.h"
 #include "argp.h"
 
-static char *root = NULL;
+static const char *root = NULL;
 grub_device_t dev = NULL;
 grub_fs_t fs = NULL;
 static char **images = NULL;
@@ -55,7 +55,7 @@ static int num_disks = 0;
 static int mount_crypt = 0;
 
 static grub_err_t
-execute_command (char *name, int n, char **args)
+execute_command (const char *name, int n, char **args)
 {
   grub_command_t cmd;
 
@@ -338,17 +338,17 @@ fuse_init (void)
       char *loop_name;
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
-	grub_util_error (grub_errmsg);
+	grub_util_error ("%s", grub_errmsg);
 
       host_file = grub_xasprintf ("(host)%s", images[i]);
       if (!host_file)
-	grub_util_error (grub_errmsg);
+	grub_util_error ("%s", grub_errmsg);
 
       argv[0] = loop_name;
       argv[1] = host_file;
 
       if (execute_command ("loopback", 2, argv))
-        grub_util_error (_("loopback command fails"));
+        grub_util_error ("%s", _("loopback command fails"));
 
       grub_free (loop_name);
       grub_free (host_file);
@@ -390,7 +390,7 @@ fuse_init (void)
 
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
-	grub_util_error (grub_errmsg);
+	grub_util_error ("%s", grub_errmsg);
 
       argv[0] = "-d";      
       argv[1] = loop_name;
@@ -422,11 +422,9 @@ print_version (FILE *stream, struct argp_state *state)
 }
 void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
 
-error_t 
+static error_t 
 argp_parser (int key, char *arg, struct argp_state *state)
 {
-  char *p;
-
   switch (key)
     {
     case 'r':
@@ -512,7 +510,8 @@ struct argp argp = {
 int
 main (int argc, char *argv[])
 {
-  char *default_root, *alloc_root;
+  const char *default_root;
+  char *alloc_root;
 
   set_program_name (argv[0]);
 
@@ -528,7 +527,7 @@ main (int argc, char *argv[])
   argp_parse (&argp, argc, argv, 0, 0, 0);
   
   if (num_disks < 2)
-    grub_util_error (_("need an image and mountpoint"));
+    grub_util_error ("%s", _("need an image and mountpoint"));
   fuse_args = xrealloc (fuse_args, (fuse_argc + 2) * sizeof (fuse_args[0]));
   fuse_args[fuse_argc] = images[num_disks - 1];
   fuse_argc++;

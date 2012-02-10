@@ -1,5 +1,14 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mount.c (root): Make const char *.
+	(execute_command): Make first argument a const char *.
+	(fuse_init): Respect format security.
+	(argp_parser): Make static. Remove unused variable.
+	(main):  Make default_root a const char *.
+	Respect format security.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-probe.c (probe): Don't call gettext on already translated
 	grub_errmsg.
 	Remove unused variables.
