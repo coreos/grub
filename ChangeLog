@@ -1,5 +1,10 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/gpt.c (gpt_partition_map_embed): Rename disk to
+	disk_ to avoid shadowing.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/LzFind.c (MatchFinder_GetIndexByte): Rename index to
 	curindex to avoid shadowing.
 	Make static.

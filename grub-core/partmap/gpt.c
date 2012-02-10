@@ -127,7 +127,7 @@ grub_gpt_partition_map_iterate (grub_disk_t disk,
 
 #ifdef GRUB_UTIL
 static grub_err_t
-gpt_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
+gpt_partition_map_embed (struct grub_disk *disk_, unsigned int *nsectors,
 			 grub_embed_type_t embed_type,
 			 grub_disk_addr_t **sectors)
 {
@@ -168,7 +168,7 @@ gpt_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "GPT currently supports only PC-BIOS embedding");
 
-  err = grub_gpt_partition_map_iterate (disk, find_usable_region);
+  err = grub_gpt_partition_map_iterate (disk_, find_usable_region);
   if (err)
     return err;
 
