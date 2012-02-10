@@ -1,5 +1,11 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mklayout.c (console_grub_equivalence): Make "layout"
+	a const char *.
+	(argp_parser): Remove unused variable.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkfont.c (grub_font_info): Make name a const char *.
 	(add_pixel): Make static.
 	(add_font): Likewise.
