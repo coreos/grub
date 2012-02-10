@@ -1,5 +1,18 @@
 2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-fstest.c (execute_command): Make first argument
+	a const char *.
+	(read_file): Avoid shadowing.
+	Reuse underlying error message if device open fails.
+	(cmd_cmp): Respect format security.
+	(root): Make const char *.
+	(fstest): Remove args argument and use global copy.
+	Respect format security.
+	(argp_parser): Make static.
+	(main): Make default_root const char *.
+
+2012-02-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mount.c (root): Make const char *.
 	(execute_command): Make first argument a const char *.
 	(fuse_init): Respect format security.

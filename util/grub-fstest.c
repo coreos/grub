@@ -44,7 +44,7 @@
 #include "argp.h"
 
 static grub_err_t
-execute_command (char *name, int n, char **args)
+execute_command (const char *name, int n, char **args)
 {
   grub_command_t cmd;
 
@@ -77,7 +77,6 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
 {
   static char buf[BUF_SIZE];
   grub_file_t file;
-  grub_off_t ofs, len;
 
   if ((pathname[0] == '-') && (pathname[1] == 0))
     {
@@ -85,7 +84,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
 
       dev = grub_device_open (0);
       if ((! dev) || (! dev->disk))
-        grub_util_error (_("can\'t open device"));
+        grub_util_error ("%s", grub_errmsg);
 
       grub_util_info ("total sectors : %lld",
                       (unsigned long long) dev->disk->total_sectors);
@@ -132,31 +131,34 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len))
       return;
     }
 
-  ofs = skip;
-  len = file->size - skip;
-  if ((leng) && (leng < len))
-    len = leng;
+  {
+    grub_off_t ofs, len;
+    ofs = skip;
+    len = file->size - skip;
+    if ((leng) && (leng < len))
+      len = leng;
 
-  file->offset = skip;
+    file->offset = skip;
 
-  while (len)
-    {
-      grub_ssize_t sz;
+    while (len)
+      {
+	grub_ssize_t sz;
 
-      sz = grub_file_read (file, buf, (len > BUF_SIZE) ? BUF_SIZE : len);
-      if (sz < 0)
-	{
-	  grub_util_error (_("read error at offset %llu: %s"), ofs,
-			   grub_errmsg);
+	sz = grub_file_read (file, buf, (len > BUF_SIZE) ? BUF_SIZE : len);
+	if (sz < 0)
+	  {
+	    grub_util_error (_("read error at offset %llu: %s"), ofs,
+			     grub_errmsg);
+	    break;
+	  }
+
+	if ((sz == 0) || (hook (ofs, buf, sz)))
 	  break;
-	}
 
-      if ((sz == 0) || (hook (ofs, buf, sz)))
-	break;
-
-      ofs += sz;
-      len -= sz;
-    }
+	ofs += sz;
+	len -= sz;
+      }
+  }
 
   grub_file_close (file);
 }
@@ -224,7 +226,8 @@ cmd_cmp (char *src, char *dest)
   {
     if ((int) fread (buf_1, 1, len, ff) != len)
       {
-	grub_util_error (_("read error at offset %llu: %s"), ofs, grub_errmsg);
+	grub_util_error (_("read error at offset %llu: %s"), ofs,
+			 grub_errmsg);
 	return 1;
       }
 
@@ -261,7 +264,7 @@ cmd_cmp (char *src, char *dest)
     pre = ftell (ff);
     fseek (ff, 0, SEEK_END);
     if (pre != ftell (ff))
-      grub_util_error (_("unexpected end of file"));
+      grub_util_error ("%s", _("unexpected end of file"));
   }
   fclose (ff);
 }
@@ -300,7 +303,7 @@ cmd_crc (char *pathname)
       grub_be_to_cpu32(*(grub_uint32_t*)GRUB_MD_CRC32->read(crc32_context)));
 }
 
-static char *root = NULL;
+static const char *root = NULL;
 static int args_count = 0;
 static int nparm = 0;
 static int num_disks = 1;
@@ -311,7 +314,7 @@ static char **args = NULL;
 static int mount_crypt = 0;
 
 static void
-fstest (int n, char **args)
+fstest (int n)
 {
   char *host_file;
   char *loop_name;
@@ -322,11 +325,11 @@ fstest (int n, char **args)
       char *argv[2];
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
-	grub_util_error (grub_errmsg);
+	grub_util_error ("%s", grub_errmsg);
 
       host_file = grub_xasprintf ("(host)%s", images[i]);
       if (!host_file)
-	grub_util_error (grub_errmsg);
+	grub_util_error ("%s", grub_errmsg);
 
       argv[0] = loop_name;
       argv[1] = host_file;
@@ -343,7 +346,8 @@ fstest (int n, char **args)
     if (mount_crypt)
       {
 	if (execute_command ("cryptomount", 1, argv))
-	  grub_util_error (_("`cryptomount' command fails: %s"), grub_errmsg);
+	  grub_util_error (_("`cryptomount' command fails: %s"),
+			   grub_errmsg);
       }
   }
 
@@ -395,16 +399,16 @@ fstest (int n, char **args)
 	char *argv[3] = { "-l", NULL, NULL};
 	dev = grub_device_open (n ? args[0] : 0);
 	if (!dev)
-	  grub_util_error (grub_errmsg);
+	  grub_util_error ("%s", grub_errmsg);
 	fs = grub_fs_probe (dev);
 	if (!fs)
-	  grub_util_error (grub_errmsg);
+	  grub_util_error ("%s", grub_errmsg);
 	if (!fs->uuid)
-	  grub_util_error (_("couldn't retrieve UUID"));
+	  grub_util_error ("%s", _("couldn't retrieve UUID"));
 	if (fs->uuid (dev, &uuid))
-	  grub_util_error (grub_errmsg);
+	  grub_util_error ("%s", grub_errmsg);
 	if (!uuid)
-	  grub_util_error (_("couldn't retrieve UUID"));
+	  grub_util_error ("%s", _("couldn't retrieve UUID"));
 	argv[1] = uuid;
 	execute_command ("xnu_uuid", 2, argv);
 	grub_free (uuid);
@@ -418,7 +422,7 @@ fstest (int n, char **args)
 
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
-	grub_util_error (grub_errmsg);
+	grub_util_error ("%s", grub_errmsg);
 
       argv[0] = "-d";      
       argv[1] = loop_name;
@@ -462,7 +466,7 @@ print_version (FILE *stream, struct argp_state *state)
 }
 void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
 
-error_t 
+static error_t 
 argp_parser (int key, char *arg, struct argp_state *state)
 {
   char *p;
@@ -656,7 +660,8 @@ struct argp argp = {
 int
 main (int argc, char *argv[])
 {
-  char *default_root, *alloc_root;
+  const char *default_root;
+  char *alloc_root;
 
   set_program_name (argv[0]);
 
@@ -694,7 +699,7 @@ main (int argc, char *argv[])
     free (alloc_root);
 
   /* Do it.  */
-  fstest (args_count - 1 - num_disks, args);
+  fstest (args_count - 1 - num_disks);
 
   /* Free resources.  */
   grub_gcry_fini_all ();
