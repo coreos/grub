@@ -1,3 +1,8 @@
+2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gentpl.py: Add missing license header.
+	* docs/grub.texi: Update copyright year.
+
 2012-02-10  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	Source grub-mkconfig_lib from the build directory at build time.
