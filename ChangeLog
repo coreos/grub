@@ -1,5 +1,10 @@
 2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_find_root_devices_from_mountinfo): Fix types.
+	(grub_util_biosdisk_get_grub_dev): Fix format specification.
+
+2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/full.c (grub_arch_dl_get_tramp_got_size): Enable
 	on powerpc.
 	Reported by: Lennart Sorensen

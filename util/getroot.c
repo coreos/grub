@@ -372,7 +372,7 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
   char *buf = NULL;
   size_t len = 0;
   char **ret = NULL;
-  int entry_len = 0, entry_max = 4;
+  grub_size_t entry_len = 0, entry_max = 4;
   struct mountinfo_entry *entries;
   struct mountinfo_entry parent_entry = { 0, 0, 0, "", "", "", "" };
   int i;
@@ -1991,7 +1991,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 			const grub_partition_t partition)
       {
 	grub_disk_addr_t part_start = 0;
-	grub_util_info ("Partition %d starts from %lu",
+	grub_util_info ("Partition %d starts from %" PRIuGRUB_UINT64_T,
 			partition->number, partition->start);
 
 	part_start = grub_partition_get_start (partition);
@@ -2022,7 +2022,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	return 0;
       }
 
-    grub_util_info ("%s starts from %lu", os_dev, start);
+    grub_util_info ("%s starts from %" PRIuGRUB_UINT64_T, os_dev, start);
 
     if (start == 0 && device_is_wholedisk (os_dev))
       return name;
