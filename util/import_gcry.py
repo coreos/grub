@@ -325,7 +325,7 @@ for cipher_file in cipher_files:
                 confutil.write ("  common = grub-core/%s;\n" % src)
             if modname == "gcry_rijndael" or modname == "gcry_md4" or modname == "gcry_md5" or modname == "gcry_rmd160" or modname == "gcry_sha1" or modname == "gcry_sha256" or modname == "gcry_sha512" or modname == "gcry_tiger":
                 # Alignment checked by hand
-                conf.write ("  cflags = '$(CFLAGS_GCRY) -Wno-cast-align';\n");
+                conf.write ("  cflags = '$(CFLAGS_GCRY) -Wno-cast-align -Wno-strict-aliasing';\n");
             else:
                 conf.write ("  cflags = '$(CFLAGS_GCRY)';\n");
             conf.write ("  cppflags = '$(CPPFLAGS_GCRY)';\n");

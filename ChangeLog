@@ -1,5 +1,11 @@
 2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Remove -Winline altogether and -Wmissing-prototypes on
+	utils.
+	* util/import_gcry.py: Add -Wno-strict-aliasing on checked modules.
+
+2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (grub_diskfilter_print_partmap)
 	[GRUB_UTIL]: New function.
 	(insert_array) [GRUB_UTIL]: Store partmaps.
