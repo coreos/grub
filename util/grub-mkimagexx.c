@@ -182,6 +182,7 @@ struct unaligned_uint32
 
 #define MASK20 ((1 << 20) - 1)
 #define MASK19 ((1 << 19) - 1)
+#define MASK3 (~(grub_addr_t) 3)
 
 static void
 add_value_to_slot_20b (grub_addr_t addr, grub_uint32_t value)
@@ -190,17 +191,17 @@ add_value_to_slot_20b (grub_addr_t addr, grub_uint32_t value)
   switch (addr & 3)
     {
     case 0:
-      p = (struct unaligned_uint32 *) ((addr & ~3ULL) + 2);
+      p = (struct unaligned_uint32 *) ((addr & MASK3) + 2);
       p->val = ((((((p->val >> 2) & MASK20) + value) & MASK20) << 2) 
 		| (p->val & ~(MASK20 << 2)));
       break;
     case 1:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 7);
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 7);
       p->val = ((((((p->val >> 3) & MASK20) + value) & MASK20) << 3)
 		| (p->val & ~(MASK20 << 3)));
       break;
     case 2:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 12);
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 12);
       p->val = ((((((p->val >> 4) & MASK20) + value) & MASK20) << 4)
 		| (p->val & ~(MASK20 << 4)));
       break;
@@ -227,15 +228,15 @@ add_value_to_slot_21 (grub_addr_t addr, grub_uint32_t value)
   switch (addr & 3)
     {
     case 0:
-      p = (struct unaligned_uint32 *) ((addr & ~3ULL) + 2);
+      p = (struct unaligned_uint32 *) ((addr & MASK3) + 2);
       p->val = ((add_value_to_slot_21_real (((p->val >> 2) & MASKF21), value) & MASKF21) << 2) | (p->val & ~(MASKF21 << 2));
       break;
     case 1:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 7);
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 7);
       p->val = ((add_value_to_slot_21_real (((p->val >> 3) & MASKF21), value) & MASKF21) << 3) | (p->val & ~(MASKF21 << 3));
       break;
     case 2:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 12);
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 12);
       p->val = ((add_value_to_slot_21_real (((p->val >> 4) & MASKF21), value) & MASKF21) << 4) | (p->val & ~(MASKF21 << 4));
       break;
     }
@@ -457,8 +458,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 			    - target_section_addr - (offset & ~3)) >> 4;
 		    tr++;
 		    if (noff & ~MASK19)
-		      grub_util_error ("trampoline offset too big (%lx)",
-				       noff);
+		      grub_util_error ("trampoline offset too big (%"
+				       PRIxGRUB_UINT64_T ")", noff);
 		    add_value_to_slot_20b ((grub_addr_t) target, noff);
 		  }
 		  break;
@@ -919,7 +920,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
   grub_size_t kernel_size;
   grub_size_t ia64jmp_off = 0, ia64_toff = 0, ia64_got_off = 0;
   unsigned ia64jmpnum = 0;
-  Elf_Shdr *symtab_section;
+  Elf_Shdr *symtab_section = 0;
   grub_size_t got = 0;
 
   *start = 0;

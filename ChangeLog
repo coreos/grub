@@ -1,5 +1,14 @@
 2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c (generate_image): Explicitly init decompress_size.
+	* util/grub-mkimagexx.c (MASK3): New define.
+	(add_value_to_slot_20b): Use MASK3.
+	(add_value_to_slot_21): Likewise.
+	(relocate_addresses): Fix format specification.
+	(load_image): Explicitly init symtab_section.
+
+2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_find_root_devices_from_mountinfo): Fix types.
 	(grub_util_biosdisk_get_grub_dev): Fix format specification.
 
