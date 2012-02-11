@@ -1,5 +1,11 @@
 2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/full.c (grub_arch_dl_get_tramp_got_size): Enable
+	on powerpc.
+	Reported by: Lennart Sorensen
+
+2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gentpl.py: Add missing license header.
 	* docs/grub.texi: Update copyright year.
 
