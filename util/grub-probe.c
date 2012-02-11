@@ -87,6 +87,9 @@ probe_partmap (grub_disk_t disk)
   for (part = disk->partition; part; part = part->parent)
     printf ("%s ", part->partmap->name);
 
+  if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID)
+    grub_diskfilter_print_partmap (disk);
+
   /* In case of LVM/RAID, check the member devices as well.  */
   if (disk->dev->memberlist)
     {
@@ -304,7 +307,7 @@ probe_abstraction (grub_disk_t disk)
   raid_level = probe_raid_level (disk);
   if (raid_level >= 0)
     {
-      printf ("raid ");
+      printf ("diskfilter ");
       if (disk->dev->raidname)
 	printf ("%s ", disk->dev->raidname (disk));
     }

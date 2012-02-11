@@ -260,6 +260,24 @@ grub_diskfilter_memberlist (grub_disk_t disk)
   return list;
 }
 
+void
+grub_diskfilter_print_partmap (grub_disk_t disk)
+{
+  struct grub_diskfilter_lv *lv = disk->data;
+  struct grub_diskfilter_pv *pv;
+
+  if (lv->vg->pvs)
+    for (pv = lv->vg->pvs; pv; pv = pv->next)
+      {
+	grub_size_t s;
+	if (!pv->disk)
+	  grub_util_error (_("Couldn't find physical volume `%s'."
+			     " Check your device.map"), pv->name);
+	for (s = 0; pv->partmaps[s]; s++)
+	  grub_printf ("%s ", pv->partmaps[s]);
+      }
+}
+
 static const char *
 grub_diskfilter_getname (struct grub_disk *disk)
 {
@@ -964,6 +982,19 @@ insert_array (grub_disk_t disk, const struct grub_diskfilter_pv_id *id,
 	    pv->part_start = grub_partition_get_start (disk->partition);
 	    pv->part_size = grub_disk_get_size (disk);
 
+#ifdef GRUB_UTIL
+	    {
+	      grub_size_t s = 1;
+	      grub_partition_t p;
+	      for (p = disk->partition; p; p = p->parent)
+		s++;
+	      pv->partmaps = xmalloc (s * sizeof (pv->partmaps[0]));
+	      s = 0;
+	      for (p = disk->partition; p; p = p->parent)
+		pv->partmaps[s++] = xstrdup (p->partmap->name);
+	      pv->partmaps[s++] = 0;
+	    }
+#endif
 	    if (start_sector != (grub_uint64_t)-1)
 	      pv->start_sector = start_sector;
 	    pv->start_sector += pv->part_start;

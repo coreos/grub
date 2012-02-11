@@ -72,6 +72,9 @@ struct grub_diskfilter_pv {
   struct grub_diskfilter_pv *next;
   /* Optional.  */
   grub_uint8_t *internal_id;
+#ifdef GRUB_UTIL
+  char **partmaps;
+#endif
 };
 
 struct grub_diskfilter_lv {
@@ -186,6 +189,8 @@ grub_diskfilter_read_node (const struct grub_diskfilter_node *node,
 struct grub_diskfilter_pv *
 grub_diskfilter_get_pv_from_disk (grub_disk_t disk,
 				  struct grub_diskfilter_vg **vg);
+void
+grub_diskfilter_print_partmap (grub_disk_t disk);
 #endif
 
 #endif /* ! GRUB_RAID_H */

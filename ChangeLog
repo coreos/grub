@@ -1,5 +1,17 @@
 2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (grub_diskfilter_print_partmap)
+	[GRUB_UTIL]: New function.
+	(insert_array) [GRUB_UTIL]: Store partmaps.
+	* include/grub/diskfilter.h (grub_diskfilter_pv) [GRUB_UTIL]: New member
+	partmaps.
+	(grub_diskfilter_print_partmap) [GRUB_UTIL]: New proto.
+	* util/grub-probe.c (probe_partmap): Call grub_diskfilter_print_partmap.
+	(probe_abstraction): Print diskfilter and not raid.
+	Reported by: Lennart Sorensen
+
+2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (generate_image): Explicitly init decompress_size.
 	* util/grub-mkimagexx.c (MASK3): New define.
 	(add_value_to_slot_20b): Use MASK3.
