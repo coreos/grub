@@ -77,10 +77,18 @@ grub_script_break (grub_command_t cmd, int argc, char *argv[])
 
   if (argc == 0)
     count = 1;
-
-  else if ((argc > 1) || (count = grub_strtoul (argv[0], &p, 10)) == 0 ||
-	   (*p != '\0'))
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad break");
+  else if (argc > 1)
+    return  grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
+  else
+    {
+      count = grub_strtoul (argv[0], &p, 10);
+      if (grub_errno)
+	return grub_errno;
+      if (*p != '\0')
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("unrecognized number"));
+      if (count == 0)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("can't break 0 loops"));
+    }
 
   is_continue = grub_strcmp (cmd->name, "break") ? 1 : 0;
   active_breaks = count;
@@ -172,11 +180,14 @@ grub_script_return (grub_command_t cmd __attribute__((unused)),
     }
 
   n = grub_strtoul (argv[0], &p, 10);
+  if (grub_errno)
+    return grub_errno;
   if (*p != '\0')
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad argument");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("unrecognized number"));
 
   function_return = 1;
-  return n ? grub_error (GRUB_ERR_TEST_FAILURE, "false") : GRUB_ERR_NONE;
+  return n ? grub_error (n, N_("false")) : GRUB_ERR_NONE;
 }
 
 static int

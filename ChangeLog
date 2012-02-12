@@ -1,5 +1,12 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/execute.c (grub_script_break): Clarify logic.
+	Better error handling.
+	(grub_script_return): Likewise.
+	* grub-core/script/lexer.c (grub_script_lexer_yywrap): Likewise.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h (__GNU_LIBRARY__): Avoid
 	rimplicit redifinition.
 

@@ -130,7 +130,7 @@ int
 grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
 			  const char *input)
 {
-  int len = 0;
+  grub_size_t len = 0;
   char *p = 0;
   char *line = 0;
   YY_BUFFER_STATE buffer;
@@ -151,14 +151,21 @@ grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
   else
     line = grub_strdup (input);
 
+  if (! line)
+    {
+      grub_script_yyerror (parserstate, N_("out of memory"));
+      return 1;
+    }
+
+  len = grub_strlen (line);
+
   /* Ensure '\n' at the end.  */
-  if (line && line[0] == '\0')
+  if (line[0] == '\0')
     {
       grub_free (line);
       line = grub_strdup ("\n");
     }
-
-  if (line && (len = grub_strlen(line)) && line[len - 1] != '\n')
+  else if (len && line[len - 1] != '\n')
     {
       p = grub_realloc (line, len + 2);
       if (p)
