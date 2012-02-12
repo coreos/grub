@@ -1,5 +1,10 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/i386/pc/play.c (grub_cmd_play): Improve error
+	handling.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/hdparm.c (grub_cmd_hdparm): Allow running
 	on partition.
 

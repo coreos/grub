@@ -237,16 +237,20 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
       for (i = 1; i + 1 < argc; i += 2)
         {
           note.pitch = grub_strtoul (args[i], &end, 0);
+	  if (grub_errno)
+	    break;
           if (*end)
             {
-              grub_error (GRUB_ERR_BAD_NUMBER, "bogus pitch number");
+              grub_error (GRUB_ERR_BAD_NUMBER, N_("unrecognized number"));
               break;
             }
 
           note.duration = grub_strtoul (args[i + 1], &end, 0);
+	  if (grub_errno)
+	    break;
           if (*end)
             {
-              grub_error (GRUB_ERR_BAD_NUMBER, "bogus duration number");
+              grub_error (GRUB_ERR_BAD_NUMBER, N_("unrecognized number"));
               break;
             }
 
