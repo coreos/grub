@@ -1,5 +1,11 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/cmdline.c (grub_cmdline_get): Don't gettext prompt.
+	* grub-core/normal/main.c (grub_normal_read_line_real): Gettext
+	prompt here.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (zfs_fetch_nvlist): Mark unknown member here
 	as GRUB_ERR_BUG. Don't malloc if no device is available.
 

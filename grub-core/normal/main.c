@@ -385,9 +385,11 @@ grub_normal_read_line_real (char **line, int cont, int nested)
   const char *prompt;
 
   if (cont)
-    prompt = ">";
+    /* TRANSLATORS: it's command line prompt.  */
+    prompt = _(">");
   else
-    prompt = "grub>";
+    /* TRANSLATORS: it's command line prompt.  */
+    prompt = _("grub>");
 
   if (!prompt)
     return grub_errno;
@@ -396,7 +398,7 @@ grub_normal_read_line_real (char **line, int cont, int nested)
     {
       *line = grub_cmdline_get (prompt);
       if (*line)
-	break;
+	return 0;
 
       if (cont || nested)
 	{
@@ -405,8 +407,7 @@ grub_normal_read_line_real (char **line, int cont, int nested)
 	  return grub_errno;
 	}
     }
-  
-  return 0;
+ 
 }
 
 static grub_err_t
