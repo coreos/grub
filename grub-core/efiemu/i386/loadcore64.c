@@ -88,25 +88,35 @@ grub_arch_efiemu_relocate_symbols64 (grub_efiemu_segment_t segs,
 		switch (ELF64_R_TYPE (rel->r_info))
 		  {
 		  case R_X86_64_64:
-		    if ((err = grub_efiemu_write_value
-			 (addr, *addr64 + rel->r_addend + sym.off, sym.handle,
-			  0, seg->ptv_rel_needed, sizeof (grub_uint64_t))))
+		    err = grub_efiemu_write_value (addr,
+						   *addr64 + rel->r_addend
+						   + sym.off, sym.handle,
+						   0, seg->ptv_rel_needed,
+						   sizeof (grub_uint64_t));
+		    if (err)
 		      return err;
 		    break;
 
 		  case R_X86_64_PC32:
-		    if ((err = grub_efiemu_write_value
-			 (addr, *addr32 + rel->r_addend + sym.off
-			  - rel->r_offset - seg->off, sym.handle, seg->handle,
-			  seg->ptv_rel_needed, sizeof (grub_uint32_t))))
+		    err = grub_efiemu_write_value (addr,
+						   *addr32 + rel->r_addend
+						   + sym.off
+						   - rel->r_offset - seg->off,
+						   sym.handle, seg->handle,
+						   seg->ptv_rel_needed,
+						   sizeof (grub_uint32_t));
+		    if (err)
 		      return err;
 		    break;
 
                   case R_X86_64_32:
                   case R_X86_64_32S:
-		    if ((err = grub_efiemu_write_value
-			 (addr, *addr32 + rel->r_addend + sym.off, sym.handle,
-			  0, seg->ptv_rel_needed, sizeof (grub_uint32_t))))
+		    err = grub_efiemu_write_value (addr,
+						   *addr32 + rel->r_addend
+						   + sym.off, sym.handle,
+						   0, seg->ptv_rel_needed,
+						   sizeof (grub_uint32_t));
+		    if (err)
 		      return err;
                     break;
 		  default:

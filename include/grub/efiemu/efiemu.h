@@ -152,9 +152,12 @@ struct grub_efiemu_elf_sym
 
 int grub_efiemu_check_header32 (void *ehdr, grub_size_t size);
 int grub_efiemu_check_header64 (void *ehdr, grub_size_t size);
-grub_err_t grub_efiemu_loadcore_init32 (void *core, grub_size_t core_size,
+grub_err_t grub_efiemu_loadcore_init32 (void *core,
+					const char *filename,
+					grub_size_t core_size,
 					grub_efiemu_segment_t *segments);
-grub_err_t grub_efiemu_loadcore_init64 (void *core, grub_size_t core_size,
+grub_err_t grub_efiemu_loadcore_init64 (void *core, const char *filename,
+					grub_size_t core_size,
 					grub_efiemu_segment_t *segments);
 grub_err_t grub_efiemu_loadcore_load32 (void *core,
 					grub_size_t core_size,
@@ -165,7 +168,8 @@ grub_err_t grub_efiemu_loadcore_load64 (void *core,
 grub_err_t grub_efiemu_loadcore_unload32 (void);
 grub_err_t grub_efiemu_loadcore_unload64 (void);
 grub_err_t grub_efiemu_loadcore_unload(void);
-grub_err_t grub_efiemu_loadcore_init (grub_file_t file);
+grub_err_t grub_efiemu_loadcore_init (grub_file_t file,
+				      const char *filename);
 grub_err_t grub_efiemu_loadcore_load (void);
 
 /* Configuration tables manipulation. Definitions and functions */

@@ -201,7 +201,7 @@ grub_efiemu_load_file (const char *filename)
 
   grub_dprintf ("efiemu", "mm initialized\n");
 
-  err = grub_efiemu_loadcore_init (file);
+  err = grub_efiemu_loadcore_init (file, filename);
   if (err)
     {
       grub_file_close (file);

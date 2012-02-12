@@ -87,18 +87,23 @@ grub_arch_efiemu_relocate_symbols32 (grub_efiemu_segment_t segs,
 		switch (ELF32_R_TYPE (rel->r_info))
 		  {
 		  case R_386_32:
-		    if ((err = grub_efiemu_write_value
-			 (addr, sym.off + *addr, sym.handle, 0,
-			  seg->ptv_rel_needed, sizeof (grub_uint32_t))))
+		    err = grub_efiemu_write_value (addr, sym.off + *addr,
+						   sym.handle, 0,
+						   seg->ptv_rel_needed,
+						   sizeof (grub_uint32_t));
+		    if (err)
 		      return err;
 
 		    break;
 
 		  case R_386_PC32:
-		    if ((err = grub_efiemu_write_value
-			 (addr, sym.off + *addr - rel->r_offset
-			  - seg->off, sym.handle, seg->handle,
-			  seg->ptv_rel_needed, sizeof (grub_uint32_t))))
+		    err = grub_efiemu_write_value (addr, sym.off + *addr
+						   - rel->r_offset
+						   - seg->off, sym.handle,
+						   seg->handle,
+						   seg->ptv_rel_needed,
+						   sizeof (grub_uint32_t));
+		    if (err)
 		      return err;
 		    break;
 		  default:

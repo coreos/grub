@@ -1,5 +1,25 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Efiemu stylistic fixes and gettext.
+
+	* grub-core/efiemu/i386/loadcore32.c
+	(grub_arch_efiemu_relocate_symbols32): Avoid set in if.
+	* grub-core/efiemu/i386/loadcore64.c
+	(grub_arch_efiemu_relocate_symbols64): Likewise.
+	* grub-core/efiemu/i386/pc/cfgtables.c
+	(grub_machine_efiemu_init_tables): Likewise.
+	* grub-core/efiemu/loadcore.c (grub_efiemu_resolve_symbols): Likewise.
+	(grub_efiemu_loadcore_initXX): Add a filename argument.
+	All users updated.
+	Improved error message.
+	* grub-core/efiemu/loadcore_common.c (grub_efiemu_loadcore_init):
+	Add a filename argument.
+	All users updated.
+	* grub-core/efiemu/symbols.c (grub_efiemu_set_virtual_address_map):
+	Reclassify double relocation as GRUB_ERR_BUG.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/i386/pc/play.c (grub_cmd_play): Improve error
 	handling.
 

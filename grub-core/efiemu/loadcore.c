@@ -120,9 +120,9 @@ grub_efiemu_get_string (unsigned offset, const Elf_Ehdr *e)
   unsigned i;
   Elf_Shdr *s;
 
-  for (i = 0, s = (Elf_Shdr *)((char *) e + e->e_shoff);
+  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
-       i++, s = (Elf_Shdr *)((char *) s + e->e_shentsize))
+       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
     if (s->sh_type == SHT_STRTAB && offset < s->sh_size)
       return (char *) e + s->sh_offset + offset;
   return 0;
@@ -135,9 +135,9 @@ grub_efiemu_init_segments (grub_efiemu_segment_t *segs, const Elf_Ehdr *e)
   unsigned i;
   Elf_Shdr *s;
 
-  for (i = 0, s = (Elf_Shdr *)((char *) e + e->e_shoff);
+  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
-       i++, s = (Elf_Shdr *)((char *) s + e->e_shentsize))
+       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
     {
       if (s->sh_flags & SHF_ALLOC)
 	{
@@ -257,7 +257,8 @@ grub_efiemu_resolve_symbols (grub_efiemu_segment_t segs, Elf_Ehdr *e)
 	  /* Resolve a global symbol.  */
 	  if (sym->st_name != 0 && sym->st_shndx == 0)
 	    {
-	      if ((err = grub_efiemu_resolve_symbol (name, &handle, &off)))
+	      err = grub_efiemu_resolve_symbol (name, &handle, &off);
+	      if (err)
 		return err;
 	      grub_efiemu_elfsyms[i].handle = handle;
 	      grub_efiemu_elfsyms[i].off = off;
@@ -267,34 +268,43 @@ grub_efiemu_resolve_symbols (grub_efiemu_segment_t segs, Elf_Ehdr *e)
 	  break;
 
 	case STT_OBJECT:
-	  if ((err = grub_efiemu_get_section_addr
-	       (segs, sym->st_shndx, &handle, &off)))
+	  err = grub_efiemu_get_section_addr (segs, sym->st_shndx,
+					      &handle, &off);
+	  if (err)
 	    return err;
 
 	  off += sym->st_value;
 	  if (bind != STB_LOCAL)
-	    if ((err = grub_efiemu_register_symbol (name, handle, off)))
-	      return err;
+	    {
+	      err = grub_efiemu_register_symbol (name, handle, off);
+	      if (err)
+		return err;
+	    }
 	  grub_efiemu_elfsyms[i].handle = handle;
 	  grub_efiemu_elfsyms[i].off = off;
 	  break;
 
 	case STT_FUNC:
-	  if ((err = grub_efiemu_get_section_addr
-	       (segs, sym->st_shndx, &handle, &off)))
+	  err = grub_efiemu_get_section_addr (segs, sym->st_shndx,
+					      &handle, &off);
+	  if (err)
 	    return err;
 
 	  off += sym->st_value;
 	  if (bind != STB_LOCAL)
-	    if ((err = grub_efiemu_register_symbol (name, handle, off)))
-	      return err;
+	    {
+	      err = grub_efiemu_register_symbol (name, handle, off);
+	      if (err)
+		return err;
+	    }
 	  grub_efiemu_elfsyms[i].handle = handle;
 	  grub_efiemu_elfsyms[i].off = off;
 	  break;
 
 	case STT_SECTION:
-	  if ((err = grub_efiemu_get_section_addr
-	       (segs, sym->st_shndx, &handle, &off)))
+	  err = grub_efiemu_get_section_addr (segs, sym->st_shndx,
+					      &handle, &off);
+	  if (err)
 	    {
 	      grub_efiemu_elfsyms[i].handle = 0;
 	      grub_efiemu_elfsyms[i].off = 0;
@@ -322,7 +332,8 @@ grub_efiemu_resolve_symbols (grub_efiemu_segment_t segs, Elf_Ehdr *e)
 
 /* Load runtime to the memory and request memory for definitive location*/
 grub_err_t
-SUFFIX (grub_efiemu_loadcore_init) (void *core, grub_size_t core_size,
+SUFFIX (grub_efiemu_loadcore_init) (void *core, const char *filename,
+				    grub_size_t core_size,
 				    grub_efiemu_segment_t *segments)
 {
   Elf_Ehdr *e = (Elf_Ehdr *) core;
@@ -333,11 +344,14 @@ SUFFIX (grub_efiemu_loadcore_init) (void *core, grub_size_t core_size,
 
   /* Make sure that every section is within the core.  */
   if ((grub_size_t) core_size < e->e_shoff + e->e_shentsize * e->e_shnum)
-    return grub_error (GRUB_ERR_BAD_OS, "ELF sections outside core");
+    return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		       filename);
 
-  if ((err = grub_efiemu_init_segments (segments, core)))
+  err = grub_efiemu_init_segments (segments, core);
+  if (err)
     return err;
-  if ((err = grub_efiemu_count_symbols (core)))
+  err = grub_efiemu_count_symbols (core);
+  if (err)
     return err;
 
   grub_efiemu_request_symbols (1);
