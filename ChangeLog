@@ -1,5 +1,15 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/test.h (grub_unit_test_init): Add missing prototype.
+	(grub_unit_test_fini): Likewise.
+	* tests/lib/unit_test.c (main): Remove extra nested external prototype.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/test.h (GRUB_UNIT_TEST)
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/execute.c (grub_script_break): Clarify logic.
 	Better error handling.
 	(grub_script_return): Likewise.

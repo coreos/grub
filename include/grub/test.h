@@ -59,6 +59,9 @@ void grub_test_nonzero (int cond, const char *file,
 		    ## __VA_ARGS__,				\
 		    "assert failed: %s", #cond)
 
+void grub_unit_test_init (void);
+void grub_unit_test_fini (void);
+
 /* Macro to define a unit test.  */
 #define GRUB_UNIT_TEST(name, funp)		\
   void grub_unit_test_init (void)		\
