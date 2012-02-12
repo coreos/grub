@@ -3988,10 +3988,11 @@ developper team.
 Firmware console on BIOS, IEEE1275 and ARC doesn't allow you to enter non-ASCII
 characters. EFI specification allows for such but author is unaware of any
 actual implementations. Serial input is currently limited for latin1 (unlikely
-to change). Own keyboard implementations (at_keyboard and usb_keyboard) can
-support any characters but work on one-char-per-keystroke. So no dead keys or
-advanced input method. Also there is no keymap change hotkey. In practice it
-makes difficult to enter any text using non-Latin alphabet.
+to change). Own keyboard implementations (at_keyboard and usb_keyboard) 
+supports any key but work on one-char-per-keystroke.
+So no dead keys or advanced input method. Also there is no keymap change hotkey.
+In practice it makes difficult to enter any text using non-Latin alphabet.
+Moreover all current input consumers are limited to ASCII.
 
 @chapter Gettext
 GRUB supports being translated. For this you need to have language *.mo files in $prefix/locale, load gettext module and set ``lang'' variable.
@@ -4002,6 +4003,10 @@ equivalence has been made. Moreover the classes like [:alpha:] match only
 ASCII subset.
 
 @chapter Other
+Currently GRUB always uses YEAR-MONTH-DAY HOUR:MINUTE:SECOND [WEEKDAY] 24-hour
+datetime format but weekdays are translated.
+GRUB always uses the decimal number format with [0-9] as digits and . as
+descimal separator and no group separator.
 IEEE1275 aliases are matched case-insensitively except non-ASCII which is
 matched as binary. Similar behaviour is for matching OSBundleRequired.
 Since IEEE1275 aliases and OSBundleRequired don't contain any non-ASCII it
@@ -4014,6 +4019,10 @@ Identifiers containing non-ASCII may work but aren't supported.
 Only the ASCII space characters (space U+0020, tab U+000b, CR U+000d and
 LF U+000a) are recognised. Other unicode space characters aren't a valid
 field separator.
+@command{test} tests <, >, <=, >=, -pgt and -plt compare the strings in the
+lexicographical order of unicode codepoints, replicating the behaviour of
+test from coreutils.
+environment variables and commands are listed in the same order.
 
 @node Security
 @chapter Authentication and authorisation
