@@ -83,8 +83,8 @@ grub_mini_cmd_help (struct grub_command *cmd __attribute__ ((unused)),
 
   for (p = grub_command_list; p; p = p->next)
     grub_printf ("%s (%d%c)\t%s\n", p->name,
-		 p->prio & GRUB_PRIO_LIST_PRIO_MASK,
-		 (p->prio & GRUB_PRIO_LIST_FLAG_ACTIVE) ? '+' : '-',
+		 p->prio & GRUB_COMMAND_PRIO_MASK,
+		 (p->prio & GRUB_COMMAND_FLAG_ACTIVE) ? '+' : '-',
 		 p->description);
 
   return 0;
