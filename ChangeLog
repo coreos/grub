@@ -1,5 +1,10 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ntfs.c (locate_attr): Avoid set in if.
+	(grub_ntfs_iterate_dir): Likewise.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Efiemu stylistic fixes and gettext.
 
 	* grub-core/efiemu/i386/loadcore32.c

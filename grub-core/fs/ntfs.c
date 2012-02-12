@@ -267,13 +267,15 @@ locate_attr (struct grub_ntfs_attr *at, struct grub_ntfs_file *mft,
   char *pa;
 
   init_attr (at, mft);
-  if ((pa = find_attr (at, attr)) == NULL)
+  pa = find_attr (at, attr);
+  if (pa == NULL)
     return NULL;
   if ((at->flags & GRUB_NTFS_AF_ALST) == 0)
     {
       while (1)
 	{
-	  if ((pa = find_attr (at, attr)) == NULL)
+	  pa = find_attr (at, attr);
+	  if (pa == NULL)
 	    break;
 	  if (at->flags & GRUB_NTFS_AF_ALST)
 	    return pa;
@@ -800,7 +802,8 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
   init_attr (at, mft);
   while (1)
     {
-      if ((cur_pos = find_attr (at, GRUB_NTFS_AT_INDEX_ROOT)) == NULL)
+      cur_pos = find_attr (at, GRUB_NTFS_AT_INDEX_ROOT);
+      if (cur_pos == NULL)
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "no $INDEX_ROOT");
 	  goto done;
