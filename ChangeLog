@@ -1,5 +1,10 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/terminfo.c (grub_terminfo_output_unregister):
+	Mark calling with invalid term as GRUB_ERR_BUG.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/tftp.c (tftp_receive): Silently discard too short
 	packets rather than raising an error.
 

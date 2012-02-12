@@ -205,7 +205,7 @@ grub_terminfo_output_unregister (struct grub_term_output *term)
 	*ptr = ((struct grub_terminfo_output_state *) (*ptr)->data)->next;
 	return GRUB_ERR_NONE;
       }
-  return grub_error (GRUB_ERR_BAD_ARGUMENT, "terminal not found");
+  return grub_error (GRUB_ERR_BUG, "terminal not found");
 }
 
 /* Wrapper for grub_putchar to write strings.  */
