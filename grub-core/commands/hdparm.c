@@ -314,12 +314,6 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args)
   if (! disk)
     return grub_errno;
 
-  if (disk->partition)
-    {
-      grub_disk_close (disk);
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "partition not allowed");
-    }
-
   switch (disk->dev->id)
     {
     case GRUB_DISK_DEVICE_ATA_ID:

@@ -1,8 +1,13 @@
-2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/hdparm.c (grub_cmd_hdparm): Allow running
+	on partition.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/misc.h (grub_error_save): Fix cleaning grub_errno.
 
-2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Improve string. Gettextize.
 
