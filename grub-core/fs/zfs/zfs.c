@@ -571,9 +571,12 @@ zfs_fetch_nvlist (struct grub_zfs_device_desc *diskdesc, char **nvlist)
 {
   grub_err_t err;
 
-  *nvlist = grub_malloc (VDEV_PHYS_SIZE);
+  *nvlist = 0;
+
   if (!diskdesc->dev)
-    return grub_error (GRUB_ERR_BAD_FS, "member drive unknown");
+    return grub_error (GRUB_ERR_BUG, "member drive unknown");
+
+  *nvlist = grub_malloc (VDEV_PHYS_SIZE);
 
   /* Read in the vdev name-value pair list (112K). */
   err = grub_disk_read (diskdesc->dev->disk, diskdesc->vdev_phys_sector, 0,

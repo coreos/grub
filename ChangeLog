@@ -1,5 +1,10 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (zfs_fetch_nvlist): Mark unknown member here
+	as GRUB_ERR_BUG. Don't malloc if no device is available.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/terminfo.c (grub_terminfo_output_unregister):
 	Mark calling with invalid term as GRUB_ERR_BUG.
 
