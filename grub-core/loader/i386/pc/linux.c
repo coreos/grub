@@ -204,9 +204,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_printf ("   [Linux-%s, setup=0x%x, size=0x%x]\n",
-	       grub_linux_is_bzimage ? "bzImage" : "zImage", real_size,
-	       grub_linux16_prot_size);
+  grub_dprintf ("linux", "[Linux-%s, setup=0x%x, size=0x%x]\n",
+		grub_linux_is_bzimage ? "bzImage" : "zImage", real_size,
+		grub_linux16_prot_size);
 
   relocator = grub_relocator_new ();
   if (!relocator)

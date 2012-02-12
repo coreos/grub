@@ -1,5 +1,11 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/efi/appleloader.c (grub_cmd_appleloader): Move
+	diagnostic to dprintf.
+	* grub-core/loader/i386/pc/linux.c (grub_cmd_linux): Likewise.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/corecmd.c (grub_core_cmd_ls): Handle error in parsing
 	device name.
 

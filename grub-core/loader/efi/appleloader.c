@@ -167,7 +167,7 @@ grub_cmd_appleloader (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_printf ("Model : %s\n", pdev->model);
+  grub_dprintf ("appleload", "Model: %s\n", pdev->model);
 
   loaded_image = grub_efi_get_loaded_image (image_handle);
   if (! loaded_image)
