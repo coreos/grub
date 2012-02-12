@@ -160,7 +160,10 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
   grub_uint8_t *ptr;
 
   if (nb->tail - nb->data < (grub_ssize_t) sizeof (tftph->opcode))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "TFTP packet too small");
+    {
+      grub_dprintf ("tftp", "TFTP packet too small\n");
+      return GRUB_ERR_NONE;
+    }
 
   tftph = (struct tftphdr *) nb->data;
   switch (grub_be_to_cpu16 (tftph->opcode))
@@ -184,16 +187,17 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
       grub_netbuff_free (nb);
       err = ack (data->sock, 0);
       grub_error_save (&data->save_err);
-      if (err)
-	return err;
       return GRUB_ERR_NONE;
     case TFTP_DATA:
       if (nb->tail - nb->data < (grub_ssize_t) (sizeof (tftph->opcode)
 						+ sizeof (tftph->u.data.block)))
-	return grub_error (GRUB_ERR_OUT_OF_RANGE, "TFTP packet too small");
+	{
+	  grub_dprintf ("tftp", "TFTP packet too small\n");
+	  return GRUB_ERR_NONE;
+	}
       err = ack (data->sock, tftph->u.data.block);
       if (err)
-	return err;      
+	return err;
 
       err = grub_priority_queue_push (data->pq, &nb);
       if (err)

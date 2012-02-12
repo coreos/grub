@@ -1,5 +1,10 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/tftp.c (tftp_receive): Silently discard too short
+	packets rather than raising an error.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/xnu.c (grub_xnu_writetree_toheap_real): Avoid set
 	in if.
 
