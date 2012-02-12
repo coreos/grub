@@ -1,5 +1,9 @@
 2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h (grub_error_save): Fix cleaning grub_errno.
+
+2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Improve string. Gettextize.
 
 2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>

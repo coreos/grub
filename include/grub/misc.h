@@ -430,7 +430,7 @@ grub_error_save (struct grub_error_saved *save)
 {
   grub_memcpy (save->errmsg, grub_errmsg, sizeof (save->errmsg));
   save->grub_errno = grub_errno;
-  save->grub_errno = GRUB_ERR_NONE;
+  grub_errno = GRUB_ERR_NONE;
 }
 
 static inline void
