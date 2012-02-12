@@ -186,7 +186,7 @@ grub_cmd_export (struct grub_command *cmd __attribute__ ((unused)),
 
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "no environment variable specified");
+		       N_("one argument expected"));
 
   for (i = 0; i < argc; i++)
     grub_env_export (args[i]);

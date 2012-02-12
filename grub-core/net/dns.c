@@ -436,7 +436,8 @@ grub_net_dns_lookup (const char *name,
     }
 
   if (!n_servers)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no DNS servers");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("no DNS servers configured"));
 
   *naddresses = 0;
   if (cache)
@@ -491,7 +492,7 @@ grub_net_dns_lookup (const char *name,
 	{
 	  grub_free (data.name);
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			     "domain component is too long");
+			     N_("domain name component is too long"));
 	}
       *optr = (dot - iptr);
       optr++;
@@ -583,14 +584,16 @@ grub_net_dns_lookup (const char *name,
   if (*data.naddresses)
     return GRUB_ERR_NONE;
   if (data.dns_err)
-    return grub_error (GRUB_ERR_NET_NO_DOMAIN, "no DNS domain found");
+    return grub_error (GRUB_ERR_NET_NO_DOMAIN,
+		       N_("no DNS record found"));
     
   if (err)
     {
       grub_errno = err;
       return err;
     }
-  return grub_error (GRUB_ERR_TIMEOUT, "no DNS reply received");
+  return grub_error (GRUB_ERR_TIMEOUT,
+		     N_("no DNS reply received"));
 }
 
 static grub_err_t

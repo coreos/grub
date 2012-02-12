@@ -402,7 +402,7 @@ grub_diskfilter_read_node (const struct grub_diskfilter_node *node,
 			       0, size << GRUB_DISK_SECTOR_BITS, buf);
       else
 	return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-			   "physical volume %s not found", node->pv->name);
+			   N_("physical volume %s not found"), node->pv->name);
 
     }
   if (node->lv)
@@ -601,7 +601,8 @@ read_segment (struct grub_diskfilter_segment *seg, grub_disk_addr_t sector,
 						       buf, read_sector + b,
 						       read_size) :
 			   grub_error (GRUB_ERR_BAD_DEVICE,
-				       "raid6rec is not loaded"));
+				       N_("module `%s' isn't loaded"),
+				       "raid6rec"));
 		  }
 		else
 		  {
@@ -610,7 +611,8 @@ read_segment (struct grub_diskfilter_segment *seg, grub_disk_addr_t sector,
 						       buf, read_sector + b,
 						       read_size) :
 			   grub_error (GRUB_ERR_BAD_DEVICE,
-				       "raid5rec is not loaded"));
+				       N_("module `%s' isn't loaded"),
+				       "raid5rec"));
 		  }
 
 		if (err)

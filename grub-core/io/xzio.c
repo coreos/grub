@@ -278,7 +278,7 @@ grub_xzio_read (grub_file_t file, char *buf, grub_size_t len)
 	case XZ_DATA_ERROR:
 	case XZ_BUF_ERROR:
 	  grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
-		      "file corrupted or unsupported block options");
+		      N_("xz file corrupted or unsupported block options"));
 	  return -1;
 	default:
 	  break;

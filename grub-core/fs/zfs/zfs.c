@@ -415,7 +415,7 @@ zio_checksum_verify (zio_cksum_t zc, grub_uint32_t checksum,
 		    (unsigned long long) zc.zc_word[1],
 		    (unsigned long long) zc.zc_word[2], 
 		    (unsigned long long) zc.zc_word[3]);
-      return grub_error (GRUB_ERR_BAD_FS, "checksum verification failed");
+      return grub_error (GRUB_ERR_BAD_FS, N_("checksum verification failed"));
     }
 
   return GRUB_ERR_NONE;
@@ -1204,7 +1204,9 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	sector = DVA_OFFSET_TO_PHYS_SECTOR (offset);
 	if (!desc->dev)
 	  {
-	    return grub_error (GRUB_ERR_BAD_FS, "member drive unknown");
+	    return grub_error (GRUB_ERR_BAD_FS,
+			       N_("couldn't find a necesssary member device "
+				  "of multi-device filesystem"));
 	  }
 	/* read in a data block */
 	return grub_disk_read (desc->dev->disk, sector, 0, len, buf);
@@ -1608,7 +1610,9 @@ zio_read (blkptr_t *bp, grub_zfs_endian_t endian, void **buf,
   if (encrypted)
     {
       if (!grub_zfs_decrypt)
-	err = grub_error (GRUB_ERR_BAD_FS, "zfscrypt module not loaded");
+	err = grub_error (GRUB_ERR_BAD_FS, 
+			  N_("module `%s' isn't loaded"),
+			  "zfscrypt");
       else
 	{
 	  unsigned i, besti = 0;

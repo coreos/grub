@@ -191,7 +191,7 @@ grub_net_link_layer_resolve (struct grub_net_network_level_interface *inf,
       return GRUB_ERR_NONE;
     }
   return grub_error (GRUB_ERR_TIMEOUT, 
-		     "timeout: could not resolve hardware address");
+		     N_("timeout: could not resolve hardware address"));
 }
 
 void
@@ -347,7 +347,8 @@ grub_cmd_ipv6_autoconf (struct grub_command *cmd __attribute__ ((unused)),
     {
       if (slaacs[j]->slaac_counter)
 	continue;
-      err = grub_error (GRUB_ERR_FILE_NOT_FOUND, "couldn't configure %s",
+      err = grub_error (GRUB_ERR_FILE_NOT_FOUND,
+			N_("couldn't autoconfigure %s"),
 			ifaces[j]->card->name);
     }
 
@@ -630,7 +631,8 @@ grub_net_route_address (grub_net_network_level_address_t addr,
 	  bestroute = route;
       }
       if (bestroute == NULL)
-	return grub_error (GRUB_ERR_NET_NO_ROUTE, "destination unreachable");
+	return grub_error (GRUB_ERR_NET_NO_ROUTE,
+			   N_("destination unreachable"));
 
       if (!bestroute->is_gateway)
 	{
@@ -642,7 +644,8 @@ grub_net_route_address (grub_net_network_level_address_t addr,
       curtarget = bestroute->gw;
     }
 
-  return grub_error (GRUB_ERR_NET_ROUTE_LOOP, "route loop detected");
+  return grub_error (GRUB_ERR_NET_ROUTE_LOOP,
+		     N_("route loop detected"));
 }
 
 static grub_err_t
@@ -1168,7 +1171,8 @@ grub_net_open_real (const char *name)
     }
   if (!server)
     {
-      grub_error (GRUB_ERR_NET_BAD_ADDRESS, "no server");
+      grub_error (GRUB_ERR_NET_BAD_ADDRESS,
+		  N_("no server is specified"));
       return NULL;
     }  
 
@@ -1198,7 +1202,10 @@ grub_net_open_real (const char *name)
 	return ret;
       }
   }
-  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such device");
+
+  /* Restore original error.  */
+  grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("disk `%s' not found"),
+	      name);
 
   return NULL;
 }
@@ -1375,7 +1382,7 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
       else
 	return total;
     }
-  grub_error (GRUB_ERR_TIMEOUT, "timeout reading '%s'", net->name);
+  grub_error (GRUB_ERR_TIMEOUT, N_("timeout reading '%s'"), net->name);
   return -1;
 }
 
@@ -1488,7 +1495,7 @@ GRUB_MOD_INIT(net)
 				       N_("Add a network address."));
   cmd_slaac = grub_register_command ("net_ipv6_autoconf",
 				     grub_cmd_ipv6_autoconf,
-				     "[CARD [HWADDRESS]]",
+				     N_("[CARD [HWADDRESS]]"),
 				     N_("Perform an IPV6 autoconfiguration"));
 
   cmd_deladdr = grub_register_command ("net_del_addr", grub_cmd_deladdr,

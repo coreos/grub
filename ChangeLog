@@ -1,3 +1,7 @@
+2012-02-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Improve string. Gettextize.
+
 2012-02-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Remove -Winline altogether and -Wmissing-prototypes on

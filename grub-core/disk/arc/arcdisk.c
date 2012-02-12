@@ -258,7 +258,7 @@ grub_arcdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 					  totl, &count))
 	return grub_error (GRUB_ERR_READ_ERROR,
 			   N_("failure reading sector 0x%llx "
-						   " from `%s'"),
+			      "from `%s'"),
 			   (unsigned long long) sector,
 			   disk->name);
       totl -= count;
@@ -294,7 +294,7 @@ grub_arcdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
       if (GRUB_ARC_FIRMWARE_VECTOR->write (last_handle, buf,
 					   totl, &count))
 	return grub_error (GRUB_ERR_WRITE_ERROR, N_("failure writing sector 0x%llx "
-						   " from `%s'"),
+						    "to `%s'"),
 			   (unsigned long long) sector,
 			   disk->name);
       totl -= count;

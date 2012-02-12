@@ -106,7 +106,7 @@ grub_script_function_find (char *functionname)
       tmp[20] = 0;
       /* Avoid truncating inside UTF-8 character.  */
       tmp[grub_getend (tmp, tmp + grub_strlen (tmp))] = 0;
-      grub_error (GRUB_ERR_UNKNOWN_COMMAND, "unknown command `%s'", tmp);
+      grub_error (GRUB_ERR_UNKNOWN_COMMAND, N_("can't find command `%s'"), tmp);
     }
 
   return func;

@@ -60,7 +60,7 @@ grub_cmd_cmostest (struct grub_command *cmd __attribute__ ((unused)),
   if (value & (1 << bit))
     return GRUB_ERR_NONE;
 
-  return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+  return grub_error (GRUB_ERR_TEST_FAILURE, N_("false"));
 }
 
 static grub_err_t

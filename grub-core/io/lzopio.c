@@ -509,7 +509,7 @@ grub_lzopio_read (grub_file_t file, char *buf, grub_size_t len)
   return ret;
 
 CORRUPTED:
-  grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "lzop file corrupted");
+  grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("lzop file corrupted"));
   return -1;
 }
 

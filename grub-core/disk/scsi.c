@@ -26,6 +26,7 @@
 #include <grub/scsi.h>
 #include <grub/scsicmd.h>
 #include <grub/time.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -718,7 +719,7 @@ grub_scsi_write (grub_disk_t disk __attribute((unused)),
   scsi = disk->data;
 
   if (scsi->devtype == grub_scsi_devtype_cdrom)
-    return grub_error (GRUB_ERR_IO, "no CD burning");
+    return grub_error (GRUB_ERR_IO, N_("cannot write to cdrom"));
 
   while (size)
     {

@@ -169,7 +169,8 @@ grub_terminfo_set_current (struct grub_term_output *term,
       return grub_errno;
     }
 
-  return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminfo type");
+  return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("unknown terminfo type `%s'"),
+		     str);
 }
 
 grub_err_t
@@ -664,7 +665,7 @@ grub_cmd_terminfo (grub_extcmd_context_t ctxt, int argc, char **args)
 	return grub_errno;
       if (*ptr != 'x')
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "incorrect geometry specification");
+			   N_("incorrect terminal dimensions specification"));
       ptr++;
       h = grub_strtoul (ptr, &ptr, 0);
       if (grub_errno)
@@ -694,7 +695,7 @@ grub_cmd_terminfo (grub_extcmd_context_t ctxt, int argc, char **args)
       }
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		     "no terminal %s found or it's not handled by terminfo",
+		     N_("terminal %s isn't found or it's not handled by terminfo"),
 		     args[0]);
 }
 

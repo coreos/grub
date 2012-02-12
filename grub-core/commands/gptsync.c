@@ -133,7 +133,8 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
       if (! partition)
 	{
 	  grub_device_close (dev);
-	  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such partition");
+	  return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			     N_("no such partition"));
 	}
 
       if (partition->start + partition->len > 0xffffffff)

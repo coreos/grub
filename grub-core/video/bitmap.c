@@ -22,6 +22,7 @@
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -202,7 +203,9 @@ grub_video_bitmap_load (struct grub_video_bitmap **bitmap,
       reader = reader->next;
     }
 
-  return grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported bitmap format");
+  return grub_error (GRUB_ERR_BAD_FILE_TYPE,
+		     N_("bitmap file `%s' is of"
+			" unsupported format"), filename);
 }
 
 /* Return bitmap width.  */

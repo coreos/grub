@@ -487,7 +487,8 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
 
   return (grub_ntfscomp_func) ? grub_ntfscomp_func (at, dest, ofs, len, ctx,
 						    vcn) :
-    grub_error (GRUB_ERR_BAD_FS, "ntfscomp module not loaded");
+    grub_error (GRUB_ERR_BAD_FS, N_("module `%s' isn't loaded"),
+		"ntfscomp");
 }
 
 static grub_err_t

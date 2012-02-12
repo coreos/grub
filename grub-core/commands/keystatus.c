@@ -78,11 +78,11 @@ grub_cmd_keystatus (grub_extcmd_context_t ctxt,
 
       FOR_ACTIVE_TERM_INPUTS (term)
 	if (!term->getkeystatus)
-	  return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+	  return grub_error (GRUB_ERR_TEST_FAILURE, N_("false"));
 	else
 	  nterms++;
       if (!nterms)
-	return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+	return grub_error (GRUB_ERR_TEST_FAILURE, N_("false"));
       return 0;
     }
 
@@ -91,7 +91,7 @@ grub_cmd_keystatus (grub_extcmd_context_t ctxt,
   if (mods >= 0 && (mods & expect_mods) != 0)
     return 0;
   else
-    return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+    return grub_error (GRUB_ERR_TEST_FAILURE, N_("false"));
 }
 
 static grub_extcmd_t cmd;

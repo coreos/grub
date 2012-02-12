@@ -249,7 +249,7 @@ grub_cmd_zfsinfo (grub_command_t cmd __attribute__ ((unused)), int argc,
   int found;
 
   if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "device name required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   if (args[0][0] == '(' && args[0][grub_strlen (args[0]) - 1] == ')')
     {
@@ -325,7 +325,7 @@ grub_cmd_zfs_bootfs (grub_command_t cmd __attribute__ ((unused)), int argc,
   grub_uint64_t mdnobj;
 
   if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "filesystem name required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   devname = grub_file_get_device_name (args[0]);
   if (grub_errno)

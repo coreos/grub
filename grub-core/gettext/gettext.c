@@ -373,7 +373,7 @@ grub_cmd_translate (grub_command_t cmd __attribute__ ((unused)),
 		    int argc, char **args)
 {
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "text to translate required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   const char *translation;
   translation = grub_gettext_translate (args[0]);

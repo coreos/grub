@@ -22,6 +22,7 @@
 #include <grub/err.h>
 #include <grub/legacy_parse.h>
 #include <grub/i386/pc/vesa_modes_table.h>
+#include <grub/i18n.h>
 
 struct legacy_command
 {
@@ -801,7 +802,7 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
       len = grub_strlen (corig);
       if (!slash)
 	{
-	  grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid color specification `%s'",
+	  grub_error (GRUB_ERR_BAD_ARGUMENT, N_("invalid color specification `%s'"),
 		      args[0]);
 	  return NULL;
 	}

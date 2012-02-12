@@ -1172,20 +1172,20 @@ test_zlib_header (grub_gzio_t gzio)
   /* Check that compression method is DEFLATE.  */
   if ((cmf & 0xf) != DEFLATED)
     {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "unsupported gzip format");
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("unsupported gzip format"));
       return 0;
     }
 
   if ((cmf * 256 + flg) % 31)
     {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "unsupported gzip format");
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("unsupported gzip format"));
       return 0;
     }
 
   /* Dictionary isn't supported.  */
   if (flg & 0x20)
     {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "unsupported gzip format");
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("unsupported gzip format"));
       return 0;
     }
 

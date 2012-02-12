@@ -33,7 +33,7 @@ grub_cmd_hello (grub_extcmd_context_t ctxt __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
-  grub_printf ("Hello World\n");
+  grub_printf ("%s\n", _("Hello World"));
   return 0;
 }
 

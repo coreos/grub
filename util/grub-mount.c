@@ -61,7 +61,7 @@ execute_command (const char *name, int n, char **args)
 
   cmd = grub_command_find (name);
   if (! cmd)
-    grub_util_error (_("can\'t find command %s"), name);
+    grub_util_error (_("can't find command `%s'"), name);
 
   return (cmd->func) (cmd, n, args);
 }

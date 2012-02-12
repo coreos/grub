@@ -366,7 +366,7 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 		      &actual);
   if (actual != (grub_ssize_t) (size  << GRUB_DISK_SECTOR_BITS))
     return grub_error (GRUB_ERR_READ_ERROR, N_("failure reading sector 0x%llx "
-					       " from `%s'"),
+					       "from `%s'"),
 		       (unsigned long long) sector,
 		       disk->name);
 
@@ -386,7 +386,7 @@ grub_ofdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 		       &actual);
   if (actual != (grub_ssize_t) (size << GRUB_DISK_SECTOR_BITS))
     return grub_error (GRUB_ERR_WRITE_ERROR, N_("failure writing sector 0x%llx "
-						" from `%s'"),
+						"to `%s'"),
 		       (unsigned long long) sector,
 		       disk->name);
 

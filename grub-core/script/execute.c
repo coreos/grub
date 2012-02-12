@@ -26,6 +26,7 @@
 #include <grub/lib/arg.h>
 #include <grub/normal.h>
 #include <grub/extcmd.h>
+#include <grub/i18n.h>
 
 /* Max digits for a char is 3 (0xFF is 255), similarly for an int it
    is sizeof (int) * 3, and one extra for a possible -ve sign.  */
@@ -157,7 +158,8 @@ grub_script_return (grub_command_t cmd __attribute__((unused)),
   unsigned long n;
 
   if (! scope || argc > 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "not in function scope");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("not in function scope"));
 
   if (argc == 0)
     {
@@ -297,7 +299,8 @@ static grub_err_t
 grub_script_env_set (const char *name, const char *val)
 {
   if (grub_env_special (name))
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad variable name");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("invalid variable name `%s'"), name);
 
   return grub_env_set (name, val);
 }
@@ -579,7 +582,8 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
       if (argv.argc < 2 || ! argv.args[1])
 	{
 	  grub_script_argv_free (&argv);
-	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing arguments");
+	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			     N_("no command is specified"));
 	}
 
       invert = 1;
@@ -644,7 +648,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
       if (ret == GRUB_ERR_TEST_FAILURE)
 	grub_errno = ret = GRUB_ERR_NONE;
       else if (ret == GRUB_ERR_NONE)
-	ret = grub_error (GRUB_ERR_TEST_FAILURE, "false");
+	ret = grub_error (GRUB_ERR_TEST_FAILURE, N_("false"));
       else
 	{
 	  grub_print_error ();

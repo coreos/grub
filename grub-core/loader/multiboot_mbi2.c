@@ -33,6 +33,7 @@
 #include <grub/env.h>
 #include <grub/video.h>
 #include <grub/acpi.h>
+#include <grub/i18n.h>
 
 #if defined (GRUB_MACHINE_EFI)
 #include <grub/efi/efi.h>
@@ -98,7 +99,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
   if (len < 32)
     {
       grub_free (buffer);
-      return grub_error (GRUB_ERR_BAD_OS, "file too small");
+      return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"), filename);
     }
 
   COMPILE_TIME_ASSERT (MULTIBOOT_HEADER_ALIGN % 4 == 0);

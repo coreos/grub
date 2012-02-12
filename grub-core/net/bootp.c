@@ -302,7 +302,8 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
   grub_uint8_t taglength;
 
   if (argc < 4)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "4 arguments expected");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("four arguments expected"));
 
   FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
     if (grub_strcmp (inter->name, args[1]) == 0)
@@ -405,7 +406,8 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
     }
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		     "unrecognised format specification %s", args[3]);
+		     N_("unrecognised DHCP option format specification `%s'"),
+		     args[3]);
 }
 
 /* FIXME: allow to specify mac address.  */
@@ -546,7 +548,8 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	continue;
       grub_error_push ();
       grub_net_network_level_interface_unregister (&ifaces[j]);
-      err = grub_error (GRUB_ERR_FILE_NOT_FOUND, "couldn't configure %s",
+      err = grub_error (GRUB_ERR_FILE_NOT_FOUND,
+			N_("couldn't autoconfigure %s"),
 			ifaces[j].card->name);
     }
 

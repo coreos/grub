@@ -416,7 +416,7 @@ grub_cmd_test (grub_command_t cmd __attribute__ ((unused)),
     argc--;
 
   return test_parse (args, &argn, argc) ? GRUB_ERR_NONE
-    : grub_error (GRUB_ERR_TEST_FAILURE, "false");
+    : grub_error (GRUB_ERR_TEST_FAILURE, N_("false"));
 }
 
 static grub_command_t cmd_1, cmd_2;

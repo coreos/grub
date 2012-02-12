@@ -35,12 +35,12 @@ grub_cmd_time (grub_command_t ctxt __attribute__ ((unused)),
   grub_uint32_t end;
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "command expected");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("no command is specified"));
 
   cmd = grub_command_find (args[0]);
 
   if (!cmd)
-    return grub_error (GRUB_ERR_UNKNOWN_COMMAND, "Unknown command `%s'\n",
+    return grub_error (GRUB_ERR_UNKNOWN_COMMAND, N_("can't find command `%s'"),
 		       args[0]);
 
   start = grub_get_time_ms ();

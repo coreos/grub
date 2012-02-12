@@ -216,7 +216,7 @@ read_bfs_file (grub_disk_t disk,
 
   if (off + len > grub_bfs_to_cpu64 (ino->size))
     return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "attempt to read past the end of file");
+		       N_("attempt to read past the end of file"));
 
   if (off < (grub_bfs_to_cpu64 (ino->max_direct_range) << RANGE_SHIFT))
     {

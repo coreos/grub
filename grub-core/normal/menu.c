@@ -373,7 +373,9 @@ menu_init (int entry, grub_menu_t menu, int nested)
 		  }
 	      }
 	    else
-	      grub_error (GRUB_ERR_BAD_MODULE, "no gfxmenu found");
+	      grub_error (GRUB_ERR_BAD_MODULE,
+			  N_("module `%s' isn't loaded"),
+			  "gfxmenu");
 	    grub_print_error ();
 	    grub_wait_after_message ();
 	  }

@@ -284,7 +284,7 @@ grub_disk_open (const char *name)
       disk->partition = grub_partition_probe (disk, p + 1);
       if (! disk->partition)
 	{
-	  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such partition");
+	  grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("no such partition"));
 	  goto fail;
 	}
     }

@@ -241,7 +241,8 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
   size = grub_file_size (file);
   if (!size)
     {
-      grub_error (GRUB_ERR_BAD_OS, "file is empty");
+      grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		  filename);
       goto fail;
     }
   pages = (((grub_efi_uintn_t) size + ((1 << 12) - 1)) >> 12);

@@ -454,7 +454,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
     }
   while (0);
 
-  return grub_error (GRUB_ERR_BAD_OS, "couldn't load file %s\n",
+  return grub_error (GRUB_ERR_BAD_OS, "couldn't load file %s",
 		     args[0]);
 }
 
@@ -468,7 +468,8 @@ grub_cmd_legacy_initrd (struct grub_command *mycmd __attribute__ ((unused)),
     {
       cmd = grub_command_find ("initrd16");
       if (!cmd)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "command initrd16 not found");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("can't find command `%s'"),
+			   "initrd16");
 
       return cmd->func (cmd, argc, args);
     }
@@ -476,13 +477,14 @@ grub_cmd_legacy_initrd (struct grub_command *mycmd __attribute__ ((unused)),
     {
       cmd = grub_command_find ("module");
       if (!cmd)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "command module not found");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("can't find command `%s'"),
+			   "module");
 
       return cmd->func (cmd, argc, args);
     }
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		     "you need to load the kernel first");
+		     N_("you need to load the kernel first"));
 }
 
 static grub_err_t
@@ -495,7 +497,8 @@ grub_cmd_legacy_initrdnounzip (struct grub_command *mycmd __attribute__ ((unused
     {
       cmd = grub_command_find ("initrd16");
       if (!cmd)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "command initrd16 not found");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("can't find command `%s'"),
+			   "initrd16");
 
       return cmd->func (cmd, argc, args);
     }
@@ -511,7 +514,8 @@ grub_cmd_legacy_initrdnounzip (struct grub_command *mycmd __attribute__ ((unused
       newargs[0] = nounzipbuf;
       cmd = grub_command_find ("module");
       if (!cmd)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "command module not found");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("can't find command `%s'"),
+			   "module");
 
       err = cmd->func (cmd, argc + 1, newargs);
       grub_free (newargs);
@@ -519,7 +523,7 @@ grub_cmd_legacy_initrdnounzip (struct grub_command *mycmd __attribute__ ((unused
     }
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		     "you need to load the kernel first");
+		     N_("you need to load the kernel first"));
 }
 
 static grub_err_t

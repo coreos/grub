@@ -465,7 +465,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  int i;
 
 	  if (cmd)
-	    return grub_error (GRUB_ERR_WRITE_ERROR, "can\'t write to cdrom");
+	    return grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write to cdrom"));
 
 	  for (i = 0; i < GRUB_BIOSDISK_CDROM_RETRY_COUNT; i++)
             if (! grub_biosdisk_rw_int13_extensions (0x42, data->drive, dap))
@@ -473,7 +473,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 
 	  if (i == GRUB_BIOSDISK_CDROM_RETRY_COUNT)
 	    return grub_error (GRUB_ERR_READ_ERROR, N_("failure reading sector 0x%llx "
-						       " from `%s'"),
+						       "from `%s'"),
 			       (unsigned long long) sector,
 			       disk->name);
 	}
@@ -497,7 +497,9 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  1024 /* cylinders */ *
 	  256 /* heads */ *
 	  63 /* spt */)
-	return grub_error (GRUB_ERR_OUT_OF_RANGE, "%s out of disk", disk->name);
+	return grub_error (GRUB_ERR_OUT_OF_RANGE,
+			   N_("attempt to read or write outside of disk `%s'"),
+			   disk->name);
 
       soff = ((grub_uint32_t) sector) % data->sectors + 1;
       head = ((grub_uint32_t) sector) / data->sectors;
@@ -516,12 +518,12 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	    {
 	    case GRUB_BIOSDISK_READ:
 	      return grub_error (GRUB_ERR_READ_ERROR, N_("failure reading sector 0x%llx "
-							 " from `%s'"),
+							 "from `%s'"),
 				 (unsigned long long) sector,
 				 disk->name);
 	    case GRUB_BIOSDISK_WRITE:
 	      return grub_error (GRUB_ERR_WRITE_ERROR, N_("failure writing sector 0x%llx "
-							  " from `%s'"),
+							  "to `%s'"),
 				 (unsigned long long) sector,
 				 disk->name);
 	    }
@@ -587,7 +589,7 @@ grub_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
   struct grub_biosdisk_data *data = disk->data;
 
   if (data->flags & GRUB_BIOSDISK_FLAG_CDROM)
-    return grub_error (GRUB_ERR_IO, "can't write to CDROM");
+    return grub_error (GRUB_ERR_IO, N_("cannot write to cdrom"));
 
   while (size)
     {

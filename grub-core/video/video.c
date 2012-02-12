@@ -541,7 +541,7 @@ grub_video_set_mode (const char *modestring,
 	  grub_free (modevar);
 
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			     "no suitable mode found");
+			     N_("no suitable video mode found"));
 	}
 
       /* Skip separator. */
@@ -705,7 +705,7 @@ grub_video_set_mode (const char *modestring,
   grub_free (modevar);
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		     "no suitable mode found");
+		     N_("no suitable video mode found"));
 }
 
 /* Initialize Video API module.  */

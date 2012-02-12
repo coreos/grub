@@ -533,7 +533,10 @@ grub_efidisk_read (struct grub_disk *disk, grub_disk_addr_t sector,
 		       (grub_efi_uintn_t) size << disk->log_sector_size,
 		       buf);
   if (status != GRUB_EFI_SUCCESS)
-    return grub_error (GRUB_ERR_READ_ERROR, "efidisk read error");
+    return grub_error (GRUB_ERR_READ_ERROR,
+		       N_("failure reading sector 0x%llx from `%s'"),
+		       (unsigned long long) sector,
+		       disk->name);
 
   return GRUB_ERR_NONE;
 }
@@ -559,7 +562,9 @@ grub_efidisk_write (struct grub_disk *disk, grub_disk_addr_t sector,
 		       (grub_efi_uintn_t) size << disk->log_sector_size,
 		       (void *) buf);
   if (status != GRUB_EFI_SUCCESS)
-    return grub_error (GRUB_ERR_WRITE_ERROR, "efidisk write error");
+    return grub_error (GRUB_ERR_WRITE_ERROR,
+		       N_("failure writing sector 0x%llx to `%s'"),
+		       (unsigned long long) sector, disk->name);
 
   return GRUB_ERR_NONE;
 }

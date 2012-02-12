@@ -269,7 +269,7 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
 		break;
 	    }
 	if (! cur)
-	  return grub_error (GRUB_ERR_BAD_ARGUMENT, "unrecognised argument %s",
+	  return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("unknown argument `%s'"),
 			     args[i]);
 	ptool = cur;
 	pargs = (struct grub_parttool_args *)

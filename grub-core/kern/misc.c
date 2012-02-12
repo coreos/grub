@@ -373,7 +373,7 @@ grub_strtoul (const char *str, char **end, int base)
 #if GRUB_CPU_SIZEOF_LONG != 8
   if (num > ~0UL)
     {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "overflow is detected");
+      grub_error (GRUB_ERR_OUT_OF_RANGE, N_("overflow is detected"));
       return ~0UL;
     }
 #endif
@@ -427,7 +427,8 @@ grub_strtoull (const char *str, char **end, int base)
       /* NUM * BASE + DIGIT > ~0ULL */
       if (num > grub_divmod64 (~0ULL - digit, base, 0))
 	{
-	  grub_error (GRUB_ERR_OUT_OF_RANGE, "overflow is detected");
+	  grub_error (GRUB_ERR_OUT_OF_RANGE,
+		      N_("overflow is detected"));
 	  return ~0ULL;
 	}
 
@@ -437,7 +438,8 @@ grub_strtoull (const char *str, char **end, int base)
 
   if (! found)
     {
-      grub_error (GRUB_ERR_BAD_NUMBER, "unrecognized number");
+      grub_error (GRUB_ERR_BAD_NUMBER,
+		  N_("unrecognized number"));
       return 0;
     }
 

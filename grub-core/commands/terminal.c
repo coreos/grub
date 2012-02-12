@@ -108,7 +108,8 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
          if (term)
            break;
          if (again)
-           return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminal '%s'\n",
+           return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			      N_("terminal `%s' isn't found"),
                               args[i]);
          for (aut = autoloads; aut; aut = aut->next)
            if (grub_strcmp (args[i], aut->name) == 0
@@ -126,7 +127,8 @@ handle_command (int argc, char **args, struct abstract_terminal **enabled,
                break;
              }
          if (!aut)
-           return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown terminal '%s'\n",
+           return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			      N_("terminal `%s' isn't found"),
                               args[i]);
          again = 1;
        }

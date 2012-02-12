@@ -48,7 +48,7 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
   struct grub_msdos_partition_mbr mbr;
 
   if (dev->disk->partition->offset)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "not a primary partition");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("not a primary partition"));
 
   index = dev->disk->partition->index;
   part = dev->disk->partition;
@@ -126,7 +126,9 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
       || grub_msdos_partition_is_extended (type))
     {
       dev->disk->partition = part;
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid type");
+      return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			 N_("the partition type 0x%x isn't "
+			    "valid"));
     }
 
   mbr.entries[index].type = type;

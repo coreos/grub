@@ -288,7 +288,7 @@ grub_zfs_decrypt_real (grub_crypto_cipher_handle_t cipher,
 
   if (!cipher)
     return grub_error (GRUB_ERR_ACCESS_DENIED,
-		       "no decryption key available");;
+		       N_("no decryption key available"));
   err = algo_decrypt (cipher, algo,
 		      (grub_uint8_t *) buf,
 		      (grub_uint8_t *) buf,
@@ -300,7 +300,7 @@ grub_zfs_decrypt_real (grub_crypto_cipher_handle_t cipher,
   for (i = 0; i < 3; i++)
     if (grub_zfs_to_cpu32 (expected_mac[i], endian)
 	!= grub_be_to_cpu32 (mac[i]))
-      return grub_error (GRUB_ERR_BAD_FS, "MAC verification failed");
+      return grub_error (GRUB_ERR_BAD_FS, N_("MAC verification failed"));
   return GRUB_ERR_NONE;
 }
 

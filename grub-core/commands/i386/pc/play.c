@@ -181,7 +181,8 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
 {
 
   if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name or tempo and notes required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+		       N_("filename or tempo and notes expected"));
 
   if (argc == 1)
     {

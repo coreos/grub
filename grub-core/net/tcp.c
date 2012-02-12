@@ -657,9 +657,11 @@ grub_net_tcp_open (char *server,
     {
       grub_list_remove (GRUB_AS_LIST (socket));
       if (socket->they_reseted)
-	grub_error (GRUB_ERR_NET_PORT_CLOSED, "port closed");
+	grub_error (GRUB_ERR_NET_PORT_CLOSED,
+		    N_("connection refused"));
       else
-	grub_error (GRUB_ERR_NET_NO_ANSWER, "no answer");
+	grub_error (GRUB_ERR_NET_NO_ANSWER,
+		    N_("connection timeout"));
 
       grub_netbuff_free (nb);
       destroy_pq (socket);

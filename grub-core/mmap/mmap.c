@@ -361,7 +361,7 @@ grub_cmd_badram (grub_command_t cmd __attribute__ ((unused)),
   }
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "badram string required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   grub_dprintf ("badram", "executing badram\n");
 

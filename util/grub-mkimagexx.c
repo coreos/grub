@@ -938,7 +938,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
   num_sections = grub_target_to_host16 (e->e_shnum);
 
   if (kernel_size < section_offset + section_entsize * num_sections)
-    grub_util_error ("invalid ELF format");
+    grub_util_error (_("premature end of file %s"), kernel_path);
 
   sections = (Elf_Shdr *) (kernel_img + section_offset);
 
@@ -1025,7 +1025,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
 #endif
 
       if (! symtab_section)
-	grub_util_error ("no symbol table");
+	grub_util_error ("%s", _("no symbol table"));
     }
   else
     {
