@@ -189,10 +189,13 @@ grub_xnu_writetree_toheap_real (void *curptr,
   /* And then the keys. Recursively use this function. */
   for (cur = start; cur; cur = cur->next)
     if (cur->datasize == -1)
-      if (!(curptr = grub_xnu_writetree_toheap_real (curptr,
-						     cur->first_child,
-						     cur->name)))
-	return 0;
+      {
+	curptr = grub_xnu_writetree_toheap_real (curptr,
+						 cur->first_child,
+						 cur->name);
+	if (!curptr)
+	  return 0;
+      }
   return curptr;
 }
 

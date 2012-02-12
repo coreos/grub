@@ -1,5 +1,10 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/xnu.c (grub_xnu_writetree_toheap_real): Avoid set
+	in if.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/efi/appleloader.c (grub_cmd_appleloader): Move
 	diagnostic to dprintf.
 	* grub-core/loader/i386/pc/linux.c (grub_cmd_linux): Likewise.
