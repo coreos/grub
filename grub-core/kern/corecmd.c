@@ -133,6 +133,8 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
       char *path;
 
       device_name = grub_file_get_device_name (argv[0]);
+      if (grub_errno)
+	goto fail;
       dev = grub_device_open (device_name);
       if (! dev)
 	goto fail;

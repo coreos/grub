@@ -1,5 +1,10 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/corecmd.c (grub_core_cmd_ls): Handle error in parsing
+	device name.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c (locate_attr): Avoid set in if.
 	(grub_ntfs_iterate_dir): Likewise.
 
