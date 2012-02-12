@@ -31,7 +31,8 @@
 #define WORDS_BIGENDIAN 1
 #endif
 
-#define __GNU_LIBRARY__
+#undef __GNU_LIBRARY__
+#define __GNU_LIBRARY__ 1
 
 #define DIM ARRAY_SIZE
 

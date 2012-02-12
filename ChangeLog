@@ -1,5 +1,10 @@
 2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h (__GNU_LIBRARY__): Avoid
+	rimplicit redifinition.
+
+2012-02-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Internationalisation): Detail (lack of) collation in
 	GRUB.
 
