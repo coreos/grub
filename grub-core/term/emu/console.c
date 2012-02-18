@@ -116,7 +116,7 @@ grub_ncurses_getkey (struct grub_term_input *term __attribute__ ((unused)))
   switch (c)
     {
     case ERR:
-      return -1;
+      return GRUB_TERM_NO_KEY;
     case KEY_LEFT:
       c = GRUB_TERM_KEY_LEFT;
       break;

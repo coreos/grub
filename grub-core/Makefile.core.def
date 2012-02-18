@@ -207,7 +207,6 @@ kernel = {
   emu = gnulib/progname.c;
   emu = gnulib/error.c;
   emu = kern/emu/cache_s.S;
-  emu = kern/emu/console.c;
   emu = kern/emu/hostdisk.c;
   emu = kern/emu/hostfs.c;
   emu = kern/emu/main.c;
@@ -215,6 +214,7 @@ kernel = {
   emu = kern/emu/mm.c;
   emu = kern/emu/time.c;
   emu = kern/emu/cache.c;
+  emu = term/emu/console.c;
 
   videoinkernel = term/gfxterm.c;
   videoinkernel = font/font.c;
