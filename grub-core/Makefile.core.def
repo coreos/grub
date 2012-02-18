@@ -1710,6 +1710,12 @@ module = {
 };
 
 module = {
+  name = backtrace;
+  common = lib/i386/backtrace.c;
+  enable = x86;
+};
+
+module = {
   name = lsapm;
   common = commands/i386/pc/lsapm.c;
   enable = i386_pc;

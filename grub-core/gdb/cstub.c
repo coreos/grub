@@ -210,6 +210,15 @@ grub_gdb_trap (int trap_no)
   char *ptr;
   int newPC;
 
+  if (!grub_gdb_port)
+    {
+      grub_printf ("Unhandled exception 0x%x at ", trap_no);
+      grub_backtrace_print_address (grub_gdb_regs[PC]);
+      grub_printf ("\n");
+      grub_backtrace_pointer (grub_gdb_regs[EBP]);
+      grub_abort ();
+    }
+
   sig_no = grub_gdb_trap2sig (trap_no);
 
   ptr = grub_gdb_outbuf;
