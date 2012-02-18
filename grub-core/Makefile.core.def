@@ -19,13 +19,13 @@ script = {
 };
 
 script = {
-  installdir = noinst;
+  installdir = platform;
   name = gmodule.pl;
   common = gmodule.pl.in;
 };
 
 script = {
-  installdir = noinst;
+  installdir = platform;
   name = gdb_grub;
   common = gdb_grub.in;
 };

@@ -1,5 +1,14 @@
 2012-02-18 Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/Makefile.common (platform_SCRIPTS): New variable.
+	(platform_PROGRAMS): Likewise.
+	* gentpl.py: Mark *,module and *.image for install.
+	* grub-core/gdb_grub.in: Add a notice of expected environment.
+	* grub-core/Makefile.core.def (gdb_grub): Mark for install.
+	(gmodule.pl): Likewise.
+
+2012-02-18 Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Replace grub_checkkey with grub_getkey_noblock.
 
 	* grub-core/kern/term.c (grub_checkkey): Replaced with ...

@@ -370,7 +370,7 @@ def first_time(snippet):
 def module(platform):
     r = set_canonical_name_suffix(".module")
 
-    r += gvar_add("noinst_PROGRAMS", "[+ name +].module")
+    r += gvar_add("platform_PROGRAMS", "[+ name +].module")
     r += gvar_add("MODULE_FILES", "[+ name +].module$(EXEEXT)")
 
     r += var_set(cname() + "_SOURCES", platform_sources(platform) + " ## platform sources")
@@ -398,7 +398,7 @@ def module(platform):
 
 def kernel(platform):
     r = set_canonical_name_suffix(".exec")
-    r += gvar_add("noinst_PROGRAMS", "[+ name +].exec")
+    r += gvar_add("platform_PROGRAMS", "[+ name +].exec")
     r += var_set(cname() + "_SOURCES", platform_startup(platform))
     r += var_add(cname() + "_SOURCES", platform_sources(platform))
     r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform) + " ## platform nodist sources")
@@ -423,7 +423,7 @@ def kernel(platform):
 
 def image(platform):
     r = set_canonical_name_suffix(".image")
-    r += gvar_add("noinst_PROGRAMS", "[+ name +].image")
+    r += gvar_add("platform_PROGRAMS", "[+ name +].image")
     r += var_set(cname() + "_SOURCES", platform_sources(platform))
     r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform) + "## platform nodist sources")
     r += var_set(cname() + "_LDADD", platform_ldadd(platform))
