@@ -332,10 +332,10 @@ set_scancodes (void)
       return;
     }
 
-#if !(defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_QEMU))
+#if !(defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS))
   current_set = 1;
   return;
-#endif
+#else
 
   grub_keyboard_controller_write (grub_keyboard_controller_orig
 				  & ~KEYBOARD_AT_TRANSLATE);
@@ -352,6 +352,7 @@ set_scancodes (void)
   if (current_set == 1)
     return;
   grub_printf ("No supported scancode set found\n");
+#endif
 }
 
 static void

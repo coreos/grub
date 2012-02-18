@@ -63,8 +63,8 @@ static grub_uint32_t andmask = 0xffffffff, ormask = 0;
 struct 
 keysym
 {
-  char *unshifted_name;			/* the name in unshifted state */
-  char *shifted_name;			/* the name in shifted state */
+  const char *unshifted_name;		/* the name in unshifted state */
+  const char *shifted_name;		/* the name in shifted state */
   unsigned char unshifted_ascii;	/* the ascii code in unshifted state */
   unsigned char shifted_ascii;		/* the ascii code in shifted state */
   unsigned char keycode;		/* keyboard scancode */
@@ -365,7 +365,7 @@ grub_cmd_sendkey (grub_extcmd_context_t ctxt, int argc, char **args)
 }
 
 static grub_extcmd_t cmd;
-static void *preboot_hook;
+static struct grub_preboot *preboot_hook;
 
 GRUB_MOD_INIT (sendkey)
 {

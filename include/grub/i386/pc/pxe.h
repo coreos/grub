@@ -157,9 +157,6 @@
 #define GRUB_PXE_BOOTP_SIZE	(312 + 236)	/* DHCP standard vendor field size.  */
 #endif
 
-#define GRUB_PXE_MIN_BLKSIZE	512
-#define GRUB_PXE_MAX_BLKSIZE	1432
-
 #define GRUB_PXE_TFTP_PORT	69
 
 #define GRUB_PXE_ERR_LEN	0xFFFFFFFF
@@ -286,6 +283,9 @@ struct grub_pxenv_unload_stack
 int EXPORT_FUNC(grub_pxe_call) (int func, void * data, grub_uint32_t pxe_rm_entry);
 
 extern struct grub_pxe_bangpxe *grub_pxe_pxenv;
+
+void *
+grub_pxe_get_cached (grub_uint16_t type);
 
 #endif
 

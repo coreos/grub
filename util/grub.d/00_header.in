@@ -19,13 +19,13 @@ set -e
 
 transform="@program_transform_name@"
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
 locale_dir=`echo ${GRUB_PREFIX}/locale | sed ${transform}`
 grub_lang=`echo $LANG | cut -d . -f 1`
 
-. ${libdir}/@PACKAGE@/grub-mkconfig_lib
+. "@datadir@/@PACKAGE@/grub-mkconfig_lib"
 
 # Do this as early as possible, since other commands might depend on it.
 # (e.g. the `loadfont' command might need lvm or raid modules)
@@ -112,12 +112,12 @@ for x in ${GRUB_TERMINAL_INPUT} ${GRUB_TERMINAL_OUTPUT}; do
 done
 
 if [ "x$serial" = x1 ]; then
-    if ! test -e ${GRUB_PREFIX}/serial.mod ; then
-	echo "Serial terminal not available on this platform." >&2 ; exit 1
+    if ! test -e "${GRUB_PREFIX}/serial.mod" ; then
+	gettext "Serial terminal not available on this platform." >&2 ; echo >&2; exit 1
     fi
 
     if [ "x${GRUB_SERIAL_COMMAND}" = "x" ] ; then
-	grub_warn "Requested serial terminal but GRUB_SERIAL_COMMAND is unspecified. Default parameters will be used."
+	grub_warn "$(gettext "Requested serial terminal but GRUB_SERIAL_COMMAND is unspecified. Default parameters will be used.")"
 	GRUB_SERIAL_COMMAND=serial
     fi
     echo "${GRUB_SERIAL_COMMAND}"
@@ -174,7 +174,8 @@ esac
 if [ "x$gfxterm" = x1 ]; then
     if [ "x$GRUB_THEME" != x ] && [ -f "$GRUB_THEME" ] \
 	&& is_path_readable_by_grub "$GRUB_THEME"; then
-	echo "Found theme: $GRUB_THEME" >&2
+	gettext_printf "Found theme: %s\n" "$GRUB_THEME" >&2
+
 	prepare_grub_to_access_device `${grub_probe} --target=device "$GRUB_THEME"`
 	cat << EOF
 insmod gfxmenu
@@ -208,12 +209,12 @@ set theme=(\$root)`make_system_path_relative_to_its_root $GRUB_THEME`
 EOF
     elif [ "x$GRUB_BACKGROUND" != x ] && [ -f "$GRUB_BACKGROUND" ] \
 	    && is_path_readable_by_grub "$GRUB_BACKGROUND"; then
-	echo "Found background: $GRUB_BACKGROUND" >&2
+	gettext_printf "Found background: %s\n" "$GRUB_BACKGROUND" >&2
 	case "$GRUB_BACKGROUND" in 
 	    *.png)         reader=png ;;
 	    *.tga)         reader=tga ;;
 	    *.jpg|*.jpeg)  reader=jpeg ;;
-	    *)             echo "Unsupported image format" >&2; exit 1 ;;
+	    *)             gettext "Unsupported image format" >&2; echo >&2; exit 1 ;;
 	esac
 	prepare_grub_to_access_device `${grub_probe} --target=device "$GRUB_BACKGROUND"`
 	cat << EOF

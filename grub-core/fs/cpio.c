@@ -22,6 +22,7 @@
 #include <grub/misc.h>
 #include <grub/disk.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -30,28 +31,69 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define ATTR_DIR   0040000
 #define ATTR_LNK   0120000
 
-#ifndef MODE_USTAR
-/* cpio support */
-#define	MAGIC_BCPIO	070707
+#ifdef MODE_ODC
+#define ALIGN_CPIO(x) x
+#define	MAGIC	"070707"
 struct head
 {
-  grub_uint16_t magic;
+  char magic[6];
+  char dev[6];
+  char ino[6];
+  char mode[6];
+  char uid[6];
+  char gid[6];
+  char nlink[6];
+  char rdev[6];
+  char mtime[11];
+  char namesize[6];
+  char filesize[11];
+} __attribute__ ((packed));
+#elif defined (MODE_NEWC)
+#define ALIGN_CPIO(x) (ALIGN_UP ((x), 4))
+#define	MAGIC	"070701"
+#define	MAGIC2	"070702"
+struct head
+{
+  char magic[6];
+  char ino[8];
+  char mode[8];
+  char uid[8];
+  char gid[8];
+  char nlink[8];
+  char mtime[8];
+  char filesize[8];
+  char devmajor[8];
+  char devminor[8];
+  char rdevmajor[8];
+  char rdevminor[8];
+  char namesize[8];
+  char check[8];
+} __attribute__ ((packed));
+#elif !defined (MODE_USTAR)
+/* cpio support */
+#define ALIGN_CPIO(x) (ALIGN_UP ((x), 2))
+#ifdef MODE_BIGENDIAN
+#define	MAGIC       "\x71\xc7"
+#else
+#define	MAGIC       "\xc7\x71"
+#endif
+struct head
+{
+  grub_uint16_t magic[1];
   grub_uint16_t dev;
   grub_uint16_t ino;
-  grub_uint16_t mode;
+  grub_uint16_t mode[1];
   grub_uint16_t uid;
   grub_uint16_t gid;
   grub_uint16_t nlink;
   grub_uint16_t rdev;
-  grub_uint16_t mtime_1;
-  grub_uint16_t mtime_2;
-  grub_uint16_t namesize;
-  grub_uint16_t filesize_1;
-  grub_uint16_t filesize_2;
+  grub_uint16_t mtime[2];
+  grub_uint16_t namesize[1];
+  grub_uint16_t filesize[2];
 } __attribute__ ((packed));
 #else
 /* tar support */
-#define MAGIC_USTAR	"ustar"
+#define MAGIC	"ustar"
 struct head
 {
   char name[100];
@@ -108,6 +150,49 @@ canonicalize (char *name)
   *optr = 0;
 }
 
+#if defined (MODE_ODC) || defined (MODE_USTAR)
+static inline unsigned long long
+read_number (const char *str, grub_size_t size)
+{
+  unsigned long long ret = 0;
+  while (size-- && *str >= '0' && *str <= '7')
+    ret = (ret << 3) | (*str++ & 0xf);
+  return ret;
+}
+#elif defined (MODE_NEWC)
+static inline unsigned long long
+read_number (const char *str, grub_size_t size)
+{
+  unsigned long long ret = 0;
+  while (size-- && grub_isxdigit (*str))
+    {
+      char dig = *str++;
+      if (dig >= '0' && dig <= '9')
+	dig &= 0xf;
+      else if (dig >= 'a' && dig <= 'f')
+	dig -= 'a' - 10;
+      else
+	dig -= 'A' - 10;
+      ret = (ret << 4) | (dig);
+    }
+  return ret;
+}
+#else
+static inline unsigned long long
+read_number (const grub_uint16_t *arr, grub_size_t size)
+{
+  long long ret = 0;
+#ifdef MODE_BIGENDIAN
+  while (size--)
+    ret = (ret << 16) | grub_be_to_cpu16 (*arr++);
+#else
+  while (size--)
+    ret = (ret << 16) | grub_le_to_cpu16 (*arr++);
+#endif
+  return ret;
+}
+#endif
+
 static grub_err_t
 grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 		     grub_int32_t *mtime, grub_disk_addr_t *ofs,
@@ -115,35 +200,40 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 {
 #ifndef MODE_USTAR
   struct head hd;
+  grub_size_t namesize;
+  grub_uint32_t modeval;
 
   if (grub_disk_read (data->disk, 0, data->hofs, sizeof (hd), &hd))
     return grub_errno;
 
-  if (hd.magic != MAGIC_BCPIO)
+  if (grub_memcmp (hd.magic, MAGIC, sizeof (hd.magic)) != 0
+#ifdef MAGIC2
+      && grub_memcmp (hd.magic, MAGIC2, sizeof (hd.magic)) != 0
+#endif
+      )
     return grub_error (GRUB_ERR_BAD_FS, "invalid cpio archive");
-
-  data->size = (((grub_uint32_t) hd.filesize_1) << 16) + hd.filesize_2;
+  data->size = read_number (hd.filesize, ARRAY_SIZE (hd.filesize));
   if (mtime)
-    *mtime = (((grub_uint32_t) hd.mtime_1) << 16) + hd.mtime_2;
+    *mtime = read_number (hd.mtime, ARRAY_SIZE (hd.mtime));
+  modeval = read_number (hd.mode, ARRAY_SIZE (hd.mode));
+  namesize = read_number (hd.namesize, ARRAY_SIZE (hd.namesize));
+
   if (mode)
-    *mode = hd.mode;
+    *mode = modeval;
 
-  if (hd.namesize & 1)
-    hd.namesize++;
-
-  *name = grub_malloc (hd.namesize + 1);
+  *name = grub_malloc (namesize + 1);
   if (*name == NULL)
     return grub_errno;
 
   if (grub_disk_read (data->disk, 0, data->hofs + sizeof (hd),
-		      hd.namesize, *name))
+		      namesize, *name))
     {
       grub_free (*name);
       return grub_errno;
     }
-  (*name)[hd.namesize] = 0;
+  (*name)[namesize] = 0;
 
-  if (data->size == 0 && hd.mode == 0 && hd.namesize == 11 + 1
+  if (data->size == 0 && modeval == 0 && namesize == 11
       && grub_memcmp(*name, "TRAILER!!!", 11) == 0)
     {
       *ofs = 0;
@@ -153,10 +243,8 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 
   canonicalize (*name);
 
-  data->dofs = data->hofs + sizeof (hd) + hd.namesize;
-  *ofs = data->dofs + data->size;
-  if (data->size & 1)
-    (*ofs)++;
+  data->dofs = data->hofs + ALIGN_CPIO (sizeof (hd) + namesize);
+  *ofs = data->dofs + ALIGN_CPIO (data->size);
 #else
   struct head hd;
   int reread = 0, have_longname = 0, have_longlink = 0;
@@ -172,13 +260,13 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 	  return GRUB_ERR_NONE;
 	}
 
-      if (grub_memcmp (hd.magic, MAGIC_USTAR, sizeof (MAGIC_USTAR) - 1))
+      if (grub_memcmp (hd.magic, MAGIC, sizeof (MAGIC) - 1))
 	return grub_error (GRUB_ERR_BAD_FS, "invalid tar archive");
 
       if (hd.typeflag == 'L')
 	{
 	  grub_err_t err;
-	  grub_size_t namesize = grub_strtoull (hd.size, NULL, 8);
+	  grub_size_t namesize = read_number (hd.size, sizeof (hd.size));
 	  *name = grub_malloc (namesize + 1);
 	  if (*name == NULL)
 	    return grub_errno;
@@ -198,7 +286,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       if (hd.typeflag == 'K')
 	{
 	  grub_err_t err;
-	  grub_size_t linksize = grub_strtoull (hd.size, NULL, 8);
+	  grub_size_t linksize = read_number (hd.size, sizeof (hd.size));
 	  if (data->linkname_alloc < linksize + 1)
 	    {
 	      char *n;
@@ -225,20 +313,20 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 
       if (!have_longname)
 	{
-	  *name = grub_strdup (hd.name);
+	  *name = grub_strndup (hd.name, sizeof (hd.name));
 	  if (*name == NULL)
 	    return grub_errno;
 	}
 
-      data->size = grub_strtoull (hd.size, NULL, 8);
+      data->size = read_number (hd.size, sizeof (hd.size));
       data->dofs = data->hofs + GRUB_DISK_SECTOR_SIZE;
       *ofs = data->dofs + ((data->size + GRUB_DISK_SECTOR_SIZE - 1) &
 			   ~(GRUB_DISK_SECTOR_SIZE - 1));
       if (mtime)
-	*mtime = grub_strtoul (hd.mtime, NULL, 8);
+	*mtime = read_number (hd.mtime, sizeof (hd.mtime));
       if (mode)
 	{
-	  *mode = grub_strtoul (hd.mode, NULL, 8);
+	  *mode = read_number (hd.mode, sizeof (hd.mode));
 	  switch (hd.typeflag)
 	    {
 	    case '2':
@@ -284,12 +372,11 @@ grub_cpio_mount (grub_disk_t disk)
   if (grub_disk_read (disk, 0, 0, sizeof (hd), &hd))
     goto fail;
 
-#ifndef MODE_USTAR
-  if (hd.magic != MAGIC_BCPIO)
-#else
-  if (grub_memcmp (hd.magic, MAGIC_USTAR,
-		   sizeof (MAGIC_USTAR) - 1))
+  if (grub_memcmp (hd.magic, MAGIC, sizeof (MAGIC) - 1)
+#ifdef MAGIC2
+      && grub_memcmp (hd.magic, MAGIC2, sizeof (MAGIC2) - 1)
 #endif
+      )
     goto fail;
 
   data = (struct grub_cpio_data *) grub_zalloc (sizeof (*data));
@@ -384,7 +471,7 @@ handle_symlink (struct grub_cpio_data *data,
   if (prefixlen)
     {
       grub_memcpy (target, *name, prefixlen);
-      target[prefixlen] = '/';
+      target[prefixlen-1] = '/';
     }
   ptr = target + prefixlen + size;
   ptr = grub_stpcpy (ptr, rest);
@@ -404,13 +491,15 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 {
   struct grub_cpio_data *data;
   grub_disk_addr_t ofs;
-  char *prev, *name, *path;
+  char *prev, *name, *path, *ptr;
   grub_size_t len;
   int symlinknest = 0;
 
   path = grub_strdup (path_in + 1);
   if (!path)
     return grub_errno;
+  for (ptr = path + grub_strlen (path) - 1; ptr >= path && *ptr == '/'; ptr--)
+    *ptr = 0;
 
   grub_dl_ref (my_mod);
 
@@ -443,14 +532,14 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 	  char *p, *n;
 
 	  n = name + len;
-	  if (*n == '/')
+	  while (*n == '/')
 	    n++;
 
-	  p = grub_strchr (name + len, '/');
+	  p = grub_strchr (n, '/');
 	  if (p)
 	    *p = 0;
 
-	  if (((!prev) || (grub_strcmp (prev, name) != 0)) && name[len] != 0)
+	  if (((!prev) || (grub_strcmp (prev, name) != 0)) && *n != 0)
 	    {
 	      struct grub_dirhook_info info;
 	      grub_memset (&info, 0, sizeof (info));
@@ -458,13 +547,14 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 	      info.mtime = mtime;
 	      info.mtimeset = 1;
 
-	      hook (name + len, &info);
+	      if (hook (n, &info))
+		goto fail;
 	      grub_free (prev);
 	      prev = name;
 	    }
 	  else
 	    {
-	      int restart;
+	      int restart = 0;
 	      err = handle_symlink (data, name, &path, mode, &restart);
 	      grub_free (name);
 	      if (err)
@@ -475,7 +565,7 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 		  if (++symlinknest == 8)
 		    {
 		      grub_error (GRUB_ERR_SYMLINK_LOOP,
-				  "too deep nesting of symlinks");
+				  N_("too deep nesting of symlinks"));
 		      goto fail;
 		    }
 		  ofs = 0;
@@ -533,7 +623,7 @@ grub_cpio_open (grub_file_t file, const char *name_in)
 
       if (!ofs)
 	{
-	  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
+	  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), name_in);
 	  break;
 	}
 
@@ -549,7 +639,7 @@ grub_cpio_open (grub_file_t file, const char *name_in)
 	  if (++symlinknest == 8)
 	    {
 	      grub_error (GRUB_ERR_SYMLINK_LOOP,
-			  "too deep nesting of symlinks");
+			  N_("too deep nesting of symlinks"));
 	      goto fail;
 	    }
 	  goto no_match;
@@ -612,6 +702,10 @@ grub_cpio_close (grub_file_t file)
 static struct grub_fs grub_cpio_fs = {
 #ifdef MODE_USTAR
   .name = "tarfs",
+#elif defined (MODE_ODC)
+  .name = "odc",
+#elif defined (MODE_NEWC)
+  .name = "newc",
 #else
   .name = "cpiofs",
 #endif
@@ -626,6 +720,12 @@ static struct grub_fs grub_cpio_fs = {
 
 #ifdef MODE_USTAR
 GRUB_MOD_INIT (tar)
+#elif defined (MODE_ODC)
+GRUB_MOD_INIT (odc)
+#elif defined (MODE_NEWC)
+GRUB_MOD_INIT (newc)
+#elif defined (MODE_BIGENDIAN)
+GRUB_MOD_INIT (cpio_be)
 #else
 GRUB_MOD_INIT (cpio)
 #endif
@@ -636,6 +736,12 @@ GRUB_MOD_INIT (cpio)
 
 #ifdef MODE_USTAR
 GRUB_MOD_FINI (tar)
+#elif defined (MODE_ODC)
+GRUB_MOD_FINI (odc)
+#elif defined (MODE_NEWC)
+GRUB_MOD_FINI (newc)
+#elif defined (MODE_BIGENDIAN)
+GRUB_MOD_FINI (cpio_be)
 #else
 GRUB_MOD_FINI (cpio)
 #endif

@@ -21,6 +21,7 @@
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -440,7 +441,7 @@ parse_modespec (const char *current_mode, int *width, int *height, int *depth)
   param = grub_strchr(param, 'x');
   if (param == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       "Invalid mode: %s\n",
+		       N_("invalid video mode specification `%s'"),
 		       current_mode);
 
   param++;
@@ -448,7 +449,7 @@ parse_modespec (const char *current_mode, int *width, int *height, int *depth)
   *width = grub_strtoul (value, 0, 0);
   if (grub_errno != GRUB_ERR_NONE)
       return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			 "Invalid mode: %s\n",
+			 N_("invalid video mode specification `%s'"),
 			 current_mode);
   
   /* Find height value.  */
@@ -459,7 +460,7 @@ parse_modespec (const char *current_mode, int *width, int *height, int *depth)
       *height = grub_strtoul (value, 0, 0);
       if (grub_errno != GRUB_ERR_NONE)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "Invalid mode: %s\n",
+			   N_("invalid video mode specification `%s'"),
 			   current_mode);
     }
   else
@@ -470,7 +471,7 @@ parse_modespec (const char *current_mode, int *width, int *height, int *depth)
       *height = grub_strtoul (value, 0, 0);
       if (grub_errno != GRUB_ERR_NONE)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "Invalid mode: %s\n",
+			   N_("invalid video mode specification `%s'"),
 			   current_mode);
       
       /* Convert color depth value.  */
@@ -478,7 +479,7 @@ parse_modespec (const char *current_mode, int *width, int *height, int *depth)
       *depth = grub_strtoul (value, 0, 0);
       if (grub_errno != GRUB_ERR_NONE)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "Invalid mode: %s\n",
+			   N_("invalid video mode specification `%s'"),
 			   current_mode);
     }
   return GRUB_ERR_NONE;
@@ -503,8 +504,7 @@ grub_video_set_mode (const char *modestring,
   next_mode = modevar;
 
   if (! modevar)
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		       "couldn't allocate space for local modevar copy");
+    return grub_errno;
 
   if (grub_memcmp (next_mode, "keep", sizeof ("keep")) == 0
       || grub_memcmp (next_mode, "keep,", sizeof ("keep,") - 1) == 0
@@ -541,7 +541,7 @@ grub_video_set_mode (const char *modestring,
 	  grub_free (modevar);
 
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			     "no suitable mode found");
+			     N_("no suitable video mode found"));
 	}
 
       /* Skip separator. */
@@ -705,7 +705,7 @@ grub_video_set_mode (const char *modestring,
   grub_free (modevar);
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		     "no suitable mode found");
+		     N_("no suitable video mode found"));
 }
 
 /* Initialize Video API module.  */

@@ -182,6 +182,8 @@ struct grub_ata
 
   int dma;
 
+  grub_size_t maxbuffer;
+
   int *present;
 
   void *data;

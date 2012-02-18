@@ -27,6 +27,7 @@
 #include <grub/dl.h>
 #include <grub/charset.h>
 #include <grub/fat.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -122,8 +123,7 @@ struct grub_fat_dir_entry
     }  __attribute__ ((packed))  file_name;
     struct {
       grub_uint8_t character_count;
-      grub_uint16_t str[11];
-      grub_uint8_t reserved[8];
+      grub_uint16_t str[15];
     }  __attribute__ ((packed))  volume_label;
   }  __attribute__ ((packed)) type_specific;
 } __attribute__ ((packed));
@@ -245,11 +245,6 @@ grub_fat_mount (grub_disk_t disk)
   if (grub_memcmp ((const char *) bpb.oem_name, "EXFAT   ",
 		   sizeof (bpb.oem_name)) != 0)
     goto fail;    
-#else
-  if (grub_strncmp((const char *) bpb.version_specific.fat12_or_fat16.fstype, "FAT12", 5)
-      && grub_strncmp((const char *) bpb.version_specific.fat12_or_fat16.fstype, "FAT16", 5)
-      && grub_strncmp((const char *) bpb.version_specific.fat32.fstype, "FAT32", 5))
-    goto fail;
 #endif
 
   /* Get the sizes of logical sectors and clusters.  */
@@ -589,7 +584,7 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
   char *filename;
 
   unibuf = grub_malloc (15 * 256 * 2);
-  filename = grub_malloc (15 * 256 * 4 + 1);
+  filename = grub_malloc (15 * 256 * GRUB_MAX_UTF8_PER_UTF16 + 1);
 
   while (1)
     {
@@ -693,10 +688,10 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
   grub_ssize_t offset = -sizeof(dir);
 
   if (! (data->attr & GRUB_FAT_ATTR_DIRECTORY))
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+    return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 
   /* Allocate space enough to hold a long name.  */
-  filename = grub_malloc (0x40 * 13 * 4 + 1);
+  filename = grub_malloc (0x40 * 13 * GRUB_MAX_UTF8_PER_UTF16 + 1);
   unibuf = (grub_uint16_t *) grub_malloc (0x40 * 13 * 2);
   if (! filename || ! unibuf)
     {
@@ -870,7 +865,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
   if (! (data->attr & GRUB_FAT_ATTR_DIRECTORY))
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       return 0;
     }
 
@@ -902,7 +897,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
   grub_fat_iterate_dir (disk, data, iter_hook);
   if (grub_errno == GRUB_ERR_NONE && ! found && !call_hook)
-    grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", origpath);
+    grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), origpath);
 
  fail:
   grub_free (dirname);
@@ -978,7 +973,7 @@ grub_fat_open (grub_file_t file, const char *name)
 
   if (data->attr & GRUB_FAT_ATTR_DIRECTORY)
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a file");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a regular file"));
       goto fail;
     }
 
@@ -1046,7 +1041,8 @@ grub_fat_label (grub_device_t device, char **label)
       if (dir.entry_type == 0x83)
 	{
 	  grub_size_t chc;
-	  *label = grub_malloc (11 * 4 + 1);
+	  *label = grub_malloc (ARRAY_SIZE (dir.type_specific.volume_label.str)
+				* GRUB_MAX_UTF8_PER_UTF16 + 1);
 	  if (!*label)
 	    {
 	      grub_free (data);
@@ -1091,7 +1087,7 @@ grub_fat_label (grub_device_t device, char **label)
 
   if (! (data->attr & GRUB_FAT_ATTR_DIRECTORY))
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       return 0;
     }
 

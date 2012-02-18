@@ -46,7 +46,7 @@
  *  This is the area for all of the special variables.
  */
 
-	.p2align	2	/* force 4-byte alignment */
+	.p2align	5	/* force 4-byte alignment */
 
 protstack:
 	.long	GRUB_MEMORY_MACHINE_PROT_STACK
@@ -79,7 +79,7 @@ protstack:
  *  description.
  */
 
-	.p2align	2	/* force 4-byte alignment */
+	.p2align	5	/* force 4-byte alignment */
 gdt:
 	.word	0, 0
 	.byte	0, 0, 0, 0
@@ -113,6 +113,7 @@ gdt:
 	.byte	0, 0x92, 0, 0
 
 
+	.p2align 5
 /* this is the GDT descriptor */
 gdtdesc:
 	.word	0x27			/* limit */

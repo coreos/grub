@@ -105,8 +105,6 @@ for cipher_file in cipher_files:
         fw.write ("/* This file was automatically imported with \n")
         fw.write ("   import_gcry.py. Please don't modify it */\n")
         fw.write ("#include <grub/dl.h>\n")
-        if cipher_file == "camellia.c":
-            fw.write ("#include \"camellia.h\"\n")
         if cipher_file == "camellia.h":
             fw.write ("#include <grub/misc.h>\n")
             fw.write ("void camellia_setup128(const unsigned char *key, grub_uint32_t *subkey);\n")
@@ -192,8 +190,10 @@ for cipher_file in cipher_files:
             if hold:
                 hold = False
                 # We're optimising for size.
-                if not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer|tripledes_set2keys|do_tripledes_set_extra_info)", line) is None:
+                if not re.match ("(run_selftests|selftest|_gcry_aes_c.._..c|_gcry_[a-z0-9]*_hash_buffer|tripledes_set2keys|do_tripledes_set_extra_info|_gcry_rmd160_mixblock|serpent_test)", line) is None:
                     skip = True
+                    if not re.match ("serpent_test", line) is None:
+                        fw.write ("static const char *serpent_test (void) { return 0; }\n");
                     fname = re.match ("[a-zA-Z0-9_]*", line).group ()
                     chmsg = "(%s): Removed." % fname
                     if nch:
@@ -323,7 +323,11 @@ for cipher_file in cipher_files:
             for src in modfiles.split():
                 conf.write ("  common = %s;\n" % src)
                 confutil.write ("  common = grub-core/%s;\n" % src)
-            conf.write ("  cflags = '$(CFLAGS_GCRY)';\n");
+            if modname == "gcry_rijndael" or modname == "gcry_md4" or modname == "gcry_md5" or modname == "gcry_rmd160" or modname == "gcry_sha1" or modname == "gcry_sha256" or modname == "gcry_sha512" or modname == "gcry_tiger":
+                # Alignment checked by hand
+                conf.write ("  cflags = '$(CFLAGS_GCRY) -Wno-cast-align -Wno-strict-aliasing';\n");
+            else:
+                conf.write ("  cflags = '$(CFLAGS_GCRY)';\n");
             conf.write ("  cppflags = '$(CPPFLAGS_GCRY)';\n");
             conf.write ("};\n\n")
         elif isc and cipher_file != "camellia.c":
@@ -372,6 +376,7 @@ outfile = os.path.join (cipher_dir_out, "ChangeLog")
 conf.close ();
 
 initfile = codecs.open (os.path.join (cipher_dir_out, "init.c"), "w", "utf-8")
+initfile.write ("#include <grub/crypto.h>\n")
 for module in modules:
     initfile.write ("extern void grub_%s_init (void);\n" % module)
     initfile.write ("extern void grub_%s_fini (void);\n" % module)

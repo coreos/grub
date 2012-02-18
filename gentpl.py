@@ -1,4 +1,19 @@
 #! /usr/bin/python
+#  GRUB  --  GRand Unified Bootloader
+#  Copyright (C) 2010,2011  Free Software Foundation, Inc.
+#
+#  GRUB is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  GRUB is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # This is the python script used to generate Makefile.tpl
@@ -47,7 +62,6 @@ GROUPS["terminfomodule"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["terminfoinkernel"]: GROUPS["terminfomodule"].remove(i)
 
 # Miscelaneous groups schedulded to disappear in future
-GROUPS["nosparc64"] = GRUB_PLATFORMS[:]; GROUPS["nosparc64"].remove("sparc64_ieee1275")
 GROUPS["i386_coreboot_multiboot_qemu"] = ["i386_coreboot", "i386_multiboot", "i386_qemu"]
 GROUPS["nopc"] = GRUB_PLATFORMS[:]; GROUPS["nopc"].remove("i386_pc")
 
@@ -356,7 +370,7 @@ def first_time(snippet):
 def module(platform):
     r = set_canonical_name_suffix(".module")
 
-    r += gvar_add("noinst_PROGRAMS", "[+ name +].module")
+    r += gvar_add("platform_PROGRAMS", "[+ name +].module")
     r += gvar_add("MODULE_FILES", "[+ name +].module$(EXEEXT)")
 
     r += var_set(cname() + "_SOURCES", platform_sources(platform) + " ## platform sources")
@@ -384,7 +398,7 @@ def module(platform):
 
 def kernel(platform):
     r = set_canonical_name_suffix(".exec")
-    r += gvar_add("noinst_PROGRAMS", "[+ name +].exec")
+    r += gvar_add("platform_PROGRAMS", "[+ name +].exec")
     r += var_set(cname() + "_SOURCES", platform_startup(platform))
     r += var_add(cname() + "_SOURCES", platform_sources(platform))
     r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform) + " ## platform nodist sources")
@@ -409,7 +423,7 @@ def kernel(platform):
 
 def image(platform):
     r = set_canonical_name_suffix(".image")
-    r += gvar_add("noinst_PROGRAMS", "[+ name +].image")
+    r += gvar_add("platform_PROGRAMS", "[+ name +].image")
     r += var_set(cname() + "_SOURCES", platform_sources(platform))
     r += var_set("nodist_" + cname() + "_SOURCES", platform_nodist_sources(platform) + "## platform nodist sources")
     r += var_set(cname() + "_LDADD", platform_ldadd(platform))
@@ -466,7 +480,7 @@ def manpage():
     r += gvar_add("man_MANS", "[+ name +].[+ mansection +]\n")
     r += rule("[+ name +].[+ mansection +]", "[+ name +]", """
 chmod a+x [+ name +]
-PATH=$(builddir):$$PATH $(HELP2MAN) --section=[+ mansection +] -i $(top_srcdir)/docs/man/[+ name +].h2m -o $@ [+ name +]
+PATH=$(builddir):$$PATH pkgdatadir=$(builddir) $(HELP2MAN) --section=[+ mansection +] -i $(top_srcdir)/docs/man/[+ name +].h2m -o $@ [+ name +]
 """)
     r += gvar_add("CLEANFILES", "[+ name +].[+ mansection +]")
     r += "endif\n"

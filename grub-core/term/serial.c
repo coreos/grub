@@ -126,7 +126,7 @@ static struct grub_term_output grub_serial_term_output =
 
 
 struct grub_serial_port *
-grub_serial_find (char *name)
+grub_serial_find (const char *name)
 {
   struct grub_serial_port *port;
 
@@ -157,7 +157,7 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
   char pname[40];
-  char *name = NULL;
+  const char *name = NULL;
   struct grub_serial_port *port;
   struct grub_serial_config config;
   grub_err_t err;
@@ -184,7 +184,9 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 
   port = grub_serial_find (name);
   if (!port)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown serial port");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+		       N_("serial port `%s' isn't found"),
+		       name);
 
   config = port->config;
 
@@ -203,7 +205,8 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
       else if (! grub_strcmp (state[4].arg, "even"))
 	config.parity = GRUB_SERIAL_PARITY_EVEN;
       else
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad parity");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   N_("unsupported serial port parity"));
     }
 
   if (state[5].set)
@@ -213,7 +216,8 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
       else if (! grub_strcmp (state[5].arg, "2"))
 	config.stop_bits = GRUB_SERIAL_STOP_BITS_2;
       else
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad number of stop bits");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   N_("unsupported serial port stop bits number"));
     }
 
   /* Initialize with new settings.  */
@@ -350,7 +354,7 @@ grub_serial_unregister (struct grub_serial_port *port)
   if (port->term_out)
     grub_term_unregister_output (port->term_out);
 
-  grub_list_remove (GRUB_AS_LIST_P (&grub_serial_ports), GRUB_AS_LIST (port));
+  grub_list_remove (GRUB_AS_LIST (port));
 }
 
 void

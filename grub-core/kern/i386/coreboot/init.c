@@ -42,6 +42,8 @@ extern grub_uint8_t _start[];
 extern grub_uint8_t _end[];
 extern grub_uint8_t _edata[];
 
+#pragma GCC diagnostic warning "-Wsuggest-attribute=noreturn"
+
 grub_uint32_t
 grub_get_rtc (void)
 {

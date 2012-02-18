@@ -445,6 +445,8 @@ static enum xz_ret dec_stream_header(struct xz_dec *s)
 		return XZ_FORMAT_ERROR;
 
 #ifndef GRUB_EMBED_DECOMPRESSOR
+	s->crc32 = grub_crypto_lookup_md_by_name ("CRC32");
+
 	if (s->crc32)
 	{
 		uint64_t hash_context[(s->crc32->contextsize + 7) / 8];
@@ -957,10 +959,6 @@ struct xz_dec * xz_dec_init(uint32_t dict_max)
 #endif
 
 	memset (s, 0, sizeof (*s));
-
-#ifndef GRUB_EMBED_DECOMPRESSOR
-	s->crc32 = grub_crypto_lookup_md_by_name ("CRC32");
-#endif
 
 	s->single_call = dict_max == 0;
 

@@ -21,26 +21,6 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 
-void
-grub_list_push (grub_list_t *head, grub_list_t item)
-{
-  item->next = *head;
-  *head = item;
-}
-
-void
-grub_list_remove (grub_list_t *head, grub_list_t item)
-{
-  grub_list_t *p, q;
-
-  for (p = head, q = *p; q; p = &(q->next), q = q->next)
-    if (q == item)
-      {
-	*p = q->next;
-	break;
-      }
-}
-
 void *
 grub_named_list_find (grub_named_list_t head, const char *name)
 {
@@ -81,6 +61,9 @@ grub_prio_list_insert (grub_prio_list_t *head, grub_prio_list_t nitem)
 
   *p = nitem;
   nitem->next = q;
+  if (q)
+    q->prev = &nitem->next;
+  nitem->prev = p;
 
   if (! inactive)
     nitem->prio |= GRUB_PRIO_LIST_FLAG_ACTIVE;

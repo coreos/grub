@@ -331,19 +331,20 @@ grub_iso9660_susp_iterate (grub_fshelp_node_t node, grub_off_t off,
 }
 
 static char *
-grub_iso9660_convert_string (grub_uint16_t *us, int len)
+grub_iso9660_convert_string (grub_uint8_t *us, int len)
 {
   char *p;
   int i;
+  grub_uint16_t t[len];
 
-  p = grub_malloc (len * 4 + 1);
+  p = grub_malloc (len * GRUB_MAX_UTF8_PER_UTF16 + 1);
   if (! p)
     return p;
 
   for (i=0; i<len; i++)
-    us[i] = grub_be_to_cpu16 (us[i]);
+    t[i] = grub_be_to_cpu16 (grub_get_unaligned16 (us + 2 * i));
 
-  *grub_utf16_to_utf8 ((grub_uint8_t *) p, us, len) = '\0';
+  *grub_utf16_to_utf8 ((grub_uint8_t *) p, t, len) = '\0';
 
   return p;
 }
@@ -533,10 +534,12 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
   grub_off_t len;
   char *symlink = 0;
 
-  auto void add_part (const char *part, int len);
-
   /* Extend the symlink.  */
-  void add_part (const char *part, int len2)
+  auto inline void  __attribute__ ((always_inline)) add_part (const char *part,
+							      int len2);
+
+  auto inline void  __attribute__ ((always_inline)) add_part (const char *part,
+							      int len2)
     {
       int size = symlink ? grub_strlen (symlink) : 0;
 
@@ -557,10 +560,11 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	{
 	  /* The flags are stored at the data position 0, here the
 	     filename type is stored.  */
+	  /* FIXME: Fix this slightly improper cast.  */
 	  if (entry->data[0] & GRUB_ISO9660_RR_DOT)
-	    filename = ".";
+	    filename = (char *) ".";
 	  else if (entry->data[0] & GRUB_ISO9660_RR_DOTDOT)
-	    filename = "..";
+	    filename = (char *) "..";
 	  else if (entry->len >= 5)
 	    {
 	      grub_size_t size = 1, csize = 1;
@@ -744,7 +748,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 
             oldname = filename;
             filename = grub_iso9660_convert_string
-                  ((grub_uint16_t *) oldname, dirent.namelen >> 1);
+                  ((grub_uint8_t *) oldname, dirent.namelen >> 1);
 
 	    semicolon = grub_strrchr (filename, ';');
 	    if (semicolon)
@@ -976,8 +980,7 @@ grub_iso9660_label (grub_device_t device, char **label)
   if (data)
     {
       if (data->joliet)
-        *label = grub_iso9660_convert_string
-                 ((grub_uint16_t *) &data->voldesc.volname, 16);
+        *label = grub_iso9660_convert_string (data->voldesc.volname, 16);
       else
         *label = grub_strndup ((char *) data->voldesc.volname, 32);
       if (*label)

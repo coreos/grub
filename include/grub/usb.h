@@ -198,6 +198,11 @@ struct grub_usb_device
   grub_uint32_t statuschange;
 
   struct grub_usb_desc_endp *hub_endpoint;
+
+  /* EHCI Split Transfer information */
+  int port;
+
+  int hubaddr;
 };
 
 
@@ -246,7 +251,10 @@ typedef enum
 
 typedef enum
   {
-    GRUB_USBMS_PROTOCOL_BULK = 0x50
+    GRUB_USBMS_PROTOCOL_BULK = 0x50,
+    /* Experimental support for Control/Bulk/Interrupt (CBI) devices */
+    GRUB_USBMS_PROTOCOL_CBI = 0x00, /* CBI with interrupt */
+    GRUB_USBMS_PROTOCOL_CB = 0x01  /* CBI wthout interrupt */
   } grub_usbms_protocol_t;
 
 static inline struct grub_usb_desc_if *
@@ -264,6 +272,7 @@ typedef int (*grub_usb_attach_hook_class) (grub_usb_device_t usbdev,
 struct grub_usb_attach_desc
 {
   struct grub_usb_attach_desc *next;
+  struct grub_usb_attach_desc **prev;
   int class;
   grub_usb_attach_hook_class hook;
 };

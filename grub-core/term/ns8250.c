@@ -24,6 +24,7 @@
 #include <grub/cpu/io.h>
 #include <grub/mm.h>
 #include <grub/time.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_MACHINE_PCBIOS
 #include <grub/machine/memory.h>
@@ -194,19 +195,23 @@ serial_hw_configure (struct grub_serial_port *port,
 
   divisor = serial_get_divisor (port, config);
   if (divisor == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad speed");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("unsupported serial port speed"));
 
   if (config->parity != GRUB_SERIAL_PARITY_NONE
       && config->parity != GRUB_SERIAL_PARITY_ODD
       && config->parity != GRUB_SERIAL_PARITY_EVEN)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported parity");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("unsupported serial port parity"));
 
   if (config->stop_bits != GRUB_SERIAL_STOP_BITS_1
       && config->stop_bits != GRUB_SERIAL_STOP_BITS_2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported stop bits");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("unsupported serial port stop bits number"));
 
   if (config->word_len < 5 || config->word_len > 8)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unsupported word length");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("unsupported serial port word length"));
 
   port->config = *config;
   port->configured = 0;

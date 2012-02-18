@@ -192,7 +192,8 @@ grub_font_loader_init (void)
 
   /* Initialize the null font.  */
   font_init (&null_font);
-  null_font.name = "<No Font>";
+  /* FIXME: Fix this slightly improper cast.  */
+  null_font.name = (char *) "<No Font>";
   null_font.ascent = unknown_glyph->height - 3;
   null_font.descent = 3;
   null_font.max_char_width = unknown_glyph->width;
@@ -250,8 +251,7 @@ open_section (grub_file_t file, struct font_file_section *section)
     }
   else if (retval < 0)
     {
-      grub_error (GRUB_ERR_BAD_FONT,
-		  "font format error: can't read section name");
+      /* Read error.  */
       return 1;
     }
 
@@ -265,8 +265,7 @@ open_section (grub_file_t file, struct font_file_section *section)
     }
   else if (retval < 0)
     {
-      grub_error (GRUB_ERR_BAD_FONT,
-		  "font format error: can't read section length");
+      /* Read error.  */
       return 1;
     }
 

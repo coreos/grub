@@ -76,6 +76,7 @@ grub_linux_claimmap_iterate (grub_addr_t target, grub_size_t size,
 	    found_addr = target;
 	    return 1;
 	  }
+	grub_print_error ();
       }
     /* Target below the memory chunk.  */
     if (target < addr && addr + size <= end)
@@ -85,6 +86,7 @@ grub_linux_claimmap_iterate (grub_addr_t target, grub_size_t size,
 	    found_addr = addr;
 	    return 1;
 	  }
+	grub_print_error ();
       }
     return 0;
   }
@@ -149,7 +151,7 @@ grub_linux_unload (void)
 }
 
 static grub_err_t
-grub_linux_load32 (grub_elf_t elf)
+grub_linux_load32 (grub_elf_t elf, const char *filename)
 {
   Elf32_Addr base_addr;
   grub_addr_t seg_addr;
@@ -157,7 +159,7 @@ grub_linux_load32 (grub_elf_t elf)
   grub_uint32_t offset;
   Elf32_Addr entry;
 
-  linux_size = grub_elf32_size (elf, &base_addr, &align);
+  linux_size = grub_elf32_size (elf, filename, &base_addr, &align);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -193,11 +195,11 @@ grub_linux_load32 (grub_elf_t elf)
       *addr = (phdr->p_paddr - base_addr) + seg_addr;
       return 0;
     }
-  return grub_elf32_load (elf, offset_phdr, 0, 0);
+  return grub_elf32_load (elf, filename, offset_phdr, 0, 0);
 }
 
 static grub_err_t
-grub_linux_load64 (grub_elf_t elf)
+grub_linux_load64 (grub_elf_t elf, const char *filename)
 {
   Elf64_Addr base_addr;
   grub_addr_t seg_addr;
@@ -205,7 +207,7 @@ grub_linux_load64 (grub_elf_t elf)
   grub_uint64_t offset;
   Elf64_Addr entry;
 
-  linux_size = grub_elf64_size (elf, &base_addr, &align);
+  linux_size = grub_elf64_size (elf, filename, &base_addr, &align);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -239,7 +241,7 @@ grub_linux_load64 (grub_elf_t elf)
       *addr = (phdr->p_paddr - base_addr) + seg_addr;
       return 0;
     }
-  return grub_elf64_load (elf, offset_phdr, 0, 0);
+  return grub_elf64_load (elf, filename, offset_phdr, 0, 0);
 }
 
 static grub_err_t
@@ -253,7 +255,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto out;
     }
 
@@ -264,7 +266,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (elf->ehdr.ehdr32.e_type != ET_EXEC && elf->ehdr.ehdr32.e_type != ET_DYN)
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "this ELF file is not of the right type");
+		  N_("this ELF file is not of the right type"));
       goto out;
     }
 
@@ -272,13 +274,13 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_unset ();
 
   if (grub_elf_is_elf32 (elf))
-    grub_linux_load32 (elf);
+    grub_linux_load32 (elf, argv[0]);
   else
   if (grub_elf_is_elf64 (elf))
-    grub_linux_load64 (elf);
+    grub_linux_load64 (elf, argv[0]);
   else
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "unknown ELF class");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("invalid arch dependent ELF magic"));
       goto out;
     }
 
@@ -317,30 +319,41 @@ static grub_err_t
 grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
-  grub_file_t file = 0;
-  grub_ssize_t size;
+  grub_file_t *files = 0;
+  grub_size_t size = 0;
   grub_addr_t first_addr;
   grub_addr_t addr;
+  int i;
+  int nfiles = 0;
+  grub_uint8_t *ptr;
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto fail;
     }
 
   if (!loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load the kernel first");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("you need to load the kernel first"));
       goto fail;
     }
 
-  grub_file_filter_disable_compression ();
-  file = grub_file_open (argv[0]);
-  if (! file)
+  files = grub_zalloc (argc * sizeof (files[0]));
+  if (!files)
     goto fail;
 
+  for (i = 0; i < argc; i++)
+    {
+      grub_file_filter_disable_compression ();
+      files[i] = grub_file_open (argv[i]);
+      if (! files[i])
+	goto fail;
+      nfiles++;
+      size += grub_file_size (files[i]);
+    }
+
   first_addr = linux_addr + linux_size;
-  size = grub_file_size (file);
 
   /* Attempt to claim at a series of addresses until successful in
      the same way that grub_rescue_cmd_linux does.  */
@@ -350,19 +363,28 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   grub_dprintf ("loader", "Loading initrd at 0x%x, size 0x%x\n", addr, size);
 
-  if (grub_file_read (file, (void *) addr, size) != size)
+  ptr = (void *) addr;
+  for (i = 0; i < nfiles; i++)
     {
-      grub_ieee1275_release (addr, size);
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
-      goto fail;
+      grub_ssize_t cursize = grub_file_size (files[i]);
+      if (grub_file_read (files[i], ptr, cursize) != cursize)
+	{
+	  grub_ieee1275_release (addr, size);
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			argv[i]);
+	  goto fail;
+	}
+      ptr += cursize;
     }
 
   initrd_addr = addr;
   initrd_size = size;
 
  fail:
-  if (file)
-    grub_file_close (file);
+  for (i = 0; i < nfiles; i++)
+    grub_file_close (files[i]);
+  grub_free (files);
 
   return grub_errno;
 }

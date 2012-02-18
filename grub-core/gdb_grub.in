@@ -2,6 +2,9 @@
 ### Load debuging information about GNU GRUB 2 modules into GDB
 ### automatically. Needs readelf, Perl and gmodule.pl script
 ###
+### Has to be launched from the writable and trusted
+### directory containing *.image and *.module
+###
 ### $Id: .gdbinit,v 1.1 2006/05/14 11:38:08 lkundrak Exp $
 ### Lubomir Kundrak <lkudrak@skosi.org>
 ###

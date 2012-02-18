@@ -151,11 +151,6 @@ rescale_image (grub_gui_image_t self)
                                    height,
                                    self->raw_bitmap,
                                    GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
-  if (grub_errno != GRUB_ERR_NONE)
-    {
-      grub_error_push ();
-      grub_error (grub_errno, "failed to scale bitmap for image component");
-    }
   return grub_errno;
 }
 
@@ -224,7 +219,7 @@ image_set_property (void *vself, const char *name, const char *value)
 
       /* Resolve to an absolute path.  */
       if (! self->theme_dir)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "unspecified theme_dir");
+	return grub_error (GRUB_ERR_BUG, "unspecified theme_dir");
       absvalue = grub_resolve_relative_path (self->theme_dir, value);
       if (! absvalue)
 	return grub_errno;

@@ -41,13 +41,13 @@ grub_cmd_cat (grub_extcmd_context_t ctxt, int argc, char **args)
   grub_file_t file;
   char buf[GRUB_DISK_SECTOR_SIZE];
   grub_ssize_t size;
-  int key = 0;
+  int key = GRUB_TERM_NO_KEY;
 
   if (state[0].set)
     dos = 1;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   file = grub_file_open (args[0]);
   if (! file)
@@ -77,8 +77,7 @@ grub_cmd_cat (grub_extcmd_context_t ctxt, int argc, char **args)
 	    }
 	}
 
-      while (grub_checkkey () >= 0 &&
-	     (key = grub_getkey ()) != GRUB_TERM_ESC)
+      while ((key = grub_getkey_noblock ()) != GRUB_TERM_ESC)
 	;
     }
 

@@ -29,12 +29,15 @@ library = {
   common = grub-core/lib/pbkdf2.c;
   common = grub-core/commands/extcmd.c;
   common = grub-core/lib/arg.c;
+  common = grub-core/disk/ldm.c;
+  common = grub-core/disk/diskfilter.c;
+  common = grub-core/partmap/gpt.c;
 };
 
 library = {
   name = libgrubmods.a;
   cflags = '$(CFLAGS_POSIX) -Wno-undef';
-  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(top_srcdir)/grub-core/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
+  cppflags = '-I$(top_srcdir)/grub-core/lib/minilzo -I$(srcdir)/grub-core/lib/xzembed -DMINILZO_HAVE_CONFIG_H';
 
   common_nodist = grub_script.tab.c;
   common_nodist = grub_script.yy.c;
@@ -53,12 +56,14 @@ library = {
   common = grub-core/disk/mdraid1x_linux.c;
   common = grub-core/disk/raid5_recover.c;
   common = grub-core/disk/raid6_recover.c;
-  common = grub-core/disk/raid.c;
   common = grub-core/fs/affs.c;
   common = grub-core/fs/afs.c;
   common = grub-core/fs/bfs.c;
   common = grub-core/fs/btrfs.c;
   common = grub-core/fs/cpio.c;
+  common = grub-core/fs/cpio_be.c;
+  common = grub-core/fs/odc.c;
+  common = grub-core/fs/newc.c;
   common = grub-core/fs/ext2.c;
   common = grub-core/fs/fat.c;
   common = grub-core/fs/exfat.c;
@@ -100,7 +105,6 @@ library = {
   common = grub-core/partmap/acorn.c;
   common = grub-core/partmap/amiga.c;
   common = grub-core/partmap/apple.c;
-  common = grub-core/partmap/gpt.c;
   common = grub-core/partmap/msdos.c;
   common = grub-core/partmap/sun.c;
   common = grub-core/partmap/plan.c;
@@ -116,6 +120,9 @@ library = {
   common = grub-core/io/lzopio.c;
   common = grub-core/kern/ia64/dl_helper.c;
   common = grub-core/lib/minilzo/minilzo.c;
+  common = grub-core/lib/xzembed/xz_dec_bcj.c;
+  common = grub-core/lib/xzembed/xz_dec_lzma2.c;
+  common = grub-core/lib/xzembed/xz_dec_stream.c;
 };
 
 program = {
@@ -135,6 +142,8 @@ program = {
 
   common = util/grub-mkimage.c;
   common = util/resolve.c;
+  common = util/argp_common.c;
+
   extra_dist = util/grub-mkimagexx.c;
 
   ldadd = libgrubmods.a;
@@ -151,6 +160,7 @@ program = {
   mansection = 1;
 
   common = util/grub-mkrelpath.c;
+  common = util/argp_common.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -164,6 +174,7 @@ program = {
   mansection = 1;
 
   common = util/grub-script-check.c;
+  common = util/argp_common.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -190,6 +201,7 @@ program = {
   mansection = 1;
 
   common = util/grub-mkpasswd-pbkdf2.c;
+  common = util/argp_common.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -259,6 +271,7 @@ program = {
   mansection = 1;
   common = util/grub-mkfont.c;
   common = grub-core/unidata.c;
+  common = util/argp_common.c;
 
   cflags = '$(freetype_cflags)';
 
@@ -272,29 +285,12 @@ program = {
 };
 
 program = {
-  name = grub-mkdevicemap;
-  installdir = sbin;
-  mansection = 8;
-
-  common = util/grub-mkdevicemap.c;
-  common = util/deviceiter.c;
-  nosparc64 = util/devicemap.c;
-
-  sparc64_ieee1275 = util/ieee1275/ofpath.c;
-  sparc64_ieee1275 = util/ieee1275/devicemap.c;
-
-  ldadd = libgrubmods.a;
-  ldadd = libgrubgcry.a;
-  ldadd = libgrubkern.a;
-  ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
-};
-
-program = {
   name = grub-probe;
   installdir = sbin;
   mansection = 8;
   common = util/grub-probe.c;
+  common = util/ieee1275/ofpath.c;
+  common = util/argp_common.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -309,6 +305,7 @@ program = {
   mansection = 8;
   common = util/grub-setup.c;
   common = util/lvm.c;
+  common = util/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
 
   sparc64_ieee1275 = util/ieee1275/ofpath.c;
@@ -344,6 +341,7 @@ program = {
   mansection = 1;
 
   common = util/grub-mklayout.c;
+  common = util/argp_common.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -495,14 +493,9 @@ script = {
 };
 
 script = {
-  name = update-grub_lib;
-  common = util/update-grub_lib.in;
-  installdir = noinst;
-};
-
-script = {
   name = grub-kbdcomp;
   common = util/grub-kbdcomp.in;
+  mansection = 1;
 };
 
 script = {

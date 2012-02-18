@@ -198,8 +198,40 @@ grub_crypto_cipher_close (grub_crypto_cipher_handle_t cipher)
   grub_free (cipher);
 }
 
-void
-grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size);
+static inline void
+grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size)
+{
+  const grub_uint8_t *in1ptr = in1, *in2ptr = in2;
+  grub_uint8_t *outptr = out;
+  while (size && (((grub_addr_t) in1ptr & (sizeof (grub_uint64_t) - 1))
+		  || ((grub_addr_t) in2ptr & (sizeof (grub_uint64_t) - 1))
+		  || ((grub_addr_t) outptr & (sizeof (grub_uint64_t) - 1))))
+    {
+      *outptr = *in1ptr ^ *in2ptr;
+      in1ptr++;
+      in2ptr++;
+      outptr++;
+      size--;
+    }
+  while (size >= sizeof (grub_uint64_t))
+    {
+      *(grub_uint64_t *) (void *) outptr
+	= (*(grub_uint64_t *) (void *) in1ptr
+	   ^ *(grub_uint64_t *) (void *) in2ptr);
+      in1ptr += sizeof (grub_uint64_t);
+      in2ptr += sizeof (grub_uint64_t);
+      outptr += sizeof (grub_uint64_t);
+      size -= sizeof (grub_uint64_t);
+    }
+  while (size)
+    {
+      *outptr = *in1ptr ^ *in2ptr;
+      in1ptr++;
+      in2ptr++;
+      outptr++;
+      size--;
+    }
+}
 
 gcry_err_code_t
 grub_crypto_ecb_decrypt (grub_crypto_cipher_handle_t cipher,
@@ -283,7 +315,7 @@ int
 grub_password_get (char buf[], unsigned buf_size);
 
 /* For indistinguishibility.  */
-#define GRUB_ACCESS_DENIED grub_error (GRUB_ERR_ACCESS_DENIED, "Access denied.")
+#define GRUB_ACCESS_DENIED grub_error (GRUB_ERR_ACCESS_DENIED, N_("access denied"))
 
 extern void (*grub_crypto_autoload_hook) (const char *name);
 

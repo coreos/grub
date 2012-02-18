@@ -32,7 +32,7 @@
 GRUB_MOD_LICENSE ("GPLv3+");
 
 /* Real mode IVT slot (seg:off far pointer) for interrupt 0x13.  */
-static grub_uint32_t *const int13slot = UINT_TO_PTR (4 * 0x13);
+static grub_uint32_t *const int13slot = (grub_uint32_t *) (4 * 0x13);
 
 /* Remember to update enum opt_idxs accordingly.  */
 static const struct grub_arg_option options[] = {
@@ -107,8 +107,7 @@ drivemap_set (grub_uint8_t newdrive, grub_uint8_t redirto)
     {
       mapping = grub_malloc (sizeof (drivemap_node_t));
       if (! mapping)
-	return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			   "cannot allocate map entry, not enough memory");
+	return grub_errno;
       mapping->newdrive = newdrive;
       mapping->redirto = redirto;
       mapping->next = map_head;
@@ -230,7 +229,7 @@ grub_cmd_drivemap (struct grub_extcmd_context *ctxt, int argc, char **args)
   grub_err_t err;
 
   if (argc != 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "two arguments required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("two arguments expected"));
 
   err = tryparse_diskstring (args[0], &mapfrom);
   if (err != GRUB_ERR_NONE)

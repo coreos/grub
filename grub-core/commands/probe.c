@@ -68,7 +68,7 @@ grub_cmd_probe (grub_extcmd_context_t ctxt, int argc, char **args)
   else
     dev = grub_device_open (args[0]);
   if (! dev)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "couldn't open device");
+    return grub_errno;
 
   if (state[1].set)
     {
@@ -96,7 +96,7 @@ grub_cmd_probe (grub_extcmd_context_t ctxt, int argc, char **args)
     }
   fs = grub_fs_probe (dev);
   if (! fs)
-    return grub_error (GRUB_ERR_UNKNOWN_FS, "unrecognised fs");
+    return grub_errno;
   if (state[3].set)
     {
       if (state[0].set)

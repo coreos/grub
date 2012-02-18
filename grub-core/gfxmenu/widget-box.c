@@ -130,12 +130,6 @@ scale_pixmap (grub_gfxmenu_box_t self, int i, int w, int h)
       if (w != 0 && h != 0)
         grub_video_bitmap_create_scaled (scaled, w, h, raw,
                                          GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
-      if (grub_errno != GRUB_ERR_NONE)
-        {
-          grub_error_push ();
-          grub_error (grub_errno,
-                      "failed to scale bitmap for styled box pixmap #%d", i);
-        }
     }
 
   return grub_errno;
@@ -188,25 +182,65 @@ get_border_width (grub_gfxmenu_box_t self)
 static int
 get_left_pad (grub_gfxmenu_box_t self)
 {
-  return get_width (self->raw_pixmaps[BOX_PIXMAP_W]);
+  int v, c;
+
+  v = get_width (self->raw_pixmaps[BOX_PIXMAP_W]);
+  c = get_width (self->raw_pixmaps[BOX_PIXMAP_NW]);
+  if (c > v)
+    v = c;
+  c = get_width (self->raw_pixmaps[BOX_PIXMAP_SW]);
+  if (c > v)
+    v = c;
+
+  return v;
 }
 
 static int
 get_top_pad (grub_gfxmenu_box_t self)
 {
-  return get_height (self->raw_pixmaps[BOX_PIXMAP_N]);
+  int v, c;
+
+  v = get_height (self->raw_pixmaps[BOX_PIXMAP_N]);
+  c = get_height (self->raw_pixmaps[BOX_PIXMAP_NW]);
+  if (c > v)
+    v = c;
+  c = get_height (self->raw_pixmaps[BOX_PIXMAP_NE]);
+  if (c > v)
+    v = c;
+
+  return v;
 }
 
 static int
 get_right_pad (grub_gfxmenu_box_t self)
 {
-  return get_width (self->raw_pixmaps[BOX_PIXMAP_E]);
+  int v, c;
+
+  v = get_width (self->raw_pixmaps[BOX_PIXMAP_E]);
+  c = get_width (self->raw_pixmaps[BOX_PIXMAP_NE]);
+  if (c > v)
+    v = c;
+  c = get_width (self->raw_pixmaps[BOX_PIXMAP_SE]);
+  if (c > v)
+    v = c;
+
+  return v;
 }
 
 static int
 get_bottom_pad (grub_gfxmenu_box_t self)
 {
-  return get_height (self->raw_pixmaps[BOX_PIXMAP_S]);
+  int v, c;
+
+  v = get_height (self->raw_pixmaps[BOX_PIXMAP_S]);
+  c = get_height (self->raw_pixmaps[BOX_PIXMAP_SW]);
+  if (c > v)
+    v = c;
+  c = get_height (self->raw_pixmaps[BOX_PIXMAP_SE]);
+  if (c > v)
+    v = c;
+
+  return v;
 }
 
 static void

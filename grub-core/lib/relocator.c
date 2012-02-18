@@ -23,6 +23,7 @@
 #include <grub/cache.h>
 #include <grub/memory.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -524,9 +525,11 @@ malloc_in_range (struct grub_relocator *rel,
 #if GRUB_RELOCATOR_HAVE_FIRMWARE_REQUESTS
   for (r = grub_mm_base; r; r = r->next)
     {
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
       grub_dprintf ("relocator", "Blocking at 0x%lx-0x%lx\n",
 		    (unsigned long) r - r->pre_size, 
 		    (unsigned long) (r + 1) + r->size);
+#endif
       events[N].type = FIRMWARE_BLOCK_START;
       events[N].pos = (grub_addr_t) r - r->pre_size;
       N++;
@@ -538,8 +541,10 @@ malloc_in_range (struct grub_relocator *rel,
     struct grub_relocator_extra_block *cur;
     for (cur = extra_blocks; cur; cur = cur->next)
       {
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
 	grub_dprintf ("relocator", "Blocking at 0x%lx-0x%lx\n",
 		      (unsigned long) cur->start, (unsigned long) cur->end);
+#endif
 	events[N].type = FIRMWARE_BLOCK_START;
 	events[N].pos = cur->start;
 	N++;
@@ -1204,14 +1209,14 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel,
   grub_phys_addr_t min_addr = 0, max_addr;
 
   if (target > ~size)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "address is out of range");
+    return grub_error (GRUB_ERR_BUG, "address is out of range");
 
   adjust_limits (rel, &min_addr, &max_addr, target, target);
 
   for (chunk = rel->chunks; chunk; chunk = chunk->next)
     if ((chunk->target <= target && target < chunk->target + chunk->size)
 	|| (target <= chunk->target && chunk->target < target + size))
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "overlap detected");
+      return grub_error (GRUB_ERR_BUG, "overlap detected");
 
   chunk = grub_malloc (sizeof (struct grub_relocator_chunk));
   if (!chunk)
@@ -1251,7 +1256,7 @@ grub_relocator_alloc_chunk_addr (struct grub_relocator *rel,
 
       grub_dprintf ("relocator", "not allocated\n");
       grub_free (chunk);
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
     }
   while (0);
 
@@ -1361,7 +1366,7 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 	  break;
 	}
 
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
     }
   while (0);
 
@@ -1481,7 +1486,7 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
   if (!malloc_in_range (rel, 0, ~(grub_addr_t)0 - rel->relocators_size + 1,
 			grub_relocator_align,
 			rel->relocators_size, &movers_chunk, 1, 1))
-    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "out of memory");
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
   movers_chunk.srcv = rels = rels0
     = grub_map_memory (movers_chunk.src, movers_chunk.size);
 

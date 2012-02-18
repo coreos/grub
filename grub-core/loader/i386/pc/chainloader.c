@@ -182,8 +182,9 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
   if (grub_file_read (file, bs, GRUB_DISK_SECTOR_SIZE)
       != GRUB_DISK_SECTOR_SIZE)
     {
-      if (grub_errno == GRUB_ERR_NONE)
-	grub_error (GRUB_ERR_BAD_OS, "too small");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    filename);
 
       goto fail;
     }
@@ -270,9 +271,9 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
     }
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
-  else
-    grub_chainloader_cmd (argv[0], flags);
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
+
+  grub_chainloader_cmd (argv[0], flags);
 
   return grub_errno;
 }

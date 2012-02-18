@@ -18,15 +18,21 @@ set -e
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
 # Initialize some variables.
+
 transform="@program_transform_name@"
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-bindir=@bindir@
-libdir=@libdir@
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
+bindir="@bindir@"
+libdir="@libdir@"
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
+datadir="@datadir@"
+if [ "x$pkgdatadir" = x ]; then
+    pkgdatadir="${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`"
+fi
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 
 self=`basename $0`
@@ -43,29 +49,28 @@ grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 
 xorriso=xorriso
 
+. "${pkgdatadir}/grub-mkconfig_lib"
+
 # Usage: usage
 # Print the usage.
 usage () {
-    cat <<EOF
-Usage: $self [OPTION] SOURCE...
-Make GRUB rescue image.
-
-  -h, --help              print this message and exit
-  -v, --version           print the version information and exit
-  -o, --output=FILE       save output in FILE [required]
-  --modules=MODULES       pre-load specified modules MODULES
-  --rom-directory=DIR     save rom images in DIR [optional]
-  --xorriso=FILE          use FILE as xorriso [optional]
-  --grub-mkimage=FILE     use FILE as grub-mkimage
-
-$self generates a bootable rescue image with specified source files, source
-directories, or mkisofs options listed by: xorriso -as mkisofs -help
-
-Option -- switches to native xorriso command mode.
-
-Report bugs to <bug-grub@gnu.org>.
-Mail xorriso support requests to <bug-xorriso@gnu.org>.
-EOF
+    gettext_printf "Usage: %s [OPTION] SOURCE...\n" "$self"
+    gettext "Make GRUB CDROM, disk, pendrive and floppy bootable image."; echo
+    echo
+    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
+    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
+    printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "save output in FILE [required]")"
+    printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    printf "  --rom-directory=%-8s%s\n" "$(gettext "DIR")" "$(gettext "save rom images in DIR [optional]")"
+    printf "  --xorriso=%-14s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as xorriso [optional]")"
+    printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    echo
+    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by the output of \`%s'\n" "xorriso -as mkisofs -help" "$self"
+    echo
+    gettext "Option -- switches to native xorriso command mode."; echo
+    echo
+    gettext "Report bugs to <bug-grub@gnu.org>."; echo
+    gettext "Mail xorriso support requests to <bug-xorriso@gnu.org>."; echo
 }
 
 argument () {
@@ -73,7 +78,7 @@ argument () {
   shift
 
   if test $# -eq 0; then
-      echo "$0: option requires an argument -- '$opt'" 1>&2
+      gettext_printf "%s: option requires an argument -- '%s'\n" "$0" "$opt" 1>&2
       exit 1
   fi
   echo $1
@@ -137,7 +142,8 @@ do
 done
 
 if [ "x${output_image}" = x ] ; then
-  echo "output file must be given" >&2
+  gettext "output file must be specified" >&2
+  echo >&2
   usage
   exit 1
 fi
@@ -146,7 +152,7 @@ set $grub_mkimage dummy
 if test -f "$1"; then
     :
 else
-    echo "$1: Not found." 1>&2
+    gettext_printf "%s: Not found.\n" "$1" 1>&2
     exit 1
 fi
 
@@ -157,20 +163,20 @@ process_input_dir ()
 {
     input_dir="$1"
     platform="$2"
-    mkdir -p ${iso9660_dir}/boot/grub/${platform}
+    mkdir -p "${iso9660_dir}/boot/grub/${platform}"
     for file in "${input_dir}/"*.mod "${input_dir}/"efiemu32.o "${input_dir}/"efiemu64.o; do
         if test -f "$file"; then
-            cp -f "$file" ${iso9660_dir}/boot/grub/${platform}/
+            cp -f "$file" "${iso9660_dir}/boot/grub/${platform}/"
         fi
     done
     for file in ${pkglib_DATA}; do
 	if test -f "${input_dir}/${file}"; then
-            cp -f "${input_dir}/${file}" ${iso9660_dir}/boot/grub/${platform}/
+            cp -f "${input_dir}/${file}" "${iso9660_dir}/boot/grub/${platform}/"
 	fi
     done
 
-    mkdir -p ${iso9660_dir}/boot/grub/locale
-    for file in ${input_dir}/po/*.mo; do
+    mkdir -p "${iso9660_dir}/boot/grub/locale"
+    for file in "${input_dir}"/po/*.mo; do
         if test -f "$file"; then
 	    cp -f "$file" ${iso9660_dir}/boot/grub/locale/
 	fi
@@ -185,28 +191,27 @@ make_image ()
 	return;
     fi
 
-    echo "Enabling $2 support ..."
+    gettext_printf "Enabling %s support ...\n" "$2"
 
-    memdisk_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-    memdisk_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-    mkdir -p ${memdisk_dir}/boot/grub
+    memdisk_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+    memdisk_dir="`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+    mkdir -p "${memdisk_dir}/boot/grub"
 
-    cat << EOF > ${memdisk_dir}/boot/grub/grub.cfg
+    (cat << EOF
 search --fs-uuid --set=root ${iso_uuid}
-set prefix=(\${root})/boot/grub/${platform}
-source \$prefix/grub.cfg
+set prefix=(\${root})/boot/grub
 EOF
-    (for i in $(cat ${source_directory}/partmap.lst) ${modules} ; do
+    for i in $(cat "${source_directory}/partmap.lst") ${modules} ; do
         echo "insmod $i"
     done ; \
-    echo "source /boot/grub/grub.cfg") \
-    > ${iso9660_dir}/boot/grub/${platform}/grub.cfg
+    echo "source \$prefix/grub.cfg") \
+    > "${memdisk_dir}/boot/grub/grub.cfg"
 
     (cd "${memdisk_dir}"; tar -cf - boot) > "${memdisk_img}"
-    rm -rf ${memdisk_dir}
-    $grub_mkimage -O ${platform} -d "${source_directory}" -m "${memdisk_img}" -o "$3" --prefix='(memdisk)/boot/grub' \
+    rm -rf "${memdisk_dir}"
+    "$grub_mkimage" -O ${platform} -d "${source_directory}" -m "${memdisk_img}" -o "$3" --prefix='(memdisk)/boot/grub' \
         search iso9660 configfile normal memdisk tar $4
-    rm -rf ${memdisk_img}
+    rm -rf "${memdisk_img}"
 }
 
 if [ "${override_dir}" = "" ] ; then
@@ -253,22 +258,22 @@ grub_mkisofs_arguments="${grub_mkisofs_arguments} --modification-date=$(echo ${i
 
 # build BIOS core.img
 if test -e "${pc_dir}" ; then
-    echo "Enabling BIOS support ..."
-    core_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-    $grub_mkimage -O i386-pc -d ${pc_dir}/ -o ${core_img} --prefix=/boot/grub/i386-pc \
-        iso9660 biosdisk
-    cat ${pc_dir}/cdboot.img ${core_img} > ${iso9660_dir}/boot/grub/i386-pc/eltorito.img
+    gettext_printf "Enabling %s support ...\n" "BIOS"
+    load_cfg="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`"
+    core_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
 
-    embed_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-    cat ${pc_dir}/boot.img ${core_img} > ${embed_img}
-
-    rm -f ${core_img}
-
-    (for i in $(cat ${pc_dir}/partmap.lst) ${modules} ; do
+    (for i in $(cat "${pc_dir}/partmap.lst") ${modules} ; do
         echo "insmod $i"
-    done ; \
-    echo "source /boot/grub/grub.cfg") \
-    > ${iso9660_dir}/boot/grub/i386-pc/grub.cfg
+    done ;) > "${load_cfg}"
+
+    "$grub_mkimage" -O i386-pc -d "${pc_dir}/" -o "${core_img}" -c "$load_cfg" --prefix=/boot/grub \
+        iso9660 biosdisk
+    cat "${pc_dir}/cdboot.img" "${core_img}" > "${iso9660_dir}/boot/grub/i386-pc/eltorito.img"
+
+    embed_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+    cat "${pc_dir}/boot.img" "${core_img}" > "${embed_img}"
+
+    rm -f "${core_img}"
 
     grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-info-table \
 		--embedded-boot ${embed_img}"
@@ -306,9 +311,9 @@ if [ -e "${iso9660_dir}/boot/coreboot.elf" ] && [ -d "${rom_directory}" ]; then
 fi
 
 # build iso image
-"${xorriso}" -as mkisofs -graft-points ${grub_mkisofs_arguments} --protective-msdos-label -o ${output_image} -r ${iso9660_dir} --sort-weight 0 / --sort-weight 1 /boot ${source}
-rm -rf ${iso9660_dir}
+"${xorriso}" -as mkisofs -graft-points ${grub_mkisofs_arguments} --protective-msdos-label -o "${output_image}" -r "${iso9660_dir}" --sort-weight 0 / --sort-weight 1 /boot ${source}
+rm -rf "${iso9660_dir}"
 
-rm -f ${embed_img}
+rm -f "${embed_img}"
 
 exit 0

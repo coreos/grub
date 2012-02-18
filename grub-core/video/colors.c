@@ -22,6 +22,7 @@
 #include <grub/gui_string_util.h>
 #include <grub/misc.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -244,10 +245,13 @@ grub_err_t
 grub_video_parse_color (const char *s, grub_video_rgba_color_t *color)
 {
   grub_video_rgba_color_t c;
+  const char *s0;
 
   /* Skip whitespace.  */
   while (*s && grub_isspace (*s))
     s++;
+
+  s0 = s;
 
   if (*s == '#')
     {
@@ -288,23 +292,26 @@ grub_video_parse_color (const char *s, grub_video_rgba_color_t *color)
         }
       else
         return grub_error (GRUB_ERR_BAD_ARGUMENT,
-                           "invalid HTML-type color string `%s'", s);
+                           N_("invalid color specification `%s'"), s0);
     }
   else if (grub_isdigit (*s))
     {
       /* Comma separated decimal values.  */
       c.red = grub_strtoul (s, 0, 0);
-      if ((s = grub_strchr (s, ',')) == 0)
+      s = grub_strchr (s, ',');
+      if (!s)
         return grub_error (GRUB_ERR_BAD_ARGUMENT,
-                           "missing 1st comma separator in color `%s'", s);
+                           N_("invalid color specification `%s'"), s0);
       s++;
       c.green = grub_strtoul (s, 0, 0);
-      if ((s = grub_strchr (s, ',')) == 0)
+      s = grub_strchr (s, ',');
+      if (!s)
         return grub_error (GRUB_ERR_BAD_ARGUMENT,
-                           "missing 2nd comma separator in color `%s'", s);
+                           N_("invalid color specification `%s'"), s0);
       s++;
       c.blue = grub_strtoul (s, 0, 0);
-      if ((s = grub_strchr (s, ',')) == 0)
+      s = grub_strchr (s, ',');
+      if (!s)
         c.alpha = 255;
       else
         {
@@ -316,7 +323,7 @@ grub_video_parse_color (const char *s, grub_video_rgba_color_t *color)
     {
       if (! grub_video_get_named_color (s, &c))
         return grub_error (GRUB_ERR_BAD_ARGUMENT,
-                           "invalid named color `%s'", s);
+                           N_("invalid color specification `%s'"), s0);
     }
 
   if (grub_errno == GRUB_ERR_NONE)

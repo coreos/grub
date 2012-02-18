@@ -21,6 +21,7 @@
 #include <grub/elf.h>
 #include <grub/misc.h>
 #include <grub/err.h>
+#include <grub/i18n.h>
 
 /* Check if EHDR is a valid ELF header.  */
 grub_err_t
@@ -32,7 +33,7 @@ grub_arch_dl_check_header (void *ehdr)
   if (e->e_ident[EI_CLASS] != ELFCLASS32
       || e->e_ident[EI_DATA] != ELFDATA2MSB
       || e->e_machine != EM_PPC)
-    return grub_error (GRUB_ERR_BAD_OS, "invalid arch specific ELF magic");
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch dependent ELF magic"));
 
   return GRUB_ERR_NONE;
 }
@@ -43,7 +44,6 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 {
   const Elf_Ehdr *e = ehdr;
   const Elf_Shdr *s;
-  Elf_Word entsize;
   unsigned i;
 
   *tramp = 0;
@@ -58,8 +58,6 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 
   if (i == e->e_shnum)
     return;
-
-  entsize = s->sh_entsize;
 
   for (i = 0, s = (const Elf_Shdr *) ((const char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -115,7 +113,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
       break;
 
   if (i == e->e_shnum)
-    return grub_error (GRUB_ERR_BAD_MODULE, "no symtab found");
+    return grub_error (GRUB_ERR_BAD_MODULE, N_("no symbol table"));
 
   entsize = s->sh_entsize;
 
@@ -198,7 +196,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
 		  default:
 		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-				       "this relocation (%d) is not implemented yet",
+				       N_("relocation 0x%x is not implemented yet"),
 				       ELF_R_TYPE (rel->r_info));
 		  }
 	      }

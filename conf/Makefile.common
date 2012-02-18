@@ -105,7 +105,7 @@ platformdir = $(pkglibrootdir)/$(target_cpu)-$(platform)
 CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers
 CPPFLAGS_GCRY = -I$(top_srcdir)/grub-core/lib/libgcrypt_wrap
 
-CFLAGS_GNULIB = -Wno-undef -Wno-sign-compare -Wno-unused -Wno-unused-parameter
+CFLAGS_GNULIB = -Wno-undef -Wno-sign-compare -Wno-unused -Wno-unused-parameter -Wno-redundant-decls -Wno-unreachable-code -Wno-conversion -Wno-old-style-definition
 CPPFLAGS_GNULIB = -I$(top_builddir)/grub-core/gnulib -I$(top_srcdir)/grub-core/gnulib
 
 CFLAGS_POSIX = -fno-builtin
@@ -137,7 +137,7 @@ KERNEL_HEADER_FILES =
 
 man_MANS =
 noinst_DATA =
-pkglib_DATA =
+pkgdata_DATA =
 bin_SCRIPTS =
 sbin_SCRIPTS =
 bin_PROGRAMS =
@@ -147,11 +147,12 @@ check_SCRIPTS =
 grubconf_DATA =
 check_PROGRAMS =
 noinst_SCRIPTS =
-pkglib_SCRIPTS =
 noinst_PROGRAMS =
 grubconf_SCRIPTS =
 noinst_LIBRARIES =
 dist_noinst_DATA =
+platform_SCRIPTS =
+platform_PROGRAMS =
 
 TESTS =
 EXTRA_DIST =

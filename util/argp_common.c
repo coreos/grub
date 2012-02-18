@@ -1,7 +1,7 @@
-/* biosdisk.h - emulate biosdisk */
+/* grub-setup.c - make GRUB usable */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,11 +17,19 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_BIOSDISK_MACHINE_UTIL_HEADER
-#define GRUB_BIOSDISK_MACHINE_UTIL_HEADER	1
+#include <config.h>
 
-void grub_util_biosdisk_init (const char *dev_map);
-void grub_util_biosdisk_fini (void);
-char *grub_util_biosdisk_get_grub_dev (const char *os_dev);
+#define _GNU_SOURCE	1
+#include "progname.h"
+#include <argp.h>
 
-#endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */
+/* Print the version information.  */
+static void
+print_version (FILE *stream, struct argp_state *state)
+{
+  fprintf (stream, "%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
+}
+void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
+
+/* Set the bug report address */
+const char *argp_program_bug_address = "<"PACKAGE_BUGREPORT">";

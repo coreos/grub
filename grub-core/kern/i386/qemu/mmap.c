@@ -39,7 +39,7 @@ extern char _end[];
 static grub_uint64_t mem_size, above_4g;
 
 void
-grub_machine_mmap_init ()
+grub_machine_mmap_init (void)
 {
   grub_uint8_t high, low, b, c, d;
   grub_cmos_read (QEMU_CMOS_MEMSIZE_HIGH, &high);

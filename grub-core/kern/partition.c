@@ -223,32 +223,34 @@ grub_partition_iterate (struct grub_disk *disk,
 char *
 grub_partition_get_name (const grub_partition_t partition)
 {
-  char *out = 0;
-  int curlen = 0;
+  char *out = 0, *ptr;
+  grub_size_t needlen = 0;
   grub_partition_t part;
+  if (!partition)
+    return grub_strdup ("");
+  for (part = partition; part; part = part->parent)
+    /* Even on 64-bit machines this buffer is enough to hold
+       longest number.  */
+    needlen += grub_strlen (part->partmap->name) + 1 + 27;
+  out = grub_malloc (needlen + 1);
+  if (!out)
+    return NULL;
+
+  ptr = out + needlen;
+  *ptr = 0;
   for (part = partition; part; part = part->parent)
     {
-      /* Even on 64-bit machines this buffer is enough to hold
-	 longest number.  */
-      char buf[grub_strlen (part->partmap->name) + 25];
-      int strl;
-      grub_snprintf (buf, sizeof (buf), "%s%d", part->partmap->name,
-		     part->number + 1);
-      strl = grub_strlen (buf);
-      if (curlen)
-	{
-	  out = grub_realloc (out, curlen + strl + 2);
-	  grub_memcpy (out + strl + 1, out, curlen);
-	  out[curlen + 1 + strl] = 0;
-	  grub_memcpy (out, buf, strl);
-	  out[strl] = ',';
-	  curlen = curlen + 1 + strl;
-	}
-      else
-	{
-	  curlen = strl;
-	  out = grub_strdup (buf);
-	}
+      char buf[27];
+      grub_size_t len;
+      grub_snprintf (buf, sizeof (buf), "%d", part->number + 1);
+      len = grub_strlen (buf);
+      ptr -= len;
+      grub_memcpy (ptr, buf, len);
+      len = grub_strlen (part->partmap->name);
+      ptr -= len;
+      grub_memcpy (ptr, part->partmap->name, len);
+      *--ptr = ',';
     }
+  grub_memmove (out, ptr + 1, out + needlen - ptr);
   return out;
 }

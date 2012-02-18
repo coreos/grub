@@ -52,12 +52,8 @@ grub_wait_after_message (void)
 
   endtime = grub_get_time_ms () + 10000;
 
-  while (grub_get_time_ms () < endtime)
-    if (grub_checkkey () >= 0)
-      {
-	grub_getkey ();
-	break;
-      }
+  while (grub_get_time_ms () < endtime
+	 && grub_getkey_noblock () == GRUB_TERM_NO_KEY);
 
   grub_xputs ("\n");
 }
@@ -373,7 +369,9 @@ menu_init (int entry, grub_menu_t menu, int nested)
 		  }
 	      }
 	    else
-	      grub_error (GRUB_ERR_BAD_MODULE, "no gfxmenu found");
+	      grub_error (GRUB_ERR_BAD_MODULE,
+			  N_("module `%s' isn't loaded"),
+			  "gfxmenu");
 	    grub_print_error ();
 	    grub_wait_after_message ();
 	  }
@@ -387,7 +385,7 @@ menu_init (int entry, grub_menu_t menu, int nested)
     grub_err_t err;
 
     if (grub_strcmp (term->name, "gfxterm") == 0 && gfxmenu)
-      break;
+      continue;
 
     err = grub_menu_try_text (term, entry, menu, nested);
     if(!err)
@@ -558,10 +556,10 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	  return default_entry;
 	}
 
-      if (grub_checkkey () >= 0 || timeout < 0)
-	{
-	  c = grub_getkey ();
+      c = grub_getkey_noblock ();
 
+      if (c != GRUB_TERM_NO_KEY)
+	{
 	  if (timeout >= 0)
 	    {
 	      grub_env_unset ("timeout");
@@ -666,7 +664,6 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
     }
 
   /* Never reach here.  */
-  return -1;
 }
 
 /* Callback invoked immediately before a menu entry is executed.  */

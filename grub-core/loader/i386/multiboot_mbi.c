@@ -34,6 +34,7 @@
 #include <grub/video.h>
 #include <grub/file.h>
 #include <grub/net.h>
+#include <grub/i18n.h>
 
 /* The bits in the required part of flags field we don't support.  */
 #define UNSUPPORTED_FLAGS			0x0000fff8
@@ -60,7 +61,7 @@ static void *elf_sections;
 
 
 grub_err_t
-grub_multiboot_load (grub_file_t file)
+grub_multiboot_load (grub_file_t file, const char *filename)
 {
   char *buffer;
   grub_ssize_t len;
@@ -75,7 +76,10 @@ grub_multiboot_load (grub_file_t file)
   if (len < 32)
     {
       grub_free (buffer);
-      return grub_error (GRUB_ERR_BAD_OS, "file too small");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    filename);
+      return grub_errno;
     }
 
   /* Look for the multiboot header in the buffer.  The header should
@@ -149,7 +153,7 @@ grub_multiboot_load (grub_file_t file)
     }
   else
     {
-      err = grub_multiboot_load_elf (file, buffer);
+      err = grub_multiboot_load_elf (file, filename, buffer);
       if (err)
 	{
 	  grub_free (buffer);

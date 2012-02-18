@@ -31,15 +31,17 @@ if test "x$grub_mkrelpath" = x; then
   grub_mkrelpath="${bindir}/`echo grub-mkrelpath | sed "${transform}"`"
 fi
 
-if $(which gettext >/dev/null 2>/dev/null) ; then
-  gettext="gettext"
+if which gettext >/dev/null 2>/dev/null; then
+  :
 else
-  gettext="echo"
+  gettext () {
+     echo -n "$@"
+  }
 fi
 
 grub_warn ()
 {
-  echo "Warning: $@" >&2
+  echo "$(gettext "Warning:")" "$@" >&2
 }
 
 make_system_path_relative_to_its_root ()
@@ -146,9 +148,17 @@ prepare_grub_to_access_device ()
 
   # If there's a filesystem UUID that GRUB is capable of identifying, use it;
   # otherwise set root as per value in device.map.
-  echo "set root='`"${grub_probe}" --device "${device}" --target=drive`'"
+  fs_hint="`"${grub_probe}" --device "${device}" --target=compatibility_hint`"
+  if [ "x$fs_hint" != x ]; then
+    echo "set root='$fs_hint'"
+  fi
   if fs_uuid="`"${grub_probe}" --device "${device}" --target=fs_uuid 2> /dev/null`" ; then
-    echo "search --no-floppy --fs-uuid --set=root ${fs_uuid}"
+    hints="`"${grub_probe}" --device "${device}" --target=hints_string 2> /dev/null`"
+    echo "if [ x\$feature_platform_search_hint = xy ]; then"
+    echo "  search --no-floppy --fs-uuid --set=root ${hints} ${fs_uuid}"
+    echo "else"
+    echo "  search --no-floppy --fs-uuid --set=root ${fs_uuid}"
+    echo "fi"
   fi
 }
 
@@ -198,8 +208,8 @@ version_test_gt ()
   fi
   case "$version_test_gt_a:$version_test_gt_b" in
     *.old:*.old) ;;
-    *.old:*) version_test_gt_a="`echo -n "$version_test_gt_a" | sed -e 's/\.old$//'`" ; cmp=gt ;;
-    *:*.old) version_test_gt_b="`echo -n "$version_test_gt_b" | sed -e 's/\.old$//'`" ; cmp=ge ;;
+    *.old:*) version_test_gt_a="`echo -n "$version_test_gt_a" | sed -e 's/\.old$//'`" ; version_test_gt_cmp=gt ;;
+    *:*.old) version_test_gt_b="`echo -n "$version_test_gt_b" | sed -e 's/\.old$//'`" ; version_test_gt_cmp=ge ;;
   esac
   version_test_numeric "$version_test_gt_a" "$version_test_gt_cmp" "$version_test_gt_b"
   return "$?"
@@ -220,7 +230,7 @@ version_find_latest ()
 # printf; so this turns ' into \'.  Note that you must use the output of
 # this function in a printf format string.
 gettext_quoted () {
-  "$gettext" "$@" | sed "s/'/'\\\\\\\\''/g"
+  gettext "$@" | sed "s/'/'\\\\\\\\''/g"
 }
 
 # Run the first argument through gettext_quoted, and then pass that and all

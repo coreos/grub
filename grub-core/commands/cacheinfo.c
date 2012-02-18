@@ -31,14 +31,16 @@ grub_rescue_cmd_info (struct grub_command *cmd __attribute__ ((unused)),
   unsigned long hits, misses;
 
   grub_disk_cache_get_performance (&hits, &misses);
-  grub_printf_ (N_("Disk cache: hits = %lu, misses = %lu "), hits, misses);
   if (hits + misses)
     {
       unsigned long ratio = hits * 10000 / (hits + misses);
       grub_printf ("(%lu.%lu%%)\n", ratio / 100, ratio % 100);
+      grub_printf_ (N_("Disk cache statistics: hits = %lu (%lu.%02lu%%),"
+		     " misses = %lu\n"), ratio / 100, ratio % 100,
+		    hits, misses);
     }
   else
-    grub_puts_ (N_("(N/A)"));
+    grub_printf ("%s\n", _("No disk cache statistics available\n"));    
 
  return 0;
 }

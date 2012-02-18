@@ -260,7 +260,6 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
 	default:
 
 	  /* Not sure how to handle those. */
-	case GRUB_DISK_DEVICE_PXE_ID:
 	case GRUB_DISK_DEVICE_NAND_ID:
 	  if (!file_disk)
 	    {
@@ -341,7 +340,7 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
   }
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   grub_dl_ref (my_mod);
 
@@ -385,7 +384,12 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
     goto fail;
 
   if (grub_file_read (file, &hdr, sizeof (hdr)) != (grub_ssize_t) sizeof (hdr))
-    goto fail;
+    {
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    argv[0]);
+      goto fail;
+    }
 
   if (grub_be_to_cpu32 (hdr.magic) != GRUB_PLAN9_MAGIC
       || hdr.zero)
@@ -463,7 +467,12 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
 
     if (grub_file_read (file, ptr, grub_be_to_cpu32 (hdr.text_size))
 	!= (grub_ssize_t) grub_be_to_cpu32 (hdr.text_size))
-      goto fail;
+      {
+	if (!grub_errno)
+	  grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		      argv[0]);
+	goto fail;
+      }
     ptr += grub_be_to_cpu32 (hdr.text_size);
     padsize = ALIGN_UP (grub_be_to_cpu32 (hdr.text_size) + sizeof (hdr),
 			GRUB_PLAN9_ALIGN) - grub_be_to_cpu32 (hdr.text_size)
@@ -474,7 +483,12 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
 
     if (grub_file_read (file, ptr, grub_be_to_cpu32 (hdr.data_size))
 	!= (grub_ssize_t) grub_be_to_cpu32 (hdr.data_size))
-      goto fail;
+      {
+	if (!grub_errno)
+	  grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		      argv[0]);
+	goto fail;
+      }
     ptr += grub_be_to_cpu32 (hdr.data_size);
     padsize = ALIGN_UP (grub_be_to_cpu32 (hdr.data_size), GRUB_PLAN9_ALIGN)
       - grub_be_to_cpu32 (hdr.data_size);

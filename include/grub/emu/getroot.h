@@ -30,7 +30,7 @@ enum grub_dev_abstraction_types {
 };
 
 char *grub_find_device (const char *dir, dev_t dev);
-char *grub_guess_root_device (const char *dir);
+char **grub_guess_root_devices (const char *dir);
 int grub_util_get_dev_abstraction (const char *os_dev);
 char *grub_util_get_grub_dev (const char *os_dev);
 char *grub_make_system_path_relative_to_its_root (const char *path);

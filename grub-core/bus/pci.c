@@ -36,6 +36,16 @@ grub_memalign_dma32 (grub_size_t align, grub_size_t size)
     align = 64;
   size = ALIGN_UP (size, align);
   ret = grub_memalign (align, size);
+#if GRUB_CPU_SIZEOF_VOID_P == 8
+  if ((grub_addr_t) ret >> 32)
+    {
+      /* Shouldn't happend since the only platform in this case is
+	 x86_64-efi and it skips any regions > 4GiB because
+	 of EFI bugs anyway.  */
+      grub_error (GRUB_ERR_BUG, "allocation outside 32-bit range");
+      return 0;
+    }
+#endif
   if (!ret)
     return 0;
   grub_arch_sync_dma_caches (ret, size);

@@ -50,7 +50,9 @@ grub_cmd_cpuid (grub_extcmd_context_t ctxt __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
   return grub_cpuid_has_longmode ? GRUB_ERR_NONE
-    : grub_error (GRUB_ERR_TEST_FAILURE, "false");
+    /* TRANSLATORS: it's a standalone boolean value,
+       opposite of "true".  */
+    : grub_error (GRUB_ERR_TEST_FAILURE, N_("false"));
 }
 
 static grub_extcmd_t cmd;

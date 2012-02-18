@@ -114,9 +114,9 @@ extern grub_efi_system_table64_t *grub_efiemu_system_table64;
 					   : (grub_efiemu_system_table32->x \
 					      = (y)))
 #define GRUB_EFIEMU_SYSTEM_TABLE_PTR(x) ((grub_efiemu_sizeof_uintn_t () == 8)\
-					 ? UINT_TO_PTR \
+					 ? (void *) (grub_addr_t)	\
 					 (grub_efiemu_system_table64->x) \
-					 : UINT_TO_PTR \
+					 : (void *) (grub_addr_t) \
 					 (grub_efiemu_system_table32->x))
 #define GRUB_EFIEMU_SYSTEM_TABLE_VAR(x) ((grub_efiemu_sizeof_uintn_t () == 8) \
 					 ? (void *) \
@@ -152,9 +152,12 @@ struct grub_efiemu_elf_sym
 
 int grub_efiemu_check_header32 (void *ehdr, grub_size_t size);
 int grub_efiemu_check_header64 (void *ehdr, grub_size_t size);
-grub_err_t grub_efiemu_loadcore_init32 (void *core, grub_size_t core_size,
+grub_err_t grub_efiemu_loadcore_init32 (void *core,
+					const char *filename,
+					grub_size_t core_size,
 					grub_efiemu_segment_t *segments);
-grub_err_t grub_efiemu_loadcore_init64 (void *core, grub_size_t core_size,
+grub_err_t grub_efiemu_loadcore_init64 (void *core, const char *filename,
+					grub_size_t core_size,
 					grub_efiemu_segment_t *segments);
 grub_err_t grub_efiemu_loadcore_load32 (void *core,
 					grub_size_t core_size,
@@ -165,7 +168,8 @@ grub_err_t grub_efiemu_loadcore_load64 (void *core,
 grub_err_t grub_efiemu_loadcore_unload32 (void);
 grub_err_t grub_efiemu_loadcore_unload64 (void);
 grub_err_t grub_efiemu_loadcore_unload(void);
-grub_err_t grub_efiemu_loadcore_init (grub_file_t file);
+grub_err_t grub_efiemu_loadcore_init (grub_file_t file,
+				      const char *filename);
 grub_err_t grub_efiemu_loadcore_load (void);
 
 /* Configuration tables manipulation. Definitions and functions */
@@ -200,15 +204,9 @@ grub_efiemu_register_configuration_table (grub_efi_guid_t guid,
 int grub_efiemu_request_memalign (grub_size_t align, grub_size_t size,
 				  grub_efi_memory_type_t type);
 void *grub_efiemu_mm_obtain_request (int handle);
-int grub_efiemu_get_memory_map (grub_efi_uintn_t *memory_map_size,
-				grub_efi_memory_descriptor_t *memory_map,
-				grub_efi_uintn_t *map_key,
-				grub_efi_uintn_t *descriptor_size,
-				grub_efi_uint32_t *descriptor_version);
 grub_err_t grub_efiemu_mm_unload (void);
 grub_err_t grub_efiemu_mm_do_alloc (void);
 grub_err_t grub_efiemu_mm_init (void);
-void *grub_efiemu_mm_obtain_request (int handle);
 void grub_efiemu_mm_return_request (int handle);
 grub_efi_memory_type_t grub_efiemu_mm_get_type (int handle);
 
@@ -271,8 +269,7 @@ grub_err_t grub_efiemu_write_value (void * addr, grub_uint32_t value,
 				    int minus_handle, int ptv_needed, int size);
 grub_err_t grub_efiemu_write_sym_markers (void);
 grub_err_t grub_efiemu_pnvram (void);
-grub_err_t grub_efiemu_prepare (void);
-char *grub_efiemu_get_default_core_name (void);
+const char *grub_efiemu_get_default_core_name (void);
 void grub_efiemu_pnvram_cmd_unregister (void);
 grub_err_t grub_efiemu_autocore (void);
 grub_err_t grub_efiemu_crc32 (void);

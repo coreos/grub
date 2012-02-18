@@ -42,7 +42,7 @@ struct grub_macho_file
 typedef struct grub_macho_file *grub_macho_t;
 
 grub_macho_t grub_macho_open (const char *);
-grub_macho_t grub_macho_file (grub_file_t);
+grub_macho_t grub_macho_file (grub_file_t file, const char *filename);
 grub_err_t grub_macho_close (grub_macho_t);
 
 int grub_macho_contains_macho32 (grub_macho_t);
@@ -57,17 +57,21 @@ grub_uint64_t grub_macho_get_entry_point64 (grub_macho_t macho);
 
 /* Ignore BSS segments when loading. */
 #define GRUB_MACHO_NOBSS 0x1
-grub_err_t grub_macho_load32 (grub_macho_t macho, char *offset, int flags);
-grub_err_t grub_macho_load64 (grub_macho_t macho, char *offset, int flags);
+grub_err_t grub_macho_load32 (grub_macho_t macho, const char *filename,
+			      char *offset, int flags);
+grub_err_t grub_macho_load64 (grub_macho_t macho, const char *filename,
+			      char *offset, int flags);
 
 /* Like filesize and file_read but take only 32-bit part
    for current architecture. */
 grub_size_t grub_macho_filesize32 (grub_macho_t macho);
-grub_err_t grub_macho_readfile32 (grub_macho_t macho, void *dest);
+grub_err_t grub_macho_readfile32 (grub_macho_t macho, const char *filename,
+				  void *dest);
 grub_size_t grub_macho_filesize64 (grub_macho_t macho);
-grub_err_t grub_macho_readfile64 (grub_macho_t macho, void *dest);
+grub_err_t grub_macho_readfile64 (grub_macho_t macho, const char *filename,
+				  void *dest);
 
-void grub_macho_parse32 (grub_macho_t macho);
-void grub_macho_parse64 (grub_macho_t macho);
+void grub_macho_parse32 (grub_macho_t macho, const char *filename);
+void grub_macho_parse64 (grub_macho_t macho, const char *filename);
 
 #endif /* ! GRUB_MACHOLOAD_HEADER */

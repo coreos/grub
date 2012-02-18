@@ -32,7 +32,7 @@ grub_cmd_source (grub_command_t cmd, int argc, char **args)
   int new_env, extractor;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   extractor = (cmd->name[0] == 'e');
   new_env = (cmd->name[extractor ? sizeof ("extract_entries_") - 1 : 0] == 'c');

@@ -126,7 +126,9 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
       if (grub_errno)
 	return grub_errno;
       if (*ptr != 'x')
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid mode specification");
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   N_("invalid video mode specification `%s'"),
+			   args[0]);
       ptr++;
       height = grub_strtoul (ptr, &ptr, 0);
       if (grub_errno)
@@ -178,7 +180,7 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
       {
 	if (adapter->init ())
 	  {
-	    grub_puts_ (N_("  Failed"));
+	    grub_puts_ (N_("  Failed to initialize video adapter"));
 	    grub_errno = GRUB_ERR_NONE;
 	    continue;
 	  }

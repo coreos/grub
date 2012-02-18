@@ -88,9 +88,9 @@ grub_chainloader_boot (void)
 	      grub_error (GRUB_ERR_BAD_OS, buf);
 	      grub_free (buf);
 	    }
-	  else
-	    grub_error (GRUB_ERR_BAD_OS, "unknown error");
 	}
+      else
+	grub_error (GRUB_ERR_BAD_OS, "unknown error");
     }
 
   if (exit_data)
@@ -197,7 +197,7 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
   char *filename;
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
   filename = argv[0];
 
   grub_dl_ref (my_mod);
@@ -241,7 +241,8 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
   size = grub_file_size (file);
   if (!size)
     {
-      grub_error (GRUB_ERR_BAD_OS, "file is empty");
+      grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		  filename);
       goto fail;
     }
   pages = (((grub_efi_uintn_t) size + ((1 << 12) - 1)) >> 12);
@@ -258,7 +259,8 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, (void *) ((grub_addr_t) address), size) != size)
     {
       if (grub_errno == GRUB_ERR_NONE)
-	grub_error (GRUB_ERR_BAD_OS, "too small");
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    filename);
 
       goto fail;
     }

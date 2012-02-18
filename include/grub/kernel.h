@@ -77,12 +77,12 @@ extern grub_addr_t EXPORT_VAR (grub_modbase);
   var && (grub_addr_t) var \
     < (grub_modbase + (((struct grub_module_info *) grub_modbase)->size));    \
   var = (struct grub_module_header *)					\
-    ((char *) var + ((struct grub_module_header *) var)->size))
+    ((grub_uint32_t *) var + ((struct grub_module_header *) var)->size / 4))
 
 grub_addr_t grub_modules_get_end (void);
 
 /* The start point of the C code.  */
-void grub_main (void);
+void grub_main (void) __attribute__ ((noreturn));
 
 /* The machine-specific initialization. This must initialize memory.  */
 void grub_machine_init (void);

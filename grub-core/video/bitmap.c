@@ -22,6 +22,7 @@
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -60,12 +61,12 @@ grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
   unsigned int size;
 
   if (!bitmap)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
+    return grub_error (GRUB_ERR_BUG, "invalid argument");
 
   *bitmap = 0;
 
   if (width == 0 || height == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
+    return grub_error (GRUB_ERR_BUG, "invalid argument");
 
   *bitmap = (struct grub_video_bitmap *)grub_malloc (sizeof (struct grub_video_bitmap));
   if (! *bitmap)
@@ -130,7 +131,7 @@ grub_video_bitmap_create (struct grub_video_bitmap **bitmap,
         grub_free (*bitmap);
         *bitmap = 0;
 
-        return grub_error (GRUB_ERR_BAD_ARGUMENT,
+        return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
                            "unsupported bitmap format");
     }
 
@@ -190,7 +191,7 @@ grub_video_bitmap_load (struct grub_video_bitmap **bitmap,
   grub_video_bitmap_reader_t reader = bitmap_readers_list;
 
   if (!bitmap)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
+    return grub_error (GRUB_ERR_BUG, "invalid argument");
 
   *bitmap = 0;
 
@@ -202,7 +203,9 @@ grub_video_bitmap_load (struct grub_video_bitmap **bitmap,
       reader = reader->next;
     }
 
-  return grub_error(GRUB_ERR_BAD_FILE_TYPE, "unsupported bitmap format");
+  return grub_error (GRUB_ERR_BAD_FILE_TYPE,
+		     N_("bitmap file `%s' is of"
+			" unsupported format"), filename);
 }
 
 /* Return bitmap width.  */

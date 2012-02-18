@@ -121,6 +121,7 @@ enum
 struct grub_ahci_device
 {
   struct grub_ahci_device *next;
+  struct grub_ahci_device **prev;
   volatile struct grub_ahci_hba *hba;
   int port;
   int num;
@@ -305,7 +306,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
   else
     grub_dprintf ("ahci", "AHCI is already in OS mode\n");
 
-  if (~(hba->global_control & GRUB_AHCI_HBA_GLOBAL_CONTROL_AHCI_EN))
+  if (!(hba->global_control & GRUB_AHCI_HBA_GLOBAL_CONTROL_AHCI_EN))
     grub_dprintf ("ahci", "AHCI is in compat mode. Switching\n");
   else
     grub_dprintf ("ahci", "AHCI is in AHCI mode.\n");
@@ -542,10 +543,10 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
 	       (unsigned long long) parms->cmdsize);
 
   if (parms->cmdsize != 0 && parms->cmdsize != 12 && parms->cmdsize != 16)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "incorrect ATAPI command size");
+    return grub_error (GRUB_ERR_BUG, "incorrect ATAPI command size");
 
   if (parms->size > GRUB_AHCI_PRDT_MAX_CHUNK_LENGTH)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too big data buffer");
+    return grub_error (GRUB_ERR_BUG, "too big data buffer");
 
   bufc = grub_memalign_dma32 (1024, parms->size + (parms->size & 1));
 
@@ -625,7 +626,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
 		      dev->hba->ports[dev->port].command_issue,
 		      dev->hba->ports[dev->port].intstatus,
 		      dev->hba->ports[dev->port].task_file_data);
-	err = grub_error (GRUB_ERR_IO, "AHCI transfer timeouted");
+	err = grub_error (GRUB_ERR_IO, "AHCI transfer timed out");
 	break;
       }
 
@@ -692,6 +693,7 @@ grub_ahci_open (int id, int devnum, struct grub_ata *ata)
 
   ata->data = dev;
   ata->dma = 1;
+  ata->maxbuffer = GRUB_AHCI_PRDT_MAX_CHUNK_LENGTH;
   ata->present = &dev->present;
 
   return GRUB_ERR_NONE;
@@ -706,7 +708,7 @@ static struct grub_ata_dev grub_ahci_dev =
 
 
 
-static void *fini_hnd;
+static struct grub_preboot *fini_hnd;
 
 GRUB_MOD_INIT(ahci)
 {

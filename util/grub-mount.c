@@ -44,7 +44,7 @@
 #include "progname.h"
 #include "argp.h"
 
-static char *root = NULL;
+static const char *root = NULL;
 grub_device_t dev = NULL;
 grub_fs_t fs = NULL;
 static char **images = NULL;
@@ -55,13 +55,13 @@ static int num_disks = 0;
 static int mount_crypt = 0;
 
 static grub_err_t
-execute_command (char *name, int n, char **args)
+execute_command (const char *name, int n, char **args)
 {
   grub_command_t cmd;
 
   cmd = grub_command_find (name);
   if (! cmd)
-    grub_util_error (_("can\'t find command %s"), name);
+    grub_util_error (_("can't find command `%s'"), name);
 
   return (cmd->func) (cmd, n, args);
 }
@@ -338,17 +338,17 @@ fuse_init (void)
       char *loop_name;
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
-	grub_util_error (grub_errmsg);
+	grub_util_error ("%s", grub_errmsg);
 
       host_file = grub_xasprintf ("(host)%s", images[i]);
       if (!host_file)
-	grub_util_error (grub_errmsg);
+	grub_util_error ("%s", grub_errmsg);
 
       argv[0] = loop_name;
       argv[1] = host_file;
 
       if (execute_command ("loopback", 2, argv))
-        grub_util_error (_("loopback command fails"));
+        grub_util_error ("%s", _("loopback command fails"));
 
       grub_free (loop_name);
       grub_free (host_file);
@@ -356,16 +356,17 @@ fuse_init (void)
 
   if (mount_crypt)
     {
-      char *argv[2] = { "-a", NULL};
+      char *argv[2] = { xstrdup ("-a"), NULL};
       if (execute_command ("cryptomount", 1, argv))
 	grub_util_error (_("cryptomount command fails: %s"), grub_errmsg);
+      free (argv[0]);
     }
 
   grub_lvm_fini ();
   grub_mdraid09_fini ();
   grub_mdraid1x_fini ();
-  grub_raid_fini ();
-  grub_raid_init ();
+  grub_diskfilter_fini ();
+  grub_diskfilter_init ();
   grub_mdraid09_init ();
   grub_mdraid1x_init ();
   grub_lvm_init ();
@@ -390,13 +391,14 @@ fuse_init (void)
 
       loop_name = grub_xasprintf ("loop%d", i);
       if (!loop_name)
-	grub_util_error (grub_errmsg);
+	grub_util_error ("%s", grub_errmsg);
 
-      argv[0] = "-d";      
+      argv[0] = xstrdup ("-d");
       argv[1] = loop_name;
 
       execute_command ("loopback", 2, argv);
 
+      grub_free (argv[0]);
       grub_free (loop_name);
     }
 
@@ -407,8 +409,10 @@ static struct argp_option options[] = {
   {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."),                 2},
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
   {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
-  {"zfs-key",      'K', N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
-  {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("Print verbose messages."), 2},
+  {"zfs-key",      'K',
+   /* TRANSLATORS: "prompt" is a keyword.  */
+   N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
+  {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("print verbose messages."), 2},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -420,11 +424,9 @@ print_version (FILE *stream, struct argp_state *state)
 }
 void (*argp_program_version_hook) (FILE *, struct argp_state *) = print_version;
 
-error_t 
+static error_t 
 argp_parser (int key, char *arg, struct argp_state *state)
 {
-  char *p;
-
   switch (key)
     {
     case 'r':
@@ -449,13 +451,18 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	  f = fopen (arg, "rb");
 	  if (!f)
 	    {
-	      printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
+	      printf (_("%s: error:"), program_name);
+	      printf (_("cannot open `%s': %s"), arg, strerror (errno));
+	      printf ("\n");
 	      return 0;
 	    }
 	  real_size = fread (buf, 1, 1024, f);
 	  if (real_size < 0)
 	    {
-	      printf (_("Error loading file %s: %s\n"), arg, strerror (errno));
+	      printf (_("%s: error:"), program_name);
+	      printf (_("cannot read `%s': %s"), arg,
+		      strerror (errno));
+	      printf ("\n");
 	      fclose (f);
 	      return 0;
 	    }
@@ -505,7 +512,8 @@ struct argp argp = {
 int
 main (int argc, char *argv[])
 {
-  char *default_root, *alloc_root;
+  const char *default_root;
+  char *alloc_root;
 
   set_program_name (argv[0]);
 
@@ -521,7 +529,7 @@ main (int argc, char *argv[])
   argp_parse (&argp, argc, argv, 0, 0, 0);
   
   if (num_disks < 2)
-    grub_util_error (_("need an image and mountpoint"));
+    grub_util_error ("%s", _("need an image and mountpoint"));
   fuse_args = xrealloc (fuse_args, (fuse_argc + 2) * sizeof (fuse_args[0]));
   fuse_args[fuse_argc] = images[num_disks - 1];
   fuse_argc++;

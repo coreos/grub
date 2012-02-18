@@ -60,11 +60,13 @@ LOCAL(uncompressed_size):
 	. = _start + GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY
 reed_solomon_redundancy:
 	.long	0
+	. = _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH
+	.short	(LOCAL(reed_solomon_part) - _start)
 
 /*
  *  This is the area for all of the special variables.
  */
-
+	. = _start + GRUB_DECOMPRESSOR_I386_PC_BOOT_DEVICE
 LOCAL(boot_dev):
 	.byte	0xFF, 0xFF, 0xFF
 LOCAL(boot_drive):
@@ -99,93 +101,22 @@ LOCAL (codestart):
 	.code32
 
 	incl	%eax
+	cld
 	call	grub_gate_a20
 
 	movl	LOCAL(compressed_size), %edx
-	addl    $(LOCAL(decompressor_end) - GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART - _start), %edx
+	addl    $(LOCAL(decompressor_end) - LOCAL(reed_solomon_part)), %edx
 	movl    reed_solomon_redundancy, %ecx
-	leal    _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART, %eax
+	leal    LOCAL(reed_solomon_part), %eax
+	cld
 	call    EXT_C (grub_reed_solomon_recover)
 	jmp	post_reed_solomon
+
+#include "../../../kern/i386/realmode.S"
 
 #include <rs_decoder.S>
 
 	.text
-
-	. = _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART
-/*
- * Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
- * This uses the a.out kludge to load raw binary to the area starting at 1MB,
- * and relocates itself after loaded.
- */
-	.p2align	2	/* force 4-byte alignment */
-multiboot_header:
-	/* magic */
-	.long	0x1BADB002
-	/* flags */
-	.long	(1 << 16)
-	/* checksum */
-	.long	-0x1BADB002 - (1 << 16)
-	/* header addr */
-	.long	multiboot_header - _start + 0x100000 + 0x200
-	/* load addr */
-	.long	0x100000
-	/* load end addr */
-	.long	0
-	/* bss end addr */
-	.long	0
-	/* entry addr */
-	.long	multiboot_entry - _start + 0x100000 + 0x200
-
-multiboot_entry:
-	.code32
-	/* obtain the boot device */
-	movl	12(%ebx), %edx
-
-	movl	$GRUB_MEMORY_MACHINE_PROT_STACK, %ebp
-	movl	%ebp, %esp
-
-	/* relocate the code */
-	movl	$(LOCAL(decompressor_end) + 0x200), %ecx
-	addl	LOCAL(compressed_size) - _start + 0x100000 + 0x200, %ecx
-	movl	$0x100000, %esi
-	movl	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %edi
-	cld
-	rep
-	movsb
-	/* jump to the real address */
-	movl	$multiboot_trampoline, %eax
-	jmp	*%eax
-
-multiboot_trampoline:
-	/* fill the boot information */
-	movl	%edx, LOCAL(boot_dev)
-	shrl	$24, %edx
-	/* enter the usual booting */
-	call	prot_to_real
-	.code16
-	jmp     LOCAL (codestart)
-	.code32
-
-post_reed_solomon:
-
-#ifdef ENABLE_LZMA
-	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
-	movl	$LOCAL(decompressor_end), %esi
-	pushl	%edi
-	movl	LOCAL (uncompressed_size), %ecx
-	leal	(%edi, %ecx), %ebx
-	call	_LzmaDecodeA
-	/* _LzmaDecodeA clears DF, so no need to run cld */
-	popl	%esi
-#endif
-
-	movl	LOCAL(boot_dev), %edx
-	movl	$prot_to_real, %edi
-	movl	$real_to_prot, %ecx
-	jmp	*%esi
-
-#include "../../../kern/i386/realmode.S"
 
 /*
  * grub_gate_a20(int on)
@@ -337,10 +268,87 @@ gate_a20_check_state:
 	popl	%ebx
 	ret
 
+LOCAL(reed_solomon_part):
+
+/*
+ * Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
+ * This uses the a.out kludge to load raw binary to the area starting at 1MB,
+ * and relocates itself after loaded.
+ */
+	.p2align	2	/* force 4-byte alignment */
+multiboot_header:
+	/* magic */
+	.long	0x1BADB002
+	/* flags */
+	.long	(1 << 16)
+	/* checksum */
+	.long	-0x1BADB002 - (1 << 16)
+	/* header addr */
+	.long	multiboot_header - _start + 0x100000 + 0x200
+	/* load addr */
+	.long	0x100000
+	/* load end addr */
+	.long	0
+	/* bss end addr */
+	.long	0
+	/* entry addr */
+	.long	multiboot_entry - _start + 0x100000 + 0x200
+
+multiboot_entry:
+	.code32
+	/* obtain the boot device */
+	movl	12(%ebx), %edx
+
+	movl	$GRUB_MEMORY_MACHINE_PROT_STACK, %ebp
+	movl	%ebp, %esp
+
+	/* relocate the code */
+	movl	$(LOCAL(decompressor_end) + 0x200), %ecx
+	addl	LOCAL(compressed_size) - _start + 0x100000 + 0x200, %ecx
+	movl	$0x100000, %esi
+	movl	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %edi
+	cld
+	rep
+	movsb
+	/* jump to the real address */
+	movl	$multiboot_trampoline, %eax
+	jmp	*%eax
+
+multiboot_trampoline:
+	/* fill the boot information */
+	movl	%edx, LOCAL(boot_dev)
+	shrl	$24, %edx
+	/* enter the usual booting */
+	call	prot_to_real
+	.code16
+	jmp     LOCAL (codestart)
+	.code32
+
+post_reed_solomon:
+
+#ifdef ENABLE_LZMA
+	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
+	movl	$LOCAL(decompressor_end), %esi
+	pushl	%edi
+	movl	LOCAL (uncompressed_size), %ecx
+	leal	(%edi, %ecx), %ebx
+	/* Don't remove this push: it's an argument.  */
+	push 	%ecx
+	call	_LzmaDecodeA
+	pop	%ecx
+	/* _LzmaDecodeA clears DF, so no need to run cld */
+	popl	%esi
+#endif
+
+	movl	LOCAL(boot_dev), %edx
+	movl	$prot_to_real, %edi
+	movl	$real_to_prot, %ecx
+	jmp	*%esi
+
 #ifdef ENABLE_LZMA
 #include "lzma_decode.S"
 #endif
 
-	.p2align 2
+	.p2align 4
 
 LOCAL(decompressor_end):

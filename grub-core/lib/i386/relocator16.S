@@ -26,6 +26,8 @@
 
 #define PSEUDO_REAL_DSEG 0x20
 
+#include <grub/i386/relocator_private.h>
+
 #include "relocator_common.S"
 	
 	.p2align	4	/* force 16-byte alignment */
@@ -101,10 +103,9 @@ VARIABLE(grub_relocator16_keep_a20_enabled)
 	test	%ax, %ax
 	jnz	LOCAL(gate_a20_done)
 
-	/* first of all, test if already in a good state */
-	call	LOCAL(gate_a20_check_state)
-	testb	%al, %al
-	jz	LOCAL(gate_a20_done)
+	movw    %cs, %ax
+	movw    %ax, %ss 
+	leaw    EXT_C(grub_relocator16_end) - LOCAL(base) + GRUB_RELOCATOR16_STACK_SIZE, %sp
 
 	/* second, try a BIOS call */
 	movw	$0x2400, %ax
@@ -132,14 +133,6 @@ LOCAL(gate_a20_check_state):
 	/* iterate the checking for a while */
 	movw	$100, %cx
 1:
-	call	3f
-	testb	%al, %al
-	jz	2f
-	loop	1b
-2:
-	ret
-
-3:
 	xorw    %ax, %ax
 	movw    %ax, %ds
 	decw    %ax
@@ -168,7 +161,12 @@ LOCAL(gate_a20_check_state):
 	subb	%dh, %al
 	xorb	$1, %al
 	/* restore the original */
-	movb	%dl, %es:(%di)
+	movb	%dl, %ds:(%si)
+
+	testb	%al, %al
+	jz	LOCAL(gate_a20_done)
+	loop	1b
+2:
 	ret
 
 LOCAL(gate_a20_done):

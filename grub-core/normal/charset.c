@@ -42,13 +42,6 @@
   Most underline diacritics aren't displayed in gfxterm
  */
 
-/* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
-   bytes (if SRCSIZE is -1, it is ignored) in length to a UTF-16 string.
-   Return the number of characters converted. DEST must be able to hold
-   at least DESTSIZE characters. If an invalid sequence is found, return -1.
-   If SRCEND is not NULL, then *SRCEND is set to the next byte after the
-   last byte used in SRC.  */
-
 #include <grub/charset.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
@@ -60,7 +53,59 @@
 #include "widthspec.h"
 #endif
 
-grub_ssize_t
+int
+grub_utf8_process (grub_uint8_t c, grub_uint32_t *code, int *count)
+{
+  if (*count)
+    {
+      if ((c & GRUB_UINT8_2_LEADINGBITS) != GRUB_UINT8_1_LEADINGBIT)
+	{
+	  *count = 0;
+	  /* invalid */
+	  return 0;
+	}
+      else
+	{
+	  *code <<= 6;
+	  *code |= (c & GRUB_UINT8_6_TRAILINGBITS);
+	  (*count)--;
+	  return 1;
+	}
+    }
+
+  if ((c & GRUB_UINT8_1_LEADINGBIT) == 0)
+    {
+      *code = c;
+      return 1;
+    }
+  if ((c & GRUB_UINT8_3_LEADINGBITS) == GRUB_UINT8_2_LEADINGBITS)
+    {
+      *count = 1;
+      *code = c & GRUB_UINT8_5_TRAILINGBITS;
+      return 1;
+    }
+  if ((c & GRUB_UINT8_4_LEADINGBITS) == GRUB_UINT8_3_LEADINGBITS)
+    {
+      *count = 2;
+      *code = c & GRUB_UINT8_4_TRAILINGBITS;
+      return 1;
+    }
+  if ((c & GRUB_UINT8_5_LEADINGBITS) == GRUB_UINT8_4_LEADINGBITS)
+    {
+      *count = 3;
+      *code = c & GRUB_UINT8_3_TRAILINGBITS;
+      return 1;
+    }
+  return 0;
+}
+
+/* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
+   bytes (if SRCSIZE is -1, it is ignored) in length to a UTF-16 string.
+   Return the number of characters converted. DEST must be able to hold
+   at least DESTSIZE characters. If an invalid sequence is found, return -1.
+   If SRCEND is not NULL, then *SRCEND is set to the next byte after the
+   last byte used in SRC.  */
+grub_size_t
 grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 		    const grub_uint8_t *src, grub_size_t srcsize,
 		    const grub_uint8_t **srcend)
@@ -74,64 +119,33 @@ grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 
   while (srcsize && destsize)
     {
-      grub_uint32_t c = *src++;
+      int was_count = count;
       if (srcsize != (grub_size_t)-1)
 	srcsize--;
-      if (count)
+      if (!grub_utf8_process (*src++, &code, &count))
 	{
-	  if ((c & GRUB_UINT8_2_LEADINGBITS) != GRUB_UINT8_1_LEADINGBIT)
-	    {
-	      /* invalid */
-	      return -1;
-	    }
-	  else
-	    {
-	      code <<= 6;
-	      code |= (c & GRUB_UINT8_6_TRAILINGBITS);
-	      count--;
-	    }
+	  code = '?';
+	  count = 0;
+	  /* Character c may be valid, don't eat it.  */
+	  if (was_count)
+	    src--;
+	}
+      if (count != 0)
+	continue;
+      if (code == 0)
+	break;
+      if (destsize < 2 && code >= GRUB_UCS2_LIMIT)
+	break;
+      if (code >= GRUB_UCS2_LIMIT)
+	{
+	  *p++ = GRUB_UTF16_UPPER_SURROGATE (code);
+	  *p++ = GRUB_UTF16_LOWER_SURROGATE (code);
+	  destsize -= 2;
 	}
       else
 	{
-	  if (c == 0)
-	    break;
-
-	  if ((c & GRUB_UINT8_1_LEADINGBIT) == 0)
-	    code = c;
-	  else if ((c & GRUB_UINT8_3_LEADINGBITS) == GRUB_UINT8_2_LEADINGBITS)
-	    {
-	      count = 1;
-	      code = c & GRUB_UINT8_5_TRAILINGBITS;
-	    }
-	  else if ((c & GRUB_UINT8_4_LEADINGBITS) == GRUB_UINT8_3_LEADINGBITS)
-	    {
-	      count = 2;
-	      code = c & GRUB_UINT8_4_TRAILINGBITS;
-	    }
-	  else if ((c & GRUB_UINT8_5_LEADINGBITS) == GRUB_UINT8_4_LEADINGBITS)
-	    {
-	      count = 3;
-	      code = c & GRUB_UINT8_3_TRAILINGBITS;
-	    }
-	  else
-	    return -1;
-	}
-
-      if (count == 0)
-	{
-	  if (destsize < 2 && code >= GRUB_UCS2_LIMIT)
-	    break;
-	  if (code >= GRUB_UCS2_LIMIT)
-	    {
-	      *p++ = GRUB_UTF16_UPPER_SURROGATE (code);
-	      *p++ = GRUB_UTF16_LOWER_SURROGATE (code);
-	      destsize -= 2;
-	    }
-	  else
-	    {
-	      *p++ = code;
-	      destsize--;
-	    }
+	  *p++ = code;
+	  destsize--;
 	}
     }
 
@@ -140,9 +154,56 @@ grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
   return p - dest;
 }
 
+/* Returns -2 if not enough space, -1 on invalid character.  */
+grub_ssize_t
+grub_encode_utf8_character (grub_uint8_t *dest, grub_uint8_t *destend,
+			    grub_uint32_t code)
+{
+  if (dest >= destend)
+    return -2;
+  if (code <= 0x007F)
+    {
+      *dest++ = code;
+      return 1;
+    }
+  if (code <= 0x07FF)
+    {
+      if (dest + 1 >= destend)
+	return -2;
+      *dest++ = (code >> 6) | 0xC0;
+      *dest++ = (code & 0x3F) | 0x80;
+      return 2;
+    }
+  if ((code >= 0xDC00 && code <= 0xDFFF)
+      || (code >= 0xD800 && code <= 0xDBFF))
+    {
+      /* No surrogates in UCS-4... */
+      return -1;
+    }
+  if (code < 0x10000)
+    {
+      if (dest + 2 >= destend)
+	return -2;
+      *dest++ = (code >> 12) | 0xE0;
+      *dest++ = ((code >> 6) & 0x3F) | 0x80;
+      *dest++ = (code & 0x3F) | 0x80;
+      return 3;
+    }
+  {
+    if (dest + 3 >= destend)
+      return -2;
+    *dest++ = (code >> 18) | 0xF0;
+    *dest++ = ((code >> 12) & 0x3F) | 0x80;
+    *dest++ = ((code >> 6) & 0x3F) | 0x80;
+    *dest++ = (code & 0x3F) | 0x80;
+    return 4;
+  }
+
+}
+
 /* Convert UCS-4 to UTF-8.  */
 void
-grub_ucs4_to_utf8 (grub_uint32_t *src, grub_size_t size,
+grub_ucs4_to_utf8 (const grub_uint32_t *src, grub_size_t size,
 		   grub_uint8_t *dest, grub_size_t destsize)
 {
   /* Keep last char for \0.  */
@@ -151,49 +212,26 @@ grub_ucs4_to_utf8 (grub_uint32_t *src, grub_size_t size,
   while (size-- && dest < destend)
     {
       grub_uint32_t code = *src++;
-
-      if (code <= 0x007F)
-	*dest++ = code;
-      else if (code <= 0x07FF)
+      grub_ssize_t s;
+      s = grub_encode_utf8_character (dest, destend, code);
+      if (s == -2)
+	break;
+      if (s == -1)
 	{
-	  if (dest + 1 >= destend)
-	    break;
-	  *dest++ = (code >> 6) | 0xC0;
-	  *dest++ = (code & 0x3F) | 0x80;
-	}
-      else if ((code >= 0xDC00 && code <= 0xDFFF)
-	       || (code >= 0xD800 && code <= 0xDBFF))
-	{
-	  /* No surrogates in UCS-4... */
 	  *dest++ = '?';
+	  continue;
 	}
-      else if (code < 0x10000)
-	{
-	  if (dest + 2 >= destend)
-	    break;
-	  *dest++ = (code >> 12) | 0xE0;
-	  *dest++ = ((code >> 6) & 0x3F) | 0x80;
-	  *dest++ = (code & 0x3F) | 0x80;
-	}
-      else
-	{
-	  if (dest + 3 >= destend)
-	    break;
-	  *dest++ = (code >> 18) | 0xF0;
-	  *dest++ = ((code >> 12) & 0x3F) | 0x80;
-	  *dest++ = ((code >> 6) & 0x3F) | 0x80;
-	  *dest++ = (code & 0x3F) | 0x80;
-	}
+      dest += s;
     }
   *dest = 0;
 }
 
 /* Convert UCS-4 to UTF-8.  */
 char *
-grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size)
+grub_ucs4_to_utf8_alloc (const grub_uint32_t *src, grub_size_t size)
 {
   grub_size_t remaining;
-  grub_uint32_t *ptr;
+  const grub_uint32_t *ptr;
   grub_size_t cnt = 0;
   grub_uint8_t *ret;
 
@@ -230,53 +268,21 @@ grub_ucs4_to_utf8_alloc (grub_uint32_t *src, grub_size_t size)
 int
 grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize)
 {
-  grub_uint32_t code = 0;
   int count = 0;
+  grub_uint32_t code = 0;
 
   while (srcsize)
     {
-      grub_uint32_t c = *src++;
       if (srcsize != (grub_size_t)-1)
 	srcsize--;
-      if (count)
-	{
-	  if ((c & 0xc0) != 0x80)
-	    {
-	      /* invalid */
-	      return 0;
-	    }
-	  else
-	    {
-	      code <<= 6;
-	      code |= (c & 0x3f);
-	      count--;
-	    }
-	}
-      else
-	{
-	  if (c == 0)
-	    break;
-
-	  if ((c & 0x80) == 0x00)
-	    code = c;
-	  else if ((c & 0xe0) == 0xc0)
-	    {
-	      count = 1;
-	      code = c & 0x1f;
-	    }
-	  else if ((c & 0xf0) == 0xe0)
-	    {
-	      count = 2;
-	      code = c & 0x0f;
-	    }
-	  else if ((c & 0xf8) == 0xf0)
-	    {
-	      count = 3;
-	      code = c & 0x07;
-	    }
-	  else
-	    return 0;
-	}
+      if (!grub_utf8_process (*src++, &code, &count))
+	return 0;
+      if (count != 0)
+	continue;
+      if (code == 0)
+	return 1;
+      if (code > GRUB_UNICODE_LAST_VALID)
+	return 0;
     }
 
   return 1;
@@ -322,63 +328,23 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
 
   while (srcsize && destsize)
     {
-      grub_uint32_t c = *src++;
+      int was_count = count;
       if (srcsize != (grub_size_t)-1)
 	srcsize--;
-      if (count)
+      if (!grub_utf8_process (*src++, &code, &count))
 	{
-	  if ((c & 0xc0) != 0x80)
-	    {
-	      /* invalid */
-	      code = '?';
-	      /* Character c may be valid, don't eat it.  */
-	      src--;
-	      if (srcsize != (grub_size_t)-1)
-		srcsize++;
-	      count = 0;
-	    }
-	  else
-	    {
-	      code <<= 6;
-	      code |= (c & 0x3f);
-	      count--;
-	    }
+	  code = '?';
+	  count = 0;
+	  /* Character c may be valid, don't eat it.  */
+	  if (was_count)
+	    src--;
 	}
-      else
-	{
-	  if (c == 0)
-	    break;
-
-	  if ((c & 0x80) == 0x00)
-	    code = c;
-	  else if ((c & 0xe0) == 0xc0)
-	    {
-	      count = 1;
-	      code = c & 0x1f;
-	    }
-	  else if ((c & 0xf0) == 0xe0)
-	    {
-	      count = 2;
-	      code = c & 0x0f;
-	    }
-	  else if ((c & 0xf8) == 0xf0)
-	    {
-	      count = 3;
-	      code = c & 0x07;
-	    }
-	  else
-	    {
-	      /* invalid */
-	      code = '?';
-	      count = 0;
-	    }
-	}
-
-      if (count == 0)
-	{
-	  *p++ = code;
-	  destsize--;
-	}
+      if (count != 0)
+	continue;
+      if (code == 0)
+	break;
+      *p++ = code;
+      destsize--;
     }
 
   if (srcend)
@@ -400,9 +366,9 @@ unpack_join (void)
       grub_errno = GRUB_ERR_NONE;
       return;
     }
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    for (i = cur->start; i <= cur->end
-	     && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    for (i = cur->start; i < cur->start + (unsigned) cur->len
+	   && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
       join_types[i] = cur->join_type;
 }
 
@@ -420,9 +386,9 @@ unpack_bidi (void)
       grub_errno = GRUB_ERR_NONE;
       return;
     }
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    for (i = cur->start; i <= cur->end
-	     && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    for (i = cur->start; i < cur->start + (unsigned) cur->len
+	   && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
       if (cur->bidi_mirror)
 	bidi_types[i] = cur->bidi_type | 0x80;
       else
@@ -440,8 +406,8 @@ get_bidi_type (grub_uint32_t c)
   if (bidi_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
     return bidi_types[c] & 0x7f;
 
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    if (cur->start <= c && c < cur->start + (unsigned) cur->len)
       return cur->bidi_type;
 
   return GRUB_BIDI_TYPE_L;
@@ -458,8 +424,8 @@ get_join_type (grub_uint32_t c)
   if (join_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
     return join_types[c];
 
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    if (cur->start <= c && c < cur->start + (unsigned) cur->len)
       return cur->join_type;
 
   return GRUB_JOIN_TYPE_NONJOINING;
@@ -476,8 +442,8 @@ is_mirrored (grub_uint32_t c)
   if (bidi_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
     return !!(bidi_types[c] & 0x80);
 
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    if (cur->start <= c && c < cur->start + (unsigned) cur->len)
       return cur->bidi_mirror;
 
   return 0;
@@ -494,8 +460,8 @@ grub_unicode_get_comb_type (grub_uint32_t c)
       unsigned i;
       comb_types = grub_zalloc (GRUB_UNICODE_MAX_CACHED_CHAR);
       if (comb_types)
-	for (cur = grub_unicode_compact; cur->end; cur++)
-	  for (i = cur->start; i <= cur->end
+	for (cur = grub_unicode_compact; cur->len; cur++)
+	  for (i = cur->start; i < cur->start + (unsigned) cur->len
 		 && i < GRUB_UNICODE_MAX_CACHED_CHAR; i++)
 	    comb_types[i] = cur->comb_type;
       else
@@ -505,8 +471,8 @@ grub_unicode_get_comb_type (grub_uint32_t c)
   if (comb_types && c < GRUB_UNICODE_MAX_CACHED_CHAR)
     return comb_types[c];
 
-  for (cur = grub_unicode_compact; cur->end; cur++)
-    if (cur->start <= c && c <= cur->end)
+  for (cur = grub_unicode_compact; cur->len; cur++)
+    if (cur->start <= c && c < cur->start + (unsigned) cur->len)
       return cur->comb_type;
 
   return GRUB_UNICODE_COMB_NONE;
@@ -938,6 +904,10 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 	    lptr++;
 	    continue;
 	  }
+
+	/* The tags: deprecated, never used.  */
+	if (*lptr >= GRUB_UNICODE_TAG_START && *lptr <= GRUB_UNICODE_TAG_END)
+	  continue;
 
 	p = grub_unicode_aglomerate_comb (lptr, logical + logical_len - lptr, 
 					  &visual[visual_len]);

@@ -22,7 +22,7 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/misc.h>
-#include <grub/raid.h>
+#include <grub/diskfilter.h>
 
 /* Linux RAID on disk structures and constants,
    copied from include/linux/raid/md_p.h.  */
@@ -161,8 +161,9 @@ struct grub_raid_super_09
   struct grub_raid_disk_09 this_disk;
 } __attribute__ ((packed));
 
-static grub_err_t
-grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
+static struct grub_diskfilter_vg *
+grub_mdraid_detect (grub_disk_t disk,
+		    struct grub_diskfilter_pv_id *id,
 		    grub_disk_addr_t *start_sector)
 {
   grub_disk_addr_t sector;
@@ -174,22 +175,31 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
   /* The sector where the mdraid 0.90 superblock is stored, if available.  */
   size = grub_disk_get_size (disk);
   if (size == GRUB_DISK_SIZE_UNKNOWN)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "not 0.9x raid");
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "not 0.9x raid");
+      return NULL;
+    }
   sector = NEW_SIZE_SECTORS (size);
 
   if (grub_disk_read (disk, sector, 0, SB_BYTES, &sb))
-    return grub_errno;
+    return NULL;
 
   /* Look whether there is a mdraid 0.90 superblock.  */
   if (grub_le_to_cpu32 (sb.md_magic) != SB_MAGIC)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "not 0.9x raid");
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "not 0.9x raid");
+      return NULL;
+    }
 
   if (grub_le_to_cpu32 (sb.major_version) != 0
       || grub_le_to_cpu32 (sb.minor_version) != 90)
-    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "unsupported RAID version: %d.%d",
-		       grub_le_to_cpu32 (sb.major_version),
-		       grub_le_to_cpu32 (sb.minor_version));
+    {
+      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		  "unsupported RAID version: %d.%d",
+		  grub_le_to_cpu32 (sb.major_version),
+		  grub_le_to_cpu32 (sb.minor_version));
+      return NULL;
+    }
 
   /* FIXME: Check the checksum.  */
 
@@ -200,27 +210,23 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 
   if (level != 0 && level != 1 && level != 4 &&
       level != 5 && level != 6 && level != 10)
-    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "unsupported RAID level: %d", level);
+    {
+      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		  "unsupported RAID level: %d", level);
+      return NULL;
+    }
   if (grub_le_to_cpu32 (sb.this_disk.number) == 0xffff
       || grub_le_to_cpu32 (sb.this_disk.number) == 0xfffe)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "spares aren't implemented");
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE,
+		  "spares aren't implemented");
+      return NULL;
+    }
 
-  array->name = NULL;
-  array->number = grub_le_to_cpu32 (sb.md_minor);
-  array->level = level;
-  array->layout = grub_le_to_cpu32 (sb.layout);
-  array->total_devs = grub_le_to_cpu32 (sb.raid_disks);
-  array->disk_size = (sb.size) ? grub_le_to_cpu32 (sb.size) * 2 : sector;
-  array->chunk_size = grub_le_to_cpu32 (sb.chunk_size) >> 9;
-  array->index = grub_le_to_cpu32 (sb.this_disk.number);
-  array->uuid_len = 16;
-  array->uuid = grub_malloc (16);
-  if (!array->uuid)
-      return grub_errno;
+  uuid = grub_malloc (16);
+  if (!uuid)
+    return NULL;
 
-  uuid = (grub_uint32_t *) array->uuid;
   uuid[0] = grub_swap_bytes32 (sb.set_uuid0);
   uuid[1] = grub_swap_bytes32 (sb.set_uuid1);
   uuid[2] = grub_swap_bytes32 (sb.set_uuid2);
@@ -228,10 +234,21 @@ grub_mdraid_detect (grub_disk_t disk, struct grub_raid_array *array,
 
   *start_sector = 0;
 
-  return 0;
+  id->uuidlen = 0;
+  id->id = grub_le_to_cpu32 (sb.this_disk.number);
+
+  char buf[32];
+  grub_snprintf (buf, sizeof (buf), "md%d", grub_le_to_cpu32 (sb.md_minor));
+  return grub_diskfilter_make_raid (16, (char *) uuid,
+				    grub_le_to_cpu32 (sb.raid_disks), buf,
+				    (sb.size) ? grub_le_to_cpu32 (sb.size) * 2 
+				    : sector,
+				    grub_le_to_cpu32 (sb.chunk_size) >> 9,
+				    grub_le_to_cpu32 (sb.layout),
+				    level);
 }
 
-static struct grub_raid grub_mdraid_dev = {
+static struct grub_diskfilter grub_mdraid_dev = {
   .name = "mdraid09",
   .detect = grub_mdraid_detect,
   .next = 0
@@ -239,10 +256,10 @@ static struct grub_raid grub_mdraid_dev = {
 
 GRUB_MOD_INIT (mdraid09)
 {
-  grub_raid_register (&grub_mdraid_dev);
+  grub_diskfilter_register (&grub_mdraid_dev);
 }
 
 GRUB_MOD_FINI (mdraid09)
 {
-  grub_raid_unregister (&grub_mdraid_dev);
+  grub_diskfilter_unregister (&grub_mdraid_dev);
 }

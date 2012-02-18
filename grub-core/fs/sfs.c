@@ -25,6 +25,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/fshelp.h>
+#include <grub/charset.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -303,6 +304,7 @@ grub_sfs_mount (grub_disk_t disk)
   data->disk = disk;
   data->label = grub_strdup ((char *) (rootobjc->objects[0].filename));
 
+  grub_free (rootobjc_data);
   return data;
 
  fail:
@@ -357,24 +359,39 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
   unsigned int next = dir->block;
   int pos;
 
-  auto int NESTED_FUNC_ATTR grub_sfs_create_node (const char *name, int block,
+  auto int NESTED_FUNC_ATTR grub_sfs_create_node (const char *name,
+						  int block,
 						  int size, int type,
 						  grub_uint32_t mtime);
 
-  int NESTED_FUNC_ATTR grub_sfs_create_node (const char *name, int block,
+  int NESTED_FUNC_ATTR grub_sfs_create_node (const char *name,
+					     int block,
 					     int size, int type,
 					     grub_uint32_t mtime)
     {
+      grub_size_t len = grub_strlen (name);
+      grub_uint8_t *name_u8;
+      int ret;
       node = grub_malloc (sizeof (*node));
       if (!node)
 	return 1;
+      name_u8 = grub_malloc (len * GRUB_MAX_UTF8_PER_LATIN1 + 1);
+      if (!name_u8)
+	{
+	  grub_free (node);
+	  return 1;
+	}
 
       node->data = data;
       node->size = size;
       node->block = block;
       node->mtime = mtime;
 
-      return hook (name, type, node);
+      *grub_latin1_to_utf8 (name_u8, (const grub_uint8_t *) name, len) = '\0';
+
+      ret = hook ((char *) name_u8, type, node);
+      grub_free (name_u8);
+      return ret;
     }
 
   objc_data = grub_malloc (data->blocksize);
@@ -398,7 +415,7 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
 	{
 	  struct grub_sfs_obj *obj;
 	  obj = (struct grub_sfs_obj *) ((char *) objc + pos);
-	  char *filename = (char *) (obj->filename);
+	  const char *filename = (const char *) obj->filename;
 	  int len;
 	  enum grub_fshelp_filetype type;
 	  unsigned int block;
@@ -412,7 +429,7 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
 	  /* Round up to a multiple of two bytes.  */
 	  pos = ((pos + 1) >> 1) << 1;
 
-	  if (grub_strlen (filename) == 0)
+	  if (filename[0] == 0)
 	    continue;
 
 	  /* First check if the file was not deleted.  */
@@ -491,7 +508,10 @@ grub_sfs_open (struct grub_file *file, const char *name)
 static grub_err_t
 grub_sfs_close (grub_file_t file)
 {
-  grub_free (file->data);
+  struct grub_sfs_data *data = (struct grub_sfs_data *) file->data;
+
+  grub_free (data->label);
+  grub_free (data);
 
   grub_dl_unref (my_mod);
 
@@ -571,8 +591,15 @@ grub_sfs_label (grub_device_t device, char **label)
 
   data = grub_sfs_mount (disk);
   if (data)
-    *label = data->label;
-
+    {
+      grub_size_t len = grub_strlen (data->label);
+      *label = grub_malloc (len * GRUB_MAX_UTF8_PER_LATIN1 + 1);
+      if (*label)
+	*grub_latin1_to_utf8 ((grub_uint8_t *) *label,
+			      (const grub_uint8_t *) data->label,
+			      len) = '\0';
+      grub_free (data->label);
+    }
   grub_free (data);
 
   return grub_errno;

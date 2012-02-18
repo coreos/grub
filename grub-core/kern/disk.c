@@ -24,6 +24,7 @@
 #include <grub/misc.h>
 #include <grub/time.h>
 #include <grub/file.h>
+#include <grub/i18n.h>
 
 #define	GRUB_CACHE_TIMEOUT	2
 
@@ -177,7 +178,7 @@ grub_disk_cache_store (unsigned long dev_id, unsigned long disk_id,
 
 
 
-static grub_disk_dev_t grub_disk_dev_list;
+grub_disk_dev_t grub_disk_dev_list;
 
 void
 grub_disk_dev_register (grub_disk_dev_t dev)
@@ -197,20 +198,6 @@ grub_disk_dev_unregister (grub_disk_dev_t dev)
         *p = q->next;
 	break;
       }
-}
-
-int
-grub_disk_dev_iterate (int (*hook) (const char *name))
-{
-  grub_disk_dev_t p;
-  grub_disk_pull_t pull;
-
-  for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
-    for (p = grub_disk_dev_list; p; p = p->next)
-      if (p->iterate && (p->iterate) (hook, pull))
-	return 1;
-
-  return 0;
 }
 
 /* Return the location of the first ',', if any, which is not
@@ -277,7 +264,8 @@ grub_disk_open (const char *name)
 
   if (! dev)
     {
-      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such disk");
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("disk `%s' not found"),
+		  name);
       goto fail;
     }
   if (disk->log_sector_size > GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS
@@ -296,7 +284,7 @@ grub_disk_open (const char *name)
       disk->partition = grub_partition_probe (disk, p + 1);
       if (! disk->partition)
 	{
-	  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such partition");
+	  grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("no such partition"));
 	  goto fail;
 	}
     }
@@ -374,7 +362,8 @@ grub_disk_adjust_range (grub_disk_t disk, grub_disk_addr_t *sector,
       if (*sector >= len
 	  || len - *sector < ((*offset + size + GRUB_DISK_SECTOR_SIZE - 1)
 			      >> GRUB_DISK_SECTOR_BITS))
-	return grub_error (GRUB_ERR_OUT_OF_RANGE, "out of partition");
+	return grub_error (GRUB_ERR_OUT_OF_RANGE,
+			   N_("attempt to read or write outside of partition"));
 
       *sector += start;
     }
@@ -385,7 +374,8 @@ grub_disk_adjust_range (grub_disk_t disk, grub_disk_addr_t *sector,
 	  >> GRUB_DISK_SECTOR_BITS) > (disk->total_sectors
 				       << (disk->log_sector_size
 					   - GRUB_DISK_SECTOR_BITS)) - *sector))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "out of disk");
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       N_("attempt to read or write outside of disk `%s'"), disk->name);
 
   return GRUB_ERR_NONE;
 }
@@ -607,12 +597,13 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
       while (l)
 	{
-	  (disk->read_hook) (s, o,
-			     ((l > GRUB_DISK_SECTOR_SIZE)
-			      ? GRUB_DISK_SECTOR_SIZE
-			      : l));
+	  grub_size_t cl;
+	  cl = GRUB_DISK_SECTOR_SIZE - o;
+	  if (cl > l)
+	    cl = l;
+	  (disk->read_hook) (s, o, cl);
 	  s++;
-	  l -= GRUB_DISK_SECTOR_SIZE - o;
+	  l -= cl;
 	  o = 0;
 	}
     }

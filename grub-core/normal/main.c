@@ -385,9 +385,11 @@ grub_normal_read_line_real (char **line, int cont, int nested)
   const char *prompt;
 
   if (cont)
-    prompt = ">";
+    /* TRANSLATORS: it's command line prompt.  */
+    prompt = _(">");
   else
-    prompt = "grub>";
+    /* TRANSLATORS: it's command line prompt.  */
+    prompt = _("grub>");
 
   if (!prompt)
     return grub_errno;
@@ -396,7 +398,7 @@ grub_normal_read_line_real (char **line, int cont, int nested)
     {
       *line = grub_cmdline_get (prompt);
       if (*line)
-	break;
+	return 0;
 
       if (cont || nested)
 	{
@@ -405,8 +407,7 @@ grub_normal_read_line_real (char **line, int cont, int nested)
 	  return grub_errno;
 	}
     }
-  
-  return 0;
+ 
 }
 
 static grub_err_t
@@ -473,7 +474,7 @@ static grub_command_t cmd_clear;
 
 static void (*grub_xputs_saved) (const char *str);
 static const char *features[] = {
-  "feature_chainloader_bpb", "feature_ntldr"
+  "feature_chainloader_bpb", "feature_ntldr", "feature_platform_search_hint"
 };
 
 GRUB_MOD_INIT(normal)
@@ -527,6 +528,10 @@ GRUB_MOD_INIT(normal)
       grub_env_set (features[i], "y");
       grub_env_export (features[i]);
     }
+  grub_env_set ("grub_cpu", GRUB_TARGET_CPU);
+  grub_env_export ("grub_cpu");
+  grub_env_set ("grub_platform", GRUB_PLATFORM);
+  grub_env_export ("grub_platform");
 }
 
 GRUB_MOD_FINI(normal)

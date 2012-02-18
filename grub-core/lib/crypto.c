@@ -22,6 +22,7 @@
 #include <grub/mm.h>
 #include <grub/term.h>
 #include <grub/dl.h>
+#include <grub/i18n.h>
 
 #ifdef GRUB_UTIL
 #include <termios.h>
@@ -167,20 +168,6 @@ grub_crypto_cipher_set_key (grub_crypto_cipher_handle_t cipher,
 			    unsigned keylen)
 {
   return cipher->cipher->setkey (cipher->ctx, key, keylen);
-}
-
-void
-grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size)
-{
-  const grub_uint8_t *in1ptr = in1, *in2ptr = in2;
-  grub_uint8_t *outptr = out;
-  while (size--)
-    {
-      *outptr = *in1ptr ^ *in2ptr;
-      in1ptr++;
-      in2ptr++;
-      outptr++;
-    }
 }
 
 gcry_err_code_t

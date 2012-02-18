@@ -25,13 +25,14 @@
 #include <grub/dl.h>
 #include <grub/crypto.h>
 
-#ifdef GRUB_CPU_WORDS_BIGENDIAN
-#define WORDS_BIGENDIAN
-#else
 #undef WORDS_BIGENDIAN
+
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN 1
 #endif
 
-#define __GNU_LIBRARY__
+#undef __GNU_LIBRARY__
+#define __GNU_LIBRARY__ 1
 
 #define DIM ARRAY_SIZE
 
@@ -88,6 +89,7 @@ fips_mode (void)
 }
 
 #ifdef GRUB_UTIL
+#pragma GCC diagnostic ignored "-Wshadow"
 static inline void *
 memcpy (void *dest, const void *src, grub_size_t n)
 {
@@ -105,6 +107,7 @@ memcmp (const void *s1, const void *s2, grub_size_t n)
 {
   return grub_memcmp (s1, s2, n);
 }
+#pragma GCC diagnostic error "-Wshadow"
 #endif
 
 

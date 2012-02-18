@@ -65,7 +65,7 @@ open_envblk_file (char *filename)
         }
       else
         {
-          grub_error (GRUB_ERR_FILE_NOT_FOUND, "prefix is not found");
+          grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("variable `%s' isn't set"), "prefix");
           return 0;
         }
     }
@@ -93,8 +93,6 @@ read_envblk_file (grub_file_t file)
       ret = grub_file_read (file, buf + offset, size);
       if (ret <= 0)
         {
-          if (grub_errno == GRUB_ERR_NONE)
-            grub_error (GRUB_ERR_FILE_READ_ERROR, "cannot read");
           grub_free (buf);
           return 0;
         }

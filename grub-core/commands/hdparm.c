@@ -47,7 +47,7 @@ static const struct grub_arg_option options[] = {
   {"sleep",           'Y', 0, N_("Set drive to sleep mode."), 0, ARG_TYPE_NONE},
   {"identify",        'i', 0, N_("Print drive identity and settings."),
 			      0, ARG_TYPE_NONE},
-  {"dumpid",          'I', 0, N_("Dump contents of ATA IDENTIFY sector."),
+  {"dumpid",          'I', 0, N_("Show raw contents of ATA IDENTIFY sector."),
 			       0, ARG_TYPE_NONE},
   {"smart",            -1, 0, N_("Disable/enable SMART (0/1)."), 0, ARG_TYPE_INT},
   {"quiet",           'q', 0, N_("Do not print messages."), 0, ARG_TYPE_NONE},
@@ -165,22 +165,20 @@ grub_hdparm_set_val_cmd (const char * msg, int val,
 }
 
 static const char *
-le16_to_char (char *dest, const grub_uint16_t * src16, unsigned bytes)
+le16_to_char (grub_uint16_t *dest, const grub_uint16_t * src16, unsigned bytes)
 {
-  grub_uint16_t * dest16 = (grub_uint16_t *) dest;
   unsigned i;
   for (i = 0; i < bytes / 2; i++)
-    dest16[i] = grub_be_to_cpu16 (src16[i]);
-  return dest;
+    dest[i] = grub_be_to_cpu16 (src16[i]);
+  dest[i] = 0;
+  return (char *) dest;
 }
 
 static void
-grub_hdparm_print_identify (const char * idbuf)
+grub_hdparm_print_identify (const grub_uint16_t * idw)
 {
-  const grub_uint16_t * idw = (const grub_uint16_t *) idbuf;
-
   /* Print identity strings.  */
-  char tmp[40];
+  grub_uint16_t tmp[21];
   grub_printf ("Model:    \"%.40s\"\n", le16_to_char (tmp, &idw[27], 40));
   grub_printf ("Firmware: \"%.8s\"\n",  le16_to_char (tmp, &idw[23], 8));
   grub_printf ("Serial:   \"%.20s\"\n", le16_to_char (tmp, &idw[10], 20));
@@ -277,19 +275,25 @@ static int get_int_arg (const struct grub_arg_list *state)
 }
 
 static grub_err_t
-grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
+grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
   struct grub_ata *ata;
+  const char *diskname;
 
   /* Check command line.  */
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing device name argument");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
-  grub_size_t len = grub_strlen (args[0]);
-  if (! (args[0][0] == '(' && args[0][len - 1] == ')'))
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "argument is not a device name");
-  args[0][len - 1] = 0;
+  if (args[0][0] == '(')
+    {
+      grub_size_t len = grub_strlen (args[0]);
+      if (args[0][len - 1] == ')')
+	args[0][len - 1] = 0;
+      diskname = &args[0][1];
+    }
+  else
+    diskname = &args[0][0];
 
   int i = 0;
   int apm          = get_int_arg (&state[i++]);
@@ -306,15 +310,9 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
   quiet            = state[i++].set;
 
   /* Open disk.  */
-  grub_disk_t disk = grub_disk_open (&args[0][1]);
+  grub_disk_t disk = grub_disk_open (diskname);
   if (! disk)
     return grub_errno;
-
-  if (disk->partition)
-    {
-      grub_disk_close (disk);
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "partition not allowed");
-    }
 
   switch (disk->dev->id)
     {
@@ -377,7 +375,7 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
   /* Print/dump IDENTIFY.  */
   if (ident || dumpid)
     {
-      char buf[GRUB_DISK_SECTOR_SIZE];
+      grub_uint16_t buf[GRUB_DISK_SECTOR_SIZE / 2];
       if (grub_hdparm_do_ata_cmd (ata, GRUB_ATA_CMD_IDENTIFY_DEVICE,
           0, 0, buf, sizeof (buf)))
 	grub_printf ("Cannot read ATA IDENTIFY data\n");
@@ -386,7 +384,7 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args) // state????
 	  if (ident)
 	    grub_hdparm_print_identify (buf);
 	  if (dumpid)
-	    hexdump (0, buf, sizeof (buf));
+	    hexdump (0, (char *) buf, sizeof (buf));
 	}
     }
 

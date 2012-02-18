@@ -49,7 +49,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 /* nilfs btree node level. */
 #define NILFS_BTREE_LEVEL_DATA          0
 #define NILFS_BTREE_LEVEL_NODE_MIN      (NILFS_BTREE_LEVEL_DATA + 1)
-#define NILFS_BTREE_LEVEL_MAX           14
 
 /* nilfs 1st super block posission from beginning of the partition
    in 512 block size */
@@ -127,8 +126,7 @@ struct grub_nilfs2_super_block
   grub_uint16_t s_checkpoint_size;
   grub_uint16_t s_segment_usage_size;
   grub_uint8_t s_uuid[16];
-  char s_volume_name[16];
-  char s_last_mounted[64];
+  char s_volume_name[80];
   grub_uint32_t s_c_interval;
   grub_uint32_t s_c_block_max;
   grub_uint32_t s_reserved[192];
@@ -208,6 +206,7 @@ struct grub_nilfs2_btree_node
   grub_uint8_t bn_level;
   grub_uint16_t bn_nchildren;
   grub_uint32_t bn_pad;
+  grub_uint64_t keys[0];
 };
 
 struct grub_nilfs2_palloc_group_desc
@@ -399,9 +398,9 @@ grub_nilfs2_btree_get_level (struct grub_nilfs2_btree_node *node)
 static inline grub_uint64_t *
 grub_nilfs2_btree_node_dkeys (struct grub_nilfs2_btree_node *node)
 {
-  return (grub_uint64_t *) ((char *) (node + 1) +
-			    ((node->bn_flags & NILFS_BTREE_NODE_ROOT) ?
-			     0 : NILFS_BTREE_NODE_EXTRA_PAD_SIZE));
+  return (node->keys +
+	  ((node->bn_flags & NILFS_BTREE_NODE_ROOT) ?
+	   0 : (NILFS_BTREE_NODE_EXTRA_PAD_SIZE / sizeof (grub_uint64_t))));
 }
 
 static inline grub_uint64_t
@@ -502,7 +501,7 @@ grub_nilfs2_btree_lookup (struct grub_nilfs2_data *data,
 			  grub_uint64_t key, int need_translate)
 {
   struct grub_nilfs2_btree_node *node;
-  unsigned char block[NILFS2_BLOCK_SIZE (data)];
+  GRUB_PROPERLY_ALIGNED_ARRAY (block, NILFS2_BLOCK_SIZE (data));
   grub_uint64_t ptr;
   int level, found, index;
 
@@ -734,7 +733,11 @@ grub_nilfs2_load_sb (struct grub_nilfs2_data *data)
   /* Make sure if 1st super block is valid.  */
   valid[0] = grub_nilfs2_valid_sb (&data->sblock);
 
-  partition_size = grub_disk_get_size (disk);
+  if (valid[0])
+    partition_size = (grub_le_to_cpu64 (data->sblock.s_dev_size)
+		      >> GRUB_DISK_SECTOR_BITS);
+  else
+    partition_size = grub_disk_get_size (disk);
   if (partition_size != GRUB_DISK_SIZE_UNKNOWN)
     {
       /* Read second super block. */
@@ -1095,7 +1098,8 @@ grub_nilfs2_label (grub_device_t device, char **label)
 
   data = grub_nilfs2_mount (disk);
   if (data)
-    *label = grub_strndup (data->sblock.s_volume_name, 14);
+    *label = grub_strndup (data->sblock.s_volume_name,
+			   sizeof (data->sblock.s_volume_name));
   else
     *label = NULL;
 

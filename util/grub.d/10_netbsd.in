@@ -17,15 +17,13 @@ set -e
 # You should have received a copy of the GNU General Public License
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-bindir=@bindir@
-libdir=@libdir@
-datarootdir=@datarootdir@
-. ${libdir}/@PACKAGE@/grub-mkconfig_lib
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
+. "@datadir@/@PACKAGE@/grub-mkconfig_lib"
 
 export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR=@localedir@
+export TEXTDOMAINDIR="@localedir@"
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS="NetBSD"
@@ -134,7 +132,7 @@ for k in $(ls -t /netbsd*) ; do
     continue
   fi
 
-  echo "Found NetBSD kernel: $k" >&2
+  gettext_printf "Found NetBSD kernel: %s\n" "$k" >&2
   netbsd_entry "knetbsd"   "$k" false "${GRUB_CMDLINE_NETBSD_DEFAULT}"
   netbsd_entry "multiboot" "$k" false "${GRUB_CMDLINE_NETBSD_DEFAULT}"
   if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then

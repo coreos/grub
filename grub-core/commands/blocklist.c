@@ -82,7 +82,7 @@ grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
     }
 
   if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   grub_file_filter_disable_compression ();
   file = grub_file_open (args[0]);

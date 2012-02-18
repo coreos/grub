@@ -212,7 +212,7 @@ uncompress_block (struct grub_lzopio *lzopio)
 
       if (lzopio->ucheck_fun)
 	{
-	  grub_uint64_t context[(lzopio->ccheck_fun->contextsize + 7) / 8];
+	  grub_uint64_t context[(lzopio->ucheck_fun->contextsize + 7) / 8];
 
 	  lzopio->ucheck_fun->init (context);
 	  lzopio->ucheck_fun->write (context, lzopio->block.udata,
@@ -299,31 +299,17 @@ test_header (grub_file_t file)
   grub_uint8_t *name = NULL;
 
   if (grub_file_read (lzopio->file, &header, sizeof (header)) != sizeof (header))
-    {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "no lzop magic found");
-      return 0;
-    }
+    return 0;
 
   if (grub_memcmp (header.magic, LZOP_MAGIC, LZOP_MAGIC_SIZE) != 0)
-    {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "no lzop magic found");
-      return 0;
-    }
+    return 0;
 
   if (grub_be_to_cpu16(header.lib_version) < LZOP_NEW_LIB)
-    {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
-		  "unsupported (too old) LZOP version");
-      return 0;
-    }
+    return 0;
 
   /* Too new version, should upgrade minilzo?  */
   if (grub_be_to_cpu16 (header.lib_version_ext) > MINILZO_VERSION)
-    {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
-		  "unsupported (too new) LZO version");
-      return 0;
-    }
+    return 0;
 
   flags = grub_be_to_cpu32 (header.flags);
 
@@ -417,8 +403,6 @@ test_header (grub_file_t file)
   return 1;
 
 CORRUPTED:
-  grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "lzop file corrupted");
-
   grub_free(name);
 
   return 0;
@@ -500,14 +484,16 @@ grub_lzopio_read (grub_file_t file, char *buf, grub_size_t len)
 
   while (len != 0 && lzopio->block.usize != 0)
     {
-      long to_copy;
+      grub_size_t to_copy;
 
       /* Block not decompressed yet.  */
       if (!lzopio->block.udata && uncompress_block (lzopio) < 0)
 	goto CORRUPTED;
 
       /* Copy requested data into buffer.  */
-      to_copy = grub_min (lzopio->block.usize - off, len);
+      to_copy = lzopio->block.usize - off;
+      if (to_copy > len)
+	to_copy = len;
       grub_memcpy (buf, lzopio->block.udata + off, to_copy);
 
       len -= to_copy;
@@ -523,7 +509,7 @@ grub_lzopio_read (grub_file_t file, char *buf, grub_size_t len)
   return ret;
 
 CORRUPTED:
-  grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "lzop file corrupted");
+  grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("lzop file corrupted"));
   return -1;
 }
 

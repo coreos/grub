@@ -147,6 +147,7 @@ struct grub_term_input
 {
   /* The next terminal.  */
   struct grub_term_input *next;
+  struct grub_term_input **prev;
 
   /* The terminal name.  */
   const char *name;
@@ -171,6 +172,7 @@ struct grub_term_output
 {
   /* The next terminal.  */
   struct grub_term_output *next;
+  struct grub_term_output **prev;
 
   /* The terminal name.  */
   const char *name;
@@ -300,17 +302,15 @@ grub_term_register_output_active (const char *name __attribute__ ((unused)),
 static inline void
 grub_term_unregister_input (grub_term_input_t term)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&grub_term_inputs), GRUB_AS_LIST (term));
-  grub_list_remove (GRUB_AS_LIST_P (&grub_term_inputs_disabled),
-		    GRUB_AS_LIST (term));
+  grub_list_remove (GRUB_AS_LIST (term));
+  grub_list_remove (GRUB_AS_LIST (term));
 }
 
 static inline void
 grub_term_unregister_output (grub_term_output_t term)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&grub_term_outputs), GRUB_AS_LIST (term));
-  grub_list_remove (GRUB_AS_LIST_P (&(grub_term_outputs_disabled)),
-		    GRUB_AS_LIST (term));
+  grub_list_remove (GRUB_AS_LIST (term));
+  grub_list_remove (GRUB_AS_LIST (term));
 }
 
 #define FOR_ACTIVE_TERM_INPUTS(var) FOR_LIST_ELEMENTS((var), (grub_term_inputs))
@@ -320,7 +320,7 @@ grub_term_unregister_output (grub_term_output_t term)
 
 void grub_putcode (grub_uint32_t code, struct grub_term_output *term);
 int EXPORT_FUNC(grub_getkey) (void);
-int EXPORT_FUNC(grub_checkkey) (void);
+int EXPORT_FUNC(grub_getkey_noblock) (void);
 void grub_cls (void);
 void EXPORT_FUNC(grub_refresh) (void);
 void grub_puts_terminal (const char *str, struct grub_term_output *term);

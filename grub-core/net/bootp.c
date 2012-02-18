@@ -68,30 +68,59 @@ parse_dhcp_vendor (const char *name, void *vend, int limit)
       tagtype = *ptr++;
 
       /* Pad tag.  */
-      if (tagtype == 0)
+      if (tagtype == GRUB_NET_BOOTP_PAD)
 	continue;
 
       /* End tag.  */
-      if (tagtype == 0xff)
+      if (tagtype == GRUB_NET_BOOTP_END)
 	return;
 
       taglength = *ptr++;
 
       switch (tagtype)
 	{
-	case 12:
+	case GRUB_NET_BOOTP_ROUTER:
+	  if (taglength == 4)
+	    {
+	      grub_net_network_level_netaddress_t target;
+	      grub_net_network_level_address_t gw;
+	      char rname[grub_strlen (name) + sizeof (":default")];
+	      
+	      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+	      target.ipv4.base = 0;
+	      target.ipv4.masksize = 0;
+	      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+	      grub_memcpy (&gw.ipv4, ptr, sizeof (gw.ipv4));
+	      grub_snprintf (rname, sizeof (rname), "%s:default", name);
+	      grub_net_add_route_gw (rname, target, gw);
+	    }
+	  break;
+	case GRUB_NET_BOOTP_DNS:
+	  {
+	    int i;
+	    for (i = 0; i < taglength / 4; i++)
+	      {
+		struct grub_net_network_level_address s;
+		s.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+		s.ipv4 = grub_get_unaligned32 (ptr);
+		grub_net_add_dns_server (&s);
+		ptr += 4;
+	      }
+	  }
+	  break;
+	case GRUB_NET_BOOTP_HOSTNAME:
 	  set_env_limn_ro (name, "hostname", (char *) ptr, taglength);
 	  break;
 
-	case 15:
+	case GRUB_NET_BOOTP_DOMAIN:
 	  set_env_limn_ro (name, "domain", (char *) ptr, taglength);
 	  break;
 
-	case 17:
+	case GRUB_NET_BOOTP_ROOT_PATH:
 	  set_env_limn_ro (name, "rootpath", (char *) ptr, taglength);
 	  break;
 
-	case 18:
+	case GRUB_NET_BOOTP_EXTENSIONS_PATH:
 	  set_env_limn_ro (name, "extensionspath", (char *) ptr, taglength);
 	  break;
 
@@ -130,27 +159,29 @@ grub_net_configure_by_dhcp_ack (const char *name,
 	       : sizeof (hwaddr.mac));
   hwaddr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
-  inter = grub_net_add_addr (name, card, addr, hwaddr, flags);
-  {
-    grub_net_network_level_netaddress_t target;
-    grub_net_network_level_address_t gw;
-    char rname[grub_strlen (name) + sizeof ("_gw")];
+  inter = grub_net_add_addr (name, card, &addr, &hwaddr, flags);
+  if (bp->gateway_ip)
+    {
+      grub_net_network_level_netaddress_t target;
+      grub_net_network_level_address_t gw;
+      char rname[grub_strlen (name) + sizeof (":gw")];
 	  
-    target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-    target.ipv4.base = bp->server_ip;
-    target.ipv4.masksize = 32;
-    gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-    gw.ipv4 = bp->gateway_ip;
-    grub_snprintf (rname, sizeof (rname), "%s_gw", name);
-    grub_net_add_route_gw (rname, target, gw);
-  }
-  {
-    grub_net_network_level_netaddress_t target;
-    target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-    target.ipv4.base = bp->gateway_ip;
-    target.ipv4.masksize = 32;
-    grub_net_add_route (name, target, inter);
-  }
+      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      target.ipv4.base = bp->server_ip;
+      target.ipv4.masksize = 32;
+      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      gw.ipv4 = bp->gateway_ip;
+      grub_snprintf (rname, sizeof (rname), "%s:gw", name);
+      grub_net_add_route_gw (rname, target, gw);
+    }
+  if (bp->gateway_ip || bp->server_ip)
+    {
+      grub_net_network_level_netaddress_t target;
+      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      target.ipv4.base = bp->gateway_ip ? bp->gateway_ip : bp->server_ip;
+      target.ipv4.masksize = 32;
+      grub_net_add_route (name, target, inter);
+    }
 
   if (size > OFFSET_OF (boot_file, bp))
     set_env_limn_ro (name, "boot_file", (char *) bp->boot_file,
@@ -271,7 +302,8 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
   grub_uint8_t taglength;
 
   if (argc < 4)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "4 arguments expected");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("four arguments expected"));
 
   FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
     if (grub_strcmp (inter->name, args[1]) == 0)
@@ -279,7 +311,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 
   if (!inter)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       N_("unrecognised interface %s"), args[1]);
+		       N_("unrecognised network interface `%s'"), args[1]);
 
   if (!inter->dhcp_ack)
     return grub_error (GRUB_ERR_IO, N_("no DHCP info found"));
@@ -374,9 +406,11 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
     }
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		     "unrecognised format specification %s", args[3]);
+		     N_("unrecognised DHCP option format specification `%s'"),
+		     args[3]);
 }
 
+/* FIXME: allow to specify mac address.  */
 static grub_err_t
 grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 		int argc, char **args)
@@ -439,6 +473,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	  struct grub_net_buff *nb;
 	  struct udphdr *udph;
 	  grub_net_network_level_address_t target;
+	  grub_net_link_level_address_t ll_target;
 
 	  if (!ifaces[j].prev)
 	    continue;
@@ -473,7 +508,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	      t = 0;
 	    }
 	  pack->ident = grub_cpu_to_be32 (t);
-	  pack->seconds = 0;//grub_cpu_to_be16 (t);
+	  pack->seconds = grub_cpu_to_be16 (t);
 
 	  grub_memcpy (&pack->mac_addr, &ifaces[j].hwaddress.mac, 6); 
 
@@ -484,11 +519,18 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	  udph->dst = grub_cpu_to_be16 (67);
 	  udph->chksum = 0;
 	  udph->len = grub_cpu_to_be16 (nb->tail - nb->data);
-
 	  target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
 	  target.ipv4 = 0xffffffff;
+	  err = grub_net_link_layer_resolve (&ifaces[j], &target, &ll_target);
+	  if (err)
+	    return err;
 
-	  err = grub_net_send_ip_packet (&ifaces[j], &target, nb);
+	  udph->chksum = grub_net_ip_transport_checksum (nb, GRUB_NET_IP_UDP,
+							 &ifaces[j].address,
+							 &target);
+
+	  err = grub_net_send_ip_packet (&ifaces[j], &target, &ll_target, nb,
+					 GRUB_NET_IP_UDP);
 	  grub_netbuff_free (nb);
 	  if (err)
 	    return err;
@@ -506,7 +548,8 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	continue;
       grub_error_push ();
       grub_net_network_level_interface_unregister (&ifaces[j]);
-      err = grub_error (GRUB_ERR_FILE_NOT_FOUND, "couldn't configure %s",
+      err = grub_error (GRUB_ERR_FILE_NOT_FOUND,
+			N_("couldn't autoconfigure %s"),
 			ifaces[j].card->name);
     }
 
@@ -514,16 +557,13 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
   return err;
 }
 
-static grub_command_t cmd_dhcp, cmd_getdhcp, cmd_bootp;
+static grub_command_t cmd_getdhcp, cmd_bootp;
 
 void
 grub_bootp_init (void)
 {
   cmd_bootp = grub_register_command ("net_bootp", grub_cmd_bootp,
 				     N_("[CARD]"),
-				     N_("perform a bootp autoconfiguration"));
-  cmd_dhcp = grub_register_command ("net_dhcp", grub_cmd_bootp,
-				    N_("[CARD]"),
 				     N_("perform a bootp autoconfiguration"));
   cmd_getdhcp = grub_register_command ("net_get_dhcp_option", grub_cmd_dhcpopt,
 				       N_("VAR INTERFACE NUMBER DESCRIPTION"),
@@ -534,6 +574,5 @@ void
 grub_bootp_fini (void)
 {
   grub_unregister_command (cmd_getdhcp);
-  grub_unregister_command (cmd_dhcp);
   grub_unregister_command (cmd_bootp);
 }

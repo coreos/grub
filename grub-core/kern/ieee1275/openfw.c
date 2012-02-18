@@ -34,7 +34,7 @@ enum grub_ieee1275_parse_type
 
 /* Walk children of 'devpath', calling hook for each.  */
 int
-grub_children_iterate (char *devpath,
+grub_children_iterate (const char *devpath,
 		       int (*hook) (struct grub_ieee1275_devalias *alias))
 {
   grub_ieee1275_phandle_t dev;
@@ -164,7 +164,7 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 	 strings, so we will add a NULL byte at the end explicitly.  */
       pathlen += 1;
 
-      devpath = grub_malloc (pathlen);
+      devpath = grub_malloc (pathlen + 1);
       if (! devpath)
 	{
 	  grub_free (devtype);
@@ -173,12 +173,15 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 	}
 
       if (grub_ieee1275_get_property (aliases, aliasname, devpath, pathlen,
-				      &actual))
+				      &actual) || actual < 0)
 	{
 	  grub_dprintf ("devalias", "get_property (%s) failed\n", aliasname);
 	  goto nextprop;
 	}
-      devpath [actual] = '\0';
+      if (actual > pathlen)
+	actual = pathlen;
+      devpath[actual] = '\0';
+      devpath[pathlen] = '\0';
 
       if (grub_ieee1275_finddevice (devpath, &dev))
 	{
@@ -252,7 +255,7 @@ grub_ieee1275_map (grub_addr_t phys, grub_addr_t virt, grub_size_t size,
   return args.catch_result;
 }
 
-int
+grub_err_t
 grub_claimmap (grub_addr_t addr, grub_size_t size)
 {
   if (grub_ieee1275_claim (addr, size, 0, 0))
@@ -261,13 +264,13 @@ grub_claimmap (grub_addr_t addr, grub_size_t size)
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_REAL_MODE)
       && grub_ieee1275_map (addr, addr, size, 0x00))
     {
-      grub_printf ("map failed: address 0x%llx, size 0x%llx\n",
-		   (long long) addr, (long long) size);
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "map failed: address 0x%llx, size 0x%llx\n",
+		  (long long) addr, (long long) size);
       grub_ieee1275_release (addr, size);
-      return -1;
+      return grub_errno;
     }
 
-  return 0;
+  return GRUB_ERR_NONE;
 }
 
 /* Get the device arguments of the Open Firmware node name `path'.  */
@@ -294,7 +297,8 @@ grub_ieee1275_get_devname (const char *path)
   int match_alias (struct grub_ieee1275_devalias *curalias)
     {
       /* briQ firmware can change capitalization in /chosen/bootpath.  */
-      if (! grub_strncasecmp (curalias->path, path, pathlen))
+      if (grub_strncasecmp (curalias->path, path, pathlen) == 0
+	  && curalias->path[pathlen] == 0)
         {
 	  newpath = grub_strdup (curalias->name);
 	  return 1;
@@ -446,10 +450,10 @@ grub_ieee1275_encode_devname (const char *path)
 	/* GRUB partition 1 is OF partition 0.  */
 	partno++;
 
-      encoding = grub_xasprintf ("%s,%d", device, partno);
+      encoding = grub_xasprintf ("ieee1275/%s,%d", device, partno);
     }
   else
-    encoding = grub_strdup (device);
+    encoding = grub_xasprintf ("ieee1275/%s", device);
 
   grub_free (partition);
   grub_free (device);

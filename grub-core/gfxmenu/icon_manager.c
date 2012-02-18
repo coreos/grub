@@ -169,11 +169,7 @@ try_loading_icon (grub_gfxmenu_icon_manager_t mgr,
                                    GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
   grub_video_bitmap_destroy (raw_bitmap);
   if (! scaled_bitmap)
-    {
-      grub_error_push ();
-      grub_error (grub_errno, "failed to scale icon");
-      return 0;
-    }
+    return 0;
 
   return scaled_bitmap;
 }

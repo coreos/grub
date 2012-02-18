@@ -63,6 +63,7 @@ struct grub_serial_config
 struct grub_serial_port
 {
   struct grub_serial_port *next;
+  struct grub_serial_port **prev;
   char *name;
   struct grub_serial_driver *driver;
   struct grub_serial_config config;
@@ -143,7 +144,7 @@ grub_serial_config_defaults (struct grub_serial_port *port)
 
 void grub_ns8250_init (void);
 char *grub_serial_ns8250_add_port (grub_port_t port);
-struct grub_serial_port *grub_serial_find (char *name);
+struct grub_serial_port *grub_serial_find (const char *name);
 extern struct grub_serial_driver grub_ns8250_driver;
 void EXPORT_FUNC(grub_serial_unregister_driver) (struct grub_serial_driver *driver);
 

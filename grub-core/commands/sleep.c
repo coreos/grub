@@ -54,7 +54,7 @@ grub_interruptible_millisleep (grub_uint32_t ms)
   start = grub_get_time_ms ();
 
   while (grub_get_time_ms () - start < ms)
-    if (grub_checkkey () >= 0 && grub_getkey () == GRUB_TERM_ESC)
+    if (grub_getkey_noblock () == GRUB_TERM_ESC)
       return 1;
 
   return 0;
@@ -67,7 +67,7 @@ grub_cmd_sleep (grub_extcmd_context_t ctxt, int argc, char **args)
   int n;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing operand");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   n = grub_strtoul (args[0], 0, 10);
 

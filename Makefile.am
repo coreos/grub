@@ -101,8 +101,7 @@ CLEANFILES += widthspec.h
 # Install config.h into platformdir
 platform_HEADERS = config.h
 
-pkglib_DATA += grub-mkconfig_lib
-pkglib_DATA += update-grub_lib
+pkgdata_DATA += grub-mkconfig_lib
 
 
 if COND_i386_coreboot
@@ -305,7 +304,7 @@ endif
 
 BOOTCHECKS += bootcheck-kfreebsd-aout
 
-BOOTCHECKS += bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64
+#BOOTCHECKS += bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64
 
 BOOTCHECKS += bootcheck-multiboot bootcheck-multiboot2
 

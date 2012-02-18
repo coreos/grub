@@ -47,7 +47,7 @@ main (int argc, char **argv)
       in = fopen (argv[1], "r");
       if (!in)
 	{
-	  fprintf (stderr, _("Couldn't open %s for reading: %s\n"),
+	  fprintf (stderr, _("cannot open `%s': %s"),
 		   argv[1], strerror (errno));
 	  return 1;
 	}
@@ -62,7 +62,7 @@ main (int argc, char **argv)
 	{					
 	  if (in != stdin)
 	    fclose (in);
-	  fprintf (stderr, _("Couldn't open %s for writing: %s\n"),
+	  fprintf (stderr, _("cannot open `%s': %s"),
 		   argv[2], strerror (errno));
 	  return 1;
 	}

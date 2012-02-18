@@ -25,6 +25,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/charset.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -53,9 +54,10 @@ struct grub_jfs_sblock
   grub_uint16_t log2_blksz;
 
   grub_uint8_t unused[79];
-  grub_uint8_t volname[11];
+  char volname[11];
   grub_uint8_t unused2[24];
   grub_uint8_t uuid[16];
+  char volname2[16];
 };
 
 struct grub_jfs_extent
@@ -241,7 +243,7 @@ struct grub_jfs_diropen
   /* On-disk name is at most 255 UTF-16 codepoints.
      Every UTF-16 codepoint is at most 4 UTF-8 bytes.
    */
-  char name[256 * 4 + 1];
+  char name[256 * GRUB_MAX_UTF8_PER_UTF16 + 1];
   grub_uint32_t ino;
 } __attribute__ ((packed));
 
@@ -402,7 +404,7 @@ grub_jfs_opendir (struct grub_jfs_data *data, struct grub_jfs_inode *inode)
   if (!((grub_le_to_cpu32 (inode->mode)
 	 & GRUB_JFS_FILETYPE_MASK) == GRUB_JFS_FILETYPE_DIR))
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       return 0;
     }
 
@@ -490,7 +492,7 @@ grub_jfs_getent (struct grub_jfs_diropen *diro)
   void addstr (grub_uint16_t *name, int ulen)
     {
       while (ulen--)
-	filename[strpos++] = *(name++);
+	filename[strpos++] = grub_le_to_cpu16 (*(name++));
     }
 
   /* The last node, read in more.  */
@@ -703,7 +705,7 @@ grub_jfs_find_file (struct grub_jfs_data *data, const char *path,
     }
 
   grub_jfs_closedir (diro);
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file `%s' not found", path);
+  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
   return grub_errno;
 }
 
@@ -715,7 +717,7 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, grub_uint32_t ino)
   char symlink[size + 1];
 
   if (++data->linknest > GRUB_JFS_MAX_SYMLNK_CNT)
-    return grub_error (GRUB_ERR_SYMLINK_LOOP, "too deep nesting of symlinks");
+    return grub_error (GRUB_ERR_SYMLINK_LOOP, N_("too deep nesting of symlinks"));
 
   if (size <= sizeof (data->currinode.symlink.path))
     grub_strncpy (symlink, (char *) (data->currinode.symlink.path), size);
@@ -729,8 +731,6 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, grub_uint32_t ino)
     ino = 2;
 
   grub_jfs_find_file (data, symlink, ino);
-  if (grub_errno)
-    grub_error (grub_errno, "cannot follow symlink `%s'", symlink);
 
   return grub_errno;
 }
@@ -809,7 +809,7 @@ grub_jfs_open (struct grub_file *file, const char *name)
   if (! ((grub_le_to_cpu32 (data->currinode.mode)
 	  & GRUB_JFS_FILETYPE_MASK) == GRUB_JFS_FILETYPE_REG))
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a regular file");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a regular file"));
       goto fail;
     }
 
@@ -887,7 +887,14 @@ grub_jfs_label (grub_device_t device, char **label)
   data = grub_jfs_mount (device->disk);
 
   if (data)
-    *label = grub_strndup ((char *) (data->sblock.volname), 11);
+    {
+      if (data->sblock.volname2[0])
+	*label = grub_strndup (data->sblock.volname2,
+			       sizeof (data->sblock.volname2));
+      else
+	*label = grub_strndup (data->sblock.volname,
+			       sizeof (data->sblock.volname));
+    }
   else
     *label = 0;
 

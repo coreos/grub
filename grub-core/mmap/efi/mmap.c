@@ -212,7 +212,7 @@ grub_mmap_unregister (int handle)
 	  return GRUB_ERR_NONE;
 	}
     }
-  return grub_error (GRUB_ERR_BAD_ARGUMENT, "handle %d not found", handle);
+  return grub_error (GRUB_ERR_BUG, "handle %d not found", handle);
 }
 
 /* Result is always page-aligned. */
@@ -272,7 +272,7 @@ grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)),
   overlays = curover;
   *handle = curover->handle;
 
-  return UINT_TO_PTR (curover->address);
+  return (void *) (grub_addr_t) curover->address;
 }
 
 void

@@ -139,6 +139,13 @@ enum
     GRUB_ARC_COMPONENT_TYPE_MEMORY_UNIT,
   };
 
+enum grub_arc_file_access
+  {
+    GRUB_ARC_FILE_ACCESS_OPEN_RO,
+    GRUB_ARC_FILE_ACCESS_OPEN_WO,
+    GRUB_ARC_FILE_ACCESS_OPEN_RW,
+  };
+
 struct grub_arc_fileinfo
 {
   grub_arc_ularge_t start;
@@ -195,7 +202,7 @@ struct grub_arc_firmware_vector
 			  grub_arc_ulong_t n,
 			  grub_arc_ulong_t *count);
   grub_arc_err_t (*get_read_status) (grub_arc_fileno_t fileno);
-  grub_arc_err_t (*write) (grub_arc_fileno_t fileno, void *buf,
+  grub_arc_err_t (*write) (grub_arc_fileno_t fileno, const void *buf,
 			   grub_arc_ulong_t n,
 			   grub_arc_ulong_t *count);
 

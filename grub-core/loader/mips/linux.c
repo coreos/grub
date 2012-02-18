@@ -31,6 +31,8 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 /* For frequencies.  */
 #include <grub/machine/time.h>
 
@@ -132,7 +134,8 @@ grub_linux_unload (void)
 }
 
 static grub_err_t
-grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
+grub_linux_load32 (grub_elf_t elf, const char *filename,
+		   void **extra_mem, grub_size_t extra_size)
 {
   Elf32_Addr base;
   int extraoff;
@@ -141,7 +144,7 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr32.e_entry;
 
-  linux_size = grub_elf32_size (elf, &base, 0);
+  linux_size = grub_elf32_size (elf, filename, &base, 0);
   if (linux_size == 0)
     return grub_errno;
   target_addr = base;
@@ -183,11 +186,12 @@ grub_linux_load32 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
       *addr = (grub_addr_t) (phdr->p_paddr - base + playground);
       return 0;
     }
-  return grub_elf32_load (elf, offset_phdr, 0, 0);
+  return grub_elf32_load (elf, filename, offset_phdr, 0, 0);
 }
 
 static grub_err_t
-grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
+grub_linux_load64 (grub_elf_t elf, const char *filename,
+		   void **extra_mem, grub_size_t extra_size)
 {
   Elf64_Addr base;
   int extraoff;
@@ -196,7 +200,7 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr64.e_entry;
 
-  linux_size = grub_elf64_size (elf, &base, 0);
+  linux_size = grub_elf64_size (elf, filename, &base, 0);
   if (linux_size == 0)
     return grub_errno;
   target_addr = base;
@@ -237,7 +241,7 @@ grub_linux_load64 (grub_elf_t elf, void **extra_mem, grub_size_t extra_size)
       *addr = (grub_addr_t) (phdr->p_paddr - base + playground);
       return 0;
     }
-  return grub_elf64_load (elf, offset_phdr, 0, 0);
+  return grub_elf64_load (elf, filename, offset_phdr, 0, 0);
 }
 
 static grub_err_t
@@ -259,7 +263,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 #endif
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no kernel specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   elf = grub_elf_open (argv[0]);
   if (! elf)
@@ -269,7 +273,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     {
       grub_elf_close (elf);
       return grub_error (GRUB_ERR_UNKNOWN_OS,
-			 "this ELF file is not of the right type\n");
+			 N_("this ELF file is not of the right type"));
     }
 
   /* Release the previously used memory.  */
@@ -314,12 +318,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 #endif
 
   if (grub_elf_is_elf32 (elf))
-    err = grub_linux_load32 (elf, &extra, size);
+    err = grub_linux_load32 (elf, argv[0], &extra, size);
   else
   if (grub_elf_is_elf64 (elf))
-    err = grub_linux_load64 (elf, &extra, size);
+    err = grub_linux_load64 (elf, argv[0], &extra, size);
   else
-    err = grub_error (GRUB_ERR_BAD_FILE_TYPE, "unknown ELF class");
+    err = grub_error (GRUB_ERR_BAD_OS, N_("invalid arch dependent ELF magic"));
 
   grub_elf_close (elf);
 
@@ -435,27 +439,37 @@ static grub_err_t
 grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
-  grub_file_t file = 0;
-  grub_ssize_t size;
+  grub_file_t *files = 0;
+  grub_size_t size = 0;
   void *initrd_src;
   grub_addr_t initrd_dest;
   grub_err_t err;
+  int i;
+  int nfiles = 0;
+  grub_uint8_t *ptr;
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   if (!loaded)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "you need to load Linux first.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("you need to load the kernel first"));
 
   if (initrd_loaded)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "only one initrd can be loaded.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "only one initrd command can be issued.");
 
-  grub_file_filter_disable_compression ();
-  file = grub_file_open (argv[0]);
-  if (! file)
-    return grub_errno;
+  files = grub_zalloc (argc * sizeof (files[0]));
+  if (!files)
+    goto fail;
 
-  size = grub_file_size (file);
+  for (i = 0; i < argc; i++)
+    {
+      grub_file_filter_disable_compression ();
+      files[i] = grub_file_open (argv[i]);
+      if (! files[i])
+	goto fail;
+      nfiles++;
+      size += grub_file_size (files[i]);
+    }
 
   {
     grub_relocator_chunk_t ch;
@@ -468,20 +482,23 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 					    GRUB_RELOCATOR_PREFERENCE_NONE);
 
     if (err)
-      {
-	grub_file_close (file);
-	return err;
-      }
+      goto fail;
     initrd_src = get_virtual_current_address (ch);
     initrd_dest = get_physical_target_address (ch) | 0x80000000;
   }
 
-  if (grub_file_read (file, initrd_src, size) != size)
+  ptr = initrd_src;
+  for (i = 0; i < nfiles; i++)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "couldn't read file");
-      grub_file_close (file);
-
-      return grub_errno;
+      grub_ssize_t cursize = grub_file_size (files[i]);
+      if (grub_file_read (files[i], ptr, cursize) != cursize)
+	{
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			argv[i]);
+	  goto fail;
+	}
+      ptr += cursize;
     }
 
 #ifdef GRUB_MACHINE_MIPS_QEMU_MIPS
@@ -491,10 +508,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 			  " rd_size=0x%" PRIxGRUB_ADDR, params,
 			  initrd_dest, size);
     if (!tmp)
-      {
-	grub_file_close (file);
-	return grub_errno;
-      }
+      goto fail;
     grub_free (params);
     params = tmp;
   }
@@ -516,9 +530,12 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   initrd_loaded = 1;
 
-  grub_file_close (file);
+ fail:
+  for (i = 0; i < nfiles; i++)
+    grub_file_close (files[i]);
+  grub_free (files);
 
-  return GRUB_ERR_NONE;
+  return grub_errno;
 }
 
 static grub_command_t cmd_linux, cmd_initrd;

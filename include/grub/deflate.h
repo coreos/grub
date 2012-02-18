@@ -23,8 +23,4 @@ grub_ssize_t
 grub_zlib_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
 		      char *outbuf, grub_size_t outsize);
 
-grub_err_t
-grub_zlib_disk_read (grub_disk_t disk, grub_disk_addr_t zlibstart,
-		     grub_off_t off, char *outbuf, grub_size_t outsize);
-
 #endif

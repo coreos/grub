@@ -97,8 +97,6 @@ grub_cs5536_smbus_wait (grub_port_t smbbase)
       if (grub_get_time_ms () > start + 40)
 	return grub_error (GRUB_ERR_IO, "SM stalled");
     }
-
-  return GRUB_ERR_NONE;
 }
 
 grub_err_t

@@ -24,6 +24,7 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 #include <grub/err.h>
+#include <grub/i18n.h>
 
 /* GCC version checking borrowed from glibc. */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
@@ -176,6 +177,18 @@ grub_isalpha (int c)
 }
 
 static inline int
+grub_islower (int c)
+{
+  return (c >= 'a' && c <= 'z');
+}
+
+static inline int
+grub_isupper (int c)
+{
+  return (c >= 'A' && c <= 'Z');
+}
+
+static inline int
 grub_isgraph (int c)
 {
   return (c >= '!' && c <= '~');
@@ -250,27 +263,6 @@ grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
   return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
 }
 
-/* Replace all `ch' characters of `input' with `with' and copy the
-   result into `output'; return EOS address of `output'. */
-static inline char *
-grub_strchrsub (char *output, const char *input, char ch, const char *with)
-{
-  grub_size_t grub_strlen (const char *s);
-  while (*input)
-    {
-      if (*input == ch)
-	{
-	  grub_strcpy (output, with);
-	  output += grub_strlen (with);
-	  input++;
-	  continue;
-	}
-      *output++ = *input++;
-    }
-  *output = '\0';
-  return output;
-}
-
 unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);
 unsigned long long EXPORT_FUNC(grub_strtoull) (const char *str, char **end, int base);
 
@@ -294,7 +286,7 @@ grub_strtol (const char *str, char **end, int base)
     {
       if (magnitude > (unsigned long) GRUB_LONG_MAX + 1)
         {
-          grub_error (GRUB_ERR_OUT_OF_RANGE, "negative overflow");
+          grub_error (GRUB_ERR_OUT_OF_RANGE, N_("overflow is detected"));
           return GRUB_LONG_MIN;
         }
       return -((long) magnitude);
@@ -303,7 +295,7 @@ grub_strtol (const char *str, char **end, int base)
     {
       if (magnitude > GRUB_LONG_MAX)
         {
-          grub_error (GRUB_ERR_OUT_OF_RANGE, "positive overflow");
+          grub_error (GRUB_ERR_OUT_OF_RANGE, N_("overflow is detected"));
           return GRUB_LONG_MAX;
         }
       return (long) magnitude;
@@ -316,6 +308,26 @@ void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
 grub_size_t EXPORT_FUNC(grub_strlen) (const char *s) __attribute__ ((warn_unused_result));
 int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 int EXPORT_FUNC(grub_printf_) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+
+/* Replace all `ch' characters of `input' with `with' and copy the
+   result into `output'; return EOS address of `output'. */
+static inline char *
+grub_strchrsub (char *output, const char *input, char ch, const char *with)
+{
+  while (*input)
+    {
+      if (*input == ch)
+	{
+	  grub_strcpy (output, with);
+	  output += grub_strlen (with);
+	  input++;
+	  continue;
+	}
+      *output++ = *input++;
+    }
+  *output = '\0';
+  return output;
+}
 
 extern void (*EXPORT_VAR (grub_xputs)) (const char *str);
 
@@ -348,16 +360,30 @@ grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint64_t d,
 					  grub_uint64_t *r);
 
-#if NEED_ENABLE_EXECUTE_STACK && !defined(GRUB_UTIL)
+#if !defined(GRUB_UTIL) && NEED_ENABLE_EXECUTE_STACK
 void EXPORT_FUNC(__enable_execute_stack) (void *addr);
 #endif
 
-#if NEED_REGISTER_FRAME_INFO && !defined(GRUB_UTIL)
+#if !defined(GRUB_UTIL) && NEED_REGISTER_FRAME_INFO
 void EXPORT_FUNC (__register_frame_info) (void);
 void EXPORT_FUNC (__deregister_frame_info) (void);
 #endif
 
 /* Inline functions.  */
+
+static inline char *
+grub_memchr (const void *p, int c, grub_size_t len)
+{
+  const char *s = p;
+  const char *e = s + len;
+
+  for (; s < e; s++)
+    if (*s == c)
+      return (char *) s;
+
+  return 0;
+}
+
 
 static inline unsigned int
 grub_abs (int x)
@@ -368,24 +394,6 @@ grub_abs (int x)
     return (unsigned int) x;
 }
 
-static inline long
-grub_min (long x, long y)
-{
-  if (x < y)
-    return x;
-  else
-    return y;
-}
-
-static inline long
-grub_max (long x, long y)
-{
-  if (x > y)
-    return x;
-  else
-    return y;
-}
-
 /* Rounded-up division */
 static inline unsigned int
 grub_div_roundup (unsigned int x, unsigned int y)
@@ -394,12 +402,18 @@ grub_div_roundup (unsigned int x, unsigned int y)
 }
 
 /* Reboot the machine.  */
+#if defined (GRUB_MACHINE_EMU) || defined (GRUB_MACHINE_QEMU_MIPS)
+void EXPORT_FUNC(grub_reboot) (void) __attribute__ ((noreturn));
+#else
 void grub_reboot (void) __attribute__ ((noreturn));
+#endif
 
 #ifdef GRUB_MACHINE_PCBIOS
 /* Halt the system, using APM if possible. If NO_APM is true, don't
  * use APM even if it is available.  */
 void grub_halt (int no_apm) __attribute__ ((noreturn));
+#elif defined (__mips__)
+void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
 #else
 void grub_halt (void) __attribute__ ((noreturn));
 #endif
@@ -410,5 +424,20 @@ extern int EXPORT_VAR(grub_no_autoload);
 #else
 #define grub_no_autoload 0
 #endif
+
+static inline void
+grub_error_save (struct grub_error_saved *save)
+{
+  grub_memcpy (save->errmsg, grub_errmsg, sizeof (save->errmsg));
+  save->grub_errno = grub_errno;
+  grub_errno = GRUB_ERR_NONE;
+}
+
+static inline void
+grub_error_load (const struct grub_error_saved *save)
+{
+  grub_memcpy (grub_errmsg, save->errmsg, sizeof (grub_errmsg));
+  grub_errno = save->grub_errno;
+}
 
 #endif /* ! GRUB_MISC_HEADER */

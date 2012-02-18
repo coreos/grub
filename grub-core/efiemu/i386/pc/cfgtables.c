@@ -67,7 +67,8 @@ grub_machine_efiemu_init_tables (void)
   if (ptr < (grub_uint8_t *) 0x100000)
     {
       grub_dprintf ("efiemu", "Registering SMBIOS\n");
-      if ((err = grub_efiemu_register_configuration_table (smbios, 0, 0, ptr)))
+      err = grub_efiemu_register_configuration_table (smbios, 0, 0, ptr);
+      if (err)
 	return err;
     }
 

@@ -48,7 +48,7 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
   struct grub_msdos_partition_mbr mbr;
 
   if (dev->disk->partition->offset)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "not a primary partition");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("not a primary partition"));
 
   index = dev->disk->partition->index;
   part = dev->disk->partition;
@@ -85,7 +85,7 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
 static struct grub_parttool_argdesc grub_pcpart_typeargs[] =
 {
   {"type", N_("Change partition type"), GRUB_PARTTOOL_ARG_VAL},
-  {"hidden", N_("Make partition hidden"), GRUB_PARTTOOL_ARG_BOOL},
+  {"hidden", N_("Set `hidden' flag in partition type"), GRUB_PARTTOOL_ARG_BOOL},
   {0, 0, 0}
 };
 
@@ -126,7 +126,9 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
       || grub_msdos_partition_is_extended (type))
     {
       dev->disk->partition = part;
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid type");
+      return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			 N_("the partition type 0x%x isn't "
+			    "valid"));
     }
 
   mbr.entries[index].type = type;

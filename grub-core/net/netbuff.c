@@ -21,13 +21,12 @@
 #include <grub/mm.h>
 #include <grub/net/netbuff.h>
 
-
 grub_err_t
 grub_netbuff_put (struct grub_net_buff *nb, grub_size_t len)
 {
   nb->tail += len;
   if (nb->tail > nb->end)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "put out of the packet range.");
+    return grub_error (GRUB_ERR_BUG, "put out of the packet range.");
   return GRUB_ERR_NONE;
 }
 
@@ -36,7 +35,7 @@ grub_netbuff_unput (struct grub_net_buff *nb, grub_size_t len)
 {
   nb->tail -= len;
   if (nb->tail < nb->head)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+    return grub_error (GRUB_ERR_BUG,
 		       "unput out of the packet range.");
   return GRUB_ERR_NONE;
 }
@@ -46,7 +45,7 @@ grub_netbuff_push (struct grub_net_buff *nb, grub_size_t len)
 {
   nb->data -= len;
   if (nb->data < nb->head)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+    return grub_error (GRUB_ERR_BUG,
 		       "push out of the packet range.");
   return GRUB_ERR_NONE;
 }
@@ -56,7 +55,7 @@ grub_netbuff_pull (struct grub_net_buff *nb, grub_size_t len)
 {
   nb->data += len;
   if (nb->data > nb->end)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+    return grub_error (GRUB_ERR_BUG,
 		       "pull out of the packet range.");
   return GRUB_ERR_NONE;
 }
@@ -67,7 +66,7 @@ grub_netbuff_reserve (struct grub_net_buff *nb, grub_size_t len)
   nb->data += len;
   nb->tail += len;
   if ((nb->tail > nb->end) || (nb->data > nb->end))
-    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+    return grub_error (GRUB_ERR_BUG,
 		       "reserve out of the packet range.");
   return GRUB_ERR_NONE;
 }
@@ -78,6 +77,8 @@ grub_netbuff_alloc (grub_size_t len)
   struct grub_net_buff *nb;
   void *data;
 
+  COMPILE_TIME_ASSERT (NETBUFF_ALIGN % sizeof (grub_properly_aligned_t) == 0);
+
   if (len < NETBUFFMINLEN)
     len = NETBUFFMINLEN;
 
@@ -85,9 +86,10 @@ grub_netbuff_alloc (grub_size_t len)
   data = grub_memalign (NETBUFF_ALIGN, len + sizeof (*nb));
   if (!data)
     return NULL;
-  nb = (struct grub_net_buff *) ((grub_uint8_t *) data + len);
+  nb = (struct grub_net_buff *) ((grub_properly_aligned_t *) data
+				 + len / sizeof (grub_properly_aligned_t));
   nb->head = nb->data = nb->tail = data;
-  nb->end = (char *) nb;
+  nb->end = (grub_uint8_t *) nb;
   return nb;
 }
 

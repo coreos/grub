@@ -17,11 +17,11 @@ set -e
 # You should have received a copy of the GNU General Public License
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-datarootdir=@datarootdir@
-. ${libdir}/@PACKAGE@/grub-mkconfig_lib
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
+
+. "@datadir@/@PACKAGE@/grub-mkconfig_lib"
 
 case "`uname 2>/dev/null`" in
   CYGWIN*)  ;;
@@ -63,21 +63,21 @@ for drv in $drives ; do
 
   # Check for Vista bootmgr.
   if [ -f "$dir"/bootmgr -a -f "$dir"/boot/bcd ] ; then
-    OS="Windows Vista bootmgr"
+    OS="$(gettext_quoted "Windows Vista/7 (loader)")"
 
   # Check for NTLDR.
   elif [ -f "$dir"/ntldr -a -f "$dir"/ntdetect.com -a -f "$dir"/boot.ini ] ; then
-    OS=`get_os_name_from_boot_ini "$dir"/boot.ini` || OS="Windows NT/2000/XP loader"
+    OS=`get_os_name_from_boot_ini "$dir"/boot.ini` || OS="$(gettext_quoted "Windows NT/2000/XP (loader)")"
     needmap=t
 
   else
     continue
   fi
 
-  # Get boot /dev/ice.
+  # Get boot device.
   dev=`${grub_probe} -t device "$dir" 2>/dev/null` || continue
 
-  echo "Found $OS on $drv ($dev)" >&2
+  gettext_printf "Found %s on %s (%s)\n" "$OS" "$drv" "$dev" >&2
   cat << EOF
 menuentry "$OS" {
 EOF

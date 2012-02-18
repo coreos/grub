@@ -21,6 +21,7 @@
 #include <grub/script_sh.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
+#include <grub/i18n.h>
 
 #define YYFREE          grub_free
 #define YYMALLOC        grub_malloc
@@ -28,6 +29,8 @@
 #define YYENABLE_NLS    0
 
 #include "grub_script.tab.h"
+
+#pragma GCC diagnostic ignored "-Wunreachable-code"
 %}
 
 %union {
@@ -107,7 +110,7 @@ script: newlines0
       | error
         {
           $$ = 0;
-          yyerror (state, "Incorrect command");
+          yyerror (state, N_("Incorrect command"));
           yyerrok;
         }
 ;

@@ -41,8 +41,8 @@
 #include <grub/fs.h>
 #include <grub/file.h>
 #include <grub/dl.h>
-#include <grub/disk.h>
 #include <grub/deflate.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -65,9 +65,6 @@ struct grub_gzio
   /* If input is in memory following fields are used instead of file.  */
   grub_size_t mem_input_size, mem_input_off;
   grub_uint8_t *mem_input;
-  grub_disk_addr_t disk_input_off;
-  grub_disk_addr_t disk_input_start;
-  grub_disk_t disk_input;
   /* The offset at which the data starts in the underlying file.  */
   grub_off_t data_offset;
   /* The type of current block.  */
@@ -197,10 +194,7 @@ test_gzip_header (grub_file_t file)
   if (grub_file_read (gzio->file, &hdr, 10) != 10
       || ((hdr.magic != GZIP_MAGIC)
 	  && (hdr.magic != OLD_GZIP_MAGIC)))
-    {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, "no gzip magic found");
-      return 0;
-    }
+    return 0;
 
   /*
    *  This does consistency checking on the header data.  If a
@@ -215,10 +209,7 @@ test_gzip_header (grub_file_t file)
 			    grub_le_to_cpu16 (extra_len))))
       || ((hdr.flags & ORIG_NAME) && eat_field (gzio->file, -1))
       || ((hdr.flags & COMMENT) && eat_field (gzio->file, -1)))
-    {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "unsupported gzip format");
-      return 0;
-    }
+    return 0;
 
   gzio->data_offset = grub_file_tell (gzio->file);
 
@@ -226,10 +217,7 @@ test_gzip_header (grub_file_t file)
   {
     grub_file_seek (gzio->file, grub_file_size (gzio->file) - 4);
     if (grub_file_read (gzio->file, &orig_len, 4) != 4)
-      {
-	grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
-	return 0;
-      }
+      return 0;
     /* FIXME: this does not handle files whose original size is over 4GB.
        But how can we know the real original size?  */
     file->size = grub_le_to_cpu32 (orig_len);
@@ -388,18 +376,6 @@ get_byte (grub_gzio_t gzio)
       return 0;
     }
 
-  if (gzio->disk_input && (gzio->disk_input_off == gzio->data_offset
-			   || gzio->inbuf_d == INBUFSIZ))
-    {
-      grub_disk_addr_t d = gzio->disk_input_start + gzio->disk_input_off;
-      gzio->inbuf_d = 0;
-      grub_disk_read (gzio->disk_input,
-		      d >> GRUB_DISK_SECTOR_BITS,
-		      d & (GRUB_DISK_SECTOR_SIZE - 1),
-		      INBUFSIZ, gzio->inbuf);
-      gzio->disk_input_off += INBUFSIZ;
-    }
-
   if (gzio->file && (grub_file_tell (gzio->file)
 		     == (grub_off_t) gzio->data_offset
 		     || gzio->inbuf_d == INBUFSIZ))
@@ -418,12 +394,10 @@ gzio_seek (grub_gzio_t gzio, grub_off_t off)
     {
       if (off > gzio->mem_input_size)
 	grub_error (GRUB_ERR_OUT_OF_RANGE,
-		    "attempt to seek outside of the file");
+		    N_("attempt to seek outside of the file"));
       else
 	gzio->mem_input_off = off;
     }
-  else if (gzio->disk_input)
-    gzio->disk_input_off = off;
   else
     grub_file_seek (gzio->file, off);
 }
@@ -1176,10 +1150,10 @@ grub_gzio_open (grub_file_t io)
 
   if (! test_gzip_header (file))
     {
+      grub_errno = GRUB_ERR_NONE;
       grub_free (gzio);
       grub_free (file);
       grub_file_seek (io, 0);
-      grub_errno = GRUB_ERR_NONE;
 
       return io;
     }
@@ -1198,20 +1172,20 @@ test_zlib_header (grub_gzio_t gzio)
   /* Check that compression method is DEFLATE.  */
   if ((cmf & 0xf) != DEFLATED)
     {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "unsupported gzip format");
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("unsupported gzip format"));
       return 0;
     }
 
   if ((cmf * 256 + flg) % 31)
     {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "unsupported gzip format");
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("unsupported gzip format"));
       return 0;
     }
 
   /* Dictionary isn't supported.  */
   if (flg & 0x20)
     {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "unsupported gzip format");
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("unsupported gzip format"));
       return 0;
     }
 
@@ -1312,34 +1286,6 @@ grub_zlib_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
 
   /* FIXME: Check Adler.  */
   return ret;
-}
-
-grub_err_t
-grub_zlib_disk_read (grub_disk_t disk, grub_disk_addr_t zlibstart,
-		     grub_off_t off, char *outbuf, grub_size_t outsize)
-{
-  grub_gzio_t gzio = 0;
-  grub_ssize_t ret;
-
-  gzio = grub_zalloc (sizeof (*gzio));
-  if (! gzio)
-    return -1;
-
-  gzio->disk_input_off = 0;
-  gzio->disk_input_start = zlibstart;
-  gzio->disk_input = disk;
-
-  if (!test_zlib_header (gzio))
-    {
-      grub_free (gzio);
-      return -1;
-    }
-
-  ret = grub_gzio_read_real (gzio, off, outbuf, outsize);
-  grub_free (gzio);
-
-  /* FIXME: Check Adler.  */
-  return ret < 0 ? grub_errno : GRUB_ERR_NONE;
 }
 
 

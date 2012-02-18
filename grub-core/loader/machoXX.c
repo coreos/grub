@@ -2,6 +2,7 @@
 #include <grub/file.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
+#include <grub/i18n.h>
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 
@@ -12,7 +13,7 @@ SUFFIX (grub_macho_contains_macho) (grub_macho_t macho)
 }
 
 void
-SUFFIX (grub_macho_parse) (grub_macho_t macho)
+SUFFIX (grub_macho_parse) (grub_macho_t macho, const char *filename)
 {
   grub_macho_header_t head;
 
@@ -25,7 +26,9 @@ SUFFIX (grub_macho_parse) (grub_macho_t macho)
       || grub_file_read (macho->file, &head, sizeof (head))
       != sizeof(head))
     {
-      grub_error (GRUB_ERR_READ_ERROR, "cannot read Mach-O header");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    filename);
       macho->offsetXX = -1;
       return;
     }
@@ -41,15 +44,14 @@ SUFFIX (grub_macho_parse) (grub_macho_t macho)
   macho->cmdsizeXX = head.sizeofcmds;
   macho->cmdsXX = grub_malloc(macho->cmdsizeXX);
   if (! macho->cmdsXX)
-    {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "not enough memory to read commands");
-      return;
-    }
+    return;
   if (grub_file_read (macho->file, macho->cmdsXX,
 		      (grub_size_t) macho->cmdsizeXX)
       != (grub_ssize_t) macho->cmdsizeXX)
     {
-      grub_error (GRUB_ERR_READ_ERROR, "cannot read Mach-O header");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    filename);
       macho->offsetXX = -1;
     }
 }
@@ -87,7 +89,9 @@ SUFFIX (grub_macho_filesize) (grub_macho_t macho)
 }
 
 grub_err_t
-SUFFIX (grub_macho_readfile) (grub_macho_t macho, void *dest)
+SUFFIX (grub_macho_readfile) (grub_macho_t macho,
+			      const char *filename,
+			      void *dest)
 {
   grub_ssize_t read;
   if (! SUFFIX (grub_macho_contains_macho) (macho))
@@ -95,19 +99,16 @@ SUFFIX (grub_macho_readfile) (grub_macho_t macho, void *dest)
 		       "couldn't read architecture-specific part");
 
   if (grub_file_seek (macho->file, macho->offsetXX) == (grub_off_t) -1)
-    {
-      grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS,
-			 "invalid offset in program header");
-    }
+    return grub_errno;
 
   read = grub_file_read (macho->file, dest,
 			 macho->endXX - macho->offsetXX);
   if (read != (grub_ssize_t) (macho->endXX - macho->offsetXX))
     {
-      grub_error_push ();
-      return grub_error (GRUB_ERR_BAD_OS,
-			 "couldn't read architecture-specific part");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    filename);
+      return grub_errno;
     }
   return GRUB_ERR_NONE;
 }
@@ -162,9 +163,9 @@ SUFFIX (grub_macho_size) (grub_macho_t macho, grub_macho_addr_t *segments_start,
 
 /* Load every loadable segment into memory specified by `_load_hook'.  */
 grub_err_t
-SUFFIX (grub_macho_load) (grub_macho_t macho, char *offset, int flags)
+SUFFIX (grub_macho_load) (grub_macho_t macho, const char *filename,
+			  char *offset, int flags)
 {
-  grub_err_t err = 0;
   auto int NESTED_FUNC_ATTR do_load(grub_macho_t _macho,
 			       struct grub_macho_cmd *hdr0,
 			       void *_arg __attribute__ ((unused)));
@@ -184,12 +185,7 @@ SUFFIX (grub_macho_load) (grub_macho_t macho, char *offset, int flags)
 
     if (grub_file_seek (_macho->file, hdr->fileoff
 			+ _macho->offsetXX) == (grub_off_t) -1)
-      {
-	grub_error_push ();
-	grub_error (GRUB_ERR_BAD_OS,
-		    "invalid offset in program header");
-	return 1;
-      }
+      return 1;
 
     if (hdr->filesize)
       {
@@ -199,11 +195,10 @@ SUFFIX (grub_macho_load) (grub_macho_t macho, char *offset, int flags)
 	if (read != (grub_ssize_t) min (hdr->filesize, hdr->vmsize))
 	  {
 	    /* XXX How can we free memory from `load_hook'? */
-	    grub_error_push ();
-	    err=grub_error (GRUB_ERR_BAD_OS,
-			    "couldn't read segment from file: "
-			    "wanted 0x%lx bytes; read 0x%lx bytes",
-			    hdr->filesize, read);
+	    if (!grub_errno)
+	      grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+			  filename);
+
 	    return 1;
 	  }
       }
@@ -216,7 +211,7 @@ SUFFIX (grub_macho_load) (grub_macho_t macho, char *offset, int flags)
 
   grub_macho_cmds_iterate (macho, do_load, 0);
 
-  return err;
+  return grub_errno;
 }
 
 grub_macho_addr_t

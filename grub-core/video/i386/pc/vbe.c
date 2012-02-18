@@ -434,7 +434,7 @@ grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
   return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "cannot get preferred mode");
 }
 
-grub_err_t
+static grub_err_t
 grub_vbe_set_video_mode (grub_uint32_t vbe_mode,
 			 struct grub_vbe_mode_info_block *vbe_mode_info)
 {

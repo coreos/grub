@@ -22,6 +22,7 @@
 #include <grub/misc.h>
 #include <grub/err.h>
 #include <grub/mm.h>
+#include <grub/i18n.h>
 
 /* Check if EHDR is a valid ELF header.  */
 grub_err_t
@@ -33,10 +34,12 @@ grub_arch_dl_check_header (void *ehdr)
   if (e->e_ident[EI_CLASS] != ELFCLASS64
       || e->e_ident[EI_DATA] != ELFDATA2LSB
       || e->e_machine != EM_IA_64)
-    return grub_error (GRUB_ERR_BAD_OS, "invalid arch specific ELF magic");
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch dependent ELF magic"));
 
   return GRUB_ERR_NONE;
 }
+
+#pragma GCC diagnostic ignored "-Wcast-align"
 
 #define MASK20 ((1 << 20) - 1)
 #define MASK19 ((1 << 19) - 1)
@@ -181,7 +184,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
       break;
 
   if (i == e->e_shnum)
-    return grub_error (GRUB_ERR_BAD_MODULE, "no symtab found");
+    return grub_error (GRUB_ERR_BAD_MODULE, N_("no symbol table"));
 
   entsize = s->sh_entsize;
 
@@ -265,7 +268,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    break;
 		  default:
 		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-				       "this relocation (0x%x) is not implemented yet",
+				       N_("relocation 0x%x is not implemented yet"),
 				       ELF_R_TYPE (rel->r_info));
 		  }
 	      }

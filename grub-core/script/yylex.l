@@ -22,6 +22,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/script_sh.h>
+#include <grub/i18n.h>
 #include "grub_script.tab.h"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -37,7 +38,7 @@
  */
 #define YY_FATAL_ERROR(msg)                     \
   do {                                          \
-    grub_printf ("fatal error: %s\n", msg);     \
+    grub_printf (_("fatal error: %s\n"), _(msg));     \
   } while (0)
 
 #define COPY(str, hint)                         \
@@ -316,14 +317,16 @@ grub_lexer_yyrealloc (void *ptr, yy_size_t size,
 
 static void copy_string (struct grub_parser_param *parser, const char *str, unsigned hint)
 {
-  int size;
+  grub_size_t size;
   char *ptr;
   unsigned len;
 
   len = hint ? hint : grub_strlen (str);
   if (parser->lexerstate->used + len >= parser->lexerstate->size)
     {
-      size = grub_max (len, parser->lexerstate->size) * 2;
+      size = len * 2;
+      if (size < parser->lexerstate->size * 2)
+        size = parser->lexerstate->size * 2;
       ptr = grub_realloc (parser->lexerstate->text, size);
       if (!ptr)
         {
@@ -362,7 +365,7 @@ grub_lexer_unput (const char *text, yyscan_t yyscanner)
   lexerstate->prefix = grub_strdup (text);
   if (! lexerstate->prefix)
     {
-      grub_script_yyerror (yyget_extra (yyscanner), "out of memory");
+      grub_script_yyerror (yyget_extra (yyscanner), N_("out of memory"));
       return 1;
     }
   return 0;

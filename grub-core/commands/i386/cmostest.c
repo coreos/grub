@@ -30,11 +30,11 @@ parse_args (int argc, char *argv[], int *byte, int *bit)
   char *rest;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Address required.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "address required");
 
   *byte = grub_strtoul (argv[0], &rest, 0);
   if (*rest != ':')
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "Address required.");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "address required");
 
   *bit = grub_strtoul (rest + 1, 0, 0);
 
@@ -60,7 +60,7 @@ grub_cmd_cmostest (struct grub_command *cmd __attribute__ ((unused)),
   if (value & (1 << bit))
     return GRUB_ERR_NONE;
 
-  return grub_error (GRUB_ERR_TEST_FAILURE, "false");
+  return grub_error (GRUB_ERR_TEST_FAILURE, N_("false"));
 }
 
 static grub_err_t

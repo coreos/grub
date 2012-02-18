@@ -23,28 +23,36 @@
 #include <grub/term.h>
 #include <grub/keyboard_layouts.h>
 
+#define _GNU_SOURCE	1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
+#include <argp.h>
 #include <unistd.h>
 #include <errno.h>
 
 #include "progname.h"
 
-#define CKBCOMP "ckbcomp"
+struct arguments
+{
+  char *input;
+  char *output;
+  int verbosity;
+};
 
-static struct option options[] = {
-  {"output", required_argument, 0, 'o'},
-  {"help", no_argument, 0, 'h'},
-  {"version", no_argument, 0, 'V'},
-  {"verbose", no_argument, 0, 'v'},
-  {0, 0, 0, 0}
+static struct argp_option options[] = {
+  {"input",  'i', N_("FILE"), 0,
+   N_("set input filename. Default is STDIN"), 0},
+  {"output",  'o', N_("FILE"), 0,
+   N_("set output filename. Default is STDOUT"), 0},
+  {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
+  { 0, 0, 0, 0, 0, 0 }
 };
 
 struct console_grub_equivalence
 {
-  char *layout;
+  const char *layout;
   grub_uint32_t grub;
 };
 
@@ -257,25 +265,6 @@ static grub_uint8_t linux_to_usb_map[128] = {
 }; 
 
 static void
-usage (int status)
-{
-  if (status)
-    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
-  else
-    printf (_("\
-Usage: %s [OPTIONS]\n\
-  -i, --input		set input filename. Default is STDIN\n\
-  -o, --output		set output filename. Default is STDOUT\n\
-  -h, --help		display this message and exit.\n\
-  -V, --version		print version information and exit.\n\
-  -v, --verbose		print verbose messages.\n\
-\n\
-Report bugs to <%s>.\n"), program_name, PACKAGE_BUGREPORT);
-
-  exit (status);
-}
-
-static void
 add_special_keys (struct grub_keyboard_layout *layout)
 {
   (void) layout;
@@ -300,7 +289,7 @@ lookup (char *code, int shift)
     if (strcmp (code, console_grub_equivalences_common[i].layout) == 0)
       return console_grub_equivalences_common[i].grub;
 
-  fprintf (stderr, _("Unknown key %s\n"), code);
+  fprintf (stderr, _("Unknown keyboard scan identifier %s\n"), code);
 
   return '\0';
 }
@@ -396,7 +385,7 @@ write_keymaps (FILE *in, FILE *out)
 	  if (keycode_usb == 0
 	      || keycode_usb >= GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
 	    {
-	      fprintf (stderr, _("Unknown keycode 0x%02x\n"), keycode_linux);
+	      fprintf (stderr, _("Unknown keyboard scan code 0x%02x\n"), keycode_linux);
 	      continue;
 	    }
 	  if (keycode_usb < GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
@@ -414,8 +403,7 @@ write_keymaps (FILE *in, FILE *out)
 
   if (ok == 0)
     {
-      fprintf (stderr, _("ERROR: no keycodes found. Check output of %s.\n"),
-	       CKBCOMP);
+      fprintf (stderr, "%s", _("ERROR: no valid keyboard layout found. Check the input.\n"));
       exit (1);
     }
 
@@ -424,65 +412,67 @@ write_keymaps (FILE *in, FILE *out)
   write_file (out, &layout);
 }
 
+static error_t
+argp_parser (int key, char *arg, struct argp_state *state)
+{
+  /* Get the input argument from argp_parse, which we
+     know is a pointer to our arguments structure. */
+  struct arguments *arguments = state->input;
+
+  switch (key)
+    {
+    case 'i':
+      arguments->input = xstrdup (arg);
+      break;
+
+    case 'o':
+      arguments->output = xstrdup (arg);
+      break;
+
+    case 'v':
+      arguments->verbosity++;
+      break;
+
+    default:
+      return ARGP_ERR_UNKNOWN;
+    }
+
+  return 0;
+}
+
+static struct argp argp = {
+  options, argp_parser, N_("[OPTIONS]"),
+  N_("Generate GRUB keyboard layout from Linux console one."),
+  NULL, NULL, NULL
+};
+
 int
 main (int argc, char *argv[])
 {
-  int verbosity;
-  char *infile_name = NULL;
-  char *outfile_name = NULL;
   FILE *in, *out;
+  struct arguments arguments;
 
   set_program_name (argv[0]);
 
-  verbosity = 0;
-
   /* Check for options.  */
-  while (1)
+  memset (&arguments, 0, sizeof (struct arguments));
+  if (argp_parse (&argp, argc, argv, 0, 0, &arguments) != 0)
     {
-      int c = getopt_long (argc, argv, "o:i:hVv", options, 0);
-
-      if (c == -1)
-	break;
-      else
-	switch (c)
-	  {
-	  case 'h':
-	    usage (0);
-	    break;
-
-	  case 'i':
-	    infile_name = optarg;
-	    break;
-
-	  case 'o':
-	    outfile_name = optarg;
-	    break;
-
-	  case 'V':
-	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME,
-		    PACKAGE_VERSION);
-	    return 0;
-
-	  case 'v':
-	    verbosity++;
-	    break;
-
-	  default:
-	    usage (1);
-	    break;
-	  }
+      fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
+      exit(1);
     }
 
-  if (infile_name)
-    in = fopen (infile_name, "r");
+  if (arguments.input)
+    in = fopen (arguments.input, "r");
   else
     in = stdin;
 
   if (!in)
-    grub_util_error (_("Couldn't open input file: %s\n"), strerror (errno));
+    grub_util_error (_("cannot open `%s': %s"), arguments.input ? : "stdin",
+		     strerror (errno));
 
-  if (outfile_name)
-    out = fopen (outfile_name, "wb");
+  if (arguments.output)
+    out = fopen (arguments.output, "wb");
   else
     out = stdout;
 
@@ -490,7 +480,8 @@ main (int argc, char *argv[])
     {
       if (in != stdin)
 	fclose (in);
-      grub_util_error (_("Couldn't open output file: %s\n"), strerror (errno));
+      grub_util_error (_("cannot open `%s': %s"), arguments.output ? : "stdout",
+		       strerror (errno));
     }
 
   write_keymaps (in, out);

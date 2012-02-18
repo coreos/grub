@@ -97,10 +97,9 @@ SUFFIX (grub_efiemu_prepare) (struct grub_efiemu_prepare_hook *prepare_hooks,
       grub_memcpy (&(conftables[i].vendor_guid), &(cur->guid),
 		       sizeof (cur->guid));
       if (cur->get_table)
-	conftables[i].vendor_table
-	  = PTR_TO_UINT64 (cur->get_table (cur->data));
+	conftables[i].vendor_table = (grub_addr_t) cur->get_table (cur->data);
       else
-	conftables[i].vendor_table = PTR_TO_UINT64 (cur->data);
+	conftables[i].vendor_table = (grub_addr_t) cur->data;
     }
 
   err = SUFFIX (grub_efiemu_crc) ();

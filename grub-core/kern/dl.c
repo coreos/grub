@@ -31,6 +31,7 @@
 #include <grub/file.h>
 #include <grub/env.h>
 #include <grub/cache.h>
+#include <grub/i18n.h>
 
 /* Platforms where modules are in a readonly area of memory.  */
 #if defined(GRUB_MACHINE_QEMU)
@@ -42,6 +43,8 @@
 #endif
 
 
+
+#pragma GCC diagnostic ignored "-Wcast-align"
 
 grub_dl_t grub_dl_head = 0;
 
@@ -208,20 +211,24 @@ static grub_err_t
 grub_dl_check_header (void *ehdr, grub_size_t size)
 {
   Elf_Ehdr *e = ehdr;
+  grub_err_t err;
 
   /* Check the header size.  */
   if (size < sizeof (Elf_Ehdr))
     return grub_error (GRUB_ERR_BAD_OS, "ELF header smaller than expected");
 
   /* Check the magic numbers.  */
-  if (grub_arch_dl_check_header (ehdr)
-      || e->e_ident[EI_MAG0] != ELFMAG0
+  if (e->e_ident[EI_MAG0] != ELFMAG0
       || e->e_ident[EI_MAG1] != ELFMAG1
       || e->e_ident[EI_MAG2] != ELFMAG2
       || e->e_ident[EI_MAG3] != ELFMAG3
       || e->e_ident[EI_VERSION] != EV_CURRENT
       || e->e_version != EV_CURRENT)
-    return grub_error (GRUB_ERR_BAD_OS, "invalid arch independent ELF magic");
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch independent ELF magic"));
+
+  err = grub_arch_dl_check_header (ehdr);
+  if (err)
+    return err;
 
   return GRUB_ERR_NONE;
 }
@@ -243,7 +250,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
        i < e->e_shnum;
        i++, s = (Elf_Shdr *)((char *) s + e->e_shentsize))
     {
-      tsize += ALIGN_UP (s->sh_size, s->sh_addralign);
+      tsize = ALIGN_UP (tsize, s->sh_addralign) + s->sh_size;
       if (talign < s->sh_addralign)
 	talign = s->sh_addralign;
     }
@@ -345,7 +352,7 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
       break;
 
   if (i == e->e_shnum)
-    return grub_error (GRUB_ERR_BAD_MODULE, "no symbol table");
+    return grub_error (GRUB_ERR_BAD_MODULE, N_("no symbol table"));
 
 #ifdef GRUB_MODULES_MACHINE_READONLY
   mod->symtab = grub_malloc (s->sh_size);
@@ -378,7 +385,7 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 	      grub_symbol_t nsym = grub_dl_resolve_symbol (name);
 	      if (! nsym)
 		return grub_error (GRUB_ERR_BAD_MODULE,
-				   "symbol not found: `%s'", name);
+				   N_("symbol `%s' not found"), name);
 	      sym->st_value = (Elf_Addr) nsym->addr;
 	      if (nsym->isfunc)
 		sym->st_info = ELF_ST_INFO (bind, STT_FUNC);
@@ -596,7 +603,7 @@ grub_dl_load_core (void *addr, grub_size_t size)
 
   if (e->e_type != ET_REL)
     {
-      grub_error (GRUB_ERR_BAD_MODULE, "invalid ELF file type");
+      grub_error (GRUB_ERR_BAD_MODULE, N_("this ELF file is not of the right type"));
       return 0;
     }
 
@@ -704,11 +711,12 @@ grub_dl_load (const char *name)
     return mod;
 
   if (! grub_dl_dir) {
-    grub_error (GRUB_ERR_FILE_NOT_FOUND, "\"prefix\" is not set");
+    grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("variable `%s' isn't set"), "prefix");
     return 0;
   }
 
-  filename = grub_xasprintf ("%s/%s.mod", grub_dl_dir, name);
+  filename = grub_xasprintf ("%s/" GRUB_TARGET_CPU "-" GRUB_PLATFORM "/%s.mod",
+			     grub_dl_dir, name);
   if (! filename)
     return 0;
 
@@ -729,7 +737,6 @@ int
 grub_dl_unload (grub_dl_t mod)
 {
   grub_dl_dep_t dep, depn;
-  grub_dl_segment_t seg, segn;
 
   if (mod->ref_count > 0)
     return 0;
@@ -749,13 +756,7 @@ grub_dl_unload (grub_dl_t mod)
       grub_free (dep);
     }
 
-  for (seg = mod->segment; seg; seg = segn)
-    {
-      segn = seg->next;
-      grub_free (seg->addr);
-      grub_free (seg);
-    }
-
+  grub_free (mod->base);
   grub_free (mod->name);
 #ifdef GRUB_MODULES_MACHINE_READONLY
   grub_free (mod->symtab);

@@ -165,7 +165,7 @@ grub_cmd_loadbios (grub_command_t cmd __attribute__ ((unused)),
   int size;
 
   if (argc == 0)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no ROM image specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   if (argc > 1)
     {
@@ -206,7 +206,9 @@ static grub_command_t cmd_fakebios, cmd_loadbios;
 GRUB_MOD_INIT(loadbios)
 {
   cmd_fakebios = grub_register_command ("fakebios", grub_cmd_fakebios,
-					0, N_("Fake BIOS."));
+					0, N_("Create BIOS-like structures for"
+					      " backward compatibility with"
+					      " existing OS."));
 
   cmd_loadbios = grub_register_command ("loadbios", grub_cmd_loadbios,
 					N_("BIOS_DUMP [INT10_DUMP]"),

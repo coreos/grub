@@ -88,7 +88,7 @@ grub_cmd_chain (grub_command_t cmd __attribute__ ((unused)),
   grub_elf_t elf;
 
   if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "filename expected");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   grub_loader_unset ();
 
@@ -103,7 +103,7 @@ grub_cmd_chain (grub_command_t cmd __attribute__ ((unused)),
       return grub_errno;
     }
 
-  elf = grub_elf_file (file);
+  elf = grub_elf_file (file, argv[0]);
   if (!elf)
     {
       grub_relocator_unload (relocator);
@@ -120,7 +120,7 @@ grub_cmd_chain (grub_command_t cmd __attribute__ ((unused)),
 
   entry = elf->ehdr.ehdr32.e_entry & 0xFFFFFF;
   
-  err = grub_elf32_load (elf, grub_chain_elf32_hook, 0, 0);
+  err = grub_elf32_load (elf, argv[0], grub_chain_elf32_hook, 0, 0);
 
   grub_elf_close (elf);
   if (err)
@@ -135,7 +135,12 @@ static grub_command_t cmd_chain;
 GRUB_MOD_INIT (chain)
 {
   cmd_chain = grub_register_command ("chainloader", grub_cmd_chain,
-				     N_("FILE"), N_("Load another payload"));
+				     N_("FILE"),
+				     /* TRANSLATORS: "payload" is a term used
+					by coreboot and must be translated in
+					sync with coreboot. If unsure,
+					let it untranslated.  */
+				     N_("Load another coreboot payload"));
 }
 
 GRUB_MOD_FINI (chain)

@@ -24,6 +24,7 @@
 #include <grub/mm.h>
 #include <grub/fs.h>
 #include <grub/device.h>
+#include <grub/i18n.h>
 
 void (*EXPORT_VAR (grub_grubnet_fini)) (void);
 
@@ -41,7 +42,7 @@ grub_file_get_device_name (const char *name)
 
       if (! p)
 	{
-	  grub_error (GRUB_ERR_BAD_FILENAME, "missing `)'");
+	  grub_error (GRUB_ERR_BAD_FILENAME, N_("missing `%c' symbol"), ')');
 	  return 0;
 	}
 
@@ -138,7 +139,7 @@ grub_file_read (grub_file_t file, void *buf, grub_size_t len)
   if (file->offset > file->size)
     {
       grub_error (GRUB_ERR_OUT_OF_RANGE,
-		  "attempt to read past the end of file");
+		  N_("attempt to read past the end of file"));
       return -1;
     }
 
@@ -178,7 +179,7 @@ grub_file_seek (grub_file_t file, grub_off_t offset)
   if (offset > file->size)
     {
       grub_error (GRUB_ERR_OUT_OF_RANGE,
-		  "attempt to seek outside of the file");
+		  N_("attempt to seek outside of the file"));
       return -1;
     }
   

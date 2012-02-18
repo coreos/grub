@@ -29,6 +29,7 @@ struct grub_test
 {
   /* The next test.  */
   struct grub_test *next;
+  struct grub_test **prev;
 
   /* The test name.  */
   char *name;
@@ -57,6 +58,9 @@ void grub_test_nonzero (int cond, const char *file,
   grub_test_nonzero(cond, GRUB_FILE, __FUNCTION__, __LINE__,	\
 		    ## __VA_ARGS__,				\
 		    "assert failed: %s", #cond)
+
+void grub_unit_test_init (void);
+void grub_unit_test_fini (void);
 
 /* Macro to define a unit test.  */
 #define GRUB_UNIT_TEST(name, funp)		\

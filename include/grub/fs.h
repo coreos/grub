@@ -46,6 +46,7 @@ struct grub_fs
 {
   /* The next filesystem.  */
   struct grub_fs *next;
+  struct grub_fs **prev;
 
   /* My name.  */
   const char *name;
@@ -111,7 +112,7 @@ grub_fs_register (grub_fs_t fs)
 static inline void
 grub_fs_unregister (grub_fs_t fs)
 {
-  grub_list_remove (GRUB_AS_LIST_P (&grub_fs_list), GRUB_AS_LIST (fs));
+  grub_list_remove (GRUB_AS_LIST (fs));
 }
 
 #define FOR_FILESYSTEMS(var) FOR_LIST_ELEMENTS((var), (grub_fs_list))

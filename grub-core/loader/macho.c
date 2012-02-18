@@ -28,6 +28,7 @@
 #include <grub/file.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/i18n.h>
 
 grub_err_t
 grub_macho_close (grub_macho_t macho)
@@ -46,7 +47,7 @@ grub_macho_close (grub_macho_t macho)
 }
 
 grub_macho_t
-grub_macho_file (grub_file_t file)
+grub_macho_file (grub_file_t file, const char *filename)
 {
   grub_macho_t macho;
   union grub_macho_filestart filestart;
@@ -69,8 +70,9 @@ grub_macho_file (grub_file_t file)
   if (grub_file_read (macho->file, &filestart, sizeof (filestart))
       != sizeof (filestart))
     {
-      grub_error_push ();
-      grub_error (GRUB_ERR_READ_ERROR, "cannot read Mach-O header");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    filename);
       goto fail;
     }
 
@@ -90,11 +92,12 @@ grub_macho_file (grub_file_t file)
 	goto fail;
       if (grub_file_read (macho->file, archs,
 			  sizeof (struct grub_macho_fat_arch) * narchs)
-	  != (grub_ssize_t)sizeof(struct grub_macho_fat_arch) * narchs)
+	  != (grub_ssize_t) sizeof(struct grub_macho_fat_arch) * narchs)
 	{
 	  grub_free (archs);
-	  grub_error_push ();
-	  grub_error (GRUB_ERR_READ_ERROR, "cannot read Mach-O header");
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+			filename);
 	  goto fail;
 	}
 
@@ -132,8 +135,8 @@ grub_macho_file (grub_file_t file)
       macho->end64 = grub_file_size (file);
     }
 
-  grub_macho_parse32 (macho);
-  grub_macho_parse64 (macho);
+  grub_macho_parse32 (macho, filename);
+  grub_macho_parse64 (macho, filename);
 
   return macho;
 
@@ -152,7 +155,7 @@ grub_macho_open (const char *name)
   if (! file)
     return 0;
 
-  macho = grub_macho_file (file);
+  macho = grub_macho_file (file, name);
   if (! macho)
     grub_file_close (file);
 

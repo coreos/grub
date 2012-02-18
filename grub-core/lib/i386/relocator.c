@@ -25,6 +25,7 @@
 
 #include <grub/i386/relocator.h>
 #include <grub/relocator_private.h>
+#include <grub/i386/relocator_private.h>
 
 extern grub_uint8_t grub_relocator_forward_start;
 extern grub_uint8_t grub_relocator_forward_end;
@@ -200,8 +201,10 @@ grub_relocator16_boot (struct grub_relocator *rel,
 
   /* Put it higher than the byte it checks for A20 check.  */
   err = grub_relocator_alloc_chunk_align (rel, &ch, 0x8010,
-					  0xa0000 - RELOCATOR_SIZEOF (16),
-					  RELOCATOR_SIZEOF (16), 16,
+					  0xa0000 - RELOCATOR_SIZEOF (16)
+					  - GRUB_RELOCATOR16_STACK_SIZE,
+					  RELOCATOR_SIZEOF (16)
+					  + GRUB_RELOCATOR16_STACK_SIZE, 16,
 					  GRUB_RELOCATOR_PREFERENCE_NONE);
   if (err)
     return err;

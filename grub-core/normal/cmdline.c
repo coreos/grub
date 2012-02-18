@@ -211,7 +211,7 @@ struct cmdline_term
    otherwise return command line.  */
 /* FIXME: The dumb interface is not supported yet.  */
 char *
-grub_cmdline_get (const char *prompt)
+grub_cmdline_get (const char *prompt_translated)
 {
   grub_size_t lpos, llen;
   grub_size_t plen;
@@ -228,7 +228,6 @@ grub_cmdline_get (const char *prompt)
   auto void cl_set_pos_all (void);
   auto void init_clterm (struct cmdline_term *cl_term_cur);
   auto void init_clterm_all (void);
-  const char *prompt_translated = _(prompt);
   struct cmdline_term *cl_terms;
   char *ret;
   unsigned nterms;

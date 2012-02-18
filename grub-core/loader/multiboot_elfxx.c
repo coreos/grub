@@ -39,6 +39,8 @@
 #define CONCAT(a,b)	CONCAT_(a, b)
 #define CONCAT_(a,b)	a ## b
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 /* Check if BUFFER contains ELF32 (or ELF64).  */
 static int
 CONCAT(grub_multiboot_is_elf, XX) (void *buffer)
@@ -49,39 +51,40 @@ CONCAT(grub_multiboot_is_elf, XX) (void *buffer)
 }
 
 static grub_err_t
-CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
+CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, const char *filename, void *buffer)
 {
   Elf_Ehdr *ehdr = (Elf_Ehdr *) buffer;
   char *phdr_base;
   int i;
 
-  if (ehdr->e_ident[EI_CLASS] != ELFCLASSXX)
-    return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF class");
-
   if (ehdr->e_ident[EI_MAG0] != ELFMAG0
       || ehdr->e_ident[EI_MAG1] != ELFMAG1
       || ehdr->e_ident[EI_MAG2] != ELFMAG2
       || ehdr->e_ident[EI_MAG3] != ELFMAG3
-      || ehdr->e_version != EV_CURRENT
-      || ehdr->e_ident[EI_DATA] != ELFDATA2LSB
-      || ehdr->e_machine != E_MACHINE)
-    return grub_error(GRUB_ERR_UNKNOWN_OS, "no valid ELF header found");
+      || ehdr->e_ident[EI_DATA] != ELFDATA2LSB)
+    return grub_error(GRUB_ERR_UNKNOWN_OS, N_("invalid arch independent ELF magic"));
+
+  if (ehdr->e_ident[EI_CLASS] != ELFCLASSXX || ehdr->e_machine != E_MACHINE
+      || ehdr->e_version != EV_CURRENT)
+    return grub_error (GRUB_ERR_UNKNOWN_OS, N_("invalid arch dependent ELF magic"));
 
   if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN)
-    return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF file type");
+    return grub_error (GRUB_ERR_UNKNOWN_OS, N_("this ELF file is not of the right type"));
 
   /* FIXME: Should we support program headers at strange locations?  */
   if (ehdr->e_phoff + ehdr->e_phnum * ehdr->e_phentsize > MULTIBOOT_SEARCH)
     return grub_error (GRUB_ERR_BAD_OS, "program header at a too high offset");
 
-#if defined (MULTIBOOT_LOAD_ELF64) && defined (__mips)
+#ifdef MULTIBOOT_LOAD_ELF64
+# ifdef __mips
   /* We still in 32-bit mode.  */
   if (ehdr->e_entry < 0xffffffff80000000ULL)
     return grub_error (GRUB_ERR_BAD_OS, "invalid entry point for ELF64");
-#else
+# else
   /* We still in 32-bit mode.  */
   if (ehdr->e_entry > 0xffffffff)
     return grub_error (GRUB_ERR_BAD_OS, "invalid entry point for ELF64");
+# endif
 #endif
 
   phdr_base = (char *) buffer + ehdr->e_phoff;
@@ -115,13 +118,16 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 	    {
 	      if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
 		  == (grub_off_t) -1)
-		return grub_error (GRUB_ERR_BAD_OS,
-				   "invalid offset in program header");
+		return grub_errno;
 
 	      if (grub_file_read (file, source, phdr(i)->p_filesz)
 		  != (grub_ssize_t) phdr(i)->p_filesz)
-		return grub_error (GRUB_ERR_BAD_OS,
-				   "couldn't read segment from file");
+		{
+		  if (!grub_errno)
+		    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+				filename);
+		  return grub_errno;
+		}
 	    }
 
           if (phdr(i)->p_filesz < phdr(i)->p_memsz)
@@ -159,13 +165,16 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 	return grub_errno;
       
       if (grub_file_seek (file, ehdr->e_shoff) == (grub_off_t) -1)
-	return grub_error (GRUB_ERR_BAD_OS,
-			   "invalid offset to section headers");
+	return grub_errno;
 
       if (grub_file_read (file, shdr, ehdr->e_shnum * ehdr->e_shentsize)
               != (grub_ssize_t) ehdr->e_shnum * ehdr->e_shentsize)
-	return grub_error (GRUB_ERR_BAD_OS,
-			   "couldn't read sections headers from file");
+	{
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			filename);
+	  return grub_errno;
+	}
       
       for (shdrptr = shdr, i = 0; i < ehdr->e_shnum;
 	   shdrptr += ehdr->e_shentsize, i++)
@@ -202,13 +211,16 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 	  }
 
 	  if (grub_file_seek (file, sh->sh_offset) == (grub_off_t) -1)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "invalid offset in section header");
+	    return grub_errno;
 
           if (grub_file_read (file, src, sh->sh_size)
               != (grub_ssize_t) sh->sh_size)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "couldn't read segment from file");
+	    {
+	      if (!grub_errno)
+		grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			    filename);
+	      return grub_errno;
+	    }
 	  sh->sh_addr = target;
 	}
       grub_multiboot_add_elfsyms (ehdr->e_shnum, ehdr->e_shentsize,

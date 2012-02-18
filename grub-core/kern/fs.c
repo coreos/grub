@@ -26,6 +26,7 @@
 #include <grub/types.h>
 #include <grub/mm.h>
 #include <grub/term.h>
+#include <grub/i18n.h>
 
 grub_fs_t grub_fs_list = 0;
 
@@ -97,7 +98,7 @@ grub_fs_probe (grub_device_t device)
   else if (device->net && device->net->fs)
     return device->net->fs;
 
-  grub_error (GRUB_ERR_UNKNOWN_FS, "unknown filesystem");
+  grub_error (GRUB_ERR_UNKNOWN_FS, N_("unknown filesystem"));
   return 0;
 }
 
@@ -145,7 +146,7 @@ grub_fs_blocklist_open (grub_file_t file, const char *name)
 	  if (grub_errno != GRUB_ERR_NONE || *p != '+')
 	    {
 	      grub_error (GRUB_ERR_BAD_FILENAME,
-			  "invalid file name `%s'", name);
+			  N_("invalid file name `%s'"), name);
 	      goto fail;
 	    }
 	}
@@ -157,7 +158,7 @@ grub_fs_blocklist_open (grub_file_t file, const char *name)
 	  || (*p && *p != ',' && ! grub_isspace (*p)))
 	{
 	  grub_error (GRUB_ERR_BAD_FILENAME,
-		      "invalid file name `%s'", name);
+		      N_("invalid file name `%s'"), name);
 	  goto fail;
 	}
 

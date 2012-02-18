@@ -19,13 +19,13 @@ script = {
 };
 
 script = {
-  installdir = noinst;
+  installdir = platform;
   name = gmodule.pl;
   common = gmodule.pl.in;
 };
 
 script = {
-  installdir = noinst;
+  installdir = platform;
   name = gdb_grub;
   common = gdb_grub.in;
 };
@@ -113,7 +113,7 @@ kernel = {
   ieee1275 = kern/ieee1275/ieee1275.c;
   ieee1275 = kern/ieee1275/mmap.c;
   ieee1275 = kern/ieee1275/openfw.c;
-  ieee1275 = term/ieee1275/ofconsole.c;
+  ieee1275 = term/ieee1275/console.c;
   ieee1275 = kern/ieee1275/init.c;
 
   terminfoinkernel = term/terminfo.c;
@@ -207,7 +207,6 @@ kernel = {
   emu = gnulib/progname.c;
   emu = gnulib/error.c;
   emu = kern/emu/cache_s.S;
-  emu = kern/emu/console.c;
   emu = kern/emu/hostdisk.c;
   emu = kern/emu/hostfs.c;
   emu = kern/emu/main.c;
@@ -215,6 +214,7 @@ kernel = {
   emu = kern/emu/mm.c;
   emu = kern/emu/time.c;
   emu = kern/emu/cache.c;
+  emu = term/emu/console.c;
 
   videoinkernel = term/gfxterm.c;
   videoinkernel = font/font.c;
@@ -348,7 +348,7 @@ image = {
   mips_qemu_mips_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
   mips_arc_ldflags = '-static-libgcc -Wl,-Ttext,0x8bc00000';
   ldadd = '-lgcc';
-  cflags = '-static-libgcc';
+  cflags = '-Wno-unreachable-code -static-libgcc';
   enable = mips;
 };
 
@@ -373,7 +373,7 @@ image = {
   i386_pc = boot/i386/pc/startup_raw.S;
 
   objcopyflags = '-O binary';
-  ldflags = '-Wl,-Ttext,0x8200';
+  ldflags = '$(TARGET_IMG_LDFLAGS) -Wl,-Ttext,0x8200';
   enable = i386_pc;
 };
 
@@ -459,6 +459,12 @@ module = {
 module = {
   name = ohci;
   common = bus/usb/ohci.c;
+  enable = pci;
+};
+
+module = {
+  name = ehci;
+  common = bus/usb/ehci.c;
   enable = pci;
 };
 
@@ -792,7 +798,7 @@ module = {
 module = {
   name = setpci;
   common = commands/setpci.c;
-  enable = x86;
+  enable = pci;
 };
 
 module = {
@@ -875,6 +881,11 @@ module = {
 };
 
 module = {
+  name = ldm;
+  common = disk/ldm.c;
+};
+
+module = {
   name = mdraid09;
   common = disk/mdraid_linux.c;
 };
@@ -885,8 +896,8 @@ module = {
 };
 
 module = {
-  name = raid;
-  common = disk/raid.c;
+  name = diskfilter;
+  common = disk/diskfilter.c;
 };
 
 module = {
@@ -1015,6 +1026,21 @@ module = {
 };
 
 module = {
+  name = cpio_be;
+  common = fs/cpio_be.c;
+};
+
+module = {
+  name = newc;
+  common = fs/newc.c;
+};
+
+module = {
+  name = odc;
+  common = fs/odc.c;
+};
+
+module = {
   name = ext2;
   common = fs/ext2.c;
 };
@@ -1102,6 +1128,8 @@ module = {
 module = {
   name = squash4;
   common = fs/squash4.c;
+  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -I$(srcdir)/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
 };
 
 module = {
@@ -1304,6 +1332,12 @@ module = {
 };
 
 module = {
+  name = pxechain;
+  i386_pc = loader/i386/pc/pxechainloader.c;
+  enable = i386_pc;
+};
+
+module = {
   name = multiboot2;
   cppflags = "-DGRUB_USE_MULTIBOOT2";
 
@@ -1418,7 +1452,7 @@ module = {
   extra_dist = script/yylex.l;
   extra_dist = script/parser.y;
 
-  cflags = '$(CFLAGS_POSIX)';
+  cflags = '$(CFLAGS_POSIX) -Wno-redundant-decls';
   cppflags = '$(CPPFLAGS_POSIX)';
 };
 
@@ -1642,9 +1676,13 @@ module = {
 module = {
   name = net;
   common = net/net.c;
+  common = net/dns.c;
   common = net/bootp.c;
   common = net/ip.c;
   common = net/udp.c;
+  common = net/tcp.c;
+  common = net/icmp.c;
+  common = net/icmp6.c;
   common = net/ethernet.c;
   common = net/arp.c;
   common = net/netbuff.c;
@@ -1653,6 +1691,11 @@ module = {
 module = {
   name = tftp;
   common = net/tftp.c;
+};
+
+module = {
+  name = http;
+  common = net/http.c;
 };
 
 module = {
@@ -1694,13 +1737,14 @@ module = {
   common = lib/xzembed/xz_dec_lzma2.c;
   common = lib/xzembed/xz_dec_stream.c;
   cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed';
+  cflags='-Wno-unreachable-code';
 };
 
 module = {
   name = lzopio;
   common = io/lzopio.c;
   common = lib/minilzo/minilzo.c;
-  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cflags = '$(CFLAGS_POSIX) -Wno-undef -Wno-redundant-decls -Wno-error';
   cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/minilzo -DMINILZO_HAVE_CONFIG_H';
 };
 
@@ -1725,6 +1769,11 @@ module = {
   name = keylayouts;
   common = commands/keylayouts.c;
   enable = videomodules;
+};
+
+module = {
+  name = priority_queue;
+  common = lib/priority_queue.c;
 };
 
 module = {

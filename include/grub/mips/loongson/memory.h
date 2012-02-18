@@ -43,8 +43,8 @@ grub_machine_mmap_unregister (int handle  __attribute__ ((unused)))
   return GRUB_ERR_NONE;
 }
 
-extern grub_uint32_t EXPORT_VAR (grub_arch_memsize);
-extern grub_uint32_t EXPORT_VAR (grub_arch_highmemsize);
+extern grub_uint32_t EXPORT_VAR (grub_arch_memsize) __attribute__ ((section(".text")));
+extern grub_uint32_t EXPORT_VAR (grub_arch_highmemsize) __attribute__ ((section(".text")));
 
 #endif
 

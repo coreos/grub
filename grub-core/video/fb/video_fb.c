@@ -622,6 +622,7 @@ common_blitter (struct grub_video_fbblit_info *target,
 						    offset_x, offset_y);
 	      return;
 	    }
+#ifdef GRUB_HAVE_UNALIGNED_ACCESS
 	  else if (target->mode_info->bpp == 24)
 	    {
 	      grub_video_fbblit_replace_24bit_1bit (target, source,
@@ -629,6 +630,7 @@ common_blitter (struct grub_video_fbblit_info *target,
 						    offset_x, offset_y);
 	      return;
 	    }
+#endif
 	  else if (target->mode_info->bpp == 16)
 	    {
 	      grub_video_fbblit_replace_16bit_1bit (target, source,
@@ -743,6 +745,7 @@ common_blitter (struct grub_video_fbblit_info *target,
 						     offset_x, offset_y);
 	      return;
 	    }
+#ifdef GRUB_HAVE_UNALIGNED_ACCESS
 	  else if (target->mode_info->blit_format
 		   == GRUB_VIDEO_BLIT_FORMAT_BGR_888
 		   || target->mode_info->blit_format
@@ -753,6 +756,7 @@ common_blitter (struct grub_video_fbblit_info *target,
 						   offset_x, offset_y);
 	      return;
 	    }
+#endif
 	  else if (target->mode_info->blit_format
 		   == GRUB_VIDEO_BLIT_FORMAT_BGR_565
 		   || target->mode_info->blit_format
@@ -1126,7 +1130,7 @@ grub_video_fb_create_render_target (struct grub_video_fbrender_target **result,
   if ((! result)
       || (width == 0)
       || (height == 0))
-    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+    return grub_error (GRUB_ERR_BUG,
                        "invalid argument given");
 
   /* Allocate memory for render target.  */
@@ -1195,6 +1199,15 @@ grub_video_fb_create_render_target_from_pointer (struct grub_video_fbrender_targ
   struct grub_video_fbrender_target *target;
   unsigned y;
 
+#ifndef GRUB_HAVE_UNALIGNED_ACCESS
+  if (!(mode_info->bytes_per_pixel & (mode_info->bytes_per_pixel - 1))
+      && ((grub_addr_t) ptr & (mode_info->bytes_per_pixel - 1)))
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unaligned pointer");
+  if (!(mode_info->bytes_per_pixel & (mode_info->bytes_per_pixel - 1))
+      && (mode_info->pitch & (mode_info->bytes_per_pixel - 1)))
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "unaligned pitch");
+#endif
+
   /* Allocate memory for render target.  */
   target = grub_malloc (sizeof (struct grub_video_fbrender_target));
   if (! target)
@@ -1250,7 +1263,7 @@ grub_video_fb_set_active_render_target (struct grub_video_fbrender_target *targe
     target = framebuffer.back_target;
 
   if (! target->data)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+    return grub_error (GRUB_ERR_BUG,
                        "invalid render target given");
 
   framebuffer.render_target = target;

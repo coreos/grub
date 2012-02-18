@@ -47,7 +47,7 @@ grub_util_raid_getmembers (const char *name, int bootable)
   fd = open (name, O_RDONLY);
 
   if (fd == -1)
-    grub_util_error (_("can't open %s: %s"), name, strerror (errno));
+    grub_util_error (_("cannot open `%s': %s"), name, strerror (errno));
 
   ret = ioctl (fd, RAID_VERSION, &version);
   if (ret != 0)

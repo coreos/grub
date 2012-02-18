@@ -41,6 +41,8 @@ cat <<EOF
 
 #define COMPILE_TIME_ASSERT(cond) switch (0) { case 1: case !(cond): ; }
 
+#pragma GCC diagnostic ignored "-Wmissing-format-attribute"
+
 void
 grub_register_exported_symbols (void)
 {

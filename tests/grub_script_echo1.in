@@ -99,3 +99,5 @@ echo one'two
 #
 # two"
 
+if test x$grubshell = xyes; then insmod regexp; fi
+echo /boot/grub/i386-pc/normal.mod

@@ -32,6 +32,7 @@
 #include <grub/crypto.h>
 #include <grub/dl.h>
 #include <time.h>
+#include <multiboot.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -41,7 +42,7 @@
 #include <grub/efi/pe32.h>
 
 #define _GNU_SOURCE	1
-#include <getopt.h>
+#include <argp.h>
 
 #include "progname.h"
 
@@ -150,7 +151,8 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
+      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR,
+      .default_compression = COMPRESSION_LZMA
     },
     {
       .dirname = "i386-pc",
@@ -165,7 +167,8 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR
+      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR,
+      .default_compression = COMPRESSION_LZMA
     },
     {
       .dirname = "i386-efi",
@@ -593,7 +596,7 @@ compress_kernel_lzma (char *kernel_img, size_t kernel_size,
 		  kernel_size,
 		  &props, out_props, &out_props_size,
 		  0, NULL, &g_Alloc, &g_Alloc) != SZ_OK)
-    grub_util_error (_("cannot compress the kernel image"));
+    grub_util_error ("%s", _("cannot compress the kernel image"));
 }
 
 #ifdef HAVE_LIBLZMA
@@ -694,7 +697,8 @@ struct fixup_block_list
 #undef MKIMAGE_ELF64
 
 static void
-generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
+generate_image (const char *dir, const char *prefix,
+		FILE *out, const char *outname, char *mods[],
 		char *memdisk_path, char *config_path,
 		struct image_target_desc *image_target, int note,
 		grub_compression_t comp)
@@ -710,7 +714,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   grub_uint64_t start_address;
   void *rel_section;
   grub_size_t reloc_size, align;
-  size_t decompress_size;
+  size_t decompress_size = 0;
 
   if (comp == COMPRESSION_AUTO)
     comp = image_target->default_compression;
@@ -731,7 +735,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
   if (memdisk_path)
     {
       memdisk_size = ALIGN_UP(grub_util_get_image_size (memdisk_path), 512);
-      grub_util_info ("the size of memory disk is 0x%x", memdisk_size);
+      grub_util_info ("the size of memory disk is 0x%llx",
+		      (unsigned long long) memdisk_size);
       total_module_size += memdisk_size + sizeof (struct grub_module_header);
     }
 
@@ -739,7 +744,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     {
       config_size_pure = grub_util_get_image_size (config_path) + 1;
       config_size = ALIGN_ADDR (config_size_pure);
-      grub_util_info ("the size of config file is 0x%x", config_size);
+      grub_util_info ("the size of config file is 0x%llx",
+		      (unsigned long long) config_size);
       total_module_size += config_size + sizeof (struct grub_module_header);
     }
 
@@ -753,7 +759,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
     total_module_size += (ALIGN_ADDR (grub_util_get_image_size (p->name))
 			  + sizeof (struct grub_module_header));
 
-  grub_util_info ("the total module size is 0x%x", total_module_size);
+  grub_util_info ("the total module size is 0x%llx",
+		  (unsigned long long) total_module_size);
 
   if (image_target->voidp_sizeof == 4)
     kernel_img = load_image32 (kernel_path, &exec_size, &kernel_size, &bss_size,
@@ -870,12 +877,13 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       offset += prefix_size;
     }
 
-  grub_util_info ("kernel_img=%p, kernel_size=0x%x", kernel_img, kernel_size);
+  grub_util_info ("kernel_img=%p, kernel_size=0x%llx", kernel_img,
+		  (unsigned long long) kernel_size);
   compress_kernel (image_target, kernel_img, kernel_size + total_module_size,
 		   &core_img, &core_size, comp);
   free (kernel_img);
 
-  grub_util_info ("the core size is 0x%x", core_size);
+  grub_util_info ("the core size is 0x%llx", (unsigned long long) core_size);
 
   if (!(image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS) 
       && image_target->total_module_size != TARGET_NO_FIELD)
@@ -911,7 +919,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       if ((image_target->id == IMAGE_I386_PC
 	   || image_target->id == IMAGE_I386_PC_PXE)
 	  && decompress_size > GRUB_KERNEL_I386_PC_LINK_ADDR - 0x8200)
-	grub_util_error (_("Decompressor is too big"));
+	grub_util_error ("%s", _("Decompressor is too big"));
 
       if (image_target->decompressor_compressed_size != TARGET_NO_FIELD)
 	*((grub_uint32_t *) (decompress_img
@@ -958,27 +966,39 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	char *boot_path, *boot_img;
 	size_t boot_size;
 
-	if (GRUB_KERNEL_I386_PC_LINK_ADDR + core_size > GRUB_MEMORY_I386_PC_UPPER)
-	  grub_util_error (_("core image is too big (%p > %p)"),
+	if (GRUB_KERNEL_I386_PC_LINK_ADDR + core_size > 0x78000
+	    || (core_size > (0xffff << GRUB_DISK_SECTOR_BITS)))
+	  grub_util_error (_("core image is too big (0x%x > 0x%x)"),
 			   GRUB_KERNEL_I386_PC_LINK_ADDR + core_size,
-			   GRUB_MEMORY_I386_PC_UPPER);
+			   0x78000);
 
 	num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
-	if (num > 0xffff)
-	  grub_util_error (_("the core image is too big"));
-
 	if (image_target->id == IMAGE_I386_PC_PXE)
 	  {
 	    char *pxeboot_path, *pxeboot_img;
 	    size_t pxeboot_size;
+	    grub_uint32_t *ptr;
 	    
 	    pxeboot_path = grub_util_get_path (dir, "pxeboot.img");
 	    pxeboot_size = grub_util_get_image_size (pxeboot_path);
 	    pxeboot_img = grub_util_read_image (pxeboot_path);
 	    
-	    grub_util_write_image (pxeboot_img, pxeboot_size, out);
+	    grub_util_write_image (pxeboot_img, pxeboot_size, out,
+				   outname);
 	    free (pxeboot_img);
 	    free (pxeboot_path);
+
+	    /* Remove Multiboot header to avoid confusing ipxe.  */
+	    for (ptr = (grub_uint32_t *) core_img;
+		 ptr < (grub_uint32_t *) (core_img + MULTIBOOT_SEARCH); ptr++)
+	      if (*ptr == grub_host_to_target32 (MULTIBOOT_HEADER_MAGIC)
+		  && grub_target_to_host32 (ptr[0])
+		  + grub_target_to_host32 (ptr[1])
+		  + grub_target_to_host32 (ptr[2]) == 0)
+		{
+		  *ptr = 0;
+		  break;
+		}
 	  }
 
 	boot_path = grub_util_get_path (dir, "diskboot.img");
@@ -1002,7 +1022,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 					    + (GRUB_DISK_SECTOR_SIZE >> 4)));
 	}
 
-	grub_util_write_image (boot_img, boot_size, out);
+	grub_util_write_image (boot_img, boot_size, out, outname);
 	free (boot_img);
 	free (boot_path);
       }
@@ -1037,8 +1057,8 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 			    image_target->section_align);
 	pe_img = xmalloc (reloc_addr + reloc_size);
 	memset (pe_img, 0, header_size);
-	memcpy (pe_img + header_size, core_img, core_size);
-	memcpy (pe_img + reloc_addr, rel_section, reloc_size);
+	memcpy ((char *) pe_img + header_size, core_img, core_size);
+	memcpy ((char *) pe_img + reloc_addr, rel_section, reloc_size);
 	header = pe_img;
 
 	/* The magic.  */
@@ -1249,7 +1269,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	aout_head->a_text = grub_host_to_target32 (core_size);
 	aout_head->a_entry
 	  = grub_host_to_target32 (GRUB_BOOT_SPARC64_IEEE1275_IMAGE_ADDRESS);
-	memcpy (aout_img + sizeof (*aout_head), core_img, core_size);
+	memcpy ((char *) aout_img + sizeof (*aout_head), core_img, core_size);
 
 	free (core_img);
 	core_img = aout_img;
@@ -1268,7 +1288,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	boot_path = grub_util_get_path (dir, "diskboot.img");
 	boot_size = grub_util_get_image_size (boot_path);
 	if (boot_size != GRUB_DISK_SECTOR_SIZE)
-	  grub_util_error (_("diskboot.img is not one sector size"));
+	  grub_util_error ("%s", _("diskboot.img is not one sector size"));
 
 	boot_img = grub_util_read_image (boot_path);
 
@@ -1276,7 +1296,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 			     - GRUB_BOOT_SPARC64_IEEE1275_LIST_SIZE + 8))
 	  = grub_host_to_target32 (num);
 
-	grub_util_write_image (boot_img, boot_size, out);
+	grub_util_write_image (boot_img, boot_size, out, outname);
 	free (boot_img);
 	free (boot_path);
       }
@@ -1333,11 +1353,12 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       GRUB_MD_SHA512->final (context);
       if (grub_memcmp (GRUB_MD_SHA512->read (context), fwstart_good_hash,
 		       GRUB_MD_SHA512->mdlen) != 0)
-	grub_util_warn (_("fwstart.img doesn't match the known good version. "
+	grub_util_warn ("%s",
+			_("fwstart.img doesn't match the known good version. "
 			  "proceed at your own risk"));
 
       if (core_size + boot_size > 512 * 1024)
-	grub_util_error (_("firmware image is too big"));
+	grub_util_error ("%s", _("firmware image is too big"));
       rom_size = 512 * 1024;
 
       rom_img = xmalloc (rom_size);
@@ -1361,7 +1382,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       size_t rom_size;
 
       if (core_size > 512 * 1024)
-	grub_util_error (_("firmware image is too big"));
+	grub_util_error ("%s", _("firmware image is too big"));
       rom_size = 512 * 1024;
 
       rom_img = xmalloc (rom_size);
@@ -1568,21 +1589,21 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 	if (note)
 	  {
 	    int note_size = sizeof (struct grub_ieee1275_note);
-	    struct grub_ieee1275_note *note = (struct grub_ieee1275_note *) 
+	    struct grub_ieee1275_note *note_ptr = (struct grub_ieee1275_note *) 
 	      (elf_img + program_size + header_size);
 
 	    grub_util_info ("adding CHRP NOTE segment");
 
-	    note->header.namesz = grub_host_to_target32 (sizeof (GRUB_IEEE1275_NOTE_NAME));
-	    note->header.descsz = grub_host_to_target32 (note_size);
-	    note->header.type = grub_host_to_target32 (GRUB_IEEE1275_NOTE_TYPE);
-	    strcpy (note->header.name, GRUB_IEEE1275_NOTE_NAME);
-	    note->descriptor.real_mode = grub_host_to_target32 (0xffffffff);
-	    note->descriptor.real_base = grub_host_to_target32 (0x00c00000);
-	    note->descriptor.real_size = grub_host_to_target32 (0xffffffff);
-	    note->descriptor.virt_base = grub_host_to_target32 (0xffffffff);
-	    note->descriptor.virt_size = grub_host_to_target32 (0xffffffff);
-	    note->descriptor.load_base = grub_host_to_target32 (0x00004000);
+	    note_ptr->header.namesz = grub_host_to_target32 (sizeof (GRUB_IEEE1275_NOTE_NAME));
+	    note_ptr->header.descsz = grub_host_to_target32 (note_size);
+	    note_ptr->header.type = grub_host_to_target32 (GRUB_IEEE1275_NOTE_TYPE);
+	    strcpy (note_ptr->header.name, GRUB_IEEE1275_NOTE_NAME);
+	    note_ptr->descriptor.real_mode = grub_host_to_target32 (0xffffffff);
+	    note_ptr->descriptor.real_base = grub_host_to_target32 (0x00c00000);
+	    note_ptr->descriptor.real_size = grub_host_to_target32 (0xffffffff);
+	    note_ptr->descriptor.virt_base = grub_host_to_target32 (0xffffffff);
+	    note_ptr->descriptor.virt_size = grub_host_to_target32 (0xffffffff);
+	    note_ptr->descriptor.load_base = grub_host_to_target32 (0x00004000);
 
 	    phdr++;
 	    phdr->p_type = grub_host_to_target32 (PT_NOTE);
@@ -1602,7 +1623,7 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
       break;
     }
 
-  grub_util_write_image (core_img, core_size, out);
+  grub_util_write_image (core_img, core_size, out, outname);
   free (core_img);
   free (kernel_path);
 
@@ -1617,227 +1638,245 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[],
 
 
 
-static struct option options[] =
-  {
-    {"directory", required_argument, 0, 'd'},
-    {"prefix", required_argument, 0, 'p'},
-    {"memdisk", required_argument, 0, 'm'},
-    {"font", required_argument, 0, 'f'},
-    {"config", required_argument, 0, 'c'},
-    {"output", required_argument, 0, 'o'},
-    {"note", no_argument, 0, 'n'},
-    {"format", required_argument, 0, 'O'},
-    {"compression", required_argument, 0, 'C'},
-    {"help", no_argument, 0, 'h'},
-    {"version", no_argument, 0, 'V'},
-    {"verbose", no_argument, 0, 'v'},
-    {0, 0, 0, 0}
-  };
+static struct argp_option options[] = {
+  {"directory",  'd', N_("DIR"), 0, N_("use images and modules under DIR [default=%s/<platform>]"), 0},
+  {"prefix",  'p', N_("DIR"), 0, N_("set prefix directory [default=%s]"), 0},
+  {"memdisk",  'm', N_("FILE"), 0, N_("embed FILE as a memdisk image"), 0},
+  {"config",   'c', N_("FILE"), 0, N_("embed FILE as an early config"), 0},
+  /* TRANSLATORS: NOTE is a name of segment.  */
+  {"note",   'n', 0, 0, N_("add NOTE segment for CHRP IEEE1275"), 0},
+  {"output",  'o', N_("FILE"), 0, N_("output a generated image to FILE [default=stdout]"), 0},
+  {"format",  'O', N_("FORMAT"), 0, 0, 0},
+  {"compression",  'C', "(xz|none|auto)", 0, N_("choose the compression to use"), 0},
+  {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
+  { 0, 0, 0, 0, 0, 0 }
+};
 
-static void
-usage (int status)
+static char *
+help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 {
-  if (status)
-    fprintf (stderr, _("Try `%s --help' for more information.\n"), program_name);
-  else
+  switch (key)
     {
-      int format_len = 0;
-      char *formats;
-      char *ptr;
-      unsigned i;
-      for (i = 0; i < ARRAY_SIZE (image_targets); i++)
-	format_len += strlen (image_targets[i].names[0]) + 2;
-      ptr = formats = xmalloc (format_len);
-      for (i = 0; i < ARRAY_SIZE (image_targets); i++)
-	{
-	  strcpy (ptr, image_targets[i].names[0]);
-	  ptr += strlen (image_targets[i].names[0]);
-	  *ptr++ = ',';
-	  *ptr++ = ' ';
-	}
-      ptr[-2] = 0;
-
-      printf (_("\
-Usage: %s [OPTION]... [MODULES]\n\
-\n\
-Make a bootable image of GRUB.\n\
-\n\
-  -d, --directory=DIR     use images and modules under DIR [default=%s/@platform@]\n\
-  -p, --prefix=DIR        set grub_prefix directory [default=%s]\n\
-  -m, --memdisk=FILE      embed FILE as a memdisk image\n\
-  -c, --config=FILE       embed FILE as boot config\n\
-  -n, --note              add NOTE segment for CHRP Open Firmware\n\
-  -o, --output=FILE       output a generated image to FILE [default=stdout]\n\
-  -O, --format=FORMAT     generate an image in format\n\
-                          available formats: %s\n\
-  -C, --compression=(xz|none|auto)  choose the compression to use\n\
-  -h, --help              display this message and exit\n\
-  -V, --version           print version information and exit\n\
-  -v, --verbose           print verbose messages\n\
-\n\
-Report bugs to <%s>.\n\
-"), 
-	      program_name, GRUB_PKGLIBROOTDIR, DEFAULT_DIRECTORY,
-	      formats,
-	      PACKAGE_BUGREPORT);
-      free (formats);
+    case 'd':
+      return xasprintf (text, GRUB_PKGLIBROOTDIR);
+    case 'p':
+      return xasprintf (text, DEFAULT_DIRECTORY);
+    case 'O':
+      {
+	int format_len = 0;
+	char *formats;
+	char *ptr;
+	char *ret;
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE (image_targets); i++)
+	  format_len += strlen (image_targets[i].names[0]) + 2;
+	ptr = formats = xmalloc (format_len);
+	for (i = 0; i < ARRAY_SIZE (image_targets); i++)
+	  {
+	    strcpy (ptr, image_targets[i].names[0]);
+	    ptr += strlen (image_targets[i].names[0]);
+	    *ptr++ = ',';
+	    *ptr++ = ' ';
+	  }
+	ptr[-2] = 0;
+	ret = xasprintf ("%s\n%s %s", _("generate an image in format"),
+			 _("available formats:"), formats);
+	free (formats);
+	return ret;
+      }
+    default:
+      return (char *) text;
     }
-  exit (status);
 }
+
+struct arguments
+{
+  size_t nmodules;
+  size_t modules_max;
+  char **modules;
+  char *output;
+  char *dir;
+  char *prefix;
+  char *memdisk;
+  char *font;
+  char *config;
+  int note;
+  struct image_target_desc *image_target;
+  grub_compression_t comp;
+};
+
+static error_t
+argp_parser (int key, char *arg, struct argp_state *state)
+{
+  /* Get the input argument from argp_parse, which we
+     know is a pointer to our arguments structure. */
+  struct arguments *arguments = state->input;
+
+  switch (key)
+    {
+    case 'o':
+      if (arguments->output)
+	free (arguments->output);
+
+      arguments->output = xstrdup (arg);
+      break;
+
+    case 'O':
+      {
+	unsigned i, j;
+	for (i = 0; i < ARRAY_SIZE (image_targets); i++)
+	  for (j = 0; image_targets[i].names[j]
+		 && j < ARRAY_SIZE (image_targets[i].names); j++)
+	    if (strcmp (arg, image_targets[i].names[j]) == 0)
+	      arguments->image_target = &image_targets[i];
+	if (!arguments->image_target)
+	  {
+	    printf (_("unknown target format %s\n"), arg);
+	    argp_usage (state);
+	    exit (1);
+	  }
+	break;
+      }
+    case 'd':
+      if (arguments->dir)
+	free (arguments->dir);
+
+      arguments->dir = xstrdup (arg);
+      break;
+
+    case 'n':
+      arguments->note = 1;
+      break;
+
+    case 'm':
+      if (arguments->memdisk)
+	free (arguments->memdisk);
+
+      arguments->memdisk = xstrdup (arg);
+
+      if (arguments->prefix)
+	free (arguments->prefix);
+
+      arguments->prefix = xstrdup ("(memdisk)/boot/grub");
+      break;
+
+    case 'c':
+      if (arguments->config)
+	free (arguments->config);
+
+      arguments->config = xstrdup (arg);
+      break;
+
+    case 'C':
+      if (grub_strcmp (arg, "xz") == 0)
+	{
+#ifdef HAVE_LIBLZMA
+	  arguments->comp = COMPRESSION_XZ;
+#else
+	  grub_util_error ("%s",
+			   _("grub-mkimage is compiled without XZ support"));
+#endif
+	}
+      else if (grub_strcmp (arg, "none") == 0)
+	arguments->comp = COMPRESSION_NONE;
+      else if (grub_strcmp (arg, "auto") == 0)
+	arguments->comp = COMPRESSION_AUTO;
+      else
+	grub_util_error (_("Unknown compression format %s"), arg);
+      break;
+
+    case 'p':
+      if (arguments->prefix)
+	free (arguments->prefix);
+
+      arguments->prefix = xstrdup (arg);
+      break;
+
+    case 'v':
+      verbosity++;
+      break;
+    case ARGP_KEY_ARG:
+      assert (arguments->nmodules < arguments->modules_max);
+      arguments->modules[arguments->nmodules++] = xstrdup(arg);
+      break;
+
+    default:
+      return ARGP_ERR_UNKNOWN;
+    }
+  return 0;
+}
+
+static struct argp argp = {
+  options, argp_parser, N_("[OPTION]... [MODULES]"),
+  N_("Make a bootable image of GRUB."),
+  NULL, help_filter, NULL
+};
 
 int
 main (int argc, char *argv[])
 {
-  char *output = NULL;
-  char *dir = NULL;
-  char *prefix = NULL;
-  char *memdisk = NULL;
-  char *font = NULL;
-  char *config = NULL;
   FILE *fp = stdout;
-  int note = 0;
-  struct image_target_desc *image_target = NULL;
-  grub_compression_t comp = COMPRESSION_AUTO;
+  struct arguments arguments;
 
   set_program_name (argv[0]);
 
   grub_util_init_nls ();
 
-  while (1)
+  memset (&arguments, 0, sizeof (struct arguments));
+  arguments.comp = COMPRESSION_AUTO;
+  arguments.modules_max = argc + 1;
+  arguments.modules = xmalloc ((arguments.modules_max + 1)
+			     * sizeof (arguments.modules[0]));
+  memset (arguments.modules, 0, (arguments.modules_max + 1)
+	  * sizeof (arguments.modules[0]));
+
+  if (argp_parse (&argp, argc, argv, 0, 0, &arguments) != 0)
     {
-      int c = getopt_long (argc, argv, "d:p:m:c:o:O:f:C:hVvn", options, 0);
-
-      if (c == -1)
-	break;
-      else
-	switch (c)
-	  {
-	  case 'o':
-	    if (output)
-	      free (output);
-
-	    output = xstrdup (optarg);
-	    break;
-
-	  case 'O':
-	    {
-	      unsigned i, j;
-	      for (i = 0; i < ARRAY_SIZE (image_targets); i++)
-		for (j = 0; image_targets[i].names[j]
-		       && j < ARRAY_SIZE (image_targets[i].names); j++)
-		  if (strcmp (optarg, image_targets[i].names[j]) == 0)
-		    image_target = &image_targets[i];
-	      if (!image_target)
-		{
-		  printf (_("unknown target format %s\n"), optarg);
-		  usage (1);
-		}
-	      break;
-	    }
-	  case 'd':
-	    if (dir)
-	      free (dir);
-
-	    dir = xstrdup (optarg);
-	    break;
-
-	  case 'n':
-	    note = 1;
-	    break;
-
-	  case 'm':
-	    if (memdisk)
-	      free (memdisk);
-
-	    memdisk = xstrdup (optarg);
-
-	    if (prefix)
-	      free (prefix);
-
-	    prefix = xstrdup ("(memdisk)/boot/grub");
-	    break;
-
-	  case 'c':
-	    if (config)
-	      free (config);
-
-	    config = xstrdup (optarg);
-	    break;
-
-	  case 'C':
-	    if (grub_strcmp (optarg, "xz") == 0)
-	      {
-#ifdef HAVE_LIBLZMA
-		comp = COMPRESSION_XZ;
-#else
-		grub_util_error (_("grub-mkimage is compiled without XZ support"),
-				 optarg);
-#endif
-	      }
-	    else if (grub_strcmp (optarg, "none") == 0)
-	      comp = COMPRESSION_NONE;
-	    else
-	      grub_util_error (_("Unknown compression format %s"), optarg);
-	    break;
-
-	  case 'h':
-	    usage (0);
-	    break;
-
-	  case 'p':
-	    if (prefix)
-	      free (prefix);
-
-	    prefix = xstrdup (optarg);
-	    break;
-
-	  case 'V':
-	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
-	    return 0;
-
-	  case 'v':
-	    verbosity++;
-	    break;
-
-	  default:
-	    usage (1);
-	    break;
-	  }
+      fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
+      exit(1);
     }
 
-  if (!image_target)
+  if (!arguments.image_target)
     {
-      printf (_("Target format not specified (use the -O option).\n"));
-      usage (1);
+      char *program = xstrdup(program_name);
+      printf ("%s\n", _("Target format not specified (use the -O option)."));
+      argp_help (&argp, stderr, ARGP_HELP_STD_USAGE, program);
+      free (program);
+      exit(1);
     }
 
-  if (output)
+  if (arguments.output)
     {
-      fp = fopen (output, "wb");
+      fp = fopen (arguments.output, "wb");
       if (! fp)
-	grub_util_error (_("cannot open %s"), output);
-      free (output);
+	grub_util_error (_("cannot open `%s': %s"), arguments.output,
+			 strerror (errno));
+      free (arguments.output);
     }
 
-  if (!dir)
+  if (!arguments.dir)
     {
-      dir = xmalloc (sizeof (GRUB_PKGLIBROOTDIR)
-		     + grub_strlen (image_target->dirname) + 1);
-      memcpy (dir, GRUB_PKGLIBROOTDIR, sizeof (GRUB_PKGLIBROOTDIR) - 1);
-      *(dir + sizeof (GRUB_PKGLIBROOTDIR) - 1) = '/';
-      strcpy (dir + sizeof (GRUB_PKGLIBROOTDIR), image_target->dirname);
+      arguments.dir = xmalloc (sizeof (GRUB_PKGLIBROOTDIR)
+			       + grub_strlen (arguments.image_target->dirname)
+			       + 1);
+      memcpy (arguments.dir, GRUB_PKGLIBROOTDIR,
+	      sizeof (GRUB_PKGLIBROOTDIR) - 1);
+      *(arguments.dir + sizeof (GRUB_PKGLIBROOTDIR) - 1) = '/';
+      strcpy (arguments.dir + sizeof (GRUB_PKGLIBROOTDIR),
+	      arguments.image_target->dirname);
     }
 
-  generate_image (dir, prefix ? : DEFAULT_DIRECTORY, fp,
-		  argv + optind, memdisk, config,
-		  image_target, note, comp);
+  generate_image (arguments.dir, arguments.prefix ? : DEFAULT_DIRECTORY, fp,
+		  arguments.output,
+		  arguments.modules, arguments.memdisk, arguments.config,
+		  arguments.image_target, arguments.note, arguments.comp);
 
   fflush (fp);
   fsync (fileno (fp));
   fclose (fp);
 
-  if (dir)
-    free (dir);
+  if (arguments.dir)
+    free (arguments.dir);
 
   return 0;
 }

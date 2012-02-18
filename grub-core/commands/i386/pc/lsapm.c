@@ -72,9 +72,9 @@ grub_cmd_lsapm (grub_command_t cmd __attribute__ ((unused)),
 {
   struct grub_apm_info info;
   if (!grub_apm_get_info (&info))
-    return grub_error (GRUB_ERR_IO, "no APM found");
+    return grub_error (GRUB_ERR_IO, N_("no APM found"));
 
-  grub_printf_ (N_("Vesion %u.%u\n"
+  grub_printf_ (N_("Version %u.%u\n"
 		   "32-bit CS = 0x%x, len = 0x%x, offset = 0x%x\n"
 		   "16-bit CS = 0x%x, len = 0x%x\n"
 		   "DS = 0x%x, len = 0x%x\n"),

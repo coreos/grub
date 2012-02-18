@@ -83,28 +83,28 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
        i < num_syms;
        i++, sym = (Elf_Sym *) ((char *) sym + sym_size))
     {
-      Elf_Section index;
+      Elf_Section cur_index;
       const char *name;
 
       name = strtab + grub_target_to_host32 (sym->st_name);
 
-      index = grub_target_to_host16 (sym->st_shndx);
-      if (index == STN_ABS)
+      cur_index = grub_target_to_host16 (sym->st_shndx);
+      if (cur_index == STN_ABS)
         {
           continue;
         }
-      else if ((index == STN_UNDEF))
+      else if ((cur_index == STN_UNDEF))
 	{
 	  if (sym->st_name)
 	    grub_util_error ("undefined symbol %s", name);
 	  else
 	    continue;
 	}
-      else if (index >= num_sections)
-	grub_util_error ("section %d does not exist", index);
+      else if (cur_index >= num_sections)
+	grub_util_error ("section %d does not exist", cur_index);
 
       sym->st_value = (grub_target_to_host (sym->st_value)
-		       + section_addresses[index]);
+		       + section_addresses[cur_index]);
 
       if (image_target->elf_target == EM_IA_64 && ELF_ST_TYPE (sym->st_info)
 	  == STT_FUNC)
@@ -115,7 +115,9 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
 	  *jptr = 0;
 	  jptr++;
 	}
-      grub_util_info ("locating %s at 0x%x", name, sym->st_value, section_addresses[index]);
+      grub_util_info ("locating %s at 0x%llx (0x%llx)", name,
+		      (unsigned long long) sym->st_value,
+		      (unsigned long long) section_addresses[cur_index]);
 
       if (! start_address)
 	if (strcmp (name, "_start") == 0 || strcmp (name, "start") == 0)
@@ -146,13 +148,13 @@ SUFFIX (get_target_address) (Elf_Ehdr *e, Elf_Shdr *s, Elf_Addr offset,
   return (Elf_Addr *) ((char *) e + grub_target_to_host32 (s->sh_offset) + offset);
 }
 
+#ifdef MKIMAGE_ELF64
 static Elf_Addr
 SUFFIX (count_funcs) (Elf_Ehdr *e, Elf_Shdr *symtab_section,
 		      struct image_target_desc *image_target)
 {
   Elf_Word symtab_size, sym_size, num_syms;
   Elf_Off symtab_offset;
-  Elf_Addr start_address = 0;
   Elf_Sym *sym;
   Elf_Word i;
   int ret = 0;
@@ -170,6 +172,7 @@ SUFFIX (count_funcs) (Elf_Ehdr *e, Elf_Shdr *symtab_section,
 
   return ret;
 }
+#endif
 
 #ifdef MKIMAGE_ELF64
 struct unaligned_uint32
@@ -179,6 +182,7 @@ struct unaligned_uint32
 
 #define MASK20 ((1 << 20) - 1)
 #define MASK19 ((1 << 19) - 1)
+#define MASK3 (~(grub_addr_t) 3)
 
 static void
 add_value_to_slot_20b (grub_addr_t addr, grub_uint32_t value)
@@ -187,17 +191,17 @@ add_value_to_slot_20b (grub_addr_t addr, grub_uint32_t value)
   switch (addr & 3)
     {
     case 0:
-      p = (struct unaligned_uint32 *) ((addr & ~3ULL) + 2);
+      p = (struct unaligned_uint32 *) ((addr & MASK3) + 2);
       p->val = ((((((p->val >> 2) & MASK20) + value) & MASK20) << 2) 
 		| (p->val & ~(MASK20 << 2)));
       break;
     case 1:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 7);
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 7);
       p->val = ((((((p->val >> 3) & MASK20) + value) & MASK20) << 3)
 		| (p->val & ~(MASK20 << 3)));
       break;
     case 2:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 12);
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 12);
       p->val = ((((((p->val >> 4) & MASK20) + value) & MASK20) << 4)
 		| (p->val & ~(MASK20 << 4)));
       break;
@@ -224,15 +228,15 @@ add_value_to_slot_21 (grub_addr_t addr, grub_uint32_t value)
   switch (addr & 3)
     {
     case 0:
-      p = (struct unaligned_uint32 *) ((addr & ~3ULL) + 2);
+      p = (struct unaligned_uint32 *) ((addr & MASK3) + 2);
       p->val = ((add_value_to_slot_21_real (((p->val >> 2) & MASKF21), value) & MASKF21) << 2) | (p->val & ~(MASKF21 << 2));
       break;
     case 1:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 7);
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 7);
       p->val = ((add_value_to_slot_21_real (((p->val >> 3) & MASKF21), value) & MASKF21) << 3) | (p->val & ~(MASKF21 << 3));
       break;
     case 2:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & ~3ULL) + 12);
+      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 12);
       p->val = ((add_value_to_slot_21_real (((p->val >> 4) & MASKF21), value) & MASKF21) << 4) | (p->val & ~(MASKF21 << 4));
       break;
     }
@@ -307,8 +311,10 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 {
   Elf_Half i;
   Elf_Shdr *s;
+#ifdef MKIMAGE_ELF64
   struct ia64_kernel_trampoline *tr = (void *) (pe_target + tramp_off);
   grub_uint64_t *gpptr = (void *) (pe_target + got_off);
+#endif
 
   for (i = 0, s = sections;
        i < num_sections;
@@ -375,8 +381,9 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  /* This is absolute.  */
 		  *target = grub_host_to_target32 (grub_target_to_host32 (*target)
 						   + addend + sym_addr);
-		  grub_util_info ("relocating an R_386_32 entry to 0x%x at the offset 0x%x",
-				  *target, offset);
+		  grub_util_info ("relocating an R_386_32 entry to 0x%llx at the offset 0x%llx",
+				  (unsigned long long) *target,
+				  (unsigned long long) offset);
 		  break;
 
 		case R_386_PC32:
@@ -385,15 +392,17 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 						   + addend + sym_addr
 						   - target_section_addr - offset
 						   - image_target->vaddr_offset);
-		  grub_util_info ("relocating an R_386_PC32 entry to 0x%x at the offset 0x%x",
-				  *target, offset);
+		  grub_util_info ("relocating an R_386_PC32 entry to 0x%llx at the offset 0x%llx",
+				  (unsigned long long) *target,
+				  (unsigned long long) offset);
 		  break;
 		default:
-		  grub_util_error ("unknown relocation type 0x%x",
+		  grub_util_error (_("relocation 0x%x is not implemented yet"),
 				   ELF_R_TYPE (info));
 		  break;
 		}
 	      break;
+#ifdef MKIMAGE_ELF64
 	     case EM_X86_64:
 	      switch (ELF_R_TYPE (info))
 		{
@@ -405,7 +414,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  *target = grub_host_to_target64 (grub_target_to_host64 (*target)
 						   + addend + sym_addr);
 		  grub_util_info ("relocating an R_X86_64_64 entry to 0x%llx at the offset 0x%llx",
-				  *target, offset);
+				  (unsigned long long) *target,
+				  (unsigned long long) offset);
 		  break;
 
 		case R_X86_64_PC32:
@@ -416,7 +426,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 						  - target_section_addr - offset
 						  - image_target->vaddr_offset);
 		    grub_util_info ("relocating an R_X86_64_PC32 entry to 0x%x at the offset 0x%llx",
-				    *t32, offset);
+				    *t32, (unsigned long long) offset);
 		    break;
 		  }
 
@@ -427,17 +437,16 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		    *t32 = grub_host_to_target64 (grub_target_to_host32 (*t32)
 						  + addend + sym_addr);
 		    grub_util_info ("relocating an R_X86_64_32(S) entry to 0x%x at the offset 0x%llx",
-				    *t32, offset);
+				    *t32, (unsigned long long) offset);
 		    break;
 		  }
 
 		default:
-		  grub_util_error ("unknown relocation type %d",
+		  grub_util_error (_("relocation 0x%x is not implemented yet"),
 				   ELF_R_TYPE (info));
 		  break;
 		}
 	      break;
-#ifdef MKIMAGE_ELF64
 	     case EM_IA_64:
 	      switch (ELF_R_TYPE (info))
 		{
@@ -449,8 +458,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 			    - target_section_addr - (offset & ~3)) >> 4;
 		    tr++;
 		    if (noff & ~MASK19)
-		      grub_util_error ("trampoline offset too big (%lx)",
-				       noff);
+		      grub_util_error ("trampoline offset too big (%"
+				       PRIxGRUB_UINT64_T ")", noff);
 		    add_value_to_slot_20b ((grub_addr_t) target, noff);
 		  }
 		  break;
@@ -496,8 +505,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  *target = grub_host_to_target64 (grub_target_to_host64 (*target)
 						   + addend + sym_addr);
 		  grub_util_info ("relocating a direct entry to 0x%"
-				  PRIxGRUB_UINT64_T " at the offset 0x%x",
-				  *target, offset);
+				  PRIxGRUB_UINT64_T " at the offset 0x%llx",
+				  *target, (unsigned long long) offset);
 		  break;
 
 		  /* We treat LTOFF22X as LTOFF22, so we can ignore LDXMOV.  */
@@ -505,7 +514,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  break;
 
 		default:
-		  grub_util_error ("unknown relocation type 0x%x",
+		  grub_util_error (_("relocation 0x%x is not implemented yet"),
 		  		   ELF_R_TYPE (info));
 		  break;
 		}
@@ -543,17 +552,17 @@ SUFFIX (add_fixup_entry) (struct fixup_block_list **cblock, grub_uint16_t type,
 		 with a section boundary.  */
 	      Elf_Addr next_address;
 	      unsigned padding_size;
-              size_t index;
+              size_t cur_index;
 
 	      next_address = current_address + b->block_size;
 	      padding_size = ((ALIGN_UP (next_address, image_target->section_align)
 			       - next_address)
 			      >> 1);
-              index = ((b->block_size - sizeof (*b)) >> 1);
+              cur_index = ((b->block_size - sizeof (*b)) >> 1);
               grub_util_info ("adding %d padding fixup entries", padding_size);
 	      while (padding_size--)
 		{
-		  b->entries[index++] = 0;
+		  b->entries[cur_index++] = 0;
 		  b->block_size += 2;
 		}
 	    }
@@ -561,11 +570,11 @@ SUFFIX (add_fixup_entry) (struct fixup_block_list **cblock, grub_uint16_t type,
             {
 	      /* If not aligned with a 32-bit boundary, add
 		 a padding entry.  */
-              size_t index;
+              size_t cur_index;
 
               grub_util_info ("adding a padding fixup entry");
-              index = ((b->block_size - sizeof (*b)) >> 1);
-              b->entries[index] = 0;
+              cur_index = ((b->block_size - sizeof (*b)) >> 1);
+              b->entries[cur_index] = 0;
               b->block_size += 2;
             }
 
@@ -587,7 +596,7 @@ SUFFIX (add_fixup_entry) (struct fixup_block_list **cblock, grub_uint16_t type,
   if (! flush)
     {
       grub_uint16_t entry;
-      size_t index;
+      size_t cur_index;
 
       /* If not allocated yet, allocate a block with enough entries.  */
       if (! (*cblock)->state)
@@ -605,9 +614,9 @@ SUFFIX (add_fixup_entry) (struct fixup_block_list **cblock, grub_uint16_t type,
 	grub_util_error ("too many fixup entries");
 
       /* Add a new entry.  */
-      index = ((b->block_size - sizeof (*b)) >> 1);
+      cur_index = ((b->block_size - sizeof (*b)) >> 1);
       entry = GRUB_PE32_FIXUP_ENTRY (type, addr - b->page_rva);
-      b->entries[index] = grub_host_to_target16 (entry);
+      b->entries[cur_index] = grub_host_to_target16 (entry);
       b->block_size += 2;
     }
 
@@ -671,7 +680,8 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		    Elf_Addr addr;
 
 		    addr = section_address + offset;
-		    grub_util_info ("adding a relocation entry for 0x%x", addr);
+		    grub_util_info ("adding a relocation entry for 0x%llx",
+				    (unsigned long long) addr);
 		    current_address
 		      = SUFFIX (add_fixup_entry) (&lst,
 						  GRUB_PE32_REL_BASED_HIGHLOW,
@@ -690,7 +700,8 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		    Elf_Addr addr;
 
 		    addr = section_address + offset;
-		    grub_util_info ("adding a relocation entry for 0x%llx", addr);
+		    grub_util_info ("adding a relocation entry for 0x%llx",
+				    (unsigned long long) addr);
 		    current_address
 		      = SUFFIX (add_fixup_entry) (&lst,
 						  GRUB_PE32_REL_BASED_DIR64,
@@ -719,7 +730,8 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		    Elf_Addr addr;
 
 		    addr = section_address + offset;
-		    grub_util_info ("adding a relocation entry for 0x%llx", addr);
+		    grub_util_info ("adding a relocation entry for 0x%llx",
+				    (unsigned long long) addr);
 		    current_address
 		      = SUFFIX (add_fixup_entry) (&lst,
 						  GRUB_PE32_REL_BASED_DIR64,
@@ -730,7 +742,7 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 #endif
 		  break;
 		default:
-		  grub_util_error ("unknown relocation type 0x%x",
+		  grub_util_error (_("relocation 0x%x is not implemented yet"),
 		  		   ELF_R_TYPE (info));
 		  break;
 		}
@@ -760,11 +772,7 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 	  memcpy (ptr, &lst->b, grub_target_to_host32 (lst->b.block_size));
 	  ptr += grub_target_to_host32 (lst->b.block_size);
 	}
-    if (current_address + *out != ptr)
-      {
-	grub_util_error ("Bug detected %d != %d\n", ptr - (grub_uint8_t *) *out,
-			 current_address);
-      }
+    assert ((current_address + (grub_uint8_t *) *out) == ptr);
   }
 
   return current_address;
@@ -853,8 +861,8 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 	if (align)
 	  current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
 				      align) - image_target->vaddr_offset;
-	grub_util_info ("locating the section %s at 0x%x",
-			name, current_address);
+	grub_util_info ("locating the section %s at 0x%llx",
+			name, (unsigned long long) current_address);
 	section_addresses[i] = current_address;
 	current_address += grub_host_to_target_addr (s->sh_size);
       }
@@ -878,8 +886,8 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 				      align)
 	    - image_target->vaddr_offset;
 
-	grub_util_info ("locating the section %s at 0x%x",
-			name, current_address);
+	grub_util_info ("locating the section %s at 0x%llx",
+			name, (unsigned long long) current_address);
 	section_addresses[i] = current_address;
 	current_address += grub_host_to_target_addr (s->sh_size);
       }
@@ -912,7 +920,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
   grub_size_t kernel_size;
   grub_size_t ia64jmp_off = 0, ia64_toff = 0, ia64_got_off = 0;
   unsigned ia64jmpnum = 0;
-  Elf_Shdr *symtab_section;
+  Elf_Shdr *symtab_section = 0;
   grub_size_t got = 0;
 
   *start = 0;
@@ -930,7 +938,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
   num_sections = grub_target_to_host16 (e->e_shnum);
 
   if (kernel_size < section_offset + section_entsize * num_sections)
-    grub_util_error ("invalid ELF format");
+    grub_util_error (_("premature end of file %s"), kernel_path);
 
   sections = (Elf_Shdr *) (kernel_img + section_offset);
 
@@ -958,16 +966,17 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
 	   i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
 	if (grub_target_to_host32 (s->sh_type) == SHT_NOBITS)
 	  {
-	    Elf_Word align = grub_host_to_target_addr (s->sh_addralign);
+	    Elf_Word sec_align = grub_host_to_target_addr (s->sh_addralign);
 	    const char *name = strtab + grub_host_to_target32 (s->sh_name);
 
-	    if (align)
+	    if (sec_align)
 	      current_address = ALIGN_UP (current_address
-					  + image_target->vaddr_offset, align)
+					  + image_target->vaddr_offset,
+					  sec_align)
 		- image_target->vaddr_offset;
 	
-	    grub_util_info ("locating the section %s at 0x%x",
-			    name, current_address);
+	    grub_util_info ("locating the section %s at 0x%llx",
+			    name, (unsigned long long) current_address);
 	    section_vaddresses[i] = current_address
 	      + image_target->vaddr_offset;
 	    current_address += grub_host_to_target_addr (s->sh_size);
@@ -1016,7 +1025,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
 #endif
 
       if (! symtab_section)
-	grub_util_error ("no symbol table");
+	grub_util_error ("%s", _("no symbol table"));
     }
   else
     {

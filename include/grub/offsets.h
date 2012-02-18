@@ -28,7 +28,12 @@
 /* Offset of reed_solomon_redundancy.  */
 #define GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY	0x10
 
-#define GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_PART 0x6e0
+/* Offset of field holding no reed solomon length.  */
+#define GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH      0x14
+
+#define GRUB_DECOMPRESSOR_I386_PC_BOOT_DEVICE           0x18
+
+#define GRUB_DECOMPRESSOR_I386_PC_MAX_DECOMPRESSOR_SIZE (0x9000-0x8200)
 
 /* The segment where the kernel is loaded.  */
 #define GRUB_BOOT_I386_PC_KERNEL_SEG	0x800

@@ -19,22 +19,24 @@
 # Initialize some variables.
 transform="@program_transform_name@"
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-sbindir=@sbindir@
-bindir=@bindir@
-libdir=@libdir@
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
+bindir="@bindir@"
+libdir="@libdir@"
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 host_os=@host_os@
-localedir=@datadir@/locale
-datarootdir=@datarootdir@
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
+datadir="@datadir@"
+if [ "x$pkgdatadir" = x ]; then
+    pkgdatadir="${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`"
+fi
 
 self=`basename $0`
 
-grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
+grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 rootdir=/srv/tftp
 grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
@@ -45,32 +47,32 @@ recheck=no
 debug=no
 debug_image=
 subdir=`echo /boot/grub | sed ${transform}`
-pc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc
-ppc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/powerpc-ieee1275
-sparc_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/sparc64-ieee1275
-i386_ieee1275_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-ieee1275
-efi32_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi
-efi64_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi
-itanium_dir=${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/ia64-efi
+pc_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-pc"
+ppc_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/powerpc-ieee1275"
+sparc_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/sparc64-ieee1275"
+i386_ieee1275_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-ieee1275"
+efi32_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/i386-efi"
+efi64_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/x86_64-efi"
+itanium_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/ia64-efi"
+
+. "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage
 # Print the usage.
 usage () {
-    cat <<EOF
-Usage: $self [OPTION] install_device
-Install GRUB on your drive.
-
-  -h, --help              print this message and exit
-  -v, --version           print the version information and exit
-  --modules=MODULES       pre-load specified modules MODULES
-  --net-directory=DIR     root directory of TFTP server
-  --subdir=DIR            relative subdirectory on network server
-  --grub-mkimage=FILE     use FILE as grub-mkimage
-
-$self copies GRUB images into net_directory/subdir/target_cpu-platform
-
-Report bugs to <bug-grub@gnu.org>.
-EOF
+    gettext_printf "Usage: %s [OPTION] install_device\n" "$self"
+    gettext; echo "Install GRUB on your drive."; echo
+    echo
+    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
+    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
+    printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    printf "  --net-directory=%-8s%s\n" "$(gettext "DIR")" "$(gettext "root directory of TFTP server")"
+    printf "  --subdir=%-15s%s\n" "$(gettext "DIR")" "$(gettext "relative subdirectory on network server")"
+    printf "  --grub-mkimage=%-9s%s" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    echo
+    gettext_printf "%s copies GRUB images into net_directory/subdir/target_cpu-platform\n" "$self" 
+    echo
+    gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }
 
 argument () {
@@ -78,7 +80,7 @@ argument () {
   shift
 
   if test $# -eq 0; then
-      echo "$0: option requires an argument -- '$opt'" 1>&2
+      gettext_printf "%s: option requires an argument -- '%s'\n" "$0" "$opt" 1>&2
       exit 1
   fi
   echo $1
@@ -140,7 +142,7 @@ do
 	;;
 
     -*)
-	echo "Unrecognized option \`$option'" 1>&2
+	gettext_printf "Unrecognized option \`%s'\n" "$option" 1>&2
 	usage
 	exit 1
 	;;
@@ -158,7 +160,7 @@ set $grub_mkimage dummy
 if test -f "$1"; then
     :
 else
-    echo "$1: Not found." 1>&2
+    gettext_printf "%s: Not found.\n" "$1" 1>&2
     exit 1
 fi
 
@@ -173,12 +175,12 @@ process_input_dir ()
     config_opt=
     mkdir -p "$grubdir" || exit 1
 
-    for file in ${grubdir}/*.mod ${grubdir}/*.lst ${grubdir}/*.img ${grubdir}/efiemu??.o; do
-	if test -f $file && [ "`basename $file`" != menu.lst ]; then
-	    rm -f $file || exit 1
+    for file in "${grubdir}"/*.mod "${grubdir}"/*.lst "${grubdir}"/*.img "${grubdir}"/efiemu??.o; do
+	if test -f "$file" && [ "`basename $file`" != menu.lst ]; then
+	    rm -f "$file" || exit 1
 	fi
     done
-    for file in ${input_dir}/*.mod; do
+    for file in "${input_dir}"/*.mod; do
         if test -f "$file"; then
             cp -f "$file" "$grubdir/"
         fi
@@ -203,7 +205,7 @@ process_input_dir ()
        config_opt="-c ${grubdir}/load.cfg "
     fi
 
-    prefix="/${subdir}/${platform}";
+    prefix="/${subdir}";
     case "${platform}" in
     	 i386-pc) mkimage_target=i386-pc-pxe;
 	 	  netmodules="pxe";
@@ -217,7 +219,7 @@ process_input_dir ()
     	 *-efi) mkimage_target="${platform}";
 	 	  netmodules="efinet";
 		  ext=efi ;;
-    	 *) echo Unsupported platform ${platform};
+    	 *) gettext_printf "Unsupported platform %s\n" ${platform};
     	    exit 1;;
     esac
 
@@ -225,8 +227,8 @@ process_input_dir ()
 source ${subdir}/grub.cfg
 EOF
 
-    $grub_mkimage ${config_opt} -d "${input_dir}" -O ${mkimage_target} --output=${grubdir}/core.$ext --prefix=$prefix $modules $netmodules tftp || exit 1
-    echo "Netboot directory for ${platform} created. Configure your DHCP server to point to ${subdir}/${platform}/core.$ext"
+    "$grub_mkimage" ${config_opt} -d "${input_dir}" -O ${mkimage_target} "--output=${grubdir}/core.$ext" "--prefix=$prefix" $modules $netmodules tftp || exit 1
+    gettext_printf "Netboot directory for %s created. Configure your DHCP server to point to %s\n" "${platform}" "${subdir}/${platform}/core.$ext"
 }
 
 if [ "${override_dir}" = "" ] ; then
@@ -252,7 +254,7 @@ if [ "${override_dir}" = "" ] ; then
         process_input_dir "${itanium_dir}" ia64-efi
     fi
 else
-    source "${override_dir}"/modinfo.sh
+    . "${override_dir}"/modinfo.sh
     process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
 fi
 

@@ -22,6 +22,7 @@
 #include <grub/mm.h>
 #include <grub/dl.h>
 #include <grub/ieee1275/ieee1275.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -177,7 +178,10 @@ grub_nand_read (grub_disk_t disk, grub_disk_addr_t sector,
       args.result = 1;
 
       if ((IEEE1275_CALL_ENTRY_FN (&args) == -1) || (args.result))
-        return grub_error (GRUB_ERR_READ_ERROR, "read error");
+        return grub_error (GRUB_ERR_READ_ERROR, N_("failure reading sector 0x%llx "
+						   "from `%s'"),
+			   (unsigned long long) sector,
+			   disk->name);
 
       ofs = 0;
       size -= len;

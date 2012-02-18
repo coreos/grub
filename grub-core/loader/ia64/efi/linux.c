@@ -30,8 +30,12 @@
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 #include <grub/elf.h>
+#include <grub/i18n.h>
+#include <grub/env.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
+
+#pragma GCC diagnostic ignored "-Wcast-align"
 
 #define ALIGN_MIN (256*1024*1024)
 
@@ -57,21 +61,6 @@ struct ia64_boot_param
   grub_uint64_t fpswa;		/* physical address of the fpswa interface */
   grub_uint64_t initrd_start;
   grub_uint64_t initrd_size;
-  grub_uint64_t domain_start;   /* boot domain address.  */
-  grub_uint64_t domain_size;    /* how big is the boot domain */
-  grub_uint64_t payloads_chain;
-  grub_uint64_t payloads_nbr;
-};
-
-struct ia64_boot_payload
-{
-  grub_uint64_t start;
-  grub_uint64_t length;
-  
-  /* Payload command line */
-  grub_uint64_t cmdline;
-  
-  grub_uint64_t next;
 };
 
 typedef struct
@@ -101,13 +90,6 @@ static grub_efi_uintn_t initrd_size;
 
 static struct ia64_boot_param *boot_param;
 static grub_efi_uintn_t boot_param_pages;
-static struct ia64_boot_payload *last_payload = NULL;
-
-/* Can linux kernel be relocated ?  */
-#define RELOCATE_OFF   0	/* No.  */
-#define RELOCATE_ON    1	/* Yes.  */
-#define RELOCATE_FORCE 2	/* Always - used to debug.  */
-static int relocate = RELOCATE_OFF;
 
 static inline grub_size_t
 page_align (grub_size_t size)
@@ -133,18 +115,19 @@ query_fpswa (void)
   
   bs = grub_efi_system_table->boot_services;
   status = bs->locate_handle (GRUB_EFI_BY_PROTOCOL,
-			      (void *)&fpswa_protocol,
+			      (void *) &fpswa_protocol,
 			      NULL, &size, &fpswa_image);
   if (status != GRUB_EFI_SUCCESS)
     {
-      grub_printf("Could not locate FPSWA driver\n");
+      grub_printf ("%s\n", _("Could not locate FPSWA driver"));
       return;
     }
   status = bs->handle_protocol (fpswa_image,
-				(void *)&fpswa_protocol, (void *)&fpswa);
+				(void *) &fpswa_protocol, (void *) &fpswa);
   if (status != GRUB_EFI_SUCCESS)
     {
-      grub_printf ("Fpswa protocol not able find the interface\n");
+      grub_printf ("%s\n",
+		   _("FPSWA protocol wasn't able to find the interface"));
       return;
     } 
 }
@@ -174,7 +157,10 @@ find_mmap_size (void)
       grub_free (mmap);
       
       if (ret < 0)
-	grub_fatal ("cannot get memory map");
+	{
+	  grub_error (GRUB_ERR_IO, "cannot get memory map");
+	  return 0;
+	}
       else if (ret > 0)
 	break;
 
@@ -205,24 +191,8 @@ free_pages (void)
 
   if (boot_param)
     {
-      struct ia64_boot_payload *payload;
-      struct ia64_boot_payload *next_payload;
-
-      /* Free payloads.  */
-      payload = (struct ia64_boot_payload *)boot_param->payloads_chain;
-      while (payload != 0)
-	{
-	  next_payload = (struct ia64_boot_payload *)payload->next;
-
-	  grub_efi_free_pages
-	    (payload->start, page_align (payload->length) >> 12);
-	  grub_efi_free_pages ((grub_efi_physical_address_t)payload, 1);
-
-	  payload = next_payload;
-	}
-
       /* Free bootparam.  */
-      grub_efi_free_pages ((grub_efi_physical_address_t)boot_param,
+      grub_efi_free_pages ((grub_efi_physical_address_t) boot_param,
 			   boot_param_pages);
       boot_param = 0;
     }
@@ -242,6 +212,8 @@ allocate_pages (grub_uint64_t align, grub_uint64_t size_pages,
   size = size_pages << 12;
 
   mmap_size = find_mmap_size ();
+  if (!mmap_size)
+    return 0;
 
     /* Read the memory map temporarily, to find free space.  */
   mmap = grub_malloc (mmap_size);
@@ -250,7 +222,10 @@ allocate_pages (grub_uint64_t align, grub_uint64_t size_pages,
 
   tmp_mmap_size = mmap_size;
   if (grub_efi_get_memory_map (&tmp_mmap_size, mmap, 0, &desc_size, 0) <= 0)
-    grub_fatal ("cannot get memory map");
+    {
+      grub_error (GRUB_ERR_IO, "cannot get memory map");
+      goto fail;
+    }
 
   mmap_end = NEXT_MEMORY_DESCRIPTOR (mmap, tmp_mmap_size);
   
@@ -278,7 +253,10 @@ allocate_pages (grub_uint64_t align, grub_uint64_t size_pages,
 	continue;
       mem = grub_efi_allocate_pages (aligned_start, size_pages);
       if (! mem)
-	grub_fatal ("cannot allocate pages");
+	{
+	  grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate memory");
+	  goto fail;
+	}
       break;
     }
 
@@ -308,10 +286,10 @@ set_boot_param_console (void)
       != GRUB_EFI_SUCCESS)
     return;
 
-  grub_dprintf("linux",
-	       "Console info: cols=%lu rows=%lu x=%u y=%u\n",
-	       cols, rows,
-	       conout->mode->cursor_column, conout->mode->cursor_row);
+  grub_dprintf ("linux",
+		"Console info: cols=%lu rows=%lu x=%u y=%u\n",
+		cols, rows,
+		conout->mode->cursor_column, conout->mode->cursor_row);
   
   boot_param->console_info.num_cols = cols;
   boot_param->console_info.num_rows = rows;
@@ -339,17 +317,17 @@ grub_linux_boot (void)
 
   set_boot_param_console ();
 
-  grub_printf ("Jump to %016lx\n", entry);
-
-  grub_machine_fini ();
+  grub_dprintf ("linux", "Jump to %016lx\n", entry);
 
   /* MDT.
      Must be done after grub_machine_fini because map_key is used by
      exit_boot_services.  */
   mmap_size = find_mmap_size ();
+  if (! mmap_size)
+    return grub_errno;
   mmap_buf = grub_efi_allocate_pages (0, page_align (mmap_size) >> 12);
   if (! mmap_buf)
-    grub_fatal ("cannot allocate memory map");
+    return grub_error (GRUB_ERR_IO, "cannot allocate memory map");
   err = grub_efi_finish_boot_services (&mmap_size, mmap_buf, &map_key,
 				       &desc_size, &desc_version);
   if (err)
@@ -377,7 +355,7 @@ grub_linux_unload (void)
 }
 
 static grub_err_t
-grub_load_elf64 (grub_file_t file, void *buffer)
+grub_load_elf64 (grub_file_t file, void *buffer, const char *filename)
 {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr *) buffer;
   Elf64_Phdr *phdr;
@@ -386,21 +364,25 @@ grub_load_elf64 (grub_file_t file, void *buffer)
   grub_uint64_t high_addr;
   grub_uint64_t align;
   grub_uint64_t reloc_offset;
-
-  if (ehdr->e_ident[EI_CLASS] != ELFCLASS64)
-    return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF class");
+  const char *relocate;
 
   if (ehdr->e_ident[EI_MAG0] != ELFMAG0
       || ehdr->e_ident[EI_MAG1] != ELFMAG1
       || ehdr->e_ident[EI_MAG2] != ELFMAG2
       || ehdr->e_ident[EI_MAG3] != ELFMAG3
+      || ehdr->e_ident[EI_DATA] != ELFDATA2LSB)
+    return grub_error(GRUB_ERR_UNKNOWN_OS,
+		      N_("invalid arch independent ELF magic"));
+
+  if (ehdr->e_ident[EI_CLASS] != ELFCLASS64
       || ehdr->e_version != EV_CURRENT
-      || ehdr->e_ident[EI_DATA] != ELFDATA2LSB
       || ehdr->e_machine != EM_IA_64)
-    return grub_error(GRUB_ERR_UNKNOWN_OS, "no valid ELF header found");
+    return grub_error (GRUB_ERR_UNKNOWN_OS,
+		       N_("invalid arch dependent ELF magic"));
 
   if (ehdr->e_type != ET_EXEC)
-    return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF file type");
+    return grub_error (GRUB_ERR_UNKNOWN_OS,
+		       N_("this ELF file is not of the right type"));
 
   /* FIXME: Should we support program headers at strange locations?  */
   if (ehdr->e_phoff + ehdr->e_phnum * ehdr->e_phentsize > GRUB_ELF_SEARCH)
@@ -435,20 +417,22 @@ grub_load_elf64 (grub_file_t file, void *buffer)
 
   kernel_pages = page_align (high_addr - low_addr) >> 12;
 
-  if (relocate != RELOCATE_FORCE)
+  /* Undocumented on purpose.  */
+  relocate = grub_env_get ("linux_relocate");
+  if (!relocate || grub_strcmp (relocate, "force") != 0)
     {
       kernel_mem = grub_efi_allocate_pages (low_addr, kernel_pages);
       reloc_offset = 0;
     }
   /* Try to relocate.  */
-  if (! kernel_mem && relocate != RELOCATE_OFF)
+  if (! kernel_mem && (!relocate || grub_strcmp (relocate, "off") != 0))
     {
       kernel_mem = allocate_pages (align, kernel_pages, low_addr);
       if (kernel_mem)
 	{
 	  reloc_offset = (grub_uint64_t)kernel_mem - low_addr;
-	  grub_printf ("  Relocated at %p (offset=%016lx)\n",
-		       kernel_mem, reloc_offset);
+	  grub_dprintf ("linux", "  Relocated at %p (offset=%016lx)\n",
+			kernel_mem, reloc_offset);
 	  entry += reloc_offset;
 	}
     }
@@ -463,20 +447,23 @@ grub_load_elf64 (grub_file_t file, void *buffer)
 			     + i * ehdr->e_phentsize);
       if (phdr->p_type == PT_LOAD)
         {
-	  grub_printf ("  [paddr=%lx load=%lx memsz=%08lx "
-		       "off=%lx flags=%x]\n",
-		       phdr->p_paddr, phdr->p_paddr + reloc_offset,
-		       phdr->p_memsz, phdr->p_offset, phdr->p_flags);
-
+	  grub_dprintf ("linux", "  [paddr=%lx load=%lx memsz=%08lx "
+			"off=%lx flags=%x]\n",
+			phdr->p_paddr, phdr->p_paddr + reloc_offset,
+			phdr->p_memsz, phdr->p_offset, phdr->p_flags);
+	  
 	  if (grub_file_seek (file, phdr->p_offset) == (grub_off_t)-1)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "invalid offset in program header");
+	    return grub_errno;
 
-	  if (grub_file_read (file, (void *)(phdr->p_paddr + reloc_offset),
+	  if (grub_file_read (file, (void *) (phdr->p_paddr + reloc_offset),
 			      phdr->p_filesz)
               != (grub_ssize_t) phdr->p_filesz)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "couldn't read segment from file");
+	    {
+	      if (!grub_errno)
+		grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+			    filename);
+	      return grub_errno;
+	    }
 	  
           if (phdr->p_filesz < phdr->p_memsz)
 	    grub_memset
@@ -509,33 +496,32 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto fail;
     }
 
   file = grub_file_open (argv[0]);
   if (! file)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
-      goto fail;
-    }
+    goto fail;
 
   len = grub_file_read (file, buffer, sizeof (buffer));
-  if (len < (grub_ssize_t)sizeof (Elf64_Ehdr))
+  if (len < (grub_ssize_t) sizeof (Elf64_Ehdr))
     {
-      grub_error (GRUB_ERR_BAD_OS, "File too small");
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    argv[0]);
       goto fail;
     }
 
-  grub_printf ("Loading linux: %s\n", argv[0]);
+  grub_dprintf ("linux", "Loading linux: %s\n", argv[0]);
 
-  if (grub_load_elf64 (file, buffer))
+  if (grub_load_elf64 (file, buffer, argv[0]))
     goto fail;
 
   len = sizeof("BOOT_IMAGE=") + 8;
   for (i = 0; i < argc; i++)
     len += grub_strlen (argv[i]) + 1;
-  len += sizeof (struct ia64_boot_param) + 256; /* Room for extensions.  */
+  len += sizeof (struct ia64_boot_param) + 512; /* Room for extensions.  */
   boot_param_pages = page_align (len) >> 12;
   boot_param = grub_efi_allocate_pages (0, boot_param_pages);
   if (boot_param == 0)
@@ -581,208 +567,96 @@ static grub_err_t
 grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
-  grub_file_t file = 0;
+  grub_file_t *files = 0;
+  int i;
+  int nfiles = 0;
+  grub_uint8_t *ptr;
 
   if (argc == 0)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No filename specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
       goto fail;
     }
   
   if (! loaded)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("you need to load the kernel first"));
       goto fail;
     }
 
-  file = grub_file_open (argv[0]);
-  if (! file)
+  files = grub_zalloc (argc * sizeof (files[0]));
+  if (!files)
     goto fail;
 
-  grub_printf ("Loading initrd: %s\n",argv[0]);
+  initrd_size = 0;
+  grub_dprintf ("linux", "Loading initrd\n");
+  for (i = 0; i < argc; i++)
+    {
+      grub_file_filter_disable_compression ();
+      files[i] = grub_file_open (argv[i]);
+      if (! files[i])
+	goto fail;
+      nfiles++;
+      initrd_size += grub_file_size (files[i]);
+      grub_dprintf ("linux", "File %d: %s\n", i, argv[i]);
+    }
 
-  initrd_size = grub_file_size (file);
   initrd_pages = (page_align (initrd_size) >> 12);
   initrd_mem = grub_efi_allocate_pages (0, initrd_pages);
   if (! initrd_mem)
-    grub_fatal ("cannot allocate pages");
-  
-  grub_printf ("  [addr=0x%lx, size=0x%lx]\n",
-	       (grub_uint64_t)initrd_mem, initrd_size);
-
-  if (grub_file_read (file, initrd_mem, initrd_size) 
-      != (grub_ssize_t)initrd_size)
     {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate pages");
       goto fail;
+    }
+  
+  grub_dprintf ("linux", "[addr=0x%lx, size=0x%lx]\n",
+		(grub_uint64_t) initrd_mem, initrd_size);
+
+  ptr = initrd_mem;
+  for (i = 0; i < nfiles; i++)
+    {
+      grub_ssize_t cursize = grub_file_size (files[i]);
+      if (grub_file_read (files[i], ptr, cursize) != cursize)
+	{
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			argv[i]);
+	  goto fail;
+	}
+      ptr += cursize;
     }
  fail:
-  if (file)
-    grub_file_close (file);
+  for (i = 0; i < nfiles; i++)
+    grub_file_close (files[i]);
+  grub_free (files);
   return grub_errno;
 }
-
-static grub_err_t
-grub_cmd_payload  (grub_command_t cmd __attribute__ ((unused)),
-		   int argc, char *argv[])
-{
-  grub_file_t file = 0;
-  grub_ssize_t size, len = 0;
-  char *base = 0, *cmdline = 0, *p;
-  struct ia64_boot_payload *payload = NULL;
-  int i;
-
-  if (argc == 0)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
-      goto fail;
-    }
-
-  if (!boot_param)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, 
-		  "You need to load the kernel first");
-      goto fail;
-    }
-
-  file = grub_file_open (argv[0]);
-  if (! file)
-    goto fail;
-
-  size = grub_file_size (file);
-  base = grub_efi_allocate_pages (0, page_align (size) >> 12);
-  if (! base)
-    goto fail;
-
-  grub_printf ("Payload %s [addr=%lx + %lx]\n",
-	       argv[0], (grub_uint64_t)base, size);
-
-  if (grub_file_read (file, base, size) != size)
-    {
-      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
-      goto fail;
-    }
-
-  len = sizeof (struct ia64_boot_payload);  
-  for (i = 0; i < argc; i++)
-    len += grub_strlen (argv[i]) + 1;
-
-  if (len > 4096)
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "payload command line too long");
-      goto fail;
-    }
-  payload = grub_efi_allocate_pages (0, 1);
-  if (! payload)
-    goto fail;
-
-  p = (char *)(payload + 1);
-
-  payload->start = (grub_uint64_t)base;
-  payload->length = size;
-  payload->cmdline = (grub_uint64_t)p;
-  payload->next = 0;
-
-  if (last_payload)
-    last_payload->next = (grub_uint64_t)payload;
-  else
-    {
-      last_payload = payload;
-      boot_param->payloads_chain = (grub_uint64_t)payload;
-    }
-  boot_param->payloads_nbr++;
-
-  /* Copy command line.  */
-  for (i = 0; i < argc; i++)
-    {
-      p = grub_stpcpy (p, argv[i]);
-      *(p++) = ' ';
-    }
-  
-  /* Remove the space after the last word.  */
-  *(--p) = '\0';
-
-
- fail:
-  if (file)
-    grub_file_close (file);
-
-  if (grub_errno != GRUB_ERR_NONE)
-    {
-      grub_free (base);
-      grub_free (cmdline);
-    }
-  return grub_errno;
-}
-
-static grub_err_t
-grub_cmd_relocate (grub_command_t cmd __attribute__ ((unused)),
-		   int argc, char *argv[])
-{
-  static const char * const vals[] = { "off", "on", "force"};
-  unsigned int i;
-
-  if (argc == 0)
-    {
-      grub_printf ("relocate is %s\n", vals[relocate]);
-      return GRUB_ERR_NONE;
-    }
-  else if (argc == 1)
-    {
-      if (kernel_mem != NULL)
-	grub_printf ("Warning: kernel already loaded!\n");
-      for (i = 0; i < sizeof (vals)/sizeof(vals[0]); i++)
-	if (grub_strcmp (argv[0], vals[i]) == 0)
-	  {
-	    relocate = i;
-	    return GRUB_ERR_NONE;
-	  }
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "unknown relocate value");
-    }
-  else
-    {
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "accept 0 or 1 argument");
-    }
-  
-}
-
 
 static grub_err_t
 grub_cmd_fpswa (grub_command_t cmd __attribute__ ((unused)),
-		int argc, char *argv[] __attribute__((unused)))
+		int argc __attribute__((unused)),
+		char *argv[] __attribute__((unused)))
 {
-  if (argc != 0)
-    {
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "Arguments not expected");
-    }
   query_fpswa ();
   if (fpswa == NULL)
-    grub_printf ("No FPSWA loaded\n");
+    grub_puts_ (N_("No FPSWA found"));
   else
-    grub_printf ("FPSWA revision: %x\n", fpswa->revision);
+    grub_printf (_("FPSWA revision: %x\n"), fpswa->revision);
   return GRUB_ERR_NONE;
 }
 
-static grub_command_t cmd_linux, cmd_initrd, cmd_payload, cmd_relocate, cmd_fpswa;
+static grub_command_t cmd_linux, cmd_initrd, cmd_fpswa;
 
 GRUB_MOD_INIT(linux)
 {
   cmd_linux = grub_register_command ("linux", grub_cmd_linux,
-				     "FILE [ARGS...]", "Load Linux.");
+				     N_("FILE [ARGS...]"), N_("Load Linux."));
   
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
-				      "FILE", "Load initrd.");
-
-  cmd_payload = grub_register_command ("payload", grub_cmd_payload,
-				       "FILE [ARGS...]",
-				       "Load an additional file.");
-
-  cmd_relocate = grub_register_command ("relocate", grub_cmd_relocate,
-					"[on|off|force]",
-					"Set relocate feature.");
+				      N_("FILE"), N_("Load initrd."));
 
   cmd_fpswa = grub_register_command ("fpswa", grub_cmd_fpswa,
-				     "", "Display FPSWA version.");
+				     "", N_("Display FPSWA version."));
 
   my_mod = mod;
 }
@@ -791,7 +665,5 @@ GRUB_MOD_FINI(linux)
 {
   grub_unregister_command (cmd_linux);
   grub_unregister_command (cmd_initrd);
-  grub_unregister_command (cmd_payload);
-  grub_unregister_command (cmd_relocate);
   grub_unregister_command (cmd_fpswa);
 }

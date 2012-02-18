@@ -126,7 +126,7 @@ static struct piwg_full_device_path devpath_6 = MAKE_PIWG_PATH (0xffcc4000,
 
 struct devdata
 {
-  char *model;
+  const char *model;
   grub_efi_device_path_t *devpath;
 };
 
@@ -167,7 +167,7 @@ grub_cmd_appleloader (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_printf ("Model : %s\n", pdev->model);
+  grub_dprintf ("appleload", "Model: %s\n", pdev->model);
 
   loaded_image = grub_efi_get_loaded_image (image_handle);
   if (! loaded_image)
@@ -220,7 +220,7 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(appleloader)
 {
   cmd = grub_register_command ("appleloader", grub_cmd_appleloader,
-			       "[OPTS]", N_("Boot legacy system."));
+			       N_("[OPTS]"), N_("Boot BIOS-based system."));
   my_mod = mod;
 }
 

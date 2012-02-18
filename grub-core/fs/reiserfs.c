@@ -38,6 +38,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/fshelp.h>
+#include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -477,23 +478,25 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
   grub_uint16_t previous_level = ~0;
   struct grub_reiserfs_item_header *item_headers = 0;
 
+#if 0
   if (! data)
     {
-      grub_error (GRUB_ERR_TEST_FAILURE, "data is NULL");
+      grub_error (GRUB_ERR_BAD_FS, "data is NULL");
       goto fail;
     }
 
   if (! key)
     {
-      grub_error (GRUB_ERR_TEST_FAILURE, "key is NULL");
+      grub_error (GRUB_ERR_BAD_FS, "key is NULL");
       goto fail;
     }
 
   if (! item)
     {
-      grub_error (GRUB_ERR_TEST_FAILURE, "item is NULL");
+      grub_error (GRUB_ERR_BAD_FS, "item is NULL");
       goto fail;
     }
+#endif
 
   block_size = grub_le_to_cpu16 (data->superblock.block_size);
   block_number = grub_le_to_cpu32 (data->superblock.root_block);
@@ -520,7 +523,7 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
       if (current_level >= previous_level)
         {
           grub_dprintf ("reiserfs_tree", "level loop detected, aborting\n");
-          grub_error (GRUB_ERR_FILE_READ_ERROR, "level loop");
+          grub_error (GRUB_ERR_BAD_FS, "level loop");
           goto fail;
         }
       previous_level = current_level;
@@ -725,8 +728,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
 
   if (item->type != GRUB_REISERFS_DIRECTORY)
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE,
-                  "grub_reiserfs_iterate_dir called on a non-directory item");
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
       goto fail;
     }
   block_size = grub_le_to_cpu16 (data->superblock.block_size);
@@ -754,7 +756,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
 #if 0
       if (grub_le_to_cpu16 (block_header->level) != 1)
         {
-          grub_error (GRUB_ERR_TEST_FAILURE,
+          grub_error (GRUB_ERR_BAD_FS,
                       "reiserfs: block %d is not a leaf block",
                       block_number);
           goto fail;
@@ -1351,21 +1353,25 @@ grub_reiserfs_uuid (grub_device_t device, char **uuid)
 
   grub_dl_ref (my_mod);
 
+  *uuid = NULL;
   data = grub_reiserfs_mount (disk);
   if (data)
     {
-      *uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-			     grub_be_to_cpu16 (data->superblock.uuid[0]),
-			     grub_be_to_cpu16 (data->superblock.uuid[1]),
-			     grub_be_to_cpu16 (data->superblock.uuid[2]),
-			     grub_be_to_cpu16 (data->superblock.uuid[3]),
-			     grub_be_to_cpu16 (data->superblock.uuid[4]),
-			     grub_be_to_cpu16 (data->superblock.uuid[5]),
-			     grub_be_to_cpu16 (data->superblock.uuid[6]),
-			     grub_be_to_cpu16 (data->superblock.uuid[7]));
+      unsigned i;
+      for (i = 0; i < ARRAY_SIZE (data->superblock.uuid); i++)
+	if (data->superblock.uuid[i])
+	  break;
+      if (i < ARRAY_SIZE (data->superblock.uuid))
+	*uuid = grub_xasprintf ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+				grub_be_to_cpu16 (data->superblock.uuid[0]),
+				grub_be_to_cpu16 (data->superblock.uuid[1]),
+				grub_be_to_cpu16 (data->superblock.uuid[2]),
+				grub_be_to_cpu16 (data->superblock.uuid[3]),
+				grub_be_to_cpu16 (data->superblock.uuid[4]),
+				grub_be_to_cpu16 (data->superblock.uuid[5]),
+				grub_be_to_cpu16 (data->superblock.uuid[6]),
+				grub_be_to_cpu16 (data->superblock.uuid[7]));
     }
-  else
-    *uuid = NULL;
 
   grub_dl_unref (my_mod);
 
