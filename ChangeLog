@@ -1,5 +1,12 @@
 2012-02-18 Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Replace grub_checkkey with grub_getkey_noblock.
+
+	* grub-core/kern/term.c (grub_checkkey): Replaced with ...
+	(grub_getkey_noblock): ... this. All users updated.
+
+2012-02-18 Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/console.c: Move to ...
 	* grub-core/term/emu/console.c: ...here.
 	(grub_ncurses_getkey): Fix return value if no key is detected.

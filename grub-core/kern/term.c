@@ -79,15 +79,10 @@ grub_xputs_dumb (const char *str)
 
 void (*grub_xputs) (const char *str) = grub_xputs_dumb;
 
-static int pending_key = GRUB_TERM_NO_KEY;
-
 int
-grub_checkkey (void)
+grub_getkey_noblock (void)
 {
   grub_term_input_t term;
-
-  if (pending_key != GRUB_TERM_NO_KEY)
-    return pending_key;
 
   if (grub_term_poll_usb)
     grub_term_poll_usb ();
@@ -97,12 +92,12 @@ grub_checkkey (void)
 
   FOR_ACTIVE_TERM_INPUTS(term)
   {
-    pending_key = term->getkey (term);
-    if (pending_key != GRUB_TERM_NO_KEY)
-      return pending_key;
+    int key = term->getkey (term);
+    if (key != GRUB_TERM_NO_KEY)
+      return key;
   }
 
-  return -1;
+  return GRUB_TERM_NO_KEY;
 }
 
 int
@@ -112,17 +107,14 @@ grub_getkey (void)
 
   grub_refresh ();
 
-  grub_checkkey ();
-  while (pending_key == GRUB_TERM_NO_KEY)
+  while (1)
     {
+      ret = grub_getkey_noblock ();
+      if (ret != GRUB_TERM_NO_KEY)
+	return ret;
       grub_cpu_idle ();
-      grub_checkkey ();
     }
-  ret = pending_key;
-  pending_key = GRUB_TERM_NO_KEY;
-  return ret;
 }
-
 
 void
 grub_refresh (void)

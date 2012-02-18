@@ -151,7 +151,7 @@ play (unsigned tempo, struct note *note)
 {
   unsigned int to;
 
-  if (note->pitch == T_FINE || grub_checkkey () >= 0)
+  if (note->pitch == T_FINE || grub_getkey_noblock () != GRUB_TERM_NO_KEY)
     return 1;
 
   grub_dprintf ("play", "pitch = %d, duration = %d\n", note->pitch,
@@ -169,7 +169,8 @@ play (unsigned tempo, struct note *note)
     }
 
   to = grub_get_rtc () + BASE_TEMPO * note->duration / tempo;
-  while (((unsigned int) grub_get_rtc () <= to) && (grub_checkkey () < 0))
+  while (((unsigned int) grub_get_rtc () <= to)
+	 && (grub_getkey_noblock () == GRUB_TERM_NO_KEY))
     ;
 
   return 0;
@@ -260,9 +261,6 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
     }
 
   beep_off ();
-
-  while (grub_checkkey () > 0)
-    grub_getkey ();
 
   return 0;
 }

@@ -52,12 +52,8 @@ grub_wait_after_message (void)
 
   endtime = grub_get_time_ms () + 10000;
 
-  while (grub_get_time_ms () < endtime)
-    if (grub_checkkey () >= 0)
-      {
-	grub_getkey ();
-	break;
-      }
+  while (grub_get_time_ms () < endtime
+	 && grub_getkey_noblock () == GRUB_TERM_NO_KEY);
 
   grub_xputs ("\n");
 }
@@ -560,10 +556,10 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	  return default_entry;
 	}
 
-      if (grub_checkkey () >= 0 || timeout < 0)
-	{
-	  c = grub_getkey ();
+      c = grub_getkey_noblock ();
 
+      if (c != GRUB_TERM_NO_KEY)
+	{
 	  if (timeout >= 0)
 	    {
 	      grub_env_unset ("timeout");
