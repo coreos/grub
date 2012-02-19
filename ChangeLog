@@ -1,4 +1,12 @@
-2012-02-18 Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-19  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub-mkconfig.in (GRUB_CMDLINE_GNUMACH): Export variable.
+	* util/grub.d/10_hurd.in: Include GRUB_CMDLINE_GNUMACH in gnumach
+	command line.
+	* docs/grub.texi (Simple configuration): Document
+	GRUB_CMDLINE_GNUMACH.
+
+2012-02-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/Makefile.common (platform_SCRIPTS): New variable.
 	(platform_PROGRAMS): Likewise.
@@ -7,14 +15,14 @@
 	* grub-core/Makefile.core.def (gdb_grub): Mark for install.
 	(gmodule.pl): Likewise.
 
-2012-02-18 Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Replace grub_checkkey with grub_getkey_noblock.
 
 	* grub-core/kern/term.c (grub_checkkey): Replaced with ...
 	(grub_getkey_noblock): ... this. All users updated.
 
-2012-02-18 Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/console.c: Move to ...
 	* grub-core/term/emu/console.c: ...here.

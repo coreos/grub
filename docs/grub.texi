@@ -1202,6 +1202,9 @@ only to the default menu entry, after those listed in
 As @samp{GRUB_CMDLINE_LINUX} and @samp{GRUB_CMDLINE_LINUX_DEFAULT}, but for
 NetBSD.
 
+@item GRUB_CMDLINE_GNUMACH
+As @samp{GRUB_CMDLINE_LINUX}, but for GNU Mach.
+
 @item GRUB_CMDLINE_XEN
 @itemx GRUB_CMDLINE_XEN_DEFAULT
 The values of these options are appended to the values of

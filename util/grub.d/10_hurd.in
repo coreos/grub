@@ -87,7 +87,7 @@ EOF
   message="$(gettext_printf "Loading GNU Mach ...")"
   cat << EOF
 	echo		'$message'
-	multiboot	${kernel} root=device:${GRUB_DEVICE#/dev/}
+	multiboot	${kernel} root=device:${GRUB_DEVICE#/dev/} ${GRUB_CMDLINE_GNUMACH}
 EOF
   save_default_entry | sed -e "s/^/\t/"
   prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/"
@@ -111,7 +111,7 @@ EOF
   message="$(gettext_printf "Loading GNU Mach ...")"
   cat << EOF
 	echo		'$message'
-	multiboot	${kernel} root=device:${GRUB_DEVICE#/dev/} -s
+	multiboot	${kernel} root=device:${GRUB_DEVICE#/dev/} -s ${GRUB_CMDLINE_GNUMACH}
 EOF
   prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/"
   message="$(gettext_printf "Loading the Hurd ...")"
