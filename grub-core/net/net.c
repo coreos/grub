@@ -658,7 +658,7 @@ grub_cmd_deladdr (struct grub_command *cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   FOR_NET_NETWORK_LEVEL_INTERFACES (inter)
-    if (grub_strcmp (inter->name, args[1]) == 0)
+    if (grub_strcmp (inter->name, args[0]) == 0)
       break;
   if (inter == NULL)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("address not found"));

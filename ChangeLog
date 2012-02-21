@@ -1,5 +1,10 @@
 2012-02-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/net.c (grub_cmd_deladdr): Fix index.
+	Reported by: Seth Goldberg
+
+2012-02-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Add -fno-builtin-gettext on host if NLS is disabled.
 
 2012-02-19  Samuel Thibault  <samuel.thibault@ens-lyon.org>
