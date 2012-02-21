@@ -290,6 +290,10 @@ if test x$grub_cv_apple_cc = xyes ; then
   HOST_CFLAGS="$HOST_CFLAGS -fnested-functions"
 fi
 
+if test x$USE_NLS = xno; then
+  HOST_CFLAGS="$HOST_CFLAGS -fno-builtin-gettext"
+fi
+
 if test "x$cross_compiling" = xyes; then
   AC_MSG_WARN([cannot generate manual pages while cross compiling])
 else
