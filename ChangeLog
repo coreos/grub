@@ -1,5 +1,10 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/acpihalt.c (get_sleep_type):
+	Remove unused variable.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/acpi.h (GRUB_ASCII_OPCODE): Add
 	GRUB_ACPI_OPCODE_STRING_CONST, GRUB_ACPI_OPCODE_BUFFER,
 	GRUB_ACPI_OPCODE_CREATE_WORD_FIELD
