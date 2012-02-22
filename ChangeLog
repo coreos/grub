@@ -1,3 +1,8 @@
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Disable for now -Wstack-protector, -Wunreachable-code
+	and -Wunused-result.
+
 2012-02-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/net/net.c (grub_cmd_deladdr): Fix index.
