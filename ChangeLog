@@ -1,5 +1,10 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/testload.c (grub_cmd_testload): Fix overflow
+	if the size isn't divisible by 512.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make list_push and list_remove functions rather than inline functions
 	to decrease size and avoid aliasing violations.
 

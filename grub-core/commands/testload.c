@@ -100,7 +100,10 @@ grub_cmd_testload (struct grub_command *cmd __attribute__ ((unused)),
     {
       char sector[GRUB_DISK_SECTOR_SIZE];
 
-      pos -= GRUB_DISK_SECTOR_SIZE;
+      if (pos >= GRUB_DISK_SECTOR_SIZE)
+	pos -= GRUB_DISK_SECTOR_SIZE;
+      else
+	pos = 0;
 
       grub_file_seek (file, pos);
 
