@@ -128,7 +128,7 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
   else
     {
       char *device_name;
-      grub_device_t dev;
+      grub_device_t dev = 0;
       grub_fs_t fs;
       char *path;
 
