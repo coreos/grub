@@ -99,7 +99,6 @@ CCASFLAGS_LIBRARY =
 # Other variables
 
 grubconfdir = $(sysconfdir)/grub.d
-grubdatadir = $(datadir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`
 platformdir = $(pkglibrootdir)/$(target_cpu)-$(platform)
 
 CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers

@@ -1,5 +1,10 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/Makefile.common (grubdatadir): Removed.
+	(Makefile.am): Move eveything grubdata to pkgdata.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/acpihalt.c (get_sleep_type):
 	Remove unused variable.
 

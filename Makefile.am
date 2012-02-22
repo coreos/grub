@@ -62,7 +62,7 @@ CLEANFILES += grub_fstest_init.c
 
 if COND_GRUB_MKFONT
 if COND_HAVE_FONT_SOURCE
-grubdata_DATA = unicode.pf2 ascii.pf2 euro.pf2 ascii.h widthspec.h
+pkgdata_DATA += unicode.pf2 ascii.pf2 euro.pf2 ascii.h widthspec.h
 endif
 endif
 
