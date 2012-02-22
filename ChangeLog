@@ -1,5 +1,10 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.util.def (libgrubmods.a): Add -Wno-error=logical-op
+	-Wno-error=missing-noreturn.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/affs.c (grub_affs_read_block): Avoid <= in loop
 	condition to avoid possibly infinite loops.
 	* grub-core/lib/pbkdf2.c (grub_crypto_pbkdf2): Likewise.
