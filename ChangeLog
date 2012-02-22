@@ -1,5 +1,12 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/affs.c (grub_affs_read_block): Avoid <= in loop
+	condition to avoid possibly infinite loops.
+	* grub-core/lib/pbkdf2.c (grub_crypto_pbkdf2): Likewise.
+	* grub-core/lib/xzembed/xz_dec_bcj.c (bcj_powerpc): Likewise.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/charset.c (bidi_line_wrap): Avoid <= in loop
 	condition to avoid possibly infinite loops.
 

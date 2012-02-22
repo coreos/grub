@@ -143,7 +143,7 @@ grub_affs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   mod = (grub_uint32_t) fileblock % data->htsize;
   /* Find the block that points to the fileblock we are looking up by
      following the chain until the right table is reached.  */
-  for (curblock = node->last_block_cache + 1; curblock <= target; curblock++)
+  for (curblock = node->last_block_cache + 1; curblock < target + 1; curblock++)
     {
       grub_disk_read (data->disk,
 		      node->block_cache[curblock - 1] + data->blocksize - 1,
