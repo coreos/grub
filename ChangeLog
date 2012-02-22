@@ -1,5 +1,9 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/disk.c (grub_disk_write): Add missing const qualifier.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/corecmd.c (grub_core_cmd_ls): Add missing var init.
 
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>

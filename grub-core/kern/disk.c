@@ -660,7 +660,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	    goto finish;
 
 	  sector += (1 << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
-	  buf = (char *) buf + len;
+	  buf = (const char *) buf + len;
 	  size -= len;
 	  real_offset = 0;
 	}
@@ -678,7 +678,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	  while (n--)
 	    grub_disk_cache_invalidate (disk->dev->id, disk->id, sector++);
 
-	  buf = (char *) buf + len;
+	  buf = (const char *) buf + len;
 	  size -= len;
 	}
     }
