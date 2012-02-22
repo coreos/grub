@@ -68,3 +68,24 @@ grub_prio_list_insert (grub_prio_list_t *head, grub_prio_list_t nitem)
   if (! inactive)
     nitem->prio |= GRUB_PRIO_LIST_FLAG_ACTIVE;
 }
+
+void
+grub_list_push (grub_list_t *head, grub_list_t item)
+{
+  item->prev = head;
+  if (*head)
+    (*head)->prev = &item->next;
+  item->next = *head;
+  *head = item;
+}
+
+void
+grub_list_remove (grub_list_t item)
+{
+  if (item->prev)
+    *item->prev = item->next;
+  if (item->next)
+    item->next->prev = item->prev;
+  item->next = 0;
+  item->prev = 0;
+}

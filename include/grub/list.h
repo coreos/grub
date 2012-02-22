@@ -31,26 +31,8 @@ struct grub_list
 };
 typedef struct grub_list *grub_list_t;
 
-static inline void
-grub_list_push (grub_list_t *head, grub_list_t item)
-{
-  item->prev = head;
-  if (*head)
-    (*head)->prev = &item->next;
-  item->next = *head;
-  *head = item;
-}
-
-static inline void
-grub_list_remove (grub_list_t item)
-{
-  if (item->prev)
-    *item->prev = item->next;
-  if (item->next)
-    item->next->prev = item->prev;
-  item->next = 0;
-  item->prev = 0;
-}
+void EXPORT_FUNC(grub_list_push) (grub_list_t *head, grub_list_t item);
+void EXPORT_FUNC(grub_list_remove) (grub_list_t item);
 
 #define FOR_LIST_ELEMENTS(var, list) for ((var) = (list); (var); (var) = (var)->next)
 

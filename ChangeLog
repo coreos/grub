@@ -1,5 +1,15 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make list_push and list_remove functions rather than inline functions
+	to decrease size and avoid aliasing violations.
+
+	* include/grub/list.h (grub_list_push): Move to ...
+	* grub-core/kern/list.c (grub_list_push): ... here. Don't inline.
+	* include/grub/list.h (grub_list_remove): Move to ...
+	* grub-core/kern/list.c (grub_list_remove): ... here. Don't inline.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Disable for now -Wstack-protector, -Wunreachable-code
 	and -Wunused-result.
 
