@@ -1,5 +1,11 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/ofpath.c: Remove include of malloc.h since stdlib is
+	already included.
+	Reported by: Eren D.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common (grubdatadir): Removed.
 	(Makefile.am): Move eveything grubdata to pkgdata.
 
