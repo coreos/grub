@@ -1,5 +1,10 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (read_device_map): Add missing noreturn
+	on show_error.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/disk.c (grub_disk_write): Add missing const qualifier.
 
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>

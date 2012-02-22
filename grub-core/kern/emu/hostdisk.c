@@ -1145,8 +1145,9 @@ read_device_map (const char *dev_map)
   int lineno = 0;
   struct stat st;
 
-  auto void show_error (const char *msg);
-  void show_error (const char *msg)
+  auto void show_error (const char *msg)
+    __attribute__ ((noreturn));
+  void __attribute__ ((noreturn)) show_error (const char *msg)
     {
       grub_util_error ("%s:%d: %s", dev_map, lineno, msg);
     }
