@@ -253,7 +253,6 @@
 ./grub-core/kern/efi/mm.c
 ./grub-core/kern/elf.c
 ./grub-core/kern/emu/cache.c
-./grub-core/kern/emu/console.c
 ./grub-core/kern/emu/full.c
 ./grub-core/kern/emu/hostdisk.c
 ./grub-core/kern/emu/hostfs.c
@@ -495,6 +494,7 @@
 ./grub-core/term/arc/console.c
 ./grub-core/term/at_keyboard.c
 ./grub-core/term/efi/console.c
+./grub-core/term/emu/console.c
 ./grub-core/term/gfxterm.c
 ./grub-core/term/i386/pc/console.c
 ./grub-core/term/i386/pc/vga_text.c

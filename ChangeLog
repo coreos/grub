@@ -1,5 +1,9 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/POTFILES.in: Regenerate.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.util.def (libgrubmods.a): Add -Wno-error=logical-op
 	-Wno-error=missing-noreturn.
 
