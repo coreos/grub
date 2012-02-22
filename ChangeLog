@@ -1,5 +1,18 @@
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/acpi.h (GRUB_ASCII_OPCODE): Add
+	GRUB_ACPI_OPCODE_STRING_CONST, GRUB_ACPI_OPCODE_BUFFER,
+	GRUB_ACPI_OPCODE_CREATE_WORD_FIELD
+	and GRUB_ACPI_OPCODE_CREATE_BYTE_FIELD.
+	* grub-core/commands/acpihalt.c [GRUB_DSDT_TEST]: Replace include of
+	i18n with gettext no-op.
+	(skip_data_ref_object): Support GRUB_ACPI_OPCODE_BUFFER and
+	GRUB_ACPI_OPCODE_STRING_CONST.
+	(get_sleep_type): Support GRUB_ACPI_OPCODE_CREATE_WORD_FIELD and
+	GRUB_ACPI_OPCODE_CREATE_BYTE_FIELD. Add handling of unknown opcodes.
+
+2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/POTFILES.in: Regenerate.
 
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
