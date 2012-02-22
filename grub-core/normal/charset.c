@@ -608,7 +608,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
   {
     struct grub_unicode_glyph t;
     unsigned i, tl;
-    for (i = 0; i <= (end - start) / 2; i++)
+    for (i = 0; i < (end - start) / 2 + 1; i++)
       {
 	t = visual[start + i];
 	visual[start + i] = visual[end - i];
@@ -665,7 +665,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  {
 	    unsigned j;	  
 	    /* FIXME: can be optimized.  */
-	    for (j = max_level; j >= min_odd_level; j--)
+	    for (j = max_level; j > min_odd_level - 1; j--)
 	      {
 		unsigned in = 0;
 		unsigned i;
@@ -734,7 +734,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  {
 	    int right_join = 0;
 	    signed i;
-	    for (i = k - 1; i >= (signed) line_start; i--)
+	    for (i = k - 1; i > (signed) line_start - 1; i--)
 	      {
 		enum grub_join_type join_type = get_join_type (visual[i].base);
 		if (!(visual[i].attributes
