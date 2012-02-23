@@ -1,5 +1,10 @@
 2012-02-23  Dalet Omega <daletomega@gmail.com>
 
+	* grub-core/gfxmenu/gui_label.c (label_set_property): Add template
+	for usual informative messages.
+
+2012-02-23  Dalet Omega <daletomega@gmail.com>
+
 	Starfield theme.
 
 	* Makefile.am: Define starfield_DATA and dejavu.pf2 generation.
