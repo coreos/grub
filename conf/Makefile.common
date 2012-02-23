@@ -100,6 +100,7 @@ CCASFLAGS_LIBRARY =
 
 grubconfdir = $(sysconfdir)/grub.d
 platformdir = $(pkglibrootdir)/$(target_cpu)-$(platform)
+starfielddir = $(pkgdatadir)/themes/starfield
 
 CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers
 CPPFLAGS_GCRY = -I$(top_srcdir)/grub-core/lib/libgcrypt_wrap

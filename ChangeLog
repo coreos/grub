@@ -1,3 +1,49 @@
+2012-02-23  Dalet Omega <daletomega@gmail.com>
+
+	Starfield theme.
+
+	* Makefile.am: Define starfield_DATA and dejavu.pf2 generation.
+	* conf/Makefile.common: Define starfielddir.
+	* configure.ac: Configure starfield.
+	* themes/starfield/COPYING.CC-BY-SA-3.0: New file.
+	* themes/starfield/README: Likewise.
+	* themes/starfield/blob_w.png: Likewise.
+	* themes/starfield/boot_menu_c.png: Likewise.
+	* themes/starfield/boot_menu_e.png: Likewise.
+	* themes/starfield/boot_menu_n.png: Likewise.
+	* themes/starfield/boot_menu_ne.png: Likewise.
+	* themes/starfield/boot_menu_nw.png: Likewise.
+	* themes/starfield/boot_menu_s.png: Likewise.
+	* themes/starfield/boot_menu_se.png: Likewise.
+	* themes/starfield/boot_menu_sw.png: Likewise.
+	* themes/starfield/boot_menu_w.png: Likewise.
+	* themes/starfield/slider_c.png: Likewise.
+	* themes/starfield/slider_n.png: Likewise.
+	* themes/starfield/slider_s.png: Likewise.
+	* themes/starfield/src/blob_nw.xcf: Likewise.
+	* themes/starfield/src/bootmenu/: Likewise.
+	* themes/starfield/src/bootmenu/center.xcf: Likewise.
+	* themes/starfield/src/bootmenu/corner.xcf: Likewise.
+	* themes/starfield/src/bootmenu/side.xcf: Likewise.
+	* themes/starfield/src/slider_c.xcf: Likewise.
+	* themes/starfield/src/slider_n.xcf: Likewise.
+	* themes/starfield/src/slider_s.xcf: Likewise.
+	* themes/starfield/src/terminalbox/: Likewise.
+	* themes/starfield/src/terminalbox/center.xcf: Likewise.
+	* themes/starfield/src/terminalbox/corner.xcf: Likewise.
+	* themes/starfield/src/terminalbox/side.xcf: Likewise.
+	* themes/starfield/starfield.png: Likewise.
+	* themes/starfield/terminal_box_c.png: Likewise.
+	* themes/starfield/terminal_box_e.png: Likewise.
+	* themes/starfield/terminal_box_n.png: Likewise.
+	* themes/starfield/terminal_box_ne.png: Likewise.
+	* themes/starfield/terminal_box_nw.png: Likewise.
+	* themes/starfield/terminal_box_s.png: Likewise.
+	* themes/starfield/terminal_box_se.png: Likewise.
+	* themes/starfield/terminal_box_sw.png: Likewise.
+	* themes/starfield/terminal_box_w.png: Likewise.
+	* themes/starfield/theme.txt: Likewise.
+
 2012-02-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub.d/00_header.in: Add missing export theme.

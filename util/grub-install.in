@@ -446,6 +446,11 @@ for dir in "${localedir}"/*; do
     fi
 done
 
+if test -d "${pkgdatadir}"/themes/starfield; then
+    mkdir -p "${grubdir}"/themes/starfield
+    cp "${pkgdatadir}"/themes/starfield/* "${grubdir}"/themes/starfield
+fi
+
 is_path_readable_by_grub "${grubdir}/${target_cpu}-$platform" || (echo "${grubdir}" not readable 1>&2 ; exit 1)
 
 # Write device to a variable so we don't have to traverse /dev every time.

@@ -901,6 +901,31 @@ AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
 
+DJVU_FONT_SOURCE=
+
+starfield_excuse=
+
+if test x$enable_grub_mkfont = xno; then
+   starfield_excuse="No grub-mkfont"
+fi
+
+if test x"$starfield_excuse" != x; then
+   for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
+     for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/truetype/ttf-dejavu; do
+        if test -f "$dir/DejaVuSans.$ext"; then
+          DJVU_FONT_SOURCE="$dir/DejaVuSans.$ext"
+          break 2
+        fi
+     done
+   done
+
+   if test "x$DJVU_FONT_SOURCE" = x; then
+     starfield_excuse="No DejaVu found"
+   fi
+fi
+
+AC_SUBST([DJVU_FONT_SOURCE])
+
 AC_ARG_ENABLE([grub-mount],
 	      [AS_HELP_STRING([--enable-grub-mount],
                              [build and install the `grub-mount' utility (default=guessed)])])
@@ -1055,6 +1080,7 @@ AM_CONDITIONAL([COND_ENABLE_CACHE_STATS], [test x$DISK_CACHE_STATS = x1])
 
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
 AM_CONDITIONAL([COND_CYGWIN], [test x$host_os = xcygwin])
+AM_CONDITIONAL([COND_STARFIELD], [test "x$starfield_excuse" = x])
 
 # Output files.
 cpudir="${target_cpu}"
@@ -1137,6 +1163,11 @@ if [ x"$grub_mount_excuse" = x ]; then
 echo grub-mount: Yes
 else
 echo grub-mount: No "($grub_mount_excuse)"
+fi
+if [ x"$starfield_excuse" = x ]; then
+echo starfield theme: Yes
+else
+echo starfield theme: No "($starfield_excuse)"
 fi
 echo "*******************************************************"
 ]
