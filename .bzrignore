@@ -104,6 +104,8 @@ partmap_test
 *.pp
 po/*.mo
 po/grub.pot
+po/POTFILES
+po/stamp-po
 stamp-h
 stamp-h1
 stamp-h.in
@@ -132,8 +134,10 @@ contrib
 grub-core/Makefile.core.am
 grub-core/Makefile.gcry.def
 grub-core/contrib
+grub-core/gdb_grub
 grub-core/genmod.sh
 grub-core/gensyminfo.sh
+grub-core/gmodule.pl
 grub-core/modinfo.sh
 grub-core/*.module
 grub-core/*.pp
