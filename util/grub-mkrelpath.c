@@ -71,7 +71,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
 static struct argp argp = {
   options, argp_parser, N_("PATH"),
-  N_("Transform a sytem filename into GRUB one."),
+  N_("Transform a system filename into GRUB one."),
   NULL, NULL, NULL
 };
 

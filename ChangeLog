@@ -1,3 +1,10 @@
+2012-02-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/btrfs.c (find_device): Fix typos.
+	* grub-core/fs/zfs/zfs.c (read_device): Likewise.
+	* util/grub-mkrelpath.c (argp_parser): Likewise.
+	Reported by: Yuri Chornoivan.
+
 2012-02-23  Dalet Omega <daletomega@gmail.com>
 
 	* grub-core/gfxmenu/gui_label.c (label_set_property): Add template

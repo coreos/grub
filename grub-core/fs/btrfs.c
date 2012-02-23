@@ -575,7 +575,7 @@ find_device (struct grub_btrfs_data *data, grub_uint64_t id, int do_rescan)
   if (!dev_found)
     {
       grub_error (GRUB_ERR_BAD_FS,
-		  N_("couldn't find a necesssary member device "
+		  N_("couldn't find a necessary member device "
 		     "of multi-device filesystem"));
       return NULL;
     }

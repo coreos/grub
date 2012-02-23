@@ -1208,7 +1208,7 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	if (!desc->dev)
 	  {
 	    return grub_error (GRUB_ERR_BAD_FS,
-			       N_("couldn't find a necesssary member device "
+			       N_("couldn't find a necessary member device "
 				  "of multi-device filesystem"));
 	  }
 	/* read in a data block */
