@@ -1,3 +1,7 @@
+2012-02-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/00_header.in: Add missing export theme.
+
 2012-02-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/ieee1275/ofpath.c: Remove include of malloc.h since stdlib is
