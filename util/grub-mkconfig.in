@@ -157,41 +157,6 @@ if [ "x${GRUB_TERMINAL_OUTPUT}" = "x" ]; then
 fi
 
 for x in ${GRUB_TERMINAL_OUTPUT}; do
-    if [ "x${x}" = "xgfxterm" ]; then
-	if [ -n "$GRUB_FONT" ] ; then
-	    if is_path_readable_by_grub ${GRUB_FONT} > /dev/null ; then
-		GRUB_FONT_PATH=${GRUB_FONT}
-	    else
-		echo "No such font or not readable by grub: ${GRUB_FONT}" >&2
-		exit 1
-	    fi
-	else
-	    for dir in ${pkgdatadir} ${GRUB_PREFIX} /usr/share/grub ; do
-		for basename in unicode unifont ascii; do
-		    path="${dir}/${basename}.pf2"
-		    if is_path_readable_by_grub ${path} > /dev/null ; then
-			GRUB_FONT_PATH=${path}
-		    else
-			continue
-		    fi
-		    if [ "${basename}" = "ascii" ] ; then
-	                # make sure all our children behave in conformance with ascii..
-			export LANG=C
-		    fi
-		    break 2
-		done
-	    done
-	fi
-	if [ -z "${GRUB_FONT_PATH}" ] ; then
-	    if [ "x$termoutdefault" != "x1" ]; then
-		gettext "No font for video terminal found." >&2; echo >&2 ; exit 1
-	    fi
-	    GRUB_TERMINAL_OUTPUT=
-	fi
-    fi
-done
-
-for x in ${GRUB_TERMINAL_OUTPUT}; do
     case "x${x}" in
 	xgfxterm) ;;
 	xconsole | xserial | xofconsole)
@@ -208,7 +173,7 @@ export GRUB_DEVICE \
   GRUB_DEVICE_BOOT \
   GRUB_DEVICE_BOOT_UUID \
   GRUB_FS \
-  GRUB_FONT_PATH \
+  GRUB_FONT \
   GRUB_PRELOAD_MODULES \
   GRUB_PREFIX
 

@@ -29,6 +29,7 @@
 #include <grub/charset.h>
 #include <grub/unicode.h>
 #include <grub/fontformat.h>
+#include <grub/env.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -433,7 +434,30 @@ grub_font_load (const char *filename)
   grub_printf ("add_font(%s)\n", filename);
 #endif
 
-  file = grub_buffile_open (filename, 1024);
+  if (filename[0] == '(' || filename[0] == '/' || filename[0] == '+')
+    file = grub_buffile_open (filename, 1024);
+  else
+    {
+      const char *prefix = grub_env_get ("prefix");
+      char *fullname, *ptr;
+      if (!prefix)
+	{
+	  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("variable `%s' isn't set"),
+		      "prefix");
+	  goto fail;
+	}
+      fullname = grub_malloc (grub_strlen (prefix) + grub_strlen (filename) + 1
+			      + sizeof ("/fonts/") + sizeof (".pf2"));
+      if (!fullname)
+	goto fail;
+      ptr = grub_stpcpy (fullname, prefix);
+      ptr = grub_stpcpy (ptr, "/fonts/");
+      ptr = grub_stpcpy (ptr, filename);
+      ptr = grub_stpcpy (ptr, ".pf2");
+      *ptr = 0;
+      file = grub_buffile_open (fullname, 1024);
+      grub_free (fullname);
+    }
   if (!file)
     goto fail;
 

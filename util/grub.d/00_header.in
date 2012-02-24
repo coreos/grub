@@ -124,11 +124,47 @@ if [ "x$serial" = x1 ]; then
 fi
 
 if [ "x$gfxterm" = x1 ]; then
-    # Make the font accessible
-    prepare_grub_to_access_device `${grub_probe} --target=device "${GRUB_FONT_PATH}"`
+    if [ -n "$GRUB_FONT" ] ; then
+       # Make the font accessible
+       prepare_grub_to_access_device `${grub_probe} --target=device "${GRUB_FONT}"`
+    cat << EOF
+if loadfont `make_system_path_relative_to_its_root "${GRUB_FONT}"` ; then
+EOF
+	else
+	    for dir in ${pkgdatadir} ${GRUB_PREFIX} /usr/share/grub ; do
+		for basename in unicode unifont ascii; do
+		    path="${dir}/${basename}.pf2"
+		    if is_path_readable_by_grub ${path} > /dev/null ; then
+			font_path=${path}
+		    else
+			continue
+		    fi
+		    break 2
+		done
+	    done
+	    if [ -n "${font_path}" ] ; then
+    cat << EOF
+if [ x\$feature_default_font_path = xy ] ; then
+   font=unicode
+else
+EOF
+
+                # Make the font accessible
+		prepare_grub_to_access_device `${grub_probe} --target=device "${font_path}"`
+    cat << EOF
+    font="`make_system_path_relative_to_its_root "${font_path}"`"
+fi
+
+if loadfont \$font ; then
+EOF
+	    else
+    cat << EOF
+if loadfont unicode ; then
+EOF
+	    fi
+	fi
 
     cat << EOF
-if loadfont `make_system_path_relative_to_its_root "${GRUB_FONT_PATH}"` ; then
   set gfxmode=${GRUB_GFXMODE}
   load_video
   insmod gfxterm

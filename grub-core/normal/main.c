@@ -474,7 +474,8 @@ static grub_command_t cmd_clear;
 
 static void (*grub_xputs_saved) (const char *str);
 static const char *features[] = {
-  "feature_chainloader_bpb", "feature_ntldr", "feature_platform_search_hint"
+  "feature_chainloader_bpb", "feature_ntldr", "feature_platform_search_hint",
+  "feature_default_font_path"
 };
 
 GRUB_MOD_INIT(normal)

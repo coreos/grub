@@ -1,5 +1,16 @@
 2012-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/font/font.c (grub_font_load): Add support for default
+	path for fonts ($prefix/fonts).
+	* grub-core/kern/corecmd.c (grub_core_cmd_insmod): Unify condition
+	for checking if string is a path.
+	* grub-core/normal/main.c (features): Add feature_default_font_path.
+	* util/grub-mkconfig.in: Skip mangling of GRUB_FONT into GRUB_FONT_PATH.
+	* util/grub.d/00_header.in: Use default directory if possible.
+	* util/grub-install.in: Install unicode.pf2.
+
+2012-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/README: Add de_CH and en@quot to po/LINGUAS generation command.
 	* po/Rules-swiss: New file.
 	* po/swiss.sed: Likewise.
