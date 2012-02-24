@@ -1,3 +1,9 @@
+2012-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* po/README: Add de_CH and en@quot to po/LINGUAS generation command.
+	* po/Rules-swiss: New file.
+	* po/swiss.sed: Likewise.
+
 2012-02-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/btrfs.c (find_device): Fix typos.
