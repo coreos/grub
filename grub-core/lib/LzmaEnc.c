@@ -1211,7 +1211,7 @@ static UInt32 GetOptimum(CLzmaEnc *p, UInt32 position, UInt32 *backRes)
       {
         UInt32 i;
         reps[0] = prevOpt->backs[pos];
-        for (i = 1; i <= pos; i++)
+        for (i = 1; i < pos + 1; i++)
           reps[i] = prevOpt->backs[i - 1];
         for (; i < LZMA_NUM_REPS; i++)
           reps[i] = prevOpt->backs[i];

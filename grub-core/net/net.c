@@ -608,8 +608,8 @@ grub_net_route_address (grub_net_network_level_address_t addr,
 			struct grub_net_network_level_interface **interf)
 {
   struct grub_net_route *route;
-  int depth = 0;
-  int routecnt = 0;
+  unsigned int depth = 0;
+  unsigned int routecnt = 0;
   struct grub_net_network_level_protocol *prot = NULL;
   grub_net_network_level_address_t curtarget = addr;
 
@@ -618,7 +618,7 @@ grub_net_route_address (grub_net_network_level_address_t addr,
   FOR_NET_ROUTES(route)
     routecnt++;
 
-  for (depth = 0; depth < routecnt + 2; depth++)
+  for (depth = 0; depth < routecnt + 2 && depth < GRUB_UINT_MAX; depth++)
     {
       struct grub_net_route *bestroute = NULL;
       FOR_NET_ROUTES(route)

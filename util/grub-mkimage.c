@@ -625,7 +625,7 @@ compress_kernel_xz (char *kernel_img, size_t kernel_size,
 
   xzret = lzma_stream_encoder (&strm, fltrs, LZMA_CHECK_NONE);
   if (xzret != LZMA_OK)
-    grub_util_error (_("cannot compress the kernel image"));
+    grub_util_error ("%s", _("cannot compress the kernel image"));
 
   *core_img = xmalloc (kernel_size);
 
@@ -642,7 +642,7 @@ compress_kernel_xz (char *kernel_img, size_t kernel_size,
 	continue;
       if (xzret == LZMA_STREAM_END)
 	break;
-      grub_util_error (_("cannot compress the kernel image"));
+      grub_util_error ("%s", _("cannot compress the kernel image"));
     }
 
   *core_size -= strm.avail_out;

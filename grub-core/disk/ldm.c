@@ -831,7 +831,7 @@ grub_util_get_ldm (grub_disk_t disk, grub_disk_addr_t start)
 {
   struct grub_diskfilter_pv *pv = NULL;
   struct grub_diskfilter_vg *vg = NULL;
-  struct grub_diskfilter_lv *res, *lv;
+  struct grub_diskfilter_lv *res = 0, *lv, *res_lv = 0;
 
   pv = grub_diskfilter_get_pv_from_disk (disk, &vg);
 
@@ -844,19 +844,21 @@ grub_util_get_ldm (grub_disk_t disk, grub_disk_addr_t start)
 	&& lv->segments->nodes->pv == pv
 	&& lv->segments->nodes->start + pv->start_sector == start)
       {
-	res = lv;
+	res_lv = lv;
 	break;
       }
+  if (!res_lv)
+    return NULL;
   for (lv = vg->lvs; lv; lv = lv->next)
     if (lv->segment_count == 1 && lv->segments->node_count == 1
 	&& lv->segments->type == GRUB_DISKFILTER_MIRROR
-	&& lv->segments->nodes->lv == lv)
+	&& lv->segments->nodes->lv == res_lv)
       {
 	res = lv;
 	break;
       }
-  if (res->fullname)
-    return grub_strdup (lv->fullname);
+  if (res && res->fullname)
+    return grub_strdup (res->fullname);
   return NULL;
 }
 

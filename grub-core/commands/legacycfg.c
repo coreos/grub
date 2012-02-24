@@ -543,15 +543,17 @@ struct legacy_md5_password
   grub_uint8_t hash[MD5_HASHLEN];
 };
 
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
+
 static int
 check_password_md5_real (const char *entered,
 			 struct legacy_md5_password *pw)
 {
-  int enteredlen = grub_strlen (entered);
+  grub_size_t enteredlen = grub_strlen (entered);
   unsigned char alt_result[MD5_HASHLEN];
   unsigned char *digest;
   grub_uint8_t ctx[GRUB_MD_MD5->contextsize];
-  int i;
+  grub_size_t i;
 
   GRUB_MD_MD5->init (ctx);
   GRUB_MD_MD5->write (ctx, entered, enteredlen);

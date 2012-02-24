@@ -49,13 +49,13 @@ grub_set_history (int newsize)
       /* Remove the lines that don't fit in the new buffer.  */
       if (newsize < hist_used)
 	{
-	  int i;
-	  int delsize = hist_used - newsize;
+	  grub_size_t i;
+	  grub_size_t delsize = hist_used - newsize;
 	  hist_used = newsize;
 
-	  for (i = 1; i <= delsize; i++)
+	  for (i = 1; i < delsize + 1; i++)
 	    {
-	      int pos = hist_end - i;
+	      grub_ssize_t pos = hist_end - i;
 	      if (pos < 0)
 		pos += hist_size;
 	      grub_free (old_hist_lines[pos]);

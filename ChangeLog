@@ -1,3 +1,31 @@
+2012-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/Makefile.common (CFLAGS_GNULIB): Add
+	-Wno-unsafe-loop-optimizations.
+	* configure.ac: Remove -Wmissing-declarations and -Wmissing-prototypes
+	on tools.
+	* grub-core/commands/legacycfg.c: Add pragma to skip
+	-Wunsafe-loop-optimizations.
+	(check_password_md5_real): Fix loop counter type.
+	* grub-core/commands/testload.c (grub_cmd_testload): Fix over the EOF
+	reading.
+	* grub-core/disk/ldm.c (grub_util_get_ldm): Fix logic error.
+	* grub-core/fs/zfs/zfs_sha256.c (zio_checksum_SHA256): Add safety
+	loop condition.
+	* grub-core/io/gzio.c: Add pragma to skip -Wunsafe-loop-optimizations.
+	* grub-core/lib/LzmaEnc.c (GetOptimum): Avoid possible infinite loop.
+	* grub-core/net/net.c (grub_net_route_address): Add safety loop
+	condition.
+	* grub-core/normal/charset.c (bidi_line_wrap): Likewise.
+	* grub-core/normal/cmdline.c (grub_set_history): Fix loop types and
+	avoid possible infinite loops.
+	* grub-core/script/parser.y: Add pragma to skip -Wmissing-declarations
+	and -Wunsafe-loop-optimizations.
+	* grub-core/script/yylex.l: Likewise.
+	* util/grub-mkfont.c: Add pragma to skip -Wunsafe-loop-optimizations.
+	(print_glyphs): Avoid infinite loops.
+	* util/grub-mkimage.c (compress_kernel_xz): Fix format security.
+
 2012-02-24  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* grub-core/commands/lsacpi.c (disp_acpi_xsdt_table): Fix loop condition

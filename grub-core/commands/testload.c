@@ -77,19 +77,24 @@ grub_cmd_testload (struct grub_command *cmd __attribute__ ((unused)),
   grub_printf ("Reading %s sequentially again", argv[0]);
   grub_file_seek (file, 0);
 
-  for (pos = 0; pos < size; pos += GRUB_DISK_SECTOR_SIZE)
+  for (pos = 0; pos < size;)
     {
       char sector[GRUB_DISK_SECTOR_SIZE];
+      grub_size_t curlen = GRUB_DISK_SECTOR_SIZE;
 
-      if (grub_file_read (file, sector, GRUB_DISK_SECTOR_SIZE)
-	  != GRUB_DISK_SECTOR_SIZE)
+      if (curlen > size - pos)
+	curlen = size - pos;
+
+      if (grub_file_read (file, sector, curlen)
+	  != (grub_ssize_t) curlen)
 	goto fail;
 
-      if (grub_memcmp (sector, buf + pos, GRUB_DISK_SECTOR_SIZE) != 0)
+      if (grub_memcmp (sector, buf + pos, curlen) != 0)
 	{
 	  grub_printf ("\nDiffers in %lld\n", (unsigned long long) pos);
 	  goto fail;
 	}
+      pos += curlen;
     }
   grub_printf (" Done.\n");
 

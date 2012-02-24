@@ -681,6 +681,8 @@ write_be16_section (const char *name, grub_uint16_t data, int* offset,
   *offset += 10;
 }
 
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
+
 static void
 print_glyphs (struct grub_font_info *font_info)
 {
@@ -717,7 +719,7 @@ print_glyphs (struct grub_font_info *font_info)
 
       bitmap = glyph->bitmap;
       mask = 0x80;
-      for (y = ymax - 1; y >= ymin; y--)
+      for (y = ymax - 1; y > ymin - 1; y--)
 	{
 	  int line_pos;
 
