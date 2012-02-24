@@ -643,8 +643,8 @@ elif [ "${target_cpu}-${platform}" = "i386-ieee1275" ] || [ "${target_cpu}-${pla
 	    exit 1
 	fi
         # Get the Open Firmware device tree path translation.
-	dev="`echo $grub_device | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`"
-	partno="`echo $grub_device | sed -e 's/.*[^0-9]\([0-9]\+\)$/\1/'`"
+	dev="`echo $install_device | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`"
+	partno="`echo $install_device | sed -e 's/.*[^0-9]\([0-9]\+\)$/\1/'`"
 	ofpath="`$ofpathname $dev`" || {
 	    gettext_printf "Couldn't find IEEE1275 device tree path for %s.\nYou will have to set \`boot-device' variable manually.\n" "$dev" 1>&2
 	    exit 1
