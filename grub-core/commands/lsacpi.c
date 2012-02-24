@@ -132,7 +132,7 @@ disp_acpi_xsdt_table (struct grub_acpi_table_header *t)
   disp_acpi_table (t);
   len = t->length - sizeof (*t);
   desc = (grub_uint64_t *) (t + 1);
-  for (; len > 0; desc++, len -= sizeof (*desc))
+  for (; len >= sizeof (*desc); desc++, len -= sizeof (*desc))
     {
 #if GRUB_CPU_SIZEOF_VOID_P == 4
       if (*desc >= (1ULL << 32))
@@ -163,7 +163,7 @@ disp_acpi_rsdt_table (struct grub_acpi_table_header *t)
   disp_acpi_table (t);
   len = t->length - sizeof (*t);
   desc = (grub_uint32_t *) (t + 1);
-  for (; len > 0; desc++, len -= sizeof (*desc))
+  for (; len >= sizeof (*desc); desc++, len -= sizeof (*desc))
     {
       t = (struct grub_acpi_table_header *) (grub_addr_t) *desc;
 
