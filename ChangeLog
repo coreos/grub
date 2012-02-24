@@ -1,5 +1,11 @@
 2012-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/hfsplus.c (grub_hfsplus_btree_iterate_node): Add btree
+	loop check using Brent algorithm.
+	(grub_hfsplus_btree_search): Likewise.
+
+2012-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Fix usage of wrong device for PreP install.
 
 2012-02-24  Vladimir Serbinenko  <phcoder@gmail.com>

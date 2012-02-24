@@ -612,6 +612,8 @@ grub_hfsplus_btree_iterate_node (struct grub_hfsplus_btree *btree,
 				 int (*hook) (void *record))
 {
   grub_disk_addr_t rec;
+  grub_uint64_t saved_node = -1;
+  grub_uint64_t node_count = 0;
 
   for (;;)
     {
@@ -627,8 +629,18 @@ grub_hfsplus_btree_iterate_node (struct grub_hfsplus_btree *btree,
       if (! first_node->next)
 	break;
 
+      if (node_count && first_node->next == saved_node)
+	{
+	  grub_error (GRUB_ERR_BAD_FS, "HFS+ btree loop");
+	  return 0;
+	}
+      if (!(node_count & (node_count - 1)))
+	saved_node = first_node->next;
+      node_count++;
+
       if (grub_hfsplus_read_file (&btree->file, 0,
-				  (grub_be_to_cpu32 (first_node->next)
+				  (((grub_disk_addr_t)
+				    grub_be_to_cpu32 (first_node->next))
 				   * btree->nodesize),
 				  btree->nodesize, cnode) <= 0)
 	return 1;
@@ -656,15 +668,27 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
   char *node;
   struct grub_hfsplus_btnode *nodedesc;
   grub_disk_addr_t rec;
+  grub_uint64_t save_node;
+  grub_uint64_t node_count = 0;
 
   node = grub_malloc (btree->nodesize);
   if (! node)
     return grub_errno;
 
   currnode = btree->root;
+  save_node = currnode - 1;
   while (1)
     {
       int match = 0;
+
+      if (save_node == currnode)
+	{
+	  grub_free (node);
+	  return grub_error (GRUB_ERR_BAD_FS, "HFS+ btree loop");
+	}
+      if (!(node_count & (node_count - 1)))
+	save_node = currnode;
+      node_count++;
 
       /* Read a node.  */
       if (grub_hfsplus_read_file (&btree->file, 0,
