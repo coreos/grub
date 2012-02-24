@@ -341,8 +341,8 @@ progress_bar_set_property (void *vself, const char *name, const char *value)
         self->id = grub_strdup (value);
       else
         self->id = 0;
-      /*      if (self->id && grub_strcmp (self->id, GRUB_GFXMENU_TIMEOUT_COMPONENT_ID)
-	      == 0)*/
+      if (self->id && grub_strcmp (self->id, GRUB_GFXMENU_TIMEOUT_COMPONENT_ID)
+	  == 0)
 	grub_gfxmenu_timeout_register ((grub_gui_component_t) self,
 				       progress_bar_set_state);
     }
