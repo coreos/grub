@@ -103,7 +103,7 @@ usage () {
     printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     printf "  --grub-mkrelpath=%-7s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkrelpath")"
     printf "  --grub-probe=%-11s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-probe")"
-    printf "  --allow-floppy          %s\n" "$(gettext "Make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes.")"
+    printf "  --allow-floppy          %s\n" "$(gettext "make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes.")"
     printf "  --recheck               %s\n" "$(gettext "delete device map if it already exists")"
     printf "  --force                 %s\n" "$(gettext "install even if problems are detected")"
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then

@@ -20,7 +20,9 @@
 #include <config.h>
 
 #define _GNU_SOURCE	1
-#include "progname.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <progname.h>
 #include <argp.h>
 
 /* Print the version information.  */

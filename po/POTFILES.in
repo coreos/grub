@@ -252,6 +252,7 @@
 ./grub-core/kern/efi/init.c
 ./grub-core/kern/efi/mm.c
 ./grub-core/kern/elf.c
+./grub-core/kern/emu/argp_common.c
 ./grub-core/kern/emu/cache.c
 ./grub-core/kern/emu/full.c
 ./grub-core/kern/emu/hostdisk.c
@@ -537,7 +538,6 @@
 ./tests/example_unit_test.c
 ./tests/lib/unit_test.c
 ./tests/printf_unit_test.c
-./util/argp_common.c
 ./util/bin2h.c
 ./util/devicemap.c
 ./util/getroot.c

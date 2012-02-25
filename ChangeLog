@@ -1,3 +1,18 @@
+2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Convert grub-emu to argp.
+
+	* grub-core/Makefile.core.def (kernel): Add kern/emu/argp_common.c on
+	emu.
+	* util/argp_common.c: Rename to ...
+	* grub-core/kern/emu/argp_common.c: ... this. All users updated.
+	Add missing includes.
+	* grub-core/kern/emu/main.c: Convert to argp.
+	* po/POTFILES.in: Regenerate.
+	* util/grub-install.in (usage): Make first letter lowcase in messages
+	for uniformity.
+	* util/grub-setup.c (options): Likewise.
+
 2012-02-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/gfxmenu/gui_progress_bar.c (progress_bar_set_property):

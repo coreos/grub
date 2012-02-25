@@ -742,20 +742,20 @@ unable_to_embed:
 
 static struct argp_option options[] = {
   {"boot-image",  'b', N_("FILE"), 0,
-   N_("Use FILE as the boot image [default=%s]"), 0},
+   N_("use FILE as the boot image [default=%s]"), 0},
   {"core-image",  'c', N_("FILE"), 0,
-   N_("Use FILE as the core image [default=%s]"), 0},
+   N_("use FILE as the core image [default=%s]"), 0},
   {"directory",   'd', N_("DIR"),  0,
-   N_("Use GRUB files in the directory DIR [default=%s]"), 0},
+   N_("use GRUB files in the directory DIR [default=%s]"), 0},
   {"device-map",  'm', N_("FILE"), 0,
    N_("use FILE as the device map [default=%s]"), 0},
   {"force",       'f', 0,      0,
    N_("install even if problems are detected"), 0},
   {"skip-fs-probe",'s',0,      0,
-   N_("Do not probe for filesystems in DEVICE"), 0},
+   N_("do not probe for filesystems in DEVICE"), 0},
   {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   {"allow-floppy", 'a', 0,      0,
-   N_("Make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes."), 0},
+   N_("make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes."), 0},
 
   { 0, 0, 0, 0, 0, 0 }
 };

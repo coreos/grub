@@ -210,6 +210,7 @@ kernel = {
   emu = kern/emu/hostdisk.c;
   emu = kern/emu/hostfs.c;
   emu = kern/emu/main.c;
+  emu = kern/emu/argp_common.c;
   emu = kern/emu/misc.c;
   emu = kern/emu/mm.c;
   emu = kern/emu/time.c;
