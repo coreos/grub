@@ -1,5 +1,9 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/realmode.S: Remove useless align.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/dl.h (grub_dl_load_file): Don't export.
 
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -46,8 +46,6 @@
  *  This is the area for all of the special variables.
  */
 
-	.p2align	5	/* force 4-byte alignment */
-
 protstack:
 	.long	GRUB_MEMORY_MACHINE_PROT_STACK
 
