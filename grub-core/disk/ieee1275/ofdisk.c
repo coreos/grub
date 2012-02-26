@@ -115,26 +115,24 @@ ofdisk_hash_add (char *devpath, char *curcan)
 static void
 scan (void)
 {
-  auto int dev_iterate (struct grub_ieee1275_devalias *alias);
+  auto int dev_iterate_real (struct grub_ieee1275_devalias *alias,
+			     int use_name);
 
-  int dev_iterate (struct grub_ieee1275_devalias *alias)
+  int dev_iterate_real (struct grub_ieee1275_devalias *alias, int use_name)
     {
       struct ofdisk_hash_ent *op;
 
-      grub_dprintf ("disk", "device name = %s type = %s\n", alias->name,
-		    alias->type);
 
       if (grub_strcmp (alias->type, "block") != 0)
 	return 0;
 
-      grub_dprintf ("disk", "disk name = %s\n", alias->name);
       grub_dprintf ("disk", "disk name = %s, path = %s\n", alias->name,
 		    alias->path);
 
-      op = ofdisk_hash_find (alias->name);
+      op = ofdisk_hash_find (alias->path);
       if (!op)
 	{
-	  char *name = grub_strdup (alias->name);
+	  char *name = grub_strdup (use_name ? alias->name : alias->path);
 	  char *can = grub_strdup (alias->path);
 	  if (!name || !can)
 	    {
@@ -148,7 +146,19 @@ scan (void)
       return 0;
     }
 
-  grub_devalias_iterate (dev_iterate);
+  auto int dev_iterate_alias (struct grub_ieee1275_devalias *alias);
+  int dev_iterate_alias (struct grub_ieee1275_devalias *alias)
+  {
+    return dev_iterate_real (alias, 1);
+  }
+
+  auto int dev_iterate (struct grub_ieee1275_devalias *alias);
+  int dev_iterate (struct grub_ieee1275_devalias *alias)
+  {
+    return dev_iterate_real (alias, 0);
+  }
+
+  grub_devalias_iterate (dev_iterate_alias);
   grub_ieee1275_devices_iterate (dev_iterate);
 }
 

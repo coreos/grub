@@ -1,5 +1,10 @@
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ieee1275/ofdisk.c (scan): Fix improper use of device
+	name as if it was an alias.
+
+2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/lsacpi.c (options): Fix typo.
 
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
