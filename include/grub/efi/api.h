@@ -84,6 +84,11 @@
     { 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b } \
   }
 
+#define GRUB_EFI_SERIAL_IO_GUID \
+  { 0xbb25cf6f, 0xf1d4, 0x11d2, \
+    { 0x9a, 0x0c, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0xfd } \
+  }
+
 #define GRUB_EFI_SIMPLE_NETWORK_GUID	\
   { 0xa19832b9, 0xac25, 0x11d3, \
     { 0x9a, 0x2d, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
@@ -221,6 +226,24 @@ enum
     GRUB_EFI_SAL_SYSTEM_TABLE_PLATFORM_FEATURE_IPIREDIRECT = 4,
     GRUB_EFI_SAL_SYSTEM_TABLE_PLATFORM_FEATURE_ITCDRIFT = 8,
   };
+
+typedef enum grub_efi_parity_type
+  {
+    GRUB_EFI_SERIAL_DEFAULT_PARITY,
+    GRUB_EFI_SERIAL_NO_PARITY,
+    GRUB_EFI_SERIAL_EVEN_PARITY,
+    GRUB_EFI_SERIAL_ODD_PARITY
+  }
+grub_efi_parity_type_t;
+
+typedef enum grub_efi_stop_bits
+  {
+    GRUB_EFI_SERIAL_DEFAULT_STOP_BITS,
+    GRUB_EFI_SERIAL_1_STOP_BIT,
+    GRUB_EFI_SERIAL_1_5_STOP_BITS,
+    GRUB_EFI_SERIAL_2_STOP_BITS
+  }
+  grub_efi_stop_bits_t;
 
 /* Enumerations.  */
 enum grub_efi_timer_delay
@@ -1064,6 +1087,27 @@ typedef struct grub_efi_configuration_table grub_efi_configuration_table_t;
 
 #define GRUB_EFIEMU_SYSTEM_TABLE_SIGNATURE 0x5453595320494249LL
 #define GRUB_EFIEMU_RUNTIME_SERVICES_SIGNATURE 0x56524553544e5552LL
+
+struct grub_efi_serial_io_interface
+{
+  grub_efi_uint32_t revision;
+  void (*reset) (void);
+  grub_efi_status_t (*set_attributes) (struct grub_efi_serial_io_interface *this,
+				       grub_efi_uint64_t speed,
+				       grub_efi_uint32_t fifo_depth,
+				       grub_efi_uint32_t timeout,
+				       grub_efi_parity_type_t parity,
+				       grub_uint8_t word_len,
+				       grub_efi_stop_bits_t stop_bits);
+  void (*set_control_bits) (void);
+  void (*get_control_bits) (void);
+  grub_efi_status_t (*write) (struct grub_efi_serial_io_interface *this,
+			      grub_efi_uintn_t *buf_size,
+			      void *buffer);
+  grub_efi_status_t (*read) (struct grub_efi_serial_io_interface *this,
+			     grub_efi_uintn_t *buf_size,
+			     void *buffer);
+};
 
 struct grub_efi_simple_input_interface
 {

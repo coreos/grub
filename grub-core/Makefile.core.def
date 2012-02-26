@@ -1528,8 +1528,11 @@ module = {
   name = serial;
   common = term/serial.c;
   x86 = term/ns8250.c;
+  ieee1275 = term/ieee1275/serial.c;
+  efi = term/efi/serial.c;
 
-  enable = x86;
+  enable = terminfomodule;
+  enable = ieee1275;
 };
 
 module = {

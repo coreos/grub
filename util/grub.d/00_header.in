@@ -112,10 +112,6 @@ for x in ${GRUB_TERMINAL_INPUT} ${GRUB_TERMINAL_OUTPUT}; do
 done
 
 if [ "x$serial" = x1 ]; then
-    if ! test -e "${GRUB_PREFIX}/serial.mod" ; then
-	gettext "Serial terminal not available on this platform." >&2 ; echo >&2; exit 1
-    fi
-
     if [ "x${GRUB_SERIAL_COMMAND}" = "x" ] ; then
 	grub_warn "$(gettext "Requested serial terminal but GRUB_SERIAL_COMMAND is unspecified. Default parameters will be used.")"
 	GRUB_SERIAL_COMMAND=serial

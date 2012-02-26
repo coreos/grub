@@ -1,5 +1,33 @@
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Implement serial on IEEE1275 and EFI.
+
+	* docs/grub.texi (Platform-specific limitations): Fix the columen video
+	on emu. Mention arc and emu as the only platforms without serial
+	support.
+	* grub-core/Makefile.core.def (serial): Enable on all terminfomodule and
+	ieee1275 platforms.
+	* grub-core/term/efi/serial.c: New file.
+	* grub-core/term/ieee1275/serial.c: Likewise.
+	* grub-core/term/serial.c (grub_serial_find): Disable direct port
+	specification if no ns8250 driver is available.
+	(grub_cmd_serial): Likewise.
+	(GRUB_MOD_INIT) [GRUB_MACHINE_IEEE1275]: Init ofserial.
+	(GRUB_MOD_INIT) [GRUB_MACHINE_EFI]: Init efiserial.
+	* include/grub/efi/api.h (GRUB_EFI_SERIAL_IO_GUID): New define.
+	(grub_efi_parity_type_t): New type.
+	(grub_efi_stop_bits_t): Likewise.
+	(grub_efi_serial_io_interface): New struct.
+	* include/grub/serial.h (grub_serial_port): Make 'broken' field
+	available for all interfaces.
+	Add EFI and IEEE1275 fields.
+	(grub_ofserial_init): New proto.
+	(grub_efiserial_init): Likeiwse.
+	* util/grub.d/00_header.in: Don't check for the presence of serial
+	module.
+
+2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ieee1275/ofdisk.c (scan): Fix improper use of device
 	name as if it was an alias.
 

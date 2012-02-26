@@ -4105,6 +4105,9 @@ ARC platform is unable to change datetime (firmware doesn't seem to provide a
 function for it).
 EMU has similar limitation.
 
+ARC platform no serial port is available.
+EMU has similar limitation.
+
 Console charset refers only to firmware-assisted console. gfxterm is always
 Unicode (see Internationalisation section for its limitations). Serial is
 configurable to UTF-8 or ASCII (see Internationalisation). In case of qemu
@@ -4149,7 +4152,6 @@ and mips-qemu_mips can use only memory up to first hole.
 @item video              @tab yes     @tab yes      @tab yes          @tab yes
 @item console charset    @tab CP437   @tab CP437    @tab CP437        @tab CP437
 @item network            @tab yes (*) @tab no       @tab no           @tab no
-@item serial             @tab yes     @tab yes      @tab yes          @tab yes
 @item ATA/AHCI           @tab yes     @tab yes      @tab yes          @tab yes
 @item AT keyboard        @tab yes     @tab yes      @tab yes          @tab yes
 @item USB                @tab yes     @tab yes      @tab yes          @tab yes
@@ -4167,7 +4169,6 @@ and mips-qemu_mips can use only memory up to first hole.
 @item video              @tab yes         @tab yes       @tab no            @tab no
 @item console charset    @tab Unicode     @tab Unicode   @tab ASCII         @tab Unicode
 @item network            @tab yes         @tab yes       @tab yes           @tab yes
-@item serial             @tab yes         @tab yes       @tab yes           @tab no
 @item ATA/AHCI           @tab yes         @tab yes       @tab yes           @tab no
 @item AT keyboard        @tab yes         @tab yes       @tab yes           @tab no
 @item USB                @tab yes         @tab yes       @tab yes           @tab no
@@ -4185,7 +4186,6 @@ and mips-qemu_mips can use only memory up to first hole.
 @item video              @tab yes         @tab no      @tab yes     @tab no
 @item console charset    @tab N/A         @tab ASCII   @tab ASCII   @tab ASCII
 @item network            @tab no          @tab yes (*) @tab yes     @tab no
-@item serial             @tab yes         @tab no      @tab no      @tab no
 @item ATA/AHCI           @tab yes         @tab no      @tab no      @tab no
 @item AT keyboard        @tab yes         @tab no      @tab no      @tab no
 @item USB                @tab yes         @tab no      @tab no      @tab no
@@ -4200,10 +4200,9 @@ and mips-qemu_mips can use only memory up to first hole.
 
 @multitable @columnfractions .20 .20 .20 .20 .20
 @item                    @tab MIPS qemu @tab emu
-@item video              @tab no        @tab no
+@item video              @tab no        @tab yes
 @item console charset    @tab CP437     @tab ASCII
 @item network            @tab no        @tab yes
-@item serial             @tab yes       @tab no
 @item ATA/AHCI           @tab yes       @tab no
 @item AT keyboard        @tab yes       @tab no
 @item USB                @tab N/A       @tab yes
