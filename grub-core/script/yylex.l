@@ -133,15 +133,17 @@ ESC             \\(.|\n)
 SQCHR           [^\']
 DQCHR           {ESC}|[^\\\"]
 DQSTR           \"{DQCHR}*\"
+I18NSTR         \$\"{DQCHR}*\"
 SQSTR           \'{SQCHR}*\'
 SPECIAL         \?|\#|\*|\@
 VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|${SPECIAL}|$\{{SPECIAL}\}
-WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE})+
+WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE}|{I18NSTR})+
 
 MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
 
 %x              SPLIT
 %x              DQUOTE
+%x              I18NQUOTE
 %x              SQUOTE
 %x              VAR
 
@@ -217,6 +219,10 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
                   yy_push_state (SQUOTE, yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_TEXT);
                 }
+  "\$\""        {
+                  yy_push_state (I18NQUOTE, yyscanner);
+                  ARG (GRUB_SCRIPT_ARG_TYPE_GETTEXT);
+                }
   \$            {
                   yy_push_state (VAR, yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_TEXT);
@@ -278,6 +284,18 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
   \$            {
                   yy_push_state (VAR, yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_DQSTR);
+                }
+  (.|\n)        { COPY (yytext, yyleng); }
+}
+
+<I18NQUOTE>{
+  \\\\          { COPY ("\\", 1); }
+  \\\"          { COPY ("\"", 1); }
+  \\\n          { /* ignore */ }
+  [^\"\\\n]+    { COPY (yytext, yyleng); }
+  \"            {
+                  yy_pop_state (yyscanner);
+                  ARG (GRUB_SCRIPT_ARG_TYPE_GETTEXT);
                 }
   (.|\n)        { COPY (yytext, yyleng); }
 }

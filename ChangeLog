@@ -1,5 +1,15 @@
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	$"..." support in scripts.
+
+	* grub-core/script/execute.c (grub_script_arglist_to_argv): Handle
+	GRUB_SCRIPT_ARG_TYPE_GETTEXT.
+	* grub-core/script/yylex.l: Likewise.
+	* include/grub/script_sh.h (GRUB_SCRIPT_ARG_TYPE_GETTEXT): New enum
+	value.
+
+2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gentpl.py: Remove obsolete pkglib_DATA handling.
 
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>

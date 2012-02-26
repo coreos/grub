@@ -328,8 +328,8 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
   struct grub_script_arg *arg = 0;
   struct grub_script_argv result = { 0, 0, 0 };
 
-  auto int append (char *s, int escape_type);
-  int append (char *s, int escape_type)
+  auto int append (const char *s, int escape_type);
+  int append (const char *s, int escape_type)
   {
     int r;
     char *p = 0;
@@ -395,10 +395,18 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 	      break;
 
 	    case GRUB_SCRIPT_ARG_TYPE_TEXT:
-	      if (grub_strlen (arg->str) &&
+	      if (arg->str[0] &&
 		  grub_script_argv_append (&result, arg->str,
 					   grub_strlen (arg->str)))
 		goto fail;
+	      break;
+
+	    case GRUB_SCRIPT_ARG_TYPE_GETTEXT:
+	      {
+		const char *t = _(arg->str);
+		if (grub_script_argv_append (&result, t, grub_strlen (t)))
+		  goto fail;
+	      }
 	      break;
 
 	    case GRUB_SCRIPT_ARG_TYPE_DQSTR:
