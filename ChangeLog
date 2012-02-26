@@ -1,5 +1,19 @@
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add new all_video module.
+
+	* grub-core/Makefile.am (moddep.lst): Make dependent on video.lst.
+	* grub-core/Makefile.core.def (all_video): New module.
+	* grub-core/genmoddep.awk: Generate dependency of all_video from
+	video.lst.
+	* grub-core/lib/fake_module.c: New file.
+	* grub-core/normal/main.c (features): Add feature_all_video_module.
+	* util/grub.d/00_header.in: Define locale_dir based on $prefix and
+	don't do explicit search again.
+	insmod all_vidoe in load_video if available.
+
+2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Another round of string clarification and adding TRANSLATORS comments.
 
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>

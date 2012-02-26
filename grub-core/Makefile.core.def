@@ -1794,3 +1794,8 @@ module = {
   name = crc64;
   common = lib/crc64.c;
 };
+
+module = {
+  name = all_video;
+  common = lib/fake_module.c;
+};
