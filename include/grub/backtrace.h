@@ -21,5 +21,6 @@
 
 void grub_backtrace (void);
 void grub_backtrace_pointer (void *ptr);
+void grub_backtrace_print_address (void *addr);
 
 #endif

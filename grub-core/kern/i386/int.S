@@ -19,9 +19,6 @@
 FUNCTION(grub_bios_interrupt)
 	pushf
 	cli
-#ifndef GRUB_MACHINE_PCBIOS
-	sidt protidt
-#endif
 	popf
 	pushl    %ebp
 	pushl    %ecx
@@ -51,9 +48,6 @@ FUNCTION(grub_bios_interrupt)
 	.code16
 	pushf
 	cli
-#ifndef GRUB_MACHINE_PCBIOS
-	lidt realidt
-#endif
 	
 	mov	%ds, %ax
 	push	%ax
@@ -126,15 +120,4 @@ intno:
 	popl    %eax
 	popl    %ecx
 	popl    %ebp
-#ifndef GRUB_MACHINE_PCBIOS
-	lidt protidt
-#endif
 	ret
-#ifndef GRUB_MACHINE_PCBIOS
-realidt:
-	.word 0x100
-	.long 0
-protidt:
-	.word 0
-	.long 0
-#endif

@@ -21,6 +21,7 @@
 #include <grub/cpu/gdb.h>
 #include <grub/gdb.h>
 #include <grub/serial.h>
+#include <grub/backtrace.h>
 
 static const char hexchars[] = "0123456789abcdef";
 int grub_gdb_regs[GRUB_MACHINE_NR_REGS];
@@ -140,9 +141,9 @@ grub_gdb_putpacket (char *buffer)
 /* Convert the memory pointed to by mem into hex, placing result in buf.
    Return a pointer to the last char put in buf (NULL).  */
 static char *
-grub_gdb_mem2hex (char *mem, char *buf, int count)
+grub_gdb_mem2hex (char *mem, char *buf, grub_size_t count)
 {
-  int i;
+  grub_size_t i;
   unsigned char ch;
 
   for (i = 0; i < count; i++)
@@ -175,7 +176,7 @@ grub_gdb_hex2mem (char *buf, char *mem, int count)
 /* Convert hex characters to int and return the number of characters
    processed.  */
 static int
-grub_gdb_hex2int (char **ptr, int *int_value)
+grub_gdb_hex2int (char **ptr, grub_uint64_t *int_value)
 {
   int num_chars = 0;
   int hex_value;
@@ -205,17 +206,16 @@ grub_gdb_trap (int trap_no)
 {
   int sig_no;
   int stepping;
-  int addr;
-  int length;
+  grub_uint64_t addr;
+  grub_uint64_t length;
   char *ptr;
-  int newPC;
 
   if (!grub_gdb_port)
     {
       grub_printf ("Unhandled exception 0x%x at ", trap_no);
-      grub_backtrace_print_address (grub_gdb_regs[PC]);
+      grub_backtrace_print_address ((void *) grub_gdb_regs[PC]);
       grub_printf ("\n");
-      grub_backtrace_pointer (grub_gdb_regs[EBP]);
+      grub_backtrace_pointer ((void *) grub_gdb_regs[EBP]);
       grub_abort ();
     }
 
@@ -284,10 +284,10 @@ grub_gdb_trap (int trap_no)
 	/* Set the value of a single CPU register -- return OK.  */
 	case 'P':
 	  {
-	    int regno;
+	    grub_uint64_t regno;
 
 	    if (grub_gdb_hex2int (&ptr, &regno) && *ptr++ == '=')
-	      if (regno >= 0 && regno < GRUB_MACHINE_NR_REGS)
+	      if (regno < GRUB_MACHINE_NR_REGS)
 		{
 		  grub_gdb_hex2mem (ptr, (char *) &grub_gdb_regs[regno], 4);
 		  grub_strcpy (grub_gdb_outbuf, "OK");
@@ -308,7 +308,8 @@ grub_gdb_trap (int trap_no)
 	      if (grub_gdb_hex2int (&ptr, &length))
 		{
 		  ptr = 0;
-		  grub_gdb_mem2hex ((char *) addr, grub_gdb_outbuf, length);
+		  grub_gdb_mem2hex ((char *) (grub_addr_t) addr,
+				    grub_gdb_outbuf, length);
 		}
 	  if (ptr)
 	    grub_strcpy (grub_gdb_outbuf, "E01");
@@ -322,7 +323,7 @@ grub_gdb_trap (int trap_no)
 	      if (grub_gdb_hex2int (&ptr, &length))
 		if (*(ptr++) == ':')
 		  {
-		    grub_gdb_hex2mem (ptr, (char *) addr, length);
+		    grub_gdb_hex2mem (ptr, (char *) (grub_addr_t) addr, length);
 		    grub_strcpy (grub_gdb_outbuf, "OK");
 		    ptr = 0;
 		  }
@@ -341,8 +342,6 @@ grub_gdb_trap (int trap_no)
 	  /* try to read optional parameter, pc unchanged if no parm */
 	  if (grub_gdb_hex2int (&ptr, &addr))
 	    grub_gdb_regs[PC] = addr;
-
-	  newPC = grub_gdb_regs[PC];
 
 	  /* Clear the trace bit.  */
 	  grub_gdb_regs[PS] &= 0xfffffeff;

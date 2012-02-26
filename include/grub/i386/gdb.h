@@ -47,7 +47,7 @@
 #define SP	ESP
 #define PS	EFLAGS
 
-#ifndef ASM
+#ifndef ASM_FILE
 
 #include <grub/gdb.h>
 
@@ -69,7 +69,6 @@ struct grub_cpu_idt_descriptor
 } __attribute__ ((packed));
 
 extern void (*grub_gdb_trapvec[]) (void);
-void grub_gdb_breakpoint (void);
 void grub_gdb_idtinit (void);
 void grub_gdb_idtrestore (void);
 void grub_gdb_trap (int trap_no);

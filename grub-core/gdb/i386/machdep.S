@@ -17,7 +17,6 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#define ASM	1
 #include <grub/cpu/gdb.h>
 
 #define EC_PRESENT	1

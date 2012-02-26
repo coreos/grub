@@ -26,29 +26,6 @@
 
 #define MAX_STACK_FRAME 102400
 
-GRUB_MOD_LICENSE ("GPLv3+");
-
-void
-grub_backtrace_print_address (void *addr)
-{
-  grub_dl_t mod;
-
-  FOR_DL_MODULES (mod)
-  {
-    grub_dl_segment_t segment;
-    for (segment = mod->segment; segment; segment = segment->next)
-      if (segment->addr <= addr && (grub_uint8_t *) segment->addr
-	  + segment->size > (grub_uint8_t *) addr)
-	{
-	  grub_printf ("%s.%x+%" PRIxGRUB_SIZE, mod->name, segment->section,
-		       (grub_uint8_t *) addr - (grub_uint8_t *) segment->addr);
-	  return;
-	}
-  }
-
-  grub_printf ("%p", addr);
-}
-
 void
 grub_backtrace_pointer (void *ebp)
 {

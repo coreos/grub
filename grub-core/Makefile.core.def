@@ -1755,7 +1755,8 @@ module = {
 
 module = {
   name = backtrace;
-  common = lib/i386/backtrace.c;
+  x86 = lib/i386/backtrace.c;
+  common = lib/backtrace.c;
   enable = x86;
 };
 
