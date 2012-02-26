@@ -1,5 +1,9 @@
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Another round of string clarification and adding TRANSLATORS comments.
+
+2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mknetdir.in: Remove erroneous reference to install_device.
 
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>

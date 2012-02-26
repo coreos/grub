@@ -79,7 +79,7 @@ hook (const struct grub_video_mode_info *info)
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP)
     grub_xputs (_("Monochrome "));
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_UNKNOWN)
-    grub_xputs (_("Unknown "));
+    grub_xputs (_("Unknown video mode "));
 
   grub_xputs ("\n");
 

@@ -183,6 +183,8 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, 
+		       /* TRANSLATORS: it's musical notes, not the notes
+			  you take.  */
 		       N_("filename or tempo and notes expected"));
 
   if (argc == 1)

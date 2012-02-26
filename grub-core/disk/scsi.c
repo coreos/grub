@@ -719,7 +719,7 @@ grub_scsi_write (grub_disk_t disk __attribute((unused)),
   scsi = disk->data;
 
   if (scsi->devtype == grub_scsi_devtype_cdrom)
-    return grub_error (GRUB_ERR_IO, N_("cannot write to cdrom"));
+    return grub_error (GRUB_ERR_IO, N_("cannot write to CD-ROM"));
 
   while (size)
     {

@@ -139,6 +139,10 @@ grub_cmd_password (grub_command_t cmd __attribute__ ((unused)),
 	  grub_free (pass->salt);
 	  grub_free (pass);
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			     /* TRANSLATORS: it means that the string which
+				was supposed to be a password hash doesn't
+				have a correct format, not to password
+				mismatch.  */
 			     N_("invalid PBKDF2 password"));
 	}
 

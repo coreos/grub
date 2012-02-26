@@ -43,10 +43,10 @@ read_headers (grub_file_t file, const char *filename, Elf_Ehdr *e, char **shdr)
       || e->e_ident[EI_MAG3] != ELFMAG3
       || e->e_ident[EI_VERSION] != EV_CURRENT
       || e->e_version != EV_CURRENT)
-    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch independent ELF magic"));
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch-independent ELF magic"));
 
   if (e->e_ident[EI_CLASS] != SUFFIX (ELFCLASS))
-    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch dependent ELF magic"));
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch-dependent ELF magic"));
 
   *shdr = grub_malloc (e->e_shnum * e->e_shentsize);
   if (! *shdr)

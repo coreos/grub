@@ -85,6 +85,7 @@ grub_machine_fini (void)
 static struct argp_option options[] = {
   {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."), 2},
   {"device-map",  'm', N_("FILE"), 0,
+   /* TRANSLATORS: There are many devices in device map.  */
    N_("use FILE as the device map [default=%s]"), 0},
   {"directory",  'd', N_("DIR"), 0,
    N_("use GRUB files in the directory DIR [default=%s]"), 0},
@@ -143,7 +144,8 @@ argp_parser (int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
       {
 	/* Too many arguments. */
-	fprintf (stderr, _("Unknown extra argument `%s'.\n"), arg);
+	fprintf (stderr, _("Unknown extra argument `%s'."), arg);
+	fprintf (stderr, "\n");
 	argp_usage (state);
       }
       break;

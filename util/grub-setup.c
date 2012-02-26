@@ -381,6 +381,7 @@ setup (const char *dir,
 	  grub_util_error (_("unable to identify a filesystem in %s; safety check can't be performed"),
 			   dest_dev->disk->name);
 	if (fs && !fs->reserved_first_sector)
+	  /* TRANSLATORS: Filesystem may reserve the space just GRUB isn't sure about it.  */
 	  grub_util_error (_("%s appears to contain a %s filesystem which isn't known to "
 			     "reserve space for DOS-style boot.  Installing GRUB there could "
 			     "result in FILESYSTEM DESTRUCTION if valuable data is overwritten "
@@ -393,6 +394,7 @@ setup (const char *dir,
 	    && strcmp (dest_partmap->name, "netbsd") != 0
 	    && strcmp (dest_partmap->name, "openbsd") != 0
 	    && strcmp (dest_partmap->name, "sunpc") != 0)
+	  /* TRANSLATORS: Partition map may reserve the space just GRUB isn't sure about it.  */
 	  grub_util_error (_("%s appears to contain a %s partition map which isn't known to "
 			     "reserve space for DOS-style boot.  Installing GRUB there could "
 			     "result in FILESYSTEM DESTRUCTION if valuable data is overwritten "
@@ -853,7 +855,8 @@ argp_parser (int key, char *arg, struct argp_state *state)
         else
           {
             /* Too many arguments. */
-            fprintf (stderr, _("Unknown extra argument `%s'.\n"), arg);
+	    fprintf (stderr, _("Unknown extra argument `%s'."), arg);
+	    fprintf (stderr, "\n");
             argp_usage (state);
           }
         break;

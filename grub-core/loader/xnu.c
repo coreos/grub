@@ -1460,8 +1460,11 @@ GRUB_MOD_INIT(xnu)
 					  GNU/Linux runlevels.
 				       */
 				       N_("DIRECTORY [OSBundleRequired]"),
+				       /* TRANSLATORS: There are many extensions
+					  in extension directory.  */
 				       N_("Load XNU extension directory."));
   cmd_ramdisk = grub_register_command ("xnu_ramdisk", grub_cmd_xnu_ramdisk, 0,
+   /* TRANSLATORS: ramdisk here isn't identifier. It can be translated.  */
 				       N_("Load XNU ramdisk. "
 					  "It will be available in OS as md0."));
   cmd_splash = grub_register_extcmd ("xnu_splash",
@@ -1472,7 +1475,7 @@ GRUB_MOD_INIT(xnu)
 #ifndef GRUB_MACHINE_EMU
   cmd_resume = grub_register_command ("xnu_resume", grub_cmd_xnu_resume,
 				      0, N_("Load an image of hibernated"
-					    " XNU image."));
+					    " XNU."));
 #endif
 
   grub_cpu_xnu_init ();

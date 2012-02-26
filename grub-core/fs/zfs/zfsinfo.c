@@ -153,11 +153,11 @@ print_vdev_info (char *nvlist, int tab)
 	  print_tabs (tab);
 	  if (!child)
 	    {
-	      grub_printf_ (N_("Mirror element %d isn't correct\n"), i);
+	      grub_printf_ (N_("Mirror element number %d isn't correct\n"), i);
 	      continue;
 	    }
 
-	  grub_printf_ (N_("Mirror element %d:\n"), i);
+	  grub_printf_ (N_("Mirror element number %d:\n"), i);
 	  print_vdev_info (child, tab + 1);
 
 	  grub_free (child);
@@ -299,6 +299,9 @@ grub_cmd_zfsinfo (grub_command_t cmd __attribute__ ((unused)), int argc,
   nv = grub_zfs_nvlist_lookup_nvlist (nvlist, ZPOOL_CONFIG_VDEV_TREE);
 
   if (!nv)
+    /* TRANSLATORS: There are undetermined number of virtual devices
+       in a device tree, not just one.
+     */
     grub_puts_ (N_("No virtual device tree available"));
   else
     print_vdev_info (nv, 1);
@@ -401,7 +404,7 @@ GRUB_MOD_INIT (zfsinfo)
 				    N_("Print ZFS info about DEVICE."));
   cmd_bootfs = grub_register_command ("zfs-bootfs", grub_cmd_zfs_bootfs,
 				      N_("FILESYSTEM [VARIABLE]"),
-				      N_("Print ZFS-BOOTFSOBJ or set it to VARIABLE"));
+				      N_("Print ZFS-BOOTFSOBJ or store it into VARIABLE"));
 }
 
 GRUB_MOD_FINI (zfsinfo)

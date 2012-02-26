@@ -98,6 +98,7 @@ linux_entry ()
 	module	${rel_dirname}/${basename} placeholder root=${linux_root_device_thisversion} ro ${args}
 EOF
   if test -n "${initrd}" ; then
+    # TRANSLATORS: ramdisk isn't identifier. Should be translated.
     message="$(gettext_printf "Loading initial ramdisk ...")"
     cat << EOF
 	echo	'$message'

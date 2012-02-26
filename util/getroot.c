@@ -1234,7 +1234,7 @@ grub_util_pull_device (const char *os_dev)
 		grub_err_t err;
 		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
 		if (err)
-		  grub_util_error (_("can't mount crypto volume `%s': %s"),
+		  grub_util_error (_("can't mount encrypted volume `%s': %s"),
 				   lastsubdev, grub_errmsg);
 	      }
 
@@ -1279,7 +1279,7 @@ grub_util_pull_device (const char *os_dev)
 		grub_err_t err;
 		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
 		if (err)
-		  grub_util_error (_("can't mount crypto volume `%s': %s"),
+		  grub_util_error (_("can't mount encrypted volume `%s': %s"),
 				   lastsubdev, grub_errmsg);
 	      }
 	    grub_free (grdev);

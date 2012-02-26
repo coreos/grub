@@ -36,6 +36,10 @@ static grub_uint32_t *const int13slot = (grub_uint32_t *) (4 * 0x13);
 
 /* Remember to update enum opt_idxs accordingly.  */
 static const struct grub_arg_option options[] = {
+  /* TRANSLATORS: In this file "mapping" refers to a change GRUB makes so if
+     your language doesn't have an equivalent of "mapping" you can
+     use the word like "rerouting".
+   */
   {"list", 'l', 0, N_("Show the current mappings."), 0, 0},
   {"reset", 'r', 0, N_("Reset all mappings to the default values."), 0, 0},
   {"swap", 's', 0, N_("Perform both direct and reverse mappings."), 0, 0},

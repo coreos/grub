@@ -808,7 +808,7 @@ GRUB_MOD_INIT(legacycfg)
   cmd_check_password = grub_register_command ("legacy_check_password",
 					      grub_cmd_legacy_check_password,
 					      N_("[--md5] PASSWD [FILE]"),
-					      N_("Simulate grub-legacy `password' command in menuentry mode"));
+					      N_("Simulate grub-legacy `password' command in menu entry mode"));
 
 }
 

@@ -772,6 +772,7 @@ grub_hostdisk_os_dev_to_grub_drive (const char *os_disk, int add)
     return NULL;
 
   if (i == ARRAY_SIZE (map))
+    /* TRANSLATORS: it refers to the lack of free slots.  */
     grub_util_error ("%s", _("device count exceeds limit"));
 
   map[i].device = xstrdup (os_disk);
@@ -1192,7 +1193,7 @@ read_device_map (const char *dev_map)
       /* Find a free slot.  */
       drive = find_free_slot ();
       if (drive < 0)
-	show_error (_("Map table size exceeded"));
+	show_error (_("device count exceeds limit"));
 
       e = p;
       p = strchr (p, ')');

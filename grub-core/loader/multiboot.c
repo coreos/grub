@@ -171,7 +171,7 @@ grub_multiboot_load_elf (grub_file_t file, const char *filename,
   else if (grub_multiboot_is_elf64 (buffer))
     return grub_multiboot_load_elf64 (file, filename, buffer);
 
-  return grub_error (GRUB_ERR_UNKNOWN_OS, N_("invalid arch dependent ELF magic"));
+  return grub_error (GRUB_ERR_UNKNOWN_OS, N_("invalid arch-dependent ELF magic"));
 }
 
 grub_err_t

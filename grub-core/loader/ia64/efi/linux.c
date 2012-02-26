@@ -372,13 +372,13 @@ grub_load_elf64 (grub_file_t file, void *buffer, const char *filename)
       || ehdr->e_ident[EI_MAG3] != ELFMAG3
       || ehdr->e_ident[EI_DATA] != ELFDATA2LSB)
     return grub_error(GRUB_ERR_UNKNOWN_OS,
-		      N_("invalid arch independent ELF magic"));
+		      N_("invalid arch-independent ELF magic"));
 
   if (ehdr->e_ident[EI_CLASS] != ELFCLASS64
       || ehdr->e_version != EV_CURRENT
       || ehdr->e_machine != EM_IA_64)
     return grub_error (GRUB_ERR_UNKNOWN_OS,
-		       N_("invalid arch dependent ELF magic"));
+		       N_("invalid arch-dependent ELF magic"));
 
   if (ehdr->e_type != ET_EXEC)
     return grub_error (GRUB_ERR_UNKNOWN_OS,

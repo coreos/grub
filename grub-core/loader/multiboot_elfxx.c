@@ -62,11 +62,11 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, const char *filename, voi
       || ehdr->e_ident[EI_MAG2] != ELFMAG2
       || ehdr->e_ident[EI_MAG3] != ELFMAG3
       || ehdr->e_ident[EI_DATA] != ELFDATA2LSB)
-    return grub_error(GRUB_ERR_UNKNOWN_OS, N_("invalid arch independent ELF magic"));
+    return grub_error(GRUB_ERR_UNKNOWN_OS, N_("invalid arch-independent ELF magic"));
 
   if (ehdr->e_ident[EI_CLASS] != ELFCLASSXX || ehdr->e_machine != E_MACHINE
       || ehdr->e_version != EV_CURRENT)
-    return grub_error (GRUB_ERR_UNKNOWN_OS, N_("invalid arch dependent ELF magic"));
+    return grub_error (GRUB_ERR_UNKNOWN_OS, N_("invalid arch-dependent ELF magic"));
 
   if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN)
     return grub_error (GRUB_ERR_UNKNOWN_OS, N_("this ELF file is not of the right type"));

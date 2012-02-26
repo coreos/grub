@@ -57,6 +57,7 @@ usage () {
     printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
     printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
     printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "save output in FILE [required]")"
+    # TRANSLATORS: platform here isn't identifier. It can be translated.
     dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})")"
     printf "  -d, --directory=%-8s%s\n" \
 	"DIR" "$dir_msg"

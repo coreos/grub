@@ -49,6 +49,12 @@ static grub_uint32_t eip = 0xffffffff;
 static const struct grub_arg_option options[] =
   {
     {"map", 'm', GRUB_ARG_OPTION_REPEATABLE,
+     /* TRANSLATORS: it's about guessing which GRUB disk
+	is which Plan9 disk. If your language has no
+	word "mapping" you can use another word which
+	means that the GRUBDEVICE and PLAN9DEVICE are
+	actually the same device, just named differently
+	in OS and GRUB.  */
      N_("Override guessed mapping of Plan9 devices."), 
      N_("GRUBDEVICE=PLAN9DEVICE"),
      ARG_TYPE_STRING},

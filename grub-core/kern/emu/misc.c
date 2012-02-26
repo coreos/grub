@@ -70,7 +70,7 @@ grub_util_warn (const char *fmt, ...)
 {
   va_list ap;
 
-  fprintf (stderr, _("%s: warn:"), program_name);
+  fprintf (stderr, _("%s: warning:"), program_name);
   fprintf (stderr, " ");
   va_start (ap, fmt);
   vfprintf (stderr, fmt, ap);

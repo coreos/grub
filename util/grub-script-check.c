@@ -68,7 +68,8 @@ argp_parser (int key, char *arg, struct argp_state *state)
       else
 	{
 	  /* Too many arguments. */
-	  fprintf (stderr, _("Unknown extra argument `%s'.\n"), arg);
+	  fprintf (stderr, _("Unknown extra argument `%s'."), arg);
+	  fprintf (stderr, "\n");
 	  argp_usage (state);
 	}
       break;

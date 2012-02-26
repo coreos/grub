@@ -323,7 +323,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (grub_elf_is_elf64 (elf))
     err = grub_linux_load64 (elf, argv[0], &extra, size);
   else
-    err = grub_error (GRUB_ERR_BAD_OS, N_("invalid arch dependent ELF magic"));
+    err = grub_error (GRUB_ERR_BAD_OS, N_("invalid arch-dependent ELF magic"));
 
   grub_elf_close (elf);
 

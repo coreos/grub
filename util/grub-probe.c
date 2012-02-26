@@ -838,7 +838,8 @@ main (int argc, char *argv[])
   if (arguments.ndevices != 1 && !argument_is_device)
     {
       char *program = xstrdup(program_name);
-      fprintf (stderr, _("Unknown extra argument `%s'.\n"), argv[optind + 1]);
+      fprintf (stderr, _("Unknown extra argument `%s'."), arguments.devices[1]);
+      fprintf (stderr, "\n");
       argp_help (&argp, stderr, ARGP_HELP_STD_USAGE, program);
       free (program);
       exit(1);

@@ -30,7 +30,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static const struct grub_arg_option options[] =
   {
     {"verbose", 'v', 0, N_("Verbose countdown."), 0, 0},
-    {"interruptible", 'i', 0, N_("Interruptible with ESC."), 0, 0},
+    {"interruptible", 'i', 0, N_("Allow to interrupt with ESC."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 

@@ -44,7 +44,7 @@ grub_arch_dl_check_header (void *ehdr)
       || e->e_ident[EI_DATA] != ELFDATA2LSB
       || e->e_machine != EM_MIPS)
 #endif
-    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch dependent ELF magic"));
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch-dependent ELF magic"));
 
   return GRUB_ERR_NONE;
 }

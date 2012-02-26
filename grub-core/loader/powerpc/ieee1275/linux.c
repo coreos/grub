@@ -280,7 +280,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     grub_linux_load64 (elf, argv[0]);
   else
     {
-      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("invalid arch dependent ELF magic"));
+      grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("invalid arch-dependent ELF magic"));
       goto out;
     }
 

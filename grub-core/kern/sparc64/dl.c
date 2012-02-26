@@ -33,7 +33,7 @@ grub_arch_dl_check_header (void *ehdr)
   if (e->e_ident[EI_CLASS] != ELFCLASS64
       || e->e_ident[EI_DATA] != ELFDATA2MSB
       || e->e_machine != EM_SPARCV9)
-    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch dependent ELF magic"));
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch-dependent ELF magic"));
 
   return GRUB_ERR_NONE;
 }

@@ -87,9 +87,9 @@ fi
 usage () {
     if [ "${target_cpu}-${platform}" = "i386-pc" ] \
 	|| [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]; then
-	gettext_printf "Usage: %s [OPTION] install_device" "$self"
+	gettext_printf "Usage: %s [OPTION] INSTALL_DEVICE" "$self"
     else
-	gettext_printf "Usage: %s [OPTION] [install_device]" "$self"
+	gettext_printf "Usage: %s [OPTION] [INSTALL_DEVICE]" "$self"
     fi
     echo
     gettext "Install GRUB on your drive." ; echo
@@ -247,7 +247,7 @@ do
 	;;
     *)
 	if test "x$install_device" != x; then
-	    gettext "More than one install_devices?" 1>&2
+	    gettext "More than one install device?" 1>&2
 	    echo 1>&2
 	    usage
 	    exit 1

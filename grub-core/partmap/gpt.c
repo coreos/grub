@@ -174,7 +174,7 @@ gpt_partition_map_embed (struct grub_disk *disk_, unsigned int *nsectors,
 
   if (len == 0)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       N_("this GPT partition label has no BIOS Boot Partition;"
+		       N_("this GPT partition label contains no BIOS Boot Partition;"
 			  " embedding won't be possible"));
 
   if (len < *nsectors)

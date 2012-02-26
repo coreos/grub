@@ -1353,6 +1353,7 @@ generate_image (const char *dir, const char *prefix,
       GRUB_MD_SHA512->final (context);
       if (grub_memcmp (GRUB_MD_SHA512->read (context), fwstart_good_hash,
 		       GRUB_MD_SHA512->mdlen) != 0)
+	/* TRANSLATORS: fwstart.img may still be good, just it wasn't checked.  */
 	grub_util_warn ("%s",
 			_("fwstart.img doesn't match the known good version. "
 			  "proceed at your own risk"));
@@ -1639,9 +1640,13 @@ generate_image (const char *dir, const char *prefix,
 
 
 static struct argp_option options[] = {
-  {"directory",  'd', N_("DIR"), 0, N_("use images and modules under DIR [default=%s/<platform>]"), 0},
+  {"directory",  'd', N_("DIR"), 0,
+   /* TRANSLATORS: platform here isn't identifier. It can be translated.  */
+   N_("use images and modules under DIR [default=%s/<platform>]"), 0},
   {"prefix",  'p', N_("DIR"), 0, N_("set prefix directory [default=%s]"), 0},
-  {"memdisk",  'm', N_("FILE"), 0, N_("embed FILE as a memdisk image"), 0},
+  {"memdisk",  'm', N_("FILE"), 0,
+   /* TRANSLATORS: memdisk here isn't an identifier, it can be translated.  */
+   N_("embed FILE as a memdisk image"), 0},
   {"config",   'c', N_("FILE"), 0, N_("embed FILE as an early config"), 0},
   /* TRANSLATORS: NOTE is a name of segment.  */
   {"note",   'n', 0, 0, N_("add NOTE segment for CHRP IEEE1275"), 0},

@@ -465,7 +465,7 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 	  int i;
 
 	  if (cmd)
-	    return grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write to cdrom"));
+	    return grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write to CD-ROM"));
 
 	  for (i = 0; i < GRUB_BIOSDISK_CDROM_RETRY_COUNT; i++)
             if (! grub_biosdisk_rw_int13_extensions (0x42, data->drive, dap))
@@ -589,7 +589,7 @@ grub_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
   struct grub_biosdisk_data *data = disk->data;
 
   if (data->flags & GRUB_BIOSDISK_FLAG_CDROM)
-    return grub_error (GRUB_ERR_IO, N_("cannot write to cdrom"));
+    return grub_error (GRUB_ERR_IO, N_("cannot write to CD-ROM"));
 
   while (size)
     {

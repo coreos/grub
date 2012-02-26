@@ -962,7 +962,9 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
 #endif
       if (lv->size < *nsectors)
 	return grub_error (GRUB_ERR_OUT_OF_RANGE,
-			   N_("your LDM embed Partition is too small;"
+			   /* TRANSLATORS: it's a partition for embedding,
+			      not a partition embed into something.  */
+			   N_("your LDM embedding Partition is too small;"
 			      " embedding won't be possible"));
       *nsectors = lv->size;
       *sectors = grub_malloc (*nsectors * sizeof (**sectors));
@@ -976,6 +978,8 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
     }
 
   return grub_error (GRUB_ERR_FILE_NOT_FOUND,
+		     /* TRANSLATORS: it's a partition for embedding,
+			not a partition embed into something.  */
 		     N_("this LDM has no Embedding Partition;"
 			" embedding won't be possible"));
 }

@@ -814,9 +814,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	  case GRUB_LINUX_VID_MODE_NORMAL:
 	    grub_env_set ("gfxpayload", "text");
 	    grub_printf_ (N_("%s is deprecated. "
-			     "Use set gfxpayload=text before "
-			     "linux command instead.\n"),
-			 argv[i]);
+			     "Use set gfxpayload=%s before "
+			     "linux command instead.\n"), "text",
+			  argv[i]);
 	    break;
 
 	  case 1:
@@ -824,9 +824,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	    /* FIXME: support 80x50 text. */
 	    grub_env_set ("gfxpayload", "text");
 	    grub_printf_ (N_("%s is deprecated. "
-			     "Use set gfxpayload=text before "
-			     "linux command instead.\n"),
-			 argv[i]);
+			     "Use set gfxpayload=%s before "
+			     "linux command instead.\n"), "text",
+			  argv[i]);
 	    break;
 	  default:
 	    /* Ignore invalid values.  */

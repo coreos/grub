@@ -166,6 +166,7 @@ main (int argc, char *argv[])
   memset (pass2, 0, sizeof (pass2));
 
 #if ! defined (__linux__) && ! defined (__FreeBSD__)
+  /* TRANSLATORS: The generator might still be secure just GRUB isn't sure about it.  */
   printf ("%s", _("WARNING: your random generator isn't known to be secure\n"));
 #endif
 

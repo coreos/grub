@@ -99,7 +99,7 @@ static const struct grub_arg_option freebsd_opts[] =
     {"dual", 'D', 0, N_("Display output on all consoles."), 0, 0},
     {"serial", 'h', 0, N_("Use serial console."), 0, 0},
     {"askname", 'a', 0, N_("Ask for file name to reboot from."), 0, 0},
-    {"cdrom", 'C', 0, N_("Use CDROM as root."), 0, 0},
+    {"cdrom", 'C', 0, N_("Use CD-ROM as root."), 0, 0},
     {"config", 'c', 0, N_("Invoke user configuration routing."), 0, 0},
     {"kdb", 'd', 0, N_("Enter in KDB on boot."), 0, 0},
     {"gdb", 'g', 0, N_("Use GDB remote debugger instead of DDB."), 0, 0},
@@ -1399,7 +1399,7 @@ grub_bsd_load_elf (grub_elf_t elf, const char *filename)
 					  kern_chunk_src, &openbsd_ramdisk);
     }
   else
-    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch dependent ELF magic"));
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch-dependent ELF magic"));
 }
 
 static grub_err_t
@@ -2082,6 +2082,8 @@ GRUB_MOD_INIT (bsd)
 
   cmd_openbsd_ramdisk = grub_register_command ("kopenbsd_ramdisk",
 					       grub_cmd_openbsd_ramdisk, 0,
+					       /* TRANSLATORS: ramdisk isn't identifier,
+						it can be translated.  */
 					       N_("Load kOpenBSD ramdisk."));
 
   my_mod = mod;

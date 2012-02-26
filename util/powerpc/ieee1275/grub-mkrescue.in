@@ -46,7 +46,7 @@ grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 # Print the usage.
 usage () {
     gettext_printf "Usage: %s [OPTION] SOURCE...\n" "$self"
-    gettext "Make GRUB CDROM, disk, pendrive and floppy bootable image."; echo
+    gettext "Make GRUB CD-ROM, disk, pendrive and floppy bootable image."; echo
     echo
     printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
     printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"

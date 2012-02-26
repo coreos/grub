@@ -224,7 +224,7 @@ grub_dl_check_header (void *ehdr, grub_size_t size)
       || e->e_ident[EI_MAG3] != ELFMAG3
       || e->e_ident[EI_VERSION] != EV_CURRENT
       || e->e_version != EV_CURRENT)
-    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch independent ELF magic"));
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch-independent ELF magic"));
 
   err = grub_arch_dl_check_header (ehdr);
   if (err)

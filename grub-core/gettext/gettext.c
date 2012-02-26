@@ -391,6 +391,10 @@ GRUB_MOD_INIT (gettext)
 
   grub_register_command_p1 ("gettext", grub_cmd_translate,
 			    N_("STRING"),
+			    /* TRANSLATORS: It refers to passing the string through gettext.
+			       So it's "translate" in the same meaning as in what you're 
+			       doing now.
+			     */
 			    N_("Translates the string with the current settings."));
 
   /* Reload .mo file information if lang changes.  */

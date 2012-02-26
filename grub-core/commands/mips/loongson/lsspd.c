@@ -57,6 +57,9 @@ grub_cmd_lsspd (grub_command_t cmd __attribute__ ((unused)),
     {
       struct grub_smbus_spd spd;
       grub_memset (&spd, 0, sizeof (spd));
+      /* TRANSLATORS: it's shown in a report in a way
+	 like number 1: ... number 2: ...
+       */
       grub_printf_ (N_("RAM slot number %d\n"), i);
       err = grub_cs5536_read_spd (smbbase, i, &spd);
       if (err)
