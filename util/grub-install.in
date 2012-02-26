@@ -32,10 +32,10 @@ PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 platform=@platform@
 host_os=@host_os@
-pkglibdir="${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`"
+pkglibdir="${libdir}/${PACKAGE_TARNAME}/${target_cpu}-${platform}"
 datadir="@datadir@"
 if [ "x$pkgdatadir" = x ]; then
-    pkgdatadir="${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`"
+    pkgdatadir="${datadir}/@PACKAGE_TARNAME@"
 fi
 localedir="@datadir@/locale"
 

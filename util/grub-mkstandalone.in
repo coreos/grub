@@ -32,7 +32,7 @@ PACKAGE_VERSION=@PACKAGE_VERSION@
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 datadir="@datadir@"
 if [ "x$pkgdatadir" = x ]; then
-    pkgdatadir="${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`"
+    pkgdatadir="${datadir}/@PACKAGE_TARNAME@"
 fi
 
 self=`basename $0`
@@ -58,7 +58,7 @@ usage () {
     printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
     printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "save output in FILE [required]")"
     # TRANSLATORS: platform here isn't identifier. It can be translated.
-    dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})")"
+    dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/${PACKAGE_TARNAME}")"
     printf "  -d, --directory=%-8s%s\n" \
 	"DIR" "$dir_msg"
     printf     "  -O, --format=%-11s%s" "$(gettext "FORMAT")" "$(gettext "generate an image in format")"; echo
@@ -155,7 +155,7 @@ if [ "x$source_directory" = x ] ; then
 	mips-loongson)
 	    cpu=mipsel ;;
     esac
-    source_directory="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/$cpu-$platform"
+    source_directory="${libdir}/${PACKAGE_TARNAME}/$cpu-$platform"
 fi
 
 . "${source_directory}"/modinfo.sh

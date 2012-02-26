@@ -1,5 +1,21 @@
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't transform PACKAGE_TARNAME following a discussion on autoconf
+	mailing list.
+
+	* util/grub-install.in: Don't transform PACKAGE_TARNAME.
+	* util/grub-kbdcomp.in: Likewise.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub-mkconfig_lib.in: Likewise.
+	* util/grub-mknetdir.in: Likewise.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub-mkstandalone.in: Likewise.
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Likewise.
+
+2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove GRUB_PREFIX.
 
 	* util/grub-mkconfig.in: Remove GRUB_PREFIX.

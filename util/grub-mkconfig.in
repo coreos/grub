@@ -32,7 +32,7 @@ PACKAGE_VERSION=@PACKAGE_VERSION@
 host_os=@host_os@
 datadir="@datadir@"
 if [ "x$pkgdatadir" = x ]; then
-    pkgdatadir="${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`"
+    pkgdatadir="${datadir}/@PACKAGE_TARNAME@"
 fi
 grub_cfg=""
 grub_mkconfig_dir="${sysconfdir}"/grub.d
