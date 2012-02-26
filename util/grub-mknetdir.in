@@ -41,7 +41,6 @@ rootdir=/srv/tftp
 grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
 
-install_device=
 no_floppy=
 recheck=no
 debug=no
@@ -60,7 +59,7 @@ itanium_dir="${libdir}/$(echo ${PACKAGE_TARNAME} | sed ${transform})/ia64-efi"
 # Usage: usage
 # Print the usage.
 usage () {
-    gettext_printf "Usage: %s [OPTION] install_device\n" "$self"
+    gettext_printf "Usage: %s [OPTION]\n" "$self"
     gettext; echo "Install GRUB on your drive."; echo
     echo
     printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
@@ -147,12 +146,11 @@ do
 	exit 1
 	;;
     *)
-	if test "x$install_device" != x; then
-	    echo "More than one install_devices?" 1>&2
-	    usage
-	    exit 1
-	fi
-	install_device="${option}" ;;
+	gettext_printf "Unknown extra argument \`%s'." "$option" 1>&2
+	echo 1>&2
+	usage
+	exit 1
+	;;
     esac
 done
 
