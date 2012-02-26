@@ -1,5 +1,10 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (insert_array): Remove scanner_name
+	argument since it can be deduced from diskfilter.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove prio_list.
 
 	* include/grub/list.h (grub_prio_list): Removed.

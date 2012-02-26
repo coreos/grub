@@ -107,7 +107,7 @@ is_lv_readable (struct grub_diskfilter_lv *lv)
 static grub_err_t
 insert_array (grub_disk_t disk, const struct grub_diskfilter_pv_id *id,
 	      struct grub_diskfilter_vg *array,
-              grub_disk_addr_t start_sector, const char *scanner_name,
+              grub_disk_addr_t start_sector,
 	      grub_diskfilter_t diskfilter __attribute__ ((unused)));
 
 static int
@@ -146,8 +146,7 @@ scan_disk (const char *name)
 	  id.uuidlen = 0;
 	  arr = diskfilter->detect (disk, &id, &start_sector);
 	  if (arr &&
-	      (! insert_array (disk, &id, arr, start_sector, diskfilter->name,
-			       diskfilter)))
+	      (! insert_array (disk, &id, arr, start_sector, diskfilter)))
 	    {
 	      if (id.uuidlen)
 		grub_free (id.uuid);
@@ -952,16 +951,16 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
 static grub_err_t
 insert_array (grub_disk_t disk, const struct grub_diskfilter_pv_id *id,
 	      struct grub_diskfilter_vg *array,
-              grub_disk_addr_t start_sector, const char *scanner_name,
+              grub_disk_addr_t start_sector,
 	      grub_diskfilter_t diskfilter __attribute__ ((unused)))
 {
   struct grub_diskfilter_pv *pv;
 
   grub_dprintf ("diskfilter", "Inserting %s into %s (%s)\n", disk->name,
-		array->name, scanner_name);
+		array->name, diskfilter->name);
 #ifdef GRUB_UTIL
   grub_util_info ("Inserting %s into %s (%s)\n", disk->name,
-		  array->name, scanner_name);
+		  array->name, diskfilter->name);
   array->driver = diskfilter;
 #endif
 
