@@ -1,5 +1,10 @@
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu_text.c (grub_print_message_indented_real): Add
+	trailing newline implicitly. All users updated.
+
+2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Implement serial on IEEE1275 and EFI.
 
 	* docs/grub.texi (Platform-specific limitations): Fix the columen video

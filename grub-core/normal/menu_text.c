@@ -69,16 +69,20 @@ grub_print_message_indented_real (const char *msg, int margin_left,
 {
   grub_uint32_t *unicode_msg;
   grub_uint32_t *last_position;
+  grub_size_t msg_len = grub_strlen (msg) + 2;
+  int ret;
 
-  int msg_len;
-  int ret = 0;
+  unicode_msg = grub_malloc (msg_len * sizeof (grub_uint32_t));
+ 
+  if (!unicode_msg)
+    return 0;
 
-  msg_len = grub_utf8_to_ucs4_alloc (msg, &unicode_msg, &last_position);
-
-  if (msg_len < 0)
-    {
-      return 0;
-    }
+  msg_len = grub_utf8_to_ucs4 (unicode_msg, msg_len,
+			       (grub_uint8_t *) msg, -1, 0);
+  
+  last_position = unicode_msg + msg_len;
+  *last_position++ = '\n';
+  *last_position = 0;
 
   if (dry_run)
     ret = grub_ucs4_count_lines (unicode_msg, last_position, margin_left,
@@ -157,7 +161,7 @@ command-line or ESC to discard edits and return to the GRUB menu."),
   else
     {
       const char *msg = _("Use the %C and %C keys to select which "
-			  "entry is highlighted.\n");
+			  "entry is highlighted.");
       char *msg_translated;
 
       msg_translated = grub_xasprintf (msg, GRUB_UNICODE_UPARROW,
@@ -178,7 +182,7 @@ command-line or ESC to discard edits and return to the GRUB menu."),
 	  ret += grub_print_message_indented_real
 	    (_("Press enter to boot the selected OS, "
 	       "\'e\' to edit the commands before booting "
-	       "or \'c\' for a command-line. ESC to return previous menu.\n"),
+	       "or \'c\' for a command-line. ESC to return previous menu."),
 	     STANDARD_MARGIN, STANDARD_MARGIN, term, dry_run);
 	}
       else
@@ -186,7 +190,7 @@ command-line or ESC to discard edits and return to the GRUB menu."),
 	  ret += grub_print_message_indented_real
 	    (_("Press enter to boot the selected OS, "
 	       "\'e\' to edit the commands before booting "
-	       "or \'c\' for a command-line.\n"),
+	       "or \'c\' for a command-line."),
 	     STANDARD_MARGIN, STANDARD_MARGIN, term, dry_run);
 	}	
     }
