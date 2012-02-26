@@ -1,5 +1,11 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make nand a prefix for nand devices.
+
+	* grub-core/disk/ieee1275/nand.c (grub_nand_open): Use prefix nand.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_stpcpy): Move from here ...
 	* include/grub/misc.h (grub_stpcpy): ... to here. Inlined.
 
