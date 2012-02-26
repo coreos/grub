@@ -129,25 +129,24 @@ if [ "x$gfxterm" = x1 ]; then
     cat << EOF
 if loadfont `make_system_path_relative_to_its_root "${GRUB_FONT}"` ; then
 EOF
-	else
-	    for dir in ${pkgdatadir} ${GRUB_PREFIX} /usr/share/grub ; do
-		for basename in unicode unifont ascii; do
-		    path="${dir}/${basename}.pf2"
-		    if is_path_readable_by_grub ${path} > /dev/null ; then
-			font_path=${path}
-		    else
-			continue
-		    fi
-		    break 2
-		done
+    else
+	for dir in "${pkgdatadir}" "`echo '/@bootdirname@/@grubdirname@' | sed "s,//*,/,g"`" /usr/share/grub ; do
+	    for basename in unicode unifont ascii; do
+		path="${dir}/${basename}.pf2"
+		if is_path_readable_by_grub "${path}" > /dev/null ; then
+		    font_path="${path}"
+		else
+		    continue
+		fi
+		break 2
 	    done
-	    if [ -n "${font_path}" ] ; then
+	done
+	if [ -n "${font_path}" ] ; then
     cat << EOF
 if [ x\$feature_default_font_path = xy ] ; then
    font=unicode
 else
 EOF
-
                 # Make the font accessible
 		prepare_grub_to_access_device `${grub_probe} --target=device "${font_path}"`
     cat << EOF

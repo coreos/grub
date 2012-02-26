@@ -42,8 +42,6 @@ self=`basename $0`
 grub_probe="${sbindir}/`echo grub-probe | sed "${transform}"`"
 grub_script_check="${bindir}/`echo grub-script-check | sed "${transform}"`"
 
-GRUB_PREFIX=`echo '/@bootdirname@/@grubdirname@' | sed "s,//*,/,g"`
-
 . "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage
@@ -126,8 +124,6 @@ else
     exit 1
 fi
 
-mkdir -p ${GRUB_PREFIX}
-
 # Device containing our userland.  Typically used for root= parameter.
 GRUB_DEVICE="`${grub_probe} --target=device /`"
 GRUB_DEVICE_UUID="`${grub_probe} --device ${GRUB_DEVICE} --target=fs_uuid 2> /dev/null`" || true
@@ -174,8 +170,7 @@ export GRUB_DEVICE \
   GRUB_DEVICE_BOOT_UUID \
   GRUB_FS \
   GRUB_FONT \
-  GRUB_PRELOAD_MODULES \
-  GRUB_PREFIX
+  GRUB_PRELOAD_MODULES
 
 # These are optional, user-defined variables.
 export GRUB_DEFAULT \
