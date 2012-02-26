@@ -192,6 +192,11 @@ grub_mdraid_detect (grub_disk_t disk,
     /* Unsupported version.  */
     return NULL;
 
+  /* No need for explicit check that sb.size is 0 (unspecified) since
+     0 >= non-0 is false.  */
+  if (((grub_disk_addr_t) grub_le_to_cpu32 (sb.size)) * 2 >= size)
+    return NULL;
+
   /* FIXME: Check the checksum.  */
 
   level = grub_le_to_cpu32 (sb.level);
@@ -229,7 +234,8 @@ grub_mdraid_detect (grub_disk_t disk,
   grub_snprintf (buf, sizeof (buf), "md%d", grub_le_to_cpu32 (sb.md_minor));
   return grub_diskfilter_make_raid (16, (char *) uuid,
 				    grub_le_to_cpu32 (sb.raid_disks), buf,
-				    (sb.size) ? grub_le_to_cpu32 (sb.size) * 2 
+				    (sb.size) ? ((grub_disk_addr_t)
+						 grub_le_to_cpu32 (sb.size)) * 2
 				    : sector,
 				    grub_le_to_cpu32 (sb.chunk_size) >> 9,
 				    grub_le_to_cpu32 (sb.layout),

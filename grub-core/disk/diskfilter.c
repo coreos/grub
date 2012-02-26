@@ -966,33 +966,33 @@ insert_array (grub_disk_t disk, const struct grub_diskfilter_pv_id *id,
 	struct grub_diskfilter_lv *lv;
 	/* FIXME: Check whether the update time of the superblocks are
 	   the same.  */
+	if (pv->disk && grub_disk_get_size (disk) >= pv->part_size)
+	  return GRUB_ERR_NONE;
+	pv->disk = grub_disk_open (disk->name);
+	if (!pv->disk)
+	  return grub_errno;
 	/* This could happen to LVM on RAID, pv->disk points to the
 	   raid device, we shouldn't change it.  */
-	if (! pv->disk)
-	  {
-	    pv->disk = grub_disk_open (disk->name);
-	    if (! pv->disk)
-	      return grub_errno;
-	    pv->part_start = grub_partition_get_start (disk->partition);
-	    pv->part_size = grub_disk_get_size (disk);
+	pv->start_sector -= pv->part_start;
+	pv->part_start = grub_partition_get_start (disk->partition);
+	pv->part_size = grub_disk_get_size (disk);
 
 #ifdef GRUB_UTIL
-	    {
-	      grub_size_t s = 1;
-	      grub_partition_t p;
-	      for (p = disk->partition; p; p = p->parent)
-		s++;
-	      pv->partmaps = xmalloc (s * sizeof (pv->partmaps[0]));
-	      s = 0;
-	      for (p = disk->partition; p; p = p->parent)
-		pv->partmaps[s++] = xstrdup (p->partmap->name);
-	      pv->partmaps[s++] = 0;
-	    }
+	{
+	  grub_size_t s = 1;
+	  grub_partition_t p;
+	  for (p = disk->partition; p; p = p->parent)
+	    s++;
+	  pv->partmaps = xmalloc (s * sizeof (pv->partmaps[0]));
+	  s = 0;
+	  for (p = disk->partition; p; p = p->parent)
+	    pv->partmaps[s++] = xstrdup (p->partmap->name);
+	  pv->partmaps[s++] = 0;
+	}
 #endif
-	    if (start_sector != (grub_uint64_t)-1)
-	      pv->start_sector = start_sector;
-	    pv->start_sector += pv->part_start;
-	  }
+	if (start_sector != (grub_uint64_t)-1)
+	  pv->start_sector = start_sector;
+	pv->start_sector += pv->part_start;
 	/* Add the device to the array. */
 	for (lv = array->lvs; lv; lv = lv->next)
 	  if (!lv->became_readable_at && lv->fullname && is_lv_readable (lv))

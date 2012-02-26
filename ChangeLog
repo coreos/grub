@@ -1,5 +1,12 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (insert_array): Choose the smallest
+	device.
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Reject too
+	small devices.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove grub_{modname}_init and grub_{modname}_fini. They should never
 	be used directly if it's really a module and GRUB_MOD_INIT shouldn't
 	be used on non-modules.
