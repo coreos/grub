@@ -14,6 +14,7 @@
 	* grub-core/gdb/i386/machdep.S: Likewise.
 	* grub-core/gdb/i386/signal.c: Likewise.
 	* grub-core/lib/i386/backtrace.c: Likewise.
+	* grub-core/lib/backtrace.c: Likewise.
 	* include/grub/backtrace.h: Likewise.
 	* include/grub/gdb.h: Likewise.
 	* include/grub/i386/gdb.h: Likewise.
