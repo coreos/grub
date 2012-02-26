@@ -46,7 +46,6 @@ grub_err_t EXPORT_FUNC(grub_env_set) (const char *name, const char *val);
 const char *EXPORT_FUNC(grub_env_get) (const char *name);
 void EXPORT_FUNC(grub_env_unset) (const char *name);
 void EXPORT_FUNC(grub_env_iterate) (int (*func) (struct grub_env_var *var));
-struct grub_env_var *EXPORT_FUNC(grub_env_find) (const char *name);
 grub_err_t EXPORT_FUNC(grub_register_variable_hook) (const char *name,
 						     grub_env_read_hook_t read_hook,
 						     grub_env_write_hook_t write_hook);

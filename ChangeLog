@@ -1,5 +1,11 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/env.h (grub_env_find): Remove prototype.
+	* grub-core/kern/env.c (grub_env_find): Make static.
+	(grub_env_set): Remove useless set.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/realmode.S: Remove useless align.
 
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
