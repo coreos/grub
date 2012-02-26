@@ -1,5 +1,10 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (grub_diskfilter_open): Remove useless
+	grub_dprintf.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Remove useless
 	grub_errors.
 	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Simplify by

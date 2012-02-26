@@ -365,14 +365,7 @@ grub_diskfilter_open (const char *name, grub_disk_t disk)
   disk->id = lv->number;
   disk->data = lv;
 
-  grub_dprintf ("diskfilter", "%s: total_devs=%d, total_size=%lld\n", name,
-		lv->segments ? lv->segments->node_count : 0,
-		(unsigned long long) lv->size);
   disk->total_sectors = lv->size;
-  grub_dprintf ("diskfilter", "%s: level=%d, total_sectors=%lld\n", name,
-		lv->segments ? lv->segments->type : 0,
-		(unsigned long long) disk->total_sectors);
-
   return 0;
 }
 
