@@ -1,5 +1,9 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/dl.h (grub_dl_load_file): Don't export.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (grub_diskfilter_open): Remove useless
 	grub_dprintf.
 
