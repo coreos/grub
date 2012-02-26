@@ -1,5 +1,9 @@
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* gentpl.py: Remove obsolete pkglib_DATA handling.
+
+2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't transform PACKAGE_TARNAME following a discussion on autoconf
 	mailing list.
 

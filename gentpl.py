@@ -527,7 +527,7 @@ def script(platform):
     r += "[+ ENDIF +]"
 
     r += rule("[+ name +]", platform_sources(platform) + " $(top_builddir)/config.status", """
-$(top_builddir)/config.status --file=-:$< | sed -e 's,@pkglib_DATA@,$(pkglib_DATA),g' > $@
+$(top_builddir)/config.status --file=$@:$<
 chmod a+x [+ name +]
 """)
 
