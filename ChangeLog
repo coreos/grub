@@ -1,5 +1,12 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't export grub_get_rtc.
+
+	* include/grub/i386/pc/time.h (grub_get_rtc): Don't export.
+	* grub-core/commands/i386/pc/play.c (play): Use grub_get_time_ms.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/genmod.sh.in: Add -R .note.GNU-stack to strip.
 
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>

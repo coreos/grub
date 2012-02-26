@@ -24,14 +24,14 @@
 #include <grub/disk.h>
 #include <grub/term.h>
 #include <grub/misc.h>
-#include <grub/machine/time.h>
 #include <grub/cpu/io.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/time.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-#define BASE_TEMPO (60 * GRUB_TICKS_PER_SECOND)
+#define BASE_TEMPO (60 * 1000)
 
 /* The speaker port.  */
 #define SPEAKER			0x61
@@ -149,7 +149,7 @@ beep_on (grub_uint16_t pitch)
 static int
 play (unsigned tempo, struct note *note)
 {
-  unsigned int to;
+  grub_uint64_t to;
 
   if (note->pitch == T_FINE || grub_getkey_noblock () != GRUB_TERM_NO_KEY)
     return 1;
@@ -168,10 +168,9 @@ play (unsigned tempo, struct note *note)
         break;
     }
 
-  to = grub_get_rtc () + BASE_TEMPO * note->duration / tempo;
-  while (((unsigned int) grub_get_rtc () <= to)
-	 && (grub_getkey_noblock () == GRUB_TERM_NO_KEY))
-    ;
+  to = grub_get_time_ms () + BASE_TEMPO * note->duration / tempo;
+  while ((grub_get_time_ms () <= to)
+	 && (grub_getkey_noblock () == GRUB_TERM_NO_KEY));
 
   return 0;
 }
