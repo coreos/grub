@@ -40,7 +40,7 @@ grub_cmd_help (grub_extcmd_context_t ctxt __attribute__ ((unused)), int argc,
       grub_command_t cmd;
       FOR_COMMANDS(cmd)
       {
-	if ((cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE))
+	if ((cmd->prio & GRUB_COMMAND_FLAG_ACTIVE))
 	  {
 	    struct grub_term_output *term;
 	    const char *summary_translated = _(cmd->summary);
@@ -106,7 +106,7 @@ grub_cmd_help (grub_extcmd_context_t ctxt __attribute__ ((unused)), int argc,
 	  currarg = args[i];
 	  FOR_COMMANDS(cmd_iter)
 	  {
-	    if (!(cmd_iter->prio & GRUB_PRIO_LIST_FLAG_ACTIVE))
+	    if (!(cmd_iter->prio & GRUB_COMMAND_FLAG_ACTIVE))
 	      continue;
 
 	    if (grub_strncmp (cmd_iter->name, currarg,

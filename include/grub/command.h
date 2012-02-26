@@ -44,6 +44,9 @@ struct grub_command;
 typedef grub_err_t (*grub_command_func_t) (struct grub_command *cmd,
 					   int argc, char **argv);
 
+#define GRUB_COMMAND_PRIO_MASK	0xff
+#define GRUB_COMMAND_FLAG_ACTIVE	0x100
+
 /* The command description.  */
 struct grub_command
 {

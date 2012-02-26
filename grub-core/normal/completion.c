@@ -444,7 +444,7 @@ grub_normal_do_completion (char *buf, int *restore,
       grub_command_t cmd;
       FOR_COMMANDS(cmd)
       {
-	if (cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE)
+	if (cmd->prio & GRUB_COMMAND_FLAG_ACTIVE)
 	  {
 	    if (add_completion (cmd->name, " ", GRUB_COMPLETION_TYPE_COMMAND))
 	      goto fail;

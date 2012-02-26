@@ -34,42 +34,6 @@ grub_named_list_find (grub_named_list_t head, const char *name)
 }
 
 void
-grub_prio_list_insert (grub_prio_list_t *head, grub_prio_list_t nitem)
-{
-  int inactive = 0;
-
-  grub_prio_list_t *p, q;
-    
-  for (p = head, q = *p; q; p = &(q->next), q = q->next)
-    {
-      int r;
-
-      r = grub_strcmp (nitem->name, q->name);
-      if (r < 0)
-	break;
-      if (r > 0)
-	continue;
-
-      if (nitem->prio >= (q->prio & GRUB_PRIO_LIST_PRIO_MASK))
-	{
-	  q->prio &= ~GRUB_PRIO_LIST_FLAG_ACTIVE;
-	  break;
-	}
-
-      inactive = 1;
-    }
-
-  *p = nitem;
-  nitem->next = q;
-  if (q)
-    q->prev = &nitem->next;
-  nitem->prev = p;
-
-  if (! inactive)
-    nitem->prio |= GRUB_PRIO_LIST_FLAG_ACTIVE;
-}
-
-void
 grub_list_push (grub_list_t *head, grub_list_t item)
 {
   item->prev = head;

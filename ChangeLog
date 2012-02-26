@@ -1,5 +1,25 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove prio_list.
+
+	* include/grub/list.h (grub_prio_list): Removed.
+	(GRUB_PRIO_LIST_PRIO_MASK): Removed. All users switched to
+	GRUB_COMMAND_PRIO_MASK.
+	(GRUB_PRIO_LIST_FLAG_ACTIVE): Removed. All users switched to
+	GRUB_COMMAND_FLAG_ACTIVE.
+	(grub_prio_list_insert): Removed.
+	(grub_prio_list_remove): Likewise.
+	(GRUB_AS_PRIO_LIST): Likewise.
+	(GRUB_AS_PRIO_LIST_P): Likewise.
+	* include/grub/command.h (GRUB_COMMAND_PRIO_MASK): New define.
+	(GRUB_COMMAND_FLAG_ACTIVE): Likewise.
+	* grub-core/kern/list.c (grub_prio_list_insert): Remove.
+	* grub-core/kern/command.c (grub_register_command_prio): Inline
+	the prio_list code.
+	(grub_unregister_command): Likewise.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix interrupt mixup from previous commit.
 
 	* include/grub/i386/pc/int.h (grub_i386_idt): New struct.
