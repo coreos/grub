@@ -1758,6 +1758,13 @@ module = {
 };
 
 module = {
+  name = backtrace;
+  x86 = lib/i386/backtrace.c;
+  common = lib/backtrace.c;
+  enable = x86;
+};
+
+module = {
   name = lsapm;
   common = commands/i386/pc/lsapm.c;
   enable = i386_pc;
@@ -1799,3 +1806,14 @@ module = {
   name = all_video;
   common = lib/fake_module.c;
 };
+
+module = {
+  name = gdb;
+  common = gdb/cstub.c;
+  common = gdb/gdb.c;
+  i386 = gdb/i386/idt.c;
+  i386 = gdb/i386/machdep.S;
+  i386 = gdb/i386/signal.c;
+  enable = i386;
+};
+

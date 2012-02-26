@@ -1,4 +1,24 @@
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Lubomir Kundrak  <lkundrak@redhat.com>
+
+	GDB serial and backtrace support.
+
+	* grub-core/kern/i386/realmode.S (real_to_prot): Reload IDT.
+	(prot_to_real): Likewise.
+	* grub-core/kern/i386/int.S (grub_bios_interrupt): Remove IDT reload.
+	* grub-core/Makefile.core.def (backtrace): New module.
+	(gdb): Likewise.
+	* grub-core/gdb/cstub.c: New file.
+	* grub-core/gdb/gdb.c: Likewise.
+	* grub-core/gdb/i386/idt.c: Likewise.
+	* grub-core/gdb/i386/machdep.S: Likewise.
+	* grub-core/gdb/i386/signal.c: Likewise.
+	* grub-core/lib/i386/backtrace.c: Likewise.
+	* include/grub/backtrace.h: Likewise.
+	* include/grub/gdb.h: Likewise.
+	* include/grub/i386/gdb.h: Likewise.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/gnulib/argp-fmtstream.c (__argp_get_display_len):
 	New function.
@@ -9,7 +29,7 @@
 	* grub-core/gnulib/argp-help.c (argp_args_usage): Use
 	__argp_get_display_len.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	$"..." support in scripts.
 
@@ -19,11 +39,11 @@
 	* include/grub/script_sh.h (GRUB_SCRIPT_ARG_TYPE_GETTEXT): New enum
 	value.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* gentpl.py: Remove obsolete pkglib_DATA handling.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Don't transform PACKAGE_TARNAME following a discussion on autoconf
 	mailing list.
@@ -39,7 +59,7 @@
 	* util/grub-set-default.in: Likewise.
 	* util/powerpc/ieee1275/grub-mkrescue.in: Likewise.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove GRUB_PREFIX.
 
@@ -47,7 +67,7 @@
 	* util/grub.d/00_header.in: Compute prefix in the only place it's still
 	used for backward compatibility.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add new all_video module.
 
@@ -61,27 +81,27 @@
 	don't do explicit search again.
 	insmod all_video in load_video if available.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Another round of string clarification and adding TRANSLATORS comments.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mknetdir.in: Remove erroneous reference to install_device.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/charset.c (grub_utf8_to_ucs4_alloc): Fix return type
 	to grub_ssize_t.
 	* grub-core/normal/main.c (grub_normal_init_page): Fix msg_len type.
 	* include/grub/charset.h (grub_utf8_to_ucs4_alloc): Fix prototype.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/menu_text.c (grub_print_message_indented_real): Add
 	trailing newline implicitly. All users updated.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Implement serial on IEEE1275 and EFI.
 
@@ -109,7 +129,7 @@
 	* util/grub.d/00_header.in: Don't check for the presence of serial
 	module.
 
-2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/ieee1275/ofdisk.c (scan): Fix improper use of device
 	name as if it was an alias.
