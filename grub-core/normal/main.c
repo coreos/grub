@@ -209,7 +209,7 @@ read_config_file (const char *config)
 void
 grub_normal_init_page (struct grub_term_output *term)
 {
-  int msg_len;
+  grub_ssize_t msg_len;
   int posx;
   const char *msg = _("GNU GRUB  version %s");
   char *msg_formatted;

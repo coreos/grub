@@ -288,9 +288,9 @@ grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize)
   return 1;
 }
 
-int
+grub_ssize_t
 grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
-			grub_uint32_t **last_position)
+			 grub_uint32_t **last_position)
 {
   grub_size_t msg_len = grub_strlen (msg);
 

@@ -174,8 +174,9 @@ char *grub_ucs4_to_utf8_alloc (const grub_uint32_t *src, grub_size_t size);
 int
 grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize);
 
-int grub_utf8_to_ucs4_alloc (const char *msg, grub_uint32_t **unicode_msg,
-			     grub_uint32_t **last_position);
+grub_ssize_t grub_utf8_to_ucs4_alloc (const char *msg,
+				      grub_uint32_t **unicode_msg,
+				      grub_uint32_t **last_position);
 
 /* Process one character from UTF8 sequence. 
    At beginning set *code = 0, *count = 0. Returns 0 on failure and

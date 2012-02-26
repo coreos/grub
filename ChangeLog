@@ -1,5 +1,12 @@
 2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/charset.c (grub_utf8_to_ucs4_alloc): Fix return type
+	to grub_ssize_t.
+	* grub-core/normal/main.c (grub_normal_init_page): Fix msg_len type.
+	* include/grub/charset.h (grub_utf8_to_ucs4_alloc): Fix prototype.
+
+2012-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu_text.c (grub_print_message_indented_real): Add
 	trailing newline implicitly. All users updated.
 
