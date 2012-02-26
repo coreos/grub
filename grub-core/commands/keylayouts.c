@@ -290,13 +290,21 @@ grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
 
 static grub_command_t cmd;
 
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_keylayouts_init (void)
+#else
 GRUB_MOD_INIT(keylayouts)
+#endif
 {
   cmd = grub_register_command ("keymap", grub_cmd_keymap,
 			       0, N_("Load a keyboard layout."));
 }
 
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_keylayouts_fini (void)
+#else
 GRUB_MOD_FINI(keylayouts)
+#endif
 {
   grub_unregister_command (cmd);
 }

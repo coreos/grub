@@ -220,12 +220,20 @@ static struct grub_video_adapter grub_video_radeon_fuloong2e_adapter =
     .next = 0
   };
 
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+void grub_video_radeon_fuloong2e_init (void)
+#else
 GRUB_MOD_INIT(video_radeon_fuloong2e)
+#endif
 {
   grub_video_register (&grub_video_radeon_fuloong2e_adapter);
 }
 
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+void grub_video_radeon_fuloong2e_fini (void)
+#else
 GRUB_MOD_FINI(video_radeon_fuloong2e)
+#endif
 {
   grub_video_unregister (&grub_video_radeon_fuloong2e_adapter);
 }

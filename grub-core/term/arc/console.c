@@ -113,8 +113,6 @@ grub_console_init_early (void)
   grub_term_register_output ("console", &grub_console_term_output);
 }
 
-void grub_terminfo_init (void);
-
 void
 grub_console_init_lately (void)
 {

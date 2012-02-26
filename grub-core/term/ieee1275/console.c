@@ -214,9 +214,6 @@ static struct grub_term_output grub_console_term_output =
     .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
-void grub_terminfo_fini (void);
-void grub_terminfo_init (void);
-
 void
 grub_console_init_early (void)
 {

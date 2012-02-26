@@ -374,7 +374,11 @@ grub_serial_unregister_driver (struct grub_serial_driver *driver)
 
 static grub_extcmd_t cmd;
 
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_serial_init (void)
+#else
 GRUB_MOD_INIT(serial)
+#endif
 {
   cmd = grub_register_extcmd ("serial", grub_cmd_serial, 0,
 			      N_("[OPTIONS...]"),
@@ -398,7 +402,11 @@ GRUB_MOD_INIT(serial)
 #endif
 }
 
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_serial_fini (void)
+#else
 GRUB_MOD_FINI(serial)
+#endif
 {
   while (grub_serial_ports)
     grub_serial_unregister (grub_serial_ports);

@@ -701,7 +701,11 @@ grub_cmd_terminfo (grub_extcmd_context_t ctxt, int argc, char **args)
 
 static grub_extcmd_t cmd;
 
+#if defined (GRUB_MACHINE_IEEE1275) || defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_ARC)
+void grub_terminfo_init (void)
+#else
 GRUB_MOD_INIT(terminfo)
+#endif
 {
   cmd = grub_register_extcmd ("terminfo", grub_cmd_terminfo, 0,
 			      N_("[[-a|-u|-v] [-g WxH] TERM [TYPE]]"),
@@ -709,7 +713,11 @@ GRUB_MOD_INIT(terminfo)
 			      options);
 }
 
+#if defined (GRUB_MACHINE_IEEE1275) || defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_ARC)
+void grub_terminfo_fini (void)
+#else
 GRUB_MOD_FINI(terminfo)
+#endif
 {
   grub_unregister_extcmd (cmd);
 }

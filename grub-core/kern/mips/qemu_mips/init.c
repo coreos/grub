@@ -8,19 +8,15 @@
 #include <grub/time.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/console.h>
 #include <grub/cpu/memory.h>
 #include <grub/memory.h>
-
-extern void grub_serial_init (void);
-extern void grub_terminfo_init (void);
-extern void grub_at_keyboard_init (void);
-extern void grub_video_init (void);
-extern void grub_bitmap_init (void);
-extern void grub_font_init (void);
-extern void grub_gfxterm_init (void);
-extern void grub_keylayouts_init (void);
-extern void grub_boot_init (void);
-extern void grub_vga_text_init (void);
+#include <grub/video.h>
+#include <grub/terminfo.h>
+#include <grub/keyboard_layouts.h>
+#include <grub/serial.h>
+#include <grub/loader.h>
+#include <grub/at_keyboard.h>
 
 static inline int
 probe_mem (grub_addr_t addr)
@@ -61,8 +57,6 @@ grub_machine_init (void)
 
   grub_install_get_time_ms (grub_rtc_get_time_ms);
 
-  grub_video_init ();
-  grub_bitmap_init ();
   grub_font_init ();
 
   grub_keylayouts_init ();

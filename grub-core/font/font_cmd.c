@@ -61,7 +61,11 @@ lsfonts_command (grub_command_t cmd __attribute__ ((unused)),
 
 static grub_command_t cmd_loadfont, cmd_lsfonts;
 
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_font_init (void)
+#else
 GRUB_MOD_INIT(font)
+#endif
 {
   grub_font_loader_init ();
 
@@ -74,7 +78,11 @@ GRUB_MOD_INIT(font)
 			   0, N_("List the loaded fonts."));
 }
 
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_font_fini (void)
+#else
 GRUB_MOD_FINI(font)
+#endif
 {
   /* TODO: Determine way to free allocated resources.
      Warning: possible pointer references could be in use.  */

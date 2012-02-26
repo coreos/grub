@@ -625,14 +625,22 @@ static struct grub_term_input grub_at_keyboard_term =
     .getkey = grub_at_keyboard_getkey
   };
 
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_at_keyboard_init (void)
+#else
 GRUB_MOD_INIT(at_keyboard)
+#endif
 {
   grub_term_register_input ("at_keyboard", &grub_at_keyboard_term);
   grub_loader_register_preboot_hook (grub_at_fini_hw, grub_at_restore_hw,
 				     GRUB_LOADER_PREBOOT_HOOK_PRIO_CONSOLE);
 }
 
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_at_keyboard_fini (void)
+#else
 GRUB_MOD_FINI(at_keyboard)
+#endif
 {
   grub_keyboard_controller_fini (NULL);
   grub_term_unregister_input (&grub_at_keyboard_term);

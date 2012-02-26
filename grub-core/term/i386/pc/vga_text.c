@@ -22,6 +22,10 @@
 #include <grub/types.h>
 #include <grub/vga.h>
 
+#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+#include <grub/machine/console.h>
+#endif
+
 GRUB_MOD_LICENSE ("GPLv3+");
 
 #define COLS	80
@@ -168,12 +172,20 @@ static struct grub_term_output grub_vga_text_term =
     .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
+#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_vga_text_init (void)
+#else
 GRUB_MOD_INIT(vga_text)
+#endif
 {
   grub_term_register_output ("vga_text", &grub_vga_text_term);
 }
 
+#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_vga_text_fini (void)
+#else
 GRUB_MOD_FINI(vga_text)
+#endif
 {
   grub_term_unregister_output (&grub_vga_text_term);
 }

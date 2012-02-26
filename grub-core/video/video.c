@@ -707,13 +707,3 @@ grub_video_set_mode (const char *modestring,
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		     N_("no suitable video mode found"));
 }
-
-/* Initialize Video API module.  */
-GRUB_MOD_INIT(video)
-{
-}
-
-/* Finalize Video API module.  */
-GRUB_MOD_FINI(video)
-{
-}

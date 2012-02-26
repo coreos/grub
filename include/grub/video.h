@@ -529,4 +529,17 @@ int EXPORT_FUNC (grub_video_get_named_color) (const char *name,
 grub_err_t EXPORT_FUNC (grub_video_parse_color) (const char *s,
 						 grub_video_rgba_color_t *color);
 
+#ifndef GRUB_MACHINE_EMU
+extern void grub_font_init (void);
+extern void grub_font_fini (void);
+extern void grub_gfxterm_init (void);
+extern void grub_gfxterm_fini (void);
+extern void grub_video_sm712_init (void);
+extern void grub_video_sm712_fini (void);
+extern void grub_video_sis315pro_init (void);
+extern void grub_video_radeon_fuloong2e_init (void);
+extern void grub_video_sis315pro_fini (void);
+extern void grub_video_radeon_fuloong2e_fini (void);
+#endif
+
 #endif /* ! GRUB_VIDEO_HEADER */

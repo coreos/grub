@@ -65,4 +65,9 @@ struct grub_preboot *EXPORT_FUNC(grub_loader_register_preboot_hook) (grub_err_t 
 /* Unregister given preboot hook. */
 void EXPORT_FUNC (grub_loader_unregister_preboot_hook) (struct grub_preboot *hnd);
 
+#ifndef GRUB_MACHINE_EMU
+void grub_boot_init (void);
+void grub_boot_fini (void);
+#endif
+
 #endif /* ! GRUB_LOADER_HEADER */

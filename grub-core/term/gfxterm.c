@@ -1244,7 +1244,11 @@ static struct grub_term_output grub_video_term =
 static grub_extcmd_t background_image_cmd_handle;
 static grub_command_t background_color_cmd_handle;
 
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_gfxterm_init (void)
+#else
 GRUB_MOD_INIT(gfxterm)
+#endif
 {
   grub_term_register_output ("gfxterm", &grub_video_term);
   background_image_cmd_handle =
@@ -1260,7 +1264,11 @@ GRUB_MOD_INIT(gfxterm)
                            N_("Set background color for active terminal."));
 }
 
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+void grub_gfxterm_fini (void)
+#else
 GRUB_MOD_FINI(gfxterm)
+#endif
 {
   grub_unregister_command (background_color_cmd_handle);
   grub_unregister_extcmd (background_image_cmd_handle);

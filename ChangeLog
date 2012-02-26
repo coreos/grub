@@ -1,5 +1,88 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove grub_{modname}_init and grub_{modname}_fini. They should never
+	be used directly if it's really a module and GRUB_MOD_INIT shouldn't
+	be used on non-modules.
+
+	* grub-core/commands/boot.c (GRUB_MOD_INIT) [LOONGSON || QEMU_MIPS]:
+	Rename to grub_boot_init.
+	(GRUB_MOD_FINI) [LOONGSON || QEMU_MIPS]: Rename to grub_boot_fini.
+	* grub-core/commands/keylayouts.c (GRUB_MOD_INIT)
+	[LOONGSON || QEMU_MIPS]: Rename to grub_keylayouts_init.
+	(GRUB_MOD_FINI) [LOONGSON || QEMU_MIPS]: Rename to grub_keylayouts_fini.
+	* grub-core/font/font_cmd.c (GRUB_MOD_INIT)
+	[LOONGSON || QEMU_MIPS]: Rename to grub_font_init.
+	(GRUB_MOD_FINI) [LOONGSON || QEMU_MIPS]: Rename to grub_font_fini.
+	* grub-core/kern/mips/loongson/init.c: Replace explicit protos with
+	includes.
+	(grub_machine_init): Remove empty inits.
+	* grub-core/kern/mips/qemu_mips/init.c: Replace explicit protos with
+	includes.
+	(grub_machine_init): Remove empty inits.
+	* grub-core/term/arc/console.c: Remove explicit proto.
+	* grub-core/term/at_keyboard.c (GRUB_MOD_INIT)
+	[LOONGSON || QEMU_MIPS]: Rename to grub_at_keyboard_init.
+	(GRUB_MOD_FINI) [LOONGSON || QEMU_MIPS]: Rename to
+	grub_at_keyboard_fini.
+	* grub-core/term/gfxterm.c (GRUB_MOD_INIT)
+	[LOONGSON || QEMU_MIPS]: Rename to grub_gfxterm_init.
+	(GRUB_MOD_FINI) [LOONGSON || QEMU_MIPS]: Rename to
+	grub_gfxterm_fini.
+	* grub-core/term/i386/pc/vga_text.c (GRUB_MOD_INIT)
+	[LOONGSON || QEMU_MIPS]: Rename to grub_vgatext_init.
+	(GRUB_MOD_FINI) [LOONGSON || QEMU_MIPS]: Rename to
+	grub_vgatext_fini.
+	* grub-core/term/ieee1275/console.c: Remove explicit proto.
+	* grub-core/term/serial.c (GRUB_MOD_INIT)
+	[LOONGSON || QEMU_MIPS]: Rename to grub_serial_init.
+	(GRUB_MOD_FINI) [LOONGSON || QEMU_MIPS]: Rename to
+	grub_serial_fini.
+	* grub-core/term/terminfo.c (GRUB_MOD_INIT)
+	[LOONGSON || QEMU_MIPS]: Rename to grub_terminfo_init.
+	(GRUB_MOD_FINI) [LOONGSON || QEMU_MIPS]: Rename to
+	grub_terminfo_fini.
+	* grub-core/video/bitmap.c (GRUB_MOD_INIT): Removed.
+	(GRUB_MOD_FINI): Likewise.
+	* grub-core/video/radeon_fuloong2e.c (GRUB_MOD_INIT)
+	[LOONGSON]: Rename to grub_video_radeon_fuloong2e_init.
+	(GRUB_MOD_FINI) [LOONGSON]: Rename to
+	grub_video_radeon_fuloong2e_fini.
+	* grub-core/video/sis315pro.c (GRUB_MOD_INIT)
+	[LOONGSON]: Rename to grub_video_sis315pro_init.
+	(GRUB_MOD_FINI) [LOONGSON]: Rename to
+	grub_video_sis315pro_fini.
+	* grub-core/video/sm712.c (GRUB_MOD_INIT)
+	[LOONGSON]: Rename to grub_video_sm712_init.
+	(GRUB_MOD_FINI) [LOONGSON]: Rename to
+	grub_video_sm712_fini.
+	* include/grub/at_keyboard.h (grub_at_keyboard_init): New proto.
+	(grub_at_keyboard_fini): Likewise.
+	* include/grub/dl.h (GRUB_MOD_INIT) [!GRUB_UTIL && !EMU]:
+	Don't declare grub_{modname}_init.
+	(GRUB_MOD_INIT) [!GRUB_UTIL && !EMU]: Don't declare grub_{modname}_fini.
+	* include/grub/keyboard_layouts.h (grub_keylayouts_init) [!EMU]:
+	New proto.
+	(grub_keylayouts_fini) [!EMU]: Likewise.
+	* include/grub/serial.h (grub_serial_init) [!EMU]:
+	New proto.
+	(grub_serial_fini) [!EMU]: Likewise.
+	* include/grub/terminfo.h (grub_terminfo_init) [!EMU]:
+	New proto.
+	(grub_terminfo_fini) [!EMU]: Likewise.
+	* include/grub/video.h (grub_font_init) [!EMU]:
+	New proto.
+	(grub_font_fini) [!EMU]: Likewise.
+	(grub_gfxterm_init) [!EMU]: Likewise.
+	(grub_gfxterm_fini) [!EMU]: Likewise.
+	(grub_video_sm712_init) [!EMU]: Likewise.
+	(grub_video_sm712_fini) [!EMU]: Likewise.
+	(grub_video_sis315pro_init) [!EMU]: Likewise.
+	(grub_video_sis315pro_fini) [!EMU]: Likewise.
+	(grub_video_radeon_fuloong2e_init) [!EMU]: Likewise.
+	(grub_video_radeon_fuloong2e_fini) [!EMU]: Likewise.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make nand a prefix for nand devices.
 
 	* grub-core/disk/ieee1275/nand.c (grub_nand_open): Use prefix nand.

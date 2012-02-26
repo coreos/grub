@@ -78,4 +78,9 @@ grub_err_t EXPORT_FUNC (grub_terminfo_output_register) (struct grub_term_output 
 							const char *type);
 grub_err_t EXPORT_FUNC (grub_terminfo_output_unregister) (struct grub_term_output *term);
 
+#ifndef GRUB_MACHINE_EMU
+void grub_terminfo_init (void);
+void grub_terminfo_fini (void);
+#endif
+
 #endif /* ! GRUB_TERMINFO_HEADER */

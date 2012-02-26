@@ -247,12 +247,3 @@ void *grub_video_bitmap_get_data (struct grub_video_bitmap *bitmap)
   return bitmap->data;
 }
 
-/* Initialize bitmap module.  */
-GRUB_MOD_INIT(bitmap)
-{
-}
-
-/* Finalize bitmap module.  */
-GRUB_MOD_FINI(bitmap)
-{
-}

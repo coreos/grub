@@ -32,19 +32,12 @@
 #include <grub/term.h>
 #include <grub/cpu/memory.h>
 #include <grub/i18n.h>
-
-extern void grub_video_sm712_init (void);
-extern void grub_video_sis315pro_init (void);
-extern void grub_video_radeon_fuloong2e_init (void);
-extern void grub_video_init (void);
-extern void grub_bitmap_init (void);
-extern void grub_font_init (void);
-extern void grub_gfxterm_init (void);
-extern void grub_at_keyboard_init (void);
-extern void grub_serial_init (void);
-extern void grub_terminfo_init (void);
-extern void grub_keylayouts_init (void);
-extern void grub_boot_init (void);
+#include <grub/video.h>
+#include <grub/terminfo.h>
+#include <grub/keyboard_layouts.h>
+#include <grub/serial.h>
+#include <grub/loader.h>
+#include <grub/at_keyboard.h>
 
 grub_err_t
 grub_machine_mmap_iterate (grub_memory_hook_t hook)
@@ -204,11 +197,9 @@ grub_machine_init (void)
 
   /* Initialize output terminal (can't be done earlier, as gfxterm
      relies on a working heap.  */
-  grub_video_init ();
   grub_video_sm712_init ();
   grub_video_sis315pro_init ();
   grub_video_radeon_fuloong2e_init ();
-  grub_bitmap_init ();
   grub_font_init ();
   grub_gfxterm_init ();
 
