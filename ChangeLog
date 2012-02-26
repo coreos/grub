@@ -1,3 +1,9 @@
+2012-02-27  Mike Gilbert  <floppym@gentoo.org>
+
+	Add configure flag to control libzfs integration.
+
+	* configure.ac: Add AC_ARG_ENABLE(libzfs ...) and associated logic.
+
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/diskfilter.c (insert_array): Choose the smallest

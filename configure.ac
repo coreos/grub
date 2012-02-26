@@ -302,7 +302,7 @@ fi
 
 # Check for functions and headers.
 AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf getextmntent)
-AC_CHECK_HEADERS(libzfs.h libnvpair.h sys/param.h sys/mount.h sys/mnttab.h sys/mkdev.h limits.h)
+AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/mnttab.h sys/mkdev.h limits.h)
 
 AC_CHECK_MEMBERS([struct statfs.f_fstypename],,,[$ac_includes_default
 #include <sys/param.h>
@@ -1006,16 +1006,45 @@ AC_CHECK_LIB([lzma], [lzma_code],
                         [Define to 1 if you have the LZMA library.])],)
 AC_SUBST([LIBLZMA])
 
-AC_CHECK_LIB([zfs], [libzfs_init],
-             [LIBZFS="-lzfs"
-              AC_DEFINE([HAVE_LIBZFS], [1],
-                        [Define to 1 if you have the ZFS library.])],)
-AC_SUBST([LIBZFS])
+AC_ARG_ENABLE([libzfs],
+              [AS_HELP_STRING([--enable-libzfs],
+                              [enable libzfs integration (default=guessed)])])
+if test x"$enable_libzfs" = xno ; then
+  libzfs_excuse="explicitly disabled"
+fi
 
-AC_CHECK_LIB([nvpair], [nvlist_print],
-             [LIBNVPAIR="-lnvpair"
-              AC_DEFINE([HAVE_LIBNVPAIR], [1],
-                        [Define to 1 if you have the NVPAIR library.])],)
+if test x"$libzfs_excuse" = x ; then
+  # Only check for system headers if libzfs support has not been disabled.
+  AC_CHECK_HEADERS(libzfs.h libnvpair.h)
+fi
+
+if test x"$libzfs_excuse" = x ; then
+  AC_CHECK_LIB([zfs], [libzfs_init],
+               [],
+               [libzfs_excuse="need zfs library"])
+fi
+
+if test x"$libzfs_excuse" = x ; then
+  AC_CHECK_LIB([nvpair], [nvlist_print],
+               [],
+               [libzfs_excuse="need nvpair library"])
+fi
+
+if test x"$enable_libzfs" = xyes && test x"$libzfs_excuse" != x ; then
+  AC_MSG_ERROR([libzfs support was explicitly requested but requirements are not satisfied])
+fi
+
+if test x"$libzfs_excuse" = x ; then
+  # We need both libzfs and libnvpair for a successful build.
+  LIBZFS="-lzfs"
+  AC_DEFINE([HAVE_LIBZFS], [1],
+            [Define to 1 if you have the ZFS library.])
+  LIBNVPAIR="-lnvpair"
+  AC_DEFINE([HAVE_LIBNVPAIR], [1],
+            [Define to 1 if you have the NVPAIR library.])
+fi
+
+AC_SUBST([LIBZFS])
 AC_SUBST([LIBNVPAIR])
 
 LIBS=""
@@ -1168,6 +1197,11 @@ if [ x"$starfield_excuse" = x ]; then
 echo starfield theme: Yes
 else
 echo starfield theme: No "($starfield_excuse)"
+fi
+if [ x"$libzfs_excuse" = x ]; then
+echo With libzfs support: Yes
+else
+echo With libzfs support: No "($libzfs_excuse)"
 fi
 echo "*******************************************************"
 ]
