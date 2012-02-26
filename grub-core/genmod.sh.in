@@ -60,7 +60,7 @@ if test x@TARGET_APPLE_CC@ != x1; then
 	    @STRIP@ --strip-unneeded \
 		-K grub_mod_init -K grub_mod_fini \
 		-K _grub_mod_init -K _grub_mod_fini \
-		-R .note -R .comment $tmpfile || exit 1
+		-R .note.GNU-stack -R .note -R .comment $tmpfile || exit 1
 	fi
 else
 # XXX Test these Apple CC fixes

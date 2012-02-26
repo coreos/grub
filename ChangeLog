@@ -1,7 +1,11 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/genmod.sh.in: Add -R .note.GNU-stack to strip.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (insert_array): Remove scanner_name
-	argument since it can be deduced from diskfilter.
+	argument since it can be deduced from diskfilter. All users updated.
 
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
