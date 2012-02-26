@@ -127,7 +127,7 @@ __argp_get_display_len (char *beg, char *end)
 
   memset (&ps, 0, sizeof (ps));
 
-  for (ptr = beg; ptr < end; )
+  for (ptr = beg; ptr < end && *ptr; )
     {
       wchar_t wc;
       size_t s;
@@ -148,7 +148,7 @@ add_length (char *ptr, char *end, size_t l)
 
   memset (&ps, 0, sizeof (ps));
 
-  while (ptr < end)
+  while (ptr < end && *ptr)
     {
       wchar_t wc;
       size_t s, k;
