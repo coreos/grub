@@ -64,24 +64,3 @@ grub_backtrace (void)
 #endif
 }
 
-static grub_err_t
-grub_cmd_backtrace (grub_command_t cmd __attribute__ ((unused)),
-		    int argc __attribute__ ((unused)),
-		    char **args __attribute__ ((unused)))
-{
-  grub_backtrace ();
-  return 0;
-}
-
-static grub_command_t cmd;
-
-GRUB_MOD_INIT(backtrace)
-{
-  cmd = grub_register_command ("backtrace", grub_cmd_backtrace,
-			       0, "Print backtrace.");
-}
-
-GRUB_MOD_FINI(backtrace)
-{
-  grub_unregister_command (cmd);
-}

@@ -166,6 +166,10 @@
 ./grub-core/fs/zfs/zfsinfo.c
 ./grub-core/fs/zfs/zfs_lzjb.c
 ./grub-core/fs/zfs/zfs_sha256.c
+./grub-core/gdb/cstub.c
+./grub-core/gdb/gdb.c
+./grub-core/gdb/i386/idt.c
+./grub-core/gdb/i386/signal.c
 ./grub-core/gentrigtables.c
 ./grub-core/gettext/gettext.c
 ./grub-core/gfxmenu/font.c
@@ -309,6 +313,7 @@
 ./grub-core/lib/adler32.c
 ./grub-core/lib/arc/datetime.c
 ./grub-core/lib/arg.c
+./grub-core/lib/backtrace.c
 ./grub-core/lib/cmdline.c
 ./grub-core/lib/cmos_datetime.c
 ./grub-core/lib/crc64.c
@@ -320,7 +325,9 @@
 ./grub-core/lib/efi/relocator.c
 ./grub-core/lib/emu/halt.c
 ./grub-core/lib/envblk.c
+./grub-core/lib/fake_module.c
 ./grub-core/lib/hexdump.c
+./grub-core/lib/i386/backtrace.c
 ./grub-core/lib/i386/halt.c
 ./grub-core/lib/i386/pc/biosnum.c
 ./grub-core/lib/i386/pc/vesa_modes_table.c
@@ -495,12 +502,14 @@
 ./grub-core/term/arc/console.c
 ./grub-core/term/at_keyboard.c
 ./grub-core/term/efi/console.c
+./grub-core/term/efi/serial.c
 ./grub-core/term/emu/console.c
 ./grub-core/term/gfxterm.c
 ./grub-core/term/i386/pc/console.c
 ./grub-core/term/i386/pc/vga_text.c
 ./grub-core/term/i386/vga_common.c
 ./grub-core/term/ieee1275/console.c
+./grub-core/term/ieee1275/serial.c
 ./grub-core/term/ns8250.c
 ./grub-core/term/serial.c
 ./grub-core/term/terminfo.c

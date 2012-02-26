@@ -1,5 +1,16 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/i386/backtrace.c (grub_cmd_backtrace): Move from ...
+	* grub-core/lib/backtrace.c (grub_cmd_backtrace): ... to here.
+	* grub-core/lib/i386/backtrace.c (GRUB_MOD_INIT): Move from ...
+	* grub-core/lib/backtrace.c (GRUB_MOD_INIT): ... to here.
+	Gettextize.
+	* grub-core/lib/i386/backtrace.c (GRUB_MOD_FINI): Move from ...
+	* grub-core/lib/backtrace.c (GRUB_MOD_FINI): ... to here.
+	* po/POTFILES.in: Regenerate.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/probe.c (grub_cmd_probe): Gettextise UUID and label
 	errors.
 
