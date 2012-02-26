@@ -54,7 +54,18 @@
 void *EXPORT_FUNC(grub_memmove) (void *dest, const void *src, grub_size_t n);
 char *EXPORT_FUNC(grub_strcpy) (char *dest, const char *src);
 char *EXPORT_FUNC(grub_strncpy) (char *dest, const char *src, int c);
-char *EXPORT_FUNC(grub_stpcpy) (char *dest, const char *src);
+static inline char *
+grub_stpcpy (char *dest, const char *src)
+{
+  char *d = dest;
+  const char *s = src;
+
+  do
+    *d++ = *s;
+  while (*s++ != '\0');
+
+  return d - 1;
+}
 
 /* XXX: If grub_memmove is too slow, we must implement grub_memcpy.  */
 static inline void *

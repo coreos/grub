@@ -103,19 +103,6 @@ grub_strncpy (char *dest, const char *src, int c)
   return dest;
 }
 
-char *
-grub_stpcpy (char *dest, const char *src)
-{
-  char *d = dest;
-  const char *s = src;
-
-  do
-    *d++ = *s;
-  while (*s++ != '\0');
-
-  return d - 1;
-}
-
 int
 grub_printf (const char *fmt, ...)
 {

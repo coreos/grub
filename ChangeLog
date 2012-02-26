@@ -1,5 +1,10 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_stpcpy): Move from here ...
+	* include/grub/misc.h (grub_stpcpy): ... to here. Inlined.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/env.h (grub_env_find): Remove prototype.
 	* grub-core/kern/env.c (grub_env_find): Make static.
 	(grub_env_set): Remove useless set.
