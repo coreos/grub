@@ -118,7 +118,7 @@ gdt:
 gdtdesc:
 	.word	0x27			/* limit */
 	.long	gdt			/* addr */
-realidt:
+LOCAL(realidt):
 	.word 0
 	.long 0
 protidt:
@@ -175,7 +175,7 @@ protcseg:
 	/* zero %eax */
 	xorl	%eax, %eax
 
-	sidt realidt
+	sidt LOCAL(realidt)
 	lidt protidt
 
 	/* return on the old (or initialized) stack! */
@@ -205,7 +205,7 @@ prot_to_real:
 	lgdt	gdtdesc
 
 	sidt    protidt
-	lidt    realidt
+	lidt    LOCAL(realidt)
 
 	/* save the protected mode stack */
 	movl	%esp, %eax

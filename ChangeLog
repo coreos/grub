@@ -1,5 +1,22 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix interrupt mixup from previous commit.
+
+	* include/grub/i386/pc/int.h (grub_i386_idt): New struct.
+	(grub_realidt): New var.
+	* grub-core/lib/i386/relocator16.S (grub_relocator16_idt): New variable
+	Load idt.
+	* grub-core/lib/i386/relocator.c (grub_relocator16_idt):
+	New declaration.
+	(grub_relocator16_boot): Set grub_relocator16_idt.
+	* grub-core/kern/i386/realmode.S (realidt): Renamed to ...
+	(LOCAL(realidt)): ... this.
+	* grub-core/boot/i386/pc/startup_raw.S: Pass pointer to realidt in eax.
+	* grub-core/kern/i386/pc/startup.S: Save pointer to realidt.
+	(grub_realidt): New variable.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/i386/backtrace.c (grub_cmd_backtrace): Move from ...
 	* grub-core/lib/backtrace.c (grub_cmd_backtrace): ... to here.
 	* grub-core/lib/i386/backtrace.c (GRUB_MOD_INIT): Move from ...

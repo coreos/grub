@@ -56,6 +56,7 @@ _start:
 
 	movl	%ecx, (LOCAL(real_to_prot_addr) - _start) (%esi)
 	movl	%edi, (LOCAL(prot_to_real_addr) - _start) (%esi)
+	movl	%eax, (EXT_C(grub_realidt) - _start) (%esi)
 
 	/* copy back the decompressed part (except the modules) */
 	movl	$(_edata - _start), %ecx
@@ -176,6 +177,9 @@ FUNCTION(grub_pxe_call)
 	ret
 
 #include "../int.S"
+
+VARIABLE(grub_realidt)
+	.long 0
 
 	.bss
 VARIABLE(grub_boot_device)

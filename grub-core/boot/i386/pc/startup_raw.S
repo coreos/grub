@@ -343,6 +343,7 @@ post_reed_solomon:
 	movl	LOCAL(boot_dev), %edx
 	movl	$prot_to_real, %edi
 	movl	$real_to_prot, %ecx
+	movl	$LOCAL(realidt), %eax
 	jmp	*%esi
 
 #ifdef ENABLE_LZMA

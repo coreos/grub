@@ -26,6 +26,7 @@
 #include <grub/i386/relocator.h>
 #include <grub/relocator_private.h>
 #include <grub/i386/relocator_private.h>
+#include <grub/i386/pc/int.h>
 
 extern grub_uint8_t grub_relocator_forward_start;
 extern grub_uint8_t grub_relocator_forward_end;
@@ -79,6 +80,7 @@ extern grub_uint64_t grub_relocator64_rip_addr;
 extern grub_uint64_t grub_relocator64_rsp;
 extern grub_uint64_t grub_relocator64_rsi;
 extern grub_addr_t grub_relocator64_cr3;
+extern struct grub_i386_idt grub_relocator16_idt;
 
 #define RELOCATOR_SIZEOF(x)	(&grub_relocator##x##_end - &grub_relocator##x##_start)
 
@@ -223,6 +225,12 @@ grub_relocator16_boot (struct grub_relocator *rel,
   grub_relocator16_ebx = state.ebx;
   grub_relocator16_edx = state.edx;
   grub_relocator16_esi = state.esi;
+#ifdef GRUB_MACHINE_PCBIOS
+  grub_relocator16_idt = *grub_realidt;
+#else
+  grub_relocator16_idt.base = 0;
+  grub_relocator16_idt.limit = 0;
+#endif
 
   grub_relocator16_keep_a20_enabled = state.a20;
 

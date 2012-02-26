@@ -76,6 +76,8 @@ VARIABLE(grub_relocator16_start)
 	movl 	%esi, %eax
 	shrl	$4, %eax
 	movw	%ax, (LOCAL (segment) - LOCAL (base)) (%esi, 1)
+
+	lidt (EXT_C(grub_relocator16_idt) - LOCAL (base)) (%esi, 1)
 	
 	/* jump to a 16 bit segment */
 	ljmp	$PSEUDO_REAL_CSEG, $(LOCAL (cont2) - LOCAL(base))
@@ -278,4 +280,7 @@ LOCAL(cs_base_byte3):
 	.byte	0, 0x92, 0, 0
 LOCAL(gdt_end):
 
+VARIABLE(grub_relocator16_idt)
+	.word 0
+	.long 0
 VARIABLE(grub_relocator16_end)

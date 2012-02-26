@@ -51,8 +51,16 @@ struct grub_bios_int_registers
 #define  GRUB_CPU_INT_FLAGS_DEFAULT   0
 #endif
 
-
 void EXPORT_FUNC (grub_bios_interrupt) (grub_uint8_t intno,
 					struct grub_bios_int_registers *regs);
+struct grub_i386_idt
+{
+  grub_uint16_t limit;
+  grub_uint32_t base;
+} __attribute__ ((packed));
+
+#ifdef GRUB_MACHINE_PCBIOS
+extern struct grub_i386_idt *EXPORT_VAR(grub_realidt);
+#endif
 
 #endif
