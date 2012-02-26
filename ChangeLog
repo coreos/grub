@@ -1,5 +1,15 @@
 2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Remove useless
+	grub_errors.
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Simplify by
+	not reloading whole superblock but only the part which is really needed.
+	Remove useless grub_errors.
+	* grub-core/disk/mdraid_linux.c (grub_mdraid_detect): Remove useless
+	grub_errors.
+
+2012-02-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't export grub_get_rtc.
 
 	* include/grub/i386/pc/time.h (grub_get_rtc): Don't export.

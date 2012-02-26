@@ -103,26 +103,20 @@ grub_dmraid_nv_detect (grub_disk_t disk,
   char *uuid;
 
   if (disk->partition)
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "skip partition");
-      return NULL;
-    }
+    /* Skip partition.  */
+    return NULL;
 
   sector = grub_disk_get_size (disk);
   if (sector == GRUB_DISK_SIZE_UNKNOWN)
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "not raid");
-      return NULL;
-    }
+    /* Not raid.  */
+    return NULL;
   sector -= 2;
   if (grub_disk_read (disk, sector, 0, sizeof (sb), &sb))
     return NULL;
 
   if (grub_memcmp (sb.vendor, NV_ID_STRING, 6))
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "not raid");
-      return NULL;
-    }
+    /* Not raid.  */
+    return NULL;
 
   if (sb.version != NV_VERSION)
     {

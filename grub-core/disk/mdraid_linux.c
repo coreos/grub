@@ -175,31 +175,22 @@ grub_mdraid_detect (grub_disk_t disk,
   /* The sector where the mdraid 0.90 superblock is stored, if available.  */
   size = grub_disk_get_size (disk);
   if (size == GRUB_DISK_SIZE_UNKNOWN)
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "not 0.9x raid");
-      return NULL;
-    }
+    /* not 0.9x raid.  */
+    return NULL;
   sector = NEW_SIZE_SECTORS (size);
 
   if (grub_disk_read (disk, sector, 0, SB_BYTES, &sb))
     return NULL;
 
   /* Look whether there is a mdraid 0.90 superblock.  */
-  if (grub_le_to_cpu32 (sb.md_magic) != SB_MAGIC)
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "not 0.9x raid");
-      return NULL;
-    }
+  if (sb.md_magic != grub_cpu_to_le32_compile_time (SB_MAGIC))
+    /* not 0.9x raid.  */
+    return NULL;
 
-  if (grub_le_to_cpu32 (sb.major_version) != 0
-      || grub_le_to_cpu32 (sb.minor_version) != 90)
-    {
-      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "unsupported RAID version: %d.%d",
-		  grub_le_to_cpu32 (sb.major_version),
-		  grub_le_to_cpu32 (sb.minor_version));
-      return NULL;
-    }
+  if (sb.major_version != grub_cpu_to_le32_compile_time (0)
+      || sb.minor_version != grub_cpu_to_le32_compile_time (90))
+    /* Unsupported version.  */
+    return NULL;
 
   /* FIXME: Check the checksum.  */
 
@@ -217,11 +208,8 @@ grub_mdraid_detect (grub_disk_t disk,
     }
   if (grub_le_to_cpu32 (sb.this_disk.number) == 0xffff
       || grub_le_to_cpu32 (sb.this_disk.number) == 0xfffe)
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE,
-		  "spares aren't implemented");
-      return NULL;
-    }
+    /* Spares aren't implemented.  */
+    return NULL;
 
   uuid = grub_malloc (16);
   if (!uuid)

@@ -108,9 +108,7 @@ grub_mdraid_detect (grub_disk_t disk,
 		    struct grub_diskfilter_pv_id *id,
 		    grub_disk_addr_t *start_sector)
 {
-  grub_disk_addr_t sector = 0;
   grub_uint64_t size;
-  struct grub_raid_super_1x sb;
   grub_uint8_t minor_version;
 
   size = grub_disk_get_size (disk);
@@ -125,6 +123,13 @@ grub_mdraid_detect (grub_disk_t disk,
 
   for (minor_version = 0; minor_version < 3; ++minor_version)
     {
+      grub_disk_addr_t sector = 0;
+      struct grub_raid_super_1x sb;
+      grub_uint16_t role;
+      grub_uint32_t level;
+      struct grub_diskfilter_vg *array;
+      char *uuid;
+	
       if (size == GRUB_DISK_SIZE_UNKNOWN && minor_version == 0)
 	continue;
 	
@@ -145,101 +150,69 @@ grub_mdraid_detect (grub_disk_t disk,
 			  &sb))
 	return NULL;
 
-      if (grub_le_to_cpu32 (sb.magic) != SB_MAGIC
+      if (sb.magic != grub_cpu_to_le32_compile_time (SB_MAGIC)
 	  || grub_le_to_cpu64 (sb.super_offset) != sector)
 	continue;
 
-      {
-	grub_uint64_t sb_size;
-	struct grub_raid_super_1x *real_sb;
-	grub_uint32_t level;
+      if (sb.major_version != grub_cpu_to_le32_compile_time (1))
+	/* Unsupported version.  */
+	return NULL;
 
-	if (grub_le_to_cpu32 (sb.major_version) != 1)
-	  {
-	    grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			"Unsupported RAID version: %d",
-			grub_le_to_cpu32 (sb.major_version));
-	    return NULL;
-	  }
+      level = grub_le_to_cpu32 (sb.level);
 
-	level = grub_le_to_cpu32 (sb.level);
+      /* Multipath.  */
+      if ((int) level == -4)
+	level = 1;
 
-	/* Multipath.  */
-	if ((int) level == -4)
-	  level = 1;
-
-	if (level != 0 && level != 1 && level != 4 &&
-	    level != 5 && level != 6 && level != 10)
-	  {
-	    grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-			"Unsupported RAID level: %d", sb.level);
-	    return NULL;
-	  }
-
-	/* 1.x superblocks don't have a fixed size on disk.  So we have to
-	   read it again now that we now the max device count.  */
-	sb_size = sizeof (struct grub_raid_super_1x) 
-	  + 2 * grub_le_to_cpu32 (sb.max_dev);
-	real_sb = grub_malloc (sb_size);
-	if (! real_sb)
+      if (level != 0 && level != 1 && level != 4 &&
+	  level != 5 && level != 6 && level != 10)
+	{
+	  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		      "Unsupported RAID level: %d", sb.level);
 	  return NULL;
+	}
 
-	if (grub_disk_read (disk, sector, 0, sb_size, real_sb))
-	  {
-	    grub_free (real_sb);
-	    return NULL;
-	  }
+      if (grub_le_to_cpu32 (sb.dev_number) >=
+	  grub_le_to_cpu32 (sb.max_dev))
+	/* Spares aren't implemented.  */
+	return NULL;
 
-	struct grub_diskfilter_vg *array;
-	char *uuid;
+      if (grub_le_to_cpu32 (sb.dev_number)
+	  >= grub_le_to_cpu32 (sb.raid_disks))
+	/* Spares aren't implemented.  */
+	return NULL;
 
-	if (grub_le_to_cpu32 (real_sb->dev_number) >=
-	    grub_le_to_cpu32 (real_sb->max_dev))
-	  {
-	    grub_error (GRUB_ERR_OUT_OF_RANGE,
-			"spares aren't implemented");
-	    return NULL;
-	  }
+      if (grub_disk_read (disk, sector, 
+			  (char *) &sb.dev_roles[sb.dev_number]
+			  - (char *) &sb,
+			  sizeof (role), &role))
+	return NULL;
 
-	id->uuidlen = 0;
-	id->id = grub_le_to_cpu16
-	  (real_sb->dev_roles[grub_le_to_cpu32 (real_sb->dev_number)]);
+      id->uuidlen = 0;
+      id->id = grub_le_to_cpu16 (role);
 
-	uuid = grub_malloc (16);
-	if (!uuid)
-	  {
-	    grub_free (real_sb);
-	    return NULL;
-	  }
+      uuid = grub_malloc (16);
+      if (!uuid)
+	return NULL;
 
-	grub_memcpy (uuid, real_sb->set_uuid, 16);
+      grub_memcpy (uuid, sb.set_uuid, 16);
 
-	*start_sector = grub_le_to_cpu64 (real_sb->data_offset);
+      *start_sector = grub_le_to_cpu64 (sb.data_offset);
 
-	if (grub_le_to_cpu32 (real_sb->dev_number)
-	    >= grub_le_to_cpu32 (real_sb->raid_disks))
-	  {
-	    grub_error (GRUB_ERR_OUT_OF_RANGE,
-			"spares aren't implemented");
-	    return NULL;
-	  }
+      array = grub_diskfilter_make_raid (16, uuid,
+					 grub_le_to_cpu32 (sb.raid_disks),
+					 sb.set_name,
+					 (sb.size)
+					 ? grub_le_to_cpu64 (sb.size) 
+					 : grub_le_to_cpu64 (sb.data_size),
+					 grub_le_to_cpu32 (sb.chunksize),
+					 grub_le_to_cpu32 (sb.layout),
+					 grub_le_to_cpu32 (sb.level));
 
-	array = grub_diskfilter_make_raid (16, uuid,
-					   grub_le_to_cpu32 (real_sb->raid_disks),
-					   real_sb->set_name,
-					   (real_sb->size)
-					   ? grub_le_to_cpu64 (real_sb->size) 
-					   : grub_le_to_cpu64 (real_sb->data_size),
-					   grub_le_to_cpu32 (real_sb->chunksize),
-					   grub_le_to_cpu32 (real_sb->layout),
-					   grub_le_to_cpu32 (real_sb->level));
-
-	grub_free (real_sb);
-	return array;
-      }
+      return array;
     }
 
-  grub_error (GRUB_ERR_OUT_OF_RANGE, "not 1.x raid");
+  /* not 1.x raid.  */
   return NULL;
 }
 
