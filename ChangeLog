@@ -1,5 +1,11 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Remove inappropriate use of program_transform_name
+	on grubdir and bootdir but allow explicit specification of those
+	variables.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mknetdir.in (grub_prefix): Removed.
 	(subdir): Use @bootdirname@ and @grubdirname@.
 

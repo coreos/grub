@@ -191,18 +191,34 @@ AC_SUBST(target_cpu)
 AC_SUBST(platform)
 
 # Define default variables
-case "$host_os" in
-  netbsd* | openbsd*)
+
+have_with_bootdir=n
+AC_ARG_WITH([bootdir],
+            AS_HELP_STRING([--with-bootdir=DIR],
+                           [set the name of /boot directory [[guessed]]]),
+			   [have_with_bootdir=y],
+			   [have_with_bootdir=n])
+if test x$have_with_bootdir = xy; then
+   bootdirname="$with_bootdir"
+else
+   case "$host_os" in
+     netbsd* | openbsd*)
         # Because /boot is used for the boot block in NetBSD and OpenBSD,
-        bootdirname=''      ;;
-  *)    bootdirname='boot'  ;;
-esac
-bootdirname=`echo "$bootdirname" | sed "$program_transform_name"`
+           bootdirname=''      ;;
+     *)    bootdirname='boot'  ;;
+   esac
+fi
+
 AC_SUBST(bootdirname)
 AC_DEFINE_UNQUOTED(GRUB_BOOT_DIR_NAME, "$bootdirname",
     [Default boot directory name]")
 
-grubdirname=`echo "$PACKAGE" | sed "$program_transform_name"`
+AC_ARG_WITH([grubdir],
+            AS_HELP_STRING([--with-grubdir=DIR],
+                           [set the name of grub directory [[guessed]]]),
+			   [grubdirname="$with_grubdir"],
+			   [grubdirname="$PACKAGE"])
+
 AC_SUBST(grubdirname)
 AC_DEFINE_UNQUOTED(GRUB_DIR_NAME, "$grubdirname",
     [Default grub directory name])
