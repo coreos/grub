@@ -214,7 +214,7 @@ grub_diskfilter_iterate (int (*hook) (const char *name),
 
   if (pull == GRUB_DISK_PULL_RESCAN)
     {
-      islcnt = inscnt;
+      islcnt = inscnt + 1;
       scan_devices (NULL);
     }
 

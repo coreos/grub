@@ -1,5 +1,10 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (grub_diskfilter_iterate): Fix off-by-one
+	error.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Remove inappropriate use of program_transform_name
 	on grubdir and bootdir but allow explicit specification of those
 	variables.
