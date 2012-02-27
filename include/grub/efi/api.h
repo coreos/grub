@@ -1054,7 +1054,7 @@ struct grub_efi_runtime_services
 
   grub_efi_status_t
   (*get_variable) (grub_efi_char16_t *variable_name,
-		   grub_efi_guid_t *vendor_guid,
+		   const grub_efi_guid_t *vendor_guid,
 		   grub_efi_uint32_t *attributes,
 		   grub_efi_uintn_t *data_size,
 		   void *data);
