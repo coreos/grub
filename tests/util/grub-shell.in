@@ -27,8 +27,6 @@ builddir="@builddir@"
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
-target_cpu=@target_cpu@
-platform=@platform@
 
 # Force build directory components
 PATH="${builddir}:$PATH"
@@ -176,7 +174,8 @@ if [ x$boot = xnet ]; then
     sh "@builddir@/grub-mknetdir" "--grub-mkimage=${builddir}/grub-mkimage" "--override-directory=${builddir}/grub-core" "--net-directory=$netdir"
     cp "${cfgfile}" "$netdir/boot/grub/grub.cfg"
     cp "${source}" "$netdir/boot/grub/testcase.cfg"
-    "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/$target_cpu-$platform/core.0"  -net nic  | cat | tr -d "\r"
+    . "${builddir}/grub-core/modinfo.sh"
+    "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.0"  -net nic  | cat | tr -d "\r"
 else
     "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r"
 fi

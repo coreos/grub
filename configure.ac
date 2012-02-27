@@ -186,9 +186,6 @@ AC_SUBST(host_cpu)
 AC_SUBST(host_os)
 AC_SUBST(host_kernel)
 
-AC_SUBST(target_cpu)
-AC_SUBST(platform)
-
 # Define default variables
 
 have_with_bootdir=n

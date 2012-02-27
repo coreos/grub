@@ -1,5 +1,14 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove platform and target_cpu replacement.
+
+	* configure.ac: Remove platform and target_cpu substitutions.
+	* tests/util/grub-shell.in: Use modinfo.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Specify powerpc-ieee1275
+	explicitly.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Autodetect platform in grub-install but allow override.
 
 	* util/grub-install.in: Autodetect platform. Support --target and

@@ -27,9 +27,7 @@ libdir="@libdir@"
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
-target_cpu=@target_cpu@
-platform=@platform@
-pkglibdir="${libdir}/@PACKAGE@/${target_cpu}-${platform}"
+input_dir="${libdir}/@PACKAGE@/powerpc-ieee1275"
 datarootdir="@datarootdir@"
 datadir="@datadir@"
 if [ "x$pkgdatadir" = x ]; then
@@ -68,8 +66,6 @@ argument () {
   fi
   echo $1
 }
-
-input_dir=${pkglibdir}
 
 source=
 output_image=
