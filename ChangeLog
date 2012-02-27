@@ -1,5 +1,9 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/POTFILES.in: Regenerated.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove improper use of program_transform_name on pkglibrootdir.
 
 	* configure.ac (pkglibrootdir): Removed.
