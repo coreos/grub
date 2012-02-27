@@ -99,7 +99,7 @@ CCASFLAGS_LIBRARY =
 # Other variables
 
 grubconfdir = $(sysconfdir)/grub.d
-platformdir = $(pkglibrootdir)/$(target_cpu)-$(platform)
+platformdir = $(pkglibdir)/$(target_cpu)-$(platform)
 starfielddir = $(pkgdatadir)/themes/starfield
 
 CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers

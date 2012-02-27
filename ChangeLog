@@ -1,5 +1,10 @@
 2012-02-27  Mike Gilbert  <floppym@gentoo.org>
 
+	* conf/Makefile.common (platformdir): Base on pkglibdir and not
+	pkglibrootdir.
+
+2012-02-27  Mike Gilbert  <floppym@gentoo.org>
+
 	Add configure flag to control libzfs integration.
 
 	* configure.ac: Add AC_ARG_ENABLE(libzfs ...) and associated logic.
