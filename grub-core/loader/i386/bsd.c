@@ -537,6 +537,32 @@ grub_netbsd_list_modules (void)
 #include "bsd_pagetable.c"
 
 static grub_uint32_t freebsd_bootdev, freebsd_biosdev;
+static grub_uint64_t freebsd_zfsguid;
+
+static void
+freebsd_get_zfs (void)
+{
+  grub_device_t dev;
+  grub_fs_t fs;
+  char *uuid;
+  grub_err_t err;
+
+  dev = grub_device_open (0);
+  if (!dev)
+    return;
+  fs = grub_fs_probe (dev);
+  if (!fs)
+    return;
+  if (!fs->uuid || grub_strcmp (fs->name, "zfs") != 0)
+    return;
+  err = fs->uuid (dev, &uuid);
+  if (err)
+    return;
+  if (!uuid)
+    return;
+  freebsd_zfsguid = grub_strtoull (uuid, 0, 16);
+  grub_free (uuid);
+}
 
 static grub_err_t
 grub_freebsd_boot (void)
@@ -754,9 +780,9 @@ grub_freebsd_boot (void)
       stack[0] = entry; /* "Return" address.  */
       stack[1] = bootflags | FREEBSD_RB_BOOTINFO;
       stack[2] = freebsd_bootdev;
-      stack[3] = 0;
-      stack[4] = 0;
-      stack[5] = 0;
+      stack[3] = freebsd_zfsguid ? 4 : 0;
+      stack[4] = freebsd_zfsguid;
+      stack[5] = freebsd_zfsguid >> 32;
       stack[6] = stack_target + 9 * sizeof (grub_uint32_t);
       stack[7] = bi.tags;
       stack[8] = kern_end;
@@ -1526,6 +1552,10 @@ grub_cmd_freebsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 	    return err;
 	}
       grub_bsd_get_device (&freebsd_biosdev, &unit, &slice, &part);
+      freebsd_zfsguid = 0;
+      if (!is_64bit)
+	freebsd_get_zfs ();
+      grub_print_error ();
       freebsd_bootdev = (FREEBSD_B_DEVMAGIC + ((slice + 1) << FREEBSD_B_SLICESHIFT) +
 			 (unit << FREEBSD_B_UNITSHIFT) + (part << FREEBSD_B_PARTSHIFT));
 

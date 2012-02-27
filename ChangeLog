@@ -1,3 +1,10 @@
+2012-02-27  Navdeep Parhar <nparhar@gmail.com>
+
+	* grub-core/loader/i386/bsd.c (freebsd_zfsguid): New variable.
+	(freebsd_get_zfs): New function.
+	(grub_freebsd_boot): Pass zfs UUID.
+	(grub_cmd_freebsd): Set zfs UUID.
+
 2012-02-27  Mike Gilbert  <floppym@gentoo.org>
 
 	* conf/Makefile.common (platformdir): Base on pkglibdir and not
