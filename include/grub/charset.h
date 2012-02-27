@@ -37,6 +37,10 @@
 #define GRUB_UINT8_6_TRAILINGBITS 0x3f
 
 #define GRUB_MAX_UTF8_PER_UTF16 4
+/* You need at least one UTF-8 byte to have one UTF-16 word.
+   You need at least three UTF-8 bytes to have 2 UTF-16 words (surrogate pairs).
+ */
+#define GRUB_MAX_UTF16_PER_UTF8 1
 
 #define GRUB_UCS2_LIMIT 0x10000
 #define GRUB_UTF16_UPPER_SURROGATE(code) \
@@ -44,10 +48,110 @@
 #define GRUB_UTF16_LOWER_SURROGATE(code) \
   (0xDC00 + (((code) - GRUB_UCS2_LIMIT) & 0xfff))
 
-grub_size_t
+/* Process one character from UTF8 sequence. 
+   At beginning set *code = 0, *count = 0. Returns 0 on failure and
+   1 on success. *count holds the number of trailing bytes.  */
+static inline int
+grub_utf8_process (grub_uint8_t c, grub_uint32_t *code, int *count)
+{
+  if (*count)
+    {
+      if ((c & GRUB_UINT8_2_LEADINGBITS) != GRUB_UINT8_1_LEADINGBIT)
+	{
+	  *count = 0;
+	  /* invalid */
+	  return 0;
+	}
+      else
+	{
+	  *code <<= 6;
+	  *code |= (c & GRUB_UINT8_6_TRAILINGBITS);
+	  (*count)--;
+	  return 1;
+	}
+    }
+
+  if ((c & GRUB_UINT8_1_LEADINGBIT) == 0)
+    {
+      *code = c;
+      return 1;
+    }
+  if ((c & GRUB_UINT8_3_LEADINGBITS) == GRUB_UINT8_2_LEADINGBITS)
+    {
+      *count = 1;
+      *code = c & GRUB_UINT8_5_TRAILINGBITS;
+      return 1;
+    }
+  if ((c & GRUB_UINT8_4_LEADINGBITS) == GRUB_UINT8_3_LEADINGBITS)
+    {
+      *count = 2;
+      *code = c & GRUB_UINT8_4_TRAILINGBITS;
+      return 1;
+    }
+  if ((c & GRUB_UINT8_5_LEADINGBITS) == GRUB_UINT8_4_LEADINGBITS)
+    {
+      *count = 3;
+      *code = c & GRUB_UINT8_3_TRAILINGBITS;
+      return 1;
+    }
+  return 0;
+}
+
+
+/* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
+   bytes (if SRCSIZE is -1, it is ignored) in length to a UTF-16 string.
+   Return the number of characters converted. DEST must be able to hold
+   at least DESTSIZE characters. If an invalid sequence is found, return -1.
+   If SRCEND is not NULL, then *SRCEND is set to the next byte after the
+   last byte used in SRC.  */
+static inline grub_size_t
 grub_utf8_to_utf16 (grub_uint16_t *dest, grub_size_t destsize,
 		    const grub_uint8_t *src, grub_size_t srcsize,
-		    const grub_uint8_t **srcend);
+		    const grub_uint8_t **srcend)
+{
+  grub_uint16_t *p = dest;
+  int count = 0;
+  grub_uint32_t code = 0;
+
+  if (srcend)
+    *srcend = src;
+
+  while (srcsize && destsize)
+    {
+      int was_count = count;
+      if (srcsize != (grub_size_t)-1)
+	srcsize--;
+      if (!grub_utf8_process (*src++, &code, &count))
+	{
+	  code = '?';
+	  count = 0;
+	  /* Character c may be valid, don't eat it.  */
+	  if (was_count)
+	    src--;
+	}
+      if (count != 0)
+	continue;
+      if (code == 0)
+	break;
+      if (destsize < 2 && code >= GRUB_UCS2_LIMIT)
+	break;
+      if (code >= GRUB_UCS2_LIMIT)
+	{
+	  *p++ = GRUB_UTF16_UPPER_SURROGATE (code);
+	  *p++ = GRUB_UTF16_LOWER_SURROGATE (code);
+	  destsize -= 2;
+	}
+      else
+	{
+	  *p++ = code;
+	  destsize--;
+	}
+    }
+
+  if (srcend)
+    *srcend = src;
+  return p - dest;
+}
 
 /* Determine the last position where the UTF-8 string [beg, end) can
    be safely cut. */
@@ -177,12 +281,6 @@ grub_is_valid_utf8 (const grub_uint8_t *src, grub_size_t srcsize);
 grub_ssize_t grub_utf8_to_ucs4_alloc (const char *msg,
 				      grub_uint32_t **unicode_msg,
 				      grub_uint32_t **last_position);
-
-/* Process one character from UTF8 sequence. 
-   At beginning set *code = 0, *count = 0. Returns 0 on failure and
-   1 on success. *count holds the number of trailing bytes.  */
-int
-grub_utf8_process (grub_uint8_t c, grub_uint32_t *code, int *count);
 
 void
 grub_ucs4_to_utf8 (const grub_uint32_t *src, grub_size_t size,

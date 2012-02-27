@@ -1,4 +1,16 @@
 2012-02-27  Matthew Garrett  <mjg@redhat.com>
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/efi/efi.c (grub_efi_get_variable): Add new function.
+	* include/grub/efi/efi.h: Likewise.
+	* include/grub/efi/api.h: Add guid for EFI-specified variables.
+	* include/grub/charset.h (GRUB_MAX_UTF16_PER_UTF8): New definition.
+	* grub-core/normal/charset.c (grub_utf8_process): Move from here ...
+	* include/grub/charset.h (grub_utf8_process): ... to here. Inline.
+	* grub-core/normal/charset.c (grub_utf8_to_utf16): Move from here ...
+	* include/grub/charset.h (grub_utf8_to_utf16): ... to here. Inline.
+
+2012-02-27  Matthew Garrett  <mjg@redhat.com>
 
 	* include/grub/efi/pci.h: New file to define EFI PCI protocols.
 

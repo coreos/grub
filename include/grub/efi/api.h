@@ -1048,6 +1048,10 @@ struct grub_efi_runtime_services
   grub_efi_status_t
   (*convert_pointer) (grub_efi_uintn_t debug_disposition, void **address);
 
+#define GRUB_EFI_GLOBAL_VARIABLE_GUID \
+  { 0x8BE4DF61, 0x93CA, 0x11d2, { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B,0x8C }}
+
+
   grub_efi_status_t
   (*get_variable) (grub_efi_char16_t *variable_name,
 		   grub_efi_guid_t *vendor_guid,
