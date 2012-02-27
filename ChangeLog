@@ -1,3 +1,9 @@
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix missing console prototype on qemu-mips.
+
+	* include/grub/mips/qemu_mips/console.h: New file.
+
 2012-02-27  Matthew Garrett  <mjg@redhat.com>
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
