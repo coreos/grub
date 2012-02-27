@@ -1,5 +1,10 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu_text.c (grub_print_message_indented_real): Fix a
+	warning.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Use file identifier if no UUID is available
 	or user explicitly prompted for it.
 

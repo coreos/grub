@@ -70,7 +70,7 @@ grub_print_message_indented_real (const char *msg, int margin_left,
   grub_uint32_t *unicode_msg;
   grub_uint32_t *last_position;
   grub_size_t msg_len = grub_strlen (msg) + 2;
-  int ret;
+  int ret = 0;
 
   unicode_msg = grub_malloc (msg_len * sizeof (grub_uint32_t));
  
