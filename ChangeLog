@@ -1,4 +1,10 @@
 2012-02-27  Richard Laager <rlaager@wiktel.com>
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/10_linux.in: Add ZFS-related arguments.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
+2012-02-27  Richard Laager <rlaager@wiktel.com>
 
 	* util/getroot.c (find_root_devices_from_poolname): Handle vdevs
 	with full paths.

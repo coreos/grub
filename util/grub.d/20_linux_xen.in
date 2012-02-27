@@ -59,13 +59,20 @@ if [ "${GRUB_CMDLINE_LINUX_XEN_REPLACE_DEFAULT}" ]; then
   GRUB_CMDLINE_LINUX_DEFAULT="${GRUB_CMDLINE_LINUX_XEN_REPLACE_DEFAULT}"
 fi
 
-if [ "x`${grub_probe} --device ${GRUB_DEVICE} --target=fs 2>/dev/null || true`" = xbtrfs ]; then
-  rootsubvol="`make_system_path_relative_to_its_root /`"
-  rootsubvol="${rootsubvol#/}"
-  if [ "x${rootsubvol}" != x ]; then
-    GRUB_CMDLINE_LINUX="rootflags=subvol=${rootsubvol} ${GRUB_CMDLINE_LINUX}"
-  fi
-fi
+GRUBFS="`${grub_probe} --device ${GRUB_DEVICE} --target=fs 2>/dev/null || true`"
+
+case x"$GRUBFS" in
+    xbtrfs)
+	rootsubvol="`make_system_path_relative_to_its_root /`"
+	rootsubvol="${rootsubvol#/}"
+	if [ "x${rootsubvol}" != x ]; then
+	    GRUB_CMDLINE_LINUX="rootflags=subvol=${rootsubvol} ${GRUB_CMDLINE_LINUX}"
+	fi;;
+    xzfs)
+	bootfs="`make_system_path_relative_to_its_root / | sed -e "s,@$,,"`"
+	LINUX_ROOT_DEVICE="ZFS=${RPOOL}${bootfs}"
+	GRUB_CMDLINE_LINUX="boot=zfs rpool=${RPOOL} bootfs=${RPOOL}${bootfs} ${cmdline} ${GRUB_CMDLINE_LINUX}";;
+esac
 
 linux_entry ()
 {
