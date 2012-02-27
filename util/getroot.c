@@ -601,7 +601,8 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
       if (!*entries[i].device)
 	continue;
 
-      if (grub_strcmp (entries[i].fstype, "fuse.zfs") == 0)
+      if (grub_strcmp (entries[i].fstype, "fuse.zfs") == 0
+	  || grub_strcmp (entries[i].fstype, "zfs") == 0)
 	{
 	  char *slash;
 	  slash = strchr (entries[i].device, '/');
