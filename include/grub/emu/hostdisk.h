@@ -48,6 +48,7 @@ grub_util_is_ldm (grub_disk_t disk);
 #ifdef GRUB_UTIL
 grub_err_t
 grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
+		     unsigned int max_nsectors,
 		     grub_embed_type_t embed_type,
 		     grub_disk_addr_t **sectors);
 #endif

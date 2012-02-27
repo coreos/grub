@@ -337,7 +337,7 @@ setup (const char *dir,
     grub_disk_addr_t *sectors;
     int i;
     grub_fs_t fs;
-    unsigned int nsec;
+    unsigned int nsec, maxsec;
 
     /* Unlike root_dev, with dest_dev we're interested in the partition map even
        if dest_dev itself is a whole disk.  */
@@ -457,14 +457,21 @@ setup (const char *dir,
       }
 
     nsec = core_sectors;
+
+    maxsec = 2 * core_sectors;
+    if (maxsec > ((0x78000 - GRUB_KERNEL_I386_PC_LINK_ADDR)
+		>> GRUB_DISK_SECTOR_BITS))
+      maxsec = ((0x78000 - GRUB_KERNEL_I386_PC_LINK_ADDR)
+		>> GRUB_DISK_SECTOR_BITS);
+
     if (is_ldm)
-      err = grub_util_ldm_embed (dest_dev->disk, &nsec,
+      err = grub_util_ldm_embed (dest_dev->disk, &nsec, maxsec,
 				 GRUB_EMBED_PCBIOS, &sectors);
     else if (dest_partmap)
-      err = dest_partmap->embed (dest_dev->disk, &nsec,
+      err = dest_partmap->embed (dest_dev->disk, &nsec, maxsec,
 				 GRUB_EMBED_PCBIOS, &sectors);
     else
-      err = fs->embed (dest_dev, &nsec,
+      err = fs->embed (dest_dev, &nsec, maxsec,
 		       GRUB_EMBED_PCBIOS, &sectors);
     if (!err && nsec < core_sectors)
       {
@@ -472,6 +479,8 @@ setup (const char *dir,
 			  N_("Your embedding area is unusually small.  "
 			     "core.img won't fit in it."));
       }
+    err = dest_partmap->embed (dest_dev->disk, &nsec, maxsec,
+			       GRUB_EMBED_PCBIOS, &sectors);
     
     if (err)
       {
@@ -480,12 +489,7 @@ setup (const char *dir,
 	goto unable_to_embed;
       }
 
-    if (nsec > 2 * core_sectors)
-      nsec = 2 * core_sectors;
-    if (nsec > ((0x78000 - GRUB_KERNEL_I386_PC_LINK_ADDR)
-		>> GRUB_DISK_SECTOR_BITS))
-      nsec = ((0x78000 - GRUB_KERNEL_I386_PC_LINK_ADDR)
-	      >> GRUB_DISK_SECTOR_BITS);
+    assert (nsec <= maxsec);
 
     /* Clean out the blocklists.  */
     block = first_block;
@@ -506,6 +510,13 @@ setup (const char *dir,
     for (i = 1; i < nsec; i++)
       save_blocklists (sectors[i] + grub_partition_get_start (container),
 		       0, GRUB_DISK_SECTOR_SIZE);
+
+    /* Make sure that the last blocklist is a terminator.  */
+    if (block == first_block)
+      block--;
+    block->start = 0;
+    block->len = 0;
+    block->segment = 0;
 
     write_rootdev (core_img, root_dev, boot_img, first_sector);
 
@@ -534,12 +545,6 @@ setup (const char *dir,
 				      - core_size);
     assert (grub_memcmp (tmp, core_img, core_size) == 0);
     free (tmp);
-
-    /* Make sure that the second blocklist is a terminator.  */
-    block = first_block - 1;
-    block->start = 0;
-    block->len = 0;
-    block->segment = 0;
 
     /* Write the core image onto the disk.  */
     for (i = 0; i < nsec; i++)

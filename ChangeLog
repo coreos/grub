@@ -1,3 +1,28 @@
+2012-02-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* include/grub/partition.h (grub_partition_map): Change prototype of
+	embed to take a maximum value for nsectors.
+	* include/grub/emu/hostdisk.h (grub_util_ldm_embed): Likewise.
+	* include/grub/fs.h (grub_fs): Likewise.
+	* grub-core/partmap/msdos.c (embed_signatures): New array.
+	(pc_partition_map_embed): Check for and avoid sectors matching any
+	of the signatures in embed_signatures, up to max_nsectors.
+	* grub-core/partmap/gpt.c (gpt_partition_map_embed): Restrict
+	returned sector map to max_nsectors.
+	* grub-core/disk/ldm.c (grub_util_ldm_embed): Likewise.
+	* grub-core/fs/btrfs.c (grub_btrfs_embed): Likewise.
+	* grub-core/fs/zfs/zfs.c (grub_zfs_embed): Likewise.
+	* util/grub-setup.c (setup): Allow for the embedding area being
+	split into multiple blocklists.  Tell dest_partmap->embed the
+	maximum number of sectors we care about.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/fs.h (grub_fs) [GRUB_UTIL]: Add blocklist_install field.
+	Specify blocklist_install and reserver_first_sector for all fs.
+	* util/grub-setup.c (setup): Use FIBMAP/FIEMAP on Linux. Check resulting
+	blocklists.
+
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.in: Clarify strings.

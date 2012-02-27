@@ -128,6 +128,7 @@ grub_gpt_partition_map_iterate (grub_disk_t disk,
 #ifdef GRUB_UTIL
 static grub_err_t
 gpt_partition_map_embed (struct grub_disk *disk_, unsigned int *nsectors,
+			 unsigned int max_nsectors,
 			 grub_embed_type_t embed_type,
 			 grub_disk_addr_t **sectors)
 {
@@ -183,6 +184,8 @@ gpt_partition_map_embed (struct grub_disk *disk_, unsigned int *nsectors,
 			  " embedding won't be possible"));
 
   *nsectors = len;
+  if (*nsectors > max_nsectors)
+    *nsectors = max_nsectors;
   *sectors = grub_malloc (*nsectors * sizeof (**sectors));
   if (!*sectors)
     return grub_errno;

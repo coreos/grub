@@ -1620,6 +1620,7 @@ grub_btrfs_label (grub_device_t device, char **label)
 static grub_err_t
 grub_btrfs_embed (grub_device_t device __attribute__ ((unused)),
 		  unsigned int *nsectors,
+		  unsigned int max_nsectors,
 		  grub_embed_type_t embed_type,
 		  grub_disk_addr_t **sectors)
 {
@@ -1635,6 +1636,8 @@ grub_btrfs_embed (grub_device_t device __attribute__ ((unused)),
 			  "It won't fit in the embedding area"));
 
   *nsectors = 64 * 2 - 1;
+  if (*nsectors > max_nsectors)
+    *nsectors = max_nsectors;
   *sectors = grub_malloc (*nsectors * sizeof (**sectors));
   if (!*sectors)
     return grub_errno;

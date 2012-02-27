@@ -909,6 +909,7 @@ grub_util_is_ldm (grub_disk_t disk)
 
 grub_err_t
 grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
+		     unsigned int max_nsectors,
 		     grub_embed_type_t embed_type,
 		     grub_disk_addr_t **sectors)
 {
@@ -967,6 +968,8 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
 			   N_("your LDM embedding Partition is too small;"
 			      " embedding won't be possible"));
       *nsectors = lv->size;
+      if (*nsectors > max_nsectors)
+	*nsectors = max_nsectors;
       *sectors = grub_malloc (*nsectors * sizeof (**sectors));
       if (!*sectors)
 	return grub_errno;

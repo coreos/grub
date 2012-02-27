@@ -81,6 +81,7 @@ struct grub_fs
 #ifdef GRUB_UTIL
   /* Determine sectors available for embedding.  */
   grub_err_t (*embed) (grub_device_t device, unsigned int *nsectors,
+		       unsigned int max_nsectors,
 		       grub_embed_type_t embed_type,
 		       grub_disk_addr_t **sectors);
 

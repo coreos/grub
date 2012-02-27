@@ -50,6 +50,7 @@ struct grub_partition_map
 #ifdef GRUB_UTIL
   /* Determine sectors available for embedding.  */
   grub_err_t (*embed) (struct grub_disk *disk, unsigned int *nsectors,
+		       unsigned int max_nsectors,
 		       grub_embed_type_t embed_type,
 		       grub_disk_addr_t **sectors);
 #endif

@@ -30,6 +30,66 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static struct grub_partition_map grub_msdos_partition_map;
 
 
+#ifdef GRUB_UTIL
+#include <grub/emu/misc.h>
+
+struct embed_signature
+{
+  const char *name;
+  const char *signature;
+  int signature_len;
+  enum { TYPE_SOFTWARE, TYPE_RAID } type;
+};
+
+const char message_warn[][200] = {
+  [TYPE_RAID] = N_("Sector %llu is already in use by %s; avoiding it.  "
+		   "Please ask the manufacturer not to store data in MBR gap"),
+  [TYPE_SOFTWARE] = N_("Sector %llu is already in use by %s; avoiding it.  "
+		       "This software may cause boot or other problems in "
+		       "future.  Please ask its authors not to store data "
+		       "in the boot track") 
+};
+
+
+/* Signatures of other software that may be using sectors in the embedding
+   area.  */
+struct embed_signature embed_signatures[] =
+  {
+    {
+      .name = "ZISD",
+      .signature = "ZISD",
+      .signature_len = 4,
+      .type = TYPE_SOFTWARE
+    },
+    {
+      .name = "FlexNet",
+      .signature = "\xd4\x41\xa0\xf5\x03\x00\x03\x00",
+      .signature_len = 8,
+      .type = TYPE_SOFTWARE
+    },
+    {
+      .name = "FlexNet",
+      .signature = "\xd8\x41\xa0\xf5\x02\x00\x02\x00",
+      .signature_len = 8,
+      .type = TYPE_SOFTWARE
+    },
+    {
+      /* from Ryan Perkins */
+      .name = "HP Backup and Recovery Manager (?)",
+      .signature = "\x70\x8a\x5d\x46\x35\xc5\x1b\x93"
+		   "\xae\x3d\x86\xfd\xb1\x55\x3e\xe0",
+      .signature_len = 16,
+      .type = TYPE_SOFTWARE
+    },
+    {
+      .name = "HighPoint RAID controller",
+      .signature = "ycgl",
+      .signature_len = 4,
+      .type = TYPE_RAID
+    }
+  };
+#endif
+
 grub_err_t
 grub_partition_msdos_iterate (grub_disk_t disk,
 			      int (*hook) (grub_disk_t disk,
@@ -154,6 +214,7 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 #ifdef GRUB_UTIL
 static grub_err_t
 pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
+			unsigned int max_nsectors,
 			grub_embed_type_t embed_type,
 			grub_disk_addr_t **sectors)
 {
@@ -247,13 +308,65 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 
   if (end >= *nsectors + 2)
     {
-      unsigned i;
+      unsigned i, j;
+      char *embed_signature_check;
+      unsigned int orig_nsectors, avail_nsectors;
+
+      orig_nsectors = *nsectors;
       *nsectors = end - 2;
+      avail_nsectors = *nsectors;
+      if (*nsectors > max_nsectors)
+	*nsectors = max_nsectors;
       *sectors = grub_malloc (*nsectors * sizeof (**sectors));
       if (!*sectors)
 	return grub_errno;
       for (i = 0; i < *nsectors; i++)
 	(*sectors)[i] = 1 + i;
+
+      /* Check for software that is already using parts of the embedding
+       * area.
+       */
+      embed_signature_check = grub_malloc (GRUB_DISK_SECTOR_SIZE);
+      for (i = 0; i < *nsectors; i++)
+	{
+	  if (grub_disk_read (disk, (*sectors)[i], 0, GRUB_DISK_SECTOR_SIZE,
+			      embed_signature_check))
+	    continue;
+
+	  for (j = 0; j < ARRAY_SIZE (embed_signatures); j++)
+	    if (! grub_memcmp (embed_signatures[j].signature,
+			       embed_signature_check,
+			       embed_signatures[j].signature_len))
+	      break;
+	  if (j == ARRAY_SIZE (embed_signatures))
+	    continue;
+	  grub_util_warn (_(message_warn[embed_signatures[j].type]),
+			  (*sectors)[i], embed_signatures[j].name);
+	  avail_nsectors--;
+	  if (avail_nsectors < *nsectors)
+	    *nsectors = avail_nsectors;
+
+	  /* Avoid this sector.  */
+	  for (j = i; j < *nsectors; j++)
+	    (*sectors)[j]++;
+
+	  /* Have we run out of space?  */
+	  if (avail_nsectors < orig_nsectors)
+	    break;
+
+	  /* Make sure to check the next sector.  */
+	  i--;
+	}
+      grub_free (embed_signature_check);
+
+      if (*nsectors < orig_nsectors)
+	return grub_error (GRUB_ERR_OUT_OF_RANGE,
+			   N_("other software is using the embedding area, and "
+			      "there is not enough room for core.img.  Such "
+			      "software is often trying to store data in a way "
+			      "that avoids detection.  We recommend you "
+			      "investigate"));
+
       return GRUB_ERR_NONE;
     }
 

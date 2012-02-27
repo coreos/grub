@@ -3902,6 +3902,7 @@ grub_zfs_dir (grub_device_t device, const char *path,
 static grub_err_t
 grub_zfs_embed (grub_device_t device __attribute__ ((unused)),
 		unsigned int *nsectors,
+		unsigned int max_nsectors,
 		grub_embed_type_t embed_type,
 		grub_disk_addr_t **sectors)
 {
@@ -3917,6 +3918,8 @@ grub_zfs_embed (grub_device_t device __attribute__ ((unused)),
 			  "It won't fit in the embedding area"));
 
   *nsectors = (VDEV_BOOT_SIZE >> GRUB_DISK_SECTOR_BITS);
+  if (*nsectors > max_nsectors)
+    *nsectors = max_nsectors;
   *sectors = grub_malloc (*nsectors * sizeof (**sectors));
   if (!*sectors)
     return grub_errno;
