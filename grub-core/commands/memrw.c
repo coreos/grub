@@ -39,7 +39,7 @@ static const struct grub_arg_option options[] =
 static grub_err_t
 grub_cmd_read (grub_extcmd_context_t ctxt, int argc, char **argv)
 {
-  grub_target_addr_t addr;
+  grub_addr_t addr;
   grub_uint32_t value = 0;
   char buf[sizeof ("XXXXXXXX")];
 
@@ -76,7 +76,7 @@ grub_cmd_read (grub_extcmd_context_t ctxt, int argc, char **argv)
 static grub_err_t
 grub_cmd_write (grub_command_t cmd, int argc, char **argv)
 {
-  grub_target_addr_t addr;
+  grub_addr_t addr;
   grub_uint32_t value;
   grub_uint32_t mask = 0xffffffff;
 

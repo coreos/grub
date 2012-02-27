@@ -54,7 +54,7 @@ static struct
 static int
 find_line_len (grub_uint32_t *fb_base, grub_uint32_t *line_len)
 {
-  grub_uint32_t *base = (grub_uint32_t *) (grub_target_addr_t) *fb_base;
+  grub_uint32_t *base = (grub_uint32_t *) (grub_addr_t) *fb_base;
   int i;
 
   for (i = 0; i < FBTEST_COUNT; i++, base += FBTEST_STEP)
@@ -67,7 +67,7 @@ find_line_len (grub_uint32_t *fb_base, grub_uint32_t *line_len)
 	    {
 	      if ((base[j] & RGB_MASK) == RGB_MAGIC)
 		{
-		  *fb_base = (grub_uint32_t) (grub_target_addr_t) base;
+		  *fb_base = (grub_uint32_t) (grub_addr_t) base;
 		  *line_len = j << 2;
 
 		  return 1;
@@ -223,7 +223,7 @@ grub_video_uga_setup (unsigned int width, unsigned int height,
 	framebuffer.mode_info.width = w;
 	framebuffer.mode_info.height = h;
 	framebuffer.mode_info.pitch = uga_pitch;
-	framebuffer.ptr = (grub_uint8_t *) (grub_target_addr_t) uga_fb;
+	framebuffer.ptr = (grub_uint8_t *) (grub_addr_t) uga_fb;
 
 	found = 1;
       }

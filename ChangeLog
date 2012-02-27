@@ -1,5 +1,19 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Replace grub_target_addr with more appropriate types.
+
+	* grub-core/commands/efi/fixvideo.c (scan_card): Replace
+	grub_target_addr with grub_addr.
+	* grub-core/commands/iorw.c (grub_cmd_read): Replace
+	grub_target_addr with grub_port.
+	(grub_cmd_write): Likewise.
+	* grub-core/commands/memrw.c (grub_cmd_read): Replace
+	grub_target_addr with grub_addr.
+	(grub_cmd_write): Likewise.
+	* grub-core/video/efi_uga.c (find_line_len): Likewise.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/efi/api.h (grub_efi_runtime_services): Add missing
 	const qualifier for vendor_guid.
 

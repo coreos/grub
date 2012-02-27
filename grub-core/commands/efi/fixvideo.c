@@ -54,7 +54,7 @@ scan_card (grub_pci_device_t dev, grub_pci_id_t pciid)
 	{
 	  if (p->pci_id == pciid)
 	    {
-	      grub_target_addr_t base;
+	      grub_addr_t base;
 
 	      grub_dprintf ("fixvideo", "Found graphic card: %s\n", p->name);
 	      addr += 8 + p->mmio_bar * 4;
