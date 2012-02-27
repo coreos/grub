@@ -1,5 +1,25 @@
 2012-02-27  Colin Watson  <cjwatson@ubuntu.com>
 
+	Use write-combining MTRR to speed up video with buggy BIOSes.
+
+	* grub-core/video/i386/pc/vbe.c (framebuffer): New member mtrr.
+	(cpuid): New define.
+	(rdmsr): Likewise.
+	(wrmsr): Likewise.
+	(mtrr_base): Likewise.
+	(mtrr_mask): Likewise.
+	(grub_vbe_enable_mtrr_entry): New function.
+	(grub_vbe_enable_mtrr): Likewise.
+	(grub_vbe_disable_mtrr): Likewise.
+	(grub_vbe_bios_set_display_start): Disable mtrr when handing the
+	control off to BIOS.
+	(grub_video_vbe_init): Fill mtrr.
+	(grub_video_vbe_fini): Disable mtrr.
+	(grub_video_vbe_get_info_and_fini): Likewise.
+	(grub_video_vbe_setup): Enable mtrr.
+
+2012-02-27  Colin Watson  <cjwatson@ubuntu.com>
+
 	* include/grub/partition.h (grub_partition_map): Change prototype of
 	embed to take a maximum value for nsectors.
 	* include/grub/emu/hostdisk.h (grub_util_ldm_embed): Likewise.

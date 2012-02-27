@@ -29,6 +29,7 @@
 #include <grub/video.h>
 #include <grub/i386/pc/int.h>
 #include <grub/i18n.h>
+#include <grub/cpu/tsc.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -44,6 +45,7 @@ static struct
   struct grub_video_mode_info mode_info;
 
   grub_uint8_t *ptr;
+  int mtrr;
 } framebuffer;
 
 static grub_uint32_t initial_vbe_mode;
@@ -54,6 +56,171 @@ real2pm (grub_vbe_farptr_t ptr)
 {
   return (void *) ((((unsigned long) ptr & 0xFFFF0000) >> 12UL)
                    + ((unsigned long) ptr & 0x0000FFFF));
+}
+
+#define cpuid(num,a,b,c,d) \
+  asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
+                : "=a" (a), "=r" (b), "=c" (c), "=d" (d)  \
+                : "0" (num))
+
+#define rdmsr(num,a,d) \
+  asm volatile ("rdmsr" : "=a" (a), "=d" (d) : "c" (num))
+
+#define wrmsr(num,lo,hi) \
+  asm volatile ("wrmsr" : : "c" (num), "a" (lo), "d" (hi) : "memory")
+
+#define mtrr_base(reg) (0x200 + (reg) * 2)
+#define mtrr_mask(reg) (0x200 + (reg) * 2 + 1)
+
+/* Try to set up a variable-range write-combining MTRR for a memory region.
+   This is best-effort; if it seems too hard, we just accept the performance
+   degradation rather than risking undefined behaviour.  It is intended
+   exclusively to work around BIOS bugs, as the BIOS should already be
+   setting up a suitable MTRR.  */
+static void
+grub_vbe_enable_mtrr_entry (int mtrr)
+{
+  grub_uint32_t eax, edx;
+  grub_uint32_t mask_lo, mask_hi;
+
+  rdmsr (mtrr_mask (mtrr), eax, edx);
+  mask_lo = eax;
+  mask_hi = edx;
+
+  mask_lo |= 0x800 /* valid */;
+  wrmsr (mtrr_mask (mtrr), mask_lo, mask_hi);
+}
+
+static void
+grub_vbe_enable_mtrr (grub_uint8_t *base, grub_size_t size)
+{
+  grub_uint32_t eax, ebx, ecx, edx;
+  grub_uint32_t features;
+  grub_uint32_t mtrrcap;
+  int var_mtrrs;
+  grub_uint32_t max_extended_cpuid;
+  grub_uint32_t maxphyaddr;
+  grub_uint64_t fb_base, fb_size;
+  grub_uint64_t size_bits, fb_mask;
+  grub_uint32_t bits_lo, bits_hi;
+  grub_uint64_t bits;
+  int i, first_unused = -1;
+  grub_uint32_t base_lo, base_hi, mask_lo, mask_hi;
+
+  fb_base = (grub_uint64_t) (grub_size_t) base;
+  fb_size = (grub_uint64_t) size;
+
+  /* Check that fb_base and fb_size can be represented using a single
+     MTRR.  */
+
+  if (fb_base < (1 << 20))
+    return; /* under 1MB, so covered by fixed-range MTRRs */
+  if (fb_base >= (1LL << 36))
+    return; /* over 36 bits, so out of range */
+  if (fb_size < (1 << 12))
+    return; /* variable-range MTRRs must cover at least 4KB */
+
+  size_bits = fb_size;
+  while (size_bits > 1)
+    size_bits >>= 1;
+  if (size_bits != 1)
+    return; /* not a power of two */
+
+  if (fb_base & (fb_size - 1))
+    return; /* not aligned on size boundary */
+
+  fb_mask = ~(fb_size - 1);
+
+  /* Check CPU capabilities.  */
+
+  if (! grub_cpu_is_cpuid_supported ())
+    return;
+
+  cpuid (1, eax, ebx, ecx, edx);
+  features = edx;
+  if (! (features & 0x00001000)) /* MTRR */
+    return;
+
+  rdmsr (0xFE, eax, edx);
+  mtrrcap = eax;
+  if (! (mtrrcap & 0x00000400)) /* write-combining */
+    return;
+  var_mtrrs = (mtrrcap & 0xFF);
+
+  cpuid (0x80000000, eax, ebx, ecx, edx);
+  max_extended_cpuid = eax;
+  if (max_extended_cpuid >= 0x80000008)
+    {
+      cpuid (0x80000008, eax, ebx, ecx, edx);
+      maxphyaddr = (eax & 0xFF);
+    }
+  else
+    maxphyaddr = 36;
+  bits_lo = 0xFFFFF000; /* assume maxphyaddr >= 36 */
+  bits_hi = (1 << (maxphyaddr - 32)) - 1;
+  bits = bits_lo | ((grub_uint64_t) bits_hi << 32);
+
+  /* Check whether an MTRR already covers this region.  If not, take an
+     unused one if possible.  */
+  for (i = 0; i < var_mtrrs; i++)
+    {
+      rdmsr (mtrr_mask (i), eax, edx);
+      mask_lo = eax;
+      mask_hi = edx;
+      if (mask_lo & 0x800) /* valid */
+	{
+	  grub_uint64_t real_base, real_mask;
+
+	  rdmsr (mtrr_base (i), eax, edx);
+	  base_lo = eax;
+	  base_hi = edx;
+
+	  real_base = ((grub_uint64_t) (base_hi & bits_hi) << 32) |
+		      (base_lo & bits_lo);
+	  real_mask = ((grub_uint64_t) (mask_hi & bits_hi) << 32) |
+		       (mask_lo & bits_lo);
+	  if (real_base < (fb_base + fb_size) &&
+	      real_base + (~real_mask & bits) >= fb_base)
+	    return; /* existing MTRR overlaps this region */
+	}
+      else if (first_unused < 0)
+	first_unused = i;
+    }
+
+  if (first_unused < 0)
+    return; /* all MTRRs in use */
+
+  /* Set up the first unused MTRR we found.  */
+  rdmsr (mtrr_base (first_unused), eax, edx);
+  base_lo = eax;
+  base_hi = edx;
+  rdmsr (mtrr_mask (first_unused), eax, edx);
+  mask_lo = eax;
+  mask_hi = edx;
+
+  base_lo = (base_lo & ~bits_lo & ~0xFF) |
+	    (fb_base & bits_lo) | 0x01 /* WC */;
+  base_hi = (base_hi & ~bits_hi) | ((fb_base >> 32) & bits_hi);
+  wrmsr (mtrr_base (first_unused), base_lo, base_hi);
+  mask_lo = (mask_lo & ~bits_lo) | (fb_mask & bits_lo) | 0x800 /* valid */;
+  mask_hi = (mask_hi & ~bits_hi) | ((fb_mask >> 32) & bits_hi);
+  wrmsr (mtrr_mask (first_unused), mask_lo, mask_hi);
+
+  framebuffer.mtrr = first_unused;
+}
+
+static void
+grub_vbe_disable_mtrr (int mtrr)
+{
+  grub_uint32_t eax, edx;
+  grub_uint32_t mask_lo, mask_hi;
+
+  rdmsr (mtrr_mask (mtrr), eax, edx);
+  mask_lo = eax;
+  mask_hi = edx;
+
+  mask_lo &= ~0x800 /* valid */;
+  wrmsr (mtrr_mask (mtrr), mask_lo, mask_hi);
 }
 
 /* Call VESA BIOS 0x4f09 to set palette data, return status.  */
@@ -221,6 +388,9 @@ grub_vbe_bios_set_display_start (grub_uint32_t x, grub_uint32_t y)
 {
   struct grub_bios_int_registers regs;
 
+  if (framebuffer.mtrr >= 0)
+    grub_vbe_disable_mtrr (framebuffer.mtrr);
+
   /* Store x in %ecx.  */
   regs.ecx = x;
   regs.edx = y;
@@ -229,6 +399,10 @@ grub_vbe_bios_set_display_start (grub_uint32_t x, grub_uint32_t y)
   regs.ebx = 0x0080;	
   regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
   grub_bios_interrupt (0x10, &regs);
+
+  if (framebuffer.mtrr >= 0)
+    grub_vbe_enable_mtrr_entry (framebuffer.mtrr);
+
   return regs.eax & 0xffff;
 }
 
@@ -324,7 +498,6 @@ grub_vbe_bios_read_edid (struct grub_video_edid_info *edid_info)
   grub_bios_interrupt (0x10, &regs);
   return regs.eax & 0xffff;
 }
-
 
 grub_err_t
 grub_vbe_probe (struct grub_vbe_info_block *info_block)
@@ -630,6 +803,7 @@ grub_video_vbe_init (void)
 
   /* Reset frame buffer.  */
   grub_memset (&framebuffer, 0, sizeof(framebuffer));
+  framebuffer.mtrr = -1;
 
   return grub_video_fb_init ();
 }
@@ -655,6 +829,11 @@ grub_video_vbe_fini (void)
   vbe_mode_list = NULL;
 
   err = grub_video_fb_fini ();
+  if (framebuffer.mtrr >= 0)
+    {
+      grub_vbe_disable_mtrr (framebuffer.mtrr);
+      framebuffer.mtrr = -1;
+    }
   return err;
 }
 
@@ -956,6 +1135,10 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
       /* Copy default palette to initialize emulated palette.  */
       err = grub_video_fb_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
 				       grub_video_fbstd_colors);
+
+      grub_vbe_enable_mtrr (framebuffer.ptr,
+			    controller_info.total_memory << 16);
+
       return err;
     }
 
@@ -986,9 +1169,18 @@ static grub_err_t
 grub_video_vbe_get_info_and_fini (struct grub_video_mode_info *mode_info,
 				  void **framebuf)
 {
+  grub_err_t err;
   grub_free (vbe_mode_list);
   vbe_mode_list = NULL;
-  return grub_video_fb_get_info_and_fini (mode_info, framebuf);
+  err = grub_video_fb_get_info_and_fini (mode_info, framebuf);
+  if (err)
+    return err;
+  if (framebuffer.mtrr >= 0)
+    {
+      grub_vbe_disable_mtrr (framebuffer.mtrr);
+      framebuffer.mtrr = -1;
+    }
+  return GRUB_ERR_NONE;
 }
 
 static void
