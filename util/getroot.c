@@ -542,6 +542,8 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
       if (sscanf (sep, "%s %s", entry.fstype, entry.device) != 2)
 	continue;
 
+      unescape (entry.device);
+
       /* Using the mount IDs, find out where this fits in the list of
 	 visible mount entries we've seen so far.  There are three
 	 interesting cases.  Firstly, it may be inserted at the end: this is
