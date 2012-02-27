@@ -1,5 +1,10 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mknetdir.in (grub_prefix): Removed.
+	(subdir): Use @bootdirname@ and @grubdirname@.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Replace PACKAGE_TARNAME with PACKAGE in pkglibdir and pkgdatadir.
 
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>

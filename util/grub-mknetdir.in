@@ -38,14 +38,13 @@ self=`basename $0`
 
 grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 rootdir=/srv/tftp
-grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
 
 no_floppy=
 recheck=no
 debug=no
 debug_image=
-subdir=`echo /boot/grub | sed ${transform}`
+subdir="`echo '/@bootdirname@/@grubdirname@' | sed "s,//*,/,g"`"
 pc_dir="${libdir}/@PACKAGE@/i386-pc"
 ppc_dir="${libdir}/@PACKAGE@/powerpc-ieee1275"
 sparc_dir="${libdir}/@PACKAGE@/sparc64-ieee1275"
