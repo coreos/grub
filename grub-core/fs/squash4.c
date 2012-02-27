@@ -935,6 +935,7 @@ static struct grub_fs grub_squash_fs =
     .mtime = grub_squash_mtime,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 0,
+    .blocklist_install = 0,
 #endif
     .next = 0
   };

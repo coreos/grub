@@ -1154,6 +1154,7 @@ static struct grub_fs grub_fat_fs =
 #else
     .reserved_first_sector = 1,
 #endif
+    .blocklist_install = 1,
 #endif
     .next = 0
   };

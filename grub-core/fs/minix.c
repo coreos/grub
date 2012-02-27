@@ -652,6 +652,10 @@ static struct grub_fs grub_minix_fs =
     .open = grub_minix_open,
     .read = grub_minix_read,
     .close = grub_minix_close,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+    .blocklist_install = 1,
+#endif
     .next = 0
   };
 

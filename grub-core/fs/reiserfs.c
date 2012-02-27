@@ -1389,6 +1389,10 @@ static struct grub_fs grub_reiserfs_fs =
     .close = grub_reiserfs_close,
     .label = grub_reiserfs_label,
     .uuid = grub_reiserfs_uuid,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+    .blocklist_install = 1,
+#endif
     .next = 0
   };
 

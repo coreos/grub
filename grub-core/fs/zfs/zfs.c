@@ -3939,6 +3939,7 @@ static struct grub_fs grub_zfs_fs = {
 #ifdef GRUB_UTIL
   .embed = grub_zfs_embed,
   .reserved_first_sector = 1,
+  .blocklist_install = 0,
 #endif
   .next = 0
 };

@@ -1093,6 +1093,10 @@ static struct grub_fs grub_iso9660_fs =
     .label = grub_iso9660_label,
     .uuid = grub_iso9660_uuid,
     .mtime = grub_iso9660_mtime,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+    .blocklist_install = 1,
+#endif
     .next = 0
   };
 

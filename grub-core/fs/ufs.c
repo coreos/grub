@@ -791,6 +791,10 @@ static struct grub_fs grub_ufs_fs =
     .label = grub_ufs_label,
     .uuid = grub_ufs_uuid,
     .mtime = grub_ufs_mtime,
+    /* FIXME: set reserved_first_sector.  */
+#ifdef GRUB_UTIL
+    .blocklist_install = 1,
+#endif
     .next = 0
   };
 

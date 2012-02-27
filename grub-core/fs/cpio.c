@@ -715,6 +715,7 @@ static struct grub_fs grub_cpio_fs = {
   .close = grub_cpio_close,
 #ifdef GRUB_UTIL
   .reserved_first_sector = 0,
+  .blocklist_install = 0,
 #endif
 };
 

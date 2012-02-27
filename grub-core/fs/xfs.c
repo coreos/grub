@@ -884,6 +884,7 @@ static struct grub_fs grub_xfs_fs =
     .uuid = grub_xfs_uuid,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 0,
+    .blocklist_install = 1,
 #endif
     .next = 0
   };

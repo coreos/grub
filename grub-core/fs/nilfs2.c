@@ -1178,6 +1178,7 @@ static struct grub_fs grub_nilfs2_fs = {
   .mtime = grub_nilfs2_mtime,
 #ifdef GRUB_UTIL
   .reserved_first_sector = 1,
+  .blocklist_install = 0,
 #endif
   .next = 0
 };

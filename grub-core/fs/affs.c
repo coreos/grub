@@ -571,6 +571,7 @@ static struct grub_fs grub_affs_fs =
     .label = grub_affs_label,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 0,
+    .blocklist_install = 1,
 #endif
     .next = 0
   };

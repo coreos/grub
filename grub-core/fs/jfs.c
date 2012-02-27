@@ -913,6 +913,10 @@ static struct grub_fs grub_jfs_fs =
     .close = grub_jfs_close,
     .label = grub_jfs_label,
     .uuid = grub_jfs_uuid,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+    .blocklist_install = 1,
+#endif
     .next = 0
   };
 

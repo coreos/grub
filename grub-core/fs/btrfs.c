@@ -1656,6 +1656,7 @@ static struct grub_fs grub_btrfs_fs = {
 #ifdef GRUB_UTIL
   .embed = grub_btrfs_embed,
   .reserved_first_sector = 1,
+  .blocklist_install = 0,
 #endif
 };
 

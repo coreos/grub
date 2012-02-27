@@ -86,6 +86,9 @@ struct grub_fs
 
   /* Whether this filesystem reserves first sector for DOS-style boot.  */
   int reserved_first_sector;
+
+  /* Whether blocklist installs have a chance to work.  */
+  int blocklist_install;
 #endif
 };
 typedef struct grub_fs *grub_fs_t;

@@ -1097,6 +1097,10 @@ static struct grub_fs grub_udf_fs = {
   .read = grub_udf_read,
   .close = grub_udf_close,
   .label = grub_udf_label,
+#ifdef GRUB_UTIL
+  .reserved_first_sector = 1,
+  .blocklist_install = 1,
+#endif
   .next = 0
 };
 

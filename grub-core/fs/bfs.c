@@ -1027,6 +1027,7 @@ static struct grub_fs grub_bfs_fs = {
 #endif
 #ifdef GRUB_UTIL
   .reserved_first_sector = 1,
+  .blocklist_install = 1,
 #endif
 };
 

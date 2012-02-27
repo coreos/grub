@@ -1357,6 +1357,10 @@ static struct grub_fs grub_hfs_fs =
     .label = grub_hfs_label,
     .uuid = grub_hfs_uuid,
     .mtime = grub_hfs_mtime,
+#ifdef GRUB_UTIL
+    .reserved_first_sector = 1,
+    .blocklist_install = 1,
+#endif
     .next = 0
   };
 

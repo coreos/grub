@@ -1252,6 +1252,7 @@ static struct grub_fs grub_ntfs_fs =
     .uuid = grub_ntfs_uuid,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 1,
+    .blocklist_install = 1,
 #endif
     .next = 0
 };
