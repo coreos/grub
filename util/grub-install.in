@@ -96,10 +96,10 @@ usage () {
     printf "  --recheck               %s\n" "$(gettext "delete device map if it already exists")"
     printf "  --force                 %s\n" "$(gettext "install even if problems are detected")"
     printf "  --force-file-id         %s\n" "$(gettext "use ID file even if UUID is available")"
-    printf "  --disk-module=%-10s%s\n" "$(gettext "MODULE")" "$(gettext "disk module to use (biosdisk or native). Only available on BIOS target")"
-    printf "  --no-nvram              %s\n" "$(gettext "don't update the \`boot-device' NVRAM variable. Only available on IEEE1275 targets.")"
-    printf "  --removable             %s\n" "$(gettext "the installation device is removable. Only available on EFI.")"
-    printf "  --bootloader-id=%-8s%s\n" "$(gettext "ID")" "$(gettext "the ID of bootloader. Only available on EFI.")"
+    printf "  --disk-module=%-10s%s\n" "$(gettext "MODULE")" "$(gettext "disk module to use (biosdisk or native). This option is only available on BIOS target")"
+    printf "  --no-nvram              %s\n" "$(gettext "don't update the \`boot-device' NVRAM variable. This option is only available on IEEE1275 targets.")"
+    printf "  --removable             %s\n" "$(gettext "the installation device is removable. This option is only available on EFI.")"
+    printf "  --bootloader-id=%-8s%s\n" "$(gettext "ID")" "$(gettext "the ID of bootloader. This option is only available on EFI.")"
 echo
 gettext "INSTALL_DEVICE must be system device filename.";echo
 echo
@@ -285,8 +285,8 @@ if [ x$source_dir = x ]; then
     source_dir="${libdir}/@PACKAGE@/$target"
 fi
 
-if ! [ -d "source_dir" ]; then
-    gettext_printf "%s doesn't seem to exist. Please specify --target or --directory\\n" "source_dir"
+if ! [ -d "$source_dir" ]; then
+    gettext_printf "%s doesn't exist. Please specify --target or --directory\\n" "source_dir"
     exit 1
 fi
 
@@ -609,7 +609,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	elif [ x"$grub_modinfo_platform" = xloongson ] || [ x"$grub_modinfo_platform" = xqemu ] || [ x"$grub_modinfo_platform" = xcoreboot ] || [ x"$grub_modinfo_platform" = xmultiboot ] || [ x"$grub_modinfo_platform" = xqemu-mips ]; then
             hints="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device`"
 	else
-            gettext "No hints available for your grub_modinfo_platform. Expect reduced performance" 1>&2
+            gettext "No hints available for your platform. Expect reduced performance" 1>&2
 	    echo 1>&2
 	    hints=
         fi
