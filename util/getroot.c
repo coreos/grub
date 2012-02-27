@@ -383,7 +383,10 @@ find_root_devices_from_poolname (char *poolname)
 		    devices = xrealloc (devices, sizeof (devices[0])
 					* devices_allocated);
 		  }
-		devices[ndevices++] = xasprintf ("/dev/%s", name);
+		if (name[0] == '/')
+		  devices[ndevices++] = xstrdup (name);
+		else
+		  devices[ndevices++] = xasprintf ("/dev/%s", name);
 	      }
 	    break;
 	  }

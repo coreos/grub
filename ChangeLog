@@ -1,5 +1,10 @@
 2012-02-27  Richard Laager <rlaager@wiktel.com>
 
+	* util/getroot.c (find_root_devices_from_poolname): Handle vdevs
+	with full paths.
+
+2012-02-27  Richard Laager <rlaager@wiktel.com>
+
 	* util/getroot.c (grub_find_root_devices_from_mountinfo): Add missing
 	unescape.
 
