@@ -106,6 +106,7 @@ usage () {
     printf "  --allow-floppy          %s\n" "$(gettext "make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes.")"
     printf "  --recheck               %s\n" "$(gettext "delete device map if it already exists")"
     printf "  --force                 %s\n" "$(gettext "install even if problems are detected")"
+    printf "  --force-file-id         %s\n" "$(gettext "use ID file even if UUID is available")"
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     printf "  --disk-module=%-10s%s\n" "$(gettext "MODULE")" "$(gettext "disk module to use (biosdisk or native)")"
 fi
@@ -139,6 +140,7 @@ argument () {
 }
 
 allow_floppy=""
+force_file_id=
 
 # Check the arguments.
 while test $# -gt 0
@@ -158,6 +160,9 @@ do
 	modules=`argument $option "$@"`; shift;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+
+    --force-file-id)
+	force_file_id=y ;;
 
 # Accept and ignore for compatibility
     --font)
@@ -539,20 +544,10 @@ if [ "x${devabstraction_module}" = "x" ] ; then
     grub_drive="`echo "${grub_drive}" | sed -e 's/^(\(\([^,\\\\]\|\\\\\\\\\|\\\\,\)*\)\(\(,[a-zA-Z0-9]*\)*\))$/\1/'`"
     if ([ "x$disk_module" != x ] && [ "x$disk_module" != xbiosdisk ]) || [ "x${grub_drive}" != "x${install_drive}" ] || ([ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]); then
         # generic method (used on coreboot and ata mod)
-        uuid="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=fs_uuid --device`"
-        if [ "x${uuid}" = "x" ] ; then
-          if [ "x$platform" != xefi ] && [ "x$platform" != xpc ] && [ x"${platform}" != x"ieee1275" ]; then
-             gettext_printf "UUID needed with $platform, but the filesystem containing %s does not support UUIDs.\n" "${grubdir}" 1>&2
-          elif [ "$disk_module" = ata ]; then
-             gettext_printf "UUID needed with ata mod, but the filesystem containing %s does not support UUIDs.\n" "${grubdir}" 1>&2
-          else
-	      # TRANSLATORS: cross-disk refers to /boot being on one disk
-	      # but MBR on another. 
-             gettext_printf "UUID needed with cross-disk installs, but the filesystem containing %s does not support UUIDs.\n" "${grubdir}" 1>&2
-          fi
-             
-          exit 1
-        fi
+	uuid=
+	if [ x"$force_file_id" != xy ]; then
+            uuid="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=fs_uuid --device`"
+	fi
 
 	if [ x"$disk_module" != x ] && [ x"$disk_module" != xbiosdisk ]; then
             hints="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device`"
@@ -569,10 +564,19 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	    echo 1>&2
 	    hints=
         fi
-        echo "search.fs_uuid ${uuid} root $hints " >> "${grubdir}/${target_cpu}-$platform/load.cfg"
+	if [ x"$uuid" != x ]; then
+            echo "search.fs_uuid ${uuid} root $hints " >> "${grubdir}/${target_cpu}-$platform/load.cfg"
+	    search_module=search_fs_uuid
+	else
+	    mkdir -p "${grubdir}/uuid"
+	    file="`mktemp "${grubdir}/uuid/XXXXXXXXXXXXXXXXXXXXXXXXX"`"
+	    relfile="`${grub_mkrelpath} "$file"`"
+            echo "search.file '${relfile}' root $hints " >> "${grubdir}/${target_cpu}-$platform/load.cfg"
+	    search_module=search_fs_file
+	fi
 	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/${target_cpu}-$platform/load.cfg"
 	config_opt="-c ${grubdir}/${target_cpu}-$platform/load.cfg "
-        modules="$modules search_fs_uuid"
+        modules="$modules $search_module"
     else
         # we need to hardcode the partition number in the core image's prefix.
 	if [ x"$grub_partition" = x ]; then

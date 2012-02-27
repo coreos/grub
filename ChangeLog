@@ -1,3 +1,8 @@
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Use file identifier if no UUID is available
+	or user explicitly prompted for it.
+
 2012-02-27  Navdeep Parhar <nparhar@gmail.com>
 
 	* grub-core/loader/i386/bsd.c (freebsd_zfsguid): New variable.
