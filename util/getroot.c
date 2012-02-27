@@ -142,6 +142,33 @@
 # endif /* ! RAW_FLOPPY_MAJOR */
 #endif /* defined(__NetBSD__) */
 
+#ifdef __linux__
+/* Defines taken from btrfs/ioctl.h.  */
+
+struct btrfs_ioctl_dev_info_args
+{
+  grub_uint64_t devid;
+  grub_uint8_t uuid[16];
+  grub_uint64_t bytes_used;
+  grub_uint64_t total_bytes;
+  grub_uint64_t unused[379];
+  grub_uint8_t path[1024];
+};
+
+struct btrfs_ioctl_fs_info_args
+{
+  grub_uint64_t max_id;
+  grub_uint64_t num_devices;
+  grub_uint8_t fsid[16];
+  grub_uint64_t reserved[124];
+};
+
+#define BTRFS_IOC_DEV_INFO _IOWR(0x94, 30, \
+                                 struct btrfs_ioctl_dev_info_args)
+#define BTRFS_IOC_FS_INFO _IOR(0x94, 31, \
+                               struct btrfs_ioctl_fs_info_args)
+#endif
+
 static void
 strip_extra_slashes (char *dir)
 {
@@ -366,12 +393,51 @@ unescape (char *str)
 }
 
 static char **
+grub_find_root_devices_from_btrfs (const char *dir)
+{
+  int fd;
+  struct btrfs_ioctl_fs_info_args fsi;
+  int i, j;
+  char **ret;
+
+  fd = open (dir, 0);
+  if (!fd)
+    return NULL;
+
+  if (ioctl (fd, BTRFS_IOC_FS_INFO, &fsi) < 0)
+    {
+      close (fd);
+      return NULL;
+    }
+
+  ret = xmalloc ((fsi.num_devices + 1) * sizeof (ret[0]));
+
+  for (i = 1; i <= fsi.max_id && j < fsi.num_devices; i++)
+    {
+      struct btrfs_ioctl_dev_info_args devi;
+      memset (&devi, 0, sizeof (devi));
+      devi.devid = i;
+      if (ioctl (fd, BTRFS_IOC_DEV_INFO, &devi) < 0)
+	{
+	  close (fd);
+	  free (ret);
+	  return NULL;
+	}
+      ret[j++] = xstrdup ((char *) devi.path);
+      if (j >= fsi.num_devices)
+	break;
+    }
+  close (fd);
+  ret[j] = 0;
+  return ret;
+}
+
+static char **
 grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
 {
   FILE *fp;
   char *buf = NULL;
   size_t len = 0;
-  char **ret = NULL;
   grub_size_t entry_len = 0, entry_max = 4;
   struct mountinfo_entry *entries;
   struct mountinfo_entry parent_entry = { 0, 0, 0, "", "", "", "" };
@@ -471,6 +537,7 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
   /* Now scan visible mounts for the ones we're interested in.  */
   for (i = entry_len - 1; i >= 0; i--)
     {
+      char **ret = NULL;
       if (!*entries[i].device)
 	continue;
 
@@ -493,7 +560,13 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
 		*relroot = xasprintf ("/%s@%s", slash + 1, entries[i].enc_root);
 	    }
 	}
-      else
+      else if (grub_strcmp (entries[i].fstype, "btrfs") == 0)
+	{
+	  ret = grub_find_root_devices_from_btrfs (dir);
+	  if (relroot)
+	    *relroot = strdup (entries[i].enc_root);
+	}
+      if (!ret)
 	{
 	  ret = xmalloc (2 * sizeof (ret[0]));
 	  ret[0] = strdup (entries[i].device);
@@ -501,13 +574,16 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
 	  if (relroot)
 	    *relroot = strdup (entries[i].enc_root);
 	}
-      break;
+	free (buf);
+	free (entries);
+	fclose (fp);
+	return ret;
     }
 
   free (buf);
   free (entries);
   fclose (fp);
-  return ret;
+  return NULL;
 }
 
 #endif /* __linux__ */

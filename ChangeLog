@@ -1,5 +1,17 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support btrfs multi-volume probe.
+
+	* util/getroot.c (btrfs_ioctl_dev_info_args) [__linux__]: New struct.
+	(btrfs_ioctl_fs_info_args) [__linux__]: Likewise.
+	(BTRFS_IOC_DEV_INFO) [__linux__]: New define.
+	(BTRFS_IOC_FS_INFO) [__linux__]: Likewise.
+	(grub_find_root_devices_from_btrfs) [__linux__]: New function.
+	(grub_find_root_devices_from_mountinfo) [__linux__]: Use
+	grub_find_root_devices_from_btrfs if on btrfs.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove any awareness of *.c util files about target.
 
 	* Makefile.util.def (grub-setup): Split to ...
