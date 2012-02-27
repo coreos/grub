@@ -1663,7 +1663,7 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
   switch (key)
     {
     case 'd':
-      return xasprintf (text, GRUB_PKGLIBROOTDIR);
+      return xasprintf (text, GRUB_PKGLIBDIR);
     case 'p':
       return xasprintf (text, DEFAULT_DIRECTORY);
     case 'O':
@@ -1861,13 +1861,13 @@ main (int argc, char *argv[])
 
   if (!arguments.dir)
     {
-      arguments.dir = xmalloc (sizeof (GRUB_PKGLIBROOTDIR)
+      arguments.dir = xmalloc (sizeof (GRUB_PKGLIBDIR)
 			       + grub_strlen (arguments.image_target->dirname)
 			       + 1);
-      memcpy (arguments.dir, GRUB_PKGLIBROOTDIR,
-	      sizeof (GRUB_PKGLIBROOTDIR) - 1);
-      *(arguments.dir + sizeof (GRUB_PKGLIBROOTDIR) - 1) = '/';
-      strcpy (arguments.dir + sizeof (GRUB_PKGLIBROOTDIR),
+      memcpy (arguments.dir, GRUB_PKGLIBDIR,
+	      sizeof (GRUB_PKGLIBDIR) - 1);
+      *(arguments.dir + sizeof (GRUB_PKGLIBDIR) - 1) = '/';
+      strcpy (arguments.dir + sizeof (GRUB_PKGLIBDIR),
 	      arguments.image_target->dirname);
     }
 

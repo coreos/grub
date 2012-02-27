@@ -1,5 +1,13 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove improper use of program_transform_name on pkglibrootdir.
+
+	* configure.ac (pkglibrootdir): Removed.
+	(grub-mkimage): Replace PKGLIBROOTDIR with PKGLIBDIR.
+	* util/grub-mkimage.c: Likewise.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu_text.c (grub_print_message_indented_real): Fix a
 	warning.
 
@@ -15,7 +23,7 @@
 	(grub_freebsd_boot): Pass zfs UUID.
 	(grub_cmd_freebsd): Set zfs UUID.
 
-2012-02-27  Mike Gilbert  <floppym@gentoo.org>
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/Makefile.common (platformdir): Base on pkglibdir and not
 	pkglibrootdir.

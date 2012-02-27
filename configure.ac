@@ -1049,9 +1049,6 @@ AC_SUBST([LIBNVPAIR])
 
 LIBS=""
 
-pkglibrootdir='$(libdir)'/`echo $PACKAGE | sed "$program_transform_name"`
-AC_SUBST(pkglibrootdir)
-
 AC_SUBST([FONT_SOURCE])
 AS_IF([test x$target_cpu = xi386 -a x$platform = xqemu],
 	    [AC_SUBST([GRUB_BOOT_MACHINE_LINK_ADDR], 0xffe00)])

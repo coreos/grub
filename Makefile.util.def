@@ -152,7 +152,7 @@ program = {
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBLZMA)';
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
-  cppflags = '-DGRUB_PKGLIBROOTDIR=\"$(pkglibrootdir)\"';
+  cppflags = '-DGRUB_PKGLIBDIR=\"$(pkglibdir)\"';
 };
 
 program = {
