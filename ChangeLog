@@ -1,3 +1,7 @@
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.util.def (grub-ofpathname): Enable on all platforms.
+
 2012-02-27  Colin Watson  <cjwatson@ubuntu.com>
 
 	Use write-combining MTRR to speed up video with buggy BIOSes.

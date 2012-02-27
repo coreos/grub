@@ -338,16 +338,14 @@ program = {
   name = grub-ofpathname;
   installdir = sbin;
   mansection = 8;
-  ieee1275 = util/ieee1275/grub-ofpathname.c;
-  ieee1275 = util/ieee1275/ofpath.c;
+  common = util/ieee1275/grub-ofpathname.c;
+  common = util/ieee1275/ofpath.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBGEOM)';
-
-  enable = sparc64_ieee1275;
 };
 
 program = {
