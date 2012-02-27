@@ -32,10 +32,10 @@ PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 platform=@platform@
 host_os=@host_os@
-pkglibdir="${libdir}/${PACKAGE_TARNAME}/${target_cpu}-${platform}"
+pkglibdir="${libdir}/@PACKAGE@/${target_cpu}-${platform}"
 datadir="@datadir@"
 if [ "x$pkgdatadir" = x ]; then
-    pkgdatadir="${datadir}/@PACKAGE_TARNAME@"
+    pkgdatadir="${datadir}/@PACKAGE@"
 fi
 localedir="@datadir@/locale"
 

@@ -22,7 +22,7 @@ datarootdir="@datarootdir@"
 datadir="@datadir@"
 bindir="@bindir@"
 sbindir="@sbindir@"
-pkgdatadir="${datadir}/@PACKAGE_TARNAME@"
+pkgdatadir="${datadir}/@PACKAGE@"
 
 if test "x$grub_probe" = x; then
   grub_probe="${sbindir}/`echo grub-probe | sed "${transform}"`"

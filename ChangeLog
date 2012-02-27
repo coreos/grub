@@ -1,5 +1,9 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Replace PACKAGE_TARNAME with PACKAGE in pkglibdir and pkgdatadir.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/POTFILES.in: Regenerated.
 
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>

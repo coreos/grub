@@ -31,7 +31,7 @@ host_os=@host_os@
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst handler.lst video.lst crypto.lst terminal.lst"
 datadir="@datadir@"
 if [ "x$pkgdatadir" = x ]; then
-    pkgdatadir="${datadir}/@PACKAGE_TARNAME@"
+    pkgdatadir="${datadir}/@PACKAGE@"
 fi
 
 self=`basename $0`
@@ -46,13 +46,13 @@ recheck=no
 debug=no
 debug_image=
 subdir=`echo /boot/grub | sed ${transform}`
-pc_dir="${libdir}/${PACKAGE_TARNAME}/i386-pc"
-ppc_dir="${libdir}/${PACKAGE_TARNAME}/powerpc-ieee1275"
-sparc_dir="${libdir}/${PACKAGE_TARNAME}/sparc64-ieee1275"
-i386_ieee1275_dir="${libdir}/${PACKAGE_TARNAME}/i386-ieee1275"
-efi32_dir="${libdir}/${PACKAGE_TARNAME}/i386-efi"
-efi64_dir="${libdir}/${PACKAGE_TARNAME}/x86_64-efi"
-itanium_dir="${libdir}/${PACKAGE_TARNAME}/ia64-efi"
+pc_dir="${libdir}/@PACKAGE@/i386-pc"
+ppc_dir="${libdir}/@PACKAGE@/powerpc-ieee1275"
+sparc_dir="${libdir}/@PACKAGE@/sparc64-ieee1275"
+i386_ieee1275_dir="${libdir}/@PACKAGE@/i386-ieee1275"
+efi32_dir="${libdir}/@PACKAGE@/i386-efi"
+efi64_dir="${libdir}/@PACKAGE@/x86_64-efi"
+itanium_dir="${libdir}/@PACKAGE@/ia64-efi"
 
 . "${pkgdatadir}/grub-mkconfig_lib"
 
