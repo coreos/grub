@@ -1,5 +1,13 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't use insecure popen in getroot.
+
+	* util/getroot.c (get_mdadm_uuid): Move pipe logic to ...
+	(exec_pipe): ... here.
+	(find_root_devices_from_poolname): Use exec_pipe.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove platform and target_cpu replacement.
 
 	* configure.ac: Remove platform and target_cpu substitutions.

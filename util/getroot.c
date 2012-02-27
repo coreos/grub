@@ -208,6 +208,42 @@ xgetcwd (void)
   return path;
 }
 
+static pid_t
+exec_pipe (char **argv, int *fd)
+{
+  int mdadm_pipe[2];
+  pid_t mdadm_pid;
+
+  *fd = 0;
+
+  if (pipe (mdadm_pipe) < 0)
+    {
+      grub_util_warn (_("Unable to create pipe: %s"),
+		      strerror (errno));
+      return 0;
+    }
+  mdadm_pid = fork ();
+  if (mdadm_pid < 0)
+    grub_util_error (_("Unable to fork: %s"), strerror (errno));
+  else if (mdadm_pid == 0)
+    {
+      /* Child.  */
+
+      close (mdadm_pipe[0]);
+      dup2 (mdadm_pipe[1], STDOUT_FILENO);
+      close (mdadm_pipe[1]);
+
+      execvp (argv[0], argv);
+      exit (127);
+    }
+  else
+    {
+      close (mdadm_pipe[1]);
+      *fd = mdadm_pipe[0];
+      return mdadm_pid;
+    }
+}
+
 static char **
 find_root_devices_from_poolname (char *poolname)
 {
@@ -277,7 +313,6 @@ find_root_devices_from_poolname (char *poolname)
 
   zpool_close (zpool);
 #else
-  char *cmd;
   FILE *fp;
   int ret;
   char *line;
@@ -287,10 +322,28 @@ find_root_devices_from_poolname (char *poolname)
   char name[PATH_MAX + 1], state[257], readlen[257], writelen[257];
   char cksum[257], notes[257];
   unsigned int dummy;
+  char *argv[4];
+  pid_t pid;
+  int fd;
 
-  cmd = xasprintf ("zpool status %s", poolname);
-  fp = popen (cmd, "r");
-  free (cmd);
+  /* execvp has inconvenient types, hence the casts.  None of these
+     strings will actually be modified.  */
+  argv[0] = (char *) "zpool";
+  argv[1] = (char *) "status";
+  argv[2] = (char *) poolname;
+  argv[3] = NULL;
+
+  pid = exec_pipe (argv, &fd);
+  if (!pid)
+    return NULL;
+
+  fp = fdopen (fd, "r");
+  if (!fp)
+    {
+      grub_util_warn (_("Unable to open stream from %s: %s"),
+		      "zpool", strerror (errno));
+      goto out;
+    }
 
   st = 0;
   while (1)
@@ -338,7 +391,9 @@ find_root_devices_from_poolname (char *poolname)
       free (line);
     }
 
-  pclose (fp);
+ out:
+  close (fd);
+  waitpid (pid, NULL, 0);
 #endif
   if (devices)
     {
@@ -1166,78 +1221,58 @@ grub_util_get_dev_abstraction (const char *os_dev)
 static char *
 get_mdadm_uuid (const char *os_dev)
 {
-  int mdadm_pipe[2];
-  pid_t mdadm_pid;
+  char *argv[5];
+  int fd;
+  pid_t pid;
+  FILE *mdadm;
+  char *buf = NULL;
+  size_t len = 0;
   char *name = NULL;
 
-  if (pipe (mdadm_pipe) < 0)
+  /* execvp has inconvenient types, hence the casts.  None of these
+     strings will actually be modified.  */
+  argv[0] = (char *) "mdadm";
+  argv[1] = (char *) "--detail";
+  argv[2] = (char *) "--export";
+  argv[3] = (char *) os_dev;
+  argv[4] = NULL;
+
+  pid = exec_pipe (argv, &fd);
+
+  if (!pid)
+    return NULL;
+
+  /* Parent.  Read mdadm's output.  */
+  mdadm = fdopen (fd, "r");
+  if (! mdadm)
     {
-      grub_util_warn (_("Unable to create pipe for mdadm: %s"),
-		      strerror (errno));
-      return NULL;
+      grub_util_warn (_("Unable to open stream from %s: %s"),
+		      "mdadm", strerror (errno));
+      goto out;
     }
 
-  mdadm_pid = fork ();
-  if (mdadm_pid < 0)
-    grub_util_warn (_("Unable to fork mdadm: %s"), strerror (errno));
-  else if (mdadm_pid == 0)
+  while (getline (&buf, &len, mdadm) > 0)
     {
-      /* Child.  */
-      char *argv[5];
-
-      close (mdadm_pipe[0]);
-      dup2 (mdadm_pipe[1], STDOUT_FILENO);
-      close (mdadm_pipe[1]);
-
-      /* execvp has inconvenient types, hence the casts.  None of these
-         strings will actually be modified.  */
-      argv[0] = (char *) "mdadm";
-      argv[1] = (char *) "--detail";
-      argv[2] = (char *) "--export";
-      argv[3] = (char *) os_dev;
-      argv[4] = NULL;
-      execvp ("mdadm", argv);
-      exit (127);
+      if (strncmp (buf, "MD_UUID=", sizeof ("MD_UUID=") - 1) == 0)
+	{
+	  char *name_start, *ptri, *ptro;
+	  
+	  free (name);
+	  name_start = buf + sizeof ("MD_UUID=") - 1;
+	  ptro = name = xmalloc (strlen (name_start) + 1);
+	  for (ptri = name_start; *ptri && *ptri != '\n' && *ptri != '\r';
+	       ptri++)
+	    if ((*ptri >= '0' && *ptri <= '9')
+		|| (*ptri >= 'a' && *ptri <= 'f')
+		|| (*ptri >= 'A' && *ptri <= 'F'))
+	      *ptro++ = *ptri;
+	  *ptro = 0;
+	}
     }
-  else
-    {
-      /* Parent.  Read mdadm's output.  */
-      FILE *mdadm;
-      char *buf = NULL;
-      size_t len = 0;
-
-      close (mdadm_pipe[1]);
-      mdadm = fdopen (mdadm_pipe[0], "r");
-      if (! mdadm)
-	{
-	  grub_util_warn (_("Unable to open stream from mdadm: %s"),
-			  strerror (errno));
-	  goto out;
-	}
-
-      while (getline (&buf, &len, mdadm) > 0)
-	{
-	  if (strncmp (buf, "MD_UUID=", sizeof ("MD_UUID=") - 1) == 0)
-	    {
-	      char *name_start, *ptri, *ptro;
-
-	      free (name);
-	      name_start = buf + sizeof ("MD_UUID=") - 1;
-	      ptro = name = xmalloc (strlen (name_start) + 1);
-	      for (ptri = name_start; *ptri && *ptri != '\n' && *ptri != '\r';
-		   ptri++)
-		if ((*ptri >= '0' && *ptri <= '9')
-		    || (*ptri >= 'a' && *ptri <= 'f')
-		    || (*ptri >= 'A' && *ptri <= 'F'))
-		  *ptro++ = *ptri;
-	      *ptro = 0;
-	    }
-	}
 
 out:
-      close (mdadm_pipe[0]);
-      waitpid (mdadm_pid, NULL, 0);
-    }
+  close (fd);
+  waitpid (pid, NULL, 0);
 
   return name;
 }
