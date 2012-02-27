@@ -66,7 +66,7 @@ efiemu_convert_pointer (grub_efi_uintn_t debug_disposition,
 
 grub_efi_status_t
 efiemu_get_variable (grub_efi_char16_t *variable_name,
-		     grub_efi_guid_t *vendor_guid,
+		     const grub_efi_guid_t *vendor_guid,
 		     grub_efi_uint32_t *attributes,
 		     grub_efi_uintn_t *data_size,
 		     void *data);
@@ -155,7 +155,7 @@ efiemu_str16len (grub_uint16_t *a)
 }
 
 static int
-efiemu_memequal (void *a, void *b, grub_size_t n)
+efiemu_memequal (const void *a, const void *b, grub_size_t n)
 {
   grub_uint8_t *ptr1, *ptr2;
   for (ptr1 = (grub_uint8_t *) a, ptr2 = (grub_uint8_t *)b;
@@ -416,7 +416,7 @@ EFI_FUNC (efiemu_convert_pointer) (grub_efi_uintn_t debug_disposition,
 
 /* Find variable by name and GUID. */
 static struct efi_variable *
-find_variable (grub_efi_guid_t *vendor_guid,
+find_variable (const grub_efi_guid_t *vendor_guid,
 	       grub_efi_char16_t *variable_name)
 {
   grub_uint8_t *ptr;
@@ -438,10 +438,10 @@ find_variable (grub_efi_guid_t *vendor_guid,
 
 grub_efi_status_t
 EFI_FUNC (efiemu_get_variable) (grub_efi_char16_t *variable_name,
-				   grub_efi_guid_t *vendor_guid,
-				   grub_efi_uint32_t *attributes,
-				   grub_efi_uintn_t *data_size,
-				   void *data)
+				const grub_efi_guid_t *vendor_guid,
+				grub_efi_uint32_t *attributes,
+				grub_efi_uintn_t *data_size,
+				void *data)
 {
   struct efi_variable *efivar;
   LOG ('g');

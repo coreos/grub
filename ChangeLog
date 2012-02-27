@@ -1,5 +1,12 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/efiemu/runtime/efiemu.c (efiemu_get_variable): Add missing
+	const qualifier.
+	(efiemu_memequal): Likewise.
+	(find_variable): Likewise.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix missing console prototype on qemu-mips.
 
 	* include/grub/mips/qemu_mips/console.h: New file.
