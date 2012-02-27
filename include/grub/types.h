@@ -20,7 +20,9 @@
 #define GRUB_TYPES_HEADER	1
 
 #include <config.h>
+#ifndef GRUB_UTIL
 #include <grub/cpu/types.h>
+#endif
 
 #ifdef GRUB_UTIL
 # define GRUB_CPU_SIZEOF_VOID_P	SIZEOF_VOID_P
@@ -48,7 +50,7 @@
 # error "This architecture is not supported because sizeof(void *) != 4 and sizeof(void *) != 8"
 #endif
 
-#ifndef GRUB_TARGET_WORDSIZE
+#if !defined (GRUB_UTIL) & !defined (GRUB_TARGET_WORDSIZE)
 # if GRUB_TARGET_SIZEOF_VOID_P == 4
 #  define GRUB_TARGET_WORDSIZE 32
 # elif GRUB_TARGET_SIZEOF_VOID_P == 8
@@ -82,15 +84,6 @@ typedef unsigned long long	grub_uint64_t;
 #endif
 
 /* Misc types.  */
-#if GRUB_TARGET_SIZEOF_VOID_P == 8
-typedef grub_uint64_t	grub_target_addr_t;
-typedef grub_uint64_t	grub_target_size_t;
-typedef grub_int64_t	grub_target_ssize_t;
-#else
-typedef grub_uint32_t	grub_target_addr_t;
-typedef grub_uint32_t	grub_target_size_t;
-typedef grub_int32_t	grub_target_ssize_t;
-#endif
 
 #if GRUB_CPU_SIZEOF_VOID_P == 8
 typedef grub_uint64_t	grub_addr_t;

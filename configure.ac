@@ -180,7 +180,6 @@ else
    machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,` -DGRUB_TARGET_CPU_`echo ${target_cpu} | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`=1"
 fi
 
-HOST_CPPFLAGS="$HOST_CPPFLAGS $machine_CPPFLAGS"
 TARGET_CPPFLAGS="$TARGET_CPPFLAGS $machine_CPPFLAGS"
 
 AC_SUBST(host_cpu)

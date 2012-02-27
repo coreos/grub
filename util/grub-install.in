@@ -41,7 +41,6 @@ localedir="@datadir@/locale"
 
 self="`basename $0`"
 
-grub_setup="${sbindir}/`echo grub-setup | sed ${transform}`"
 grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 grub_probe="${sbindir}/`echo grub-probe | sed ${transform}`"
 grub_editenv="${bindir}/`echo grub-editenv | sed ${transform}`"
@@ -260,6 +259,14 @@ do
 	install_device="${option}" ;;
     esac
 done
+
+if test "x$grub_setup" = x && [ "${target_cpu}-${platform}" = "i386-pc" ]; then
+    grub_setup="${sbindir}/`echo grub-bios-setup | sed ${transform}`"
+fi
+
+if test "x$grub_setup" = x && [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]; then
+    grub_setup="${sbindir}/`echo grub-sparc64-setup | sed ${transform}`"
+fi
 
 if test "x$install_device" = x && ([ "${target_cpu}-${platform}" = "i386-pc" ] \
     || [ "${target_cpu}-${platform}" = "sparc64-ieee1275" ]); then

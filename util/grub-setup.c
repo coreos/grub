@@ -28,13 +28,16 @@
 #include <grub/partition.h>
 #include <grub/env.h>
 #include <grub/emu/hostdisk.h>
-#include <grub/machine/boot.h>
-#include <grub/machine/kernel.h>
 #include <grub/term.h>
 #include <grub/i18n.h>
 #include <grub/util/lvm.h>
-#ifdef GRUB_MACHINE_IEEE1275
+#ifdef GRUB_SETUP_SPARC64
 #include <grub/util/ofpath.h>
+#include <grub/sparc64/ieee1275/boot.h>
+#include <grub/sparc64/ieee1275/kernel.h>
+#else
+#include <grub/i386/pc/boot.h>
+#include <grub/i386/pc/kernel.h>
 #endif
 
 #include <stdio.h>
@@ -77,14 +80,14 @@
 #define DEFAULT_BOOT_FILE	"boot.img"
 #define DEFAULT_CORE_FILE	"core.img"
 
-#ifdef GRUB_MACHINE_SPARC64
+#ifdef GRUB_SETUP_SPARC64
 #define grub_target_to_host16(x)	grub_be_to_cpu16(x)
 #define grub_target_to_host32(x)	grub_be_to_cpu32(x)
 #define grub_target_to_host64(x)	grub_be_to_cpu64(x)
 #define grub_host_to_target16(x)	grub_cpu_to_be16(x)
 #define grub_host_to_target32(x)	grub_cpu_to_be32(x)
 #define grub_host_to_target64(x)	grub_cpu_to_be64(x)
-#elif defined (GRUB_MACHINE_PCBIOS)
+#elif defined (GRUB_SETUP_BIOS)
 #define grub_target_to_host16(x)	grub_le_to_cpu16(x)
 #define grub_target_to_host32(x)	grub_le_to_cpu32(x)
 #define grub_target_to_host64(x)	grub_le_to_cpu64(x)
@@ -99,7 +102,7 @@ static void
 write_rootdev (char *core_img, grub_device_t root_dev,
 	       char *boot_img, grub_uint64_t first_sector)
 {
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
   {
     grub_uint8_t *boot_drive;
     grub_disk_addr_t *kernel_sector;
@@ -113,7 +116,7 @@ write_rootdev (char *core_img, grub_device_t root_dev,
     *kernel_sector = grub_cpu_to_le64 (first_sector);
   }
 #endif
-#ifdef GRUB_MACHINE_IEEE1275
+#ifdef GRUB_SETUP_SPARC64
   {
     grub_disk_addr_t *kernel_byte;
     kernel_byte = (grub_disk_addr_t *) (boot_img
@@ -124,7 +127,7 @@ write_rootdev (char *core_img, grub_device_t root_dev,
 #endif
 }
 
-#ifdef GRUB_MACHINE_IEEE1275
+#ifdef GRUB_SETUP_SPARC64
 #define BOOT_SECTOR 1
 #else
 #define BOOT_SECTOR 0
@@ -145,9 +148,9 @@ setup (const char *dir,
   struct grub_boot_blocklist *first_block, *block;
   char *tmp_img;
   grub_disk_addr_t first_sector;
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
   grub_uint16_t current_segment
-    = GRUB_BOOT_MACHINE_KERNEL_SEG + (GRUB_DISK_SECTOR_SIZE >> 4);
+    = GRUB_BOOT_I386_PC_KERNEL_SEG + (GRUB_DISK_SECTOR_SIZE >> 4);
 #endif
   grub_uint16_t last_length = GRUB_DISK_SECTOR_SIZE;
   grub_file_t file;
@@ -196,7 +199,7 @@ setup (const char *dir,
 	{
 	  block->start = grub_host_to_target64 (sector);
 	  block->len = grub_host_to_target16 (1);
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
 	  block->segment = grub_host_to_target16 (current_segment);
 #endif
 
@@ -206,7 +209,7 @@ setup (const char *dir,
 	}
 
       last_length = length;
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
       current_segment += GRUB_DISK_SECTOR_SIZE >> 4;
 #endif
     }
@@ -226,7 +229,7 @@ setup (const char *dir,
 		  >> GRUB_DISK_SECTOR_BITS);
   if (core_size < GRUB_DISK_SECTOR_SIZE)
     grub_util_error (_("the size of `%s' is too small"), core_path);
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
   if (core_size > 0xFFFF * GRUB_DISK_SECTOR_SIZE)
     grub_util_error (_("the size of `%s' is too large"), core_path);
 #endif
@@ -293,14 +296,14 @@ setup (const char *dir,
   if (grub_env_set ("root", root) != GRUB_ERR_NONE)
     grub_util_error ("%s", grub_errmsg);
 
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
   /* Read the original sector from the disk.  */
   tmp_img = xmalloc (GRUB_DISK_SECTOR_SIZE);
   if (grub_disk_read (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE, tmp_img))
     grub_util_error ("%s", grub_errmsg);
 #endif
 
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
   {
     grub_uint16_t *boot_drive_check;
     boot_drive_check = (grub_uint16_t *) (boot_img
@@ -319,7 +322,7 @@ setup (const char *dir,
   }
 #endif
 
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
   {
     grub_partition_map_t dest_partmap = NULL;
     grub_partition_t container = dest_dev->disk->partition;
@@ -374,7 +377,7 @@ setup (const char *dir,
 
     is_ldm = grub_util_is_ldm (dest_dev->disk);
 
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
     if (fs_probe)
       {
 	if (!fs && !dest_partmap)
@@ -551,7 +554,7 @@ unable_to_embed:
     grub_util_error ("%s", _("embedding is not possible, but this is required for "
 			     "RAID and LVM install"));
 
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
   if (dest_dev->disk->id != root_dev->disk->id
       || dest_dev->disk->dev->id != root_dev->disk->dev->id)
     /* TRANSLATORS: cross-disk refers to /boot being on one disk
@@ -651,7 +654,7 @@ unable_to_embed:
     {
       block->start = 0;
       block->len = 0;
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
       block->segment = 0;
 #endif
 
@@ -678,7 +681,7 @@ unable_to_embed:
       != (grub_ssize_t) core_size - GRUB_DISK_SECTOR_SIZE)
     grub_util_error ("%s", _("failed to read the rest sectors of the core image"));
 
-#ifdef GRUB_MACHINE_IEEE1275
+#ifdef GRUB_SETUP_SPARC64
   {
     char *boot_devpath;
     boot_devpath = (char *) (boot_img
@@ -691,7 +694,8 @@ unable_to_embed:
 	dest_ofpath
 	  = grub_util_devname_to_ofpath (grub_util_biosdisk_get_osdev (root_dev->disk));
 	grub_util_info ("dest_ofpath is `%s'", dest_ofpath);
-	strncpy (boot_devpath, dest_ofpath, GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
+	strncpy (boot_devpath, dest_ofpath,
+		 GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
 		 - GRUB_BOOT_MACHINE_BOOT_DEVPATH - 1);
 	boot_devpath[GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
 		   - GRUB_BOOT_MACHINE_BOOT_DEVPATH - 1] = 0;
@@ -723,7 +727,7 @@ unable_to_embed:
   grub_util_write_image (core_img, GRUB_DISK_SECTOR_SIZE * 2, fp, core_path);
   fclose (fp);
 
-#ifdef GRUB_MACHINE_PCBIOS
+#ifdef GRUB_SETUP_BIOS
  finish:
 #endif
 
@@ -919,7 +923,7 @@ main (int argc, char *argv[])
       exit(1);
     }
 
-#ifdef GRUB_MACHINE_IEEE1275
+#ifdef GRUB_SETUP_SPARC64
   arguments.force = 1;
 #endif
 

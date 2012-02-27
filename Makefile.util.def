@@ -300,7 +300,7 @@ program = {
 };
 
 program = {
-  name = grub-setup;
+  name = grub-bios-setup;
   installdir = sbin;
   mansection = 8;
   common = util/grub-setup.c;
@@ -308,16 +308,30 @@ program = {
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
 
-  sparc64_ieee1275 = util/ieee1275/ofpath.c;
+  ldadd = libgrubmods.a;
+  ldadd = libgrubkern.a;
+  ldadd = libgrubgcry.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+  cppflags = '-DGRUB_SETUP_BIOS=1';
+};
+
+program = {
+  name = grub-sparc64-setup;
+  installdir = sbin;
+  mansection = 8;
+  common = util/grub-setup.c;
+  common = util/lvm.c;
+  common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/lib/reed_solomon.c;
+  common = util/ieee1275/ofpath.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
   ldadd = libgrubgcry.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
-
-  enable = i386_pc;
-  enable = sparc64_ieee1275;
+  cppflags = '-DGRUB_SETUP_SPARC64=1';
 };
 
 program = {

@@ -1,5 +1,30 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove any awareness of *.c util files about target.
+
+	* Makefile.util.def (grub-setup): Split to ...
+	(grub-bios-setup): ... and this.
+	(grub-sparc64-setup): ... and this.
+	* configure.ac: Don't add machine_CPPFLAGS into HOST_CPPFLAGS.
+	* docs/man/grub-setup.h2m: Split into ...
+	* docs/man/grub-sparc64-setup.h2m: ... this.
+	* docs/man/grub-bios-setup.h2m: ... and this.
+	* include/grub/dl.h (grub_dl) [GRUB_UTIL]: Remove struct.
+	* include/grub/elf.h (Elf_*) [GRUB_UTIL]: Remove types.
+	(GRUB_TARGET_WORDSIZE) [GRUB_UTIL]: Remove.
+	(grub_target_addr_t): Remove.
+	(grub_target_size_t): Remove.
+	(grub_target_ssize_t): Remove.
+	* util/grub-install.in: Use new grub-*-setup.
+	* util/grub-mkimagexx.c (Elf_Word): New define.
+	(Elf_Half): Likewise.
+	(Elf_Section): Likewise.
+	(ELF_ST_TYPE): Likewise.
+	* util/grub-setup.c: Switch from GRUB_MACHINE_SPARC64 to
+	GRUB_SETUP_SPARC64 and from GRUB_MACHINE_PCBIOS to GRUB_SETUP_BIOS.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Replace grub_target_addr with more appropriate types.
 
 	* grub-core/commands/efi/fixvideo.c (scan_card): Replace

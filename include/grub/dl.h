@@ -147,6 +147,7 @@ struct grub_dl_dep
 };
 typedef struct grub_dl_dep *grub_dl_dep_t;
 
+#ifndef GRUB_UTIL
 struct grub_dl
 {
   char *name;
@@ -164,6 +165,7 @@ struct grub_dl
   grub_size_t sz;
   struct grub_dl *next;
 };
+#endif
 typedef struct grub_dl *grub_dl_t;
 
 grub_dl_t grub_dl_load_file (const char *filename);

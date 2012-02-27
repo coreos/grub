@@ -2331,6 +2331,7 @@ typedef Elf32_Addr Elf32_Conflict;
 
 #define R_X86_64_NUM		24
 
+#ifndef GRUB_UTIL
 #if GRUB_TARGET_WORDSIZE == 32
 
 typedef Elf32_Addr Elf_Addr;
@@ -2377,5 +2378,6 @@ typedef Elf64_Xword Elf_Xword;
 #define ELF_R_INFO(sym, type)	ELF64_R_INFO(sym, type)
 
 #endif /* GRUB_TARGET_WORDSIZE == 64 */
+#endif
 
 #endif /* ! GRUB_ELF_H */

@@ -31,8 +31,12 @@
 # define Elf_Shdr	Elf32_Shdr
 # define Elf_Rela       Elf32_Rela
 # define Elf_Rel        Elf32_Rel
+# define Elf_Word       Elf32_Word
+# define Elf_Half       Elf32_Half
+# define Elf_Section    Elf32_Section
 # define ELF_R_SYM(val)		ELF32_R_SYM(val)
 # define ELF_R_TYPE(val)		ELF32_R_TYPE(val)
+# define ELF_ST_TYPE(val)		ELF32_ST_TYPE(val)
 #elif defined(MKIMAGE_ELF64)
 # define SUFFIX(x)	x ## 64
 # define ELFCLASSXX	ELFCLASS64
@@ -44,8 +48,12 @@
 # define Elf_Shdr	Elf64_Shdr
 # define Elf_Rela       Elf64_Rela
 # define Elf_Rel        Elf64_Rel
+# define Elf_Word       Elf64_Word
+# define Elf_Half       Elf64_Half
+# define Elf_Section    Elf64_Section
 # define ELF_R_SYM(val)		ELF64_R_SYM(val)
 # define ELF_R_TYPE(val)		ELF64_R_TYPE(val)
+# define ELF_ST_TYPE(val)		ELF64_ST_TYPE(val)
 #else
 #error "I'm confused"
 #endif
@@ -1095,3 +1103,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
 #undef Elf_Rel
 #undef ELF_R_TYPE
 #undef ELF_R_SYM
+#undef Elf_Word
+#undef Elf_Half
+#undef Elf_Section
+#undef ELF_ST_TYPE
