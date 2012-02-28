@@ -1,5 +1,9 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/xnu.c (grub_xnu_boot): Fix format specification.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Bump to 2.00~beta0.
 
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>

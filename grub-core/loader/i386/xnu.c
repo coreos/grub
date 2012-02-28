@@ -1001,8 +1001,8 @@ grub_xnu_boot (void)
   descriptor_size = 0;
   descriptor_version = 0;
 
-  grub_dprintf ("xnu", "eip=%x, efi=%x\n", grub_xnu_entry_point,
-		(int) grub_autoefi_system_table);
+  grub_dprintf ("xnu", "eip=%x, efi=%p\n", grub_xnu_entry_point,
+		grub_autoefi_system_table);
 
   const char *debug = grub_env_get ("debug");
 
