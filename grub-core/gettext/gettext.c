@@ -257,6 +257,8 @@ grub_mofile_open (const char *filename)
 			 "mo: invalid mo version in file: %s", filename);
     }
 
+  grub_gettext_delete_list ();
+
   grub_gettext_offset_original = grub_le_to_cpu32 (head.offset_original);
   grub_gettext_offset_translation = grub_le_to_cpu32 (head.offset_translation);
   grub_gettext_max = grub_le_to_cpu32 (head.number_of_strings);
@@ -266,7 +268,6 @@ grub_mofile_open (const char *filename)
     grub_file_close (fd_mo);
   fd_mo = 0;
 
-  grub_gettext_delete_list ();
   grub_gettext_msg_list = grub_zalloc (grub_gettext_max
 				       * sizeof (grub_gettext_msg_list[0]));
   if (!grub_gettext_msg_list)

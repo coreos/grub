@@ -1,9 +1,15 @@
-2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gettext/gettext.c (grub_mofile_open): Call
+	grub_gettext_delete_list before changing grub_gettext_max to avoid
+	running out of array bounds.
+
+2012-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/i386/pc/vga_text.c: Add GRUB_MACHINE_MULTIBOOT to
 	grub_vga_text_init/grub_vga_text_fini.
 
-2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/xnu.c (grub_xnu_boot): Fix format specification.
 
