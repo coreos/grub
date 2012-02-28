@@ -164,7 +164,7 @@ SUFFIX (grub_macho_size) (grub_macho_t macho, grub_macho_addr_t *segments_start,
 /* Load every loadable segment into memory specified by `_load_hook'.  */
 grub_err_t
 SUFFIX (grub_macho_load) (grub_macho_t macho, const char *filename,
-			  char *offset, int flags)
+			  char *offset, int flags, int *darwin_version)
 {
   auto int NESTED_FUNC_ATTR do_load(grub_macho_t _macho,
 			       struct grub_macho_cmd *hdr0,
@@ -201,6 +201,23 @@ SUFFIX (grub_macho_load) (grub_macho_t macho, const char *filename,
 
 	    return 1;
 	  }
+	if (darwin_version)
+	  {
+	    const char *ptr = offset + hdr->vmaddr;
+	    const char *end = ptr + min (hdr->filesize, hdr->vmsize)
+	      - (sizeof ("Darwin Kernel Version ") - 1);
+	    for (; ptr < end; ptr++)
+	      if (grub_memcmp (ptr, "Darwin Kernel Version ",
+			       sizeof ("Darwin Kernel Version ") - 1) == 0)
+		{
+		  ptr += sizeof ("Darwin Kernel Version ") - 1;
+		  *darwin_version = 0;
+		  end += (sizeof ("Darwin Kernel Version ") - 1);
+		  while (ptr < end && grub_isdigit (*ptr))
+		    *darwin_version = (*ptr++ - '0') + *darwin_version * 10;
+		  break;
+		}
+	  }
       }
 
     if (hdr->filesize < hdr->vmsize)
@@ -208,6 +225,9 @@ SUFFIX (grub_macho_load) (grub_macho_t macho, const char *filename,
 		   0, hdr->vmsize - hdr->filesize);
     return 0;
   }
+
+  if (darwin_version)
+    *darwin_version = 0;
 
   grub_macho_cmds_iterate (macho, do_load, 0);
 

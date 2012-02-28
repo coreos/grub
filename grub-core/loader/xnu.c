@@ -44,6 +44,7 @@ struct grub_xnu_devtree_key *grub_xnu_devtree_root = 0;
 static int driverspackagenum = 0;
 static int driversnum = 0;
 int grub_xnu_is_64bit = 0;
+int grub_xnu_darwin_version = 0;
 
 grub_addr_t grub_xnu_heap_target_start = 0;
 grub_size_t grub_xnu_heap_size = 0;
@@ -387,7 +388,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
 
   /* Load kernel. */
   err = grub_macho_load32 (macho, args[0], (char *) loadaddr - startcode,
-			   GRUB_MACHO_NOBSS);
+			   GRUB_MACHO_NOBSS, &grub_xnu_darwin_version);
   if (err)
     {
       grub_macho_close (macho);
@@ -500,7 +501,7 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
 
   /* Load kernel. */
   err = grub_macho_load64 (macho, args[0], (char *) loadaddr - startcode,
-			   GRUB_MACHO_NOBSS);
+			   GRUB_MACHO_NOBSS, &grub_xnu_darwin_version);
   if (err)
     {
       grub_macho_close (macho);

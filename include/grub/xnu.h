@@ -115,4 +115,5 @@ typedef enum {GRUB_XNU_BITMAP_CENTER, GRUB_XNU_BITMAP_STRETCH}
 extern grub_xnu_bitmap_mode_t grub_xnu_bitmap_mode;
 extern int grub_xnu_is_64bit;
 extern grub_addr_t grub_xnu_heap_target_start;
+extern int grub_xnu_darwin_version;
 #endif

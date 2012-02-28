@@ -1,5 +1,22 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support v2 xnu boot arguments.
+
+	* grub-core/loader/i386/xnu.c (grub_cpu_xnu_fill_devicetree):
+	New argument fsbfreq_out.
+	(grub_xnu_set_video): Receive an argument grub_xnu_boot_params_common.
+	(grub_xnu_boot): Support v2 arguments. Disable PIC so that APIC can
+	be used.
+	* grub-core/loader/machoXX.c (grub_macho_load): New argument
+	darwin_version.
+	* grub-core/loader/xnu.c (grub_xnu_darwin_version): New variable.
+	* include/grub/i386/xnu.h (grub_xnu_boot_params_common): New struct.
+	(grub_xnu_boot_params): Rename to ...
+	(grub_xnu_boot_params_v1): ...this. Use grub_xnu_boot_params_common.
+	(grub_xnu_boot_params_v2): New struct.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/efiemu/prepare.c (grub_efiemu_crc): Add missing
 	zeroing of CRC field before computing CRC.
 

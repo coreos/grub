@@ -58,9 +58,9 @@ grub_uint64_t grub_macho_get_entry_point64 (grub_macho_t macho);
 /* Ignore BSS segments when loading. */
 #define GRUB_MACHO_NOBSS 0x1
 grub_err_t grub_macho_load32 (grub_macho_t macho, const char *filename,
-			      char *offset, int flags);
+			      char *offset, int flags, int *darwin_version);
 grub_err_t grub_macho_load64 (grub_macho_t macho, const char *filename,
-			      char *offset, int flags);
+			      char *offset, int flags, int *darwin_version);
 
 /* Like filesize and file_read but take only 32-bit part
    for current architecture. */
