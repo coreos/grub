@@ -1,5 +1,10 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/efiemu/prepare.c (grub_efiemu_crc): Add missing
+	zeroing of CRC field before computing CRC.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/relocator.c (malloc_in_range): Fix memory leak.
 	Change order of allocations to decrease fragmentation.
 
