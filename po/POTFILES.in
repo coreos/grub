@@ -521,7 +521,6 @@
 ./tests/lib/unit_test.c
 ./tests/printf_unit_test.c
 ./util/bin2h.c
-./util/devicemap.c
 ./util/getroot.c
 ./util/grub-editenv.c
 ./util/grub-fstest.c

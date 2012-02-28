@@ -1,5 +1,27 @@
 2012-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix make dist.
+
+	* Makefile.am (starfield_theme_files): New var.
+	(starfield_DATA): Use starfield_theme_files.
+	(EXTRA_DIST): Add starfield_theme_files. Add starfield source files.
+	Add bootcheck-related files.
+	* conf/Makefile.extra-dist (EXTRA_DIST): Add several missing files.
+	* docs/Makefile.am (EXTRA_DIST): Add font_char_metrics.png
+	and font_char_metrics.txt.
+	* grub-core/Makefile.core.def (kernel): Update extra_dist.
+	(setjmp): Add lib/ia64/longjmp.S.
+	* po/Makefile.in.in (DISTFILES): Add POTFILES-shell.in and grub.d.sed.
+	* po/POTFILES.in: Regenerate.
+	* po/Rules-swiss: use DISTFILES.common.extra2 and not
+	DISTFILES.common.extra1.
+	* util/devicemap.c: Removed.
+	* grub-core/lib/i386/relocator_backward.S: Likewise.
+	* util/import_gcry.py: Remove unused files. Add extra_dist for
+	ChangeLog.
+
+2012-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gettext/gettext.c (grub_mofile_open): Call
 	grub_gettext_delete_list before changing grub_gettext_max to avoid
 	running out of array bounds.

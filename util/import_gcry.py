@@ -49,6 +49,7 @@ confutil.write ("library = {\n");
 confutil.write ("  name = libgrubgcry.a;\n");
 confutil.write ("  cflags = '$(CFLAGS_GCRY)';\n");
 confutil.write ("  cppflags = '$(CPPFLAGS_GCRY)';\n");
+confutil.write ("  extra_dist = grub-core/lib/libgcrypt-grub/cipher/ChangeLog;\n");
 confutil.write ("\n");
 chlog = ""
 modules = []
@@ -330,12 +331,16 @@ for cipher_file in cipher_files:
                 conf.write ("  cflags = '$(CFLAGS_GCRY)';\n");
             conf.write ("  cppflags = '$(CPPFLAGS_GCRY)';\n");
             conf.write ("};\n\n")
+            f.close ()
+            fw.close ()
+            if nch:
+                chlog = "%s%s\n" % (chlog, chlognew)
         elif isc and cipher_file != "camellia.c":
             print ("WARNING: C file isn't a module: %s" % cipher_file)
-        f.close ()
-        fw.close ()
-        if nch:
-            chlog = "%s%s\n" % (chlog, chlognew)
+            f.close ()
+            fw.close ()
+            os.remove (outfile)
+            chlog = "%s\n	* %s: Removed" % (chlog, cipher_file)
         continue
     chlog = "%s%sSkipped unknown file\n" % (chlog, chlognew)
     print ("WARNING: unknown file %s" % cipher_file)

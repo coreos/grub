@@ -194,6 +194,7 @@ kernel = {
   mips_loongson = video/sis315pro.c;
   mips_loongson = video/radeon_fuloong2e.c;
   extra_dist = video/sm712_init.c;
+  extra_dist = video/sis315_init.c;
   mips_loongson = commands/keylayouts.c;
 
   powerpc_ieee1275 = kern/powerpc/cache.S;
@@ -234,7 +235,7 @@ kernel = {
 
   extra_dist = kern/i386/int.S;
   extra_dist = kern/i386/realmode.S;
-  extra_dist = kern/i386/pc/lzma_decode.S;
+  extra_dist = boot/i386/pc/lzma_decode.S;
   extra_dist = kern/mips/cache_flush.S;
 };
 
@@ -1286,6 +1287,7 @@ module = {
   extra_dist = lib/sparc64/setjmp.S;
   extra_dist = lib/powerpc/setjmp.S;
   extra_dist = lib/ia64/setjmp.S;
+  extra_dist = lib/ia64/longjmp.S;
 };
 
 module = {

@@ -4,4 +4,6 @@ AUTOMAKE_OPTIONS = subdir-objects
 info_TEXINFOS = grub.texi grub-dev.texi
 grub_TEXINFOS = fdl.texi
 
+EXTRA_DIST = font_char_metrics.png font_char_metrics.txt
+
 
