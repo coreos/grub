@@ -42,9 +42,11 @@ struct embed_signature
 };
 
 const char message_warn[][200] = {
-  [TYPE_RAID] = N_("Sector %llu is already in use by %s; avoiding it.  "
+  [TYPE_RAID] = N_("Sector %llu is already in use by raid controller `%s';"
+		   " avoiding it.  "
 		   "Please ask the manufacturer not to store data in MBR gap"),
-  [TYPE_SOFTWARE] = N_("Sector %llu is already in use by %s; avoiding it.  "
+  [TYPE_SOFTWARE] = N_("Sector %llu is already in use by the program `%s';"
+		       " avoiding it.  "
 		       "This software may cause boot or other problems in "
 		       "future.  Please ask its authors not to store data "
 		       "in the boot track") 

@@ -1,5 +1,9 @@
 2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/msdos.c (message_warn): Clarify messages.
+
+2012-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support v2 xnu boot arguments.
 
 	* grub-core/loader/i386/xnu.c (grub_cpu_xnu_fill_devicetree):
