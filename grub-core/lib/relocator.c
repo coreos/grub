@@ -495,9 +495,9 @@ malloc_in_range (struct grub_relocator *rel,
   }
 #endif
 
-  events = grub_malloc (maxevents * sizeof (events[0]));
   eventt = grub_malloc (maxevents * sizeof (events[0]));
   counter = grub_malloc ((DIGITSORT_MASK + 2) * sizeof (counter[0]));
+  events = grub_malloc (maxevents * sizeof (events[0]));
   if (!events || !eventt || !counter)
     {
       grub_dprintf ("relocator", "events or counter allocation failed %d\n",
@@ -939,6 +939,9 @@ malloc_in_range (struct grub_relocator *rel,
   /* Malloc is available again.  */
   grub_mm_base = base_saved;
 
+  grub_free (eventt);
+  grub_free (counter);
+
   {
     int last_start = 0;
     int inreg = 0, regbeg = 0, ncol = 0;
@@ -1165,12 +1168,17 @@ malloc_in_range (struct grub_relocator *rel,
 	  free_subchunk (&res->subchunks[i]);
 	grub_free (res->subchunks);
 	grub_dprintf ("relocator", "allocation failed with out-of-memory\n");
+	grub_free (events);
+
 	return 0;
       }
   }
 
   res->src = target;
   res->size = size;
+
+  grub_free (events);
+
   grub_dprintf ("relocator", "allocated: 0x%lx+0x%lx\n", (unsigned long) target,
 		(unsigned long) size);
 
