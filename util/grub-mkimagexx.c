@@ -871,6 +871,9 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 				      align) - image_target->vaddr_offset;
 	grub_util_info ("locating the section %s at 0x%llx",
 			name, (unsigned long long) current_address);
+	if (image_target->id != IMAGE_EFI)
+	  current_address = grub_host_to_target_addr (s->sh_addr)
+	    - image_target->link_addr;
 	section_addresses[i] = current_address;
 	current_address += grub_host_to_target_addr (s->sh_size);
       }
@@ -896,6 +899,9 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 
 	grub_util_info ("locating the section %s at 0x%llx",
 			name, (unsigned long long) current_address);
+	if (image_target->id != IMAGE_EFI)
+	  current_address = grub_host_to_target_addr (s->sh_addr)
+	    - image_target->link_addr;
 	section_addresses[i] = current_address;
 	current_address += grub_host_to_target_addr (s->sh_size);
       }
@@ -985,6 +991,10 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
 	
 	    grub_util_info ("locating the section %s at 0x%llx",
 			    name, (unsigned long long) current_address);
+	    if (image_target->id != IMAGE_EFI)
+	      current_address = grub_host_to_target_addr (s->sh_addr)
+		- image_target->link_addr;
+
 	    section_vaddresses[i] = current_address
 	      + image_target->vaddr_offset;
 	    current_address += grub_host_to_target_addr (s->sh_size);

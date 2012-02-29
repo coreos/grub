@@ -1,5 +1,11 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimagexx.c (locate_sections): Support non-standard
+	ELF section gap.
+	(load_image): Likewise.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Fix a typo in previous commit.
 
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
