@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors) [__APPLE__]:
+	Add blocksize retrieval.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Restore CFLAGS after efiemu check.
 
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -283,6 +283,9 @@ grub_util_get_fd_sectors (int fd, const char *name, unsigned *log_secsize)
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     if (ioctl (fd, DIOCGSECTORSIZE, &sector_size))
       goto fail;
+# elif defined(__APPLE__)
+    if (ioctl (fd, DKIOCGETBLOCKSIZE, &sector_size))
+      goto fail;
 # elif defined(__sun__)
     sector_size = minfo.dki_lbsize;
 # elif defined(__NetBSD__)
