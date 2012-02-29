@@ -1060,10 +1060,11 @@ grub_xvasprintf (const char *fmt, va_list ap)
   while (1)
     {
       va_list ap2;
-      va_copy (ap2, ap);
       ret = grub_malloc (as + 1);
       if (!ret)
 	return NULL;
+
+      va_copy (ap2, ap);
 
       s = grub_vsnprintf_real (ret, as, fmt, ap2);
 

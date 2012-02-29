@@ -1,3 +1,8 @@
+2012-02-29  Andreas Vogel <anvoit>
+
+	* grub-core/kern/misc.c (grub_xvasprintf): Fix an exit path which
+	resulted in leak of arguments.
+
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/boot/i386/pc/startup_raw.S: Use separate
