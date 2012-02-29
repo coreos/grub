@@ -381,7 +381,7 @@ static enum xz_ret hash_validate(struct xz_dec *s, struct xz_buf *b,
 {
 #ifndef GRUB_EMBED_DECOMPRESSOR
 	const gcry_md_spec_t *hash = crc32 ? s->crc32 : s->hash;
-	grub_uint64_t *hash_context = crc32 ? s->crc32_context 
+	void *hash_context = crc32 ? s->crc32_context 
 		: s->hash_context;
 	if(!s->have_hash_value && hash
 		&& sizeof (s->hash_value) >= hash->mdlen)

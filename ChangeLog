@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/xzembed/xz_dec_stream.c (hash_validate): Use void *
+	for context.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ldm.c (make_vg): Init part.name.
 	(grub_ldm_detect): Silence spurious warning.
 	(grub_util_is_ldm): Likewise.
