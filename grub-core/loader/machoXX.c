@@ -276,7 +276,7 @@ SUFFIX (grub_macho_load) (grub_macho_t macho, const char *filename,
 	grub_ssize_t read, toread = min (hdr->filesize, hdr->vmsize);
 	if (macho->uncompressedXX)
 	  {
-	    if (hdr->fileoff + toread
+	    if (hdr->fileoff + (grub_size_t) toread
 		> _macho->uncompressed_sizeXX)
 	      read = -1;
 	    else

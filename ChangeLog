@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/machoXX.c (grub_macho_load): Fix signed vs unsigned
+	comparison.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* acinclude.m4 (grub_CHECK_PIC): New test.
 	* configure.ac: Add -fno-PIC to TARGET_CFLAGS if -fPIC is default.
 
