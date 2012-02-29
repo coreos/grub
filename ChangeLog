@@ -1,5 +1,11 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ldm.c (make_vg): Init part.name.
+	(grub_ldm_detect): Silence spurious warning.
+	(grub_util_is_ldm): Likewise.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/xnu.c (grub_xnu_boot): Init fsbfreq to
 	sane value to avoid a spurious warning.
 

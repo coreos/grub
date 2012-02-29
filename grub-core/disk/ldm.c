@@ -596,6 +596,7 @@ make_vg (grub_disk_t disk,
 	  grub_disk_addr_t start, size;
 
 	  grub_uint8_t *ptr;
+	  part.name = 0;
 	  if (grub_memcmp (vblk[i].magic, LDM_VBLK_MAGIC,
 			   sizeof (vblk[i].magic)) != 0)
 	    continue;
@@ -757,7 +758,7 @@ grub_ldm_detect (grub_disk_t disk,
     int i;
     for (i = 0; i < 3; i++)
       {
-	grub_disk_addr_t sector;
+	grub_disk_addr_t sector = LDM_LABEL_SECTOR;
 	switch (i)
 	  {
 	  case 0:
@@ -868,7 +869,7 @@ grub_util_is_ldm (grub_disk_t disk)
   int i;
   for (i = 0; i < 3; i++)
     {
-      grub_disk_addr_t sector;
+      grub_disk_addr_t sector = LDM_LABEL_SECTOR;
       grub_err_t err;
       struct grub_ldm_label label;
 
