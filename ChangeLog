@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/ofpath.c: Rename devname to sys_devname everywhere to
+	avoid conflicts.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/ieee1275/grub-ofpathname.c: Add missing config.h include.
 
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>

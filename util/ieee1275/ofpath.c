@@ -244,7 +244,7 @@ get_basename(char *p)
 }
 
 static char *
-of_path_of_vdisk(const char *devname __attribute__((unused)),
+of_path_of_vdisk(const char *sys_devname __attribute__((unused)),
 		 const char *device,
 		 const char *devnode __attribute__((unused)),
 		 const char *devicenode)
@@ -263,7 +263,7 @@ of_path_of_vdisk(const char *devname __attribute__((unused)),
 }
 
 static char *
-of_path_of_ide(const char *devname __attribute__((unused)), const char *device,
+of_path_of_ide(const char *sys_devname __attribute__((unused)), const char *device,
 	       const char *devnode __attribute__((unused)),
 	       const char *devicenode)
 {
@@ -350,7 +350,7 @@ check_sas (char *sysfs_path, int *tgt)
 }
 
 static char *
-of_path_of_scsi(const char *devname __attribute__((unused)), const char *device,
+of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *device,
 		const char *devnode __attribute__((unused)),
 		const char *devicenode)
 {
@@ -419,11 +419,11 @@ strip_trailing_digits (const char *p)
 }
 
 char *
-grub_util_devname_to_ofpath (const char *devname)
+grub_util_devname_to_ofpath (const char *sys_devname)
 {
   char *name_buf, *device, *devnode, *devicenode, *ofpath;
 
-  name_buf = xrealpath (devname);
+  name_buf = xrealpath (sys_devname);
 
   device = get_basename (name_buf);
   devnode = strip_trailing_digits (name_buf);
