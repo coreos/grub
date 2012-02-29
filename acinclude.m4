@@ -424,3 +424,31 @@ else
   AC_MSG_RESULT([no])
 [fi]
 ])
+
+dnl Check if the C compiler supports `-fPIC'.
+AC_DEFUN([grub_CHECK_PIC],[
+[# Position independent executable.
+pic_possible=yes]
+AC_MSG_CHECKING([whether `$CC' has `-fPIC' as default])
+# Is this a reliable test case?
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[
+#ifdef __PIC__
+int main() {
+	return 0;
+}
+#else
+#error NO __PIC__ DEFINED
+#endif
+]])])
+
+[# `$CC -c -o ...' might not be portable.  But, oh, well...  Is calling
+# `ac_compile' like this correct, after all?
+if eval "$ac_compile -S -o conftest.s" 2> /dev/null; then]
+  AC_MSG_RESULT([yes])
+  [# Should we clear up other files as well, having called `AC_LANG_CONFTEST'?
+  rm -f conftest.s
+else
+  pic_possible=no]
+  AC_MSG_RESULT([no])
+[fi]
+])

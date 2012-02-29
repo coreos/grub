@@ -596,6 +596,14 @@ if [ x"$pie_possible" = xyes ]; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIE"
 fi]
 
+# Position independent executable.
+grub_CHECK_PIC
+[# Need that, because some distributions ship compilers that include
+# `-fPIC' in the default specs.
+if [ x"$pic_possible" = xyes ]; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIC"
+fi]
+
 # Smashing stack protector.
 grub_CHECK_STACK_PROTECTOR
 # Need that, because some distributions ship compilers that include
