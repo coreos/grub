@@ -457,11 +457,13 @@ read_segment (struct grub_diskfilter_segment *seg, grub_disk_addr_t sector,
 	    if (read_size > size)
 	      read_size = size;
 
+	    err = 0;
 	    for (i = 0; i < near; i++)
 	      {
 		unsigned int k;
 
 		k = disknr;
+		err = 0;
 		for (j = 0; j < far; j++)
 		  {
 		    if (grub_errno == GRUB_ERR_READ_ERROR

@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (read_segment): Initialise err
+	before loops.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/xzembed/xz_dec_stream.c (hash_validate): Use void *
 	for context.
 
