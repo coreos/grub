@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/xnu.c (grub_xnu_boot): Init fsbfreq to
+	sane value to avoid a spurious warning.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/dl.h: Switch from APPLE_CC to __APPLE__.
 	(GRUB_MOD_LICENSE) [ASM_FILE]: Make into macro. All users updated.
 
