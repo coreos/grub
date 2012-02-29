@@ -26,8 +26,13 @@
 
 /* Add an underscore to a C symbol in assembler code if needed. */
 #ifndef GRUB_UTIL
+
 #if HAVE_ASM_USCORE
+#ifdef ASM_FILE
 # define EXT_C(sym)	_ ## sym
+#else
+# define EXT_C(sym)	"_" sym
+#endif
 #else
 # define EXT_C(sym)	sym
 #endif

@@ -57,10 +57,10 @@ grub_backtrace (void)
 {
 #ifdef __x86_64__
   asm volatile ("movq %rbp, %rdi\n"
-		"call grub_backtrace_pointer");
+		"call " EXT_C("grub_backtrace_pointer"));
 #else
   asm volatile ("movl %ebp, %eax\n"
-		"call grub_backtrace_pointer");
+		"call " EXT_C("grub_backtrace_pointer"));
 #endif
 }
 
