@@ -18,6 +18,7 @@
  */
 
 #include <grub/cpu/gdb.h>
+#include <grub/symbol.h>
 
 #define EC_PRESENT	1
 #define EC_ABSENT	0
@@ -30,13 +31,9 @@
 
 #define	VECTOR		1
 
-	.globl grub_gdb_trap
-	.globl grub_gdb_regs
-
 	.bss
-	.globl grub_gdb_stack
 	.space GRUB_GDB_STACKSIZE
-grub_gdb_stack:
+VARIABLE(grub_gdb_stack)
 
 /*
  * Supplemental macros for register saving/restoration
@@ -44,22 +41,22 @@ grub_gdb_stack:
  */
 
 .macro save32 reg ndx
-	movl \reg, grub_gdb_regs+(\ndx * 4)
+	movl \reg, EXT_C(grub_gdb_regs)+(\ndx * 4)
 .endm
 
 .macro save16 reg ndx
 	mov $0, %eax
-	movw \reg, grub_gdb_regs+(\ndx * 4)
-	movw %ax, grub_gdb_regs+(\ndx * 4 + 2)
-	movl grub_gdb_regs+(EAX * 4), %eax
+	movw \reg, EXT_C(grub_gdb_regs)+(\ndx * 4)
+	movw %ax, EXT_C(grub_gdb_regs)+(\ndx * 4 + 2)
+	movl EXT_C(grub_gdb_regs)+(EAX * 4), %eax
 .endm
 
 .macro load32 ndx reg
-	movl grub_gdb_regs+(\ndx * 4), \reg
+	movl EXT_C(grub_gdb_regs)+(\ndx * 4), \reg
 .endm
 
 .macro load16 ndx reg
-	movw grub_gdb_regs+(\ndx * 4), \reg
+	movw EXT_C(grub_gdb_regs)+(\ndx * 4), \reg
 .endm
 
 .macro save_context
@@ -131,9 +128,9 @@ grub_gdb_stack:
 	.endif
 
 	save_context
-	mov	$grub_gdb_stack, %esp
+	mov	$EXT_C(grub_gdb_stack), %esp
 	mov	$\beg, %eax	/* trap number */
-	call	grub_gdb_trap
+	call	EXT_C(grub_gdb_trap)
 	load_context
 	iret
 
@@ -159,8 +156,8 @@ grub_gdb_stack:
  */
 
 	.data VECTOR
-	.globl grub_gdb_trapvec
-grub_gdb_trapvec:
+
+VARIABLE(grub_gdb_trapvec)
 	ent EC_ABSENT	0 7
 	ent EC_PRESENT	8
 	ent EC_ABSENT	9
