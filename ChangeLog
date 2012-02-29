@@ -1,5 +1,11 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/i386/pc/startup_raw.S: Use separate
+	reed_solomon_size const definition instead of computing it since
+	Apple assembler doesn't support the later.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gentpl.py (kernel): Rewrite Apple part.
 
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
