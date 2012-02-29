@@ -114,6 +114,9 @@
 
 #if defined(__APPLE__)
 # include <sys/disk.h>
+# include <sys/param.h>
+# include <sys/sysctl.h>
+# include <sys/mount.h>
 #endif
 
 #ifdef HAVE_DEVICE_MAPPER
@@ -1523,10 +1526,10 @@ grub_util_biosdisk_is_floppy (grub_disk_t disk)
 #else
   /* Some kernels (e.g. kFreeBSD) don't have a static major number
      for floppies, but they still use a "fd[0-9]" pathname.  */
-  if (map[disk->id].device[5] == 'f'
-      && map[disk->id].device[6] == 'd'
-      && map[disk->id].device[7] >= '0'
-      && map[disk->id].device[7] <= '9')
+  if (dname[5] == 'f'
+      && dname[6] == 'd'
+      && dname[7] >= '0'
+      && dname[7] <= '9')
 #endif
     return 1;
 

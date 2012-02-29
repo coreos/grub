@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c [__APPLE__]: Add missing includes.
+	(grub_util_biosdisk_is_floppy): Fix usage of undefined variable.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (generate_image): Silence spurious warning.
 
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
