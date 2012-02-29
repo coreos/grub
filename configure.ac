@@ -470,8 +470,10 @@ if test x$grub_cv_apple_target_cc = xyes ; then
   TARGET_IMG_LDFLAGS='-nostdlib -static -Wl,-preload -Wl,-segalign,20'
   TARGET_IMG_LDFLAGS_AC='-nostdlib -static -Wl,-preload -Wl,-segalign,20'
   TARGET_IMG_BASE_LDOPT="-Wl,-image_base"
+  TARGET_LDFLAGS_OLDMAGIC=""
 else
   TARGET_APPLE_CC=0
+  TARGET_LDFLAGS_OLDMAGIC="-W,-N"
 # Use linker script if present, otherwise use builtin -N script.
 if test -f "${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"; then
   TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
@@ -486,6 +488,8 @@ else
 fi
 TARGET_IMG_CFLAGS=
 fi
+
+AC_SUBST(TARGET_LDFLAGS_OLDMAGIC)
 
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])

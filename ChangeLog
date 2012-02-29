@@ -1,5 +1,12 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't add -Wl,-N on Apple platform.
+
+	* configure.ac (TARGET_LDFLAGS_OLDMAGIC): New subst.
+	* conf/Makefile.common: Use TARGET_LDFLAGS_OLDMAGIC instead of -Wl,-N
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (lzma_decompress): Use
 	TARGET_IMG_BASE_LDOPT rather than hardcoding -Wl,-Ttext.
 
