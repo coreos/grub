@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/libgcc.h (__STDC_VERSION__): Define if it's not yet so
+	to avoid the warning.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/i386/pc/diskboot.S (firstlist): Rename to ...
 	(LOCAL(firstlist)): ... this. Move it before the firstlist and not
 	after. All users updated.

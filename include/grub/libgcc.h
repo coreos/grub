@@ -17,6 +17,9 @@
  */
 
 /* We need to include config-util.h.in for HAVE_*.  */
+#ifndef __STDC_VERSION__
+#define __STDC_VERSION__ 0
+#endif
 #include <config-util.h>
 
 /* On x86 these functions aren't really needed. Save some space.  */
