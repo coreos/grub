@@ -1,5 +1,12 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/i386/relocator16.S: Declare LOCAL(relocator16_end)
+	for local arithmetics.
+	Break %sp init into 2 instructions.
+	Add 0 byte at the end.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (read_segment): Initialise err
 	before loops.
 

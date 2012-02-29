@@ -102,12 +102,14 @@ LOCAL(cont3):
 	.byte	0xb8
 VARIABLE(grub_relocator16_keep_a20_enabled)
 	.word	0
+
 	test	%ax, %ax
 	jnz	LOCAL(gate_a20_done)
 
 	movw    %cs, %ax
 	movw    %ax, %ss 
-	leaw    EXT_C(grub_relocator16_end) - LOCAL(base) + GRUB_RELOCATOR16_STACK_SIZE, %sp
+	leaw    LOCAL(relocator16_end) - LOCAL(base), %sp
+	addw    $GRUB_RELOCATOR16_STACK_SIZE, %sp
 
 	/* second, try a BIOS call */
 	movw	$0x2400, %ax
@@ -283,4 +285,6 @@ LOCAL(gdt_end):
 VARIABLE(grub_relocator16_idt)
 	.word 0
 	.long 0
+LOCAL(relocator16_end):
 VARIABLE(grub_relocator16_end)
+	.byte 0
