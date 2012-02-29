@@ -1,5 +1,9 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Restore CFLAGS after efiemu check.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Move -fnested-functions to CPPFLAGS to workaround
 	Apple bug.
 
