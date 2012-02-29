@@ -1,5 +1,9 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/grub-ofpathname.c: Add missing config.h include.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (setup) [!__linux__]: Add missing file declaration
 	and grub_file_close call.
 
