@@ -20,6 +20,10 @@ set -e
 prefix="@prefix@"
 exec_prefix="@exec_prefix@"
 datarootdir="@datarootdir@"
+
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR="@localedir@"
+
 . "@datadir@/@PACKAGE@/grub-mkconfig_lib"
 
 CLASS="--class gnu --class os"

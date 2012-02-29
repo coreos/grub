@@ -37,6 +37,9 @@ rootdir=
 bootdir=
 grubdir=`echo "/@bootdirname@/@grubdirname@" | sed 's,//*,/,g'`
 
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR="@localedir@"
+
 . "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage

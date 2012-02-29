@@ -42,6 +42,9 @@ self=`basename $0`
 grub_probe="${sbindir}/`echo grub-probe | sed "${transform}"`"
 grub_script_check="${bindir}/`echo grub-script-check | sed "${transform}"`"
 
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR="@localedir@"
+
 . "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage

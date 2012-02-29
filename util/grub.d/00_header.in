@@ -24,6 +24,9 @@ exec_prefix="@exec_prefix@"
 datarootdir="@datarootdir@"
 grub_lang=`echo $LANG | cut -d . -f 1`
 
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR="@localedir@"
+
 . "@datadir@/@PACKAGE@/grub-mkconfig_lib"
 
 # Do this as early as possible, since other commands might depend on it.

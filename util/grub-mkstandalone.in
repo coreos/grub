@@ -43,6 +43,9 @@ format=
 grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 source=
 
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR="@localedir@"
+
 . "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage

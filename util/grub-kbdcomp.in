@@ -15,6 +15,9 @@ grub_mklayout="${bindir}/`echo grub-mklayout | sed ${transform}`"
 
 ckbcomp_options=""
 
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR="@localedir@"
+
 . "${pkgdatadir}/grub-mkconfig_lib"
 
 self=`basename $0`

@@ -38,6 +38,9 @@ self=`basename $0`
 
 grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
 
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR="@localedir@"
+
 . "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage

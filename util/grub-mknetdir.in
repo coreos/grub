@@ -53,6 +53,9 @@ efi32_dir="${libdir}/@PACKAGE@/i386-efi"
 efi64_dir="${libdir}/@PACKAGE@/x86_64-efi"
 itanium_dir="${libdir}/@PACKAGE@/ia64-efi"
 
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR="@localedir@"
+
 . "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage
