@@ -1,5 +1,9 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/genmod.sh.in: Rewrite the Apple part.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/machoXX.c (grub_macho_load): Fix signed vs unsigned
 	comparison.
 
