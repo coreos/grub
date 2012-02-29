@@ -1,5 +1,9 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.am (MACHO2IMG): Add missing variable.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/i386/pc/halt.c (grub_halt): Add noreturn attribute.
 	(grub_cmd_halt): Likewise.
 
