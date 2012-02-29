@@ -336,7 +336,7 @@ __argp_fmtstream_point (argp_fmtstream_t __fs)
 }
 
 size_t
-__argp_get_display_len (char *beg, char *end);
+__argp_get_display_len (const char *beg, const char *end);
 
 #if !_LIBC
 #undef __argp_fmtstream_putc

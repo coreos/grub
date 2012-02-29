@@ -1,5 +1,11 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gnulib/argp-fmtstream.c (__argp_get_display_len): Add
+	missing const qualifiers.
+	* grub-core/gnulib/argp-fmtstream.h (__argp_get_display_len): Likewise.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c [__APPLE__]: Add missing includes.
 	(grub_util_biosdisk_is_floppy): Fix usage of undefined variable.
 

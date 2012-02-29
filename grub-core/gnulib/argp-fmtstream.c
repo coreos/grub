@@ -119,9 +119,9 @@ weak_alias (__argp_fmtstream_free, argp_fmtstream_free)
 
 
 size_t
-__argp_get_display_len (char *beg, char *end)
+__argp_get_display_len (const char *beg, const char *end)
 {
-  char *ptr;
+  const char *ptr;
   size_t r = 0;
   mbstate_t ps;
 
