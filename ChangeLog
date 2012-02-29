@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-setup.c (setup) [!__linux__]: Add missing file declaration
+	and grub_file_close call.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add LZSS Mach-O support (needed for new xnu kernelcache).
 
 	* grub-core/Makefile.core.def (xnu): Add file lzss.c

@@ -799,6 +799,7 @@ unable_to_embed:
   }
 #else
   {
+    grub_file_t file;
     /* Now read the core image to determine where the sectors are.  */
     grub_file_filter_disable_compression ();
     file = grub_file_open (core_path_dev);
@@ -815,6 +816,7 @@ unable_to_embed:
     if (grub_file_read (file, tmp_img, core_size - GRUB_DISK_SECTOR_SIZE)
 	!= (grub_ssize_t) core_size - GRUB_DISK_SECTOR_SIZE)
       grub_util_error ("%s", _("failed to read the rest sectors of the core image"));
+    grub_file_close (file);
   }
 #endif
 
