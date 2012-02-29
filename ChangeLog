@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/dl.h: Switch from APPLE_CC to __APPLE__.
+	(GRUB_MOD_LICENSE) [ASM_FILE]: Make into macro. All users updated.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/symbol.h (EXT_C) [!ASM_FILE]: Redefine with strings.
 	* grub-core/lib/i386/backtrace.c (grub_backtrace): Use EXT_C.
 

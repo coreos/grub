@@ -21,7 +21,7 @@
 
 	.file	"setjmp.S"
 
-GRUB_MOD_LICENSE ("GPLv3+")
+GRUB_MOD_LICENSE "GPLv3+"
 
 	.text
 

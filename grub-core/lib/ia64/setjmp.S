@@ -69,7 +69,7 @@
 
 	.file	"setjmp.S"
 
-GRUB_MOD_LICENSE ("GPLv2+")
+GRUB_MOD_LICENSE "GPLv2+"
 
 	/* The following two entry points are the traditional entry points: */
 

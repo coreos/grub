@@ -77,13 +77,13 @@ grub_mod_fini (void)
 #endif
 
 #ifndef ASM_FILE
-#ifdef APPLE_CC
+#ifdef __APPLE__
 #define GRUB_MOD_SECTION(x) "_" #x ", _" #x ""
 #else
 #define GRUB_MOD_SECTION(x) "." #x
 #endif
 #else
-#ifdef APPLE_CC
+#ifdef __APPLE__
 #define GRUB_MOD_SECTION(x) _ ## x , _ ##x 
 #else
 #define GRUB_MOD_SECTION(x) . ## x
@@ -114,11 +114,21 @@ static const char grub_module_name_##name[] \
 static const char grub_module_depend_##name[] \
  __attribute__((section(GRUB_MOD_SECTION(moddeps)), __used__)) = #name
 #else
-#define GRUB_MOD_LICENSE(license)	\
-  .section GRUB_MOD_SECTION(module_license), "a";	\
-  .ascii "LICENSE="; \
-  .ascii license; \
+#ifdef __APPLE__
+.macro GRUB_MOD_LICENSE
+  .section GRUB_MOD_SECTION(module_license)
+  .ascii "LICENSE="
+  .ascii $0
   .byte 0
+.endm
+#else
+.macro GRUB_MOD_LICENSE license
+  .section GRUB_MOD_SECTION(module_license), "a"
+  .ascii "LICENSE="
+  .ascii "\license"
+  .byte 0
+.endm
+#endif
 #endif
 
 /* Under GPL license obligations you have to distribute your module
