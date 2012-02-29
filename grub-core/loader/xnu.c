@@ -351,17 +351,12 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
 
   grub_xnu_unload ();
 
-  macho = grub_macho_open (args[0]);
+  macho = grub_macho_open (args[0], 0);
   if (! macho)
     return grub_errno;
-  if (! grub_macho_contains_macho32 (macho))
-    {
-      grub_macho_close (macho);
-      return grub_error (GRUB_ERR_BAD_OS,
-			 "kernel doesn't contain suitable 32-bit architecture");
-    }
 
-  err = grub_macho_size32 (macho, &startcode, &endcode, GRUB_MACHO_NOBSS);
+  err = grub_macho_size32 (macho, &startcode, &endcode, GRUB_MACHO_NOBSS,
+			   args[0]);
   if (err)
     {
       grub_macho_close (macho);
@@ -396,7 +391,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
       return err;
     }
 
-  grub_xnu_entry_point = grub_macho_get_entry_point32 (macho);
+  grub_xnu_entry_point = grub_macho_get_entry_point32 (macho, args[0]);
   if (! grub_xnu_entry_point)
     {
       grub_macho_close (macho);
@@ -461,17 +456,12 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
 
   grub_xnu_unload ();
 
-  macho = grub_macho_open (args[0]);
+  macho = grub_macho_open (args[0], 1);
   if (! macho)
     return grub_errno;
-  if (! grub_macho_contains_macho64 (macho))
-    {
-      grub_macho_close (macho);
-      return grub_error (GRUB_ERR_BAD_OS,
-			 "kernel doesn't contain suitable 64-bit architecture");
-    }
 
-  err = grub_macho_size64 (macho, &startcode, &endcode, GRUB_MACHO_NOBSS);
+  err = grub_macho_size64 (macho, &startcode, &endcode, GRUB_MACHO_NOBSS,
+			   args[0]);
   if (err)
     {
       grub_macho_close (macho);
@@ -509,7 +499,8 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
       return err;
     }
 
-  grub_xnu_entry_point = grub_macho_get_entry_point64 (macho) & 0x0fffffff;
+  grub_xnu_entry_point = grub_macho_get_entry_point64 (macho, args[0])
+    & 0x0fffffff;
   if (! grub_xnu_entry_point)
     {
       grub_macho_close (macho);
@@ -667,18 +658,16 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile,
   /* Compute the needed space. */
   if (binaryfile)
     {
-      macho = grub_macho_file (binaryfile, filename);
-      if (! macho || ! grub_macho_contains_macho32 (macho))
-	{
-	  if (macho)
-	    grub_macho_close (macho);
-	  return grub_error (GRUB_ERR_BAD_OS,
-			     "extension doesn't contain suitable architecture");
-	}
-      if (grub_xnu_is_64bit)
-	machosize = grub_macho_filesize64 (macho);
+      macho = grub_macho_file (binaryfile, filename, grub_xnu_is_64bit);
+      if (!macho)
+	grub_file_close (binaryfile);
       else
-	machosize = grub_macho_filesize32 (macho);
+	{
+	  if (grub_xnu_is_64bit)
+	    machosize = grub_macho_filesize64 (macho);
+	  else
+	    machosize = grub_macho_filesize32 (macho);
+	}
       neededspace += machosize;
     }
   else

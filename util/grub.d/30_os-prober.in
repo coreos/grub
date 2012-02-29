@@ -66,8 +66,11 @@ EOF
            if [ -f /Extra/DSDT.aml ]; then
               acpi -e /Extra/DSDT.aml
            fi
-           $1 /mach_kernel boot-uuid=\${uuid} rd=*uuid
-           if [ /System/Library/Extensions.mkext -nt /System/Library/Extensions ]; then
+           if [ /kernelcache -nt /System/Library/Extensions ]; then
+              $1 /kernelcache boot-uuid=\${uuid} rd=*uuid
+           else
+              $1 /mach_kernel boot-uuid=\${uuid} rd=*uuid
+           elif [ /System/Library/Extensions.mkext -nt /System/Library/Extensions ]; then
               xnu_mkext /System/Library/Extensions.mkext
            else
               xnu_kextdir /System/Library/Extensions

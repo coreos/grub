@@ -1378,6 +1378,7 @@ module = {
   x86 = loader/macho64.c;
   x86 = loader/macho.c;
   x86 = loader/xnu.c;
+  x86 = loader/lzss.c;
 
   extra_dist = loader/machoXX.c;
   enable = x86;

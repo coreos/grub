@@ -1,5 +1,39 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add LZSS Mach-O support (needed for new xnu kernelcache).
+
+	* grub-core/Makefile.core.def (xnu): Add file lzss.c
+	* grub-core/loader/lzss.c: New file.
+	* grub-core/loader/xnu.c (grub_xnu_load_driver): Close binaryfile
+	on Mach-O open failure.
+	* grub-core/loader/macho.c (grub_macho_close): Free uncompressedXX.
+	Don't free cmdsXX in uncompressedXX is set.
+	(grub_macho_file): Init new fields.
+	New argument is_64bit. All users updated.
+	Handle compressed. Error out if no suitable architecture is found.
+	Don't close file.
+	(grub_macho_open): New argument is_64bit. All users updated.
+	* grub-core/loader/macho32.c: Add defines for new fields.
+	* grub-core/loader/macho64.c: Likewise.
+	* grub-core/loader/machoXX.c (grub_macho_contains_macho): Make static.
+	(grub_macho_parse): Handle compressed.
+	Defer actual processing if compressed.
+	(grub_macho_cmds_iterate): Decompress if compressed. New argument
+	"filename". All users updated.
+	(grub_macho_size): New argument "filename". All users updated.
+	(grub_macho_get_entry_point): Likewise.
+	(grub_macho_load): Handle compressed.
+	* include/grub/macho.h (grub_macho_lzss_header): New struct.
+	(GRUB_MACHO_LZSS_OFFSET): New define.
+	(grub_decompress_lzss): New proto.
+	* include/grub/machoload.h (grub_macho_file): New fields to handle
+	compressed.
+	(grub_macho_contains_macho64): Remove proto.
+	(grub_macho_contains_macho32): Likewise.
+	* util/grub.d/30_os-prober.in: Use kernel cache if available.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/pata.c (grub_pata_readwrite): Fix ATAPI protocol error.
 
 2012-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
