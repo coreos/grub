@@ -1,3 +1,7 @@
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* po/Rules-swiss: Fix header comment.
+
 2012-02-29  Andreas Vogel <anvoit>
 
 	* grub-core/kern/misc.c (grub_xvasprintf): Fix an exit path which

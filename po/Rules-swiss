@@ -1,4 +1,4 @@
-# Special Makefile rules for English message catalogs with quotation marks.
+# Special Makefile rules for transforming German typography into Swiss one.
 
 DISTFILES.common.extra2 = swiss.sed Rules-swiss
 
