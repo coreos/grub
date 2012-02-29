@@ -221,7 +221,8 @@ grub_util_get_geli_uuid (const char *dev)
   if (fd < 0)
     return NULL;
 
-  s = grub_util_get_fd_sectors (fd, dev, &log_secsize);
+  s = grub_util_get_fd_size (fd, dev, &log_secsize);
+  s >>= log_secsize;
   grub_util_fd_seek (fd, dev, (s << log_secsize) - 512);
 
   uuid = xmalloc (GRUB_MD_SHA256->mdlen * 2 + 1);

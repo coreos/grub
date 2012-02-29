@@ -1,5 +1,15 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use the common size routine in hostfs so we can read disks as well.
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors): Rename to ..
+	(grub_util_get_fd_size): ... this. Return size in bytes.
+	All users updated.
+	* grub-core/kern/emu/hostfs.c (grub_hostfs_open): Use
+	grub_util_get_fd_size.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_sectors) [__APPLE__]:
 	Add blocksize retrieval.
 

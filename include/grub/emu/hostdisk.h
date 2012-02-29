@@ -59,7 +59,7 @@ grub_hostdisk_os_dev_to_grub_drive (const char *os_dev, int add);
 
 #if !defined(__MINGW32__)
 grub_uint64_t
-grub_util_get_fd_sectors (int fd, const char *name, unsigned *log_secsize);
+grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize);
 #endif
 
 char *

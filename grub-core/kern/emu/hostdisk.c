@@ -240,7 +240,7 @@ grub_util_biosdisk_iterate (int (*hook) (const char *name),
 
 #if !defined(__MINGW32__)
 grub_uint64_t
-grub_util_get_fd_sectors (int fd, const char *name, unsigned *log_secsize)
+grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
 {
 # if defined(__NetBSD__)
   struct disklabel label;
@@ -304,16 +304,16 @@ grub_util_get_fd_sectors (int fd, const char *name, unsigned *log_secsize)
       *log_secsize = log_sector_size;
 
 # if defined (__APPLE__)
-    return nr;
+    return nr << log_sector_size;
 # elif defined(__NetBSD__)
-    return label.d_secperunit;
+    return label.d_secperunit << log_sector_size;
 # elif defined (__sun__)
-    return minfo.dki_capacity;
+    return minfo.dki_capacity << log_sector_size;
 # else
     if (nr & ((1 << log_sector_size) - 1))
       grub_util_error ("%s", _("unaligned device size"));
 
-    return (nr >> log_sector_size);
+    return nr;
 # endif
 
  fail:
@@ -329,7 +329,7 @@ grub_util_get_fd_sectors (int fd, const char *name, unsigned *log_secsize)
   if (log_secsize)
    *log_secsize = 9;
 
-  return st.st_size >> 9;
+  return st.st_size;
 }
 #endif
 
@@ -378,8 +378,9 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("cannot open `%s': %s"),
 			 map[drive].device, strerror (errno));
 
-    disk->total_sectors = grub_util_get_fd_sectors (fd, map[drive].device,
-						    &disk->log_sector_size);
+    disk->total_sectors = grub_util_get_fd_size (fd, map[drive].device,
+						 &disk->log_sector_size);
+    disk->total_sectors >>= disk->log_sector_size;
 
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
     if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))

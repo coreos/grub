@@ -24,6 +24,7 @@
 #include <grub/mm.h>
 #include <grub/dl.h>
 #include <grub/util/misc.h>
+#include <grub/emu/hostdisk.h>
 #include <grub/i18n.h>
 
 #include <dirent.h>
@@ -132,9 +133,7 @@ grub_hostfs_open (struct grub_file *file, const char *name)
 #ifdef __MINGW32__
   file->size = grub_util_get_disk_size (name);
 #else
-  fseeko (f, 0, SEEK_END);
-  file->size = ftello (f);
-  fseeko (f, 0, SEEK_SET);
+  file->size = grub_util_get_fd_size (fileno (f), name, NULL);
 #endif
 
   return GRUB_ERR_NONE;
