@@ -473,7 +473,7 @@ if test x$grub_cv_apple_target_cc = xyes ; then
   TARGET_LDFLAGS_OLDMAGIC=""
 else
   TARGET_APPLE_CC=0
-  TARGET_LDFLAGS_OLDMAGIC="-W,-N"
+  TARGET_LDFLAGS_OLDMAGIC="-Wl,-N"
 # Use linker script if present, otherwise use builtin -N script.
 if test -f "${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"; then
   TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"

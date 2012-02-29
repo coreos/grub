@@ -1,5 +1,9 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Fix a typo in previous commit.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't add -Wl,-N on Apple platform.
 
 	* configure.ac (TARGET_LDFLAGS_OLDMAGIC): New subst.
