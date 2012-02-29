@@ -301,8 +301,8 @@ AC_CHECK_SIZEOF(long)
 
 grub_apple_cc
 if test x$grub_cv_apple_cc = xyes ; then
-  HOST_CPPFLAGS="$HOST_CPPFLAGS -DAPPLE_CC=1"
-  HOST_CFLAGS="$HOST_CFLAGS -fnested-functions"
+  HOST_CPPFLAGS="$HOST_CPPFLAGS -DAPPLE_CC=1 -fnested-functions"
+  HOST_CFLAGS="$HOST_CFLAGS"
 fi
 
 if test x$USE_NLS = xno; then
@@ -454,7 +454,7 @@ fi
 grub_apple_target_cc
 if test x$grub_cv_apple_target_cc = xyes ; then
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS -DAPPLE_CC=1"
-  TARGET_CFLAGS="$TARGET_CFLAGS -fnested-functions"
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -fnested-functions"
 
   CFLAGS="$CFLAGS -DAPPLE_CC=1 -fnested-functions"
   TARGET_APPLE_CC=1
