@@ -712,8 +712,8 @@ generate_image (const char *dir, const char *prefix,
   struct grub_util_path_list *path_list, *p, *next;
   grub_size_t bss_size;
   grub_uint64_t start_address;
-  void *rel_section;
-  grub_size_t reloc_size, align;
+  void *rel_section = 0;
+  grub_size_t reloc_size = 0, align;
   size_t decompress_size = 0;
 
   if (comp == COMPRESSION_AUTO)

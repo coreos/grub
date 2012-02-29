@@ -1,5 +1,9 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c (generate_image): Silence spurious warning.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/ieee1275/ofpath.c: Rename devname to sys_devname everywhere to
 	avoid conflicts.
 
