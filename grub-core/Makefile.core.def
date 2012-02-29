@@ -375,7 +375,7 @@ image = {
   i386_pc = boot/i386/pc/startup_raw.S;
 
   objcopyflags = '-O binary';
-  ldflags = '$(TARGET_IMG_LDFLAGS) -Wl,-Ttext,0x8200';
+  ldflags = '$(TARGET_IMG_LDFLAGS) $(TARGET_IMG_BASE_LDOPT),0x8200';
   enable = i386_pc;
 };
 

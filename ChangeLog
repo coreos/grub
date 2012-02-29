@@ -1,5 +1,10 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (lzma_decompress): Use
+	TARGET_IMG_BASE_LDOPT rather than hardcoding -Wl,-Ttext.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/genmod.sh.in: Rewrite the Apple part.
 
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
