@@ -1,5 +1,9 @@
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* gentpl.py (kernel): Rewrite Apple part.
+
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/kernel.h (FOR_MODULES): Check module magic.
 
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
