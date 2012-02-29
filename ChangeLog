@@ -1,3 +1,7 @@
+2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/pata.c (grub_pata_readwrite): Fix ATAPI protocol error.
+
 2012-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix make dist.

@@ -203,11 +203,8 @@ grub_pata_readwrite (struct grub_ata *disk,
 
   /* Transfer data.  */
   while (nread < parms->size
-	 && ((sts & (GRUB_ATA_STATUS_DRQ | GRUB_ATA_STATUS_ERR))
-	     == GRUB_ATA_STATUS_DRQ)
-	 && (!parms->cmdsize 
-	     || ((grub_pata_regget (dev, GRUB_ATAPI_REG_IREASON)
-		  & GRUB_ATAPI_IREASON_MASK) == GRUB_ATAPI_IREASON_DATA_IN)))
+	 && (sts & (GRUB_ATA_STATUS_DRQ | GRUB_ATA_STATUS_ERR))
+	 == GRUB_ATA_STATUS_DRQ)
     {
       unsigned cnt;
 
@@ -217,6 +214,10 @@ grub_pata_readwrite (struct grub_ata *disk,
 
       if (parms->cmdsize)
 	{
+	  if ((grub_pata_regget (dev, GRUB_ATAPI_REG_IREASON)
+	       & GRUB_ATAPI_IREASON_MASK) != GRUB_ATAPI_IREASON_DATA_IN)
+	    return grub_error (GRUB_ERR_READ_ERROR, "ATAPI protocol error");
+
 	  cnt = grub_pata_regget (dev, GRUB_ATAPI_REG_CNTHIGH) << 8
 	    | grub_pata_regget (dev, GRUB_ATAPI_REG_CNTLOW);
 	  grub_dprintf("pata", "DRQ count=%u\n", cnt);
