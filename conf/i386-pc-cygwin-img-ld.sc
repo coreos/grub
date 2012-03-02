@@ -18,6 +18,8 @@ SECTIONS
     __rdata_end__ = . ;
     *(.pdata)
     edata = . ;
+    _edata = . ;
+    __edata = . ;
   }
   .bss :
   {

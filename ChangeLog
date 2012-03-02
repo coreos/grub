@@ -1,3 +1,7 @@
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/i386-pc-cygwin-img-ld.sc: Define also _edata and __edata.
+
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.in: Add missing gettext init.
