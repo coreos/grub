@@ -1,5 +1,11 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/videoinfo.c (hook): Replace "Direct"
+	with "Direct color" and "Packed" with "Packed pixel".
+	(grub_cmd_videoinfo): Simplify legend.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_make_system_path_relative_to_its_root): Fix
 	absolutely unclear error message.
 

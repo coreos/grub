@@ -55,7 +55,7 @@ hook (const struct grub_video_mode_info *info)
     grub_xputs (_("Text-only "));
   /* Show mask and position details for direct color modes.  */
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_RGB)
-    grub_printf_ (N_("Direct, mask: %d/%d/%d/%d  pos: %d/%d/%d/%d"),
+    grub_printf_ (N_("Direct color, mask: %d/%d/%d/%d  pos: %d/%d/%d/%d"),
 		  info->red_mask_size,
 		  info->green_mask_size,
 		  info->blue_mask_size,
@@ -65,7 +65,7 @@ hook (const struct grub_video_mode_info *info)
 		  info->blue_field_pos,
 		  info->reserved_field_pos);
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
-    grub_xputs (_("Packed "));
+    grub_xputs (_("Packed pixel "));
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_YUV)
     grub_xputs (_("YUV "));
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_PLANAR)
@@ -75,6 +75,8 @@ hook (const struct grub_video_mode_info *info)
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_CGA)
     grub_xputs (_("CGA "));
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_NONCHAIN4)
+    /* TRANSLATORS: Non-chain 4 is a 256-color planar
+       (unchained) video memory mode.  */
     grub_xputs (_("Non-chain 4 "));
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP)
     grub_xputs (_("Monochrome "));
@@ -150,8 +152,7 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
   id = grub_video_get_driver_id ();
 
   grub_puts_ (N_("List of supported video modes:"));
-  grub_puts_ (N_("Legend: P=Packed pixel, D=Direct color, "
-		 "mask/pos=R/G/B/reserved"));
+  grub_puts_ (N_("Legend: mask/position=red/green/blue/reserved"));
 
   FOR_VIDEO_ADAPTERS (adapter)
   {
