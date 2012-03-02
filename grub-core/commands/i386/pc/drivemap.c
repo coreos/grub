@@ -185,6 +185,9 @@ list_mappings (void)
       return GRUB_ERR_NONE;
     }
 
+  /* TRANSLATORS:  This is the header of mapping list. 
+     On the left is how OS will see the disks and
+     on the right current GRUB vision.  */
   grub_puts_ (N_("OS disk #num ------> GRUB/BIOS device"));
   drivemap_node_t *curnode = map_head;
   while (curnode)

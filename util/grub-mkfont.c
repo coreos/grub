@@ -552,6 +552,11 @@ process_cursive (struct gsub_feature *feature,
 		  subst (m);
 	    }
 	  else
+	    /* TRANSLATORS: most font transformations apply only to
+	       some glyphs. Those glyphs are described as "coverage".
+	       There are 2 coverage specifications: list and range.
+	       This warning is thrown when another coverage specification
+	       is detected.  */
 	    printf (_("Unsupported coverage specification: %d\n"), covertype);
 	}
     }
@@ -961,8 +966,15 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 static struct argp_option options[] = {
   {"output",  'o', N_("FILE"), 0, N_("save output in FILE [required]"), 0},
   {"ascii-bitmaps",  0x102, 0, 0, N_("save only the ASCII bitmaps"), 0},
-  {"width-spec",  0x103, 0, 0, N_("create width summary file"), 0},
-  {"index",  'i', N_("NUM"), 0, N_("set face index"), 0},
+  {"width-spec",  0x103, 0, 0, 
+   /* TRANSLATORS: this refers to creating a file containing the width of
+      every glyph but not the glyphs themselves.  */
+   N_("create width summary file"), 0},
+  {"index",  'i', N_("NUM"), 0,
+   /* TRANSLATORS: some font files may have multiple faces (fonts).
+      This option is used to chose among them, the first face being '0'.
+      Rarely used.  */
+   N_("set face index"), 0},
   {"range",  'r', N_("FROM-TO[,FROM-TO]"), 0, N_("set font range"), 0},
   {"name",  'n', N_("NAME"), 0, N_("set font family name"), 0},
   {"size",  's', N_("SIZE"), 0, N_("set font size"), 0},
@@ -971,7 +983,12 @@ static struct argp_option options[] = {
   {"bold",  'b', 0, 0, N_("convert to bold font"), 0},
   {"force-autohint",  'a', 0, 0, N_("force autohint"), 0},
   {"no-hinting",  0x101, 0, 0, N_("disable hinting"), 0},
-  {"no-bitmap",  0x100, 0, 0, N_("ignore bitmap strikes when loading"), 0},
+  {"no-bitmap",  0x100, 0, 0,
+   /* TRANSLATORS: some fonts contain bitmap rendering for
+      some sizes. This option forces rerendering even if
+      pre-rendered bitmap is available.
+    */
+   N_("ignore bitmap strikes when loading"), 0},
   {"verbose",  'v', 0, 0, N_("print verbose messages."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };

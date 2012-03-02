@@ -248,6 +248,7 @@ done
 
 if test "x${grub_cfg}" != "x" ; then
   if ! ${grub_script_check} ${grub_cfg}.new; then
+    # TRANSLATORS: %s is replaced by filename
     gettext_printf "Syntax errors are detected in generated GRUB config file.
 Ensure that there are no errors in /etc/default/grub
 and /etc/grub.d/* files or please file a bug report with

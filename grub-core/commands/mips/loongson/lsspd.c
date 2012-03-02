@@ -49,6 +49,9 @@ grub_cmd_lsspd (grub_command_t cmd __attribute__ ((unused)),
   if (err)
     return err;
 
+  /* TRANSLATORS: System management bus is often used to access components like
+     RAM (info only, not data) or batteries. I/O space is where in memory
+     its ports are.  */
   grub_printf_ (N_("System management bus controller I/O space is at 0x%x\n"),
 		smbbase);
 

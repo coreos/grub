@@ -228,6 +228,7 @@ source ${subdir}/grub.cfg
 EOF
 
     "$grub_mkimage" ${config_opt} -d "${input_dir}" -O ${mkimage_target} "--output=${grubdir}/core.$ext" "--prefix=$prefix" $modules $netmodules tftp || exit 1
+    # TRANSLATORS: First %s is replaced by platform name. Second one by filename.
     gettext_printf "Netboot directory for %s created. Configure your DHCP server to point to %s\n" "${platform}" "${subdir}/${platform}/core.$ext"
 }
 

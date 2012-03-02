@@ -32,6 +32,14 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static const struct grub_arg_option options[] =
   {
     { "set", 's', GRUB_ARG_OPTION_REPEATABLE,
+      /* TRANSLATORS: in regexp you can mark some
+	 groups with parentheses. These groups are
+	 then numbered and you can save some of
+	 them in variables. In other programs
+	 those components aree often referenced with
+	 back slash, e.g. \1. Compare
+	 sed -e 's,\([a-z][a-z]*\),lowercase=\1,g'	 
+       */
       N_("Store matched component NUMBER in VARNAME."),
       N_("[NUMBER:]VARNAME"), ARG_TYPE_STRING },
     { 0, 0, 0, 0, 0, 0 }

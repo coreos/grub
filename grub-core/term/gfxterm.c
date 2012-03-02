@@ -1100,10 +1100,16 @@ grub_gfxterm_set_repaint_callback (grub_gfxterm_repaint_callback_t func)
 
 static const struct grub_arg_option background_image_cmd_options[] =
   {
-    /* TRANSLATORS: note that GRUB will accept only original keywords stretch
-       and normal, not the translated ones. So please put both in translation
-       e.g. stretch=(%STRETCH%)|normal(=%NORMAL).  */
-    {"mode", 'm', 0, N_("Background image mode."), N_("stretch|normal"),
+    {"mode", 'm', 0, N_("Background image mode."),
+    /* TRANSLATORS: This refers to background image mode (stretched or 
+       in left-top conrner). Note that GRUB will accept only original
+       keywords stretch and normal, not the translated ones.
+       So please put both in translation
+       e.g. stretch(=%STRETCH%)|normal(=%NORMAL). Since many people
+       may not know the word stretch or normal I recommend
+       putting the translation either here or in "Background image mode."
+       string.  */
+     N_("stretch|normal"),
      ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };

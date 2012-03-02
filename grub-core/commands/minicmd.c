@@ -145,6 +145,11 @@ grub_mini_cmd_lsmod (struct grub_command *cmd __attribute__ ((unused)),
 {
   grub_dl_t mod;
 
+  /* TRANSLATORS: this is module list header.  Name
+     is module name, Ref Count is a reference counter
+     (how many modules or open descriptors use it).
+     Dependencies are the other modules it uses.
+   */
   grub_printf_ (N_("Name\tRef Count\tDependencies\n"));
   FOR_DL_MODULES (mod)
   {

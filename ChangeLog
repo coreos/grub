@@ -1,5 +1,21 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/i386/pc/drivemap.c: Add TRANSLATORS comments.
+	* grub-core/commands/lsmmap.c: Likewise.
+	* grub-core/commands/minicmd.c: Likewise.
+	* grub-core/commands/mips/loongson/lsspd.c: Likewise.
+	* grub-core/commands/regexp.c: Likewise.
+	* grub-core/gdb/gdb.c: Likewise.
+	* grub-core/term/gfxterm.c: Likewise.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub-mkfont.c: Likewise.
+	* util/grub-mklayout.c: Likewise.
+	* util/grub-mknetdir.in: Likewise.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/videoinfo.c (hook): Replace "Direct"
 	with "Direct color" and "Packed" with "Packed pixel".
 	(grub_cmd_videoinfo): Simplify legend.

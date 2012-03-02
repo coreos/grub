@@ -28,7 +28,11 @@ static const char *names[] =
   {
     [GRUB_MEMORY_AVAILABLE] = N_("available RAM"),
     [GRUB_MEMORY_RESERVED] = N_("reserved RAM"),
+    /* TRANSLATORS: this refers to memory where ACPI tables are stored
+       and which can be used by OS once it loads ACPI tables.  */
     [GRUB_MEMORY_ACPI] = N_("ACPI reclaimable RAM"),
+    /* TRANSLATORS: this refers to memory which ACPI-compliant OS
+       is required to save accross hibernations.  */
     [GRUB_MEMORY_NVS] = N_("ACPI non-volatile storage RAM"),
     [GRUB_MEMORY_BADRAM] = N_("faulty RAM (BadRAM)"),
     [GRUB_MEMORY_CODE] = N_("RAM holding firmware code"),

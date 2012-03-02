@@ -76,7 +76,12 @@ GRUB_MOD_INIT (gdb)
 {
   grub_gdb_idtinit ();
   cmd = grub_register_command ("gdbstub", grub_cmd_gdbstub,
-			       N_("PORT"), N_("Start GDB stub on given port"));
+			       N_("PORT"), 
+			       /* TRANSLATORS: GDB stub is a small part of
+				  GDB functionality running on local host
+				  which allows remote debugger to
+				  connect to it.  */
+			       N_("Start GDB stub on given port"));
   cmd_break = grub_register_command ("gdbstub_break", grub_cmd_gdb_break,
 				     /* TRANSLATORS: this refers to triggering
 					a breakpoint so that the user will land

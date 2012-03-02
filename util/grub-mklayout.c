@@ -289,6 +289,7 @@ lookup (char *code, int shift)
     if (strcmp (code, console_grub_equivalences_common[i].layout) == 0)
       return console_grub_equivalences_common[i].grub;
 
+  /* TRANSLATORS: scan identifier is keyboard key symbolic name.  */
   fprintf (stderr, _("Unknown keyboard scan identifier %s\n"), code);
 
   return '\0';
@@ -385,6 +386,7 @@ write_keymaps (FILE *in, FILE *out)
 	  if (keycode_usb == 0
 	      || keycode_usb >= GRUB_KEYBOARD_LAYOUTS_ARRAY_SIZE)
 	    {
+	      /* TRANSLATORS: scan code is keyboard key numeric identifier.  */
 	      fprintf (stderr, _("Unknown keyboard scan code 0x%02x\n"), keycode_linux);
 	      continue;
 	    }
@@ -403,6 +405,8 @@ write_keymaps (FILE *in, FILE *out)
 
   if (ok == 0)
     {
+      /* TRANSLATORS: this error is triggered when input doesn't contain any
+	 key descriptions.  */
       fprintf (stderr, "%s", _("ERROR: no valid keyboard layout found. Check the input.\n"));
       exit (1);
     }

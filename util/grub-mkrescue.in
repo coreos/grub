@@ -58,15 +58,18 @@ export TEXTDOMAINDIR="@localedir@"
 # Print the usage.
 usage () {
     gettext_printf "Usage: %s [OPTION] SOURCE...\n" "$self"
+    # TRANSLATORS: it generates one single image which is bootable through any method.
     gettext "Make GRUB CD-ROM, disk, pendrive and floppy bootable image."; echo
     echo
+    filetrans="$(gettext FILE)"
     printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
     printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
-    printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "save output in FILE [required]")"
+    printf "  -o, --output=%-11s%s\n" "$filetrans" "$(gettext "save output in FILE [required]")"
     printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
     printf "  --rom-directory=%-8s%s\n" "$(gettext "DIR")" "$(gettext "save rom images in DIR [optional]")"
-    printf "  --xorriso=%-14s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as xorriso [optional]")"
-    printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    # TRANSLATORS: xorriso is a program for creating ISOs and burning CDs
+    printf "  --xorriso=%-14s%s\n" "$filetrans" "$(gettext "use FILE as xorriso [optional]")"
+    printf "  --grub-mkimage=%-9s%s\n" "$filetrans" "$(gettext "use FILE as grub-mkimage")"
     echo
     gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by the output of \`%s'\n" "xorriso -as mkisofs -help" "$self"
     echo
