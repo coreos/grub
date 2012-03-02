@@ -55,8 +55,6 @@ usage () {
     gettext_printf "Usage: %s [OPTION] SOURCE...\n" "$self"
     gettext "Generate a standalone image (containing all modules) in the selected format"
     echo
-    gettext "Make GRUB rescue image."; echo
-    echo
     printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
     printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
     printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "save output in FILE [required]")"
