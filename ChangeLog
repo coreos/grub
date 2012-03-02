@@ -1,5 +1,12 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-pe2elf.c (usage): Add missing noreturn.
+	(write_section_data): Rename name to shname to avoid shadowing.
+	(write_symbol_table): Rename name to symname to avoid shadowing.
+	Fix write_reloc_section call.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/i386/pc/startup_raw.S: Move decompressor_end to .bss
 	to ensure that it's after the last byte of .text.
 

@@ -22,6 +22,7 @@
 #include <grub/util/misc.h>
 #include <grub/elf.h>
 #include <grub/efi/pe32.h>
+#include <grub/misc.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -40,7 +41,7 @@ static struct option options[] = {
   {0, 0, 0, 0}
 };
 
-static void
+static void __attribute__ ((noreturn))
 usage (int status)
 {
   if (status)
@@ -138,41 +139,41 @@ write_section_data (FILE* fp, const char *name, char *image,
   for (i = 0; i < pe_chdr->num_sections; i++, pe_shdr++)
     {
       grub_uint32_t idx;
-      const char *name = pe_shdr->name;
+      const char *shname = pe_shdr->name;
 
-      if (name[0] == '/' && isdigit (name[1]))
+      if (shname[0] == '/' && grub_isdigit (shname[1]))
       {
         char t[sizeof (pe_shdr->name) + 1];
-        memcpy (t, name, sizeof (pe_shdr->name));
+        memcpy (t, shname, sizeof (pe_shdr->name));
         t[sizeof (pe_shdr->name)] = 0;
-        name = pe_strtab + atoi (t + 1);
+        shname = pe_strtab + atoi (t + 1);
       }
 
-      if (! strcmp (name, ".text"))
+      if (! strcmp (shname, ".text"))
         {
           idx = TEXT_SECTION;
           shdr[idx].sh_flags = SHF_ALLOC | SHF_EXECINSTR;
         }
-      else if (! strcmp (name, ".rdata"))
+      else if (! strcmp (shname, ".rdata"))
         {
           idx = RDATA_SECTION;
           shdr[idx].sh_flags = SHF_ALLOC;
         }
-      else if (! strcmp (name, ".data"))
+      else if (! strcmp (shname, ".data"))
         {
           idx = DATA_SECTION;
           shdr[idx].sh_flags = SHF_ALLOC | SHF_WRITE;
         }
-      else if (! strcmp (name, ".bss"))
+      else if (! strcmp (shname, ".bss"))
         {
           idx = BSS_SECTION;
           shdr[idx].sh_flags = SHF_ALLOC | SHF_WRITE;
         }
-      else if (! strcmp (name, ".modname"))
+      else if (! strcmp (shname, ".modname"))
         idx = MODNAME_SECTION;
-      else if (! strcmp (name, ".moddeps"))
+      else if (! strcmp (shname, ".moddeps"))
         idx = MODDEPS_SECTION;
-      else if (strcmp (name, ".module_license") == 0)
+      else if (strcmp (shname, ".module_license") == 0)
         idx = MODLICENSE_SECTION;
       else
         {
@@ -193,19 +194,19 @@ write_section_data (FILE* fp, const char *name, char *image,
           shdr[idx].sh_offset = offset;
           grub_util_write_image_at (image + pe_shdr->raw_data_offset,
                                     pe_shdr->raw_data_size, offset, fp,
-				    name);
+				    shname);
 
           offset += pe_shdr->raw_data_size;
         }
 
       if (pe_shdr->relocations_offset)
         {
-          char relname[5 + strlen (name)];
+          char relname[5 + strlen (shname)];
 
           if (num_sections >= MAX_SECTIONS)
             grub_util_error ("too many sections");
 
-          sprintf (relname, ".rel%s", name);
+          sprintf (relname, ".rel%s", shname);
 
           shdr[num_sections].sh_name = insert_string (relname);
           shdr[num_sections].sh_link = i;
@@ -216,7 +217,7 @@ write_section_data (FILE* fp, const char *name, char *image,
           num_sections++;
         }
       else
-        shdr[idx].sh_name = insert_string (name);
+        shdr[idx].sh_name = insert_string (shname);
     }
 
   return section_map;
@@ -366,23 +367,23 @@ write_symbol_table (FILE* fp, const char *name, char *image,
       else
         {
 	  char short_name[9];
-          char *name;
+          char *symname;
 
 	  if (pe_symtab->long_name[0])
 	    {
 	      strncpy (short_name, pe_symtab->short_name, 8);
 	      short_name[8] = 0;
-	      name = short_name;
+	      symname = short_name;
 	    }
 	  else
-	    name = pe_strtab + pe_symtab->long_name[1];
+	    symname = pe_strtab + pe_symtab->long_name[1];
 
-          if ((strcmp (name, "_grub_mod_init")) &&
-              (strcmp (name, "_grub_mod_fini")) &&
+          if ((strcmp (symname, "_grub_mod_init")) &&
+              (strcmp (symname, "_grub_mod_fini")) &&
               (bind == STB_LOCAL))
               continue;
 
-          symtab[num_syms].st_name = insert_string (name);
+          symtab[num_syms].st_name = insert_string (symname);
         }
 
       symtab[num_syms].st_shndx = section_map[pe_symtab->section];
@@ -393,7 +394,8 @@ write_symbol_table (FILE* fp, const char *name, char *image,
       num_syms++;
     }
 
-  write_reloc_section (fp, image, pe_chdr, pe_shdr, symtab, symtab_map);
+  write_reloc_section (fp, name, image, pe_chdr, pe_shdr,
+		       symtab, symtab_map);
 
   shdr[SYMTAB_SECTION].sh_name = insert_string (".symtab");
   shdr[SYMTAB_SECTION].sh_type = SHT_SYMTAB;
