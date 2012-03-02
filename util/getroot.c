@@ -2646,7 +2646,11 @@ grub_make_system_path_relative_to_its_root (const char *path)
       if (p == NULL)
 	/* This should never happen.  */
 	grub_util_error ("%s",
-			 _("FIXME: no / in buf. (make_system_path_relative_to_its_root)"));
+			 /* TRANSLATORS: canonical pathname is the
+			    complete one e.g. /etc/fstab. It has
+			    to contain / normally, if it doesn't
+			    we're in trouble and throw this error.  */
+			 _("no / in canonical filename"));
       if (p != buf)
 	*p = 0;
       else

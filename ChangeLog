@@ -1,5 +1,10 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_make_system_path_relative_to_its_root): Fix
+	absolutely unclear error message.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkstandalone.in: Remove confusing leftover print.
 
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
