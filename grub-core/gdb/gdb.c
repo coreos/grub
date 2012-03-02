@@ -43,6 +43,8 @@ grub_cmd_gdbstub (struct grub_command *cmd __attribute__ ((unused)),
   if (!port)
     return grub_errno;
   grub_gdb_port = port;
+  /* TRANSLATORS: at this position GRUB waits for the user to do an action
+     in remote debugger, namely to tell it to establish connection.  */
   grub_puts_ (N_("Now connect the remote debugger, please."));
   grub_gdb_breakpoint ();
   return 0;
@@ -76,6 +78,9 @@ GRUB_MOD_INIT (gdb)
   cmd = grub_register_command ("gdbstub", grub_cmd_gdbstub,
 			       N_("PORT"), N_("Start GDB stub on given port"));
   cmd_break = grub_register_command ("gdbstub_break", grub_cmd_gdb_break,
+				     /* TRANSLATORS: this refers to triggering
+					a breakpoint so that the user will land
+					into GDB.  */
 				     0, N_("Break into GDB"));
   cmd_stop = grub_register_command ("gdbstub_stop", grub_cmd_gdbstop,
 				    0, N_("Stop GDB stub"));

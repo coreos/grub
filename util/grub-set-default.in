@@ -111,7 +111,7 @@ do
 done
 
 if test "x$entry" = x; then
-    gettext "menu entry not specified." 1>&2
+    gettext "Menu entry not specified." 1>&2
     echo >&2
     usage
     exit 1

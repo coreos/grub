@@ -153,10 +153,17 @@ print_vdev_info (char *nvlist, int tab)
 	  print_tabs (tab);
 	  if (!child)
 	    {
+	      /* TRANSLATORS: it's the element carying the number %d, not
+		 total element number. And the number itself is fine,
+		 only the element isn't.
+	      */
 	      grub_printf_ (N_("Mirror element number %d isn't correct\n"), i);
 	      continue;
 	    }
 
+	  /* TRANSLATORS: it's the element carying the number %d, not
+	     total element number. This is used in enumeration
+	     "Element number 1", "Element number 2", ... */
 	  grub_printf_ (N_("Mirror element number %d:\n"), i);
 	  print_vdev_info (child, tab + 1);
 

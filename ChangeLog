@@ -1,5 +1,22 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfsinfo.c (print_vdev_info): Add TRANSLATORS
+	comments.
+	* grub-core/gdb/gdb.c (grub_cmd_gdbstub): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* grub-core/loader/i386/linux.c (grub_cmd_linux): Clarify that it's
+	VGA mode.
+	* grub-core/net/net.c (grub_net_route_address): Add TRANSLATORS
+	comments.
+	* util/grub-install.in (usage): Likewise.
+	Spell ID in whole letters.
+	Add missing ending dot.
+	Quote variables.
+	* util/grub-reboot.in: Fix capitalisation.
+	* util/grub-set-default.in: Likewise.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (strip_extra_slashes) [CYGWIN]: #ifdef-out.
 	(exec_pipe) [CYGWIN || MINGW32]: Likewise.
 	(find_root_devices_from_poolname) [CYGWIN || MINGW32]: Likewise.

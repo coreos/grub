@@ -645,6 +645,9 @@ grub_net_route_address (grub_net_network_level_address_t addr,
     }
 
   return grub_error (GRUB_ERR_NET_ROUTE_LOOP,
+		     /* TRANSLATORS: route loop is a condition when e.g.
+			to contact server A you need to go through B
+			and to contact B you need to go through A.  */
 		     N_("route loop detected"));
 }
 

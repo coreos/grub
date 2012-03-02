@@ -90,7 +90,10 @@ usage () {
     printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
     dirmsg="$(gettext_printf "install GRUB images under the directory DIR/%s instead of the %s directory" "@grubdirname@" "$grubdir")"
     printf "  --boot-directory=%-7s%s\n" "$(gettext "DIR")" "$dirmsg"
-    printf "  --target=%-15s%s\n" "$(gettext "TARGET")" "$(gettext "install GRUB for TARGET platform [default=current]")"
+    # TRANSLATORS: "TARGET" as in "target platform
+    target_trans="$(gettext "TARGET")"
+    # TRANSLATORS: "current" refers to the platform user's currently running on
+    printf "  --target=%-15s%s\n" "$target_trans" "$(gettext "install GRUB for TARGET platform [default=current]")"
     printf "  --directory=%-12s%s\n" "$(gettext "DIR")" "$(gettext "use GRUB images from DIR. Takes precedence over target")"
     printf "  --grub-setup=%-11s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-setup")"
     printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
@@ -99,7 +102,7 @@ usage () {
     printf "  --allow-floppy          %s\n" "$(gettext "make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes.")"
     printf "  --recheck               %s\n" "$(gettext "delete device map if it already exists")"
     printf "  --force                 %s\n" "$(gettext "install even if problems are detected")"
-    printf "  --force-file-id         %s\n" "$(gettext "use ID file even if UUID is available")"
+    printf "  --force-file-id         %s\n" "$(gettext "use identifier file even if UUID is available")"
     printf "  --disk-module=%-10s%s\n" "$(gettext "MODULE")" "$(gettext "disk module to use (biosdisk or native). This option is only available on BIOS target")"
     printf "  --no-nvram              %s\n" "$(gettext "don't update the \`boot-device' NVRAM variable. This option is only available on IEEE1275 targets.")"
     printf "  --removable             %s\n" "$(gettext "the installation device is removable. This option is only available on EFI.")"
@@ -613,7 +616,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	elif [ x"$grub_modinfo_platform" = xloongson ] || [ x"$grub_modinfo_platform" = xqemu ] || [ x"$grub_modinfo_platform" = xcoreboot ] || [ x"$grub_modinfo_platform" = xmultiboot ] || [ x"$grub_modinfo_platform" = xqemu-mips ]; then
             hints="`echo "${grub_device}" | xargs "$grub_probe" --device-map="${device_map}" --target=baremetal_hints --device`"
 	else
-            gettext "No hints available for your platform. Expect reduced performance" 1>&2
+            gettext "No hints available for your platform. Expect reduced performance." 1>&2
 	    echo 1>&2
 	    hints=
         fi
@@ -746,7 +749,7 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
     fi
 elif [ x"${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = xmips-arc ]; then
     dvhtool -d "${install_device}" --unix-to-vh "{grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" grub
-    gettext "You will have to set SystemPartition and OSLoader manually." 1>&2
+    gettext "You will have to set \`SystemPartition' and \`OSLoader' manually." 1>&2
     echo 1>&2
 elif [ x"$grub_modinfo_platform" = xefi ]; then
     cp "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" "${efidir}/${efi_file}"

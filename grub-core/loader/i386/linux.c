@@ -834,7 +834,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		vid_mode > GRUB_VESA_MODE_TABLE_END)
 	      {
 		grub_env_set ("gfxpayload", "text");
-		grub_printf_ (N_("%s is deprecated. Mode %d isn't recognized. "
+		grub_printf_ (N_("%s is deprecated. VGA mode %d isn't recognized. "
 				 "Use set gfxpayload=WIDTHxHEIGHT[xDEPTH] "
 				 "before linux command instead.\n"),
 			     argv[i], vid_mode);
