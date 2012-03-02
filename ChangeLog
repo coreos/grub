@@ -1,5 +1,24 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (strip_extra_slashes) [CYGWIN]: #ifdef-out.
+	(exec_pipe) [CYGWIN || MINGW32]: Likewise.
+	(find_root_devices_from_poolname) [CYGWIN || MINGW32]: Likewise.
+	(find_root_devices_from_libzfs) [CYGWIN || MINGW32]: Likewise.
+	Disable -Werror for -Wdeprecated-declarations.
+	(grub_guess_root_devices) [CYGWIN || MINGW32]: #ifdef-out.
+	(get_dm_uuid) [!HAVE_DEVICE_MAPPER]: Likewise.
+	(grub_util_get_dm_abstraction) [! __linux__]: #ifdef-out.
+	(grub_util_get_grub_dev): Make luks handling dependent on
+	HAVE_DEVICE_MAPPER and not __linux__.
+	(get_win32_path): Fix format security.
+	(grub_find_zpool_from_dir) [CYGWIN || MINGW32]: #ifdef-out.
+	(grub_make_system_path_relative_to_its_root) [CYGWIN || MINGW32]:
+	Don't try grub_find_zpool_from_dir.
+	(grub_make_system_path_relative_to_its_root) [!__linux__]:
+	#ifdef-out paresdir.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-pe2elf.c (usage): Add missing noreturn.
 	(write_section_data): Rename name to shname to avoid shadowing.
 	(write_symbol_table): Rename name to symname to avoid shadowing.

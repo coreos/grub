@@ -172,6 +172,8 @@ struct btrfs_ioctl_fs_info_args
                                struct btrfs_ioctl_fs_info_args)
 #endif
 
+#if ! defined(__CYGWIN__)
+
 static void
 strip_extra_slashes (char *dir)
 {
@@ -210,6 +212,10 @@ xgetcwd (void)
 
   return path;
 }
+
+#endif
+
+#if !defined (__MINGW32__) && !defined (__CYGWIN__)
 
 static pid_t
 exec_pipe (char **argv, int *fd)
@@ -413,6 +419,8 @@ find_root_devices_from_poolname (char *poolname)
     }
   return devices;
 }
+
+#endif
 
 #ifdef __linux__
 
@@ -652,6 +660,8 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
 
 #endif /* __linux__ */
 
+#if !defined (__MINGW32__) && !defined (__CYGWIN__)
+
 static char **
 find_root_devices_from_libzfs (const char *dir)
 {
@@ -671,6 +681,8 @@ find_root_devices_from_libzfs (const char *dir)
 
   return devices;
 }
+
+#endif
 
 #ifdef __MINGW32__
 
@@ -858,6 +870,8 @@ get_bootsec_serial (const char *os_dev, int mbr)
   return serial;
 }
 
+#pragma GCC diagnostic warning "-Wdeprecated-declarations"
+
 char *
 grub_find_device (const char *path, dev_t dev)
 {
@@ -976,8 +990,10 @@ grub_guess_root_devices (const char *dir)
     os_dev = grub_find_root_devices_from_mountinfo (dir, NULL);
 #endif /* __linux__ */
 
+#if !defined (__MINGW32__) && !defined (__CYGWIN__)
   if (!os_dev)
     os_dev = find_root_devices_from_libzfs (dir);
+#endif
 
   if (os_dev)
     {
@@ -1080,40 +1096,38 @@ grub_util_open_dm (const char *os_dev, struct dm_tree **tree,
 
 #endif
 
+#ifdef HAVE_DEVICE_MAPPER
 static char *
 get_dm_uuid (const char *os_dev)
 {
+  struct dm_tree *tree;
+  struct dm_tree_node *node;
+  const char *node_uuid;
+  char *ret;
+
   if ((strncmp ("/dev/mapper/", os_dev, 12) != 0))
     return NULL;
   
-#ifdef HAVE_DEVICE_MAPPER
-  {
-    struct dm_tree *tree;
-    struct dm_tree_node *node;
-    const char *node_uuid;
-    char *ret;
+  if (!grub_util_open_dm (os_dev, &tree, &node))
+    return NULL;
 
-    if (!grub_util_open_dm (os_dev, &tree, &node))
+  node_uuid = dm_tree_node_get_uuid (node);
+  if (! node_uuid)
+    {
+      grub_dprintf ("hostdisk", "%s has no DM uuid\n", os_dev);
+      dm_tree_free (tree);
       return NULL;
+    }
 
-    node_uuid = dm_tree_node_get_uuid (node);
-    if (! node_uuid)
-      {
-	grub_dprintf ("hostdisk", "%s has no DM uuid\n", os_dev);
-	dm_tree_free (tree);
-	return NULL;
-      }
+  ret = grub_strdup (node_uuid);
 
-    ret = grub_strdup (node_uuid);
+  dm_tree_free (tree);
 
-    dm_tree_free (tree);
-
-    return ret;
-  }
+  return ret;
+}
 #endif
 
-  return NULL;
-}
+#ifdef __linux__
 
 static enum grub_dev_abstraction_types
 grub_util_get_dm_abstraction (const char *os_dev)
@@ -1145,6 +1159,8 @@ grub_util_get_dm_abstraction (const char *os_dev)
   return GRUB_DEV_ABSTRACTION_LVM;  
 #endif
 }
+
+#endif
 
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include <libgeom.h>
@@ -2270,8 +2286,8 @@ grub_util_get_grub_dev (const char *os_dev)
       break;
 #endif
 
-#ifdef __linux__
     case GRUB_DEV_ABSTRACTION_LUKS:
+#ifdef HAVE_DEVICE_MAPPER
       {
 	char *uuid, *dash;
 	uuid = get_dm_uuid (os_dev);
@@ -2284,8 +2300,8 @@ grub_util_get_grub_dev (const char *os_dev)
 				   uuid + sizeof ("CRYPT-LUKS1-") - 1);
 	grub_free (uuid);
       }
-      break;
 #endif
+      break;
 
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
     case GRUB_DEV_ABSTRACTION_GELI:
@@ -2487,7 +2503,7 @@ get_win32_path (const char *path)
 {
   char winpath[PATH_MAX];
   if (cygwin_conv_path (CCP_POSIX_TO_WIN_A, path, winpath, sizeof(winpath)))
-    grub_util_error (_("cygwin_conv_path() failed"));
+    grub_util_error ("%s", _("cygwin_conv_path() failed"));
 
   int len = strlen (winpath);
   int offs = (len > 2 && winpath[1] == ':' ? 2 : 0);
@@ -2524,6 +2540,7 @@ grub_get_libzfs_handle (void)
 }
 #endif /* HAVE_LIBZFS */
 
+#if !defined (__MINGW32__) && !defined (__CYGWIN__)
 /* ZFS has similar problems to those of btrfs (see above).  */
 void
 grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
@@ -2584,6 +2601,7 @@ grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
   else
     *poolfs = xstrdup ("");
 }
+#endif
 
 /* This function never prints trailing slashes (so that its output
    can be appended a slash unconditionally).  */
@@ -2603,10 +2621,12 @@ grub_make_system_path_relative_to_its_root (const char *path)
     grub_util_error (_("failed to get canonical path of %s"), path);
 
   /* For ZFS sub-pool filesystems, could be extended to others (btrfs?).  */
+#if !defined (__MINGW32__) && !defined (__CYGWIN__)
   {
     char *dummy;
     grub_find_zpool_from_dir (p, &dummy, &poolfs);
   }
+#endif
 
   len = strlen (p) + 1;
   buf = xstrdup (p);
@@ -2708,7 +2728,9 @@ grub_make_system_path_relative_to_its_root (const char *path)
     }
 #endif
 
+#ifdef __linux__
  parsedir:
+#endif
   /* Remove trailing slashes, return empty string if root directory.  */
   len = strlen (buf3);
   while (len > 0 && buf3[len - 1] == '/')
