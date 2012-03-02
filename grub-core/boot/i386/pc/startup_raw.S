@@ -105,8 +105,7 @@ LOCAL (codestart):
 	call	grub_gate_a20
 
 	movl	LOCAL(compressed_size), %edx
-	LOCAL(reed_solomon_size) = LOCAL(decompressor_end) - LOCAL(reed_solomon_part)
-	addl    $LOCAL(reed_solomon_size), %edx
+	addl    $(LOCAL(decompressor_end) - LOCAL(reed_solomon_part)), %edx
 	movl    reed_solomon_redundancy, %ecx
 	leal    LOCAL(reed_solomon_part), %eax
 	cld
@@ -353,4 +352,5 @@ post_reed_solomon:
 
 	.p2align 4
 
+	.bss
 LOCAL(decompressor_end):

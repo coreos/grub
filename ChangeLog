@@ -1,5 +1,10 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/i386/pc/startup_raw.S: Move decompressor_end to .bss
+	to ensure that it's after the last byte of .text.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/ieee1275/ofpath.c (my_isdigit): New function.
 	(trailing_digits): Use my_isdigit.
 	(strip_trailing_digits): Likewise.
