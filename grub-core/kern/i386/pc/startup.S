@@ -49,9 +49,10 @@
 
 	.text
 
-	.globl	start, _start
+	.globl	start, _start, __start
 start:
 _start:
+__start:
 	.code32
 
 	movl	%ecx, (LOCAL(real_to_prot_addr) - _start) (%esi)

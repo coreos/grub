@@ -1,5 +1,9 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/pc/startup.S: Define __start.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gentpl.py (kernel): Remove the use of TARGET_OBJ2ELF after strip since
 	strip already transforms he format.
 
