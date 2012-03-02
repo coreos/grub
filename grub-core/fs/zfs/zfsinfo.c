@@ -97,6 +97,11 @@ print_vdev_info (char *nvlist, int tab)
       char *devid = 0;
 
       print_tabs (tab);
+      /* TRANSLATORS: The virtual devices form a tree (in graph-theoretical
+	 sense). The nodes like mirror or raidz have children: member devices.
+	 The "real" devices which actually store data are called "leafs"
+	 (again borrowed from graph theory) and can be either disks
+	 (or partitions) or files.  */
       grub_puts_ (N_("Leaf virtual device (file or disk)"));
 
       print_state (nvlist, tab);

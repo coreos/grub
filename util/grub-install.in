@@ -90,7 +90,7 @@ usage () {
     printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
     dirmsg="$(gettext_printf "install GRUB images under the directory DIR/%s instead of the %s directory" "@grubdirname@" "$grubdir")"
     printf "  --boot-directory=%-7s%s\n" "$(gettext "DIR")" "$dirmsg"
-    # TRANSLATORS: "TARGET" as in "target platform
+    # TRANSLATORS: "TARGET" as in "target platform".
     target_trans="$(gettext "TARGET")"
     # TRANSLATORS: "current" refers to the platform user's currently running on
     printf "  --target=%-15s%s\n" "$target_trans" "$(gettext "install GRUB for TARGET platform [default=current]")"

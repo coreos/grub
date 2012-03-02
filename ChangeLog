@@ -1,5 +1,10 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfsinfo.c (print_vdev_info): Add TRANSLATORS comment.
+	* util/grub-install.in: Add missing quote in the comment.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/i386/pc/drivemap.c: Add TRANSLATORS comments.
 	* grub-core/commands/lsmmap.c: Likewise.
 	* grub-core/commands/minicmd.c: Likewise.
