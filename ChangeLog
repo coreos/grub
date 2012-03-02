@@ -1,5 +1,11 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/ofpath.c (my_isdigit): New function.
+	(trailing_digits): Use my_isdigit.
+	(strip_trailing_digits): Likewise.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/resolve.c (read_dep_list): Use grub_isspace instead of isspace.
 	* grub-core/kern/emu/hostdisk.c (read_device_map): Likewise.
 

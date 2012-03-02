@@ -185,6 +185,12 @@ block_device_get_sysfs_path_and_link(const char *devicenode)
   return ret;
 }
 
+static inline int
+my_isdigit (int c)
+{
+  return (c >= '0' && c <= '9');
+}
+
 static const char *
 trailing_digits (const char *p)
 {
@@ -193,7 +199,7 @@ trailing_digits (const char *p)
   end = p + strlen(p) - 1;
   while (end >= p)
     {
-      if (! isdigit(*end))
+      if (! my_isdigit(*end))
 	break;
       end--;
     }
@@ -410,7 +416,7 @@ strip_trailing_digits (const char *p)
   end = new + strlen(new) - 1;
   while (end >= new)
     {
-      if (! isdigit(*end))
+      if (! my_isdigit(*end))
 	break;
       *end-- = '\0';
     }
