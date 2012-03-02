@@ -1179,7 +1179,7 @@ read_device_map (const char *dev_map)
       lineno++;
 
       /* Skip leading spaces.  */
-      while (*p && isspace (*p))
+      while (*p && grub_isspace (*p))
 	p++;
 
       /* If the first character is `#' or NUL, skip this line.  */
@@ -1215,7 +1215,7 @@ read_device_map (const char *dev_map)
 
       p++;
       /* Skip leading spaces.  */
-      while (*p && isspace (*p))
+      while (*p && grub_isspace (*p))
 	p++;
 
       if (*p == '\0')
@@ -1223,7 +1223,7 @@ read_device_map (const char *dev_map)
 
       /* NUL-terminate the filename.  */
       e = p;
-      while (*e && ! isspace (*e))
+      while (*e && ! grub_isspace (*e))
 	e++;
       *e = '\0';
 

@@ -1,5 +1,10 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/resolve.c (read_dep_list): Use grub_isspace instead of isspace.
+	* grub-core/kern/emu/hostdisk.c (read_device_map): Likewise.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/pc/startup.S: Define __start.
 
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>

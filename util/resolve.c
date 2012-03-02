@@ -25,6 +25,7 @@
 #include <errno.h>
 
 #include <grub/emu/misc.h>
+#include <grub/misc.h>
 #include <grub/util/misc.h>
 #include <grub/util/resolve.h>
 #include <grub/i18n.h>
@@ -107,7 +108,7 @@ read_dep_list (FILE *fp)
 	  char *name;
 
 	  /* Skip whitespace.  */
-	  while (*p && isspace (*p))
+	  while (*p && grub_isspace (*p))
 	    p++;
 
 	  if (! *p)
@@ -116,7 +117,7 @@ read_dep_list (FILE *fp)
 	  name = p;
 
 	  /* Skip non-whitespace.  */
-	  while (*p && ! isspace (*p))
+	  while (*p && ! grub_isspace (*p))
 	    p++;
 
 	  *p++ = '\0';
