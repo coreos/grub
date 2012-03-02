@@ -426,9 +426,6 @@ def kernel(platform):
 """if test x$(USE_APPLE_CC_FIXES) = xyes; then \
   $(STRIP) $(""" + cname() + """) -o $@.bin $<; \
   $(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -ed2031 -ed2022 -wd1106 -nu -nd $@.bin $@; \
-elif test ! -z '$(TARGET_OBJ2ELF)'; then \
-  $(STRIP) $(""" + cname() + """_STRIPFLAGS) -o $@ $<;\
-   $(TARGET_OBJ2ELF) $@.bin && cp $@.bin $@ || (rm -f $@.bin; exit 1); \
 else """  + "$(STRIP) $(" + cname() + "_STRIPFLAGS) -o $@ $<; \
 fi"""))
     return r

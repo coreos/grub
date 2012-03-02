@@ -1,5 +1,10 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* gentpl.py (kernel): Remove the use of TARGET_OBJ2ELF after strip since
+	strip already transforms he format.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/i386-pc-cygwin-img-ld.sc: Define also _edata and __edata.
 
 2012-02-29  Vladimir Serbinenko  <phcoder@gmail.com>
