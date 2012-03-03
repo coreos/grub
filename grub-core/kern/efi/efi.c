@@ -183,7 +183,8 @@ grub_efi_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
 }
 
 void *
-grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid)
+grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid,
+		       grub_size_t *datasize_out)
 {
   grub_efi_status_t status;
   grub_efi_uintn_t datasize = 0;
@@ -191,6 +192,8 @@ grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid)
   grub_efi_char16_t *var16;
   void *data;
   grub_size_t len, len16;
+
+  *datasize_out = 0;
 
   len = grub_strlen (var);
   len16 = len * GRUB_MAX_UTF16_PER_UTF8;
@@ -204,6 +207,9 @@ grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid)
 
   status = efi_call_5 (r->get_variable, var16, guid, NULL, &datasize, NULL);
 
+  if (!datasize)
+    return NULL;
+
   data = grub_malloc (datasize);
   if (!data)
     {
@@ -215,7 +221,10 @@ grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid)
   grub_free (var16);
 
   if (status == GRUB_EFI_SUCCESS)
-    return data;
+    {
+      *datasize_out = datasize;
+      return data;
+    }
 
   grub_free (data);
   return NULL;

@@ -27,14 +27,22 @@
 #include <grub/video_fb.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
+#include <grub/efi/edid.h>
 #include <grub/efi/graphics_output.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_efi_guid_t graphics_output_guid = GRUB_EFI_GOP_GUID;
+static grub_efi_guid_t active_edid_guid = GRUB_EFI_EDID_ACTIVE_GUID;
+static grub_efi_guid_t discovered_edid_guid = GRUB_EFI_EDID_DISCOVERED_GUID;
+static grub_efi_guid_t efi_var_guid = GRUB_EFI_GLOBAL_VARIABLE_GUID;
 static struct grub_efi_gop *gop;
 static unsigned old_mode;
 static int restore_needed;
+static grub_efi_handle_t gop_handle;
+
+static int
+grub_video_gop_iterate (int (*hook) (const struct grub_video_mode_info *info));
 
 static struct
 {
@@ -47,9 +55,37 @@ static struct
 static int
 check_protocol (void)
 {
-  gop = grub_efi_locate_protocol (&graphics_output_guid, 0);
-  if (gop)
+  grub_efi_handle_t *handles;
+  grub_efi_uintn_t num_handles, i;
+  int have_usable_mode = 0;
+
+  auto int hook (const struct grub_video_mode_info *info);
+  int hook (const struct grub_video_mode_info *info __attribute__ ((unused)))
+  {
+    have_usable_mode = 1;
     return 1;
+  }
+
+  handles = grub_efi_locate_handle (GRUB_EFI_BY_PROTOCOL,
+				    &graphics_output_guid, NULL, &num_handles);
+  if (!handles || num_handles == 0)
+    return 0;
+
+  for (i = 0; i < num_handles; i++)
+    {
+      gop_handle = handles[i];
+      gop = grub_efi_open_protocol (gop_handle, &graphics_output_guid,
+				    GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+      grub_video_gop_iterate (hook);
+      if (have_usable_mode)
+	{
+	  grub_free (handles);
+	  return 1;
+	}
+    }
+
+  gop = 0;
+  gop_handle = 0;
 
   return 0;
 }
@@ -221,6 +257,64 @@ grub_video_gop_iterate (int (*hook) (const struct grub_video_mode_info *info))
 }
 
 static grub_err_t
+grub_video_gop_get_edid (struct grub_video_edid_info *edid_info)
+{
+  struct grub_efi_active_edid *edid;
+  grub_size_t copy_size;
+
+  grub_memset (edid_info, 0, sizeof (*edid_info));
+
+  edid = grub_efi_open_protocol (gop_handle, &active_edid_guid,
+				 GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+  if (!edid || edid->size_of_edid == 0)
+    edid = grub_efi_open_protocol (gop_handle, &discovered_edid_guid,
+				   GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+
+  if (!edid || edid->size_of_edid == 0)
+    {
+      char edidname[] = "agp-internal-edid";
+      grub_size_t datasize;
+      grub_uint8_t *data;
+      data = grub_efi_get_variable (edidname, &efi_var_guid, &datasize);
+      if (data && datasize > 16)
+	{
+	  copy_size = datasize - 16;
+	  if (copy_size > sizeof (*edid_info))
+	    copy_size = sizeof (*edid_info);
+	  grub_memcpy (edid_info, data + 16, copy_size);
+	  grub_free (data);
+	  return GRUB_ERR_NONE;
+	}
+      return grub_error (GRUB_ERR_BAD_DEVICE, "EDID information not available");
+    }
+
+  copy_size = edid->size_of_edid;
+  if (copy_size > sizeof (*edid_info))
+    copy_size = sizeof (*edid_info);
+  grub_memcpy (edid_info, edid->edid, copy_size);
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_gop_get_preferred_mode (unsigned int *width, unsigned int *height)
+{
+  struct grub_video_edid_info edid_info;
+  grub_err_t err;
+
+  err = grub_video_gop_get_edid (&edid_info);
+  if (err)
+    return err;
+  err = grub_video_edid_checksum (&edid_info);
+  if (err)
+    return err;
+  err = grub_video_edid_preferred_mode (&edid_info, width, height);
+  if (err)
+    return err;
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 grub_video_gop_setup (unsigned int width, unsigned int height,
 		      unsigned int mode_type,
 		      unsigned int mode_mask __attribute__ ((unused)))
@@ -232,9 +326,22 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
   unsigned bpp;
   int found = 0;
   unsigned long long best_volume = 0;
+  unsigned int preferred_width = 0, preferred_height = 0;
 
   depth = (mode_type & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK)
     >> GRUB_VIDEO_MODE_TYPE_DEPTH_POS;
+
+  if (width == 0 && height == 0)
+    {
+      err = 1;
+      grub_gop_get_preferred_mode (&preferred_width, &preferred_height);
+      if (err)
+	{
+	  preferred_width = 800;
+	  preferred_height = 600;
+	  grub_errno = GRUB_ERR_NONE;
+	}
+    }
 
   /* Keep current mode if possible.  */
   if (gop->mode->info)
@@ -269,6 +376,13 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
 
 	  grub_dprintf ("video", "GOP: mode %d: %dx%d\n", mode, info->width,
 			info->height);
+
+	  if (preferred_width && (info->width > preferred_width
+				  || info->height > preferred_height))
+	    {
+	      grub_dprintf ("video", "GOP: mode %d: too large\n", mode);
+	      continue;
+	    }
 
 	  bpp = grub_video_gop_get_bpp (info);
 	  if (!bpp)
@@ -401,6 +515,7 @@ static struct grub_video_adapter grub_video_gop_adapter =
     .setup = grub_video_gop_setup,
     .get_info = grub_video_fb_get_info,
     .get_info_and_fini = grub_video_gop_get_info_and_fini,
+    .get_edid = grub_video_gop_get_edid,
     .set_palette = grub_video_fb_set_palette,
     .get_palette = grub_video_fb_get_palette,
     .set_viewport = grub_video_fb_set_viewport,

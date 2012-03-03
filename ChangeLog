@@ -1,3 +1,19 @@
+2012-03-03  Matthew Garrett  <mjg@redhat.com>
+2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use EDID on EFI.
+
+	* grub-core/kern/efi/efi.c (grub_efi_get_variable): New argument
+	datasize_out.
+	* grub-core/video/efi_gop.c (check_protocol): Check that GOP has usable
+	modes. Set gop_handle.
+	(grub_video_gop_get_edid): New function.
+	(grub_gop_get_preferred_mode): Likewise.
+	(grub_video_gop_setup): Use grub_gop_get_preferred_mode.
+	(grub_video_efi_gop_adapter): Set .get_edid.
+	* include/grub/efi/edid.h: New file.
+	* include/grub/efi/efi.h (grub_efi_get_variable): Update proto.
+
 2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.in: Load efivars unconditionally.
