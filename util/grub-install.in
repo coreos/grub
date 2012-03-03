@@ -272,11 +272,29 @@ if [ x$source_dir = x ]; then
 	    x"ia64"*)
 		target="ia64-efi";;
 	    x"x86_64"* | x"amd64"*)
+                # On Linux, we need the efivars kernel modules.
+		# If no EFI is available this module just does nothing
+		# besides a small hello and if we detect efi we'll load it
+		# anyway later. So it should be safe to
+		# try to load it here.
+		case "$host_os" in
+		    linux*)
+			modprobe -q efivars 2>/dev/null || true ;;
+		esac
 		if [ -d /sys/firmware/efi ]; then
 		    target="x86_64-efi"
 		fi
 		target=i386-pc;;
 	    x"i"?"86"*)
+                # On Linux, we need the efivars kernel modules.
+		# If no EFI is available this module just does nothing
+		# besides a small hello and if we detect efi we'll load it
+		# anyway later. So it should be safe to
+		# try to load it here.
+		case "$host_os" in
+		    linux*)
+			modprobe -q efivars 2>/dev/null || true ;;
+		esac
 		if [ -d /sys/firmware/efi ]; then
 		    target="i386-efi"
 		fi

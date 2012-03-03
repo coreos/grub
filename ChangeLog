@@ -1,5 +1,9 @@
 2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Load efivars unconditionally.
+
+2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/Rules-piglatin: Change suffix from .po-update-en to
 	.po-update-en-piglatin.
 
