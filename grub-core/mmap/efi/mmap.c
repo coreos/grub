@@ -125,7 +125,7 @@ grub_efi_mmap_iterate (grub_memory_hook_t hook, int avoid_efi_boot_services)
 }
 
 grub_err_t
-grub_machine_mmap_iterate (grub_memory_hook_t hook, int avoid_efi_boot_services)
+grub_machine_mmap_iterate (grub_memory_hook_t hook)
 {
   return grub_efi_mmap_iterate (hook, 0);
 }
