@@ -1319,7 +1319,8 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 				  grub_phys_addr_t min_addr,
 				  grub_phys_addr_t max_addr,
 				  grub_size_t size, grub_size_t align,
-				  int preference)
+				  int preference,
+				  int avoid_efi_boot_services)
 {
   grub_addr_t min_addr2 = 0, max_addr2;
   struct grub_relocator_chunk *chunk;
@@ -1406,7 +1407,12 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
       return 0;
     }
 
-    grub_machine_mmap_iterate (hook);
+#ifdef GRUB_MACHINE_EFI
+    grub_efi_mmap_iterate (hook, avoid_efi_boot_services);
+#else
+    (void) avoid_efi_boot_services;
+    grub_mmap_iterate (hook);
+#endif
     if (!found)
       return grub_error (GRUB_ERR_BAD_OS, "couldn't find suitable memory target");
   }

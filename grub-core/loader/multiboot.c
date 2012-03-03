@@ -134,7 +134,7 @@ grub_multiboot_boot (void)
     return err;
 #endif
 
-  grub_relocator32_boot (grub_multiboot_relocator, state);
+  grub_relocator32_boot (grub_multiboot_relocator, state, 0);
 
   /* Not reached.  */
   return GRUB_ERR_NONE;
@@ -307,7 +307,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
     err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
 					    0, (0xffffffff - size) + 1,
 					    size, MULTIBOOT_MOD_ALIGN,
-					    GRUB_RELOCATOR_PREFERENCE_NONE);
+					    GRUB_RELOCATOR_PREFERENCE_NONE, 0);
     if (err)
       {
 	grub_file_close (file);

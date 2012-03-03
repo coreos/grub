@@ -85,4 +85,7 @@ extern grub_efi_handle_t EXPORT_VAR(grub_efi_image_handle);
 
 extern int EXPORT_VAR(grub_efi_is_finished);
 
+grub_err_t
+grub_efi_mmap_iterate (grub_memory_hook_t hook, int avoid_efi_boot_services);
+
 #endif /* ! GRUB_EFI_EFI_HEADER */

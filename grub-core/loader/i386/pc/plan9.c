@@ -90,7 +90,7 @@ grub_plan9_boot (void)
   };
   grub_video_set_mode ("text", 0, 0);
 
-  return grub_relocator32_boot (rel, state);
+  return grub_relocator32_boot (rel, state, 0);
 }
 
 static grub_err_t

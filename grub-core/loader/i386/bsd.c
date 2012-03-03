@@ -723,7 +723,8 @@ grub_freebsd_boot (void)
 						0x10000, 0x90000,
 						3 * sizeof (grub_uint32_t)
 						+ sizeof (bi), 4,
-						GRUB_RELOCATOR_PREFERENCE_NONE);
+						GRUB_RELOCATOR_PREFERENCE_NONE,
+						0);
 	if (err)
 	  return err;
 	stack = get_virtual_current_address (ch);
@@ -760,7 +761,8 @@ grub_freebsd_boot (void)
 						0x10000, 0x90000,
 						9 * sizeof (grub_uint32_t)
 						+ sizeof (bi), 4,
-						GRUB_RELOCATOR_PREFERENCE_NONE);
+						GRUB_RELOCATOR_PREFERENCE_NONE,
+						0);
 	if (err)
 	  return err;
 	stack = get_virtual_current_address (ch);
@@ -786,7 +788,7 @@ grub_freebsd_boot (void)
       stack[6] = stack_target + 9 * sizeof (grub_uint32_t);
       stack[7] = bi.tags;
       stack[8] = kern_end;
-      return grub_relocator32_boot (relocator, state);
+      return grub_relocator32_boot (relocator, state, 0);
     }
 
   /* Not reached.  */
@@ -873,7 +875,7 @@ grub_openbsd_boot (void)
   stack[7] = (grub_uint8_t *) curarg - (grub_uint8_t *) arg0;
   stack[8] = ((grub_uint8_t *) arg0 - (grub_uint8_t *) buf0) + buf_target;
 
-  return grub_relocator32_boot (relocator, state);
+  return grub_relocator32_boot (relocator, state, 0);
 }
 
 static grub_err_t
@@ -1144,7 +1146,8 @@ grub_netbsd_boot (void)
     grub_relocator_chunk_t ch;
     err = grub_relocator_alloc_chunk_align (relocator, &ch, 0x10000, 0x90000,
 					    7 * sizeof (grub_uint32_t), 4,
-					    GRUB_RELOCATOR_PREFERENCE_NONE);
+					    GRUB_RELOCATOR_PREFERENCE_NONE,
+					    0);
     if (err)
       return err;
     stack = get_virtual_current_address (ch);
@@ -1168,7 +1171,7 @@ grub_netbsd_boot (void)
   stack[5] = grub_mmap_get_upper () >> 10;
   stack[6] = grub_mmap_get_lower () >> 10;
 
-  return grub_relocator32_boot (relocator, state);
+  return grub_relocator32_boot (relocator, state, 0);
 }
 
 static grub_err_t
