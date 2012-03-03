@@ -1,5 +1,17 @@
 2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/date.c (GRUB_MOD_INIT): Remove non-uniform
+	"Command for ...".
+	* grub-core/commands/hdparm.c (options): Use "Display" rather than
+	"Check" since we don't check anything.
+	* grub-core/commands/i386/cpuid.c (options): Clarify that long mode
+	is 64-bit one.
+	* grub-core/commands/search_wrap.c (options): Clarify the conditions.
+	* grub-core/disk/geli.c (grub_md_sha256_real): Fix typo.
+	(grub_md_sha512_real): Likewise.
+
+2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/gptsync.c: Fix typographic quoting.
 	* grub-core/commands/ieee1275/suspend.c: Likewise.
 	* grub-core/commands/parttool.c: Likewise.

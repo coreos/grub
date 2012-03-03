@@ -43,20 +43,25 @@ static const struct grub_arg_option options[] =
      N_("First try the device HINT. If HINT ends in comma, "
 	"also try subpartitions"), N_("HINT"), ARG_TYPE_STRING},
     {"hint-ieee1275",   0, GRUB_ARG_OPTION_REPEATABLE,
-     N_("First try the device HINT if on IEEE1275. If HINT ends in comma, "
-	"also try subpartitions"), N_("HINT"), ARG_TYPE_STRING},
+     N_("First try the device HINT if currently running on IEEE1275. "
+	"If HINT ends in comma, also try subpartitions"),
+     N_("HINT"), ARG_TYPE_STRING},
     {"hint-bios",   0, GRUB_ARG_OPTION_REPEATABLE,
-     N_("First try the device HINT if on BIOS. If HINT ends in comma, "
-	"also try subpartitions"), N_("HINT"), ARG_TYPE_STRING},
+     N_("First try the device HINT if on currently running BIOS. "
+	"If HINT ends in comma, also try subpartitions"),
+     N_("HINT"), ARG_TYPE_STRING},
     {"hint-baremetal",   0, GRUB_ARG_OPTION_REPEATABLE,
-     N_("First try the device HINT. If HINT ends in comma, "
-	"also try subpartitions"), N_("HINT"), ARG_TYPE_STRING},
+     N_("First try the device HINT if direct hardware access is suported. "
+	"If HINT ends in comma, also try subpartitions"),
+     N_("HINT"), ARG_TYPE_STRING},
     {"hint-efi",   0, GRUB_ARG_OPTION_REPEATABLE,
-     N_("First try the device HINT if on EFI. If HINT ends in comma, "
-	"also try subpartitions"), N_("HINT"), ARG_TYPE_STRING},
+     N_("First try the device HINT if on currently running EFI. "
+	"If HINT ends in comma, also try subpartitions"),
+     N_("HINT"), ARG_TYPE_STRING},
     {"hint-arc",   0, GRUB_ARG_OPTION_REPEATABLE,
-     N_("First try the device HINT if on ARC. If HINT ends in comma, "
-	"also try subpartitions"), N_("HINT"), ARG_TYPE_STRING},
+     N_("First try the device HINT if on currently running ARC."
+	" If HINT ends in comma, also try subpartitions"),
+     N_("HINT"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 

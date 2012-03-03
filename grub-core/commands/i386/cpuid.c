@@ -36,7 +36,9 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static const struct grub_arg_option options[] =
   {
-    {"long-mode", 'l', 0, N_("Check for long mode flag (default)."), 0, 0},
+    /* TRANSLATORS: "(default)" at the end means that this option is used if
+       no argument is specified.  */
+    {"long-mode", 'l', 0, N_("Check if CPU supports 64-bit (long) mode (default)."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 

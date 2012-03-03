@@ -33,10 +33,10 @@ static const struct grub_arg_option options[] = {
   {"apm",             'B', 0, N_("Set Advanced Power Management\n"
 			      "(1=low, ..., 254=high, 255=off)."),
 			      0, ARG_TYPE_INT},
-  {"power",           'C', 0, N_("Check power mode."), 0, ARG_TYPE_NONE},
+  {"power",           'C', 0, N_("Display power mode."), 0, ARG_TYPE_NONE},
   {"security-freeze", 'F', 0, N_("Freeze ATA security settings until reset."),
 			      0, ARG_TYPE_NONE},
-  {"health",          'H', 0, N_("Check SMART health status."), 0, ARG_TYPE_NONE},
+  {"health",          'H', 0, N_("Display SMART health status."), 0, ARG_TYPE_NONE},
   {"aam",             'M', 0, N_("Set Automatic Acoustic Management\n"
 			      "(0=off, 128=quiet, ..., 254=fast)."),
 			      0, ARG_TYPE_INT},
