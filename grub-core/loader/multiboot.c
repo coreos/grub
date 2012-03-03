@@ -134,7 +134,11 @@ grub_multiboot_boot (void)
     return err;
 #endif
 
+#if defined (__i386__) || defined (__x86_64__)
   grub_relocator32_boot (grub_multiboot_relocator, state, 0);
+#else
+  grub_relocator32_boot (grub_multiboot_relocator, state);
+#endif
 
   /* Not reached.  */
   return GRUB_ERR_NONE;
