@@ -162,7 +162,7 @@ grub_cmd_videoinfo (grub_command_t cmd __attribute__ ((unused)),
     struct grub_video_mode_info info;
     struct grub_video_edid_info edid_info;
 
-    grub_printf_ (N_("Adapter '%s':\n"), adapter->name);
+    grub_printf_ (N_("Adapter `%s':\n"), adapter->name);
 
     if (!adapter->iterate)
       {

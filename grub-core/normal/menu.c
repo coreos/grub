@@ -672,7 +672,7 @@ notify_booting (grub_menu_entry_t entry,
 		void *userdata __attribute__((unused)))
 {
   grub_printf ("  ");
-  grub_printf_ (N_("Booting \'%s\'"), entry->title);
+  grub_printf_ (N_("Booting `%s'"), entry->title);
   grub_printf ("\n\n");
 }
 
@@ -684,7 +684,7 @@ notify_fallback (grub_menu_entry_t entry,
 		 void *userdata __attribute__((unused)))
 {
   grub_printf ("\n   ");
-  grub_printf_ (N_("Falling back to \'%s\'"), entry->title);
+  grub_printf_ (N_("Falling back to `%s'"), entry->title);
   grub_printf ("\n\n");
   grub_millisleep (DEFAULT_ENTRY_ERROR_DELAY_MS);
 }

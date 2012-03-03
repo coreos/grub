@@ -193,7 +193,8 @@ main (int argc, char *argv[])
   hold = arguments.hold;
   /* Wait until the ARGS.HOLD variable is cleared by an attached debugger. */
   if (hold && verbosity > 0)
-    printf (_("Run \"gdb %s %d\", and set ARGS.HOLD to zero.\n"),
+    /* TRANSLATORS: In this case GRUB tells user what he has to do.  */
+    printf (_("Run `gdb %s %d', and set ARGS.HOLD to zero.\n"),
             program_name, (int) getpid ());
   while (hold)
     {

@@ -38,7 +38,7 @@ static int curhandle = 0;
 static grub_dl_t mymod;
 static char helpmsg[] =
   N_("Perform COMMANDS on partition.\n"
-     "Use \"parttool PARTITION help\" for the list "
+     "Use `parttool PARTITION help' for the list "
      "of available commands.");
 
 int

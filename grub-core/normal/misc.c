@@ -71,7 +71,7 @@ grub_normal_print_device_info (const char *name)
 		  if (label && grub_strlen (label))
 		    {
 		      grub_xputs (" ");
-		      grub_printf_ (N_("- Label \"%s\""), label);
+		      grub_printf_ (N_("- Label `%s'"), label);
 		    }
 		  grub_free (label);
 		}

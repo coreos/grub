@@ -444,14 +444,14 @@ setup (const char *dir,
 
     if (dest_partmap && !dest_partmap->embed)
       {
-	grub_util_warn (_("Partition style '%s' doesn't support embedding"),
+	grub_util_warn (_("Partition style `%s' doesn't support embedding"),
 			dest_partmap->name);
 	goto unable_to_embed;
       }
 
     if (fs && !fs->embed)
       {
-	grub_util_warn (_("File system '%s' doesn't support embedding"),
+	grub_util_warn (_("File system `%s' doesn't support embedding"),
 			fs->name);
 	goto unable_to_embed;
       }

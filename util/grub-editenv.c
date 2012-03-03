@@ -102,7 +102,7 @@ struct argp argp = {
   "\n"N_("\
 Tool to edit environment block.")
 "\v"N_("\
-If FILENAME is '-', the default value %s is used."),
+If FILENAME is `-', the default value %s is used."),
   NULL, help_filter, NULL
 };
 

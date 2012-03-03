@@ -1385,7 +1385,7 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
       else
 	return total;
     }
-  grub_error (GRUB_ERR_TIMEOUT, N_("timeout reading '%s'"), net->name);
+  grub_error (GRUB_ERR_TIMEOUT, N_("timeout reading `%s'"), net->name);
   return -1;
 }
 

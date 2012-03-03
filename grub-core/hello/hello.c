@@ -42,7 +42,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(hello)
 {
   cmd = grub_register_extcmd ("hello", grub_cmd_hello, 0, 0,
-			      N_("Say \"Hello World\"."), 0);
+			      N_("Say `Hello World'."), 0);
 }
 
 GRUB_MOD_FINI(hello)

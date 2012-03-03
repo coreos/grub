@@ -31,7 +31,7 @@ grub_cmd_suspend (grub_command_t cmd __attribute__ ((unused)),
 		  int argc __attribute__ ((unused)),
 		  char **args __attribute__ ((unused)))
 {
-  grub_puts_ (N_("Run 'go' to resume GRUB."));
+  grub_puts_ (N_("Run `go' to resume GRUB."));
   grub_ieee1275_enter ();
   grub_cls ();
   return 0;

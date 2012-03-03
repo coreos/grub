@@ -191,7 +191,7 @@ GRUB_MOD_INIT(search)
 			     " or filesystem UUID."
 			     " If --set is specified, the first device found is"
 			     " set to a variable. If no variable name is"
-			     " specified, \"root\" is used."),
+			     " specified, `root' is used."),
 			  options);
 }
 
