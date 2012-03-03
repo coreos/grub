@@ -2,15 +2,15 @@
 
 DISTFILES.common.extra3 = piglatin.sed en@piglatin.header insert-header.sin Rules-piglatin
 
-.SUFFIXES: .insert-header .po-update-en
+.SUFFIXES: .insert-header .po-update-en-piglatin
 
 en@piglatin.po-create:
 	$(MAKE) en@piglatin.po-update
 
 en@piglatin.po-update: en@piglatin.po-update-en
 
-.insert-header.po-update-en:
-	@lang=`echo $@ | sed -e 's/\.po-update-en$$//'`; \
+.insert-header.po-update-en-piglatin:
+	@lang=`echo $@ | sed -e 's/\.po-update-en-piglatin$$//'`; \
 	if test "$(PACKAGE)" = "gettext"; then PATH=`pwd`/../src:$$PATH; GETTEXTLIBDIR=`cd $(top_srcdir)/src && pwd`; export GETTEXTLIBDIR; fi; \
 	tmpdir=`pwd`; \
 	echo "$$lang:"; \
