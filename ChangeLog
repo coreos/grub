@@ -1,5 +1,22 @@
 2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/acpihalt.c: Add TRANSLATORS comments.
+	* grub-core/commands/keystatus.c: Likewise.
+	* grub-core/commands/loadenv.c: Likewise.
+	* grub-core/commands/probe.c: Likewise.
+	* grub-core/commands/regexp.c: Likewise.
+	* grub-core/commands/true.c: Likewise.
+	* grub-core/commands/videoinfo.c: Likewise.
+	* grub-core/disk/cryptodisk.c: Likewise.
+	* grub-core/disk/ldm.c: Likewise.
+	* grub-core/disk/loopback.c: Likewise.
+	* grub-core/disk/luks.c: Likewise.
+	* grub-core/fs/zfs/zfsinfo.c: Likewise.
+	* grub-core/kern/disk.c: Likewise.
+	* grub-core/kern/emu/hostdisk.c: Likewise.
+
+2012-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfsinfo.c (print_vdev_info): Add TRANSLATORS comment.
 	* util/grub-install.in: Add missing quote in the comment.
 

@@ -965,7 +965,11 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
       if (lv->size < *nsectors)
 	return grub_error (GRUB_ERR_OUT_OF_RANGE,
 			   /* TRANSLATORS: it's a partition for embedding,
-			      not a partition embed into something.  */
+			      not a partition embed into something. GRUB
+			      install tools put core.img into a place
+			      usable for bootloaders (called generically
+			      "embedding zone") and this operation is
+			      called "embedding".  */
 			   N_("your LDM embedding Partition is too small;"
 			      " embedding won't be possible"));
       *nsectors = lv->size;

@@ -69,6 +69,9 @@ hook (const struct grub_video_mode_info *info)
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_YUV)
     grub_xputs (_("YUV "));
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_PLANAR)
+    /* TRANSLATORS: "Planar" is the video memory where you have to write
+       in several different banks "plans" to control the different color
+       components of the same pixel.  */
     grub_xputs (_("Planar "));
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_HERCULES)
     grub_xputs (_("Hercules "));

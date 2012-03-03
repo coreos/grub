@@ -27,6 +27,8 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static const struct grub_arg_option options[] =
   {
+    /* TRANSLATORS: "Check" in a sense that if this key is pressed then
+       "true" is returned, otherwise "false".  */
     {"shift", 's', 0, N_("Check Shift key."), 0, 0},
     {"ctrl", 'c', 0, N_("Check Control key."), 0, 0},
     {"alt", 'a', 0, N_("Check Alt key."), 0, 0},

@@ -284,6 +284,8 @@ grub_disk_open (const char *name)
       disk->partition = grub_partition_probe (disk, p + 1);
       if (! disk->partition)
 	{
+	  /* TRANSLATORS: It means that the specified partition e.g.
+	     hd0,msdos1=/dev/sda1 doesn't exist.  */
 	  grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("no such partition"));
 	  goto fail;
 	}

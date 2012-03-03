@@ -236,6 +236,9 @@ get_bootpath (char *nvlist, char **bootpath, char **devid)
 }
 
 static const char *poolstates[] = {
+  /* TRANSLATORS: Here we speak about ZFS pools it's semi-marketing,
+     semi-technical term by Sun/Oracle and should be translated in sync with
+     other ZFS-related software and documentation.  */
   [POOL_STATE_ACTIVE] = N_("Pool state: active"),
   [POOL_STATE_EXPORTED] = N_("Pool state: exported"),
   [POOL_STATE_DESTROYED] = N_("Pool state: destroyed"),

@@ -355,6 +355,7 @@ grub_acpi_halt (void)
 
   grub_millisleep (1500);
 
+  /* TRANSLATORS: It's computer shutdown using ACPI, not disabling ACPI.  */
   grub_puts_ (N_("ACPI shutdown failed"));
 }
 #endif

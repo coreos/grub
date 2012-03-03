@@ -40,6 +40,7 @@ grub_cryptodisk_dev_t grub_cryptodisk_list;
 static const struct grub_arg_option options[] =
   {
     {"uuid", 'u', 0, N_("Mount by UUID."), 0, 0},
+    /* TRANSLATORS: It's still restricted to cryptodisks only.  */
     {"all", 'a', 0, N_("Mount all."), 0, 0},
     {"boot", 'b', 0, N_("Mount all volumes with `boot' flag set."), 0, 0},
     {0, 0, 0, 0, 0, 0}

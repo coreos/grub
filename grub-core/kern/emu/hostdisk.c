@@ -253,6 +253,7 @@ grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
   struct stat st;
 
   if (fstat (fd, &st) < 0)
+    /* TRANSLATORS: "stat" comes from the name of POSIX function.  */
     grub_util_error (_("cannot stat `%s': %s"), name, strerror (errno));
 
 #if defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
@@ -444,8 +445,8 @@ grub_util_follow_gpart_up (const char *name, grub_disk_addr_t *off_out, char **n
       break;
   if (!class)
     /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
-       Usually left untranslated.
-     */
+       Usually left untranslated. "part" is the identifier of one of its
+       classes.  */
     grub_util_error (_("couldn't find geom `part' class"));
 
   LIST_FOREACH (geom, &class->lg_geom, lg_geom)

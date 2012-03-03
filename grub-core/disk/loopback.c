@@ -38,6 +38,8 @@ static struct grub_loopback *loopback_list;
 
 static const struct grub_arg_option options[] =
   {
+    /* TRANSLATORS: The disk is simply removed from the list of available ones,
+       not wiped, avoid to scare user.  */
     {"delete", 'd', 0, N_("Delete the specified loopback drive."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
@@ -224,6 +226,8 @@ GRUB_MOD_INIT(loopback)
 {
   cmd = grub_register_extcmd ("loopback", grub_cmd_loopback, 0,
 			      N_("[-d] DEVICENAME FILE."),
+			      /* TRANSLATORS: The file itself is not destroyed
+				 or transformed into drive.  */
 			      N_("Make a virtual drive from a file."), options);
   grub_disk_dev_register (&grub_loopback_dev);
 }

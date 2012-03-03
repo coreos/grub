@@ -32,6 +32,8 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static const struct grub_arg_option options[] =
   {
+    /* TRANSLATORS: This option is used to override default filename
+       for loading and storing environment.  */
     {"file", 'f', 0, N_("Specify filename."), 0, ARG_TYPE_PATHNAME},
     {0, 0, 0, 0, 0, 0}
   };

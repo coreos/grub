@@ -434,6 +434,8 @@ luks_recover_key (grub_disk_t source,
 	  continue;
 	}
 
+      /* TRANSLATORS: It's a cryptographic key slot: one element of an array
+	 where each element is either empty or holds a key.  */
       grub_printf_ (N_("Slot %d opened\n"), i);
 
       /* Set the master key.  */
