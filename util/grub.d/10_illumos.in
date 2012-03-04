@@ -34,7 +34,7 @@ case "${GRUB_DISTRIBUTOR}" in
   ;;
 esac
 
-echo "menuentry '${OS}' ${CLASS} \$menuentry_id_option 'illumos-$(grub_get_device_id "${GRUB_DEVICE_BOOT}")' {"
+echo "menuentry '$(echo "$OS" | grub_quote)' ${CLASS} \$menuentry_id_option 'illumos-$(grub_get_device_id "${GRUB_DEVICE_BOOT}")' {"
 save_default_entry | sed -e "s/^/\t/"
 prepare_grub_to_access_device "${GRUB_DEVICE_BOOT}" | sed -e "s/^/\t/"
 message="$(gettext_printf "Loading kernel of Illumos ...")"

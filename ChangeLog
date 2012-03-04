@@ -1,5 +1,22 @@
 2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use submenus in grub-mkconfig.
+
+	* util/grub-mkconfig.in: Define GRUB_ACTUAL_DEFAULT.
+	* util/grub-mkconfig_lib.in (grub_quote): New function.
+	(gettext_printf): Use gettext and not gettext_quoted to fix several
+	messages.
+	* util/grub.d/10_hurd.in: Use submenus.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/10_netbsd.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+	* util/grub.d/10_illumos.in: Add missing quoting.
+	* util/grub.d/10_windows.in: Likewise.
+
+2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix menu title instability bug.
 
 	* grub-core/commands/menuentry.c (options): New option --id.

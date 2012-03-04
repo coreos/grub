@@ -239,6 +239,11 @@ version_find_latest ()
 # One layer of quotation is eaten by "", the second by sed, and the third by
 # printf; so this turns ' into \'.  Note that you must use the output of
 # this function in a printf format string.
+
+grub_quote () {
+  sed "s/'/'\\\\\\\\''/g"
+}
+
 gettext_quoted () {
   gettext "$@" | sed "s/'/'\\\\\\\\''/g"
 }
@@ -249,7 +254,7 @@ gettext_quoted () {
 gettext_printf () {
   gettext_printf_format="$1"
   shift
-  printf "$(gettext_quoted "$gettext_printf_format")" "$@"
+  printf "$(gettext "$gettext_printf_format")" "$@"
 }
 
 uses_abstraction () {

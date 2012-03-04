@@ -85,40 +85,54 @@ netbsd_load_fs_module ()
   esac
 }
 
+title_correction_code=
+
 netbsd_entry ()
 {
   loader="$1"	# "knetbsd" or "multiboot"
   kernel="$2"	# absolute path to the kernel file
-  recovery="$3"	# is this is a recovery entry?
+  type="$3"
   args="$4"	# extra arguments appended to loader command
 
   kroot_device="$(echo ${GRUB_DEVICE} | sed -e 's,^/dev/r,,')"
-  if ${recovery} ; then
-    title="$(gettext_quoted "%s, with kernel %s (via %s, recovery mode)")"
-  else
-    title="$(gettext_quoted "%s, with kernel %s (via %s)")"
-  fi
 
   if [ -z "$boot_device_id" ]; then
       boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
   fi
-  printf "menuentry \"${title}\" \$menuentry_id_option 'netbsd-$kernel-$recovery-$boot_device_id' {\n" \
-    "${OS}" "$(echo ${kernel} | sed -e 's,^.*/,,')" "${loader}"
-  printf "%s\n" "${prepare_boot_cache}"
+
+  if [ x$type != xsimple ] ; then
+      if [ x$type = xrecovery ] ; then
+	  title="$(gettext_printf "%s, with kernel %s (via %s, recovery mode)" "${OS}" "$(echo ${kernel} | sed -e 's,^.*/,,')" "${loader}")"
+      else
+	  title="$(gettext_printf "%s, with kernel %s (via %s)" "${OS}" "$(echo ${kernel} | sed -e 's,^.*/,,')" "${loader}")"
+      fi
+      replacement_title="$(echo "Advanced options for ${OS}" | sed 's,>,>>,g')>$(echo "$title" | sed 's,>,>>,g')"
+      if [ x"$title" = x"$GRUB_ACTUAL_DEFAULT" ]; then
+	  quoted="$(echo "$GRUB_ACTUAL_DEFAULT" | grub_quote)"
+	  title_correction_code="${title_correction_code}if [ \"x\$default\" = '$quoted' ]; then default='$(echo "$replacement_title" | grub_quote)'; fi;"
+	  grub_warn "$(gettext_printf "Please don't use old title \`%s' for GRUB_DEFAULT, use \`%s' (for versions before 2.00) or \`%s' (for 2.00 or later)" "$GRUB_ACTUAL_DEFAULT" "$replacement_title" "netbsd-advanced-$boot_device_id>netbsd-${loader}-$kernel-$type-$boot_device_id")"
+      fi
+
+      echo "menuentry '$(echo "$title" | grub_quote)' \$menuentry_id_option 'netbsd-${loader}-$kernel-$type-$boot_device_id' {"  | sed "s/^/$submenu_indentation/"
+  else
+      echo "menuentry '$(echo "$OS" | grub_quote)' \$menuentry_id_option 'netbsd-${loader}-simple-$boot_device_id' {"  | sed "s/^/$submenu_indentation/"
+  fi
+
+  printf "%s\n" "${prepare_boot_cache}" | sed "s/^/$submenu_indentation/"
   case "${loader}" in
     knetbsd)
       printf "\tknetbsd %s -r %s %s\n" \
-        "${kernel}" "${kroot_device}" "${GRUB_CMDLINE_NETBSD} ${args}"
+        "${kernel}" "${kroot_device}" "${GRUB_CMDLINE_NETBSD} ${args}" | sed "s/^/$submenu_indentation/"
       ;;
     multiboot)
       printf "\tmultiboot %s %s root=%s %s\n" \
-        "${kernel}" "${kernel}" "${kroot_device}" "${GRUB_CMDLINE_NETBSD} ${args}"
+        "${kernel}" "${kernel}" "${kroot_device}" "${GRUB_CMDLINE_NETBSD} ${args}" | sed "s/^/$submenu_indentation/"
       ;;
   esac
 
   netbsd_load_fs_module "${loader}" "${kernel}"
 
-  printf "}\n"
+  printf "}\n" | sed "s/^/$submenu_indentation/"
 }
 
 prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e 's,^,	,')"
@@ -128,6 +142,11 @@ boot_device_id=
 # pick all statically linked ELF executable files (or links) in / with a
 # name that starts with `netbsd'.
 pattern="^ELF[^,]*executable.*statically linked"
+# Extra indentation to add to menu entries in a submenu. We're not in a submenu
+# yet, so it's empty. In a submenu it will be equal to '\t' (one tab).
+submenu_indentation=""
+
+is_first_entry=true
 for k in $(ls -t /netbsd*) ; do
   if ! grub_file_is_not_garbage "$k" ; then
     continue
@@ -137,10 +156,31 @@ for k in $(ls -t /netbsd*) ; do
   fi
 
   gettext_printf "Found NetBSD kernel: %s\n" "$k" >&2
-  netbsd_entry "knetbsd"   "$k" false "${GRUB_CMDLINE_NETBSD_DEFAULT}"
-  netbsd_entry "multiboot" "$k" false "${GRUB_CMDLINE_NETBSD_DEFAULT}"
-  if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then
-    netbsd_entry "knetbsd"   "$k" true "-s"
-    netbsd_entry "multiboot" "$k" true "-s"
+
+  if [ "x$is_first_entry" = xtrue ]; then
+      netbsd_entry "knetbsd"   "$k" simple "${GRUB_CMDLINE_NETBSD_DEFAULT}"
+    submenu_indentation="\t"
+    
+    if [ -z "$boot_device_id" ]; then
+	boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
+    fi
+    # TRANSLATORS: %s is replaced with an OS name
+    echo "submenu '$(gettext_printf "Advanced options for %s" "${OS}" | grub_quote)' \$menuentry_id_option 'netbsd-advanced-$boot_device_id' {"
   fi
+
+  netbsd_entry "knetbsd"   "$k" advanced "${GRUB_CMDLINE_NETBSD_DEFAULT}"
+  netbsd_entry "multiboot" "$k" advanced "${GRUB_CMDLINE_NETBSD_DEFAULT}"
+  if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then
+    netbsd_entry "knetbsd"   "$k" recovery "-s"
+    netbsd_entry "multiboot" "$k" recovery "-s"
+  fi
+  is_first_entry=false
 done
+
+# If at least one kernel was found, then we need to
+# add a closing '}' for the submenu command.
+if [ x"$is_first_entry" != xtrue ]; then
+  echo '}'
+fi
+
+echo "$title_correction_code"

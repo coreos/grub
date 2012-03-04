@@ -40,6 +40,7 @@ grub_mkconfig_dir="${sysconfdir}"/grub.d
 self=`basename $0`
 
 grub_probe="${sbindir}/`echo grub-probe | sed "${transform}"`"
+grub_editenv="${bindir}/`echo grub-editenv | sed "${transform}"`"
 grub_script_check="${bindir}/`echo grub-script-check | sed "${transform}"`"
 
 export TEXTDOMAIN=@PACKAGE@
@@ -165,6 +166,11 @@ for x in ${GRUB_TERMINAL_OUTPUT}; do
     esac
 done
 
+GRUB_ACTUAL_DEFAULT="$GRUB_DEFAULT"
+
+if [ "x${GRUB_ACTUAL_DEFAULT}" = "xsaved" ] ; then GRUB_ACTUAL_DEFAULT="`"${grub_editenv}" - list | sed -n '/^saved_entry=/ s,^saved_entry=,,p'`" ; fi
+
+
 # These are defined in this script, export them here so that user can
 # override them.
 export GRUB_DEVICE \
@@ -173,7 +179,8 @@ export GRUB_DEVICE \
   GRUB_DEVICE_BOOT_UUID \
   GRUB_FS \
   GRUB_FONT \
-  GRUB_PRELOAD_MODULES
+  GRUB_PRELOAD_MODULES \
+  GRUB_ACTUAL_DEFAULT
 
 # These are optional, user-defined variables.
 export GRUB_DEFAULT \

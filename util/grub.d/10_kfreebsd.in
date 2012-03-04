@@ -63,37 +63,49 @@ load_kfreebsd_module ()
 EOF
 }
 
+title_correction_code=
+
 kfreebsd_entry ()
 {
   os="$1"
   version="$2"
-  recovery="$3"
+  type="$3"
   args="$4"
-  if ${recovery} ; then
-    title="$(gettext_quoted "%s, with kFreeBSD %s (recovery mode)")"
-  else
-    title="$(gettext_quoted "%s, with kFreeBSD %s")"
-  fi
   if [ -z "$boot_device_id" ]; then
       boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
   fi
-  printf "menuentry '${title}' ${CLASS} \$menuentry_id_option 'kfreebsd-$version-$recovery-$boot_device_id' {\n" "${os}" "${version}"
-  if ! ${recovery} ; then
-      save_default_entry | sed -e "s/^/\t/"
+  if [ x$type != xsimple ] ; then
+      if [ x$type = xrecovery ] ; then
+	  title="$(gettext_printf "%s, with kFreeBSD %s (recovery mode)" "${os}" "${version}")"
+      else
+	  title="$(gettext_printf "%s, with kFreeBSD %s" "${os}" "${version}")"
+      fi
+      replacement_title="$(echo "Advanced options for ${OS}" | sed 's,>,>>,g')>$(echo "$title" | sed 's,>,>>,g')"
+      if [ x"$title" = x"$GRUB_ACTUAL_DEFAULT" ]; then
+	  quoted="$(echo "$GRUB_ACTUAL_DEFAULT" | grub_quote)"
+	  title_correction_code="${title_correction_code}if [ \"x\$default\" = '$quoted' ]; then default='$(echo "$replacement_title" | grub_quote)'; fi;"
+	  grub_warn "$(gettext_printf "Please don't use old title \`%s' for GRUB_DEFAULT, use \`%s' (for versions before 2.00) or \`%s' (for 2.00 or later)" "$GRUB_ACTUAL_DEFAULT" "$replacement_title" "kfreebsd-advanced-$boot_device_id>kfreebsd-$version-$type-$boot_device_id")"
+      fi
+      echo "menuentry '$(echo "$title" | grub_quote)' ${CLASS} \$menuentry_id_option 'kfreebsd-$version-$type-$boot_device_id' {" | sed "s/^/$submenu_indentation/"
+  else
+      echo "menuentry '$(echo "$OS" | grub_quote)' ${CLASS} \$menuentry_id_option 'kfreebsd-simple-$boot_device_id' {" | sed "s/^/$submenu_indentation/"
+  fi
+  if [ x$type != xrecovery ] ; then
+      save_default_entry | sed -e "s/^/\t/" | sed "s/^/$submenu_indentation/"
   fi
   if [ -z "${prepare_boot_cache}" ]; then
     prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
   fi
 
-  printf '%s\n' "${prepare_boot_cache}"
+  printf '%s\n' "${prepare_boot_cache}" | sed "s/^/$submenu_indentation/"
   message="$(gettext_printf "Loading kernel of FreeBSD %s ..." ${version})"
-  cat << EOF
+  sed "s/^/$submenu_indentation/" << EOF
 	echo			'$message'
 	kfreebsd		${rel_dirname}/${basename} ${args}
 EOF
 
   if test -n "${devices}" ; then
-    cat << EOF
+      sed "s/^/$submenu_indentation/" << EOF
 	kfreebsd_loadenv	${devices_rel_dirname}/${devices_basename}
 EOF
   fi
@@ -112,19 +124,19 @@ EOF
 
       ls "${dirname}/zfs/zpool.cache" > /dev/null
       printf '%s\n' "${prepare_boot_cache}"
-  cat << EOF
+      sed "s/^/$submenu_indentation/" << EOF
 	kfreebsd_module		${rel_dirname}/zfs/zpool.cache type=/boot/zfs/zpool.cache
 EOF
     ;;
   esac
 
   if [ x${kfreebsd_fs} = xufs ]; then
-	load_kfreebsd_module ${kfreebsd_fs} true
+	load_kfreebsd_module ${kfreebsd_fs} true | sed "s/^/$submenu_indentation/"
   else
-	load_kfreebsd_module ${kfreebsd_fs} false
+	load_kfreebsd_module ${kfreebsd_fs} false | sed "s/^/$submenu_indentation/"
   fi
 
-  cat << EOF
+  sed "s/^/$submenu_indentation/" << EOF
 	set kFreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${kfreebsd_device}
 	set kFreeBSD.vfs.root.mountfrom.options=rw
 }
@@ -136,6 +148,13 @@ list=`for i in /boot/kfreebsd-* /boot/kernel/kernel ; do
       done`
 prepare_boot_cache=
 boot_device_id=
+title_correction_code=
+
+# Extra indentation to add to menu entries in a submenu. We're not in a submenu
+# yet, so it's empty. In a submenu it will be equal to '\t' (one tab).
+submenu_indentation=""
+
+is_first_entry=true
 
 while [ "x$list" != "x" ] ; do
   kfreebsd=`version_find_latest $list`
@@ -192,10 +211,31 @@ while [ "x$list" != "x" ] ; do
     module_dir_rel=$(make_system_path_relative_to_its_root $module_dir)
   fi
 
-  kfreebsd_entry "${OS}" "${version}" false
+  if [ "x$is_first_entry" = xtrue ]; then
+      kfreebsd_entry "${OS}" "${version}" simple
+      submenu_indentation="\t"
+    
+      if [ -z "$boot_device_id" ]; then
+	  boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
+      fi
+      # TRANSLATORS: %s is replaced with an OS name
+      echo "submenu '$(gettext_printf "Advanced options for %s" "${OS}" | grub_quote)' \$menuentry_id_option 'kfreebsd-advanced-$boot_device_id' {"
+  fi
+
+  kfreebsd_entry "${OS}" "${version}" advanced
   if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then
-    kfreebsd_entry "${OS}" "${version}" true "-s"
+    kfreebsd_entry "${OS}" "${version}" recovery "-s"
   fi
 
   list=`echo $list | tr ' ' '\n' | grep -vx $kfreebsd | tr '\n' ' '`
+  is_first_entry=false
 done
+
+# If at least one kernel was found, then we need to
+# add a closing '}' for the submenu command.
+if [ x"$is_first_entry" != xtrue ]; then
+  echo '}'
+fi
+
+echo "$title_correction_code"
+

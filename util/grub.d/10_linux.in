@@ -66,77 +66,81 @@ case x"$GRUBFS" in
 	GRUB_CMDLINE_LINUX="boot=zfs rpool=${RPOOL} bootfs=${RPOOL}${bootfs} ${cmdline} ${GRUB_CMDLINE_LINUX}";;
 esac
 
+title_correction_code=
+
 linux_entry ()
 {
   os="$1"
   version="$2"
-  recovery="$3"
+  type="$3"
   args="$4"
-  if ${recovery} ; then
-    title="$(gettext_quoted "%s, with Linux %s (recovery mode)")"
-  else
-    title="$(gettext_quoted "%s, with Linux %s")"
-  fi
+
   if [ -z "$boot_device_id" ]; then
       boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
   fi
-  printf "menuentry '${title}' ${CLASS} \$menuentry_id_option 'gnulinux-$version-$recovery-$boot_device_id' {\n" "${os}" "${version}"
-  if ! ${recovery} ; then
+  if [ x$type != xsimple ] ; then
+      case $type in
+	  recovery)
+	      title="$(gettext_printf "%s, with Linux %s (recovery mode)" "${os}" "${version}")" ;;
+	  *)
+	      title="$(gettext_printf "%s, with Linux %s" "${os}" "${version}")" ;;
+      esac
+      if [ x"$title" = x"$GRUB_ACTUAL_DEFAULT" ] || [ x"Previous Linux versions>$title" = x"$GRUB_ACTUAL_DEFAULT" ]; then
+	  replacement_title="$(echo "Advanced options for ${OS}" | sed 's,>,>>,g')>$(echo "$title" | sed 's,>,>>,g')"
+	  quoted="$(echo "$GRUB_ACTUAL_DEFAULT" | grub_quote)"
+	  title_correction_code="${title_correction_code}if [ \"x\$default\" = '$quoted' ]; then default='$(echo "$replacement_title" | grub_quote)'; fi;"
+	  grub_warn "$(gettext_printf "Please don't use old title \`%s' for GRUB_DEFAULT, use \`%s' (for versions before 2.00) or \`%s' (for 2.00 or later)" "$GRUB_ACTUAL_DEFAULT" "$replacement_title" "gnulinux-advanced-$boot_device_id>gnulinux-$version-$type-$boot_device_id")"
+      fi
+      echo "menuentry '$(echo "$title" | grub_quote)' ${CLASS} \$menuentry_id_option 'gnulinux-$version-$type-$boot_device_id' {" | sed "s/^/$submenu_indentation/"
+  else
+      echo "menuentry '$(echo "$os" | grub_quote)' ${CLASS} \$menuentry_id_option 'gnulinux-simple-$boot_device_id' {" | sed "s/^/$submenu_indentation/"
+  fi      
+  if [ x$type != xrecovery ] ; then
       save_default_entry | sed -e "s/^/\t/"
   fi
 
   # Use ELILO's generic "efifb" when it's known to be available.
   # FIXME: We need an interface to select vesafb in case efifb can't be used.
   if [ "x$GRUB_GFXPAYLOAD_LINUX" = x ]; then
-      cat << EOF
-	load_video
-EOF
+      echo "	load_video" | sed "s/^/$submenu_indentation/"
       if grep -qx "CONFIG_FB_EFI=y" "${config}" 2> /dev/null \
 	  && grep -qx "CONFIG_VT_HW_CONSOLE_BINDING=y" "${config}" 2> /dev/null; then
-	  cat << EOF
-	set gfxpayload=keep
-EOF
+	  echo "	set gfxpayload=keep" | sed "s/^/$submenu_indentation/"
       fi
   else
       if [ "x$GRUB_GFXPAYLOAD_LINUX" != xtext ]; then
-	  cat << EOF
-	load_video
-EOF
+	  echo "	load_video" | sed "s/^/$submenu_indentation/"
       fi
-	  cat << EOF
-	set gfxpayload=$GRUB_GFXPAYLOAD_LINUX
-EOF
+      echo "	set gfxpayload=$GRUB_GFXPAYLOAD_LINUX" | sed "s/^/$submenu_indentation/"
   fi
 
-  cat << EOF
-	insmod gzio
-EOF
+  echo "	insmod gzio" | sed "s/^/$submenu_indentation/"
 
   if [ x$dirname = x/ ]; then
     if [ -z "${prepare_root_cache}" ]; then
       prepare_root_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/")"
     fi
-    printf '%s\n' "${prepare_root_cache}"
+    printf '%s\n' "${prepare_root_cache}" | sed "s/^/$submenu_indentation/"
   else
     if [ -z "${prepare_boot_cache}" ]; then
       prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
     fi
-    printf '%s\n' "${prepare_boot_cache}"
+    printf '%s\n' "${prepare_boot_cache}" | sed "s/^/$submenu_indentation/"
   fi
   message="$(gettext_printf "Loading Linux %s ..." ${version})"
-  cat << EOF
+  sed "s/^/$submenu_indentation/" << EOF
 	echo	'$message'
 	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro ${args}
 EOF
   if test -n "${initrd}" ; then
     # TRANSLATORS: ramdisk isn't identifier. Should be translated.
     message="$(gettext_printf "Loading initial ramdisk ...")"
-    cat << EOF
+    sed "s/^/$submenu_indentation/" << EOF
 	echo	'$message'
 	initrd	${rel_dirname}/${initrd}
 EOF
   fi
-  cat << EOF
+  sed "s/^/$submenu_indentation/" << EOF
 }
 EOF
 }
@@ -155,7 +159,13 @@ esac
 prepare_boot_cache=
 prepare_root_cache=
 boot_device_id=
+title_correction_code=
 
+# Extra indentation to add to menu entries in a submenu. We're not in a submenu
+# yet, so it's empty. In a submenu it will be equal to '\t' (one tab).
+submenu_indentation=""
+
+is_first_entry=true
 while [ "x$list" != "x" ] ; do
   linux=`version_find_latest $list`
   gettext_printf "Found linux image: %s\n" "$linux" >&2
@@ -200,12 +210,34 @@ while [ "x$list" != "x" ] ; do
     linux_root_device_thisversion=${GRUB_DEVICE}
   fi
 
-  linux_entry "${OS}" "${version}" false \
-      "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
+  if [ "x$is_first_entry" = xtrue ]; then
+    linux_entry "${OS}" "${version}" simple \
+    "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
+
+    submenu_indentation="\t"
+    
+    if [ -z "$boot_device_id" ]; then
+	boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
+    fi
+    # TRANSLATORS: %s is replaced with an OS name
+    echo "submenu '$(gettext_printf "Advanced options for %s" "${OS}" | grub_quote)' \$menuentry_id_option 'gnulinux-advanced-$boot_device_id' {"
+  fi
+
+  linux_entry "${OS}" "${version}" advanced \
+              "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
   if [ "x${GRUB_DISABLE_RECOVERY}" != "xtrue" ]; then
-    linux_entry "${OS}" "${version}" true \
-	"single ${GRUB_CMDLINE_LINUX}"
+    linux_entry "${OS}" "${version}" recovery \
+                "single ${GRUB_CMDLINE_LINUX}"
   fi
 
   list=`echo $list | tr ' ' '\n' | grep -vx $linux | tr '\n' ' '`
+  is_first_entry=false
 done
+
+# If at least one kernel was found, then we need to
+# add a closing '}' for the submenu command.
+if [ x"$is_first_entry" != xtrue ]; then
+  echo '}'
+fi
+
+echo "$title_correction_code"
