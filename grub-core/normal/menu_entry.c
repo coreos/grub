@@ -890,7 +890,7 @@ kill_line (struct screen *screen, int continuous, int update)
 	return 0;
 
       grub_memmove (p + offset, linep->buf + screen->column, size);
-      p[offset + size - 1] = '\0';
+      p[offset + size] = '\0';
 
       screen->killed_text = p;
 
@@ -900,9 +900,9 @@ kill_line (struct screen *screen, int continuous, int update)
 
       if (update)
 	{
-	  new_num = get_logical_num_lines (linep, &screen->terms[i]);
 	  for (i = 0; i < screen->nterms; i++)
 	    {
+	      new_num = get_logical_num_lines (linep, &screen->terms[i]);
 	      if (orig_num[i] != new_num)
 		update_screen (screen, &screen->terms[i],
 			       screen->line, screen->column, 0, 1, ALL_LINES);

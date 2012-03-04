@@ -1,3 +1,8 @@
+2012-03-04  Hideki EIRAKU <hdk1983@gmail.com>
+
+	* grub-core/normal/menu_entry.c (kill_line): Fix a crash and off-by-one
+	error.
+
 2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Use sort -V by the idea of Georgi Georgiev.
