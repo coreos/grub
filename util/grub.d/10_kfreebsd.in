@@ -74,7 +74,10 @@ kfreebsd_entry ()
   else
     title="$(gettext_quoted "%s, with kFreeBSD %s")"
   fi
-  printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}"
+  if [ -z "$boot_device_id" ]; then
+      boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
+  fi
+  printf "menuentry '${title}' ${CLASS} \$menuentry_id_option 'kfreebsd-$version-$recovery-$boot_device_id' {\n" "${os}" "${version}"
   if ! ${recovery} ; then
       save_default_entry | sed -e "s/^/\t/"
   fi
@@ -132,6 +135,7 @@ list=`for i in /boot/kfreebsd-* /boot/kernel/kernel ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
 prepare_boot_cache=
+boot_device_id=
 
 while [ "x$list" != "x" ] ; do
   kfreebsd=`version_find_latest $list`

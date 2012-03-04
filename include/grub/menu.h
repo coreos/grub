@@ -32,6 +32,9 @@ struct grub_menu_entry
   /* The title name.  */
   const char *title;
 
+  /* The identifier.  */
+  const char *id;
+
   /* If set means not everybody is allowed to boot this entry.  */
   int restricted;
 

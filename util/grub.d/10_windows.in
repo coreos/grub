@@ -63,14 +63,16 @@ for drv in $drives ; do
   test -n "$dir" || continue
 
   needmap=
+  osid=
 
   # Check for Vista bootmgr.
   if [ -f "$dir"/bootmgr -a -f "$dir"/boot/bcd ] ; then
     OS="$(gettext_quoted "Windows Vista/7 (loader)")"
-
+    osid=bootmgr
   # Check for NTLDR.
   elif [ -f "$dir"/ntldr -a -f "$dir"/ntdetect.com -a -f "$dir"/boot.ini ] ; then
     OS=`get_os_name_from_boot_ini "$dir"/boot.ini` || OS="$(gettext_quoted "Windows NT/2000/XP (loader)")"
+    osid=ntldr
     needmap=t
 
   else
@@ -82,7 +84,7 @@ for drv in $drives ; do
 
   gettext_printf "Found %s on %s (%s)\n" "$OS" "$drv" "$dev" >&2
   cat << EOF
-menuentry "$OS" {
+menuentry "$OS" \$menuentry_id_option '$osid-$(grub_get_device_id "${dev}")' {
 EOF
 
   save_default_entry | sed -e 's,^,\t,'

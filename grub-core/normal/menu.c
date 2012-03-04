@@ -188,7 +188,7 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
 	grub_env_set ("timeout", "0");
     }
 
-  for (ptr = entry->title; *ptr; ptr++)
+  for (ptr = entry->id; *ptr; ptr++)
     sz += (*ptr == '>') ? 2 : 1;
   if (chosen)
     {
@@ -217,7 +217,7 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
 	  optr = grub_stpcpy (optr, chosen);
 	  *optr++ = '>';
 	}
-      for (ptr = entry->title; *ptr; ptr++)
+      for (ptr = entry->id; *ptr; ptr++)
 	{
 	  if (*ptr == '>')
 	    *optr++ = '>';
@@ -411,10 +411,10 @@ grub_menu_register_viewer (struct grub_menu_viewer *viewer)
 }
 
 static int
-menuentry_eq (const char *title, const char *spec)
+menuentry_eq (const char *id, const char *spec)
 {
   const char *ptr1, *ptr2;
-  ptr1 = title;
+  ptr1 = id;
   ptr2 = spec;
   while (1)
     {
@@ -459,7 +459,8 @@ get_entry_number (grub_menu_t menu, const char *name)
 
       for (i = 0; e; i++)
 	{
-	  if (menuentry_eq (e->title, val))
+	  if (menuentry_eq (e->title, val)
+	      || menuentry_eq (e->id, val))
 	    {
 	      entry = i;
 	      break;

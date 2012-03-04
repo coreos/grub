@@ -87,7 +87,10 @@ linux_entry ()
   else
     title="$(gettext_quoted "%s, with Xen %s and Linux %s")"
   fi
-  printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${xen_version}" "${version}"
+  if [ -z "$boot_device_id" ]; then
+      boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
+  fi
+  printf "menuentry '${title}' ${CLASS} \$menuentry_id_option 'xen-gnulinux-$version-$recovery-$boot_device_id' {\n" "${os}" "${xen_version}" "${version}"
   if ! ${recovery} ; then
       save_default_entry | sed -e "s/^/\t/"
   fi
@@ -139,6 +142,7 @@ xen_list=`for i in /boot/xen*; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
 prepare_boot_cache=
+boot_device_id=
 
 while [ "x${xen_list}" != "x" ] ; do
     list="${linux_list}"
@@ -147,7 +151,10 @@ while [ "x${xen_list}" != "x" ] ; do
     xen_dirname=`dirname ${current_xen}`
     rel_xen_dirname=`make_system_path_relative_to_its_root $xen_dirname`
     xen_version=`echo $xen_basename | sed -e "s,.gz$,,g;s,^xen-,,g"`
-    echo "submenu \"Xen ${xen_version}\" {"
+    if [ -z "$boot_device_id" ]; then
+	boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
+    fi
+    echo "submenu \"Xen ${xen_version}\" \$menuentry_id_option 'xen-hypervisor-$xen_version-$boot_device_id' {"
     while [ "x$list" != "x" ] ; do
 	linux=`version_find_latest $list`
 	gettext_printf "Found linux image: %s\n" "$linux" >&2

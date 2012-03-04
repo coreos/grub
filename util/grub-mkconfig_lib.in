@@ -162,6 +162,16 @@ prepare_grub_to_access_device ()
   fi
 }
 
+grub_get_device_id ()
+{
+  device="$1"
+  if fs_uuid="`"${grub_probe}" --device "${device}" --target=fs_uuid 2> /dev/null`" ; then
+    echo "$fs_uuid";
+  else
+    echo "$device"
+  fi
+}
+
 grub_file_is_not_garbage ()
 {
   if test -f "$1" ; then

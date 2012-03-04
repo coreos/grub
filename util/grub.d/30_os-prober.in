@@ -52,7 +52,7 @@ osx_entry() {
     # TRANSLATORS: it refers on the OS residing on device %s
     onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
         cat << EOF
-menuentry "${LONGNAME} $bitstr $onstr" --class osx --class darwin --class os {
+menuentry "${LONGNAME} $bitstr $onstr" --class osx --class darwin --class os \$menuentry_id_option 'osprober-xnu-$2-$(grub_get_device_id "${DEVICE}")'  {
 EOF
 	save_default_entry | sed -e "s/^/\t/"
 	prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
@@ -104,6 +104,8 @@ EOF
 EOF
 }
 
+used_osprober_linux_ids=
+
 for OS in ${OSPROBED} ; do
   DEVICE="`echo ${OS} | cut -d ':' -f 1`"
   LONGNAME="`echo ${OS} | cut -d ':' -f 2 | tr '^' ' '`"
@@ -121,7 +123,7 @@ for OS in ${OSPROBED} ; do
 
 	  onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
       cat << EOF
-menuentry "${LONGNAME} $onstr" --class windows --class os {
+menuentry "${LONGNAME} $onstr" --class windows --class os \$menuentry_id_option 'osprober-chain-$(grub_get_device_id "${DEVICE}")' {
 EOF
       save_default_entry | sed -e "s/^/\t/"
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
@@ -144,6 +146,7 @@ EOF
     linux)
       LINUXPROBED="`linux-boot-prober ${DEVICE} 2> /dev/null | tr ' ' '^' | paste -s -d ' '`"
       prepare_boot_cache=
+      boot_device_id=
 
       for LINUX in ${LINUXPROBED} ; do
         LROOT="`echo ${LINUX} | cut -d ':' -f 1`"
@@ -163,8 +166,17 @@ EOF
 	fi
 
 	onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
+	recovery_params="$(echo "${LPARAMS}" | grep single)"
+	counter=1
+	while echo "$used_osprober_linux_ids" | grep 'osprober-gnulinux-$LKERNEL-${recovery_params}-$counter-$boot_device_id' > /dev/null; do
+	    counter=$((counter+1));
+	done
+	if [ -z "$boot_device_id" ]; then
+	    boot_device_id="$(grub_get_device_id "${DEVICE}")"
+	fi
+	used_osprober_linux_ids="$used_osprober_linux_ids 'osprober-gnulinux-$LKERNEL-${recovery_params}-$counter-$boot_device_id'"
         cat << EOF
-menuentry "${LLABEL} $onstr" --class gnu-linux --class gnu --class os {
+menuentry "${LLABEL} $onstr" --class gnu-linux --class gnu --class os \$menuentry_id_option 'osprober-gnulinux-$LKERNEL-${recovery_params}-$boot_device_id' {
 EOF
 	save_default_entry | sed -e "s/^/\t/"
 	if [ -z "${prepare_boot_cache}" ]; then
@@ -192,7 +204,7 @@ EOF
     hurd)
       onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
       cat << EOF
-menuentry "${LONGNAME} $onstr" --class hurd --class gnu --class os {
+menuentry "${LONGNAME} $onstr" --class hurd --class gnu --class os \$menuentry_id_option 'osprober-gnuhurd-/boot/gnumach.gz-false-$(grub_get_device_id "${DEVICE}")' {
 EOF
       save_default_entry | sed -e "s/^/\t/"
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"

@@ -1,4 +1,29 @@
-2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix menu title instability bug.
+
+	* grub-core/commands/menuentry.c (options): New option --id.
+	(grub_normal_add_menu_entry): New argument id. All users updated.
+	(grub_cmd_menuentry): Handle --id.
+	(grub_menu_init): Accept unknown arguments.
+	* grub-core/normal/main.c (features): Add feature_menuentry_id and
+	feature_menuentry_options.
+	* grub-core/normal/menu.c (grub_menu_execute_entry): Use id for
+	saved_entry.
+	(get_entry_number): Match with id as well.
+	* include/grub/menu.h (grub_menu_entry): New member id.
+	* util/grub-mkconfig_lib.in (grub_get_device_id): New function.
+	* util/grub.d/00_header.in: Define menuentry_id_option.
+	* util/grub.d/10_hurd.in: Define id.
+	* util/grub.d/10_illumos.in: Likewise.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/10_netbsd.in: Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+
+2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/script/execute.c (grub_script_return): Replace ambiguous
 	"scope" with "body".

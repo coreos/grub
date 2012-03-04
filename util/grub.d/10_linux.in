@@ -77,7 +77,10 @@ linux_entry ()
   else
     title="$(gettext_quoted "%s, with Linux %s")"
   fi
-  printf "menuentry '${title}' ${CLASS} {\n" "${os}" "${version}"
+  if [ -z "$boot_device_id" ]; then
+      boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
+  fi
+  printf "menuentry '${title}' ${CLASS} \$menuentry_id_option 'gnulinux-$version-$recovery-$boot_device_id' {\n" "${os}" "${version}"
   if ! ${recovery} ; then
       save_default_entry | sed -e "s/^/\t/"
   fi
@@ -151,6 +154,7 @@ esac
 
 prepare_boot_cache=
 prepare_root_cache=
+boot_device_id=
 
 while [ "x$list" != "x" ] ; do
   linux=`version_find_latest $list`

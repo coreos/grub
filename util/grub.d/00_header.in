@@ -63,6 +63,15 @@ set default="${GRUB_DEFAULT}"
 EOF
 fi
 cat <<EOF
+
+if [ x"\${feature_menuentry_id}" = xy ]; then
+  menuentry_id_option="--id"
+else
+  menuentry_id_option=""
+fi
+
+export menuentry_id_option
+
 if [ "\${prev_saved_entry}" ]; then
   set saved_entry="\${prev_saved_entry}"
   save_env saved_entry

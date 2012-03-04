@@ -99,7 +99,10 @@ netbsd_entry ()
     title="$(gettext_quoted "%s, with kernel %s (via %s)")"
   fi
 
-  printf "menuentry \"${title}\" {\n" \
+  if [ -z "$boot_device_id" ]; then
+      boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
+  fi
+  printf "menuentry \"${title}\" \$menuentry_id_option 'netbsd-$kernel-$recovery-$boot_device_id' {\n" \
     "${OS}" "$(echo ${kernel} | sed -e 's,^.*/,,')" "${loader}"
   printf "%s\n" "${prepare_boot_cache}"
   case "${loader}" in
@@ -119,6 +122,7 @@ netbsd_entry ()
 }
 
 prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e 's,^,	,')"
+boot_device_id=
 
 # We look for NetBSD kernels in / but not in subdirectories.  We simply
 # pick all statically linked ELF executable files (or links) in / with a

@@ -85,9 +85,9 @@ do
   KERNEL="using ${kernel_base}"
 
   cat << EOF
-menuentry "${OS} ${KERNEL}" ${CLASS} {
+menuentry "${OS} ${KERNEL}" ${CLASS} \$menuentry_id_option 'gnuhurd-$kernel-false-$(grub_get_device_id "${GRUB_DEVICE_BOOT}")' {
 EOF
-  prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
+  prepare_grub_to_access_device "${GRUB_DEVICE_BOOT}" | sed -e "s/^/\t/"
   message="$(gettext_printf "Loading GNU Mach ...")"
   cat << EOF
 	echo		'$message'
