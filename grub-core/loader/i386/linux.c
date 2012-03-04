@@ -658,7 +658,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   struct linux_kernel_header lh;
   struct linux_kernel_params *params;
   grub_uint8_t setup_sects;
-  grub_size_t real_size, prot_size;
+  grub_size_t real_size, prot_size, prot_file_size;
   grub_ssize_t len;
   int i;
   grub_size_t align, min_align;
@@ -735,7 +735,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     setup_sects = GRUB_LINUX_DEFAULT_SETUP_SECTS;
 
   real_size = setup_sects << GRUB_DISK_SECTOR_BITS;
-  prot_size = grub_file_size (file) - real_size - GRUB_DISK_SECTOR_SIZE;
+  prot_file_size = grub_file_size (file) - real_size - GRUB_DISK_SECTOR_SIZE;
 
   if (grub_le_to_cpu16 (lh.version) >= 0x205
       && lh.kernel_alignment != 0
@@ -761,7 +761,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   else
     {
       min_align = 0;
-      prot_size = grub_file_size (file) - real_size - GRUB_DISK_SECTOR_SIZE;
+      prot_size = prot_file_size;
       preffered_address = grub_le_to_cpu32 (lh.code32_start);
     }
 
@@ -971,7 +971,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 			      maximal_cmdline_size
 			      - (sizeof (LINUX_IMAGE) - 1));
 
-  len = prot_size;
+  len = prot_file_size;
   if (grub_file_read (file, prot_mode_mem, len) != len && !grub_errno)
     grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
 		argv[0]);

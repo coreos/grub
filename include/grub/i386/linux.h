@@ -140,7 +140,7 @@ struct linux_kernel_header
   grub_uint32_t payload_length;
   grub_uint64_t setup_data;
   grub_uint64_t pref_address;
-  grub_uint64_t init_size;
+  grub_uint32_t init_size;
 } __attribute__ ((packed));
 
 /* Boot parameters for Linux based on 2.6.12. This is used by the setup

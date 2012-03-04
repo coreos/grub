@@ -1,5 +1,11 @@
 2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/i386/linux.h (linux_kernel_header): Fix init_size type.
+	* grub-core/loader/i386/linux.c (grub_cmd_linux): Differentiate between
+	prot_size and prot_file_size.
+
+2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (is_lv_readable): New argument "easily".
 	All users updated. If easily=1 require raid-5/-6 to be full.
 	(is_node_readable): Likewise.
