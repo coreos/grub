@@ -1,3 +1,17 @@
+2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/diskfilter.c (is_lv_readable): New argument "easily".
+	All users updated. If easily=1 require raid-5/-6 to be full.
+	(is_node_readable): Likewise.
+	(scan_devices): Scan incomplete but readable LVs at the end.
+	(grub_diskfilter_memberlist): Pull missing devices.
+	(insert_array): Skip scanning until device is complete or scan is
+	done otherwise.
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Fix wrong
+	check.
+	* include/grub/diskfilter.h (grub_diskfilter_lv): New member scanned.
+	* util/raid.c (grub_util_raid_getmembers): Handle "removed" disks.
+
 2012-03-03  Matthew Garrett  <mjg@redhat.com>
 2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 

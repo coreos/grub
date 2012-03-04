@@ -87,7 +87,7 @@ struct grub_diskfilter_lv {
   grub_size_t segment_alloc;
   grub_uint64_t size;
   int became_readable_at;
-
+  int scanned;
   int visible;
 
   /* Pointer to segment_count segments. */

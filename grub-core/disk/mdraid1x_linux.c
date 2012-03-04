@@ -177,15 +177,15 @@ grub_mdraid_detect (grub_disk_t disk,
 	/* Spares aren't implemented.  */
 	return NULL;
 
-      if (grub_le_to_cpu32 (sb.dev_number)
-	  >= grub_le_to_cpu32 (sb.raid_disks))
-	/* Spares aren't implemented.  */
-	return NULL;
-
       if (grub_disk_read (disk, sector, 
 			  (char *) &sb.dev_roles[sb.dev_number]
 			  - (char *) &sb,
 			  sizeof (role), &role))
+	return NULL;
+
+      if (grub_le_to_cpu16 (role)
+	  >= grub_le_to_cpu32 (sb.raid_disks))
+	/* Spares aren't implemented.  */
 	return NULL;
 
       id->uuidlen = 0;

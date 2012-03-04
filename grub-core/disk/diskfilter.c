@@ -41,24 +41,24 @@ static int lv_num = 0;
 
 static struct grub_diskfilter_lv *
 find_lv (const char *name);
-static int is_lv_readable (struct grub_diskfilter_lv *lv);
+static int is_lv_readable (struct grub_diskfilter_lv *lv, int easily);
 
 
 
 static grub_err_t
-is_node_readable (const struct grub_diskfilter_node *node)
+is_node_readable (const struct grub_diskfilter_node *node, int easily)
 {
   /* Check whether we actually know the physical volume we want to
      read from.  */
   if (node->pv)
     return !!(node->pv->disk);
   if (node->lv)
-    return is_lv_readable (node->lv);
+    return is_lv_readable (node->lv, easily);
   return 0;
 }
 
 static int
-is_lv_readable (struct grub_diskfilter_lv *lv)
+is_lv_readable (struct grub_diskfilter_lv *lv, int easily)
 {
   unsigned i, j;
   if (!lv)
@@ -69,10 +69,12 @@ is_lv_readable (struct grub_diskfilter_lv *lv)
       switch (lv->segments[i].type)
 	{
 	case GRUB_DISKFILTER_RAID6:
-	  need--;
+	  if (!easily)
+	    need--;
 	case GRUB_DISKFILTER_RAID4:
 	case GRUB_DISKFILTER_RAID5:
-	  need--;
+	  if (!easily)
+	    need--;
 	case GRUB_DISKFILTER_STRIPED:
 	  break;
 
@@ -92,7 +94,7 @@ is_lv_readable (struct grub_diskfilter_lv *lv)
 	}
 	for (j = 0; j < lv->segments[i].node_count; j++)
 	  {
-	    if (is_node_readable (lv->segments[i].nodes + j))
+	    if (is_node_readable (lv->segments[i].nodes + j, easily))
 	      have++;
 	    if (have >= need)
 	      break;
@@ -192,6 +194,8 @@ scan_devices (const char *arname)
 {
   grub_disk_dev_t p;
   grub_disk_pull_t pull;
+  struct grub_diskfilter_vg *vg;
+  struct grub_diskfilter_lv *lv = NULL;
 
   for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
     for (p = grub_disk_dev_list; p; p = p->next)
@@ -200,9 +204,20 @@ scan_devices (const char *arname)
 	{
 	  if ((p->iterate) (scan_disk, pull))
 	    return;
-	  if (arname && is_lv_readable (find_lv (arname)))
+	  if (arname && is_lv_readable (find_lv (arname), 1))
 	    return;
 	}
+
+  for (vg = array_list; vg; vg = vg->next)
+    {
+      if (vg->lvs)
+	for (lv = vg->lvs; lv; lv = lv->next)
+	  if (!lv->scanned && lv->fullname && lv->became_readable_at)
+	    {
+	      scan_disk (lv->fullname);
+	      lv->scanned = 1;
+	    }
+    }
 }
 
 static int
@@ -243,18 +258,36 @@ grub_diskfilter_memberlist (grub_disk_t disk)
   struct grub_diskfilter_lv *lv = disk->data;
   grub_disk_memberlist_t list = NULL, tmp;
   struct grub_diskfilter_pv *pv;
+  grub_disk_pull_t pull;
+  grub_disk_dev_t p;
 
-  if (lv->vg->pvs)
-    for (pv = lv->vg->pvs; pv; pv = pv->next)
-      {
-	if (!pv->disk)
-	  grub_util_error (_("Couldn't find physical volume `%s'."
-			     " Check your device.map"), pv->name);
-	tmp = grub_malloc (sizeof (*tmp));
-	tmp->disk = pv->disk;
-	tmp->next = list;
-	list = tmp;
-      }
+  if (!lv->vg->pvs)
+    return NULL;
+
+  pv = lv->vg->pvs;
+  while (pv && pv->disk)
+    pv = pv->next;
+
+  for (pull = 0; pv && pull < GRUB_DISK_PULL_MAX; pull++)
+    for (p = grub_disk_dev_list; pv && p; p = p->next)
+      if (p->id != GRUB_DISK_DEVICE_DISKFILTER_ID
+	  && p->iterate)
+	{
+	  (p->iterate) (scan_disk, pull);
+	  while (pv && pv->disk)
+	    pv = pv->next;
+	}
+
+  for (pv = lv->vg->pvs; pv; pv = pv->next)
+    {
+      if (!pv->disk)
+	grub_util_error (_("Couldn't find physical volume `%s'."
+			   " Check your device.map"), pv->name);
+      tmp = grub_malloc (sizeof (*tmp));
+      tmp->disk = pv->disk;
+      tmp->next = list;
+      list = tmp;
+    }
 
   return list;
 }
@@ -318,7 +351,7 @@ find_lv (const char *name)
 	{
 	  if (uuid_len == vg->uuid_len
 	      && grub_memcmp (uuidbin, vg->uuid, uuid_len) == 0)
-	    if (is_lv_readable (vg->lvs))
+	    if (is_lv_readable (vg->lvs, 0))
 	      return vg->lvs;
 	}
     }
@@ -328,7 +361,7 @@ find_lv (const char *name)
       if (vg->lvs)
 	for (lv = vg->lvs; lv; lv = lv->next)
 	  if (lv->fullname && grub_strcmp (lv->fullname, name) == 0
-	      && is_lv_readable (lv))
+	      && is_lv_readable (lv, 0))
 	    return lv;
     }
   return NULL;
@@ -997,10 +1030,14 @@ insert_array (grub_disk_t disk, const struct grub_diskfilter_pv_id *id,
 	pv->start_sector += pv->part_start;
 	/* Add the device to the array. */
 	for (lv = array->lvs; lv; lv = lv->next)
-	  if (!lv->became_readable_at && lv->fullname && is_lv_readable (lv))
+	  if (!lv->became_readable_at && lv->fullname && is_lv_readable (lv, 0))
 	    {
 	      lv->became_readable_at = ++inscnt;
-	      scan_disk (lv->fullname);
+	      if (is_lv_readable (lv, 1))
+		{
+		  scan_disk (lv->fullname);
+		  lv->scanned = 1;
+		}
 	    }
 	break;
       }

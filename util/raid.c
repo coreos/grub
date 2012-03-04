@@ -70,19 +70,22 @@ grub_util_raid_getmembers (const char *name, int bootable)
 
   devicelist = xmalloc ((info.nr_disks + 1) * sizeof (char *));
 
-  for (i = 0, j = 0; i <info.nr_disks; i++)
+  for (i = 0, j = 0; j < info.nr_disks; i++)
     {
       disk.number = i;
       ret = ioctl (fd, GET_DISK_INFO, &disk);
       if (ret != 0)
 	grub_util_error (_("ioctl GET_DISK_INFO error: %s"), strerror (errno));
+      
+      if (disk.state & (1 << MD_DISK_REMOVED))
+	continue;
 
       if (disk.state & (1 << MD_DISK_ACTIVE))
-	{
-	  devicelist[j] = grub_find_device (NULL,
-					    makedev (disk.major, disk.minor));
-	  j++;
-	}
+	devicelist[j] = grub_find_device (NULL,
+					  makedev (disk.major, disk.minor));
+      else
+	devicelist[j] = NULL;
+      j++;
     }
 
   devicelist[j] = NULL;
