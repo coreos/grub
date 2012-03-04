@@ -155,7 +155,8 @@ grub_cpu_relocator_forward (void *ptr, void *src, void *dest,
 
 grub_err_t
 grub_relocator32_boot (struct grub_relocator *rel,
-		       struct grub_relocator32_state state)
+		       struct grub_relocator32_state state,
+		       int avoid_efi_bootservices)
 {
   grub_err_t err;
   void *relst;
@@ -164,7 +165,8 @@ grub_relocator32_boot (struct grub_relocator *rel,
   err = grub_relocator_alloc_chunk_align (rel, &ch, 0,
 					  (0xffffffff - RELOCATOR_SIZEOF (32))
 					  + 1, RELOCATOR_SIZEOF (32), 16,
-					  GRUB_RELOCATOR_PREFERENCE_NONE);
+					  GRUB_RELOCATOR_PREFERENCE_NONE,
+					  avoid_efi_bootservices);
   if (err)
     return err;
 
@@ -207,7 +209,8 @@ grub_relocator16_boot (struct grub_relocator *rel,
 					  - GRUB_RELOCATOR16_STACK_SIZE,
 					  RELOCATOR_SIZEOF (16)
 					  + GRUB_RELOCATOR16_STACK_SIZE, 16,
-					  GRUB_RELOCATOR_PREFERENCE_NONE);
+					  GRUB_RELOCATOR_PREFERENCE_NONE,
+					  0);
   if (err)
     return err;
 
@@ -261,7 +264,8 @@ grub_relocator64_boot (struct grub_relocator *rel,
   err = grub_relocator_alloc_chunk_align (rel, &ch, min_addr,
 					  max_addr - RELOCATOR_SIZEOF (64),
 					  RELOCATOR_SIZEOF (64), 16,
-					  GRUB_RELOCATOR_PREFERENCE_NONE);
+					  GRUB_RELOCATOR_PREFERENCE_NONE,
+					  0);
   if (err)
     return err;
 

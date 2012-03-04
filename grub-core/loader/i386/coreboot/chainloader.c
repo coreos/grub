@@ -43,7 +43,7 @@ grub_chain_boot (void)
   grub_video_set_mode ("text", 0, 0);
 
   state.eip = entry;
-  return grub_relocator32_boot (relocator, state);
+  return grub_relocator32_boot (relocator, state, 0);
 }
 
 static grub_err_t

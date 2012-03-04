@@ -454,7 +454,7 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
 					  0x10000, 0x100000 - bufsize,
 					  bufsize, 4,
-					  GRUB_RELOCATOR_PREFERENCE_NONE);
+					  GRUB_RELOCATOR_PREFERENCE_NONE, 0);
   if (err)
     return err;
   ptrorig = get_virtual_current_address (ch);

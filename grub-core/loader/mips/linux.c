@@ -479,7 +479,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 					    + linux_size + 0x10000,
 					    (0x10000000 - size),
 					    size, 0x10000,
-					    GRUB_RELOCATOR_PREFERENCE_NONE);
+					    GRUB_RELOCATOR_PREFERENCE_NONE, 0);
 
     if (err)
       goto fail;

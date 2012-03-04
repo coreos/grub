@@ -200,7 +200,8 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, const char *filename, voi
 						    (0xffffffff - sh->sh_size)
 						    + 1, sh->sh_size,
 						    sh->sh_addralign,
-						    GRUB_RELOCATOR_PREFERENCE_NONE);
+						    GRUB_RELOCATOR_PREFERENCE_NONE,
+						    0);
 	    if (err)
 	      {
 		grub_dprintf ("multiboot_loader", "Error loading shdr %d\n", i);

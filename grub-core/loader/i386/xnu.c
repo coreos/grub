@@ -842,7 +842,7 @@ grub_xnu_boot_resume (void)
   state.eip = grub_xnu_entry_point;
   state.eax = grub_xnu_arg1;
 
-  return grub_relocator32_boot (grub_xnu_relocator, state); 
+  return grub_relocator32_boot (grub_xnu_relocator, state, 0); 
 }
 
 /* Setup video for xnu. */
@@ -1150,7 +1150,7 @@ grub_xnu_boot (void)
   grub_outb (0xff, 0x21);
   grub_outb (0xff, 0xa1);
 
-  return grub_relocator32_boot (grub_xnu_relocator, state);
+  return grub_relocator32_boot (grub_xnu_relocator, state, 0);
 }
 
 static grub_command_t cmd_devprop_load;

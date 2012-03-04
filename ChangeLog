@@ -1,6 +1,28 @@
 2012-03-03  Matthew Garrett  <mjg@redhat.com>
 2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid EFI boot services when loading Linux.
+
+	* grub-core/lib/i386/relocator.c (grub_relocator32_boot): New argument
+	avoid_efi_bootservices. All users updated.
+	* grub-core/lib/relocator.c (grub_relocator_alloc_chunk_align): New
+	argument avoid_efi_bootservices. All users updated.
+	Use grub_efi_mmap_iterate on EFI, grub_mmap_iterate if available.
+	* grub-core/loader/i386/linux.c (allocate_pages): New arguments
+	align, min_align, relocatable, prefered_address. All users updated.
+	Allocate avoiding boot services if kernel is relocatable.
+	(grub_cmd_linux): Check if kernel is relocatable.
+	* grub-core/mmap/efi/mmap.c (grub_machine_mmap_iterate): Move most to ..
+	(grub_efi_mmap_iterate): ... here. New argument avoid_efi_boot_services.
+	Skip GRUB_EFI_BOOT_SERVICES_DATA and GRUB_EFI_BOOT_SERVICES_CODE if
+	avoid_efi_boot_services.
+	(grub_machine_mmap_iterate): Wrap grub_efi_mmap_iterate.
+	* include/grub/i386/linux.h (linux_kernel_header): Update to 2.10.
+	(linux_kernel_params): Likewise.
+
+2012-03-03  Matthew Garrett  <mjg@redhat.com>
+2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use EDID on EFI.
 
 	* grub-core/kern/efi/efi.c (grub_efi_get_variable): New argument

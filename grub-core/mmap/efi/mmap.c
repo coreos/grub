@@ -29,7 +29,7 @@
   ((grub_efi_memory_descriptor_t *) ((char *) (desc) + (size)))
 
 grub_err_t
-grub_machine_mmap_iterate (grub_memory_hook_t hook)
+grub_efi_mmap_iterate (grub_memory_hook_t hook, int avoid_efi_boot_services)
 {
   grub_efi_uintn_t mmap_size = 0;
   grub_efi_memory_descriptor_t *map_buf = 0;
@@ -65,6 +65,13 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
 		    + desc->num_pages * 4096, desc->type);
       switch (desc->type)
 	{
+	case GRUB_EFI_BOOT_SERVICES_CODE:
+	  if (!avoid_efi_boot_services)
+	    {
+	      hook (desc->physical_start, desc->num_pages * 4096,
+		    GRUB_MEMORY_AVAILABLE);
+	      break;
+	    }
 	case GRUB_EFI_RUNTIME_SERVICES_CODE:
 	  hook (desc->physical_start, desc->num_pages * 4096,
 		GRUB_MEMORY_CODE);
@@ -79,6 +86,13 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
 	  grub_printf ("Unknown memory type %d, considering reserved\n",
 		       desc->type);
 
+	case GRUB_EFI_BOOT_SERVICES_DATA:
+	  if (!avoid_efi_boot_services)
+	    {
+	      hook (desc->physical_start, desc->num_pages * 4096,
+		    GRUB_MEMORY_AVAILABLE);
+	      break;
+	    }
 	case GRUB_EFI_RESERVED_MEMORY_TYPE:
 	case GRUB_EFI_RUNTIME_SERVICES_DATA:
 	case GRUB_EFI_MEMORY_MAPPED_IO:
@@ -90,8 +104,6 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
 
 	case GRUB_EFI_LOADER_CODE:
 	case GRUB_EFI_LOADER_DATA:
-	case GRUB_EFI_BOOT_SERVICES_CODE:
-	case GRUB_EFI_BOOT_SERVICES_DATA:
 	case GRUB_EFI_CONVENTIONAL_MEMORY:
 	  hook (desc->physical_start, desc->num_pages * 4096,
 		GRUB_MEMORY_AVAILABLE);
@@ -110,6 +122,12 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
     }
 
   return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_machine_mmap_iterate (grub_memory_hook_t hook)
+{
+  return grub_efi_mmap_iterate (hook, 0);
 }
 
 static inline grub_efi_memory_type_t

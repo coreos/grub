@@ -38,7 +38,8 @@ grub_reboot (void)
     while (1);
   err = grub_relocator_alloc_chunk_align (relocator, &ch, 0x1000, 0x1000,
 					  grub_reboot_end - grub_reboot_start,
-					  16, GRUB_RELOCATOR_PREFERENCE_NONE);
+					  16, GRUB_RELOCATOR_PREFERENCE_NONE,
+					  0);
   if (err)
     while (1);
   buf = get_virtual_current_address (ch);

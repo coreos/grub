@@ -189,7 +189,9 @@ free_pages (void)
 /* Allocate pages for the real mode code and the protected mode code
    for linux as well as a memory map buffer.  */
 static grub_err_t
-allocate_pages (grub_size_t prot_size)
+allocate_pages (grub_size_t prot_size, grub_size_t *align,
+		grub_size_t min_align, int relocatable,
+		grub_uint64_t prefered_address)
 {
   grub_size_t real_size, mmap_size;
   grub_err_t err;
@@ -254,7 +256,11 @@ allocate_pages (grub_size_t prot_size)
 
       return 0;
     }
+#ifdef GRUB_MACHINE_EFI
+  grub_efi_mmap_iterate (hook, 1);
+#else
   grub_mmap_iterate (hook);
+#endif
   if (! real_mode_target)
     {
       err = grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate real mode pages");
@@ -273,15 +279,36 @@ allocate_pages (grub_size_t prot_size)
   }
   efi_mmap_buf = (grub_uint8_t *) real_mode_mem + real_size + mmap_size;
 
-  prot_mode_target = GRUB_LINUX_BZIMAGE_ADDR;
-
   {
     grub_relocator_chunk_t ch;
-    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
-					   prot_mode_target, prot_size);
+    if (relocatable)
+      {
+	err = grub_relocator_alloc_chunk_align (relocator, &ch,
+						prefered_address,
+						prefered_address,
+						prot_size, 1,
+						GRUB_RELOCATOR_PREFERENCE_LOW,
+						1);
+	for (; err && *align >= min_align; (*align)--)
+	  {
+	    grub_errno = GRUB_ERR_NONE;
+	    err = grub_relocator_alloc_chunk_align (relocator, &ch,
+						    0x1000000, 0xffffffff,
+						    prot_size, 1 << *align,
+						    GRUB_RELOCATOR_PREFERENCE_LOW,
+						    1);
+	  }
+	if (err)
+	  goto fail;
+      }
+    else
+      err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					     prefered_address,
+					     prot_size);
     if (err)
       goto fail;
     prot_mode_mem = get_virtual_current_address (ch);
+    prot_mode_target = get_physical_target_address (ch);
   }
 
   grub_dprintf ("linux", "real_mode_mem = %lx, real_mode_pages = %x, "
@@ -612,7 +639,7 @@ grub_linux_boot (void)
   state.esi = real_mode_target;
   state.esp = real_mode_target;
   state.eip = params->code32_start;
-  return grub_relocator32_boot (relocator, state);
+  return grub_relocator32_boot (relocator, state, 0);
 }
 
 static grub_err_t
@@ -634,6 +661,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_size_t real_size, prot_size;
   grub_ssize_t len;
   int i;
+  grub_size_t align, min_align;
+  int relocatable;
+  grub_uint64_t preffered_address = GRUB_LINUX_BZIMAGE_ADDR;
 
   grub_dl_ref (my_mod);
 
@@ -707,7 +737,37 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   real_size = setup_sects << GRUB_DISK_SECTOR_BITS;
   prot_size = grub_file_size (file) - real_size - GRUB_DISK_SECTOR_SIZE;
 
-  if (allocate_pages (prot_size))
+  if (grub_le_to_cpu16 (lh.version) >= 0x205
+      && lh.kernel_alignment != 0
+      && ((lh.kernel_alignment - 1) & lh.kernel_alignment) == 0)
+    {
+      for (align = 0; align < 32; align++)
+	if (grub_le_to_cpu32 (lh.kernel_alignment) & (1 << align))
+	  break;
+      relocatable = grub_le_to_cpu32 (lh.relocatable);
+    }
+  else
+    {
+      align = 0;
+      relocatable = 0;
+    }
+    
+  if (grub_le_to_cpu16 (lh.version) >= 0x020a)
+    {
+      min_align = lh.min_alignment;
+      prot_size = grub_le_to_cpu32 (lh.init_size);
+      preffered_address = grub_le_to_cpu64 (lh.pref_address);
+    }
+  else
+    {
+      min_align = 0;
+      prot_size = grub_file_size (file) - real_size - GRUB_DISK_SECTOR_SIZE;
+      preffered_address = grub_le_to_cpu32 (lh.code32_start);
+    }
+
+  if (allocate_pages (prot_size, &align,
+		      min_align, relocatable,
+		      preffered_address))
     goto fail;
 
   params = (struct linux_kernel_params *) real_mode_mem;
@@ -1021,7 +1081,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     grub_relocator_chunk_t ch;
     err = grub_relocator_alloc_chunk_align (relocator, &ch,
 					    addr_min, addr, size, 0x1000,
-					    GRUB_RELOCATOR_PREFERENCE_HIGH);
+					    GRUB_RELOCATOR_PREFERENCE_HIGH,
+					    1);
     if (err)
       return err;
     initrd_mem = get_virtual_current_address (ch);
