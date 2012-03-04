@@ -185,6 +185,24 @@ grub_file_is_not_garbage ()
   return 0
 }
 
+version_sort ()
+{
+  case $version_sort_sort_has_v in
+    yes)
+      LC_ALL=C sort -V;;
+    no)
+      LC_ALL=C sort -n;;
+    *)
+      if sort -v </dev/null > /dev/null 2>&1; then
+        version_sort_sort_has_v=yes
+	LC_ALL=C sort -V
+      else
+        version_sort_sort_has_v=no
+        LC_ALL=C sort -n
+      fi;;
+   esac
+}
+
 version_test_numeric ()
 {
   version_test_numeric_a="$1"
@@ -201,7 +219,7 @@ version_test_numeric ()
     version_test_numeric_a="$version_test_numeric_b"
     version_test_numeric_b="$version_test_numeric_c"
   fi
-  if (echo "$version_test_numeric_a" ; echo "$version_test_numeric_b") | sort -n | head -n 1 | grep -qx "$version_test_numeric_b" ; then
+  if (echo "$version_test_numeric_a" ; echo "$version_test_numeric_b") | version_sort | head -n 1 | grep -qx "$version_test_numeric_b" ; then
     return 0
   else
     return 1

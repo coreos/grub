@@ -1,5 +1,12 @@
 2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use sort -V by the idea of Georgi Georgiev.
+
+	* util/grub-mkconfig_lib.in (version_sort): New function.
+	(version_test_numeric): Use version_sort.
+
+2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use submenus in grub-mkconfig.
 
 	* util/grub-mkconfig.in: Define GRUB_ACTUAL_DEFAULT.
