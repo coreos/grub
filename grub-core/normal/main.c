@@ -133,7 +133,25 @@ grub_normal_free_menu (grub_menu_t menu)
   while (entry)
     {
       grub_menu_entry_t next_entry = entry->next;
+      grub_size_t i;
 
+      if (entry->classes)
+	{
+	  struct grub_menu_entry_class *class;
+	  for (class = entry->classes; class; class = class->next)
+	    grub_free (class->name);
+	  grub_free (entry->classes);
+	}
+
+      if (entry->args)
+	{
+	  for (i = 0; entry->args[i]; i++)
+	    grub_free (entry->args[i]);
+	  grub_free (entry->args);
+	}
+
+      grub_free ((void *) entry->id);
+      grub_free ((void *) entry->users);
       grub_free ((void *) entry->title);
       grub_free ((void *) entry->sourcecode);
       entry = next_entry;
