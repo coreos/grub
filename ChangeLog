@@ -1,5 +1,10 @@
 2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/execute.c (grub_script_return): Replace ambiguous
+	"scope" with "body".
+
+2012-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/i386/linux.h (linux_kernel_header): Fix init_size type.
 	* grub-core/loader/i386/linux.c (grub_cmd_linux): Differentiate between
 	prot_size and prot_file_size.

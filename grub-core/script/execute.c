@@ -169,7 +169,7 @@ grub_script_return (grub_command_t cmd __attribute__((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       /* TRANSLATORS: it's about not being
 			  inside a function.  */
-		       N_("not in function scope"));
+		       N_("not in function body"));
 
   if (argc == 0)
     {
