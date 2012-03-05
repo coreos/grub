@@ -1,5 +1,11 @@
 2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Unify "option requires an argument" message
+	with similar messages in other files.
+	* util/grub-mkconfig.in: Likewise.
+
+2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-set-default.in: Replace printf with gettext_printf (the
 	string in in question is already translated from grub-reboot)
 
