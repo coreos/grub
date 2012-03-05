@@ -1,3 +1,7 @@
+2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Bump up the version to beta1.
+
 2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/linux.c (allocate_pages): Fix handling of the
