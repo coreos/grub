@@ -446,6 +446,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
 static struct argp argp = {
   options, argp_parser, N_("[OPTIONS]"),
+  /* TRANSLATORS: "one" is a shortcut for "keyboard layout".  */
   N_("Generate GRUB keyboard layout from Linux console one."),
   NULL, NULL, NULL
 };

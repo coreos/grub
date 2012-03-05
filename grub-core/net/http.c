@@ -116,6 +116,8 @@ parse_line (grub_file_t file, http_data_t data, char *ptr, grub_size_t len)
 	  return GRUB_ERR_NONE;
 	default:
 	  data->err = GRUB_ERR_NET_UNKNOWN_ERROR;
+	  /* TRANSLATORS: GRUB HTTP code is pretty young. So even perfectly
+	     valid answers like 403 will trigger this very generic message.  */
 	  data->errmsg = grub_xasprintf (_("unsupported HTTP error %d: %s"),
 					 code, ptr);
 	  return GRUB_ERR_NONE;

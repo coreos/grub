@@ -588,6 +588,7 @@ unable_to_embed:
 			  "setup by using blocklists.  However, blocklists are UNRELIABLE and "
 			  "their use is discouraged."));
   if (! force)
+    /* TRANSLATORS: Here GRUB refuses to continue with blocklist install.  */
     grub_util_error ("%s", _("will not proceed with blocklists"));
 
   /* The core image must be put on a filesystem unfortunately.  */
@@ -952,6 +953,8 @@ static struct argp_option options[] = {
    N_("do not probe for filesystems in DEVICE"), 0},
   {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   {"allow-floppy", 'a', 0,      0,
+   /* TRANSLATORS: The potential breakage isn't limited to floppies but it's
+      likely to make the install unbootable from HDD.  */
    N_("make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes."), 0},
 
   { 0, 0, 0, 0, 0, 0 }

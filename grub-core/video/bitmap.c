@@ -204,6 +204,8 @@ grub_video_bitmap_load (struct grub_video_bitmap **bitmap,
     }
 
   return grub_error (GRUB_ERR_BAD_FILE_TYPE,
+		     /* TRANSLATORS: We're speaking about bitmap images like
+			JPEG or PNG.  */
 		     N_("bitmap file `%s' is of"
 			" unsupported format"), filename);
 }

@@ -132,6 +132,8 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
     }
 
   mbr.entries[index].type = type;
+  /* TRANSLATORS: In this case we're actually writing to the disk and actively
+     modifying partition type rather than just defining it.  */
   grub_printf_ (N_("Setting partition type to 0x%x\n"), type);
 
    /* Write the parttable.  */

@@ -42,6 +42,9 @@ struct embed_signature
 };
 
 const char message_warn[][200] = {
+  /* TRANSLATORS: MBR gap and boot track is the same thing and is the space
+     between MBR and first partitition. If your language translates well only
+     "boot track", you can just use it everywhere.  */
   [TYPE_RAID] = N_("Sector %llu is already in use by raid controller `%s';"
 		   " avoiding it.  "
 		   "Please ask the manufacturer not to store data in MBR gap"),

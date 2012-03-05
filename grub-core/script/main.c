@@ -56,6 +56,8 @@ grub_script_init (void)
 					N_("[NUM]"), N_("Continue loops"));
   cmd_shift = grub_register_command ("shift", grub_script_shift,
 				     N_("[NUM]"),
+				     /* TRANSLATORS: Positional arguments are
+					arguments $0, $1, $2, ...  */
 				     N_("Shift positional parameters."));
   cmd_setparams = grub_register_command ("setparams", grub_script_setparams,
 					 N_("[VALUE]..."),

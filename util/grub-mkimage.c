@@ -1645,8 +1645,10 @@ static struct argp_option options[] = {
    N_("use images and modules under DIR [default=%s/<platform>]"), 0},
   {"prefix",  'p', N_("DIR"), 0, N_("set prefix directory [default=%s]"), 0},
   {"memdisk",  'm', N_("FILE"), 0,
-   /* TRANSLATORS: memdisk here isn't an identifier, it can be translated.  */
+   /* TRANSLATORS: "memdisk" here isn't an identifier, it can be translated.
+    "embed" is a verb (command description).  "*/
    N_("embed FILE as a memdisk image"), 0},
+   /* TRANSLATORS: "embed" is a verb (command description).  "*/
   {"config",   'c', N_("FILE"), 0, N_("embed FILE as an early config"), 0},
   /* TRANSLATORS: NOTE is a name of segment.  */
   {"note",   'n', 0, 0, N_("add NOTE segment for CHRP IEEE1275"), 0},

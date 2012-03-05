@@ -1,5 +1,21 @@
 2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/http.c: Add TRANSLATORS comments.
+	* grub-core/normal/cmdline.c: Likewise.
+	* grub-core/normal/misc.c: Likewise.
+	* grub-core/partmap/msdos.c: Likewise.
+	* grub-core/parttool/msdospart.c: Likewise.
+	* grub-core/script/execute.c: Likewise.
+	* grub-core/script/main.c: Likewise.
+	* grub-core/term/terminfo.c: Likewise.
+	* grub-core/video/bitmap.c: Likewise.
+	* util/grub-install.in: Likewise.
+	* util/grub-mkimage.c: Likewise.
+	* util/grub-mklayout.c: Likewise.
+	* util/grub-setup.c: Likewise.
+
+2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mount.c (fuse_init): Unify cryptomount and loopback messages
 	with similar messages in grub-fstest.
 

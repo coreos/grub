@@ -600,6 +600,10 @@ print_terminfo (void)
     [GRUB_TERM_CODE_TYPE_UTF8_LOGICAL >> GRUB_TERM_CODE_TYPE_SHIFT]
     = _("UTF-8"),
     [GRUB_TERM_CODE_TYPE_UTF8_VISUAL >> GRUB_TERM_CODE_TYPE_SHIFT]
+    /* TRANSLATORS: visually ordered UTF-8 is a non-compliant encoding
+       based on UTF-8 with right-to-left languages written in reverse.
+       Used on some terminals. Normal UTF-8 is refered as
+       "logically-ordered UTF-8" by opposition.  */
     = _("visually-ordered UTF-8"),
     [GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS >> GRUB_TERM_CODE_TYPE_SHIFT]
     = "Glyph descriptors",

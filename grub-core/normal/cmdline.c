@@ -186,6 +186,9 @@ print_completion (const char *item, grub_completion_type_t type, int count)
 	  grub_puts_ (N_("Possible arguments are:"));
 	  break;
 	default:
+	  /* TRANSLATORS: this message is used if none of above matches.
+	     This shouldn't happen but please use the general term for
+	     "thing" or "object".  */
 	  grub_puts_ (N_("Possible things are:"));
 	  break;
 	}

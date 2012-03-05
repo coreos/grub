@@ -86,6 +86,8 @@ grub_normal_print_device_info (const char *name)
 		{
 		  grub_unixtime2datetime (tm, &datetime);
 		  grub_xputs (" ");
+		  /* TRANSLATORS: Arguments are year, month, day, hour, minute,
+		     second, day of the week (translated).  */
 		  grub_printf_ (N_("- Last modification time %d-%02d-%02d "
 			       "%02d:%02d:%02d %s"),
 			       datetime.year, datetime.month, datetime.day,

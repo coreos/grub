@@ -81,6 +81,8 @@ disk_module=unspecified
 # Usage: usage
 # Print the usage.
 usage () {
+    # TRANSLATORS: INSTALL_DEVICE isn't an identifier and is the DEVICE you
+    # install to.
     gettext_printf "Usage: %s [OPTION] [INSTALL_DEVICE]" "$self"
     echo
     gettext "Install GRUB on your drive." ; echo
@@ -724,6 +726,8 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
 	dev="`echo $install_device | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`"
 	partno="`echo $install_device | sed -e 's/.*[^0-9]\([0-9]\+\)$/\1/'`"
 	ofpath="`$ofpathname $dev`" || {
+	    # TRANSLATORS: "device tree path" is the name of the device
+            # for IEEE1275
 	    gettext_printf "Couldn't find IEEE1275 device tree path for %s.\nYou will have to set \`boot-device' variable manually.\n" "$dev" 1>&2
 	    exit 1
 	}
