@@ -1,5 +1,10 @@
 2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-reboot.in (usage): Mention id posibility.
+	* util/grub-set-default.in (usage): Likewise.
+
+2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h (ALIGN_UP_OVERHEAD): New define.
 	* grub-core/loader/i386/linux.c (grub_cmd_initrd): Align initrds at 4.
 	* grub-core/loader/i386/pc/linux.c (grub_cmd_initrd): Likewise.

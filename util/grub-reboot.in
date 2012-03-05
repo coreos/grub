@@ -53,7 +53,7 @@ usage () {
     dirmsg="$(gettext_printf "expect GRUB images under the directory DIR/%s instead of the %s directory" "@grubdirname@" "$grubdir")"
     printf "  --boot-directory=%-7s%s\n" "$(gettext "DIR")" "$dirmsg"
     echo
-    gettext "MENU_ENTRY is a number or a menu item title."; echo
+    gettext "MENU_ENTRY is a number, a menu item title or a menu item identifier."; echo
     echo
     gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }
