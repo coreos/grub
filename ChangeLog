@@ -1,5 +1,10 @@
 2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mount.c (fuse_init): Unify cryptomount and loopback messages
+	with similar messages in grub-fstest.
+
+2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Unify "option requires an argument" message
 	with similar messages in other files.
 	* util/grub-mkconfig.in: Likewise.

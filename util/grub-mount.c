@@ -348,7 +348,7 @@ fuse_init (void)
       argv[1] = host_file;
 
       if (execute_command ("loopback", 2, argv))
-        grub_util_error ("%s", _("loopback command fails"));
+        grub_util_error (_("`loopback' command fails: %s"), grub_errmsg);
 
       grub_free (loop_name);
       grub_free (host_file);
@@ -358,7 +358,8 @@ fuse_init (void)
     {
       char *argv[2] = { xstrdup ("-a"), NULL};
       if (execute_command ("cryptomount", 1, argv))
-	grub_util_error (_("cryptomount command fails: %s"), grub_errmsg);
+	  grub_util_error (_("`cryptomount' command fails: %s"),
+			   grub_errmsg);
       free (argv[0]);
     }
 
