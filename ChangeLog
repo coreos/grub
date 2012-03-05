@@ -1,5 +1,10 @@
 2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c (allocate_pages): Fix handling of the
+	case when min_align = 0.
+
+2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/charset.c (bidi_line_wrap): Fix a spurious warning
 	and fix a case when line_start overflows.
 

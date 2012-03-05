@@ -289,7 +289,7 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
 						prot_size, 1,
 						GRUB_RELOCATOR_PREFERENCE_LOW,
 						1);
-	for (; err && *align >= min_align; (*align)--)
+	for (; err && *align + 1 > min_align; (*align)--)
 	  {
 	    grub_errno = GRUB_ERR_NONE;
 	    err = grub_relocator_alloc_chunk_align (relocator, &ch,
