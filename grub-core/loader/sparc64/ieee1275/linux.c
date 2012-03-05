@@ -403,7 +403,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       if (! files[i])
 	goto fail;
       nfiles++;
-      size += grub_file_size (files[i]);
+      size += ALIGN_UP(grub_file_size (files[i]), 4);
     }
 
   addr = 0x60000000;
@@ -438,6 +438,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 	  goto fail;
 	}
       ptr += cursize;
+      grub_memset (ptr, 0, ALIGN_UP_OVERHEAD (cursize, 4));
+      ptr += ALIGN_UP_OVERHEAD (cursize, 4);
     }
 
   initrd_addr = addr;

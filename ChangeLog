@@ -1,5 +1,15 @@
 2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h (ALIGN_UP_OVERHEAD): New define.
+	* grub-core/loader/i386/linux.c (grub_cmd_initrd): Align initrds at 4.
+	* grub-core/loader/i386/pc/linux.c (grub_cmd_initrd): Likewise.
+	* grub-core/loader/ia64/efi/linux.c (grub_cmd_initrd): Likewise.
+	* grub-core/loader/mips/linux.c (grub_cmd_initrd): Likewise.
+	* grub-core/loader/powerpc/ieee1275/linux.c (grub_cmd_initrd): Likewise.
+	* grub-core/loader/sparc64/ieee1275/linux.c (grub_cmd_initrd): Likewise.
+
+2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/menuentry.c (options): Remove
 	GRUB_ARG_OPTION_REPEATABLE.
 	Reported by: Andreas Vogel

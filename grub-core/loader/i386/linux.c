@@ -1034,7 +1034,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       if (! files[i])
 	goto fail;
       nfiles++;
-      size += grub_file_size (files[i]);
+      size += ALIGN_UP (grub_file_size (files[i]), 4);
     }
 
   initrd_pages = (page_align (size) >> 12);
@@ -1101,6 +1101,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 	  goto fail;
 	}
       ptr += cursize;
+      grub_memset (ptr, 0, ALIGN_UP_OVERHEAD (cursize, 4));
+      ptr += ALIGN_UP_OVERHEAD (cursize, 4);
     }
 
   grub_dprintf ("linux", "Initrd, addr=0x%x, size=0x%x\n",
