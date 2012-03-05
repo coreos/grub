@@ -1,5 +1,10 @@
 2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/charset.c (bidi_line_wrap): Fix a spurious warning
+	and fix a case when line_start overflows.
+
+2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-reboot.in (usage): Mention id posibility.
 	* util/grub-set-default.in (usage): Likewise.
 
