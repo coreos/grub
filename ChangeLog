@@ -1,3 +1,9 @@
+2012-03-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/menuentry.c (options): Remove
+	GRUB_ARG_OPTION_REPEATABLE.
+	Reported by: Andreas Vogel
+
 2012-03-04  Andreas Vogel <Andreas.Vogel@anvo-it.de>
 
 	* grub-core/normal/main.c (grub_normal_free_menu): Fix memory leak.

@@ -36,8 +36,7 @@ static const struct grub_arg_option options[] =
      N_("Keyboard key to quickly boot this entry."), N_("KEYBOARD_KEY"), ARG_TYPE_STRING},
     {"source", 4, 0,
      N_("Use STRING as menu entry body."), N_("STRING"), ARG_TYPE_STRING},
-    {"id", 1, GRUB_ARG_OPTION_REPEATABLE,
-     N_("Menu entry identifier."), N_("STRING"), ARG_TYPE_STRING},
+    {"id", 0, 0, N_("Menu entry identifier."), N_("STRING"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
 
