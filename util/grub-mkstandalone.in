@@ -62,7 +62,7 @@ usage () {
     dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/@PACKAGE@")"
     printf "  -d, --directory=%-8s%s\n" \
 	"DIR" "$dir_msg"
-    printf     "  -O, --format=%-11s%s" "$(gettext "FORMAT")" "$(gettext "generate an image in format")"; echo
+    printf     "  -O, --format=%-11s%s" "$(gettext "FORMAT")" "$(gettext "generate an image in FORMAT")"; echo
     printf "                          %s %s\n" "$(gettext "available formats:")" "$formats"
     echo
     printf     "  -C, --compression=(xz|none|auto)  %s\n" "$(gettext "choose the compression to use")"
