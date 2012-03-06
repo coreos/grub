@@ -142,6 +142,11 @@ add_glyph (struct grub_font_info *font_info, FT_UInt glyph_idx, FT_Face face,
       printf (_("Freetype Error %d loading glyph 0x%x for U+0x%x%s"),
 	      err, glyph_idx, char_code & GRUB_FONT_CODE_CHAR_MASK,
 	      char_code & GRUB_FONT_CODE_RIGHT_JOINED
+	      /* TRANSLATORS: These qualifiers are used for cursive typography,
+		 mainly Arabic. Note that the terms refer to the visual position
+		 and not logical order and if used in left-to-right script then
+		 leftmost is initial but with right-to-left script like Arabic
+		 rightmost is the initial.  */
 	      ? ((char_code & GRUB_FONT_CODE_LEFT_JOINED) ? _(" (medial)"):
 		 _(" (leftmost)"))
 	      : ((char_code & GRUB_FONT_CODE_LEFT_JOINED) ? _(" (rightmost)"):
@@ -626,6 +631,7 @@ add_font (struct grub_font_info *font_info, FT_Face face, int nocut)
 		for (j = 0; j < 4; j++)
 		  if (!grub_isgraph (str[j]))
 		    str[j] = '?';
+		/* TRANSLATORS: It's gsub feature, not gsub font.  */
 		printf (_("Unknown gsub font feature 0x%x (%s)\n"),
 			feattag, str);
 	      }
@@ -965,6 +971,7 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 
 static struct argp_option options[] = {
   {"output",  'o', N_("FILE"), 0, N_("save output in FILE [required]"), 0},
+  /* TRANSLATORS: bitmaps are images like e.g. in JPEG.  */
   {"ascii-bitmaps",  0x102, 0, 0, N_("save only the ASCII bitmaps"), 0},
   {"width-spec",  0x103, 0, 0, 
    /* TRANSLATORS: this refers to creating a file containing the width of
@@ -975,8 +982,13 @@ static struct argp_option options[] = {
       This option is used to chose among them, the first face being '0'.
       Rarely used.  */
    N_("set face index"), 0},
-  {"range",  'r', N_("FROM-TO[,FROM-TO]"), 0, N_("set font range"), 0},
-  {"name",  'n', N_("NAME"), 0, N_("set font family name"), 0},
+  {"range",  'r', N_("FROM-TO[,FROM-TO]"), 0, 
+   /* TRANSLATORS: It refers to the range of characters in font.  */
+   N_("set font range"), 0},
+  {"name",  'n', N_("NAME"), 0, 
+   /* TRANSLATORS: "family name" for font is just a generic name without suffix
+      like "Bold".  */
+   N_("set font family name"), 0},
   {"size",  's', N_("SIZE"), 0, N_("set font size"), 0},
   {"desc",  'd', N_("NUM"), 0, N_("set font descent"), 0},
   {"asce",  'c', N_("NUM"), 0, N_("set font ascent"), 0},
@@ -1056,6 +1068,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
 	    a = strtoul (p, &p, 0);
 	    if (*p != '-')
+	      /* TRANSLATORS: It refers to the range of characters in font.  */
 	      grub_util_error ("%s", _("invalid font range"));
 	    b = strtoul (p + 1, &p, 0);
 	    if ((arguments->font_info.num_range

@@ -540,6 +540,9 @@ grub_video_set_mode (const char *modestring,
 	{
 	  grub_free (modevar);
 
+	  /* TRANSLATORS: This doesn't imply that there is no available video
+	     mode at all. All modes may have been filtered out by some criteria.
+	   */
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			     N_("no suitable video mode found"));
 	}

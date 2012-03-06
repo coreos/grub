@@ -1174,6 +1174,8 @@ test_zlib_header (grub_gzio_t gzio)
   /* Check that compression method is DEFLATE.  */
   if ((cmf & 0xf) != DEFLATED)
     {
+      /* TRANSLATORS: It's about given file having some strange format, not
+	 complete lack of gzip support.  */
       grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("unsupported gzip format"));
       return 0;
     }

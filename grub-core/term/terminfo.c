@@ -629,6 +629,8 @@ static const struct grub_arg_option options[] =
   {"visual-utf8", 'v', 0, N_("Terminal is visually-ordered UTF-8."), 0,
    ARG_TYPE_NONE},
   {"geometry", 'g', 0, N_("Terminal has specified geometry."),
+   /* TRANSLATORS: "x" has to be entered in, like an identifier, so please don't
+      use better Unicode codepoints.  */
    N_("WIDTHxHEIGHT."), ARG_TYPE_STRING},
   {0, 0, 0, 0, 0, 0}
 };

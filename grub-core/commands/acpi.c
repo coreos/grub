@@ -54,6 +54,7 @@ static const struct grub_arg_option options[] = {
    N_("Set creator field of RSDP, XSDT and RSDT."), 0, ARG_TYPE_STRING},
   {"oemtablecreatorrev", 'd', 0,
    N_("Set creator revision of RSDP, XSDT and RSDT."), 0, ARG_TYPE_INT},
+  /* TRANSLATORS: "hangs" here is a noun, not a verb.  */
   {"no-ebda", 'e', 0, N_("Don't update EBDA. May fix failures or hangs on some."
    " BIOSes but makes it ineffective with OS not receiving RSDP from GRUB."),
    0, ARG_TYPE_NONE},

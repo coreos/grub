@@ -770,6 +770,8 @@ GRUB_MOD_INIT(legacycfg)
     = grub_register_command ("legacy_source",
 			     grub_cmd_legacy_source,
 			     N_("FILE"),
+			     /* TRANSLATORS: "legacy config" means
+				"config as used by grub-legacy".  */
 			     N_("Parse legacy config in same context"));
   cmd_configfile
     = grub_register_command ("legacy_configfile",

@@ -371,6 +371,8 @@ GRUB_MOD_INIT (sendkey)
 {
   cmd = grub_register_extcmd ("sendkey", grub_cmd_sendkey, 0,
 			      N_("[KEYSTROKE1] [KEYSTROKE2] ..."),
+			      /* TRANSLATORS: It can emulate multiple
+				 keypresses.  */
 			      N_("Emulate a keystroke"), options);
 
   preboot_hook 

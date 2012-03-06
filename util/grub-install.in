@@ -101,6 +101,8 @@ usage () {
     printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     printf "  --grub-mkrelpath=%-7s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkrelpath")"
     printf "  --grub-probe=%-11s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-probe")"
+    # TRANSLATORS: "may break" doesn't just mean that option wouldn't have any
+    # effect but that it will make the resulting install unbootable from HDD.
     printf "  --allow-floppy          %s\n" "$(gettext "make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes.")"
     printf "  --recheck               %s\n" "$(gettext "delete device map if it already exists")"
     printf "  --force                 %s\n" "$(gettext "install even if problems are detected")"

@@ -260,6 +260,9 @@ GRUB_MOD_INIT(hashsum)
   cmd = grub_register_extcmd ("hashsum", grub_cmd_hashsum, 0,
 			      N_("-h HASH [-c FILE [-p PREFIX]] "
 				 "[FILE1 [FILE2 ...]]"),
+			      /* TRANSLATORS: "hash checksum" is just to
+				 be a bit more precise, you can treat it as
+				 just "hash".  */
 			      N_("Compute or check hash checksum."),
 			      options);
   cmd_md5 = grub_register_extcmd ("md5sum", grub_cmd_hashsum, 0,

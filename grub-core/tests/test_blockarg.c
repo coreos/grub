@@ -44,6 +44,8 @@ GRUB_MOD_INIT(test_blockarg)
   cmd = grub_register_extcmd ("test_blockarg", test_blockarg,
 			      GRUB_COMMAND_FLAG_BLOCKS,
 			      N_("BLOCK"),
+			      /* TRANSLATORS: this is the BLOCK-argument, not
+			       environment block.  */
 			      N_("Print and execute block argument."), 0);
 }
 

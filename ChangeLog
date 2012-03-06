@@ -1,10 +1,27 @@
 2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/acpi.c: Add TRANSLATORS comments.
+	* grub-core/commands/gptsync.c: Likewise.
+	* grub-core/commands/hashsum.c: Likewise.
+	* grub-core/commands/i386/pc/sendkey.c: Likewise.
+	* grub-core/commands/legacycfg.c: Likewise.
+	* grub-core/io/gzio.c: Likewise.
+	* grub-core/net/net.c: Likewise.
+	* grub-core/term/gfxterm.c: Likewise.
+	* grub-core/term/terminfo.c: Likewise.
+	* grub-core/tests/test_blockarg.c: Likewise.
+	* grub-core/video/video.c: Likewise.
+	* util/grub-install.in: Likewise.
+	* util/grub-mkfont.c: Likewise.
+
+2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (help_filter): Add missing capitalisation.
 
 2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/search_wrap.c (options): Fix a typo.
+	Reported by: David Prévot.
 
 2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 

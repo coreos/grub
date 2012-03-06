@@ -1494,6 +1494,8 @@ static grub_command_t cmd_lsaddr, cmd_slaac;
 GRUB_MOD_INIT(net)
 {
   cmd_addaddr = grub_register_command ("net_add_addr", grub_cmd_addaddr,
+					/* TRANSLATORS: HWADDRESS stands for
+					   "hardware address".  */
 				       N_("SHORTNAME CARD ADDRESS [HWADDRESS]"),
 				       N_("Add a network address."));
   cmd_slaac = grub_register_command ("net_ipv6_autoconf",
@@ -1505,6 +1507,7 @@ GRUB_MOD_INIT(net)
 				       N_("SHORTNAME"),
 				       N_("Delete a network address."));
   cmd_addroute = grub_register_command ("net_add_route", grub_cmd_addroute,
+					/* TRANSLATORS: "gw" is a keyword.  */
 					N_("SHORTNAME NET [INTERFACE| gw GATEWAY]"),
 					N_("Add a network route."));
   cmd_delroute = grub_register_command ("net_del_route", grub_cmd_delroute,

@@ -1102,7 +1102,7 @@ static const struct grub_arg_option background_image_cmd_options[] =
   {
     {"mode", 'm', 0, N_("Background image mode."),
     /* TRANSLATORS: This refers to background image mode (stretched or 
-       in left-top conrner). Note that GRUB will accept only original
+       in left-top corner). Note that GRUB will accept only original
        keywords stretch and normal, not the translated ones.
        So please put both in translation
        e.g. stretch(=%STRETCH%)|normal(=%NORMAL). Since many people
