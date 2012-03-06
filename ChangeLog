@@ -1,5 +1,10 @@
 2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-kbdcomp.in: Change "layout" to "keyboard layout" in
+	description.
+
+2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-script-check.c (main): Fix a syntax error message which was
 	unclear.
 

@@ -24,7 +24,7 @@ self=`basename $0`
 
 usage () {
     gettext_printf "Usage: %s -o OUTPUT CKBMAP_ARGUMENTS...\n" "$self"
-    gettext "Make GRUB layout file."; echo
+    gettext "Make GRUB keyboard layout file."; echo
     echo
     printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
     printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
