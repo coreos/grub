@@ -51,7 +51,7 @@ static const struct grub_arg_option options[] =
 	"If HINT ends in comma, also try subpartitions"),
      N_("HINT"), ARG_TYPE_STRING},
     {"hint-baremetal",   0, GRUB_ARG_OPTION_REPEATABLE,
-     N_("First try the device HINT if direct hardware access is suported. "
+     N_("First try the device HINT if direct hardware access is supported. "
 	"If HINT ends in comma, also try subpartitions"),
      N_("HINT"), ARG_TYPE_STRING},
     {"hint-efi",   0, GRUB_ARG_OPTION_REPEATABLE,

@@ -1,5 +1,9 @@
 2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/search_wrap.c (options): Fix a typo.
+
+2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-kbdcomp.in: Change "layout" to "keyboard layout" in
 	description.
 
