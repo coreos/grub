@@ -188,7 +188,7 @@ main (int argc, char *argv[])
 
   if (found_input && script == 0)
     {
-      fprintf (stderr, _("error: line no: %u\n"), lineno);
+      fprintf (stderr, _("Syntax error at line %u\n"), lineno);
       return 1;
     }
 
