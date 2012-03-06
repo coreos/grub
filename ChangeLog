@@ -1,5 +1,9 @@
 2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c (generate_image): Unify diskboot.img size message.
+
+2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/http.c: Add TRANSLATORS comments.
 	* grub-core/normal/cmdline.c: Likewise.
 	* grub-core/normal/misc.c: Likewise.

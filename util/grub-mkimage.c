@@ -1288,7 +1288,8 @@ generate_image (const char *dir, const char *prefix,
 	boot_path = grub_util_get_path (dir, "diskboot.img");
 	boot_size = grub_util_get_image_size (boot_path);
 	if (boot_size != GRUB_DISK_SECTOR_SIZE)
-	  grub_util_error ("%s", _("diskboot.img is not one sector size"));
+	  grub_util_error (_("diskboot.img size must be %u bytes"),
+			   GRUB_DISK_SECTOR_SIZE);
 
 	boot_img = grub_util_read_image (boot_path);
 
