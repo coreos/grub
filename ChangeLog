@@ -1,4 +1,9 @@
-2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/search_wrap.c (options): Fix wrong copy-paste in
+	messages.
+
+2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-fstest.c (options): Remove OPTION_ARG_OPTIONAL from options
 	without argument.

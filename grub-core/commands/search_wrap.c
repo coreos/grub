@@ -47,7 +47,7 @@ static const struct grub_arg_option options[] =
 	"If HINT ends in comma, also try subpartitions"),
      N_("HINT"), ARG_TYPE_STRING},
     {"hint-bios",   0, GRUB_ARG_OPTION_REPEATABLE,
-     N_("First try the device HINT if on currently running BIOS. "
+     N_("First try the device HINT if currently running on BIOS. "
 	"If HINT ends in comma, also try subpartitions"),
      N_("HINT"), ARG_TYPE_STRING},
     {"hint-baremetal",   0, GRUB_ARG_OPTION_REPEATABLE,
@@ -55,11 +55,11 @@ static const struct grub_arg_option options[] =
 	"If HINT ends in comma, also try subpartitions"),
      N_("HINT"), ARG_TYPE_STRING},
     {"hint-efi",   0, GRUB_ARG_OPTION_REPEATABLE,
-     N_("First try the device HINT if on currently running EFI. "
+     N_("First try the device HINT if currently running on EFI. "
 	"If HINT ends in comma, also try subpartitions"),
      N_("HINT"), ARG_TYPE_STRING},
     {"hint-arc",   0, GRUB_ARG_OPTION_REPEATABLE,
-     N_("First try the device HINT if on currently running ARC."
+     N_("First try the device HINT if currently running on ARC."
 	" If HINT ends in comma, also try subpartitions"),
      N_("HINT"), ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
