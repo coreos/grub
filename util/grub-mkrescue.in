@@ -66,7 +66,7 @@ usage () {
     printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
     printf "  -o, --output=%-11s%s\n" "$filetrans" "$(gettext "save output in FILE [required]")"
     printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
-    printf "  --rom-directory=%-8s%s\n" "$(gettext "DIR")" "$(gettext "save rom images in DIR [optional]")"
+    printf "  --rom-directory=%-8s%s\n" "$(gettext "DIR")" "$(gettext "save ROM images in DIR [optional]")"
     # TRANSLATORS: xorriso is a program for creating ISOs and burning CDs
     printf "  --xorriso=%-14s%s\n" "$filetrans" "$(gettext "use FILE as xorriso [optional]")"
     printf "  --grub-mkimage=%-9s%s\n" "$filetrans" "$(gettext "use FILE as grub-mkimage")"
