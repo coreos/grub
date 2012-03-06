@@ -1687,7 +1687,7 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 	    *ptr++ = ' ';
 	  }
 	ptr[-2] = 0;
-	ret = xasprintf ("%s\n%s %s", _("generate an image in format"),
+	ret = xasprintf ("%s\n%s %s", _("generate an image in FORMAT"),
 			 _("available formats:"), formats);
 	free (formats);
 	return ret;
