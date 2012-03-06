@@ -107,7 +107,7 @@ usage () {
     printf "  --recheck               %s\n" "$(gettext "delete device map if it already exists")"
     printf "  --force                 %s\n" "$(gettext "install even if problems are detected")"
     printf "  --force-file-id         %s\n" "$(gettext "use identifier file even if UUID is available")"
-    printf "  --disk-module=%-10s%s\n" "$(gettext "MODULE")" "$(gettext "disk module to use (biosdisk or native). This option is only available on BIOS target")"
+    printf "  --disk-module=%-10s%s\n" "$(gettext "MODULE")" "$(gettext "disk module to use (biosdisk or native). This option is only available on BIOS target.")"
     printf "  --no-nvram              %s\n" "$(gettext "don't update the \`boot-device' NVRAM variable. This option is only available on IEEE1275 targets.")"
     printf "  --removable             %s\n" "$(gettext "the installation device is removable. This option is only available on EFI.")"
     printf "  --bootloader-id=%-8s%s\n" "$(gettext "ID")" "$(gettext "the ID of bootloader. This option is only available on EFI.")"

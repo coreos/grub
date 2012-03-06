@@ -1,5 +1,9 @@
 2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Add missing dot at the end of sentence.
+
+2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/videoinfo.c: Add TRANSLATORS comments.
 	* grub-core/commands/videotest.c: Likewise.
 	* grub-core/loader/i386/linux.c: Likewise.
