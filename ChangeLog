@@ -1,5 +1,11 @@
 2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-fstest.c (options): Remove OPTION_ARG_OPTIONAL from options
+	without argument.
+	* util/grub-mount.c (options): Likewise.
+
+2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (generate_image): Unify diskboot.img size message.
 
 2012-03-05  Vladimir Serbinenko  <phcoder@gmail.com>

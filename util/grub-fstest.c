@@ -452,12 +452,12 @@ static struct argp_option options[] = {
   {"length",    'n', "N",           0, N_("Handle N bytes in output file."),   2},
   {"diskcount", 'c', "N",           0, N_("Specify the number of input files."),                   2},
   {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
-  {"crypto",   'C', NULL, OPTION_ARG_OPTIONAL, N_("Mount crypto devices."), 2},
+  {"crypto",   'C', NULL, 0, N_("Mount crypto devices."), 2},
   {"zfs-key",      'K',
    /* TRANSLATORS: "prompt" is a keyword.  */
    N_("FILE|prompt"), 0, N_("Load zfs crypto key."),                 2},
-  {"verbose",   'v', NULL, OPTION_ARG_OPTIONAL, N_("print verbose messages."), 2},
-  {"uncompress", 'u', NULL, OPTION_ARG_OPTIONAL, N_("Uncompress data."), 2},
+  {"verbose",   'v', NULL, 0, N_("print verbose messages."), 2},
+  {"uncompress", 'u', NULL, 0, N_("Uncompress data."), 2},
   {0, 0, 0, 0, 0, 0}
 };
 
