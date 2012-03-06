@@ -208,7 +208,12 @@ static grub_command_t cmd_vbe;
 GRUB_MOD_INIT(videotest)
 {
   cmd = grub_register_command ("videotest", grub_cmd_videotest,
+			       /* TRANSLATORS: "x" has to be entered in,
+				  like an identifier, so please don't
+				  use better Unicode codepoints.  */
 			       N_("[WxH]"),
+			       /* TRANSLATORS: Here, on the other hand, it's
+				  nicer to use unicode cross instead of x.  */
 			       N_("Test video subsystem in mode WxH."));
 #ifdef GRUB_MACHINE_PCBIOS
   cmd_vbe = grub_register_command ("vbetest", grub_cmd_videotest,

@@ -221,12 +221,19 @@ static grub_command_t cmd_vbe;
 
 GRUB_MOD_INIT(videoinfo)
 {
-  cmd = grub_register_command ("videoinfo", grub_cmd_videoinfo, N_("[WxH[xD]]"),
+  cmd = grub_register_command ("videoinfo", grub_cmd_videoinfo,
+			       /* TRANSLATORS: "x" has to be entered in,
+				  like an identifier, so please don't
+				  use better Unicode codepoints.  */
+			       N_("[WxH[xD]]"),
 			       N_("List available video modes. If "
 				     "resolution is given show only modes"
 				     " matching it."));
 #ifdef GRUB_MACHINE_PCBIOS
   cmd_vbe = grub_register_command ("vbeinfo", grub_cmd_videoinfo,
+				   /* TRANSLATORS: "x" has to be entered in,
+				      like an identifier, so please don't
+				      use better Unicode codepoints.  */
 				   N_("[WxH[xD]]"),
 				   N_("List available video modes. If "
 				      "resolution is given show only modes"
