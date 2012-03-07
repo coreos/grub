@@ -1,3 +1,11 @@
+2012-03-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/linux.c (prot_init_space): New variable.
+	(allocate_pages): Improve dprintf.
+	(grub_cmd_linux): Fill prot_init_space. Fix improper usage of
+	code32_start. Fill code32_start and kernel_alignment in params.
+	(grub_cmd_initrd): Use prot_init_space.
+
 2012-03-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkstandalone.in: Propagate grub-mkimage.c change.

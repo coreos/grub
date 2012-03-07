@@ -73,6 +73,7 @@ static void *initrd_mem;
 static grub_addr_t initrd_mem_target;
 static grub_uint32_t real_mode_pages;
 static grub_uint32_t prot_mode_pages;
+static grub_size_t prot_init_space;
 static grub_uint32_t initrd_pages;
 static struct grub_relocator *relocator = NULL;
 static void *efi_mmap_buf;
@@ -311,11 +312,12 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
     prot_mode_target = get_physical_target_address (ch);
   }
 
-  grub_dprintf ("linux", "real_mode_mem = %lx, real_mode_pages = %x, "
-                "prot_mode_mem = %lx, prot_mode_pages = %x\n",
-                (unsigned long) real_mode_mem, (unsigned) real_mode_pages,
-                (unsigned long) prot_mode_mem, (unsigned) prot_mode_pages);
-
+  grub_dprintf ("linux", "real_mode_mem = %lx, real_mode_target = %lx, real_mode_pages = %x\n",
+                (unsigned long) real_mode_mem, (unsigned long) real_mode_target,
+		(unsigned) real_mode_pages);
+  grub_dprintf ("linux", "prot_mode_mem = %lx, prot_mode_target = %lx, prot_mode_pages = %x\n",
+                (unsigned long) prot_mode_mem, (unsigned long) prot_mode_target,
+		(unsigned) prot_mode_pages);
   return GRUB_ERR_NONE;
 
  fail:
@@ -756,13 +758,16 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     {
       min_align = lh.min_alignment;
       prot_size = grub_le_to_cpu32 (lh.init_size);
+      prot_init_space = page_align (prot_size);
       preffered_address = grub_le_to_cpu64 (lh.pref_address);
     }
   else
     {
-      min_align = 0;
+      min_align = align;
       prot_size = prot_file_size;
-      preffered_address = grub_le_to_cpu32 (lh.code32_start);
+      preffered_address = GRUB_LINUX_BZIMAGE_ADDR;
+      /* Usually, the compression ratio is about 50%.  */
+      prot_init_space = page_align (prot_size) * 3;
     }
 
   if (allocate_pages (prot_size, &align,
@@ -774,6 +779,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_memset (params, 0, GRUB_LINUX_CL_OFFSET + maximal_cmdline_size);
   grub_memcpy (&params->setup_sects, &lh.setup_sects, sizeof (lh) - 0x1F1);
 
+  params->code32_start = prot_mode_target + lh.code32_start - GRUB_LINUX_BZIMAGE_ADDR;
+  params->kernel_alignment = (1 << align);
   params->ps_mouse = params->padding10 =  0;
 
   len = 0x400 - sizeof (lh);
@@ -1066,8 +1073,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
      worse than that of Linux 2.3.xx, so avoid the last 64kb.  */
   addr_max -= 0x10000;
 
-  /* Usually, the compression ratio is about 50%.  */
-  addr_min = (grub_addr_t) prot_mode_target + ((prot_mode_pages * 3) << 12)
+  addr_min = (grub_addr_t) prot_mode_target + prot_init_space
              + page_align (size);
 
   /* Put the initrd as high as possible, 4KiB aligned.  */
