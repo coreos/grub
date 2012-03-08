@@ -1,3 +1,9 @@
+2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Add missing
+	byte-swap on big-endian.
+	Reported by: Lennart Sorensen
+
 2012-03-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/linux.c (prot_init_space): New variable.
