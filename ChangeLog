@@ -1,5 +1,9 @@
 2012-03-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Fix install non-PreP IEEE1275 install.
+
+2012-03-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/i386/pc/sendkey.c (GRUB_MOD_INIT): Fix confusing
 	message.
 	* util/grub-install.in: Fix anf gettextize error message.

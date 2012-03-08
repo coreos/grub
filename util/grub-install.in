@@ -727,22 +727,23 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
 	    echo "$1: Not found." 1>&2
 	    exit 1
 	fi
-        # Get the Open Firmware device tree path translation.
-	dev="`echo $install_device | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`"
-	partno="`echo $install_device | sed -e 's/.*[^0-9]\([0-9]\+\)$/\1/'`"
-	ofpath="`$ofpathname $dev`" || {
+	if  [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" != "powerpc-ieee1275" ] \
+	    || [ -z "${install_device}" ]; then
+         # Get the Open Firmware device tree path translation.
+	    dev="`echo $grub_device | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`"
+	    partno="`echo $grub_device | sed -e 's/.*[^0-9]\([0-9]\+\)$/\1/'`"
+	    ofpath="`$ofpathname $dev`" || {
 	    # TRANSLATORS: "device tree path" is the name of the device
             # for IEEE1275
-	    gettext_printf "Couldn't find IEEE1275 device tree path for %s.\nYou will have to set \`boot-device' variable manually.\n" "$dev" 1>&2
-	    exit 1
-	}
+		gettext_printf "Couldn't find IEEE1275 device tree path for %s.\nYou will have to set \`boot-device' variable manually.\n" "$dev" 1>&2
+		exit 1
+	    }
 
-        # Point boot-device at the new grub install
-	boot_device="$ofpath:$partno,"`"$grub_mkrelpath" "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" | sed 's,/,\\\\,g'`
+            # Point boot-device at the new grub install
+	    boot_device="$ofpath:$partno,"`"$grub_mkrelpath" "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" | sed 's,/,\\\\,g'`
 
-        # If a install device is defined, copy the core.elf to PReP partition. 
-	if  [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "powerpc-ieee1275" ] \
-	    && [ -n "${install_device}" ]; then
+        # If a install device is defined, copy the core.elf to PReP partition.
+	else
             if [ "$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t msdos_parttype)" != "41" ]; then
 		gettext "The chosen partition is not a PReP partition." 1>&2
 		echo 1>&2
