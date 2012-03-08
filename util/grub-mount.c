@@ -408,7 +408,7 @@ fuse_init (void)
 
 static struct argp_option options[] = {  
   {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."),                 2},
-  {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
+  {"debug",     'd', N_("STRING"),           0, N_("Set debug environment variable."),  2},
   {"crypto",   'C', NULL, 0, N_("Mount crypto devices."), 2},
   {"zfs-key",      'K',
    /* TRANSLATORS: "prompt" is a keyword.  */

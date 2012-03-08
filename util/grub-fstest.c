@@ -448,10 +448,10 @@ static struct argp_option options[] = {
   {N_("xnu_uuid DEVICE"), 0, 0, OPTION_DOC, N_("Compute XNU UUID of the device."), 1},
   
   {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."),                 2},
-  {"skip",      's', "N",           0, N_("Skip N bytes from output file."),   2},
-  {"length",    'n', "N",           0, N_("Handle N bytes in output file."),   2},
-  {"diskcount", 'c', "N",           0, N_("Specify the number of input files."),                   2},
-  {"debug",     'd', "S",           0, N_("Set debug environment variable."),  2},
+  {"skip",      's', N_("NUM"),           0, N_("Skip N bytes from output file."),   2},
+  {"length",    'n', N_("NUM"),           0, N_("Handle N bytes in output file."),   2},
+  {"diskcount", 'c', N_("NUM"),           0, N_("Specify the number of input files."),                   2},
+  {"debug",     'd', N_("STRING"),           0, N_("Set debug environment variable."),  2},
   {"crypto",   'C', NULL, 0, N_("Mount crypto devices."), 2},
   {"zfs-key",      'K',
    /* TRANSLATORS: "prompt" is a keyword.  */
