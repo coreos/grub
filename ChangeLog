@@ -1,5 +1,10 @@
 2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/POTFILES.in: Regenerate. Include *.h since they contain
+	translatable strings as well.
+
+2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/mdraid1x_linux.c (grub_mdraid_detect): Add missing
 	byte-swap on big-endian.
 	Reported by: Lennart Sorensen
