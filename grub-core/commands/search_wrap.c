@@ -37,7 +37,8 @@ static const struct grub_arg_option options[] =
     {"fs-uuid",		'u', 0, N_("Search devices by a filesystem UUID."),
      0, 0},
     {"set",		's', GRUB_ARG_OPTION_OPTIONAL,
-     N_("Set a variable to the first device found."), "VAR", ARG_TYPE_STRING},
+     N_("Set a variable to the first device found."), N_("VARNAME"),
+     ARG_TYPE_STRING},
     {"no-floppy",	'n', 0, N_("Do not probe any floppy drive."), 0, 0},
     {"hint",	        'h', GRUB_ARG_OPTION_REPEATABLE,
      N_("First try the device HINT. If HINT ends in comma, "

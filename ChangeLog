@@ -1,5 +1,11 @@
 2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/probe.c (options): Replace VAR with VARNAME and
+	gettextize.
+	* grub-core/commands/search_wrap.c (options): Likewise.
+
+2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/charset.c (bidi_line_wrap): Fix a spurious warning.
 
 2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -37,7 +37,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static const struct grub_arg_option options[] =
   {
     {"set",             's', 0,
-     N_("Set a variable to return value."), "VAR", ARG_TYPE_STRING},
+     N_("Set a variable to return value."), N_("VARNAME"), ARG_TYPE_STRING},
     /* TRANSLATORS: It's a driver that is currently in use to access
        the diven disk.  */
     {"driver",		'd', 0, N_("Determine driver."), 0, 0},
