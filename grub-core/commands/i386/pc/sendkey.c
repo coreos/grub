@@ -373,7 +373,7 @@ GRUB_MOD_INIT (sendkey)
 			      N_("[KEYSTROKE1] [KEYSTROKE2] ..."),
 			      /* TRANSLATORS: It can emulate multiple
 				 keypresses.  */
-			      N_("Emulate a keystroke"), options);
+			      N_("Emulate a keystroke sequence"), options);
 
   preboot_hook 
     = grub_loader_register_preboot_hook (grub_sendkey_preboot, 
