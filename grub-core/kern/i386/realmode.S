@@ -117,7 +117,7 @@ gdtdesc:
 	.word	0x27			/* limit */
 	.long	gdt			/* addr */
 LOCAL(realidt):
-	.word 0
+	.word 0x400
 	.long 0
 protidt:
 	.word 0

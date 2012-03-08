@@ -1,5 +1,12 @@
 2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/i386/pc/startup_raw.S (multiboot_trampoline): Fix
+	size calculation.
+	* grub-core/kern/i386/realmode.S (realidt): Assume default BIOS IDT if
+	none is known.
+
+2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/net.c (grub_net_addr_to_str): Don't translate
 	"temporary" since it's used in identifier and is limited in space.
 

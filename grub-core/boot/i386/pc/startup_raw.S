@@ -303,7 +303,7 @@ multiboot_entry:
 	movl	%ebp, %esp
 
 	/* relocate the code */
-	movl	$(LOCAL(decompressor_end) + 0x200), %ecx
+	movl	$(LOCAL(decompressor_end) - _start + 0x200), %ecx
 	addl	LOCAL(compressed_size) - _start + 0x100000 + 0x200, %ecx
 	movl	$0x100000, %esi
 	movl	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %edi
