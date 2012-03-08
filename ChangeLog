@@ -1,5 +1,10 @@
 2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/net.c (grub_net_addr_to_str): Don't translate
+	"temporary" since it's used in identifier and is limited in space.
+
+2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/POTFILES.in: Regenerate. Include *.h since they contain
 	translatable strings as well.
 
