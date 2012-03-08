@@ -633,7 +633,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  {
 	    int right_join = 0;
 	    signed i;
-	    for (i = k - 1; i >= 0 && (unsigned) i >= line_start;
+	    for (i = k - 1; i >= 0 && (unsigned) i + 1 > line_start;
 		 i--)
 	      {
 		enum grub_join_type join_type = get_join_type (visual[i].base);

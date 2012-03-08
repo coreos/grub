@@ -1,5 +1,9 @@
 2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/charset.c (bidi_line_wrap): Fix a spurious warning.
+
+2012-03-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/i386/pc/startup_raw.S (multiboot_trampoline): Fix
 	size calculation.
 	* grub-core/kern/i386/realmode.S (realidt): Assume default BIOS IDT if
