@@ -1,5 +1,14 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/videoinfo.c: Add TRANSLATORS comments.
+	* grub-core/commands/xnu_uuid.c: Likewise.
+	* grub-core/loader/efi/appleloader.c: Likewise.
+	* grub-core/script/execute.c: Likewise.
+	* grub-core/script/main.c: Likewise.
+	* util/grub-mkfont.c: Likewise.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkfont.c (options): Use more appropriate "select" that
 	"set" for face index.
 

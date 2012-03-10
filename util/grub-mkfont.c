@@ -487,6 +487,9 @@ process_cursive (struct gsub_feature *feature,
       struct gsub_lookup *lookup;
       if (lookup_index >= grub_be_to_cpu16 (lookups->count))
 	{
+	  /* TRANSLATORS: "lookup" is taken directly from font specifications
+	   which are formulated as "Under condition X replace LOOKUP with 
+	   SUBSTITUITION".  "*/
 	  printf (_("Out of range lookup: %d\n"), lookup_index);
 	  continue;
 	}

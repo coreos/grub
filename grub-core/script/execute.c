@@ -87,8 +87,9 @@ grub_script_break (grub_command_t cmd, int argc, char *argv[])
       if (*p != '\0')
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("unrecognized number"));
       if (count == 0)
-	/* TRANSLATORS: 0 is a quantifier. Break can be used e.g. to break
-	   3 loops at once. But asking it to break 0 loops makes no sense. */
+	/* TRANSLATORS: 0 is a quantifier. "break" (similar to bash)
+	   can be used e.g. to break 3 loops at once.
+	   But asking it to break 0 loops makes no sense. */
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("can't break 0 loops"));
     }
 

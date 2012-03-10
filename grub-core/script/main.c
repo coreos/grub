@@ -64,6 +64,11 @@ grub_script_init (void)
 					 N_("Set positional parameters."));
   cmd_return = grub_register_command ("return", grub_script_return,
 				      N_("[NUM]"),
+				      /* TRANSLATORS: It's a command description
+					 and "Return" is a verb, not a noun. The
+					 command in question is "return" and
+					 has exactly the same semanics as bash
+					 equivalent.  */
 				      N_("Return from a function."));
 }
 

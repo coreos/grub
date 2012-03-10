@@ -55,6 +55,8 @@ hook (const struct grub_video_mode_info *info)
     grub_xputs (_("Text-only "));
   /* Show mask and position details for direct color modes.  */
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_RGB)
+    /* TRANSLATORS: "Direct color" is a mode when the color components
+       are written dirrectly into memory.  */
     grub_printf_ (N_("Direct color, mask: %d/%d/%d/%d  pos: %d/%d/%d/%d"),
 		  info->red_mask_size,
 		  info->green_mask_size,
@@ -65,6 +67,8 @@ hook (const struct grub_video_mode_info *info)
 		  info->blue_field_pos,
 		  info->reserved_field_pos);
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
+    /* TRANSLATORS: In "packed pixel" mode you write the index of the color
+       in the palette. Synonyms include "paletted color".  */
     grub_xputs (_("Packed pixel "));
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_YUV)
     grub_xputs (_("YUV "));

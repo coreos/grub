@@ -220,7 +220,11 @@ static grub_command_t cmd;
 GRUB_MOD_INIT(appleloader)
 {
   cmd = grub_register_command ("appleloader", grub_cmd_appleloader,
-			       N_("[OPTS]"), N_("Boot BIOS-based system."));
+			       N_("[OPTS]"),
+			       /* TRANSLATORS: This command is used on EFI to
+				switch to BIOS mode and boot the OS requiring
+				BIOS.  */
+			       N_("Boot BIOS-based system."));
   my_mod = mod;
 }
 

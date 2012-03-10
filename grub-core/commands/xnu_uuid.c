@@ -100,6 +100,8 @@ static grub_command_t cmd;
 GRUB_MOD_INIT (xnu_uuid)
 {
   cmd = grub_register_command ("xnu_uuid", grub_cmd_xnu_uuid,
+			       /* TRANSLATORS: GRUBUUID stands for "filesystem
+				  UUID as used in GRUB".  */
 			       N_("[-l] GRUBUUID [VARNAME]"),
 			       N_("Transform 64-bit UUID to format "
 				  "suitable for XNU. If -l is given keep "
