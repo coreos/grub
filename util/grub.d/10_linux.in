@@ -53,6 +53,10 @@ fi
 
 GRUBFS="`${grub_probe} --device ${GRUB_DEVICE} --target=fs 2>/dev/null || true`"
 
+if [ x"$GRUBFS" = x ]; then
+    GRUBFS="$(stat -f --printf=%T / || true)"
+fi
+
 case x"$GRUBFS" in
     xbtrfs)
 	rootsubvol="`make_system_path_relative_to_its_root /`"

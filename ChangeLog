@@ -1,5 +1,11 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/10_linux.in: Use stat if grub-probe on root fails.
+	* util/grub.d/20_linux_xen.in: Likewise.
+	Based on Debian patch.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/10_linux.in: Fix syntax error resulting in
 	Richard Laager's patch.
 	* util/grub.d/20_linux_xen.in: Propagate Richard Laager's patch.
