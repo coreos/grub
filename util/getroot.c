@@ -237,6 +237,8 @@ exec_pipe (char **argv, int *fd)
   else if (mdadm_pid == 0)
     {
       /* Child.  */
+      /* Ensure child is not localised.  */
+      setenv ("LC_ALL", "C", 1);
 
       close (mdadm_pipe[0]);
       dup2 (mdadm_pipe[1], STDOUT_FILENO);

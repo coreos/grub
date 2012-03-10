@@ -1,5 +1,9 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (exec_pipe): Ensure that the child is not localised.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Check for themes/starfield/theme.txt and not
 	themes/starfield.
 
