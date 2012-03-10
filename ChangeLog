@@ -1,5 +1,10 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Check for themes/starfield/theme.txt and not
+	themes/starfield.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gnulib/regcomp.c (regerror): Fix out-of-range array lookup.
 
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
