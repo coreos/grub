@@ -41,9 +41,11 @@ static struct argp_option options[] = {
    N_("Create a blank environment block file."), 0},
   {"list",   0, 0, OPTION_DOC|OPTION_NO_USAGE,
    N_("List the current variables."), 0},
-  {"set [name=value ...]", 0, 0, OPTION_DOC|OPTION_NO_USAGE,
+  /* TRANSLATORS: "set" is a keyword. It's a summary of "set" subcommand.  */
+  {N_("set [NAME=VALUE ...]"), 0, 0, OPTION_DOC|OPTION_NO_USAGE,
    N_("Set variables."), 0},
-  {"unset [name ....]",    0, 0, OPTION_DOC|OPTION_NO_USAGE,
+  /* TRANSLATORS: "unset" is a keyword. It's a summary of "unset" subcommand.  */
+  {N_("unset [NAME ...]"),    0, 0, OPTION_DOC|OPTION_NO_USAGE,
    N_("Delete variables."), 0},
 
   {0,         0, 0, OPTION_DOC, N_("Options:"), -1},

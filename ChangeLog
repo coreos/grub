@@ -1,5 +1,9 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-editenv.c (options): Gettextize command summaries.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/efi/chainloader.c (grub_cmd_chainloader): Use
 	"out of memory" error messagge.
 
