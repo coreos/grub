@@ -1,5 +1,10 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkfont.c (options): Use more appropriate "select" that
+	"set" for face index.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-editenv.c (options): Gettextize command summaries.
 
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>

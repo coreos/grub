@@ -981,7 +981,7 @@ static struct argp_option options[] = {
    /* TRANSLATORS: some font files may have multiple faces (fonts).
       This option is used to chose among them, the first face being '0'.
       Rarely used.  */
-   N_("set face index"), 0},
+   N_("select face index"), 0},
   {"range",  'r', N_("FROM-TO[,FROM-TO]"), 0, 
    /* TRANSLATORS: It refers to the range of characters in font.  */
    N_("set font range"), 0},
