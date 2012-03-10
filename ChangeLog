@@ -1,5 +1,10 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/efi/chainloader.c (grub_cmd_chainloader): Fix format
+	in dprintf.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix IMSM handling on Fedora.
 
 	* util/getroot.c (grub_util_is_imsm): New function.
