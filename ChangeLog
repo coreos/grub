@@ -1,5 +1,13 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am: Strip gold section.
+	* conf/Makefile.common: Likewise.
+	* gentpl.py: Likewise.
+	* grub-core/Makefile.core.def: Likewise.
+	* grub-core/genmod.sh.in: Likewise.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/10_linux.in: Use stat if grub-probe on root fails.
 	* util/grub.d/20_linux_xen.in: Likewise.
 	Based on Debian patch.

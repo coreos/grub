@@ -165,19 +165,19 @@ kfreebsd.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
 	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
 
 kfreebsd.aout: kfreebsd.elf
-	$(OBJCOPY) -O a.out-i386-linux $< $@ -R .note.gnu.build-id
+	$(OBJCOPY) -O a.out-i386-linux $< $@ -R .note.gnu.build-id -R .note.gnu.gold-version
 
 pc-chainloader.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S
 	$(TARGET_CC) -o $@ $< -DTARGET_CHAINLOADER=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x7c00 -m32
 
 pc-chainloader.bin: pc-chainloader.elf
-	$(OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@;
+	$(OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn -R .note.gnu.gold-version $< $@;
 
 ntldr.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S
 	$(TARGET_CC) -o $@ $< -DTARGET_NTLDR=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0 -m32
 
 ntldr.bin: ntldr.elf
-	$(OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@;
+	$(OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn -R .note.gnu.gold-version $< $@;
 
 multiboot2.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
 	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include -DTARGET_MULTIBOOT2=1

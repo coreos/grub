@@ -37,13 +37,13 @@ kernel = {
 
   emu_ldflags              = '-Wl,-r,-d';
   i386_efi_ldflags         = '-Wl,-r,-d';
-  i386_efi_stripflags      = '--strip-unneeded -K start -R .note -R .comment';
+  i386_efi_stripflags      = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
   x86_64_efi_ldflags       = '-Wl,-r,-d';
-  x86_64_efi_stripflags    = '--strip-unneeded -K start -R .note -R .comment';
+  x86_64_efi_stripflags    = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
   ia64_efi_cflags = '-fno-builtin -fpic -minline-int-divide-max-throughput';
   ia64_efi_ldflags = '-Wl,-r,-d';
-  ia64_efi_stripflags = '--strip-unneeded -K start -R .note -R .comment';
+  ia64_efi_stripflags = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
   i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x9000';

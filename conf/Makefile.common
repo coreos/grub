@@ -72,9 +72,9 @@ LDFLAGS_KERNEL = $(LDFLAGS_CPU) $(LDFLAGS_PLATFORM) -nostdlib $(TARGET_LDFLAGS_O
 CPPFLAGS_KERNEL = $(CPPFLAGS_CPU) $(CPPFLAGS_PLATFORM)
 CCASFLAGS_KERNEL = $(CCASFLAGS_CPU) $(CCASFLAGS_PLATFORM)
 if COND_CYGWIN
-STRIPFLAGS_KERNEL = -F elf32-i386 -R .rel.dyn -R .reginfo -R .note -R .comment -R .drectve
+STRIPFLAGS_KERNEL = -F elf32-i386 -R .rel.dyn -R .reginfo -R .note -R .comment -R .drectve -R .note.gnu.gold-version
 else
-STRIPFLAGS_KERNEL = -R .rel.dyn -R .reginfo -R .note -R .comment
+STRIPFLAGS_KERNEL = -R .rel.dyn -R .reginfo -R .note -R .comment -R .note.gnu.gold-version
 endif
 
 CFLAGS_MODULE = $(CFLAGS_CPU) $(CFLAGS_PLATFORM) -ffreestanding

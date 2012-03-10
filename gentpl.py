@@ -453,7 +453,7 @@ def image(platform):
 if test x$(USE_APPLE_CC_FIXES) = xyes; then \
   $(MACHO2IMG) $< $@; \
 else \
-  $(OBJCOPY) $(""" + cname() + """_OBJCOPYFLAGS) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn $< $@; \
+  $(OBJCOPY) $(""" + cname() + """_OBJCOPYFLAGS) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn -R .note.gnu.gold-version $< $@; \
 fi
 """)
     return r
