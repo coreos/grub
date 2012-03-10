@@ -555,9 +555,9 @@ regerror (int errcode, const regex_t *_Restrict_ preg,
        to this routine.  If we are given anything else, or if other regex
        code generates an invalid error code, then the program has a bug.
        Dump core so we can fix it.  */
-    msg = "unknown regexp error";
-
-  msg = gettext (__re_error_msgid + __re_error_msgid_idx[errcode]);
+    msg = gettext ("unknown regexp error");
+  else
+    msg = gettext (__re_error_msgid + __re_error_msgid_idx[errcode]);
 
   msg_size = strlen (msg) + 1; /* Includes the null.  */
 
