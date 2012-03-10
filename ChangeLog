@@ -1,5 +1,10 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (grub_diskfilter_memberlist): Add scanning
+	of diskfilter for diskfilter on diskfilter support.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (exec_pipe): Ensure that the child is not localised.
 
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>

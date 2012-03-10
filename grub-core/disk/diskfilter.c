@@ -260,6 +260,8 @@ grub_diskfilter_memberlist (grub_disk_t disk)
   struct grub_diskfilter_pv *pv;
   grub_disk_pull_t pull;
   grub_disk_dev_t p;
+  struct grub_diskfilter_vg *vg;
+  struct grub_diskfilter_lv *lv2 = NULL;
 
   if (!lv->vg->pvs)
     return NULL;
@@ -277,6 +279,19 @@ grub_diskfilter_memberlist (grub_disk_t disk)
 	  while (pv && pv->disk)
 	    pv = pv->next;
 	}
+
+  for (vg = array_list; pv && vg; vg = vg->next)
+    {
+      if (vg->lvs)
+	for (lv2 = vg->lvs; pv && lv2; lv2 = lv2->next)
+	  if (!lv2->scanned && lv2->fullname && lv2->became_readable_at)
+	    {
+	      scan_disk (lv2->fullname);
+	      lv2->scanned = 1;
+	      while (pv && pv->disk)
+		pv = pv->next;
+	    }
+    }
 
   for (pv = lv->vg->pvs; pv; pv = pv->next)
     {
