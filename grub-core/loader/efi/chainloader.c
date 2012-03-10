@@ -252,7 +252,8 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
 			      pages, &address);
   if (status != GRUB_EFI_SUCCESS)
     {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate %u pages", pages);
+      grub_dprintf ("chain", "Failed to allocate %u pages\n", pages);
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
       goto fail;
     }
 

@@ -1,5 +1,10 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/efi/chainloader.c (grub_cmd_chainloader): Use
+	"out of memory" error messagge.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (grub_diskfilter_memberlist): Add scanning
 	of diskfilter for diskfilter on diskfilter support.
 
