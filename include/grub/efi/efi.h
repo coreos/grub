@@ -86,4 +86,9 @@ extern grub_efi_handle_t EXPORT_VAR(grub_efi_image_handle);
 
 extern int EXPORT_VAR(grub_efi_is_finished);
 
+struct grub_net_card;
+
+grub_efi_handle_t
+grub_efinet_get_device_handle (struct grub_net_card *card);
+
 #endif /* ! GRUB_EFI_EFI_HEADER */

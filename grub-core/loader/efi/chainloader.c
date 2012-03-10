@@ -34,6 +34,7 @@
 #include <grub/efi/disk.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
+#include <grub/net.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -190,11 +191,11 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
   grub_ssize_t size;
   grub_efi_status_t status;
   grub_efi_boot_services_t *b;
-  grub_efi_handle_t dev_handle = 0;
   grub_device_t dev = 0;
   grub_efi_device_path_t *dp = 0;
   grub_efi_loaded_image_t *loaded_image;
   char *filename;
+  grub_efi_handle_t dev_handle = 0;
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
@@ -219,13 +220,29 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
     goto fail;
 
   if (dev->disk)
+    dev_handle = grub_efidisk_get_device_handle (dev->disk);
+  else if (dev->net && dev->net->server)
     {
-      dev_handle = grub_efidisk_get_device_handle (dev->disk);
-      if (dev_handle)
-	dp = grub_efi_get_device_path (dev_handle);
+      grub_net_network_level_address_t addr;
+      struct grub_net_network_level_interface *inf;
+      grub_net_network_level_address_t gateway;
+      grub_err_t err;
+
+      err = grub_net_resolve_address (dev->net->server, &addr);
+      if (err)
+	goto fail;
+
+      err = grub_net_route_address (addr, &gateway, &inf);
+      if (err)
+	goto fail;
+
+      dev_handle = grub_efinet_get_device_handle (inf->card);
     }
 
-  if (! dev->disk || ! dev_handle || ! dp)
+  if (dev_handle)
+    dp = grub_efi_get_device_path (dev_handle);
+
+  if (! dp)
     {
       grub_error (GRUB_ERR_BAD_DEVICE, "not a valid root device");
       goto fail;

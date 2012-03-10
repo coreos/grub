@@ -122,6 +122,13 @@ static struct grub_net_card_driver efidriver =
     .recv = get_card_packet
   };
 
+grub_efi_handle_t
+grub_efinet_get_device_handle (struct grub_net_card *card)
+{
+  if (!card || card->driver != &efidriver)
+    return 0;
+  return card->efi_handle;
+}
 
 static void
 grub_efinet_findcards (void)

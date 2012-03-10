@@ -1,5 +1,14 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix efi chainloader on network root.
+
+	* grub-core/loader/efi/chainloader.c (grub_cmd_chainloader): Handle
+	network devices.
+	* grub-core/net/drivers/efi/efinet.c (grub_efinet_get_device_handle):
+	New function.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gfxmenu/gui_progress_bar.c (grub_gui_progress_bar): Remove
 	unused show_text member.
 	* docs/grub.texi: Document "text" property.
