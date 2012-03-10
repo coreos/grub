@@ -172,6 +172,11 @@ struct btrfs_ioctl_fs_info_args
                                struct btrfs_ioctl_fs_info_args)
 #endif
 
+#ifdef __linux__
+static int
+grub_util_is_imsm (const char *os_dev);
+#endif
+
 #if ! defined(__CYGWIN__)
 
 static void
@@ -1224,7 +1229,8 @@ grub_util_get_dev_abstraction (const char *os_dev)
     return ret;
 
   /* Check for RAID.  */
-  if (!strncmp (os_dev, "/dev/md", 7) && ! grub_util_device_is_mapped (os_dev))
+  if (!strncmp (os_dev, "/dev/md", 7) && ! grub_util_device_is_mapped (os_dev)
+      && !grub_util_is_imsm (os_dev))
     return GRUB_DEV_ABSTRACTION_RAID;
 #endif
 
@@ -1302,6 +1308,87 @@ out:
   waitpid (pid, NULL, 0);
 
   return name;
+}
+
+static int
+grub_util_is_imsm (const char *os_dev)
+{
+  int try;
+  const char *dev = os_dev;
+
+  for (try = 0; try < 2; try++)
+    {
+      char *argv[5];
+      int fd;
+      pid_t pid;
+      FILE *mdadm;
+      char *buf = NULL;
+      size_t len = 0;
+
+      /* execvp has inconvenient types, hence the casts.  None of these
+	 strings will actually be modified.  */
+      argv[0] = (char *) "mdadm";
+      argv[1] = (char *) "--detail";
+      argv[2] = (char *) "--export";
+      argv[3] = (char *) dev;
+      argv[4] = NULL;
+
+      pid = exec_pipe (argv, &fd);
+
+      if (!pid)
+	{
+	  if (dev != os_dev)
+	    free ((void *) dev);
+	  return 0;
+	}
+
+      /* Parent.  Read mdadm's output.  */
+      mdadm = fdopen (fd, "r");
+      if (! mdadm)
+	{
+	  grub_util_warn (_("Unable to open stream from %s: %s"),
+			  "mdadm", strerror (errno));
+	  close (fd);
+	  waitpid (pid, NULL, 0);
+	  if (dev != os_dev)
+	    free ((void *) dev);
+	  return 0;
+	}
+
+      while (getline (&buf, &len, mdadm) > 0)
+	{
+	  if (strncmp (buf, "MD_CONTAINER=", sizeof ("MD_CONTAINER=") - 1) == 0)
+	    {
+	      char *newdev, *ptr;
+	      newdev = xstrdup (buf + sizeof ("MD_CONTAINER=") - 1);
+	      ptr = newdev + strlen (newdev) - 1;
+	      for (; ptr >= newdev && (*ptr == '\n' || *ptr == '\r'); ptr--);
+	      ptr[1] = 0;
+	      grub_util_info ("Container of %s is %s", dev, newdev);
+	      dev = newdev;
+	      goto out;
+	    }
+	  if (strncmp (buf, "MD_METADATA=imsm",
+		       sizeof ("MD_METADATA=imsm") - 1) == 0)
+	    {
+	      close (fd);
+	      waitpid (pid, NULL, 0);
+	      grub_util_info ("%s is imsm", dev);	      
+	      if (dev != os_dev)
+		free ((void *) dev);
+	      return 1;
+	    }
+	}
+
+      return 0;
+
+    out:
+      close (fd);
+      waitpid (pid, NULL, 0);
+    }
+  if (dev != os_dev)
+    free ((void *) dev);
+  return 0;
 }
 #endif /* __linux__ */
 

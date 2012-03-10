@@ -1,5 +1,12 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix IMSM handling on Fedora.
+
+	* util/getroot.c (grub_util_is_imsm): New function.
+	(grub_util_get_dev_abstraction): Treat IMSM as simple device, not RAID.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.am: Strip gold section.
 	* conf/Makefile.common: Likewise.
 	* gentpl.py: Likewise.
