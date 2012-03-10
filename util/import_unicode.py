@@ -135,7 +135,7 @@ for line in infile:
                                        lastcombtype, lastmirrortype, \
                                        lastjoin)))
             if lastcode - begincode + 1 >= 0x200:
-                print "Too long range"
+                print ("Too long range")
                 raise
         begincode = curcode
     lastcode = curcode
