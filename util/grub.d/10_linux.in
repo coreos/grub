@@ -64,6 +64,7 @@ case x"$GRUBFS" in
 	rpool=`${grub_probe} --device ${GRUB_DEVICE} --target=fs_label 2>/dev/null || true`
 	bootfs="`make_system_path_relative_to_its_root / | sed -e "s,@$,,"`"
 	LINUX_ROOT_DEVICE="ZFS=${rpool}${bootfs}"
+	;;
 esac
 
 title_correction_code=
