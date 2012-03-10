@@ -1,5 +1,9 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Bump up the version to beta2.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix gettext reload bugs (e.g. inability to disable gettext
 	once enabled).
 
