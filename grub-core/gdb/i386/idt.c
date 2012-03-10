@@ -74,7 +74,5 @@ grub_gdb_idtrestore (void)
 void
 grub_gdb_breakpoint (void)
 {
-  int x = 1, y = 0;
-  (void) (x / y);
   asm volatile ("int $3");
 }

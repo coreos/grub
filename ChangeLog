@@ -1,5 +1,9 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gdb/i386/idt.c (grub_gdb_breakpoint): Remove old debug code.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/hashsum.c (grub_cmd_hashsum): Remove dot at the end
 	of error message.
 
