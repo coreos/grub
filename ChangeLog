@@ -1,5 +1,31 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix gettext reload bugs (e.g. inability to disable gettext
+	once enabled).
+
+	* grub-core/gettext/gettext.c: Encapsulate all static variables in
+	main_context and secondary_context. All functions updated.
+	(grub_gettext_translate): Rename to ...
+	(grub_gettext_translate_real): ... this. Return NULL on failed
+	translate.
+	(grub_gettext_translate): Handle secondary context.
+	(grub_gettext_delete_list): Close file and zero-out the context.
+	(grub_mofile_open): Don't call grub_gettext_delete_list.
+	Don't close file.
+	(grub_gettext_init_ext): Call grub_gettext_init_ext. Skip loading
+	if locale="" to avoid pointless error message.
+	(grub_gettext_env_write_lang): Update lang even if load fails.
+	Handle secondary context.
+	(grub_gettext_reread_prefix): New function.
+	(read_main): Likewise.
+	(read_secondary): Likewise.
+	(GRUB_MOD_INIT): Handle secondary context. Hook and export variables.
+	(GRUB_MOD_FINI): Handle secondary context. Don't close file.
+	* grub-core/normal/main.c (read_lists): Call grub_gettext_reread_prefix.
+	* include/grub/normal.h (grub_gettext_reread_prefix): New proto.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Decrease warning level to avoid spurious warnings and
 	to be able to compile with GCC 4.2.
 	* Makefile.util.def: Remove -Wno-error=logical-op.

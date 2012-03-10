@@ -34,13 +34,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
    http://www.gnu.org/software/autoconf/manual/gettext/MO-Files.html .
 */
 
-
-static grub_file_t fd_mo;
-
-static grub_off_t grub_gettext_offset_original;
-static grub_off_t grub_gettext_offset_translation;
-static grub_size_t grub_gettext_max;
-static int grub_gettext_max_log;
+static struct grub_gettext_context main_context, secondary_context;
 
 static const char *(*grub_gettext_original) (const char *s);
 
@@ -49,8 +43,6 @@ struct grub_gettext_msg
   char *name;
   char *translated;
 };
-
-static struct grub_gettext_msg *grub_gettext_msg_list = NULL;
 
 struct header
 {
@@ -65,6 +57,16 @@ struct string_descriptor
 {
   grub_uint32_t length;
   grub_uint32_t offset;
+};
+
+struct grub_gettext_context
+{
+  grub_file_t fd_mo;
+  grub_off_t grub_gettext_offset_original;
+  grub_off_t grub_gettext_offset_translation;
+  grub_size_t grub_gettext_max;
+  int grub_gettext_max_log;
+  struct grub_gettext_msg *grub_gettext_msg_list;
 };
 
 #define MO_MAGIC_NUMBER 		0x950412de
@@ -85,7 +87,8 @@ grub_gettext_pread (grub_file_t file, void *buf, grub_size_t len,
 }
 
 static char *
-grub_gettext_getstr_from_position (grub_off_t off,
+grub_gettext_getstr_from_position (struct grub_gettext_context *ctx,
+				   grub_off_t off,
 				   grub_size_t position)
 {
   grub_off_t internal_position;
@@ -97,7 +100,7 @@ grub_gettext_getstr_from_position (grub_off_t off,
 
   internal_position = (off + position * sizeof (desc));
 
-  err = grub_gettext_pread (fd_mo, (char *) &desc,
+  err = grub_gettext_pread (ctx->fd_mo, (char *) &desc,
 			    sizeof (desc), internal_position);
   if (err)
     return NULL;
@@ -108,7 +111,7 @@ grub_gettext_getstr_from_position (grub_off_t off,
   if (!translation)
     return NULL;
 
-  err = grub_gettext_pread (fd_mo, translation, length, offset);
+  err = grub_gettext_pread (ctx->fd_mo, translation, length, offset);
   if (err)
     {
       grub_free (translation);
@@ -120,63 +123,68 @@ grub_gettext_getstr_from_position (grub_off_t off,
 }
 
 static const char *
-grub_gettext_gettranslation_from_position (grub_size_t position)
+grub_gettext_gettranslation_from_position (struct grub_gettext_context *ctx,
+					   grub_size_t position)
 {
-  if (!grub_gettext_msg_list[position].translated)
-    grub_gettext_msg_list[position].translated
-      = grub_gettext_getstr_from_position (grub_gettext_offset_translation,
+  if (!ctx->grub_gettext_msg_list[position].translated)
+    ctx->grub_gettext_msg_list[position].translated
+      = grub_gettext_getstr_from_position (ctx,
+					   ctx->grub_gettext_offset_translation,
 					   position);
-  return grub_gettext_msg_list[position].translated;
+  return ctx->grub_gettext_msg_list[position].translated;
 }
 
 static const char *
-grub_gettext_getstring_from_position (grub_size_t position)
+grub_gettext_getstring_from_position (struct grub_gettext_context *ctx,
+				      grub_size_t position)
 {
-  if (!grub_gettext_msg_list[position].name)
-    grub_gettext_msg_list[position].name
-      = grub_gettext_getstr_from_position (grub_gettext_offset_original,
+  if (!ctx->grub_gettext_msg_list[position].name)
+    ctx->grub_gettext_msg_list[position].name
+      = grub_gettext_getstr_from_position (ctx,
+					   ctx->grub_gettext_offset_original,
 					   position);
-  return grub_gettext_msg_list[position].name;
+  return ctx->grub_gettext_msg_list[position].name;
 }
 
 static const char *
-grub_gettext_translate (const char *orig)
+grub_gettext_translate_real (struct grub_gettext_context *ctx,
+			     const char *orig)
 {
   grub_size_t current = 0;
   int i;
   const char *current_string;
   static int depth = 0;
 
-  if (!grub_gettext_msg_list || !fd_mo)
-    return orig;
+  if (!ctx->grub_gettext_msg_list || !ctx->fd_mo)
+    return NULL;
 
   /* Shouldn't happen. Just a precaution if our own code
      calls gettext somehow.  */
   if (depth > 2)
-    return orig;
+    return NULL;
   depth++;
 
   /* Make sure we can use grub_gettext_translate for error messages.  Push
      active error message to error stack and reset error message.  */
   grub_error_push ();
 
-  for (i = grub_gettext_max_log; i >= 0; i--)
+  for (i = ctx->grub_gettext_max_log; i >= 0; i--)
     {
       grub_size_t test;
       int cmp;
 
       test = current | (1 << i);
-      if (test >= grub_gettext_max)
+      if (test >= ctx->grub_gettext_max)
 	continue;
 
-      current_string = grub_gettext_getstring_from_position (test);
+      current_string = grub_gettext_getstring_from_position (ctx, test);
 
       if (!current_string)
 	{
 	  grub_errno = GRUB_ERR_NONE;
 	  grub_error_pop ();
 	  depth--;
-	  return orig;
+	  return NULL;
 	}
 
       /* Search by bisection.  */
@@ -186,13 +194,13 @@ grub_gettext_translate (const char *orig)
       if (cmp == 0)
 	{
 	  const char *ret = 0;
-	  ret = grub_gettext_gettranslation_from_position (current);
+	  ret = grub_gettext_gettranslation_from_position (ctx, current);
 	  if (!ret)
 	    {
 	      grub_errno = GRUB_ERR_NONE;
 	      grub_error_pop ();
 	      depth--;
-	      return orig;
+	      return NULL;
 	    }
 	  grub_error_pop ();
 	  depth--;
@@ -202,27 +210,45 @@ grub_gettext_translate (const char *orig)
 
   grub_error_pop ();
   depth--;
-  return orig;    
+  return NULL;
+}
+
+static const char *
+grub_gettext_translate (const char *orig)
+{
+  const char *ret;
+  ret = grub_gettext_translate_real (&main_context, orig);
+  if (ret)
+    return ret;
+  ret = grub_gettext_translate_real (&secondary_context, orig);
+  if (ret)
+    return ret;
+  return orig;
 }
 
 static void
-grub_gettext_delete_list (void)
+grub_gettext_delete_list (struct grub_gettext_context *ctx)
 {
-  struct grub_gettext_msg *l = grub_gettext_msg_list;
+  struct grub_gettext_msg *l = ctx->grub_gettext_msg_list;
   grub_size_t i;
 
   if (!l)
     return;
-  grub_gettext_msg_list = 0;
-  for (i = 0; i < grub_gettext_max; i++)
+  ctx->grub_gettext_msg_list = 0;
+  for (i = 0; i < ctx->grub_gettext_max; i++)
     grub_free (l[i].name);
   /* Don't delete the translated message because could be in use.  */
   grub_free (l);
+  if (ctx->fd_mo)
+    grub_file_close (ctx->fd_mo);
+  ctx->fd_mo = 0;
+  grub_memset (ctx, 0, sizeof (*ctx));
 }
 
 /* This is similar to grub_file_open. */
 static grub_err_t
-grub_mofile_open (const char *filename)
+grub_mofile_open (struct grub_gettext_context *ctx,
+		  const char *filename)
 {
   struct header head;
   grub_err_t err;
@@ -257,25 +283,20 @@ grub_mofile_open (const char *filename)
 			 "mo: invalid mo version in file: %s", filename);
     }
 
-  grub_gettext_delete_list ();
+  ctx->grub_gettext_offset_original = grub_le_to_cpu32 (head.offset_original);
+  ctx->grub_gettext_offset_translation = grub_le_to_cpu32 (head.offset_translation);
+  ctx->grub_gettext_max = grub_le_to_cpu32 (head.number_of_strings);
+  for (ctx->grub_gettext_max_log = 0; ctx->grub_gettext_max >> ctx->grub_gettext_max_log;
+       ctx->grub_gettext_max_log++);
 
-  grub_gettext_offset_original = grub_le_to_cpu32 (head.offset_original);
-  grub_gettext_offset_translation = grub_le_to_cpu32 (head.offset_translation);
-  grub_gettext_max = grub_le_to_cpu32 (head.number_of_strings);
-  for (grub_gettext_max_log = 0; grub_gettext_max >> grub_gettext_max_log;
-       grub_gettext_max_log++);
-  if (fd_mo)
-    grub_file_close (fd_mo);
-  fd_mo = 0;
-
-  grub_gettext_msg_list = grub_zalloc (grub_gettext_max
-				       * sizeof (grub_gettext_msg_list[0]));
-  if (!grub_gettext_msg_list)
+  ctx->grub_gettext_msg_list = grub_zalloc (ctx->grub_gettext_max
+					    * sizeof (ctx->grub_gettext_msg_list[0]));
+  if (!ctx->grub_gettext_msg_list)
     {
       grub_file_close (fd);
       return grub_errno;
     }
-  fd_mo = fd;
+  ctx->fd_mo = fd;
   if (grub_gettext != grub_gettext_translate)
     {
       grub_gettext_original = grub_gettext;
@@ -287,7 +308,8 @@ grub_mofile_open (const char *filename)
 /* Returning grub_file_t would be more natural, but grub_mofile_open assigns
    to fd_mo anyway ...  */
 static grub_err_t
-grub_mofile_open_lang (const char *part1, const char *part2, const char *locale)
+grub_mofile_open_lang (struct grub_gettext_context *ctx,
+		       const char *part1, const char *part2, const char *locale)
 {
   char *mo_file;
   grub_err_t err;
@@ -298,7 +320,7 @@ grub_mofile_open_lang (const char *part1, const char *part2, const char *locale)
   if (!mo_file)
     return grub_errno;
 
-  err = grub_mofile_open (mo_file);
+  err = grub_mofile_open (ctx, mo_file);
 
   /* Will try adding .gz as well.  */
   if (err)
@@ -310,31 +332,36 @@ grub_mofile_open_lang (const char *part1, const char *part2, const char *locale)
       grub_free (mo_file_old);
       if (!mo_file)
 	return grub_errno;
-      err = grub_mofile_open (mo_file);
+      err = grub_mofile_open (ctx, mo_file);
     }
   return err;
 }
 
 static grub_err_t
-grub_gettext_init_ext (const char *locale)
+grub_gettext_init_ext (struct grub_gettext_context *ctx,
+		       const char *locale,
+		       const char *locale_dir, const char *prefix)
 {
   const char *part1, *part2;
   grub_err_t err;
 
-  if (!locale)
+  grub_gettext_delete_list (ctx);
+
+  if (!locale || locale[0] == 0)
     return 0;
 
-  part1 = grub_env_get ("locale_dir");
+  part1 = locale_dir;
   part2 = "";
-  if (!part1)
+  if (!part1 || part1[0] == 0)
     {
-      part1 = grub_env_get ("prefix");
-      if (!part1)
-	return 0;
+      part1 = prefix;
       part2 = "/locale";
     }
 
-  err = grub_mofile_open_lang (part1, part2, locale);
+  if (!part1 || part1[0] == 0)
+    return 0;
+
+  err = grub_mofile_open_lang (ctx, part1, part2, locale);
 
   /* ll_CC didn't work, so try ll.  */
   if (err)
@@ -346,7 +373,7 @@ grub_gettext_init_ext (const char *locale)
 	{
 	  *underscore = '\0';
 	  grub_errno = GRUB_ERR_NONE;
-	  err = grub_mofile_open_lang (part1, part2, lang);
+	  err = grub_mofile_open_lang (ctx, part1, part2, lang);
 	}
 
       grub_free (lang);
@@ -359,12 +386,51 @@ grub_gettext_env_write_lang (struct grub_env_var *var
 			     __attribute__ ((unused)), const char *val)
 {
   grub_err_t err;
-  err = grub_gettext_init_ext (val);
+  err = grub_gettext_init_ext (&main_context, val, grub_env_get ("locale_dir"),
+			       grub_env_get ("prefix"));
   if (err)
-    {
-      grub_print_error ();
-      return NULL;
-    }
+    grub_print_error ();
+
+  err = grub_gettext_init_ext (&secondary_context, val,
+			       grub_env_get ("secondary_locale_dir"), 0);
+  if (err)
+    grub_print_error ();
+
+  return grub_strdup (val);
+}
+
+void
+grub_gettext_reread_prefix (const char *val)
+{
+  grub_err_t err;
+  err = grub_gettext_init_ext (&main_context, grub_env_get ("lang"), 
+			       grub_env_get ("locale_dir"),
+			       val);
+  if (err)
+    grub_print_error ();
+}
+
+static char *
+read_main (struct grub_env_var *var
+	   __attribute__ ((unused)), const char *val)
+{
+  grub_err_t err;
+  err = grub_gettext_init_ext (&main_context, grub_env_get ("lang"), val,
+			       grub_env_get ("prefix"));
+  if (err)
+    grub_print_error ();
+  return grub_strdup (val);
+}
+
+static char *
+read_secondary (struct grub_env_var *var
+		__attribute__ ((unused)), const char *val)
+{
+  grub_err_t err;
+  err = grub_gettext_init_ext (&secondary_context, grub_env_get ("lang"), val,
+			       0);
+  if (err)
+    grub_print_error ();
 
   return grub_strdup (val);
 }
@@ -388,7 +454,13 @@ GRUB_MOD_INIT (gettext)
 
   lang = grub_env_get ("lang");
 
-  grub_gettext_init_ext (lang);
+  grub_gettext_init_ext (&main_context, lang, grub_env_get ("locale_dir"),
+			 grub_env_get ("prefix"));
+  grub_gettext_init_ext (&secondary_context, lang,
+			 grub_env_get ("secondary_locale_dir"), 0);
+
+  grub_register_variable_hook ("locale_dir", NULL, read_main);
+  grub_register_variable_hook ("secondary_locale_dir", NULL, read_secondary);
 
   grub_register_command_p1 ("gettext", grub_cmd_translate,
 			    N_("STRING"),
@@ -403,14 +475,14 @@ GRUB_MOD_INIT (gettext)
 
   /* Preserve hooks after context changes.  */
   grub_env_export ("lang");
+  grub_env_export ("locale_dir");
+  grub_env_export ("secondary_locale_dir");
 }
 
 GRUB_MOD_FINI (gettext)
 {
-  if (fd_mo != 0)
-    grub_file_close (fd_mo);
-
-  grub_gettext_delete_list ();
+  grub_gettext_delete_list (&main_context);
+  grub_gettext_delete_list (&secondary_context);
 
   grub_gettext = grub_gettext_original;
 }

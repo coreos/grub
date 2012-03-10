@@ -136,4 +136,7 @@ void grub_normal_auth_fini (void);
 grub_command_t
 grub_dyncmd_get_cmd (grub_command_t cmd);
 
+void
+grub_gettext_reread_prefix (const char *val);
+
 #endif /* ! GRUB_NORMAL_HEADER */

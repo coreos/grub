@@ -269,6 +269,7 @@ read_lists (const char *val)
       read_crypto_list (val);
       read_terminal_list (val);
     }
+  grub_gettext_reread_prefix (val);
 }
 
 static char *
