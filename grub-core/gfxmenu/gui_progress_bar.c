@@ -37,7 +37,6 @@ struct grub_gui_progress_bar
   int start;
   int end;
   int value;
-  int show_text;
   char *template;
   grub_font_t font;
   grub_video_rgba_color_t text_color;

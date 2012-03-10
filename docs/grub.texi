@@ -1595,11 +1595,12 @@ the id ``__timeout__''.  This indicates to GRUB that the progress bar should
 be updated as time passes, and it should be made invisible if the countdown to
 automatic boot is interrupted by the user.
 
-Progress bars may optionally have text displayed on them.  This is controlled
-through the ``show_text'' property, which can be set to either ``true'' or
-``false'' to control whether text is displayed.  When GRUB is counting down to
-automatic boot, the text informs the user of the number of seconds remaining.
-
+Progress bars may optionally have text displayed on them.  This text is
+controlled by variable ``text'' which contains a printf template with the
+only argument %d is the number of seconds remaining. Additionally special
+values ``@@TIMEOUT_NOTIFICATION_SHORT@@'', ``@@TIMEOUT_NOTIFICATION_MIDDLE@@'',
+``@@TIMEOUT_NOTIFICATION_LONG@@'' are replaced with standard and translated
+templates.
 
 @subsection Circular Progress Indicator
 

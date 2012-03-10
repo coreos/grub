@@ -1,5 +1,11 @@
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gfxmenu/gui_progress_bar.c (grub_gui_progress_bar): Remove
+	unused show_text member.
+	* docs/grub.texi: Document "text" property.
+
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/efi/chainloader.c (grub_cmd_chainloader): Fix format
 	in dprintf.
 
