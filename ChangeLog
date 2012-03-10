@@ -1,3 +1,9 @@
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Decrease warning level to avoid spurious warnings and
+	to be able to compile with GCC 4.2.
+	* Makefile.util.def: Remove -Wno-error=logical-op.
+
 2012-03-10  William Bittner <william.bittner@gmail.com>
 
 	* util/import_unicode.py: Add missing brackets around string for
