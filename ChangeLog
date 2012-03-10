@@ -1,3 +1,7 @@
+2012-03-10  Richard Laager <rlaager@wiktel.com>
+
+	* util/grub.d/10_linux.in: Fix ZFS root passing.
+
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/videoinfo.c: Add TRANSLATORS comments.
