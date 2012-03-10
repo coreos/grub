@@ -1,3 +1,8 @@
+2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* tests/partmap_test.in: Replace qemu-img usage with dd to decrease
+	dependencies.
+
 2012-03-10  Richard Laager <rlaager@wiktel.com>
 
 	* util/grub.d/10_linux.in: Fix ZFS root passing.
