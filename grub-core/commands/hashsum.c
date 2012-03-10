@@ -248,7 +248,7 @@ grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
     }
 
   if (unread)
-    return grub_error (GRUB_ERR_TEST_FAILURE, "%d files couldn't be read.",
+    return grub_error (GRUB_ERR_TEST_FAILURE, "%d files couldn't be read",
 		       unread);
   return GRUB_ERR_NONE;
 }
