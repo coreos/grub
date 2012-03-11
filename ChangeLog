@@ -1,5 +1,12 @@
 2012-03-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c (allocate_pages): Don't allocate
+	beyond 4 GiB.
+	(grub_cmd_linux): Use GRUB_LINUX_BZIMAGE_ADDR for non-relocatable
+	images independently of preffered adderss field.
+
+2012-03-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/i386/pc/play.c: Improve TRANSLATORS comments.
 	* grub-core/commands/regexp.c: Likewise.
 	* grub-core/loader/i386/linux.c: Likewise.

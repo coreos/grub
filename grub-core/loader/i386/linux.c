@@ -294,7 +294,8 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
 	  {
 	    grub_errno = GRUB_ERR_NONE;
 	    err = grub_relocator_alloc_chunk_align (relocator, &ch,
-						    0x1000000, 0xffffffff,
+						    0x1000000,
+						    0xffffffff & ~prot_size,
 						    prot_size, 1 << *align,
 						    GRUB_RELOCATOR_PREFERENCE_LOW,
 						    1);
@@ -759,7 +760,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       min_align = lh.min_alignment;
       prot_size = grub_le_to_cpu32 (lh.init_size);
       prot_init_space = page_align (prot_size);
-      preffered_address = grub_le_to_cpu64 (lh.pref_address);
+      if (relocatable)
+	preffered_address = grub_le_to_cpu64 (lh.pref_address);
+      else
+	preffered_address = GRUB_LINUX_BZIMAGE_ADDR;
     }
   else
     {
