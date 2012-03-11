@@ -77,8 +77,9 @@ grub_cmd_cat (grub_extcmd_context_t ctxt, int argc, char **args)
 	    }
 	}
 
-      while ((key = grub_getkey_noblock ()) != GRUB_TERM_ESC)
-	;
+      do
+	key = grub_getkey_noblock ();
+      while (key != GRUB_TERM_ESC && key != GRUB_TERM_NO_KEY);
     }
 
   grub_xputs ("\n");

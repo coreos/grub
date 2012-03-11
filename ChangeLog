@@ -1,3 +1,7 @@
+2012-03-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/cat.c (grub_cmd_cat): Fix termination key check.
+
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Bump up the version to beta2.
