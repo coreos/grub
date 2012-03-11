@@ -666,6 +666,12 @@ script = {
   common = tests/grub_cmd_echo.in;
 };
 
+script = {
+  testcase;
+  name = grub_script_gettext;
+  common = tests/grub_script_gettext.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;

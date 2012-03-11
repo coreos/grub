@@ -139,7 +139,7 @@ SPECIAL         \?|\#|\*|\@
 VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|${SPECIAL}|$\{{SPECIAL}\}
 WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE}|{I18NSTR})+
 
-MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
+MULTILINE       {WORD}?((\"{DQCHR}*)|(\$\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
 
 %x              SPLIT
 %x              DQUOTE
@@ -289,7 +289,7 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
 }
 
 <I18NQUOTE>{
-  \\\\          { COPY ("\\", 1); }
+  \\\\          { COPY ("\\\\", 2); }
   \\\"          { COPY ("\"", 1); }
   \\\n          { /* ignore */ }
   [^\"\\\n]+    { COPY (yytext, yyleng); }
@@ -297,6 +297,7 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
                   yy_pop_state (yyscanner);
                   ARG (GRUB_SCRIPT_ARG_TYPE_GETTEXT);
                 }
+  \\            { COPY ("\\", 1); }
   (.|\n)        { COPY (yytext, yyleng); }
 }
 

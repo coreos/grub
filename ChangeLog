@@ -1,5 +1,16 @@
 2012-03-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add variable parsing in $"..." and fix several mismatches with bash.
+
+	* Makefile.util.def (grub_script_gettext): New test.
+	* grub-core/script/execute.c (parse_string): New function.
+	(gettext_append): Likewise.
+	(grub_script_arglist_to_argv): Use gettext_append.
+	* grub-core/script/yylex.l: Fix slash and newline handling in $"...".
+	* tests/grub_script_gettext.in: New file.
+
+2012-03-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix handling of leading spaces in scripts.
 
 	* grub-core/normal/cmdline.c (grub_cmdline_get): Don't strip leading
