@@ -338,7 +338,11 @@ read_terminal_list (const char *prefix)
       if (! buf)
 	break;
 
-      switch (buf[0])
+      p = buf;
+      while (grub_isspace (p[0]))
+	p++;
+
+      switch (p[0])
 	{
 	case 'i':
 	  target = &grub_term_input_autoload;
@@ -351,15 +355,15 @@ read_terminal_list (const char *prefix)
       if (!target)
 	continue;
       
-      name = buf + 1;
+      name = p + 1;
             
       p = grub_strchr (name, ':');
       if (! p)
 	continue;
-      
-      *p = '\0';
-      while (*++p == ' ')
-	;
+
+      p++;
+      while (*p == ' ' || *p == '\t')
+	p++;
 
       cur = grub_malloc (sizeof (*cur));
       if (!cur)

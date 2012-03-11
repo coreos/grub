@@ -1,5 +1,16 @@
 2012-03-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix handling of leading spaces in scripts.
+
+	* grub-core/normal/cmdline.c (grub_cmdline_get): Don't strip leading
+	spaces.
+	* grub-core/normal/main.c (grub_file_getline): Remove all preprocessing
+	other than skipping \r. All users updated.
+	* tests/grub_script_echo1.in: Add space-related tests.
+	* util/grub-menulst2cfg.c (main): Remove useless space skipping.
+
+2012-03-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/cat.c (grub_cmd_cat): Fix termination key check.
 
 2012-03-10  Vladimir Serbinenko  <phcoder@gmail.com>

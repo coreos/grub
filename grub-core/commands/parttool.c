@@ -205,6 +205,8 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
 		      break;
 
 		    name = buf;
+		    while (grub_isspace (name[0]))
+		      name++;
 
 		    if (! grub_isgraph (name[0]))
 		      continue;
@@ -214,8 +216,9 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
 		      continue;
 
 		    *p = '\0';
-		    while (*++p == ' ')
-		      ;
+		    p++;
+		    while (*p == ' ' || *p == '\t')
+		      p++;
 
 		    if (! grub_isgraph (*p))
 		      continue;

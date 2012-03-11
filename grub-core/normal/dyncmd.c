@@ -141,6 +141,9 @@ read_command_list (const char *prefix)
 		    break;
 
 		  name = buf;
+		  while (grub_isspace (name[0]))
+		    name++;
+
 		  if (*name == '*')
 		    {
 		      name++;
@@ -155,8 +158,9 @@ read_command_list (const char *prefix)
 		    continue;
 
 		  *p = '\0';
-		  while (*++p == ' ')
-		    ;
+		  p++;
+		  while (*p == ' ' || *p == '\t')
+		    p++;
 
 		  if (! grub_isgraph (*p))
 		    continue;

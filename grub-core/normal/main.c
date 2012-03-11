@@ -45,10 +45,10 @@ char *
 grub_file_getline (grub_file_t file)
 {
   char c;
-  int pos = 0;
-  int literal = 0;
+  grub_size_t pos = 0;
   char *cmdline;
-  int max_len = 64;
+  int have_newline = 0;
+  grub_size_t max_len = 64;
 
   /* Initially locate some space.  */
   cmdline = grub_malloc (max_len);
@@ -64,59 +64,32 @@ grub_file_getline (grub_file_t file)
       if (c == '\r')
 	continue;
 
-      /* Replace tabs with spaces.  */
-      if (c == '\t')
-	c = ' ';
 
-      /* The previous is a backslash, then...  */
-      if (literal)
+      if (pos >= max_len)
 	{
-	  /* If it is a newline, replace it with a space and continue.  */
-	  if (c == '\n')
+	  char *old_cmdline = cmdline;
+	  max_len = max_len * 2;
+	  cmdline = grub_realloc (cmdline, max_len);
+	  if (! cmdline)
 	    {
-	      c = ' ';
-
-	      /* Go back to overwrite the backslash.  */
-	      if (pos > 0)
-		pos--;
+	      grub_free (old_cmdline);
+	      return 0;
 	    }
-
-	  literal = 0;
 	}
 
-      if (c == '\\')
-	literal = 1;
-
-      if (pos == 0)
+      if (c == '\n')
 	{
-	  if (! grub_isspace (c))
-	    cmdline[pos++] = c;
+	  have_newline = 1;
+	  break;
 	}
-      else
-	{
-	  if (pos >= max_len)
-	    {
-	      char *old_cmdline = cmdline;
-	      max_len = max_len * 2;
-	      cmdline = grub_realloc (cmdline, max_len);
-	      if (! cmdline)
-		{
-		  grub_free (old_cmdline);
-		  return 0;
-		}
-	    }
 
-	  if (c == '\n')
-	    break;
-
-	  cmdline[pos++] = c;
-	}
+      cmdline[pos++] = c;
     }
 
   cmdline[pos] = '\0';
 
   /* If the buffer is empty, don't return anything at all.  */
-  if (pos == 0)
+  if (pos == 0 && !have_newline)
     {
       grub_free (cmdline);
       cmdline = 0;

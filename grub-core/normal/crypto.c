@@ -116,14 +116,17 @@ read_crypto_list (const char *prefix)
 	break;
       
       name = buf;
-            
+      while (grub_isspace (name[0]))
+	name++;
+
       p = grub_strchr (name, ':');
       if (! p)
 	continue;
       
       *p = '\0';
-      while (*++p == ' ')
-	;
+      p++;
+      while (*p == ' ' || *p == '\t')
+	p++;
 
       cur = grub_malloc (sizeof (*cur));
       if (!cur)

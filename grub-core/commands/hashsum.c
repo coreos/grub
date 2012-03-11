@@ -103,6 +103,8 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
   while (grub_free (buf), (buf = grub_file_getline (hashlist)))
     {
       const char *p = buf;
+      while (grub_isspace (p[0]))
+	p++;
       for (i = 0; i < hash->mdlen; i++)
 	{
 	  int high, low;
@@ -112,8 +114,9 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 	    return grub_error (GRUB_ERR_BAD_FILE_TYPE, "invalid hash list");
 	  expected[i] = (high << 4) | low;
 	}
-      if (*p++ != ' ' || *p++ != ' ')
+      if ((p[0] != ' ' && p[0] != '\t') || (p[1] != ' ' && p[1] != '\t'))
 	return grub_error (GRUB_ERR_BAD_FILE_TYPE, "invalid hash list");
+      p += 2;
       if (prefix)
 	{
 	  char *filename;

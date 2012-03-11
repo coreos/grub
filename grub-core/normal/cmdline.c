@@ -630,11 +630,6 @@ grub_cmdline_get (const char *prompt_translated)
   grub_xputs ("\n");
   grub_refresh ();
 
-  /* Remove leading spaces.  */
-  lpos = 0;
-  while (buf[lpos] == ' ')
-    lpos++;
-
   histpos = 0;
   if (strlen_ucs4 (buf) > 0)
     {
@@ -643,7 +638,7 @@ grub_cmdline_get (const char *prompt_translated)
       grub_history_add (empty, 0);
     }
 
-  ret = grub_ucs4_to_utf8_alloc (buf + lpos, llen - lpos + 1);
+  ret = grub_ucs4_to_utf8_alloc (buf, llen + 1);
   grub_free (buf);
   grub_free (cl_terms);
   return ret;
