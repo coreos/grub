@@ -170,8 +170,10 @@ grub_script_return (grub_command_t cmd __attribute__((unused)),
 
   if (! scope || argc > 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
-		       /* TRANSLATORS: it's about not being
-			  inside a function.  */
+		       /* TRANSLATORS: It's about not being
+			  inside a function. "return" can be used only
+			  in a function and this error occurs if it's used
+			  anywhere else.  */
 		       N_("not in function body"));
 
   if (argc == 0)

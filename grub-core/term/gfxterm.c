@@ -1105,7 +1105,8 @@ static const struct grub_arg_option background_image_cmd_options[] =
        in left-top corner). Note that GRUB will accept only original
        keywords stretch and normal, not the translated ones.
        So please put both in translation
-       e.g. stretch(=%STRETCH%)|normal(=%NORMAL). Since many people
+       e.g. stretch(=%STRETCH%)|normal(=%NORMAL%).
+       The percents mark the translated version. Since many people
        may not know the word stretch or normal I recommend
        putting the translation either here or in "Background image mode."
        string.  */

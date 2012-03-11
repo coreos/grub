@@ -1,5 +1,14 @@
 2012-03-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/i386/pc/play.c: Improve TRANSLATORS comments.
+	* grub-core/commands/regexp.c: Likewise.
+	* grub-core/loader/i386/linux.c: Likewise.
+	* grub-core/partmap/msdos.c: Likewise.
+	* grub-core/script/execute.c: Likewise.
+	* grub-core/term/gfxterm.c: Likewise.
+
+2012-03-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add variable parsing in $"..." and fix several mismatches with bash.
 
 	* Makefile.util.def (grub_script_gettext): New test.

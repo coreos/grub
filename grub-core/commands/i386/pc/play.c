@@ -182,8 +182,10 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, 
-		       /* TRANSLATORS: it's musical notes, not the notes
-			  you take.  */
+		       /* TRANSLATORS: It's musical notes, not the notes
+			  you take. Play command expects arguments which can
+			  be either a filename or tempo+notes.
+			  This error happens if none is specified.  */
 		       N_("filename or tempo and notes expected"));
 
   if (argc == 1)

@@ -38,7 +38,8 @@ static const struct grub_arg_option options[] =
 	 them in variables. In other programs
 	 those components aree often referenced with
 	 back slash, e.g. \1. Compare
-	 sed -e 's,\([a-z][a-z]*\),lowercase=\1,g'	 
+	 sed -e 's,\([a-z][a-z]*\),lowercase=\1,g'
+	 The whole matching component is saved in VARNAME, not its number.
        */
       N_("Store matched component NUMBER in VARNAME."),
       N_("[NUMBER:]VARNAME"), ARG_TYPE_STRING },
