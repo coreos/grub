@@ -1,3 +1,8 @@
+2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/menuentry.c (grub_normal_add_menu_entry): Add
+	zero terminator. Fixes a crash.
+
 2012-03-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/linux.c (allocate_pages): Don't allocate

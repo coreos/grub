@@ -99,7 +99,8 @@ grub_normal_add_menu_entry (int argc, const char **args,
     {
       int i;
       for (i = 0; classes[i]; i++); /* count # of menuentry classes */
-      menu_classes = grub_zalloc (sizeof (struct grub_menu_entry_class) * i);
+      menu_classes = grub_zalloc (sizeof (struct grub_menu_entry_class)
+				  * (i + 1));
       if (! menu_classes)
 	goto fail;
 
