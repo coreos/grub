@@ -48,7 +48,10 @@
 
 grub_dl_t grub_dl_head = 0;
 
-static grub_err_t
+grub_err_t
+grub_dl_add (grub_dl_t mod);
+
+grub_err_t
 grub_dl_add (grub_dl_t mod)
 {
   if (grub_dl_get (mod->name))
