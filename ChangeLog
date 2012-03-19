@@ -1,5 +1,10 @@
 2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_make_system_path_relative_to_its_root): Fix
+	missing quotes which caused confusion among translators.
+
+2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkconfig_lib.in: Fix typo.
 
 2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
