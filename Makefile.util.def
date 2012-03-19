@@ -542,6 +542,12 @@ script = {
 
 script = {
   testcase;
+  name = grub_script_leading_whitespace;
+  common = tests/grub_script_leading_whitespace.in;
+};
+
+script = {
+  testcase;
   name = grub_script_echo_keywords;
   common = tests/grub_script_echo_keywords.in;
 };

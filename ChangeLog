@@ -1,5 +1,12 @@
 2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/argv.c (grub_script_argv_split_append): Skip leading
+	spaces.
+	* tests/grub_script_leading_whitespace.in: New file.
+	* Makefile.util.def (grub_script_leading_whitespace): New test.
+
+2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/dl.c (grub_dl_add): Make global in order for gdb_grub
 	to work.
 

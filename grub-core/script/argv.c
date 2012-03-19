@@ -132,6 +132,9 @@ grub_script_argv_split_append (struct grub_script_argv *argv, const char *s)
   if (! s)
     return 0;
 
+  while (*s && grub_isspace (*s))
+    s++;
+
   while (! errors && *s)
     {
       p = s;
