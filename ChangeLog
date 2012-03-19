@@ -1,5 +1,9 @@
 2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkconfig_lib.in: Fix typo.
+
+2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/argv.c (grub_script_argv_split_append): Skip leading
 	spaces.
 	* tests/grub_script_leading_whitespace.in: New file.

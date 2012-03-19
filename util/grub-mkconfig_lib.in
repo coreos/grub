@@ -193,7 +193,7 @@ version_sort ()
     no)
       LC_ALL=C sort -n;;
     *)
-      if sort -v </dev/null > /dev/null 2>&1; then
+      if sort -V </dev/null > /dev/null 2>&1; then
         version_sort_sort_has_v=yes
 	LC_ALL=C sort -V
       else
