@@ -888,12 +888,18 @@ grub_jfs_label (grub_device_t device, char **label)
 
   if (data)
     {
-      if (data->sblock.volname2[0])
+      if (data->sblock.volname2[0] < ' ')
+	{
+	  char *ptr;
+	  ptr = data->sblock.volname + sizeof (data->sblock.volname) - 1;
+	  while (ptr >= data->sblock.volname && *ptr == ' ')
+	    ptr--;
+	  *label = grub_strndup (data->sblock.volname,
+				 ptr - data->sblock.volname + 1);
+	}
+      else
 	*label = grub_strndup (data->sblock.volname2,
 			       sizeof (data->sblock.volname2));
-      else
-	*label = grub_strndup (data->sblock.volname,
-			       sizeof (data->sblock.volname));
     }
   else
     *label = 0;
