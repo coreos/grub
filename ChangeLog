@@ -1,5 +1,11 @@
 2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gdb/cstub.c (grub_gdb_inbuf): Increase the size to avoid
+	overflow.
+	(grub_gdb_outbuf): Likewise.
+
+2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/menuentry.c (grub_normal_add_menu_entry): Add
 	zero terminator. Fixes a crash.
 

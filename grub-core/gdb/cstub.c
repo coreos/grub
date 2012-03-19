@@ -28,8 +28,8 @@ int grub_gdb_regs[GRUB_MACHINE_NR_REGS];
 
 #define GRUB_GDB_COMBUF_SIZE 400	/* At least sizeof(grub_gdb_regs)*2 are needed for
 					   register packets.  */
-static char grub_gdb_inbuf[GRUB_GDB_COMBUF_SIZE];
-static char grub_gdb_outbuf[GRUB_GDB_COMBUF_SIZE];
+static char grub_gdb_inbuf[GRUB_GDB_COMBUF_SIZE + 1];
+static char grub_gdb_outbuf[GRUB_GDB_COMBUF_SIZE + 1];
 
 struct grub_serial_port *grub_gdb_port;
 
