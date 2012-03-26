@@ -451,13 +451,18 @@ grub_cmd_translate (grub_command_t cmd __attribute__ ((unused)),
 GRUB_MOD_INIT (gettext)
 {
   const char *lang;
+  grub_err_t err;
 
   lang = grub_env_get ("lang");
 
-  grub_gettext_init_ext (&main_context, lang, grub_env_get ("locale_dir"),
-			 grub_env_get ("prefix"));
-  grub_gettext_init_ext (&secondary_context, lang,
-			 grub_env_get ("secondary_locale_dir"), 0);
+  err = grub_gettext_init_ext (&main_context, lang, grub_env_get ("locale_dir"),
+			       grub_env_get ("prefix"));
+  if (err)
+    grub_print_error ();
+  err = grub_gettext_init_ext (&secondary_context, lang,
+			       grub_env_get ("secondary_locale_dir"), 0);
+  if (err)
+    grub_print_error ();
 
   grub_register_variable_hook ("locale_dir", NULL, read_main);
   grub_register_variable_hook ("secondary_locale_dir", NULL, read_secondary);

@@ -1,3 +1,7 @@
+2012-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gettext/gettext.c (GRUB_MOD_INIT): Handle errors.
+
 2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/getroot.c (grub_make_system_path_relative_to_its_root): Fix
