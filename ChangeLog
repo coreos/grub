@@ -1,5 +1,15 @@
 2012-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle big-endian mdraid.
+
+	* Makefile.util.def (libgrubkern): Add mdraid_linux_be.c.
+	* grub-core/Makefile.core.def (mdraid09_be): New module.
+	* grub-core/disk/mdraid_linux.c: Use grub_md_to_cpu* and grub_cpu_to_md*
+	rather than grub_le_to_cpu* and grub_cpu_to_le*.
+	* grub-core/disk/mdraid_linux_be.c: New file.
+
+2012-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gettext/gettext.c (GRUB_MOD_INIT): Handle errors.
 
 2012-03-19  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -893,6 +893,11 @@ module = {
 };
 
 module = {
+  name = mdraid09_be;
+  common = disk/mdraid_linux_be.c;
+};
+
+module = {
   name = mdraid1x;
   common = disk/mdraid1x_linux.c;
 };

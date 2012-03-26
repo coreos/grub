@@ -29,6 +29,22 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#ifdef MODE_BIGENDIAN
+#define grub_md_to_cpu64 grub_be_to_cpu64
+#define grub_md_to_cpu32 grub_be_to_cpu32
+#define grub_md_to_cpu16 grub_be_to_cpu16
+#define grub_cpu_to_md64_compile_time grub_cpu_to_be64
+#define grub_cpu_to_md32_compile_time grub_cpu_to_be32
+#define grub_cpu_to_md16_compile_time grub_cpu_to_be16
+#else
+#define grub_md_to_cpu64 grub_le_to_cpu64
+#define grub_md_to_cpu32 grub_le_to_cpu32
+#define grub_md_to_cpu16 grub_le_to_cpu16
+#define grub_cpu_to_md64_compile_time grub_cpu_to_le64
+#define grub_cpu_to_md32_compile_time grub_cpu_to_le32
+#define grub_cpu_to_md16_compile_time grub_cpu_to_le16
+#endif
+
 #define RESERVED_BYTES			(64 * 1024)
 #define RESERVED_SECTORS		(RESERVED_BYTES / 512)
 
@@ -183,23 +199,23 @@ grub_mdraid_detect (grub_disk_t disk,
     return NULL;
 
   /* Look whether there is a mdraid 0.90 superblock.  */
-  if (sb.md_magic != grub_cpu_to_le32_compile_time (SB_MAGIC))
+  if (sb.md_magic != grub_cpu_to_md32_compile_time (SB_MAGIC))
     /* not 0.9x raid.  */
     return NULL;
 
-  if (sb.major_version != grub_cpu_to_le32_compile_time (0)
-      || sb.minor_version != grub_cpu_to_le32_compile_time (90))
+  if (sb.major_version != grub_cpu_to_md32_compile_time (0)
+      || sb.minor_version != grub_cpu_to_md32_compile_time (90))
     /* Unsupported version.  */
     return NULL;
 
   /* No need for explicit check that sb.size is 0 (unspecified) since
      0 >= non-0 is false.  */
-  if (((grub_disk_addr_t) grub_le_to_cpu32 (sb.size)) * 2 >= size)
+  if (((grub_disk_addr_t) grub_md_to_cpu32 (sb.size)) * 2 >= size)
     return NULL;
 
   /* FIXME: Check the checksum.  */
 
-  level = grub_le_to_cpu32 (sb.level);
+  level = grub_md_to_cpu32 (sb.level);
   /* Multipath.  */
   if ((int) level == -4)
     level = 1;
@@ -211,8 +227,8 @@ grub_mdraid_detect (grub_disk_t disk,
 		  "unsupported RAID level: %d", level);
       return NULL;
     }
-  if (grub_le_to_cpu32 (sb.this_disk.number) == 0xffff
-      || grub_le_to_cpu32 (sb.this_disk.number) == 0xfffe)
+  if (grub_md_to_cpu32 (sb.this_disk.number) == 0xffff
+      || grub_md_to_cpu32 (sb.this_disk.number) == 0xfffe)
     /* Spares aren't implemented.  */
     return NULL;
 
@@ -228,32 +244,44 @@ grub_mdraid_detect (grub_disk_t disk,
   *start_sector = 0;
 
   id->uuidlen = 0;
-  id->id = grub_le_to_cpu32 (sb.this_disk.number);
+  id->id = grub_md_to_cpu32 (sb.this_disk.number);
 
   char buf[32];
-  grub_snprintf (buf, sizeof (buf), "md%d", grub_le_to_cpu32 (sb.md_minor));
+  grub_snprintf (buf, sizeof (buf), "md%d", grub_md_to_cpu32 (sb.md_minor));
   return grub_diskfilter_make_raid (16, (char *) uuid,
-				    grub_le_to_cpu32 (sb.raid_disks), buf,
+				    grub_md_to_cpu32 (sb.raid_disks), buf,
 				    (sb.size) ? ((grub_disk_addr_t)
-						 grub_le_to_cpu32 (sb.size)) * 2
+						 grub_md_to_cpu32 (sb.size)) * 2
 				    : sector,
-				    grub_le_to_cpu32 (sb.chunk_size) >> 9,
-				    grub_le_to_cpu32 (sb.layout),
+				    grub_md_to_cpu32 (sb.chunk_size) >> 9,
+				    grub_md_to_cpu32 (sb.layout),
 				    level);
 }
 
 static struct grub_diskfilter grub_mdraid_dev = {
+#ifdef MODE_BIGENDIAN
+  .name = "mdraid09_be",
+#else
   .name = "mdraid09",
+#endif
   .detect = grub_mdraid_detect,
   .next = 0
 };
 
+#ifdef MODE_BIGENDIAN
+GRUB_MOD_INIT (mdraid09_be)
+#else
 GRUB_MOD_INIT (mdraid09)
+#endif
 {
   grub_diskfilter_register (&grub_mdraid_dev);
 }
 
+#ifdef MODE_BIGENDIAN
+GRUB_MOD_FINI (mdraid09_be)
+#else
 GRUB_MOD_FINI (mdraid09)
+#endif
 {
   grub_diskfilter_unregister (&grub_mdraid_dev);
 }

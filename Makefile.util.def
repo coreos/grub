@@ -53,6 +53,7 @@ library = {
   common = grub-core/disk/loopback.c;
   common = grub-core/disk/lvm.c;
   common = grub-core/disk/mdraid_linux.c;
+  common = grub-core/disk/mdraid_linux_be.c;
   common = grub-core/disk/mdraid1x_linux.c;
   common = grub-core/disk/raid5_recover.c;
   common = grub-core/disk/raid6_recover.c;
