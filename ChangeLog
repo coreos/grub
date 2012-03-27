@@ -1,3 +1,8 @@
+2012-03-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Invoking grub-probe): New section.
+	Reported by: Filipus Klutiero.  Fixes Debian bug #666031.
+
 2012-03-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix tab and wide character handling in editor and menu.

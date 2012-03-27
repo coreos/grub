@@ -37,6 +37,7 @@ Invariant Sections.
 * grub-mkconfig: (grub)Invoking grub-mkconfig.  Generate GRUB configuration
 * grub-mkpasswd-pbkdf2: (grub)Invoking grub-mkpasswd-pbkdf2.
 * grub-mkrescue: (grub)Invoking grub-mkrescue.  Make a GRUB rescue image
+* grub-probe: (grub)Invoking grub-probe.        Probe device information
 @end direntry
 
 @setchapternewpage odd
@@ -100,6 +101,7 @@ This edition documents version @value{VERSION}.
 * Invoking grub-mkpasswd-pbkdf2::
                                 Generate GRUB password hashes
 * Invoking grub-mkrescue::      Make a GRUB rescue image
+* Invoking grub-probe::         Probe device information for GRUB
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Future::                      Some future plans on GRUB
@@ -4644,6 +4646,92 @@ default.
 @item --grub-mkimage=@var{file}
 Use @var{file} as the @command{grub-mkimage} program, rather than the
 built-in default.
+@end table
+
+
+@node Invoking grub-probe
+@chapter Invoking grub-probe
+
+The program @command{grub-probe} probes device information for a given path
+or device.
+
+@example
+grub-probe --target=fs /boot/grub
+grub-probe --target=drive --device /dev/sda1
+@end example
+
+@command{grub-probe} must be given a path or device as a non-option
+argument, and also accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command-line options and exit.
+
+@item --version
+Print the version number of GRUB and exit.
+
+@item -d
+@itemx --device
+If this option is given, then the non-option argument is a system device
+name (such as @samp{/dev/sda1}), and @command{grub-probe} will print
+information about that device.  If it is not given, then the non-option
+argument is a filesystem path (such as @samp{/boot/grub}), and
+@command{grub-probe} will print information about the device containing that
+part of the filesystem.
+
+@item -m @var{file}
+@itemx --device-map=@var{file}
+Use @var{file} as the device map (@pxref{Device map}) rather than the
+default, usually @samp{/boot/grub/device.map}.
+
+@item -t @var{target}
+@itemx --target=@var{target}
+Print information about the given path or device as defined by @var{target}.
+The available targets and their meanings are:
+
+@table @samp
+@item fs
+GRUB filesystem module.
+@item fs_uuid
+Filesystem Universally Unique Identifier (UUID).
+@item fs_label
+Filesystem label.
+@item drive
+GRUB device name.
+@item device
+System device name.
+@item partmap
+GRUB partition map module.
+@item abstraction
+GRUB abstraction module (e.g. @samp{lvm}).
+@item cryptodisk_uuid
+Crypto device UUID.
+@item msdos_parttype
+MBR partition type code (two hexadecimal digits).
+@item hints_string
+A string of platform search hints suitable for passing to the
+@command{search} command (@pxref{search}).
+@item bios_hints
+Search hints for the PC BIOS platform.
+@item ieee1275_hints
+Search hints for the IEEE1275 platform.
+@item baremetal_hints
+Search hints for platforms where disks are addressed directly rather than
+via firmware.
+@item efi_hints
+Search hints for the EFI platform.
+@item arc_hints
+Search hints for the ARC platform.
+@item compatibility_hint
+A guess at a reasonable GRUB drive name for this device, which may be
+used as a fallback if the @command{search} command fails.
+@item disk
+System device name for the whole disk.
+@end table
+
+@item -v
+@itemx --verbose
+Print verbose messages.
 @end table
 
 
