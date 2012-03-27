@@ -38,7 +38,7 @@ enum update_mode
 struct line
 {
   /* The line buffer.  */
-  char *buf;
+  grub_uint32_t *buf;
   /* The length of the line.  */
   int len;
   /* The maximum length of the line.  */
@@ -52,6 +52,7 @@ struct per_term_screen
   int x;
   /* The Y coordinate.  */
   int y;
+  int y_line_start;
   /* Number of entries.  */
   int num_entries;
 };
@@ -80,7 +81,11 @@ struct screen
 };
 
 /* Used for storing completion items temporarily.  */
-static struct line completion_buffer;
+static struct {
+  char *buf;
+  grub_size_t len;
+  grub_size_t max_len;
+} completion_buffer;
 static int completion_type;
 
 /* Initialize a line.  */
@@ -88,8 +93,8 @@ static int
 init_line (struct line *linep)
 {
   linep->len = 0;
-  linep->max_len = 80; /* XXX */
-  linep->buf = grub_malloc (linep->max_len + 1);
+  linep->max_len = 80;
+  linep->buf = grub_malloc ((linep->max_len + 1) * sizeof (linep->buf[0]));
   if (! linep->buf)
     return 0;
 
@@ -102,8 +107,8 @@ ensure_space (struct line *linep, int extra)
 {
   if (linep->max_len < linep->len + extra)
     {
-      linep->max_len = linep->len + extra + 80; /* XXX */
-      linep->buf = grub_realloc (linep->buf, linep->max_len + 1);
+      linep->max_len = 2 * (linep->len + extra);
+      linep->buf = grub_realloc (linep->buf, (linep->max_len + 1) * sizeof (linep->buf[0]));
       if (! linep->buf)
 	return 0;
     }
@@ -115,44 +120,99 @@ ensure_space (struct line *linep, int extra)
 static int
 get_logical_num_lines (struct line *linep, struct per_term_screen *term_screen)
 {
-  return (linep->len / grub_term_entry_width (term_screen->term)) + 1;
+  return (grub_getstringwidth (linep->buf, linep->buf + linep->len,
+			       term_screen->term)
+	  / grub_term_entry_width (term_screen->term)) + 1;
+}
+
+static void
+advance (struct screen *screen)
+{
+  unsigned i;
+  struct grub_unicode_glyph glyph;
+
+  screen->column += grub_unicode_aglomerate_comb (screen->lines[screen->line].buf + screen->column,
+						  screen->lines[screen->line].len - screen->column,
+						  &glyph);
+
+  for (i = 0; i < screen->nterms; i++)
+    {
+      grub_ssize_t width;
+      width = grub_term_getcharwidth (screen->terms[i].term, &glyph);
+      screen->terms[i].x += width;
+      if (screen->terms[i].x
+	  == grub_term_entry_width (screen->terms[i].term))
+	{
+	  screen->terms[i].x = 0;
+	  screen->terms[i].y++;
+	}
+      if (screen->terms[i].x
+	  > grub_term_entry_width (screen->terms[i].term))
+	{
+	  screen->terms[i].x = width;
+	  screen->terms[i].y++;
+	}
+    }
+  grub_free (glyph.combining);
+}
+
+static void
+advance_to (struct screen *screen, int c)
+{
+  if (c > screen->lines[screen->line].len)
+    c = screen->lines[screen->line].len;
+
+  while (screen->column < c)
+    advance (screen);
 }
 
 /* Print a line.  */
-static void
-print_line (struct line *linep, int offset, int start, int y,
-	    struct per_term_screen *term_screen)
+static int
+print_line (struct line *linep, int offset, int y,
+	    struct per_term_screen *term_screen, int dry_run)
 {
+  int x;
+  int i;
+
   grub_term_gotoxy (term_screen->term, 
-		    GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + start + 1,
-		    y + GRUB_TERM_FIRST_ENTRY_Y);
+ 		    GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + 1,
+ 		    y + GRUB_TERM_FIRST_ENTRY_Y);
+ 
+  x = 0;
+  for (i = 0; i + offset < (int) linep->len;)
+     {
+      grub_ssize_t width;
+      grub_size_t delta = 0;
+      struct grub_unicode_glyph glyph;
 
-  if (linep->len >= offset + grub_term_entry_width (term_screen->term))
-    {
-      char *p, c;
-      p = linep->buf + offset + grub_term_entry_width (term_screen->term);
-      c = *p;
-      *p = 0;
-      grub_puts_terminal (linep->buf + offset + start, term_screen->term);
-      *p = c;
-      grub_putcode ('\\', term_screen->term);
-    }
-  else
-    {
-      int i;
-      char *p, c;
+      delta = grub_unicode_aglomerate_comb (linep->buf + offset + i,
+					    linep->len - offset - i,
+					    &glyph);
+      width = grub_term_getcharwidth (term_screen->term, &glyph);
+      grub_free (glyph.combining);
 
-      p = linep->buf + linep->len;
-      c = *p;
-      *p = 0;
-      grub_puts_terminal (linep->buf + offset + start, term_screen->term);
-      *p = c;
+      if (x + width > grub_term_entry_width (term_screen->term) && x != 0)
+	break;
+      x += width;
+      i += delta;
+     }
 
-      for (i = 0;
-	   i <= grub_term_entry_width (term_screen->term) - linep->len + offset;
-	   i++)
-	grub_putcode (' ', term_screen->term);
-    }
+  if (dry_run)
+    return i;
+
+  grub_print_ucs4 (linep->buf + offset,
+		   linep->buf + offset + i, 0, 0, term_screen->term);
+
+  if (i + offset != linep->len)
+    grub_putcode ('\\', term_screen->term);
+   else
+     {
+       for (;
+	    x < (int) grub_term_entry_width (term_screen->term);
+	    x++)
+	 grub_putcode (' ', term_screen->term);
+     }
+  return i;
 }
 
 /* Print an empty line.  */
@@ -213,10 +273,13 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
   /* Check if scrolling is necessary.  */
   if (term_screen->y < 0 || term_screen->y >= term_screen->num_entries)
     {
+      int delta;
       if (term_screen->y < 0)
-	term_screen->y = 0;
+	delta = -term_screen->y;
       else
-	term_screen->y = term_screen->num_entries - 1;
+	delta = term_screen->num_entries - 1 - term_screen->y;
+      term_screen->y += delta;
+      term_screen->y_line_start += delta;
 
       region_start = 0;
       region_column = 0;
@@ -229,8 +292,7 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
     {
       /* Draw lines. This code is tricky, because this must calculate logical
 	 positions.  */
-      y = term_screen->y - screen->column
-	/ grub_term_entry_width (term_screen->term);
+      y = term_screen->y_line_start;
       i = screen->line;
       linep = screen->lines + i;
       while (y > 0)
@@ -246,6 +308,7 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
       do
 	{
 	  int column;
+	  int off = 0;
 
 	  if (linep >= screen->lines + screen->num_lines)
 	    break;
@@ -256,7 +319,10 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 	       column += grub_term_entry_width (term_screen->term), y++)
 	    {
 	      if (y < 0)
-		continue;
+		{
+		  off += print_line (linep, off, y, term_screen, 1);
+		  continue;
+		}
 
 	      if (i == region_start)
 		{
@@ -264,18 +330,19 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 		      && region_column
 		      < (column
 			 + grub_term_entry_width (term_screen->term)))
-		    print_line (linep, column, region_column - column, y,
-				term_screen);
+		    off += print_line (linep, off, y, term_screen, 0);
 		  else if (region_column < column)
-		    print_line (linep, column, 0, y, term_screen);
+		    off += print_line (linep, off, y, term_screen, 0);
+		  else
+		    off += print_line (linep, off, y, term_screen, 1);
 		}
 	      else if (i > region_start && mode == ALL_LINES)
-		print_line (linep, column, 0, y, term_screen);
+		off += print_line (linep, off, y, term_screen, 0);
 	    }
 
 	  if (y == term_screen->num_entries)
 	    {
-	      if (column <= linep->len || i + 1 < screen->num_lines)
+	      if (off <= linep->len || i + 1 < screen->num_lines)
 		down_flag = 1;
 	    }
 
@@ -285,7 +352,6 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 	  if (mode == ALL_LINES && i == screen->num_lines)
 	    for (; y < term_screen->num_entries; y++)
 	      print_empty_line (y, term_screen);
-
 	}
       while (y < term_screen->num_entries);
 
@@ -367,7 +433,7 @@ insert_string (struct screen *screen, const char *s, int update)
 
 	  grub_memmove (next_linep->buf,
 			current_linep->buf + screen->column,
-			size);
+			size * sizeof (next_linep->buf[0]));
 	  current_linep->len = screen->column;
 	  next_linep->len = size;
 
@@ -391,6 +457,7 @@ insert_string (struct screen *screen, const char *s, int update)
 	    {
 	      screen->terms[i].x = 0;
 	      screen->terms[i].y++;
+	      screen->terms[i].y_line_start = screen->terms[i].y;
 	    }
 	  s++;
 	}
@@ -401,6 +468,7 @@ insert_string (struct screen *screen, const char *s, int update)
 	  struct line *current_linep;
 	  int size;
 	  int orig_num[screen->nterms], new_num[screen->nterms];
+	  grub_uint32_t *unicode_msg;
 
 	  /* Find a string delimited by LF.  */
 	  p = grub_strchr (s, '\n');
@@ -409,16 +477,26 @@ insert_string (struct screen *screen, const char *s, int update)
 
 	  /* Insert the string.  */
 	  current_linep = screen->lines + screen->line;
-	  size = p - s;
+	  unicode_msg = grub_malloc ((p - s) * sizeof (grub_uint32_t));
+
+	  if (!unicode_msg)
+	    return 0;
+
+	  size = grub_utf8_to_ucs4 (unicode_msg, (p - s),
+				    (grub_uint8_t *) s, (p - s), 0);
+
 	  if (! ensure_space (current_linep, size))
 	    return 0;
 
 	  grub_memmove (current_linep->buf + screen->column + size,
 			current_linep->buf + screen->column,
-			current_linep->len - screen->column);
+			(current_linep->len - screen->column)
+			* sizeof (current_linep->buf[0]));
 	  grub_memmove (current_linep->buf + screen->column,
-			s,
-			size);
+			unicode_msg,
+			size * sizeof (current_linep->buf[0]));
+	  grub_free (unicode_msg);
+
 	  for (i = 0; i < screen->nterms; i++)
 	    orig_num[i] = get_logical_num_lines (current_linep,
 						 &screen->terms[i]);
@@ -444,16 +522,9 @@ insert_string (struct screen *screen, const char *s, int update)
 	      mode[i] = SINGLE_LINE;
 
 	  /* Move the cursor.  */
-	  screen->column += size;
+	  advance_to (screen, screen->column + size);
+
 	  screen->real_column = screen->column;
-	  for (i = 0; i < screen->nterms; i++)
-	    {
-	      screen->terms[i].x += size;
-	      screen->terms[i].y += screen->terms[i].x
-		/ grub_term_entry_width (screen->terms[i].term);
-	      screen->terms[i].x
-		%= grub_term_entry_width (screen->terms[i].term);
-	    }
 	  s = p;
 	}
     }
@@ -520,6 +591,7 @@ make_screen (grub_menu_entry_t entry)
     {
       screen->terms[i].x = 0;
       screen->terms[i].y = 0;
+      screen->terms[i].y_line_start = screen->terms[i].y;
     }
 
   return screen;
@@ -537,19 +609,7 @@ forward_char (struct screen *screen, int update)
 
   linep = screen->lines + screen->line;
   if (screen->column < linep->len)
-    {
-      screen->column++;
-      for (i = 0; i < screen->nterms; i++)
-	{
-	  screen->terms[i].x++;
-	  if (screen->terms[i].x
-	      == grub_term_entry_width (screen->terms[i].term))
-	    {
-	      screen->terms[i].x = 0;
-	      screen->terms[i].y++;
-	    }
-	}
-    }
+    advance (screen);
   else if (screen->num_lines > screen->line + 1)
     {
       screen->column = 0;
@@ -558,6 +618,7 @@ forward_char (struct screen *screen, int update)
 	{
 	  screen->terms[i].x = 0;
 	  screen->terms[i].y++;
+	  screen->terms[i].y_line_start = screen->terms[i].y;
 	}
     }
 
@@ -575,31 +636,49 @@ backward_char (struct screen *screen, int update)
 
   if (screen->column > 0)
     {
+      struct grub_unicode_glyph glyph;
+      struct line *linep;
+
+      linep = screen->lines + screen->line;
+
       screen->column--;
+      screen->column = grub_unicode_get_comb_start (linep->buf, 
+						    linep->buf + screen->column)
+	- linep->buf;
+
+      grub_unicode_aglomerate_comb (screen->lines[screen->line].buf + screen->column,
+				    screen->lines[screen->line].len - screen->column,
+				    &glyph);
+
       for (i = 0; i < screen->nterms; i++)
 	{
-	  screen->terms[i].x--;
-	  if (screen->terms[i].x == -1)
+	  grub_ssize_t width;
+	  width = grub_term_getcharwidth (screen->terms[i].term, &glyph);
+	  screen->terms[i].x -= width;
+	  if (screen->terms[i].x < 0)
 	    {
 	      screen->terms[i].x
 		= grub_term_entry_width (screen->terms[i].term) - 1;
 	      screen->terms[i].y--;
 	    }
 	}
+      grub_free (glyph.combining);
     }
   else if (screen->line > 0)
     {
       struct line *linep;
 
-      screen->line--;
       linep = screen->lines + screen->line;
-      screen->column = linep->len;
+      screen->column = 0;
+      screen->line--;
+
       for (i = 0; i < screen->nterms; i++)
 	{
-	  screen->terms[i].x = screen->column
-	    % grub_term_entry_width (screen->terms[i].term);
-	  screen->terms[i].y--;
+	  screen->terms[i].y_line_start -= get_logical_num_lines (linep, &screen->terms[i]);
+	  screen->terms[i].y = screen->terms[i].y_line_start;
+	  screen->terms[i].x = 0;
 	}
+      advance_to (screen, screen->lines[screen->line].len);
     }
 
   screen->real_column = screen->column;
@@ -620,40 +699,29 @@ previous_line (struct screen *screen, int update)
       struct line *linep;
       int col;
 
-      /* How many physical lines from the current position
-	 to the first physical line?  */
-      col = screen->column;
-
       screen->line--;
 
       linep = screen->lines + screen->line;
       if (linep->len < screen->real_column)
-	screen->column = linep->len;
+	col = linep->len;
       else
-	screen->column = screen->real_column;
+	col = screen->real_column;
+
+      screen->column = 0;
 
       for (i = 0; i < screen->nterms; i++)
 	{
-	  int dy;
-	  dy = col / grub_term_entry_width (screen->terms[i].term);
-
-	  /* How many physical lines from the current position
-	     to the last physical line?  */
-	  dy += (linep->len / grub_term_entry_width (screen->terms[i].term)
-		 - screen->column
-		 / grub_term_entry_width (screen->terms[i].term));
-	
-	  screen->terms[i].y -= dy + 1;
-	  screen->terms[i].x
-	    = screen->column % grub_term_entry_width (screen->terms[i].term);
-      }
+	  screen->terms[i].y_line_start -= get_logical_num_lines (linep, &screen->terms[i]);
+	  screen->terms[i].y = screen->terms[i].y_line_start;
+	  screen->terms[i].x = 0;
+	}
+      advance_to (screen, col);
     }
   else
     {
       for (i = 0; i < screen->nterms; i++)
 	{
-	  screen->terms[i].y
-	    -= screen->column / grub_term_entry_width (screen->terms[i].term);
+	  screen->terms[i].y = screen->terms[i].y_line_start;
 	  screen->terms[i].x = 0;
 	}
       screen->column = 0;
@@ -673,53 +741,29 @@ next_line (struct screen *screen, int update)
   if (screen->line < screen->num_lines - 1)
     {
       struct line *linep;
-      int l1, c1;
+      int c;
 
       /* How many physical lines from the current position
 	 to the last physical line?  */
       linep = screen->lines + screen->line;
-      l1 = linep->len;
-      c1 = screen->column;
 
       screen->line++;
-
-      linep++;
-      if (linep->len < screen->real_column)
-	screen->column = linep->len;
+      if ((linep + 1)->len < screen->real_column)
+	c = (linep + 1)->len;
       else
-	screen->column = screen->real_column;
+	c = screen->real_column;
+      screen->column = 0;
 
       for (i = 0; i < screen->nterms; i++)
 	{
-	  int dy;
-	  dy = l1 / grub_term_entry_width (screen->terms[i].term)
-	    - c1 / grub_term_entry_width (screen->terms[i].term);
-	  /* How many physical lines from the current position
-	     to the first physical line?  */
-	  dy += screen->column / grub_term_entry_width (screen->terms[i].term);
-	  screen->terms[i].y += dy + 1;
-	  screen->terms[i].x = screen->column
-	    % grub_term_entry_width (screen->terms[i].term);
+	  screen->terms[i].y_line_start += get_logical_num_lines (linep, &screen->terms[i]);
+	  screen->terms[i].x = 0;
+	  screen->terms[i].y = screen->terms[i].y_line_start;
 	}
+      advance_to (screen, c);
     }
   else
-    {
-      struct line *linep;
-      int l, s;
-      
-      linep = screen->lines + screen->line;
-      l = linep->len;
-      s = screen->column;
-      screen->column = linep->len;
-      for (i = 0; i < screen->nterms; i++)
-	{
-	  screen->terms[i].y 
-	    += (l / grub_term_entry_width (screen->terms[i].term)
-		-  s / grub_term_entry_width (screen->terms[i].term));
-	  screen->terms[i].x
-	    = screen->column % grub_term_entry_width (screen->terms[i].term);
-	}
-    }
+    advance_to (screen, screen->lines[screen->line].len);
 
   if (update)
     update_screen_all (screen, screen->num_lines, 0, 0, 0, NO_LINE);
@@ -731,14 +775,12 @@ static int
 beginning_of_line (struct screen *screen, int update)
 {
   unsigned i;
-  int col;
-  
-  col = screen->column;
+
   screen->column = screen->real_column = 0;
   for (i = 0; i < screen->nterms; i++)
     {
       screen->terms[i].x = 0;
-      screen->terms[i].y -= col / grub_term_entry_width (screen->terms[i].term);
+      screen->terms[i].y = screen->terms[i].y_line_start;
     }
 
   if (update)
@@ -750,21 +792,7 @@ beginning_of_line (struct screen *screen, int update)
 static int
 end_of_line (struct screen *screen, int update)
 {
-  struct line *linep;
-  unsigned i;
-  int col;
-
-  linep = screen->lines + screen->line;
-  col = screen->column;
-  screen->column = screen->real_column = linep->len;
-  for (i = 0; i < screen->nterms; i++)
-    {
-      screen->terms[i].y 
-	+= (linep->len / grub_term_entry_width (screen->terms->term)
-	    - col / grub_term_entry_width (screen->terms->term));
-      screen->terms[i].x
-	= screen->column % grub_term_entry_width (screen->terms->term);
-    }
+  advance_to (screen, screen->lines[screen->line].len);
 
   if (update)
     update_screen_all (screen, screen->num_lines, 0, 0, 0, NO_LINE);
@@ -790,7 +818,8 @@ delete_char (struct screen *screen, int update)
 
       grub_memmove (linep->buf + screen->column,
 		    linep->buf + screen->column + 1,
-		    linep->len - screen->column - 1);
+		    (linep->len - screen->column - 1)
+		    * sizeof (linep->buf[0]));
       linep->len--;
 
       start = screen->line;
@@ -820,7 +849,8 @@ delete_char (struct screen *screen, int update)
       if (! ensure_space (linep, next_linep->len))
 	return 0;
 
-      grub_memmove (linep->buf + linep->len, next_linep->buf, next_linep->len);
+      grub_memmove (linep->buf + linep->len, next_linep->buf,
+		    next_linep->len * sizeof (linep->buf[0]));
       linep->len += next_linep->len;
 
       grub_free (next_linep->buf);
@@ -954,7 +984,10 @@ open_line (struct screen *screen, int update)
     return 0;
 
   for (i = 0; i < screen->nterms; i++)
-    screen->terms[i].y = saved_y[i];
+    {
+      screen->terms[i].y = saved_y[i];
+      screen->terms[i].y_line_start = screen->terms[i].y;
+    }
 
   if (update)
     update_screen_all (screen, screen->line, screen->column, 0, 1, ALL_LINES);
@@ -1003,7 +1036,6 @@ store_completion (const char *item, grub_completion_type_t type,
 static int
 complete (struct screen *screen, int continuous, int update)
 {
-  char saved_char;
   struct line *linep;
   int restore;
   char *insert;
@@ -1012,6 +1044,7 @@ complete (struct screen *screen, int continuous, int update)
   grub_uint32_t *ucs4;
   grub_size_t buflen;
   grub_ssize_t ucs4len;
+  char *u8;
 
   if (continuous)
     count++;
@@ -1023,12 +1056,11 @@ complete (struct screen *screen, int continuous, int update)
   completion_buffer.max_len = 0;
 
   linep = screen->lines + screen->line;
-  saved_char = linep->buf[screen->column];
-  linep->buf[screen->column] = '\0';
+  u8 = grub_ucs4_to_utf8_alloc (linep->buf, screen->column);
+  if (!u8)
+    return 1;
 
-  insert = grub_normal_do_completion (linep->buf, &restore, store_completion);
-
-  linep->buf[screen->column] = saved_char;
+  insert = grub_normal_do_completion (u8, &restore, store_completion);
   
   if (completion_buffer.buf)
     {
@@ -1287,6 +1319,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
     screen->terms[i].term = term;
     screen->terms[i].x = 0;
     screen->terms[i].y = 0;
+    screen->terms[i].y_line_start = screen->terms[i].y;
     i++;
   }
   /* Draw the screen.  */

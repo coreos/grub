@@ -1,3 +1,22 @@
+2012-03-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix tab and wide character handling in editor and menu.
+
+	* grub-core/normal/charset.c (grub_unicode_aglomerate_comb): Don't
+	agglomerate control characters with combining marks.
+	(bidi_line_wrap): Allow break on tab.
+	(grub_unicode_get_comb_start): New function.
+	* grub-core/normal/menu_entry.c: Restructure to handle wide characters
+	and tab correctly.
+	* grub-core/normal/menu_text.c (print_entry): Replace \n, \r, \b and \e
+	with a space.
+	* grub-core/normal/term.c (print_ucs4_terminal): New argument
+	fixed_tab_size. All users updated.
+	* include/grub/term.h (GRUB_TERM_TAB_WIDTH): New const.
+	(grub_term_getcharwidth): Handle \t.
+	* include/grub/unicode.h (grub_unicode_glyph_dup): Fix allocation
+	and copy.
+
 2012-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Handle big-endian mdraid.

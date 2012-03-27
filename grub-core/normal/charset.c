@@ -418,6 +418,17 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 
   grub_memset (out, 0, sizeof (*out));
 
+  if (inlen && grub_iscntrl (*in))
+    {
+      out->base = *in;
+      out->variant = 0;
+      out->attributes = 0;
+      out->ncomb = 0;
+      out->estimated_width = 1;
+      out->combining = NULL;
+      return 1;
+    }
+
   for (ptr = in; ptr < in + inlen; ptr++)
     {
       /* Variation selectors >= 17 are outside of BMP and SMP. 
@@ -429,7 +440,6 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 	  if (haveout)
 	    out->variant = *ptr - GRUB_UNICODE_VARIATION_SELECTOR_1 + 1;
 	  continue;
-
 	}
       if (*ptr >= GRUB_UNICODE_VARIATION_SELECTOR_17
 	  && *ptr <= GRUB_UNICODE_VARIATION_SELECTOR_256)
@@ -528,7 +538,8 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
       if (getcharwidth && k != visual_len)
 	line_width += last_width = getcharwidth (&visual[k]);
 
-      if (k != visual_len && visual[k].base == ' ')
+      if (k != visual_len && (visual[k].base == ' '
+			      || visual[k].base == '\t'))
 	{
 	  last_space = k;
 	  last_space_width = line_width;
@@ -1142,3 +1153,28 @@ grub_unicode_shape_code (grub_uint32_t in, grub_uint8_t attr)
 
   return in;
 }
+
+const grub_uint32_t *
+grub_unicode_get_comb_start (const grub_uint32_t *str, 
+			     const grub_uint32_t *cur)
+{
+  const grub_uint32_t *ptr;
+  for (ptr = cur; ptr >= str; ptr--)
+    {
+      if (*ptr >= GRUB_UNICODE_VARIATION_SELECTOR_1
+	  && *ptr <= GRUB_UNICODE_VARIATION_SELECTOR_16)
+	continue;
+
+      if (*ptr >= GRUB_UNICODE_VARIATION_SELECTOR_17
+	  && *ptr <= GRUB_UNICODE_VARIATION_SELECTOR_256)
+	continue;
+	
+      enum grub_comb_type comb_type;
+      comb_type = grub_unicode_get_comb_type (*ptr);
+      if (comb_type)
+	continue;
+      return ptr;
+    }
+  return str;
+}
+

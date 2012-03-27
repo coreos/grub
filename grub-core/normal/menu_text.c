@@ -234,6 +234,12 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
   grub_term_gotoxy (term, GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN, y);
 
   int last_printed = 0;
+
+  for (i = 0; i < len; i++)
+    if (unicode_title[i] == '\n' || unicode_title[i] == '\b'
+	|| unicode_title[i] == '\r' || unicode_title[i] == '\e')
+      unicode_title[i] = ' ';
+
   for (x = GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + 1, i = 0;
        x < (int) (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term)
 		  - GRUB_TERM_MARGIN);)

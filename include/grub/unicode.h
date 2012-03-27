@@ -243,13 +243,14 @@ grub_unicode_glyph_dup (const struct grub_unicode_glyph *in)
   grub_memcpy (out, in, sizeof (*in));
   if (in->combining)
     {
-      out->combining = grub_malloc (in->ncomb * sizeof (*in));
+      out->combining = grub_malloc (in->ncomb * sizeof (out->combining[0]));
       if (!out->combining)
 	{
 	  grub_free (out);
 	  return NULL;
 	}
-      grub_memcpy (out->combining, in->combining, in->ncomb * sizeof (*in));
+      grub_memcpy (out->combining, in->combining,
+		   in->ncomb * sizeof (out->combining[0]));
     }
   return out;
 }

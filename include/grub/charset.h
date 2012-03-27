@@ -293,4 +293,8 @@ grub_ssize_t
 grub_encode_utf8_character (grub_uint8_t *dest, grub_uint8_t *destend,
 			    grub_uint32_t code);
 
+const grub_uint32_t *
+grub_unicode_get_comb_start (const grub_uint32_t *str, 
+			     const grub_uint32_t *cur);
+
 #endif

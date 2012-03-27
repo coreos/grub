@@ -50,7 +50,8 @@ grub_putcode_dumb (grub_uint32_t code,
     {
       int n;
 
-      n = 8 - ((term->getxy (term) >> 8) & 7);
+      n = GRUB_TERM_TAB_WIDTH - ((term->getxy (term) >> 8)
+				 % GRUB_TERM_TAB_WIDTH);
       while (n--)
 	grub_putcode_dumb (' ', term);
 

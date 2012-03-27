@@ -435,10 +435,15 @@ grub_unicode_estimate_width (const struct grub_unicode_glyph *c __attribute__ ((
 
 #endif
 
+#define GRUB_TERM_TAB_WIDTH 8
+
 static inline grub_ssize_t 
 grub_term_getcharwidth (struct grub_term_output *term,
 			const struct grub_unicode_glyph *c)
 {
+  if (c->base == '\t')
+    return GRUB_TERM_TAB_WIDTH;
+
   if (term->getcharwidth)
     return term->getcharwidth (term, c);
   else if (((term->flags & GRUB_TERM_CODE_TYPE_MASK)
