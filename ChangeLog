@@ -1,5 +1,10 @@
 2012-03-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (grub_diskfilter_memberlist): Degrade
+	the error when some elements are missing into a warning.
+
+2012-03-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/charset.c (bidi_line_wrap): Fix out-of-range swap.
 
 2012-03-28  Colin Watson  <cjwatson@ubuntu.com>
