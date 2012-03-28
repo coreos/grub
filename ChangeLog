@@ -1,3 +1,7 @@
+2012-03-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/charset.c (bidi_line_wrap): Fix out-of-range swap.
+
 2012-03-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Invoking grub-probe): New section.

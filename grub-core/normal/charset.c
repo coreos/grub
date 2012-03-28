@@ -577,7 +577,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	    /* FIXME: can be optimized.  */
 	    for (j = max_level; j > min_odd_level - 1; j--)
 	      {
-		unsigned in = 0;
+		unsigned in = line_start;
 		unsigned i;
 		for (i = line_start; i < k; i++)
 		  {
