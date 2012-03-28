@@ -1,5 +1,9 @@
 2012-03-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Fix nvram call for PreP.
+
+2012-03-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (grub_diskfilter_memberlist): Degrade
 	the error when some elements are missing into a warning.
 

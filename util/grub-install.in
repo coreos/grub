@@ -764,6 +764,13 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
 		echo "  dd if=/dev/zero of=${install_device}"
 		exit 1
             fi
+	    dev="`echo "${install_device}" | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`"
+	    boot_device="`$ofpathname "$dev"`" || {
+	    # TRANSLATORS: "device tree path" is the name of the device
+            # for IEEE1275
+		gettext_printf "Couldn't find IEEE1275 device tree path for %s.\nYou will have to set \`boot-device' variable manually.\n" "$dev" 1>&2
+		exit 1
+	    }
 	fi
 
 	"$nvsetenv" boot-device "$boot_device" || {
