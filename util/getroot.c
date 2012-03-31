@@ -1892,13 +1892,16 @@ devmapper_out:
 	      if (! mapper_name)
 		grub_dprintf ("hostdisk", "%s has no DM name\n", path);
 	    }
+	  char *ret;
+	  if (mapper_name)
+	    ret = xasprintf ("/dev/mapper/%s", mapper_name);
+	  else
+	    ret = NULL;
+
 	  if (tree)
 	    dm_tree_free (tree);
 	  free (path);
-	  if (mapper_name)
-	    return xasprintf ("/dev/mapper/%s", mapper_name);
-	  else
-	    return NULL;
+	  return ret;
 	}
 #endif /* HAVE_DEVICE_MAPPER */
     }

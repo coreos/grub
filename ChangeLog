@@ -1,3 +1,9 @@
+2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/getroot.c (convert_system_partition_to_system_disk): Fix use
+	after free.
+	Reported by: Peter Jones.
+
 2012-03-31  Anton Blanchard  <anton@samba.org>
 
 	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Do not byteswap
