@@ -212,6 +212,7 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 # define grub_cpu_to_be64_compile_time(x)	((grub_uint64_t) (x))
 # define grub_be_to_cpu64_compile_time(x)	((grub_uint64_t) (x))
 # define grub_cpu_to_le32_compile_time(x)	grub_swap_bytes32_compile_time(x)
+# define grub_cpu_to_le64_compile_time(x)	grub_swap_bytes64_compile_time(x)
 # define grub_cpu_to_le16_compile_time(x)	grub_swap_bytes16_compile_time(x)
 #else /* ! WORDS_BIGENDIAN */
 # define grub_cpu_to_le16(x)	((grub_uint16_t) (x))
@@ -232,6 +233,7 @@ static inline grub_uint64_t grub_swap_bytes64(grub_uint64_t x)
 # define grub_be_to_cpu64_compile_time(x)	grub_swap_bytes64_compile_time(x)
 # define grub_cpu_to_le16_compile_time(x)	((grub_uint16_t) (x))
 # define grub_cpu_to_le32_compile_time(x)	((grub_uint32_t) (x))
+# define grub_cpu_to_le64_compile_time(x)	((grub_uint64_t) (x))
 
 #endif /* ! WORDS_BIGENDIAN */
 

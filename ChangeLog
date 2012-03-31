@@ -1,3 +1,15 @@
+2012-03-31  Anton Blanchard  <anton@samba.org>
+2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix btrfs endianness handling.
+
+	* grub-core/fs/btrfs.c (key_cmp): Use grub_le_to_cpu for clarity.
+	(lower_bound): Make root uint64_t. Use root in le.
+	(grub_btrfs_read_logical): Fix template key init. Fix address byteswap.
+	(find_path): Fix template key init.
+	(grub_btrfs_dir): Fix mtime byteswap.
+	* include/grub/types.h (grub_cpu_to_le64_compile_time): New macro.
+
 2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/btrfs.c (grub_btrfs_read_logical): New argument

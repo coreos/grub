@@ -280,9 +280,9 @@ read_sblock (grub_disk_t disk, struct grub_btrfs_superblock *sb)
 static int
 key_cmp (const struct grub_btrfs_key *a, const struct grub_btrfs_key *b)
 {
-  if (grub_cpu_to_le64 (a->object_id) < grub_cpu_to_le64 (b->object_id))
+  if (grub_le_to_cpu64 (a->object_id) < grub_le_to_cpu64 (b->object_id))
     return -1;
-  if (grub_cpu_to_le64 (a->object_id) > grub_cpu_to_le64 (b->object_id))
+  if (grub_le_to_cpu64 (a->object_id) > grub_le_to_cpu64 (b->object_id))
     return +1;
 
   if (a->type < b->type)
@@ -290,9 +290,9 @@ key_cmp (const struct grub_btrfs_key *a, const struct grub_btrfs_key *b)
   if (a->type > b->type)
     return +1;
 
-  if (grub_cpu_to_le64 (a->offset) < grub_cpu_to_le64 (b->offset))
+  if (grub_le_to_cpu64 (a->offset) < grub_le_to_cpu64 (b->offset))
     return -1;
-  if (grub_cpu_to_le64 (a->offset) > grub_cpu_to_le64 (b->offset))
+  if (grub_le_to_cpu64 (a->offset) > grub_le_to_cpu64 (b->offset))
     return +1;
   return 0;
 }
@@ -382,12 +382,12 @@ static grub_err_t
 lower_bound (struct grub_btrfs_data *data,
 	     const struct grub_btrfs_key *key_in,
 	     struct grub_btrfs_key *key_out,
-	     grub_disk_addr_t root,
+	     grub_uint64_t root,
 	     grub_disk_addr_t *outaddr, grub_size_t *outsize,
 	     struct grub_btrfs_leaf_descriptor *desc,
 	     int recursion_depth)
 {
-  grub_disk_addr_t addr = root;
+  grub_disk_addr_t addr = grub_le_to_cpu64 (root);
   int depth = -1;
 
   if (desc)
@@ -652,11 +652,11 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 	    * grub_le_to_cpu16 (chunk->nstripes);
 	}
 
-      key_in.object_id = GRUB_BTRFS_OBJECT_ID_CHUNK;
+      key_in.object_id = grub_cpu_to_le64_compile_time (GRUB_BTRFS_OBJECT_ID_CHUNK);
       key_in.type = GRUB_BTRFS_ITEM_TYPE_CHUNK;
-      key_in.offset = addr;
+      key_in.offset = grub_cpu_to_le64 (addr);
       err = lower_bound (data, &key_in, &key_out,
-			 grub_le_to_cpu64 (data->sblock.chunk_tree),
+			 data->sblock.chunk_tree,
 			 &chaddr, &chsize, NULL, recursion_depth);
       if (err)
 	return err;
@@ -772,7 +772,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 	if (csize == 0)
 	  return grub_error (GRUB_ERR_BUG,
 			     "couldn't find the chunk descriptor");
-	if ((grub_size_t) csize > size)
+	if (csize > (grub_uint64_t) size)
 	  csize = size;
 
 	for (j = 0; j < 2; j++)
@@ -787,7 +787,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 		   With RAID5-like it will be more difficult.  */
 		stripe += stripen + i;
 
-		paddr = stripe->offset + stripe_offset;
+		paddr = grub_le_to_cpu64 (stripe->offset) + stripe_offset;
 
 		grub_dprintf ("btrfs", "chunk 0x%" PRIxGRUB_UINT64_T
 			      "+0x%" PRIxGRUB_UINT64_T
@@ -1385,8 +1385,8 @@ find_path (struct grub_btrfs_data *data,
 	      }
 	    key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
 	    key->offset = 0;
-	    key->object_id = GRUB_BTRFS_OBJECT_ID_CHUNK;
-	    *tree = grub_le_to_cpu64 (ri.tree);
+	    key->object_id = grub_cpu_to_le64_compile_time (GRUB_BTRFS_OBJECT_ID_CHUNK);
+	    *tree = ri.tree;
 	    break;
 	  }
 	case GRUB_BTRFS_ITEM_TYPE_INODE_ITEM:
@@ -1508,7 +1508,7 @@ grub_btrfs_dir (grub_device_t device, const char *path,
 	    grub_errno = GRUB_ERR_NONE;
 	  else
 	    {
-	      info.mtime = inode.mtime.sec;
+	      info.mtime = grub_le_to_cpu64 (inode.mtime.sec);
 	      info.mtimeset = 1;
 	    }
 	  c = cdirel->name[grub_le_to_cpu16 (cdirel->n)];
