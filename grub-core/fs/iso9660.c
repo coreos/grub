@@ -620,7 +620,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	  unsigned int pos = 1;
 
 	  /* The symlink is not stored as a POSIX symlink, translate it.  */
-	  while (pos + sizeof (*entry) < grub_le_to_cpu32 (entry->len))
+	  while (pos + sizeof (*entry) < entry->len)
 	    {
 	      /* The current position is the `Component Flag'.  */
 	      switch (entry->data[pos] & 30)

@@ -1,3 +1,8 @@
+2012-03-31  Anton Blanchard  <anton@samba.org>
+
+	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Do not byteswap
+	8 bit values.
+
 2012-03-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.in: Fix nvram call for PreP.
