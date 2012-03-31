@@ -97,7 +97,7 @@ grub_datetime2unixtime (const struct grub_datetime *datetime, grub_int32_t *nix)
   ret += ay * SECPERYEAR;
 
   ret += monthssum[datetime->month - 1] * SECPERDAY;
-  if (ay == 0 && datetime->month >= 3)
+  if (ay == 3 && datetime->month >= 3)
     ret += SECPERDAY;
 
   ret += (datetime->day - 1) * SECPERDAY;

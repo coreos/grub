@@ -1,5 +1,10 @@
 2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/datetime.h (grub_datetime2unixtime): Fix handling of days
+	aftert 29th of February.
+
+2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix exfat endianness handling.
 
 	* grub-core/fs/fat.c (grub_fat_data): Make fat_sector 32-bit.
