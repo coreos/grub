@@ -1,3 +1,13 @@
+2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix exfat endianness handling.
+
+	* grub-core/fs/fat.c (grub_fat_data): Make fat_sector 32-bit.
+	(grub_fat_mount) [MODE_EXFAT]: Fix bpb.num_reserved_sectors byte-swap.
+	(grub_fat_iterate_dir) [MODE_EXFAT]: Fix attr byte-swap.
+	Byte-swap utf16 when necessary.
+	(grub_fat_label) [MODE_EXFAT]: Byte-swap utf16 when necessary.
+
 2012-03-31  Anton Blanchard  <anton@samba.org>
 2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 

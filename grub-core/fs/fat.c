@@ -178,7 +178,7 @@ struct grub_fat_data
   int logical_sector_bits;
   grub_uint32_t num_sectors;
 
-  grub_uint16_t fat_sector;
+  grub_uint32_t fat_sector;
   grub_uint32_t sectors_per_fat;
   int fat_size;
 
@@ -269,8 +269,13 @@ grub_fat_mount (grub_disk_t disk)
   data->cluster_bits += data->logical_sector_bits;
 
   /* Get information about FATs.  */
+#ifdef MODE_EXFAT
+  data->fat_sector = (grub_le_to_cpu32 (bpb.num_reserved_sectors)
+		      << data->logical_sector_bits);
+#else
   data->fat_sector = (grub_le_to_cpu16 (bpb.num_reserved_sectors)
 		      << data->logical_sector_bits);
+#endif
   if (data->fat_sector == 0)
     goto fail;
 
@@ -607,7 +612,7 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
 
 	  nsec = dir.type_specific.file.secondary_count;
 
-	  node.attr = grub_cpu_to_le32 (dir.type_specific.file.attr);
+	  node.attr = grub_cpu_to_le16 (dir.type_specific.file.attr);
 	  node.have_stream = 0;
 	  for (i = 0; i < nsec; i++)
 	    {
@@ -632,9 +637,13 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
 		  node.have_stream = 1;
 		  break;
 		case 0xc1:
-		  grub_memcpy (unibuf + slots * 15,
-			       sec.type_specific.file_name.str, 30);
-		  slots++;
+		  {
+		    int j;
+		    for (j = 0; j < 15; j++)
+		      unibuf[slots * 15 + j] 
+			= grub_le_to_cpu16 (sec.type_specific.file_name.str[j]);
+		    slots++;
+		  }
 		  break;
 		default:
 		  grub_dprintf ("exfat", "unknown secondary type 0x%02x\n",
@@ -1041,6 +1050,8 @@ grub_fat_label (grub_device_t device, char **label)
       if (dir.entry_type == 0x83)
 	{
 	  grub_size_t chc;
+	  grub_uint16_t t[ARRAY_SIZE (dir.type_specific.volume_label.str)];
+	  grub_size_t i;
 	  *label = grub_malloc (ARRAY_SIZE (dir.type_specific.volume_label.str)
 				* GRUB_MAX_UTF8_PER_UTF16 + 1);
 	  if (!*label)
@@ -1051,8 +1062,9 @@ grub_fat_label (grub_device_t device, char **label)
 	  chc = dir.type_specific.volume_label.character_count;
 	  if (chc > ARRAY_SIZE (dir.type_specific.volume_label.str))
 	    chc = ARRAY_SIZE (dir.type_specific.volume_label.str);
-	  *grub_utf16_to_utf8 ((grub_uint8_t *) *label,
-			       dir.type_specific.volume_label.str, chc) = '\0';
+	  for (i = 0; i < chc; i++)
+	    t[i] = grub_le_to_cpu16 (dir.type_specific.volume_label.str[i]);
+	  *grub_utf16_to_utf8 ((grub_uint8_t *) *label, t, chc) = '\0';
 	}
     }
 
