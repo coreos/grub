@@ -1,5 +1,10 @@
 2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/btrfs.c (grub_btrfs_read_logical): New argument
+	recursion_depth. Break infinite resursions. All users updated.
+
+2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (convert_system_partition_to_system_disk): Fix use
 	after free.
 	Reported by: Peter Jones.

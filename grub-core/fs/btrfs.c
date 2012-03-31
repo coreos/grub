@@ -240,7 +240,8 @@ static grub_disk_addr_t superblock_sectors[] = { 64 * 2, 64 * 1024 * 2,
 
 static grub_err_t
 grub_btrfs_read_logical (struct grub_btrfs_data *data,
-			 grub_disk_addr_t addr, void *buf, grub_size_t size);
+			 grub_disk_addr_t addr, void *buf, grub_size_t size,
+			 int recursion_depth);
 
 static grub_err_t
 read_sblock (grub_disk_t disk, struct grub_btrfs_superblock *sb)
@@ -351,12 +352,12 @@ next (struct grub_btrfs_data *data,
 				     * sizeof (node)
 				     + sizeof (struct btrfs_header)
 				     + desc->data[desc->depth - 1].addr,
-				     &node, sizeof (node));
+				     &node, sizeof (node), 0);
       if (err)
 	return -err;
 
       err = grub_btrfs_read_logical (data, grub_le_to_cpu64 (node.addr),
-				     &head, sizeof (head));
+				     &head, sizeof (head), 0);
       if (err)
 	return -err;
 
@@ -367,7 +368,7 @@ next (struct grub_btrfs_data *data,
 				 * sizeof (leaf)
 				 + sizeof (struct btrfs_header)
 				 + desc->data[desc->depth - 1].addr, &leaf,
-				 sizeof (leaf));
+				 sizeof (leaf), 0);
   if (err)
     return -err;
   *outsize = grub_le_to_cpu32 (leaf.size);
@@ -383,7 +384,8 @@ lower_bound (struct grub_btrfs_data *data,
 	     struct grub_btrfs_key *key_out,
 	     grub_disk_addr_t root,
 	     grub_disk_addr_t *outaddr, grub_size_t *outsize,
-	     struct grub_btrfs_leaf_descriptor *desc)
+	     struct grub_btrfs_leaf_descriptor *desc,
+	     int recursion_depth)
 {
   grub_disk_addr_t addr = root;
   int depth = -1;
@@ -396,6 +398,11 @@ lower_bound (struct grub_btrfs_data *data,
       if (!desc->data)
 	return grub_errno;
     }
+
+  /* > 2 would work as well but be robust and allow a bit more just in case.
+   */
+  if (recursion_depth > 10)
+    return grub_error (GRUB_ERR_BAD_FS, "too deep btrfs virtual nesting");
 
   grub_dprintf ("btrfs",
 		"retrieving %" PRIxGRUB_UINT64_T
@@ -410,7 +417,8 @@ lower_bound (struct grub_btrfs_data *data,
     reiter:
       depth++;
       /* FIXME: preread few nodes into buffer. */
-      err = grub_btrfs_read_logical (data, addr, &head, sizeof (head));
+      err = grub_btrfs_read_logical (data, addr, &head, sizeof (head),
+				     recursion_depth + 1);
       if (err)
 	return err;
       addr += sizeof (head);
@@ -423,7 +431,8 @@ lower_bound (struct grub_btrfs_data *data,
 	  for (i = 0; i < grub_le_to_cpu32 (head.nitems); i++)
 	    {
 	      err = grub_btrfs_read_logical (data, addr + i * sizeof (node),
-					     &node, sizeof (node));
+					     &node, sizeof (node),
+					     recursion_depth + 1);
 	      if (err)
 		return err;
 
@@ -475,7 +484,8 @@ lower_bound (struct grub_btrfs_data *data,
 	for (i = 0; i < grub_le_to_cpu32 (head.nitems); i++)
 	  {
 	    err = grub_btrfs_read_logical (data, addr + i * sizeof (leaf),
-					   &leaf, sizeof (leaf));
+					   &leaf, sizeof (leaf),
+					   recursion_depth + 1);
 	    if (err)
 	      return err;
 
@@ -602,7 +612,7 @@ find_device (struct grub_btrfs_data *data, grub_uint64_t id, int do_rescan)
 
 static grub_err_t
 grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
-			 void *buf, grub_size_t size)
+			 void *buf, grub_size_t size, int recursion_depth)
 {
   while (size > 0)
     {
@@ -647,7 +657,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
       key_in.offset = addr;
       err = lower_bound (data, &key_in, &key_out,
 			 grub_le_to_cpu64 (data->sblock.chunk_tree),
-			 &chaddr, &chsize, NULL);
+			 &chaddr, &chsize, NULL, recursion_depth);
       if (err)
 	return err;
       key = &key_out;
@@ -661,7 +671,8 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 	return grub_errno;
 
       challoc = 1;
-      err = grub_btrfs_read_logical (data, chaddr, chunk, chsize);
+      err = grub_btrfs_read_logical (data, chaddr, chunk, chsize,
+				     recursion_depth);
       if (err)
 	{
 	  grub_free (chunk);
@@ -887,14 +898,15 @@ grub_btrfs_read_inode (struct grub_btrfs_data *data,
   key_in.type = GRUB_BTRFS_ITEM_TYPE_INODE_ITEM;
   key_in.offset = 0;
 
-  err = lower_bound (data, &key_in, &key_out, tree, &elemaddr, &elemsize, NULL);
+  err = lower_bound (data, &key_in, &key_out, tree, &elemaddr, &elemsize, NULL,
+		     0);
   if (err)
     return err;
   if (num != key_out.object_id
       || key_out.type != GRUB_BTRFS_ITEM_TYPE_INODE_ITEM)
     return grub_error (GRUB_ERR_BAD_FS, "inode not found");
 
-  return grub_btrfs_read_logical (data, elemaddr, inode, sizeof (*inode));
+  return grub_btrfs_read_logical (data, elemaddr, inode, sizeof (*inode), 0);
 }
 
 static grub_ssize_t
@@ -994,7 +1006,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	  key_in.type = GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM;
 	  key_in.offset = grub_cpu_to_le64 (pos);
 	  err = lower_bound (data, &key_in, &key_out, tree,
-			     &elemaddr, &elemsize, NULL);
+			     &elemaddr, &elemsize, NULL, 0);
 	  if (err)
 	    return -1;
 	  if (key_out.object_id != ino
@@ -1018,7 +1030,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	    return grub_errno;
 
 	  err = grub_btrfs_read_logical (data, elemaddr, data->extent,
-					 elemsize);
+					 elemsize, 0);
 	  if (err)
 	    return err;
 
@@ -1110,7 +1122,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 		return -1;
 	      err = grub_btrfs_read_logical (data,
 					     grub_le_to_cpu64 (data->extent->laddr),
-					     tmp, zsize);
+					     tmp, zsize, 0);
 	      if (err)
 		{
 		  grub_free (tmp);
@@ -1138,7 +1150,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	  err = grub_btrfs_read_logical (data,
 					 grub_le_to_cpu64 (data->extent->laddr)
 					 + grub_le_to_cpu64 (data->extent->offset)
-					 + extoff, buf, csize);
+					 + extoff, buf, csize, 0);
 	  if (err)
 	    return -1;
 	  break;
@@ -1214,7 +1226,7 @@ find_path (struct grub_btrfs_data *data,
       key->offset = grub_cpu_to_le64 (~grub_getcrc32c (1, ctoken, ctokenlen));
 
       err = lower_bound (data, key, &key_out, *tree, &elemaddr, &elemsize,
-			 NULL);
+			 NULL, 0);
       if (err)
 	{
 	  grub_free (direl);
@@ -1245,7 +1257,7 @@ find_path (struct grub_btrfs_data *data,
 	    }
 	}
 
-      err = grub_btrfs_read_logical (data, elemaddr, direl, elemsize);
+      err = grub_btrfs_read_logical (data, elemaddr, direl, elemsize, 0);
       if (err)
 	{
 	  grub_free (direl);
@@ -1345,7 +1357,7 @@ find_path (struct grub_btrfs_data *data,
 	    struct grub_btrfs_root_item ri;
 	    err = lower_bound (data, &cdirel->key, &key_out,
 			       data->sblock.root_tree,
-			       &elemaddr, &elemsize, NULL);
+			       &elemaddr, &elemsize, NULL, 0);
 	    if (err)
 	      {
 		grub_free (direl);
@@ -1362,7 +1374,8 @@ find_path (struct grub_btrfs_data *data,
 		grub_free (origpath);
 		return err;
 	      }
-	    err = grub_btrfs_read_logical (data, elemaddr, &ri, sizeof (ri));
+	    err = grub_btrfs_read_logical (data, elemaddr, &ri,
+					   sizeof (ri), 0);
 	    if (err)
 	      {
 		grub_free (direl);
@@ -1436,7 +1449,8 @@ grub_btrfs_dir (grub_device_t device, const char *path,
       return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
     }
 
-  err = lower_bound (data, &key_in, &key_out, tree, &elemaddr, &elemsize, &desc);
+  err = lower_bound (data, &key_in, &key_out, tree,
+		     &elemaddr, &elemsize, &desc, 0);
   if (err)
     {
       grub_btrfs_unmount (data);
@@ -1470,7 +1484,7 @@ grub_btrfs_dir (grub_device_t device, const char *path,
 	    }
 	}
 
-      err = grub_btrfs_read_logical (data, elemaddr, direl, elemsize);
+      err = grub_btrfs_read_logical (data, elemaddr, direl, elemsize, 0);
       if (err)
 	{
 	  r = -err;
