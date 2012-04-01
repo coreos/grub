@@ -1,7 +1,11 @@
+2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/lsacpi.c (options): Add missing terminator.
+
 2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/datetime.h (grub_datetime2unixtime): Fix handling of days
-	aftert 29th of February.
+	after 29th of February.
 
 2012-03-31  Vladimir Serbinenko  <phcoder@gmail.com>
 

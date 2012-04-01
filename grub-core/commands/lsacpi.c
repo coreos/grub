@@ -198,7 +198,8 @@ disp_acpi_rsdpv2 (struct grub_acpi_rsdp_v20 *rsdp)
 
 static const struct grub_arg_option options[] = {
   {"v1", '1', 0, N_("Show version 1 tables only."), 0, ARG_TYPE_NONE},
-  {"v2", '2', 0, N_("Show version 2 and version 3 tables only."), 0, ARG_TYPE_NONE}
+  {"v2", '2', 0, N_("Show version 2 and version 3 tables only."), 0, ARG_TYPE_NONE},
+  {0, 0, 0, 0, 0, 0}
 };
 
 static grub_err_t
