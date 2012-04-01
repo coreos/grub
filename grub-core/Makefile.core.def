@@ -1103,6 +1103,21 @@ module = {
 };
 
 module = {
+  name = minix_be;
+  common = fs/minix_be.c;
+};
+
+module = {
+  name = minix2_be;
+  common = fs/minix2_be.c;
+};
+
+module = {
+  name = minix3_be;
+  common = fs/minix3_be.c;
+};
+
+module = {
   name = nilfs2;
   common = fs/nilfs2.c;
 };

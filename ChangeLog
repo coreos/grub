@@ -1,5 +1,25 @@
 2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle big-endian minixfs (fixes minixfs tests on bigendian).
+
+	* grub-core/fs/minix.c: Replace le with minix. Add necessary defines,
+	modify names. Introduce MODE_BIGENDIAN.
+	* grub-core/fs/minix_be.c: New file.
+	* grub-core/fs/minix2_be.c: Likewise
+	* grub-core/fs/minix3_be.c: Likewise.
+	* Makefile.util.def (libgrubmods): Add minix_be, minix2_be and
+	minix3_be.
+	* grub-core/Makefile.core.def (minix_be): New module.
+	(minix2_be): Likewise.
+	(minix3_be): Likewise.
+
+2012-04-01  Felix <email@hamburg.de>
+
+	* grub-core/loader/efi/appleloader.c (devpath_7): New var.
+	(devs): Add MBP 2011.
+
+2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/font/font.c (blit_comb): Handle dagesh somewhat.
 
 2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>

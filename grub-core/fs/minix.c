@@ -47,38 +47,48 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define GRUB_MINIX_IFDIR	0040000U
 #define GRUB_MINIX_IFLNK	0120000U
 
+#ifdef MODE_BIGENDIAN
+#define grub_cpu_to_minix16_compile_time grub_cpu_to_be16_compile_time
+#define grub_minix_to_cpu16 grub_be_to_cpu16
+#define grub_minix_to_cpu32 grub_be_to_cpu32
+#else
+#define grub_cpu_to_minix16_compile_time grub_cpu_to_le16_compile_time
+#define grub_minix_to_cpu16 grub_le_to_cpu16
+#define grub_minix_to_cpu32 grub_le_to_cpu32
+#endif
+
 #if defined(MODE_MINIX2) || defined(MODE_MINIX3)
 typedef grub_uint32_t grub_minix_uintn_t;
-#define grub_minix_le_to_cpu_n grub_le_to_cpu32
+#define grub_minix_to_cpu_n grub_minix_to_cpu32
 #else
 typedef grub_uint16_t grub_minix_uintn_t;
-#define grub_minix_le_to_cpu_n grub_le_to_cpu16
+#define grub_minix_to_cpu_n grub_minix_to_cpu16
 #endif
 
 #define GRUB_MINIX_INODE_BLKSZ(data) sizeof (grub_minix_uintn_t)
 #ifdef MODE_MINIX3
 typedef grub_uint32_t grub_minix_ino_t;
-#define grub_minix_le_to_cpu_ino grub_le_to_cpu32
+#define grub_minix_to_cpu_ino grub_minix_to_cpu32
 #else
 typedef grub_uint16_t grub_minix_ino_t;
-#define grub_minix_le_to_cpu_ino grub_le_to_cpu16
+#define grub_minix_to_cpu_ino grub_minix_to_cpu16
 #endif
 
-#define GRUB_MINIX_INODE_SIZE(data) (grub_le_to_cpu32 (data->inode.size))
-#define GRUB_MINIX_INODE_MODE(data) (grub_le_to_cpu16 (data->inode.mode))
-#define GRUB_MINIX_INODE_DIR_ZONES(data,blk) (grub_minix_le_to_cpu_n   \
+#define GRUB_MINIX_INODE_SIZE(data) (grub_minix_to_cpu32 (data->inode.size))
+#define GRUB_MINIX_INODE_MODE(data) (grub_minix_to_cpu16 (data->inode.mode))
+#define GRUB_MINIX_INODE_DIR_ZONES(data,blk) (grub_minix_to_cpu_n   \
 					      (data->inode.dir_zones[blk]))
-#define GRUB_MINIX_INODE_INDIR_ZONE(data)  (grub_minix_le_to_cpu_n \
+#define GRUB_MINIX_INODE_INDIR_ZONE(data)  (grub_minix_to_cpu_n \
 					    (data->inode.indir_zone))
-#define GRUB_MINIX_INODE_DINDIR_ZONE(data) (grub_minix_le_to_cpu_n \
+#define GRUB_MINIX_INODE_DINDIR_ZONE(data) (grub_minix_to_cpu_n \
 					    (data->inode.double_indir_zone))
 
 #ifndef MODE_MINIX3
 #define GRUB_MINIX_LOG2_ZONESZ	(GRUB_MINIX_LOG2_BSIZE				\
-				 + grub_le_to_cpu16 (data->sblock.log2_zone_size))
+				 + grub_minix_to_cpu16 (data->sblock.log2_zone_size))
 #endif
 #define GRUB_MINIX_ZONESZ	(1 << (data->log_block_size		\
-				       + grub_le_to_cpu16 (data->sblock.log2_zone_size)))
+				       + grub_minix_to_cpu16 (data->sblock.log2_zone_size)))
 
 #ifdef MODE_MINIX3
 #define GRUB_MINIX_ZONE2SECT(zone) ((zone) << (data->log_block_size - GRUB_DISK_SECTOR_BITS))
@@ -187,7 +197,7 @@ grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
 		      GRUB_MINIX_ZONE2SECT(zone),
 		      sizeof (grub_minix_uintn_t) * num,
 		      sizeof (grub_minix_uintn_t), (char *) &indirn);
-      return grub_minix_le_to_cpu_n (indirn);
+      return grub_minix_to_cpu_n (indirn);
     }
 
   /* Direct block.  */
@@ -219,7 +229,7 @@ grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
   if (blk < ((grub_uint64_t) block_per_zone * (grub_uint64_t) block_per_zone
 	     * (grub_uint64_t) block_per_zone))
     {
-      indir = grub_get_indir (grub_minix_le_to_cpu_n (data->inode.triple_indir_zone),
+      indir = grub_get_indir (grub_minix_to_cpu_n (data->inode.triple_indir_zone),
 			      (blk / block_per_zone) / block_per_zone);
       indir = grub_get_indir (indir, (blk / block_per_zone) % block_per_zone);
       indir = grub_get_indir (indir, blk % block_per_zone);
@@ -311,8 +321,8 @@ grub_minix_read_inode (struct grub_minix_data *data, int ino)
 
   /* The first inode in minix is inode 1.  */
   ino--;
-  block = GRUB_MINIX_ZONE2SECT (2 + grub_le_to_cpu16 (sblock->inode_bmap_size)
-				+ grub_le_to_cpu16 (sblock->zone_bmap_size));
+  block = GRUB_MINIX_ZONE2SECT (2 + grub_minix_to_cpu16 (sblock->inode_bmap_size)
+				+ grub_minix_to_cpu16 (sblock->zone_bmap_size));
   block += ino / (GRUB_DISK_SECTOR_SIZE / sizeof (struct grub_minix_inode));
   int offs = (ino % (GRUB_DISK_SECTOR_SIZE
 		     / sizeof (struct grub_minix_inode))
@@ -406,7 +416,7 @@ grub_minix_find_file (struct grub_minix_data *data, const char *path)
       if (!grub_strcmp (name, filename))
 	{
 	  dirino = data->ino;
-	  grub_minix_read_inode (data, grub_minix_le_to_cpu_ino (ino));
+	  grub_minix_read_inode (data, grub_minix_to_cpu_ino (ino));
 
 	  /* Follow the symlink.  */
 	  if ((GRUB_MINIX_INODE_MODE (data)
@@ -461,7 +471,7 @@ grub_minix_mount (grub_disk_t disk)
   if (grub_errno)
     goto fail;
 
-  if (grub_le_to_cpu16 (data->sblock.magic) == GRUB_MINIX_MAGIC)
+  if (data->sblock.magic == grub_cpu_to_minix16_compile_time (GRUB_MINIX_MAGIC))
     {
 #if !defined(MODE_MINIX3)
     data->filename_size = 14;
@@ -470,7 +480,8 @@ grub_minix_mount (grub_disk_t disk)
 #endif
     }
 #if !defined(MODE_MINIX3)
-  else if (grub_le_to_cpu16 (data->sblock.magic) == GRUB_MINIX_MAGIC_30)
+  else if (data->sblock.magic
+	   == grub_cpu_to_minix16_compile_time (GRUB_MINIX_MAGIC_30))
     data->filename_size = 30;
 #endif
   else
@@ -488,7 +499,7 @@ grub_minix_mount (grub_disk_t disk)
 	  || data->sblock.block_size == 0)
 	goto fail;
       for (data->log_block_size = 0; (1 << data->log_block_size)
-	     < grub_le_to_cpu16 (data->sblock.block_size);
+	     < grub_minix_to_cpu16 (data->sblock.block_size);
 	   data->log_block_size++);
     }
 #else
@@ -559,11 +570,11 @@ grub_minix_dir (grub_device_t device, const char *path,
 	  continue;
 	}
 
-      grub_minix_read_inode (data, grub_minix_le_to_cpu_ino (ino));
+      grub_minix_read_inode (data, grub_minix_to_cpu_ino (ino));
       info.dir = ((GRUB_MINIX_INODE_MODE (data)
 		   & GRUB_MINIX_IFDIR) == GRUB_MINIX_IFDIR);
       info.mtimeset = 1;
-      info.mtime = grub_le_to_cpu32 (data->inode.mtime);
+      info.mtime = grub_minix_to_cpu32 (data->inode.mtime);
 
       if (hook (filename, &info) ? 1 : 0)
 	break;
@@ -641,12 +652,22 @@ grub_minix_close (grub_file_t file)
 
 static struct grub_fs grub_minix_fs =
   {
+#ifdef MODE_BIGENDIAN
+#if defined(MODE_MINIX3)
+    .name = "minix3_be",
+#elif defined(MODE_MINIX2)
+    .name = "minix2_be",
+#else
+    .name = "minix_be",
+#endif
+#else
 #if defined(MODE_MINIX3)
     .name = "minix3",
 #elif defined(MODE_MINIX2)
     .name = "minix2",
 #else
     .name = "minix",
+#endif
 #endif
     .dir = grub_minix_dir,
     .open = grub_minix_open,
@@ -659,6 +680,15 @@ static struct grub_fs grub_minix_fs =
     .next = 0
   };
 
+#ifdef MODE_BIGENDIAN
+#if defined(MODE_MINIX3)
+GRUB_MOD_INIT(minix3_be)
+#elif defined(MODE_MINIX2)
+GRUB_MOD_INIT(minix2_be)
+#else
+GRUB_MOD_INIT(minix_be)
+#endif
+#else
 #if defined(MODE_MINIX3)
 GRUB_MOD_INIT(minix3)
 #elif defined(MODE_MINIX2)
@@ -666,17 +696,28 @@ GRUB_MOD_INIT(minix2)
 #else
 GRUB_MOD_INIT(minix)
 #endif
+#endif
 {
   grub_fs_register (&grub_minix_fs);
   my_mod = mod;
 }
 
+#ifdef MODE_BIGENDIAN
+#if defined(MODE_MINIX3)
+GRUB_MOD_FINI(minix3_be)
+#elif defined(MODE_MINIX2)
+GRUB_MOD_FINI(minix2_be)
+#else
+GRUB_MOD_FINI(minix_be)
+#endif
+#else
 #if defined(MODE_MINIX3)
 GRUB_MOD_FINI(minix3)
 #elif defined(MODE_MINIX2)
 GRUB_MOD_FINI(minix2)
 #else
 GRUB_MOD_FINI(minix)
+#endif
 #endif
 {
   grub_fs_unregister (&grub_minix_fs);
