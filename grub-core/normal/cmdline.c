@@ -207,6 +207,7 @@ print_completion (const char *item, grub_completion_type_t type, int count)
 struct cmdline_term
 {
   unsigned xpos, ypos, ystart, width, height;
+  unsigned prompt_len;
   struct grub_term_output *term;
 };
 
@@ -217,7 +218,6 @@ char *
 grub_cmdline_get (const char *prompt_translated)
 {
   grub_size_t lpos, llen;
-  grub_size_t plen;
   grub_uint32_t *buf;
   grub_size_t max_len = 256;
   int key;
@@ -237,8 +237,9 @@ grub_cmdline_get (const char *prompt_translated)
 
   void cl_set_pos (struct cmdline_term *cl_term)
   {
-    cl_term->xpos = (plen + lpos) % (cl_term->width - 1);
-    cl_term->ypos = cl_term->ystart + (plen + lpos) / (cl_term->width - 1);
+    cl_term->xpos = (cl_term->prompt_len + lpos) % (cl_term->width - 1);
+    cl_term->ypos = cl_term->ystart
+      + (cl_term->prompt_len + lpos) / (cl_term->width - 1);
     grub_term_gotoxy (cl_term->term, cl_term->xpos, cl_term->ypos);
   }
 
@@ -334,7 +335,7 @@ grub_cmdline_get (const char *prompt_translated)
 
   void init_clterm (struct cmdline_term *cl_term_cur)
   {
-    cl_term_cur->xpos = plen;
+    cl_term_cur->xpos = cl_term_cur->prompt_len;
     cl_term_cur->ypos = (grub_term_getxy (cl_term_cur->term) & 0xFF);
     cl_term_cur->ystart = cl_term_cur->ypos;
     cl_term_cur->width = grub_term_width (cl_term_cur->term);
@@ -352,7 +353,6 @@ grub_cmdline_get (const char *prompt_translated)
   if (!buf)
     return 0;
 
-  plen = grub_strlen (prompt_translated) + sizeof (" ") - 1;
   lpos = llen = 0;
   buf[0] = '\0';
 
@@ -363,12 +363,16 @@ grub_cmdline_get (const char *prompt_translated)
       if ((grub_term_getxy (term) >> 8) != 0)
 	grub_putcode ('\n', term);
   }
-  grub_printf ("%s ", prompt_translated);
+  grub_xputs (prompt_translated);
+  grub_xputs (" ");
   grub_normal_reset_more ();
 
   {
     struct cmdline_term *cl_term_cur;
     struct grub_term_output *cur;
+    grub_uint32_t *unicode_msg;
+    grub_size_t msg_len = grub_strlen (prompt_translated) + 3;
+
     nterms = 0;
     FOR_ACTIVE_TERM_OUTPUTS(cur)
       nterms++;
@@ -377,12 +381,24 @@ grub_cmdline_get (const char *prompt_translated)
     if (!cl_terms)
       return 0;
     cl_term_cur = cl_terms;
+
+    unicode_msg = grub_malloc (msg_len * sizeof (grub_uint32_t));
+    if (!unicode_msg)
+      return 0;;
+    msg_len = grub_utf8_to_ucs4 (unicode_msg, msg_len - 1,
+				 (grub_uint8_t *) prompt_translated, -1, 0);
+    unicode_msg[msg_len++] = ' ';
+
     FOR_ACTIVE_TERM_OUTPUTS(cur)
     {
       cl_term_cur->term = cur;
+      cl_term_cur->prompt_len = grub_getstringwidth (unicode_msg,
+						     unicode_msg + msg_len,
+						     cur);
       init_clterm (cl_term_cur);
       cl_term_cur++;
     }
+    grub_free (unicode_msg);
   }
 
   if (hist_used == 0)
@@ -453,7 +469,9 @@ grub_cmdline_get (const char *prompt_translated)
 	    if (restore)
 	      {
 		/* Restore the prompt.  */
-		grub_printf ("\n%s ", prompt_translated);
+		grub_xputs ("\n");
+		grub_xputs (prompt_translated);
+		grub_xputs (" ");
 		init_clterm_all ();
 		cl_print_all (0, 0);
 	      }
