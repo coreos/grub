@@ -1,5 +1,9 @@
 2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Increase version.
+
+2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Introduce en@cyrillic en@hebrew en@arabic and en@greek.
 
 	* po/Rules-translit: New file.
