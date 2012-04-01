@@ -1306,6 +1306,14 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	    min_devwidth = combining_glyphs[i]->width;
 	  break;
 
+	case GRUB_UNICODE_COMB_HEBREW_DAGESH:
+	  do_blit (combining_glyphs[i], targetx,
+		   -(bounds.height / 2 + bounds.y
+		     + combining_glyphs[i]->height / 2));
+	  if (min_devwidth < combining_glyphs[i]->width)
+	    min_devwidth = combining_glyphs[i]->width;
+	  break;
+
 	case GRUB_UNICODE_COMB_HEBREW_SHEVA:
 	case GRUB_UNICODE_COMB_HEBREW_HIRIQ:
 	case GRUB_UNICODE_COMB_HEBREW_QAMATS:

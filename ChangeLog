@@ -1,5 +1,9 @@
 2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/font/font.c (blit_comb): Handle dagesh somewhat.
+
+2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/cmdline.c (print_completion): New field
 	prompt_len.
 	(grub_cmdline_get): Handle width properly.
