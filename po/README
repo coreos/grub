@@ -10,7 +10,7 @@ that will hopefully clarify the situation.
 
     Then create a po/LINGUAS file listing all the language codes:
 
-      ((cd po && ls *.po| cut -d. -f1; echo "en@quot"; echo "en@piglatin"; echo "de_CH") | sort |uniq |  xargs) >po/LINGUAS
+      ((cd po && ls *.po| cut -d. -f1; echo "en@quot"; echo "en@hebrew"; echo "de@hebrew"; echo "en@cyrillic"; echo "en@greek"; echo "en@arabic" ;echo "en@piglatin"; echo "de_CH") | sort |uniq |  xargs) >po/LINGUAS
 
     GRUB's build system will automatically detect those and include them
     in your install.

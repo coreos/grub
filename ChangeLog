@@ -1,5 +1,17 @@
 2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Introduce en@cyrillic en@hebrew en@arabic and en@greek.
+
+	* po/Rules-translit: New file.
+	* po/arabic.sed: Likewise.
+	* po/cyrillic.sed: Likewise.
+	* po/greek.sed: Likewise.
+	* po/hebrew.sed: Likewise.
+	* po/README: Add en@cyrillic en@hebrew en@arabic and en@greek.
+	* po/Makefile.in.in: Add extra_dist4.
+
+2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle big-endian minixfs (fixes minixfs tests on bigendian).
 
 	* grub-core/fs/minix.c: Replace le with minix. Add necessary defines,
