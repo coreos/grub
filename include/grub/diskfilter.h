@@ -42,7 +42,7 @@ struct grub_diskfilter_vg {
   grub_size_t uuid_len;
   /* Optional.  */
   char *name;
-  int extent_size;
+  grub_uint64_t extent_size;
   struct grub_diskfilter_pv *pvs;
   struct grub_diskfilter_lv *lvs;
   struct grub_diskfilter_vg *next;
@@ -100,8 +100,8 @@ struct grub_diskfilter_lv {
 };
 
 struct grub_diskfilter_segment {
-  unsigned int start_extent;
-  unsigned int extent_count;
+  grub_uint64_t start_extent;
+  grub_uint64_t extent_count;
   enum 
     {
       GRUB_DISKFILTER_STRIPED = 0,

@@ -1,3 +1,10 @@
+2012-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/diskfilter.h (grub_diskfilter_vg): Increase extent_size
+	to uint64_t to prevent overflow.
+	(grub_diskfilter_lv): Increase start_extent and extent_count
+	to uint64_t to prevent overflow.
+
 2012-04-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Increase version.
