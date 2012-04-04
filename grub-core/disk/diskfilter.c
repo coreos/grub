@@ -297,6 +297,11 @@ grub_diskfilter_memberlist (grub_disk_t disk)
     {
       if (!pv->disk)
 	{
+	  /* TRANSLATORS: This message kicks in during the detection of
+	     which modules needs to be included in core image. This happens
+	     in the case of degraded RAID and means that autodetection may
+	     fail to include some of modules. It's an installation time
+	     message, not runtime message.  */
 	  grub_util_warn (_("Couldn't find physical volume `%s'."
 			    " Some modules may be missing from core image."),
 			  pv->name);
@@ -322,8 +327,17 @@ grub_diskfilter_print_partmap (grub_disk_t disk)
       {
 	grub_size_t s;
 	if (!pv->disk)
-	  grub_util_error (_("Couldn't find physical volume `%s'."
-			     " Check your device.map"), pv->name);
+	  {
+	    /* TRANSLATORS: This message kicks in during the detection of
+	       which modules needs to be included in core image. This happens
+	       in the case of degraded RAID and means that autodetection may
+	       fail to include some of modules. It's an installation time
+	       message, not runtime message.  */
+	    grub_util_warn (_("Couldn't find physical volume `%s'."
+			      " Some modules may be missing from core image."),
+			    pv->name);
+	    continue;
+	  }
 	for (s = 0; pv->partmaps[s]; s++)
 	  grub_printf ("%s ", pv->partmaps[s]);
       }

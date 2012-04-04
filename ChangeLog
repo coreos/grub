@@ -1,5 +1,12 @@
 2012-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (grub_diskfilter_memberlist): Add
+	TRANSLATORS comment.
+	(grub_diskfilter_print_partmap): Propagate changing of error into
+	warning.
+
+2012-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/diskfilter.h (grub_diskfilter_vg): Increase extent_size
 	to uint64_t to prevent overflow.
 	(grub_diskfilter_lv): Increase start_extent and extent_count
