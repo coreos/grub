@@ -1,5 +1,12 @@
 2012-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gettext/gettext.c (grub_gettext_pread): Fix the case when
+	len = 0.
+	(grub_gettext_translate_real): Handle 0th string.
+	(grub_gettext_translate): Ensure that "" isn't translated.
+
+2012-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (grub_diskfilter_memberlist): Add
 	TRANSLATORS comment.
 	(grub_diskfilter_print_partmap): Propagate changing of error into

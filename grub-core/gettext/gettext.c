@@ -75,6 +75,8 @@ static grub_err_t
 grub_gettext_pread (grub_file_t file, void *buf, grub_size_t len,
 		    grub_off_t offset)
 {
+  if (len == 0)
+    return GRUB_ERR_NONE;
   if (grub_file_seek (file, offset) == (grub_off_t) - 1)
     return grub_errno;
   if (grub_file_read (file, buf, len) != (grub_ssize_t) len)
@@ -208,6 +210,35 @@ grub_gettext_translate_real (struct grub_gettext_context *ctx,
 	}
     }
 
+  if (current == 0 && ctx->grub_gettext_max != 0)
+    {
+      current_string = grub_gettext_getstring_from_position (ctx, 0);
+
+      if (!current_string)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  grub_error_pop ();
+	  depth--;
+	  return NULL;
+	}
+
+      if (grub_strcmp (current_string, orig) == 0)
+	{
+	  const char *ret = 0;
+	  ret = grub_gettext_gettranslation_from_position (ctx, current);
+	  if (!ret)
+	    {
+	      grub_errno = GRUB_ERR_NONE;
+	      grub_error_pop ();
+	      depth--;
+	      return NULL;
+	    }
+	  grub_error_pop ();
+	  depth--;
+	  return ret;      
+	}
+    }
+
   grub_error_pop ();
   depth--;
   return NULL;
@@ -217,6 +248,9 @@ static const char *
 grub_gettext_translate (const char *orig)
 {
   const char *ret;
+  if (orig[0] == 0)
+    return orig;
+
   ret = grub_gettext_translate_real (&main_context, orig);
   if (ret)
     return ret;
