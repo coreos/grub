@@ -1,5 +1,11 @@
 2012-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/README: Move language fetcing to ...
+	* linguas.sh: ... here.
+	* po/README: Point to linguas.sh.
+
+2012-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/README: Exclude ko.po due to disclaimer problems.
 
 2012-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
