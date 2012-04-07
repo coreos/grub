@@ -126,7 +126,7 @@ read_block_header (struct grub_lzopio *lzopio)
 	  sizeof (lzopio->block.ucheck))
 	return -1;
 
-      lzopio->block.ucheck = grub_be_to_cpu32 (lzopio->block.ucheck);
+      lzopio->block.ucheck = lzopio->block.ucheck;
     }
 
   /* Read checksum of compressed data.  */
@@ -144,7 +144,7 @@ read_block_header (struct grub_lzopio *lzopio)
 	      sizeof (lzopio->block.ccheck))
 	    return -1;
 
-	  lzopio->block.ccheck = grub_be_to_cpu32 (lzopio->block.ccheck);
+	  lzopio->block.ccheck = lzopio->block.ccheck;
 	}
     }
 
@@ -382,7 +382,7 @@ test_header (grub_file_t file)
 
   if (hcheck)
   {
-    checksum = grub_cpu_to_be32(checksum);
+    checksum = checksum;
     if (grub_memcmp (&checksum, hcheck->read(context), sizeof(checksum)) != 0)
       goto CORRUPTED;
   }
