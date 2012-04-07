@@ -64,12 +64,12 @@ usage () {
     gettext_printf "Usage: %s [OPTION]\n" "$self"
     gettext; echo "Install GRUB on your drive."; echo
     echo
-    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
-    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
-    printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
-    printf "  --net-directory=%-8s%s\n" "$(gettext "DIR")" "$(gettext "root directory of TFTP server")"
-    printf "  --subdir=%-15s%s\n" "$(gettext "DIR")" "$(gettext "relative subdirectory on network server")"
-    printf "  --grub-mkimage=%-9s%s" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    print_option_help "-h, --help" "$(gettext "print this message and exit")"
+    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
+    print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    print_option_help "--net-directory=$(gettext "DIR")" "$(gettext "root directory of TFTP server")"
+    print_option_help "--subdir=$(gettext "DIR")" "$(gettext "relative subdirectory on network server")"
+    print_option_help "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     echo
     gettext_printf "%s copies GRUB images into net_directory/subdir/target_cpu-platform\n" "$self" 
     echo

@@ -87,30 +87,30 @@ usage () {
     echo
     gettext "Install GRUB on your drive." ; echo
     echo
-    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
-    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
-    printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    print_option_help "-h, --help" "$(gettext "print this message and exit")"
+    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
+    print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
     dirmsg="$(gettext_printf "install GRUB images under the directory DIR/%s instead of the %s directory" "@grubdirname@" "$grubdir")"
-    printf "  --boot-directory=%-7s%s\n" "$(gettext "DIR")" "$dirmsg"
+    print_option_help "--boot-directory=$(gettext "DIR")" "$dirmsg"
     # TRANSLATORS: "TARGET" as in "target platform".
     target_trans="$(gettext "TARGET")"
     # TRANSLATORS: "current" refers to the platform user's currently running on
-    printf "  --target=%-15s%s\n" "$target_trans" "$(gettext "install GRUB for TARGET platform [default=current]")"
-    printf "  --directory=%-12s%s\n" "$(gettext "DIR")" "$(gettext "use GRUB images from DIR. Takes precedence over target")"
-    printf "  --grub-setup=%-11s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-setup")"
-    printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
-    printf "  --grub-mkrelpath=%-7s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkrelpath")"
-    printf "  --grub-probe=%-11s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-probe")"
+    print_option_help "--target=$target_trans" "$(gettext "install GRUB for TARGET platform [default=current]")"
+    print_option_help "--directory=$(gettext "DIR")" "$(gettext "use GRUB images from DIR. Takes precedence over target")"
+    print_option_help "--grub-setup=$(gettext "FILE")" "$(gettext "use FILE as grub-setup")"
+    print_option_help "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    print_option_help "--grub-mkrelpath=$(gettext "FILE")" "$(gettext "use FILE as grub-mkrelpath")"
+    print_option_help "--grub-probe=$(gettext "FILE")" "$(gettext "use FILE as grub-probe")"
     # TRANSLATORS: "may break" doesn't just mean that option wouldn't have any
     # effect but that it will make the resulting install unbootable from HDD.
-    printf "  --allow-floppy          %s\n" "$(gettext "make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes.")"
-    printf "  --recheck               %s\n" "$(gettext "delete device map if it already exists")"
-    printf "  --force                 %s\n" "$(gettext "install even if problems are detected")"
-    printf "  --force-file-id         %s\n" "$(gettext "use identifier file even if UUID is available")"
-    printf "  --disk-module=%-10s%s\n" "$(gettext "MODULE")" "$(gettext "disk module to use (biosdisk or native). This option is only available on BIOS target.")"
-    printf "  --no-nvram              %s\n" "$(gettext "don't update the \`boot-device' NVRAM variable. This option is only available on IEEE1275 targets.")"
-    printf "  --removable             %s\n" "$(gettext "the installation device is removable. This option is only available on EFI.")"
-    printf "  --bootloader-id=%-8s%s\n" "$(gettext "ID")" "$(gettext "the ID of bootloader. This option is only available on EFI.")"
+    print_option_help "--allow-floppy" "$(gettext "make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes.")"
+    print_option_help "--recheck" "$(gettext "delete device map if it already exists")"
+    print_option_help "--force" "$(gettext "install even if problems are detected")"
+    print_option_help "--force-file-id" "$(gettext "use identifier file even if UUID is available")"
+    print_option_help "--disk-module=$(gettext "MODULE")" "$(gettext "disk module to use (biosdisk or native). This option is only available on BIOS target.")"
+    print_option_help "--no-nvram" "$(gettext "don't update the \`boot-device' NVRAM variable. This option is only available on IEEE1275 targets.")"
+    print_option_help  "--removable" "$(gettext "the installation device is removable. This option is only available on EFI.")"
+    print_option_help  "--bootloader-id=$(gettext "ID")" "$(gettext "the ID of bootloader. This option is only available on EFI.")"
 echo
 gettext "INSTALL_DEVICE must be system device filename.";echo
 echo

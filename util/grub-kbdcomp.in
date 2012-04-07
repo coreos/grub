@@ -26,9 +26,9 @@ usage () {
     gettext_printf "Usage: %s -o OUTPUT CKBMAP_ARGUMENTS...\n" "$self"
     gettext "Make GRUB keyboard layout file."; echo
     echo
-    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
-    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
-    printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "save output in FILE [required]")"
+    print_option_help "-h, --help" "$(gettext "print this message and exit")"
+    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
+    print_option_help "-o, --output=$(gettext FILE)" "$(gettext "save output in FILE [required]")"
     echo
     gettext_printf "%s generates a keyboard layout for GRUB using ckbcomp\n" "$self"
     echo

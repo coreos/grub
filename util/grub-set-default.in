@@ -48,10 +48,10 @@ usage () {
     gettext_printf "Usage: %s [OPTION] MENU_ENTRY\n" "$self"
     gettext "Set the default boot menu entry for GRUB."; echo
     echo
-    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
-    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
+    print_option_help "-h, --help" "$(gettext "print this message and exit")"
+    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
     dirmsg="$(gettext_printf "expect GRUB images under the directory DIR/%s instead of the %s directory" "@grubdirname@" "$grubdir")"
-    printf "  --boot-directory=%-7s%s\n" "$(gettext "DIR")" "$dirmsg"
+    print_option_help "--boot-directory=$(gettext "DIR")" "$dirmsg"
     echo
     gettext "MENU_ENTRY is a number, a menu item title or a menu item identifier."; echo
     echo

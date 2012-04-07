@@ -54,9 +54,9 @@ usage () {
     gettext_printf "Usage: %s [OPTION]\n" "$self"
     gettext "Generate a grub config file"; echo
     echo
-    printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "output generated config to FILE [default=stdout]")"
-    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
-    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
+    print_option_help "-o, --output=$(gettext FILE)" "$(gettext "output generated config to FILE [default=stdout]")"
+    print_option_help "-h, --help" "$(gettext "print this message and exit")"
+    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
     echo
     gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }

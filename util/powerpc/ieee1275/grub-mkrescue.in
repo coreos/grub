@@ -49,12 +49,12 @@ usage () {
     gettext_printf "Usage: %s [OPTION] SOURCE...\n" "$self"
     gettext "Make GRUB CD-ROM, disk, pendrive and floppy bootable image."; echo
     echo
-    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
-    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
-    printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
-    printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    print_option_help "-h, --help" "$(gettext "print this message and exit")"
+    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
+    print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    print_option_help "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     echo
-    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by the output of \`%s'\n" "genisoimage -help" "$self"
+    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by the output of \`%s'\n" "genisoimage -help" "$self" | grub_fmt
     echo
     gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }

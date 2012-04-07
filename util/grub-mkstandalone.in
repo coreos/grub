@@ -55,19 +55,18 @@ usage () {
     gettext_printf "Usage: %s [OPTION] SOURCE...\n" "$self"
     gettext "Generate a standalone image (containing all modules) in the selected format"
     echo
-    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
-    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
-    printf "  -o, --output=%-11s%s\n" "$(gettext FILE)" "$(gettext "save output in FILE [required]")"
+    print_option_help "-h, --help" "$(gettext "print this message and exit")"
+    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
+    print_option_help "-o, --output=$(gettext FILE)" "$(gettext "save output in FILE [required]")"
     # TRANSLATORS: platform here isn't identifier. It can be translated.
     dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/@PACKAGE@")"
-    printf "  -d, --directory=%-8s%s\n" \
-	"DIR" "$dir_msg"
-    printf     "  -O, --format=%-11s%s" "$(gettext "FORMAT")" "$(gettext "generate an image in FORMAT")"; echo
-    printf "                          %s %s\n" "$(gettext "available formats:")" "$formats"
+    print_option_help "-d, --directory=$(gettext "DIR")" "$dir_msg"
+    print_option_help "-O, --format=$(gettext "FORMAT")" "$(gettext "generate an image in FORMAT")"; echo
+    print_option_help "" "$(gettext "available formats:") $formats"
     echo
-    printf     "  -C, --compression=(xz|none|auto)  %s\n" "$(gettext "choose the compression to use")"
-    printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
-    printf "  --grub-mkimage=%-9s%s\n" "$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    print_option_help "-C, --compression=(xz|none|auto)" "$(gettext "choose the compression to use")"
+    print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    print_option_help  "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     echo
     gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }

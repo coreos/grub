@@ -62,16 +62,16 @@ usage () {
     gettext "Make GRUB CD-ROM, disk, pendrive and floppy bootable image."; echo
     echo
     filetrans="$(gettext FILE)"
-    printf "  -h, --help              %s\n" "$(gettext "print this message and exit")"
-    printf "  -v, --version           %s\n" "$(gettext "print the version information and exit")"
-    printf "  -o, --output=%-11s%s\n" "$filetrans" "$(gettext "save output in FILE [required]")"
-    printf "  --modules=%-14s%s\n" "$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
-    printf "  --rom-directory=%-8s%s\n" "$(gettext "DIR")" "$(gettext "save ROM images in DIR [optional]")"
+    print_option_help "-h, --help" "$(gettext "print this message and exit")"
+    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
+    print_option_help "-o, --output=$filetrans" "$(gettext "save output in FILE [required]")"
+    print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    print_option_help "--rom-directory=$(gettext "DIR")" "$(gettext "save ROM images in DIR [optional]")"
     # TRANSLATORS: xorriso is a program for creating ISOs and burning CDs
-    printf "  --xorriso=%-14s%s\n" "$filetrans" "$(gettext "use FILE as xorriso [optional]")"
-    printf "  --grub-mkimage=%-9s%s\n" "$filetrans" "$(gettext "use FILE as grub-mkimage")"
+    print_option_help "--xorriso=$filetrans" "$(gettext "use FILE as xorriso [optional]")"
+    print_option_help "--grub-mkimage=$filetrans" "$(gettext "use FILE as grub-mkimage")"
     echo
-    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by the output of \`%s'\n" "xorriso -as mkisofs -help" "$self"
+    gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by the output of \`%s'\n" "xorriso -as mkisofs -help" "$self" | grub_fmt
     echo
     gettext "Option -- switches to native xorriso command mode."; echo
     echo
