@@ -282,7 +282,14 @@ grub_ssize_t grub_utf8_to_ucs4_alloc (const char *msg,
 				      grub_uint32_t **unicode_msg,
 				      grub_uint32_t **last_position);
 
-void
+/* Returns the number of bytes the string src would occupy is converted
+   to UTF-8, excluding \0.  */
+grub_size_t
+grub_get_num_of_utf8_bytes (const grub_uint32_t *src, grub_size_t size);
+
+/* Converts UCS-4 to UTF-8. Returns the number of bytes effectively written
+   excluding the trailing \0.  */
+grub_size_t
 grub_ucs4_to_utf8 (const grub_uint32_t *src, grub_size_t size,
 		   grub_uint8_t *dest, grub_size_t destsize);
 grub_size_t grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,

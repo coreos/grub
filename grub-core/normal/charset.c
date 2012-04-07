@@ -101,12 +101,13 @@ grub_encode_utf8_character (grub_uint8_t *dest, grub_uint8_t *destend,
 }
 
 /* Convert UCS-4 to UTF-8.  */
-void
+grub_size_t
 grub_ucs4_to_utf8 (const grub_uint32_t *src, grub_size_t size,
 		   grub_uint8_t *dest, grub_size_t destsize)
 {
   /* Keep last char for \0.  */
   grub_uint8_t *destend = dest + destsize - 1;
+  grub_uint8_t *dest0 = dest;
 
   while (size-- && dest < destend)
     {
@@ -123,16 +124,17 @@ grub_ucs4_to_utf8 (const grub_uint32_t *src, grub_size_t size,
       dest += s;
     }
   *dest = 0;
+  return dest - dest0;
 }
 
-/* Convert UCS-4 to UTF-8.  */
-char *
-grub_ucs4_to_utf8_alloc (const grub_uint32_t *src, grub_size_t size)
+/* Returns the number of bytes the string src would occupy is converted
+   to UTF-8, excluding trailing \0.  */
+grub_size_t
+grub_get_num_of_utf8_bytes (const grub_uint32_t *src, grub_size_t size)
 {
   grub_size_t remaining;
   const grub_uint32_t *ptr;
   grub_size_t cnt = 0;
-  grub_uint8_t *ret;
 
   remaining = size;
   ptr = src;
@@ -153,7 +155,15 @@ grub_ucs4_to_utf8_alloc (const grub_uint32_t *src, grub_size_t size)
       else
 	cnt += 4;
     }
-  cnt++;
+  return cnt;
+}
+
+/* Convert UCS-4 to UTF-8.  */
+char *
+grub_ucs4_to_utf8_alloc (const grub_uint32_t *src, grub_size_t size)
+{
+  grub_uint8_t *ret;
+  grub_size_t cnt = grub_get_num_of_utf8_bytes (src, size) + 1;
 
   ret = grub_malloc (cnt);
   if (!ret)

@@ -1205,21 +1205,22 @@ run (struct screen *screen)
   char * editor_getsource (void)
   {
     int i;
-    int size = 0;
+    grub_size_t size = 0, tot_size = 0;
     char *source;
 
     for (i = 0; i < screen->num_lines; i++)
-      size += screen->lines[i].len + 1;
+      tot_size += grub_get_num_of_utf8_bytes (screen->lines[i].buf,
+					      screen->lines[i].len) + 1;
 
-    source = grub_malloc (size + 1);
+    source = grub_malloc (tot_size + 1);
     if (! source)
       return NULL;
 
-    size = 0;
     for (i = 0; i < screen->num_lines; i++)
       {
-	grub_memcpy (source + size, screen->lines[i].buf, screen->lines[i].len);
-	size += screen->lines[i].len;
+	size += grub_ucs4_to_utf8 (screen->lines[i].buf, screen->lines[i].len,
+				   (grub_uint8_t *) source + size,
+				   tot_size - size);
 	source[size++] = '\n';
       }
     source[size] = '\0';
