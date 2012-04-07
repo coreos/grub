@@ -469,7 +469,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	{
 	  struct grub_net_bootp_packet *pack;
 	  struct grub_datetime date;
-	  grub_int32_t t;
+	  grub_int32_t t = 0;
 	  struct grub_net_buff *nb;
 	  struct udphdr *udph;
 	  grub_net_network_level_address_t target;

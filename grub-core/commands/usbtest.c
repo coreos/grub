@@ -111,7 +111,7 @@ grub_usb_get_string (grub_usb_device_t dev, grub_uint8_t index, int langid,
 static void
 usb_print_str (const char *description, grub_usb_device_t dev, int idx)
 {
-  char *name;
+  char *name = NULL;
   grub_usb_err_t err;
   /* XXX: LANGID  */
 

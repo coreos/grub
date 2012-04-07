@@ -613,7 +613,7 @@ hop_level (grub_disk_t disk,
 	   struct grub_bfs_inode *ino, const char *name)
 {
   grub_err_t err;
-  grub_uint64_t res;
+  grub_uint64_t res = 0;
 
   if (((grub_bfs_to_cpu32 (ino->mode) & ATTR_TYPE) != ATTR_DIR))
     return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
