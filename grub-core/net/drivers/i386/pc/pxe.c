@@ -24,6 +24,7 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/i18n.h>
+#include <grub/loader.h>
 
 #include <grub/machine/pxe.h>
 #include <grub/machine/int.h>
@@ -311,6 +312,36 @@ struct grub_net_card grub_pxe_card =
   .name = "pxe"
 };
 
+static grub_err_t
+grub_pxe_shutdown (int flags)
+{
+  if (flags & GRUB_LOADER_FLAG_PXE_NOT_UNLOAD)
+    return GRUB_ERR_NONE;
+  if (!pxe_rm_entry)
+    return GRUB_ERR_NONE;
+
+  grub_pxe_call (GRUB_PXENV_UNDI_CLOSE,
+		 (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR,
+		 pxe_rm_entry);
+  grub_pxe_call (GRUB_PXENV_UNDI_SHUTDOWN,
+		 (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR,
+		 pxe_rm_entry);
+  grub_pxe_call (GRUB_PXENV_UNLOAD_STACK,
+		 (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR,
+		 pxe_rm_entry);
+  pxe_rm_entry = 0;
+  grub_net_card_unregister (&grub_pxe_card);
+
+  return GRUB_ERR_NONE;
+}
+
+/* Nothing we can do.  */
+static grub_err_t
+grub_pxe_restore (void)
+{
+  return GRUB_ERR_NONE;
+}
+
 void *
 grub_pxe_get_cached (grub_uint16_t type)
 {
@@ -339,6 +370,8 @@ grub_pc_net_config_real (char **device, char **path)
 				  1, device, path);
 
 }
+
+static struct grub_preboot *fini_hnd;
 
 GRUB_MOD_INIT(pxe)
 {
@@ -374,10 +407,14 @@ GRUB_MOD_INIT(pxe)
 
   grub_net_card_register (&grub_pxe_card);
   grub_pc_net_config = grub_pc_net_config_real;
+  fini_hnd = grub_loader_register_preboot_hook (grub_pxe_shutdown,
+						grub_pxe_restore,
+						GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
 }
 
 GRUB_MOD_FINI(pxe)
 {
   grub_pc_net_config = 0;
-  grub_net_card_unregister (&grub_pxe_card);
+  grub_pxe_shutdown (0);
+  grub_loader_unregister_preboot_hook (fini_hnd);
 }

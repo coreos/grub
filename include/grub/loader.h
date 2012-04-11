@@ -28,11 +28,16 @@
 /* Check if a loader is loaded.  */
 int EXPORT_FUNC (grub_loader_is_loaded) (void);
 
-/* Set loader functions. NORETURN must be set to true, if BOOT won't return
-   to the original state.  */
+/* Set loader functions.  */
+enum
+{
+  GRUB_LOADER_FLAG_NORETURN = 1,
+  GRUB_LOADER_FLAG_PXE_NOT_UNLOAD = 2,
+};
+
 void EXPORT_FUNC (grub_loader_set) (grub_err_t (*boot) (void),
-					 grub_err_t (*unload) (void),
-					 int noreturn);
+				    grub_err_t (*unload) (void),
+				    int flags);
 
 /* Unset current loader, if any.  */
 void EXPORT_FUNC (grub_loader_unset) (void);

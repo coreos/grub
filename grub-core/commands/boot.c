@@ -29,7 +29,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_err_t (*grub_loader_boot_func) (void);
 static grub_err_t (*grub_loader_unload_func) (void);
-static int grub_loader_noreturn;
+static int grub_loader_flags;
 
 struct grub_preboot
 {
@@ -52,7 +52,7 @@ grub_loader_is_loaded (void)
 
 /* Register a preboot hook. */
 struct grub_preboot *
-grub_loader_register_preboot_hook (grub_err_t (*preboot_func) (int noreturn),
+grub_loader_register_preboot_hook (grub_err_t (*preboot_func) (int flags),
 				   grub_err_t (*preboot_rest_func) (void),
 				   grub_loader_preboot_hook_prio_t prio)
 {
@@ -112,14 +112,14 @@ grub_loader_unregister_preboot_hook (struct grub_preboot *hnd)
 void
 grub_loader_set (grub_err_t (*boot) (void),
 		 grub_err_t (*unload) (void),
-		 int noreturn)
+		 int flags)
 {
   if (grub_loader_loaded && grub_loader_unload_func)
     grub_loader_unload_func ();
 
   grub_loader_boot_func = boot;
   grub_loader_unload_func = unload;
-  grub_loader_noreturn = noreturn;
+  grub_loader_flags = flags;
 
   grub_loader_loaded = 1;
 }
@@ -146,12 +146,12 @@ grub_loader_boot (void)
     return grub_error (GRUB_ERR_NO_KERNEL,
 		       N_("you need to load the kernel first"));
 
-  if (grub_loader_noreturn)
+  if (grub_loader_flags & GRUB_LOADER_FLAG_NORETURN)
     grub_machine_fini ();
 
   for (cur = preboots_head; cur; cur = cur->next)
     {
-      err = cur->preboot_func (grub_loader_noreturn);
+      err = cur->preboot_func (grub_loader_flags);
       if (err)
 	{
 	  for (cur = cur->prev; cur; cur = cur->prev)
