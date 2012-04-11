@@ -1,5 +1,10 @@
 2012-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/util/grub-shell.in: Set pkgdatadir when calling grub-mkrescue
+	and grub-mknetdir.
+
+2012-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/linux.c (grub_cmd_linux): Avoid accessing
 	kh.loadflags on pre-2.00 kernels.
 
