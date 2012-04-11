@@ -700,9 +700,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  if (! (lh.loadflags & GRUB_LINUX_FLAG_BIG_KERNEL))
+  /* FIXME: 2.03 is not always good enough (Linux 2.4 can be 2.03 and
+     still not support 32-bit boot.  */
+  if (lh.header != grub_cpu_to_le32 (GRUB_LINUX_MAGIC_SIGNATURE)
+      || grub_le_to_cpu16 (lh.version) < 0x0203)
     {
-      grub_error (GRUB_ERR_BAD_OS, "zImage doesn't support 32-bit boot"
+      grub_error (GRUB_ERR_BAD_OS, "version too old for 32-bit boot"
 #ifdef GRUB_MACHINE_PCBIOS
 		  " (try with `linux16')"
 #endif
@@ -710,12 +713,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  /* FIXME: 2.03 is not always good enough (Linux 2.4 can be 2.03 and
-     still not support 32-bit boot.  */
-  if (lh.header != grub_cpu_to_le32 (GRUB_LINUX_MAGIC_SIGNATURE)
-      || grub_le_to_cpu16 (lh.version) < 0x0203)
+  if (! (lh.loadflags & GRUB_LINUX_FLAG_BIG_KERNEL))
     {
-      grub_error (GRUB_ERR_BAD_OS, "version too old for 32-bit boot"
+      grub_error (GRUB_ERR_BAD_OS, "zImage doesn't support 32-bit boot"
 #ifdef GRUB_MACHINE_PCBIOS
 		  " (try with `linux16')"
 #endif
