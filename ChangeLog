@@ -1,5 +1,13 @@
 2012-04-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/minix.c (grub_minix_data): Fix ino type.
+	(grub_minix_read_file): Likewise.
+	(grub_minix_read_inode): Likewise.
+	(grub_minix_find_file): Likewise.
+	(grub_minix_dir): Likewise.
+
+2012-04-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (setup): Fix partition handling and blocklist
 	check.
 

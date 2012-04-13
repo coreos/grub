@@ -166,7 +166,7 @@ struct grub_minix_data
 {
   struct grub_minix_sblock sblock;
   struct grub_minix_inode inode;
-  int ino;
+  grub_minix_ino_t ino;
   int linknest;
   grub_disk_t disk;
   int filename_size;
@@ -311,7 +311,7 @@ grub_minix_read_file (struct grub_minix_data *data,
 /* Read inode INO from the mounted filesystem described by DATA.  This
    inode is used by default now.  */
 static grub_err_t
-grub_minix_read_inode (struct grub_minix_data *data, int ino)
+grub_minix_read_inode (struct grub_minix_data *data, grub_minix_ino_t ino)
 {
   struct grub_minix_sblock *sblock = &data->sblock;
 
@@ -338,7 +338,7 @@ grub_minix_read_inode (struct grub_minix_data *data, int ino)
 /* Lookup the symlink the current inode points to.  INO is the inode
    number of the directory the symlink is relative to.  */
 static grub_err_t
-grub_minix_lookup_symlink (struct grub_minix_data *data, int ino)
+grub_minix_lookup_symlink (struct grub_minix_data *data, grub_minix_ino_t ino)
 {
   char symlink[GRUB_MINIX_INODE_SIZE (data) + 1];
 
@@ -374,7 +374,7 @@ grub_minix_find_file (struct grub_minix_data *data, const char *path)
   char *name = fpath;
   char *next;
   unsigned int pos = 0;
-  int dirino;
+  grub_minix_ino_t dirino;
 
   grub_strcpy (fpath, path);
 
@@ -550,7 +550,7 @@ grub_minix_dir (grub_device_t device, const char *path,
     {
       grub_minix_ino_t ino;
       char filename[data->filename_size + 1];
-      int dirino = data->ino;
+      grub_minix_ino_t dirino = data->ino;
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
 
