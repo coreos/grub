@@ -1425,12 +1425,8 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
       for (chunk2 = rel->chunks; chunk2; chunk2 = chunk2->next)
 	if ((chunk2->target <= chunk->target
 	     && chunk->target < chunk2->target + chunk2->size)
-	    || (chunk2->target <= chunk->target + size
-		&& chunk->target + size < chunk2->target + chunk2->size)
 	    || (chunk->target <= chunk2->target && chunk2->target
-		< chunk->target + size)
-	    || (chunk->target <= chunk2->target + chunk2->size
-		&& chunk2->target + chunk2->size < chunk->target + size))
+		< chunk->target + size))
 	  {
 	    if (preference == GRUB_RELOCATOR_PREFERENCE_HIGH)
 	      chunk->target = ALIGN_DOWN (chunk2->target, align);

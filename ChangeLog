@@ -1,3 +1,8 @@
+2012-04-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/relocator.c (grub_relocator_alloc_chunk_align): Remove
+	redundant buggy overlap check.
+
 2012-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* tests/util/grub-shell.in: Set pkgdatadir when calling grub-mkrescue
