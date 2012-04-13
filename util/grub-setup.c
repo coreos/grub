@@ -150,7 +150,7 @@ setup (const char *dir,
   char *root = 0;
   size_t boot_size, core_size;
   grub_uint16_t core_sectors;
-  grub_device_t root_dev = 0, dest_dev;
+  grub_device_t root_dev = 0, dest_dev, core_dev;
   struct grub_boot_blocklist *first_block, *block;
   char *tmp_img;
   grub_disk_addr_t first_sector;
@@ -251,6 +251,8 @@ setup (const char *dir,
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
     grub_util_error ("%s", grub_errmsg);
+
+  core_dev = dest_dev;
 
   {
     char **root_devices = grub_guess_root_devices (dir);
@@ -582,6 +584,8 @@ unable_to_embed:
        but MBR on another.  */
     grub_util_error ("%s", _("embedding is not possible, but this is required for "
 			     "cross-disk install"));
+#else
+  core_dev = root_dev;
 #endif
 
   grub_util_warn ("%s", _("Embedding is not possible.  GRUB can only be installed in this "
@@ -697,6 +701,7 @@ unable_to_embed:
 #ifdef __linux__
   {
     grub_partition_t container = root_dev->disk->partition;
+    grub_uint64_t container_start = grub_partition_get_start (container);
     struct fiemap fie1;
     int fd;
 
@@ -743,11 +748,11 @@ unable_to_embed:
 		  rest = GRUB_DISK_SECTOR_SIZE;
 		if (i == 0 && j == 0)
 		  save_first_sector (((grub_uint64_t) blk) * mul
-				     + grub_partition_get_start (container),
+				     + container_start,
 				     0, rest);
 		else
 		  save_blocklists (((grub_uint64_t) blk) * mul + j
-				   + grub_partition_get_start (container),
+				   + container_start,
 				   0, rest);
 	      }
 	  }
@@ -782,13 +787,13 @@ unable_to_embed:
 		if (i == 0 && j == 0)
 		  save_first_sector ((fie2->fm_extents[i].fe_physical
 				      >> GRUB_DISK_SECTOR_BITS)
-				     + j,
+				     + j + container_start,
 				     fie2->fm_extents[i].fe_physical
 				     & (GRUB_DISK_SECTOR_SIZE - 1), len);
 		else
 		  save_blocklists ((fie2->fm_extents[i].fe_physical
 				    >> GRUB_DISK_SECTOR_BITS)
-				   + j,
+				   + j + container_start,
 				   fie2->fm_extents[i].fe_physical
 				   & (GRUB_DISK_SECTOR_SIZE - 1), len);
 
@@ -874,16 +879,16 @@ unable_to_embed:
     char *buf, *ptr = core_img;
     size_t len = core_size;
     grub_uint64_t blk;
-    grub_partition_t container = root_dev->disk->partition;
+    grub_partition_t container = core_dev->disk->partition;
     grub_err_t err;
 
-    root_dev->disk->partition = 0;
+    core_dev->disk->partition = 0;
 
     buf = xmalloc (core_size);
     blk = first_sector;
-    err = grub_disk_read (dest_dev->disk, blk, 0, GRUB_DISK_SECTOR_SIZE, buf);
+    err = grub_disk_read (core_dev->disk, blk, 0, GRUB_DISK_SECTOR_SIZE, buf);
     if (err)
-      grub_util_error (_("cannot read `%s': %s"), dest_dev->disk->name,
+      grub_util_error (_("cannot read `%s': %s"), core_dev->disk->name,
 		       grub_errmsg);
     if (grub_memcmp (buf, ptr, GRUB_DISK_SECTOR_SIZE) != 0)
       grub_util_error ("%s", _("blocklists are invalid"));
@@ -900,9 +905,9 @@ unable_to_embed:
 	if (cur > len)
 	  cur = len;
 
-	err = grub_disk_read (dest_dev->disk, blk, 0, cur, buf);
+	err = grub_disk_read (core_dev->disk, blk, 0, cur, buf);
 	if (err)
-	  grub_util_error (_("cannot read `%s': %s"), dest_dev->disk->name,
+	  grub_util_error (_("cannot read `%s': %s"), core_dev->disk->name,
 			   grub_errmsg);
 
 	if (grub_memcmp (buf, ptr, cur) != 0)
@@ -915,7 +920,7 @@ unable_to_embed:
 	if ((char *) block <= core_img)
 	  grub_util_error ("%s", _("no terminator in the core image"));
       }
-    root_dev->disk->partition = container;
+    core_dev->disk->partition = container;
     free (buf);
   }
 
