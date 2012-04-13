@@ -1,5 +1,9 @@
 2012-04-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c: Disable -Wstrict-aliasing.
+
+2012-04-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/minix.c (grub_minix_data): Fix ino type.
 	(grub_minix_read_file): Likewise.
 	(grub_minix_read_inode): Likewise.

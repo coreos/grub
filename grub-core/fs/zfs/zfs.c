@@ -2378,6 +2378,8 @@ dnode_get (dnode_end_t * mdn, grub_uint64_t objnum, grub_uint8_t type,
   return GRUB_ERR_NONE;
 }
 
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+
 /*
  * Get the file dnode for a given file name where mdn is the meta dnode
  * for this ZFS object set. When found, place the file dnode in dn.
