@@ -70,6 +70,9 @@ usage () {
     print_option_help "--net-directory=$(gettext "DIR")" "$(gettext "root directory of TFTP server")"
     print_option_help "--subdir=$(gettext "DIR")" "$(gettext "relative subdirectory on network server")"
     print_option_help "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    # TRANSLATORS: platform here isn't identifier. It can be translated.
+    dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/@PACKAGE@")"
+    print_option_help "-d, --directory=$(gettext "DIR")" "$dir_msg"
     echo
     gettext_printf "%s copies GRUB images into net_directory/subdir/target_cpu-platform\n" "$self" 
     echo
@@ -129,18 +132,10 @@ do
     --debug-image=*)
 	debug_image=`echo "$option" | sed 's/--debug-image=//'` ;;
 
-    # Intentionally undocumented
-    --override-directory)
-        override_dir=`argument $option "$@"`
-	shift
-	PATH=${override_dir}:$PATH
-	export PATH
-	;;
-    --override-directory=*)
-	override_dir=`echo "${option}/" | sed 's/--override-directory=//'`
-	PATH=${override_dir}:$PATH
-	export PATH
-	;;
+    --directory | -d)
+	source_directory=`argument $option "$@"`; shift ;;
+    --directory=*)
+	source_directory=`echo "$option" | sed 's/--directory=//'` ;;
 
     -*)
 	gettext_printf "Unrecognized option \`%s'\n" "$option" 1>&2
@@ -232,7 +227,7 @@ EOF
     gettext_printf "Netboot directory for %s created. Configure your DHCP server to point to %s\n" "${platform}" "${subdir}/${platform}/core.$ext"
 }
 
-if [ "${override_dir}" = "" ] ; then
+if [ "${source_directory}" = "" ] ; then
     if test -e "${pc_dir}" ; then
         process_input_dir "${pc_dir}" i386-pc
     fi
@@ -255,8 +250,8 @@ if [ "${override_dir}" = "" ] ; then
         process_input_dir "${itanium_dir}" ia64-efi
     fi
 else
-    . "${override_dir}"/modinfo.sh
-    process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
+    . "${source_directory}"/modinfo.sh
+    process_input_dir "${source_directory}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
 fi
 
 
