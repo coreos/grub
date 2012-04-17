@@ -259,6 +259,8 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
     }
 #ifdef GRUB_MACHINE_EFI
   grub_efi_mmap_iterate (hook, 1);
+  if (! real_mode_target)
+    grub_efi_mmap_iterate (hook, 0);
 #else
   grub_mmap_iterate (hook);
 #endif
