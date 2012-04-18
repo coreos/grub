@@ -111,6 +111,7 @@ usage () {
     print_option_help "--no-nvram" "$(gettext "don't update the \`boot-device' NVRAM variable. This option is only available on IEEE1275 targets.")"
     print_option_help  "--removable" "$(gettext "the installation device is removable. This option is only available on EFI.")"
     print_option_help  "--bootloader-id=$(gettext "ID")" "$(gettext "the ID of bootloader. This option is only available on EFI.")"
+    print_option_help "--efi-directory=$(gettext "DIR")" "$(gettext "use DIR as the EFI System Partition root.")"
 echo
 gettext "INSTALL_DEVICE must be system device filename.";echo
 echo
@@ -134,6 +135,7 @@ argument () {
 
 allow_floppy=""
 force_file_id=
+efidir=
 
 # Check the arguments.
 while test $# -gt 0
@@ -173,6 +175,11 @@ do
 	bootdir="`argument $option "$@"`"; shift;;
     --boot-directory=*)
 	bootdir="`echo "$option" | sed 's/--boot-directory=//'`" ;;
+
+    --efi-directory)
+	efidir="`argument $option "$@"`"; shift;;
+    --efi-directory=*)
+	efidir="`echo "$option" | sed 's/--efi-directory=//'`" ;;
 
     --directory | -d)
 	source_dir="`argument $option "$@"`"; shift;;
@@ -397,37 +404,40 @@ fi
 
 if [ x"$grub_modinfo_platform" = xefi ]; then
     # Find the EFI System Partition.
-    efidir=
-    if test -d "${bootdir}/efi"; then
-	install_device="`"$grub_probe" --target=device --device-map= "${bootdir}/efi"`"
-        # Is it a mount point?
-	if test "x$install_device" != "x`"$grub_probe" --target=device --device-map= "${bootdir}"`"; then
-	    efidir="${bootdir}/efi"
-	fi
-    elif test -d "${bootdir}/EFI"; then
-	install_device="`"$grub_probe" --target=device --device-map= "${bootdir}/EFI"`"
-        # Is it a mount point?
-	if test "x$install_device" != "x`"$grub_probe" --target=device --device-map= "${bootdir}"`"; then
-	    efidir="${bootdir}/EFI"
-	fi
-    elif test -n "$rootdir" && test "x$rootdir" != "x/"; then
+    if test -n "$efidir"; then
+	install_device="`"$grub_probe" --target=device --device-map= "${efidir}"`"
+    else
+	if test -d "${bootdir}/efi"; then
+	    install_device="`"$grub_probe" --target=device --device-map= "${bootdir}/efi"`"
+            # Is it a mount point?
+	    if test "x$install_device" != "x`"$grub_probe" --target=device --device-map= "${bootdir}"`"; then
+		efidir="${bootdir}/efi"
+	    fi
+	elif test -d "${bootdir}/EFI"; then
+	    install_device="`"$grub_probe" --target=device --device-map= "${bootdir}/EFI"`"
+            # Is it a mount point?
+	    if test "x$install_device" != "x`"$grub_probe" --target=device --device-map= "${bootdir}"`"; then
+		efidir="${bootdir}/EFI"
+	    fi
+	elif test -n "$rootdir" && test "x$rootdir" != "x/"; then
         # The EFI System Partition may have been given directly using
         # --root-directory.
-	install_device="`"$grub_probe" --target=device --device-map= "${rootdir}"`"
+	    install_device="`"$grub_probe" --target=device --device-map= "${rootdir}"`"
         # Is it a mount point?
-	if test "x$install_device" != "x`"$grub_probe" --target=device --device-map= "${rootdir}/.."`"; then
-	    efidir="${rootdir}"
+	    if test "x$install_device" != "x`"$grub_probe" --target=device --device-map= "${rootdir}/.."`"; then
+		efidir="${rootdir}"
+	    fi
+	fi
+
+	if test -n "$efidir"; then
+	    efi_fs=`"$grub_probe" --target=fs "--device-map=${device_map}" "${efidir}"`
+	    if test "x$efi_fs" = xfat; then :; else
+		gettext_printf "%s doesn't look like an EFI partition.\n" "${efidir}" 1>&2
+		efidir=
+	    fi
 	fi
     fi
-    
-    if test -n "$efidir"; then
-	efi_fs=`"$grub_probe" --target=fs "--device-map=${device_map}" "${efidir}"`
-	if test "x$efi_fs" = xfat; then :; else
-	    gettext_printf "%s doesn't look like an EFI partition.\n" "${efidir}" 1>&2
-	    efidir=
-	fi
-    fi
-    
+
     if test -n "$efidir"; then
         # The EFI specification requires that an EFI System Partition must
         # contain an "EFI" subdirectory, and that OS loaders are stored in

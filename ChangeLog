@@ -1,3 +1,7 @@
+2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: New option --efi-directory.
+
 2012-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/linux.c (allocate_pages): Overwrite low memory
