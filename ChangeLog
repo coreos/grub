@@ -1,3 +1,7 @@
+2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/Makefile.common (LDFLAGS_PLATFORM): Use explicit -Wl.
+
 2012-04-18  Mads Kiilerich <mads@kiilerich.com>
 
          * grub-mkconfig_lib.in: Ignore *.rpmnew and *.rpmsave.
