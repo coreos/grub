@@ -1001,7 +1001,7 @@ static struct grub_diskfilter grub_ldm_dev = {
 
 GRUB_MOD_INIT (ldm)
 {
-  grub_diskfilter_register (&grub_ldm_dev);
+  grub_diskfilter_register_back (&grub_ldm_dev);
 }
 
 GRUB_MOD_FINI (ldm)

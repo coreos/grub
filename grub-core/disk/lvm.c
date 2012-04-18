@@ -756,7 +756,7 @@ static struct grub_diskfilter grub_lvm_dev = {
 
 GRUB_MOD_INIT (lvm)
 {
-  grub_diskfilter_register (&grub_lvm_dev);
+  grub_diskfilter_register_back (&grub_lvm_dev);
 }
 
 GRUB_MOD_FINI (lvm)

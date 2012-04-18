@@ -274,7 +274,7 @@ GRUB_MOD_INIT (mdraid09_be)
 GRUB_MOD_INIT (mdraid09)
 #endif
 {
-  grub_diskfilter_register (&grub_mdraid_dev);
+  grub_diskfilter_register_front (&grub_mdraid_dev);
 }
 
 #ifdef MODE_BIGENDIAN

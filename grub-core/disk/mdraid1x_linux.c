@@ -224,7 +224,7 @@ static struct grub_diskfilter grub_mdraid_dev = {
 
 GRUB_MOD_INIT (mdraid1x)
 {
-  grub_diskfilter_register (&grub_mdraid_dev);
+  grub_diskfilter_register_front (&grub_mdraid_dev);
 }
 
 GRUB_MOD_FINI (mdraid1x)

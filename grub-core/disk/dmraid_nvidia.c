@@ -177,7 +177,7 @@ static struct grub_diskfilter grub_dmraid_nv_dev =
 
 GRUB_MOD_INIT(dm_nv)
 {
-  grub_diskfilter_register (&grub_dmraid_nv_dev);
+  grub_diskfilter_register_front (&grub_dmraid_nv_dev);
 }
 
 GRUB_MOD_FINI(dm_nv)

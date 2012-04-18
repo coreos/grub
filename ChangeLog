@@ -1,5 +1,14 @@
 2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Scan mdraid before LVM.
+
+	* include/grub/diskfilter.h (grub_diskfilter_register): Renamed to ..
+	(grub_diskfilter_register_front): ... this.
+	(grub_diskfilter_register_back): New function.
+	All users of grub_diskfilter_register updated.
+
+2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Fix an automatic target detection bug.
 
 2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>

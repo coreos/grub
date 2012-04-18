@@ -148,10 +148,20 @@ typedef struct grub_diskfilter *grub_diskfilter_t;
 
 extern grub_diskfilter_t grub_diskfilter_list;
 static inline void
-grub_diskfilter_register (grub_diskfilter_t diskfilter)
+grub_diskfilter_register_front (grub_diskfilter_t diskfilter)
 {
   grub_list_push (GRUB_AS_LIST_P (&grub_diskfilter_list),
 		  GRUB_AS_LIST (diskfilter));
+}
+
+static inline void
+grub_diskfilter_register_back (grub_diskfilter_t diskfilter)
+{
+  grub_diskfilter_t p, *q;
+  for (q = &grub_diskfilter_list, p = *q; p; q = &p->next, p = *q);
+  diskfilter->next = NULL;
+  diskfilter->prev = q;
+  *q = diskfilter;
 }
 static inline void
 grub_diskfilter_unregister (grub_diskfilter_t diskfilter)
