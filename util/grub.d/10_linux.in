@@ -150,7 +150,8 @@ EOF
 EOF
 }
 
-case x`uname -m` in
+machine=`uname -m`
+case "x$machine" in
     xi?86 | xx86_64)
 	list=`for i in /boot/vmlinuz-* /vmlinuz-* /boot/kernel-* ; do
                   if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
@@ -159,6 +160,14 @@ case x`uname -m` in
 	list=`for i in /boot/vmlinuz-* /boot/vmlinux-* /vmlinuz-* /vmlinux-* /boot/kernel-* ; do
                   if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
 	     done` ;;
+esac
+
+case "$machine" in
+    i?86) GENKERNEL_ARCH="x86" ;;
+    mips|mips64) GENKERNEL_ARCH="mips" ;;
+    mipsel|mips64el) GENKERNEL_ARCH="mipsel" ;;
+    arm*) GENKERNEL_ARCH="arm" ;;
+    *) GENKERNEL_ARCH="$machine" ;;
 esac
 
 prepare_boot_cache=
@@ -187,7 +196,9 @@ while [ "x$list" != "x" ] ; do
 	   "initrd.img-${alt_version}" "initrd-${alt_version}.img" \
 	   "initrd-${alt_version}" "initramfs-${alt_version}.img" \
 	   "initramfs-genkernel-${version}" \
-	   "initramfs-genkernel-${alt_version}"; do
+	   "initramfs-genkernel-${alt_version}" \
+	   "initramfs-genkernel-${GENKERNEL_ARCH}-${version}" \
+	   "initramfs-genkernel-${GENKERNEL_ARCH}-${alt_version}"; do
     if test -e "${dirname}/${i}" ; then
       initrd="$i"
       break

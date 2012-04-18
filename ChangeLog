@@ -1,3 +1,7 @@
+2012-04-18  Mike Gilbert  <floppym@gentoo.org>
+
+	* util/grub.d/10_linux.in: Fix detection of genkernel initramfs.
+
 2012-04-18  Bean  <bean123ch@gmail.com>
 
 	* grub-core/disk/ata.c (grub_ata_strncpy): Put terminating zero at right
