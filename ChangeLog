@@ -1,3 +1,8 @@
+2012-04-18  Bean  <bean123ch@gmail.com>
+
+	* grub-core/disk/ata.c (grub_ata_strncpy): Put terminating zero at right
+	place.
+
 2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/hostdisk.c (open_device): New argument max. All

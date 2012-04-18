@@ -35,7 +35,7 @@ grub_ata_strncpy (grub_uint16_t *dst16, grub_uint16_t *src16, grub_size_t len)
 
   for (i = 0; i < len / 2; i++)
     *(dst16++) = grub_be_to_cpu16 (*(src16++));
-  dst16[i] = 0;
+  *dst16 = 0;
 }
 
 static void
