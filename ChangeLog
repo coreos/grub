@@ -1,5 +1,10 @@
 2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_write): Fix message
+	disunification.
+
+2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common (LDFLAGS_PLATFORM): Use explicit -Wl.
 
 2012-04-18  Mads Kiilerich <mads@kiilerich.com>

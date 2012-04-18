@@ -1097,7 +1097,8 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	     parts. -jochen  */
 	  if (grub_util_fd_write (fd, buf, (1 << disk->log_sector_size))
 	      != (1 << disk->log_sector_size))
-	    return grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write `%s': %s"),
+	    return grub_error (GRUB_ERR_WRITE_ERROR,
+			       N_("cannot write to `%s': %s"),
 			       map[disk->id].device, strerror (errno));
 	  
 	  buf += (1 << disk->log_sector_size);
@@ -1108,7 +1109,7 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 
       if (grub_util_fd_write (fd, buf, max << disk->log_sector_size)
 	  != (ssize_t) (max << disk->log_sector_size))
-	return grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write `%s': %s"),
+	return grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write to `%s': %s"),
 			   map[disk->id].device, strerror (errno));
       size -= max;
       buf += (max << disk->log_sector_size);
