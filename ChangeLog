@@ -1,5 +1,13 @@
 2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (open_device): New argument max. All
+	users updated.
+	(grub_util_biosdisk_read): Handle Linux partitions not exactly
+	corresponding to GRUB partitions.
+	(grub_util_biosdisk_write): Likewise.
+
+2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Scan mdraid before LVM.
 
 	* include/grub/diskfilter.h (grub_diskfilter_register): Renamed to ..

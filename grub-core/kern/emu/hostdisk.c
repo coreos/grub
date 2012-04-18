@@ -790,10 +790,13 @@ grub_hostdisk_os_dev_to_grub_drive (const char *os_disk, int add)
 }
 
 static int
-open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
+open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
+	     grub_disk_addr_t *max)
 {
   int fd;
   struct grub_util_biosdisk_data *data = disk->data;
+
+  *max = ~0ULL;
 
 #ifdef O_LARGEFILE
   flags |= O_LARGEFILE;
@@ -819,9 +822,16 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
     part_start = grub_partition_get_start (disk->partition);
 
     strcpy (dev, map[disk->id].device);
-    if (disk->partition && sector >= part_start
+    if (disk->partition
 	&& strncmp (map[disk->id].device, "/dev/", 5) == 0)
-      is_partition = linux_find_partition (dev, part_start);
+      {
+	if (sector >= part_start)
+	  is_partition = linux_find_partition (dev, part_start);
+	else
+	  *max = part_start - sector;
+      }
+
+  reopen:
 
     if (data->dev && strcmp (data->dev, dev) == 0 &&
 	data->access_mode == (flags & O_ACCMODE))
@@ -863,7 +873,21 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
       }
 
     if (is_partition)
-      sector -= part_start;
+      {
+	*max = grub_util_get_fd_size (fd, dev, 0);
+	*max >>= disk->log_sector_size;
+	if (sector - part_start >= *max)
+	  {
+	    *max = disk->partition->len - (sector - part_start);
+	    if (*max == 0)
+	      *max = ~0ULL;
+	    is_partition = 0;
+	    strcpy (dev, map[disk->id].device);
+	    goto reopen;
+	  }
+	sector -= part_start;
+	*max -= sector;
+      }
   }
 #else /* ! __linux__ */
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
@@ -1009,90 +1033,87 @@ static grub_err_t
 grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 			 grub_size_t size, char *buf)
 {
-  int fd;
-
-  /* Split pre-partition and partition reads.  */
-  if (disk->partition && sector < disk->partition->start
-      && sector + size > disk->partition->start)
+  while (size)
     {
-      grub_err_t err;
-      err = grub_util_biosdisk_read (disk, sector,
-				     disk->partition->start - sector,
-				     buf);
-      if (err)
-	return err;
+      int fd;
+      grub_disk_addr_t max = ~0ULL;
+      fd = open_device (disk, sector, O_RDONLY, &max);
+      if (fd < 0)
+	return grub_errno;
 
-      return grub_util_biosdisk_read (disk, disk->partition->start,
-				      size - (disk->partition->start - sector),
-				      buf + ((disk->partition->start - sector)
-					     << GRUB_DISK_SECTOR_BITS));
-    }
-
-  fd = open_device (disk, sector, O_RDONLY);
-  if (fd < 0)
-    return grub_errno;
+      if (max > size)
+	max = size;
 
 #ifdef __linux__
-  if (sector == 0 && size > 1)
-    {
-      /* Work around a bug in Linux ez remapping.  Linux remaps all
-	 sectors that are read together with the MBR in one read.  It
-	 should only remap the MBR, so we split the read in two
-	 parts. -jochen  */
-      if (grub_util_fd_read (fd, buf, (1 << disk->log_sector_size))
-	  != (1 << disk->log_sector_size))
+      if (sector == 0 && max > 1)
 	{
-	  grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
-		      map[disk->id].device, strerror (errno));
-	  return grub_errno;
+	  /* Work around a bug in Linux ez remapping.  Linux remaps all
+	     sectors that are read together with the MBR in one read.  It
+	     should only remap the MBR, so we split the read in two
+	     parts. -jochen  */
+	  if (grub_util_fd_read (fd, buf, (1 << disk->log_sector_size))
+	      != (1 << disk->log_sector_size))
+	    return grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
+			       map[disk->id].device, strerror (errno));
+	  
+	  buf += (1 << disk->log_sector_size);
+	  size--;
+	  max--;
 	}
-
-      buf += (1 << disk->log_sector_size);
-      size--;
-    }
 #endif /* __linux__ */
 
-  if (grub_util_fd_read (fd, buf, size << disk->log_sector_size)
-      != (ssize_t) (size << disk->log_sector_size))
-    grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
-		map[disk->id].device, strerror (errno));
-
-  return grub_errno;
+      if (grub_util_fd_read (fd, buf, max << disk->log_sector_size)
+	  != (ssize_t) (max << disk->log_sector_size))
+	return grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
+			   map[disk->id].device, strerror (errno));
+      size -= max;
+      buf += (max << disk->log_sector_size);
+      sector += max;
+    }
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
 grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 			  grub_size_t size, const char *buf)
 {
-  int fd;
-
-  /* Split pre-partition and partition writes.  */
-  if (disk->partition && sector < disk->partition->start
-      && sector + size > disk->partition->start)
+  while (size)
     {
-      grub_err_t err;
-      err = grub_util_biosdisk_write (disk, sector,
-				      disk->partition->start - sector,
-				      buf);
-      if (err)
-	return err;
+      int fd;
+      grub_disk_addr_t max = ~0ULL;
+      fd = open_device (disk, sector, O_RDONLY, &max);
+      if (fd < 0)
+	return grub_errno;
 
-      return grub_util_biosdisk_write (disk, disk->partition->start,
-				       size - (disk->partition->start - sector),
-				       buf + ((disk->partition->start - sector)
-					      << GRUB_DISK_SECTOR_BITS));
+      if (max > size)
+	max = size;
+
+#ifdef __linux__
+      if (sector == 0 && max > 1)
+	{
+	  /* Work around a bug in Linux ez remapping.  Linux remaps all
+	     sectors that are write together with the MBR in one write.  It
+	     should only remap the MBR, so we split the write in two
+	     parts. -jochen  */
+	  if (grub_util_fd_write (fd, buf, (1 << disk->log_sector_size))
+	      != (1 << disk->log_sector_size))
+	    return grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write `%s': %s"),
+			       map[disk->id].device, strerror (errno));
+	  
+	  buf += (1 << disk->log_sector_size);
+	  size--;
+	  max--;
+	}
+#endif /* __linux__ */
+
+      if (grub_util_fd_write (fd, buf, max << disk->log_sector_size)
+	  != (ssize_t) (max << disk->log_sector_size))
+	return grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write `%s': %s"),
+			   map[disk->id].device, strerror (errno));
+      size -= max;
+      buf += (max << disk->log_sector_size);
     }
-
-  fd = open_device (disk, sector, O_WRONLY);
-  if (fd < 0)
-    return grub_errno;
-
-  if (grub_util_fd_write (fd, buf, size << disk->log_sector_size)
-      != (ssize_t) (size << disk->log_sector_size))
-    grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write to `%s': %s"),
-		map[disk->id].device, strerror (errno));
-
-  return grub_errno;
+  return GRUB_ERR_NONE;
 }
 
 grub_err_t
@@ -1104,7 +1125,8 @@ grub_util_biosdisk_flush (struct grub_disk *disk)
     return GRUB_ERR_NONE;
   if (data->fd == -1)
     {
-      data->fd = open_device (disk, 0, O_RDONLY);
+      grub_disk_addr_t max;
+      data->fd = open_device (disk, 0, O_RDONLY, &max);
       if (data->fd < 0)
 	return grub_errno;
     }
