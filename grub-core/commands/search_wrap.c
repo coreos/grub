@@ -86,6 +86,7 @@ grub_cmd_search (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
   const char *var = 0;
+  const char *id = 0;
   int i = 0, j = 0, nhints = 0;
   char **hints = NULL;
 
@@ -163,20 +164,27 @@ grub_cmd_search (grub_extcmd_context_t ctxt, int argc, char **args)
     if (grub_memcmp (args[j], "--hint-", sizeof ("--hint-") - 1) != 0)
       break;
 
-  if (argc == j)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
-
   if (state[SEARCH_SET].set)
     var = state[SEARCH_SET].arg ? state[SEARCH_SET].arg : "root";
 
+  if (argc != j)
+    id = args[j];
+  else if (state[SEARCH_SET].set && state[SEARCH_SET].arg)
+    {
+      id = state[SEARCH_SET].arg;
+      var = "root";
+    }
+  else
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
+
   if (state[SEARCH_LABEL].set)
-    grub_search_label (args[j], var, state[SEARCH_NO_FLOPPY].set, 
+    grub_search_label (id, var, state[SEARCH_NO_FLOPPY].set, 
 		       hints, nhints);
   else if (state[SEARCH_FS_UUID].set)
-    grub_search_fs_uuid (args[j], var, state[SEARCH_NO_FLOPPY].set,
+    grub_search_fs_uuid (id, var, state[SEARCH_NO_FLOPPY].set,
 			 hints, nhints);
   else if (state[SEARCH_FILE].set)
-    grub_search_fs_file (args[j], var, state[SEARCH_NO_FLOPPY].set, 
+    grub_search_fs_file (id, var, state[SEARCH_NO_FLOPPY].set, 
 			 hints, nhints);
   else
     return grub_error (GRUB_ERR_INVALID_COMMAND, "unspecified search type");
