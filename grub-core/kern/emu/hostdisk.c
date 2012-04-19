@@ -1081,7 +1081,7 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
     {
       int fd;
       grub_disk_addr_t max = ~0ULL;
-      fd = open_device (disk, sector, O_RDONLY, &max);
+      fd = open_device (disk, sector, O_WRONLY, &max);
       if (fd < 0)
 	return grub_errno;
 

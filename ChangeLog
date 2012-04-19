@@ -1,5 +1,10 @@
 2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_write): Fix opening
+	mode.
+
+2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Bump to beta4.
 
 2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
