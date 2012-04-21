@@ -438,7 +438,7 @@ grub_util_follow_gpart_up (const char *name, grub_disk_addr_t *off_out, char **n
     /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
        Usually left untranslated.
      */
-    grub_util_error (_("couldn't open geom"));
+    grub_util_error ("%s", _("couldn't open geom"));
 
   LIST_FOREACH (class, &mesh.lg_class, lg_class)
     if (strcasecmp (class->lg_name, "part") == 0)
@@ -447,7 +447,7 @@ grub_util_follow_gpart_up (const char *name, grub_disk_addr_t *off_out, char **n
     /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
        Usually left untranslated. "part" is the identifier of one of its
        classes.  */
-    grub_util_error (_("couldn't find geom `part' class"));
+    grub_util_error ("%s", _("couldn't find geom `part' class"));
 
   LIST_FOREACH (geom, &class->lg_geom, lg_geom)
     { 

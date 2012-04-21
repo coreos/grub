@@ -28,17 +28,17 @@
 int
 grub_util_lvm_isvolume (char *name)
 {
-  char *devname;
+  char *lvmdevname;
   struct stat st;
   int err;
 
-  devname = xmalloc (strlen (name) + sizeof (LVM_DEV_MAPPER_STRING));
+  lvmdevname = xmalloc (strlen (name) + sizeof (LVM_DEV_MAPPER_STRING));
 
-  strcpy (devname, LVM_DEV_MAPPER_STRING);
-  strcpy (devname + sizeof(LVM_DEV_MAPPER_STRING) - 1, name);
+  strcpy (lvmdevname, LVM_DEV_MAPPER_STRING);
+  strcpy (lvmdevname + sizeof(LVM_DEV_MAPPER_STRING) - 1, name);
 
-  err = stat (devname, &st);
-  free (devname);
+  err = stat (lvmdevname, &st);
+  free (lvmdevname);
 
   if (err)
     return 0;

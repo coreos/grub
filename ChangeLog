@@ -1,5 +1,19 @@
 2012-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix kfreebsd compile and behaviour.
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_follow_gpart_up): Fix
+	format-security.
+	* util/getroot.c: Fix wait.h include.
+	(grub_guess_root_devices): Error if grub_find_device fails.
+	(grub_util_get_geom_abstraction): Fix shadowing and format-security.
+	(grub_util_get_dev_abstraction): Likewise.
+	(grub_util_pull_device): Likewise.
+	(grub_util_get_grub_dev): Likewise.
+	* util/lvm.c (grub_util_lvm_isvolume): Likewise.
+
+2012-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix and unify wholedisk detection.
 
 	* util/getroot.c (convert_system_partition_to_system_disk): New argument

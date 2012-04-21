@@ -51,10 +51,8 @@
 #include <sys/mman.h>
 #endif
 
-#ifdef __linux__
-# include <sys/types.h>
-# include <sys/wait.h>
-#endif
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 # include <sys/mount.h>
@@ -1047,6 +1045,12 @@ grub_guess_root_devices (const char *dir)
   /* This might be truly slow, but is there any better way?  */
   os_dev[0] = grub_find_device ("/dev", dev);
 #endif
+  if (!os_dev[0])
+    {
+      free (os_dev);
+      return 0;
+    }
+
   os_dev[1] = 0;
 #endif /* !__GNU__ */
 
@@ -1179,7 +1183,7 @@ grub_util_get_geom_abstraction (const char *dev)
   struct gmesh mesh;
   struct gclass *class;
   const char *name;
-  int error;
+  int err;
 
   if (strncmp (dev, "/dev/", sizeof ("/dev/") - 1) != 0)
     return 0;
@@ -1188,12 +1192,12 @@ grub_util_get_geom_abstraction (const char *dev)
 
   grub_util_info ("following geom '%s'", name);
 
-  error = geom_gettree (&mesh);
-  if (error != 0)
+  err = geom_gettree (&mesh);
+  if (err != 0)
     /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
        Usually left untranslated.
      */
-    grub_util_error (_("couldn't open geom"));
+    grub_util_error ("%s", _("couldn't open geom"));
 
   LIST_FOREACH (class, &mesh.lg_class, lg_class)
     {
@@ -1235,10 +1239,10 @@ grub_util_get_dev_abstraction (const char *os_dev)
 #endif
 
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
-  const char *abs;
-  abs = grub_util_get_geom_abstraction (os_dev);
-  grub_util_info ("abstraction of %s is %s", os_dev, abs);
-  if (abs && grub_strcasecmp (abs, "eli") == 0)
+  const char *abstrac;
+  abstrac = grub_util_get_geom_abstraction (os_dev);
+  grub_util_info ("abstraction of %s is %s", os_dev, abstrac);
+  if (abstrac && grub_strcasecmp (abstrac, "eli") == 0)
     return GRUB_DEV_ABSTRACTION_GELI;
 
   /* Check for LVM.  */
@@ -1406,7 +1410,7 @@ grub_util_pull_device (const char *os_dev)
 	struct gmesh mesh;
 	struct gclass *class;
 	const char *name;
-	int error;
+	int err;
 	char *lastsubdev = NULL;
 
 	if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
@@ -1416,12 +1420,12 @@ grub_util_pull_device (const char *os_dev)
 
 	grub_util_info ("following geom '%s'", name);
 
-	error = geom_gettree (&mesh);
-	if (error != 0)
+	err = geom_gettree (&mesh);
+	if (err != 0)
 	  /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
 	     Usually left untranslated.
 	  */
-	  grub_util_error (_("couldn't open geom"));
+	  grub_util_error ("%s", _("couldn't open geom"));
 
 	LIST_FOREACH (class, &mesh.lg_class, lg_class)
 	  {
@@ -1434,12 +1438,12 @@ grub_util_pull_device (const char *os_dev)
 		    {
 		      struct gconsumer *consumer;
 		      char *fname;
-		      char *uuid;
 
 		      LIST_FOREACH (consumer, &geom->lg_consumer, lg_consumer)
 			break;
 		      if (!consumer)
-			grub_util_error (_("couldn't find geli consumer"));
+			grub_util_error ("%s",
+					 _("couldn't find geli consumer"));
 		      fname = xasprintf ("/dev/%s", consumer->lg_provider->lg_name);
 		      grub_util_info ("consumer %s", consumer->lg_provider->lg_name);
 		      lastsubdev = consumer->lg_provider->lg_name;
@@ -1456,9 +1460,9 @@ grub_util_pull_device (const char *os_dev)
 
 	    if (grdev)
 	      {
-		grub_err_t err;
-		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
-		if (err)
+		grub_err_t gr_err;
+		gr_err = grub_cryptodisk_cheat_mount (grdev, os_dev);
+		if (gr_err)
 		  grub_util_error (_("can't mount encrypted volume `%s': %s"),
 				   lastsubdev, grub_errmsg);
 	      }
@@ -2390,7 +2394,7 @@ grub_util_get_grub_dev (const char *os_dev)
 	struct gmesh mesh;
 	struct gclass *class;
 	const char *name;
-	int error;
+	int err;
 
 	if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
 	  return 0;
@@ -2399,12 +2403,12 @@ grub_util_get_grub_dev (const char *os_dev)
 
 	grub_util_info ("following geom '%s'", name);
 
-	error = geom_gettree (&mesh);
-	if (error != 0)
+	err = geom_gettree (&mesh);
+	if (err != 0)
 	  /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
 	     Usually left untranslated.
 	  */
-	  grub_util_error (_("couldn't open geom"));
+	  grub_util_error ("%s", _("couldn't open geom"));
 
 	LIST_FOREACH (class, &mesh.lg_class, lg_class)
 	  {
@@ -2422,11 +2426,13 @@ grub_util_get_grub_dev (const char *os_dev)
 		      LIST_FOREACH (consumer, &geom->lg_consumer, lg_consumer)
 			break;
 		      if (!consumer)
-			grub_util_error (_("couldn't find geli consumer"));
+			grub_util_error ("%s",
+					 _("couldn't find geli consumer"));
 		      fname = xasprintf ("/dev/%s", consumer->lg_provider->lg_name);
 		      uuid = grub_util_get_geli_uuid (fname);
 		      if (!uuid)
-			grub_util_error (_("couldn't retrieve geli UUID"));
+			grub_util_error ("%s",
+					 _("couldn't retrieve geli UUID"));
 		      grub_dev = xasprintf ("cryptouuid/%s", uuid);
 		      free (fname);
 		      free (uuid);
