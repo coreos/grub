@@ -1,3 +1,12 @@
+2012-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix and unify wholedisk detection.
+
+	* util/getroot.c (convert_system_partition_to_system_disk): New argument
+	is_part. All users updated.
+	(device_is_wholedisk): Removed.
+	(grub_util_biosdisk_get_grub_dev): Use is_part.
+
 2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_write): Fix opening

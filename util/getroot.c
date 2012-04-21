@@ -1642,10 +1642,14 @@ grub_util_biosdisk_is_floppy (grub_disk_t disk)
 }
 
 static char *
-convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
+convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
+					 int *is_part)
 {
+  *is_part = 0;
+
 #if defined(__linux__)
   char *path = xmalloc (PATH_MAX);
+
   if (! realpath (os_dev, path))
     return NULL;
 
@@ -1658,7 +1662,10 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	{
 	  p = strstr (p, "part");
 	  if (p)
-	    strcpy (p, "disc");
+	    {
+	      *is_part = 1;
+	      strcpy (p, "disc");
+	    }
 
 	  return path;
 	}
@@ -1668,7 +1675,10 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	{
 	  p = strstr (p, "part");
 	  if (p)
-	    strcpy (p, "disc");
+	    {
+	      *is_part = 1;
+	      strcpy (p, "disc");
+	    }
 
 	  return path;
 	}
@@ -1679,7 +1689,10 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  /* /dev/rd/c[0-9]+d[0-9]+(p[0-9]+)? */
 	  p = strchr (p, 'p');
 	  if (p)
-	    *p = '\0';
+	    {
+	      *is_part = 1;
+	      *p = '\0';
+	    }
 
 	  return path;
 	}
@@ -1690,7 +1703,10 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  /* /dev/rd/c[0-9]+d[0-9]+(p[0-9]+)? */
 	  p = strchr (p, 'p');
 	  if (p)
-	    *p = '\0';
+	    {
+	      *is_part = 1;
+	      *p = '\0';
+	    }
 
 	  return path;
 	}
@@ -1700,7 +1716,10 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  /* /dev/cciss/c[0-9]+d[0-9]+(p[0-9]+)? */
 	  p = strchr (p, 'p');
 	  if (p)
-	    *p = '\0';
+	    {
+	      *is_part = 1;
+	      *p = '\0';
+	    }
 
 	  return path;
 	}
@@ -1711,7 +1730,10 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  /* /dev/ida/c[0-9]+d[0-9]+(p[0-9]+)? */
 	  p = strchr (p, 'p');
 	  if (p)
-	    *p = '\0';
+	    {
+	      *is_part = 1;
+	      *p = '\0';
+	    }
 
 	  return path;
 	}
@@ -1720,6 +1742,8 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
       if (strncmp ("i2o/hd", p, sizeof ("i2o/hd") - 1) == 0)
       	{
 	  /* /dev/i2o/hd[a-z]([0-9]+)? */
+	  if (p[sizeof ("i2o/hda") - 1])
+	    *is_part = 1;
 	  p[sizeof ("i2o/hda") - 1] = '\0';
 	  return path;
 	}
@@ -1730,7 +1754,10 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  /* /dev/mmcblk[0-9]+(p[0-9]+)? */
 	  p = strchr (p, 'p');
 	  if (p)
-	    *p = '\0';
+	    {
+	      *is_part = 1;
+	      *p = '\0';
+	    }
 
 	  return path;
 	}
@@ -1741,6 +1768,8 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  char *ptr = p + 2;
 	  while (*ptr >= '0' && *ptr <= '9')
 	    ptr++;
+	  if (*ptr)
+	    *is_part = 1;
 	  *ptr = 0;
 	  return path;
 	}
@@ -1750,6 +1779,8 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  && p[5] >= 'a' && p[5] <= 'z')
 	{
 	  /* /dev/vdisk[a-z][0-9]* */
+	  if (p[6])
+	    *is_part = 1;
 	  p[6] = '\0';
 	  return path;
 	}
@@ -1761,6 +1792,8 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  char *pp = p + 2;
 	  while (*pp >= 'a' && *pp <= 'z')
 	    pp++;
+	  if (*pp)
+	    *is_part = 1;
 	  /* /dev/[hsv]d[a-z]+[0-9]* */
 	  *pp = '\0';
 	  return path;
@@ -1772,16 +1805,16 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 	  char *pp = p + 3;
 	  while (*pp >= 'a' && *pp <= 'z')
 	    pp++;
+	  if (*pp)
+	    *is_part = 1;
 	  /* /dev/xvd[a-z]+[0-9]* */
 	  *pp = '\0';
 	  return path;
 	}
 
 #ifdef HAVE_DEVICE_MAPPER
-      /* If this is a DM-RAID device.
-         Compare os_dev rather than path here, since nodes under
-         /dev/mapper/ are often symlinks.  */
-      if ((strncmp ("/dev/mapper/", os_dev, 12) == 0))
+      if ((strncmp ("/dev/mapper/", path, sizeof ("/dev/mapper/") - 1) == 0)
+	  || (strncmp ("/dev/dm-", path, sizeof ("/dev/dm-") - 1) == 0))
 	{
 	  struct dm_tree *tree;
 	  uint32_t maj, min;
@@ -1843,6 +1876,7 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st)
 		  && grub_util_get_dm_node_linear_info (node_name,
 							&major, &minor))
 		{
+		  *is_part = 1;
 		  if (tree)
 		    dm_tree_free (tree);
 		  free (path);
@@ -1914,14 +1948,21 @@ devmapper_out:
     {
       char *p = strchr (path + 7, 's');
       if (p)
-	*p = '\0';
+	{
+	  *is_part = 1;
+	  *p = '\0';
+	}
     }
   return path;
 
 #elif defined(__CYGWIN__)
   char *path = xstrdup (os_dev);
-  if (strncmp ("/dev/sd", path, 7) == 0 && 'a' <= path[7] && path[7] <= 'z')
-    path[8] = 0;
+  if (strncmp ("/dev/sd", path, 7) == 0 && 'a' <= path[7] && path[7] <= 'z'
+      && path[8])
+    {
+      *is_part = 1;
+      path[8] = 0;
+    }
   return path;
 
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
@@ -1930,6 +1971,8 @@ devmapper_out:
     return xstrdup (os_dev);
   grub_util_follow_gpart_up (os_dev + sizeof ("/dev/") - 1, NULL, &out);
 
+  if (grub_strcmp (os_dev + sizeof ("/dev/") - 1, out) != 0)
+    *is_part = 1;
   out2 = xasprintf ("/dev/%s", out);
   free (out);
 
@@ -1944,7 +1987,10 @@ devmapper_out:
           {
             p = strpbrk (p, "sp");
             if (p)
-              *p = '\0';
+	      {
+		*is_part = 1;
+		*p = '\0';
+	      }
             break;
           }
     }
@@ -1980,6 +2026,7 @@ devmapper_out:
 	  close (fd);
 	  return xstrdup (os_dev);
 	}
+      *is_part = (dkw.dkw_offset != 0);
       close (fd);
       return xasprintf ("/dev/r%s%c", dkw.dkw_parent, 'a' + rawpart);
     }
@@ -1997,6 +2044,8 @@ devmapper_out:
 	  p++;
 	  if ((*p >= 'a' && *p <= 'z') && (*(p+1) == '\0'))
 	    {
+	      if (*p != 'a' + rawpart)
+		*is_part = 1;
 	      /* path matches the required regular expression and
 		 p points to its last character.  */
 	      *p = 'a' + rawpart;
@@ -2013,6 +2062,8 @@ devmapper_out:
       && colon)
     {
       char *ret = xmalloc (colon - os_dev + sizeof (":q,raw"));
+      if (grub_strcmp (colon, ":q,raw") != 0)
+	*is_part = 1;
       grub_memcpy (ret, os_dev, colon - os_dev);
       grub_memcpy (ret + (colon - os_dev), ":q,raw", sizeof (":q,raw"));
       return ret;
@@ -2030,9 +2081,10 @@ find_system_device (const char *os_dev, struct stat *st, int convert, int add)
 {
   char *os_disk;
   const char *drive;
+  int is_part;
 
   if (convert)
-    os_disk = convert_system_partition_to_system_disk (os_dev, st);
+    os_disk = convert_system_partition_to_system_disk (os_dev, st, &is_part);
   else
     os_disk = xstrdup (os_dev);
   if (! os_disk)
@@ -2076,76 +2128,11 @@ make_device_name (const char *drive, int dos_part, int bsd_part)
   return ret;
 }
 
-#if defined(__sun__)
-static int
-device_is_wholedisk (const char *os_dev)
-{
-  if (grub_memcmp (os_dev, "/devices/", sizeof ("/devices/") - 1) != 0)
-    return 1;
-  if (grub_memcmp (os_dev + strlen (os_dev) - (sizeof (":q,raw") - 1),
-		   ":q,raw", (sizeof (":q,raw") - 1)) == 0)
-    return 1;
-  return 0;
-}
-#endif
-
-#if defined(__linux__) || defined(__CYGWIN__)
-static int
-device_is_wholedisk (const char *os_dev)
-{
-  int len = strlen (os_dev);
-
-  if (os_dev[len - 1] < '0' || os_dev[len - 1] > '9')
-    return 1;
-  return 0;
-}
-#endif
-
-#if defined(__NetBSD__)
-/* Try to determine whether a given device name corresponds to a whole disk.
-   This function should give in most cases a definite answer, but it may
-   actually give an approximate one in the following sense: if the return
-   value is 0 then the device name does not correspond to a whole disk.  */
-static int
-device_is_wholedisk (const char *os_dev)
-{
-  int len = strlen (os_dev);
-  int rawpart = -1;
-
-# ifdef HAVE_GETRAWPARTITION
-  rawpart = getrawpartition();
-# endif /* HAVE_GETRAWPARTITION */
-  if (rawpart < 0)
-    return 1;
-  return (os_dev[len - 1] == ('a' + rawpart));
-}
-#endif /* defined(__NetBSD__) */
-
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-static int
-device_is_wholedisk (const char *os_dev)
-{
-  const char *p;
-
-  if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
-    return 0;
-
-  for (p = os_dev + sizeof ("/dev/") - 1; *p; ++p)
-    if (grub_isdigit (*p))
-      {
-	if (strchr (p, 's'))
-	  return 0;
-	break;
-      }
-
-  return 1;
-}
-#endif /* defined(__FreeBSD__) || defined(__FreeBSD_kernel__) */
-
 char *
 grub_util_get_os_disk (const char *os_dev)
 {
   struct stat st;
+  int is_part;
 
   grub_util_info ("Looking for %s", os_dev);
 
@@ -2158,7 +2145,7 @@ grub_util_get_os_disk (const char *os_dev)
       return 0;
     }
 
-  return convert_system_partition_to_system_disk (os_dev, &st);
+  return convert_system_partition_to_system_disk (os_dev, &st, &is_part);
 }
 
 char *
@@ -2167,6 +2154,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   struct stat st;
   const char *drive;
   char *sys_disk;
+  int is_part;
 
   grub_util_info ("Looking for %s", os_dev);
 
@@ -2180,7 +2168,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     }
 
   drive = find_system_device (os_dev, &st, 1, 1);
-  sys_disk = convert_system_partition_to_system_disk (os_dev, &st);
+  sys_disk = convert_system_partition_to_system_disk (os_dev, &st, &is_part);
   if (grub_strcmp (os_dev, sys_disk) == 0)
     {
       free (sys_disk);
@@ -2252,7 +2240,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
     grub_util_info ("%s starts from %" PRIuGRUB_UINT64_T, os_dev, start);
 
-    if (start == 0 && device_is_wholedisk (os_dev))
+    if (start == 0 && !is_part)
       return name;
 
     grub_util_info ("opening the device %s", name);
