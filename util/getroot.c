@@ -175,7 +175,7 @@ static int
 grub_util_is_imsm (const char *os_dev);
 #endif
 
-#if ! defined(__CYGWIN__)
+#if ! defined(__CYGWIN__) && !defined(__GNU__)
 
 static void
 strip_extra_slashes (char *dir)
@@ -218,7 +218,7 @@ xgetcwd (void)
 
 #endif
 
-#if !defined (__MINGW32__) && !defined (__CYGWIN__)
+#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
 
 static pid_t
 exec_pipe (char **argv, int *fd)
@@ -665,7 +665,7 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
 
 #endif /* __linux__ */
 
-#if !defined (__MINGW32__) && !defined (__CYGWIN__)
+#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
 
 static char **
 find_root_devices_from_libzfs (const char *dir)
@@ -697,6 +697,8 @@ grub_find_device (const char *dir __attribute__ ((unused)),
 {
   return 0;
 }
+
+#elif defined (__GNU__)
 
 #elif ! defined(__CYGWIN__)
 

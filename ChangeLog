@@ -4,6 +4,9 @@
 
 	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_size) [__GNU__]: Do
 	not define nr variable.
+	* util/getroot.c [__GNU__] (strip_extra_slashes, xgetcwd, exec_pipe,
+	find_root_devices_from_poolname, find_root_devices_from_libzfs,
+	grub_find_device): Do not define.
 
 2012-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
