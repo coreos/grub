@@ -242,13 +242,15 @@ grub_util_biosdisk_iterate (int (*hook) (const char *name),
 grub_uint64_t
 grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
 {
+#if !defined (__GNU__)
 # if defined(__NetBSD__)
   struct disklabel label;
 # elif defined (__sun__)
   struct dk_minfo minfo;
-#else
+# else
   unsigned long long nr;
 # endif
+#endif
   unsigned sector_size, log_sector_size;
   struct stat st;
 

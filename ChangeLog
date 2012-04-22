@@ -1,3 +1,10 @@
+2012-04-22  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	Fix hurd build.
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_size) [__GNU__]: Do
+	not define nr variable.
+
 2012-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix kfreebsd compile and behaviour.
