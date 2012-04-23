@@ -389,9 +389,11 @@ fstest (int n)
     case CMD_BLOCKLIST:
       execute_command ("blocklist", n, args);
       grub_printf ("\n");
+      break;
     case CMD_TESTLOAD:
       execute_command ("testload", n, args);
       grub_printf ("\n");
+      break;
     case CMD_XNU_UUID:
       {
 	grub_device_t dev;

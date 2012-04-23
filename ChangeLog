@@ -1,3 +1,7 @@
+2012-04-23  Bean  <bean123ch@gmail.com>
+
+	* util/grub-fstest.c (fstest): Add missing break.
+
 2012-04-22  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	Fix hurd build.
