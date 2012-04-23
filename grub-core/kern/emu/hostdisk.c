@@ -115,7 +115,7 @@ struct hd_geometry
 # endif /* ! RAW_FLOPPY_MAJOR */
 #endif /* defined(__NetBSD__) */
 
-struct
+static struct
 {
   char *drive;
   char *device;
