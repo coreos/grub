@@ -1,5 +1,9 @@
 2012-04-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.in: Fix locale directory.
+
+2012-04-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (map): Make static.
 
 2012-04-23  Bean  <bean123ch@gmail.com>

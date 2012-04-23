@@ -52,6 +52,8 @@ xorriso=xorriso
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR="@localedir@"
 
+localedir="@datadir@/locale"
+
 . "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage
@@ -182,9 +184,9 @@ process_input_dir ()
     done
 
     mkdir -p "${iso9660_dir}/boot/grub/locale"
-    for file in "${input_dir}"/po/*.mo; do
-        if test -f "$file"; then
-	    cp -f "$file" ${iso9660_dir}/boot/grub/locale/
+    for dir in "${localedir}"/*; do
+	if test -f "$dir/LC_MESSAGES/grub.mo"; then
+            cp -f "$dir/LC_MESSAGES/grub.mo" "${iso9660_dir}/boot/grub/locale/${dir##*/}.mo"
 	fi
     done
 }
