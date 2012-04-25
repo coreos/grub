@@ -948,9 +948,9 @@ grub_ntfs_mount (grub_disk_t disk)
   if (grub_memcmp ((char *) &bpb.oem_name, "NTFS", 4))
     goto fail;
 
-  data->spc = (bpb.sectors_per_cluster
-	       * (grub_le_to_cpu16 (bpb.bytes_per_sector)
-		  >> GRUB_NTFS_BLK_SHR));
+  data->spc = (((grub_uint32_t) bpb.sectors_per_cluster
+		* (grub_uint32_t) grub_le_to_cpu16 (bpb.bytes_per_sector))
+	       >> GRUB_NTFS_BLK_SHR);
 
   if (bpb.clusters_per_mft > 0)
     data->mft_size = data->spc * bpb.clusters_per_mft;
