@@ -1,5 +1,10 @@
 2012-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/squash4.c (lzo_decompress): Set grub_errno on error.
+	Allocate at lest 8192 for temporary buffer as required for lzo.
+
+2012-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/fat.c (grub_fat_mount): Don't add logical_sector_bits
 	to cluster_bits, since it's already added in.
 	(grub_fat_read_data): Likewise.

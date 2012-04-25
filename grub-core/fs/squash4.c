@@ -298,13 +298,17 @@ lzo_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
   lzo_uint usize = data->blksz;
   grub_uint8_t *udata;
 
-  udata = grub_malloc (data->blksz);
+  if (usize < 8192)
+    usize = 8192;
+
+  udata = grub_malloc (usize);
   if (!udata)
     return -1;
 
   if (lzo1x_decompress_safe ((grub_uint8_t *) inbuf,
 			     insize, udata, &usize, NULL) != LZO_E_OK)
     {
+      grub_error (GRUB_ERR_BAD_FS, "incorrect compressed chunk");
       grub_free (udata);
       return -1;
     }
