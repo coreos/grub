@@ -326,7 +326,7 @@ grub_fat_mount (grub_disk_t disk)
 #else
   data->cluster_sector = data->root_sector + data->num_root_sectors;
   data->num_clusters = (((data->num_sectors - data->cluster_sector)
-			 >> (data->cluster_bits + data->logical_sector_bits))
+			 >> data->cluster_bits)
 			+ 2);
 #endif
 
@@ -482,7 +482,6 @@ grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
 
   /* Calculate the logical cluster number and offset.  */
   logical_cluster_bits = (data->cluster_bits
-			  + data->logical_sector_bits
 			  + GRUB_DISK_SECTOR_BITS);
   logical_cluster = offset >> logical_cluster_bits;
   offset &= (1ULL << logical_cluster_bits) - 1;
@@ -556,7 +555,7 @@ grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
       /* Read the data here.  */
       sector = (data->cluster_sector
 		+ ((data->cur_cluster - 2)
-		   << (data->cluster_bits + data->logical_sector_bits)));
+		   << data->cluster_bits));
       size = (1 << logical_cluster_bits) - offset;
       if (size > len)
 	size = len;

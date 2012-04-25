@@ -1,5 +1,11 @@
 2012-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/fat.c (grub_fat_mount): Don't add logical_sector_bits
+	to cluster_bits, since it's already added in.
+	(grub_fat_read_data): Likewise.
+
+2012-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c (grub_ntfs_mount): Support 256-byte sectors,
 	as long as cluster size is multiple of 512 bytes.
 
