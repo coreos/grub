@@ -77,30 +77,49 @@ static void
 grub_console_dimensions (void)
 {
   grub_ieee1275_ihandle_t options;
-  grub_ssize_t lval;
+  grub_ieee1275_phandle_t stdout_phandle;
+  char val[1024];
+
+  /* Always assume 80x24 on serial since screen-#rows/screen-#columns is often
+     garbage for such devices.  */
+  if (! grub_ieee1275_instance_to_package (stdout_ihandle,
+					   &stdout_phandle)
+      && ! grub_ieee1275_package_to_path (stdout_phandle,
+					  val, sizeof (val) - 1, 0))
+    {
+      grub_ieee1275_ihandle_t stdout_options;
+      val[sizeof (val) - 1] = 0;      
+
+      if (! grub_ieee1275_finddevice (val, &stdout_options)
+	  && ! grub_ieee1275_get_property (stdout_options, "device_type",
+					   val, sizeof (val) - 1, 0))
+	{
+	  val[sizeof (val) - 1] = 0;
+	  if (grub_strcmp (val, "serial") == 0)
+	    {
+	      grub_console_terminfo_output.width = 80;
+	      grub_console_terminfo_output.height = 24;
+	      return;
+	    }
+	}
+    }
 
   if (! grub_ieee1275_finddevice ("/options", &options)
       && options != (grub_ieee1275_ihandle_t) -1)
     {
-      if (! grub_ieee1275_get_property_length (options, "screen-#columns",
-					       &lval)
-	  && lval >= 0 && lval < 1024)
+      if (! grub_ieee1275_get_property (options, "screen-#columns",
+					val, sizeof (val) - 1, 0))
 	{
-	  char val[lval];
-
-	  if (! grub_ieee1275_get_property (options, "screen-#columns",
-					    val, lval, 0))
-	    grub_console_terminfo_output.width
-	      = (grub_uint8_t) grub_strtoul (val, 0, 10);
+	  val[sizeof (val) - 1] = 0;
+	  grub_console_terminfo_output.width
+	    = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
-      if (! grub_ieee1275_get_property_length (options, "screen-#rows", &lval)
-	  && lval >= 0 && lval < 1024)
+      if (! grub_ieee1275_get_property (options, "screen-#rows",
+					val, sizeof (val) - 1, 0))
 	{
-	  char val[lval];
-	  if (! grub_ieee1275_get_property (options, "screen-#rows",
-					    val, lval, 0))
-	    grub_console_terminfo_output.height
-	      = (grub_uint8_t) grub_strtoul (val, 0, 10);
+	  val[sizeof (val) - 1] = 0;
+	  grub_console_terminfo_output.height
+	    = (grub_uint8_t) grub_strtoul (val, 0, 10);
 	}
     }
 

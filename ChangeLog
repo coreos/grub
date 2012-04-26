@@ -1,5 +1,10 @@
 2012-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/ieee1275/console.c (grub_console_dimensions): Use 80x24
+	geometry on serial consoles.
+
+2012-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/terminfo.c (grub_terminfo_readkey): Increase timeout
 	because of network consoles.
 
