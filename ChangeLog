@@ -1,5 +1,10 @@
 2012-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (read_segment): Fix the case when disknr
+	falls on Q syndrom.
+
+2012-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/nilfs2.c (grub_nilfs2_palloc_entry_offset_log):
 	Fix argument to grub_nilfs2_palloc_bitmap_block_offset.
 

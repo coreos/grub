@@ -723,8 +723,12 @@ read_segment (struct grub_diskfilter_segment *seg, grub_disk_addr_t sector,
 		    else
 		      {
 			disknr -= seg->node_count;
-			if (disknr == p)
-			  disknr += n;
+			if ((disknr >= p && disknr < p + n)
+			    || (disknr + seg->node_count >= p
+				&& disknr + seg->node_count < p + n))
+			  disknr = p + n;
+			if (disknr >= seg->node_count)
+			  disknr -= seg->node_count;
 		      }
 		  }
 		else
