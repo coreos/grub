@@ -377,7 +377,7 @@ grub_nilfs2_palloc_entry_offset_log (struct grub_nilfs2_data *data,
   group = grub_nilfs2_palloc_group (data, nr, &group_offset);
 
   return grub_nilfs2_palloc_bitmap_block_offset (data, group,
-						 1 << log_entry_size) + 1 +
+						 log_entry_size) + 1 +
     (group_offset >> grub_nilfs2_log_entries_per_block_log (data,
 							    log_entry_size));
 
