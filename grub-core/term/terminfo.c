@@ -549,9 +549,12 @@ grub_terminfo_getkey (struct grub_term_input *termi)
     = (struct grub_terminfo_input_state *) (termi->data);
   if (data->npending)
     {
+      int ret;
       data->npending--;
-      grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
-      return data->input_buf[0];
+      ret = data->input_buf[0];
+      grub_memmove (data->input_buf, data->input_buf + 1, data->npending
+		    * sizeof (data->input_buf[0]));
+      return ret;
     }
 
   grub_terminfo_readkey (termi, data->input_buf,
@@ -559,9 +562,12 @@ grub_terminfo_getkey (struct grub_term_input *termi)
 
   if (data->npending)
     {
+      int ret;
       data->npending--;
-      grub_memmove (data->input_buf, data->input_buf + 1, data->npending);
-      return data->input_buf[0];
+      ret = data->input_buf[0];
+      grub_memmove (data->input_buf, data->input_buf + 1, data->npending
+		    * sizeof (data->input_buf[0]));
+      return ret;
     }
 
   return GRUB_TERM_NO_KEY;
