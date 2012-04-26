@@ -400,7 +400,7 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
     start = grub_get_time_ms ();				\
     do								\
       c = readkey (term);					\
-    while (c == -1 && grub_get_time_ms () - start < 12);	\
+    while (c == -1 && grub_get_time_ms () - start < 100);	\
     if (c == -1)						\
       return;							\
 								\
