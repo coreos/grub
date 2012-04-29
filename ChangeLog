@@ -1,3 +1,8 @@
+2012-04-29  Bean  <bean123ch@gmail.com>
+
+	* grub-core/net/drivers/efi/efinet.c (get_card_packet): Fix buffer
+	allocation.
+
 2012-04-29  Mads Kiilerich  <mads@kiilerich.com> (tiny)
 
 	* configure.ac: Detect starfield theme font path

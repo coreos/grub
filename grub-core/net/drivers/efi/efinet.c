@@ -63,14 +63,13 @@ get_card_packet (const struct grub_net_card *dev)
   grub_efi_uintn_t bufsize = 1536;
   struct grub_net_buff *nb;
 
-  nb = grub_netbuff_alloc (bufsize);
+  nb = grub_netbuff_alloc (bufsize + 2);
   if (!nb)
     return NULL;
 
   /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
      by 4. So that IP header is aligned on 4 bytes. */
-  grub_netbuff_reserve (nb, 2);
-  if (!nb)
+  if (grub_netbuff_reserve (nb, 2))
     {
       grub_netbuff_free (nb);
       return NULL;
@@ -84,14 +83,13 @@ get_card_packet (const struct grub_net_card *dev)
 
       bufsize = ALIGN_UP (bufsize, 32);
 
-      nb = grub_netbuff_alloc (bufsize);
+      nb = grub_netbuff_alloc (bufsize + 2);
       if (!nb)
 	return NULL;
 
       /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
 	 by 4. So that IP header is aligned on 4 bytes. */
-      grub_netbuff_reserve (nb, 2);
-      if (!nb)
+      if (grub_netbuff_reserve (nb, 2))
 	{
 	  grub_netbuff_free (nb);
 	  return NULL;
