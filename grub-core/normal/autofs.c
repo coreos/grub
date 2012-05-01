@@ -109,14 +109,14 @@ read_fs_list (const char *prefix)
 		      continue;
 		    }
 
-		  fs_mod = grub_malloc_notrack (sizeof (*fs_mod));
+		  fs_mod = grub_malloc (sizeof (*fs_mod));
 		  if (! fs_mod)
 		    {
 		      grub_free (buf);
 		      continue;
 		    }
 
-		  fs_mod->name = grub_strdup_notrack (p);
+		  fs_mod->name = grub_strdup (p);
 		  grub_free (buf);
 		  if (! fs_mod->name)
 		    {

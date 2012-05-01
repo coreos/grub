@@ -1,4 +1,9 @@
 2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/autofs.c (read_fs_list): Revert accidental wrong
+	commit.
+
+2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 2012-05-01  Bean  <bean123ch@gmail.com>
 
 	* grub-core/net/ip.c (handle_dgram): Fix DHCP mac comparison.
