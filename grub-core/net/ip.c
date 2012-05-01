@@ -237,35 +237,41 @@ handle_dgram (struct grub_net_buff *nb,
     udph = (struct udphdr *) nb->data;
     if (proto == GRUB_NET_IP_UDP && grub_be_to_cpu16 (udph->dst) == 68)
       {
+	if (udph->chksum)
+	  {
+	    grub_uint16_t chk, expected;
+	    chk = udph->chksum;
+	    udph->chksum = 0;
+	    expected = grub_net_ip_transport_checksum (nb,
+						       GRUB_NET_IP_UDP,
+						       source,
+						       dest);
+	    if (expected != chk)
+	      {
+		grub_dprintf ("net", "Invalid UDP checksum. "
+			      "Expected %x, got %x\n", 
+			      grub_be_to_cpu16 (expected),
+			      grub_be_to_cpu16 (chk));
+		grub_netbuff_free (nb);
+		return GRUB_ERR_NONE;
+	      }
+	    udph->chksum = chk;
+	  }
+
+	err = grub_netbuff_pull (nb, sizeof (*udph));
+	if (err)
+	  {
+	    grub_netbuff_free (nb);
+	    return err;
+	  }
+	
 	FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
 	  if (inf->card == card
 	      && inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV
-	      && grub_net_hwaddr_cmp (&inf->hwaddress, hwaddress) == 0)
+	      && inf->hwaddress.type == GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET
+	      && grub_memcmp (inf->hwaddress.mac, &dhcp->mac_addr,
+			      sizeof (inf->hwaddress.mac)) == 0)
 	    {
-	      if (udph->chksum)
-		{
-		  grub_uint16_t chk, expected;
-		  chk = udph->chksum;
-		  udph->chksum = 0;
-		  expected = grub_net_ip_transport_checksum (nb,
-							     GRUB_NET_IP_UDP,
-							     source,
-							     dest);
-		  if (expected != chk)
-		    {
-		      grub_dprintf ("net", "Invalid UDP checksum. "
-				    "Expected %x, got %x\n", 
-				    grub_be_to_cpu16 (expected),
-				    grub_be_to_cpu16 (chk));
-		      grub_netbuff_free (nb);
-		      return GRUB_ERR_NONE;
-		    }
-		  udph->chksum = chk;
-		}
-
-	      err = grub_netbuff_pull (nb, sizeof (*udph));
-	      if (err)
-		return err;
 	      grub_net_process_dhcp (nb, inf->card);
 	      grub_netbuff_free (nb);
 	      return GRUB_ERR_NONE;

@@ -1,4 +1,9 @@
 2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-05-01  Bean  <bean123ch@gmail.com>
+
+	* grub-core/net/ip.c (handle_dgram): Fix DHCP mac comparison.
+
+2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/file.c (grub_file_read): Read nothing if len = 0.
 	Special behaviour for len = 0 to read whole file isn't used anywhere and
