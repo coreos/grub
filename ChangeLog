@@ -1,5 +1,14 @@
 2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle RAIDZ on non-512B sectors.
+
+	* grub-core/fs/zfs/zfs.c (grub_zfs_device_desc): New member
+	max_children_ashift.
+	(fill_vdev_info_real): Fill max_children_ashift.
+	(read_device): Use max_children_ashift.
+
+2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/fshelp.c (grub_fshelp_find_file): Fix memory leak.
 
 2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>

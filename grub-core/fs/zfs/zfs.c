@@ -194,6 +194,7 @@ struct grub_zfs_device_desc
   grub_uint64_t id;
   grub_uint64_t guid;
   unsigned ashift;
+  unsigned max_children_ashift;
 
   /* Valid only for non-leafs.  */
   unsigned n_children;
@@ -630,6 +631,8 @@ fill_vdev_info_real (struct grub_zfs_data *data,
       }
   }
 
+  fill->max_children_ashift = 0;
+
   if (grub_strcmp (type, VDEV_TYPE_DISK) == 0
       || grub_strcmp (type, VDEV_TYPE_FILE) == 0)
     {
@@ -706,6 +709,8 @@ fill_vdev_info_real (struct grub_zfs_data *data,
 	      grub_free (type);
 	      return err;
 	    }
+	  if (fill->children[i].ashift > fill->max_children_ashift)
+	    fill->max_children_ashift = fill->children[i].ashift;
 	}
       grub_free (type);
       return GRUB_ERR_NONE;
@@ -1274,7 +1279,8 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	    bsize = s / (desc->n_children - desc->nparity);
 
 	    if (desc->nparity == 1
-		&& ((offset >> (desc->ashift + 11)) & 1) == c)
+		&& ((offset >> (desc->ashift + 20 - desc->max_children_ashift))
+		    & 1) == c)
 	      c++;
 
 	    high = grub_divmod64 ((offset >> desc->ashift) + c,
@@ -1342,7 +1348,8 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 		high = grub_divmod64 ((offset >> desc->ashift)
 				      + cur_redundancy_pow
 				      + ((desc->nparity == 1)
-					 && ((offset >> (desc->ashift + 11))
+					 && ((offset >> (desc->ashift + 20
+							 - desc->max_children_ashift))
 					     & 1)),
 				      desc->n_children, &devn);
 		err = read_device ((high << desc->ashift)
