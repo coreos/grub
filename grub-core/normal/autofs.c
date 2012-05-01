@@ -104,13 +104,20 @@ read_fs_list (const char *prefix)
 
 		  /* If the line is empty, skip it.  */
 		  if (p >= q)
-		    continue;
+		    {
+		      grub_free (buf);
+		      continue;
+		    }
 
-		  fs_mod = grub_malloc (sizeof (*fs_mod));
+		  fs_mod = grub_malloc_notrack (sizeof (*fs_mod));
 		  if (! fs_mod)
-		    continue;
+		    {
+		      grub_free (buf);
+		      continue;
+		    }
 
-		  fs_mod->name = grub_strdup (p);
+		  fs_mod->name = grub_strdup_notrack (p);
+		  grub_free (buf);
 		  if (! fs_mod->name)
 		    {
 		      grub_free (fs_mod);

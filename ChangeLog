@@ -1,5 +1,9 @@
 2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/autofs.c (read_fs_list): Fix memory leak.
+
+2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle RAIDZ on non-512B sectors.
 
 	* grub-core/fs/zfs/zfs.c (grub_zfs_device_desc): New member
