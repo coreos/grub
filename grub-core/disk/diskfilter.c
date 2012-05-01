@@ -113,7 +113,15 @@ insert_array (grub_disk_t disk, const struct grub_diskfilter_pv_id *id,
 	      grub_diskfilter_t diskfilter __attribute__ ((unused)));
 
 static int
-scan_disk (const char *name)
+is_valid_diskfilter_name (const char *name)
+{
+  return (grub_memcmp (name, "md", sizeof ("md") - 1) == 0
+	  || grub_memcmp (name, "lvm/", sizeof ("lvm/") - 1) == 0
+	  || grub_memcmp (name, "ldm/", sizeof ("ldm/") - 1) == 0);
+}
+
+static int
+scan_disk (const char *name, int accept_diskfilter)
 {
   auto int hook (grub_disk_t disk, grub_partition_t p);
   int hook (grub_disk_t disk, grub_partition_t p)
@@ -170,23 +178,39 @@ scan_disk (const char *name)
   grub_disk_t disk;
   static int scan_depth = 0;
 
+  if (!accept_diskfilter && is_valid_diskfilter_name (name))
+    return 0;
+
   if (scan_depth > 100)
     return 0;
 
+  scan_depth++;
   disk = grub_disk_open (name);
   if (!disk)
     {
       grub_errno = GRUB_ERR_NONE;
+      scan_depth--;
       return 0;
     }
-  scan_depth++;
   if (hook (disk, 0))
-    return 1;
+    {
+      scan_depth--;
+      return 1;
+    }
   if (grub_partition_iterate (disk, hook))
-    return 1;
-  scan_depth--;
+    {
+      scan_depth--;
+      return 1;
+    }
   grub_disk_close (disk);
+  scan_depth--;
   return 0;
+}
+
+static int
+scan_disk_hook (const char *name)
+{
+  return scan_disk (name, 0);
 }
 
 static void
@@ -202,7 +226,7 @@ scan_devices (const char *arname)
       if (p->id != GRUB_DISK_DEVICE_DISKFILTER_ID
 	  && p->iterate)
 	{
-	  if ((p->iterate) (scan_disk, pull))
+	  if ((p->iterate) (scan_disk_hook, pull))
 	    return;
 	  if (arname && is_lv_readable (find_lv (arname), 1))
 	    return;
@@ -214,7 +238,7 @@ scan_devices (const char *arname)
 	for (lv = vg->lvs; lv; lv = lv->next)
 	  if (!lv->scanned && lv->fullname && lv->became_readable_at)
 	    {
-	      scan_disk (lv->fullname);
+	      scan_disk (lv->fullname, 1);
 	      lv->scanned = 1;
 	    }
     }
@@ -275,7 +299,7 @@ grub_diskfilter_memberlist (grub_disk_t disk)
       if (p->id != GRUB_DISK_DEVICE_DISKFILTER_ID
 	  && p->iterate)
 	{
-	  (p->iterate) (scan_disk, pull);
+	  (p->iterate) (scan_disk_hook, pull);
 	  while (pv && pv->disk)
 	    pv = pv->next;
 	}
@@ -286,7 +310,7 @@ grub_diskfilter_memberlist (grub_disk_t disk)
 	for (lv2 = vg->lvs; pv && lv2; lv2 = lv2->next)
 	  if (!lv2->scanned && lv2->fullname && lv2->became_readable_at)
 	    {
-	      scan_disk (lv2->fullname);
+	      scan_disk (lv2->fullname, 1);
 	      lv2->scanned = 1;
 	      while (pv && pv->disk)
 		pv = pv->next;
@@ -1072,7 +1096,7 @@ insert_array (grub_disk_t disk, const struct grub_diskfilter_pv_id *id,
 	      lv->became_readable_at = ++inscnt;
 	      if (is_lv_readable (lv, 1))
 		{
-		  scan_disk (lv->fullname);
+		  scan_disk (lv->fullname, 1);
 		  lv->scanned = 1;
 		}
 	    }
@@ -1137,7 +1161,7 @@ grub_diskfilter_get_pv_from_disk (grub_disk_t disk,
   struct grub_diskfilter_pv *pv;
   struct grub_diskfilter_vg *vg;
 
-  scan_disk (disk->name);
+  scan_disk (disk->name, 1);
   for (vg = array_list; vg; vg = vg->next)
     for (pv = vg->pvs; pv; pv = pv->next)
       {

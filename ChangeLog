@@ -1,3 +1,12 @@
+2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't scan into non-diskfilter devices having diskfilter names.
+
+	* grub-core/disk/diskfilter.c (is_valid_diskfilter_name): New function.
+	(scan_disk): New argument accept_diskfilter. Fix recursion depth
+	handling.
+	(scan_disk_hook): New function.
+
 2012-04-29  Bean  <bean123ch@gmail.com>
 
 	* grub-core/net/drivers/efi/efinet.c (get_card_packet): Fix buffer
