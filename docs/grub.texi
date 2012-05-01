@@ -679,17 +679,12 @@ storage devices.
 @node Device map
 @section The map between BIOS drives and OS devices
 
-The @command{grub-mkdevicemap} program can be used to create the @dfn{device
-map file}.  It is often run automatically by tools such as
-@command{grub-install} if the device map file does not already exist.  The
-file name @file{/boot/grub/device.map} is preferred.
-
 If the device map file exists, the GRUB utilities (@command{grub-probe},
 @command{grub-setup}, etc.) read it to map BIOS drives to OS devices.  This
 file consists of lines like this:
 
 @example
-@var{device} @var{file}
+(@var{device}) @var{file}
 @end example
 
 @var{device} is a drive specified in the GRUB syntax (@pxref{Device
@@ -713,11 +708,12 @@ custom menu entries you write.  If the device map file does not exist, then
 the GRUB utilities will assume a temporary device map on the fly.  This is
 often good enough, particularly in the common case of single-disk systems.
 
-However, the device map file is not entirely obsolete yet, and there are
-still some situations that require it to exist.  If necessary, you may edit
-the file if @command{grub-mkdevicemap} makes a mistake.  You can put any
-comments in the file if needed, as the GRUB utilities assume that a line is
-just a comment if the first character is @samp{#}.
+However, the device map file is not entirely obsolete yet, and it is
+used for overriding when current environment is different from the one on boot.
+Most common case is if you use a partition or logical volume as a disk for
+virtual machine.  You can put any comments in the file if needed,
+as the GRUB utilities assume that a line is just a comment if
+the first character is @samp{#}.
 
 
 @node BIOS installation
@@ -2253,13 +2249,14 @@ by a digit, like @samp{fd0}, or @samp{cd}.
 AHCI, PATA (ata), crypto, USB use the name of driver followed by a number.
 Memdisk and host are limited to one disk and so it's refered just by driver
 name.
-RAID (md), ofdisk (ieee1275 and nand), LVM (lv) and arcdisk (arc) use
+RAID (md), ofdisk (ieee1275 and nand), LVM (lv), LDM and arcdisk (arc) use
 intrinsic name of disk prefixed by driver name. Additionally just ``nand''
 refers to the disk aliased as ``nand''.
 Conflicts are solved by suffixing a number if necessarry.
 Commas need to be escaped.
 Loopback uses whatever name specified to @command{loopback} command.
-Hostdisk uses names specified in device.map or hostdisk/<OS NAME>.
+Hostdisk uses names specified in device.map as long as it's of the form
+[fhc]d[0-9]* or hostdisk/<OS DEVICE>.
 For crypto and RAID (md) additionally you can use the syntax
 <driver name>uuid/<uuid>.
 

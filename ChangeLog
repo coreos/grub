@@ -1,5 +1,11 @@
 2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (read_device_map): Reject non-standard
+	disk names.
+	* docs/grub.texi: Update device.map parts.
+
+2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't scan into non-diskfilter devices having diskfilter names.
 
 	* grub-core/disk/diskfilter.c (is_valid_diskfilter_name): New function.

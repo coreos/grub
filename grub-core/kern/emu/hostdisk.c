@@ -1200,6 +1200,7 @@ read_device_map (const char *dev_map)
     {
       char *p = buf;
       char *e;
+      char *drive_e, *drive_p;
       int drive;
 
       lineno++;
@@ -1234,9 +1235,22 @@ read_device_map (const char *dev_map)
 	  show_error (tmp);
 	}
 
-      map[drive].drive = xmalloc (p - e + sizeof ('\0'));
-      strncpy (map[drive].drive, e, p - e + sizeof ('\0'));
-      map[drive].drive[p - e] = '\0';
+      map[drive].drive = 0;
+      if ((e[0] == 'f' || e[0] == 'h' || e[0] == 'c') && e[1] == 'd')
+	{
+	  char *ptr;
+	  for (ptr = e + 2; ptr < p; ptr++)
+	    if (!grub_isdigit (*ptr))
+	      break;
+	  if (ptr == p)
+	    {
+	      map[drive].drive = xmalloc (p - e + sizeof ('\0'));
+	      strncpy (map[drive].drive, e, p - e + sizeof ('\0'));
+	      map[drive].drive[p - e] = '\0';
+	    }
+	}
+      drive_e = e;
+      drive_p = p;
       map[drive].device_map = 1;
 
       p++;
@@ -1279,6 +1293,21 @@ read_device_map (const char *dev_map)
       else
 #endif
       map[drive].device = xstrdup (p);
+      if (!map[drive].drive)
+	{
+	  char c;
+	  map[drive].drive = xmalloc (sizeof ("hostdisk/") + strlen (p));
+	  memcpy (map[drive].drive, "hostdisk/", sizeof ("hostdisk/") - 1);
+	  strcpy (map[drive].drive + sizeof ("hostdisk/") - 1, p);
+	  c = *drive_p;
+	  *drive_p = 0;
+	  grub_util_warn (_("the drive name %s in device.map is incorrect. "
+			    "Using %s instead. "
+			    "Please use the form [hfc]d[0-9]* "
+			    "(E.g. `hd0' or `cd')"),
+			  drive_e, map[drive].drive);
+	  *drive_p = c;
+	}
     }
 
   fclose (fp);
