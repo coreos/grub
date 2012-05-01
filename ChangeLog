@@ -1,5 +1,11 @@
 2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/file.c (grub_file_read): Read nothing if len = 0.
+	Special behaviour for len = 0 to read whole file isn't used anywhere and
+	can cause buffer ovewrflows in several places.
+
+2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/autofs.c (read_fs_list): Fix memory leak.
 
 2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -143,7 +143,10 @@ grub_file_read (grub_file_t file, void *buf, grub_size_t len)
       return -1;
     }
 
-  if (len == 0 || len > file->size - file->offset)
+  if (len == 0)
+    return 0;
+
+  if (len > file->size - file->offset)
     len = file->size - file->offset;
 
   /* Prevent an overflow.  */
