@@ -237,6 +237,7 @@ handle_dgram (struct grub_net_buff *nb,
     udph = (struct udphdr *) nb->data;
     if (proto == GRUB_NET_IP_UDP && grub_be_to_cpu16 (udph->dst) == 68)
       {
+	const struct grub_net_bootp_packet *bootp;
 	if (udph->chksum)
 	  {
 	    grub_uint16_t chk, expected;
@@ -264,12 +265,14 @@ handle_dgram (struct grub_net_buff *nb,
 	    grub_netbuff_free (nb);
 	    return err;
 	  }
+
+	bootp = (const struct grub_net_bootp_packet *) nb->data;
 	
 	FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
 	  if (inf->card == card
 	      && inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV
 	      && inf->hwaddress.type == GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET
-	      && grub_memcmp (inf->hwaddress.mac, &dhcp->mac_addr,
+	      && grub_memcmp (inf->hwaddress.mac, &bootp->mac_addr,
 			      sizeof (inf->hwaddress.mac)) == 0)
 	    {
 	      grub_net_process_dhcp (nb, inf->card);
