@@ -1,5 +1,9 @@
 2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/fshelp.c (grub_fshelp_find_file): Fix memory leak.
+
+2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (read_device_map): Reject non-standard
 	disk names.
 	* docs/grub.texi: Update device.map parts.

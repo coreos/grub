@@ -136,6 +136,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  found = iterate_dir (currnode, iterate);
 	  if (! found)
 	    {
+	      free_node (currnode);
 	      if (grub_errno)
 		return grub_errno;
 
