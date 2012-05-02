@@ -380,8 +380,18 @@ find_root_devices_from_poolname (char *poolname)
 	      st++;
 	    break;
 	  case 1:
-	    if (!strcmp (name, poolname))
-	      st++;
+	    {
+	      char *ptr = line;
+	      while (1)
+		{
+		  if (strncmp (ptr, poolname, strlen (poolname)) == 0
+		      && grub_isspace(ptr[strlen (poolname)]))
+		    st++;
+		  if (!grub_isspace (*ptr))
+		    break;
+		  ptr++;
+		}
+	    }
 	    break;
 	  case 2:
 	    if (strcmp (name, "mirror") && !sscanf (name, "mirror-%u", &dummy)

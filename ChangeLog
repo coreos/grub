@@ -1,3 +1,8 @@
+2012-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/getroot.c (find_root_devices_from_poolname): Handle spaces in the
+	name.
+
 2012-05-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/net/ip.c (handle_dgram): Fix undeclared variable.
