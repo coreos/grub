@@ -37,6 +37,8 @@ static const struct grub_arg_option options[] =
     {"source", 4, 0,
      N_("Use STRING as menu entry body."), N_("STRING"), ARG_TYPE_STRING},
     {"id", 0, 0, N_("Menu entry identifier."), N_("STRING"), ARG_TYPE_STRING},
+    {"unrestricted", 0, 0, N_("This entry can be booted by any user."),
+     0, ARG_TYPE_NONE},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -254,6 +256,7 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
   char *prefix;
   unsigned len;
   grub_err_t r;
+  const char *users;
 
   if (! argc)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing arguments");
@@ -264,12 +267,19 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
   if (! ctxt->state[3].set && ! ctxt->script)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no menuentry definition");
 
+  if (ctxt->state[1].set)
+    users = ctxt->state[1].arg;
+  else if (ctxt->state[5].set)
+    users = NULL;
+  else
+    users = "";
+
   if (! ctxt->script)
     return grub_normal_add_menu_entry (argc, (const char **) args,
 				       (ctxt->state[0].set ? ctxt->state[0].args
 					: NULL),
 				       ctxt->state[4].arg,
-				       ctxt->state[1].arg,
+				       users,
 				       ctxt->state[2].arg, 0,
 				       ctxt->state[3].arg,
 				       ctxt->extcmd->cmd->name[0] == 's');
@@ -287,7 +297,7 @@ grub_cmd_menuentry (grub_extcmd_context_t ctxt, int argc, char **args)
 
   r = grub_normal_add_menu_entry (argc - 1, (const char **) args,
 				  ctxt->state[0].args, ctxt->state[4].arg,
-				  ctxt->state[1].arg,
+				  users,
 				  ctxt->state[2].arg, prefix, src + 1,
 				  ctxt->extcmd->cmd->name[0] == 's');
 

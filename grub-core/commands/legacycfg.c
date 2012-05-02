@@ -123,7 +123,8 @@ legacy_file (const char *filename)
 		return grub_errno;
 	      }
 	    args[0] = oldname;
-	    grub_normal_add_menu_entry (1, args, NULL, NULL, NULL, NULL, NULL,
+	    grub_normal_add_menu_entry (1, args, NULL, NULL, "legacy",
+					NULL, NULL,
 					entrysrc, 0);
 	    grub_free (args);
 	    entrysrc[0] = 0;

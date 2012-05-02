@@ -1,5 +1,12 @@
 2012-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/legacycfg.c (legacy_file): Default to restricted
+	entries.
+	* grub-core/commands/menuentry.c (grub_cmd_menuentry): Likewise.
+	* docs/grub.texi: Update menuentry description.
+
+2012-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (setup): Remove duplicate call to embed. Fixes
 	crash when embedding onto filesystem.
 
