@@ -1,5 +1,14 @@
 2012-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix reiserfs big seek times.
+
+	* grub-core/fs/reiserfs.c (grub_reiserfs_get_item): New argument
+	exact. All users updated.
+	(grub_reiserfs_read): Use nearest btree search for seeking.
+	Fix return value on error.
+
+2012-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/legacycfg.c (legacy_file): Default to restricted
 	entries.
 	* grub-core/commands/menuentry.c (grub_cmd_menuentry): Likewise.

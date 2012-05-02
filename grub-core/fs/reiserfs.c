@@ -468,7 +468,7 @@ grub_reiserfs_compare_keys (const struct grub_reiserfs_key *key1,
 static grub_err_t
 grub_reiserfs_get_item (struct grub_reiserfs_data *data,
                         const struct grub_reiserfs_key *key,
-                        struct grub_fshelp_node *item)
+                        struct grub_fshelp_node *item, int exact)
 {
   grub_uint32_t block_number;
   struct grub_reiserfs_block_header *block_header = 0;
@@ -581,30 +581,47 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
           item_headers
             = (struct grub_reiserfs_item_header *) (block_header + 1);
           for (i = 0;
-               i < item_count
-                 && (grub_reiserfs_compare_keys (key, &(item_headers[i].key))
-                     != 0);
+               i < item_count;
                i++)
-            {
-#ifdef GRUB_REISERFS_DEBUG
-              if (key->directory_id == item_headers[i].key.directory_id && \
-                  key->object_id == item_headers[i].key.object_id)
-                grub_printf("C");
-              else
-                grub_printf(" ");
-              grub_printf(" %03d/%03d ", i + 1, item_count);
-              grub_reiserfs_print_key (&(item_headers[i].key));
-#endif
-            }
-          if (i < item_count)
-            block_key = &(item_headers[i].key);
+	    {
+	      int val;
+	      val = grub_reiserfs_compare_keys (key, &(item_headers[i].key));
+	      if (val == 0)
+		{
+		  block_key = &(item_headers[i].key);
+		  break;
+		}
+	      if (val < 0 && exact)
+		break;
+	      if (val < 0)
+		{
+		  if (i == 0)
+		    {
+		      grub_error (GRUB_ERR_READ_ERROR, "unexpected btree node");
+		      goto fail;
+		    }
+		  i--;
+		  block_key = &(item_headers[i].key);
+		  break;
+		}
+	    }
+	  if (!exact && i == item_count)
+	    {
+	      if (i == 0)
+		{
+		  grub_error (GRUB_ERR_READ_ERROR, "unexpected btree node");
+		  goto fail;
+		}
+	      i--;
+	      block_key = &(item_headers[i].key);
+	    }
         }
     }
   while (current_level > 1);
 
   item->data = data;
 
-  if (i == item_count || grub_reiserfs_compare_keys (key, block_key))
+  if (!block_key)
     {
       item->block_number = 0;
       item->block_position = 0;
@@ -654,7 +671,7 @@ grub_reiserfs_read_symlink (grub_fshelp_node_t node)
   grub_reiserfs_set_key_type (&key, GRUB_REISERFS_DIRECT,
                               grub_reiserfs_get_key_version (&key));
 
-  if (grub_reiserfs_get_item (node->data, &key, &found) != GRUB_ERR_NONE)
+  if (grub_reiserfs_get_item (node->data, &key, &found, 1) != GRUB_ERR_NONE)
     goto fail;
 
   if (found.block_number == 0)
@@ -797,7 +814,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
               if (! entry_item)
                 goto fail;
 
-              if (grub_reiserfs_get_item (data, &entry_key, entry_item)
+              if (grub_reiserfs_get_item (data, &entry_key, entry_item, 1)
                   != GRUB_ERR_NONE)
                 {
                   grub_free (entry_item);
@@ -816,7 +833,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                   grub_reiserfs_set_key_offset (&entry_key, 0);
                   grub_reiserfs_set_key_type (&entry_key, GRUB_REISERFS_STAT,
                                               2);
-                  if (grub_reiserfs_get_item (data, &entry_key, entry_item)
+                  if (grub_reiserfs_get_item (data, &entry_key, entry_item, 1)
                       != GRUB_ERR_NONE)
                     {
                       grub_free (entry_item);
@@ -959,7 +976,7 @@ next:
       grub_reiserfs_set_key_offset (&(item_headers[block_position].key),
                                     next_offset);
       if (grub_reiserfs_get_item (data, &(item_headers[block_position].key),
-                                  &directory_item) != GRUB_ERR_NONE)
+                                  &directory_item, 1) != GRUB_ERR_NONE)
         goto fail;
       block_number = directory_item.block_number;
       block_position = directory_item.block_position;
@@ -1001,7 +1018,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
   key.u.v2.offset_type = 0;
   grub_reiserfs_set_key_type (&key, GRUB_REISERFS_DIRECTORY, 2);
   grub_reiserfs_set_key_offset (&key, 1);
-  if (grub_reiserfs_get_item (data, &key, &root) != GRUB_ERR_NONE)
+  if (grub_reiserfs_get_item (data, &key, &root, 1) != GRUB_ERR_NONE)
     goto fail;
   if (root.block_number == 0)
     {
@@ -1017,7 +1034,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
   key.object_id = found->header.key.object_id;
   grub_reiserfs_set_key_type (&key, GRUB_REISERFS_STAT, 2);
   grub_reiserfs_set_key_offset (&key, 0);
-  if (grub_reiserfs_get_item (data, &key, &info) != GRUB_ERR_NONE)
+  if (grub_reiserfs_get_item (data, &key, &info, 1) != GRUB_ERR_NONE)
     goto fail;
   if (info.block_number == 0)
     {
@@ -1097,11 +1114,27 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
 		(unsigned long long) final_position,
 		(unsigned long long) (final_position - initial_position),
 		(unsigned long) len);
+
+  grub_reiserfs_set_key_offset (&key, initial_position + 1);
+
+  if (grub_reiserfs_get_item (data, &key, &found, 0) != GRUB_ERR_NONE)
+    goto fail;
+
+  if (found.block_number == 0)
+    {
+      grub_error (GRUB_ERR_READ_ERROR, "offset %lld not found",
+		  (unsigned long long) initial_position);
+      goto fail;
+    }
+
+  current_key_offset = grub_reiserfs_get_key_offset (&found.header.key);
+  current_position = current_key_offset - 1;
+
   while (current_position < final_position)
     {
       grub_reiserfs_set_key_offset (&key, current_key_offset);
 
-      if (grub_reiserfs_get_item (data, &key, &found) != GRUB_ERR_NONE)
+      if (grub_reiserfs_get_item (data, &key, &found, 1) != GRUB_ERR_NONE)
         goto fail;
       if (found.block_number == 0)
         goto fail;
@@ -1245,7 +1278,7 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
 
  fail:
   grub_free (indirect_block_ptr);
-  return 0;
+  return -1;
 }
 
 /* Close the file FILE.  */
@@ -1296,7 +1329,7 @@ grub_reiserfs_dir (grub_device_t device, const char *path,
   root_key.u.v2.offset_type = 0;
   grub_reiserfs_set_key_type (&root_key, GRUB_REISERFS_DIRECTORY, 2);
   grub_reiserfs_set_key_offset (&root_key, 1);
-  if (grub_reiserfs_get_item (data, &root_key, &root) != GRUB_ERR_NONE)
+  if (grub_reiserfs_get_item (data, &root_key, &root, 1) != GRUB_ERR_NONE)
     goto fail;
   if (root.block_number == 0)
     {
