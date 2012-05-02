@@ -1,5 +1,10 @@
 2012-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-setup.c (setup): Remove duplicate call to embed. Fixes
+	crash when embedding onto filesystem.
+
+2012-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (find_root_devices_from_poolname): Handle spaces in the
 	name.
 

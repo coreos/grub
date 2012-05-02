@@ -481,8 +481,6 @@ setup (const char *dir,
 			  N_("Your embedding area is unusually small.  "
 			     "core.img won't fit in it."));
       }
-    err = dest_partmap->embed (dest_dev->disk, &nsec, maxsec,
-			       GRUB_EMBED_PCBIOS, &sectors);
     
     if (err)
       {
