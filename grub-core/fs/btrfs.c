@@ -913,8 +913,10 @@ static grub_ssize_t
 grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
 			  char *obuf, grub_size_t osize)
 {
-  grub_uint32_t total_size, cblock_size, ret = 0;
+  grub_uint32_t total_size, cblock_size;
+  grub_size_t ret = 0;
   unsigned char buf[GRUB_BTRFS_LZO_BLOCK_SIZE];
+  char *ibuf0 = ibuf;
 
   total_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
   ibuf += sizeof (total_size);
@@ -925,6 +927,10 @@ grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
   /* Jump forward to first block with requested data.  */
   while (off >= GRUB_BTRFS_LZO_BLOCK_SIZE)
     {
+      /* Don't let following uint32_t cross the page boundary.  */
+      if (((ibuf - ibuf0) & 0xffc) == 0xffc)
+	ibuf = ((ibuf - ibuf0 + 3) & ~3) + ibuf0;
+
       cblock_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
       ibuf += sizeof (cblock_size);
 
@@ -938,6 +944,10 @@ grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
   while (osize > 0)
     {
       lzo_uint usize = GRUB_BTRFS_LZO_BLOCK_SIZE;
+
+      /* Don't let following uint32_t cross the page boundary.  */
+      if (((ibuf - ibuf0) & 0xffc) == 0xffc)
+	ibuf = ((ibuf - ibuf0 + 3) & ~3) + ibuf0;
 
       cblock_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
       ibuf += sizeof (cblock_size);

@@ -1,5 +1,10 @@
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/btrfs.c (grub_btrfs_lzo_decompress): Fix offset when
+	crossing page boundary.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix B-tree search in BFS, especially in presence of non-ASCII
 	characters.
 
