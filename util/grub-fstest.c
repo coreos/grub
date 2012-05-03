@@ -284,7 +284,8 @@ cmd_cmp (char *src, char *dest)
 	  *ptr++ = '/';
 	  strcpy (ptr, entry->d_name);
 
-	  if (lstat (dest, &st) == -1 || S_ISLNK (st.st_mode))
+	  if (lstat (dest, &st) == -1 || (!S_ISREG (st.st_mode)
+					  && !S_ISDIR (st.st_mode)))
 	    continue;
 
 	  cmd_cmp (srcnew, destnew);

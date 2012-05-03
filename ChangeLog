@@ -1,3 +1,8 @@
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-fstest.c (cmd_cmp): Avoid comparing devices, pipes
+	and so on.
+
 2012-05-03  Matthew Garrett  <mjg@redhat.com>
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
