@@ -1,5 +1,12 @@
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/reiserfs.c (grub_reiserfs_iterate_dir): Put a trailing
+	zero after directory block since last entry may be not 0-terminated if
+	it ends on block boundary. Use continue instead of if spanning whole
+	loop.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support 4K sectors UDF inline files.
 
 	* grub-core/fs/udf.c (grub_udf_file_entry): Don't specify padding size.
