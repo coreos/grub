@@ -506,6 +506,25 @@ iterate_in_b_tree (grub_disk_t disk,
     }
 }
 
+static int
+bfs_strcmp (const char *a, const char *b, grub_size_t alen)
+{
+  while (*b && alen)
+    {
+      if (*a != *b)
+	break;
+
+      a++;
+      b++;
+      alen--;
+    }
+
+  if (!alen)
+  return - (int) (grub_uint8_t) *b;
+
+  return (int) (grub_uint8_t) *a - (int) (grub_uint8_t) *b;
+}
+
 static grub_err_t
 find_in_b_tree (grub_disk_t disk,
 		const struct grub_bfs_superblock *sb,
@@ -537,7 +556,6 @@ find_in_b_tree (grub_disk_t disk,
 	grub_uint16_t keylen_idx[grub_bfs_to_cpu_treehead (node.count_keys)];
 	grub_uint64_t key_values[grub_bfs_to_cpu_treehead (node.count_keys)];
 	unsigned i;
-	grub_uint16_t start = 0, end = 0;
 	err =
 	  read_bfs_file (disk, sb, ino, node_off + sizeof (node), key_data,
 			 grub_bfs_to_cpu_treehead (node.total_key_len), 0);
@@ -566,31 +584,62 @@ find_in_b_tree (grub_disk_t disk,
 	if (err)
 	  return err;
 
-	for (i = 0; i < grub_bfs_to_cpu_treehead (node.count_keys); i++)
+	int lg, j;
+
+	for (lg = 0; grub_bfs_to_cpu_treehead (node.count_keys) >> lg; lg++);
+
+	i = 0;
+
+	for (j = lg - 1; j >= 0; j--)
 	  {
 	    int cmp;
-	    char c;
-	    start = end;
-	    end = grub_bfs_to_cpu16 (keylen_idx[i]);
+	    grub_uint16_t start = 0, end = 0;
+	    if ((i | (1 << j)) >= grub_bfs_to_cpu_treehead (node.count_keys))
+	      continue;
+	    start = grub_bfs_to_cpu16 (keylen_idx[(i | (1 << j)) - 1]);
+	    end = grub_bfs_to_cpu16 (keylen_idx[(i | (1 << j))]);
 	    if (grub_bfs_to_cpu_treehead (node.total_key_len) <= end)
 	      end = grub_bfs_to_cpu_treehead (node.total_key_len);
-	    c = key_data[end];
-	    key_data[end] = 0;
-	    cmp = grub_strcmp (key_data + start, name);
-	    key_data[end] = c;
+	    cmp = bfs_strcmp (key_data + start, name, end - start);
 	    if (cmp == 0 && level == 0)
 	      {
-		*res = grub_bfs_to_cpu64 (key_values[i]);
+		*res = grub_bfs_to_cpu64 (key_values[i | (1 << j)]);
+		return GRUB_ERR_NONE;
+	      }
+	    if (cmp < 0)
+	      i |= (1 << j);
+	  }
+	if (i == 0)
+	  {
+	    grub_uint16_t end = 0;
+	    int cmp;
+	    end = grub_bfs_to_cpu16 (keylen_idx[0]);
+	    if (grub_bfs_to_cpu_treehead (node.total_key_len) <= end)
+	      end = grub_bfs_to_cpu_treehead (node.total_key_len);
+	    cmp = bfs_strcmp (key_data, name, end);
+	    if (cmp == 0 && level == 0)
+	      {
+		*res = grub_bfs_to_cpu64 (key_values[0]);
 		return GRUB_ERR_NONE;
 	      }
 	    if (cmp >= 0 && level != 0)
 	      {
-		node_off = grub_bfs_to_cpu64 (key_values[i]);
-		break;
+		node_off = grub_bfs_to_cpu64 (key_values[0]);
+		level--;
+		continue;
 	      }
+	    else if (level != 0
+		     && grub_bfs_to_cpu_treehead (node.count_keys) >= 2)
+	      {
+		node_off = grub_bfs_to_cpu64 (key_values[1]);
+		level--;
+		continue;
+	      }	      
 	  }
-	if (i < grub_bfs_to_cpu_treehead (node.count_keys))
+	else if (level != 0
+		 && i + 1 < grub_bfs_to_cpu_treehead (node.count_keys))
 	  {
+	    node_off = grub_bfs_to_cpu64 (key_values[i + 1]);
 	    level--;
 	    continue;
 	  }
