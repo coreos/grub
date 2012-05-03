@@ -140,3 +140,34 @@ grub_pci_iterate (grub_pci_iteratefunc_t hook)
 	}
     }
 }
+
+grub_uint8_t
+grub_pci_find_capability (grub_pci_device_t dev, grub_uint8_t cap)
+{
+  grub_uint8_t pos = 0x34;
+  int ttl = 48;
+
+  while (ttl--)
+    {
+      grub_uint8_t id;
+      grub_pci_address_t addr;
+
+      addr = grub_pci_make_address (dev, pos);
+      pos = grub_pci_read_byte (addr);
+      if (pos < 0x40)
+	break;
+
+      pos &= ~3;
+
+      addr = grub_pci_make_address (dev, pos);      
+      id = grub_pci_read_byte (addr);
+
+      if (id == 0xff)
+	break;
+      
+      if (id == cap)
+	return pos;
+      pos++;
+    }
+  return 0;
+}

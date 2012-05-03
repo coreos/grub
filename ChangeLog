@@ -1,3 +1,21 @@
+2012-05-03  Matthew Garrett  <mjg@redhat.com>
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Suspend broadcom cards in order to stop their DMA.
+
+	* grub-core/Makefile.am (KERNEL_HEADER_FILES): Add pci.h on x86 EFI.
+	* grub-core/Makefile.core.def (kernel): Add pci.c on x86 EFI.
+	(pci): Don't build on x86 EFI.
+	* grub-core/bus/pci.c (grub_pci_find_capability): New function.
+	* grub-core/kern/efi/mm.c (stop_broadcom) [__i386__ || __x86_64__]:
+	New function.
+	(grub_efi_finish_boot_services) [__i386__ || __x86_64__]: Call
+	stop_broadcom if running on EFI.
+	* include/grub/pci.h (GRUB_PCI_CLASS_NETWORK): New enum value.
+	(GRUB_PCI_CAP_POWER_MANAGEMENT): Likewise.
+	(GRUB_PCI_VENDOR_BROADCOM): Likewise.
+	(grub_pci_find_capability): New proto.
+
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi: Remove dot from the extension as it apparently

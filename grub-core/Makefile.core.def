@@ -139,11 +139,13 @@ kernel = {
 
   i386_efi = kern/i386/tsc.c;
   i386_efi = kern/i386/efi/init.c;
+  i386_efi = bus/pci.c;
 
   x86_64_efi = kern/i386/tsc.c;
   x86_64_efi = kern/x86_64/dl.c;
   x86_64_efi = kern/x86_64/efi/callwrap.S;
   x86_64_efi = kern/i386/efi/init.c;
+  x86_64_efi = bus/pci.c;
 
   ia64_efi = kern/ia64/efi/startup.S;
   ia64_efi = kern/ia64/efi/init.c;
@@ -475,8 +477,6 @@ module = {
   common = bus/pci.c;
 
   enable = i386_pc;
-  enable = i386_efi;
-  enable = x86_64_efi;
   enable = i386_ieee1275;
   enable = i386_coreboot;
   enable = i386_multiboot;

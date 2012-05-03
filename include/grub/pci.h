@@ -81,6 +81,19 @@
 #define  GRUB_PCI_STATUS_DEVSEL_TIMING_SHIFT 9
 #define  GRUB_PCI_STATUS_DEVSEL_TIMING_MASK 0x0600
 #define  GRUB_PCI_CLASS_SUBCLASS_VGA  0x0300
+enum
+  {
+    GRUB_PCI_CLASS_NETWORK = 0x02
+  };
+enum
+  {
+    GRUB_PCI_CAP_POWER_MANAGEMENT = 0x01
+  };
+
+enum
+  {
+    GRUB_PCI_VENDOR_BROADCOM = 0x14e4
+  };
 
 #ifndef ASM_FILE
 typedef grub_uint32_t grub_pci_id_t;
@@ -146,6 +159,8 @@ grub_dma_virt2phys (volatile void *virt, struct grub_pci_dma_chunk *chunk)
 	  + grub_dma_get_phys (chunk));
 }
 
+grub_uint8_t
+EXPORT_FUNC (grub_pci_find_capability) (grub_pci_device_t dev, grub_uint8_t cap);
 
 #endif
 

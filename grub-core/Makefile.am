@@ -96,6 +96,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 endif
 
 if COND_i386_coreboot
@@ -126,6 +127,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 endif
 
 if COND_ia64_efi
