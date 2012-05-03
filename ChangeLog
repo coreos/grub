@@ -1,11 +1,5 @@
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* util/grub.d/00_header.in: Make timeout apply to else
-	clause of hidden timout.
-	Reported by: Mads Kiilerich.
-
-2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
-
 	* grub-core/kern/fs.c (grub_fs_probe) [GRUB_UTIL]: Add workaround for
 	btrfs.
 
