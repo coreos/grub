@@ -280,6 +280,8 @@ make_timeout ()
 	fi
 	cat << EOF
 if sleep$verbose --interruptible ${1} ; then
+  set timeout=0
+else
   set timeout=${2}
 fi
 EOF
