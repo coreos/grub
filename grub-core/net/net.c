@@ -797,6 +797,23 @@ addr_set_env (struct grub_env_var *var __attribute__ ((unused)),
   return NULL;
 }
 
+static char *
+defserver_set_env (struct grub_env_var *var __attribute__ ((unused)),
+		   const char *val)
+{
+  grub_free (grub_net_default_server);
+  grub_net_default_server = grub_strdup (val);
+  return grub_strdup (val);
+}
+
+static const char *
+defserver_get_env (struct grub_env_var *var __attribute__ ((unused)),
+		   const char *val __attribute__ ((unused)))
+{
+  return grub_net_default_server ? : "";
+}
+
+
 static void
 grub_net_network_level_interface_register (struct grub_net_network_level_interface *inter)
 {
@@ -1493,6 +1510,11 @@ static grub_command_t cmd_lsaddr, cmd_slaac;
 
 GRUB_MOD_INIT(net)
 {
+  grub_register_variable_hook ("net_default_server", defserver_get_env,
+			       defserver_set_env);
+  grub_register_variable_hook ("pxe_default_server", defserver_get_env,
+			       defserver_set_env);
+
   cmd_addaddr = grub_register_command ("net_add_addr", grub_cmd_addaddr,
 					/* TRANSLATORS: HWADDRESS stands for
 					   "hardware address".  */
@@ -1531,6 +1553,9 @@ GRUB_MOD_INIT(net)
 
 GRUB_MOD_FINI(net)
 {
+  grub_register_variable_hook ("net_default_server", 0, 0);
+  grub_register_variable_hook ("pxe_default_server", 0, 0);
+
   grub_bootp_fini ();
   grub_dns_fini ();
   grub_unregister_command (cmd_addaddr);
