@@ -216,7 +216,7 @@ GRUB_XFS_EXTENT_BLOCK (grub_xfs_extent *exts, int ex)
 static inline grub_uint64_t
 GRUB_XFS_EXTENT_SIZE (grub_xfs_extent *exts, int ex)
 {
-  return (grub_be_to_cpu32 (exts[ex][3]) & ((1 << 20) - 1));
+  return (grub_be_to_cpu32 (exts[ex][3]) & ((1 << 21) - 1));
 }
 
 static inline int

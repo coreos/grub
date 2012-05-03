@@ -1,5 +1,9 @@
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/xfs.c (GRUB_XFS_EXTENT_BLOCK): Fix bitmask.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (nvlist_find_value): Fix return value.
 
 2012-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
