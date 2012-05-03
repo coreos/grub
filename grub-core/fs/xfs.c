@@ -456,19 +456,28 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
   int NESTED_FUNC_ATTR call_hook (grub_uint64_t ino, const char *filename)
     {
       struct grub_fshelp_node *fdiro;
+      grub_err_t err;
 
       fdiro = grub_malloc (sizeof (struct grub_fshelp_node)
 			   - sizeof (struct grub_xfs_inode)
 			   + (1 << diro->data->sblock.log2_inode));
       if (!fdiro)
-	return 0;
+	{
+	  grub_print_error ();
+	  return 0;
+	}
 
       /* The inode should be read, otherwise the filetype can
 	 not be determined.  */
       fdiro->ino = ino;
       fdiro->inode_read = 1;
       fdiro->data = diro->data;
-      grub_xfs_read_inode (diro->data, ino, &fdiro->inode);
+      err = grub_xfs_read_inode (diro->data, ino, &fdiro->inode);
+      if (err)
+	{
+	  grub_print_error ();
+	  return 0;
+	}
 
       return hook (filename,
 		   grub_xfs_mode_to_filetype (fdiro->inode.mode),

@@ -1,5 +1,9 @@
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/xfs.c (grub_xfs_iterate_dir): Handle read_inode errors.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/xfs.c (GRUB_XFS_EXTENT_BLOCK): Fix bitmask.
 
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
