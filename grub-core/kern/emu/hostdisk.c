@@ -1301,7 +1301,12 @@ read_device_map (const char *dev_map)
 	  strcpy (map[drive].drive + sizeof ("hostdisk/") - 1, p);
 	  c = *drive_p;
 	  *drive_p = 0;
-	  grub_util_warn (_("the drive name %s in device.map is incorrect. "
+	  /* TRANSLATORS: device.map is a filename. Not to be translated.
+	     device.map specifies disk correspondance overrides. Previously
+	     one could create any kind of device name with this. Due to
+	     some problems we decided to limit it to just a handful
+	     possibilities.  */
+	  grub_util_warn (_("the drive name `%s' in device.map is incorrect. "
 			    "Using %s instead. "
 			    "Please use the form [hfc]d[0-9]* "
 			    "(E.g. `hd0' or `cd')"),

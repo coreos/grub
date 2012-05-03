@@ -1,5 +1,10 @@
 2012-05-03  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
+	* grub-core/commands/menuentry.c: Add TRANSLATORS comments.
+	* grub-core/kern/emu/hostdisk.c: Likewise.
+
+2012-05-03  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
 	Handle hurd userspace partitions.
 
 	* util/getroot.c (find_hurd_root_device): New function.
