@@ -1,5 +1,10 @@
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ufs.c (grub_ufs_lookup_symlink): Use proper check for
+	inline symlinks in addition to workaround.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/xfs.c (grub_xfs_iterate_dir): Handle read_inode errors.
 
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>

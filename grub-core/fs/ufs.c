@@ -401,7 +401,13 @@ grub_ufs_lookup_symlink (struct grub_ufs_data *data, int ino)
   if (++data->linknest > GRUB_UFS_MAX_SYMLNK_CNT)
     return grub_error (GRUB_ERR_SYMLINK_LOOP, N_("too deep nesting of symlinks"));
 
-  if (INODE_SIZE (data) <= sizeof (data->inode.symlink))
+  /* Normally we should just check that data->inode.nblocks == 0.
+     However old Linux doesn't maintain nblocks correctly and so it's always
+     0. If size is bigger than inline space then the symlink is surely not
+     inline.  */
+  /* Check against zero is paylindromic, no need to swap.  */
+  if (data->inode.nblocks == 0
+      && INODE_SIZE (data) <= sizeof (data->inode.symlink))
     grub_strcpy (symlink, (char *) INODE (data, symlink));
   else
     grub_ufs_read_file (data, 0, 0, INODE_SIZE (data), symlink);
