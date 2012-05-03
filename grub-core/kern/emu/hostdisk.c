@@ -1248,6 +1248,22 @@ read_device_map (const char *dev_map)
 	      strncpy (map[drive].drive, e, p - e + sizeof ('\0'));
 	      map[drive].drive[p - e] = '\0';
 	    }
+	  if (*ptr == ',')
+	    {
+	      *p = 0;
+
+	      /* TRANSLATORS: device.map is a file indicating which
+		 devices are available at boot time. Fedora populated it with
+		 entries like (hd0,1) /dev/sda1 which would mean that every
+		 partition is a separate disk for BIOS. Such entries were
+		 inactive in GRUB due to its bug which is now gone. Without
+		 this additional check these entries would be harmful now.
+	      */
+	      grub_util_warn (_("the device.map entry `%s' is invalid. "
+				"Ignoring it. Please correct or "
+				"delete your device.map"), e);
+	      continue;
+	    }
 	}
       drive_e = e;
       drive_p = p;
