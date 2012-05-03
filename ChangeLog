@@ -1,5 +1,9 @@
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (PXE): Remove not present variables.
+
+2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/net.c (defserver_set_env): New function.
 	(defserver_get_env): Likewise.
 	(GRUB_MOD_INIT): Register net_default_server and pxe_default_server.
