@@ -3113,7 +3113,10 @@ nvlist_find_value (const char *nvlist_in, const char *name,
 
       nelm = grub_be_to_cpu32 (grub_get_unaligned32 (nvpair));
       if (nelm < 1)
-	return grub_error (GRUB_ERR_BAD_FS, "empty nvpair");
+	{
+	  grub_error (GRUB_ERR_BAD_FS, "empty nvpair");
+	  return 0;
+	}
 
       nvpair += 4;
 
