@@ -1,5 +1,9 @@
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.cfg: Update.
+
+2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (PXE): Remove not present variables.
 
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
