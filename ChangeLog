@@ -1,5 +1,9 @@
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/menuentry.c: Fix typo in TRANSLATORS comments.
+
+2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/fs.c (grub_fs_probe) [GRUB_UTIL]: Add workaround for
 	btrfs.
 

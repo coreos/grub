@@ -39,7 +39,7 @@ static const struct grub_arg_option options[] =
     {"id", 0, 0, N_("Menu entry identifier."), N_("STRING"), ARG_TYPE_STRING},
     /* TRANSLATORS: menu entry can either be bootable by anyone or only by
        handful of users. By default when security is active only superusers can
-       boot a given only superusers. With --unrestricted (this option)
+       boot a given menu entry. With --unrestricted (this option)
        anyone can boot it.  */
     {"unrestricted", 0, 0, N_("This entry can be booted by any user."),
      0, ARG_TYPE_NONE},
