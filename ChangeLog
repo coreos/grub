@@ -1,5 +1,19 @@
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support 4K sectors UDF inline files.
+
+	* grub-core/fs/udf.c (grub_udf_file_entry): Don't specify padding size.
+	(grub_udf_extended_file_entry): Likewise.
+	(grub_fshelp_node): Name the anonymous union. Put block at the end.
+	All users updated.
+	(get_fshelp_size): New function.
+	(grub_udf_read_icb): Read whole block.
+	(grub_udf_iterate_dir): Likewise.
+	(grub_udf_dir): Likewise.
+	(grub_udf_open): Likewise.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ufs.c (grub_ufs_get_file_block): Support triple indirect.
 
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
