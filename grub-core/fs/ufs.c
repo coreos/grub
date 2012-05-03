@@ -65,9 +65,9 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 #define INODE_MODE(data) INODE_ENDIAN (data,mode,16,16)
 #ifdef MODE_UFS2
-#define INODE_BLKSZ 8
+#define LOG_INODE_BLKSZ 3
 #else
-#define INODE_BLKSZ 4
+#define LOG_INODE_BLKSZ 2
 #endif
 #ifdef MODE_UFS2
 #define UFS_INODE_PER_BLOCK 2
@@ -227,11 +227,11 @@ static grub_err_t grub_ufs_find_file (struct grub_ufs_data *data,
 
 
 static grub_disk_addr_t
-grub_ufs_get_file_block (struct grub_ufs_data *data, unsigned int blk)
+grub_ufs_get_file_block (struct grub_ufs_data *data, grub_disk_addr_t blk)
 {
   struct grub_ufs_sblock *sblock = &data->sblock;
-  unsigned int indirsz;
-  int log2_blksz;
+  unsigned long indirsz;
+  int log2_blksz, log_indirsz;
 
   /* Direct.  */
   if (blk < GRUB_UFS_DIRBLKS)
@@ -241,7 +241,8 @@ grub_ufs_get_file_block (struct grub_ufs_data *data, unsigned int blk)
 
   blk -= GRUB_UFS_DIRBLKS;
 
-  indirsz = UFS_BLKSZ (sblock) / INODE_BLKSZ;
+  log_indirsz = data->log2_blksz - LOG_INODE_BLKSZ;
+  indirsz = 1 << log_indirsz;
   /* Single indirect block.  */
   if (blk < indirsz)
     {
@@ -250,14 +251,16 @@ grub_ufs_get_file_block (struct grub_ufs_data *data, unsigned int blk)
 #else
       grub_uint32_t indir[UFS_BLKSZ (sblock) / sizeof (grub_uint32_t)];
 #endif
-      grub_disk_read (data->disk, INODE_INDIRBLOCKS (data, 0) << log2_blksz,
+      grub_disk_read (data->disk,
+		      ((grub_disk_addr_t) INODE_INDIRBLOCKS (data, 0))
+		      << log2_blksz,
 		      0, sizeof (indir), indir);
       return indir[blk];
     }
   blk -= indirsz;
 
   /* Double indirect block.  */
-  if (blk < indirsz * indirsz)
+  if (blk < (grub_disk_addr_t) indirsz * (grub_disk_addr_t) indirsz)
     {
 #ifdef MODE_UFS2
       grub_uint64_t indir[UFS_BLKSZ (sblock) / sizeof (grub_uint64_t)];
@@ -265,19 +268,49 @@ grub_ufs_get_file_block (struct grub_ufs_data *data, unsigned int blk)
       grub_uint32_t indir[UFS_BLKSZ (sblock) / sizeof (grub_uint32_t)];
 #endif
 
-      grub_disk_read (data->disk, INODE_INDIRBLOCKS (data, 1) << log2_blksz,
+      grub_disk_read (data->disk,
+		      ((grub_disk_addr_t) INODE_INDIRBLOCKS (data, 1))
+		      << log2_blksz,
 		      0, sizeof (indir), indir);
       grub_disk_read (data->disk,
-		      (indir [blk / indirsz])
+		      ((grub_disk_addr_t) indir [blk >> log_indirsz])
 		      << log2_blksz,
 		      0, sizeof (indir), indir);
 
-      return indir[blk % indirsz];
+      return indir[blk & ((1 << log_indirsz) - 1)];
     }
 
+  blk -= (grub_disk_addr_t) indirsz * (grub_disk_addr_t) indirsz;
+
+  /* Triple indirect block.  */
+  if (!(blk >> (3 * log_indirsz)))
+    {
+#ifdef MODE_UFS2
+      grub_uint64_t indir[UFS_BLKSZ (sblock) / sizeof (grub_uint64_t)];
+#else
+      grub_uint32_t indir[UFS_BLKSZ (sblock) / sizeof (grub_uint32_t)];
+#endif
+
+      grub_disk_read (data->disk,
+		      ((grub_disk_addr_t) INODE_INDIRBLOCKS (data, 2))
+		      << log2_blksz,
+		      0, sizeof (indir), indir);
+      grub_disk_read (data->disk,
+		      ((grub_disk_addr_t) indir [blk >> (2 * log_indirsz)])
+		      << log2_blksz,
+		      0, sizeof (indir), indir);
+
+      grub_disk_read (data->disk,
+		      ((grub_disk_addr_t) indir [(blk >> log_indirsz)
+						 & ((1 << log_indirsz) - 1)])
+		      << log2_blksz,
+		      0, sizeof (indir), indir);
+
+      return indir[blk & ((1 << log_indirsz) - 1)];
+    }
 
   grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-	      "ufs does not support triple indirect blocks");
+	      "ufs does not support quadruple indirect blocks");
   return 0;
 }
 

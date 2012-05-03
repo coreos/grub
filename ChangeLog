@@ -1,5 +1,9 @@
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ufs.c (grub_ufs_get_file_block): Support triple indirect.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ufs.c (grub_ufs_lookup_symlink): Use proper check for
 	inline symlinks in addition to workaround.
 
