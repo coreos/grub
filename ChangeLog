@@ -1,4 +1,9 @@
-2012-05-03  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (read_device_map): Skip invalid Fedora
+	entries.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/menuentry.c: Add TRANSLATORS comments.
 	* grub-core/kern/emu/hostdisk.c: Likewise.
