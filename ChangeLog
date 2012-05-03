@@ -1,5 +1,11 @@
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (convert_system_partition_to_system_disk); Add etherd
+	names.
+	Reported by: Bastian Blank.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/btrfs.c (grub_btrfs_lzo_decompress): Fix offset when
 	crossing page boundary.
 

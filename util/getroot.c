@@ -1740,6 +1740,20 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	  return path;
 	}
 
+      /* If this is an AOE disk.  */
+      if (strncmp ("etherd/e", p, sizeof ("etherd/e") - 1) == 0)
+	{
+	  /* /dev/etherd/e[0-9]+\.[0-9]+(p[0-9]+)? */
+	  p = strchr (p, 'p');
+	  if (p)
+	    {
+	      *is_part = 1;
+	      *p = '\0';
+	    }
+
+	  return path;
+	}
+
       /* If this is a Compaq Intelligent Drive Array.  */
       if (strncmp ("ida/c", p, sizeof ("ida/c") - 1) == 0)
 	{
