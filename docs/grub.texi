@@ -1579,11 +1579,11 @@ fit on screen, do ``set pager=1'' before executing ``lsfonts''.
 @subsection Progress Bar
 
 @float Figure, Pixmap-styled progress bar
-@c @image{Theme_progress_bar,,,,.png}
+@c @image{Theme_progress_bar,,,,png}
 @end float
 
 @float Figure, Plain progress bar, drawn with solid color.
-@c @image{Theme_progress_bar_filled,,,,.png}
+@c @image{Theme_progress_bar_filled,,,,png}
 @end float
 
 Progress bars are used to display the remaining time before GRUB boots the

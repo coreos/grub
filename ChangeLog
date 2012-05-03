@@ -1,5 +1,10 @@
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi: Remove dot from the extension as it apparently
+	doesn't work with some makeinfo versions.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/Makefile.in.in: Make msgfmt output in little-endian in accordance
 	with GRUB expectance.
 
