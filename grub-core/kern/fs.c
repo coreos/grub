@@ -53,7 +53,23 @@ grub_fs_probe (grub_device_t device)
       for (p = grub_fs_list; p; p = p->next)
 	{
 	  grub_dprintf ("fs", "Detecting %s...\n", p->name);
-	  (p->dir) (device, "/", dummy_func);
+
+	  /* This is evil: newly-created just mounted BtrFS after copying all
+	     GRUB files has a very peculiar unrecoverable corruption which
+	     will be fixed at sync but we'd rather not do a global sync and
+	     syncing just files doesn't seem to help. Relax the check for
+	     this time.  */
+#ifdef GRUB_UTIL
+	  if (grub_strcmp (p->name, "btrfs") == 0)
+	    {
+	      char *label = 0;
+	      p->uuid (device, &label);
+	      if (label)
+		grub_free (label);
+	    }
+	  else
+#endif
+	    (p->dir) (device, "/", dummy_func);
 	  if (grub_errno == GRUB_ERR_NONE)
 	    return p;
 
