@@ -40,6 +40,12 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <sys/types.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "progname.h"
 #include "argp.h"
 
@@ -244,6 +250,48 @@ cmd_cmp (char *src, char *dest)
       }
     return 0;
   }
+
+  struct stat st;
+  if (stat (dest, &st) == -1)
+    grub_util_error (_("OS file %s open error: %s"), dest,
+		     strerror (errno));
+
+  if (S_ISDIR (st.st_mode))
+    {
+      DIR *dir = opendir (dest);
+      struct dirent *entry;
+      if (dir == NULL)
+	{
+	  grub_util_error (_("OS file %s open error: %s"), dest,
+			   strerror (errno));
+	  return;
+	}
+      while ((entry = readdir (dir)))
+	{
+	  char *srcnew, *destnew;
+	  char *ptr;
+	  if (strcmp (entry->d_name, ".") == 0
+	      || strcmp (entry->d_name, "..") == 0)
+	    continue;
+	  srcnew = xmalloc (strlen (src) + sizeof ("/")
+			    + strlen (entry->d_name));
+	  destnew = xmalloc (strlen (dest) + sizeof ("/")
+			    + strlen (entry->d_name));
+	  ptr = stpcpy (srcnew, src);
+	  *ptr++ = '/';
+	  strcpy (ptr, entry->d_name);
+	  ptr = stpcpy (destnew, dest);
+	  *ptr++ = '/';
+	  strcpy (ptr, entry->d_name);
+
+	  if (lstat (dest, &st) == -1 || S_ISLNK (st.st_mode))
+	    continue;
+
+	  cmd_cmp (srcnew, destnew);
+	}
+      closedir (dir);
+      return;
+    }
 
   ff = fopen (dest, "rb");
   if (ff == NULL)

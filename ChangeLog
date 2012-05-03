@@ -1,5 +1,9 @@
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-fstest.c (cmd_cmp): Compare directories recursively.
+
+2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/reiserfs.c (grub_reiserfs_iterate_dir): Put a trailing
 	zero after directory block since last entry may be not 0-terminated if
 	it ends on block boundary. Use continue instead of if spanning whole
