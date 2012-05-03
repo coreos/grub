@@ -710,6 +710,75 @@ grub_find_device (const char *dir __attribute__ ((unused)),
 
 #elif defined (__GNU__)
 
+static char *
+find_hurd_root_device (const char *path)
+{
+  file_t file;
+  error_t err;
+  char *argz = NULL, *name = NULL, *ret;
+  size_t argz_len = 0;
+  int i;
+
+  file = file_name_lookup (path, 0, 0);
+  if (file == MACH_PORT_NULL)
+    grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
+
+  /* This returns catenated 0-terminated strings.  */
+  err = file_get_fs_options (file, &argz, &argz_len);
+  if (err)
+    grub_util_error (_("cannot get filesystem options "
+                       "for path `%s': %s"), path, strerror(err));
+  if (argz_len == 0)
+    /* TRANSLATORS: a "translator" is similar to a filesystem, but handled by a
+     * userland daemon.  */
+    grub_util_error (_("translator is empty for path `%s'"), path);
+
+  /* Make sure the string is terminated.  */
+  argz[argz_len-1] = 0;
+
+  /* Skip first word (translator path) and options.  */
+  for (i = strlen (argz) + 1; i < argz_len; i += strlen (argz + i) + 1)
+    {
+      if (argz[i] != '-')
+        {
+          /* Non-option.  Only accept one, assumed to be the FS path.  */
+          /* XXX: this should be replaced by an RPC to the translator.  */
+          if (name)
+            /* TRANSLATORS: we expect to get something like
+               /hurd/foobar --option1 --option2=baz /dev/something
+             */
+            grub_util_error (_("translator `%s' for path `%s' has several "
+                               "non-option words, at least `%s' and `%s'"),
+                               argz, path, name, argz + i);
+          name = argz + i;
+        }
+    }
+
+  if (!name)
+    /* TRANSLATORS: we expect to get something like
+       /hurd/foobar --option1 --option2=baz /dev/something
+     */
+    grub_util_error (_("translator `%s' for path `%s' is given only options, "
+                       "cannot find device part"), argz, path);
+
+  if (strncmp (name, "device:", sizeof ("device:") - 1) == 0)
+    {
+      char *dev_name = name + sizeof ("device:") - 1;
+      size_t size = sizeof ("/dev/") - 1 + strlen (dev_name) + 1;
+      char *next;
+      ret = malloc (size);
+      next = stpncpy (ret, "/dev/", size);
+      stpncpy (next, dev_name, size - (next - ret));
+    }
+  else if (!strncmp (name, "file:", sizeof ("file:") - 1))
+    ret = strdup (name + sizeof ("file:") - 1);
+  else
+    ret = strdup (name);
+
+  munmap (argz, argz_len);
+  return ret;
+}
+
 #elif ! defined(__CYGWIN__)
 
 char *
@@ -940,65 +1009,7 @@ char **
 grub_guess_root_devices (const char *dir)
 {
   char **os_dev = NULL;
-#ifdef __GNU__
-  file_t file;
-  mach_port_t *ports;
-  int *ints;
-  loff_t *offsets;
-  char *data;
-  error_t err;
-  mach_msg_type_number_t num_ports = 0, num_ints = 0, num_offsets = 0, data_len = 0;
-  size_t name_len;
-
-  file = file_name_lookup (dir, 0, 0);
-  if (file == MACH_PORT_NULL)
-    return 0;
-
-  err = file_get_storage_info (file,
-			       &ports, &num_ports,
-			       &ints, &num_ints,
-			       &offsets, &num_offsets,
-			       &data, &data_len);
-
-  if (num_ints < 1)
-    grub_util_error (_("Storage info for `%s' does not include type"), dir);
-  if (ints[0] != STORAGE_DEVICE)
-    grub_util_error (_("Filesystem of `%s' is not stored on local disk"), dir);
-
-  if (num_ints < 5)
-    grub_util_error (_("Storage info for `%s' does not include name"), dir);
-  name_len = ints[4];
-  if (name_len < data_len)
-    grub_util_error (_("Bogus name length for storage info for `%s'"), dir);
-  if (data[name_len - 1] != '\0')
-    grub_util_error (_("Storage name for `%s' not NUL-terminated"), dir);
-
-  os_dev = xmalloc (2 * sizeof (os_dev[0]));
-  os_dev[0] = xmalloc (sizeof ("/dev/") - 1 + data_len);
-  memcpy (os_dev[0], "/dev/", sizeof ("/dev/") - 1);
-  memcpy (os_dev[0] + sizeof ("/dev/") - 1, data, data_len);
-  os_dev[1] = 0;
-
-  if (ports && num_ports > 0)
-    {
-      mach_msg_type_number_t i;
-      for (i = 0; i < num_ports; i++)
-        {
-	  mach_port_t port = ports[i];
-	  if (port != MACH_PORT_NULL)
-	    mach_port_deallocate (mach_task_self(), port);
-        }
-      munmap ((caddr_t) ports, num_ports * sizeof (*ports));
-    }
-
-  if (ints && num_ints > 0)
-    munmap ((caddr_t) ints, num_ints * sizeof (*ints));
-  if (offsets && num_offsets > 0)
-    munmap ((caddr_t) offsets, num_offsets * sizeof (*offsets));
-  if (data && data_len > 0)
-    munmap (data, data_len);
-  mach_port_deallocate (mach_task_self (), file);
-#else /* !__GNU__ */
+#ifndef __GNU__
   struct stat st;
   dev_t dev;
 
@@ -1045,12 +1056,17 @@ grub_guess_root_devices (const char *dir)
     grub_util_error (_("cannot stat `%s': %s"), dir, strerror (errno));
 
   dev = st.st_dev;
+#endif /* !__GNU__ */
 
   os_dev = xmalloc (2 * sizeof (os_dev[0]));
   
 #ifdef __CYGWIN__
   /* Cygwin specific function.  */
   os_dev[0] = grub_find_device (dir, dev);
+
+#elif defined __GNU__
+  /* GNU/Hurd specific function.  */
+  os_dev[0] = find_hurd_root_device (dir);
 
 #else
 
@@ -1064,7 +1080,6 @@ grub_guess_root_devices (const char *dir)
     }
 
   os_dev[1] = 0;
-#endif /* !__GNU__ */
 
   return os_dev;
 }

@@ -1,3 +1,10 @@
+2012-05-03  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	Handle hurd userspace partitions.
+
+	* util/getroot.c (find_hurd_root_device): New function.
+	(grub_guess_root_devices): Use find_hurd_root_device on Hurd.
+
 2012-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/getroot.c (convert_system_partition_to_system_disk); Add etherd
