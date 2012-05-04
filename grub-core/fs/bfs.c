@@ -519,10 +519,17 @@ bfs_strcmp (const char *a, const char *b, grub_size_t alen)
       alen--;
     }
 
+#ifdef MODE_AFS
   if (!alen)
-  return - (int) (grub_uint8_t) *b;
+    return - (int) (grub_int8_t) *b;
+
+  return (int) (grub_int8_t) *a - (int) (grub_int8_t) *b;
+#else
+  if (!alen)
+    return - (int) (grub_uint8_t) *b;
 
   return (int) (grub_uint8_t) *a - (int) (grub_uint8_t) *b;
+#endif
 }
 
 static grub_err_t

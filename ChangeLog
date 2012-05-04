@@ -1,3 +1,7 @@
+2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/bfs.c (bfs_strcmp) [MODE_AFS]: Use signed comparison.
+
 2012-05-04  Samuel Thibault <samuel.thibault@ens-lyon.org>
 
 	* util/getroot.c (find_hurd_root_device): Try to make error message
