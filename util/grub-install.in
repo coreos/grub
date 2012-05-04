@@ -613,13 +613,13 @@ if [ "x${relative_grubdir}" = "x" ] ; then
 fi
 
 prefix_drive=
-config_opt=
+config_opt_file=
 
 rm -f "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg"
 
 if [ "x${debug_image}" != x ]; then
     echo "set debug='${debug_image}'" >> "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg"
-    config_opt="-c ${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg "
+    config_opt_file="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg"
 fi
 
 if [ "x${devabstraction_module}" = "x" ] ; then
@@ -668,8 +668,8 @@ if [ "x${devabstraction_module}" = "x" ] ; then
             echo "search.file '${relfile}' root $hints " >> "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg"
 	    search_module=search_fs_file
 	fi
-	echo 'set prefix=($root)'"${relative_grubdir}" >> "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg"
-	config_opt="-c ${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg "
+	echo 'set prefix=($root)'"$(echo "${relative_grubdir}" | sed "s,\\([ \"'\\\\]\\),\\\\\\1,g")" >> "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg"
+	config_opt_file="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg"
         modules="$modules $search_module"
     else
         # we need to hardcode the partition number in the core image's prefix.
@@ -685,7 +685,7 @@ else
 	for uuid in "`echo "${grub_device}" | xargs "${grub_probe}"  --target=cryptodisk_uuid --device`"; do
 	    echo "cryptomount -u $uuid" >> "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg"
 	done
-	config_opt="-c ${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg "
+	config_opt_file="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg"
     fi
 
     prefix_drive=`"$grub_probe" --device-map="${device_map}" --target=drive --device "${grub_device}"` || exit 1
@@ -704,8 +704,11 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     *) imgext=img ;;
 esac
 
-
-"$grub_mkimage" ${config_opt} -d "${source_dir}" -O ${mkimage_target} --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
+if [ x"$config_opt_file" = x ]; then
+    "$grub_mkimage" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
+else
+    "$grub_mkimage" -c "${config_opt_file}" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
+fi
 
 # Backward-compatibility kludges
 if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "mipsel-loongson" ]; then
@@ -713,7 +716,12 @@ if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "mipsel-loongson" ]
 elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "powerpc-ieee1275" ]; then
     cp "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" "${grubdir}/grub"
 elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-efi" ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "x86_64-efi" ]; then
-    "$grub_mkimage" ${config_opt} -d "${source_dir}" -O ${mkimage_target} --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $modules || exit 1
+
+    if [ x"$config_opt_file" = x ]; then
+	"$grub_mkimage" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $modules || exit 1
+    else
+	"$grub_mkimage" -c "${config_opt_file}" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $modules || exit 1
+    fi
 fi
 
 

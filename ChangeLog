@@ -1,5 +1,9 @@
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Fix handling of prefix containing spaces.
+
+2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/squash4.c (grub_squash_inode): Fix offset field.
 	(grub_squash_read_data): Fix offset byte-swapping.
 
