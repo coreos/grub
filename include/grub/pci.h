@@ -81,6 +81,9 @@
 #define  GRUB_PCI_STATUS_DEVSEL_TIMING_SHIFT 9
 #define  GRUB_PCI_STATUS_DEVSEL_TIMING_MASK 0x0600
 #define  GRUB_PCI_CLASS_SUBCLASS_VGA  0x0300
+
+#ifndef ASM_FILE
+
 enum
   {
     GRUB_PCI_CLASS_NETWORK = 0x02
@@ -95,7 +98,7 @@ enum
     GRUB_PCI_VENDOR_BROADCOM = 0x14e4
   };
 
-#ifndef ASM_FILE
+
 typedef grub_uint32_t grub_pci_id_t;
 
 #ifdef GRUB_MACHINE_EMU

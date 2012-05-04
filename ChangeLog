@@ -1,5 +1,9 @@
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/pci.h: Move enums into no-asm part.
+
+2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/bfs.c (bfs_strcmp) [MODE_AFS]: Use signed comparison.
 
 2012-05-04  Samuel Thibault <samuel.thibault@ens-lyon.org>
