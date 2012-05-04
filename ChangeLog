@@ -1,5 +1,10 @@
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/squash4.c (grub_squash_inode): Fix offset field.
+	(grub_squash_read_data): Fix offset byte-swapping.
+
+2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_strcmp): Use unsigned comparison as
 	per common usage and preffered in several parts of code.
 	(grub_memcmp): Likewise.

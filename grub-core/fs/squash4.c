@@ -86,8 +86,7 @@ struct grub_squash_inode
     struct {
       grub_uint32_t chunk;
       grub_uint32_t fragment;
-      grub_uint16_t offset;
-      grub_uint16_t dummy;
+      grub_uint32_t offset;
       grub_uint32_t size;
       grub_uint32_t block_size[0];
     }  __attribute__ ((packed)) file;
@@ -96,8 +95,7 @@ struct grub_squash_inode
       grub_uint64_t size;
       grub_uint32_t dummy1[3];
       grub_uint32_t fragment;
-      grub_uint16_t offset;
-      grub_uint16_t dummy2;
+      grub_uint32_t offset;
       grub_uint32_t dummy3;
       grub_uint32_t block_size[0];
     }  __attribute__ ((packed)) long_file;
@@ -860,7 +858,7 @@ grub_squash_read_data (struct grub_squash_data *data,
   a += grub_le_to_cpu64 (frag.offset);
   compressed = !(frag.size & SQUASH_BLOCK_UNCOMPRESSED);
   if (ino->ino.type == grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR))
-    b = grub_le_to_cpu64 (ino->ino.long_file.offset) + off;
+    b = grub_le_to_cpu32 (ino->ino.long_file.offset) + off;
   else
     b = grub_le_to_cpu32 (ino->ino.file.offset) + off;
   
