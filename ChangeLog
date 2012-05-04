@@ -1,5 +1,17 @@
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix errors on compressed NTFS with 512B clusters.
+
+	* include/grub/ntfs.h (grub_ntfscomp_func_t): Use appropriately sized
+	types.
+	* grub-core/fs/ntfs.c (grub_ntfs_read): Return correct -1 on error and
+	not 0.
+	* grub-core/fs/ntfscomp.c (read_block): Use appropriately-sized types.
+	Relax check for inline extents.
+	(ntfscomp): Return correct -1 on error and not 0.
+
+2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Fix handling of prefix containing spaces.
 
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -181,10 +181,10 @@ struct grub_ntfs_rlst
 
 typedef grub_err_t (*grub_ntfscomp_func_t) (struct grub_ntfs_attr * at,
 					    char *dest,
-					    grub_uint32_t ofs,
-					    grub_uint32_t len,
+					    grub_disk_addr_t ofs,
+					    grub_size_t len,
 					    struct grub_ntfs_rlst * ctx,
-					    grub_uint32_t vcn);
+					    grub_disk_addr_t vcn);
 
 extern grub_ntfscomp_func_t grub_ntfscomp_func;
 

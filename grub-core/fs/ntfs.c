@@ -1121,7 +1121,7 @@ grub_ntfs_read (grub_file_t file, char *buf, grub_size_t len)
     mft->attr.save_pos = 1;
 
   read_attr (&mft->attr, buf, file->offset, len, 1, file->read_hook);
-  return (grub_errno) ? 0 : len;
+  return (grub_errno) ? -1 : (grub_ssize_t) len;
 }
 
 static grub_err_t
