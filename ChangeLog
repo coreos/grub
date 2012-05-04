@@ -1,3 +1,8 @@
+2012-05-04  Samuel Thibault <samuel.thibault@ens-lyon.org>
+
+	* util/getroot.c (find_hurd_root_device): Try to make error message
+	and comments to translators clearer.
+
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/menuentry.c: Fix typo in TRANSLATORS comments.

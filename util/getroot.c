@@ -721,17 +721,23 @@ find_hurd_root_device (const char *path)
 
   file = file_name_lookup (path, 0, 0);
   if (file == MACH_PORT_NULL)
+    /* TRANSLATORS: The first %s is the file being looked at, the second %s is
+       the error message.  */
     grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
 
   /* This returns catenated 0-terminated strings.  */
   err = file_get_fs_options (file, &argz, &argz_len);
   if (err)
-    grub_util_error (_("cannot get filesystem options "
+    /* TRANSLATORS: On GNU/Hurd, a "translator" is similar to a filesystem
+       mount, but handled by a userland daemon, whose invocation command line
+       is being fetched here.  First %s is the file being looked at (for which
+       we are fetching the "translator" command line), second %s is the error
+       message.
+       */
+    grub_util_error (_("cannot get translator command line "
                        "for path `%s': %s"), path, strerror(err));
   if (argz_len == 0)
-    /* TRANSLATORS: a "translator" is similar to a filesystem, but handled by a
-     * userland daemon.  */
-    grub_util_error (_("translator is empty for path `%s'"), path);
+    grub_util_error (_("translator command line is empty for path `%s'"), path);
 
   /* Make sure the string is terminated.  */
   argz[argz_len-1] = 0;
