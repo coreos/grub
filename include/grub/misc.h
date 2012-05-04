@@ -247,14 +247,16 @@ grub_strcasecmp (const char *s1, const char *s2)
 {
   while (*s1 && *s2)
     {
-      if (grub_tolower (*s1) != grub_tolower (*s2))
+      if (grub_tolower ((grub_uint8_t) *s1)
+	  != grub_tolower ((grub_uint8_t) *s2))
 	break;
 
       s1++;
       s2++;
     }
 
-  return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
+  return (int) grub_tolower ((grub_uint8_t) *s1)
+    - (int) grub_tolower ((grub_uint8_t) *s2);
 }
 
 static inline int
@@ -272,7 +274,8 @@ grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
       s2++;
     }
 
-  return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
+  return (int) grub_tolower ((grub_uint8_t) *s1)
+    - (int) grub_tolower ((grub_uint8_t) *s2);
 }
 
 unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);

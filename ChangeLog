@@ -1,5 +1,19 @@
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_strcmp): Use unsigned comparison as
+	per common usage and preffered in several parts of code.
+	(grub_memcmp): Likewise.
+	(grub_strncmp): Likewise.
+	* include/grub/misc.h (grub_strcasecmp): Likewise.
+	(grub_strncasecmp): Likewise.
+	* Makefile.util.def (cmp_test): New test.
+	(grub_script_strcmp): Likewise.
+	* tests/cmp_unit_test.c: New file.
+	* tests/grub_script_strcmp.in: Likewise.
+	* grub-core/fs/hfsplus.c (grub_hfsplus_cmp_catkey): Add a comment.
+
+2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/pci.h: Move enums into no-asm part.
 
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -532,6 +532,8 @@ grub_hfsplus_cmp_catkey (struct grub_hfsplus_key *keya,
   len = grub_be_to_cpu16 (catkey_a->namelen);
   if (len > catkey_b->namelen)
     len = catkey_b->namelen;
+  /* Since it's big-endian memcmp gives the same result as manually comparing
+     uint16_t but may be faster.  */
   diff = grub_memcmp (catkey_a->name, catkey_b->name,
 		      len * sizeof (catkey_a->name[0]));
   if (diff == 0)

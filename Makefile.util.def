@@ -682,6 +682,12 @@ script = {
   common = tests/grub_script_gettext.in;
 };
 
+script = {
+  testcase;
+  name = grub_script_strcmp;
+  common = tests/grub_script_strcmp.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;
@@ -702,6 +708,21 @@ program = {
   testcase;
   name = printf_test;
   common = tests/printf_unit_test.c;
+  common = tests/lib/unit_test.c;
+  common = grub-core/kern/list.c;
+  common = grub-core/kern/misc.c;
+  common = grub-core/tests/lib/test.c;
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+};
+
+program = {
+  testcase;
+  name = cmp_test;
+  common = tests/cmp_unit_test.c;
   common = tests/lib/unit_test.c;
   common = grub-core/kern/list.c;
   common = grub-core/kern/misc.c;

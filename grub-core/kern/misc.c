@@ -216,8 +216,8 @@ grub_vprintf (const char *fmt, va_list args)
 int
 grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 {
-  const char *t1 = s1;
-  const char *t2 = s2;
+  const grub_uint8_t *t1 = s1;
+  const grub_uint8_t *t2 = s2;
 
   while (n--)
     {
@@ -252,7 +252,7 @@ grub_strcmp (const char *s1, const char *s2)
       s2++;
     }
 
-  return (int) *s1 - (int) *s2;
+  return (int) (grub_uint8_t) *s1 - (int) (grub_uint8_t) *s2;
 }
 
 int
@@ -270,7 +270,7 @@ grub_strncmp (const char *s1, const char *s2, grub_size_t n)
       s2++;
     }
 
-  return (int) *s1 - (int) *s2;
+  return (int) (grub_uint8_t) *s1 - (int) (grub_uint8_t)  *s2;
 }
 
 char *
