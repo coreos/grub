@@ -138,7 +138,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	  else
 	    {
 	      grub_uint64_t fsize = file->size * 100ULL;
-	      int fsz = file->size;
+	      grub_uint64_t fsz = file->size;
 	      int units = 0;
 	      char buf[20];
 

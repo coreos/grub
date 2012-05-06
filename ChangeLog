@@ -1,5 +1,9 @@
 2012-05-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/ls.c (grub_ls_list_files): Fix overflow.
+
+2012-05-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/sfs.c (grub_fshelp_node): Fix types.
 	(grub_sfs_read_extent): Likewise.
 	(grub_sfs_read_block): Likewise.
