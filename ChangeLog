@@ -1,5 +1,10 @@
 2012-05-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/bfs.c (read_bfs_file): Fix overflow with over 2TiB
+	filesystems.
+
+2012-05-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/affs.c (grub_affs_read_block): Fix theoretical overflow.
 
 2012-05-06  Vladimir Serbinenko  <phcoder@gmail.com>

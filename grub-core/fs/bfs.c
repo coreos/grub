@@ -225,7 +225,7 @@ read_bfs_file (grub_disk_t disk,
       for (i = 0; i < ARRAY_SIZE (ino->direct); i++)
 	{
 	  grub_uint64_t newpos;
-	  newpos = pos + (grub_bfs_to_cpu16 (ino->direct[i].len)
+	  newpos = pos + (((grub_uint64_t) grub_bfs_to_cpu16 (ino->direct[i].len))
 			  << grub_bfs_to_cpu32 (sb->log2_bsize));
 	  if (newpos > off)
 	    {
@@ -261,7 +261,7 @@ read_bfs_file (grub_disk_t disk,
       grub_err_t err;
       grub_uint64_t pos = (grub_bfs_to_cpu64 (ino->max_direct_range)
 			   << RANGE_SHIFT);
-      nentries = (grub_bfs_to_cpu16 (ino->indirect.len)
+      nentries = (((grub_size_t) grub_bfs_to_cpu16 (ino->indirect.len))
 		  << (grub_bfs_to_cpu32 (sb->log2_bsize) - LOG_EXTENT_SIZE));
       entries = grub_malloc (nentries << LOG_EXTENT_SIZE);
       if (!entries)
@@ -271,7 +271,7 @@ read_bfs_file (grub_disk_t disk,
       for (i = 0; i < nentries; i++)
 	{
 	  grub_uint64_t newpos;
-	  newpos = pos + (grub_bfs_to_cpu16 (entries[i].len)
+	  newpos = pos + (((grub_uint64_t) grub_bfs_to_cpu16 (entries[i].len))
 			  << grub_bfs_to_cpu32 (sb->log2_bsize));
 	  if (newpos > off)
 	    {
@@ -310,7 +310,7 @@ read_bfs_file (grub_disk_t disk,
     grub_size_t nl1_entries, nl2_entries;
     grub_off_t last_l1n = ~0ULL;
     grub_err_t err;
-    nl1_entries = (grub_bfs_to_cpu16 (ino->double_indirect.len)
+    nl1_entries = (((grub_uint64_t) grub_bfs_to_cpu16 (ino->double_indirect.len))
 		   << (grub_bfs_to_cpu32 (sb->log2_bsize) - LOG_EXTENT_SIZE));
     l1_entries = grub_malloc (nl1_entries << LOG_EXTENT_SIZE);
     if (!l1_entries)
@@ -359,7 +359,7 @@ read_bfs_file (grub_disk_t disk,
 	  }
 	if (l1n != last_l1n)
 	  {
-	    nl2_entries = (grub_bfs_to_cpu16 (l1_entries[l1n].len)
+	    nl2_entries = (((grub_uint64_t) grub_bfs_to_cpu16 (l1_entries[l1n].len))
 			   << (grub_bfs_to_cpu32 (sb->log2_bsize)
 			       - LOG_EXTENT_SIZE));
 	    if (nl2_entries > (1U << (grub_bfs_to_cpu32 (sb->log2_bsize)
