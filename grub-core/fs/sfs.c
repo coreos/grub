@@ -120,8 +120,8 @@ struct grub_sfs_btree
 struct grub_fshelp_node
 {
   struct grub_sfs_data *data;
-  int block;
-  int size;
+  grub_uint32_t block;
+  grub_uint32_t size;
   grub_uint32_t mtime;
 };
 
@@ -147,12 +147,12 @@ static grub_dl_t my_mod;
    in NEXTEXT.  */
 static grub_err_t
 grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
-		      int *size, int *nextext)
+		      grub_uint32_t *size, grub_uint32_t *nextext)
 {
   char *treeblock;
   struct grub_sfs_btree *tree;
   int i;
-  int next;
+  grub_uint32_t next;
 
   treeblock = grub_malloc (data->blocksize);
   if (!block)
@@ -213,9 +213,9 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
 static grub_disk_addr_t
 grub_sfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
-  int blk = node->block;
-  int size = 0;
-  int next = 0;
+  grub_uint32_t blk = node->block;
+  grub_uint32_t size = 0;
+  grub_uint32_t next = 0;
 
   while (blk)
     {
@@ -230,7 +230,7 @@ grub_sfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       if (err)
 	return 0;
 
-      if (fileblock < (unsigned int) size)
+      if (fileblock < size)
 	return fileblock + blk;
 
       fileblock -= size;
@@ -265,7 +265,7 @@ grub_sfs_mount (grub_disk_t disk)
   struct grub_sfs_data *data;
   struct grub_sfs_objc *rootobjc;
   char *rootobjc_data = 0;
-  unsigned int blk;
+  grub_uint32_t blk;
 
   data = grub_malloc (sizeof (*data));
   if (!data)
@@ -337,7 +337,7 @@ grub_sfs_read_symlink (grub_fshelp_node_t node)
 
   /* This is just a wild guess, but it always worked for me.  How the
      SLNK block looks like is not documented in the SFS docs.  */
-  symlink = grub_strdup (&block[24]);
+  symlink = grub_strndup (&block[24], data->blocksize - 24);
   grub_free (block);
   if (!symlink)
     return 0;
@@ -357,7 +357,7 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
   char *objc_data;
   struct grub_sfs_objc *objc;
   unsigned int next = dir->block;
-  int pos;
+  grub_uint32_t pos;
 
   auto int NESTED_FUNC_ATTR grub_sfs_create_node (const char *name,
 						  int block,
@@ -416,9 +416,9 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
 	  struct grub_sfs_obj *obj;
 	  obj = (struct grub_sfs_obj *) ((char *) objc + pos);
 	  const char *filename = (const char *) obj->filename;
-	  int len;
+	  grub_size_t len;
 	  enum grub_fshelp_filetype type;
-	  unsigned int block;
+	  grub_uint32_t block;
 
 	  /* The filename and comment dynamically increase the size of
 	     the object.  */
@@ -525,10 +525,8 @@ grub_sfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_sfs_data *data = (struct grub_sfs_data *) file->data;
 
-  int size = grub_sfs_read_file (&data->diropen, file->read_hook,
-				 file->offset, len, buf);
-
-  return size;
+  return grub_sfs_read_file (&data->diropen, file->read_hook,
+			     file->offset, len, buf);
 }
 
 

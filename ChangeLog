@@ -1,3 +1,13 @@
+2012-05-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/sfs.c (grub_fshelp_node): Fix types.
+	(grub_sfs_read_extent): Likewise.
+	(grub_sfs_read_block): Likewise.
+	(grub_sfs_mount): Likewise.
+	(grub_sfs_iterate_dir): Likewise.
+	(grub_sfs_read_symlink): Use strncpy instead of strcpy.
+	(grub_sfs_read): Remove unnecessarry and wrong temporary variable.
+
 2012-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix errors on compressed NTFS with 512B clusters.
