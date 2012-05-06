@@ -129,8 +129,8 @@ grub_affs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
   if (!node->block_cache)
     {
-      node->block_cache = grub_malloc ((((grub_be_to_cpu32 (node->di.size)
-					  + 511) >> 9)  / data->htsize + 1)
+      node->block_cache = grub_malloc (((grub_be_to_cpu32 (node->di.size)
+					  >> 9)  / data->htsize + 2)
 				       * sizeof (node->block_cache[0]));
       if (!node->block_cache)
 	return -1;
