@@ -263,24 +263,31 @@ static char *
 grub_affs_read_symlink (grub_fshelp_node_t node)
 {
   struct grub_affs_data *data = node->data;
-  char *symlink;
+  grub_uint8_t *latin1, *utf8;
   const grub_size_t symlink_size = (data->blocksize * GRUB_DISK_SECTOR_SIZE
 				    - 225);
 
-  symlink = grub_malloc (symlink_size + 1);
-  if (!symlink)
+  latin1 = grub_malloc (symlink_size);
+  if (!latin1)
     return 0;
 
   grub_disk_read (data->disk, node->block, GRUB_AFFS_SYMLINK_OFFSET,
-		  symlink_size, symlink);
+		  symlink_size, latin1);
   if (grub_errno)
     {
-      grub_free (symlink);
+      grub_free (latin1);
       return 0;
     }
-  symlink[symlink_size] = 1;
-  grub_dprintf ("affs", "Symlink: `%s'\n", symlink);
-  return symlink;
+  utf8 = grub_malloc (symlink_size * GRUB_MAX_UTF8_PER_LATIN1 + 1);
+  if (!utf8)
+    {
+      grub_free (latin1);
+      return 0;
+    }
+  *grub_latin1_to_utf8 (utf8, latin1, symlink_size) = '\0';
+  grub_dprintf ("affs", "Symlink: `%s'\n", utf8);
+  grub_free (latin1);
+  return (char *) utf8;
 }
 
 
