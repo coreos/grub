@@ -1,3 +1,23 @@
+2012-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/sfs.c (grub_sfs_rblock): New fields createtime and
+	flags.
+	(FLAGS_CASE_SENSITIVE): New enum value.
+	(cache_entry): New struct.
+	(grub_fshelp_node): Add fields cache_off, next_extent, cache_allocated,
+	cache_size and cache.
+	(grub_sfs_data): Remove blocksize. All users switched to log_blocksize.
+	Add log_blocksize and fshelp_flags.
+	(grub_sfs_read_extent): Handle non-512 blocks.
+	(grub_sfs_read_block): Add cаche and handle non-512 blocks.
+	(grub_sfs_read_file): Handle non-512 blocks.
+	(grub_sfs_mount): Handle non-512 blocks. Fill log_blocksize and
+	fshelp_flags.
+	(grub_sfs_read_symlink): Handle non-512 blocks.
+	(grub_sfs_iterate_dir): Init new fields. Mark as case-insensitive.
+	(grub_sfs_dir): Free cache.
+	(grub_sfs_close): Likewise.
+
 2012-05-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/bfs.c (read_bfs_file): Fix overflow with over 2TiB
