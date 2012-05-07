@@ -323,6 +323,8 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
       else
 	type = GRUB_FSHELP_UNKNOWN;
 
+      type |= GRUB_FSHELP_CASE_INSENSITIVE;
+
       node->data = data;
       node->block = block;
       node->di = *fil;
