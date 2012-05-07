@@ -73,7 +73,7 @@ struct grub_affs_file
   grub_uint32_t next;
   grub_uint32_t parent;
   grub_uint32_t extension;
-  grub_int32_t type;
+  grub_uint32_t type;
 } __attribute__ ((packed));
 
 /* The location of `struct grub_affs_file' relative to the end of a
@@ -478,6 +478,15 @@ grub_affs_read (grub_file_t file, char *buf, grub_size_t len)
 				grub_be_to_cpu32 (data->diropen.di.size), 0);
 }
 
+static grub_int32_t
+aftime2ctime (const struct grub_affs_time *t)
+{
+  return grub_be_to_cpu32 (t->day) * 86400
+    + grub_be_to_cpu32 (t->min) * 60
+    + grub_be_to_cpu32 (t->hz) / 50
+    + 8 * 365 * 86400 + 86400 * 2;
+}
+
 static grub_err_t
 grub_affs_dir (grub_device_t device, const char *path,
 	       int (*hook) (const char *filename,
@@ -498,10 +507,7 @@ grub_affs_dir (grub_device_t device, const char *path,
       grub_memset (&info, 0, sizeof (info));
       info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
       info.mtimeset = 1;
-      info.mtime = grub_be_to_cpu32 (node->di.mtime.day) * 86400
-	+ grub_be_to_cpu32 (node->di.mtime.min) * 60
-	+ grub_be_to_cpu32 (node->di.mtime.hz) / 50
-	+ 8 * 365 * 86400 + 86400 * 2;
+      info.mtime = aftime2ctime (&node->di.mtime);
       grub_free (node);
       return hook (filename, &info);
     }
@@ -550,7 +556,7 @@ grub_affs_label (grub_device_t device, char **label)
 					 - GRUB_AFFS_FILE_LOCATION),
 		      sizeof (file), &file);
       if (grub_errno)
-	return 0;
+	return grub_errno;
 
       len = file.namelen;
       if (len > sizeof (file.name))
@@ -569,6 +575,40 @@ grub_affs_label (grub_device_t device, char **label)
   return grub_errno;
 }
 
+static grub_err_t
+grub_affs_mtime (grub_device_t device, grub_int32_t *t)
+{
+  struct grub_affs_data *data;
+  grub_disk_t disk = device->disk;
+  struct grub_affs_time af_time;
+
+  *t = 0;
+
+  data = grub_affs_mount (disk);
+  if (!data)
+    {
+      grub_dl_unref (my_mod);
+      return grub_errno;
+    }
+
+  grub_disk_read (data->disk, grub_be_to_cpu32 (data->bblock.rootblock),
+		  data->blocksize * GRUB_DISK_SECTOR_SIZE - 40,
+		  sizeof (af_time), &af_time);
+  if (grub_errno)
+    {
+      grub_dl_unref (my_mod);
+      grub_free (data);
+      return grub_errno;
+    }
+
+  *t = aftime2ctime (&af_time);
+  grub_dl_unref (my_mod);
+
+  grub_free (data);
+
+  return GRUB_ERR_NONE;
+}
+
 
 static struct grub_fs grub_affs_fs =
   {
@@ -578,6 +618,8 @@ static struct grub_fs grub_affs_fs =
     .read = grub_affs_read,
     .close = grub_affs_close,
     .label = grub_affs_label,
+    .mtime = grub_affs_mtime,
+
 #ifdef GRUB_UTIL
     .reserved_first_sector = 0,
     .blocklist_install = 1,

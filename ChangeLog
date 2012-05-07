@@ -1,3 +1,14 @@
+2012-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add filesystem mtime to AFFS.
+
+	* grub-core/fs/affs.c (grub_affs_file): Make type unsigned.
+	(aftime2ctime): New function.
+	(grub_affs_dir): Use aftime2ctime.
+	(grub_affs_label): Fix return value.
+	(grub_affs_mtime): New function.
+	(grub_affs_fs): Add mtime.
+
 2012-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/affs.c (grub_affs_read_symlink): Convert latin1 into
