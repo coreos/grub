@@ -447,12 +447,16 @@ grub_sfs_read_symlink (grub_fshelp_node_t node)
 
   /* This is just a wild guess, but it always worked for me.  How the
      SLNK block looks like is not documented in the SFS docs.  */
-  symlink = grub_strndup (&block[24],
-			  (GRUB_DISK_SECTOR_SIZE << data->log_blocksize) - 24);
-  grub_free (block);
+  symlink = grub_malloc (((GRUB_DISK_SECTOR_SIZE << data->log_blocksize)
+			  - 24) * GRUB_MAX_UTF8_PER_LATIN1 + 1);
   if (!symlink)
-    return 0;
-
+    {
+      grub_free (block);
+      return 0;
+    }
+  *grub_latin1_to_utf8 ((grub_uint8_t *) symlink, (grub_uint8_t *) &block[24],
+			(GRUB_DISK_SECTOR_SIZE << data->log_blocksize) - 24) = '\0';
+  grub_free (block);
   return symlink;
 }
 

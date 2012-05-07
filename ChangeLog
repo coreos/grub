@@ -1,5 +1,10 @@
 2012-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/sfs.c (grub_sfs_read_symlink): Convert latin1 into
+	UTF-8.
+
+2012-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/affs.c (grub_affs_iterate_dir): Mark as case insensitive.
 
 2012-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
