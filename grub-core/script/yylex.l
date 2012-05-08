@@ -139,7 +139,8 @@ SPECIAL         \?|\#|\*|\@
 VARIABLE        ${NAME}|$\{{NAME}\}|${DIGITS}|$\{{DIGITS}\}|${SPECIAL}|$\{{SPECIAL}\}
 WORD            ({CHAR}|{DQSTR}|{SQSTR}|{ESC}|{VARIABLE}|{I18NSTR})+
 
-MULTILINE       {WORD}?((\"{DQCHR}*)|(\$\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
+MULTILINE       {WORD}?((\"{DQCHR}*)|(\$\"{DQCHR}*)|(\'{SQCHR}*))
+POS_MULTILINE   {WORD}?\\\n
 
 %x              SPLIT
 %x              DQUOTE
@@ -189,6 +190,26 @@ MULTILINE       {WORD}?((\"{DQCHR}*)|(\$\"{DQCHR}*)|(\'{SQCHR}*)|(\\\n))
                   if (grub_lexer_unput (yytext, yyscanner))
 		    return GRUB_PARSER_TOKEN_BAD;
 		}
+
+{POS_MULTILINE} {
+                  if (yyg->yy_c_buf_p + 1 == &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[yyg->yy_n_chars + 1] )
+		    {
+		      if (grub_lexer_unput (yytext, yyscanner))
+			return GRUB_PARSER_TOKEN_BAD;
+		    }
+		  else
+		    {
+		      RECORD;
+		      yypush_buffer_state (YY_CURRENT_BUFFER, yyscanner);
+		      if (grub_lexer_resplit (yytext, yyscanner))
+			{
+			  yypop_buffer_state (yyscanner);
+			  return GRUB_PARSER_TOKEN_WORD;
+			}
+		      yyextra->lexerstate->resplit = 1;
+		    }
+		}
+
 
 {NAME}          { RECORD; return GRUB_PARSER_TOKEN_NAME; }
 {WORD}          {

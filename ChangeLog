@@ -1,5 +1,10 @@
 2012-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/yylex.l: Ugly fix for "\\\n ".
+	* tests/grub_script_echo1.in: Add tests.
+
+2012-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Ignore empty devicetree directory.
 
 2012-05-08  Bean  <bean123ch@gmail.com>
