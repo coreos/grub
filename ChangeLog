@@ -1,3 +1,7 @@
+2012-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Ignore empty devicetree directory.
+
 2012-05-08  Bean  <bean123ch@gmail.com>
 
 	* grub-core/net/ip.c (reassemble): Make asm_buffer into asm_netbuff.

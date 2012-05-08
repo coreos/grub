@@ -311,7 +311,12 @@ if [ x$source_dir = x ]; then
 		if [ -d /sys/firmware/efi ]; then
 		    target="i386-efi"
 		elif [ -e /proc/device-tree ]; then
-		    target="i386-ieee1275"
+		    target=i386-pc
+		    for x in /proc/device-tree/*; do
+			if [ -e "$x" ]; then
+			    target="i386-ieee1275"
+			fi
+		    done
 		else
 		    target=i386-pc
 		fi
