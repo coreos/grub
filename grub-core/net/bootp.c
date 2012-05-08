@@ -39,7 +39,11 @@ set_env_limn_ro (const char *intername, const char *suffix,
   char c;
   char varname[sizeof ("net_") + grub_strlen (intername) + sizeof ("_")
 	       + grub_strlen (suffix)];
+  char *ptr;
   grub_snprintf (varname, sizeof (varname), "net_%s_%s", intername, suffix);
+  for (ptr = varname; *ptr; ptr++)
+    if (*ptr == ':')
+      *ptr = '_';    
   c = value[len];
   value[len] = 0;
   grub_env_set (varname, value);

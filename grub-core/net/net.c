@@ -820,8 +820,12 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
   {
     char buf[GRUB_NET_MAX_STR_HWADDR_LEN];
     char name[grub_strlen (inter->name) + sizeof ("net__mac")];
+    char *ptr;
     grub_net_hwaddr_to_str (&inter->hwaddress, buf);
     grub_snprintf (name, sizeof (name), "net_%s_mac", inter->name);
+    for (ptr = name; *ptr; ptr++)
+      if (*ptr == ':')
+	*ptr = '_';    
     grub_env_set (name, buf);
     grub_register_variable_hook (name, 0, hwaddr_set_env);
   }
@@ -829,8 +833,12 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
   {
     char buf[GRUB_NET_MAX_STR_ADDR_LEN];
     char name[grub_strlen (inter->name) + sizeof ("net__ip")];
+    char *ptr;
     grub_net_addr_to_str (&inter->address, buf);
     grub_snprintf (name, sizeof (name), "net_%s_ip", inter->name);
+    for (ptr = name; *ptr; ptr++)
+      if (*ptr == ':')
+	*ptr = '_';    
     grub_env_set (name, buf);
     grub_register_variable_hook (name, 0, addr_set_env);
   }
