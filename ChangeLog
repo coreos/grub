@@ -1,5 +1,20 @@
 2012-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix AFFS with non-512B blocks.
+
+	* grub-core/fs/affs.c (grub_affs_rblock): Make type uint32_t.
+	(AFFS_MAX_LOG_BLOCK_SIZE): New definition.
+	(grub_affs_data): Replace blocksize with log_blocksize.
+	(grub_affs_read_block): Fix non-512B blocks.
+	(grub_affs_read_symlink): Likewise.
+	(grub_affs_iterate_dir): Likewise. Fix freeing corruption.
+	(grub_affs_read): Fix non-512B blocks.
+	(grub_affs_label): Likewise.
+	(grub_affs_mtime): Likewise.
+	(grub_affs_mount): Fix block detection routine.
+
+2012-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add filesystem mtime to AFFS.
 
 	* grub-core/fs/affs.c (grub_affs_file): Make type unsigned.
