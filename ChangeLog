@@ -1,5 +1,10 @@
 2012-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/hashsum.c (grub_cmd_hashsum): Align space for
+	resulting hash as a precaution.
+
+2012-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/bootp.c (set_env_limn_ro): Replace reserved ':' with
 	'_' in variable names.
 	* grub-core/net/net.c (grub_net_network_level_interface_register):

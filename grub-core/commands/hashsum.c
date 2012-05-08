@@ -218,7 +218,7 @@ grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
 
   for (i = 0; i < (unsigned) argc; i++)
     {
-      grub_uint8_t result[hash->mdlen];
+      GRUB_PROPERLY_ALIGNED_ARRAY (result, hash->mdlen);
       grub_file_t file;
       grub_err_t err;
       unsigned j;
@@ -246,7 +246,7 @@ grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
 	  continue;
 	}
       for (j = 0; j < hash->mdlen; j++)
-	grub_printf ("%02x", result[j]);
+	grub_printf ("%02x", ((grub_uint8_t *) result)[j]);
       grub_printf ("  %s\n", args[i]);
     }
 
