@@ -93,11 +93,12 @@ grub_netbuff_alloc (grub_size_t len)
   return nb;
 }
 
-grub_err_t
+void
 grub_netbuff_free (struct grub_net_buff *nb)
 {
+  if (!nb)
+    return;
   grub_free (nb->head);
-  return GRUB_ERR_NONE;
 }
 
 grub_err_t

@@ -84,7 +84,7 @@ struct reassemble
   grub_uint8_t proto;
   grub_uint64_t last_time;
   grub_priority_queue_t pq;
-  grub_uint8_t *asm_buffer;
+  struct grub_net_buff *asm_netbuff;
   grub_size_t total_len;
   grub_size_t cur_ptr;
   grub_uint8_t ttl;
@@ -351,8 +351,9 @@ free_rsm (struct reassemble *rsm)
       grub_netbuff_free (*nb);
       grub_priority_queue_pop (rsm->pq);
     }
-  grub_free (rsm->asm_buffer);
+  grub_netbuff_free (rsm->asm_netbuff);
   grub_priority_queue_destroy (rsm->pq);
+  grub_free (rsm);
 }
 
 static void
@@ -361,11 +362,15 @@ free_old_fragments (void)
   struct reassemble *rsm, **prev;
   grub_uint64_t limit_time = grub_get_time_ms () - 90000;
 
-  for (prev = &reassembles, rsm = *prev; rsm; prev = &rsm->next, rsm = *prev)
+  for (prev = &reassembles, rsm = *prev; rsm; rsm = *prev)
     if (rsm->last_time < limit_time)
       {
 	*prev = rsm->next;
 	free_rsm (rsm);
+      }
+    else
+      {
+	prev = &rsm->next;
       }
 }
 
@@ -473,7 +478,7 @@ grub_net_recv_ip4_packets (struct grub_net_buff *nb,
 	  grub_free (rsm);
 	  return grub_errno;
 	}
-      rsm->asm_buffer = 0;
+      rsm->asm_netbuff = 0;
       rsm->total_len = 0;
       rsm->cur_ptr = 0;
       rsm->ttl = 0xff;
@@ -492,22 +497,21 @@ grub_net_recv_ip4_packets (struct grub_net_buff *nb,
       rsm->total_len = (8 * (grub_be_to_cpu16 (iph->frags) & OFFSET_MASK)
 			+ (nb->tail - nb->data));
       rsm->total_len -= ((iph->verhdrlen & 0xf) * sizeof (grub_uint32_t));
-      rsm->asm_buffer = grub_zalloc (rsm->total_len);
-      if (!rsm->asm_buffer)
+      rsm->asm_netbuff = grub_netbuff_alloc (rsm->total_len);
+      if (!rsm->asm_netbuff)
 	{
 	  *prev = rsm->next;
 	  free_rsm (rsm);
 	  return grub_errno;
 	}
     }
-  if (!rsm->asm_buffer)
+  if (!rsm->asm_netbuff)
     return GRUB_ERR_NONE;
 
   while (1)
     {
       struct grub_net_buff **nb_top_p, *nb_top;
       grub_size_t copy;
-      grub_uint8_t *res;
       grub_size_t res_len;
       struct grub_net_buff *ret;
       grub_net_ip_protocol_t proto;
@@ -532,7 +536,10 @@ grub_net_recv_ip4_packets (struct grub_net_buff *nb,
 	}
       if (rsm->cur_ptr < (grub_size_t) 8 * (grub_be_to_cpu16 (iph->frags)
 					    & OFFSET_MASK))
-	return GRUB_ERR_NONE;
+	{
+	  grub_netbuff_free (nb_top);
+	  return GRUB_ERR_NONE;
+	}
 
       rsm->cur_ptr = (8 * (grub_be_to_cpu16 (iph->frags) & OFFSET_MASK)
 		      + (nb_top->tail - nb_top->head));
@@ -547,31 +554,33 @@ grub_net_recv_ip4_packets (struct grub_net_buff *nb,
 	  < copy)
 	copy = rsm->total_len - 8 * (grub_be_to_cpu16 (iph->frags)
 				     & OFFSET_MASK);
-      grub_memcpy (&rsm->asm_buffer[8 * (grub_be_to_cpu16 (iph->frags)
-					 & OFFSET_MASK)],
+      grub_memcpy (&rsm->asm_netbuff->data[8 * (grub_be_to_cpu16 (iph->frags)
+						& OFFSET_MASK)],
 		   nb_top->data, copy);
 
       if ((grub_be_to_cpu16 (iph->frags) & MORE_FRAGMENTS))
-	continue;
-      
-      res = rsm->asm_buffer;
+	{
+	  grub_netbuff_free (nb_top);
+	  continue;
+	}
+      grub_netbuff_free (nb_top);
+
+      ret = rsm->asm_netbuff;
       proto = rsm->proto;
       src = rsm->source;
       dst = rsm->dest;
       ttl = rsm->ttl;
 
-      rsm->asm_buffer = 0;
+      rsm->asm_netbuff = 0;
       res_len = rsm->total_len;
       *prev = rsm->next;
       free_rsm (rsm);
-      ret = grub_malloc (sizeof (*ret));
-      if (!ret)
+
+      if (grub_netbuff_put (ret, res_len))
 	{
-	  grub_free (res);
-	  return grub_errno;
+	  grub_netbuff_free (ret);
+	  return GRUB_ERR_NONE;
 	}
-      ret->data = ret->head = res;
-      ret->tail = ret->end = res + res_len;
 
       source.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
       source.ipv4 = src;

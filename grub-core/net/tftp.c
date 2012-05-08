@@ -214,6 +214,7 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	    tftph = (struct tftphdr *) nb_top->data;
 	    if (grub_be_to_cpu16 (tftph->u.data.block) >= data->block + 1)
 	      break;
+	    grub_netbuff_free (nb_top);
 	    grub_priority_queue_pop (data->pq);
 	  }
 	if (grub_be_to_cpu16 (tftph->u.data.block) == data->block + 1)
@@ -248,7 +249,7 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	    if ((nb_top->tail - nb_top->data) > 0)
 	      grub_net_put_packet (&file->device->net->packs, nb_top);
 	    else
-	      grub_netbuff_free (nb);
+	      grub_netbuff_free (nb_top);
 	  }
       }
       return GRUB_ERR_NONE;
@@ -269,7 +270,10 @@ destroy_pq (tftp_data_t data)
 {
   struct grub_net_buff **nb_p;
   while ((nb_p = grub_priority_queue_top (data->pq)))
-    grub_netbuff_free (*nb_p);
+    {
+      grub_netbuff_free (*nb_p);
+      grub_priority_queue_pop (data->pq);
+    }
 
   grub_priority_queue_destroy (data->pq);
 }

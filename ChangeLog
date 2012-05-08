@@ -1,3 +1,14 @@
+2012-05-08  Bean  <bean123ch@gmail.com>
+
+	* grub-core/net/ip.c (reassemble): Make asm_buffer into asm_netbuff.
+	All users updated.
+	(free_rsm): Free header as well.
+	(free_old_fragments): Fix memory leak.
+	* grub-core/net/netbuff.c (grub_netbuff_free): Make return void.
+	* grub-core/net/tftp.c (tftp_receive): Fix memory leak.
+	(destroy_pq): Likewise.
+	* include/grub/net/netbuff.h (grub_netbuff_free): Make return void.
+
 2012-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/hashsum.c (grub_cmd_hashsum): Align space for
