@@ -225,6 +225,7 @@ struct grub_fshelp_node
   grub_uint16_t block_position;
   grub_uint64_t next_offset;
   grub_int32_t mtime;
+  grub_off_t size;
   enum grub_reiserfs_item_type type; /* To know how to read the header.  */
   struct grub_reiserfs_item_header header;
 };
@@ -235,6 +236,13 @@ struct grub_reiserfs_data
   struct grub_reiserfs_superblock superblock;
   grub_disk_t disk;
 };
+
+static grub_ssize_t
+grub_reiserfs_read_real (struct grub_fshelp_node *node,
+			 grub_off_t off, char *buf, grub_size_t len,
+			 void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
+							     unsigned offset,
+							     unsigned length));
 
 /* Internal-only functions. Not to be used outside of this file.  */
 
@@ -659,43 +667,22 @@ static char *
 grub_reiserfs_read_symlink (grub_fshelp_node_t node)
 {
   char *symlink_buffer = 0;
-  grub_uint16_t block_size;
-  grub_disk_addr_t block;
-  grub_off_t offset;
-  grub_size_t len;
-  struct grub_fshelp_node found;
-  struct grub_reiserfs_key key;
-
-  grub_memcpy (&key, &(node->header.key), sizeof (key));
-  grub_reiserfs_set_key_offset (&key, 1);
-  grub_reiserfs_set_key_type (&key, GRUB_REISERFS_DIRECT,
-                              grub_reiserfs_get_key_version (&key));
-
-  if (grub_reiserfs_get_item (node->data, &key, &found, 1) != GRUB_ERR_NONE)
-    goto fail;
-
-  if (found.block_number == 0)
-    goto fail;
-
-  block_size = grub_le_to_cpu16 (node->data->superblock.block_size);
-  len = grub_le_to_cpu16 (found.header.item_size);
-  block = found.block_number * (block_size  >> GRUB_DISK_SECTOR_BITS);
-  offset = grub_le_to_cpu16 (found.header.item_location);
+  grub_size_t len = node->size;
+  grub_ssize_t ret;
 
   symlink_buffer = grub_malloc (len + 1);
   if (! symlink_buffer)
-    goto fail;
+    return 0;
 
-  grub_disk_read (node->data->disk, block, offset, len, symlink_buffer);
-  if (grub_errno)
-    goto fail;
+  ret = grub_reiserfs_read_real (node, 0, symlink_buffer, len, 0);
+  if (ret < 0)
+    {
+      grub_free (symlink_buffer);
+      return 0;
+    }
 
-  symlink_buffer[len] = 0;
+  symlink_buffer[ret] = 0;
   return symlink_buffer;
-
- fail:
-  grub_free (symlink_buffer);
-  return 0;
 }
 
 /* Fill the mounted filesystem structure and return it.  */
@@ -897,6 +884,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
 			entry_type = GRUB_FSHELP_SYMLINK;
 		      else
 			entry_type = GRUB_FSHELP_REG;
+		      entry_item->size = (grub_off_t) grub_le_to_cpu64 (entry_v1_stat.size);
 		    }
 		  else
 		    {
@@ -939,6 +927,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
 				    entry_v2_stat.first_direct_byte);
 #endif
 		      entry_item->mtime = grub_le_to_cpu32 (entry_v2_stat.mtime);
+		      entry_item->size = (grub_off_t) grub_le_to_cpu64 (entry_v2_stat.size);
 		      if ((grub_le_to_cpu16 (entry_v2_stat.mode) & S_IFLNK)
 			  == S_IFLNK)
 			entry_type = GRUB_FSHELP_SYMLINK;
@@ -1004,16 +993,13 @@ static grub_err_t
 grub_reiserfs_open (struct grub_file *file, const char *name)
 {
   struct grub_reiserfs_data *data = 0;
-  struct grub_fshelp_node root, *found = 0, info;
+  struct grub_fshelp_node root, *found = 0;
   struct grub_reiserfs_key key;
-  grub_uint32_t block_number;
-  grub_uint16_t entry_version, block_size, entry_location;
 
   grub_dl_ref (my_mod);
   data = grub_reiserfs_mount (file->device->disk);
   if (! data)
     goto fail;
-  block_size = grub_le_to_cpu16 (data->superblock.block_size);
   key.directory_id = grub_cpu_to_le32 (1);
   key.object_id = grub_cpu_to_le32 (2);
   key.u.v2.offset_type = 0;
@@ -1031,46 +1017,8 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
                          grub_reiserfs_read_symlink, GRUB_FSHELP_REG);
   if (grub_errno)
     goto fail;
-  key.directory_id = found->header.key.directory_id;
-  key.object_id = found->header.key.object_id;
-  grub_reiserfs_set_key_type (&key, GRUB_REISERFS_STAT, 2);
-  grub_reiserfs_set_key_offset (&key, 0);
-  if (grub_reiserfs_get_item (data, &key, &info, 1) != GRUB_ERR_NONE)
-    goto fail;
-  if (info.block_number == 0)
-    {
-      grub_error (GRUB_ERR_BAD_FS, "unable to find searched item");
-      goto fail;
-    }
-  entry_version = grub_le_to_cpu16 (info.header.version);
-  entry_location = grub_le_to_cpu16 (info.header.item_location);
-  block_number = info.block_number;
-  if (entry_version == 0) /* Version 1 stat item. */
-    {
-      struct grub_reiserfs_stat_item_v1 entry_v1_stat;
-      grub_disk_read (data->disk,
-                      block_number * (block_size >> GRUB_DISK_SECTOR_BITS),
-                      entry_location
-                      + (((grub_off_t) block_number * block_size)
-                         & (GRUB_DISK_SECTOR_SIZE - 1)),
-                      sizeof (entry_v1_stat), &entry_v1_stat);
-      if (grub_errno)
-        goto fail;
-      file->size = (grub_off_t) grub_le_to_cpu64 (entry_v1_stat.size);
-    }
-  else
-    {
-      struct grub_reiserfs_stat_item_v2 entry_v2_stat;
-      grub_disk_read (data->disk,
-                      block_number * (block_size  >> GRUB_DISK_SECTOR_BITS),
-                      entry_location
-                      + (((grub_off_t) block_number * block_size)
-                         & (GRUB_DISK_SECTOR_SIZE - 1)),
-                      sizeof (entry_v2_stat), &entry_v2_stat);
-      if (grub_errno)
-        goto fail;
-      file->size = (grub_off_t) grub_le_to_cpu64 (entry_v2_stat.size);
-    }
+  file->size = found->size;
+
   grub_dprintf ("reiserfs", "file size : %d (%08x%08x)\n",
                 (unsigned int) file->size,
                 (unsigned int) (file->size >> 32), (unsigned int) file->size);
@@ -1087,11 +1035,14 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
 }
 
 static grub_ssize_t
-grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
+grub_reiserfs_read_real (struct grub_fshelp_node *node,
+			 grub_off_t off, char *buf, grub_size_t len,
+			 void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
+							     unsigned offset,
+							     unsigned length))
 {
   unsigned int indirect_block, indirect_block_count;
   struct grub_reiserfs_key key;
-  struct grub_fshelp_node *node = file->data;
   struct grub_reiserfs_data *data = node->data;
   struct grub_fshelp_node found;
   grub_uint16_t block_size = grub_le_to_cpu16 (data->superblock.block_size);
@@ -1106,9 +1057,9 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
   key.object_id = node->header.key.object_id;
   key.u.v2.offset_type = 0;
   grub_reiserfs_set_key_type (&key, GRUB_REISERFS_ANY, 2);
-  initial_position = file->offset;
+  initial_position = off;
   current_position = 0;
-  final_position = MIN (len + initial_position, file->size);
+  final_position = MIN (len + initial_position, node->size);
   grub_dprintf ("reiserfs",
 		"Reading from %lld to %lld (%lld instead of requested %ld)\n",
 		(unsigned long long) initial_position,
@@ -1154,7 +1105,7 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
                             "Reading direct block %u from %u to %u...\n",
                             (unsigned) block, (unsigned) offset,
                             (unsigned) (offset + length));
-              found.data->disk->read_hook = file->read_hook;
+              found.data->disk->read_hook = read_hook;
               grub_disk_read (found.data->disk,
                               block,
                               offset
@@ -1180,7 +1131,7 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
                           item_size, indirect_block_ptr);
           if (grub_errno)
             goto fail;
-          found.data->disk->read_hook = file->read_hook;
+          found.data->disk->read_hook = read_hook;
           for (indirect_block = 0;
                indirect_block < indirect_block_count
                  && current_position < final_position;
@@ -1280,6 +1231,13 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
  fail:
   grub_free (indirect_block_ptr);
   return -1;
+}
+
+static grub_ssize_t
+grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
+{
+  return grub_reiserfs_read_real (file->data, file->offset, buf, len,
+				  file->read_hook);
 }
 
 /* Close the file FILE.  */

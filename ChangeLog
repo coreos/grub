@@ -1,5 +1,18 @@
 2012-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix long symlinks on reiserfs.
+
+	* grub-core/fs/reiserfs.c (grub_fshelp_node): New field size.
+	(grub_reiserfs_read_symlink): Use grub_reiserfs_read_real.
+	(grub_reiserfs_iterate_dir): Save size for non-directories.
+	(grub_reiserfs_open): Don't reread stat block as we already know the
+	size.
+	(grub_reiserfs_read): Split into...
+	(grub_reiserfs_read_real): ... and ...
+	(grub_reiserfs_read): ...this.
+
+2012-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix non-indexed JFS.
 
 	* grub-core/fs/jfs.c (grub_jfs_sblock): New field flags.
