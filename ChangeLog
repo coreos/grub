@@ -1,3 +1,12 @@
+2012-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix non-indexed JFS.
+
+	* grub-core/fs/jfs.c (grub_jfs_sblock): New field flags.
+	(grub_jfs_data): New field namecomponentlen.
+	(grub_jfs_mount): Fill namecomponentlen.
+	(grub_jfs_getent): Use namecomponentlen rather than hardcoded 11.
+
 2012-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/script/yylex.l: Ugly fix for "\\\n ".

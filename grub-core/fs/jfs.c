@@ -52,8 +52,9 @@ struct grub_jfs_sblock
      4096 was tested.  */
   grub_uint32_t blksz;
   grub_uint16_t log2_blksz;
-
-  grub_uint8_t unused[79];
+  grub_uint8_t unused[14];
+  grub_uint32_t flags;
+  grub_uint8_t unused3[61];
   char volname[11];
   grub_uint8_t unused2[24];
   grub_uint8_t uuid[16];
@@ -220,6 +221,7 @@ struct grub_jfs_data
   struct grub_jfs_inode currinode;
   int pos;
   int linknest;
+  int namecomponentlen;
 } __attribute__ ((packed));
 
 struct grub_jfs_diropen
@@ -380,6 +382,11 @@ grub_jfs_mount (grub_disk_t disk)
 		      sizeof (struct grub_jfs_inode), &data->fileset))
     goto fail;
 
+  if (data->sblock.flags & grub_cpu_to_le32_compile_time (0x00200000))
+    data->namecomponentlen = 11;
+  else
+    data->namecomponentlen = 13;
+
   return data;
 
  fail:
@@ -532,9 +539,10 @@ grub_jfs_getent (struct grub_jfs_diropen *diro)
       return grub_jfs_getent (diro);
     }
 
-  addstr (leaf->namepart, len < 11 ? len : 11);
+  addstr (leaf->namepart, len < diro->data->namecomponentlen ? len
+	  : diro->data->namecomponentlen);
   diro->ino = grub_le_to_cpu32 (leaf->inode);
-  len -= 11;
+  len -= diro->data->namecomponentlen;
 
   /* Move down to the leaf level.  */
   nextent = leaf->next;
