@@ -1,3 +1,7 @@
+2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Bump to beta5.
+
 2012-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix wrapped HFS+ handling.
