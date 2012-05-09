@@ -87,11 +87,11 @@ typedef grub_uint16_t grub_minix_ino_t;
 #define GRUB_MINIX_LOG2_ZONESZ	(GRUB_MINIX_LOG2_BSIZE				\
 				 + grub_minix_to_cpu16 (data->sblock.log2_zone_size))
 #endif
-#define GRUB_MINIX_ZONESZ	(1 << (data->log_block_size		\
-				       + grub_minix_to_cpu16 (data->sblock.log2_zone_size)))
+#define GRUB_MINIX_ZONESZ	((grub_uint64_t) data->block_size <<			\
+				 (GRUB_DISK_SECTOR_BITS + grub_minix_to_cpu16 (data->sblock.log2_zone_size)))
 
 #ifdef MODE_MINIX3
-#define GRUB_MINIX_ZONE2SECT(zone) ((zone) << (data->log_block_size - GRUB_DISK_SECTOR_BITS))
+#define GRUB_MINIX_ZONE2SECT(zone) ((zone) * data->block_size)
 #else
 #define GRUB_MINIX_ZONE2SECT(zone) ((zone) << GRUB_MINIX_LOG2_ZONESZ)
 #endif
@@ -170,7 +170,7 @@ struct grub_minix_data
   int linknest;
   grub_disk_t disk;
   int filename_size;
-  grub_size_t log_block_size;
+  grub_size_t block_size;
 };
 
 static grub_dl_t my_mod;
@@ -251,26 +251,31 @@ static grub_ssize_t
 grub_minix_read_file (struct grub_minix_data *data,
 		      void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 					 unsigned offset, unsigned length),
-		      grub_off_t pos, grub_disk_addr_t len, char *buf)
+		      grub_off_t pos, grub_size_t len, char *buf)
 {
-  grub_disk_addr_t i;
-  grub_disk_addr_t blockcnt;
-  grub_uint64_t posblock;
-  grub_uint64_t blockoff;
+  grub_uint32_t i;
+  grub_uint32_t blockcnt;
+  grub_uint32_t posblock;
+  grub_uint32_t blockoff;
 
   /* Adjust len so it we can't read past the end of the file.  */
   if (len + pos > GRUB_MINIX_INODE_SIZE (data))
     len = GRUB_MINIX_INODE_SIZE (data) - pos;
 
-  blockcnt = ((len + pos + (1 << data->log_block_size) - 1)
-	      >> data->log_block_size);
-  posblock = pos >> data->log_block_size;
-  blockoff = pos & ((1 << data->log_block_size) - 1);
+  /* Files are at most 2G/4G - 1 bytes on minixfs. Avoid 64-bit division.  */
+  blockcnt = ((grub_uint32_t) ((len + pos
+				+ (data->block_size << GRUB_DISK_SECTOR_BITS)
+				- 1)
+	       >> GRUB_DISK_SECTOR_BITS)) / data->block_size;
+  posblock = (((grub_uint32_t) pos)
+	      / (data->block_size << GRUB_DISK_SECTOR_BITS));
+  blockoff = (((grub_uint32_t) pos)
+	      % (data->block_size << GRUB_DISK_SECTOR_BITS));
 
   for (i = posblock; i < blockcnt; i++)
     {
       grub_disk_addr_t blknr;
-      grub_uint64_t blockend = 1 << data->log_block_size;
+      grub_uint64_t blockend = data->block_size << GRUB_DISK_SECTOR_BITS;
       grub_off_t skipfirst = 0;
 
       blknr = grub_minix_get_file_block (data, i);
@@ -280,10 +285,12 @@ grub_minix_read_file (struct grub_minix_data *data,
       /* Last block.  */
       if (i == blockcnt - 1)
 	{
-	  blockend = (len + pos) & ((1 << data->log_block_size) - 1);
+	  /* len + pos < 4G (checked above), so it doesn't overflow.  */
+	  blockend = (((grub_uint32_t) (len + pos))
+		      % (data->block_size << GRUB_DISK_SECTOR_BITS));
 
 	  if (!blockend)
-	    blockend = 1 << data->log_block_size;
+	    blockend = data->block_size << GRUB_DISK_SECTOR_BITS;
 	}
 
       /* First block.  */
@@ -301,7 +308,7 @@ grub_minix_read_file (struct grub_minix_data *data,
       if (grub_errno)
 	return -1;
 
-      buf += (1 << data->log_block_size) - skipfirst;
+      buf += (data->block_size << GRUB_DISK_SECTOR_BITS) - skipfirst;
     }
 
   return len;
@@ -492,18 +499,18 @@ grub_minix_mount (grub_disk_t disk)
 #ifdef MODE_MINIX3
   /* These tests are endian-independent. No need to byteswap.  */
   if (data->sblock.block_size == 0xffff)
-    data->log_block_size = 10;
+    data->block_size = 2;
   else
     {
-      if ((data->sblock.block_size & (data->sblock.block_size - 1))
-	  || data->sblock.block_size == 0)
+      if ((data->sblock.block_size == grub_cpu_to_minix16_compile_time (0x200))
+	  || (data->sblock.block_size == 0)
+	  || (data->sblock.block_size & grub_cpu_to_minix16_compile_time (0x1ff)))
 	goto fail;
-      for (data->log_block_size = 0; (1 << data->log_block_size)
-	     < grub_minix_to_cpu16 (data->sblock.block_size);
-	   data->log_block_size++);
+      data->block_size = grub_minix_to_cpu16 (data->sblock.block_size)
+	>> GRUB_DISK_SECTOR_BITS;
     }
 #else
-  data->log_block_size = 10;
+  data->block_size = 2;
 #endif
 
   return data;

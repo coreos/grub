@@ -1,4 +1,13 @@
-2012-04-18  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix minixfs with non-power-of-two blocks since it's supported by minix.
+
+	* grub-core/fs/minix.c (GRUB_MINIX_ZONESZ): Use block_size.
+	(grub_minix_data): Replace log_block_size with block_size.
+	(grub_minix_read_file): Use block_size but avoid 64-bit division.
+	(grub_minix_mount): Fill block_size.
+
+2012-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Bump to beta5.
 
