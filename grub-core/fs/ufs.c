@@ -53,17 +53,14 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define UFS_BLKSZ(sblock) (grub_le_to_cpu32 (sblock->bsize))
 #define UFS_LOG_BLKSZ(sblock) (data->log2_blksz)
 
-#define INODE(data,field) data->inode.  field
 #ifdef MODE_UFS2
 #define INODE_ENDIAN(data,field,bits1,bits2) grub_le_to_cpu##bits2 (data->inode.field)
 #else
 #define INODE_ENDIAN(data,field,bits1,bits2) grub_le_to_cpu##bits1 (data->inode.field)
 #endif
 
-#define INODE_SIZE(data) INODE_ENDIAN (data,size,32,64)
-#define INODE_NBLOCKS(data) INODE_ENDIAN (data,nblocks,32,64)
-
-#define INODE_MODE(data) INODE_ENDIAN (data,mode,16,16)
+#define INODE_SIZE(data) grub_le_to_cpu64 (data->inode.size)
+#define INODE_MODE(data) grub_le_to_cpu16 (data->inode.mode)
 #ifdef MODE_UFS2
 #define LOG_INODE_BLKSZ 3
 #else
@@ -136,7 +133,7 @@ struct grub_ufs_inode
   grub_uint32_t uid;
   grub_uint32_t gid;
   grub_uint32_t blocksize;
-  grub_int64_t size;
+  grub_uint64_t size;
   grub_int64_t nblocks;
   grub_uint64_t atime;
   grub_uint64_t mtime;
@@ -171,7 +168,7 @@ struct grub_ufs_inode
   grub_uint16_t nlinks;
   grub_uint16_t uid;
   grub_uint16_t gid;
-  grub_int64_t size;
+  grub_uint64_t size;
   grub_uint64_t atime;
   grub_uint64_t mtime;
   grub_uint64_t ctime;
@@ -441,7 +438,7 @@ grub_ufs_lookup_symlink (struct grub_ufs_data *data, int ino)
   /* Check against zero is paylindromic, no need to swap.  */
   if (data->inode.nblocks == 0
       && INODE_SIZE (data) <= sizeof (data->inode.symlink))
-    grub_strcpy (symlink, (char *) INODE (data, symlink));
+    grub_strcpy (symlink, (char *) data->inode.symlink);
   else
     grub_ufs_read_file (data, 0, 0, INODE_SIZE (data), symlink);
   symlink[INODE_SIZE (data)] = '\0';

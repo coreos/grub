@@ -1,3 +1,14 @@
+2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix UFS1 big file support.
+
+	* grub-core/fs/ufs.c (INODE): Removed.
+	(INODE_SIZE): Always use 64-bit byte-swap since size field is always
+	64-bit.
+	(INODE_MODE): Simplify.
+	(grub_ufs_inode): Use uint64_t for size and not int64_t.
+	(grub_ufs_lookup_symlink): Don't use INODE.
+
 2012-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix minixfs with non-power-of-two blocks since it's supported by minix.
