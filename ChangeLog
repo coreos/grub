@@ -1,5 +1,15 @@
 2012-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix wrapped HFS+ handling.
+
+	* grub-core/fs/fshelp.c (grub_fshelp_read_file): New argument
+	blocks_start. All users updated.
+	* grub-core/fs/hfsplus.c (grub_hfsplus_read_block): Don't add
+	wrapping offset.
+	(grub_hfsplus_read_file): Pass embedding offset to fshelp_read_file.
+
+2012-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix long symlinks on reiserfs.
 
 	* grub-core/fs/reiserfs.c (grub_fshelp_node): New field size.

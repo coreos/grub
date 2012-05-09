@@ -483,7 +483,7 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
       if (!grub_fshelp_log2blksize (ctx->comp.spc, &pow))
 	grub_fshelp_read_file (ctx->comp.disk, (grub_fshelp_node_t) ctx,
 			       read_hook, ofs, len, dest,
-			       grub_ntfs_read_block, ofs + len, pow);
+			       grub_ntfs_read_block, ofs + len, pow, 0);
       return grub_errno;
     }
 

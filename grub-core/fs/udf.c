@@ -594,7 +594,7 @@ grub_udf_read_file (grub_fshelp_node_t node,
   return  grub_fshelp_read_file (node->data->disk, node, read_hook,
 				 pos, len, buf, grub_udf_read_block,
 				 U64 (node->block.fe.file_size),
-				 node->data->lbshift);
+				 node->data->lbshift, 0);
 }
 
 static unsigned sblocklist[] = { 256, 512, 0 };

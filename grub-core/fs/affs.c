@@ -498,7 +498,7 @@ grub_affs_read (grub_file_t file, char *buf, grub_size_t len)
 				file->read_hook,
 				file->offset, len, buf, grub_affs_read_block,
 				grub_be_to_cpu32 (data->diropen.di.size),
-				data->log_blocksize);
+				data->log_blocksize, 0);
 }
 
 static grub_int32_t

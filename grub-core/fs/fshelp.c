@@ -233,7 +233,8 @@ grub_fshelp_read_file (grub_disk_t disk, grub_fshelp_node_t node,
 		       grub_off_t pos, grub_size_t len, char *buf,
 		       grub_disk_addr_t (*get_block) (grub_fshelp_node_t node,
                                                       grub_disk_addr_t block),
-		       grub_off_t filesize, int log2blocksize)
+		       grub_off_t filesize, int log2blocksize,
+		       grub_disk_addr_t blocks_start)
 {
   grub_disk_addr_t i, blockcnt;
   int blocksize = 1 << (log2blocksize + GRUB_DISK_SECTOR_BITS);
@@ -281,7 +282,7 @@ grub_fshelp_read_file (grub_disk_t disk, grub_fshelp_node_t node,
 	{
 	  disk->read_hook = read_hook;
 
-	  grub_disk_read (disk, blknr, skipfirst,
+	  grub_disk_read (disk, blknr + blocks_start, skipfirst,
 			  blockend, buf);
 	  disk->read_hook = 0;
 	  if (grub_errno)

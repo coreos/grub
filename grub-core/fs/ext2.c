@@ -520,7 +520,7 @@ grub_ext2_read_file (grub_fshelp_node_t node,
 				pos, len, buf, grub_ext2_read_block,
 				grub_cpu_to_le32 (node->inode.size)
 				| (((grub_off_t) grub_cpu_to_le32 (node->inode.size_high)) << 32),
-				LOG2_EXT2_BLOCK_SIZE (node->data));
+				LOG2_EXT2_BLOCK_SIZE (node->data), 0);
 
 }
 

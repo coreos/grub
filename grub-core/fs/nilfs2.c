@@ -635,7 +635,7 @@ grub_nilfs2_read_file (grub_fshelp_node_t node,
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_nilfs2_read_block,
 				grub_le_to_cpu64 (node->inode.i_size),
-				LOG2_NILFS2_BLOCK_SIZE (node->data));
+				LOG2_NILFS2_BLOCK_SIZE (node->data), 0);
 
 }
 

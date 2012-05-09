@@ -351,7 +351,7 @@ grub_sfs_read_file (grub_fshelp_node_t node,
 {
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_sfs_read_block,
-				node->size, node->data->log_blocksize);
+				node->size, node->data->log_blocksize, 0);
 }
 
 

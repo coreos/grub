@@ -327,9 +327,7 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       nnode = 0;
 
       if (blk != 0xffffffffffffffffULL)
-	return (blk
-		+ (node->data->embedded_offset >> (node->data->log2blksize
-						   - GRUB_DISK_SECTOR_BITS)));
+	return blk;
 
       /* For the extent overflow file, extra extents can't be found in
 	 the extent overflow file.  If this happens, you found a
@@ -382,7 +380,8 @@ grub_hfsplus_read_file (grub_fshelp_node_t node,
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_hfsplus_read_block,
 				node->size,
-				node->data->log2blksize - GRUB_DISK_SECTOR_BITS);
+				node->data->log2blksize - GRUB_DISK_SECTOR_BITS,
+				node->data->embedded_offset);
 }
 
 static struct grub_hfsplus_data *

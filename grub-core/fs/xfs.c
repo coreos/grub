@@ -389,7 +389,7 @@ grub_xfs_read_file (grub_fshelp_node_t node,
 				pos, len, buf, grub_xfs_read_block,
 				grub_be_to_cpu64 (node->inode.size),
 				node->data->sblock.log2_bsize
-				- GRUB_DISK_SECTOR_BITS);
+				- GRUB_DISK_SECTOR_BITS, 0);
 }
 
 
