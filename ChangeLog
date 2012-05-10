@@ -1,8 +1,13 @@
 2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ufs.c (grub_ufs_find_file): Fix handling of double slash.
+	* grub-core/fs/minix.c (grub_minix_find_file): Likewise.
+
+2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-menulst2cfg.c (main): Check return value of fwrite.
 	* util/grub-mklayout.c (write_file): Likewise. New argument fname.
-	Allusers updated.
+	All users updated.
 
 2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 

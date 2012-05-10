@@ -386,12 +386,10 @@ grub_minix_find_file (struct grub_minix_data *data, const char *path)
   grub_strcpy (fpath, path);
 
   /* Skip the first slash.  */
-  if (name[0] == '/')
-    {
-      name++;
-      if (!*name)
-	return 0;
-    }
+  while (*name == '/')
+    name++;
+  if (!*name)
+    return 0;
 
   /* Extract the actual part from the pathname.  */
   next = grub_strchr (name, '/');
@@ -399,6 +397,8 @@ grub_minix_find_file (struct grub_minix_data *data, const char *path)
     {
       next[0] = '\0';
       next++;
+      while (*next == '/')
+	next++;
     }
 
   do
@@ -445,6 +445,8 @@ grub_minix_find_file (struct grub_minix_data *data, const char *path)
 	    {
 	      next[0] = '\0';
 	      next++;
+	      while (*next == '/')
+		next++;
 	    }
 
      	  if ((GRUB_MINIX_INODE_MODE (data)
