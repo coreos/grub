@@ -533,6 +533,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
   enum grub_fshelp_filetype type;
   grub_off_t len;
   char *symlink = 0;
+  int was_continue = 0;
 
   /* Extend the symlink.  */
   auto inline void  __attribute__ ((always_inline)) add_part (const char *part,
@@ -630,11 +631,11 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 		    /* The data on pos + 2 is the actual data, pos + 1
 		       is the length.  Both are part of the `Component
 		       Record'.  */
-		    if (symlink && (entry->data[pos] & 1))
+		    if (symlink && !was_continue)
 		      add_part ("/", 1);
 		    add_part ((char *) &entry->data[pos + 2],
 			      entry->data[pos + 1]);
-
+		    was_continue = (entry->data[pos] & 1);
 		    break;
 		  }
 
@@ -668,6 +669,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
   for (; offset < len; offset += dirent.len)
     {
       symlink = 0;
+      was_continue = 0;
 
       if (read_node (dir, offset, sizeof (dirent), (char *) &dirent))
 	return 0;
@@ -817,6 +819,8 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 			 + node->have_dirents * sizeof (node->dirents[0])
 			 - sizeof (node->dirents), symlink);
 	    grub_free (symlink);
+	    symlink = 0;
+	    was_continue = 0;
 	  }
 	if (hook (filename, type, node))
 	  {

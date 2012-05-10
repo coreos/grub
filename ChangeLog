@@ -1,5 +1,10 @@
 2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Fix symlink
+	handling.
+
+2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ufs.c (grub_ufs_find_file): Fix handling of double slash.
 	* grub-core/fs/minix.c (grub_minix_find_file): Likewise.
 
