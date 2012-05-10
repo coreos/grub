@@ -310,7 +310,7 @@ get_grub_code (char *layout_code, int shift)
 }
 
 static void
-write_file (FILE *out, struct grub_keyboard_layout *layout)
+write_file (FILE *out, const char *fname, struct grub_keyboard_layout *layout)
 {
   grub_uint32_t version;
   unsigned i;
@@ -332,14 +332,21 @@ write_file (FILE *out, struct grub_keyboard_layout *layout)
     layout->keyboard_map_shift_l3[i]
       = grub_cpu_to_le32(layout->keyboard_map_shift_l3[i]);
 
-  fwrite (GRUB_KEYBOARD_LAYOUTS_FILEMAGIC, 1,
-	  GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE, out);
-  fwrite (&version, sizeof (version), 1, out);
-  fwrite (layout, 1, sizeof (*layout), out);
+  if (fwrite (GRUB_KEYBOARD_LAYOUTS_FILEMAGIC, 1,
+	      GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE, out)
+      != GRUB_KEYBOARD_LAYOUTS_FILEMAGIC_SIZE
+      || fwrite (&version, sizeof (version), 1, out) != 1
+      || fwrite (layout, 1, sizeof (*layout), out) != sizeof (*layout))
+    {
+      if (fname)
+	grub_util_error ("cannot write to `%s': %s", fname, strerror (errno));
+      else
+	grub_util_error ("cannot write to the stdout: %s", strerror (errno));
+    }
 }
 
 static void
-write_keymaps (FILE *in, FILE *out)
+write_keymaps (FILE *in, FILE *out, const char *out_filename)
 {
   struct grub_keyboard_layout layout;
   char line[2048];
@@ -413,7 +420,7 @@ write_keymaps (FILE *in, FILE *out)
 
   add_special_keys (&layout);
 
-  write_file (out, &layout);
+  write_file (out, out_filename, &layout);
 }
 
 static error_t
@@ -489,7 +496,7 @@ main (int argc, char *argv[])
 		       strerror (errno));
     }
 
-  write_keymaps (in, out);
+  write_keymaps (in, out, arguments.output);
 
   if (in != stdin)
     fclose (in);

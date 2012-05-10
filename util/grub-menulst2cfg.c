@@ -35,6 +35,7 @@ main (int argc, char **argv)
   size_t bufsize = 0;
   char *suffix = xstrdup ("");
   int suffixlen = 0;
+  const char *out_fname = 0;
 
   if (argc >= 2 && argv[1][0] == '-')
     {
@@ -66,6 +67,7 @@ main (int argc, char **argv)
 		   argv[2], strerror (errno));
 	  return 1;
 	}
+      out_fname = argv[2];
     }
   else
     out = stdout;
@@ -109,7 +111,14 @@ main (int argc, char **argv)
   if (entryname)
     fprintf (out, "}\n\n");
 
-  fwrite (suffix, 1, suffixlen, out);
+  if (fwrite (suffix, 1, suffixlen, out) != suffixlen)
+    {
+      if (out_fname)
+	grub_util_error ("cannot write to `%s': %s",
+			 out_fname, strerror (errno));
+      else
+	grub_util_error ("cannot write to the stdout: %s", strerror (errno));
+    }
 
   free (buf);
   free (suffix);
