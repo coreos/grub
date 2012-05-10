@@ -1,5 +1,15 @@
 2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/cpio.c (grub_cpio_find_file): Handle prefix.
+	(handle_symlink): Fix off-by-one error.
+	Canonicalize the target.
+	(grub_cpio_dir): Canonicalize the name.
+	Fix memory leak.
+	Set directory.
+	(grub_cpio_open): Canonicalize the name.
+
+2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Fix symlink
 	handling.
 

@@ -254,7 +254,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       if (grub_disk_read (data->disk, 0, data->hofs, sizeof (hd), &hd))
 	return grub_errno;
 
-      if (!hd.name[0])
+      if (!hd.name[0] && !hd.prefix[0])
 	{
 	  *ofs = 0;
 	  return GRUB_ERR_NONE;
@@ -313,9 +313,21 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 
       if (!have_longname)
 	{
-	  *name = grub_strndup (hd.name, sizeof (hd.name));
+	  grub_size_t extra_size = 0;
+
+	  while (extra_size < sizeof (hd.prefix)
+		 && hd.prefix[extra_size])
+	    extra_size++;
+	  *name = grub_malloc (sizeof (hd.name) + extra_size + 2);
 	  if (*name == NULL)
 	    return grub_errno;
+	  if (hd.prefix[0])
+	    {
+	      grub_memcpy (*name, hd.prefix, extra_size);
+	      (*name)[extra_size++] = '/';
+	    }
+	  grub_memcpy (*name + extra_size, hd.name, sizeof (hd.name));
+	  (*name)[extra_size + sizeof (hd.name)] = 0;
 	}
 
       data->size = read_number (hd.size, sizeof (hd.size));
@@ -457,13 +469,15 @@ handle_symlink (struct grub_cpio_data *data,
 #endif
   if (target[prefixlen] == '/')
     {
-      grub_memmove (target, target + prefixlen, data->size - 1);
-      ptr = target + data->size - 1;
+      grub_memmove (target, target + prefixlen, size);
+      ptr = target + size;
       ptr = grub_stpcpy (ptr, rest);
       *ptr = 0;
       grub_dprintf ("cpio", "symlink redirected %s to %s\n",
 		    *name, target);
       grub_free (*name);
+
+      canonicalize (target);
       *name = target;
       *restart = 1;
       return GRUB_ERR_NONE;
@@ -479,6 +493,7 @@ handle_symlink (struct grub_cpio_data *data,
   grub_dprintf ("cpio", "symlink redirected %s to %s\n",
 		*name, target);
   grub_free (*name);
+  canonicalize (target);
   *name = target;
   *restart = 1;
   return GRUB_ERR_NONE;
@@ -498,6 +513,7 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
   path = grub_strdup (path_in + 1);
   if (!path)
     return grub_errno;
+  canonicalize (path);
   for (ptr = path + grub_strlen (path) - 1; ptr >= path && *ptr == '/'; ptr--)
     *ptr = 0;
 
@@ -543,12 +559,15 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 	    {
 	      struct grub_dirhook_info info;
 	      grub_memset (&info, 0, sizeof (info));
-	      info.dir = (p != NULL);
+	      info.dir = (p != NULL) || ((mode & ATTR_TYPE) == ATTR_DIR);
 	      info.mtime = mtime;
 	      info.mtimeset = 1;
 
 	      if (hook (n, &info))
-		goto fail;
+		{
+		  grub_free (name);
+		  goto fail;
+		}
 	      grub_free (prev);
 	      prev = name;
 	    }
@@ -602,6 +621,8 @@ grub_cpio_open (grub_file_t file, const char *name_in)
 
   if (!name)
     return grub_errno;
+
+  canonicalize (name);
 
   grub_dl_ref (my_mod);
 
