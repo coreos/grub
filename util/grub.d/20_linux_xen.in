@@ -164,6 +164,14 @@ boot_device_id=
 
 title_correction_code=
 
+case "$machine" in
+    i?86) GENKERNEL_ARCH="x86" ;;
+    mips|mips64) GENKERNEL_ARCH="mips" ;;
+    mipsel|mips64el) GENKERNEL_ARCH="mipsel" ;;
+    arm*) GENKERNEL_ARCH="arm" ;;
+    *) GENKERNEL_ARCH="$machine" ;;
+esac
+
 # Extra indentation to add to menu entries in a submenu. We're not in a submenu
 # yet, so it's empty. In a submenu it will be equal to '\t' (one tab).
 submenu_indentation=""
@@ -194,12 +202,14 @@ while [ "x${xen_list}" != "x" ] ; do
 	linux_root_device_thisversion="${LINUX_ROOT_DEVICE}"
 
 	initrd=
-	for i in "initrd.img-${version}" "initrd-${version}.img" \
-	    "initrd-${version}" "initrd.img-${alt_version}" \
-	    "initrd-${alt_version}.img" "initrd-${alt_version}" \
-	    "initramfs-genkernel-${version}" \
-	    "initramfs-genkernel-${alt_version}" ; do
-	    if test -e "${dirname}/${i}" ; then
+	for i in "initrd.img-${version}" "initrd-${version}.img" "initrd-${version}.gz" \
+	   "initrd-${version}" "initramfs-${version}.img" \
+	   "initrd.img-${alt_version}" "initrd-${alt_version}.img" \
+	   "initrd-${alt_version}" "initramfs-${alt_version}.img" \
+	   "initramfs-genkernel-${version}" \
+	   "initramfs-genkernel-${alt_version}" \
+	   "initramfs-genkernel-${GENKERNEL_ARCH}-${version}" \
+	   "initramfs-genkernel-${GENKERNEL_ARCH}-${alt_version}" ; then
 		initrd="$i"
 		break
 	    fi

@@ -1,5 +1,10 @@
 2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/20_linux_xen.in: Update initrd list based on 10_linux.in
+	counterpart.
+
+2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix UFS1 big file support.
 
 	* grub-core/fs/ufs.c (INODE): Removed.
