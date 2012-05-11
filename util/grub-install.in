@@ -776,7 +776,7 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
 		exit 1
             fi
 
-            if [ "$(file -s "${install_device}" -b | awk '{ print $1 }')" = ELF ] || [ $(cmp /dev/zero "${install_device}" &>/dev/null) ]; then
+            if [ "$(file -s "${install_device}" -b | awk '{ print $1 }')" = ELF ] || [ x$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t zero_check) = xtrue ]; then
             # Change boot device to the harddisk root
 		boot_device="$ofpath"
 		dd if="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" of="${install_device}" status=noxfer || {

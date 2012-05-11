@@ -1,4 +1,13 @@
-2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use grub-probe and not cmp to check that disk is empty.
+
+	* util/grub-install.in: Use grub-probe for zero-check.
+	* util/grub-probe.c (PRINT_ZERO_CHECK): New enum value.
+	(probe): Handle PRINT_ZERO_CHECK.
+	(argp_parser): Handle -t zero_check.
+
+2012-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Flush block cache on adding disk to device map.
 

@@ -67,6 +67,7 @@ enum {
   PRINT_ARC_HINT,
   PRINT_COMPATIBILITY_HINT,
   PRINT_MSDOS_PARTTYPE,
+  PRINT_ZERO_CHECK,
   PRINT_DISK
 };
 
@@ -390,6 +391,45 @@ probe (const char *path, char **device_names, char delim)
 	  putchar (delim);
 	}
       goto end;
+    }
+
+  if (print == PRINT_ZERO_CHECK)
+    {
+      for (curdev = drives_names; *curdev; curdev++)
+	{
+	  grub_device_t dev = NULL;
+	  grub_uint32_t buffer[32768];
+	  grub_disk_addr_t addr;
+	  grub_disk_addr_t dsize;
+
+	  grub_util_info ("opening %s", *curdev);
+	  dev = grub_device_open (*curdev);
+	  if (! dev || !dev->disk)
+	    grub_util_error ("%s", grub_errmsg);
+
+	  dsize = grub_disk_get_size (dev->disk);
+	  for (addr = 0; addr < dsize;
+	       addr += sizeof (buffer) / GRUB_DISK_SECTOR_SIZE)
+	    {
+	      grub_size_t sz = sizeof (buffer);
+	      grub_uint32_t *ptr;
+
+	      if (sizeof (buffer) / GRUB_DISK_SECTOR_SIZE > dsize - addr)
+		sz = (dsize - addr) * GRUB_DISK_SECTOR_SIZE;
+	      grub_disk_read (dev->disk, addr, 0, sz, buffer);
+
+	      for (ptr = buffer; ptr < buffer + sz / sizeof (*buffer); ptr++)
+		if (*ptr)
+		  {
+		    grub_printf ("false\n");
+		    grub_device_close (dev);
+		    goto end;
+		  }
+	    }
+
+	  grub_device_close (dev);
+	}
+      grub_printf ("true\n");
     }
 
   if (print == PRINT_FS || print == PRINT_FS_UUID
@@ -770,6 +810,8 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	print = PRINT_ARC_HINT;
       else if (!strcmp (arg, "compatibility_hint"))
 	print = PRINT_COMPATIBILITY_HINT;
+      else if (strcmp (arg, "zero_check") == 0)
+	print = PRINT_ZERO_CHECK;
       else if (!strcmp (arg, "disk"))
 	print = PRINT_DISK;
       else
