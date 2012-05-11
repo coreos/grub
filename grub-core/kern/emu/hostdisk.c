@@ -764,6 +764,21 @@ grub_util_fd_seek (int fd, const char *name, grub_uint64_t off)
 }
 #endif
 
+static void
+flush_initial_buffer (const char *os_dev __attribute__ ((unused)))
+{
+#ifdef __linux__
+  int fd;
+  struct stat st;
+
+  fd = open (os_dev, O_RDONLY);
+  if (fd >= 0 && fstat (fd, &st) >= 0 && S_ISBLK (st.st_mode))
+    ioctl (fd, BLKFLSBUF, 0);
+  if (fd >= 0)
+    close (fd);
+#endif
+}
+
 const char *
 grub_hostdisk_os_dev_to_grub_drive (const char *os_disk, int add)
 {
@@ -787,6 +802,8 @@ grub_hostdisk_os_dev_to_grub_drive (const char *os_disk, int add)
   strcpy (map[i].drive, "hostdisk/");
   strcpy (map[i].drive + sizeof ("hostdisk/") - 1, os_disk);
   map[i].device_map = 0;
+
+  flush_initial_buffer (os_disk);
 
   return map[i].drive;
 }
@@ -872,6 +889,11 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
 	data->dev = xstrdup (dev);
 	data->access_mode = (flags & O_ACCMODE);
 	data->fd = fd;
+
+#ifdef __linux__
+	if (data->is_disk)
+	  ioctl (data->fd, BLKFLSBUF, 0);
+#endif
       }
 
     if (is_partition)
@@ -1329,6 +1351,8 @@ read_device_map (const char *dev_map)
 			  drive_e, map[drive].drive);
 	  *drive_p = c;
 	}
+
+      flush_initial_buffer (map[drive].device);
     }
 
   fclose (fp);

@@ -1,5 +1,15 @@
 2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Flush block cache on adding disk to device map.
+
+	* grub-core/kern/emu/hostdisk.c (flush_initial_buffer): New function.
+	(grub_hostdisk_os_dev_to_grub_drive): Call flush_initial_buffer on
+	adding.
+	(read_device_map): Likewise.
+	(open_device): Flush on opening.
+
+2012-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/cpio.c (grub_cpio_find_file): Handle prefix.
 	(handle_symlink): Fix off-by-one error.
 	Canonicalize the target.
