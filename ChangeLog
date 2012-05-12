@@ -1,5 +1,10 @@
 2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/bfs.c (find_in_b_tree) [MODE_AFS]: Fix handling of exact
+	match in inner node.
+
+2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/bfs.c (mount): Improve filesystem detection reliability.
 	* grub-core/fs/ext2.c (grub_ext2_mount): Likewise.
 	* grub-core/fs/hfs.c (grub_hfs_mount): Likewise.

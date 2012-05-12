@@ -614,7 +614,11 @@ find_in_b_tree (grub_disk_t disk,
 		*res = grub_bfs_to_cpu64 (key_values[i | (1 << j)]);
 		return GRUB_ERR_NONE;
 	      }
+#ifdef MODE_AFS
+	    if (cmp <= 0)
+#else
 	    if (cmp < 0)
+#endif
 	      i |= (1 << j);
 	  }
 	if (i == 0)
@@ -630,7 +634,11 @@ find_in_b_tree (grub_disk_t disk,
 		*res = grub_bfs_to_cpu64 (key_values[0]);
 		return GRUB_ERR_NONE;
 	      }
+#ifdef MODE_AFS
+	    if (cmp > 0 && level != 0)
+#else
 	    if (cmp >= 0 && level != 0)
+#endif
 	      {
 		node_off = grub_bfs_to_cpu64 (key_values[0]);
 		level--;
