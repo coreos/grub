@@ -43,6 +43,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define grub_bfs_to_cpu16 grub_le_to_cpu16
 #define grub_bfs_to_cpu32 grub_le_to_cpu32
 #define grub_bfs_to_cpu64 grub_le_to_cpu64
+#define grub_cpu_to_bfs32_compile_time grub_cpu_to_le32_compile_time
 
 #ifdef MODE_AFS
 #define grub_bfs_to_cpu_treehead grub_bfs_to_cpu32
@@ -818,11 +819,13 @@ mount (grub_disk_t disk, struct grub_bfs_superblock *sb)
 		       );
   if (err)
     return err;
-  if (grub_bfs_to_cpu32 (sb->magic1) != SUPER_BLOCK_MAGIC1
-      || grub_bfs_to_cpu32 (sb->magic2) != SUPER_BLOCK_MAGIC2
-      || grub_bfs_to_cpu32 (sb->magic3) != SUPER_BLOCK_MAGIC3
+  if (sb->magic1 != grub_cpu_to_bfs32_compile_time (SUPER_BLOCK_MAGIC1)
+      || sb->magic2 != grub_cpu_to_bfs32_compile_time (SUPER_BLOCK_MAGIC2)
+      || sb->magic3 != grub_cpu_to_bfs32_compile_time (SUPER_BLOCK_MAGIC3)
+      || sb->bsize == 0
       || (grub_bfs_to_cpu32 (sb->bsize)
-	  != (1U << grub_bfs_to_cpu32 (sb->log2_bsize))))
+	  != (1U << grub_bfs_to_cpu32 (sb->log2_bsize)))
+      || grub_bfs_to_cpu32 (sb->log2_bsize) < GRUB_DISK_SECTOR_BITS)
     return grub_error (GRUB_ERR_BAD_FS, 
 #ifdef MODE_AFS
 		       "not an AFS filesystem"

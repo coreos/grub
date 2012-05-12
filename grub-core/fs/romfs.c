@@ -107,10 +107,19 @@ grub_romfs_mount (grub_device_t dev)
       grub_error (GRUB_ERR_BAD_FS, "too short filesystem");
       return NULL;
     }
+  if (grub_memcmp (sb.sb.magic, GRUB_ROMFS_MAGIC,
+		   sizeof (sb.sb.magic)) != 0)
+    {
+      grub_error (GRUB_ERR_BAD_FS, "not romfs");
+      return NULL;
+    }    
   err = do_checksum (&sb, sizeof (sb) < grub_be_to_cpu32 (sb.sb.total_size) ?
 		     sizeof (sb) : grub_be_to_cpu32 (sb.sb.total_size));
   if (err)
-    return NULL;
+    {
+      grub_error (GRUB_ERR_BAD_FS, "checksum incorrect");
+      return NULL;
+    }
   for (ptr = sb.sb.label; (void *) ptr < (void *) (&sb + 1)
 	 && ptr - sb.d < (grub_ssize_t) grub_be_to_cpu32 (sb.sb.total_size); ptr++)
     if (!*ptr)

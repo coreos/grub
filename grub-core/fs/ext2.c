@@ -578,7 +578,8 @@ grub_ext2_mount (grub_disk_t disk)
     goto fail;
 
   /* Make sure this is an ext2 filesystem.  */
-  if (grub_le_to_cpu16 (data->sblock.magic) != EXT2_MAGIC)
+  if (grub_le_to_cpu16 (data->sblock.magic) != EXT2_MAGIC
+      || grub_le_to_cpu32 (data->sblock.log2_block_size) >= 16)
     {
       grub_error (GRUB_ERR_BAD_FS, "not an ext2 filesystem");
       goto fail;

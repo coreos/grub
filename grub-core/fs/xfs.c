@@ -663,7 +663,10 @@ grub_xfs_mount (grub_disk_t disk)
 		      sizeof (struct grub_xfs_sblock), &data->sblock))
     goto fail;
 
-  if (grub_strncmp ((char *) (data->sblock.magic), "XFSB", 4))
+  if (grub_strncmp ((char *) (data->sblock.magic), "XFSB", 4)
+      || data->sblock.log2_bsize < GRUB_DISK_SECTOR_BITS
+      || ((int) data->sblock.log2_bsize
+	  + (int) data->sblock.log2_dirblk) >= 27)
     {
       grub_error (GRUB_ERR_BAD_FS, "not a XFS filesystem");
       goto fail;

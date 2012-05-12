@@ -1,3 +1,15 @@
+2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/bfs.c (mount): Improve filesystem detection reliability.
+	* grub-core/fs/ext2.c (grub_ext2_mount): Likewise.
+	* grub-core/fs/hfs.c (grub_hfs_mount): Likewise.
+	* grub-core/fs/hfsplus.c (grub_hfsplus_mount): Likewise.
+	* grub-core/fs/jfs.c (grub_jfs_mount): Likewise.
+	* grub-core/fs/minix.c (grub_minix_mount): Likewise.
+	* grub-core/fs/ntfs.c (grub_ntfs_mount): Likewise.
+	* grub-core/fs/romfs.c (grub_romfs_mount): Likewise.
+	* grub-core/fs/xfs.c (grub_xfs_mount): Likewise.
+
 2012-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Use grub-probe and not cmp to check that disk is empty.

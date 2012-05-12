@@ -328,7 +328,8 @@ grub_hfs_mount (grub_disk_t disk)
     goto fail;
 
   /* Check if this is a HFS filesystem.  */
-  if (grub_be_to_cpu16 (data->sblock.magic) != GRUB_HFS_MAGIC)
+  if (grub_be_to_cpu16 (data->sblock.magic) != GRUB_HFS_MAGIC
+      || (data->sblock.blksz & grub_cpu_to_be32_compile_time (0xc00001ff)))
     {
       grub_error (GRUB_ERR_BAD_FS, "not an HFS filesystem");
       goto fail;

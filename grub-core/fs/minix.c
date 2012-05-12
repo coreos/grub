@@ -483,9 +483,9 @@ grub_minix_mount (grub_disk_t disk)
   if (data->sblock.magic == grub_cpu_to_minix16_compile_time (GRUB_MINIX_MAGIC))
     {
 #if !defined(MODE_MINIX3)
-    data->filename_size = 14;
+      data->filename_size = 14;
 #else
-    data->filename_size = 60;
+      data->filename_size = 60;
 #endif
     }
 #if !defined(MODE_MINIX3)
@@ -494,6 +494,11 @@ grub_minix_mount (grub_disk_t disk)
     data->filename_size = 30;
 #endif
   else
+    goto fail;
+
+  /* 20 means 1G zones. We could support up to 31 but already 1G isn't
+     supported by anything else.  */
+  if (grub_minix_to_cpu16 (data->sblock.log2_zone_size) >= 20)
     goto fail;
 
   data->disk = disk;

@@ -366,8 +366,10 @@ grub_jfs_mount (grub_disk_t disk)
       goto fail;
     }
 
-  if (grub_le_to_cpu32 (data->sblock.blksz)
-      != (1U << grub_le_to_cpu16 (data->sblock.log2_blksz)))
+  if (data->sblock.blksz == 0
+      || grub_le_to_cpu32 (data->sblock.blksz)
+      != (1U << grub_le_to_cpu16 (data->sblock.log2_blksz))
+      || grub_le_to_cpu16 (data->sblock.log2_blksz) < GRUB_DISK_SECTOR_BITS)
     {
       grub_error (GRUB_ERR_BAD_FS, "not a JFS filesystem");
       goto fail;

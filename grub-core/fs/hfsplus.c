@@ -439,18 +439,21 @@ grub_hfsplus_mount (grub_disk_t disk)
   /* Make sure this is an HFS+ filesystem.  XXX: Do we really support
      HFX?  */
   magic = grub_be_to_cpu16 (volheader.hfsplus.magic);
-  if ((magic != GRUB_HFSPLUS_MAGIC) && (magic != GRUB_HFSPLUSX_MAGIC))
+  if (((magic != GRUB_HFSPLUS_MAGIC) && (magic != GRUB_HFSPLUSX_MAGIC))
+      || volheader.hfsplus.blksize == 0
+      || ((volheader.hfsplus.blksize & (volheader.hfsplus.blksize - 1)) != 0)
+      || grub_be_to_cpu32 (volheader.hfsplus.blksize) < GRUB_DISK_SECTOR_SIZE)
     {
       grub_error (GRUB_ERR_BAD_FS, "not a HFS+ filesystem");
       goto fail;
     }
 
   grub_memcpy (&data->volheader, &volheader.hfsplus,
-      sizeof (volheader.hfsplus));
+	       sizeof (volheader.hfsplus));
 
-  if (grub_fshelp_log2blksize (grub_be_to_cpu32 (data->volheader.blksize),
-			       &data->log2blksize))
-    goto fail;
+  for (data->log2blksize = 0;
+       (1U << data->log2blksize) < grub_be_to_cpu32 (data->volheader.blksize);
+       data->log2blksize++);
 
   /* Make a new node for the catalog tree.  */
   data->catalog_tree.file.data = data;
