@@ -1,5 +1,15 @@
 2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix handling of UDF symlinks.
+
+	* grub-core/fs/udf.c (read_string): New argument outbuf.
+	All users updated.
+	(grub_ufs_read_symlink): Rename to ...
+	(grub_udf_read_symlink): ... this. All users updated.
+	Handle symlinks with more than one component.
+
+2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/affs.c (grub_affs_read_symlink): Fix handling of long
 	symlinks. Replace leading colon with a slash.
 

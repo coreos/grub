@@ -802,10 +802,9 @@ fail:
 }
 
 static char *
-read_string (grub_uint8_t *raw, grub_size_t sz)
+read_string (const grub_uint8_t *raw, grub_size_t sz, char *outbuf)
 {
   grub_uint16_t *utf16 = NULL;
-  char *ret;
   grub_size_t utf16len = 0;
 
   if (raw[0] != 8 && raw[0] != 16)
@@ -831,11 +830,12 @@ read_string (grub_uint8_t *raw, grub_size_t sz)
       for (i = 0; i < utf16len; i++)
 	utf16[i] = (raw[2 * i + 1] << 8) | raw[2*i + 2];
     }
-  ret = grub_malloc (utf16len * GRUB_MAX_UTF8_PER_UTF16 + 1);
-  if (ret)
-    *grub_utf16_to_utf8 ((grub_uint8_t *) ret, utf16, utf16len) = '\0';
+  if (!outbuf)
+    outbuf = grub_malloc (utf16len * GRUB_MAX_UTF8_PER_UTF16 + 1);
+  if (outbuf)
+    *grub_utf16_to_utf8 ((grub_uint8_t *) outbuf, utf16, utf16len) = '\0';
   grub_free (utf16);
-  return ret;
+  return outbuf;
 }
 
 static int
@@ -904,7 +904,7 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 		  != dirent.file_ident_length)
 		return 0;
 
-	      filename = read_string (raw, dirent.file_ident_length);
+	      filename = read_string (raw, dirent.file_ident_length, 0);
 	      if (!filename)
 		grub_print_error ();
 
@@ -925,22 +925,87 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 }
 
 static char *
-grub_ufs_read_symlink (grub_fshelp_node_t node)
+grub_udf_read_symlink (grub_fshelp_node_t node)
 {
   grub_size_t sz = U64 (node->block.fe.file_size);
   grub_uint8_t *raw;
-  char *ret;
+  const grub_uint8_t *ptr;
+  char *out, *optr;
 
   if (sz < 4)
     return NULL;
-  raw = grub_malloc (sz - 4);
+  raw = grub_malloc (sz);
   if (!raw)
     return NULL;
-  if (grub_udf_read_file (node, NULL, 4, sz - 4, (char *) raw) < 0)
-    return NULL;
-  ret = read_string (raw, sz - 4);
+  if (grub_udf_read_file (node, NULL, 0, sz, (char *) raw) < 0)
+    {
+      grub_free (raw);
+      return NULL;
+    }
+
+  out = grub_malloc (sz * 2 + 1);
+  if (!out)
+    {
+      grub_free (raw);
+      return NULL;
+    }
+
+  optr = out;
+
+  for (ptr = raw; ptr < raw + sz; )
+    {
+      grub_size_t s;
+      if ((grub_size_t) (ptr - raw + 4) > sz)
+	goto fail;
+      if (!(ptr[2] == 0 && ptr[3] == 0))
+	goto fail;
+      s = 4 + ptr[1];
+      if ((grub_size_t) (ptr - raw + s) > sz)
+	goto fail;
+      switch (*ptr)
+	{
+	case 1:
+	  if (ptr[1])
+	    goto fail;
+	case 2:
+	  /* in 4 bytes. out: 1 byte.  */
+	  optr = out;
+	  *optr++ = '/';
+	  break;
+	case 3:
+	  /* in 4 bytes. out: 3 bytes.  */
+	  if (optr != out)
+	    *optr++ = '/';
+	  *optr++ = '.';
+	  *optr++ = '.';
+	  break;
+	case 4:
+	  /* in 4 bytes. out: 2 bytes.  */
+	  if (optr != out)
+	    *optr++ = '/';
+	  *optr++ = '.';
+	  break;
+	case 5:
+	  /* in 4 + n bytes. out, at most: 1 + 2 * n bytes.  */
+	  if (optr != out)
+	    *optr++ = '/';
+	  read_string (ptr + 4, s - 4, optr);
+	  optr += grub_strlen (optr);
+	  break;
+	default:
+	  goto fail;
+	}
+      ptr += s;
+    }
+  *optr = 0;
   grub_free (raw);
-  return ret;
+  return out;
+
+ fail:
+  grub_free (raw);
+  grub_free (out);
+  grub_error (GRUB_ERR_BAD_FS, "invalid symlink");
+  return NULL;
 }
 
 static grub_err_t
@@ -1010,7 +1075,7 @@ grub_udf_dir (grub_device_t device, const char *path,
 
   if (grub_fshelp_find_file (path, rootnode,
 			     &foundnode,
-			     grub_udf_iterate_dir, grub_ufs_read_symlink,
+			     grub_udf_iterate_dir, grub_udf_read_symlink,
 			     GRUB_FSHELP_DIR))
     goto fail;
 
@@ -1051,7 +1116,7 @@ grub_udf_open (struct grub_file *file, const char *name)
 
   if (grub_fshelp_find_file (name, rootnode,
 			     &foundnode,
-			     grub_udf_iterate_dir, grub_ufs_read_symlink,
+			     grub_udf_iterate_dir, grub_udf_read_symlink,
 			     GRUB_FSHELP_REG))
     goto fail;
 
@@ -1104,7 +1169,7 @@ grub_udf_label (grub_device_t device, char **label)
 
   if (data)
     {
-      *label = read_string (data->lvd.ident, sizeof (data->lvd.ident));
+      *label = read_string (data->lvd.ident, sizeof (data->lvd.ident), 0);
       grub_free (data);
     }
   else
