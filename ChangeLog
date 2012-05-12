@@ -1,5 +1,10 @@
 2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/affs.c (grub_affs_read_symlink): Fix handling of long
+	symlinks. Replace leading colon with a slash.
+
+2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/jfs.c (grub_jfs_find_file): Handle multiple slashes in
 	filename.
 
