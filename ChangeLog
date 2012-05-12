@@ -1,5 +1,10 @@
 2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (read_device_map): Improve TRANSLATORS
+	comment.
+
+2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix handling of UDF symlinks.
 
 	* grub-core/fs/udf.c (read_string): New argument outbuf.

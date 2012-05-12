@@ -1274,7 +1274,9 @@ read_device_map (const char *dev_map)
 	    {
 	      *p = 0;
 
-	      /* TRANSLATORS: device.map is a file indicating which
+	      /* TRANSLATORS: Only one entry is ignored. However the suggestion
+		 is to correct/delete the whole file.
+		 device.map is a file indicating which
 		 devices are available at boot time. Fedora populated it with
 		 entries like (hd0,1) /dev/sda1 which would mean that every
 		 partition is a separate disk for BIOS. Such entries were
