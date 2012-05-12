@@ -699,7 +699,7 @@ grub_jfs_find_file (struct grub_jfs_data *data, const char *path,
 
 	  name = next;
 	  next = grub_strchr (name, '/');
-	  if (next)
+	  while (next && *next == '/')
 	    {
 	      next[0] = '\0';
 	      next++;

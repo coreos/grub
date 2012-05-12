@@ -1,5 +1,10 @@
 2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/jfs.c (grub_jfs_find_file): Handle multiple slashes in
+	filename.
+
+2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/bfs.c (find_in_b_tree) [MODE_AFS]: Fix handling of exact
 	match in inner node.
 
