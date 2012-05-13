@@ -77,7 +77,8 @@ grub_fs_probe (grub_device_t device)
 	  grub_dprintf ("fs", "%s detection failed.\n", p->name);
 	  grub_error_pop ();
 
-	  if (grub_errno != GRUB_ERR_BAD_FS)
+	  if (grub_errno != GRUB_ERR_BAD_FS
+	      && grub_errno != GRUB_ERR_OUT_OF_RANGE)
 	    return 0;
 
 	  grub_errno = GRUB_ERR_NONE;

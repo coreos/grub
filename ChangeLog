@@ -1,5 +1,10 @@
 2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/fs.c (grub_fs_probe): Handle GRUB_ERR_OUT_OF_RANGE as
+	a bad FS.
+
+2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/udf.c (read_string): Bail out on size=0.
 	(grub_udf_read_symlink): Handle read_string failure.
 
