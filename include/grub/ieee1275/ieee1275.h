@@ -116,6 +116,8 @@ enum grub_ieee1275_flag
      1 address cell is used on PowerMacs.
    */
   GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS,
+
+  GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS
 };
 
 extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);

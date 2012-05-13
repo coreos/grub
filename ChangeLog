@@ -1,9 +1,18 @@
-2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ieee1275/ofdisk.c (scan): Don't scan device tree if
+	GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS is set.
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
+	GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS on IBM hardware.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New enum value
+	GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS.
+
+2012-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/fs.c (grub_fs_probe): Handle GRUB_ERR_OUT_OF_RANGE as
 	a bad FS.
 
-2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/udf.c (read_string): Bail out on size=0.
 	(grub_udf_read_symlink): Handle read_string failure.

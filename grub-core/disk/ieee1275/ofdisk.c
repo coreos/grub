@@ -159,7 +159,8 @@ scan (void)
   }
 
   grub_devalias_iterate (dev_iterate_alias);
-  grub_ieee1275_devices_iterate (dev_iterate);
+  if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS))
+    grub_ieee1275_devices_iterate (dev_iterate);
 }
 
 static int
