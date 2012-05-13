@@ -1,5 +1,10 @@
 2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/udf.c (read_string): Bail out on size=0.
+	(grub_udf_read_symlink): Handle read_string failure.
+
+2012-05-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (read_device_map): Improve TRANSLATORS
 	comment.
 

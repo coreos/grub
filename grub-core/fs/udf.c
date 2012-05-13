@@ -807,6 +807,9 @@ read_string (const grub_uint8_t *raw, grub_size_t sz, char *outbuf)
   grub_uint16_t *utf16 = NULL;
   grub_size_t utf16len = 0;
 
+  if (sz == 0)
+    return NULL;
+
   if (raw[0] != 8 && raw[0] != 16)
     return NULL;
 
@@ -989,7 +992,8 @@ grub_udf_read_symlink (grub_fshelp_node_t node)
 	  /* in 4 + n bytes. out, at most: 1 + 2 * n bytes.  */
 	  if (optr != out)
 	    *optr++ = '/';
-	  read_string (ptr + 4, s - 4, optr);
+	  if (!read_string (ptr + 4, s - 4, optr))
+	    goto fail;
 	  optr += grub_strlen (optr);
 	  break;
 	default:
