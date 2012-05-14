@@ -44,9 +44,9 @@
 
 #define GRUB_UCS2_LIMIT 0x10000
 #define GRUB_UTF16_UPPER_SURROGATE(code) \
-  (0xD800 + ((((code) - GRUB_UCS2_LIMIT) >> 12) & 0xfff))
+  (0xD800 | ((((code) - GRUB_UCS2_LIMIT) >> 10) & 0x3ff))
 #define GRUB_UTF16_LOWER_SURROGATE(code) \
-  (0xDC00 + (((code) - GRUB_UCS2_LIMIT) & 0xfff))
+  (0xDC00 | (((code) - GRUB_UCS2_LIMIT) & 0x3ff))
 
 /* Process one character from UTF8 sequence. 
    At beginning set *code = 0, *count = 0. Returns 0 on failure and
@@ -195,7 +195,7 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, const grub_uint16_t *src,
 	  if (code >= 0xDC00 && code <= 0xDFFF)
 	    {
 	      /* Surrogate pair.  */
-	      code = ((code_high - 0xD800) << 12) + (code - 0xDC00) + 0x10000;
+	      code = ((code_high - 0xD800) << 10) + (code - 0xDC00) + 0x10000;
 
 	      *dest++ = (code >> 18) | 0xF0;
 	      *dest++ = ((code >> 12) & 0x3F) | 0x80;

@@ -1,3 +1,9 @@
+2012-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/charset.h (GRUB_UTF16_UPPER_SURROGATE): Fix mask sizes.
+	(GRUB_UTF16_LOWER_SURROGATE): Likewise.
+	(grub_utf16_to_utf8): Likewise.
+
 2012-05-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/ieee1275/ofdisk.c (scan): Don't scan device tree if
