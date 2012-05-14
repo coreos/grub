@@ -209,7 +209,8 @@ while [ "x${xen_list}" != "x" ] ; do
 	   "initramfs-genkernel-${version}" \
 	   "initramfs-genkernel-${alt_version}" \
 	   "initramfs-genkernel-${GENKERNEL_ARCH}-${version}" \
-	   "initramfs-genkernel-${GENKERNEL_ARCH}-${alt_version}" ; then
+	   "initramfs-genkernel-${GENKERNEL_ARCH}-${alt_version}" ; do
+	    if test -e "${dirname}/${i}" ; then
 		initrd="$i"
 		break
 	    fi

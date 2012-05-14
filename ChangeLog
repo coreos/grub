@@ -1,5 +1,9 @@
 2012-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/20_linux_xen.in: Add missing line.
+
+2012-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/charset.h (GRUB_UTF16_UPPER_SURROGATE): Fix mask sizes.
 	(GRUB_UTF16_LOWER_SURROGATE): Likewise.
 	(grub_utf16_to_utf8): Likewise.
