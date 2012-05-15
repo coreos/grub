@@ -1,3 +1,9 @@
+2012-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/ntfs.h (grub_ntfs_comp_table_element): New struct.
+	(grub_ntfs_comp): Use grub_ntfs_comp_table_element for comp_table.
+	All users updated.
+
 2012-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* Makefile.am (starfield_DATA): Replace dejavu.pf2 with dejavu_10.pf2,

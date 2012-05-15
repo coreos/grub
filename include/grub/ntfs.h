@@ -161,11 +161,17 @@ struct grub_ntfs_data
   grub_uint64_t uuid;
 };
 
+struct grub_ntfs_comp_table_element
+{
+  grub_uint32_t next_vcn;
+  grub_uint32_t next_lcn;
+};
+
 struct grub_ntfs_comp
 {
   grub_disk_t disk;
   int comp_head, comp_tail;
-  grub_uint32_t comp_table[16][2];
+  struct grub_ntfs_comp_table_element comp_table[16];
   grub_uint32_t cbuf_ofs, cbuf_vcn, spc;
   char *cbuf;
 };

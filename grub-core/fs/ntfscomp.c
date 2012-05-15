@@ -32,12 +32,12 @@ decomp_nextvcn (struct grub_ntfs_comp *cc)
     return grub_error (GRUB_ERR_BAD_FS, "compression block overflown");
   if (grub_disk_read
       (cc->disk,
-       (cc->comp_table[cc->comp_head][1] -
-	(cc->comp_table[cc->comp_head][0] - cc->cbuf_vcn)) * cc->spc, 0,
+       (cc->comp_table[cc->comp_head].next_lcn -
+	(cc->comp_table[cc->comp_head].next_vcn - cc->cbuf_vcn)) * cc->spc, 0,
        cc->spc << GRUB_NTFS_BLK_SHR, cc->cbuf))
     return grub_errno;
   cc->cbuf_vcn++;
-  if ((cc->cbuf_vcn >= cc->comp_table[cc->comp_head][0]))
+  if ((cc->cbuf_vcn >= cc->comp_table[cc->comp_head].next_vcn))
     cc->comp_head++;
   cc->cbuf_ofs = 0;
   return 0;
@@ -202,8 +202,8 @@ read_block (struct grub_ntfs_rlst *ctx, char *buf, grub_size_t num)
 	    {
 	      if (ctx->flags & GRUB_NTFS_RF_BLNK)
 		break;
-	      ctx->comp.comp_table[ctx->comp.comp_tail][0] = ctx->next_vcn;
-	      ctx->comp.comp_table[ctx->comp.comp_tail][1] =
+	      ctx->comp.comp_table[ctx->comp.comp_tail].next_vcn = ctx->next_vcn;
+	      ctx->comp.comp_table[ctx->comp.comp_tail].next_lcn =
 		ctx->curr_lcn + ctx->next_vcn - ctx->curr_vcn;
 	      ctx->comp.comp_tail++;
 	      if (grub_ntfs_read_run_list (ctx))
@@ -247,7 +247,7 @@ read_block (struct grub_ntfs_rlst *ctx, char *buf, grub_size_t num)
 	      grub_disk_addr_t tt;
 
 	      tt =
-		ctx->comp.comp_table[ctx->comp.comp_head][0] -
+		ctx->comp.comp_table[ctx->comp.comp_head].next_vcn -
 		ctx->target_vcn;
 	      if (tt > nn)
 		tt = nn;
@@ -256,8 +256,8 @@ read_block (struct grub_ntfs_rlst *ctx, char *buf, grub_size_t num)
 		{
 		  if (grub_disk_read
 		      (ctx->comp.disk,
-		       (ctx->comp.comp_table[ctx->comp.comp_head][1] -
-			(ctx->comp.comp_table[ctx->comp.comp_head][0] -
+		       (ctx->comp.comp_table[ctx->comp.comp_head].next_lcn -
+			(ctx->comp.comp_table[ctx->comp.comp_head].next_vcn -
 			 ctx->target_vcn)) * ctx->comp.spc, 0,
 		       tt * (ctx->comp.spc << GRUB_NTFS_BLK_SHR), buf))
 		    return grub_errno;
@@ -265,7 +265,7 @@ read_block (struct grub_ntfs_rlst *ctx, char *buf, grub_size_t num)
 		}
 	      nn -= tt;
 	      if (ctx->target_vcn >=
-		  ctx->comp.comp_table[ctx->comp.comp_head][0])
+		  ctx->comp.comp_table[ctx->comp.comp_head].next_vcn)
 		ctx->comp.comp_head++;
 	    }
 	  if (nn)
