@@ -1,5 +1,10 @@
 2012-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ntfs.c (read_data): Prevent overflow.
+	(read_attr): Ensure that we read start of possibly compressed block.
+
+2012-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/ntfs.h (grub_ntfs_comp_table_element): New struct.
 	(grub_ntfs_comp): Use grub_ntfs_comp_table_element for comp_table.
 	All users updated.

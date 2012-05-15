@@ -441,7 +441,7 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
 	}
 
       vcn = ctx->target_vcn = (ofs >> GRUB_NTFS_COM_LOG_LEN) * (GRUB_NTFS_COM_SEC / ctx->comp.spc);
-      ctx->target_vcn &= ~0xF;
+      ctx->target_vcn &= ~0xFULL;
     }
   else
     vcn = ctx->target_vcn = grub_divmod64 (ofs >> GRUB_NTFS_BLK_SHR, ctx->comp.spc, 0);
@@ -513,7 +513,13 @@ read_attr (struct grub_ntfs_attr *at, char *dest, grub_disk_addr_t ofs,
       char *pa;
       grub_disk_addr_t vcn;
 
-      vcn = grub_divmod64 (ofs, at->mft->data->spc << GRUB_NTFS_BLK_SHR, 0);
+      /* If compression is possible make sure that we include possible
+	 compressed block size.  */
+      if (GRUB_NTFS_COM_SEC >= at->mft->data->spc)
+	vcn = ((ofs >> GRUB_NTFS_COM_LOG_LEN)
+	       * (GRUB_NTFS_COM_SEC / at->mft->data->spc)) & ~0xFULL;
+      else
+	vcn = grub_divmod64 (ofs, at->mft->data->spc << GRUB_NTFS_BLK_SHR, 0);
       pa = at->attr_nxt + u16at (at->attr_nxt, 4);
       while (pa < at->attr_end)
 	{
