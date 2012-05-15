@@ -1,5 +1,13 @@
 2012-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am (starfield_DATA): Replace dejavu.pf2 with dejavu_10.pf2,
+	dejavu_12.pf2, dejavu_14.pf2 and dejavu_16.pf2.
+	(dejavu.pf2): Replace with ...
+	(dejavu_10.pf2), (dejavu_12.pf2), (dejavu_14.pf2), (dejavu_16.pf2):
+	this.
+
+2012-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub.d/20_linux_xen.in: Add missing line.
 
 2012-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
