@@ -219,6 +219,7 @@ struct grub_jfs_data
   grub_disk_t disk;
   struct grub_jfs_inode fileset;
   struct grub_jfs_inode currinode;
+  int caseins;
   int pos;
   int linknest;
   int namecomponentlen;
@@ -388,6 +389,11 @@ grub_jfs_mount (grub_disk_t disk)
     data->namecomponentlen = 11;
   else
     data->namecomponentlen = 13;
+
+  if (data->sblock.flags & grub_cpu_to_le32_compile_time (0x40000000))
+    data->caseins = 1;
+  else
+    data->caseins = 0;
 
   return data;
 
@@ -674,7 +680,8 @@ grub_jfs_find_file (struct grub_jfs_data *data, const char *path,
 
       /* Check if the current direntry matches the current part of the
 	 pathname.  */
-      if (!grub_strcmp (name, diro->name))
+      if (data->caseins ? grub_strcasecmp (name, diro->name) == 0
+	  : grub_strcmp (name, diro->name) == 0)
 	{
 	  grub_uint32_t ino = diro->ino;
 	  grub_uint32_t dirino = grub_le_to_cpu32 (data->currinode.inode);

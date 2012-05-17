@@ -1,5 +1,11 @@
 2012-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/jfs.c (grub_jfs_data): New field caseins.
+	(grub_jfs_mount): Fill caseins.
+	(grub_jfs_find_file): Respect caseins.
+
+2012-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Don't strrchr
 	through UTF-16.
 
