@@ -821,12 +821,11 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
    If HOOK is specified, call it with each file name.  */
 static char *
 grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
-		   const char *path,
+		   const char *path, const char *origpath,
 		   int (*hook) (const char *filename,
 				const struct grub_dirhook_info *info))
 {
   char *dirname, *dirp;
-  char *origpath = NULL;
   int call_hook;
   int found = 0;
 
@@ -877,10 +876,6 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
       return 0;
     }
 
-  origpath = grub_strdup (path);
-  if (!origpath)
-    return 0;
-
   /* Extract a directory name.  */
   while (*path == '/')
     path++;
@@ -909,7 +904,6 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
  fail:
   grub_free (dirname);
-  grub_free (origpath);
 
   return found ? dirp : 0;
 }
@@ -945,7 +939,7 @@ grub_fat_dir (grub_device_t device, const char *path,
 
   do
     {
-      p = grub_fat_find_dir (disk, data, p, hook);
+      p = grub_fat_find_dir (disk, data, p, path, hook);
     }
   while (p && grub_errno == GRUB_ERR_NONE);
 
@@ -973,7 +967,7 @@ grub_fat_open (grub_file_t file, const char *name)
 
   do
     {
-      p = grub_fat_find_dir (file->device->disk, data, p, 0);
+      p = grub_fat_find_dir (file->device->disk, data, p, name, 0);
       if (grub_errno != GRUB_ERR_NONE)
 	goto fail;
     }

@@ -1,3 +1,8 @@
+2012-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/fat.c (grub_fat_find_dir): Fix error message.
+	New argument origpath. All users updated.
+
 2012-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/ntfs.c (read_data): Prevent overflow.
