@@ -725,30 +725,29 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	      type = GRUB_FSHELP_REG;
 	  }
 
+	/* . and .. */
+	if (!filename && dirent.namelen == 1 && (name[0] == ';' || name[0] == 0 || name[0] == 1))
+	  {
+	    grub_free (node);
+	    continue;
+	  }
+
 	/* The filename was not stored in a rock ridge entry.  Read it
 	   from the iso9660 filesystem.  */
-	if (!filename)
+	if (!dir->data->joliet && !filename)
 	  {
 	    name[dirent.namelen] = '\0';
 	    filename = grub_strrchr (name, ';');
 	    if (filename)
 	      *filename = '\0';
-
-	    /* . and .. */
-	    if (dirent.namelen == 1 && (name[0] == 0 || name[0] == 1))
-	      {
-		grub_free (node);
-		continue;
-	      }
-	    else
-	      filename = name;
+	    filename = name;
 	  }
 
-        if (dir->data->joliet)
+        if (dir->data->joliet && !filename)
           {
             char *oldname, *semicolon;
 
-            oldname = filename;
+            oldname = name;
             filename = grub_iso9660_convert_string
                   ((grub_uint8_t *) oldname, dirent.namelen >> 1);
 

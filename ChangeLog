@@ -1,5 +1,10 @@
 2012-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Don't strrchr
+	through UTF-16.
+
+2012-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/fat.c (grub_fat_find_dir): Fix error message.
 	New argument origpath. All users updated.
 
