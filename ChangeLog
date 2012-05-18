@@ -1,3 +1,8 @@
+2012-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Mark plain
+	ISO9660 names as case-insensitive, lowercase it and remove trailing dot.
+
 2012-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/jfs.c (grub_jfs_data): New field caseins.

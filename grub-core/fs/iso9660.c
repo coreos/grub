@@ -736,10 +736,17 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	   from the iso9660 filesystem.  */
 	if (!dir->data->joliet && !filename)
 	  {
+	    char *ptr;
 	    name[dirent.namelen] = '\0';
 	    filename = grub_strrchr (name, ';');
 	    if (filename)
 	      *filename = '\0';
+	    /* ISO9660 names are not case-preserving.  */
+	    type |= GRUB_FSHELP_CASE_INSENSITIVE;
+	    for (ptr = name; *ptr; ptr++)
+	      *ptr = grub_tolower (*ptr);
+	    if (ptr != name && *(ptr - 1) == '.')
+	      *(ptr - 1) = 0;
 	    filename = name;
 	  }
 
