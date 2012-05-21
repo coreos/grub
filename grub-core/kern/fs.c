@@ -100,7 +100,8 @@ grub_fs_probe (grub_device_t device)
 		  return p;
 		}
 
-	      if (grub_errno != GRUB_ERR_BAD_FS)
+	      if (grub_errno != GRUB_ERR_BAD_FS
+		  && grub_errno != GRUB_ERR_OUT_OF_RANGE)
 		{
 		  count--;
 		  return 0;

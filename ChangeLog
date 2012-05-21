@@ -1,3 +1,8 @@
+2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/fs.c (grub_fs_probe): Handle GRUB_ERR_OUT_OF_RANGE as
+	a bad FS.
+
 2012-05-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Mark plain
