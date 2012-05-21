@@ -1,8 +1,19 @@
 2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove unjustified hard dependency of normal.mod on gfxterm.
+
+	* include/grub/term.h (grub_term_output): New member fullscreen.
+	* include/grub/gfxterm.h (grub_gfxterm_fullscreen): Removed.
+	* grub-core/term/gfxterm.c (grub_gfxterm_fullscreen): Make static.
+	(grub_gfxterm): Set .fullscreen.
+	* grub-core/normal/menu.c (menu_init): Use fullscreen.
+	* grub-core/gfxmenu/gfxmenu.c (GRUB_MOD_INIT): Likewise.
+
+2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi (Internationalisation/Filesystems): Add precisions
 	mentioning possible problems with non-ASCII (non-compliant) ISOs.
-	MEntion case-insensitive AFFS, SFS and JFS.
+	Mention case-insensitive AFFS, SFS and JFS.
 
 2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
 

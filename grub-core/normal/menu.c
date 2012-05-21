@@ -349,7 +349,7 @@ menu_init (int entry, grub_menu_t menu, int nested)
   int gfxmenu = 0;
 
   FOR_ACTIVE_TERM_OUTPUTS(term)
-    if (grub_strcmp (term->name, "gfxterm") == 0)
+    if (term->fullscreen)
       {
 	if (grub_env_get ("theme"))
 	  {
@@ -376,7 +376,7 @@ menu_init (int entry, grub_menu_t menu, int nested)
 	    grub_wait_after_message ();
 	  }
 	grub_errno = GRUB_ERR_NONE;
-	grub_gfxterm_fullscreen ();
+	term->fullscreen ();
 	break;
       }
 

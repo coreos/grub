@@ -313,7 +313,7 @@ grub_gfxterm_set_window (struct grub_video_render_target *target,
   return grub_errno;
 }
 
-grub_err_t
+static grub_err_t
 grub_gfxterm_fullscreen (void)
 {
   const char *font_name;
@@ -1242,6 +1242,7 @@ static struct grub_term_output grub_video_term =
     .setcolorstate = grub_virtual_screen_setcolorstate,
     .setcursor = grub_gfxterm_setcursor,
     .refresh = grub_gfxterm_refresh,
+    .fullscreen = grub_gfxterm_fullscreen,
     .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS,
     .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
     .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,

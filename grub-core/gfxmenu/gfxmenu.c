@@ -121,9 +121,9 @@ GRUB_MOD_INIT (gfxmenu)
   struct grub_term_output *term;
 
   FOR_ACTIVE_TERM_OUTPUTS(term)
-    if (grub_gfxmenu_try_hook && grub_strcmp (term->name, "gfxterm") == 0)
+    if (grub_gfxmenu_try_hook && term->fullscreen)
       {
-	grub_gfxterm_fullscreen ();
+	term->fullscreen ();
 	break;
       }
 

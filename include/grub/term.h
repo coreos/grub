@@ -215,6 +215,9 @@ struct grub_term_output
   /* Update the screen.  */
   void (*refresh) (struct grub_term_output *term);
 
+  /* gfxterm only: put in fullscreen mode.  */
+  grub_err_t (*fullscreen) (void);
+
   /* The feature flags defined above.  */
   grub_uint32_t flags;
 
