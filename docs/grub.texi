@@ -1135,7 +1135,11 @@ indefinitely.
 
 @item GRUB_HIDDEN_TIMEOUT
 Wait this many seconds for a key to be pressed before displaying the menu.
-If no key is pressed during that time, boot immediately.  Unset by default.
+If no key is pressed during that time, display the menu for the number of
+seconds specified in GRUB_TIMEOUT before booting the default entry. We expect
+that most people who use GRUB_HIDDEN_TIMEOUT will want to have GRUB_TIMEOUT set 
+to @samp{0} so that the menu is not displayed at all unless a key is pressed.
+Unset by default.
 
 @item GRUB_HIDDEN_TIMEOUT_QUIET
 In conjunction with @samp{GRUB_HIDDEN_TIMEOUT}, set this to @samp{true} to
