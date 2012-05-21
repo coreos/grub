@@ -612,6 +612,8 @@ grub_affs_mtime (grub_device_t device, grub_int32_t *t)
 
   *t = 0;
 
+  grub_dl_ref (my_mod);
+
   data = grub_affs_mount (disk);
   if (!data)
     {

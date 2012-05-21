@@ -1,5 +1,9 @@
 2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/affs.c (grub_affs_mtime): Add missing grub_dl_ref.
+
+2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/fs.c (grub_fs_probe): Handle GRUB_ERR_OUT_OF_RANGE as
 	a bad FS.
 
