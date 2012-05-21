@@ -43,6 +43,7 @@ do_print (int n)
   /* NOTE: Do not remove the trailing space characters.
      They are required to clear the line.  */
   grub_printf ("%d    ", n);
+  grub_refresh ();
 }
 
 /* Based on grub_millisleep() from kern/generic/millisleep.c.  */

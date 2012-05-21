@@ -1,9 +1,14 @@
+2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/sleep.c (do_print): Add missing grub_refresh.
+	Reported by: Jordan Uggla.
+
 2012-05-21  Jordan Uggla  <jordan.uggla@gmail.com>
 
-       * docs/grub.texi Fix documentation of GRUB_HIDDEN_TIMOUNT to match the
-       actual implementation. Specifically, clarify that the grub menu will
-       be displayed for GRUB_TIMOUT seconds after the hidden timeout has
-       passed.
+	* docs/grub.texi Fix documentation of GRUB_HIDDEN_TIMOUNT to match the
+	actual implementation. Specifically, clarify that the grub menu will
+	be displayed for GRUB_TIMOUT seconds after the hidden timeout has
+	passed.
 
 2012-05-21  Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
