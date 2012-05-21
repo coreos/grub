@@ -3941,18 +3941,26 @@ NTFS, JFS, UDF, HFS+, exFAT, long filenames in FAT, Joliet part of
 ISO9660 are treated as UTF-16 as per specification. AFS and BFS are read
 as UTF-8, again according to specification. BtrFS, cpio, tar, squash4, minix,
 minix2, minix3, ROMFS, ReiserFS, XFS, ext2, ext3, ext4, FAT (short names),
-ISO9660 (plain and RockRidge), nilfs2, UFS1, UFS2 and ZFS are assumed
+RockRidge part of ISO9660, nilfs2, UFS1, UFS2 and ZFS are assumed
 to be UTF-8. This might be false on systems configured with legacy charset
 but as long as the charset used is superset of ASCII you should be able to
 access ASCII-named files. And it's recommended to configure your system to use
-UTF-8 to access the filesystem, convmv may help with migration. AFFS, SFS
-and HFS never use unicode and GRUB assumes them to be in Latin1, Latin1
-and MacRoman respectively. GRUB handles filesystem case-insensitivity however
-no attempt is performed at case conversion of international characters
+UTF-8 to access the filesystem, convmv may help with migration. ISO9660 (plain)
+filenames are specified as being ASCII or being described with unspecified
+escape sequences. GRUB assumes that the ISO9660 names are UTF-8 (since
+any ASCII is valid UTF-8). There are some old CD-ROMs which use CP437
+in non-compliant way. You're still able to access files with names containing
+only ASCII characters on such filesystems though. You're also able to access
+any file if the filesystem contains valid Joliet (UTF-16) or RockRidge (UTF-8).
+AFFS, SFS and HFS never use unicode and GRUB assumes them to be in Latin1,
+Latin1 and MacRoman respectively. GRUB handles filesystem case-insensitivity
+however no attempt is performed at case conversion of international characters
 so e.g. a file named lowercase greek alpha is treated as different from
 the one named as uppercase alpha. The filesystems in questions are
-NTFS (except POSIX namespace), HFS+ (by default), FAT, exFAT and
-ZFS (configurable on per-subvolume basis by property ``casesensitivity'',
+NTFS (except POSIX namespace), HFS+ (configurable at mkfs time, default
+insensitive), SFS (configurable at mkfs time, default insensitive),
+JFS (configurable at mkfs time, default sensitive), HFS, AFFS, FAT, exFAT
+and ZFS (configurable on per-subvolume basis by property ``casesensitivity'',
 default sensitive). On ZFS subvolumes marked as case insensitive files
 containing lowercase international characters are inaccessible.
 Also like all supported filesystems except HFS+ and ZFS (configurable on

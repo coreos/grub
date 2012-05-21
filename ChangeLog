@@ -1,5 +1,11 @@
 2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Internationalisation/Filesystems): Add precisions
+	mentioning possible problems with non-ASCII (non-compliant) ISOs.
+	MEntion case-insensitive AFFS, SFS and JFS.
+
+2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/affs.c (grub_affs_mtime): Add missing grub_dl_ref.
 
 2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
