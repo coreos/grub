@@ -1,3 +1,8 @@
+2012-05-21  Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+	* grub-core/kern/powerpc/dl.c (trampoline_template): Use r12 instead
+	of r0.
+
 2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove unjustified hard dependency of normal.mod on gfxterm.

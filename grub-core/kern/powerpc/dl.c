@@ -89,9 +89,9 @@ struct trampoline
 
 static const struct trampoline trampoline_template = 
   {
-    0x3c000000,
-    0x60000000,
-    0x7c0903a6,
+    0x3d800000,
+    0x618c0000,
+    0x7d8903a6,
     0x4e800420,
   };
 
