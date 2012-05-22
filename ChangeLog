@@ -1,5 +1,15 @@
 2012-05-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/gpt.c (grub_gpt_partition_map_iterate): Accept
+	protective entry in any slot.
+	* grub-core/partmap/msdos.c (grub_partition_msdos_iterate): Reject
+	if protective entry is found in any slot.
+
+	Protective entry in non-first slot make no sense but is a widespread
+	brain damage.
+
+2012-05-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/squash4.c (grub_squash_read_data): Add missing byte-swap.
 
 2012-05-22  Vladimir Serbinenko  <phcoder@gmail.com>

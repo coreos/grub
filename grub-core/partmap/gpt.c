@@ -69,7 +69,10 @@ grub_gpt_partition_map_iterate (grub_disk_t disk,
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
 
   /* Make sure the MBR is a protective MBR and not a normal MBR.  */
-  if (mbr.entries[0].type != GRUB_PC_PARTITION_TYPE_GPT_DISK)
+  for (i = 0; i < 4; i++)
+    if (mbr.entries[i].type == GRUB_PC_PARTITION_TYPE_GPT_DISK)
+      break;
+  if (i == 4)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no GPT partition map found");
 
   /* Read the GPT header.  */

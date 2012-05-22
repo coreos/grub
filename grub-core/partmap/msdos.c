@@ -136,6 +136,12 @@ grub_partition_msdos_iterate (grub_disk_t disk,
       if (grub_disk_read (disk, p.offset, 0, sizeof (mbr), &mbr))
 	goto finish;
 
+      /* If this is a GPT partition, this MBR is just a dummy.  */
+      if (p.offset == 0)
+	for (i = 0; i < 4; i++)
+	  if (mbr.entries[i].type == GRUB_PC_PARTITION_TYPE_GPT_DISK)
+	    return grub_error (GRUB_ERR_BAD_PART_TABLE, "dummy mbr");
+
       /* This is our loop-detection algorithm. It works the following way:
 	 It saves last position which was a power of two. Then it compares the
 	 saved value with a current one. This way it's guaranteed that the loop
@@ -173,10 +179,6 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 			p.index, e->flag, e->type,
 			(unsigned long long) p.start,
 			(unsigned long long) p.len);
-
-	  /* If this is a GPT partition, this MBR is just a dummy.  */
-	  if (e->type == GRUB_PC_PARTITION_TYPE_GPT_DISK && p.index == 0)
-	    return grub_error (GRUB_ERR_BAD_PART_TABLE, "dummy mbr");
 
 	  /* If this partition is a normal one, call the hook.  */
 	  if (! grub_msdos_partition_is_empty (e->type)
