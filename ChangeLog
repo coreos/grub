@@ -1,3 +1,7 @@
+2012-05-22  Jordan Uggla  <jordan.uggla@gmail.com>
+
+	* docs/grub-dev.texi: Remove dot from .png.
+
 2012-05-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/partmap/gpt.c (grub_gpt_partition_map_iterate): Accept

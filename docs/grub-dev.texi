@@ -1689,7 +1689,7 @@ right edges of two adjacent glyphs.  The @strong{device width} field determines
 the effective leading value that is used to render the font.
 
 @end itemize
-@image{font_char_metrics,,,,.png}
+@image{font_char_metrics,,,,png}
    
 An illustration of how the various font metrics apply to characters.
 
