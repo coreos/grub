@@ -856,7 +856,7 @@ grub_squash_read_data (struct grub_squash_data *data,
   if (err)
     return -1;
   a += grub_le_to_cpu64 (frag.offset);
-  compressed = !(frag.size & SQUASH_BLOCK_UNCOMPRESSED);
+  compressed = !(frag.size & grub_cpu_to_le32_compile_time (SQUASH_BLOCK_UNCOMPRESSED));
   if (ino->ino.type == grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR))
     b = grub_le_to_cpu32 (ino->ino.long_file.offset) + off;
   else
@@ -866,19 +866,20 @@ grub_squash_read_data (struct grub_squash_data *data,
   if (compressed)
     {
       char *block;
-      block = grub_malloc (frag.size);
+      block = grub_malloc (grub_le_to_cpu32 (frag.size));
       if (!block)
 	return -1;
       err = grub_disk_read (data->disk,
 			    a >> GRUB_DISK_SECTOR_BITS,
 			    a & (GRUB_DISK_SECTOR_SIZE - 1),
-			    frag.size, block);
+			    grub_le_to_cpu32 (frag.size), block);
       if (err)
 	{
 	  grub_free (block);
 	  return -1;
 	}
-      if (data->decompress (block, frag.size, b, buf, len, data)
+      if (data->decompress (block, grub_le_to_cpu32 (frag.size),
+			    b, buf, len, data)
 	  != (grub_ssize_t) len)
 	{
 	  grub_free (block);

@@ -1,5 +1,9 @@
 2012-05-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/squash4.c (grub_squash_read_data): Add missing byte-swap.
+
+2012-05-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/reiserfs.c (grub_reiserfs_iterate_dir): Fix size byteswap
 	with old reiserfs.
 	(grub_reiserfs_open): Don't free root.
