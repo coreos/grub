@@ -129,6 +129,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  if (type != GRUB_FSHELP_DIR)
 	    {
 	      free_node (currnode);
+	      currnode = 0;
 	      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 	    }
 
@@ -137,6 +138,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  if (! found)
 	    {
 	      free_node (currnode);
+	      currnode = 0;
 	      if (grub_errno)
 		return grub_errno;
 
@@ -153,12 +155,14 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 		{
 		  free_node (currnode);
 		  free_node (oldnode);
+		  currnode = 0;
 		  return grub_error (GRUB_ERR_SYMLINK_LOOP,
                                      N_("too deep nesting of symlinks"));
 		}
 
 	      symlink = read_symlink (currnode);
 	      free_node (currnode);
+	      currnode = 0;
 
 	      if (!symlink)
 		{

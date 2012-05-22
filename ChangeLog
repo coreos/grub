@@ -1,3 +1,8 @@
+2012-05-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/fshelp.c (grub_fshelp_find_file): Set currnode to 0
+	after freeing for safety.
+
 2012-05-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/sleep.c (do_print): Add missing grub_refresh.
