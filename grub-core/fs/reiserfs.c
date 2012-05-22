@@ -884,7 +884,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
 			entry_type = GRUB_FSHELP_SYMLINK;
 		      else
 			entry_type = GRUB_FSHELP_REG;
-		      entry_item->size = (grub_off_t) grub_le_to_cpu64 (entry_v1_stat.size);
+		      entry_item->size = (grub_off_t) grub_le_to_cpu32 (entry_v1_stat.size);
 		    }
 		  else
 		    {
@@ -1028,7 +1028,8 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
 
  fail:
   assert (grub_errno != GRUB_ERR_NONE);
-  grub_free (found);
+  if (found != &root)
+    grub_free (found);
   grub_free (data);
   grub_dl_unref (my_mod);
   return grub_errno;
