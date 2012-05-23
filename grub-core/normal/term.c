@@ -368,6 +368,7 @@ read_terminal_list (const char *prefix)
       p = grub_strchr (name, ':');
       if (! p)
 	continue;
+      *p = 0;
 
       p++;
       while (*p == ' ' || *p == '\t')
