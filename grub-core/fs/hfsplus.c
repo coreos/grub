@@ -1025,7 +1025,7 @@ grub_hfsplus_label (grub_device_t device, char **label)
     }
 
   catkey = (struct grub_hfsplus_catkey *)
-    grub_hfsplus_btree_recptr (&data->catalog_tree, node, 0);
+    grub_hfsplus_btree_recptr (&data->catalog_tree, node, ptr);
 
   label_len = grub_be_to_cpu16 (catkey->namelen);
   for (i = 0; i < label_len; i++)

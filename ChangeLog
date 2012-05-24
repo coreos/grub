@@ -1,5 +1,10 @@
 2012-05-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/hfsplus.c (grub_hfsplus_label): Use found ptr rather
+	than 0.
+
+2012-05-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.am (starfield_DATA): Add dejavu_bold_14.pf2.
 	(dejavu_bold_14.pf2): New target.
 
