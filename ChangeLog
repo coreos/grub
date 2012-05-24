@@ -1,5 +1,10 @@
 2012-05-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am (starfield_DATA): Add dejavu_bold_14.pf2.
+	(dejavu_bold_14.pf2): New target.
+
+2012-05-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Fix djvu font detection.
 
 2012-05-23  Vladimir Serbinenko  <phcoder@gmail.com>

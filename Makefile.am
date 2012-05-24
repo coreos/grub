@@ -69,13 +69,15 @@ endif
 starfield_theme_files = $(srcdir)/themes/starfield/blob_w.png $(srcdir)/themes/starfield/boot_menu_c.png $(srcdir)/themes/starfield/boot_menu_e.png $(srcdir)/themes/starfield/boot_menu_ne.png $(srcdir)/themes/starfield/boot_menu_n.png $(srcdir)/themes/starfield/boot_menu_nw.png $(srcdir)/themes/starfield/boot_menu_se.png $(srcdir)/themes/starfield/boot_menu_s.png $(srcdir)/themes/starfield/boot_menu_sw.png $(srcdir)/themes/starfield/boot_menu_w.png $(srcdir)/themes/starfield/slider_c.png $(srcdir)/themes/starfield/slider_n.png $(srcdir)/themes/starfield/slider_s.png $(srcdir)/themes/starfield/starfield.png $(srcdir)/themes/starfield/terminal_box_c.png $(srcdir)/themes/starfield/terminal_box_e.png $(srcdir)/themes/starfield/terminal_box_ne.png $(srcdir)/themes/starfield/terminal_box_n.png $(srcdir)/themes/starfield/terminal_box_nw.png $(srcdir)/themes/starfield/terminal_box_se.png $(srcdir)/themes/starfield/terminal_box_s.png $(srcdir)/themes/starfield/terminal_box_sw.png $(srcdir)/themes/starfield/terminal_box_w.png $(srcdir)/themes/starfield/theme.txt $(srcdir)/themes/starfield/README $(srcdir)/themes/starfield/COPYING.CC-BY-SA-3.0
 
 if COND_STARFIELD
-starfield_DATA = dejavu_10.pf2 dejavu_12.pf2 dejavu_14.pf2 dejavu_16.pf2 $(starfield_theme_files)
+starfield_DATA = dejavu_10.pf2 dejavu_12.pf2 dejavu_bold_14.pf2 dejavu_14.pf2 dejavu_16.pf2 $(starfield_theme_files)
 dejavu_10.pf2: $(DJVU_FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont -s 10 -o $@ $(DJVU_FONT_SOURCE)
 dejavu_12.pf2: $(DJVU_FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont -s 12 -o $@ $(DJVU_FONT_SOURCE)
 dejavu_14.pf2: $(DJVU_FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont -s 14 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_bold_14.pf2: $(DJVU_FONT_SOURCE) grub-mkfont
+	$(builddir)/grub-mkfont -b -s 14 -o $@ $(DJVU_FONT_SOURCE)
 dejavu_16.pf2: $(DJVU_FONT_SOURCE) grub-mkfont
 	$(builddir)/grub-mkfont -s 16 -o $@ $(DJVU_FONT_SOURCE)
 else
