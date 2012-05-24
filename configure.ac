@@ -938,7 +938,7 @@ if test x$enable_grub_mkfont = xno; then
    starfield_excuse="No grub-mkfont"
 fi
 
-if test x"$starfield_excuse" != x; then
+if test x"$starfield_excuse" = x; then
    for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
      for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/truetype/ttf-dejavu /usr/share/fonts/dejavu; do
         if test -f "$dir/DejaVuSans.$ext"; then
