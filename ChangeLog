@@ -1,3 +1,7 @@
+2012-05-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-fstest.c (cmd_cmp): Fix stat'ing of wrong file.
+
 2012-05-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/hfsplus.c (grub_hfsplus_label): Use found ptr rather
