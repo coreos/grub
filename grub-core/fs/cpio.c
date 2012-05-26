@@ -142,6 +142,15 @@ canonicalize (char *name)
 	  iptr += 2;
 	  continue;
 	}
+      if (iptr[0] == '.' && iptr[1] == '.' && (iptr[2] == '/' || iptr[2] == 0))
+	{
+	  iptr += 3;
+	  if (optr == name)
+	    continue;
+	  for (optr -= 2; optr >= name && *optr != '/'; optr--);
+	  optr++;
+	  continue;
+	}
       while (*iptr && *iptr != '/')
 	*optr++ = *iptr++;
       if (*iptr)
@@ -341,6 +350,9 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 	  *mode = read_number (hd.mode, sizeof (hd.mode));
 	  switch (hd.typeflag)
 	    {
+	      /* Hardlink.  */
+	    case '1':
+	      /* Symlink.  */
 	    case '2':
 	      *mode |= ATTR_LNK;
 	      break;

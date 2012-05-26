@@ -1,5 +1,10 @@
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/cpio.c (canonicalize): Handle "..".
+	(grub_cpio_find_file) [MODE_USTAR]: Handle hardlinks.
+
+2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/btrfs.c (GRUB_BTRFS_ITEM_TYPE_INODE_REF): New enum value.
 	(find_path): Handle "." and "..".
 
