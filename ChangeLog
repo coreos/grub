@@ -1,5 +1,10 @@
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Don't skip "." and
+	"..".
+
+2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/hfsplus.c (grub_hfsplus_catfile): New field parentid.
 	(grub_hfsplus_iterate_dir): Add "." and "..".
 

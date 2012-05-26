@@ -726,11 +726,11 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	  }
 
 	/* . and .. */
-	if (!filename && dirent.namelen == 1 && (name[0] == ';' || name[0] == 0 || name[0] == 1))
-	  {
-	    grub_free (node);
-	    continue;
-	  }
+	if (!filename && dirent.namelen == 1 && name[0] == 0)
+	  filename = (char *) ".";
+
+	if (!filename && dirent.namelen == 1 && name[0] == 1)
+	  filename = (char *) "..";
 
 	/* The filename was not stored in a rock ridge entry.  Read it
 	   from the iso9660 filesystem.  */
