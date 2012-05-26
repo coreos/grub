@@ -144,7 +144,7 @@ struct grub_hfsplus_catfile
 {
   grub_uint16_t type;
   grub_uint16_t flags;
-  grub_uint32_t reserved;
+  grub_uint32_t parentid; /* Thread only.  */
   grub_uint32_t fileid;
   grub_uint8_t unused1[4];
   grub_uint32_t mtime;
@@ -796,20 +796,38 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 	return 1;
 
       /* Determine the type of the node that is found.  */
-      if (grub_be_to_cpu16 (fileinfo->type) == GRUB_HFSPLUS_FILETYPE_REG)
+      switch (fileinfo->type)
 	{
-	  int mode = (grub_be_to_cpu16 (fileinfo->mode)
-		      & GRUB_HFSPLUS_FILEMODE_MASK);
+	case grub_cpu_to_be16_compile_time (GRUB_HFSPLUS_FILETYPE_REG):
+	  {
+	    int mode = (grub_be_to_cpu16 (fileinfo->mode)
+			& GRUB_HFSPLUS_FILEMODE_MASK);
 
-	  if (mode == GRUB_HFSPLUS_FILEMODE_REG)
-	    type = GRUB_FSHELP_REG;
-	  else if (mode == GRUB_HFSPLUS_FILEMODE_SYMLINK)
-	    type = GRUB_FSHELP_SYMLINK;
-	  else
-	    type = GRUB_FSHELP_UNKNOWN;
+	    if (mode == GRUB_HFSPLUS_FILEMODE_REG)
+	      type = GRUB_FSHELP_REG;
+	    else if (mode == GRUB_HFSPLUS_FILEMODE_SYMLINK)
+	      type = GRUB_FSHELP_SYMLINK;
+	    else
+	      type = GRUB_FSHELP_UNKNOWN;
+	    break;
+	  }
+	case grub_cpu_to_be16_compile_time (GRUB_HFSPLUS_FILETYPE_DIR):
+	  type = GRUB_FSHELP_DIR;
+	  break;
+	case grub_cpu_to_be16_compile_time (GRUB_HFSPLUS_FILETYPE_DIR_THREAD):
+	  if (dir->fileid == 2)
+	    return 0;
+	  node = grub_malloc (sizeof (*node));
+	  if (!node)
+	    return 1;
+	  node->data = dir->data;
+	  node->mtime = 0;
+	  node->size = 0;
+	  node->fileid = grub_be_to_cpu32 (fileinfo->parentid);
+
+	  ret = hook ("..", GRUB_FSHELP_DIR, node);
+	  return ret;
 	}
-      else if (grub_be_to_cpu16 (fileinfo->type) == GRUB_HFSPLUS_FILETYPE_DIR)
-	type = GRUB_FSHELP_DIR;
 
       if (type == GRUB_FSHELP_UNKNOWN)
 	return 0;
@@ -850,6 +868,8 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
       /* A valid node is found; setup the node and call the
 	 callback function.  */
       node = grub_malloc (sizeof (*node));
+      if (!node)
+	return 1;
       node->data = dir->data;
 
       grub_memcpy (node->extents, fileinfo->data.extents,
@@ -868,6 +888,16 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
   struct grub_hfsplus_key_internal intern;
   struct grub_hfsplus_btnode *node;
   grub_disk_addr_t ptr;
+
+  {
+    struct grub_fshelp_node *fsnode;
+    fsnode = grub_malloc (sizeof (*fsnode));
+    if (!fsnode)
+      return 1;
+    *fsnode = *dir;
+    if (hook (".", GRUB_FSHELP_DIR, fsnode))
+      return 1;
+  }
 
   /* Create a key that points to the first entry in the directory.  */
   intern.catkey.parent = dir->fileid;
