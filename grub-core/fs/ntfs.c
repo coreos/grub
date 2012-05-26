@@ -650,10 +650,7 @@ list_file (struct grub_ntfs_file *diro, char *pos,
 
 	  fdiro->data = diro->data;
 	  fdiro->ino = u32at (pos, 0);
-	  if (u64at (pos, 0x20) > u64at (pos, 0x28))
-	    fdiro->mtime = u64at (pos, 0x20);
-	  else
-	    fdiro->mtime = u64at (pos, 0x28);
+	  fdiro->mtime = u64at (pos, 0x20);
 
 	  ustr = grub_malloc (ns * GRUB_MAX_UTF8_PER_UTF16 + 1);
 	  if (ustr == NULL)

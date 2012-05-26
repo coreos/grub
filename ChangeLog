@@ -1,5 +1,9 @@
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ntfs.c (list_file): Set mtime to correct value.
+
+2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/iso9660.c (grub_iso9660_iterate_dir): Don't skip "." and
 	"..".
 
