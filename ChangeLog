@@ -1,3 +1,20 @@
+2012-05-26  Matthew Garrett  <mjg@redhat.com>
+
+	* grub-core/term/efi/console.c (grub_efi_console_init): Set text mode.
+	(grub_efi_console_fini): Likewise.
+	* grub-core/video/efi_gop.c (framebuffer): New field offscreen.
+	(grub_video_gop_fill_mode_info): Rename to ...
+	(grub_video_gop_fill_real_mode_info): ... this.
+	(grub_video_gop_fill_mode_info): New function.
+	(grub_video_gop_setup): Setup double framebuffer.
+	(grub_video_gop_get_info_and_fini): Use original framebuffer.
+	Free offscreen.
+	(grub_video_gop_swap_buffers): Copy framebuffer.
+	(grub_video_gop_fini): Free offscreen buffer.
+	* include/grub/efi/graphics_output.h (grub_efi_gop_blt_operation_t):
+	New enum.
+	(grub_efi_gop_blt_pixel): New struct.
+
 2012-05-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* gentpl.py: Remove error disabling for objconv.
