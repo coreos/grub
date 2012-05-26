@@ -1,5 +1,13 @@
 2012-05-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix extent overflow comparator.
+
+	* grub-core/fs/hfsplus.c (grub_hfsplus_extkey_internal): Add type.
+	(grub_hfsplus_read_block): Set type.
+	(grub_hfsplus_cmp_extkey): Compare type.
+
+2012-05-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-fstest.c (cmd_cmp): Fix stat'ing of wrong file.
 
 2012-05-24  Vladimir Serbinenko  <phcoder@gmail.com>

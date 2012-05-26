@@ -189,6 +189,7 @@ struct grub_hfsplus_catkey_internal
 struct grub_hfsplus_extkey_internal
 {
   grub_uint32_t fileid;
+  grub_uint8_t type;
   grub_uint32_t start;
 };
 
@@ -341,6 +342,7 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
       /* Set up the key to look for in the extent overflow file.  */
       extoverflow.extkey.fileid = node->fileid;
+      extoverflow.extkey.type = 0;
       extoverflow.extkey.start = fileblock - blksleft;
 
       if (grub_hfsplus_btree_search (&node->data->extoverflow_tree,
@@ -578,6 +580,11 @@ grub_hfsplus_cmp_extkey (struct grub_hfsplus_key *keya,
   if (akey > extkey_b->fileid)
     return 1;
   if (akey < extkey_b->fileid)
+    return -1;
+
+  if (extkey_a->type > extkey_b->type)
+    return 1;
+  if (extkey_a->type < extkey_b->type)
     return -1;
   
   akey = grub_be_to_cpu32 (extkey_a->start);
