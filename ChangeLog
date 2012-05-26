@@ -1,3 +1,9 @@
+2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/affs.c (grub_affs_file): New field hardlink.
+	(GRUB_AFFS_FILETYPE_HARDLINK): New enum value.
+	(grub_affs_iterate_dir): Handle hardlinks.
+
 2012-05-26  Matthew Garrett  <mjg@redhat.com>
 
 	* grub-core/term/efi/console.c (grub_efi_console_init): Set text mode.

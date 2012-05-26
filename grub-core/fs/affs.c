@@ -69,7 +69,9 @@ struct grub_affs_file
   struct grub_affs_time mtime;
   grub_uint8_t namelen;
   grub_uint8_t name[30];
-  grub_uint8_t unused3[33];
+  grub_uint8_t unused3[5];
+  grub_uint32_t hardlink;
+  grub_uint32_t unused4[6];
   grub_uint32_t next;
   grub_uint32_t parent;
   grub_uint32_t extension;
@@ -86,9 +88,13 @@ struct grub_affs_file
 #define GRUB_AFFS_BLOCKPTR_OFFSET	24
 #define GRUB_AFFS_SYMLINK_OFFSET	24
 
-#define GRUB_AFFS_FILETYPE_REG		0xfffffffd
-#define GRUB_AFFS_FILETYPE_DIR		2
-#define GRUB_AFFS_FILETYPE_SYMLINK	3
+enum
+  {
+    GRUB_AFFS_FILETYPE_DIR = 2,
+    GRUB_AFFS_FILETYPE_SYMLINK = 3,
+    GRUB_AFFS_FILETYPE_HARDLINK = 0xfffffffc,
+    GRUB_AFFS_FILETYPE_REG = 0xfffffffd
+  };
 
 #define AFFS_MAX_LOG_BLOCK_SIZE 4
 
@@ -333,6 +339,7 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
       int type;
       grub_uint8_t name_u8[sizeof (fil->name) * GRUB_MAX_UTF8_PER_LATIN1 + 1];
       grub_size_t len;
+      unsigned int nest;
 
       node = grub_zalloc (sizeof (*node));
       if (!node)
@@ -341,20 +348,8 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
 	  return 1;
 	}
 
-      if (grub_be_to_cpu32 (fil->type) == GRUB_AFFS_FILETYPE_REG)
-	type = GRUB_FSHELP_REG;
-      else if (grub_be_to_cpu32 (fil->type) == GRUB_AFFS_FILETYPE_DIR)
-	type = GRUB_FSHELP_DIR;
-      else if (grub_be_to_cpu32 (fil->type) == GRUB_AFFS_FILETYPE_SYMLINK)
-	type = GRUB_FSHELP_SYMLINK;
-      else
-	type = GRUB_FSHELP_UNKNOWN;
-
-      type |= GRUB_FSHELP_CASE_INSENSITIVE;
-
       node->data = data;
       node->block = block;
-      node->di = *fil;
       node->parent = dir;
 
       len = fil->namelen;
@@ -362,6 +357,44 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
 	len = sizeof (fil->name);
       *grub_latin1_to_utf8 (name_u8, fil->name, len) = '\0';
       
+      node->di = *fil;
+      for (nest = 0; nest < 8; nest++)
+	{
+	  switch (node->di.type)
+	    {
+	    case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_REG):
+	      type = GRUB_FSHELP_REG;
+	      break;
+	    case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_DIR):
+	      type = GRUB_FSHELP_DIR;
+	      break;
+	    case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_SYMLINK):
+	      type = GRUB_FSHELP_SYMLINK;
+	      break;
+	    case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_HARDLINK):
+	      {
+		grub_err_t err;
+		node->block = grub_be_to_cpu32 (node->di.hardlink);
+		err = grub_disk_read (data->disk,
+				      (((grub_uint64_t) node->block + 1) << data->log_blocksize)
+				      - 1,
+				      GRUB_DISK_SECTOR_SIZE - GRUB_AFFS_FILE_LOCATION,
+				      sizeof (node->di), (char *) &node->di);
+		if (err)
+		  return 1;
+		continue;
+	      }
+	    default:
+	      return 0;
+	    }
+	  break;
+	}
+
+      if (nest == 8)
+	return 0;
+
+      type |= GRUB_FSHELP_CASE_INSENSITIVE;
+
       if (hook ((char *) name_u8, type, node))
 	{
 	  grub_free (hashtable);
