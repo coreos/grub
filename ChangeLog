@@ -1,5 +1,9 @@
 2012-05-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* gentpl.py: Remove error disabling for objconv.
+
+2012-05-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Remove -Wunitialized as it's not available on older
 	compilers.
 
