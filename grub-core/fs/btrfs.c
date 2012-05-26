@@ -106,15 +106,20 @@ struct grub_btrfs_data
   struct grub_btrfs_extent_data *extent;
 };
 
+enum
+  {
+    GRUB_BTRFS_ITEM_TYPE_INODE_ITEM = 0x01,
+    GRUB_BTRFS_ITEM_TYPE_INODE_REF = 0x0c,
+    GRUB_BTRFS_ITEM_TYPE_DIR_ITEM = 0x54,
+    GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM = 0x6c,
+    GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM = 0x84,
+    GRUB_BTRFS_ITEM_TYPE_DEVICE = 0xd8,
+    GRUB_BTRFS_ITEM_TYPE_CHUNK = 0xe4
+  };
+
 struct grub_btrfs_key
 {
   grub_uint64_t object_id;
-#define GRUB_BTRFS_ITEM_TYPE_INODE_ITEM 0x01
-#define GRUB_BTRFS_ITEM_TYPE_DIR_ITEM 0x54
-#define GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM 0x6c
-#define GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM 0x84
-#define GRUB_BTRFS_ITEM_TYPE_DEVICE 0xd8
-#define GRUB_BTRFS_ITEM_TYPE_CHUNK 0xe4
   grub_uint8_t type;
   grub_uint64_t offset;
 } __attribute__ ((packed));
@@ -1230,6 +1235,48 @@ find_path (struct grub_btrfs_data *data,
 	  grub_free (path_alloc);
 	  grub_free (origpath);
 	  return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
+	}
+
+      if (ctokenlen == 1 && ctoken[0] == '.')
+	{
+	  if (!skip_default)
+	    path = slash;
+	  skip_default = 0;
+	continue;
+	}
+      if (ctokenlen == 2 && ctoken[0] == '.' && ctoken[1] == '.')
+	{
+	  key->type = GRUB_BTRFS_ITEM_TYPE_INODE_REF;
+	  key->offset = -1;
+
+	  err = lower_bound (data, key, &key_out, *tree, &elemaddr, &elemsize,
+			     NULL, 0);
+	  if (err)
+	    {
+	      grub_free (direl);
+	      grub_free (path_alloc);
+	      grub_free (origpath);
+	      return err;
+	    }
+
+	  if (key_out.type != key->type
+	      || key->object_id != key_out.object_id)
+	    {
+	      grub_free (direl);
+	      grub_free (path_alloc);
+	      err = grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), origpath);
+	      grub_free (origpath);
+	      return err;
+	    }
+
+	  *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
+	  key->object_id = key_out.offset;
+
+	  if (!skip_default)
+	    path = slash;
+	  skip_default = 0;
+
+	  continue;
 	}
 
       key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
