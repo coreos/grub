@@ -672,8 +672,52 @@ grub_jfs_find_file (struct grub_jfs_data *data, const char *path,
 
   for (;;)
     {
-      if (grub_strlen (name) == 0)
+      if (name[0] == 0)
 	return GRUB_ERR_NONE;
+
+      if (name[0] == '.' && name[1] == 0)
+	{
+	  if (!next)
+	    return 0;
+
+	  name = next;
+	  next = grub_strchr (name, '/');
+	  while (next && *next == '/')
+	    {
+	      next[0] = '\0';
+	      next++;
+	    }
+	  continue;
+	}
+
+      if (name[0] == '.' && name[1] == '.' && name[2] == 0)
+	{
+	  grub_uint32_t ino = grub_le_to_cpu32 (data->currinode.dir.header.idotdot);
+
+	  grub_jfs_closedir (diro);
+	  diro = 0;
+
+	  if (grub_jfs_read_inode (data, ino, &data->currinode))
+	    break;
+
+	  if (!next)
+	    return 0;
+
+	  name = next;
+	  next = grub_strchr (name, '/');
+	  while (next && *next == '/')
+	    {
+	      next[0] = '\0';
+	      next++;
+	    }
+
+	  /* Open this directory for reading dirents.  */
+	  diro = grub_jfs_opendir (data, &data->currinode);
+	  if (!diro)
+	    return grub_errno;
+
+	  continue;
+	}
 
       if (grub_jfs_getent (diro) == GRUB_ERR_OUT_OF_RANGE)
 	break;

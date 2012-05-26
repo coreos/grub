@@ -1,5 +1,9 @@
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/jfs.c (grub_jfs_find_file): Handle "." and "..".
+
+2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c (list_file): Set mtime to correct value.
 
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
