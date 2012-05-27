@@ -413,7 +413,7 @@ static int
 iterate_in_b_tree (grub_disk_t disk,
 		   const struct grub_bfs_superblock *sb,
 		   const struct grub_bfs_inode *ino,
-		   int (*hook) (const char *name, grub_uint64_t value))
+		   int NESTED_FUNC_ATTR (*hook) (const char *name, grub_uint64_t value))
 {
   struct grub_bfs_btree_header head;
   grub_err_t err;
@@ -851,9 +851,9 @@ grub_bfs_dir (grub_device_t device, const char *path,
 {
   struct grub_bfs_superblock sb;
   grub_err_t err;
-  auto int hook (const char *name, grub_uint64_t value);
+  auto int NESTED_FUNC_ATTR hook (const char *name, grub_uint64_t value);
 
-  int hook (const char *name, grub_uint64_t value)
+  int NESTED_FUNC_ATTR hook (const char *name, grub_uint64_t value)
   {
     grub_err_t err2;
     union
