@@ -1,5 +1,10 @@
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkconfig_lib.in (print_option_help): Properly redirect
+	stderr on test calls.
+
+2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/jfs.c (grub_jfs_find_file): Handle "." and "..".
 
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>

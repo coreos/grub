@@ -290,16 +290,16 @@ uses_abstraction () {
 
 print_option_help () {
   if test x$print_option_help_wc = x; then
-      if wc -L < /dev/null > /dev/null; then
+      if wc -L  </dev/null > /dev/null 2>&1; then
 	  print_option_help_wc=-L
-      elif wc -m < /dev/null > /dev/null; then
+      elif wc -m  </dev/null > /dev/null 2>&1; then
 	  print_option_help_wc=-m
       else
 	  print_option_help_wc=-b
       fi
   fi
   if test x$grub_have_fmt = x; then
-      if fmt -w 40 < /dev/null > /dev/null; then
+      if fmt -w 40  </dev/null > /dev/null 2>&1; then
 	  grub_have_fmt=y;
       else
 	  grub_have_fmt=n;
