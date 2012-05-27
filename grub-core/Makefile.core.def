@@ -1613,7 +1613,7 @@ module = {
 };
 
 module = {
-  name = example_functional_test;
+  name = exfctest;
   common = tests/example_functional_test.c;
   cflags = -Wno-format;
 };

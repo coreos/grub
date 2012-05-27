@@ -35,4 +35,4 @@ example_test (void)
 }
 
 /* Register example_test method as a functional test.  */
-GRUB_FUNCTIONAL_TEST (example_functional_test, example_test);
+GRUB_FUNCTIONAL_TEST (exfctest, example_test);

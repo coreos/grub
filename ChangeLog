@@ -1,5 +1,11 @@
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (example_functional_test): Rename to ...
+	(exfctest): ... this to avoid overlong filenames.
+	All users updated.
+
+2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle "." and ".." on squashfs.
 
 	* grub-core/fs/squash4.c (grub_fshelp_node): New field stsize.
