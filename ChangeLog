@@ -1,5 +1,16 @@
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle "." and ".." on squashfs.
+
+	* grub-core/fs/squash4.c (grub_fshelp_node): New field stsize.
+	Make inode numbers into stack.
+	(grub_squash_read_symlink): Use stack.
+	(grub_squash_iterate_dir): Use stack. Create "." and ".." nodes.
+	(make_root_node): Fill stack.
+	(grub_squash_open): Use stack.
+
+2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (open_device): Set dest->dev to 0 after
 	freeing.
 

@@ -208,8 +208,12 @@ struct grub_fshelp_node
 {
   struct grub_squash_data *data;
   struct grub_squash_inode ino;
-  grub_disk_addr_t ino_chunk;
-  grub_uint16_t	ino_offset;
+  grub_size_t stsize;
+  struct 
+  {
+    grub_disk_addr_t ino_chunk;
+    grub_uint16_t ino_offset;
+  } stack[1];
 };
 
 static grub_err_t
@@ -460,9 +464,9 @@ grub_squash_read_symlink (grub_fshelp_node_t node)
   err = read_chunk (node->data, ret,
 		    grub_le_to_cpu32 (node->ino.symlink.namelen),
 		    grub_le_to_cpu64 (node->data->sb.inodeoffset)
-		    + node->ino_chunk,
-		    node->ino_offset + (node->ino.symlink.name
-					- (char *) &node->ino));
+		    + node->stack[node->stsize - 1].ino_chunk,
+		    node->stack[node->stsize - 1].ino_offset
+		    + (node->ino.symlink.name - (char *) &node->ino));
   if (err)
     {
       grub_free (ret);
@@ -502,6 +506,40 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 		  grub_le_to_cpu16 (dir->ino.type));
       return 0;
     }
+
+  {
+    grub_fshelp_node_t node;
+    node = grub_malloc (sizeof (*node) + dir->stsize * sizeof (dir->stack[0]));
+    if (!node)
+      return 0;
+    grub_memcpy (node, dir,
+		 sizeof (*node) + dir->stsize * sizeof (dir->stack[0]));
+    if (hook (".", GRUB_FSHELP_DIR, node))
+      return 1;
+
+    if (dir->stsize != 1)
+      {
+	grub_err_t err;
+
+	node = grub_malloc (sizeof (*node) + dir->stsize * sizeof (dir->stack[0]));
+	if (!node)
+	  return 0;
+
+	grub_memcpy (node, dir,
+		     sizeof (*node) + dir->stsize * sizeof (dir->stack[0]));
+
+	node->stsize--;
+	err = read_chunk (dir->data, &node->ino, sizeof (node->ino),
+			  grub_le_to_cpu64 (dir->data->sb.inodeoffset)
+			  + node->stack[node->stsize - 1].ino_chunk,
+			  node->stack[node->stsize - 1].ino_offset);
+	if (err)
+	  return 0;
+
+	if (hook ("..", GRUB_FSHELP_DIR, node))
+	  return 1;
+      }
+  }
 
   while (off < endoff)
     {
@@ -554,14 +592,18 @@ grub_squash_iterate_dir (grub_fshelp_node_t dir,
 	  if (grub_le_to_cpu16 (di.type) == SQUASH_TYPE_SYMLINK)
 	    filetype = GRUB_FSHELP_SYMLINK;
 
-	  node = grub_malloc (sizeof (*node));
+	  node = grub_malloc (sizeof (*node)
+			      + (dir->stsize + 1) * sizeof (dir->stack[0]));
 	  if (! node)
 	    return 0;
-	  *node = *dir;
-	  node->ino = ino;
-	  node->ino_chunk = grub_le_to_cpu32 (dh.ino_chunk);
-	  node->ino_offset = grub_le_to_cpu16 (di.ino_offset);
 
+	  grub_memcpy (node, dir,
+		       sizeof (*node) + dir->stsize * sizeof (dir->stack[0]));
+
+	  node->ino = ino;
+	  node->stack[node->stsize].ino_chunk = grub_le_to_cpu32 (dh.ino_chunk);
+	  node->stack[node->stsize].ino_offset = grub_le_to_cpu16 (di.ino_offset);
+	  node->stsize++;
 	  r = hook (buf, filetype, node);
 
 	  grub_free (buf);
@@ -577,11 +619,13 @@ make_root_node (struct grub_squash_data *data, struct grub_fshelp_node *root)
 {
   grub_memset (root, 0, sizeof (*root));
   root->data = data;
- 
+  root->stsize = 1;
+  root->stack[0].ino_chunk = grub_le_to_cpu32 (data->sb.root_ino_chunk);
+  root->stack[0].ino_offset = grub_cpu_to_le16 (data->sb.root_ino_offset);
  return read_chunk (data, &root->ino, sizeof (root->ino),
 		    grub_le_to_cpu64 (data->sb.inodeoffset) 
-		    + grub_le_to_cpu32 (data->sb.root_ino_chunk),
-		    grub_cpu_to_le16 (data->sb.root_ino_offset));
+		    + root->stack[0].ino_chunk,
+		    root->stack[0].ino_offset);
 }
 
 static void
@@ -669,8 +713,8 @@ grub_squash_open (struct grub_file *file, const char *name)
   data->ino.ino = fdiro->ino;
   data->ino.block_sizes = NULL;
   data->ino.cumulated_block_sizes = NULL;
-  data->ino.ino_chunk = fdiro->ino_chunk;
-  data->ino.ino_offset = fdiro->ino_offset;
+  data->ino.ino_chunk = fdiro->stack[fdiro->stsize - 1].ino_chunk;
+  data->ino.ino_offset = fdiro->stack[fdiro->stsize - 1].ino_offset;
 
   switch (fdiro->ino.type)
     {
