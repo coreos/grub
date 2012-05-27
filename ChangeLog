@@ -1,3 +1,14 @@
+2012-05-27  Peter Jones <pjones@redhat.com>
+
+	The old code gives arguments to a printf function which can't work
+	correctly, and the compiler complains.
+
+	* grub-core/tests/example_functional_test.c (example_test): Add
+	missing text.
+	* grub-core/tests/lib/test.c (add_failure): Rewrite.
+	* include/grub/test.h (grub_test_assert_helper): New declaration.
+	(grub_test_assert): Use grub_test_assert_helper.
+
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/Makefile.core.def (example_functional_test): Rename to ...

@@ -43,22 +43,75 @@ typedef struct grub_test_failure *grub_test_failure_t;
 grub_test_t grub_test_list;
 static grub_test_failure_t failure_list;
 
-static void
-add_failure (const char *file,
-	     const char *funp,
-	     grub_uint32_t line, const char *fmt, va_list args)
+static grub_test_failure_t
+failure_start(const char *file, const char *funp, grub_uint32_t line);
+static grub_test_failure_t
+failure_start(const char *file, const char *funp, grub_uint32_t line)
 {
   grub_test_failure_t failure;
 
   failure = (grub_test_failure_t) grub_malloc (sizeof (*failure));
   if (!failure)
-    return;
+    return NULL;
 
   failure->file = grub_strdup (file ? : "<unknown_file>");
-  failure->funp = grub_strdup (funp ? : "<unknown_function>");
-  failure->line = line;
-  failure->message = grub_xvasprintf (fmt, args);
+  if (!failure->file)
+    {
+      grub_free(failure);
+      return NULL;
+    }
 
+  failure->funp = grub_strdup (funp ? : "<unknown_function>");
+  if (!failure->funp)
+    {
+      grub_free(failure->file);
+      grub_free(failure);
+      return NULL;
+    }
+
+  failure->line = line;
+
+  failure->message = NULL;
+
+  return failure;
+}
+
+static void
+failure_append_vtext(grub_test_failure_t failure, const char *fmt, va_list args);
+static void
+failure_append_vtext(grub_test_failure_t failure, const char *fmt, va_list args)
+{
+  char *msg = grub_xvasprintf(fmt, args);
+  if (failure->message)
+    {
+      char *oldmsg = failure->message;
+
+      failure->message = grub_xasprintf("%s%s", oldmsg, msg);
+      grub_free(oldmsg);
+    }
+  else
+    {
+      failure->message = msg;
+    }
+}
+
+static void
+failure_append_text(grub_test_failure_t failure, const char *fmt, ...)
+{
+  va_list args;
+
+  va_start(args, fmt);
+  failure_append_vtext(failure, fmt, args);
+  va_end(args);
+}
+
+static void
+add_failure (const char *file,
+	     const char *funp,
+	     grub_uint32_t line, const char *fmt, va_list args)
+{
+  grub_test_failure_t failure = failure_start(file, funp, line);
+  failure_append_text(failure, fmt, args);
   grub_list_push (GRUB_AS_LIST_P (&failure_list), GRUB_AS_LIST (failure));
 }
 
@@ -98,6 +151,29 @@ grub_test_nonzero (int cond,
   va_start (ap, fmt);
   add_failure (file, funp, line, fmt, ap);
   va_end (ap);
+}
+
+void
+grub_test_assert_helper (int cond, const char *file, const char *funp,
+			 grub_uint32_t line, const char *condstr,
+			 const char *fmt, ...)
+{
+  va_list ap;
+  grub_test_failure_t failure;
+
+  if (cond)
+    return;
+
+  failure = failure_start(file, funp, line);
+  failure_append_text(failure, "assert failed: %s ", condstr);
+
+  va_start(ap, fmt);
+
+  failure_append_vtext(failure, fmt, ap);
+
+  va_end(ap);
+
+  grub_list_push (GRUB_AS_LIST_P (&failure_list), GRUB_AS_LIST (failure));
 }
 
 void

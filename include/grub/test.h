@@ -54,10 +54,14 @@ void grub_test_nonzero (int cond, const char *file,
   __attribute__ ((format (printf, 5, 6)));
 
 /* Macro to fill in location details and an optional error message.  */
+void grub_test_assert_helper (int cond, const char *file,
+                            const char *func, grub_uint32_t line,
+                            const char *condstr, const char *fmt, ...)
+  __attribute__ ((format (printf, 6, 7)));
+
 #define grub_test_assert(cond, ...)				\
-  grub_test_nonzero(cond, GRUB_FILE, __FUNCTION__, __LINE__,	\
-		    ## __VA_ARGS__,				\
-		    "assert failed: %s", #cond)
+  grub_test_assert_helper(cond, GRUB_FILE, __FUNCTION__, __LINE__,     \
+                         #cond, ## __VA_ARGS__);
 
 void grub_unit_test_init (void);
 void grub_unit_test_fini (void);
