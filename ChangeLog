@@ -1,5 +1,10 @@
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (open_device): Set dest->dev to 0 after
+	freeing.
+
+2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkconfig_lib.in (print_option_help): Properly redirect
 	stderr on test calls.
 

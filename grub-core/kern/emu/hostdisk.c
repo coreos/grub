@@ -861,6 +861,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
     else
       {
 	free (data->dev);
+	data->dev = 0;
 	if (data->fd != -1)
 	  {
 	    if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
@@ -941,6 +942,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
   else
     {
       free (data->dev);
+      data->dev = 0;
       if (data->fd != -1)
 	{
 	    if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
