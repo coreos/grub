@@ -1,5 +1,11 @@
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/main.c (read_config_file): Provide config_file and
+	config_directory.
+	* util/grub.d/41_custom.in: Use config_directoy when available.
+
+2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/bfs.c (iterate_in_b_tree): Add missing NESTED_FUNC_ATTR.
 	(grub_bfs_dir): Likewise.
 
