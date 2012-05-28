@@ -1163,9 +1163,11 @@ grub_hfs_dir (grub_device_t device, const char *path,
       struct grub_hfs_dirrec *drec = rec->data;
       struct grub_hfs_filerec *frec = rec->data;
       struct grub_hfs_catalog_key *ckey = rec->key;
-      char fname[sizeof (ckey->str) * MAX_UTF8_PER_MAC_ROMAN + 1] = { 0 };
+      char fname[sizeof (ckey->str) * MAX_UTF8_PER_MAC_ROMAN + 1];
       struct grub_dirhook_info info;
       grub_size_t len;
+
+      grub_memset (fname, 0, sizeof (fname));
 
       grub_memset (&info, 0, sizeof (info));
 

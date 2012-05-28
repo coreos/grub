@@ -1,5 +1,10 @@
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/hfs.c (grub_hfs_dir): Use memset instead of
+	initialisation to avoid __bzero reference.
+
+2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/i386/pc/startup_raw.S [__APPLE__]: Add Apple assembly
 	version.
 	* grub-core/commands/i386/pc/drivemap_int13h.S [__APPLE__]: Likewise.
