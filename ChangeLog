@@ -1,5 +1,11 @@
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_util_biosdisk_get_grub_dev) [__APPLE__]:
+	Implement Apple flavour.
+	(convert_system_partition_to_system_disk) [__APPLE__]: Likewise.
+
+2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h (memcmp) [__APPLE__]: Mark as regparm 0.
 	(memmove) [__APPLE__]: Likewise.
 	(memcpy) [__APPLE__]: Likewise.
@@ -8,7 +14,6 @@
 	(memmove) [__APPLE__]: Likewise.
 	(memcpy) [__APPLE__]: Likewise.
 	(memset) [__APPLE__]: Likewise.
-
 
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 

@@ -2121,6 +2121,18 @@ devmapper_out:
     }
   else
     return xstrdup (os_dev);
+#elif defined (__APPLE__)
+  char *ptr;
+  char *ret = xstrdup (os_dev);
+  int disk = grub_memcmp (ret, "/dev/disk", sizeof ("/dev/disk") - 1) == 0;
+  int rdisk = grub_memcmp (ret, "/dev/rdisk", sizeof ("/dev/rdisk") - 1) == 0;
+  if (!disk && !rdisk)
+    return ret;
+  ptr = ret + sizeof ("/dev/disk") + rdisk - 1;
+  while (*ptr >= '0' && *ptr <= '9')
+    ptr++;
+  *ptr = 0;
+  return ret;
 #else
 # warning "The function `convert_system_partition_to_system_disk' might not work on your OS correctly."
   return xstrdup (os_dev);
@@ -2374,6 +2386,27 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     return make_device_name (drive, dos_part, bsd_part);
   }
 
+#elif defined(__APPLE__)
+  /* Apple uses "/dev/r?disk[0-9]+(s[0-9]+)?".  */
+  {
+    const char *p;
+    int disk = (grub_memcmp (os_dev, "/dev/disk", sizeof ("/dev/disk") - 1)
+		 == 0);
+    int rdisk = (grub_memcmp (os_dev, "/dev/rdisk", sizeof ("/dev/rdisk") - 1)
+		 == 0);
+ 
+    if (!disk && !rdisk)
+      return make_device_name (drive, -1, -1);
+
+    p = os_dev + sizeof ("/dev/disk") + rdisk - 1;
+    while (*p >= '0' && *p <= '9')
+      p++;
+    if (*p != 's')
+      return make_device_name (drive, -1, -1);
+    p++;
+
+    return make_device_name (drive, strtol (p, NULL, 10) - 1, -1);
+  }
 #else
 # warning "The function `grub_util_biosdisk_get_grub_dev' might not work on your OS correctly."
   return make_device_name (drive, -1, -1);
