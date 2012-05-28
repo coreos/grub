@@ -1,5 +1,10 @@
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Remove APPLE_CC and add -Wl,-allow_stack_execute on
+	Apple.
+
+2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gentpl.py: Ignore error 2022 in objconv since it's irrelevant for us.
 
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>

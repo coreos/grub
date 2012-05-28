@@ -301,8 +301,8 @@ AC_CHECK_SIZEOF(long)
 
 grub_apple_cc
 if test x$grub_cv_apple_cc = xyes ; then
-  HOST_CPPFLAGS="$HOST_CPPFLAGS -DAPPLE_CC=1 -fnested-functions"
-  HOST_CFLAGS="$HOST_CFLAGS"
+  HOST_CPPFLAGS="$HOST_CPPFLAGS -fnested-functions"
+  HOST_LDFLAGS="$HOST_LDFLAGS -Wl,-allow_stack_execute"
 fi
 
 if test x$USE_NLS = xno; then
@@ -453,10 +453,9 @@ fi
 
 grub_apple_target_cc
 if test x$grub_cv_apple_target_cc = xyes ; then
-  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -DAPPLE_CC=1"
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS -fnested-functions"
 
-  CFLAGS="$CFLAGS -DAPPLE_CC=1 -fnested-functions"
+  CFLAGS="$CFLAGS -fnested-functions"
   TARGET_APPLE_CC=1
   AC_CHECK_PROG([OBJCONV], [objconv], [objconv], [])
   if test "x$OBJCONV" = x ; then
