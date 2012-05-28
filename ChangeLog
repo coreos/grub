@@ -1,5 +1,9 @@
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* gentpl.py: Ignore error 2022 in objconv since it's irrelevant for us.
+
+2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/sys/types.h [__APPLE__]: Include stddef
 	rather than defining size_t ourselves to avoid conflict.
 

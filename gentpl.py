@@ -419,13 +419,13 @@ def kernel(platform):
     r += rule("[+ name +].img", "[+ name +].exec$(EXEEXT)",
               if_platform_tagged(platform, "nostrip",
 """if test x$(USE_APPLE_CC_FIXES) = xyes; then \
-     $(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -wd1106 -nu -nd $< $@; \
+     $(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -ed2022 -wd1106 -nu -nd $< $@; \
    elif test ! -z '$(TARGET_OBJ2ELF)'; then \
      cp $< $@.bin; $(TARGET_OBJ2ELF) $@.bin && cp $@.bin $@ || (rm -f $@.bin; exit 1); \
    else cp $< $@; fi""",
 """if test x$(USE_APPLE_CC_FIXES) = xyes; then \
   $(STRIP) $(""" + cname() + """) -o $@.bin $<; \
-  $(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -wd1106 -nu -nd $@.bin $@; \
+  $(OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -ed2022 -wd1106 -nu -nd $@.bin $@; \
 else """  + "$(STRIP) $(" + cname() + "_STRIPFLAGS) -o $@ $<; \
 fi"""))
     return r
