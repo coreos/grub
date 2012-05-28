@@ -1,5 +1,15 @@
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/i386/pc/startup_raw.S [__APPLE__]: Add Apple assembly
+	version.
+	* grub-core/commands/i386/pc/drivemap_int13h.S [__APPLE__]: Likewise.
+	* grub-core/kern/i386/pc/startup.S [__APPLE__]: Likewise.
+	* grub-core/lib/i386/relocator16.S [__APPLE__]: Likewise.
+	* grub-core/lib/i386/relocator_common.S [__APPLE__]: Likewise.
+	* grub-core/mmap/i386/pc/mmap_helper.S [__APPLE__]: Likewise.
+
+2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/efiemu/runtime/efiemu.c: Replace APPLE_CC with __APPLE__.
 	* grub-core/kern/misc.c: Likewise.
 	* grub-core/loader/i386/xnu.c: Likewise.

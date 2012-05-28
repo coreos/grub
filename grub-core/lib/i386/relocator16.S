@@ -35,10 +35,19 @@
 VARIABLE(grub_relocator16_start)
 	PREAMBLE
 
+#ifdef __APPLE__
+	LOCAL(cs_base_bytes12_offset) = LOCAL (cs_base_bytes12) - LOCAL (base)
+	LOCAL(cs_base_byte3_offset) = LOCAL (cs_base_byte3) - LOCAL (base)
+	movl 	%esi, %eax
+	movw	%ax, (LOCAL(cs_base_bytes12_offset)) (RSI, 1)
+	shrl	$16, %eax
+	movb	%al, (LOCAL (cs_base_byte3_offset)) (RSI, 1)
+#else
 	movl 	%esi, %eax
 	movw	%ax, (LOCAL (cs_base_bytes12) - LOCAL (base)) (RSI, 1)
 	shrl	$16, %eax
 	movb	%al, (LOCAL (cs_base_byte3) - LOCAL (base)) (RSI, 1)
+#endif
 
 	RELOAD_GDT
 	.code32
@@ -75,12 +84,23 @@ VARIABLE(grub_relocator16_start)
 
 	movl 	%esi, %eax
 	shrl	$4, %eax
+#ifdef __APPLE_
+	LOCAL(segment_offset) = LOCAL (segment) - LOCAL (base)
+	LOCAL(idt_offset) = LOCAL(relocator16_idt) - LOCAL (base)
+	LOCAL(cont2_offset) = LOCAL (cont2) - LOCAL(base)
+	movw	%ax, LOCAL(segment_offset) (%esi, 1)
+	lidt LOCAL(idt_offset) (%esi, 1)
+	
+	/* jump to a 16 bit segment */
+	ljmp	$PSEUDO_REAL_CSEG, $(LOCAL(cont2_offset))
+#else
 	movw	%ax, (LOCAL (segment) - LOCAL (base)) (%esi, 1)
 
 	lidt (EXT_C(grub_relocator16_idt) - LOCAL (base)) (%esi, 1)
 	
 	/* jump to a 16 bit segment */
 	ljmp	$PSEUDO_REAL_CSEG, $(LOCAL (cont2) - LOCAL(base))
+#endif
 LOCAL(cont2):
 	.code16
 
@@ -92,7 +112,12 @@ LOCAL(cont2):
 	/* flush prefetch queue, reload %cs */
 	/* ljmp  */
 	.byte	0xea
+#ifdef __APPLE__
+	LOCAL(cont3_offset) = LOCAL(cont3) - LOCAL(base)
+	.word 	LOCAL(cont3_offset)
+#else
 	.word 	LOCAL(cont3)-LOCAL(base)
+#endif
 LOCAL(segment):
 	.word	0
 
@@ -108,7 +133,12 @@ VARIABLE(grub_relocator16_keep_a20_enabled)
 
 	movw    %cs, %ax
 	movw    %ax, %ss 
+#ifdef __APPLE__
+	LOCAL(relocator16_end_offset) = LOCAL(relocator16_end) - LOCAL(base)
+	leaw    LOCAL(relocator16_end_offset), %sp
+#else
 	leaw    LOCAL(relocator16_end) - LOCAL(base), %sp
+#endif
 	addw    $GRUB_RELOCATOR16_STACK_SIZE, %sp
 
 	/* second, try a BIOS call */
@@ -282,6 +312,9 @@ LOCAL(cs_base_byte3):
 	.byte	0, 0x92, 0, 0
 LOCAL(gdt_end):
 
+#ifdef __APPLE__
+LOCAL(relocator16_idt):
+#endif
 VARIABLE(grub_relocator16_idt)
 	.word 0
 	.long 0

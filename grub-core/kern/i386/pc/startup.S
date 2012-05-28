@@ -44,6 +44,9 @@
 #include <config.h>
 #include <grub/symbol.h>
 #include <multiboot.h>
+#ifdef __APPLE__
+#include <grub/i386/pc/memory.h>
+#endif
 
 	.file	"startup.S"
 
@@ -53,6 +56,9 @@
 start:
 _start:
 __start:
+#ifdef __APPLE__
+LOCAL(start):
+#endif
 	.code32
 
 	movl	%ecx, (LOCAL(real_to_prot_addr) - _start) (%esi)
@@ -60,7 +66,12 @@ __start:
 	movl	%eax, (EXT_C(grub_realidt) - _start) (%esi)
 
 	/* copy back the decompressed part (except the modules) */
+#ifdef __APPLE__
+	movl	$EXT_C(_edata), %ecx
+	subl    $LOCAL(start), %ecx
+#else
 	movl	$(_edata - _start), %ecx
+#endif
 	movl	$(_start), %edi
 	rep
 	movsb
@@ -84,11 +95,19 @@ LOCAL(cont):
 	movsb
 #endif
 
+#ifdef __APPLE__
+	/* clean out the bss */
+	movl	$EXT_C(_edata), %edi
+
+	/* compute the bss length */
+	movl	$GRUB_MEMORY_MACHINE_SCRATCH_ADDR, %ecx
+#else
 	/* clean out the bss */
 	movl	$BSS_START_SYMBOL, %edi
 
 	/* compute the bss length */
 	movl	$END_SYMBOL, %ecx
+#endif
 	subl	%edi, %ecx
 
 	/* clean out */
@@ -182,6 +201,13 @@ FUNCTION(grub_pxe_call)
 VARIABLE(grub_realidt)
 	.long 0
 
+#ifdef __APPLE__
+	.globl EXT_C(_edata)
+	.globl EXT_C(grub_boot_device)
+	.zerofill __DATA, __aa_before_bss, EXT_C(_edata), 1, 0
+	.zerofill __DATA, __bss, EXT_C(grub_boot_device), 4, 2
+#else
 	.bss
 VARIABLE(grub_boot_device)
 	.long	0
+#endif

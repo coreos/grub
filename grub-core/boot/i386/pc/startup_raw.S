@@ -105,7 +105,12 @@ LOCAL (codestart):
 	call	grub_gate_a20
 
 	movl	LOCAL(compressed_size), %edx
+#ifdef __APPLE__
+	addl    $decompressor_end, %edx
+	subl    $(LOCAL(reed_solomon_part)), %edx
+#else
 	addl    $(LOCAL(decompressor_end) - LOCAL(reed_solomon_part)), %edx
+#endif
 	movl    reed_solomon_redundancy, %ecx
 	leal    LOCAL(reed_solomon_part), %eax
 	cld
@@ -303,8 +308,16 @@ multiboot_entry:
 	movl	%ebp, %esp
 
 	/* relocate the code */
+#ifdef __APPLE__
+	LOCAL(compressed_size_offset) = LOCAL(compressed_size) - LOCAL(base)
+	movl	$0x200, %ecx
+	addl    $decompressor_end, %ecx
+	subl    $LOCAL(base), %ecx
+	addl	LOCAL(compressed_size_offset) + 0x100000 + 0x200, %ecx
+#else
 	movl	$(LOCAL(decompressor_end) - _start + 0x200), %ecx
 	addl	LOCAL(compressed_size) - _start + 0x100000 + 0x200, %ecx
+#endif
 	movl	$0x100000, %esi
 	movl	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %edi
 	cld
@@ -328,7 +341,11 @@ post_reed_solomon:
 
 #ifdef ENABLE_LZMA
 	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
+#ifdef __APPLE__
+	movl	$decompressor_end, %esi
+#else
 	movl	$LOCAL(decompressor_end), %esi
+#endif
 	pushl	%edi
 	movl	LOCAL (uncompressed_size), %ecx
 	leal	(%edi, %ecx), %ebx
@@ -352,5 +369,9 @@ post_reed_solomon:
 
 	.p2align 4
 
+#ifdef __APPLE__
+	.zerofill __DATA, __aa_before_bss, decompressor_end, 10, 0
+#else
 	.bss
 LOCAL(decompressor_end):
+#endif
