@@ -76,7 +76,7 @@ else
     # Attach .modname and .moddeps sections
     echo "char modname[]  __attribute__ ((section(\"_modname, _modname\"))) = \"$modname\";" >$t1
 
-    for dep in $deps; do echo "char moddep_$dep[] __attribute__ ((section(\"_moddeps, _moddeps\"))) = \"$dep\";" >$t2; done
+    for dep in $deps; do echo "char moddep_$dep[] __attribute__ ((section(\"_moddeps, _moddeps\"))) = \"$dep\";" >>$t2; done
 
     if test -n "$deps"; then
 	@TARGET_CC@ @TARGET_LDFLAGS@ -ffreestanding -nostdlib -o $tmpfile2 $t1 $t2 $tmpfile -Wl,-r,-d

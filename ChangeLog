@@ -1,3 +1,8 @@
+2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/genmod.sh.in: Fix a bug in Apple part which caused
+	dependency discard.
+
 2012-05-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/main.c (read_config_file): Provide config_file and
