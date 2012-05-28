@@ -1,5 +1,11 @@
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/list.h (grub_bad_type_cast_real): Remove return.
+	* include/grub/misc.h (ATTRIBUTE_ERROR): Make into noreturn attribute
+	on older compiler.
+
+2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_util_biosdisk_get_grub_dev) [__APPLE__]:
 	Implement Apple flavour.
 	(convert_system_partition_to_system_disk) [__APPLE__]: Likewise.

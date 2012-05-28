@@ -45,7 +45,6 @@ grub_bad_type_cast_real (int line, const char *file)
 {
   grub_fatal ("error:%s:%u: bad type cast between incompatible grub types",
 	      file, line);
-  return 0;
 }
 
 #define grub_bad_type_cast() grub_bad_type_cast_real(__LINE__, GRUB_FILE)

@@ -39,7 +39,7 @@
 #  define ATTRIBUTE_ERROR(msg) \
 	__attribute__ ((__error__ (msg)))
 #else
-#  define ATTRIBUTE_ERROR(msg)
+#  define ATTRIBUTE_ERROR(msg) __attribute__ ((noreturn))
 #endif
 
 #define ALIGN_UP(addr, align) \
