@@ -113,10 +113,17 @@ grub_strncat (char *dest, const char *src, int c)
 
 /* Prototypes for aliases.  */
 #ifndef GRUB_UTIL
+#ifdef __APPLE__
+int __attribute__ ((regparm(0))) EXPORT_FUNC(memcmp) (const void *s1, const void *s2, grub_size_t n);
+void *__attribute__ ((regparm(0))) EXPORT_FUNC(memmove) (void *dest, const void *src, grub_size_t n);
+void *__attribute__ ((regparm(0))) EXPORT_FUNC(memcpy) (void *dest, const void *src, grub_size_t n);
+void *__attribute__ ((regparm(0))) EXPORT_FUNC(memset) (void *s, int c, grub_size_t n);
+#else
 int EXPORT_FUNC(memcmp) (const void *s1, const void *s2, grub_size_t n);
 void *EXPORT_FUNC(memmove) (void *dest, const void *src, grub_size_t n);
 void *EXPORT_FUNC(memcpy) (void *dest, const void *src, grub_size_t n);
 void *EXPORT_FUNC(memset) (void *s, int c, grub_size_t n);
+#endif
 #endif
 
 int EXPORT_FUNC(grub_memcmp) (const void *s1, const void *s2, grub_size_t n);

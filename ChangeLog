@@ -1,5 +1,17 @@
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h (memcmp) [__APPLE__]: Mark as regparm 0.
+	(memmove) [__APPLE__]: Likewise.
+	(memcpy) [__APPLE__]: Likewise.
+	(memset) [__APPLE__]: Likewise.
+	* grub-core/kern/misc.c (memcmp) [__APPLE__]: Likewise.
+	(memmove) [__APPLE__]: Likewise.
+	(memcpy) [__APPLE__]: Likewise.
+	(memset) [__APPLE__]: Likewise.
+
+
+2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/genmod.sh.in: Fix a bug in Apple part which caused
 	dependency discard.
 

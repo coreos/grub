@@ -64,18 +64,20 @@ grub_memmove (void *dest, const void *src, grub_size_t n)
   return dest;
 }
 
-#ifndef APPLE_CC
+#ifndef __APPLE__
 void *memmove (void *dest, const void *src, grub_size_t n)
   __attribute__ ((alias ("grub_memmove")));
 /* GCC emits references to memcpy() for struct copies etc.  */
 void *memcpy (void *dest, const void *src, grub_size_t n)
   __attribute__ ((alias ("grub_memmove")));
 #else
-void *memcpy (void *dest, const void *src, grub_size_t n)
+void * __attribute__ ((regparm(0)))
+memcpy (void *dest, const void *src, grub_size_t n)
 {
 	return grub_memmove (dest, src, n);
 }
-void *memmove (void *dest, const void *src, grub_size_t n)
+void * __attribute__ ((regparm(0)))
+memmove (void *dest, const void *src, grub_size_t n)
 {
 	return grub_memmove (dest, src, n);
 }
@@ -230,11 +232,12 @@ grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 
   return 0;
 }
-#ifndef APPLE_CC
+#ifndef __APPLE__
 int memcmp (const void *s1, const void *s2, grub_size_t n)
   __attribute__ ((alias ("grub_memcmp")));
 #else
-int memcmp (const void *s1, const void *s2, grub_size_t n)
+int __attribute__ ((regparm(0)))
+memcmp (const void *s1, const void *s2, grub_size_t n)
 {
   return grub_memcmp (s1, s2, n);
 }
@@ -505,11 +508,12 @@ grub_memset (void *s, int c, grub_size_t len)
 
   return s;
 }
-#ifndef APPLE_CC
+#ifndef __APPLE__
 void *memset (void *s, int c, grub_size_t n)
   __attribute__ ((alias ("grub_memset")));
 #else
-void *memset (void *s, int c, grub_size_t n)
+void * __attribute__ ((regparm(0)))
+memset (void *s, int c, grub_size_t n)
 {
   return grub_memset (s, c, n);
 }
