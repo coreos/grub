@@ -137,7 +137,7 @@ grub_puts_ (const char *s)
   return grub_puts (_(s));
 }
 
-#if defined (APPLE_CC) && ! defined (GRUB_UTIL)
+#if defined (__APPLE__) && ! defined (GRUB_UTIL)
 int
 grub_err_printf (const char *fmt, ...)
 {
@@ -152,7 +152,7 @@ grub_err_printf (const char *fmt, ...)
 }
 #endif
 
-#if ! defined (APPLE_CC) && ! defined (GRUB_UTIL)
+#if ! defined (__APPLE__) && ! defined (GRUB_UTIL)
 int grub_err_printf (const char *fmt, ...)
 __attribute__ ((alias("grub_printf")));
 #endif
@@ -1112,7 +1112,7 @@ grub_abort (void)
   grub_exit ();
 }
 
-#if ! defined (APPLE_CC) && !defined (GRUB_UTIL)
+#if ! defined (__APPLE__) && !defined (GRUB_UTIL)
 /* GCC emits references to abort().  */
 void abort (void) __attribute__ ((alias ("grub_abort")));
 #endif

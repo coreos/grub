@@ -46,7 +46,7 @@ grub_efi_status_t
 efiemu_set_wakeup_time (grub_efi_boolean_t enabled,
 			grub_efi_time_t *time);
 
-#ifdef APPLE_CC
+#ifdef __APPLE__
 #define PHYSICAL_ATTRIBUTE __attribute__ ((section("_text-physical, _text-physical")));
 #else
 #define PHYSICAL_ATTRIBUTE __attribute__ ((section(".text-physical")));

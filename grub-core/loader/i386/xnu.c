@@ -132,7 +132,7 @@ guessfsb (void)
   if (! grub_cpu_is_cpuid_supported ())
     return sane_value;
 
-#ifdef APPLE_CC
+#ifdef __APPLE__
   asm volatile ("movl $0, %%eax\n"
 #ifdef __x86_64__
 		"push %%rbx\n"
@@ -167,7 +167,7 @@ guessfsb (void)
   if (max_cpuid < 1)
     return sane_value;
 
-#ifdef APPLE_CC
+#ifdef __APPLE__
   asm volatile ("movl $1, %%eax\n"
 #ifdef __x86_64__
 		"push %%rbx\n"

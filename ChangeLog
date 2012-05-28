@@ -1,5 +1,13 @@
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/efiemu/runtime/efiemu.c: Replace APPLE_CC with __APPLE__.
+	* grub-core/kern/misc.c: Likewise.
+	* grub-core/loader/i386/xnu.c: Likewise.
+	* include/grub/i386/tsc.h: Likewise.
+	* include/grub/symbol.h: Likewise.
+
+2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/list.h (grub_bad_type_cast_real): Remove return.
 	* include/grub/misc.h (ATTRIBUTE_ERROR): Make into noreturn attribute
 	on older compiler.

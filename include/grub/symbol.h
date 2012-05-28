@@ -37,7 +37,7 @@
 # define EXT_C(sym)	sym
 #endif
 
-#if defined (APPLE_CC)
+#if defined (__APPLE__)
 #define FUNCTION(x)	.globl EXT_C(x) ; EXT_C(x):
 #define VARIABLE(x)	.globl EXT_C(x) ; EXT_C(x):
 #elif ! defined (__CYGWIN__) && ! defined (__MINGW32__)
