@@ -21,7 +21,11 @@
 
 #include <grub/misc.h>
 
+#ifndef __APPLE__
 typedef grub_size_t size_t;
+#else
+#include <stddef.h>
+#endif
 typedef grub_ssize_t ssize_t;
 #ifndef GRUB_POSIX_BOOL_DEFINED
 typedef enum { false = 0, true = 1 } bool;

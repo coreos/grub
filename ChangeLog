@@ -1,5 +1,10 @@
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/posix_wrap/sys/types.h [__APPLE__]: Include stddef
+	rather than defining size_t ourselves to avoid conflict.
+
+2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/hfs.c (grub_hfs_dir): Use memset instead of
 	initialisation to avoid __bzero reference.
 
