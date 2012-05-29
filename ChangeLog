@@ -1,3 +1,8 @@
+2012-05-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gdb/i386/machdep.S: Make usable with Apple assembler.
+	Binary on other platforms stays identical.
+
 2012-05-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Remove APPLE_CC and add -Wl,-allow_stack_execute on
