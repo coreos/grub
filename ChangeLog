@@ -1,5 +1,11 @@
 2012-05-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add condition for COND_HOST_XNU.
+	* Makefile.util.def (10_xnu): New script.
+	* util/grub.d/10_xnu.in: New file, extracted from 30_os_prober.in.
+
+2012-05-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/pc/startup.S [__APPLE__]: Add a workaround for
 	objconv bug.
 

@@ -420,6 +420,13 @@ script = {
 };
 
 script = {
+  name = '10_xnu';
+  common = util/grub.d/10_xnu.in;
+  installdir = grubconf;
+  condition = COND_HOST_XNU;
+};
+
+script = {
   name = '20_linux_xen';
   common = util/grub.d/20_linux_xen.in;
   installdir = grubconf;
