@@ -1,5 +1,10 @@
 2012-05-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/pc/startup.S [__APPLE__]: Add a workaround for
+	objconv bug.
+
+2012-05-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gdb/i386/machdep.S: Make usable with Apple assembler.
 	Binary on other platforms stays identical.
 

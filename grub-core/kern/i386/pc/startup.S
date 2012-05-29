@@ -202,6 +202,10 @@ VARIABLE(grub_realidt)
 	.long 0
 
 #ifdef __APPLE__
+	/* Older versions of objconv assume that there is the same number
+	   of text and data sections. Hence this dummy.  */
+	.section __TEXT, __zz_dummy
+	.byte 0
 	.globl EXT_C(_edata)
 	.globl EXT_C(grub_boot_device)
 	.zerofill __DATA, __aa_before_bss, EXT_C(_edata), 1, 0
