@@ -1,3 +1,8 @@
+2012-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/gptsync.c (grub_cmd_gptsync): Propagate the
+	relaxation of protective MBR requirements.
+
 2012-05-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Add condition for COND_HOST_XNU.

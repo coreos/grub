@@ -67,6 +67,7 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
   struct grub_partition *partition;
   grub_disk_addr_t first_sector;
   int numactive = 0;
+  int i;
 
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "device name required");
@@ -107,13 +108,15 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
     }
 
   /* Make sure the MBR is a protective MBR and not a normal MBR.  */
-  if (mbr.entries[0].type != GRUB_PC_PARTITION_TYPE_GPT_DISK)
+  for (i = 0; i < 4; i++)
+    if (mbr.entries[i].type == GRUB_PC_PARTITION_TYPE_GPT_DISK)
+      break;
+  if (i == 4)
     {
       grub_device_close (dev);
       return grub_error (GRUB_ERR_BAD_PART_TABLE, "no GPT partition map found");
     }
 
-  int i;
   first_sector = dev->disk->total_sectors;
   for (i = 1; i < argc; i++)
     {
