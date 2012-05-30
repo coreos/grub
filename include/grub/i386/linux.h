@@ -69,8 +69,6 @@
 #define GRUB_E820_NVS        4
 #define GRUB_E820_BADRAM     5
 
-#define GRUB_E820_MAX_ENTRY  128
-
 struct grub_e820_mmap
 {
   grub_uint64_t addr;
@@ -298,7 +296,7 @@ struct linux_kernel_params
   grub_uint32_t payload_length;
   grub_uint64_t setup_data;
   grub_uint8_t pad2[120];		/* 258 */
-  struct grub_e820_mmap e820_map[GRUB_E820_MAX_ENTRY];	/* 2d0 */
+  struct grub_e820_mmap e820_map[(0x400 - 0x2d0) / 20];	/* 2d0 */
 
 } __attribute__ ((packed));
 #endif /* ! ASM_FILE */

@@ -1,5 +1,26 @@
 2012-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix handling of EFI with big memory maps.
+
+	* grub-core/loader/i386/linux.c (GRUB_LINUX_CL_OFFSET): Removed.
+	(real_mode_mem): Likewise.
+	(real_mode_target): Likewise.
+	(real_mode_pages): Likewise.
+	(prot_mode_pages): Likewise.
+	(linux_params): New var.
+	(linux_cmdline): Likewise.
+	(free_pages): Don't set real mode variables.
+	(allocate_pages): Don't allocate real mode memory.
+	(grub_e820_add_region): Remove the limit.
+	(grub_linux_boot): Allocate and copy real mode memory.
+	(grub_linux_unload): Free linux_cmdline.
+	(grub_cmd_linux): Use temporary storage for parameters.
+	(grub_cmd_initrd): Likewise.
+	* include/grub/i386/linux.h (GRUB_E820_MAX_ENTRY): Removed.
+	(linux_kernel_params): Make it 1K big.
+
+2012-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.util.def: Remove -Wno-format.
 	* grub-core/Makefile.core.def: Likewise.
 

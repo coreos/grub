@@ -59,25 +59,21 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define ACCEPTS_PURE_TEXT 1
 #endif
 
-#define GRUB_LINUX_CL_OFFSET		0x1000
-
 static grub_dl_t my_mod;
 
 static grub_size_t linux_mem_size;
 static int loaded;
-static void *real_mode_mem;
-static grub_addr_t real_mode_target;
 static void *prot_mode_mem;
 static grub_addr_t prot_mode_target;
 static void *initrd_mem;
 static grub_addr_t initrd_mem_target;
-static grub_uint32_t real_mode_pages;
-static grub_uint32_t prot_mode_pages;
 static grub_size_t prot_init_space;
 static grub_uint32_t initrd_pages;
 static struct grub_relocator *relocator = NULL;
 static void *efi_mmap_buf;
 static grub_size_t maximal_cmdline_size;
+static struct linux_kernel_params linux_params;
+static char *linux_cmdline;
 #ifdef GRUB_MACHINE_EFI
 static grub_efi_uintn_t efi_mmap_size;
 #else
@@ -183,8 +179,8 @@ free_pages (void)
 {
   grub_relocator_unload (relocator);
   relocator = NULL;
-  real_mode_mem = prot_mode_mem = initrd_mem = 0;
-  real_mode_target = prot_mode_target = initrd_mem_target = 0;
+  prot_mode_mem = initrd_mem = 0;
+  prot_mode_target = initrd_mem_target = 0;
 }
 
 /* Allocate pages for the real mode code and the protected mode code
@@ -194,27 +190,9 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
 		grub_size_t min_align, int relocatable,
 		grub_uint64_t prefered_address)
 {
-  grub_size_t real_size, mmap_size;
   grub_err_t err;
 
-  /* Make sure that each size is aligned to a page boundary.  */
-  real_size = GRUB_LINUX_CL_OFFSET + maximal_cmdline_size;
   prot_size = page_align (prot_size);
-  mmap_size = find_mmap_size ();
-
-#ifdef GRUB_MACHINE_EFI
-  efi_mmap_size = find_efi_mmap_size ();
-  if (efi_mmap_size == 0)
-    return grub_errno;
-#endif
-
-  grub_dprintf ("linux", "real_size = %x, prot_size = %x, mmap_size = %x\n",
-		(unsigned) real_size, (unsigned) prot_size, (unsigned) mmap_size);
-
-  /* Calculate the number of pages; Combine the real mode code with
-     the memory map buffer for simplicity.  */
-  real_mode_pages = ((real_size + mmap_size + efi_mmap_size) >> 12);
-  prot_mode_pages = (prot_size >> 12);
 
   /* Initialize the memory pointers with NULL for convenience.  */
   free_pages ();
@@ -228,59 +206,6 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
 
   /* FIXME: Should request low memory from the heap when this feature is
      implemented.  */
-
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
-				  grub_memory_type_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
-			     grub_memory_type_t type)
-    {
-      /* We must put real mode code in the traditional space.  */
-
-      if (type == GRUB_MEMORY_AVAILABLE
-	  && addr <= 0x90000)
-	{
-	  if (addr < 0x10000)
-	    {
-	      size += addr - 0x10000;
-	      addr = 0x10000;
-	    }
-
-	  if (addr + size > 0x90000)
-	    size = 0x90000 - addr;
-
-	  if (real_size + mmap_size + efi_mmap_size > size)
-	    return 0;
-
-	  real_mode_target = ((addr + size) - (real_size + mmap_size + efi_mmap_size));
-	  return 1;
-	}
-
-      return 0;
-    }
-#ifdef GRUB_MACHINE_EFI
-  grub_efi_mmap_iterate (hook, 1);
-  if (! real_mode_target)
-    grub_efi_mmap_iterate (hook, 0);
-#else
-  grub_mmap_iterate (hook);
-#endif
-  if (! real_mode_target)
-    {
-      err = grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate real mode pages");
-      goto fail;
-    }
-
-  {
-    grub_relocator_chunk_t ch;
-    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
-					   real_mode_target,
-					   (real_size + mmap_size 
-					    + efi_mmap_size));
-    if (err)
-      goto fail;
-    real_mode_mem = get_virtual_current_address (ch);
-  }
-  efi_mmap_buf = (grub_uint8_t *) real_mode_mem + real_size + mmap_size;
 
   {
     grub_relocator_chunk_t ch;
@@ -315,12 +240,9 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
     prot_mode_target = get_physical_target_address (ch);
   }
 
-  grub_dprintf ("linux", "real_mode_mem = %lx, real_mode_target = %lx, real_mode_pages = %x\n",
-                (unsigned long) real_mode_mem, (unsigned long) real_mode_target,
-		(unsigned) real_mode_pages);
-  grub_dprintf ("linux", "prot_mode_mem = %lx, prot_mode_target = %lx, prot_mode_pages = %x\n",
+  grub_dprintf ("linux", "prot_mode_mem = %lx, prot_mode_target = %lx, prot_size = %x\n",
                 (unsigned long) prot_mode_mem, (unsigned long) prot_mode_target,
-		(unsigned) prot_mode_pages);
+		(unsigned) prot_size);
   return GRUB_ERR_NONE;
 
  fail:
@@ -334,12 +256,6 @@ grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
                       grub_uint32_t type)
 {
   int n = *e820_num;
-
-  if (n >= GRUB_E820_MAX_ENTRY)
-    {
-      return grub_error (GRUB_ERR_OUT_OF_RANGE,
-			 "Too many e820 memory map entries");
-    }
 
   if ((n > 0) && (e820_map[n - 1].addr + e820_map[n - 1].size == start) &&
       (e820_map[n - 1].type == type))
@@ -462,8 +378,84 @@ grub_linux_boot (void)
   const char *modevar;
   char *tmp;
   struct grub_relocator32_state state;
+  void *real_mode_mem;
+  grub_addr_t real_mode_target;
+  grub_size_t real_size, mmap_size;
+  grub_size_t cl_offset;
+
+  mmap_size = find_mmap_size ();
+  /* Make sure that each size is aligned to a page boundary.  */
+  cl_offset = ALIGN_UP (mmap_size + sizeof (*params), 4096);
+  real_size = ALIGN_UP (cl_offset + maximal_cmdline_size, 4096);
+
+#ifdef GRUB_MACHINE_EFI
+  efi_mmap_size = find_efi_mmap_size ();
+  if (efi_mmap_size == 0)
+    return grub_errno;
+#endif
+
+  grub_dprintf ("linux", "real_size = %x, mmap_size = %x\n",
+		(unsigned) real_size, (unsigned) mmap_size);
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+				  grub_memory_type_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
+			     grub_memory_type_t type)
+    {
+      /* We must put real mode code in the traditional space.  */
+
+      if (type == GRUB_MEMORY_AVAILABLE
+	  && addr <= 0x90000)
+	{
+	  if (addr < 0x10000)
+	    {
+	      size += addr - 0x10000;
+	      addr = 0x10000;
+	    }
+
+	  if (addr + size > 0x90000)
+	    size = 0x90000 - addr;
+
+	  if (real_size + efi_mmap_size > size)
+	    return 0;
+
+	  real_mode_target = ((addr + size) - (real_size + efi_mmap_size));
+	  return 1;
+	}
+
+      return 0;
+    }
+#ifdef GRUB_MACHINE_EFI
+  grub_efi_mmap_iterate (hook, 1);
+  if (! real_mode_target)
+    grub_efi_mmap_iterate (hook, 0);
+#else
+  grub_mmap_iterate (hook);
+#endif
+  if (! real_mode_target)
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate real mode pages");
+
+  {
+    grub_relocator_chunk_t ch;
+    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					   real_mode_target,
+					   (real_size + efi_mmap_size));
+    if (err)
+     return err;
+    real_mode_mem = get_virtual_current_address (ch);
+  }
+  efi_mmap_buf = (grub_uint8_t *) real_mode_mem + real_size;
+
+  grub_dprintf ("linux", "real_mode_mem = %lx, real_mode_target = %lx, real_size = %x\n",
+                (unsigned long) real_mode_mem, (unsigned long) real_mode_target,
+		(unsigned) real_size);
 
   params = real_mode_mem;
+
+  *params = linux_params;
+  params->cmd_line_ptr = real_mode_target + cl_offset;
+  grub_memcpy ((char *) params + cl_offset, linux_cmdline,
+	       maximal_cmdline_size);
 
 #ifdef GRUB_MACHINE_IEEE1275
   {
@@ -482,10 +474,10 @@ grub_linux_boot (void)
   grub_dprintf ("linux", "code32_start = %x\n",
 		(unsigned) params->code32_start);
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
+  auto int NESTED_FUNC_ATTR hook_fill (grub_uint64_t, grub_uint64_t,
 				  grub_memory_type_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, 
-			     grub_memory_type_t type)
+  int NESTED_FUNC_ATTR hook_fill (grub_uint64_t addr, grub_uint64_t size, 
+				  grub_memory_type_t type)
     {
       grub_uint32_t e820_type;
       switch (type)
@@ -517,7 +509,7 @@ grub_linux_boot (void)
     }
 
   e820_num = 0;
-  if (grub_mmap_iterate (hook))
+  if (grub_mmap_iterate (hook_fill))
     return grub_errno;
   params->mmap_size = e820_num;
 
@@ -652,6 +644,8 @@ grub_linux_unload (void)
 {
   grub_dl_unref (my_mod);
   loaded = 0;
+  grub_free (linux_cmdline);
+  linux_cmdline = 0;
   return GRUB_ERR_NONE;
 }
 
@@ -781,16 +775,16 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		      preffered_address))
     goto fail;
 
-  params = (struct linux_kernel_params *) real_mode_mem;
-  grub_memset (params, 0, GRUB_LINUX_CL_OFFSET + maximal_cmdline_size);
+  params = (struct linux_kernel_params *) &linux_params;
+  grub_memset (params, 0, sizeof (*params));
   grub_memcpy (&params->setup_sects, &lh.setup_sects, sizeof (lh) - 0x1F1);
 
   params->code32_start = prot_mode_target + lh.code32_start - GRUB_LINUX_BZIMAGE_ADDR;
   params->kernel_alignment = (1 << align);
   params->ps_mouse = params->padding10 =  0;
 
-  len = 0x400 - sizeof (lh);
-  if (grub_file_read (file, (char *) real_mode_mem + sizeof (lh), len) != len)
+  len = sizeof (*params) - sizeof (lh);
+  if (grub_file_read (file, (char *) params + sizeof (lh), len) != len)
     {
       if (!grub_errno)
 	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
@@ -805,7 +799,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   params->cl_magic = GRUB_LINUX_CL_MAGIC;
   params->cl_offset = 0x1000;
 
-  params->cmd_line_ptr = real_mode_target + 0x1000;
   params->ramdisk_image = 0;
   params->ramdisk_size = 0;
 
@@ -978,10 +971,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       }
 
   /* Create kernel command line.  */
-  grub_memcpy ((char *)real_mode_mem + GRUB_LINUX_CL_OFFSET, LINUX_IMAGE,
-	      sizeof (LINUX_IMAGE));
+  linux_cmdline = grub_zalloc (maximal_cmdline_size + 1);
+  if (!linux_cmdline)
+    goto fail;
+  grub_memcpy (linux_cmdline, LINUX_IMAGE, sizeof (LINUX_IMAGE));
   grub_create_loader_cmdline (argc, argv,
-			      (char *)real_mode_mem + GRUB_LINUX_CL_OFFSET
+			      linux_cmdline
 			      + sizeof (LINUX_IMAGE) - 1,
 			      maximal_cmdline_size
 			      - (sizeof (LINUX_IMAGE) - 1));
@@ -1054,7 +1049,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   initrd_pages = (page_align (size) >> 12);
 
-  lh = (struct linux_kernel_header *) real_mode_mem;
+  lh = (struct linux_kernel_header *) &linux_params;
 
   /* Get the highest address available for the initrd.  */
   if (grub_le_to_cpu16 (lh->version) >= 0x0203)
