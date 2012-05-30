@@ -703,7 +703,6 @@ program = {
   common = grub-core/kern/list.c;
   common = grub-core/kern/misc.c;
   common = grub-core/tests/lib/test.c;
-  cflags = -Wno-format;
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
   ldadd = libgrubkern.a;

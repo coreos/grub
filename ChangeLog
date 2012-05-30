@@ -1,5 +1,10 @@
 2012-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.util.def: Remove -Wno-format.
+	* grub-core/Makefile.core.def: Likewise.
+
+2012-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/cmp_unit_test.c: Add missing failure message.
 	* tests/example_unit_test.c: Likewise.
 	* tests/printf_unit_test.c: Likewise.
