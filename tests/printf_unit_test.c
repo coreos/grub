@@ -21,6 +21,8 @@
 #include <grub/test.h>
 #include <grub/misc.h>
 
+#define MSG "printf test failed"
+
 static void
 printf_test (void)
 {
@@ -28,16 +30,16 @@ printf_test (void)
   char expected[512];
   grub_snprintf (real, sizeof (real), "%d %d %d", 1, 2, 3);
   snprintf (expected, sizeof (expected), "%d %d %d", 1, 2, 3);
-  grub_test_assert (strcmp (real, expected) == 0);
+  grub_test_assert (strcmp (real, expected) == 0, MSG);
   grub_snprintf (real, sizeof (real), "%3$d %2$d %1$d", 1, 2, 3);
   snprintf (expected, sizeof (expected), "%3$d %2$d %1$d", 1, 2, 3);
-  grub_test_assert (strcmp (real, expected) == 0);
+  grub_test_assert (strcmp (real, expected) == 0, MSG);
   grub_snprintf (real, sizeof (real), "%d %lld %d", 1, 2LL, 3);
   snprintf (expected, sizeof (expected), "%d %lld %d", 1, 2LL, 3);
-  grub_test_assert (strcmp (real, expected) == 0);
+  grub_test_assert (strcmp (real, expected) == 0, MSG);
   grub_snprintf (real, sizeof (real), "%3$d %2$lld %1$d", 1, 2LL, 3);
   snprintf (expected, sizeof (expected), "%3$d %2$lld %1$d", 1, 2LL, 3);
-  grub_test_assert (strcmp (real, expected) == 0);
+  grub_test_assert (strcmp (real, expected) == 0, MSG);
 }
 
 GRUB_UNIT_TEST ("printf_unit_test", printf_test);

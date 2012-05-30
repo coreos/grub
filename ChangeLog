@@ -1,5 +1,11 @@
 2012-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/cmp_unit_test.c: Add missing failure message.
+	* tests/example_unit_test.c: Likewise.
+	* tests/printf_unit_test.c: Likewise.
+
+2012-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/gptsync.c (grub_cmd_gptsync): Propagate the
 	relaxation of protective MBR requirements.
 
