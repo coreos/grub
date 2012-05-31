@@ -65,7 +65,7 @@ grub_file_getline (grub_file_t file)
 	continue;
 
 
-      if (pos >= max_len)
+      if (pos + 1 >= max_len)
 	{
 	  char *old_cmdline = cmdline;
 	  max_len = max_len * 2;
