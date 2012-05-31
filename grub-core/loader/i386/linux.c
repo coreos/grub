@@ -379,13 +379,16 @@ grub_linux_boot (void)
   char *tmp;
   struct grub_relocator32_state state;
   void *real_mode_mem;
-  grub_addr_t real_mode_target;
+  grub_addr_t real_mode_target = 0;
   grub_size_t real_size, mmap_size;
   grub_size_t cl_offset;
 
   mmap_size = find_mmap_size ();
   /* Make sure that each size is aligned to a page boundary.  */
   cl_offset = ALIGN_UP (mmap_size + sizeof (*params), 4096);
+  if (cl_offset < ((grub_size_t) params->setup_sects << GRUB_DISK_SECTOR_BITS))
+    cl_offset = ALIGN_UP ((grub_size_t) (params->setup_sects
+					 << GRUB_DISK_SECTOR_BITS), 4096);
   real_size = ALIGN_UP (cl_offset + maximal_cmdline_size, 4096);
 
 #ifdef GRUB_MACHINE_EFI
@@ -403,27 +406,30 @@ grub_linux_boot (void)
 			     grub_memory_type_t type)
     {
       /* We must put real mode code in the traditional space.  */
+      if (type != GRUB_MEMORY_AVAILABLE || addr > 0x90000)
+	return 0;
 
-      if (type == GRUB_MEMORY_AVAILABLE
-	  && addr <= 0x90000)
+      if (addr + size < 0x10000)
+	return 0;
+
+      if (addr < 0x10000)
 	{
-	  if (addr < 0x10000)
-	    {
-	      size += addr - 0x10000;
-	      addr = 0x10000;
-	    }
-
-	  if (addr + size > 0x90000)
-	    size = 0x90000 - addr;
-
-	  if (real_size + efi_mmap_size > size)
-	    return 0;
-
-	  real_mode_target = ((addr + size) - (real_size + efi_mmap_size));
-	  return 1;
+	  size += addr - 0x10000;
+	  addr = 0x10000;
 	}
 
-      return 0;
+      if (addr + size > 0x90000)
+	size = 0x90000 - addr;
+
+      if (real_size + efi_mmap_size > size)
+	return 0;
+
+      grub_dprintf ("linux", "addr = %lx, size = %x, need_size = %x\n",
+		    (unsigned long) addr,
+		    (unsigned) size,
+		    (unsigned) (real_size + efi_mmap_size));
+      real_mode_target = ((addr + size) - (real_size + efi_mmap_size));
+      return 1;
     }
 #ifdef GRUB_MACHINE_EFI
   grub_efi_mmap_iterate (hook, 1);
@@ -432,6 +438,11 @@ grub_linux_boot (void)
 #else
   grub_mmap_iterate (hook);
 #endif
+  grub_dprintf ("linux", "real_mode_target = %lx, real_size = %x, efi_mmap_size = %x\n",
+                (unsigned long) real_mode_target,
+		(unsigned) real_size,
+		(unsigned) efi_mmap_size);
+
   if (! real_mode_target)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate real mode pages");
 
@@ -446,10 +457,8 @@ grub_linux_boot (void)
   }
   efi_mmap_buf = (grub_uint8_t *) real_mode_mem + real_size;
 
-  grub_dprintf ("linux", "real_mode_mem = %lx, real_mode_target = %lx, real_size = %x\n",
-                (unsigned long) real_mode_mem, (unsigned long) real_mode_target,
-		(unsigned) real_size);
-
+  grub_dprintf ("linux", "real_mode_mem = %lx\n",
+                (unsigned long) real_mode_mem);
   params = real_mode_mem;
 
   *params = linux_params;

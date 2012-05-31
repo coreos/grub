@@ -1,3 +1,8 @@
+2012-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Fix overflow and
+	uninited variable. Allocate at least setup_sects.
+
 2012-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix handling of EFI with big memory maps.
