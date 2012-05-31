@@ -209,18 +209,22 @@ enum
 {
   GRUB_EHCI_MULT_MASK = (3 << 30),
   GRUB_EHCI_MULT_RESERVED = (0 << 30),
-  GRUB_EHCI_MULT_ONE = (0 << 30),
-  GRUB_EHCI_MULT_TWO = (0 << 30),
-  GRUB_EHCI_MULT_THREE = (0 << 30),
+  GRUB_EHCI_MULT_ONE = (1 << 30),
+  GRUB_EHCI_MULT_TWO = (2 << 30),
+  GRUB_EHCI_MULT_THREE = (3 << 30),
   GRUB_EHCI_DEVPORT_MASK = (0x7f << 23),
-  GRUB_EHCI_HUBADDR_MASK = (0x7f << 16)
+  GRUB_EHCI_HUBADDR_MASK = (0x7f << 16),
+  GRUB_EHCI_CMASK_MASK = (0xff << 8),
+  GRUB_EHCI_SMASK_MASK = (0xff << 0),
 };
 
 enum
 {
   GRUB_EHCI_MULT_OFF = 30,
   GRUB_EHCI_DEVPORT_OFF = 23,
-  GRUB_EHCI_HUBADDR_OFF = 16
+  GRUB_EHCI_HUBADDR_OFF = 16,
+  GRUB_EHCI_CMASK_OFF = 8,
+  GRUB_EHCI_SMASK_OFF = 0,
 };
 
 #define GRUB_EHCI_TERMINATE      (1<<0)
@@ -790,6 +794,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev,
   /* Enable asynchronous list */
   grub_ehci_oper_write32 (e, GRUB_EHCI_COMMAND,
 			  GRUB_EHCI_CMD_AS_ENABL
+			  | GRUB_EHCI_CMD_PS_ENABL
 			  | grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
 
   /* Now should be possible to power-up and enumerate ports etc. */
@@ -934,6 +939,12 @@ grub_ehci_setup_qh (grub_ehci_qh_t qh, grub_usb_transfer_t transfer)
     & GRUB_EHCI_DEVPORT_MASK;
   ep_cap |= (transfer->dev->hubaddr << GRUB_EHCI_HUBADDR_OFF)
     & GRUB_EHCI_HUBADDR_MASK;
+  if (transfer->dev->speed == GRUB_USB_SPEED_LOW
+      && transfer->type != GRUB_USB_TRANSACTION_TYPE_CONTROL)
+  {
+    ep_cap |= (1<<0) << GRUB_EHCI_SMASK_OFF;
+    ep_cap |= (7<<2) << GRUB_EHCI_CMASK_OFF;
+  }
   qh->ep_cap = grub_cpu_to_le32 (ep_cap);
 
   grub_dprintf ("ehci", "setup_qh: qh=%p, not changed: qh_hptr=%08x\n",
@@ -957,6 +968,7 @@ grub_ehci_find_qh (struct grub_ehci *e, grub_usb_transfer_t transfer)
   grub_uint32_t target, mask;
   int i;
   grub_ehci_qh_t qh = e->qh_virt;
+  grub_ehci_qh_t head;
 
   /* Prepare part of EP Characteristic to find existing QH */
   target = ((transfer->endpoint << GRUB_EHCI_EP_NUM_OFF) |
@@ -992,14 +1004,21 @@ grub_ehci_find_qh (struct grub_ehci *e, grub_usb_transfer_t transfer)
    * de-allocate QHs of unplugged devices. */
   /* We should preset new QH and link it into AL */
   grub_ehci_setup_qh (&qh[i], transfer);
-  /* Linking - this new (last) QH will point to first QH */
-  qh[i].qh_hptr = grub_cpu_to_le32 (GRUB_EHCI_HPTR_TYPE_QH
-				    | grub_dma_virt2phys (&qh[1],
-							  e->qh_chunk));
-  /* Linking - previous last QH will point to this new QH */
-  qh[i - 1].qh_hptr = grub_cpu_to_le32 (GRUB_EHCI_HPTR_TYPE_QH
-					| grub_dma_virt2phys (&qh[i],
-							      e->qh_chunk));
+
+  /* low speed interrupt transfers are linked to the periodic
+   * scheudle, everything else to the asynchronous schedule */
+  if (transfer->dev->speed == GRUB_USB_SPEED_LOW
+      && transfer->type != GRUB_USB_TRANSACTION_TYPE_CONTROL)
+    head = &qh[0];
+  else
+    head = &qh[1];
+
+  /* Linking - this new (last) QH will copy the QH from the head QH */
+  qh[i].qh_hptr = head->qh_hptr;
+  /* Linking - the head QH will point to this new QH */
+  head->qh_hptr = grub_cpu_to_le32 (GRUB_EHCI_HPTR_TYPE_QH
+                                    | grub_dma_virt2phys (&qh[i],
+                                                          e->qh_chunk));
 
   return &qh[i];
 }
@@ -1231,7 +1250,7 @@ grub_ehci_setup_transfer (grub_usb_controller_t dev,
     /* XXX: Fix it: Currently we don't do anything to restart EHCI */
     return GRUB_USB_ERR_INTERNAL;
   if ((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
-       & GRUB_EHCI_ST_AS_STATUS) == 0)
+       & (GRUB_EHCI_ST_AS_STATUS | GRUB_EHCI_ST_PS_STATUS)) == 0)
     /* XXX: Fix it: Currently we don't do anything to restart EHCI */
     return GRUB_USB_ERR_INTERNAL;
 
@@ -1383,6 +1402,7 @@ grub_ehci_parse_notrun (grub_usb_controller_t dev,
   /* Try enable EHCI and AL */
   grub_ehci_oper_write32 (e, GRUB_EHCI_COMMAND,
 			  GRUB_EHCI_CMD_RUNSTOP | GRUB_EHCI_CMD_AS_ENABL
+			  | GRUB_EHCI_CMD_PS_ENABL
 			  | grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
   /* Ensure command is written */
   grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND);
@@ -1481,7 +1501,7 @@ grub_ehci_check_transfer (grub_usb_controller_t dev,
        & GRUB_EHCI_ST_HC_HALTED) != 0)
     return grub_ehci_parse_notrun (dev, transfer, actual);
   if ((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
-       & GRUB_EHCI_ST_AS_STATUS) == 0)
+       & (GRUB_EHCI_ST_AS_STATUS | GRUB_EHCI_ST_PS_STATUS)) == 0)
     return grub_ehci_parse_notrun (dev, transfer, actual);
 
   token = grub_le_to_cpu32 (cdata->qh_virt->td_overlay.token);
@@ -1519,6 +1539,7 @@ grub_ehci_cancel_transfer (grub_usb_controller_t dev,
   grub_size_t actual;
   int i;
   grub_uint64_t maxtime;
+  grub_uint32_t qh_phys;
 
   /* QH can be active and should be de-activated and halted */
 
@@ -1529,7 +1550,7 @@ grub_ehci_cancel_transfer (grub_usb_controller_t dev,
   if (((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
 	& GRUB_EHCI_ST_HC_HALTED) != 0) ||
       ((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
-	& GRUB_EHCI_ST_AS_STATUS) == 0))
+	& (GRUB_EHCI_ST_AS_STATUS | GRUB_EHCI_ST_PS_STATUS)) == 0))
     {
       grub_ehci_pre_finish_transfer (transfer);
       grub_ehci_free_tds (e, cdata->td_first_virt, transfer, &actual);
@@ -1541,44 +1562,83 @@ grub_ehci_cancel_transfer (grub_usb_controller_t dev,
 
   /* EHCI and AL are running. What to do?
    * Try to Halt QH via de-scheduling QH. */
-  /* Find index of current QH - we need previous QH, i.e. i-1 */
-  i = ((int) (e->qh_virt - cdata->qh_virt)) / sizeof (struct grub_ehci_qh);
+  /* Find index of previous QH */
+  qh_phys = grub_dma_virt2phys(cdata->qh_virt, e->qh_chunk);
+  for (i = 0; i < GRUB_EHCI_N_QH; i++)
+    {
+      if ((e->qh_virt[i].qh_hptr & GRUB_EHCI_QHTDPTR_MASK) == qh_phys)
+        break;
+    }
+  if (i == GRUB_EHCI_N_QH)
+    {
+      grub_printf ("%s: prev not found, queues are corrupt\n", __func__);
+      return GRUB_USB_ERR_UNRECOVERABLE;
+    }
   /* Unlink QH from AL */
-  e->qh_virt[i - 1].qh_hptr = cdata->qh_virt->qh_hptr;
-  /* Ring the doorbell */
-  grub_ehci_oper_write32 (e, GRUB_EHCI_COMMAND,
-			  GRUB_EHCI_CMD_AS_ADV_D
-			  | grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
-  /* Ensure command is written */
-  grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND);
-  /* Wait answer with timeout */
-  maxtime = grub_get_time_ms () + 2;
-  while (((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
-	   & GRUB_EHCI_ST_AS_ADVANCE) == 0)
-	 && (grub_get_time_ms () < maxtime));
+  e->qh_virt[i].qh_hptr = cdata->qh_virt->qh_hptr;
 
-  /* We do not detect the timeout because if timeout occurs, it most
-   * probably means something wrong with EHCI - maybe stopped etc. */
+  /* If this is an interrupt transfer, we just wait for the periodic
+   * schedule to advance a few times and then assume that the EHCI
+   * controller has read the updated QH. */
+  if (cdata->qh_virt->ep_cap & GRUB_EHCI_SMASK_MASK)
+    {
+      grub_millisleep(20);
+    }
+  else
+    {
+      /* For the asynchronous schedule we use the advance doorbell to find
+       * out when the EHCI controller has read the updated QH. */
 
-  /* Shut up the doorbell */
-  grub_ehci_oper_write32 (e, GRUB_EHCI_COMMAND,
-			  ~GRUB_EHCI_CMD_AS_ADV_D
-			  & grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
-  grub_ehci_oper_write32 (e, GRUB_EHCI_STATUS,
-			  GRUB_EHCI_ST_AS_ADVANCE
-			  | grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS));
-  /* Ensure command is written */
-  grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS);
+      /* Ring the doorbell */
+      grub_ehci_oper_write32 (e, GRUB_EHCI_COMMAND,
+                              GRUB_EHCI_CMD_AS_ADV_D
+                              | grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
+      /* Ensure command is written */
+      grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND);
+      /* Wait answer with timeout */
+      maxtime = grub_get_time_ms () + 2;
+      while (((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
+               & GRUB_EHCI_ST_AS_ADVANCE) == 0)
+             && (grub_get_time_ms () < maxtime));
+
+      /* We do not detect the timeout because if timeout occurs, it most
+       * probably means something wrong with EHCI - maybe stopped etc. */
+
+      /* Shut up the doorbell */
+      grub_ehci_oper_write32 (e, GRUB_EHCI_COMMAND,
+                              ~GRUB_EHCI_CMD_AS_ADV_D
+                              & grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
+      grub_ehci_oper_write32 (e, GRUB_EHCI_STATUS,
+                              GRUB_EHCI_ST_AS_ADVANCE
+                              | grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS));
+      /* Ensure command is written */
+      grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS);
+    }
 
   /* Now is QH out of AL and we can do anything with it... */
   grub_ehci_pre_finish_transfer (transfer);
   grub_ehci_free_tds (e, cdata->td_first_virt, transfer, &actual);
   grub_ehci_free_td (e, cdata->td_alt_virt);
 
+  /* FIXME Putting the QH back on the list should work, but for some
+   * strange reason doing that will affect other QHs on the periodic
+   * list.  So free the QH instead of putting it back on the list
+   * which does seem to work, but I would like to know why. */
+
+#if 0
   /* Finaly we should return QH back to the AL... */
-  e->qh_virt[i - 1].qh_hptr =
+  e->qh_virt[i].qh_hptr =
     grub_cpu_to_le32 (grub_dma_virt2phys
 		      (cdata->qh_virt, e->qh_chunk));
+#else
+  /* Free the QH */
+  cdata->qh_virt->ep_char = 0;
+  cdata->qh_virt->qh_hptr =
+    grub_cpu_to_le32 ((grub_dma_virt2phys (cdata->qh_virt,
+                                           e->qh_chunk)
+                       & GRUB_EHCI_POINTER_MASK) | GRUB_EHCI_HPTR_TYPE_QH);
+#endif
+
   grub_free (cdata);
 
   grub_dprintf ("ehci", "cancel_transfer: end\n");
@@ -1787,6 +1847,7 @@ grub_ehci_restore_hw (void)
       /* Enable asynchronous list */
       grub_ehci_oper_write32 (e, GRUB_EHCI_COMMAND,
 			      GRUB_EHCI_CMD_AS_ENABL
+			      | GRUB_EHCI_CMD_PS_ENABL
 			      | grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
 
       /* Now should be possible to power-up and enumerate ports etc. */

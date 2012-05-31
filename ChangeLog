@@ -1,3 +1,23 @@
+2012-05-31  Christer Weinigel <christer@weinigel.se>
+
+	Fix EHCI low-speed.
+
+	* grub-core/bus/usb/ehci.c (GRUB_EHCI_MULT_ONE): Fix the value.
+	(GRUB_EHCI_MULT_TWO): Likewise.
+	(GRUB_EHCI_MULT_THREE): Likewise.
+	(GRUB_EHCI_CMASK_MASK): New enum value.
+	(GRUB_EHCI_SMASK_MASK): Likewise.
+	(GRUB_EHCI_CMASK_OFF): Likewise.
+	(GRUB_EHCI_SMASK_OFF): Likewise.
+	(grub_ehci_pci_iter): Enable periodic schedule.
+	(grub_ehci_parse_notrun): Likewise.
+	(grub_ehci_restore_hw): Likewise.
+	(grub_ehci_setup_qh): Set flags for low speed transfers.
+	(grub_ehci_find_qh): Use periodic list for low speed.
+	(grub_ehci_setup_transfer): Check periodic queue as well.
+	(grub_ehci_check_transfer): Likewise.
+	(grub_ehci_cancel_transfer): Cancel periodic transfer.
+
 2012-05-31  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
 	* util/grub-install.in: Write core.elf in PReP even if the --no-nvram
