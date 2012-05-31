@@ -32,7 +32,7 @@ dnl type, so there is no conflict. Variables with the prefix "TARGET_"
 dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
 dnl type.
 
-AC_INIT([GRUB],[2.00~beta5],[bug-grub@gnu.org])
+AC_INIT([GRUB],[2.00~beta6],[bug-grub@gnu.org])
 
 AC_CONFIG_AUX_DIR([build-aux])
 
