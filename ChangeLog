@@ -1,3 +1,8 @@
+2012-05-31  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
+	* util/grub-install.in: Write core.elf in PReP even if the --no-nvram
+	parameter is used.
+
 2012-05-31  Peter Jones <pjones@redhat.com>
 
 	* include/grub/i386/linux.h (linux_kernel_params): Add v206.

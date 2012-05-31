@@ -736,6 +736,29 @@ if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ] || [ "$
     "$grub_setup" ${allow_floppy} ${setup_verbose} ${setup_force} --directory="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform" \
 	--device-map="${device_map}" "${install_device}" || exit 1
 elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "powerpc-ieee1275" ]; then
+
+    # If a install device is defined, copy the core.elf to PReP partition.
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "powerpc-ieee1276" ] && [ -n "${install_device}" ]; then
+        if [ "$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t msdos_parttype)" != "41" ]; then
+	       gettext "The chosen partition is not a PReP partition." 1>&2
+	       echo 1>&2
+	       exit 1
+        fi
+
+        if [ "$(file -s "${install_device}" -b | awk '{ print $1 }')" = ELF ] || [ x$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t zero_check) = xtrue ]; then
+	        dd if="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" of="${install_device}" status=noxfer || {
+	        gettext "Failed to copy Grub to the PReP partition." 1>&2
+	            echo 1>&2
+	            exit 1
+	        }
+        else
+	        gettext "The PReP partition is not empty. If you are sure you want to use it, run dd to clear it:" 1>&2
+	        echo 1>&2
+	        echo "  dd if=/dev/zero of=${install_device}"
+	        exit 1
+        fi
+    fi
+
     if [ x"$update_nvram" = xyes ]; then
 	ofpathname="`which ofpathname`"
 	nvsetenv="`which nvsetenv`"
@@ -768,28 +791,8 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
             # Point boot-device at the new grub install
 	    boot_device="$ofpath:$partno,"`"$grub_mkrelpath" "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" | sed 's,/,\\\\,g'`
 
-        # If a install device is defined, copy the core.elf to PReP partition.
 	else
-            if [ "$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t msdos_parttype)" != "41" ]; then
-		gettext "The chosen partition is not a PReP partition." 1>&2
-		echo 1>&2
-		exit 1
-            fi
 
-            if [ "$(file -s "${install_device}" -b | awk '{ print $1 }')" = ELF ] || [ x$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t zero_check) = xtrue ]; then
-            # Change boot device to the harddisk root
-		boot_device="$ofpath"
-		dd if="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" of="${install_device}" status=noxfer || {
-		    gettext "Failed to copy Grub to the PReP partition." 1>&2
-		    echo 1>&2
-		    exit 1
-		}
-            else
-		gettext "The PReP partition is not empty. If you are sure you want to use it, run dd to clear it:" 1>&2
-		echo 1>&2
-		echo "  dd if=/dev/zero of=${install_device}"
-		exit 1
-            fi
 	    dev="`echo "${install_device}" | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`"
 	    boot_device="`$ofpathname "$dev"`" || {
 	    # TRANSLATORS: "device tree path" is the name of the device
