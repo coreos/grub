@@ -627,7 +627,7 @@ grub_linux_boot (void)
 	params->v0208.efi_mmap_size = efi_mmap_size;
 
 #ifdef __x86_64__
-	params->v0206.efi_mmap_hi = (efi_mmap_target >> 32);
+	params->v0208.efi_mmap_hi = (efi_mmap_target >> 32);
 #endif
       }
     else if (grub_le_to_cpu16 (params->version) >= 0x0206)
@@ -846,10 +846,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_le_to_cpu16 (params->version) >= 0x0208)
     {
-      params->v0206.efi_signature = GRUB_LINUX_EFI_SIGNATURE;
-      params->v0206.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
+      params->v0208.efi_signature = GRUB_LINUX_EFI_SIGNATURE;
+      params->v0208.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
 #ifdef __x86_64__
-      params->v0206.efi_system_table_hi = (grub_uint32_t) ((grub_uint64_t) grub_efi_system_table >> 32);
+      params->v0208.efi_system_table_hi = (grub_uint32_t) ((grub_uint64_t) grub_efi_system_table >> 32);
 #endif
     }
   else if (grub_le_to_cpu16 (params->version) >= 0x0206)
