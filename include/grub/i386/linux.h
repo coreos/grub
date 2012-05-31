@@ -244,9 +244,20 @@ struct linux_kernel_params
           grub_uint32_t efi_mem_desc_version;	/* 1cc */
           grub_uint32_t efi_mmap;		/* 1d0 */
           grub_uint32_t efi_mmap_size;		/* 1d4 */
+	} v0206;
+      struct
+        {
+          grub_uint32_t padding7_1;		/* 1b8 */
+          grub_uint32_t padding7_2;		/* 1bc */
+          grub_uint32_t efi_signature;		/* 1c0 */
+          grub_uint32_t efi_system_table;	/* 1c4 */
+          grub_uint32_t efi_mem_desc_size;	/* 1c8 */
+          grub_uint32_t efi_mem_desc_version;	/* 1cc */
+          grub_uint32_t efi_mmap;		/* 1d0 */
+          grub_uint32_t efi_mmap_size;		/* 1d4 */
           grub_uint32_t efi_system_table_hi;	/* 1d8 */
           grub_uint32_t efi_mmap_hi;		/* 1dc */
-        } v0206;
+        } v0208;
     };
 
   grub_uint32_t alt_mem;		/* 1e0 */

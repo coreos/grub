@@ -619,15 +619,23 @@ grub_linux_boot (void)
     efi_mmap_target = real_mode_target 
       + ((grub_uint8_t *) efi_mmap_buf - (grub_uint8_t *) real_mode_mem);
     /* Pass EFI parameters.  */
-    if (grub_le_to_cpu16 (params->version) >= 0x0206)
+    if (grub_le_to_cpu16 (params->version) >= 0x0208)
+      {
+	params->v0208.efi_mem_desc_size = efi_desc_size;
+	params->v0208.efi_mem_desc_version = efi_desc_version;
+	params->v0208.efi_mmap = efi_mmap_target;
+	params->v0208.efi_mmap_size = efi_mmap_size;
+
+#ifdef __x86_64__
+	params->v0206.efi_mmap_hi = (efi_mmap_target >> 32);
+#endif
+      }
+    else if (grub_le_to_cpu16 (params->version) >= 0x0206)
       {
 	params->v0206.efi_mem_desc_size = efi_desc_size;
 	params->v0206.efi_mem_desc_version = efi_desc_version;
 	params->v0206.efi_mmap = efi_mmap_target;
 	params->v0206.efi_mmap_size = efi_mmap_size;
-#ifdef __x86_64__
-	params->v0206.efi_mmap_hi = (efi_mmap_target >> 32);
-#endif
       }
     else if (grub_le_to_cpu16 (params->version) >= 0x0204)
       {
@@ -829,13 +837,25 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   params->font_size = 16; /* XXX */
 
 #ifdef GRUB_MACHINE_EFI
-  if (grub_le_to_cpu16 (params->version) >= 0x0206)
+#ifdef __x86_64__
+  if (grub_le_to_cpu16 (params->version < 0x0208) &&
+      ((grub_addr_t) grub_efi_system_table >> 32) != 0)
+    return grub_error(GRUB_ERR_BAD_OS,
+		      "kernel does not support 64-bit addressing");
+#endif
+
+  if (grub_le_to_cpu16 (params->version) >= 0x0208)
     {
       params->v0206.efi_signature = GRUB_LINUX_EFI_SIGNATURE;
       params->v0206.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
 #ifdef __x86_64__
       params->v0206.efi_system_table_hi = (grub_uint32_t) ((grub_uint64_t) grub_efi_system_table >> 32);
 #endif
+    }
+  else if (grub_le_to_cpu16 (params->version) >= 0x0206)
+    {
+      params->v0206.efi_signature = GRUB_LINUX_EFI_SIGNATURE;
+      params->v0206.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
     }
   else if (grub_le_to_cpu16 (params->version) >= 0x0204)
     {

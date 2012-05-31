@@ -1,3 +1,9 @@
+2012-05-31  Peter Jones <pjones@redhat.com>
+
+	* include/grub/i386/linux.h (linux_kernel_params): Add v206.
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Use v206.
+	(grub_cmd_linux) [__x86_64__]: Validate grub_efi_system_table.
+
 2012-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/linux.c (grub_linux_boot): Fix overflow and
