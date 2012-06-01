@@ -738,7 +738,7 @@ if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ] || [ "$
 elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "powerpc-ieee1275" ]; then
 
     # If a install device is defined, copy the core.elf to PReP partition.
-    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "powerpc-ieee1276" ] && [ -n "${install_device}" ]; then
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "powerpc-ieee1275" ] && [ -n "${install_device}" ]; then
         if [ "$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t msdos_parttype)" != "41" ]; then
 	       gettext "The chosen partition is not a PReP partition." 1>&2
 	       echo 1>&2

@@ -1,3 +1,7 @@
+2012-06-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Check for ieee1275 and not ieee1276.
+
 2012-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Bump to beta6.
