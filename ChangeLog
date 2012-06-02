@@ -1,5 +1,10 @@
 2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_guess_root_devices): Don't canonicalise
+	/dev/root and /dev/dm-*.
+
+2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu_entry.c (update_screen): Fix loop condition to
 	fix partially stale display.
 
