@@ -1,5 +1,11 @@
 2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/parser.c (grub_parser_state_transitions): Handle \t.
+	(grub_parser_cmdline_state): Likewise.
+	(grub_parser_split_cmdline): Likewise.
+
+2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_guess_root_devices): Don't canonicalise
 	/dev/root and /dev/dm-*.
 
