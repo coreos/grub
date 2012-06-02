@@ -1,5 +1,10 @@
 2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu_entry.c (backward_char): Use right line for
+	substraction.
+
+2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_write) [__linux__]:
 	Fix MBR remapping workaround.
 	(grub_util_biosdisk_read) [__linux__]: Likewise.

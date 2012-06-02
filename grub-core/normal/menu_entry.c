@@ -668,9 +668,9 @@ backward_char (struct screen *screen, int update)
     {
       struct line *linep;
 
-      linep = screen->lines + screen->line;
       screen->column = 0;
       screen->line--;
+      linep = screen->lines + screen->line;
 
       for (i = 0; i < screen->nterms; i++)
 	{
