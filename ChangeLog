@@ -1,3 +1,7 @@
+2012-06-02  Isao Shimizu  <isaoshimizu@gmail.com>
+
+	* util/ieee1275/ofpath.c (check_sas): Fix sas path.
+
 2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/menu_entry.c (print_line): Fix off-by-one error which

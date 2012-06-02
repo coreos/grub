@@ -337,9 +337,9 @@ check_sas (char *sysfs_path, int *tgt)
   *q = '\0';
 
   path_size = (strlen (p) + strlen (ed)
-	       + sizeof ("%s/sas_device:%s/phy_identifier"));
+	       + sizeof ("%s/sas_device/%s/phy_identifier"));
   path = xmalloc (path_size);
-  snprintf (path, path_size, "%s/sas_device:%s/phy_identifier", p, ed);
+  snprintf (path, path_size, "%s/sas_device/%s/phy_identifier", p, ed);
 
   fd = open (path, O_RDONLY);
   if (fd < 0)
