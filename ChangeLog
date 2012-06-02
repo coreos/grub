@@ -1,3 +1,9 @@
+2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_write) [__linux__]:
+	Fix MBR remapping workaround.
+	(grub_util_biosdisk_read) [__linux__]: Likewise.
+
 2012-06-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.in: Check for ieee1275 and not ieee1276.
