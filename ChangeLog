@@ -1,3 +1,10 @@
+2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/video/efi_gop.c (grub_video_gop_setup): Reject invalid
+	resolutions.
+	* grub-core/video/i386/pc/vbe.c (grub_vbe_get_preferred_mode): Likewise.
+	* grub-core/video/video.c (grub_video_edid_preferred_mode): Likewise.
+
 2012-06-02  Isao Shimizu  <isaoshimizu@gmail.com>
 
 	* util/ieee1275/ofpath.c (check_sas): Fix sas path.

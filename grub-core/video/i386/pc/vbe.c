@@ -581,7 +581,6 @@ grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
   /* Use low memory scratch area as temporary storage for VESA BIOS calls.  */
   flat_panel_info = (struct grub_vbe_flat_panel_info *)
     (GRUB_MEMORY_MACHINE_SCRATCH_ADDR + sizeof (struct grub_video_edid_info));
-  grub_memset (flat_panel_info, 0, sizeof (*flat_panel_info));
 
   if (controller_info.version >= 0x200
       && (grub_vbe_bios_get_ddc_capabilities (&ddc_level) & 0xff)
@@ -590,14 +589,18 @@ grub_vbe_get_preferred_mode (unsigned int *width, unsigned int *height)
       if (grub_video_vbe_get_edid (&edid_info) == GRUB_ERR_NONE
 	  && grub_video_edid_checksum (&edid_info) == GRUB_ERR_NONE
 	  && grub_video_edid_preferred_mode (&edid_info, width, height)
-	      == GRUB_ERR_NONE)
+	      == GRUB_ERR_NONE && *width < 4096 && *height < 4096)
 	return GRUB_ERR_NONE;
 
       grub_errno = GRUB_ERR_NONE;
     }
 
+  grub_memset (flat_panel_info, 0, sizeof (*flat_panel_info));
   status = grub_vbe_bios_get_flat_panel_info (flat_panel_info);
-  if (status == GRUB_VBE_STATUS_OK)
+  if (status == GRUB_VBE_STATUS_OK
+      && flat_panel_info->horizontal_size && flat_panel_info->vertical_size
+      && flat_panel_info->horizontal_size < 4096
+      && flat_panel_info->vertical_size < 4096)
     {
       *width = flat_panel_info->horizontal_size;
       *height = flat_panel_info->vertical_size;

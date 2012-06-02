@@ -415,7 +415,8 @@ grub_video_edid_preferred_mode (struct grub_video_edid_info *edid_info,
 		| (((unsigned int)
 		    (edid_info->detailed_timings[0].vertical_hi & 0xf0))
 		   << 4);
-      return GRUB_ERR_NONE;
+      if (*width && *height)
+	return GRUB_ERR_NONE;
     }
 
   return grub_error (GRUB_ERR_BAD_DEVICE, "no preferred mode available");
