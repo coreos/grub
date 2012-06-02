@@ -1,5 +1,10 @@
 2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu_entry.c (update_screen): Fix loop condition to
+	fix partially stale display.
+
+2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu_entry.c (backward_char): Use right line for
 	substraction.
 

@@ -309,12 +309,16 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 	{
 	  int column;
 	  int off = 0;
+	  int full_len;
 
 	  if (linep >= screen->lines + screen->num_lines)
 	    break;
 
+	  full_len = grub_getstringwidth (linep->buf, linep->buf + linep->len,
+					  term_screen->term);
+
 	  for (column = 0;
-	       column <= linep->len
+	       column <= full_len
 		 && y < term_screen->num_entries;
 	       column += grub_term_entry_width (term_screen->term), y++)
 	    {
