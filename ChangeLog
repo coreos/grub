@@ -1,5 +1,10 @@
 2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu_entry.c (print_line): Fix off-by-one error which
+	resulted in \\ at the end of the line.
+
+2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/parser.c (grub_parser_state_transitions): Handle \t.
 	(grub_parser_cmdline_state): Likewise.
 	(grub_parser_split_cmdline): Likewise.

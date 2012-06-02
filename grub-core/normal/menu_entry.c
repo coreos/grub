@@ -208,7 +208,7 @@ print_line (struct line *linep, int offset, int y,
    else
      {
        for (;
-	    x < (int) grub_term_entry_width (term_screen->term);
+	    x <= (int) grub_term_entry_width (term_screen->term);
 	    x++)
 	 grub_putcode (' ', term_screen->term);
      }
