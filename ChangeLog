@@ -1,5 +1,11 @@
 2012-06-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/mmap/i386/pc/mmap.c (malloc_hook):
+	Allocate in multiples of 16 to avoid adding a few bytes free region the
+	windows bugs upon.
+
+2012-06-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/i386/pc/drivemap.c (install_int13_handler):
 	Allocate in multiples of 16 to avoid adding a few bytes free region the
 	windows bugs upon.

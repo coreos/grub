@@ -171,7 +171,7 @@ malloc_hook (void)
 
   reentry = 1;
   hooktarget
-    = grub_mmap_malign_and_register (16, hooksize, &mmapregion,
+    = grub_mmap_malign_and_register (16, ALIGN_UP (hooksize, 16), &mmapregion,
 				     GRUB_MEMORY_RESERVED,
 				     GRUB_MMAP_MALLOC_LOW);
   reentry = 0;
