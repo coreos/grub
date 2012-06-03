@@ -312,7 +312,7 @@ install_int13_handler (int noret __attribute__ ((unused)))
   total_size = INT13H_OFFSET (&grub_drivemap_mapstart)
     + (entries + 1) * sizeof (int13map_node_t);
   grub_dprintf ("drivemap", "Payload is %u bytes long\n", total_size);
-  handler_base = grub_mmap_malign_and_register (16, total_size,
+  handler_base = grub_mmap_malign_and_register (16, ALIGN_UP (total_size, 16),
 						&drivemap_mmap,
 						GRUB_MEMORY_RESERVED,
 						GRUB_MMAP_MALLOC_LOW);

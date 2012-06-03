@@ -1,3 +1,10 @@
+2012-06-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/i386/pc/drivemap.c (install_int13_handler):
+	Allocate in multiples of 16 to avoid adding a few bytes free region the
+	windows bugs upon.
+	* grub-core/mmap/i386/pc/mmap.c (malloc_hook): Likewise.
+
 2012-06-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/video/efi_gop.c (grub_video_gop_setup): Reject invalid
