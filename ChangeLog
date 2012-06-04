@@ -1,5 +1,9 @@
 2012-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/ofpath.c (of_path_of_scsi): Fix wrong format specifier.
+
+2012-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle IBM OFW path.
 
 	* util/ieee1275/ofpath.c (find_obppath): Use devspec if obppath isn't

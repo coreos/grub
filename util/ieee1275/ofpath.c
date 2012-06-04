@@ -404,7 +404,7 @@ of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *dev
       unsigned long id = 0x8000 | (tgt << 8) | (bus << 5) | lun;
       if (*digit_string == '\0')
 	{
-	  snprintf(disk, sizeof (disk), "/%s@%04x000000000000", disk_name, id);
+	  snprintf(disk, sizeof (disk), "/%s@%04lx000000000000", disk_name, id);
 	}
       else
 	{
@@ -412,7 +412,7 @@ of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *dev
 
 	  sscanf(digit_string, "%d", &part);
 	  snprintf(disk, sizeof (disk),
-		   "/%s@%04x000000000000:%c", disk_name, id, 'a' + (part - 1));
+		   "/%s@%04lx000000000000:%c", disk_name, id, 'a' + (part - 1));
 	}
     }
   else
