@@ -65,7 +65,9 @@ grub_util_info (const char *fmt, ...)
   fputc ('\n', stderr);
 }
 
+#define grub_util_warn grub_util_info
 #define _(x) x
+#define xstrdup strdup
 #endif
 
 static void
@@ -118,6 +120,12 @@ find_obppath (const char *sysfs_path_orig)
 #endif
 
       fd = open(path, O_RDONLY);
+      if (fd < 0 || fstat (fd, &st) < 0)
+	{
+	  snprintf(path, path_size, "%s/devspec", sysfs_path);
+	  fd = open(path, O_RDONLY);
+	}
+
       if (fd < 0 || fstat (fd, &st) < 0)
 	{
 	  kill_trailing_dir(sysfs_path);
@@ -391,17 +399,36 @@ of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *dev
     disk_name = "disk";
 
   digit_string = trailing_digits (device);
-  if (*digit_string == '\0')
+  if (strncmp (of_path, "/vdevice/", sizeof ("/vdevice/") - 1) == 0)
     {
-      snprintf(disk, sizeof (disk), "/%s@%x,%d", disk_name, tgt, lun);
+      unsigned long id = 0x8000 | (tgt << 8) | (bus << 5) | lun;
+      if (*digit_string == '\0')
+	{
+	  snprintf(disk, sizeof (disk), "/%s@%04x000000000000", disk_name, id);
+	}
+      else
+	{
+	  int part;
+
+	  sscanf(digit_string, "%d", &part);
+	  snprintf(disk, sizeof (disk),
+		   "/%s@%04x000000000000:%c", disk_name, id, 'a' + (part - 1));
+	}
     }
   else
     {
-      int part;
+      if (*digit_string == '\0')
+	{
+	  snprintf(disk, sizeof (disk), "/%s@%x,%d", disk_name, tgt, lun);
+	}
+      else
+	{
+	  int part;
 
-      sscanf(digit_string, "%d", &part);
-      snprintf(disk, sizeof (disk),
-	       "/%s@%x,%d:%c", disk_name, tgt, lun, 'a' + (part - 1));
+	  sscanf(digit_string, "%d", &part);
+	  snprintf(disk, sizeof (disk),
+		   "/%s@%x,%d:%c", disk_name, tgt, lun, 'a' + (part - 1));
+	}
     }
   strcat(of_path, disk);
   return of_path;
