@@ -156,8 +156,18 @@ linux_list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* /boot/kernel-*; do
 if [ "x${linux_list}" = "x" ] ; then
     exit 0
 fi
+
+file_is_not_sym () {
+    case "$1" in
+	*/xen-syms-*)
+	    return 1;;
+	*)
+	    return 0;;
+    esac
+}
+
 xen_list=`for i in /boot/xen*; do
-        if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+        if grub_file_is_not_garbage "$i" && file_is_not_sym "$i" ; then echo -n "$i " ; fi
       done`
 prepare_boot_cache=
 boot_device_id=

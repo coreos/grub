@@ -1,5 +1,9 @@
 2012-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/20_linux_xen.in: Skip xen-syms.
+
+2012-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-probe.c (escape_of_path): Don't add ieee1275/.
 	(probe): Add ieee1275 to OFW devices.
 
