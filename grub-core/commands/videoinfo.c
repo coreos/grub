@@ -49,7 +49,8 @@ hook (const struct grub_video_mode_info *info)
 	grub_printf (" ");
       grub_printf (" 0x%03x ", info->mode_number);
     }
-  grub_printf ("%4d x %4d x %2d  ", info->width, info->height, info->bpp);
+  grub_printf ("%4d x %4d x %2d (%4d)  ", info->width, info->height, info->bpp,
+	       info->pitch);
 
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_PURE_TEXT)
     grub_xputs (_("Text-only "));
