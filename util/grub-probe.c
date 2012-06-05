@@ -157,11 +157,10 @@ escape_of_path (const char *orig_path)
   if (!strchr (orig_path, ','))
     return (char *) xstrdup (orig_path);
 
-  new_path = xmalloc (strlen (orig_path) * 2 + sizeof ("ieee1275/"));
+  new_path = xmalloc (strlen (orig_path) * 2 + 1);
 
   p = orig_path;
-  grub_strcpy (new_path, "ieee1275/");
-  d = new_path + sizeof ("ieee1275/") - 1;
+  d = new_path;
   while ((c = *p++) != '\0')
     {
       if (c == ',')
@@ -499,9 +498,14 @@ probe (const char *path, char **device_names, char delim)
 
 	  if (ofpath)
 	    {
+	      char *tmp = xmalloc (strlen (ofpath) + sizeof ("ieee1275/"));
+	      char *p;
+	      p = stpcpy (tmp, "ieee1275/");
+	      strcpy (p, ofpath);
 	      printf ("--hint-ieee1275='");
-	      print_full_name (ofpath, dev);
+	      print_full_name (tmp, dev);
 	      printf ("' ");
+	      free (tmp);
 	    }
 
 	  biosname = guess_bios_drive (*curdev);
@@ -611,7 +615,12 @@ probe (const char *path, char **device_names, char delim)
 
 	  if (ofpath)
 	    {
-	      print_full_name (ofpath, dev);
+	      char *tmp = xmalloc (strlen (ofpath) + sizeof ("ieee1275/"));
+	      char *p;
+	      p = stpcpy (tmp, "ieee1275/");
+	      strcpy (p, ofpath);
+	      print_full_name (tmp, dev);
+	      free (tmp);
 	      putchar (delim);
 	    }
 

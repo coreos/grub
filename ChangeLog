@@ -1,3 +1,8 @@
+2012-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-probe.c (escape_of_path): Don't add ieee1275/.
+	(probe): Add ieee1275 to OFW devices.
+
 2012-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/ieee1275/ofpath.c (of_path_of_scsi): Fix wrong format specifier.
