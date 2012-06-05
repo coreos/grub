@@ -1,5 +1,9 @@
 2012-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c: Disable -Wcast-align.
+
+2012-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/genmod.sh.in: Enable objconv errors 2030, 2050 and 2031
 	as they are fatal.
 

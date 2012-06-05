@@ -688,6 +688,8 @@ struct fixup_block_list
   struct grub_pe32_fixup_block b;
 };
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 #define MKIMAGE_ELF32 1
 #include "grub-mkimagexx.c"
 #undef MKIMAGE_ELF32
