@@ -169,8 +169,6 @@ escape_of_path (const char *orig_path)
     }
   *d = 0;
 
-  free ((char *) orig_path);
-
   return new_path;
 }
 

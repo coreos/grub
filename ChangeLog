@@ -1,5 +1,9 @@
 2012-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-probe.c (escape_of_path): Fix double free.
+
+2012-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/videoinfo.c (hook): Show pitch.
 
 2012-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
