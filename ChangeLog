@@ -1,5 +1,11 @@
 2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/hdparm.c (le16_to_char): Always byte-swap strings.
+	(grub_ata_strncpy): Likewise.
+	(grub_ata_identify): Add missing byteswaps.
+
+2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/i386/pc/vga_text.c (screen_write_char): Add missing
 	byte-swap.
 	(screen_read_char): Likewise.

@@ -34,7 +34,7 @@ grub_ata_strncpy (grub_uint16_t *dst16, grub_uint16_t *src16, grub_size_t len)
   unsigned int i;
 
   for (i = 0; i < len / 2; i++)
-    *(dst16++) = grub_be_to_cpu16 (*(src16++));
+    *(dst16++) = grub_swap_bytes16 (*(src16++));
   *dst16 = 0;
 }
 
@@ -156,10 +156,10 @@ grub_ata_identify (struct grub_ata *dev)
   dev->addr = GRUB_ATA_CHS;
 
   /* Check if LBA is supported.  */
-  if (info16[49] & (1 << 9))
+  if (info16[49] & grub_cpu_to_le16_compile_time ((1 << 9)))
     {
       /* Check if LBA48 is supported.  */
-      if (info16[83] & (1 << 10))
+      if (info16[83] & grub_cpu_to_le16_compile_time ((1 << 10)))
 	dev->addr = GRUB_ATA_LBA48;
       else
 	dev->addr = GRUB_ATA_LBA;
@@ -171,7 +171,7 @@ grub_ata_identify (struct grub_ata *dev)
   else
     dev->size = grub_le_to_cpu64 (info64[25]);
 
-  if (info16[106] & (1 << 12))
+  if (info16[106] & grub_cpu_to_le16_compile_time ((1 << 12)))
     {
       grub_uint32_t secsize;
       secsize = grub_le_to_cpu32 (grub_get_unaligned32 (&info16[117]));
@@ -187,9 +187,9 @@ grub_ata_identify (struct grub_ata *dev)
     dev->log_sector_size = 9;
 
   /* Read CHS information.  */
-  dev->cylinders = info16[1];
-  dev->heads = info16[3];
-  dev->sectors_per_track = info16[6];
+  dev->cylinders = grub_le_to_cpu16 (info16[1]);
+  dev->heads = grub_le_to_cpu16 (info16[3]);
+  dev->sectors_per_track = grub_le_to_cpu16 (info16[6]);
 
   grub_ata_dumpinfo (dev, info16);
 

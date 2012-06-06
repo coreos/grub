@@ -169,7 +169,7 @@ le16_to_char (grub_uint16_t *dest, const grub_uint16_t * src16, unsigned bytes)
 {
   unsigned i;
   for (i = 0; i < bytes / 2; i++)
-    dest[i] = grub_be_to_cpu16 (src16[i]);
+    dest[i] = grub_swap_bytes16 (src16[i]);
   dest[i] = 0;
   return (char *) dest;
 }
