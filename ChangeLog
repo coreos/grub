@@ -1,3 +1,11 @@
+2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ieee1275/ofdisk.c (scan): Support vscsi on IBM
+	machines.
+	Tested by: Paulo Flabiano Smorigo.
+	Crucial information about API supplied by: Coleen <Last name unknown>.
+	Reviewed by: Coleen <Last name unknown>.
+
 2012-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkimage.c: Disable -Wcast-align.
