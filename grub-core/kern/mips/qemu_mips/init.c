@@ -81,12 +81,13 @@ grub_machine_fini (void)
 void
 grub_exit (void)
 {
-  while (1);
+  grub_halt ();
 }
 
 void
 grub_halt (void)
 {
+  grub_outl (42, 0xbfbf0004);
   while (1);
 }
 

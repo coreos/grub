@@ -17,9 +17,11 @@
  */
 
 #include <grub/misc.h>
+#include <grub/cpu/io.h>
 
 void
 grub_reboot (void)
 {
+  grub_outl (42, 0xbfbf0000);
   while (1);
 }
