@@ -111,14 +111,16 @@ copy_file_path (grub_efi_file_path_device_path_t *fp,
 
   fp->header.type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE;
   fp->header.subtype = GRUB_EFI_FILE_PATH_DEVICE_PATH_SUBTYPE;
-  size = len * sizeof (grub_efi_char16_t) + sizeof (*fp);
+
+  size = grub_utf8_to_utf16 (fp->path_name, len * GRUB_MAX_UTF16_PER_UTF8,
+			     (const grub_uint8_t *) str, len, 0);
+  for (p = fp->path_name; p < fp->path_name + size; p++)
+    if (*p == '/')
+      *p = '\\';
+
+  size = size * sizeof (grub_efi_char16_t) + sizeof (*fp);
   fp->header.length[0] = (grub_efi_uint8_t) (size & 0xff);
   fp->header.length[1] = (grub_efi_uint8_t) (size >> 8);
-  for (p = fp->path_name; len > 0; len--, p++, str++)
-    {
-      /* FIXME: this assumes that the path is in ASCII.  */
-      *p = (grub_efi_char16_t) (*str == '/' ? '\\' : *str);
-    }
 }
 
 static grub_efi_device_path_t *
@@ -154,6 +156,7 @@ make_file_path (grub_efi_device_path_t *dp, const char *filename)
 
   file_path = grub_malloc (size
 			   + ((grub_strlen (dir_start) + 1)
+			      * GRUB_MAX_UTF16_PER_UTF8
 			      * sizeof (grub_efi_char16_t))
 			   + sizeof (grub_efi_file_path_device_path_t) * 2);
   if (! file_path)

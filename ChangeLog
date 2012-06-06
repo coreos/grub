@@ -1,5 +1,11 @@
 2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/efi/chainloader.c (copy_file_path): Handle non-ASCII
+	filenames.
+	(make_file_path): Likewise.
+
+2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ieee1275/ofdisk.c (scan): Support vscsi on IBM
 	machines.
 	Tested by: Paulo Flabiano Smorigo.
