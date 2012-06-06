@@ -1,5 +1,12 @@
 2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/i386/pc/vga_text.c (screen_write_char): Add missing
+	byte-swap.
+	(screen_read_char): Likewise.
+	(grub_vga_text_cls): Likewise.
+
+2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/efi/chainloader.c (copy_file_path): Handle non-ASCII
 	filenames.
 	(make_file_path): Likewise.
