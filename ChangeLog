@@ -1,5 +1,11 @@
 2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/serial.c (grub_serial_register)
+	[GRUB_MACHINE_MIPS_QEMU_MIPS]: Don't autostart console in order to bring
+	the behaviour in line with x86 platforms.
+
+2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/hdparm.c (le16_to_char): Always byte-swap strings.
 	(grub_ata_strncpy): Likewise.
 	(grub_ata_identify): Add missing byteswaps.
