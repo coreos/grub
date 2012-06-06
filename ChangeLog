@@ -1,5 +1,10 @@
 2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ieee1275/ofdisk.c (quiesce): New function.
+	(grub_ofdisk_fini): Quiesce USB devices.
+
+2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/powerpc/ieee1275/linux.c (grub_linux_boot): Sync
 	caches.
 
