@@ -1,5 +1,16 @@
 2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Extend automated tests to qemu-mips.
+
+	* Makefile.am: reorganise tests and enable qemu-mips.
+	* configure.ac (COND_mipseb), (COND_mipsel): New conditions.
+	* grub-core/tests/boot/linux.init-mips.S: New file.
+	* tests/partmap_test.in: Handle ata0 disks.
+	* tests/util/grub-shell.in: Handle qemu-mips. Make defaults work on
+	non-pc i386.
+
+2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.util.def (grub-mkrescue) Anable on mips_qemu_mips and
 	ia64.
 	* util/grub-mkrescue.in: Handle qemu-mips and ia64. Add missing

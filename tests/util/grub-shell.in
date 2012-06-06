@@ -54,8 +54,59 @@ Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 
-boot=hd
-qemu=qemu-system-i386
+. "${builddir}/grub-core/modinfo.sh"
+qemuopts=
+case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
+    mips-qemu_mips)
+	boot=mips_qemu
+	qemu=qemu-system-mips
+	qemuopts="-M mips"
+	console=vga_text
+	;;
+    mipsel-qemu_mips)
+	boot=mipsel_qemu
+	qemu=qemu-system-mipsel
+	qemuopts="-M mips"
+	console=vga_text
+	;;
+    i386-coreboot)
+	boot=coreboot
+	qemu=qemu-system-i386
+	console=vga_text
+	;;
+    i386-multiboot)
+	boot=cd
+	qemu=qemu-system-i386
+	console=vga_text;;
+
+    i386-ieee1275)
+	boot=cd
+	qemu=qemu-system-i386
+	console=console;;
+
+    i386-qemu)
+	boot=qemu
+	qemu=qemu-system-i386
+	console=vga_text;;
+
+    i386-pc)
+	boot=cd
+	qemu=qemu-system-i386
+	console=console;;
+
+    i386-efi)
+	qemu=qemu-system-i386
+	boot=cd
+	console=console;;
+    x86_64-efi)
+	qemu=qemu-system-x86_64
+	boot=cd
+	console=console;;
+    *)
+	boot=hd
+	qemu=qemu-system-i386
+	console=console;;
+esac
 
 # Check the arguments.
 for option in "$@"; do
@@ -85,6 +136,8 @@ for option in "$@"; do
 	elif [ "$dev" = "net" ] ; then boot=net;
 	elif [ "$dev" = "qemu" ] ; then boot=qemu;
 	elif [ "$dev" = "coreboot" ] ; then boot=coreboot;
+	elif [ "$dev" = "mips_qemu" ] ; then boot=mips_qemu;
+	elif [ "$dev" = "mipsel_qemu" ] ; then boot=mips_qemu;
 	else
 	    echo "Unrecognized boot method \`$dev'" 1>&2
 	    usage
@@ -132,7 +185,7 @@ done
 cat <<EOF >>${cfgfile}
 source /boot/grub/testcase.cfg
 # Stop serial output to suppress "ACPI shutdown failed" error.
-terminal_output console
+terminal_output $console
 halt
 EOF
 
@@ -161,6 +214,16 @@ if [ x$boot = xqemu ]; then
     device=cdrom
 fi
 
+if [ x$boot = xmipsel_qemu ]; then
+    bootdev="-kernel ${rom_directory}/mipsel-qemu_mips.elf"
+    device=cdrom
+fi
+
+if [ x$boot = xmips_qemu ]; then
+    bootdev="-kernel ${rom_directory}/mips-qemu_mips.elf"
+    device=cdrom
+fi
+
 if [ x$boot = xcoreboot ]; then
     imgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     cp "${GRUB_COREBOOT_ROM}" "${imgfile}"
@@ -174,7 +237,6 @@ if [ x$boot = xnet ]; then
     pkgdatadir="@builddir@" sh "@builddir@/grub-mknetdir" "--grub-mkimage=${builddir}/grub-mkimage" "--directory=${builddir}/grub-core" "--net-directory=$netdir"
     cp "${cfgfile}" "$netdir/boot/grub/grub.cfg"
     cp "${source}" "$netdir/boot/grub/testcase.cfg"
-    . "${builddir}/grub-core/modinfo.sh"
     "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.0"  -net nic  | cat | tr -d "\r"
 else
     "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r"

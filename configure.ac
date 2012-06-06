@@ -1113,6 +1113,8 @@ AM_CONDITIONAL([COND_mips_arc], [test x$target_cpu = xmips -a x$platform = xarc]
 AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_mips], [test x$target_cpu = xmips -o x$target_cpu = xmipsel])
+AM_CONDITIONAL([COND_mipsel], [test x$target_cpu = xmipsel])
+AM_CONDITIONAL([COND_mipseb], [test x$target_cpu = xmips])
 
 AM_CONDITIONAL([COND_HOST_HURD], [test x$host_kernel = xhurd])
 AM_CONDITIONAL([COND_HOST_LINUX], [test x$host_kernel = xlinux])
