@@ -1,5 +1,9 @@
 2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-fstest.c (cmd_crc): Use grub_get_unaligned32 for safety.
+
+2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/pata.c (grub_pata_pio_read)
 	[GRUB_MACHINE_MIPS_QEMU_MIPS]: Don't byteswap even on mipseb.
 	(grub_pata_pio_write) [GRUB_MACHINE_MIPS_QEMU_MIPS]: Likewise.

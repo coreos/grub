@@ -349,7 +349,7 @@ cmd_crc (char *pathname)
   read_file (pathname, crc_hook);
   GRUB_MD_CRC32->final(crc32_context);
   printf ("%08x\n",
-      grub_be_to_cpu32(*(grub_uint32_t*)GRUB_MD_CRC32->read(crc32_context)));
+	  grub_be_to_cpu32 (grub_get_unaligned32 (GRUB_MD_CRC32->read (crc32_context))));
 }
 
 static const char *root = NULL;
