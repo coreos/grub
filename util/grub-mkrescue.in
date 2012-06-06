@@ -40,9 +40,12 @@ self=`basename $0`
 multiboot_dir="${libdir}/@PACKAGE@/i386-multiboot"
 coreboot_dir="${libdir}/@PACKAGE@/i386-coreboot"
 qemu_dir="${libdir}/@PACKAGE@/i386-qemu"
+mipsel_qemu_dir="${libdir}/@PACKAGE@/mipsel-qemu_mips"
+mips_qemu_dir="${libdir}/@PACKAGE@/mips-qemu_mips"
 pc_dir="${libdir}/@PACKAGE@/i386-pc"
 efi32_dir="${libdir}/@PACKAGE@/i386-efi"
 efi64_dir="${libdir}/@PACKAGE@/x86_64-efi"
+ia64_dir="${libdir}/@PACKAGE@/ia64-efi"
 rom_directory=
 override_dir=
 grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
@@ -224,22 +227,31 @@ EOF
 
 if [ "${override_dir}" = "" ] ; then
     if test -e "${multiboot_dir}" ; then
-        process_input_dir ${multiboot_dir} i386-multiboot
+        process_input_dir "${multiboot_dir}" i386-multiboot
     fi
     if test -e "${coreboot_dir}" ; then
-        process_input_dir ${coreboot_dir} i386-coreboot
+        process_input_dir "${coreboot_dir}" i386-coreboot
     fi
     if test -e "${qemu_dir}" ; then
-        process_input_dir ${qemu_dir} i386-qemu
+        process_input_dir "${qemu_dir}" i386-qemu
     fi
     if test -e "${pc_dir}" ; then
-        process_input_dir ${pc_dir} i386-pc
+        process_input_dir "${pc_dir}" i386-pc
     fi
     if test -e "${efi32_dir}" ; then
-        process_input_dir ${efi32_dir} i386-efi
+        process_input_dir "${efi32_dir}" i386-efi
     fi
     if test -e "${efi64_dir}" ; then
-        process_input_dir ${efi64_dir} x86_64-efi
+        process_input_dir "${efi64_dir}" x86_64-efi
+    fi
+    if test -e "${ia64_dir}" ; then
+        process_input_dir "${ia64_dir}" ia64-efi
+    fi
+    if test -e "${mips_qemu_dir}" ; then
+        process_input_dir "${mips_qemu_dir}" mips-qemu_mips
+    fi
+    if test -e "${mipsel_qemu_dir}" ; then
+        process_input_dir "${mipsel_qemu_dir}" mipsel-qemu_mips
     fi
 else
     . "${override_dir}"/modinfo.sh
@@ -248,15 +260,21 @@ else
     pc_dir=
     efi32_dir=
     efi64_dir=
+    ia64_dir=
     coreboot_dir=
     qemu_dir=
+    mipsel_qemu_dir=
+    mips_qemu_dir=
     case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
-        i386-multiboot) multiboot_dir=${override_dir} ;;
-        i386-coreboot) coreboot_dir=${override_dir} ;;
-        i386-qemu) qemu_dir=${override_dir} ;;
-        i386-pc) pc_dir=${override_dir} ;;
-	i386-efi) efi32_dir=${override_dir} ;;
-	x86_64-efi) efi64_dir=${override_dir} ;;
+        i386-multiboot) multiboot_dir="${override_dir}" ;;
+        i386-coreboot) coreboot_dir="${override_dir}" ;;
+        i386-qemu) qemu_dir="${override_dir}" ;;
+        i386-pc) pc_dir="${override_dir}" ;;
+	i386-efi) efi32_dir="${override_dir}" ;;
+	x86_64-efi) efi64_dir="${override_dir}" ;;
+	ia64-efi) ia64_dir="${override_dir}" ;;
+	mipsel-qemu_mips) mipsel_qemu_dir="${override_dir}" ;;
+	mips-qemu_mips) mips_qemu_dir="${override_dir}" ;;
     esac
 fi
 
@@ -290,10 +308,12 @@ fi
 # build multiboot core.img
 make_image "${multiboot_dir}" i386-multiboot "${iso9660_dir}/boot/multiboot.img" "pata ahci at_keyboard"
 
-if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
+if test -e "${efi64_dir}" || test -e "${efi32_dir}" || test -e "${ia64_dir}"; then
     efi_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     mkdir -p "${efi_dir}/efi/boot"
 
+    # build bootia64.efi
+    make_image "${ia64_dir}" ia64-efi "${efi_dir}"/efi/boot/bootia64.efi ""
     # build bootx64.efi
     make_image "${efi64_dir}" x86_64-efi "${efi_dir}"/efi/boot/bootx64.efi ""
     # build bootia32.efi
@@ -309,6 +329,14 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}"; then
     grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img"
 fi
 
+make_image "${mipsel_qemu_dir}" mipsel-qemu_mips-elf "${iso9660_dir}/boot/mipsel-qemu_mips.elf" "pata"
+if [ -e "${iso9660_dir}/boot/mipsel-qemu_mips.elf" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/mipsel-qemu_mips.elf" "${rom_directory}/mipsel-qemu_mips.elf"
+fi
+make_image "${mips_qemu_dir}" mips-qemu_mips-elf "${iso9660_dir}/boot/mips-qemu_mips.elf" "pata"
+if [ -e "${iso9660_dir}/boot/mips-qemu_mips.elf" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/mips-qemu_mips.elf" "${rom_directory}/mips-qemu_mips.elf"
+fi
 make_image "${qemu_dir}" i386-qemu "${iso9660_dir}/boot/qemu.img" "pata at_keyboard"
 if [ -e "${iso9660_dir}/boot/qemu.img" ] && [ -d "${rom_directory}" ]; then
     cp "${iso9660_dir}/boot/qemu.img" "${rom_directory}/qemu.img"

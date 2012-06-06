@@ -455,6 +455,8 @@ script = {
   mansection = 1;
   name = grub-mkrescue;
   x86 = util/grub-mkrescue.in;
+  mips_qemu_mips = util/grub-mkrescue.in;
+  ia64_efi = util/grub-mkrescue.in;
   powerpc_ieee1275 = util/powerpc/ieee1275/grub-mkrescue.in;
   enable = i386_pc;
   enable = i386_efi;
@@ -462,6 +464,8 @@ script = {
   enable = i386_qemu;
   enable = i386_multiboot;
   enable = i386_coreboot;
+  enable = mips_qemu_mips;
+  enable = ia64_efi;
   enable = powerpc_ieee1275;
 };
 
