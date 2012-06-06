@@ -1,5 +1,10 @@
 2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/powerpc/ieee1275/linux.c (grub_linux_boot): Sync
+	caches.
+
+2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-fstest.c (cmd_crc): Use grub_get_unaligned32 for safety.
 
 2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>

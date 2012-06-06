@@ -28,6 +28,7 @@
 #include <grub/i18n.h>
 #include <grub/memory.h>
 #include <grub/lib/cmdline.h>
+#include <grub/cache.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -102,6 +103,7 @@ grub_linux_boot (void)
   kernel_entry_t linuxmain;
   grub_ssize_t actual;
 
+  grub_arch_sync_caches ((void *) linux_addr, linux_size);
   /* Set the command line arguments.  */
   grub_ieee1275_set_property (grub_ieee1275_chosen, "bootargs", linux_args,
 			      grub_strlen (linux_args) + 1, &actual);
