@@ -1,5 +1,9 @@
 2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/util/grub-shell.in: Trim firmware output on EFI.
+
+2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (vga_text): Disable on muliboot
 	and coreboot since it's already in kernel.
 

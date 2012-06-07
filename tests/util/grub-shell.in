@@ -32,6 +32,8 @@ PACKAGE_VERSION=@PACKAGE_VERSION@
 PATH="${builddir}:$PATH"
 export PATH
 
+trim=0
+
 # Usage: usage
 # Print the usage.
 usage () {
@@ -46,6 +48,7 @@ Run GRUB script in a Qemu instance.
   --qemu=FILE             Name of qemu binary
   --qemu-opts=OPTIONS     extra options to pass to Qemu instance
   --files=FILES           add files to the image
+  --trim                  trim firmware output
 
 $0 runs input GRUB script or SOURCE file in a Qemu instance and prints
 its output.
@@ -97,11 +100,15 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     i386-efi)
 	qemu=qemu-system-i386
 	boot=cd
-	console=console;;
+	console=console
+	trim=1
+	;;
     x86_64-efi)
 	qemu=qemu-system-x86_64
 	boot=cd
-	console=console;;
+	console=console
+	trim=1
+	;;
     *)
 	boot=hd
 	qemu=qemu-system-i386
@@ -117,6 +124,9 @@ for option in "$@"; do
     -v | --version)
 	echo "$0 (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
+    --trim)
+	trim=1
+	;;
     --modules=*)
 	ms=`echo "$option" | sed -e 's/--modules=//' -e 's/,/ /g'`
 	modules="$modules $ms" ;;
@@ -175,6 +185,12 @@ terminal_input serial
 terminal_output serial
 EOF
 
+trim_head=664cbea8-132f-4770-8aa4-1696d59ac35c
+
+if [ $trim = 1 ]; then
+    echo "echo $trim_head" >>${cfgfile}
+fi
+
 rom_directory=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 
 for mod in ${modules}
@@ -232,14 +248,23 @@ if [ x$boot = xcoreboot ]; then
     device=cdrom
 fi
 
+do_trim ()
+{
+    if [ $trim = 1 ]; then
+	awk '{ if (have_head == 1) print $0; } /664cbea8-132f-4770-8aa4-1696d59ac35c/ { have_head=1; }'
+    else
+	cat
+    fi
+}
+
 if [ x$boot = xnet ]; then
     netdir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     pkgdatadir="@builddir@" sh "@builddir@/grub-mknetdir" "--grub-mkimage=${builddir}/grub-mkimage" "--directory=${builddir}/grub-core" "--net-directory=$netdir"
     cp "${cfgfile}" "$netdir/boot/grub/grub.cfg"
     cp "${source}" "$netdir/boot/grub/testcase.cfg"
-    "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.0"  -net nic  | cat | tr -d "\r"
+    "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.0"  -net nic  | cat | tr -d "\r" | do_trim
 else
-    "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r"
+    "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r" | do_trim
 fi
 rm -f "${isofile}" "${imgfile}"
 rm -rf "${rom_directory}"
