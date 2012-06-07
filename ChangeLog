@@ -1,3 +1,9 @@
+2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/types.h (grub_set_unaligned64): New function.
+	* util/grub-setup.c (write_rootdev): Use unaligned access functions.
+	(setup): Likewise.
+
 2012-06-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/ieee1275/ofdisk.c (quiesce): New function.

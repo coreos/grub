@@ -111,24 +111,23 @@ write_rootdev (char *core_img, grub_device_t root_dev,
 #ifdef GRUB_SETUP_BIOS
   {
     grub_uint8_t *boot_drive;
-    grub_disk_addr_t *kernel_sector;
+    void *kernel_sector;
     boot_drive = (grub_uint8_t *) (boot_img + GRUB_BOOT_MACHINE_BOOT_DRIVE);
-    kernel_sector = (grub_disk_addr_t *) (boot_img
-					  + GRUB_BOOT_MACHINE_KERNEL_SECTOR);
+    kernel_sector = (boot_img + GRUB_BOOT_MACHINE_KERNEL_SECTOR);
 
     /* FIXME: can this be skipped?  */
     *boot_drive = 0xFF;
 
-    *kernel_sector = grub_cpu_to_le64 (first_sector);
+    grub_set_unaligned64 (kernel_sector, grub_cpu_to_le64 (first_sector));
   }
 #endif
 #ifdef GRUB_SETUP_SPARC64
   {
-    grub_disk_addr_t *kernel_byte;
-    kernel_byte = (grub_disk_addr_t *) (boot_img
-					+ GRUB_BOOT_AOUT_HEADER_SIZE
-					+ GRUB_BOOT_MACHINE_KERNEL_BYTE);
-    *kernel_byte = grub_cpu_to_be64 (first_sector << GRUB_DISK_SECTOR_BITS);
+    void *kernel_byte;
+    kernel_byte = (boot_img + GRUB_BOOT_AOUT_HEADER_SIZE
+		   + GRUB_BOOT_MACHINE_KERNEL_BYTE);
+    grub_set_unaligned64 (kernel_byte,
+			  grub_cpu_to_be64 (first_sector << GRUB_DISK_SECTOR_BITS));
   }
 #endif
 }
@@ -312,8 +311,8 @@ setup (const char *dir,
 
 #ifdef GRUB_SETUP_BIOS
   {
-    grub_uint16_t *boot_drive_check;
-    boot_drive_check = (grub_uint16_t *) (boot_img
+    grub_uint8_t *boot_drive_check;
+    boot_drive_check = (grub_uint8_t *) (boot_img
 					  + GRUB_BOOT_MACHINE_DRIVE_CHECK);
     /* Copy the possible DOS BPB.  */
     memcpy (boot_img + GRUB_BOOT_MACHINE_BPB_START,
@@ -324,8 +323,11 @@ setup (const char *dir,
        for buggy BIOSes which don't pass boot drive correctly. Instead,
        they pass 0x00 or 0x01 even when booted from 0x80.  */
     if (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk))
-      /* Replace the jmp (2 bytes) with double nop's.  */
-      *boot_drive_check = 0x9090;
+      {
+	/* Replace the jmp (2 bytes) with double nop's.  */
+	boot_drive_check[0] = 0x90;
+	boot_drive_check[1] = 0x90;
+      }
   }
 #endif
 
@@ -526,13 +528,13 @@ setup (const char *dir,
 						  - sizeof (*block));
 
     grub_size_t no_rs_length;
-    *(grub_uint32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
-			+ GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY)
-      = grub_host_to_target32 (nsec * GRUB_DISK_SECTOR_SIZE - core_size);
+    grub_set_unaligned32 ((core_img + GRUB_DISK_SECTOR_SIZE
+			   + GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY),
+			  grub_host_to_target32 (nsec * GRUB_DISK_SECTOR_SIZE - core_size));
     no_rs_length = grub_target_to_host16 
-      (*(grub_uint16_t *) (core_img
-			   + GRUB_DISK_SECTOR_SIZE
-			   + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH));
+      (grub_get_unaligned16 (core_img
+			     + GRUB_DISK_SECTOR_SIZE
+			     + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH));
 
     if (no_rs_length == 0xffff)
       grub_util_error ("%s", _("core.img version mismatch"));
