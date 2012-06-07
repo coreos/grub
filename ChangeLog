@@ -1,5 +1,12 @@
 2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move handling of GRUB_QEMU_OPTS to grub-shell so that make check works.
+
+	* Makefile.am: Remove GRUB_QEMU_OPTS handling.
+	* tests/util/grub-shell.in: Add GRUB_QEMU_OPTS handling.
+
+2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/types.h (grub_set_unaligned64): New function.
 	* util/grub-setup.c (write_rootdev): Use unaligned access functions.
 	(setup): Likewise.

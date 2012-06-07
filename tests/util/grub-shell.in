@@ -55,18 +55,18 @@ EOF
 }
 
 . "${builddir}/grub-core/modinfo.sh"
-qemuopts=
+qemuopts="${GRUB_QEMU_OPTS}"
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mips-qemu_mips)
 	boot=mips_qemu
 	qemu=qemu-system-mips
-	qemuopts="-M mips"
+	qemuopts="$qemuopts -M mips"
 	console=vga_text
 	;;
     mipsel-qemu_mips)
 	boot=mipsel_qemu
 	qemu=qemu-system-mipsel
-	qemuopts="-M mips"
+	qemuopts="$qemuopts -M mips"
 	console=vga_text
 	;;
     i386-coreboot)
