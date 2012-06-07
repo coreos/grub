@@ -65,4 +65,11 @@ grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize);
 char *
 grub_util_get_os_disk (const char *os_dev);
 
+#ifdef HAVE_DEVICE_MAPPER
+int
+grub_util_get_dm_node_linear_info (const char *dev,
+				   int *maj, int *min,
+				   grub_disk_addr_t *st);
+#endif
+
 #endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */

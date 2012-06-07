@@ -420,6 +420,95 @@ grub_util_device_is_mapped (const char *dev)
 #endif /* HAVE_DEVICE_MAPPER */
 }
 
+#ifdef HAVE_DEVICE_MAPPER
+int
+grub_util_get_dm_node_linear_info (const char *dev,
+				   int *maj, int *min,
+				   grub_disk_addr_t *st)
+{
+  struct dm_task *dmt;
+  void *next = NULL;
+  uint64_t length, start;
+  char *target, *params;
+  char *ptr;
+  int major, minor;
+  int first = 1;
+  grub_disk_addr_t partstart = 0;
+
+  while (1)
+    {
+      dmt = dm_task_create(DM_DEVICE_TABLE);
+      if (!dmt)
+	break;
+      
+      if (! (first ? dm_task_set_name (dmt, dev)
+	     : dm_task_set_major_minor (dmt, major, minor, 0)))
+	{
+	  dm_task_destroy (dmt);
+	  break;
+	}
+      dm_task_no_open_count(dmt);
+      if (!dm_task_run(dmt))
+	{
+	  dm_task_destroy (dmt);
+	  break;
+	}
+      next = dm_get_next_target(dmt, next, &start, &length,
+				&target, &params);
+      if (grub_strcmp (target, "linear") != 0)
+	{
+	  dm_task_destroy (dmt);
+	  break;
+	}
+      major = grub_strtoul (params, &ptr, 10);
+      if (grub_errno)
+	{
+	  dm_task_destroy (dmt);
+	  grub_errno = GRUB_ERR_NONE;
+	  return 0;
+	}
+      if (*ptr != ':')
+	{
+	  dm_task_destroy (dmt);
+	  return 0;
+	}
+      ptr++;
+      minor = grub_strtoul (ptr, &ptr, 10);
+      if (grub_errno)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  dm_task_destroy (dmt);
+	  return 0;
+	}
+
+      if (*ptr != ' ')
+	{
+	  dm_task_destroy (dmt);
+	  return 0;
+	}
+      ptr++;
+      partstart += grub_strtoull (ptr, &ptr, 10);
+      if (grub_errno)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  dm_task_destroy (dmt);
+	  return 0;
+	}
+
+      dm_task_destroy (dmt);
+      first = 0;
+    }
+  if (first)
+    return 0;
+  if (maj)
+    *maj = major;
+  if (min)
+    *min = minor;
+  if (st)
+    *st = partstart;
+  return 1;
+}
+#endif
 
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
 
@@ -508,71 +597,10 @@ grub_hostdisk_find_partition_start (const char *dev)
 # endif /* !defined(HAVE_DIOCGDINFO) */
 
 # ifdef HAVE_DEVICE_MAPPER
-  if (grub_util_device_is_mapped (dev)) {
-    struct dm_task *task = NULL;
-    grub_uint64_t start, length;
-    char *target_type, *params, *space;
-    grub_disk_addr_t partition_start;
-
-    /* If any device-mapper operation fails, we fall back silently to
-       HDIO_GETGEO.  */
-    task = dm_task_create (DM_DEVICE_TABLE);
-    if (! task)
-      {
-	grub_dprintf ("hostdisk", "dm_task_create failed\n");
-	goto devmapper_fail;
-      }
-
-    if (! dm_task_set_name (task, dev))
-      {
-	grub_dprintf ("hostdisk", "dm_task_set_name failed\n");
-	goto devmapper_fail;
-      }
-
-    if (! dm_task_run (task))
-      {
-	grub_dprintf ("hostdisk", "dm_task_run failed\n");
-	goto devmapper_fail;
-      }
-
-    dm_get_next_target (task, NULL, &start, &length, &target_type, &params);
-    if (! target_type)
-      {
-	grub_dprintf ("hostdisk", "no dm target\n");
-	goto devmapper_fail;
-      }
-    if (strcmp (target_type, "linear") != 0)
-      {
-	grub_dprintf ("hostdisk", "ignoring dm target %s (not linear)\n",
-		      target_type);
-	goto devmapper_fail;
-      }
-    if (! params)
-      {
-	grub_dprintf ("hostdisk", "no dm params\n");
-	goto devmapper_fail;
-      }
-
-    /* The params string for a linear target looks like this:
-         DEVICE-NAME START-SECTOR
-       Parse this out.  */
-    space = strchr (params, ' ');
-    if (! space)
-      goto devmapper_fail;
-    errno = 0;
-    partition_start = strtoull (space + 1, NULL, 10);
-    if (errno == 0)
-      {
-	grub_dprintf ("hostdisk", "dm %s starts at %llu\n",
-		      dev, (unsigned long long) partition_start);
-	dm_task_destroy (task);
-	return partition_start;
-      }
-
-devmapper_fail:
-    if (task)
-      dm_task_destroy (task);
-  }
+  grub_disk_addr_t partition_start;
+  if (grub_util_device_is_mapped (dev)
+      && grub_util_get_dm_node_linear_info (dev, 0, 0, &partition_start))
+    return partition_start;
 # endif /* HAVE_DEVICE_MAPPER */
 
   fd = open (dev, O_RDONLY);

@@ -1,5 +1,19 @@
 2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_util_get_dm_node_linear_info): Moved from here...
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_dm_node_linear_info):
+	to here. New return value start. All users updated.
+	Recursively scan linear mappings.
+	* include/grub/emu/hostdisk.h (grub_util_get_dm_node_linear_info): New
+	proto.
+	* grub-core/kern/emu/hostdisk.c (grub_hostdisk_find_partition_start):
+	Use grub_util_get_dm_node_linear_info.
+	* util/getroot.c (convert_system_partition_to_system_disk): Use
+	grub_util_info rather than grub_dprintf.
+	(grub_util_biosdisk_get_grub_dev): Add a new grub_util_info.
+
+2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move handling of GRUB_QEMU_OPTS to grub-shell so that make check works.
 
 	* Makefile.am: Remove GRUB_QEMU_OPTS handling.

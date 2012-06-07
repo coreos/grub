@@ -1575,69 +1575,6 @@ grub_util_pull_device (const char *os_dev)
     }
 }
 
-#ifdef HAVE_DEVICE_MAPPER
-static int
-grub_util_get_dm_node_linear_info (const char *dev,
-				   int *maj, int *min)
-{
-  struct dm_task *dmt;
-  void *next = NULL;
-  uint64_t length, start;
-  char *target, *params;
-  char *ptr;
-  int major, minor;
-
-  dmt = dm_task_create(DM_DEVICE_TABLE);
-  if (!dmt)
-    return 0;
-  
-  if (!dm_task_set_name(dmt, dev))
-    {
-      dm_task_destroy (dmt);
-      return 0;
-    }
-  dm_task_no_open_count(dmt);
-  if (!dm_task_run(dmt))
-    {
-      dm_task_destroy (dmt);
-      return 0;
-    }
-  next = dm_get_next_target(dmt, next, &start, &length,
-			    &target, &params);
-  if (grub_strcmp (target, "linear") != 0)
-    {
-      dm_task_destroy (dmt);
-      return 0;
-    }
-  major = grub_strtoul (params, &ptr, 10);
-  if (grub_errno)
-    {
-      dm_task_destroy (dmt);
-      grub_errno = GRUB_ERR_NONE;
-      return 0;
-    }
-  if (*ptr != ':')
-    {
-      dm_task_destroy (dmt);
-      return 0;
-    }
-  ptr++;
-  minor = grub_strtoul (ptr, 0, 10);
-  if (grub_errno)
-    {
-      grub_errno = GRUB_ERR_NONE;
-      dm_task_destroy (dmt);
-      return 0;
-    }
-  if (maj)
-    *maj = major;
-  if (min)
-    *min = minor;
-  dm_task_destroy (dmt);
-  return 1;
-}
-#endif
-
 int
 grub_util_biosdisk_is_floppy (grub_disk_t disk)
 {
@@ -1882,7 +1819,7 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	  tree = dm_tree_create ();
 	  if (! tree)
 	    {
-	      grub_dprintf ("hostdisk", "dm_tree_create failed\n");
+	      grub_util_info ("dm_tree_create failed");
 	      goto devmapper_out;
 	    }
 
@@ -1890,26 +1827,26 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	  min = minor (st->st_rdev);
 	  if (! dm_tree_add_dev (tree, maj, min))
 	    {
-	      grub_dprintf ("hostdisk", "dm_tree_add_dev failed\n");
+	      grub_util_info ("dm_tree_add_dev failed");
 	      goto devmapper_out;
 	    }
 
 	  node = dm_tree_find_node (tree, maj, min);
 	  if (! node)
 	    {
-	      grub_dprintf ("hostdisk", "dm_tree_find_node failed\n");
+	      grub_util_info ("dm_tree_find_node failed");
 	      goto devmapper_out;
 	    }
 	  node_uuid = dm_tree_node_get_uuid (node);
 	  if (! node_uuid)
 	    {
-	      grub_dprintf ("hostdisk", "%s has no DM uuid\n", path);
+	      grub_util_info ("%s has no DM uuid", path);
 	      node = NULL;
 	      goto devmapper_out;
 	    }
 	  if (strncmp (node_uuid, "LVM-", 4) == 0)
 	    {
-	      grub_dprintf ("hostdisk", "%s is an LVM\n", path);
+	      grub_util_info ("%s is an LVM", path);
 	      node = NULL;
 	      goto devmapper_out;
 	    }
@@ -1919,7 +1856,7 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 		 linear mappings so are handled by
 		 grub_util_get_dm_node_linear_info.  Multipath disks are not
 		 linear mappings and must be handled specially.  */
-	      grub_dprintf ("hostdisk", "%s is a multipath disk\n", path);
+	      grub_util_info ("%s is a multipath disk", path);
 	      mapper_name = dm_tree_node_get_name (node);
 	      goto devmapper_out;
 	    }
@@ -1927,11 +1864,11 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	    {
 	      int major, minor;
 	      const char *node_name;
-	      grub_dprintf ("hostdisk", "%s is not DM-RAID\n", path);
+	      grub_util_info ("%s is not DM-RAID", path);
 
 	      if ((node_name = dm_tree_node_get_name (node))
 		  && grub_util_get_dm_node_linear_info (node_name,
-							&major, &minor))
+							&major, &minor, 0))
 		{
 		  *is_part = 1;
 		  if (tree)
@@ -1953,24 +1890,24 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	  child = dm_tree_next_child (&handle, node, 0);
 	  if (! child)
 	    {
-	      grub_dprintf ("hostdisk", "%s has no DM children\n", path);
+	      grub_util_info ("%s has no DM children", path);
 	      goto devmapper_out;
 	    }
 	  child_uuid = dm_tree_node_get_uuid (child);
 	  if (! child_uuid)
 	    {
-	      grub_dprintf ("hostdisk", "%s child has no DM uuid\n", path);
+	      grub_util_info ("%s child has no DM uuid", path);
 	      goto devmapper_out;
 	    }
 	  else if (strncmp (child_uuid, "DMRAID-", 7) != 0)
 	    {
-	      grub_dprintf ("hostdisk", "%s child is not DM-RAID\n", path);
+	      grub_util_info ("%s child is not DM-RAID", path);
 	      goto devmapper_out;
 	    }
 	  child_name = dm_tree_node_get_name (child);
 	  if (! child_name)
 	    {
-	      grub_dprintf ("hostdisk", "%s child has no DM name\n", path);
+	      grub_util_info ("%s child has no DM name", path);
 	      goto devmapper_out;
 	    }
 	  mapper_name = child_name;
@@ -1981,7 +1918,7 @@ devmapper_out:
 	      /* This is a DM-RAID disk, not a partition.  */
 	      mapper_name = dm_tree_node_get_name (node);
 	      if (! mapper_name)
-		grub_dprintf ("hostdisk", "%s has no DM name\n", path);
+		grub_util_info ("%s has no DM name", path);
 	    }
 	  char *ret;
 	  if (mapper_name)
@@ -2238,6 +2175,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
   drive = find_system_device (os_dev, &st, 1, 1);
   sys_disk = convert_system_partition_to_system_disk (os_dev, &st, &is_part);
+  grub_util_info ("%s is a parent of %s", sys_disk, os_dev);
   if (grub_strcmp (os_dev, sys_disk) == 0)
     {
       free (sys_disk);
