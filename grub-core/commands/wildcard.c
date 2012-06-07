@@ -363,6 +363,57 @@ match_files (const char *prefix, const char *suffix, const char *end,
   return 0;
 }
 
+static int
+check_file (const char *dir, const char *basename)
+{
+  grub_fs_t fs;
+  grub_device_t dev;
+  int found = 0;
+  const char *device_name, *path;
+
+  auto int match (const char *name, const struct grub_dirhook_info *info);
+  int match (const char *name, const struct grub_dirhook_info *info)
+  {
+    if (basename[0] == 0
+	&& (info->case_insensitive ? grub_strcasecmp (name, basename) == 0
+	    : grub_strcmp (name, basename) == 0))
+      {
+	found = 1;
+	return 1;
+      }
+    
+    return 0;
+  }
+
+  device_name = grub_file_get_device_name (dir);
+  dev = grub_device_open (device_name);
+  if (! dev)
+    goto fail;
+
+  fs = grub_fs_probe (dev);
+  if (! fs)
+    goto fail;
+
+  if (dir[0] == '(')
+    {
+      path = grub_strchr (dir, ')');
+      if (!path)
+	goto fail;
+      path++;
+    }
+  else
+    path = dir;
+
+  fs->dir (dev, path, match);
+  if (grub_errno == 0 && basename[0] == 0)
+    found = 1;
+
+ fail:
+  grub_errno = 0;
+
+  return found;
+}
+
 static char*
 wildcard_escape (const char *s)
 {
@@ -419,17 +470,90 @@ wildcard_expand (const char *s, char ***strs)
   const char *regexop;
   const char *noregexop;
   char **paths = 0;
+  int had_regexp = 0;
 
   unsigned i;
   regex_t regexp;
+
+  if (s[0] != '/' && s[0] != '(' && s[0] != '*')
+    return 0;
 
   start = s;
   while (*start)
     {
       split_path (start, &noregexop, &regexop);
 
+      if (noregexop == regexop)
+	{
+	  grub_dprintf ("expand", "no expansion needed\n");
+	  if (paths == 0)
+	    {
+	      paths = grub_malloc (sizeof (char *) * 2);
+	      if (!paths)
+		goto fail;
+	      paths[0] = grub_malloc (regexop - start + 1);
+	      if (!paths[0])
+		goto fail;
+	      grub_memcpy (paths[0], start, regexop - start);
+	      paths[0][regexop - start] = '\0';
+	      paths[1] = 0;
+	    }
+	  else
+	    {
+	      int j = 0;
+	      for (i = 0; paths[i]; i++)
+		{
+		  char *o, *oend;
+		  char *n;
+		  char *p;
+		  o = paths[i];
+		  oend = o + grub_strlen (o);
+		  n = grub_malloc ((oend - o) + (regexop - start) + 1);
+		  if (!n)
+		    goto fail;
+		  grub_memcpy (n, o, oend - o);
+		  grub_memcpy (n + (oend - o), start, regexop - start);
+		  n[(oend - o) + (regexop - start)] = '\0';
+		  if (had_regexp)
+		    p = grub_strrchr (n, '/');
+		  else
+		    p = 0;
+		  if (!p)
+		    {
+		      grub_free (o);
+		      paths[j++] = n;
+		      continue;
+		    }
+		  *p = 0;
+		  if (!check_file (n, p + 1))
+		    {
+		      grub_dprintf ("expand", "file <%s> not found\n",
+				    start);
+		      grub_free (o);
+		      grub_free (n);
+			      continue;
+		    }
+		  *p = '/';
+		  grub_free (o);
+		  paths[j++] = n;
+		}
+	      if (j == 0)
+		{
+		  grub_free (paths);
+		  paths = 0;
+		  goto done;
+		}
+	      paths[j] = 0;
+	    }
+	  grub_dprintf ("expand", "paths[0] = `%s'\n", paths[0]);
+	  start = regexop;
+	  continue;
+	}
+
       if (make_regex (noregexop, regexop, &regexp))
 	goto fail;
+
+      had_regexp = 1;
 
       if (paths == 0)
 	{
@@ -448,6 +572,7 @@ wildcard_expand (const char *s, char ***strs)
 	      char **p;
 
 	      p = match_files (paths[i], start, noregexop, &regexp);
+	      grub_free (paths[i]);
 	      if (! p)
 		continue;
 
@@ -455,6 +580,7 @@ wildcard_expand (const char *s, char ***strs)
 	      if (! r)
 		goto fail;
 	    }
+	  grub_free (paths);
 	  paths = r;
 	}
 

@@ -1,5 +1,11 @@
 2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/wildcard.c (+check_file): New function.
+	(wildcard_expand): Don't expand to non-existing files, expand with
+	suffix and not attempt to expand if not needed.
+
+2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/efi/efidisk.c (name_devices): Don't make disks
 	out of partitions containing other partitions.
 
