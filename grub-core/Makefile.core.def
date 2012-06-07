@@ -1590,8 +1590,6 @@ module = {
   common = term/i386/pc/vga_text.c;
   common = term/i386/vga_common.c;
   enable = i386_pc;
-  enable = i386_coreboot;
-  enable = i386_multiboot;
 };
 
 module = {
