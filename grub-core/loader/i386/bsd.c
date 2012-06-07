@@ -35,6 +35,9 @@
 #include <grub/ns8250.h>
 #include <grub/bsdlabel.h>
 #include <grub/crypto.h>
+#ifdef GRUB_MACHINE_PCBIOS
+#include <grub/machine/int.h>
+#endif
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -808,6 +811,35 @@ grub_openbsd_boot (void)
   err = grub_bsd_add_mmap ();
   if (err)
     return err;
+
+#ifdef GRUB_MACHINE_PCBIOS
+  {
+    struct grub_bios_int_registers regs;
+
+    regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+    regs.ebx = 0;
+    regs.ecx = 0;
+    regs.eax = 0xb101;
+    regs.es = 0;
+    regs.edi = 0;
+    regs.edx = 0;
+
+    grub_bios_interrupt (0x1a, &regs);
+    if (regs.edx == 0x20494350)
+      {
+	struct grub_openbsd_bootarg_pcibios pcibios;
+	
+	pcibios.characteristics = regs.eax & 0xff;
+	pcibios.revision = regs.ebx & 0xffff;
+	pcibios.pm_entry = regs.edi;
+	pcibios.last_bus = regs.ecx & 0xff;
+
+	grub_bsd_add_meta (OPENBSD_BOOTARG_PCIBIOS, &pcibios,
+			   sizeof (pcibios));
+      }
+  }
+#endif
 
   {
     struct bsd_tag *tag;

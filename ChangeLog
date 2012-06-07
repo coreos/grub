@@ -1,5 +1,16 @@
 2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Pass PCIINFO on BIOS to OpenBSD since otherwise it fails to boot
+	on some qemu versions with GRUB.
+
+	* include/grub/i386/openbsd_bootarg.h (OPENBSD_BOOTARG_PCIBIOS): New
+	define.
+	(grub_openbsd_bootarg_pcibios): New struct.
+	* grub-core/loader/i386/bsd.c (grub_openbsd_boot) [GRUB_MACHINE_PCBIOS]:
+	Add PCIINFO.
+
+2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/util/grub-shell.in: Trim firmware output on EFI.
 
 2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
