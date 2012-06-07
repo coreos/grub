@@ -1,5 +1,10 @@
 2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/efi/efidisk.c (name_devices): Don't make disks
+	out of partitions containing other partitions.
+
+2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Pass PCIINFO on BIOS to OpenBSD since otherwise it fails to boot
 	on some qemu versions with GRUB.
 
