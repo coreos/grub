@@ -1,3 +1,8 @@
+2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/wildcard.c (wildcard_expand): Set default return
+	value rather than let it uninited.
+
 2012-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/wildcard.c (+check_file): New function.

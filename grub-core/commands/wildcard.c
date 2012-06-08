@@ -475,6 +475,7 @@ wildcard_expand (const char *s, char ***strs)
   unsigned i;
   regex_t regexp;
 
+  *strs = 0;
   if (s[0] != '/' && s[0] != '(' && s[0] != '*')
     return 0;
 
