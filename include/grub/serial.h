@@ -54,6 +54,7 @@ typedef enum
 typedef enum
   {
     GRUB_SERIAL_STOP_BITS_1,
+    GRUB_SERIAL_STOP_BITS_1_5,
     GRUB_SERIAL_STOP_BITS_2,
   } grub_serial_stop_bits_t;
 

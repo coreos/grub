@@ -1,5 +1,13 @@
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add a 1.5 stop bits value.
+
+	* grub-core/term/serial.c (grub_cmd_serial): Handle 1.5.
+	* include/grub/serial.h (grub_serial_stop_bits_t): Add
+	GRUB_SERIAL_STOP_BITS_1_5.
+
+2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/wildcard.c (wildcard_expand): Set default return
 	value rather than let it uninited.
 

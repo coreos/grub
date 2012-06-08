@@ -217,6 +217,8 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 	config.stop_bits = GRUB_SERIAL_STOP_BITS_1;
       else if (! grub_strcmp (state[5].arg, "2"))
 	config.stop_bits = GRUB_SERIAL_STOP_BITS_2;
+      else if (! grub_strcmp (state[5].arg, "1.5"))
+	config.stop_bits = GRUB_SERIAL_STOP_BITS_1_5;
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			   N_("unsupported serial port stop bits number"));
