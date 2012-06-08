@@ -85,8 +85,6 @@ struct grub_script_argv
 /* Pluggable wildcard translator.  */
 struct grub_script_wildcard_translator
 {
-  char *(*escape) (const char *str);
-  char *(*unescape) (const char *str);
   grub_err_t (*expand) (const char *str, char ***expansions);
 };
 extern struct grub_script_wildcard_translator *grub_wildcard_translator;

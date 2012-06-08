@@ -1,5 +1,20 @@
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix wildcard escaping.
+
+	* grub-core/commands/wildcard.c (wildcard_escape): Moved from here ...
+	* grub-core/script/execute.c (wildcard_escape): .. to here.
+	Don't escape dot.
+	* grub-core/commands/wildcard.c (wildcard_unescape): Moved from here ...
+	* grub-core/script/execute.c (wildcard_unescape): .. to here.
+	Don't escape dot.
+	* grub-core/script/execute.c (gettext_append): Always escape.
+	(grub_script_arglist_to_argv): Always handle escaping/unescaping.
+	* grub-core/script/yylex.l: Don't cut away the escaping.
+	* tests/grub_script_echo1.in: Add tests with wildcard.
+
+2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/serial/ftdi.c (real_config): Handle 1.5 stop bits.
 	(ftdi_hw_configure): Likewise.
 	* grub-core/bus/usb/serial/pl2303.c (GRUB_PL2303_STOP_BITS_1_5): New

@@ -52,6 +52,55 @@ static struct grub_script_scope *scope = 0;
 /* Wildcard translator for GRUB script.  */
 struct grub_script_wildcard_translator *grub_wildcard_translator;
 
+static char*
+wildcard_escape (const char *s)
+{
+  int i;
+  int len;
+  char ch;
+  char *p;
+
+  len = grub_strlen (s);
+  p = grub_malloc (len * 2 + 1);
+  if (! p)
+    return NULL;
+
+  i = 0;
+  while ((ch = *s++))
+    {
+      if (ch == '*' || ch == '\\')
+	p[i++] = '\\';
+      p[i++] = ch;
+    }
+  p[i] = '\0';
+  return p;
+}
+
+static char*
+wildcard_unescape (const char *s)
+{
+  int i;
+  int len;
+  char ch;
+  char *p;
+
+  len = grub_strlen (s);
+  p = grub_malloc (len + 1);
+  if (! p)
+    return NULL;
+
+  i = 0;
+  while ((ch = *s++))
+    {
+      if (ch == '\\')
+	p[i++] = *s++;
+      else
+	p[i++] = ch;
+    }
+  p[i] = '\0';
+  return p;
+}
+
 static void
 replace_scope (struct grub_script_scope *new_scope)
 {
@@ -504,20 +553,14 @@ gettext_append (struct grub_script_argv *result, const char *orig_str)
     goto fail;
 
   *ptr = 0;
-  if (grub_wildcard_translator)
+  char *escaped = 0;
+  escaped = wildcard_escape (res);
+  if (grub_script_argv_append (result, escaped, grub_strlen (escaped)))
     {
-      char *escaped = 0;
-      escaped = grub_wildcard_translator->escape (res);
-      if (grub_script_argv_append (result, escaped, grub_strlen (escaped)))
-	{
-	  grub_free (escaped);
-	  goto fail;
-	}
       grub_free (escaped);
-    }
-  else
-    if (grub_script_argv_append (result, res, ptr - res))
       goto fail;
+    }
+  grub_free (escaped);
 
   rval = 0;
  fail:
@@ -547,13 +590,13 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
     int r;
     char *p = 0;
 
-    if (! grub_wildcard_translator || escape_type == 0)
+    if (escape_type == 0)
       return grub_script_argv_append (&result, s, grub_strlen (s));
 
     if (escape_type > 0)
-      p = grub_wildcard_translator->escape (s);
+      p = wildcard_escape (s);
     else if (escape_type < 0)
-      p = grub_wildcard_translator->unescape (s);
+      p = wildcard_unescape (s);
 
     if (! p)
       return 1;
@@ -636,48 +679,46 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 
   /* Perform wildcard expansion.  */
 
-  if (grub_wildcard_translator)
-    {
-      int j;
-      int failed = 0;
-      char **expansions = 0;
-      struct grub_script_argv unexpanded = result;
+  int j;
+  int failed = 0;
+  struct grub_script_argv unexpanded = result;
 
-      result.argc = 0;
-      result.args = 0;
-      for (i = 0; unexpanded.args[i]; i++)
+  result.argc = 0;
+  result.args = 0;
+  for (i = 0; unexpanded.args[i]; i++)
+    {
+      char **expansions = 0;
+      if (grub_wildcard_translator
+	  && grub_wildcard_translator->expand (unexpanded.args[i],
+					       &expansions))
 	{
-	  if (grub_wildcard_translator->expand (unexpanded.args[i],
-						&expansions))
+	  grub_script_argv_free (&unexpanded);
+	  goto fail;
+	}
+
+      if (! expansions)
+	{
+	  grub_script_argv_next (&result);
+	  append (unexpanded.args[i], -1);
+	}
+      else
+	{
+	  for (j = 0; expansions[j]; j++)
+	    {
+	      failed = (failed || grub_script_argv_next (&result) ||
+			append (expansions[j], -1));
+	      grub_free (expansions[j]);
+	    }
+	  grub_free (expansions);
+	  
+	  if (failed)
 	    {
 	      grub_script_argv_free (&unexpanded);
 	      goto fail;
 	    }
-
-	  if (! expansions)
-	    {
-	      grub_script_argv_next (&result);
-	      append (unexpanded.args[i], -1);
-	    }
-	  else
-	    {
-	      for (j = 0; expansions[j]; j++)
-		{
-		  failed = (failed || grub_script_argv_next (&result) ||
-			    append (expansions[j], -1));
-		  grub_free (expansions[j]);
-		}
-	      grub_free (expansions);
-
-	      if (failed)
-		{
-		  grub_script_argv_free (&unexpanded);
-		  goto fail;
-		}
-	    }
 	}
-      grub_script_argv_free (&unexpanded);
     }
+  grub_script_argv_free (&unexpanded);
 
   *argv = result;
   return 0;

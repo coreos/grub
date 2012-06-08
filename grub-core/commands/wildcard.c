@@ -36,14 +36,10 @@ static char ** match_devices (const regex_t *regexp, int noparts);
 static char ** match_files (const char *prefix, const char *suffix_start,
 			    const char *suffix_end, const regex_t *regexp);
 
-static char* wildcard_escape (const char *s);
-static char* wildcard_unescape (const char *s);
 static grub_err_t wildcard_expand (const char *s, char ***strs);
 
 struct grub_script_wildcard_translator grub_filename_translator = {
   .expand = wildcard_expand,
-  .escape = wildcard_escape,
-  .unescape = wildcard_unescape
 };
 
 static char **
@@ -412,55 +408,6 @@ check_file (const char *dir, const char *basename)
   grub_errno = 0;
 
   return found;
-}
-
-static char*
-wildcard_escape (const char *s)
-{
-  int i;
-  int len;
-  char ch;
-  char *p;
-
-  len = grub_strlen (s);
-  p = grub_malloc (len * 2 + 1);
-  if (! p)
-    return NULL;
-
-  i = 0;
-  while ((ch = *s++))
-    {
-      if (isregexop (ch))
-	p[i++] = '\\';
-      p[i++] = ch;
-    }
-  p[i] = '\0';
-  return p;
-}
-
-static char*
-wildcard_unescape (const char *s)
-{
-  int i;
-  int len;
-  char ch;
-  char *p;
-
-  len = grub_strlen (s);
-  p = grub_malloc (len + 1);
-  if (! p)
-    return NULL;
-
-  i = 0;
-  while ((ch = *s++))
-    {
-      if (ch == '\\' && isregexop (*s))
-	p[i++] = *s++;
-      else
-	p[i++] = ch;
-    }
-  p[i] = '\0';
-  return p;
 }
 
 static grub_err_t

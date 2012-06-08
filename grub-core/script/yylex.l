@@ -230,7 +230,7 @@ POS_MULTILINE   {WORD}?\\\n
  /* Split word into multiple args */
 
 <SPLIT>{
-  \\.           { COPY (yytext + 1, yyleng - 1); }
+  \\.           { COPY (yytext, yyleng); }
   \\\n          { /* ignore */ }
   \"            {
                   yy_push_state (DQUOTE, yyscanner);
