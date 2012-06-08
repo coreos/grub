@@ -94,6 +94,7 @@ struct grub_serial_port
       struct grub_usb_desc_endp *in_endp;
       struct grub_usb_desc_endp *out_endp;
     };
+    struct grub_escc_descriptor *escc_desc;
 #ifdef GRUB_MACHINE_IEEE1275
     struct
     {

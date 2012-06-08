@@ -816,6 +816,12 @@ module = {
 };
 
 module = {
+  name = escc;
+  ieee1275 = term/ieee1275/escc.c;
+  enable = powerpc_ieee1275;
+};
+
+module = {
   name = terminal;
   common = commands/terminal.c;
 };

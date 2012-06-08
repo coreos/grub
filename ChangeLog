@@ -1,5 +1,14 @@
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	ESCC serial driver for conducting sautomated tests in qemu.
+	Not tested on real hardware.
+
+	* include/grub/serial.h (grub_serial_port): New field escc_desc.
+	* grub-core/term/ieee1275/escc.c: New file.
+	* grub-core/Makefile.core.def (escc): New module.
+
+2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/ieee1275/serial.c (do_real_config): Set handle to
 	invalid on error.
 	(serial_hw_fetch): Don't read invalid handle.
