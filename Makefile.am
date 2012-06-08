@@ -162,6 +162,9 @@ linux.init.i386: $(srcdir)/grub-core/tests/boot/linux.init-i386.S
 linux.init.mips: $(srcdir)/grub-core/tests/boot/linux.init-mips.S
 	$(TARGET_CC) -o $@ $< -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
+linux.init.ppc: $(srcdir)/grub-core/tests/boot/linux.init-ppc.S
+	$(TARGET_CC) -o $@ $< -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
+
 linux.init.mipsel: $(srcdir)/grub-core/tests/boot/linux.init-mips.S
 	$(TARGET_CC) -o $@ $< -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
@@ -208,6 +211,9 @@ kopenbsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kbsd.init-x86_64.S
 	$(TARGET_CC) -o $@ $< -m64 -DTARGET_OPENBSD=1 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux-initramfs.mips: linux.init.mips Makefile
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
+
+linux-initramfs.ppc: linux.init.ppc Makefile
 	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 linux-initramfs.mipsel: linux.init.mipsel Makefile
@@ -284,6 +290,9 @@ bootcheck-linux-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64
 bootcheck-linux-mips: linux-initramfs.mips $(GRUB_PAYLOADS_DIR)/linux.mips $(srcdir)/grub-core/tests/boot/linux.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu=qemu-system-mips --files=/initrd=linux-initramfs.mips --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.mips $(srcdir)/grub-core/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
+bootcheck-linux-ppc: linux-initramfs.ppc $(GRUB_PAYLOADS_DIR)/linux.ppc $(srcdir)/grub-core/tests/boot/linux.cfg grub-shell
+	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu=qemu-system-ppc --files=/initrd=linux-initramfs.ppc --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.ppc $(srcdir)/grub-core/tests/boot/linux-ppc.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+
 bootcheck-linux-mipsel: linux-initramfs.mipsel $(GRUB_PAYLOADS_DIR)/linux.mipsel $(srcdir)/grub-core/tests/boot/linux.cfg grub-shell
 	timeout -s KILL $(BOOTCHECK_TIMEOUT) ./grub-shell --qemu=qemu-system-mipsel --files=/initrd=linux-initramfs.mipsel --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.mipsel $(srcdir)/grub-core/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
@@ -345,6 +354,10 @@ BOOTCHECKS = bootcheck-linux-mipsel
 endif
 if COND_mipseb
 BOOTCHECKS = bootcheck-linux-mips
+endif
+
+if COND_powerpc_ieee1275
+BOOTCHECKS = bootcheck-linux-ppc
 endif
 
 EXTRA_DIST += grub-core/tests/boot/kbsd.init-i386.S grub-core/tests/boot/kbsd.init-x86_64.S grub-core/tests/boot/kbsd.spec.txt grub-core/tests/boot/kernel-8086.S grub-core/tests/boot/kernel-i386.S grub-core/tests/boot/kfreebsd-aout.cfg grub-core/tests/boot/kfreebsd.cfg grub-core/tests/boot/kfreebsd.init-i386.S grub-core/tests/boot/kfreebsd.init-x86_64.S grub-core/tests/boot/knetbsd.cfg grub-core/tests/boot/kopenbsd.cfg grub-core/tests/boot/kopenbsdlabel.txt grub-core/tests/boot/linux16.cfg grub-core/tests/boot/linux.cfg grub-core/tests/boot/linux.init-i386.S grub-core/tests/boot/linux.init-x86_64.S grub-core/tests/boot/multiboot2.cfg grub-core/tests/boot/multiboot.cfg grub-core/tests/boot/ntldr.cfg grub-core/tests/boot/pc-chainloader.cfg

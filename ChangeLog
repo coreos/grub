@@ -1,5 +1,11 @@
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am: Add ppc linux bootcheck.
+	* grub-core/tests/boot/linux-ppc.cfg: New file.
+	* grub-core/tests/boot/linux.init-ppc.S: Likewise.
+
+2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/grub_script_expansion.in: Skip network protocols.
 
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
