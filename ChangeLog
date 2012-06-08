@@ -1,5 +1,9 @@
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/util/grub-shell.in: Use escc-ch-a port on ppc.
+
+2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/powerpc/ieee1275/grub-mkrescue.in: Handle (and ignore)
 	--rom-directory.
 	Add -graft-points.

@@ -59,7 +59,17 @@ EOF
 
 . "${builddir}/grub-core/modinfo.sh"
 qemuopts="${GRUB_QEMU_OPTS}"
+serial_port=com0
+serial_null=
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
+    powerpc-ieee1275)
+	boot=cd
+	qemu=qemu-system-ppc
+	console=console
+	serial_port=escc-ch-a
+	serial_null="-serial null"
+	;;
+
     mips-qemu_mips)
 	boot=mips_qemu
 	qemu=qemu-system-mips
@@ -179,10 +189,10 @@ cfgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 cat <<EOF >${cfgfile}
 grubshell=yes
 insmod serial
-serial
-terminfo serial dumb
-terminal_input serial
-terminal_output serial
+serial ${serial_port}
+terminfo serial_${serial_port} dumb
+terminal_input serial_${serial_port}
+terminal_output serial_${serial_port}
 EOF
 
 trim_head=664cbea8-132f-4770-8aa4-1696d59ac35c
@@ -262,9 +272,9 @@ if [ x$boot = xnet ]; then
     pkgdatadir="@builddir@" sh "@builddir@/grub-mknetdir" "--grub-mkimage=${builddir}/grub-mkimage" "--directory=${builddir}/grub-core" "--net-directory=$netdir"
     cp "${cfgfile}" "$netdir/boot/grub/grub.cfg"
     cp "${source}" "$netdir/boot/grub/testcase.cfg"
-    "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.0"  -net nic  | cat | tr -d "\r" | do_trim
+    "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.0"  -net nic  | cat | tr -d "\r" | do_trim
 else
-    "${qemu}" ${qemuopts} -nographic -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r" | do_trim
+    "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r" | do_trim
 fi
 rm -f "${isofile}" "${imgfile}"
 rm -rf "${rom_directory}"
