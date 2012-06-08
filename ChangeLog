@@ -1,5 +1,12 @@
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/ieee1275/serial.c (do_real_config): Set handle to
+	invalid on error.
+	(serial_hw_fetch): Don't read invalid handle.
+	(serial_hw_put): Don't write into invalid handle.
+
+2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add a 1.5 stop bits value.
 
 	* grub-core/term/serial.c (grub_cmd_serial): Handle 1.5.
