@@ -59,6 +59,11 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mips-qemu_mips | mipsel-qemu_mips | i386-qemu | i386-multiboot | i386-coreboot)
 	disk=ata0
 	;;
+    powerpc-ieee1275)
+	disk=ieee1275//pci@80000000/mac-io@4/ata-3@20000/disk@0
+	# QEMU firmware has bugs which prevent it from accessing hard disk.
+	exit 0
+	;;
     *)
 	disk=hd0
 	;;

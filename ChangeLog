@@ -1,5 +1,9 @@
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/partmap_test.in: Skip on ppc due to serious firmware bug.
+
+2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix wildcard escaping.
 
 	* grub-core/commands/wildcard.c (wildcard_escape): Moved from here ...
