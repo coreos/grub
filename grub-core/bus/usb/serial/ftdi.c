@@ -82,6 +82,7 @@ real_config (struct grub_serial_port *port)
   };
   const grub_uint16_t stop_bits[] = {
     [GRUB_SERIAL_STOP_BITS_1] = 0x0000,
+    [GRUB_SERIAL_STOP_BITS_1_5] = 0x0800,
     [GRUB_SERIAL_STOP_BITS_2] = 0x1000,
   };
 
@@ -148,6 +149,7 @@ ftdi_hw_configure (struct grub_serial_port *port,
 		       N_("unsupported serial port parity"));
 
   if (config->stop_bits != GRUB_SERIAL_STOP_BITS_1
+      && config->stop_bits != GRUB_SERIAL_STOP_BITS_1_5
       && config->stop_bits != GRUB_SERIAL_STOP_BITS_2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       N_("unsupported serial port stop bits number"));

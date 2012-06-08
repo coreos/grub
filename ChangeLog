@@ -1,5 +1,14 @@
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/serial/ftdi.c (real_config): Handle 1.5 stop bits.
+	(ftdi_hw_configure): Likewise.
+	* grub-core/bus/usb/serial/pl2303.c (GRUB_PL2303_STOP_BITS_1_5): New
+	define.
+	(real_config): Handle 1.5 stop bits.
+	(pl2303_hw_configure): Likewise.
+
+2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.am: Add ppc linux bootcheck.
 	* grub-core/tests/boot/linux-ppc.cfg: New file.
 	* grub-core/tests/boot/linux.init-ppc.S: Likewise.
