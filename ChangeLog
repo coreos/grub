@@ -1,5 +1,11 @@
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/powerpc/ieee1275/grub-mkrescue.in: Handle (and ignore)
+	--rom-directory.
+	Add -graft-points.
+
+2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	ESCC serial driver for conducting sautomated tests in qemu.
 	Not tested on real hardware.
 

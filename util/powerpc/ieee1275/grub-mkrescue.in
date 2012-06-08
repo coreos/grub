@@ -107,6 +107,11 @@ do
     --output=*)
 	output_image=`echo "$option" | sed 's/--output=//'` ;;
 
+    --rom-directory=*)
+       ;;
+    --rom-directory)
+	shift ;;
+
     *)
 	source="${source} ${option} $@"; break ;;
     esac
@@ -133,7 +138,7 @@ mkdir ${iso_dir}/boot
 mkdir ${boot_dir}
 core_img=${boot_dir}/grub.img
 ${grub_mkimage} -O powerpc-ieee1275 -n -d ${input_dir}/ -o ${core_img} ${modules}
-genisoimage -hfs -part -no-desktop -r -J -o ${output_image} \
+genisoimage -graft-points -hfs -part -no-desktop -r -J -o ${output_image} \
  -map ${map_file} -hfs-bless ${boot_dir} -chrp-boot -sysid PPC \
  ${iso_dir} ${source}
 
