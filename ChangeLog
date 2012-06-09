@@ -1,5 +1,10 @@
 2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/grub_script_expansion.in: Explicitly tell grep that we handle
+	text and not binary.
+
+2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Stop polling as soon as we have the packet we were waiting for.
 
 	* include/grub/net.h (grub_net_poll_cards): New argument stop_condition.
