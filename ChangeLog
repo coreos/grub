@@ -1,3 +1,10 @@
+2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/efi/efidisk.c (find_parent_device): Return the parent
+	even if it's used.
+	(name_devices): Replace #if 0 with #ifdef DEBUG_NAMES.
+	Skip if parent is unused.
+
 2012-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* tests/partmap_test.in: Skip on ppc due to serious firmware bug.

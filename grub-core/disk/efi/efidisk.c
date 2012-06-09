@@ -167,13 +167,7 @@ find_parent_device (struct grub_efidisk_data *devices,
 	continue;
 
       if (grub_efi_compare_device_paths (parent->device_path, dp) == 0)
-	{
-	  /* Found.  */
-	  if (! parent->last_device_path)
-	    parent = 0;
-
-	  break;
-	}
+	break;
     }
 
   grub_free (dp);
@@ -276,26 +270,31 @@ name_devices (struct grub_efidisk_data *devices)
 		parent = find_parent_device (devices, d);
 		if (!parent)
 		  {
-#if 0
+#ifdef DEBUG_NAMES
 		    grub_printf ("skipping orphaned partition: ");
-		    grub_efi_print_device_path (parent->device_path);
+		    grub_efi_print_device_path (d->device_path);
 #endif
 		    break;
 		  }
 		parent2 = find_parent_device (devices, parent);
 		if (parent2)
 		  {
-#if 0
+#ifdef DEBUG_NAMES
 		    grub_printf ("skipping subpartition: ");
-		    grub_efi_print_device_path (parent->device_path);
+		    grub_efi_print_device_path (d->device_path);
 #endif
 		    /* Mark itself as used.  */
 		    d->last_device_path = 0;
 		    break;
 		  }
+		if (!parent->last_device_path)
+		  {
+		    d->last_device_path = 0;
+		    break;
+		  }
 		if (is_hard_drive)
 		  {
-#if 0
+#ifdef DEBUG_NAMES
 		    grub_printf ("adding a hard drive by a partition: ");
 		    grub_efi_print_device_path (parent->device_path);
 #endif
@@ -303,7 +302,7 @@ name_devices (struct grub_efidisk_data *devices)
 		  }
 		else
 		  {
-#if 0
+#ifdef DEBUG_NAMES
 		    grub_printf ("adding a cdrom by a partition: ");
 		    grub_efi_print_device_path (parent->device_path);
 #endif
@@ -318,9 +317,20 @@ name_devices (struct grub_efidisk_data *devices)
 	      break;
 
 	    default:
+#ifdef DEBUG_NAMES
+	      grub_printf ("skipping other type: ");
+	      grub_efi_print_device_path (d->device_path);
+#endif
 	      /* For now, ignore the others.  */
 	      break;
 	    }
+	}
+      else
+	{
+#ifdef DEBUG_NAMES
+	  grub_printf ("skipping non-media: ");
+	  grub_efi_print_device_path (d->device_path);
+#endif
 	}
     }
 
@@ -339,7 +349,7 @@ name_devices (struct grub_efidisk_data *devices)
 	{
 	  /* Only one partition in a non-media device. Assume that this
 	     is a floppy drive.  */
-#if 0
+#ifdef DEBUG_NAMES
 	  grub_printf ("adding a floppy by guessing: ");
 	  grub_efi_print_device_path (d->device_path);
 #endif
@@ -349,7 +359,7 @@ name_devices (struct grub_efidisk_data *devices)
 	{
 	  /* This check is too heuristic, but assume that this is a
 	     CDROM drive.  */
-#if 0
+#ifdef DEBUG_NAMES
 	  grub_printf ("adding a cdrom by guessing: ");
 	  grub_efi_print_device_path (d->device_path);
 #endif
@@ -358,7 +368,7 @@ name_devices (struct grub_efidisk_data *devices)
       else
 	{
 	  /* The default is a hard drive.  */
-#if 0
+#ifdef DEBUG_NAMES
 	  grub_printf ("adding a hard drive by guessing: ");
 	  grub_efi_print_device_path (d->device_path);
 #endif
