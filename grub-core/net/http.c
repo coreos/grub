@@ -390,7 +390,7 @@ http_establish (struct grub_file *file, grub_off_t offset, int initial)
   for (i = 0; !data->headers_recv && i < 100; i++)
     {
       grub_net_tcp_retransmit ();
-      grub_net_poll_cards (300);
+      grub_net_poll_cards (300, &data->headers_recv);
     }
 
   if (!data->headers_recv)

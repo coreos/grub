@@ -108,6 +108,7 @@ struct recv_data
   int dns_err;
   char *name;
   const char *oname;
+  int stop;
 };
 
 static inline int
@@ -339,6 +340,7 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	      grub_memcpy (&(*data->addresses)[*data->naddresses].ipv4,
 			   ptr, 4);
 	      (*data->naddresses)++;
+	      data->stop = 1;
 	      break;
 	    case DNS_CLASS_AAAA:
 	      if (length != 16)
@@ -348,6 +350,7 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	      grub_memcpy (&(*data->addresses)[*data->naddresses].ipv6,
 			   ptr, 16);
 	      (*data->naddresses)++;
+	      data->stop = 1;
 	      break;
 	    case DNS_CLASS_CNAME:
 	      if (!(redirect_cnt & (redirect_cnt - 1)))
@@ -425,7 +428,7 @@ grub_net_dns_lookup (const char *name,
   static grub_uint16_t id = 1;
   grub_err_t err = GRUB_ERR_NONE;
   struct recv_data data = {naddresses, addresses, cache,
-			   grub_cpu_to_be16 (id++), 0, 0, name};
+			   grub_cpu_to_be16 (id++), 0, 0, name, 0};
   grub_uint8_t *nbd;
   int have_server = 0;
 
@@ -573,7 +576,7 @@ grub_net_dns_lookup (const char *name,
 	  if (*data.naddresses)
 	    goto out;
 	}
-      grub_net_poll_cards (200);
+      grub_net_poll_cards (200, &data.stop);
     }
  out:
   grub_free (data.name);

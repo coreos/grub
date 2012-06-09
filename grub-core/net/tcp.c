@@ -649,7 +649,7 @@ grub_net_tcp_open (char *server,
 	}
       for (j = 0; (j < TCP_SYN_RETRANSMISSION_TIMEOUT / 50 
 		   && !socket->established); j++)
-	grub_net_poll_cards (50);
+	grub_net_poll_cards (50, &socket->established);
       if (socket->established)
 	break;
     }

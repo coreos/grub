@@ -1,5 +1,27 @@
 2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Stop polling as soon as we have the packet we were waiting for.
+
+	* include/grub/net.h (grub_net_poll_cards): New argument stop_condition.
+	All users updated.
+	* grub-core/net/arp.c (have_pending): New var.
+	(pending_req): Likewise.
+	(grub_net_arp_send_request): Fill pending_req and use have_pending as
+	stop indicator.
+	(grub_net_arp_receive): Set have_pending.
+	* grub-core/net/dns.c (recv_data): New field stop.
+	(recv_hook): Set stop.
+	(grub_net_dns_lookup): Init stop and use as stop condition.
+	* grub-core/net/http.c (http_establish): Use headers_recv as stop
+	condition.
+	* grub-core/net/net.c (grub_net_poll_cards): New argument
+	stop_condition. Stop when it goes true.
+	* grub-core/net/tcp.c (grub_net_tcp_open): Use `established' as stop
+	indicator.
+	* grub-core/net/tftp.c (tftp_open): Use `have_oack' as stop indicator.
+
+2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Keep TX and RX buffers on EFI rather than always allocate new ones.
 
 	* include/grub/net.h (grub_net_card_driver): Allow driver to modify

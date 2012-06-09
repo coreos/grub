@@ -458,7 +458,7 @@ void
 grub_net_hwaddr_to_str (const grub_net_link_level_address_t *addr, char *str);
 
 void
-grub_net_poll_cards (unsigned time);
+grub_net_poll_cards (unsigned time, int *stop_condition);
 
 void grub_bootp_init (void);
 void grub_bootp_fini (void);

@@ -45,6 +45,8 @@ struct arphdr {
   grub_uint16_t op;
 } __attribute__ ((packed));
 
+static int have_pending;
+static grub_uint32_t pending_req;
 
 grub_err_t
 grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
@@ -106,7 +108,9 @@ grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
     {
       if (grub_net_link_layer_resolve_check (inf, proto_addr))
 	return GRUB_ERR_NONE;
-      grub_net_poll_cards (GRUB_NET_INTERVAL);
+      pending_req = proto_addr->ipv4;
+      have_pending = 0;
+      grub_net_poll_cards (GRUB_NET_INTERVAL, &have_pending);
       if (grub_net_link_layer_resolve_check (inf, proto_addr))
 	return GRUB_ERR_NONE;
       nb.data = nbd;
@@ -140,6 +144,8 @@ grub_net_arp_receive (struct grub_net_buff *nb,
       target_addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
       grub_memcpy (&sender_addr.ipv4, sender_protocol_address, 4);
       grub_memcpy (&target_addr.ipv4, target_protocol_address, 4);
+      if (grub_memcmp (sender_protocol_address, &pending_req, 4) == 0)
+	have_pending = 1;
     }
   else
     return GRUB_ERR_NONE;

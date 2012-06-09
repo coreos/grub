@@ -339,7 +339,7 @@ grub_cmd_ipv6_autoconf (struct grub_command *cmd __attribute__ ((unused)),
 	}
       if (done)
 	break;
-      grub_net_poll_cards (interval);
+      grub_net_poll_cards (interval, 0);
     }
 
   err = GRUB_ERR_NONE;
@@ -1336,16 +1336,15 @@ receive_packets (struct grub_net_card *card)
 }
 
 void
-grub_net_poll_cards (unsigned time)
+grub_net_poll_cards (unsigned time, int *stop_condition)
 {
   struct grub_net_card *card;
   grub_uint64_t start_time;
-  FOR_NET_CARDS (card)
-    {
-      start_time = grub_get_time_ms ();
-      while ((grub_get_time_ms () - start_time) < time)	
-	receive_packets (card);
-    }
+  start_time = grub_get_time_ms ();
+  while ((grub_get_time_ms () - start_time) < time
+	 && (!stop_condition || !*stop_condition))
+    FOR_NET_CARDS (card)
+      receive_packets (card);
   grub_net_tcp_retransmit ();
 }
 
@@ -1405,7 +1404,7 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
       if (!net->eof)
 	{
 	  try++;
-	  grub_net_poll_cards (GRUB_NET_INTERVAL);
+	  grub_net_poll_cards (GRUB_NET_INTERVAL, &net->eof);
 	}
       else
 	return total;

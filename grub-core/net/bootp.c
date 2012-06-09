@@ -541,7 +541,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	}
       if (!done)
 	break;
-      grub_net_poll_cards (interval);
+      grub_net_poll_cards (interval, 0);
     }
 
   err = GRUB_ERR_NONE;
