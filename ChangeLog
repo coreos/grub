@@ -1,5 +1,10 @@
 2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/ieee1275/serial.c (do_real_config): Fix cast to fix
+	compilation error on sparc64.
+
+2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use ITC on IA64 rather than broken routine based on daytime.
 
 	* grub-core/kern/efi/efi.c (grub_rtc_get_time_ms) [__ia64__]: Remove on

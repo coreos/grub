@@ -42,7 +42,7 @@ do_real_config (struct grub_serial_port *port)
     return;
 
   if (grub_ieee1275_open (port->elem->devpath, &port->handle)
-      || port->handle == (grub_ieee1275_cell_t) -1)
+      || port->handle == (grub_ieee1275_ihandle_t) -1)
     port->handle = IEEE1275_IHANDLE_INVALID;
 
   port->configured = 1;
