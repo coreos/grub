@@ -230,6 +230,7 @@ grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid,
   return NULL;
 }
 
+#ifndef __ia64__
 grub_uint64_t
 grub_rtc_get_time_ms (void)
 {
@@ -250,6 +251,7 @@ grub_get_rtc (void)
 {
   return grub_rtc_get_time_ms ();
 }
+#endif
 
 #pragma GCC diagnostic ignored "-Wcast-align"
 

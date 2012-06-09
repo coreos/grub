@@ -1,5 +1,20 @@
 2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use ITC on IA64 rather than broken routine based on daytime.
+
+	* grub-core/kern/efi/efi.c (grub_rtc_get_time_ms) [__ia64__]: Remove on
+	ia64.
+	(grub_get_rtc) [__ia64__]: Likewise.
+	* grub-core/kern/ia64/efi/init.c (divisor): New variable.
+	(get_itc): New function.
+	(grub_rtc_get_time_ms): Likewise.
+	(grub_machine_init): Calibrate ITC.
+	* include/grub/efi/time.h (grub_get_rtc), (GRUB_TICKS_PER_SECOND):
+	Keep only on non-ia64. Don't export since it's broken and used only
+	if TSC is unavailable.
+
+2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/efi/efidisk.c (find_parent_device): Return the parent
 	even if it's used.
 	(name_devices): Replace #if 0 with #ifdef DEBUG_NAMES.

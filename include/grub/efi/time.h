@@ -21,9 +21,11 @@
 
 #include <grub/symbol.h>
 
+#ifndef __ia64__
 #define GRUB_TICKS_PER_SECOND	1000
 
 /* Return the real time in ticks.  */
-grub_uint32_t EXPORT_FUNC (grub_get_rtc) (void);
+grub_uint32_t grub_get_rtc (void);
+#endif
 
 #endif /* ! GRUB_EFI_TIME_HEADER */

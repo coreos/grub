@@ -27,10 +27,43 @@
 #include <grub/kernel.h>
 #include <grub/efi/efi.h>
 
+static grub_uint64_t divisor = 1;
+
+static grub_uint64_t
+get_itc (void)
+{
+  grub_uint64_t ret;
+  asm volatile ("mov %0=ar.itc" : "=r" (ret));
+  return ret;
+}
+
+grub_uint64_t
+grub_rtc_get_time_ms (void)
+{
+  return get_itc () / divisor;
+}
+
 void
 grub_machine_init (void)
 {
+  grub_efi_event_t event;
+  grub_uint64_t before, after;
+  grub_efi_uintn_t idx;
   grub_efi_init ();
+
+  efi_call_5 (grub_efi_system_table->boot_services->create_event,
+	      GRUB_EFI_EVT_TIMER, GRUB_EFI_TPL_CALLBACK, 0, 0, &event);
+
+  before = get_itc ();
+  efi_call_3 (grub_efi_system_table->boot_services->set_timer, event,
+	      GRUB_EFI_TIMER_RELATIVE, 200000);
+  efi_call_3 (grub_efi_system_table->boot_services->wait_for_event, 1,
+	      &event, &idx);
+  after = get_itc ();
+  efi_call_1 (grub_efi_system_table->boot_services->close_event, event);
+  divisor = (after - before + 5) / 20;
+  if (divisor == 0)
+    divisor = 800000;
   grub_install_get_time_ms (grub_rtc_get_time_ms);
 }
 
