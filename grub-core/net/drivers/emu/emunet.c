@@ -34,7 +34,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static int fd;
 
 static grub_err_t 
-send_card_buffer (const struct grub_net_card *dev __attribute__ ((unused)),
+send_card_buffer (struct grub_net_card *dev __attribute__ ((unused)),
 		  struct grub_net_buff *pack)
 {
   ssize_t actual;
@@ -47,7 +47,7 @@ send_card_buffer (const struct grub_net_card *dev __attribute__ ((unused)),
 }
 
 static struct grub_net_buff *
-get_card_packet (const struct grub_net_card *dev __attribute__ ((unused)))
+get_card_packet (struct grub_net_card *dev __attribute__ ((unused)))
 {
   ssize_t actual;
   struct grub_net_buff *nb;

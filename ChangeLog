@@ -1,5 +1,16 @@
 2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Keep TX and RX buffers on EFI rather than always allocate new ones.
+
+	* include/grub/net.h (grub_net_card_driver): Allow driver to modify
+	card. All users updated.
+	(grub_net_card): New members txbuf, rcvbuf, rcvbufsize and txbusy.
+	* grub-core/net/drivers/efi/efinet.c (send_card_buffer): Reuse buffer.
+	(get_card_packet): Likewise.
+	(grub_efinet_findcards): Init new fields.
+
+2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/ieee1275/serial.c (do_real_config): Fix cast to fix
 	compilation error on sparc64.
 

@@ -74,11 +74,11 @@ struct grub_net_card_driver
   struct grub_net_card_driver *next;
   struct grub_net_card_driver **prev;
   const char *name;
-  grub_err_t (*open) (const struct grub_net_card *dev);
-  void (*close) (const struct grub_net_card *dev);
-  grub_err_t (*send) (const struct grub_net_card *dev,
+  grub_err_t (*open) (struct grub_net_card *dev);
+  void (*close) (struct grub_net_card *dev);
+  grub_err_t (*send) (struct grub_net_card *dev,
 		      struct grub_net_buff *buf);
-  struct grub_net_buff * (*recv) (const struct grub_net_card *dev);
+  struct grub_net_buff * (*recv) (struct grub_net_card *dev);
 };
 
 typedef struct grub_net_packet
@@ -126,6 +126,10 @@ struct grub_net_card
   struct grub_net_slaac_mac_list *slaac_list;
   grub_ssize_t new_ll_entry;
   struct grub_net_link_layer_entry *link_layer_table;
+  void *txbuf;
+  void *rcvbuf;
+  grub_size_t rcvbufsize;
+  int txbusy;
   union
   {
 #ifdef GRUB_MACHINE_EFI

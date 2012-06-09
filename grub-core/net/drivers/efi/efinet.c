@@ -31,37 +31,74 @@ static grub_efi_guid_t net_io_guid = GRUB_EFI_SIMPLE_NETWORK_GUID;
 static grub_efi_guid_t pxe_io_guid = GRUB_EFI_PXE_GUID;
 
 static grub_err_t
-send_card_buffer (const struct grub_net_card *dev,
+send_card_buffer (struct grub_net_card *dev,
 		  struct grub_net_buff *pack)
 {
   grub_efi_status_t st;
   grub_efi_simple_network_t *net = dev->efi_net;
   grub_uint64_t limit_time = grub_get_time_ms () + 4000;
-  st = efi_call_7 (net->transmit, net, 0, (pack->tail - pack->data),
-		   pack->data, NULL, NULL, NULL);
+  grub_size_t len;
+
+  if (dev->txbusy)
+    while (1)
+      {
+	void *txbuf = NULL;
+	st = efi_call_3 (net->get_status, net, 0, &txbuf);
+	if (st != GRUB_EFI_SUCCESS)
+	  return grub_error (GRUB_ERR_IO,
+			     N_("couldn't send network packet"));
+	if (txbuf == dev->txbuf)
+	  {
+	    dev->txbusy = 0;
+	    break;
+	  }
+	if (limit_time < grub_get_time_ms ())
+	  return grub_error (GRUB_ERR_TIMEOUT, N_("couldn't send network packet"));
+      }
+
+  len = (pack->tail - pack->data);
+  if (len > dev->mtu)
+    len = dev->mtu;
+
+  grub_memcpy (dev->txbuf, pack->data, len);
+
+  st = efi_call_7 (net->transmit, net, 0, len,
+		   dev->txbuf, NULL, NULL, NULL);
   if (st != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_IO, N_("couldn't send network packet"));
-  while (1)
-    {
-      void *txbuf = NULL;
-      st = efi_call_3 (net->get_status, net, 0, &txbuf);
-      if (st != GRUB_EFI_SUCCESS)
-	return grub_error (GRUB_ERR_IO, N_("couldn't send network packet"));
-      if (txbuf)
-	return GRUB_ERR_NONE;
-      if (limit_time < grub_get_time_ms ())
-	return grub_error (GRUB_ERR_TIMEOUT, N_("couldn't send network packet"));
-    }
+  dev->txbusy = 1;
+  return GRUB_ERR_NONE;
 }
 
 static struct grub_net_buff *
-get_card_packet (const struct grub_net_card *dev)
+get_card_packet (struct grub_net_card *dev)
 {
   grub_efi_simple_network_t *net = dev->efi_net;
   grub_err_t err;
   grub_efi_status_t st;
-  grub_efi_uintn_t bufsize = 1536;
+  grub_efi_uintn_t bufsize = dev->rcvbufsize;
   struct grub_net_buff *nb;
+  int i;
+
+  for (i = 0; i < 2; i++)
+    {
+      if (!dev->rcvbuf)
+	dev->rcvbuf = grub_malloc (dev->rcvbufsize);
+      if (!dev->rcvbuf)
+	return NULL;
+
+      st = efi_call_7 (net->receive, net, NULL, &bufsize,
+		       dev->rcvbuf, NULL, NULL, NULL);
+      if (st != GRUB_EFI_BUFFER_TOO_SMALL)
+	break;
+      dev->rcvbufsize = 2 * ALIGN_UP (dev->rcvbufsize > bufsize
+				      ? dev->rcvbufsize : bufsize, 64);
+      grub_free (dev->rcvbuf);
+      dev->rcvbuf = 0;
+    }
+
+  if (st != GRUB_EFI_SUCCESS)
+    return NULL;
 
   nb = grub_netbuff_alloc (bufsize + 2);
   if (!nb)
@@ -74,35 +111,7 @@ get_card_packet (const struct grub_net_card *dev)
       grub_netbuff_free (nb);
       return NULL;
     }
-
-  st = efi_call_7 (net->receive, net, NULL, &bufsize,
-		   nb->data, NULL, NULL, NULL);
-  if (st == GRUB_EFI_BUFFER_TOO_SMALL)
-    {
-      grub_netbuff_free (nb);
-
-      bufsize = ALIGN_UP (bufsize, 32);
-
-      nb = grub_netbuff_alloc (bufsize + 2);
-      if (!nb)
-	return NULL;
-
-      /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
-	 by 4. So that IP header is aligned on 4 bytes. */
-      if (grub_netbuff_reserve (nb, 2))
-	{
-	  grub_netbuff_free (nb);
-	  return NULL;
-	}
-
-      st = efi_call_7 (net->receive, net, NULL, &bufsize,
-		       nb->data, NULL, NULL, NULL);
-    }
-  if (st != GRUB_EFI_SUCCESS)
-    {
-      grub_netbuff_free (nb);
-      return NULL;
-    }
+  grub_memcpy (nb->data, dev->rcvbuf, bufsize);
   err = grub_netbuff_put (nb, bufsize);
   if (err)
     {
@@ -171,11 +180,23 @@ grub_efinet_findcards (void)
 	  return;
 	}
 
+      card->mtu = net->mode->max_packet_size;
+      card->txbuf = grub_zalloc (ALIGN_UP (card->mtu, 64) + 256);
+      if (!card->txbuf)
+	{
+	  grub_print_error ();
+	  grub_free (handles);
+	  grub_free (card);
+	  return;
+	}
+      card->txbusy = 0;
+
+      card->rcvbufsize = ALIGN_UP (card->mtu, 64) + 256;
+
       card->name = grub_xasprintf ("efinet%d", i++);
       card->driver = &efidriver;
       card->flags = 0;
       card->default_address.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
-      card->mtu = net->mode->max_packet_size;
       grub_memcpy (card->default_address.mac,
 		   net->mode->current_address,
 		   sizeof (card->default_address.mac));

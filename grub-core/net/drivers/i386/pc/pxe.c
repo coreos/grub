@@ -167,7 +167,7 @@ grub_pxe_scan (void)
 }
 
 static struct grub_net_buff *
-grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)))
+grub_pxe_recv (struct grub_net_card *dev __attribute__ ((unused)))
 {
   struct grub_pxe_undi_isr *isr;
   static int in_progress = 0;
@@ -250,7 +250,7 @@ grub_pxe_recv (const struct grub_net_card *dev __attribute__ ((unused)))
 }
 
 static grub_err_t 
-grub_pxe_send (const struct grub_net_card *dev __attribute__ ((unused)),
+grub_pxe_send (struct grub_net_card *dev __attribute__ ((unused)),
 	       struct grub_net_buff *pack)
 {
   struct grub_pxe_undi_transmit *trans;
@@ -276,7 +276,7 @@ grub_pxe_send (const struct grub_net_card *dev __attribute__ ((unused)),
 }
 
 static void
-grub_pxe_close (const struct grub_net_card *dev __attribute__ ((unused)))
+grub_pxe_close (struct grub_net_card *dev __attribute__ ((unused)))
 {
   if (pxe_rm_entry)
     grub_pxe_call (GRUB_PXENV_UNDI_CLOSE,
@@ -285,7 +285,7 @@ grub_pxe_close (const struct grub_net_card *dev __attribute__ ((unused)))
 }
 
 static grub_err_t
-grub_pxe_open (const struct grub_net_card *dev __attribute__ ((unused)))
+grub_pxe_open (struct grub_net_card *dev __attribute__ ((unused)))
 {
   struct grub_pxe_undi_open *ou;
   ou = (void *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
