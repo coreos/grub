@@ -1401,6 +1401,8 @@ grub_font_construct_dry_run (grub_font_t hinted_font,
   struct grub_font_glyph *main_glyph = NULL;
   struct grub_font_glyph **combining_glyphs;
   grub_uint32_t desired_attributes = 0;
+  unsigned i;
+  grub_uint32_t base = glyph_id->base;
 
   if (combining_glyphs_out)
     *combining_glyphs_out = NULL;
@@ -1411,16 +1413,28 @@ grub_font_construct_dry_run (grub_font_t hinted_font,
   if (glyph_id->attributes & GRUB_UNICODE_GLYPH_ATTRIBUTE_LEFT_JOINED)
     desired_attributes |= GRUB_FONT_CODE_LEFT_JOINED;
 
-  main_glyph = grub_font_get_glyph_with_fallback (hinted_font, glyph_id->base
+
+  if (base == 'i' || base == 'j')
+    {
+      for (i = 0; i < glyph_id->ncomb; i++)
+	if (glyph_id->combining[i].type == GRUB_UNICODE_STACK_ABOVE)
+	  break;
+      if (i < glyph_id->ncomb && base == 'i')
+	base = GRUB_UNICODE_DOTLESS_LOWERCASE_I;
+      if (i < glyph_id->ncomb && base == 'j')
+	base = GRUB_UNICODE_DOTLESS_LOWERCASE_J;
+    }
+
+  main_glyph = grub_font_get_glyph_with_fallback (hinted_font, base
 						  | desired_attributes);
 
   if (!main_glyph)
     main_glyph = grub_font_get_glyph_with_fallback (hinted_font,
-						    glyph_id->base);
+						    base);
 
   /* Glyph not available in any font.  Use ASCII fallback.  */
   if (!main_glyph)
-    main_glyph = ascii_glyph_lookup (glyph_id->base);
+    main_glyph = ascii_glyph_lookup (base);
 
   /* Glyph not available in any font.  Return unknown glyph.  */
   if (!main_glyph)
@@ -1440,13 +1454,10 @@ grub_font_construct_dry_run (grub_font_t hinted_font,
       return main_glyph;
     }
 
-  {
-    unsigned i;
-    for (i = 0; i < glyph_id->ncomb; i++)
-      combining_glyphs[i]
-	= grub_font_get_glyph_with_fallback (main_glyph->font,
-					     glyph_id->combining[i].code);
-  }
+  for (i = 0; i < glyph_id->ncomb; i++)
+    combining_glyphs[i]
+      = grub_font_get_glyph_with_fallback (main_glyph->font,
+					   glyph_id->combining[i].code);
 
   blit_comb (glyph_id, NULL, bounds, main_glyph, combining_glyphs,
 	     device_width);

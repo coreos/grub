@@ -167,6 +167,8 @@ struct grub_unicode_glyph
 
 enum
   {
+    GRUB_UNICODE_DOTLESS_LOWERCASE_I       = 0x0131,
+    GRUB_UNICODE_DOTLESS_LOWERCASE_J       = 0x0237,
     GRUB_UNICODE_COMBINING_GRAPHEME_JOINER = 0x034f,
     GRUB_UNICODE_HEBREW_WAW                = 0x05d5,
     GRUB_UNICODE_ARABIC_START              = 0x0600,

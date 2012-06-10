@@ -1,3 +1,13 @@
+2012-06-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove dor on i and j when combining with above diacritics.
+
+	* include/grub/unicode.h (GRUB_UNICODE_DOTLESS_LOWERCASE_I): New enum
+	value.
+	(GRUB_UNICODE_DOTLESS_LOWERCASE_J): Likewise.
+	* grub-core/font/font.c (grub_font_construct_dry_run): Replace i and j
+	with dotless variants when any combining above is present.
+
 2012-06-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* tests/grub_script_expansion.in: Explicitly tell grep that we handle
