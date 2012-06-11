@@ -93,7 +93,6 @@ endif
 
 if COND_i386_efi
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
@@ -124,7 +123,6 @@ endif
 
 if COND_x86_64_efi
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
@@ -132,7 +130,6 @@ endif
 
 if COND_ia64_efi
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 endif
 
@@ -165,6 +162,7 @@ endif
 if COND_mips_loongson
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/time.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h

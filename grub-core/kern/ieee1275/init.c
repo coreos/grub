@@ -292,9 +292,3 @@ ieee1275_get_time_ms (void)
 
   return msecs;
 }
-
-grub_uint32_t
-grub_get_rtc (void)
-{
-  return ieee1275_get_time_ms ();
-}

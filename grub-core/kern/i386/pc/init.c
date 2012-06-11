@@ -33,6 +33,7 @@
 #include <grub/cache.h>
 #include <grub/time.h>
 #include <grub/cpu/tsc.h>
+#include <grub/machine/time.h>
 
 struct mem_region
 {

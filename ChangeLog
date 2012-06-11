@@ -1,6 +1,34 @@
 2012-06-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	Remove dor on i and j when combining with above diacritics.
+	Remove non-functional EFI grub_get_rtc. Put a better fatal message
+	than current grub_get_rtc() not implemented when booted with
+	coreboot without TSC.
+
+	* grub-core/Makefile.am: Exclude efi/time.h from kernel headers.
+	Add machine/time.h to kernel headers on loongson.
+	* grub-core/Makefile.core.def (kernel): Remove
+	kern/generic/rtc_get_time_ms.c on qemu-multiboot-coreboot.
+	* grub-core/kern/efi/efi.c (grub_rtc_get_time_ms): Removed.
+	(grub_get_rtc): Likewise.
+	* grub-core/kern/generic/rtc_get_time_ms.c: Include grub/machine/time.h.
+	* grub-core/kern/i386/coreboot/init.c (grub_get_rtc): Removed.
+	* grub-core/kern/i386/pc/init.c: Include grub/machine/init.h.
+	* grub-core/kern/i386/tsc.c (grub_tsc_init)
+	[!GRUB_MACHINE_PCBIOS && !GRUB_MACHINE_IEEE1275]: Call grub_fatal
+	rather than installing known non-working time source.
+	* grub-core/kern/ieee1275/init.c (grub_get_rtc): Removed.
+	* grub-core/kern/mips/loongson/init.c: Include grub/machine/time.h.
+	* include/grub/time.h: Don't include machine/time.h.
+	* include/grub/efi/time.h: Removed.
+	* include/grub/i386/efi/time.h: Likewise.
+	* include/grub/i386/ieee1275/time.h: Likewise.
+	* include/grub/powerpc/ieee1275/time.h: Likewise.
+	* include/grub/sparc64/ieee1275/time.h: Likewise.
+	* include/grub/x86_64/efi/time.h: Likewise.
+
+2012-06-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove dot on i and j when combining with above diacritics.
 
 	* include/grub/unicode.h (GRUB_UNICODE_DOTLESS_LOWERCASE_I): New enum
 	value.

@@ -42,15 +42,7 @@ extern grub_uint8_t _start[];
 extern grub_uint8_t _end[];
 extern grub_uint8_t _edata[];
 
-#pragma GCC diagnostic warning "-Wsuggest-attribute=noreturn"
-
-grub_uint32_t
-grub_get_rtc (void)
-{
-  grub_fatal ("grub_get_rtc() is not implemented.\n");
-}
-
-void
+void  __attribute__ ((noreturn))
 grub_exit (void)
 {
   /* We can't use grub_fatal() in this function.  This would create an infinite

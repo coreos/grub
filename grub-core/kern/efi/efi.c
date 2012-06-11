@@ -23,7 +23,6 @@
 #include <grub/efi/efi.h>
 #include <grub/efi/console_control.h>
 #include <grub/efi/pe32.h>
-#include <grub/machine/time.h>
 #include <grub/time.h>
 #include <grub/term.h>
 #include <grub/kernel.h>
@@ -229,29 +228,6 @@ grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid,
   grub_free (data);
   return NULL;
 }
-
-#ifndef __ia64__
-grub_uint64_t
-grub_rtc_get_time_ms (void)
-{
-  grub_efi_time_t time;
-  grub_efi_runtime_services_t *r;
-
-  r = grub_efi_system_table->runtime_services;
-  if (efi_call_2 (r->get_time, &time, 0) != GRUB_EFI_SUCCESS)
-    /* What is possible in this case?  */
-    return 0;
-
-  return ((time.minute * 60 + time.second) * 1000
-	   + time.nanosecond / 1000000);
-}
-
-grub_uint32_t
-grub_get_rtc (void)
-{
-  return grub_rtc_get_time_ms ();
-}
-#endif
 
 #pragma GCC diagnostic ignored "-Wcast-align"
 

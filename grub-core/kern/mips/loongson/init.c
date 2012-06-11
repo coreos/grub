@@ -23,7 +23,7 @@
 #include <grub/types.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
-#include <grub/time.h>
+#include <grub/machine/time.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
 #include <grub/memory.h>
