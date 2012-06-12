@@ -1,5 +1,9 @@
 2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Fix cross-disk check on non-PreP machines.
+
+2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/ieee1275/console.c (grub_console_fini): Don't
 	needlessly lose the console.
 
