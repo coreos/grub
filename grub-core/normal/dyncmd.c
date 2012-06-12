@@ -122,8 +122,8 @@ read_command_list (const char *prefix)
 			last->next = ptr->next;
 		      else
 			grub_command_list = ptr->next;
-		      grub_free (ptr);
 		      grub_free (ptr->data); /* extcmd struct */
+		      grub_free (ptr);
 		    }
 		  else
 		    last = ptr;

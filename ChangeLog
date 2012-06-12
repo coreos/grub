@@ -1,3 +1,8 @@
+2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/dyncmd.c (read_command_list): Don't access freed
+	space.
+
 2012-06-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove non-functional EFI grub_get_rtc. Put a better fatal message
