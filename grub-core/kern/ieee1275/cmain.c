@@ -91,7 +91,8 @@ grub_ieee1275_find_options (void)
   if (rc >= 0 && grub_strncmp (tmp, "IBM", 3) == 0)
     grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS);
 
-  if (grub_strncmp (tmp, "PowerMac", sizeof ("PowerMac") - 1) == 0)
+  if (grub_strncmp (tmp, "PowerMac", sizeof ("PowerMac") - 1) == 0
+      || grub_strncmp (tmp, "RackMac", sizeof ("RackMac") - 1) == 0)
     grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS);
 
   if (is_smartfirmware)

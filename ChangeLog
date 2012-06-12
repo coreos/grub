@@ -1,5 +1,11 @@
 2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Apply
+	PowerMac workaround to Xserves as well.
+	Information supplied by: Benjamin Herrenschmidt.
+
+2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't assume that beginning address is also the entry point on ppc.
 
 	* grub-core/loader/powerpc/ieee1275/linux.c (linux_entry): New variable.
