@@ -257,9 +257,4 @@ grub_console_init_lately (void)
 void
 grub_console_fini (void)
 {
-  grub_term_unregister_input (&grub_console_term_input);
-  grub_term_unregister_output (&grub_console_term_output);
-  grub_terminfo_output_unregister (&grub_console_term_output);
-
-  grub_terminfo_fini ();
 }

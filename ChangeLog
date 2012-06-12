@@ -1,5 +1,10 @@
 2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/ieee1275/console.c (grub_console_fini): Don't
+	needlessly lose the console.
+
+2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/dyncmd.c (read_command_list): Don't access freed
 	space.
 
