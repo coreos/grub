@@ -1,5 +1,14 @@
 2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't assume that beginning address is also the entry point on ppc.
+
+	* grub-core/loader/powerpc/ieee1275/linux.c (linux_entry): New variable.
+	(grub_linux_boot): Use linux_entry.
+	(grub_linux_load32): Fill linux_entry. Fix setting linux_addr.
+	(grub_linux_load64): Likewise.
+
+2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Fix cross-disk check on non-PreP machines.
 
 2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>

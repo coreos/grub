@@ -43,6 +43,7 @@ static grub_addr_t initrd_addr;
 static grub_size_t initrd_size;
 
 static grub_addr_t linux_addr;
+static grub_addr_t linux_entry;
 static grub_size_t linux_size;
 
 static char *linux_args;
@@ -108,14 +109,14 @@ grub_linux_boot (void)
   grub_ieee1275_set_property (grub_ieee1275_chosen, "bootargs", linux_args,
 			      grub_strlen (linux_args) + 1, &actual);
 
-  grub_dprintf ("loader", "Entry point: 0x%x\n", linux_addr);
+  grub_dprintf ("loader", "Entry point: 0x%x\n", linux_entry);
   grub_dprintf ("loader", "Initrd at: 0x%x, size 0x%x\n", initrd_addr,
 		initrd_size);
   grub_dprintf ("loader", "Boot arguments: %s\n", linux_args);
   grub_dprintf ("loader", "Jumping to Linux...\n");
 
   /* Boot the kernel.  */
-  linuxmain = (kernel_entry_t) linux_addr;
+  linuxmain = (kernel_entry_t) linux_entry;
   linuxmain ((void *) initrd_addr, initrd_size, grub_ieee1275_entry_fn, 0, 0);
 
   return GRUB_ERR_NONE;
@@ -181,7 +182,8 @@ grub_linux_load32 (grub_elf_t elf, const char *filename)
   if (seg_addr == (grub_addr_t) -1)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't claim memory");
 
-  linux_addr = seg_addr + offset;
+  linux_entry = seg_addr + offset;
+  linux_addr = seg_addr;
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load);
@@ -227,7 +229,8 @@ grub_linux_load64 (grub_elf_t elf, const char *filename)
   if (seg_addr == (grub_addr_t) -1)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "couldn't claim memory");
 
-  linux_addr = seg_addr + offset;
+  linux_entry = seg_addr + offset;
+  linux_addr = seg_addr;
 
   /* Now load the segments into the area we claimed.  */
   auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load);
