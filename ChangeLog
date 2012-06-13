@@ -1,5 +1,12 @@
 2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Revert usb-quiesce since it's wrong.
+
+	* grub-core/disk/ieee1275/ofdisk.c (quiesce): Removed.
+	(grub_ofdisk_init): Don't do quiesce.
+
+2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Apply
 	PowerMac workaround to Xserves as well.
 	Information supplied by: Benjamin Herrenschmidt.

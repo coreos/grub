@@ -476,34 +476,6 @@ grub_ofdisk_init (void)
   grub_disk_dev_register (&grub_ofdisk_dev);
 }
 
-static int quiesce (struct grub_ieee1275_devalias *alias)
-{
-  static grub_ieee1275_ihandle_t ihandle;
-  struct set_color_args
-  {
-    struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_cell_t method;
-    grub_ieee1275_cell_t ihandle;
-    grub_ieee1275_cell_t catch_result;
-  }
-  args;
-
-  if (grub_strcmp (alias->type, "usb") != 0)
-    return 0;
-
-
-  if (grub_ieee1275_open (alias->path, &ihandle))
-    return 0;
-    
-  INIT_IEEE1275_COMMON (&args.common, "call-method", 2, 1);
-  args.method = (grub_ieee1275_cell_t) "usb-quiesce";
-  args.ihandle = ihandle;
-
-  IEEE1275_CALL_ENTRY_FN (&args);
-  grub_ieee1275_close (ihandle);
-  return 0;
-}
-
 void
 grub_ofdisk_fini (void)
 {
@@ -511,9 +483,6 @@ grub_ofdisk_fini (void)
     grub_ieee1275_close (last_ihandle);
   last_ihandle = 0;
   last_devpath = NULL;
-
-  grub_ieee1275_devices_iterate (quiesce);
-  grub_millisleep (10);
 
   grub_disk_dev_unregister (&grub_ofdisk_dev);
 }
