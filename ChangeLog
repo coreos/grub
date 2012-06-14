@@ -1,3 +1,10 @@
+2012-06-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/getroot.c (convert_system_partition_to_system_disk) [__APPLE__]:
+	Set is_part appropriately.
+	(grub_util_biosdisk_get_grub_dev): Use is_part rather than comparing
+	names. Canonicalize partition without full disk.
+
 2012-06-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Revert usb-quiesce since it's wrong.

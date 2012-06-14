@@ -2074,7 +2074,11 @@ devmapper_out:
   ptr = ret + sizeof ("/dev/disk") + rdisk - 1;
   while (*ptr >= '0' && *ptr <= '9')
     ptr++;
-  *ptr = 0;
+  if (*ptr)
+    {
+      *is_part = 1;
+      *ptr = 0;
+    }
   return ret;
 #else
 # warning "The function `convert_system_partition_to_system_disk' might not work on your OS correctly."
@@ -2175,8 +2179,10 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
   drive = find_system_device (os_dev, &st, 1, 1);
   sys_disk = convert_system_partition_to_system_disk (os_dev, &st, &is_part);
+  if (!sys_disk)
+    return 0;
   grub_util_info ("%s is a parent of %s", sys_disk, os_dev);
-  if (grub_strcmp (os_dev, sys_disk) == 0)
+  if (!is_part)
     {
       free (sys_disk);
       return make_device_name (drive, -1, -1);
@@ -2264,11 +2270,15 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	   but are really more like disks.  */
 	if (grub_errno == GRUB_ERR_UNKNOWN_DEVICE)
 	  {
+	    char *canon;
 	    grub_util_warn
 	      (_("disk does not exist, so falling back to partition device %s"),
 	       os_dev);
 
-	    drive = find_system_device (os_dev, &st, 0, 1);
+	    canon = canonicalize_file_name (os_dev);
+	    drive = find_system_device (canon ? : os_dev, &st, 0, 1);
+	    if (canon)
+	      free (canon);
 	    return make_device_name (drive, -1, -1);
 	  }
 	else
