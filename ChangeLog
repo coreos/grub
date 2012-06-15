@@ -1,5 +1,23 @@
 2012-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid slow read-back from VRAM.
+
+	* include/grub/video_fb.h (grub_video_fb_doublebuf_update_screen_t):
+	Move from here ...
+	* grub-core/video/fb/video_fb.c
+	(grub_video_fb_doublebuf_update_screen_t): ... here. Remove arguments.
+	* grub-core/video/fb/video_fb.c (framebuf_t): New type.
+	(front_target): Remove front_target. Add pages.
+	(grub_video_fb_init): Skip setting front_pages.
+	(grub_video_fb_fini): Likewise.
+	(doublebuf_blit_update_screen): Use pages.
+	(grub_video_fb_doublebuf_blit_init): Likewise.
+	(doublebuf_pageflipping_init): Allocate offscreen buffer.
+	(doublebuf_pageflipping_update_screen): Use offscreen buffer.
+	(grub_video_fb_setup): Prefer doublebuffing.
+
+2012-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/main.c (GRUB_MOD_INIT): Ignore errors when loading
 	gzio.
 
