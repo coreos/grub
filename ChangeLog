@@ -1,5 +1,15 @@
 2012-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add loongson tests.
+
+	* tests/util/grub-shell.in: Handle loongson.
+	* tests/partmap_test.in: Add loongson to the list of platform using ATA
+	drivers.
+	* grub-core/tests/boot/linux.init-mips.S (SHUTDOWN_MAGIC3) [REBOOT]:
+	Reboot instead of shutdown if REBOOT is defined.
+
+2012-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/mips/loongson/reboot.c (grub_reboot): Use 32-bit
 	sized ports since unlike on real hardware qemu supports only 32-bit
 	regs.

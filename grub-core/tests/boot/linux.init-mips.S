@@ -23,8 +23,11 @@
 #define STDOUT 1
 #define SHUTDOWN_MAGIC1 0xfee1dead
 #define SHUTDOWN_MAGIC2 0x28121969
+#ifdef REBOOT
+#define SHUTDOWN_MAGIC3 0x01234567
+#else
 #define SHUTDOWN_MAGIC3 0x4321fedc
-
+#endif
 	.text
 	.global start, _start, __start
 __start:	

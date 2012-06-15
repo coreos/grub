@@ -61,6 +61,7 @@ EOF
 qemuopts="${GRUB_QEMU_OPTS}"
 serial_port=com0
 serial_null=
+hald_cmd=halt
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     powerpc-ieee1275)
 	boot=cd
@@ -81,6 +82,14 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	qemu=qemu-system-mipsel
 	qemuopts="$qemuopts -M mips"
 	console=vga_text
+	;;
+    mipsel-loongson)
+	boot=mipsel_fulong2e
+	qemu=qemu-system-mips64el
+	qemuopts="$qemuopts -no-reboot -M fulong2e"
+	console=
+	halt_cmd=reboot
+	trim=1
 	;;
     i386-coreboot)
 	boot=coreboot
@@ -157,7 +166,8 @@ for option in "$@"; do
 	elif [ "$dev" = "qemu" ] ; then boot=qemu;
 	elif [ "$dev" = "coreboot" ] ; then boot=coreboot;
 	elif [ "$dev" = "mips_qemu" ] ; then boot=mips_qemu;
-	elif [ "$dev" = "mipsel_qemu" ] ; then boot=mips_qemu;
+	elif [ "$dev" = "mipsel_qemu" ] ; then boot=mipsel_qemu;
+	elif [ "$dev" = "mipsel_fulong2e" ] ; then boot=mipsel_fulong2e;
 	else
 	    echo "Unrecognized boot method \`$dev'" 1>&2
 	    usage
@@ -211,9 +221,11 @@ done
 cat <<EOF >>${cfgfile}
 source /boot/grub/testcase.cfg
 # Stop serial output to suppress "ACPI shutdown failed" error.
-terminal_output $console
-halt
 EOF
+if [ x$console != x ]; then
+    echo "terminal_output $console" >>${cfgfile}
+fi
+echo "$halt_cmd" >>${cfgfile}
 
 isofile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 if [ x$boot != xnet ]; then
@@ -242,6 +254,11 @@ fi
 
 if [ x$boot = xmipsel_qemu ]; then
     bootdev="-kernel ${rom_directory}/mipsel-qemu_mips.elf"
+    device=cdrom
+fi
+
+if [ x$boot = xmipsel_fulong2e ]; then
+    bootdev="-kernel ${rom_directory}/mipsel-loongson.elf -append machtype=lemote-fuloong-2e"
     device=cdrom
 fi
 

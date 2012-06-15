@@ -56,7 +56,7 @@ list_parts () {
 }
 
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
-    mips-qemu_mips | mipsel-qemu_mips | i386-qemu | i386-multiboot | i386-coreboot)
+    mips-qemu_mips | mipsel-qemu_mips | i386-qemu | i386-multiboot | i386-coreboot | mipsel-loongson)
 	disk=ata0
 	;;
     powerpc-ieee1275)
