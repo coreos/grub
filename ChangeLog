@@ -1,3 +1,7 @@
+2012-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Multi-boot manual config): New section.
+
 2012-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Avoid slow read-back from VRAM.

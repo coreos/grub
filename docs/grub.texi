@@ -1056,6 +1056,7 @@ need to write the whole thing by hand.
 @menu
 * Simple configuration::        Recommended for most users
 * Shell-like scripting::        For power users and developers
+* Multi-boot manual config::    For non-standard multi-OS scenarios
 * Embedded configuration::      Embedding a configuration file into GRUB
 @end menu
 
@@ -1484,6 +1485,101 @@ status is greater than zero if @code{n} is greater than @code{$#} or less
 than zero; otherwise 0.
 
 @end table
+
+@node Multi-boot manual config
+@section Multi-boot manual config
+
+Currently autogenerating config files for multi-boot environments depends on
+os-prober and has several shortcomings. While fixing it is scheduled for the
+next release, meanwhile you can make use of the power of GRUB syntax and do it
+yourself. A possible configuration is detailed here, feel free to adjust to your
+needs.
+
+First create a separate GRUB partition, big enough to hold GRUB and
+few OS network installers you want to use. Mount this partition on
+/mnt/boot and disable GRUB in all OSes and manually install
+self-compiled latest GRUB with:
+
+@code{grub-install --boot-directory=/mnt/boot /dev/sda}
+
+In all the OSes install GRUB tools but disable installing GRUB in bootsector,
+so you'll have menu.lst and grub.cfg available for use. Also disable os-prober
+use by setting:
+
+@code{GRUB_DISABLE_OS_PROBER=true}
+
+in /etc/default/grub
+
+Then write grub.cfg as following in /mnt/boot/grub/grub.cfg:
+
+@example
+
+menuentry "OS using grub2" @{
+   insmod xfs
+   search -s root -l OS1 --hint hd0,gpt2
+   configfile /boot/grub/grub.cfg
+@}
+
+menuentry "OS using grub2-legacy" @{
+   insmod ext2
+   search -s root -l OS2 --hint hd0,gpt3
+   legacy_configfile /boot/grub/menu.lst
+@}
+
+menuentry "Windows XP" @{
+   insmod ntfs
+   search -s root -l WINDOWS_XP --hint hd0,gpt4
+   gptsync hd0 4+7
+   ntldr /ntldr
+@}
+
+menuentry "Windows 7" @{
+   insmod ntfs
+   search -s root -l WINDOWS_7 --hint hd0,gpt5
+   gptsync hd0 5+7
+   ntldr /bootmgr
+@}
+
+menuentry "FreeBSD" @{
+          insmod zfs
+          search -s root -l freepool --hint hd0,gpt6
+          kfreebsd /freebsd@@/boot/kernel/kernel
+          kfreebsd_module_elf /freebsd@@/boot/kernel/opensolaris.ko
+          kfreebsd_module_elf /freebsd@@/boot/kernel/zfs.ko
+          kfreebsd_module /freebsd@@/boot/zfs/zpool.cache type=/boot/zfs/zpool.cache
+          set kFreeBSD.vfs.root.mountfrom=zfs:freepool/freebsd
+          set kFreeBSD.hw.psm.synaptics_support=1
+@}
+
+menuentry "experimental GRUB" @{
+          search -s root -l GRUB --hint hd0,gpt1
+          multiboot /experimental/grub/i386-pc/core.img
+@}
+
+menuentry "Fedora 16 install" @{
+          search -s root -l GRUB --hint hd0,gpt1
+          linux /fedora/vmlinuz lang=en_US keymap=sg resolution=1280x800
+          initrd /fedora/initrd.img
+@}
+
+menuentry "Fedora rawhide install" @{
+          search -s root -l GRUB --hint hd0,gpt1
+          linux /fedora/vmlinuz repo=ftp://mirror.switch.ch/mirror/fedora/linux/development/rawhide/x86_64 lang=en_US keymap=sg resolution=1280x800
+          initrd /fedora/initrd.img
+@}
+
+menuentry "Debian sid install" @{
+          search -s root -l GRUB --hint hd0,gpt1
+          linux /debian/dists/sid/main/installer-amd64/current/images/hd-media/vmlinuz
+          initrd /debian/dists/sid/main/installer-amd64/current/images/hd-media/initrd.gz
+@}
+
+@end example
+
+Notes:
+@itemize
+@item Argument to search after -l is FS LABEL. You can also use UUIDs with -u UUID instead of -l LABEL
+@end itemize
 
 @node Embedded configuration
 @section Embedding a configuration file into GRUB
