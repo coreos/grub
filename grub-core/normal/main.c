@@ -501,6 +501,7 @@ GRUB_MOD_INIT(normal)
 
   /* Previously many modules depended on gzio. Be nice to user and load it.  */
   grub_dl_load ("gzio");
+  grub_errno = 0;
 
   grub_normal_auth_init ();
   grub_context_init ();

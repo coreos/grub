@@ -1,5 +1,10 @@
 2012-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/main.c (GRUB_MOD_INIT): Ignore errors when loading
+	gzio.
+
+2012-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add loongson tests.
 
 	* tests/util/grub-shell.in: Handle loongson.
