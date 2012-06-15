@@ -1,3 +1,8 @@
+2012-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.util.def (grub-mkrescue): Enable on loongson.
+	* util/grub-mkrescue.in: Handle loongson.
+
 2012-06-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/getroot.c (convert_system_partition_to_system_disk) [__APPLE__]:

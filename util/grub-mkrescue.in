@@ -41,6 +41,7 @@ multiboot_dir="${libdir}/@PACKAGE@/i386-multiboot"
 coreboot_dir="${libdir}/@PACKAGE@/i386-coreboot"
 qemu_dir="${libdir}/@PACKAGE@/i386-qemu"
 mipsel_qemu_dir="${libdir}/@PACKAGE@/mipsel-qemu_mips"
+loongson_dir="${libdir}/@PACKAGE@/mipsel-loongson"
 mips_qemu_dir="${libdir}/@PACKAGE@/mips-qemu_mips"
 pc_dir="${libdir}/@PACKAGE@/i386-pc"
 efi32_dir="${libdir}/@PACKAGE@/i386-efi"
@@ -253,6 +254,9 @@ if [ "${override_dir}" = "" ] ; then
     if test -e "${mipsel_qemu_dir}" ; then
         process_input_dir "${mipsel_qemu_dir}" mipsel-qemu_mips
     fi
+    if test -e "${loongson_dir}" ; then
+        process_input_dir "${loongson_dir}" mipsel-loongson
+    fi
 else
     . "${override_dir}"/modinfo.sh
     process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
@@ -265,6 +269,7 @@ else
     qemu_dir=
     mipsel_qemu_dir=
     mips_qemu_dir=
+    loongson_dir=
     case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
         i386-multiboot) multiboot_dir="${override_dir}" ;;
         i386-coreboot) coreboot_dir="${override_dir}" ;;
@@ -274,6 +279,7 @@ else
 	x86_64-efi) efi64_dir="${override_dir}" ;;
 	ia64-efi) ia64_dir="${override_dir}" ;;
 	mipsel-qemu_mips) mipsel_qemu_dir="${override_dir}" ;;
+	mipsel-loongson) loongson_dir="${override_dir}" ;;
 	mips-qemu_mips) mips_qemu_dir="${override_dir}" ;;
     esac
 fi
@@ -333,6 +339,21 @@ make_image "${mipsel_qemu_dir}" mipsel-qemu_mips-elf "${iso9660_dir}/boot/mipsel
 if [ -e "${iso9660_dir}/boot/mipsel-qemu_mips.elf" ] && [ -d "${rom_directory}" ]; then
     cp "${iso9660_dir}/boot/mipsel-qemu_mips.elf" "${rom_directory}/mipsel-qemu_mips.elf"
 fi
+
+make_image "${loongson_dir}" mipsel-loongson-elf "${iso9660_dir}/boot/mipsel-loongson.elf" "pata -C xz"
+if [ -e "${iso9660_dir}/boot/mipsel-loongson.elf" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/mipsel-loongson.elf" "${rom_directory}/mipsel-loongson.elf"
+fi
+make_image "${loongson_dir}" mipsel-yeeloong-flash "${iso9660_dir}/boot/mipsel-yeeloong.bin" "pata -C xz"
+if [ -e "${iso9660_dir}/boot/mipsel-yeeloong.bin" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/mipsel-yeeloong.bin" "${rom_directory}/mipsel-yeeloong.bin"
+fi
+
+make_image "${loongson_dir}" mipsel-fuloong2f-flash "${iso9660_dir}/boot/mipsel-fuloong2f.bin" "pata -C xz"
+if [ -e "${iso9660_dir}/boot/mipsel-fulong.bin" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/mipsel-fulong.bin" "${rom_directory}/mipsel-fulong.bin"
+fi
+
 make_image "${mips_qemu_dir}" mips-qemu_mips-elf "${iso9660_dir}/boot/mips-qemu_mips.elf" "pata"
 if [ -e "${iso9660_dir}/boot/mips-qemu_mips.elf" ] && [ -d "${rom_directory}" ]; then
     cp "${iso9660_dir}/boot/mips-qemu_mips.elf" "${rom_directory}/mips-qemu_mips.elf"
