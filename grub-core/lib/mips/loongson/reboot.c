@@ -32,8 +32,8 @@ grub_reboot (void)
   switch (grub_arch_machine)
     {
     case GRUB_ARCH_MACHINE_FULOONG2E:
-      grub_outb (grub_inb (0xbfe00104) & ~4, 0xbfe00104);
-      grub_outb (grub_inb (0xbfe00104) | 4, 0xbfe00104);
+      grub_outl (grub_inl (0xbfe00104) & ~4, 0xbfe00104);
+      grub_outl (grub_inl (0xbfe00104) | 4, 0xbfe00104);
       break;
     case GRUB_ARCH_MACHINE_FULOONG2F:
       {
