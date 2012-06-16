@@ -110,6 +110,10 @@ grub_pci_write_byte (grub_pci_address_t addr, grub_uint8_t data)
 volatile void *
 EXPORT_FUNC (grub_pci_device_map_range) (grub_pci_device_t dev,
 					 grub_addr_t base, grub_size_t size);
+void *
+EXPORT_FUNC (grub_pci_device_map_range_cached) (grub_pci_device_t dev,
+						grub_addr_t base,
+						grub_size_t size);
 void
 EXPORT_FUNC (grub_pci_device_unmap_range) (grub_pci_device_t dev,
 					   volatile void *mem,

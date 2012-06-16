@@ -1,3 +1,22 @@
+2012-06-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Speed-up video on fuloong.
+
+	* grub-core/bus/bonito.c (grub_pci_device_map_range_cached):
+	New function.
+	(grub_pci_device_unmap_range): Handle non-cached address.
+	* grub-core/video/sis315pro.c (framebuffer): Remove render_target and
+	add direct_ptr.
+	(grub_video_sis315pro_video_fini): Unmap direct_ptr.
+	(grub_video_sis315pro_setup): Use cache address and grub_video_fb_setup.
+	(grub_video_sis315pro_set_active_render_target): Removed.
+	(grub_video_sis315pro_get_info_and_fini): Use uncached address.
+	(grub_video_adapter): Use grub_video_fb_set_active_render_target.
+	(grub_video_sis315pro_swap_buffers): Call grub_video_fb_swap_buffers and
+	sync caches.
+	* include/grub/mips/loongson/pci.h (grub_pci_device_map_range_cached):
+	New proto.
+
 2012-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (Multi-boot manual config): New section.

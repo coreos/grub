@@ -27,6 +27,7 @@
 #include <grub/video_fb.h>
 #include <grub/pci.h>
 #include <grub/vga.h>
+#include <grub/cache.h>
 
 #define GRUB_SIS315PRO_PCIID 0x03251039
 #define GRUB_SIS315PRO_TOTAL_MEMORY_SPACE  0x800000
@@ -35,9 +36,9 @@
 static struct
 {
   struct grub_video_mode_info mode_info;
-  struct grub_video_render_target *render_target;
 
   grub_uint8_t *ptr;
+  volatile grub_uint8_t *direct_ptr;
   int mapped;
   grub_uint32_t base;
   grub_uint32_t mmiobase;
@@ -74,8 +75,12 @@ static grub_err_t
 grub_video_sis315pro_video_fini (void)
 {
   if (framebuffer.mapped)
-    grub_pci_device_unmap_range (framebuffer.dev, framebuffer.ptr,
-				 GRUB_SIS315PRO_TOTAL_MEMORY_SPACE);
+    {
+      grub_pci_device_unmap_range (framebuffer.dev, framebuffer.ptr,
+				   GRUB_SIS315PRO_TOTAL_MEMORY_SPACE);
+      grub_pci_device_unmap_range (framebuffer.dev, framebuffer.direct_ptr,
+				   GRUB_SIS315PRO_TOTAL_MEMORY_SPACE);
+    }
 
   return grub_video_fb_fini ();
 }
@@ -137,7 +142,9 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
   /* Fill mode info details.  */
   framebuffer.mode_info.width = 640;
   framebuffer.mode_info.height = 480;
-  framebuffer.mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+  framebuffer.mode_info.mode_type = (GRUB_VIDEO_MODE_TYPE_INDEX_COLOR
+				     | GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
+				     | GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
   framebuffer.mode_info.bpp = 8;
   framebuffer.mode_info.bytes_per_pixel = 1;
   framebuffer.mode_info.pitch = 640 * 1;
@@ -192,9 +199,13 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
   /* We can safely discard volatile attribute.  */
 #ifndef TEST
   framebuffer.ptr
-    = (void *) grub_pci_device_map_range (framebuffer.dev,
-					  framebuffer.base,
-					  GRUB_SIS315PRO_TOTAL_MEMORY_SPACE);
+    = grub_pci_device_map_range_cached (framebuffer.dev,
+					framebuffer.base,
+					GRUB_SIS315PRO_TOTAL_MEMORY_SPACE);
+  framebuffer.direct_ptr
+    = grub_pci_device_map_range (framebuffer.dev,
+				 framebuffer.base,
+				 GRUB_SIS315PRO_TOTAL_MEMORY_SPACE);
   framebuffer.mmioptr = grub_pci_device_map_range (framebuffer.dev,
 						   framebuffer.mmiobase,
 						   GRUB_SIS315PRO_MMIO_SPACE);
@@ -205,6 +216,9 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
   /* Prevent garbage from appearing on the screen.  */
   grub_memset (framebuffer.ptr, 0, 
 	       framebuffer.mode_info.height * framebuffer.mode_info.pitch);
+  grub_arch_sync_dma_caches (framebuffer.ptr,
+			     framebuffer.mode_info.height
+			     * framebuffer.mode_info.pitch);
 #endif
 
   grub_outb (GRUB_VGA_IO_MISC_NEGATIVE_VERT_POLARITY
@@ -347,16 +361,9 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
 #endif
 
 #ifndef TEST
-  err = grub_video_fb_create_render_target_from_pointer (&framebuffer
-							 .render_target,
-							 &framebuffer.mode_info,
-							 framebuffer.ptr);
-
-  if (err)
-    return err;
-
-  err = grub_video_fb_set_active_render_target (framebuffer.render_target);
-  
+  err = grub_video_fb_setup (mode_type, mode_mask,
+			     &framebuffer.mode_info,
+			     framebuffer.ptr, NULL, NULL);
   if (err)
     return err;
 
@@ -372,17 +379,13 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
 static grub_err_t
 grub_video_sis315pro_swap_buffers (void)
 {
-  /* TODO: Implement buffer swapping.  */
+  grub_size_t s;
+  s = (framebuffer.mode_info.height
+       * framebuffer.mode_info.pitch
+       * framebuffer.mode_info.bytes_per_pixel);
+  grub_video_fb_swap_buffers ();
+  grub_arch_sync_dma_caches (framebuffer.ptr, s);
   return GRUB_ERR_NONE;
-}
-
-static grub_err_t
-grub_video_sis315pro_set_active_render_target (struct grub_video_render_target *target)
-{
-  if (target == GRUB_VIDEO_RENDER_TARGET_DISPLAY)
-      target = framebuffer.render_target;
-
-  return grub_video_fb_set_active_render_target (target);
 }
 
 static grub_err_t
@@ -390,7 +393,7 @@ grub_video_sis315pro_get_info_and_fini (struct grub_video_mode_info *mode_info,
 					void **framebuf)
 {
   grub_memcpy (mode_info, &(framebuffer.mode_info), sizeof (*mode_info));
-  *framebuf = (char *) framebuffer.ptr;
+  *framebuf = (void *) framebuffer.direct_ptr;
 
   grub_video_fb_fini ();
 
@@ -424,7 +427,7 @@ static struct grub_video_adapter grub_video_sis315pro_adapter =
     .swap_buffers = grub_video_sis315pro_swap_buffers,
     .create_render_target = grub_video_fb_create_render_target,
     .delete_render_target = grub_video_fb_delete_render_target,
-    .set_active_render_target = grub_video_sis315pro_set_active_render_target,
+    .set_active_render_target = grub_video_fb_set_active_render_target,
     .get_active_render_target = grub_video_fb_get_active_render_target,
 
     .next = 0
