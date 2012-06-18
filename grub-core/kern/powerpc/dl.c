@@ -70,7 +70,7 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 	       max = rel + s->sh_size / s->sh_entsize;
 	     rel < max;
 	     rel++)
-	  if (ELF_R_TYPE (rel->r_info) == R_PPC_REL24)
+	  if (ELF_R_TYPE (rel->r_info) == GRUB_ELF_R_PPC_REL24)
 	    (*tramp)++;
 	
       }
@@ -155,11 +155,11 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		value = sym->st_value + rel->r_addend;
 		switch (ELF_R_TYPE (rel->r_info))
 		  {
-		  case R_PPC_ADDR16_LO:
+		  case GRUB_ELF_R_PPC_ADDR16_LO:
 		    *(Elf_Half *) addr = value;
 		    break;
 
-		  case R_PPC_REL24:
+		  case GRUB_ELF_R_PPC_REL24:
 		    {
 		      Elf_Sword delta = value - (Elf_Word) addr;
 
@@ -182,15 +182,15 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		      break;
 		    }
 
-		  case R_PPC_ADDR16_HA:
+		  case GRUB_ELF_R_PPC_ADDR16_HA:
 		    *(Elf_Half *) addr = (value + 0x8000) >> 16;
 		    break;
 
-		  case R_PPC_ADDR32:
+		  case GRUB_ELF_R_PPC_ADDR32:
 		    *addr = value;
 		    break;
 
-		  case R_PPC_REL32:
+		  case GRUB_ELF_R_PPC_REL32:
 		    *addr = value - (Elf_Word) addr;
 		    break;
 

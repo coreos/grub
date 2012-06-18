@@ -1,5 +1,10 @@
 2012-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/elf.h: Rename R_PPC to GRUB_R_PPC to avoid collisions.
+	All users updated.
+
+2012-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Generate
 	UUID search command even if hints probing failed.
 
