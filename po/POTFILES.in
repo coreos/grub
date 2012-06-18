@@ -106,6 +106,7 @@
 ./grub-core/disk/luks.c
 ./grub-core/disk/lvm.c
 ./grub-core/disk/mdraid1x_linux.c
+./grub-core/disk/mdraid_linux_be.c
 ./grub-core/disk/mdraid_linux.c
 ./grub-core/disk/memdisk.c
 ./grub-core/disk/pata.c
@@ -147,8 +148,11 @@
 ./grub-core/fs/hfsplus.c
 ./grub-core/fs/iso9660.c
 ./grub-core/fs/jfs.c
+./grub-core/fs/minix2_be.c
 ./grub-core/fs/minix2.c
+./grub-core/fs/minix3_be.c
 ./grub-core/fs/minix3.c
+./grub-core/fs/minix_be.c
 ./grub-core/fs/minix.c
 ./grub-core/fs/newc.c
 ./grub-core/fs/nilfs2.c
@@ -557,6 +561,7 @@
 ./grub-core/term/i386/pc/vga_text.c
 ./grub-core/term/i386/vga_common.c
 ./grub-core/term/ieee1275/console.c
+./grub-core/term/ieee1275/escc.c
 ./grub-core/term/ieee1275/serial.c
 ./grub-core/term/ns8250.c
 ./grub-core/term/serial.c
@@ -631,7 +636,6 @@
 ./include/grub/efi/memory.h
 ./include/grub/efi/pci.h
 ./include/grub/efi/pe32.h
-./include/grub/efi/time.h
 ./include/grub/efi/uga_draw.h
 ./include/grub/elf.h
 ./include/grub/elfload.h
@@ -676,7 +680,6 @@
 ./include/grub/i386/efiemu.h
 ./include/grub/i386/efi/memory.h
 ./include/grub/i386/efi/serial.h
-./include/grub/i386/efi/time.h
 ./include/grub/i386/floppy.h
 ./include/grub/i386/freebsd_linker.h
 ./include/grub/i386/freebsd_reboot.h
@@ -684,7 +687,6 @@
 ./include/grub/i386/ieee1275/ieee1275.h
 ./include/grub/i386/ieee1275/memory.h
 ./include/grub/i386/ieee1275/serial.h
-./include/grub/i386/ieee1275/time.h
 ./include/grub/i386/io.h
 ./include/grub/i386/linux.h
 ./include/grub/i386/macho.h
@@ -820,7 +822,6 @@
 ./include/grub/pci.h
 ./include/grub/pciutils.h
 ./include/grub/powerpc/ieee1275/ieee1275.h
-./include/grub/powerpc/ieee1275/time.h
 ./include/grub/powerpc/kernel.h
 ./include/grub/powerpc/memory.h
 ./include/grub/powerpc/relocator.h
@@ -843,7 +844,6 @@
 ./include/grub/sparc64/ieee1275/boot.h
 ./include/grub/sparc64/ieee1275/ieee1275.h
 ./include/grub/sparc64/ieee1275/kernel.h
-./include/grub/sparc64/ieee1275/time.h
 ./include/grub/sparc64/setjmp.h
 ./include/grub/sparc64/time.h
 ./include/grub/sparc64/types.h
@@ -874,7 +874,6 @@
 ./include/grub/x86_64/efi/loader.h
 ./include/grub/x86_64/efi/memory.h
 ./include/grub/x86_64/efi/serial.h
-./include/grub/x86_64/efi/time.h
 ./include/grub/x86_64/io.h
 ./include/grub/x86_64/linux.h
 ./include/grub/x86_64/macho.h
@@ -906,6 +905,7 @@
 ./include/grub/zfs/zio.h
 ./include/multiboot2.h
 ./include/multiboot.h
+./tests/cmp_unit_test.c
 ./tests/example_unit_test.c
 ./tests/lib/unit_test.c
 ./tests/printf_unit_test.c

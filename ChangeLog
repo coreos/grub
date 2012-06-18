@@ -1,5 +1,9 @@
 2012-06-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/POTFILES.in: Regenerated.
+
+2012-06-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Speed-up video on fuloong.
 
 	* grub-core/bus/bonito.c (grub_pci_device_map_range_cached):
