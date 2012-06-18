@@ -153,7 +153,7 @@ prepare_grub_to_access_device ()
     echo "set root='$fs_hint'"
   fi
   if fs_uuid="`"${grub_probe}" --device "${device}" --target=fs_uuid 2> /dev/null`" ; then
-    hints="`"${grub_probe}" --device "${device}" --target=hints_string 2> /dev/null`"
+    hints="`"${grub_probe}" --device "${device}" --target=hints_string 2> /dev/null`" || hints=
     echo "if [ x\$feature_platform_search_hint = xy ]; then"
     echo "  search --no-floppy --fs-uuid --set=root ${hints} ${fs_uuid}"
     echo "else"

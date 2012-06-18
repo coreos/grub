@@ -1,4 +1,9 @@
-2012-06-17  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Generate
+	UUID search command even if hints probing failed.
+
+2012-06-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* po/POTFILES.in: Regenerated.
 
