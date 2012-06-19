@@ -1,5 +1,11 @@
 2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/drivers/ieee1275/ofnet.c (get_card_packet): Fix packet
+	presence check.
+	(grub_ieee1275_net_config_real): Fix config pointer.
+
+2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_parse_args): Extend
 	filename parsing to non-block devices.
 

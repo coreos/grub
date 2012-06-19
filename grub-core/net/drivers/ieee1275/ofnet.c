@@ -96,7 +96,7 @@ get_card_packet (struct grub_net_card *dev)
   do
     rc = grub_ieee1275_read (data->handle, nb->data, dev->mtu + 64, &actual);
   while ((actual <= 0 || rc < 0) && (grub_get_time_ms () - start_time < 200));
-  if (actual)
+  if (actual > 0)
     {
       grub_netbuff_put (nb, actual);
       return nb;
@@ -176,8 +176,8 @@ grub_ieee1275_net_config_real (const char *devpath, char **device, char **path)
 
     grub_net_configure_by_dhcp_ack (card->name, card, 0,
 				    (struct grub_net_bootp_packet *)
-				    &bootp_response
-				    + bootp_response_properties[i].offset,
+				    (bootp_response
+				     + bootp_response_properties[i].offset),
 				    size - bootp_response_properties[i].offset,
 				    1, device, path);
     return;
