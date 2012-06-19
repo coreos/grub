@@ -1,5 +1,10 @@
 2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_parse_args): Extend
+	filename parsing to non-block devices.
+
+2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/device.c (grub_device_open): Remove dead code.
 
 2012-06-18  Vladimir Serbinenko  <phcoder@gmail.com>

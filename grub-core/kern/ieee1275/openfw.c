@@ -354,9 +354,6 @@ grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
 	char *comma;
 	char *args;
 
-	if (grub_strcmp ("block", type) != 0)
-	  goto unknown;
-
 	args = grub_ieee1275_get_devargs (path);
 	if (!args)
 	  /* Shouldn't happen.  */
