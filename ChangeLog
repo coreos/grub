@@ -1,5 +1,21 @@
 2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid unnecessary memcpy of whole video buffer.
+
+	* grub-core/video/fb/video_fb.c (dirty): New struct.
+	(framebuffer): Add members current_dirty and previous_dirty.
+	(dirty): New function.
+	(grub_video_fb_fill_rect): Update dirty.
+	(common_blitter): Likewise.
+	(grub_video_fb_scroll): Likewise.
+	(doublebuf_blit_update_screen): Copy only dirty part.
+	(doublebuf_pageflipping_update_screen): Likewise.
+	(grub_video_fb_doublebuf_blit_init): Init dirty.
+	(doublebuf_pageflipping_init): Likewise.
+	(grub_video_fb_setup): Likewise.
+
+2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/drivers/ieee1275/ofnet.c (search_net_devices): Decrease
 	poll rate.
 
