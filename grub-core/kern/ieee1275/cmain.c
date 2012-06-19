@@ -55,10 +55,11 @@ grub_ieee1275_find_options (void)
   grub_ieee1275_phandle_t bootrom;
   int rc;
   grub_uint32_t realmode = 0;
-  char tmp[32];
+  char tmp[256];
   int is_smartfirmware = 0;
   int is_olpc = 0;
   int is_qemu = 0;
+  grub_ssize_t actual;
 
 #ifdef __sparc__
   grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0);
@@ -91,9 +92,24 @@ grub_ieee1275_find_options (void)
   if (rc >= 0 && grub_strncmp (tmp, "IBM", 3) == 0)
     grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS);
 
-  if (grub_strncmp (tmp, "PowerMac", sizeof ("PowerMac") - 1) == 0
-      || grub_strncmp (tmp, "RackMac", sizeof ("RackMac") - 1) == 0)
-    grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS);
+  rc = grub_ieee1275_get_property (root, "compatible",
+				   tmp,	sizeof (tmp), &actual);
+  if (rc >= 0)
+    {
+      char *ptr;
+      for (ptr = tmp; ptr - tmp < actual; ptr += grub_strlen (ptr) + 1)
+	{
+	  if (grub_memcmp (ptr, "MacRISC", sizeof ("MacRISC") - 1) == 0
+	      && (ptr[sizeof ("MacRISC") - 1] == 0
+		  || grub_isdigit (ptr[sizeof ("MacRISC") - 1])))
+	    {
+	      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS);
+	      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX);
+	      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_VIRT_TO_REAL_BROKEN);
+	      break;
+	    }
+	}
+    }
 
   if (is_smartfirmware)
     {

@@ -1,5 +1,23 @@
 2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/net.h (grub_net_card): New member txbufsize.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New enum values
+	GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX and
+	GRUB_IEEE1275_FLAG_VIRT_TO_REAL_BROKEN.
+	* grub-core/net/drivers/efi/efinet.c (grub_efinet_findcards): Use
+	txbufsize.
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Use
+	compatible property to check for macs. Set
+	GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX and
+	GRUB_IEEE1275_FLAG_VIRT_TO_REAL_BROKEN on macs.
+	* grub-core/net/drivers/ieee1275/ofnet.c (card_open): Don't add suffix
+	if GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX is set.
+	(send_card_buffer): Use txbuf.
+	(grub_ofnet_findcards): Allocate txbuf. Simplify code flow and move
+	nested function out of the parent while on it.
+
+2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/drivers/ieee1275/ofnet.c (get_card_packet): Fix packet
 	presence check.
 	(grub_ieee1275_net_config_real): Fix config pointer.

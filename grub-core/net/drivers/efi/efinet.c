@@ -181,7 +181,8 @@ grub_efinet_findcards (void)
 	}
 
       card->mtu = net->mode->max_packet_size;
-      card->txbuf = grub_zalloc (ALIGN_UP (card->mtu, 64) + 256);
+      card->txbufsize = ALIGN_UP (card->mtu, 64) + 256;
+      card->txbuf = grub_zalloc (card->txbufsize);
       if (!card->txbuf)
 	{
 	  grub_print_error ();

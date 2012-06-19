@@ -129,6 +129,7 @@ struct grub_net_card
   void *txbuf;
   void *rcvbuf;
   grub_size_t rcvbufsize;
+  grub_size_t txbufsize;
   int txbusy;
   union
   {

@@ -36,13 +36,19 @@ card_open (struct grub_net_card *dev)
 {
   int status;
   struct grub_ofnetcard_data *data = dev->data;
-  char path[grub_strlen (data->path) +
-	    grub_strlen (":speed=auto,duplex=auto,1.1.1.1,dummy,1.1.1.1,1.1.1.1,5,5,1.1.1.1,512") + 1];
 
-  /* The full string will prevent a bootp packet to be sent. Just put some valid ip in there.  */
-  grub_snprintf (path, sizeof (path), "%s%s", data->path,
-		 ":speed=auto,duplex=auto,1.1.1.1,dummy,1.1.1.1,1.1.1.1,5,5,1.1.1.1,512");
-  status = grub_ieee1275_open (path, &(data->handle));
+  if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX))
+    {
+      char path[grub_strlen (data->path) +
+		sizeof (":speed=auto,duplex=auto,1.1.1.1,dummy,1.1.1.1,1.1.1.1,5,5,1.1.1.1,512")];
+      
+      /* The full string will prevent a bootp packet to be sent. Just put some valid ip in there.  */
+      grub_snprintf (path, sizeof (path), "%s%s", data->path,
+		     ":speed=auto,duplex=auto,1.1.1.1,dummy,1.1.1.1,1.1.1.1,5,5,1.1.1.1,512");
+      status = grub_ieee1275_open (path, &(data->handle));
+    }
+  else
+    status = grub_ieee1275_open (data->path, &(data->handle));
 
   if (status)
     return grub_error (GRUB_ERR_IO, "Couldn't open network card.");
@@ -65,8 +71,14 @@ send_card_buffer (struct grub_net_card *dev, struct grub_net_buff *pack)
   grub_ssize_t actual;
   int status;
   struct grub_ofnetcard_data *data = dev->data;
+  grub_size_t len;
 
-  status = grub_ieee1275_write (data->handle, pack->data,
+  len = (pack->tail - pack->data);
+  if (len > dev->mtu)
+    len = dev->mtu;
+
+  grub_memcpy (dev->txbuf, pack->data, len);
+  status = grub_ieee1275_write (data->handle, dev->txbuf,
 				pack->tail - pack->data, &actual);
 
   if (status)
@@ -205,77 +217,108 @@ find_alias (const char *fullname)
   return ret;
 }
 
+static int
+search_net_devices (struct grub_ieee1275_devalias *alias)
+{
+  struct grub_ofnetcard_data *ofdata;
+  struct grub_net_card *card;
+  grub_ieee1275_phandle_t devhandle;
+  grub_net_link_level_address_t lla;
+  char *shortname;
+
+  if (grub_strcmp (alias->type, "network") != 0)
+    return 0;
+
+  ofdata = grub_malloc (sizeof (struct grub_ofnetcard_data));
+  if (!ofdata)
+    {
+      grub_print_error ();
+      return 1;
+    }
+  card = grub_zalloc (sizeof (struct grub_net_card));
+  if (!card)
+    {
+      grub_free (ofdata);
+      grub_print_error ();
+      return 1;
+    }
+
+  ofdata->path = grub_strdup (alias->path);
+
+  grub_ieee1275_finddevice (ofdata->path, &devhandle);
+
+  {
+    grub_uint32_t t;
+    if (grub_ieee1275_get_integer_property (devhandle,
+					    "max-frame-size", &t,
+					    sizeof (t), 0))
+      card->mtu = 1500;
+    else
+      card->mtu = t;
+  }
+
+  if (grub_ieee1275_get_property (devhandle, "mac-address",
+				  &(lla.mac), 6, 0)
+      && grub_ieee1275_get_property (devhandle, "local-mac-address",
+				     &(lla.mac), 6, 0))
+    {
+      grub_error (GRUB_ERR_IO, "Couldn't retrieve mac address.");
+      grub_print_error ();
+      return 0;
+    }
+
+  lla.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+  card->default_address = lla;
+
+  card->txbufsize = ALIGN_UP (card->mtu, 64) + 256;
+
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_VIRT_TO_REAL_BROKEN))
+    {
+      struct alloc_args
+      {
+	struct grub_ieee1275_common_hdr common;
+	grub_ieee1275_cell_t method;
+	grub_ieee1275_cell_t len;
+	grub_ieee1275_cell_t catch;
+	grub_ieee1275_cell_t result;
+      }
+      args;
+      INIT_IEEE1275_COMMON (&args.common, "interpret", 2, 2);
+      args.len = card->txbufsize;
+      args.method = (grub_ieee1275_cell_t) "alloc-mem";
+
+      if (IEEE1275_CALL_ENTRY_FN (&args) == -1
+	  || args.catch)
+	{
+	  card->txbuf = 0;
+	  grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
+	}
+      else
+	card->txbuf = (void *) args.result;
+    }
+  else
+    card->txbuf = grub_zalloc (card->txbufsize);
+  if (!card->txbuf)
+    {
+      grub_print_error ();
+      return 0;
+    }
+  card->driver = NULL;
+  card->data = ofdata;
+  card->flags = 0;
+  shortname = find_alias (alias->path);
+  card->name = grub_xasprintf ("ofnet_%s", shortname ? : alias->path);
+  card->idle_poll_delay_ms = 1;
+  grub_free (shortname);
+
+  card->driver = &ofdriver;
+  grub_net_card_register (card);
+  return 0;
+}
+
 static void
 grub_ofnet_findcards (void)
 {
-  auto int search_net_devices (struct grub_ieee1275_devalias *alias);
-
-  int search_net_devices (struct grub_ieee1275_devalias *alias)
-  {
-    if (!grub_strcmp (alias->type, "network"))
-      {
-	struct grub_ofnetcard_data *ofdata;
-	struct grub_net_card *card;
-	grub_ieee1275_phandle_t devhandle;
-	grub_net_link_level_address_t lla;
-	char *shortname;
-
-	ofdata = grub_malloc (sizeof (struct grub_ofnetcard_data));
-	if (!ofdata)
-	  {
-	    grub_print_error ();
-	    return 1;
-	  }
-	card = grub_zalloc (sizeof (struct grub_net_card));
-	if (!card)
-	  {
-	    grub_free (ofdata);
-	    grub_print_error ();
-	    return 1;
-	  }
-
-	ofdata->path = grub_strdup (alias->path);
-
-	grub_ieee1275_finddevice (ofdata->path, &devhandle);
-
-	{
-	  grub_uint32_t t;
-	  if (grub_ieee1275_get_integer_property (devhandle,
-						  "max-frame-size", &t,
-						  sizeof (t), 0))
-	    card->mtu = 1500;
-	  else
-	    card->mtu = t;
-	}
-
-	if (grub_ieee1275_get_property (devhandle, "mac-address",
-					&(lla.mac), 6, 0)
-	    && grub_ieee1275_get_property (devhandle, "local-mac-address",
-					   &(lla.mac), 6, 0))
-	  {
-	    grub_error (GRUB_ERR_IO, "Couldn't retrieve mac address.");
-	    grub_print_error ();
-	    return 0;
-	  }
-
-	lla.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
-	card->default_address = lla;
-
-	card->driver = NULL;
-	card->data = ofdata;
-	card->flags = 0;
-	shortname = find_alias (alias->path);
-	card->name = grub_xasprintf ("ofnet_%s", shortname ? : alias->path);
-	card->idle_poll_delay_ms = 1;
-	grub_free (shortname);
-
-	card->driver = &ofdriver;
-	grub_net_card_register (card);
-	return 0;
-      }
-    return 0;
-  }
-
   /* Look at all nodes for devices of the type network.  */
   grub_ieee1275_devices_iterate (search_net_devices);
 }
