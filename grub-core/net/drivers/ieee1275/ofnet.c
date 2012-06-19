@@ -308,7 +308,7 @@ search_net_devices (struct grub_ieee1275_devalias *alias)
   card->flags = 0;
   shortname = find_alias (alias->path);
   card->name = grub_xasprintf ("ofnet_%s", shortname ? : alias->path);
-  card->idle_poll_delay_ms = 1;
+  card->idle_poll_delay_ms = 10;
   grub_free (shortname);
 
   card->driver = &ofdriver;
