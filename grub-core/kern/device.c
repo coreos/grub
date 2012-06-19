@@ -32,7 +32,6 @@ grub_net_t (*grub_net_open) (const char *name) = NULL;
 grub_device_t
 grub_device_open (const char *name)
 {
-  grub_disk_t disk = 0;
   grub_device_t dev = 0;
 
   if (! name)
@@ -64,9 +63,6 @@ grub_device_open (const char *name)
     return dev;
 
  fail:
-  if (disk)
-    grub_disk_close (disk);
-
   grub_free (dev);
 
   return 0;
