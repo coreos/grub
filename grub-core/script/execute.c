@@ -68,7 +68,7 @@ wildcard_escape (const char *s)
   i = 0;
   while ((ch = *s++))
     {
-      if (ch == '*' || ch == '\\')
+      if (ch == '*' || ch == '\\' || ch == '?')
 	p[i++] = '\\';
       p[i++] = ch;
     }
@@ -706,7 +706,7 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 	  for (j = 0; expansions[j]; j++)
 	    {
 	      failed = (failed || grub_script_argv_next (&result) ||
-			append (expansions[j], -1));
+			append (expansions[j], 0));
 	      grub_free (expansions[j]);
 	    }
 	  grub_free (expansions);

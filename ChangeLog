@@ -1,5 +1,18 @@
 2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix wildcard regexp dot and other special characters handling.
+	Reported by: Robert Mabee.
+
+	* grub-core/commands/wildcard.c (isregexop): Add "|+{}[]?".
+	(make_regex): Escape "|+{}[]". Transform '?' to '.?'.
+	(split_path): Trigger expansion on '?'.
+	(unescape): New function.
+	(wildcard_expand): Unescape parts copied without globbing.
+	* grub-core/script/execute.c (wildcard_escape): Escape '?'.
+	(grub_script_arglist_to_argv): Don't unescape expansions.
+
+2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/net.h (grub_net_card): New member txbufsize.
 	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New enum values
 	GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX and

@@ -80,7 +80,7 @@ merge (char **dest, char **ps)
 static inline int
 isregexop (char ch)
 {
-  return grub_strchr ("*.\\", ch) ? 1 : 0;
+  return grub_strchr ("*.\\|+{}[]?", ch) ? 1 : 0;
 }
 
 static char *
@@ -123,7 +123,7 @@ make_regex (const char *start, const char *end, regex_t *regexp)
   buffer[i++] = '^';
   while (start < end)
     {
-      /* XXX Only * expansion for now.  */
+      /* XXX Only * and ? expansion for now.  */
       switch ((ch = *start++))
 	{
 	case '\\':
@@ -136,6 +136,12 @@ make_regex (const char *start, const char *end, regex_t *regexp)
 	case '(':
 	case ')':
 	case '@':
+	case '+':
+	case '|':
+	case '{':
+	case '}':
+	case '[':
+	case ']':
 	  buffer[i++] = '\\';
 	  buffer[i++] = ch;
 	  break;
@@ -143,6 +149,10 @@ make_regex (const char *start, const char *end, regex_t *regexp)
 	case '*':
 	  buffer[i++] = '.';
 	  buffer[i++] = '*';
+	  break;
+
+	case '?':
+	  buffer[i++] = '.';
 	  break;
 
 	default:
@@ -181,7 +191,7 @@ split_path (const char *str, const char **noregexop, const char **regexop)
       if (ch == '\\' && end[1])
 	end++;
 
-      else if (isregexop (ch))
+      else if (ch == '*' || ch == '?')
 	regex = 1;
 
       else if (ch == '/' && ! regex)
@@ -410,6 +420,27 @@ check_file (const char *dir, const char *basename)
   return found;
 }
 
+static void
+unescape (char *out, const char *in, const char *end)
+{
+  char *optr;
+  const char *iptr;
+
+  for (optr = out, iptr = in; iptr < end;)
+    {
+      if (*iptr == '\\' && iptr + 1 < end)
+	{
+	  *optr++ = iptr[1];
+	  iptr += 2;
+	  continue;
+	}
+      if (*iptr == '\\')
+	break;
+      *optr++ = *iptr++;
+    }
+  *optr = 0;
+}
+
 static grub_err_t
 wildcard_expand (const char *s, char ***strs)
 {
@@ -442,8 +473,7 @@ wildcard_expand (const char *s, char ***strs)
 	      paths[0] = grub_malloc (regexop - start + 1);
 	      if (!paths[0])
 		goto fail;
-	      grub_memcpy (paths[0], start, regexop - start);
-	      paths[0][regexop - start] = '\0';
+	      unescape (paths[0], start, regexop);
 	      paths[1] = 0;
 	    }
 	  else
@@ -460,8 +490,8 @@ wildcard_expand (const char *s, char ***strs)
 		  if (!n)
 		    goto fail;
 		  grub_memcpy (n, o, oend - o);
-		  grub_memcpy (n + (oend - o), start, regexop - start);
-		  n[(oend - o) + (regexop - start)] = '\0';
+
+		  unescape (n + (oend - o), start, regexop);
 		  if (had_regexp)
 		    p = grub_strrchr (n, '/');
 		  else
