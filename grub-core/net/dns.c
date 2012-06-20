@@ -604,18 +604,23 @@ grub_cmd_nslookup (struct grub_command *cmd __attribute__ ((unused)),
 		   int argc, char **args)
 {
   grub_err_t err;
-  struct grub_net_network_level_address server;
   grub_size_t naddresses, i;
   struct grub_net_network_level_address *addresses;
-  if (argc != 2)
+  if (argc != 2 && argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("two arguments expected"));
-  err = grub_net_resolve_address (args[1], &server);
-  if (err)
-    return err;
+  if (argc == 2)
+    {
+      struct grub_net_network_level_address server;
+      err = grub_net_resolve_address (args[1], &server);
+      if (err)
+	return err;
+      err = grub_net_dns_lookup (args[0], &server, 1, &naddresses,
+				 &addresses, 0);
+    }
+  else
+    err = grub_net_dns_lookup (args[0], dns_servers, dns_nservers, &naddresses,
+			       &addresses, 0);
 
-  err = grub_net_dns_lookup (args[0], &server, 1, &naddresses, &addresses, 0);
-  if (err)
-    return err;
   for (i = 0; i < naddresses; i++)
     {
       char buf[GRUB_NET_MAX_STR_ADDR_LEN];
