@@ -1,5 +1,10 @@
 2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/dns.c (grub_net_add_dns_server): Don't erase old servers
+	while reallocating.
+
+2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Respect netmask from bootp/dhcp.
 
 	* grub-core/net/bootp.c (parse_dhcp_vendor): Parse mask.

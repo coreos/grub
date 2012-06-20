@@ -47,7 +47,7 @@ grub_net_add_dns_server (const struct grub_net_network_level_address *s)
       struct grub_net_network_level_address *ns;
       if (na < 8)
 	na = 8;
-      ns = grub_malloc (na * sizeof (ns[0]));
+      ns = grub_realloc (dns_servers, na * sizeof (ns[0]));
       if (!ns)
 	return grub_errno;
       dns_servers_alloc = na;
