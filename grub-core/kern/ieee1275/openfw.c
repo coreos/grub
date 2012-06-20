@@ -436,21 +436,42 @@ char *
 grub_ieee1275_encode_devname (const char *path)
 {
   char *device = grub_ieee1275_get_devname (path);
-  char *partition = grub_ieee1275_parse_args (path, GRUB_PARSE_PARTITION);
+  char *partition;
   char *encoding;
+  char *optr;
+  const char *iptr;
 
+  encoding = grub_malloc (sizeof ("ieee1275/") + 2 * grub_strlen (device)
+			  + sizeof (",XXXXXXXXXXXX"));
+  if (!encoding)
+    {
+      grub_free (device);
+      return 0;
+    }
+
+  partition = grub_ieee1275_parse_args (path, GRUB_PARSE_PARTITION);
+
+  optr = grub_stpcpy (encoding, "ieee1275/");
+  for (iptr = device; *iptr; )
+    {
+      if (*iptr == ',')
+	*optr++ ='\\';
+      *optr++ = *iptr++;
+    }
   if (partition && partition[0])
     {
       unsigned int partno = grub_strtoul (partition, 0, 0);
+
+      *optr++ = ',';
 
       if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS))
 	/* GRUB partition 1 is OF partition 0.  */
 	partno++;
 
-      encoding = grub_xasprintf ("ieee1275/%s,%d", device, partno);
+      grub_snprintf (optr, sizeof ("XXXXXXXXXXXX"), "%d", partno);
     }
   else
-    encoding = grub_xasprintf ("ieee1275/%s", device);
+    *optr = '\0';
 
   grub_free (partition);
   grub_free (device);

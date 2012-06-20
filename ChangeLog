@@ -1,5 +1,10 @@
 2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_encode_devname):
+	Escape commas.
+
+2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Restructure FAT driver to avoid hook in label reading as it hits a
 	GCC bug.
 
