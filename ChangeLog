@@ -1,5 +1,10 @@
 2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Setup video before
+	determining EFI memory map size.
+
+2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Escape commas.
 
 2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>

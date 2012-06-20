@@ -372,7 +372,6 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 static grub_err_t
 grub_linux_boot (void)
 {
-  struct linux_kernel_params *params;
   int e820_num;
   grub_err_t err = 0;
   const char *modevar;
@@ -383,11 +382,104 @@ grub_linux_boot (void)
   grub_size_t real_size, mmap_size;
   grub_size_t cl_offset;
 
+#ifdef GRUB_MACHINE_IEEE1275
+  {
+    const char *bootpath;
+    grub_ssize_t len;
+
+    bootpath = grub_env_get ("root");
+    if (bootpath)
+      grub_ieee1275_set_property (grub_ieee1275_chosen,
+				  "bootpath", bootpath,
+				  grub_strlen (bootpath) + 1,
+				  &len);
+    linux_params.ofw_signature = GRUB_LINUX_OFW_SIGNATURE;
+    linux_params.ofw_num_items = 1;
+    linux_params.ofw_cif_handler = (grub_uint32_t) grub_ieee1275_entry_fn;
+    linux_params.ofw_idt = 0;
+  }
+#endif
+
+  modevar = grub_env_get ("gfxpayload");
+
+  /* Now all graphical modes are acceptable.
+     May change in future if we have modes without framebuffer.  */
+  if (modevar && *modevar != 0)
+    {
+      tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
+      if (! tmp)
+	return grub_errno;
+#if ACCEPTS_PURE_TEXT
+      err = grub_video_set_mode (tmp, 0, 0);
+#else
+      err = grub_video_set_mode (tmp, GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+#endif
+      grub_free (tmp);
+    }
+  else
+    {
+#if ACCEPTS_PURE_TEXT
+      err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
+#else
+      err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
+				 GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
+#endif
+    }
+
+  if (err)
+    {
+      grub_print_error ();
+      grub_puts_ (N_("Booting in blind mode"));
+      grub_errno = GRUB_ERR_NONE;
+    }
+
+  if (grub_linux_setup_video (&linux_params))
+    {
+#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
+      linux_params.have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
+      linux_params.video_mode = 0x3;
+#else
+      linux_params.have_vga = 0;
+      linux_params.video_mode = 0;
+      linux_params.video_width = 0;
+      linux_params.video_height = 0;
+#endif
+    }
+
+
+#ifndef GRUB_MACHINE_IEEE1275
+  if (linux_params.have_vga == GRUB_VIDEO_LINUX_TYPE_TEXT)
+#endif
+    {
+      grub_term_output_t term;
+      int found = 0;
+      FOR_ACTIVE_TERM_OUTPUTS(term)
+	if (grub_strcmp (term->name, "vga_text") == 0
+	    || grub_strcmp (term->name, "console") == 0
+	    || grub_strcmp (term->name, "ofconsole") == 0)
+	  {
+	    grub_uint16_t pos = grub_term_getxy (term);
+	    linux_params.video_cursor_x = pos >> 8;
+	    linux_params.video_cursor_y = pos & 0xff;
+	    linux_params.video_width = grub_term_width (term);
+	    linux_params.video_height = grub_term_height (term);
+	    found = 1;
+	    break;
+	  }
+      if (!found)
+	{
+	  linux_params.video_cursor_x = 0;
+	  linux_params.video_cursor_y = 0;
+	  linux_params.video_width = 80;
+	  linux_params.video_height = 25;
+	}
+    }
+
   mmap_size = find_mmap_size ();
   /* Make sure that each size is aligned to a page boundary.  */
-  cl_offset = ALIGN_UP (mmap_size + sizeof (*params), 4096);
-  if (cl_offset < ((grub_size_t) params->setup_sects << GRUB_DISK_SECTOR_BITS))
-    cl_offset = ALIGN_UP ((grub_size_t) (params->setup_sects
+  cl_offset = ALIGN_UP (mmap_size + sizeof (linux_params), 4096);
+  if (cl_offset < ((grub_size_t) linux_params.setup_sects << GRUB_DISK_SECTOR_BITS))
+    cl_offset = ALIGN_UP ((grub_size_t) (linux_params.setup_sects
 					 << GRUB_DISK_SECTOR_BITS), 4096);
   real_size = ALIGN_UP (cl_offset + maximal_cmdline_size, 4096);
 
@@ -459,26 +551,15 @@ grub_linux_boot (void)
 
   grub_dprintf ("linux", "real_mode_mem = %lx\n",
                 (unsigned long) real_mode_mem);
+
+  struct linux_kernel_params *params;
+
   params = real_mode_mem;
 
   *params = linux_params;
   params->cmd_line_ptr = real_mode_target + cl_offset;
   grub_memcpy ((char *) params + cl_offset, linux_cmdline,
 	       maximal_cmdline_size);
-
-#ifdef GRUB_MACHINE_IEEE1275
-  {
-    const char *bootpath;
-    grub_ssize_t len;
-
-    bootpath = grub_env_get ("root");
-    if (bootpath)
-      grub_ieee1275_set_property (grub_ieee1275_chosen,
-				  "bootpath", bootpath,
-				  grub_strlen (bootpath) + 1,
-				  &len);
-  }
-#endif
 
   grub_dprintf ("linux", "code32_start = %x\n",
 		(unsigned) params->code32_start);
@@ -521,89 +602,6 @@ grub_linux_boot (void)
   if (grub_mmap_iterate (hook_fill))
     return grub_errno;
   params->mmap_size = e820_num;
-
-  modevar = grub_env_get ("gfxpayload");
-
-  /* Now all graphical modes are acceptable.
-     May change in future if we have modes without framebuffer.  */
-  if (modevar && *modevar != 0)
-    {
-      tmp = grub_xasprintf ("%s;" DEFAULT_VIDEO_MODE, modevar);
-      if (! tmp)
-	return grub_errno;
-#if ACCEPTS_PURE_TEXT
-      err = grub_video_set_mode (tmp, 0, 0);
-#else
-      err = grub_video_set_mode (tmp, GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
-#endif
-      grub_free (tmp);
-    }
-  else
-    {
-#if ACCEPTS_PURE_TEXT
-      err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
-#else
-      err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
-				 GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
-#endif
-    }
-  if (err)
-    {
-      grub_print_error ();
-      grub_puts_ (N_("Booting in blind mode"));
-      grub_errno = GRUB_ERR_NONE;
-    }
-
-  if (grub_linux_setup_video (params))
-    {
-#if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU)
-      params->have_vga = GRUB_VIDEO_LINUX_TYPE_TEXT;
-      params->video_mode = 0x3;
-#else
-      params->have_vga = 0;
-      params->video_mode = 0;
-      params->video_width = 0;
-      params->video_height = 0;
-#endif
-    }
-
-  /* Initialize these last, because terminal position could be affected by printfs above.  */
-#ifndef GRUB_MACHINE_IEEE1275
-  if (params->have_vga == GRUB_VIDEO_LINUX_TYPE_TEXT)
-#endif
-    {
-      grub_term_output_t term;
-      int found = 0;
-      FOR_ACTIVE_TERM_OUTPUTS(term)
-	if (grub_strcmp (term->name, "vga_text") == 0
-	    || grub_strcmp (term->name, "console") == 0
-	    || grub_strcmp (term->name, "ofconsole") == 0)
-	  {
-	    grub_uint16_t pos = grub_term_getxy (term);
-	    params->video_cursor_x = pos >> 8;
-	    params->video_cursor_y = pos & 0xff;
-	    params->video_width = grub_term_width (term);
-	    params->video_height = grub_term_height (term);
-	    found = 1;
-	    break;
-	  }
-      if (!found)
-	{
-	  params->video_cursor_x = 0;
-	  params->video_cursor_y = 0;
-	  params->video_width = 80;
-	  params->video_height = 25;
-	}
-    }
-
-#ifdef GRUB_MACHINE_IEEE1275
-  {
-    params->ofw_signature = GRUB_LINUX_OFW_SIGNATURE;
-    params->ofw_num_items = 1;
-    params->ofw_cif_handler = (grub_uint32_t) grub_ieee1275_entry_fn;
-    params->ofw_idt = 0;
-  }
-#endif
 
 #ifdef GRUB_MACHINE_EFI
   {
