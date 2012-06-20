@@ -1,5 +1,17 @@
 2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Restructure FAT driver to avoid hook in label reading as it hits a
+	GCC bug.
+
+	* include/grub/err.h (grub_err_t): New enum value GRUB_ERR_EOF.
+	* grub-core/fs/fat.c (grub_fat_iterate_context): New struct.
+	(grub_fat_iterate_dir): Split into ...
+	(grub_fat_iterate_init): ... this, ...
+	(grub_fat_iterate_fini): ... this, ...
+	(grub_fat_iterate_dir_next): ... and this. All users updated.
+
+2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New enum value
 	GRUB_IEEE1275_FLAG_BROKEN_REPEAT.
 	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
