@@ -33,6 +33,9 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 #include <grub/time.h>
+#ifdef __powerpc__
+#include <grub/ieee1275/ieee1275.h>
+#endif
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -560,11 +563,30 @@ grub_terminfo_getkey (struct grub_term_input *termi)
   grub_terminfo_readkey (termi, data->input_buf,
 			 &data->npending, data->readkey);
 
+#ifdef __powerpc__
+  if (data->npending == 1 && data->input_buf[0] == '\e'
+      && grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_BROKEN_REPEAT)
+      && grub_get_time_ms () - data->last_key_time < 1000
+      && (data->last_key & GRUB_TERM_EXTENDED))
+    {
+      data->npending = 0;
+      data->last_key_time = grub_get_time_ms ();
+      return data->last_key;
+    }
+#endif
+
   if (data->npending)
     {
       int ret;
       data->npending--;
       ret = data->input_buf[0];
+#ifdef __powerpc__
+      if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_BROKEN_REPEAT))
+	{
+	  data->last_key = ret;
+	  data->last_key_time = grub_get_time_ms ();
+	}
+#endif
       grub_memmove (data->input_buf, data->input_buf + 1, data->npending
 		    * sizeof (data->input_buf[0]));
       return ret;

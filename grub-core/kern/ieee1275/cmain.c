@@ -92,6 +92,17 @@ grub_ieee1275_find_options (void)
   if (rc >= 0 && grub_strncmp (tmp, "IBM", 3) == 0)
     grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS);
 
+  /* Old Macs have no key repeat, newer ones have fully working one.
+     The ones inbetween when repeated key generates an escaoe sequence
+     only the escape is repeated. With this workaround however a fast
+     e.g. down arrow-ESC is perceived as down arrow-down arrow which is
+     also annoying but is less so than the original bug of exiting from
+     the current window on arrow repeat. To avoid unaffected users suffering
+     from this workaround match only exact models known to have this bug.
+   */
+  if (rc >= 0 && grub_strcmp (tmp, "PowerBook3,3") == 0)
+    grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_BROKEN_REPEAT);
+
   rc = grub_ieee1275_get_property (root, "compatible",
 				   tmp,	sizeof (tmp), &actual);
   if (rc >= 0)

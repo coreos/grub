@@ -1,3 +1,14 @@
+2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New enum value
+	GRUB_IEEE1275_FLAG_BROKEN_REPEAT.
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
+	GRUB_IEEE1275_FLAG_BROKEN_REPEAT on PowerBook3,3.
+	* include/grub/terminfo.h (grub_terminfo_input_state) [__powerpc__]:
+	New fields last_key and last_key_time.
+	* grub-core/term/terminfo.c (grub_terminfo_getkey): Transform
+	extended key-esc into extended key-extended key.
+
 2012-06-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Avoid unnecessary memcpy of whole video buffer.

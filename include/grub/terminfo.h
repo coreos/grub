@@ -32,6 +32,10 @@ struct grub_terminfo_input_state
 {
   int input_buf[GRUB_TERMINFO_READKEY_MAX_LEN];
   int npending;
+#ifdef __powerpc__
+  int last_key;
+  grub_uint64_t last_key_time;
+#endif
   int (*readkey) (struct grub_term_input *term);
 };
 
