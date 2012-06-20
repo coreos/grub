@@ -1,5 +1,10 @@
 2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/main.c (grub_set_prefix_and_root): Skip escaped commas
+	when looking for partition separator.
+
+2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_encode_devname):
 	Escape commas.
 

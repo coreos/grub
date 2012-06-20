@@ -141,8 +141,18 @@ grub_set_prefix_and_root (void)
       /* We have a partition, but still need to fill in the drive.  */
       char *comma, *new_device;
 
-      comma = grub_strchr (fwdevice, ',');
-      if (comma)
+      for (comma = fwdevice; *comma; )
+	{
+	  if (comma[0] == '\\' && comma[1] == ',')
+	    {
+	      comma += 2;
+	      continue;
+	    }
+	  if (*comma == ',')
+	    break;
+	  comma++;
+	}
+      if (*comma)
 	{
 	  char *drive = grub_strndup (fwdevice, comma - fwdevice);
 	  new_device = grub_xasprintf ("%s%s", drive, device);
