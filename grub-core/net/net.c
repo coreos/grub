@@ -874,44 +874,53 @@ grub_net_add_addr (const char *name,
 
   grub_net_network_level_interface_register (inter);
 
-  if (addr->type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
+  return inter;
+}
+
+grub_err_t
+grub_net_add_ipv4_local (struct grub_net_network_level_interface *inter,
+			 int mask)
+{
+  grub_uint32_t ip_cpu;
+  struct grub_net_route *route;
+
+  if (inter->address.type != GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4)
+    return 0;
+
+  ip_cpu = grub_be_to_cpu32 (inter->address.ipv4);
+
+  if (mask == -1)
     {
-      int mask = -1;
-      grub_uint32_t ip_cpu = grub_be_to_cpu32 (addr->ipv4);
       if (!(ip_cpu & 0x80000000))
 	mask = 8;
       else if (!(ip_cpu & 0x40000000))
 	mask = 16;
       else if (!(ip_cpu & 0x20000000))
 	mask = 24;
-      else
-	mask = -1;
-      if (mask != -1)
-	{
-	  struct grub_net_route *route;
+    }
+  if (mask == -1)
+    return 0;
 
-	  route = grub_zalloc (sizeof (*route));
-	  if (!route)
-	    return NULL;
+  route = grub_zalloc (sizeof (*route));
+  if (!route)
+    return grub_errno;
 
-	  route->name = grub_xasprintf ("%s:local", name);
-	  if (!route->name)
-	    {
-	      grub_free (route);
-	      return NULL;
-	    }
-
-	  route->target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	  route->target.ipv4.base = grub_cpu_to_be32 (ip_cpu & (0xffffffff << (32 - mask)));
-	  route->target.ipv4.masksize = mask;
-	  route->is_gateway = 0;
-	  route->interface = inter;
-
-	  grub_net_route_register (route);
-	}
+  route->name = grub_xasprintf ("%s:local", inter->name);
+  if (!route->name)
+    {
+      grub_free (route);
+      return grub_errno;
     }
 
-  return inter;
+  route->target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+  route->target.ipv4.base = grub_cpu_to_be32 (ip_cpu & (0xffffffff << (32 - mask)));
+  route->target.ipv4.masksize = mask;
+  route->is_gateway = 0;
+  route->interface = inter;
+
+  grub_net_route_register (route);
+
+  return 0;
 }
 
 /* FIXME: support MAC specifying.  */
@@ -923,6 +932,7 @@ grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
   grub_net_network_level_address_t addr;
   grub_err_t err;
   grub_net_interface_flags_t flags = 0;
+  struct grub_net_network_level_interface *inf;
 
   if (argc != 3)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("three arguments expected"));
@@ -944,8 +954,11 @@ grub_cmd_addaddr (struct grub_command *cmd __attribute__ ((unused)),
   if (card->flags & GRUB_NET_CARD_HWADDRESS_IMMUTABLE)
     flags |= GRUB_NET_INTERFACE_HWADDRESS_IMMUTABLE;
 
-  grub_net_add_addr (args[0], card, &addr, &card->default_address,
-		     flags);
+  inf = grub_net_add_addr (args[0], card, &addr, &card->default_address,
+			   flags);
+  if (inf)
+    grub_net_add_ipv4_local (inf, -1);
+
   return grub_errno;
 }
 

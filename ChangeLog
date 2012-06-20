@@ -1,5 +1,18 @@
 2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Respect netmask from bootp/dhcp.
+
+	* grub-core/net/bootp.c (parse_dhcp_vendor): Parse mask.
+	(grub_net_configure_by_dhcp_ack): Use mask and grub_net_add_ipv4_local.
+	* grub-core/net/net.c (grub_net_add_addr): Split creating local route
+	into ...
+	(grub_net_add_ipv4_local): ... this.
+	(grub_cmd_addaddr): Use grub_net_add_ipv4_local.
+	* include/grub/net.h (GRUB_NET_BOOTP_NETMASK): New enum value.
+	(grub_net_add_ipv4_local): New proto.
+
+2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/linux.c (grub_linux_boot): Setup video before
 	determining EFI memory map size.
 

@@ -52,7 +52,7 @@ set_env_limn_ro (const char *intername, const char *suffix,
 }
 
 static void
-parse_dhcp_vendor (const char *name, void *vend, int limit)
+parse_dhcp_vendor (const char *name, void *vend, int limit, int *mask)
 {
   grub_uint8_t *ptr, *ptr0;
 
@@ -83,6 +83,17 @@ parse_dhcp_vendor (const char *name, void *vend, int limit)
 
       switch (tagtype)
 	{
+	case GRUB_NET_BOOTP_NETMASK:
+	  if (taglength == 4)
+	    {
+	      int i;
+	      for (i = 0; i < 32; i++)
+		if (!(ptr[i / 8] & (1 << (7 - (i % 8)))))
+		  break;
+	      *mask = i;
+	    }
+	  break;
+
 	case GRUB_NET_BOOTP_ROUTER:
 	  if (taglength == 4)
 	    {
@@ -149,6 +160,7 @@ grub_net_configure_by_dhcp_ack (const char *name,
   grub_net_network_level_address_t addr;
   grub_net_link_level_address_t hwaddr;
   struct grub_net_network_level_interface *inter;
+  int mask = -1;
 
   addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
   addr.ipv4 = bp->your_ip;
@@ -242,8 +254,9 @@ grub_net_configure_by_dhcp_ack (const char *name,
 	}
     }
   if (size > OFFSET_OF (vendor, bp))
-    parse_dhcp_vendor (name, &bp->vendor, size - OFFSET_OF (vendor, bp));
-
+    parse_dhcp_vendor (name, &bp->vendor, size - OFFSET_OF (vendor, bp), &mask);
+  grub_net_add_ipv4_local (inter, mask);
+  
   inter->dhcp_ack = grub_malloc (size);
   if (inter->dhcp_ack)
     {

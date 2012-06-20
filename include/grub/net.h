@@ -409,6 +409,7 @@ struct grub_net_bootp_packet
 enum
   {
     GRUB_NET_BOOTP_PAD = 0x00,
+    GRUB_NET_BOOTP_NETMASK = 0x01,
     GRUB_NET_BOOTP_ROUTER = 0x03,
     GRUB_NET_BOOTP_DNS = 0x06,
     GRUB_NET_BOOTP_HOSTNAME = 0x0c,
@@ -425,6 +426,10 @@ grub_net_configure_by_dhcp_ack (const char *name,
 				const struct grub_net_bootp_packet *bp,
 				grub_size_t size,
 				int is_def, char **device, char **path);
+
+grub_err_t
+grub_net_add_ipv4_local (struct grub_net_network_level_interface *inf,
+			 int mask);
 
 void
 grub_net_process_dhcp (struct grub_net_buff *nb,
