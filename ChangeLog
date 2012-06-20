@@ -1,5 +1,9 @@
 2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Escape commas.
+
+2012-06-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/main.c (grub_set_prefix_and_root): Skip escaped commas
 	when looking for partition separator.
 

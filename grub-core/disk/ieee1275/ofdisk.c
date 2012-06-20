@@ -265,10 +265,17 @@ grub_ofdisk_iterate (int (*hook) (const char *name),
 	    continue;
 
 	  {
-	    char buffer[sizeof ("ieee1275/") + grub_strlen (ent->shortest)];
-	    char *ptr;
-	    ptr = grub_stpcpy (buffer, "ieee1275/");
-	    grub_strcpy (ptr, ent->shortest);
+	    char buffer[sizeof ("ieee1275/") + 2 * grub_strlen (ent->shortest)];
+	    const char *iptr;
+	    char *optr;
+	    optr = grub_stpcpy (buffer, "ieee1275/");
+	    for (iptr = ent->shortest; *iptr; iptr++)
+	      {
+		if (*iptr == ',')
+		  *optr++ = '\\';
+		*optr++ = *iptr++;
+	      }
+	    *optr = 0;
 	    if (hook (buffer))
 	      return 1;
 	  }
