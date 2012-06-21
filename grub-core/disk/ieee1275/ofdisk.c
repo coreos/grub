@@ -269,7 +269,7 @@ grub_ofdisk_iterate (int (*hook) (const char *name),
 	    const char *iptr;
 	    char *optr;
 	    optr = grub_stpcpy (buffer, "ieee1275/");
-	    for (iptr = ent->shortest; *iptr; iptr++)
+	    for (iptr = ent->shortest; *iptr; )
 	      {
 		if (*iptr == ',')
 		  *optr++ = '\\';
