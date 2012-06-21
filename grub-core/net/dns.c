@@ -605,7 +605,7 @@ grub_cmd_nslookup (struct grub_command *cmd __attribute__ ((unused)),
 {
   grub_err_t err;
   grub_size_t naddresses, i;
-  struct grub_net_network_level_address *addresses;
+  struct grub_net_network_level_address *addresses = 0;
   if (argc != 2 && argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("two arguments expected"));
   if (argc == 2)

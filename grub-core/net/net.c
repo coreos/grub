@@ -503,7 +503,7 @@ grub_net_resolve_address (const char *name,
   const char *rest;
   grub_err_t err;
   grub_size_t naddresses;
-  struct grub_net_network_level_address *addresses;
+  struct grub_net_network_level_address *addresses = 0;
 
   if (parse_ip (name, &addr->ipv4, &rest) && *rest == 0)
     {

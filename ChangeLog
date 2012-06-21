@@ -1,5 +1,11 @@
 2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/dns.c (grub_cmd_nslookup): Init addresses to 0 to avoid
+	freeing random buffer on failure.
+	* grub-core/net/net.c (grub_net_resolve_address): Likewise.
+
+2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/bootp.c (grub_cmd_bootp): Fix packet allocation size.
 
 2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
