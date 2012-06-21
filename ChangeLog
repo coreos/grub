@@ -1,5 +1,10 @@
 2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/execute.c (grub_script_arglist_to_argv): Escape
+	blocks.
+
+2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Fix double
 	increment.
 

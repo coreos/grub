@@ -642,11 +642,23 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 	      break;
 
 	    case GRUB_SCRIPT_ARG_TYPE_BLOCK:
-	      if (grub_script_argv_append (&result, "{", 1)
-		  || grub_script_argv_append (&result, arg->str,
-					      grub_strlen (arg->str))
-		  || grub_script_argv_append (&result, "}", 1))
-		goto fail;
+	      {
+		char *p;
+		if (grub_script_argv_append (&result, "{", 1))
+		  goto fail;
+		p = wildcard_escape (arg->str);
+		if (!p)
+		  goto fail;
+		if (grub_script_argv_append (&result, p,
+					     grub_strlen (p)))
+		  {
+		    grub_free (p);
+		    goto fail;
+		  }
+		grub_free (p);
+		if (grub_script_argv_append (&result, "}", 1))
+		  goto fail;
+	      }
 	      result.script = arg->script;
 	      break;
 
