@@ -1,5 +1,9 @@
 2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/bootp.c (grub_cmd_bootp): Fix packet allocation size.
+
+2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/drivers/emu/emunet.c (get_card_packet): Allocate the
 	reserved bytes.
 	* grub-core/net/drivers/i386/pc/pxe.c (grub_pxe_recv): Likewise.

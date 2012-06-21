@@ -494,7 +494,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 
 	  if (!ifaces[j].prev)
 	    continue;
-	  nb = grub_netbuff_alloc (sizeof (*pack));
+	  nb = grub_netbuff_alloc (sizeof (*pack) + 64 + 128);
 	  if (!nb)
 	    {
 	      grub_netbuff_free (nb);
