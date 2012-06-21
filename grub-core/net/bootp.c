@@ -189,12 +189,9 @@ grub_net_configure_by_dhcp_ack (const char *name,
       gw.ipv4 = bp->gateway_ip;
       grub_snprintf (rname, sizeof (rname), "%s:gw", name);
       grub_net_add_route_gw (rname, target, gw);
-    }
-  if (bp->gateway_ip || bp->server_ip)
-    {
-      grub_net_network_level_netaddress_t target;
+
       target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-      target.ipv4.base = bp->gateway_ip ? bp->gateway_ip : bp->server_ip;
+      target.ipv4.base = bp->gateway_ip;
       target.ipv4.masksize = 32;
       grub_net_add_route (name, target, inter);
     }
