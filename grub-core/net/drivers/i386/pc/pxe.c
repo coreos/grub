@@ -213,7 +213,7 @@ grub_pxe_recv (struct grub_net_card *dev __attribute__ ((unused)))
       grub_pxe_call (GRUB_PXENV_UNDI_ISR, isr, pxe_rm_entry);
     }
 
-  buf = grub_netbuff_alloc (isr->frame_len);
+  buf = grub_netbuff_alloc (isr->frame_len + 2);
   if (!buf)
     return NULL;
   /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible

@@ -52,7 +52,7 @@ get_card_packet (struct grub_net_card *dev __attribute__ ((unused)))
   ssize_t actual;
   struct grub_net_buff *nb;
 
-  nb = grub_netbuff_alloc (1536);
+  nb = grub_netbuff_alloc (1536 + 2);
   if (!nb)
     return NULL;
 

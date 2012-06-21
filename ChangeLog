@@ -1,5 +1,13 @@
 2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/drivers/emu/emunet.c (get_card_packet): Allocate the
+	reserved bytes.
+	* grub-core/net/drivers/i386/pc/pxe.c (grub_pxe_recv): Likewise.
+	* grub-core/net/drivers/ieee1275/ofnet.c (get_card_packet): Likewise.
+	Handle malloc error correctly.
+
+2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/execute.c (grub_script_arglist_to_argv): Escape
 	blocks.
 

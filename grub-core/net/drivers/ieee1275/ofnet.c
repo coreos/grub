@@ -95,15 +95,16 @@ get_card_packet (struct grub_net_card *dev)
   grub_uint64_t start_time;
   struct grub_net_buff *nb;
 
-  nb = grub_netbuff_alloc (dev->mtu + 64);
-  /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
-     by 4. So that IP header is aligned on 4 bytes. */
-  grub_netbuff_reserve (nb, 2);
+  nb = grub_netbuff_alloc (dev->mtu + 64 + 2);
   if (!nb)
     {
       grub_netbuff_free (nb);
       return NULL;
     }
+  /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
+     by 4. So that IP header is aligned on 4 bytes. */
+  grub_netbuff_reserve (nb, 2);
+
   start_time = grub_get_time_ms ();
   do
     rc = grub_ieee1275_read (data->handle, nb->data, dev->mtu + 64, &actual);
