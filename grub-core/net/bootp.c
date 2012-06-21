@@ -204,6 +204,25 @@ grub_net_configure_by_dhcp_ack (const char *name,
 		     sizeof (bp->boot_file));
   if (is_def)
     grub_net_default_server = 0;
+  if (is_def && !grub_net_default_server && bp->server_ip)
+    {
+      grub_net_default_server = grub_xasprintf ("%d.%d.%d.%d",
+						((grub_uint8_t *) &bp->server_ip)[0],
+						((grub_uint8_t *) &bp->server_ip)[1],
+						((grub_uint8_t *) &bp->server_ip)[2],
+						((grub_uint8_t *) &bp->server_ip)[3]);
+      grub_print_error ();
+    }
+
+  if (device && !*device && bp->server_ip)
+    {
+      *device = grub_xasprintf ("tftp,%d.%d.%d.%d",
+				((grub_uint8_t *) &bp->server_ip)[0],
+				((grub_uint8_t *) &bp->server_ip)[1],
+				((grub_uint8_t *) &bp->server_ip)[2],
+				((grub_uint8_t *) &bp->server_ip)[3]);
+      grub_print_error ();
+    }
   if (size > OFFSET_OF (server_name, bp)
       && bp->server_name[0])
     {
@@ -220,25 +239,7 @@ grub_net_configure_by_dhcp_ack (const char *name,
 	  grub_print_error ();
 	}
     }
-  if (is_def && !grub_net_default_server)
-    {
-      grub_net_default_server = grub_xasprintf ("%d.%d.%d.%d",
-						((grub_uint8_t *) &bp->server_ip)[0],
-						((grub_uint8_t *) &bp->server_ip)[1],
-						((grub_uint8_t *) &bp->server_ip)[2],
-						((grub_uint8_t *) &bp->server_ip)[3]);
-      grub_print_error ();
-    }
 
-  if (device && !*device)
-    {
-      *device = grub_xasprintf ("tftp,%d.%d.%d.%d",
-				((grub_uint8_t *) &bp->server_ip)[0],
-				((grub_uint8_t *) &bp->server_ip)[1],
-				((grub_uint8_t *) &bp->server_ip)[2],
-				((grub_uint8_t *) &bp->server_ip)[3]);
-      grub_print_error ();
-    }
   if (size > OFFSET_OF (boot_file, bp) && path)
     {
       *path = grub_strndup (bp->boot_file, sizeof (bp->boot_file));
