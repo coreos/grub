@@ -27,6 +27,7 @@
 #include <grub/video_fb.h>
 #include <grub/pci.h>
 #include <grub/vga.h>
+#include <grub/cache.h>
 
 #include "sm712_init.c"
 
@@ -194,9 +195,9 @@ static struct
 static struct
 {
   struct grub_video_mode_info mode_info;
-  struct grub_video_render_target *render_target;
 
-  grub_uint8_t *ptr;
+  volatile grub_uint8_t *ptr;
+  grub_uint8_t *cached_ptr;
   int mapped;
   grub_uint32_t base;
   grub_pci_device_t dev;
@@ -216,9 +217,12 @@ static grub_err_t
 grub_video_sm712_video_fini (void)
 {
   if (framebuffer.mapped)
-    grub_pci_device_unmap_range (framebuffer.dev, framebuffer.ptr,
-				 GRUB_SM712_TOTAL_MEMORY_SPACE);
-
+    {
+      grub_pci_device_unmap_range (framebuffer.dev, framebuffer.ptr,
+				   GRUB_SM712_TOTAL_MEMORY_SPACE);
+      grub_pci_device_unmap_range (framebuffer.dev, framebuffer.cached_ptr,
+				   GRUB_SM712_TOTAL_MEMORY_SPACE);
+    }
   return grub_video_fb_fini ();
 }
 #endif
@@ -382,7 +386,9 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   /* Fill mode info details.  */
   framebuffer.mode_info.width = 1024;
   framebuffer.mode_info.height = 600;
-  framebuffer.mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_RGB;
+  framebuffer.mode_info.mode_type = (GRUB_VIDEO_MODE_TYPE_RGB
+				     | GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED
+				     | GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
   framebuffer.mode_info.bpp = 16;
   framebuffer.mode_info.bytes_per_pixel = 2;
   framebuffer.mode_info.pitch = 1024 * 2;
@@ -423,9 +429,13 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   /* We can safely discard volatile attribute.  */
 #ifndef TEST
   framebuffer.ptr
-    = (void *) grub_pci_device_map_range (framebuffer.dev,
-					  framebuffer.base,
-					  GRUB_SM712_TOTAL_MEMORY_SPACE);
+    = grub_pci_device_map_range (framebuffer.dev,
+				 framebuffer.base,
+				 GRUB_SM712_TOTAL_MEMORY_SPACE);
+  framebuffer.cached_ptr
+    = grub_pci_device_map_range_cached (framebuffer.dev,
+					framebuffer.base,
+					GRUB_SM712_TOTAL_MEMORY_SPACE);
 #endif
   framebuffer.mapped = 1;
 
@@ -437,7 +447,7 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
 
 #ifndef TEST
   /* Prevent garbage from appearing on the screen.  */
-  grub_memset (framebuffer.ptr, 0, 
+  grub_memset ((void *) framebuffer.cached_ptr, 0, 
 	       framebuffer.mode_info.height * framebuffer.mode_info.pitch);
 #endif
 
@@ -688,16 +698,9 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   (void) grub_sm712_sr_read (0x16);
 
 #ifndef TEST
-  err = grub_video_fb_create_render_target_from_pointer (&framebuffer
-							 .render_target,
-							 &framebuffer.mode_info,
-							 framebuffer.ptr);
-
-  if (err)
-    return err;
-
-  err = grub_video_fb_set_active_render_target (framebuffer.render_target);
-  
+  err = grub_video_fb_setup (mode_type, mode_mask,
+			     &framebuffer.mode_info,
+			     framebuffer.cached_ptr, NULL, NULL);
   if (err)
     return err;
 
@@ -713,17 +716,13 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
 static grub_err_t
 grub_video_sm712_swap_buffers (void)
 {
-  /* TODO: Implement buffer swapping.  */
+  grub_size_t s;
+  s = (framebuffer.mode_info.height
+       * framebuffer.mode_info.pitch
+       * framebuffer.mode_info.bytes_per_pixel);
+  grub_video_fb_swap_buffers ();
+  grub_arch_sync_dma_caches (framebuffer.cached_ptr, s);
   return GRUB_ERR_NONE;
-}
-
-static grub_err_t
-grub_video_sm712_set_active_render_target (struct grub_video_render_target *target)
-{
-  if (target == GRUB_VIDEO_RENDER_TARGET_DISPLAY)
-      target = framebuffer.render_target;
-
-  return grub_video_fb_set_active_render_target (target);
 }
 
 static grub_err_t
@@ -765,7 +764,7 @@ static struct grub_video_adapter grub_video_sm712_adapter =
     .swap_buffers = grub_video_sm712_swap_buffers,
     .create_render_target = grub_video_fb_create_render_target,
     .delete_render_target = grub_video_fb_delete_render_target,
-    .set_active_render_target = grub_video_sm712_set_active_render_target,
+    .set_active_render_target = grub_video_fb_set_active_render_target,
     .get_active_render_target = grub_video_fb_get_active_render_target,
 
     .next = 0

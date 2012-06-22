@@ -1,5 +1,18 @@
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Speed-up video on yeeloong.
+
+	* grub-core/video/sm712.c (framebuffer): Remove render_target and
+	add cached_ptr.
+	(grub_video_sm712_video_fini): Unmap cached_ptr.
+	(grub_video_sm712_setup): Use cache address and grub_video_fb_setup.
+	(grub_video_sm712_set_active_render_target): Removed.
+	(grub_video_adapter): Use grub_video_fb_set_active_render_target.
+	(grub_video_sm712_swap_buffers): Call grub_video_fb_swap_buffers and
+	sync caches.
+
+2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Avoid flushing the same line multiple times on loongson.
 
 	* grub-core/kern/mips/cache.S [GRUB_MACHINE_MIPS_LOONGSON]:
