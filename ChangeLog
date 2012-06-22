@@ -1,5 +1,10 @@
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_find_root_devices_from_mountinfo): Handle btrfs
+	subvolumes.
+
+2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Implement flow control for http.
 
 	* grub-core/net/http.c (parse_line): Handle response 206.
