@@ -224,7 +224,7 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 
 	    grub_priority_queue_pop (data->pq);
 
-	    if (file->device->net->packs.count < 200)
+	    if (file->device->net->packs.count < 50)
 	      err = ack (data, tftph->u.data.block);
 	    else
 	      {
@@ -451,7 +451,7 @@ static grub_err_t
 tftp_packets_pulled (struct grub_file *file)
 {
   tftp_data_t data = file->data;
-  if (file->device->net->packs.count >= 200)
+  if (file->device->net->packs.count >= 50)
     return 0;
 
   if (!file->device->net->eof)

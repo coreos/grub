@@ -1,5 +1,9 @@
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/tftp.c: Decrease stall to 50 packets.
+
+2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/net.c (grub_net_fs_open): Free resources on failed open.
 
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
