@@ -1,5 +1,9 @@
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/util/grub-shell.in: Fix a typo.
+
+2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Implement flow control for tftp.
 
 	* grub-core/net/net.c (receive_packets): Decrease the stop to 10

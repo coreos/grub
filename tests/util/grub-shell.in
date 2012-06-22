@@ -61,7 +61,7 @@ EOF
 qemuopts="${GRUB_QEMU_OPTS}"
 serial_port=com0
 serial_null=
-hald_cmd=halt
+halt_cmd=halt
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     powerpc-ieee1275)
 	boot=cd
@@ -225,7 +225,7 @@ EOF
 if [ x$console != x ]; then
     echo "terminal_output $console" >>${cfgfile}
 fi
-echo "$halt_cmd" >>${cfgfile}
+echo "${halt_cmd}" >>${cfgfile}
 
 isofile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 if [ x$boot != xnet ]; then
