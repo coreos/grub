@@ -102,6 +102,7 @@ typedef struct tftp_data
   grub_uint64_t file_size;
   grub_uint64_t block;
   grub_uint32_t block_size;
+  grub_uint32_t ack_sent;
   int have_oack;
   struct grub_error_saved save_err;
   grub_net_udp_socket_t sock;
@@ -124,7 +125,7 @@ cmp (const void *a__, const void *b__)
 }
 
 static grub_err_t
-ack (grub_net_udp_socket_t sock, grub_uint16_t block)
+ack (tftp_data_t data, grub_uint16_t block)
 {
   struct tftphdr *tftph_ack;
   grub_uint8_t nbdata[512];
@@ -144,8 +145,11 @@ ack (grub_net_udp_socket_t sock, grub_uint16_t block)
   tftph_ack->opcode = grub_cpu_to_be16 (TFTP_ACK);
   tftph_ack->u.ack.block = block;
 
-  err = grub_net_send_udp_packet (sock, &nb_ack);
-  return err;
+  err = grub_net_send_udp_packet (data->sock, &nb_ack);
+  if (err)
+    return err;
+  data->ack_sent = block;
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -185,7 +189,7 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	}
       data->block = 0;
       grub_netbuff_free (nb);
-      err = ack (data->sock, 0);
+      err = ack (data, 0);
       grub_error_save (&data->save_err);
       return GRUB_ERR_NONE;
     case TFTP_DATA:
@@ -195,9 +199,6 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	  grub_dprintf ("tftp", "TFTP packet too small\n");
 	  return GRUB_ERR_NONE;
 	}
-      err = ack (data->sock, tftph->u.data.block);
-      if (err)
-	return err;
 
       err = grub_priority_queue_push (data->pq, &nb);
       if (err)
@@ -223,6 +224,16 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 
 	    grub_priority_queue_pop (data->pq);
 
+	    if (file->device->net->packs.count < 200)
+	      err = ack (data, tftph->u.data.block);
+	    else
+	      {
+		file->device->net->stall = 1;
+		err = 0;
+	      }
+	    if (err)
+	      return err;
+
 	    err = grub_netbuff_pull (nb_top, sizeof (tftph->opcode) +
 				     sizeof (tftph->u.data.block));
 	    if (err)
@@ -233,6 +244,7 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	    if (size < data->block_size)
 	      {
 		file->device->net->eof = 1;
+		file->device->net->stall = 1;
 		grub_net_udp_close (data->sock);
 		data->sock = NULL;
 	      }
@@ -435,11 +447,26 @@ tftp_close (struct grub_file *file)
   return GRUB_ERR_NONE;
 }
 
+static grub_err_t
+tftp_packets_pulled (struct grub_file *file)
+{
+  tftp_data_t data = file->data;
+  if (file->device->net->packs.count >= 200)
+    return 0;
+
+  if (!file->device->net->eof)
+    file->device->net->stall = 0;
+  if (data->ack_sent >= data->block)
+    return 0;
+  return ack (data, data->block);
+}
+
 static struct grub_net_app_protocol grub_tftp_protocol = 
   {
     .name = "tftp",
     .open = tftp_open,
-    .close = tftp_close
+    .close = tftp_close,
+    .packets_pulled = tftp_packets_pulled
   };
 
 GRUB_MOD_INIT (tftp)

@@ -93,6 +93,7 @@ typedef struct grub_net_packets
 {
   grub_net_packet_t *first;
   grub_net_packet_t *last;
+  grub_size_t count;
 } grub_net_packets_t;
 
 #ifdef GRUB_MACHINE_EFI
@@ -204,12 +205,16 @@ grub_net_put_packet (grub_net_packets_t *pkts, struct grub_net_buff *nb)
   else
     pkts->first = pkts->last = n;
 
+  pkts->count++;
+
   return GRUB_ERR_NONE;
 }
 
 static inline void
 grub_net_remove_packet (grub_net_packet_t *pkt)
 {
+  pkt->up->count--;
+
   if (pkt->prev)
     pkt->prev->next = pkt->next;
   else
@@ -236,6 +241,7 @@ struct grub_net_app_protocol
   grub_err_t (*open) (struct grub_file *file, const char *filename);
   grub_err_t (*seek) (struct grub_file *file, grub_off_t off);
   grub_err_t (*close) (struct grub_file *file);
+  grub_err_t (*packets_pulled) (struct grub_file *file);
 };
 
 typedef struct grub_net
@@ -247,6 +253,7 @@ typedef struct grub_net
   grub_off_t offset;
   grub_fs_t fs;
   int eof;
+  int stall;
 } *grub_net_t;
 
 extern grub_net_t (*EXPORT_VAR (grub_net_open)) (const char *name);

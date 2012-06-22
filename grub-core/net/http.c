@@ -82,6 +82,7 @@ parse_line (grub_file_t file, http_data_t data, char *ptr, grub_size_t len)
       if (data->chunk_rem == 0)
 	{
 	  file->device->net->eof = 1;
+	  file->device->net->stall = 1;
 	  if (file->size == GRUB_FILE_SIZE_UNKNOWN)
 	    file->size = have_ahead (file);
 	}
@@ -156,6 +157,7 @@ http_err (grub_net_tcp_socket_t sock __attribute__ ((unused)),
     grub_free (data->current_line);
   grub_free (data);
   file->device->net->eof = 1;
+  file->device->net->stall = 1;
   if (file->size == GRUB_FILE_SIZE_UNKNOWN)
     file->size = have_ahead (file);
 }

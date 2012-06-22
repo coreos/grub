@@ -1,5 +1,26 @@
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Implement flow control for tftp.
+
+	* grub-core/net/net.c (receive_packets): Decrease the stop to 10
+	packets but stop only if stop condition is satisfied.
+	(grub_net_fs_read_real): Call packets_pulled after real read. Use
+	`stall' instead of `eof' as stop condition.
+	* grub-core/net/http.c (parse_line): Set `stall' on EOF.
+	(http_err): Likewise.
+	* grub-core/net/tftp.c (ack): Replace the first argument with data
+	instead of socket.
+	(tftp_receive): Stall if too many packets are in wait queue.
+	(tftp_packets_pulled): New function.
+	(grub_tftp_protocol): Set packets_pulled.
+	* include/grub/net.h (grub_net_packets): New field count.
+	(grub_net_put_packet): Increment count.
+	(grub_net_remove_packet): Likewise.
+	(grub_net_app_protocol): New field `packets_pulled'.
+	(grub_net): New field `stall'.
+
+2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/net.c (receive_packets): Stop after 100 packets to let
 	sync part to handle them.
 

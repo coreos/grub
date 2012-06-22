@@ -1309,7 +1309,7 @@ grub_net_fs_close (grub_file_t file)
 }
 
 static void
-receive_packets (struct grub_net_card *card)
+receive_packets (struct grub_net_card *card, int *stop_condition)
 {
   int received = 0;
   if (card->num_ifaces == 0)
@@ -1332,7 +1332,7 @@ receive_packets (struct grub_net_card *card)
 	 and just mark them as used and not used.  */ 
       struct grub_net_buff *nb;
 
-      if (received > 100)
+      if (received > 10 && stop_condition && *stop_condition)
 	break;
 
       nb = card->driver->recv (card);
@@ -1362,7 +1362,7 @@ grub_net_poll_cards (unsigned time, int *stop_condition)
   while ((grub_get_time_ms () - start_time) < time
 	 && (!stop_condition || !*stop_condition))
     FOR_NET_CARDS (card)
-      receive_packets (card);
+      receive_packets (card, stop_condition);
   grub_net_tcp_retransmit ();
 }
 
@@ -1376,7 +1376,7 @@ grub_net_poll_cards_idle_real (void)
 
     if (ctime < card->last_poll
 	|| ctime >= card->last_poll + card->idle_poll_delay_ms)
-      receive_packets (card);
+      receive_packets (card, 0);
   }
   grub_net_tcp_retransmit ();
 }
@@ -1417,12 +1417,19 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
 	    nb->data += amount;
 
 	  if (!len)
-	    return total;
+	    {
+	      if (net->protocol->packets_pulled)
+		net->protocol->packets_pulled (file);
+	      return total;
+	    }
 	}
+      if (net->protocol->packets_pulled)
+	net->protocol->packets_pulled (file);
+
       if (!net->eof)
 	{
 	  try++;
-	  grub_net_poll_cards (GRUB_NET_INTERVAL, &net->eof);
+	  grub_net_poll_cards (GRUB_NET_INTERVAL, &net->stall);
 	}
       else
 	return total;
