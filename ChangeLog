@@ -1,5 +1,14 @@
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid flushing the same line multiple times on loongson.
+
+	* grub-core/kern/mips/cache.S [GRUB_MACHINE_MIPS_LOONGSON]:
+	Step in 32 bytes and not 1 byte.
+	* grub-core/kern/mips/cache_flush.S [GRUB_MACHINE_MIPS_LOONGSON]:
+	Likewise.
+
+2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_find_root_devices_from_mountinfo): Handle btrfs
 	subvolumes.
 
