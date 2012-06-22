@@ -1,5 +1,10 @@
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mm.c (get_header_from_pointer): Put a more informative
+	message on double free. Put the value of magic in case of mismatch.
+
+2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Speed-up video on yeeloong.
 
 	* grub-core/video/sm712.c (framebuffer): Remove render_target and
