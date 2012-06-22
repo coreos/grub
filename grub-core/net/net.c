@@ -1280,10 +1280,24 @@ grub_net_fs_open (struct grub_file *file_out, const char *name)
 
   err = file->device->net->protocol->open (file, name);
   if (err)
-    return err;
+    {
+      while (file->device->net->packs.first)
+	{
+	  grub_netbuff_free (file->device->net->packs.first->nb);
+	  grub_net_remove_packet (file->device->net->packs.first);
+	}
+      grub_free (file->device->net->name);
+      grub_free (file);
+      return err;
+    }
   bufio = grub_bufio_open (file, 32768);
   if (! bufio)
     {
+      while (file->device->net->packs.first)
+	{
+	  grub_netbuff_free (file->device->net->packs.first->nb);
+	  grub_net_remove_packet (file->device->net->packs.first);
+	}
       file->device->net->protocol->close (file);
       grub_free (file->device->net->name);
       grub_free (file);
