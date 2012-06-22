@@ -1,5 +1,11 @@
 2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/main.c (grub_set_prefix_and_root): Fix memory leak.
+	* grub-core/net/drivers/ieee1275/ofnet.c
+	(grub_ieee1275_net_config_real): Likewise.
+
+2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/bootp.c (grub_net_configure_by_dhcp_ack): Don't create
 	the direct route for server/gateway.
 

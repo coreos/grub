@@ -193,6 +193,7 @@ grub_ieee1275_net_config_real (const char *devpath, char **device, char **path)
 				     + bootp_response_properties[i].offset),
 				    size - bootp_response_properties[i].offset,
 				    1, device, path);
+    grub_free (bootp_response);
     return;
   }
 }

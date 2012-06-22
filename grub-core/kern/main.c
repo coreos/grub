@@ -165,8 +165,12 @@ grub_set_prefix_and_root (void)
       grub_free (device);
       device = new_device;
     }
+  else
+    grub_free (fwdevice);
   if (fwpath && !path)
     path = fwpath;
+  else
+    grub_free (fwpath);
   if (device)
     {
       char *prefix_set;
