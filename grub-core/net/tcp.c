@@ -60,6 +60,7 @@ struct grub_net_tcp_socket
   int errors;
   int they_reseted;
   int i_reseted;
+  int i_stall;
   grub_uint32_t my_start_seq;
   grub_uint32_t my_cur_seq;
   grub_uint32_t their_start_seq;
@@ -331,7 +332,8 @@ ack_real (grub_net_tcp_socket_t sock, int res)
     {
       tcph_ack->ack = grub_cpu_to_be32 (sock->their_cur_seq);
       tcph_ack->flags = grub_cpu_to_be16_compile_time ((5 << 12) | TCP_ACK);
-      tcph_ack->window = grub_cpu_to_be16 (sock->my_window);
+      tcph_ack->window = !sock->i_stall ? grub_cpu_to_be16 (sock->my_window)
+	: 0;
     }
   tcph_ack->urgent = 0;
   tcph_ack->src = grub_cpu_to_be16 (sock->in_port);
@@ -707,7 +709,8 @@ grub_net_send_tcp_packet (const grub_net_tcp_socket_t socket,
       tcph = (struct tcphdr *) nb2->data;
       tcph->ack = grub_cpu_to_be32 (socket->their_cur_seq);
       tcph->flags = grub_cpu_to_be16_compile_time ((5 << 12) | TCP_ACK);
-      tcph->window = grub_cpu_to_be16 (socket->my_window);
+      tcph->window = !socket->i_stall ? grub_cpu_to_be16 (socket->my_window)
+	: 0;
       tcph->urgent = 0;
       err = grub_netbuff_put (nb2, fraglen);
       if (err)
@@ -730,7 +733,7 @@ grub_net_send_tcp_packet (const grub_net_tcp_socket_t socket,
   tcph->ack = grub_cpu_to_be32 (socket->their_cur_seq);
   tcph->flags = (grub_cpu_to_be16_compile_time ((5 << 12) | TCP_ACK)
 		 | (push ? grub_cpu_to_be16_compile_time (TCP_PUSH) : 0));
-  tcph->window = grub_cpu_to_be16 (socket->my_window);
+  tcph->window = !socket->i_stall ? grub_cpu_to_be16 (socket->my_window) : 0;
   tcph->urgent = 0;
   return tcp_send (nb, socket);
 }
@@ -974,4 +977,22 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
     }
   grub_netbuff_free (nb);
   return GRUB_ERR_NONE;
+}
+
+void
+grub_net_tcp_stall (grub_net_tcp_socket_t sock)
+{
+  if (sock->i_stall)
+    return;
+  sock->i_stall = 1;
+  ack (sock);
+}
+
+void
+grub_net_tcp_unstall (grub_net_tcp_socket_t sock)
+{
+  if (!sock->i_stall)
+    return;
+  sock->i_stall = 0;
+  ack (sock);
 }

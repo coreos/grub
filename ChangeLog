@@ -1,5 +1,24 @@
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Implement flow control for http.
+
+	* grub-core/net/http.c (parse_line): Handle response 206.
+	(http_receive): Stall if too many packets are in the queue.
+	(http_establish): Fix range header.
+	(http_seek): Fix double free.
+	(http_close): Likewise.
+	(http_packets_pulled): New function.
+	(grub_http_protocol): Set http_seek
+	* grub-core/net/tcp.c (grub_net_tcp_socket): New field `i_stall'.
+	(ack_real): Set window depending on i_stall.
+	(grub_net_send_tcp_packet): Likewise.
+	(grub_net_tcp_stall): New function.
+	(grub_net_tcp_unstall): Likewise.
+	* include/grub/net/tcp.h (grub_net_tcp_stall): New proto.
+	(grub_net_tcp_unstall): Likewise.
+
+2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/tftp.c: Decrease stall to 50 packets.
 
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>

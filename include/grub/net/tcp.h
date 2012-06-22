@@ -76,4 +76,10 @@ grub_net_tcp_accept (grub_net_tcp_socket_t sock,
 				       void *data),
 		     void *hook_data);
 
+void
+grub_net_tcp_stall (grub_net_tcp_socket_t sock);
+
+void
+grub_net_tcp_unstall (grub_net_tcp_socket_t sock);
+
 #endif
