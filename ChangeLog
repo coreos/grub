@@ -1,3 +1,8 @@
+2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/net/net.c (receive_packets): Stop after 100 packets to let
+	sync part to handle them.
+
 2012-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/main.c (grub_set_prefix_and_root): Fix memory leak.

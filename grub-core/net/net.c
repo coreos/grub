@@ -1311,6 +1311,7 @@ grub_net_fs_close (grub_file_t file)
 static void
 receive_packets (struct grub_net_card *card)
 {
+  int received = 0;
   if (card->num_ifaces == 0)
     return;
   if (!card->opened)
@@ -1331,12 +1332,16 @@ receive_packets (struct grub_net_card *card)
 	 and just mark them as used and not used.  */ 
       struct grub_net_buff *nb;
 
+      if (received > 100)
+	break;
+
       nb = card->driver->recv (card);
       if (!nb)
 	{
 	  card->last_poll = grub_get_time_ms ();
 	  break;
 	}
+      received++;
       grub_net_recv_ethernet_packet (nb, card);
       if (grub_errno)
 	{
