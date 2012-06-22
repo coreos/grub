@@ -371,7 +371,7 @@ grub_free (void *ptr)
     }
   else
     {
-      grub_mm_header_t q;
+      grub_mm_header_t q, s;
 
 #if 0
       q = r->first;
@@ -384,12 +384,12 @@ grub_free (void *ptr)
       while (q != r->first);
 #endif
 
-      for (q = r->first; q >= p || q->next <= p; q = q->next)
+      for (s = r->first, q = s->next; q <= p || q->next >= p; s = q, q = s->next)
 	{
 	  if (q->magic != GRUB_MM_FREE_MAGIC)
 	    grub_fatal ("free magic is broken at %p: 0x%x", q, q->magic);
 
-	  if (q >= q->next && (q < p || q->next > p))
+	  if (q <= q->next && (q > p || q->next < p))
 	    break;
 	}
 
@@ -397,21 +397,25 @@ grub_free (void *ptr)
       p->next = q->next;
       q->next = p;
 
-      if (p + p->size == p->next)
-	{
-	  if (p->next == q)
-	    q = p;
-
-	  p->next->magic = 0;
-	  p->size += p->next->size;
-	  p->next = p->next->next;
-	}
-
-      if (q + q->size == p)
+      if (p->next + p->next->size == p)
 	{
 	  p->magic = 0;
-	  q->size += p->size;
+
+	  p->next->size += p->size;
 	  q->next = p->next;
+	  p = p->next;
+	}
+
+      r->first = q;
+
+      if (q == p + p->size)
+	{
+	  q->magic = 0;
+	  p->size += q->size;
+	  if (q == s)
+	    s = p;
+	  s->next = p;
+	  q = s;
 	}
 
       r->first = q;
