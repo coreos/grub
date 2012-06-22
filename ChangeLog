@@ -1,3 +1,7 @@
+2012-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub.texi (Multi-boot manual config): Use --set. Improve remark.
+
 2012-06-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/mm.c (grub_free): Fix agglomerating of free regions.
