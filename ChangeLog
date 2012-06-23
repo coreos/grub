@@ -1,5 +1,9 @@
 2012-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Bump to 2.00~rc1.
+
+2012-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/mips/loongson/fwstart.S: Add missing setting of high
 	half of $a0.
 
