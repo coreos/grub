@@ -1,4 +1,11 @@
 2012-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-06-23  Jordan Uggla  <jordan.uggla@gmail.com>
+
+	* docs/grub.texi: Fix search syntax.
+	(Multi-boot manual config): Put msdos rather than GPT example.
+	Grammar corrections.
+
+2012-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi (Multi-boot manual config): Use --set. Improve remark.
 

@@ -911,7 +911,7 @@ root partition to the kernel.
 @enumerate
 @item
 Set GRUB's root device to the same drive as GNU/Hurd's.  The command
-@code{search --file --set /boot/gnumach.gz} or similar may help you
+@code{search --set=root --file /boot/gnumach.gz} or similar may help you
 (@pxref{search}).
 
 @item 
@@ -944,7 +944,7 @@ resembles to boot a Multiboot-compliant OS.
 @enumerate
 @item
 Set GRUB's root device to the same drive as GNU/Linux's.  The command
-@code{search --file --set /vmlinuz} or similar may help you
+@code{search --set=root --file /vmlinuz} or similar may help you
 (@pxref{search}).
 
 @item
@@ -1495,10 +1495,12 @@ next release, meanwhile you can make use of the power of GRUB syntax and do it
 yourself. A possible configuration is detailed here, feel free to adjust to your
 needs.
 
-First create a separate GRUB partition, big enough to hold GRUB and
-few OS network installers you want to use. Mount this partition on
-/mnt/boot and disable GRUB in all OSes and manually install
-self-compiled latest GRUB with:
+First create a separate GRUB partition, big enough to hold GRUB. Some of the
+following entries show how to load OS installer images from this same partition,
+for that you obviously need to make the partition large enough to hold those
+images as well.
+Mount this partition on/mnt/boot and disable GRUB in all OSes and manually
+install self-compiled latest GRUB with:
 
 @code{grub-install --boot-directory=/mnt/boot /dev/sda}
 
@@ -1510,39 +1512,37 @@ use by setting:
 
 in /etc/default/grub
 
-Then write grub.cfg as following in /mnt/boot/grub/grub.cfg:
+Then write a grub.cfg (/mnt/boot/grub/grub.cfg):
 
 @example
 
 menuentry "OS using grub2" @{
    insmod xfs
-   search --set=root -l OS1 --hint hd0,gpt2
+   search --set=root --label OS1 --hint hd0,msdos8
    configfile /boot/grub/grub.cfg
 @}
 
 menuentry "OS using grub2-legacy" @{
    insmod ext2
-   search --set=root -l OS2 --hint hd0,gpt3
+   search --set=root --label OS2 --hint hd0,msdos6
    legacy_configfile /boot/grub/menu.lst
 @}
 
 menuentry "Windows XP" @{
    insmod ntfs
-   search --set=root -l WINDOWS_XP --hint hd0,gpt4
-   gptsync hd0 4+7
+   search --set=root --label WINDOWS_XP --hint hd0,msdos1
    ntldr /ntldr
 @}
 
 menuentry "Windows 7" @{
    insmod ntfs
-   search --set=root -l WINDOWS_7 --hint hd0,gpt5
-   gptsync hd0 5+7
+   search --set=root --label WINDOWS_7 --hint hd0,msdos2
    ntldr /bootmgr
 @}
 
 menuentry "FreeBSD" @{
           insmod zfs
-          search --set=root -l freepool --hint hd0,gpt6
+          search --set=root --label freepool --hint hd0,msdos7
           kfreebsd /freebsd@@/boot/kernel/kernel
           kfreebsd_module_elf /freebsd@@/boot/kernel/opensolaris.ko
           kfreebsd_module_elf /freebsd@@/boot/kernel/zfs.ko
@@ -1552,24 +1552,24 @@ menuentry "FreeBSD" @{
 @}
 
 menuentry "experimental GRUB" @{
-          search --set=root -l GRUB --hint hd0,gpt1
+          search --set=root --label GRUB --hint hd0,msdos5
           multiboot /experimental/grub/i386-pc/core.img
 @}
 
-menuentry "Fedora 16 install" @{
-          search --set=root -l GRUB --hint hd0,gpt1
+menuentry "Fedora 16 installer" @{
+          search --set=root --label GRUB --hint hd0,msdos5
           linux /fedora/vmlinuz lang=en_US keymap=sg resolution=1280x800
           initrd /fedora/initrd.img
 @}
 
-menuentry "Fedora rawhide install" @{
-          search --set=root -l GRUB --hint hd0,gpt1
+menuentry "Fedora rawhide installer" @{
+          search --set=root --label GRUB --hint hd0,msdos5
           linux /fedora/vmlinuz repo=ftp://mirror.switch.ch/mirror/fedora/linux/development/rawhide/x86_64 lang=en_US keymap=sg resolution=1280x800
           initrd /fedora/initrd.img
 @}
 
-menuentry "Debian sid install" @{
-          search --set=root -l GRUB --hint hd0,gpt1
+menuentry "Debian sid installer" @{
+          search --set=root --label GRUB --hint hd0,msdos5
           linux /debian/dists/sid/main/installer-amd64/current/images/hd-media/vmlinuz
           initrd /debian/dists/sid/main/installer-amd64/current/images/hd-media/initrd.gz
 @}
@@ -1578,7 +1578,7 @@ menuentry "Debian sid install" @{
 
 Notes:
 @itemize
-@item Argument to search after -l is FS LABEL. You can also use UUIDs with -u UUID instead of -l LABEL. You could also use direct @code{root=hd0,gptX} but this is not recommened due to device name instability.
+@item Argument to search after --label is FS LABEL. You can also use UUIDs with --fs-uuid UUID instead of --label LABEL. You could also use direct @code{root=hd0,msdosX} but this is not recommened due to device name instability.
 @end itemize
 
 @node Embedded configuration
