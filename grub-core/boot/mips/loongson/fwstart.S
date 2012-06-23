@@ -73,6 +73,7 @@ retry_cs5536:
 	 sll $t4, $t4, 1
 
 #ifndef FULOONG2F
+	lui $a0, %hi(cs5536_found)
 	bal message
 	 addiu $a0, $a0, %lo(cs5536_found)
 	bal printhex
