@@ -1,5 +1,11 @@
 2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (scan_disk) [GRUB_UTIL]: Put more
+	informative verbose message.
+	(read_lv): Handle 64-bit segment size.
+
+2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/lvm.c (grub_lvm_getvalue): Handle 64-bit values.
 
 2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>

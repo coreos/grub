@@ -152,6 +152,10 @@ scan_disk (const char *name, int accept_diskfilter)
 
       for (diskfilter = grub_diskfilter_list; diskfilter; diskfilter = diskfilter->next)
 	{
+#ifdef GRUB_UTIL
+	  grub_util_info ("Scanning for %s devices on disk %s", 
+			  diskfilter->name, name);
+#endif
 	  id.uuid = 0;
 	  id.uuidlen = 0;
 	  arr = diskfilter->detect (disk, &id, &start_sector);
@@ -780,7 +784,7 @@ read_lv (struct grub_diskfilter_lv *lv, grub_disk_addr_t sector,
       struct grub_diskfilter_vg *vg = lv->vg;
       struct grub_diskfilter_segment *seg = lv->segments;
       grub_uint64_t extent;
-      grub_size_t to_read;
+      grub_uint64_t to_read;
 
       extent = grub_divmod64 (sector, vg->extent_size, NULL);
       
