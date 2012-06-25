@@ -65,7 +65,7 @@ grub_raid6_init_table (void)
 
 static grub_err_t
 grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
-                    char *buf, grub_disk_addr_t sector, int size)
+                    char *buf, grub_disk_addr_t sector, grub_size_t size)
 {
   int i, q, pos;
   int bad1 = -1, bad2 = -1;

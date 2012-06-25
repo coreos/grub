@@ -178,12 +178,12 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
 typedef grub_err_t (*grub_raid5_recover_func_t) (struct grub_diskfilter_segment *array,
                                                  int disknr, char *buf,
                                                  grub_disk_addr_t sector,
-                                                 int size);
+                                                 grub_size_t size);
 
 typedef grub_err_t (*grub_raid6_recover_func_t) (struct grub_diskfilter_segment *array,
                                                  int disknr, int p, char *buf,
                                                  grub_disk_addr_t sector,
-                                                 int size);
+                                                 grub_size_t size);
 
 extern grub_raid5_recover_func_t grub_raid5_recover_func;
 extern grub_raid6_recover_func_t grub_raid6_recover_func;

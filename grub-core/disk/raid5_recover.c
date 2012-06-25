@@ -29,7 +29,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_err_t
 grub_raid5_recover (struct grub_diskfilter_segment *array, int disknr,
-                    char *buf, grub_disk_addr_t sector, int size)
+                    char *buf, grub_disk_addr_t sector, grub_size_t size)
 {
   char *buf2;
   int i;
