@@ -1,5 +1,10 @@
 2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c (grub_cmd_initrd): Avoid unnecessarry
+	cast between linux_kernel_header and linux_kernel_params.
+
+2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/diskfilter.h (grub_raid5_recover_func_t): Use proper
 	type for size.
 	(grub_raid6_recover_func_t): Likewise.

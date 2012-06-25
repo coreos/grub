@@ -1043,7 +1043,6 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_addr_t addr_min, addr_max;
   grub_addr_t addr;
   grub_err_t err;
-  struct linux_kernel_header *lh;
   int i;
   int nfiles = 0;
   grub_uint8_t *ptr;
@@ -1076,12 +1075,10 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   initrd_pages = (page_align (size) >> 12);
 
-  lh = (struct linux_kernel_header *) &linux_params;
-
   /* Get the highest address available for the initrd.  */
-  if (grub_le_to_cpu16 (lh->version) >= 0x0203)
+  if (grub_le_to_cpu16 (linux_params.version) >= 0x0203)
     {
-      addr_max = grub_cpu_to_le32 (lh->initrd_addr_max);
+      addr_max = grub_cpu_to_le32 (linux_params.initrd_addr_max);
 
       /* XXX in reality, Linux specifies a bogus value, so
 	 it is necessary to make sure that ADDR_MAX does not exceed
@@ -1144,9 +1141,9 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_dprintf ("linux", "Initrd, addr=0x%x, size=0x%x\n",
 		(unsigned) addr, (unsigned) size);
 
-  lh->ramdisk_image = initrd_mem_target;
-  lh->ramdisk_size = size;
-  lh->root_dev = 0x0100; /* XXX */
+  linux_params.ramdisk_image = initrd_mem_target;
+  linux_params.ramdisk_size = size;
+  linux_params.root_dev = 0x0100; /* XXX */
 
  fail:
   for (i = 0; i < nfiles; i++)
