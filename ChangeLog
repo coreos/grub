@@ -1,3 +1,10 @@
+2012-06-25  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	Fix overflow.
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_size)
+	[__NetBSD__]: Add explicit cast before bitshift.
+
 2012-06-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Bump to 2.00~rc1.

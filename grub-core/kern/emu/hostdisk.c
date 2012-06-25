@@ -309,7 +309,7 @@ grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
 # if defined (__APPLE__)
     return nr << log_sector_size;
 # elif defined(__NetBSD__)
-    return label.d_secperunit << log_sector_size;
+    return (grub_uint64_t) label.d_secperunit << log_sector_size;
 # elif defined (__sun__)
     return minfo.dki_capacity << log_sector_size;
 # else
