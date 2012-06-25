@@ -798,22 +798,36 @@ grub_fat_iterate_dir_next (grub_disk_t disk, struct grub_fat_data *data,
       filep = ctxt->filename;
       if (ctxt->dir.attr & GRUB_FAT_ATTR_VOLUME_ID)
 	{
-	  for (i = 0; i < sizeof (ctxt->dir.name) && ctxt->dir.name[i]
-		 && ! grub_isspace (ctxt->dir.name[i]); i++)
+	  for (i = 0; i < sizeof (ctxt->dir.name) && ctxt->dir.name[i]; i++)
 	    *filep++ = ctxt->dir.name[i];
+	  while (i > 0 && ctxt->dir.name[i - 1] == ' ')
+	    {
+	      filep--;
+	      i--;
+	    }
 	}
       else
 	{
-	  for (i = 0; i < 8 && ctxt->dir.name[i] && ! grub_isspace (ctxt->dir.name[i]); i++)
+	  for (i = 0; i < 8 && ctxt->dir.name[i]; i++)
 	    *filep++ = grub_tolower (ctxt->dir.name[i]);
+	  while (i > 0 && ctxt->dir.name[i - 1] == ' ')
+	    {
+	      filep--;
+	      i--;
+	    }
 
-	  *filep = '.';
+	  *filep++ = '.';
 
-	  for (i = 8; i < 11 && ctxt->dir.name[i] && ! grub_isspace (ctxt->dir.name[i]); i++)
-	    *++filep = grub_tolower (ctxt->dir.name[i]);
+	  for (i = 8; i < 11 && ctxt->dir.name[i]; i++)
+	    *filep++ = grub_tolower (ctxt->dir.name[i]);
+	  while (i > 8 && ctxt->dir.name[i - 1] == ' ')
+	    {
+	      filep--;
+	      i--;
+	    }
 
-	  if (*filep != '.')
-	    filep++;
+	  if (i == 8)
+	    filep--;
 	}
       *filep = '\0';
       return GRUB_ERR_NONE;
@@ -1117,7 +1131,7 @@ grub_fat_label (grub_device_t device, char **label)
     goto fail;
 
   while (!(err = grub_fat_iterate_dir_next (disk, data, &ctxt)))
-    if (ctxt.dir.attr == GRUB_FAT_ATTR_VOLUME_ID)
+    if ((ctxt.dir.attr & ~GRUB_FAT_ATTR_ARCHIVE) == GRUB_FAT_ATTR_VOLUME_ID)
       {
 	*label = grub_strdup (ctxt.filename);
 	break;

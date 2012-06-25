@@ -1,5 +1,11 @@
 2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/fat.c (grub_fat_iterate_dir_next): Don't stop on a space
+	character but still remove trainling spaces.
+	(grub_fat_label): Ignore archive flag.
+
+2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/linux.c (grub_cmd_initrd): Avoid unnecessarry
 	cast between linux_kernel_header and linux_kernel_params.
 
