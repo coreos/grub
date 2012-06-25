@@ -340,7 +340,7 @@ if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ] ; then
     if [ x$disk_module = xunspecified ]; then
 	disk_module=biosdisk
     fi
-elif [ "${grub_modinfo_platform}" = "ieee1275" ] || [ "${grub_modinfo_platform}" = "efi" ] ; then
+elif [ "${grub_modinfo_platform}" = "ieee1275" ] || [ "${grub_modinfo_platform}" = "efi" ] || [ "${grub_modinfo_platform}" = "arc" ] ; then
     disk_module=
 else
     disk_module=native
@@ -817,7 +817,7 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
 	}
     fi
 elif [ x"${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = xmips-arc ]; then
-    dvhtool -d "${install_device}" --unix-to-vh "{grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" grub
+    dvhtool -d "${install_device}" --unix-to-vh "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" grub
     gettext "You will have to set \`SystemPartition' and \`OSLoader' manually." 1>&2
     echo 1>&2
 elif [ x"$grub_modinfo_platform" = xefi ]; then

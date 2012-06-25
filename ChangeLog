@@ -1,5 +1,10 @@
 2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Fix dvhtool invocation. Add arc to the list of
+	platforms with firmware disk drivers in the core.
+
+2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (scan_disk) [GRUB_UTIL]: Put more
 	informative verbose message.
 	(read_lv): Handle 64-bit segment size.
