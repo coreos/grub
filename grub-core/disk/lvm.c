@@ -37,14 +37,14 @@ GRUB_MOD_LICENSE ("GPLv3+");
 /* Go the string STR and return the number after STR.  *P will point
    at the number.  In case STR is not found, *P will be NULL and the
    return value will be 0.  */
-static int
+static grub_uint64_t
 grub_lvm_getvalue (char **p, const char *str)
 {
   *p = grub_strstr (*p, str);
   if (! *p)
     return 0;
   *p += grub_strlen (str);
-  return grub_strtoul (*p, p, 10);
+  return grub_strtoull (*p, p, 10);
 }
 
 #if 0
