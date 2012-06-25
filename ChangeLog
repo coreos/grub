@@ -1,3 +1,7 @@
+2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkimage.c (generate_image): Add Fuloong2F verified hash.
+
 2012-06-25  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	Fix overflow.
