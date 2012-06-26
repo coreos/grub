@@ -1,5 +1,13 @@
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle slash in HFS label.
+
+	* grub-core/fs/hfs.c (macroman_to_utf8): New argument slash_translate.
+	(grub_hfs_dir): Tanslate slash.
+	(grub_hfs_label): Don't translate slash.
+
+2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/ls.c (grub_ls_list_devices): Disable
 	network protocol listing since it introduces problematic dependency on
 	net module.

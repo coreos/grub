@@ -999,7 +999,8 @@ static const char macroman[0x80][MAX_UTF8_PER_MAC_ROMAN + 1] =
   };
 
 static void
-macroman_to_utf8 (char *to, const grub_uint8_t *from, grub_size_t len)
+macroman_to_utf8 (char *to, const grub_uint8_t *from, grub_size_t len,
+		  int translate_slash)
 {
   char *optr = to;
   const grub_uint8_t *iptr;
@@ -1007,7 +1008,7 @@ macroman_to_utf8 (char *to, const grub_uint8_t *from, grub_size_t len)
   for (iptr = from; iptr < from + len && *iptr; iptr++)
     {
       /* Translate '/' to ':' as per HFS spec.  */
-      if (*iptr == '/')
+      if (*iptr == '/' && translate_slash)
 	{
 	  *optr++ = ':';
 	  continue;
@@ -1174,7 +1175,7 @@ grub_hfs_dir (grub_device_t device, const char *path,
       len = ckey->strlen;
       if (len > sizeof (ckey->str))
 	len = sizeof (ckey->str);
-      macroman_to_utf8 (fname, ckey->str, len);
+      macroman_to_utf8 (fname, ckey->str, len, 1);
 
       info.case_insensitive = 1;
 
@@ -1299,7 +1300,7 @@ grub_hfs_label (grub_device_t device, char **label)
       *label = grub_malloc (len * MAX_UTF8_PER_MAC_ROMAN + 1);
       if (*label)
 	macroman_to_utf8 (*label, data->sblock.volname + 1,
-			  len + 1);
+			  len + 1, 0);
     }
   else
     *label = 0;
