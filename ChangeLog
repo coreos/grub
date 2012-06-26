@@ -1,3 +1,8 @@
+2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/boot/decompressor/minilib.c (grub_memcmp): Fix the compare
+	signedness.
+
 2012-06-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.in: Fix dvhtool invocation. Add arc to the list of
