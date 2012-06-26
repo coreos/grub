@@ -642,10 +642,12 @@ print_terminfo (void)
   grub_puts_ (N_("Current terminfo types:"));
   for (cur = terminfo_outputs; cur;
        cur = ((struct grub_terminfo_output_state *) cur->data)->next)
-    grub_printf ("%s: %s\t%s\n", cur->name,
+    grub_printf ("%s: %s\t%s\t%dx%d\n", cur->name,
 		 grub_terminfo_get_current(cur),
 		 encoding_names[(cur->flags & GRUB_TERM_CODE_TYPE_MASK)
-				>> GRUB_TERM_CODE_TYPE_SHIFT]);
+				>> GRUB_TERM_CODE_TYPE_SHIFT],
+		 ((struct grub_terminfo_output_state *) cur->data)->width,
+	         ((struct grub_terminfo_output_state *) cur->data)->height);
 
   return GRUB_ERR_NONE;
 }

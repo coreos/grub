@@ -1,5 +1,9 @@
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/terminfo.c (print_terminfo): Print terminal dimensions.
+
+2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/mips/arc/init.c (grub_machine_init): Set clock
 	frequency to 150 MHz.
 
