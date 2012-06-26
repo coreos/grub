@@ -1,5 +1,9 @@
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c (generate_image): Add Yeeloong verified hash.
+
+2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Init video early on yeeloong to avoid being rebooted by watchdog.
 
 	* grub-core/Makefile.am (gensm712): New target.
