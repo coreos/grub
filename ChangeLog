@@ -1,5 +1,11 @@
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/ls.c (grub_ls_list_devices): Disable
+	network protocol listing since it introduces problematic dependency on
+	net module.
+
+2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c (generate_image): Add Yeeloong verified hash.
 
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>

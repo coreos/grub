@@ -62,7 +62,7 @@ grub_ls_list_devices (int longlist)
   grub_device_iterate (grub_ls_print_devices);
   grub_xputs ("\n");
 
-#ifndef GRUB_UTIL
+#if 0
   {
     grub_net_app_level_t proto;
     int first = 1;
