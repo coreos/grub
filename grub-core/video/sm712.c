@@ -18,6 +18,7 @@
 
 #define grub_video_render_target grub_video_fbrender_target
 
+#if !defined (TEST) && !defined(GENINIT)
 #include <grub/err.h>
 #include <grub/types.h>
 #include <grub/dl.h>
@@ -28,6 +29,15 @@
 #include <grub/pci.h>
 #include <grub/vga.h>
 #include <grub/cache.h>
+#else
+typedef unsigned char grub_uint8_t;
+typedef unsigned short grub_uint16_t;
+typedef unsigned int grub_uint32_t;
+typedef int grub_err_t;
+#include <grub/vgaregs.h>
+#include <stdio.h>
+#define ARRAY_SIZE(array) (sizeof (array) / sizeof (array[0]))
+#endif
 
 #include "sm712_init.c"
 
@@ -194,16 +204,20 @@ static struct
 
 static struct
 {
+#if !defined (TEST) && !defined(GENINIT)
   struct grub_video_mode_info mode_info;
+#endif
 
   volatile grub_uint8_t *ptr;
   grub_uint8_t *cached_ptr;
   int mapped;
   grub_uint32_t base;
+#if !defined (TEST) && !defined(GENINIT)
   grub_pci_device_t dev;
+#endif
 } framebuffer;
 
-#ifndef TEST
+#if !defined (TEST) && !defined(GENINIT)
 static grub_err_t
 grub_video_sm712_video_init (void)
 {
@@ -232,6 +246,10 @@ grub_sm712_write_reg (grub_uint8_t val, grub_uint16_t addr)
 {
 #ifdef TEST
   printf ("  {1, 0x%x, 0x%x},\n", addr, val);
+#elif defined (GENINIT)
+  printf (" .byte 0x%02x, 0x%02x\n", (addr - 0x3c0), val);
+  if ((addr - 0x3c0) & ~0x7f)
+    printf ("FAIL\n");
 #else
    *(volatile grub_uint8_t *) (framebuffer.ptr + GRUB_SM712_REG_BASE
 			       + addr) = val;
@@ -243,6 +261,10 @@ grub_sm712_read_reg (grub_uint16_t addr)
 {
 #ifdef TEST
   printf ("  {-1, 0x%x, 0x5},\n", addr);
+#elif defined (GENINIT)
+  if ((addr - 0x3c0) & ~0x7f)
+    printf ("FAIL\n");
+  printf ("  .byte 0x%04x, 0x00\n", (addr - 0x3c0) | 0x80);
 #else
   return *(volatile grub_uint8_t *) (framebuffer.ptr + GRUB_SM712_REG_BASE
 				     + addr);
@@ -342,12 +364,12 @@ static grub_err_t
 grub_video_sm712_setup (unsigned int width, unsigned int height,
 			unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
 {
+  unsigned i;
+#if !defined (TEST) && !defined(GENINIT)
   int depth;
   grub_err_t err;
   int found = 0;
-  unsigned i;
 
-#ifndef TEST
   auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)));
   int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)))
     {
@@ -382,7 +404,6 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   grub_pci_iterate (find_card);
   if (!found)
     return grub_error (GRUB_ERR_IO, "Couldn't find graphics card");
-#endif
   /* Fill mode info details.  */
   framebuffer.mode_info.width = 1024;
   framebuffer.mode_info.height = 600;
@@ -401,12 +422,11 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   framebuffer.mode_info.blue_field_pos = 0;
   framebuffer.mode_info.reserved_mask_size = 0;
   framebuffer.mode_info.reserved_field_pos = 0;
-#ifndef TEST
   framebuffer.mode_info.blit_format
     = grub_video_get_blit_format (&framebuffer.mode_info);
 #endif
 
-#ifndef TEST
+#if !defined (TEST) && !defined(GENINIT)
   if (found && framebuffer.base == 0)
     {
       grub_pci_address_t addr;
@@ -427,7 +447,7 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
 #endif
 
   /* We can safely discard volatile attribute.  */
-#ifndef TEST
+#if !defined (TEST) && !defined(GENINIT)
   framebuffer.ptr
     = grub_pci_device_map_range (framebuffer.dev,
 				 framebuffer.base,
@@ -440,12 +460,12 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   framebuffer.mapped = 1;
 
   /* Initialise SM712.  */
-#ifndef TEST
+#if !defined (TEST) && !defined(GENINIT)
   /* FIXME */
   grub_vga_sr_write (0x11, 0x18);
 #endif
 
-#ifndef TEST
+#if !defined (TEST) && !defined(GENINIT)
   /* Prevent garbage from appearing on the screen.  */
   grub_memset ((void *) framebuffer.cached_ptr, 0, 
 	       framebuffer.mode_info.height * framebuffer.mode_info.pitch);
@@ -687,7 +707,7 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
 			| GRUB_VGA_IO_MISC_COLOR,
 			GRUB_VGA_IO_MISC_WRITE);
 
-#ifndef TEST
+#if !defined (TEST) && !defined(GENINIT)
   /* Undocumented? */
   *(volatile grub_uint32_t *) ((char *) framebuffer.ptr + 0x40c00c) = 0;
   *(volatile grub_uint32_t *) ((char *) framebuffer.ptr + 0x40c040) = 0;
@@ -697,7 +717,7 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
 
   (void) grub_sm712_sr_read (0x16);
 
-#ifndef TEST
+#if !defined (TEST) && !defined(GENINIT)
   err = grub_video_fb_setup (mode_type, mode_mask,
 			     &framebuffer.mode_info,
 			     framebuffer.cached_ptr, NULL, NULL);
@@ -707,11 +727,13 @@ grub_video_sm712_setup (unsigned int width, unsigned int height,
   /* Copy default palette to initialize emulated palette.  */
   err = grub_video_fb_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
 				   grub_video_fbstd_colors);
-#endif
   return err;
+#else
+  return 0;
+#endif
 }
 
-#ifndef TEST
+#if !defined (TEST) && !defined(GENINIT)
 
 static grub_err_t
 grub_video_sm712_swap_buffers (void)

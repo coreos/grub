@@ -1,5 +1,18 @@
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Init video early on yeeloong to avoid being rebooted by watchdog.
+
+	* grub-core/Makefile.am (gensm712): New target.
+	(sm712_start.S): Likewise.
+	(boot/mips/loongson/fwstart.S): Depend on sm712_start.S
+	* grub-core/boot/mips/loongson/fwstart.S [!FULOONG2F]: Init SM712.
+	* grub-core/video/sm712.c [GENINIT]: Generate compact init procedure
+	description.
+	* include/grub/vga.h: Move registry definitions to...
+	* include/grub/vgaregs.h: ... here.
+
+2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/decompressor/minilib.c (grub_memcmp): Fix the compare
 	signedness.
 
