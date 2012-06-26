@@ -1,5 +1,10 @@
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mips/arc/init.c (grub_machine_init): Set clock
+	frequency to 150 MHz.
+
+2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Apple fixes.
 
 	* grub-core/lib/i386/relocator16.S: Use correct __APPLE__ and not

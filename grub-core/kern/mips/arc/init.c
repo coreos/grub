@@ -137,7 +137,7 @@ grub_machine_init (void)
   grub_console_init_early ();
 
   /* FIXME: measure this.  */
-  grub_arch_cpuclock = 64000000;
+  grub_arch_cpuclock = 150000000;
   grub_install_get_time_ms (grub_rtc_get_time_ms);
 
   while (1)
