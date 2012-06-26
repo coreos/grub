@@ -58,7 +58,7 @@ LOCAL(cont0):
 	LOCAL(jump_vector_offset) = LOCAL(jump_vector) - LOCAL(base)
 	LOCAL(gdt_offset) = LOCAL(gdt) - LOCAL(base)
 	LOCAL(gdt_addr_offset) = LOCAL(gdt_addr) - LOCAL(base)
-	LOCAL(gdtdesc_offset) = LOCAL(gdt_addr) - LOCAL(base)
+	LOCAL(gdtdesc_offset) = LOCAL(gdtdesc) - LOCAL(base)
 
 	lea	LOCAL(cont1_offset) (RSI, 1), RAX
 	movl	%eax, LOCAL(jump_vector_offset) (RSI, 1)

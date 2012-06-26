@@ -1,5 +1,15 @@
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Apple fixes.
+
+	* grub-core/lib/i386/relocator16.S: Use correct __APPLE__ and not
+	__APPLE_
+	* grub-core/lib/i386/relocator_common.S [__APPLE__]: Fix gdtdesc
+	definition.
+	* grub-core/lib/i386/relocator64.S [__APPLE__]: Assemble jmp manually.
+
+2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle slash in HFS label.
 
 	* grub-core/fs/hfs.c (macroman_to_utf8): New argument slash_translate.

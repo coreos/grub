@@ -84,7 +84,7 @@ VARIABLE(grub_relocator16_start)
 
 	movl 	%esi, %eax
 	shrl	$4, %eax
-#ifdef __APPLE_
+#ifdef __APPLE__
 	LOCAL(segment_offset) = LOCAL (segment) - LOCAL (base)
 	LOCAL(idt_offset) = LOCAL(relocator16_idt) - LOCAL (base)
 	LOCAL(cont2_offset) = LOCAL (cont2) - LOCAL(base)
