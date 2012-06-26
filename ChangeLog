@@ -1,5 +1,11 @@
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/arc/console.c (grub_console_init_output): Add one since
+	the value returned by firmware is the maximal position, not diumension.
+	(grub_terminfo_output_state): Use a more sane fallback.
+
+2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/terminfo.c (print_terminfo): Print terminal dimensions.
 
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>

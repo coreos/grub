@@ -61,8 +61,8 @@ grub_console_init_output (struct grub_term_output *term)
     info = GRUB_ARC_FIRMWARE_VECTOR->getdisplaystatus (GRUB_ARC_STDOUT);
   if (info)
     {
-      grub_console_terminfo_output.width = info->w;
-      grub_console_terminfo_output.height = info->h;
+      grub_console_terminfo_output.width = info->w + 1;
+      grub_console_terminfo_output.height = info->h + 1;
     }
   grub_terminfo_output_init (term);
 
@@ -78,7 +78,7 @@ static struct grub_terminfo_output_state grub_console_terminfo_output =
   {
     .put = put,
     .width = 80,
-    .height = 36
+    .height = 20
   };
 
 static struct grub_term_input grub_console_term_input =
