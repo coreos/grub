@@ -1,3 +1,8 @@
+2012-06-27  Yves Blusseau <blusseau@zetam.org>
+
+	* util/grub-mkconfig_lib.in: Fix print messages replacing builtin
+	echo shell command by printf command.
+
 2012-06-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/arc/console.c (grub_console_init_output): Add one since

@@ -35,7 +35,7 @@ if which gettext >/dev/null 2>/dev/null; then
   :
 else
   gettext () {
-     echo -n "$@"
+     printf "%s" "$@"
   }
 fi
 
@@ -308,14 +308,14 @@ print_option_help () {
   print_option_help_lead="  $1"
   print_option_help_lspace="$(echo "$print_option_help_lead" | wc $print_option_help_wc)"
   print_option_help_fill="$((26 - print_option_help_lspace))"
-  echo -n "$print_option_help_lead"
+  printf "%s" "$print_option_help_lead"
   if test $print_option_help_fill -le 0; then
       print_option_help_nl=y
       echo
   else
       print_option_help_i=0;
       while test $print_option_help_i -lt $print_option_help_fill; do
-	  echo -n " "
+      printf " "
 	  print_option_help_i=$((print_option_help_i+1))
       done
       print_option_help_nl=n
