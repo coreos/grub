@@ -189,7 +189,8 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 		}
 	    }
 
-	  free_node (oldnode);
+	  if (oldnode != currnode)
+	    free_node (oldnode);
 
 	  /* Found the node!  */
 	  if (! next || *next == '\0')

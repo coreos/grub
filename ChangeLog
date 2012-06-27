@@ -1,3 +1,8 @@
+2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/fshelp.c (grub_fshelp_find_file): Don't free oldnode if
+	it's equal to currnode. This can happen with "" symlink.
+
 2012-06-27  Yves Blusseau <blusseau@zetam.org>
 
 	* util/grub-mkconfig_lib.in: Fix print messages replacing builtin
