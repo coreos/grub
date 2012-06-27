@@ -61,8 +61,9 @@ New in 2.00:
   * Ability to load another coreboot payload when on coreboot.
   * Plan9.
   * Freedos.
-  * Ntldr/bootmgr (Windows bootloader).
-  * chainloader --bpb support.
+  * Ntldr/bootmgr (to load Windows bootloader).
+  * chainloader --bpb support to patch FAT or NTFS BPB in memory to correct
+    wrong partition offset.
   * PXE chainloading support.
   * Darwin 11 (Mac OS X Lion) protocol support.
 
@@ -72,8 +73,8 @@ New in 2.00:
 
 * Testing and debugging:
   * New grub-fstest commands: cat, zfsinfo, testload xnu_uuid
-  * grub-fstest recursive directory compare for quickly check that directory is
-    read correctly.
+  * grub-fstest recursive directory compare for quickly checking that
+    a directory is read correctly.
   * Backtace on crash (if gdb module is loaded, x86 only)
   * Disk cache statistics gathering.
   * GDB stub and GDB support script.
@@ -82,19 +83,21 @@ New in 2.00:
   * New `time' command.
 
 * Performance:
-  * Lazy scanning for improved performance.
+  * Lazy scanning to avoid accessing devices which aren't really used.
+    This avoids boot delay due to slow device scanning.
   * Use CPU cache when accessing video memory.
-  * Search hints for better performance.
+  * Search hints to first try the most likely device when searching for a
+    device with given UUID. This avoids slow scanning in most cases.
 
 * Internationalisation:
   * Updated to Unicode 6.0.
-  * $"..." syntax for translation in grub script. This allows easy
+  * $"..." syntax for translation in grub scripting language. This allows easy
     translation of grub.cfg at runtime.
   * Translations to many languages included in official distribution.
 
 * Scripting:
   * $grub_cpu and $grub_platform variables for conditioning grub.cfg on platform
-    on runtime.
+    at runtime.
   * $feature_* variables to condition scripts on available features.
   * Use of ids to identify menu entries.
   * all_video module which is empty but depends on all video modules thus
@@ -118,7 +121,8 @@ New in 2.00:
 
 * Experimental support for compiling with Apple toolchain.
 
-* grub-mkdevicemap removed. Now all devices are detected on runtime.
+* grub-mkdevicemap removed. Now all devices are detected on invocation of
+  any grub utility.
 
 New in 1.99:
 

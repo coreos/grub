@@ -1,4 +1,9 @@
 2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+2012-06-27  Jordan Uggla  <jordan.uggla@gmail.com>
+
+	* NEWS: Fix unclarity and language mistakes.
+
+2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/linux.c (find_efi_mmap_size): Increase
 	additional size to 3 pages.
