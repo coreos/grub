@@ -1,5 +1,11 @@
 2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c (find_efi_mmap_size): Increase
+	additional size to 3 pages.
+	Reported by: Stuart Hayes.
+
+2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* NEWS: Add 2.00 entry.
 
 2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>

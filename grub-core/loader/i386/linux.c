@@ -139,7 +139,7 @@ find_efi_mmap_size (void)
 
   /* Increase the size a bit for safety, because GRUB allocates more on
      later, and EFI itself may allocate more.  */
-  mmap_size += (1 << 12);
+  mmap_size += (3 << 12);
 
   mmap_size = page_align (mmap_size);
   return mmap_size;
