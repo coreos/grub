@@ -1,5 +1,11 @@
 2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/wildcard.c (check_file): Fix bad logic.
+	put explicit "/" for empty path.
+	(wildcard_expand): Improve dprintf.
+
+2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/fshelp.c (grub_fshelp_find_file): Don't free oldnode if
 	it's equal to currnode. This can happen with "" symlink.
 

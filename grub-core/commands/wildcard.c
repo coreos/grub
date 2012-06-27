@@ -381,7 +381,7 @@ check_file (const char *dir, const char *basename)
   int match (const char *name, const struct grub_dirhook_info *info)
   {
     if (basename[0] == 0
-	&& (info->case_insensitive ? grub_strcasecmp (name, basename) == 0
+	|| (info->case_insensitive ? grub_strcasecmp (name, basename) == 0
 	    : grub_strcmp (name, basename) == 0))
       {
 	found = 1;
@@ -410,7 +410,7 @@ check_file (const char *dir, const char *basename)
   else
     path = dir;
 
-  fs->dir (dev, path, match);
+  fs->dir (dev, path[0] ? path : "/", match);
   if (grub_errno == 0 && basename[0] == 0)
     found = 1;
 
@@ -505,8 +505,8 @@ wildcard_expand (const char *s, char ***strs)
 		  *p = 0;
 		  if (!check_file (n, p + 1))
 		    {
-		      grub_dprintf ("expand", "file <%s> not found\n",
-				    start);
+		      grub_dprintf ("expand", "file <%s> in <%s> not found\n",
+				    p + 1, n);
 		      grub_free (o);
 		      grub_free (n);
 			      continue;
