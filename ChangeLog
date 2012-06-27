@@ -1,5 +1,9 @@
 2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* NEWS: Add 2.00 entry.
+
+2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/wildcard.c (check_file): Fix bad logic.
 	put explicit "/" for empty path.
 	(wildcard_expand): Improve dprintf.
