@@ -492,7 +492,7 @@ static void (*grub_xputs_saved) (const char *str);
 static const char *features[] = {
   "feature_chainloader_bpb", "feature_ntldr", "feature_platform_search_hint",
   "feature_default_font_path", "feature_all_video_module",
-  "feature_menuentry_id", "feature_menuentry_options"
+  "feature_menuentry_id", "feature_menuentry_options", "feature_200_final"
 };
 
 GRUB_MOD_INIT(normal)

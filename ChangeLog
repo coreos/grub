@@ -1,4 +1,9 @@
 2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Bump version to 2.00.
+	* grub-core/normal/main.c (features): Add feature_200_final.
+
+2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 2012-06-27  Jordan Uggla  <jordan.uggla@gmail.com>
 
 	* NEWS: Fix unclarity and language mistakes.
