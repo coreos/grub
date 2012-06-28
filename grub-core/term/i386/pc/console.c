@@ -22,6 +22,8 @@
 #include <grub/types.h>
 #include <grub/machine/int.h>
 
+static grub_uint8_t grub_console_cur_color = 0x7;
+
 static void
 int10_9 (grub_uint8_t ch, grub_uint16_t n)
 {
@@ -248,6 +250,31 @@ grub_console_getkeystatus (struct grub_term_input *term __attribute__ ((unused))
 {
   /* conveniently GRUB keystatus is modelled after BIOS one.  */
   return bios_data_area->keyboard_flag_lower & ~0x80;
+}
+
+static grub_uint16_t
+grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
+{
+  return (80 << 8) | 25;
+}
+
+static void
+grub_console_setcolorstate (struct grub_term_output *term,
+			    grub_term_color_state state)
+{
+  switch (state) {
+    case GRUB_TERM_COLOR_STANDARD:
+      grub_console_cur_color = GRUB_TERM_DEFAULT_STANDARD_COLOR & 0x7f;
+      break;
+    case GRUB_TERM_COLOR_NORMAL:
+      grub_console_cur_color = term->normal_color & 0x7f;
+      break;
+    case GRUB_TERM_COLOR_HIGHLIGHT:
+      grub_console_cur_color = term->highlight_color & 0x7f;
+      break;
+    default:
+      break;
+  }
 }
 
 static struct grub_term_input grub_console_term_input =

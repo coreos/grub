@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2010,2012  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -290,7 +290,7 @@ static struct legacy_command legacy_commands[] =
      " default values are COM1, 9600, 8N1."},
     /* FIXME: setkey unsupported.  */    /* NUL_TERMINATE */
     /* NOTE: setup unsupported.  */
-    /* FIXME: --no-echo, --no-edit, hercules unsupported.  */
+    /* FIXME: --no-echo, --no-edit unsupported.  */
     /* NOTE: both terminals are activated so --silent and --timeout
        are useless.  */
     {"terminal", NULL, NULL, 0, 0, {}, FLAG_TERMINAL | FLAG_IGNORE_REST,
@@ -507,8 +507,8 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
       int dumb = 0, lines = 24;
 #ifdef TODO
       int no_echo = 0, no_edit = 0;
-      int hercules = 0;
 #endif
+      int hercules = 0;
       int console = 0, serial = 0;
       /* Big enough for any possible resulting command. */
       char outbuf[256] = "";
@@ -541,10 +541,8 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 
 	  if (grub_memcmp (ptr, "serial", sizeof ("serial") - 1) == 0)
 	    serial = 1;
-#ifdef TODO
 	  if (grub_memcmp (ptr, "hercules", sizeof ("hercules") - 1) == 0)
 	    hercules = 1;
-#endif
 	  while (*ptr && !grub_isspace (*ptr))
 	    ptr++;
 	  while (*ptr && grub_isspace (*ptr))
@@ -561,7 +559,7 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 	  grub_strcpy (outptr, "serial ");
 	  outptr += grub_strlen (outptr);
 	}
-      if (console)
+      if (console || hercules)
 	{
 	  grub_strcpy (outptr, "console ");
 	  outptr += grub_strlen (outptr);
@@ -576,6 +574,11 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
       if (console)
 	{
 	  grub_strcpy (outptr, "console ");
+	  outptr += grub_strlen (outptr);
+	}
+      if (hercules)
+	{
+	  grub_strcpy (outptr, "mda_text ");
 	  outptr += grub_strlen (outptr);
 	}
       grub_strcpy (outptr, "; ");

@@ -1,3 +1,34 @@
+2012-06-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add monochrome text support (mda_text, aka `hercules' in grub-legacy).
+
+	* grub-core/Makefile.core.def (mda_text): New module.
+	* grub-core/lib/legacy_parse.c (grub_legacy_parse): Support `hercules'.
+	* grub-core/term/i386/vga_common.c (grub_console_cur_color): Moved to ..
+	* grub-core/term/i386/pc/vga_text.c (cur_color): ... here
+	* grub-core/term/i386/pc/console.c (grub_console_cur_color): ... and
+	here.
+	* grub-core/term/i386/vga_common.c (grub_console_getwh): Moved to ..
+	* grub-core/term/i386/pc/vga_text.c (grub_console_getwh): ... here
+	* grub-core/term/i386/pc/console.c (grub_console_getwh): ... and
+	here.
+	* grub-core/term/i386/vga_common.c (grub_console_setcolorstate): Moved
+	to ..
+	* grub-core/term/i386/pc/vga_text.c (grub_console_setcolorstate):
+	... here
+	* grub-core/term/i386/pc/console.c (grub_console_setcolorstate): ... and
+	here.
+	* grub-core/term/i386/vga_common.c: Removed.
+	* include/grub/i386/vga_common.h: Likewise.
+	* include/grub/vga.h (grub_vga_cr_bw_write): New function.
+	(grub_vga_cr_bw_read): Likewise.
+	* include/grub/vgaregs.h (GRUB_VGA_IO_CR_BW_INDEX): New enum value.
+	(GRUB_VGA_IO_CR_BW_DATA): Likewise.
+	* grub-core/term/i386/pc/vga_text.c [MODE_MDA]: Call
+	grub_vga_cr_bw_read/grub_vga_cr_bw_write instead of
+	grub_vga_cr_read/grub_vga_cr_write.
+	(grub_vga_text_setcolorstate) [MODE_MDA]: Ignore color.
+
 2012-06-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Bump version to 2.00.

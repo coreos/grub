@@ -17,10 +17,17 @@
  */
 
 #include <grub/dl.h>
-#include <grub/i386/vga_common.h>
 #include <grub/cpu/io.h>
 #include <grub/types.h>
 #include <grub/vga.h>
+#include <grub/term.h>
+
+/* MODESET is used for testing to force monochrome or colour mode.
+   You shouldn't use mda_text on vga.
+ */
+#ifdef MODESET
+#include <grub/machine/int.h>
+#endif
 
 #if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
 #include <grub/machine/console.h>
@@ -35,9 +42,20 @@ static int grub_curr_x, grub_curr_y;
 
 #ifdef __mips__
 #define VGA_TEXT_SCREEN		((grub_uint16_t *) 0xb00b8000)
+#define cr_read grub_vga_cr_read
+#define cr_write grub_vga_cr_write
+#elif defined (MODE_MDA)
+#define VGA_TEXT_SCREEN		((grub_uint16_t *) 0xb0000)
+#define cr_read grub_vga_cr_bw_read
+#define cr_write grub_vga_cr_bw_write
+static grub_uint8_t cur_color;
 #else
 #define VGA_TEXT_SCREEN		((grub_uint16_t *) 0xb8000)
+#define cr_read grub_vga_cr_read
+#define cr_write grub_vga_cr_write
 #endif
+
+static grub_uint8_t cur_color = 0x7;
 
 static void
 screen_write_char (int x, int y, short c)
@@ -55,8 +73,8 @@ static void
 update_cursor (void)
 {
   unsigned int pos = grub_curr_y * COLS + grub_curr_x;
-  grub_vga_cr_write (pos >> 8, GRUB_VGA_CR_CURSOR_ADDR_HIGH);
-  grub_vga_cr_write (pos & 0xFF, GRUB_VGA_CR_CURSOR_ADDR_LOW);
+  cr_write (pos >> 8, GRUB_VGA_CR_CURSOR_ADDR_HIGH);
+  cr_write (pos & 0xFF, GRUB_VGA_CR_CURSOR_ADDR_LOW);
 }
 
 static void
@@ -72,7 +90,7 @@ inc_y (void)
         for (x = 0; x < COLS; x++)
           screen_write_char (x, y, screen_read_char (x, y + 1));
       for (x = 0; x < COLS; x++)
-	screen_write_char (x, ROWS - 1, ' ' | (grub_console_cur_color << 8));
+	screen_write_char (x, ROWS - 1, ' ' | (cur_color << 8));
     }
 }
 
@@ -103,7 +121,7 @@ grub_vga_text_putchar (struct grub_term_output *term __attribute__ ((unused)),
 	break;
       default:
 	screen_write_char (grub_curr_x, grub_curr_y,
-			   c->base | (grub_console_cur_color << 8));
+			   c->base | (cur_color << 8));
 	inc_x ();
     }
 
@@ -130,7 +148,7 @@ grub_vga_text_cls (struct grub_term_output *term)
 {
   int i;
   for (i = 0; i < ROWS * COLS; i++)
-    VGA_TEXT_SCREEN[i] = grub_cpu_to_le16 (' ' | (grub_console_cur_color << 8));
+    VGA_TEXT_SCREEN[i] = grub_cpu_to_le16 (' ' | (cur_color << 8));
   grub_vga_text_gotoxy (term, 0, 0);
 }
 
@@ -139,49 +157,136 @@ grub_vga_text_setcursor (struct grub_term_output *term __attribute__ ((unused)),
 			 int on)
 {
   grub_uint8_t old;
-  old = grub_vga_cr_read (GRUB_VGA_CR_CURSOR_START);
+  old = cr_read (GRUB_VGA_CR_CURSOR_START);
   if (on)
-    grub_vga_cr_write (old & ~GRUB_VGA_CR_CURSOR_START_DISABLE,
-		       GRUB_VGA_CR_CURSOR_START);
+    cr_write (old & ~GRUB_VGA_CR_CURSOR_START_DISABLE,
+	      GRUB_VGA_CR_CURSOR_START);
   else
-    grub_vga_cr_write (old | GRUB_VGA_CR_CURSOR_START_DISABLE,
-		       GRUB_VGA_CR_CURSOR_START);
+    cr_write (old | GRUB_VGA_CR_CURSOR_START_DISABLE,
+	      GRUB_VGA_CR_CURSOR_START);
 }
 
 static grub_err_t
-grub_vga_text_init_fini (struct grub_term_output *term)
+grub_vga_text_init (struct grub_term_output *term)
 {
+#ifdef MODESET
+  struct grub_bios_int_registers regs;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+#ifdef MODE_MDA
+  regs.eax = 7;
+#else
+  regs.eax = 3;
+#endif
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+#endif
   grub_vga_text_cls (term);
   return 0;
 }
 
+static grub_err_t
+grub_vga_text_fini (struct grub_term_output *term)
+{
+#ifdef MODESET
+  struct grub_bios_int_registers regs;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+
+  regs.eax = 3;
+  regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
+  grub_bios_interrupt (0x10, &regs);
+#endif
+  grub_vga_text_cls (term);
+  return 0;
+}
+
+static grub_uint16_t
+grub_vga_text_getwh (struct grub_term_output *term __attribute__ ((unused)))
+{
+  return (80 << 8) | 25;
+}
+
+#ifndef MODE_MDA
+
+static void
+grub_vga_text_setcolorstate (struct grub_term_output *term,
+			    grub_term_color_state state)
+{
+  switch (state) {
+    case GRUB_TERM_COLOR_STANDARD:
+      cur_color = GRUB_TERM_DEFAULT_STANDARD_COLOR & 0x7f;
+      break;
+    case GRUB_TERM_COLOR_NORMAL:
+      cur_color = term->normal_color & 0x7f;
+      break;
+    case GRUB_TERM_COLOR_HIGHLIGHT:
+      cur_color = term->highlight_color & 0x7f;
+      break;
+    default:
+      break;
+  }
+}
+
+#else
+static void
+grub_vga_text_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+			     grub_term_color_state state)
+{
+  switch (state) {
+    case GRUB_TERM_COLOR_STANDARD:
+      cur_color = 0x07;
+      break;
+    case GRUB_TERM_COLOR_NORMAL:
+      cur_color = 0x07;
+      break;
+    case GRUB_TERM_COLOR_HIGHLIGHT:
+      cur_color = 0x70;
+      break;
+    default:
+      break;
+  }
+}
+#endif
+
 static struct grub_term_output grub_vga_text_term =
   {
+#ifdef MODE_MDA
+    .name = "mda_text",
+#else
     .name = "vga_text",
-    .init = grub_vga_text_init_fini,
-    .fini = grub_vga_text_init_fini,
+#endif
+    .init = grub_vga_text_init,
+    .fini = grub_vga_text_fini,
     .putchar = grub_vga_text_putchar,
-    .getwh = grub_console_getwh,
+    .getwh = grub_vga_text_getwh,
     .getxy = grub_vga_text_getxy,
     .gotoxy = grub_vga_text_gotoxy,
     .cls = grub_vga_text_cls,
-    .setcolorstate = grub_console_setcolorstate,
+    .setcolorstate = grub_vga_text_setcolorstate,
     .setcursor = grub_vga_text_setcursor,
     .flags = GRUB_TERM_CODE_TYPE_CP437,
     .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
     .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
-#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
+#ifdef MODE_MDA
+GRUB_MOD_INIT(mda_text)
+#elif defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
 void grub_vga_text_init (void)
 #else
 GRUB_MOD_INIT(vga_text)
 #endif
 {
+#ifdef MODE_MDA
+  grub_term_register_output ("mda_text", &grub_vga_text_term);
+#else
   grub_term_register_output ("vga_text", &grub_vga_text_term);
+#endif
 }
 
-#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
+#ifdef MODE_MDA
+GRUB_MOD_FINI(mda_text)
+#elif defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
 void grub_vga_text_fini (void)
 #else
 GRUB_MOD_FINI(vga_text)

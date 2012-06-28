@@ -123,9 +123,6 @@ kernel = {
   i386_coreboot_multiboot_qemu = kern/i386/coreboot/init.c;
   i386_coreboot_multiboot_qemu = term/i386/pc/vga_text.c;
 
-  i386_coreboot_multiboot_qemu = term/i386/vga_common.c;
-  i386_pc = term/i386/vga_common.c;
-
   x86 = kern/i386/pit.c;
 
   efi = disk/efi/efidisk.c;
@@ -175,7 +172,6 @@ kernel = {
   mips_qemu_mips = term/at_keyboard.c;
   mips_qemu_mips = commands/keylayouts.c;
   mips_qemu_mips = term/i386/pc/vga_text.c;
-  mips_qemu_mips = term/i386/vga_common.c;
   mips_qemu_mips = kern/vga_init.c;
 
   mips_arc = kern/mips/arc/init.c;
@@ -1591,8 +1587,14 @@ module = {
 module = {
   name = vga_text;
   common = term/i386/pc/vga_text.c;
-  common = term/i386/vga_common.c;
   enable = i386_pc;
+};
+
+module = {
+  name = mda_text;
+  common = term/i386/pc/mda_text.c;
+  enable = i386_pc;
+  enable = i386_coreboot_multiboot_qemu;
 };
 
 module = {
