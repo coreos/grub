@@ -118,12 +118,13 @@ find_efi_mmap_size (void)
       int ret;
       grub_efi_memory_descriptor_t *mmap;
       grub_efi_uintn_t desc_size;
+      grub_efi_uintn_t cur_mmap_size = mmap_size;
 
-      mmap = grub_malloc (mmap_size);
+      mmap = grub_malloc (cur_mmap_size);
       if (! mmap)
 	return 0;
 
-      ret = grub_efi_get_memory_map (&mmap_size, mmap, 0, &desc_size, 0);
+      ret = grub_efi_get_memory_map (&cur_mmap_size, mmap, 0, &desc_size, 0);
       grub_free (mmap);
 
       if (ret < 0)
@@ -134,6 +135,8 @@ find_efi_mmap_size (void)
       else if (ret > 0)
 	break;
 
+      if (mmap_size < cur_mmap_size)
+	mmap_size = cur_mmap_size;
       mmap_size += (1 << 12);
     }
 

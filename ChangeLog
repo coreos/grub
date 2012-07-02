@@ -1,3 +1,9 @@
+2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/linux.c (find_efi_mmap_size): Don't decrease
+	efi_mmap_size.
+	Reported by: Stuart Hayes.
+
 2012-06-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add monochrome text support (mda_text, aka `hercules' in grub-legacy).
