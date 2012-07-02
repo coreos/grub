@@ -65,6 +65,7 @@ struct legacy_command
  */
 static struct legacy_command legacy_commands[] =
   {
+    /* FIXME: background unsupported.  */
     {"blocklist", "blocklist '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Print the blocklist notation of the file FILE."},
     {"boot", "boot\n", NULL, 0, 0, {}, 0, 0,
@@ -82,6 +83,8 @@ static struct legacy_command legacy_commands[] =
      2, {TYPE_FORCE_OPTION, TYPE_FILE}, 0, "[--force] FILE",
      "Load the chain-loader FILE. If --force is specified, then load it"
      " forcibly, whether the boot loader signature is present or not."},
+    {"clear", "clear\n", NULL, 0, 0, {}, 0, 0,
+     "Clear the screen."},
     {"cmp", "cmp '%s' '%s'\n", NULL, 0,
      2, {TYPE_FILE, TYPE_FILE}, FLAG_IGNORE_REST, "FILE1 FILE2",
      "Compare the file FILE1 with the FILE2 and inform the different values"
@@ -125,6 +128,7 @@ static struct legacy_command legacy_commands[] =
     {"displaymem", "lsmmap\n", NULL, 0, 0, {}, 0, 0, 
      "Display what GRUB thinks the system address space map of the"
      " machine is, including all regions of physical RAM installed."},
+    /* FIXME: device and efimap unsupported.  */
     /* NOTE: embed unsupported.  */
     {"fallback", "set fallback='%s'\n", NULL, 0,
      1, {TYPE_VERBATIM}, 0, "NUM...",
@@ -136,6 +140,8 @@ static struct legacy_command legacy_commands[] =
     {"find", "search -f '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILENAME",
      "Search for the filename FILENAME in all of partitions and print the list of"
      " the devices which contain the file."},
+    /* FIXME: findiso unsupported.  */
+    /* FIXME: foreground unsupported.  */
     /* FIXME: fstest unsupported.  */
     /* NOTE: The obsolete C/H/S geometry isn't shown anymore.  */
     {"geometry", "insmod regexp; ls -l (%s*)\n", NULL, 0, 1, {TYPE_VERBATIM}, 0, "DRIVE",
@@ -243,6 +249,7 @@ static struct legacy_command legacy_commands[] =
     {"pause", "echo %s; if ! sleep -i 60; then return; fi\n", NULL, 0, 1,
      {TYPE_REST_VERBATIM}, 0,
      "[MESSAGE ...]", "Print MESSAGE, then wait until a key is pressed."},
+    /* FIXME: quit unsupported.  */
     /* FIXME: rarp unsupported.  */
     {"read", "read_dword %s\n", NULL, 0, 1, {TYPE_INT}, 0, "ADDR",
      "Read a 32-bit value from memory at address ADDR and"
@@ -288,11 +295,14 @@ static struct legacy_command legacy_commands[] =
      " STOP is the length of stop bit(s). The option --device can be used only"
      " in the grub shell, which specifies the file name of a tty device. The"
      " default values are COM1, 9600, 8N1."},
+    /* FIXME: silent unsupported.  */
+    /* FIXME: splashimage unsupported.  */
     /* FIXME: setkey unsupported.  */    /* NUL_TERMINATE */
     /* NOTE: setup unsupported.  */
     /* FIXME: --no-echo, --no-edit unsupported.  */
     /* NOTE: both terminals are activated so --silent and --timeout
        are useless.  */
+    /* FIXME: graphics unsupported.  */
     {"terminal", NULL, NULL, 0, 0, {}, FLAG_TERMINAL | FLAG_IGNORE_REST,
      "[--dumb] [--no-echo] [--no-edit] [--timeout=SECS] [--lines=LINES] "
      "[--silent] [console] [serial] [hercules]",
@@ -307,7 +317,7 @@ static struct legacy_command legacy_commands[] =
      " seconds. The option --lines specifies the maximum number of lines."
      " The option --silent is used to suppress messages."},
     /* FIXME: terminfo unsupported.  */    /* NUL_TERMINATE */
-    {"testload", "cat '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
+    {"testload", "testload '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Read the entire contents of FILE in several different ways and"
      " compares them, to test the filesystem code. "
      " If this test succeeds, then a good next"
@@ -334,6 +344,8 @@ static struct legacy_command legacy_commands[] =
      " the information about only the mode."},
     {"vbeprobe", "insmod vbe; videoinfo\n", NULL, 0, 0, {},
      FLAG_FALLBACK, NULL, NULL}
+    /* FIXME: verbose unsupported.  */
+    /* FIXME: version unsupported.  */
   };
 
 char *

@@ -1,5 +1,9 @@
 2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/legacy_parse.c: Support clear and testload.
+
+2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/efi/serial.c: Support 1.5 stop bits.
 
 2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
