@@ -1,5 +1,11 @@
 2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/tftp.c (ack): Fix endianness problem.
+	(tftp_receive): Likewise.
+	Reported by: Michael Davidsaver.
+
+2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gentpl.py: Make mans depend on grub-mkconfig_lib.
 
 2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
