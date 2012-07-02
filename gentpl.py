@@ -487,7 +487,7 @@ def installdir(default="bin"):
 def manpage():
     r  = "if COND_MAN_PAGES\n"
     r += gvar_add("man_MANS", "[+ name +].[+ mansection +]\n")
-    r += rule("[+ name +].[+ mansection +]", "[+ name +]", """
+    r += rule("[+ name +].[+ mansection +]", "[+ name +] grub-mkconfig_lib", """
 chmod a+x [+ name +]
 PATH=$(builddir):$$PATH pkgdatadir=$(builddir) $(HELP2MAN) --section=[+ mansection +] -i $(top_srcdir)/docs/man/[+ name +].h2m -o $@ [+ name +]
 """)

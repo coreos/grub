@@ -1,5 +1,15 @@
 2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* gentpl.py: Make mans depend on grub-mkconfig_lib.
+
+2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/list.h (FOR_LIST_ELEMENTS_SAFE): New macro.
+	* include/grub/command.h (FOR_COMMANDS_SAFE): Likewise.
+	* grub-core/commands/help.c (grub_cmd_help): Use FOR_COMMANDS_SAFE.
+
+2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/linux.c (find_efi_mmap_size): Don't decrease
 	efi_mmap_size.
 	Reported by: Stuart Hayes.
