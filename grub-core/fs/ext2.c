@@ -65,7 +65,8 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 /* The inode size.  */
 #define EXT2_INODE_SIZE(data)	\
-        (EXT2_REVISION (data) == EXT2_GOOD_OLD_REVISION \
+  (data->sblock.revision_level \
+   == grub_cpu_to_le32_compile_time (EXT2_GOOD_OLD_REVISION)	\
          ? EXT2_GOOD_OLD_INODE_SIZE \
          : grub_le_to_cpu16 (data->sblock.inode_size))
 
@@ -105,7 +106,8 @@ GRUB_MOD_LICENSE ("GPLv3+");
  * flags here as the related features are implemented into the driver.  */
 #define EXT2_DRIVER_SUPPORTED_INCOMPAT ( EXT2_FEATURE_INCOMPAT_FILETYPE \
                                        | EXT4_FEATURE_INCOMPAT_EXTENTS  \
-                                       | EXT4_FEATURE_INCOMPAT_FLEX_BG )
+                                       | EXT4_FEATURE_INCOMPAT_FLEX_BG \
+                                       | EXT4_FEATURE_INCOMPAT_64BIT)
 /* List of rationales for the ignored "incompatible" features:
  * needs_recovery: Not really back-incompatible - was added as such to forbid
  *                 ext2 drivers from mounting an ext3 volume with a dirty
@@ -179,7 +181,7 @@ struct grub_ext2_sblock
   grub_uint32_t hash_seed[4];
   grub_uint8_t def_hash_version;
   grub_uint8_t jnl_backup_type;
-  grub_uint16_t reserved_word_pad;
+  grub_uint16_t group_desc_size;
   grub_uint32_t default_mount_opts;
   grub_uint32_t first_meta_bg;
   grub_uint32_t mkfs_time;
@@ -197,6 +199,14 @@ struct grub_ext2_block_group
   grub_uint16_t used_dirs;
   grub_uint16_t pad;
   grub_uint32_t reserved[3];
+  grub_uint32_t block_id_hi;
+  grub_uint32_t inode_id_hi;
+  grub_uint32_t inode_table_id_hi;
+  grub_uint16_t free_blocks_hi;
+  grub_uint16_t free_inodes_hi;
+  grub_uint16_t used_dirs_hi;
+  grub_uint16_t pad2;
+  grub_uint32_t reserved2[3];
 };
 
 /* The ext2 inode.  */
@@ -310,6 +320,7 @@ struct grub_fshelp_node
 struct grub_ext2_data
 {
   struct grub_ext2_sblock sblock;
+  int log_group_desc_size;
   grub_disk_t disk;
   struct grub_ext2_inode *inode;
   struct grub_fshelp_node diropen;
@@ -328,7 +339,7 @@ grub_ext2_blockgroup (struct grub_ext2_data *data, int group,
   return grub_disk_read (data->disk,
                          ((grub_le_to_cpu32 (data->sblock.first_data_block) + 1)
                           << LOG2_EXT2_BLOCK_SIZE (data)),
-			 group * sizeof (struct grub_ext2_block_group),
+			 group << data->log_group_desc_size,
 			 sizeof (struct grub_ext2_block_group), blkgrp);
 }
 
@@ -362,7 +373,7 @@ grub_ext4_find_leaf (struct grub_ext2_data *data, grub_properly_aligned_t *buf,
         return 0;
 
       block = grub_le_to_cpu16 (index[i].leaf_hi);
-      block = (block << 32) + grub_le_to_cpu32 (index[i].leaf);
+      block = (block << 32) | grub_le_to_cpu32 (index[i].leaf);
       if (grub_disk_read (data->disk,
                           block << LOG2_EXT2_BLOCK_SIZE (data),
                           0, EXT2_BLOCK_SIZE(data), buf))
@@ -377,11 +388,11 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   struct grub_ext2_data *data = node->data;
   struct grub_ext2_inode *inode = &node->inode;
-  int blknr = -1;
+  grub_disk_addr_t blknr = -1;
   unsigned int blksz = EXT2_BLOCK_SIZE (data);
   int log2_blksz = LOG2_EXT2_BLOCK_SIZE (data);
 
-  if (grub_le_to_cpu32(inode->flags) & EXT4_EXTENTS_FLAG)
+  if (inode->flags & grub_cpu_to_le32_compile_time (EXT4_EXTENTS_FLAG))
     {
       GRUB_PROPERLY_ALIGNED_ARRAY (buf, EXT2_BLOCK_SIZE(data));
       struct grub_ext4_extent_header *leaf;
@@ -535,6 +546,7 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
   int inodes_per_block;
   unsigned int blkno;
   unsigned int blkoff;
+  grub_disk_addr_t base;
 
   /* It is easier to calculate if the first inode is 0.  */
   ino--;
@@ -551,10 +563,14 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
   blkoff = (ino % grub_le_to_cpu32 (sblock->inodes_per_group))
     % inodes_per_block;
 
+  base = grub_le_to_cpu32 (blkgrp.inode_table_id);
+  if (data->log_group_desc_size >= 6)
+    base |= (((grub_disk_addr_t) grub_le_to_cpu32 (blkgrp.inode_table_id_hi))
+	     << 32);
+
   /* Read the inode.  */
   if (grub_disk_read (data->disk,
-		      (((grub_disk_addr_t) grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno)
-		        << LOG2_EXT2_BLOCK_SIZE (data)),
+		      ((base + blkno) << LOG2_EXT2_BLOCK_SIZE (data)),
 		      EXT2_INODE_SIZE (data) * blkoff,
 		      sizeof (struct grub_ext2_inode), inode))
     return grub_errno;
@@ -578,7 +594,7 @@ grub_ext2_mount (grub_disk_t disk)
     goto fail;
 
   /* Make sure this is an ext2 filesystem.  */
-  if (grub_le_to_cpu16 (data->sblock.magic) != EXT2_MAGIC
+  if (data->sblock.magic != grub_cpu_to_le16_compile_time (EXT2_MAGIC)
       || grub_le_to_cpu32 (data->sblock.log2_block_size) >= 16)
     {
       grub_error (GRUB_ERR_BAD_FS, "not an ext2 filesystem");
@@ -586,13 +602,29 @@ grub_ext2_mount (grub_disk_t disk)
     }
 
   /* Check the FS doesn't have feature bits enabled that we don't support. */
-  if (grub_le_to_cpu32 (data->sblock.feature_incompat)
-        & ~(EXT2_DRIVER_SUPPORTED_INCOMPAT | EXT2_DRIVER_IGNORED_INCOMPAT))
+  if (data->sblock.revision_level != grub_cpu_to_le32_compile_time (EXT2_GOOD_OLD_REVISION)
+      && (data->sblock.feature_incompat
+	  & grub_cpu_to_le32_compile_time (~(EXT2_DRIVER_SUPPORTED_INCOMPAT
+					     | EXT2_DRIVER_IGNORED_INCOMPAT))))
     {
       grub_error (GRUB_ERR_BAD_FS, "filesystem has unsupported incompatible features");
       goto fail;
     }
 
+  if (data->sblock.revision_level != grub_cpu_to_le32_compile_time (EXT2_GOOD_OLD_REVISION)
+      && (data->sblock.feature_incompat
+	  & grub_cpu_to_le32_compile_time (EXT4_FEATURE_INCOMPAT_64BIT))
+      && data->sblock.group_desc_size != 0
+      && ((data->sblock.group_desc_size & (data->sblock.group_desc_size - 1))
+	  == 0)
+      && (data->sblock.group_desc_size & grub_cpu_to_le16_compile_time (0x1fe0)))
+    {
+      grub_uint16_t b = grub_le_to_cpu16 (data->sblock.group_desc_size);
+      for (data->log_group_desc_size = 0; b != (1 << data->log_group_desc_size);
+	   data->log_group_desc_size++);
+    }
+  else
+    data->log_group_desc_size = 5;
 
   data->disk = disk;
 
