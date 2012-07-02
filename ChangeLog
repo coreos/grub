@@ -1,5 +1,9 @@
 2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/efi/serial.c: Support 1.5 stop bits.
+
+2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ext2.c: Experimental support for 64-bit.
 
 2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
