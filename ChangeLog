@@ -1,3 +1,7 @@
+2012-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.am: Fix path to boot/i386/pc/startup_raw.S.
+
 2012-07-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/legacy_parse.c: Support clear and testload.
