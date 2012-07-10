@@ -1734,6 +1734,14 @@ module = {
 };
 
 module = {
+  name = linuxefi;
+  efi = loader/i386/efi/linux.c;
+  efi = lib/cmdline.c;
+  enable = i386_efi;
+  enable = x86_64_efi;
+};
+
+module = {
   name = chain;
   efi = loader/efi/chainloader.c;
   i386_pc = loader/i386/pc/chainloader.c;
