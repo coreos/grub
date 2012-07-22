@@ -1,5 +1,13 @@
 2012-07-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/bsd.c (grub_bsd_elf32_size_hook): Fix mask.
+	(grub_bsd_elf32_hook): Likewise.
+	(grub_bsd_elf64_size_hook): Likewise.
+	(grub_bsd_elf64_hook): Likewise.
+	(grub_bsd_load_elf): Likewise.
+
+2012-07-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/xzembed/xz_dec_stream.c (hash_validate): Fix behaviour
 	if hash function is unavailable.
 	(dec_stream_header): Likewise.

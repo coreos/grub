@@ -1309,7 +1309,7 @@ grub_bsd_elf32_size_hook (grub_elf_t elf __attribute__ ((unused)),
       && phdr->p_type != PT_DYNAMIC)
       return 0;
 
-  paddr = phdr->p_paddr & 0xFFFFFF;
+  paddr = phdr->p_paddr & 0xFFFFFFF;
 
   if (paddr < kern_start)
     kern_start = paddr;
@@ -1333,7 +1333,7 @@ grub_bsd_elf32_hook (Elf32_Phdr * phdr, grub_addr_t * addr, int *do_load)
     }
 
   *do_load = 1;
-  phdr->p_paddr &= 0xFFFFFF;
+  phdr->p_paddr &= 0xFFFFFFF;
   paddr = phdr->p_paddr;
 
   *addr = (grub_addr_t) (paddr - kern_start + (grub_uint8_t *) kern_chunk_src);
@@ -1351,7 +1351,7 @@ grub_bsd_elf64_size_hook (grub_elf_t elf __attribute__ ((unused)),
       && phdr->p_type != PT_DYNAMIC)
     return 0;
 
-  paddr = phdr->p_paddr & 0xffffff;
+  paddr = phdr->p_paddr & 0xfffffff;
 
   if (paddr < kern_start)
     kern_start = paddr;
@@ -1375,7 +1375,7 @@ grub_bsd_elf64_hook (Elf64_Phdr * phdr, grub_addr_t * addr, int *do_load)
     }
 
   *do_load = 1;
-  paddr = phdr->p_paddr & 0xffffff;
+  paddr = phdr->p_paddr & 0xfffffff;
 
   *addr = (grub_addr_t) (paddr - kern_start + (grub_uint8_t *) kern_chunk_src);
 
@@ -1394,7 +1394,7 @@ grub_bsd_load_elf (grub_elf_t elf, const char *filename)
     {
       grub_relocator_chunk_t ch;
 
-      entry = elf->ehdr.ehdr32.e_entry & 0xFFFFFF;
+      entry = elf->ehdr.ehdr32.e_entry & 0xFFFFFFF;
       err = grub_elf32_phdr_iterate (elf, filename,
 				     grub_bsd_elf32_size_hook, NULL);
       if (err)
