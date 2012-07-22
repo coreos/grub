@@ -1,3 +1,12 @@
+2012-07-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix coreboot compilation.
+
+	* grub-core/term/i386/pc/vga_text.c (grub_vga_text_init): Rename to ...
+	(grub_vga_text_init_real): ... this.
+	(grub_vga_text_fini): Rename to ...
+	(grub_vga_text_fini_real): ... this.
+
 2012-07-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/Makefile.am: Fix path to boot/i386/pc/startup_raw.S.

@@ -167,7 +167,7 @@ grub_vga_text_setcursor (struct grub_term_output *term __attribute__ ((unused)),
 }
 
 static grub_err_t
-grub_vga_text_init (struct grub_term_output *term)
+grub_vga_text_init_real (struct grub_term_output *term)
 {
 #ifdef MODESET
   struct grub_bios_int_registers regs;
@@ -186,7 +186,7 @@ grub_vga_text_init (struct grub_term_output *term)
 }
 
 static grub_err_t
-grub_vga_text_fini (struct grub_term_output *term)
+grub_vga_text_fini_real (struct grub_term_output *term)
 {
 #ifdef MODESET
   struct grub_bios_int_registers regs;
@@ -255,8 +255,8 @@ static struct grub_term_output grub_vga_text_term =
 #else
     .name = "vga_text",
 #endif
-    .init = grub_vga_text_init,
-    .fini = grub_vga_text_fini,
+    .init = grub_vga_text_init_real,
+    .fini = grub_vga_text_fini_real,
     .putchar = grub_vga_text_putchar,
     .getwh = grub_vga_text_getwh,
     .getxy = grub_vga_text_getxy,
