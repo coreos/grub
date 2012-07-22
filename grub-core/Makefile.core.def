@@ -569,6 +569,12 @@ module = {
 };
 
 module = {
+  name = lsefi;
+  common = commands/efi/lsefi.c;
+  enable = efi;
+};
+
+module = {
   name = blocklist;
   common = commands/blocklist.c;
 };

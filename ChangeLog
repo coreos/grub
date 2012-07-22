@@ -1,5 +1,13 @@
 2012-07-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	New command `lsefi'.
+
+	* grub-core/Makefile.core.def (lsefi): New module.
+	* grub-core/commands/efi/lsefi.c: New file.
+	* include/grub/efi/api.h: Add more GUIDs.
+
+2012-07-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/bsd.c (grub_bsd_elf32_size_hook): Fix mask.
 	(grub_bsd_elf32_hook): Likewise.
 	(grub_bsd_elf64_size_hook): Likewise.
