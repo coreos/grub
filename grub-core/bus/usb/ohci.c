@@ -270,6 +270,11 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
 	return 0;
 #endif
 
+      /* Set bus master - needed for coreboot, VMware, broken BIOSes etc. */
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+      grub_pci_write_word(addr,
+          GRUB_PCI_COMMAND_BUS_MASTER | grub_pci_read_word(addr));
+
       grub_dprintf ("ohci", "class=0x%02x 0x%02x interface 0x%02x\n",
 		    class, subclass, interf);
     }

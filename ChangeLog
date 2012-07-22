@@ -1,3 +1,8 @@
+2012-07-22  Ales Nesrsta  <starous@volny.cz>
+
+	* grub-core/bus/usb/ehci.c: PCI iter. - added PCI bus master setting.
+	* grub-core/bus/usb/ohci.c: PCI iter. - added PCI bus master setting.
+
 2012-07-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkconfig_lib.in (grub_quote): Remove extra layer of escape.
