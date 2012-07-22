@@ -255,19 +255,19 @@ version_find_latest ()
   echo "$version_find_latest_a"
 }
 
-# One layer of quotation is eaten by "", the second by sed, and the third by
-# printf; so this turns ' into \'.  Note that you must use the output of
+# One layer of quotation is eaten by "" and the second by
+# sed; so this turns ' into \'.  Note that you must use the output of
 # this function in a printf format string.
 
 grub_quote () {
-  sed "s/'/'\\\\\\\\''/g"
+  sed "s/'/'\\\\''/g"
 }
 
 gettext_quoted () {
-  gettext "$@" | sed "s/'/'\\\\\\\\''/g"
+  gettext "$@" | grub_quote
 }
 
-# Run the first argument through gettext_quoted, and then pass that and all
+# Run the first argument through gettext, and then pass that and all
 # remaining arguments to printf.  This is a useful abbreviation and tends to
 # be easier to type.
 gettext_printf () {

@@ -117,7 +117,7 @@ EOF
       opts=
   fi
   sed "s/^/$submenu_indentation/" << EOF
-	echo		'$message'
+	echo		'$(echo "$message" | grub_quote)'
 	multiboot	${kernel} root=device:${GRUB_DEVICE#/dev/} $opts ${GRUB_CMDLINE_GNUMACH}
 EOF
 
@@ -133,7 +133,7 @@ EOF
   fi
 
   sed "s/^/$submenu_indentation/" << EOF
-	echo		'$message'
+	echo		'$(echo "$message" | grub_quote)'
 	module		/hurd/${hurd_fs}.static ${hurd_fs} $opts \\
 			--multiboot-command-line='\${kernel-command-line}' \\
 			--host-priv-port='\${host-port}' \\

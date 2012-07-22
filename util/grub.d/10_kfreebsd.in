@@ -100,7 +100,7 @@ kfreebsd_entry ()
   printf '%s\n' "${prepare_boot_cache}" | sed "s/^/$submenu_indentation/"
   message="$(gettext_printf "Loading kernel of FreeBSD %s ..." ${version})"
   sed "s/^/$submenu_indentation/" << EOF
-	echo			'$message'
+	echo			'$(echo "$message" | grub_quote)'
 	kfreebsd		${rel_dirname}/${basename} ${args}
 EOF
 

@@ -46,6 +46,7 @@ message="$(gettext_printf "Loading kernel of Illumos ...")"
 		ISADIR=
 	fi
 	zfs-bootfs $($grub_mkrelpath /) ZFS_BOOTFS
+        echo '$(echo "$message" | grub_quote)'
 	multiboot $($grub_mkrelpath /platform/i86pc/kernel)/\$ISADIR/unix /platform/i86pc/kernel/\$ISADIR/unix -B \$ZFS_BOOTFS,console=text
 	module $($grub_mkrelpath /platform/i86pc)/\$ISADIR/boot_archive /platform/i86pc/\$ISADIR/boot_archive
 }

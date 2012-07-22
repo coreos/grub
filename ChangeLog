@@ -1,5 +1,14 @@
 2012-07-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkconfig_lib.in (grub_quote): Remove extra layer of escape.
+	* util/grub.d/10_hurd.in: Add missing quoting.
+	* util/grub.d/10_illumos.in: Likewise.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
+2012-07-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	New command `lsefi'.
 
 	* grub-core/Makefile.core.def (lsefi): New module.

@@ -120,16 +120,16 @@ linux_entry ()
   xmessage="$(gettext_printf "Loading Xen %s ..." ${xen_version})"
   lmessage="$(gettext_printf "Loading Linux %s ..." ${version})"
   sed "s/^/$submenu_indentation/" << EOF
-	echo	'$xmessage'
+	echo	'$(echo "$xmessage" | grub_quote)'
 	multiboot	${rel_xen_dirname}/${xen_basename} placeholder ${xen_args}
-	echo	'$lmessage'
+	echo	'$(echo "$lmessage" | grub_quote)'
 	module	${rel_dirname}/${basename} placeholder root=${linux_root_device_thisversion} ro ${args}
 EOF
   if test -n "${initrd}" ; then
     # TRANSLATORS: ramdisk isn't identifier. Should be translated.
     message="$(gettext_printf "Loading initial ramdisk ...")"
     sed "s/^/$submenu_indentation/" << EOF
-	echo	'$message'
+	echo	'$(echo "$message" | grub_quote)'
 	module	${rel_dirname}/${initrd}
 EOF
   fi
