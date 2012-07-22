@@ -403,18 +403,25 @@ static enum xz_ret hash_validate(struct xz_dec *s, struct xz_buf *b,
 	}
 #endif
 
-	do {
+	if (b->in_pos == b->in_size)
+		return XZ_OK;
+
+	if (!crc32 && s->hash_size == 0)
+		s->pos += 8;
+
+	while (s->pos < (crc32 ? 32 : s->hash_size * 8)) {
 		if (b->in_pos == b->in_size)
 			return XZ_OK;
 
 #ifndef GRUB_EMBED_DECOMPRESSOR
-		if (hash && s->hash_value[s->pos / 8] != b->in[b->in_pos++])
+		if (hash && s->hash_value[s->pos / 8] != b->in[b->in_pos])
 			return XZ_DATA_ERROR;
 #endif
+		b->in_pos++;
 
 		s->pos += 8;
 
-	} while (s->pos < (crc32 ? 32 : s->hash_size * 8));
+	}
 
 #ifndef GRUB_EMBED_DECOMPRESSOR
 	if (s->hash)
@@ -529,8 +536,6 @@ static enum xz_ret dec_stream_header(struct xz_dec *s)
 			s->hash->init(s->index.hash.hash_context);
  			s->hash->init(s->block.hash.hash_context);
 		}
-		if (!s->hash)
-			return XZ_OPTIONS_ERROR;
 #endif
 	}
 	else

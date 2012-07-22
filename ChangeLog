@@ -1,5 +1,11 @@
 2012-07-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/xzembed/xz_dec_stream.c (hash_validate): Fix behaviour
+	if hash function is unavailable.
+	(dec_stream_header): Likewise.
+
+2012-07-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/autofs.c (autoload_fs_module): Save and restore
 	filter state.
 
