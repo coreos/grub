@@ -311,8 +311,10 @@ tables are also loaded.
 
 @item Support non-Multiboot kernels
 Support many of the various free 32-bit kernels that lack Multiboot
-compliance (primarily FreeBSD, NetBSD, OpenBSD, and
-Linux). Chain-loading of other boot loaders is also supported.
+compliance (primarily FreeBSD, NetBSD@footnote{The NetBSD/i386 kernel
+is Multiboot-compliant, but lacks support for Multiboot modules.},
+OpenBSD, and Linux). Chain-loading of other boot loaders is also
+supported.
 
 @item Load multiples modules
 Fully support the Multiboot feature of loading multiple modules.
@@ -897,6 +899,7 @@ Here, we describe some caveats on several operating systems.
 @menu
 * GNU/Hurd::
 * GNU/Linux::
+* NetBSD::
 * DOS/Windows::
 @end menu
 
@@ -995,6 +998,63 @@ option to the kernel to let it use less than actual memory size, you
 will also have to specify the same memory size to GRUB. To let GRUB know
 the size, run the command @command{uppermem} @emph{before} loading the
 kernel. @xref{uppermem}, for more information.
+
+
+@node NetBSD
+@subsection NetBSD
+
+Booting a NetBSD kernel from GRUB is also relatively easy: first set
+GRUB's root device, then load the kernel and the modules, and finally
+run @command{boot}.
+
+@enumerate
+@item
+Set GRUB's root device to the partition holding the NetBSD root file
+system.  For a disk with a NetBSD disk label, this is usually the first
+partition (a:).  In that case, and assuming that the partition is on the
+first hard disk, set GRUB's root device as follows:
+
+@example
+grub> @kbd{insmod part_bsd}
+grub> @kbd{set root=(hd0,netbsd1)}
+@end example
+
+For a disk with a GUID Partition Table (GPT), and assuming that the
+NetBSD root partition is the third GPT partition, do this:
+
+@example
+grub> @kbd{insmod part_gpt}
+grub> @kbd{set root=(hd0,gpt3)}
+@end example
+
+@item
+Load the kernel using the command @command{knetbsd}:
+
+@example
+grub> @kbd{knetbsd /netbsd}
+@end example
+
+Various options may be given to @command{knetbsd}.  These options are,
+for the most part, the same as in the NetBSD boot loader.  For instance,
+to boot the system in single-user mode and with verbose messages, do
+this:
+
+@example
+grub> @kbd{knetbsd /netbsd -s -v}
+@end example
+
+@item
+If needed, load kernel modules with the command
+@command{knetbsd_module_elf}.  A typical example is the module for the
+root file system:
+
+@example
+grub> @kbd{knetbsd_module_elf /stand/amd64/6.0/modules/ffs/ffs.kmod}
+@end example
+
+@item
+Finally, run the command @command{boot} (@pxref{boot}).
+@end enumerate
 
 
 @node DOS/Windows

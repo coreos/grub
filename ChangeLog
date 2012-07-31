@@ -1,3 +1,8 @@
+2012-07-31  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* docs/grub.texi: Note that NetBSD/i386 is Multiboot-compliant.
+	(NetBSD): New subsection.
+
 2012-07-22  Ales Nesrsta  <starous@volny.cz>
 
 	* grub-core/bus/usb/ehci.c: PCI iter. - added PCI bus master setting.
