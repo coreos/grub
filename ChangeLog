@@ -1,5 +1,9 @@
 2012-07-31  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
+	* po/POTFILES.in: Regenerated.
+
+2012-07-31  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
 	* docs/grub.texi: Note that NetBSD/i386 is Multiboot-compliant.
 	(NetBSD): New subsection.
 

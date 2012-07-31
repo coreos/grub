@@ -32,6 +32,7 @@
 ./grub-core/commands/efi/acpi.c
 ./grub-core/commands/efi/fixvideo.c
 ./grub-core/commands/efi/loadbios.c
+./grub-core/commands/efi/lsefi.c
 ./grub-core/commands/efi/lsefimmap.c
 ./grub-core/commands/efi/lsefisystab.c
 ./grub-core/commands/efi/lssal.c
@@ -558,8 +559,8 @@
 ./grub-core/term/emu/console.c
 ./grub-core/term/gfxterm.c
 ./grub-core/term/i386/pc/console.c
+./grub-core/term/i386/pc/mda_text.c
 ./grub-core/term/i386/pc/vga_text.c
-./grub-core/term/i386/vga_common.c
 ./grub-core/term/ieee1275/console.c
 ./grub-core/term/ieee1275/escc.c
 ./grub-core/term/ieee1275/serial.c
@@ -730,7 +731,6 @@
 ./include/grub/i386/time.h
 ./include/grub/i386/tsc.h
 ./include/grub/i386/types.h
-./include/grub/i386/vga_common.h
 ./include/grub/i386/xnu.h
 ./include/grub/ia64/efi/memory.h
 ./include/grub/ia64/efi/time.h
@@ -867,6 +867,7 @@
 ./include/grub/util/ofpath.h
 ./include/grub/util/resolve.h
 ./include/grub/vga.h
+./include/grub/vgaregs.h
 ./include/grub/video_fb.h
 ./include/grub/video.h
 ./include/grub/x86_64/at_keyboard.h
