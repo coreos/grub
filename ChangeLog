@@ -1,3 +1,7 @@
+2012-08-05  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* configure.ac: Strengthen the test for working -nostdinc -isystem.
+
 2012-07-31  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* po/POTFILES.in: Regenerated.
