@@ -1,4 +1,8 @@
-2012-09-04  Colin Watson  <cjwatson@debian.org>
+2012-09-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/mmap/mips/loongson: Remove empty directory.
+
+2012-09-04  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/man/grub-mkdevicemap.h2m: Remove, since grub-mkdevicemap is
 	gone.
