@@ -1,3 +1,8 @@
+2012-09-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Add grub-bios-setup, grub-ofpathname, and
+	grub-sparc64-setup.
+
 2012-08-05  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* configure.ac: Strengthen the test for working -nostdinc -isystem.

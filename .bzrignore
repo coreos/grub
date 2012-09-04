@@ -34,6 +34,7 @@ genkernsyms.sh
 gensymlist.sh
 gentrigtables
 grub-bin2h
+grub-bios-setup
 grub_cmd_echo
 grub_cmd_regexp
 grub-editenv
@@ -49,6 +50,7 @@ grub-macho2img
 grub-menulst2cfg
 grub-mk*
 grub-mount
+grub-ofpathname
 grub-pe2elf
 grub-probe
 grub_probe_init.c
@@ -86,6 +88,7 @@ grub_setup_init.c
 grub_setup_init.h
 grub-shell
 grub-shell-tester
+grub-sparc64-setup
 *.img
 *.image
 include/grub/cpu
