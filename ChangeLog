@@ -1,3 +1,8 @@
+2012-09-04  Colin Watson  <cjwatson@debian.org>
+
+	* docs/man/grub-mkdevicemap.h2m: Remove, since grub-mkdevicemap is
+	gone.
+
 2012-09-04  Colin Watson  <cjwatson@ubuntu.com>
 
 	* .bzrignore: Add grub-bios-setup, grub-ofpathname, and
