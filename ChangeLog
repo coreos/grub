@@ -1,5 +1,12 @@
 2012-09-04  Colin Watson  <cjwatson@ubuntu.com>
 
+	* Makefile.am (EXTRA_DIST): Add
+	grub-core/tests/boot/linux.init-mips.S,
+	grub-core/tests/boot/linux.init-ppc.S, and
+	grub-core/tests/boot/linux-ppc.cfg.
+
+2012-09-04  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/mmap/mips/loongson: Remove empty directory.
 
 2012-09-04  Colin Watson  <cjwatson@ubuntu.com>
