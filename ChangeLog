@@ -1,5 +1,13 @@
 2012-09-04  Colin Watson  <cjwatson@ubuntu.com>
 
+	* Makefile.am (EXTRA_DIST): Add linguas.sh.  It's only strictly
+	required for checkouts from bzr, but it may be useful for users or
+	distributors wishing to update translations against a tarball
+	distribution, and it can be helpful for the tarball to be a superset
+	of what's in bzr.
+
+2012-09-04  Colin Watson  <cjwatson@ubuntu.com>
+
 	* Makefile.am (EXTRA_DIST): Add
 	grub-core/tests/boot/linux.init-mips.S,
 	grub-core/tests/boot/linux.init-ppc.S, and
