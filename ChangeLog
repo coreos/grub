@@ -1,5 +1,9 @@
 2012-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/partmap/dvh.c (grub_dvh_is_valid): Add missing byteswap.
+
+2012-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/xfs.c (grub_xfs_read_block): Make keys a const pointer.
 
 2012-09-04  Colin Watson  <cjwatson@ubuntu.com>

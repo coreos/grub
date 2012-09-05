@@ -57,7 +57,7 @@ grub_dvh_is_valid (grub_uint32_t *label)
   for (pos = label;
        pos < (label + sizeof (struct grub_dvh_block) / 4);
        pos++)
-    sum += *pos;
+    sum += grub_be_to_cpu32 (*pos);
 
   return ! sum;
 }
