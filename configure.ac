@@ -242,7 +242,7 @@ fi
 FONT_SOURCE=
 
 for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
-  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont; do
+  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont /usr/share/fonts/uni; do
     if test -f "$dir/unifont.$ext"; then
       FONT_SOURCE="$dir/unifont.$ext"
       break 2
