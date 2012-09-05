@@ -285,7 +285,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
   if (node->inode.format == XFS_INODE_FORMAT_BTREE)
     {
-      grub_uint64_t *keys;
+      const grub_uint64_t *keys;
       int recoffset;
 
       leaf = grub_malloc (node->data->bsize);
