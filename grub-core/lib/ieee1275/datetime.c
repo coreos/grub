@@ -89,7 +89,7 @@ grub_get_datetime (struct grub_datetime *datetime)
 
   grub_ieee1275_close (ihandle);
 
-  if (status == -1)
+  if (status == -1 || args.catch_result)
     return grub_error (GRUB_ERR_IO, "get-time failed");
 
   datetime->year = args.year;
@@ -148,7 +148,7 @@ grub_set_datetime (struct grub_datetime *datetime)
 
   grub_ieee1275_close (ihandle);
 
-  if (status == -1)
+  if (status == -1 || args.catch_result)
     return grub_error (GRUB_ERR_IO, "set-time failed");
 
   return GRUB_ERR_NONE;

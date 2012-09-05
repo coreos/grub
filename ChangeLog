@@ -1,5 +1,11 @@
 2012-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ieee1275/ofdisk.c (scan): Check function return value.
+	* grub-core/lib/ieee1275/datetime.c (grub_get_datetime): Likewise.
+	(grub_set_datetime): Likewise.
+
+2012-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/yylex.l: Ignore unused-function and sign-compare
 	warnings.
 

@@ -178,7 +178,7 @@ scan (void)
 	args.table = 0;
 	args.nentries = 0;
 
-	if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
+	if (IEEE1275_CALL_ENTRY_FN (&args) == -1 || args.catch_result)
 	  {
 	    grub_ieee1275_close (ihandle);
 	    return 0;
