@@ -1,5 +1,10 @@
 2012-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/yylex.l: Ignore unused-function and sign-compare
+	warnings.
+
+2012-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/partmap/dvh.c (grub_dvh_is_valid): Add missing byteswap.
 
 2012-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
