@@ -1,3 +1,8 @@
+2012-09-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/import_gcry.py: Sort cipher_files, to make build system
+	generation more deterministic.
+
 2012-09-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/ieee1275/ofdisk.c (scan): Check function return value.

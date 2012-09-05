@@ -40,7 +40,7 @@ try:
 except:
     print ("WARNING: %s already exists" % cipher_dir_out)
 
-cipher_files = os.listdir (cipher_dir_in)
+cipher_files = sorted (os.listdir (cipher_dir_in))
 conf = codecs.open (os.path.join ("grub-core", "Makefile.gcry.def"), "w", "utf-8")
 conf.write ("AutoGen definitions Makefile.tpl;\n\n")
 confutil = codecs.open ("Makefile.utilgcry.def", "w", "utf-8")
