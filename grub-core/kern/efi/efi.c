@@ -181,6 +181,36 @@ grub_efi_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
   return grub_error (GRUB_ERR_IO, "set_virtual_address_map failed");
 }
 
+grub_err_t
+grub_efi_set_variable(const char *var, const grub_efi_guid_t *guid,
+		      void *data, grub_size_t datasize)
+{
+  grub_efi_status_t status;
+  grub_efi_runtime_services_t *r;
+  grub_efi_char16_t *var16;
+  grub_size_t len, len16;
+
+  len = grub_strlen (var);
+  len16 = len * GRUB_MAX_UTF16_PER_UTF8;
+  var16 = grub_malloc ((len16 + 1) * sizeof (var16[0]));
+  if (!var16)
+    return grub_errno;
+  len16 = grub_utf8_to_utf16 (var16, len16, (grub_uint8_t *) var, len, NULL);
+  var16[len16] = 0;
+
+  r = grub_efi_system_table->runtime_services;
+
+  status = efi_call_5 (r->set_variable, var16, guid, 
+		       (GRUB_EFI_VARIABLE_NON_VOLATILE
+			| GRUB_EFI_VARIABLE_BOOTSERVICE_ACCESS
+			| GRUB_EFI_VARIABLE_RUNTIME_ACCESS),
+		       datasize, data);
+  if (status == GRUB_EFI_SUCCESS)
+    return GRUB_ERR_NONE;
+
+  return grub_error (GRUB_ERR_IO, "could not set EFI variable `%s'", var);
+}
+
 void *
 grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid,
 		       grub_size_t *datasize_out)

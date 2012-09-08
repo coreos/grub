@@ -1,3 +1,12 @@
+2012-09-08  Peter Jones <pjones@redhat.com>
+
+	* grub-core/Makefile.core.def (efifwsetup): New module.
+	* grub-core/commands/efi/efifwsetup.c: New file.
+	* grub-core/kern/efi/efi.c (grub_efi_set_variable): New function
+	* include/grub/efi/api.h (GRUB_EFI_OS_INDICATIONS_BOOT_TO_FW_UI):
+	New define.
+	* include/grub/efi/efi.h (grub_efi_set_variable): New proto.
+
 2012-09-05  Jiri Slaby <jslaby@suse.cz>
 
 	* configure.ac: Add SuSe path.

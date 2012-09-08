@@ -575,6 +575,12 @@ module = {
 };
 
 module = {
+  name = efifwsetup;
+  efi = commands/efi/efifwsetup.c;
+  enable = efi;
+};
+
+module = {
   name = blocklist;
   common = commands/blocklist.c;
 };
