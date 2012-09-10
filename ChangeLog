@@ -1,3 +1,8 @@
+2012-09-10  Benoit Gschwind <gschwind>
+
+	* grub-core/loader/efi/appleloader.c (devpath_8): New var.
+	(devs): Add devpath_8.
+
 2012-09-08  Peter Jones <pjones@redhat.com>
 
 	* grub-core/Makefile.core.def (efifwsetup): New module.

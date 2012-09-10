@@ -127,6 +127,10 @@ static struct piwg_full_device_path devpath_6 = MAKE_PIWG_PATH (0xffcc4000,
 static struct piwg_full_device_path devpath_7 = MAKE_PIWG_PATH (0xff981000,
 								0xffc8ffff);
 
+/* mid-2012 MBP retina (MacBookPro10,1) */ 
+static struct piwg_full_device_path devpath_8 = MAKE_PIWG_PATH (0xff990000,
+								0xffb2ffff);
+
 struct devdata
 {
   const char *model;
@@ -142,6 +146,7 @@ struct devdata devs[] =
   {"MB NV", (grub_efi_device_path_t *) &devpath_5},
   {"MB NV2", (grub_efi_device_path_t *) &devpath_6},
   {"MBP2011", (grub_efi_device_path_t *) &devpath_7},
+  {"MBP2012", (grub_efi_device_path_t *) &devpath_8},
   {NULL, NULL},
 };
 
