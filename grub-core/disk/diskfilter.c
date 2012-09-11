@@ -1130,6 +1130,9 @@ free_array (void)
 	    grub_disk_close (pv->disk);
 	  if (pv->id.uuidlen)
 	    grub_free (pv->id.uuid);
+#ifdef GRUB_UTIL
+	  grub_free (pv->partmaps);
+#endif
 	  grub_free (pv->internal_id);
 	  grub_free (pv);
 	}

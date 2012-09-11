@@ -918,7 +918,10 @@ grub_find_device (const char *dir, dev_t dev)
 	     grub files */
 
 	  if (strcmp(res, "/dev/root") == 0)
-		continue;
+	    {
+	      free (res);
+	      continue;
+	    }
 
 	  if (chdir (saved_cwd) < 0)
 	    grub_util_error ("%s", _("cannot restore the original directory"));
@@ -1363,6 +1366,7 @@ get_mdadm_uuid (const char *os_dev)
 out:
   close (fd);
   waitpid (pid, NULL, 0);
+  free (buf);
 
   return name;
 }
@@ -1436,6 +1440,8 @@ grub_util_is_imsm (const char *os_dev)
 	      return 1;
 	    }
 	}
+
+      free (buf);
 
       return 0;
 
@@ -1577,7 +1583,10 @@ grub_util_pull_device (const char *os_dev)
 	char **devicelist = grub_util_raid_getmembers (os_dev, 0);
 	int i;
 	for (i = 0; devicelist[i];i++)
-	  grub_util_pull_device (devicelist[i]);
+	  {
+	    grub_util_pull_device (devicelist[i]);
+	    free (devicelist[i]);
+	  }
 	free (devicelist);
       }
 #endif

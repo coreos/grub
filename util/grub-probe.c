@@ -474,6 +474,7 @@ probe (const char *path, char **device_names, char delim)
 	  printf ("%s", label);
 	  putchar (delim);
 	}
+      grub_device_close (dev);
       goto end;
     }
 

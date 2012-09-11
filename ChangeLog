@@ -1,3 +1,12 @@
+2012-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/diskfilter.c (free_array) [GRUB_UTIL]: Fix memory leak.
+	* util/getroot.c (grub_find_device): Likewise.
+	(get_mdadm_uuid): Likewise.
+	(grub_util_is_imsm): Likewise.
+	(grub_util_pull_device): Likewise.
+	* util/grub-probe.c (probe): Likewise.
+
 2012-09-10  Benoit Gschwind <gschwind>
 
 	* grub-core/loader/efi/appleloader.c (devpath_8): New var.
