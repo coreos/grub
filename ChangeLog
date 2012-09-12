@@ -1,3 +1,12 @@
+2012-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't require grub-mkconfig_lib to generate manpages for programs.
+
+	* gentpl.py (manpage): Additional argument adddeps. Add adddeps to
+	dependencies, don't add grub-mkconfig_lib.
+	(program): Pass empty adddeps.
+	(script): Pass grub-mkconfig_lib as adddeps.
+
 2012-09-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/diskfilter.c (free_array) [GRUB_UTIL]: Fix memory leak.
