@@ -1,5 +1,13 @@
 2012-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/efi/api.h (grub_efi_runtime_services): Make vendor_guid
+	a const pointer.
+	* grub-core/efiemu/runtime/efiemu.c (efiemu_memcpy): Make from a
+	const pointer.
+	(efiemu_set_variable): Make vendor_guid a const pointer.
+
+2012-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't require grub-mkconfig_lib to generate manpages for programs.
 
 	* gentpl.py (manpage): Additional argument adddeps. Add adddeps to
