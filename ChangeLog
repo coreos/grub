@@ -1,3 +1,9 @@
+2012-09-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/term/terminfo.c: Only fix up powerpc key repeat on
+	IEEE1275 machines.  Fixes powerpc-emu compilation.
+	* include/grub/terminfo.h: Likewise.
+
 2012-09-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/efi/api.h (grub_efi_runtime_services): Make vendor_guid

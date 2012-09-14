@@ -33,7 +33,7 @@
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
 #include <grub/time.h>
-#ifdef __powerpc__
+#if defined(__powerpc__) && defined(GRUB_MACHINE_IEEE1275)
 #include <grub/ieee1275/ieee1275.h>
 #endif
 
@@ -563,7 +563,7 @@ grub_terminfo_getkey (struct grub_term_input *termi)
   grub_terminfo_readkey (termi, data->input_buf,
 			 &data->npending, data->readkey);
 
-#ifdef __powerpc__
+#if defined(__powerpc__) && defined(GRUB_MACHINE_IEEE1275)
   if (data->npending == 1 && data->input_buf[0] == '\e'
       && grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_BROKEN_REPEAT)
       && grub_get_time_ms () - data->last_key_time < 1000
@@ -580,7 +580,7 @@ grub_terminfo_getkey (struct grub_term_input *termi)
       int ret;
       data->npending--;
       ret = data->input_buf[0];
-#ifdef __powerpc__
+#if defined(__powerpc__) && defined(GRUB_MACHINE_IEEE1275)
       if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_BROKEN_REPEAT))
 	{
 	  data->last_key = ret;
