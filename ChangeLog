@@ -1,3 +1,8 @@
+2012-09-17  Colin Watson  <cjwatson@debian.org>
+
+	* util/grub-mkconfig_lib.in (grub_quote): Remove outdated sentence
+	from comment.
+
 2012-09-14  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/term/terminfo.c: Only fix up powerpc key repeat on

@@ -255,10 +255,8 @@ version_find_latest ()
   echo "$version_find_latest_a"
 }
 
-# One layer of quotation is eaten by "" and the second by
-# sed; so this turns ' into \'.  Note that you must use the output of
-# this function in a printf format string.
-
+# One layer of quotation is eaten by "" and the second by sed; so this turns
+# ' into \'.
 grub_quote () {
   sed "s/'/'\\\\''/g"
 }
