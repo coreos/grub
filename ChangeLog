@@ -1,3 +1,9 @@
+2012-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/linux.c (grub_cmd_linux): Fix incorrect
+	le-conversion.
+	Reported by: BURETTE, Bernard.
+
 2012-09-17  Colin Watson  <cjwatson@debian.org>
 
 	* util/grub-mkconfig_lib.in (grub_quote): Remove outdated sentence

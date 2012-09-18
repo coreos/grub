@@ -839,7 +839,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
 #ifdef GRUB_MACHINE_EFI
 #ifdef __x86_64__
-  if (grub_le_to_cpu16 (params->version < 0x0208) &&
+  if (grub_le_to_cpu16 (params->version) < 0x0208 &&
       ((grub_addr_t) grub_efi_system_table >> 32) != 0)
     return grub_error(GRUB_ERR_BAD_OS,
 		      "kernel does not support 64-bit addressing");
