@@ -108,7 +108,7 @@ menuentry '$(echo "$OS" | grub_quote)' ${CLASS} \$menuentry_id_option 'gnuhurd-s
 EOF
   fi
 
-  prepare_grub_to_access_device "${GRUB_DEVICE_BOOT}" | sed -e "s/^/\t/"|sed "s/^/$submenu_indentation/"
+  prepare_grub_to_access_device "${GRUB_DEVICE_BOOT}" | grub_add_tab|sed "s/^/$submenu_indentation/"
   message="$(gettext_printf "Loading GNU Mach ...")"
 
   if [ x$type = xrecovery ] ; then
@@ -122,9 +122,9 @@ EOF
 EOF
 
   if [ x$type != xrecovery ] ; then
-      save_default_entry | sed -e "s/^/\t/"| sed "s/^/$submenu_indentation/"
+      save_default_entry | grub_add_tab| sed "s/^/$submenu_indentation/"
   fi
-  prepare_grub_to_access_device "${GRUB_DEVICE}" | sed -e "s/^/\t/"| sed "s/^/$submenu_indentation/"
+  prepare_grub_to_access_device "${GRUB_DEVICE}" | grub_add_tab| sed "s/^/$submenu_indentation/"
   message="$(gettext_printf "Loading the Hurd ...")"
   if [ x$type = xrecovery ] ; then
       opts=
@@ -158,7 +158,7 @@ do
 
   if [ "x$is_first_entry" = xtrue ]; then
       hurd_entry "$kernel" simple
-      submenu_indentation="\t"
+      submenu_indentation="$grub_tab"
     
       # TRANSLATORS: %s is replaced with an OS name
       echo "submenu '$(gettext_printf "Advanced options for %s" "${OS}" | grub_quote)' \$menuentry_id_option 'gnuhurd-advanced-$(grub_get_device_id "${GRUB_DEVICE_BOOT}")' {"

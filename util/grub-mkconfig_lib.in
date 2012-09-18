@@ -347,3 +347,10 @@ grub_fmt () {
       cat
   fi
 }
+
+grub_tab="	"
+
+grub_add_tab () {
+  sed -e "s/^/$grub_tab/"
+}
+

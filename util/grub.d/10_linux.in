@@ -101,7 +101,7 @@ linux_entry ()
       echo "menuentry '$(echo "$os" | grub_quote)' ${CLASS} \$menuentry_id_option 'gnulinux-simple-$boot_device_id' {" | sed "s/^/$submenu_indentation/"
   fi      
   if [ x$type != xrecovery ] ; then
-      save_default_entry | sed -e "s/^/\t/"
+      save_default_entry | grub_add_tab
   fi
 
   # Use ELILO's generic "efifb" when it's known to be available.
@@ -123,12 +123,12 @@ linux_entry ()
 
   if [ x$dirname = x/ ]; then
     if [ -z "${prepare_root_cache}" ]; then
-      prepare_root_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/")"
+      prepare_root_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE} | grub_add_tab)"
     fi
     printf '%s\n' "${prepare_root_cache}" | sed "s/^/$submenu_indentation/"
   else
     if [ -z "${prepare_boot_cache}" ]; then
-      prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/")"
+      prepare_boot_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | grub_add_tab)"
     fi
     printf '%s\n' "${prepare_boot_cache}" | sed "s/^/$submenu_indentation/"
   fi
@@ -230,7 +230,7 @@ while [ "x$list" != "x" ] ; do
     linux_entry "${OS}" "${version}" simple \
     "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
 
-    submenu_indentation="\t"
+    submenu_indentation="$grub_tab"
     
     if [ -z "$boot_device_id" ]; then
 	boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"

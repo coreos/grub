@@ -77,10 +77,10 @@ netbsd_load_fs_module ()
   prepare_grub_to_access_device $(${grub_probe} -t device "${kmodule}") | sed -e 's,^,	,'
   case "${loader}" in
     knetbsd)
-      printf "\tknetbsd_module_elf %s\n" "${kmodule_rel}"
+      printf "$grub_tabknetbsd_module_elf %s\n" "${kmodule_rel}"
       ;;
     multiboot)
-      printf "\tmodule %s\n" "${kmodule_rel}"
+      printf "$grub_tabmodule %s\n" "${kmodule_rel}"
       ;;
   esac
 }
@@ -121,11 +121,11 @@ netbsd_entry ()
   printf "%s\n" "${prepare_boot_cache}" | sed "s/^/$submenu_indentation/"
   case "${loader}" in
     knetbsd)
-      printf "\tknetbsd %s -r %s %s\n" \
+      printf "$grub_tabknetbsd %s -r %s %s\n" \
         "${kernel}" "${kroot_device}" "${GRUB_CMDLINE_NETBSD} ${args}" | sed "s/^/$submenu_indentation/"
       ;;
     multiboot)
-      printf "\tmultiboot %s %s root=%s %s\n" \
+      printf "$grub_tabmultiboot %s %s root=%s %s\n" \
         "${kernel}" "${kernel}" "${kroot_device}" "${GRUB_CMDLINE_NETBSD} ${args}" | sed "s/^/$submenu_indentation/"
       ;;
   esac
@@ -159,7 +159,7 @@ for k in $(ls -t /netbsd*) ; do
 
   if [ "x$is_first_entry" = xtrue ]; then
       netbsd_entry "knetbsd"   "$k" simple "${GRUB_CMDLINE_NETBSD_DEFAULT}"
-    submenu_indentation="\t"
+    submenu_indentation="$grub_tab"
     
     if [ -z "$boot_device_id" ]; then
 	boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"

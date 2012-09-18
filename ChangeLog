@@ -1,5 +1,19 @@
 2012-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkconfig_lib.in (grub_tab): New variable.
+	(grub_add_tab): New function.
+	* util/grub.d/10_hurd.in: Replace \t with $grub_tab orgrub_add_tab.
+	* util/grub.d/10_illumos.in: Likewise.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/10_netbsd.in: Likewise.
+	* util/grub.d/10_windows.in: Likewise.
+	* util/grub.d/10_xnu.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+	* util/grub.d/30_os-prober.in: Likewise.
+
+2012-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
 	GRUB_IEEE1275_FLAG_CURSORONOFF_ANSI_BROKEN on mac.
 	* grub-core/term/ieee1275/console.c (grub_console_init_lately): Use
