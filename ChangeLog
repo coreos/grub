@@ -1,5 +1,16 @@
 2012-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set
+	GRUB_IEEE1275_FLAG_CURSORONOFF_ANSI_BROKEN on mac.
+	* grub-core/term/ieee1275/console.c (grub_console_init_lately): Use
+	ieee1275-nocursor if GRUB_IEEE1275_FLAG_CURSORONOFF_ANSI_BROKEN is set.
+	* grub-core/term/terminfo.c (grub_terminfo_set_current): Add new type
+	ieee1275-nocursor.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): New value
+	GRUB_IEEE1275_FLAG_CURSORONOFF_ANSI_BROKEN.
+
+2012-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/linux.c (grub_cmd_linux): Fix incorrect
 	le-conversion.
 	Reported by: BURETTE, Bernard.

@@ -247,9 +247,10 @@ grub_console_init_lately (void)
 
   if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_ANSI))
     type = "dumb";
+  else if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_CURSORONOFF_ANSI_BROKEN))
+    type = "ieee1275-nocursor";
   else
     type = "ieee1275";
-
   grub_terminfo_init ();
   grub_terminfo_output_register (&grub_console_term_output, type);
 }

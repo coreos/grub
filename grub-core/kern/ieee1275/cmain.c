@@ -117,6 +117,7 @@ grub_ieee1275_find_options (void)
 	      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS);
 	      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX);
 	      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_VIRT_TO_REAL_BROKEN);
+	      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_CURSORONOFF_ANSI_BROKEN);
 	      break;
 	    }
 	}
