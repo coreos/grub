@@ -316,14 +316,14 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 	break;
     }
 
-  if (end >= *nsectors + 2)
+  if (end >= *nsectors + 1)
     {
       unsigned i, j;
       char *embed_signature_check;
       unsigned int orig_nsectors, avail_nsectors;
 
       orig_nsectors = *nsectors;
-      *nsectors = end - 2;
+      *nsectors = end - 1;
       avail_nsectors = *nsectors;
       if (*nsectors > max_nsectors)
 	*nsectors = max_nsectors;
