@@ -1,3 +1,11 @@
+2012-09-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-setup.c (write_rootdev): Remove unused core_img
+	parameter.  Update all callers.
+	(setup): Define core_sectors only if GRUB_SETUP_BIOS, to appease
+	'gcc -Wunused-but-set-variable'.  Remove unnecessary nested #ifdef
+	GRUB_SETUP_BIOS.
+
 2012-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkconfig_lib.in (grub_tab): New variable.
@@ -29,7 +37,7 @@
 	le-conversion.
 	Reported by: BURETTE, Bernard.
 
-2012-09-17  Colin Watson  <cjwatson@debian.org>
+2012-09-17  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig_lib.in (grub_quote): Remove outdated sentence
 	from comment.

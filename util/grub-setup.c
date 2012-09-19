@@ -105,7 +105,7 @@
 #endif
 
 static void
-write_rootdev (char *core_img, grub_device_t root_dev,
+write_rootdev (grub_device_t root_dev,
 	       char *boot_img, grub_uint64_t first_sector)
 {
 #ifdef GRUB_SETUP_BIOS
@@ -148,7 +148,9 @@ setup (const char *dir,
   char *boot_img, *core_img;
   char *root = 0;
   size_t boot_size, core_size;
+#ifdef GRUB_SETUP_BIOS
   grub_uint16_t core_sectors;
+#endif
   grub_device_t root_dev = 0, dest_dev, core_dev;
   struct grub_boot_blocklist *first_block, *block;
   char *tmp_img;
@@ -229,8 +231,10 @@ setup (const char *dir,
 
   core_path = grub_util_get_path (dir, core_file);
   core_size = grub_util_get_image_size (core_path);
+#ifdef GRUB_SETUP_BIOS
   core_sectors = ((core_size + GRUB_DISK_SECTOR_SIZE - 1)
 		  >> GRUB_DISK_SECTOR_BITS);
+#endif
   if (core_size < GRUB_DISK_SECTOR_SIZE)
     grub_util_error (_("the size of `%s' is too small"), core_path);
 #ifdef GRUB_SETUP_BIOS
@@ -386,7 +390,6 @@ setup (const char *dir,
 
     is_ldm = grub_util_is_ldm (dest_dev->disk);
 
-#ifdef GRUB_SETUP_BIOS
     if (fs_probe)
       {
 	if (!fs && !dest_partmap)
@@ -424,7 +427,6 @@ setup (const char *dir,
 			   dest_dev->disk->name, dest_partmap->name);
 
       }
-#endif
 
     /* Copy the partition table.  */
     if (dest_partmap ||
@@ -520,7 +522,7 @@ setup (const char *dir,
     block->len = 0;
     block->segment = 0;
 
-    write_rootdev (core_img, root_dev, boot_img, first_sector);
+    write_rootdev (root_dev, boot_img, first_sector);
 
     core_img = realloc (core_img, nsec * GRUB_DISK_SECTOR_SIZE);
     first_block = (struct grub_boot_blocklist *) (core_img
@@ -858,7 +860,7 @@ unable_to_embed:
   free (core_path_dev);
   free (tmp_img);
 
-  write_rootdev (core_img, root_dev, boot_img, first_sector);
+  write_rootdev (root_dev, boot_img, first_sector);
 
   /* Write the first two sectors of the core image onto the disk.  */
   grub_util_info ("opening the core image `%s'", core_path);
