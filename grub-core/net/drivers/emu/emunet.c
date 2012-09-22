@@ -21,8 +21,10 @@
 #include <sys/socket.h>
 #include <grub/net.h>
 #include <sys/types.h>
-#include <linux/if.h>
-#include <linux/if_tun.h>
+#ifdef __linux__
+# include <linux/if.h>
+# include <linux/if_tun.h>
+#endif /* __linux__ */
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -97,6 +99,7 @@ static struct grub_net_card emucard =
 
 GRUB_MOD_INIT(emunet)
 {
+#ifdef __linux__
   struct ifreq ifr;
   fd = open ("/dev/net/tun", O_RDWR | O_NONBLOCK);
   if (fd < 0)
@@ -110,6 +113,10 @@ GRUB_MOD_INIT(emunet)
       return;
     }
   grub_net_card_register (&emucard);
+#else /* !__linux__ */
+  fd = -1;
+  return;
+#endif /* __linux__ */
 }
 
 GRUB_MOD_FINI(emunet)

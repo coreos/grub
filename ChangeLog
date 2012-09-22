@@ -1,3 +1,16 @@
+2012-09-22  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix grub-emu build on FreeBSD.
+
+	* Makefile.util.def (grub-mount): Add LIBGEOM to ldadd.
+	* grub-core/net/drivers/emu/emunet.c: Only include Linux-specific
+	headers on Linux.
+	(GRUB_MOD_INIT): Return immediately on non-Linux platforms; this
+	implementation is currently Linux-specific.
+	* util/getroot.c (exec_pipe): Define only on Linux or when either
+	libzfs or libnvpair is unavailable.
+	(find_root_devices_from_poolname): Remove unused path variable.
+
 2012-09-19  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/partmap/msdos.c (pc_partition_map_embed): Revert
