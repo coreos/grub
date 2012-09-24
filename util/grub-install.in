@@ -330,7 +330,7 @@ if [ x$source_dir = x ]; then
 fi
 
 if ! [ -d "$source_dir" ]; then
-    gettext_printf "%s doesn't exist. Please specify --target or --directory\\n" "source_dir"
+    gettext_printf "%s doesn't exist. Please specify --target or --directory\\n" "$source_dir"
     exit 1
 fi
 
