@@ -1,3 +1,8 @@
+2012-09-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkconfig_lib.in (is_path_readable_by_grub): Redirect
+	errors from grub-probe to /dev/null, not stdout.
+
 2012-09-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/affs.c (grub_affs_mount): Support AFFS bootblock in
