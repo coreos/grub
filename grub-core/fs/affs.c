@@ -97,6 +97,7 @@ enum
   };
 
 #define AFFS_MAX_LOG_BLOCK_SIZE 4
+#define AFFS_MAX_SUPERBLOCK 1
 
 
 
@@ -184,94 +185,92 @@ grub_affs_mount (grub_disk_t disk)
 {
   struct grub_affs_data *data;
   grub_uint32_t *rootblock = 0;
-  struct grub_affs_rblock *rblock;
+  struct grub_affs_rblock *rblock = 0;
   int log_blocksize = 0;
+  int bsnum = 0;
 
   data = grub_zalloc (sizeof (struct grub_affs_data));
   if (!data)
     return 0;
 
-  /* Read the bootblock.  */
-  grub_disk_read (disk, 0, 0, sizeof (struct grub_affs_bblock),
-		  &data->bblock);
-  if (grub_errno)
-    goto fail;
-
-  /* Make sure this is an affs filesystem.  */
-  if (grub_strncmp ((char *) (data->bblock.type), "DOS", 3))
+  for (bsnum = 0; bsnum < AFFS_MAX_SUPERBLOCK + 1; bsnum++)
     {
-      grub_error (GRUB_ERR_BAD_FS, "not an AFFS filesystem");
-      goto fail;
-    }
-
-  /* Test if the filesystem is a OFS filesystem.  */
-  if (! (data->bblock.flags & GRUB_AFFS_FLAG_FFS))
-    {
-      grub_error (GRUB_ERR_BAD_FS, "OFS not yet supported");
-      goto fail;
-    }
-
-  /* No sane person uses more than 8KB for a block.  At least I hope
-     for that person because in that case this won't work.  */
-  rootblock = grub_malloc (GRUB_DISK_SECTOR_SIZE << AFFS_MAX_LOG_BLOCK_SIZE);
-  if (!rootblock)
-    goto fail;
-
-  rblock = (struct grub_affs_rblock *) rootblock;
-
-  /* The filesystem blocksize is not stored anywhere in the filesystem
-     itself.  One way to determine it is try reading blocks for the
-     rootblock until the checksum is correct.  */
-  for (log_blocksize = 0; log_blocksize <= AFFS_MAX_LOG_BLOCK_SIZE;
-       log_blocksize++)
-    {
-      grub_uint32_t *currblock = rootblock;
-      unsigned int i;
-      grub_uint32_t checksum = 0;
-
-      /* Read the rootblock.  */
-      grub_disk_read (disk,
-		      (grub_uint64_t) grub_be_to_cpu32 (data->bblock.rootblock)
-		      << log_blocksize, 0,
-		      GRUB_DISK_SECTOR_SIZE << log_blocksize, rootblock);
+      /* Read the bootblock.  */
+      grub_disk_read (disk, bsnum, 0, sizeof (struct grub_affs_bblock),
+		      &data->bblock);
       if (grub_errno)
 	goto fail;
 
-      if (rblock->type != grub_cpu_to_be32_compile_time (2)
-	  || rblock->htsize == 0
-	  || currblock[(GRUB_DISK_SECTOR_SIZE << log_blocksize)
-		      / sizeof (*currblock) - 1]
-	   != grub_cpu_to_be32_compile_time (1))
+      /* Make sure this is an affs filesystem.  */
+      if (grub_strncmp ((char *) (data->bblock.type), "DOS", 3) != 0
+	  /* Test if the filesystem is a OFS filesystem.  */
+	  || !(data->bblock.flags & GRUB_AFFS_FLAG_FFS))
 	continue;
 
-      for (i = 0; i < (GRUB_DISK_SECTOR_SIZE << log_blocksize)
-	     / sizeof (*currblock);
-	   i++)
-	checksum += grub_be_to_cpu32 (currblock[i]);
+      /* No sane person uses more than 8KB for a block.  At least I hope
+	 for that person because in that case this won't work.  */
+      if (!rootblock)
+	rootblock = grub_malloc (GRUB_DISK_SECTOR_SIZE
+				 << AFFS_MAX_LOG_BLOCK_SIZE);
+      if (!rootblock)
+	goto fail;
 
-      if (checksum == 0)
-	break;
+      rblock = (struct grub_affs_rblock *) rootblock;
+
+      /* The filesystem blocksize is not stored anywhere in the filesystem
+	 itself.  One way to determine it is try reading blocks for the
+	 rootblock until the checksum is correct.  */
+      for (log_blocksize = 0; log_blocksize <= AFFS_MAX_LOG_BLOCK_SIZE;
+	   log_blocksize++)
+	{
+	  grub_uint32_t *currblock = rootblock;
+	  unsigned int i;
+	  grub_uint32_t checksum = 0;
+
+	  /* Read the rootblock.  */
+	  grub_disk_read (disk,
+			  (grub_uint64_t) grub_be_to_cpu32 (data->bblock.rootblock)
+			  << log_blocksize, 0,
+			  GRUB_DISK_SECTOR_SIZE << log_blocksize, rootblock);
+	  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+	    {
+	      grub_errno = 0;
+	      break;
+	    }
+	  if (grub_errno)
+	    goto fail;
+
+	  if (rblock->type != grub_cpu_to_be32_compile_time (2)
+	      || rblock->htsize == 0
+	      || currblock[(GRUB_DISK_SECTOR_SIZE << log_blocksize)
+			   / sizeof (*currblock) - 1]
+	      != grub_cpu_to_be32_compile_time (1))
+	    continue;
+
+	  for (i = 0; i < (GRUB_DISK_SECTOR_SIZE << log_blocksize)
+		 / sizeof (*currblock);
+	       i++)
+	    checksum += grub_be_to_cpu32 (currblock[i]);
+
+	  if (checksum == 0)
+	    {
+	      data->log_blocksize = log_blocksize;
+	      data->disk = disk;
+	      data->htsize = grub_be_to_cpu32 (rblock->htsize);
+	      data->diropen.data = data;
+	      data->diropen.block = grub_be_to_cpu32 (data->bblock.rootblock);
+	      data->diropen.parent = NULL;
+	      grub_memcpy (&data->diropen.di, rootblock,
+			   sizeof (data->diropen.di));
+	      grub_free (rootblock);
+
+	      return data;
+	    }
+	}
     }
-  if (log_blocksize > AFFS_MAX_LOG_BLOCK_SIZE)
-    {
-      grub_error (GRUB_ERR_BAD_FS, "AFFS blocksize couldn't be determined");
-      goto fail;
-    }
-
-  data->log_blocksize = log_blocksize;
-  data->disk = disk;
-  data->htsize = grub_be_to_cpu32 (rblock->htsize);
-  data->diropen.data = data;
-  data->diropen.block = grub_be_to_cpu32 (data->bblock.rootblock);
-  data->diropen.parent = NULL;
-  grub_memcpy (&data->diropen.di, rootblock, sizeof (data->diropen.di));
-
-  grub_free (rootblock);
-
-  return data;
 
  fail:
-  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+  if (grub_errno == GRUB_ERR_NONE || grub_errno == GRUB_ERR_OUT_OF_RANGE)
     grub_error (GRUB_ERR_BAD_FS, "not an AFFS filesystem");
 
   grub_free (data);
