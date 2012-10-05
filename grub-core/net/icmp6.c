@@ -55,7 +55,7 @@ struct prefix_option
   grub_uint8_t prefixlen;
   grub_uint8_t flags;
   grub_uint32_t valid_lifetime;
-  grub_uint32_t prefered_lifetime;
+  grub_uint32_t preferred_lifetime;
   grub_uint32_t reserved;
   grub_uint64_t prefix[2];
 } __attribute__ ((packed));
@@ -370,14 +370,14 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 		struct grub_net_slaac_mac_list *slaac;
 		if (!(opt->flags & FLAG_SLAAC)
 		    || (grub_be_to_cpu64 (opt->prefix[0]) >> 48) == 0xfe80
-		    || (grub_be_to_cpu32 (opt->prefered_lifetime)
+		    || (grub_be_to_cpu32 (opt->preferred_lifetime)
 			> grub_be_to_cpu32 (opt->valid_lifetime))
 		    || opt->prefixlen != 64)
 		  {
 		    grub_dprintf ("net", "discarded prefix: %d, %d, %d, %d\n",
 				  !(opt->flags & FLAG_SLAAC),
 				  (grub_be_to_cpu64 (opt->prefix[0]) >> 48) == 0xfe80,
-				  (grub_be_to_cpu32 (opt->prefered_lifetime)
+				  (grub_be_to_cpu32 (opt->preferred_lifetime)
 				   > grub_be_to_cpu32 (opt->valid_lifetime)),
 				  opt->prefixlen != 64);
 		    continue;

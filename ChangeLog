@@ -1,3 +1,11 @@
+2012-10-05  Colin Watson  <cjwatson@debian.org>
+
+	* grub-core/loader/i386/linux.c (allocate_pages): Fix spelling of
+	preferred_address.
+	(grub_cmd_linux): Likewise.
+	* grub-core/net/icmp6.c (struct prefix_option): Fix spelling of
+	preferred_lifetime.  Update all users.
+
 2012-09-26  Colin Watson  <cjwatson@ubuntu.com>
 
 	* Makefile.util.def (grub-mknetdir): Move to $prefix/bin.

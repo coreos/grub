@@ -191,7 +191,7 @@ free_pages (void)
 static grub_err_t
 allocate_pages (grub_size_t prot_size, grub_size_t *align,
 		grub_size_t min_align, int relocatable,
-		grub_uint64_t prefered_address)
+		grub_uint64_t preferred_address)
 {
   grub_err_t err;
 
@@ -215,8 +215,8 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
     if (relocatable)
       {
 	err = grub_relocator_alloc_chunk_align (relocator, &ch,
-						prefered_address,
-						prefered_address,
+						preferred_address,
+						preferred_address,
 						prot_size, 1,
 						GRUB_RELOCATOR_PREFERENCE_LOW,
 						1);
@@ -235,7 +235,7 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
       }
     else
       err = grub_relocator_alloc_chunk_addr (relocator, &ch,
-					     prefered_address,
+					     preferred_address,
 					     prot_size);
     if (err)
       goto fail;
@@ -680,7 +680,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   int i;
   grub_size_t align, min_align;
   int relocatable;
-  grub_uint64_t preffered_address = GRUB_LINUX_BZIMAGE_ADDR;
+  grub_uint64_t preferred_address = GRUB_LINUX_BZIMAGE_ADDR;
 
   grub_dl_ref (my_mod);
 
@@ -775,22 +775,22 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       prot_size = grub_le_to_cpu32 (lh.init_size);
       prot_init_space = page_align (prot_size);
       if (relocatable)
-	preffered_address = grub_le_to_cpu64 (lh.pref_address);
+	preferred_address = grub_le_to_cpu64 (lh.pref_address);
       else
-	preffered_address = GRUB_LINUX_BZIMAGE_ADDR;
+	preferred_address = GRUB_LINUX_BZIMAGE_ADDR;
     }
   else
     {
       min_align = align;
       prot_size = prot_file_size;
-      preffered_address = GRUB_LINUX_BZIMAGE_ADDR;
+      preferred_address = GRUB_LINUX_BZIMAGE_ADDR;
       /* Usually, the compression ratio is about 50%.  */
       prot_init_space = page_align (prot_size) * 3;
     }
 
   if (allocate_pages (prot_size, &align,
 		      min_align, relocatable,
-		      preffered_address))
+		      preferred_address))
     goto fail;
 
   params = (struct linux_kernel_params *) &linux_params;
