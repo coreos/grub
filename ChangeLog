@@ -1,4 +1,9 @@
-2012-10-05  Colin Watson  <cjwatson@debian.org>
+2012-10-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/commands/configfile.c (GRUB_MOD_INIT): Correct
+	description of extract_entries_configfile.
+
+2012-10-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/loader/i386/linux.c (allocate_pages): Fix spelling of
 	preferred_address.
