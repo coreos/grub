@@ -1,3 +1,8 @@
+2012-10-12  Christoph Junghans  <ottxor@gentoo.org>
+
+	* grub-core/Makefile.am (moddep.lst): Use $(AWK) rather than awk.
+	Fixes Savannah bug #37558.
+
 2012-10-12  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/commands/configfile.c (GRUB_MOD_INIT): Correct

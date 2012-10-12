@@ -349,7 +349,7 @@ syminfo.lst: gensyminfo.sh kernel_syms.lst $(MODULE_FILES)
 
 # generate global module dependencies list
 moddep.lst: syminfo.lst genmoddep.awk video.lst
-	cat $< | sort | awk -f $(srcdir)/genmoddep.awk > $@ || (rm -f $@; exit 1)
+	cat $< | sort | $(AWK) -f $(srcdir)/genmoddep.awk > $@ || (rm -f $@; exit 1)
 platform_DATA += moddep.lst
 CLEANFILES += config.log syminfo.lst moddep.lst
 
