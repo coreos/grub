@@ -38,6 +38,14 @@
 #define GRUB_MODULES_MACHINE_READONLY
 #endif
 
+#ifdef GRUB_MACHINE_EMU
+#include <sys/mman.h>
+#endif
+
+#ifdef GRUB_MACHINE_EFI
+#include <grub/efi/efi.h>
+#endif
+
 
 
 #pragma GCC diagnostic ignored "-Wcast-align"
@@ -685,6 +693,15 @@ grub_dl_load_file (const char *filename)
   grub_ssize_t size;
   void *core = 0;
   grub_dl_t mod = 0;
+
+#ifdef GRUB_MACHINE_EFI
+  if (grub_efi_secure_boot ())
+    {
+      grub_error (GRUB_ERR_ACCESS_DENIED,
+		  "Secure Boot forbids loading module from %s", filename);
+      return 0;
+    }
+#endif
 
   grub_boot_time ("Loading module %s", filename);
 
