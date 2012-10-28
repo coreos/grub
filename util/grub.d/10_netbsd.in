@@ -74,13 +74,13 @@ netbsd_load_fs_module ()
   fi
 
   kmodule_rel=$(make_system_path_relative_to_its_root "$kmodule") || return
-  prepare_grub_to_access_device $(${grub_probe} -t device "${kmodule}") | sed -e 's,^,	,'
+  prepare_grub_to_access_device $(${grub_probe} -t device "${kmodule}") | sed -e 's,^,	,' | sed "s/^/$submenu_indentation/"
   case "${loader}" in
     knetbsd)
-      printf "$grub_tabknetbsd_module_elf %s\n" "${kmodule_rel}"
+      printf "${grub_tab}knetbsd_module_elf %s\n" "${kmodule_rel}" | sed "s/^/$submenu_indentation/"
       ;;
     multiboot)
-      printf "$grub_tabmodule %s\n" "${kmodule_rel}"
+      printf "${grub_tab}module %s\n" "${kmodule_rel}" | sed "s/^/$submenu_indentation/"
       ;;
   esac
 }
@@ -121,11 +121,11 @@ netbsd_entry ()
   printf "%s\n" "${prepare_boot_cache}" | sed "s/^/$submenu_indentation/"
   case "${loader}" in
     knetbsd)
-      printf "$grub_tabknetbsd %s -r %s %s\n" \
+      printf "${grub_tab}knetbsd %s -r %s %s\n" \
         "${kernel}" "${kroot_device}" "${GRUB_CMDLINE_NETBSD} ${args}" | sed "s/^/$submenu_indentation/"
       ;;
     multiboot)
-      printf "$grub_tabmultiboot %s %s root=%s %s\n" \
+      printf "${grub_tab}multiboot %s %s root=%s %s\n" \
         "${kernel}" "${kernel}" "${kroot_device}" "${GRUB_CMDLINE_NETBSD} ${args}" | sed "s/^/$submenu_indentation/"
       ;;
   esac
@@ -147,7 +147,7 @@ pattern="^ELF[^,]*executable.*statically linked"
 submenu_indentation=""
 
 is_first_entry=true
-for k in $(ls -t /netbsd*) ; do
+for k in /netbsd $(ls -t /netbsd?* 2>/dev/null) ; do
   if ! grub_file_is_not_garbage "$k" ; then
     continue
   fi

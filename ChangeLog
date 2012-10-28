@@ -1,3 +1,8 @@
+2012-10-28  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* util/grub.d/10_netbsd.in: Fix tab indentation and make sure
+	that /netbsd appears first (when it exists).
+
 2012-10-12  Christoph Junghans  <ottxor@gentoo.org>
 
 	* grub-core/Makefile.am (moddep.lst): Use $(AWK) rather than awk.
