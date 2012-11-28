@@ -50,7 +50,7 @@
 # error "This architecture is not supported because sizeof(void *) != 4 and sizeof(void *) != 8"
 #endif
 
-#if !defined (GRUB_UTIL) & !defined (GRUB_TARGET_WORDSIZE)
+#if !defined (GRUB_UTIL) && !defined (GRUB_TARGET_WORDSIZE)
 # if GRUB_TARGET_SIZEOF_VOID_P == 4
 #  define GRUB_TARGET_WORDSIZE 32
 # elif GRUB_TARGET_SIZEOF_VOID_P == 8

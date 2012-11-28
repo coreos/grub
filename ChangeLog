@@ -1,3 +1,8 @@
+2012-11-28  Leif Lindholm  <leif.lindholm@arm.com>
+
+        * include/grub/types.h: Fix functionality unaffecting typo in
+        GRUB_TARGET_WORDSIZE conditional macro.
+
 2012-11-28  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
 	* grub-core/net/bootp.c (parse_dhcp_vendor): Fix double increment.
