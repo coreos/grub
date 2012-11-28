@@ -122,7 +122,7 @@ parse_dhcp_vendor (const char *name, void *vend, int limit, int *mask)
 		ptr += 4;
 	      }
 	  }
-	  break;
+	  continue;
 	case GRUB_NET_BOOTP_HOSTNAME:
 	  set_env_limn_ro (name, "hostname", (char *) ptr, taglength);
 	  break;
