@@ -90,6 +90,7 @@ library = {
   common = grub-core/fs/udf.c;
   common = grub-core/fs/ufs2.c;
   common = grub-core/fs/ufs.c;
+  common = grub-core/fs/ufs_be.c;
   common = grub-core/fs/xfs.c;
   common = grub-core/fs/zfs/zfscrypt.c;
   common = grub-core/fs/zfs/zfs.c;

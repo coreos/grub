@@ -1181,6 +1181,11 @@ module = {
 };
 
 module = {
+  name = ufs1_be;
+  common = fs/ufs_be.c;
+};
+
+module = {
   name = ufs2;
   common = fs/ufs2.c;
 };

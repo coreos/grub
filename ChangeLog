@@ -1,3 +1,13 @@
+2012-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support big-endian UFS1.
+
+	* Makefile.util.def (libgrubmods): Add ufs_be.c
+	* grub-core/Makefile.core.def (ufs1_be): New module.
+	* grub-core/fs/ufs_be.c: New file.
+	* grub-core/fs/ufs.c: Declare grub_ufs_to_le* and use them throughout
+	the file.
+
 2012-11-28  Leif Lindholm  <leif.lindholm@arm.com>
 
         * include/grub/types.h: Fix functionality unaffecting typo in
