@@ -1,5 +1,13 @@
 2012-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix big-endian mtime.
+
+	* grub-core/fs/ufs.c (grub_ufs_inode): Split improperly attached
+	together sec and usec.
+	(grub_ufs_dir): Use correct byteswapping for UFS time.
+
+2012-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support big-endian UFS1.
 
 	* Makefile.util.def (libgrubmods): Add ufs_be.c

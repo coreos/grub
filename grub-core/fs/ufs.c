@@ -151,9 +151,9 @@ struct grub_ufs_inode
   grub_uint64_t mtime;
   grub_uint64_t ctime;
   grub_uint64_t create_time;
-  grub_uint32_t atime_sec;
-  grub_uint32_t mtime_sec;
-  grub_uint32_t ctime_sec;
+  grub_uint32_t atime_usec;
+  grub_uint32_t mtime_usec;
+  grub_uint32_t ctime_usec;
   grub_uint32_t create_time_sec;
   grub_uint32_t gen;
   grub_uint32_t kernel_flags;
@@ -181,9 +181,12 @@ struct grub_ufs_inode
   grub_uint16_t uid;
   grub_uint16_t gid;
   grub_uint64_t size;
-  grub_uint64_t atime;
-  grub_uint64_t mtime;
-  grub_uint64_t ctime;
+  grub_uint32_t atime;
+  grub_uint32_t atime_usec;
+  grub_uint32_t mtime;
+  grub_uint32_t mtime_usec;
+  grub_uint32_t ctime;
+  grub_uint32_t ctime_usec;
   union
   {
     struct
@@ -684,7 +687,11 @@ grub_ufs_dir (grub_device_t device, const char *path,
 
 	info.dir = ((grub_ufs_to_cpu16 (inode.mode) & GRUB_UFS_ATTR_TYPE)
 		    == GRUB_UFS_ATTR_DIR);
+#ifdef MODE_UFS2
 	info.mtime = grub_ufs_to_cpu64 (inode.mtime);
+#else
+	info.mtime = grub_ufs_to_cpu32 (inode.mtime);
+#endif
 	info.mtimeset = 1;
 
 	if (hook (filename, &info))
