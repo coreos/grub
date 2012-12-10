@@ -1101,7 +1101,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
       arguments->font_info.desc = strtoul (arg, NULL, 0);
       break;
 
-    case 'e':
+    case 'c':
       arguments->font_info.asce = strtoul (arg, NULL, 0);
       break;
 
