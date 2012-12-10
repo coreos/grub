@@ -361,7 +361,13 @@ grub_gfxmenu_draw_terminal_box (void)
 static void
 init_terminal (grub_gfxmenu_view_t view)
 {
+  const int border_width = 3;
+
   grub_font_t terminal_font;
+
+  unsigned int line_width;
+
+  struct grub_font_glyph *glyph;
 
   terminal_font = grub_font_get (view->terminal_font_name);
   if (!terminal_font)
@@ -370,11 +376,27 @@ init_terminal (grub_gfxmenu_view_t view)
       return;
     }
 
-  term_rect.width = view->screen.width * 7 / 10;
+  glyph = grub_font_get_glyph (terminal_font, 'M');
+
+  line_width = ((glyph ? glyph->device_width : 8) * 80 + 2 * border_width);
+
+  if (view->screen.width <= line_width)
+    /* The screen is too small. Use all space, except a small border
+       to show the user, it is a window and not full screen: */
+    term_rect.width = view->screen.width - 6 * border_width;
+  else
+    {
+      /* The screen is big enough. Try 70% of the screen width: */
+      term_rect.width = view->screen.width * 7 / 10;
+      /* Make sure, that we use at least the line_width: */
+      if ( term_rect.width < line_width )
+	term_rect.width = line_width;
+    }
+
   term_rect.height = view->screen.height * 7 / 10;
 
-  term_rect.x = view->screen.x + view->screen.width * (10 - 7) / 10 / 2;
-  term_rect.y = view->screen.y + view->screen.height * (10 - 7) / 10 / 2;
+  term_rect.x = view->screen.x + (view->screen.width  - term_rect.width) / 2;
+  term_rect.y = view->screen.y + (view->screen.height - term_rect.height) / 2;
 
   term_view = view;
 
@@ -384,7 +406,8 @@ init_terminal (grub_gfxmenu_view_t view)
   grub_gfxterm_set_window (GRUB_VIDEO_RENDER_TARGET_DISPLAY, term_rect.x,
 			   term_rect.y,
 			   term_rect.width, term_rect.height,
-			   view->double_repaint, terminal_font, 3);
+			   view->double_repaint, terminal_font,
+			   border_width);
   grub_gfxterm_decorator_hook = grub_gfxmenu_draw_terminal_box;
 }
 
