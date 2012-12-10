@@ -928,10 +928,20 @@ grub_cmd_cryptomount (grub_extcmd_context_t ctxt, int argc, char **args)
       grub_err_t err;
       grub_disk_t disk;
       grub_cryptodisk_t dev;
+      char *devname;
+      char *devlast;
 
       search_uuid = NULL;
       check_boot = state[2].set;
-      disk = grub_disk_open (args[0]);
+      devname = args[0];
+      if (devname[0] == '(' && *(devlast = &devname[grub_strlen (devname) - 1]) == ')')
+	{
+	  *devlast = '\0';
+	  disk = grub_disk_open (devname + 1);
+	  *devlast = ')';
+	}
+      else
+	disk = grub_disk_open (devname);
       if (!disk)
 	return grub_errno;
 
