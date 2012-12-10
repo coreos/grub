@@ -1796,6 +1796,18 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	  return path;
 	}
 
+      if (strncmp ("nbd", p, 3) == 0
+	  && p[3] >= '0' && p[3] <= '9')
+	{
+	  char *ptr = p + 3;
+	  while (*ptr >= '0' && *ptr <= '9')
+	    ptr++;
+	  if (*ptr)
+	    *is_part = 1;
+	  *ptr = 0;
+	  return path;
+	}
+
       /* If this is an IDE, SCSI or Virtio disk.  */
       if (strncmp ("vdisk", p, 5) == 0
 	  && p[5] >= 'a' && p[5] <= 'z')
