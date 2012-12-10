@@ -201,7 +201,7 @@ grub_virtual_screen_free (void)
 static grub_err_t
 grub_virtual_screen_setup (unsigned int x, unsigned int y,
                            unsigned int width, unsigned int height,
-                           const char *font_name)
+			   grub_font_t font)
 {
   unsigned int i;
 
@@ -209,10 +209,7 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   grub_virtual_screen_free ();
 
   /* Initialize with default data.  */
-  virtual_screen.font = grub_font_get (font_name);
-  if (!virtual_screen.font)
-    return grub_error (GRUB_ERR_BAD_FONT,
-                       "no font loaded");
+  virtual_screen.font = font;
   virtual_screen.width = width;
   virtual_screen.height = height;
   virtual_screen.offset_x = x;
@@ -282,7 +279,7 @@ grub_err_t
 grub_gfxterm_set_window (struct grub_video_render_target *target,
 			 int x, int y, int width, int height,
 			 int double_repaint,
-			 const char *font_name, int border_width)
+			 grub_font_t font, int border_width)
 {
   /* Clean up any prior instance.  */
   destroy_window ();
@@ -294,7 +291,7 @@ grub_gfxterm_set_window (struct grub_video_render_target *target,
   if (grub_virtual_screen_setup (border_width, border_width, 
                                  width - 2 * border_width, 
                                  height - 2 * border_width, 
-                                 font_name) 
+                                 font) 
       != GRUB_ERR_NONE)
     {
       return grub_errno;
@@ -321,6 +318,7 @@ grub_gfxterm_fullscreen (void)
   grub_video_color_t color;
   grub_err_t err;
   int double_redraw;
+  grub_font_t font;
 
   err = grub_video_get_info (&mode_info);
   /* Figure out what mode we ended up.  */
@@ -346,12 +344,16 @@ grub_gfxterm_fullscreen (void)
   if (! font_name)
     font_name = "";   /* Allow fallback to any font.  */
 
+  font = grub_font_get (font_name);
+  if (!font)
+    return grub_error (GRUB_ERR_BAD_FONT, "no font loaded");
+
   grub_gfxterm_decorator_hook = NULL;
 
   return grub_gfxterm_set_window (GRUB_VIDEO_RENDER_TARGET_DISPLAY,
 				  0, 0, mode_info.width, mode_info.height,
 				  double_redraw,
-				  font_name, DEFAULT_BORDER_WIDTH);
+				  font, DEFAULT_BORDER_WIDTH);
 }
 
 static grub_err_t

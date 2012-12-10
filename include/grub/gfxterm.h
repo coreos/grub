@@ -23,12 +23,13 @@
 #include <grub/types.h>
 #include <grub/term.h>
 #include <grub/video.h>
+#include <grub/font.h>
 
 grub_err_t
 EXPORT_FUNC (grub_gfxterm_set_window) (struct grub_video_render_target *target,
 				       int x, int y, int width, int height,
 				       int double_repaint,
-				       const char *font_name, int border_width);
+				       grub_font_t font, int border_width);
 
 typedef void (*grub_gfxterm_repaint_callback_t)(int x, int y,
                                                 int width, int height);

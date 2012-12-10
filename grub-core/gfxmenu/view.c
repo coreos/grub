@@ -361,6 +361,15 @@ grub_gfxmenu_draw_terminal_box (void)
 static void
 init_terminal (grub_gfxmenu_view_t view)
 {
+  grub_font_t terminal_font;
+
+  terminal_font = grub_font_get (view->terminal_font_name);
+  if (!terminal_font)
+    {
+      grub_error (GRUB_ERR_BAD_FONT, "no font loaded");
+      return;
+    }
+
   term_rect.width = view->screen.width * 7 / 10;
   term_rect.height = view->screen.height * 7 / 10;
 
@@ -375,7 +384,7 @@ init_terminal (grub_gfxmenu_view_t view)
   grub_gfxterm_set_window (GRUB_VIDEO_RENDER_TARGET_DISPLAY, term_rect.x,
 			   term_rect.y,
 			   term_rect.width, term_rect.height,
-			   view->double_repaint, view->terminal_font_name, 3);
+			   view->double_repaint, terminal_font, 3);
   grub_gfxterm_decorator_hook = grub_gfxmenu_draw_terminal_box;
 }
 
