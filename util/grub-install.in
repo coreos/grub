@@ -748,7 +748,7 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
 	       exit 1
         fi
 
-        if [ "$(file -s "${install_device}" -b | awk '{ print $1 }')" = ELF ] || [ x$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t zero_check) = xtrue ]; then
+        if [ "$(file -s -b -L "${install_device}" | awk '{ print $1 }')" = ELF ] || [ x$("${grub_probe}" -m "${device_map}" -d "${install_device}" -t zero_check) = xtrue ]; then
 	        dd if="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" of="${install_device}" status=noxfer || {
 	        gettext "Failed to copy Grub to the PReP partition." 1>&2
 	            echo 1>&2
