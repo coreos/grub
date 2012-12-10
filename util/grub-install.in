@@ -486,8 +486,6 @@ if [ x"$grub_modinfo_platform" = xefi ]; then
 		*)
 		    efi_file=grub.efi ;;
 	    esac
-	   # TODO: We should also use efibootmgr, if available, to add a Boot
-	   # entry for ourselves.
 	fi
 	efidir="$efidir/EFI/$efi_distributor"
 	mkdir -p "$efidir" || exit 1
