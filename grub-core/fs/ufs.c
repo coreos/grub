@@ -664,6 +664,9 @@ grub_ufs_dir (grub_device_t device, const char *path,
 			      (char *) &dirent) < 0)
 	break;
 
+      if (dirent.direntlen == 0)
+	break;
+
 #ifdef MODE_UFS2
       namelen = dirent.namelen_bsd;
 #else
