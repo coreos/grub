@@ -35,7 +35,7 @@ AC_DEFUN([gl_STDIO_H],
 
   dnl Check for declarations of anything we want to poison if the
   dnl corresponding gnulib module is not in use, and which is not
-  dnl guaranteed by C89.
+  dnl guaranteed by both C89 and C11.
   gl_WARN_ON_USE_PREPARE([[#include <stdio.h>
     ]], [dprintf fpurge fseeko ftello getdelim getline gets popen renameat
     snprintf tmpfile vdprintf vsnprintf])
