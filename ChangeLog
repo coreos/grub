@@ -1,5 +1,10 @@
 2012-12-28  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub-mkconfig.in: Accept GRUB_TERMINAL_OUTPUT=vga_text.
+	Fixes Savannah bug #37821.
+
+2012-12-28  Colin Watson  <cjwatson@ubuntu.com>
+
 	Apply program name transformations at build-time rather than at
 	run-time.  Fixes Debian bug #696465.
 

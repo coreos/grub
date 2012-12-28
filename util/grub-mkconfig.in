@@ -158,7 +158,7 @@ fi
 for x in ${GRUB_TERMINAL_OUTPUT}; do
     case "x${x}" in
 	xgfxterm) ;;
-	xconsole | xserial | xofconsole)
+	xconsole | xserial | xofconsole | xvga_text)
             # make sure all our children behave in conformance with ascii..
 	    export LANG=C;;
 	*) echo "Invalid output terminal \"${GRUB_TERMINAL_OUTPUT}\"" >&2 ; exit 1 ;;
