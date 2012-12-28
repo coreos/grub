@@ -50,6 +50,22 @@ AC_CONFIG_HEADER([config-util.h])
 
 # Program name transformations
 AC_ARG_PROGRAM
+grub_TRANSFORM([grub-bios-setup])
+grub_TRANSFORM([grub-editenv])
+grub_TRANSFORM([grub-install])
+grub_TRANSFORM([grub-mkconfig])
+grub_TRANSFORM([grub-mkfont])
+grub_TRANSFORM([grub-mkimage])
+grub_TRANSFORM([grub-mklayout])
+grub_TRANSFORM([grub-mkpasswd-pbkdf2])
+grub_TRANSFORM([grub-mkrelpath])
+grub_TRANSFORM([grub-mkrescue])
+grub_TRANSFORM([grub-probe])
+grub_TRANSFORM([grub-reboot])
+grub_TRANSFORM([grub-script-check])
+grub_TRANSFORM([grub-set-default])
+grub_TRANSFORM([grub-setup])
+grub_TRANSFORM([grub-sparc64-setup])
 
 # Optimization flag.  Allow user to override.
 if test "x$TARGET_CFLAGS" = x; then

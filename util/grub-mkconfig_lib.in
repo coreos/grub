@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
-transform="@program_transform_name@"
-
 prefix="@prefix@"
 exec_prefix="@exec_prefix@"
 datarootdir="@datarootdir@"
@@ -25,10 +23,10 @@ sbindir="@sbindir@"
 pkgdatadir="${datadir}/@PACKAGE@"
 
 if test "x$grub_probe" = x; then
-  grub_probe="${sbindir}/`echo grub-probe | sed "${transform}"`"
+  grub_probe="${sbindir}/@grub_probe@"
 fi
 if test "x$grub_mkrelpath" = x; then
-  grub_mkrelpath="${bindir}/`echo grub-mkrelpath | sed "${transform}"`"
+  grub_mkrelpath="${bindir}/@grub_mkrelpath@"
 fi
 
 if which gettext >/dev/null 2>/dev/null; then

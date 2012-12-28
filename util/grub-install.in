@@ -17,8 +17,6 @@
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
 # Initialize some variables.
-transform="@program_transform_name@"
-
 prefix="@prefix@"
 exec_prefix="@exec_prefix@"
 datarootdir="@datarootdir@"
@@ -44,10 +42,10 @@ localedir="@datadir@/locale"
 
 self="`basename $0`"
 
-grub_mkimage="${bindir}/`echo grub-mkimage | sed ${transform}`"
-grub_probe="${sbindir}/`echo grub-probe | sed ${transform}`"
-grub_editenv="${bindir}/`echo grub-editenv | sed ${transform}`"
-grub_mkrelpath="${bindir}/`echo grub-mkrelpath | sed ${transform}`"
+grub_mkimage="${bindir}/@grub_mkimage@"
+grub_probe="${sbindir}/@grub_probe@"
+grub_editenv="${bindir}/@grub_editenv@"
+grub_mkrelpath="${bindir}/@grub_mkrelpath@"
 rootdir=
 bootdir=
 grubdir="`echo "/@bootdirname@/@grubdirname@" | sed 's,//*,/,g'`"
@@ -347,11 +345,11 @@ else
 fi
 
 if test "x$grub_setup" = x && [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ]; then
-    grub_setup="${sbindir}/`echo grub-bios-setup | sed ${transform}`"
+    grub_setup="${sbindir}/@grub_bios_setup@"
 fi
 
 if test "x$grub_setup" = x && [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "sparc64-ieee1275" ]; then
-    grub_setup="${sbindir}/`echo grub-sparc64-setup | sed ${transform}`"
+    grub_setup="${sbindir}/@grub_sparc64_setup@"
 fi
 
 if test "x$install_device" = x && ([ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ] \

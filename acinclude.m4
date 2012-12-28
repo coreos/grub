@@ -452,3 +452,9 @@ else
   AC_MSG_RESULT([no])
 [fi]
 ])
+
+dnl Create an output variable with the transformed name of a GRUB utility
+dnl program.
+AC_DEFUN([grub_TRANSFORM],[dnl
+AC_SUBST(AS_TR_SH([$1]), [`AS_ECHO([$1]) | sed "$program_transform_name"`])dnl
+])

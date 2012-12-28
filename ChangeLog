@@ -1,5 +1,29 @@
 2012-12-28  Colin Watson  <cjwatson@ubuntu.com>
 
+	Apply program name transformations at build-time rather than at
+	run-time.  Fixes Debian bug #696465.
+
+	* acinclude.m4 (grub_TRANSFORM): New macro.
+	* configure.ac: Create output variables with transformed names for
+	most programs.
+	* util/bash-completion.d/grub-completion.bash.in: Use
+	pre-transformed variables for program names.
+	* util/grub-install.in: Likewise.
+	* util/grub-kbdcomp.in: Likewise.
+	* util/grub-mkconfig.in: Likewise.
+	* util/grub-mkconfig_lib.in: Likewise.
+	* util/grub-mknetdir.in: Likewise.
+	* util/grub-mkrescue.in: Likewise.
+	* util/grub-mkstandalone.in: Likewise.
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+	* util/powerpc/ieee1275/grub-mkrescue.in: Likewise.
+	* tests/util/grub-shell-tester.in: Remove unused assignment.
+	* tests/util/grub-shell.in: Likewise.
+	* util/grub.d/00_header.in: Likewise.
+
+2012-12-28  Colin Watson  <cjwatson@ubuntu.com>
+
 	Backport gnulib fixes for C11.  Fixes Savannah bug #37738.
 
 	* grub-core/gnulib/stdio.in.h (gets): Warn on use only if
