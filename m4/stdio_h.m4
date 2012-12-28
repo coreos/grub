@@ -37,7 +37,7 @@ AC_DEFUN([gl_STDIO_H],
   dnl corresponding gnulib module is not in use, and which is not
   dnl guaranteed by C89.
   gl_WARN_ON_USE_PREPARE([[#include <stdio.h>
-    ]], [dprintf fpurge fseeko ftello getdelim getline popen renameat
+    ]], [dprintf fpurge fseeko ftello getdelim getline gets popen renameat
     snprintf tmpfile vdprintf vsnprintf])
 ])
 
