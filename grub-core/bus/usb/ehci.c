@@ -455,8 +455,7 @@ grub_ehci_reset (struct grub_ehci *e)
 
 /* PCI iteration function... */
 static int NESTED_FUNC_ATTR
-grub_ehci_pci_iter (grub_pci_device_t dev,
-		    grub_pci_id_t pciid __attribute__ ((unused)))
+grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
 {
   grub_uint8_t release;
   grub_uint32_t class_code;

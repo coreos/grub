@@ -245,7 +245,7 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
   int found = 0;
   int pitch, bytes_per_pixel;
 
-  auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)));
+  auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid);
   int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid)
     {
       grub_pci_address_t addr;
