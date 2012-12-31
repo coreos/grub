@@ -35,6 +35,14 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+/* Helper for legacy_file.  */
+static grub_err_t
+legacy_file_getline (char **line, int cont __attribute__ ((unused)))
+{
+  *line = 0;
+  return GRUB_ERR_NONE;
+}
+
 static grub_err_t
 legacy_file (const char *filename)
 {
@@ -42,14 +50,6 @@ legacy_file (const char *filename)
   char *entryname = NULL, *entrysrc = NULL;
   grub_menu_t menu;
   char *suffix = grub_strdup ("");
-
-  auto grub_err_t getline (char **line, int cont);
-  grub_err_t getline (char **line, 
-		      int cont __attribute__ ((unused)))
-  {
-    *line = 0;
-    return GRUB_ERR_NONE;
-  }
 
   if (!suffix)
     return grub_errno;
@@ -134,7 +134,7 @@ legacy_file (const char *filename)
 
       if (parsed && !entryname)
 	{
-	  grub_normal_parse_line (parsed, getline);
+	  grub_normal_parse_line (parsed, legacy_file_getline);
 	  grub_print_error ();
 	  grub_free (parsed);
 	  parsed = NULL;
@@ -180,7 +180,7 @@ legacy_file (const char *filename)
       grub_free (args);
     }
 
-  grub_normal_parse_line (suffix, getline);
+  grub_normal_parse_line (suffix, legacy_file_getline);
   grub_print_error ();
   grub_free (suffix);
   grub_free (entrysrc);

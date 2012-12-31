@@ -34,25 +34,26 @@ static const struct grub_arg_option help_options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
+/* Helper for find_short.  */
+static struct grub_arg_option *
+fnd_short (const struct grub_arg_option *opt, char c)
+{
+  while (opt->doc)
+    {
+      if (opt->shortarg == c)
+	return (struct grub_arg_option *) opt;
+      opt++;
+    }
+  return 0;
+}
+
 static struct grub_arg_option *
 find_short (const struct grub_arg_option *options, char c)
 {
   struct grub_arg_option *found = 0;
-  auto struct grub_arg_option *fnd_short (const struct grub_arg_option *opt);
-
-  struct grub_arg_option *fnd_short (const struct grub_arg_option *opt)
-    {
-      while (opt->doc)
-	{
-	  if (opt->shortarg == c)
-	    return (struct grub_arg_option *) opt;
-	  opt++;
-	}
-      return 0;
-    }
 
   if (options)
-    found = fnd_short (options);
+    found = fnd_short (options, c);
 
   if (! found)
     {
@@ -74,29 +75,30 @@ find_short (const struct grub_arg_option *options, char c)
   return found;
 }
 
+/* Helper for find_long.  */
+static struct grub_arg_option *
+fnd_long (const struct grub_arg_option *opt, const char *s, int len)
+{
+  while (opt->doc)
+    {
+      if (opt->longarg && ! grub_strncmp (opt->longarg, s, len) &&
+	  opt->longarg[len] == '\0')
+	return (struct grub_arg_option *) opt;
+      opt++;
+    }
+  return 0;
+}
+
 static struct grub_arg_option *
 find_long (const struct grub_arg_option *options, const char *s, int len)
 {
   struct grub_arg_option *found = 0;
-  auto struct grub_arg_option *fnd_long (const struct grub_arg_option *opt);
-
-  struct grub_arg_option *fnd_long (const struct grub_arg_option *opt)
-    {
-      while (opt->doc)
-	{
-	  if (opt->longarg && ! grub_strncmp (opt->longarg, s, len) &&
-	      opt->longarg[len] == '\0')
-	    return (struct grub_arg_option *) opt;
-	  opt++;
-	}
-      return 0;
-    }
 
   if (options)
-    found = fnd_long (options);
+    found = fnd_long (options, s, len);
 
   if (! found)
-    found = fnd_long (help_options);
+    found = fnd_long (help_options, s, len);
 
   return found;
 }

@@ -286,47 +286,48 @@ grub_sendkey_preboot (int noret __attribute__ ((unused)))
   return GRUB_ERR_NONE;
 }
 
+/* Helper for grub_cmd_sendkey.  */
+static int
+find_key_code (char *key)
+{
+  unsigned i;
+
+  for (i = 0; i < sizeof (keysym_table) / sizeof (keysym_table[0]); i++)
+    {
+      if (keysym_table[i].unshifted_name 
+	  && grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
+	return keysym_table[i].keycode;
+      else if (keysym_table[i].shifted_name 
+	       && grub_strcmp (key, keysym_table[i].shifted_name) == 0)
+	return keysym_table[i].keycode;
+    }
+
+  return 0;
+}
+
+/* Helper for grub_cmd_sendkey.  */
+static int
+find_ascii_code (char *key)
+{
+  unsigned i;
+
+  for (i = 0; i < sizeof (keysym_table) / sizeof (keysym_table[0]); i++)
+    {
+      if (keysym_table[i].unshifted_name 
+	  && grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
+	return keysym_table[i].unshifted_ascii;
+      else if (keysym_table[i].shifted_name 
+	       && grub_strcmp (key, keysym_table[i].shifted_name) == 0)
+	return keysym_table[i].shifted_ascii;
+    }
+
+  return 0;
+}
+
 static grub_err_t
 grub_cmd_sendkey (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
-
-  auto int find_key_code (char *key); 
-  auto int find_ascii_code (char *key);
-
-  int find_key_code (char *key)
-    {
-      unsigned i;
-
-      for (i = 0; i < sizeof (keysym_table) / sizeof (keysym_table[0]); i++)
-	{
-	  if (keysym_table[i].unshifted_name 
-	      && grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
-	    return keysym_table[i].keycode;
-	  else if (keysym_table[i].shifted_name 
-		   && grub_strcmp (key, keysym_table[i].shifted_name) == 0)
-	    return keysym_table[i].keycode;
-	}
-
-      return 0;
-    }
-
-  int find_ascii_code (char *key)
-    {
-      unsigned i;
-
-      for (i = 0; i < sizeof (keysym_table) / sizeof (keysym_table[0]); i++)
-	{
-	  if (keysym_table[i].unshifted_name 
-	      && grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
-	    return keysym_table[i].unshifted_ascii;
-	  else if (keysym_table[i].shifted_name 
-		   && grub_strcmp (key, keysym_table[i].shifted_name) == 0)
-	    return keysym_table[i].shifted_ascii;
-	}
-
-      return 0;
-    }
 
   andmask = 0xffffffff;
   ormask = 0;

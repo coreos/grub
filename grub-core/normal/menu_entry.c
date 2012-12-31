@@ -1205,32 +1205,6 @@ run (struct screen *screen)
   grub_menu_t menu = NULL;
   char *dummy[1] = { NULL };
 
-  auto char * editor_getsource (void);
-  char * editor_getsource (void)
-  {
-    int i;
-    grub_size_t size = 0, tot_size = 0;
-    char *source;
-
-    for (i = 0; i < screen->num_lines; i++)
-      tot_size += grub_get_num_of_utf8_bytes (screen->lines[i].buf,
-					      screen->lines[i].len) + 1;
-
-    source = grub_malloc (tot_size + 1);
-    if (! source)
-      return NULL;
-
-    for (i = 0; i < screen->num_lines; i++)
-      {
-	size += grub_ucs4_to_utf8 (screen->lines[i].buf, screen->lines[i].len,
-				   (grub_uint8_t *) source + size,
-				   tot_size - size);
-	source[size++] = '\n';
-      }
-    source[size] = '\0';
-    return source;
-  }
-
   grub_cls ();
   grub_printf ("  ");
   grub_printf_ (N_("Booting a command list"));
@@ -1248,9 +1222,27 @@ run (struct screen *screen)
     }
 
   /* Execute the script, line for line.  */
-  script = editor_getsource ();
-  if (! script)
-    return 0;
+  {
+    int i;
+    grub_size_t size = 0, tot_size = 0;
+
+    for (i = 0; i < screen->num_lines; i++)
+      tot_size += grub_get_num_of_utf8_bytes (screen->lines[i].buf,
+					      screen->lines[i].len) + 1;
+
+    script = grub_malloc (tot_size + 1);
+    if (! script)
+      return 0;
+
+    for (i = 0; i < screen->num_lines; i++)
+      {
+	size += grub_ucs4_to_utf8 (screen->lines[i].buf, screen->lines[i].len,
+				   (grub_uint8_t *) script + size,
+				   tot_size - size);
+	script[size++] = '\n';
+      }
+    script[size] = '\0';
+  }
   grub_script_execute_sourcecode (script, 0, dummy);
   grub_free (script);
 

@@ -22,20 +22,21 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 
+/* Helper for grub_linuxbios_table_iterate.  */
+static int
+check_signature (grub_linuxbios_table_header_t tbl_header)
+{
+  if (! grub_memcmp (tbl_header->signature, "LBIO", 4))
+    return 1;
+
+  return 0;
+}
+
 static grub_err_t
 grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t))
 {
   grub_linuxbios_table_header_t table_header;
   grub_linuxbios_table_item_t table_item;
-
-  auto int check_signature (grub_linuxbios_table_header_t);
-  int check_signature (grub_linuxbios_table_header_t tbl_header)
-  {
-    if (! grub_memcmp (tbl_header->signature, "LBIO", 4))
-      return 1;
-
-    return 0;
-  }
 
   /* Assuming table_header is aligned to its size (8 bytes).  */
 

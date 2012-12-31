@@ -114,6 +114,14 @@ read_envblk_file (grub_file_t file)
   return envblk;
 }
 
+/* Helper for grub_cmd_load_env.  */
+static int
+set_var (const char *name, const char *value)
+{
+  grub_env_set (name, value);
+  return 0;
+}
+
 static grub_err_t
 grub_cmd_load_env (grub_extcmd_context_t ctxt,
 		   int argc __attribute__ ((unused)),
@@ -122,13 +130,6 @@ grub_cmd_load_env (grub_extcmd_context_t ctxt,
   struct grub_arg_list *state = ctxt->state;
   grub_file_t file;
   grub_envblk_t envblk;
-
-  auto int set_var (const char *name, const char *value);
-  int set_var (const char *name, const char *value)
-  {
-    grub_env_set (name, value);
-    return 0;
-  }
 
   file = open_envblk_file ((state[0].set) ? state[0].arg : 0);
   if (! file)

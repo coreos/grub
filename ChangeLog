@@ -1,3 +1,39 @@
+2012-12-31  Colin Watson  <cjwatson@ubuntu.com>
+
+	Remove several trivially-unnecessary uses of nested functions.
+
+	* grub-core/commands/i386/pc/sendkey.c
+	(grub_cmd_sendkey: find_key_code, find_ascii_code): Make static
+	instead of nested.
+	* grub-core/commands/legacycfg.c (legacy_file: getline): Likewise.
+	Rename to ...
+	(legacy_file_getline): ... this.
+	* grub-core/commands/loadenv.c (grub_cmd_load_env: set_var):
+	Likewise.
+	* grub-core/kern/corecmd.c (grub_core_cmd_set: print_env): Likewise.
+	* grub-core/kern/fs.c (grub_fs_probe: dummy_func): Likewise.  Rename
+	to ...
+	(probe_dummy_iter): ... this.
+	* grub-core/kern/i386/coreboot/mmap.c
+	(grub_linuxbios_table_iterate: check_signature): Likewise.
+	* grub-core/kern/parser.c (grub_parser_split_cmdline:
+	check_varstate): Likewise.  Mark inline.
+	* grub-core/lib/arg.c (find_short: fnd_short): Likewise.  Pass
+	an additional parameter.
+	(find_long: fnd_long): Likewise.  Pass two additional parameters.
+	* grub-core/lib/crc.c (init_crc32c_table: reflect): Likewise.
+	* grub-core/lib/crc64.c (init_crc64_table: reflect): Likewise.
+	* grub-core/lib/ieee1275/cmos.c (grub_cmos_find_port: hook):
+	Likewise.  Rename to ...
+	(grub_cmos_find_port_iter): ... this.
+	* grub-core/lib/ieee1275/datetime.c (find_rtc: hook): Likewise.
+	Rename to ...
+	(find_rtc_iter): ... this.
+
+	* grub-core/normal/menu_entry.c (run): Fold nested editor_getsource
+	function directly into the function body, since it is only called
+	once.
+
 2012-12-30  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/bus/usb/ehci.c (grub_ehci_pci_iter): Remove incorrect
