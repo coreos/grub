@@ -1,5 +1,12 @@
 2013-01-02  Colin Watson  <cjwatson@ubuntu.com>
 
+	Fix failing printf test.
+
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Parse '-', '.', and
+	'$' in the correct order when collecting type information.
+
+2013-01-02  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (configfile): Explain environment variable
 	handling.
 	(source): New section.
