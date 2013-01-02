@@ -3303,6 +3303,7 @@ you forget a command, you can run the command @command{help}
 * search::                      Search devices by file, label, or UUID
 * sendkey::                     Emulate keystrokes
 * set::                         Set an environment variable
+* source::                      Read a configuration file in same context
 * true::                        Do nothing, successfully
 * unset::                       Unset an environment variable
 * uppermem::                    Set the upper memory size
@@ -3429,7 +3430,9 @@ If they are completely identical, nothing will be printed.
 
 @deffn Command configfile file
 Load @var{file} as a configuration file.  If @var{file} defines any menu
-entries, then show a menu containing them immediately.
+entries, then show a menu containing them immediately.  Any environment
+variable changes made by the commands in @var{file} will not be preserved
+after @command{configfile} returns.
 @end deffn
 
 
@@ -4066,6 +4069,19 @@ This command is only available on PC BIOS systems.
 @deffn Command set [envvar=value]
 Set the environment variable @var{envvar} to @var{value}. If invoked with no
 arguments, print all environment variables with their values.
+@end deffn
+
+
+@node source
+@subsection source
+
+@deffn Command source file
+Read @var{file} as a configuration file, as if its contents had been
+incorporated directly into the sourcing file.  Unlike @command{configfile}
+(@pxref{configfile}), this executes the contents of @var{file} without
+changing context: any environment variable changes made by the commands in
+@var{file} will be preserved after @command{source} returns, and the menu
+will not be shown immediately.
 @end deffn
 
 
