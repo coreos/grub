@@ -1,5 +1,11 @@
 2013-01-02  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/tests/lib/test.c (grub_test_run): Return non-zero on
+	test failures, so that a failing unit test correctly causes 'make
+	check' to fail.
+
+2013-01-02  Colin Watson  <cjwatson@ubuntu.com>
+
 	Fix failing printf test.
 
 	* grub-core/kern/misc.c (grub_vsnprintf_real): Parse '-', '.', and

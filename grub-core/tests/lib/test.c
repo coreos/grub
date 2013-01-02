@@ -225,10 +225,14 @@ grub_test_run (grub_test_t test)
 		 failure->line, (failure->message ? : "<no message>"));
 
   if (!failure_list)
-    grub_printf ("%s: PASS\n", test->name);
+    {
+      grub_printf ("%s: PASS\n", test->name);
+      return GRUB_ERR_NONE;
+    }
   else
-    grub_printf ("%s: FAIL\n", test->name);
-
-  free_failures ();
-  return GRUB_ERR_NONE;
+    {
+      grub_printf ("%s: FAIL\n", test->name);
+      free_failures ();
+      return GRUB_ERR_TEST_FAILURE;
+    }
 }
