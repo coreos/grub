@@ -122,10 +122,10 @@ EOF
     zfs)
       load_kfreebsd_module opensolaris false
 
-      ls "${dirname}/zfs/zpool.cache" > /dev/null
+      ls "/boot/zfs/zpool.cache" > /dev/null
       printf '%s\n' "${prepare_boot_cache}"
       sed "s/^/$submenu_indentation/" << EOF
-	kfreebsd_module		${rel_dirname}/zfs/zpool.cache type=/boot/zfs/zpool.cache
+	kfreebsd_module		$(make_system_path_relative_to_its_root /boot)/zfs/zpool.cache type=/boot/zfs/zpool.cache
 EOF
     ;;
   esac

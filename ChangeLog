@@ -1,3 +1,9 @@
+2013-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub.d/10_kfreebsd.in: Correct the patch to zpool.cache as it's
+	always in /boot/zfs.
+	Reported by: Yuta Satoh.
+
 2013-01-03  Yuta Satoh  <nigoro>
 
 	* util/grub.d/10_kfreebsd.in: Fix improper references to grub-probe by
