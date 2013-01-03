@@ -295,7 +295,7 @@ grub_iso9660_susp_iterate (grub_fshelp_node_t node, grub_off_t off,
   if (load_sua ())
     return grub_errno;
 
-  for (; (char *) entry < (char *) sua + sua_size - 1;
+  for (; (char *) entry < (char *) sua + sua_size - 1 && entry->len > 0;
        entry = (struct grub_iso9660_susp_entry *)
 	 ((char *) entry + entry->len))
     {

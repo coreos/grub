@@ -1,3 +1,8 @@
+2013-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/iso9660.c (grub_iso9660_susp_iterate): Avoid hang if
+	entry->len = 0.
+
 2013-01-03  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub.texi (Invoking grub-mkrelpath): New section.
