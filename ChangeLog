@@ -1,3 +1,8 @@
+2013-01-03  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Invoking grub-mount): New section.
+	Reported by: Filipus Klutiero.  Fixes Debian bug #666427.
+
 2013-01-02  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/tests/lib/test.c (grub_test_run): Return non-zero on
