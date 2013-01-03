@@ -36,9 +36,11 @@ Invariant Sections.
 * grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
 * grub-mkconfig: (grub)Invoking grub-mkconfig.  Generate GRUB configuration
 * grub-mkpasswd-pbkdf2: (grub)Invoking grub-mkpasswd-pbkdf2.
+* grub-mkrelpath: (grub)Invoking grub-mkrelpath.
 * grub-mkrescue: (grub)Invoking grub-mkrescue.  Make a GRUB rescue image
 * grub-mount: (grub)Invoking grub-mount.        Mount a file system using GRUB
 * grub-probe: (grub)Invoking grub-probe.        Probe device information
+* grub-script-check: (grub)Invoking grub-script-check.
 @end direntry
 
 @setchapternewpage odd
@@ -101,9 +103,11 @@ This edition documents version @value{VERSION}.
 * Invoking grub-mkconfig::      Generate a GRUB configuration file
 * Invoking grub-mkpasswd-pbkdf2::
                                 Generate GRUB password hashes
+* Invoking grub-mkrelpath::     Make system path relative to its root
 * Invoking grub-mkrescue::      Make a GRUB rescue image
 * Invoking grub-mount::         Mount a file system using GRUB
 * Invoking grub-probe::         Probe device information for GRUB
+* Invoking grub-script-check::  Check GRUB script file for syntax errors
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Future::                      Some future plans on GRUB
@@ -4774,6 +4778,33 @@ Length of the salt.  Defaults to 64.
 @end table
 
 
+@node Invoking grub-mkrelpath
+@chapter Invoking grub-mkrelpath
+
+The program @command{grub-mkrelpath} makes a file system path relative to
+the root of its containing file system.  For instance, if @file{/usr} is a
+mount point, then:
+
+@example
+$ @kbd{grub-mkrelpath /usr/share/grub/unicode.pf2}
+@samp{/share/grub/unicode.pf2}
+@end example
+
+This is mainly used internally by other GRUB utilities such as
+@command{grub-mkconfig} (@pxref{Invoking grub-mkconfig}), but may
+occasionally also be useful for debugging.
+
+@command{grub-mkrelpath} accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command-line options and exit.
+
+@item --version
+Print the version number of GRUB and exit.
+@end table
+
+
 @node Invoking grub-mkrescue
 @chapter Invoking grub-mkrescue
 
@@ -5002,6 +5033,33 @@ System device name for the whole disk.
 @item -v
 @itemx --verbose
 Print verbose messages.
+@end table
+
+
+@node Invoking grub-script-check
+@chapter Invoking grub-script-check
+
+The program @command{grub-script-check} takes a GRUB script file
+(@pxref{Shell-like scripting}) and checks it for syntax errors, similar to
+commands such as @command{sh -n}.  It may take a @var{path} as a non-option
+argument; if none is supplied, it will read from standard input.
+
+@example
+grub-script-check /boot/grub/grub.cfg
+@end example
+
+@command{grub-script-check} accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command-line options and exit.
+
+@item --version
+Print the version number of GRUB and exit.
+
+@item -v
+@itemx --verbose
+Print each line of input after reading it.
 @end table
 
 
