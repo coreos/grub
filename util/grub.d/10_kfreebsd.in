@@ -54,7 +54,7 @@ load_kfreebsd_module ()
   fi
 
   if [ -z "${prepare_module_dir_cache}" ]; then
-    prepare_module_dir_cache="$(prepare_grub_to_access_device $(grub-probe -t device "${module_dir}") | grub_add_tab)"
+    prepare_module_dir_cache="$(prepare_grub_to_access_device $(${grub_probe} -t device "${module_dir}") | grub_add_tab)"
   fi
 
   printf '%s\n' "${prepare_module_dir_cache}"
@@ -112,7 +112,7 @@ EOF
 
   load_kfreebsd_module acpi true
 
-  for abstraction in dummy $(grub-probe -t abstraction --device ${GRUB_DEVICE}) ; do
+  for abstraction in dummy $(${grub_probe} -t abstraction --device ${GRUB_DEVICE}) ; do
     case $abstraction in
       lvm) load_kfreebsd_module geom_linux_lvm false ;;
     esac
@@ -179,7 +179,7 @@ while [ "x$list" != "x" ] ; do
   case ${GRUB_FS} in
     zfs)
 			# zpool name
-			kfreebsd_device=$(grub-probe -t fs_label --device ${GRUB_DEVICE})
+			kfreebsd_device=$(${grub_probe} -t fs_label --device ${GRUB_DEVICE})
 			# filesystem name (empty string for the main filesystem)
 			kfreebsd_device="${kfreebsd_device}$(${grub_mkrelpath} / | sed -e "s,/*@$,,")"
     ;;
