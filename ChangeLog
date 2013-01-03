@@ -1,5 +1,9 @@
 2013-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Extend -Wno-trampolines to host.
+
+2013-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/iso9660.c (grub_iso9660_susp_iterate): Avoid hang if
 	entry->len = 0.
 

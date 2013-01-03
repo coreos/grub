@@ -358,6 +358,23 @@ AC_CHECK_HEADER([util.h], [
 ])
 AC_SUBST([LIBUTIL])
 
+AC_CACHE_CHECK([whether -Wno-trampolines work], [grub_cv_host_cc_wnotrampolines], [
+  SAVED_CFLAGS="$CFLAGS"
+  # Test for -Wtrampolines rather than -Wno-trampolines to reduce confusion
+  # in the event of later failures (since -Wno-* is always accepted, but
+  # produces a diagnostic if something else is wrong).
+  CFLAGS="$HOST_CFLAGS -Wtrampolines"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
+int va_arg_func (int fixed, va_list args);]], [[]])],
+      [grub_cv_host_cc_wnotrampolines=yes],
+      [grub_cv_host_cc_wnotrampolines=no])
+  CFLAGS="$SAVED_CFLAGS"
+])
+
+if test x"$grub_host_cv_cc_wnotrampolines" = xyes ; then
+  HOST_CFLAGS="$HOST_CFLAGS -Wno-trampolines"
+fi
+
 #
 # Check for host and build compilers.
 #
