@@ -391,7 +391,7 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
   grub_memset (&cc, 0, sizeof (cc));
   ctx = &cc;
   ctx->attr = at;
-  ctx->comp.spc = at->mft->data->spc;
+  ctx->comp.log_spc = at->mft->data->log_spc;
   ctx->comp.disk = at->mft->data->disk;
 
   if (pa[8] == 0)
@@ -440,11 +440,11 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
 	  at->save_pos = 1;
 	}
 
-      vcn = ctx->target_vcn = (ofs >> GRUB_NTFS_COM_LOG_LEN) * (GRUB_NTFS_COM_SEC / ctx->comp.spc);
+      vcn = ctx->target_vcn = (ofs >> GRUB_NTFS_COM_LOG_LEN) * (GRUB_NTFS_COM_SEC >> ctx->comp.log_spc);
       ctx->target_vcn &= ~0xFULL;
     }
   else
-    vcn = ctx->target_vcn = grub_divmod64 (ofs >> GRUB_NTFS_BLK_SHR, ctx->comp.spc, 0);
+    vcn = ctx->target_vcn = ofs >> (GRUB_NTFS_BLK_SHR + ctx->comp.log_spc);
 
   ctx->next_vcn = u32at (pa, 0x10);
   ctx->curr_lcn = 0;
@@ -459,17 +459,17 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
       grub_disk_addr_t st0, st1;
       grub_uint64_t m;
 
-      grub_divmod64 (ofs >> GRUB_NTFS_BLK_SHR, ctx->comp.spc, &m);
+      m = (ofs >> GRUB_NTFS_BLK_SHR) & ((1 << ctx->comp.log_spc) - 1);
 
       st0 =
-	(ctx->target_vcn - ctx->curr_vcn + ctx->curr_lcn) * ctx->comp.spc + m;
+	((ctx->target_vcn - ctx->curr_vcn + ctx->curr_lcn) << ctx->comp.log_spc) + m;
       st1 = st0 + 1;
       if (st1 ==
-	  (ctx->next_vcn - ctx->curr_vcn + ctx->curr_lcn) * ctx->comp.spc)
+	  (ctx->next_vcn - ctx->curr_vcn + ctx->curr_lcn) << ctx->comp.log_spc)
 	{
 	  if (grub_ntfs_read_run_list (ctx))
 	    return grub_errno;
-	  st1 = ctx->curr_lcn * ctx->comp.spc;
+	  st1 = ctx->curr_lcn << ctx->comp.log_spc;
 	}
       grub_set_unaligned32 (dest, grub_cpu_to_le32 (st0));
       grub_set_unaligned32 (dest + 4, grub_cpu_to_le32 (st1));
@@ -478,12 +478,10 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
 
   if (!(ctx->flags & GRUB_NTFS_RF_COMP))
     {
-      unsigned int pow;
-
-      if (!grub_fshelp_log2blksize (ctx->comp.spc, &pow))
-	grub_fshelp_read_file (ctx->comp.disk, (grub_fshelp_node_t) ctx,
-			       read_hook, ofs, len, dest,
-			       grub_ntfs_read_block, ofs + len, pow, 0);
+      grub_fshelp_read_file (ctx->comp.disk, (grub_fshelp_node_t) ctx,
+			     read_hook, ofs, len, dest,
+			     grub_ntfs_read_block, ofs + len,
+			     ctx->comp.log_spc, 0);
       return grub_errno;
     }
 
@@ -515,11 +513,11 @@ read_attr (struct grub_ntfs_attr *at, char *dest, grub_disk_addr_t ofs,
 
       /* If compression is possible make sure that we include possible
 	 compressed block size.  */
-      if (GRUB_NTFS_COM_SEC >= at->mft->data->spc)
+      if (GRUB_NTFS_LOG_COM_SEC >= at->mft->data->log_spc)
 	vcn = ((ofs >> GRUB_NTFS_COM_LOG_LEN)
-	       * (GRUB_NTFS_COM_SEC / at->mft->data->spc)) & ~0xFULL;
+	       << (GRUB_NTFS_LOG_COM_SEC - at->mft->data->log_spc)) & ~0xFULL;
       else
-	vcn = grub_divmod64 (ofs, at->mft->data->spc << GRUB_NTFS_BLK_SHR, 0);
+	vcn = ofs >> (at->mft->data->log_spc + GRUB_NTFS_BLK_SHR);
       pa = at->attr_nxt + u16at (at->attr_nxt, 4);
       while (pa < at->attr_end)
 	{
@@ -934,6 +932,7 @@ grub_ntfs_mount (grub_disk_t disk)
 {
   struct grub_ntfs_bpb bpb;
   struct grub_ntfs_data *data = 0;
+  grub_uint32_t spc;
 
   if (!disk)
     goto fail;
@@ -955,23 +954,25 @@ grub_ntfs_mount (grub_disk_t disk)
       || (bpb.bytes_per_sector & (bpb.bytes_per_sector - 1)) != 0)
     goto fail;
 
-  data->spc = (((grub_uint32_t) bpb.sectors_per_cluster
-		* (grub_uint32_t) grub_le_to_cpu16 (bpb.bytes_per_sector))
-	       >> GRUB_NTFS_BLK_SHR);
-  if (!data->spc)
+  spc = (((grub_uint32_t) bpb.sectors_per_cluster
+	  * (grub_uint32_t) grub_le_to_cpu16 (bpb.bytes_per_sector))
+	 >> GRUB_NTFS_BLK_SHR);
+  if (spc == 0 || (spc & (spc - 1)))
     goto fail;
 
+  for (data->log_spc = 0; (1U << data->log_spc) < spc; data->log_spc++);
+
   if (bpb.clusters_per_mft > 0)
-    data->mft_size = data->spc * bpb.clusters_per_mft;
+    data->mft_size = bpb.clusters_per_mft << data->log_spc;
   else
     data->mft_size = 1 << (-bpb.clusters_per_mft - GRUB_NTFS_BLK_SHR);
 
   if (bpb.clusters_per_index > 0)
-    data->idx_size = data->spc * bpb.clusters_per_index;
+    data->idx_size = bpb.clusters_per_index << data->log_spc;
   else
     data->idx_size = 1 << (-bpb.clusters_per_index - GRUB_NTFS_BLK_SHR);
 
-  data->mft_start = grub_le_to_cpu64 (bpb.mft_lcn) * data->spc;
+  data->mft_start = grub_le_to_cpu64 (bpb.mft_lcn) << data->log_spc;
 
   if ((data->mft_size > GRUB_NTFS_MAX_MFT) || (data->idx_size > GRUB_NTFS_MAX_IDX))
     goto fail;

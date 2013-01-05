@@ -87,6 +87,7 @@ enum
 #define GRUB_NTFS_COM_LEN		4096
 #define GRUB_NTFS_COM_LOG_LEN	12
 #define GRUB_NTFS_COM_SEC		(GRUB_NTFS_COM_LEN >> GRUB_NTFS_BLK_SHR)
+#define GRUB_NTFS_LOG_COM_SEC		(GRUB_NTFS_COM_LOG_LEN - GRUB_NTFS_BLK_SHR)
 
 enum
   {
@@ -156,7 +157,7 @@ struct grub_ntfs_data
   grub_disk_t disk;
   grub_uint32_t mft_size;
   grub_uint32_t idx_size;
-  grub_uint32_t spc;
+  int log_spc;
   grub_uint32_t mft_start;
   grub_uint64_t uuid;
 };
@@ -172,7 +173,8 @@ struct grub_ntfs_comp
   grub_disk_t disk;
   int comp_head, comp_tail;
   struct grub_ntfs_comp_table_element comp_table[16];
-  grub_uint32_t cbuf_ofs, cbuf_vcn, spc;
+  grub_uint32_t cbuf_ofs, cbuf_vcn;
+  int log_spc;
   char *cbuf;
 };
 
