@@ -1,5 +1,10 @@
 2013-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ext2.c (grub_ext2_read_block): Use shifts rather than
+	divisions.
+
+2013-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c: Eliminate useless divisions in favor of shifts.
 	* grub-core/fs/ntfscomp.c: Likewise.
 	* include/grub/ntfs.h (grub_ntfs_data): Replace spc with log_spc.

@@ -454,11 +454,12 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       blknr = grub_le_to_cpu32 (indir[fileblock - INDIRECT_BLOCKS]);
     }
   /* Double indirect.  */
-  else if (fileblock < INDIRECT_BLOCKS + blksz / 4 * (blksz / 4 + 1))
+  else if (fileblock < INDIRECT_BLOCKS
+	   + blksz / 4 * ((grub_disk_addr_t) blksz / 4 + 1))
     {
-      unsigned int perblock = blksz / 4;
-      unsigned int rblock = fileblock - (INDIRECT_BLOCKS
-					 + blksz / 4);
+      int log_perblock = log2_blksz + 9 - 2;
+      grub_disk_addr_t rblock = fileblock - (INDIRECT_BLOCKS
+					     + blksz / 4);
       grub_uint32_t indir[blksz / 4];
 
       if (grub_disk_read (data->disk,
@@ -470,21 +471,22 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
       if (grub_disk_read (data->disk,
 			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (indir[rblock / perblock]))
+			   grub_le_to_cpu32 (indir[rblock >> log_perblock]))
 			  << log2_blksz,
 			  0, blksz, indir))
 	return grub_errno;
 
 
-      blknr = grub_le_to_cpu32 (indir[rblock % perblock]);
+      blknr = grub_le_to_cpu32 (indir[rblock & ((1 << log_perblock) - 1)]);
     }
   /* triple indirect.  */
-  else if (fileblock < INDIRECT_BLOCKS + blksz / 4 * (blksz / 4 + 1)
-	   + (blksz / 4) * (blksz / 4) * (blksz / 4 + 1))
+  else if (fileblock < INDIRECT_BLOCKS + blksz / 4 * ((grub_disk_addr_t) blksz / 4 + 1)
+	   + ((grub_disk_addr_t) blksz / 4) * ((grub_disk_addr_t) blksz / 4)
+	   * ((grub_disk_addr_t) blksz / 4 + 1))
     {
-      unsigned int perblock = blksz / 4;
-      unsigned int rblock = fileblock - (INDIRECT_BLOCKS + blksz / 4
-					 * (blksz / 4 + 1));
+      int log_perblock = log2_blksz + 9 - 2;
+      grub_disk_addr_t rblock = fileblock - (INDIRECT_BLOCKS + blksz / 4
+					     * (blksz / 4 + 1));
       grub_uint32_t indir[blksz / 4];
 
       if (grub_disk_read (data->disk,
@@ -496,19 +498,19 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
       if (grub_disk_read (data->disk,
 			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (indir[(rblock / perblock) / perblock]))
+			   grub_le_to_cpu32 (indir[(rblock >> log_perblock) >> log_perblock]))
 			  << log2_blksz,
 			  0, blksz, indir))
 	return grub_errno;
 
       if (grub_disk_read (data->disk,
 			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (indir[(rblock / perblock) % perblock]))
+			   grub_le_to_cpu32 (indir[(rblock >> log_perblock) & ((1 << log_perblock) - 1)]))
 			  << log2_blksz,
 			  0, blksz, indir))
 	return grub_errno;
 
-      blknr = grub_le_to_cpu32 (indir[rblock % perblock]);
+      blknr = grub_le_to_cpu32 (indir[rblock  & ((1 << log_perblock) - 1)]);
     }
   else
     {
