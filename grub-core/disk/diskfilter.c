@@ -831,7 +831,8 @@ grub_diskfilter_write (grub_disk_t disk __attribute ((unused)),
 		 grub_size_t size __attribute ((unused)),
 		 const char *buf __attribute ((unused)))
 {
-  return GRUB_ERR_NOT_IMPLEMENTED_YET;
+  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		     "diskfilter writes are not supported");
 }
 
 struct grub_diskfilter_vg *

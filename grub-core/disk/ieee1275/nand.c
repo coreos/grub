@@ -203,7 +203,8 @@ grub_nand_write (grub_disk_t disk __attribute ((unused)),
                  grub_size_t size __attribute ((unused)),
                  const char *buf __attribute ((unused)))
 {
-  return GRUB_ERR_NOT_IMPLEMENTED_YET;
+  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		     "nand write is not supported");
 }
 
 static struct grub_disk_dev grub_nand_dev =

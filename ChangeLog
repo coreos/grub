@@ -1,3 +1,10 @@
+2013-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/diskfilter.c (grub_diskfilter_write): Call
+	grub_error properly.
+	* grub-core/disk/ieee1275/nand.c (grub_nand_write): Likewise.
+	* grub-core/disk/loopback.c (grub_loopback_write): Likewise.
+
 2013-01-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub.d/10_kfreebsd.in: Correct the patch to zpool.cache as it's
