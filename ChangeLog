@@ -1,5 +1,12 @@
 2013-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/nilfs2.c (-grub_nilfs2_palloc_groups_per_desc_block):
+	Rename to ...
+	(grub_nilfs2_palloc_log_groups_per_desc_block): ... this. Return log
+	of groups_per_block. All users updated.
+
+2013-01-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (grub_diskfilter_write): Call
 	grub_error properly.
 	* grub-core/disk/ieee1275/nand.c (grub_nand_write): Likewise.

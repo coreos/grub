@@ -214,6 +214,8 @@ struct grub_nilfs2_palloc_group_desc
   grub_uint32_t pg_nfrees;
 };
 
+#define LOG_SIZE_GROUP_DESC 2
+
 #define LOG_NILFS_DAT_ENTRY_SIZE 5
 struct grub_nilfs2_dat_entry
 {
@@ -311,10 +313,12 @@ grub_nilfs2_palloc_group (struct grub_nilfs2_data *data,
 }
 
 static inline grub_uint32_t
-grub_nilfs2_palloc_groups_per_desc_block (struct grub_nilfs2_data *data)
+grub_nilfs2_palloc_log_groups_per_desc_block (struct grub_nilfs2_data *data)
 {
-  return NILFS2_BLOCK_SIZE (data) /
-    sizeof (struct grub_nilfs2_palloc_group_desc);
+  return LOG2_BLOCK_SIZE (data) - LOG_SIZE_GROUP_DESC;
+
+  COMPILE_TIME_ASSERT (sizeof (struct grub_nilfs2_palloc_group_desc)
+		       == (1 << LOG_SIZE_GROUP_DESC));
 }
 
 static inline grub_uint32_t
@@ -338,8 +342,8 @@ static inline grub_uint32_t
 grub_nilfs2_blocks_per_desc_block_log (struct grub_nilfs2_data *data,
 				       unsigned long log_entry_size)
 {
-  return grub_nilfs2_palloc_groups_per_desc_block (data) *
-    grub_nilfs2_blocks_per_group_log (data, log_entry_size) + 1;
+  return(grub_nilfs2_blocks_per_group_log (data, log_entry_size)
+	 << grub_nilfs2_palloc_log_groups_per_desc_block (data)) + 1;
 }
 
 static inline grub_uint32_t
@@ -348,7 +352,7 @@ grub_nilfs2_palloc_desc_block_offset_log (struct grub_nilfs2_data *data,
 					  unsigned long log_entry_size)
 {
   grub_uint32_t desc_block =
-    group / grub_nilfs2_palloc_groups_per_desc_block (data);
+    group >> grub_nilfs2_palloc_log_groups_per_desc_block (data);
   return desc_block * grub_nilfs2_blocks_per_desc_block_log (data,
 							     log_entry_size);
 }
@@ -358,8 +362,8 @@ grub_nilfs2_palloc_bitmap_block_offset (struct grub_nilfs2_data *data,
 					unsigned long group,
 					unsigned long log_entry_size)
 {
-  unsigned long desc_offset = group %
-    grub_nilfs2_palloc_groups_per_desc_block (data);
+  unsigned long desc_offset = group
+    & ((1 << grub_nilfs2_palloc_log_groups_per_desc_block (data)) - 1);
 
   return grub_nilfs2_palloc_desc_block_offset_log (data, group, log_entry_size)
     + 1
