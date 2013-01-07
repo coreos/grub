@@ -186,12 +186,9 @@ grub_xzio_open (grub_file_t io)
     }
 
   xzio->file = io;
-  xzio->saved_offset = 0;
 
   file->device = io->device;
-  file->offset = 0;
   file->data = xzio;
-  file->read_hook = 0;
   file->fs = &grub_xzio_fs;
   file->size = GRUB_FILE_SIZE_UNKNOWN;
   file->not_easily_seekable = 1;
@@ -210,10 +207,7 @@ grub_xzio_open (grub_file_t io)
     }
 
   xzio->buf.in = xzio->inbuf;
-  xzio->buf.in_pos = 0;
-  xzio->buf.in_size = 0;
   xzio->buf.out = xzio->outbuf;
-  xzio->buf.out_pos = 0;
   xzio->buf.out_size = XZBUFSIZ;
 
   /* FIXME: don't test footer on not easily seekable files.  */

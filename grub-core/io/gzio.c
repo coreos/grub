@@ -1130,7 +1130,7 @@ grub_gzio_open (grub_file_t io)
   grub_file_t file;
   grub_gzio_t gzio = 0;
 
-  file = (grub_file_t) grub_malloc (sizeof (*file));
+  file = (grub_file_t) grub_zalloc (sizeof (*file));
   if (! file)
     return 0;
 
@@ -1144,9 +1144,7 @@ grub_gzio_open (grub_file_t io)
   gzio->file = io;
 
   file->device = io->device;
-  file->offset = 0;
   file->data = gzio;
-  file->read_hook = 0;
   file->fs = &grub_gzio_fs;
   file->not_easily_seekable = 1;
 

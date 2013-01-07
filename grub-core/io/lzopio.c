@@ -428,9 +428,7 @@ grub_lzopio_open (grub_file_t io)
   lzopio->file = io;
 
   file->device = io->device;
-  file->offset = 0;
   file->data = lzopio;
-  file->read_hook = 0;
   file->fs = &grub_lzopio_fs;
   file->size = GRUB_FILE_SIZE_UNKNOWN;
   file->not_easily_seekable = 1;

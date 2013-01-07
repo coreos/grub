@@ -1,5 +1,14 @@
 2013-01-07  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/io/bufio.c (grub_bufio_open): Use grub_zalloc instead of
+	explicitly zeroing elements.
+	* grub-core/io/gzio.c (grub_gzio_open): Likewise.
+	* grub-core/io/lzopio.c (grub_lzopio_open): Remove explicit zeroing
+	of elements in a structure already allocated using grub_zalloc.
+	* grub-core/io/xzio.c (grub_xzio_open): Likewise.
+
+2013-01-07  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (grub_cpu): New subsection.
 	(grub_platform): Likewise.
 
