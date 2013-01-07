@@ -261,12 +261,12 @@ grub_minix_read_file (struct grub_minix_data *data,
   /* Adjust len so it we can't read past the end of the file.  */
   if (len + pos > GRUB_MINIX_INODE_SIZE (data))
     len = GRUB_MINIX_INODE_SIZE (data) - pos;
+  if (len == 0)
+    return 0;
 
   /* Files are at most 2G/4G - 1 bytes on minixfs. Avoid 64-bit division.  */
-  blockcnt = ((grub_uint32_t) ((len + pos
-				+ (data->block_size << GRUB_DISK_SECTOR_BITS)
-				- 1)
-	       >> GRUB_DISK_SECTOR_BITS)) / data->block_size;
+  blockcnt = ((grub_uint32_t) ((len + pos - 1)
+	       >> GRUB_DISK_SECTOR_BITS)) / data->block_size + 1;
   posblock = (((grub_uint32_t) pos)
 	      / (data->block_size << GRUB_DISK_SECTOR_BITS));
   blockoff = (((grub_uint32_t) pos)
