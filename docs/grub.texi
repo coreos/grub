@@ -2674,6 +2674,8 @@ These variables have special meaning to GRUB.
 * gfxmode::
 * gfxpayload::
 * gfxterm_font::
+* grub_cpu::
+* grub_platform::
 * icondir::
 * lang::
 * locale_dir::
@@ -2855,6 +2857,20 @@ configuration}).
 If this variable is set, it names a font to use for text on the
 @samp{gfxterm} graphical terminal.  Otherwise, @samp{gfxterm} may use any
 available font.
+
+
+@node grub_cpu
+@subsection grub_cpu
+
+In normal mode (@pxref{normal}), GRUB sets the @samp{grub_cpu} variable to
+the CPU type for which GRUB was built (e.g. @samp{i386} or @samp{powerpc}).
+
+
+@node grub_platform
+@subsection grub_platform
+
+In normal mode (@pxref{normal}), GRUB sets the @samp{grub_platform} variable
+to the platform for which GRUB was built (e.g. @samp{pc} or @samp{efi}).
 
 
 @node icondir

@@ -1,3 +1,8 @@
+2013-01-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (grub_cpu): New subsection.
+	(grub_platform): Likewise.
+
 2013-01-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/minix.c (grub_minix_read_file): Simplify arithmetics.
