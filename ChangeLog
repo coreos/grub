@@ -1,3 +1,8 @@
+2013-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/disk.c (grub_disk_write): Fix sector number on 4K
+	sector devices.
+
 2013-01-07  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/io/bufio.c (grub_bufio_open): Use grub_zalloc instead of

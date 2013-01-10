@@ -658,7 +658,8 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 
 	  grub_disk_cache_invalidate (disk->dev->id, disk->id, sector);
 
-	  if ((disk->dev->write) (disk, sector, 1, tmp_buf) != GRUB_ERR_NONE)
+	  if ((disk->dev->write) (disk, transform_sector (disk, sector),
+				  1, tmp_buf) != GRUB_ERR_NONE)
 	    goto finish;
 
 	  sector += (1 << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
@@ -674,11 +675,15 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	  len = size & ~((1 << disk->log_sector_size) - 1);
 	  n = size >> disk->log_sector_size;
 
-	  if ((disk->dev->write) (disk, sector, n, buf) != GRUB_ERR_NONE)
+	  if ((disk->dev->write) (disk, transform_sector (disk, sector),
+				  n, buf) != GRUB_ERR_NONE)
 	    goto finish;
 
 	  while (n--)
-	    grub_disk_cache_invalidate (disk->dev->id, disk->id, sector++);
+	    {
+	      grub_disk_cache_invalidate (disk->dev->id, disk->id, sector);
+	      sector += (1 << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
+	    }
 
 	  buf = (const char *) buf + len;
 	  size -= len;
