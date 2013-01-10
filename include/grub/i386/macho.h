@@ -23,6 +23,11 @@
 
 #define GRUB_MACHO_CPUTYPE_IS_HOST32(x) ((x)==0x00000007)
 #define GRUB_MACHO_CPUTYPE_IS_HOST64(x) ((x)==0x01000007)
+#ifdef __x86_64__
+#define GRUB_MACHO_CPUTYPE_IS_HOST_CURRENT(x) ((x)==0x01000007)
+#else
+#define GRUB_MACHO_CPUTYPE_IS_HOST_CURRENT(x) ((x)==0x00000007)
+#endif
 
 struct grub_macho_thread32
 {

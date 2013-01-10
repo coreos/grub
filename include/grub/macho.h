@@ -27,6 +27,7 @@ struct grub_macho_fat_header
   grub_uint32_t nfat_arch;
 } __attribute__ ((packed));
 #define GRUB_MACHO_FAT_MAGIC 0xcafebabe
+#define GRUB_MACHO_FAT_EFI_MAGIC 0x0ef1fab9
 
 typedef grub_uint32_t grub_macho_cpu_type_t;
 typedef grub_uint32_t grub_macho_cpu_subtype_t;
