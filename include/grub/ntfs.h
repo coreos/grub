@@ -132,17 +132,17 @@ struct grub_ntfs_bpb
 struct grub_ntfs_attr
 {
   int flags;
-  char *emft_buf, *edat_buf;
-  char *attr_cur, *attr_nxt, *attr_end;
+  grub_uint8_t *emft_buf, *edat_buf;
+  grub_uint8_t *attr_cur, *attr_nxt, *attr_end;
   grub_uint32_t save_pos;
-  char *sbuf;
+  grub_uint8_t *sbuf;
   struct grub_ntfs_file *mft;
 };
 
 struct grub_ntfs_file
 {
   struct grub_ntfs_data *data;
-  char *buf;
+  grub_uint8_t *buf;
   grub_uint64_t size;
   grub_uint64_t mtime;
   grub_uint32_t ino;
@@ -155,10 +155,10 @@ struct grub_ntfs_data
   struct grub_ntfs_file cmft;
   struct grub_ntfs_file mmft;
   grub_disk_t disk;
-  grub_uint32_t mft_size;
-  grub_uint32_t idx_size;
+  grub_uint64_t mft_size;
+  grub_uint64_t idx_size;
   int log_spc;
-  grub_uint32_t mft_start;
+  grub_uint64_t mft_start;
   grub_uint64_t uuid;
 };
 
@@ -175,20 +175,20 @@ struct grub_ntfs_comp
   struct grub_ntfs_comp_table_element comp_table[16];
   grub_uint32_t cbuf_ofs, cbuf_vcn;
   int log_spc;
-  char *cbuf;
+  grub_uint8_t *cbuf;
 };
 
 struct grub_ntfs_rlst
 {
   int flags;
   grub_disk_addr_t target_vcn, curr_vcn, next_vcn, curr_lcn;
-  char *cur_run;
+  grub_uint8_t *cur_run;
   struct grub_ntfs_attr *attr;
   struct grub_ntfs_comp comp;
 };
 
 typedef grub_err_t (*grub_ntfscomp_func_t) (struct grub_ntfs_attr * at,
-					    char *dest,
+					    grub_uint8_t *dest,
 					    grub_disk_addr_t ofs,
 					    grub_size_t len,
 					    struct grub_ntfs_rlst * ctx,

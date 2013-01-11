@@ -45,21 +45,21 @@ decomp_nextvcn (struct grub_ntfs_comp *cc)
 }
 
 static grub_err_t
-decomp_getch (struct grub_ntfs_comp *cc, unsigned char *res)
+decomp_getch (struct grub_ntfs_comp *cc, grub_uint8_t *res)
 {
   if (cc->cbuf_ofs >= (1U << (cc->log_spc + GRUB_NTFS_BLK_SHR)))
     {
       if (decomp_nextvcn (cc))
 	return grub_errno;
     }
-  *res = (unsigned char) cc->cbuf[cc->cbuf_ofs++];
+  *res = cc->cbuf[cc->cbuf_ofs++];
   return 0;
 }
 
 static grub_err_t
 decomp_get16 (struct grub_ntfs_comp *cc, grub_uint16_t * res)
 {
-  unsigned char c1 = 0, c2 = 0;
+  grub_uint8_t c1 = 0, c2 = 0;
 
   if ((decomp_getch (cc, &c1)) || (decomp_getch (cc, &c2)))
     return grub_errno;
@@ -69,7 +69,7 @@ decomp_get16 (struct grub_ntfs_comp *cc, grub_uint16_t * res)
 
 /* Decompress a block (4096 bytes) */
 static grub_err_t
-decomp_block (struct grub_ntfs_comp *cc, char *dest)
+decomp_block (struct grub_ntfs_comp *cc, grub_uint8_t *dest)
 {
   grub_uint16_t flg, cnt;
 
@@ -81,7 +81,7 @@ decomp_block (struct grub_ntfs_comp *cc, char *dest)
     {
       if (flg & 0x8000)
 	{
-	  unsigned char tag;
+	  grub_uint8_t tag;
 	  grub_uint32_t bits, copied;
 
 	  bits = copied = tag = 0;
@@ -136,7 +136,7 @@ decomp_block (struct grub_ntfs_comp *cc, char *dest)
 		}
 	      else
 		{
-		  unsigned char ch = 0;
+		  grub_uint8_t ch = 0;
 
 		  if (decomp_getch (cc, &ch))
 		    return grub_errno;
@@ -177,7 +177,7 @@ decomp_block (struct grub_ntfs_comp *cc, char *dest)
 }
 
 static grub_err_t
-read_block (struct grub_ntfs_rlst *ctx, char *buf, grub_size_t num)
+read_block (struct grub_ntfs_rlst *ctx, grub_uint8_t *buf, grub_size_t num)
 {
   int log_cpb = GRUB_NTFS_LOG_COM_SEC - ctx->comp.log_spc;
 
@@ -289,7 +289,7 @@ read_block (struct grub_ntfs_rlst *ctx, char *buf, grub_size_t num)
 }
 
 static grub_err_t
-ntfscomp (struct grub_ntfs_attr *at, char *dest, grub_disk_addr_t ofs,
+ntfscomp (struct grub_ntfs_attr *at, grub_uint8_t *dest, grub_disk_addr_t ofs,
 	  grub_size_t len, struct grub_ntfs_rlst *ctx, grub_disk_addr_t vcn)
 {
   grub_err_t ret;

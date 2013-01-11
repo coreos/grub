@@ -1,5 +1,11 @@
 2013-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ntfs.c: Ue more appropriate types.
+	* grub-core/fs/ntfscomp.c: Likewise.
+	* include/grub/ntfs.h: Likewise.
+
+2013-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support Apple FAT binaries on non-Apple platforms.
 
 	* include/grub/macho.h (GRUB_MACHO_FAT_EFI_MAGIC): New define.
