@@ -13,6 +13,16 @@ python util/import_unicode.py unicode/UnicodeData.txt unicode/BidiMirroring.txt 
 
 echo "Importing libgcrypt..."
 python util/import_gcry.py grub-core/lib/libgcrypt/ grub-core
+sed -n -f util/import_gcrypth.sed < grub-core/lib/libgcrypt/src/gcrypt.h.in > include/grub/gcrypt/gcrypt.h
+rm include/grub/gcrypt/g10lib.h
+rm -rf grub-core/lib/libgcrypt-grub/mpi/generic
+ln -s ../../../grub-core/lib/libgcrypt-grub/src/g10lib.h include/grub/gcrypt/g10lib.h
+cp -R grub-core/lib/libgcrypt/mpi/generic grub-core/lib/libgcrypt-grub/mpi/generic
+
+for x in mpi-asm-defs.h mpih-add1.c mpih-sub1.c mpih-mul1.c mpih-mul2.c mpih-mul3.c mpih-lshift.c mpih-rshift.c; do
+    rm grub-core/lib/libgcrypt-grub/mpi/"$x"
+    ln -s generic/"$x" grub-core/lib/libgcrypt-grub/mpi/"$x"
+done
 
 echo "Creating Makefile.tpl..."
 python gentpl.py | sed -e '/^$/{N;/^\n$/D;}' > Makefile.tpl

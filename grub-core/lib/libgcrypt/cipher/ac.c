@@ -2499,7 +2499,7 @@ typedef enum dencode_action
 dencode_action_t;
 
 /* Encode or decode a message according to the the encoding method
-   METHOD; ACTION specifies wether the message that is contained in
+   METHOD; ACTION specifies whether the message that is contained in
    BUFFER_IN and of length BUFFER_IN_N should be encoded or decoded.
    The resulting message will be stored in a newly allocated buffer in
    BUFFER_OUT and BUFFER_OUT_N.  */

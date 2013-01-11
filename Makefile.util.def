@@ -213,8 +213,6 @@ program = {
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
-  cflags = '$(CFLAGS_GCRY)';
-  cppflags = '$(CPPFLAGS_GCRY)';
 };
 
 program = {
@@ -244,9 +242,6 @@ program = {
   common = util/grub-fstest.c;
   common = grub-core/kern/emu/hostfs.c;
   common = grub-core/disk/host.c;
-
-  cflags = '$(CFLAGS_GCRY)';
-  cppflags = '$(CPPFLAGS_GCRY)';
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;

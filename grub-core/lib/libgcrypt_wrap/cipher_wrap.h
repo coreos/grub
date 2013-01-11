@@ -34,8 +34,6 @@
 #undef __GNU_LIBRARY__
 #define __GNU_LIBRARY__ 1
 
-#define DIM ARRAY_SIZE
-
 typedef grub_uint64_t u64;
 typedef grub_uint32_t u32;
 typedef grub_uint16_t u16;
@@ -44,36 +42,11 @@ typedef grub_size_t size_t;
 
 #define U64_C(c) (c ## ULL)
 
-#define _gcry_burn_stack grub_burn_stack
-#define log_error(fmt, args...) grub_dprintf ("crypto", fmt, ## args)
-
-
 #define PUBKEY_FLAG_NO_BLINDING    (1 << 0)
 
 #define CIPHER_INFO_NO_WEAK_KEY    1
 
 #define HAVE_U64_TYPEDEF 1
-
-typedef union {
-    int a;
-    short b;
-    char c[1];
-    long d;
-#ifdef HAVE_U64_TYPEDEF
-    u64 e;
-#endif
-    float f;
-    double g;
-} PROPERLY_ALIGNED_TYPE;
-
-#define gcry_assert(x) grub_assert_real(GRUB_FILE, __LINE__, x)
-
-static inline void
-grub_assert_real (const char *file, int line, int cond)
-{
-  if (!cond)
-    grub_fatal ("Assertion failed at %s:%d\n", file, line);
-}
 
 /* Selftests are in separate modules.  */
 static inline char *
@@ -90,11 +63,6 @@ fips_mode (void)
 
 #ifdef GRUB_UTIL
 #pragma GCC diagnostic ignored "-Wshadow"
-static inline void *
-memcpy (void *dest, const void *src, grub_size_t n)
-{
-  return grub_memcpy (dest, src, n);
-}
 
 static inline void *
 memset (void *s, int c, grub_size_t n)
@@ -102,13 +70,17 @@ memset (void *s, int c, grub_size_t n)
   return grub_memset (s, c, n);
 }
 
-static inline int
-memcmp (const void *s1, const void *s2, grub_size_t n)
-{
-  return grub_memcmp (s1, s2, n);
-}
 #pragma GCC diagnostic error "-Wshadow"
 #endif
 
+
+#define DBG_CIPHER 0
+
+#include <string.h>
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#include <grub/gcrypt/g10lib.h>
+#include <grub/gcrypt/gcrypt.h>
+
+#define gcry_mpi_mod _gcry_mpi_mod
 
 #endif

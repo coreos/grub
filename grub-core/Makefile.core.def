@@ -687,6 +687,13 @@ module = {
 };
 
 module = {
+  name = verify;
+  common = commands/verify.c;
+  cflags = '$(CFLAGS_POSIX)';
+  cppflags = '-I$(srcdir)/lib/posix_wrap';
+};
+
+module = {
   name = hdparm;
   common = commands/hdparm.c;
   common = lib/hexdump.c;
@@ -1842,6 +1849,35 @@ module = {
 module = {
   name = crc64;
   common = lib/crc64.c;
+};
+
+module = {
+  name = mpi;
+  common = lib/libgcrypt-grub/mpi/mpiutil.c;
+  common = lib/libgcrypt-grub/mpi/mpi-bit.c;
+  common = lib/libgcrypt-grub/mpi/mpi-add.c;
+  common = lib/libgcrypt-grub/mpi/mpi-mul.c;
+  common = lib/libgcrypt-grub/mpi/mpi-mod.c;
+  common = lib/libgcrypt-grub/mpi/mpi-gcd.c;
+  common = lib/libgcrypt-grub/mpi/mpi-div.c;
+  common = lib/libgcrypt-grub/mpi/mpi-cmp.c;
+  common = lib/libgcrypt-grub/mpi/mpi-inv.c;
+  common = lib/libgcrypt-grub/mpi/mpi-pow.c;
+  common = lib/libgcrypt-grub/mpi/mpi-mpow.c;
+  common = lib/libgcrypt-grub/mpi/mpih-lshift.c;
+  common = lib/libgcrypt-grub/mpi/mpih-mul.c;
+  common = lib/libgcrypt-grub/mpi/mpih-mul1.c;
+  common = lib/libgcrypt-grub/mpi/mpih-mul2.c;
+  common = lib/libgcrypt-grub/mpi/mpih-mul3.c;
+  common = lib/libgcrypt-grub/mpi/mpih-add1.c;
+  common = lib/libgcrypt-grub/mpi/mpih-sub1.c;
+  common = lib/libgcrypt-grub/mpi/mpih-div.c;
+  common = lib/libgcrypt-grub/mpi/mpicoder.c;
+  common = lib/libgcrypt-grub/mpi/mpih-rshift.c;
+  common = lib/libgcrypt_wrap/mem.c;
+
+  cflags = '$(CFLAGS_GCRY) -Wno-redundant-decls -Wno-sign-compare';
+  cppflags = '$(CPPFLAGS_GCRY)';
 };
 
 module = {

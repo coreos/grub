@@ -23,6 +23,7 @@
 #include <grub/term.h>
 #include <grub/dl.h>
 #include <grub/i18n.h>
+#include <grub/env.h>
 
 #ifdef GRUB_UTIL
 #include <termios.h>
@@ -56,6 +57,38 @@ grub_burn_stack (grub_size_t size)
     grub_burn_stack (size - sizeof (buf));
 }
 
+void
+_gcry_burn_stack (int size)
+{
+  grub_burn_stack (size);
+}
+
+void __attribute__ ((noreturn))
+_gcry_assert_failed (const char *expr, const char *file, int line,
+		     const char *func)
+  
+{
+  grub_fatal ("assertion %s at %s:%d (%s) failed\n", expr, file, line, func);
+}
+
+
+void _gcry_log_error (const char *fmt, ...)
+{
+  va_list args;
+  const char *debug = grub_env_get ("debug");
+
+  if (! debug)
+    return;
+
+  if (grub_strword (debug, "all") || grub_strword (debug, "gcrypt"))
+    {
+      grub_printf ("gcrypt error: ");
+      va_start (args, fmt);
+      grub_vprintf (fmt, args);
+      va_end (args);
+      grub_refresh ();
+    }
+}
 
 void 
 grub_cipher_register (gcry_cipher_spec_t *cipher)
@@ -477,3 +510,4 @@ grub_password_get (char buf[], unsigned buf_size)
   return (key != '\e');
 #endif
 }
+

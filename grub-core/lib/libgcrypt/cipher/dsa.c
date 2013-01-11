@@ -907,6 +907,7 @@ dsa_generate_ext (int algo, unsigned int nbits, unsigned long evalue,
               gcry_mpi_release ((*retfactors)[i]);
               (*retfactors)[i] = NULL;
             }
+          gcry_free (*retfactors);
           *retfactors = NULL;
           if (ec)
             {

@@ -42,6 +42,15 @@ typedef grub_int16_t int16_t;
 typedef grub_int32_t int32_t;
 typedef grub_int64_t int64_t;
 
+#define HAVE_U64_TYPEDEF 1
+typedef grub_uint64_t u64;
+
+#define SIZEOF_UNSIGNED_LONG GRUB_CPU_SIZEOF_LONG
+#define SIZEOF_UNSIGNED_INT 4
+#define SIZEOF_UNSIGNED_LONG_LONG 8
+#define SIZEOF_UNSIGNED_SHORT 2
+#define SIZEOF_UINT64_T 8
+
 #ifdef GRUB_CPU_WORDS_BIGENDIAN
 #define WORDS_BIGENDIAN
 #else

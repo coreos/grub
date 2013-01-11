@@ -85,7 +85,7 @@ static gcry_module_t pubkeys_registered;
 /* This is the lock protecting PUBKEYS_REGISTERED.  */
 static ath_mutex_t pubkeys_registered_lock = ATH_MUTEX_INITIALIZER;;
 
-/* Flag to check wether the default pubkeys have already been
+/* Flag to check whether the default pubkeys have already been
    registered.  */
 static int default_pubkeys_registered;
 
@@ -1567,7 +1567,7 @@ sexp_data_to_mpi (gcry_sexp_t input, unsigned int nbits, gcry_mpi_t *ret_mpi,
    Do a PK encrypt operation
   
    Caller has to provide a public key as the SEXP pkey and data as a
-   SEXP with just one MPI in it. Alternativly S_DATA might be a
+   SEXP with just one MPI in it. Alternatively S_DATA might be a
    complex S-Expression, similar to the one used for signature
    verification.  This provides a flag which allows to handle PKCS#1
    block type 2 padding.  The function returns a a sexp which may be
@@ -2357,7 +2357,7 @@ gcry_pk_get_nbits (gcry_sexp_t key)
 
 
 /* Return the so called KEYGRIP which is the SHA-1 hash of the public
-   key parameters expressed in a way depended on the algorithm.
+   key parameters expressed in a way depending on the algorithm.
 
    ARRAY must either be 20 bytes long or NULL; in the latter case a
    newly allocated array of that size is returned, otherwise ARRAY or
@@ -2503,15 +2503,15 @@ gcry_pk_ctl (int cmd, void *buffer, size_t buflen)
         care or a combination of the GCRY_PK_USAGE_xxx flags;
 
     GCRYCTL_GET_ALGO_USAGE:
-        Return the usage glafs for the give algo.  An invalid alog
-        does return 0.  Disabled algos are ignored here becuase we
+        Return the usage flags for the given algo.  An invalid algo
+        returns 0.  Disabled algos are ignored here because we
         only want to know whether the algo is at all capable of
         the usage.
   
    Note: Because this function is in most cases used to return an
    integer value, we can make it easier for the caller to just look at
    the return value.  The caller will in all cases consult the value
-   and thereby detecting whether a error occured or not (i.e. while
+   and thereby detecting whether a error occurred or not (i.e. while
    checking the block size) */
 gcry_error_t
 gcry_pk_algo_info (int algorithm, int what, void *buffer, size_t *nbytes)

@@ -37,7 +37,6 @@
 #endif
 
 #include "g10lib.h"
-#include "memory.h"
 #include "bithelp.h"
 #include "cipher.h"
 #include "hash-common.h"

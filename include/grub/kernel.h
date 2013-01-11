@@ -27,7 +27,8 @@ enum
   OBJ_TYPE_ELF,
   OBJ_TYPE_MEMDISK,
   OBJ_TYPE_CONFIG,
-  OBJ_TYPE_PREFIX
+  OBJ_TYPE_PREFIX,
+  OBJ_TYPE_PUBKEY
 };
 
 /* The module header.  */
@@ -77,7 +78,7 @@ extern grub_addr_t EXPORT_VAR (grub_modbase);
   var && (grub_addr_t) var \
     < (grub_modbase + (((struct grub_module_info *) grub_modbase)->size));    \
   var = (struct grub_module_header *)					\
-    ((grub_uint32_t *) var + ((struct grub_module_header *) var)->size / 4))
+    ((void **) var + (((struct grub_module_header *) var)->size + sizeof (void *) - 1) / sizeof (void *)))
 
 grub_addr_t grub_modules_get_end (void);
 

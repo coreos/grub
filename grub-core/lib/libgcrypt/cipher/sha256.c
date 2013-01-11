@@ -1,5 +1,5 @@
 /* sha256.c - SHA256 hash function
- *	Copyright (C) 2003, 2006, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2006, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of Libgcrypt.
  *
@@ -41,7 +41,6 @@
 #include <string.h>
 
 #include "g10lib.h"
-#include "memory.h"
 #include "bithelp.h"
 #include "cipher.h"
 #include "hash-common.h"
@@ -95,10 +94,6 @@ sha224_init (void *context)
 /*
   Transform the message X which consists of 16 32-bit-words. See FIPS
   180-2 for details.  */
-#define Cho(x,y,z) (z ^ (x & (y ^ z)))      /* (4.2) same as SHA-1's F1 */
-#define Maj(x,y,z) ((x & y) | (z & (x|y)))  /* (4.3) same as SHA-1's F3 */
-#define Sum0(x) (ror ((x), 2) ^ ror ((x), 13) ^ ror ((x), 22))  /* (4.4) */
-#define Sum1(x) (ror ((x), 6) ^ ror ((x), 11) ^ ror ((x), 25))  /* (4.5) */
 #define S0(x) (ror ((x), 7) ^ ror ((x), 18) ^ ((x) >> 3))       /* (4.6) */
 #define S1(x) (ror ((x), 17) ^ ror ((x), 19) ^ ((x) >> 10))     /* (4.7) */
 #define R(a,b,c,d,e,f,g,h,k,w) do                                 \
@@ -114,6 +109,35 @@ sha224_init (void *context)
             b = a;                                                \
             a = t1 + t2;                                          \
           } while (0)
+
+/* (4.2) same as SHA-1's F1.  */
+static inline u32
+Cho (u32 x, u32 y, u32 z)
+{
+  return (z ^ (x & (y ^ z)));
+}
+
+/* (4.3) same as SHA-1's F3 */
+static inline u32
+Maj (u32 x, u32 y, u32 z)
+{
+  return ((x & y) | (z & (x|y)));
+}
+  
+/* (4.4) */
+static inline u32
+Sum0 (u32 x)
+{
+  return (ror (x, 2) ^ ror (x, 13) ^ ror (x, 22));
+}
+
+/* (4.5) */
+static inline u32
+Sum1 (u32 x)
+{
+  return (ror (x, 6) ^ ror (x, 11) ^ ror (x, 25));
+}
+
  
 static void
 transform (SHA256_CONTEXT *hd, const unsigned char *data)
@@ -172,8 +196,55 @@ transform (SHA256_CONTEXT *hd, const unsigned char *data)
   for (; i < 64; i++)
     w[i] = S1(w[i-2]) + w[i-7] + S0(w[i-15]) + w[i-16];
 
-  for (i=0; i < 64; i++)
-    R(a,b,c,d,e,f,g,h,K[i],w[i]);
+  for (i=0; i < 64;)
+    {
+#if 0
+      R(a,b,c,d,e,f,g,h,K[i],w[i]);
+      i++;
+#else
+      t1 = h + Sum1 (e) + Cho (e, f, g) + K[i] + w[i];   
+      t2 = Sum0 (a) + Maj (a, b, c);
+      d += t1;
+      h  = t1 + t2;
+
+      t1 = g + Sum1 (d) + Cho (d, e, f) + K[i+1] + w[i+1];
+      t2 = Sum0 (h) + Maj (h, a, b);
+      c += t1;
+      g  = t1 + t2;
+
+      t1 = f + Sum1 (c) + Cho (c, d, e) + K[i+2] + w[i+2];
+      t2 = Sum0 (g) + Maj (g, h, a);
+      b += t1;
+      f  = t1 + t2;
+
+      t1 = e + Sum1 (b) + Cho (b, c, d) + K[i+3] + w[i+3];
+      t2 = Sum0 (f) + Maj (f, g, h);
+      a += t1;
+      e  = t1 + t2;
+
+      t1 = d + Sum1 (a) + Cho (a, b, c) + K[i+4] + w[i+4];
+      t2 = Sum0 (e) + Maj (e, f, g);
+      h += t1;
+      d  = t1 + t2;
+
+      t1 = c + Sum1 (h) + Cho (h, a, b) + K[i+5] + w[i+5];
+      t2 = Sum0 (d) + Maj (d, e, f);
+      g += t1;
+      c  = t1 + t2;
+
+      t1 = b + Sum1 (g) + Cho (g, h, a) + K[i+6] + w[i+6];
+      t2 = Sum0 (c) + Maj (c, d, e);
+      f += t1;
+      b  = t1 + t2;
+
+      t1 = a + Sum1 (f) + Cho (f, g, h) + K[i+7] + w[i+7];
+      t2 = Sum0 (b) + Maj (b, c, d);
+      e += t1;
+      a  = t1 + t2;
+
+      i += 8;
+#endif
+    }
 
   hd->h0 += a;
   hd->h1 += b;
@@ -184,10 +255,6 @@ transform (SHA256_CONTEXT *hd, const unsigned char *data)
   hd->h6 += g;
   hd->h7 += h;
 }
-#undef Cho
-#undef Maj
-#undef Sum0
-#undef Sum1
 #undef S0
 #undef S1
 #undef R

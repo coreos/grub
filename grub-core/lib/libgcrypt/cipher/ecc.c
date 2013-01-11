@@ -1,5 +1,5 @@
 /* ecc.c  -  Elliptic Curve Cryptography
-   Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2010 Free Software Foundation, Inc.
 
    This file is part of Libgcrypt.
   
@@ -504,6 +504,7 @@ generate_curve (unsigned int nbits, const char *name,
  */
 static gpg_err_code_t
 generate_key (ECC_secret_key *sk, unsigned int nbits, const char *name,
+              int transient_key,
               gcry_mpi_t g_x, gcry_mpi_t g_y,
               gcry_mpi_t q_x, gcry_mpi_t q_y)
 {
@@ -512,6 +513,7 @@ generate_key (ECC_secret_key *sk, unsigned int nbits, const char *name,
   gcry_mpi_t d;
   mpi_point_t Q;
   mpi_ec_t ctx;
+  gcry_random_level_t random_level;
 
   err = generate_curve (nbits, name, &E, &nbits);
   if (err)
@@ -528,9 +530,11 @@ generate_key (ECC_secret_key *sk, unsigned int nbits, const char *name,
       log_mpidump ("ecc generation  Gz", E.G.z);
     }
 
+  random_level = transient_key ? GCRY_STRONG_RANDOM : GCRY_VERY_STRONG_RANDOM;
   if (DBG_CIPHER)
-    log_debug ("choosing a random x of size %u\n", nbits);
-  d = gen_k (E.n, GCRY_VERY_STRONG_RANDOM); 
+    log_debug ("choosing a random x of size %u%s\n", nbits,
+               transient_key? " (transient-key)":"");
+  d = gen_k (E.n, random_level); 
 
   /* Compute Q.  */
   point_init (&Q);
@@ -962,6 +966,7 @@ ecc_generate_ext (int algo, unsigned int nbits, unsigned long evalue,
   gcry_mpi_t g_x, g_y, q_x, q_y;
   char *curve_name = NULL;
   gcry_sexp_t l1;
+  int transient_key = 0;
 
   (void)algo;
   (void)evalue;
@@ -978,6 +983,14 @@ ecc_generate_ext (int algo, unsigned int nbits, unsigned long evalue,
           if (!curve_name)
             return GPG_ERR_INV_OBJ; /* No curve name or value too large. */
         }
+
+      /* Parse the optional transient-key flag.  */
+      l1 = gcry_sexp_find_token (genparms, "transient-key", 0);
+      if (l1)
+        {
+          transient_key = 1;
+          gcry_sexp_release (l1);
+        }
     }
 
   /* NBITS is required if no curve name has been given.  */
@@ -988,7 +1001,7 @@ ecc_generate_ext (int algo, unsigned int nbits, unsigned long evalue,
   g_y = mpi_new (0);
   q_x = mpi_new (0);
   q_y = mpi_new (0);
-  ec = generate_key (&sk, nbits, curve_name, g_x, g_y, q_x, q_y);
+  ec = generate_key (&sk, nbits, curve_name, transient_key, g_x, g_y, q_x, q_y);
   gcry_free (curve_name);
   if (ec)
     return ec;
@@ -1266,7 +1279,7 @@ compute_keygrip (gcry_md_hd_t md, gcry_sexp_t keyparam)
     }
 
   /* Check that all parameters are known and normalize all MPIs (that
-     should not be required but we use an internal fucntion later and
+     should not be required but we use an internal function later and
      thus we better make 100% sure that they are normalized). */
   for (idx = 0; idx < 6; idx++)
     if (!values[idx])

@@ -1,3 +1,7 @@
+2013-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Import gcrypt public-key cryptography and implement signature checking.
+
 2013-01-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/ntfs.c: Ue more appropriate types.

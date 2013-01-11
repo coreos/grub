@@ -988,7 +988,7 @@ is_prime (gcry_mpi_t n, int steps, unsigned int *count)
 /* Given ARRAY of size N with M elements set to true produce a
    modified array with the next permutation of M elements.  Note, that
    ARRAY is used in a one-bit-per-byte approach.  To detected the last
-   permutation it is useful to intialize the array with the first M
+   permutation it is useful to initialize the array with the first M
    element set to true and use this test:
        m_out_of_n (array, m, n);
        for (i = j = 0; i < n && j < m; i++)
@@ -1170,7 +1170,7 @@ gcry_prime_generate (gcry_mpi_t *prime, unsigned int prime_bits,
   return gcry_error (err);
 }
 
-/* Check wether the number X is prime.  */
+/* Check whether the number X is prime.  */
 gcry_error_t
 gcry_prime_check (gcry_mpi_t x, unsigned int flags)
 {

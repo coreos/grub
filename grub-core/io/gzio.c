@@ -1125,7 +1125,7 @@ initialize_tables (grub_gzio_t gzio)
    even if IO does not contain data compressed by gzip, return a valid file
    object. Note that this function won't close IO, even if an error occurs.  */
 static grub_file_t
-grub_gzio_open (grub_file_t io)
+grub_gzio_open (grub_file_t io, const char *name __attribute__ ((unused)))
 {
   grub_file_t file;
   grub_gzio_t gzio = 0;

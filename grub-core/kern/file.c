@@ -107,7 +107,7 @@ grub_file_open (const char *name)
     if (grub_file_filters_enabled[filter])
       {
 	last_file = file;
-	file = grub_file_filters_enabled[filter] (file);
+	file = grub_file_filters_enabled[filter] (file, name);
       }
   if (!file)
     grub_file_close (last_file);

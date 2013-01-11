@@ -24,7 +24,6 @@
 #include <string.h>
 
 #include "g10lib.h"
-#include "memory.h"
 #include "rmd.h"
 #include "cipher.h" /* Only used for the rmd160_hash_buffer() prototype. */
 

@@ -47,6 +47,8 @@ CPPFLAGS_DEFAULT += -I$(top_builddir)
 CPPFLAGS_DEFAULT += -I$(top_srcdir)
 CPPFLAGS_DEFAULT += -I$(top_srcdir)/include
 CPPFLAGS_DEFAULT += -I$(top_builddir)/include
+CPPFLAGS_DEFAULT += -I$(top_srcdir)/grub-core/lib/libgcrypt-grub/include
+CPPFLAGS_DEFAULT += -I$(top_srcdir)/grub-core/lib/libgcrypt-grub/src/
 CCASFLAGS_DEFAULT = -DASM_FILE=1
 
 LDADD_KERNEL =
@@ -102,14 +104,14 @@ grubconfdir = $(sysconfdir)/grub.d
 platformdir = $(pkglibdir)/$(target_cpu)-$(platform)
 starfielddir = $(pkgdatadir)/themes/starfield
 
-CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers
-CPPFLAGS_GCRY = -I$(top_srcdir)/grub-core/lib/libgcrypt_wrap
-
 CFLAGS_GNULIB = -Wno-undef -Wno-sign-compare -Wno-unused -Wno-unused-parameter -Wno-redundant-decls -Wno-unreachable-code -Wno-conversion -Wno-old-style-definition -Wno-unsafe-loop-optimizations
 CPPFLAGS_GNULIB = -I$(top_builddir)/grub-core/gnulib -I$(top_srcdir)/grub-core/gnulib
 
 CFLAGS_POSIX = -fno-builtin
 CPPFLAGS_POSIX = -I$(top_srcdir)/grub-core/lib/posix_wrap
+
+CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers $(CFLAGS_POSIX)
+CPPFLAGS_GCRY = -I$(top_srcdir)/grub-core/lib/libgcrypt_wrap $(CPPFLAGS_POSIX) -D_GCRYPT_IN_LIBGCRYPT=1 -I$(top_srcdir)/include/grub/gcrypt
 
 CPPFLAGS_EFIEMU = -I$(top_srcdir)/grub-core/efiemu/runtime
 

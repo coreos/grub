@@ -409,7 +409,8 @@ CORRUPTED:
 }
 
 static grub_file_t
-grub_lzopio_open (grub_file_t io)
+grub_lzopio_open (grub_file_t io,
+		  const char *name __attribute__ ((unused)))
 {
   grub_file_t file;
   grub_lzopio_t lzopio;

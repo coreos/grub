@@ -169,7 +169,8 @@ ERROR:
 }
 
 static grub_file_t
-grub_xzio_open (grub_file_t io)
+grub_xzio_open (grub_file_t io,
+		const char *name __attribute__ ((unused)))
 {
   grub_file_t file;
   grub_xzio_t xzio;

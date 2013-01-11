@@ -106,7 +106,7 @@
  *
  *     if ( (error_msg = selftest()) )
  *     {
- *	   fprintf(stderr, "An error in the DES/Tripple-DES implementation occured: %s\n", error_msg);
+ *	   fprintf(stderr, "An error in the DES/Triple-DES implementation occurred: %s\n", error_msg);
  *	   abort();
  *     }
  */

@@ -522,7 +522,7 @@ static byte calc_sb_tbl[512] = {
  * preprocessed through q0 and q1 respectively; for longer keys they are the
  * output of previous stages.  j is the index of the first key byte to use.
  * CALC_K computes a pair of subkeys for 128-bit Twofish, by calling CALC_K_2
- * twice, doing the Psuedo-Hadamard Transform, and doing the necessary
+ * twice, doing the Pseudo-Hadamard Transform, and doing the necessary
  * rotations.  Its parameters are: a, the array to write the results into,
  * j, the index of the first output entry, k and l, the preprocessed indices
  * for index 2i, and m and n, the preprocessed indices for index 2i+1.

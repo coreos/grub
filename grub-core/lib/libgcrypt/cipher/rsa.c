@@ -444,18 +444,28 @@ generate_x931 (RSA_secret_key *sk, unsigned int nbits, unsigned long e_value,
     else
       {
         /* Parameters to derive the key are given.  */
+        /* Note that we explicitly need to setup the values of tbl
+           because some compilers (e.g. OpenWatcom, IRIX) don't allow
+           to initialize a structure with automatic variables.  */
         struct { const char *name; gcry_mpi_t *value; } tbl[] = {
-          { "Xp1", &xp1 },
-          { "Xp2", &xp2 },
-          { "Xp",  &xp  },
-          { "Xq1", &xq1 },
-          { "Xq2", &xq2 },
-          { "Xq",  &xq  },
-          { NULL,  NULL }
+          { "Xp1" },
+          { "Xp2" },
+          { "Xp"  },
+          { "Xq1" },
+          { "Xq2" },
+          { "Xq"  },
+          { NULL }
         };
         int idx;
         gcry_sexp_t oneparm;
         
+        tbl[0].value = &xp1;
+        tbl[1].value = &xp2;
+        tbl[2].value = &xp;
+        tbl[3].value = &xq1;
+        tbl[4].value = &xq2;
+        tbl[5].value = &xq;
+
         for (idx=0; tbl[idx].name; idx++)
           {
             oneparm = gcry_sexp_find_token (deriveparms, tbl[idx].name, 0);
@@ -572,7 +582,7 @@ generate_x931 (RSA_secret_key *sk, unsigned int nbits, unsigned long e_value,
 
 
 /****************
- * Test wether the secret key is valid.
+ * Test whether the secret key is valid.
  * Returns: true if this is a valid key.
  */
 static int
@@ -876,7 +886,7 @@ rsa_check_secret_key (int algo, gcry_mpi_t *skey)
     err = GPG_ERR_NO_OBJ;  /* To check the key we need the optional
                               parameters. */
   else if (!check_secret_key (&sk))
-    err = GPG_ERR_PUBKEY_ALGO;
+    err = GPG_ERR_BAD_SECKEY;
 
   return err;
 }
@@ -942,7 +952,7 @@ rsa_decrypt (int algo, gcry_mpi_t *result, gcry_mpi_t *data,
       gcry_mpi_mod (r, r, sk.n);
 
       /* Calculate inverse of r.  It practically impossible that the
-         follwing test fails, thus we do not add code to release
+         following test fails, thus we do not add code to release
          allocated resources.  */
       if (!gcry_mpi_invm (ri, r, sk.n))
 	return GPG_ERR_INTERNAL;
@@ -1053,7 +1063,7 @@ rsa_get_nbits (int algo, gcry_mpi_t *pkey)
         (e #010001#))
         
    PKCS-15 says that for RSA only the modulus should be hashed -
-   however, it is not clear wether this is meant to use the raw bytes
+   however, it is not clear whether this is meant to use the raw bytes
    (assuming this is an unsigned integer) or whether the DER required
    0 should be prefixed.  We hash the raw bytes.  */
 static gpg_err_code_t

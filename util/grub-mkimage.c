@@ -701,8 +701,8 @@ struct fixup_block_list
 static void
 generate_image (const char *dir, const char *prefix,
 		FILE *out, const char *outname, char *mods[],
-		char *memdisk_path, char *config_path,
-		struct image_target_desc *image_target, int note,
+		char *memdisk_path, char **pubkey_paths, size_t npubkeys,
+		char *config_path, struct image_target_desc *image_target, int note,
 		grub_compression_t comp)
 {
   char *kernel_img, *core_img;
@@ -733,6 +733,18 @@ generate_image (const char *dir, const char *prefix,
     total_module_size = sizeof (struct grub_module_info64);
   else
     total_module_size = sizeof (struct grub_module_info32);
+
+  {
+    size_t i;
+    for (i = 0; i < npubkeys; i++)
+      {
+	size_t curs;
+	curs = ALIGN_ADDR (grub_util_get_image_size (pubkey_paths[i]));
+	grub_util_info ("the size of public key is 0x%llx",
+			(unsigned long long) pubkey_paths[i]);
+	total_module_size += curs + sizeof (struct grub_module_header);
+      }
+  }
 
   if (memdisk_path)
     {
@@ -834,6 +846,26 @@ generate_image (const char *dir, const char *prefix,
       grub_util_load_image (p->name, kernel_img + offset);
       offset += mod_size;
     }
+
+  {
+    size_t i;
+    for (i = 0; i < npubkeys; i++)
+      {
+	size_t curs;
+	struct grub_module_header *header;
+
+	curs = grub_util_get_image_size (pubkey_paths[i]);
+
+	header = (struct grub_module_header *) (kernel_img + offset);
+	memset (header, 0, sizeof (struct grub_module_header));
+	header->type = grub_host_to_target32 (OBJ_TYPE_PUBKEY);
+	header->size = grub_host_to_target32 (curs + sizeof (*header));
+	offset += sizeof (*header);
+
+	grub_util_load_image (pubkey_paths[i], kernel_img + offset);
+	offset += ALIGN_ADDR (curs);
+      }
+  }
 
   if (memdisk_path)
     {
@@ -1654,6 +1686,8 @@ static struct argp_option options[] = {
    N_("embed FILE as a memdisk image"), 0},
    /* TRANSLATORS: "embed" is a verb (command description).  "*/
   {"config",   'c', N_("FILE"), 0, N_("embed FILE as an early config"), 0},
+   /* TRANSLATORS: "embed" is a verb (command description).  "*/
+  {"pubkey",   'k', N_("FILE"), 0, N_("embed FILE as public key for signature checking"), 0},
   /* TRANSLATORS: NOTE is a name of segment.  */
   {"note",   'n', 0, 0, N_("add NOTE segment for CHRP IEEE1275"), 0},
   {"output",  'o', N_("FILE"), 0, N_("output a generated image to FILE [default=stdout]"), 0},
@@ -1709,6 +1743,8 @@ struct arguments
   char *dir;
   char *prefix;
   char *memdisk;
+  char **pubkeys;
+  size_t npubkeys;
   char *font;
   char *config;
   int note;
@@ -1769,6 +1805,13 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	free (arguments->prefix);
 
       arguments->prefix = xstrdup ("(memdisk)/boot/grub");
+      break;
+
+    case 'k':
+      arguments->pubkeys = xrealloc (arguments->pubkeys,
+				     sizeof (arguments->pubkeys[0])
+				     * (arguments->npubkeys + 1));
+      arguments->pubkeys[arguments->npubkeys++] = xstrdup (arg);
       break;
 
     case 'c':
@@ -1879,7 +1922,8 @@ main (int argc, char *argv[])
 
   generate_image (arguments.dir, arguments.prefix ? : DEFAULT_DIRECTORY, fp,
 		  arguments.output,
-		  arguments.modules, arguments.memdisk, arguments.config,
+		  arguments.modules, arguments.memdisk, arguments.pubkeys,
+		  arguments.npubkeys, arguments.config,
 		  arguments.image_target, arguments.note, arguments.comp);
 
   fflush (fp);

@@ -21,6 +21,8 @@
 
 #include <grub/misc.h>
 
+#define HAVE_STRCASECMP 1
+
 static inline grub_size_t
 strlen (const char *s)
 {
@@ -54,6 +56,12 @@ memcmp (const void *s1, const void *s2, size_t n)
 
 #endif
 
+static inline void
+bcopy (const void *src, void *dest, grub_size_t n)
+{
+  grub_memcpy (dest, src, n);
+}
+
 static inline char *
 strcpy (char *dest, const char *src)
 {
@@ -73,7 +81,7 @@ strchr (const char *s, int c)
 }
 
 static inline char *
-strncpy (char *dest, const char *src, size_t n)
+strncpy (char *dest, const char *src, grub_size_t n)
 {
   return grub_strncpy (dest, src, n);
 }
@@ -85,7 +93,7 @@ strcat (char *dest, const char *src)
 }
 
 static inline char *
-strncat (char *dest, const char *src, size_t n)
+strncat (char *dest, const char *src, grub_size_t n)
 {
   return grub_strncat (dest, src, n);
 }
@@ -97,7 +105,7 @@ strcoll (const char *s1, const char *s2)
 }
 
 static inline void *
-memchr (const void *s, int c, size_t n)
+memchr (const void *s, int c, grub_size_t n)
 {
   return grub_memchr (s, c, n);
 }
