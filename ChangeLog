@@ -1,3 +1,8 @@
+2013-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* autogen.sh: Do not try to delete nonexistant files.
+	* util/import_gcrypth.sed: Add some missing header removals.
+
 2013-01-12  Colin Watson  <cjwatson@ubuntu.com>
 
 	Clean up dangling references to grub-setup.
