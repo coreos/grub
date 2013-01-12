@@ -53,7 +53,8 @@ read_packet_header (grub_file_t sig, grub_uint8_t *out_type, grub_size_t *len)
     default:
       if (grub_errno)
 	return grub_errno;
-      return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+      /* TRANSLATORS: it's about GNUPG signatures.  */
+      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
     }
 
   if (type == 0)
@@ -63,12 +64,12 @@ read_packet_header (grub_file_t sig, grub_uint8_t *out_type, grub_size_t *len)
     }
 
   if (!(type & 0x80))
-    return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+    return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
   if (type & 0x40)
     {
       *out_type = (type & 0x3f);
       if (grub_file_read (sig, &l, sizeof (l)) != 1)
-	return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
       if (l < 192)
 	{
 	  *len = l;
@@ -78,39 +79,39 @@ read_packet_header (grub_file_t sig, grub_uint8_t *out_type, grub_size_t *len)
 	{
 	  *len = (l - 192) << 8;
 	  if (grub_file_read (sig, &l, sizeof (l)) != 1)
-	    return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	    return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	  *len |= l;
 	  return 0;
 	}
       if (l == 255)
 	{
 	  if (grub_file_read (sig, &l32, sizeof (l32)) != sizeof (l32))
-	    return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	    return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	  *len = grub_be_to_cpu32 (l32);
 	  return 0;
 	}
-      return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
     }
   *out_type = ((type >> 2) & 0xf);
   switch (type & 0x3)
     {
     case 0:
       if (grub_file_read (sig, &l, sizeof (l)) != sizeof (l))
-	return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
       *len = l;
       return 0;
     case 1:
       if (grub_file_read (sig, &l16, sizeof (l16)) != sizeof (l16))
-	return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
       *len = grub_be_to_cpu16 (l16);
       return 0;
     case 2:
       if (grub_file_read (sig, &l32, sizeof (l32)) != sizeof (l32))
-	return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
       *len = grub_be_to_cpu32 (l32);
       return 0;
     }
-  return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+  return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 }
 
 struct signature_v4_header
@@ -210,7 +211,7 @@ grub_load_public_key (grub_file_t f)
 
       if (grub_file_read (f, &v, sizeof (v)) != sizeof (v))
 	{
-	  grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	  grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	  goto fail;
 	}
 
@@ -218,12 +219,12 @@ grub_load_public_key (grub_file_t f)
 
       if (v != 4)
 	{
-	  grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	  grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	  goto fail;
 	}
       if (grub_file_read (f, &creation_time, sizeof (creation_time)) != sizeof (creation_time))
 	{
-	  grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	  grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	  goto fail;
 	}
 
@@ -231,7 +232,7 @@ grub_load_public_key (grub_file_t f)
 
       if (grub_file_read (f, &pk, sizeof (pk)) != sizeof (pk))
 	{
-	  grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	  grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	  goto fail;
 	}
 
@@ -263,19 +264,19 @@ grub_load_public_key (grub_file_t f)
 	  grub_uint8_t buffer[4096];
 	  if (grub_file_read (f, &l, sizeof (l)) != sizeof (l))
 	    {
-	      grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	      goto fail;
 	    }
 	  
 	  lb = (grub_be_to_cpu16 (l) + 7) / 8;
 	  if (lb > sizeof (buffer) - sizeof (grub_uint16_t))
 	    {
-	      grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	      goto fail;
 	    }
 	  if (grub_file_read (f, buffer + sizeof (grub_uint16_t), lb) != (grub_ssize_t) lb)
 	    {
-	      grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	      goto fail;
 	    }
 	  grub_memcpy (buffer, &l, sizeof (l));
@@ -285,7 +286,7 @@ grub_load_public_key (grub_file_t f)
 	  if (gcry_mpi_scan (&sk->mpis[i], GCRYMPI_FMT_PGP,
 			     buffer, lb + sizeof (grub_uint16_t), 0))
 	    {
-	      grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	      goto fail;
 	    }
 	}
@@ -357,29 +358,29 @@ grub_verify_signature (grub_file_t f, grub_file_t sig,
     return err;
 
   if (type != 0x2)
-    return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+    return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 
   if (grub_file_read (sig, &v, sizeof (v)) != sizeof (v))
-    return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+    return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 
   if (v != 4)
-    return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+    return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 
   if (grub_file_read (sig, &v4, sizeof (v4)) != sizeof (v4))
-    return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+    return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 
   h = v4.hash;
   t = v4.type;
   pk = v4.pkeyalgo;
   
   if (t != 0)
-    return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+    return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 
   if (h >= ARRAY_SIZE (hashes) || hashes[h] == NULL)
     return grub_error (GRUB_ERR_BAD_SIGNATURE, "unknown hash");
 
   if (pk >= ARRAY_SIZE (pkalgos) || pkalgos[pk].name == NULL)
-    return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+    return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 
   hash = grub_crypto_lookup_md_by_name (hashes[h]);
   if (!hash)
@@ -420,7 +421,7 @@ grub_verify_signature (grub_file_t f, grub_file_t sig,
 	grub_uint8_t readbuf[4096];
 	r = grub_file_read (sig, readbuf, rem < (grub_ssize_t) sizeof (readbuf) ? rem : (grub_ssize_t) sizeof (readbuf));
 	if (r < 0)
-	  return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	  return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	if (r == 0)
 	  break;
 	hash->write (context, readbuf, r);
@@ -432,17 +433,17 @@ grub_verify_signature (grub_file_t f, grub_file_t sig,
     hash->write (context, &headlen, sizeof (headlen));
     r = grub_file_read (sig, &unhashed_sub, sizeof (unhashed_sub));
     if (r != sizeof (unhashed_sub))
-      return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
     {
       grub_uint8_t readbuf[4096];
       grub_uint8_t *ptr;
       grub_uint32_t l;
       rem = grub_be_to_cpu16 (unhashed_sub);
       if (rem > (int) sizeof (readbuf))
-	return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
       r = grub_file_read (sig, readbuf, rem);
       if (r != rem)
-	return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
       for (ptr = readbuf; ptr < readbuf + rem; ptr += l)
 	{
 	  if (*ptr < 192)
@@ -473,9 +474,9 @@ grub_verify_signature (grub_file_t f, grub_file_t sig,
     hval = hash->read (context);
 
     if (grub_file_read (sig, hash_start, sizeof (hash_start)) != sizeof (hash_start))
-      return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
     if (grub_memcmp (hval, hash_start, sizeof (hash_start)) != 0)
-      return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 
     grub_dprintf ("crypt", "@ %x\n", (int)grub_file_tell (sig));
 
@@ -486,22 +487,22 @@ grub_verify_signature (grub_file_t f, grub_file_t sig,
 	grub_uint8_t buffer[4096];
 	grub_dprintf ("crypt", "alive\n");
 	if (grub_file_read (sig, &l, sizeof (l)) != sizeof (l))
-	  return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	  return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	grub_dprintf ("crypt", "alive\n");
 	lb = (grub_be_to_cpu16 (l) + 7) / 8;
 	grub_dprintf ("crypt", "l = 0x%04x\n", grub_be_to_cpu16 (l));
 	if (lb > sizeof (buffer) - sizeof (grub_uint16_t))
-	  return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	  return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	grub_dprintf ("crypt", "alive\n");
 	if (grub_file_read (sig, buffer + sizeof (grub_uint16_t), lb) != (grub_ssize_t) lb)
-	  return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	  return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	grub_dprintf ("crypt", "alive\n");
 	grub_memcpy (buffer, &l, sizeof (l));
 	grub_dprintf ("crypt", "alive\n");
 
 	if (gcry_mpi_scan (&mpis[i], GCRYMPI_FMT_PGP,
 			   buffer, lb + sizeof (grub_uint16_t), 0))
-	  return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+	  return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	grub_dprintf ("crypt", "alive\n");
       }
 
@@ -510,17 +511,18 @@ grub_verify_signature (grub_file_t f, grub_file_t sig,
     else
       sk = grub_crypto_pk_locate_subkey_in_trustdb (keyid);
     if (!sk)
-      return grub_error (GRUB_ERR_BAD_SIGNATURE, "key not found");
+      /* TRANSLATORS: %08x is 32-bit key id.  */
+      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("public key %08x not found"), keyid);
 
     int nbits = gcry_mpi_get_nbits (sk->mpis[1]);
     grub_dprintf ("crypt", "must be %d bits got %d bits\n", (int)nbits, (int)(8 * hash->mdlen));
 
     if (gcry_mpi_scan (&hmpi, GCRYMPI_FMT_USG, hval, nbits / 8 < (int) hash->mdlen ? nbits / 8 : (int) hash->mdlen, 0))
-      return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
     if (!grub_crypto_pk_dsa)
-      return grub_error (GRUB_ERR_BAD_SIGNATURE, "DSA module is not loaded");
+      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("module `%s' isn't loaded"), "gcry_dsa");
     if (grub_crypto_pk_dsa->verify (0, hmpi, mpis, sk->mpis, 0, 0))
-      return grub_error (GRUB_ERR_BAD_SIGNATURE, "bad signature");
+      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
   }
 
   return GRUB_ERR_NONE;
@@ -534,7 +536,7 @@ grub_cmd_trust (grub_command_t cmd  __attribute__ ((unused)),
   struct grub_public_key *pk = NULL;
 
   if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "one argument required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
   grub_file_filter_disable_all ();
   pkf = grub_file_open (args[0]);
@@ -563,7 +565,7 @@ grub_cmd_distrust (grub_command_t cmd  __attribute__ ((unused)),
   struct grub_public_subkey *sk;
 
   if (argc < 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "one argument required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
   keyid = grub_strtoull (args[0], 0, 16);
   if (grub_errno)
     return grub_errno;
@@ -582,7 +584,8 @@ grub_cmd_distrust (grub_command_t cmd  __attribute__ ((unused)),
       *pkey = next;
       return GRUB_ERR_NONE;
     }
-  return grub_error (GRUB_ERR_BAD_ARGUMENT, "key %08x not found", keyid);
+  /* TRANSLATORS: %08x is 32-bit key id.  */
+  return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("public key %08x not found"), keyid);
 }
 
 static grub_err_t
@@ -596,7 +599,7 @@ grub_cmd_verify_signature (grub_command_t cmd  __attribute__ ((unused)),
   grub_dprintf ("crypt", "alive\n");
 
   if (argc < 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "two arguments required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("two arguments expected"));
 
   grub_dprintf ("crypt", "alive\n");
 
@@ -744,13 +747,13 @@ GRUB_MOD_INIT(verify)
     grub_env_set ("check_signatures", grub_pk_trusted ? "enforce" : "no");
 
   cmd = grub_register_command ("verify_detached", grub_cmd_verify_signature,
-			       "FILE SIGFILE [PKFILE]",
+			       N_("FILE SIGNATURE_FILE [PUBKEY_FILE]"),
 			       N_("Verify detached signature."));
   cmd_trust = grub_register_command ("trust", grub_cmd_trust,
-				     "PKFILE",
+				     N_("PUBKEY_FILE"),
 				     N_("Add PKFILE to trusted keys."));
   cmd_distrust = grub_register_command ("distrust", grub_cmd_distrust,
-					"KEYID",
+					N_("PUBKEY_ID"),
 					N_("Remove KEYID from trusted keys."));
 }
 

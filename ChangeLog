@@ -1,5 +1,9 @@
 2013-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/verify.c: Mark messages for translating.
+
+2013-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/libgcrypt_wrap/mem.c (gcry_x*alloc): Make out of memory
 	fatal.
 
