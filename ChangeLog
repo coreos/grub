@@ -1,5 +1,10 @@
 2013-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt_wrap/mem.c (gcry_x*alloc): Make out of memory
+	fatal.
+
+2013-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/libgcrypt_wrap/mem.c (_gcry_log_bug): Make gcrypt bugs
 	fatal.
 

@@ -35,31 +35,51 @@ gcry_is_secure (const void *a __attribute__ ((unused)))
 void *
 gcry_xcalloc (size_t n, size_t m)
 {
-  return grub_zalloc (n * m);
+  void *ret;
+  ret = grub_zalloc (n * m);
+  if (!ret)
+    grub_fatal ("gcry_xcalloc failed");
+  return ret;
 }
 
 void *
 gcry_xmalloc_secure (size_t n)
 {
-  return grub_malloc (n);
+  void *ret;
+  ret = grub_malloc (n);
+  if (!ret)
+    grub_fatal ("gcry_xmalloc failed");
+  return ret;
 }
 
 void *
 gcry_xcalloc_secure (size_t n, size_t m)
 {
-  return grub_zalloc (n * m);
+  void *ret;
+  ret = grub_zalloc (n * m);
+  if (!ret)
+    grub_fatal ("gcry_xcalloc failed");
+  return ret;
 }
 
 void *
 gcry_xmalloc (size_t n)
 {
-  return grub_malloc (n);
+  void *ret;
+  ret = grub_malloc (n);
+  if (!ret)
+    grub_fatal ("gcry_xmalloc failed");
+  return ret;
 }
 
 void *
 gcry_xrealloc (void *a, size_t n)
 {
-  return grub_realloc (a, n);
+  void *ret;
+  ret = grub_realloc (a, n);
+  if (!ret)
+    grub_fatal ("gcry_xrealloc failed");
+  return ret;
 }
 
 void
