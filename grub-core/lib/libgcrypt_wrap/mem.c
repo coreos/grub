@@ -95,6 +95,7 @@ void _gcry_log_bug (const char *fmt, ...)
   grub_vprintf (fmt, args);
   va_end (args);
   grub_refresh ();
+  grub_abort ();
 }
 
 gcry_err_code_t

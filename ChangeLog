@@ -1,4 +1,9 @@
-2013-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/libgcrypt_wrap/mem.c (_gcry_log_bug): Make gcrypt bugs
+	fatal.
+
+2013-01-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* autogen.sh: Do not try to delete nonexistant files.
 	* util/import_gcrypth.sed: Add some missing header removals.
