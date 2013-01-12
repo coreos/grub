@@ -622,11 +622,11 @@ This install doesn't conflict with standard install as long as they are in
 separate directories.
 
 Note that @command{grub-install} is actually just a shell script and the
-real task is done by @command{grub-mkimage} and @command{grub-setup}.
-Therefore, you may run those commands directly to install GRUB, without
-using @command{grub-install}. Don't do that, however, unless you are very
-familiar with the internals of GRUB. Installing a boot loader on a running
-OS may be extremely dangerous.
+real task is done by other tools such as @command{grub-mkimage}. Therefore,
+you may run those commands directly to install GRUB, without using
+@command{grub-install}. Don't do that, however, unless you are very familiar
+with the internals of GRUB. Installing a boot loader on a running OS may be
+extremely dangerous.
 
 @node Making a GRUB bootable CD-ROM
 @section Making a GRUB bootable CD-ROM
@@ -688,8 +688,8 @@ storage devices.
 @section The map between BIOS drives and OS devices
 
 If the device map file exists, the GRUB utilities (@command{grub-probe},
-@command{grub-setup}, etc.) read it to map BIOS drives to OS devices.  This
-file consists of lines like this:
+etc.) read it to map BIOS drives to OS devices.  This file consists of lines
+like this:
 
 @example
 (@var{device}) @var{file}
@@ -2283,8 +2283,8 @@ bytes.
 The sole function of @file{boot.img} is to read the first sector of the core
 image from a local disk and jump to it.  Because of the size restriction,
 @file{boot.img} cannot understand any file system structure, so
-@command{grub-setup} hardcodes the location of the first sector of the core
-image into @file{boot.img} when installing GRUB.
+@command{grub-install} hardcodes the location of the first sector of the
+core image into @file{boot.img} when installing GRUB.
 
 @item diskboot.img
 This image is used as the first sector of the core image when booting from a
@@ -4689,9 +4689,9 @@ GRUB.
 @node Invoking grub-install
 @chapter Invoking grub-install
 
-The program @command{grub-install} installs GRUB on your drive using
-@command{grub-mkimage} and (on some platforms) @command{grub-setup}.  You
-must specify the device name on which you want to install GRUB, like this:
+The program @command{grub-install} generates a GRUB core image using
+@command{grub-mkimage} and installs it on your system.  You must specify the
+device name on which you want to install GRUB, like this:
 
 @example
 grub-install @var{install_device}

@@ -114,8 +114,8 @@ echo
 gettext "INSTALL_DEVICE must be system device filename.";echo
 echo
 
-gettext_printf "%s copies GRUB images into %s, and uses grub-setup
-to install grub into the boot sector.\n" "$self" "$grubdir";echo
+gettext_printf "%s copies GRUB images into %s.  On some platforms, it
+may also install GRUB into the boot sector.\n" "$self" "$grubdir";echo
 echo
 gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }

@@ -1,3 +1,28 @@
+2013-01-12  Colin Watson  <cjwatson@ubuntu.com>
+
+	Clean up dangling references to grub-setup.
+	Fixes Ubuntu bug #1082045.
+
+	* docs/grub.texi (Images): Refer generally to grub-install rather
+	than directly to grub-setup.
+	(Installing GRUB using grub-install): Remove direct reference to
+	grub-setup.
+	(Device map) Likewise.
+	(Invoking grub-install): Likewise.
+	* docs/man/grub-install.h2m (SEE ALSO): Likewise.
+	* docs/man/grub-mkimage.h2m (SEE ALSO): Likewise.
+	* util/grub-install.in (usage): Likewise.
+
+	* util/bash-completion.d/grub-completion.bash.in (_grub_setup):
+	Apply to grub-bios-setup and grub-sparc64-setup rather than to
+	grub-setup.
+	* configure.ac: Remove grub_setup output variable.
+
+	* docs/man/grub-bios-setup.h2m (NAME): Change name from grub-setup
+	to grub-bios-setup.
+	* docs/man/grub-sparc64-setup.h2m (NAME): Change name from
+	grub-setup to grub-sparc64-setup.
+
 2013-01-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Import gcrypt public-key cryptography and implement signature checking.

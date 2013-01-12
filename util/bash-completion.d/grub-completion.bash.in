@@ -252,10 +252,16 @@ _grub_setup () {
         _filedir
     fi
 }
-__grub_setup_program="@grub_setup@"
-have ${__grub_setup_program} && \
- complete -F _grub_setup -o filenames ${__grub_setup_program}
-unset __grub_setup_program
+
+__grub_bios_setup_program="@grub_bios_setup@"
+have ${__grub_bios_setup_program} && \
+ complete -F _grub_setup -o filenames ${__grub_bios_setup_program}
+unset __grub_bios_setup_program
+
+__grub_sparc64_setup_program="@grub_sparc64_setup@"
+have ${__grub_sparc64_setup_program} && \
+ complete -F _grub_setup -o filenames ${__grub_sparc64_setup_program}
+unset __grub_sparc64_setup_program
 
 
 #
