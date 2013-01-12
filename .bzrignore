@@ -172,3 +172,5 @@ Makefile.utilgcry.def
 po/*.po
 po/*.gmo
 po/LINGUAS
+include/grub/gcrypt/gcrypt.h
+include/grub/gcrypt/g10lib.h
