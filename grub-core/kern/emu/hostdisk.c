@@ -1339,7 +1339,7 @@ read_device_map (const char *dev_map)
 	{
 	  map[drive].device = xmalloc (PATH_MAX);
 	  if (! realpath (p, map[drive].device))
-	    grub_util_error (_("failed to get canonical path of %s"), p);
+	    grub_util_error (_("failed to get canonical path of `%s'"), p);
 	}
       else
 #endif

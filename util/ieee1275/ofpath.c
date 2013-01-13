@@ -131,7 +131,7 @@ find_obppath (const char *sysfs_path_orig)
 	  kill_trailing_dir(sysfs_path);
 	  if (!strcmp(sysfs_path, "/sys"))
 	    {
-	      grub_util_info (_("'obppath' not found in parent dirs of %s,"
+	      grub_util_info (_("`obppath' not found in parent dirs of `%s',"
 				" no IEEE1275 name discovery"),
 			      sysfs_path_orig);
 	      free (path);
@@ -164,7 +164,7 @@ xrealpath (const char *in)
   out = realpath (in, NULL);
 #endif
   if (!out)
-    grub_util_error (_("failed to get canonical path of %s"), in);
+    grub_util_error (_("failed to get canonical path of `%s'"), in);
   return out;
 }
 

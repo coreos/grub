@@ -1065,7 +1065,7 @@ grub_guess_root_devices (const char *dir)
 	    {
 	      *cur = canonicalize_file_name (tmp);
 	      if (*cur == NULL)
-		grub_util_error (_("failed to get canonical path of %s"), tmp);
+		grub_util_error (_("failed to get canonical path of `%s'"), tmp);
 	      free (tmp);
 	    }
 	  root = (strcmp (*cur, "/dev/root") == 0);
@@ -2778,7 +2778,7 @@ grub_make_system_path_relative_to_its_root (const char *path)
   /* canonicalize.  */
   p = canonicalize_file_name (path);
   if (p == NULL)
-    grub_util_error (_("failed to get canonical path of %s"), path);
+    grub_util_error (_("failed to get canonical path of `%s'"), path);
 
   /* For ZFS sub-pool filesystems, could be extended to others (btrfs?).  */
 #if !defined (__MINGW32__) && !defined (__CYGWIN__)
