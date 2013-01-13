@@ -298,10 +298,6 @@ grub_load_public_key (grub_file_t f)
       *last = sk;
       last = &sk->next;
 
-      for (i = 0; i < 20; i += 2)
-	grub_printf ("%02x%02x ", ((grub_uint8_t *) sk->fingerprint)[i], ((grub_uint8_t *) sk->fingerprint)[i + 1]);
-      grub_printf ("\n");
-
       grub_dprintf ("crypt", "actual pos: %x, expected: %x\n", (int)grub_file_tell (f), (int)pend);
 
       grub_file_seek (f, pend);
@@ -557,6 +553,27 @@ grub_cmd_trust (grub_command_t cmd  __attribute__ ((unused)),
 }
 
 static grub_err_t
+grub_cmd_list (grub_command_t cmd  __attribute__ ((unused)),
+	       int argc __attribute__ ((unused)),
+	       char **args __attribute__ ((unused)))
+{
+  struct grub_public_key *pk = NULL;
+  struct grub_public_subkey *sk = NULL;
+
+  for (pk = grub_pk_trusted; pk; pk = pk->next)
+    for (sk = pk->subkeys; sk; sk = sk->next)
+      {
+	unsigned i;
+	for (i = 0; i < 20; i += 2)
+	  grub_printf ("%02x%02x ", ((grub_uint8_t *) sk->fingerprint)[i],
+		       ((grub_uint8_t *) sk->fingerprint)[i + 1]);
+	grub_printf ("\n");
+      }
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 grub_cmd_distrust (grub_command_t cmd  __attribute__ ((unused)),
 		   int argc, char **args)
 {
@@ -701,7 +718,7 @@ struct gcry_pk_spec *grub_crypto_pk_dsa;
 struct gcry_pk_spec *grub_crypto_pk_ecdsa;
 struct gcry_pk_spec *grub_crypto_pk_rsa;
 
-static grub_command_t cmd, cmd_trust, cmd_distrust;
+static grub_command_t cmd, cmd_trust, cmd_distrust, cmd_list;
 
 GRUB_MOD_INIT(verify)
 {
@@ -752,6 +769,9 @@ GRUB_MOD_INIT(verify)
   cmd_trust = grub_register_command ("trust", grub_cmd_trust,
 				     N_("PUBKEY_FILE"),
 				     N_("Add PKFILE to trusted keys."));
+  cmd_list = grub_register_command ("list_trusted", grub_cmd_list,
+				    0,
+				    N_("List trusted keys."));
   cmd_distrust = grub_register_command ("distrust", grub_cmd_distrust,
 					N_("PUBKEY_ID"),
 					N_("Remove KEYID from trusted keys."));
@@ -762,5 +782,6 @@ GRUB_MOD_FINI(verify)
   grub_file_filter_unregister (GRUB_FILE_FILTER_PUBKEY);
   grub_unregister_command (cmd);
   grub_unregister_command (cmd_trust);
+  grub_unregister_command (cmd_list);
   grub_unregister_command (cmd_distrust);
 }

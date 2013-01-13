@@ -1,3 +1,9 @@
+2013-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	New command list_trusted.
+
+	* grub-core/commands/verify.c (grub_cmd_list): New function.
+
 2013-01-13  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkimage.c (generate_image): Fix "size of public key"
