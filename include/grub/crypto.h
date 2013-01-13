@@ -66,9 +66,10 @@ typedef enum
     GPG_ERR_WRONG_PUBKEY_ALGO,
     GPG_ERR_OUT_OF_MEMORY,
     GPG_ERR_TOO_LARGE
-  } gcry_err_code_t;
-#define gpg_err_code_t gcry_err_code_t
-#define gpg_error_t gcry_err_code_t
+  } gpg_err_code_t;
+typedef gpg_err_code_t gpg_error_t;
+typedef gpg_error_t gcry_error_t;
+typedef gpg_err_code_t gcry_err_code_t;
 #define gcry_error_t gcry_err_code_t
 #if 0
 enum gcry_cipher_modes 
@@ -174,6 +175,7 @@ typedef struct gcry_md_spec
   struct gcry_md_spec *next;
 } gcry_md_spec_t;
 
+struct gcry_mpi;
 typedef struct gcry_mpi *gcry_mpi_t;
 
 /* Type for the pk_generate function.  */

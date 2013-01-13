@@ -34,12 +34,6 @@
 #undef __GNU_LIBRARY__
 #define __GNU_LIBRARY__ 1
 
-typedef grub_uint64_t u64;
-typedef grub_uint32_t u32;
-typedef grub_uint16_t u16;
-typedef grub_uint8_t byte;
-typedef grub_size_t size_t;
-
 #define U64_C(c) (c ## ULL)
 
 #define PUBKEY_FLAG_NO_BLINDING    (1 << 0)

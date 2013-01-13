@@ -1874,6 +1874,7 @@ module = {
   common = lib/libgcrypt-grub/mpi/mpih-div.c;
   common = lib/libgcrypt-grub/mpi/mpicoder.c;
   common = lib/libgcrypt-grub/mpi/mpih-rshift.c;
+  common = lib/libgcrypt-grub/mpi/mpi-inline.c;
   common = lib/libgcrypt_wrap/mem.c;
 
   cflags = '$(CFLAGS_GCRY) -Wno-redundant-decls -Wno-sign-compare';

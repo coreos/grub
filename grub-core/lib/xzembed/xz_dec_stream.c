@@ -197,20 +197,20 @@ static bool fill_temp(struct xz_dec *s, struct xz_buf *b)
 static enum xz_ret dec_vli(struct xz_dec *s,
 		const uint8_t *in, size_t *in_pos, size_t in_size)
 {
-	uint8_t byte;
+	uint8_t b;
 
 	if (s->pos == 0)
 		s->vli = 0;
 
 	while (*in_pos < in_size) {
-		byte = in[*in_pos];
+		b = in[*in_pos];
 		++*in_pos;
 
-		s->vli |= (vli_type)(byte & 0x7F) << s->pos;
+		s->vli |= (vli_type)(b & 0x7F) << s->pos;
 
-		if ((byte & 0x80) == 0) {
+		if ((b & 0x80) == 0) {
 			/* Don't allow non-minimal encodings. */
-			if (byte == 0 && s->pos != 0)
+			if (b == 0 && s->pos != 0)
 				return XZ_DATA_ERROR;
 
 			s->pos = 0;

@@ -1,5 +1,20 @@
 2013-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix compilation with older compilers.
+
+	* grub-core/Makefile.core.def (mpi): Add mpi-inline.c.
+	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h: Remove redundant
+	declarations.
+	* grub-core/lib/posix_wrap/string.h: Include sys/types.h.
+	* grub-core/lib/posix_wrap/sys/types.h: Add common types.
+	* grub-core/lib/xzembed/xz_dec_lzma2.c (dict_put): Replace byte
+	identifier with b.
+	* grub-core/lib/xzembed/xz_dec_stream.c (dec_vli): Likewise.
+	* include/grub/crypto.h: Add type defines.
+	* util/import_gcrypth.sed: Remove duplicate type defines.
+
+2013-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	New command list_trusted.
 
 	* grub-core/commands/verify.c (grub_cmd_list): New function.

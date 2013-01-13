@@ -20,6 +20,7 @@
 #define GRUB_POSIX_STRING_H	1
 
 #include <grub/misc.h>
+#include <sys/types.h>
 
 #define HAVE_STRCASECMP 1
 
@@ -49,7 +50,7 @@ memcpy (void *dest, const void *src, grub_size_t n)
 }
 
 static inline int
-memcmp (const void *s1, const void *s2, size_t n)
+memcmp (const void *s1, const void *s2, grub_size_t n)
 {
   return grub_memcmp (s1, s2, n);
 }
