@@ -254,9 +254,10 @@ init_port (struct grub_ahci_device *dev)
   return 1;
 }
 
-static int NESTED_FUNC_ATTR
+static int
 grub_ahci_pciinit (grub_pci_device_t dev,
-		   grub_pci_id_t pciid __attribute__ ((unused)))
+		   grub_pci_id_t pciid __attribute__ ((unused)),
+		   void *data __attribute__ ((unused)))
 {
   grub_pci_address_t addr;
   grub_uint32_t class;
@@ -394,7 +395,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 static grub_err_t
 grub_ahci_initialize (void)
 {
-  grub_pci_iterate (grub_ahci_pciinit);
+  grub_pci_iterate (grub_ahci_pciinit, NULL);
   return grub_errno;
 }
 

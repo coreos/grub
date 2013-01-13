@@ -109,37 +109,36 @@ grub_efi_free_pages (grub_efi_physical_address_t address,
 
 #if defined (__i386__) || defined (__x86_64__)
 
+/* Helper for stop_broadcom.  */
+static int
+find_card (grub_pci_device_t dev, grub_pci_id_t pciid,
+	   void *data __attribute__ ((unused)))
+{
+  grub_pci_address_t addr;
+  grub_uint8_t cap;
+  grub_uint16_t pm_state;
+
+  if ((pciid & 0xffff) != GRUB_PCI_VENDOR_BROADCOM)
+    return 0;
+
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
+  if (grub_pci_read (addr) >> 24 != GRUB_PCI_CLASS_NETWORK)
+    return 0;
+  cap = grub_pci_find_capability (dev, GRUB_PCI_CAP_POWER_MANAGEMENT);
+  if (!cap)
+    return 0;
+  addr = grub_pci_make_address (dev, cap + 4);
+  pm_state = grub_pci_read_word (addr);
+  pm_state = pm_state | 0x03;
+  grub_pci_write_word (addr, pm_state);
+  grub_pci_read_word (addr);
+  return 0;
+}
+
 static void
 stop_broadcom (void)
 {
-  auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev,
-				       grub_pci_id_t pciid);
-
-  int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev,
-				  grub_pci_id_t pciid)
-    {
-      grub_pci_address_t addr;
-      grub_uint8_t cap;
-      grub_uint16_t pm_state;
-
-      if ((pciid & 0xffff) != GRUB_PCI_VENDOR_BROADCOM)
-	return 0;
-
-      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
-      if (grub_pci_read (addr) >> 24 != GRUB_PCI_CLASS_NETWORK)
-	return 0;
-      cap = grub_pci_find_capability (dev, GRUB_PCI_CAP_POWER_MANAGEMENT);
-      if (!cap)
-	return 0;
-      addr = grub_pci_make_address (dev, cap + 4);
-      pm_state = grub_pci_read_word (addr);
-      pm_state = pm_state | 0x03;
-      grub_pci_write_word (addr, pm_state);
-      grub_pci_read_word (addr);
-      return 0;
-    }
-
-  grub_pci_iterate (find_card);
+  grub_pci_iterate (find_card, NULL);
 }
 
 #endif

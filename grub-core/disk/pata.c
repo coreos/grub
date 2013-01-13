@@ -338,9 +338,10 @@ grub_pata_device_initialize (int port, int device, int addr)
 }
 
 #ifndef GRUB_MACHINE_MIPS_QEMU_MIPS
-static int NESTED_FUNC_ATTR
+static int
 grub_pata_pciinit (grub_pci_device_t dev,
-		   grub_pci_id_t pciid)
+		   grub_pci_id_t pciid,
+		   void *data __attribute__ ((unused)))
 {
   static int compat_use[2] = { 0 };
   grub_pci_address_t addr;
@@ -446,7 +447,7 @@ grub_pata_pciinit (grub_pci_device_t dev,
 static grub_err_t
 grub_pata_initialize (void)
 {
-  grub_pci_iterate (grub_pata_pciinit);
+  grub_pci_iterate (grub_pata_pciinit, NULL);
   return 0;
 }
 #else

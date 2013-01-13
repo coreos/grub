@@ -60,6 +60,32 @@ grub_video_radeon_fuloong2e_video_fini (void)
   return grub_video_fb_fini ();
 }
 
+#ifndef TEST
+/* Helper for grub_video_radeon_fuloong2e_setup.  */
+static int
+find_card (grub_pci_device_t dev, grub_pci_id_t pciid, void *data)
+{
+  int *found = data;
+  grub_pci_address_t addr;
+  grub_uint32_t class;
+
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
+  class = grub_pci_read (addr);
+
+  if (((class >> 16) & 0xffff) != GRUB_PCI_CLASS_SUBCLASS_VGA
+      || pciid != 0x515a1002)
+    return 0;
+  
+  *found = 1;
+
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
+  framebuffer.base = grub_pci_read (addr);
+  framebuffer.dev = dev;
+
+  return 1;
+}
+#endif
+
 static grub_err_t
 grub_video_radeon_fuloong2e_setup (unsigned int width, unsigned int height,
 			unsigned int mode_type, unsigned int mode_mask __attribute__ ((unused)))
@@ -69,28 +95,6 @@ grub_video_radeon_fuloong2e_setup (unsigned int width, unsigned int height,
   int found = 0;
 
 #ifndef TEST
-  auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid);
-  int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid)
-    {
-      grub_pci_address_t addr;
-      grub_uint32_t class;
-
-      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
-      class = grub_pci_read (addr);
-
-      if (((class >> 16) & 0xffff) != GRUB_PCI_CLASS_SUBCLASS_VGA
-	  || pciid != 0x515a1002)
-	return 0;
-      
-      found = 1;
-
-      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
-      framebuffer.base = grub_pci_read (addr);
-      framebuffer.dev = dev;
-
-      return 1;
-    }
-
   /* Decode depth from mode_type.  If it is zero, then autodetect.  */
   depth = (mode_type & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK)
           >> GRUB_VIDEO_MODE_TYPE_DEPTH_POS;
@@ -100,7 +104,7 @@ grub_video_radeon_fuloong2e_setup (unsigned int width, unsigned int height,
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "Only 640x480x16 is supported");
 
-  grub_pci_iterate (find_card);
+  grub_pci_iterate (find_card, &found);
   if (!found)
     return grub_error (GRUB_ERR_IO, "Couldn't find graphics card");
 #endif

@@ -49,45 +49,47 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
   return GRUB_ERR_NONE;
 }
 
+/* Helper for init_pci.  */
+static int
+set_card (grub_pci_device_t dev, grub_pci_id_t pciid,
+	  void *data __attribute__ ((unused)))
+{
+  grub_pci_address_t addr;
+  /* FIXME: autoscan for BARs and devices.  */
+  switch (pciid)
+    {
+    case GRUB_LOONGSON_OHCI_PCIID:
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
+      grub_pci_write (addr, 0x5025000);
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+      grub_pci_write_word (addr, GRUB_PCI_COMMAND_SERR_ENABLE
+			   | GRUB_PCI_COMMAND_PARITY_ERROR
+			   | GRUB_PCI_COMMAND_BUS_MASTER
+			   | GRUB_PCI_COMMAND_MEM_ENABLED);
+
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_STATUS);
+      grub_pci_write_word (addr, 0x0200 | GRUB_PCI_STATUS_CAPABILITIES);
+      break;
+    case GRUB_LOONGSON_EHCI_PCIID:
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
+      grub_pci_write (addr, 0x5026000);
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+      grub_pci_write_word (addr, GRUB_PCI_COMMAND_SERR_ENABLE
+			   | GRUB_PCI_COMMAND_PARITY_ERROR
+			   | GRUB_PCI_COMMAND_BUS_MASTER
+			   | GRUB_PCI_COMMAND_MEM_ENABLED);
+
+      addr = grub_pci_make_address (dev, GRUB_PCI_REG_STATUS);
+      grub_pci_write_word (addr, (1 << GRUB_PCI_STATUS_DEVSEL_TIMING_SHIFT)
+			   | GRUB_PCI_STATUS_CAPABILITIES);
+      break;
+    }
+  return 0;
+}
+
 static void
 init_pci (void)
 {
-  auto int NESTED_FUNC_ATTR set_card (grub_pci_device_t dev, grub_pci_id_t pciid);
-  int NESTED_FUNC_ATTR set_card (grub_pci_device_t dev, grub_pci_id_t pciid)
-  {
-    grub_pci_address_t addr;
-    /* FIXME: autoscan for BARs and devices.  */
-    switch (pciid)
-      {
-      case GRUB_LOONGSON_OHCI_PCIID:
-	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
-	grub_pci_write (addr, 0x5025000);
-	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
-	grub_pci_write_word (addr, GRUB_PCI_COMMAND_SERR_ENABLE
-			     | GRUB_PCI_COMMAND_PARITY_ERROR
-			     | GRUB_PCI_COMMAND_BUS_MASTER
-			     | GRUB_PCI_COMMAND_MEM_ENABLED);
-
-	addr = grub_pci_make_address (dev, GRUB_PCI_REG_STATUS);
-	grub_pci_write_word (addr, 0x0200 | GRUB_PCI_STATUS_CAPABILITIES);
-	break;
-      case GRUB_LOONGSON_EHCI_PCIID:
-	addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
-	grub_pci_write (addr, 0x5026000);
-	addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
-	grub_pci_write_word (addr, GRUB_PCI_COMMAND_SERR_ENABLE
-			     | GRUB_PCI_COMMAND_PARITY_ERROR
-			     | GRUB_PCI_COMMAND_BUS_MASTER
-			     | GRUB_PCI_COMMAND_MEM_ENABLED);
-
-	addr = grub_pci_make_address (dev, GRUB_PCI_REG_STATUS);
-	grub_pci_write_word (addr, (1 << GRUB_PCI_STATUS_DEVSEL_TIMING_SHIFT)
-			     | GRUB_PCI_STATUS_CAPABILITIES);
-	break;
-      }
-    return 0;
-  }
-
   *((volatile grub_uint32_t *) GRUB_CPU_LOONGSON_PCI_HIT1_SEL_LO) = 0x8000000c;
   *((volatile grub_uint32_t *) GRUB_CPU_LOONGSON_PCI_HIT1_SEL_HI) = 0xffffffff;
 
@@ -110,7 +112,7 @@ init_pci (void)
   *((volatile grub_uint32_t *) (GRUB_MACHINE_PCI_CONTROLLER_HEADER 
 				+ GRUB_PCI_REG_ADDRESS_REG1)) = 0;
 
-  grub_pci_iterate (set_card);
+  grub_pci_iterate (set_card, NULL);
 }
 
 void

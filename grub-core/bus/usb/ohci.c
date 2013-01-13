@@ -213,9 +213,9 @@ grub_ohci_writereg32 (struct grub_ohci *o,
 
 /* Iterate over all PCI devices.  Determine if a device is an OHCI
    controller.  If this is the case, initialize it.  */
-static int NESTED_FUNC_ATTR
-grub_ohci_pci_iter (grub_pci_device_t dev,
-		    grub_pci_id_t pciid)
+static int
+grub_ohci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
+		    void *data __attribute__ ((unused)))
 {
   grub_uint32_t interf;
   grub_uint32_t base;
@@ -477,7 +477,7 @@ grub_ohci_pci_iter (grub_pci_device_t dev,
 static void
 grub_ohci_inithw (void)
 {
-  grub_pci_iterate (grub_ohci_pci_iter);
+  grub_pci_iterate (grub_ohci_pci_iter, NULL);
 }
 
 

@@ -454,8 +454,9 @@ grub_ehci_reset (struct grub_ehci *e)
 }
 
 /* PCI iteration function... */
-static int NESTED_FUNC_ATTR
-grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
+static int
+grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
+		    void *data __attribute__ ((unused)))
 {
   grub_uint8_t release;
   grub_uint32_t class_code;
@@ -1814,7 +1815,7 @@ grub_ehci_detect_dev (grub_usb_controller_t dev, int port, int *changed)
 static void
 grub_ehci_inithw (void)
 {
-  grub_pci_iterate (grub_ehci_pci_iter);
+  grub_pci_iterate (grub_ehci_pci_iter, NULL);
 }
 
 static grub_err_t

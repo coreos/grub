@@ -83,8 +83,9 @@ static int regsize;
 static grub_uint16_t regaddr;
 static const char *varname;
 
-static int NESTED_FUNC_ATTR
-grub_setpci_iter (grub_pci_device_t dev, grub_pci_id_t pciid)
+static int
+grub_setpci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
+		  void *data __attribute__ ((unused)))
 {
   grub_uint32_t regval = 0;
   grub_pci_address_t addr;
@@ -320,7 +321,7 @@ grub_cmd_setpci (grub_extcmd_context_t ctxt, int argc, char **argv)
     return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		       "option -v isn't valid for writes");
 
-  grub_pci_iterate (grub_setpci_iter);
+  grub_pci_iterate (grub_setpci_iter, NULL);
   return GRUB_ERR_NONE;
 }
 

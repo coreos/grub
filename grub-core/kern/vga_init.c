@@ -18,6 +18,7 @@
 
 #ifndef __mips__
 #include <grub/pci.h>
+#include <grub/mm.h>
 #endif
 #include <grub/machine/kernel.h>
 #include <grub/misc.h>
@@ -87,38 +88,42 @@ load_palette (void)
     grub_vga_palette_write (i, colors[i].r, colors[i].g, colors[i].b);
 }
 
+#ifndef __mips__
+/* Helper for grub_qemu_init_cirrus.  */
+static int
+find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)),
+	   void *data __attribute__ ((unused)))
+{
+  grub_pci_address_t addr;
+  grub_uint32_t class;
+
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
+  class = grub_pci_read (addr);
+
+  if (((class >> 16) & 0xffff) != GRUB_PCI_CLASS_SUBCLASS_VGA)
+    return 0;
+  
+  /* FIXME: chooose addresses dynamically.  */
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
+  grub_pci_write (addr, 0xf0000000 | GRUB_PCI_ADDR_MEM_PREFETCH
+		  | GRUB_PCI_ADDR_SPACE_MEMORY | GRUB_PCI_ADDR_MEM_TYPE_32);
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG1);
+  grub_pci_write (addr, 0xf2000000
+		  | GRUB_PCI_ADDR_SPACE_MEMORY | GRUB_PCI_ADDR_MEM_TYPE_32);
+
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+  grub_pci_write (addr, GRUB_PCI_COMMAND_MEM_ENABLED
+		  | GRUB_PCI_COMMAND_IO_ENABLED);
+  
+  return 1;
+}
+#endif
+
 void
 grub_qemu_init_cirrus (void)
 {
 #ifndef __mips__
-  auto int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid);
-  int NESTED_FUNC_ATTR find_card (grub_pci_device_t dev, grub_pci_id_t pciid __attribute__ ((unused)))
-    {
-      grub_pci_address_t addr;
-      grub_uint32_t class;
-
-      addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
-      class = grub_pci_read (addr);
-
-      if (((class >> 16) & 0xffff) != GRUB_PCI_CLASS_SUBCLASS_VGA)
-	return 0;
-      
-      /* FIXME: chooose addresses dynamically.  */
-      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
-      grub_pci_write (addr, 0xf0000000 | GRUB_PCI_ADDR_MEM_PREFETCH
-		      | GRUB_PCI_ADDR_SPACE_MEMORY | GRUB_PCI_ADDR_MEM_TYPE_32);
-      addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG1);
-      grub_pci_write (addr, 0xf2000000
-		      | GRUB_PCI_ADDR_SPACE_MEMORY | GRUB_PCI_ADDR_MEM_TYPE_32);
- 
-      addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
-      grub_pci_write (addr, GRUB_PCI_COMMAND_MEM_ENABLED
-		      | GRUB_PCI_COMMAND_IO_ENABLED);
-      
-      return 1;
-    }
-
-  grub_pci_iterate (find_card);
+  grub_pci_iterate (find_card, NULL);
 #endif
 
   grub_outb (GRUB_VGA_IO_MISC_COLOR,
