@@ -740,8 +740,8 @@ generate_image (const char *dir, const char *prefix,
       {
 	size_t curs;
 	curs = ALIGN_ADDR (grub_util_get_image_size (pubkey_paths[i]));
-	grub_util_info ("the size of public key is 0x%llx",
-			(unsigned long long) pubkey_paths[i]);
+	grub_util_info ("the size of public key %zd is 0x%llx",
+			i, (unsigned long long) curs);
 	total_module_size += curs + sizeof (struct grub_module_header);
       }
   }

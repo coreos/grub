@@ -1,5 +1,10 @@
 2013-01-13  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub-mkimage.c (generate_image): Fix "size of public key"
+	info message.
+
+2013-01-13  Colin Watson  <cjwatson@ubuntu.com>
+
 	Remove nested functions from PCI iterators.
 
 	* grub-core/bus/pci.c (grub_pci_iterate): Add hook_data argument,
