@@ -180,63 +180,64 @@ grub_linux_unload (void)
 
 #define FOUR_MB	(4 * 1024 * 1024)
 
+/* Helper for alloc_phys.  */
+static int
+alloc_phys_choose (grub_uint64_t addr, grub_uint64_t len,
+		   grub_memory_type_t type, void *data)
+{
+  grub_addr_t *ret = data;
+  grub_addr_t end = addr + len;
+
+  if (type != 1)
+    return 0;
+
+  addr = ALIGN_UP (addr, FOUR_MB);
+  if (addr + size >= end)
+    return 0;
+
+  if (addr >= grub_phys_start && addr < grub_phys_end)
+    {
+      addr = ALIGN_UP (grub_phys_end, FOUR_MB);
+      if (addr + size >= end)
+	return 0;
+    }
+  if ((addr + size) >= grub_phys_start
+      && (addr + size) < grub_phys_end)
+    {
+      addr = ALIGN_UP (grub_phys_end, FOUR_MB);
+      if (addr + size >= end)
+	return 0;
+    }
+
+  if (loaded)
+    {
+      grub_addr_t linux_end = ALIGN_UP (linux_paddr + linux_size, FOUR_MB);
+
+      if (addr >= linux_paddr && addr < linux_end)
+	{
+	  addr = linux_end;
+	  if (addr + size >= end)
+	    return 0;
+	}
+      if ((addr + size) >= linux_paddr
+	  && (addr + size) < linux_end)
+	{
+	  addr = linux_end;
+	  if (addr + size >= end)
+	    return 0;
+	}
+    }
+
+  *ret = addr;
+  return 1;
+}
+
 static grub_addr_t
 alloc_phys (grub_addr_t size)
 {
   grub_addr_t ret = (grub_addr_t) -1;
 
-  auto int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len,
-				    grub_memory_type_t type);
-  int NESTED_FUNC_ATTR choose (grub_uint64_t addr, grub_uint64_t len,
-			       grub_memory_type_t type)
-  {
-    grub_addr_t end = addr + len;
-
-    if (type != 1)
-      return 0;
-
-    addr = ALIGN_UP (addr, FOUR_MB);
-    if (addr + size >= end)
-      return 0;
-
-    if (addr >= grub_phys_start && addr < grub_phys_end)
-      {
-	addr = ALIGN_UP (grub_phys_end, FOUR_MB);
-	if (addr + size >= end)
-	  return 0;
-      }
-    if ((addr + size) >= grub_phys_start
-	&& (addr + size) < grub_phys_end)
-      {
-	addr = ALIGN_UP (grub_phys_end, FOUR_MB);
-	if (addr + size >= end)
-	  return 0;
-      }
-
-    if (loaded)
-      {
-	grub_addr_t linux_end = ALIGN_UP (linux_paddr + linux_size, FOUR_MB);
-
-	if (addr >= linux_paddr && addr < linux_end)
-	  {
-	    addr = linux_end;
-	    if (addr + size >= end)
-	      return 0;
-	  }
-	if ((addr + size) >= linux_paddr
-	    && (addr + size) < linux_end)
-	  {
-	    addr = linux_end;
-	    if (addr + size >= end)
-	      return 0;
-	  }
-      }
-
-    ret = addr;
-    return 1;
-  }
-
-  grub_machine_mmap_iterate (choose);
+  grub_machine_mmap_iterate (alloc_phys_choose, &ret);
 
   return ret;
 }
@@ -454,21 +455,23 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   return grub_errno;
 }
 
+/* Helper for determine_phys_base.  */
+static int
+get_physbase (grub_uint64_t addr, grub_uint64_t len __attribute__ ((unused)),
+	      grub_uint32_t type, void *data __attribute__ ((unused)))
+{
+  if (type != 1)
+    return 0;
+  if (addr < phys_base)
+    phys_base = addr;
+  return 0;
+}
+
 static void
 determine_phys_base (void)
 {
-  auto int NESTED_FUNC_ATTR get_physbase (grub_uint64_t addr, grub_uint64_t len __attribute__((unused)), grub_uint32_t type);
-  int NESTED_FUNC_ATTR get_physbase (grub_uint64_t addr, grub_uint64_t len __attribute__((unused)), grub_uint32_t type)
-  {
-    if (type != 1)
-      return 0;
-    if (addr < phys_base)
-      phys_base = addr;
-    return 0;
-  }
-
   phys_base = ~(grub_uint64_t) 0;
-  grub_machine_mmap_iterate (get_physbase);
+  grub_machine_mmap_iterate (get_physbase, NULL);
 }
 
 static void

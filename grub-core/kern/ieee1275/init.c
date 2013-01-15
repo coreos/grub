@@ -156,74 +156,76 @@ grub_claim_heap (void)
 				 + GRUB_KERNEL_MACHINE_STACK_SIZE), 0x200000);
 }
 #else
+/* Helper for grub_claim_heap.  */
+static int
+heap_init (grub_uint64_t addr, grub_uint64_t len, grub_memory_type_t type,
+	   void *data)
+{
+  unsigned long *total = data;
+
+  if (type != 1)
+    return 0;
+
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM))
+    {
+      if (addr + len <= 0x180000)
+	return 0;
+
+      if (addr < 0x180000)
+	{
+	  len = addr + len - 0x180000;
+	  addr = 0x180000;
+	}
+    }
+  len -= 1; /* Required for some firmware.  */
+
+  /* Never exceed HEAP_MAX_SIZE  */
+  if (*total + len > HEAP_MAX_SIZE)
+    len = HEAP_MAX_SIZE - *total;
+
+  /* Avoid claiming anything above HEAP_MAX_ADDR, if possible. */
+  if ((addr < HEAP_MAX_ADDR) &&				/* if it's too late, don't bother */
+      (addr + len > HEAP_MAX_ADDR) &&				/* if it wasn't available anyway, don't bother */
+      (*total + (HEAP_MAX_ADDR - addr) > HEAP_MIN_SIZE))	/* only limit ourselves when we can afford to */
+     len = HEAP_MAX_ADDR - addr;
+
+  /* In theory, firmware should already prevent this from happening by not
+     listing our own image in /memory/available.  The check below is intended
+     as a safeguard in case that doesn't happen.  However, it doesn't protect
+     us from corrupting our module area, which extends up to a
+     yet-undetermined region above _end.  */
+  if ((addr < (grub_addr_t) _end) && ((addr + len) > (grub_addr_t) _start))
+    {
+      grub_printf ("Warning: attempt to claim over our own code!\n");
+      len = 0;
+    }
+
+  if (len)
+    {
+      grub_err_t err;
+      /* Claim and use it.  */
+      err = grub_claimmap (addr, len);
+      if (err)
+	return err;
+      grub_mm_init_region ((void *) (grub_addr_t) addr, len);
+    }
+
+  *total += len;
+  if (*total >= HEAP_MAX_SIZE)
+    return 1;
+
+  return 0;
+}
+
 static void 
 grub_claim_heap (void)
 {
   unsigned long total = 0;
 
-  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t len,
-				       grub_memory_type_t type);
-  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t len,
-				  grub_memory_type_t type)
-  {
-    if (type != 1)
-      return 0;
-
-    if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM))
-      {
-	if (addr + len <= 0x180000)
-	  return 0;
-
-	if (addr < 0x180000)
-	  {
-	    len = addr + len - 0x180000;
-	    addr = 0x180000;
-	  }
-      }
-    len -= 1; /* Required for some firmware.  */
-
-    /* Never exceed HEAP_MAX_SIZE  */
-    if (total + len > HEAP_MAX_SIZE)
-      len = HEAP_MAX_SIZE - total;
-
-    /* Avoid claiming anything above HEAP_MAX_ADDR, if possible. */
-    if ((addr < HEAP_MAX_ADDR) &&				/* if it's too late, don't bother */
-        (addr + len > HEAP_MAX_ADDR) &&				/* if it wasn't available anyway, don't bother */
-        (total + (HEAP_MAX_ADDR - addr) > HEAP_MIN_SIZE))	/* only limit ourselves when we can afford to */
-       len = HEAP_MAX_ADDR - addr;
-
-    /* In theory, firmware should already prevent this from happening by not
-       listing our own image in /memory/available.  The check below is intended
-       as a safeguard in case that doesn't happen.  However, it doesn't protect
-       us from corrupting our module area, which extends up to a
-       yet-undetermined region above _end.  */
-    if ((addr < (grub_addr_t) _end) && ((addr + len) > (grub_addr_t) _start))
-      {
-        grub_printf ("Warning: attempt to claim over our own code!\n");
-        len = 0;
-      }
-
-    if (len)
-      {
-	grub_err_t err;
-	/* Claim and use it.  */
-	err = grub_claimmap (addr, len);
-	if (err)
-	  return err;
-	grub_mm_init_region ((void *) (grub_addr_t) addr, len);
-      }
-
-    total += len;
-    if (total >= HEAP_MAX_SIZE)
-      return 1;
-
-    return 0;
-  }
-
   if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_CANNOT_INTERPRET))
-    heap_init (HEAP_MAX_ADDR - HEAP_MIN_SIZE, HEAP_MIN_SIZE, 1);
+    heap_init (HEAP_MAX_ADDR - HEAP_MIN_SIZE, HEAP_MIN_SIZE, 1, &total);
   else
-    grub_machine_mmap_iterate (heap_init);
+    grub_machine_mmap_iterate (heap_init, &total);
 }
 #endif
 

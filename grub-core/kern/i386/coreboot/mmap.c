@@ -33,7 +33,9 @@ check_signature (grub_linuxbios_table_header_t tbl_header)
 }
 
 static grub_err_t
-grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t))
+grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t,
+					   void *),
+			      void *hook_data)
 {
   grub_linuxbios_table_header_t table_header;
   grub_linuxbios_table_item_t table_item;
@@ -68,42 +70,54 @@ signature_found:
            *(grub_uint64_t *) (table_item + 1);
          goto signature_found;   
        }
-      if (hook (table_item))
+      if (hook (table_item, hook_data))
        return 1;
     }
 
   return 0;
 }
 
-grub_err_t
-grub_machine_mmap_iterate (grub_memory_hook_t hook)
+/* Context for grub_machine_mmap_iterate.  */
+struct grub_machine_mmap_iterate_ctx
 {
+  grub_memory_hook_t hook;
+  void *hook_data;
+};
+
+/* Helper for grub_machine_mmap_iterate.  */
+static int
+iterate_linuxbios_table (grub_linuxbios_table_item_t table_item, void *data)
+{
+  struct grub_machine_mmap_iterate_ctx *ctx = data;
   mem_region_t mem_region;
 
-  auto int iterate_linuxbios_table (grub_linuxbios_table_item_t);
-  int iterate_linuxbios_table (grub_linuxbios_table_item_t table_item)
-  {
-    if (table_item->tag != GRUB_LINUXBIOS_MEMBER_MEMORY)
-      return 0;
-
-    mem_region =
-      (mem_region_t) ((long) table_item +
-				 sizeof (struct grub_linuxbios_table_item));
-    while ((long) mem_region < (long) table_item + (long) table_item->size)
-      {
-	if (hook (mem_region->addr, mem_region->size,
-		  /* Multiboot mmaps match with the coreboot mmap definition.
-		     Therefore, we can just pass type through.  */
-		  mem_region->type))
-	  return 1;
-
-	mem_region++;
-      }
-
+  if (table_item->tag != GRUB_LINUXBIOS_MEMBER_MEMORY)
     return 0;
-  }
 
-  grub_linuxbios_table_iterate (iterate_linuxbios_table);
+  mem_region =
+    (mem_region_t) ((long) table_item +
+			       sizeof (struct grub_linuxbios_table_item));
+  while ((long) mem_region < (long) table_item + (long) table_item->size)
+    {
+      if (ctx->hook (mem_region->addr, mem_region->size,
+		     /* Multiboot mmaps match with the coreboot mmap
+		        definition.  Therefore, we can just pass type
+		        through.  */
+		     mem_region->type, ctx->hook_data))
+	return 1;
+
+      mem_region++;
+    }
+
+  return 0;
+}
+
+grub_err_t
+grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
+{
+  struct grub_machine_mmap_iterate_ctx ctx = { hook, hook_data };
+
+  grub_linuxbios_table_iterate (iterate_linuxbios_table, &ctx);
 
   return 0;
 }

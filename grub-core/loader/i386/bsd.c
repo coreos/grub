@@ -269,81 +269,93 @@ struct grub_e820_mmap
 #define GRUB_E820_NVS        4
 #define GRUB_E820_BADRAM     5
 
+/* Context for generate_e820_mmap.  */
+struct generate_e820_mmap_ctx
+{
+  int count;
+  struct grub_e820_mmap *mmap;
+  struct grub_e820_mmap prev, cur;
+};
+
+/* Helper for generate_e820_mmap.  */
+static int
+generate_e820_mmap_iter (grub_uint64_t addr, grub_uint64_t size,
+			 grub_memory_type_t type, void *data)
+{
+  struct generate_e820_mmap_ctx *ctx = data;
+
+  ctx->cur.addr = addr;
+  ctx->cur.size = size;
+  switch (type)
+    {
+    case GRUB_MEMORY_AVAILABLE:
+      ctx->cur.type = GRUB_E820_RAM;
+      break;
+
+    case GRUB_MEMORY_ACPI:
+      ctx->cur.type = GRUB_E820_ACPI;
+      break;
+
+    case GRUB_MEMORY_NVS:
+      ctx->cur.type = GRUB_E820_NVS;
+      break;
+
+    default:
+    case GRUB_MEMORY_CODE:
+    case GRUB_MEMORY_RESERVED:
+      ctx->cur.type = GRUB_E820_RESERVED;
+      break;
+    }
+
+  /* Merge regions if possible. */
+  if (ctx->count && ctx->cur.type == ctx->prev.type
+      && ctx->cur.addr == ctx->prev.addr + ctx->prev.size)
+    {
+      ctx->prev.size += ctx->cur.size;
+      if (ctx->mmap)
+	ctx->mmap[-1] = ctx->prev;
+    }
+  else
+    {
+      if (ctx->mmap)
+	*ctx->mmap++ = ctx->cur;
+      ctx->prev = ctx->cur;
+      ctx->count++;
+    }
+
+  if (kernel_type == KERNEL_TYPE_OPENBSD && ctx->prev.addr < 0x100000
+      && ctx->prev.addr + ctx->prev.size > 0x100000)
+    {
+      ctx->cur.addr = 0x100000;
+      ctx->cur.size = ctx->prev.addr + ctx->prev.size - 0x100000;
+      ctx->cur.type = ctx->prev.type;
+      ctx->prev.size = 0x100000 - ctx->prev.addr;
+      if (ctx->mmap)
+	{
+	  ctx->mmap[-1] = ctx->prev;
+	  ctx->mmap[0] = ctx->cur;
+	  ctx->mmap++;
+	}
+      ctx->prev = ctx->cur;
+      ctx->count++;
+    }
+
+  return 0;
+}
+
 static void
 generate_e820_mmap (grub_size_t *len, grub_size_t *cnt, void *buf)
 {
-  int count = 0;
-  struct grub_e820_mmap *mmap = buf;
-  struct grub_e820_mmap prev, cur;
+  struct generate_e820_mmap_ctx ctx = {
+    .count = 0,
+    .mmap = buf
+  };
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
-				  grub_memory_type_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
-			     grub_memory_type_t type)
-    {
-      cur.addr = addr;
-      cur.size = size;
-      switch (type)
-	{
-	case GRUB_MEMORY_AVAILABLE:
-	  cur.type = GRUB_E820_RAM;
-	  break;
-
-	case GRUB_MEMORY_ACPI:
-	  cur.type = GRUB_E820_ACPI;
-	  break;
-
-	case GRUB_MEMORY_NVS:
-	  cur.type = GRUB_E820_NVS;
-	  break;
-
-	default:
-	case GRUB_MEMORY_CODE:
-	case GRUB_MEMORY_RESERVED:
-	  cur.type = GRUB_E820_RESERVED;
-	  break;
-	}
-
-      /* Merge regions if possible. */
-      if (count && cur.type == prev.type && cur.addr == prev.addr + prev.size)
-	{
-	  prev.size += cur.size;
-	  if (mmap)
-	    mmap[-1] = prev;
-	}
-      else
-	{
-	  if (mmap)
-	    *mmap++ = cur;
-	  prev = cur;
-	  count++;
-	}
-
-      if (kernel_type == KERNEL_TYPE_OPENBSD && prev.addr < 0x100000
-	  && prev.addr + prev.size > 0x100000)
-	{
-	  cur.addr = 0x100000;
-	  cur.size = prev.addr + prev.size - 0x100000;
-	  cur.type = prev.type;
-	  prev.size = 0x100000 - prev.addr;
-	  if (mmap)
-	    {
-	      mmap[-1] = prev;
-	      mmap[0] = cur;
-	      mmap++;
-	    }
-	  prev = cur;
-	  count++;
-	}
-
-      return 0;
-    }
-
-  grub_mmap_iterate (hook);
+  grub_mmap_iterate (generate_e820_mmap_iter, &ctx);
 
   if (len)
-    *len = count * sizeof (struct grub_e820_mmap);
-  *cnt = count;
+    *len = ctx.count * sizeof (struct grub_e820_mmap);
+  *cnt = ctx.count;
 
   return;
 }

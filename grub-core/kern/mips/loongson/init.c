@@ -40,12 +40,12 @@
 #include <grub/at_keyboard.h>
 
 grub_err_t
-grub_machine_mmap_iterate (grub_memory_hook_t hook)
+grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 {
   hook (GRUB_ARCH_LOWMEMPSTART, grub_arch_memsize << 20,
-	GRUB_MEMORY_AVAILABLE);
+	GRUB_MEMORY_AVAILABLE, hook_data);
   hook (GRUB_ARCH_HIGHMEMPSTART, grub_arch_highmemsize << 20,
-	GRUB_MEMORY_AVAILABLE);
+	GRUB_MEMORY_AVAILABLE, hook_data);
   return GRUB_ERR_NONE;
 }
 

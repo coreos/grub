@@ -150,23 +150,25 @@ find_efi_mmap_size (void)
 
 #endif
 
+/* Helper for find_mmap_size.  */
+static int
+count_hook (grub_uint64_t addr __attribute__ ((unused)),
+	    grub_uint64_t size __attribute__ ((unused)),
+	    grub_memory_type_t type __attribute__ ((unused)), void *data)
+{
+  grub_size_t *count = data;
+
+  (*count)++;
+  return 0;
+}
+
 /* Find the optimal number of pages for the memory map. */
 static grub_size_t
 find_mmap_size (void)
 {
   grub_size_t count = 0, mmap_size;
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
-				  grub_memory_type_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
-			     grub_uint64_t size __attribute__ ((unused)),
-			     grub_memory_type_t type __attribute__ ((unused)))
-    {
-      count++;
-      return 0;
-    }
-
-  grub_mmap_iterate (hook);
+  grub_mmap_iterate (count_hook, &count);
 
   mmap_size = count * sizeof (struct grub_e820_mmap);
 
@@ -372,17 +374,96 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   return GRUB_ERR_NONE;
 }
 
+/* Context for grub_linux_boot.  */
+struct grub_linux_boot_ctx
+{
+  grub_addr_t real_mode_target;
+  grub_size_t real_size;
+  struct linux_kernel_params *params;
+  int e820_num;
+};
+
+/* Helper for grub_linux_boot.  */
+static int
+grub_linux_boot_mmap_find (grub_uint64_t addr, grub_uint64_t size,
+			   grub_memory_type_t type, void *data)
+{
+  struct grub_linux_boot_ctx *ctx = data;
+
+  /* We must put real mode code in the traditional space.  */
+  if (type != GRUB_MEMORY_AVAILABLE || addr > 0x90000)
+    return 0;
+
+  if (addr + size < 0x10000)
+    return 0;
+
+  if (addr < 0x10000)
+    {
+      size += addr - 0x10000;
+      addr = 0x10000;
+    }
+
+  if (addr + size > 0x90000)
+    size = 0x90000 - addr;
+
+  if (ctx->real_size + efi_mmap_size > size)
+    return 0;
+
+  grub_dprintf ("linux", "addr = %lx, size = %x, need_size = %x\n",
+		(unsigned long) addr,
+		(unsigned) size,
+		(unsigned) (ctx->real_size + efi_mmap_size));
+  ctx->real_mode_target = ((addr + size) - (ctx->real_size + efi_mmap_size));
+  return 1;
+}
+
+static int
+grub_linux_boot_mmap_fill (grub_uint64_t addr, grub_uint64_t size,
+			   grub_memory_type_t type, void *data)
+{
+  struct grub_linux_boot_ctx *ctx = data;
+
+  grub_uint32_t e820_type;
+  switch (type)
+    {
+    case GRUB_MEMORY_AVAILABLE:
+      e820_type = GRUB_E820_RAM;
+      break;
+
+    case GRUB_MEMORY_ACPI:
+      e820_type = GRUB_E820_ACPI;
+      break;
+
+    case GRUB_MEMORY_NVS:
+      e820_type = GRUB_E820_NVS;
+      break;
+
+    case GRUB_MEMORY_BADRAM:
+      e820_type = GRUB_E820_BADRAM;
+      break;
+
+    default:
+      e820_type = GRUB_E820_RESERVED;
+    }
+  if (grub_e820_add_region (ctx->params->e820_map, &ctx->e820_num,
+			    addr, size, e820_type))
+    return 1;
+
+  return 0;
+}
+
 static grub_err_t
 grub_linux_boot (void)
 {
-  int e820_num;
   grub_err_t err = 0;
   const char *modevar;
   char *tmp;
   struct grub_relocator32_state state;
   void *real_mode_mem;
-  grub_addr_t real_mode_target = 0;
-  grub_size_t real_size, mmap_size;
+  struct grub_linux_boot_ctx ctx = {
+    .real_mode_target = 0
+  };
+  grub_size_t mmap_size;
   grub_size_t cl_offset;
 
 #ifdef GRUB_MACHINE_IEEE1275
@@ -484,7 +565,7 @@ grub_linux_boot (void)
   if (cl_offset < ((grub_size_t) linux_params.setup_sects << GRUB_DISK_SECTOR_BITS))
     cl_offset = ALIGN_UP ((grub_size_t) (linux_params.setup_sects
 					 << GRUB_DISK_SECTOR_BITS), 4096);
-  real_size = ALIGN_UP (cl_offset + maximal_cmdline_size, 4096);
+  ctx.real_size = ALIGN_UP (cl_offset + maximal_cmdline_size, 4096);
 
 #ifdef GRUB_MACHINE_EFI
   efi_mmap_size = find_efi_mmap_size ();
@@ -493,118 +574,51 @@ grub_linux_boot (void)
 #endif
 
   grub_dprintf ("linux", "real_size = %x, mmap_size = %x\n",
-		(unsigned) real_size, (unsigned) mmap_size);
+		(unsigned) ctx.real_size, (unsigned) mmap_size);
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
-				  grub_memory_type_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size,
-			     grub_memory_type_t type)
-    {
-      /* We must put real mode code in the traditional space.  */
-      if (type != GRUB_MEMORY_AVAILABLE || addr > 0x90000)
-	return 0;
-
-      if (addr + size < 0x10000)
-	return 0;
-
-      if (addr < 0x10000)
-	{
-	  size += addr - 0x10000;
-	  addr = 0x10000;
-	}
-
-      if (addr + size > 0x90000)
-	size = 0x90000 - addr;
-
-      if (real_size + efi_mmap_size > size)
-	return 0;
-
-      grub_dprintf ("linux", "addr = %lx, size = %x, need_size = %x\n",
-		    (unsigned long) addr,
-		    (unsigned) size,
-		    (unsigned) (real_size + efi_mmap_size));
-      real_mode_target = ((addr + size) - (real_size + efi_mmap_size));
-      return 1;
-    }
 #ifdef GRUB_MACHINE_EFI
-  grub_efi_mmap_iterate (hook, 1);
-  if (! real_mode_target)
-    grub_efi_mmap_iterate (hook, 0);
+  grub_efi_mmap_iterate (grub_linux_boot_mmap_find, &ctx, 1);
+  if (! ctx.real_mode_target)
+    grub_efi_mmap_iterate (grub_linux_boot_mmap_find, &ctx, 0);
 #else
-  grub_mmap_iterate (hook);
+  grub_mmap_iterate (grub_linux_boot_mmap_find, &ctx);
 #endif
   grub_dprintf ("linux", "real_mode_target = %lx, real_size = %x, efi_mmap_size = %x\n",
-                (unsigned long) real_mode_target,
-		(unsigned) real_size,
+                (unsigned long) ctx.real_mode_target,
+		(unsigned) ctx.real_size,
 		(unsigned) efi_mmap_size);
 
-  if (! real_mode_target)
+  if (! ctx.real_mode_target)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate real mode pages");
 
   {
     grub_relocator_chunk_t ch;
     err = grub_relocator_alloc_chunk_addr (relocator, &ch,
-					   real_mode_target,
-					   (real_size + efi_mmap_size));
+					   ctx.real_mode_target,
+					   (ctx.real_size + efi_mmap_size));
     if (err)
      return err;
     real_mode_mem = get_virtual_current_address (ch);
   }
-  efi_mmap_buf = (grub_uint8_t *) real_mode_mem + real_size;
+  efi_mmap_buf = (grub_uint8_t *) real_mode_mem + ctx.real_size;
 
   grub_dprintf ("linux", "real_mode_mem = %lx\n",
                 (unsigned long) real_mode_mem);
 
-  struct linux_kernel_params *params;
+  ctx.params = real_mode_mem;
 
-  params = real_mode_mem;
-
-  *params = linux_params;
-  params->cmd_line_ptr = real_mode_target + cl_offset;
-  grub_memcpy ((char *) params + cl_offset, linux_cmdline,
+  *ctx.params = linux_params;
+  ctx.params->cmd_line_ptr = ctx.real_mode_target + cl_offset;
+  grub_memcpy ((char *) ctx.params + cl_offset, linux_cmdline,
 	       maximal_cmdline_size);
 
   grub_dprintf ("linux", "code32_start = %x\n",
-		(unsigned) params->code32_start);
+		(unsigned) ctx.params->code32_start);
 
-  auto int NESTED_FUNC_ATTR hook_fill (grub_uint64_t, grub_uint64_t,
-				  grub_memory_type_t);
-  int NESTED_FUNC_ATTR hook_fill (grub_uint64_t addr, grub_uint64_t size, 
-				  grub_memory_type_t type)
-    {
-      grub_uint32_t e820_type;
-      switch (type)
-        {
-        case GRUB_MEMORY_AVAILABLE:
-	  e820_type = GRUB_E820_RAM;
-	  break;
-
-        case GRUB_MEMORY_ACPI:
-	  e820_type = GRUB_E820_ACPI;
-	  break;
-
-        case GRUB_MEMORY_NVS:
-	  e820_type = GRUB_E820_NVS;
-	  break;
-
-        case GRUB_MEMORY_BADRAM:
-	  e820_type = GRUB_E820_BADRAM;
-	  break;
-
-        default:
-          e820_type = GRUB_E820_RESERVED;
-        }
-      if (grub_e820_add_region (params->e820_map, &e820_num,
-				addr, size, e820_type))
-	return 1;
-
-      return 0;
-    }
-
-  e820_num = 0;
-  if (grub_mmap_iterate (hook_fill))
+  ctx.e820_num = 0;
+  if (grub_mmap_iterate (grub_linux_boot_mmap_fill, &ctx))
     return grub_errno;
-  params->mmap_size = e820_num;
+  ctx.params->mmap_size = ctx.e820_num;
 
 #ifdef GRUB_MACHINE_EFI
   {
@@ -617,33 +631,33 @@ grub_linux_boot (void)
       return err;
     
     /* Note that no boot services are available from here.  */
-    efi_mmap_target = real_mode_target 
+    efi_mmap_target = ctx.real_mode_target 
       + ((grub_uint8_t *) efi_mmap_buf - (grub_uint8_t *) real_mode_mem);
     /* Pass EFI parameters.  */
-    if (grub_le_to_cpu16 (params->version) >= 0x0208)
+    if (grub_le_to_cpu16 (ctx.params->version) >= 0x0208)
       {
-	params->v0208.efi_mem_desc_size = efi_desc_size;
-	params->v0208.efi_mem_desc_version = efi_desc_version;
-	params->v0208.efi_mmap = efi_mmap_target;
-	params->v0208.efi_mmap_size = efi_mmap_size;
+	ctx.params->v0208.efi_mem_desc_size = efi_desc_size;
+	ctx.params->v0208.efi_mem_desc_version = efi_desc_version;
+	ctx.params->v0208.efi_mmap = efi_mmap_target;
+	ctx.params->v0208.efi_mmap_size = efi_mmap_size;
 
 #ifdef __x86_64__
-	params->v0208.efi_mmap_hi = (efi_mmap_target >> 32);
+	ctx.params->v0208.efi_mmap_hi = (efi_mmap_target >> 32);
 #endif
       }
-    else if (grub_le_to_cpu16 (params->version) >= 0x0206)
+    else if (grub_le_to_cpu16 (ctx.params->version) >= 0x0206)
       {
-	params->v0206.efi_mem_desc_size = efi_desc_size;
-	params->v0206.efi_mem_desc_version = efi_desc_version;
-	params->v0206.efi_mmap = efi_mmap_target;
-	params->v0206.efi_mmap_size = efi_mmap_size;
+	ctx.params->v0206.efi_mem_desc_size = efi_desc_size;
+	ctx.params->v0206.efi_mem_desc_version = efi_desc_version;
+	ctx.params->v0206.efi_mmap = efi_mmap_target;
+	ctx.params->v0206.efi_mmap_size = efi_mmap_size;
       }
-    else if (grub_le_to_cpu16 (params->version) >= 0x0204)
+    else if (grub_le_to_cpu16 (ctx.params->version) >= 0x0204)
       {
-	params->v0204.efi_mem_desc_size = efi_desc_size;
-	params->v0204.efi_mem_desc_version = efi_desc_version;
-	params->v0204.efi_mmap = efi_mmap_target;
-	params->v0204.efi_mmap_size = efi_mmap_size;
+	ctx.params->v0204.efi_mem_desc_size = efi_desc_size;
+	ctx.params->v0204.efi_mem_desc_version = efi_desc_version;
+	ctx.params->v0204.efi_mmap = efi_mmap_target;
+	ctx.params->v0204.efi_mmap_size = efi_mmap_size;
       }
   }
 #endif
@@ -651,9 +665,9 @@ grub_linux_boot (void)
   /* FIXME.  */
   /*  asm volatile ("lidt %0" : : "m" (idt_desc)); */
   state.ebp = state.edi = state.ebx = 0;
-  state.esi = real_mode_target;
-  state.esp = real_mode_target;
-  state.eip = params->code32_start;
+  state.esi = ctx.real_mode_target;
+  state.esp = ctx.real_mode_target;
+  state.eip = ctx.params->code32_start;
   return grub_relocator32_boot (relocator, state, 0);
 }
 

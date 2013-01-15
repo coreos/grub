@@ -57,6 +57,39 @@ grub_addr_t grub_modbase;
 grub_addr_t grub_modbase = ALIGN_UP((grub_addr_t) _end, GRUB_KERNEL_MACHINE_MOD_ALIGN);
 #endif
 
+/* Helper for grub_machine_init.  */
+static int
+heap_init (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
+	   void *data __attribute__ ((unused)))
+{
+#if GRUB_CPU_SIZEOF_VOID_P == 4
+  /* Restrict ourselves to 32-bit memory space.  */
+  if (addr > GRUB_ULONG_MAX)
+    return 0;
+  if (addr + size > GRUB_ULONG_MAX)
+    size = GRUB_ULONG_MAX - addr;
+#endif
+
+  if (type != GRUB_MEMORY_AVAILABLE)
+    return 0;
+
+  /* Avoid the lower memory.  */
+  if (addr < GRUB_MEMORY_MACHINE_LOWER_SIZE)
+    {
+      if (addr + size <= GRUB_MEMORY_MACHINE_LOWER_SIZE)
+	return 0;
+      else
+	{
+	  size -= GRUB_MEMORY_MACHINE_LOWER_SIZE - addr;
+	  addr = GRUB_MEMORY_MACHINE_LOWER_SIZE;
+	}
+    }
+
+  grub_mm_init_region ((void *) (grub_addr_t) addr, (grub_size_t) size);
+
+  return 0;
+}
+
 void
 grub_machine_init (void)
 {
@@ -68,43 +101,10 @@ grub_machine_init (void)
   /* Initialize the console as early as possible.  */
   grub_vga_text_init ();
 
-  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t, grub_uint64_t, 
-				       grub_memory_type_t);
-  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t size,
-				  grub_memory_type_t type)
-  {
-#if GRUB_CPU_SIZEOF_VOID_P == 4
-    /* Restrict ourselves to 32-bit memory space.  */
-    if (addr > GRUB_ULONG_MAX)
-      return 0;
-    if (addr + size > GRUB_ULONG_MAX)
-      size = GRUB_ULONG_MAX - addr;
-#endif
-
-    if (type != GRUB_MEMORY_AVAILABLE)
-      return 0;
-
-    /* Avoid the lower memory.  */
-    if (addr < GRUB_MEMORY_MACHINE_LOWER_SIZE)
-      {
-	if (addr + size <= GRUB_MEMORY_MACHINE_LOWER_SIZE)
-	  return 0;
-	else
-	  {
-	    size -= GRUB_MEMORY_MACHINE_LOWER_SIZE - addr;
-	    addr = GRUB_MEMORY_MACHINE_LOWER_SIZE;
-	  }
-      }
-
-    grub_mm_init_region ((void *) (grub_addr_t) addr, (grub_size_t) size);
-
-    return 0;
-  }
-
 #if defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
   grub_machine_mmap_init ();
 #endif
-  grub_machine_mmap_iterate (heap_init);
+  grub_machine_mmap_iterate (heap_init, NULL);
 
   grub_tsc_init ();
 }

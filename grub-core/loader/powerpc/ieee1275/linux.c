@@ -51,49 +51,51 @@ static char *linux_args;
 typedef void (*kernel_entry_t) (void *, unsigned long, int (void *),
 				unsigned long, unsigned long);
 
+/* Helper for grub_linux_claimmap_iterate.  */
+static int
+alloc_mem (grub_uint64_t addr, grub_uint64_t len, grub_memory_type_t type,
+	   void *data)
+{
+  grub_addr_t *found_addr = data;
+
+  grub_uint64_t end = addr + len;
+  addr = ALIGN_UP (addr, align);
+  target = ALIGN_UP (target, align);
+
+  /* Target above the memory chunk.  */
+  if (type != GRUB_MEMORY_AVAILABLE || target > end)
+    return 0;
+
+  /* Target inside the memory chunk.  */
+  if (target >= addr && target < end && size <= end - target)
+    {
+      if (grub_claimmap (target, size) == GRUB_ERR_NONE)
+	{
+	  *found_addr = target;
+	  return 1;
+	}
+      grub_print_error ();
+    }
+  /* Target below the memory chunk.  */
+  if (target < addr && addr + size <= end)
+    {
+      if (grub_claimmap (addr, size) == GRUB_ERR_NONE)
+	{
+	  *found_addr = addr;
+	  return 1;
+	}
+      grub_print_error ();
+    }
+  return 0;
+}
+
 static grub_addr_t
 grub_linux_claimmap_iterate (grub_addr_t target, grub_size_t size,
 			     grub_size_t align)
 {
   grub_addr_t found_addr = (grub_addr_t) -1;
 
-  auto int NESTED_FUNC_ATTR alloc_mem (grub_uint64_t addr, grub_uint64_t len,
-				       grub_memory_type_t type);
-  int NESTED_FUNC_ATTR alloc_mem (grub_uint64_t addr, grub_uint64_t len,
-				  grub_memory_type_t type)
-  {
-    grub_uint64_t end = addr + len;
-    addr = ALIGN_UP (addr, align);
-    target = ALIGN_UP (target, align);
-
-    /* Target above the memory chunk.  */
-    if (type != GRUB_MEMORY_AVAILABLE || target > end)
-      return 0;
-
-    /* Target inside the memory chunk.  */
-    if (target >= addr && target < end && size <= end - target)
-      {
-	if (grub_claimmap (target, size) == GRUB_ERR_NONE)
-	  {
-	    found_addr = target;
-	    return 1;
-	  }
-	grub_print_error ();
-      }
-    /* Target below the memory chunk.  */
-    if (target < addr && addr + size <= end)
-      {
-	if (grub_claimmap (addr, size) == GRUB_ERR_NONE)
-	  {
-	    found_addr = addr;
-	    return 1;
-	  }
-	grub_print_error ();
-      }
-    return 0;
-  }
-
-  grub_machine_mmap_iterate (alloc_mem);
+  grub_machine_mmap_iterate (alloc_mem, &found_addr);
 
   return found_addr;
 }

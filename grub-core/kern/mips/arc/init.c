@@ -91,7 +91,7 @@ grub_arc_iterate_devs (int (*hook) (const char *name,
 }
 
 grub_err_t
-grub_machine_mmap_iterate (grub_memory_hook_t hook)
+grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 {
   struct grub_arc_memory_descriptor *cur = NULL;
   while (1)
@@ -120,7 +120,7 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook)
 	  break;
 	}
       if (hook (((grub_uint64_t) cur->start_page) << 12,
-		((grub_uint64_t) cur->num_pages)  << 12, type))
+		((grub_uint64_t) cur->num_pages)  << 12, type, hook_data))
 	return GRUB_ERR_NONE;
     }
 }

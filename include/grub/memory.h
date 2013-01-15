@@ -36,21 +36,25 @@ typedef enum grub_memory_type
     GRUB_MEMORY_HOLE = 21
   } grub_memory_type_t;
 
-typedef int NESTED_FUNC_ATTR (*grub_memory_hook_t) (grub_uint64_t,
-						    grub_uint64_t,
-						    grub_memory_type_t);
+typedef int (*grub_memory_hook_t) (grub_uint64_t,
+				   grub_uint64_t,
+				   grub_memory_type_t,
+				   void *);
 
-grub_err_t grub_mmap_iterate (grub_memory_hook_t hook);
+grub_err_t grub_mmap_iterate (grub_memory_hook_t hook, void *hook_data);
 
 #ifdef GRUB_MACHINE_EFI
 grub_err_t
-grub_efi_mmap_iterate (grub_memory_hook_t hook, int avoid_efi_boot_services);
+grub_efi_mmap_iterate (grub_memory_hook_t hook, void *hook_data,
+		       int avoid_efi_boot_services);
 #endif
 
 #if !defined (GRUB_MACHINE_EMU) && !defined (GRUB_MACHINE_EFI)
-grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate) (grub_memory_hook_t hook);
+grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate) (grub_memory_hook_t hook,
+						   void *hook_data);
 #else
-grub_err_t grub_machine_mmap_iterate (grub_memory_hook_t hook);
+grub_err_t grub_machine_mmap_iterate (grub_memory_hook_t hook,
+				      void *hook_data);
 #endif
 
 int grub_mmap_register (grub_uint64_t start, grub_uint64_t size, int type);

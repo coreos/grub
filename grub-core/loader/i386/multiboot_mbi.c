@@ -224,48 +224,50 @@ grub_multiboot_get_mbi_size (void)
   return ret;
 }
 
+/* Helper for grub_fill_multiboot_mmap.  */
+static int
+grub_fill_multiboot_mmap_iter (grub_uint64_t addr, grub_uint64_t size,
+			       grub_memory_type_t type, void *data)
+{
+  struct multiboot_mmap_entry **mmap_entry = data;
+
+  (*mmap_entry)->addr = addr;
+  (*mmap_entry)->len = size;
+  switch (type)
+    {
+    case GRUB_MEMORY_AVAILABLE:
+      (*mmap_entry)->type = MULTIBOOT_MEMORY_AVAILABLE;
+      break;
+
+    case GRUB_MEMORY_ACPI:
+      (*mmap_entry)->type = MULTIBOOT_MEMORY_ACPI_RECLAIMABLE;
+      break;
+
+    case GRUB_MEMORY_NVS:
+      (*mmap_entry)->type = MULTIBOOT_MEMORY_NVS;
+      break;
+
+    case GRUB_MEMORY_BADRAM:
+      (*mmap_entry)->type = MULTIBOOT_MEMORY_BADRAM;
+      break;
+      
+    default:
+      (*mmap_entry)->type = MULTIBOOT_MEMORY_RESERVED;
+      break;
+    }
+  (*mmap_entry)->size = sizeof (struct multiboot_mmap_entry) - sizeof ((*mmap_entry)->size);
+  (*mmap_entry)++;
+
+  return 0;
+}
+
 /* Fill previously allocated Multiboot mmap.  */
 static void
 grub_fill_multiboot_mmap (struct multiboot_mmap_entry *first_entry)
 {
   struct multiboot_mmap_entry *mmap_entry = (struct multiboot_mmap_entry *) first_entry;
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t,
-				  grub_memory_type_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, 
-			     grub_memory_type_t type)
-    {
-      mmap_entry->addr = addr;
-      mmap_entry->len = size;
-      switch (type)
-	{
-	case GRUB_MEMORY_AVAILABLE:
- 	  mmap_entry->type = MULTIBOOT_MEMORY_AVAILABLE;
- 	  break;
-
-	case GRUB_MEMORY_ACPI:
- 	  mmap_entry->type = MULTIBOOT_MEMORY_ACPI_RECLAIMABLE;
- 	  break;
-
-	case GRUB_MEMORY_NVS:
- 	  mmap_entry->type = MULTIBOOT_MEMORY_NVS;
- 	  break;
-
-	case GRUB_MEMORY_BADRAM:
- 	  mmap_entry->type = MULTIBOOT_MEMORY_BADRAM;
- 	  break;
-	  
- 	default:
- 	  mmap_entry->type = MULTIBOOT_MEMORY_RESERVED;
- 	  break;
- 	}
-      mmap_entry->size = sizeof (struct multiboot_mmap_entry) - sizeof (mmap_entry->size);
-      mmap_entry++;
-
-      return 0;
-    }
-
-  grub_mmap_iterate (hook);
+  grub_mmap_iterate (grub_fill_multiboot_mmap_iter, &mmap_entry);
 }
 
 #if GRUB_MACHINE_HAS_VBE || GRUB_MACHINE_HAS_VGA_TEXT

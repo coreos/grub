@@ -63,6 +63,18 @@ static int console_required;
 static grub_dl_t my_mod;
 
 
+/* Helper for grub_get_multiboot_mmap_count.  */
+static int
+count_hook (grub_uint64_t addr __attribute__ ((unused)),
+	    grub_uint64_t size __attribute__ ((unused)),
+	    grub_memory_type_t type __attribute__ ((unused)), void *data)
+{
+  grub_size_t *count = data;
+
+  (*count)++;
+  return 0;
+}
+
 /* Return the length of the Multiboot mmap that will be needed to allocate
    our platform's map.  */
 grub_uint32_t
@@ -70,16 +82,7 @@ grub_get_multiboot_mmap_count (void)
 {
   grub_size_t count = 0;
 
-  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
-  int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
-			     grub_uint64_t size __attribute__ ((unused)),
-			     grub_memory_type_t type __attribute__ ((unused)))
-    {
-      count++;
-      return 0;
-    }
-
-  grub_mmap_iterate (hook);
+  grub_mmap_iterate (count_hook, &count);
 
   return count;
 }

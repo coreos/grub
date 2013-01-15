@@ -1,3 +1,113 @@
+2013-01-15  Colin Watson  <cjwatson@ubuntu.com>
+
+	Remove nested functions from memory map iterators.
+
+	* grub-core/efiemu/mm.c (grub_efiemu_mmap_iterate): Add hook_data
+	argument, passed to hook.
+	* grub-core/kern/i386/coreboot/mmap.c
+	(grub_linuxbios_table_iterate): Likewise.
+	(grub_machine_mmap_iterate: iterate_linuxbios_table): Make static
+	instead of nested.
+	(grub_machine_mmap_iterate): Add hook_data argument.
+	* grub-core/kern/i386/multiboot_mmap.c (grub_machine_mmap_iterate):
+	Add hook_data argument, passed to hook.
+	* grub-core/kern/i386/pc/mmap.c (grub_machine_mmap_iterate):
+	Likewise.
+	* grub-core/kern/i386/qemu/mmap.c (grub_machine_mmap_iterate):
+	Likewise.
+	* grub-core/kern/ieee1275/mmap.c (grub_machine_mmap_iterate):
+	Likewise.
+	* grub-core/kern/mips/arc/init.c (grub_machine_mmap_iterate):
+	Likewise.
+	* grub-core/kern/mips/loongson/init.c (grub_machine_mmap_iterate):
+	Likewise.
+	* grub-core/kern/mips/qemu_mips/init.c (grub_machine_mmap_iterate):
+	Likewise.
+	* grub-core/mmap/efi/mmap.c (grub_efi_mmap_iterate): Likewise.
+	(grub_machine_mmap_iterate): Likewise.
+	* grub-core/mmap/mmap.c (grub_mmap_iterate): Likewise.
+	* include/grub/efiemu/efiemu.h (grub_efiemu_mmap_iterate): Update
+	prototype.
+	* include/grub/memory.h (grub_memory_hook_t): Add data argument.
+	Remove NESTED_FUNC_ATTR from here and from all users.
+	(grub_mmap_iterate): Update prototype.
+	(grub_efi_mmap_iterate): Update prototype.  Update all callers to
+	pass appropriate hook data.
+	(grub_machine_mmap_iterate): Likewise.
+
+	* grub-core/commands/acpi.c (grub_acpi_create_ebda: find_hook): Make
+	static instead of nested.
+	* grub-core/commands/lsmmap.c (grub_cmd_lsmmap: hook): Likewise.
+	Rename to ...
+	(lsmmap_hook): ... this.
+	* grub-core/efiemu/mm.c (grub_efiemu_mmap_init: bounds_hook):
+	Likewise.
+	(grub_efiemu_mmap_fill: fill_hook): Likewise.
+	* grub-core/kern/i386/coreboot/init.c (grub_machine_init:
+	heap_init): Likewise.
+	* grub-core/kern/i386/pc/init.c (grub_machine_init: hook): Likewise.
+	Rename to ...
+	(mmap_iterate_hook): ... this.
+	* grub-core/kern/ieee1275/init.c (grub_claim_heap: heap_init):
+	Likewise.
+	* grub-core/lib/ieee1275/relocator.c
+	(grub_relocator_firmware_get_max_events: count): Likewise.
+	(grub_relocator_firmware_fill_events: fill): Likewise.  Rename
+	to ...
+	(grub_relocator_firmware_fill_events_iter): ... this.
+	* grub-core/lib/relocator.c (grub_relocator_alloc_chunk_align:
+	hook): Likewise.  Rename to ...
+	(grub_relocator_alloc_chunk_align_iter): ... this.
+	* grub-core/loader/i386/bsd.c (generate_e820_mmap: hook): Likewise.
+	Rename to ...
+	(generate_e820_mmap_iter): ... this.
+	* grub-core/loader/i386/linux.c (find_mmap_size: hook): Likewise.
+	Rename to ...
+	(count_hook): ... this.
+	(grub_linux_boot: hook): Likewise.  Rename to ...
+	(grub_linux_boot_mmap_find): ... this.
+	(grub_linux_boot: hook_fill): Likewise.  Rename to ...
+	(grub_linux_boot_mmap_fill): ... this.
+	* grub-core/loader/i386/multiboot_mbi.c (grub_fill_multiboot_mmap:
+	hook): Likewise.  Rename to ...
+	(grub_fill_multiboot_mmap_iter): ... this.
+	* grub-core/loader/multiboot.c (grub_get_multiboot_mmap_count:
+	hook): Likewise.  Rename to ...
+	(count_hook): ... this.
+	* grub-core/loader/multiboot_mbi2.c (grub_fill_multiboot_mmap:
+	hook): Likewise.  Rename to ...
+	(grub_fill_multiboot_mmap_iter): ... this.
+	* grub-core/loader/powerpc/ieee1275/linux.c
+	(grub_linux_claimmap_iterate: alloc_mem): Likewise.
+	* grub-core/loader/sparc64/ieee1275/linux.c (alloc_phys: choose):
+	Likewise.  Rename to ...
+	(alloc_phys_choose): ... this.
+	(determine_phys_base: get_physbase): Likewise.
+	* grub-core/mmap/i386/mmap.c (grub_mmap_malign_and_register:
+	find_hook): Likewise.
+	* grub-core/mmap/i386/pc/mmap.c (preboot: fill_hook): Likewise.
+	(malloc_hook: count_hook): Likewise.
+	* grub-core/mmap/i386/uppermem.c (grub_mmap_get_lower: hook):
+	Likewise.  Rename to ...
+	(lower_hook): ... this.
+	(grub_mmap_get_upper: hook): Likewise.  Rename to ...
+	(upper_hook): ... this.
+	(grub_mmap_get_post64: hook): Likewise.  Rename to ...
+	(post64_hook): ... this.
+	* grub-core/mmap/mips/uppermem.c (grub_mmap_get_lower: hook):
+	Likewise.  Rename to ...
+	(lower_hook): ... this.
+	(grub_mmap_get_upper: hook): Likewise.  Rename to ...
+	(upper_hook): ... this.
+	* grub-core/mmap/mmap.c (grub_mmap_iterate: count_hook): Likewise.
+	(grub_mmap_iterate: fill_hook): Likewise.
+	(fill_mask): Pass addr and mask within a single struct.
+	(grub_cmd_badram: hook): Make static instead of nested.  Rename
+	to ...
+	(badram_iter): ... this.
+	(grub_cmd_cutmem: hook): Likewise.  Rename to ...
+	(cutmem_iter): ... this.
+
 2013-01-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/hostdisk.c (read_device_map): Explicitly

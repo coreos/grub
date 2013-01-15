@@ -92,9 +92,9 @@ grub_halt (void)
 }
 
 grub_err_t 
-grub_machine_mmap_iterate (grub_memory_hook_t hook)
+grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 {
-  hook (0, grub_arch_memsize, GRUB_MEMORY_AVAILABLE);
+  hook (0, grub_arch_memsize, GRUB_MEMORY_AVAILABLE, hook_data);
   return GRUB_ERR_NONE;
 }
 
