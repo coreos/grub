@@ -134,32 +134,36 @@ grub_normal_free_menu (grub_menu_t menu)
   grub_env_unset_menu ();
 }
 
+/* Helper for read_config_file.  */
+static grub_err_t
+read_config_file_getline (char **line, int cont __attribute__ ((unused)),
+			  void *data)
+{
+  grub_file_t file = data;
+
+  while (1)
+    {
+      char *buf;
+
+      *line = buf = grub_file_getline (file);
+      if (! buf)
+	return grub_errno;
+
+      if (buf[0] == '#')
+	grub_free (*line);
+      else
+	break;
+    }
+
+  return GRUB_ERR_NONE;
+}
+
 static grub_menu_t
 read_config_file (const char *config)
 {
   grub_file_t file;
   const char *old_file, *old_dir;
   char *config_dir, *ptr = 0;
-
-  auto grub_err_t getline (char **line, int cont);
-  grub_err_t getline (char **line, int cont __attribute__ ((unused)))
-    {
-      while (1)
-	{
-	  char *buf;
-
-	  *line = buf = grub_file_getline (file);
-	  if (! buf)
-	    return grub_errno;
-
-	  if (buf[0] == '#')
-	    grub_free (*line);
-	  else
-	    break;
-	}
-
-      return GRUB_ERR_NONE;
-    }
 
   grub_menu_t newmenu;
 
@@ -199,10 +203,10 @@ read_config_file (const char *config)
       grub_print_error ();
       grub_errno = GRUB_ERR_NONE;
 
-      if ((getline (&line, 0)) || (! line))
+      if ((read_config_file_getline (&line, 0, file)) || (! line))
 	break;
 
-      grub_normal_parse_line (line, getline);
+      grub_normal_parse_line (line, read_config_file_getline, file);
       grub_free (line);
     }
 
@@ -427,7 +431,8 @@ grub_normal_read_line_real (char **line, int cont, int nested)
 }
 
 static grub_err_t
-grub_normal_read_line (char **line, int cont)
+grub_normal_read_line (char **line, int cont,
+		       void *data __attribute__ ((unused)))
 {
   return grub_normal_read_line_real (line, cont, 0);
 }
@@ -463,7 +468,7 @@ grub_cmdline_run (int nested)
       if (! line)
 	break;
 
-      grub_normal_parse_line (line, grub_normal_read_line);
+      grub_normal_parse_line (line, grub_normal_read_line, NULL);
       grub_free (line);
     }
 }

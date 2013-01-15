@@ -418,7 +418,7 @@ grub_normal_do_completion (char *buf, int *restore,
 
   *restore = 1;
 
-  if (grub_parser_split_cmdline (buf, 0, &argc, &argv))
+  if (grub_parser_split_cmdline (buf, 0, 0, &argc, &argv))
     return 0;
 
   if (argc == 0)

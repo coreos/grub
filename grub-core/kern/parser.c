@@ -107,7 +107,8 @@ check_varstate (grub_parser_state_t s)
 }
 
 grub_err_t
-grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
+grub_parser_split_cmdline (const char *cmdline,
+			   grub_reader_getline_t getline, void *getline_data,
 			   int *argc, char ***argv)
 {
   grub_parser_state_t state = GRUB_PARSER_STATE_TEXT;
@@ -149,7 +150,7 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
       if (!rd || !*rd)
 	{
 	  if (getline)
-	    getline (&rd, 1);
+	    getline (&rd, 1, getline_data);
 	  else
 	    break;
 	}
@@ -232,36 +233,39 @@ grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
   return 0;
 }
 
+/* Helper for grub_parser_execute.  */
+static grub_err_t
+grub_parser_execute_getline (char **line, int cont __attribute__ ((unused)),
+			     void *data)
+{
+  char **source = data;
+  char *p;
+
+  if (!*source)
+    {
+      *line = 0;
+      return 0;
+    }
+
+  p = grub_strchr (*source, '\n');
+
+  if (p)
+    *line = grub_strndup (*source, p - *source);
+  else
+    *line = grub_strdup (*source);
+  *source = p ? p + 1 : 0;
+  return 0;
+}
+
 grub_err_t
 grub_parser_execute (char *source)
 {
-  auto grub_err_t getline (char **line, int cont);
-  grub_err_t getline (char **line, int cont __attribute__ ((unused)))
-  {
-    char *p;
-
-    if (!source)
-      {
-	*line = 0;
-	return 0;
-      }
-
-    p = grub_strchr (source, '\n');
-
-    if (p)
-      *line = grub_strndup (source, p - source);
-    else
-      *line = grub_strdup (source);
-    source = p ? p + 1 : 0;
-    return 0;
-  }
-
   while (source)
     {
       char *line;
 
-      getline (&line, 0);
-      grub_rescue_parse_line (line, getline);
+      grub_parser_execute_getline (&line, 0, &source);
+      grub_rescue_parse_line (line, grub_parser_execute_getline, &source);
       grub_free (line);
     }
 

@@ -783,6 +783,31 @@ grub_script_function_call (grub_script_function_t func, int argc, char **args)
   return ret;
 }
 
+/* Helper for grub_script_execute_sourcecode.  */
+static grub_err_t
+grub_script_execute_sourcecode_getline (char **line,
+					int cont __attribute__ ((unused)),
+					void *data)
+{
+  const char **source = data;
+  const char *p;
+
+  if (! *source)
+    {
+      *line = 0;
+      return 0;
+    }
+
+  p = grub_strchr (*source, '\n');
+
+  if (p)
+    *line = grub_strndup (*source, p - *source);
+  else
+    *line = grub_strdup (*source);
+  *source = p ? p + 1 : 0;
+  return 0;
+}
+
 /* Execute a source script.  */
 grub_err_t
 grub_script_execute_sourcecode (const char *source, int argc, char **args)
@@ -791,27 +816,6 @@ grub_script_execute_sourcecode (const char *source, int argc, char **args)
   struct grub_script *parsed_script;
   struct grub_script_scope new_scope;
   struct grub_script_scope *old_scope;
-
-  auto grub_err_t getline (char **line, int cont);
-  grub_err_t getline (char **line, int cont __attribute__ ((unused)))
-  {
-    const char *p;
-
-    if (! source)
-      {
-	*line = 0;
-	return 0;
-      }
-
-    p = grub_strchr (source, '\n');
-
-    if (p)
-      *line = grub_strndup (source, p - source);
-    else
-      *line = grub_strdup (source);
-    source = p ? p + 1 : 0;
-    return 0;
-  }
 
   new_scope.argv.argc = argc;
   new_scope.argv.args = args;
@@ -824,8 +828,9 @@ grub_script_execute_sourcecode (const char *source, int argc, char **args)
     {
       char *line;
 
-      getline (&line, 0);
-      parsed_script = grub_script_parse (line, getline);
+      grub_script_execute_sourcecode_getline (&line, 0, &source);
+      parsed_script = grub_script_parse
+	(line, grub_script_execute_sourcecode_getline, &source);
       if (! parsed_script)
 	{
 	  ret = grub_errno;

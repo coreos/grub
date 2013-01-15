@@ -1,5 +1,51 @@
 2013-01-15  Colin Watson  <cjwatson@ubuntu.com>
 
+	Remove nested functions from script reading and parsing.
+
+	* grub-core/kern/parser.c (grub_parser_split_cmdline): Add
+	getline_data argument, passed to getline.
+	* grub-core/kern/rescue_parser.c (grub_rescue_parse_line): Add
+	getline_data argument, passed to grub_parser_split_cmdline.
+	* grub-core/script/lexer.c (grub_script_lexer_yywrap): Pass
+	lexerstate->getline_data to lexerstate->getline.
+	(grub_script_lexer_init): Add getline_data argument, saved in
+	lexerstate->getline_data.
+	* grub-core/script/main.c (grub_normal_parse_line): Add getline_data
+	argument, passed to grub_script_parse.
+	* grub-core/script/script.c (grub_script_parse): Add getline_data
+	argument, passed to grub_script_lexer_init.
+	* include/grub/parser.h (grub_parser_split_cmdline): Update
+	prototype.  Update all callers to pass appropriate getline data.
+	(struct grub_parser.parse_line): Likewise.
+	(grub_rescue_parse_line): Likewise.
+	* include/grub/reader.h (grub_reader_getline_t): Add void *
+	argument.
+	* include/grub/script_sh.h (struct grub_lexer_param): Add
+	getline_data member.
+	(grub_script_parse): Update prototype.  Update all callers to pass
+	appropriate getline data.
+	(grub_script_lexer_init): Likewise.
+	(grub_normal_parse_line): Likewise.
+
+	* grub-core/commands/legacycfg.c (legacy_file_getline): Add unused
+	data argument.
+	* grub-core/kern/parser.c (grub_parser_execute: getline): Make
+	static instead of nested.  Rename to ...
+	(grub_parser_execute_getline): ... this.
+	* grub-core/kern/rescue_reader.c (grub_rescue_read_line): Add unused
+	data argument.
+	* grub-core/normal/main.c (read_config_file: getline): Make static
+	instead of nested.  Rename to ...
+	(read_config_file_getline): ... this.
+	(grub_normal_read_line): Add unused data argument.
+	* grub-core/script/execute.c (grub_script_execute_sourcecode:
+	getline): Make static instead of nested.  Rename to ...
+	(grub_script_execute_sourcecode_getline): ... this.
+	* util/grub-script-check.c (main: get_config_line): Make static
+	instead of nested.
+
+2013-01-15  Colin Watson  <cjwatson@ubuntu.com>
+
 	Remove nested functions from memory map iterators.
 
 	* grub-core/efiemu/mm.c (grub_efiemu_mmap_iterate): Add hook_data
