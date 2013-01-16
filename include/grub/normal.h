@@ -77,6 +77,14 @@ grub_print_ucs4 (const grub_uint32_t * str,
 		 const grub_uint32_t * last_position,
 		 int margin_left, int margin_right,
 		 struct grub_term_output *term);
+
+void
+grub_print_ucs4_menu (const grub_uint32_t * str,
+		      const grub_uint32_t * last_position,
+		      int margin_left, int margin_right,
+		      struct grub_term_output *term,
+		      int skip_lines, int max_lines, grub_uint32_t contchar,
+		      struct grub_term_pos *pos);
 int
 grub_ucs4_count_lines (const grub_uint32_t * str,
 		       const grub_uint32_t * last_position,

@@ -513,7 +513,10 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 		struct grub_unicode_glyph *visual,
 		grub_size_t visual_len, unsigned *levels,
 		grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
-		grub_size_t maxwidth, grub_size_t startwidth)
+		grub_size_t maxwidth, grub_size_t startwidth,
+		grub_uint32_t contchar,
+		struct grub_term_pos *pos, int primitive_wrap,
+		grub_size_t log_end)
 {
   struct grub_unicode_glyph *outptr = visual_out;
   unsigned line_start = 0;
@@ -521,17 +524,30 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
   unsigned k;
   grub_ssize_t last_space = -1;
   grub_ssize_t last_space_width = 0;
+  int lines = 0;
 
   auto void revert (unsigned start, unsigned end);
   void revert (unsigned start, unsigned end)
   {
     struct grub_unicode_glyph t;
     unsigned i, tl;
+    int a, b;
+    if (pos)
+      {
+	a = pos[visual[start].orig_pos].x;
+	b = pos[visual[end].orig_pos].x;
+      }
     for (i = 0; i < (end - start) / 2 + 1; i++)
       {
 	t = visual[start + i];
 	visual[start + i] = visual[end - i];
 	visual[end - i] = t;
+
+	if (pos)
+	  {
+	    pos[visual[start + i].orig_pos].x = a + b - pos[visual[start + i].orig_pos].x;
+	    pos[visual[end - i].orig_pos].x = a + b - pos[visual[end - i].orig_pos].x;
+	  }
 	tl = levels[start + i];
 	levels[start + i] = levels[end - i];
 	levels[end - i] = tl;
@@ -545,11 +561,27 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
     {
       grub_ssize_t last_width = 0;
 
+ 
+      if (pos && k != visual_len)
+	{
+	  pos[visual[k].orig_pos].x = line_width;
+	  pos[visual[k].orig_pos].y = lines;
+	  pos[visual[k].orig_pos].valid = 1;
+	}
+
+      if (k == visual_len && pos)
+	{
+	  pos[log_end].x = line_width;
+	  pos[log_end].y = lines;
+	  pos[log_end].valid = 1;
+	}
+
       if (getcharwidth && k != visual_len)
 	line_width += last_width = getcharwidth (&visual[k]);
 
       if (k != visual_len && (visual[k].base == ' '
-			      || visual[k].base == '\t'))
+			      || visual[k].base == '\t')
+	  && !primitive_wrap)
 	{
 	  last_space = k;
 	  last_space_width = line_width;
@@ -561,9 +593,12 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  unsigned min_odd_level = 0xffffffff;
 	  unsigned max_level = 0;
 
+	  lines++;
+
 	  if (k != visual_len && last_space > (signed) line_start)
 	    k = last_space;
-	  else if (k != visual_len && line_start == 0 && startwidth != 0)
+	  else if (k != visual_len && line_start == 0 && startwidth != 0
+		   && !primitive_wrap)
 	    {
 	      k = 0;
 	      last_space_width = startwidth;
@@ -685,6 +720,12 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  outptr += k - line_start;
 	  if (k != visual_len)
 	    {
+	      if (contchar)
+		{
+		  grub_memset (outptr, 0, sizeof (visual[0]));
+		  outptr->base = contchar;
+		  outptr++;
+		}
 	      grub_memset (outptr, 0, sizeof (visual[0]));
 	      outptr->base = '\n';
 	      outptr++;
@@ -695,6 +736,11 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 
 	  line_start = k;
 	  line_width -= last_space_width;
+	  if (pos && k != visual_len)
+	    {
+	      pos[visual[k].orig_pos].x = 0;
+	      pos[visual[k].orig_pos].y = lines;
+	    }
 	}
     }
 
@@ -707,7 +753,11 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 				  grub_size_t logical_len,
 				  struct grub_unicode_glyph *visual_out,
 				  grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
-				  grub_size_t maxwidth, grub_size_t startwidth)
+				  grub_size_t maxwidth, grub_size_t startwidth,
+				  grub_uint32_t contchar,
+				  struct grub_term_pos *pos,
+				  int primitive_wrap,
+				  grub_size_t log_end)
 {
   enum grub_bidi_type type = GRUB_BIDI_TYPE_L;
   enum override_status {OVERRIDE_NEUTRAL = 0, OVERRIDE_R, OVERRIDE_L};
@@ -832,7 +882,7 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 
 	p = grub_unicode_aglomerate_comb (lptr, logical + logical_len - lptr, 
 					  &visual[visual_len]);
-	
+	visual[visual_len].orig_pos = lptr - logical;
 	type = get_bidi_type (visual[visual_len].base);
 	switch (type)
 	  {
@@ -1066,7 +1116,8 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
   {
     grub_ssize_t ret;
     ret = bidi_line_wrap (visual_out, visual, visual_len, levels, 
-			  getcharwidth, maxwidth, startwidth);
+			  getcharwidth, maxwidth, startwidth, contchar,
+			  pos, primitive_wrap, log_end);
     grub_free (levels);
     grub_free (visual);
     return ret;
@@ -1078,11 +1129,12 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 			     grub_size_t logical_len,
 			     struct grub_unicode_glyph **visual_out,
 			     grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
-			     grub_size_t max_length, grub_size_t startwidth)
+			     grub_size_t max_length, grub_size_t startwidth,
+			     grub_uint32_t contchar, struct grub_term_pos *pos, int primitive_wrap)
 {
   const grub_uint32_t *line_start = logical, *ptr;
   struct grub_unicode_glyph *visual_ptr;
-  *visual_out = visual_ptr = grub_malloc (2 * sizeof (visual_ptr[0])
+  *visual_out = visual_ptr = grub_malloc (3 * sizeof (visual_ptr[0])
 					  * logical_len);
   if (!visual_ptr)
     return -1;
@@ -1096,7 +1148,11 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 						  visual_ptr,
 						  getcharwidth,
 						  max_length,
-						  startwidth);
+						  startwidth,
+						  contchar,
+						  pos,
+						  primitive_wrap,
+						  logical_len);
 	  startwidth = 0;
 
 	  if (ret < 0)
@@ -1186,5 +1242,29 @@ grub_unicode_get_comb_start (const grub_uint32_t *str,
       return ptr;
     }
   return str;
+}
+
+const grub_uint32_t *
+grub_unicode_get_comb_end (const grub_uint32_t *end, 
+			   const grub_uint32_t *cur)
+{
+  const grub_uint32_t *ptr;
+  for (ptr = cur; ptr < end; ptr++)
+    {
+      if (*ptr >= GRUB_UNICODE_VARIATION_SELECTOR_1
+	  && *ptr <= GRUB_UNICODE_VARIATION_SELECTOR_16)
+	continue;
+
+      if (*ptr >= GRUB_UNICODE_VARIATION_SELECTOR_17
+	  && *ptr <= GRUB_UNICODE_VARIATION_SELECTOR_256)
+	continue;
+	
+      enum grub_comb_type comb_type;
+      comb_type = grub_unicode_get_comb_type (*ptr);
+      if (comb_type)
+	continue;
+      return ptr;
+    }
+  return end;
 }
 

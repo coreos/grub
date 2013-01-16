@@ -52,7 +52,7 @@ grub_font_draw_string (const char *str, grub_font_t font,
     return grub_errno;
 
   visual_len = grub_bidi_logical_to_visual (logical, logical_len, &visual,
-					    0, 0, 0);
+					    0, 0, 0, 0, 0, 0);
   grub_free (logical);
   if (visual_len < 0)
     return grub_errno;

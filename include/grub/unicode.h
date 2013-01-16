@@ -139,6 +139,7 @@ struct grub_unicode_glyph
   grub_uint16_t variant:9;
   grub_uint8_t attributes:5;
   grub_size_t ncomb;
+  grub_size_t orig_pos;
   struct grub_unicode_combining {
     grub_uint32_t code;
     enum grub_comb_type type;
@@ -186,6 +187,13 @@ enum
     GRUB_UNICODE_THAANA_SUKUN              = 0x07b0,
     GRUB_UNICODE_ZWNJ                      = 0x200c,
     GRUB_UNICODE_ZWJ                       = 0x200d,
+    GRUB_UNICODE_LRM                       = 0x200e,
+    GRUB_UNICODE_RLM                       = 0x200f,
+    GRUB_UNICODE_LRE                       = 0x202a,
+    GRUB_UNICODE_RLE                       = 0x202b,
+    GRUB_UNICODE_PDF                       = 0x202c,
+    GRUB_UNICODE_LRO                       = 0x202d,
+    GRUB_UNICODE_RLO                       = 0x202e,
     GRUB_UNICODE_LEFTARROW                 = 0x2190,
     GRUB_UNICODE_UPARROW                   = 0x2191,
     GRUB_UNICODE_RIGHTARROW                = 0x2192,
@@ -222,13 +230,21 @@ extern struct grub_unicode_bidi_pair grub_unicode_bidi_pairs[];
 /*  Unicode mandates an arbitrary limit.  */
 #define GRUB_BIDI_MAX_EXPLICIT_LEVEL 61
 
+struct grub_term_pos
+{
+  unsigned valid:1;
+  unsigned x:15, y:16;
+};
+
 grub_ssize_t
 grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 			     grub_size_t logical_len,
 			     struct grub_unicode_glyph **visual_out,
 			     grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
 			     grub_size_t max_width,
-			     grub_size_t start_width);
+			     grub_size_t start_width, grub_uint32_t codechar,
+			     struct grub_term_pos *pos,
+			     int primitive_wrap);
 
 enum grub_comb_type
 grub_unicode_get_comb_type (grub_uint32_t c);
@@ -274,5 +290,9 @@ grub_uint32_t
 grub_unicode_mirror_code (grub_uint32_t in);
 grub_uint32_t
 grub_unicode_shape_code (grub_uint32_t in, grub_uint8_t attr);
+
+const grub_uint32_t *
+grub_unicode_get_comb_end (const grub_uint32_t *end, 
+			   const grub_uint32_t *cur);
 
 #endif

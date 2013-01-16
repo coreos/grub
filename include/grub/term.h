@@ -104,7 +104,7 @@ grub_term_color_state;
 #define GRUB_TERM_CODE_TYPE_CP437	                (1 << GRUB_TERM_CODE_TYPE_SHIFT)
 /* UTF-8 stream in logical order. Usually used for terminals
    which just forward the stream to another computer.  */
-#define GRUB_TERM_CODE_TYPE_UTF8_LOGICAL	(2 << GRUB_TERM_CODE_TYPE_SHIFT)
+#define GRUB_TERM_CODE_TYPE_UTF8_LOGICAL       	(2 << GRUB_TERM_CODE_TYPE_SHIFT)
 /* UTF-8 in visual order. Like UTF-8 logical but for buggy endpoints.  */
 #define GRUB_TERM_CODE_TYPE_UTF8_VISUAL	        (3 << GRUB_TERM_CODE_TYPE_SHIFT)
 /* Glyph description in visual order.  */
@@ -344,7 +344,7 @@ static inline unsigned grub_term_height (struct grub_term_output *term)
 static inline unsigned
 grub_term_border_width (struct grub_term_output *term)
 {
-  return grub_term_width (term) - GRUB_TERM_MARGIN * 3 - GRUB_TERM_SCROLL_WIDTH;
+  return grub_term_width (term) - GRUB_TERM_MARGIN * 2;
 }
 
 /* The max column number of an entry. The last "-1" is for a
@@ -352,7 +352,7 @@ grub_term_border_width (struct grub_term_output *term)
 static inline int
 grub_term_entry_width (struct grub_term_output *term)
 {
-  return grub_term_border_width (term) - 2 - GRUB_TERM_MARGIN * 2 - 1;
+  return grub_term_border_width (term) - GRUB_TERM_MARGIN * 2 - 1;
 }
 
 static inline grub_uint16_t
