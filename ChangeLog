@@ -1,3 +1,8 @@
+2013-01-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/script/lexer.c (grub_script_lexer_init): Rename getline
+	argument to prevent name collision.
+
 2013-01-15  Colin Watson  <cjwatson@ubuntu.com>
 
 	Remove nested functions from script reading and parsing.
