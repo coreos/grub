@@ -828,6 +828,12 @@ module = {
 };
 
 module = {
+  name = pcidump;
+  common = commands/pcidump.c;
+  enable = pci;
+};
+
+module = {
   name = sleep;
   common = commands/sleep.c;
 };

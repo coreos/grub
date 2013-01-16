@@ -331,7 +331,7 @@ GRUB_MOD_INIT(setpci)
 {
   cmd = grub_register_extcmd ("setpci", grub_cmd_setpci, 0,
 			      N_("[-s POSITION] [-d DEVICE] [-v VAR] "
-				 "[REGISTER][=VALUE[:MASK]]"),
+				 "REGISTER[=VALUE[:MASK]]"),
 			      N_("Manipulate PCI devices."), options);
 }
 
