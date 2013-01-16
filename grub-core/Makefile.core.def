@@ -779,6 +779,18 @@ module = {
 };
 
 module = {
+  name = spkmodem;
+  x86 = term/spkmodem.c;
+  enable = x86;
+};
+
+module = {
+  name = morse;
+  x86 = term/morse.c;
+  enable = x86;
+};
+
+module = {
   name = probe;
   common = commands/probe.c;
 };

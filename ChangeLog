@@ -1,5 +1,9 @@
 2013-01-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	New terminal outputs using serial: morse and spkmodem.
+
+2013-01-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Improve bidi handling in entry editor.
 
 2013-01-16  Vladimir Serbinenko  <phcoder@gmail.com>

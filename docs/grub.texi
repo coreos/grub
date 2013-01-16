@@ -1229,9 +1229,9 @@ Select the terminal input device.  You may select multiple devices here,
 separated by spaces.
 
 Valid terminal input names depend on the platform, but may include
-@samp{console} (PC BIOS and EFI consoles), @samp{serial} (serial terminal),
-@samp{ofconsole} (Open Firmware console), @samp{at_keyboard} (PC AT
-keyboard, mainly useful with Coreboot), or @samp{usb_keyboard} (USB keyboard
+@samp{console} (native platform console), @samp{serial} (serial terminal),
+@samp{serial_<port>} (serial terminal with explicit port selection),
+@samp{at_keyboard} (PC AT keyboard), or @samp{usb_keyboard} (USB keyboard
 using the HID Boot Protocol, for cases where the firmware does not handle
 this).
 
@@ -1242,9 +1242,21 @@ Select the terminal output device.  You may select multiple devices here,
 separated by spaces.
 
 Valid terminal output names depend on the platform, but may include
-@samp{console} (PC BIOS and EFI consoles), @samp{serial} (serial terminal),
-@samp{gfxterm} (graphics-mode output), @samp{ofconsole} (Open Firmware
-console), or @samp{vga_text} (VGA text output, mainly useful with Coreboot).
+@samp{console} (native platform console), @samp{serial} (serial terminal),
+@samp{serial_<port>} (serial terminal with explicit port selection),
+@samp{gfxterm} (graphics-mode output), @samp{vga_text} (VGA text output),
+@samp{mda_text} (MDA text output), @samp{morse} (Morse-coding using system
+beeper) or @samp{spkmodem} (simple data protocol using system speaker).
+
+@samp{spkmodem} is useful when no serial port is available. Connect the output
+of sending system (where GRUB is running) to line-in of receiving system
+(usually developper machine).
+On receiving system compile @samp{spkmodem-recv} from
+@samp{util/spkmodem-recv.c} and run:
+
+@example
+parecord --channels=1 --rate=48000 --format=s16le | ./spkmodem-recv
+@end example
 
 The default is to use the platform's native terminal output.
 
