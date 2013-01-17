@@ -5,19 +5,13 @@
 /* Compilation:  gcc -o spkmodem-recv spkmodem-recv  */
 /* Usage: parecord --channels=1 --rate=48000 --format=s16le | ./spkmodem-recv */
 
-#define RATE 48000
-#define SAMPLES_PER_TRAME 480
-#define AMPLITUDE_THRESHOLD 100000
-#define FREQ_SEP_MIN 15
-#define FREQ_SEP_NOM 20
-#define FREQ_SEP_MAX 25
-
-#define FREQ_DATA_MIN 10
-#define FREQ_DATA_THRESHOLD 60
-#define FREQ_DATA_MAX 120
-#define AMPLITUDE_SAMPLES 2 * SAMPLES_PER_TRAME
-
-#define THRESHOLD 1000
+#define SAMPLES_PER_TRAME 240
+#define FREQ_SEP_MIN 6
+#define FREQ_SEP_MAX 15
+#define FREQ_DATA_MIN 15
+#define FREQ_DATA_THRESHOLD 25
+#define FREQ_DATA_MAX 60
+#define THRESHOLD 500
 
 #define DEBUG 0
 
@@ -67,14 +61,14 @@ main ()
 	  c = 0;
 	  lp = 0;
 	}
-      if (f2 > 12 && f2 < 25
-	  && f1 > 5 && f1 < 120)
+      if (f2 > FREQ_SEP_MIN && f2 < FREQ_SEP_MAX
+	  && f1 > FREQ_DATA_MIN && f1 < FREQ_DATA_MAX)
 	{
 #if DEBUG
 	  printf ("%d %d %d @%d\n", f1, f2, FREQ_DATA_THRESHOLD,
 		  ftell (stdin) - sizeof (trame));
 #endif
-	  if (f1 < 60)
+	  if (f1 < FREQ_DATA_THRESHOLD)
 	    c |= (1 << bitn);
 	  bitn--;
 	  if (bitn < 0)

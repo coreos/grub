@@ -129,7 +129,7 @@ grub_setpci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
 
   if (!write_mask)
     {
-      grub_printf (_("Register %x of %d:%d.%d is %x\n"), regaddr,
+      grub_printf (_("Register %x of %x:%02x.%x is %x\n"), regaddr,
 		   grub_pci_get_bus (dev),
 		   grub_pci_get_device (dev),
 		   grub_pci_get_function (dev),

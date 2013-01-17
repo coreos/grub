@@ -31,29 +31,65 @@ GRUB_MOD_LICENSE ("GPLv3+");
 extern struct grub_terminfo_output_state grub_spkmodem_terminfo_output;
 
 static void
+make_tone (grub_uint16_t freq_count, unsigned int duration)
+{
+  /* Program timer 2.  */
+  grub_outb (GRUB_PIT_CTRL_SELECT_2
+	     | GRUB_PIT_CTRL_READLOAD_WORD
+	     | GRUB_PIT_CTRL_SQUAREWAVE_GEN
+	     | GRUB_PIT_CTRL_COUNT_BINARY, GRUB_PIT_CTRL);
+  grub_outb (freq_count & 0xff, GRUB_PIT_COUNTER_2);		/* LSB */
+  grub_outb ((freq_count >> 8) & 0xff, GRUB_PIT_COUNTER_2);	/* MSB */
+
+  /* Start speaker.  */
+  grub_outb (grub_inb (GRUB_PIT_SPEAKER_PORT)
+	     | GRUB_PIT_SPK_TMR2 | GRUB_PIT_SPK_DATA,
+	     GRUB_PIT_SPEAKER_PORT);
+
+  for (; duration; duration--)
+    {
+      unsigned short counter, previous_counter = 0xffff;
+      while (1)
+	{
+	  counter = grub_inb (GRUB_PIT_COUNTER_2);
+	  counter |= ((grub_uint16_t) grub_inb (GRUB_PIT_COUNTER_2)) << 8;
+	  if (counter > previous_counter)
+	    {
+	      previous_counter = counter;
+	      break;
+	    }
+	  previous_counter = counter;
+	}
+    }
+}
+
+static int inited;
+
+static void
 put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 {
   int i;
 
+  if (!inited)
+    {
+      make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 50, 20);
+      inited = 1;
+    }
+
   for (i = 7; i >= 0; i--)
     {
       if ((c >> i) & 1)
-	grub_speaker_beep_on (2000);
+	make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 2000, 20);
       else
-	grub_speaker_beep_on (4000);
-      grub_millisleep (10);
-      grub_speaker_beep_on (1000);
-      grub_millisleep (10);
+	make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 4000, 40);
+      make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 1000, 10);
     }
-  grub_speaker_beep_on (50);
+  make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 50, 0);
 }
 
 static grub_err_t
 grub_spkmodem_init_output (struct grub_term_output *term)
 {
-  grub_speaker_beep_on (50);
-  grub_millisleep (50);
-
   grub_terminfo_output_init (term);
 
   return 0;
@@ -63,6 +99,7 @@ static grub_err_t
 grub_spkmodem_fini_output (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_speaker_beep_off ();
+  inited = 0;
   return 0;
 }
 
