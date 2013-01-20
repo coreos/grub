@@ -1115,8 +1115,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
      worse than that of Linux 2.3.xx, so avoid the last 64kb.  */
   addr_max -= 0x10000;
 
-  addr_min = (grub_addr_t) prot_mode_target + prot_init_space
-             + page_align (size);
+  addr_min = (grub_addr_t) prot_mode_target + prot_init_space;
 
   /* Put the initrd as high as possible, 4KiB aligned.  */
   addr = (addr_max - size) & ~0xFFF;

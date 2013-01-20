@@ -1,3 +1,9 @@
+2013-01-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/loader/i386/linux.c (grub_cmd_initrd): Don't add the
+	initrd size to addr_min, since the initrd will be allocated after
+	this address.
+
 2013-01-20  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* conf/Makefile.common: Fix autogen rules to pass definition
