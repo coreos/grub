@@ -140,7 +140,7 @@ parse_dhcp_vendor (const char *name, void *vend, int limit, int *mask)
 	  break;
 
 	  /* If you need any other options please contact GRUB
-	     developpement team.  */
+	     development team.  */
 	}
 
       ptr += taglength;

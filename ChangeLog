@@ -1,3 +1,7 @@
+2013-01-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix typos for "developer" and "development".
+
 2013-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add license header to spkmodem-recv.c.

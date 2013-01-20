@@ -1250,7 +1250,7 @@ beeper) or @samp{spkmodem} (simple data protocol using system speaker).
 
 @samp{spkmodem} is useful when no serial port is available. Connect the output
 of sending system (where GRUB is running) to line-in of receiving system
-(usually developper machine).
+(usually developer machine).
 On receiving system compile @samp{spkmodem-recv} from
 @samp{util/spkmodem-recv.c} and run:
 
@@ -4204,7 +4204,7 @@ and tonal writing (2e5-2e9). GRUB also ignores deprecated (as specified
 in Unicode) characters (e.g. tags). GRUB also doesn't handle so called
 ``annotation characters'' If you can complete either of
 two lists or, better, propose a patch to improve rendering, please contact
-developper team.
+developer team.
 
 @chapter Input terminal
 Firmware console on BIOS, IEEE1275 and ARC doesn't allow you to enter non-ASCII
