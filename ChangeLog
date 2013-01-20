@@ -1,5 +1,31 @@
 2013-01-20  Colin Watson  <cjwatson@ubuntu.com>
 
+	Remove nested functions from device iterators.
+
+	* include/grub/arc/arc.h (grub_arc_iterate_devs_hook_t): New type.
+	(grub_arc_iterate_devs): Add hook_data argument.
+	* include/grub/ata.h (grub_ata_dev_iterate_hook_t): New type.
+	(struct grub_ata_dev.iterate): Add hook_data argument.
+	* include/grub/device.h (grub_device_iterate_hook_t): New type.
+	(grub_device_iterate): Add hook_data argument.
+	* include/grub/disk.h (grub_disk_dev_iterate_hook_t): New type.
+	(struct grub_disk_dev.iterate): Add hook_data argument.
+	(grub_disk_dev_iterate): Likewise.
+	* include/grub/gpt_partition.h (grub_gpt_partition_map_iterate):
+	Likewise.
+	* include/grub/msdos_partition.h (grub_partition_msdos_iterate):
+	Likewise.
+	* include/grub/partition.h (grub_partition_iterate_hook_t): New
+	type.
+	(struct grub_partition_map.iterate): Add hook_data argument.
+	(grub_partition_iterate): Likewise.
+	* include/grub/scsi.h (grub_scsi_dev_iterate_hook_t): New type.
+	(struct grub_scsi_dev.iterate): Add hook_data argument.
+
+	Update all callers.
+
+2013-01-20  Colin Watson  <cjwatson@ubuntu.com>
+
 	Fix typos for "developer" and "development".
 
 2013-01-18  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -448,8 +448,8 @@ grub_cryptodisk_setkey (grub_cryptodisk_t dev, grub_uint8_t *key, grub_size_t ke
 }
 
 static int
-grub_cryptodisk_iterate (int (*hook) (const char *name),
-		   grub_disk_pull_t pull)
+grub_cryptodisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
+			 grub_disk_pull_t pull)
 {
   grub_cryptodisk_t i;
 
@@ -460,7 +460,7 @@ grub_cryptodisk_iterate (int (*hook) (const char *name),
     {
       char buf[30];
       grub_snprintf (buf, sizeof (buf), "crypto%lu", i->id);
-      if (hook (buf))
+      if (hook (buf, hook_data))
 	return 1;
     }
 
@@ -866,7 +866,8 @@ grub_cryptodisk_cheat_mount (const char *sourcedev, const char *cheat)
 #endif
 
 static int
-grub_cryptodisk_scan_device (const char *name)
+grub_cryptodisk_scan_device (const char *name,
+			     void *data __attribute__ ((unused)))
 {
   grub_err_t err;
   grub_disk_t source;
@@ -908,7 +909,7 @@ grub_cmd_cryptomount (grub_extcmd_context_t ctxt, int argc, char **args)
 
       check_boot = state[2].set;
       search_uuid = args[0];
-      grub_device_iterate (&grub_cryptodisk_scan_device);
+      grub_device_iterate (&grub_cryptodisk_scan_device, NULL);
       search_uuid = NULL;
 
       if (!have_it)
@@ -919,7 +920,7 @@ grub_cmd_cryptomount (grub_extcmd_context_t ctxt, int argc, char **args)
     {
       search_uuid = NULL;
       check_boot = state[2].set;
-      grub_device_iterate (&grub_cryptodisk_scan_device);
+      grub_device_iterate (&grub_cryptodisk_scan_device, NULL);
       search_uuid = NULL;
       return GRUB_ERR_NONE;
     }

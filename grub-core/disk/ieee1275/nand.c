@@ -33,7 +33,7 @@ struct grub_nand_data
 };
 
 static int
-grub_nand_iterate (int (*hook) (const char *name),
+grub_nand_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		   grub_disk_pull_t pull)
 {
   auto int dev_iterate (struct grub_ieee1275_devalias *alias);
@@ -41,7 +41,7 @@ grub_nand_iterate (int (*hook) (const char *name),
   {
     if (grub_strcmp (alias->name, "nand") == 0)
       {
-	hook (alias->name);
+	hook (alias->name, hook_data);
 	return 1;
       }
     

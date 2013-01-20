@@ -64,8 +64,7 @@ grub_dvh_is_valid (grub_uint32_t *label)
 
 static grub_err_t
 dvh_partition_map_iterate (grub_disk_t disk,
-                           int (*hook) (grub_disk_t disk,
-					const grub_partition_t partition))
+			   grub_partition_iterate_hook_t hook, void *hook_data)
 {
   struct grub_partition p;
   union
@@ -101,7 +100,7 @@ dvh_partition_map_iterate (grub_disk_t disk,
       p.start = grub_be_to_cpu32 (block.dvh.parts[partnum].start);
       p.len = grub_be_to_cpu32 (block.dvh.parts[partnum].length);
       p.number = p.index = partnum;
-      if (hook (disk, &p))
+      if (hook (disk, &p, hook_data))
 	break;
     }
 

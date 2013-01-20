@@ -392,40 +392,50 @@ grub_ata_real_open (int id, int bus)
   return NULL;
 }
 
+/* Context for grub_ata_iterate.  */
+struct grub_ata_iterate_ctx
+{
+  grub_disk_dev_iterate_hook_t hook;
+  void *hook_data;
+};
+
+/* Helper for grub_ata_iterate.  */
 static int
-grub_ata_iterate (int (*hook_in) (const char *name),
+grub_ata_iterate_iter (int id, int bus, void *data)
+{
+  struct grub_ata_iterate_ctx *ctx = data;
+  struct grub_ata *ata;
+  int ret;
+  char devname[40];
+
+  ata = grub_ata_real_open (id, bus);
+
+  if (!ata)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
+  if (ata->atapi)
+    {
+      grub_ata_real_close (ata);
+      return 0;
+    }
+  grub_snprintf (devname, sizeof (devname), 
+		 "%s%d", grub_scsi_names[id], bus);
+  ret = ctx->hook (devname, ctx->hook_data);
+  grub_ata_real_close (ata);
+  return ret;
+}
+
+static int
+grub_ata_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		  grub_disk_pull_t pull)
 {
-  auto int hook (int id, int bus);
-  int hook (int id, int bus)
-  {
-    struct grub_ata *ata;
-    int ret;
-    char devname[40];
-
-    ata = grub_ata_real_open (id, bus);
-
-    if (!ata)
-      {
-	grub_errno = GRUB_ERR_NONE;
-	return 0;
-      }
-    if (ata->atapi)
-      {
-	grub_ata_real_close (ata);
-	return 0;
-      }
-    grub_snprintf (devname, sizeof (devname), 
-		   "%s%d", grub_scsi_names[id], bus);
-    ret = hook_in (devname);
-    grub_ata_real_close (ata);
-    return ret;
-  }
-
+  struct grub_ata_iterate_ctx ctx = { hook, hook_data };
   grub_ata_dev_t p;
   
   for (p = grub_ata_dev_list; p; p = p->next)
-    if (p->iterate && p->iterate (hook, pull))
+    if (p->iterate && p->iterate (grub_ata_iterate_iter, &ctx, pull))
       return 1;
   return 0;
 }
@@ -561,37 +571,47 @@ grub_atapi_open (int id, int bus, struct grub_scsi *scsi)
   return GRUB_ERR_NONE;
 }
 
+/* Context for grub_atapi_iterate.  */
+struct grub_atapi_iterate_ctx
+{
+  grub_scsi_dev_iterate_hook_t hook;
+  void *hook_data;
+};
+
+/* Helper for grub_atapi_iterate.  */
 static int
-grub_atapi_iterate (int NESTED_FUNC_ATTR (*hook_in) (int id, int bus, int luns),
+grub_atapi_iterate_iter (int id, int bus, void *data)
+{
+  struct grub_atapi_iterate_ctx *ctx = data;
+  struct grub_ata *ata;
+  int ret;
+
+  ata = grub_ata_real_open (id, bus);
+
+  if (!ata)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
+  if (!ata->atapi)
+    {
+      grub_ata_real_close (ata);
+      return 0;
+    }
+  ret = ctx->hook (id, bus, 1, ctx->hook_data);
+  grub_ata_real_close (ata);
+  return ret;
+}
+
+static int
+grub_atapi_iterate (grub_scsi_dev_iterate_hook_t hook, void *hook_data,
 		    grub_disk_pull_t pull)
 {
-  auto int hook (int id, int bus);
-  int hook (int id, int bus)
-  {
-    struct grub_ata *ata;
-    int ret;
-
-    ata = grub_ata_real_open (id, bus);
-
-    if (!ata)
-      {
-	grub_errno = GRUB_ERR_NONE;
-	return 0;
-      }
-    if (!ata->atapi)
-      {
-	grub_ata_real_close (ata);
-	return 0;
-      }
-    ret = hook_in (id, bus, 1);
-    grub_ata_real_close (ata);
-    return ret;
-  }
-
+  struct grub_atapi_iterate_ctx ctx = { hook, hook_data };
   grub_ata_dev_t p;
   
   for (p = grub_ata_dev_list; p; p = p->next)
-    if (p->iterate && p->iterate (hook, pull))
+    if (p->iterate && p->iterate (grub_atapi_iterate_iter, &ctx, pull))
       return 1;
   return 0;
 }

@@ -538,56 +538,71 @@ lower_bound (struct grub_btrfs_data *data,
     }
 }
 
+/* Context for find_device.  */
+struct find_device_ctx
+{
+  struct grub_btrfs_data *data;
+  grub_uint64_t id;
+  grub_device_t dev_found;
+};
+
+/* Helper for find_device.  */
+static int
+find_device_iter (const char *name, void *data)
+{
+  struct find_device_ctx *ctx = data;
+  grub_device_t dev;
+  grub_err_t err;
+  struct grub_btrfs_superblock sb;
+
+  dev = grub_device_open (name);
+  if (!dev)
+    return 0;
+  if (!dev->disk)
+    {
+      grub_device_close (dev);
+      return 0;
+    }
+  err = read_sblock (dev->disk, &sb);
+  if (err == GRUB_ERR_BAD_FS)
+    {
+      grub_device_close (dev);
+      grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
+  if (err)
+    {
+      grub_device_close (dev);
+      grub_print_error ();
+      return 0;
+    }
+  if (grub_memcmp (ctx->data->sblock.uuid, sb.uuid, sizeof (sb.uuid)) != 0
+      || sb.this_device.device_id != ctx->id)
+    {
+      grub_device_close (dev);
+      return 0;
+    }
+
+  ctx->dev_found = dev;
+  return 1;
+}
+
 static grub_device_t
 find_device (struct grub_btrfs_data *data, grub_uint64_t id, int do_rescan)
 {
-  grub_device_t dev_found = NULL;
-  auto int hook (const char *name);
-  int hook (const char *name)
-  {
-    grub_device_t dev;
-    grub_err_t err;
-    struct grub_btrfs_superblock sb;
-    dev = grub_device_open (name);
-    if (!dev)
-      return 0;
-    if (!dev->disk)
-      {
-	grub_device_close (dev);
-	return 0;
-      }
-    err = read_sblock (dev->disk, &sb);
-    if (err == GRUB_ERR_BAD_FS)
-      {
-	grub_device_close (dev);
-	grub_errno = GRUB_ERR_NONE;
-	return 0;
-      }
-    if (err)
-      {
-	grub_device_close (dev);
-	grub_print_error ();
-	return 0;
-      }
-    if (grub_memcmp (data->sblock.uuid, sb.uuid, sizeof (sb.uuid)) != 0
-	|| sb.this_device.device_id != id)
-      {
-	grub_device_close (dev);
-	return 0;
-      }
-
-    dev_found = dev;
-    return 1;
-  }
-
+  struct find_device_ctx ctx = {
+    .data = data,
+    .id = id,
+    .dev_found = NULL
+  };
   unsigned i;
 
   for (i = 0; i < data->n_devices_attached; i++)
     if (id == data->devices_attached[i].id)
       return data->devices_attached[i].dev;
   if (do_rescan)
-    grub_device_iterate (hook);
-  if (!dev_found)
+    grub_device_iterate (find_device_iter, &ctx);
+  if (!ctx.dev_found)
     {
       grub_error (GRUB_ERR_BAD_FS,
 		  N_("couldn't find a necessary member device "
@@ -605,14 +620,14 @@ find_device (struct grub_btrfs_data *data, grub_uint64_t id, int do_rescan)
 			* sizeof (data->devices_attached[0]));
       if (!data->devices_attached)
 	{
-	  grub_device_close (dev_found);
+	  grub_device_close (ctx.dev_found);
 	  data->devices_attached = tmp;
 	  return NULL;
 	}
     }
   data->devices_attached[data->n_devices_attached - 1].id = id;
-  data->devices_attached[data->n_devices_attached - 1].dev = dev_found;
-  return dev_found;
+  data->devices_attached[data->n_devices_attached - 1].dev = ctx.dev_found;
+  return ctx.dev_found;
 }
 
 static grub_err_t

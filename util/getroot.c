@@ -2198,6 +2198,36 @@ grub_util_get_os_disk (const char *os_dev)
   return convert_system_partition_to_system_disk (os_dev, &st, &is_part);
 }
 
+#if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined (__sun__)
+/* Context for grub_util_biosdisk_get_grub_dev.  */
+struct grub_util_biosdisk_get_grub_dev_ctx
+{
+  char *partname;
+  grub_disk_addr_t start;
+};
+
+/* Helper for grub_util_biosdisk_get_grub_dev.  */
+static int
+find_partition (grub_disk_t dsk __attribute__ ((unused)),
+		const grub_partition_t partition, void *data)
+{
+  struct grub_util_biosdisk_get_grub_dev_ctx *ctx = data;
+  grub_disk_addr_t part_start = 0;
+  grub_util_info ("Partition %d starts from %" PRIuGRUB_UINT64_T,
+		  partition->number, partition->start);
+
+  part_start = grub_partition_get_start (partition);
+
+  if (ctx->start == part_start)
+    {
+      ctx->partname = grub_partition_get_name (partition);
+      return 1;
+    }
+
+  return 0;
+}
+#endif
+
 char *
 grub_util_biosdisk_get_grub_dev (const char *os_dev)
 {
@@ -2250,29 +2280,9 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
      For NetBSD and FreeBSD, proceed as for Linux, except that the start
      sector is obtained from the disk label.  */
   {
-    char *name, *partname;
+    char *name;
     grub_disk_t disk;
-    grub_disk_addr_t start;
-    auto int find_partition (grub_disk_t dsk,
-			     const grub_partition_t partition);
-
-    int find_partition (grub_disk_t dsk __attribute__ ((unused)),
-			const grub_partition_t partition)
-      {
-	grub_disk_addr_t part_start = 0;
-	grub_util_info ("Partition %d starts from %" PRIuGRUB_UINT64_T,
-			partition->number, partition->start);
-
-	part_start = grub_partition_get_start (partition);
-
-	if (start == part_start)
-	  {
-	    partname = grub_partition_get_name (partition);
-	    return 1;
-	  }
-
-	return 0;
-      }
+    struct grub_util_biosdisk_get_grub_dev_ctx ctx;
 
     name = make_device_name (drive, -1, -1);
 
@@ -2284,16 +2294,16 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
      * different, we know that os_dev cannot be a floppy device.  */
 # endif /* !defined(HAVE_DIOCGDINFO) */
 
-    start = grub_hostdisk_find_partition_start (os_dev);
+    ctx.start = grub_hostdisk_find_partition_start (os_dev);
     if (grub_errno != GRUB_ERR_NONE)
       {
 	free (name);
 	return 0;
       }
 
-    grub_util_info ("%s starts from %" PRIuGRUB_UINT64_T, os_dev, start);
+    grub_util_info ("%s starts from %" PRIuGRUB_UINT64_T, os_dev, ctx.start);
 
-    if (start == 0 && !is_part)
+    if (ctx.start == 0 && !is_part)
       return name;
 
     grub_util_info ("opening the device %s", name);
@@ -2325,20 +2335,20 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	  return 0;
       }
 
-    name = grub_util_get_ldm (disk, start);
+    name = grub_util_get_ldm (disk, ctx.start);
     if (name)
       return name;
 
-    partname = NULL;
+    ctx.partname = NULL;
 
-    grub_partition_iterate (disk, find_partition);
+    grub_partition_iterate (disk, find_partition, &ctx);
     if (grub_errno != GRUB_ERR_NONE)
       {
 	grub_disk_close (disk);
 	return 0;
       }
 
-    if (partname == NULL)
+    if (ctx.partname == NULL)
       {
 	grub_disk_close (disk);
 	grub_util_info ("cannot find the partition of `%s'", os_dev);
@@ -2347,8 +2357,8 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	return 0;
       }
 
-    name = grub_xasprintf ("%s,%s", disk->name, partname);
-    free (partname);
+    name = grub_xasprintf ("%s,%s", disk->name, ctx.partname);
+    free (ctx.partname);
     grub_disk_close (disk);
     return name;
   }

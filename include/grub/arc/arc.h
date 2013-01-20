@@ -255,7 +255,12 @@ struct grub_arc_system_parameter_block
 #define GRUB_ARC_STDIN 0
 #define GRUB_ARC_STDOUT 1
 
-int EXPORT_FUNC (grub_arc_iterate_devs) (int (*hook) (const char *name, const struct grub_arc_component *comp), int alt_names);
+typedef int (*grub_arc_iterate_devs_hook_t)
+  (const char *name, const struct grub_arc_component *comp, void *data);
+
+int EXPORT_FUNC (grub_arc_iterate_devs) (grub_arc_iterate_devs_hook_t hook,
+					 void *hook_data,
+					 int alt_names);
 
 #define FOR_ARC_CHILDREN(comp, parent) for (comp = GRUB_ARC_FIRMWARE_VECTOR->getchild (parent); comp; comp = GRUB_ARC_FIRMWARE_VECTOR->getpeer (comp))
 

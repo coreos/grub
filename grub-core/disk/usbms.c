@@ -265,7 +265,7 @@ grub_usbms_attach (grub_usb_device_t usbdev, int configno, int interfno)
 
 
 static int
-grub_usbms_iterate (int NESTED_FUNC_ATTR (*hook) (int id, int bus, int luns),
+grub_usbms_iterate (grub_scsi_dev_iterate_hook_t hook, void *hook_data,
 		    grub_disk_pull_t pull)
 {
   unsigned i;
@@ -278,7 +278,8 @@ grub_usbms_iterate (int NESTED_FUNC_ATTR (*hook) (int id, int bus, int luns),
   for (i = 0; i < ARRAY_SIZE (grub_usbms_devices); i++)
     if (grub_usbms_devices[i])
       {
-	if (hook (GRUB_SCSI_SUBSYSTEM_USBMS, i, grub_usbms_devices[i]->luns))
+	if (hook (GRUB_SCSI_SUBSYSTEM_USBMS, i, grub_usbms_devices[i]->luns,
+		  hook_data))
 	  return 1;
       }
 

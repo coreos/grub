@@ -80,23 +80,37 @@ arcdisk_hash_add (char *devpath)
 }
 
 
+/* Context for grub_arcdisk_iterate.  */
+struct grub_arcdisk_iterate_ctx
+{
+  grub_disk_dev_iterate_hook_t hook;
+  void *hook_data;
+};
+
+/* Helper for grub_arcdisk_iterate.  */
+static int
+grub_arcdisk_iterate_iter (const char *name,
+			   const struct grub_arc_component *comp, void *data)
+{
+  struct grub_arcdisk_iterate_ctx *ctx = data;
+
+  if (!(comp->type == GRUB_ARC_COMPONENT_TYPE_DISK
+	|| comp->type == GRUB_ARC_COMPONENT_TYPE_DISK
+	|| comp->type == GRUB_ARC_COMPONENT_TYPE_TAPE))
+    return 0;
+  return ctx->hook (name, ctx->hook_data);
+}
+
 static int
 grub_arcdisk_iterate (int (*hook_in) (const char *name),
 		      grub_disk_pull_t pull)
 {
-  auto int hook (const char *name, const struct grub_arc_component *comp);
-  int hook (const char *name, const struct grub_arc_component *comp)
-  {
-    if (!(comp->type == GRUB_ARC_COMPONENT_TYPE_DISK
-	  || comp->type == GRUB_ARC_COMPONENT_TYPE_DISK
-	  || comp->type == GRUB_ARC_COMPONENT_TYPE_TAPE))
-      return 0;
-    return hook_in (name);
-  }
+  struct grub_arcdisk_iterate_ctx ctx = { hook, hook_data };
+
   if (pull != GRUB_DISK_PULL_NONE)
     return 0;
 
-  return grub_arc_iterate_devs (hook, 1);
+  return grub_arc_iterate_devs (grub_arcdisk_iterate_iter, &ctx, 1);
 }
 
 #define RAW_SUFFIX "partition(10)"

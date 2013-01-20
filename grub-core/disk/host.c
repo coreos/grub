@@ -27,13 +27,13 @@
 int grub_disk_host_i_want_a_reference;
 
 static int
-grub_host_iterate (int (*hook) (const char *name),
+grub_host_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		   grub_disk_pull_t pull)
 {
   if (pull != GRUB_DISK_PULL_NONE)
     return 0;
 
-  if (hook ("host"))
+  if (hook ("host", hook_data))
     return 1;
   return 0;
 }

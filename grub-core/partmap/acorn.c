@@ -101,8 +101,8 @@ fail:
 
 static grub_err_t
 acorn_partition_map_iterate (grub_disk_t disk,
-			     int (*hook) (grub_disk_t disk,
-					  const grub_partition_t partition))
+			     grub_partition_iterate_hook_t hook,
+			     void *hook_data)
 {
   struct grub_partition part;
   struct linux_part map[LINUX_MAP_ENTRIES];
@@ -127,7 +127,7 @@ acorn_partition_map_iterate (grub_disk_t disk,
       part.offset = 6;
       part.number = part.index = i;
 
-      if (hook (disk, &part))
+      if (hook (disk, &part, hook_data))
 	return grub_errno;
     }
 

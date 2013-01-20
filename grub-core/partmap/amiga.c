@@ -87,8 +87,8 @@ amiga_partition_map_checksum (void *buf, grub_size_t sz)
 
 static grub_err_t
 amiga_partition_map_iterate (grub_disk_t disk,
-			     int (*hook) (grub_disk_t disk,
-					  const grub_partition_t partition))
+			     grub_partition_iterate_hook_t hook,
+			     void *hook_data)
 {
   struct grub_partition part;
   struct grub_amiga_rdsk rdsk;
@@ -145,7 +145,7 @@ amiga_partition_map_iterate (grub_disk_t disk,
       part.index = 0;
       part.partmap = &grub_amiga_partition_map;
 
-      if (hook (disk, &part))
+      if (hook (disk, &part, hook_data))
 	return grub_errno;
 
       next = grub_be_to_cpu32 (apart.next);

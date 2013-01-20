@@ -210,59 +210,71 @@ split_path (const char *str, const char **noregexop, const char **regexop)
     *noregexop = split;
 }
 
+/* Context for match_devices.  */
+struct match_devices_ctx
+{
+  const regex_t *regexp;
+  int noparts;
+  int ndev;
+  char **devs;
+};
+
+/* Helper for match_devices.  */
+static int
+match_devices_iter (const char *name, void *data)
+{
+  struct match_devices_ctx *ctx = data;
+  char **t;
+  char *buffer;
+
+  /* skip partitions if asked to. */
+  if (ctx->noparts && grub_strchr (name, ','))
+    return 0;
+
+  buffer = grub_xasprintf ("(%s)", name);
+  if (! buffer)
+    return 1;
+
+  grub_dprintf ("expand", "matching: %s\n", buffer);
+  if (regexec (ctx->regexp, buffer, 0, 0, 0))
+    {
+      grub_dprintf ("expand", "not matched\n");
+      grub_free (buffer);
+      return 0;
+    }
+
+  t = grub_realloc (ctx->devs, sizeof (char*) * (ctx->ndev + 2));
+  if (! t)
+    return 1;
+
+  ctx->devs = t;
+  ctx->devs[ctx->ndev++] = buffer;
+  ctx->devs[ctx->ndev] = 0;
+  return 0;
+}
+
 static char **
 match_devices (const regex_t *regexp, int noparts)
 {
+  struct match_devices_ctx ctx = {
+    .regexp = regexp,
+    .noparts = noparts,
+    .ndev = 0,
+    .devs = 0
+  };
   int i;
-  int ndev;
-  char **devs;
 
-  auto int match (const char *name);
-  int match (const char *name)
-  {
-    char **t;
-    char *buffer;
-
-    /* skip partitions if asked to. */
-    if (noparts && grub_strchr(name, ','))
-      return 0;
-
-    buffer = grub_xasprintf ("(%s)", name);
-    if (! buffer)
-      return 1;
-
-    grub_dprintf ("expand", "matching: %s\n", buffer);
-    if (regexec (regexp, buffer, 0, 0, 0))
-      {
-	grub_dprintf ("expand", "not matched\n");
-	grub_free (buffer);
-	return 0;
-      }
-
-    t = grub_realloc (devs, sizeof (char*) * (ndev + 2));
-    if (! t)
-      return 1;
-
-    devs = t;
-    devs[ndev++] = buffer;
-    devs[ndev] = 0;
-    return 0;
-  }
-
-  ndev = 0;
-  devs = 0;
-
-  if (grub_device_iterate (match))
+  if (grub_device_iterate (match_devices_iter, &ctx))
     goto fail;
 
-  return devs;
+  return ctx.devs;
 
  fail:
 
-  for (i = 0; devs && devs[i]; i++)
-    grub_free (devs[i]);
+  for (i = 0; ctx.devs && ctx.devs[i]; i++)
+    grub_free (ctx.devs[i]);
 
-  grub_free (devs);
+  grub_free (ctx.devs);
 
   return 0;
 }

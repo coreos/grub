@@ -501,7 +501,7 @@ grub_pata_open (int id, int devnum, struct grub_ata *ata)
 }
 
 static int
-grub_pata_iterate (int (*hook) (int id, int bus),
+grub_pata_iterate (grub_ata_dev_iterate_hook_t hook, void *hook_data,
 		   grub_disk_pull_t pull)
 {
   struct grub_pata_device *dev;
@@ -510,7 +510,8 @@ grub_pata_iterate (int (*hook) (int id, int bus),
     return 0;
 
   for (dev = grub_pata_devices; dev; dev = dev->next)
-    if (hook (GRUB_SCSI_SUBSYSTEM_PATA, dev->port * 2 + dev->device))
+    if (hook (GRUB_SCSI_SUBSYSTEM_PATA, dev->port * 2 + dev->device,
+	      hook_data))
       return 1;
 
   return 0;

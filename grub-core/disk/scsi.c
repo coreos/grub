@@ -423,50 +423,59 @@ grub_scsi_write16 (grub_disk_t disk, grub_disk_addr_t sector,
 
 
 
-static int
-grub_scsi_iterate (int (*hook) (const char *name),
-		   grub_disk_pull_t pull)
+/* Context for grub_scsi_iterate.  */
+struct grub_scsi_iterate_ctx
 {
-  grub_scsi_dev_t p;
+  grub_disk_dev_iterate_hook_t hook;
+  void *hook_data;
+};
 
-  auto int NESTED_FUNC_ATTR scsi_iterate (int id, int bus, int luns);
+/* Helper for grub_scsi_iterate.  */
+static int
+scsi_iterate (int id, int bus, int luns, void *data)
+{
+  struct grub_scsi_iterate_ctx *ctx = data;
+  int i;
 
-  int NESTED_FUNC_ATTR scsi_iterate (int id, int bus, int luns)
+  /* In case of a single LUN, just return `usbX'.  */
+  if (luns == 1)
     {
-      int i;
-
-      /* In case of a single LUN, just return `usbX'.  */
-      if (luns == 1)
-	{
-	  char *sname;
-	  int ret;
-	  sname = grub_xasprintf ("%s%d", grub_scsi_names[id], bus);
-	  if (!sname)
-	    return 1;
-	  ret = hook (sname);
-	  grub_free (sname);
-	  return ret;
-	}
-
-      /* In case of multiple LUNs, every LUN will get a prefix to
-	 distinguish it.  */
-      for (i = 0; i < luns; i++)
-	{
-	  char *sname;
-	  int ret;
-	  sname = grub_xasprintf ("%s%d%c", grub_scsi_names[id], bus, 'a' + i);
-	  if (!sname)
-	    return 1;
-	  ret = hook (sname);
-	  grub_free (sname);
-	  if (ret)
-	    return 1;
-	}
-      return 0;
+      char *sname;
+      int ret;
+      sname = grub_xasprintf ("%s%d", grub_scsi_names[id], bus);
+      if (!sname)
+	return 1;
+      ret = ctx->hook (sname, ctx->hook_data);
+      grub_free (sname);
+      return ret;
     }
 
+  /* In case of multiple LUNs, every LUN will get a prefix to
+     distinguish it.  */
+  for (i = 0; i < luns; i++)
+    {
+      char *sname;
+      int ret;
+      sname = grub_xasprintf ("%s%d%c", grub_scsi_names[id], bus, 'a' + i);
+      if (!sname)
+	return 1;
+      ret = ctx->hook (sname, ctx->hook_data);
+      grub_free (sname);
+      if (ret)
+	return 1;
+    }
+  return 0;
+}
+
+static int
+grub_scsi_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
+		   grub_disk_pull_t pull)
+{
+  struct grub_scsi_iterate_ctx ctx = { hook, hook_data };
+  grub_scsi_dev_t p;
+
   for (p = grub_scsi_dev_list; p; p = p->next)
-    if (p->iterate && (p->iterate) (scsi_iterate, pull))
+    if (p->iterate && (p->iterate) (scsi_iterate, &ctx, pull))
       return 1;
 
   return 0;

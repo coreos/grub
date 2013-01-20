@@ -988,43 +988,47 @@ scan_disk (grub_device_t dev, struct grub_zfs_data *data,
   return grub_error (GRUB_ERR_BAD_FS, "couldn't find a valid label");
 }
 
+/* Helper for scan_devices.  */
+static int
+scan_devices_iter (const char *name, void *hook_data)
+{
+  struct grub_zfs_data *data = hook_data;
+  grub_device_t dev;
+  grub_err_t err;
+  int inserted;
+
+  dev = grub_device_open (name);
+  if (!dev)
+    return 0;
+  if (!dev->disk)
+    {
+      grub_device_close (dev);
+      return 0;
+    }
+  err = scan_disk (dev, data, 0, &inserted);
+  if (err == GRUB_ERR_BAD_FS)
+    {
+      grub_device_close (dev);
+      grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
+  if (err)
+    {
+      grub_device_close (dev);
+      grub_print_error ();
+      return 0;
+    }
+
+  if (!inserted)
+    grub_device_close (dev);
+  
+  return 0;
+}
+
 static grub_err_t
 scan_devices (struct grub_zfs_data *data)
 {
-  auto int hook (const char *name);
-  int hook (const char *name)
-  {
-    grub_device_t dev;
-    grub_err_t err;
-    int inserted;
-    dev = grub_device_open (name);
-    if (!dev)
-      return 0;
-    if (!dev->disk)
-      {
-	grub_device_close (dev);
-	return 0;
-      }
-    err = scan_disk (dev, data, 0, &inserted);
-    if (err == GRUB_ERR_BAD_FS)
-      {
-	grub_device_close (dev);
-	grub_errno = GRUB_ERR_NONE;
-	return 0;
-      }
-    if (err)
-      {
-	grub_device_close (dev);
-	grub_print_error ();
-	return 0;
-      }
-
-    if (!inserted)
-      grub_device_close (dev);
-    
-    return 0;
-  }
-  grub_device_iterate (hook);
+  grub_device_iterate (scan_devices_iter, data);
   return GRUB_ERR_NONE;
 }
 

@@ -100,8 +100,8 @@ struct embed_signature embed_signatures[] =
 
 grub_err_t
 grub_partition_msdos_iterate (grub_disk_t disk,
-			      int (*hook) (grub_disk_t disk,
-					   const grub_partition_t partition))
+			      grub_partition_iterate_hook_t hook,
+			      void *hook_data)
 {
   struct grub_partition p;
   struct grub_msdos_partition_mbr mbr;
@@ -186,7 +186,7 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 	    {
 	      p.number++;
 
-	      if (hook (disk, &p))
+	      if (hook (disk, &p, hook_data))
 		return grub_errno;
 	    }
 	  else if (p.number < 4)

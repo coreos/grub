@@ -138,6 +138,44 @@ write_rootdev (grub_device_t root_dev,
 #define BOOT_SECTOR 0
 #endif
 
+#ifdef GRUB_SETUP_BIOS
+/* Context for setup/identify_partmap.  */
+struct identify_partmap_ctx
+{
+  grub_partition_map_t dest_partmap;
+  grub_partition_t container;
+  int multiple_partmaps;
+};
+
+/* Helper for setup/identify_partmap.
+   Unlike root_dev, with dest_dev we're interested in the partition map even
+   if dest_dev itself is a whole disk.  */
+static int
+identify_partmap (grub_disk_t disk __attribute__ ((unused)),
+		  const grub_partition_t p, void *data)
+{
+  struct identify_partmap_ctx *ctx = data;
+
+  if (p->parent != ctx->container)
+    return 0;
+  /* NetBSD and OpenBSD subpartitions have metadata inside a partition,
+     so they are safe to ignore.
+   */
+  if (grub_strcmp (p->partmap->name, "netbsd") == 0
+      || grub_strcmp (p->partmap->name, "openbsd") == 0)
+    return 0;
+  if (ctx->dest_partmap == NULL)
+    {
+      ctx->dest_partmap = p->partmap;
+      return 0;
+    }
+  if (ctx->dest_partmap == p->partmap)
+    return 0;
+  ctx->multiple_partmaps = 1;
+  return 1;
+}
+#endif
+
 static void
 setup (const char *dir,
        const char *boot_file, const char *core_file,
@@ -337,9 +375,11 @@ setup (const char *dir,
 
 #ifdef GRUB_SETUP_BIOS
   {
-    grub_partition_map_t dest_partmap = NULL;
-    grub_partition_t container = dest_dev->disk->partition;
-    int multiple_partmaps = 0;
+    struct identify_partmap_ctx ctx = {
+      .dest_partmap = NULL,
+      .container = dest_dev->disk->partition,
+      .multiple_partmaps = 0
+    };
     int is_ldm;
     grub_err_t err;
     grub_disk_addr_t *sectors;
@@ -347,38 +387,13 @@ setup (const char *dir,
     grub_fs_t fs;
     unsigned int nsec, maxsec;
 
-    /* Unlike root_dev, with dest_dev we're interested in the partition map even
-       if dest_dev itself is a whole disk.  */
-    auto int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk,
-						const grub_partition_t p);
-    int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk __attribute__ ((unused)),
-					   const grub_partition_t p)
-    {
-      if (p->parent != container)
-	return 0;
-      /* NetBSD and OpenBSD subpartitions have metadata inside a partition,
-	 so they are safe to ignore.
-       */
-      if (grub_strcmp (p->partmap->name, "netbsd") == 0
-	  || grub_strcmp (p->partmap->name, "openbsd") == 0)
-	return 0;
-      if (dest_partmap == NULL)
-	{
-	  dest_partmap = p->partmap;
-	  return 0;
-	}
-      if (dest_partmap == p->partmap)
-	return 0;
-      multiple_partmaps = 1;
-      return 1;
-    }
+    grub_partition_iterate (dest_dev->disk, identify_partmap, &ctx);
 
-    grub_partition_iterate (dest_dev->disk, identify_partmap);
-
-    if (container && grub_strcmp (container->partmap->name, "msdos") == 0
-	&& dest_partmap
-	&& (container->msdostype == GRUB_PC_PARTITION_TYPE_NETBSD
-	    || container->msdostype == GRUB_PC_PARTITION_TYPE_OPENBSD))
+    if (ctx.container
+	&& grub_strcmp (ctx.container->partmap->name, "msdos") == 0
+	&& ctx.dest_partmap
+	&& (ctx.container->msdostype == GRUB_PC_PARTITION_TYPE_NETBSD
+	    || ctx.container->msdostype == GRUB_PC_PARTITION_TYPE_OPENBSD))
       {
 	grub_util_warn ("%s", _("Attempting to install GRUB to a disk with multiple partition labels or both partition label and filesystem.  This is not supported yet."));
 	goto unable_to_embed;
@@ -392,7 +407,7 @@ setup (const char *dir,
 
     if (fs_probe)
       {
-	if (!fs && !dest_partmap)
+	if (!fs && !ctx.dest_partmap)
 	  grub_util_error (_("unable to identify a filesystem in %s; safety check can't be performed"),
 			   dest_dev->disk->name);
 	if (fs && !fs->reserved_first_sector)
@@ -403,20 +418,20 @@ setup (const char *dir,
 			     "by grub-setup (--skip-fs-probe disables this "
 			     "check, use at your own risk)"), dest_dev->disk->name, fs->name);
 
-	if (dest_partmap && strcmp (dest_partmap->name, "msdos") != 0
-	    && strcmp (dest_partmap->name, "gpt") != 0
-	    && strcmp (dest_partmap->name, "bsd") != 0
-	    && strcmp (dest_partmap->name, "netbsd") != 0
-	    && strcmp (dest_partmap->name, "openbsd") != 0
-	    && strcmp (dest_partmap->name, "sunpc") != 0)
+	if (ctx.dest_partmap && strcmp (ctx.dest_partmap->name, "msdos") != 0
+	    && strcmp (ctx.dest_partmap->name, "gpt") != 0
+	    && strcmp (ctx.dest_partmap->name, "bsd") != 0
+	    && strcmp (ctx.dest_partmap->name, "netbsd") != 0
+	    && strcmp (ctx.dest_partmap->name, "openbsd") != 0
+	    && strcmp (ctx.dest_partmap->name, "sunpc") != 0)
 	  /* TRANSLATORS: Partition map may reserve the space just GRUB isn't sure about it.  */
 	  grub_util_error (_("%s appears to contain a %s partition map which isn't known to "
 			     "reserve space for DOS-style boot.  Installing GRUB there could "
 			     "result in FILESYSTEM DESTRUCTION if valuable data is overwritten "
 			     "by grub-setup (--skip-fs-probe disables this "
-			     "check, use at your own risk)"), dest_dev->disk->name, dest_partmap->name);
-	if (is_ldm && dest_partmap && strcmp (dest_partmap->name, "msdos") != 0
-	    && strcmp (dest_partmap->name, "gpt") != 0)
+			     "check, use at your own risk)"), dest_dev->disk->name, ctx.dest_partmap->name);
+	if (is_ldm && ctx.dest_partmap && strcmp (ctx.dest_partmap->name, "msdos") != 0
+	    && strcmp (ctx.dest_partmap->name, "gpt") != 0)
 	  grub_util_error (_("%s appears to contain a %s partition map and "
 			     "LDM which isn't known to be a safe combination."
 			     "  Installing GRUB there could "
@@ -424,12 +439,12 @@ setup (const char *dir,
 			     " is overwritten "
 			     "by grub-setup (--skip-fs-probe disables this "
 			     "check, use at your own risk)"),
-			   dest_dev->disk->name, dest_partmap->name);
+			   dest_dev->disk->name, ctx.dest_partmap->name);
 
       }
 
     /* Copy the partition table.  */
-    if (dest_partmap ||
+    if (ctx.dest_partmap ||
         (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk)))
       memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
 	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
@@ -437,21 +452,21 @@ setup (const char *dir,
 
     free (tmp_img);
     
-    if (! dest_partmap && ! fs && !is_ldm)
+    if (! ctx.dest_partmap && ! fs && !is_ldm)
       {
 	grub_util_warn ("%s", _("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
 	goto unable_to_embed;
       }
-    if (multiple_partmaps || (dest_partmap && fs) || (is_ldm && fs))
+    if (ctx.multiple_partmaps || (ctx.dest_partmap && fs) || (is_ldm && fs))
       {
 	grub_util_warn ("%s", _("Attempting to install GRUB to a disk with multiple partition labels.  This is not supported yet."));
 	goto unable_to_embed;
       }
 
-    if (dest_partmap && !dest_partmap->embed)
+    if (ctx.dest_partmap && !ctx.dest_partmap->embed)
       {
 	grub_util_warn (_("Partition style `%s' doesn't support embedding"),
-			dest_partmap->name);
+			ctx.dest_partmap->name);
 	goto unable_to_embed;
       }
 
@@ -473,9 +488,9 @@ setup (const char *dir,
     if (is_ldm)
       err = grub_util_ldm_embed (dest_dev->disk, &nsec, maxsec,
 				 GRUB_EMBED_PCBIOS, &sectors);
-    else if (dest_partmap)
-      err = dest_partmap->embed (dest_dev->disk, &nsec, maxsec,
-				 GRUB_EMBED_PCBIOS, &sectors);
+    else if (ctx.dest_partmap)
+      err = ctx.dest_partmap->embed (dest_dev->disk, &nsec, maxsec,
+				     GRUB_EMBED_PCBIOS, &sectors);
     else
       err = fs->embed (dest_dev, &nsec, maxsec,
 		       GRUB_EMBED_PCBIOS, &sectors);
@@ -507,12 +522,12 @@ setup (const char *dir,
 	  grub_util_error ("%s", _("no terminator in the core image"));
       }
 
-    save_first_sector (sectors[0] + grub_partition_get_start (container),
+    save_first_sector (sectors[0] + grub_partition_get_start (ctx.container),
 		       0, GRUB_DISK_SECTOR_SIZE);
 
     block = first_block;
     for (i = 1; i < nsec; i++)
-      save_blocklists (sectors[i] + grub_partition_get_start (container),
+      save_blocklists (sectors[i] + grub_partition_get_start (ctx.container),
 		       0, GRUB_DISK_SECTOR_SIZE);
 
     /* Make sure that the last blocklist is a terminator.  */

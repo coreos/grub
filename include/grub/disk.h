@@ -56,6 +56,8 @@ typedef enum
     GRUB_DISK_PULL_MAX
   } grub_disk_pull_t;
 
+typedef int (*grub_disk_dev_iterate_hook_t) (const char *name, void *data);
+
 /* Disk device.  */
 struct grub_disk_dev
 {
@@ -66,7 +68,7 @@ struct grub_disk_dev
   enum grub_disk_dev_id id;
 
   /* Call HOOK with each device name, until HOOK returns non-zero.  */
-  int (*iterate) (int (*hook) (const char *name),
+  int (*iterate) (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		  grub_disk_pull_t pull);
 
   /* Open the device named NAME, and set up DISK.  */
@@ -158,14 +160,14 @@ void grub_disk_cache_invalidate_all (void);
 void EXPORT_FUNC(grub_disk_dev_register) (grub_disk_dev_t dev);
 void EXPORT_FUNC(grub_disk_dev_unregister) (grub_disk_dev_t dev);
 static inline int
-grub_disk_dev_iterate (int (*hook) (const char *name))
+grub_disk_dev_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data)
 {
   grub_disk_dev_t p;
   grub_disk_pull_t pull;
 
   for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
     for (p = grub_disk_dev_list; p; p = p->next)
-      if (p->iterate && (p->iterate) (hook, pull))
+      if (p->iterate && (p->iterate) (hook, hook_data, pull))
 	return 1;
 
   return 0;

@@ -218,7 +218,7 @@ scan (void)
 }
 
 static int
-grub_ofdisk_iterate (int (*hook) (const char *name),
+grub_ofdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		     grub_disk_pull_t pull)
 {
   unsigned i;
@@ -276,7 +276,7 @@ grub_ofdisk_iterate (int (*hook) (const char *name),
 		*optr++ = *iptr++;
 	      }
 	    *optr = 0;
-	    if (hook (buffer))
+	    if (hook (buffer, hook_data))
 	      return 1;
 	  }
 	}

@@ -45,21 +45,24 @@ static const struct grub_arg_option options[] =
 
 static const char grub_human_sizes[] = {' ', 'K', 'M', 'G', 'T'};
 
+/* Helper for grub_ls_list_devices.  */
+static int
+grub_ls_print_devices (const char *name, void *data)
+{
+  int *longlist = data;
+
+  if (longlist)
+    grub_normal_print_device_info (name);
+  else
+    grub_printf ("(%s) ", name);
+
+  return 0;
+}
+
 static grub_err_t
 grub_ls_list_devices (int longlist)
 {
-  auto int grub_ls_print_devices (const char *name);
-  int grub_ls_print_devices (const char *name)
-    {
-      if (longlist)
-	grub_normal_print_device_info (name);
-      else
-	grub_printf ("(%s) ", name);
-
-      return 0;
-    }
-
-  grub_device_iterate (grub_ls_print_devices);
+  grub_device_iterate (grub_ls_print_devices, &longlist);
   grub_xputs ("\n");
 
 #if 0

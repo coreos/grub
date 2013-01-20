@@ -99,7 +99,8 @@ add_completion (const char *completion, const char *extra,
 }
 
 static int
-iterate_partition (grub_disk_t disk, const grub_partition_t p)
+iterate_partition (grub_disk_t disk, const grub_partition_t p,
+		   void *data __attribute__ ((unused)))
 {
   const char *disk_name = disk->name;
   char *name;
@@ -154,7 +155,7 @@ iterate_dir (const char *filename, const struct grub_dirhook_info *info)
 }
 
 static int
-iterate_dev (const char *devname)
+iterate_dev (const char *devname, void *data __attribute__ ((unused)))
 {
   grub_device_t dev;
 
@@ -180,7 +181,7 @@ iterate_dev (const char *devname)
 	  }
 
 	if (dev->disk)
-	  if (grub_partition_iterate (dev->disk, iterate_partition))
+	  if (grub_partition_iterate (dev->disk, iterate_partition, NULL))
 	    {
 	      grub_device_close (dev);
 	      return 1;
@@ -213,7 +214,7 @@ complete_device (void)
   if (! p)
     {
       /* Complete the disk part.  */
-      if (grub_disk_dev_iterate (iterate_dev))
+      if (grub_disk_dev_iterate (iterate_dev, NULL))
 	return 1;
     }
   else
@@ -228,7 +229,7 @@ complete_device (void)
 	{
 	  if (dev->disk)
 	    {
-	      if (grub_partition_iterate (dev->disk, iterate_partition))
+	      if (grub_partition_iterate (dev->disk, iterate_partition, NULL))
 		{
 		  grub_device_close (dev);
 		  return 1;

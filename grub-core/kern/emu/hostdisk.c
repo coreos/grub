@@ -223,7 +223,7 @@ find_free_slot (void)
 }
 
 static int
-grub_util_biosdisk_iterate (int (*hook) (const char *name),
+grub_util_biosdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 			    grub_disk_pull_t pull)
 {
   unsigned i;
@@ -232,7 +232,7 @@ grub_util_biosdisk_iterate (int (*hook) (const char *name),
     return 0;
 
   for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
-    if (map[i].drive && hook (map[i].drive))
+    if (map[i].drive && hook (map[i].drive, hook_data))
       return 1;
 
   return 0;

@@ -68,8 +68,8 @@ grub_sun_is_valid (grub_uint16_t *label)
 
 static grub_err_t
 sun_pc_partition_map_iterate (grub_disk_t disk,
-			      int (*hook) (grub_disk_t disk,
-					   const grub_partition_t partition))
+			      grub_partition_iterate_hook_t hook,
+			      void *hook_data)
 {
   grub_partition_t p;
   union
@@ -122,7 +122,7 @@ sun_pc_partition_map_iterate (grub_disk_t disk,
       p->number = partnum;
       if (p->len)
 	{
-	  if (hook (disk, p))
+	  if (hook (disk, p, hook_data))
 	    partnum = GRUB_PARTMAP_SUN_PC_MAX_PARTS;
 	}
     }

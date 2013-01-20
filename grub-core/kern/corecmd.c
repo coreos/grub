@@ -96,7 +96,7 @@ grub_core_cmd_insmod (struct grub_command *cmd __attribute__ ((unused)),
 }
 
 static int
-grub_mini_print_devices (const char *name)
+grub_mini_print_devices (const char *name, void *data __attribute__ ((unused)))
 {
   grub_printf ("(%s) ", name);
 
@@ -119,7 +119,7 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
 {
   if (argc < 1)
     {
-      grub_device_iterate (grub_mini_print_devices);
+      grub_device_iterate (grub_mini_print_devices, NULL);
       grub_xputs ("\n");
       grub_refresh ();
     }

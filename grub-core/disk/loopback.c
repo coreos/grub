@@ -135,15 +135,15 @@ fail:
 
 
 static int
-grub_loopback_iterate (int (*hook) (const char *name),
-		    grub_disk_pull_t pull)
+grub_loopback_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
+		       grub_disk_pull_t pull)
 {
   struct grub_loopback *d;
   if (pull != GRUB_DISK_PULL_NONE)
     return 0;
   for (d = loopback_list; d; d = d->next)
     {
-      if (hook (d->devname))
+      if (hook (d->devname, hook_data))
 	return 1;
     }
   return 0;

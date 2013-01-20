@@ -120,7 +120,7 @@ grub_msdos_partition_is_extended (int type)
 
 grub_err_t
 grub_partition_msdos_iterate (grub_disk_t disk,
-			      int (*hook) (grub_disk_t disk,
-					   const grub_partition_t partition));
+			      grub_partition_iterate_hook_t hook,
+			      void *hook_data);
 
 #endif /* ! GRUB_PC_PARTITION_HEADER */

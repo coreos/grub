@@ -48,8 +48,7 @@ const char *type_names[] = {
 
 static int
 iterate_rec (const char *prefix, const struct grub_arc_component *parent,
-	     int (*hook) (const char *name,
-			  const struct grub_arc_component *comp),
+	     grub_arc_iterate_devs_hook_t hook, void *hook_data,
 	     int alt_names)
 {
   const struct grub_arc_component *comp;
@@ -67,12 +66,13 @@ iterate_rec (const char *prefix, const struct grub_arc_component *parent,
 	name = grub_xasprintf ("%s%s(%lu)", prefix, cname, comp->key);
       if (!name)
 	return 1;
-      if (hook (name, comp))
+      if (hook (name, comp, hook_data))
 	{
 	  grub_free (name);
 	  return 1;
 	}
-      if (iterate_rec ((parent ? name : prefix), comp, hook, alt_names))
+      if (iterate_rec ((parent ? name : prefix), comp, hook, hook_data,
+		       alt_names))
 	{
 	  grub_free (name);
 	  return 1;
@@ -83,11 +83,11 @@ iterate_rec (const char *prefix, const struct grub_arc_component *parent,
 }
 
 int
-grub_arc_iterate_devs (int (*hook) (const char *name,
-				    const struct grub_arc_component *comp),
+grub_arc_iterate_devs (grub_arc_iterate_devs_hook_t hook, void *hook_data,
 		       int alt_names)
 {
-  return iterate_rec ((alt_names ? "arc" : ""), NULL, hook, alt_names);
+  return iterate_rec ((alt_names ? "arc" : ""), NULL, hook, hook_data,
+		      alt_names);
 }
 
 grub_err_t

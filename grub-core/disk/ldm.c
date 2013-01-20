@@ -105,35 +105,39 @@ read_int (grub_uint8_t *in, grub_size_t s)
 
 static const grub_gpt_part_type_t ldm_type = GRUB_GPT_PARTITION_TYPE_LDM;
 
+/* Helper for gpt_ldm_sector.  */
+static int
+gpt_ldm_sector_iter (grub_disk_t disk, const grub_partition_t p, void *data)
+{
+  grub_disk_addr_t *sector = data;
+  struct grub_gpt_partentry gptdata;
+  grub_partition_t p2;
+
+  p2 = disk->partition;
+  disk->partition = p->parent;
+  if (grub_disk_read (disk, p->offset, p->index,
+		      sizeof (gptdata), &gptdata))
+    {
+      disk->partition = p2;
+      return 0;
+    }
+  disk->partition = p2;
+
+  if (! grub_memcmp (&gptdata.type, &ldm_type, 16))
+    {
+      *sector = p->start + p->len - 1;
+      return 1;
+    }
+  return 0;
+}
+
 static grub_disk_addr_t
 gpt_ldm_sector (grub_disk_t dsk)
 {
   grub_disk_addr_t sector = 0;
   grub_err_t err;
-  auto int hook (grub_disk_t disk, const grub_partition_t p);
-  int hook (grub_disk_t disk, const grub_partition_t p)
-  {
-    struct grub_gpt_partentry gptdata;
-    grub_partition_t p2;
 
-    p2 = disk->partition;
-    disk->partition = p->parent;
-    if (grub_disk_read (disk, p->offset, p->index,
-			sizeof (gptdata), &gptdata))
-      {
-	disk->partition = p2;
-	return 0;
-      }
-    disk->partition = p2;
-
-    if (! grub_memcmp (&gptdata.type, &ldm_type, 16))
-      {
-	sector = p->start + p->len - 1;
-	return 1;
-      }
-    return 0;
-  }
-  err = grub_gpt_partition_map_iterate (dsk, hook);
+  err = grub_gpt_partition_map_iterate (dsk, gpt_ldm_sector_iter, &sector);
   if (err)
     {
       grub_errno = GRUB_ERR_NONE;

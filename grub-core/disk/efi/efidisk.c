@@ -404,7 +404,7 @@ enumerate_disks (void)
 }
 
 static int
-grub_efidisk_iterate (int (*hook) (const char *name),
+grub_efidisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		      grub_disk_pull_t pull)
 {
   struct grub_efidisk_data *d;
@@ -418,7 +418,7 @@ grub_efidisk_iterate (int (*hook) (const char *name),
 	{
 	  grub_snprintf (buf, sizeof (buf), "hd%d", count);
 	  grub_dprintf ("efidisk", "iterating %s\n", buf);
-	  if (hook (buf))
+	  if (hook (buf, hook_data))
 	    return 1;
 	}
       break;
@@ -427,7 +427,7 @@ grub_efidisk_iterate (int (*hook) (const char *name),
 	{
 	  grub_snprintf (buf, sizeof (buf), "fd%d", count);
 	  grub_dprintf ("efidisk", "iterating %s\n", buf);
-	  if (hook (buf))
+	  if (hook (buf, hook_data))
 	    return 1;
 	}
 
@@ -435,7 +435,7 @@ grub_efidisk_iterate (int (*hook) (const char *name),
 	{
 	  grub_snprintf (buf, sizeof (buf), "cd%d", count);
 	  grub_dprintf ("efidisk", "iterating %s\n", buf);
-	  if (hook (buf))
+	  if (hook (buf, hook_data))
 	    return 1;
 	}
       break;
@@ -736,6 +736,31 @@ get_diskname_from_path (const grub_efi_device_path_t *path,
   return 0;
 }
 
+/* Context for grub_efidisk_get_device_name.  */
+struct grub_efidisk_get_device_name_ctx
+{
+  char *partition_name;
+  grub_efi_hard_drive_device_path_t hd;
+};
+
+/* Helper for grub_efidisk_get_device_name.
+   Find the identical partition.  */
+static int
+grub_efidisk_get_device_name_iter (grub_disk_t disk __attribute__ ((unused)),
+				   const grub_partition_t part, void *data)
+{
+  struct grub_efidisk_get_device_name_ctx *ctx = data;
+
+  if (grub_partition_get_start (part) == ctx->hd.partition_start
+      && grub_partition_get_len (part) == ctx->hd.partition_size)
+    {
+      ctx->partition_name = grub_partition_get_name (part);
+      return 1;
+    }
+
+  return 0;
+}
+
 char *
 grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 {
@@ -754,27 +779,10 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
       && (GRUB_EFI_DEVICE_PATH_SUBTYPE (ldp)
 	  == GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE))
     {
-      char *partition_name = NULL;
+      struct grub_efidisk_get_device_name_ctx ctx;
       char *dev_name;
       grub_efi_device_path_t *dup_dp, *dup_ldp;
-      grub_efi_hard_drive_device_path_t hd;
       grub_disk_t parent = 0;
-
-      auto int find_partition (grub_disk_t disk, const grub_partition_t part);
-
-      /* Find the identical partition.  */
-      int find_partition (grub_disk_t disk __attribute__ ((unused)),
-			  const grub_partition_t part)
-	{
-	  if (grub_partition_get_start (part) == hd.partition_start
-	      && grub_partition_get_len (part) == hd.partition_size)
-	    {
-	      partition_name = grub_partition_get_name (part);
-	      return 1;
-	    }
-
-	  return 0;
-	}
 
       /* It is necessary to duplicate the device path so that GRUB
 	 can overwrite it.  */
@@ -797,24 +805,27 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 	return 0;
 
       /* Find a partition which matches the hard drive device path.  */
-      grub_memcpy (&hd, ldp, sizeof (hd));
-      if (hd.partition_start == 0
-	  && hd.partition_size == grub_disk_get_size (parent))
+      ctx.partition_name = NULL;
+      grub_memcpy (&ctx.hd, ldp, sizeof (ctx.hd));
+      if (ctx.hd.partition_start == 0
+	  && ctx.hd.partition_size == grub_disk_get_size (parent))
 	{
 	  dev_name = grub_strdup (parent->name);
 	}
       else
 	{
-	  grub_partition_iterate (parent, find_partition);
+	  grub_partition_iterate (parent, grub_efidisk_get_device_name_iter,
+				  &ctx);
 
-	  if (! partition_name)
+	  if (! ctx.partition_name)
 	    {
 	      grub_disk_close (parent);
 	      return 0;
 	    }
 
-	  dev_name = grub_xasprintf ("%s,%s", parent->name, partition_name);
-	  grub_free (partition_name);
+	  dev_name = grub_xasprintf ("%s,%s", parent->name,
+				     ctx.partition_name);
+	  grub_free (ctx.partition_name);
 	}
       grub_disk_close (parent);
 
