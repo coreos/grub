@@ -1,3 +1,7 @@
+2013-01-20  Leif Lindholm  <leif.lindholm@arm.com>
+
+	* include/grub/elf.h: Update ARM definitions based on binutils.
+
 2013-01-20  Aleš Nesrsta  <starous@volny.cz>
 
 	Split long USB transfers into short ones.

@@ -145,6 +145,7 @@ typedef struct
 #define ELFOSABI_TRU64		10	/* Compaq TRU64 UNIX.  */
 #define ELFOSABI_MODESTO	11	/* Novell Modesto.  */
 #define ELFOSABI_OPENBSD	12	/* OpenBSD.  */
+#define ELFOSABI_ARM_AEABI	64	/* ARM EABI */
 #define ELFOSABI_ARM		97	/* ARM */
 #define ELFOSABI_STANDALONE	255	/* Standalone (embedded) application */
 
@@ -2005,15 +2006,18 @@ typedef Elf32_Addr Elf32_Conflict;
 /* ARM specific declarations */
 
 /* Processor specific flags for the ELF header e_flags field.  */
-#define EF_ARM_RELEXEC     0x01
-#define EF_ARM_HASENTRY    0x02
-#define EF_ARM_INTERWORK   0x04
-#define EF_ARM_APCS_26     0x08
-#define EF_ARM_APCS_FLOAT  0x10
-#define EF_ARM_PIC         0x20
-#define EF_ARM_ALIGN8      0x40		/* 8-bit structure alignment is in use */
-#define EF_ARM_NEW_ABI     0x80
-#define EF_ARM_OLD_ABI     0x100
+#define EF_ARM_RELEXEC     	0x01
+#define EF_ARM_HASENTRY    	0x02
+#define EF_ARM_INTERWORK   	0x04
+#define EF_ARM_APCS_26     	0x08
+#define EF_ARM_APCS_FLOAT  	0x10
+#define EF_ARM_PIC         	0x20
+#define EF_ARM_ALIGN8      	0x40 /* 8-bit structure alignment is in use */
+#define EF_ARM_NEW_ABI     	0x80
+#define EF_ARM_OLD_ABI     	0x100
+#define EF_ARM_SOFT_FLOAT	0x200
+#define EF_ARM_VFP_FLOAT	0x400
+#define EF_ARM_MAVERICK_FLOAT	0x800
 
 /* Other constants defined in the ARM ELF spec. version B-01.  */
 /* NB. These conflict with values defined above.  */
@@ -2022,13 +2026,21 @@ typedef Elf32_Addr Elf32_Conflict;
 #define EF_ARM_MAPSYMSFIRST	0x10
 #define EF_ARM_EABIMASK		0XFF000000
 
+/* Constants defined in AAELF.  */
+#define EF_ARM_BE8	    0x00800000
+#define EF_ARM_LE8	    0x00400000
+
 #define EF_ARM_EABI_VERSION(flags) ((flags) & EF_ARM_EABIMASK)
 #define EF_ARM_EABI_UNKNOWN  0x00000000
 #define EF_ARM_EABI_VER1     0x01000000
 #define EF_ARM_EABI_VER2     0x02000000
+#define EF_ARM_EABI_VER3     0x03000000
+#define EF_ARM_EABI_VER4     0x04000000
+#define EF_ARM_EABI_VER5     0x05000000
 
 /* Additional symbol types for Thumb */
-#define STT_ARM_TFUNC      0xd
+#define STT_ARM_TFUNC	     STT_LOPROC /* A Thumb function.  */
+#define STT_ARM_16BIT	     STT_HIPROC /* A Thumb label.  */
 
 /* ARM-specific values for sh_flags */
 #define SHF_ARM_ENTRYSECT  0x10000000   /* Section contains an entry point */
@@ -2038,6 +2050,17 @@ typedef Elf32_Addr Elf32_Conflict;
 /* ARM-specific program header flags */
 #define PF_ARM_SB          0x10000000   /* Segment contains the location
 					   addressed by the static base */
+#define PF_ARM_PI	   0x20000000   /* Position-independent segment.  */
+#define PF_ARM_ABS	   0x40000000   /* Absolute segment.  */
+
+/* Processor specific values for the Phdr p_type field.  */
+#define PT_ARM_EXIDX		(PT_LOPROC + 1)	/* ARM unwind segment.  */
+
+/* Processor specific values for the Shdr sh_type field.  */
+#define SHT_ARM_EXIDX		(SHT_LOPROC + 1) /* ARM unwind section.  */
+#define SHT_ARM_PREEMPTMAP	(SHT_LOPROC + 2) /* Preemption details.  */
+#define SHT_ARM_ATTRIBUTES	(SHT_LOPROC + 3) /* ARM attributes section.  */
+
 
 /* ARM relocs.  */
 #define R_ARM_NONE		0	/* No reloc */
@@ -2050,7 +2073,7 @@ typedef Elf32_Addr Elf32_Conflict;
 #define R_ARM_THM_ABS5		7
 #define R_ARM_ABS8		8	/* Direct 8 bit */
 #define R_ARM_SBREL32		9
-#define R_ARM_THM_PC22		10
+#define R_ARM_THM_CALL		10
 #define R_ARM_THM_PC8		11
 #define R_ARM_AMP_VCALL9	12
 #define R_ARM_SWI24		13
@@ -2065,16 +2088,36 @@ typedef Elf32_Addr Elf32_Conflict;
 #define R_ARM_GOTPC		25	/* 32 bit PC relative offset to GOT */
 #define R_ARM_GOT32		26	/* 32 bit GOT entry */
 #define R_ARM_PLT32		27	/* 32 bit PLT address */
+#define R_ARM_CALL		28
+#define R_ARM_JUMP24		29
+#define R_ARM_THM_JUMP24	30
+#define R_ARM_BASE_ABS		31
 #define R_ARM_ALU_PCREL_7_0	32
 #define R_ARM_ALU_PCREL_15_8	33
 #define R_ARM_ALU_PCREL_23_15	34
 #define R_ARM_LDR_SBREL_11_0	35
 #define R_ARM_ALU_SBREL_19_12	36
 #define R_ARM_ALU_SBREL_27_20	37
+#define R_ARM_TLS_GOTDESC	90
+#define R_ARM_TLS_CALL		91
+#define R_ARM_TLS_DESCSEQ	92
+#define R_ARM_THM_TLS_CALL	93
 #define R_ARM_GNU_VTENTRY	100
 #define R_ARM_GNU_VTINHERIT	101
 #define R_ARM_THM_PC11		102	/* thumb unconditional branch */
 #define R_ARM_THM_PC9		103	/* thumb conditional branch */
+#define R_ARM_TLS_GD32		104	/* PC-rel 32 bit for global dynamic
+					   thread local data */
+#define R_ARM_TLS_LDM32		105	/* PC-rel 32 bit for local dynamic
+					   thread local data */
+#define R_ARM_TLS_LDO32		106	/* 32 bit offset relative to TLS
+					   block */
+#define R_ARM_TLS_IE32		107	/* PC-rel 32 bit for GOT entry of
+					   static TLS block offset */
+#define R_ARM_TLS_LE32		108	/* 32 bit offset relative to static
+					   TLS block */
+#define	R_ARM_THM_TLS_DESCSEQ	129
+#define R_ARM_IRELATIVE		160
 #define R_ARM_RXPC25		249
 #define R_ARM_RSBREL32		250
 #define R_ARM_THM_RPC22		251
