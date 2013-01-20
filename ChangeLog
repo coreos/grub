@@ -1,3 +1,7 @@
+2013-01-20  Aleš Nesrsta  <starous@volny.cz>
+
+	Split long USB transfers into short ones.
+
 2013-01-20  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* docs/grub.texi (Simple configuration): Clarify GRUB_HIDDEN_TIMEOUT

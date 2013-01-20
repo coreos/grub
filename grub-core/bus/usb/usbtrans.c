@@ -351,11 +351,23 @@ grub_usb_err_t
 grub_usb_bulk_read (grub_usb_device_t dev,
 		    int endpoint, grub_size_t size, char *data)
 {
-  grub_size_t actual;
+  grub_size_t actual, transferred;
   grub_usb_err_t err;
-  err = grub_usb_bulk_readwrite (dev, endpoint, size, data,
-				 GRUB_USB_TRANSFER_TYPE_IN, 1000, &actual);
-  if (!err && actual != size)
+  grub_size_t current_size, position;
+
+  for (position = 0, transferred = 0;
+       position < size; position += MAX_USB_TRANSFER_LEN)
+    {
+      current_size = size - position;
+      if (current_size >= MAX_USB_TRANSFER_LEN)
+	current_size = MAX_USB_TRANSFER_LEN;
+      err = grub_usb_bulk_readwrite (dev, endpoint, current_size,
+              &data[position], GRUB_USB_TRANSFER_TYPE_IN, 1000, &actual);
+      transferred += actual;
+      if (err || (current_size != actual) ) break;
+    }
+
+  if (!err && transferred != size)
     err = GRUB_USB_ERR_DATA;
   return err;
 }

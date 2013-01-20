@@ -19,6 +19,8 @@
 #ifndef	GRUB_USBTRANS_H
 #define	GRUB_USBTRANS_H	1
 
+#define MAX_USB_TRANSFER_LEN 0x0800
+
 typedef enum
   {
     GRUB_USB_TRANSFER_TYPE_IN,
