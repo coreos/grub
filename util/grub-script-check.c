@@ -169,7 +169,7 @@ main (int argc, char *argv[])
       if (! ctx.file)
 	{
           char *program = xstrdup(program_name);
-	  fprintf (stderr, "%s: %s: %s\n", program_name, 
+	  fprintf (stderr, _("cannot open `%s': %s"),
 		   ctx.arguments.filename, strerror (errno));
           argp_help (&argp, stderr, ARGP_HELP_STD_USAGE, program);
           free(program);
