@@ -1311,7 +1311,7 @@ grub_bsd_load_aout (grub_file_t file, const char *filename)
 			 bss_size);
 }
 
-static int NESTED_FUNC_ATTR
+static int
 grub_bsd_elf32_size_hook (grub_elf_t elf __attribute__ ((unused)),
 			  Elf32_Phdr *phdr, void *arg __attribute__ ((unused)))
 {
@@ -1353,7 +1353,7 @@ grub_bsd_elf32_hook (Elf32_Phdr * phdr, grub_addr_t * addr, int *do_load)
   return GRUB_ERR_NONE;
 }
 
-static int NESTED_FUNC_ATTR
+static int
 grub_bsd_elf64_size_hook (grub_elf_t elf __attribute__ ((unused)),
 			  Elf64_Phdr *phdr, void *arg __attribute__ ((unused)))
 {
