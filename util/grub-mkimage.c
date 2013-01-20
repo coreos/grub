@@ -1905,7 +1905,6 @@ main (int argc, char *argv[])
       if (! fp)
 	grub_util_error (_("cannot open `%s': %s"), arguments.output,
 			 strerror (errno));
-      free (arguments.output);
     }
 
   if (!arguments.dir)
@@ -1932,6 +1931,9 @@ main (int argc, char *argv[])
 
   if (arguments.dir)
     free (arguments.dir);
+
+  if (arguments.output)
+    free (arguments.output);
 
   return 0;
 }

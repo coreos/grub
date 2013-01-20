@@ -1,3 +1,8 @@
+2013-01-20  Leif Lindholm  <leif.lindholm@arm.com>
+
+	* util/grub-mkimage.c (main): Postpone freeing arguments.output
+	until after its use in generate_image.
+
 2013-01-20  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/loader/i386/linux.c (grub_cmd_initrd): Don't add the
