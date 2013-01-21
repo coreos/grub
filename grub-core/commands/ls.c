@@ -51,7 +51,7 @@ grub_ls_print_devices (const char *name, void *data)
 {
   int *longlist = data;
 
-  if (longlist)
+  if (*longlist)
     grub_normal_print_device_info (name);
   else
     grub_printf ("(%s) ", name);

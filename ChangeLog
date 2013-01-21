@@ -1,3 +1,12 @@
+2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/ls.c (grub_ls_print_devices): Add missing
+	asterisk.
+
+2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Make color variables global instead of it being per-terminal.
+
 2013-01-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	Fix powerpc and sparc64 build failures caused by un-nesting memory
