@@ -1036,7 +1036,7 @@ grub_gfxterm_cls (struct grub_term_output *term)
 }
 
 static void
-grub_virtual_screen_setcolorstate (struct grub_term_output *term,
+grub_virtual_screen_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
 				   grub_term_color_state state)
 {
   switch (state)
@@ -1046,11 +1046,11 @@ grub_virtual_screen_setcolorstate (struct grub_term_output *term,
       break;
 
     case GRUB_TERM_COLOR_NORMAL:
-      virtual_screen.term_color = term->normal_color;
+      virtual_screen.term_color = grub_term_normal_color;
       break;
 
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      virtual_screen.term_color = term->highlight_color;
+      virtual_screen.term_color = grub_term_highlight_color;
       break;
 
     default:
@@ -1246,8 +1246,6 @@ static struct grub_term_output grub_video_term =
     .refresh = grub_gfxterm_refresh,
     .fullscreen = grub_gfxterm_fullscreen,
     .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS,
-    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
-    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
     .next = 0
   };
 

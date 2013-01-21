@@ -221,10 +221,6 @@ struct grub_term_output
   /* The feature flags defined above.  */
   grub_uint32_t flags;
 
-  /* Current color state.  */
-  grub_uint8_t normal_color;
-  grub_uint8_t highlight_color;
-
   void *data;
 };
 typedef struct grub_term_output *grub_term_output_t;
@@ -232,6 +228,10 @@ typedef struct grub_term_output *grub_term_output_t;
 #define GRUB_TERM_DEFAULT_NORMAL_COLOR 0x07
 #define GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR 0x70
 #define GRUB_TERM_DEFAULT_STANDARD_COLOR 0x07
+
+/* Current color state.  */
+extern grub_uint8_t EXPORT_VAR(grub_term_normal_color);
+extern grub_uint8_t EXPORT_VAR(grub_term_highlight_color);
 
 extern struct grub_term_output *EXPORT_VAR(grub_term_outputs_disabled);
 extern struct grub_term_input *EXPORT_VAR(grub_term_inputs_disabled);
@@ -391,16 +391,6 @@ grub_setcolorstate (grub_term_color_state state)
     grub_term_setcolorstate (term, state);
 }
 
-/* Set the normal color and the highlight color. The format of each
-   color is VGA's.  */
-static inline void 
-grub_term_setcolor (struct grub_term_output *term,
-		    grub_uint8_t normal_color, grub_uint8_t highlight_color)
-{
-  term->normal_color = normal_color;
-  term->highlight_color = highlight_color;
-}
-
 /* Turn on/off the cursor.  */
 static inline void 
 grub_term_setcursor (struct grub_term_output *term, int on)
@@ -458,14 +448,6 @@ grub_term_getcharwidth (struct grub_term_output *term,
     return grub_unicode_estimate_width (c);
   else
     return 1;
-}
-
-static inline void 
-grub_term_getcolor (struct grub_term_output *term, 
-		    grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
-{
-  *normal_color = term->normal_color;
-  *highlight_color = term->highlight_color;
 }
 
 struct grub_term_autoload

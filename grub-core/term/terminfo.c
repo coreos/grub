@@ -303,12 +303,12 @@ grub_terminfo_setcolorstate (struct grub_term_output *term,
 	{
 	case GRUB_TERM_COLOR_STANDARD:
 	case GRUB_TERM_COLOR_NORMAL:
-	  fg = term->normal_color & 0x0f;
-	  bg = term->normal_color >> 4;
+	  fg = grub_term_normal_color & 0x0f;
+	  bg = grub_term_normal_color >> 4;
 	  break;
 	case GRUB_TERM_COLOR_HIGHLIGHT:
-	  fg = term->highlight_color & 0x0f;
-	  bg = term->highlight_color >> 4;
+	  fg = grub_term_highlight_color & 0x0f;
+	  bg = grub_term_highlight_color >> 4;
 	  break;
 	default:
 	  return;

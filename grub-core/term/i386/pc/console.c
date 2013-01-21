@@ -259,7 +259,8 @@ grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
 }
 
 static void
-grub_console_setcolorstate (struct grub_term_output *term,
+grub_console_setcolorstate (struct grub_term_output *term
+			    __attribute__ ((unused)),
 			    grub_term_color_state state)
 {
   switch (state) {
@@ -267,10 +268,10 @@ grub_console_setcolorstate (struct grub_term_output *term,
       grub_console_cur_color = GRUB_TERM_DEFAULT_STANDARD_COLOR & 0x7f;
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      grub_console_cur_color = term->normal_color & 0x7f;
+      grub_console_cur_color = grub_term_normal_color & 0x7f;
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_console_cur_color = term->highlight_color & 0x7f;
+      grub_console_cur_color = grub_term_highlight_color & 0x7f;
       break;
     default:
       break;
@@ -295,8 +296,6 @@ static struct grub_term_output grub_console_term_output =
     .setcolorstate = grub_console_setcolorstate,
     .setcursor = grub_console_setcursor,
     .flags = GRUB_TERM_CODE_TYPE_CP437,
-    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
-    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
 void

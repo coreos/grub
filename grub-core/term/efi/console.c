@@ -192,7 +192,8 @@ grub_console_cls (struct grub_term_output *term __attribute__ ((unused)))
 }
 
 static void
-grub_console_setcolorstate (struct grub_term_output *term,
+grub_console_setcolorstate (struct grub_term_output *term
+			    __attribute__ ((unused)),
 			    grub_term_color_state state)
 {
   grub_efi_simple_text_output_interface_t *o;
@@ -208,10 +209,10 @@ grub_console_setcolorstate (struct grub_term_output *term,
 		  & 0x7f);
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      efi_call_2 (o->set_attributes, o, term->normal_color & 0x7f);
+      efi_call_2 (o->set_attributes, o, grub_term_normal_color & 0x7f);
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      efi_call_2 (o->set_attributes, o, term->highlight_color & 0x7f);
+      efi_call_2 (o->set_attributes, o, grub_term_highlight_color & 0x7f);
       break;
     default:
       break;
@@ -265,8 +266,6 @@ static struct grub_term_output grub_console_term_output =
     .cls = grub_console_cls,
     .setcolorstate = grub_console_setcolorstate,
     .setcursor = grub_console_setcursor,
-    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
-    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
     .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS
   };
 

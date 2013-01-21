@@ -115,8 +115,6 @@ static struct grub_term_output grub_audio_term_output =
    .cls = (void *) dummy,
    .setcolorstate = (void *) dummy,
    .setcursor = (void *) dummy,
-   .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
-   .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
    .flags = GRUB_TERM_CODE_TYPE_ASCII | GRUB_TERM_DUMB
   };
 

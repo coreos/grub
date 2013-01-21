@@ -225,8 +225,10 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
       return;
     }
 
-  grub_term_getcolor (term, &old_color_normal, &old_color_highlight);
-  grub_term_setcolor (term, grub_color_menu_normal, grub_color_menu_highlight);
+  old_color_normal = grub_term_normal_color;
+  old_color_highlight = grub_term_highlight_color;
+  grub_term_normal_color = grub_color_menu_normal;
+  grub_term_highlight_color = grub_color_menu_highlight;
   grub_term_setcolorstate (term, highlight
 			   ? GRUB_TERM_COLOR_HIGHLIGHT
 			   : GRUB_TERM_COLOR_NORMAL);
@@ -293,7 +295,9 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 
   grub_term_gotoxy (term, grub_term_cursor_x (term), y);
 
-  grub_term_setcolor (term, old_color_normal, old_color_highlight);
+  grub_term_normal_color = old_color_normal;
+  grub_term_highlight_color = old_color_highlight;
+
   grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
   grub_free (unicode_title);
 }
@@ -349,11 +353,11 @@ grub_menu_init_page (int nested, int edit, int *num_entries,
   *num_entries = grub_term_height (term) - GRUB_TERM_TOP_BORDER_Y
     - (print_message (nested, edit, term, 1) + 3) - 2;
 
-  grub_term_getcolor (term, &old_color_normal, &old_color_highlight);
-
   /* By default, use the same colors for the menu.  */
-  grub_color_menu_normal = old_color_normal;
-  grub_color_menu_highlight = old_color_highlight;
+  old_color_normal = grub_term_normal_color;
+  old_color_highlight = grub_term_highlight_color;
+  grub_color_menu_normal = grub_term_normal_color;
+  grub_color_menu_highlight = grub_color_menu_highlight;
 
   /* Then give user a chance to replace them.  */
   grub_parse_color_name_pair (&grub_color_menu_normal,
@@ -362,9 +366,11 @@ grub_menu_init_page (int nested, int edit, int *num_entries,
 			      grub_env_get ("menu_color_highlight"));
 
   grub_normal_init_page (term);
-  grub_term_setcolor (term, grub_color_menu_normal, grub_color_menu_highlight);
+  grub_term_normal_color = grub_color_menu_normal;
+  grub_term_highlight_color = grub_color_menu_highlight;
   draw_border (term, *num_entries);
-  grub_term_setcolor (term, old_color_normal, old_color_highlight);
+  grub_term_normal_color = old_color_normal;
+  grub_term_highlight_color = old_color_highlight;
   print_message (nested, edit, term, 0);
 }
 

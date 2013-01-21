@@ -209,18 +209,18 @@ grub_vga_text_getwh (struct grub_term_output *term __attribute__ ((unused)))
 #ifndef MODE_MDA
 
 static void
-grub_vga_text_setcolorstate (struct grub_term_output *term,
-			    grub_term_color_state state)
+grub_vga_text_setcolorstate (struct grub_term_output *term __attribute__ ((unused)),
+			     grub_term_color_state state)
 {
   switch (state) {
     case GRUB_TERM_COLOR_STANDARD:
       cur_color = GRUB_TERM_DEFAULT_STANDARD_COLOR & 0x7f;
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      cur_color = term->normal_color & 0x7f;
+      cur_color = grub_term_normal_color & 0x7f;
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      cur_color = term->highlight_color & 0x7f;
+      cur_color = grub_term_highlight_color & 0x7f;
       break;
     default:
       break;
@@ -265,8 +265,6 @@ static struct grub_term_output grub_vga_text_term =
     .setcolorstate = grub_vga_text_setcolorstate,
     .setcursor = grub_vga_text_setcursor,
     .flags = GRUB_TERM_CODE_TYPE_CP437,
-    .normal_color = GRUB_TERM_DEFAULT_NORMAL_COLOR,
-    .highlight_color = GRUB_TERM_DEFAULT_HIGHLIGHT_COLOR,
   };
 
 #ifdef MODE_MDA

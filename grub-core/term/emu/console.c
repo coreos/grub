@@ -82,11 +82,11 @@ grub_ncurses_setcolorstate (struct grub_term_output *term,
       grub_console_attr = A_NORMAL;
       break;
     case GRUB_TERM_COLOR_NORMAL:
-      grub_console_cur_color = term->normal_color;
+      grub_console_cur_color = grub_term_normal_color;
       grub_console_attr = A_NORMAL;
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_console_cur_color = term->highlight_color;
+      grub_console_cur_color = grub_term_highlight_color;
       grub_console_attr = A_STANDOUT;
       break;
     default:

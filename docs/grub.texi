@@ -2776,6 +2776,33 @@ those colors.  Each color must be a name from the following list:
 
 The default is @samp{white/black}.
 
+The color support support varies from terminal to terminal.
+
+@samp{morse} has no color support at all.
+
+@samp{mda_text} color support is limited to highlighting by
+black/white reversal.
+
+@samp{console} on ARC and IEEE1275, @samp{serial_*} and
+@samp{spkmodem} are governed by terminfo and support
+only 8 colors if in modes @samp{vt100-color}, @samp{arc}
+(default for console on ARC), @samp{ieee1275} (default
+for console on IEEE1275). When in mode @samp{vt100}
+then the color support is limited to highlighting by black/white
+reversal. When in mode @samp{dumb} there is no color support.
+
+@samp{console} on EMU supports 8 colors.
+
+When console supports no colors this setting is ignored.
+When console supports 8 colors, then the colors from the
+second half of the previous list are mapped to the
+matching colors of first half.
+
+@samp{console} on EFI and BIOS and @samp{vga_text} support all 16 colors.
+
+@samp{gfxterm} supports all 16 colors and would be theoretically extendable
+to support whole rgb24 palette but currently there is no compelling reason
+to go beyond the current 16 colors.
 
 @node debug
 @subsection debug
@@ -4355,6 +4382,8 @@ AT keyboard support allows keyboard layout remapping and support for keys not
 available through firmware. It isn't needed for normal operation except
 baremetal ports.
 
+Speaker allows morse and spkmodem communication.
+
 USB support provides benefits similar to ATA (for USB disks) or AT (for USB
 keyboards). In addition it allows USBserial.
 
@@ -4376,6 +4405,7 @@ and mips-qemu_mips can use only memory up to first hole.
 @item network            @tab yes (*) @tab no       @tab no           @tab no
 @item ATA/AHCI           @tab yes     @tab yes      @tab yes          @tab yes
 @item AT keyboard        @tab yes     @tab yes      @tab yes          @tab yes
+@item Speaker            @tab yes     @tab yes      @tab yes          @tab yes
 @item USB                @tab yes     @tab yes      @tab yes          @tab yes
 @item chainloader        @tab local   @tab yes      @tab yes          @tab no
 @item cpuid              @tab partial @tab partial  @tab partial      @tab partial
@@ -4393,6 +4423,7 @@ and mips-qemu_mips can use only memory up to first hole.
 @item network            @tab yes         @tab yes       @tab yes           @tab yes
 @item ATA/AHCI           @tab yes         @tab yes       @tab yes           @tab no
 @item AT keyboard        @tab yes         @tab yes       @tab yes           @tab no
+@item Speaker            @tab yes         @tab yes       @tab yes           @tab no
 @item USB                @tab yes         @tab yes       @tab yes           @tab no
 @item chainloader        @tab local       @tab local     @tab no            @tab local
 @item cpuid              @tab partial     @tab partial   @tab partial       @tab no
@@ -4410,6 +4441,7 @@ and mips-qemu_mips can use only memory up to first hole.
 @item network            @tab no          @tab yes (*) @tab yes     @tab no
 @item ATA/AHCI           @tab yes         @tab no      @tab no      @tab no
 @item AT keyboard        @tab yes         @tab no      @tab no      @tab no
+@item Speaker            @tab no          @tab no      @tab no      @tab no
 @item USB                @tab yes         @tab no      @tab no      @tab no
 @item chainloader        @tab yes         @tab no      @tab no      @tab no
 @item cpuid              @tab no          @tab no      @tab no      @tab no
@@ -4427,6 +4459,7 @@ and mips-qemu_mips can use only memory up to first hole.
 @item network            @tab no        @tab yes
 @item ATA/AHCI           @tab yes       @tab no
 @item AT keyboard        @tab yes       @tab no
+@item Speaker            @tab no        @tab no
 @item USB                @tab N/A       @tab yes
 @item chainloader        @tab yes       @tab no
 @item cpuid              @tab no        @tab no
