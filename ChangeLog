@@ -1,3 +1,8 @@
+2013-01-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/disk/arc/arcdisk.c (grub_arcdisk_iterate): Fix
+	parameter declarations.
+
 2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/lsmmap.c: Fix unused variable on emu.

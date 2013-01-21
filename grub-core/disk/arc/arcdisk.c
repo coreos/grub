@@ -102,7 +102,7 @@ grub_arcdisk_iterate_iter (const char *name,
 }
 
 static int
-grub_arcdisk_iterate (int (*hook_in) (const char *name),
+grub_arcdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		      grub_disk_pull_t pull)
 {
   struct grub_arcdisk_iterate_ctx ctx = { hook, hook_data };
