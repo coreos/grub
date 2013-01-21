@@ -94,6 +94,13 @@ struct embed_signature embed_signatures[] =
       .signature = "ycgl",
       .signature_len = 4,
       .type = TYPE_RAID
+    },
+    {
+      /* https://bugs.launchpad.net/bugs/987022 */
+      .name = "Acer registration utility (?)",
+      .signature = "GREGRegDone.Tag\x00",
+      .signature_len = 16,
+      .type = TYPE_SOFTWARE
     }
   };
 #endif
