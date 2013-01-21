@@ -692,10 +692,7 @@ grub_ext2_read_symlink (grub_fshelp_node_t node)
 
 static int
 grub_ext2_iterate_dir (grub_fshelp_node_t dir,
-		       int NESTED_FUNC_ATTR
-		       (*hook) (const char *filename,
-				enum grub_fshelp_filetype filetype,
-				grub_fshelp_node_t node))
+		       grub_fshelp_iterate_dir_hook_t hook, void *hook_data)
 {
   unsigned int fpos = 0;
   struct grub_fshelp_node *diro = (struct grub_fshelp_node *) dir;
@@ -777,7 +774,7 @@ grub_ext2_iterate_dir (grub_fshelp_node_t dir,
 		type = GRUB_FSHELP_REG;
 	    }
 
-	  if (hook (filename, type, fdiro))
+	  if (hook (filename, type, fdiro, hook_data))
 	    return 1;
 	}
 
@@ -858,59 +855,69 @@ grub_ext2_read (grub_file_t file, char *buf, grub_size_t len)
 }
 
 
-static grub_err_t
-grub_ext2_dir (grub_device_t device, const char *path,
-	       int (*hook) (const char *filename,
-			    const struct grub_dirhook_info *info))
+/* Context for grub_ext2_dir.  */
+struct grub_ext2_dir_ctx
 {
-  struct grub_ext2_data *data = 0;
-  struct grub_fshelp_node *fdiro = 0;
+  grub_fs_dir_hook_t hook;
+  void *hook_data;
+  struct grub_ext2_data *data;
+};
 
-  auto int NESTED_FUNC_ATTR iterate (const char *filename,
-				     enum grub_fshelp_filetype filetype,
-				     grub_fshelp_node_t node);
+/* Helper for grub_ext2_dir.  */
+static int
+grub_ext2_dir_iter (const char *filename, enum grub_fshelp_filetype filetype,
+		    grub_fshelp_node_t node, void *data)
+{
+  struct grub_ext2_dir_ctx *ctx = data;
+  struct grub_dirhook_info info;
 
-  int NESTED_FUNC_ATTR iterate (const char *filename,
-				enum grub_fshelp_filetype filetype,
-				grub_fshelp_node_t node)
+  grub_memset (&info, 0, sizeof (info));
+  if (! node->inode_read)
     {
-      struct grub_dirhook_info info;
-      grub_memset (&info, 0, sizeof (info));
-      if (! node->inode_read)
-	{
-	  grub_ext2_read_inode (data, node->ino, &node->inode);
-	  if (!grub_errno)
-	    node->inode_read = 1;
-	  grub_errno = GRUB_ERR_NONE;
-	}
-      if (node->inode_read)
-	{
-	  info.mtimeset = 1;
-	  info.mtime = grub_le_to_cpu32 (node->inode.mtime);
-	}
-
-      info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
-      grub_free (node);
-      return hook (filename, &info);
+      grub_ext2_read_inode (ctx->data, node->ino, &node->inode);
+      if (!grub_errno)
+	node->inode_read = 1;
+      grub_errno = GRUB_ERR_NONE;
     }
+  if (node->inode_read)
+    {
+      info.mtimeset = 1;
+      info.mtime = grub_le_to_cpu32 (node->inode.mtime);
+    }
+
+  info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+  grub_free (node);
+  return ctx->hook (filename, &info, ctx->hook_data);
+}
+
+static grub_err_t
+grub_ext2_dir (grub_device_t device, const char *path, grub_fs_dir_hook_t hook,
+	       void *hook_data)
+{
+  struct grub_ext2_dir_ctx ctx = {
+    .hook = hook,
+    .hook_data = hook_data
+  };
+  struct grub_fshelp_node *fdiro = 0;
 
   grub_dl_ref (my_mod);
 
-  data = grub_ext2_mount (device->disk);
-  if (! data)
+  ctx.data = grub_ext2_mount (device->disk);
+  if (! ctx.data)
     goto fail;
 
-  grub_fshelp_find_file (path, &data->diropen, &fdiro, grub_ext2_iterate_dir,
-			 grub_ext2_read_symlink, GRUB_FSHELP_DIR);
+  grub_fshelp_find_file (path, &ctx.data->diropen, &fdiro,
+			 grub_ext2_iterate_dir, grub_ext2_read_symlink,
+			 GRUB_FSHELP_DIR);
   if (grub_errno)
     goto fail;
 
-  grub_ext2_iterate_dir (fdiro, iterate);
+  grub_ext2_iterate_dir (fdiro, grub_ext2_dir_iter, &ctx);
 
  fail:
-  if (fdiro != &data->diropen)
+  if (fdiro != &ctx.data->diropen)
     grub_free (fdiro);
-  grub_free (data);
+  grub_free (ctx.data);
 
   grub_dl_unref (my_mod);
 

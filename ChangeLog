@@ -1,5 +1,14 @@
 2013-01-21  Colin Watson  <cjwatson@ubuntu.com>
 
+	Remove nested functions from filesystem directory iterators.
+
+	* include/grub/fs.h (grub_fs_dir_hook_t): New type.
+	(struct grub_fs.dir): Add hook_data argument.
+
+	Update all implementations and callers.
+
+2013-01-21  Colin Watson  <cjwatson@ubuntu.com>
+
 	* docs/grub.texi (Multi-boot manual config): Fix typo for
 	"recommended".
 

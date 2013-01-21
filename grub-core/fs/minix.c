@@ -536,8 +536,7 @@ grub_minix_mount (grub_disk_t disk)
 
 static grub_err_t
 grub_minix_dir (grub_device_t device, const char *path,
-		  int (*hook) (const char *filename,
-			       const struct grub_dirhook_info *info))
+		grub_fs_dir_hook_t hook, void *hook_data)
 {
   struct grub_minix_data *data = 0;
   unsigned int pos = 0;
@@ -590,7 +589,7 @@ grub_minix_dir (grub_device_t device, const char *path,
       info.mtimeset = 1;
       info.mtime = grub_minix_to_cpu32 (data->inode.mtime);
 
-      if (hook (filename, &info) ? 1 : 0)
+      if (hook (filename, &info, hook_data) ? 1 : 0)
 	break;
 
       /* Load the old inode back in.  */

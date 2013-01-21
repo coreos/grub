@@ -1151,9 +1151,8 @@ grub_hfs_find_dir (struct grub_hfs_data *data, const char *path,
 
 
 static grub_err_t
-grub_hfs_dir (grub_device_t device, const char *path,
-		  int (*hook) (const char *filename,
-			       const struct grub_dirhook_info *info))
+grub_hfs_dir (grub_device_t device, const char *path, grub_fs_dir_hook_t hook,
+	      void *hook_data)
 {
   int inode;
 
@@ -1184,14 +1183,14 @@ grub_hfs_dir (grub_device_t device, const char *path,
 	  info.dir = 1;
 	  info.mtimeset = 1;
 	  info.mtime = grub_be_to_cpu32 (drec->mtime) - 2082844800;
-	  return hook (fname, &info);
+	  return hook (fname, &info, hook_data);
 	}
       if (frec->type == GRUB_HFS_FILETYPE_FILE)
 	{
 	  info.dir = 0;
 	  info.mtimeset = 1;
 	  info.mtime = grub_be_to_cpu32 (frec->mtime) - 2082844800;
-	  return hook (fname, &info);
+	  return hook (fname, &info, hook_data);
 	}
 
       return 0;

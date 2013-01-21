@@ -1253,8 +1253,8 @@ grub_net_open_real (const char *name)
 
 static grub_err_t
 grub_net_fs_dir (grub_device_t device, const char *path __attribute__ ((unused)),
-	       int (*hook) (const char *filename,
-			    const struct grub_dirhook_info *info) __attribute__ ((unused)))
+		 grub_fs_dir_hook_t hook __attribute__ ((unused)),
+		 void *hook_data __attribute__ ((unused)))
 {
   if (!device->net)
     return grub_error (GRUB_ERR_BUG, "invalid net device");

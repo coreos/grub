@@ -65,8 +65,7 @@ struct grub_hostfs_data
 
 static grub_err_t
 grub_hostfs_dir (grub_device_t device, const char *path,
-		 int (*hook) (const char *filename,
-			      const struct grub_dirhook_info *info))
+		 grub_fs_dir_hook_t hook, void *hook_data)
 {
   DIR *dir;
 
@@ -91,7 +90,7 @@ grub_hostfs_dir (grub_device_t device, const char *path,
 	break;
 
       info.dir = !! is_dir (path, de->d_name);
-      hook (de->d_name, &info);
+      hook (de->d_name, &info, hook_data);
 
     }
 

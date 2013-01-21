@@ -513,8 +513,7 @@ handle_symlink (struct grub_cpio_data *data,
 
 static grub_err_t
 grub_cpio_dir (grub_device_t device, const char *path_in,
-	       int (*hook) (const char *filename,
-			    const struct grub_dirhook_info *info))
+	       grub_fs_dir_hook_t hook, void *hook_data)
 {
   struct grub_cpio_data *data;
   grub_disk_addr_t ofs;
@@ -575,7 +574,7 @@ grub_cpio_dir (grub_device_t device, const char *path_in,
 	      info.mtime = mtime;
 	      info.mtimeset = 1;
 
-	      if (hook (n, &info))
+	      if (hook (n, &info, hook_data))
 		{
 		  grub_free (name);
 		  goto fail;

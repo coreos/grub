@@ -41,6 +41,10 @@ struct grub_dirhook_info
   grub_int32_t mtime;
 };
 
+typedef int (*grub_fs_dir_hook_t) (const char *filename,
+				   const struct grub_dirhook_info *info,
+				   void *data);
+
 /* Filesystem descriptor.  */
 struct grub_fs
 {
@@ -53,8 +57,7 @@ struct grub_fs
 
   /* Call HOOK with each file under DIR.  */
   grub_err_t (*dir) (grub_device_t device, const char *path,
-		     int (*hook) (const char *filename,
-				  const struct grub_dirhook_info *info));
+		     grub_fs_dir_hook_t hook, void *hook_data);
 
   /* Open a file named NAME and initialize FILE.  */
   grub_err_t (*open) (struct grub_file *file, const char *name);

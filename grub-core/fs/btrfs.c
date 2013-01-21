@@ -1491,8 +1491,7 @@ find_path (struct grub_btrfs_data *data,
 
 static grub_err_t
 grub_btrfs_dir (grub_device_t device, const char *path,
-		int (*hook) (const char *filename,
-			     const struct grub_dirhook_info *info))
+		grub_fs_dir_hook_t hook, void *hook_data)
 {
   struct grub_btrfs_data *data = grub_btrfs_mount (device);
   struct grub_btrfs_key key_in, key_out;
@@ -1586,7 +1585,7 @@ grub_btrfs_dir (grub_device_t device, const char *path,
 	  c = cdirel->name[grub_le_to_cpu16 (cdirel->n)];
 	  cdirel->name[grub_le_to_cpu16 (cdirel->n)] = 0;
 	  info.dir = (cdirel->type == GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY);
-	  if (hook (cdirel->name, &info))
+	  if (hook (cdirel->name, &info, hook_data))
 	    goto out;
 	  cdirel->name[grub_le_to_cpu16 (cdirel->n)] = c;
 	}

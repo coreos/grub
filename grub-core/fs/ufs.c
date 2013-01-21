@@ -625,8 +625,7 @@ grub_ufs_mount (grub_disk_t disk)
 
 static grub_err_t
 grub_ufs_dir (grub_device_t device, const char *path,
-	       int (*hook) (const char *filename,
-			    const struct grub_dirhook_info *info))
+	      grub_fs_dir_hook_t hook, void *hook_data)
 {
   struct grub_ufs_data *data;
   unsigned int pos = 0;
@@ -697,7 +696,7 @@ grub_ufs_dir (grub_device_t device, const char *path,
 #endif
 	info.mtimeset = 1;
 
-	if (hook (filename, &info))
+	if (hook (filename, &info, hook_data))
 	  break;
       }
 

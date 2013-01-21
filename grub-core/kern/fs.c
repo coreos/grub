@@ -35,10 +35,11 @@ grub_fs_autoload_hook_t grub_fs_autoload_hook = 0;
 /* Helper for grub_fs_probe.  */
 static int
 probe_dummy_iter (const char *filename __attribute__ ((unused)),
-		  const struct grub_dirhook_info *info __attribute__ ((unused)))
-  {
-    return 1;
-  }
+		  const struct grub_dirhook_info *info __attribute__ ((unused)),
+		  void *data __attribute__ ((unused)))
+{
+  return 1;
+}
 
 grub_fs_t
 grub_fs_probe (grub_device_t device)
@@ -69,7 +70,7 @@ grub_fs_probe (grub_device_t device)
 	    }
 	  else
 #endif
-	    (p->dir) (device, "/", probe_dummy_iter);
+	    (p->dir) (device, "/", probe_dummy_iter, NULL);
 	  if (grub_errno == GRUB_ERR_NONE)
 	    return p;
 
@@ -93,7 +94,7 @@ grub_fs_probe (grub_device_t device)
 	    {
 	      p = grub_fs_list;
 
-	      (p->dir) (device, "/", probe_dummy_iter);
+	      (p->dir) (device, "/", probe_dummy_iter, NULL);
 	      if (grub_errno == GRUB_ERR_NONE)
 		{
 		  count--;

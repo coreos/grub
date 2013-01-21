@@ -600,10 +600,7 @@ free_file (struct grub_ntfs_file *mft)
 
 static int
 list_file (struct grub_ntfs_file *diro, grub_uint8_t *pos,
-	   int NESTED_FUNC_ATTR
-	   (*hook) (const char *filename,
-		    enum grub_fshelp_filetype filetype,
-		    grub_fshelp_node_t node))
+	   grub_fshelp_iterate_dir_hook_t hook, void *hook_data)
 {
   grub_uint8_t *np;
   int ns;
@@ -667,7 +664,7 @@ list_file (struct grub_ntfs_file *diro, grub_uint8_t *pos,
           if (namespace)
             type |= GRUB_FSHELP_CASE_INSENSITIVE;
 
-	  if (hook (ustr, type, fdiro))
+	  if (hook (ustr, type, fdiro, hook_data))
 	    {
 	      grub_free (ustr);
 	      return 1;
@@ -778,10 +775,7 @@ grub_ntfs_read_symlink (grub_fshelp_node_t node)
 
 static int
 grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
-		       int NESTED_FUNC_ATTR
-		       (*hook) (const char *filename,
-				enum grub_fshelp_filetype filetype,
-				grub_fshelp_node_t node))
+		       grub_fshelp_iterate_dir_hook_t hook, void *hook_data)
 {
   grub_uint8_t *bitmap;
   struct grub_ntfs_attr attr, *at;
@@ -824,7 +818,7 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
     }
 
   cur_pos += 0x10;		/* Skip index root */
-  ret = list_file (mft, cur_pos + u16at (cur_pos, 0), hook);
+  ret = list_file (mft, cur_pos + u16at (cur_pos, 0), hook, hook_data);
   if (ret)
     goto done;
 
@@ -909,7 +903,8 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
 		  || (fixup (indx, mft->data->idx_size,
 			     (const grub_uint8_t *) "INDX")))
 		goto done;
-	      ret = list_file (mft, &indx[0x18 + u16at (indx, 0x18)], hook);
+	      ret = list_file (mft, &indx[0x18 + u16at (indx, 0x18)],
+			       hook, hook_data);
 	      if (ret)
 		goto done;
 	    }
@@ -1017,32 +1012,38 @@ fail:
   return 0;
 }
 
+/* Context for grub_ntfs_dir.  */
+struct grub_ntfs_dir_ctx
+{
+  grub_fs_dir_hook_t hook;
+  void *hook_data;
+};
+
+/* Helper for grub_ntfs_dir.  */
+static int
+grub_ntfs_dir_iter (const char *filename, enum grub_fshelp_filetype filetype,
+		    grub_fshelp_node_t node, void *data)
+{
+  struct grub_ntfs_dir_ctx *ctx = data;
+  struct grub_dirhook_info info;
+
+  grub_memset (&info, 0, sizeof (info));
+  info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+  info.mtimeset = 1;
+  info.mtime = grub_divmod64 (node->mtime, 10000000, 0) 
+    - 86400ULL * 365 * (1970 - 1601)
+    - 86400ULL * ((1970 - 1601) / 4) + 86400ULL * ((1970 - 1601) / 100);
+  grub_free (node);
+  return ctx->hook (filename, &info, ctx->hook_data);
+}
+
 static grub_err_t
 grub_ntfs_dir (grub_device_t device, const char *path,
-	       int (*hook) (const char *filename,
-			    const struct grub_dirhook_info *info))
+	       grub_fs_dir_hook_t hook, void *hook_data)
 {
+  struct grub_ntfs_dir_ctx ctx = { hook, hook_data };
   struct grub_ntfs_data *data = 0;
   struct grub_fshelp_node *fdiro = 0;
-
-  auto int NESTED_FUNC_ATTR iterate (const char *filename,
-				     enum grub_fshelp_filetype filetype,
-				     grub_fshelp_node_t node);
-
-  int NESTED_FUNC_ATTR iterate (const char *filename,
-				enum grub_fshelp_filetype filetype,
-				grub_fshelp_node_t node)
-  {
-      struct grub_dirhook_info info;
-      grub_memset (&info, 0, sizeof (info));
-      info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
-      info.mtimeset = 1;
-      info.mtime = grub_divmod64 (node->mtime, 10000000, 0) 
-	- 86400ULL * 365 * (1970 - 1601)
-	- 86400ULL * ((1970 - 1601) / 4) + 86400ULL * ((1970 - 1601) / 100);
-      grub_free (node);
-      return hook (filename, &info);
-  }
 
   grub_dl_ref (my_mod);
 
@@ -1056,7 +1057,7 @@ grub_ntfs_dir (grub_device_t device, const char *path,
   if (grub_errno)
     goto fail;
 
-  grub_ntfs_iterate_dir (fdiro, iterate);
+  grub_ntfs_iterate_dir (fdiro, grub_ntfs_dir_iter, &ctx);
 
 fail:
   if ((fdiro) && (fdiro != &data->cmft))

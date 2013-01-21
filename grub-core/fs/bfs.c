@@ -173,6 +173,15 @@ struct grub_bfs_data
   struct grub_bfs_inode ino[0];
 };
 
+/* Context for grub_bfs_dir.  */
+struct grub_bfs_dir_ctx
+{
+  grub_device_t device;
+  grub_fs_dir_hook_t hook;
+  void *hook_data;
+  struct grub_bfs_superblock sb;
+};
+
 static grub_err_t
 read_extent (grub_disk_t disk,
 	     const struct grub_bfs_superblock *sb,
@@ -413,7 +422,9 @@ static int
 iterate_in_b_tree (grub_disk_t disk,
 		   const struct grub_bfs_superblock *sb,
 		   const struct grub_bfs_inode *ino,
-		   int NESTED_FUNC_ATTR (*hook) (const char *name, grub_uint64_t value))
+		   int (*hook) (const char *name, grub_uint64_t value,
+				struct grub_bfs_dir_ctx *ctx),
+		   struct grub_bfs_dir_ctx *ctx)
 {
   struct grub_bfs_btree_header head;
   grub_err_t err;
@@ -496,7 +507,8 @@ iterate_in_b_tree (grub_disk_t disk,
 	      end = grub_bfs_to_cpu_treehead (node.total_key_len);
 	    c = key_data[end];
 	    key_data[end] = 0;
-	    if (hook (key_data + start, grub_bfs_to_cpu64 (key_values[i])))
+	    if (hook (key_data + start, grub_bfs_to_cpu64 (key_values[i]),
+		      ctx))
 	      return 1;
 	    key_data[end] = c;
 	  }
@@ -844,46 +856,52 @@ mount (grub_disk_t disk, struct grub_bfs_superblock *sb)
   return GRUB_ERR_NONE;
 }
 
+/* Helper for grub_bfs_dir.  */
+static int
+grub_bfs_dir_iter (const char *name, grub_uint64_t value,
+		   struct grub_bfs_dir_ctx *ctx)
+{
+  grub_err_t err2;
+  union
+  {
+    struct grub_bfs_inode ino;
+    grub_uint8_t raw[grub_bfs_to_cpu32 (ctx->sb.bsize)];
+  } ino;
+  struct grub_dirhook_info info;
+
+  err2 = grub_disk_read (ctx->device->disk, value
+			 << (grub_bfs_to_cpu32 (ctx->sb.log2_bsize)
+			     - GRUB_DISK_SECTOR_BITS), 0,
+			 grub_bfs_to_cpu32 (ctx->sb.bsize), (char *) ino.raw);
+  if (err2)
+    {
+      grub_print_error ();
+      return 0;
+    }
+
+  info.mtimeset = 1;
+#ifdef MODE_AFS
+  info.mtime =
+    grub_divmod64 (grub_bfs_to_cpu64 (ino.ino.mtime), 1000000, 0);
+#else
+  info.mtime = grub_bfs_to_cpu64 (ino.ino.mtime) >> 16;
+#endif
+  info.dir = ((grub_bfs_to_cpu32 (ino.ino.mode) & ATTR_TYPE) == ATTR_DIR);
+  return ctx->hook (name, &info, ctx->hook_data);
+}
+
 static grub_err_t
 grub_bfs_dir (grub_device_t device, const char *path,
-	      int (*hook_in) (const char *filename,
-			      const struct grub_dirhook_info * info))
+	      grub_fs_dir_hook_t hook, void *hook_data)
 {
-  struct grub_bfs_superblock sb;
+  struct grub_bfs_dir_ctx ctx = {
+    .device = device,
+    .hook = hook,
+    .hook_data = hook_data
+  };
   grub_err_t err;
-  auto int NESTED_FUNC_ATTR hook (const char *name, grub_uint64_t value);
 
-  int NESTED_FUNC_ATTR hook (const char *name, grub_uint64_t value)
-  {
-    grub_err_t err2;
-    union
-    {
-      struct grub_bfs_inode ino;
-      grub_uint8_t raw[grub_bfs_to_cpu32 (sb.bsize)];
-    } ino;
-    struct grub_dirhook_info info;
-
-    err2 = grub_disk_read (device->disk, value
-			   << (grub_bfs_to_cpu32 (sb.log2_bsize)
-			       - GRUB_DISK_SECTOR_BITS), 0,
-			   grub_bfs_to_cpu32 (sb.bsize), (char *) ino.raw);
-    if (err2)
-      {
-	grub_print_error ();
-	return 0;
-      }
-
-    info.mtimeset = 1;
-#ifdef MODE_AFS
-    info.mtime =
-      grub_divmod64 (grub_bfs_to_cpu64 (ino.ino.mtime), 1000000, 0);
-#else
-    info.mtime = grub_bfs_to_cpu64 (ino.ino.mtime) >> 16;
-#endif
-    info.dir = ((grub_bfs_to_cpu32 (ino.ino.mode) & ATTR_TYPE) == ATTR_DIR);
-    return hook_in (name, &info);
-  }
-  err = mount (device->disk, &sb);
+  err = mount (device->disk, &ctx.sb);
   if (err)
     return err;
 
@@ -891,14 +909,15 @@ grub_bfs_dir (grub_device_t device, const char *path,
     union
     {
       struct grub_bfs_inode ino;
-      grub_uint8_t raw[grub_bfs_to_cpu32 (sb.bsize)];
+      grub_uint8_t raw[grub_bfs_to_cpu32 (ctx.sb.bsize)];
     } ino;
-    err = find_file (path, device->disk, &sb, &ino.ino);
+    err = find_file (path, device->disk, &ctx.sb, &ino.ino);
     if (err)
       return err;
     if (((grub_bfs_to_cpu32 (ino.ino.mode) & ATTR_TYPE) != ATTR_DIR))
       return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
-    iterate_in_b_tree (device->disk, &sb, &ino.ino, hook);
+    iterate_in_b_tree (device->disk, &ctx.sb, &ino.ino, grub_bfs_dir_iter,
+		       &ctx);
   }
 
   return grub_errno;

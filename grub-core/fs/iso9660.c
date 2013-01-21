@@ -521,10 +521,7 @@ get_node_size (grub_fshelp_node_t node)
 
 static int
 grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
-			  int NESTED_FUNC_ATTR
-			  (*hook) (const char *filename,
-				   enum grub_fshelp_filetype filetype,
-				   grub_fshelp_node_t node))
+			  grub_fshelp_iterate_dir_hook_t hook, void *hook_data)
 {
   struct grub_iso9660_dir dirent;
   grub_off_t offset = 0;
@@ -828,7 +825,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	    symlink = 0;
 	    was_continue = 0;
 	  }
-	if (hook (filename, type, node))
+	if (hook (filename, type, node, hook_data))
 	  {
 	    if (filename_alloc)
 	      grub_free (filename);
@@ -844,31 +841,38 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 
 
 
+/* Context for grub_iso9660_dir.  */
+struct grub_iso9660_dir_ctx
+{
+  grub_fs_dir_hook_t hook;
+  void *hook_data;
+};
+
+/* Helper for grub_iso9660_dir.  */
+static int
+grub_iso9660_dir_iter (const char *filename,
+		       enum grub_fshelp_filetype filetype,
+		       grub_fshelp_node_t node, void *data)
+{
+  struct grub_iso9660_dir_ctx *ctx = data;
+  struct grub_dirhook_info info;
+
+  grub_memset (&info, 0, sizeof (info));
+  info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+  info.mtimeset = !!iso9660_to_unixtime2 (&node->dirents[0].mtime, &info.mtime);
+
+  grub_free (node);
+  return ctx->hook (filename, &info, ctx->hook_data);
+}
+
 static grub_err_t
 grub_iso9660_dir (grub_device_t device, const char *path,
-		  int (*hook) (const char *filename,
-			       const struct grub_dirhook_info *info))
+		  grub_fs_dir_hook_t hook, void *hook_data)
 {
+  struct grub_iso9660_dir_ctx ctx = { hook, hook_data };
   struct grub_iso9660_data *data = 0;
   struct grub_fshelp_node rootnode;
   struct grub_fshelp_node *foundnode;
-
-  auto int NESTED_FUNC_ATTR iterate (const char *filename,
-				     enum grub_fshelp_filetype filetype,
-				     grub_fshelp_node_t node);
-
-  int NESTED_FUNC_ATTR iterate (const char *filename,
-				enum grub_fshelp_filetype filetype,
-				grub_fshelp_node_t node)
-    {
-      struct grub_dirhook_info info;
-      grub_memset (&info, 0, sizeof (info));
-      info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
-      info.mtimeset = !!iso9660_to_unixtime2 (&node->dirents[0].mtime, &info.mtime);
-
-      grub_free (node);
-      return hook (filename, &info);
-    }
 
   grub_dl_ref (my_mod);
 
@@ -891,7 +895,7 @@ grub_iso9660_dir (grub_device_t device, const char *path,
     goto fail;
 
   /* List the files in the directory.  */
-  grub_iso9660_iterate_dir (foundnode, iterate);
+  grub_iso9660_iterate_dir (foundnode, grub_iso9660_dir_iter, &ctx);
 
   if (foundnode != &rootnode)
     grub_free (foundnode);

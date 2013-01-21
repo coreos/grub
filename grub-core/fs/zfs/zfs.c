@@ -253,6 +253,14 @@ struct grub_zfs_data
   grub_uint64_t guid;
 };
 
+/* Context for grub_zfs_dir.  */
+struct grub_zfs_dir_ctx
+{
+  grub_fs_dir_hook_t hook;
+  void *hook_data;
+  struct grub_zfs_data *data;
+};
+
 grub_err_t (*grub_zfs_decrypt) (grub_crypto_cipher_handle_t cipher,
 				grub_uint64_t algo,
 				void *nonce,
@@ -1790,8 +1798,9 @@ mzap_lookup (mzap_phys_t * zapobj, grub_zfs_endian_t endian,
 
 static int
 mzap_iterate (mzap_phys_t * zapobj, grub_zfs_endian_t endian, int objsize, 
-	      int NESTED_FUNC_ATTR (*hook) (const char *name, 
-					    grub_uint64_t val))
+	      int (*hook) (const char *name, grub_uint64_t val,
+			   struct grub_zfs_dir_ctx *ctx),
+	      struct grub_zfs_dir_ctx *ctx)
 {
   int i, chunks;
   mzap_ent_phys_t *mzap_ent = zapobj->mz_chunk;
@@ -1803,7 +1812,7 @@ mzap_iterate (mzap_phys_t * zapobj, grub_zfs_endian_t endian, int objsize,
 		    mzap_ent[i].mze_name, (long long)mzap_ent[i].mze_value,
 		    (int)mzap_ent[i].mze_cd);
       if (hook (mzap_ent[i].mze_name, 
-		grub_zfs_to_cpu64 (mzap_ent[i].mze_value, endian)))
+		grub_zfs_to_cpu64 (mzap_ent[i].mze_value, endian), ctx))
 	return 1;
     }
 
@@ -2054,12 +2063,11 @@ fzap_lookup (dnode_end_t * zap_dnode, zap_phys_t * zap,
 static int
 fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
 	      grub_size_t name_elem_length,
-	      int NESTED_FUNC_ATTR (*hook) (const void *name,
-					    grub_size_t name_length,
-					    const void *val_in,
-					    grub_size_t nelem,
-					    grub_size_t elemsize), 
-	      struct grub_zfs_data *data)
+	      int (*hook) (const void *name, grub_size_t name_length,
+			   const void *val_in,
+			   grub_size_t nelem, grub_size_t elemsize,
+			   void *data),
+	      void *hook_data, struct grub_zfs_data *data)
 {
   zap_leaf_phys_t *l;
   void *l_in;
@@ -2158,7 +2166,7 @@ fzap_iterate (dnode_end_t * zap_dnode, zap_phys_t * zap,
 	      }
 
 	    if (hook (buf, le->le_name_length,
-		      val, le->le_value_length, le->le_int_size))
+		      val, le->le_value_length, le->le_int_size, hook_data))
 	      {
 		grub_free (l);
 		return 1;
@@ -2221,11 +2229,35 @@ zap_lookup (dnode_end_t * zap_dnode, const char *name, grub_uint64_t *val,
   return grub_error (GRUB_ERR_BAD_FS, "unknown ZAP type");
 }
 
+/* Context for zap_iterate_u64.  */
+struct zap_iterate_u64_ctx
+{
+  int (*hook) (const char *, grub_uint64_t, struct grub_zfs_dir_ctx *);
+  struct grub_zfs_dir_ctx *dir_ctx;
+};
+
+/* Helper for zap_iterate_u64.  */
+static int
+zap_iterate_u64_transform (const void *name,
+			   grub_size_t namelen __attribute__ ((unused)),
+			   const void *val_in,
+			   grub_size_t nelem,
+			   grub_size_t elemsize,
+			   void *data)
+{
+  struct zap_iterate_u64_ctx *ctx = data;
+
+  if (elemsize != sizeof (grub_uint64_t) || nelem != 1)
+    return 0;
+  return ctx->hook (name, grub_be_to_cpu64 (*(const grub_uint64_t *) val_in),
+		    ctx->dir_ctx);
+}
+
 static int
 zap_iterate_u64 (dnode_end_t * zap_dnode, 
-		 int NESTED_FUNC_ATTR (*hook) (const char *name,
-					       grub_uint64_t val),
-		 struct grub_zfs_data *data)
+		 int (*hook) (const char *name, grub_uint64_t val,
+			      struct grub_zfs_dir_ctx *ctx),
+		 struct grub_zfs_data *data, struct grub_zfs_dir_ctx *ctx)
 {
   grub_uint64_t block_type;
   int size;
@@ -2233,23 +2265,6 @@ zap_iterate_u64 (dnode_end_t * zap_dnode,
   grub_err_t err;
   int ret;
   grub_zfs_endian_t endian;
-
-  auto int NESTED_FUNC_ATTR transform (const void *name,
-				       grub_size_t namelen,
-				       const void *val_in,
-				       grub_size_t nelem,
-				       grub_size_t elemsize);
-
-  int NESTED_FUNC_ATTR transform (const void *name,
-				  grub_size_t namelen __attribute__ ((unused)),
-				  const void *val_in,
-				  grub_size_t nelem,
-				  grub_size_t elemsize)
-  {
-    if (elemsize != sizeof (grub_uint64_t) || nelem != 1)
-      return 0;
-    return hook (name, grub_be_to_cpu64 (*(const grub_uint64_t *) val_in));
-  }
 
   /* Read in the first block of the zap object data. */
   size = grub_zfs_to_cpu16 (zap_dnode->dn.dn_datablkszsec, zap_dnode->endian) << SPA_MINBLOCKSHIFT;
@@ -2263,15 +2278,21 @@ zap_iterate_u64 (dnode_end_t * zap_dnode,
   if (block_type == ZBT_MICRO)
     {
       grub_dprintf ("zfs", "micro zap\n");
-      ret = mzap_iterate (zapbuf, endian, size, hook);
+      ret = mzap_iterate (zapbuf, endian, size, hook, ctx);
       grub_free (zapbuf);
       return ret;
     }
   else if (block_type == ZBT_HEADER)
     {
+      struct zap_iterate_u64_ctx transform_ctx = {
+	.hook = hook,
+	.dir_ctx = ctx
+      };
+
       grub_dprintf ("zfs", "fat zap\n");
       /* this is a fat zap */
-      ret = fzap_iterate (zap_dnode, zapbuf, 1, transform, data);
+      ret = fzap_iterate (zap_dnode, zapbuf, 1,
+			  zap_iterate_u64_transform, &transform_ctx, data);
       grub_free (zapbuf);
       return ret;
     }
@@ -2282,12 +2303,11 @@ zap_iterate_u64 (dnode_end_t * zap_dnode,
 static int
 zap_iterate (dnode_end_t * zap_dnode, 
 	     grub_size_t nameelemlen,
-	     int NESTED_FUNC_ATTR (*hook) (const void *name,
-					   grub_size_t namelen,
-					   const void *val_in,
-					   grub_size_t nelem,
-					   grub_size_t elemsize),
-	     struct grub_zfs_data *data)
+	     int (*hook) (const void *name, grub_size_t namelen,
+			  const void *val_in,
+			  grub_size_t nelem, grub_size_t elemsize,
+			  void *data),
+	     void *hook_data, struct grub_zfs_data *data)
 {
   grub_uint64_t block_type;
   void *zapbuf;
@@ -2312,7 +2332,8 @@ zap_iterate (dnode_end_t * zap_dnode,
     {
       grub_dprintf ("zfs", "fat zap\n");
       /* this is a fat zap */
-      ret = fzap_iterate (zap_dnode, zapbuf, nameelemlen, hook, data);
+      ret = fzap_iterate (zap_dnode, zapbuf, nameelemlen, hook, hook_data,
+			  data);
       grub_free (zapbuf);
       return ret;
     }
@@ -2826,6 +2847,61 @@ make_mdn (dnode_end_t * mdn, struct grub_zfs_data *data)
   return GRUB_ERR_NONE;
 }
 
+/* Context for dnode_get_fullpath.  */
+struct dnode_get_fullpath_ctx
+{
+  struct subvolume *subvol;
+  grub_uint64_t salt;
+  int keyn;
+};
+
+/* Helper for dnode_get_fullpath.  */
+static int
+count_zap_keys (const void *name __attribute__ ((unused)),
+		grub_size_t namelen __attribute__ ((unused)),
+		const void *val_in __attribute__ ((unused)),
+		grub_size_t nelem __attribute__ ((unused)),
+		grub_size_t elemsize __attribute__ ((unused)),
+		void *data)
+{
+  struct dnode_get_fullpath_ctx *ctx = data;
+
+  ctx->subvol->nkeys++;
+  return 0;
+}
+
+/* Helper for dnode_get_fullpath.  */
+static int
+load_zap_key (const void *name, grub_size_t namelen, const void *val_in,
+	      grub_size_t nelem, grub_size_t elemsize, void *data)
+{
+  struct dnode_get_fullpath_ctx *ctx = data;
+
+  if (namelen != 1)
+    {
+      grub_dprintf ("zfs", "Unexpected key index size %" PRIuGRUB_SIZE "\n",
+		    namelen);
+      return 0;
+    }
+
+  if (elemsize != 1)
+    {
+      grub_dprintf ("zfs", "Unexpected key element size %" PRIuGRUB_SIZE "\n",
+		    elemsize);
+      return 0;
+    }
+
+  ctx->subvol->keyring[ctx->keyn].txg =
+    grub_be_to_cpu64 (*(grub_uint64_t *) name);
+  ctx->subvol->keyring[ctx->keyn].algo =
+    grub_le_to_cpu64 (*(grub_uint64_t *) val_in);
+  ctx->subvol->keyring[ctx->keyn].cipher =
+    grub_zfs_load_key (val_in, nelem, ctx->salt,
+		       ctx->subvol->keyring[ctx->keyn].algo);
+  ctx->keyn++;
+  return 0;
+}
+
 static grub_err_t
 dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 		    dnode_end_t * dn, int *isfs,
@@ -2835,57 +2911,7 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
   const char *ptr_at, *filename;
   grub_uint64_t headobj;
   grub_uint64_t keychainobj;
-  grub_uint64_t salt;
   grub_err_t err;
-  int keyn = 0;
-
-  auto int NESTED_FUNC_ATTR count_zap_keys (const void *name,
-					  grub_size_t namelen,
-					  const void *val_in,
-					  grub_size_t nelem,
-					  grub_size_t elemsize);
-  int NESTED_FUNC_ATTR count_zap_keys (const void *name __attribute__ ((unused)),
-				       grub_size_t namelen __attribute__ ((unused)),
-				       const void *val_in __attribute__ ((unused)),
-				       grub_size_t nelem __attribute__ ((unused)),
-				       grub_size_t elemsize __attribute__ ((unused)))
-  {
-    subvol->nkeys++;
-    return 0;
-  }
-
-  auto int NESTED_FUNC_ATTR load_zap_key (const void *name,
-					  grub_size_t namelen,
-					  const void *val_in,
-					  grub_size_t nelem,
-					  grub_size_t elemsize);
-  int NESTED_FUNC_ATTR load_zap_key (const void *name,
-				     grub_size_t namelen,
-				     const void *val_in,
-				     grub_size_t nelem,
-				     grub_size_t elemsize)
-  {
-    if (namelen != 1)
-      {
-	grub_dprintf ("zfs", "Unexpected key index size %" PRIuGRUB_SIZE "\n",
-		      namelen);
-	return 0;
-      }
-
-    if (elemsize != 1)
-      {
-	grub_dprintf ("zfs", "Unexpected key element size %" PRIuGRUB_SIZE "\n",
-		      elemsize);
-	return 0;
-      }
-
-    subvol->keyring[keyn].txg = grub_be_to_cpu64 (*(grub_uint64_t *) name);
-    subvol->keyring[keyn].algo = grub_le_to_cpu64 (*(grub_uint64_t *) val_in);
-    subvol->keyring[keyn].cipher = grub_zfs_load_key (val_in, nelem, salt,
-						      subvol->keyring[keyn].algo);
-    keyn++;
-    return 0;
-  }
 
   ptr_at = grub_strchr (fullpath, '@');
   if (! ptr_at)
@@ -2953,6 +2979,10 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
   keychainobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&dn->dn))->keychain, dn->endian);
   if (grub_zfs_load_key && keychainobj)
     {
+      struct dnode_get_fullpath_ctx ctx = {
+	.subvol = subvol,
+	.keyn = 0
+      };
       dnode_end_t keychain_dn, props_dn;
       grub_uint64_t propsobj;
       propsobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&dn->dn))->dd_props_zapobj, dn->endian);
@@ -2966,12 +2996,12 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 	  return err;
 	}
 
-      err = zap_lookup (&props_dn, "salt", &salt, data, 0);
+      err = zap_lookup (&props_dn, "salt", &ctx.salt, data, 0);
       if (err == GRUB_ERR_FILE_NOT_FOUND)
 	{
 	  err = 0;
 	  grub_errno = 0;
-	  salt = 0;
+	  ctx.salt = 0;
 	}
       if (err)
 	{
@@ -2988,7 +3018,7 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 	  return err;
 	}
       subvol->nkeys = 0;
-      zap_iterate (&keychain_dn, 8, count_zap_keys, data);
+      zap_iterate (&keychain_dn, 8, count_zap_keys, &ctx, data);
       subvol->keyring = grub_zalloc (subvol->nkeys * sizeof (subvol->keyring[0]));
       if (!subvol->keyring)
 	{
@@ -2996,7 +3026,7 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 	  grub_free (snapname);
 	  return err;
 	}
-      zap_iterate (&keychain_dn, 8, load_zap_key, data);
+      zap_iterate (&keychain_dn, 8, load_zap_key, &ctx, data);
     }
 
   if (snapname)
@@ -3748,108 +3778,122 @@ fill_fs_info (struct grub_dirhook_info *info,
   return;
 }
 
+/* Helper for grub_zfs_dir.  */
+static int
+iterate_zap (const char *name, grub_uint64_t val, struct grub_zfs_dir_ctx *ctx)
+{
+  grub_err_t err;
+  struct grub_dirhook_info info;
+
+  dnode_end_t dn;
+  grub_memset (&info, 0, sizeof (info));
+
+  dnode_get (&(ctx->data->subvol.mdn), val, 0, &dn, ctx->data);
+
+  if (dn.dn.dn_bonustype == DMU_OT_SA)
+    {
+      void *sahdrp;
+      int hdrsize;
+
+      if (dn.dn.dn_bonuslen != 0)
+	{
+	  sahdrp = (sa_hdr_phys_t *) DN_BONUS (&ctx->data->dnode.dn);
+	}
+      else if (dn.dn.dn_flags & DNODE_FLAG_SPILL_BLKPTR)
+	{
+	  blkptr_t *bp = &dn.dn.dn_spill;
+
+	  err = zio_read (bp, dn.endian, &sahdrp, NULL, ctx->data);
+	  if (err)
+	    {
+	      grub_print_error ();
+	      return 0;
+	    }
+	}
+      else
+	{
+	  grub_error (GRUB_ERR_BAD_FS, "filesystem is corrupt");
+	  grub_print_error ();
+	  return 0;
+	}
+
+      hdrsize = SA_HDR_SIZE (((sa_hdr_phys_t *) sahdrp));
+      info.mtimeset = 1;
+      info.mtime = grub_zfs_to_cpu64 (grub_get_unaligned64 ((char *) sahdrp + hdrsize + SA_MTIME_OFFSET), dn.endian);
+      info.case_insensitive = ctx->data->subvol.case_insensitive;
+    }
+  
+  if (dn.dn.dn_bonustype == DMU_OT_ZNODE)
+    {	
+      info.mtimeset = 1;
+      info.mtime = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&dn.dn))->zp_mtime[0],
+				      dn.endian);
+    }
+      info.dir = (dn.dn.dn_type == DMU_OT_DIRECTORY_CONTENTS);
+      grub_dprintf ("zfs", "type=%d, name=%s\n", 
+		(int)dn.dn.dn_type, (char *)name);
+  return ctx->hook (name, &info, ctx->hook_data);
+}
+
+/* Helper for grub_zfs_dir.  */
+static int
+iterate_zap_fs (const char *name, grub_uint64_t val,
+		struct grub_zfs_dir_ctx *ctx)
+{
+  grub_err_t err;
+  struct grub_dirhook_info info;
+
+  dnode_end_t mdn;
+  err = dnode_get (&(ctx->data->mos), val, 0, &mdn, ctx->data);
+  if (err)
+    return 0;
+  if (mdn.dn.dn_type != DMU_OT_DSL_DIR)
+    return 0;
+
+  fill_fs_info (&info, mdn, ctx->data);
+  return ctx->hook (name, &info, ctx->hook_data);
+}
+
+/* Helper for grub_zfs_dir.  */
+static int
+iterate_zap_snap (const char *name, grub_uint64_t val,
+		  struct grub_zfs_dir_ctx *ctx)
+{
+  grub_err_t err;
+  struct grub_dirhook_info info;
+  char *name2;
+  int ret;
+
+  dnode_end_t mdn;
+
+  err = dnode_get (&(ctx->data->mos), val, 0, &mdn, ctx->data);
+  if (err)
+    return 0;
+
+  if (mdn.dn.dn_type != DMU_OT_DSL_DATASET)
+    return 0;
+
+  fill_fs_info (&info, mdn, ctx->data);
+
+  name2 = grub_malloc (grub_strlen (name) + 2);
+  name2[0] = '@';
+  grub_memcpy (name2 + 1, name, grub_strlen (name) + 1);
+  ret = ctx->hook (name2, &info, ctx->hook_data);
+  grub_free (name2);
+  return ret;
+}
+
 static grub_err_t
 grub_zfs_dir (grub_device_t device, const char *path,
-	      int (*hook) (const char *, const struct grub_dirhook_info *))
+	      grub_fs_dir_hook_t hook, void *hook_data)
 {
+  struct grub_zfs_dir_ctx ctx = {
+    .hook = hook,
+    .hook_data = hook_data
+  };
   struct grub_zfs_data *data;
   grub_err_t err;
   int isfs;
-  auto int NESTED_FUNC_ATTR iterate_zap (const char *name, grub_uint64_t val);
-  auto int NESTED_FUNC_ATTR iterate_zap_fs (const char *name, 
-					    grub_uint64_t val);
-  auto int NESTED_FUNC_ATTR iterate_zap_snap (const char *name, 
-					      grub_uint64_t val);
-
-  int NESTED_FUNC_ATTR iterate_zap (const char *name, grub_uint64_t val)
-  {
-    struct grub_dirhook_info info;
-    dnode_end_t dn;
-    grub_memset (&info, 0, sizeof (info));
-
-    dnode_get (&(data->subvol.mdn), val, 0, &dn, data);
-
-    if (dn.dn.dn_bonustype == DMU_OT_SA)
-      {
-	void *sahdrp;
-	int hdrsize;
-
-	if (dn.dn.dn_bonuslen != 0)
-	  {
-	    sahdrp = (sa_hdr_phys_t *) DN_BONUS (&data->dnode.dn);
-	  }
-	else if (dn.dn.dn_flags & DNODE_FLAG_SPILL_BLKPTR)
-	  {
-	    blkptr_t *bp = &dn.dn.dn_spill;
-
-	    err = zio_read (bp, dn.endian, &sahdrp, NULL, data);
-	    if (err)
-	      {
-		grub_print_error ();
-		return 0;
-	      }
-	  }
-	else
-	  {
-	    grub_error (GRUB_ERR_BAD_FS, "filesystem is corrupt");
-	    grub_print_error ();
-	    return 0;
-	  }
-
-	hdrsize = SA_HDR_SIZE (((sa_hdr_phys_t *) sahdrp));
-	info.mtimeset = 1;
-	info.mtime = grub_zfs_to_cpu64 (grub_get_unaligned64 ((char *) sahdrp + hdrsize + SA_MTIME_OFFSET), dn.endian);
-	info.case_insensitive = data->subvol.case_insensitive;
-      }
-    
-    if (dn.dn.dn_bonustype == DMU_OT_ZNODE)
-      {	
-	info.mtimeset = 1;
-	info.mtime = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&dn.dn))->zp_mtime[0],
-					dn.endian);
-      }
-	info.dir = (dn.dn.dn_type == DMU_OT_DIRECTORY_CONTENTS);
-	grub_dprintf ("zfs", "type=%d, name=%s\n", 
-		  (int)dn.dn.dn_type, (char *)name);
-    return hook (name, &info);
-  }
-
-  int NESTED_FUNC_ATTR iterate_zap_fs (const char *name, grub_uint64_t val)
-  {
-    struct grub_dirhook_info info;
-    dnode_end_t mdn;
-    err = dnode_get (&(data->mos), val, 0, &mdn, data);
-    if (err)
-      return 0;
-    if (mdn.dn.dn_type != DMU_OT_DSL_DIR)
-      return 0;
-
-    fill_fs_info (&info, mdn, data);
-    return hook (name, &info);
-  }
-  int NESTED_FUNC_ATTR iterate_zap_snap (const char *name, grub_uint64_t val)
-  {
-    struct grub_dirhook_info info;
-    char *name2;
-    int ret;
-    dnode_end_t mdn;
-
-    err = dnode_get (&(data->mos), val, 0, &mdn, data);
-    if (err)
-      return 0;
-
-    if (mdn.dn.dn_type != DMU_OT_DSL_DATASET)
-      return 0;
-
-    fill_fs_info (&info, mdn, data);
-
-    name2 = grub_malloc (grub_strlen (name) + 2);
-    name2[0] = '@';
-    grub_memcpy (name2 + 1, name, grub_strlen (name) + 1);
-    ret = hook (name2, &info);
-    grub_free (name2);
-    return ret;
-  }
 
   data = zfs_mount (device);
   if (! data)
@@ -3860,6 +3904,8 @@ grub_zfs_dir (grub_device_t device, const char *path,
       zfs_unmount (data);
       return err;
     }
+  ctx.data = data;
+
   if (isfs)
     {
       grub_uint64_t childobj, headobj; 
@@ -3868,7 +3914,7 @@ grub_zfs_dir (grub_device_t device, const char *path,
       struct grub_dirhook_info info;
 
       fill_fs_info (&info, data->dnode, data);
-      hook ("@", &info);
+      hook ("@", &info, hook_data);
       
       childobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&data->dnode.dn))->dd_child_dir_zapobj, data->dnode.endian);
       headobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&data->dnode.dn))->dd_head_dataset_obj, data->dnode.endian);
@@ -3880,7 +3926,7 @@ grub_zfs_dir (grub_device_t device, const char *path,
 	  return err;
 	}
 
-      zap_iterate_u64 (&dn, iterate_zap_fs, data);
+      zap_iterate_u64 (&dn, iterate_zap_fs, data, &ctx);
       
       err = dnode_get (&(data->mos), headobj, DMU_OT_DSL_DATASET, &dn, data);
       if (err)
@@ -3899,7 +3945,7 @@ grub_zfs_dir (grub_device_t device, const char *path,
 	  return err;
 	}
 
-      zap_iterate_u64 (&dn, iterate_zap_snap, data);
+      zap_iterate_u64 (&dn, iterate_zap_snap, data, &ctx);
     }
   else
     {
@@ -3908,7 +3954,7 @@ grub_zfs_dir (grub_device_t device, const char *path,
 	  zfs_unmount (data);
 	  return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 	}
-      zap_iterate_u64 (&(data->dnode), iterate_zap, data);
+      zap_iterate_u64 (&(data->dnode), iterate_zap, data, &ctx);
     }
   zfs_unmount (data);
   return grub_errno;

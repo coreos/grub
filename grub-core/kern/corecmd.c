@@ -105,7 +105,8 @@ grub_mini_print_devices (const char *name, void *data __attribute__ ((unused)))
 
 static int
 grub_mini_print_files (const char *filename,
-		       const struct grub_dirhook_info *info)
+		       const struct grub_dirhook_info *info,
+		       void *data __attribute__ ((unused)))
 {
   grub_printf ("%s%s ", filename, info->dir ? "/" : "");
 
@@ -160,7 +161,7 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
 	}
       else if (fs)
 	{
-	  (fs->dir) (dev, path, grub_mini_print_files);
+	  (fs->dir) (dev, path, grub_mini_print_files, NULL);
 	  grub_xputs ("\n");
 	  grub_refresh ();
 	}

@@ -316,12 +316,87 @@ grub_affs_read_symlink (grub_fshelp_node_t node)
 }
 
 
+/* Helper for grub_affs_iterate_dir.  */
+static int
+grub_affs_create_node (grub_fshelp_node_t dir,
+		       grub_fshelp_iterate_dir_hook_t hook, void *hook_data,
+		       struct grub_fshelp_node **node,
+		       grub_uint32_t **hashtable,
+		       grub_uint32_t block, const struct grub_affs_file *fil)
+{
+  struct grub_affs_data *data = dir->data;
+  int type;
+  grub_uint8_t name_u8[sizeof (fil->name) * GRUB_MAX_UTF8_PER_LATIN1 + 1];
+  grub_size_t len;
+  unsigned int nest;
+
+  *node = grub_zalloc (sizeof (**node));
+  if (!*node)
+    {
+      grub_free (*hashtable);
+      return 1;
+    }
+
+  (*node)->data = data;
+  (*node)->block = block;
+  (*node)->parent = dir;
+
+  len = fil->namelen;
+  if (len > sizeof (fil->name))
+    len = sizeof (fil->name);
+  *grub_latin1_to_utf8 (name_u8, fil->name, len) = '\0';
+  
+  (*node)->di = *fil;
+  for (nest = 0; nest < 8; nest++)
+    {
+      switch ((*node)->di.type)
+	{
+	case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_REG):
+	  type = GRUB_FSHELP_REG;
+	  break;
+	case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_DIR):
+	  type = GRUB_FSHELP_DIR;
+	  break;
+	case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_SYMLINK):
+	  type = GRUB_FSHELP_SYMLINK;
+	  break;
+	case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_HARDLINK):
+	  {
+	    grub_err_t err;
+	    (*node)->block = grub_be_to_cpu32 ((*node)->di.hardlink);
+	    err = grub_disk_read (data->disk,
+				  (((grub_uint64_t) (*node)->block + 1) << data->log_blocksize)
+				  - 1,
+				  GRUB_DISK_SECTOR_SIZE - GRUB_AFFS_FILE_LOCATION,
+				  sizeof ((*node)->di), (char *) &(*node)->di);
+	    if (err)
+	      return 1;
+	    continue;
+	  }
+	default:
+	  return 0;
+	}
+      break;
+    }
+
+  if (nest == 8)
+    return 0;
+
+  type |= GRUB_FSHELP_CASE_INSENSITIVE;
+
+  if (hook ((char *) name_u8, type, *node, hook_data))
+    {
+      grub_free (*hashtable);
+      *node = 0;
+      return 1;
+    }
+  *node = 0;
+  return 0;
+}
+
 static int
 grub_affs_iterate_dir (grub_fshelp_node_t dir,
-		       int NESTED_FUNC_ATTR
-		       (*hook) (const char *filename,
-				enum grub_fshelp_filetype filetype,
-				grub_fshelp_node_t node))
+		       grub_fshelp_iterate_dir_hook_t hook, void *hook_data)
 {
   unsigned int i;
   struct grub_affs_file file;
@@ -329,88 +404,13 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
   struct grub_affs_data *data = dir->data;
   grub_uint32_t *hashtable;
 
-  auto int NESTED_FUNC_ATTR grub_affs_create_node (grub_uint32_t block,
-						   const struct grub_affs_file *fil);
-
-  int NESTED_FUNC_ATTR grub_affs_create_node (grub_uint32_t block,
-					      const struct grub_affs_file *fil)
-    {
-      int type;
-      grub_uint8_t name_u8[sizeof (fil->name) * GRUB_MAX_UTF8_PER_LATIN1 + 1];
-      grub_size_t len;
-      unsigned int nest;
-
-      node = grub_zalloc (sizeof (*node));
-      if (!node)
-	{
-	  grub_free (hashtable);
-	  return 1;
-	}
-
-      node->data = data;
-      node->block = block;
-      node->parent = dir;
-
-      len = fil->namelen;
-      if (len > sizeof (fil->name))
-	len = sizeof (fil->name);
-      *grub_latin1_to_utf8 (name_u8, fil->name, len) = '\0';
-      
-      node->di = *fil;
-      for (nest = 0; nest < 8; nest++)
-	{
-	  switch (node->di.type)
-	    {
-	    case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_REG):
-	      type = GRUB_FSHELP_REG;
-	      break;
-	    case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_DIR):
-	      type = GRUB_FSHELP_DIR;
-	      break;
-	    case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_SYMLINK):
-	      type = GRUB_FSHELP_SYMLINK;
-	      break;
-	    case grub_cpu_to_be32_compile_time (GRUB_AFFS_FILETYPE_HARDLINK):
-	      {
-		grub_err_t err;
-		node->block = grub_be_to_cpu32 (node->di.hardlink);
-		err = grub_disk_read (data->disk,
-				      (((grub_uint64_t) node->block + 1) << data->log_blocksize)
-				      - 1,
-				      GRUB_DISK_SECTOR_SIZE - GRUB_AFFS_FILE_LOCATION,
-				      sizeof (node->di), (char *) &node->di);
-		if (err)
-		  return 1;
-		continue;
-	      }
-	    default:
-	      return 0;
-	    }
-	  break;
-	}
-
-      if (nest == 8)
-	return 0;
-
-      type |= GRUB_FSHELP_CASE_INSENSITIVE;
-
-      if (hook ((char *) name_u8, type, node))
-	{
-	  grub_free (hashtable);
-	  node = 0;
-	  return 1;
-	}
-      node = 0;
-      return 0;
-    }
-
   /* Create the directory entries for `.' and `..'.  */
   node = grub_zalloc (sizeof (*node));
   if (!node)
     return 1;
     
   *node = *dir;
-  if (hook (".", GRUB_FSHELP_DIR, node))
+  if (hook (".", GRUB_FSHELP_DIR, node, hook_data))
     return 1;
   if (dir->parent)
     {
@@ -418,7 +418,7 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
       if (!node)
 	return 1;
       *node = *dir->parent;
-      if (hook ("..", GRUB_FSHELP_DIR, node))
+      if (hook ("..", GRUB_FSHELP_DIR, node, hook_data))
 	return 1;
     }
 
@@ -454,7 +454,8 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
 	  if (grub_errno)
 	    goto fail;
 
-	  if (grub_affs_create_node (next, &file))
+	  if (grub_affs_create_node (dir, hook, hook_data, &node, &hashtable,
+				     next, &file))
 	    return 1;
 
 	  next = grub_be_to_cpu32 (file.next);
@@ -545,30 +546,36 @@ aftime2ctime (const struct grub_affs_time *t)
     + 8 * 365 * 86400 + 86400 * 2;
 }
 
+/* Context for grub_affs_dir.  */
+struct grub_affs_dir_ctx
+{
+  grub_fs_dir_hook_t hook;
+  void *hook_data;
+};
+
+/* Helper for grub_affs_dir.  */
+static int
+grub_affs_dir_iter (const char *filename, enum grub_fshelp_filetype filetype,
+		    grub_fshelp_node_t node, void *data)
+{
+  struct grub_affs_dir_ctx *ctx = data;
+  struct grub_dirhook_info info;
+
+  grub_memset (&info, 0, sizeof (info));
+  info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+  info.mtimeset = 1;
+  info.mtime = aftime2ctime (&node->di.mtime);
+  grub_free (node);
+  return ctx->hook (filename, &info, ctx->hook_data);
+}
+
 static grub_err_t
 grub_affs_dir (grub_device_t device, const char *path,
-	       int (*hook) (const char *filename,
-			    const struct grub_dirhook_info *info))
+	       grub_fs_dir_hook_t hook, void *hook_data)
 {
+  struct grub_affs_dir_ctx ctx = { hook, hook_data };
   struct grub_affs_data *data = 0;
   struct grub_fshelp_node *fdiro = 0;
-
-  auto int NESTED_FUNC_ATTR iterate (const char *filename,
-				     enum grub_fshelp_filetype filetype,
-				     grub_fshelp_node_t node);
-
-  int NESTED_FUNC_ATTR iterate (const char *filename,
-				enum grub_fshelp_filetype filetype,
-				grub_fshelp_node_t node)
-    {
-      struct grub_dirhook_info info;
-      grub_memset (&info, 0, sizeof (info));
-      info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
-      info.mtimeset = 1;
-      info.mtime = aftime2ctime (&node->di.mtime);
-      grub_free (node);
-      return hook (filename, &info);
-    }
 
   grub_dl_ref (my_mod);
 
@@ -581,7 +588,7 @@ grub_affs_dir (grub_device_t device, const char *path,
   if (grub_errno)
     goto fail;
 
-  grub_affs_iterate_dir (fdiro, iterate);
+  grub_affs_iterate_dir (fdiro, grub_affs_dir_iter, &ctx);
 
  fail:
   if (data && fdiro != &data->diropen)

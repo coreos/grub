@@ -38,24 +38,25 @@ enum grub_fshelp_filetype
     GRUB_FSHELP_SYMLINK
   };
 
+typedef int (*grub_fshelp_iterate_dir_hook_t) (const char *filename,
+					       enum grub_fshelp_filetype filetype,
+					       grub_fshelp_node_t node,
+					       void *data);
+
 /* Lookup the node PATH.  The node ROOTNODE describes the root of the
    directory tree.  The node found is returned in FOUNDNODE, which is
    either a ROOTNODE or a new malloc'ed node.  ITERATE_DIR is used to
    iterate over all directory entries in the current node.
    READ_SYMLINK is used to read the symlink if a node is a symlink.
    EXPECTTYPE is the type node that is expected by the called, an
-   error is generated if the node is not of the expected type.  Make
-   sure you use the NESTED_FUNC_ATTR macro for HOOK, this is required
-   because GCC has a nasty bug when using regparm=3.  */
+   error is generated if the node is not of the expected type.  */
 grub_err_t
 EXPORT_FUNC(grub_fshelp_find_file) (const char *path,
 				    grub_fshelp_node_t rootnode,
 				    grub_fshelp_node_t *foundnode,
 				    int (*iterate_dir) (grub_fshelp_node_t dir,
-							int NESTED_FUNC_ATTR
-							(*hook) (const char *filename,
-								 enum grub_fshelp_filetype filetype,
-								 grub_fshelp_node_t node)),
+							grub_fshelp_iterate_dir_hook_t hook,
+							void *hook_data),
 				    char *(*read_symlink) (grub_fshelp_node_t node),
 				    enum grub_fshelp_filetype expect);
 

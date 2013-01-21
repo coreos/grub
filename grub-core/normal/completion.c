@@ -123,7 +123,8 @@ iterate_partition (grub_disk_t disk, const grub_partition_t p,
 }
 
 static int
-iterate_dir (const char *filename, const struct grub_dirhook_info *info)
+iterate_dir (const char *filename, const struct grub_dirhook_info *info,
+	     void *data __attribute__ ((unused)))
 {
   if (! info->dir)
     {
@@ -295,7 +296,7 @@ complete_file (void)
       dirfile[1] = '\0';
 
       /* Iterate the directory.  */
-      (fs->dir) (dev, dir, iterate_dir);
+      (fs->dir) (dev, dir, iterate_dir, NULL);
 
       grub_free (dir);
 

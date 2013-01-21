@@ -844,8 +844,7 @@ grub_fat_iterate_dir_next (grub_disk_t disk, struct grub_fat_data *data,
 static char *
 grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 		   const char *path, const char *origpath,
-		   int (*hook) (const char *filename,
-				const struct grub_dirhook_info *info))
+		   grub_fs_dir_hook_t hook, void *hook_data)
 {
   char *dirname, *dirp;
   int call_hook;
@@ -905,7 +904,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 #endif
       if (*dirname == '\0' && call_hook)
 	{
-	  if (hook (ctxt.filename, &info))
+	  if (hook (ctxt.filename, &info, hook_data))
 	    break;
 	  else
 	    continue;
@@ -926,7 +925,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 	  data->cur_cluster_num = ~0U;
 
 	  if (call_hook)
-	    hook (ctxt.filename, &info);
+	    hook (ctxt.filename, &info, hook_data);
 
 	  break;
 	}
@@ -946,9 +945,8 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 }
 
 static grub_err_t
-grub_fat_dir (grub_device_t device, const char *path,
-	      int (*hook) (const char *filename,
-			   const struct grub_dirhook_info *info))
+grub_fat_dir (grub_device_t device, const char *path, grub_fs_dir_hook_t hook,
+	      void *hook_data)
 {
   struct grub_fat_data *data = 0;
   grub_disk_t disk = device->disk;
@@ -976,7 +974,7 @@ grub_fat_dir (grub_device_t device, const char *path,
 
   do
     {
-      p = grub_fat_find_dir (disk, data, p, path, hook);
+      p = grub_fat_find_dir (disk, data, p, path, hook, hook_data);
     }
   while (p && grub_errno == GRUB_ERR_NONE);
 
@@ -1004,7 +1002,7 @@ grub_fat_open (grub_file_t file, const char *name)
 
   do
     {
-      p = grub_fat_find_dir (file->device->disk, data, p, name, 0);
+      p = grub_fat_find_dir (file->device->disk, data, p, name, 0, 0);
       if (grub_errno != GRUB_ERR_NONE)
 	goto fail;
     }

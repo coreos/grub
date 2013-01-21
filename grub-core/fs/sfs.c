@@ -460,12 +460,48 @@ grub_sfs_read_symlink (grub_fshelp_node_t node)
   return symlink;
 }
 
+/* Helper for grub_sfs_iterate_dir.  */
+static int
+grub_sfs_create_node (struct grub_fshelp_node **node,
+		      struct grub_sfs_data *data,
+		      const char *name,
+		      grub_uint32_t block, grub_uint32_t size, int type,
+		      grub_uint32_t mtime,
+		      grub_fshelp_iterate_dir_hook_t hook, void *hook_data)
+{
+  grub_size_t len = grub_strlen (name);
+  grub_uint8_t *name_u8;
+  int ret;
+  *node = grub_malloc (sizeof (**node));
+  if (!*node)
+    return 1;
+  name_u8 = grub_malloc (len * GRUB_MAX_UTF8_PER_LATIN1 + 1);
+  if (!name_u8)
+    {
+      grub_free (*node);
+      return 1;
+    }
+
+  (*node)->data = data;
+  (*node)->size = size;
+  (*node)->block = block;
+  (*node)->mtime = mtime;
+  (*node)->cache = 0;
+  (*node)->cache_off = 0;
+  (*node)->next_extent = block;
+  (*node)->cache_size = 0;
+  (*node)->cache_allocated = 0;
+
+  *grub_latin1_to_utf8 (name_u8, (const grub_uint8_t *) name, len) = '\0';
+
+  ret = hook ((char *) name_u8, type | data->fshelp_flags, *node, hook_data);
+  grub_free (name_u8);
+  return ret;
+}
+
 static int
 grub_sfs_iterate_dir (grub_fshelp_node_t dir,
-		       int NESTED_FUNC_ATTR
-		       (*hook) (const char *filename,
-				enum grub_fshelp_filetype filetype,
-				grub_fshelp_node_t node))
+		      grub_fshelp_iterate_dir_hook_t hook, void *hook_data)
 {
   struct grub_fshelp_node *node = 0;
   struct grub_sfs_data *data = dir->data;
@@ -473,46 +509,6 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
   struct grub_sfs_objc *objc;
   unsigned int next = dir->block;
   grub_uint32_t pos;
-
-  auto int NESTED_FUNC_ATTR grub_sfs_create_node (const char *name,
-						  grub_uint32_t block,
-						  grub_uint32_t size, int type,
-						  grub_uint32_t mtime);
-
-  int NESTED_FUNC_ATTR grub_sfs_create_node (const char *name,
-					     grub_uint32_t block,
-					     grub_uint32_t size, int type,
-					     grub_uint32_t mtime)
-    {
-      grub_size_t len = grub_strlen (name);
-      grub_uint8_t *name_u8;
-      int ret;
-      node = grub_malloc (sizeof (*node));
-      if (!node)
-	return 1;
-      name_u8 = grub_malloc (len * GRUB_MAX_UTF8_PER_LATIN1 + 1);
-      if (!name_u8)
-	{
-	  grub_free (node);
-	  return 1;
-	}
-
-      node->data = data;
-      node->size = size;
-      node->block = block;
-      node->mtime = mtime;
-      node->cache = 0;
-      node->cache_off = 0;
-      node->next_extent = block;
-      node->cache_size = 0;
-      node->cache_allocated = 0;
-
-      *grub_latin1_to_utf8 (name_u8, (const grub_uint8_t *) name, len) = '\0';
-
-      ret = hook ((char *) name_u8, type | data->fshelp_flags, node);
-      grub_free (name_u8);
-      return ret;
-    }
 
   objc_data = grub_malloc (GRUB_DISK_SECTOR_SIZE << data->log_blocksize);
   if (!objc_data)
@@ -570,9 +566,10 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
 	  else
 	    block = grub_be_to_cpu32 (obj->file_dir.file.first_block);
 
-	  if (grub_sfs_create_node (filename, block,
+	  if (grub_sfs_create_node (&node, data, filename, block,
 				    grub_be_to_cpu32 (obj->file_dir.file.size),
-				    type, grub_be_to_cpu32 (obj->mtime)))
+				    type, grub_be_to_cpu32 (obj->mtime),
+				    hook, hook_data))
 	    {
 	      grub_free (objc_data);
 	      return 1;
@@ -654,31 +651,37 @@ grub_sfs_read (grub_file_t file, char *buf, grub_size_t len)
 }
 
 
+/* Context for grub_sfs_dir.  */
+struct grub_sfs_dir_ctx
+{
+  grub_fs_dir_hook_t hook;
+  void *hook_data;
+};
+
+/* Helper for grub_sfs_dir.  */
+static int
+grub_sfs_dir_iter (const char *filename, enum grub_fshelp_filetype filetype,
+		   grub_fshelp_node_t node, void *data)
+{
+  struct grub_sfs_dir_ctx *ctx = data;
+  struct grub_dirhook_info info;
+
+  grub_memset (&info, 0, sizeof (info));
+  info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+  info.mtime = node->mtime + 8 * 365 * 86400 + 86400 * 2;
+  info.mtimeset = 1;
+  grub_free (node->cache);
+  grub_free (node);
+  return ctx->hook (filename, &info, ctx->hook_data);
+}
+
 static grub_err_t
 grub_sfs_dir (grub_device_t device, const char *path,
-	       int (*hook) (const char *filename,
-			    const struct grub_dirhook_info *info))
+	      grub_fs_dir_hook_t hook, void *hook_data)
 {
+  struct grub_sfs_dir_ctx ctx = { hook, hook_data };
   struct grub_sfs_data *data = 0;
   struct grub_fshelp_node *fdiro = 0;
-
-  auto int NESTED_FUNC_ATTR iterate (const char *filename,
-				     enum grub_fshelp_filetype filetype,
-				     grub_fshelp_node_t node);
-
-  int NESTED_FUNC_ATTR iterate (const char *filename,
-				enum grub_fshelp_filetype filetype,
-				grub_fshelp_node_t node)
-    {
-      struct grub_dirhook_info info;
-      grub_memset (&info, 0, sizeof (info));
-      info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
-      info.mtime = node->mtime + 8 * 365 * 86400 + 86400 * 2;
-      info.mtimeset = 1;
-      grub_free (node->cache);
-      grub_free (node);
-      return hook (filename, &info);
-    }
 
   grub_dl_ref (my_mod);
 
@@ -691,7 +694,7 @@ grub_sfs_dir (grub_device_t device, const char *path,
   if (grub_errno)
     goto fail;
 
-  grub_sfs_iterate_dir (fdiro, iterate);
+  grub_sfs_iterate_dir (fdiro, grub_sfs_dir_iter, &ctx);
 
  fail:
   if (data && fdiro != &data->diropen)
