@@ -1657,7 +1657,7 @@ menuentry "Debian sid installer" @{
 
 Notes:
 @itemize
-@item Argument to search after --label is FS LABEL. You can also use UUIDs with --fs-uuid UUID instead of --label LABEL. You could also use direct @code{root=hd0,msdosX} but this is not recommened due to device name instability.
+@item Argument to search after --label is FS LABEL. You can also use UUIDs with --fs-uuid UUID instead of --label LABEL. You could also use direct @code{root=hd0,msdosX} but this is not recommended due to device name instability.
 @end itemize
 
 @node Embedded configuration
