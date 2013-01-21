@@ -1143,6 +1143,49 @@ grub_font_blit_glyph_mirror (struct grub_font_glyph *target,
     }
 }
 
+/* Context for blit_comb.  */
+struct blit_comb_ctx
+{
+  struct grub_font_glyph *glyph;
+  int *device_width;
+  struct grub_video_signed_rect bounds;
+};
+
+/* Helper for blit_comb.  */
+static void
+do_blit (struct grub_font_glyph *src, signed dx, signed dy,
+	 struct blit_comb_ctx *ctx)
+{
+  if (ctx->glyph)
+    grub_font_blit_glyph (ctx->glyph, src, dx - ctx->glyph->offset_x,
+			  (ctx->glyph->height + ctx->glyph->offset_y) + dy);
+  if (dx < ctx->bounds.x)
+    {
+      ctx->bounds.width += ctx->bounds.x - dx;
+      ctx->bounds.x = dx;
+    }
+  if (ctx->bounds.y > -src->height - dy)
+    {
+      ctx->bounds.height += ctx->bounds.y - (-src->height - dy);
+      ctx->bounds.y = (-src->height - dy);
+    }
+  if (dx + src->width - ctx->bounds.x >= (signed) ctx->bounds.width)
+    ctx->bounds.width = dx + src->width - ctx->bounds.x + 1;
+  if ((signed) ctx->bounds.height < src->height + (-src->height - dy)
+      - ctx->bounds.y)
+    ctx->bounds.height = src->height + (-src->height - dy) - ctx->bounds.y;
+}
+
+/* Helper for blit_comb.  */
+static inline void
+add_device_width (int val, struct blit_comb_ctx *ctx)
+{
+  if (ctx->glyph)
+    ctx->glyph->device_width += val;
+  if (ctx->device_width)
+    *ctx->device_width += val;
+}
+
 static void
 blit_comb (const struct grub_unicode_glyph *glyph_id,
 	   struct grub_font_glyph *glyph,
@@ -1150,63 +1193,34 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	   struct grub_font_glyph *main_glyph,
 	   struct grub_font_glyph **combining_glyphs, int *device_width)
 {
-  struct grub_video_signed_rect bounds;
+  struct blit_comb_ctx ctx = {
+    .glyph = glyph,
+    .device_width = device_width
+  };
   unsigned i;
   signed above_rightx, above_righty;
   signed above_leftx, above_lefty;
   signed below_rightx, below_righty;
   signed min_devwidth = 0;
-  auto void NESTED_FUNC_ATTR do_blit (struct grub_font_glyph *src,
-				      signed dx, signed dy);
-  void NESTED_FUNC_ATTR do_blit (struct grub_font_glyph *src,
-				 signed dx, signed dy)
-  {
-    if (glyph)
-      grub_font_blit_glyph (glyph, src, dx - glyph->offset_x,
-			    (glyph->height + glyph->offset_y) + dy);
-    if (dx < bounds.x)
-      {
-	bounds.width += bounds.x - dx;
-	bounds.x = dx;
-      }
-    if (bounds.y > -src->height - dy)
-      {
-	bounds.height += bounds.y - (-src->height - dy);
-	bounds.y = (-src->height - dy);
-      }
-    if (dx + src->width - bounds.x >= (signed) bounds.width)
-      bounds.width = dx + src->width - bounds.x + 1;
-    if ((signed) bounds.height < src->height + (-src->height - dy) - bounds.y)
-      bounds.height = src->height + (-src->height - dy) - bounds.y;
-  }
-
-  auto void add_device_width (int val);
-  void add_device_width (int val)
-  {
-    if (glyph)
-      glyph->device_width += val;
-    if (device_width)
-      *device_width += val;
-  }
 
   if (glyph)
     glyph->device_width = main_glyph->device_width;
   if (device_width)
     *device_width = main_glyph->device_width;
 
-  bounds.x = main_glyph->offset_x;
-  bounds.y = main_glyph->offset_y;
-  bounds.width = main_glyph->width;
-  bounds.height = main_glyph->height;
+  ctx.bounds.x = main_glyph->offset_x;
+  ctx.bounds.y = main_glyph->offset_y;
+  ctx.bounds.width = main_glyph->width;
+  ctx.bounds.height = main_glyph->height;
 
   above_rightx = main_glyph->offset_x + main_glyph->width;
-  above_righty = bounds.y + bounds.height;
+  above_righty = ctx.bounds.y + ctx.bounds.height;
 
   above_leftx = main_glyph->offset_x;
-  above_lefty = bounds.y + bounds.height;
+  above_lefty = ctx.bounds.y + ctx.bounds.height;
 
-  below_rightx = bounds.x + bounds.width;
-  below_righty = bounds.y;
+  below_rightx = ctx.bounds.x + ctx.bounds.width;
+  below_righty = ctx.bounds.y;
 
   for (i = 0; i < glyph_id->ncomb; i++)
     {
@@ -1216,7 +1230,7 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 
       if (!combining_glyphs[i])
 	continue;
-      targetx = (bounds.width - combining_glyphs[i]->width) / 2 + bounds.x;
+      targetx = (ctx.bounds.width - combining_glyphs[i]->width) / 2 + ctx.bounds.x;
       /* CGJ is to avoid diacritics reordering. */
       if (glyph_id->combining[i].code
 	  == GRUB_UNICODE_COMBINING_GRAPHEME_JOINER)
@@ -1226,31 +1240,31 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	case GRUB_UNICODE_COMB_OVERLAY:
 	  do_blit (combining_glyphs[i],
 		   targetx,
-		   (bounds.height - combining_glyphs[i]->height) / 2
-		   - (bounds.height + bounds.y));
+		   (ctx.bounds.height - combining_glyphs[i]->height) / 2
+		   - (ctx.bounds.height + ctx.bounds.y), &ctx);
 	  if (min_devwidth < combining_glyphs[i]->width)
 	    min_devwidth = combining_glyphs[i]->width;
 	  break;
 
 	case GRUB_UNICODE_COMB_ATTACHED_ABOVE_RIGHT:
-	  do_blit (combining_glyphs[i], above_rightx, -above_righty);
+	  do_blit (combining_glyphs[i], above_rightx, -above_righty, &ctx);
 	  above_rightx += combining_glyphs[i]->width;
 	  break;
 
 	case GRUB_UNICODE_COMB_ABOVE_RIGHT:
 	  do_blit (combining_glyphs[i], above_rightx,
-		   -(above_righty + combining_glyphs[i]->height));
+		   -(above_righty + combining_glyphs[i]->height), &ctx);
 	  above_rightx += combining_glyphs[i]->width;
 	  break;
 
 	case GRUB_UNICODE_COMB_ABOVE_LEFT:
 	  above_leftx -= combining_glyphs[i]->width;
 	  do_blit (combining_glyphs[i], above_leftx,
-		   -(above_lefty + combining_glyphs[i]->height));
+		   -(above_lefty + combining_glyphs[i]->height), &ctx);
 	  break;
 
 	case GRUB_UNICODE_COMB_BELOW_RIGHT:
-	  do_blit (combining_glyphs[i], below_rightx, below_righty);
+	  do_blit (combining_glyphs[i], below_rightx, below_righty, &ctx);
 	  below_rightx += combining_glyphs[i]->width;
 	  break;
 
@@ -1276,7 +1290,7 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	    space = 1 + (grub_font_get_xheight (main_glyph->font)) / 8;
 	  do_blit (combining_glyphs[i], targetx,
 		   -(main_glyph->height + main_glyph->offset_y + space
-		     + combining_glyphs[i]->height));
+		     + combining_glyphs[i]->height), &ctx);
 	  if (min_devwidth < combining_glyphs[i]->width)
 	    min_devwidth = combining_glyphs[i]->width;
 	  break;
@@ -1300,16 +1314,16 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 
 	case GRUB_UNICODE_STACK_ATTACHED_ABOVE:
 	  do_blit (combining_glyphs[i], targetx,
-		   -(bounds.height + bounds.y + space
-		     + combining_glyphs[i]->height));
+		   -(ctx.bounds.height + ctx.bounds.y + space
+		     + combining_glyphs[i]->height), &ctx);
 	  if (min_devwidth < combining_glyphs[i]->width)
 	    min_devwidth = combining_glyphs[i]->width;
 	  break;
 
 	case GRUB_UNICODE_COMB_HEBREW_DAGESH:
 	  do_blit (combining_glyphs[i], targetx,
-		   -(bounds.height / 2 + bounds.y
-		     + combining_glyphs[i]->height / 2));
+		   -(ctx.bounds.height / 2 + ctx.bounds.y
+		     + combining_glyphs[i]->height / 2), &ctx);
 	  if (min_devwidth < combining_glyphs[i]->width)
 	    min_devwidth = combining_glyphs[i]->width;
 	  break;
@@ -1340,7 +1354,8 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 	    space = 1 + (grub_font_get_xheight (main_glyph->font)) / 8;
 
 	case GRUB_UNICODE_STACK_ATTACHED_BELOW:
-	  do_blit (combining_glyphs[i], targetx, -(bounds.y - space));
+	  do_blit (combining_glyphs[i], targetx, -(ctx.bounds.y - space),
+		   &ctx);
 	  if (min_devwidth < combining_glyphs[i]->width)
 	    min_devwidth = combining_glyphs[i]->width;
 	  break;
@@ -1373,22 +1388,22 @@ blit_comb (const struct grub_unicode_glyph *glyph_id,
 		     main_glyph->device_width
 		     + combining_glyphs[i]->offset_x,
 		     -(combining_glyphs[i]->height
-		       + combining_glyphs[i]->offset_y));
-	    add_device_width (combining_glyphs[i]->device_width);
+		       + combining_glyphs[i]->offset_y), &ctx);
+	    add_device_width (combining_glyphs[i]->device_width, &ctx);
 	  }
 	}
     }
   add_device_width ((above_rightx >
 		     below_rightx ? above_rightx : below_rightx) -
-		    (main_glyph->offset_x + main_glyph->width));
-  add_device_width (above_leftx - main_glyph->offset_x);
+		    (main_glyph->offset_x + main_glyph->width), &ctx);
+  add_device_width (above_leftx - main_glyph->offset_x, &ctx);
   if (glyph && glyph->device_width < min_devwidth)
     glyph->device_width = min_devwidth;
   if (device_width && *device_width < min_devwidth)
     *device_width = min_devwidth;
 
   if (bounds_out)
-    *bounds_out = bounds;
+    *bounds_out = ctx.bounds;
 }
 
 static struct grub_font_glyph *
