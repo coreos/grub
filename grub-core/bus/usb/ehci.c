@@ -870,7 +870,7 @@ fail:
 }
 
 static int
-grub_ehci_iterate (int (*hook) (grub_usb_controller_t dev))
+grub_ehci_iterate (grub_usb_controller_iterate_hook_t hook, void *hook_data)
 {
   struct grub_ehci *e;
   struct grub_usb_controller dev;
@@ -878,7 +878,7 @@ grub_ehci_iterate (int (*hook) (grub_usb_controller_t dev))
   for (e = ehci; e; e = e->next)
     {
       dev.data = e;
-      if (hook (&dev))
+      if (hook (&dev, hook_data))
 	return 1;
     }
 

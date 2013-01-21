@@ -672,7 +672,7 @@ grub_uhci_cancel_transfer (grub_usb_controller_t dev,
 }
 
 static int
-grub_uhci_iterate (int (*hook) (grub_usb_controller_t dev))
+grub_uhci_iterate (grub_usb_controller_iterate_hook_t hook, void *hook_data)
 {
   struct grub_uhci *u;
   struct grub_usb_controller dev;
@@ -680,7 +680,7 @@ grub_uhci_iterate (int (*hook) (grub_usb_controller_t dev))
   for (u = uhci; u; u = u->next)
     {
       dev.data = u;
-      if (hook (&dev))
+      if (hook (&dev, hook_data))
 	return 1;
     }
 

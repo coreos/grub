@@ -1,3 +1,15 @@
+2013-01-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	Remove nested functions from USB iterators.
+
+	* include/grub/usb.h (grub_usb_iterate_hook_t): New type.
+	(grub_usb_controller_iterate_hook_t): Likewise.
+	(grub_usb_iterate): Add hook_data argument.
+	(grub_usb_controller_iterate): Likewise.
+	(struct grub_usb_controller_dev.iterate): Likewise.
+
+	Update all implementations and callers.
+
 2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/term.c (print_ucs4_terminal): Don't output right

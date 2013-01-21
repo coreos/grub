@@ -483,7 +483,7 @@ grub_ohci_inithw (void)
 
 
 static int
-grub_ohci_iterate (int (*hook) (grub_usb_controller_t dev))
+grub_ohci_iterate (grub_usb_controller_iterate_hook_t hook, void *hook_data)
 {
   struct grub_ohci *o;
   struct grub_usb_controller dev;
@@ -491,7 +491,7 @@ grub_ohci_iterate (int (*hook) (grub_usb_controller_t dev))
   for (o = ohci; o; o = o->next)
     {
       dev.data = o;
-      if (hook (&dev))
+      if (hook (&dev, hook_data))
 	return 1;
     }
 
