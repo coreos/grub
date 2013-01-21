@@ -70,12 +70,7 @@ put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 {
   int i;
 
-  if (!inited)
-    {
-      make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 50, 20);
-      inited = 1;
-    }
-
+  make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 200, 4);
   for (i = 7; i >= 0; i--)
     {
       if ((c >> i) & 1)
@@ -84,12 +79,17 @@ put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 	make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 4000, 40);
       make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 1000, 10);
     }
-  make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 50, 0);
+  make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 200, 0);
 }
 
 static grub_err_t
 grub_spkmodem_init_output (struct grub_term_output *term)
 {
+  /* Some models shutdown sound when not in use and it takes for it
+     around 30 ms to come back on which loses 3 bits. So generate a base
+     200 Hz continously. */
+
+  make_tone (GRUB_SPEAKER_PIT_FREQUENCY / 200, 0);
   grub_terminfo_output_init (term);
 
   return 0;
