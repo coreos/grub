@@ -1,5 +1,10 @@
 2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/term.c (print_ucs4_terminal): Don't output right
+	margin when not needed.
+
+2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make color variables global instead of it being per-terminal.
 
 2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
