@@ -1,5 +1,9 @@
 2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/lsmmap.c: Fix unused variable on emu.
+
+2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Improve spkmomdem reliability by adding a separator between bytes.
 
 2013-01-21  Colin Watson  <cjwatson@ubuntu.com>

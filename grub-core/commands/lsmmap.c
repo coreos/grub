@@ -25,6 +25,7 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#ifndef GRUB_MACHINE_EMU
 static const char *names[] =
   {
     [GRUB_MEMORY_AVAILABLE] = N_("available RAM"),
@@ -40,7 +41,6 @@ static const char *names[] =
     [GRUB_MEMORY_HOLE] = N_("Address range not associated with RAM")
   };
 
-#ifndef GRUB_MACHINE_EMU
 /* Helper for grub_cmd_lsmmap.  */
 static int
 lsmmap_hook (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
