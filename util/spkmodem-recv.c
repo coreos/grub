@@ -24,7 +24,7 @@
 /* Usage: parecord --channels=1 --rate=48000 --format=s16le | ./spkmodem-recv */
 
 #define SAMPLES_PER_TRAME 240
-#define FREQ_SEP_MIN 6
+#define FREQ_SEP_MIN 5
 #define FREQ_SEP_MAX 15
 #define FREQ_DATA_MIN 15
 #define FREQ_DATA_THRESHOLD 25
@@ -32,6 +32,7 @@
 #define THRESHOLD 500
 
 #define DEBUG 0
+#define FLUSH_TIMEOUT 1
 
 static signed short trame[2 * SAMPLES_PER_TRAME];
 static signed short pulse[2 * SAMPLES_PER_TRAME];
@@ -70,15 +71,18 @@ main ()
   int bitn = 7;
   char c = 0;
   int i;
+  int llp = 0;
   while (!feof (stdin))
     {
-      if (lp > 20000)
+      if (lp > 3 * SAMPLES_PER_TRAME)
 	{
-	  fflush (stdout);
 	  bitn = 7;
 	  c = 0;
 	  lp = 0;
+	  llp++;
 	}
+      if (llp == FLUSH_TIMEOUT)
+	fflush (stdout);
       if (f2 > FREQ_SEP_MIN && f2 < FREQ_SEP_MAX
 	  && f1 > FREQ_DATA_MIN && f1 < FREQ_DATA_MAX)
 	{
@@ -100,6 +104,7 @@ main ()
 	      c = 0;
 	    }
 	  lp = 0;
+	  llp = 0;
 	  for (i = 0; i < SAMPLES_PER_TRAME; i++)
 	    read_sample ();
 	  continue;
