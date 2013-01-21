@@ -1,3 +1,8 @@
+2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/kernel.h (FOR_MODULES): Adjust to preserve alignment
+	invariants.
+
 2013-01-21  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/font/font.c (blit_comb: do_blit): Make static instead of

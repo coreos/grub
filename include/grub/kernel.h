@@ -78,7 +78,7 @@ extern grub_addr_t EXPORT_VAR (grub_modbase);
   var && (grub_addr_t) var \
     < (grub_modbase + (((struct grub_module_info *) grub_modbase)->size));    \
   var = (struct grub_module_header *)					\
-    ((void **) var + (((struct grub_module_header *) var)->size + sizeof (void *) - 1) / sizeof (void *)))
+    (((grub_uint32_t *) var) + ((((struct grub_module_header *) var)->size + sizeof (grub_addr_t) - 1) / sizeof (grub_addr_t)) * (sizeof (grub_addr_t) / sizeof (grub_uint32_t))))
 
 grub_addr_t grub_modules_get_end (void);
 
