@@ -180,32 +180,39 @@ grub_linux_unload (void)
 
 #define FOUR_MB	(4 * 1024 * 1024)
 
+/* Context for alloc_phys.  */
+struct alloc_phys_ctx
+{
+  grub_addr_t size;
+  grub_addr_t ret;
+};
+
 /* Helper for alloc_phys.  */
 static int
 alloc_phys_choose (grub_uint64_t addr, grub_uint64_t len,
 		   grub_memory_type_t type, void *data)
 {
-  grub_addr_t *ret = data;
+  struct alloc_phys_ctx *ctx = data;
   grub_addr_t end = addr + len;
 
   if (type != 1)
     return 0;
 
   addr = ALIGN_UP (addr, FOUR_MB);
-  if (addr + size >= end)
+  if (addr + ctx->size >= end)
     return 0;
 
   if (addr >= grub_phys_start && addr < grub_phys_end)
     {
       addr = ALIGN_UP (grub_phys_end, FOUR_MB);
-      if (addr + size >= end)
+      if (addr + ctx->size >= end)
 	return 0;
     }
-  if ((addr + size) >= grub_phys_start
-      && (addr + size) < grub_phys_end)
+  if ((addr + ctx->size) >= grub_phys_start
+      && (addr + ctx->size) < grub_phys_end)
     {
       addr = ALIGN_UP (grub_phys_end, FOUR_MB);
-      if (addr + size >= end)
+      if (addr + ctx->size >= end)
 	return 0;
     }
 
@@ -216,30 +223,33 @@ alloc_phys_choose (grub_uint64_t addr, grub_uint64_t len,
       if (addr >= linux_paddr && addr < linux_end)
 	{
 	  addr = linux_end;
-	  if (addr + size >= end)
+	  if (addr + ctx->size >= end)
 	    return 0;
 	}
-      if ((addr + size) >= linux_paddr
-	  && (addr + size) < linux_end)
+      if ((addr + ctx->size) >= linux_paddr
+	  && (addr + ctx->size) < linux_end)
 	{
 	  addr = linux_end;
-	  if (addr + size >= end)
+	  if (addr + ctx->size >= end)
 	    return 0;
 	}
     }
 
-  *ret = addr;
+  ctx->ret = addr;
   return 1;
 }
 
 static grub_addr_t
 alloc_phys (grub_addr_t size)
 {
-  grub_addr_t ret = (grub_addr_t) -1;
+  struct alloc_phys_ctx ctx = {
+    .size = size,
+    .ret = (grub_addr_t) -1
+  };
 
-  grub_machine_mmap_iterate (alloc_phys_choose, &ret);
+  grub_machine_mmap_iterate (alloc_phys_choose, &ctx);
 
-  return ret;
+  return ctx.ret;
 }
 
 static grub_err_t

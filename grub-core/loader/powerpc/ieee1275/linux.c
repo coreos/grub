@@ -51,37 +51,47 @@ static char *linux_args;
 typedef void (*kernel_entry_t) (void *, unsigned long, int (void *),
 				unsigned long, unsigned long);
 
+/* Context for grub_linux_claimmap_iterate.  */
+struct grub_linux_claimmap_iterate_ctx
+{
+  grub_addr_t target;
+  grub_size_t size;
+  grub_size_t align;
+  grub_addr_t found_addr;
+};
+
 /* Helper for grub_linux_claimmap_iterate.  */
 static int
 alloc_mem (grub_uint64_t addr, grub_uint64_t len, grub_memory_type_t type,
 	   void *data)
 {
-  grub_addr_t *found_addr = data;
+  struct grub_linux_claimmap_iterate_ctx *ctx = data;
 
   grub_uint64_t end = addr + len;
-  addr = ALIGN_UP (addr, align);
-  target = ALIGN_UP (target, align);
+  addr = ALIGN_UP (addr, ctx->align);
+  ctx->target = ALIGN_UP (ctx->target, ctx->align);
 
   /* Target above the memory chunk.  */
-  if (type != GRUB_MEMORY_AVAILABLE || target > end)
+  if (type != GRUB_MEMORY_AVAILABLE || ctx->target > end)
     return 0;
 
   /* Target inside the memory chunk.  */
-  if (target >= addr && target < end && size <= end - target)
+  if (ctx->target >= addr && ctx->target < end &&
+      ctx->size <= end - ctx->target)
     {
-      if (grub_claimmap (target, size) == GRUB_ERR_NONE)
+      if (grub_claimmap (ctx->target, ctx->size) == GRUB_ERR_NONE)
 	{
-	  *found_addr = target;
+	  ctx->found_addr = ctx->target;
 	  return 1;
 	}
       grub_print_error ();
     }
   /* Target below the memory chunk.  */
-  if (target < addr && addr + size <= end)
+  if (ctx->target < addr && addr + ctx->size <= end)
     {
-      if (grub_claimmap (addr, size) == GRUB_ERR_NONE)
+      if (grub_claimmap (addr, ctx->size) == GRUB_ERR_NONE)
 	{
-	  *found_addr = addr;
+	  ctx->found_addr = addr;
 	  return 1;
 	}
       grub_print_error ();
@@ -93,11 +103,16 @@ static grub_addr_t
 grub_linux_claimmap_iterate (grub_addr_t target, grub_size_t size,
 			     grub_size_t align)
 {
-  grub_addr_t found_addr = (grub_addr_t) -1;
+  struct grub_linux_claimmap_iterate_ctx ctx = {
+    .target = target,
+    .size = size,
+    .align = align,
+    .found_addr = (grub_addr_t) -1
+  };
 
-  grub_machine_mmap_iterate (alloc_mem, &found_addr);
+  grub_machine_mmap_iterate (alloc_mem, &ctx);
 
-  return found_addr;
+  return ctx.found_addr;
 }
 
 static grub_err_t
