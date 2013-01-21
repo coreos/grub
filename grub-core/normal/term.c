@@ -672,7 +672,8 @@ print_ucs4_terminal (const grub_uint32_t * str,
 
 	      if (!wasn && contchar)
 		putcode_real (contchar, term, fixed_tab);
-	      fill_margin (term, contchar ? margin_right : 1);
+	      if (contchar)
+		fill_margin (term, margin_right);
 
 	      grub_putcode ('\n', term);
 	      if (state != &local_state && ++state->num_lines
