@@ -1,5 +1,10 @@
 2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h: Include sys/types.h rather
+	than defining WORDS_BIGENDIAN manually.
+
+2013-01-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/kernel.h (FOR_MODULES): Adjust to preserve alignment
 	invariants.
 

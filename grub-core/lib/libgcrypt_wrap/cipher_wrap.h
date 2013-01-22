@@ -25,11 +25,7 @@
 #include <grub/dl.h>
 #include <grub/crypto.h>
 
-#undef WORDS_BIGENDIAN
-
-#ifdef GRUB_CPU_WORDS_BIGENDIAN
-#define WORDS_BIGENDIAN 1
-#endif
+#include <sys/types.h>
 
 #undef __GNU_LIBRARY__
 #define __GNU_LIBRARY__ 1
