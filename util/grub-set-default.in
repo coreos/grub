@@ -20,6 +20,7 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
+sysconfdir="@sysconfdir@"
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 datarootdir="@datarootdir@"
@@ -45,6 +46,7 @@ export TEXTDOMAINDIR="@localedir@"
 usage () {
     gettext_printf "Usage: %s [OPTION] MENU_ENTRY\n" "$self"
     gettext "Set the default boot menu entry for GRUB."; echo
+    gettext_printf "This requires setting GRUB_DEFAULT=saved in %s/default/grub.\n" "$sysconfdir"
     echo
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
     print_option_help "-v, --version" "$(gettext "print the version information and exit")"
