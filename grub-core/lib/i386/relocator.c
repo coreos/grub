@@ -54,6 +54,7 @@ extern grub_uint16_t grub_relocator16_sp;
 extern grub_uint32_t grub_relocator16_edx;
 extern grub_uint32_t grub_relocator16_ebx;
 extern grub_uint32_t grub_relocator16_esi;
+extern grub_uint32_t grub_relocator16_ebp;
 
 extern grub_uint16_t grub_relocator16_keep_a20_enabled;
 
@@ -225,6 +226,7 @@ grub_relocator16_boot (struct grub_relocator *rel,
   grub_relocator16_ss = state.ss;
   grub_relocator16_sp = state.sp;
 
+  grub_relocator16_ebp = state.ebp;
   grub_relocator16_ebx = state.ebx;
   grub_relocator16_edx = state.edx;
   grub_relocator16_esi = state.esi;

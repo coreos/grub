@@ -1,3 +1,18 @@
+2013-01-27  C. Masloch  <pushbx@38.de>
+
+	Improve FreeDOS direct loading support compatibility.
+
+	* include/grub/i386/relocator.h (grub_relocator16_state):
+	New member ebp.
+	* grub-core/lib/i386/relocator.c (grub_relocator16_ebp): New extern
+	variable.
+	(grub_relocator16_boot): Handle %ebp.
+	* grub-core/lib/i386/relocator16.S: Likewise.
+	* grub-core/loader/i386/pc/freedos.c:
+	Load BPB to pass kernel which partition to load from.
+	Check that kernel file is not too large.
+	Set register dl to BIOS unit number as well.
+
 2013-01-22  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-reboot.in (usage): Document the need for
