@@ -1,3 +1,8 @@
+2013-01-27  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub-install.in: change misleading comment about
+	device.map creation
+
 2013-01-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/menu_text.c (grub_menu_init_page): Fix behaviour

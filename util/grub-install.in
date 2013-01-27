@@ -505,7 +505,7 @@ if test $recheck = yes; then
     rm -f "$device_map"
 fi
 
-# Create the device map file if it is not present.
+# Device map file is optional
 if test -f "$device_map"; then
     # Make sure that there is no duplicated entry.
     tmp=`sed -n '/^([fh]d[0-9]*)/s/\(^(.*)\).*/\1/p' "$device_map" \
