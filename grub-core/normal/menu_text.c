@@ -357,7 +357,7 @@ grub_menu_init_page (int nested, int edit, int *num_entries,
   old_color_normal = grub_term_normal_color;
   old_color_highlight = grub_term_highlight_color;
   grub_color_menu_normal = grub_term_normal_color;
-  grub_color_menu_highlight = grub_color_menu_highlight;
+  grub_color_menu_highlight = grub_term_highlight_color;
 
   /* Then give user a chance to replace them.  */
   grub_parse_color_name_pair (&grub_color_menu_normal,
