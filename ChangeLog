@@ -1,3 +1,8 @@
+2013-01-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/xfs.c (grub_xfs_read_block): Fix computation in presence
+	of extended attributes.
+
 2013-01-27  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/grub-install.in: change misleading comment about

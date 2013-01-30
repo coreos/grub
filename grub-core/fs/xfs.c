@@ -295,9 +295,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       nrec = grub_be_to_cpu16 (node->inode.data.btree.numrecs);
       keys = &node->inode.data.btree.keys[0];
       if (node->inode.fork_offset)
-	recoffset = (node->inode.fork_offset
-		     - ((char *) &node->inode.data.btree.keys - (char *) &node->inode))
-	  / (2 * sizeof (grub_uint64_t));
+	recoffset = (node->inode.fork_offset - 1) / 2;
       else
 	recoffset = ((1 << node->data->sblock.log2_inode)
 		     - ((char *) &node->inode.data.btree.keys
