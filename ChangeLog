@@ -1,5 +1,10 @@
 2013-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/usb.c (grub_usb_device_attach): Add missing
+	grub_print_error.
+
+2013-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/serial/common.c (grub_usbserial_attach): Fix missing
 	zero-out of port structure.
 

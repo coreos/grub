@@ -297,14 +297,18 @@ void grub_usb_device_attach (grub_usb_device_t dev)
 	{
 	case GRUB_USB_CLASS_MASS_STORAGE:
 	  grub_dl_load ("usbms");
+	  grub_print_error ();
 	  break;
 	case GRUB_USB_CLASS_HID:
 	  grub_dl_load ("usb_keyboard");
+	  grub_print_error ();
 	  break;
 	case 0xff:
 	  /* FIXME: don't load useless modules.  */
 	  grub_dl_load ("usbserial_ftdi");
+	  grub_print_error ();
 	  grub_dl_load ("usbserial_pl2303");
+	  grub_print_error ();
 	  break;
 	}
     }
