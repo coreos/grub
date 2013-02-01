@@ -147,6 +147,7 @@ find_file (const char *currpath, grub_fshelp_node_t currroot,
 	      free_node (ctx->currnode, ctx);
 	      free_node (ctx->oldnode, ctx);
 	      ctx->currnode = 0;
+	      ctx->oldnode = 0;
 	      return grub_error (GRUB_ERR_SYMLINK_LOOP,
 				 N_("too deep nesting of symlinks"));
 	    }
@@ -158,6 +159,7 @@ find_file (const char *currpath, grub_fshelp_node_t currroot,
 	  if (!symlink)
 	    {
 	      free_node (ctx->oldnode, ctx);
+	      ctx->oldnode = 0;
 	      return grub_errno;
 	    }
 
@@ -177,12 +179,16 @@ find_file (const char *currpath, grub_fshelp_node_t currroot,
 	  if (grub_errno)
 	    {
 	      free_node (ctx->oldnode, ctx);
+	      ctx->oldnode = 0;
 	      return grub_errno;
 	    }
 	}
 
       if (ctx->oldnode != ctx->currnode)
-	free_node (ctx->oldnode, ctx);
+	{
+	  free_node (ctx->oldnode, ctx);
+	  ctx->oldnode = 0;
+	}
 
       /* Found the node!  */
       if (! next || *next == '\0')

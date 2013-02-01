@@ -1,5 +1,10 @@
 2013-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/fshelp.c (find_file): Set oldnode to zero after
+	freeing it.
+
+2013-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Implement USBDebug (full USB stack variant).
 
 2013-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
