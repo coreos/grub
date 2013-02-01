@@ -1,5 +1,9 @@
 2013-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Implement USBDebug (full USB stack variant).
+
+2013-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/lsacpi.c: Show more info. Hide some boring parts
 	unless they have unexpected values.
 

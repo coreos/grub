@@ -448,6 +448,12 @@ module = {
 };
 
 module = {
+  name = usbserial_usbdebug;
+  common = bus/usb/serial/usbdebug_late.c;
+  enable = usb;
+};
+
+module = {
   name = uhci;
   common = bus/usb/uhci.c;
   enable = x86;

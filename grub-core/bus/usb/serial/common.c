@@ -42,7 +42,8 @@ static int usbnum = 0;
 
 int
 grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno,
-		       struct grub_serial_driver *driver)
+		       struct grub_serial_driver *driver, int in_endp,
+		       int out_endp)
 {
   struct grub_serial_port *port;
   int j;
@@ -73,12 +74,16 @@ grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno,
       struct grub_usb_desc_endp *endp;
       endp = &usbdev->config[0].interf[interfno].descendp[j];
 
-      if ((endp->endp_addr & 128) && (endp->attrib & 3) == 2)
+      if ((endp->endp_addr & 128) && (endp->attrib & 3) == 2
+	  && (in_endp == GRUB_USB_SERIAL_ENDPOINT_LAST_MATCHING
+	      || in_endp == endp->endp_addr))
 	{
 	  /* Bulk IN endpoint.  */
 	  port->in_endp = endp;
 	}
-      else if (!(endp->endp_addr & 128) && (endp->attrib & 3) == 2)
+      else if (!(endp->endp_addr & 128) && (endp->attrib & 3) == 2
+	       && (out_endp == GRUB_USB_SERIAL_ENDPOINT_LAST_MATCHING
+		   || out_endp == endp->endp_addr))
 	{
 	  /* Bulk OUT endpoint.  */
 	  port->out_endp = endp;

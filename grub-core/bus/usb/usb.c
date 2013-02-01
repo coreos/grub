@@ -309,6 +309,8 @@ void grub_usb_device_attach (grub_usb_device_t dev)
 	  grub_print_error ();
 	  grub_dl_load ("usbserial_pl2303");
 	  grub_print_error ();
+	  grub_dl_load ("usbserial_usbdebug");
+	  grub_print_error ();
 	  break;
 	}
     }

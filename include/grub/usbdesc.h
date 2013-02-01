@@ -28,6 +28,7 @@ typedef enum {
   GRUB_USB_DESCRIPTOR_STRING,
   GRUB_USB_DESCRIPTOR_INTERFACE,
   GRUB_USB_DESCRIPTOR_ENDPOINT,
+  GRUB_USB_DESCRIPTOR_DEBUG = 10,
   GRUB_USB_DESCRIPTOR_HUB = 0x29
 } grub_usb_descriptor_t;
 
@@ -109,6 +110,14 @@ struct grub_usb_desc_str
   grub_uint8_t length;
   grub_uint8_t type;
   grub_uint16_t str[0];
+} __attribute__ ((packed));
+
+struct grub_usb_desc_debug
+{
+  grub_uint8_t length;
+  grub_uint8_t type;
+  grub_uint8_t in_endp;
+  grub_uint8_t out_endp;
 } __attribute__ ((packed));
 
 struct grub_usb_usb_hubdesc

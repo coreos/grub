@@ -193,7 +193,9 @@ grub_ftdi_attach (grub_usb_device_t usbdev, int configno, int interfno)
     return 0;
 
   return grub_usbserial_attach (usbdev, configno, interfno,
-				&grub_ftdi_driver);
+				&grub_ftdi_driver,
+				GRUB_USB_SERIAL_ENDPOINT_LAST_MATCHING,
+				GRUB_USB_SERIAL_ENDPOINT_LAST_MATCHING);
 }
 
 static struct grub_usb_attach_desc attach_hook =
