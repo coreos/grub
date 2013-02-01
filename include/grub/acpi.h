@@ -88,11 +88,31 @@ struct grub_acpi_madt
 
 enum
   {
+    GRUB_ACPI_MADT_ENTRY_TYPE_LAPIC = 0,
+    GRUB_ACPI_MADT_ENTRY_TYPE_IOAPIC = 1,
     GRUB_ACPI_MADT_ENTRY_TYPE_INTERRUPT_OVERRIDE = 2,
+    GRUB_ACPI_MADT_ENTRY_TYPE_LAPIC_NMI = 4,
     GRUB_ACPI_MADT_ENTRY_TYPE_SAPIC = 6,
     GRUB_ACPI_MADT_ENTRY_TYPE_LSAPIC = 7,
     GRUB_ACPI_MADT_ENTRY_TYPE_PLATFORM_INT_SOURCE = 8
   };
+
+struct grub_acpi_madt_entry_lapic
+{
+  struct grub_acpi_madt_entry_header hdr;
+  grub_uint8_t acpiid;
+  grub_uint8_t apicid;
+  grub_uint32_t flags;
+};
+
+struct grub_acpi_madt_entry_ioapic
+{
+  struct grub_acpi_madt_entry_header hdr;
+  grub_uint8_t id;
+  grub_uint8_t pad;
+  grub_uint32_t address;
+  grub_uint32_t global_sys_interrupt;
+};
 
 struct grub_acpi_madt_entry_interrupt_override
 {
@@ -101,7 +121,16 @@ struct grub_acpi_madt_entry_interrupt_override
   grub_uint8_t source;
   grub_uint32_t global_sys_interrupt;
   grub_uint16_t flags;
-};
+} __attribute__ ((packed));
+
+
+struct grub_acpi_madt_entry_lapic_nmi
+{
+  struct grub_acpi_madt_entry_header hdr;
+  grub_uint8_t acpiid;
+  grub_uint16_t flags;
+  grub_uint8_t lint;
+} __attribute__ ((packed));
 
 struct grub_acpi_madt_entry_sapic
 {
