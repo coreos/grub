@@ -1,3 +1,8 @@
+2013-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/bus/usb/serial/common.c (grub_usbserial_attach): Fix missing
+	zero-out of port structure.
+
 2013-01-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/xfs.c (grub_xfs_read_block): Fix computation in presence

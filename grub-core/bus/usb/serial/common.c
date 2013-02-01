@@ -51,7 +51,7 @@ grub_usbserial_attach (grub_usb_device_t usbdev, int configno, int interfno,
 
   interf = usbdev->config[configno].interf[interfno].descif;
 
-  port = grub_malloc (sizeof (*port));
+  port = grub_zalloc (sizeof (*port));
   if (!port)
     {
       grub_print_error ();
