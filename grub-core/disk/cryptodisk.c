@@ -875,7 +875,10 @@ grub_cryptodisk_scan_device (const char *name,
   /* Try to open disk.  */
   source = grub_disk_open (name);
   if (!source)
-    return grub_errno;
+    {
+      grub_print_error ();
+      return 0;
+    }
 
   err = grub_cryptodisk_scan_device_real (name, source);
 

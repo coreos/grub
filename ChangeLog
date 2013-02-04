@@ -1,3 +1,8 @@
+2013-02-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/cryptodisk.c (grub_cryptodisk_scan_device): Don't stop
+	on first error.
+
 2013-02-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/fshelp.c (find_file): Set oldnode to zero after
