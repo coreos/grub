@@ -75,7 +75,8 @@ disp_madt_table (struct grub_acpi_madt *t)
 	    grub_printf ("  LAPIC ACPI_ID=%02x APIC_ID=%02x Flags=%08x\n",
 			 dt->acpiid, dt->apicid, dt->flags);
 	    if (dt->hdr.len != sizeof (*dt))
-	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len, sizeof (*dt));
+	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len,
+			   (int) sizeof (*dt));
 	    break;
 	  }
 
@@ -85,7 +86,8 @@ disp_madt_table (struct grub_acpi_madt *t)
 	    grub_printf ("  IOAPIC ID=%02x address=%08x GSI=%08x\n",
 			 dt->id, dt->address, dt->global_sys_interrupt);
 	    if (dt->hdr.len != sizeof (*dt))
-	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len, sizeof (*dt));
+	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len,
+			   (int) sizeof (*dt));
 	    if (dt->pad)
 	      grub_printf ("   non-zero pad: %02x\n", dt->pad);
 	    break;
@@ -98,7 +100,8 @@ disp_madt_table (struct grub_acpi_madt *t)
 			 dt->bus, dt->source, dt->global_sys_interrupt,
 			 dt->flags);
 	    if (dt->hdr.len != sizeof (*dt))
-	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len, sizeof (*dt));
+	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len,
+			   (int) sizeof (*dt));
 	  }
 	  break;
 
@@ -108,7 +111,8 @@ disp_madt_table (struct grub_acpi_madt *t)
 	    grub_printf ("  LAPIC_NMI ACPI_ID=%02x Flags=%04x lint=%02x\n",
 			 dt->acpiid, dt->flags, dt->lint);
 	    if (dt->hdr.len != sizeof (*dt))
-	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len, sizeof (*dt));
+	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len,
+			   (int) sizeof (*dt));
 	    break;
 	  }
 
@@ -120,7 +124,8 @@ disp_madt_table (struct grub_acpi_madt *t)
 			 dt->id, dt->global_sys_interrupt_base,
 			 dt->addr);
 	    if (dt->hdr.len != sizeof (*dt))
-	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len, sizeof (*dt));
+	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len,
+			   (int) sizeof (*dt));
 	    if (dt->pad)
 	      grub_printf ("   non-zero pad: %02x\n", dt->pad);
 
@@ -139,7 +144,8 @@ disp_madt_table (struct grub_acpi_madt *t)
 	      grub_printf ("  UID val=%08x, Str=%s\n", dt->cpu_uid,
 			   dt->cpu_uid_str);
 	    if (dt->hdr.len != sizeof (*dt) + grub_strlen ((char *) dt->cpu_uid_str) + 1)
-	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len, sizeof (*dt));
+	      grub_printf ("   table size mismatch %d != %d\n", dt->hdr.len,
+			   (int) sizeof (*dt));
 	    if (dt->pad[0] || dt->pad[1] || dt->pad[2])
 	      grub_printf ("   non-zero pad: %02x%02x%02x\n", dt->pad[0], dt->pad[1], dt->pad[2]);
 	  }
@@ -239,7 +245,8 @@ disp_acpi_rsdpv2 (struct grub_acpi_rsdp_v20 *rsdp)
   grub_printf ("len=%d chksum=%02x (%s) XSDT=%016" PRIxGRUB_UINT64_T "\n", rsdp->length, rsdp->checksum, grub_byte_checksum (rsdp, rsdp->length) == 0 ? "valid" : "invalid",
 	       rsdp->xsdt_addr);
   if (rsdp->length != sizeof (*rsdp))
-    grub_printf (" length mismatch %d != %d\n", rsdp->length, sizeof (*rsdp));
+    grub_printf (" length mismatch %d != %d\n", rsdp->length,
+		 (int) sizeof (*rsdp));
   if (rsdp->reserved[0] || rsdp->reserved[1] || rsdp->reserved[2])
     grub_printf (" non-zero reserved %02x%02x%02x\n", rsdp->reserved[0], rsdp->reserved[1], rsdp->reserved[2]);
 }
