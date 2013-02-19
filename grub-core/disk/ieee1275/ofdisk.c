@@ -349,6 +349,14 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a block device");
     }
 
+  grub_uint32_t block_size = 0;
+  if (grub_ofdisk_get_block_size (devpath, &block_size) == 0)
+    {
+      for (disk->log_sector_size = 0;
+           (1U << disk->log_sector_size) < block_size;
+           disk->log_sector_size++);
+    }
+
   /* XXX: There is no property to read the number of blocks.  There
      should be a property `#blocks', but it is not there.  Perhaps it
      is possible to use seek for this.  */
@@ -415,7 +423,7 @@ grub_ofdisk_prepare (grub_disk_t disk, grub_disk_addr_t sector)
       last_devpath = disk->data;      
     }
 
-  pos = sector << GRUB_DISK_SECTOR_BITS;
+  pos = sector << disk->log_sector_size;
 
   grub_ieee1275_seek (last_ihandle, pos, &status);
   if (status < 0)
@@ -434,9 +442,9 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   err = grub_ofdisk_prepare (disk, sector);
   if (err)
     return err;
-  grub_ieee1275_read (last_ihandle, buf, size  << GRUB_DISK_SECTOR_BITS,
+  grub_ieee1275_read (last_ihandle, buf, size  << disk->log_sector_size,
 		      &actual);
-  if (actual != (grub_ssize_t) (size  << GRUB_DISK_SECTOR_BITS))
+  if (actual != (grub_ssize_t) (size  << disk->log_sector_size))
     return grub_error (GRUB_ERR_READ_ERROR, N_("failure reading sector 0x%llx "
 					       "from `%s'"),
 		       (unsigned long long) sector,
@@ -454,9 +462,9 @@ grub_ofdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
   err = grub_ofdisk_prepare (disk, sector);
   if (err)
     return err;
-  grub_ieee1275_write (last_ihandle, buf, size  << GRUB_DISK_SECTOR_BITS,
+  grub_ieee1275_write (last_ihandle, buf, size  << disk->log_sector_size,
 		       &actual);
-  if (actual != (grub_ssize_t) (size << GRUB_DISK_SECTOR_BITS))
+  if (actual != (grub_ssize_t) (size << disk->log_sector_size))
     return grub_error (GRUB_ERR_WRITE_ERROR, N_("failure writing sector 0x%llx "
 						"to `%s'"),
 		       (unsigned long long) sector,
@@ -492,4 +500,45 @@ grub_ofdisk_fini (void)
   last_devpath = NULL;
 
   grub_disk_dev_unregister (&grub_ofdisk_dev);
+}
+
+grub_err_t
+grub_ofdisk_get_block_size (const char *device, grub_uint32_t *block_size)
+{
+  struct size_args_ieee1275
+    {
+      struct grub_ieee1275_common_hdr common;
+      grub_ieee1275_cell_t method;
+      grub_ieee1275_cell_t ihandle;
+      grub_ieee1275_cell_t result;
+      grub_ieee1275_cell_t size1;
+      grub_ieee1275_cell_t size2;
+    } args_ieee1275;
+
+  if (last_ihandle)
+    grub_ieee1275_close (last_ihandle);
+
+  last_ihandle = 0;
+  last_devpath = NULL;
+
+  grub_ieee1275_open (device, &last_ihandle);
+  if (! last_ihandle)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
+
+  INIT_IEEE1275_COMMON (&args_ieee1275.common, "call-method", 2, 2);
+  args_ieee1275.method = (grub_ieee1275_cell_t) "block-size";
+  args_ieee1275.ihandle = last_ihandle;
+  args_ieee1275.result = 1;
+
+  *block_size = GRUB_DISK_SECTOR_SIZE;
+
+  if ((IEEE1275_CALL_ENTRY_FN (&args_ieee1275) == -1) || (args_ieee1275.result))
+    grub_dprintf ("disk", "can't get block size\n");
+  else
+    if (args_ieee1275.size1
+        && !(args_ieee1275.size1 & (args_ieee1275.size1 - 1))
+        && args_ieee1275.size1 >= 512 && args_ieee1275.size1 <= 16384)
+      *block_size = args_ieee1275.size1;
+
+  return 0;
 }

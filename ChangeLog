@@ -1,3 +1,16 @@
+2013-02-19  Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>
+
+	Support Openfirmware disks with non-512B sectors.
+
+	* grub-core/disk/ieee1275/ofdisk.c (grub_ofdisk_open): Get the block
+	size of the disk.
+	* (grub_ofdisk_get_block_size): New function.
+	* (grub_ofdisk_prepare): Use the correct block size.
+	* (grub_ofdisk_read): Likewise.
+	* (grub_ofdisk_write): Likewise.
+	* include/grub/ieee1275/ofdisk.h (grub_ofdisk_get_block_size):
+	New proto.
+
 2013-02-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/lsacpi.c: Fix types on 64-bit platform.
