@@ -510,6 +510,12 @@ module = {
 };
 
 module = {
+  name = cmosdump;
+  common = commands/i386/cmosdump.c;
+  enable = cmos;
+};
+
+module = {
   name = iorw;
   common = commands/iorw.c;
   enable = x86;
