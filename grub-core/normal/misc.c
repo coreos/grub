@@ -117,13 +117,17 @@ grub_normal_print_device_info (const char *name)
 	grub_printf ("%s", _("No known filesystem detected"));
 
       if (dev->disk->partition)
-	grub_printf (_(" - Partition start at %llu"),
-		     (unsigned long long) grub_partition_get_start (dev->disk->partition));
+	grub_printf (_(" - Partition start at %llu%sKiB"),
+		     (unsigned long long) (grub_partition_get_start (dev->disk->partition) >> 1),
+		     (grub_partition_get_start (dev->disk->partition) & 1) ? ".5" : "" );
+      else
+	grub_printf_ (N_(" - Sector size %uB"), 1 << dev->disk->log_sector_size);
       if (grub_disk_get_size (dev->disk) == GRUB_DISK_SIZE_UNKNOWN)
 	grub_puts_ (N_(" - Total size unknown"));
       else
-	grub_printf (_(" - Total size %llu sectors"),
-		     (unsigned long long) grub_disk_get_size (dev->disk));
+	grub_printf (_(" - Total size %llu%sKiB"),
+		     (unsigned long long) (grub_disk_get_size (dev->disk) >> 1),
+		     (grub_disk_get_size (dev->disk) & 1) ? ".5" : "");
 
       grub_device_close (dev);
     }
