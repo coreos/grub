@@ -1,3 +1,10 @@
+2013-02-25  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* Makefile.util.def: Add partmap/msdos.c to common library.
+	* include/grub/msdos_partition.h: Add GRUB_PC_PARTITION_TYPE_LDM
+	* grub-core/disk/ldm.c: Check for existence of
+	GRUB_PC_PARTITION_TYPE_LDM.
+
 2013-02-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/misc.c (grub_normal_print_device_info): Use KiB to display

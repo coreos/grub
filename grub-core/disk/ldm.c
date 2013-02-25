@@ -22,6 +22,7 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/diskfilter.h>
+#include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
 #include <grub/i18n.h>
 
@@ -101,6 +102,37 @@ read_int (grub_uint8_t *in, grub_size_t s)
       ret |= *ptr2;
     }
   return ret;
+}
+
+static int
+check_ldm_partition (grub_disk_t disk __attribute__ ((unused)), const grub_partition_t p, void *data)
+{
+  int *has_ldm = data;
+
+  if (p->number >= 4)
+    return 1;
+  if (p->msdostype == GRUB_PC_PARTITION_TYPE_LDM)
+    {
+      *has_ldm = 1;
+      return 1;
+    }
+  return 0;
+}
+
+static int
+msdos_has_ldm_partition (grub_disk_t dsk)
+{
+  grub_err_t err;
+  int has_ldm = 0;
+
+  err = grub_partition_msdos_iterate (dsk, check_ldm_partition, &has_ldm);
+  if (err)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
+
+  return has_ldm;
 }
 
 static const grub_gpt_part_type_t ldm_type = GRUB_GPT_PARTITION_TYPE_LDM;
@@ -760,17 +792,20 @@ grub_ldm_detect (grub_disk_t disk,
 
   {
     int i;
+    int has_ldm = msdos_has_ldm_partition (disk);
     for (i = 0; i < 3; i++)
       {
 	grub_disk_addr_t sector = LDM_LABEL_SECTOR;
 	switch (i)
 	  {
 	  case 0:
+	    if (!has_ldm)
+	      continue;
 	    sector = LDM_LABEL_SECTOR;
 	    break;
 	  case 1:
 	    /* LDM is never inside a partition.  */
-	    if (disk->partition)
+	    if (!has_ldm || disk->partition)
 	      continue;
 	    sector = grub_disk_get_size (disk);
 	    if (sector == GRUB_DISK_SIZE_UNKNOWN)
@@ -871,6 +906,7 @@ int
 grub_util_is_ldm (grub_disk_t disk)
 {
   int i;
+  int has_ldm = msdos_has_ldm_partition (disk);
   for (i = 0; i < 3; i++)
     {
       grub_disk_addr_t sector = LDM_LABEL_SECTOR;
@@ -880,11 +916,13 @@ grub_util_is_ldm (grub_disk_t disk)
       switch (i)
 	{
 	case 0:
+	  if (!has_ldm)
+	    continue;
 	  sector = LDM_LABEL_SECTOR;
 	  break;
 	case 1:
 	  /* LDM is never inside a partition.  */
-	  if (disk->partition)
+	  if (!has_ldm || disk->partition)
 	    continue;
 	  sector = grub_disk_get_size (disk);
 	  if (sector == GRUB_DISK_SIZE_UNKNOWN)

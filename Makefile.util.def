@@ -32,6 +32,7 @@ library = {
   common = grub-core/disk/ldm.c;
   common = grub-core/disk/diskfilter.c;
   common = grub-core/partmap/gpt.c;
+  common = grub-core/partmap/msdos.c;
 };
 
 library = {
@@ -110,7 +111,6 @@ library = {
   common = grub-core/partmap/acorn.c;
   common = grub-core/partmap/amiga.c;
   common = grub-core/partmap/apple.c;
-  common = grub-core/partmap/msdos.c;
   common = grub-core/partmap/sun.c;
   common = grub-core/partmap/plan.c;
   common = grub-core/partmap/dvh.c;
