@@ -393,11 +393,12 @@ insert_string (struct screen *screen, const char *s, int update)
 	  if (! screen->lines)
 	    return 0;
 
-	  /* Scroll down. */
-	  grub_memmove (screen->lines + screen->line + 2,
-			screen->lines + screen->line + 1,
-			((screen->num_lines - screen->line - 2)
-			 * sizeof (struct line)));
+	  /* Shift down if not appending after the last line. */
+	  if (screen->line < screen->num_lines - 2)
+	    grub_memmove (screen->lines + screen->line + 2,
+			  screen->lines + screen->line + 1,
+			  ((screen->num_lines - screen->line - 2)
+			   * sizeof (struct line)));
 
 	  if (! init_line (screen, screen->lines + screen->line + 1))
 	    return 0;

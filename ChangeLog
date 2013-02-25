@@ -1,5 +1,10 @@
 2013-02-25  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* grub-core/normal/menu_entry.c (insert_string): fix off by one
+	access to unallocated memory.
+
+2013-02-25  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* Makefile.util.def: Add partmap/msdos.c to common library.
 	* include/grub/msdos_partition.h: Add GRUB_PC_PARTITION_TYPE_LDM
 	* grub-core/disk/ldm.c: Check for existence of
