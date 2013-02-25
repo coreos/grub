@@ -243,7 +243,6 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 
       do
 	{
-	  int off = 0;
 	  struct grub_term_pos **pos;
 
 	  if (linep >= screen->lines + screen->num_lines)
@@ -301,7 +300,7 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 	  y += get_logical_num_lines (linep, term_screen);
 	  if (y >= term_screen->num_entries)
 	    {
-	      if (off <= linep->len || i + 1 < screen->num_lines)
+	      if (i + 1 < screen->num_lines)
 		down_flag = 1;
 	    }
 

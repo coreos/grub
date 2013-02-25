@@ -1,5 +1,10 @@
 2013-02-25  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* grub-core/normal/menu_entry.c (update_screen): remove
+	unused variable `off' which caused scroll down arrow to be always shown.
+
+2013-02-25  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* grub-core/normal/menu_entry.c (insert_string): fix off by one
 	access to unallocated memory.
 
