@@ -797,7 +797,10 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
       dup_ldp->length[1] = 0;
 
       if (!get_diskname_from_path (dup_dp, device_name))
-	return 0;
+	{
+	  grub_free (dup_dp);
+	  return 0;
+	}
       parent = grub_disk_open (device_name);
       grub_free (dup_dp);
 

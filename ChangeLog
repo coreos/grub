@@ -1,3 +1,8 @@
+2013-02-26  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/disk/efi/efidisk.c(grub_efidisk_get_device_name): Fix
+	memory leak if device name is not found.
+
 2013-02-25  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/normal/menu_entry.c (update_screen): remove
