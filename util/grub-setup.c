@@ -138,6 +138,70 @@ write_rootdev (grub_device_t root_dev,
 #define BOOT_SECTOR 0
 #endif
 
+/* Helper for setup.  */
+static void
+save_first_sector (grub_disk_addr_t sector, unsigned offset, unsigned length,
+		   void *data)
+{
+  grub_disk_addr_t *first_sector = data;
+  grub_util_info ("the first sector is <%" PRIuGRUB_UINT64_T ",%u,%u>",
+		  sector, offset, length);
+
+  if (offset != 0 || length != GRUB_DISK_SECTOR_SIZE)
+    grub_util_error ("%s", _("the first sector of the core file is not sector-aligned"));
+
+  *first_sector = sector;
+}
+
+struct blocklists
+{
+  struct grub_boot_blocklist *first_block, *block;
+#ifdef GRUB_SETUP_BIOS
+  grub_uint16_t current_segment;
+#endif
+  grub_uint16_t last_length;
+};
+
+/* Helper for setup.  */
+static void
+save_blocklists (grub_disk_addr_t sector, unsigned offset, unsigned length,
+		 void *data)
+{
+  struct blocklists *bl = data;
+  struct grub_boot_blocklist *prev = bl->block + 1;
+
+  grub_util_info ("saving <%" PRIuGRUB_UINT64_T ",%u,%u>",
+		  sector, offset, length);
+
+  if (offset != 0 || bl->last_length != GRUB_DISK_SECTOR_SIZE)
+    grub_util_error ("%s", _("non-sector-aligned data is found in the core file"));
+
+  if (bl->block != bl->first_block
+      && (grub_target_to_host64 (prev->start)
+	  + grub_target_to_host16 (prev->len)) == sector)
+    {
+      grub_uint16_t t = grub_target_to_host16 (prev->len) + 1;
+      prev->len = grub_host_to_target16 (t);
+    }
+  else
+    {
+      bl->block->start = grub_host_to_target64 (sector);
+      bl->block->len = grub_host_to_target16 (1);
+#ifdef GRUB_SETUP_BIOS
+      bl->block->segment = grub_host_to_target16 (bl->current_segment);
+#endif
+
+      bl->block--;
+      if (bl->block->len)
+	grub_util_error ("%s", _("the sectors of the core file are too fragmented"));
+    }
+
+  bl->last_length = length;
+#ifdef GRUB_SETUP_BIOS
+  bl->current_segment += GRUB_DISK_SECTOR_SIZE >> 4;
+#endif
+}
+
 #ifdef GRUB_SETUP_BIOS
 /* Context for setup/identify_partmap.  */
 struct identify_partmap_ctx
@@ -147,7 +211,7 @@ struct identify_partmap_ctx
   int multiple_partmaps;
 };
 
-/* Helper for setup/identify_partmap.
+/* Helper for setup.
    Unlike root_dev, with dest_dev we're interested in the partition map even
    if dest_dev itself is a whole disk.  */
 static int
@@ -190,73 +254,16 @@ setup (const char *dir,
   grub_uint16_t core_sectors;
 #endif
   grub_device_t root_dev = 0, dest_dev, core_dev;
-  struct grub_boot_blocklist *first_block, *block;
+  struct blocklists bl;
   char *tmp_img;
   grub_disk_addr_t first_sector;
-#ifdef GRUB_SETUP_BIOS
-  grub_uint16_t current_segment
-    = GRUB_BOOT_I386_PC_KERNEL_SEG + (GRUB_DISK_SECTOR_SIZE >> 4);
-#endif
-  grub_uint16_t last_length = GRUB_DISK_SECTOR_SIZE;
   FILE *fp;
 
-  auto void NESTED_FUNC_ATTR save_first_sector (grub_disk_addr_t sector,
-						unsigned offset,
-						unsigned length);
-  auto void NESTED_FUNC_ATTR save_blocklists (grub_disk_addr_t sector,
-					      unsigned offset,
-					      unsigned length);
-
-  void NESTED_FUNC_ATTR save_first_sector (grub_disk_addr_t sector,
-					   unsigned offset,
-					   unsigned length)
-    {
-      grub_util_info ("the first sector is <%" PRIuGRUB_UINT64_T ",%u,%u>",
-		      sector, offset, length);
-
-      if (offset != 0 || length != GRUB_DISK_SECTOR_SIZE)
-	grub_util_error ("%s", _("the first sector of the core file is not sector-aligned"));
-
-      first_sector = sector;
-    }
-
-  void NESTED_FUNC_ATTR save_blocklists (grub_disk_addr_t sector,
-					 unsigned offset,
-					 unsigned length)
-    {
-      struct grub_boot_blocklist *prev = block + 1;
-
-      grub_util_info ("saving <%" PRIuGRUB_UINT64_T ",%u,%u>",
-		      sector, offset, length);
-
-      if (offset != 0 || last_length != GRUB_DISK_SECTOR_SIZE)
-	grub_util_error ("%s", _("non-sector-aligned data is found in the core file"));
-
-      if (block != first_block
-	  && (grub_target_to_host64 (prev->start)
-	      + grub_target_to_host16 (prev->len)) == sector)
-	{
-	  grub_uint16_t t = grub_target_to_host16 (prev->len) + 1;
-	  prev->len = grub_host_to_target16 (t);
-	}
-      else
-	{
-	  block->start = grub_host_to_target64 (sector);
-	  block->len = grub_host_to_target16 (1);
 #ifdef GRUB_SETUP_BIOS
-	  block->segment = grub_host_to_target16 (current_segment);
+  bl.current_segment =
+    GRUB_BOOT_I386_PC_KERNEL_SEG + (GRUB_DISK_SECTOR_SIZE >> 4);
 #endif
-
-	  block--;
-	  if (block->len)
-	    grub_util_error ("%s", _("the sectors of the core file are too fragmented"));
-	}
-
-      last_length = length;
-#ifdef GRUB_SETUP_BIOS
-      current_segment += GRUB_DISK_SECTOR_SIZE >> 4;
-#endif
-    }
+  bl.last_length = GRUB_DISK_SECTOR_SIZE;
 
   /* Read the boot image by the OS service.  */
   boot_path = grub_util_get_path (dir, boot_file);
@@ -283,9 +290,9 @@ setup (const char *dir,
   core_img = grub_util_read_image (core_path);
 
   /* Have FIRST_BLOCK to point to the first blocklist.  */
-  first_block = (struct grub_boot_blocklist *) (core_img
-						+ GRUB_DISK_SECTOR_SIZE
-						- sizeof (*block));
+  bl.first_block = (struct grub_boot_blocklist *) (core_img
+						   + GRUB_DISK_SECTOR_SIZE
+						   - sizeof (*bl.block));
   grub_util_info ("root is `%s', dest is `%s'", root, dest);
 
   grub_util_info ("Opening dest");
@@ -511,38 +518,38 @@ setup (const char *dir,
     assert (nsec <= maxsec);
 
     /* Clean out the blocklists.  */
-    block = first_block;
-    while (block->len)
+    bl.block = bl.first_block;
+    while (bl.block->len)
       {
-	grub_memset (block, 0, sizeof (block));
+	grub_memset (bl.block, 0, sizeof (bl.block));
       
-	block--;
+	bl.block--;
 
-	if ((char *) block <= core_img)
+	if ((char *) bl.block <= core_img)
 	  grub_util_error ("%s", _("no terminator in the core image"));
       }
 
     save_first_sector (sectors[0] + grub_partition_get_start (ctx.container),
-		       0, GRUB_DISK_SECTOR_SIZE);
+		       0, GRUB_DISK_SECTOR_SIZE, &first_sector);
 
-    block = first_block;
+    bl.block = bl.first_block;
     for (i = 1; i < nsec; i++)
       save_blocklists (sectors[i] + grub_partition_get_start (ctx.container),
-		       0, GRUB_DISK_SECTOR_SIZE);
+		       0, GRUB_DISK_SECTOR_SIZE, &bl);
 
     /* Make sure that the last blocklist is a terminator.  */
-    if (block == first_block)
-      block--;
-    block->start = 0;
-    block->len = 0;
-    block->segment = 0;
+    if (bl.block == bl.first_block)
+      bl.block--;
+    bl.block->start = 0;
+    bl.block->len = 0;
+    bl.block->segment = 0;
 
     write_rootdev (root_dev, boot_img, first_sector);
 
     core_img = realloc (core_img, nsec * GRUB_DISK_SECTOR_SIZE);
-    first_block = (struct grub_boot_blocklist *) (core_img
-						  + GRUB_DISK_SECTOR_SIZE
-						  - sizeof (*block));
+    bl.first_block = (struct grub_boot_blocklist *) (core_img
+						     + GRUB_DISK_SECTOR_SIZE
+						     - sizeof (*bl.block));
 
     grub_size_t no_rs_length;
     grub_set_unaligned32 ((core_img + GRUB_DISK_SECTOR_SIZE
@@ -698,22 +705,22 @@ unable_to_embed:
 #endif
 
   /* Clean out the blocklists.  */
-  block = first_block;
-  while (block->len)
+  bl.block = bl.first_block;
+  while (bl.block->len)
     {
-      block->start = 0;
-      block->len = 0;
+      bl.block->start = 0;
+      bl.block->len = 0;
 #ifdef GRUB_SETUP_BIOS
-      block->segment = 0;
+      bl.block->segment = 0;
 #endif
 
-      block--;
+      bl.block--;
 
-      if ((char *) block <= core_img)
+      if ((char *) bl.block <= core_img)
 	grub_util_error ("%s", _("no terminator in the core image"));
     }
 
-  block = first_block;
+  bl.block = bl.first_block;
 
 #ifdef __linux__
   {
@@ -766,11 +773,11 @@ unable_to_embed:
 		if (i == 0 && j == 0)
 		  save_first_sector (((grub_uint64_t) blk) * mul
 				     + container_start,
-				     0, rest);
+				     0, rest, &first_sector);
 		else
 		  save_blocklists (((grub_uint64_t) blk) * mul + j
 				   + container_start,
-				   0, rest);
+				   0, rest, &bl);
 	      }
 	  }
       }
@@ -806,13 +813,14 @@ unable_to_embed:
 				      >> GRUB_DISK_SECTOR_BITS)
 				     + j + container_start,
 				     fie2->fm_extents[i].fe_physical
-				     & (GRUB_DISK_SECTOR_SIZE - 1), len);
+				     & (GRUB_DISK_SECTOR_SIZE - 1), len,
+				     &first_sector);
 		else
 		  save_blocklists ((fie2->fm_extents[i].fe_physical
 				    >> GRUB_DISK_SECTOR_BITS)
 				   + j + container_start,
 				   fie2->fm_extents[i].fe_physical
-				   & (GRUB_DISK_SECTOR_SIZE - 1), len);
+				   & (GRUB_DISK_SECTOR_SIZE - 1), len, &bl);
 
 
 	      }
@@ -830,12 +838,14 @@ unable_to_embed:
       grub_util_error ("%s", grub_errmsg);
 
     file->read_hook = save_first_sector;
+    file->read_hook_data = &first_sector;
     if (grub_file_read (file, tmp_img, GRUB_DISK_SECTOR_SIZE)
 	!= GRUB_DISK_SECTOR_SIZE)
       grub_util_error ("%s", _("failed to read the first sector of the core image"));
 
-    block = first_block;
+    bl.block = bl.first_block;
     file->read_hook = save_blocklists;
+    file->read_hook_data = &bl;
     if (grub_file_read (file, tmp_img, core_size - GRUB_DISK_SECTOR_SIZE)
 	!= (grub_ssize_t) core_size - GRUB_DISK_SECTOR_SIZE)
       grub_util_error ("%s", _("failed to read the rest sectors of the core image"));
@@ -913,11 +923,11 @@ unable_to_embed:
     ptr += GRUB_DISK_SECTOR_SIZE;
     len -= GRUB_DISK_SECTOR_SIZE;
 
-    block = first_block;
-    while (block->len)
+    bl.block = bl.first_block;
+    while (bl.block->len)
       {
-	size_t cur = grub_target_to_host16 (block->len) << GRUB_DISK_SECTOR_BITS;
-	blk = grub_target_to_host64 (block->start);
+	size_t cur = grub_target_to_host16 (bl.block->len) << GRUB_DISK_SECTOR_BITS;
+	blk = grub_target_to_host64 (bl.block->start);
 
 	if (cur > len)
 	  cur = len;
@@ -932,9 +942,9 @@ unable_to_embed:
 
 	ptr += cur;
 	len -= cur;
-	block--;
+	bl.block--;
 	
-	if ((char *) block <= core_img)
+	if ((char *) bl.block <= core_img)
 	  grub_util_error ("%s", _("no terminator in the core image"));
       }
     core_dev->disk->partition = container;

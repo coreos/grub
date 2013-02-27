@@ -603,7 +603,7 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	  cl = GRUB_DISK_SECTOR_SIZE - o;
 	  if (cl > l)
 	    cl = l;
-	  (disk->read_hook) (s, o, cl);
+	  (disk->read_hook) (s, o, cl, disk->read_hook_data);
 	  s++;
 	  l -= cl;
 	  o = 0;

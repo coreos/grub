@@ -23,6 +23,7 @@
 #include <grub/err.h>
 #include <grub/device.h>
 #include <grub/fs.h>
+#include <grub/disk.h>
 
 /* File description.  */
 struct grub_file
@@ -46,8 +47,10 @@ struct grub_file
   void *data;
 
   /* This is called when a sector is read. Used only for a disk device.  */
-  void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-		     unsigned offset, unsigned length);
+  grub_disk_read_hook_t read_hook;
+
+  /* Caller-specific data passed to the read hook.  */
+  void *read_hook_data;
 };
 typedef struct grub_file *grub_file_t;
 

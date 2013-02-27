@@ -454,8 +454,7 @@ grub_fat_mount (grub_disk_t disk)
 
 static grub_ssize_t
 grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
-		    void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-				       unsigned offset, unsigned length),
+		    grub_disk_read_hook_t read_hook, void *read_hook_data,
 		    grub_off_t offset, grub_size_t len, char *buf)
 {
   grub_size_t size;
@@ -561,6 +560,7 @@ grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
 	size = len;
 
       disk->read_hook = read_hook;
+      disk->read_hook_data = read_hook_data;
       grub_disk_read (disk, sector, offset, size, buf);
       disk->read_hook = 0;
       if (grub_errno)
@@ -630,7 +630,7 @@ grub_fat_iterate_dir_next (grub_disk_t disk, struct grub_fat_data *data,
 
       ctxt->offset += sizeof (dir);
 
-      if (grub_fat_read_data (disk, data, 0, ctxt->offset, sizeof (dir),
+      if (grub_fat_read_data (disk, data, 0, 0, ctxt->offset, sizeof (dir),
 			      (char *) &dir)
 	   != sizeof (dir))
 	break;
@@ -652,7 +652,7 @@ grub_fat_iterate_dir_next (grub_disk_t disk, struct grub_fat_data *data,
 	    {
 	      struct grub_fat_dir_entry sec;
 	      ctxt->offset += sizeof (sec);
-	      if (grub_fat_read_data (disk, data, 0,
+	      if (grub_fat_read_data (disk, data, 0, 0,
 				      ctxt->offset, sizeof (sec), (char *) &sec)
 		  != sizeof (sec))
 		break;
@@ -729,7 +729,7 @@ grub_fat_iterate_dir_next (grub_disk_t disk, struct grub_fat_data *data,
       ctxt->offset += sizeof (ctxt->dir);
 
       /* Read a directory entry.  */
-      if (grub_fat_read_data (disk, data, 0,
+      if (grub_fat_read_data (disk, data, 0, 0,
 			      ctxt->offset, sizeof (ctxt->dir),
 			      (char *) &ctxt->dir)
 	   != sizeof (ctxt->dir) || ctxt->dir.name[0] == 0)
@@ -1031,7 +1031,8 @@ grub_fat_open (grub_file_t file, const char *name)
 static grub_ssize_t
 grub_fat_read (grub_file_t file, char *buf, grub_size_t len)
 {
-  return grub_fat_read_data (file->device->disk, file->data, file->read_hook,
+  return grub_fat_read_data (file->device->disk, file->data,
+			     file->read_hook, file->read_hook_data,
 			     file->offset, len, buf);
 }
 
@@ -1064,7 +1065,7 @@ grub_fat_label (grub_device_t device, char **label)
     {
       offset += sizeof (dir);
 
-      if (grub_fat_read_data (disk, data, 0,
+      if (grub_fat_read_data (disk, data, 0, 0,
 			       offset, sizeof (dir), (char *) &dir)
 	   != sizeof (dir))
 	break;

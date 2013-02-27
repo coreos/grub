@@ -217,9 +217,7 @@ read_bfs_file (grub_disk_t disk,
 	       const struct grub_bfs_superblock *sb,
 	       const struct grub_bfs_inode *ino,
 	       grub_off_t off, void *buf, grub_size_t len,
-	       void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-						   unsigned offset,
-						   unsigned length))
+	       grub_disk_read_hook_t read_hook, void *read_hook_data)
 {
   if (len == 0)
     return GRUB_ERR_NONE;
@@ -245,6 +243,7 @@ read_bfs_file (grub_disk_t disk,
 	      if (read_size > len)
 		read_size = len;
 	      disk->read_hook = read_hook;
+	      disk->read_hook_data = read_hook_data;
 	      err = read_extent (disk, sb, &ino->direct[i], 0, off - pos,
 				 buf, read_size);
 	      disk->read_hook = 0;
@@ -290,6 +289,7 @@ read_bfs_file (grub_disk_t disk,
 	      if (read_size > len)
 		read_size = len;
 	      disk->read_hook = read_hook;
+	      disk->read_hook_data = read_hook_data;
 	      err = read_extent (disk, sb, &entries[i], 0, off - pos,
 				 buf, read_size);
 	      disk->read_hook = 0;
@@ -401,6 +401,7 @@ read_bfs_file (grub_disk_t disk,
 	if (read_size > len)
 	  read_size = len;
 	disk->read_hook = read_hook;
+	disk->read_hook_data = read_hook_data;
 	err = read_extent (disk, sb, &l2_entries[l2n], 0, boff,
 			   buf, read_size);
 	disk->read_hook = 0;
@@ -431,7 +432,7 @@ iterate_in_b_tree (grub_disk_t disk,
   int level;
   grub_uint64_t node_off;
 
-  err = read_bfs_file (disk, sb, ino, 0, &head, sizeof (head), 0);
+  err = read_bfs_file (disk, sb, ino, 0, &head, sizeof (head), 0, 0);
   if (err)
     return 0;
   node_off = grub_bfs_to_cpu64 (head.root);
@@ -441,7 +442,8 @@ iterate_in_b_tree (grub_disk_t disk,
     {
       struct grub_bfs_btree_node node;
       grub_uint64_t key_value;
-      err = read_bfs_file (disk, sb, ino, node_off, &node, sizeof (node), 0);
+      err = read_bfs_file (disk, sb, ino, node_off, &node, sizeof (node),
+			   0, 0);
       if (err)
 	return 0;
       err = read_bfs_file (disk, sb, ino, node_off
@@ -451,7 +453,7 @@ iterate_in_b_tree (grub_disk_t disk,
 				       BTREE_ALIGN) +
 			   grub_bfs_to_cpu_treehead (node.count_keys) *
 			   sizeof (grub_uint16_t), &key_value,
-			   sizeof (grub_uint64_t), 0);
+			   sizeof (grub_uint64_t), 0, 0);
       if (err)
 	return 0;
 
@@ -461,7 +463,8 @@ iterate_in_b_tree (grub_disk_t disk,
   while (1)
     {
       struct grub_bfs_btree_node node;
-      err = read_bfs_file (disk, sb, ino, node_off, &node, sizeof (node), 0);
+      err = read_bfs_file (disk, sb, ino, node_off, &node, sizeof (node),
+			   0, 0);
       if (err)
 	return 0;
       {
@@ -473,7 +476,7 @@ iterate_in_b_tree (grub_disk_t disk,
 
 	err =
 	  read_bfs_file (disk, sb, ino, node_off + sizeof (node), key_data,
-			 grub_bfs_to_cpu_treehead (node.total_key_len), 0);
+			 grub_bfs_to_cpu_treehead (node.total_key_len), 0, 0);
 	if (err)
 	  return 0;
 	key_data[grub_bfs_to_cpu_treehead (node.total_key_len)] = 0;
@@ -483,7 +486,7 @@ iterate_in_b_tree (grub_disk_t disk,
 					 (node.total_key_len), BTREE_ALIGN),
 			     keylen_idx,
 			     grub_bfs_to_cpu_treehead (node.count_keys) *
-			     sizeof (grub_uint16_t), 0);
+			     sizeof (grub_uint16_t), 0, 0);
 	if (err)
 	  return 0;
 	err = read_bfs_file (disk, sb, ino, node_off
@@ -494,7 +497,7 @@ iterate_in_b_tree (grub_disk_t disk,
 			     grub_bfs_to_cpu_treehead (node.count_keys) *
 			     sizeof (grub_uint16_t), key_values,
 			     grub_bfs_to_cpu_treehead (node.count_keys) *
-			     sizeof (grub_uint64_t), 0);
+			     sizeof (grub_uint64_t), 0, 0);
 	if (err)
 	  return 0;
 
@@ -556,7 +559,7 @@ find_in_b_tree (grub_disk_t disk,
   int level;
   grub_uint64_t node_off;
 
-  err = read_bfs_file (disk, sb, ino, 0, &head, sizeof (head), 0);
+  err = read_bfs_file (disk, sb, ino, 0, &head, sizeof (head), 0, 0);
   if (err)
     return err;
   node_off = grub_bfs_to_cpu64 (head.root);
@@ -565,7 +568,8 @@ find_in_b_tree (grub_disk_t disk,
   while (1)
     {
       struct grub_bfs_btree_node node;
-      err = read_bfs_file (disk, sb, ino, node_off, &node, sizeof (node), 0);
+      err = read_bfs_file (disk, sb, ino, node_off, &node, sizeof (node),
+			   0, 0);
       if (err)
 	return err;
       if (node.count_keys == 0)
@@ -578,7 +582,7 @@ find_in_b_tree (grub_disk_t disk,
 	unsigned i;
 	err =
 	  read_bfs_file (disk, sb, ino, node_off + sizeof (node), key_data,
-			 grub_bfs_to_cpu_treehead (node.total_key_len), 0);
+			 grub_bfs_to_cpu_treehead (node.total_key_len), 0, 0);
 	if (err)
 	  return err;
 	key_data[grub_bfs_to_cpu_treehead (node.total_key_len)] = 0;
@@ -589,7 +593,7 @@ find_in_b_tree (grub_disk_t disk,
 								 total_key_len),
 				       BTREE_ALIGN), keylen_idx,
 			     grub_bfs_to_cpu_treehead (node.count_keys) *
-			     sizeof (grub_uint16_t), 0);
+			     sizeof (grub_uint16_t), 0, 0);
 	if (err)
 	  return err;
 	err = read_bfs_file (disk, sb, ino, node_off
@@ -600,7 +604,7 @@ find_in_b_tree (grub_disk_t disk,
 			     grub_bfs_to_cpu_treehead (node.count_keys) *
 			     sizeof (grub_uint16_t), key_values,
 			     grub_bfs_to_cpu_treehead (node.count_keys) *
-			     sizeof (grub_uint64_t), 0);
+			     sizeof (grub_uint64_t), 0, 0);
 	if (err)
 	  return err;
 
@@ -771,7 +775,7 @@ find_file (const char *path, grub_disk_t disk,
 		  return grub_errno;
 		}
 	      grub_free (old_alloc);
-	      err = read_bfs_file (disk, sb, ino, 0, alloc, symsize, 0);
+	      err = read_bfs_file (disk, sb, ino, 0, alloc, symsize, 0, 0);
 	      if (err)
 		{
 		  grub_free (alloc);
@@ -974,7 +978,8 @@ grub_bfs_read (grub_file_t file, char *buf, grub_size_t len)
   struct grub_bfs_data *data = file->data;
 
   err = read_bfs_file (file->device->disk, &data->sb,
-		       data->ino, file->offset, buf, len, file->read_hook);
+		       data->ino, file->offset, buf, len,
+		       file->read_hook, file->read_hook_data);
   if (err)
     return -1;
   return len;
@@ -1056,7 +1061,7 @@ read_bfs_attr (grub_disk_t disk,
       if (read > len)
 	read = len;
 
-      err = read_bfs_file (disk, sb, &ino2.ino, 0, buf, read, 0);
+      err = read_bfs_file (disk, sb, &ino2.ino, 0, buf, read, 0, 0);
       if (err)
 	return -1;
       return read;

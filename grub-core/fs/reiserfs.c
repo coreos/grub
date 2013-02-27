@@ -240,9 +240,8 @@ struct grub_reiserfs_data
 static grub_ssize_t
 grub_reiserfs_read_real (struct grub_fshelp_node *node,
 			 grub_off_t off, char *buf, grub_size_t len,
-			 void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-							     unsigned offset,
-							     unsigned length));
+			 grub_disk_read_hook_t read_hook,
+			 void *read_hook_data);
 
 /* Internal-only functions. Not to be used outside of this file.  */
 
@@ -674,7 +673,7 @@ grub_reiserfs_read_symlink (grub_fshelp_node_t node)
   if (! symlink_buffer)
     return 0;
 
-  ret = grub_reiserfs_read_real (node, 0, symlink_buffer, len, 0);
+  ret = grub_reiserfs_read_real (node, 0, symlink_buffer, len, 0, 0);
   if (ret < 0)
     {
       grub_free (symlink_buffer);
@@ -1036,9 +1035,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
 static grub_ssize_t
 grub_reiserfs_read_real (struct grub_fshelp_node *node,
 			 grub_off_t off, char *buf, grub_size_t len,
-			 void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-							     unsigned offset,
-							     unsigned length))
+			 grub_disk_read_hook_t read_hook, void *read_hook_data)
 {
   unsigned int indirect_block, indirect_block_count;
   struct grub_reiserfs_key key;
@@ -1105,6 +1102,7 @@ grub_reiserfs_read_real (struct grub_fshelp_node *node,
                             (unsigned) block, (unsigned) offset,
                             (unsigned) (offset + length));
               found.data->disk->read_hook = read_hook;
+              found.data->disk->read_hook_data = read_hook_data;
               grub_disk_read (found.data->disk,
                               block,
                               offset
@@ -1131,6 +1129,7 @@ grub_reiserfs_read_real (struct grub_fshelp_node *node,
           if (grub_errno)
             goto fail;
           found.data->disk->read_hook = read_hook;
+          found.data->disk->read_hook_data = read_hook_data;
           for (indirect_block = 0;
                indirect_block < indirect_block_count
                  && current_position < final_position;
@@ -1236,7 +1235,7 @@ static grub_ssize_t
 grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   return grub_reiserfs_read_real (file->data, file->offset, buf, len,
-				  file->read_hook);
+				  file->read_hook, file->read_hook_data);
 }
 
 /* Close the file FILE.  */

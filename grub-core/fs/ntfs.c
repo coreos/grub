@@ -91,21 +91,15 @@ static grub_err_t read_mft (struct grub_ntfs_data *data, grub_uint8_t *buf,
 static grub_err_t read_attr (struct grub_ntfs_attr *at, grub_uint8_t *dest,
 			     grub_disk_addr_t ofs, grub_size_t len,
 			     int cached,
-			     void
-			     NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t
-							    sector,
-							    unsigned offset,
-							    unsigned length));
+			     grub_disk_read_hook_t read_hook,
+			     void *read_hook_data);
 
 static grub_err_t read_data (struct grub_ntfs_attr *at, grub_uint8_t *pa,
 			     grub_uint8_t *dest,
 			     grub_disk_addr_t ofs, grub_size_t len,
 			     int cached,
-			     void
-			     NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t
-							    sector,
-							    unsigned offset,
-							    unsigned length));
+			     grub_disk_read_hook_t read_hook,
+			     void *read_hook_data);
 
 static void
 init_attr (struct grub_ntfs_attr *at, struct grub_ntfs_file *mft)
@@ -207,7 +201,7 @@ find_attr (struct grub_ntfs_attr *at, grub_uint8_t attr)
 	  at->edat_buf = grub_malloc (n);
 	  if (!at->edat_buf)
 	    return NULL;
-	  if (read_data (at, pa, at->edat_buf, 0, n, 0, 0))
+	  if (read_data (at, pa, at->edat_buf, 0, n, 0, 0, 0))
 	    {
 	      grub_error (GRUB_ERR_BAD_FS,
 			  "fail to read non-resident attribute list");
@@ -249,7 +243,7 @@ find_attr (struct grub_ntfs_attr *at, grub_uint8_t attr)
 	      if (read_attr
 		  (at, pa + 0x10,
 		   u32at (pa, 0x10) * (at->mft->data->mft_size << GRUB_NTFS_BLK_SHR),
-		   at->mft->data->mft_size << GRUB_NTFS_BLK_SHR, 0, 0))
+		   at->mft->data->mft_size << GRUB_NTFS_BLK_SHR, 0, 0, 0))
 		return NULL;
 	      pa += u16at (pa, 4);
 	    }
@@ -325,9 +319,7 @@ retry:
     {
       if ((ctx->attr) && (ctx->attr->flags & GRUB_NTFS_AF_ALST))
 	{
-	  void NESTED_FUNC_ATTR (*save_hook) (grub_disk_addr_t sector,
-					      unsigned offset,
-					      unsigned length);
+	  grub_disk_read_hook_t save_hook;
 
 	  save_hook = ctx->comp.disk->read_hook;
 	  ctx->comp.disk->read_hook = 0;
@@ -379,9 +371,7 @@ grub_ntfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t block)
 static grub_err_t
 read_data (struct grub_ntfs_attr *at, grub_uint8_t *pa, grub_uint8_t *dest,
 	   grub_disk_addr_t ofs, grub_size_t len, int cached,
-	   void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-					       unsigned offset,
-					       unsigned length))
+	   grub_disk_read_hook_t read_hook, void *read_hook_data)
 {
   grub_disk_addr_t vcn;
   struct grub_ntfs_rlst cc, *ctx;
@@ -480,7 +470,8 @@ read_data (struct grub_ntfs_attr *at, grub_uint8_t *pa, grub_uint8_t *dest,
   if (!(ctx->flags & GRUB_NTFS_RF_COMP))
     {
       grub_fshelp_read_file (ctx->comp.disk, (grub_fshelp_node_t) ctx,
-			     read_hook, ofs, len, (char *) dest,
+			     read_hook, read_hook_data, ofs, len,
+			     (char *) dest,
 			     grub_ntfs_read_block, ofs + len,
 			     ctx->comp.log_spc, 0);
       return grub_errno;
@@ -495,9 +486,7 @@ read_data (struct grub_ntfs_attr *at, grub_uint8_t *pa, grub_uint8_t *dest,
 static grub_err_t
 read_attr (struct grub_ntfs_attr *at, grub_uint8_t *dest, grub_disk_addr_t ofs,
 	   grub_size_t len, int cached,
-	   void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-					       unsigned offset,
-					       unsigned length))
+	   grub_disk_read_hook_t read_hook, void *read_hook_data)
 {
   grub_uint8_t *save_cur;
   grub_uint8_t attr;
@@ -532,7 +521,8 @@ read_attr (struct grub_ntfs_attr *at, grub_uint8_t *dest, grub_disk_addr_t ofs,
     }
   pp = find_attr (at, attr);
   if (pp)
-    ret = read_data (at, pp, dest, ofs, len, cached, read_hook);
+    ret = read_data (at, pp, dest, ofs, len, cached,
+		     read_hook, read_hook_data);
   else
     ret =
       (grub_errno) ? grub_errno : grub_error (GRUB_ERR_BAD_FS,
@@ -546,7 +536,7 @@ read_mft (struct grub_ntfs_data *data, grub_uint8_t *buf, grub_uint32_t mftno)
 {
   if (read_attr
       (&data->mmft.attr, buf, mftno * ((grub_disk_addr_t) data->mft_size << GRUB_NTFS_BLK_SHR),
-       data->mft_size << GRUB_NTFS_BLK_SHR, 0, 0))
+       data->mft_size << GRUB_NTFS_BLK_SHR, 0, 0, 0))
     return grub_error (GRUB_ERR_BAD_FS, "read MFT 0x%X fails", mftno);
   return fixup (buf, data->mft_size, (const grub_uint8_t *) "FILE");
 }
@@ -717,7 +707,7 @@ grub_ntfs_read_symlink (grub_fshelp_node_t node)
     }
 
   err = read_attr (&mft->attr, (grub_uint8_t *) &symdesc, 0,
-		   sizeof (struct symlink_descriptor), 1, 0);
+		   sizeof (struct symlink_descriptor), 1, 0, 0);
   if (err)
     return NULL;
 
@@ -743,7 +733,7 @@ grub_ntfs_read_symlink (grub_fshelp_node_t node)
   if (!buf16)
     return NULL;
 
-  err = read_attr (&mft->attr, (grub_uint8_t *) buf16, off, len, 1, 0);
+  err = read_attr (&mft->attr, (grub_uint8_t *) buf16, off, len, 1, 0, 0);
   if (err)
     return NULL;
 
@@ -852,7 +842,7 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
 	    }
           else
             {
-              if (read_data (at, cur_pos, bmp, 0, bitmap_len, 0, 0))
+              if (read_data (at, cur_pos, bmp, 0, bitmap_len, 0, 0, 0))
                 {
                   grub_error (GRUB_ERR_BAD_FS,
                               "fails to read non-resident $BITMAP");
@@ -899,7 +889,7 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
 	    {
 	      if ((read_attr
 		   (at, indx, i * (mft->data->idx_size << GRUB_NTFS_BLK_SHR),
-		    (mft->data->idx_size << GRUB_NTFS_BLK_SHR), 0, 0))
+		    (mft->data->idx_size << GRUB_NTFS_BLK_SHR), 0, 0, 0))
 		  || (fixup (indx, mft->data->idx_size,
 			     (const grub_uint8_t *) "INDX")))
 		goto done;
@@ -1136,7 +1126,7 @@ grub_ntfs_read (grub_file_t file, char *buf, grub_size_t len)
     mft->attr.save_pos = 1;
 
   read_attr (&mft->attr, (grub_uint8_t *) buf, file->offset, len, 1,
-	     file->read_hook);
+	     file->read_hook, file->read_hook_data);
   return (grub_errno) ? -1 : (grub_ssize_t) len;
 }
 

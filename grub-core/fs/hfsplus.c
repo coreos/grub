@@ -375,11 +375,11 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_hfsplus_read_file (grub_fshelp_node_t node,
-			void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-					   unsigned offset, unsigned length),
+			grub_disk_read_hook_t read_hook, void *read_hook_data,
 			grub_off_t pos, grub_size_t len, char *buf)
 {
-  return grub_fshelp_read_file (node->data->disk, node, read_hook,
+  return grub_fshelp_read_file (node->data->disk, node,
+				read_hook, read_hook_data,
 				pos, len, buf, grub_hfsplus_read_block,
 				node->size,
 				node->data->log2blksize - GRUB_DISK_SECTOR_BITS,
@@ -477,7 +477,7 @@ grub_hfsplus_mount (grub_disk_t disk)
     grub_be_to_cpu64 (data->volheader.extents_file.size);
 
   /* Read the essential information about the trees.  */
-  if (grub_hfsplus_read_file (&data->catalog_tree.file, 0,
+  if (grub_hfsplus_read_file (&data->catalog_tree.file, 0, 0,
 			      sizeof (struct grub_hfsplus_btnode),
 			      sizeof (header), (char *) &header) <= 0)
     goto fail;
@@ -487,14 +487,14 @@ grub_hfsplus_mount (grub_disk_t disk)
   data->case_sensitive = ((magic == GRUB_HFSPLUSX_MAGIC) &&
 			  (header.key_compare == GRUB_HFSPLUSX_BINARYCOMPARE));
 
-  if (grub_hfsplus_read_file (&data->extoverflow_tree.file, 0,
+  if (grub_hfsplus_read_file (&data->extoverflow_tree.file, 0, 0,
 			      sizeof (struct grub_hfsplus_btnode),
 			      sizeof (header), (char *) &header) <= 0)
     goto fail;
 
   data->extoverflow_tree.root = grub_be_to_cpu32 (header.root);
 
-  if (grub_hfsplus_read_file (&data->extoverflow_tree.file, 0, 0,
+  if (grub_hfsplus_read_file (&data->extoverflow_tree.file, 0, 0, 0,
 			      sizeof (node), (char *) &node) <= 0)
     goto fail;
 
@@ -605,7 +605,7 @@ grub_hfsplus_read_symlink (grub_fshelp_node_t node)
   if (!symlink)
     return 0;
 
-  numread = grub_hfsplus_read_file (node, 0, 0, node->size, symlink);
+  numread = grub_hfsplus_read_file (node, 0, 0, 0, node->size, symlink);
   if (numread != (grub_ssize_t) node->size)
     {
       grub_free (symlink);
@@ -649,7 +649,7 @@ grub_hfsplus_btree_iterate_node (struct grub_hfsplus_btree *btree,
 	saved_node = first_node->next;
       node_count++;
 
-      if (grub_hfsplus_read_file (&btree->file, 0,
+      if (grub_hfsplus_read_file (&btree->file, 0, 0,
 				  (((grub_disk_addr_t)
 				    grub_be_to_cpu32 (first_node->next))
 				   * btree->nodesize),
@@ -702,7 +702,7 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
       node_count++;
 
       /* Read a node.  */
-      if (grub_hfsplus_read_file (&btree->file, 0,
+      if (grub_hfsplus_read_file (&btree->file, 0, 0,
 				  (grub_disk_addr_t) currnode
 				  * (grub_disk_addr_t) btree->nodesize,
 				  btree->nodesize, (char *) node) <= 0)
@@ -971,8 +971,9 @@ grub_hfsplus_read (grub_file_t file, char *buf, grub_size_t len)
   struct grub_hfsplus_data *data =
     (struct grub_hfsplus_data *) file->data;
 
-  return grub_hfsplus_read_file (&data->opened_file, file->read_hook,
-				     file->offset, len, buf);
+  return grub_hfsplus_read_file (&data->opened_file,
+				 file->read_hook, file->read_hook_data,
+				 file->offset, len, buf);
 }
 
 /* Context for grub_hfsplus_dir.  */

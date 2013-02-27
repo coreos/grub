@@ -577,8 +577,7 @@ grub_jfs_getent (struct grub_jfs_diropen *diro)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_jfs_read_file (struct grub_jfs_data *data,
-		    void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-				       unsigned offset, unsigned length),
+		    grub_disk_read_hook_t read_hook, void *read_hook_data,
 		    grub_off_t pos, grub_size_t len, char *buf)
 {
   grub_off_t i;
@@ -616,6 +615,7 @@ grub_jfs_read_file (struct grub_jfs_data *data,
 	}
 
       data->disk->read_hook = read_hook;
+      data->disk->read_hook_data = read_hook_data;
       grub_disk_read (data->disk,
 		      blknr << (grub_le_to_cpu16 (data->sblock.log2_blksz)
 				- GRUB_DISK_SECTOR_BITS),
@@ -782,7 +782,7 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, grub_uint32_t ino)
 
   if (size <= sizeof (data->currinode.symlink.path))
     grub_strncpy (symlink, (char *) (data->currinode.symlink.path), size);
-  else if (grub_jfs_read_file (data, 0, 0, size, symlink) < 0)
+  else if (grub_jfs_read_file (data, 0, 0, 0, size, symlink) < 0)
     return grub_errno;
 
   symlink[size] = '\0';
@@ -894,7 +894,8 @@ grub_jfs_read (grub_file_t file, char *buf, grub_size_t len)
   struct grub_jfs_data *data =
     (struct grub_jfs_data *) file->data;
 
-  return grub_jfs_read_file (data, file->read_hook, file->offset, len, buf);
+  return grub_jfs_read_file (data, file->read_hook, file->read_hook_data,
+			     file->offset, len, buf);
 }
 
 

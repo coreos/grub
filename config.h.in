@@ -5,6 +5,10 @@
 #if defined(__PPC__) && !defined(__powerpc__)
 #define __powerpc__ 1
 #endif
+
+/* Define to 1 to enable disk cache statistics.  */
+#define DISK_CACHE_STATS @DISK_CACHE_STATS@
+
 #if defined (GRUB_UTIL) || !defined (GRUB_MACHINE)
 #include <config-util.h>
 #define NESTED_FUNC_ATTR
@@ -39,8 +43,6 @@
 #define NEED_ENABLE_EXECUTE_STACK @NEED_ENABLE_EXECUTE_STACK@
 /* Define to 1 if GCC generates calls to __register_frame_info().  */
 #define NEED_REGISTER_FRAME_INFO @NEED_REGISTER_FRAME_INFO@
-/* Define to 1 to enable disk cache statistics.  */
-#define DISK_CACHE_STATS @DISK_CACHE_STATS@
 
 #define GRUB_TARGET_CPU "@GRUB_TARGET_CPU@"
 #define GRUB_PLATFORM "@GRUB_PLATFORM@"

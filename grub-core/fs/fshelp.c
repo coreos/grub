@@ -248,14 +248,13 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 
 /* Read LEN bytes from the file NODE on disk DISK into the buffer BUF,
    beginning with the block POS.  READ_HOOK should be set before
-   reading a block from the file.  GET_BLOCK is used to translate file
-   blocks to disk blocks.  The file is FILESIZE bytes big and the
+   reading a block from the file.  READ_HOOK_DATA is passed through as
+   the DATA argument to READ_HOOK.  GET_BLOCK is used to translate
+   file blocks to disk blocks.  The file is FILESIZE bytes big and the
    blocks have a size of LOG2BLOCKSIZE (in log2).  */
 grub_ssize_t
 grub_fshelp_read_file (grub_disk_t disk, grub_fshelp_node_t node,
-		       void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-                                                           unsigned offset,
-                                                           unsigned length),
+		       grub_disk_read_hook_t read_hook, void *read_hook_data,
 		       grub_off_t pos, grub_size_t len, char *buf,
 		       grub_disk_addr_t (*get_block) (grub_fshelp_node_t node,
                                                       grub_disk_addr_t block),
@@ -307,6 +306,7 @@ grub_fshelp_read_file (grub_disk_t disk, grub_fshelp_node_t node,
       if (blknr)
 	{
 	  disk->read_hook = read_hook;
+	  disk->read_hook_data = read_hook_data;
 
 	  grub_disk_read (disk, blknr + blocks_start, skipfirst,
 			  blockend, buf);

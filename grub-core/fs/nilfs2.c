@@ -630,13 +630,11 @@ grub_nilfs2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_nilfs2_read_file (grub_fshelp_node_t node,
-		       void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t
-							   sector,
-							   unsigned offset,
-							   unsigned length),
+		       grub_disk_read_hook_t read_hook, void *read_hook_data,
 		       grub_off_t pos, grub_size_t len, char *buf)
 {
-  return grub_fshelp_read_file (node->data->disk, node, read_hook,
+  return grub_fshelp_read_file (node->data->disk, node,
+				read_hook, read_hook_data,
 				pos, len, buf, grub_nilfs2_read_block,
 				grub_le_to_cpu64 (node->inode.i_size),
 				LOG2_NILFS2_BLOCK_SIZE (node->data), 0);
@@ -856,7 +854,7 @@ grub_nilfs2_read_symlink (grub_fshelp_node_t node)
   if (!symlink)
     return 0;
 
-  grub_nilfs2_read_file (diro, 0, 0,
+  grub_nilfs2_read_file (diro, 0, 0, 0,
 			 grub_le_to_cpu64 (diro->inode.i_size), symlink);
   if (grub_errno)
     {
@@ -887,7 +885,7 @@ grub_nilfs2_iterate_dir (grub_fshelp_node_t dir,
     {
       struct grub_nilfs2_dir_entry dirent;
 
-      grub_nilfs2_read_file (diro, 0, fpos,
+      grub_nilfs2_read_file (diro, 0, 0, fpos,
 			     sizeof (struct grub_nilfs2_dir_entry),
 			     (char *) &dirent);
       if (grub_errno)
@@ -902,7 +900,7 @@ grub_nilfs2_iterate_dir (grub_fshelp_node_t dir,
 	  struct grub_fshelp_node *fdiro;
 	  enum grub_fshelp_filetype type = GRUB_FSHELP_UNKNOWN;
 
-	  grub_nilfs2_read_file (diro, 0,
+	  grub_nilfs2_read_file (diro, 0, 0,
 				 fpos + sizeof (struct grub_nilfs2_dir_entry),
 				 dirent.name_len, filename);
 	  if (grub_errno)
@@ -1025,7 +1023,8 @@ grub_nilfs2_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_nilfs2_data *data = (struct grub_nilfs2_data *) file->data;
 
-  return grub_nilfs2_read_file (&data->diropen, file->read_hook,
+  return grub_nilfs2_read_file (&data->diropen,
+				file->read_hook, file->read_hook_data,
 				file->offset, len, buf);
 }
 

@@ -19,6 +19,8 @@
 #ifndef GRUB_DISK_HEADER
 #define GRUB_DISK_HEADER	1
 
+#include <config.h>
+
 #include <grub/symbol.h>
 #include <grub/err.h>
 #include <grub/types.h>
@@ -99,6 +101,10 @@ extern grub_disk_dev_t EXPORT_VAR (grub_disk_dev_list);
 
 struct grub_partition;
 
+typedef void (*grub_disk_read_hook_t) (grub_disk_addr_t sector,
+				       unsigned offset, unsigned length,
+				       void *data);
+
 /* Disk.  */
 struct grub_disk
 {
@@ -122,8 +128,10 @@ struct grub_disk
 
   /* Called when a sector was read. OFFSET is between 0 and
      the sector size minus 1, and LENGTH is between 0 and the sector size.  */
-  void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-		     unsigned offset, unsigned length);
+  grub_disk_read_hook_t read_hook;
+
+  /* Caller-specific data passed to the read hook.  */
+  void *read_hook_data;
 
   /* Device-specific data.  */
   void *data;

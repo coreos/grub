@@ -531,7 +531,7 @@ grub_affs_read (grub_file_t file, char *buf, grub_size_t len)
     (struct grub_affs_data *) file->data;
 
   return grub_fshelp_read_file (data->diropen.data->disk, &data->diropen,
-				file->read_hook,
+				file->read_hook, file->read_hook_data,
 				file->offset, len, buf, grub_affs_read_block,
 				grub_be_to_cpu32 (data->diropen.di.size),
 				data->log_blocksize, 0);

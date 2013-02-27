@@ -249,8 +249,7 @@ grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_minix_read_file (struct grub_minix_data *data,
-		      void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-					 unsigned offset, unsigned length),
+		      grub_disk_read_hook_t read_hook, void *read_hook_data,
 		      grub_off_t pos, grub_size_t len, char *buf)
 {
   grub_uint32_t i;
@@ -301,6 +300,7 @@ grub_minix_read_file (struct grub_minix_data *data,
 	}
 
       data->disk->read_hook = read_hook;
+      data->disk->read_hook_data = read_hook_data;
       grub_disk_read (data->disk,
 		      GRUB_MINIX_ZONE2SECT(blknr),
 		      skipfirst, blockend, buf);
@@ -352,7 +352,7 @@ grub_minix_lookup_symlink (struct grub_minix_data *data, grub_minix_ino_t ino)
   if (++data->linknest > GRUB_MINIX_MAX_SYMLNK_CNT)
     return grub_error (GRUB_ERR_SYMLINK_LOOP, N_("too deep nesting of symlinks"));
 
-  if (grub_minix_read_file (data, 0, 0,
+  if (grub_minix_read_file (data, 0, 0, 0,
 			    GRUB_MINIX_INODE_SIZE (data), symlink) < 0)
     return grub_errno;
 
@@ -409,10 +409,10 @@ grub_minix_find_file (struct grub_minix_data *data, const char *path)
       if (grub_strlen (name) == 0)
 	return GRUB_ERR_NONE;
 
-      if (grub_minix_read_file (data, 0, pos, sizeof (ino),
+      if (grub_minix_read_file (data, 0, 0, pos, sizeof (ino),
 				(char *) &ino) < 0)
 	return grub_errno;
-      if (grub_minix_read_file (data, 0, pos + sizeof (ino),
+      if (grub_minix_read_file (data, 0, 0, pos + sizeof (ino),
 				data->filename_size, (char *) filename)< 0)
 	return grub_errno;
 
@@ -568,11 +568,11 @@ grub_minix_dir (grub_device_t device, const char *path,
       grub_memset (&info, 0, sizeof (info));
 
 
-      if (grub_minix_read_file (data, 0, pos, sizeof (ino),
+      if (grub_minix_read_file (data, 0, 0, pos, sizeof (ino),
 				(char *) &ino) < 0)
 	return grub_errno;
 
-      if (grub_minix_read_file (data, 0, pos + sizeof (ino),
+      if (grub_minix_read_file (data, 0, 0, pos + sizeof (ino),
 				data->filename_size,
 				(char *) filename) < 0)
 	return grub_errno;
@@ -649,7 +649,8 @@ grub_minix_read (grub_file_t file, char *buf, grub_size_t len)
   struct grub_minix_data *data =
     (struct grub_minix_data *) file->data;
 
-  return grub_minix_read_file (data, file->read_hook, file->offset, len, buf);
+  return grub_minix_read_file (data, file->read_hook, file->read_hook_data,
+			       file->offset, len, buf);
 }
 
 

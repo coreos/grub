@@ -345,11 +345,11 @@ grub_sfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_sfs_read_file (grub_fshelp_node_t node,
-		    void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-				       unsigned offset, unsigned length),
+		    grub_disk_read_hook_t read_hook, void *read_hook_data,
 		    grub_off_t pos, grub_size_t len, char *buf)
 {
-  return grub_fshelp_read_file (node->data->disk, node, read_hook,
+  return grub_fshelp_read_file (node->data->disk, node,
+				read_hook, read_hook_data,
 				pos, len, buf, grub_sfs_read_block,
 				node->size, node->data->log_blocksize, 0);
 }
@@ -646,7 +646,8 @@ grub_sfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_sfs_data *data = (struct grub_sfs_data *) file->data;
 
-  return grub_sfs_read_file (&data->diropen, file->read_hook,
+  return grub_sfs_read_file (&data->diropen,
+			     file->read_hook, file->read_hook_data,
 			     file->offset, len, buf);
 }
 

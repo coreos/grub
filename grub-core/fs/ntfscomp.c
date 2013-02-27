@@ -302,6 +302,7 @@ ntfscomp (struct grub_ntfs_attr *at, grub_uint8_t *dest, grub_disk_addr_t ofs,
   ret = 0;
 
   //ctx->comp.disk->read_hook = read_hook;
+  //ctx->comp.disk->read_hook_data = read_hook_data;
 
   if ((vcn > ctx->target_vcn) &&
       (read_block

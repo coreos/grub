@@ -1,3 +1,15 @@
+2013-02-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	Remove nested functions from disk and file read hooks.
+
+	* include/grub/disk.h (grub_disk_read_hook_t): New type.
+	(struct grub_disk): Add read_hook_data member.
+	* include/grub/file.h (struct grub_file): Likewise.
+	* include/grub/fshelp.h (grub_fshelp_read_file): Add read_hook_data
+	argument.
+
+	Update all callers.
+
 2012-02-27  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/partmap/msdos.c (grub_partition_msdos_iterate):

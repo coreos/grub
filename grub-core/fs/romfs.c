@@ -399,6 +399,7 @@ grub_romfs_read (grub_file_t file, char *buf, grub_size_t len)
 
   /* XXX: The file is stored in as a single extent.  */
   data->data->disk->read_hook = file->read_hook;
+  data->data->disk->read_hook_data = file->read_hook_data;
   grub_disk_read (data->data->disk,
 		  (data->data_addr + file->offset) >> GRUB_DISK_SECTOR_BITS,
 		  (data->data_addr + file->offset) & (GRUB_DISK_SECTOR_SIZE - 1),		  

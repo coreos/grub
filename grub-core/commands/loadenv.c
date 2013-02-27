@@ -284,44 +284,51 @@ write_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
   return 1;
 }
 
+/* Context for grub_cmd_save_env.  */
+struct grub_cmd_save_env_ctx
+{
+  struct blocklist *head, *tail;
+};
+
+/* Store blocklists in a linked list.  */
+static void
+save_env_read_hook (grub_disk_addr_t sector, unsigned offset, unsigned length,
+		    void *data)
+{
+  struct grub_cmd_save_env_ctx *ctx = data;
+  struct blocklist *block;
+
+  if (offset + length > GRUB_DISK_SECTOR_SIZE)
+    /* Seemingly a bug.  */
+    return;
+
+  block = grub_malloc (sizeof (*block));
+  if (! block)
+    return;
+
+  block->sector = sector;
+  block->offset = offset;
+  block->length = length;
+
+  /* Slightly complicated, because the list should be FIFO.  */
+  block->next = 0;
+  if (ctx->tail)
+    ctx->tail->next = block;
+  ctx->tail = block;
+  if (! ctx->head)
+    ctx->head = block;
+}
+
 static grub_err_t
 grub_cmd_save_env (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
   grub_file_t file;
   grub_envblk_t envblk;
-  struct blocklist *head = 0;
-  struct blocklist *tail = 0;
-
-  /* Store blocklists in a linked list.  */
-  auto void NESTED_FUNC_ATTR read_hook (grub_disk_addr_t sector,
-                                        unsigned offset,
-                                        unsigned length);
-  void NESTED_FUNC_ATTR read_hook (grub_disk_addr_t sector,
-                                   unsigned offset, unsigned length)
-    {
-      struct blocklist *block;
-
-      if (offset + length > GRUB_DISK_SECTOR_SIZE)
-        /* Seemingly a bug.  */
-        return;
-
-      block = grub_malloc (sizeof (*block));
-      if (! block)
-        return;
-
-      block->sector = sector;
-      block->offset = offset;
-      block->length = length;
-
-      /* Slightly complicated, because the list should be FIFO.  */
-      block->next = 0;
-      if (tail)
-        tail->next = block;
-      tail = block;
-      if (! head)
-        head = block;
-    }
+  struct grub_cmd_save_env_ctx ctx = {
+    .head = 0,
+    .tail = 0
+  };
 
   if (! argc)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no variable is specified");
@@ -336,13 +343,14 @@ grub_cmd_save_env (grub_extcmd_context_t ctxt, int argc, char **args)
       return grub_error (GRUB_ERR_BAD_DEVICE, "disk device required");
     }
 
-  file->read_hook = read_hook;
+  file->read_hook = save_env_read_hook;
+  file->read_hook_data = &ctx;
   envblk = read_envblk_file (file);
   file->read_hook = 0;
   if (! envblk)
     goto fail;
 
-  if (check_blocklists (envblk, head, file))
+  if (check_blocklists (envblk, ctx.head, file))
     goto fail;
 
   while (argc)
@@ -363,12 +371,12 @@ grub_cmd_save_env (grub_extcmd_context_t ctxt, int argc, char **args)
       args++;
     }
 
-  write_blocklists (envblk, head, file);
+  write_blocklists (envblk, ctx.head, file);
 
  fail:
   if (envblk)
     grub_envblk_close (envblk);
-  free_blocklists (head);
+  free_blocklists (ctx.head);
   grub_file_close (file);
   return grub_errno;
 }

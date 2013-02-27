@@ -243,8 +243,7 @@ grub_hfs_block (struct grub_hfs_data *data, grub_hfs_datarecord_t dat,
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_hfs_read_file (struct grub_hfs_data *data,
-		    void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-				       unsigned offset, unsigned length),
+		    grub_disk_read_hook_t read_hook, void *read_hook_data,
 		    grub_off_t pos, grub_size_t len, char *buf)
 {
   grub_off_t i;
@@ -289,6 +288,7 @@ grub_hfs_read_file (struct grub_hfs_data *data,
       if (blknr)
 	{
 	  data->disk->read_hook = read_hook;
+	  data->disk->read_hook_data = read_hook_data;
 	  grub_disk_read (data->disk, blknr, skipfirst,
 			  blockend, buf);
 	  data->disk->read_hook = 0;
@@ -1269,7 +1269,8 @@ grub_hfs_read (grub_file_t file, char *buf, grub_size_t len)
   struct grub_hfs_data *data =
     (struct grub_hfs_data *) file->data;
 
-  return grub_hfs_read_file (data, file->read_hook, file->offset, len, buf);
+  return grub_hfs_read_file (data, file->read_hook, file->read_hook_data,
+			     file->offset, len, buf);
 }
 
 
