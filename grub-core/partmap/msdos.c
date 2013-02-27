@@ -196,7 +196,7 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 	      if (hook (disk, &p, hook_data))
 		return grub_errno;
 	    }
-	  else if (p.number < 4)
+	  else if (p.number < 3)
 	    /* If this partition is a logical one, shouldn't increase the
 	       partition number.  */
 	    p.number++;
