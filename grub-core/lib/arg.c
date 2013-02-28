@@ -109,69 +109,70 @@ show_usage (grub_extcmd_t cmd)
   grub_printf ("%s %s %s\n", _("Usage:"), cmd->cmd->name, _(cmd->cmd->summary));
 }
 
+static void
+showargs (const struct grub_arg_option *opt,
+	  int h_is_used, int u_is_used)
+{
+  for (; opt->doc; opt++)
+    {
+      int spacing = 20;
+
+      if (opt->shortarg && grub_isgraph (opt->shortarg))
+	grub_printf ("-%c%c ", opt->shortarg, opt->longarg ? ',':' ');
+      else if (opt == help_options && ! h_is_used)
+	grub_printf ("-h, ");
+      else if (opt == help_options + 1 && ! u_is_used)
+	grub_printf ("-u, ");
+      else
+	grub_printf ("    ");
+
+      if (opt->longarg)
+	{
+	  grub_printf ("--%s", opt->longarg);
+	  spacing -= grub_strlen (opt->longarg) + 2;
+
+	  if (opt->arg)
+	    {
+	      grub_printf ("=%s", opt->arg);
+	      spacing -= grub_strlen (opt->arg) + 1;
+	    }
+	}
+
+      if (spacing < 0)
+	spacing = 3;
+
+      while (spacing--)
+	grub_xputs (" ");
+
+      grub_printf ("%s\n", _(opt->doc));
+    }
+}
+
 void
 grub_arg_show_help (grub_extcmd_t cmd)
 {
-  auto void showargs (const struct grub_arg_option *opt);
   int h_is_used = 0;
   int u_is_used = 0;
-
-  auto void showargs (const struct grub_arg_option *opt)
-    {
-      for (; opt->doc; opt++)
-	{
-	  int spacing = 20;
-
-	  if (opt->shortarg && grub_isgraph (opt->shortarg))
-	    grub_printf ("-%c%c ", opt->shortarg, opt->longarg ? ',':' ');
-	  else if (opt == help_options && ! h_is_used)
-	    grub_printf ("-h, ");
-	  else if (opt == help_options + 1 && ! u_is_used)
-	    grub_printf ("-u, ");
-	  else
-	    grub_printf ("    ");
-
-	  if (opt->longarg)
-	    {
-	      grub_printf ("--%s", opt->longarg);
-	      spacing -= grub_strlen (opt->longarg) + 2;
-
-	      if (opt->arg)
-		{
-		  grub_printf ("=%s", opt->arg);
-		  spacing -= grub_strlen (opt->arg) + 1;
-		}
-	    }
-
-	  if (spacing < 0)
-	    spacing = 3;
-
-	  while (spacing--)
-	    grub_xputs (" ");
-
-	  grub_printf ("%s\n", _(opt->doc));
-
-	  switch (opt->shortarg)
-	    {
-	    case 'h':
-	      h_is_used = 1;
-	      break;
-
-	    case 'u':
-	      u_is_used = 1;
-	      break;
-
-	    default:
-	      break;
-	    }
-	}
-    }
+  const struct grub_arg_option *opt;
 
   show_usage (cmd);
   grub_printf ("%s\n\n", _(cmd->cmd->description));
+
+  for (opt = cmd->options; opt->doc; opt++)
+    switch (opt->shortarg)
+      {
+      case 'h':
+	h_is_used = 1;
+	break;
+
+      case 'u':
+	u_is_used = 1;
+	break;
+      }
+
   if (cmd->options)
-    showargs (cmd->options);
-  showargs (help_options);
+    showargs (cmd->options, h_is_used, u_is_used);
+  showargs (help_options, h_is_used, u_is_used);
 #if 0
   grub_printf ("\nReport bugs to <%s>.\n", PACKAGE_BUGREPORT);
 #endif

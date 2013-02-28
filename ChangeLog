@@ -1,5 +1,10 @@
 2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/arg.c (grub_arg_show_help): Move showargs
+	out of its parent.
+
+2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/jfs.c: Remove nested functions.
 
 2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
