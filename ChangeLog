@@ -1,5 +1,9 @@
 2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/iso9660.c: Remove nested functions.
+
+2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/parttool.c (grub_cmd_parttool): Move show_help out
 	of parent function.
 
