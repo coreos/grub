@@ -178,27 +178,26 @@ static grub_dl_t my_mod;
 static grub_err_t grub_minix_find_file (struct grub_minix_data *data,
 					const char *path);
 
+  /* Read the block pointer in ZONE, on the offset NUM.  */
+static grub_minix_uintn_t
+grub_get_indir (struct grub_minix_data *data, 
+		 grub_minix_uintn_t zone,
+		 grub_minix_uintn_t num)
+{
+  grub_minix_uintn_t indirn;
+  grub_disk_read (data->disk,
+		  GRUB_MINIX_ZONE2SECT(zone),
+		  sizeof (grub_minix_uintn_t) * num,
+		  sizeof (grub_minix_uintn_t), (char *) &indirn);
+  return grub_minix_to_cpu_n (indirn);
+}
+
 static grub_minix_uintn_t
 grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
 {
   grub_minix_uintn_t indir;
   const grub_uint32_t block_per_zone = (GRUB_MINIX_ZONESZ
 					/ GRUB_MINIX_INODE_BLKSZ (data));
-
-  auto grub_minix_uintn_t grub_get_indir (grub_minix_uintn_t,
-					  grub_minix_uintn_t);
-
-  /* Read the block pointer in ZONE, on the offset NUM.  */
-  grub_minix_uintn_t grub_get_indir (grub_minix_uintn_t zone,
-				     grub_minix_uintn_t num)
-    {
-      grub_minix_uintn_t indirn;
-      grub_disk_read (data->disk,
-		      GRUB_MINIX_ZONE2SECT(zone),
-		      sizeof (grub_minix_uintn_t) * num,
-		      sizeof (grub_minix_uintn_t), (char *) &indirn);
-      return grub_minix_to_cpu_n (indirn);
-    }
 
   /* Direct block.  */
   if (blk < GRUB_MINIX_INODE_DIR_BLOCKS)
@@ -208,7 +207,7 @@ grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
   blk -= GRUB_MINIX_INODE_DIR_BLOCKS;
   if (blk < block_per_zone)
     {
-      indir = grub_get_indir (GRUB_MINIX_INODE_INDIR_ZONE (data), blk);
+      indir = grub_get_indir (data, GRUB_MINIX_INODE_INDIR_ZONE (data), blk);
       return indir;
     }
 
@@ -216,10 +215,10 @@ grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
   blk -= block_per_zone;
   if (blk < block_per_zone * block_per_zone)
     {
-      indir = grub_get_indir (GRUB_MINIX_INODE_DINDIR_ZONE (data),
+      indir = grub_get_indir (data, GRUB_MINIX_INODE_DINDIR_ZONE (data),
 			      blk / block_per_zone);
 
-      indir = grub_get_indir (indir, blk % block_per_zone);
+      indir = grub_get_indir (data, indir, blk % block_per_zone);
 
       return indir;
     }
@@ -229,10 +228,10 @@ grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
   if (blk < ((grub_uint64_t) block_per_zone * (grub_uint64_t) block_per_zone
 	     * (grub_uint64_t) block_per_zone))
     {
-      indir = grub_get_indir (grub_minix_to_cpu_n (data->inode.triple_indir_zone),
+      indir = grub_get_indir (data, grub_minix_to_cpu_n (data->inode.triple_indir_zone),
 			      (blk / block_per_zone) / block_per_zone);
-      indir = grub_get_indir (indir, (blk / block_per_zone) % block_per_zone);
-      indir = grub_get_indir (indir, blk % block_per_zone);
+      indir = grub_get_indir (data, indir, (blk / block_per_zone) % block_per_zone);
+      indir = grub_get_indir (data, indir, blk % block_per_zone);
 
       return indir;
     }

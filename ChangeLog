@@ -1,5 +1,9 @@
 2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/minix.c: Remove nested functions.
+
+2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/iso9660.c: Remove nested functions.
 
 2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
