@@ -1390,9 +1390,9 @@ module = {
 
 module = {
   name = linux16;
-  i386_pc = loader/i386/pc/linux.c;
-  i386_pc = lib/cmdline.c;
-  enable = i386_pc;
+  common = loader/i386/pc/linux.c;
+  common = lib/cmdline.c;
+  enable = x86;
 };
 
 module = {

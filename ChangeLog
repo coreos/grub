@@ -1,5 +1,13 @@
 2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Enable linux16 on non-BIOS systems for i.a. memtest.
+
+	* grub-core/loader/i386/pc/linux.c (grub_cmd_linux): Handle hole at 0
+	correctly.
+	* grub-core/Makefile.core.def (linux16): Enable on all x86 flavours.
+
+2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/coreboot/mmap.c (grub_linuxbios_table_iterate):
 	Fix end of table condition.
 

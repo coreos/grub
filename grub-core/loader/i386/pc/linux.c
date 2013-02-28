@@ -79,6 +79,42 @@ grub_linux_unload (void)
   return GRUB_ERR_NONE;
 }
 
+static int
+target_hook (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
+	    void *data)
+{
+  grub_uint64_t *result = data;
+  grub_uint64_t candidate;
+
+  if (type != GRUB_MEMORY_AVAILABLE)
+    return 0;
+  if (addr >= 0xa0000)
+    return 0;
+  if (addr + size >= 0xa0000)
+    size = 0xa0000 - addr;
+
+  /* Put the real mode part at as a high location as possible.  */
+  candidate = addr + size - (GRUB_LINUX_CL_OFFSET + maximal_cmdline_size);
+  /* But it must not exceed the traditional area.  */
+  if (candidate > GRUB_LINUX_OLD_REAL_MODE_ADDR)
+    candidate = GRUB_LINUX_OLD_REAL_MODE_ADDR;
+  if (candidate < addr)
+    return 0;
+
+  if (candidate > *result || *result == (grub_uint64_t) -1)
+    *result = candidate;
+  return 0;
+}
+
+static grub_addr_t
+grub_find_real_target (void)
+{
+  grub_uint64_t result = (grub_uint64_t) -1;
+
+  grub_mmap_iterate (target_hook, &result);
+  return result;
+}
+
 static grub_err_t
 grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
@@ -141,12 +177,13 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       if (grub_le_to_cpu16 (lh.version) >= 0x0206)
 	maximal_cmdline_size = grub_le_to_cpu32 (lh.cmdline_size) + 1;
 
-      /* Put the real mode part at as a high location as possible.  */
-      grub_linux_real_target = grub_mmap_get_lower () 
-	- (GRUB_LINUX_CL_OFFSET + maximal_cmdline_size);
-      /* But it must not exceed the traditional area.  */
-      if (grub_linux_real_target > GRUB_LINUX_OLD_REAL_MODE_ADDR)
-	grub_linux_real_target = GRUB_LINUX_OLD_REAL_MODE_ADDR;
+      grub_linux_real_target = grub_find_real_target ();
+      if (grub_linux_real_target == (grub_addr_t)-1)
+	{
+	  grub_error (GRUB_ERR_OUT_OF_RANGE,
+		      "no appropriate low memory found");
+	  goto fail;
+	}
 
       if (grub_le_to_cpu16 (lh.version) >= 0x0201)
 	{
@@ -190,17 +227,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       grub_error (GRUB_ERR_BAD_OS, "too big zImage (0x%x > 0x%x), use bzImage instead",
 		  (char *) GRUB_LINUX_ZIMAGE_ADDR + grub_linux16_prot_size,
 		  (grub_size_t) grub_linux_real_target);
-      goto fail;
-    }
-
-  if (grub_linux_real_target + GRUB_LINUX_CL_OFFSET + maximal_cmdline_size
-      > grub_mmap_get_lower ())
-    {
-      grub_error (GRUB_ERR_OUT_OF_RANGE,
-		 "too small lower memory (0x%x > 0x%x)",
-		  grub_linux_real_target + GRUB_LINUX_CL_OFFSET
-		  + maximal_cmdline_size,
-		  (int) grub_mmap_get_lower ());
       goto fail;
     }
 
