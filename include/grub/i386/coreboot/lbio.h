@@ -22,8 +22,12 @@
 
 struct grub_linuxbios_table_header
 {
-  char signature[4];
-  grub_uint32_t size;
+  grub_uint8_t signature[4];
+  grub_uint32_t header_size;
+  grub_uint32_t header_checksum;
+  grub_uint32_t table_size;
+  grub_uint32_t table_checksum;
+  grub_uint32_t table_entries;
 };
 typedef struct grub_linuxbios_table_header *grub_linuxbios_table_header_t;
 

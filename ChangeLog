@@ -1,5 +1,10 @@
 2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/coreboot/mmap.c (grub_linuxbios_table_iterate):
+	Fix end of table condition.
+
+2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/arg.c (grub_arg_show_help): Move showargs
 	out of its parent.
 

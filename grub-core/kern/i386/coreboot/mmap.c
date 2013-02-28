@@ -58,8 +58,10 @@ signature_found:
 
   table_item =
     (grub_linuxbios_table_item_t) ((long) table_header +
-			       (long) table_header->size);
-  for (; table_item->size;
+			       (long) table_header->header_size);
+  for (; table_item < (grub_linuxbios_table_item_t) ((long) table_header
+						     + (long) table_header->header_size
+						     + (long) table_header->table_size);
        table_item = (grub_linuxbios_table_item_t) ((long) table_item + (long) table_item->size))
     {
       if (table_item->tag == GRUB_LINUXBIOS_MEMBER_LINK
