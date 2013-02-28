@@ -1,5 +1,10 @@
 2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/parttool.c (grub_cmd_parttool): Move show_help out
+	of parent function.
+
+2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-fstest.c: Remove nested functions.
 
 2013-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
