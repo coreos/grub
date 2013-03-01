@@ -1,5 +1,10 @@
 2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/efi/efidisk.c: Transform iterate_child_devices into
+	a FOR_CHILDREN macro.
+
+2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/main.c (grub_set_prefix_and_root): Strip trailing
 	platform from firmware path.
 

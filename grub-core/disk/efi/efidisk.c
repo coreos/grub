@@ -175,38 +175,28 @@ find_parent_device (struct grub_efidisk_data *devices,
 }
 
 static int
-iterate_child_devices (struct grub_efidisk_data *devices,
-		       struct grub_efidisk_data *d,
-		       int (*hook) (struct grub_efidisk_data *child))
+is_child (struct grub_efidisk_data *child,
+	  struct grub_efidisk_data *parent)
 {
-  struct grub_efidisk_data *p;
+  grub_efi_device_path_t *dp, *ldp;
+  int ret;
 
-  for (p = devices; p; p = p->next)
-    {
-      grub_efi_device_path_t *dp, *ldp;
+  dp = duplicate_device_path (child->device_path);
+  if (! dp)
+    return 0;
 
-      dp = duplicate_device_path (p->device_path);
-      if (! dp)
-	return 0;
+  ldp = find_last_device_path (dp);
+  ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
+  ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
+  ldp->length[0] = sizeof (*ldp);
+  ldp->length[1] = 0;
 
-      ldp = find_last_device_path (dp);
-      ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
-      ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
-      ldp->length[0] = sizeof (*ldp);
-      ldp->length[1] = 0;
-
-      if (grub_efi_compare_device_paths (dp, d->device_path) == 0)
-	if (hook (p))
-	  {
-	    grub_free (dp);
-	    return 1;
-	  }
-
-      grub_free (dp);
-    }
-
-  return 0;
+  ret = (grub_efi_compare_device_paths (dp, parent->device_path) == 0);
+  grub_free (dp);
+  return ret;
 }
+
+#define FOR_CHILDREN(p, dev) for (p = dev; p; p = p->next) if (is_child (p, d))
 
 /* Add a device into a list of devices in an ascending order.  */
 static void
@@ -655,9 +645,10 @@ grub_efidisk_get_device_handle (grub_disk_t disk)
       {
 	struct grub_efidisk_data *devices;
 	grub_efi_handle_t handle = 0;
-	auto int find_partition (struct grub_efidisk_data *c);
+	struct grub_efidisk_data *c;
 
-	int find_partition (struct grub_efidisk_data *c)
+	devices = make_devices ();
+	FOR_CHILDREN (c, devices)
 	  {
 	    grub_efi_hard_drive_device_path_t hd;
 
@@ -673,14 +664,10 @@ grub_efidisk_get_device_handle (grub_disk_t disk)
 		    == hd.partition_size))
 	      {
 		handle = c->handle;
-		return 1;
+		break;
 	      }
-
-	    return 0;
 	  }
 
-	devices = make_devices ();
-	iterate_child_devices (devices, d, find_partition);
 	free_devices (devices);
 
 	if (handle != 0)
