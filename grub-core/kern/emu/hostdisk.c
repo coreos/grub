@@ -1209,13 +1209,6 @@ read_device_map (const char *dev_map)
   int lineno = 0;
   struct stat st;
 
-  auto void show_error (const char *msg)
-    __attribute__ ((noreturn));
-  void __attribute__ ((noreturn)) show_error (const char *msg)
-    {
-      grub_util_error ("%s:%d: %s", dev_map, lineno, msg);
-    }
-
   if (dev_map[0] == '\0')
     {
       grub_util_info ("no device.map");
@@ -1250,14 +1243,14 @@ read_device_map (const char *dev_map)
 	{
 	  char *tmp;
 	  tmp = xasprintf (_("missing `%c' symbol"), '(');
-	  show_error (tmp);
+	  grub_util_error ("%s:%d: %s", dev_map, lineno, tmp);
 	}
 
       p++;
       /* Find a free slot.  */
       drive = find_free_slot ();
       if (drive < 0)
-	show_error (_("device count exceeds limit"));
+	grub_util_error ("%s:%d: %s", dev_map, lineno, _("device count exceeds limit"));
 
       e = p;
       p = strchr (p, ')');
@@ -1265,7 +1258,7 @@ read_device_map (const char *dev_map)
 	{
 	  char *tmp;
 	  tmp = xasprintf (_("missing `%c' symbol"), ')');
-	  show_error (tmp);
+	  grub_util_error ("%s:%d: %s", dev_map, lineno, tmp);
 	}
 
       map[drive].drive = 0;
@@ -1310,7 +1303,7 @@ read_device_map (const char *dev_map)
 	p++;
 
       if (*p == '\0')
-	show_error (_("filename expected"));
+	grub_util_error ("%s:%d: %s", dev_map, lineno, _("filename expected"));
 
       /* NUL-terminate the filename.  */
       e = p;

@@ -1,5 +1,10 @@
 2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (read_device_map): Remove nested
+	function.
+
+2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gentrigtables.c: Make tables const.
 
 2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
