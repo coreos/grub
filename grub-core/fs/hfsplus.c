@@ -620,7 +620,8 @@ static int
 grub_hfsplus_btree_iterate_node (struct grub_hfsplus_btree *btree,
 				 struct grub_hfsplus_btnode *first_node,
 				 grub_disk_addr_t first_rec,
-				 int (*hook) (void *record))
+				 int (*hook) (void *record, void *hook_arg),
+				 void *hook_arg)
 {
   grub_disk_addr_t rec;
   grub_uint64_t saved_node = -1;
@@ -633,7 +634,7 @@ grub_hfsplus_btree_iterate_node (struct grub_hfsplus_btree *btree,
       /* Iterate over all records in this node.  */
       for (rec = first_rec; rec < grub_be_to_cpu16 (first_node->count); rec++)
 	{
-	  if (hook (grub_hfsplus_btree_recptr (btree, first_node, rec)))
+	  if (hook (grub_hfsplus_btree_recptr (btree, first_node, rec), hook_arg))
 	    return 1;
 	}
 
@@ -764,123 +765,138 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
     }
 }
 
+struct list_nodes_ctx
+{
+  int ret;
+  grub_fshelp_node_t dir;
+  grub_fshelp_iterate_dir_hook_t hook;
+  void *hook_data;
+};
+
+static int
+list_nodes (void *record, void *hook_arg)
+{
+  struct grub_hfsplus_catkey *catkey;
+  char *filename;
+  int i;
+  struct grub_fshelp_node *node;
+  struct grub_hfsplus_catfile *fileinfo;
+  enum grub_fshelp_filetype type = GRUB_FSHELP_UNKNOWN;
+  struct list_nodes_ctx *ctx = hook_arg;
+
+  catkey = (struct grub_hfsplus_catkey *) record;
+
+  fileinfo =
+    (struct grub_hfsplus_catfile *) ((char *) record
+				     + grub_be_to_cpu16 (catkey->keylen)
+				     + 2 + (grub_be_to_cpu16(catkey->keylen)
+					    % 2));
+
+  /* Stop iterating when the last directory entry is found.  */
+  if (grub_be_to_cpu32 (catkey->parent) != ctx->dir->fileid)
+    return 1;
+
+  /* Determine the type of the node that is found.  */
+  switch (fileinfo->type)
+    {
+    case grub_cpu_to_be16_compile_time (GRUB_HFSPLUS_FILETYPE_REG):
+      {
+	int mode = (grub_be_to_cpu16 (fileinfo->mode)
+		    & GRUB_HFSPLUS_FILEMODE_MASK);
+
+	if (mode == GRUB_HFSPLUS_FILEMODE_REG)
+	  type = GRUB_FSHELP_REG;
+	else if (mode == GRUB_HFSPLUS_FILEMODE_SYMLINK)
+	  type = GRUB_FSHELP_SYMLINK;
+	else
+	  type = GRUB_FSHELP_UNKNOWN;
+	break;
+      }
+    case grub_cpu_to_be16_compile_time (GRUB_HFSPLUS_FILETYPE_DIR):
+      type = GRUB_FSHELP_DIR;
+      break;
+    case grub_cpu_to_be16_compile_time (GRUB_HFSPLUS_FILETYPE_DIR_THREAD):
+      if (ctx->dir->fileid == 2)
+	return 0;
+      node = grub_malloc (sizeof (*node));
+      if (!node)
+	return 1;
+      node->data = ctx->dir->data;
+      node->mtime = 0;
+      node->size = 0;
+      node->fileid = grub_be_to_cpu32 (fileinfo->parentid);
+
+      ctx->ret = ctx->hook ("..", GRUB_FSHELP_DIR, node, ctx->hook_data);
+      return ctx->ret;
+    }
+
+  if (type == GRUB_FSHELP_UNKNOWN)
+    return 0;
+
+  filename = grub_malloc (grub_be_to_cpu16 (catkey->namelen)
+			  * GRUB_MAX_UTF8_PER_UTF16 + 1);
+  if (! filename)
+    return 0;
+
+  /* Make sure the byte order of the UTF16 string is correct.  */
+  for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
+    {
+      catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
+
+      if (catkey->name[i] == '/')
+	catkey->name[i] = ':';
+
+      /* If the name is obviously invalid, skip this node.  */
+      if (catkey->name[i] == 0)
+	return 0;
+    }
+
+  *grub_utf16_to_utf8 ((grub_uint8_t *) filename, catkey->name,
+		       grub_be_to_cpu16 (catkey->namelen)) = '\0';
+
+  /* Restore the byte order to what it was previously.  */
+  for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
+    {
+      if (catkey->name[i] == ':')
+	catkey->name[i] = '/';
+      catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
+    }
+
+  /* hfs+ is case insensitive.  */
+  if (! ctx->dir->data->case_sensitive)
+    type |= GRUB_FSHELP_CASE_INSENSITIVE;
+
+  /* A valid node is found; setup the node and call the
+     callback function.  */
+  node = grub_malloc (sizeof (*node));
+  if (!node)
+    return 1;
+  node->data = ctx->dir->data;
+
+  grub_memcpy (node->extents, fileinfo->data.extents,
+	       sizeof (node->extents));
+  node->mtime = grub_be_to_cpu32 (fileinfo->mtime) - 2082844800;
+  node->size = grub_be_to_cpu64 (fileinfo->data.size);
+  node->fileid = grub_be_to_cpu32 (fileinfo->fileid);
+
+  ctx->ret = ctx->hook (filename, type, node, ctx->hook_data);
+
+  grub_free (filename);
+
+  return ctx->ret;
+}
+
 static int
 grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 			  grub_fshelp_iterate_dir_hook_t hook, void *hook_data)
 {
-  int ret = 0;
-
-  auto int list_nodes (void *record);
-  int list_nodes (void *record)
-    {
-      struct grub_hfsplus_catkey *catkey;
-      char *filename;
-      int i;
-      struct grub_fshelp_node *node;
-      struct grub_hfsplus_catfile *fileinfo;
-      enum grub_fshelp_filetype type = GRUB_FSHELP_UNKNOWN;
-
-      catkey = (struct grub_hfsplus_catkey *) record;
-
-      fileinfo =
-	(struct grub_hfsplus_catfile *) ((char *) record
-					 + grub_be_to_cpu16 (catkey->keylen)
-					 + 2 + (grub_be_to_cpu16(catkey->keylen)
-						% 2));
-
-      /* Stop iterating when the last directory entry is found.  */
-      if (grub_be_to_cpu32 (catkey->parent) != dir->fileid)
-	return 1;
-
-      /* Determine the type of the node that is found.  */
-      switch (fileinfo->type)
-	{
-	case grub_cpu_to_be16_compile_time (GRUB_HFSPLUS_FILETYPE_REG):
-	  {
-	    int mode = (grub_be_to_cpu16 (fileinfo->mode)
-			& GRUB_HFSPLUS_FILEMODE_MASK);
-
-	    if (mode == GRUB_HFSPLUS_FILEMODE_REG)
-	      type = GRUB_FSHELP_REG;
-	    else if (mode == GRUB_HFSPLUS_FILEMODE_SYMLINK)
-	      type = GRUB_FSHELP_SYMLINK;
-	    else
-	      type = GRUB_FSHELP_UNKNOWN;
-	    break;
-	  }
-	case grub_cpu_to_be16_compile_time (GRUB_HFSPLUS_FILETYPE_DIR):
-	  type = GRUB_FSHELP_DIR;
-	  break;
-	case grub_cpu_to_be16_compile_time (GRUB_HFSPLUS_FILETYPE_DIR_THREAD):
-	  if (dir->fileid == 2)
-	    return 0;
-	  node = grub_malloc (sizeof (*node));
-	  if (!node)
-	    return 1;
-	  node->data = dir->data;
-	  node->mtime = 0;
-	  node->size = 0;
-	  node->fileid = grub_be_to_cpu32 (fileinfo->parentid);
-
-	  ret = hook ("..", GRUB_FSHELP_DIR, node, hook_data);
-	  return ret;
-	}
-
-      if (type == GRUB_FSHELP_UNKNOWN)
-	return 0;
-
-      filename = grub_malloc (grub_be_to_cpu16 (catkey->namelen)
-			      * GRUB_MAX_UTF8_PER_UTF16 + 1);
-      if (! filename)
-	return 0;
-
-      /* Make sure the byte order of the UTF16 string is correct.  */
-      for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
-	{
-	  catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
-
-	  if (catkey->name[i] == '/')
-	    catkey->name[i] = ':';
-
-	  /* If the name is obviously invalid, skip this node.  */
-	  if (catkey->name[i] == 0)
-	    return 0;
-	}
-
-      *grub_utf16_to_utf8 ((grub_uint8_t *) filename, catkey->name,
-			   grub_be_to_cpu16 (catkey->namelen)) = '\0';
-
-      /* Restore the byte order to what it was previously.  */
-      for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
-	{
-	  if (catkey->name[i] == ':')
-	    catkey->name[i] = '/';
-	  catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
-	}
-
-      /* hfs+ is case insensitive.  */
-      if (! dir->data->case_sensitive)
-	type |= GRUB_FSHELP_CASE_INSENSITIVE;
-
-      /* A valid node is found; setup the node and call the
-	 callback function.  */
-      node = grub_malloc (sizeof (*node));
-      if (!node)
-	return 1;
-      node->data = dir->data;
-
-      grub_memcpy (node->extents, fileinfo->data.extents,
-		   sizeof (node->extents));
-      node->mtime = grub_be_to_cpu32 (fileinfo->mtime) - 2082844800;
-      node->size = grub_be_to_cpu64 (fileinfo->data.size);
-      node->fileid = grub_be_to_cpu32 (fileinfo->fileid);
-
-      ret = hook (filename, type, node, hook_data);
-
-      grub_free (filename);
-
-      return ret;
-    }
+  struct list_nodes_ctx ctx =
+  {
+    .ret = 0,
+    .dir = dir,
+    .hook = hook,
+    .hook_data = hook_data
+  };
 
   struct grub_hfsplus_key_internal intern;
   struct grub_hfsplus_btnode *node;
@@ -908,11 +924,11 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 
   /* Iterate over all entries in this directory.  */
   grub_hfsplus_btree_iterate_node (&dir->data->catalog_tree, node, ptr,
-				   list_nodes);
+				   list_nodes, &ctx);
 
   grub_free (node);
 
-  return ret;
+  return ctx.ret;
 }
 
 /* Open a file named NAME and initialize FILE.  */
