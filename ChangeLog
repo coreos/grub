@@ -1,5 +1,10 @@
 2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/pc/linux.c (grub_cmd_linux): Fix compilation
+	for 64-bit platforms.
+
+2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/efi/efidisk.c: Transform iterate_child_devices into
 	a FOR_CHILDREN macro.
 
