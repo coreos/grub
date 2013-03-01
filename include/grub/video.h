@@ -372,7 +372,7 @@ struct grub_video_adapter
 
   grub_err_t (*get_active_render_target) (struct grub_video_render_target **target);
 
-  int (*iterate) (int (*hook) (const struct grub_video_mode_info *info));
+  int (*iterate) (int (*hook) (const struct grub_video_mode_info *info, void *hook_arg), void *hook_arg);
 
   grub_err_t (*get_edid) (struct grub_video_edid_info *edid_info);
 

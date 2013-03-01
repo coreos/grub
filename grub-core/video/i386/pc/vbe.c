@@ -952,7 +952,7 @@ vbe2videoinfo (grub_uint32_t mode,
 }
 
 static int
-grub_video_vbe_iterate (int (*hook) (const struct grub_video_mode_info *info))
+grub_video_vbe_iterate (int (*hook) (const struct grub_video_mode_info *info, void *hook_arg), void *hook_arg)
 {
   grub_uint16_t *p;
   struct grub_vbe_mode_info_block vbe_mode_info;
@@ -969,7 +969,7 @@ grub_video_vbe_iterate (int (*hook) (const struct grub_video_mode_info *info))
         }
 
       vbe2videoinfo (*p, &vbe_mode_info, &mode_info);
-      if (hook (&mode_info))
+      if (hook (&mode_info, hook_arg))
 	return 1;
     }
   return 0;
