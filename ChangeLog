@@ -1,3 +1,8 @@
+2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/main.c (grub_set_prefix_and_root): Strip trailing
+	platform from firmware path.
+
 2013-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Enable linux16 on non-BIOS systems for i.a. memtest.

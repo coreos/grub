@@ -168,7 +168,16 @@ grub_set_prefix_and_root (void)
   else
     grub_free (fwdevice);
   if (fwpath && !path)
-    path = fwpath;
+    {
+      grub_size_t len = grub_strlen (fwpath);
+      while (len > 1 && fwpath[len - 1] == '/')
+	fwpath[--len] = 0;
+      if (len >= sizeof (GRUB_TARGET_CPU "-" GRUB_PLATFORM) - 1
+	  && grub_memcmp (fwpath + len - (sizeof (GRUB_TARGET_CPU "-" GRUB_PLATFORM) - 1), GRUB_TARGET_CPU "-" GRUB_PLATFORM,
+			  sizeof (GRUB_TARGET_CPU "-" GRUB_PLATFORM) - 1) == 0)
+	fwpath[len - (sizeof (GRUB_TARGET_CPU "-" GRUB_PLATFORM) - 1)] = 0;
+      path = fwpath;
+    }
   else
     grub_free (fwpath);
   if (device)
