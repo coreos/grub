@@ -1,5 +1,9 @@
 2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gentrigtables.c: Make tables const.
+
+2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove nested functions from videoinfo iterators.
 
 2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
