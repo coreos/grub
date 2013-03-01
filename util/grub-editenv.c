@@ -184,17 +184,17 @@ open_envblk_file (const char *name)
   return envblk;
 }
 
+static int
+print_var (const char *varname, const char *value)
+{
+  printf ("%s=%s\n", varname, value);
+  return 0;
+}
+
 static void
 list_variables (const char *name)
 {
   grub_envblk_t envblk;
-
-  auto int print_var (const char *varname, const char *value);
-  int print_var (const char *varname, const char *value)
-    {
-      printf ("%s=%s\n", varname, value);
-      return 0;
-    }
 
   envblk = open_envblk_file (name);
   grub_envblk_iterate (envblk, print_var);

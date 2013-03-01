@@ -1,5 +1,10 @@
 2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-editenv.c (list_variables): Move print_var out of its
+	parent.
+
+2013-03-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (read_device_map): Remove nested
 	function.
 
