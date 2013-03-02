@@ -114,107 +114,113 @@ ofdisk_hash_add (char *devpath, char *curcan)
 }
 
 static void
-scan (void)
+dev_iterate_real (const char *name, const char *path)
 {
-  auto int dev_iterate_real (const char *name, const char *path);
+  struct ofdisk_hash_ent *op;
 
-  int dev_iterate_real (const char *name, const char *path)
+  grub_dprintf ("disk", "disk name = %s, path = %s\n", name,
+		path);
+
+  op = ofdisk_hash_find (path);
+  if (!op)
     {
-      struct ofdisk_hash_ent *op;
-
-      grub_dprintf ("disk", "disk name = %s, path = %s\n", name,
-		    path);
-
-      op = ofdisk_hash_find (path);
-      if (!op)
+      char *name_dup = grub_strdup (name);
+      char *can = grub_strdup (path);
+      if (!name_dup || !can)
 	{
-	  char *name_dup = grub_strdup (name);
-	  char *can = grub_strdup (path);
-	  if (!name_dup || !can)
-	    {
-	      grub_errno = GRUB_ERR_NONE;
-	      grub_free (name_dup);
-	      grub_free (can);
-	      return 0;
-	    }
-	  op = ofdisk_hash_add (name_dup, can);
+	  grub_errno = GRUB_ERR_NONE;
+	  grub_free (name_dup);
+	  grub_free (can);
+	  return;
 	}
-      return 0;
+      op = ofdisk_hash_add (name_dup, can);
+    }
+  return;
+}
+
+static void
+dev_iterate (const struct grub_ieee1275_devalias *alias)
+{
+  if (grub_strcmp (alias->type, "vscsi") == 0)
+    {
+      static grub_ieee1275_ihandle_t ihandle;
+      struct set_color_args
+      {
+	struct grub_ieee1275_common_hdr common;
+	grub_ieee1275_cell_t method;
+	grub_ieee1275_cell_t ihandle;
+	grub_ieee1275_cell_t catch_result;
+	grub_ieee1275_cell_t nentries;
+	grub_ieee1275_cell_t table;
+      }
+      args;
+      char *buf, *bufptr;
+      unsigned i;
+
+      if (grub_ieee1275_open (alias->path, &ihandle))
+	return;
+    
+      INIT_IEEE1275_COMMON (&args.common, "call-method", 2, 3);
+      args.method = (grub_ieee1275_cell_t) "vscsi-report-luns";
+      args.ihandle = ihandle;
+      args.table = 0;
+      args.nentries = 0;
+
+      if (IEEE1275_CALL_ENTRY_FN (&args) == -1 || args.catch_result)
+	{
+	  grub_ieee1275_close (ihandle);
+	  return;
+	}
+
+      buf = grub_malloc (grub_strlen (alias->path) + 32);
+      if (!buf)
+	return;
+      bufptr = grub_stpcpy (buf, alias->path);
+
+      for (i = 0; i < args.nentries; i++)
+	{
+	  grub_uint64_t *ptr;
+
+	  ptr = *(grub_uint64_t **) (args.table + 4 + 8 * i);
+	  while (*ptr)
+	    {
+	      grub_snprintf (bufptr, 32, "/disk@%" PRIxGRUB_UINT64_T, *ptr++);
+	      dev_iterate_real (buf, buf);
+	    }
+	}
+      grub_ieee1275_close (ihandle);
+      grub_free (buf);
+      return;
     }
 
-  auto int dev_iterate_alias (struct grub_ieee1275_devalias *alias);
-  int dev_iterate_alias (struct grub_ieee1275_devalias *alias)
+  if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS)
+      && grub_strcmp (alias->type, "block") == 0)
+    {
+      dev_iterate_real (alias->path, alias->path);
+      return;
+    }
+
   {
-    if (grub_strcmp (alias->type, "block") != 0)
-      return 0;
-    return dev_iterate_real (alias->name, alias->path);
+    struct grub_ieee1275_devalias child;
+
+    FOR_IEEE1275_DEVCHILDREN(alias->path, child)
+      dev_iterate (&child);
   }
+}
 
-  auto int dev_iterate (struct grub_ieee1275_devalias *alias);
-  int dev_iterate (struct grub_ieee1275_devalias *alias)
-  {
-    if (grub_strcmp (alias->type, "vscsi") == 0)
-      {
-	static grub_ieee1275_ihandle_t ihandle;
-	struct set_color_args
-	{
-	  struct grub_ieee1275_common_hdr common;
-	  grub_ieee1275_cell_t method;
-	  grub_ieee1275_cell_t ihandle;
-	  grub_ieee1275_cell_t catch_result;
-	  grub_ieee1275_cell_t nentries;
-	  grub_ieee1275_cell_t table;
-	}
-	args;
-	char *buf, *bufptr;
-	unsigned i;
+static void
+scan (void)
+{
+  struct grub_ieee1275_devalias alias;
+  FOR_IEEE1275_DEVALIASES(alias)
+    {
+      if (grub_strcmp (alias.type, "block") != 0)
+	continue;
+      dev_iterate_real (alias.name, alias.path);
+    }
 
-	if (grub_ieee1275_open (alias->path, &ihandle))
-	  return 0;
-    
-	INIT_IEEE1275_COMMON (&args.common, "call-method", 2, 3);
-	args.method = (grub_ieee1275_cell_t) "vscsi-report-luns";
-	args.ihandle = ihandle;
-	args.table = 0;
-	args.nentries = 0;
-
-	if (IEEE1275_CALL_ENTRY_FN (&args) == -1 || args.catch_result)
-	  {
-	    grub_ieee1275_close (ihandle);
-	    return 0;
-	  }
-
-	buf = grub_malloc (grub_strlen (alias->path) + 32);
-	if (!buf)
-	  return 0;
-	bufptr = grub_stpcpy (buf, alias->path);
-
-	for (i = 0; i < args.nentries; i++)
-	  {
-	    grub_uint64_t *ptr;
-
-	    ptr = *(grub_uint64_t **) (args.table + 4 + 8 * i);
-	    while (*ptr)
-	      {
-		grub_snprintf (bufptr, 32, "/disk@%" PRIxGRUB_UINT64_T, *ptr++);
-		if (dev_iterate_real (buf, buf))
-		  return 1;
-	      }
-	  }
-	grub_ieee1275_close (ihandle);
-	grub_free (buf);
-	return 0;
-      }
-
-    if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS)
-	&& grub_strcmp (alias->type, "block") == 0)
-      return dev_iterate_real (alias->path, alias->path);
-
-    return grub_children_iterate (alias->path, dev_iterate);
-  }
-
-  grub_devalias_iterate (dev_iterate_alias);
-  grub_children_iterate ("/", dev_iterate);
+  FOR_IEEE1275_DEVCHILDREN("/", alias)
+    dev_iterate (&alias);
 }
 
 static int

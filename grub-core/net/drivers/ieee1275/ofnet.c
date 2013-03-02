@@ -198,27 +198,6 @@ grub_ieee1275_net_config_real (const char *devpath, char **device, char **path)
   }
 }
 
-static char *
-find_alias (const char *fullname)
-{
-  char *ret = NULL;
-  auto int find_alias_hook (struct grub_ieee1275_devalias *alias);
-
-  int find_alias_hook (struct grub_ieee1275_devalias *alias)
-  {
-    if (grub_strcmp (alias->path, fullname) == 0)
-      {
-	ret = grub_strdup (alias->name);
-	return 1;
-      }
-    return 0;
-  }
-
-  grub_devalias_iterate (find_alias_hook);
-  grub_errno = GRUB_ERR_NONE;
-  return ret;
-}
-
 static int
 search_net_devices (struct grub_ieee1275_devalias *alias)
 {
@@ -308,7 +287,7 @@ search_net_devices (struct grub_ieee1275_devalias *alias)
   card->driver = NULL;
   card->data = ofdata;
   card->flags = 0;
-  shortname = find_alias (alias->path);
+  shortname = grub_ieee1275_get_devname (alias->path);
   card->name = grub_xasprintf ("ofnet_%s", shortname ? : alias->path);
   card->idle_poll_delay_ms = 10;
   grub_free (shortname);

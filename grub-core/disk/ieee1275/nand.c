@@ -36,22 +36,29 @@ static int
 grub_nand_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		   grub_disk_pull_t pull)
 {
-  auto int dev_iterate (struct grub_ieee1275_devalias *alias);
-  int dev_iterate (struct grub_ieee1275_devalias *alias)
-  {
-    if (grub_strcmp (alias->name, "nand") == 0)
-      {
-	hook (alias->name, hook_data);
-	return 1;
-      }
-    
-    return 0;
-  }
+  static int have_nand = -1;
 
   if (pull != GRUB_DISK_PULL_NONE)
     return 0;
 
-  return grub_devalias_iterate (dev_iterate);
+  if (have_nand == -1)
+    {
+      struct grub_ieee1275_devalias alias;
+
+      have_nand = 0;
+      FOR_IEEE1275_DEVALIASES(alias)
+	if (grub_strcmp (alias->name, "nand") == 0)
+	  {
+	    have_nand = 1;
+	    break;
+	  }
+      grub_ieee1275_devalias_free (&alias);
+    }
+
+  if (have_nand)
+    return hook ("nand", hook_data);
+
+  return 0;
 }
 
 static grub_err_t

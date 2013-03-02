@@ -54,22 +54,22 @@ set_video_mode (unsigned width __attribute__ ((unused)),
   /* TODO */
 }
 
+static int
+find_display_hook (struct grub_ieee1275_devalias *alias)
+{
+  if (grub_strcmp (alias->type, "display") == 0)
+    {
+      grub_dprintf ("video", "Found display %s\n", alias->path);
+      display = grub_strdup (alias->path);
+      return 1;
+    }
+  return 0;
+}
+
 static void
 find_display (void)
 {
-  auto int hook (struct grub_ieee1275_devalias *alias);
-  int hook (struct grub_ieee1275_devalias *alias)
-  {
-    if (grub_strcmp (alias->type, "display") == 0)
-      {
-	grub_dprintf ("video", "Found display %s\n", alias->path);
-	display = grub_strdup (alias->path);
-	return 1;
-      }
-    return 0;
-  }
-  
-  grub_ieee1275_devices_iterate (hook);
+  grub_ieee1275_devices_iterate (find_display_hook);
 }
 
 static grub_err_t

@@ -180,58 +180,53 @@ ofserial_hash_add (char *devpath, char *curcan)
   return p;
 }
 
+static void
+dev_iterate_real (struct grub_ieee1275_devalias *alias,
+		  int use_name)
+{
+  struct ofserial_hash_ent *op;
+
+  if (grub_strcmp (alias->type, "serial") != 0)
+    return;
+
+  grub_dprintf ("serial", "serial name = %s, path = %s\n", alias->name,
+		alias->path);
+
+  op = ofserial_hash_find (alias->path);
+  if (!op)
+    {
+      char *name = grub_strdup (use_name ? alias->name : alias->path);
+      char *can = grub_strdup (alias->path);
+      if (!name || !can)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  grub_free (name);
+	  grub_free (can);
+	  return;
+	}
+      op = ofserial_hash_add (name, can);
+    }
+  return;
+}
+
+static int
+dev_iterate (struct grub_ieee1275_devalias *alias)
+{
+  dev_iterate_real (alias, 0);
+  return 0;
+}
+
 void
 grub_ofserial_init (void)
 {
-  auto int dev_iterate_real (struct grub_ieee1275_devalias *alias,
-			     int use_name);
-
-  int dev_iterate_real (struct grub_ieee1275_devalias *alias,
-			int use_name)
-    {
-      struct ofserial_hash_ent *op;
-
-      if (grub_strcmp (alias->type, "serial") != 0)
-	return 0;
-
-      grub_dprintf ("serial", "serial name = %s, path = %s\n", alias->name,
-		    alias->path);
-
-      op = ofserial_hash_find (alias->path);
-      if (!op)
-	{
-	  char *name = grub_strdup (use_name ? alias->name : alias->path);
-	  char *can = grub_strdup (alias->path);
-	  if (!name || !can)
-	    {
-	      grub_errno = GRUB_ERR_NONE;
-	      grub_free (name);
-	      grub_free (can);
-	      return 0;
-	    }
-	  op = ofserial_hash_add (name, can);
-	}
-      return 0;
-    }
-
-  auto int dev_iterate_alias (struct grub_ieee1275_devalias *alias);
-  int dev_iterate_alias (struct grub_ieee1275_devalias *alias)
-  {
-    return dev_iterate_real (alias, 1);
-  }
-
-  auto int dev_iterate (struct grub_ieee1275_devalias *alias);
-  int dev_iterate (struct grub_ieee1275_devalias *alias)
-  {
-    return dev_iterate_real (alias, 0);
-  }
-
   unsigned i;
   grub_err_t err;
+  struct grub_ieee1275_devalias alias;
 
-  grub_devalias_iterate (dev_iterate_alias);
+  FOR_IEEE1275_DEVALIASES(alias)
+    dev_iterate_real (&alias, 1);
+
   grub_ieee1275_devices_iterate (dev_iterate);
-
   
   for (i = 0; i < ARRAY_SIZE (ofserial_hash); i++)
     {

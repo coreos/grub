@@ -1,5 +1,9 @@
 2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move to more hookless approach in IEEE1275 devices handling.
+
+2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/term.c (grub_term_normal_color),
 	(grub_term_highlight_color): Add back lost defaults.
 
