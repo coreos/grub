@@ -179,7 +179,7 @@ grub_linux_load32 (grub_elf_t elf, const char *filename)
   grub_uint32_t offset;
   Elf32_Addr entry;
 
-  linux_size = grub_elf32_size (elf, filename, &base_addr, &align);
+  linux_size = grub_elf32_size (elf, &base_addr, &align);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -203,20 +203,7 @@ grub_linux_load32 (grub_elf_t elf, const char *filename)
   linux_addr = seg_addr;
 
   /* Now load the segments into the area we claimed.  */
-  auto grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load);
-  grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load)
-    {
-      if (phdr->p_type != PT_LOAD)
-	{
-	  *do_load = 0;
-	  return 0;
-	}
-      *do_load = 1;
-
-      *addr = (phdr->p_paddr - base_addr) + seg_addr;
-      return 0;
-    }
-  return grub_elf32_load (elf, filename, offset_phdr, 0, 0);
+  return grub_elf32_load (elf, filename, (void *) (seg_addr - base_addr), GRUB_ELF_LOAD_FLAGS_NONE, 0, 0);
 }
 
 static grub_err_t
@@ -228,7 +215,7 @@ grub_linux_load64 (grub_elf_t elf, const char *filename)
   grub_uint64_t offset;
   Elf64_Addr entry;
 
-  linux_size = grub_elf64_size (elf, filename, &base_addr, &align);
+  linux_size = grub_elf64_size (elf, &base_addr, &align);
   if (linux_size == 0)
     return grub_errno;
   /* Pad it; the kernel scribbles over memory beyond its load address.  */
@@ -250,20 +237,7 @@ grub_linux_load64 (grub_elf_t elf, const char *filename)
   linux_addr = seg_addr;
 
   /* Now load the segments into the area we claimed.  */
-  auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load);
-  grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load)
-    {
-      if (phdr->p_type != PT_LOAD)
-	{
-	  *do_load = 0;
-	  return 0;
-	}
-      *do_load = 1;
-
-      *addr = (phdr->p_paddr - base_addr) + seg_addr;
-      return 0;
-    }
-  return grub_elf64_load (elf, filename, offset_phdr, 0, 0);
+  return grub_elf64_load (elf, filename, (void *) (grub_addr_t) (seg_addr - base_addr), GRUB_ELF_LOAD_FLAGS_NONE, 0, 0);
 }
 
 static grub_err_t

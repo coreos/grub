@@ -144,7 +144,7 @@ grub_linux_load32 (grub_elf_t elf, const char *filename,
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr32.e_entry;
 
-  linux_size = grub_elf32_size (elf, filename, &base, 0);
+  linux_size = grub_elf32_size (elf, &base, 0);
   if (linux_size == 0)
     return grub_errno;
   target_addr = base;
@@ -171,22 +171,7 @@ grub_linux_load32 (grub_elf_t elf, const char *filename,
   *extra_mem = playground + extraoff;
 
   /* Now load the segments into the area we claimed.  */
-  auto grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load);
-  grub_err_t offset_phdr (Elf32_Phdr *phdr, grub_addr_t *addr, int *do_load)
-    {
-      if (phdr->p_type != PT_LOAD)
-	{
-	  *do_load = 0;
-	  return 0;
-	}
-      *do_load = 1;
-
-      /* Linux's program headers incorrectly contain virtual addresses.
-       * Translate those to physical, and offset to the area we claimed.  */
-      *addr = (grub_addr_t) (phdr->p_paddr - base + playground);
-      return 0;
-    }
-  return grub_elf32_load (elf, filename, offset_phdr, 0, 0);
+  return grub_elf32_load (elf, filename, playground - base, GRUB_ELF_LOAD_FLAGS_NONE, 0, 0);
 }
 
 static grub_err_t
@@ -200,7 +185,7 @@ grub_linux_load64 (grub_elf_t elf, const char *filename,
   /* Linux's entry point incorrectly contains a virtual address.  */
   entry_addr = elf->ehdr.ehdr64.e_entry;
 
-  linux_size = grub_elf64_size (elf, filename, &base, 0);
+  linux_size = grub_elf64_size (elf, &base, 0);
   if (linux_size == 0)
     return grub_errno;
   target_addr = base;
@@ -227,21 +212,7 @@ grub_linux_load64 (grub_elf_t elf, const char *filename,
   *extra_mem = playground + extraoff;
 
   /* Now load the segments into the area we claimed.  */
-  auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load);
-  grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load)
-    {
-      if (phdr->p_type != PT_LOAD)
-	{
-	  *do_load = 0;
-	  return 0;
-	}
-      *do_load = 1;
-      /* Linux's program headers incorrectly contain virtual addresses.
-       * Translate those to physical, and offset to the area we claimed.  */
-      *addr = (grub_addr_t) (phdr->p_paddr - base + playground);
-      return 0;
-    }
-  return grub_elf64_load (elf, filename, offset_phdr, 0, 0);
+  return grub_elf64_load (elf, filename, playground - base, GRUB_ELF_LOAD_FLAGS_NONE, 0, 0);
 }
 
 static grub_err_t

@@ -1,5 +1,9 @@
 2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make elfload not use hooks. Opt for flags and iterators instead.
+
+2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/ia64/longjmp.S: Fix the name of longjmp function.
 	* grub-core/lib/ia64/setjmp.S: Fix the name of setjmp function.
 

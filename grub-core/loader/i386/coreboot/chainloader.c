@@ -56,36 +56,13 @@ grub_chain_unload (void)
 }
 
 static grub_err_t
-grub_chain_elf32_hook (Elf32_Phdr * phdr, grub_addr_t * addr, int *do_load)
-{
-  grub_err_t err;
-  grub_relocator_chunk_t ch;
-
-  if (phdr->p_type != PT_LOAD)
-    {
-      *do_load = 0;
-      return 0;
-    }
-
-  *do_load = 1;
-  err = grub_relocator_alloc_chunk_addr (relocator, &ch,
-					 phdr->p_paddr, phdr->p_memsz);
-  if (err)
-    return err;
-
-  *addr = (grub_addr_t) get_virtual_current_address (ch);
-
-  return GRUB_ERR_NONE;
-}
-
-
-static grub_err_t
 grub_cmd_chain (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
 {
   grub_err_t err;
   grub_file_t file;
   grub_elf_t elf;
+  Elf32_Phdr *phdr;
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
@@ -118,13 +95,47 @@ grub_cmd_chain (grub_command_t cmd __attribute__ ((unused)),
       grub_elf_close (elf);
     }
 
-  entry = elf->ehdr.ehdr32.e_entry & 0xFFFFFF;
-  
-  err = grub_elf32_load (elf, argv[0], grub_chain_elf32_hook, 0, 0);
+  entry = elf->ehdr.ehdr32.e_entry;
+
+  FOR_ELF32_PHDRS(elf, phdr)
+    {
+      grub_uint8_t *load_addr;
+      grub_relocator_chunk_t ch;
+
+      if (phdr->p_type != PT_LOAD)
+	continue;
+
+      err = grub_relocator_alloc_chunk_addr (relocator, &ch,
+					     phdr->p_paddr, phdr->p_memsz);
+      if (err)
+	break;
+
+      load_addr = get_virtual_current_address (ch);
+
+      if (grub_file_seek (elf->file, phdr->p_offset) == (grub_off_t) -1)
+	return grub_errno;
+
+      if (phdr->p_filesz)
+	{
+	  grub_ssize_t read;
+	  read = grub_file_read (elf->file, load_addr, phdr->p_filesz);
+	  if (read != (grub_ssize_t) phdr->p_filesz)
+	    {
+	      if (!grub_errno)
+		grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+			    argv[0]);
+	      break;
+	    }
+	}
+
+      if (phdr->p_filesz < phdr->p_memsz)
+	grub_memset ((load_addr + phdr->p_filesz),
+		     0, phdr->p_memsz - phdr->p_filesz);
+    }
 
   grub_elf_close (elf);
-  if (err)
-    return err;
+  if (grub_errno)
+    return grub_errno;
 
   grub_loader_set (grub_chain_boot, grub_chain_unload, 0);
   return GRUB_ERR_NONE;

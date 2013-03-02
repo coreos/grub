@@ -261,7 +261,7 @@ grub_linux_load64 (grub_elf_t elf, const char *filename)
   linux_entry = elf->ehdr.ehdr64.e_entry;
   linux_addr = 0x40004000;
   off = 0x4000;
-  linux_size = grub_elf64_size (elf, filename, 0, 0);
+  linux_size = grub_elf64_size (elf, 0, 0);
   if (linux_size == 0)
     return grub_errno;
 
@@ -286,21 +286,7 @@ grub_linux_load64 (grub_elf_t elf, const char *filename)
   base = linux_entry - off;
 
   /* Now load the segments into the area we claimed.  */
-  auto grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load);
-  grub_err_t offset_phdr (Elf64_Phdr *phdr, grub_addr_t *addr, int *do_load)
-    {
-      if (phdr->p_type != PT_LOAD)
-	{
-	  *do_load = 0;
-	  return 0;
-	}
-      *do_load = 1;
-
-      /* Adjust the program load address to linux_addr.  */
-      *addr = (phdr->p_paddr - base) + (linux_addr - off);
-      return 0;
-    }
-  return grub_elf64_load (elf, filename, offset_phdr, 0, 0);
+  return grub_elf64_load (elf, filename, (void *) (linux_addr - off - base), GRUB_ELF_LOAD_FLAGS_NONE, 0, 0);
 }
 
 static grub_err_t
