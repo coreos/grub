@@ -103,8 +103,8 @@ grub_cmos_read (grub_uint8_t index, grub_uint8_t *val)
       if (err)
 	return err;
     }
-  grub_cmos_port[0] = index;
-  *val = grub_cmos_port[1];
+  grub_cmos_port[((index & 0x80) >> 6) | 0] = index & 0x7f;
+  *val = grub_cmos_port[((index & 0x80) >> 6) | 1];
   return GRUB_ERR_NONE;
 }
 
@@ -118,8 +118,8 @@ grub_cmos_write (grub_uint8_t index, grub_uint8_t val)
       if (err)
 	return err;
     }
-  grub_cmos_port[0] = index;
-  grub_cmos_port[1] = val;
+  grub_cmos_port[((index & 0x80) >> 6) | 0] = index;
+  grub_cmos_port[((index & 0x80) >> 6) | 1] = val;
   return GRUB_ERR_NONE;
 }
 

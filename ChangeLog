@@ -1,5 +1,9 @@
 2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/cmos.h: Handle high CMOS addresses on sparc64.
+
+2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/mips/loongson/cmos.h: Fix high CMOS addresses.
 
 2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
