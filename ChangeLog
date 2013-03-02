@@ -1,5 +1,10 @@
 2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/ia64/longjmp.S: Fix the name of longjmp function.
+	* grub-core/lib/ia64/setjmp.S: Fix the name of setjmp function.
+
+2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/execute.c (gettext_append): Remove nested functions.
 
 2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
