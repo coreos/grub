@@ -1,5 +1,14 @@
 2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/execute.c (gettext_append): Remove nested functions.
+
+2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/charset.c (grub_bidi_logical_to_visual): Add
+	hook pass-through parameter. All users updated and unnested.
+
+2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/loadenv.c (grub_cmd_list_env): Move print_var
 	out of its parent.
 

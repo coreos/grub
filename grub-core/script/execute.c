@@ -372,10 +372,19 @@ grub_script_env_set (const char *name, const char *val)
   return grub_env_set (name, val);
 }
 
+struct gettext_context
+{
+  char **allowed_strings;
+  grub_size_t nallowed_strings;
+  grub_size_t additional_len;
+};
+
 static int
 parse_string (const char *str,
-	      int (*hook) (const char *var, grub_size_t varlen),
-	      char **put)
+	      int (*hook) (const char *var, grub_size_t varlen,
+			   char **ptr, struct gettext_context *ctx),
+	      struct gettext_context *ctx,
+	      char *put)
 {
   const char *ptr;
   int escaped = 0;
@@ -387,7 +396,7 @@ parse_string (const char *str,
       case '\\':
 	escaped = !escaped;
 	if (!escaped && put)
-	  *((*put)++) = '\\';
+	  *(put++) = '\\';
 	ptr++;
 	break;
       case '$':
@@ -395,7 +404,7 @@ parse_string (const char *str,
 	  {
 	    escaped = 0;
 	    if (put)
-	      *((*put)++) = *ptr;
+	      *(put++) = *ptr;
 	    ptr++;
 	    break;
 	  }
@@ -409,7 +418,7 @@ parse_string (const char *str,
 	      ptr = grub_strchr (optr, '}');
 	      if (!ptr)
 		break;
-	      if (hook (optr, ptr - optr))
+	      if (hook (optr, ptr - optr, &put, ctx))
 		return 1;
 	      ptr++;
 	      break;
@@ -418,7 +427,7 @@ parse_string (const char *str,
 	    optr = ptr;
 	    while (*ptr >= '0' && *ptr <= '9')
 	      ptr++;
-	    if (hook (optr, ptr - optr))
+	    if (hook (optr, ptr - optr, &put, ctx))
 	      return 1;
 	    break;
 	  case 'a' ... 'z':
@@ -430,29 +439,98 @@ parse_string (const char *str,
 		   || (*ptr >= 'A' && *ptr <= 'Z')
 		   || *ptr == '_')
 	      ptr++;
-	    if (hook (optr, ptr - optr))
+	    if (hook (optr, ptr - optr, &put, ctx))
 	      return 1;
 	    break;
 	  case '?':
 	  case '#':
-	    if (hook (ptr, 1))
+	    if (hook (ptr, 1, &put, ctx))
 	      return 1;
 	    ptr++;
 	    break;
 	  default:
 	    if (put)
-	      *((*put)++) = '$';
+	      *(put++) = '$';
 	  }
 	break;
       default:
 	if (escaped && put)
-	  *((*put)++) = '\\';
+	  *(put++) = '\\';
 	escaped = 0;
 	if (put)
-	  *((*put)++) = *ptr;
+	  *(put++) = *ptr;
 	ptr++;
 	break;
       }
+  if (put)
+    *(put++) = 0;
+  return 0;
+}
+
+static int
+gettext_putvar (const char *str, grub_size_t len,
+		char **ptr, struct gettext_context *ctx)
+{
+  const char *var;
+  grub_size_t i;
+
+  for (i = 0; i < ctx->nallowed_strings; i++)
+    if (grub_strncmp (ctx->allowed_strings[i], str, len) == 0
+	&& ctx->allowed_strings[i][len] == 0)
+      {
+	break;
+      }
+  if (i == ctx->nallowed_strings)
+    return 0;
+
+  /* Enough for any number.  */
+  if (len == 1 && str[0] == '#')
+    {
+      grub_snprintf (*ptr, 30, "%u", scope->argv.argc);
+      *ptr += grub_strlen (*ptr);
+      return 0;
+    }
+  var = grub_env_get (ctx->allowed_strings[i]);
+  if (var)
+    *ptr = grub_stpcpy (*ptr, var);
+  return 0;
+}
+
+static int
+gettext_save_allow (const char *str, grub_size_t len,
+		    char **ptr __attribute__ ((unused)),
+		    struct gettext_context *ctx)
+{
+  ctx->allowed_strings[ctx->nallowed_strings++] = grub_strndup (str, len);
+  if (!ctx->allowed_strings[ctx->nallowed_strings - 1])
+    return 1;
+  return 0;
+}
+
+static int
+gettext_getlen (const char *str, grub_size_t len,
+		char **ptr __attribute__ ((unused)),
+		struct gettext_context *ctx)
+{
+  const char *var;
+  grub_size_t i;
+
+  for (i = 0; i < ctx->nallowed_strings; i++)
+    if (grub_strncmp (ctx->allowed_strings[i], str, len) == 0
+	&& ctx->allowed_strings[i][len] == 0)
+      break;
+  if (i == ctx->nallowed_strings)
+    return 0;
+
+  /* Enough for any number.  */
+  if (len == 1 && str[0] == '#')
+    {
+      ctx->additional_len += 30;
+      return 0;
+    }
+  var = grub_env_get (ctx->allowed_strings[i]);
+  if (var)
+    ctx->additional_len += grub_strlen (var);
   return 0;
 }
 
@@ -460,99 +538,37 @@ static int
 gettext_append (struct grub_script_argv *result, const char *orig_str)
 {
   const char *template;
-  char *res = 0, *ptr;
-  char **allowed_strings;
-  grub_size_t nallowed_strings = 0;
-  grub_size_t additional_len = 1;
+  char *res = 0;
+  struct gettext_context ctx = {
+    .allowed_strings = 0,
+    .nallowed_strings = 0,
+    .additional_len = 1
+  };
   int rval = 1;
   const char *iptr;
-
-  auto int save_allow (const char *str, grub_size_t len);
-  int save_allow (const char *str, grub_size_t len)
-  {
-    allowed_strings[nallowed_strings++] = grub_strndup (str, len);
-    if (!allowed_strings[nallowed_strings - 1])
-      return 1;
-    return 0;
-  }
-
-  auto int getlen (const char *str, grub_size_t len);
-  int getlen (const char *str, grub_size_t len)
-  {
-    const char *var;
-    grub_size_t i;
-
-    for (i = 0; i < nallowed_strings; i++)
-      if (grub_strncmp (allowed_strings[i], str, len) == 0
-	  && allowed_strings[i][len] == 0)
-	break;
-    if (i == nallowed_strings)
-      return 0;
-
-    /* Enough for any number.  */
-    if (len == 1 && str[0] == '#')
-      {
-	additional_len += 30;
-	return 0;
-      }
-    var = grub_env_get (allowed_strings[i]);
-    if (var)
-      additional_len += grub_strlen (var);
-    return 0;
-  }
-
-  auto int putvar (const char *str, grub_size_t len);
-  int putvar (const char *str, grub_size_t len)
-  {
-    const char *var;
-    grub_size_t i;
-
-    for (i = 0; i < nallowed_strings; i++)
-      if (grub_strncmp (allowed_strings[i], str, len) == 0
-	  && allowed_strings[i][len] == 0)
-       	{
-	  break;
-	}
-    if (i == nallowed_strings)
-      return 0;
-
-    /* Enough for any number.  */
-    if (len == 1 && str[0] == '#')
-      {
-	grub_snprintf (ptr, 30, "%u", scope->argv.argc);
-	ptr += grub_strlen (ptr);
-	return 0;
-      }
-    var = grub_env_get (allowed_strings[i]);
-    if (var)
-      ptr = grub_stpcpy (ptr, var);
-    return 0;
-  }
 
   grub_size_t dollar_cnt = 0;
 
   for (iptr = orig_str; *iptr; iptr++)
     if (*iptr == '$')
       dollar_cnt++;
-  allowed_strings = grub_malloc (sizeof (allowed_strings[0]) * dollar_cnt);
+  ctx.allowed_strings = grub_malloc (sizeof (ctx.allowed_strings[0]) * dollar_cnt);
 
-  if (parse_string (orig_str, save_allow, 0))
+  if (parse_string (orig_str, gettext_save_allow, &ctx, 0))
     goto fail;
 
   template = _(orig_str);
 
-  if (parse_string (template, getlen, 0))
+  if (parse_string (template, gettext_getlen, &ctx, 0))
     goto fail;
 
-  res = grub_malloc (grub_strlen (template) + additional_len);
+  res = grub_malloc (grub_strlen (template) + ctx.additional_len);
   if (!res)
     goto fail;
-  ptr = res;
 
-  if (parse_string (template, putvar, &ptr))
+  if (parse_string (template, gettext_putvar, &ctx, res))
     goto fail;
 
-  *ptr = 0;
   char *escaped = 0;
   escaped = wildcard_escape (res);
   if (grub_script_argv_append (result, escaped, grub_strlen (escaped)))
@@ -567,10 +583,10 @@ gettext_append (struct grub_script_argv *result, const char *orig_str)
   grub_free (res);
   {
     grub_size_t i;
-    for (i = 0; i < nallowed_strings; i++)
-      grub_free (allowed_strings[i]);
+    for (i = 0; i < ctx.nallowed_strings; i++)
+      grub_free (ctx.allowed_strings[i]);
   }
-  grub_free (allowed_strings);
+  grub_free (ctx.allowed_strings);
   return rval;
 }
 
