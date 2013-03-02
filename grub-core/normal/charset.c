@@ -512,7 +512,8 @@ static grub_ssize_t
 bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 		struct grub_unicode_glyph *visual,
 		grub_size_t visual_len, unsigned *levels,
-		grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
+		grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual, void *getcharwidth_arg),
+		void *getcharwidth_arg,
 		grub_size_t maxwidth, grub_size_t startwidth,
 		grub_uint32_t contchar,
 		struct grub_term_pos *pos, int primitive_wrap,
@@ -577,7 +578,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	}
 
       if (getcharwidth && k != visual_len)
-	line_width += last_width = getcharwidth (&visual[k]);
+	line_width += last_width = getcharwidth (&visual[k], getcharwidth_arg);
 
       if (k != visual_len && (visual[k].base == ' '
 			      || visual[k].base == '\t')
@@ -752,7 +753,8 @@ static grub_ssize_t
 grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 				  grub_size_t logical_len,
 				  struct grub_unicode_glyph *visual_out,
-				  grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
+				  grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual, void *getcharwidth_arg),
+				  void *getcharwidth_arg,
 				  grub_size_t maxwidth, grub_size_t startwidth,
 				  grub_uint32_t contchar,
 				  struct grub_term_pos *pos,
@@ -1116,7 +1118,7 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
   {
     grub_ssize_t ret;
     ret = bidi_line_wrap (visual_out, visual, visual_len, levels, 
-			  getcharwidth, maxwidth, startwidth, contchar,
+			  getcharwidth, getcharwidth_arg, maxwidth, startwidth, contchar,
 			  pos, primitive_wrap, log_end);
     grub_free (levels);
     grub_free (visual);
@@ -1128,7 +1130,8 @@ grub_ssize_t
 grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 			     grub_size_t logical_len,
 			     struct grub_unicode_glyph **visual_out,
-			     grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual),
+			     grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual, void *getcharwidth_arg),
+			     void *getcharwidth_arg,
 			     grub_size_t max_length, grub_size_t startwidth,
 			     grub_uint32_t contchar, struct grub_term_pos *pos, int primitive_wrap)
 {
@@ -1147,6 +1150,7 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 						  ptr - line_start,
 						  visual_ptr,
 						  getcharwidth,
+						  getcharwidth_arg,
 						  max_length,
 						  startwidth,
 						  contchar,

@@ -840,6 +840,12 @@ print_backlog (struct grub_term_output *term,
   return 0;
 }
 
+static grub_ssize_t
+getcharwidth (const struct grub_unicode_glyph *c, void *term)
+{
+  return grub_term_getcharwidth (term, c);
+}
+
 static int
 print_ucs4_real (const grub_uint32_t * str,
 		 const grub_uint32_t * last_position,
@@ -881,14 +887,8 @@ print_ucs4_real (const grub_uint32_t * str,
       int ret;
       struct grub_unicode_glyph *vptr;
 
-      auto grub_ssize_t getcharwidth (const struct grub_unicode_glyph *c);
-      grub_ssize_t getcharwidth (const struct grub_unicode_glyph *c)
-      {
-	return grub_term_getcharwidth (term, c);
-      }
-
       visual_len = grub_bidi_logical_to_visual (str, last_position - str,
-						&visual, getcharwidth,
+						&visual, getcharwidth, term,
 						get_maxwidth (term, 
 							      margin_left,
 							      margin_right),
