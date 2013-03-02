@@ -1,5 +1,10 @@
 2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/term.c (grub_term_normal_color),
+	(grub_term_highlight_color): Add back lost defaults.
+
+2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make elfload not use hooks. Opt for flags and iterators instead.
 
 2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
