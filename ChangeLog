@@ -1,3 +1,8 @@
+2013-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ieee1275/nand.c: Fix compilation on
+	i386-ieee1275.
+
 2013-03-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/cmos.h: Handle high CMOS addresses on sparc64.

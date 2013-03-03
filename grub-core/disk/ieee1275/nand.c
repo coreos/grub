@@ -47,7 +47,7 @@ grub_nand_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 
       have_nand = 0;
       FOR_IEEE1275_DEVALIASES(alias)
-	if (grub_strcmp (alias->name, "nand") == 0)
+	if (grub_strcmp (alias.name, "nand") == 0)
 	  {
 	    have_nand = 1;
 	    break;
