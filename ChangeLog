@@ -1,5 +1,10 @@
 2013-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/execute.c (grub_script_arglist_to_argv): Move
+	append out of its parent.
+
+2013-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/regexp.c (set_matches): Move setvar out of its
 	parent.
 
