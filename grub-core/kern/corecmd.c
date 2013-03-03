@@ -28,14 +28,6 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 
-/* Helper for grub_core_cmd_set.  */
-static int
-print_env (struct grub_env_var *env)
-{
-  grub_printf ("%s=%s\n", env->name, env->value);
-  return 0;
-}
-
 /* set ENVVAR=VALUE */
 static grub_err_t
 grub_core_cmd_set (struct grub_command *cmd __attribute__ ((unused)),
@@ -46,7 +38,9 @@ grub_core_cmd_set (struct grub_command *cmd __attribute__ ((unused)),
 
   if (argc < 1)
     {
-      grub_env_iterate (print_env);
+      struct grub_env_var *env;
+      FOR_SORTED_ENV (env)
+	grub_printf ("%s=%s\n", env->name, env->value);
       return 0;
     }
 

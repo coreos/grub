@@ -1332,8 +1332,8 @@ unescape (char *name, char *curdot, char *nextdot, int *len)
 grub_err_t
 grub_xnu_fill_devicetree (void)
 {
-  auto int iterate_env (struct grub_env_var *var);
-  int iterate_env (struct grub_env_var *var)
+  struct grub_env_var *var;
+  FOR_SORTED_ENV (var)
   {
     char *nextdot = 0, *curdot;
     struct grub_xnu_devtree_key **curkey = &grub_xnu_devtree_root;
@@ -1343,7 +1343,7 @@ grub_xnu_fill_devicetree (void)
 
     if (grub_memcmp (var->name, "XNU.DeviceTree.",
 		     sizeof ("XNU.DeviceTree.") - 1) != 0)
-      return 0;
+      continue;
 
     curdot = var->name + sizeof ("XNU.DeviceTree.") - 1;
     nextdot = grub_strchr (curdot, '.');
@@ -1354,7 +1354,7 @@ grub_xnu_fill_devicetree (void)
 	name = grub_realloc (name, nextdot - curdot + 1);
 
 	if (!name)
-	  return 1;
+	  return grub_errno;
 
 	unescape (name, curdot, nextdot, &len);
 	name[len - 1] = 0;
@@ -1372,7 +1372,7 @@ grub_xnu_fill_devicetree (void)
     name = grub_realloc (name, nextdot - curdot + 1);
    
     if (!name)
-      return 1;
+      return grub_errno;
    
     unescape (name, curdot, nextdot, &len);
     name[len] = 0;
@@ -1382,17 +1382,13 @@ grub_xnu_fill_devicetree (void)
    
     data = grub_malloc (grub_strlen (var->value) + 1);
     if (!data)
-      return 1;
+      return grub_errno;
    
     unescape (data, var->value, var->value + grub_strlen (var->value),
 	      &len);
     curvalue->datasize = len;
     curvalue->data = data;
-
-    return 0;
   }
-
-  grub_env_iterate (iterate_env);
 
   return grub_errno;
 }

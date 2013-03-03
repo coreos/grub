@@ -1,5 +1,10 @@
 2013-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/env.c, include/grub/env.h: Change iterator through
+	all vars to a macro. All users updated.
+
+2013-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ieee1275/nand.c: Fix compilation on
 	i386-ieee1275.
 

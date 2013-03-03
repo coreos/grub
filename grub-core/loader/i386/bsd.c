@@ -589,33 +589,7 @@ grub_freebsd_boot (void)
   grub_err_t err;
   grub_size_t tag_buf_len = 0;
 
-  auto int iterate_env (struct grub_env_var *var);
-  int iterate_env (struct grub_env_var *var)
-  {
-    if ((!grub_memcmp (var->name, "kFreeBSD.", sizeof("kFreeBSD.") - 1)) && (var->name[sizeof("kFreeBSD.") - 1]))
-      {
-	grub_strcpy ((char *) p, &var->name[sizeof("kFreeBSD.") - 1]);
-	p += grub_strlen ((char *) p);
-	*(p++) = '=';
-	grub_strcpy ((char *) p, var->value);
-	p += grub_strlen ((char *) p) + 1;
-      }
-
-    return 0;
-  }
-
-  auto int iterate_env_count (struct grub_env_var *var);
-  int iterate_env_count (struct grub_env_var *var)
-  {
-    if ((!grub_memcmp (var->name, "kFreeBSD.", sizeof("kFreeBSD.") - 1)) && (var->name[sizeof("kFreeBSD.") - 1]))
-      {
-	p_size += grub_strlen (&var->name[sizeof("kFreeBSD.") - 1]);
-	p_size++;
-	p_size += grub_strlen (var->value) + 1;
-      }
-
-    return 0;
-  }
+  struct grub_env_var *var;
 
   grub_memset (&bi, 0, sizeof (bi));
   bi.version = FREEBSD_BOOTINFO_VERSION;
@@ -624,7 +598,13 @@ grub_freebsd_boot (void)
   bi.boot_device = freebsd_biosdev;
 
   p_size = 0;
-  grub_env_iterate (iterate_env_count);
+  FOR_SORTED_ENV (var)
+    if ((grub_memcmp (var->name, "kFreeBSD.", sizeof("kFreeBSD.") - 1) == 0) && (var->name[sizeof("kFreeBSD.") - 1]))
+      {
+	p_size += grub_strlen (&var->name[sizeof("kFreeBSD.") - 1]);
+	p_size++;
+	p_size += grub_strlen (var->value) + 1;
+      }
 
   if (p_size)
     p_size = ALIGN_PAGE (kern_end + p_size + 1) - kern_end;
@@ -664,7 +644,15 @@ grub_freebsd_boot (void)
   p0 = p;
   kern_end += p_size;
 
-  grub_env_iterate (iterate_env);
+  FOR_SORTED_ENV (var)
+    if ((grub_memcmp (var->name, "kFreeBSD.", sizeof("kFreeBSD.") - 1) == 0) && (var->name[sizeof("kFreeBSD.") - 1]))
+      {
+	grub_strcpy ((char *) p, &var->name[sizeof("kFreeBSD.") - 1]);
+	p += grub_strlen ((char *) p);
+	*(p++) = '=';
+	grub_strcpy ((char *) p, var->value);
+	p += grub_strlen ((char *) p) + 1;
+      }
 
   if (p != p0)
     {
