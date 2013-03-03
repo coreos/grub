@@ -1,5 +1,10 @@
 2013-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/regexp.c (set_matches): Move setvar out of its
+	parent.
+
+2013-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/env.c, include/grub/env.h: Change iterator through
 	all vars to a macro. All users updated.
 
