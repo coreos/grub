@@ -382,10 +382,6 @@ grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint64_t d,
 					  grub_uint64_t *r);
 
-#if !defined(GRUB_UTIL) && NEED_ENABLE_EXECUTE_STACK
-void EXPORT_FUNC(__enable_execute_stack) (void *addr);
-#endif
-
 #if !defined(GRUB_UTIL) && NEED_REGISTER_FRAME_INFO
 void EXPORT_FUNC (__register_frame_info) (void);
 void EXPORT_FUNC (__deregister_frame_info) (void);

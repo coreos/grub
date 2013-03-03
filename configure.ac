@@ -357,21 +357,18 @@ AC_CHECK_HEADER([util.h], [
 ])
 AC_SUBST([LIBUTIL])
 
-AC_CACHE_CHECK([whether -Wno-trampolines work], [grub_cv_host_cc_wnotrampolines], [
+AC_CACHE_CHECK([whether -Wtrampolines work], [grub_cv_host_cc_wtrampolines], [
   SAVED_CFLAGS="$CFLAGS"
-  # Test for -Wtrampolines rather than -Wno-trampolines to reduce confusion
-  # in the event of later failures (since -Wno-* is always accepted, but
-  # produces a diagnostic if something else is wrong).
   CFLAGS="$HOST_CFLAGS -Wtrampolines"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
 int va_arg_func (int fixed, va_list args);]], [[]])],
-      [grub_cv_host_cc_wnotrampolines=yes],
-      [grub_cv_host_cc_wnotrampolines=no])
+      [grub_cv_host_cc_wtrampolines=yes],
+      [grub_cv_host_cc_wtrampolines=no])
   CFLAGS="$SAVED_CFLAGS"
 ])
 
-if test x"$grub_host_cv_cc_wnotrampolines" = xyes ; then
-  HOST_CFLAGS="$HOST_CFLAGS -Wno-trampolines"
+if test x"$grub_host_cv_cc_wtrampolines" = xyes ; then
+  HOST_CFLAGS="$HOST_CFLAGS -Wtrampolines"
 fi
 
 #
@@ -621,9 +618,6 @@ fi
 # Compiler features.
 #
 
-# Need __enable_execute_stack() for nested function trampolines?
-grub_CHECK_ENABLE_EXECUTE_STACK
-
 # Position independent executable.
 grub_CHECK_PIE
 [# Need that, because some distributions ship compilers that include
@@ -715,7 +709,7 @@ CFLAGS="$CFLAGS -Wl,--defsym,abort=main"
 fi
 
 # Check for libgcc symbols
-AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __trampoline_setup __ucmpdi2 _restgpr_14_x __ia64_trampoline __udivsi3 __umoddi3 __udivdi3 __divsi3 __modsi3 __umodsi3 __moddi3 __divdi3 __ctzdi2 __ctzsi2)
+AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __ucmpdi2 _restgpr_14_x __udivsi3 __umoddi3 __udivdi3 __divsi3 __modsi3 __umodsi3 __moddi3 __divdi3 __ctzdi2 __ctzsi2)
 
 if test "x$TARGET_APPLE_CC" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib"
@@ -761,21 +755,18 @@ if test x"$grub_cv_cc_isystem" = xyes ; then
 fi
 fi
 
-AC_CACHE_CHECK([whether -Wno-trampolines work], [grub_cv_cc_wnotrampolines], [
+AC_CACHE_CHECK([whether -Wtrampolines work], [grub_cv_cc_wtrampolines], [
   SAVED_CFLAGS="$CFLAGS"
-  # Test for -Wtrampolines rather than -Wno-trampolines to reduce confusion
-  # in the event of later failures (since -Wno-* is always accepted, but
-  # produces a diagnostic if something else is wrong).
   CFLAGS="$TARGET_CFLAGS -Wtrampolines"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
 int va_arg_func (int fixed, va_list args);]], [[]])],
-      [grub_cv_cc_wnotrampolines=yes],
-      [grub_cv_cc_wnotrampolines=no])
+      [grub_cv_cc_wtrampolines=yes],
+      [grub_cv_cc_wtrampolines=no])
   CFLAGS="$SAVED_CFLAGS"
 ])
 
-if test x"$grub_cv_cc_wnotrampolines" = xyes ; then
-  TARGET_CFLAGS="$TARGET_CFLAGS -Wno-trampolines"
+if test x"$grub_cv_cc_wtrampolines" = xyes ; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -Wtrampolines"
 fi
 
 # Restore the flags.

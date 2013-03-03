@@ -74,14 +74,6 @@ void EXPORT_FUNC (__ctzsi2) (void);
 # endif
 #endif
 
-# ifdef HAVE___IA64_TRAMPOLINE
-void EXPORT_FUNC (__ia64_trampoline) (void);
-# endif
-
-#ifdef HAVE___TRAMPOLINE_SETUP
-void EXPORT_FUNC (__trampoline_setup) (void);
-#endif
-
 #ifdef HAVE__RESTGPR_14_X
 void EXPORT_FUNC (_restgpr_14_x) (void);
 void EXPORT_FUNC (_restgpr_15_x) (void);

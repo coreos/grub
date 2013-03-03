@@ -11,7 +11,6 @@
 
 #if defined (GRUB_UTIL) || !defined (GRUB_MACHINE)
 #include <config-util.h>
-#define NESTED_FUNC_ATTR
 #else
 /* Define if C symbols get an underscore after compilation. */
 #define HAVE_ASM_USCORE @HAVE_ASM_USCORE@
@@ -48,11 +47,5 @@
 #define GRUB_PLATFORM "@GRUB_PLATFORM@"
 
 #define RE_ENABLE_I18N 1
-
-#if defined(__i386__)
-#define NESTED_FUNC_ATTR __attribute__ ((__regparm__ (1)))
-#else
-#define NESTED_FUNC_ATTR
-#endif
 
 #endif

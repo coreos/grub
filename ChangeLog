@@ -1,5 +1,11 @@
 2013-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove all trampoline support. Add -Wtrampolines when
+	present. Remove symbols used for trampolines to make
+	link fail if trampolines are present.
+
+2013-03-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/execute.c (grub_script_arglist_to_argv): Move
 	append out of its parent.
 
