@@ -272,8 +272,7 @@ grub_terminfo_cls (struct grub_term_output *term)
     = (struct grub_terminfo_output_state *) term->data;
 
   putstr (term, grub_terminfo_tparm (data->cls));
-
-  data->xpos = data->ypos = 0;
+  grub_terminfo_gotoxy (term, 0, 0);
 }
 
 void
