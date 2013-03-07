@@ -191,6 +191,7 @@ grub_machine_init (void)
 #if 0
   int grub_lower_mem;
 #endif
+  grub_addr_t modend;
 
   grub_modbase = GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR + (_edata - _start);
 
@@ -222,8 +223,17 @@ grub_machine_init (void)
 
   compact_mem_regions ();
 
+  modend = grub_modules_get_end ();
   for (i = 0; i < num_regions; i++)
-      grub_mm_init_region ((void *) mem_regions[i].addr, mem_regions[i].size);
+    {
+      grub_addr_t beg = mem_regions[i].addr;
+      grub_addr_t fin = mem_regions[i].addr + mem_regions[i].size;
+      if (modend && beg < modend)
+	beg = modend;
+      if (beg >= fin)
+	continue;
+      grub_mm_init_region ((void *) beg, fin - beg);
+    }
 
   grub_tsc_init ();
 }

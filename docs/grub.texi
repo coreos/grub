@@ -89,6 +89,7 @@ This edition documents version @value{VERSION}.
 * Serial terminal::             Using GRUB via a serial line
 * Vendor power-on keys::        Changing GRUB behaviour on vendor power-on keys
 * Images::                      GRUB image files
+* Core image size limitation::  GRUB image files size limitations
 * Filesystem::                  Filesystem syntax and semantics
 * Interface::                   The menu and the command-line
 * Environment::                 GRUB environment variables
@@ -2390,6 +2391,43 @@ In GRUB 2, images for PXE network booting are now constructed using
 contains the @samp{pxe} and @samp{pxecmd} modules.  @xref{Network}.
 @end table
 
+@node Core image size limitation
+@chapter Core image size limitation
+
+Heavily limited platforms:
+@itemize
+@item i386-pc (normal and PXE): the core image size (compressed) is limited by 458240 bytes.
+ kernel.img (.text + .data + .bss, uncompressed) is limited by 392704 bytes.
+ module size (uncompressed) + kernel.img (.text + .data, uncompressed) is limited by the size of contiguous chunk at 1M address.
+@item sparc64-ieee1275: kernel.img (.text + .data + .bss) + modules + 256K (stack) + 2M (heap) is limited by space available at 0x4400. On most platforms it's just 3 or 4M since ieee1275 maps only so much.
+@item i386-ieee1275: kernel.img  (.text + .data + .bss) + modules is limited by memory available at 0x10000, at most 596K
+@end itemize
+
+Lightly limited platforms:
+
+@itemize
+@item i386-qemu: kernel.img (.text + .data + .bss) is limited by 392704 bytes.
+                 (core.img would be limited by ROM size but it's unlimited on qemu
+@item All EFI platforms: limited by contiguous RAM size and possibly firmware bugs
+@item Coreboot and multiboot. kernel.img (.text + .data + .bss) is limited by 392704 bytes.
+      module size is limited by the size of contiguous chunk at 1M address.
+@item mipsel-loongson (ELF), mips(el)-qemu_mips (ELF): if uncompressed:
+                kernel.img (.text + .data) + modules is limited by the space from 80200000 forward
+                if compressed:
+                kernel.img (.text + .data, uncompressed) + modules (uncompressed)
+                + (modules + kernel.img (.text + .data)) (compressed)
+                + decompressor is limited by the space from 80200000 forward
+@item mipsel-loongson (Flash), mips(el)-qemu_mips (Flash): kernel.img (.text + .data) + modules is limited by the space from 80200000 forward
+                               core.img (final) is limited by flash size (512K on yeeloong and fulooong)
+@item mips-arc: if uncompressed:
+                kernel.img (.text + .data) is limited by the space from 8bd00000 forward
+                modules + dummy decompressor  is limited by the space from 8bd00000 backward
+                if compressed:
+                kernel.img (.text + .data, uncompressed) is limited by the space from 8bd00000 forward
+                modules (uncompressed) + (modules + kernel.img (.text + .data)) (compressed, aligned to 1M)
+                + 1M (decompressor + scratch space) is limited by the space from 8bd00000 backward
+@item powerpc-ieee1275: kernel.img (.text + .data + .bss) + modules is limited by space available at 0x200000
+@end itemize
 
 @node Filesystem
 @chapter Filesystem syntax and semantics

@@ -1,3 +1,9 @@
+2013-03-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Lift up core size limits on some platforms. Fix potential memory
+	corruption with big core on small memory systems. Document remaining
+	limits.
+
 2013-03-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/terminfo.c (grub_terminfo_cls): Issue an explicit

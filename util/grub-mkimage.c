@@ -995,16 +995,42 @@ generate_image (const char *dir, const char *prefix,
     {
     case IMAGE_I386_PC:
     case IMAGE_I386_PC_PXE:
+	if (GRUB_KERNEL_I386_PC_LINK_ADDR + core_size > 0x78000
+	    || (core_size > (0xffff << GRUB_DISK_SECTOR_BITS))
+	    || (kernel_size + bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000))
+	  grub_util_error (_("core image is too big (0x%x > 0x%x)"),
+			   GRUB_KERNEL_I386_PC_LINK_ADDR + core_size,
+			   0x78000);
+	/* fallthrough */
+    case IMAGE_COREBOOT:
+    case IMAGE_QEMU:
+	if (kernel_size + bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000)
+	  grub_util_error (_("kernel image is too big (0x%x > 0x%x)"),
+			   kernel_size + bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR,
+			   0x68000);
+	break;
+    case IMAGE_LOONGSON_ELF:
+    case IMAGE_YEELOONG_FLASH:
+    case IMAGE_FULOONG2F_FLASH:
+    case IMAGE_EFI:
+    case IMAGE_MIPS_ARC:
+    case IMAGE_QEMU_MIPS_FLASH:
+      break;
+    case IMAGE_SPARC64_AOUT:
+    case IMAGE_SPARC64_RAW:
+    case IMAGE_I386_IEEE1275:
+    case IMAGE_PPC:
+      break;
+    }
+
+  switch (image_target->id)
+    {
+    case IMAGE_I386_PC:
+    case IMAGE_I386_PC_PXE:
       {
 	unsigned num;
 	char *boot_path, *boot_img;
 	size_t boot_size;
-
-	if (GRUB_KERNEL_I386_PC_LINK_ADDR + core_size > 0x78000
-	    || (core_size > (0xffff << GRUB_DISK_SECTOR_BITS)))
-	  grub_util_error (_("core image is too big (0x%x > 0x%x)"),
-			   GRUB_KERNEL_I386_PC_LINK_ADDR + core_size,
-			   0x78000);
 
 	num = ((core_size + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
 	if (image_target->id == IMAGE_I386_PC_PXE)
@@ -1615,9 +1641,12 @@ generate_image (const char *dir, const char *prefix,
 	    phdr->p_filesz = phdr->p_memsz
 	      = grub_host_to_target32 (core_size - kernel_size);
 
-	    target_addr_mods = ALIGN_UP (target_addr + kernel_size + bss_size
-					 + image_target->mod_gap,
-					 image_target->mod_align);
+	    if (image_target->id == IMAGE_COREBOOT)
+	      target_addr_mods = GRUB_KERNEL_I386_COREBOOT_MODULES_ADDR;
+	    else
+	      target_addr_mods = ALIGN_UP (target_addr + kernel_size + bss_size
+					   + image_target->mod_gap,
+					   image_target->mod_align);
 	    phdr->p_vaddr = grub_host_to_target32 (target_addr_mods);
 	    phdr->p_paddr = grub_host_to_target32 (target_addr_mods);
 	    phdr->p_align = grub_host_to_target32 (image_target->link_align);

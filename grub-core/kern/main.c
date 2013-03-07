@@ -30,8 +30,10 @@
 #include <grub/reader.h>
 #include <grub/parser.h>
 
-/* This is actualy platform-independant but used only on loongson and sparc.  */
-#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_SPARC64)
+#ifdef GRUB_MACHINE_PCBIOS
+#include <grub/machine/memory.h>
+#endif
+
 grub_addr_t
 grub_modules_get_end (void)
 {
@@ -45,7 +47,6 @@ grub_modules_get_end (void)
 
   return grub_modbase + modinfo->size;
 }
-#endif
 
 /* Load all modules in core.  */
 static void
@@ -67,6 +68,8 @@ grub_load_modules (void)
   }
 }
 
+static char *load_config;
+
 static void
 grub_load_config (void)
 {
@@ -76,9 +79,17 @@ grub_load_config (void)
     /* Not an embedded config, skip.  */
     if (header->type != OBJ_TYPE_CONFIG)
       continue;
-    
-    grub_parser_execute ((char *) header +
-			 sizeof (struct grub_module_header));
+
+    load_config = grub_malloc (header->size - sizeof (struct grub_module_header) + 1);
+    if (!load_config)
+      {
+	grub_print_error ();
+	break;
+      }
+    grub_memcpy (load_config, (char *) header +
+		 sizeof (struct grub_module_header),
+		 header->size - sizeof (struct grub_module_header));
+    load_config[header->size - sizeof (struct grub_module_header)] = 0;
     break;
   }
 }
@@ -212,6 +223,30 @@ grub_load_normal_mode (void)
   grub_command_execute ("normal", 0, 0);
 }
 
+static void
+reclaim_module_space (void)
+{
+  grub_addr_t modstart, modend;
+
+  if (!grub_modbase)
+    return;
+
+#ifdef GRUB_MACHINE_PCBIOS
+  modstart = GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR;
+#else
+  modstart = grub_modbase;
+#endif
+  modend = grub_modules_get_end ();
+  grub_modbase = 0;
+
+#if GRUB_KERNEL_PRELOAD_SPACE_REUSABLE
+  grub_mm_init_region ((void *) modstart, modend - modstart);
+#else
+  (void) modstart;
+  (void) modend;
+#endif
+}
+
 /* The main routine.  */
 void __attribute__ ((noreturn))
 grub_main (void)
@@ -223,6 +258,8 @@ grub_main (void)
   grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
   grub_printf ("Welcome to GRUB!\n\n");
   grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+
+  grub_load_config ();
 
   /* Load pre-loaded modules and free the space.  */
   grub_register_exported_symbols ();
@@ -237,9 +274,14 @@ grub_main (void)
   grub_env_export ("root");
   grub_env_export ("prefix");
 
+  /* Reclaim space used for modules.  */
+  reclaim_module_space ();
+
   grub_register_core_commands ();
 
-  grub_load_config ();
+  if (load_config)
+    grub_parser_execute (load_config);
+
   grub_load_normal_mode ();
   grub_rescue_run ();
 }

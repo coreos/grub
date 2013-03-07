@@ -54,7 +54,8 @@ grub_exit (void)
 #ifdef GRUB_MACHINE_QEMU
 grub_addr_t grub_modbase;
 #else
-grub_addr_t grub_modbase = ALIGN_UP((grub_addr_t) _end, GRUB_KERNEL_MACHINE_MOD_ALIGN);
+grub_addr_t grub_modbase = GRUB_KERNEL_I386_COREBOOT_MODULES_ADDR;
+static grub_uint64_t modend;
 #endif
 
 /* Helper for grub_machine_init.  */
@@ -62,30 +63,32 @@ static int
 heap_init (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
 	   void *data __attribute__ ((unused)))
 {
+  grub_uint64_t begin = addr, end = addr + size;
+
 #if GRUB_CPU_SIZEOF_VOID_P == 4
   /* Restrict ourselves to 32-bit memory space.  */
-  if (addr > GRUB_ULONG_MAX)
+  if (begin > GRUB_ULONG_MAX)
     return 0;
-  if (addr + size > GRUB_ULONG_MAX)
-    size = GRUB_ULONG_MAX - addr;
+  if (end > GRUB_ULONG_MAX)
+    end = GRUB_ULONG_MAX;
 #endif
 
   if (type != GRUB_MEMORY_AVAILABLE)
     return 0;
 
   /* Avoid the lower memory.  */
-  if (addr < GRUB_MEMORY_MACHINE_LOWER_SIZE)
-    {
-      if (addr + size <= GRUB_MEMORY_MACHINE_LOWER_SIZE)
-	return 0;
-      else
-	{
-	  size -= GRUB_MEMORY_MACHINE_LOWER_SIZE - addr;
-	  addr = GRUB_MEMORY_MACHINE_LOWER_SIZE;
-	}
-    }
+  if (begin < GRUB_MEMORY_MACHINE_LOWER_SIZE)
+    begin = GRUB_MEMORY_MACHINE_LOWER_SIZE;
 
-  grub_mm_init_region ((void *) (grub_addr_t) addr, (grub_size_t) size);
+#ifndef GRUB_MACHINE_QEMU
+  if (modend && begin < modend)
+    begin = modend;
+#endif
+  
+  if (end <= begin)
+    return 0;
+
+  grub_mm_init_region ((void *) (grub_addr_t) begin, (grub_size_t) (end - begin));
 
   return 0;
 }
@@ -97,6 +100,9 @@ grub_machine_init (void)
   grub_modbase = grub_core_entry_addr + (_edata - _start);
 
   grub_qemu_init_cirrus ();
+#endif
+#ifndef GRUB_MACHINE_QEMU
+  modend = grub_modules_get_end ();
 #endif
   /* Initialize the console as early as possible.  */
   grub_vga_text_init ();
