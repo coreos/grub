@@ -524,7 +524,7 @@ struct iterate_dir_ctx
 };
 
   /* Extend the symlink.  */
-static void  __attribute__ ((always_inline))
+static void
 add_part (struct iterate_dir_ctx *ctx,
 	  const char *part,
 	  int len2)
