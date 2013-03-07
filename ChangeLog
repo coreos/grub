@@ -1,5 +1,11 @@
 2013-03-07  Nickolai Zeldovich <nickolai@csail.mit.edu>
 
+	* grub-core/commands/acpi.c (grub_acpi_create_ebda): Don't
+	dereference null pointer. While the code is technically correct, gcc
+	may eliminate a null check if pointer is already dereferenced.
+
+2013-03-07  Nickolai Zeldovich <nickolai@csail.mit.edu>
+
 	* grub-core/normal/crypto.c (read_crypto_list): Fix incorrect
 	OOM check.
 	* grub-core/normal/term.c (read_terminal_list): Likewise.

@@ -171,7 +171,7 @@ grub_acpi_create_ebda (void)
   struct grub_acpi_create_ebda_ctx ctx = {
     .highestlow = 0
   };
-  int ebda_kb_len;
+  int ebda_kb_len = 0;
   int mmapregion = 0;
   grub_uint8_t *ebda, *v1inebda = 0, *v2inebda = 0;
   grub_uint8_t *targetebda, *target;
@@ -179,8 +179,9 @@ grub_acpi_create_ebda (void)
   struct grub_acpi_rsdp_v20 *v2;
 
   ebda = (grub_uint8_t *) (grub_addr_t) ((*((grub_uint16_t *)0x40e)) << 4);
-  ebda_kb_len = *(grub_uint16_t *) ebda;
-  if (! ebda || ebda_kb_len > 16)
+  if (ebda)
+    ebda_kb_len = *(grub_uint16_t *) ebda;
+  if (ebda_kb_len > 16)
     ebda_kb_len = 0;
   ctx.ebda_len = (ebda_kb_len + 1) << 10;
 
