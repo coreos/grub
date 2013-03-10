@@ -1,5 +1,10 @@
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/bsdXX.c (grub_openbsd_find_ramdisk): Use
+	multiplication rather than division.
+
+2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/arg.c (grub_arg_list_alloc): Use shifts rather
 	than divisions.
 
