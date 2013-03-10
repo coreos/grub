@@ -1,5 +1,10 @@
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/arg.c (grub_arg_list_alloc): Use shifts rather
+	than divisions.
+
+2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/verify.c (grub_verify_signature): Use unsigned
 	operations to have intended shifts and not divisions.
 

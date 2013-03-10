@@ -428,7 +428,7 @@ grub_arg_list_alloc(grub_extcmd_t extcmd, int argc,
 {
   int i;
   char **args;
-  unsigned argcnt;
+  grub_size_t argcnt;
   struct grub_arg_list *list;
   const struct grub_arg_option *options;
 
@@ -440,7 +440,7 @@ grub_arg_list_alloc(grub_extcmd_t extcmd, int argc,
   for (i = 0; options[i].doc; i++)
     {
       if (options[i].flags & GRUB_ARG_OPTION_REPEATABLE)
-	argcnt += (argc + 1) / 2 + 1; /* max possible for any option */
+	argcnt += ((grub_size_t) argc + 1) / 2 + 1; /* max possible for any option */
     }
 
   list = grub_zalloc (sizeof (*list) * i + sizeof (char*) * argcnt);
@@ -456,7 +456,7 @@ grub_arg_list_alloc(grub_extcmd_t extcmd, int argc,
       if (options[i].flags & GRUB_ARG_OPTION_REPEATABLE)
 	{
 	  list[i].args = args;
-	  args += argc / 2 + 1;
+	  args += (grub_size_t) argc / 2 + 1;
 	}
     }
   return list;
