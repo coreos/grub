@@ -1,5 +1,10 @@
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/verify.c (grub_verify_signature): Use unsigned
+	operations to have intended shifts and not divisions.
+
+2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/pc/plan9.c (fill_disk): Fix types to use
 	intended shifts rather than division.
 

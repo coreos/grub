@@ -510,10 +510,13 @@ grub_verify_signature (grub_file_t f, grub_file_t sig,
       /* TRANSLATORS: %08x is 32-bit key id.  */
       return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("public key %08x not found"), keyid);
 
-    int nbits = gcry_mpi_get_nbits (sk->mpis[1]);
-    grub_dprintf ("crypt", "must be %d bits got %d bits\n", (int)nbits, (int)(8 * hash->mdlen));
+    unsigned nbits = gcry_mpi_get_nbits (sk->mpis[1]);
+    grub_dprintf ("crypt", "must be %u bits got %d bits\n", nbits,
+		  (int)(8 * hash->mdlen));
 
-    if (gcry_mpi_scan (&hmpi, GCRYMPI_FMT_USG, hval, nbits / 8 < (int) hash->mdlen ? nbits / 8 : (int) hash->mdlen, 0))
+    if (gcry_mpi_scan (&hmpi, GCRYMPI_FMT_USG, hval,
+		       nbits / 8 < (unsigned) hash->mdlen ? nbits / 8
+		       : (unsigned) hash->mdlen, 0))
       return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
     if (!grub_crypto_pk_dsa)
       return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("module `%s' isn't loaded"), "gcry_dsa");
