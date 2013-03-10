@@ -1197,7 +1197,7 @@ grub_video_vbe_print_adapter_specific_info (void)
   
   /* The total_memory field is in 64 KiB units.  */
   grub_printf_ (N_("              total memory: %d KiB\n"),
-		(controller_info.total_memory << 16) / 1024);
+		(controller_info.total_memory << 6));
 }
 
 static struct grub_video_adapter grub_video_vbe_adapter =

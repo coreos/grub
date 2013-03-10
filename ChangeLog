@@ -1,5 +1,11 @@
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/i386/pc/vbe.c
+	(grub_video_vbe_print_adapter_specific_info): Replace division by
+	shifts.
+
+2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Adjust types in gdb module to have intended unsigned shifts rather than
 	signed divisions.
 
