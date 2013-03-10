@@ -1,5 +1,10 @@
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/pc/plan9.c (fill_disk): Fix types to use
+	intended shifts rather than division.
+
+2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/datetime.h (grub_datetime2unixtime): Fix unixtime
 	computation for some years before epoch. Avode confusing division
 	while on it.

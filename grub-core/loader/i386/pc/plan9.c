@@ -292,7 +292,7 @@ fill_disk (const char *name, void *data)
 
       case GRUB_DISK_DEVICE_ATA_ID:
 	{
-	  int unit;
+	  unsigned unit;
 	  if (grub_strlen (dev->disk->name) < sizeof ("ata0") - 1)
 	    unit = 0;
 	  else
@@ -304,7 +304,7 @@ fill_disk (const char *name, void *data)
 	if (((dev->disk->id >> GRUB_SCSI_ID_SUBSYSTEM_SHIFT) & 0xff)
 	    == GRUB_SCSI_SUBSYSTEM_PATA)
 	  {
-	    int unit;
+	    unsigned unit;
 	    if (grub_strlen (dev->disk->name) < sizeof ("ata0") - 1)
 	      unit = 0;
 	    else
