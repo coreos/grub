@@ -1,5 +1,11 @@
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/datetime.h (grub_datetime2unixtime): Fix unixtime
+	computation for some years before epoch. Avode confusing division
+	while on it.
+
+2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/i386/pc/vbe.c
 	(grub_video_vbe_print_adapter_specific_info): Replace division by
 	shifts.
