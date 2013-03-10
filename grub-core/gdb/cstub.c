@@ -204,7 +204,7 @@ grub_gdb_hex2int (char **ptr, grub_uint64_t *int_value)
 void
 grub_gdb_trap (int trap_no)
 {
-  int sig_no;
+  unsigned int sig_no;
   int stepping;
   grub_uint64_t addr;
   grub_uint64_t length;
@@ -264,7 +264,7 @@ grub_gdb_trap (int trap_no)
 	case '?':
 	  grub_gdb_outbuf[0] = 'S';
 	  grub_gdb_outbuf[1] = hexchars[sig_no >> 4];
-	  grub_gdb_outbuf[2] = hexchars[sig_no % 16];
+	  grub_gdb_outbuf[2] = hexchars[sig_no & 0xf];
 	  grub_gdb_outbuf[3] = 0;
 	  break;
 

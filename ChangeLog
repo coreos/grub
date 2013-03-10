@@ -1,5 +1,10 @@
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Adjust types in gdb module to have intended unsigned shifts rather than
+	signed divisions.
+
+2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/hfs.c (grub_hfs_read_file): Avoid divmod64 since the
 	maximum size is 4G - 1 on hfs
 
