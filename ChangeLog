@@ -1,3 +1,8 @@
+2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/fshelp.c (grub_fshelp_log2blksize): Remove now unused
+	function.
+
 2013-03-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/fs/iso9660.c (add_part): Remove always_inline attribute
