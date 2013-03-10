@@ -102,7 +102,6 @@ kernel = {
 
   noemu_nodist = symlist.c;
 
-  i386_pc = kern/generic/rtc_get_time_ms.c;
   mips = kern/generic/rtc_get_time_ms.c;
 
   ieee1275 = disk/ieee1275/ofdisk.c;
@@ -122,8 +121,6 @@ kernel = {
 
   i386_coreboot_multiboot_qemu = kern/i386/coreboot/init.c;
   i386_coreboot_multiboot_qemu = term/i386/pc/vga_text.c;
-
-  x86 = kern/i386/pit.c;
 
   efi = disk/efi/efidisk.c;
   efi = kern/efi/efi.c;

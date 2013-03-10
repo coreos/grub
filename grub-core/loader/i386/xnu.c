@@ -125,9 +125,6 @@ guessfsb (void)
 {
   const grub_uint64_t sane_value = 100000000;
   grub_uint32_t manufacturer[3], max_cpuid, capabilities, msrlow;
-  grub_uint64_t start_tsc;
-  grub_uint64_t end_tsc;
-  grub_uint64_t tsc_ticks_per_ms;
 
   if (! grub_cpu_is_cpuid_supported ())
     return sane_value;
@@ -192,14 +189,6 @@ guessfsb (void)
   if (! (capabilities & (1 << 7)))
     return sane_value;
 
-  /* Calibrate the TSC rate. */
-
-  start_tsc = grub_get_tsc ();
-  grub_pit_wait (0xffff);
-  end_tsc = grub_get_tsc ();
-
-  tsc_ticks_per_ms = grub_divmod64 (end_tsc - start_tsc, 55, 0);
-
   /* Read the multiplier. */
   asm volatile ("movl $0x198, %%ecx\n"
 		"rdmsr"
@@ -207,8 +196,21 @@ guessfsb (void)
 		:
 		: "%ecx", "%eax");
 
-  return grub_divmod64 (2000 * tsc_ticks_per_ms,
-			((msrlow >> 7) & 0x3e) + ((msrlow >> 14) & 1), 0);
+  grub_uint64_t v;
+  grub_uint32_t r;
+
+  /* (2000ULL << 32) / grub_tsc_rate  */
+  /* Assumption: TSC frequency is over 2 MHz.  */
+  v = 0xffffffff / grub_tsc_rate;
+  v *= 2000;
+  /* v is at most 2000 off from (2000ULL << 32) / grub_tsc_rate.
+     Since grub_tsc_rate < 2^32/2^11=2^21, so no overflow.
+   */
+  r = (2000ULL << 32) - v * grub_tsc_rate;
+  v += r / grub_tsc_rate;
+
+  return grub_divmod64 (v, ((msrlow >> 7) & 0x3e) | ((msrlow >> 14) & 1),
+			 0);
 }
 
 struct property_descriptor

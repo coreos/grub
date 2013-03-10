@@ -1,5 +1,9 @@
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid costly 64-bit division in grub_get_time_ms on most platforms.
+
+2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/fshelp.c (grub_fshelp_log2blksize): Remove now unused
 	function.
 

@@ -52,8 +52,8 @@ void (*grub_pc_net_config) (char **device, char **path);
  *	return the real time in ticks, of which there are about
  *	18-20 per second
  */
-grub_uint32_t
-grub_get_rtc (void)
+grub_uint64_t
+grub_rtc_get_time_ms (void)
 {
   struct grub_bios_int_registers regs;
 
@@ -61,7 +61,7 @@ grub_get_rtc (void)
   regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
   grub_bios_interrupt (0x1a, &regs);
 
-  return (regs.ecx << 16) | (regs.edx & 0xffff);
+  return ((regs.ecx << 16) | (regs.edx & 0xffff)) * 55ULL;
 }
 
 void

@@ -137,5 +137,7 @@ grub_cpu_is_tsc_supported (void)
 
 void grub_tsc_init (void);
 grub_uint64_t grub_tsc_get_time_ms (void);
+/* In ms per 2^32 ticks.  */
+extern grub_uint32_t EXPORT_VAR(grub_tsc_rate);
 
 #endif /* ! KERNEL_CPU_TSC_HEADER */

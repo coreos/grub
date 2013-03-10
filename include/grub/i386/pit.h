@@ -100,6 +100,4 @@ enum
     GRUB_PIT_CTRL_COUNT_BCD = 0x01	/* 4-decade BCD counter.  */
   };
 
-void EXPORT_FUNC(grub_pit_wait) (grub_uint16_t tics);
-
 #endif /* ! KERNEL_CPU_PIT_HEADER */

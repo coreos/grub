@@ -98,29 +98,29 @@ if COND_i386_pc
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/pxe.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/int.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 endif
 
 if COND_i386_efi
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 endif
 
 if COND_i386_coreboot
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/i386/pc/int.h
 endif
 
 if COND_i386_multiboot
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/i386/pc/int.h
 endif
 
 if COND_i386_qemu
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 endif
 
 if COND_i386_ieee1275
@@ -128,13 +128,13 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/lib/arg.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 endif
 
 if COND_x86_64_efi
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pit.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 endif
 
