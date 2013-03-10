@@ -1,5 +1,10 @@
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/hfs.c (grub_hfs_read_file): Avoid divmod64 since the
+	maximum size is 4G - 1 on hfs
+
+2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Avoid costly 64-bit division in grub_get_time_ms on most platforms.
 
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>

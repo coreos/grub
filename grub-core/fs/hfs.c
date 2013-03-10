@@ -244,15 +244,16 @@ grub_hfs_block (struct grub_hfs_data *data, grub_hfs_datarecord_t dat,
 static grub_ssize_t
 grub_hfs_read_file (struct grub_hfs_data *data,
 		    grub_disk_read_hook_t read_hook, void *read_hook_data,
-		    grub_off_t pos, grub_size_t len, char *buf)
+		    grub_uint32_t pos, grub_size_t len, char *buf)
 {
   grub_off_t i;
   grub_off_t blockcnt;
 
-  blockcnt = grub_divmod64 (((len + pos)
-			     + data->blksz - 1), data->blksz, 0);
+  /* Files are at most 2G/4G - 1 bytes on hfs. Avoid 64-bit division.
+     Moreover len > 0 as checked in upper layer.  */
+  blockcnt = (len + pos - 1) / data->blksz + 1;
 
-  for (i = grub_divmod64 (pos, data->blksz, 0); i < blockcnt; i++)
+  for (i = pos / data->blksz; i < blockcnt; i++)
     {
       grub_disk_addr_t blknr;
       grub_off_t blockoff;
@@ -260,7 +261,7 @@ grub_hfs_read_file (struct grub_hfs_data *data,
 
       int skipfirst = 0;
 
-      grub_divmod64 (pos, data->blksz, &blockoff);
+      blockoff = pos % data->blksz;
 
       blknr = grub_hfs_block (data, data->extents, data->fileid, i, 1);
       if (grub_errno)
@@ -269,7 +270,7 @@ grub_hfs_read_file (struct grub_hfs_data *data,
       /* Last block.  */
       if (i == blockcnt - 1)
 	{
-	  grub_divmod64 ((len + pos), data->blksz, &blockend);
+	  blockend = (len + pos) % data->blksz;
 
 	  /* The last portion is exactly EXT2_BLOCK_SIZE (data).  */
 	  if (! blockend)
@@ -277,7 +278,7 @@ grub_hfs_read_file (struct grub_hfs_data *data,
 	}
 
       /* First block.  */
-      if (i == grub_divmod64 (pos, data->blksz, 0))
+      if (i == pos / data->blksz)
 	{
 	  skipfirst = blockoff;
 	  blockend -= skipfirst;
