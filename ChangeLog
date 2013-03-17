@@ -1,3 +1,7 @@
+2013-03-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Resend a packet if we got the wrong buffer in status.
+
 2013-03-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/bsdXX.c (grub_openbsd_find_ramdisk): Use
