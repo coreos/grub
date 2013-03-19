@@ -254,6 +254,8 @@ grub_main (void)
   /* First of all, initialize the machine.  */
   grub_machine_init ();
 
+  grub_boot_time ("After machine init.");
+
   /* Hello.  */
   grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
   grub_printf ("Welcome to GRUB!\n\n");
@@ -261,12 +263,16 @@ grub_main (void)
 
   grub_load_config ();
 
+  grub_boot_time ("Before loading embedded modules.");
+
   /* Load pre-loaded modules and free the space.  */
   grub_register_exported_symbols ();
 #ifdef GRUB_LINKER_HAVE_INIT
   grub_arch_dl_init_linker ();
 #endif  
   grub_load_modules ();
+
+  grub_boot_time ("After loading embedded modules.");
 
   /* It is better to set the root device as soon as possible,
      for convenience.  */
@@ -277,10 +283,16 @@ grub_main (void)
   /* Reclaim space used for modules.  */
   reclaim_module_space ();
 
+  grub_boot_time ("After reclaiming module space.");
+
   grub_register_core_commands ();
+
+  grub_boot_time ("Before execution of embedded config.");
 
   if (load_config)
     grub_parser_execute (load_config);
+
+  grub_boot_time ("After execution of embedded config. Attempt to go to normal mode");
 
   grub_load_normal_mode ();
   grub_rescue_run ();

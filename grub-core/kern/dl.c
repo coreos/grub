@@ -648,7 +648,10 @@ grub_dl_load_core (void *addr, grub_size_t size)
 
   grub_dprintf ("modules", "module name: %s\n", mod->name);
   grub_dprintf ("modules", "init function: %p\n", mod->init);
+
+  grub_boot_time ("Initing module %s", mod->name);
   grub_dl_call_init (mod);
+  grub_boot_time ("Module %s inited", mod->name);
 
   if (grub_dl_add (mod))
     {

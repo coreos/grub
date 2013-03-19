@@ -52,6 +52,8 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller,
   int i;
   grub_usb_err_t err;
 
+  grub_boot_time ("Attaching USB device");
+
   dev = grub_zalloc (sizeof (struct grub_usb_device));
   if (! dev)
     return NULL;
@@ -108,8 +110,12 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller,
 
   /* Wait "recovery interval", spec. says 2ms */
   grub_millisleep (2);
+
+  grub_boot_time ("Probing USB device driver");
   
   grub_usb_device_attach (dev);
+
+  grub_boot_time ("Attached USB device");
   
   return dev;
 }
@@ -194,6 +200,8 @@ attach_root_port (struct grub_usb_hub *hub, int portno,
   grub_usb_speed_t current_speed = GRUB_USB_SPEED_NONE;
   int changed=0;
 
+  grub_boot_time ("detect_dev USB root portno=%d\n", portno);
+
 #if 0
 /* Specification does not say about disabling of port when device
  * connected. If disabling is really necessary for some devices,
@@ -203,6 +211,9 @@ attach_root_port (struct grub_usb_hub *hub, int portno,
   if (err)
     return;
 #endif
+
+  grub_boot_time ("Before the stable power wait portno=%d", portno);
+
   /* Wait for completion of insertion and stable power (USB spec.)
    * Should be at least 100ms, some devices requires more...
    * There is also another thing - some devices have worse contacts
@@ -239,6 +250,8 @@ attach_root_port (struct grub_usb_hub *hub, int portno,
   /* If the device is a Hub, scan it for more devices.  */
   if (dev->descdev.class == 0x09)
     grub_usb_add_hub (dev);
+
+  grub_boot_time ("Attached root port");
 }
 
 grub_usb_err_t
@@ -247,6 +260,8 @@ grub_usb_root_hub (grub_usb_controller_t controller)
   int i;
   struct grub_usb_hub *hub;
   int changed=0;
+
+  grub_boot_time ("Registering USB root hub");
 
   hub = grub_malloc (sizeof (*hub));
   if (!hub)
@@ -286,6 +301,8 @@ grub_usb_root_hub (grub_usb_controller_t controller)
 	    attach_root_port (hub, i, speed);
         }
     }
+
+  grub_boot_time ("USB root hub registered");
 
   return GRUB_USB_ERR_NONE;
 }
@@ -407,12 +424,13 @@ poll_nonroot_hub (grub_usb_device_t dev)
 	  /* Connected and status of connection changed ? */
 	  if (status & GRUB_USB_HUB_STATUS_PORT_CONNECTED)
 	    {
+	      grub_boot_time ("Before the stable power wait portno=%d", i);
 	      /* A device is actually connected to this port. */
-  /* Wait for completion of insertion and stable power (USB spec.)
-   * Should be at least 100ms, some devices requires more...
-   * There is also another thing - some devices have worse contacts
-   * and connected signal is unstable for some time - we should handle
-   * it - but prevent deadlock in case when device is too faulty... */
+	      /* Wait for completion of insertion and stable power (USB spec.)
+	       * Should be at least 100ms, some devices requires more...
+	       * There is also another thing - some devices have worse contacts
+	       * and connected signal is unstable for some time - we should handle
+	       * it - but prevent deadlock in case when device is too faulty... */
               for (total = j = 0; (j < 250) && (total < 2000); j++, total++)
                 {
                   grub_millisleep (1);
@@ -432,6 +450,9 @@ poll_nonroot_hub (grub_usb_device_t dev)
                   if (!(current_status & GRUB_USB_HUB_STATUS_PORT_CONNECTED))
                     j = 0;
                 }
+
+	      grub_boot_time ("After the stable power wait portno=%d", i);
+
               grub_dprintf ("usb", "(non-root) total=%d\n", total);
               if (total >= 2000)
                 continue;
@@ -443,6 +464,8 @@ poll_nonroot_hub (grub_usb_device_t dev)
 				    GRUB_USB_REQ_SET_FEATURE,
 				    GRUB_USB_HUB_FEATURE_PORT_RESET,
 				    i, 0, 0);
+	      grub_boot_time ("Resetting port %d", i);
+
 	      rescan = 1;
 	      /* We cannot reset more than one device at the same time !
 	       * Resetting more devices together results in very bad
@@ -463,6 +486,8 @@ poll_nonroot_hub (grub_usb_device_t dev)
 				      | GRUB_USB_REQTYPE_TARGET_OTHER),
 				GRUB_USB_REQ_CLEAR_FEATURE,
 				GRUB_USB_HUB_FEATURE_C_PORT_RESET, i, 0, 0);
+
+	  grub_boot_time ("Port %d reset", i);
 
 	  if (status & GRUB_USB_HUB_STATUS_PORT_CONNECTED)
 	    {

@@ -151,6 +151,8 @@ grub_usbms_attach (grub_usb_device_t usbdev, int configno, int interfno)
   unsigned curnum;
   grub_usb_err_t err = GRUB_ERR_NONE;
 
+  grub_boot_time ("Attaching USB mass storage");
+
   if (first_available_slot == ARRAY_SIZE (grub_usbms_devices))
     return 0;
 
@@ -245,6 +247,8 @@ grub_usbms_attach (grub_usb_device_t usbdev, int configno, int interfno)
   grub_dprintf ("usbms", "alive\n");
 
   usbdev->config[configno].interf[interfno].detach_hook = grub_usbms_detach;
+
+  grub_boot_time ("Attached USB mass storage");
 
 #if 0 /* All this part should be probably deleted.
        * This make trouble on some devices if they are not in

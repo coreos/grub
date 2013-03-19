@@ -798,6 +798,17 @@ else
 fi
 AC_SUBST([DISK_CACHE_STATS])
 
+AC_ARG_ENABLE([boot-time],
+	      AS_HELP_STRING([--enable-boot-time],
+                             [enable boot time statistics collection]))
+
+if test x$enable_boot_time = xyes; then
+  BOOT_TIME_STATS=1
+else
+  BOOT_TIME_STATS=0
+fi
+AC_SUBST([BOOT_TIME_STATS])
+
 AC_ARG_ENABLE([grub-emu-usb],
 	      [AS_HELP_STRING([--enable-grub-emu-usb],
                              [build and install the `grub-emu' debugging utility with USB support (default=guessed)])])
@@ -1159,6 +1170,7 @@ AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
 AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
 AM_CONDITIONAL([COND_ENABLE_CACHE_STATS], [test x$DISK_CACHE_STATS = x1])
+AM_CONDITIONAL([COND_ENABLE_BOOT_TIME_STATS], [test x$BOOT_TIME_STATS = x1])
 
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
 AM_CONDITIONAL([COND_CYGWIN], [test x$host_os = xcygwin])
@@ -1231,6 +1243,13 @@ echo With disk cache statistics: Yes
 else
 echo With disk cache statistics: No
 fi
+
+if [ x"$enable_boot_time" = xyes ]; then
+echo With boot time statistics: Yes
+else
+echo With boot time statistics: No
+fi
+
 if [ x"$efiemu_excuse" = x ]; then
 echo efiemu runtime: Yes
 else

@@ -262,8 +262,13 @@ void grub_usb_device_attach (grub_usb_device_t dev)
 	continue;
 
       for (desc = attach_hooks; desc; desc = desc->next)
-	if (interf->class == desc->class && desc->hook (dev, 0, i))
-	  dev->config[0].interf[i].attached = 1;
+	if (interf->class == desc->class)
+	  {
+	    grub_boot_time ("Probing USB device driver class %x", desc->class);
+	    if (desc->hook (dev, 0, i))
+	      dev->config[0].interf[i].attached = 1;
+	    grub_boot_time ("Probed USB device driver class %x", desc->class);
+	  }
 
       if (dev->config[0].interf[i].attached)
 	continue;

@@ -1130,3 +1130,42 @@ void __deregister_frame_info (void)
 }
 #endif
 
+#if BOOT_TIME_STATS
+
+#include <grub/time.h>
+
+struct grub_boot_time *grub_boot_time_head;
+static struct grub_boot_time **boot_time_last = &grub_boot_time_head;
+
+void
+grub_real_boot_time (const char *file,
+		     const int line,
+		     const char *fmt, ...)
+{
+  struct grub_boot_time *n;
+  va_list args;
+
+  grub_error_push ();
+  n = grub_malloc (sizeof (*n));
+  if (!n)
+    {
+      grub_errno = 0;
+      grub_error_pop ();
+      return;
+    }
+  n->file = file;
+  n->line = line;
+  n->tp = grub_get_time_ms ();
+  n->next = 0;
+
+  va_start (args, fmt);
+  n->msg = grub_xvasprintf (fmt, args);    
+  va_end (args);
+
+  *boot_time_last = n;
+  boot_time_last = &n->next;
+
+  grub_errno = 0;
+  grub_error_pop ();
+}
+#endif

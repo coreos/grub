@@ -715,6 +715,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
       usblegsup = grub_pci_read (pciaddr_eecp);
       if (usblegsup & GRUB_EHCI_BIOS_OWNED)
 	{
+	  grub_boot_time ("Taking ownership of EHCI port");
 	  grub_dprintf ("ehci",
 			"EHCI grub_ehci_pci_iter: EHCI owned by: BIOS\n");
 	  /* Ownership change - set OS_OWNED bit */
@@ -741,6 +742,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
 	      /* Ensure PCI register is written */
 	      grub_pci_read (pciaddr_eecp);
 	    }
+	  grub_boot_time ("Ownership of EHCI port taken");
 	}
       else if (usblegsup & GRUB_EHCI_OS_OWNED)
 	/* XXX: What to do in this case - nothing ? Can it happen ? */
@@ -1706,10 +1708,12 @@ grub_ehci_portstatus (grub_usb_controller_t dev,
   /* Reset RESET bit and wait for the end of reset */
   grub_ehci_port_resbits (e, port, GRUB_EHCI_PORT_RESET);
   endtime = grub_get_time_ms () + 1000;
+  grub_boot_time ("Resetting port %d", port);
   while (grub_ehci_port_read (e, port) & GRUB_EHCI_PORT_RESET)
     if (grub_get_time_ms () > endtime)
       return grub_error (GRUB_ERR_IO,
 			 "portstatus: EHCI Timed out - reset port");
+  grub_boot_time ("Port %d reset", port);
   /* Remember "we did the reset" - needed by detect_dev */
   e->reset |= (1 << port);
   /* Test if port enabled, i.e. HIGH speed device connected */
@@ -1911,8 +1915,11 @@ GRUB_MOD_INIT (ehci)
 {
   COMPILE_TIME_ASSERT (sizeof (struct grub_ehci_td) == 64);
   COMPILE_TIME_ASSERT (sizeof (struct grub_ehci_qh) == 96);
+  grub_boot_time ("Initing EHCI hardware");
   grub_ehci_inithw ();
+  grub_boot_time ("Registering EHCI driver");
   grub_usb_controller_dev_register (&usb_controller);
+  grub_boot_time ("EHCI driver registered");
   grub_loader_register_preboot_hook (grub_ehci_fini_hw, grub_ehci_restore_hw,
 				     GRUB_LOADER_PREBOOT_HOOK_PRIO_DISK);
 }

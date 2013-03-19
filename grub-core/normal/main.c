@@ -296,6 +296,8 @@ grub_normal_execute (const char *config, int nested, int batch)
       grub_register_variable_hook ("prefix", NULL, read_lists_hook);
     }
 
+  grub_boot_time ("Executing config file");
+
   if (config)
     {
       menu = read_config_file (config);
@@ -304,10 +306,14 @@ grub_normal_execute (const char *config, int nested, int batch)
       grub_errno = GRUB_ERR_NONE;
     }
 
+  grub_boot_time ("Executed config file");
+
   if (! batch)
     {
       if (menu && menu->size)
 	{
+
+	  grub_boot_time ("Entering menu");
 	  grub_show_menu (menu, nested, 0);
 	  if (nested)
 	    grub_normal_free_menu (menu);
@@ -319,12 +325,15 @@ grub_normal_execute (const char *config, int nested, int batch)
 void
 grub_enter_normal_mode (const char *config)
 {
+  grub_boot_time ("Entering normal mode");
   nested_level++;
   grub_normal_execute (config, 0, 0);
+  grub_boot_time ("Entering shell");
   grub_cmdline_run (0);
   nested_level--;
   if (grub_normal_exit_level)
     grub_normal_exit_level--;
+  grub_boot_time ("Exiting normal mode");
 }
 
 /* Enter normal mode from rescue mode.  */
@@ -504,6 +513,8 @@ GRUB_MOD_INIT(normal)
 {
   unsigned i;
 
+  grub_boot_time ("Preparing normal module");
+
   /* Previously many modules depended on gzio. Be nice to user and load it.  */
   grub_dl_load ("gzio");
   grub_errno = 0;
@@ -556,6 +567,8 @@ GRUB_MOD_INIT(normal)
   grub_env_export ("grub_cpu");
   grub_env_set ("grub_platform", GRUB_PLATFORM);
   grub_env_export ("grub_platform");
+
+  grub_boot_time ("Normal module prepared");
 }
 
 GRUB_MOD_FINI(normal)

@@ -1,6 +1,10 @@
 2013-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	remove get_endpoint_descriptor and change all functions needing
+	Implement boot time analysis framework.
+
+2013-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove get_endpoint_descriptor and change all functions needing
 	descriptor to just receive it as argument rather than endpoint
 	address.
 

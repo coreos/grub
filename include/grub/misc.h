@@ -458,4 +458,24 @@ grub_error_load (const struct grub_error_saved *save)
   grub_errno = save->grub_errno;
 }
 
+#if BOOT_TIME_STATS
+struct grub_boot_time
+{
+  struct grub_boot_time *next;
+  grub_uint64_t tp;
+  const char *file;
+  int line;
+  char *msg;
+};
+
+extern struct grub_boot_time *EXPORT_VAR(grub_boot_time_head);
+
+void EXPORT_FUNC(grub_real_boot_time) (const char *file,
+				       const int line,
+				       const char *fmt, ...) __attribute__ ((format (printf, 3, 4)));
+#define grub_boot_time(fmt, args...) grub_real_boot_time(GRUB_FILE, __LINE__, fmt, ## args)
+#else
+#define grub_boot_time(fmt, args...) 
+#endif
+
 #endif /* ! GRUB_MISC_HEADER */

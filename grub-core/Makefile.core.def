@@ -1869,6 +1869,12 @@ module = {
 };
 
 module = {
+  name = boottime;
+  common = commands/boottime.c;
+  condition = COND_ENABLE_BOOT_TIME_STATS;
+};
+
+module = {
   name = adler32;
   common = lib/adler32.c;
 };
