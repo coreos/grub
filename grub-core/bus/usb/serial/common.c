@@ -124,7 +124,7 @@ grub_usbserial_fetch (struct grub_serial_port *port, grub_size_t header_size)
   if (port->bufstart < port->bufend)
     return port->buf[port->bufstart++];
 
-  err = grub_usb_bulk_read_extended (port->usbdev, port->in_endp->endp_addr,
+  err = grub_usb_bulk_read_extended (port->usbdev, port->in_endp,
 				     sizeof (port->buf), port->buf, 10,
 				     &actual);
   if (err != GRUB_USB_ERR_NONE)

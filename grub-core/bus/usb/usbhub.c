@@ -173,7 +173,7 @@ grub_usb_add_hub (grub_usb_device_t dev)
 	  if (len > sizeof (dev->statuschange))
 	    len = sizeof (dev->statuschange);
 	  dev->hub_transfer
-	    = grub_usb_bulk_read_background (dev, endp->endp_addr, len,
+	    = grub_usb_bulk_read_background (dev, endp, len,
 					     (char *) &dev->statuschange);
 	  break;
 	}
@@ -342,7 +342,7 @@ poll_nonroot_hub (grub_usb_device_t dev)
   if (len > sizeof (dev->statuschange))
     len = sizeof (dev->statuschange);
   dev->hub_transfer
-    = grub_usb_bulk_read_background (dev, dev->hub_endpoint->endp_addr, len,
+    = grub_usb_bulk_read_background (dev, dev->hub_endpoint, len,
 				     (char *) &dev->statuschange);
 
   if (err || actual == 0 || changed == 0)

@@ -41,7 +41,7 @@ usbdebug_late_hw_put (struct grub_serial_port *port, const int c)
 {
   char cc = c;
 
-  grub_usb_bulk_write (port->usbdev, port->out_endp->endp_addr, 1, &cc);
+  grub_usb_bulk_write (port->usbdev, port->out_endp, 1, &cc);
 }
 
 static grub_err_t

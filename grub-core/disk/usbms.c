@@ -326,7 +326,7 @@ grub_usbms_transfer_bo (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 
   /* Write the request.
    * XXX: Error recovery is maybe still not fully correct. */
-  err = grub_usb_bulk_write (dev->dev, dev->out->endp_addr,
+  err = grub_usb_bulk_write (dev->dev, dev->out,
 			     sizeof (cbw), (char *) &cbw);
   if (err)
     {
@@ -341,7 +341,7 @@ grub_usbms_transfer_bo (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
   /* Read/write the data, (maybe) according to specification.  */
   if (size && (read_write == 0))
     {
-      err = grub_usb_bulk_read (dev->dev, dev->in->endp_addr, size, buf);
+      err = grub_usb_bulk_read (dev->dev, dev->in, size, buf);
       grub_dprintf ("usb", "read: %d %d\n", err, GRUB_USB_ERR_STALL); 
       if (err)
         {
@@ -362,7 +362,7 @@ grub_usbms_transfer_bo (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
     }
   else if (size)
     {
-      err = grub_usb_bulk_write (dev->dev, dev->out->endp_addr, size, buf);
+      err = grub_usb_bulk_write (dev->dev, dev->out, size, buf);
       grub_dprintf ("usb", "write: %d %d\n", err, GRUB_USB_ERR_STALL);
       grub_dprintf ("usb", "First 16 bytes of sent data:\n %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
   	buf[ 0], buf[ 1], buf[ 2], buf[ 3],
@@ -388,12 +388,12 @@ grub_usbms_transfer_bo (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 
   /* Read the status - (maybe) according to specification.  */
 CheckCSW:
-  errCSW = grub_usb_bulk_read (dev->dev, dev->in->endp_addr,
+  errCSW = grub_usb_bulk_read (dev->dev, dev->in,
 		    sizeof (status), (char *) &status);
   if (errCSW)
     {
       grub_usb_clear_halt (dev->dev, dev->in->endp_addr);
-      errCSW = grub_usb_bulk_read (dev->dev, dev->in->endp_addr,
+      errCSW = grub_usb_bulk_read (dev->dev, dev->in,
 			        sizeof (status), (char *) &status);
       if (errCSW)
         { /* Bulk-only reset device. */
@@ -476,7 +476,7 @@ grub_usbms_transfer_cbi (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
       else if (dev->protocol == GRUB_USBMS_PROTOCOL_CBI)
         {
           /* Try to get status from interrupt pipe */
-          err = grub_usb_bulk_read (dev->dev, dev->intrpt->endp_addr,
+          err = grub_usb_bulk_read (dev->dev, dev->intrpt,
                                     2, (char*)&status);
           grub_dprintf ("usb", "CBI cmdcb setup status: err=%d, status=0x%x\n", err, status);
         }
@@ -487,7 +487,7 @@ grub_usbms_transfer_cbi (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
   /* Read/write the data, (maybe) according to specification.  */
   if (size && (read_write == 0))
     {
-      err = grub_usb_bulk_read (dev->dev, dev->in->endp_addr, size, buf);
+      err = grub_usb_bulk_read (dev->dev, dev->in, size, buf);
       grub_dprintf ("usb", "read: %d\n", err); 
       if (err)
         {
@@ -498,7 +498,7 @@ grub_usbms_transfer_cbi (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
     }
   else if (size)
     {
-      err = grub_usb_bulk_write (dev->dev, dev->out->endp_addr, size, buf);
+      err = grub_usb_bulk_write (dev->dev, dev->out, size, buf);
       grub_dprintf ("usb", "write: %d\n", err);
       if (err)
         {
@@ -517,7 +517,7 @@ grub_usbms_transfer_cbi (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
    * (we do not it yet) - ? */
   if (dev->protocol == GRUB_USBMS_PROTOCOL_CBI)
     { /* Check status in interrupt pipe */
-      err = grub_usb_bulk_read (dev->dev, dev->intrpt->endp_addr,
+      err = grub_usb_bulk_read (dev->dev, dev->intrpt,
                                 2, (char*)&status);
       grub_dprintf ("usb", "read status: %d\n", err);
       if (err)

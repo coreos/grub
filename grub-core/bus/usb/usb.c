@@ -147,31 +147,6 @@ grub_usb_get_descriptor (grub_usb_device_t dev,
 			       0, size, data);
 }
 
-struct grub_usb_desc_endp *
-grub_usb_get_endpdescriptor (grub_usb_device_t usbdev, int addr)
-{
-  int i;
-
-  for (i = 0; i < usbdev->config[0].descconf->numif; i++)
-    {
-      struct grub_usb_desc_if *interf;
-      int j;
-
-      interf = usbdev->config[0].interf[i].descif;
-
-      for (j = 0; j < interf->endpointcnt; j++)
-	{
-	  struct grub_usb_desc_endp *endp;
-	  endp = &usbdev->config[0].interf[i].descendp[j];
-
-	  if (endp->endp_addr == addr)
-	    return endp;
-	}
-    }
-
-  return NULL;
-}
-
 grub_usb_err_t
 grub_usb_device_initialize (grub_usb_device_t dev)
 {

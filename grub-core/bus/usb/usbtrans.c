@@ -27,21 +27,14 @@
 
 
 static inline unsigned int
-grub_usb_bulk_maxpacket (grub_usb_device_t dev, int endpoint)
+grub_usb_bulk_maxpacket (grub_usb_device_t dev,
+			 struct grub_usb_desc_endp *endpoint)
 {
-  unsigned int max = 64;
-
   /* Use the maximum packet size given in the endpoint descriptor.  */
-  if (dev->initialized)
-    {
-      struct grub_usb_desc_endp *endpdesc;
-      endpdesc = grub_usb_get_endpdescriptor (dev, endpoint);
+  if (dev->initialized && endpoint)
+    return endpoint->maxpacket;
 
-      if (endpdesc)
-	max = endpdesc->maxpacket;
-    }
-
-  return max;
+  return 64;
 }
 
 
@@ -219,7 +212,8 @@ grub_usb_control_msg (grub_usb_device_t dev,
 
 static grub_usb_transfer_t
 grub_usb_bulk_setup_readwrite (grub_usb_device_t dev,
-			       int endpoint, grub_size_t size0, char *data_in,
+			       struct grub_usb_desc_endp *endpoint,
+			       grub_size_t size0, char *data_in,
 			       grub_transfer_type_t type)
 {
   int i;
@@ -230,7 +224,7 @@ grub_usb_bulk_setup_readwrite (grub_usb_device_t dev,
   grub_uint32_t data_addr;
   struct grub_pci_dma_chunk *data_chunk;
   grub_size_t size = size0;
-  int toggle = dev->toggle[endpoint];
+  int toggle = dev->toggle[endpoint->endp_addr];
 
   grub_dprintf ("usb", "bulk: size=0x%02lx type=%d\n", (unsigned long) size,
 		type);
@@ -257,7 +251,7 @@ grub_usb_bulk_setup_readwrite (grub_usb_device_t dev,
   datablocks = ((size + max - 1) / max);
   transfer->transcnt = datablocks;
   transfer->size = size - 1;
-  transfer->endpoint = endpoint;
+  transfer->endpoint = endpoint->endp_addr;
   transfer->devaddr = dev->addr;
   transfer->type = GRUB_USB_TRANSACTION_TYPE_BULK;
   transfer->dir = type;
@@ -323,7 +317,8 @@ grub_usb_bulk_finish_readwrite (grub_usb_transfer_t transfer)
 
 static grub_usb_err_t
 grub_usb_bulk_readwrite (grub_usb_device_t dev,
-			 int endpoint, grub_size_t size0, char *data_in,
+			 struct grub_usb_desc_endp *endpoint,
+			 grub_size_t size0, char *data_in,
 			 grub_transfer_type_t type, int timeout,
 			 grub_size_t *actual)
 {
@@ -343,7 +338,7 @@ grub_usb_bulk_readwrite (grub_usb_device_t dev,
 
 static grub_usb_err_t
 grub_usb_bulk_readwrite_packetize (grub_usb_device_t dev,
-				   int endpoint,
+				   struct grub_usb_desc_endp *endpoint,
 				   grub_transfer_type_t type,
 				   grub_size_t size, char *data)
 {
@@ -380,7 +375,8 @@ grub_usb_bulk_readwrite_packetize (grub_usb_device_t dev,
 
 grub_usb_err_t
 grub_usb_bulk_write (grub_usb_device_t dev,
-		     int endpoint, grub_size_t size, char *data)
+		     struct grub_usb_desc_endp *endpoint,
+		     grub_size_t size, char *data)
 {
   return grub_usb_bulk_readwrite_packetize (dev, endpoint,
 					    GRUB_USB_TRANSFER_TYPE_OUT,
@@ -389,7 +385,8 @@ grub_usb_bulk_write (grub_usb_device_t dev,
 
 grub_usb_err_t
 grub_usb_bulk_read (grub_usb_device_t dev,
-		    int endpoint, grub_size_t size, char *data)
+		    struct grub_usb_desc_endp *endpoint,
+		    grub_size_t size, char *data)
 {
   return grub_usb_bulk_readwrite_packetize (dev, endpoint,
 					    GRUB_USB_TRANSFER_TYPE_IN,
@@ -414,7 +411,8 @@ grub_usb_check_transfer (grub_usb_transfer_t transfer, grub_size_t *actual)
 
 grub_usb_transfer_t
 grub_usb_bulk_read_background (grub_usb_device_t dev,
-			       int endpoint, grub_size_t size, void *data)
+			       struct grub_usb_desc_endp *endpoint,
+			       grub_size_t size, void *data)
 {
   grub_usb_err_t err;
   grub_usb_transfer_t transfer;
@@ -441,7 +439,8 @@ grub_usb_cancel_transfer (grub_usb_transfer_t transfer)
 
 grub_usb_err_t
 grub_usb_bulk_read_extended (grub_usb_device_t dev,
-			     int endpoint, grub_size_t size, char *data,
+			     struct grub_usb_desc_endp *endpoint,
+			     grub_size_t size, char *data,
 			     int timeout, grub_size_t *actual)
 {
   return grub_usb_bulk_readwrite (dev, endpoint, size, data,

@@ -63,9 +63,6 @@ grub_usb_err_t grub_usb_get_descriptor (grub_usb_device_t dev,
 					grub_uint8_t type, grub_uint8_t index,
 					grub_size_t size, char *data);
 
-struct grub_usb_desc_endp *
-grub_usb_get_endpdescriptor (grub_usb_device_t usbdev, int addr);
-
 grub_usb_err_t grub_usb_clear_halt (grub_usb_device_t dev, int endpoint);
 
 
@@ -87,10 +84,12 @@ grub_usb_err_t grub_usb_control_msg (grub_usb_device_t dev, grub_uint8_t reqtype
 
 grub_usb_err_t
 grub_usb_bulk_read (grub_usb_device_t dev,
-		    int endpoint, grub_size_t size, char *data);
+		    struct grub_usb_desc_endp *endpoint,
+		    grub_size_t size, char *data);
 grub_usb_err_t
 grub_usb_bulk_write (grub_usb_device_t dev,
-		     int endpoint, grub_size_t size, char *data);
+		     struct grub_usb_desc_endp *endpoint,
+		     grub_size_t size, char *data);
 
 grub_usb_err_t
 grub_usb_root_hub (grub_usb_controller_t controller);
@@ -297,11 +296,13 @@ void grub_usb_poll_devices (void);
 void grub_usb_device_attach (grub_usb_device_t dev);
 grub_usb_err_t
 grub_usb_bulk_read_extended (grub_usb_device_t dev,
-			     int endpoint, grub_size_t size, char *data,
+			     struct grub_usb_desc_endp *endpoint,
+			     grub_size_t size, char *data,
 			     int timeout, grub_size_t *actual);
 grub_usb_transfer_t
 grub_usb_bulk_read_background (grub_usb_device_t dev,
-			      int endpoint, grub_size_t size, void *data);
+			       struct grub_usb_desc_endp *endpoint,
+			       grub_size_t size, void *data);
 grub_usb_err_t
 grub_usb_check_transfer (grub_usb_transfer_t trans, grub_size_t *actual);
 void
