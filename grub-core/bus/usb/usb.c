@@ -26,45 +26,7 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-static grub_usb_controller_dev_t grub_usb_list;
 static struct grub_usb_attach_desc *attach_hooks;
-
-/* Iterate over all controllers found by the driver.  */
-static int
-grub_usb_controller_dev_register_iter (grub_usb_controller_t dev, void *data)
-{
-  grub_usb_controller_dev_t usb = data;
-
-  dev->dev = usb;
-
-  /* Enable the ports of the USB Root Hub.  */
-  grub_usb_root_hub (dev);
-
-  return 0;
-}
-
-void
-grub_usb_controller_dev_register (grub_usb_controller_dev_t usb)
-{
-  usb->next = grub_usb_list;
-  grub_usb_list = usb;
-
-  if (usb->iterate)
-    usb->iterate (grub_usb_controller_dev_register_iter, usb);
-}
-
-void
-grub_usb_controller_dev_unregister (grub_usb_controller_dev_t usb)
-{
-  grub_usb_controller_dev_t *p, q;
-
-  for (p = &grub_usb_list, q = *p; q; p = &(q->next), q = q->next)
-    if (q == usb)
-      {
-	*p = q->next;
-	break;
-      }
-}
 
 #if 0
 /* Context for grub_usb_controller_iterate.  */

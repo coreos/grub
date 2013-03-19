@@ -121,6 +121,8 @@ struct grub_usb_controller_dev
 
   grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port, int *changed);
 
+  struct grub_usb_hub_port *ports;
+
   /* Per controller flag - port reset pending, don't do another reset */
   grub_uint64_t pending_reset;
 
@@ -170,6 +172,18 @@ struct grub_usb_configuration
   struct grub_usb_interface interf[32];
 };
 
+struct grub_usb_hub_port
+{
+  grub_uint64_t soft_limit_time;
+  grub_uint64_t hard_limit_time;
+  enum { 
+    PORT_STATE_NORMAL = 0,
+    PORT_STATE_WAITING_FOR_STABLE_POWER = 1,
+    PORT_STATE_FAILED_DEVICE = 2,
+    PORT_STATE_STABLE_POWER = 3,
+  } state;
+};
+
 struct grub_usb_device
 {
   /* The device descriptor of this device.  */
@@ -203,6 +217,8 @@ struct grub_usb_device
 
   /* Number of hub ports.  */
   unsigned nports;
+
+  struct grub_usb_hub_port *ports;
 
   grub_usb_transfer_t hub_transfer;
 

@@ -41,6 +41,7 @@ struct grub_usb_hub
 };
 
 static struct grub_usb_hub *hubs;
+static grub_usb_controller_dev_t grub_usb_list;
 
 /* Add a device that currently has device number 0 and resides on
    CONTROLLER, the Hub reported that the device speed is SPEED.  */
@@ -146,10 +147,15 @@ grub_usb_add_hub (grub_usb_device_t dev)
   grub_dprintf ("usb", "Hub set configuration\n");
   grub_usb_set_configuration (dev, 1);
 
-  dev->children = grub_zalloc (hubdesc.portcnt * sizeof (dev->children[0]));
-  if (!dev->children)
-    return GRUB_USB_ERR_INTERNAL;
   dev->nports = hubdesc.portcnt;
+  dev->children = grub_zalloc (hubdesc.portcnt * sizeof (dev->children[0]));
+  dev->ports = grub_zalloc (dev->nports * sizeof (dev->ports[0]));
+  if (!dev->children || !dev->ports)
+    {
+      grub_free (dev->children);
+      grub_free (dev->ports);
+      return GRUB_USB_ERR_INTERNAL;
+    }
 
   /* Power on all Hub ports.  */
   for (i = 1; i <= hubdesc.portcnt; i++)
@@ -197,46 +203,6 @@ attach_root_port (struct grub_usb_hub *hub, int portno,
 {
   grub_usb_device_t dev;
   grub_err_t err;
-  int total, i;
-  grub_usb_speed_t current_speed = GRUB_USB_SPEED_NONE;
-  int changed=0;
-
-  grub_boot_time ("detect_dev USB root portno=%d\n", portno);
-
-#if 0
-/* Specification does not say about disabling of port when device
- * connected. If disabling is really necessary for some devices,
- * delete this #if 0 and related #endif */
-  /* Disable the port. XXX: Why? */
-  err = hub->controller->dev->portstatus (hub->controller, portno, 0);
-  if (err)
-    return;
-#endif
-
-  grub_boot_time ("Before the stable power wait portno=%d", portno);
-
-  /* Wait for completion of insertion and stable power (USB spec.)
-   * Should be at least 100ms, some devices requires more...
-   * There is also another thing - some devices have worse contacts
-   * and connected signal is unstable for some time - we should handle
-   * it - but prevent deadlock in case when device is too faulty... */
-  for (total = i = 0; (i < 250) && (total < 2000); i++, total++)
-    {
-      grub_millisleep (1);
-      current_speed = hub->controller->dev->detect_dev
-                        (hub->controller, portno, &changed);
-      if (current_speed == GRUB_USB_SPEED_NONE)
-        i = 0;
-    }
-
-  grub_boot_time ("After the stable power wait portno=%d", portno);
-
-  grub_dprintf ("usb", "total=%d\n", total);
-  if (total >= 2000)
-    {
-      grub_boot_time ("Root port timeout");
-      return;
-    }
 
   grub_boot_time ("After detect_dev");
 
@@ -267,12 +233,14 @@ attach_root_port (struct grub_usb_hub *hub, int portno,
   grub_boot_time ("Attached root port");
 }
 
-grub_usb_err_t
-grub_usb_root_hub (grub_usb_controller_t controller)
+/* Iterate over all controllers found by the driver.  */
+static int
+grub_usb_controller_dev_register_iter (grub_usb_controller_t controller, void *data)
 {
-  int i;
+  grub_usb_controller_dev_t usb = data;
   struct grub_usb_hub *hub;
-  int changed=0;
+
+  controller->dev = usb;
 
   grub_boot_time ("Registering USB root hub");
 
@@ -295,29 +263,118 @@ grub_usb_root_hub (grub_usb_controller_t controller)
   /* Query the number of ports the root Hub has.  */
   hub->nports = controller->dev->hubports (controller);
   hub->devices = grub_zalloc (sizeof (hub->devices[0]) * hub->nports);
-  if (!hub->devices)
+  usb->ports = grub_zalloc (sizeof (usb->ports[0]) * hub->nports);
+  if (!hub->devices || !usb->ports)
     {
+      grub_free (hub->devices);
+      grub_free (usb->ports);
       grub_free (hub->controller);
       grub_free (hub);
-      return GRUB_USB_ERR_INTERNAL;
+      grub_print_error ();
+      return 0;
     }
 
-  for (i = 0; i < hub->nports; i++)
+  return 0;
+}
+
+void
+grub_usb_controller_dev_unregister (grub_usb_controller_dev_t usb)
+{
+  grub_usb_controller_dev_t *p, q;
+
+  for (p = &grub_usb_list, q = *p; q; p = &(q->next), q = q->next)
+    if (q == usb)
+      {
+	*p = q->next;
+	break;
+      }
+}
+
+void
+grub_usb_controller_dev_register (grub_usb_controller_dev_t usb)
+{
+  int portno;
+  int continue_waiting = 0;
+  struct grub_usb_hub *hub;
+
+  usb->next = grub_usb_list;
+  grub_usb_list = usb;
+
+  if (usb->iterate)
+    usb->iterate (grub_usb_controller_dev_register_iter, usb);
+
+  grub_boot_time ("waiting for stable power on USB root\n");
+
+  while (1)
     {
-      grub_usb_speed_t speed;
-      if (!controller->dev->pending_reset)
-        {
-          speed = controller->dev->detect_dev (hub->controller, i,
-					       &changed);
+      for (hub = hubs; hub; hub = hub->next)
+	if (hub->controller->dev == usb)
+	  {
+	    /* Wait for completion of insertion and stable power (USB spec.)
+	     * Should be at least 100ms, some devices requires more...
+	     * There is also another thing - some devices have worse contacts
+	     * and connected signal is unstable for some time - we should handle
+	     * it - but prevent deadlock in case when device is too faulty... */
+	    for (portno = 0; portno < hub->nports; portno++)
+	      {
+		grub_usb_speed_t speed;
+		int changed = 0;
 
-          if (speed != GRUB_USB_SPEED_NONE)
-	    attach_root_port (hub, i, speed);
-        }
+		speed = hub->controller->dev->detect_dev (hub->controller, portno,
+							  &changed);
+      
+		if (usb->ports[portno].state == PORT_STATE_NORMAL
+		    && speed != GRUB_USB_SPEED_NONE)
+		  {
+		    usb->ports[portno].soft_limit_time = grub_get_time_ms () + 250;
+		    usb->ports[portno].hard_limit_time = usb->ports[portno].soft_limit_time + 1750;
+		    usb->ports[portno].state = PORT_STATE_WAITING_FOR_STABLE_POWER;
+		    continue_waiting++;
+		    continue;
+		  }
+
+		if (usb->ports[portno].state == PORT_STATE_WAITING_FOR_STABLE_POWER
+		    && speed == GRUB_USB_SPEED_NONE)
+		  {
+		    usb->ports[portno].soft_limit_time = grub_get_time_ms () + 250;
+		    continue;
+		  }
+		if (usb->ports[portno].state == PORT_STATE_WAITING_FOR_STABLE_POWER
+		    && grub_get_time_ms () > usb->ports[portno].soft_limit_time)
+		  {
+		    usb->ports[portno].state = PORT_STATE_STABLE_POWER;
+		    continue_waiting--;
+		    continue;
+		  }
+		if (usb->ports[portno].state == PORT_STATE_WAITING_FOR_STABLE_POWER
+		    && grub_get_time_ms () > usb->ports[portno].hard_limit_time)
+		  {
+		    usb->ports[portno].state = PORT_STATE_FAILED_DEVICE;
+		    continue_waiting--;
+		    continue;
+		  }
+	      }
+	  }
+      if (!continue_waiting)
+	break;
+      grub_millisleep (1);
     }
+
+  grub_boot_time ("After the stable power wait on USB root");
+
+  for (hub = hubs; hub; hub = hub->next)
+    if (hub->controller->dev == usb)
+      for (portno = 0; portno < hub->nports; portno++)
+	if (usb->ports[portno].state == PORT_STATE_STABLE_POWER)
+	  {
+	    grub_usb_speed_t speed;
+	    int changed = 0;
+	    usb->ports[portno].state = PORT_STATE_NORMAL;
+	    speed = hub->controller->dev->detect_dev (hub->controller, portno, &changed);
+	    attach_root_port (hub, portno, speed);
+	  }
 
   grub_boot_time ("USB root hub registered");
-
-  return GRUB_USB_ERR_NONE;
 }
 
 static void detach_device (grub_usb_device_t dev);
@@ -349,6 +406,71 @@ detach_device (grub_usb_device_t dev)
   grub_usb_devs[dev->addr] = 0;
 }
 
+static int
+wait_power_nonroot_hub (grub_usb_device_t dev)
+{
+  grub_usb_err_t err;
+  int continue_waiting = 0;
+  unsigned i;
+  
+  for (i = 1; i <= dev->nports; i++)
+    if (dev->ports[i - 1].state == PORT_STATE_WAITING_FOR_STABLE_POWER)
+      {
+	grub_uint64_t tm;
+	grub_uint32_t current_status = 0;
+
+	/* Get the port status.  */
+	err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
+					  | GRUB_USB_REQTYPE_CLASS
+					  | GRUB_USB_REQTYPE_TARGET_OTHER),
+				    GRUB_USB_REQ_GET_STATUS,
+				    0, i,
+				    sizeof (current_status),
+				    (char *) &current_status);
+	if (err)
+	  {
+	    dev->ports[i - 1].state = PORT_STATE_FAILED_DEVICE;
+	    continue;
+	  }
+	tm = grub_get_time_ms ();
+	if (!(current_status & GRUB_USB_HUB_STATUS_PORT_CONNECTED))
+	  dev->ports[i - 1].soft_limit_time = tm + 250;
+	if (tm >= dev->ports[i - 1].soft_limit_time)
+	  {
+	    if (dev->controller.dev->pending_reset)
+	      continue;
+	    /* Now do reset of port. */
+	    grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
+					| GRUB_USB_REQTYPE_CLASS
+					| GRUB_USB_REQTYPE_TARGET_OTHER),
+				  GRUB_USB_REQ_SET_FEATURE,
+				  GRUB_USB_HUB_FEATURE_PORT_RESET,
+				  i, 0, 0);
+	    dev->ports[i - 1].state = PORT_STATE_NORMAL;
+	    grub_boot_time ("Resetting port %d", i);
+
+	    rescan = 1;
+	    /* We cannot reset more than one device at the same time !
+	     * Resetting more devices together results in very bad
+	     * situation: more than one device has default address 0
+	     * at the same time !!!
+	     * Additionaly, we cannot perform another reset
+	     * anywhere on the same OHCI controller until
+	     * we will finish addressing of reseted device ! */
+	    dev->controller.dev->pending_reset = grub_get_time_ms () + 5000;
+	    npending++;
+	    continue;
+	  }
+	if (tm >= dev->ports[i - 1].hard_limit_time)
+	  {
+	    dev->ports[i - 1].state = PORT_STATE_FAILED_DEVICE;
+	    continue;
+	  }
+	continue_waiting = 1;
+      }
+  return continue_waiting && dev->controller.dev->pending_reset == 0;
+}
+
 static void
 poll_nonroot_hub (grub_usb_device_t dev)
 {
@@ -356,7 +478,6 @@ poll_nonroot_hub (grub_usb_device_t dev)
   unsigned i;
   grub_uint8_t changed;
   grub_size_t actual, len;
-  int j, total;
 
   if (!dev->hub_transfer)
     return;
@@ -382,9 +503,9 @@ poll_nonroot_hub (grub_usb_device_t dev)
   for (i = 1; i <= dev->nports; i++)
     {
       grub_uint32_t status;
-      grub_uint32_t current_status = 0;
 
-      if (!(changed & (1 << i)))
+      if (!(changed & (1 << i))
+	  || dev->ports[i - 1].state == PORT_STATE_WAITING_FOR_STABLE_POWER)
 	continue;
 
       /* Get the port status.  */
@@ -444,52 +565,10 @@ poll_nonroot_hub (grub_usb_device_t dev)
 	       * There is also another thing - some devices have worse contacts
 	       * and connected signal is unstable for some time - we should handle
 	       * it - but prevent deadlock in case when device is too faulty... */
-              for (total = j = 0; (j < 250) && (total < 2000); j++, total++)
-                {
-                  grub_millisleep (1);
-                  /* Get the port status.  */
-                  err = grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_IN
-					       | GRUB_USB_REQTYPE_CLASS
-					       | GRUB_USB_REQTYPE_TARGET_OTHER),
-				              GRUB_USB_REQ_GET_STATUS,
-				              0, i,
-				              sizeof (current_status),
-				              (char *) &current_status);
-                  if (err)
-                    {
-                      total = 2000;
-	              break;
-                    }
-                  if (!(current_status & GRUB_USB_HUB_STATUS_PORT_CONNECTED))
-                    j = 0;
-                }
-
-	      grub_boot_time ("After the stable power wait portno=%d", i);
-
-              grub_dprintf ("usb", "(non-root) total=%d\n", total);
-              if (total >= 2000)
-                continue;
-
-              /* Now do reset of port. */
-	      grub_usb_control_msg (dev, (GRUB_USB_REQTYPE_OUT
-					  | GRUB_USB_REQTYPE_CLASS
-					  | GRUB_USB_REQTYPE_TARGET_OTHER),
-				    GRUB_USB_REQ_SET_FEATURE,
-				    GRUB_USB_HUB_FEATURE_PORT_RESET,
-				    i, 0, 0);
-	      grub_boot_time ("Resetting port %d", i);
-
-	      rescan = 1;
-	      /* We cannot reset more than one device at the same time !
-	       * Resetting more devices together results in very bad
-	       * situation: more than one device has default address 0
-	       * at the same time !!!
-	       * Additionaly, we cannot perform another reset
-	       * anywhere on the same OHCI controller until
-	       * we will finish addressing of reseted device ! */
-              dev->controller.dev->pending_reset = grub_get_time_ms () + 5000;
-	      npending++;
-              return;
+	      dev->ports[i - 1].soft_limit_time = grub_get_time_ms () + 250;
+	      dev->ports[i - 1].hard_limit_time = dev->ports[i - 1].soft_limit_time + 1750;
+	      dev->ports[i - 1].state = PORT_STATE_WAITING_FOR_STABLE_POWER;
+	      continue;
 	    }
 	}
 
@@ -580,6 +659,8 @@ grub_usb_poll_devices (int wait_for_completion)
 	}
     }
 
+  grub_boot_time ("Probing USB device driver");
+
   while (1)
     {
       rescan = 0;
@@ -592,11 +673,26 @@ grub_usb_poll_devices (int wait_for_completion)
 	  if (dev && dev->descdev.class == 0x09)
 	    poll_nonroot_hub (dev);
 	}
+
+      while (1)
+	{
+	  int continue_waiting = 0;
+	  for (i = 0; i < GRUB_USBHUB_MAX_DEVICES; i++)
+	    {
+	      grub_usb_device_t dev = grub_usb_devs[i];
+	    
+	      if (dev && dev->descdev.class == 0x09)
+		continue_waiting = continue_waiting || wait_power_nonroot_hub (dev);
+	    }
+	  if (!continue_waiting)
+	    break;
+	  grub_millisleep (1);
+	}
+
       if (!(rescan || (npending && wait_for_completion)))
 	break;
-      grub_millisleep (50);
+      grub_millisleep (25);
     }
-
 }
 
 int

@@ -1,5 +1,9 @@
 2013-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Initialize USB ports in parallel to speed-up boot.
+
+2013-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix USB devices not being detected when requested
 	due to delayed attach.
 
