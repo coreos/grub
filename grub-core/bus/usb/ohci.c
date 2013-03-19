@@ -1431,7 +1431,9 @@ static struct grub_usb_controller_dev usb_controller =
   .cancel_transfer = grub_ohci_cancel_transfer,
   .hubports = grub_ohci_hubports,
   .portstatus = grub_ohci_portstatus,
-  .detect_dev = grub_ohci_detect_dev
+  .detect_dev = grub_ohci_detect_dev,
+  /* estimated max. count of TDs for one bulk transfer */
+  .max_bulk_tds = GRUB_OHCI_TDS * 3 / 4
 };
 
 static struct grub_preboot *fini_hnd;

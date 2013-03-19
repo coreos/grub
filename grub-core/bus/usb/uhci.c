@@ -823,7 +823,9 @@ static struct grub_usb_controller_dev usb_controller =
   .cancel_transfer = grub_uhci_cancel_transfer,
   .hubports = grub_uhci_hubports,
   .portstatus = grub_uhci_portstatus,
-  .detect_dev = grub_uhci_detect_dev
+  .detect_dev = grub_uhci_detect_dev,
+  /* estimated max. count of TDs for one bulk transfer */
+  .max_bulk_tds = N_TD * 3 / 4
 };
 
 GRUB_MOD_INIT(uhci)

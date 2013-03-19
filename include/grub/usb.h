@@ -124,6 +124,13 @@ struct grub_usb_controller_dev
 
   /* Per controller flag - port reset pending, don't do another reset */
   grub_uint64_t pending_reset;
+
+  /* Max. number of transfer descriptors used per one bulk transfer */
+  /* The reason is to prevent "exhausting" of TD by large bulk */
+  /* transfer - number of TD is limited in USB host driver */
+  /* Value is calculated/estimated in driver - some TDs should be */
+  /* reserved for posible concurrent control or "interrupt" transfers */
+  grub_size_t max_bulk_tds;
   
   /* The next host controller.  */
   struct grub_usb_controller_dev *next;

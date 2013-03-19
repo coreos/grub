@@ -1,3 +1,7 @@
+2013-03-19  Aleš Nesrsta  <starous@volny.cz>
+
+	Better estimate the maximum USB transfer size.
+
 2013-03-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Resend a packet if we got the wrong buffer in status.
