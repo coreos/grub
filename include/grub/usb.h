@@ -291,7 +291,7 @@ struct grub_usb_attach_desc
 void grub_usb_register_attach_hook_class (struct grub_usb_attach_desc *desc);
 void grub_usb_unregister_attach_hook_class (struct grub_usb_attach_desc *desc);
 
-void grub_usb_poll_devices (void);
+void grub_usb_poll_devices (int wait_for_completion);
 
 void grub_usb_device_attach (grub_usb_device_t dev);
 grub_usb_err_t

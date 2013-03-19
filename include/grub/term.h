@@ -467,7 +467,7 @@ grub_print_spaces (struct grub_term_output *term, int number_spaces)
     grub_putcode (' ', term);
 }
 
-extern void (*EXPORT_VAR (grub_term_poll_usb)) (void);
+extern void (*EXPORT_VAR (grub_term_poll_usb)) (int wait_for_completion);
 
 #define GRUB_TERM_REPEAT_PRE_INTERVAL 400
 #define GRUB_TERM_REPEAT_INTERVAL 50

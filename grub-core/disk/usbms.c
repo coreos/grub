@@ -277,7 +277,7 @@ grub_usbms_iterate (grub_scsi_dev_iterate_hook_t hook, void *hook_data,
   if (pull != GRUB_DISK_PULL_NONE)
     return 0;
 
-  grub_usb_poll_devices ();
+  grub_usb_poll_devices (1);
 
   for (i = 0; i < ARRAY_SIZE (grub_usbms_devices); i++)
     if (grub_usbms_devices[i])
@@ -611,7 +611,8 @@ grub_usbms_open (int id, int devnum, struct grub_scsi *scsi)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "not USB Mass Storage device");
 
-  grub_usb_poll_devices ();
+  if (!grub_usbms_devices[devnum])
+    grub_usb_poll_devices (1);
 
   if (!grub_usbms_devices[devnum])
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,

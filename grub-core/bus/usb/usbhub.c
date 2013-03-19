@@ -29,6 +29,7 @@
 static struct grub_usb_device *grub_usb_devs[GRUB_USBHUB_MAX_DEVICES];
 
 static int rescan = 0;
+static int npending = 0;
 
 struct grub_usb_hub
 {
@@ -227,21 +228,33 @@ attach_root_port (struct grub_usb_hub *hub, int portno,
       if (current_speed == GRUB_USB_SPEED_NONE)
         i = 0;
     }
+
+  grub_boot_time ("After the stable power wait portno=%d", portno);
+
   grub_dprintf ("usb", "total=%d\n", total);
   if (total >= 2000)
-    return;
+    {
+      grub_boot_time ("Root port timeout");
+      return;
+    }
+
+  grub_boot_time ("After detect_dev");
 
   /* Enable the port.  */
   err = hub->controller->dev->portstatus (hub->controller, portno, 1);
   if (err)
     return;
   hub->controller->dev->pending_reset = grub_get_time_ms () + 5000;
+  npending++;
 
   grub_millisleep (10);
+
+  grub_boot_time ("Port enabled");
 
   /* Enable the port and create a device.  */
   dev = grub_usb_hub_add_dev (hub->controller, speed, portno, 0);
   hub->controller->dev->pending_reset = 0;
+  npending--;
   if (! dev)
     return;
 
@@ -475,6 +488,7 @@ poll_nonroot_hub (grub_usb_device_t dev)
 	       * anywhere on the same OHCI controller until
 	       * we will finish addressing of reseted device ! */
               dev->controller.dev->pending_reset = grub_get_time_ms () + 5000;
+	      npending++;
               return;
 	    }
 	}
@@ -510,7 +524,11 @@ poll_nonroot_hub (grub_usb_device_t dev)
 
 	      /* Add the device and assign a device address to it.  */
 	      next_dev = grub_usb_hub_add_dev (&dev->controller, speed, i, dev->addr);
-	      dev->controller.dev->pending_reset = 0;
+	      if (dev->controller.dev->pending_reset)
+		{
+		  dev->controller.dev->pending_reset = 0;
+		  npending--;
+		}
 	      if (! next_dev)
 		continue;
 
@@ -525,7 +543,7 @@ poll_nonroot_hub (grub_usb_device_t dev)
 }
 
 void
-grub_usb_poll_devices (void)
+grub_usb_poll_devices (int wait_for_completion)
 {
   struct grub_usb_hub *hub;
   int i;
@@ -539,7 +557,7 @@ grub_usb_poll_devices (void)
 	  grub_usb_speed_t speed = GRUB_USB_SPEED_NONE;
 	  int changed = 0;
 
-          if (!hub->controller->dev->pending_reset)
+          if (hub->controller->dev->pending_reset)
             {
               /* Check for possible timeout */
               if (grub_get_time_ms () > hub->controller->dev->pending_reset)
@@ -547,6 +565,7 @@ grub_usb_poll_devices (void)
                   /* Something went wrong, reset device was not
                    * addressed properly, timeout happened */
 	          hub->controller->dev->pending_reset = 0;
+		  npending--;
 	          speed = hub->controller->dev->detect_dev (hub->controller,
                                                             i, &changed);
                 }
@@ -573,7 +592,7 @@ grub_usb_poll_devices (void)
 	  if (dev && dev->descdev.class == 0x09)
 	    poll_nonroot_hub (dev);
 	}
-      if (!rescan)
+      if (!(rescan || (npending && wait_for_completion)))
 	break;
       grub_millisleep (50);
     }

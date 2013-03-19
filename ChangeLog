@@ -1,5 +1,10 @@
 2013-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix USB devices not being detected when requested
+	due to delayed attach.
+
+2013-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Implement boot time analysis framework.
 
 2013-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
