@@ -1,3 +1,7 @@
+2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/boottime.h: Add missing file.
+
 2013-03-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Initialize USB ports in parallel to speed-up boot.
