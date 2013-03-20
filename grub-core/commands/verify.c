@@ -124,7 +124,10 @@ struct signature_v4_header
 
 const char *hashes[] = {
   "md5", "sha1", "ripemd160",
-  [0x0a] = "sha512"
+  [0x08] = "sha256",
+  [0x09] = "sha384",
+  [0x0a] = "sha512",
+  [0x0b] = "sha224"
 };
 
 struct

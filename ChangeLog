@@ -1,5 +1,10 @@
 2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/verify.c (hashes): Add several hashes
+	from the spec.
+
+2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Slight improve in USB-related boot-time checkpoints.
 
 2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
