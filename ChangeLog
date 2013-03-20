@@ -1,5 +1,10 @@
 2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	New commands cbmemc, lscoreboot, coreboot_boottime to inspect
+	coreboot tables content. Support for cbmemc.
+
+2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix a conflict between ports structures with 2 controllers of
 	same kind.
 

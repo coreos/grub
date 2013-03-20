@@ -32,7 +32,7 @@ check_signature (grub_linuxbios_table_header_t tbl_header)
   return 0;
 }
 
-static grub_err_t
+grub_err_t
 grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t,
 					   void *),
 			      void *hook_data)

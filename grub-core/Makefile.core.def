@@ -519,6 +519,24 @@ module = {
 };
 
 module = {
+  name = cbtime;
+  common = commands/i386/coreboot/cb_timestamps.c;
+  enable = i386_coreboot;
+};
+
+module = {
+  name = cbls;
+  common = commands/i386/coreboot/cbls.c;
+  enable = i386_coreboot;
+};
+
+module = {
+  name = cbmemc;
+  common = term/i386/coreboot/cbmemc.c;
+  enable = i386_coreboot;
+};
+
+module = {
   name = regexp;
   common = commands/regexp.c;
   common = commands/wildcard.c;

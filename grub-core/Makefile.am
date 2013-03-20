@@ -110,6 +110,7 @@ endif
 
 if COND_i386_coreboot
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/coreboot/lbio.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/i386/pc/int.h
 endif
 

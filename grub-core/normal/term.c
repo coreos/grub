@@ -979,20 +979,21 @@ grub_ucs4_count_lines (const grub_uint32_t * str,
 }
 
 void
-grub_xputs_normal (const char *str)
+grub_xnputs (const char *str, grub_size_t msg_len)
 {
   grub_uint32_t *unicode_str = NULL, *unicode_last_position;
   int backlog = 0;
   grub_term_output_t term;
 
   grub_error_push ();
-  grub_utf8_to_ucs4_alloc (str, &unicode_str,
-  			   &unicode_last_position);
+
+  unicode_str = grub_malloc (msg_len * sizeof (grub_uint32_t));
+ 
   grub_error_pop ();
 
   if (!unicode_str)
     {
-      for (; *str; str++)
+      for (; msg_len--; str++, msg_len++)
 	{
 	  struct grub_unicode_glyph c =
 	    {
@@ -1021,6 +1022,10 @@ grub_xputs_normal (const char *str)
       return;
     }
 
+  msg_len = grub_utf8_to_ucs4 (unicode_str, msg_len,
+			       (grub_uint8_t *) str, -1, 0);
+  unicode_last_position = unicode_str + msg_len;
+
   FOR_ACTIVE_TERM_OUTPUTS(term)
   {
     int cur;
@@ -1042,6 +1047,12 @@ grub_xputs_normal (const char *str)
       }
     }
   grub_free (unicode_str);
+}
+
+void
+grub_xputs_normal (const char *str)
+{
+  grub_xnputs (str, grub_strlen (str));
 }
 
 void

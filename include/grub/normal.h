@@ -141,6 +141,9 @@ void grub_normal_free_menu (grub_menu_t menu);
 void grub_normal_auth_init (void);
 void grub_normal_auth_fini (void);
 
+void
+grub_xnputs (const char *str, grub_size_t msg_len);
+
 grub_command_t
 grub_dyncmd_get_cmd (grub_command_t cmd);
 

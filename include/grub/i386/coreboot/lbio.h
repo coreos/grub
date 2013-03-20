@@ -31,11 +31,36 @@ struct grub_linuxbios_table_header
 };
 typedef struct grub_linuxbios_table_header *grub_linuxbios_table_header_t;
 
+struct grub_linuxbios_timestamp_entry
+{
+  grub_uint32_t id;
+  grub_uint64_t tsc;
+} __attribute__((packed));
+
+struct grub_linuxbios_timestamp_table
+{
+  grub_uint64_t base_tsc;
+  grub_uint32_t capacity;
+  grub_uint32_t used;
+  struct grub_linuxbios_timestamp_entry entries[0];
+} __attribute__((packed));
+
+struct grub_linuxbios_mainboard
+{
+  grub_uint8_t vendor;
+  grub_uint8_t part_number;
+  char strings[0];
+};
+
 struct grub_linuxbios_table_item
 {
 #define GRUB_LINUXBIOS_MEMBER_UNUSED		0x00
 #define GRUB_LINUXBIOS_MEMBER_MEMORY		0x01
+#define GRUB_LINUXBIOS_MEMBER_MAINBOARD		0x03
+#define GRUB_LINUXBIOS_MEMBER_CONSOLE           0x10
 #define GRUB_LINUXBIOS_MEMBER_LINK              0x11
+#define GRUB_LINUXBIOS_MEMBER_TIMESTAMPS        0x16
+#define GRUB_LINUXBIOS_MEMBER_CBMEMC            0x17
   grub_uint32_t tag;
   grub_uint32_t size;
 };
@@ -49,5 +74,10 @@ struct grub_linuxbios_mem_region
   grub_uint32_t type;
 };
 typedef struct grub_linuxbios_mem_region *mem_region_t;
+
+grub_err_t
+EXPORT_FUNC(grub_linuxbios_table_iterate) (int (*hook) (grub_linuxbios_table_item_t,
+					   void *),
+					   void *hook_data);
 
 #endif
