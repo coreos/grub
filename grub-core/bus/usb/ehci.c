@@ -1699,6 +1699,8 @@ grub_ehci_portstatus (grub_usb_controller_t dev,
 
   grub_dprintf ("ehci", "portstatus: enable\n");
 
+  grub_boot_time ("Resetting port %d", port);
+
   /* Now we will do reset - if HIGH speed device connected, it will
    * result in Enabled state, otherwise port remains disabled. */
   /* Set RESET bit for 50ms */
@@ -1708,7 +1710,6 @@ grub_ehci_portstatus (grub_usb_controller_t dev,
   /* Reset RESET bit and wait for the end of reset */
   grub_ehci_port_resbits (e, port, GRUB_EHCI_PORT_RESET);
   endtime = grub_get_time_ms () + 1000;
-  grub_boot_time ("Resetting port %d", port);
   while (grub_ehci_port_read (e, port) & GRUB_EHCI_PORT_RESET)
     if (grub_get_time_ms () > endtime)
       return grub_error (GRUB_ERR_IO,

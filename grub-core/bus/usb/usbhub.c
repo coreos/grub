@@ -452,7 +452,7 @@ wait_power_nonroot_hub (grub_usb_device_t dev)
 				  GRUB_USB_HUB_FEATURE_PORT_RESET,
 				  i, 0, 0);
 	    dev->ports[i - 1].state = PORT_STATE_NORMAL;
-	    grub_boot_time ("Resetting port %d", i);
+	    grub_boot_time ("Resetting port %p:%d", dev, i - 1);
 
 	    rescan = 1;
 	    /* We cannot reset more than one device at the same time !
@@ -573,6 +573,8 @@ poll_nonroot_hub (grub_usb_device_t dev)
 	      dev->ports[i - 1].soft_limit_time = grub_get_time_ms () + 250;
 	      dev->ports[i - 1].hard_limit_time = dev->ports[i - 1].soft_limit_time + 1750;
 	      dev->ports[i - 1].state = PORT_STATE_WAITING_FOR_STABLE_POWER;
+	      grub_boot_time ("Scheduling stable power wait for port %p:%d",
+			      dev, i - 1);
 	      continue;
 	    }
 	}
@@ -663,8 +665,6 @@ grub_usb_poll_devices (int wait_for_completion)
 	    }
 	}
     }
-
-  grub_boot_time ("Probing USB device driver");
 
   while (1)
     {

@@ -1,5 +1,9 @@
 2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Slight improve in USB-related boot-time checkpoints.
+
+2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/boottime.c: Fix copyright header.
 
 2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
