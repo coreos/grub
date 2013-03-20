@@ -1,5 +1,10 @@
 2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix a conflict between ports structures with 2 controllers of
+	same kind.
+
+2013-03-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/boottime.h: Add missing file.
 
 2013-03-19  Vladimir Serbinenko  <phcoder@gmail.com>

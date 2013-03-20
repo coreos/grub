@@ -37,6 +37,7 @@ struct grub_usb_hub
   grub_usb_controller_t controller;
   int nports;
   struct grub_usb_device **devices;
+  struct grub_usb_hub_port *ports;
   grub_usb_device_t dev;
 };
 
@@ -263,11 +264,11 @@ grub_usb_controller_dev_register_iter (grub_usb_controller_t controller, void *d
   /* Query the number of ports the root Hub has.  */
   hub->nports = controller->dev->hubports (controller);
   hub->devices = grub_zalloc (sizeof (hub->devices[0]) * hub->nports);
-  usb->ports = grub_zalloc (sizeof (usb->ports[0]) * hub->nports);
-  if (!hub->devices || !usb->ports)
+  hub->ports = grub_zalloc (sizeof (hub->ports[0]) * hub->nports);
+  if (!hub->devices || !hub->ports)
     {
       grub_free (hub->devices);
-      grub_free (usb->ports);
+      grub_free (hub->ports);
       grub_free (hub->controller);
       grub_free (hub);
       grub_print_error ();
@@ -323,33 +324,37 @@ grub_usb_controller_dev_register (grub_usb_controller_dev_t usb)
 		speed = hub->controller->dev->detect_dev (hub->controller, portno,
 							  &changed);
       
-		if (usb->ports[portno].state == PORT_STATE_NORMAL
+		if (hub->ports[portno].state == PORT_STATE_NORMAL
 		    && speed != GRUB_USB_SPEED_NONE)
 		  {
-		    usb->ports[portno].soft_limit_time = grub_get_time_ms () + 250;
-		    usb->ports[portno].hard_limit_time = usb->ports[portno].soft_limit_time + 1750;
-		    usb->ports[portno].state = PORT_STATE_WAITING_FOR_STABLE_POWER;
+		    hub->ports[portno].soft_limit_time = grub_get_time_ms () + 250;
+		    hub->ports[portno].hard_limit_time = hub->ports[portno].soft_limit_time + 1750;
+		    hub->ports[portno].state = PORT_STATE_WAITING_FOR_STABLE_POWER;
+		    grub_boot_time ("Scheduling stable power wait for port %p:%d",
+				    usb, portno);
 		    continue_waiting++;
 		    continue;
 		  }
 
-		if (usb->ports[portno].state == PORT_STATE_WAITING_FOR_STABLE_POWER
+		if (hub->ports[portno].state == PORT_STATE_WAITING_FOR_STABLE_POWER
 		    && speed == GRUB_USB_SPEED_NONE)
 		  {
-		    usb->ports[portno].soft_limit_time = grub_get_time_ms () + 250;
+		    hub->ports[portno].soft_limit_time = grub_get_time_ms () + 250;
 		    continue;
 		  }
-		if (usb->ports[portno].state == PORT_STATE_WAITING_FOR_STABLE_POWER
-		    && grub_get_time_ms () > usb->ports[portno].soft_limit_time)
+		if (hub->ports[portno].state == PORT_STATE_WAITING_FOR_STABLE_POWER
+		    && grub_get_time_ms () > hub->ports[portno].soft_limit_time)
 		  {
-		    usb->ports[portno].state = PORT_STATE_STABLE_POWER;
+		    hub->ports[portno].state = PORT_STATE_STABLE_POWER;
+		    grub_boot_time ("Got stable power wait for port %p:%d",
+				    usb, portno);
 		    continue_waiting--;
 		    continue;
 		  }
-		if (usb->ports[portno].state == PORT_STATE_WAITING_FOR_STABLE_POWER
-		    && grub_get_time_ms () > usb->ports[portno].hard_limit_time)
+		if (hub->ports[portno].state == PORT_STATE_WAITING_FOR_STABLE_POWER
+		    && grub_get_time_ms () > hub->ports[portno].hard_limit_time)
 		  {
-		    usb->ports[portno].state = PORT_STATE_FAILED_DEVICE;
+		    hub->ports[portno].state = PORT_STATE_FAILED_DEVICE;
 		    continue_waiting--;
 		    continue;
 		  }
@@ -365,11 +370,11 @@ grub_usb_controller_dev_register (grub_usb_controller_dev_t usb)
   for (hub = hubs; hub; hub = hub->next)
     if (hub->controller->dev == usb)
       for (portno = 0; portno < hub->nports; portno++)
-	if (usb->ports[portno].state == PORT_STATE_STABLE_POWER)
+	if (hub->ports[portno].state == PORT_STATE_STABLE_POWER)
 	  {
 	    grub_usb_speed_t speed;
 	    int changed = 0;
-	    usb->ports[portno].state = PORT_STATE_NORMAL;
+	    hub->ports[portno].state = PORT_STATE_NORMAL;
 	    speed = hub->controller->dev->detect_dev (hub->controller, portno, &changed);
 	    attach_root_port (hub, portno, speed);
 	  }
