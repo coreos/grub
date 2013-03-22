@@ -3695,7 +3695,7 @@ grub_zfs_getmdnobj (grub_device_t dev, const char *fsfilename,
   return err;
 }
 
-static void
+static grub_err_t
 fill_fs_info (struct grub_dirhook_info *info,
 	      dnode_end_t mdn, struct grub_zfs_data *data)
 {
@@ -3716,30 +3716,32 @@ fill_fs_info (struct grub_dirhook_info *info,
       if (err)
 	{
 	  grub_dprintf ("zfs", "failed here\n");
-	  return;
+	  return err;
 	}
     }
-  make_mdn (&mdn, data);
+  err = make_mdn (&mdn, data);
+  if (err)
+    return err;
   err = dnode_get (&mdn, MASTER_NODE_OBJ, DMU_OT_MASTER_NODE, 
 		   &dn, data);
   if (err)
     {
       grub_dprintf ("zfs", "failed here\n");
-      return;
+      return err;
     }
   
   err = zap_lookup (&dn, ZFS_ROOT_OBJ, &objnum, data, 0);
   if (err)
     {
       grub_dprintf ("zfs", "failed here\n");
-      return;
+      return err;
     }
   
   err = dnode_get (&mdn, objnum, 0, &dn, data);
   if (err)
     {
       grub_dprintf ("zfs", "failed here\n");
-      return;
+      return err;
     }
   
   if (dn.dn.dn_bonustype == DMU_OT_SA)
@@ -3757,12 +3759,12 @@ fill_fs_info (struct grub_dirhook_info *info,
 
 	  err = zio_read (bp, dn.endian, &sahdrp, NULL, data);
 	  if (err)
-	    return;
+	    return err;
 	}
       else
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "filesystem is corrupt");
-	  return;
+	  return grub_errno;
 	}
 
       hdrsize = SA_HDR_SIZE (((sa_hdr_phys_t *) sahdrp));
@@ -3775,7 +3777,7 @@ fill_fs_info (struct grub_dirhook_info *info,
       info->mtimeset = 1;
       info->mtime = grub_zfs_to_cpu64 (((znode_phys_t *) DN_BONUS (&dn.dn))->zp_mtime[0], dn.endian);
     }
-  return;
+  return 0;
 }
 
 /* Helper for grub_zfs_dir.  */
@@ -3846,11 +3848,19 @@ iterate_zap_fs (const char *name, grub_uint64_t val,
   dnode_end_t mdn;
   err = dnode_get (&(ctx->data->mos), val, 0, &mdn, ctx->data);
   if (err)
-    return 0;
+    {
+      grub_errno = 0;
+      return 0;
+    }
   if (mdn.dn.dn_type != DMU_OT_DSL_DIR)
     return 0;
 
-  fill_fs_info (&info, mdn, ctx->data);
+  err = fill_fs_info (&info, mdn, ctx->data);
+  if (err)
+    {
+      grub_errno = 0;
+      return 0;
+    }
   return ctx->hook (name, &info, ctx->hook_data);
 }
 
@@ -3868,12 +3878,20 @@ iterate_zap_snap (const char *name, grub_uint64_t val,
 
   err = dnode_get (&(ctx->data->mos), val, 0, &mdn, ctx->data);
   if (err)
-    return 0;
+    {
+      grub_errno = 0;
+      return 0;
+    }
 
   if (mdn.dn.dn_type != DMU_OT_DSL_DATASET)
     return 0;
 
-  fill_fs_info (&info, mdn, ctx->data);
+  err = fill_fs_info (&info, mdn, ctx->data);
+  if (err)
+    {
+      grub_errno = 0;
+      return 0;
+    }
 
   name2 = grub_malloc (grub_strlen (name) + 2);
   name2[0] = '@';
@@ -3913,9 +3931,18 @@ grub_zfs_dir (grub_device_t device, const char *path,
       dnode_end_t dn;
       struct grub_dirhook_info info;
 
-      fill_fs_info (&info, data->dnode, data);
-      hook ("@", &info, hook_data);
-      
+      err = fill_fs_info (&info, data->dnode, data);
+      if (err)
+	{
+	  zfs_unmount (data);
+	  return err;
+	}
+      if (hook ("@", &info, hook_data))
+	{
+	  zfs_unmount (data);
+	  return GRUB_ERR_NONE;
+	}
+
       childobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&data->dnode.dn))->dd_child_dir_zapobj, data->dnode.endian);
       headobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&data->dnode.dn))->dd_head_dataset_obj, data->dnode.endian);
       err = dnode_get (&(data->mos), childobj,

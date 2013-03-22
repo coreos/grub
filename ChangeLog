@@ -1,5 +1,9 @@
 2013-03-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c: Fix incorrect handling of special volumes.
+
+2013-03-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add ability to generate newc additions on runtime.
 
 2013-03-22  Vladimir Serbinenko  <phcoder@gmail.com>
