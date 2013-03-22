@@ -34,6 +34,7 @@
 #include <grub/i386/relocator.h>
 #include <grub/i18n.h>
 #include <grub/lib/cmdline.h>
+#include <grub/linux.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -1055,14 +1056,11 @@ static grub_err_t
 grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
-  grub_file_t *files = 0;
   grub_size_t size = 0;
   grub_addr_t addr_min, addr_max;
   grub_addr_t addr;
   grub_err_t err;
-  int i;
-  int nfiles = 0;
-  grub_uint8_t *ptr;
+  struct grub_linux_initrd_context initrd_ctx;
 
   if (argc == 0)
     {
@@ -1076,19 +1074,10 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  files = grub_zalloc (argc * sizeof (files[0]));
-  if (!files)
+  if (grub_initrd_init (argc, argv, &initrd_ctx))
     goto fail;
 
-  for (i = 0; i < argc; i++)
-    {
-      grub_file_filter_disable_compression ();
-      files[i] = grub_file_open (argv[i]);
-      if (! files[i])
-	goto fail;
-      nfiles++;
-      size += ALIGN_UP (grub_file_size (files[i]), 4);
-    }
+  size = grub_get_initrd_size (&initrd_ctx);
 
   initrd_pages = (page_align (size) >> 12);
 
@@ -1138,21 +1127,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     initrd_mem_target = get_physical_target_address (ch);
   }
 
-  ptr = initrd_mem;
-  for (i = 0; i < nfiles; i++)
-    {
-      grub_ssize_t cursize = grub_file_size (files[i]);
-      if (grub_file_read (files[i], ptr, cursize) != cursize)
-	{
-	  if (!grub_errno)
-	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
-			argv[i]);
-	  goto fail;
-	}
-      ptr += cursize;
-      grub_memset (ptr, 0, ALIGN_UP_OVERHEAD (cursize, 4));
-      ptr += ALIGN_UP_OVERHEAD (cursize, 4);
-    }
+  if (grub_initrd_load (&initrd_ctx, argv, initrd_mem))
+    goto fail;
 
   grub_dprintf ("linux", "Initrd, addr=0x%x, size=0x%x\n",
 		(unsigned) addr, (unsigned) size);
@@ -1162,9 +1138,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   linux_params.root_dev = 0x0100; /* XXX */
 
  fail:
-  for (i = 0; i < nfiles; i++)
-    grub_file_close (files[i]);
-  grub_free (files);
+  grub_initrd_close (&initrd_ctx);
 
   return grub_errno;
 }

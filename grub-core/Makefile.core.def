@@ -1406,6 +1406,7 @@ module = {
 module = {
   name = linux16;
   common = loader/i386/pc/linux.c;
+  common = loader/linux.c;
   common = lib/cmdline.c;
   enable = x86;
 };
@@ -1454,6 +1455,7 @@ module = {
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
   ia64_efi = loader/ia64/efi/linux.c;
+  common = loader/linux.c;
   common = lib/cmdline.c;
   enable = noemu;
 };

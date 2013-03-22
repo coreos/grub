@@ -29,6 +29,7 @@
 #include <grub/memory.h>
 #include <grub/lib/cmdline.h>
 #include <grub/cache.h>
+#include <grub/linux.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -315,13 +316,10 @@ static grub_err_t
 grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
-  grub_file_t *files = 0;
   grub_size_t size = 0;
   grub_addr_t first_addr;
   grub_addr_t addr;
-  int i;
-  int nfiles = 0;
-  grub_uint8_t *ptr;
+  struct grub_linux_initrd_context initrd_ctx;
 
   if (argc == 0)
     {
@@ -335,19 +333,10 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  files = grub_zalloc (argc * sizeof (files[0]));
-  if (!files)
+  if (grub_initrd_init (argc, argv, &initrd_ctx))
     goto fail;
 
-  for (i = 0; i < argc; i++)
-    {
-      grub_file_filter_disable_compression ();
-      files[i] = grub_file_open (argv[i]);
-      if (! files[i])
-	goto fail;
-      nfiles++;
-      size += ALIGN_UP (grub_file_size (files[i]), 4);
-    }
+  size = grub_get_initrd_size (&initrd_ctx);
 
   first_addr = linux_addr + linux_size;
 
@@ -359,30 +348,14 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   grub_dprintf ("loader", "Loading initrd at 0x%x, size 0x%x\n", addr, size);
 
-  ptr = (void *) addr;
-  for (i = 0; i < nfiles; i++)
-    {
-      grub_ssize_t cursize = grub_file_size (files[i]);
-      if (grub_file_read (files[i], ptr, cursize) != cursize)
-	{
-	  grub_ieee1275_release (addr, size);
-	  if (!grub_errno)
-	    grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
-			argv[i]);
-	  goto fail;
-	}
-      ptr += cursize;
-      grub_memset (ptr, 0, ALIGN_UP_OVERHEAD (cursize, 4));
-      ptr += ALIGN_UP_OVERHEAD (cursize, 4);
-    }
+  if (grub_initrd_load (&initrd_ctx, argv, (void *) addr))
+    goto fail;
 
   initrd_addr = addr;
   initrd_size = size;
 
  fail:
-  for (i = 0; i < nfiles; i++)
-    grub_file_close (files[i]);
-  grub_free (files);
+  grub_initrd_close (&initrd_ctx);
 
   return grub_errno;
 }
