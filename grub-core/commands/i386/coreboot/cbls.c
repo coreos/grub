@@ -29,7 +29,7 @@ static const char *console_descs[] = {
   "8250 UART",
   "VGA",
   "BTEXT",
-  "CBMEM console",
+  "log buffer console",
   "SROM",
   "EHCI debug",
   "memory-mapped 8250 UART"
@@ -54,7 +54,7 @@ static const char *descs[] = {
   [0x13] = "GPIO",
   [0x15] = "VDAT",
   [GRUB_LINUXBIOS_MEMBER_TIMESTAMPS] = "timestamps (`coreboot_boottime' to list)",
-  [GRUB_LINUXBIOS_MEMBER_CBMEMC] = "CBMEM console (`cbmem' to list)",
+  [GRUB_LINUXBIOS_MEMBER_CBMEMC] = "CBMEM console (`cbmemc' to list)",
   [0x18] = "MRC cache",
   [0x19] = "VBNV",
   [0xc8] = "CMOS option table",
