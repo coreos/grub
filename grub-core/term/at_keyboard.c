@@ -259,7 +259,13 @@ grub_keyboard_controller_write (grub_uint8_t c)
   grub_outb (c, KEYBOARD_REG_DATA);
 }
 
-#if !defined (GRUB_MACHINE_MIPS_LOONGSON) && !defined (GRUB_MACHINE_QEMU) && !defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+#define USE_SCANCODE_SET 1
+#else
+#define USE_SCANCODE_SET 0
+#endif
+
+#if !USE_SCANCODE_SET
 
 static grub_uint8_t
 grub_keyboard_controller_read (void)
@@ -332,7 +338,7 @@ set_scancodes (void)
       return;
     }
 
-#if !(defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS))
+#if !USE_SCANCODE_SET
   current_set = 1;
   return;
 #else
@@ -570,8 +576,12 @@ grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unus
       keyboard_controller_wait_until_ready ();
       grub_inb (KEYBOARD_REG_DATA);
     }
-#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
   grub_keyboard_controller_orig = 0;
+  grub_keyboard_orig_set = 2;
+#elif defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_COREBOOT)
+  /* *BSD relies on those settings.  */
+  grub_keyboard_controller_orig = KEYBOARD_AT_TRANSLATE;
   grub_keyboard_orig_set = 2;
 #else
   grub_keyboard_controller_orig = grub_keyboard_controller_read ();

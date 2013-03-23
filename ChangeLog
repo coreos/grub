@@ -1,3 +1,8 @@
+2013-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/at_keyboard.c: Increase robustness on coreboot
+	and qemu.
+
 2013-03-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/zfs/zfs.c: Fix incorrect handling of special volumes.
