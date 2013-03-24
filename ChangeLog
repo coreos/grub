@@ -1,5 +1,10 @@
 2013-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/20_linux_xen.in: Automatically add no-real-mode edd=off on
+	non-BIOS platforms.
+
+2013-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (vga): Disable on coreboot and multiboot
 	platforms.
 

@@ -121,7 +121,12 @@ linux_entry ()
   lmessage="$(gettext_printf "Loading Linux %s ..." ${version})"
   sed "s/^/$submenu_indentation/" << EOF
 	echo	'$(echo "$xmessage" | grub_quote)'
-	multiboot	${rel_xen_dirname}/${xen_basename} placeholder ${xen_args}
+        if [ "\$grub_platform" = "pc" -o "\$grub_platform" = "" ]; then
+            xen_rm_opts=
+        else
+            xen_rm_opts="no-real-mode edd=off"
+        fi
+	multiboot	${rel_xen_dirname}/${xen_basename} placeholder ${xen_args} \${xen_rm_opts}
 	echo	'$(echo "$lmessage" | grub_quote)'
 	module	${rel_dirname}/${basename} placeholder root=${linux_root_device_thisversion} ro ${args}
 EOF
