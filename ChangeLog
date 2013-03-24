@@ -1,5 +1,10 @@
 2013-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (vbe): Disable on coreboot and multiboot
+	platforms.
+
+2013-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add new 'proc' filesystem framework and put luks_script into it.
 
 2013-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
