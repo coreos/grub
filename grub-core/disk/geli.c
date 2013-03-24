@@ -381,9 +381,7 @@ configure_ciphers (grub_disk_t disk, const char *check_uuid,
       newdev->rekey_shift = 20;
     }
 
-#ifdef GRUB_UTIL
   newdev->modname = "geli";
-#endif
 
   newdev->total_length = grub_disk_get_size (disk) - 1;
   grub_memcpy (newdev->uuid, uuid, sizeof (newdev->uuid));

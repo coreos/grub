@@ -22,6 +22,9 @@
 #include <grub/dl.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
+#include <grub/fs.h>
+#include <grub/file.h>
+#include <grub/procfs.h>
 
 #ifdef GRUB_UTIL
 #include <errno.h>
@@ -403,6 +406,8 @@ grub_cryptodisk_setkey (grub_cryptodisk_t dev, grub_uint8_t *key, grub_size_t ke
   err = grub_crypto_cipher_set_key (dev->cipher, key, real_keysize);
   if (err)
     return err;
+  grub_memcpy (dev->key, key, keysize);
+  dev->keysize = keysize;
 
   /* Configure ESSIV if necessary.  */
   if (dev->mode_iv == GRUB_CRYPTODISK_MODE_IV_ESSIV)
@@ -979,6 +984,112 @@ static struct grub_disk_dev grub_cryptodisk_dev = {
   .next = 0
 };
 
+static char
+hex (grub_uint8_t val)
+{
+  if (val < 10)
+    return '0' + val;
+  return 'a' + val - 10;
+}
+
+/* Open a file named NAME and initialize FILE.  */
+static char *
+luks_script_get (void)
+{
+  grub_cryptodisk_t i;
+  grub_size_t size = 0;
+  char *ptr, *ret;
+
+  for (i = cryptodisk_list; i != NULL; i = i->next)
+    if (grub_strcmp (i->modname, "luks") == 0)
+      {
+	size += sizeof ("luks_mount ");
+	size += grub_strlen (i->uuid);
+	size += grub_strlen (i->cipher->cipher->name);
+	size += 54;
+	if (i->essiv_hash)
+	  size += grub_strlen (i->essiv_hash->name);
+	size += i->keysize * 2;
+      }
+
+  ret = grub_malloc (size + 1);
+  if (!ret)
+    return 0;
+
+  ptr = ret;
+
+  for (i = cryptodisk_list; i != NULL; i = i->next)
+    if (grub_strcmp (i->modname, "luks") == 0)
+      {
+	unsigned j;
+	const char *iptr;
+	ptr = grub_stpcpy (ptr, "luks_mount ");
+	ptr = grub_stpcpy (ptr, i->uuid);
+	*ptr++ = ' ';
+	grub_snprintf (ptr, 21, "%" PRIuGRUB_UINT64_T " ", i->offset);
+	while (*ptr)
+	  ptr++;
+	for (iptr = i->cipher->cipher->name; *iptr; iptr++)
+	  *ptr++ = grub_tolower (*iptr);
+	switch (i->mode)
+	  {
+	  case GRUB_CRYPTODISK_MODE_ECB:
+	    ptr = grub_stpcpy (ptr, "-ecb"); 
+	    break;
+	  case GRUB_CRYPTODISK_MODE_CBC:
+	    ptr = grub_stpcpy (ptr, "-cbc");
+	    break;
+	  case GRUB_CRYPTODISK_MODE_PCBC:
+	    ptr = grub_stpcpy (ptr, "-pcbc");
+	    break;
+	  case GRUB_CRYPTODISK_MODE_XTS:
+	    ptr = grub_stpcpy (ptr, "-xts");
+	    break;
+	  case GRUB_CRYPTODISK_MODE_LRW:
+	    ptr = grub_stpcpy (ptr, "-lrw");
+	    break;
+	  }
+
+	switch (i->mode_iv)
+	  {
+	  case GRUB_CRYPTODISK_MODE_IV_NULL:
+	    ptr = grub_stpcpy (ptr, "-null"); 
+	    break;
+	  case GRUB_CRYPTODISK_MODE_IV_PLAIN:
+	    ptr = grub_stpcpy (ptr, "-plain"); 
+	    break;
+	  case GRUB_CRYPTODISK_MODE_IV_PLAIN64:
+	    ptr = grub_stpcpy (ptr, "-plain64"); 
+	    break;
+	  case GRUB_CRYPTODISK_MODE_IV_BENBI:
+	    ptr = grub_stpcpy (ptr, "-benbi"); 
+	    break;
+	  case GRUB_CRYPTODISK_MODE_IV_ESSIV:
+	    ptr = grub_stpcpy (ptr, "-essiv:"); 
+	    ptr = grub_stpcpy (ptr, i->essiv_hash->name);
+	    break;
+	  case GRUB_CRYPTODISK_MODE_IV_BYTECOUNT64:
+	  case GRUB_CRYPTODISK_MODE_IV_BYTECOUNT64_HASH:
+	    break;
+	  }
+	*ptr++ = ' ';
+	for (j = 0; j < i->keysize; j++)
+	  {
+	    *ptr++ = hex (i->key[j] >> 4);
+	    *ptr++ = hex (i->key[j] & 0xf);
+	  }
+	*ptr++ = '\n';
+      }
+  *ptr = '\0';
+  return ret;
+}
+
+struct grub_procfs_entry luks_script =
+{
+  .name = "luks_script",
+  .get_contents = luks_script_get
+};
+
 static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT (cryptodisk)
@@ -987,10 +1098,12 @@ GRUB_MOD_INIT (cryptodisk)
   cmd = grub_register_extcmd ("cryptomount", grub_cmd_cryptomount, 0,
 			      N_("SOURCE|-u UUID|-a|-b"),
 			      N_("Mount a crypto device."), options);
+  grub_procfs_register ("luks_script", &luks_script);
 }
 
 GRUB_MOD_FINI (cryptodisk)
 {
   grub_disk_dev_unregister (&grub_cryptodisk_dev);
   cryptodisk_cleanup ();
+  grub_procfs_unregister (&luks_script);
 }

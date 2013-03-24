@@ -1,3 +1,7 @@
+2013-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add new 'proc' filesystem framework and put luks_script into it.
+
 2013-03-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/at_keyboard.c: Increase robustness on coreboot

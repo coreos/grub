@@ -33,6 +33,7 @@ library = {
   common = grub-core/disk/diskfilter.c;
   common = grub-core/partmap/gpt.c;
   common = grub-core/partmap/msdos.c;
+  common = grub-core/fs/proc.c;
 };
 
 library = {

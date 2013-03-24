@@ -290,9 +290,7 @@ configure_ciphers (grub_disk_t disk, const char *check_uuid,
   newdev->log_sector_size = 9;
   newdev->total_length = grub_disk_get_size (disk) - newdev->offset;
   grub_memcpy (newdev->uuid, uuid, sizeof (newdev->uuid));
-#ifdef GRUB_UTIL
   newdev->modname = "luks";
-#endif
   COMPILE_TIME_ASSERT (sizeof (newdev->uuid) >= sizeof (uuid));
   return newdev;
 }

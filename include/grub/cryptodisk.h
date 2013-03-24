@@ -49,6 +49,7 @@ typedef enum
 #define GRUB_CRYPTODISK_GF_SIZE (1U << GRUB_CRYPTODISK_GF_LOG_SIZE)
 #define GRUB_CRYPTODISK_GF_LOG_BYTES (GRUB_CRYPTODISK_GF_LOG_SIZE - 3)
 #define GRUB_CRYPTODISK_GF_BYTES (1U << GRUB_CRYPTODISK_GF_LOG_BYTES)
+#define GRUB_CRYPTODISK_MAX_KEYLEN 128
 
 struct grub_cryptodisk;
 
@@ -80,11 +81,13 @@ struct grub_cryptodisk
   grub_uint8_t *lrw_precalc;
   grub_uint8_t iv_prefix[64];
   grub_size_t iv_prefix_len;
+  grub_uint8_t key[GRUB_CRYPTODISK_MAX_KEYLEN];
+  grub_size_t keysize;
 #ifdef GRUB_UTIL
   char *cheat;
-  const char *modname;
   int cheat_fd;
 #endif
+  const char *modname;
   int log_sector_size;
   grub_cryptodisk_rekey_func_t rekey;
   int rekey_shift;
