@@ -115,9 +115,7 @@ EOF
 
 prepare_grub_to_access_device ()
 {
-  device="$1"
-
-  partmap="`"${grub_probe}" --device "${device}" --target=partmap`"
+  partmap="`"${grub_probe}" --device "$@" --target=partmap`"
   for module in ${partmap} ; do
     case "${module}" in
       netbsd | openbsd)
@@ -128,30 +126,30 @@ prepare_grub_to_access_device ()
   done
 
   # Abstraction modules aren't auto-loaded.
-  abstraction="`"${grub_probe}" --device "${device}" --target=abstraction`"
+  abstraction="`"${grub_probe}" --device "$@" --target=abstraction`"
   for module in ${abstraction} ; do
     echo "insmod ${module}"
   done
 
-  fs="`"${grub_probe}" --device "${device}" --target=fs`"
+  fs="`"${grub_probe}" --device "$@" --target=fs`"
   for module in ${fs} ; do
     echo "insmod ${module}"
   done
 
   if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
-      for uuid in "`"${grub_probe}" --device "${device}" --target=cryptodisk_uuid`"; do
+      for uuid in "`"${grub_probe}" --device "$@" --target=cryptodisk_uuid`"; do
 	  echo "cryptomount -u $uuid"
       done
   fi
 
   # If there's a filesystem UUID that GRUB is capable of identifying, use it;
   # otherwise set root as per value in device.map.
-  fs_hint="`"${grub_probe}" --device "${device}" --target=compatibility_hint`"
+  fs_hint="`"${grub_probe}" --device "$@" --target=compatibility_hint`"
   if [ "x$fs_hint" != x ]; then
     echo "set root='$fs_hint'"
   fi
-  if fs_uuid="`"${grub_probe}" --device "${device}" --target=fs_uuid 2> /dev/null`" ; then
-    hints="`"${grub_probe}" --device "${device}" --target=hints_string 2> /dev/null`" || hints=
+  if fs_uuid="`"${grub_probe}" --device "$@" --target=fs_uuid 2> /dev/null`" ; then
+    hints="`"${grub_probe}" --device "$@" --target=hints_string 2> /dev/null`" || hints=
     echo "if [ x\$feature_platform_search_hint = xy ]; then"
     echo "  search --no-floppy --fs-uuid --set=root ${hints} ${fs_uuid}"
     echo "else"
