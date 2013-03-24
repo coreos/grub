@@ -1656,8 +1656,6 @@ module = {
   name = vga;
   common = video/i386/pc/vga.c;
   enable = i386_pc;
-  enable = i386_coreboot;
-  enable = i386_multiboot;
 };
 
 module = {

@@ -1,5 +1,10 @@
 2013-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (vga): Disable on coreboot and multiboot
+	platforms.
+
+2013-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Fix
 	handling of multi-device filesystems.
 
