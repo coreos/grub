@@ -86,6 +86,8 @@ struct grub_machine_mmap_iterate_ctx
   void *hook_data;
 };
 
+#define GRUB_MACHINE_MEMORY_BADRAM 	5
+
 /* Helper for grub_machine_mmap_iterate.  */
 static int
 iterate_linuxbios_table (grub_linuxbios_table_item_t table_item, void *data)
@@ -105,7 +107,9 @@ iterate_linuxbios_table (grub_linuxbios_table_item_t table_item, void *data)
 		     /* Multiboot mmaps match with the coreboot mmap
 		        definition.  Therefore, we can just pass type
 		        through.  */
-		     mem_region->type, ctx->hook_data))
+		     (((mem_region->type <= GRUB_MACHINE_MEMORY_BADRAM) && (mem_region->type >= GRUB_MACHINE_MEMORY_AVAILABLE))
+		      || mem_region->type == GRUB_MEMORY_COREBOOT_TABLES) ? mem_region->type : GRUB_MEMORY_RESERVED,
+		     ctx->hook_data))
 	return 1;
 
       mem_region++;

@@ -1,3 +1,8 @@
+2013-03-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Replace the region at 0 from coreboot tables to available in BSD
+	memory map.
+
 2013-03-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub.d/20_linux_xen.in: Automatically add no-real-mode edd=off on

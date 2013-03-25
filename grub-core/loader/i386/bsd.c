@@ -268,6 +268,7 @@ struct grub_e820_mmap
 #define GRUB_E820_ACPI       3
 #define GRUB_E820_NVS        4
 #define GRUB_E820_BADRAM     5
+#define GRUB_E820_COREBOOT_TABLES 0x10
 
 /* Context for generate_e820_mmap.  */
 struct generate_e820_mmap_ctx
@@ -299,13 +300,21 @@ generate_e820_mmap_iter (grub_uint64_t addr, grub_uint64_t size,
     case GRUB_MEMORY_NVS:
       ctx->cur.type = GRUB_E820_NVS;
       break;
-
+    case GRUB_MEMORY_COREBOOT_TABLES:
+      /* Nowadays the tables at 0 don't contain anything important but
+       *BSD needs the memory at 0 for own needs.
+       */
+      if (addr == 0)
+	ctx->cur.type = GRUB_E820_RAM;
+      else
+	ctx->cur.type = GRUB_E820_COREBOOT_TABLES;
+      break;
     default:
     case GRUB_MEMORY_CODE:
     case GRUB_MEMORY_RESERVED:
       ctx->cur.type = GRUB_E820_RESERVED;
       break;
-    }
+    }  
 
   /* Merge regions if possible. */
   if (ctx->count && ctx->cur.type == ctx->prev.type
