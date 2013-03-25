@@ -619,7 +619,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
   grub_dprintf ("ahci", "AHCI tfd = %x\n",
 		dev->hba->ports[dev->port].task_file_data);
 
-  endtime = grub_get_time_ms () + (spinup ? 10000 : 1000);
+  endtime = grub_get_time_ms () + (spinup ? 10000 : 5000);
   while ((dev->hba->ports[dev->port].command_issue & 1))
     if (grub_get_time_ms () > endtime)
       {

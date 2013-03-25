@@ -1,5 +1,9 @@
 2013-03-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ahci.c: Give more time for AHCI request.
+
+2013-03-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu.c: Wait if there were errors shown at "boot"
 	command.
 
