@@ -250,9 +250,14 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
   if (errs_before != grub_err_printed_errors)
     grub_wait_after_message ();
 
+  errs_before = grub_err_printed_errors;
+
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
     grub_command_execute ("boot", 0, 0);
+
+  if (errs_before != grub_err_printed_errors)
+    grub_wait_after_message ();
 
   if (entry->submenu)
     {

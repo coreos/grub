@@ -1,5 +1,10 @@
 2013-03-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu.c: Wait if there were errors shown at "boot"
+	command.
+
+2013-03-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Replace the region at 0 from coreboot tables to available in BSD
 	memory map.
 
