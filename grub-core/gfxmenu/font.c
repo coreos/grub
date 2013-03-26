@@ -104,6 +104,7 @@ grub_font_get_string_width (grub_font_t font, const char *str)
 
       grub_free (glyph.combining);
     }
+  grub_free (logical);
 
   return width;
 }

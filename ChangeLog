@@ -1,3 +1,8 @@
+2013-03-26  Vladimir Testov <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/font.c (grub_font_get_string_width): Fix
+	memory leak.
+
 2013-03-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/ahci.c: Give more time for AHCI request.
