@@ -41,6 +41,7 @@ typedef uint8_t grub_uint8_t;
 #endif
 
 #ifndef GRUB_DSDT_TEST
+#include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/time.h>
 #include <grub/cpu/io.h>
@@ -146,6 +147,10 @@ skip_ext_op (const grub_uint8_t *ptr, const grub_uint8_t *end)
       ptr += skip_name_string (ptr, end);
       ptr++;
       break;
+    case GRUB_ACPI_EXTOPCODE_EVENT_OP:
+      ptr++;
+      ptr += skip_name_string (ptr, end);
+      break;
     case GRUB_ACPI_EXTOPCODE_OPERATION_REGION:
       ptr++;
       ptr += skip_name_string (ptr, end);
@@ -158,7 +163,12 @@ skip_ext_op (const grub_uint8_t *ptr, const grub_uint8_t *end)
 	return 0;
       break;
     case GRUB_ACPI_EXTOPCODE_FIELD_OP:
+    case GRUB_ACPI_EXTOPCODE_DEVICE_OP:
+    case GRUB_ACPI_EXTOPCODE_PROCESSOR_OP:
+    case GRUB_ACPI_EXTOPCODE_POWER_RES_OP:
+    case GRUB_ACPI_EXTOPCODE_THERMAL_ZONE_OP:
     case GRUB_ACPI_EXTOPCODE_INDEX_FIELD_OP:
+    case GRUB_ACPI_EXTOPCODE_BANK_FIELD_OP:
       ptr++;
       ptr += decode_length (ptr, 0);
       break;
@@ -170,12 +180,14 @@ skip_ext_op (const grub_uint8_t *ptr, const grub_uint8_t *end)
 }
 
 static int
-get_sleep_type (grub_uint8_t *table, grub_uint8_t *end)
+get_sleep_type (grub_uint8_t *table, grub_uint8_t *ptr, grub_uint8_t *end,
+		grub_uint8_t *scope, int scope_len)
 {
-  grub_uint8_t *ptr, *prev = table;
-  int sleep_type = -1;
+  grub_uint8_t *prev = table;
+  int sleep_type = -2;
   
-  ptr = table + sizeof (struct grub_acpi_table_header);
+  if (!ptr)
+    ptr = table + sizeof (struct grub_acpi_table_header);
   while (ptr < end && prev < ptr)
     {
       int add;
@@ -202,7 +214,8 @@ get_sleep_type (grub_uint8_t *table, grub_uint8_t *end)
 	  }
 	case GRUB_ACPI_OPCODE_NAME:
 	  ptr++;
-	  if (memcmp (ptr, "_S5_", 4) == 0 || memcmp (ptr, "\\_S5_", 4) == 0)
+	  if ((!scope || memcmp (scope, "\\", scope_len) == 0) &&
+	      (memcmp (ptr, "_S5_", 4) == 0 || memcmp (ptr, "\\_S5_", 4) == 0))
 	    {
 	      int ll;
 	      grub_uint8_t *ptr2 = ptr;
@@ -241,6 +254,25 @@ get_sleep_type (grub_uint8_t *table, grub_uint8_t *end)
 	    return -1;
 	  break;
 	case GRUB_ACPI_OPCODE_SCOPE:
+	  {
+	    int scope_sleep_type;
+	    int ll;
+	    grub_uint8_t *name;
+	    int name_len;
+
+	    ptr++;
+	    add = decode_length (ptr, &ll);
+	    name = ptr + ll;
+	    name_len = skip_name_string (name, ptr + add);
+	    if (!name_len)
+	      return -1;
+	    scope_sleep_type = get_sleep_type (table, name + name_len,
+					       ptr + add, name, name_len);
+	    if (scope_sleep_type != -2)
+	      return scope_sleep_type;
+	    ptr += add;
+	    break;
+	  }
 	case GRUB_ACPI_OPCODE_IF:
 	case GRUB_ACPI_OPCODE_METHOD:
 	  {
@@ -291,7 +323,7 @@ main (int argc, char **argv)
       return 2;
     }
 
-  printf ("Sleep type = %d\n", get_sleep_type (buf, buf + len));
+  printf ("Sleep type = %d\n", get_sleep_type (buf, NULL, buf + len, NULL, 0));
   free (buf);
   fclose (f);
   return 0;
@@ -304,8 +336,10 @@ grub_acpi_halt (void)
 {
   struct grub_acpi_rsdp_v20 *rsdp2;
   struct grub_acpi_rsdp_v10 *rsdp1;
-      struct grub_acpi_table_header *rsdt;
-      grub_uint32_t *entry_ptr;
+  struct grub_acpi_table_header *rsdt;
+  grub_uint32_t *entry_ptr;
+  grub_uint32_t port = 0;
+  int sleep_type = -1;
 
   rsdp2 = grub_acpi_get_rsdpv2 ();
   if (rsdp2)
@@ -324,33 +358,39 @@ grub_acpi_halt (void)
     {
       if (grub_memcmp ((void *) (grub_addr_t) *entry_ptr, "FACP", 4) == 0)
 	{
-	  grub_uint32_t port;
 	  struct grub_acpi_fadt *fadt
 	    = ((struct grub_acpi_fadt *) (grub_addr_t) *entry_ptr);
 	  struct grub_acpi_table_header *dsdt
 	    = (struct grub_acpi_table_header *) (grub_addr_t) fadt->dsdt_addr;
-	  int sleep_type = -1;
+	  grub_uint8_t *buf = (grub_uint8_t *) dsdt;
 
 	  port = fadt->pm1a;
 
 	  grub_dprintf ("acpi", "PM1a port=%x\n", port);
 
 	  if (grub_memcmp (dsdt->signature, "DSDT",
-			   sizeof (dsdt->signature)) != 0)
-	    break;
-
-	  sleep_type = get_sleep_type ((grub_uint8_t *) dsdt,
-				       (grub_uint8_t *) dsdt + dsdt->length);
-
-	  if (sleep_type < 0 || sleep_type >= 8)
-	    break;
-
-	  grub_dprintf ("acpi", "SLP_TYP = %d, port = 0x%x\n",
-			sleep_type, port);
-
-	  grub_outw (GRUB_ACPI_SLP_EN
-	  	     | (sleep_type << GRUB_ACPI_SLP_TYP_OFFSET), port & 0xffff);
+			   sizeof (dsdt->signature)) == 0)
+	    sleep_type = get_sleep_type (buf, NULL, buf + dsdt->length,
+					 NULL, 0);
 	}
+      else if (grub_memcmp ((void *) (grub_addr_t) *entry_ptr, "SSDT", 4) == 0)
+	{
+	  struct grub_acpi_table_header *ssdt
+	    = (struct grub_acpi_table_header *) (grub_addr_t) *entry_ptr;
+	  grub_uint8_t *buf = (grub_uint8_t *) ssdt;
+
+	  grub_dprintf ("acpi", "SSDT = %p\n", ssdt);
+
+	  sleep_type = get_sleep_type (buf, NULL, buf + ssdt->length, NULL, 0);
+	}
+    }
+
+  if (port && sleep_type >= 0 && sleep_type < 8)
+    {
+      grub_dprintf ("acpi", "SLP_TYP = %d, port = 0x%x\n", sleep_type, port);
+
+      grub_outw (GRUB_ACPI_SLP_EN | (sleep_type << GRUB_ACPI_SLP_TYP_OFFSET),
+		 port & 0xffff);
     }
 
   grub_millisleep (1500);

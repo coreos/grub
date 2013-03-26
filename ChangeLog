@@ -1,3 +1,14 @@
+2013-03-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/commands/acpihalt.c (skip_ext_op): Add support for
+	  skipping Event, Device, Processor, PowerRes, ThermalZone, and
+	  BankField extended opcodes.
+	  (get_sleep_type): Add minimal scope handling (just enough to
+	  handle setting the scope to the root path).
+	  (grub_acpi_halt): Parse any SSDTs as well as the DSDT.
+	* include/grub/acpi.h: Add enumeration values for Event, Device,
+	  Processor, PowerRes, ThermalZone, and BankField extended opcodes.
+
 2013-03-26  Vladimir Testov <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/font.c (grub_font_get_string_width): Fix
