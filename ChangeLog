@@ -1,3 +1,9 @@
+2013-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/efi/mm.c (grub_efi_finish_boot_services):
+	Try terminating EFI services several times due to quirks in some
+	implementations.
+
 2013-03-26  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/commands/acpihalt.c (skip_ext_op): Add support for

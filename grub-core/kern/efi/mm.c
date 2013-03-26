@@ -160,27 +160,41 @@ grub_efi_finish_boot_services (grub_efi_uintn_t *outbuf_size, void *outbuf,
 			   apple, sizeof (apple)) == 0);
 #endif
 
-  if (grub_efi_get_memory_map (&finish_mmap_size, finish_mmap_buf, &finish_key,
-			       &finish_desc_size, &finish_desc_version) < 0)
-    return grub_error (GRUB_ERR_IO, "couldn't retrieve memory map");
+  while (1)
+    {
+      if (grub_efi_get_memory_map (&finish_mmap_size, finish_mmap_buf, &finish_key,
+				   &finish_desc_size, &finish_desc_version) < 0)
+	return grub_error (GRUB_ERR_IO, "couldn't retrieve memory map");
 
-  if (outbuf && *outbuf_size < finish_mmap_size)
-    return grub_error (GRUB_ERR_IO, "memory map buffer is too small");
+      if (outbuf && *outbuf_size < finish_mmap_size)
+	return grub_error (GRUB_ERR_IO, "memory map buffer is too small");
 
-  finish_mmap_buf = grub_malloc (finish_mmap_size);
-  if (!finish_mmap_buf)
-    return grub_errno;
+      finish_mmap_buf = grub_malloc (finish_mmap_size);
+      if (!finish_mmap_buf)
+	return grub_errno;
 
-  if (grub_efi_get_memory_map (&finish_mmap_size, finish_mmap_buf, &finish_key,
-			       &finish_desc_size, &finish_desc_version) <= 0)
-    return grub_error (GRUB_ERR_IO, "couldn't retrieve memory map");
+      if (grub_efi_get_memory_map (&finish_mmap_size, finish_mmap_buf, &finish_key,
+				   &finish_desc_size, &finish_desc_version) <= 0)
+	{
+	  grub_free (finish_mmap_buf);
+	  return grub_error (GRUB_ERR_IO, "couldn't retrieve memory map");
+	}
 
-  b = grub_efi_system_table->boot_services;
-  status = efi_call_2 (b->exit_boot_services, grub_efi_image_handle,
-		       finish_key);
-  if (status != GRUB_EFI_SUCCESS)
-    return grub_error (GRUB_ERR_IO, "couldn't terminate EFI services");
+      b = grub_efi_system_table->boot_services;
+      status = efi_call_2 (b->exit_boot_services, grub_efi_image_handle,
+			   finish_key);
+      if (status == GRUB_EFI_SUCCESS)
+	break;
 
+      if (status != GRUB_EFI_INVALID_PARAMETER)
+	{
+	  grub_free (finish_mmap_buf);
+	  return grub_error (GRUB_ERR_IO, "couldn't terminate EFI services");
+	}
+
+      grub_free (finish_mmap_buf);
+      grub_printf ("Trying to terminate EFI services again\n");
+    }
   grub_efi_is_finished = 1;
   if (outbuf_size)
     *outbuf_size = finish_mmap_size;
