@@ -1,3 +1,8 @@
+2013-03-31  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/commands/verify.c: Fix hash algorithms values for
+	the first three hashes - they start with 1, not with 0.
+
 2013-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/efi/mm.c (grub_efi_finish_boot_services):

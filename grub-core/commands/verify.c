@@ -123,7 +123,9 @@ struct signature_v4_header
 } __attribute__ ((packed));
 
 const char *hashes[] = {
-  "md5", "sha1", "ripemd160",
+  [0x01] = "md5",
+  [0x02] = "sha1",
+  [0x03] = "ripemd160",
   [0x08] = "sha256",
   [0x09] = "sha384",
   [0x0a] = "sha512",
