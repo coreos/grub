@@ -1,3 +1,7 @@
+2013-04-01  Radosław Szymczyszyn <lavrin@gmail.com>
+
+	* INSTALL: Mention xorriso requirement.
+
 2013-03-31  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/commands/verify.c: Fix hash algorithms values for
