@@ -1,5 +1,10 @@
 2013-04-01  Radosław Szymczyszyn <lavrin@gmail.com>
 
+	* grub-core/partmap/apple.c (apple_partition_map_iterate): Add
+	missing closing bracket.
+
+2013-04-01  Radosław Szymczyszyn <lavrin@gmail.com>
+
 	* INSTALL: Mention xorriso requirement.
 
 2013-03-31  Andrey Borzenkov <arvidjaar@gmail.com>
