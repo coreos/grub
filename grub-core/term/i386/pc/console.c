@@ -255,7 +255,8 @@ grub_console_getkeystatus (struct grub_term_input *term __attribute__ ((unused))
 static grub_uint16_t
 grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
-  return (80 << 8) | 25;
+  /* Due to current cursor moving algorithm we lost the last column.  */
+  return (79 << 8) | 25;
 }
 
 static void

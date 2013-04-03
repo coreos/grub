@@ -1,5 +1,10 @@
 2013-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/i386/pc/console.c (grub_console_getwh): Decrease
+	reported width by one to compensate for curesor algorithm problem.
+
+2013-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix screen corruption in menu entry editor and simplify the code
 	flow while on it.
 
