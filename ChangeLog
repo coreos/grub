@@ -1,5 +1,10 @@
 2013-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/verify.c: Save verified file to avoid it being
+	tampered with after verification was done.
+
+2013-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/i386/pc/console.c (grub_console_getwh): Decrease
 	reported width by one to compensate for curesor algorithm problem.
 

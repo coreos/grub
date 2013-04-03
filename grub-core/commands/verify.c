@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2011  Free Software Foundation, Inc.
+ *  Copyright (C) 2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -338,9 +338,10 @@ grub_crypto_pk_locate_subkey_in_trustdb (grub_uint64_t keyid)
   return 0;
 }
 
-grub_err_t
-grub_verify_signature (grub_file_t f, grub_file_t sig,
-		       struct grub_public_key *pkey)
+static grub_err_t
+grub_verify_signature_real (char *buf, grub_size_t size,
+			    grub_file_t f, grub_file_t sig,
+			    struct grub_public_key *pkey)
 {
   grub_size_t len;
   grub_uint8_t v;
@@ -404,16 +405,19 @@ grub_verify_signature (grub_file_t f, grub_file_t sig,
 
     grub_memset (context, 0, sizeof (context));
     hash->init (context);
-    while (1)
-      {
-	grub_uint8_t readbuf[4096];
-	r = grub_file_read (f, readbuf, sizeof (readbuf));
-	if (r < 0)
-	  return grub_errno;
-	if (r == 0)
-	  break;
-	hash->write (context, readbuf, r);
-      }
+    if (buf)
+      hash->write (context, buf, size);
+    else 
+      while (1)
+	{
+	  grub_uint8_t readbuf[4096];
+	  r = grub_file_read (f, readbuf, sizeof (readbuf));
+	  if (r < 0)
+	    return grub_errno;
+	  if (r == 0)
+	    break;
+	  hash->write (context, readbuf, r);
+	}
 
     hash->write (context, &v, sizeof (v));
     hash->write (context, &v4, sizeof (v4));
@@ -530,6 +534,13 @@ grub_verify_signature (grub_file_t f, grub_file_t sig,
   }
 
   return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_verify_signature (grub_file_t f, grub_file_t sig,
+		       struct grub_public_key *pkey)
+{
+  return grub_verify_signature_real (0, 0, f, sig, pkey);
 }
 
 static grub_err_t
@@ -665,6 +676,28 @@ grub_cmd_verify_signature (grub_command_t cmd  __attribute__ ((unused)),
 
 static int sec = 0;
 
+static grub_ssize_t
+verified_read (struct grub_file *file, char *buf, grub_size_t len)
+{
+  grub_memcpy (buf, (char *) file->data + file->offset, len);
+  return len;
+}
+
+static grub_err_t
+verified_close (struct grub_file *file)
+{
+  grub_free (file->data);
+  file->data = 0;
+  return GRUB_ERR_NONE;
+}
+
+struct grub_fs verified_fs =
+{
+  .name = "verified_read",
+  .read = verified_read,
+  .close = verified_close
+};
+
 static grub_file_t
 grub_pubkey_open (grub_file_t io, const char *filename)
 {
@@ -672,8 +705,11 @@ grub_pubkey_open (grub_file_t io, const char *filename)
   char *fsuf, *ptr;
   grub_err_t err;
   grub_file_filter_t curfilt[GRUB_FILE_FILTER_MAX];
+  grub_file_t ret;
 
   if (!sec)
+    return io;
+  if (io->device->disk && io->device->disk->id == GRUB_DISK_DEVICE_MEMDISK_ID)
     return io;
   fsuf = grub_malloc (grub_strlen (filename) + sizeof (".sig"));
   if (!fsuf)
@@ -691,12 +727,40 @@ grub_pubkey_open (grub_file_t io, const char *filename)
   if (!sig)
     return NULL;
 
-  err = grub_verify_signature (io, sig, NULL);
+  ret = grub_malloc (sizeof (*ret));
+  if (!ret)
+    return NULL;
+  *ret = *io;
+
+  ret->fs = &verified_fs;
+  ret->not_easily_seekable = 0;
+  if (ret->size >> (sizeof (grub_size_t) * GRUB_CHAR_BIT - 1))
+    {
+      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		  "big file signature isn't implemented yet");
+      return NULL;
+    }
+  ret->data = grub_malloc (ret->size);
+  if (!ret->data)
+    {
+      grub_free (ret);
+      return NULL;
+    }
+  if (grub_file_read (io, ret->data, ret->size) != (grub_ssize_t) ret->size)
+    {
+      if (!grub_errno)
+	grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
+		    filename);
+      return NULL;
+    }
+
+  err = grub_verify_signature_real (ret->data, ret->size, 0, sig, NULL);
   grub_file_close (sig);
   if (err)
     return NULL;
-  grub_file_seek (io, 0);
-  return io;
+  io->device = 0;
+  grub_file_close (io);
+  return ret;
 }
 
 static char *
