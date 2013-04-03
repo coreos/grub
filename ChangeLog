@@ -1,3 +1,8 @@
+2013-04-03  Francesco Lavra  <francescolavra.fl@gmail.com>
+
+	* include/grub/elf.h: Add missing ARM relocation codes and fix
+	  existing ones.
+
 2013-04-03  Vladimir Testov <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_progress_bar.c: Handle padding sizes.
