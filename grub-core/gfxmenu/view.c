@@ -195,7 +195,7 @@ grub_gfxmenu_print_timeout (int timeout, void *data)
   if (view->first_timeout == -1)
     view->first_timeout = timeout;
 
-  update_timeouts (1, -(view->first_timeout + 1), -timeout, 0);
+  update_timeouts (1, -view->first_timeout, -timeout, 0);
   redraw_timeouts (view);
   grub_video_swap_buffers ();
   if (view->double_repaint)
