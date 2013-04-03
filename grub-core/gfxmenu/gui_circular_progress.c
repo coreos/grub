@@ -152,12 +152,12 @@ circprog_paint (void *vself, const grub_video_rect_t *region)
   if (self->ticks_disappear)
     {
       tick_begin = nticks;
-      tick_end = self->num_ticks - 1;
+      tick_end = self->num_ticks;
     }
   else
     {
       tick_begin = 0;
-      tick_end = nticks - 1;
+      tick_end = nticks;
     }
 
   int i;

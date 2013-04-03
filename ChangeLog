@@ -1,3 +1,7 @@
+2013-04-03  Vladimir Testov <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/gui_circular_progress.c: Fix off-by-one error.
+
 2013-04-01  Radosław Szymczyszyn <lavrin@gmail.com>
 
 	* grub-core/partmap/apple.c (apple_partition_map_iterate): Add
