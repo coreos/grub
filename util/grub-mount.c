@@ -407,7 +407,8 @@ fuse_init (void)
       return grub_errno;
     }
 
-  fuse_main (fuse_argc, fuse_args, &grub_opers, NULL);
+  if (fuse_main (fuse_argc, fuse_args, &grub_opers, NULL))
+    grub_error (GRUB_ERR_IO, "fuse_main failed");
 
   for (i = 0; i < num_disks; i++)
     {
@@ -427,7 +428,7 @@ fuse_init (void)
       grub_free (loop_name);
     }
 
-  return GRUB_ERR_NONE;
+  return grub_errno;
 }
 
 static struct argp_option options[] = {  

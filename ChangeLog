@@ -1,3 +1,8 @@
+2013-04-03  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub-mount.c (fuse_init): Return error if fuse_main
+	failed.
+
 2013-04-03  Francesco Lavra  <francescolavra.fl@gmail.com>
 
 	* include/grub/elf.h: Add missing ARM relocation codes and fix
