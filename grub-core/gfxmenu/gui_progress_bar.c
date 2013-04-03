@@ -139,6 +139,12 @@ draw_pixmap_bar (grub_gui_progress_bar_t self)
   int bar_b_pad = bar->get_bottom_pad (bar);
   int bar_h_pad = bar_l_pad + bar_r_pad;
   int bar_v_pad = bar_t_pad + bar_b_pad;
+  int hl_l_pad = hl->get_left_pad (hl);
+  int hl_r_pad = hl->get_right_pad (hl);
+  int hl_t_pad = hl->get_top_pad (hl);
+  int hl_b_pad = hl->get_bottom_pad (hl);
+  int hl_h_pad = hl_l_pad + hl_r_pad;
+  int hl_v_pad = hl_t_pad + hl_b_pad;
   int tracklen = w - bar_h_pad;
   int trackheight = h - bar_v_pad;
   int barwidth;
@@ -148,7 +154,7 @@ draw_pixmap_bar (grub_gui_progress_bar_t self)
   barwidth = (tracklen * (self->value - self->start) 
 	      / (self->end - self->start));
 
-  hl->set_content_size (hl, barwidth, h - bar_v_pad);
+  hl->set_content_size (hl, barwidth - hl_h_pad, h - bar_v_pad - hl_v_pad);
 
   bar->draw (bar, 0, 0);
   hl->draw (hl, bar_l_pad, bar_t_pad);
