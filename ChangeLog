@@ -1,3 +1,8 @@
+2013-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix screen corruption in menu entry editor and simplify the code
+	flow while on it.
+
 2013-04-03  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/grub-mount.c (fuse_init): Return error if fuse_main

@@ -690,6 +690,13 @@ print_ucs4_terminal (const grub_uint32_t * str,
 	  line_width -= lastspacewidth;
 	  if (ptr == last_space || *ptr == '\n')
 	    ptr++;
+	  else if (pos)
+	      {
+		pos[ptr - str].x = line_width - last_width;
+		pos[ptr - str].y = lines;
+		pos[ptr - str].valid = 1;
+	      }
+
 	  line_start = ptr;
 
 	  if (skip_lines)
@@ -726,6 +733,8 @@ print_ucs4_terminal (const grub_uint32_t * str,
   if (!dry_run && !skip_lines && max_lines)
     {
       const grub_uint32_t *ptr2;
+      int sp;
+
       for (ptr2 = line_start; ptr2 < last_position; ptr2++)
 	{
 	  /* Skip combining characters on non-UTF8 terminals.  */
@@ -736,6 +745,10 @@ print_ucs4_terminal (const grub_uint32_t * str,
 	    continue;
 	  putcode_real (*ptr2, term, fixed_tab);
 	}
+
+      sp = max_width - pos[last_position - str].x + 1;
+      if (sp > 0)
+	grub_print_spaces (term, sp);
     }
   return dry_run ? lines : 0;
 }
@@ -908,7 +921,7 @@ print_ucs4_real (const grub_uint32_t * str,
 	{
 	  for (vptr = visual_show;
 	       max_lines && vptr < visual + visual_len; vptr++)
-	    if (visual_show->base == '\n')
+	    if (vptr->base == '\n')
 	      max_lines--;
 
 	  visual_len_show = vptr - visual_show;	  

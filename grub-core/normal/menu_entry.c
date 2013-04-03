@@ -253,49 +253,24 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 	  if (!*pos)
 	    *pos = grub_zalloc ((linep->len + 1) * sizeof (**pos));
 
-	  if (i == region_start || linep == screen->lines + screen->line)
+	  if (i == region_start || linep == screen->lines + screen->line
+	      || (i > region_start && mode == ALL_LINES))
 	    {
-	      int sp;
 	      grub_term_gotoxy (term_screen->term, GRUB_TERM_LEFT_BORDER_X
 				+ GRUB_TERM_MARGIN + 1, (y < 0 ? 0 : y)
 				+ GRUB_TERM_FIRST_ENTRY_Y);
-	      grub_print_ucs4_menu (linep->buf,
-				    linep->buf + linep->len,
-				    GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN
-				    + 1,
-				    GRUB_TERM_MARGIN
-				    + GRUB_TERM_SCROLL_WIDTH + 2,
-				    term_screen->term,
-				    (y < 0) ? -y : 0,
-				    term_screen->num_entries
-				    - ((y > 0) ? y : 0), '\\',
-				    *pos);
-	      sp = grub_term_entry_width (term_screen->term)
-		 - (*pos)[linep->len].x;
-	      if (sp > 0)
-		grub_print_spaces (term_screen->term, sp);
- 	    }
-	  else if (i > region_start && mode == ALL_LINES)
-	    {
-	      int sp;
-	      grub_term_gotoxy (term_screen->term, GRUB_TERM_LEFT_BORDER_X
-				+ GRUB_TERM_MARGIN + 1, (y < 0 ? 0 : y)
-				+ GRUB_TERM_FIRST_ENTRY_Y);
+
 	      grub_print_ucs4_menu (linep->buf,
 				    linep->buf + linep->len,
 				    GRUB_TERM_LEFT_BORDER_X
-			    + GRUB_TERM_MARGIN + 1,
+				    + GRUB_TERM_MARGIN + 1,
 				    GRUB_TERM_MARGIN
-				    + GRUB_TERM_SCROLL_WIDTH + 2,
+				    + GRUB_TERM_SCROLL_WIDTH,
 				    term_screen->term,
 				    (y < 0) ? -y : 0,
 				    term_screen->num_entries
 				    - ((y > 0) ? y : 0), '\\',
 				    *pos);
-	      sp = grub_term_entry_width (term_screen->term)
-		- (*pos)[linep->len].x;
-	      if (sp > 0)
-		grub_print_spaces (term_screen->term, sp);
 	    }
 	  y += get_logical_num_lines (linep, term_screen);
 	  if (y >= term_screen->num_entries)
