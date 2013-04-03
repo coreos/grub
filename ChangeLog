@@ -1,4 +1,10 @@
 2013-04-03  Vladimir Testov <vladimir.testov@rosalab.ru>
+2013-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gfxmenu/gui_circular_progress.c: Take both width and height
+	into account when calculating radius.
+
+2013-04-03  Vladimir Testov <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/view.c: Fix off-by-one error.
 

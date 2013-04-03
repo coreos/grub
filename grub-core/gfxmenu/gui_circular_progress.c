@@ -138,7 +138,7 @@ circprog_paint (void *vself, const grub_video_rect_t *region)
                           (height - center_height) / 2, 0, 0,
                           center_width, center_height);
 
-  int radius = width / 2 - tick_width / 2 - 1;
+  int radius = grub_min (height, width) / 2 - grub_max (tick_height, tick_width) / 2 - 1;
   int nticks;
   int tick_begin;
   int tick_end;
