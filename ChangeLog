@@ -1,4 +1,9 @@
 2013-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-04-04  Peter Jones <pjones@redhat.com>
+
+	* grub-core/disk/efi/efidisk.c: Handle partitions on non-512B disks.
+
+2013-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Use TSC as a possible time source on i386-ieee1275.
 
