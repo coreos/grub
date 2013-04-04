@@ -343,7 +343,7 @@ grub_usb_bulk_readwrite_packetize (grub_usb_device_t dev,
 				   grub_size_t size, char *data)
 {
   grub_size_t actual, transferred;
-  grub_usb_err_t err;
+  grub_usb_err_t err = GRUB_USB_ERR_NONE;
   grub_size_t current_size, position;
   grub_size_t max_bulk_transfer_len = MAX_USB_TRANSFER_LEN;
   grub_size_t max;

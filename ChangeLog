@@ -1,5 +1,10 @@
 2013-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/usbtrans.c (grub_usb_bulk_readwrite_packetize):
+	Init err.
+
+2013-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-setup.c (setup): Handle some corner cases.
 
 2013-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
