@@ -256,7 +256,7 @@ setup (const char *dir,
   grub_device_t root_dev = 0, dest_dev, core_dev;
   struct blocklists bl;
   char *tmp_img;
-  grub_disk_addr_t first_sector;
+  grub_disk_addr_t first_sector = (grub_disk_addr_t)-1;
   FILE *fp;
 
 #ifdef GRUB_SETUP_BIOS
@@ -756,6 +756,8 @@ unable_to_embed:
 	  grub_util_error ("%s", _("blocksize is not divisible by 512"));
 	mul = bsize >> GRUB_DISK_SECTOR_BITS;
 	nblocks = (core_size + bsize - 1) / bsize;
+	if (mul == 0 || nblocks == 0)
+	  grub_util_error ("%s", _("can't retrieve blocklists"));
 	for (i = 0; i < nblocks; i++)
 	  {
 	    unsigned blk = i;
@@ -808,7 +810,7 @@ unable_to_embed:
 			      - j * GRUB_DISK_SECTOR_SIZE);
 		if (len > GRUB_DISK_SECTOR_SIZE)
 		  len = GRUB_DISK_SECTOR_SIZE;
-		if (i == 0 && j == 0)
+		if (first_sector == (grub_disk_addr_t)-1)
 		  save_first_sector ((fie2->fm_extents[i].fe_physical
 				      >> GRUB_DISK_SECTOR_BITS)
 				     + j + container_start,
@@ -825,6 +827,8 @@ unable_to_embed:
 
 	      }
 	  }
+	if (first_sector == (grub_disk_addr_t)-1)
+	  grub_util_error ("%s", _("can't retrieve blocklists"));
       }
     fclose (fp);
   }
