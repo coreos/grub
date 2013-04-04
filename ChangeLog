@@ -1,5 +1,9 @@
 2013-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use TSC as a possible time source on i386-ieee1275.
+
+2013-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/usbtrans.c (grub_usb_bulk_readwrite_packetize):
 	Init err.
 

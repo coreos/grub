@@ -128,11 +128,11 @@ kernel = {
   efi = kern/efi/mm.c;
   efi = term/efi/console.c;
 
-  i386_efi = kern/i386/tsc.c;
+  x86 = kern/i386/tsc.c;
+
   i386_efi = kern/i386/efi/init.c;
   i386_efi = bus/pci.c;
 
-  x86_64_efi = kern/i386/tsc.c;
   x86_64_efi = kern/x86_64/dl.c;
   x86_64_efi = kern/x86_64/efi/callwrap.S;
   x86_64_efi = kern/i386/efi/init.c;
@@ -145,19 +145,15 @@ kernel = {
 
   i386_pc = kern/i386/pc/init.c;
   i386_pc = kern/i386/pc/mmap.c;
-  i386_pc = kern/i386/tsc.c;
   i386_pc = term/i386/pc/console.c;
 
   i386_qemu = bus/pci.c;
   i386_qemu = kern/vga_init.c;
   i386_qemu = kern/i386/qemu/mmap.c;
-  i386_qemu = kern/i386/tsc.c;
 
   i386_coreboot = kern/i386/coreboot/mmap.c;
-  i386_coreboot = kern/i386/tsc.c;
 
   i386_multiboot = kern/i386/multiboot_mmap.c;
-  i386_multiboot = kern/i386/tsc.c;
 
   mips = kern/mips/cache.S;
   mips = kern/mips/dl.c;

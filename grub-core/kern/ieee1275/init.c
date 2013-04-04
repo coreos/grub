@@ -34,6 +34,9 @@
 #include <grub/net.h>
 #include <grub/offsets.h>
 #include <grub/memory.h>
+#ifdef __i386__
+#include <grub/cpu/tsc.h>
+#endif
 #ifdef __sparc__
 #include <grub/machine/kernel.h>
 #endif
@@ -269,8 +272,6 @@ grub_parse_cmdline (void)
     }
 }
 
-static grub_uint64_t ieee1275_get_time_ms (void);
-
 grub_addr_t grub_modbase;
 
 void
@@ -288,7 +289,11 @@ grub_machine_init (void)
 
   grub_parse_cmdline ();
 
-  grub_install_get_time_ms (ieee1275_get_time_ms);
+#ifdef __i386__
+  grub_tsc_init ();
+#else
+  grub_install_get_time_ms (grub_rtc_get_time_ms);
+#endif
 }
 
 void
@@ -298,8 +303,8 @@ grub_machine_fini (void)
   grub_console_fini ();
 }
 
-static grub_uint64_t
-ieee1275_get_time_ms (void)
+grub_uint64_t
+grub_rtc_get_time_ms (void)
 {
   grub_uint32_t msecs = 0;
 
