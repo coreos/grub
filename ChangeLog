@@ -1,3 +1,7 @@
+2013-04-04  Francesco Lavra  <francescolavra.fl@gmail.com>
+
+	* util/grub-mkimage.c: Introduce new define EFI32_HEADER_SIZE.
+
 2013-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Unify file copying setup across different install scripts. Add

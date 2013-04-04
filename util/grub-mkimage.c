@@ -91,6 +91,13 @@ struct image_target_desc
   grub_uint16_t pe_target;
 };
 
+#define EFI32_HEADER_SIZE ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE		\
+				    + GRUB_PE32_SIGNATURE_SIZE		\
+				    + sizeof (struct grub_pe32_coff_header) \
+				    + sizeof (struct grub_pe32_optional_header) \
+				    + 4 * sizeof (struct grub_pe32_section_table), \
+				    GRUB_PE32_SECTION_ALIGNMENT)
+
 #define EFI64_HEADER_SIZE ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE		\
 				    + GRUB_PE32_SIGNATURE_SIZE		\
 				    + sizeof (struct grub_pe32_coff_header) \
@@ -182,12 +189,7 @@ struct image_target_desc image_targets[] =
       .decompressor_uncompressed_size = TARGET_NO_FIELD,
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = GRUB_PE32_SECTION_ALIGNMENT,
-      .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
-				+ GRUB_PE32_SIGNATURE_SIZE
-				+ sizeof (struct grub_pe32_coff_header)
-				+ sizeof (struct grub_pe32_optional_header)
-				+ 4 * sizeof (struct grub_pe32_section_table),
-				GRUB_PE32_SECTION_ALIGNMENT),
+      .vaddr_offset = EFI32_HEADER_SIZE,
       .pe_target = GRUB_PE32_MACHINE_I386,
       .elf_target = EM_386,
     },
@@ -1101,12 +1103,7 @@ generate_image (const char *dir, const char *prefix,
 	int reloc_addr;
 
 	if (image_target->voidp_sizeof == 4)
-	  header_size = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
-				  + GRUB_PE32_SIGNATURE_SIZE
-				  + sizeof (struct grub_pe32_coff_header)
-				  + sizeof (struct grub_pe32_optional_header)
-				  + 4 * sizeof (struct grub_pe32_section_table),
-				  GRUB_PE32_SECTION_ALIGNMENT);
+	  header_size = EFI32_HEADER_SIZE;
 	else
 	  header_size = EFI64_HEADER_SIZE;
 
