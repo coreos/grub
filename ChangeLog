@@ -1,3 +1,7 @@
+2013-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/posix_wrap/locale.h [GRUB_UTIL]: Include host locale.h.
+
 2013-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/verify.c: Save verified file to avoid it being
