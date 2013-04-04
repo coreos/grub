@@ -88,6 +88,8 @@ usage () {
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
     print_option_help "-v, --version" "$(gettext "print the version information and exit")"
     print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
+    grub_print_install_files_help
+
     dirmsg="$(gettext_printf "install GRUB images under the directory DIR/%s instead of the %s directory" "@grubdirname@" "$grubdir")"
     print_option_help "--boot-directory=$(gettext "DIR")" "$dirmsg"
     # TRANSLATORS: "TARGET" as in "target platform".
@@ -120,17 +122,6 @@ echo
 gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }
 
-argument () {
-  opt="$1"
-  shift
-
-  if test $# -eq 0; then
-      gettext_printf "%s: option requires an argument -- \`%s'\n" "$0" "$opt" 1>&2
-      exit 1
-  fi
-  echo "$1"
-}
-
 allow_floppy=""
 force_file_id=
 efidir=
@@ -138,6 +129,12 @@ efidir=
 # Check the arguments.
 while test $# -gt 0
 do
+    grub_process_install_options "$@"
+    case "$grub_process_install_options_consumed" in
+	1) shift; continue;;
+	2) shift; shift; continue;;
+    esac
+
     option=$1
     shift
 
@@ -519,38 +516,14 @@ else
 fi
 
 # Copy the GRUB images to the GRUB directory.
-for file in "${grubdir}"/*.mod "${grubdir}"/*.lst "${grubdir}"/*.img "${grubdir}"/efiemu??.o "${grubdir}"/${grub_modinfo_target_cpu}-$grub_modinfo_platform/*.mod "${grubdir}"/${grub_modinfo_target_cpu}-$grub_modinfo_platform/*.lst "${grubdir}"/${grub_modinfo_target_cpu}-$grub_modinfo_platform/*.img "${grubdir}"/${grub_modinfo_target_cpu}-$grub_modinfo_platform/efiemu??.o; do
-    if test -f "$file" && [ "`basename $file`" != menu.lst ]; then
-	rm -f "$file" || exit 1
-    fi
-done
-for file in "${source_dir}"/*.mod "${source_dir}"/*.lst; do
-    cp -f "$file" "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform" || exit 1
-done
+grub_install_files "${source_dir}" "${grubdir}" "${grub_modinfo_target_cpu}-$grub_modinfo_platform" all
+
 if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "sparc64-ieee1275" ] ; then
     for file in "${source_dir}"/*.img "${source_dir}"/efiemu??.o; do
 	if test -f "$file"; then
 	    cp -f "$file" "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform" || exit 1
 	fi
     done
-fi
-
-# Copy gettext files
-mkdir -p "${grubdir}"/locale/
-for dir in "${localedir}"/*; do
-    if test -f "$dir/LC_MESSAGES/grub.mo"; then
-        cp -f "$dir/LC_MESSAGES/grub.mo" "${grubdir}/locale/${dir##*/}.mo"
-    fi
-done
-
-if test -f "${pkgdatadir}"/themes/starfield/theme.txt; then
-    mkdir -p "${grubdir}"/themes/starfield
-    cp "${pkgdatadir}"/themes/starfield/* "${grubdir}"/themes/starfield
-fi
-
-if test -f "${pkgdatadir}"/unicode.pf2; then
-    mkdir -p "${grubdir}"/fonts
-    cp "${pkgdatadir}"/unicode.pf2 "${grubdir}"/fonts
 fi
 
 if ! is_path_readable_by_grub "${grubdir}"; then

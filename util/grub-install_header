@@ -1,0 +1,161 @@
+#! /bin/sh
+set -e
+
+# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012  Free Software Foundation, Inc.
+#
+# GRUB is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GRUB is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+
+pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst \
+handler.lst video.lst crypto.lst terminal.lst"
+
+grub_install_files () {
+    grub_install_files_source_directory="$1"
+    grub_install_files_target_directory="$2"
+    grub_install_files_platform="$3"
+    
+    mkdir -p "${grub_install_files_target_directory}"/"${grub_install_files_platform}"
+    
+    for file in "${grub_install_files_target_directory}"/*.mod \
+"${grub_install_files_target_directory}"/*.lst \
+"${grub_install_files_target_directory}"/*.img \
+"${grub_install_files_target_directory}"/efiemu??.o \
+"${grub_install_files_target_directory}"/"${grub_install_files_platform}"/*.mod \
+"${grub_install_files_target_directory}"/"${grub_install_files_platform}"/*.lst \
+"${grub_install_files_target_directory}"/"${grub_install_files_platform}"/*.img \
+"${grub_install_files_target_directory}"/"${grub_install_files_platform}"/efiemu??.o;
+    do
+	if test -f "$file" && [ "`basename $file`" != menu.lst ]; then
+	    rm -f "$file" || exit 1
+	fi
+    done
+
+    if [ x"$install_modules" = xall ]; then
+	for file in "${grub_install_files_source_directory}/"*.mod; do
+	    cp -f "$file" "${grub_install_files_target_directory}"/"${grub_install_files_platform}"
+	done
+    else
+	modules1=
+	modules2="$install_modules"
+	while [ x"$modules2" != x ]; do
+	    modules3=
+	    for x in $modules2; do
+		modules3="$modules3 $(grep "^$x:" "${grub_install_files_source_directory}/moddep.lst" | sed 's,^[^:]*:,,')"
+	    done
+	    modules1="$modules1 $modules2"
+	    modules2="$modules3"
+	done
+	for file in $(echo "$modules1" | sed 's, ,\n,g' |sort -u); do
+	    cp -f "${grub_install_files_source_directory}/$file.mod" "${grub_install_files_target_directory}"/"${grub_install_files_platform}"
+	done
+    fi
+    
+    for file in ${pkglib_DATA} efiemu32.o efiemu64.o; do
+	if test -f "${grub_install_files_source_directory}/${file}"; then
+            cp -f "${grub_install_files_source_directory}/${file}" "${grub_install_files_target_directory}"/"${grub_install_files_platform}"
+	fi
+    done
+    
+    # Copy gettext files
+    mkdir -p "${grub_install_files_target_directory}"/locale
+
+    for file in "${grub_install_files_target_directory}"/locale/*.mo; do
+	if test -f "$file"; then
+	    rm -f "$file" || exit 1
+	fi
+    done
+
+    if [ x"$install_locales" = xall ]; then
+	for file in "${grub_install_files_source_directory}"/po/*.mo; do
+	    if test -f "$file"; then
+		cp -f "$file" "${grub_install_files_target_directory}"/locale/
+	    fi
+	done
+	for dir in "${localedir}"/*; do
+	    if test -f "$dir/LC_MESSAGES/grub.mo" && ! test -f "${grub_install_files_target_directory}"/locale/"${dir##*/}.mo"; then
+		cp -f "$dir/LC_MESSAGES/grub.mo" "${grub_install_files_target_directory}"/locale/"${dir##*/}.mo"
+	    fi
+	done
+    else
+	for locale in $install_locales; do
+	    if test -f "${grub_install_files_source_directory}"/po/$locale.mo; then
+		cp -f " "${grub_install_files_source_directory}"/po/$locale.mo" "${grub_install_files_target_directory}"/locale/$locale.mo
+	    elif test -f "${localedir}/$locale/LC_MESSAGES/grub.mo"; then
+		cp -f "${localedir}/$locale/LC_MESSAGES/grub.mo" "${grub_install_files_target_directory}"/locale/$locale.mo
+	    fi
+	done
+    fi
+    for theme in ${install_themes} ; do
+	if test -f "${pkgdatadir}"/themes/"${theme}"/theme.txt; then
+	    mkdir -p "${grub_install_files_target_directory}"/themes/"${theme}"
+	    cp "${pkgdatadir}"/themes/"${theme}"/* "${grub_install_files_target_directory}"/themes/"${theme}"
+	fi
+    done
+
+    for font in ${install_fonts} ; do
+	if test -f "${pkgdatadir}"/"$font".pf2; then
+	    mkdir -p "${grub_install_files_target_directory}"/fonts
+	    cp "${pkgdatadir}"/"$font".pf2 "${grub_install_files_target_directory}"/fonts
+	fi
+    done
+}
+
+grub_print_install_files_help () {
+    print_option_help "--install-modules=$(gettext "MODULES")" "$(gettext "install only MODULES and their dependencies [default=all]")"
+    print_option_help "--themes=THEMES" "$(gettext_printf "install THEMES [default=%s]" "starfield")"
+    print_option_help "--fonts=FONTS" "$(gettext_printf "install FONTS [default=%s]" "unicode")"
+    print_option_help "--locales=LOCALES" "$(gettext_printf "install only LOCALES [default=all]")"
+}
+
+install_modules=all
+install_themes=starfield
+install_fonts=unicode
+install_locales=all
+
+argument () {
+  opt=$1
+  shift
+
+  if test $# -eq 0; then
+      gettext_printf "%s: option requires an argument -- \`%s'\n" "$0" "$opt" 1>&2
+      exit 1
+  fi
+  echo $1
+}
+
+grub_process_install_options () {
+    option=$1
+    shift
+
+    grub_process_install_options_consumed=0
+
+    case "$option" in
+	--install-modules)
+	    install_modules=`argument $option "$@"`; grub_process_install_options_consumed=2; return ;;
+	--install-modules=*)
+            install_modules=`echo "$option" | sed 's/--install-modules=//'`; grub_process_install_options_consumed=1; return ;;
+	--themes)
+	    install_themes=`argument $option "$@"`; grub_process_install_options_consumed=2; return ;;
+	--themes=*)
+            install_themes=`echo "$option" | sed 's/--themes=//'`; grub_process_install_options_consumed=1; return ;;
+	--fonts)
+	    install_fonts=`argument $option "$@"`; grub_process_install_options_consumed=2; return ;;
+	--fonts=*)
+            install_fonts=`echo "$option" | sed 's/--fonts=//'`; grub_process_install_options_consumed=1; return ;;
+	--locales)
+	    install_locales=`argument $option "$@"`; grub_process_install_options_consumed=2; return ;;
+	--locales=*)
+            install_locales=`echo "$option" | sed 's/--locales=//'`; grub_process_install_options_consumed=1; return ;;
+    esac
+}
+

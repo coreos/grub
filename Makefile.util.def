@@ -451,9 +451,13 @@ script = {
 script = {
   mansection = 1;
   name = grub-mkrescue;
+  x86 = util/grub-install_header;
   x86 = util/grub-mkrescue.in;
+  mips_qemu_mips = util/grub-install_header;
   mips_qemu_mips = util/grub-mkrescue.in;
+  mips_loongson = util/grub-install_header;
   mips_loongson = util/grub-mkrescue.in;
+  ia64_efi = util/grub-install_header;
   ia64_efi = util/grub-mkrescue.in;
   powerpc_ieee1275 = util/powerpc/ieee1275/grub-mkrescue.in;
   enable = i386_pc;
@@ -471,6 +475,7 @@ script = {
 script = {
   mansection = 1;
   name = grub-mkstandalone;
+  common = util/grub-install_header;
   common = util/grub-mkstandalone.in;
 };
 
@@ -479,6 +484,7 @@ script = {
   installdir = sbin;
   name = grub-install;
 
+  common = util/grub-install_header;
   common = util/grub-install.in;
   enable = noemu;
 };
@@ -488,6 +494,7 @@ script = {
   installdir = bin;
   name = grub-mknetdir;
 
+  common = util/grub-install_header;
   common = util/grub-mknetdir.in;
 };
 

@@ -535,8 +535,8 @@ def script(platform):
     r += "[+ IF mansection +]" + manpage("grub-mkconfig_lib") + "[+ ENDIF +]"
     r += "[+ ENDIF +]"
 
-    r += rule("[+ name +]", platform_sources(platform) + " $(top_builddir)/config.status", """
-$(top_builddir)/config.status --file=$@:$<
+    r += rule("[+ name +]", "$(top_builddir)/config.status " + platform_sources(platform), """
+(skip=1; for x in $^; do if [ $$skip = 1 ]; then skip=0; else cat "$$x"; fi; done) | $(top_builddir)/config.status --file=$@:-
 chmod a+x [+ name +]
 """)
 
