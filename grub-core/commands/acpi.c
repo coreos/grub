@@ -365,13 +365,13 @@ setup_common_tables (void)
     numoftables++;
 
   rsdt_addr = rsdt = (struct grub_acpi_table_header *) playground_ptr;
-  playground_ptr += sizeof (struct grub_acpi_table_header) + 4 * numoftables;
+  playground_ptr += sizeof (struct grub_acpi_table_header) + sizeof (grub_uint32_t) * numoftables;
 
   rsdt_entry = (grub_uint32_t *) (rsdt + 1);
 
   /* Fill RSDT header. */
   grub_memcpy (&(rsdt->signature), "RSDT", 4);
-  rsdt->length = sizeof (struct grub_acpi_table_header) + 4 * numoftables;
+  rsdt->length = sizeof (struct grub_acpi_table_header) + sizeof (grub_uint32_t) * numoftables;
   rsdt->revision = 1;
   grub_memcpy (&(rsdt->oemid), root_oemid, sizeof (rsdt->oemid));
   grub_memcpy (&(rsdt->oemtable), root_oemtable, sizeof (rsdt->oemtable));
@@ -419,13 +419,13 @@ setv2table (void)
 
   /* Create XSDT. */
   xsdt = (struct grub_acpi_table_header *) playground_ptr;
-  playground_ptr += sizeof (struct grub_acpi_table_header) + 8 * numoftables;
+  playground_ptr += sizeof (struct grub_acpi_table_header) + sizeof (grub_uint64_t) * numoftables;
 
   xsdt_entry = (grub_uint64_t *)(xsdt + 1);
   for (cur = acpi_tables; cur; cur = cur->next)
     *(xsdt_entry++) = (grub_addr_t) cur->addr;
   grub_memcpy (&(xsdt->signature), "XSDT", 4);
-  xsdt->length = sizeof (struct grub_acpi_table_header) + 8 * numoftables;
+  xsdt->length = sizeof (struct grub_acpi_table_header) + sizeof (grub_uint64_t) * numoftables;
   xsdt->revision = 1;
   grub_memcpy (&(xsdt->oemid), root_oemid, sizeof (xsdt->oemid));
   grub_memcpy (&(xsdt->oemtable), root_oemtable, sizeof (xsdt->oemtable));
@@ -708,11 +708,11 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
   /* DSDT. */
   playground_size += dsdt_size;
   /* RSDT. */
-  playground_size += sizeof (struct grub_acpi_table_header) + 4 * numoftables;
+  playground_size += sizeof (struct grub_acpi_table_header) + sizeof (grub_uint32_t) * numoftables;
   /* RSDPv1. */
   playground_size += sizeof (struct grub_acpi_rsdp_v10);
   /* XSDT. */
-  playground_size += sizeof (struct grub_acpi_table_header) + 8 * numoftables;
+  playground_size += sizeof (struct grub_acpi_table_header) + sizeof (grub_uint64_t) * numoftables;
   /* RSDPv2. */
   playground_size += sizeof (struct grub_acpi_rsdp_v20);
 
