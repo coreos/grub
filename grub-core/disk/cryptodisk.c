@@ -256,7 +256,7 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 	case GRUB_CRYPTODISK_MODE_IV_BYTECOUNT64_HASH:
 	  {
 	    grub_uint64_t tmp;
-	    grub_uint64_t ctx[(dev->iv_hash->contextsize + 7) / 8];
+	    GRUB_PROPERLY_ALIGNED_ARRAY (ctx, dev->iv_hash->contextsize);
 
 	    grub_memset (ctx, 0, sizeof (ctx));
 

@@ -1,5 +1,10 @@
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use GRUB_PROPERLY_ALIGNED_ARRAY in grub-core/disk/cryptodisk.c and
+	grub-core/disk/geli.c.
+
+2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkfont.c: Prefer enum to #define.
 
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>

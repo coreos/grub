@@ -146,7 +146,7 @@ geli_rekey (struct grub_cryptodisk *dev, grub_uint64_t zoneno)
     grub_uint64_t zone;
   } __attribute__ ((packed)) tohash
       = { {'e', 'k', 'e', 'y'}, grub_cpu_to_le64 (zoneno) };
-  grub_uint64_t key[(dev->hash->mdlen + 7) / 8];
+  GRUB_PROPERLY_ALIGNED_ARRAY (key, dev->hash->mdlen);
 
   grub_dprintf ("geli", "rekeying %" PRIuGRUB_UINT64_T " keysize=%d\n",
 		zoneno, dev->rekey_derived_size);
