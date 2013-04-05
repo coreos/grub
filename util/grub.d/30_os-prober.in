@@ -112,6 +112,11 @@ for OS in ${OSPROBED} ; do
   LONGNAME="`echo ${OS} | cut -d ':' -f 2 | tr '^' ' '`"
   LABEL="`echo ${OS} | cut -d ':' -f 3 | tr '^' ' '`"
   BOOT="`echo ${OS} | cut -d ':' -f 4`"
+  BTRFS="`echo ${OS} | cut -d ':' -f 5`"
+  if [ "x$BTRFS" = "xbtrfs" ]; then
+	BTRFSuuid="`echo ${OS} | cut -d ':' -f 6`"
+	BTRFSsubvol="`echo ${OS} | cut -d ':' -f 7`"
+  fi
 
   if [ -z "${LONGNAME}" ] ; then
     LONGNAME="${LABEL}"
@@ -145,7 +150,11 @@ EOF
 EOF
     ;;
     linux)
-      LINUXPROBED="`linux-boot-prober ${DEVICE} 2> /dev/null | tr ' ' '^' | paste -s -d ' '`"
+      if [ "x$BTRFS" = "xbtrfs" ]; then
+         LINUXPROBED="`linux-boot-prober btrfs ${BTRFSuuid} ${BTRFSsubvol}  2> /dev/null | tr ' ' '^' | paste -s -d ' '`"
+      else
+         LINUXPROBED="`linux-boot-prober ${DEVICE} 2> /dev/null | tr ' ' '^' | paste -s -d ' '`"
+      fi
       prepare_boot_cache=
       boot_device_id=
       is_first_entry=true

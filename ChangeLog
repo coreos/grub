@@ -1,3 +1,7 @@
+2013-04-05  Fedora Ninjas <grub2-owner@fedoraproject.org>
+
+	* util/grub.d/30_os-prober.in: Support btrrfs linux-prober extensions.
+
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Use GRUB_PROPERLY_ALIGNED_ARRAY in grub-core/disk/cryptodisk.c and
