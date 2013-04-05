@@ -300,4 +300,6 @@ static inline void grub_set_unaligned64 (void *ptr, grub_uint64_t val)
   dd->d = val;
 }
 
+#define GRUB_CHAR_BIT 8
+
 #endif /* ! GRUB_TYPES_HEADER */
