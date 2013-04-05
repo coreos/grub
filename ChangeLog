@@ -1,5 +1,9 @@
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/verify.c: Use GRUB_CHAR_BIT.
+
+2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/bsdlabel.h: Use enums.
 
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -77,7 +77,7 @@ read_packet_header (grub_file_t sig, grub_uint8_t *out_type, grub_size_t *len)
 	}
       if (l < 224)
 	{
-	  *len = (l - 192) << 8;
+	  *len = (l - 192) << GRUB_CHAR_BIT;
 	  if (grub_file_read (sig, &l, sizeof (l)) != 1)
 	    return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	  *len |= l;
@@ -273,7 +273,7 @@ grub_load_public_key (grub_file_t f)
 	      goto fail;
 	    }
 	  
-	  lb = (grub_be_to_cpu16 (l) + 7) / 8;
+	  lb = (grub_be_to_cpu16 (l) + GRUB_CHAR_BIT - 1) / GRUB_CHAR_BIT;
 	  if (lb > sizeof (buffer) - sizeof (grub_uint16_t))
 	    {
 	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
@@ -457,7 +457,7 @@ grub_verify_signature_real (char *buf, grub_size_t size,
 	    {
 	      if (ptr + 1 >= readbuf + rem)
 		break;
-	      l = (((ptr[0] & ~192) << 8) | ptr[1]) + 192;
+	      l = (((ptr[0] & ~192) << GRUB_CHAR_BIT) | ptr[1]) + 192;
 	      ptr += 2;
 	    }
 	  else
