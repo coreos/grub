@@ -501,7 +501,7 @@ grub_efidisk_open (const char *name, struct grub_disk *disk)
   if (! d)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such device");
 
-  disk->id = ((num << 8) | name[0]);
+  disk->id = ((num << GRUB_CHAR_BIT) | name[0]);
   m = d->block_io->media;
   /* FIXME: Probably it is better to store the block size in the disk,
      and total sectors should be replaced with total blocks.  */

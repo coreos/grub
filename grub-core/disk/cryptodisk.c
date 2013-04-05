@@ -103,7 +103,7 @@ gf_mul_be (grub_uint8_t *o, const grub_uint8_t *a, const grub_uint8_t *b)
   grub_memcpy (t, b, GRUB_CRYPTODISK_GF_BYTES);
   for (i = 0; i < GRUB_CRYPTODISK_GF_SIZE; i++)
     {
-      if (((a[GRUB_CRYPTODISK_GF_BYTES - i / 8 - 1] >> (i % 8))) & 1)
+      if (((a[GRUB_CRYPTODISK_GF_BYTES - i / GRUB_CHAR_BIT - 1] >> (i % GRUB_CHAR_BIT))) & 1)
 	grub_crypto_xor (o, o, t, GRUB_CRYPTODISK_GF_BYTES);
       gf_mul_x_be (t);
     }

@@ -1,5 +1,9 @@
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Replace 8 with GRUB_CHAR_BIT in several places when appropriate.
+
+2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add new defines GRUB_RSDP_SIGNATURE_SIZE and GRUB_RSDP_SIGNATURE.
 
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>

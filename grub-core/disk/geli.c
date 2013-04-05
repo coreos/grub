@@ -414,7 +414,7 @@ recover_key (grub_disk_t source, grub_cryptodisk_t dev)
   if (err)
     return err;
 
-  keysize = grub_le_to_cpu16 (header.keylen) / 8;
+  keysize = grub_le_to_cpu16 (header.keylen) / GRUB_CHAR_BIT;
   grub_memset (zero, 0, sizeof (zero));
 
   grub_puts_ (N_("Attempting to decrypt master key..."));
