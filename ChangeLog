@@ -1,3 +1,7 @@
+2013-04-04  Andrey Borzenkov  <arvidjaar@gmail.com>
+
+	* docs/grub.texi: Document menuentry --id option.
+
 2013-04-04  Francesco Lavra  <francescolavra.fl@gmail.com>
 
 	* util/grub-mkimage.c: Introduce new define EFI32_HEADER_SIZE.

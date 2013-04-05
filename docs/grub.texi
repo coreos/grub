@@ -1522,7 +1522,7 @@ definitions do not affect the exit status in @code{$?}.  When executed, the
 exit status of a function is the exit status of the last command executed in
 the body.
 
-@item menuentry @var{title} [@option{--class=class} @dots{}] [@option{--users=users}] [@option{--unrestricted}] [@option{--hotkey=key}] @{ @var{command}; @dots{} @}
+@item menuentry @var{title} [@option{--class=class} @dots{}] [@option{--users=users}] [@option{--unrestricted}] [@option{--hotkey=key}] [@option{--id=id}] @{ @var{command}; @dots{} @}
 @xref{menuentry}.
 @end table
 
@@ -3215,13 +3215,13 @@ These commands can only be used in the menu:
 
 @deffn Command menuentry @var{title} @
  [@option{--class=class} @dots{}] [@option{--users=users}] @
- [@option{--unrestricted}] [@option{--hotkey=key}] @
+ [@option{--unrestricted}] [@option{--hotkey=key}] [@option{--id=id}] @
  @{ @var{command}; @dots{} @}
 This defines a GRUB menu entry named @var{title}.  When this entry is
 selected from the menu, GRUB will set the @var{chosen} environment variable
-to @var{title}, execute the list of commands given within braces, and if the
-last command in the list returned successfully and a kernel was loaded it
-will execute the @command{boot} command.
+to value of @option{--id} if @option{--id} is given, execute the list of
+commands given within braces, and if the last command in the list returned
+successfully and a kernel was loaded it will execute the @command{boot} command.
 
 The @option{--class} option may be used any number of times to group menu
 entries into classes.  Menu themes may display different classes using
@@ -3236,6 +3236,10 @@ entries.  @xref{Security}.
 The @option{--hotkey} option associates a hotkey with a menu entry.
 @var{key} may be a single letter, or one of the aliases @samp{backspace},
 @samp{tab}, or @samp{delete}.
+
+The @option{--id} may be used to associate unique identifier with a menu entry.
+@var{id} is string of ASCII aphanumeric characters, underscore and hyphen
+and should not start with a digit.
 @end deffn
 
 
@@ -3244,7 +3248,7 @@ The @option{--hotkey} option associates a hotkey with a menu entry.
 
 @deffn Command submenu @var{title} @
  [@option{--class=class} @dots{}] [@option{--users=users}] @
- [@option{--unrestricted}] [@option{--hotkey=key}] @
+ [@option{--unrestricted}] [@option{--hotkey=key}] [@option{--id=id}] @
  @{ @var{menu entries} @dots{} @}
 This defines a submenu.  An entry called @var{title} will be added to the
 menu; when that entry is selected, a new menu will be displayed showing all
