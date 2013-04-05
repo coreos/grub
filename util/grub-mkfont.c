@@ -73,10 +73,13 @@ enum file_formats
   WIDTH_SPEC
 };
 
-#define GRUB_FONT_FLAG_BOLD		1
-#define GRUB_FONT_FLAG_NOBITMAP		2
-#define GRUB_FONT_FLAG_NOHINTING	4
-#define GRUB_FONT_FLAG_FORCEHINT	8
+enum
+  {
+    GRUB_FONT_FLAG_BOLD	= 1,
+    GRUB_FONT_FLAG_NOBITMAP = 2,
+    GRUB_FONT_FLAG_NOHINTING = 4,
+    GRUB_FONT_FLAG_FORCEHINT = 8
+  };
 
 struct grub_font_info
 {

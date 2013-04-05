@@ -1,5 +1,9 @@
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkfont.c: Prefer enum to #define.
+
+2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/acpi.c: Use sizeof rather than hardcoding the size.
 
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
