@@ -24,9 +24,12 @@
 #include <grub/err.h>
 #endif
 
+#define GRUB_RSDP_SIGNATURE "RSD PTR "
+#define GRUB_RSDP_SIGNATURE_SIZE 8
+
 struct grub_acpi_rsdp_v10
 {
-  grub_uint8_t signature[8];
+  grub_uint8_t signature[GRUB_RSDP_SIGNATURE_SIZE];
   grub_uint8_t checksum;
   grub_uint8_t oemid[6];
   grub_uint8_t revision;

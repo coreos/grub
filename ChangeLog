@@ -1,5 +1,9 @@
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add new defines GRUB_RSDP_SIGNATURE_SIZE and GRUB_RSDP_SIGNATURE.
+
+2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/verify.c: Use GRUB_CHAR_BIT.
 
 2013-04-05  Vladimir Serbinenko  <phcoder@gmail.com>

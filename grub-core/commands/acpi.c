@@ -217,7 +217,7 @@ grub_acpi_create_ebda (void)
     {
       grub_dprintf ("acpi", "Scanning EBDA for old rsdpv2\n");
       for (; target < targetebda + 0x400 - v2->length; target += 0x10)
-	if (grub_memcmp (target, "RSD PTR ", 8) == 0
+	if (grub_memcmp (target, GRUB_RSDP_SIGNATURE, GRUB_RSDP_SIGNATURE_SIZE) == 0
 	    && grub_byte_checksum (target,
 				   sizeof (struct grub_acpi_rsdp_v10)) == 0
 	    && ((struct grub_acpi_rsdp_v10 *) target)->revision != 0
@@ -238,7 +238,7 @@ grub_acpi_create_ebda (void)
       grub_dprintf ("acpi", "Scanning EBDA for old rsdpv1\n");
       for (; target < targetebda + 0x400 - sizeof (struct grub_acpi_rsdp_v10);
 	   target += 0x10)
-	if (grub_memcmp (target, "RSD PTR ", 8) == 0
+	if (grub_memcmp (target, GRUB_RSDP_SIGNATURE, GRUB_RSDP_SIGNATURE_SIZE) == 0
 	    && grub_byte_checksum (target,
 				   sizeof (struct grub_acpi_rsdp_v10)) == 0)
 	  {
@@ -299,7 +299,7 @@ grub_acpi_create_ebda (void)
   for (target = targetebda;
        target < targetebda + 0x400 - sizeof (struct grub_acpi_rsdp_v10);
        target += 0x10)
-    if (grub_memcmp (target, "RSD PTR ", 8) == 0
+    if (grub_memcmp (target, GRUB_RSDP_SIGNATURE, GRUB_RSDP_SIGNATURE_SIZE) == 0
 	&& grub_byte_checksum (target,
 			       sizeof (struct grub_acpi_rsdp_v10)) == 0
 	&& target != v1inebda && target != v2inebda)
@@ -394,7 +394,7 @@ setv1table (void)
   /* Create RSDP. */
   rsdpv1_new = (struct grub_acpi_rsdp_v10 *) playground_ptr;
   playground_ptr += sizeof (struct grub_acpi_rsdp_v10);
-  grub_memcpy (&(rsdpv1_new->signature), "RSD PTR ",
+  grub_memcpy (&(rsdpv1_new->signature), GRUB_RSDP_SIGNATURE,
 	       sizeof (rsdpv1_new->signature));
   grub_memcpy (&(rsdpv1_new->oemid), root_oemid, sizeof  (rsdpv1_new->oemid));
   rsdpv1_new->revision = 0;
@@ -438,7 +438,7 @@ setv2table (void)
   /* Create RSDPv2. */
   rsdpv2_new = (struct grub_acpi_rsdp_v20 *) playground_ptr;
   playground_ptr += sizeof (struct grub_acpi_rsdp_v20);
-  grub_memcpy (&(rsdpv2_new->rsdpv1.signature), "RSD PTR ",
+  grub_memcpy (&(rsdpv2_new->rsdpv1.signature), GRUB_RSDP_SIGNATURE,
 	       sizeof (rsdpv2_new->rsdpv1.signature));
   grub_memcpy (&(rsdpv2_new->rsdpv1.oemid), root_oemid,
 	       sizeof (rsdpv2_new->rsdpv1.oemid));
