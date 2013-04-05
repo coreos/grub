@@ -1554,6 +1554,10 @@ Causes a function to exit with the return value specified by @code{n}.  If
 in the function body.  If used outside a function the return status is
 false.
 
+@item setparams [@code{arg}] @dots{}
+Replace positional parameters starting with @code{$1} with arguments to
+@command{setparams}.
+
 @item shift [@code{n}]
 The positional parameters from @code{n}+1 @dots{} are renamed to
 @code{$1}@dots{}.  Parameters represented by the numbers @code{$#} down to
@@ -1751,8 +1755,8 @@ Colors can be specified in several ways:
 The fonts GRUB uses ``PFF2 font format'' bitmap fonts.  Fonts are specified
 with full font names.  Currently there is no
 provision for a preference list of fonts, or deriving one font from another.
-Fonts are loaded with the ``loadfont'' command in GRUB.  To see the list of
-loaded fonts, execute the ``lsfonts'' command.  If there are too many fonts to
+Fonts are loaded with the ``loadfont'' command in GRUB (@ref{loadfont}).  To see the list of
+loaded fonts, execute the ``lsfonts'' command (@ref{lsfonts}).  If there are too many fonts to
 fit on screen, do ``set pager=1'' before executing ``lsfonts''.
 
 
@@ -3365,16 +3369,25 @@ you forget a command, you can run the command @command{help}
 (@pxref{help}).
 
 @menu
+* [::                           Check file types and compare values
 * acpi::                        Load ACPI tables
+* authenticate::                Check whether user is in user list
+* background_color::            Set background color for active terminal
+* background_image::            Load background image for active terminal
 * badram::                      Filter out bad regions of RAM
 * blocklist::                   Print a block list
 * boot::                        Start up your operating system
 * cat::                         Show the contents of a file
 * chainloader::                 Chain-load another boot loader
+* clear::                       Clear the screen
+* cmosclean::                   Clear bit in CMOS
+* cmosdump::                    Dump CMOS contents
+* cmostest::                    Test bit in CMOS
 * cmp::                         Compare two files
 * configfile::                  Load a configuration file
 * cpuid::                       Check for CPU features
-* crc::                         Calculate CRC32 checksums
+* crc::                         Compute or check CRC32 checksums
+* cryptomount::                 Mount a crypto device
 * date::                        Display or set current date and time
 * drivemap::                    Map a drive to another
 * echo::                        Display a line of text
@@ -3383,6 +3396,7 @@ you forget a command, you can run the command @command{help}
 * gettext::                     Translate a string
 * gptsync::                     Fill an MBR based on GPT entries
 * halt::                        Shut down your computer
+* hashsum::                     Compute or check hash checksum
 * help::                        Show help messages
 * initrd::                      Load a Linux initrd
 * initrd16::                    Load a Linux initrd (16-bit mode)
@@ -3391,27 +3405,48 @@ you forget a command, you can run the command @command{help}
 * linux::                       Load a Linux kernel
 * linux16::                     Load a Linux kernel (16-bit mode)
 * list_env::                    List variables in environment block
+* loadfont::                    Load font files
 * load_env::                    Load variables from environment block
 * loopback::                    Make a device from a filesystem image
 * ls::                          List devices or files
+* lsfonts::                     List loaded fonts
+* lsmod::                       Show loaded modules
+* md5sum::                      Compute or check MD5 hash
 * normal::                      Enter normal mode
 * normal_exit::                 Exit from normal mode
 * parttool::                    Modify partition table entries
 * password::                    Set a clear-text password
 * password_pbkdf2::             Set a hashed password
 * play::                        Play a tune
+* probe::                       Retrieve device info
 * pxe_unload::                  Unload the PXE environment
 * read::                        Read user input
 * reboot::                      Reboot your computer
+* regexp::                      Test if regular expression matches string
+* rmmod::                       Remove a module
 * save_env::                    Save variables to environment block
 * search::                      Search devices by file, label, or UUID
 * sendkey::                     Emulate keystrokes
 * set::                         Set an environment variable
+* sha1sum::                     Compute or check SHA1 hash
+* sha256sum::                   Compute or check SHA256 hash
+* sha512sum::                   Compute or check SHA512 hash
+* sleep::                       Wait for a specified number of seconds
 * source::                      Read a configuration file in same context
+* test::                        Check file types and compare values
 * true::                        Do nothing, successfully
 * unset::                       Unset an environment variable
 * uppermem::                    Set the upper memory size
+@comment * vbeinfo::                     List available video modes
+* videoinfo::                   List available video modes
 @end menu
+
+
+@node [
+@subsection [
+@deffn Command @code{[} expression @code{]}
+Alias for @code{test @var{expression}} (@pxref{test}).
+@end deffn
 
 
 @node acpi
@@ -3434,6 +3469,42 @@ Normally, this command will replace the Root System Description Pointer
 @option{--no-ebda} option is used, the new tables will be known only to
 GRUB, but may be used by GRUB's EFI emulation.
 @end deffn
+
+
+@node authenticate
+@subsection authenticate
+@deffn Command authenticate [userlist]
+Check whether user is in @var{userlist} or listed in the value of variable
+@samp{superusers}. See @pxref{superusers} for valid user list format.
+If @samp{superusers} is empty, this command returns true. @xref{Security}.
+@end deffn
+
+
+@node background_color
+@subsection background_color
+
+@deffn Command background_color color
+Set background color for active terminal. For valid color specifications see
+@pxref{Theme file format, ,Colors}. Background color can be changed only when
+using @samp{gfxterm} for terminal output.
+
+This command sets color of empty areas without text. Text background color
+is controlled by environment variables @var{color_normal}, @var{color_highlight},
+@var{menu_color_normal}, @var{menu_color_highlight}. @xref{Special environment variables}.
+@end deffn
+
+
+@node background_image
+@subsection background_image
+
+@deffn Command background_image [[@option{--mode} @samp{stretch}|@samp{normal}] file]
+Load background image for active terminal from @var{file}. Image is stretched
+to fill up entire screen unless option @option{--mode} @samp{normal} is given.
+Without arguments remove currently loaded background image. Background image
+can be changed only when using @samp{gfxterm} for terminal output.
+
+@end deffn
+
 
 @node badram
 @subsection badram
@@ -3507,6 +3578,42 @@ load a defective boot loader, such as SCO UnixWare 7.1.
 @end deffn
 
 
+@node clear
+@subsection clear
+
+@deffn Command clear
+Clear the screen.
+@end deffn
+
+
+@node cmosclean
+@subsection cmosclean
+
+@deffn Command cmosclean byte:bit
+Clear value of bit in CMOS at location @var{byte}:@var{bit}. This command
+is available only on platforms that support CMOS.
+@end deffn
+
+
+@node cmosdump
+@subsection cmosdump
+
+@deffn Dump CMOS contents
+Dump full CMOS contents as hexadecimal values. This command is available only
+on platforms that support CMOS.
+@end deffn
+
+
+@node cmostest
+@subsection cmostest
+
+@deffn Command cmostest byte:bit
+Test value of bit in CMOS at location @var{byte}:@var{bit}. Exit status
+is zero if bit is set, non zero otherwise. This command is available only
+on platforms that support CMOS.
+@end deffn
+
+
 @node cmp
 @subsection cmp
 
@@ -3557,8 +3664,24 @@ invoked with @option{-l}.  This may change in the future.
 @node crc
 @subsection crc
 
-@deffn Command crc file
-Display the CRC32 checksum of @var{file}.
+@deffn Command crc arg @dots{}
+Alias for @code{hashsum --hash crc32 arg @dots{}}. See command @command{hashsum}
+(@pxref{hashsum}) for full description.
+@end deffn
+
+
+@node cryptomount
+@subsection cryptomount
+
+@deffn Command cryptomount device|@option{-u} uuid|@option{-a}|@option{-b}
+Setup access to encrypted device. If necessary, passphrase
+is requested interactively. Option @var{device} configures specific grub device
+(@pxref{Naming convention}); option @option{-u} @var{uuid} configures device
+with specified @var{uuid}; option @option{-a} configures all detected encrypted
+devices; option @option{-b} configures all geli containers that have boot flag set.
+
+GRUB suports devices encrypted using LUKS and geli. Note that necessary modules (@var{luks} and @var{geli}) have to be loaded manually before this command can
+be used.
 @end deffn
 
 
@@ -3704,6 +3827,29 @@ is shut down using APM.
 @end deffn
 
 
+@node hashsum
+@subsection hashsum
+
+@deffn Command hashsum @option{--hash} hash @option{--keep-going} @option{--uncompress} @option{--check} file [@option{--prefix} dir]|file @dots{}
+Compute or verify file hashes. Hash type is selected with option @option{--hash}.
+Supported hashes are: @samp{adler32}, @samp{crc64}, @samp{crc32},
+@samp{crc32rfc1510}, @samp{crc24rfc2440}, @samp{md4}, @samp{md5},
+@samp{ripemd160}, @samp{sha1}, @samp{sha224}, @samp{sha256}, @samp{sha512},
+@samp{sha384}, @samp{tiger192}, @samp{tiger}, @samp{tiger2}, @samp{whirlpool}.
+Option @option{--uncompress} uncompresses files before computing hash.
+
+When list of files is given, hash of each file is computed and printed,
+followed by file name, each file on a new line.
+
+When option @option{--check} is given, it points to a file that contains
+list of @var{hash name} pairs in the same format as used by UNIX
+@command{md5sum} command. Option @option{--prefix}
+may be used to give directory where files are located. Hash verification
+stops after the first mismatch was found unless option @option{--keep-going}
+was given.
+@end deffn
+
+
 @node help
 @subsection help
 
@@ -3822,6 +3968,16 @@ block.
 @end deffn
 
 
+@node loadfont
+@subsection loadfont
+
+@deffn Command loadfont file @dots{}
+Load specified font files. Unless absolute pathname is given, @var{file}
+is assumed to be in directory @samp{$prefix/fonts} with
+suffix @samp{.pf2} appended. @xref{Theme file format,,Fonts}.
+@end deffn
+
+
 @node loopback
 @subsection loopback
 
@@ -3852,6 +4008,31 @@ syntax}), then list all files at the root directory of that device.
 
 If the argument is a directory given as an absolute file name (@pxref{File
 name syntax}), then list the contents of that directory.
+@end deffn
+
+
+@node lsfonts
+@subsection lsfonts
+
+@deffn Command lsfonts
+List loaded fonts.
+@end deffn
+
+
+@node lsmod
+@subsection lsmod
+
+@deffn Command lsmod
+Show list of loaded modules.
+@end deffn
+
+
+@node md5sum
+@subsection md5sum
+
+@deffn Command md5sum arg @dots{}
+Alias for @code{hashsum --hash md5 arg @dots{}}. See command @command{hashsum}
+(@pxref{hashsum}) for full description.
 @end deffn
 
 
@@ -3940,7 +4121,7 @@ to generate password hashes.  @xref{Security}.
 @node play
 @subsection play
 
-@deffn Command play file | tempo [pitch1 duration1] [pitch2 duration2] ...
+@deffn Command play file | tempo [pitch1 duration1] [pitch2 duration2] @dots{}
 Plays a tune
 
 If the argument is a file name (@pxref{File name syntax}), play the tune
@@ -3953,6 +4134,15 @@ If the arguments are a series of numbers, play the inline tune.
 The tempo is the base for all note durations. 60 gives a 1-second base, 120
 gives a half-second base, etc.  Pitches are Hz.  Set pitch to 0 to produce
 a rest.
+@end deffn
+
+
+@node probe
+@subsection probe
+
+@deffn Command probe [@option{--set} var] @option{--driver}|@option{--partmap}|@option{--fs}|@option{--fs-uuid}|@option{--label} device
+Retrieve device information. If option @option{--set} is given, assign result
+to variable @var{var}, otherwise print information on the screen.
 @end deffn
 
 
@@ -3981,6 +4171,26 @@ with no terminating newline.
 
 @deffn Command reboot
 Reboot the computer.
+@end deffn
+
+
+@node regexp
+@subsection regexp
+
+@deffn Command regexp [@option{--set} [number:]var] regexp string
+Test if regular expression @var{regexp} matches @var{string}. Supported
+regular expressions are POSIX.2 Extended Regular Expressions. If option
+@option{--set} is given, store @var{number}th matched subexpression in
+variable @var{var}. Subexpressions are numbered in order of their opening
+parentheses starting from @samp{1}.  @var{number} defaults to @samp{1}.
+@end deffn
+
+
+@node rmmod
+@subsection rmmod
+
+@deffn Command rmmod module
+Remove a loaded @var{module}.
 @end deffn
 
 
@@ -4176,6 +4386,43 @@ arguments, print all environment variables with their values.
 @end deffn
 
 
+@node sha1sum
+@subsection sha1sum
+
+@deffn Command sha1sum arg @dots{}
+Alias for @code{hashsum --hash sha1 arg @dots{}}. See command @command{hashsum}
+(@pxref{hashsum}) for full description.
+@end deffn
+
+
+@node sha256sum
+@subsection sha256sum
+
+@deffn Command sha256sum arg @dots{}
+Alias for @code{hashsum --hash sha256 arg @dots{}}. See command @command{hashsum}
+(@pxref{hashsum}) for full description.
+@end deffn
+
+
+@node sha512sum
+@subsection sha512sum
+
+@deffn Command sha512sum arg @dots{}
+Alias for @code{hashsum --hash sha512 arg @dots{}}. See command @command{hashsum}
+(@pxref{hashsum}) for full description.
+@end deffn
+
+
+@node sleep
+@subsection sleep
+
+@deffn Command sleep [@option{--verbose}] [@option{--interruptible}] count
+Sleep for @var{count} seconds. If option @option{--interruptible} is given,
+allow @key{ESC} to interrupt sleep. With @option{--verbose} show countdown
+of remaining seconds.
+@end deffn
+
+
 @node source
 @subsection source
 
@@ -4186,6 +4433,74 @@ incorporated directly into the sourcing file.  Unlike @command{configfile}
 changing context: any environment variable changes made by the commands in
 @var{file} will be preserved after @command{source} returns, and the menu
 will not be shown immediately.
+@end deffn
+
+
+@node test
+@subsection test
+
+@deffn Command test expression
+Evaluate @var{expression} and return zero exit status if result is true,
+non zero status otherwise.
+
+@var{expression} is one of:
+
+@table @asis
+@item @var{string1} @code{==} @var{string2}
+the strings are equal
+@item @var{string1} @code{!=} @var{string2}
+the strings are not equal
+@item @var{string1} @code{<} @var{string2}
+@var{string1} is lexicographically less than @var{string2}
+@item @var{string1} @code{<=} @var{string2}
+@var{string1} is lexicographically less or equal than @var{string2}
+@item @var{string1} @code{>} @var{string2}
+@var{string1} is lexicographically greater than @var{string2}
+@item @var{string1} @code{>=} @var{string2}
+@var{string1} is lexicographically greater or equal than @var{string2}
+@item @var{integer1} @code{-eq} @var{integer2}
+@var{integer1} is equal to @var{integer2}
+@item @var{integer1} @code{-ge} @var{integer2}
+@var{integer1} is greater than or equal to @var{integer2}
+@item @var{integer1} @code{-gt} @var{integer2}
+@var{integer1} is greater than @var{integer2}
+@item @var{integer1} @code{-le} @var{integer2}
+@var{integer1} is less than or equal to @var{integer2}
+@item @var{integer1} @code{-lt} @var{integer2}
+@var{integer1} is less than @var{integer2}
+@item @var{integer1} @code{-ne} @var{integer2}
+@var{integer1} is not equal to @var{integer2}
+@item @var{prefix}@var{integer1} @code{-pgt} @var{prefix}@var{integer2}
+@var{integer1} is greater than @var{integer2} after stripping off common non-numeric @var{prefix}.
+@item @var{prefix}@var{integer1} @code{-plt} @var{prefix}@var{integer2}
+@var{integer1} is less than @var{integer2} after stripping off common non-numeric @var{prefix}.
+@item @var{file1} @code{-nt} @var{file2}
+@var{file1} is newer than @var{file2} (modification time). Optionally numeric @var{bias} may be directly appended to @code{-nt} in which case it is added to the first file modification time.
+@item @var{file1} @code{-ot} @var{file2}
+@var{file1} is older than @var{file2} (modification time). Optionally numeric @var{bias} may be directly appended to @code{-ot} in which case it is added to the first file modification time.
+@item @code{-d} @var{file}
+@var{file} exists and is a directory
+@item @code{-e} @var{file}
+@var{file} exists
+@item @code{-f} @var{file}
+@var{file} exists and is not a directory
+@item @code{-s} @var{file}
+@var{file} exists and has a size greater than zero
+@item @code{-n} @var{string}
+the length of @var{string} is nonzero
+@item @var{string}
+@var{string} is equivalent to @code{-n @var{string}}
+@item @code{-z} @var{string}
+the length of @var{string} is zero
+@item @code{(} @var{expression} @code{)}
+@var{expression} is true
+@item @code{!} @var{expression}
+@var{expression} is false
+@item @var{expression1} @code{-a} @var{expression2}
+both @var{expression1} and @var{expression2} are true
+@item @var{expression1} @code{-o} @var{expression2}
+either @var{expression1} or @var{expression2} is true
+@end table
 @end deffn
 
 
@@ -4210,6 +4525,25 @@ Unset the environment variable @var{envvar}.
 @subsection uppermem
 
 This command is not yet implemented for GRUB 2, although it is planned.
+
+
+@ignore
+@node vbeinfo
+@subsection vbeinfo
+
+@deffn Command vbeinfo [[WxH]xD]
+Alias for command @command{videoinfo} (@pxref{videoinfo}). It is available
+only on PC BIOS platforms.
+@end deffn
+@end ignore
+
+
+@node videoinfo
+@subsection videoinfo
+
+@deffn Command videoinfo [[WxH]xD]
+List available video modes. If resolution is given, show only matching modes.
+@end deffn
 
 @node Internationalisation
 @chapter Charset
@@ -4311,7 +4645,7 @@ Identifiers containing non-ASCII may work but aren't supported.
 Only the ASCII space characters (space U+0020, tab U+000b, CR U+000d and
 LF U+000a) are recognised. Other unicode space characters aren't a valid
 field separator.
-@command{test} tests <, >, <=, >=, -pgt and -plt compare the strings in the
+@command{test} (@pxref{test}) tests <, >, <=, >=, -pgt and -plt compare the strings in the
 lexicographical order of unicode codepoints, replicating the behaviour of
 test from coreutils.
 environment variables and commands are listed in the same order.
@@ -4769,8 +5103,8 @@ Installing to the whole disk device is normally more robust.
 @item
 Check that GRUB actually knows how to read from the device and file system
 containing @file{/boot/grub}.  It will not be able to read from encrypted
-devices, nor from file systems for which support has not yet been added to
-GRUB.
+devices with unsupported encryption scheme, nor from file systems for which
+support has not yet been added to GRUB.
 @end itemize
 
 

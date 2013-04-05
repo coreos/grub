@@ -1,3 +1,7 @@
+2013-04-04  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* docs/grub.texi: Document more user commands.
+
 2013-04-04  Andrey Borzenkov  <arvidjaar@gmail.com>
 
 	* docs/grub.texi: Document menuentry --id option.
