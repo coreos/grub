@@ -1,3 +1,8 @@
+2013-04-06  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub-install_header: Use @PACKAGE@.mo in message catalog name
+	instead of hardcoding grub.mo.
+
 2013-04-05  Fedora Ninjas <grub2-owner@fedoraproject.org>
 
 	* util/grub.d/30_os-prober.in: Support btrrfs linux-prober extensions.

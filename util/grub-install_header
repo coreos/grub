@@ -82,16 +82,16 @@ grub_install_files () {
 	    fi
 	done
 	for dir in "${localedir}"/*; do
-	    if test -f "$dir/LC_MESSAGES/grub.mo" && ! test -f "${grub_install_files_target_directory}"/locale/"${dir##*/}.mo"; then
-		cp -f "$dir/LC_MESSAGES/grub.mo" "${grub_install_files_target_directory}"/locale/"${dir##*/}.mo"
+	    if test -f "$dir/LC_MESSAGES/@PACKAGE@.mo" && ! test -f "${grub_install_files_target_directory}"/locale/"${dir##*/}.mo"; then
+		cp -f "$dir/LC_MESSAGES/@PACKAGE@.mo" "${grub_install_files_target_directory}"/locale/"${dir##*/}.mo"
 	    fi
 	done
     else
 	for locale in $install_locales; do
 	    if test -f "${grub_install_files_source_directory}"/po/$locale.mo; then
 		cp -f " "${grub_install_files_source_directory}"/po/$locale.mo" "${grub_install_files_target_directory}"/locale/$locale.mo
-	    elif test -f "${localedir}/$locale/LC_MESSAGES/grub.mo"; then
-		cp -f "${localedir}/$locale/LC_MESSAGES/grub.mo" "${grub_install_files_target_directory}"/locale/$locale.mo
+	    elif test -f "${localedir}/$locale/LC_MESSAGES/@PACKAGE@.mo"; then
+		cp -f "${localedir}/$locale/LC_MESSAGES/@PACKAGE@.mo" "${grub_install_files_target_directory}"/locale/$locale.mo
 	    fi
 	done
     fi
