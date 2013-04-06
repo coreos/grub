@@ -1,5 +1,10 @@
 2013-04-06  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* conf/Makefile.extra-dist (EXTRA_DIST): Add
+	grub-core/lib/libgcrypt/src/gcrypt.h.in and util/import_gcrypth.sed.
+
+2013-04-06  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* util/grub-install_header: Use @PACKAGE@.mo in message catalog name
 	instead of hardcoding grub.mo.
 

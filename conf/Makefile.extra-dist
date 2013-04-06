@@ -31,11 +31,13 @@ EXTRA_DIST += $(shell find $(top_srcdir)/include -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/lib -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/gnulib -name '*.h')
 EXTRA_DIST += grub-core/efiemu/runtime/config.h
+EXTRA_DIST += grub-core/lib/libgcrypt/src/gcrypt.h.in
 
 EXTRA_DIST += grub-core/lib/LzmaDec.c
 
 EXTRA_DIST += BUGS
 EXTRA_DIST += util/i386/efi/grub-dumpdevtree
+EXTRA_DIST += util/import_gcrypth.sed
 
 EXTRA_DIST += m4/gnulib-cache.m4
 EXTRA_DIST += m4/glibc2.m4
