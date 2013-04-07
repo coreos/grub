@@ -746,9 +746,12 @@ print_ucs4_terminal (const grub_uint32_t * str,
 	  putcode_real (*ptr2, term, fixed_tab);
 	}
 
-      sp = max_width - pos[last_position - str].x + 1;
-      if (sp > 0)
-	grub_print_spaces (term, sp);
+      if (contchar)
+	{
+	  sp = max_width - pos[last_position - str].x + 1;
+	  if (sp > 0)
+	    grub_print_spaces (term, sp);
+	}
     }
   return dry_run ? lines : 0;
 }
@@ -780,7 +783,8 @@ put_glyphs_terminal (const struct grub_unicode_glyph *visual,
 		     grub_ssize_t visual_len,
 		     int margin_left, int margin_right,
 		     struct grub_term_output *term,
-		     struct term_state *state, int fixed_tab)
+		     struct term_state *state, int fixed_tab,
+		     grub_uint32_t contchar)
 {
   const struct grub_unicode_glyph *visual_ptr;
   for (visual_ptr = visual; visual_ptr < visual + visual_len; visual_ptr++)
@@ -799,7 +803,11 @@ put_glyphs_terminal (const struct grub_unicode_glyph *visual,
 	      return 1;
 	    }
 
-	  grub_print_spaces (term, margin_left);
+	  if (!contchar)
+	    grub_print_spaces (term, margin_left);
+	  else
+	    grub_term_gotoxy (term, margin_left,
+			      grub_term_getxy (term) & 0xff);
 	}
       grub_free (visual_ptr->combining);
     }
@@ -839,7 +847,7 @@ print_backlog (struct grub_term_output *term,
       ret = put_glyphs_terminal (state->backlog_glyphs,
 				 state->backlog_len,
 				 margin_left, margin_right, term, state,
-				 state->backlog_fixed_tab);
+				 state->backlog_fixed_tab, 0);
       if (!ret)
 	{
 	  grub_free (state->free);
@@ -942,8 +950,8 @@ print_ucs4_real (const grub_uint32_t * str,
       else
 	{
 	  ret = put_glyphs_terminal (visual_show, visual_len_show, margin_left,
-				     contchar ? margin_right : 1,
-				     term, state, fixed_tab);
+				     contchar ? 0 : margin_right,
+				     term, state, fixed_tab, contchar);
 
 	  if (!ret)
 	    grub_free (visual);

@@ -1,3 +1,9 @@
+2013-04-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/term.c: Few more fixes for menu entry editor
+	rendering.
+	Reported by: Andrey Borzenkov <arvidjaar@gmail.com>
+
 2013-04-06  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* conf/Makefile.extra-dist (EXTRA_DIST): Add
