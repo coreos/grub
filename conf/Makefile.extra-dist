@@ -18,6 +18,7 @@ EXTRA_DIST += conf/i386-pc-cygwin-img-ld.sc
 
 EXTRA_DIST += grub-core/Makefile.core.def
 EXTRA_DIST += grub-core/Makefile.gcry.def
+EXTRA_DIST += grub-core/Makefile.libfdt.def
 
 EXTRA_DIST += grub-core/genmoddep.awk
 EXTRA_DIST += grub-core/genmod.sh.in
@@ -27,6 +28,7 @@ EXTRA_DIST += grub-core/genemuinit.sh
 EXTRA_DIST += grub-core/genemuinitheader.sh
 
 EXTRA_DIST += grub-core/lib/libgcrypt/cipher
+EXTRA_DIST += grub-core/lib/dtc
 EXTRA_DIST += $(shell find $(top_srcdir)/include -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/lib -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/gnulib -name '*.h')

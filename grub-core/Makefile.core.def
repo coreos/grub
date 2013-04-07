@@ -45,6 +45,9 @@ kernel = {
   ia64_efi_ldflags = '-Wl,-r,-d';
   ia64_efi_stripflags = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
+  arm_efi_ldflags          = '-Wl,-r,-d';
+  arm_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
+
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
   i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x9000';
 
@@ -66,6 +69,8 @@ kernel = {
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
   emu_cflags = '$(CFLAGS_GNULIB)';
   emu_cppflags = '$(CPPFLAGS_GNULIB)';
+  arm_uboot_ldflags       = '-Wl,-Ttext=0x08000000';
+  arm_uboot_stripflags    = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
   i386_pc_startup = kern/i386/pc/startup.S;
   i386_efi_startup = kern/i386/efi/startup.S;
@@ -77,6 +82,8 @@ kernel = {
   mips_startup = kern/mips/startup.S;
   sparc64_ieee1275_startup = kern/sparc64/ieee1275/crt0.S;
   powerpc_ieee1275_startup = kern/powerpc/ieee1275/startup.S;
+  arm_uboot_startup = kern/arm/uboot/startup.S;
+  arm_efi_startup = kern/arm/efi/startup.S;
 
   common = kern/command.c;
   common = kern/corecmd.c;
@@ -112,6 +119,12 @@ kernel = {
   ieee1275 = term/ieee1275/console.c;
   ieee1275 = kern/ieee1275/init.c;
 
+  uboot = disk/uboot/ubootdisk.c;
+  uboot = kern/uboot/uboot.c;
+  uboot = kern/uboot/init.c;
+  uboot = kern/uboot/hw.c;
+  uboot = term/uboot/console.c;
+
   terminfoinkernel = term/terminfo.c;
   terminfoinkernel = term/tparm.c;
   terminfoinkernel = commands/extcmd.c;
@@ -142,6 +155,9 @@ kernel = {
   ia64_efi = kern/ia64/efi/init.c;
   ia64_efi = kern/ia64/dl.c;
   ia64_efi = kern/ia64/dl_helper.c;
+
+  arm_efi = kern/arm/efi/init.c;
+  arm_efi = kern/arm/efi/misc.c;
 
   i386_pc = kern/i386/pc/init.c;
   i386_pc = kern/i386/pc/mmap.c;
@@ -191,6 +207,10 @@ kernel = {
   sparc64_ieee1275 = kern/sparc64/cache.S;
   sparc64_ieee1275 = kern/sparc64/dl.c;
   sparc64_ieee1275 = kern/sparc64/ieee1275/ieee1275.c;
+
+  arm = kern/arm/dl.c;
+  arm = kern/arm/cache.S;
+  arm = kern/arm/misc.S;
 
   emu = disk/host.c;
   emu = gnulib/progname.c;
@@ -688,6 +708,7 @@ module = {
   efi = lib/efi/halt.c;
   ieee1275 = lib/ieee1275/halt.c;
   emu = lib/emu/halt.c;
+  uboot = lib/uboot/halt.c;
 };
 
 module = {
@@ -696,11 +717,13 @@ module = {
   i386 = lib/i386/reboot_trampoline.S;
   ia64_efi = lib/efi/reboot.c;
   x86_64_efi = lib/efi/reboot.c;
+  arm_efi = lib/efi/reboot.c;
   powerpc_ieee1275 = lib/ieee1275/reboot.c;
   sparc64_ieee1275 = lib/ieee1275/reboot.c;
   mips_arc = lib/mips/arc/reboot.c;
   mips_loongson = lib/mips/loongson/reboot.c;
   mips_qemu_mips = lib/mips/qemu_mips/reboot.c;
+  uboot = lib/uboot/reboot.c;
   common = commands/reboot.c;
 };
 
@@ -1358,6 +1381,7 @@ module = {
   name = datetime;
   cmos = lib/cmos_datetime.c;
   efi = lib/efi/datetime.c;
+  uboot = lib/uboot/datetime.c;
   sparc64_ieee1275 = lib/ieee1275/datetime.c;
   powerpc_ieee1275 = lib/ieee1275/datetime.c;
   sparc64_ieee1275 = lib/ieee1275/cmos.c;
@@ -1377,6 +1401,7 @@ module = {
   extra_dist = lib/powerpc/setjmp.S;
   extra_dist = lib/ia64/setjmp.S;
   extra_dist = lib/ia64/longjmp.S;
+  extra_dist = lib/arm/setjmp.S;
 };
 
 module = {
@@ -1456,9 +1481,12 @@ module = {
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
   ia64_efi = loader/ia64/efi/linux.c;
+  arm = loader/arm/linux.c;
   common = loader/linux.c;
   common = lib/cmdline.c;
   enable = noemu;
+
+  fdt_cppflags = '$(CPPFLAGS_LIBFDT)';
 };
 
 module = {
@@ -1507,6 +1535,7 @@ module = {
 
   enable = x86;
   enable = ia64_efi;
+  enable = arm_efi;
   enable = mips;
 };
 

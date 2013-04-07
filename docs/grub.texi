@@ -3389,6 +3389,7 @@ you forget a command, you can run the command @command{help}
 * crc::                         Compute or check CRC32 checksums
 * cryptomount::                 Mount a crypto device
 * date::                        Display or set current date and time
+* devicetree::                  Load a device tree blob
 * drivemap::                    Map a drive to another
 * echo::                        Display a line of text
 * export::                      Export an environment variable
@@ -3695,6 +3696,17 @@ Otherwise, take the current date and time, change any elements specified as
 arguments, and set the result as the new date and time.  For example, `date
 01-01' will set the current month and day to January 1, but leave the year,
 hour, minute, and second unchanged.
+@end deffn
+
+
+@node devicetree
+@subsection linux
+
+@deffn Command devicetree file
+Load a device tree blob (.dtb) from a filesystem, for later use by a Linux
+kernel. Does not perform merging with any device tree supplied by firmware,
+but rather replaces it completely.
+@ref{GNU/Linux}.
 @end deffn
 
 

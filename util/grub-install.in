@@ -316,6 +316,8 @@ if [ x$source_dir = x ]; then
 		    target=i386-pc
 		fi
 		;;
+	    x"arm"*)
+		target="arm-uboot";;
 	    *)
 		gettext "Unable to determine your platform. Use --target." ;
 		echo	;;
@@ -335,7 +337,7 @@ if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ] ; then
     if [ x$disk_module = xunspecified ]; then
 	disk_module=biosdisk
     fi
-elif [ "${grub_modinfo_platform}" = "ieee1275" ] || [ "${grub_modinfo_platform}" = "efi" ] || [ "${grub_modinfo_platform}" = "arc" ] ; then
+elif [ "${grub_modinfo_platform}" = "ieee1275" ] || [ "${grub_modinfo_platform}" = "efi" ] || [ "${grub_modinfo_platform}" = "arc" ] || [ "${grub_modinfo_platform}" = "uboot" ] ; then
     disk_module=
 else
     disk_module=native
@@ -464,6 +466,8 @@ if [ x"$grub_modinfo_platform" = xefi ]; then
 	    # expansion.
 		ia64)
 		    efi_file=BOOTIA64.EFI ;;
+		arm)
+		    efi_file=BOOTARM.EFI ;;
 	    esac
 	else
 	    # It is convenient for each architecture to have a different
@@ -478,6 +482,8 @@ if [ x"$grub_modinfo_platform" = xefi ]; then
 	 # expansion.
 		ia64)
 		    efi_file=grubia64.efi ;;
+		arm)
+		    efi_file=grubarm.efi ;;
 		*)
 		    efi_file=grub.efi ;;
 	    esac
@@ -826,6 +832,14 @@ elif [ x"$grub_modinfo_platform" = xefi ]; then
 	    efibootmgr $efi_quiet -c -d "$efidir_disk" -p "$efidir_part" -w \
 		-L "$bootloader_id" -l "\\EFI\\$efi_distributor\\$efi_file"
 	fi
+    fi
+elif [ x"${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = xarm-uboot ]; then
+    grub_imgname="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}"
+    raw_imgname="${uboot_imgname}.raw"
+    mv "$grub_imgname" "$raw_imgname"
+    mkimage -T kernel -A ARM -O Linux -a 0x08000000 -e 0x08000000 -C none -d "$raw_imgname" "$grub_imgname"
+    if [ $? -eq 0 ]; then
+	rm -f "$raw_imgname"
     fi
 else
     gettext "WARNING: no platform-specific install was performed" 1>&2

@@ -174,3 +174,5 @@ po/*.gmo
 po/LINGUAS
 include/grub/gcrypt/gcrypt.h
 include/grub/gcrypt/g10lib.h
+grub-core/lib/dtc-grub
+grub-core/Makefile.libfdt.def

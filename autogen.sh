@@ -30,6 +30,9 @@ for x in mpi-asm-defs.h mpih-add1.c mpih-sub1.c mpih-mul1.c mpih-mul2.c mpih-mul
     ln -s generic/"$x" grub-core/lib/libgcrypt-grub/mpi/"$x"
 done
 
+echo "Importing libfdt..."
+python util/import_libfdt.py grub-core/lib/dtc/ grub-core
+
 echo "Creating Makefile.tpl..."
 python gentpl.py | sed -e '/^$/{N;/^\n$/D;}' > Makefile.tpl
 
@@ -43,7 +46,7 @@ if [ "x${GRUB_CONTRIB}" != x ]; then
 fi
 
 UTIL_DEFS='Makefile.util.def Makefile.utilgcry.def'
-CORE_DEFS='grub-core/Makefile.core.def grub-core/Makefile.gcry.def'
+CORE_DEFS='grub-core/Makefile.core.def grub-core/Makefile.gcry.def grub-core/Makefile.libfdt.def'
 
 for extra in contrib/*/Makefile.util.def; do
   if test -e "$extra"; then
