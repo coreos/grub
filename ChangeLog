@@ -1,5 +1,10 @@
 2013-04-08  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* grub-core/Makefile.core.def: Add kern/elfXX.c to elf module
+	as extra_dist.
+
+2013-04-08  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* grub-core/term/i386/pc/console.c: Fix cursor moving algorithm.
 
 2013-04-08  Bryan Hundven <bryanhundven@gmail.com>

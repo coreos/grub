@@ -1316,6 +1316,8 @@ module = {
 module = {
   name = elf;
   common = kern/elf.c;
+
+  extra_dist = kern/elfXX.c;
 };
 
 module = {
