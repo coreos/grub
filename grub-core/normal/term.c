@@ -787,13 +787,17 @@ put_glyphs_terminal (const struct grub_unicode_glyph *visual,
 		     grub_uint32_t contchar)
 {
   const struct grub_unicode_glyph *visual_ptr;
+  int since_last_nl = 1;
   for (visual_ptr = visual; visual_ptr < visual + visual_len; visual_ptr++)
     {
-      if (visual_ptr->base == '\n')
-	grub_print_spaces (term, margin_right);
+      if (visual_ptr->base == '\n' && contchar)
+	fill_margin (term, margin_right);
+
       putglyph (visual_ptr, term, fixed_tab);
+      since_last_nl++;
       if (visual_ptr->base == '\n')
 	{
+	  since_last_nl = 0;
 	  if (state && ++state->num_lines
 	      >= (grub_ssize_t) grub_term_height (term) - 2)
 	    {
@@ -811,6 +815,9 @@ put_glyphs_terminal (const struct grub_unicode_glyph *visual,
 	}
       grub_free (visual_ptr->combining);
     }
+  if (contchar && since_last_nl)
+	fill_margin (term, margin_right);
+
   return 0;
 }
 
@@ -950,7 +957,7 @@ print_ucs4_real (const grub_uint32_t * str,
       else
 	{
 	  ret = put_glyphs_terminal (visual_show, visual_len_show, margin_left,
-				     contchar ? 0 : margin_right,
+				     margin_right,
 				     term, state, fixed_tab, contchar);
 
 	  if (!ret)
