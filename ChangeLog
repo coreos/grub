@@ -1,3 +1,8 @@
+2013-04-08  Bryan Hundven <bryanhundven@gmail.com>
+
+	* docs/grub-dev.texi: Move @itemize after @subsection to satisfy
+	texinfo-5.1.
+
 2013-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/term.c: Few more fixes for menu entry editor
