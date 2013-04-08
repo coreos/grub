@@ -86,13 +86,9 @@ grub_console_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
  * Put the character C on the console. Because GRUB wants to write a
  * character with an attribute, this implementation is a bit tricky.
  * If C is a control character (CR, LF, BEL, BS), use INT 10, AH = 0Eh
- * (TELETYPE OUTPUT). Otherwise, save the original position, put a space,
- * save the current position, restore the original position, write the
- * character and the attribute, and restore the current position.
- *
- * The reason why this is so complicated is that there is no easy way to
- * get the height of the screen, and the TELETYPE OUTPUT BIOS call doesn't
- * support setting a background attribute.
+ * (TELETYPE OUTPUT). Otherwise, use INT 10, AH = 9 to write character
+ * with attributes and advance cursor. If we are on the last column,
+ * let BIOS to wrap line correctly.
  */
 static void
 grub_console_putchar_real (grub_uint8_t c)
@@ -112,19 +108,18 @@ grub_console_putchar_real (grub_uint8_t c)
   /* get the current position */
   pos = grub_console_getxy (NULL);
   
+  /* write the character with the attribute */
+  int10_9 (c, 1);
+
   /* check the column with the width */
   if ((pos & 0xff00) >= (79 << 8))
     {
       grub_console_putchar_real (0x0d);
       grub_console_putchar_real (0x0a);
-      /* get the current position */
-      pos = grub_console_getxy (NULL);
     }
+  else
+    grub_console_gotoxy (NULL, ((pos & 0xff00) >> 8) + 1, (pos & 0xff));
 
-  /* write the character with the attribute */
-  int10_9 (c, 1);
-
-  grub_console_gotoxy (NULL, ((pos & 0xff00) >> 8) + 1, (pos & 0xff));
 }
 
 static void
@@ -255,8 +250,7 @@ grub_console_getkeystatus (struct grub_term_input *term __attribute__ ((unused))
 static grub_uint16_t
 grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
-  /* Due to current cursor moving algorithm we lost the last column.  */
-  return (79 << 8) | 25;
+  return (80 << 8) | 25;
 }
 
 static void

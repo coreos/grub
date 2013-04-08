@@ -1,3 +1,7 @@
+2013-04-08  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/term/i386/pc/console.c: Fix cursor moving algorithm.
+
 2013-04-08  Bryan Hundven <bryanhundven@gmail.com>
 
 	* docs/grub-dev.texi: Move @itemize after @subsection to satisfy
