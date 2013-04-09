@@ -117,7 +117,7 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
       if (image_target->elf_target == EM_IA_64 && ELF_ST_TYPE (sym->st_info)
 	  == STT_FUNC)
 	{
-	  *jptr = sym->st_value;
+	  *jptr = grub_host_to_target64 (sym->st_value);
 	  sym->st_value = (char *) jptr - (char *) jumpers + jumpers_addr;
 	  jptr++;
 	  *jptr = 0;
@@ -143,8 +143,8 @@ SUFFIX (get_symbol_address) (Elf_Ehdr *e, Elf_Shdr *s, Elf_Word i,
   Elf_Sym *sym;
 
   sym = (Elf_Sym *) ((char *) e
-		       + grub_target_to_host32 (s->sh_offset)
-		       + i * grub_target_to_host32 (s->sh_entsize));
+		       + grub_target_to_host (s->sh_offset)
+		       + i * grub_target_to_host (s->sh_entsize));
   return sym->st_value;
 }
 
@@ -153,7 +153,7 @@ static Elf_Addr *
 SUFFIX (get_target_address) (Elf_Ehdr *e, Elf_Shdr *s, Elf_Addr offset,
 		    struct image_target_desc *image_target)
 {
-  return (Elf_Addr *) ((char *) e + grub_target_to_host32 (s->sh_offset) + offset);
+  return (Elf_Addr *) ((char *) e + grub_target_to_host (s->sh_offset) + offset);
 }
 
 #ifdef MKIMAGE_ELF64
@@ -182,128 +182,6 @@ SUFFIX (count_funcs) (Elf_Ehdr *e, Elf_Shdr *symtab_section,
 }
 #endif
 
-#ifdef MKIMAGE_ELF64
-struct unaligned_uint32
-{
-  grub_uint32_t val;
-}  __attribute__ ((packed));
-
-#define MASK20 ((1 << 20) - 1)
-#define MASK19 ((1 << 19) - 1)
-#define MASK3 (~(grub_addr_t) 3)
-
-static void
-add_value_to_slot_20b (grub_addr_t addr, grub_uint32_t value)
-{
-  struct unaligned_uint32 *p;
-  switch (addr & 3)
-    {
-    case 0:
-      p = (struct unaligned_uint32 *) ((addr & MASK3) + 2);
-      p->val = ((((((p->val >> 2) & MASK20) + value) & MASK20) << 2) 
-		| (p->val & ~(MASK20 << 2)));
-      break;
-    case 1:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 7);
-      p->val = ((((((p->val >> 3) & MASK20) + value) & MASK20) << 3)
-		| (p->val & ~(MASK20 << 3)));
-      break;
-    case 2:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 12);
-      p->val = ((((((p->val >> 4) & MASK20) + value) & MASK20) << 4)
-		| (p->val & ~(MASK20 << 4)));
-      break;
-    }
-}
-
-#define MASKF21 ( ((1 << 23) - 1) & ~((1 << 7) | (1 << 8)) )
-
-static grub_uint32_t
-add_value_to_slot_21_real (grub_uint32_t a, grub_uint32_t value)
-{
-  grub_uint32_t high, mid, low, c;
-  low  = (a & 0x00007f);
-  mid  = (a & 0x7fc000) >> 7;
-  high = (a & 0x003e00) << 7;
-  c = (low | mid | high) + value;
-  return (c & 0x7f) | ((c << 7) & 0x7fc000) | ((c >> 7) & 0x0003e00); //0x003e00
-}
-
-static void
-add_value_to_slot_21 (grub_addr_t addr, grub_uint32_t value)
-{
-  struct unaligned_uint32 *p;
-  switch (addr & 3)
-    {
-    case 0:
-      p = (struct unaligned_uint32 *) ((addr & MASK3) + 2);
-      p->val = ((add_value_to_slot_21_real (((p->val >> 2) & MASKF21), value) & MASKF21) << 2) | (p->val & ~(MASKF21 << 2));
-      break;
-    case 1:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 7);
-      p->val = ((add_value_to_slot_21_real (((p->val >> 3) & MASKF21), value) & MASKF21) << 3) | (p->val & ~(MASKF21 << 3));
-      break;
-    case 2:
-      p = (struct unaligned_uint32 *) ((grub_uint8_t *) (addr & MASK3) + 12);
-      p->val = ((add_value_to_slot_21_real (((p->val >> 4) & MASKF21), value) & MASKF21) << 4) | (p->val & ~(MASKF21 << 4));
-      break;
-    }
-}
-
-
-struct ia64_kernel_trampoline
-{
-  /* nop.m */
-  grub_uint8_t nop[5];
-  /* movl r15 = addr*/
-  grub_uint8_t addr_hi[6];
-  grub_uint8_t e0;
-  grub_uint8_t addr_lo[4];
-  grub_uint8_t jump[0x20];
-};
-
-static grub_uint8_t nopm[5] =
-  {
-    /* [MLX]       nop.m 0x0 */
-    0x05, 0x00, 0x00, 0x00, 0x01
-  };
-
-static grub_uint8_t jump[0x20] =
-  {
-    /* [MMI]       add r15=r15,r1;; */
-    0x0b, 0x78, 0x3c, 0x02, 0x00, 0x20,
-    /* ld8 r16=[r15],8 */
-    0x00, 0x41, 0x3c, 0x30, 0x28, 0xc0,
-    /* mov r14=r1;; */
-    0x01, 0x08, 0x00, 0x84,
-    /* 	[MIB]       ld8 r1=[r15] */
-    0x11, 0x08, 0x00, 0x1e, 0x18, 0x10,
-    /* mov b6=r16 */
-    0x60, 0x80, 0x04, 0x80, 0x03, 0x00, 
-    /* br.few b6;; */
-    0x60, 0x00, 0x80, 0x00       	            
-  };
-
-static void
-make_trampoline (struct ia64_kernel_trampoline *tr, grub_uint64_t addr)
-{
-  grub_memcpy (tr->nop, nopm, sizeof (tr->nop));
-  tr->addr_hi[0] = ((addr & 0xc00000) >> 16);
-  tr->addr_hi[1] = (addr >> 24) & 0xff;
-  tr->addr_hi[2] = (addr >> 32) & 0xff;
-  tr->addr_hi[3] = (addr >> 40) & 0xff;
-  tr->addr_hi[4] = (addr >> 48) & 0xff;
-  tr->addr_hi[5] = (addr >> 56) & 0xff;
-  tr->e0 = 0xe0;
-  tr->addr_lo[0] = ((addr & 0x000f) << 4) | 0x01;
-  tr->addr_lo[1] = (((addr & 0x0070) >> 4) | ((addr & 0x070000) >> 11)
-		    | ((addr & 0x200000) >> 17));
-  tr->addr_lo[2] = ((addr & 0x1f80) >> 5) | ((addr & 0x180000) >> 19);
-  tr->addr_lo[3] = ((addr & 0xe000) >> 13) | 0x60;
-  grub_memcpy (tr->jump, jump, sizeof (tr->jump));
-}
-#endif
-
 /* Deal with relocation information. This function relocates addresses
    within the virtual address space starting from 0. So only relative
    addresses can be fully resolved. Absolute addresses must be relocated
@@ -320,8 +198,9 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
   Elf_Half i;
   Elf_Shdr *s;
 #ifdef MKIMAGE_ELF64
-  struct ia64_kernel_trampoline *tr = (void *) (pe_target + tramp_off);
+  struct grub_ia64_trampoline *tr = (void *) (pe_target + tramp_off);
   grub_uint64_t *gpptr = (void *) (pe_target + got_off);
+#define MASK19 ((1 << 19) - 1)
 #endif
 
   for (i = 0, s = sections;
@@ -352,9 +231,9 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 			strtab + grub_target_to_host32 (s->sh_name),
 			strtab + grub_target_to_host32 (target_section->sh_name));
 
-	rtab_size = grub_target_to_host32 (s->sh_size);
-	r_size = grub_target_to_host32 (s->sh_entsize);
-	rtab_offset = grub_target_to_host32 (s->sh_offset);
+	rtab_size = grub_target_to_host (s->sh_size);
+	r_size = grub_target_to_host (s->sh_entsize);
+	rtab_offset = grub_target_to_host (s->sh_offset);
 	num_rs = rtab_size / r_size;
 
 	for (j = 0, r = (Elf_Rela *) ((char *) e + rtab_offset);
@@ -375,7 +254,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 						    ELF_R_SYM (info), image_target);
 
             addend = (s->sh_type == grub_target_to_host32 (SHT_RELA)) ?
-	      r->r_addend : 0;
+	      grub_target_to_host (r->r_addend) : 0;
 
 	   switch (image_target->elf_target)
 	     {
@@ -461,14 +340,14 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		case R_IA64_PCREL21B:
 		  {
 		    grub_uint64_t noff;
-		    make_trampoline (tr, addend + sym_addr);
+		    grub_ia64_make_trampoline (tr, addend + sym_addr);
 		    noff = ((char *) tr - (char *) pe_target
 			    - target_section_addr - (offset & ~3)) >> 4;
 		    tr++;
 		    if (noff & ~MASK19)
 		      grub_util_error ("trampoline offset too big (%"
 				       PRIxGRUB_UINT64_T ")", noff);
-		    add_value_to_slot_20b ((grub_addr_t) target, noff);
+		    grub_ia64_add_value_to_slot_20b ((grub_addr_t) target, noff);
 		  }
 		  break;
 
@@ -478,8 +357,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		    Elf_Sym *sym;
 
 		    sym = (Elf_Sym *) ((char *) e
-				       + grub_target_to_host32 (symtab_section->sh_offset)
-				       + ELF_R_SYM (info) * grub_target_to_host32 (symtab_section->sh_entsize));
+				       + grub_target_to_host (symtab_section->sh_offset)
+				       + ELF_R_SYM (info) * grub_target_to_host (symtab_section->sh_entsize));
 		    if (ELF_ST_TYPE (sym->st_info) == STT_FUNC)
 		      sym_addr = grub_target_to_host64 (*(grub_uint64_t *) (pe_target
 									    + sym->st_value
@@ -487,15 +366,15 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  }
 		case R_IA64_LTOFF_FPTR22:
 		  *gpptr = grub_host_to_target64 (addend + sym_addr);
-		  add_value_to_slot_21 ((grub_addr_t) target,
-					(char *) gpptr - (char *) pe_target
-					+ image_target->vaddr_offset);
+		  grub_ia64_add_value_to_slot_21 ((grub_addr_t) target,
+						  (char *) gpptr - (char *) pe_target
+						  + image_target->vaddr_offset);
 		  gpptr++;
 		  break;
 
 		case R_IA64_GPREL22:
-		  add_value_to_slot_21 ((grub_addr_t) target,
-					addend + sym_addr);
+		  grub_ia64_add_value_to_slot_21 ((grub_addr_t) target,
+						  addend + sym_addr);
 		  break;
 		case R_IA64_PCREL64LSB:
 		  *target = grub_host_to_target64 (grub_target_to_host64 (*target)
@@ -514,7 +393,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 						   + addend + sym_addr);
 		  grub_util_info ("relocating a direct entry to 0x%"
 				  PRIxGRUB_UINT64_T " at the offset 0x%llx",
-				  *target, (unsigned long long) offset);
+				  grub_target_to_host64 (*target),
+				  (unsigned long long) offset);
 		  break;
 
 		  /* We treat LTOFF22X as LTOFF22, so we can ignore LDXMOV.  */
@@ -650,8 +530,8 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 
   for (i = 0, s = sections; i < num_sections;
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
-    if ((s->sh_type == grub_cpu_to_le32 (SHT_REL)) ||
-        (s->sh_type == grub_cpu_to_le32 (SHT_RELA)))
+    if ((grub_target_to_host32 (s->sh_type) == SHT_REL) ||
+        (grub_target_to_host32 (s->sh_type) == SHT_RELA))
       {
 	Elf_Rel *r;
 	Elf_Word rtab_size, r_size, num_rs;
@@ -662,9 +542,9 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 	grub_util_info ("translating the relocation section %s",
 			strtab + grub_le_to_cpu32 (s->sh_name));
 
-	rtab_size = grub_le_to_cpu32 (s->sh_size);
-	r_size = grub_le_to_cpu32 (s->sh_entsize);
-	rtab_offset = grub_le_to_cpu32 (s->sh_offset);
+	rtab_size = grub_target_to_host (s->sh_size);
+	r_size = grub_target_to_host (s->sh_entsize);
+	rtab_offset = grub_target_to_host (s->sh_offset);
 	num_rs = rtab_size / r_size;
 
 	section_address = section_addresses[grub_le_to_cpu32 (s->sh_info)];
@@ -676,8 +556,8 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 	    Elf_Addr info;
 	    Elf_Addr offset;
 
-	    offset = grub_le_to_cpu32 (r->r_offset);
-	    info = grub_le_to_cpu32 (r->r_info);
+	    offset = grub_target_to_host (r->r_offset);
+	    info = grub_target_to_host (r->r_info);
 
 	    /* Necessary to relocate only absolute addresses.  */
 	    switch (image_target->elf_target)
@@ -1027,7 +907,7 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
 	  *kernel_sz = ALIGN_UP (*kernel_sz, 16);
 
 	  grub_ia64_dl_get_tramp_got_size (e, &tramp, &got);
-	  tramp *= sizeof (struct ia64_kernel_trampoline);
+	  tramp *= sizeof (struct grub_ia64_trampoline);
 
 	  ia64_toff = *kernel_sz;
 	  *kernel_sz += ALIGN_UP (tramp, 16);

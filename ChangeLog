@@ -1,3 +1,9 @@
+2013-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix ia64-efi image generation on big-endian machines. Deduplicate
+	some code while on it.
+	Reported by: Leif Lindholm.
+
 2013-04-08  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/Makefile.core.def: Add kern/elfXX.c to elf module

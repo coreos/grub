@@ -40,6 +40,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <grub/efi/pe32.h>
+#include <grub/ia64/reloc.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -1201,10 +1202,10 @@ generate_image (const char *dir, const char *prefix,
 	    o->subsystem = grub_host_to_target16 (GRUB_PE32_SUBSYSTEM_EFI_APPLICATION);
 
 	    /* Do these really matter? */
-	    o->stack_reserve_size = grub_host_to_target32 (0x10000);
-	    o->stack_commit_size = grub_host_to_target32 (0x10000);
-	    o->heap_reserve_size = grub_host_to_target32 (0x10000);
-	    o->heap_commit_size = grub_host_to_target32 (0x10000);
+	    o->stack_reserve_size = grub_host_to_target64 (0x10000);
+	    o->stack_commit_size = grub_host_to_target64 (0x10000);
+	    o->heap_reserve_size = grub_host_to_target64 (0x10000);
+	    o->heap_commit_size = grub_host_to_target64 (0x10000);
     
 	    o->num_data_directories
 	      = grub_host_to_target32 (GRUB_PE32_NUM_DATA_DIRECTORIES);
