@@ -1,3 +1,8 @@
+2013-04-09  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* autogen.sh: Use "-h", not "-f", to test for existence of symbolic
+	links under grub-core/lib/libgcrypt-grub/mpi.
+
 2013-04-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix ia64-efi image generation on big-endian machines. Deduplicate
