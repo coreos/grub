@@ -1,3 +1,8 @@
+2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix missing PVs if they don't contain "interesting" LV. Closes #38677.
+	Fix few warining messages and leaks while on it.
+
 2013-04-09  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* autogen.sh: Use "-h", not "-f", to test for existence of symbolic

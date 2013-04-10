@@ -243,6 +243,13 @@ exec_pipe (char **argv, int *fd)
   else if (mdadm_pid == 0)
     {
       /* Child.  */
+
+      /* Close fd's.  */
+#ifdef HAVE_DEVICE_MAPPER
+      dm_lib_release ();
+#endif
+      grub_diskfilter_fini ();
+
       /* Ensure child is not localised.  */
       setenv ("LC_ALL", "C", 1);
 
@@ -1315,6 +1322,76 @@ grub_util_get_dev_abstraction (const char *os_dev)
   return GRUB_DEV_ABSTRACTION_NONE;
 }
 
+static void
+pull_lvm_by_command (const char *os_dev)
+{
+  char *argv[6];
+  int fd;
+  pid_t pid;
+  FILE *mdadm;
+  char *buf = NULL;
+  size_t len = 0;
+  char *vgname;
+  const char *iptr;
+  char *optr;
+
+  if (strncmp (os_dev, "/dev/mapper/", sizeof ("/dev/mapper/") - 1)
+      != 0)
+    return;
+
+  vgname = xmalloc (strlen (os_dev + sizeof ("/dev/mapper/") - 1) + 1);
+  for (iptr = os_dev + sizeof ("/dev/mapper/") - 1, optr = vgname; *iptr; )
+    if (*iptr != '-')
+      *optr++ = *iptr++;
+    else if (iptr[0] == '-' && iptr[1] == '-')
+      {
+	iptr += 2;
+	*optr++ = '-';
+      }
+    else
+      break;
+  *optr = '\0';
+
+  /* execvp has inconvenient types, hence the casts.  None of these
+     strings will actually be modified.  */
+  argv[0] = (char *) "vgs";
+  argv[1] = (char *) "--options";
+  argv[2] = (char *) "pv_name";
+  argv[3] = (char *) "--noheadings";
+  argv[4] = vgname;
+  argv[5] = NULL;
+
+  pid = exec_pipe (argv, &fd);
+  free (vgname);
+
+  if (!pid)
+    return;
+
+  /* Parent.  Read mdadm's output.  */
+  mdadm = fdopen (fd, "r");
+  if (! mdadm)
+    {
+      grub_util_warn (_("Unable to open stream from %s: %s"),
+		      "vgs", strerror (errno));
+      goto out;
+    }
+
+  while (getline (&buf, &len, mdadm) > 0)
+    {
+      char *ptr;
+      for (ptr = buf; ptr < buf + 2 && *ptr == ' '; ptr++);
+      if (*ptr == '\0')
+	continue;
+      *(ptr + strlen (ptr) - 1) = '\0';
+      grub_util_pull_device (ptr);
+    }
+
+out:
+  close (fd);
+  waitpid (pid, NULL, 0);
+  free (buf);
+}
+
 #ifdef __linux__
 static char *
 get_mdadm_uuid (const char *os_dev)
@@ -1538,6 +1615,8 @@ grub_util_pull_device (const char *os_dev)
       break;
 
     case GRUB_DEV_ABSTRACTION_LVM:
+      pull_lvm_by_command (os_dev);
+      /* Fallthrough in case that lvm-tools are unavailable.  */
     case GRUB_DEV_ABSTRACTION_LUKS:
 #ifdef HAVE_DEVICE_MAPPER
       {

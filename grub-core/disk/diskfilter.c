@@ -199,16 +199,8 @@ scan_disk (const char *name, int accept_diskfilter)
       scan_depth--;
       return 0;
     }
-  if (scan_disk_partition_iter (disk, 0, (void *) name))
-    {
-      scan_depth--;
-      return 1;
-    }
-  if (grub_partition_iterate (disk, scan_disk_partition_iter, (void *) name))
-    {
-      scan_depth--;
-      return 1;
-    }
+  scan_disk_partition_iter (disk, 0, (void *) name);
+  grub_partition_iterate (disk, scan_disk_partition_iter, (void *) name);
   grub_disk_close (disk);
   scan_depth--;
   return 0;

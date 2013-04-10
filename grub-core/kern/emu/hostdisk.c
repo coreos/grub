@@ -431,7 +431,7 @@ grub_util_get_dm_node_linear_info (const char *dev,
   uint64_t length, start;
   char *target, *params;
   char *ptr;
-  int major, minor;
+  int major = 0, minor = 0;
   int first = 1;
   grub_disk_addr_t partstart = 0;
 
@@ -497,6 +497,8 @@ grub_util_get_dm_node_linear_info (const char *dev,
 
       dm_task_destroy (dmt);
       first = 0;
+      if (!dm_is_dm_major (major))
+	break;
     }
   if (first)
     return 0;
