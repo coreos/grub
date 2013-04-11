@@ -65,6 +65,7 @@ grub_TRANSFORM([grub-reboot])
 grub_TRANSFORM([grub-script-check])
 grub_TRANSFORM([grub-set-default])
 grub_TRANSFORM([grub-sparc64-setup])
+grub_TRANSFORM([grub-render-label])
 
 # Optimization flag.  Allow user to override.
 if test "x$TARGET_CFLAGS" = x; then

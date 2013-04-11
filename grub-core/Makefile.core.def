@@ -30,6 +30,12 @@ script = {
   common = gdb_grub.in;
 };
 
+script = {
+  installdir = platform;
+  name = grub.chrp;
+  common = boot/powerpc/grub.chrp.in;
+};
+
 kernel = {
   name = kernel;
 

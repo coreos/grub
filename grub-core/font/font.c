@@ -422,7 +422,7 @@ read_section_as_short (struct font_file_section *section,
 
 /* Load a font and add it to the beginning of the global font list.
    Returns 0 upon success, nonzero upon failure.  */
-int
+grub_font_t
 grub_font_load (const char *filename)
 {
   grub_file_t file = 0;
@@ -657,7 +657,7 @@ grub_font_load (const char *filename)
   if (register_font (font) != 0)
     goto fail;
 
-  return 0;
+  return font;
 
 fail:
   if (file)
@@ -666,7 +666,7 @@ fail:
     font->file = 0;
 
   free_font (font);
-  return 1;
+  return 0;
 }
 
 /* Read a 16-bit big-endian integer from FILE, convert it to native byte

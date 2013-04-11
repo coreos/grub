@@ -542,4 +542,9 @@ extern void grub_video_sis315pro_fini (void);
 extern void grub_video_radeon_fuloong2e_fini (void);
 #endif
 
+#ifdef GRUB_UTIL
+void
+grub_video_set_adapter (grub_video_adapter_t adapter);
+#endif
+
 #endif /* ! GRUB_VIDEO_HEADER */

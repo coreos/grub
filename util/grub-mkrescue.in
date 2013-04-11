@@ -43,9 +43,16 @@ pc_dir="${libdir}/@PACKAGE@/i386-pc"
 efi32_dir="${libdir}/@PACKAGE@/i386-efi"
 efi64_dir="${libdir}/@PACKAGE@/x86_64-efi"
 ia64_dir="${libdir}/@PACKAGE@/ia64-efi"
+ppc_dir="${libdir}/@PACKAGE@/powerpc-ieee1275"
 rom_directory=
 override_dir=
 grub_mkimage="${bindir}/@grub_mkimage@"
+grub_render_label="${bindir}/@grub_render_label@"
+label_font="${pkgdatadir}/unicode.pf2"
+label_color="black"
+label_bgcolor="white"
+product_name="${PACKAGE_NAME}"
+product_version="${PACKAGE_VERSION}"
 
 xorriso=xorriso
 
@@ -74,6 +81,12 @@ usage () {
     # TRANSLATORS: xorriso is a program for creating ISOs and burning CDs
     print_option_help "--xorriso=$filetrans" "$(gettext "use FILE as xorriso [optional]")"
     print_option_help "--grub-mkimage=$filetrans" "$(gettext "use FILE as grub-mkimage")"
+    print_option_help "--grub-render-label=$filetrans" "$(gettext "use FILE as grub-render-label")"
+    print_option_help "--label-font=$filetrans" "$(gettext "use FILE as font for label")"
+    print_option_help "--label-color=$(gettext "COLOR")" "$(gettext "use COLOR for label")"
+    print_option_help "--label-bgcolor=$(gettext "COLOR")" "$(gettext "use COLOR for label background")"
+    print_option_help "--product-name=$(gettext "STR")" "$(gettext "use STR as product")"
+    print_option_help "--product-version=$(gettext "STR")" "$(gettext "use STR as product version")"
     echo
     gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by the output of \`%s'\n" "xorriso -as mkisofs -help" "$self" | grub_fmt
     echo
@@ -131,10 +144,40 @@ do
 	export PATH
 	;;
 
+    --product-name)
+        product_name=`argument $option "$@"`; shift ;;
+    --product-name=*)
+	product_name=`echo "$option" | sed 's/--product-name=//'` ;;
+
+    --product-version)
+        product_version=`argument $option "$@"`; shift ;;
+    --product-version=*)
+	product_version=`echo "$option" | sed 's/--product-version=//'` ;;
+
     --grub-mkimage)
 	grub_mkimage=`argument $option "$@"`; shift ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+
+    --grub-render-label)
+	grub_render_label=`argument $option "$@"`; shift ;;
+    --grub-render-label=*)
+	grub_render_label=`echo "$option" | sed 's/--grub-render-label=//'` ;;
+
+    --label-font)
+	label_font=`argument $option "$@"`; shift ;;
+    --label-font=*)
+	label_font=`echo "$option" | sed 's/--label-font=//'` ;;
+
+    --label-color)
+	label_color=`argument $option "$@"`; shift ;;
+    --label-color=*)
+	label_color=`echo "$option" | sed 's/--label-color=//'` ;;
+
+    --label-bgcolor)
+	label_bgcolor=`argument $option "$@"`; shift ;;
+    --label-bgcolor=*)
+	label_bgcolor=`echo "$option" | sed 's/--label-bgcolor=//'` ;;
 
     --xorriso)
 	xorriso=`argument $option "$@"`; shift ;;
@@ -231,6 +274,9 @@ if [ "${override_dir}" = "" ] ; then
     if test -e "${loongson_dir}" ; then
         process_input_dir "${loongson_dir}" mipsel-loongson
     fi
+    if test -e "${ppc_dir}" ; then
+        process_input_dir "${ppc_dir}" mipsel-loongson
+    fi
 else
     . "${override_dir}"/modinfo.sh
     process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
@@ -244,6 +290,7 @@ else
     mipsel_qemu_dir=
     mips_qemu_dir=
     loongson_dir=
+    ppc_dir=
     case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
         i386-multiboot) multiboot_dir="${override_dir}" ;;
         i386-coreboot) coreboot_dir="${override_dir}" ;;
@@ -255,6 +302,7 @@ else
 	mipsel-qemu_mips) mipsel_qemu_dir="${override_dir}" ;;
 	mipsel-loongson) loongson_dir="${override_dir}" ;;
 	mips-qemu_mips) mips_qemu_dir="${override_dir}" ;;
+	powerpc-ieee1275) ppc_dir="${override_dir}" ;;
     esac
 fi
 
@@ -307,6 +355,38 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}" || test -e "${ia64_dir}"; th
     mcopy -s -i "${iso9660_dir}"/efi.img ${efi_dir}/efi ::/
     rm -rf ${efi_dir}
     grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img"
+fi
+
+make_image "${ppc_dir}" powerpc-ieee1275 "${iso9660_dir}/boot/powerpc.elf" ""
+if [ -e "${iso9660_dir}"/System/Library/CoreServices/boot.efi ] || [ -e "${iso9660_dir}/boot/powerpc.elf" ]; then
+    mkdir -p "${iso9660_dir}"/System/Library/CoreServices
+    touch "${iso9660_dir}/mach_kernel"
+    cat > "${iso9660_dir}/System/Library/CoreServices/SystemVersion.plist" <<EOF
+<plist version="1.0">
+<dict>
+        <key>ProductBuildVersion</key>
+        <string></string>
+        <key>ProductName</key>
+        <string>${product_name}</string>
+        <key>ProductVersion</key>
+        <string>${product_version}</string>
+</dict>
+</plist>
+EOF
+    "$grub_render_label" -f "$label_font" -b "$label_bgcolor" -c "$label_color" -t "${product_name} ${product_version}" -o "${iso9660_dir}/System/Library/CoreServices/.disk_label"
+    echo "${product_name} ${product_version}" > "${iso9660_dir}/System/Library/CoreServices/.disk_label.contentDetails"
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfsplus -hfsplus-file-creator-type chrp tbxj /System/Library/CoreServices/.disk_label"
+fi
+
+if [ -e "${iso9660_dir}/boot/powerpc.elf" ] ; then
+    cp "${ppc_dir}/grub.chrp" "${iso9660_dir}"/System/Library/CoreServices/BootX
+    cp "${iso9660_dir}/boot/powerpc.elf" "${iso9660_dir}"/System/Library/CoreServices/grub.elf
+    # FIXME: add PreP
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfsplus-file-creator-type chrp tbxi /System/Library/CoreServices/BootX -hfs-bless-by p /System/Library/CoreServices -sysid PPC"
+fi
+
+if [ -e "${iso9660_dir}"/System/Library/CoreServices/boot.efi ]; then
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfs-bless-by i /System/Library/CoreServices/boot.efi"
 fi
 
 make_image "${mipsel_qemu_dir}" mipsel-qemu_mips-elf "${iso9660_dir}/boot/mipsel-qemu_mips.elf" "pata"
