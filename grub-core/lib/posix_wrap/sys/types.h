@@ -51,6 +51,8 @@ typedef grub_uint16_t u16;
 #define HAVE_BYTE_TYPEDEF 1
 typedef grub_uint8_t byte;
 
+typedef grub_addr_t uintptr_t;
+
 #define SIZEOF_UNSIGNED_LONG GRUB_CPU_SIZEOF_LONG
 #define SIZEOF_UNSIGNED_INT 4
 #define SIZEOF_UNSIGNED_LONG_LONG 8

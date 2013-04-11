@@ -17,6 +17,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config-util.h>
+
 #include <grub/disk.h>
 #include <grub/partition.h>
 #include <grub/msdos_partition.h>

@@ -16,6 +16,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include <config-util.h>
+
 #define _BSD_SOURCE
 #include <grub/fs.h>
 #include <grub/file.h>

@@ -1,5 +1,9 @@
 2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Import new gnulib.
+
+2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use ACPI shutdown intests as traditional port was removed.
 
 2013-04-11  Andrey Borzenkov <arvidjaar@gmail.com>

@@ -18,6 +18,7 @@
  */
 
 #include <config.h>
+#include <config-util.h>
 
 #define _GNU_SOURCE	1
 #include <stdlib.h>

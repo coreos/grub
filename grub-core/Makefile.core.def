@@ -194,7 +194,7 @@ kernel = {
 
   emu = disk/host.c;
   emu = gnulib/progname.c;
-  emu = gnulib/error.c;
+  emu = kern/emu/error.c;
   emu = kern/emu/cache_s.S;
   emu = kern/emu/hostdisk.c;
   emu = kern/emu/hostfs.c;
