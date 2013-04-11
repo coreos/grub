@@ -1,0 +1,12 @@
+#! /bin/bash
+set -e
+
+pdt="$(date -u +%s)"
+dt=`echo date | @builddir@/grub-shell`
+dtg="$(date -u -d "$dt" +%s)"
+ndt="$(date -u +%s)"
+
+if [ $pdt -le $dtg ] && [ $dtg -le $ndt ]; then
+    exit 0;
+fi
+echo "Date not in range: $pdt <= $dtg <= $ndt"

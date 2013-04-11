@@ -1,5 +1,9 @@
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/grub_cmd_date.in: New test for datetime.
+
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/partmap_test.in: Fix missing qemudisk setting.
 
 2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
