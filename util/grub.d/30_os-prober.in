@@ -195,7 +195,7 @@ EOF
 
 	if [ "x$is_first_entry" = xtrue ]; then
             cat << EOF
-menuentry '$(echo "$OS" | grub_quote)' --class gnu-linux --class gnu --class os \$menuentry_id_option 'osprober-gnulinux-simple-$boot_device_id' {
+menuentry '$(echo "$OS $onstr" | grub_quote)' --class gnu-linux --class gnu --class os \$menuentry_id_option 'osprober-gnulinux-simple-$boot_device_id' {
 EOF
 	    save_default_entry | grub_add_tab
 	    printf '%s\n' "${prepare_boot_cache}"
@@ -210,7 +210,7 @@ EOF
         cat << EOF
 }
 EOF
-	    echo "submenu '$(gettext_printf "Advanced options for %s" "${OS}" | grub_quote)' \$menuentry_id_option 'osprober-gnulinux-advanced-$boot_device_id' {"
+	    echo "submenu '$(gettext_printf "Advanced options for %s" "${OS} $onstr" | grub_quote)' \$menuentry_id_option 'osprober-gnulinux-advanced-$boot_device_id' {"
 	    is_first_entry=false
 	fi
 	title="${LLABEL} $onstr"

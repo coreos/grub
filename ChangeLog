@@ -1,3 +1,8 @@
+2013-04-11  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub.d/30_os-prober.in: Add onstr to entries for visual
+	distinction.
+
 2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix missing PVs if they don't contain "interesting" LV. Closes #38677.
