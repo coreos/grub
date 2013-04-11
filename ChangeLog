@@ -1,5 +1,11 @@
 2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi: Fix description of GRUB_CMDLINE_XEN and
+	GRUB_CMDLINE_XEN_DEFAULT.
+	Reported by: 	Marc Warne (GigaTux) <gigatux>
+
+2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Import new gnulib.
 
 2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
