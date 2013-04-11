@@ -1,3 +1,7 @@
+2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use ACPI shutdown intests as traditional port was removed.
+
 2013-04-11  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/grub.d/30_os-prober.in: Add onstr to entries for visual
