@@ -72,6 +72,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	;;
     *)
 	disk=hd0
+	qemudisk=hda
 	;;
 esac
 imgfile="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1

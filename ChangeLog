@@ -1,3 +1,7 @@
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* tests/partmap_test.in: Fix missing qemudisk setting.
+
 2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support i386-ieee1275 grub-mkrescue and make check on it.
