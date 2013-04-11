@@ -100,10 +100,11 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	console=vga_text;;
 
     i386-ieee1275)
-	boot=cd
+	boot=hd
 	qemu=qemu-system-i386
-	console=console;;
-
+	console=console
+	trim=1
+	;;
     i386-qemu)
 	boot=qemu
 	qemu=qemu-system-i386

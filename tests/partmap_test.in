@@ -49,7 +49,7 @@ list_parts () {
     outfile="$1"
     shift
 
-    echo ls | "${grubshell}" --qemu-opts="-hda ${imgfile}" \
+    echo ls | "${grubshell}" --qemu-opts="-$qemudisk ${imgfile}" \
 	--modules=$mod | tr -d "\n\r" > "${outfile}"
     cat "${outfile}"
     echo
@@ -58,11 +58,17 @@ list_parts () {
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mips-qemu_mips | mipsel-qemu_mips | i386-qemu | i386-multiboot | i386-coreboot | mipsel-loongson)
 	disk=ata0
+	qemudisk=hda
 	;;
     powerpc-ieee1275)
 	disk=ieee1275//pci@80000000/mac-io@4/ata-3@20000/disk@0
+	qemudisk=hda
 	# QEMU firmware has bugs which prevent it from accessing hard disk.
 	exit 0
+	;;
+    i386-ieee1275)
+	disk=ieee1275/d
+	qemudisk=hdb
 	;;
     *)
 	disk=hd0

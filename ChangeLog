@@ -1,5 +1,9 @@
 2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support i386-ieee1275 grub-mkrescue and make check on it.
+
+2013-04-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Merge powerpc grub-mkrescue flavour with common. Use xorriso HFS+
 	feature for it.
 
