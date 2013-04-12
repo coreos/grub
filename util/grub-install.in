@@ -833,14 +833,6 @@ elif [ x"$grub_modinfo_platform" = xefi ]; then
 		-L "$bootloader_id" -l "\\EFI\\$efi_distributor\\$efi_file"
 	fi
     fi
-elif [ x"${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = xarm-uboot ]; then
-    grub_imgname="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}"
-    raw_imgname="${uboot_imgname}.raw"
-    mv "$grub_imgname" "$raw_imgname"
-    mkimage -T kernel -A ARM -O Linux -a 0x08000000 -e 0x08000000 -C none -d "$raw_imgname" "$grub_imgname"
-    if [ $? -eq 0 ]; then
-	rm -f "$raw_imgname"
-    fi
 else
     gettext "WARNING: no platform-specific install was performed" 1>&2
     echo 1>&2

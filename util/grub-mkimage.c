@@ -40,6 +40,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <grub/efi/pe32.h>
+#include <grub/uboot/image.h>
+#include <grub/arm/reloc.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -1499,6 +1501,42 @@ generate_image (const char *dir, const char *prefix,
       core_size = rom_size;
     }
     break;
+
+    case IMAGE_UBOOT:
+    {
+      struct grub_uboot_image_header *hdr;
+      GRUB_PROPERLY_ALIGNED_ARRAY (crc32_context, GRUB_MD_CRC32->contextsize);
+
+      hdr = xmalloc (core_size + sizeof (struct grub_uboot_image_header));
+      memcpy (hdr + 1, core_img, core_size);
+
+      memset (hdr, 0, sizeof (*hdr));
+      hdr->ih_magic = grub_cpu_to_be32_compile_time (GRUB_UBOOT_IH_MAGIC);
+      hdr->ih_time = grub_cpu_to_be32 (time (0));
+      hdr->ih_size = grub_cpu_to_be32 (core_size);
+      hdr->ih_load = grub_cpu_to_be32 (image_target->link_addr);
+      hdr->ih_ep = grub_cpu_to_be32 (image_target->link_addr);
+      hdr->ih_type = GRUB_UBOOT_IH_TYPE_KERNEL;
+      hdr->ih_os = GRUB_UBOOT_IH_OS_LINUX;
+      hdr->ih_arch = GRUB_UBOOT_IH_ARCH_ARM;
+      hdr->ih_comp = GRUB_UBOOT_IH_COMP_NONE;
+
+      GRUB_MD_CRC32->init(crc32_context);
+      GRUB_MD_CRC32->write(crc32_context, hdr + 1, core_size);
+      GRUB_MD_CRC32->final(crc32_context);
+      hdr->ih_dcrc = grub_get_unaligned32 (GRUB_MD_CRC32->read (crc32_context));
+
+      GRUB_MD_CRC32->init(crc32_context);
+      GRUB_MD_CRC32->write(crc32_context, hdr, sizeof (*hdr));
+      GRUB_MD_CRC32->final(crc32_context);
+      hdr->ih_hcrc = grub_get_unaligned32 (GRUB_MD_CRC32->read (crc32_context));
+
+      free (core_img);
+      core_img = (char *) hdr;
+      core_size += sizeof (struct grub_uboot_image_header);
+    }
+    break;
+
     case IMAGE_MIPS_ARC:
       {
 	char *ecoff_img;
@@ -1724,9 +1762,6 @@ generate_image (const char *dir, const char *prefix,
 	core_img = elf_img;
 	core_size = program_size + header_size + footer_size;
       }
-      break;
-    case IMAGE_UBOOT:
-      /* Raw image, header added by grub-install */
       break;
     }
 
