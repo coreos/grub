@@ -49,6 +49,7 @@ rom_directory=
 override_dir=
 grub_mkimage="${bindir}/@grub_mkimage@"
 grub_render_label="${bindir}/@grub_render_label@"
+grub_glue_efi="${bindir}/@grub_glue_efi@"
 label_font="${pkgdatadir}/unicode.pf2"
 label_color="black"
 label_bgcolor="white"
@@ -82,6 +83,7 @@ usage () {
     # TRANSLATORS: xorriso is a program for creating ISOs and burning CDs
     print_option_help "--xorriso=$filetrans" "$(gettext "use FILE as xorriso [optional]")"
     print_option_help "--grub-mkimage=$filetrans" "$(gettext "use FILE as grub-mkimage")"
+    print_option_help "--grub-glue-efi=$filetrans" "$(gettext "use FILE as grub-glue-efi")"
     print_option_help "--grub-render-label=$filetrans" "$(gettext "use FILE as grub-render-label")"
     print_option_help "--label-font=$filetrans" "$(gettext "use FILE as font for label")"
     print_option_help "--label-color=$(gettext "COLOR")" "$(gettext "use COLOR for label")"
@@ -159,6 +161,11 @@ do
 	grub_mkimage=`argument $option "$@"`; shift ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+
+    --grub-glue-efi)
+	grub_glue_efi=`argument $option "$@"`; shift ;;
+    --grub-glue-efi=*)
+	grub_glue_efi=`echo "$option" | sed 's/--grub-glue-efi=//'` ;;
 
     --grub-render-label)
 	grub_render_label=`argument $option "$@"`; shift ;;
@@ -357,6 +364,18 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}" || test -e "${ia64_dir}"; th
     if [ -e "${efi_dir}"/efi/boot/bootia32.efi ]; then
         # For old macs. Suggested by Peter Jones.
 	cp "${efi_dir}"/efi/boot/bootia32.efi "${efi_dir}"/efi/boot/boot.efi
+    fi
+
+    if [ -e "${efi_dir}"/efi/boot/bootx64.efi ] || [ -e "${efi_dir}"/efi/boot/bootia32.efi ]; then
+	mkdir -p "${iso9660_dir}"/System/Library/CoreServices
+    fi
+
+    if [ -e "${efi_dir}"/efi/boot/bootx64.efi ] && [ -e "${efi_dir}"/efi/boot/bootia32.efi ]; then
+	"$grub_glue_efi" -6 "${efi_dir}"/efi/boot/bootx64.efi -3 "${efi_dir}"/efi/boot/bootia32.efi -o "${iso9660_dir}"/System/Library/CoreServices/boot.efi
+    elif [ -e "${efi_dir}"/efi/boot/bootx64.efi ]; then
+	cp "${efi_dir}"/efi/boot/bootx64.efi "${iso9660_dir}"/System/Library/CoreServices/boot.efi
+    elif [ -e "${efi_dir}"/efi/boot/bootia32.efi ]; then
+	cp "${efi_dir}"/efi/boot/bootia32.efi "${iso9660_dir}"/System/Library/CoreServices/boot.efi
     fi
 
     mformat -C -f 2880 -L 16 -i "${iso9660_dir}"/efi.img ::

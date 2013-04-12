@@ -776,6 +776,20 @@ program = {
 };
 
 program = {
+  name = grub-glue-efi;
+  mansection = 1;
+
+  common = util/grub-glue-efi.c;
+  common = grub-core/kern/emu/argp_common.c;
+
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+};
+
+program = {
   name = grub-render-label;
   mansection = 1;
 
