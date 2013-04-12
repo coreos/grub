@@ -35,10 +35,10 @@ extern char _end[];
 extern grub_size_t grub_total_module_size;
 extern int (*uboot_syscall_ptr) (int, int *, ...);
 
-grub_addr_t grub_modbase;
-
-grub_uint32_t uboot_machine_type;
-grub_addr_t uboot_boot_data;
+/* Set to anything other than zero so it lands in .data and not .bss.  */
+grub_addr_t grub_modbase = 0x55aa55aa;
+grub_uint32_t uboot_machine_type = 0x55aa55aa;
+grub_addr_t uboot_boot_data = 0x55aa55aa;
 
 static unsigned long timer_start;
 
@@ -69,7 +69,6 @@ uboot_timer_ms (void)
 void
 grub_machine_init (void)
 {
-  grub_addr_t end, real_bss_start;
   int ver;
 
   /* First of all - establish connection with U-Boot */
@@ -85,26 +84,14 @@ grub_machine_init (void)
       uboot_puts ("invalid U-Boot API version\n");
     }
 
-  /*
-   * Modules were relocated to _end, or __bss_start + grub_total_module_size,
-   * whichever greater. (And __bss_start may not point to actual BSS start...)
-   */
-  real_bss_start = uboot_get_real_bss_start ();
-  end = real_bss_start + grub_total_module_size;
-  if (end < (grub_addr_t) _end)
-    end = (grub_addr_t) _end;
-  grub_modbase = end;
-
   /* Initialize the console so that GRUB can display messages.  */
   grub_console_init_early ();
 
   /* Enumerate memory and initialize the memory management system. */
   grub_uboot_mm_init ();
 
-  grub_dprintf ("init", "__bss_start: 0x%08x, real_bss_start: 0x%08x\n",
-		(grub_addr_t) __bss_start, real_bss_start);
-  grub_dprintf ("init", "end: 0x%08x, _end: 0x%08x\n",
-		(grub_addr_t) end, (grub_addr_t) _end);
+  grub_dprintf ("init", "__bss_start: %p\n", __bss_start);
+  grub_dprintf ("init", "_end: %p\n", _end);
   grub_dprintf ("init", "grub_modbase: %p\n", (void *) grub_modbase);
   grub_dprintf ("init", "grub_modules_get_end(): %p\n",
 		(void *) grub_modules_get_end ());

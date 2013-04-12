@@ -65,20 +65,28 @@ FUNCTION(codestart)
 	ldr	sp, =entry_state
 	push	{r4-r12,lr}	@ store U-Boot context (sp in r12)
 
-	@ Put kernel parameters aside until we can store them (further down)
-	mov	r4, r1		@ machine type
-	mov	r5, r2		@ boot data
+	ldr     r12, =EXT_C(uboot_machine_type)
+	str     r1, [r12]
+	ldr     r12, =EXT_C(uboot_boot_data)
+	str     r2, [r12]
 
 	@ Modules have been stored as a blob in BSS,
 	@ they need to be manually relocated to _end or
 	@ (__bss_start + grub_total_module_size), whichever greater.
-	bl	uboot_get_real_bss_start	@ r0 = src
+	ldr	r0, =EXT_C(__bss_start)		@ src
+	add	r0, r0, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
+	mvn	r1, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
+	and	r0, r0, r1
+
 	ldr	r1, =EXT_C(_end)		@ dst = End of BSS
 	ldr	r2, grub_total_module_size	@ blob size
 	add	r3, r0, r2			@ blob end
 	cmp	r1, r3				@ _end < blob end?
 	movlt	r1, r3				@ dst = blob end + blob size
-	
+
+	ldr     r12, =EXT_C(grub_modbase)
+	str     r1, [r12]
+
 1:	ldr	r3, [r0], #4 			@ r3 = *src++ 
 	str	r3, [r1], #4			@ *dst++ = r3 
 	subs	r2, #4				@ remaining -= 4
@@ -91,33 +99,14 @@ FUNCTION(codestart)
 
 	@ Since we _are_ the C run-time, we need to manually zero the BSS
 	@ region before continuing
-	bl	uboot_get_real_bss_start	@ zero from here
+	ldr	r0, =EXT_C(__bss_start)	@ zero from here
 	ldr	r1, =EXT_C(_end)		@ to here
 	mov	r2, #0
 1:	str	r2, [r0], #4
 	cmp	r0, r1
 	bne	1b
-
-	@ Global variables now accessible - store kernel parameters in memory
-	ldr     r12, =EXT_C(uboot_machine_type)
-	str     r4, [r12]
-	ldr     r12, =EXT_C(uboot_boot_data)
-	str     r5, [r12]
 	
 	b	EXT_C(grub_main)
-
-	/*
-	 * __bss_start does not actually point to the start of the runtime
-	 * BSS, but rather to the next byte following the preceding data.
-	 */
-FUNCTION (uboot_get_real_bss_start)
-	ldr	r0, =EXT_C(__bss_start)		@ src
-	tst	r0, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
-	beq	1f
-	mvn	r1, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
-	and	r0, r0, r1
-	add	r0, r0, #(GRUB_KERNEL_MACHINE_MOD_ALIGN)
-1:	bx	lr
 
 	/*
 	 * uboot_syscall():
