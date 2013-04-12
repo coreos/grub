@@ -1,5 +1,9 @@
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Replace stpcpy with grub_stpcpy in tools.
+
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle Japanese special keys.
 	Reported by: Hiroyuki YAMAMORI.
 	Codes supplied by: Hiroyuki YAMAMORI.

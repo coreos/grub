@@ -499,7 +499,7 @@ probe (const char *path, char **device_names, char delim)
 	    {
 	      char *tmp = xmalloc (strlen (ofpath) + sizeof ("ieee1275/"));
 	      char *p;
-	      p = stpcpy (tmp, "ieee1275/");
+	      p = grub_stpcpy (tmp, "ieee1275/");
 	      strcpy (p, ofpath);
 	      printf ("--hint-ieee1275='");
 	      print_full_name (tmp, dev);
@@ -616,7 +616,7 @@ probe (const char *path, char **device_names, char delim)
 	    {
 	      char *tmp = xmalloc (strlen (ofpath) + sizeof ("ieee1275/"));
 	      char *p;
-	      p = stpcpy (tmp, "ieee1275/");
+	      p = grub_stpcpy (tmp, "ieee1275/");
 	      strcpy (p, ofpath);
 	      print_full_name (tmp, dev);
 	      free (tmp);

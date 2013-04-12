@@ -667,14 +667,14 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
 	      char *ptr;
 	      *relroot = xmalloc (strlen (entries[i].enc_root) +
 				  2 + strlen (dir));
-	      ptr = stpcpy (*relroot, entries[i].enc_root);
+	      ptr = grub_stpcpy (*relroot, entries[i].enc_root);
 	      if (strlen (dir) > strlen (entries[i].enc_path))
 		{
 		  while (ptr > *relroot && *(ptr - 1) == '/')
 		    ptr--;
 		  if (dir[strlen (entries[i].enc_path)] != '/')
 		    *ptr++ = '/';
-		  ptr = stpcpy (ptr, dir + strlen (entries[i].enc_path));
+		  ptr = grub_stpcpy (ptr, dir + strlen (entries[i].enc_path));
 		}
 	      *ptr = 0;
 	    }
