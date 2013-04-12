@@ -198,8 +198,13 @@ cfgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 cat <<EOF >${cfgfile}
 grubshell=yes
 insmod serial
+EOF
+if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ]; then
+    echo insmod escc >>${cfgfile}
+fi
+cat <<EOF >>${cfgfile}
 serial ${serial_port}
-terminfo serial_${serial_port} dumb
+terminfo -g 255x255 serial_${serial_port} dumb
 terminal_input serial_${serial_port}
 terminal_output serial_${serial_port}
 EOF
@@ -228,7 +233,7 @@ echo "${halt_cmd}" >>${cfgfile}
 
 isofile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 if [ x$boot != xnet ]; then
-    pkgdatadir="@builddir@" sh "@builddir@/grub-mkrescue" "--grub-mkimage=${builddir}/grub-mkimage" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
+    pkgdatadir="@builddir@" sh "@builddir@/grub-mkrescue" "--grub-mkimage=${builddir}/grub-mkimage" "--grub-render-label=${builddir}/grub-render-label" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
 	--rom-directory="${rom_directory}" \
 	"/boot/grub/grub.cfg=${cfgfile}" "/boot/grub/testcase.cfg=${source}" \
 	${files} >/dev/null 2>&1
