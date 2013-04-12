@@ -150,7 +150,7 @@ program = {
   common = util/resolve.c;
   common = grub-core/kern/emu/argp_common.c;
 
-  arm = grub-core/kern/arm/dl.c;
+  common = grub-core/kern/arm/dl.c;
 
   extra_dist = util/grub-mkimagexx.c;
 
@@ -472,7 +472,6 @@ script = {
   enable = mips_loongson;
   enable = ia64_efi;
   enable = powerpc_ieee1275;
-  enable = arm_uboot;
 };
 
 script = {
