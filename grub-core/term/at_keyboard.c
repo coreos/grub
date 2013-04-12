@@ -97,7 +97,17 @@ static const grub_uint8_t set1_mapping[128] =
     /* OLPC keys. Just mapped to normal keys.  */
     /* 0x64 */ 0,                             GRUB_KEYBOARD_KEY_UP,
     /* 0x66 */ GRUB_KEYBOARD_KEY_DOWN,        GRUB_KEYBOARD_KEY_LEFT,
-    /* 0x68 */ GRUB_KEYBOARD_KEY_RIGHT
+    /* 0x68 */ GRUB_KEYBOARD_KEY_RIGHT,       0,
+    /* 0x6a */ 0,                             0,
+    /* 0x6c */ 0,                             0,
+    /* 0x6e */ 0,                             0,
+    /* 0x70 */ 0,                             0,
+    /* 0x72 */ 0,                             GRUB_KEYBOARD_KEY_JP_RO,
+    /* 0x74 */ 0,                             0,
+    /* 0x76 */ 0,                             0,
+    /* 0x78 */ 0,                             0,
+    /* 0x7a */ 0,                             0,
+    /* 0x7c */ 0,                             GRUB_KEYBOARD_KEY_JP_YEN,
   };
 
 static const struct
@@ -163,7 +173,7 @@ static const grub_uint8_t set2_mapping[256] =
     /* 0x4a */ GRUB_KEYBOARD_KEY_SLASH,       GRUB_KEYBOARD_KEY_L,
     /* 0x4c */ GRUB_KEYBOARD_KEY_SEMICOLON,   GRUB_KEYBOARD_KEY_P,
     /* 0x4e */ GRUB_KEYBOARD_KEY_DASH,        0,
-    /* 0x50 */ 0,                             0,
+    /* 0x50 */ 0,                             GRUB_KEYBOARD_KEY_JP_RO,
     /* 0x52 */ GRUB_KEYBOARD_KEY_DQUOTE,      0,
     /* 0x54 */ GRUB_KEYBOARD_KEY_LBRACKET,    GRUB_KEYBOARD_KEY_EQUAL,
     /* 0x56 */ 0,                             0,
@@ -176,7 +186,7 @@ static const grub_uint8_t set2_mapping[256] =
     /* 0x64 */ 0,                             0,
     /* 0x66 */ GRUB_KEYBOARD_KEY_BACKSPACE,   0,
     /* 0x68 */ 0,                             GRUB_KEYBOARD_KEY_NUM1,
-    /* 0x6a */ 0,                             GRUB_KEYBOARD_KEY_NUM4,
+    /* 0x6a */ GRUB_KEYBOARD_KEY_JP_YEN,      GRUB_KEYBOARD_KEY_NUM4,
     /* 0x6c */ GRUB_KEYBOARD_KEY_NUM7,        0,
     /* 0x6e */ 0,                             0,
     /* 0x70 */ GRUB_KEYBOARD_KEY_NUMDOT,      GRUB_KEYBOARD_KEY_NUM0,

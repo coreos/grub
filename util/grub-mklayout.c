@@ -250,7 +250,7 @@ static grub_uint8_t linux_to_usb_map[128] = {
   /* 0x52 */ GRUB_KEYBOARD_KEY_NUMDOT,      GRUB_KEYBOARD_KEY_NUMDOT, 
   /* 0x54 */ 0,                             0, 
   /* 0x56 */ GRUB_KEYBOARD_KEY_102ND,       GRUB_KEYBOARD_KEY_F11, 
-  /* 0x58 */ GRUB_KEYBOARD_KEY_F12,         0,
+  /* 0x58 */ GRUB_KEYBOARD_KEY_F12,         GRUB_KEYBOARD_KEY_JP_RO,
   /* 0x5a */ 0,                             0,
   /* 0x5c */ 0,                             0,
   /* 0x5e */ 0,                             0,
@@ -261,7 +261,14 @@ static grub_uint8_t linux_to_usb_map[128] = {
   /* 0x68 */ GRUB_KEYBOARD_KEY_PPAGE,       GRUB_KEYBOARD_KEY_LEFT,
   /* 0x6a */ GRUB_KEYBOARD_KEY_RIGHT,       GRUB_KEYBOARD_KEY_END,
   /* 0x6c */ GRUB_KEYBOARD_KEY_DOWN,        GRUB_KEYBOARD_KEY_NPAGE, 
-  /* 0x6e */ GRUB_KEYBOARD_KEY_INSERT,      GRUB_KEYBOARD_KEY_DELETE
+  /* 0x6e */ GRUB_KEYBOARD_KEY_INSERT,      GRUB_KEYBOARD_KEY_DELETE,
+  /* 0x70 */ 0,                             0,
+  /* 0x72 */ 0,                             GRUB_KEYBOARD_KEY_JP_RO,
+  /* 0x74 */ 0,                             0,
+  /* 0x76 */ 0,                             0,
+  /* 0x78 */ 0,                             0,
+  /* 0x7a */ 0,                             0,
+  /* 0x7c */ GRUB_KEYBOARD_KEY_JP_YEN,
 }; 
 
 static void

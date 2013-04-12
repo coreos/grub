@@ -1,5 +1,11 @@
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle Japanese special keys.
+	Reported by: Hiroyuki YAMAMORI.
+	Codes supplied by: Hiroyuki YAMAMORI.
+
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c: Document memdisk implying --prefix.
 
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
