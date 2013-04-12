@@ -153,10 +153,10 @@ if COND_x86_64_efi
 QEMU32=qemu-system-x86_64
 endif
 
-linux.init.x86_64: $(srcdir)/grub-core/tests/boot/linux.init-x86_64.S
+linux.init.x86_64: $(srcdir)/grub-core/tests/boot/linux.init-x86_64.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -m64 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
-linux.init.i386: $(srcdir)/grub-core/tests/boot/linux.init-i386.S
+linux.init.i386: $(srcdir)/grub-core/tests/boot/linux.init-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux.init.mips: $(srcdir)/grub-core/tests/boot/linux.init-mips.S
@@ -171,46 +171,46 @@ linux.init.mipsel: $(srcdir)/grub-core/tests/boot/linux.init-mips.S
 linux.init.loongson: $(srcdir)/grub-core/tests/boot/linux.init-mips.S
 	$(TARGET_CC) -o $@ $< -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -DREBOOT=1
 
-multiboot.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
+multiboot.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -DTARGET_MULTIBOOT=1 -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
 
-kfreebsd.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
+kfreebsd.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
 
 kfreebsd.aout: kfreebsd.elf
 	$(OBJCOPY) -O a.out-i386-linux $< $@ -R .note.gnu.build-id -R .note.gnu.gold-version
 
-pc-chainloader.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S
+pc-chainloader.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -DTARGET_CHAINLOADER=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x7c00 -m32
 
 pc-chainloader.bin: pc-chainloader.elf
 	$(OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn -R .note.gnu.gold-version $< $@;
 
-ntldr.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S
+ntldr.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -DTARGET_NTLDR=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0 -m32
 
 ntldr.bin: ntldr.elf
 	$(OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn -R .note.gnu.gold-version $< $@;
 
-multiboot2.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S
+multiboot2.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include -DTARGET_MULTIBOOT2=1
 
-kfreebsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kfreebsd.init-x86_64.S
+kfreebsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kfreebsd.init-x86_64.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -m64 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" && freebsd-brandelf -t FreeBSD $@
 
-kfreebsd.init.i386: $(srcdir)/grub-core/tests/boot/kfreebsd.init-i386.S
+kfreebsd.init.i386: $(srcdir)/grub-core/tests/boot/kfreebsd.init-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" && freebsd-brandelf -t FreeBSD $@
 
-knetbsd.init.i386: $(srcdir)/grub-core/tests/boot/kbsd.init-i386.S
+knetbsd.init.i386: $(srcdir)/grub-core/tests/boot/kbsd.init-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DTARGET_NETBSD=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
-kopenbsd.init.i386: $(srcdir)/grub-core/tests/boot/kbsd.init-i386.S
+kopenbsd.init.i386: $(srcdir)/grub-core/tests/boot/kbsd.init-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DTARGET_OPENBSD=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
-knetbsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kbsd.init-x86_64.S
+knetbsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kbsd.init-x86_64.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -m64 -DTARGET_NETBSD=1 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
-kopenbsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kbsd.init-x86_64.S
+kopenbsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kbsd.init-x86_64.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
 	$(TARGET_CC) -o $@ $< -m64 -DTARGET_OPENBSD=1 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux-initramfs.mips: linux.init.mips Makefile
@@ -335,18 +335,17 @@ BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-
 endif
 
 if COND_i386_multiboot
-# Freebsd crashes because memory at 0-0x1000 is occupied and requires ACPI
+# FreeBSD requires ACPI
 BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-knetbsd-x86_64
 endif
 
 if COND_i386_coreboot
-# 64-bit NetBSD crashes because memory at 0-0x1000 is occupied
-# Freebsd crashes because memory at 0-0x1000 is occupied and requires ACPI
-BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64
+# Freebsd requires ACPI
+BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-knetbsd-x86_64
 endif
 
 if COND_i386_qemu
-# Freebsd crashes because memory at 0-0x1000 is occupied and requires ACPI
+# FreeBSD requires ACPI
 BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-knetbsd-x86_64
 endif
 

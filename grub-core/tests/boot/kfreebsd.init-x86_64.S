@@ -85,6 +85,6 @@ ioperm_arg1:
 	.long 8
 	.long 1
 ioperm_arg2:
-	.long 0x1000
+	.long 0x7000
 	.long 8
 	.long 1

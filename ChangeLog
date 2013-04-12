@@ -1,5 +1,10 @@
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Turn off QEMU ACPI-way since new releases don't have shutdown port
+	anymore.
+
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi: Update coreboot status info.
 
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>

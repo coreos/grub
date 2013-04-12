@@ -65,7 +65,7 @@ _start:
 
 	/* IOPERM.  */
 	movl $SYSCALL_ARCH, %eax
-	pushl $iopl_arg1
+	pushl $ioperm_arg1
 	pushl $SYSCALL_ARCH_IOPERM
 	pushl $0
 	int $SYSCALL_INT
@@ -73,7 +73,7 @@ _start:
 
 	/* IOPERM.  */
 	movl $SYSCALL_ARCH, %eax
-	pushl $iopl_arg2
+	pushl $ioperm_arg2
 	pushl $SYSCALL_ARCH_IOPERM
 	pushl $0
 	int $SYSCALL_INT
@@ -104,6 +104,6 @@ ioperm_arg1:
 	.long 8
 	.long 1
 ioperm_arg2:
-	.long 0x1000
+	.long 0x7000
 	.long 8
 	.long 1
