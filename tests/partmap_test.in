@@ -69,6 +69,8 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     i386-ieee1275)
 	disk=ieee1275/d
 	qemudisk=hdb
+	# QEMU firmware has bugs which prevent it from accessing hard disk.
+	exit 0
 	;;
     *)
 	disk=hd0

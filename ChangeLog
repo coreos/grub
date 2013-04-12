@@ -1,5 +1,9 @@
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Disable partmap check on i386-ieee1275 due to openfirmware issues.
+
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/util/grub-shell.in: Fix it on powerpc.
 
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
