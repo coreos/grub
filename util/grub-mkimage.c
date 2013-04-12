@@ -1710,7 +1710,9 @@ static struct argp_option options[] = {
   {"memdisk",  'm', N_("FILE"), 0,
    /* TRANSLATORS: "memdisk" here isn't an identifier, it can be translated.
     "embed" is a verb (command description).  "*/
-   N_("embed FILE as a memdisk image"), 0},
+   N_("embed FILE as a memdisk image\n"
+      "Implies `-p (memdisk)/boot/grub' but prefix can be overridden by "
+      "later options"), 0},
    /* TRANSLATORS: "embed" is a verb (command description).  "*/
   {"config",   'c', N_("FILE"), 0, N_("embed FILE as an early config"), 0},
    /* TRANSLATORS: "embed" is a verb (command description).  "*/

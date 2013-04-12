@@ -1,5 +1,9 @@
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c: Document memdisk implying --prefix.
+
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/ehci.c (grub_ehci_fini_hw): Ignore errors, not
 	much we can do about it anyway.
 
