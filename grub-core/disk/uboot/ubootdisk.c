@@ -246,7 +246,7 @@ uboot_disk_open (const char *name, struct grub_disk *disk)
   grub_dprintf ("ubootdisk", "(%s) blocksize=%d, log_sector_size=%d\n",
 		disk->name, d->block_size, disk->log_sector_size);
 
-  disk->total_sectors = GRUB_DISK_SIZE_UNKNOWN;
+  disk->total_sectors = devinfo->di_stor.block_count ? : GRUB_DISK_SIZE_UNKNOWN;
   disk->data = d;
 
   return GRUB_ERR_NONE;
