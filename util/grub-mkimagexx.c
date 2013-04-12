@@ -60,9 +60,6 @@
 
 static Elf_Addr SUFFIX (entry_point);
 
-grub_err_t reloc_thm_call (grub_uint16_t *addr, Elf32_Addr sym_addr);
-grub_err_t reloc_thm_jump19 (grub_uint16_t *addr, Elf32_Addr sym_addr);
-
 /* Relocate symbols; note that this function overwrites the symbol table.
    Return the address of a start symbol.  */
 static Elf_Addr
@@ -553,19 +550,27 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		   case R_ARM_THM_CALL:
 		   case R_ARM_THM_JUMP24:
 		     {
-		       grub_util_info ("  THM_JUMP24:\ttarget=0x%08x\toffset=(0x%08x)",	(unsigned int) target, sym_addr);
+		       grub_err_t err;
+		       grub_util_info ("  THM_JUMP24:\ttarget=0x%08lx\toffset=(0x%08x)",	(unsigned long) target, sym_addr);
 		       sym_addr -= offset;
 		       /* Thumb instructions can be 16-bit aligned */
-		       reloc_thm_call ((grub_uint16_t *) target, sym_addr);
+		       err = grub_arm_reloc_thm_call ((grub_uint16_t *) target,
+						      sym_addr);
+		       if (err)
+			 grub_util_error ("%s", grub_errmsg);
 		     }
 		     break;
 		   case R_ARM_THM_JUMP19:
 		     {
+		       grub_err_t err;
 		       grub_util_info ("  THM_JUMP19:\toffset=%d\t(0x%08x)",
 				       sym_addr, sym_addr);
 		       sym_addr -= offset;
 		       /* Thumb instructions can be 16-bit aligned */
-		       reloc_thm_jump19 ((grub_uint16_t *) target, sym_addr);
+		       err = grub_arm_reloc_thm_jump19 ((grub_uint16_t *) target,
+							sym_addr);
+		       if (err)
+			 grub_util_error ("%s", grub_errmsg);
 		     }
 		     break;
 		   default:

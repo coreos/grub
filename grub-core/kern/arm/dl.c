@@ -23,17 +23,11 @@
 #include <grub/err.h>
 #include <grub/mm.h>
 #include <grub/i18n.h>
+#include <grub/arm/reloc.h>
 
 #ifdef GRUB_UTIL
 # include <grub/util/misc.h>
 #else
-# if !defined(__thumb2__)
-#  error "Relocations not implemented for A32 ("ARM") instruction set yet!"
-# endif
-
-grub_err_t reloc_jump24 (grub_uint32_t *addr, Elf32_Addr sym_addr);
-grub_err_t reloc_thm_call (grub_uint16_t *addr, Elf32_Addr sym_addr);
-grub_err_t reloc_thm_jump19 (grub_uint16_t *addr, Elf32_Addr sym_addr);
 
 #ifdef DL_DEBUG
 static const char *symstrtab;
@@ -104,7 +98,7 @@ reloc_abs32 (Elf_Word *target, Elf_Addr sym_addr)
  *   B.W, BL and BLX
  */
 grub_err_t
-reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
+grub_arm_reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
 {
   grub_int32_t offset, offset_low, offset_high;
   grub_uint32_t sign, j1, j2, is_blx;
@@ -122,14 +116,8 @@ reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
 
   /* If BLX, target symbol must be ARM (target address LSB == 0) */
   if (is_blx && (sym_addr & 1))
-    {
-#ifndef GRUB_UTIL
-      return grub_error
-	(GRUB_ERR_BUG, N_("Relocation targeting wrong execution state"));
-#else
-      grub_util_error ("Relocation targeting wrong execution state");
-#endif
-    }
+    return grub_error (GRUB_ERR_BUG,
+		       N_("Relocation targeting wrong execution state"));
 
   offset_low = -16777216;
   offset_high = is_blx ? 16777212 : 16777214;
@@ -159,18 +147,12 @@ reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
 #endif
 
   if ((offset < offset_low) || (offset > offset_high))
-    {
-#ifdef GRUB_UTIL
-      grub_util_error ("Relocation out of range");
-#else
-      return grub_error
-	(GRUB_ERR_OUT_OF_RANGE, N_("THM_CALL Relocation out of range."));
-#endif
-    }
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       N_("THM_CALL Relocation out of range."));
 
 #ifdef GRUB_UTIL
-  grub_util_info ("    relative destination = 0x%08x",
-		  (unsigned int)target + offset);
+  grub_util_info ("    relative destination = 0x%08lx",
+		  (unsigned long)target + offset);
 #endif
 
   /* Reassemble instruction word */
@@ -200,7 +182,7 @@ reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
  * Relocate conditional Thumb (T32) B<c>.W
  */
 grub_err_t
-reloc_thm_jump19 (grub_uint16_t *addr, Elf32_Addr sym_addr)
+grub_arm_reloc_thm_jump19 (grub_uint16_t *addr, Elf32_Addr sym_addr)
 {
   grub_int32_t offset;
   grub_uint32_t insword, insmask;
@@ -260,7 +242,7 @@ reloc_thm_jump19 (grub_uint16_t *addr, Elf32_Addr sym_addr)
  * Relocate ARM (A32) B
  */
 grub_err_t
-reloc_jump24 (grub_uint32_t *addr, Elf32_Addr sym_addr)
+grub_arm_reloc_jump24 (grub_uint32_t *addr, Elf32_Addr sym_addr)
 {
   grub_uint32_t insword;
   grub_int32_t offset;
@@ -358,9 +340,10 @@ do_relocations (Elf_Shdr * relhdr, Elf_Ehdr * e, grub_dl_t mod)
 	      return retval;
 	  }
 	  break;
+	case R_ARM_CALL:
 	case R_ARM_JUMP24:
 	  {
-	    retval = reloc_jump24 (target, sym_addr);
+	    retval = grub_arm_reloc_jump24 (target, sym_addr);
 	    if (retval != GRUB_ERR_NONE)
 	      return retval;
 	  }
@@ -369,7 +352,7 @@ do_relocations (Elf_Shdr * relhdr, Elf_Ehdr * e, grub_dl_t mod)
 	case R_ARM_THM_JUMP24:
 	  {
 	    /* Thumb instructions can be 16-bit aligned */
-	    retval = reloc_thm_call ((grub_uint16_t *) target, sym_addr);
+	    retval = grub_arm_reloc_thm_call ((grub_uint16_t *) target, sym_addr);
 	    if (retval != GRUB_ERR_NONE)
 	      return retval;
 	  }
@@ -377,7 +360,7 @@ do_relocations (Elf_Shdr * relhdr, Elf_Ehdr * e, grub_dl_t mod)
 	case R_ARM_THM_JUMP19:
 	  {
 	    /* Thumb instructions can be 16-bit aligned */
-	    retval = reloc_thm_jump19 ((grub_uint16_t *) target, sym_addr);
+	    retval = grub_arm_reloc_thm_jump19 ((grub_uint16_t *) target, sym_addr);
 	    if (retval != GRUB_ERR_NONE)
 	      return retval;
 	  }
