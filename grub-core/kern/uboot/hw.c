@@ -82,7 +82,7 @@ grub_uboot_probe_hardware (void)
 	}
       else if (devinfo->type & DEV_TYP_NET)
 	{
-	  grub_dprintf ("init", "  type\t\t= NET (not supported yet)\n");
+	  grub_dprintf ("init", "  type\t\t= NET\n");
 	}
       else
 	{

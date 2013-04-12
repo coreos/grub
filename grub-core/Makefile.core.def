@@ -1831,6 +1831,12 @@ module = {
 };
 
 module = {
+  name = ubootnet;
+  common = net/drivers/uboot/ubootnet.c;
+  enable = uboot;
+};
+
+module = {
   name = efinet;
   common = net/drivers/efi/efinet.c;
   enable = efi;

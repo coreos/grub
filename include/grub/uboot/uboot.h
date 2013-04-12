@@ -100,19 +100,19 @@ grub_uint32_t uboot_get_timer (grub_uint32_t base);
 /*
  * int API_dev_enum(struct device_info *)
  */
-int uboot_dev_enum (void);
+int EXPORT_FUNC(uboot_dev_enum) (void);
 
-struct device_info *uboot_dev_get (int handle);
+struct device_info *EXPORT_FUNC(uboot_dev_get) (int handle);
 
 /*
  * int API_dev_open(struct device_info *)
  */
-int uboot_dev_open (int handle);
+int EXPORT_FUNC(uboot_dev_open) (int handle);
 
 /*
  * int API_dev_close(struct device_info *)
  */
-int uboot_dev_close (int handle);
+int EXPORT_FUNC(uboot_dev_close) (int handle);
 
 /*
  * Notice: this is for sending network packets only, as U-Boot does not
@@ -134,8 +134,8 @@ int uboot_dev_write (int handle, void *buf, int *len);
 int uboot_dev_read (int handle, void *buf, lbasize_t blocks,
 		    lbastart_t start, lbasize_t * real_blocks);
 
-int uboot_dev_recv (int handle, void *buf, int size, int *real_size);
-int uboot_dev_send (int handle, void *buf, int size);
+int EXPORT_FUNC(uboot_dev_recv) (int handle, void *buf, int size, int *real_size);
+int EXPORT_FUNC(uboot_dev_send) (int handle, void *buf, int size);
 
 /*
  * int API_env_get(const char *name, char **value)
