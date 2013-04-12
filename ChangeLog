@@ -1,5 +1,10 @@
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/drivers/ieee1275/ofnet.c: Don't attempt to send more
+	than buffer size.
+
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Disable partmap check on i386-ieee1275 due to openfirmware issues.
 
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>

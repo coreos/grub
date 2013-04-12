@@ -79,7 +79,7 @@ send_card_buffer (struct grub_net_card *dev, struct grub_net_buff *pack)
 
   grub_memcpy (dev->txbuf, pack->data, len);
   status = grub_ieee1275_write (data->handle, dev->txbuf,
-				pack->tail - pack->data, &actual);
+				len, &actual);
 
   if (status)
     return grub_error (GRUB_ERR_IO, N_("couldn't send network packet"));
