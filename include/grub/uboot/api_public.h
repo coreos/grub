@@ -61,9 +61,6 @@
 
 typedef int (*scp_t) (int, int *, ...);
 
-typedef grub_uint16_t uint16_t;
-typedef grub_uint32_t uint32_t;
-
 #define API_SIG_VERSION	1
 #define API_SIG_MAGIC	"UBootAPI"
 #define API_SIG_MAGLEN	8
@@ -71,8 +68,8 @@ typedef grub_uint32_t uint32_t;
 struct api_signature
 {
   char magic[API_SIG_MAGLEN];	/* magic string */
-  uint16_t version;		/* API version */
-  uint32_t checksum;		/* checksum of this sig struct */
+  grub_uint16_t version;	/* API version */
+  grub_uint32_t checksum;	/* checksum of this sig struct */
   scp_t syscall;		/* entry point to the API */
 };
 
