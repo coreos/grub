@@ -4860,6 +4860,7 @@ Information retrieval:
 @item mips-arc: lsdev
 @item efi: lsefisystab, lssal, lsefimmap
 @item i386-pc: lsapm
+@item i386-coreboot: lscoreboot, coreboot_boottime
 @item acpi-enabled (i386-pc, i386-coreboot, i386-multiboot, *-efi): lsacpi
 @end itemize
 
@@ -4895,10 +4896,10 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item Plan9                          @tab yes     @tab no (1)
 @item Freedos                        @tab yes     @tab no (1)
 @item FreeBSD bootloader             @tab yes     @tab crashes (1)
-@item 32-bit kFreeBSD                @tab yes     @tab crashes (2,6)
-@item 64-bit kFreeBSD                @tab yes     @tab crashes (2,6)
+@item 32-bit kFreeBSD                @tab yes     @tab crashes (5)
+@item 64-bit kFreeBSD                @tab yes     @tab crashes (5)
 @item 32-bit kNetBSD                 @tab yes     @tab crashes (1)
-@item 64-bit kNetBSD                 @tab yes     @tab crashes (2)
+@item 64-bit kNetBSD                 @tab yes     @tab crashes
 @item 32-bit kOpenBSD                @tab yes     @tab yes
 @item 64-bit kOpenBSD                @tab yes     @tab yes
 @item Multiboot                      @tab yes     @tab yes
@@ -4909,9 +4910,9 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item 64-bit Linux (modern protocol) @tab yes     @tab yes
 @item 32-bit XNU                     @tab yes     @tab ?
 @item 64-bit XNU                     @tab yes     @tab ?
-@item 32-bit EFI chainloader         @tab no (3)  @tab no (3)
-@item 64-bit EFI chainloader         @tab no (3)  @tab no (3)
-@item Appleloader                    @tab no (3)  @tab no (3)
+@item 32-bit EFI chainloader         @tab no (2)  @tab no (2)
+@item 64-bit EFI chainloader         @tab no (2)  @tab no (2)
+@item Appleloader                    @tab no (2)  @tab no (2)
 @end multitable
 
 @multitable @columnfractions .50 .22 .22
@@ -4921,8 +4922,8 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item Plan9                          @tab no (1)       @tab no (1)
 @item FreeDOS                        @tab no (1)       @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)  @tab crashes (1)
-@item 32-bit kFreeBSD                @tab crashes (6)  @tab crashes (6)
-@item 64-bit kFreeBSD                @tab crashes (6)  @tab crashes (6)
+@item 32-bit kFreeBSD                @tab crashes (5)  @tab crashes (5)
+@item 64-bit kFreeBSD                @tab crashes (5)  @tab crashes (5)
 @item 32-bit kNetBSD                 @tab crashes (1)  @tab crashes (1)  
 @item 64-bit kNetBSD                 @tab yes          @tab yes
 @item 32-bit kOpenBSD                @tab yes          @tab yes
@@ -4935,9 +4936,9 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item 64-bit Linux (modern protocol) @tab yes          @tab yes
 @item 32-bit XNU                     @tab ?            @tab ?
 @item 64-bit XNU                     @tab ?            @tab ?
-@item 32-bit EFI chainloader         @tab no (3)       @tab no (3)
-@item 64-bit EFI chainloader         @tab no (3)       @tab no (3)
-@item Appleloader                    @tab no (3)       @tab no (3)
+@item 32-bit EFI chainloader         @tab no (2)       @tab no (2)
+@item 64-bit EFI chainloader         @tab no (2)       @tab no (2)
+@item Appleloader                    @tab no (2)       @tab no (2)
 @end multitable
 
 @multitable @columnfractions .50 .22 .22
@@ -4960,9 +4961,9 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item 32-bit Linux (modern protocol) @tab yes           @tab yes
 @item 64-bit Linux (modern protocol) @tab yes           @tab yes
 @item 32-bit XNU                     @tab yes           @tab yes
-@item 64-bit XNU                     @tab yes (5)       @tab yes
-@item 32-bit EFI chainloader         @tab yes           @tab no (4)
-@item 64-bit EFI chainloader         @tab no (4)        @tab yes
+@item 64-bit XNU                     @tab yes (4)       @tab yes
+@item 32-bit EFI chainloader         @tab yes           @tab no (3)
+@item 64-bit EFI chainloader         @tab no (3)        @tab yes
 @item Appleloader                    @tab yes           @tab yes
 @end multitable
 
@@ -4973,8 +4974,8 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item Plan9                          @tab no (1)
 @item FreeDOS                        @tab no (1)
 @item FreeBSD bootloader             @tab crashes (1)
-@item 32-bit kFreeBSD                @tab crashes (6)
-@item 64-bit kFreeBSD                @tab crashes (6)
+@item 32-bit kFreeBSD                @tab crashes (5)
+@item 64-bit kFreeBSD                @tab crashes (5)
 @item 32-bit kNetBSD                 @tab crashes (1)
 @item 64-bit kNetBSD                 @tab ?
 @item 32-bit kOpenBSD                @tab ?
@@ -4987,14 +4988,13 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 @item 64-bit Linux (modern protocol) @tab ?
 @item 32-bit XNU                     @tab ?
 @item 64-bit XNU                     @tab ?
-@item 32-bit EFI chainloader         @tab no (3)
-@item 64-bit EFI chainloader         @tab no (3)
-@item Appleloader                    @tab no (3)
+@item 32-bit EFI chainloader         @tab no (2)
+@item 64-bit EFI chainloader         @tab no (2)
+@item Appleloader                    @tab no (2)
 @end multitable
 
 @enumerate
 @item Requires BIOS
-@item Crashes because the memory at 0x0-0x1000 isn't available
 @item EFI only
 @item 32-bit and 64-bit EFI have different structures and work in different CPU modes so it's not possible to chainload 32-bit bootloader on 64-bit platform and vice-versa
 @item Some modules may need to be disabled

@@ -1,5 +1,9 @@
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi: Update coreboot status info.
+
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/grub_cmd_date.in: New test for datetime.
 
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
