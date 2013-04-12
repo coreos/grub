@@ -122,4 +122,5 @@ void EXPORT_FUNC (__aeabi_llsr) (void);
 void EXPORT_FUNC (__aeabi_uidiv) (void);
 void EXPORT_FUNC (__aeabi_uidivmod) (void);
 void EXPORT_FUNC (__wrap___clear_cache) (void *, void *);
+void EXPORT_FUNC (__aeabi_ulcmp) (void);
 #endif
