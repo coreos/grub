@@ -1,5 +1,9 @@
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/http.c: Fix bad free.
+
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/drivers/ieee1275/ofnet.c: Don't attempt to send more
 	than buffer size.
 
