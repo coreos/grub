@@ -225,9 +225,9 @@ struct grub_usb_device
   struct grub_usb_desc_endp *hub_endpoint;
 
   /* EHCI Split Transfer information */
-  int port;
+  int split_hubport;
 
-  int hubaddr;
+  int split_hubaddr;
 };
 
 

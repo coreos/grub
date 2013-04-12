@@ -1,3 +1,7 @@
+2013-04-12  Aleš Nesrsta  <starous@volny.cz>
+
+	Fix handling of split transfers.
+
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/net/http.c: Fix bad free.

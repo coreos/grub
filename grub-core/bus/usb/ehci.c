@@ -798,7 +798,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
   /* Set ownership of root hub ports to EHCI */
   grub_ehci_oper_write32 (e, GRUB_EHCI_CONFIG_FLAG, GRUB_EHCI_CF_EHCI_OWNER);
 
-  /* Enable asynchronous list */
+  /* Enable both lists */
   grub_ehci_oper_write32 (e, GRUB_EHCI_COMMAND,
 			  GRUB_EHCI_CMD_AS_ENABL
 			  | GRUB_EHCI_CMD_PS_ENABL
@@ -942,9 +942,9 @@ grub_ehci_setup_qh (grub_ehci_qh_t qh, grub_usb_transfer_t transfer)
    * SplitCompletionMask - AFAIK it is ignored in asynchronous list,
    * InterruptScheduleMask - AFAIK it should be zero in async. list */
   ep_cap |= GRUB_EHCI_MULT_THREE;
-  ep_cap |= (transfer->dev->port << GRUB_EHCI_DEVPORT_OFF)
+  ep_cap |= (transfer->dev->split_hubport << GRUB_EHCI_DEVPORT_OFF)
     & GRUB_EHCI_DEVPORT_MASK;
-  ep_cap |= (transfer->dev->hubaddr << GRUB_EHCI_HUBADDR_OFF)
+  ep_cap |= (transfer->dev->split_hubaddr << GRUB_EHCI_HUBADDR_OFF)
     & GRUB_EHCI_HUBADDR_MASK;
   if (transfer->dev->speed == GRUB_USB_SPEED_LOW
       && transfer->type != GRUB_USB_TRANSACTION_TYPE_CONTROL)
@@ -1260,16 +1260,6 @@ grub_ehci_setup_transfer (grub_usb_controller_t dev,
        & (GRUB_EHCI_ST_AS_STATUS | GRUB_EHCI_ST_PS_STATUS)) == 0)
     /* XXX: Fix it: Currently we don't do anything to restart EHCI */
     return GRUB_USB_ERR_INTERNAL;
-
-  /* Check if transfer is not high speed and connected to root hub.
-   * It should not happened but... */
-  if ((transfer->dev->speed != GRUB_USB_SPEED_HIGH)
-      && !transfer->dev->hubaddr)
-    {
-      grub_error (GRUB_USB_ERR_BADDEVICE,
-		  "FULL/LOW speed device on EHCI port!?!");
-      return GRUB_USB_ERR_BADDEVICE;
-    }
 
   /* Allocate memory for controller transfer data.  */
   cdata = grub_malloc (sizeof (*cdata));
@@ -1887,13 +1877,18 @@ grub_ehci_fini_hw (int noreturn __attribute__ ((unused)))
   /* We should disable all EHCI HW to prevent any DMA access etc. */
   for (e = ehci; e; e = e->next)
     {
+      /* Disable both lists */
+      grub_ehci_oper_write32 (e, GRUB_EHCI_COMMAND,
+        ~(GRUB_EHCI_CMD_AS_ENABL | GRUB_EHCI_CMD_PS_ENABL)
+        & grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
+
       /* Check if EHCI is halted and halt it if not */
       if (grub_ehci_halt (e) != GRUB_USB_ERR_NONE)
-	grub_error (GRUB_ERR_TIMEOUT, "restore_hw: EHCI halt timeout");
+	grub_error (GRUB_ERR_TIMEOUT, "fini_hw: EHCI halt timeout");
 
       /* Reset EHCI */
       if (grub_ehci_reset (e) != GRUB_USB_ERR_NONE)
-	grub_error (GRUB_ERR_TIMEOUT, "restore_hw: EHCI reset timeout");
+	grub_error (GRUB_ERR_TIMEOUT, "fini_hw: EHCI reset timeout");
     }
 
   return GRUB_USB_ERR_NONE;
