@@ -1883,12 +1883,10 @@ grub_ehci_fini_hw (int noreturn __attribute__ ((unused)))
         & grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
 
       /* Check if EHCI is halted and halt it if not */
-      if (grub_ehci_halt (e) != GRUB_USB_ERR_NONE)
-	grub_error (GRUB_ERR_TIMEOUT, "fini_hw: EHCI halt timeout");
+      grub_ehci_halt (e);
 
       /* Reset EHCI */
-      if (grub_ehci_reset (e) != GRUB_USB_ERR_NONE)
-	grub_error (GRUB_ERR_TIMEOUT, "fini_hw: EHCI reset timeout");
+      grub_ehci_reset (e);
     }
 
   return GRUB_USB_ERR_NONE;
