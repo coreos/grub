@@ -286,7 +286,7 @@ if [ "${override_dir}" = "" ] ; then
         process_input_dir "${loongson_dir}" mipsel-loongson
     fi
     if test -e "${ppc_dir}" ; then
-        process_input_dir "${ppc_dir}" mipsel-loongson
+        process_input_dir "${ppc_dir}" powerpc-ieee1275
     fi
 else
     . "${override_dir}"/modinfo.sh
