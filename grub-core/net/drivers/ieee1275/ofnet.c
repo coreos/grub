@@ -97,10 +97,7 @@ get_card_packet (struct grub_net_card *dev)
 
   nb = grub_netbuff_alloc (dev->mtu + 64 + 2);
   if (!nb)
-    {
-      grub_netbuff_free (nb);
-      return NULL;
-    }
+    return NULL;
   /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
      by 4. So that IP header is aligned on 4 bytes. */
   grub_netbuff_reserve (nb, 2);
@@ -281,6 +278,9 @@ search_net_devices (struct grub_ieee1275_devalias *alias)
     card->txbuf = grub_zalloc (card->txbufsize);
   if (!card->txbuf)
     {
+      grub_free (ofdata->path);
+      grub_free (ofdata);
+      grub_free (card);
       grub_print_error ();
       return 0;
     }
