@@ -1,5 +1,9 @@
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/man/grub-glue-efi.h2m: Add missing file.
+
+2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Fix wrong architecture for ppc dir.
 
 2013-04-12  Vladimir Serbinenko  <phcoder@gmail.com>
