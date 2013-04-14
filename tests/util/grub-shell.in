@@ -69,6 +69,16 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	serial_null="-serial null"
 	;;
 
+    sparc64-ieee1275)
+	boot=cd
+	qemu=qemu-system-sparc64
+	console=
+	serial_port=ieee1275/ttya
+	trim=1
+	qemuopts="$qemuopts -no-reboot"
+	halt_cmd=reboot
+	;;
+
     mips-qemu_mips)
 	boot=mips_qemu
 	qemu=qemu-system-mips
