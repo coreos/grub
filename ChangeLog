@@ -1,5 +1,10 @@
 2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_devalias_next): Make
+	source and destination differ.
+
+2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ieee1275/ofdisk.c: Fix CD-ROM and boot device
 	detection.
 
