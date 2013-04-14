@@ -1,5 +1,10 @@
 2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Allow IEEE1275 ports on path even if it wasn't detected automatically.
+	Needed on OpenBIOS due to incomplete device tree.
+
+2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ieee1275/ofdisk.c: Iterate over bootpath even if it
 	would be otherwise excluded.
 

@@ -31,6 +31,9 @@
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
 #include <grub/machine/kernel.h>
 #endif
+#ifdef GRUB_MACHINE_IEEE1275
+#include <grub/ieee1275/console.h>
+#endif
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -140,6 +143,19 @@ grub_serial_find (const char *name)
     {
       name = grub_serial_ns8250_add_port (grub_strtoul (&name[sizeof ("port") - 1],
 							0, 16));
+      if (!name)
+	return NULL;
+
+      FOR_SERIAL_PORTS (port)
+	if (grub_strcmp (port->name, name) == 0)
+	  break;
+    }
+#endif
+
+#ifdef GRUB_MACHINE_IEEE1275
+  if (!port && grub_memcmp (name, "ieee1275/", sizeof ("ieee1275/") - 1) == 0)
+    {
+      name = grub_ofserial_add_port (&name[sizeof ("ieee1275/") - 1]);
       if (!name)
 	return NULL;
 
