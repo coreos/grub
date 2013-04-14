@@ -10,3 +10,4 @@ if [ $pdt -le $dtg ] && [ $dtg -le $ndt ]; then
     exit 0;
 fi
 echo "Date not in range: $pdt <= $dtg <= $ndt"
+exit 1
