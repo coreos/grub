@@ -1,5 +1,10 @@
 2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub-dev.texi: Rearrange menu to match the section order.
+	Reported by: Bryan Hundven.
+
+2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/linux.c: Remove useless leftover pointer.
 
 2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -74,8 +74,8 @@ This edition documents version @value{VERSION}.
 
 @menu
 * Getting the source code::
-* Finding your way around::
 * Coding style::
+* Finding your way around::
 * Contributing Changes::
 * Porting::
 * Error Handling::
@@ -948,8 +948,8 @@ driver manager works are not included here.
 
 @menu
 * Video API::
-* Bitmap API::
 * Example usage of Video API::
+* Bitmap API::
 @end menu
 
 @node Video API
