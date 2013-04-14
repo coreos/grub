@@ -31,6 +31,7 @@ static grub_ieee1275_ihandle_t last_ihandle;
 struct ofdisk_hash_ent
 {
   char *devpath;
+  int is_boot;
   /* Pointer to shortest available name on nodes representing canonical names,
      otherwise NULL.  */
   const char *shortest;
@@ -69,13 +70,12 @@ ofdisk_hash_add_real (char *devpath)
   struct ofdisk_hash_ent *p;
   struct ofdisk_hash_ent **head = &ofdisk_hash[ofdisk_hash_fn(devpath)];
 
-  p = grub_malloc(sizeof (*p));
+  p = grub_zalloc (sizeof (*p));
   if (!p)
     return NULL;
 
   p->devpath = devpath;
   p->next = *head;
-  p->shortest = 0;
   *head = p;
   return p;
 }
@@ -267,7 +267,8 @@ grub_ofdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		}
 	    }
 
-	  if (grub_strncmp (ent->shortest, "cdrom", 5) == 0)
+	  if (grub_strncmp (ent->shortest, "cdrom", 5) == 0
+	      || ent->is_boot)
 	    continue;
 
 	  {
@@ -491,9 +492,51 @@ static struct grub_disk_dev grub_ofdisk_dev =
     .next = 0
   };
 
+static void
+insert_bootpath (void)
+{
+  char *bootpath;
+  grub_ssize_t bootpath_size;
+  char *type;
+
+  if (grub_ieee1275_get_property_length (grub_ieee1275_chosen, "bootpath",
+					 &bootpath_size)
+      || bootpath_size <= 0)
+    {
+      /* Should never happen.  */
+      grub_printf ("/chosen/bootpath property missing!\n");
+      return;
+    }
+
+  bootpath = (char *) grub_malloc ((grub_size_t) bootpath_size + 64);
+  if (! bootpath)
+    {
+      grub_print_error ();
+      return;
+    }
+  grub_ieee1275_get_property (grub_ieee1275_chosen, "bootpath", bootpath,
+                              (grub_size_t) bootpath_size + 1, 0);
+  bootpath[bootpath_size] = '\0';
+
+  /* Transform an OF device path to a GRUB path.  */
+
+  type = grub_ieee1275_get_device_type (bootpath);
+  if (!(type && grub_strcmp (type, "network") == 0))
+    {
+      struct ofdisk_hash_ent *op;
+      char *device = grub_ieee1275_get_devname (bootpath);
+      op = ofdisk_hash_add (device, NULL);
+      op->is_boot = 1;
+    }
+  grub_free (type);
+  grub_free (bootpath);
+}
+
 void
 grub_ofdisk_init (void)
 {
+  insert_bootpath ();
+
   grub_disk_dev_register (&grub_ofdisk_dev);
 }
 

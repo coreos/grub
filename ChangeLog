@@ -1,4 +1,9 @@
-2013-04-13  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ieee1275/ofdisk.c: Iterate over bootpath even if it
+	would be otherwise excluded.
+
+2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options):
 	Inline name defines used only once.
