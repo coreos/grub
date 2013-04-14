@@ -1,5 +1,9 @@
 2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c: Remove useless leftover pointer.
+
+2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move GRUB out of system area when using xorriso 1.2.9 or later.
 
 2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
