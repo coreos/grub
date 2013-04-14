@@ -1,5 +1,9 @@
 2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/partmap_test.in: Skip on sparc64.
+
+2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support grub-shell on sparc64.
 
 2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
