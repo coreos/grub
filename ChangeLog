@@ -1,5 +1,10 @@
 2013-04-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options):
+	Inline name defines used only once.
+
+2013-04-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix memory leaks in ofnet.
 	Reported by: Francesco Lavra.
 
