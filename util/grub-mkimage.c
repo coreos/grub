@@ -67,7 +67,8 @@ struct image_target_desc
   int bigendian;
   enum {
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
-    IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
+    IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_SPARC64_CDCORE,
+    IMAGE_I386_IEEE1275,
     IMAGE_LOONGSON_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
     IMAGE_FULOONG2F_FLASH, IMAGE_I386_PC_PXE, IMAGE_MIPS_ARC,
     IMAGE_QEMU_MIPS_FLASH
@@ -325,6 +326,21 @@ struct image_target_desc image_targets[] =
       .voidp_sizeof = 8,
       .bigendian = 1, 
       .id = IMAGE_SPARC64_RAW,
+      .flags = PLATFORM_FLAGS_NONE,
+      .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
+      .decompressor_compressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_addr = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
+    },
+    {
+      .dirname = "sparc64-ieee1275",
+      .names = { "sparc64-ieee1275-cdcore", NULL },
+      .voidp_sizeof = 8,
+      .bigendian = 1, 
+      .id = IMAGE_SPARC64_CDCORE,
       .flags = PLATFORM_FLAGS_NONE,
       .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
       .decompressor_compressed_size = TARGET_NO_FIELD,
@@ -1021,6 +1037,7 @@ generate_image (const char *dir, const char *prefix,
       break;
     case IMAGE_SPARC64_AOUT:
     case IMAGE_SPARC64_RAW:
+    case IMAGE_SPARC64_CDCORE:
     case IMAGE_I386_IEEE1275:
     case IMAGE_PPC:
       break;
@@ -1359,6 +1376,8 @@ generate_image (const char *dir, const char *prefix,
 	free (boot_img);
 	free (boot_path);
       }
+      break;
+    case IMAGE_SPARC64_CDCORE:
       break;
     case IMAGE_YEELOONG_FLASH:
     case IMAGE_FULOONG2F_FLASH:

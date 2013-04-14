@@ -45,7 +45,7 @@ need the following.
 Prerequisites for make-check:
 
 * qemu, specifically the binary 'qemu-system-i386'
-* xorriso, for grub-mkrescue and grub-shell
+* xorriso 1.2.9 or later, for grub-mkrescue and grub-shell
 
 Configuring the GRUB
 ====================

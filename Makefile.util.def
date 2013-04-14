@@ -475,6 +475,7 @@ script = {
   enable = mips_loongson;
   enable = ia64_efi;
   enable = powerpc_ieee1275;
+  enable = sparc64_ieee1275;
 };
 
 script = {

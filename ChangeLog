@@ -1,5 +1,9 @@
 2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support mkrescue on sparc64.
+
+2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Allow IEEE1275 ports on path even if it wasn't detected automatically.
 	Needed on OpenBIOS due to incomplete device tree.
 

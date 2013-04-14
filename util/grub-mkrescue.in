@@ -44,6 +44,7 @@ i386_ieee1275_dir="${libdir}/@PACKAGE@/i386-ieee1275"
 efi32_dir="${libdir}/@PACKAGE@/i386-efi"
 efi64_dir="${libdir}/@PACKAGE@/x86_64-efi"
 ia64_dir="${libdir}/@PACKAGE@/ia64-efi"
+sparc64_dir="${libdir}/@PACKAGE@/sparc64-ieee1275"
 ppc_dir="${libdir}/@PACKAGE@/powerpc-ieee1275"
 rom_directory=
 override_dir=
@@ -90,6 +91,7 @@ usage () {
     print_option_help "--label-bgcolor=$(gettext "COLOR")" "$(gettext "use COLOR for label background")"
     print_option_help "--product-name=$(gettext "STR")" "$(gettext "use STR as product")"
     print_option_help "--product-version=$(gettext "STR")" "$(gettext "use STR as product version")"
+    print_option_help "--sparc-boot" "$(gettext "enable sparc boot. Disables HFS+, APM and boot as disk image for i386-pc")"
     echo
     gettext_printf "%s generates a bootable rescue image with specified source files, source directories, or mkisofs options listed by the output of \`%s'\n" "xorriso -as mkisofs -help" "$self" | grub_fmt
     echo
@@ -98,6 +100,8 @@ usage () {
     gettext "Report bugs to <bug-grub@gnu.org>."; echo
     gettext "Mail xorriso support requests to <bug-xorriso@gnu.org>."; echo
 }
+
+system_area=auto
 
 # Check the arguments.
 while test $# -gt 0
@@ -146,6 +150,9 @@ do
 	PATH=${override_dir}:$PATH
 	export PATH
 	;;
+
+    --sparc-boot)
+        system_area=sparc64 ;;
 
     --product-name)
         product_name=`argument $option "$@"`; shift ;;
@@ -230,9 +237,7 @@ make_image ()
 
     gettext_printf "Enabling %s support ...\n" "$2"
 
-    memdisk_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
-    memdisk_dir="`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
-    mkdir -p "${memdisk_dir}/boot/grub"
+    load_cfg="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`"
 
     (cat << EOF
 search --fs-uuid --set=root ${iso_uuid}
@@ -240,18 +245,36 @@ set prefix=(\${root})/boot/grub
 EOF
     for i in $(cat "${source_directory}/partmap.lst") ${modules} ; do
         echo "insmod $i"
-    done ; \
-    echo "source \$prefix/grub.cfg") \
-    > "${memdisk_dir}/boot/grub/grub.cfg"
+    done ; ) > "${load_cfg}"
 
-    (cd "${memdisk_dir}"; tar -cf - boot) > "${memdisk_img}"
-    rm -rf "${memdisk_dir}"
-    "$grub_mkimage" -O ${platform} -d "${source_directory}" -m "${memdisk_img}" -o "$3" --prefix='(memdisk)/boot/grub' \
-        search iso9660 configfile normal memdisk tar $4
-    rm -rf "${memdisk_img}"
+    "$grub_mkimage" -O ${platform} -d "${source_directory}" -c "${load_cfg}" -o "$3" \
+        search iso9660 $4
+    rm -rf "${load_cfg}"
+}
+
+make_image_fwdisk ()
+{
+    source_directory="$1"
+    platform=$2
+    if ! test -e "${source_directory}"; then
+	return;
+    fi
+
+    gettext_printf "Enabling %s support ...\n" "$2"
+
+    "$grub_mkimage" -O ${platform} -d "${source_directory}" -p '()/boot/grub' -o "$3" \
+        iso9660 $4
 }
 
 if [ "${override_dir}" = "" ] ; then
+    if [ "$system_area" = auto ]; then
+	if test -e "${pc_dir}" || test -e "${ppc_dir}" \
+	    || test -e "${efi32_dir}" || test -e "${efi64_dir}"; then 
+	    system_area=common;
+	elif test -e "${sparc64_dir}" ; then
+	    system_area=sparc64;
+	fi
+    fi
     if test -e "${multiboot_dir}" ; then
         process_input_dir "${multiboot_dir}" i386-multiboot
     fi
@@ -288,6 +311,9 @@ if [ "${override_dir}" = "" ] ; then
     if test -e "${ppc_dir}" ; then
         process_input_dir "${ppc_dir}" powerpc-ieee1275
     fi
+    if test -e "${sparc64_dir}" ; then
+        process_input_dir "${sparc64_dir}" sparc64-ieee1275
+    fi
 else
     . "${override_dir}"/modinfo.sh
     process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
@@ -303,18 +329,20 @@ else
     loongson_dir=
     ppc_dir=
     i386_ieee1275_dir=
+    sparc64_dir=
     case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
         i386-multiboot) multiboot_dir="${override_dir}" ;;
         i386-coreboot) coreboot_dir="${override_dir}" ;;
         i386-qemu) qemu_dir="${override_dir}" ;;
-        i386-pc) pc_dir="${override_dir}" ;;
-	i386-efi) efi32_dir="${override_dir}" ;;
-	x86_64-efi) efi64_dir="${override_dir}" ;;
+        i386-pc) pc_dir="${override_dir}"; system_area=common;;
+	i386-efi) efi32_dir="${override_dir}"; system_area=common ;;
+	x86_64-efi) efi64_dir="${override_dir}"; system_area=common ;;
 	ia64-efi) ia64_dir="${override_dir}" ;;
 	mipsel-qemu_mips) mipsel_qemu_dir="${override_dir}" ;;
 	mipsel-loongson) loongson_dir="${override_dir}" ;;
 	mips-qemu_mips) mips_qemu_dir="${override_dir}" ;;
-	powerpc-ieee1275) ppc_dir="${override_dir}" ;;
+	powerpc-ieee1275) ppc_dir="${override_dir}"; system_area=common ;;
+	sparc64-ieee1275) sparc64_dir="${override_dir}"; system_area=sparc64 ;;
 	i386-ieee1275) i386_ieee1275_dir="${override_dir}" ;;
     esac
 fi
@@ -342,14 +370,16 @@ if test -e "${pc_dir}" ; then
 
     rm -f "${core_img}"
 
-    grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-info-table \
-		--embedded-boot ${embed_img}"
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-load-size 4 -boot-info-table"
+    if [ "$system_area" = common ]; then
+	grub_mkisofs_arguments="--embedded-boot ${embed_img}"
+    fi
 fi
 
 # build multiboot core.img
 make_image "${multiboot_dir}" i386-multiboot "${iso9660_dir}/boot/multiboot.img" "pata ahci at_keyboard"
 
-make_image "${i386_ieee1275_dir}" i386-ieee1275 "${iso9660_dir}/boot/ofwx86.elf" ""
+make_image_fwdisk "${i386_ieee1275_dir}" i386-ieee1275 "${iso9660_dir}/boot/ofwx86.elf" ""
 
 if test -e "${efi64_dir}" || test -e "${efi32_dir}" || test -e "${ia64_dir}"; then
     efi_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
@@ -384,7 +414,7 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}" || test -e "${ia64_dir}"; th
     grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img"
 fi
 
-make_image "${ppc_dir}" powerpc-ieee1275 "${iso9660_dir}/boot/powerpc.elf" ""
+make_image_fwdisk "${ppc_dir}" powerpc-ieee1275 "${iso9660_dir}/boot/powerpc.elf" ""
 if [ -e "${iso9660_dir}"/System/Library/CoreServices/boot.efi ] || [ -e "${iso9660_dir}/boot/powerpc.elf" ]; then
     mkdir -p "${iso9660_dir}"/System/Library/CoreServices
     touch "${iso9660_dir}/mach_kernel"
@@ -402,18 +432,30 @@ if [ -e "${iso9660_dir}"/System/Library/CoreServices/boot.efi ] || [ -e "${iso96
 EOF
     "$grub_render_label" -f "$label_font" -b "$label_bgcolor" -c "$label_color" -t "${product_name} ${product_version}" -o "${iso9660_dir}/System/Library/CoreServices/.disk_label"
     echo "${product_name} ${product_version}" > "${iso9660_dir}/System/Library/CoreServices/.disk_label.contentDetails"
-    grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfsplus -hfsplus-file-creator-type chrp tbxj /System/Library/CoreServices/.disk_label"
+    if [ "$system_area" = common ]; then
+	grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfsplus -hfsplus-file-creator-type chrp tbxj /System/Library/CoreServices/.disk_label"
+    fi
 fi
 
 if [ -e "${iso9660_dir}/boot/powerpc.elf" ] ; then
     cp "${ppc_dir}/grub.chrp" "${iso9660_dir}"/System/Library/CoreServices/BootX
     cp "${iso9660_dir}/boot/powerpc.elf" "${iso9660_dir}"/System/Library/CoreServices/grub.elf
     # FIXME: add PreP
-    grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfsplus-file-creator-type chrp tbxi /System/Library/CoreServices/BootX -hfs-bless-by p /System/Library/CoreServices -sysid PPC"
+    if [ "$system_area" = common ]; then
+	grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfsplus-file-creator-type chrp tbxi /System/Library/CoreServices/BootX -hfs-bless-by p /System/Library/CoreServices"
+    fi
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} -sysid PPC"
 fi
 
-if [ -e "${iso9660_dir}"/System/Library/CoreServices/boot.efi ]; then
+if [ -e "${iso9660_dir}"/System/Library/CoreServices/boot.efi ] && [ "$system_area" = common ]; then
     grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfs-bless-by i /System/Library/CoreServices/boot.efi"
+fi
+
+make_image_fwdisk "${sparc64_dir}" sparc64-ieee1275-cdcore "${iso9660_dir}/boot/grub/sparc64-ieee1275/core.img" ""
+if [ -e "${iso9660_dir}"/boot/grub/sparc64-ieee1275/core.img ] && [ "$system_area" = sparc64 ]; then
+   sysarea_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+   dd if=/dev/zero count=1 bs=512 | cat - "${sparc64_dir}"/cdboot.img > "$sysarea_img"
+   grub_mkisofs_arguments="${grub_mkisofs_arguments} -G $sysarea_img -B , --grub2-sparc-core /boot/grub/sparc64-ieee1275/core.img"
 fi
 
 make_image "${mipsel_qemu_dir}" mipsel-qemu_mips-elf "${iso9660_dir}/boot/mipsel-qemu_mips.elf" "pata"
@@ -452,6 +494,7 @@ fi
 "${xorriso}" -as mkisofs -graft-points ${grub_mkisofs_arguments} --protective-msdos-label -o "${output_image}" -r "${iso9660_dir}" --sort-weight 0 / --sort-weight 1 /boot ${source}
 rm -rf "${iso9660_dir}"
 
+rm -f "${sysarea_img}"
 rm -f "${embed_img}"
 
 exit 0

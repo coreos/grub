@@ -283,10 +283,19 @@ image = {
 
 image = {
   name = cdboot;
+
   i386_pc = boot/i386/pc/cdboot.S;
   i386_pc_ldflags = '$(TARGET_IMG_LDFLAGS)';
   i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x7C00';
+
+  sparc64_ieee1275 = boot/sparc64/ieee1275/boot.S;
+  sparc64_ieee1275_objcopyflags = '-O a.out-sunos-big';
+  sparc64_ieee1275_ldflags = ' -Wl,-Ttext=0x4000';
+  sparc64_ieee1275_cppflags = '-DCDBOOT=1';
+
   objcopyflags = '-O binary';
+
+  enable = sparc64_ieee1275;
   enable = i386_pc;
 };
 

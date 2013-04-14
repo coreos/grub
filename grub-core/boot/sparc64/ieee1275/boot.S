@@ -28,6 +28,7 @@ pic_base:
 	call	boot_continue
 	 mov	%o4, CIF_REG
 
+#ifndef CDBOOT
 	/* The offsets to these locations are defined by the
 	 * GRUB_BOOT_MACHINE_foo macros in include/grub/sparc/ieee1275/boot.h,
 	 * and grub-setup uses this to patch these next three values as needed.
@@ -43,9 +44,19 @@ pic_base:
 	. = _start + GRUB_BOOT_MACHINE_BOOT_DEVPATH
 boot_path:
 	. = _start + GRUB_BOOT_MACHINE_KERNEL_BYTE
-boot_path_end:
 kernel_byte:		.xword (2 << 9)
+boot_path_end:
 kernel_address:		.word  GRUB_BOOT_MACHINE_KERNEL_ADDR
+#else
+#define boot_path (_start + 512)
+#define boot_path_end (_start + 1024)
+#include <grub/offsets.h>
+
+	. = _start + 8
+kernel_byte:		.xword (2 << 9)
+kernel_size:	        .word  512
+kernel_address:		.word  GRUB_BOOT_SPARC64_IEEE1275_IMAGE_ADDRESS
+#endif
 
 prom_finddev_name:	.asciz "finddevice"
 prom_chosen_path:	.asciz "/chosen"
@@ -158,8 +169,10 @@ boot_continue:
 	 mov	GRUB_NAME_LEN, %o3
 
 	GET_ABS(boot_path, %o3)
+#ifndef CDBOOT
 	ldub	[%o3], %o1
 	brnz,pn	%o1, bootpath_known
+#endif
 
 	/* getprop(chosen_node, "bootpath", &buffer, buffer_size) */
 	 GET_ABS(prom_bootpath_name, %o2)
@@ -194,12 +207,19 @@ bootpath_known:
 	GET_ABS(prom_read_name, %o0)
 	LDUW_ABS(kernel_address, 0x00, %o2)
 	call	prom_call_3_1_o1
+#ifdef CDBOOT
+	 LDUW_ABS(kernel_size, 0x00, %o3)
+#else
 	 mov	512, %o3
+#endif
 
 	LDUW_ABS(kernel_address, 0x00, %o2)
 	jmpl	%o2, %o7
+#ifdef CDBOOT
+	 mov	CIF_REG, %o4
+#else
 	 nop
-
+#endif
 	. = _start + GRUB_BOOT_MACHINE_CODE_END
 
 /* the last 4 bytes in the sector 0 contain the signature */
