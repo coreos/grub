@@ -19,6 +19,14 @@ set -e
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst \
 handler.lst video.lst crypto.lst terminal.lst"
 
+grub_compress_file () {
+    if [ "$compressor" != "" ] ; then
+        "$compressor" $compressor_opts "$1" > "$2"
+    else
+        cp -f "$1" "$2"
+    fi
+}
+
 grub_install_files () {
     grub_install_files_source_directory="$1"
     grub_install_files_target_directory="$2"
@@ -42,7 +50,7 @@ grub_install_files () {
 
     if [ x"$install_modules" = xall ]; then
 	for file in "${grub_install_files_source_directory}/"*.mod; do
-	    cp -f "$file" "${grub_install_files_target_directory}"/"${grub_install_files_platform}"
+	    grub_compress_file "$file" "${grub_install_files_target_directory}"/"${grub_install_files_platform}/$(basename "$file")"
 	done
     else
 	modules1=
@@ -56,13 +64,13 @@ grub_install_files () {
 	    modules2="$modules3"
 	done
 	for file in $(echo "$modules1" | sed 's, ,\n,g' |sort -u); do
-	    cp -f "${grub_install_files_source_directory}/$file.mod" "${grub_install_files_target_directory}"/"${grub_install_files_platform}"
+	    grub_compress_file "${grub_install_files_source_directory}/$file.mod" "${grub_install_files_target_directory}"/"${grub_install_files_platform}/$file.mod"
 	done
     fi
     
     for file in ${pkglib_DATA} efiemu32.o efiemu64.o; do
 	if test -f "${grub_install_files_source_directory}/${file}"; then
-            cp -f "${grub_install_files_source_directory}/${file}" "${grub_install_files_target_directory}"/"${grub_install_files_platform}"
+            grub_compress_file "${grub_install_files_source_directory}/${file}" "${grub_install_files_target_directory}"/"${grub_install_files_platform}/${file}"
 	fi
     done
     
@@ -78,34 +86,36 @@ grub_install_files () {
     if [ x"$install_locales" = xall ]; then
 	for file in "${grub_install_files_source_directory}"/po/*.mo; do
 	    if test -f "$file"; then
-		cp -f "$file" "${grub_install_files_target_directory}"/locale/
+		grub_compress_file "$file" "${grub_install_files_target_directory}"/locale/"$(basename "$file")"
 	    fi
 	done
 	for dir in "${localedir}"/*; do
 	    if test -f "$dir/LC_MESSAGES/@PACKAGE@.mo" && ! test -f "${grub_install_files_target_directory}"/locale/"${dir##*/}.mo"; then
-		cp -f "$dir/LC_MESSAGES/@PACKAGE@.mo" "${grub_install_files_target_directory}"/locale/"${dir##*/}.mo"
+		grub_compress_file "$dir/LC_MESSAGES/@PACKAGE@.mo" "${grub_install_files_target_directory}"/locale/"${dir##*/}.mo"
 	    fi
 	done
     else
 	for locale in $install_locales; do
 	    if test -f "${grub_install_files_source_directory}"/po/$locale.mo; then
-		cp -f " "${grub_install_files_source_directory}"/po/$locale.mo" "${grub_install_files_target_directory}"/locale/$locale.mo
+		grub_compress_file "${grub_install_files_source_directory}"/po/locale.mo "${grub_install_files_target_directory}"/locale/$locale.mo
 	    elif test -f "${localedir}/$locale/LC_MESSAGES/@PACKAGE@.mo"; then
-		cp -f "${localedir}/$locale/LC_MESSAGES/@PACKAGE@.mo" "${grub_install_files_target_directory}"/locale/$locale.mo
+		grub_compress_file "${localedir}/$locale/LC_MESSAGES/@PACKAGE@.mo" "${grub_install_files_target_directory}"/locale/$locale.mo
 	    fi
 	done
     fi
     for theme in ${install_themes} ; do
 	if test -f "${pkgdatadir}"/themes/"${theme}"/theme.txt; then
 	    mkdir -p "${grub_install_files_target_directory}"/themes/"${theme}"
-	    cp "${pkgdatadir}"/themes/"${theme}"/* "${grub_install_files_target_directory}"/themes/"${theme}"
+	    for file in "${pkgdatadir}"/themes/"${theme}"/*; do
+		grub_compress_file "$file" "${grub_install_files_target_directory}"/themes/"${theme}"/"$(basename "$file")"
+	    done
 	fi
     done
 
     for font in ${install_fonts} ; do
 	if test -f "${pkgdatadir}"/"$font".pf2; then
 	    mkdir -p "${grub_install_files_target_directory}"/fonts
-	    cp "${pkgdatadir}"/"$font".pf2 "${grub_install_files_target_directory}"/fonts
+	    grub_compress_file "${pkgdatadir}"/"$font".pf2 "${grub_install_files_target_directory}"/fonts/"$font".pf2
 	fi
     done
 }
@@ -115,12 +125,17 @@ grub_print_install_files_help () {
     print_option_help "--themes=THEMES" "$(gettext_printf "install THEMES [default=%s]" "starfield")"
     print_option_help "--fonts=FONTS" "$(gettext_printf "install FONTS [default=%s]" "unicode")"
     print_option_help "--locales=LOCALES" "$(gettext_printf "install only LOCALES [default=all]")"
+    print_option_help "--compress[=no,xz,gz,lzo]" "$(gettext "compress GRUB files [optional]")"
 }
 
 install_modules=all
 install_themes=starfield
 install_fonts=unicode
 install_locales=all
+compress=no
+grub_decompression_module=""
+compressor=""
+compressor_opts=""
 
 argument () {
   opt=$1
@@ -131,6 +146,29 @@ argument () {
       exit 1
   fi
   echo $1
+}
+
+grub_parse_compress () {
+    compress="$1"
+    case x"$compress" in
+	xno) ;;
+	xgz)
+	    compressor=`which gzip || true`
+	    grub_decompression_module="gzio"
+	    compressor_opts="--best --stdout";;
+	xxz)
+	    compressor=`which xz || true`
+	    grub_decompression_module="xzio gcry_crc"
+	    compressor_opts="--lzma2=dict=128KiB --check=none --stdout";;
+	xlzo)
+	    compressor=`which lzop || true`
+	    grub_decompression_module="lzopio adler32 gcry_crc"
+	    compressor_opts="-9 -c";;
+	*)
+	    gettext_printf "Unrecognized compression \`%s'\n" "$compress" 1>&2
+	    usage
+	    exit 1
+    esac
 }
 
 grub_process_install_options () {
@@ -156,6 +194,11 @@ grub_process_install_options () {
 	    install_locales=`argument $option "$@"`; grub_process_install_options_consumed=2; return ;;
 	--locales=*)
             install_locales=`echo "$option" | sed 's/--locales=//'`; grub_process_install_options_consumed=1; return ;;
+	--compress)
+	    grub_parse_compress `argument $option "$@"`; grub_process_install_options_consumed=2; return ;;
+        --compress=*)
+            grub_parse_compress `echo "${option}" | sed 's/--compress=//'`; grub_process_install_options_consumed=1; return ;;
     esac
 }
 
+export grub_decompression_module

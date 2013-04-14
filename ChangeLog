@@ -1,3 +1,7 @@
+2013-04-14  Szymon Janc <szymon@janc.net.pl>
+
+	Add option to compress files on install/image creation.
+
 2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub-dev.texi: Rearrange menu to match the section order.

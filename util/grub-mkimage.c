@@ -1740,7 +1740,7 @@ static struct argp_option options[] = {
   {"note",   'n', 0, 0, N_("add NOTE segment for CHRP IEEE1275"), 0},
   {"output",  'o', N_("FILE"), 0, N_("output a generated image to FILE [default=stdout]"), 0},
   {"format",  'O', N_("FORMAT"), 0, 0, 0},
-  {"compression",  'C', "(xz|none|auto)", 0, N_("choose the compression to use"), 0},
+  {"compression",  'C', "(xz|none|auto)", 0, N_("choose the compression to use for core image"), 0},
   {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };

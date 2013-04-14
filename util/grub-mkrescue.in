@@ -248,7 +248,7 @@ EOF
     done ; ) > "${load_cfg}"
 
     "$grub_mkimage" -O ${platform} -d "${source_directory}" -c "${load_cfg}" -o "$3" \
-        search iso9660 $4
+        $grub_decompression_module search iso9660 $4
     rm -rf "${load_cfg}"
 }
 
@@ -263,7 +263,7 @@ make_image_fwdisk ()
     gettext_printf "Enabling %s support ...\n" "$2"
 
     "$grub_mkimage" -O ${platform} -d "${source_directory}" -p '()/boot/grub' -o "$3" \
-        iso9660 $4
+        $grub_decompression_module iso9660 $4
 }
 
 if [ "${override_dir}" = "" ] ; then
@@ -362,7 +362,7 @@ if test -e "${pc_dir}" ; then
     done ;) > "${load_cfg}"
 
     "$grub_mkimage" -O i386-pc -d "${pc_dir}/" -o "${core_img}" -c "$load_cfg" --prefix=/boot/grub \
-        iso9660 biosdisk
+        $grub_decompression_module iso9660 biosdisk
     cat "${pc_dir}/cdboot.img" "${core_img}" > "${iso9660_dir}/boot/grub/i386-pc/eltorito.img"
 
     grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-load-size 4 -boot-info-table"

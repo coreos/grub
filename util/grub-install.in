@@ -684,9 +684,9 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 esac
 
 if [ x"$config_opt_file" = x ]; then
-    "$grub_mkimage" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
+    "$grub_mkimage" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $grub_decompression_module $modules || exit 1
 else
-    "$grub_mkimage" -c "${config_opt_file}" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
+    "$grub_mkimage" -c "${config_opt_file}" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $grub_decompression_module $modules || exit 1
 fi
 
 # Backward-compatibility kludges
@@ -697,9 +697,9 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
 elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-efi" ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "x86_64-efi" ]; then
 
     if [ x"$config_opt_file" = x ]; then
-	"$grub_mkimage" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $modules || exit 1
+	"$grub_mkimage" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $grub_decompression_module $modules || exit 1
     else
-	"$grub_mkimage" -c "${config_opt_file}" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $modules || exit 1
+	"$grub_mkimage" -c "${config_opt_file}" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $grub_decompression_module $modules || exit 1
     fi
 fi
 
