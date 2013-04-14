@@ -1,5 +1,10 @@
 2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/grub_script_expansion.in: Use fixed-string grep to skip over
+	firmware error messages.
+
+2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/openfw.c (grub_ieee1275_devalias_next): Make
 	source and destination differ.
 
