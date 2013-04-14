@@ -1,6 +1,13 @@
 #! /bin/bash
 set -e
 
+. "@builddir@/grub-core/modinfo.sh"
+
+# OpenBIOS on sparc64 doesn't implement RTC
+if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = sparc64-ieee1275 ]; then
+    exit 0
+fi
+
 pdt="$(date -u +%s)"
 dt=`echo date | @builddir@/grub-shell`
 dtg="$(date -u -d "$dt" +%s)"
