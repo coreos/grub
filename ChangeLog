@@ -1,3 +1,8 @@
+2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ieee1275/ofdisk.c: Fix CD-ROM and boot device
+	detection.
+
 2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/posix_wrap/sys/types.h: Make WORDS_BIGENDIAN definition

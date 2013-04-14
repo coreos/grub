@@ -32,6 +32,7 @@ struct ofdisk_hash_ent
 {
   char *devpath;
   int is_boot;
+  int is_cdrom;
   /* Pointer to shortest available name on nodes representing canonical names,
      otherwise NULL.  */
   const char *shortest;
@@ -80,6 +81,18 @@ ofdisk_hash_add_real (char *devpath)
   return p;
 }
 
+static int
+check_string_cdrom (const char *str)
+{
+  const char *ptr = grub_strrchr (str, '/');
+
+  if (ptr)
+    ptr++;
+  else
+    ptr = str;
+  return (grub_strncmp (ptr, "cdrom", 5) == 0);
+}
+
 static struct ofdisk_hash_ent *
 ofdisk_hash_add (char *devpath, char *curcan)
 {
@@ -92,6 +105,8 @@ ofdisk_hash_add (char *devpath, char *curcan)
   if (!curcan)
     {
       p->shortest = devpath;
+      if (check_string_cdrom (devpath))
+	p->is_cdrom = 1;  
       return p;
     }
 
@@ -100,6 +115,9 @@ ofdisk_hash_add (char *devpath, char *curcan)
     pcan = ofdisk_hash_add_real (curcan);
   else
     grub_free (curcan);
+
+  if (check_string_cdrom (devpath) || check_string_cdrom (curcan))
+    pcan->is_cdrom = 1;
 
   if (!pcan)
     grub_errno = GRUB_ERR_NONE;
@@ -267,8 +285,7 @@ grub_ofdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		}
 	    }
 
-	  if (grub_strncmp (ent->shortest, "cdrom", 5) == 0
-	      || ent->is_boot)
+	  if (!ent->is_boot && ent->is_cdrom)
 	    continue;
 
 	  {
