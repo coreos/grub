@@ -1,4 +1,10 @@
+2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/posix_wrap/sys/types.h: Make WORDS_BIGENDIAN definition
+	match config-util.h to avoid warnings and increase compatibility.
+
 2013-04-14  Szymon Janc <szymon@janc.net.pl>
+2013-04-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add option to compress files on install/image creation.
 

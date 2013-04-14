@@ -60,7 +60,7 @@ typedef grub_addr_t uintptr_t;
 #define SIZEOF_UINT64_T 8
 
 #ifdef GRUB_CPU_WORDS_BIGENDIAN
-#define WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN 1
 #else
 #undef WORDS_BIGENDIAN
 #endif
