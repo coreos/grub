@@ -365,15 +365,25 @@ if test -e "${pc_dir}" ; then
         iso9660 biosdisk
     cat "${pc_dir}/cdboot.img" "${core_img}" > "${iso9660_dir}/boot/grub/i386-pc/eltorito.img"
 
-    embed_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
-    cat "${pc_dir}/boot.img" "${core_img}" > "${embed_img}"
-
-    rm -f "${core_img}"
-
     grub_mkisofs_arguments="${grub_mkisofs_arguments} -b boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-load-size 4 -boot-info-table"
     if [ "$system_area" = common ]; then
-	grub_mkisofs_arguments="--embedded-boot ${embed_img}"
+	if "${xorriso}" -as mkisofs -help 2>&1 | fgrep "grub2-boot-info" >/dev/null; then
+	    grub_mkisofs_arguments="${grub_mkisofs_arguments} --grub2-boot-info --grub2-mbr ${pc_dir}/boot_hybrid.img"
+	else
+	    gettext "Your xorriso doesn't support \`--grub2-boot-info'. Some features are disabled. Please use xorriso 1.2.9 or later."
+	    echo
+	    sysarea_img="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+	    cat "${pc_dir}/boot.img" "${core_img}" > "${sysarea_img}"
+	    if [ "$(wc -c "${sysarea_img}" | awk '{ print $1; }')" -gt 32768 ]; then
+		gettext "Your xorriso doesn't support \`--grub2-boot-info'. Your core image is too big. Boot as disk is disabled. Please use xorriso 1.2.9 or later."
+		echo
+	    else
+		grub_mkisofs_arguments="${grub_mkisofs_arguments} -G ${sysarea_img}"
+	    fi
+	fi
     fi
+
+    rm -f "${core_img}"
 fi
 
 # build multiboot core.img
@@ -495,6 +505,5 @@ fi
 rm -rf "${iso9660_dir}"
 
 rm -f "${sysarea_img}"
-rm -f "${embed_img}"
 
 exit 0
