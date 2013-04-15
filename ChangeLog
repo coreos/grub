@@ -1,4 +1,11 @@
 2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-04-15  Peter Jones <pjones@redhat.com>
+
+	* grub-core/disk/efi/efidisk.c: Limit disk read or write chunk to 0x500
+	sectors.
+	Based on patch by Peter Jones.
+
+2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix DMRAID partition handling.
 
