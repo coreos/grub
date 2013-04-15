@@ -1956,6 +1956,7 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	      grub_util_info ("dm_tree_find_node failed");
 	      goto devmapper_out;
 	    }
+	reiterate:
 	  node_uuid = dm_tree_node_get_uuid (node);
 	  if (! node_uuid)
 	    {
@@ -2030,6 +2031,9 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	      goto devmapper_out;
 	    }
 	  mapper_name = child_name;
+	  *is_part = 1;
+	  node = child;
+	  goto reiterate;
 
 devmapper_out:
 	  if (! mapper_name && node)

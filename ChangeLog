@@ -1,5 +1,9 @@
 2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix DMRAID partition handling.
+
+2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/grub_cmd_date.in: Skip on sparc64.
 
 2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
