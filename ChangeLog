@@ -1,5 +1,9 @@
 2013-04-16  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* grub-core/disk/efi/efidisk.c: Really limit transfer chunk size.
+
+2013-04-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* autogen.sh: Use "-f" in addition for "-h" when checking file presence.
 
 2013-04-15  Vladimir Serbinenko  <phcoder@gmail.com>

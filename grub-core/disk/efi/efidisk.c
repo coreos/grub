@@ -549,7 +549,7 @@ grub_efidisk_readwrite (struct grub_disk *disk, grub_disk_addr_t sector,
       status = efi_call_5 ((wr ? bio->write_blocks : bio->read_blocks), bio,
 			   bio->media->media_id,
 			   (grub_efi_uint64_t) sector,
-			   (grub_efi_uintn_t) size << disk->log_sector_size,
+			   (grub_efi_uintn_t) len << disk->log_sector_size,
 			   buf);
       size -= len;
       buf += len << disk->log_sector_size;
