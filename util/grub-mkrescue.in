@@ -421,7 +421,7 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}" || test -e "${ia64_dir}"; th
     mformat -C -f 2880 -L 16 -i "${iso9660_dir}"/efi.img ::
     mcopy -s -i "${iso9660_dir}"/efi.img ${efi_dir}/efi ::/
     rm -rf ${efi_dir}
-    grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img"
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img -efi-boot-part --efi-boot-image"
 fi
 
 make_image_fwdisk "${ppc_dir}" powerpc-ieee1275 "${iso9660_dir}/boot/powerpc.elf" ""
@@ -443,7 +443,7 @@ EOF
     "$grub_render_label" -f "$label_font" -b "$label_bgcolor" -c "$label_color" -t "${product_name} ${product_version}" -o "${iso9660_dir}/System/Library/CoreServices/.disk_label"
     echo "${product_name} ${product_version}" > "${iso9660_dir}/System/Library/CoreServices/.disk_label.contentDetails"
     if [ "$system_area" = common ]; then
-	grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfsplus -hfsplus-file-creator-type chrp tbxj /System/Library/CoreServices/.disk_label"
+	grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfsplus -apm-block-size 2048 -hfsplus-file-creator-type chrp tbxj /System/Library/CoreServices/.disk_label"
     fi
 fi
 
