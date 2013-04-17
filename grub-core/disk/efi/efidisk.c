@@ -329,18 +329,28 @@ name_devices (struct grub_efidisk_data *devices)
     {
       grub_efi_device_path_t *dp;
       grub_efi_block_io_media_t *m;
+      int is_floppy = 0;
 
       dp = d->last_device_path;
       if (! dp)
 	continue;
 
       m = d->block_io->media;
-      if (m->logical_partition)
+      if (GRUB_EFI_DEVICE_PATH_TYPE (dp) == GRUB_EFI_ACPI_DEVICE_PATH_TYPE
+	  && GRUB_EFI_DEVICE_PATH_SUBTYPE (dp)
+	  == GRUB_EFI_ACPI_DEVICE_PATH_SUBTYPE)
 	{
-	  /* Only one partition in a non-media device. Assume that this
-	     is a floppy drive.  */
+	  grub_efi_acpi_device_path_t *acpi
+	    = (grub_efi_acpi_device_path_t *) dp;
+	  /* Floppy EISA ID.  */ 
+	  if (acpi->hid == 0x60441d0 || acpi->hid == 0x70041d0
+	      || acpi->hid == 0x70141d1)
+	    is_floppy = 1;
+	}
+      if (is_floppy)
+	{
 #ifdef DEBUG_NAMES
-	  grub_printf ("adding a floppy by guessing: ");
+	  grub_printf ("adding a floppy: ");
 	  grub_efi_print_device_path (d->device_path);
 #endif
 	  add_device (&fd_devices, d);

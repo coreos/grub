@@ -1,5 +1,10 @@
 2013-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/efi/efidisk.c: Detect floppies by ACPI ID.
+	It improves performance in qemu.
+
+2013-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* build-aux/snippet: Add missing gnulib files.
 
 2013-04-16  Andrey Borzenkov <arvidjaar@gmail.com>
