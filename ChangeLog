@@ -1,3 +1,9 @@
+2013-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add support for pseries and other bootinfo machines to grub-mkrescue.
+
+	Tested by: Paulo Flabiano Smorigo.
+
 2013-04-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkrescue.in: Add GPT for EFI boot.

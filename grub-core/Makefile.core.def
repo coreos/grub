@@ -34,6 +34,14 @@ script = {
   installdir = platform;
   name = grub.chrp;
   common = boot/powerpc/grub.chrp.in;
+  enable = powerpc_ieee1275;
+};
+
+script = {
+  installdir = platform;
+  name = bootinfo.txt;
+  common = boot/powerpc/bootinfo.txt.in;
+  enable = powerpc_ieee1275;
 };
 
 kernel = {

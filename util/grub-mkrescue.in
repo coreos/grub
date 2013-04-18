@@ -449,6 +449,8 @@ fi
 
 if [ -e "${iso9660_dir}/boot/powerpc.elf" ] ; then
     cp "${ppc_dir}/grub.chrp" "${iso9660_dir}"/System/Library/CoreServices/BootX
+    mkdir -p "${iso9660_dir}"/ppc/chrp
+    cp "${ppc_dir}/bootinfo.txt" "${iso9660_dir}"/ppc/bootinfo.txt
     cp "${iso9660_dir}/boot/powerpc.elf" "${iso9660_dir}"/System/Library/CoreServices/grub.elf
     # FIXME: add PreP
     if [ "$system_area" = common ]; then
