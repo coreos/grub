@@ -1,3 +1,10 @@
+2013-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/elfXX.c (grub_elfXX_load): Handle
+	GRUB_ELF_LOAD_FLAGS_30BITS and GRUB_ELF_LOAD_FLAGS_62BITS.
+	* grub-core/loader/powerpc/ieee1275/linux.c (grub_linux_load32),
+	(grub_linux_load64): Mask out 2 high bits.
+
 2013-04-19  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/grub.d/30_os-prober.in: Add onstr to linux entries in one

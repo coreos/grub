@@ -204,7 +204,7 @@ grub_linux_load32 (grub_elf_t elf, const char *filename)
   linux_addr = seg_addr;
 
   /* Now load the segments into the area we claimed.  */
-  return grub_elf32_load (elf, filename, (void *) (seg_addr - base_addr), GRUB_ELF_LOAD_FLAGS_NONE, 0, 0);
+  return grub_elf32_load (elf, filename, (void *) (seg_addr - base_addr), GRUB_ELF_LOAD_FLAGS_30BITS, 0, 0);
 }
 
 static grub_err_t
@@ -238,7 +238,7 @@ grub_linux_load64 (grub_elf_t elf, const char *filename)
   linux_addr = seg_addr;
 
   /* Now load the segments into the area we claimed.  */
-  return grub_elf64_load (elf, filename, (void *) (grub_addr_t) (seg_addr - base_addr), GRUB_ELF_LOAD_FLAGS_NONE, 0, 0);
+  return grub_elf64_load (elf, filename, (void *) (grub_addr_t) (seg_addr - base_addr), GRUB_ELF_LOAD_FLAGS_62BITS, 0, 0);
 }
 
 static grub_err_t
