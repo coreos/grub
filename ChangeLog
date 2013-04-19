@@ -1,3 +1,8 @@
+2013-04-19  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub.d/30_os-prober.in: Add onstr to linux entries in one
+	more place.
+
 2013-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add support for pseries and other bootinfo machines to grub-mkrescue.
