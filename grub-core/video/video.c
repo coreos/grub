@@ -339,6 +339,7 @@ grub_video_create_render_target (struct grub_video_render_target **result,
                                  unsigned int width, unsigned int height,
                                  unsigned int mode_type)
 {
+  *result = 0;
   if (! grub_video_adapter_active)
     return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
@@ -351,6 +352,8 @@ grub_video_create_render_target (struct grub_video_render_target **result,
 grub_err_t
 grub_video_delete_render_target (struct grub_video_render_target *target)
 {
+  if (!target)
+    return GRUB_ERR_NONE;
   if (! grub_video_adapter_active)
     return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 

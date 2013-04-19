@@ -1,5 +1,13 @@
 2013-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/videotest.c (grub_cmd_videotest): Fix error
+	handling when creating text_layer failed.
+	* grub-core/video/video.c (grub_video_create_render_target):
+	Set result to 0 on error.
+	(grub_video_delete_render_target): Do not dereference NULL.
+
+2013-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/elfXX.c (grub_elfXX_load): Handle
 	GRUB_ELF_LOAD_FLAGS_30BITS and GRUB_ELF_LOAD_FLAGS_62BITS.
 	* grub-core/loader/powerpc/ieee1275/linux.c (grub_linux_load32),

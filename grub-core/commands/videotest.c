@@ -71,10 +71,10 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
     grub_font_t fixed;
     struct grub_font_glyph *glyph;
 
-    grub_video_create_render_target (&text_layer, width, height,
-				     GRUB_VIDEO_MODE_TYPE_RGB
-				     | GRUB_VIDEO_MODE_TYPE_ALPHA);
-    if (!text_layer)
+    if (grub_video_create_render_target (&text_layer, width, height,
+					 GRUB_VIDEO_MODE_TYPE_RGB
+					 | GRUB_VIDEO_MODE_TYPE_ALPHA)
+	|| !text_layer)
       goto fail;
 
     grub_video_set_active_render_target (text_layer);
