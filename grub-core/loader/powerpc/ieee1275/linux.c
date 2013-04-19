@@ -111,6 +111,20 @@ grub_linux_claimmap_iterate (grub_addr_t target, grub_size_t size,
     .found_addr = (grub_addr_t) -1
   };
 
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_FORCE_CLAIM))
+    {
+      grub_uint64_t addr = target;
+      if (addr < GRUB_IEEE1275_STATIC_HEAP_START
+	  + GRUB_IEEE1275_STATIC_HEAP_LEN)
+	addr = GRUB_IEEE1275_STATIC_HEAP_START
+	  + GRUB_IEEE1275_STATIC_HEAP_LEN;
+      addr = ALIGN_UP (addr, align);
+      if (grub_claimmap (addr, size) == GRUB_ERR_NONE)
+	return addr;
+      return (grub_addr_t) -1;
+    }
+	
+
   grub_machine_mmap_iterate (alloc_mem, &ctx);
 
   return ctx.found_addr;

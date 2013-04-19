@@ -1,5 +1,12 @@
 2013-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/init.c (grub_claim_heap): Improve handling
+	of GRUB_IEEE1275_FLAG_FORCE_CLAIM.
+	* grub-core/loader/powerpc/ieee1275/linux.c
+	(grub_linux_claimmap_iterate): Handle GRUB_IEEE1275_FLAG_FORCE_CLAIM.
+
+2013-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options):
 	Look for /boot-rom as well as /rom/boot-rom.
 
