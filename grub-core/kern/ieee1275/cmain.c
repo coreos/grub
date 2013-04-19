@@ -186,7 +186,8 @@ grub_ieee1275_find_options (void)
       grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_HAS_CURSORONOFF);
     }
 
-  if (! grub_ieee1275_finddevice ("/rom/boot-rom", &bootrom))
+  if (! grub_ieee1275_finddevice ("/rom/boot-rom", &bootrom)
+      || ! grub_ieee1275_finddevice ("/boot-rom", &bootrom))
     {
       rc = grub_ieee1275_get_property (bootrom, "model", tmp, sizeof (tmp), 0);
       if (rc >= 0 && !grub_strncmp (tmp, "PPC Open Hack'Ware",

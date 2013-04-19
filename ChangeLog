@@ -1,5 +1,10 @@
 2013-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ieee1275/cmain.c (grub_ieee1275_find_options):
+	Look for /boot-rom as well as /rom/boot-rom.
+
+2013-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/videotest.c (grub_cmd_videotest): Fix error
 	handling when creating text_layer failed.
 	* grub-core/video/video.c (grub_video_create_render_target):
