@@ -984,9 +984,11 @@ malloc_in_range (struct grub_relocator *rel,
 	    alloc_end = min (events[j].pos, target + size);
 	    if (alloc_end > alloc_start)
 	      {
+#ifdef DEBUG_RELOCATOR_NOMEM_DPRINTF
 		grub_dprintf ("relocator", "subchunk 0x%lx-0x%lx, %d\n",
 			      (unsigned long) alloc_start,
 			      (unsigned long) alloc_end, typepre);
+#endif
 		curschu->type = typepre;
 		curschu->start = alloc_start;
 		curschu->size = alloc_end - alloc_start;
