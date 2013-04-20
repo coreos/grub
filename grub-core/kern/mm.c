@@ -140,11 +140,12 @@ grub_mm_init_region (void *addr, grub_size_t size)
 
   /* Allocate a region from the head.  */
   r = (grub_mm_region_t) ALIGN_UP ((grub_addr_t) addr, GRUB_MM_ALIGN);
-  size -= (char *) r - (char *) addr + sizeof (*r);
 
   /* If this region is too small, ignore it.  */
-  if (size < GRUB_MM_ALIGN)
+  if (size < GRUB_MM_ALIGN + (char *) r - (char *) addr + sizeof (*r))
     return;
+
+  size -= (char *) r - (char *) addr + sizeof (*r);
 
   h = (grub_mm_header_t) (r + 1);
   h->next = h;

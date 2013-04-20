@@ -1,5 +1,10 @@
 2013-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mm.c (grub_mm_init_region): Fix condition for
+	detecting too small regions.
+
+2013-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (legacycfg): Enable on EFI.
 
 2013-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
