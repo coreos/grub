@@ -1,5 +1,9 @@
 2013-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def (legacycfg): Enable on EFI.
+
+2013-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/efi/relocator.c (grub_relocator_firmware_alloc_region):
 	Remove dprintf.
 	* grub-core/lib/relocator.c (malloc_in_range): Likewise.

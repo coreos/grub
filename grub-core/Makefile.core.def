@@ -1856,7 +1856,12 @@ module = {
   common = commands/legacycfg.c;
   common = lib/legacy_parse.c;
   emu = lib/i386/pc/vesa_modes_table.c;
+  i386_efi = lib/i386/pc/vesa_modes_table.c;
+  x86_64_efi = lib/i386/pc/vesa_modes_table.c;
+
   enable = i386_pc;
+  enable = i386_efi;
+  enable = x86_64_efi;
   enable = emu;
 };
 
