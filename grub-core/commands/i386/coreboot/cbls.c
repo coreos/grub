@@ -50,7 +50,7 @@ static const char *descs[] = {
   [0xd] = "assembler",
   [0xf] = "serial",
   [GRUB_LINUXBIOS_MEMBER_CONSOLE] = "console",
-  [0x12] = "framebuffer",
+  [GRUB_LINUXBIOS_MEMBER_FRAMEBUFFER] = "framebuffer",
   [0x13] = "GPIO",
   [0x15] = "VDAT",
   [GRUB_LINUXBIOS_MEMBER_TIMESTAMPS] = "timestamps (`coreboot_boottime' to list)",
@@ -77,6 +77,20 @@ iterate_linuxbios_table (grub_linuxbios_table_item_t table_item,
 
   switch (table_item->tag)
     {
+    case GRUB_LINUXBIOS_MEMBER_FRAMEBUFFER:
+      {
+	struct grub_linuxbios_table_framebuffer *fb;
+	fb = (struct grub_linuxbios_table_framebuffer *) (table_item + 1);
+
+	grub_printf (": %dx%dx%d pitch=%d lfb=0x%llx %d/%d/%d/%d %d/%d/%d/%d",
+		     fb->width, fb->height,
+		     fb->bpp, fb->pitch, fb->lfb,
+		     fb->red_mask_size, fb->green_mask_size,
+		     fb->blue_mask_size, fb->reserved_mask_size,
+		     fb->red_field_pos, fb->green_field_pos,
+		     fb->blue_field_pos, fb->reserved_field_pos);
+	break;
+      }
     case GRUB_LINUXBIOS_MEMBER_MAINBOARD:
       {
 	struct grub_linuxbios_mainboard *mb;

@@ -1797,6 +1797,12 @@ module = {
 };
 
 module = {
+  name = coreboot_fb;
+  common = video/i386/coreboot/cbfb.c;
+  enable = i386_coreboot;
+};
+
+module = {
   name = sdl;
   emu = video/emu/sdl.c;
   enable = emu;

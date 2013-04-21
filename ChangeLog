@@ -1,3 +1,9 @@
+2013-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support coreboot framebuffer.
+
+	* grub-core/video/i386/coreboot/cbfb.c: New file.
+
 2013-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/mm.c (grub_mm_init_region): Fix condition for
