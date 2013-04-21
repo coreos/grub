@@ -95,7 +95,7 @@ grub_arcdisk_iterate_iter (const char *name,
   struct grub_arcdisk_iterate_ctx *ctx = data;
 
   if (!(comp->type == GRUB_ARC_COMPONENT_TYPE_DISK
-	|| comp->type == GRUB_ARC_COMPONENT_TYPE_DISK
+	|| comp->type == GRUB_ARC_COMPONENT_TYPE_FLOPPY
 	|| comp->type == GRUB_ARC_COMPONENT_TYPE_TAPE))
     return 0;
   return ctx->hook (name, ctx->hook_data);

@@ -1,5 +1,10 @@
 2013-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/arc/arcdisk.c (grub_arcdisk_iterate_iter):
+	Fix a type which prevented CD-ROM and floppy boot.
+
+2013-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support coreboot framebuffer.
 
 	* grub-core/video/i386/coreboot/cbfb.c: New file.
