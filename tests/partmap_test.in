@@ -63,21 +63,25 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     powerpc-ieee1275)
 	disk=ieee1275//pci@80000000/mac-io@4/ata-3@20000/disk@0
 	qemudisk=hda
-	# QEMU firmware has bugs which prevent it from accessing hard disk.
+	# QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
 	exit 0
 	;;
     sparc64-ieee1275)
 	disk=ieee1275//pci@1fe\,0/pci-ata@5/ide0@500/disk@0
 	qemudisk=hda
-	# QEMU firmware has bugs which prevent it from accessing hard disk.
+	# QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
 	exit 0
 	;;
     i386-ieee1275)
 	disk=ieee1275/d
 	qemudisk=hdb
-	# QEMU firmware has bugs which prevent it from accessing hard disk.
+	# QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
 	exit 0
 	;;
+    mips-arc)
+	# ARC firmware has bugs which prevent it from accessing hard disk w/o dvh disklabel.
+	exit 0
+
     *)
 	disk=hd0
 	qemudisk=hda

@@ -85,6 +85,13 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	qemuopts="$qemuopts -M mips"
 	console=vga_text
 	;;
+    mips-arc)
+	boot=cd
+	qemu=qemu-system-mips64
+	qemuopts="$qemuopts -M indy"
+	console=console
+	trim=1
+	;;
     mipsel-qemu_mips)
 	boot=mipsel_qemu
 	qemu=qemu-system-mipsel
