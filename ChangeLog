@@ -1,5 +1,9 @@
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ata.c (grub_ata_real_open): Use grub_error properly.
+
+2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add missing video ids to coreboot and ieee1275 video.
 
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
