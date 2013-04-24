@@ -128,6 +128,7 @@ static struct grub_video_adapter grub_video_cbfb_adapter =
     .name = "Coreboot video driver",
 
     .prio = GRUB_VIDEO_ADAPTER_PRIO_FIRMWARE_DIRTY,
+    .id = GRUB_VIDEO_DRIVER_COREBOOT,
 
     .init = grub_video_cbfb_init,
     .fini = grub_video_fb_fini,

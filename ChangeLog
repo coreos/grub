@@ -1,5 +1,9 @@
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add missing video ids to coreboot and ieee1275 video.
+
+2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Add mips-arc support.
 
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
