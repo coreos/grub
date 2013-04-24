@@ -50,10 +50,72 @@ put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 
 static struct grub_terminfo_output_state grub_console_terminfo_output;
 
-static grub_err_t
-grub_console_init_output (struct grub_term_output *term)
+static int
+check_is_serial (void)
+{
+  static int is_serial = -1;
+
+  if (is_serial != -1)
+    return is_serial;
+
+  const char *consout = 0;
+
+  /* Check for serial. It works unless user manually overrides ConsoleOut
+     variable. If he does there is nothing we can do. Fortunately failure
+     isn't critical.
+  */
+  if (GRUB_ARC_SYSTEM_PARAMETER_BLOCK->firmware_vector_length
+      >= ((char *) (&GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable + 1)
+	  - (char *) GRUB_ARC_FIRMWARE_VECTOR)
+      && GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable)
+    consout = GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable ("ConsoleOut");
+  if (!consout)
+    return is_serial = 0;
+  if (consout[0] == '\0')
+    return is_serial = 0;
+
+  const char *ptr = consout + grub_strlen (consout) - 1;
+  int i;
+  /*
+    Recognize:
+    serial(N)
+    serial(N)other(M)
+   */
+  for (i = 0; i < 2; i++)
+    {
+      if (*ptr != ')')
+	return is_serial = 0;
+      ptr--;
+      for (; ptr >= consout && grub_isdigit (*ptr); ptr--);
+      if (ptr < consout)
+	return is_serial = 0;
+      if (*ptr != '(')
+	return is_serial = 0;
+      if (ptr >= consout + sizeof ("serial") - 1
+	  && grub_memcmp (ptr - (sizeof ("serial") - 1),
+			  "serial", sizeof ("serial") - 1) == 0)
+	return is_serial = 1;
+      if (!(ptr >= consout + sizeof ("other") - 1
+	    && grub_memcmp (ptr - (sizeof ("other") - 1),
+			    "other", sizeof ("other") - 1) == 0))
+	return is_serial = 0;
+      ptr -= sizeof ("other");
+    }
+  return 0;
+}
+    
+static void
+set_console_dimensions (void)
 {
   struct grub_arc_display_status *info = NULL;
+
+  if (check_is_serial ())
+    {
+      grub_console_terminfo_output.width = 80;
+      grub_console_terminfo_output.height = 24;
+      return;
+    }
+
   if (GRUB_ARC_SYSTEM_PARAMETER_BLOCK->firmware_vector_length
       >= ((char *) (&GRUB_ARC_FIRMWARE_VECTOR->getdisplaystatus + 1)
 	  - (char *) GRUB_ARC_FIRMWARE_VECTOR)
@@ -64,6 +126,12 @@ grub_console_init_output (struct grub_term_output *term)
       grub_console_terminfo_output.width = info->w + 1;
       grub_console_terminfo_output.height = info->h + 1;
     }
+}
+
+static grub_err_t
+grub_console_init_output (struct grub_term_output *term)
+{
+  set_console_dimensions ();
   grub_terminfo_output_init (term);
 
   return 0;
@@ -115,5 +183,8 @@ void
 grub_console_init_lately (void)
 {
   grub_terminfo_init ();
-  grub_terminfo_output_register (&grub_console_term_output, "arc");
+  if (check_is_serial ())
+    grub_terminfo_output_register (&grub_console_term_output, "vt100");
+  else
+    grub_terminfo_output_register (&grub_console_term_output, "arc");
 }

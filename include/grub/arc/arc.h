@@ -210,7 +210,7 @@ struct grub_arc_firmware_vector
   grub_arc_err_t (*seek) (grub_arc_fileno_t fileno,
 			  grub_arc_ularge_t *pos, grub_arc_enum_t mode);
   void *mount;
-  void *getenvironmentvariable;
+  const char * (*getenvironmentvariable) (const char *name);
   void *setenvironmentvariable;
 
   /* 0x80. */

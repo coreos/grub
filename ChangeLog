@@ -1,5 +1,10 @@
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/arc/console.c: Assume that console is 80x24 vt100 if
+	it's serial.
+
+2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Fix target fo qemu_mips.
 	Fix extension on EFI.
 
