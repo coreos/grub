@@ -464,18 +464,7 @@ script = {
   name = grub-mkrescue;
   common = util/grub-install_header;
   common = util/grub-mkrescue.in;
-  enable = i386_pc;
-  enable = i386_efi;
-  enable = x86_64_efi;
-  enable = i386_qemu;
-  enable = i386_multiboot;
-  enable = i386_coreboot;
-  enable = i386_ieee1275;
-  enable = mips_qemu_mips;
-  enable = mips_loongson;
-  enable = ia64_efi;
-  enable = powerpc_ieee1275;
-  enable = sparc64_ieee1275;
+  enable = noemu;
 };
 
 script = {
