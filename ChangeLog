@@ -1,5 +1,9 @@
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/dl.c (grub_dl_resolve_symbols): Handle malloc failure.
+
+2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move mips-arc link address. Previous link address was chosen
 	in belief that RAM on SGI platforms grows down while in fact it
 	grows up from an unusual base.

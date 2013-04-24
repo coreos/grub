@@ -359,6 +359,8 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 
 #ifdef GRUB_MODULES_MACHINE_READONLY
   mod->symtab = grub_malloc (s->sh_size);
+  if (!mod->symtab)
+    return grub_errno;
   memcpy (mod->symtab, (char *) e + s->sh_offset, s->sh_size);
 #else
   mod->symtab = (Elf_Sym *) ((char *) e + s->sh_offset);
