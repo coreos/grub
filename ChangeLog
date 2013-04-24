@@ -1,5 +1,10 @@
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c (grub_linux_boot): Default to
+	gfxpayload=keep if cbfb is active.
+
+2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ata.c (grub_ata_real_open): Use grub_error properly.
 
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>

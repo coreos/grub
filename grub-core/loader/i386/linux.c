@@ -503,15 +503,20 @@ grub_linux_boot (void)
 #endif
       grub_free (tmp);
     }
-  else
-    {
+  else       /* We can't go back to text mode from coreboot fb.  */
+#ifdef GRUB_MACHINE_COREBOOT
+    if (grub_video_get_driver_id () == GRUB_VIDEO_DRIVER_COREBOOT)
+      err = GRUB_ERR_NONE;
+    else
+#endif
+      {
 #if ACCEPTS_PURE_TEXT
-      err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
+	err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
 #else
-      err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
+	err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
 				 GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
 #endif
-    }
+      }
 
   if (err)
     {
