@@ -1,5 +1,10 @@
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/ieee1275/console.c (grub_console_dimensions): Ignore
+	bogus SLOF values.
+
+2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make check work on mips-arc.
 
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>

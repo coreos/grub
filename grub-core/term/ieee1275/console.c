@@ -123,6 +123,14 @@ grub_console_dimensions (void)
 	}
     }
 
+  /* Bogus default value on SLOF in QEMU.  */
+  if (grub_console_terminfo_output.width == 200
+      && grub_console_terminfo_output.height == 200)
+    {
+      grub_console_terminfo_output.width = 80;
+      grub_console_terminfo_output.height = 24;
+    }
+
   /* Use a small console by default.  */
   if (! grub_console_terminfo_output.width)
     grub_console_terminfo_output.width = 80;
