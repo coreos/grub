@@ -1,5 +1,10 @@
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Fix target fo qemu_mips.
+	Fix extension on EFI.
+
+2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu_text.c (print_entry): Put an asterisk
 	in front of chosen entry to mark it even if highlighting is lost.
 
