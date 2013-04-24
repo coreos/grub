@@ -484,10 +484,10 @@ fi
 
 make_image "${arcs_dir}" mips-arc "${iso9660_dir}/boot/grub/mips-arc/core.img" ""
 if [ -e "${iso9660_dir}/boot/grub/mips-arc/core.img" ]; then
-   grub_mkisofs_arguments="${grub_mkisofs_arguments} /boot/grub/mips-arc/grub=${iso9660_dir}/boot/grub/mips-arc/core.img /boot/grub/mips-arc/sashARCS=${iso9660_dir}/boot/grub/mips-arc/core.img"
+   grub_mkisofs_arguments="${grub_mkisofs_arguments} /boot/grub/mips-arc/grub=${iso9660_dir}/boot/grub/mips-arc/core.img /boot/grub/mips-arc/sashARCS=${iso9660_dir}/boot/grub/mips-arc/core.img  /boot/grub/mips-arc/sash=${iso9660_dir}/boot/grub/mips-arc/core.img"
 fi
 if [ -e "${iso9660_dir}/boot/grub/mips-arc/core.img" ] && [ "$system_area" = arcs ]; then
-   grub_mkisofs_arguments="${grub_mkisofs_arguments} -mips-boot /boot/grub/mips-arc/sashARCS -mips-boot /boot/grub/mips-arc/grub"
+   grub_mkisofs_arguments="${grub_mkisofs_arguments} -mips-boot /boot/grub/mips-arc/sashARCS -mips-boot /boot/grub/mips-arc/sash -mips-boot /boot/grub/mips-arc/grub"
 fi
 
 make_image "${mipsel_qemu_dir}" mipsel-qemu_mips-elf "${iso9660_dir}/boot/mipsel-qemu_mips.elf" "pata"
