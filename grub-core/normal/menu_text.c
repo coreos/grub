@@ -242,7 +242,7 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 	|| unicode_title[i] == '\r' || unicode_title[i] == '\e')
       unicode_title[i] = ' ';
 
-  for (x = GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + 1, i = 0;
+  for (x = GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + 2, i = 0;
        x < (int) (GRUB_TERM_LEFT_BORDER_X + grub_term_border_width (term)
 		  - GRUB_TERM_MARGIN);)
     {
@@ -268,6 +268,8 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
       else
 	break;
     }
+
+  grub_putcode (highlight ? '*' : ' ', term);
 
   grub_print_ucs4 (unicode_title,
 		   unicode_title + last_printed, 0, 0, term);

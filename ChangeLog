@@ -1,5 +1,10 @@
 2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu_text.c (print_entry): Put an asterisk
+	in front of chosen entry to mark it even if highlighting is lost.
+
+2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/linux.c (grub_linux_boot): Default to
 	gfxpayload=keep if cbfb is active.
 
