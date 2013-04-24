@@ -387,8 +387,7 @@ struct image_target_desc image_targets[] =
       .voidp_sizeof = 4,
       .bigendian = 1,
       .id = IMAGE_MIPS_ARC, 
-      .flags = (PLATFORM_FLAGS_DECOMPRESSORS
-		| PLATFORM_FLAGS_MODULES_BEFORE_KERNEL),
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
       .total_module_size = GRUB_KERNEL_MIPS_ARC_TOTAL_MODULE_SIZE,
       .decompressor_compressed_size = GRUB_DECOMPRESSOR_MIPS_LOONGSON_COMPRESSED_SIZE,
       .decompressor_uncompressed_size = GRUB_DECOMPRESSOR_MIPS_LOONGSON_UNCOMPRESSED_SIZE,
@@ -1522,12 +1521,10 @@ generate_image (const char *dir, const char *prefix,
 
 	program_size = ALIGN_ADDR (core_size);
 	if (comp == COMPRESSION_NONE)
-	  target_addr = (image_target->link_addr 
-			 - total_module_size - decompress_size);
+	  target_addr = (image_target->link_addr - decompress_size);
 	else
-	  target_addr = (image_target->link_addr 
-			 - ALIGN_UP(total_module_size + core_size, 1048576)
-			 - (1 << 20));
+	  target_addr = ALIGN_UP (image_target->link_addr
+				  + kernel_size + total_module_size, 32);
 
 	ecoff_img = xmalloc (program_size + sizeof (*head) + sizeof (*section));
 	grub_memset (ecoff_img, 0, program_size + sizeof (*head) + sizeof (*section));

@@ -128,12 +128,16 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 extern grub_uint32_t grub_total_modules_size __attribute__ ((section(".text")));
 grub_addr_t grub_modbase;
 
+extern char _end[];
+
 void
 grub_machine_init (void)
 {
   struct grub_arc_memory_descriptor *cur = NULL;
+  grub_addr_t modend;
 
-  grub_modbase = GRUB_KERNEL_MIPS_ARC_LINK_ADDR - grub_total_modules_size;
+  grub_modbase = ALIGN_UP ((grub_addr_t) _end, GRUB_KERNEL_MACHINE_MOD_ALIGN);
+  modend = grub_modbase + grub_total_modules_size;
   grub_console_init_early ();
 
   /* FIXME: measure this.  */
@@ -153,10 +157,10 @@ grub_machine_init (void)
       start = ((grub_uint64_t) cur->start_page) << 12;
       end = ((grub_uint64_t) cur->num_pages)  << 12;
       end += start;
-      if ((grub_uint64_t) end > ((GRUB_KERNEL_MIPS_ARC_LINK_ADDR
-				  - grub_total_modules_size) & 0x1fffffff))
-	end = ((GRUB_KERNEL_MIPS_ARC_LINK_ADDR - grub_total_modules_size)
-	       & 0x1fffffff);
+      if ((grub_uint64_t) start < (modend & 0x1fffffff))
+	start = (modend & 0x1fffffff);
+      if ((grub_uint64_t) end > 0x20000000)
+	end = 0x20000000;
       if (end > start)
 	grub_mm_init_region ((void *) (grub_addr_t) (start | 0x80000000),
 			     end - start);

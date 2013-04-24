@@ -1,3 +1,9 @@
+2013-04-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move mips-arc link address. Previous link address was chosen
+	in belief that RAM on SGI platforms grows down while in fact it
+	grows up from an unusual base.
+
 2013-04-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/arc/arcdisk.c (grub_arcdisk_iterate_iter):
