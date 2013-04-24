@@ -226,6 +226,7 @@ fi
 
 iso9660_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 mkdir -p ${iso9660_dir}/boot/grub
+mkdir -p ${iso9660_dir}/boot/grub/roms
 
 process_input_dir ()
 {
@@ -399,9 +400,9 @@ if test -e "${pc_dir}" ; then
 fi
 
 # build multiboot core.img
-make_image "${multiboot_dir}" i386-multiboot "${iso9660_dir}/boot/multiboot.img" "pata ahci at_keyboard"
+make_image "${multiboot_dir}" i386-multiboot "${iso9660_dir}/boot/grub/i386-multiboot/core.elf" "pata ahci at_keyboard"
 
-make_image_fwdisk "${i386_ieee1275_dir}" i386-ieee1275 "${iso9660_dir}/boot/ofwx86.elf" ""
+make_image_fwdisk "${i386_ieee1275_dir}" i386-ieee1275 "${iso9660_dir}/boot/grub/i386-ieee1275/core.elf" ""
 
 if test -e "${efi64_dir}" || test -e "${efi32_dir}" || test -e "${ia64_dir}"; then
     efi_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
@@ -436,8 +437,8 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}" || test -e "${ia64_dir}"; th
     grub_mkisofs_arguments="${grub_mkisofs_arguments} --efi-boot efi.img -efi-boot-part --efi-boot-image"
 fi
 
-make_image_fwdisk "${ppc_dir}" powerpc-ieee1275 "${iso9660_dir}/boot/powerpc.elf" ""
-if [ -e "${iso9660_dir}"/System/Library/CoreServices/boot.efi ] || [ -e "${iso9660_dir}/boot/powerpc.elf" ]; then
+make_image_fwdisk "${ppc_dir}" powerpc-ieee1275 "${iso9660_dir}/boot/grub/powerpc-ieee1275/core.elf" ""
+if [ -e "${iso9660_dir}"/System/Library/CoreServices/boot.efi ] || [ -e "${iso9660_dir}/boot/grub/powerpc-ieee1275/core.elf" ]; then
     mkdir -p "${iso9660_dir}"/System/Library/CoreServices
     touch "${iso9660_dir}/mach_kernel"
     cat > "${iso9660_dir}/System/Library/CoreServices/SystemVersion.plist" <<EOF
@@ -459,11 +460,11 @@ EOF
     fi
 fi
 
-if [ -e "${iso9660_dir}/boot/powerpc.elf" ] ; then
+if [ -e "${iso9660_dir}/boot/grub/powerpc-ieee1275/core.elf" ] ; then
     cp "${ppc_dir}/grub.chrp" "${iso9660_dir}"/System/Library/CoreServices/BootX
     mkdir -p "${iso9660_dir}"/ppc/chrp
     cp "${ppc_dir}/bootinfo.txt" "${iso9660_dir}"/ppc/bootinfo.txt
-    cp "${iso9660_dir}/boot/powerpc.elf" "${iso9660_dir}"/System/Library/CoreServices/grub.elf
+    grub_mkisofs_arguments="${grub_mkisofs_arguments} /System/Library/CoreServices/grub.elf=${iso9660_dir}/boot/grub/powerpc-ieee1275/core.elf /boot/grub/powerpc.elf=${iso9660_dir}/boot/grub/powerpc-ieee1275/core.elf"
     # FIXME: add PreP
     if [ "$system_area" = common ]; then
 	grub_mkisofs_arguments="${grub_mkisofs_arguments} -hfsplus-file-creator-type chrp tbxi /System/Library/CoreServices/BootX -hfs-bless-by p /System/Library/CoreServices"
@@ -490,36 +491,36 @@ if [ -e "${iso9660_dir}/boot/grub/mips-arc/core.img" ] && [ "$system_area" = arc
    grub_mkisofs_arguments="${grub_mkisofs_arguments} -mips-boot /boot/grub/mips-arc/sashARCS -mips-boot /boot/grub/mips-arc/sash -mips-boot /boot/grub/mips-arc/grub"
 fi
 
-make_image "${mipsel_qemu_dir}" mipsel-qemu_mips-elf "${iso9660_dir}/boot/mipsel-qemu_mips.elf" "pata"
-if [ -e "${iso9660_dir}/boot/mipsel-qemu_mips.elf" ] && [ -d "${rom_directory}" ]; then
-    cp "${iso9660_dir}/boot/mipsel-qemu_mips.elf" "${rom_directory}/mipsel-qemu_mips.elf"
+make_image "${mipsel_qemu_dir}" mipsel-qemu_mips-elf "${iso9660_dir}/boot/grub/roms/mipsel-qemu_mips.elf" "pata"
+if [ -e "${iso9660_dir}/boot/grub/roms/mipsel-qemu_mips.elf" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/grub/roms/mipsel-qemu_mips.elf" "${rom_directory}/mipsel-qemu_mips.elf"
 fi
 
-make_image "${loongson_dir}" mipsel-loongson-elf "${iso9660_dir}/boot/mipsel-loongson.elf" "pata -C xz"
-if [ -e "${iso9660_dir}/boot/mipsel-loongson.elf" ] && [ -d "${rom_directory}" ]; then
-    cp "${iso9660_dir}/boot/mipsel-loongson.elf" "${rom_directory}/mipsel-loongson.elf"
+make_image "${loongson_dir}" mipsel-loongson-elf "${iso9660_dir}/boot/mipsel-loongson/core.elf" "pata -C xz"
+if [ -e "${iso9660_dir}/boot/mipsel-loongson/core.elf" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/mipsel-loongson/core.elf" "${rom_directory}/mipsel-loongson.elf"
 fi
-make_image "${loongson_dir}" mipsel-yeeloong-flash "${iso9660_dir}/boot/mipsel-yeeloong.bin" "pata -C xz"
-if [ -e "${iso9660_dir}/boot/mipsel-yeeloong.bin" ] && [ -d "${rom_directory}" ]; then
-    cp "${iso9660_dir}/boot/mipsel-yeeloong.bin" "${rom_directory}/mipsel-yeeloong.bin"
-fi
-
-make_image "${loongson_dir}" mipsel-fuloong2f-flash "${iso9660_dir}/boot/mipsel-fuloong2f.bin" "pata -C xz"
-if [ -e "${iso9660_dir}/boot/mipsel-fulong.bin" ] && [ -d "${rom_directory}" ]; then
-    cp "${iso9660_dir}/boot/mipsel-fulong.bin" "${rom_directory}/mipsel-fulong.bin"
+make_image "${loongson_dir}" mipsel-yeeloong-flash "${iso9660_dir}/boot/grub/roms/mipsel-yeeloong.bin" "pata -C xz"
+if [ -e "${iso9660_dir}/boot/grub/roms/mipsel-yeeloong.bin" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/grub/roms/mipsel-yeeloong.bin" "${rom_directory}/mipsel-yeeloong.bin"
 fi
 
-make_image "${mips_qemu_dir}" mips-qemu_mips-elf "${iso9660_dir}/boot/mips-qemu_mips.elf" "pata"
-if [ -e "${iso9660_dir}/boot/mips-qemu_mips.elf" ] && [ -d "${rom_directory}" ]; then
-    cp "${iso9660_dir}/boot/mips-qemu_mips.elf" "${rom_directory}/mips-qemu_mips.elf"
+make_image "${loongson_dir}" mipsel-fuloong2f-flash "${iso9660_dir}/boot/grub/roms/mipsel-fuloong2f.bin" "pata -C xz"
+if [ -e "${iso9660_dir}/boot/grub/roms/mipsel-fulong.bin" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/grub/roms/mipsel-fulong.bin" "${rom_directory}/mipsel-fulong.bin"
 fi
-make_image "${qemu_dir}" i386-qemu "${iso9660_dir}/boot/qemu.img" "pata at_keyboard"
-if [ -e "${iso9660_dir}/boot/qemu.img" ] && [ -d "${rom_directory}" ]; then
-    cp "${iso9660_dir}/boot/qemu.img" "${rom_directory}/qemu.img"
+
+make_image "${mips_qemu_dir}" mips-qemu_mips-elf "${iso9660_dir}/boot/grub/roms/mips-qemu_mips.elf" "pata"
+if [ -e "${iso9660_dir}/boot/grub/roms/mips-qemu_mips.elf" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/grub/roms/mips-qemu_mips.elf" "${rom_directory}/mips-qemu_mips.elf"
 fi
-make_image "${coreboot_dir}" i386-coreboot "${iso9660_dir}/boot/coreboot.elf" "pata ahci at_keyboard"
-if [ -e "${iso9660_dir}/boot/coreboot.elf" ] && [ -d "${rom_directory}" ]; then
-    cp "${iso9660_dir}/boot/coreboot.elf" "${rom_directory}/coreboot.elf"
+make_image "${qemu_dir}" i386-qemu "${iso9660_dir}/boot/grub/roms/qemu.img" "pata at_keyboard"
+if [ -e "${iso9660_dir}/boot/grub/roms/qemu.img" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/grub/roms/qemu.img" "${rom_directory}/qemu.img"
+fi
+make_image "${coreboot_dir}" i386-coreboot "${iso9660_dir}/boot/grub/roms/coreboot.elf" "pata ahci at_keyboard"
+if [ -e "${iso9660_dir}/boot/grub/roms/coreboot.elf" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/grub/roms/coreboot.elf" "${rom_directory}/coreboot.elf"
 fi
 
 # build iso image
