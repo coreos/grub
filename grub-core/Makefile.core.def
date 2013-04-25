@@ -1661,10 +1661,12 @@ module = {
   common = term/serial.c;
   x86 = term/ns8250.c;
   ieee1275 = term/ieee1275/serial.c;
+  mips_arc = term/arc/serial.c;
   efi = term/efi/serial.c;
 
   enable = terminfomodule;
   enable = ieee1275;
+  enable = mips_arc;
 };
 
 module = {

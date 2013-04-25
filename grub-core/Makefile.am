@@ -151,6 +151,7 @@ endif
 if COND_mips_arc
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/arc/arc.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 endif
 
 if COND_mips_qemu_mips

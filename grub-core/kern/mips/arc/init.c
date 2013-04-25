@@ -125,6 +125,45 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
     }
 }
 
+char *
+grub_arc_alt_name_to_norm (const char *name, const char *suffix)
+{
+  char *optr;
+  const char *iptr;
+  char * ret = grub_malloc (2 * grub_strlen (name) + grub_strlen (suffix));
+  int state = 0;
+
+  if (!ret)
+    return NULL;
+  optr = ret;
+  for (iptr = name + 4; *iptr; iptr++)
+    if (state == 0)
+      {
+	if (!grub_isdigit (*iptr))
+	  *optr++ = *iptr;
+	else
+	  {
+	    *optr++ = '(';
+	    *optr++ = *iptr;
+	    state = 1;
+	  }
+      }
+    else
+      {
+	if (grub_isdigit (*iptr))
+	  *optr++ = *iptr;
+	else
+	  {
+	    *optr++ = ')';
+	    state = 0;
+	  }
+      }
+  if (state)
+    *optr++ = ')';
+  grub_strcpy (optr, suffix);
+  return ret;
+}
+
 extern grub_uint32_t grub_total_modules_size __attribute__ ((section(".text")));
 grub_addr_t grub_modbase;
 

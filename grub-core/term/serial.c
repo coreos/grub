@@ -137,7 +137,7 @@ grub_serial_find (const char *name)
     if (grub_strcmp (port->name, name) == 0)
       break;
 
-#if (defined(__mips__) || defined (__i386__) || defined (__x86_64__)) && !defined(GRUB_MACHINE_EMU)
+#if (defined(__mips__) || defined (__i386__) || defined (__x86_64__)) && !defined(GRUB_MACHINE_EMU) && !defined(GRUB_MACHINE_ARC)
   if (!port && grub_memcmp (name, "port", sizeof ("port") - 1) == 0
       && grub_isxdigit (name [sizeof ("port") - 1]))
     {
@@ -242,7 +242,7 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
   err = port->driver->configure (port, &config);
   if (err)
     return err;
-#if !defined (GRUB_MACHINE_EMU) && (defined(__mips__) || defined (__i386__) || defined (__x86_64__))
+#if !defined (GRUB_MACHINE_EMU) && !defined(GRUB_MACHINE_ARC) && (defined(__mips__) || defined (__i386__) || defined (__x86_64__))
 
   /* Compatibility kludge.  */
   if (port->driver == &grub_ns8250_driver)
@@ -396,7 +396,7 @@ GRUB_MOD_INIT(serial)
 	       &grub_serial_terminfo_input_template,
 	       sizeof (grub_serial_terminfo_input));
 
-#if !defined (GRUB_MACHINE_EMU) && (defined(__mips__) || defined (__i386__) || defined (__x86_64__))
+#if !defined (GRUB_MACHINE_EMU) && !defined(GRUB_MACHINE_ARC) && (defined(__mips__) || defined (__i386__) || defined (__x86_64__))
   grub_ns8250_init ();
 #endif
 #ifdef GRUB_MACHINE_IEEE1275
@@ -404,6 +404,9 @@ GRUB_MOD_INIT(serial)
 #endif
 #ifdef GRUB_MACHINE_EFI
   grub_efiserial_init ();
+#endif
+#ifdef GRUB_MACHINE_ARC
+  grub_arcserial_init ();
 #endif
 }
 

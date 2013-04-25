@@ -153,9 +153,7 @@ reopen (const char *name, int writable)
 static grub_err_t
 grub_arcdisk_open (const char *name, grub_disk_t disk)
 {
-  char *fullname, *optr;
-  const char *iptr;
-  int state = 0;
+  char *fullname;
   grub_err_t err;
   grub_arc_err_t r;
   struct grub_arc_fileinfo info;
@@ -163,35 +161,7 @@ grub_arcdisk_open (const char *name, grub_disk_t disk)
 
   if (grub_memcmp (name, "arc/", 4) != 0)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not arc device");
-  fullname = grub_malloc (2 * grub_strlen (name) + sizeof (RAW_SUFFIX));
-  if (!fullname)
-    return grub_errno;
-  optr = fullname;
-  for (iptr = name + 4; *iptr; iptr++)
-    if (state == 0)
-      {
-	if (!grub_isdigit (*iptr))
-	  *optr++ = *iptr;
-	else
-	  {
-	    *optr++ = '(';
-	    *optr++ = *iptr;
-	    state = 1;
-	  }
-      }
-    else
-      {
-	if (grub_isdigit (*iptr))
-	  *optr++ = *iptr;
-	else
-	  {
-	    *optr++ = ')';
-	    state = 0;
-	  }
-      }
-  if (state)
-    *optr++ = ')';
-  grub_memcpy (optr, RAW_SUFFIX, sizeof (RAW_SUFFIX));
+  fullname = grub_arc_alt_name_to_norm (name, RAW_SUFFIX);
   disk->data = fullname;
   grub_dprintf ("arcdisk", "opening %s\n", fullname);
 

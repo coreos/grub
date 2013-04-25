@@ -4729,8 +4729,7 @@ ARC platform is unable to change datetime (firmware doesn't seem to provide a
 function for it).
 EMU has similar limitation.
 
-ARC platform no serial port is available.
-EMU has similar limitation.
+On EMU platform no serial port is available.
 
 Console charset refers only to firmware-assisted console. gfxterm is always
 Unicode (see Internationalisation section for its limitations). Serial is
@@ -4746,9 +4745,6 @@ the actual console may be much more limited depending on firmware
 
 On BIOS network is supported only if the image is loaded through network.
 On sparc64 GRUB is unable to determine which server it was booted from.
-
-On platforms not having direct serial support (as indicated in the line serial)
-you can still redirect firmware console to serial if it allows so.
 
 Direct ATA/AHCI support allows to circumvent various firmware limitations but
 isn't needed for normal operation except on baremetal ports.

@@ -50,6 +50,55 @@ put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 
 static struct grub_terminfo_output_state grub_console_terminfo_output;
 
+int
+grub_arc_is_device_serial (const char *name, int alt_names)
+{
+  if (name[0] == '\0')
+    return 0;
+
+  const char *ptr = name + grub_strlen (name) - 1;
+  int i;
+  /*
+    Recognize:
+    serial(N)
+    serial(N)other(M)
+   */
+  for (i = 0; i < 2; i++)
+    {
+      if (!alt_names)
+	{
+	  if (*ptr != ')')
+	    return 0;
+	  ptr--;
+	}
+      for (; ptr >= name && grub_isdigit (*ptr); ptr--);
+      if (ptr < name)
+	return 0;
+      if (!alt_names)
+	{
+	  if (*ptr != '(')
+	    return 0;
+	  ptr--;
+	}
+      if (ptr + 1 >= name + sizeof ("serial") - 1
+	  && grub_memcmp (ptr + 1 - (sizeof ("serial") - 1),
+			  "serial", sizeof ("serial") - 1) == 0)
+	return 1;
+      if (!(ptr + 1 >= name + sizeof ("other") - 1
+	    && grub_memcmp (ptr + 1 - (sizeof ("other") - 1),
+			    "other", sizeof ("other") - 1) == 0))
+	return 0;
+      ptr -= sizeof ("other") - 1;
+      if (alt_names)
+	{
+	  if (*ptr != '/')
+	    return 0;
+	  ptr--;
+	}
+    }
+  return 0;
+}
+
 static int
 check_is_serial (void)
 {
@@ -71,37 +120,7 @@ check_is_serial (void)
     consout = GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable ("ConsoleOut");
   if (!consout)
     return is_serial = 0;
-  if (consout[0] == '\0')
-    return is_serial = 0;
-
-  const char *ptr = consout + grub_strlen (consout) - 1;
-  int i;
-  /*
-    Recognize:
-    serial(N)
-    serial(N)other(M)
-   */
-  for (i = 0; i < 2; i++)
-    {
-      if (*ptr != ')')
-	return is_serial = 0;
-      ptr--;
-      for (; ptr >= consout && grub_isdigit (*ptr); ptr--);
-      if (ptr < consout)
-	return is_serial = 0;
-      if (*ptr != '(')
-	return is_serial = 0;
-      if (ptr >= consout + sizeof ("serial") - 1
-	  && grub_memcmp (ptr - (sizeof ("serial") - 1),
-			  "serial", sizeof ("serial") - 1) == 0)
-	return is_serial = 1;
-      if (!(ptr >= consout + sizeof ("other") - 1
-	    && grub_memcmp (ptr - (sizeof ("other") - 1),
-			    "other", sizeof ("other") - 1) == 0))
-	return is_serial = 0;
-      ptr -= sizeof ("other");
-    }
-  return 0;
+  return is_serial = grub_arc_is_device_serial (consout, 0);
 }
     
 static void

@@ -79,6 +79,12 @@ struct grub_arc_display_status
   grub_arc_uchar_t reverse_video;
 };
 
+enum
+  {
+    GRUB_ARC_COMPONENT_FLAG_OUT = 0x40,
+    GRUB_ARC_COMPONENT_FLAG_IN = 0x20,
+  };
+
 struct grub_arc_component
 {
   grub_arc_enum_t class;
@@ -261,6 +267,11 @@ typedef int (*grub_arc_iterate_devs_hook_t)
 int EXPORT_FUNC (grub_arc_iterate_devs) (grub_arc_iterate_devs_hook_t hook,
 					 void *hook_data,
 					 int alt_names);
+
+char *EXPORT_FUNC (grub_arc_alt_name_to_norm) (const char *name, const char *suffix);
+
+int EXPORT_FUNC (grub_arc_is_device_serial) (const char *name, int alt_names);
+
 
 #define FOR_ARC_CHILDREN(comp, parent) for (comp = GRUB_ARC_FIRMWARE_VECTOR->getchild (parent); comp; comp = GRUB_ARC_FIRMWARE_VECTOR->getpeer (comp))
 
