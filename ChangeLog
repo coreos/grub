@@ -1,5 +1,9 @@
 2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.in: Fix loongson filename.
+
+2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Move all files that don't have a location
 	set in stone under /boot/grub. Use ISO hard links rather than copies
 	to save some space.

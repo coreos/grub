@@ -496,9 +496,9 @@ if [ -e "${iso9660_dir}/boot/grub/roms/mipsel-qemu_mips.elf" ] && [ -d "${rom_di
     cp "${iso9660_dir}/boot/grub/roms/mipsel-qemu_mips.elf" "${rom_directory}/mipsel-qemu_mips.elf"
 fi
 
-make_image "${loongson_dir}" mipsel-loongson-elf "${iso9660_dir}/boot/mipsel-loongson/core.elf" "pata -C xz"
-if [ -e "${iso9660_dir}/boot/mipsel-loongson/core.elf" ] && [ -d "${rom_directory}" ]; then
-    cp "${iso9660_dir}/boot/mipsel-loongson/core.elf" "${rom_directory}/mipsel-loongson.elf"
+make_image "${loongson_dir}" mipsel-loongson-elf "${iso9660_dir}/boot/grub/loongson.elf" "pata -C xz"
+if [ -e "${iso9660_dir}/boot/grub/loongson.elf" ] && [ -d "${rom_directory}" ]; then
+    cp "${iso9660_dir}/boot/grub/loongson.elf" "${rom_directory}/mipsel-loongson.elf"
 fi
 make_image "${loongson_dir}" mipsel-yeeloong-flash "${iso9660_dir}/boot/grub/roms/mipsel-yeeloong.bin" "pata -C xz"
 if [ -e "${iso9660_dir}/boot/grub/roms/mipsel-yeeloong.bin" ] && [ -d "${rom_directory}" ]; then
