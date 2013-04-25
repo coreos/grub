@@ -1,5 +1,9 @@
 2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/partmap_test.in: Add missing double semicolon.
+
+2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Fix loongson filename.
 
 2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>

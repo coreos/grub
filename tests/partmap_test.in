@@ -80,8 +80,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	;;
     mips-arc)
 	# ARC firmware has bugs which prevent it from accessing hard disk w/o dvh disklabel.
-	exit 0
-
+	exit 0 ;;
     *)
 	disk=hd0
 	qemudisk=hda
