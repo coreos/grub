@@ -1,5 +1,10 @@
 2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/powerpc/bootinfo.txt.in: Missing update from previous
+	commit.
+
+2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/partmap_test.in: Add missing double semicolon.
 
 2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -1,7 +1,7 @@
 <chrp-boot>
 <description>@PACKAGE@ @VERSION@</description>
 <os-name>@PACKAGE@ @VERSION@</os-name>
-<boot-script>boot &device;:\boot\powerpc.elf</boot-script>
+<boot-script>boot &device;:\boot\grub\powerpc.elf</boot-script>
 <icon size=64,64 color-space=3,3,2>
 <bitmap>
 FF FF FF FF FF FF FF FF FF FF 92 6D 6D 6D 6D 6D 6D 6D 6D 6D DB FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF B6 92 6D 92 92 92 DB FF FF FF FF FF FF FF FF FF FF 
