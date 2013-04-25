@@ -400,6 +400,24 @@ struct image_target_desc image_targets[] =
       .default_compression = COMPRESSION_NONE
     },
     {
+      .dirname = "mipsel-arc",
+      .names = {"mipsel-arc", NULL},
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_MIPS_ARC, 
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .total_module_size = GRUB_KERNEL_MIPS_ARC_TOTAL_MODULE_SIZE,
+      .decompressor_compressed_size = GRUB_DECOMPRESSOR_MIPS_LOONGSON_COMPRESSED_SIZE,
+      .decompressor_uncompressed_size = GRUB_DECOMPRESSOR_MIPS_LOONGSON_UNCOMPRESSED_SIZE,
+      .decompressor_uncompressed_addr = GRUB_DECOMPRESSOR_MIPS_LOONGSON_UNCOMPRESSED_ADDR,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .link_addr = GRUB_KERNEL_MIPSEL_ARC_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_ARC_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
+    },
+    {
       .dirname = "mipsel-qemu_mips",
       .names = { "mipsel-qemu_mips-elf", NULL },
       .voidp_sizeof = 4,
@@ -1530,11 +1548,14 @@ generate_image (const char *dir, const char *prefix,
 	grub_memset (ecoff_img, 0, program_size + sizeof (*head) + sizeof (*section));
 	head = (void *) ecoff_img;
 	section = (void *) (head + 1);
-	head->magic = grub_host_to_target16 (0x160);
+	head->magic = image_target->bigendian ? grub_host_to_target16 (0x160)
+	  : grub_host_to_target16 (0x166);
 	head->nsec = grub_host_to_target16 (1);
 	head->time = grub_host_to_target32 (0);
 	head->opt = grub_host_to_target16 (0x38);
-	head->flags = grub_host_to_target16 (0x207);
+	head->flags = image_target->bigendian
+	  ? grub_host_to_target16 (0x207)
+	  : grub_host_to_target16 (0x103);
 	head->magic2 = grub_host_to_target16 (0x107);
 	head->textsize = grub_host_to_target32 (program_size);
 	head->entry = grub_host_to_target32 (target_addr);
@@ -1544,6 +1565,11 @@ generate_image (const char *dir, const char *prefix,
 	section->vaddr = grub_host_to_target32 (target_addr);
 	section->size = grub_host_to_target32 (program_size);
 	section->file_offset = grub_host_to_target32 (sizeof (*head) + sizeof (*section));
+	if (!image_target->bigendian)
+	  {
+	    section->paddr = grub_host_to_target32 (0xaa60);
+	    section->flags = grub_host_to_target32 (0x20);
+	  }
 	memcpy (section + 1, core_img, core_size);
 	free (core_img);
 	core_img = ecoff_img;

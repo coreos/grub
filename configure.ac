@@ -145,6 +145,7 @@ case "$target_cpu"-"$platform" in
   mips-qemu_mips) ;;
   mips-qemu-mips) platform=qemu_mips;;
   mips-arc) ;;
+  mipsel-arc) ;;
   mipsel-qemu_mips) ;;
   mipsel-qemu-mips) platform=qemu_mips;;
   mipsel-yeeloong) platform=loongson ;;
@@ -197,6 +198,23 @@ if test x${target_cpu} = xmipsel ; then
 else
    machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,` -DGRUB_TARGET_CPU_`echo ${target_cpu} | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`=1"
 fi
+
+case "${target_cpu}-$platform" in
+     mips-arc)
+        TARGET_LINK_ADDR=0x88200000
+        TARGET_DECOMPRESSOR_LINK_ADDR=0x88100000
+	;;
+     mipsel-arc)
+        TARGET_LINK_ADDR=0x80700000
+	TARGET_DECOMPRESSOR_LINK_ADDR=0x80600000
+	;;
+     mips*-qemu_mips | mips-loongson)
+        TARGET_DECOMPRESSOR_LINK_ADDR=0x80100000
+	;;
+esac
+
+AC_SUBST(TARGET_LINK_ADDR)
+AC_SUBST(TARGET_DECOMPRESSOR_LINK_ADDR)
 
 TARGET_CPPFLAGS="$TARGET_CPPFLAGS $machine_CPPFLAGS"
 
@@ -1146,7 +1164,7 @@ AM_CONDITIONAL([COND_i386_multiboot], [test x$target_cpu = xi386 -a x$platform =
 AM_CONDITIONAL([COND_x86_64_efi], [test x$target_cpu = xx86_64 -a x$platform = xefi])
 AM_CONDITIONAL([COND_mips_loongson], [test x$target_cpu = xmipsel -a x$platform = xloongson])
 AM_CONDITIONAL([COND_mips_qemu_mips], [test "(" x$target_cpu = xmips -o x$target_cpu = xmipsel ")"  -a x$platform = xqemu_mips])
-AM_CONDITIONAL([COND_mips_arc], [test x$target_cpu = xmips -a x$platform = xarc])
+AM_CONDITIONAL([COND_mips_arc], [test "(" x$target_cpu = xmips -o x$target_cpu = xmipsel ")"  -a x$platform = xarc])
 AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_mips], [test x$target_cpu = xmips -o x$target_cpu = xmipsel])

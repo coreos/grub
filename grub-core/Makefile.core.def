@@ -73,7 +73,7 @@ kernel = {
   mips_loongson_ldflags    = '-Wl,-Ttext,0x80200000';
   powerpc_ieee1275_ldflags = '-Wl,-Ttext,0x200000';
   sparc64_ieee1275_ldflags = '-Wl,-Ttext,0x4400';
-  mips_arc_ldflags    = '-Wl,-Ttext,0x88200000';
+  mips_arc_ldflags    = '-Wl,-Ttext,$(TARGET_LINK_ADDR)';
   mips_qemu_mips_ldflags    = '-Wl,-Ttext,0x80200000';
 
   mips_loongson_cppflags = '-DUSE_ASCII_FAILBACK';
@@ -370,9 +370,7 @@ image = {
   cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1';
 
   objcopyflags = '-O binary';
-  mips_loongson_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
-  mips_qemu_mips_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
-  mips_arc_ldflags = '-static-libgcc -Wl,-Ttext,0x88100000';
+  mips_ldflags = '-static-libgcc -Wl,-Ttext,$(TARGET_DECOMPRESSOR_LINK_ADDR)';
   ldadd = '-lgcc';
   cflags = '-Wno-unreachable-code -static-libgcc';
   enable = mips;
@@ -386,9 +384,7 @@ image = {
   cppflags = '-DGRUB_EMBED_DECOMPRESSOR=1';
 
   objcopyflags = '-O binary';
-  mips_loongson_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
-  mips_qemu_mips_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
-  mips_arc_ldflags = '-static-libgcc -Wl,-Ttext,0x88100000';
+  mips_ldflags = '-static-libgcc -Wl,-Ttext,$(TARGET_DECOMPRESSOR_LINK_ADDR)';
   ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;

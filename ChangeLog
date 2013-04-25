@@ -1,5 +1,9 @@
 2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Enable mipsel-arc.
+
+2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add serial on ARC platform.
 
 2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>

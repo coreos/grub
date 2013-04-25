@@ -113,7 +113,11 @@ grub_arcdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
   return grub_arc_iterate_devs (grub_arcdisk_iterate_iter, &ctx, 1);
 }
 
+#ifdef GRUB_CPU_MIPSEL
+#define RAW_SUFFIX "partition(0)"
+#else
 #define RAW_SUFFIX "partition(10)"
+#endif
 
 static grub_err_t
 reopen (const char *name, int writable)

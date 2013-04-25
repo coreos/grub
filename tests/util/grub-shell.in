@@ -92,6 +92,15 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	console=console
 	trim=1
 	;;
+    mipsel-arc)
+	boot=cd
+	qemu=qemu-system-mips64el
+	qemuopts="$qemuopts -M magnum -no-reboot"
+	serial_port=arc/multi0/serial0
+	console=console
+	halt_cmd=reboot
+	trim=1
+	;;
     mipsel-qemu_mips)
 	boot=mipsel_qemu
 	qemu=qemu-system-mipsel

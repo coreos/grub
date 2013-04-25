@@ -46,6 +46,7 @@ efi64_dir="${libdir}/@PACKAGE@/x86_64-efi"
 ia64_dir="${libdir}/@PACKAGE@/ia64-efi"
 sparc64_dir="${libdir}/@PACKAGE@/sparc64-ieee1275"
 arcs_dir="${libdir}/@PACKAGE@/mips-arc"
+arc_dir="${libdir}/@PACKAGE@/mipsel-arc"
 ppc_dir="${libdir}/@PACKAGE@/powerpc-ieee1275"
 rom_directory=
 override_dir=
@@ -325,6 +326,9 @@ if [ "${override_dir}" = "" ] ; then
     if test -e "${arcs_dir}" ; then
         process_input_dir "${arcs_dir}" mips-arc
     fi
+    if test -e "${arc_dir}" ; then
+        process_input_dir "${arc_dir}" mipsel-arc
+    fi
 else
     . "${override_dir}"/modinfo.sh
     process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
@@ -342,6 +346,7 @@ else
     i386_ieee1275_dir=
     sparc64_dir=
     arcs_dir=
+    arc_dir=
     case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
         i386-multiboot) multiboot_dir="${override_dir}" ;;
         i386-coreboot) coreboot_dir="${override_dir}" ;;
@@ -356,6 +361,7 @@ else
 	powerpc-ieee1275) ppc_dir="${override_dir}"; system_area=common ;;
 	sparc64-ieee1275) sparc64_dir="${override_dir}"; system_area=sparc64 ;;
 	mips-arc) arcs_dir="${override_dir}"; system_area=arcs ;;
+	mipsel-arc) arc_dir="${override_dir}" ;;
 	i386-ieee1275) i386_ieee1275_dir="${override_dir}" ;;
     esac
 fi
@@ -490,6 +496,8 @@ fi
 if [ -e "${iso9660_dir}/boot/grub/mips-arc/core.img" ] && [ "$system_area" = arcs ]; then
    grub_mkisofs_arguments="${grub_mkisofs_arguments} -mips-boot /boot/grub/mips-arc/sashARCS -mips-boot /boot/grub/mips-arc/sash -mips-boot /boot/grub/mips-arc/grub"
 fi
+
+make_image "${arc_dir}" mipsel-arc "${iso9660_dir}/boot/grub/arc.exe" ""
 
 make_image "${mipsel_qemu_dir}" mipsel-qemu_mips-elf "${iso9660_dir}/boot/grub/roms/mipsel-qemu_mips.elf" "pata"
 if [ -e "${iso9660_dir}/boot/grub/roms/mipsel-qemu_mips.elf" ] && [ -d "${rom_directory}" ]; then
