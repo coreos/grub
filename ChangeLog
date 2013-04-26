@@ -1,3 +1,7 @@
+2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Fix loongson conditional.
+
 2013-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Enable mipsel-arc.

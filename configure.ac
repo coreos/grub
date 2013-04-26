@@ -208,7 +208,7 @@ case "${target_cpu}-$platform" in
         TARGET_LINK_ADDR=0x80700000
 	TARGET_DECOMPRESSOR_LINK_ADDR=0x80600000
 	;;
-     mips*-qemu_mips | mips-loongson)
+     mips*-qemu_mips | mips*-loongson)
         TARGET_DECOMPRESSOR_LINK_ADDR=0x80100000
 	;;
 esac
