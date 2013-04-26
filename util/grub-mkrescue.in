@@ -408,7 +408,7 @@ fi
 # build multiboot core.img
 make_image "${multiboot_dir}" i386-multiboot "${iso9660_dir}/boot/grub/i386-multiboot/core.elf" "pata ahci at_keyboard"
 
-make_image_fwdisk "${i386_ieee1275_dir}" i386-ieee1275 "${iso9660_dir}/boot/grub/i386-ieee1275/core.elf" ""
+make_image_fwdisk "${i386_ieee1275_dir}" i386-ieee1275 "${iso9660_dir}/boot/grub/ofwx86.elf" ""
 
 if test -e "${efi64_dir}" || test -e "${efi32_dir}" || test -e "${ia64_dir}"; then
     efi_dir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
