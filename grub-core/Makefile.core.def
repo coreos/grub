@@ -248,9 +248,9 @@ program = {
   emu = kern/emu/full.c;
   emu_nodist = grub_emu_init.c;
 
-  ldadd = 'kernel.img$(EXEEXT)';
+  ldadd = 'kernel.exec$(EXEEXT)';
   ldadd = '$(MODULE_FILES)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+  ldadd = 'gnulib/libgnu.a $(LIBCURSES) $(LIBINTL) $(LIBUTIL) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;
 };
@@ -261,8 +261,8 @@ program = {
   emu = kern/emu/lite.c;
   emu_nodist = symlist.c;
 
-  ldadd = 'kernel.img$(EXEEXT)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+  ldadd = 'kernel.exec$(EXEEXT)';
+  ldadd = 'gnulib/libgnu.a $(LIBCURSES) $(LIBINTL) $(LIBUTIL) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;
 };
