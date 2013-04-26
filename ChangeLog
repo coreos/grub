@@ -1,5 +1,9 @@
 2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/pseries_test.in: New test.
+
+2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add test to check that different boot mediums work.
 
 2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
