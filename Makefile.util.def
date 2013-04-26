@@ -690,6 +690,54 @@ script = {
 
 script = {
   testcase;
+  name = hddboot_test;
+  common = tests/hddboot_test.in;
+};
+
+script = {
+  testcase;
+  name = fddboot_test;
+  common = tests/fddboot_test.in;
+};
+
+script = {
+  testcase;
+  name = cdboot_test;
+  common = tests/cdboot_test.in;
+};
+
+script = {
+  testcase;
+  name = netboot_test;
+  common = tests/netboot_test.in;
+};
+
+script = {
+  testcase;
+  name = pseries_test;
+  common = tests/pseries_test.in;
+};
+
+script = {
+  testcase;
+  name = xzcompress_test;
+  common = tests/xzcompress_test.in;
+};
+
+script = {
+  testcase;
+  name = gzcompress_test;
+  common = tests/gzcompress_test.in;
+};
+
+script = {
+  testcase;
+  name = lzocompress_test;
+  common = tests/lzocompress_test.in;
+};
+
+script = {
+  testcase;
   name = grub_cmd_echo;
   common = tests/grub_cmd_echo.in;
 };

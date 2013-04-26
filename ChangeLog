@@ -1,5 +1,9 @@
 2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add test to check that different boot mediums work.
+
+2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Rename i386-ieee1275 core image due to
 	ofw limited ISO support.
 

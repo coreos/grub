@@ -41,11 +41,13 @@ Run GRUB script in a Qemu instance.
 
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
-  --boot=[fd|hd|cd|net]       boot method for Qemu instance
+  --boot=[fd|hd|cd|net]   boot method for Qemu instance
   --modules=MODULES       pre-load specified modules MODULES
   --qemu=FILE             Name of qemu binary
   --qemu-opts=OPTIONS     extra options to pass to Qemu instance
   --files=FILES           add files to the image
+  --mkrescue-arg=ARGS     additional arguments to grub-mkrescue
+  --timeout=SECONDS       set timeout
   --trim                  trim firmware output
 
 $0 runs input GRUB script or SOURCE file in a Qemu instance and prints
@@ -60,6 +62,7 @@ qemuopts="${GRUB_QEMU_OPTS}"
 serial_port=com0
 serial_null=
 halt_cmd=halt
+pseries=n
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     powerpc-ieee1275)
 	boot=cd
@@ -67,6 +70,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	console=console
 	serial_port=escc-ch-a
 	serial_null="-serial null"
+	netbootext=elf
 	;;
 
     sparc64-ieee1275)
@@ -139,7 +143,9 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     i386-pc)
 	boot=cd
 	qemu=qemu-system-i386
-	console=console;;
+	console=console
+	netbootext=0
+	;;
 
     i386-efi)
 	qemu=qemu-system-i386
@@ -159,6 +165,8 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	console=console;;
 esac
 
+timeout=60
+
 # Check the arguments.
 for option in "$@"; do
     case "$option" in
@@ -177,11 +185,24 @@ for option in "$@"; do
     --files=*)
 	fls=`echo "$option" | sed -e 's/--files=//' -e 's/,/ /g'`
 	files="$files $fls" ;;
+    --mkrescue-arg=*)
+	mkr=`echo "$option" | sed -e 's/--mkrescue-arg=//' -e 's/,/ /g'`
+	mkrescue_args="$mkrescue_args $mkr" ;;
     --qemu=*)
 	qemu=`echo "$option" | sed -e 's/--qemu=//' -e 's/,/ /g'`;;
+    --pseries)
+	qemu=qemu-system-ppc64
+	serial_port=ieee1275/hvterm
+	serial_null=
+	qemuopts="$qemuopts -no-reboot"
+	trim=1
+	    ;;
     --qemu-opts=*)
         qs=`echo "$option" | sed -e 's/--qemu-opts=//'`
         qemuopts="$qemuopts $qs" ;;
+    --timeout=*)
+        timeout=`echo "$option" | sed -e 's/--timeout=//'`
+	;;
     --boot=*)
         dev=`echo "$option" | sed -e 's/--boot=//'`
 	if   [ "$dev" = "fd" ] ; then boot=fd;
@@ -260,12 +281,16 @@ echo "${halt_cmd}" >>${cfgfile}
 isofile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 if [ x$boot != xnet ]; then
     pkgdatadir="@builddir@" sh "@builddir@/grub-mkrescue" "--grub-mkimage=${builddir}/grub-mkimage" "--grub-render-label=${builddir}/grub-render-label" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
-	--rom-directory="${rom_directory}" \
+	--rom-directory="${rom_directory}" ${mkrescue_args} \
 	"/boot/grub/grub.cfg=${cfgfile}" "/boot/grub/testcase.cfg=${source}" \
 	${files} >/dev/null 2>&1
 fi
 if [ x$boot = xhd ]; then
-    device=hda
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = mips-arc ]; then
+	device=hdb
+    else
+	device=hda
+    fi
     bootdev="-boot c"
 fi
 if [ x$boot = xcd ]; then
@@ -305,6 +330,15 @@ if [ x$boot = xcoreboot ]; then
     device=cdrom
 fi
 
+if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = mipsel-arc ]; then
+    case "$boot" in
+	hd)
+	    bootdev="-global ds1225y.filename=$GRUB_QEMU_MAGNUM_NVRAM_DIR/disk" ;;
+	*)
+	    bootdev="-global ds1225y.filename=$GRUB_QEMU_MAGNUM_NVRAM_DIR/cdrom";;
+    esac
+fi
+
 do_trim ()
 {
     if [ $trim = 1 ]; then
@@ -316,12 +350,12 @@ do_trim ()
 
 if [ x$boot = xnet ]; then
     netdir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-    pkgdatadir="@builddir@" sh "@builddir@/grub-mknetdir" "--grub-mkimage=${builddir}/grub-mkimage" "--directory=${builddir}/grub-core" "--net-directory=$netdir"
+    pkgdatadir="@builddir@" sh "@builddir@/grub-mknetdir" "--grub-mkimage=${builddir}/grub-mkimage" "--directory=${builddir}/grub-core" "--net-directory=$netdir" ${mkrescue_args} > /dev/null
     cp "${cfgfile}" "$netdir/boot/grub/grub.cfg"
     cp "${source}" "$netdir/boot/grub/testcase.cfg"
-    "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.0"  -net nic  | cat | tr -d "\r" | do_trim
+    timeout -s KILL $timeout "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.$netbootext"  -net nic  | cat | tr -d "\r" | do_trim
 else
-    "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r" | do_trim
+    timeout -s KILL $timeout "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r" | do_trim
 fi
 rm -f "${isofile}" "${imgfile}"
 rm -rf "${rom_directory}"

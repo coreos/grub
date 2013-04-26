@@ -3,9 +3,8 @@ set -e
 
 . "@builddir@/grub-core/modinfo.sh"
 
-# OpenBIOS on sparc64 doesn't implement RTC
-# mipsel-arc QEMU emulated RTC doesn't play well with firmware
-if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = sparc64-ieee1275 ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = mipsel-arc ]; then
+# FIXME: OpenBIOS on sparc64 doesn't implement RTC
+if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = sparc64-ieee1275 ]; then
     exit 0
 fi
 
