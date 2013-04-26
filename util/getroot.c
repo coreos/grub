@@ -220,9 +220,6 @@ xgetcwd (void)
 
 #if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
 
-#if (defined (__linux__) || \
-     !defined (HAVE_LIBZFS) || !defined (HAVE_LIBNVPAIR))
-
 static pid_t
 exec_pipe (char **argv, int *fd)
 {
@@ -267,8 +264,6 @@ exec_pipe (char **argv, int *fd)
       return mdadm_pid;
     }
 }
-
-#endif
 
 static char **
 find_root_devices_from_poolname (char *poolname)
@@ -1322,6 +1317,8 @@ grub_util_get_dev_abstraction (const char *os_dev)
   return GRUB_DEV_ABSTRACTION_NONE;
 }
 
+#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
+
 static void
 pull_lvm_by_command (const char *os_dev)
 {
@@ -1391,6 +1388,8 @@ out:
   waitpid (pid, NULL, 0);
   free (buf);
 }
+
+#endif
 
 #ifdef __linux__
 static char *
@@ -1615,7 +1614,9 @@ grub_util_pull_device (const char *os_dev)
       break;
 
     case GRUB_DEV_ABSTRACTION_LVM:
+#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
       pull_lvm_by_command (os_dev);
+#endif
       /* Fallthrough in case that lvm-tools are unavailable.  */
     case GRUB_DEV_ABSTRACTION_LUKS:
 #ifdef HAVE_DEVICE_MAPPER

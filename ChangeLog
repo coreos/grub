@@ -1,5 +1,10 @@
 2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (exec_pipe): Put proper #if's so that its users don't
+	compile when not needed.
+
+2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/pseries_test.in: New test.
 
 2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
