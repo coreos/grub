@@ -1,5 +1,10 @@
 2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Replace libcurses with our own vt100 handling for the ease of testing
+	and decreasing prerequisites.
+
+2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def: Fix grub-emu and grub-emu-lite sources.
 
 2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>

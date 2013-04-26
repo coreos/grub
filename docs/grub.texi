@@ -4586,26 +4586,35 @@ On normalized ZFS subvolumes filenames out of normalisation are inaccessible.
 
 @chapter Output terminal
 Firmware output console ``console'' on ARC and IEEE1275 are limited to ASCII.
+
 BIOS firmware console and VGA text are limited to ASCII and some pseudographics.
+
 None of above mentioned is appropriate for displaying international and any
 unsupported character is replaced with question mark except pseudographics
-which we attempt to approximate with ASCII. EFI console on the other hand
-nominally supports UTF-16 but actual language coverage depends on firmware and
-may be very limited. The encoding used on serial can be chosen with
-@command{terminfo} as either ASCII, UTF-8 or ``visual UTF-8''. Last one is
-against the specification but results in correct rendering of right-to-left
-on some readers which don't have own bidi implementation. When using gfxterm
-or gfxmenu GRUB itself is responsible for rendering the text. In this case
-GRUB is limited by loaded fonts. If fonts contain all required characters
-then bidirectional text, cursive variants and combining marks other than
-enclosing, half (e.g. left half tilde or combining overline) and double ones.
-Ligatures aren't supported though. This should cover European, Middle Eastern
-(if you don't mind lack of lam-alif ligature in Arabic) and East Asian scripts.
-Notable unsupported scripts are Brahmic family and derived as well as
-Mongolian, Tifinagh, Korean Jamo (precomposed characters have no problem)
-and tonal writing (2e5-2e9). GRUB also ignores deprecated (as specified
-in Unicode) characters (e.g. tags). GRUB also doesn't handle so called
-``annotation characters'' If you can complete either of
+which we attempt to approximate with ASCII.
+
+EFI console on the other hand nominally supports UTF-16 but actual language
+coverage depends on firmware and may be very limited.
+
+The encoding used on serial can be chosen with @command{terminfo} as
+either ASCII, UTF-8 or ``visual UTF-8''. Last one is against the specification
+but results in correct rendering of right-to-left on some readers which don't
+have own bidi implementation.
+
+On emu GRUB checks if charset is UTF-8 and uses it if so and uses ASCII
+otherwise.
+
+When using gfxterm or gfxmenu GRUB itself is responsible for rendering the
+text. In this case GRUB is limited by loaded fonts. If fonts contain all
+required characters then bidirectional text, cursive variants and combining
+marks other than enclosing, half (e.g. left half tilde or combining overline)
+and double ones. Ligatures aren't supported though. This should cover European,
+Middle Eastern (if you don't mind lack of lam-alif ligature in Arabic) and
+East Asian scripts. Notable unsupported scripts are Brahmic family and
+derived as well as Mongolian, Tifinagh, Korean Jamo (precomposed characters
+have no problem) and tonal writing (2e5-2e9). GRUB also ignores deprecated
+(as specified in Unicode) characters (e.g. tags). GRUB also doesn't handle so
+called ``annotation characters'' If you can complete either of
 two lists or, better, propose a patch to improve rendering, please contact
 developer team.
 
@@ -4826,7 +4835,7 @@ and mips-qemu_mips can use only memory up to first hole.
 @multitable @columnfractions .20 .20 .20 .20 .20
 @item                    @tab MIPS qemu @tab emu
 @item video              @tab no        @tab yes
-@item console charset    @tab CP437     @tab ASCII
+@item console charset    @tab CP437     @tab Unicode (*)
 @item network            @tab no        @tab yes
 @item ATA/AHCI           @tab yes       @tab no
 @item AT keyboard        @tab yes       @tab no

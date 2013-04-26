@@ -842,22 +842,6 @@ AC_ARG_ENABLE([grub-emu-pci],
                              [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
 
 if test "$platform" = emu; then
-  missing_ncurses=
-[# Check for curses libraries.]
-  AC_CHECK_LIB([ncurses], [wgetch], [LIBCURSES="-lncurses"],
-    [AC_CHECK_LIB([curses], [wgetch], [LIBCURSES="-lcurses"],
-      [missing_ncurses=[true]])])
-  AC_SUBST([LIBCURSES])
-[if [ x"$missing_ncurses" = x ]; then ]
-  [# Check for headers.]
-  AC_CHECK_HEADERS([ncurses/curses.h], [],
-    [AC_CHECK_HEADERS([ncurses.h], [],
-      [AC_CHECK_HEADERS([curses.h], [],
-	[missing_ncurses=[true]])])])
-[fi]
-if test x"$missing_ncurses" = xtrue ; then
-  AC_MSG_ERROR([grub-emu can't be compiled without ncurses])
-fi
 
 if test x"$enable_grub_emu_usb" != xyes ; then
    grub_emu_usb_excuse="not enabled"

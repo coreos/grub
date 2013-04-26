@@ -23,11 +23,11 @@ On GNU/Linux, you also need:
 
 * libdevmapper 1.02.34 or later (recommended)
 
-To build grub-emu, you need:
+For optional grub-emu features, you need:
 
-* ncurses
-* libusb (recommended)
 * SDL (recommended)
+* libpciaccess (optional)
+* libusb (optional)
 
 To build GRUB's graphical terminal (gfxterm), you need:
 
