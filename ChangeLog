@@ -1,3 +1,8 @@
+2013-04-27  Leon Drugi <eyak>
+
+	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_load): Fix cast in
+	BSS clearing.
+
 2013-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Core compression test.

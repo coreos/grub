@@ -251,7 +251,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	}
 
       if (addr_tag->bss_end_addr)
-	grub_memset ((grub_uint32_t *) source + load_size, 0,
+	grub_memset ((grub_uint8_t *) source + load_size, 0,
 		     addr_tag->bss_end_addr - addr_tag->load_addr - load_size);
     }
   else
