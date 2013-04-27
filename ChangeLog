@@ -1,3 +1,7 @@
+2013-04-27  Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>
+
+	* include/grub/macho.h: Set GRUB_MACHO_FAT_EFI_MAGIC as unsigned.
+
 2013-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/ns8250.c: Systematically probe ports by writing

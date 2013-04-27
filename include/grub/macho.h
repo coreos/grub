@@ -34,7 +34,7 @@ enum
   };
 
 #define GRUB_MACHO_FAT_MAGIC 0xcafebabe
-#define GRUB_MACHO_FAT_EFI_MAGIC 0x0ef1fab9
+#define GRUB_MACHO_FAT_EFI_MAGIC 0x0ef1fab9U
 
 typedef grub_uint32_t grub_macho_cpu_type_t;
 typedef grub_uint32_t grub_macho_cpu_subtype_t;
