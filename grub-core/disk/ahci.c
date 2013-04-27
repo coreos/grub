@@ -350,7 +350,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 	  continue;
 	}
 
-      adevs[i] = grub_malloc (sizeof (*adevs[i]));
+      adevs[i] = grub_zalloc (sizeof (*adevs[i]));
       if (!adevs[i])
 	return 1;
 
@@ -619,9 +619,9 @@ grub_ahci_pciinit (grub_pci_device_t dev,
   for (i = 0; i < nports; i++)
     if (failed_adevs[i])
       {
-	grub_dma_free (adevs[i]->command_list_chunk);
-	grub_dma_free (adevs[i]->command_table_chunk);
-	grub_dma_free (adevs[i]->rfis);
+	grub_dma_free (failed_adevs[i]->command_list_chunk);
+	grub_dma_free (failed_adevs[i]->command_table_chunk);
+	grub_dma_free (failed_adevs[i]->rfis);
       }
 
   for (i = 0; i < nports; i++)
