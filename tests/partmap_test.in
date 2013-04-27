@@ -49,7 +49,7 @@ list_parts () {
     outfile="$1"
     shift
 
-    echo ls | "${grubshell}" --qemu-opts="-$qemudisk ${imgfile}" \
+    echo ls | "${grubshell}" --disk="${imgfile}" \
 	--modules=$mod | tr -d "\n\r" > "${outfile}"
     cat "${outfile}"
     echo
@@ -58,23 +58,19 @@ list_parts () {
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mips-qemu_mips | mipsel-qemu_mips | i386-qemu | i386-multiboot | i386-coreboot | mipsel-loongson)
 	disk=ata0
-	qemudisk=hda
 	;;
     powerpc-ieee1275)
 	disk=ieee1275//pci@80000000/mac-io@4/ata-3@20000/disk@0
-	qemudisk=hda
 	# FIXME: QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
 	exit 0
 	;;
     sparc64-ieee1275)
 	disk=ieee1275//pci@1fe\,0/pci-ata@5/ide0@500/disk@0
-	qemudisk=hda
 	# FIXME: QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
 	exit 0
 	;;
     i386-ieee1275)
 	disk=ieee1275/d
-	qemudisk=hdb
 	# FIXME: QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
 	exit 0
 	;;
@@ -83,11 +79,9 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	exit 0 ;;
     mipsel-arc)
 	disk=arc/scsi0/disk0/rdisk0
-	qemudisk=hda
 	;;
     *)
 	disk=hd0
-	qemudisk=hda
 	;;
 esac
 imgfile="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1

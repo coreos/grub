@@ -263,7 +263,7 @@ grub_normal_init_page (struct grub_term_output *term)
 static void
 read_lists (const char *val)
 {
-  if (! grub_no_autoload)
+  if (! grub_no_modules)
     {
       read_command_list (val);
       read_fs_list (val);

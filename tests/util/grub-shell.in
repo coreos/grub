@@ -44,6 +44,7 @@ Run GRUB script in a Qemu instance.
   --boot=[fd|hd|cd|net]   boot method for Qemu instance
   --modules=MODULES       pre-load specified modules MODULES
   --qemu=FILE             Name of qemu binary
+  --disk=FILE             Attach FILE as a disk
   --qemu-opts=OPTIONS     extra options to pass to Qemu instance
   --files=FILES           add files to the image
   --mkrescue-arg=ARGS     additional arguments to grub-mkrescue
@@ -63,7 +64,16 @@ serial_port=com0
 serial_null=
 halt_cmd=halt
 pseries=n
+disk=hda
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
+    *-emu)
+	device_map=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
+	boot=emu
+	console=console
+	disk=0
+	# To skip "Welcome to GRUB" and color setttings
+	trim=1
+	;;
     powerpc-ieee1275)
 	boot=cd
 	qemu=qemu-system-ppc
@@ -134,6 +144,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	qemu=qemu-system-i386
 	console=console
 	trim=1
+	disk=hdb
 	;;
     i386-qemu)
 	boot=qemu
@@ -200,6 +211,28 @@ for option in "$@"; do
     --qemu-opts=*)
         qs=`echo "$option" | sed -e 's/--qemu-opts=//'`
         qemuopts="$qemuopts $qs" ;;
+    --disk=*)
+        dsk=`echo "$option" | sed -e 's/--disk=//'`
+	if [ ${grub_modinfo_platform} = emu ]; then
+	    echo "(hd$disk)  $dsk" >> "$device_map"
+	    disk="$((disk+1))"
+	else
+	    if [ $disk = error ]; then
+		echo "Too many disks" 1>&2
+		exit 1;
+	    fi
+            qemuopts="$qemuopts -$disk $dsk"
+	    if [ "$disk" = hda ]; then
+		disk=hdb;
+	    elif [ "$disk" = hdb ]; then
+		# CDROM is hdc
+		disk=hdd
+	    elif [ "$disk" = hdd ]; then
+		# CDROM is hdc
+		disk=error
+	    fi
+	fi
+	;;
     --timeout=*)
         timeout=`echo "$option" | sed -e 's/--timeout=//'`
 	;;
@@ -244,16 +277,27 @@ fi
 cfgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 cat <<EOF >${cfgfile}
 grubshell=yes
-insmod serial
 EOF
+
+
+if [ "${grub_modinfo_platform}" != emu ]; then
+    echo insmod serial >>${cfgfile}
+fi
+
 if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ]; then
     echo insmod escc >>${cfgfile}
 fi
+if [ "${grub_modinfo_platform}" != emu ]; then
+    echo "serial ${serial_port}" >>${cfgfile}
+    term="serial_${serial_port}"
+else
+    term=console
+fi
+
 cat <<EOF >>${cfgfile}
-serial ${serial_port}
-terminfo -g 255x255 serial_${serial_port} dumb
-terminal_input serial_${serial_port}
-terminal_output serial_${serial_port}
+terminfo -g 255x255 ${term} dumb
+terminal_input ${term}
+terminal_output ${term}
 EOF
 
 trim_head=664cbea8-132f-4770-8aa4-1696d59ac35c
@@ -270,7 +314,7 @@ do
 done
 
 cat <<EOF >>${cfgfile}
-source /boot/grub/testcase.cfg
+source \$prefix/testcase.cfg
 # Stop serial output to suppress "ACPI shutdown failed" error.
 EOF
 if [ x$console != x ]; then
@@ -279,7 +323,7 @@ fi
 echo "${halt_cmd}" >>${cfgfile}
 
 isofile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-if [ x$boot != xnet ]; then
+if [ x$boot != xnet ] && [ x$boot != xemu ]; then
     pkgdatadir="@builddir@" sh "@builddir@/grub-mkrescue" "--grub-mkimage=${builddir}/grub-mkimage" "--grub-render-label=${builddir}/grub-render-label" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
 	--rom-directory="${rom_directory}" ${mkrescue_args} \
 	"/boot/grub/grub.cfg=${cfgfile}" "/boot/grub/testcase.cfg=${source}" \
@@ -354,6 +398,11 @@ if [ x$boot = xnet ]; then
     cp "${cfgfile}" "$netdir/boot/grub/grub.cfg"
     cp "${source}" "$netdir/boot/grub/testcase.cfg"
     timeout -s KILL $timeout "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.$netbootext"  -net nic  | cat | tr -d "\r" | do_trim
+elif [ x$boot = xemu ]; then
+    grubdir="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
+    cp "${cfgfile}" "$grubdir/grub.cfg"
+    cp "${source}" "$grubdir/testcase.cfg"
+    @builddir@/grub-core/grub-emu -m "$device_map" -d "$grubdir" | tr -d "\r" | do_trim
 else
     timeout -s KILL $timeout "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r" | do_trim
 fi

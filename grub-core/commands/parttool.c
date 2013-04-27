@@ -179,7 +179,7 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
     }
 
   /* Load modules. */
-  if (! grub_no_autoload)
+  if (! grub_no_modules)
   {
     const char *prefix;
     prefix = grub_env_get ("prefix");
