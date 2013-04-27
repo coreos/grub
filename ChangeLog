@@ -1,3 +1,8 @@
+2013-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/ns8250.c: Systematically probe ports by writing
+	to SR before using them.
+
 2013-04-27  Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>
 
 	* util/ieee1275/ofpath.c (of_path_of_scsi): Fix path output for sas
