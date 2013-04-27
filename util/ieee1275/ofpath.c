@@ -324,11 +324,11 @@ vendor_is_ATA(const char *path)
 }
 
 static void
-check_sas (char *sysfs_path, int *tgt)
+check_sas (char *sysfs_path, int *tgt, unsigned long int *sas_address)
 {
   char *ed = strstr (sysfs_path, "end_device");
   char *p, *q, *path;
-  char phy[16];
+  char phy[21];
   int fd;
   size_t path_size;
 
@@ -348,15 +348,24 @@ check_sas (char *sysfs_path, int *tgt)
 	       + sizeof ("%s/sas_device/%s/phy_identifier"));
   path = xmalloc (path_size);
   snprintf (path, path_size, "%s/sas_device/%s/phy_identifier", p, ed);
-
   fd = open (path, O_RDONLY);
   if (fd < 0)
     grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
 
   memset (phy, 0, sizeof (phy));
-  read (fd, phy, sizeof (phy));
+  read (fd, phy, sizeof (phy) - 1);
+  close (fd);
 
   sscanf (phy, "%d", tgt);
+
+  snprintf (path, path_size, "%s/sas_device/%s/sas_address", p, ed);
+  fd = open (path, O_RDONLY);
+  if (fd < 0)
+  grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
+
+  memset (phy, 0, sizeof (phy));
+  read (fd, phy, sizeof (phy) - 1);
+  sscanf (phy, "%lx", sas_address);
 
   free (path);
   free (p);
@@ -370,13 +379,14 @@ of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *dev
 {
   const char *p, *digit_string, *disk_name;
   int host, bus, tgt, lun;
+  unsigned long int sas_address;
   char *sysfs_path, disk[MAX_DISK_CAT - sizeof ("/fp@0,0")];
   char *of_path;
 
   sysfs_path = block_device_get_sysfs_path_and_link(devicenode);
   p = get_basename (sysfs_path);
   sscanf(p, "%d:%d:%d:%d", &host, &bus, &tgt, &lun);
-  check_sas (sysfs_path, &tgt);
+  check_sas (sysfs_path, &tgt, &sas_address);
 
   if (vendor_is_ATA(sysfs_path))
     {
@@ -417,18 +427,52 @@ of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *dev
     }
   else
     {
-      if (*digit_string == '\0')
-	{
-	  snprintf(disk, sizeof (disk), "/%s@%x,%d", disk_name, tgt, lun);
-	}
-      else
-	{
-	  int part;
+      if (lun == 0)
+        {
+          int sas_id = 0;
+          sas_id = bus << 16 | tgt << 8 | lun;
 
-	  sscanf(digit_string, "%d", &part);
-	  snprintf(disk, sizeof (disk),
-		   "/%s@%x,%d:%c", disk_name, tgt, lun, 'a' + (part - 1));
-	}
+          if (*digit_string == '\0')
+            {
+              snprintf(disk, sizeof (disk), "/sas/%s@%x", disk_name, sas_id);
+            }
+          else
+            {
+              int part;
+
+              sscanf(digit_string, "%d", &part);
+              snprintf(disk, sizeof (disk),
+                       "/sas/%s@%x:%c", disk_name, sas_id, 'a' + (part - 1));
+            }
+        }
+      else
+        {
+          char *lunstr;
+          int lunpart[4];
+
+          lunstr = xmalloc (20);
+
+          lunpart[0] = (lun >> 8) & 0xff;
+          lunpart[1] = lun & 0xff;
+          lunpart[2] = (lun >> 24) & 0xff;
+          lunpart[3] = (lun >> 16) & 0xff;
+
+          sprintf(lunstr, "%02x%02x%02x%02x00000000", lunpart[0], lunpart[1], lunpart[2], lunpart[3]);
+          long int longlun = atol(lunstr);
+
+          if (*digit_string == '\0')
+            {
+              snprintf(disk, sizeof (disk), "/sas/%s@%lx,%lu", disk_name, sas_address, longlun);
+            }
+          else
+            {
+              int part;
+
+              sscanf(digit_string, "%d", &part);
+              snprintf(disk, sizeof (disk),
+                       "/sas/%s@%lx,%lu:%c", disk_name, sas_address, longlun, 'a' + (part - 1));
+            }
+        }
     }
   strcat(of_path, disk);
   return of_path;

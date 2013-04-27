@@ -1,3 +1,9 @@
+2013-04-27  Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>
+
+	* util/ieee1275/ofpath.c (of_path_of_scsi): Fix path output for sas
+	disks.
+	(check_sas): Get sas_adress info.
+
 2013-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/ahci.c (grub_ahci_pciinit): Fix handling of empty
