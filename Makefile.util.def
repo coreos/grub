@@ -720,6 +720,12 @@ script = {
 
 script = {
   testcase;
+  name = core_compress_test;
+  common = tests/core_compress_test.in;
+};
+
+script = {
+  testcase;
   name = xzcompress_test;
   common = tests/xzcompress_test.in;
 };

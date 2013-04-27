@@ -177,6 +177,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 esac
 
 timeout=60
+mkimage_extra_arg=
 
 # Check the arguments.
 for option in "$@"; do
@@ -236,6 +237,13 @@ for option in "$@"; do
     --timeout=*)
         timeout=`echo "$option" | sed -e 's/--timeout=//'`
 	;;
+
+    # Intentionally undocumented
+    --grub-mkimage-extra)
+	mkimage_extra_arg="$mkimage_extra_arg `argument $option "$@"`"; shift ;;
+    --grub-mkimage-extra=*)
+	mkimage_extra_arg="$mkimage_extra_arg `echo "$option" | sed 's/--grub-mkimage-extra=//'`" ;;
+
     --boot=*)
         dev=`echo "$option" | sed -e 's/--boot=//'`
 	if   [ "$dev" = "fd" ] ; then boot=fd;
@@ -325,7 +333,7 @@ echo "${halt_cmd}" >>${cfgfile}
 isofile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 if [ x$boot != xnet ] && [ x$boot != xemu ]; then
     pkgdatadir="@builddir@" sh "@builddir@/grub-mkrescue" "--grub-mkimage=${builddir}/grub-mkimage" "--grub-render-label=${builddir}/grub-render-label" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
-	--rom-directory="${rom_directory}" ${mkrescue_args} \
+	--rom-directory="${rom_directory}" "--grub-mkimage-extra=$mkimage_extra_arg" ${mkrescue_args} \
 	"/boot/grub/grub.cfg=${cfgfile}" "/boot/grub/testcase.cfg=${source}" \
 	${files} >/dev/null 2>&1
 fi

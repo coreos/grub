@@ -105,6 +105,7 @@ usage () {
 }
 
 system_area=auto
+mkimage_extra_arg=
 
 # Check the arguments.
 while test $# -gt 0
@@ -153,6 +154,12 @@ do
 	PATH=${override_dir}:$PATH
 	export PATH
 	;;
+
+    # Intentionally undocumented
+    --grub-mkimage-extra)
+	mkimage_extra_arg="$mkimage_extra_arg `argument $option "$@"`"; shift ;;
+    --grub-mkimage-extra=*)
+	mkimage_extra_arg="$mkimage_extra_arg `echo "$option" | sed 's/--grub-mkimage-extra=//'`" ;;
 
     --sparc-boot)
         system_area=sparc64 ;;

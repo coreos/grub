@@ -1,5 +1,9 @@
 2013-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Core compression test.
+
+2013-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Implement grub_machine_get_bootlocation for ARC.
 
 2013-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
