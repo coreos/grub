@@ -1,3 +1,7 @@
+2013-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Improve AHCI detection and command issuing.
+
 2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix pseries test.
