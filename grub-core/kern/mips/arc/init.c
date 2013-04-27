@@ -34,6 +34,8 @@
 #include <grub/arc/arc.h>
 #include <grub/offsets.h>
 #include <grub/i18n.h>
+#include <grub/disk.h>
+#include <grub/partition.h>
 
 const char *type_names[] = {
 #ifdef GRUB_CPU_WORDS_BIGENDIAN
@@ -164,16 +166,51 @@ grub_arc_alt_name_to_norm (const char *name, const char *suffix)
   return ret;
 }
 
+static char *
+norm_name_to_alt (const char *name)
+{
+  char *optr;
+  const char *iptr;
+  int state = 0;
+  char * ret = grub_malloc (grub_strlen (name) + sizeof ("arc/"));
+
+  if (!ret)
+    return NULL;
+  optr = grub_stpcpy (ret, "arc/");
+  for (iptr = name; *iptr; iptr++)
+    {
+      if (state == 1)
+	{
+	  *optr++ = '/';
+	  state = 0;
+	}
+      if (*iptr == '(')
+	continue;
+      if (*iptr == ')')
+	{
+	  state = 1;
+	  continue;
+	}
+      *optr++ = *iptr;
+    }
+  *optr = '\0';
+  return ret;
+}
+
 extern grub_uint32_t grub_total_modules_size __attribute__ ((section(".text")));
 grub_addr_t grub_modbase;
 
 extern char _end[];
+static char boot_location[256];
 
 void
 grub_machine_init (void)
 {
   struct grub_arc_memory_descriptor *cur = NULL;
   grub_addr_t modend;
+
+  grub_memcpy (boot_location,
+	       (char *) (GRUB_DECOMPRESSOR_LINK_ADDR - 256), 256);
 
   grub_modbase = ALIGN_UP ((grub_addr_t) _end, GRUB_KERNEL_MACHINE_MOD_ALIGN);
   modend = grub_modbase + grub_total_modules_size;
@@ -239,3 +276,133 @@ grub_exit (void)
   while (1);
 }
 
+static char *
+get_part (char *dev)
+{
+  char *ptr;
+  if (!*dev)
+    return 0;
+  ptr = dev + grub_strlen (dev) - 1;
+  if (ptr == dev || *ptr != ')')
+    return 0;
+  ptr--;
+  while (grub_isdigit (*ptr) && ptr > dev)
+    ptr--;
+  if (*ptr != '(' || ptr == dev)
+    return 0;
+  ptr--;
+  if (ptr - dev < (int) sizeof ("partition") - 2)
+    return 0;
+  ptr -= sizeof ("partition") - 2;
+  if (grub_memcmp (ptr, "partition", sizeof ("partition") - 1) != 0)
+    return 0;
+  return ptr;
+}
+
+static grub_disk_addr_t
+get_partition_offset (char *part, grub_disk_addr_t *en)
+{
+  grub_arc_fileno_t handle;
+  grub_disk_addr_t ret = -1;
+  struct grub_arc_fileinfo info;
+  grub_arc_err_t r;
+
+  if (GRUB_ARC_FIRMWARE_VECTOR->open (part, GRUB_ARC_FILE_ACCESS_OPEN_RO,
+				      &handle))
+    return -1;
+
+  r = GRUB_ARC_FIRMWARE_VECTOR->getfileinformation (handle, &info);
+  if (!r)
+    {
+      ret = (info.start >> 9);
+      *en = (info.end >> 9);
+    }
+  GRUB_ARC_FIRMWARE_VECTOR->close (handle);
+  return ret;
+}
+
+struct get_device_name_ctx
+{
+  char *partition_name;
+  grub_disk_addr_t poff, pend;
+};
+
+static int
+get_device_name_iter (grub_disk_t disk __attribute__ ((unused)),
+		      const grub_partition_t part, void *data)
+{
+  struct get_device_name_ctx *ctx = data;
+
+  if (grub_partition_get_start (part) == ctx->poff
+      && grub_partition_get_len (part) == ctx->pend)
+    {
+      ctx->partition_name = grub_partition_get_name (part);
+      return 1;
+    }
+
+  return 0;
+}
+
+void
+grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
+			       char **path __attribute__ ((unused)))
+{
+  char *loaddev = boot_location;
+  char *pptr, *partptr;
+  char *dname;
+  grub_disk_addr_t poff = -1, pend;
+  struct get_device_name_ctx ctx;
+  grub_disk_t parent = 0;
+
+  pptr = grub_strchr (loaddev, '/');
+  if (pptr)
+    {
+      *path = grub_strdup (pptr);
+      *pptr = '\0';
+    }
+  partptr = get_part (loaddev);
+  if (partptr)
+    {
+      poff = get_partition_offset (loaddev, &pend);
+      *partptr = '\0';
+    }
+  dname = norm_name_to_alt (loaddev);
+  if (poff == (grub_addr_t) -1)
+    {
+      *device = dname;
+      return;
+    }
+
+  parent = grub_disk_open (dname);
+  if (!parent)
+    {
+      *device = dname;
+      return;
+    }
+
+  if (poff == 0
+      && pend == grub_disk_get_size (parent))
+    {
+      grub_disk_close (parent);
+      *device = dname;
+      return;
+    }
+
+  ctx.partition_name = NULL;
+  ctx.poff = poff;
+  ctx.pend = pend;
+
+  grub_partition_iterate (parent, get_device_name_iter, &ctx);
+  grub_disk_close (parent);
+
+  if (! ctx.partition_name)
+    {
+      *device = dname;
+      return;
+    }
+
+  *device = grub_xasprintf ("%s,%s", dname,
+			    ctx.partition_name);
+  grub_free (ctx.partition_name);
+  grub_free (dname);
+}

@@ -259,6 +259,12 @@ grub_exit (void)
   grub_halt ();
 }
 
+void
+grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
+			       char **path __attribute__ ((unused)))
+{
+}
+
 extern char _end[];
 grub_addr_t grub_modbase = (grub_addr_t) _end;
 

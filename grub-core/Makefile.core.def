@@ -76,6 +76,7 @@ kernel = {
   mips_arc_ldflags    = '-Wl,-Ttext,$(TARGET_LINK_ADDR)';
   mips_qemu_mips_ldflags    = '-Wl,-Ttext,0x80200000';
 
+  mips_arc_cppflags = '-DGRUB_DECOMPRESSOR_LINK_ADDR=$(TARGET_DECOMPRESSOR_LINK_ADDR)';
   mips_loongson_cppflags = '-DUSE_ASCII_FAILBACK';
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
   emu_cflags = '$(CFLAGS_GNULIB)';

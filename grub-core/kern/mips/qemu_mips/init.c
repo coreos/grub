@@ -98,6 +98,12 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
   return GRUB_ERR_NONE;
 }
 
+void
+grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
+			       char **path __attribute__ ((unused)))
+{
+}
+
 extern char _end[];
 grub_addr_t grub_modbase = (grub_addr_t) _end;
 
