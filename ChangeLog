@@ -1,5 +1,9 @@
 2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix pseries test.
+
+2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make 'make check' work on emu.
 
 2013-04-26  Vladimir Serbinenko  <phcoder@gmail.com>

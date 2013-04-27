@@ -205,7 +205,7 @@ for option in "$@"; do
 	qemu=qemu-system-ppc64
 	serial_port=ieee1275/hvterm
 	serial_null=
-	qemuopts="$qemuopts -no-reboot"
+	qemuopts="$qemuopts -M pseries -no-reboot"
 	trim=1
 	    ;;
     --qemu-opts=*)

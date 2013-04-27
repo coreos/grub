@@ -23,15 +23,15 @@ if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" != powerpc-ieee1275 ]
    exit 0
 fi
 
-if [ "$(echo hello | "${grubshell}" --pseries --timeout 180 --boot=cd)" != "Hello World" ]; then
+if [ "$(echo hello | "${grubshell}" --pseries --timeout=180 --boot=cd)" != "Hello World" ]; then
    exit 1
 fi
 
-if [ "$(echo hello | "${grubshell}" --pseries --timeout 180 --boot=hd)" != "Hello World" ]; then
+if [ "$(echo hello | "${grubshell}" --pseries --timeout=180 --boot=hd)" != "Hello World" ]; then
    exit 1
 fi
 
 # FIXME: workaround SLOF bugs
-#if [ "$(echo hello | "${grubshell}" --pseries --timeout 180 --boot=net)" != "Hello World" ]; then
+#if [ "$(echo hello | "${grubshell}" --pseries --timeout=180 --boot=net)" != "Hello World" ]; then
 #   exit 1
 #fi
