@@ -1,5 +1,9 @@
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/nativedisk.c: Ignore unknown filesystem error.
+
+2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	New command `nativedisk'.
 
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>

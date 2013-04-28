@@ -79,6 +79,8 @@ iterate_device (const char *name, void *data)
 
   if (get_uuid (name, &cur_uuid))
     {
+      if (grub_errno == GRUB_ERR_UNKNOWN_FS)
+	grub_errno = 0;
       grub_print_error ();
       return 0;
     }
