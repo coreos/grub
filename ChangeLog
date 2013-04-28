@@ -1,5 +1,10 @@
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/file.c: Use const char * rather than casting to
+	non-const.
+
+2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/probe.c: Add missing grub_device_close.
 
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
