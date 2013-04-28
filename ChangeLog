@@ -1,5 +1,10 @@
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/io/lzopio.c: Use GRUB_PROPERLY_ALIGNED_ARRAY.
+	* grub-core/loader/i386/bsd.c: Likewise.
+
+2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ahci.c: Fix compilation for amd64 (format warnings).
 
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
