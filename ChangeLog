@@ -1,5 +1,9 @@
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/probe.c: Add missing grub_device_close.
+
+2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* INSTALL: Document linguas.sh.
 
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
