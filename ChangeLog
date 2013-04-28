@@ -1,5 +1,10 @@
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/efi/api.h (GRUB_EFI_DEVICE_PATH_LENGTH): Use
+	grub_get_unaligned16 rather than shifts.
+
+2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/file.c: Use const char * rather than casting to
 	non-const.
 
