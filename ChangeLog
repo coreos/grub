@@ -1,5 +1,9 @@
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ahci.c: Fix compilation for amd64 (format warnings).
+
+2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/efi/api.h (GRUB_EFI_DEVICE_PATH_LENGTH): Use
 	grub_get_unaligned16 rather than shifts.
 

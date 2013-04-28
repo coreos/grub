@@ -531,8 +531,8 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 		      adevs[i]->hba->ports[adevs[i]->port].sata_error);
 
 	grub_dprintf ("ahci", "offset: %x, tfd:%x, CMD: %x\n",
-		      (char *) &adevs[i]->hba->ports[adevs[i]->port].task_file_data - 
-		      (char *) adevs[i]->hba,
+		      (int) ((char *) &adevs[i]->hba->ports[adevs[i]->port].task_file_data - 
+			     (char *) adevs[i]->hba),
 		      adevs[i]->hba->ports[adevs[i]->port].task_file_data,
 		      adevs[i]->hba->ports[adevs[i]->port].command);
 
@@ -545,8 +545,8 @@ grub_ahci_pciinit (grub_pci_device_t dev,
     if (adevs[i])
       {
 	grub_dprintf ("ahci", "offset: %x, tfd:%x, CMD: %x\n",
-		      (char *) &adevs[i]->hba->ports[adevs[i]->port].task_file_data - 
-		      (char *) adevs[i]->hba,
+		      (int) ((char *) &adevs[i]->hba->ports[adevs[i]->port].task_file_data - 
+			     (char *) adevs[i]->hba),
 		      adevs[i]->hba->ports[adevs[i]->port].task_file_data,
 		      adevs[i]->hba->ports[adevs[i]->port].command);
 
