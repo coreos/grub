@@ -51,15 +51,13 @@ grub_dl_t grub_dl_head = 0;
 grub_err_t
 grub_dl_add (grub_dl_t mod);
 
+/* Keep global so that GDB scripts work.  */
 grub_err_t
 grub_dl_add (grub_dl_t mod)
 {
   if (grub_dl_get (mod->name))
     return grub_error (GRUB_ERR_BAD_MODULE,
 		       "`%s' is already loaded", mod->name);
-
-  mod->next = grub_dl_head;
-  grub_dl_head = mod;
 
   return GRUB_ERR_NONE;
 }
@@ -75,18 +73,6 @@ grub_dl_remove (grub_dl_t mod)
 	*p = q->next;
 	return;
       }
-}
-
-grub_dl_t
-grub_dl_get (const char *name)
-{
-  grub_dl_t l;
-
-  for (l = grub_dl_head; l; l = l->next)
-    if (grub_strcmp (name, l->name) == 0)
-      return l;
-
-  return 0;
 }
 
 
@@ -447,13 +433,6 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
   return GRUB_ERR_NONE;
 }
 
-static void
-grub_dl_call_init (grub_dl_t mod)
-{
-  if (mod->init)
-    (mod->init) (mod);
-}
-
 /* Me, Vladimir Serbinenko, hereby I add this module check as per new
    GNU module policy. Note that this license check is informative only.
    Modules have to be licensed under GPLv3 or GPLv3+ (optionally
@@ -595,7 +574,7 @@ grub_dl_flush_cache (grub_dl_t mod)
 
 /* Load a module from core memory.  */
 grub_dl_t
-grub_dl_load_core (void *addr, grub_size_t size)
+grub_dl_load_core_noinit (void *addr, grub_size_t size)
 {
   Elf_Ehdr *e;
   grub_dl_t mod;
@@ -651,15 +630,28 @@ grub_dl_load_core (void *addr, grub_size_t size)
   grub_dprintf ("modules", "module name: %s\n", mod->name);
   grub_dprintf ("modules", "init function: %p\n", mod->init);
 
-  grub_boot_time ("Initing module %s", mod->name);
-  grub_dl_call_init (mod);
-  grub_boot_time ("Module %s inited", mod->name);
-
   if (grub_dl_add (mod))
     {
       grub_dl_unload (mod);
       return 0;
     }
+
+  return mod;
+}
+
+grub_dl_t
+grub_dl_load_core (void *addr, grub_size_t size)
+{
+  grub_dl_t mod;
+
+  mod = grub_dl_load_core_noinit (addr, size);
+
+  if (!mod)
+    return NULL;
+
+  grub_boot_time ("Initing module %s", mod->name);
+  grub_dl_init (mod);
+  grub_boot_time ("Module %s inited", mod->name);
 
   return mod;
 }

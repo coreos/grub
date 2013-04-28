@@ -3411,6 +3411,7 @@ you forget a command, you can run the command @command{help}
 * lsfonts::                     List loaded fonts
 * lsmod::                       Show loaded modules
 * md5sum::                      Compute or check MD5 hash
+* nativedisk::                  Switch to native disk drivers
 * normal::                      Enter normal mode
 * normal_exit::                 Exit from normal mode
 * parttool::                    Modify partition table entries
@@ -4034,6 +4035,13 @@ Alias for @code{hashsum --hash md5 arg @dots{}}. See command @command{hashsum}
 (@pxref{hashsum}) for full description.
 @end deffn
 
+
+@node nativedisk
+@subsection nativedisk
+
+@deffn Command nativedisk
+Switch from firmware disk drivers to native ones.
+@end deffn
 
 @node normal
 @subsection normal

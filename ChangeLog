@@ -1,5 +1,9 @@
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	New command `nativedisk'.
+
+2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/io/lzopio.c: Use GRUB_PROPERLY_ALIGNED_ARRAY.
 	* grub-core/loader/i386/bsd.c: Likewise.
 

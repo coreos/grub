@@ -508,6 +508,11 @@ module = {
 };
 
 module = {
+  name = nativedisk;
+  common = commands/nativedisk.c;
+};
+
+module = {
   name = emupci;
   common = bus/emu/pci.c;
   common = commands/lspci.c;
