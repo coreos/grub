@@ -76,9 +76,14 @@ Building the GRUB
 
 The simplest way to compile this package is:
 
-  1. `cd' to the directory containing the package's source code.  If
-     you don't use a release tarball you have to type `./autogen.sh'.
-     Type `./configure' to configure the package for your system.
+  1. `cd' to the directory containing the package's source code.
+
+  2. Skip this and following step if you use release tarball and proceed to
+     step 4. If you want translations type `./linguas.sh'.
+  
+  3. Type `./autogen.sh'.
+
+  4. Type `./configure' to configure the package for your system.
      If you're using `csh' on an old version of System V, you might
      need to type `sh ./configure' instead to prevent `csh' from trying
      to execute `configure' itself.
@@ -86,15 +91,15 @@ The simplest way to compile this package is:
      Running `configure' takes awhile.  While running, it prints some
      messages telling which features it is checking for.
 
-  2. Type `make' to compile the package.
+  6. Type `make' to compile the package.
 
-  3. Optionally, type `make check' to run any self-tests that come with
+  7. Optionally, type `make check' to run any self-tests that come with
      the package.
 
-  4. Type `make install' to install the programs and any data files and
+  8. Type `make install' to install the programs and any data files and
      documentation.
 
-  5. You can remove the program binaries and object files from the
+  9. You can remove the program binaries and object files from the
      source code directory by typing `make clean'.  To also remove the
      files that `configure' created (so you can compile the package for
      a different kind of computer), type `make distclean'.  There is
