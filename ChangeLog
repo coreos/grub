@@ -1,5 +1,9 @@
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove POTFILES.in and regenerate it in autogen.sh.
+
+2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move --directory/--override-directorry to grub-install_header and unify.
 
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
