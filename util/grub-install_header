@@ -126,6 +126,9 @@ grub_print_install_files_help () {
     print_option_help "--fonts=FONTS" "$(gettext_printf "install FONTS [default=%s]" "unicode")"
     print_option_help "--locales=LOCALES" "$(gettext_printf "install only LOCALES [default=all]")"
     print_option_help "--compress[=no,xz,gz,lzo]" "$(gettext "compress GRUB files [optional]")"
+    # TRANSLATORS: platform here isn't identifier. It can be translated.
+    dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/@PACKAGE@")"
+    print_option_help "-d, --directory=$(gettext "DIR")" "$dir_msg"
 }
 
 install_modules=all
@@ -136,6 +139,7 @@ compress=no
 grub_decompression_module=""
 compressor=""
 compressor_opts=""
+source_directory=""
 
 argument () {
   opt=$1
@@ -198,6 +202,16 @@ grub_process_install_options () {
 	    grub_parse_compress `argument $option "$@"`; grub_process_install_options_consumed=2; return ;;
         --compress=*)
             grub_parse_compress `echo "${option}" | sed 's/--compress=//'`; grub_process_install_options_consumed=1; return ;;
+	--directory | -d)
+	    source_directory=`argument $option "$@"`; grub_process_install_options_consumed=2 ;;
+	--directory=*)
+	    source_directory=`echo "$option" | sed 's/--directory=//'` grub_process_install_options_consumed=1;;
+
+	# For backwards compatibility
+	--override-directory)
+	    source_directory=`argument $option "$@"`; grub_process_install_options_consumed=2 ;;
+	--override-directory=*)
+	    source_directory=`echo "$option" | sed 's/--override-directory=//'` grub_process_install_options_consumed=1;;
     esac
 }
 

@@ -33,7 +33,6 @@ fi
 
 self=`basename $0`
 
-source_directory=
 compression=auto
 format=
 grub_mkimage="${bindir}/@grub_mkimage@"
@@ -54,9 +53,6 @@ usage () {
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
     print_option_help "-v, --version" "$(gettext "print the version information and exit")"
     print_option_help "-o, --output=$(gettext FILE)" "$(gettext "save output in FILE [required]")"
-    # TRANSLATORS: platform here isn't identifier. It can be translated.
-    dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/@PACKAGE@")"
-    print_option_help "-d, --directory=$(gettext "DIR")" "$dir_msg"
     print_option_help "-O, --format=$(gettext "FORMAT")" "$(gettext "generate an image in FORMAT")"; echo
     print_option_help "" "$(gettext "available formats:") $formats"
     echo
@@ -97,11 +93,6 @@ do
 	output_image=`argument $option "$@"`; shift ;;
     --output=*)
 	output_image=`echo "$option" | sed 's/--output=//'` ;;
-
-    --directory | -d)
-	source_directory=`argument $option "$@"`; shift ;;
-    --directory=*)
-	source_directory=`echo "$option" | sed 's/--directory=//'` ;;
 
     --grub-mkimage)
 	grub_mkimage=`argument $option "$@"`; shift ;;

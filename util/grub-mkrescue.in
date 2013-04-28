@@ -1,3 +1,4 @@
+#!/bin/sh
 
 # Make GRUB rescue image
 # Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010  Free Software Foundation, Inc.
@@ -49,7 +50,6 @@ arcs_dir="${libdir}/@PACKAGE@/mips-arc"
 arc_dir="${libdir}/@PACKAGE@/mipsel-arc"
 ppc_dir="${libdir}/@PACKAGE@/powerpc-ieee1275"
 rom_directory=
-override_dir=
 grub_mkimage="${bindir}/@grub_mkimage@"
 grub_render_label="${bindir}/@grub_render_label@"
 grub_glue_efi="${bindir}/@grub_glue_efi@"
@@ -141,19 +141,6 @@ do
         rom_directory=`argument $option "$@"`; shift ;;
     --rom-directory=*)
 	rom_directory=`echo "$option" | sed 's/--rom-directory=//'` ;;
-
-    # Intentionally undocumented
-    --override-directory)
-        override_dir=`argument $option "$@"`
-	shift
-	PATH=${override_dir}:$PATH
-	export PATH
-	;;
-    --override-directory=*)
-	override_dir=`echo "${option}/" | sed 's/--override-directory=//'`
-	PATH=${override_dir}:$PATH
-	export PATH
-	;;
 
     # Intentionally undocumented
     --grub-mkimage-extra)
@@ -280,7 +267,7 @@ make_image_fwdisk ()
         $grub_decompression_module iso9660 $4
 }
 
-if [ "${override_dir}" = "" ] ; then
+if [ "${source_directory}" = "" ] ; then
     if [ "$system_area" = auto ]; then
 	if test -e "${pc_dir}" || test -e "${ppc_dir}" \
 	    || test -e "${efi32_dir}" || test -e "${efi64_dir}"; then 
@@ -337,8 +324,8 @@ if [ "${override_dir}" = "" ] ; then
         process_input_dir "${arc_dir}" mipsel-arc
     fi
 else
-    . "${override_dir}"/modinfo.sh
-    process_input_dir "${override_dir}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
+    . "${source_directory}"/modinfo.sh
+    process_input_dir "${source_directory}" ${grub_modinfo_target_cpu}-${grub_modinfo_platform}
     multiboot_dir=
     pc_dir=
     efi32_dir=
@@ -355,21 +342,21 @@ else
     arcs_dir=
     arc_dir=
     case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
-        i386-multiboot) multiboot_dir="${override_dir}" ;;
-        i386-coreboot) coreboot_dir="${override_dir}" ;;
-        i386-qemu) qemu_dir="${override_dir}" ;;
-        i386-pc) pc_dir="${override_dir}"; system_area=common;;
-	i386-efi) efi32_dir="${override_dir}"; system_area=common ;;
-	x86_64-efi) efi64_dir="${override_dir}"; system_area=common ;;
-	ia64-efi) ia64_dir="${override_dir}" ;;
-	mipsel-qemu_mips) mipsel_qemu_dir="${override_dir}" ;;
-	mipsel-loongson) loongson_dir="${override_dir}" ;;
-	mips-qemu_mips) mips_qemu_dir="${override_dir}" ;;
-	powerpc-ieee1275) ppc_dir="${override_dir}"; system_area=common ;;
-	sparc64-ieee1275) sparc64_dir="${override_dir}"; system_area=sparc64 ;;
-	mips-arc) arcs_dir="${override_dir}"; system_area=arcs ;;
-	mipsel-arc) arc_dir="${override_dir}" ;;
-	i386-ieee1275) i386_ieee1275_dir="${override_dir}" ;;
+        i386-multiboot) multiboot_dir="${source_directory}" ;;
+        i386-coreboot) coreboot_dir="${source_directory}" ;;
+        i386-qemu) qemu_dir="${source_directory}" ;;
+        i386-pc) pc_dir="${source_directory}"; system_area=common;;
+	i386-efi) efi32_dir="${source_directory}"; system_area=common ;;
+	x86_64-efi) efi64_dir="${source_directory}"; system_area=common ;;
+	ia64-efi) ia64_dir="${source_directory}" ;;
+	mipsel-qemu_mips) mipsel_qemu_dir="${source_directory}" ;;
+	mipsel-loongson) loongson_dir="${source_directory}" ;;
+	mips-qemu_mips) mips_qemu_dir="${source_directory}" ;;
+	powerpc-ieee1275) ppc_dir="${source_directory}"; system_area=common ;;
+	sparc64-ieee1275) sparc64_dir="${source_directory}"; system_area=sparc64 ;;
+	mips-arc) arcs_dir="${source_directory}"; system_area=arcs ;;
+	mipsel-arc) arc_dir="${source_directory}" ;;
+	i386-ieee1275) i386_ieee1275_dir="${source_directory}" ;;
     esac
 fi
 

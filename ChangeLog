@@ -1,5 +1,9 @@
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move --directory/--override-directorry to grub-install_header and unify.
+
+2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/morse.c: Macroify dih and dah.
 
 2013-04-27  Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>

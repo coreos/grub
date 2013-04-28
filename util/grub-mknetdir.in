@@ -66,9 +66,6 @@ usage () {
     print_option_help "--net-directory=$(gettext "DIR")" "$(gettext "root directory of TFTP server")"
     print_option_help "--subdir=$(gettext "DIR")" "$(gettext "relative subdirectory on network server")"
     print_option_help "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
-    # TRANSLATORS: platform here isn't identifier. It can be translated.
-    dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/@PACKAGE@")"
-    print_option_help "-d, --directory=$(gettext "DIR")" "$dir_msg"
     echo
     gettext_printf "%s copies GRUB images into net_directory/subdir/target_cpu-platform\n" "$self" 
     echo
@@ -122,11 +119,6 @@ do
 	debug_image=`argument $option "$@"`; shift;;
     --debug-image=*)
 	debug_image=`echo "$option" | sed 's/--debug-image=//'` ;;
-
-    --directory | -d)
-	source_directory=`argument $option "$@"`; shift ;;
-    --directory=*)
-	source_directory=`echo "$option" | sed 's/--directory=//'` ;;
 
     -*)
 	gettext_printf "Unrecognized option \`%s'\n" "$option" 1>&2
