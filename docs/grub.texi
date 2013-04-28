@@ -4041,6 +4041,10 @@ Alias for @code{hashsum --hash md5 arg @dots{}}. See command @command{hashsum}
 
 @deffn Command nativedisk
 Switch from firmware disk drivers to native ones.
+Really useful only on platforms where both
+firmware and native disk drives are available.
+Currently i386-pc, i386-efi, i386-ieee1275 and
+x86_64-efi.
 @end deffn
 
 @node normal
