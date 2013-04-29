@@ -1,5 +1,9 @@
 2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mips/arc/init.c: Fix prefix detection.
+
+2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/arg.c (grub_arg_show_help): Fix a NULL pointer
 	dereference.
 	Reported by: qwertial.

@@ -179,19 +179,26 @@ norm_name_to_alt (const char *name)
   optr = grub_stpcpy (ret, "arc/");
   for (iptr = name; *iptr; iptr++)
     {
-      if (state == 1)
+      if (state == 3)
 	{
 	  *optr++ = '/';
 	  state = 0;
 	}
       if (*iptr == '(')
-	continue;
-      if (*iptr == ')')
 	{
 	  state = 1;
 	  continue;
 	}
+      if (*iptr == ')')
+	{
+	  if (state == 1)
+	    *optr++ = '0';
+	  state = 3;
+	  continue;
+	}
       *optr++ = *iptr;
+      if (state == 1)
+	state = 2;
     }
   *optr = '\0';
   return ret;
@@ -353,13 +360,48 @@ grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
   grub_disk_addr_t poff = -1, pend;
   struct get_device_name_ctx ctx;
   grub_disk_t parent = 0;
+  unsigned i;
 
-  pptr = grub_strchr (loaddev, '/');
-  if (pptr)
+  for (i = 0; i < ARRAY_SIZE (type_names); i++)
+    if (type_names[i]
+	&& grub_memcmp (loaddev, type_names[i], grub_strlen (type_names[i])) == 0
+	&& loaddev[grub_strlen (type_names[i])] == '(')
+      break;
+  if (i == ARRAY_SIZE (type_names))
+    pptr = loaddev;
+  else
+    for (pptr = loaddev; *pptr && *pptr != '/' && *pptr != '\\'; pptr++);
+  if (*pptr)
     {
+      char *iptr, *optr;
+      char sep = *pptr;
+      *path = grub_malloc (grub_strlen (pptr) + 1);
+      if (!*path)
+	return;
+      for (iptr = pptr, optr = *path; *iptr; iptr++, optr++)
+	if (*iptr == sep)
+	  *optr = '/';
+	else
+	  *optr = *iptr;
+      *optr = '\0';
       *path = grub_strdup (pptr);
       *pptr = '\0';
     }
+
+  if (*loaddev == '\0')
+    {
+      const char *syspart = 0;
+
+      if (GRUB_ARC_SYSTEM_PARAMETER_BLOCK->firmware_vector_length
+	  >= ((char *) (&GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable + 1)
+	      - (char *) GRUB_ARC_FIRMWARE_VECTOR)
+	  && GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable)
+	syspart = GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable ("SystemPartition");
+      if (!syspart)
+	return;
+      loaddev = grub_strdup (syspart);
+    }
+
   partptr = get_part (loaddev);
   if (partptr)
     {
@@ -370,6 +412,8 @@ grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
   if (poff == (grub_addr_t) -1)
     {
       *device = dname;
+      if (loaddev != boot_location)
+	grub_free (loaddev);
       return;
     }
 
@@ -377,6 +421,8 @@ grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
   if (!parent)
     {
       *device = dname;
+      if (loaddev != boot_location)
+	grub_free (loaddev);
       return;
     }
 
@@ -385,6 +431,8 @@ grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
     {
       grub_disk_close (parent);
       *device = dname;
+      if (loaddev != boot_location)
+	grub_free (loaddev);
       return;
     }
 
@@ -398,6 +446,8 @@ grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
   if (! ctx.partition_name)
     {
       *device = dname;
+      if (loaddev != boot_location)
+	grub_free (loaddev);
       return;
     }
 
@@ -405,4 +455,6 @@ grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
 			    ctx.partition_name);
   grub_free (ctx.partition_name);
   grub_free (dname);
+  if (loaddev != boot_location)
+    grub_free (loaddev);
 }
