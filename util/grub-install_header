@@ -16,8 +16,33 @@ set -e
 # You should have received a copy of the GNU General Public License
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+datarootdir="@datarootdir@"
+bindir="@bindir@"
+
+libdir="@libdir@"
+PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_TARNAME=@PACKAGE_TARNAME@
+PACKAGE_VERSION=@PACKAGE_VERSION@
+datadir="@datadir@"
+if [ "x$pkgdatadir" = x ]; then
+    pkgdatadir="${datadir}/@PACKAGE@"
+fi
+
+self=`basename $0`
+
+export TEXTDOMAIN=@PACKAGE@
+export TEXTDOMAINDIR="@localedir@"
+
+. "${pkgdatadir}/grub-mkconfig_lib"
+
+modules=
+
 pkglib_DATA="moddep.lst command.lst fs.lst partmap.lst parttool.lst \
 handler.lst video.lst crypto.lst terminal.lst"
+
+grub_mkimage="${bindir}/@grub_mkimage@"
 
 grub_compress_file () {
     if [ "$compressor" != "" ] ; then
@@ -121,6 +146,7 @@ grub_install_files () {
 }
 
 grub_print_install_files_help () {
+    print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
     print_option_help "--install-modules=$(gettext "MODULES")" "$(gettext "install only MODULES and their dependencies [default=all]")"
     print_option_help "--themes=THEMES" "$(gettext_printf "install THEMES [default=%s]" "starfield")"
     print_option_help "--fonts=FONTS" "$(gettext_printf "install FONTS [default=%s]" "unicode")"
@@ -129,6 +155,8 @@ grub_print_install_files_help () {
     # TRANSLATORS: platform here isn't identifier. It can be translated.
     dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/@PACKAGE@")"
     print_option_help "-d, --directory=$(gettext "DIR")" "$dir_msg"
+    print_option_help  "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
+    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
 }
 
 install_modules=all
@@ -212,6 +240,18 @@ grub_process_install_options () {
 	    source_directory=`argument $option "$@"`; grub_process_install_options_consumed=2 ;;
 	--override-directory=*)
 	    source_directory=`echo "$option" | sed 's/--override-directory=//'` grub_process_install_options_consumed=1;;
+
+	--grub-mkimage)
+	    grub_mkimage=`argument $option "$@"`; grub_process_install_options_consumed=2 ;;
+        --grub-mkimage=*)
+	    grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'`;grub_process_install_options_consumed=1 ;;
+        --modules)
+	    modules=`argument $option "$@"`; grub_process_install_options_consumed=2;;
+        --modules=*)
+	    modules=`echo "$option" | sed 's/--modules=//'` grub_process_install_options_consumed=1;;
+        -v | --version)
+	    echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
+	    exit 0 ;;
     esac
 }
 

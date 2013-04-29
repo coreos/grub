@@ -17,38 +17,19 @@
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
 # Initialize some variables.
-prefix="@prefix@"
-exec_prefix="@exec_prefix@"
-datarootdir="@datarootdir@"
 sbindir="@sbindir@"
-bindir="@bindir@"
-libdir="@libdir@"
 sysconfdir="@sysconfdir@"
-PACKAGE_NAME=@PACKAGE_NAME@
-PACKAGE_TARNAME=@PACKAGE_TARNAME@
-PACKAGE_VERSION=@PACKAGE_VERSION@
-
-export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR="@localedir@"
 
 host_os=@host_os@
 target=
-datadir="@datadir@"
-if [ "x$pkgdatadir" = x ]; then
-    pkgdatadir="${datadir}/@PACKAGE@"
-fi
 localedir="@datadir@/locale"
 
-self="`basename $0`"
-
-grub_mkimage="${bindir}/@grub_mkimage@"
 grub_probe="${sbindir}/@grub_probe@"
 grub_editenv="${bindir}/@grub_editenv@"
 grub_mkrelpath="${bindir}/@grub_mkrelpath@"
 rootdir=
 bootdir=
 grubdir="`echo "/@bootdirname@/@grubdirname@" | sed 's,//*,/,g'`"
-modules=
 
 install_device=
 force_lba=
@@ -73,8 +54,6 @@ fi
 
 disk_module=unspecified
 
-. "${pkgdatadir}/grub-mkconfig_lib"
-
 # Usage: usage
 # Print the usage.
 usage () {
@@ -85,8 +64,6 @@ usage () {
     gettext "Install GRUB on your drive." ; echo
     echo
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
-    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
-    print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
     grub_print_install_files_help
 
     dirmsg="$(gettext_printf "install GRUB images under the directory DIR/%s instead of the %s directory" "@grubdirname@" "$grubdir")"
@@ -96,7 +73,6 @@ usage () {
     # TRANSLATORS: "current" refers to the platform user's currently running on
     print_option_help "--target=$target_trans" "$(gettext "install GRUB for TARGET platform [default=current]")"
     print_option_help "--grub-setup=$(gettext "FILE")" "$(gettext "use FILE as grub-setup")"
-    print_option_help "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     print_option_help "--grub-mkrelpath=$(gettext "FILE")" "$(gettext "use FILE as grub-mkrelpath")"
     print_option_help "--grub-probe=$(gettext "FILE")" "$(gettext "use FILE as grub-probe")"
     # TRANSLATORS: "may break" doesn't just mean that option wouldn't have any
@@ -140,14 +116,6 @@ do
     -h | --help)
 	usage
 	exit 0 ;;
-    -v | --version)
-	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
-	exit 0 ;;
-
-    --modules)
-	modules=`argument $option "$@"`; shift;;
-    --modules=*)
-	modules=`echo "$option" | sed 's/--modules=//'` ;;
 
     --force-file-id)
 	force_file_id=y ;;
@@ -188,11 +156,6 @@ do
 	bootloader_id="`argument $option "$@"`"; shift;;
     --bootloader-id=*)
 	bootloader_id="`echo "$option" | sed 's/--bootloader-id=//'`" ;;
-
-    --grub-mkimage)
-	grub_mkimage="`argument $option "$@"`"; shift;;
-    --grub-mkimage=*)
-	grub_mkimage="`echo "$option" | sed 's/--grub-mkimage=//'`" ;;
 
     --grub-mkrelpath)
 	grub_mkrelpath="`argument "$option" "$@"`"; shift;;

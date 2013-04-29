@@ -18,30 +18,9 @@
 
 # Initialize some variables.
 
-prefix="@prefix@"
-exec_prefix="@exec_prefix@"
-datarootdir="@datarootdir@"
-bindir="@bindir@"
-libdir="@libdir@"
-PACKAGE_NAME=@PACKAGE_NAME@
-PACKAGE_TARNAME=@PACKAGE_TARNAME@
-PACKAGE_VERSION=@PACKAGE_VERSION@
-datadir="@datadir@"
-if [ "x$pkgdatadir" = x ]; then
-    pkgdatadir="${datadir}/@PACKAGE@"
-fi
-
-self=`basename $0`
-
 compression=auto
 format=
-grub_mkimage="${bindir}/@grub_mkimage@"
 source=
-
-export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR="@localedir@"
-
-. "${pkgdatadir}/grub-mkconfig_lib"
 
 # Usage: usage
 # Print the usage.
@@ -51,15 +30,12 @@ usage () {
     gettext "Generate a standalone image (containing all modules) in the selected format"
     echo
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
-    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
     print_option_help "-o, --output=$(gettext FILE)" "$(gettext "save output in FILE [required]")"
     print_option_help "-O, --format=$(gettext "FORMAT")" "$(gettext "generate an image in FORMAT")"; echo
     print_option_help "" "$(gettext "available formats:") $formats"
     echo
     print_option_help "-C, --compression=(xz|none|auto)" "$(gettext "choose the compression to use for core image")"
-    print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
     grub_print_install_files_help
-    print_option_help  "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     echo
     gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }
@@ -80,24 +56,11 @@ do
     -h | --help)
 	usage
 	exit 0 ;;
-    -v | --version)
-	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
-	exit 0 ;;
-
-    --modules)
-	modules=`argument $option "$@"`; shift ;;
-    --modules=*)
-	modules=`echo "$option" | sed 's/--modules=//'` ;;
 
     -o | --output)
 	output_image=`argument $option "$@"`; shift ;;
     --output=*)
 	output_image=`echo "$option" | sed 's/--output=//'` ;;
-
-    --grub-mkimage)
-	grub_mkimage=`argument $option "$@"`; shift ;;
-    --grub-mkimage=*)
-	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
 
     --compression | -C)
 	compression=`argument $option "$@"`; shift ;;
