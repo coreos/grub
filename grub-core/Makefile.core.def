@@ -482,7 +482,7 @@ module = {
 module = {
   name = uhci;
   common = bus/usb/uhci.c;
-  enable = x86;
+  enable = pci;
 };
 
 module = {

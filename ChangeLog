@@ -1,5 +1,10 @@
 2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/uhci.c: Fix DMA handling and enable on all PCI
+	platforms.
+
+2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/execute.c (grub_script_arglist_to_argv): Fix
 	handling of variables containing backslash.
 
