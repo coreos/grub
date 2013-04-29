@@ -605,7 +605,7 @@ if test "x$target_m64" = x1; then
   TARGET_MODULE_FORMAT="elf64"
 fi
 
-if test "$target_cpu"-"$platform" = x86_64-efi; then
+if test "$target_cpu" = x86_64; then
   # Use large model to support 4G memory
   AC_CACHE_CHECK([whether option -mcmodel=large works], grub_cv_cc_mcmodel, [
     SAVED_CFLAGS=$CFLAGS
@@ -619,7 +619,9 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
   fi
+fi
 
+if test "$target_cpu"-"$platform" = x86_64-efi; then
   # EFI writes to stack below %rsp, we must not use the red zone
   AC_CACHE_CHECK([whether option -mno-red-zone works], grub_cv_cc_no_red_zone, [
     CFLAGS="$CFLAGS -m64 -mno-red-zone"
