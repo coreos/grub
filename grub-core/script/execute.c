@@ -643,9 +643,38 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 
 		  if (arg->type == GRUB_SCRIPT_ARG_TYPE_VAR)
 		    {
-		      if (grub_script_argv_append (&result, values[i],
-						   grub_strlen (values[i])))
+		      int len;
+		      char ch;
+		      char *p;
+		      char *op;
+		      const char *s = values[i];
+
+		      len = grub_strlen (values[i]);
+		      /* \? -> \\\? */
+		      /* \* -> \\\* */
+		      /* \ -> \\ */
+		      p = grub_malloc (len * 2 + 1);
+		      if (! p)
 			goto fail;
+
+		      op = p;
+		      while ((ch = *s++))
+			{
+			  if (ch == '\\')
+			    {
+			      *op++ = '\\';
+			      if (*s == '?' || *s == '*')
+				*op++ = '\\';
+			    }
+			  *op++ = ch;
+			}
+		      *op = '\0';
+
+		      if (grub_script_argv_append (&result, p, op - p))
+			{
+			  grub_free (p);
+			  goto fail;
+			}
 		    }
 		  else
 		    {
