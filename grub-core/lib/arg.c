@@ -158,7 +158,7 @@ grub_arg_show_help (grub_extcmd_t cmd)
   show_usage (cmd);
   grub_printf ("%s\n\n", _(cmd->cmd->description));
 
-  for (opt = cmd->options; opt->doc; opt++)
+  for (opt = cmd->options; opt && opt->doc; opt++)
     switch (opt->shortarg)
       {
       case 'h':

@@ -1,3 +1,9 @@
+2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/arg.c (grub_arg_show_help): Fix a NULL pointer
+	dereference.
+	Reported by: qwertial.
+
 2013-04-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi: Add a comment about usefullness of nativedisk.
