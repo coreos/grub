@@ -510,6 +510,10 @@ module = {
 module = {
   name = nativedisk;
   common = commands/nativedisk.c;
+
+  enable = x86;
+  enable = mips_loongson;
+  enable = mips_qemu_mips;
 };
 
 module = {

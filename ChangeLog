@@ -1,5 +1,10 @@
 2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/nativedisk.c: Customize the list of modules on
+	platform. Don't try to search for disks already using native drivers.
+
+2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/uhci.c: Fix DMA handling and enable on all PCI
 	platforms.
 

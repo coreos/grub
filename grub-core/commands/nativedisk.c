@@ -31,17 +31,67 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-static const char *modnames_def[] = { "pata", "ahci", "usbms", "ohci", "uhci", "ehci" };
+static const char *modnames_def[] = { 
+  /* FIXME: autogenerate this.  */
+#if defined (__i386__) || defined (__x86_64__) || defined (GRUB_MACHINE_MIPS_LOONGSON)
+  "pata", "ahci", "usbms", "ohci", "uhci", "ehci"
+#elif defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+  "pata"
+#else
+#error "Fill this"
+#endif
+ };
 
 static grub_err_t
-get_uuid (const char *name, char **uuid)
+get_uuid (const char *name, char **uuid, int getnative)
 {
   grub_device_t dev;
   grub_fs_t fs = 0;
 
+  *uuid = 0;
+
   dev = grub_device_open (name);
   if (!dev)
     return grub_errno;
+
+  if (!dev->disk)
+    {
+      grub_dprintf ("nativedisk", "Skipping non-disk\n");
+      return 0;
+    }
+
+  switch (dev->disk->dev->id)
+    {
+      /* Firmware disks.  */
+    case GRUB_DISK_DEVICE_BIOSDISK_ID:
+    case GRUB_DISK_DEVICE_OFDISK_ID:
+    case GRUB_DISK_DEVICE_EFIDISK_ID:
+    case GRUB_DISK_DEVICE_NAND_ID:
+    case GRUB_DISK_DEVICE_ARCDISK_ID:
+    case GRUB_DISK_DEVICE_HOSTDISK_ID:
+      break;
+
+      /* Native disks.  */
+    case GRUB_DISK_DEVICE_ATA_ID:
+    case GRUB_DISK_DEVICE_SCSI_ID:
+      if (getnative)
+	break;
+
+      /* Virtual disks.  */
+    case GRUB_DISK_DEVICE_PROCFS_ID:
+    case GRUB_DISK_DEVICE_HOST_ID:
+      /* GRUB-only memdisk. Can't match any of firmware devices.  */
+    case GRUB_DISK_DEVICE_MEMDISK_ID:
+      grub_dprintf ("nativedisk", "Skipping native disk %s\n",
+		    dev->disk->name);
+      return 0;
+
+      /* FIXME: those probably need special handling.  */
+    case GRUB_DISK_DEVICE_LOOPBACK_ID:
+    case GRUB_DISK_DEVICE_DISKFILTER_ID:
+    case GRUB_DISK_DEVICE_CRYPTODISK_ID:
+      break;
+    }
   if (dev)
     fs = grub_fs_probe (dev);
   if (!fs)
@@ -49,7 +99,7 @@ get_uuid (const char *name, char **uuid)
       grub_device_close (dev);
       return grub_errno;
     }
-  if (!fs->uuid || fs->uuid (dev, uuid))
+  if (!fs->uuid || fs->uuid (dev, uuid) || !*uuid)
     {
       grub_device_close (dev);
 
@@ -77,14 +127,17 @@ iterate_device (const char *name, void *data)
   struct search_ctx *ctx = data;
   char *cur_uuid;
 
-  if (get_uuid (name, &cur_uuid))
+  if (get_uuid (name, &cur_uuid, 1))
     {
       if (grub_errno == GRUB_ERR_UNKNOWN_FS)
 	grub_errno = 0;
       grub_print_error ();
       return 0;
     }
-  if (grub_strcasecmp (cur_uuid, ctx->prefix_uuid) == 0)
+
+  grub_dprintf ("nativedisk", "checking %s: %s\n", name,
+		cur_uuid);
+  if (ctx->prefix_uuid && grub_strcasecmp (cur_uuid, ctx->prefix_uuid) == 0)
     {
       char *prefix;
       prefix = grub_xasprintf ("(%s)/%s", name, ctx->prefix_path);
@@ -92,7 +145,7 @@ iterate_device (const char *name, void *data)
       grub_free (prefix);
       ctx->prefix_found = 1;
     }
-  if (grub_strcasecmp (cur_uuid, ctx->root_uuid) == 0)
+  if (ctx->root_uuid && grub_strcasecmp (cur_uuid, ctx->root_uuid) == 0)
     {
       grub_env_set ("root", name);
       ctx->root_found = 1;
@@ -109,9 +162,7 @@ grub_cmd_nativedisk (grub_command_t cmd __attribute__ ((unused)),
   const char *path_prefix = 0;
   int mods_loaded = 0;
   grub_dl_t *mods;
-  struct search_ctx ctx;
   const char **args;
-  grub_fs_autoload_hook_t saved_autoload;
   int i;
 
   if (argc == 0)
@@ -138,7 +189,7 @@ grub_cmd_nativedisk (grub_command_t cmd __attribute__ ((unused)),
   if (!mods)
     return grub_errno;
 
-  if (get_uuid (NULL, &uuid_root))
+  if (get_uuid (NULL, &uuid_root, 0))
     return grub_errno;
 
   prefdev = grub_file_get_device_name (prefix);
@@ -148,11 +199,14 @@ grub_cmd_nativedisk (grub_command_t cmd __attribute__ ((unused)),
       prefdev = 0;
     }
 
-  if (get_uuid (prefdev, &uuid_prefix))
+  if (get_uuid (prefdev, &uuid_prefix, 0))
     {
       grub_free (uuid_root);
       return grub_errno;
     }
+
+  grub_dprintf ("nativedisk", "uuid_prefix = %s, uuid_root = %s\n",
+		uuid_prefix, uuid_root);
 
   for (mods_loaded = 0; mods_loaded < argc; mods_loaded++)
     {
@@ -205,21 +259,26 @@ grub_cmd_nativedisk (grub_command_t cmd __attribute__ ((unused)),
     if (mods[i])
       grub_dl_init (mods[i]);
 
-  /* No need to autoload FS since obviously we already have the necessary fs modules.  */
-  saved_autoload = grub_fs_autoload_hook;
-  grub_fs_autoload_hook = 0;
+  if (uuid_prefix || uuid_root)
+    {
+      struct search_ctx ctx;
+      grub_fs_autoload_hook_t saved_autoload;
 
-  ctx.root_uuid = uuid_root;
-  ctx.prefix_uuid = uuid_prefix;
-  ctx.prefix_path = path_prefix;
-  ctx.prefix_found = 0;
-  ctx.root_found = 0;
+      /* No need to autoload FS since obviously we already have the necessary fs modules.  */
+      saved_autoload = grub_fs_autoload_hook;
+      grub_fs_autoload_hook = 0;
 
-  /* FIXME: try to guess the correct values.  */
-  grub_device_iterate (iterate_device, &ctx);
+      ctx.root_uuid = uuid_root;
+      ctx.prefix_uuid = uuid_prefix;
+      ctx.prefix_path = path_prefix;
+      ctx.prefix_found = !uuid_prefix;
+      ctx.root_found = !uuid_root;
 
-  grub_fs_autoload_hook = saved_autoload;
+      /* FIXME: try to guess the correct values.  */
+      grub_device_iterate (iterate_device, &ctx);
 
+      grub_fs_autoload_hook = saved_autoload;
+    }
   grub_free (uuid_root);
   grub_free (uuid_prefix);
 
