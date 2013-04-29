@@ -541,6 +541,16 @@ list_set_view_info (void *vself,
   self->view = view;
 }
 
+/* Refresh list variables */
+static void
+list_refresh_info (void *vself,
+                   grub_gfxmenu_view_t view)
+{
+  list_impl_t self = vself;
+  if (view->nested)
+    self->first_shown_index = 0;
+}
+
 static struct grub_gui_component_ops list_comp_ops =
   {
     .destroy = list_destroy,
@@ -557,7 +567,8 @@ static struct grub_gui_component_ops list_comp_ops =
 
 static struct grub_gui_list_ops list_ops =
 {
-  .set_view_info = list_set_view_info
+  .set_view_info = list_set_view_info,
+  .refresh_list = list_refresh_info
 };
 
 grub_gui_component_t
