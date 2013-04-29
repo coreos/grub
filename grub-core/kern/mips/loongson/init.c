@@ -55,7 +55,8 @@ set_card (grub_pci_device_t dev, grub_pci_id_t pciid,
 	  void *data __attribute__ ((unused)))
 {
   grub_pci_address_t addr;
-  /* FIXME: autoscan for BARs and devices.  */
+  /* We could use grub_pci_assign_addresses for this but we prefer to
+     have exactly same memory map as on pmon.  */
   switch (pciid)
     {
     case GRUB_LOONGSON_OHCI_PCIID:

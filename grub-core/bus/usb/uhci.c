@@ -236,15 +236,7 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
     return 0;
 
   if ((base & GRUB_UHCI_IOMASK) == 0)
-    {
-#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_QEMU)
-      static int ndevs = 0;
-      base = 0x1800 + ndevs++ * 0x100;
-      grub_pci_write (addr, base | GRUB_PCI_ADDR_SPACE_IO);
-#else
-      return 0;
-#endif
-    }
+    return 0;
 
   grub_dprintf ("uhci", "base = %x\n", base);
 

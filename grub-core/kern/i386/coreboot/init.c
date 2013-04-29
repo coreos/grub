@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,9 +34,6 @@
 #include <grub/cpu/io.h>
 #include <grub/cpu/floppy.h>
 #include <grub/cpu/tsc.h>
-#ifdef GRUB_MACHINE_QEMU
-#include <grub/machine/kernel.h>
-#endif
 
 extern grub_uint8_t _start[];
 extern grub_uint8_t _end[];
@@ -51,12 +48,8 @@ grub_exit (void)
     grub_cpu_idle ();
 }
 
-#ifdef GRUB_MACHINE_QEMU
-grub_addr_t grub_modbase;
-#else
 grub_addr_t grub_modbase = GRUB_KERNEL_I386_COREBOOT_MODULES_ADDR;
 static grub_uint64_t modend;
-#endif
 
 /* Helper for grub_machine_init.  */
 static int
@@ -80,10 +73,8 @@ heap_init (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
   if (begin < GRUB_MEMORY_MACHINE_LOWER_SIZE)
     begin = GRUB_MEMORY_MACHINE_LOWER_SIZE;
 
-#ifndef GRUB_MACHINE_QEMU
   if (modend && begin < modend)
     begin = modend;
-#endif
   
   if (end <= begin)
     return 0;
@@ -96,18 +87,11 @@ heap_init (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
 void
 grub_machine_init (void)
 {
-#ifdef GRUB_MACHINE_QEMU
-  grub_modbase = grub_core_entry_addr + (_edata - _start);
-
-  grub_qemu_init_cirrus ();
-#endif
-#ifndef GRUB_MACHINE_QEMU
   modend = grub_modules_get_end ();
-#endif
-  /* Initialize the console as early as possible.  */
+
   grub_vga_text_init ();
 
-#if defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_QEMU)
+#ifdef GRUB_MACHINE_MULTIBOOT
   grub_machine_mmap_init ();
 #endif
   grub_machine_mmap_iterate (heap_init, NULL);

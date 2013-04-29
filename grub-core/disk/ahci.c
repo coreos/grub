@@ -185,9 +185,6 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 
   addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG5);
 
-#ifdef GRUB_MACHINE_QEMU
-  grub_pci_write (addr, 0xf4000000);
-#endif
   bar = grub_pci_read (addr);
 
   if ((bar & (GRUB_PCI_ADDR_SPACE_MASK | GRUB_PCI_ADDR_MEM_TYPE_MASK

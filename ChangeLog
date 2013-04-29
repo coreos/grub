@@ -1,4 +1,8 @@
-2013-04-29 Vladimir Testov <vladimir.testov@rosalab.ru>
+2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Make PCI init in i386-qemu port more robust.
+
+2013-04-29  Vladimir Testov <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_list.c: Refresh first_shown_entry value when
 	cached view is reused.
