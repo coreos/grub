@@ -1,5 +1,9 @@
 2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add few new tests.
+
+2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Enforce disabling of firmware disk drivers when native drivers kick in.
 
 2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -546,6 +546,36 @@ script = {
 
 script = {
   testcase;
+  name = pata_test;
+  common = tests/pata_test.in;
+};
+
+script = {
+  testcase;
+  name = ahci_test;
+  common = tests/ahci_test.in;
+};
+
+script = {
+  testcase;
+  name = uhci_test;
+  common = tests/uhci_test.in;
+};
+
+script = {
+  testcase;
+  name = ohci_test;
+  common = tests/ohci_test.in;
+};
+
+script = {
+  testcase;
+  name = ehci_test;
+  common = tests/ehci_test.in;
+};
+
+script = {
+  testcase;
   name = example_grub_script_test;
   common = tests/example_grub_script_test.in;
 };
@@ -750,8 +780,20 @@ script = {
 
 script = {
   testcase;
+  name = help_test;
+  common = tests/help_test.in;
+};
+
+script = {
+  testcase;
   name = grub_script_gettext;
   common = tests/grub_script_gettext.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_escape_comma;
+  common = tests/grub_script_escape_comma.in;
 };
 
 script = {

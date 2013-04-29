@@ -322,7 +322,7 @@ do
 done
 
 cat <<EOF >>${cfgfile}
-source \$prefix/testcase.cfg
+source "\$prefix/testcase.cfg"
 # Stop serial output to suppress "ACPI shutdown failed" error.
 EOF
 if [ x$console != x ]; then
