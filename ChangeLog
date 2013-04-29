@@ -1,5 +1,9 @@
 2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Enforce disabling of firmware disk drivers when native drivers kick in.
+
+2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/nativedisk.c: Customize the list of modules on
 	platform. Don't try to search for disks already using native drivers.
 

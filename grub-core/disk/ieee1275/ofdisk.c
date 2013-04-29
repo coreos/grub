@@ -550,14 +550,6 @@ insert_bootpath (void)
 }
 
 void
-grub_ofdisk_init (void)
-{
-  insert_bootpath ();
-
-  grub_disk_dev_register (&grub_ofdisk_dev);
-}
-
-void
 grub_ofdisk_fini (void)
 {
   if (last_ihandle)
@@ -566,6 +558,16 @@ grub_ofdisk_fini (void)
   last_devpath = NULL;
 
   grub_disk_dev_unregister (&grub_ofdisk_dev);
+}
+
+void
+grub_ofdisk_init (void)
+{
+  grub_disk_firmware_fini = grub_ofdisk_fini;
+
+  insert_bootpath ();
+
+  grub_disk_dev_register (&grub_ofdisk_dev);
 }
 
 grub_err_t

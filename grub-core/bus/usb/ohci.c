@@ -28,6 +28,7 @@
 #include <grub/time.h>
 #include <grub/cs5536.h>
 #include <grub/loader.h>
+#include <grub/disk.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -1442,6 +1443,9 @@ GRUB_MOD_INIT(ohci)
 {
   COMPILE_TIME_ASSERT (sizeof (struct grub_ohci_td) == 32);
   COMPILE_TIME_ASSERT (sizeof (struct grub_ohci_ed) == 16);
+
+  grub_stop_disk_firmware ();
+
   grub_ohci_inithw ();
   grub_usb_controller_dev_register (&usb_controller);
   fini_hnd = grub_loader_register_preboot_hook (grub_ohci_fini_hw,

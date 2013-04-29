@@ -183,11 +183,6 @@ grub_ahci_pciinit (grub_pci_device_t dev,
   if (class >> 8 != 0x010601)
     return 0;
 
-#ifdef GRUB_MACHINE_QEMU
-  addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
-  grub_pci_write_word (addr, 0x107);
-#endif
-
   addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG5);
 
 #ifdef GRUB_MACHINE_QEMU
@@ -1102,13 +1097,7 @@ static struct grub_preboot *fini_hnd;
 
 GRUB_MOD_INIT(ahci)
 {
-  /* To prevent two drivers operating on the same disks.  */
-  grub_disk_firmware_is_tainted = 1;
-  if (grub_disk_firmware_fini)
-    {
-      grub_disk_firmware_fini ();
-      grub_disk_firmware_fini = NULL;
-    }
+  grub_stop_disk_firmware ();
 
   /* AHCI initialization.  */
   grub_ahci_initialize ();

@@ -866,6 +866,8 @@ static struct grub_usb_controller_dev usb_controller =
 
 GRUB_MOD_INIT(uhci)
 {
+  grub_stop_disk_firmware ();
+
   grub_uhci_inithw ();
   grub_usb_controller_dev_register (&usb_controller);
   grub_dprintf ("uhci", "registered\n");

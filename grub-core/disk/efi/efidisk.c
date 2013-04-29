@@ -624,19 +624,24 @@ static struct grub_disk_dev grub_efidisk_dev =
   };
 
 void
-grub_efidisk_init (void)
-{
-  enumerate_disks ();
-  grub_disk_dev_register (&grub_efidisk_dev);
-}
-
-void
 grub_efidisk_fini (void)
 {
   free_devices (fd_devices);
   free_devices (hd_devices);
   free_devices (cd_devices);
+  fd_devices = 0;
+  hd_devices = 0;
+  cd_devices = 0;
   grub_disk_dev_unregister (&grub_efidisk_dev);
+}
+
+void
+grub_efidisk_init (void)
+{
+  grub_disk_firmware_fini = grub_efidisk_fini;
+
+  enumerate_disks ();
+  grub_disk_dev_register (&grub_efidisk_dev);
 }
 
 /* Some utility functions to map GRUB devices with EFI devices.  */

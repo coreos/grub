@@ -25,6 +25,8 @@
 #include <grub/err.h>
 #include <grub/types.h>
 #include <grub/device.h>
+/* For NULL.  */
+#include <grub/mm.h>
 
 /* These are used to set a device id. When you add a new disk device,
    you must define a new id for it here.  */
@@ -204,6 +206,18 @@ EXPORT_FUNC(grub_disk_cache_get_performance) (unsigned long *hits, unsigned long
 
 extern void (* EXPORT_VAR(grub_disk_firmware_fini)) (void);
 extern int EXPORT_VAR(grub_disk_firmware_is_tainted);
+
+static inline void
+grub_stop_disk_firmware (void)
+{
+  /* To prevent two drivers operating on the same disks.  */
+  grub_disk_firmware_is_tainted = 1;
+  if (grub_disk_firmware_fini)
+    {
+      grub_disk_firmware_fini ();
+      grub_disk_firmware_fini = NULL;
+    }
+}
 
 #if defined (GRUB_UTIL)
 void grub_lvm_init (void);

@@ -28,6 +28,7 @@
 #include <grub/time.h>
 #include <grub/loader.h>
 #include <grub/cs5536.h>
+#include <grub/disk.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -1909,6 +1910,9 @@ GRUB_MOD_INIT (ehci)
 {
   COMPILE_TIME_ASSERT (sizeof (struct grub_ehci_td) == 64);
   COMPILE_TIME_ASSERT (sizeof (struct grub_ehci_qh) == 96);
+
+  grub_stop_disk_firmware ();
+
   grub_boot_time ("Initing EHCI hardware");
   grub_ehci_inithw ();
   grub_boot_time ("Registering EHCI driver");
