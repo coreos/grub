@@ -1,5 +1,9 @@
 2013-04-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mips/loongson/init.c: Support halt for loongson 2E.
+
+2013-04-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/partmap/amiga.c: Fix size of checksummed block.
 
 2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>

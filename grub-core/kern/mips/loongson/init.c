@@ -221,12 +221,45 @@ grub_machine_fini (void)
 {
 }
 
+static int
+halt_via (grub_pci_device_t dev, grub_pci_id_t pciid,
+	  void *data __attribute__ ((unused)))
+{
+  grub_uint16_t pm;
+  grub_pci_address_t addr;
+
+  if (pciid != 0x30571106)
+    return 0;
+
+  addr = grub_pci_make_address (dev, 0x40);
+  pm = grub_pci_read (addr) & ~1;
+
+  if (pm == 0)
+    {
+      grub_pci_write (addr, 0x1801);
+      pm = 0x1800;
+    }
+
+  addr = grub_pci_make_address (dev, 0x80);
+  grub_pci_write_byte (addr, 0xff);
+
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+  grub_pci_write_word (addr, grub_pci_read_word (addr) | GRUB_PCI_COMMAND_IO_ENABLED);
+
+  /* FIXME: This one is derived from qemu. Check on real hardware.  */
+  grub_outw (0x2000, pm + 4 + GRUB_MACHINE_PCI_IO_BASE);
+  grub_millisleep (5000);
+
+  return 0;
+}
+
 void
 grub_halt (void)
 {
   switch (grub_arch_machine)
     {
     case GRUB_ARCH_MACHINE_FULOONG2E:
+      grub_pci_iterate (halt_via, NULL);
       break;
     case GRUB_ARCH_MACHINE_FULOONG2F:
       {
