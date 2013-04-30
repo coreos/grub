@@ -19,8 +19,8 @@ grubshell=@builddir@/grub-shell
 
 . "@builddir@/grub-core/modinfo.sh"
 
-# FIXME: Only mips currently supports configurable core compression
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
+    # FIXME: Only mips currently supports configurable core compression
     *-emu | i386-* | x86_64-* | sparc64-* | ia64-*)
 	exit 0
 	;;

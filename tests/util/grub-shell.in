@@ -103,7 +103,8 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	boot=cd
 	qemu=qemu-system-mips64
 	qemuopts="$qemuopts -M indy"
-	console=console
+	serial_port=arc/serial0/line0
+	console=
 	trim=1
 	;;
     mipsel-arc)
@@ -124,9 +125,8 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mipsel-loongson)
 	boot=mipsel_fulong2e
 	qemu=qemu-system-mips64el
-	qemuopts="$qemuopts -no-reboot -M fulong2e"
+	qemuopts="$qemuopts -M fulong2e"
 	console=
-	halt_cmd=reboot
 	trim=1
 	;;
     i386-coreboot)

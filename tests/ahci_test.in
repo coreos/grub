@@ -20,12 +20,13 @@ grubshell=@builddir@/grub-shell
 . "@builddir@/grub-core/modinfo.sh"
 
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
+    # PLATFORM: Don't mess with real devices when OS is active
     *-emu)
 	exit 0;;
     # FIXME: qemu gets bonito DMA wrong
     mipsel-loongson)
 	exit 0;;
-    # no AHCI on ARC and qemu-mips platforms
+    # PLATFORM: no AHCI on ARC and qemu-mips platforms
     mips*-arc | mips*-qemu_mips)
 	exit 0;;
     # FIXME: No native drivers are available for those

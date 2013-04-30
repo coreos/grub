@@ -13,8 +13,17 @@ dt=`echo date | @builddir@/grub-shell`
 dtg="$(date -u -d "$dt" +%s)"
 ndt="$(date -u +%s)"
 
-if [ $pdt -le $dtg ] && [ $dtg -le $ndt ]; then
-    exit 0;
+if [ $pdt -gt $dtg ] || [ $dtg -gt $ndt ]; then
+  echo "Date not in range: $pdt <= $dtg <= $ndt"
+  exit 1
 fi
-echo "Date not in range: $pdt <= $dtg <= $ndt"
-exit 1
+
+pdt="$(date -u +%s)"
+dt=`echo 'insmod datehook; echo $YEAR-$MONTH-$DAY $HOUR:$MINUTE:$SECOND' | @builddir@/grub-shell`
+dtg="$(date -u -d "$dt" +%s)"
+ndt="$(date -u +%s)"
+
+if [ $pdt -gt $dtg ] || [ $dtg -gt $ndt ]; then
+  echo "Date not in range: $pdt <= $dtg <= $ndt"
+  exit 1
+fi

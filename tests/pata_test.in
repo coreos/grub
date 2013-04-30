@@ -23,9 +23,10 @@ disk=hda
 indisk=ata0
 
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
+    # PLATFORM: Don't mess with real devices when OS is active
     *-emu)
 	exit 0;;
-    # no ATA on ARC platforms (they use SCSI)
+    # PLATFORM: no ATA on ARC platforms (they use SCSI)
     *-arc)
 	exit 0;;
     # FIXME: No native drivers are available for those

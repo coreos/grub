@@ -20,9 +20,10 @@ grubshell=@builddir@/grub-shell
 . "@builddir@/grub-core/modinfo.sh"
 
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
+    # PLATFORM: emu is different
     *-emu)
 	exit 0;;
-    # Flash targets
+    # PLATFORM: Flash targets
     i386-qemu | i386-coreboot | mips-qemu_mips | mipsel-qemu_mips)
 	exit 0;;
     # FIXME: currently grub-shell uses only -kernel for loongson
@@ -40,7 +41,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     # FIXME: QEMU doesn't emulate SCSI floppies
     mipsel-arc | mips-arc)
 	exit 0;;
-    # powerpc doesn't boot from floppy except OldWorld Macs which we don't support anyway
+    # PLATFORM: powerpc doesn't boot from floppy except OldWorld Macs which we don't support anyway
     powerpc-ieee1275)
 	exit 0;;
 esac

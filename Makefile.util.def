@@ -702,6 +702,18 @@ script = {
 
 script = {
   testcase;
+  name = grub_cmd_set_date;
+  common = tests/grub_cmd_set_date.in;
+};
+
+script = {
+  testcase;
+  name = grub_cmd_sleep;
+  common = tests/grub_cmd_sleep.in;
+};
+
+script = {
+  testcase;
   name = grub_script_expansion;
   common = tests/grub_script_expansion.in;
 };

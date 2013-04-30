@@ -1,5 +1,9 @@
 2013-04-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add few more tests.
+
+2013-04-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/arc/arc.h: Account for missing "other" peripheral on
 	ARCS. All users updated.
 
