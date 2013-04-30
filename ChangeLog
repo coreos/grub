@@ -1,3 +1,7 @@
+2013-04-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/partmap/amiga.c: Fix size of checksummed block.
+
 2013-04-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Use -mcmodel=large on x86_64-emu as well.
