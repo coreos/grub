@@ -45,7 +45,11 @@ const char *type_names[] = {
   "eisa", "tc", "scsi", "dti", "multi", "disk", "tape", "cdrom", "worm",
   "serial", "net", "video", "par", "point", "key", "audio", "other",
   "rdisk", "fdisk", "tape", "modem", "monitor", "print", "pointer",
-  "keyboard", "term", "other", "line", "network", NULL
+  "keyboard", "term",
+#ifndef GRUB_CPU_WORDS_BIGENDIAN
+  "other",
+#endif
+  "line", "network", NULL
 };
 
 static int

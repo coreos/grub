@@ -1,5 +1,10 @@
 2013-04-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/arc/arc.h: Account for missing "other" peripheral on
+	ARCS. All users updated.
+
+2013-04-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/mips/loongson/init.c: Support halt for loongson 2E.
 
 2013-04-30  Vladimir Serbinenko  <phcoder@gmail.com>

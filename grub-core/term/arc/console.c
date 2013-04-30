@@ -61,7 +61,7 @@ grub_arc_is_device_serial (const char *name, int alt_names)
   /*
     Recognize:
     serial(N)
-    serial(N)other(M)
+    serial(N)line(M)
    */
   for (i = 0; i < 2; i++)
     {
@@ -84,11 +84,11 @@ grub_arc_is_device_serial (const char *name, int alt_names)
 	  && grub_memcmp (ptr + 1 - (sizeof ("serial") - 1),
 			  "serial", sizeof ("serial") - 1) == 0)
 	return 1;
-      if (!(ptr + 1 >= name + sizeof ("other") - 1
-	    && grub_memcmp (ptr + 1 - (sizeof ("other") - 1),
-			    "other", sizeof ("other") - 1) == 0))
+      if (!(ptr + 1 >= name + sizeof ("line") - 1
+	    && grub_memcmp (ptr + 1 - (sizeof ("line") - 1),
+			    "line", sizeof ("line") - 1) == 0))
 	return 0;
-      ptr -= sizeof ("other") - 1;
+      ptr -= sizeof ("line") - 1;
       if (alt_names)
 	{
 	  if (*ptr != '/')
