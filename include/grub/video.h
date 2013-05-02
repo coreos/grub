@@ -419,7 +419,7 @@ grub_err_t EXPORT_FUNC (grub_video_get_info) (struct grub_video_mode_info *mode_
 grub_err_t EXPORT_FUNC (grub_video_get_info_and_fini) (struct grub_video_mode_info *mode_info,
 					 void **framebuffer);
 
-enum grub_video_blit_format grub_video_get_blit_format (struct grub_video_mode_info *mode_info);
+enum grub_video_blit_format EXPORT_FUNC(grub_video_get_blit_format) (struct grub_video_mode_info *mode_info);
 
 grub_err_t grub_video_set_palette (unsigned int start, unsigned int count,
                                    struct grub_video_palette_data *palette_data);
