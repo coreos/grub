@@ -265,7 +265,12 @@ static void
 videotest_checksum (void)
 {
   unsigned i;
-  grub_font_load ("unicode");
+  if (grub_font_load ("unicode") == 0)
+    {
+      grub_test_assert (0, "unicode font not found: %s", grub_errmsg);
+      return;
+    }
+  
   for (i = 0; i < ARRAY_SIZE (tests); i++)
     {
       grub_video_capture_start (&tests[i].mode_info,
@@ -277,6 +282,8 @@ videotest_checksum (void)
 
       char *args[] = { 0 };
       grub_command_execute ("videotest", 0, args);
+
+      grub_terminal_input_fake_sequence_end ();
       grub_video_checksum_end ();
       grub_video_capture_end ();
     }

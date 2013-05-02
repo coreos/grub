@@ -1,5 +1,11 @@
 2013-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/videotest_checksum.c (videotest_checksum): Error out
+	if no unifont is found.
+	Restore original keyboard.
+
+2013-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/linux.c (grub_linux_setup_video): Add
 	GRUB_VIDEO_ADAPTER_CAPTURE: to handled drived ids.
 
