@@ -343,6 +343,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 	  /* Make gcc happy. */
 	case GRUB_VIDEO_DRIVER_SDL:
 	case GRUB_VIDEO_DRIVER_NONE:
+	case GRUB_VIDEO_ADAPTER_CAPTURE:
 	  params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
 	  break;
 	}
