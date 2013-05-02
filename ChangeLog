@@ -1,3 +1,8 @@
+2013-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/videotest.c: Reduce flickering and draw 6 squares
+	instead of 2 to have full RGB/CMY test pattern.
+
 2013-04-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add few more tests.
