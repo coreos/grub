@@ -63,6 +63,42 @@ struct
 	.number_of_colors = GRUB_VIDEO_FBSTD_NUMCOLORS
       },
     },
+
+
+    {
+      .mode_info = {
+	.width = 640,
+	.height = 480,
+	.pitch = 640,
+	.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR,
+	.bpp = 8,
+	.bytes_per_pixel = 1,
+	.number_of_colors = GRUB_VIDEO_FBSTD_EXT_NUMCOLORS
+      },
+    },
+    {
+      .mode_info = {
+	.width = 800,
+	.height = 600,
+	.pitch = 800,
+	.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR,
+	.bpp = 8,
+	.bytes_per_pixel = 1,
+	.number_of_colors = GRUB_VIDEO_FBSTD_EXT_NUMCOLORS
+      },
+    },
+    {
+      .mode_info = {
+	.width = 1024,
+	.height = 768,
+	.pitch = 1024,
+	.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR,
+	.bpp = 8,
+	.bytes_per_pixel = 1,
+	.number_of_colors = GRUB_VIDEO_FBSTD_EXT_NUMCOLORS
+      },
+    },
+
     {
       .mode_info = {
 	.width = 640,
@@ -275,7 +311,7 @@ videotest_checksum (void)
     {
       grub_video_capture_start (&tests[i].mode_info,
 				grub_video_fbstd_colors,
-				GRUB_VIDEO_FBSTD_NUMCOLORS);
+				tests[i].mode_info.number_of_colors);
       grub_terminal_input_fake_sequence ((int []) { '\n' }, 1);
 
       grub_video_checksum ("videotest");

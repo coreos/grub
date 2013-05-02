@@ -82,7 +82,11 @@ get_pixel (struct grub_video_fbblit_info *source,
       {
         grub_uint8_t *ptr;
         ptr = grub_video_fb_get_video_ptr (source, x, y);
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+        color = ptr[2] | (ptr[1] << 8) | (ptr[0] << 16);
+#else
         color = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16);
+#endif
       }
       break;
 
@@ -131,7 +135,11 @@ set_pixel (struct grub_video_fbblit_info *source,
     case 24:
       {
         grub_uint8_t *ptr;
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+        grub_uint8_t *colorptr = ((grub_uint8_t *)&color) + 1;
+#else
         grub_uint8_t *colorptr = (grub_uint8_t *)&color;
+#endif
 
         ptr = grub_video_fb_get_video_ptr (source, x, y);
 

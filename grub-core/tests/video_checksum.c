@@ -249,14 +249,16 @@ get_modename (void)
     }
   if (capt_mode_info.red_field_pos == 0)
     {
-      grub_snprintf (buf, sizeof (buf), "bgr%d%d%d", capt_mode_info.blue_mask_size,
+      grub_snprintf (buf, sizeof (buf), "bgra%d%d%d%d", capt_mode_info.blue_mask_size,
 		     capt_mode_info.green_mask_size,
-		     capt_mode_info.red_mask_size);
+		     capt_mode_info.red_mask_size,
+		     capt_mode_info.reserved_mask_size);
       return buf;
     }
-  grub_snprintf (buf, sizeof (buf), "rgb%d%d%d", capt_mode_info.red_mask_size,
+  grub_snprintf (buf, sizeof (buf), "rgba%d%d%d%d", capt_mode_info.red_mask_size,
 		 capt_mode_info.green_mask_size,
-		 capt_mode_info.blue_mask_size);
+		 capt_mode_info.blue_mask_size,
+		 capt_mode_info.reserved_mask_size);
   return buf;
 }
 
@@ -270,11 +272,81 @@ static void
 checksum (void)
 {
   void *ptr;
-  grub_uint32_t crc;
+  grub_uint32_t crc = 0;
 
   ptr = grub_video_capture_get_framebuffer ();
 
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+  switch (capt_mode_info.bytes_per_pixel)
+    {
+    case 1:
+      crc = grub_getcrc32c (0, ptr, capt_mode_info.pitch
+			    * capt_mode_info.height);
+      break;
+    case 2:
+      {
+	unsigned x, y, rowskip;
+	grub_uint8_t *iptr = ptr;
+	crc = 0;
+	rowskip = capt_mode_info.pitch - capt_mode_info.width * 2;
+	for (y = 0; y < capt_mode_info.height; y++)
+	  {
+	    for (x = 0; x < capt_mode_info.width; x++)
+	      {
+		crc = grub_getcrc32c (crc, iptr + 1, 1);
+		crc = grub_getcrc32c (crc, iptr, 1);
+		iptr += 2;
+	      }
+	    crc = grub_getcrc32c (crc, iptr, rowskip);
+	    iptr += rowskip;
+	  }
+	break;
+      }
+    case 3:
+      {
+	unsigned x, y, rowskip;
+	grub_uint8_t *iptr = ptr;
+	crc = 0;
+	rowskip = capt_mode_info.pitch - capt_mode_info.width * 3;
+	for (y = 0; y < capt_mode_info.height; y++)
+	  {
+	    for (x = 0; x < capt_mode_info.width; x++)
+	      {
+		crc = grub_getcrc32c (crc, iptr + 2, 1);
+		crc = grub_getcrc32c (crc, iptr + 1, 1);
+		crc = grub_getcrc32c (crc, iptr, 1);
+		iptr += 3;
+	      }
+	    crc = grub_getcrc32c (crc, iptr, rowskip);
+	    iptr += rowskip;
+	  }
+	break;
+      }
+    case 4:
+      {
+	unsigned x, y, rowskip;
+	grub_uint8_t *iptr = ptr;
+	crc = 0;
+	rowskip = capt_mode_info.pitch - capt_mode_info.width * 4;
+	for (y = 0; y < capt_mode_info.height; y++)
+	  {
+	    for (x = 0; x < capt_mode_info.width; x++)
+	      {
+		crc = grub_getcrc32c (crc, iptr + 3, 1);
+		crc = grub_getcrc32c (crc, iptr + 2, 1);
+		crc = grub_getcrc32c (crc, iptr + 1, 1);
+		crc = grub_getcrc32c (crc, iptr, 1);
+		iptr += 4;
+	      }
+	    crc = grub_getcrc32c (crc, iptr, rowskip);
+	    iptr += rowskip;
+	  }
+	break;
+      }
+    }
+#else
   crc = grub_getcrc32c (0, ptr, capt_mode_info.pitch * capt_mode_info.height);
+#endif
   if (!checksums || ctr >= nchk)
     {
       grub_test_assert (0, "Unexpected checksum %s_%dx%dx%s:%d: 0x%x",

@@ -253,9 +253,12 @@ grub_png_decode_image_header (struct grub_png_data *data)
 		       "png: color type not supported");
 
   if (data->is_16bit)
-    {
       data->bpp <<= 1;
 
+#ifndef GRUB_CPU_WORDS_BIGENDIAN
+  if (data->is_16bit)
+#endif
+    {
       data->image_data = grub_malloc (data->image_height *
                                       data->image_width *  data->bpp);
       if (grub_errno)
@@ -263,11 +266,13 @@ grub_png_decode_image_header (struct grub_png_data *data)
 
       data->cur_rgb = data->image_data;
     }
+#ifndef GRUB_CPU_WORDS_BIGENDIAN
   else
     {
       data->image_data = 0;
       data->cur_rgb = (*data->bitmap)->data;
     }
+#endif
 
   data->raw_bytes = data->image_height * (data->image_width + 1) * data->bpp;
 
@@ -536,7 +541,7 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
       data->cur_filter = n;
     }
   else
-    *(data->cur_rgb++) = n;
+    *data->cur_rgb++ = n;
 
   data->cur_column++;
   row_bytes = data->image_width * data->bpp;
@@ -772,12 +777,60 @@ grub_png_convert_image (struct grub_png_data *data)
   grub_uint8_t *d1, *d2;
 
   d1 = (*data->bitmap)->data;
-  d2 = data->image_data + 1;
+  d2 = data->image_data + data->is_16bit;
 
   /* Only copy the upper 8 bit.  */
+#ifndef GRUB_CPU_WORDS_BIGENDIAN
   for (i = 0; i < (data->image_width * data->image_height * data->bpp >> 1);
        i++, d1++, d2+=2)
     *d1 = *d2;
+#else
+  switch (data->bpp)
+    {
+      /* 16-bit with alpha.  */
+    case 8:
+      for (i = 0; i < (data->image_width * data->image_height);
+	   i++, d1 += 4, d2+=8)
+	{
+	  d1[0] = d2[7];
+	  d1[1] = d2[5];
+	  d1[2] = d2[3];
+	  d1[3] = d2[1];
+	}
+      break;
+      /* 16-bit without alpha.  */
+    case 6:
+      for (i = 0; i < (data->image_width * data->image_height);
+	   i++, d1 += 3, d2+=6)
+	{
+	  d1[0] = d2[5];
+	  d1[1] = d2[3];
+	  d1[2] = d2[1];
+	}
+      break;
+      /* 8-bit with alpha.  */
+    case 4:
+      for (i = 0; i < (data->image_width * data->image_height);
+	   i++, d1 += 4, d2 += 4)
+	{
+	  d1[0] = d2[3];
+	  d1[1] = d2[2];
+	  d1[2] = d2[1];
+	  d1[3] = d2[0];
+	}
+      break;
+      /* 8-bit without alpha.  */
+    case 3:
+      for (i = 0; i < (data->image_width * data->image_height);
+	   i++, d1 += 3, d2 += 3)
+	{
+	  d1[0] = d2[2];
+	  d1[1] = d2[1];
+	  d1[2] = d2[0];
+	}
+      break;
+    }
+#endif
 }
 
 static grub_err_t
@@ -816,7 +869,9 @@ grub_png_decode_png (struct grub_png_data *data)
 	  break;
 
 	case PNG_CHUNK_IEND:
+#ifndef GRUB_CPU_WORDS_BIGENDIAN
           if (data->is_16bit)
+#endif
             grub_png_convert_image (data);
 
 	  return grub_errno;

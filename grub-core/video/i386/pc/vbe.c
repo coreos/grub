@@ -938,7 +938,10 @@ vbe2videoinfo (grub_uint32_t mode,
   else
     mode_info->pitch = vbeinfo->bytes_per_scan_line;
 
-  mode_info->number_of_colors = 256; /* TODO: fix me.  */
+  if (mode_info->mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
+    mode_info->number_of_colors = 16;
+  else
+    mode_info->number_of_colors = 256;
   mode_info->red_mask_size = vbeinfo->red_mask_size;
   mode_info->red_field_pos = vbeinfo->red_field_position;
   mode_info->green_mask_size = vbeinfo->green_mask_size;

@@ -247,7 +247,7 @@ grub_video_uga_setup (unsigned int width, unsigned int height,
       framebuffer.mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_RGB;
       framebuffer.mode_info.bpp = 32;
       framebuffer.mode_info.bytes_per_pixel = 4;
-      framebuffer.mode_info.number_of_colors = 256; /* TODO: fix me.  */
+      framebuffer.mode_info.number_of_colors = 256;
       framebuffer.mode_info.red_mask_size = 8;
       framebuffer.mode_info.red_field_pos = 16;
       framebuffer.mode_info.green_mask_size = 8;

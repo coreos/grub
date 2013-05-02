@@ -1,5 +1,9 @@
 2013-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Several fixes to ieee1275 and big-endian video.
+
+2013-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add missing exports on mips.
 
 2013-05-02  Vladimir Serbinenko  <phcoder@gmail.com>

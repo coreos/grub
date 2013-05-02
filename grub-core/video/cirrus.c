@@ -295,15 +295,14 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
       && !grub_video_check_mode_flag (mode_type, mode_mask,
 				      GRUB_VIDEO_MODE_TYPE_INDEX_COLOR, 0))
     depth = 24;
-
-  if (depth == 0)
+  else if (depth == 0)
     depth = 8;
 
   if (depth != 32 && depth != 24 && depth != 16 && depth != 15 && depth != 8)
     return grub_error (GRUB_ERR_IO, "only 32, 24, 16, 15 and 8-bit bpp are"
 		       " supported by cirrus video");
 
-  bytes_per_pixel = (depth + 7) / 8;
+  bytes_per_pixel = (depth + GRUB_CHAR_BIT - 1) / GRUB_CHAR_BIT;
   pitch = width * bytes_per_pixel;
 
   if (pitch > CIRRUS_MAX_PITCH)
@@ -411,6 +410,7 @@ grub_video_cirrus_setup (unsigned int width, unsigned int height,
     {
     case 8:
       framebuffer.mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+      framebuffer.mode_info.number_of_colors = 16;
       break;
     case 16:
       framebuffer.mode_info.red_mask_size = 5;

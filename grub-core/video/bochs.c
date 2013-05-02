@@ -331,6 +331,7 @@ grub_video_bochs_setup (unsigned int width, unsigned int height,
     case 4:
     case 8:
       framebuffer.mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+      framebuffer.mode_info.number_of_colors = 16;
       break;
     case 16:
       framebuffer.mode_info.red_mask_size = 5;
