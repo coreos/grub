@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010,2012 Free Software Foundation, Inc.
+ *  Copyright (C) 2010,2012,2013 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,8 +16,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#define grub_video_render_target grub_video_fbrender_target
 
 #include <config.h>
 
@@ -73,58 +71,6 @@ static struct argp_option options[] = {
 #include <grub/mm.h>
 #include <grub/video.h>
 #include <grub/video_fb.h>
-
-static struct
-{
-  struct grub_video_mode_info mode_info;
-  struct grub_video_render_target *render_target;
-  grub_uint8_t *ptr;
-} framebuffer;
-
-static grub_err_t
-grub_video_text_render_swap_buffers (void)
-{
-  return GRUB_ERR_NONE;
-}
-
-static grub_err_t
-grub_video_text_render_set_active_render_target (struct grub_video_render_target *target)
-{
-  if (target == GRUB_VIDEO_RENDER_TARGET_DISPLAY)
-    target = framebuffer.render_target;
-
-  return grub_video_fb_set_active_render_target (target);
-}
-
-static struct grub_video_adapter grub_video_text_render_adapter =
-  {
-    .name = "Text rendering",
-
-    .prio = GRUB_VIDEO_ADAPTER_PRIO_FIRMWARE,
-
-    .fini = grub_video_fb_fini,
-    .get_info = grub_video_fb_get_info,
-    .get_info_and_fini = 0,
-    .set_palette = grub_video_fb_set_palette,
-    .get_palette = grub_video_fb_get_palette,
-    .set_viewport = grub_video_fb_set_viewport,
-    .get_viewport = grub_video_fb_get_viewport,
-    .map_color = grub_video_fb_map_color,
-    .map_rgb = grub_video_fb_map_rgb,
-    .map_rgba = grub_video_fb_map_rgba,
-    .unmap_color = grub_video_fb_unmap_color,
-    .fill_rect = grub_video_fb_fill_rect,
-    .blit_bitmap = grub_video_fb_blit_bitmap,
-    .blit_render_target = grub_video_fb_blit_render_target,
-    .scroll = grub_video_fb_scroll,
-    .swap_buffers = grub_video_text_render_swap_buffers,
-    .create_render_target = grub_video_fb_create_render_target,
-    .delete_render_target = grub_video_fb_delete_render_target,
-    .set_active_render_target = grub_video_text_render_set_active_render_target,
-    .get_active_render_target = grub_video_fb_get_active_render_target,
-
-    .next = 0
-  };
 
 static error_t
 argp_parser (int key, char *arg, struct argp_state *state)
@@ -208,6 +154,7 @@ main (int argc, char *argv[])
 				 0x77, 0x66, 0x3f, 0x27 };
   int i, j, k, cptr = 0;
   grub_uint8_t bg, fg;
+  struct grub_video_mode_info mode_info;
 
   for (i = 0; i < 256; i++)
     ieee1275_palette[i].a = 0xff;
@@ -340,32 +287,17 @@ main (int argc, char *argv[])
   width = grub_font_get_string_width (font, text) + 10;
   height = grub_font_get_height (font);
 
-  grub_memset (&framebuffer, 0, sizeof (framebuffer));
+  mode_info.width = width;
+  mode_info.height = height;
+  mode_info.pitch = width;
 
-  grub_video_fb_init ();
+  mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+  mode_info.bpp = 8;
+  mode_info.bytes_per_pixel = 1;
+  mode_info.number_of_colors = 256;
 
-  framebuffer.mode_info.width = width;
-  framebuffer.mode_info.height = height;
-  framebuffer.mode_info.pitch = width;
-
-  framebuffer.mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
-  framebuffer.mode_info.bpp = 8;
-  framebuffer.mode_info.bytes_per_pixel = 1;
-  framebuffer.mode_info.number_of_colors = 256;
-
-  framebuffer.mode_info.blit_format = grub_video_get_blit_format (&framebuffer.mode_info);
-
-  /* For some reason sparc64 uses 32-bit pointer too.  */
-  framebuffer.ptr = xmalloc (height * width);
-  
-  grub_video_fb_create_render_target_from_pointer (&framebuffer.render_target,
-						   &framebuffer.mode_info,
-						   framebuffer.ptr);
-  grub_video_fb_set_active_render_target (framebuffer.render_target);
-  grub_video_fb_set_palette (0, ARRAY_SIZE (ieee1275_palette),
-			     ieee1275_palette);
-
-  grub_video_set_adapter (&grub_video_text_render_adapter);
+  grub_video_capture_start (&mode_info, ieee1275_palette,
+			    ARRAY_SIZE (ieee1275_palette));
 
   fg = grub_video_map_rgb (arguments.fgcolor.red,
 			   arguments.fgcolor.green,
@@ -374,18 +306,17 @@ main (int argc, char *argv[])
 			   arguments.bgcolor.green,
 			   arguments.bgcolor.blue);
 
-  grub_memset (framebuffer.ptr, bg, height * width);
+  grub_memset (grub_video_capture_get_framebuffer (), bg, height * width);
   grub_font_draw_string (text, font, fg,
                          5, grub_font_get_ascent (font));
-
-  grub_video_set_adapter (0);
 
   head.magic = 1;
   head.width = grub_cpu_to_be16 (width);
   head.height = grub_cpu_to_be16 (height);
   fwrite (&head, 1, sizeof (head), out);
-  fwrite (framebuffer.ptr, 1, width * height, out);
+  fwrite (grub_video_capture_get_framebuffer (), 1, width * height, out);
 
+  grub_video_capture_end ();
   if (out != stdout)
     fclose (out);
 

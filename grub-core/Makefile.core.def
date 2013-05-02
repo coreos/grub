@@ -1731,11 +1731,19 @@ module = {
   name = functional_test;
   common = tests/lib/functional_test.c;
   common = tests/lib/test.c;
+  common = tests/video_checksum.c;
+  common = tests/fake_input.c;
+  common = video/capture.c;
 };
 
 module = {
   name = exfctest;
   common = tests/example_functional_test.c;
+};
+
+module = {
+  name = videotest_checksum;
+  common = tests/videotest_checksum.c;
 };
 
 module = {

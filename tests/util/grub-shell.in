@@ -408,6 +408,8 @@ if [ x$boot = xnet ]; then
     timeout -s KILL $timeout "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.$netbootext"  -net nic  | cat | tr -d "\r" | do_trim
 elif [ x$boot = xemu ]; then
     grubdir="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
+    mkdir -p "$grubdir/fonts"
+    cp "@builddir@/"unicode.pf2 "$grubdir/fonts/unicode.pf2"
     cp "${cfgfile}" "$grubdir/grub.cfg"
     cp "${source}" "$grubdir/testcase.cfg"
     @builddir@/grub-core/grub-emu -m "$device_map" -d "$grubdir" | tr -d "\r" | do_trim

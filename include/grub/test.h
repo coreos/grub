@@ -90,4 +90,13 @@ void grub_unit_test_fini (void);
     grub_test_unregister (#name);		\
   }
 
+void
+grub_video_checksum (const char *basename_in);
+void
+grub_video_checksum_end (void);
+void
+grub_terminal_input_fake_sequence (int *seq_in, int nseq_in);
+void
+grub_terminal_input_fake_sequence_end (void);
+
 #endif /* ! GRUB_TEST_HEADER */

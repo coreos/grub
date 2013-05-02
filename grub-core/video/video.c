@@ -29,7 +29,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 grub_video_adapter_t grub_video_adapter_list = NULL;
 
 /* Active video adapter.  */
-static grub_video_adapter_t grub_video_adapter_active;
+grub_video_adapter_t grub_video_adapter_active;
 
 /* Restore back to initial mode (where applicable).  */
 grub_err_t
@@ -510,6 +510,9 @@ grub_video_set_mode (const char *modestring,
   if (! modevar)
     return grub_errno;
 
+  if (grub_video_adapter_active && grub_video_adapter_active->id == GRUB_VIDEO_ADAPTER_CAPTURE)
+    return GRUB_ERR_NONE;
+
   if (grub_memcmp (next_mode, "keep", sizeof ("keep")) == 0
       || grub_memcmp (next_mode, "keep,", sizeof ("keep,") - 1) == 0
       || grub_memcmp (next_mode, "keep;", sizeof ("keep;") - 1) == 0)
@@ -714,11 +717,3 @@ grub_video_set_mode (const char *modestring,
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
 		     N_("no suitable video mode found"));
 }
-
-#ifdef GRUB_UTIL
-void
-grub_video_set_adapter (grub_video_adapter_t adapter)
-{
-  grub_video_adapter_active = adapter;
-}
-#endif

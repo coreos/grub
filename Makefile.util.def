@@ -67,6 +67,7 @@ library = {
   common = grub-core/video/fb/fbfill.c;
   common = grub-core/video/fb/video_fb.c;
   common = grub-core/video/video.c;
+  common = grub-core/video/capture.c;
   common = grub-core/video/colors.c;
   common = grub-core/unidata.c;
   common = grub-core/io/bufio.c;
@@ -812,6 +813,12 @@ script = {
   testcase;
   name = grub_script_strcmp;
   common = tests/grub_script_strcmp.in;
+};
+
+script = {
+  testcase;
+  name = grub_func_test;
+  common = tests/grub_func_test.in;
 };
 
 program = {
