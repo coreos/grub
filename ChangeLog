@@ -1,5 +1,11 @@
 2013-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gfxmenu/view.c (grub_gfxmenu_view_new): Clear
+	grub_gfxmenu_timeout_notifications.
+	(grub_gfxmenu_view_destroy): Likewise.
+
+2013-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/term.c (print_ucs4_real): Fix startwidth in dry run.
 
 2013-05-02  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -58,6 +58,14 @@ grub_gfxmenu_view_new (const char *theme_path,
   if (! view)
     return 0;
 
+  while (grub_gfxmenu_timeout_notifications)
+    {
+      struct grub_gfxmenu_timeout_notify *p;
+      p = grub_gfxmenu_timeout_notifications;
+      grub_gfxmenu_timeout_notifications = grub_gfxmenu_timeout_notifications->next;
+      grub_free (p);
+    }
+
   view->screen.x = 0;
   view->screen.y = 0;
   view->screen.width = width;
@@ -105,6 +113,13 @@ grub_gfxmenu_view_destroy (grub_gfxmenu_view_t view)
 {
   if (!view)
     return;
+  while (grub_gfxmenu_timeout_notifications)
+    {
+      struct grub_gfxmenu_timeout_notify *p;
+      p = grub_gfxmenu_timeout_notifications;
+      grub_gfxmenu_timeout_notifications = grub_gfxmenu_timeout_notifications->next;
+      grub_free (p);
+    }
   grub_video_bitmap_destroy (view->desktop_image);
   if (view->terminal_box)
     view->terminal_box->destroy (view->terminal_box);
