@@ -986,11 +986,18 @@ grub_video_fbblit_blend_BGR888_RGBA8888 (struct grub_video_fbblit_info *dst,
               /* General pixel color blending.  */
               color = *dstptr;
 
+#ifndef GRUB_CPU_WORDS_BIGENDIAN
               db = dstptr[0];
-              db = (db * (255 - a) + sb * a) / 255;
               dg = dstptr[1];
-              dg = (dg * (255 - a) + sg * a) / 255;
               dr = dstptr[2];
+#else
+              dr = dstptr[0];
+              dg = dstptr[1];
+              db = dstptr[2];
+#endif
+
+              db = (db * (255 - a) + sb * a) / 255;
+              dg = (dg * (255 - a) + sg * a) / 255;
               dr = (dr * (255 - a) + sr * a) / 255;
             }
 
@@ -1145,13 +1152,13 @@ grub_video_fbblit_blend_RGB888_RGBA8888 (struct grub_video_fbblit_info *dst,
             }
 
 #ifndef GRUB_CPU_WORDS_BIGENDIAN
-          db = dstptr[0];
-          dg = dstptr[1];
-          dr = dstptr[2];
-#else
           dr = dstptr[0];
           dg = dstptr[1];
           db = dstptr[2];
+#else
+          db = dstptr[0];
+          dg = dstptr[1];
+          dr = dstptr[2];
 #endif
 
           dr = (dr * (255 - a) + sr * a) / 255;
