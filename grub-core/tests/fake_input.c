@@ -55,6 +55,7 @@ grub_terminal_input_fake_sequence (int *seq_in, int nseq_in)
       grub_memcpy (seq, seq_in, nseq_in * sizeof (seq[0]));
     }
   nseq = nseq_in;
+  seqptr = 0;
 }
 
 void
@@ -64,4 +65,5 @@ grub_terminal_input_fake_sequence_end (void)
   grub_free (seq);
   seq = 0;
   nseq = 0;
+  seqptr = 0;
 }

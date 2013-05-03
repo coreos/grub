@@ -22,6 +22,7 @@ prefix="@prefix@"
 exec_prefix="@exec_prefix@"
 datarootdir="@datarootdir@"
 builddir="@builddir@"
+srcdir="@srcdir@"
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
@@ -409,7 +410,9 @@ if [ x$boot = xnet ]; then
 elif [ x$boot = xemu ]; then
     grubdir="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
     mkdir -p "$grubdir/fonts"
+    mkdir -p "$grubdir/themes"
     cp "@builddir@/"unicode.pf2 "$grubdir/fonts/unicode.pf2"
+    cp -R "@srcdir@/themes/starfield" "$grubdir/themes/starfield"
     cp "${cfgfile}" "$grubdir/grub.cfg"
     cp "${source}" "$grubdir/testcase.cfg"
     @builddir@/grub-core/grub-emu -m "$device_map" -d "$grubdir" | tr -d "\r" | do_trim

@@ -51,9 +51,10 @@ grub_functional_all_tests (grub_extcmd_context_t ctxt __attribute__ ((unused)),
 
   grub_dl_load ("exfctest");
   grub_dl_load ("videotest_checksum");
+  grub_dl_load ("gfxterm_menu");
 
   FOR_LIST_ELEMENTS (test, grub_test_list)
-    ok = ok && !grub_test_run (test);
+    ok = !grub_test_run (test) && ok;
   if (ok)
     grub_printf ("ALL TESTS PASSED\n");
   else

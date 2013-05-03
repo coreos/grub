@@ -25,6 +25,9 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 
+#include <grub/video.h>
+#include <grub/video_fb.h>
+
 struct grub_test
 {
   /* The next test.  */
@@ -98,5 +101,7 @@ void
 grub_terminal_input_fake_sequence (int *seq_in, int nseq_in);
 void
 grub_terminal_input_fake_sequence_end (void);
+
+extern struct grub_video_mode_info grub_test_video_modes[30];
 
 #endif /* ! GRUB_TEST_HEADER */

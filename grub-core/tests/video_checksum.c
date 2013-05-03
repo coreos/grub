@@ -31,6 +31,208 @@ static char *basename;
 static const grub_uint32_t *checksums;
 static struct grub_video_mode_info capt_mode_info;
 
+struct grub_video_mode_info grub_test_video_modes[30] = {
+  {
+    .width = 640,
+    .height = 480,
+    .pitch = 640,
+    .mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR,
+    .bpp = 8,
+    .bytes_per_pixel = 1,
+    .number_of_colors = GRUB_VIDEO_FBSTD_NUMCOLORS
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 800,
+    .mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR,
+    .bpp = 8,
+    .bytes_per_pixel = 1,
+    .number_of_colors = GRUB_VIDEO_FBSTD_NUMCOLORS
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 1024,
+    .mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR,
+    .bpp = 8,
+    .bytes_per_pixel = 1,
+    .number_of_colors = GRUB_VIDEO_FBSTD_NUMCOLORS
+  },
+  {
+    .width = 640,
+    .height = 480,
+    .pitch = 640,
+    .mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR,
+    .bpp = 8,
+    .bytes_per_pixel = 1,
+    .number_of_colors = GRUB_VIDEO_FBSTD_EXT_NUMCOLORS
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 800,
+    .mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR,
+    .bpp = 8,
+    .bytes_per_pixel = 1,
+    .number_of_colors = GRUB_VIDEO_FBSTD_EXT_NUMCOLORS
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 1024,
+    .mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR,
+    .bpp = 8,
+    .bytes_per_pixel = 1,
+    .number_of_colors = GRUB_VIDEO_FBSTD_EXT_NUMCOLORS
+  },
+  {
+    .width = 640,
+    .height = 480,
+    .pitch = 1280,
+    GRUB_VIDEO_MI_RGB555 ()
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 1600,
+    GRUB_VIDEO_MI_RGB555 ()
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 2048,
+    GRUB_VIDEO_MI_RGB555 ()
+  },
+  {
+    .width = 640,
+    .height = 480,
+    .pitch = 1280,
+    GRUB_VIDEO_MI_RGB565 ()
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 1600,
+    GRUB_VIDEO_MI_RGB565 ()
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 2048,
+    GRUB_VIDEO_MI_RGB565 ()
+  },
+  {
+    .width = 640,
+    .height = 480,
+    .pitch = 640 * 3,
+    GRUB_VIDEO_MI_RGB888 ()
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 800 * 3,
+    GRUB_VIDEO_MI_RGB888 ()
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 1024 * 3,
+    GRUB_VIDEO_MI_RGB888 ()
+  },
+  {
+    .width = 640,
+    .height = 480,
+    .pitch = 640 * 4,
+    GRUB_VIDEO_MI_RGBA8888()
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 800 * 4,
+    GRUB_VIDEO_MI_RGBA8888()
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 1024 * 4,
+    GRUB_VIDEO_MI_RGBA8888()
+  },
+
+  {
+    .width = 640,
+    .height = 480,
+    .pitch = 1280,
+    GRUB_VIDEO_MI_BGR555 ()
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 1600,
+    GRUB_VIDEO_MI_BGR555 ()
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 2048,
+    GRUB_VIDEO_MI_BGR555 ()
+  },
+  {
+    .width = 640,
+    .height = 480,
+    .pitch = 1280,
+    GRUB_VIDEO_MI_BGR565 ()
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 1600,
+    GRUB_VIDEO_MI_BGR565 ()
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 2048,
+    GRUB_VIDEO_MI_BGR565 ()
+  },
+  {
+    .width = 640,
+    .height = 480,
+    .pitch = 640 * 3,
+    GRUB_VIDEO_MI_BGR888 ()
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 800 * 3,
+    GRUB_VIDEO_MI_BGR888 ()
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 1024 * 3,
+    GRUB_VIDEO_MI_BGR888 ()
+  },
+  {
+    .width = 640,
+    .height = 480,
+    .pitch = 640 * 4,
+    GRUB_VIDEO_MI_BGRA8888()
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 800 * 4,
+    GRUB_VIDEO_MI_BGRA8888()
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 1024 * 4,
+    GRUB_VIDEO_MI_BGRA8888()
+  },
+};
+
 #ifdef GRUB_MACHINE_EMU
 #include <grub/emu/misc.h>
 #include <sys/types.h>
@@ -262,7 +464,7 @@ get_modename (void)
   return buf;
 }
 
-//#define GENERATE_MODE 1
+#define GENERATE_MODE 1
 
 #if defined (GENERATE_MODE) && defined (GRUB_MACHINE_EMU)
 int genfd = -1;

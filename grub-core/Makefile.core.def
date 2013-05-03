@@ -1747,6 +1747,11 @@ module = {
 };
 
 module = {
+  name = gfxterm_menu;
+  common = tests/gfxterm_menu.c;
+};
+
+module = {
   name = bitmap;
   common = video/bitmap.c;
   enable = videomodules;

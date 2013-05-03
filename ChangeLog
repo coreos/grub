@@ -1,5 +1,9 @@
 2013-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	New series of tests for gfxterm and gfxmenu.
+
+2013-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gfxmenu/gfxmenu.c (grub_gfxmenu_try): Allow specifying
 	the theme path relative to $prefix/themes.
 
