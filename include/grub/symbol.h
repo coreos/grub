@@ -29,11 +29,7 @@
 
 #if HAVE_ASM_USCORE
 #ifdef ASM_FILE
-# ifndef (__arm__)
-#  define EXT_C(sym)	_ ## sym
-# else
-#  define EXT_C(sym)	% ## sym
-# endif
+# define EXT_C(sym)	_ ## sym
 #else
 # define EXT_C(sym)	"_" sym
 #endif

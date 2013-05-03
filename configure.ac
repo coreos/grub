@@ -656,6 +656,14 @@ if test x"$sap_possible" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-stack-arg-probe"
 fi
 
+# -mno-unaligned-access
+if test "$target_cpu" = arm; then
+  grub_CHECK_NO_UNALIGNED_ACCESS
+  if test x"$nua_possible" = xyes; then
+    TARGET_CFLAGS="$TARGET_CFLAGS -mno-unaligned-access"
+  fi
+fi
+
 AC_ARG_ENABLE([werror],
 	      [AS_HELP_STRING([--disable-werror],
                              [do not use -Werror when building GRUB])])

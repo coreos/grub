@@ -17,19 +17,10 @@
  */
 
 #include <grub/symbol.h>
-#include <grub/dl.h>
 
 	.file	"setjmp.S"
 	.syntax	unified
-#if !defined (__thumb2__)
 	.arm
-#define ARM(x...)	x
-#define THUMB(x...)
-#else
-	.thumb
-#define THUMB(x...)	x
-#define ARM(x...)
-#endif
 
 	.text
 
@@ -37,9 +28,7 @@
  * int grub_setjmp (grub_jmp_buf env)
  */
 FUNCTION(grub_setjmp)
- THUMB(	mov	ip, sp			)
- THUMB(	stm	r0, { r4-r11, ip, lr }	)
- ARM(	stm	r0, { r4-r11, sp, lr }	)
+	stm	r0, { r4-r11, sp, lr }
 	mov	r0, #0
 	bx	lr
 
@@ -47,9 +36,7 @@ FUNCTION(grub_setjmp)
  * int grub_longjmp (grub_jmp_buf env, int val)
  */
 FUNCTION(grub_longjmp)
- THUMB(	ldm	r0, { r4-r11, ip, lr }	)
- THUMB(	mov	sp, ip			)
- ARM(	ldm	r0, { r4-r11, sp, lr }	)
+ 	ldm	r0, { r4-r11, sp, lr }
 	movs	r0, r1
 	moveq	r0, #1
 	bx	lr

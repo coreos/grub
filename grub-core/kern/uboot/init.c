@@ -130,10 +130,9 @@ grub_machine_get_bootlocation (char **device, char **path)
   tmp = uboot_env_get ("grub_bootdev");
   if (tmp)
     {
-      *device = grub_malloc (grub_strlen (tmp) + 1);
+      *device = grub_strdup (tmp);
       if (*device == NULL)
 	return;
-      grub_strncpy (*device, tmp, grub_strlen (tmp) + 1);
     }
   else
     *device = NULL;
@@ -141,10 +140,9 @@ grub_machine_get_bootlocation (char **device, char **path)
   tmp = uboot_env_get ("grub_bootpath");
   if (tmp)
     {
-      *path = grub_malloc (grub_strlen (tmp) + 1);
+      *path = grub_strdup (tmp);
       if (*path == NULL)
 	return;
-      grub_strncpy (*path, tmp, grub_strlen (tmp) + 1);
     }
   else
     *path = NULL;

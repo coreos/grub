@@ -458,3 +458,23 @@ dnl program.
 AC_DEFUN([grub_TRANSFORM],[dnl
 AC_SUBST(AS_TR_SH([$1]), [`AS_ECHO([$1]) | sed "$program_transform_name"`])dnl
 ])
+
+dnl Check if the C compiler supports `-mno-unaligned-access'.
+AC_DEFUN([grub_CHECK_NO_UNALIGNED_ACCESS],[
+[# foobar
+nua_possible=yes]
+AC_MSG_CHECKING([whether `$CC' supports `-mno-unaligned-access'])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[
+int main() {
+	return 0;
+}
+]])])
+
+[if eval "$ac_compile -S -mno-unaligned-access -o conftest.s" 2> /dev/null; then]
+  AC_MSG_RESULT([yes])
+  [rm -f conftest.s
+else
+  nua_possible=no]
+  AC_MSG_RESULT([no])
+[fi]
+])

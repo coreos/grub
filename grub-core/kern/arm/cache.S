@@ -17,19 +17,22 @@
  */
 
 #include <grub/symbol.h>
-#include <grub/dl.h>
 
 	.file	"cache.S"
 	.text
 	.syntax	unified
-#if !defined (__thumb2__)
 	.arm
-#define ARM(x...)	x
-#define THUMB(x...)
+#if (__ARM_ARCH_6__ == 1)
+	.arch	armv6
+# define DMB	mcr	p15, 0, r0, c7, c10, 5
+# define DSB	mcr	p15, 0, r0, c7, c10, 4
+# define ISB	mcr	p15, 0, r0, c7, c5, 4
+#elif (__ARM_ARCH_7A__ == 1)
+# define DMB	dmb
+# define DSB	dsb
+# define ISB	isb
 #else
-	.thumb
-#define THUMB(x...)	x
-#define ARM(x...)
+# error Unsupported architecture version!
 #endif
 
 	.align	2
@@ -39,54 +42,43 @@
  */
 
 @ r0 - *beg (inclusive)
-@ r1 - *end (exclusive)	
+@ r1 - *end (exclusive)
 clean_dcache_range:
-	@ Clean data cache range for range to point-of-unification
+	@ Clean data cache for range to point-of-unification
 	ldr	r2, dlinesz
+	sub	r3, r2, #1		@ align "beg" to start of line
+	mvn	r3, r3
+	and	r0, r0, r3
 1:	cmp	r0, r1
 	bge	2f
-#ifdef DEBUG
-	push	{r0-r2, lr}
-	mov	r1, r2
-	mov	r2, r0
-	ldr	r0, =dcstr
-	bl	EXT_C(grub_printf)
-	pop	{r0-r2, lr}
-#endif
 	mcr	p15, 0, r0, c7, c11, 1	@ DCCMVAU
 	add	r0, r0, r2		@ Next line
 	b	1b
-2:	dsb
+2:	DSB
 	bx	lr
 
 @ r0 - *beg (inclusive)
-@ r1 - *end (exclusive)	
+@ r1 - *end (exclusive)
 invalidate_icache_range:
 	@ Invalidate instruction cache for range to point-of-unification
 	ldr	r2, ilinesz
+	sub	r3, r2, #1		@ align "beg" to start of line
+	mvn	r3, r3
+	and	r0, r0, r3
 1:	cmp	r0, r1
 	bge	2f
-#ifdef DEBUG
-	push	{r0-r2, lr}
-	mov	r1, r2
-	mov	r2, r0
-	ldr	r0, =icstr
-	bl	EXT_C(grub_printf)
-	pop	{r0-r2, lr}
-#endif
 	mcr	p15, 0, r0, c7, c5, 1	@ ICIMVAU
 	add	r0, r0, r2		@ Next line
 	b	1b
 	@ Branch predictor invalidate all
 2:	mcr	p15, 0, r0, c7,	c5, 6	@ BPIALL
-	dsb
-	isb
+	DSB
+	ISB
 	bx	lr
-	
-@void __wrap___clear_cache(char *beg, char *end);
-FUNCTION(__wrap___clear_cache)
-	dmb
-	dsb
+
+sync_caches:
+	DMB
+	DSB
 	push	{r4-r6, lr}
 	ldr	r2, probed	@ If first call, probe cache sizes
 	cmp	r2, #0
@@ -103,7 +95,8 @@ probe_caches:
 	push	{r4-r6, lr}
 	mrc 	p15, 0, r4, c0, c0, 1	@ Read Cache Type Register
 	mov	r5, #1
-	ubfx	r6, r4, #16, #4		@ Extract min D-cache num word log2
+	lsr	r6, r4, #16		@ Extract min D-cache num word log2
+	and	r6, r6, #0xf
 	add	r6, r6, #2		@ words->bytes
 	lsl	r6, r5, r6		@ Convert to num bytes
 	ldr	r3, =dlinesz
@@ -117,11 +110,6 @@ probe_caches:
 	str	r5, [r3]
 	pop	{r4-r6, pc}
 
-#ifdef DEBUG
-dcstr:	.asciz	"cleaning %d bytes of D cache @ 0x%08x\n"
-icstr:	.asciz	"invalidating %d bytes of I cache @ 0x%08x\n"
-#endif
-	
 	.align	3
 probed:	.long	0
 dlinesz:
@@ -132,7 +120,7 @@ ilinesz:
 @void grub_arch_sync_caches (void *address, grub_size_t len)
 FUNCTION(grub_arch_sync_caches)
 	add	r1, r0, r1
-	b	__wrap___clear_cache
+	b	sync_caches
 
 	@ r0  - CLIDR
 	@ r1  - LoC
@@ -149,21 +137,26 @@ FUNCTION(grub_arch_sync_caches)
 clean_invalidate_dcache:
 	push	{r4-r12, lr}
 	mrc 	p15, 1, r0, c0, c0, 1	@ Read CLIDR
-	ubfx	r1, r0, #24, #3		@ Extract LoC
-	
+	lsr	r1, r0, #24		@ Extract LoC
+	and	r1, r1, #0x7
+
 	mov	r2, #0			@ First level, L1
 2:	and	r8, r0, #7		@ cache type at current level
 	cmp	r8, #2
 	blt	5f			@ instruction only, or none, skip level
 
-	@ set current cache level/type (for CSSIDR read)
+	@ set current cache level/type (for CCSIDR read)
 	lsl	r8, r2, #1
 	mcr	p15, 2, r8, c0, c0, 0	@ Write CSSELR (level, type: data/uni)
 
 	@ read current cache information
-	mrc	p15, 1, r8, c0, c0, 0	@ Read CSSIDR
-	ubfx	r3, r8, #13, #14	@ Number of sets -1
-	ubfx	r4, r8, #3, #9		@ Number of ways -1
+	mrc	p15, 1, r8, c0, c0, 0	@ Read CCSIDR
+	lsr	r3, r8, #13		@ Number of sets -1
+	ldr	r9, =0x3fff
+	and	r3, r3, r9
+	lsr	r4, r8, #3		@ Number of ways -1
+	ldr	r9, =0x1ff
+	and	r4, r4, r9
 	and	r7, r8, #7		@ log2(line size in words) - 2
 	add	r7, r7, #2		@  adjust
 	mov	r8, #1
@@ -186,11 +179,11 @@ clean_invalidate_dcache:
 	clz	r9, r10			@ r9 = way field offset
 	add	r9, r9, #1
 4:	lsl	r10, r6, r9
-	orr	r11, r8, r10		@ insert way field	
-	
-	@ clean line by set/way
+	orr	r11, r8, r10		@ insert way field
+
+	@ clean and invalidate line by set/way
 	mcr	p15, 0, r11, c7, c14, 2	@ DCCISW
-	
+
 	@ next way
 	add	r6, r6, #1
 	cmp	r6, r4
@@ -200,7 +193,7 @@ clean_invalidate_dcache:
 	add	r5, r5, #1
 	cmp	r5, r3
 	ble	3b
-	
+
 	@ next level
 5:	lsr	r0, r0, #3		@ align next level CLIDR 'type' field
 	add	r2, r2, #1		@ increment cache level counter
@@ -208,8 +201,8 @@ clean_invalidate_dcache:
 	blt	2b			@ outer loop
 
 	@ return
-6:	dsb
-	isb
+6:	DSB
+	ISB
 	pop	{r4-r12, pc}
 
 FUNCTION(grub_arm_disable_caches_mmu)
@@ -219,8 +212,8 @@ FUNCTION(grub_arm_disable_caches_mmu)
 	mrc	p15, 0, r0, c1, c0, 0
 	bic	r0, r0, #(1 << 2)
 	mcr	p15, 0, r0, c1, c0, 0
-	dsb
-	isb
+	DSB
+	ISB
 
 	@ clean/invalidate D-cache
 	bl	clean_invalidate_dcache
@@ -229,14 +222,14 @@ FUNCTION(grub_arm_disable_caches_mmu)
 	mrc	p15, 0, r0, c1, c0, 0
 	bic	r0, r0, #(1 << 12)
 	mcr	p15, 0, r0, c1, c0, 0
-	dsb
-	isb
+	DSB
+	ISB
 
 	@ invalidate I-cache (also invalidates branch predictors)
 	mcr	p15, 0, r0, c7, c5, 0
-	dsb
-	isb
-	
+	DSB
+	ISB
+
 	@ clear SCTLR M bit
 	mrc	p15, 0, r0, c1, c0, 0
 	bic	r0, r0, #(1 << 0)
@@ -244,8 +237,8 @@ FUNCTION(grub_arm_disable_caches_mmu)
 
 	mcr	p15, 0, r0, c8, c7, 0	@ invalidate TLB
 	mcr	p15, 0, r0, c7, c5, 6	@ invalidate branch predictor
-	dsb
-	isb
+	DSB
+	ISB
 
 	pop	{r4, pc}
 

@@ -38,10 +38,7 @@ if COND_sparc64_ieee1275
   LDFLAGS_PLATFORM = -Wl,-melf64_sparc -mno-relax
 endif
 if COND_arm
-# Image entry point always in ARM (A32) state - ensure proper functionality if
-# the rest is built for the Thumb (T32) state.
-  CFLAGS_PLATFORM += -mthumb-interwork -mno-unaligned-access -mlong-calls
-  CCASFLAGS_PLATFORM = -Wa,-mimplicit-it=thumb
+  CFLAGS_PLATFORM += -mthumb-interwork -mlong-calls
   LDFLAGS_PLATFORM = -Wl,--wrap=__clear_cache
 endif
 
