@@ -920,8 +920,8 @@ print_ucs4_real (const grub_uint32_t * str,
 						get_maxwidth (term, 
 							      margin_left,
 							      margin_right),
-						get_startwidth (term, 
-								margin_left),
+						dry_run ? 0 : get_startwidth (term, 
+									      margin_left),
 						contchar, pos, !!contchar);
       if (visual_len < 0)
 	{

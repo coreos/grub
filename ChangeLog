@@ -1,3 +1,7 @@
+2013-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/term.c (print_ucs4_real): Fix startwidth in dry run.
+
 2013-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Several fixes to ieee1275 and big-endian video.
