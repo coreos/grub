@@ -1,5 +1,9 @@
 2013-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/video_checksum.c: Don't set GENERATE_MODE.
+
+2013-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	New series of tests for gfxterm and gfxmenu.
 
 2013-05-03  Vladimir Serbinenko  <phcoder@gmail.com>

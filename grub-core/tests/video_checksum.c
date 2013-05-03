@@ -464,7 +464,7 @@ get_modename (void)
   return buf;
 }
 
-#define GENERATE_MODE 1
+//#define GENERATE_MODE 1
 
 #if defined (GENERATE_MODE) && defined (GRUB_MACHINE_EMU)
 int genfd = -1;
