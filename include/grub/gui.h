@@ -112,6 +112,7 @@ grub_gfxmenu_timeout_unregister (grub_gui_component_t self)
     if (q->self == self)
       {
 	*p = q->next;
+	grub_free (q);
 	break;
       }
 }
