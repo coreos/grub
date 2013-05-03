@@ -31,14 +31,13 @@ enum disktype
 
 struct ubootdisk_data
 {
-  struct ubootdisk_data *next;
   void *cookie;
-  int handle;
+  struct device_info *dev;
   int opencount;
   enum disktype type;
   grub_uint32_t block_size;
 };
 
-grub_err_t grub_ubootdisk_register (struct device_info *newdev, int handle);
+grub_err_t grub_ubootdisk_register (struct device_info *newdev);
 
 #endif /* ! GRUB_UBOOT_DISK_HEADER */

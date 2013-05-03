@@ -26,10 +26,11 @@
 #include <grub/types.h>
 #include <grub/uboot/disk.h>
 #include <grub/uboot/uboot.h>
+#include <grub/uboot/api_public.h>
 
-static struct ubootdisk_data *fd_devices;
 static struct ubootdisk_data *hd_devices;
-static struct ubootdisk_data *cd_devices;
+static int hd_num;
+static int hd_max;
 
 /*
  * grub_ubootdisk_register():
@@ -37,73 +38,53 @@ static struct ubootdisk_data *cd_devices;
  *   code.
  */
 grub_err_t
-grub_ubootdisk_register (struct device_info *newdev, int handle)
+grub_ubootdisk_register (struct device_info *newdev)
 {
   struct ubootdisk_data *d;
-  enum disktype type;
 
 #define STOR_TYPE(x) ((x) & 0x0ff0)
   switch (STOR_TYPE (newdev->type))
     {
     case DT_STOR_IDE:
     case DT_STOR_SATA:
-      /* hd */
-      type = hd;
-      break;
     case DT_STOR_MMC:
     case DT_STOR_USB:
-      /* fd */
-      type = fd;
+      /* hd */
+      if (hd_num == hd_max)
+	{
+	  int new_num;
+	  new_num = (hd_max ? hd_max * 2 : 1);
+	  d = grub_realloc(hd_devices,
+			   sizeof (struct ubootdisk_data) * new_num);
+	  if (!d)
+	    return grub_errno;
+	  hd_devices = d;
+	  hd_max = new_num;
+	}
+
+      d = &hd_devices[hd_num];
+      hd_num++;
       break;
     default:
       return GRUB_ERR_BAD_DEVICE;
       break;
     }
 
-  d = (struct ubootdisk_data *) grub_malloc (sizeof (struct ubootdisk_data));
-  if (!d)
-    return GRUB_ERR_OUT_OF_MEMORY;
-  d->handle = handle;
+  d->dev = newdev;
   d->cookie = newdev->cookie;
   d->opencount = 0;
-
-  switch (type)
-    {
-    case cd:
-      grub_dprintf ("ubootdisk", "registering cd device\n");
-      d->next = cd_devices;
-      cd_devices = d;
-
-      break;
-    case fd:
-      grub_dprintf ("ubootdisk", "registering fd device\n");
-      d->next = fd_devices;
-      fd_devices = d;
-
-      break;
-    case hd:
-      grub_dprintf ("ubootdisk", "registering hd device\n");
-      d->next = hd_devices;
-      hd_devices = d;
-
-      break;
-    default:
-      grub_free (d);
-      return GRUB_ERR_BAD_DEVICE;
-    }
 
   return 0;
 }
 
 /*
  * uboot_disk_iterate():
- *   Itarator over enumerated disk devices.
+ *   Iterator over enumerated disk devices.
  */
 static int
 uboot_disk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		    grub_disk_pull_t pull)
 {
-  struct ubootdisk_data *d;
   char buf[16];
   int count;
 
@@ -111,28 +92,9 @@ uboot_disk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
     {
     case GRUB_DISK_PULL_NONE:
       /* "hd" - built-in mass-storage */
-      for (d = hd_devices, count = 0; d; d = d->next, count++)
+      for (count = 0 ; count < hd_num; count++)
 	{
 	  grub_snprintf (buf, sizeof (buf) - 1, "hd%d", count);
-	  grub_dprintf ("ubootdisk", "iterating %s\n", buf);
-	  if (hook (buf, hook_data))
-	    return 1;
-	}
-      break;
-    case GRUB_DISK_PULL_REMOVABLE:
-      /* "floppy" - removable mass storage */
-      for (d = fd_devices, count = 0; d; d = d->next, count++)
-	{
-	  grub_snprintf (buf, sizeof (buf) - 1, "fd%d", count);
-	  grub_dprintf ("ubootdisk", "iterating %s\n", buf);
-	  if (hook (buf, hook_data))
-	    return 1;
-	}
-
-      /* "cdrom" - removeable read-only storage */
-      for (d = cd_devices, count = 0; d; d = d->next, count++)
-	{
-	  grub_snprintf (buf, sizeof (buf) - 1, "cd%d", count);
 	  grub_dprintf ("ubootdisk", "iterating %s\n", buf);
 	  if (hook (buf, hook_data))
 	    return 1;
@@ -147,15 +109,10 @@ uboot_disk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 
 /* Helper function for uboot_disk_open. */
 static struct ubootdisk_data *
-get_device (struct ubootdisk_data *devices, int num)
+get_hd_device (int num)
 {
-  struct ubootdisk_data *d;
-
-  for (d = devices; d && num; d = d->next, num--)
-    ;
-
-  if (num == 0)
-    return d;
+  if (num < hd_num)
+    return &hd_devices[num];
 
   return NULL;
 }
@@ -190,14 +147,8 @@ uboot_disk_open (const char *name, struct grub_disk *disk)
 
   switch (name[0])
     {
-    case 'f':
-      d = get_device (fd_devices, num);
-      break;
-    case 'c':
-      d = get_device (cd_devices, num);
-      break;
     case 'h':
-      d = get_device (hd_devices, num);
+      d = get_hd_device (num);
       break;
     default:
       goto fail;
@@ -219,7 +170,7 @@ uboot_disk_open (const char *name, struct grub_disk *disk)
     }
   else
     {
-      retval = uboot_dev_open (d->handle);
+      retval = grub_uboot_dev_open (d->dev);
       if (retval != 0)
 	goto fail;
       d->opencount = 1;
@@ -228,9 +179,7 @@ uboot_disk_open (const char *name, struct grub_disk *disk)
   grub_dprintf ("ubootdisk", "cookie: 0x%08x\n", (grub_addr_t) d->cookie);
   disk->id = (grub_addr_t) d->cookie;
 
-  /* Device has previously been enumerated, so this should never fail */
-  if ((devinfo = uboot_dev_get (d->handle)) == NULL)
-    goto fail;
+  devinfo = d->dev;
 
   d->block_size = devinfo->di_stor.block_size;
   if (d->block_size == 0)
@@ -246,7 +195,11 @@ uboot_disk_open (const char *name, struct grub_disk *disk)
   grub_dprintf ("ubootdisk", "(%s) blocksize=%d, log_sector_size=%d\n",
 		disk->name, d->block_size, disk->log_sector_size);
 
-  disk->total_sectors = devinfo->di_stor.block_count ? : GRUB_DISK_SIZE_UNKNOWN;
+  if (devinfo->di_stor.block_count)
+    disk->total_sectors = devinfo->di_stor.block_count;
+  else
+    disk->total_sectors = GRUB_DISK_SIZE_UNKNOWN;
+
   disk->data = d;
 
   return GRUB_ERR_NONE;
@@ -275,7 +228,7 @@ uboot_disk_close (struct grub_disk *disk)
     }
   else if (d->opencount == 1)
     {
-      retval = uboot_dev_close (d->handle);
+      retval = grub_uboot_dev_close (d->dev);
       d->opencount--;
       grub_dprintf ("ubootdisk", "closed %s (%d)\n", disk->name, retval);
     }
@@ -296,12 +249,12 @@ uboot_disk_read (struct grub_disk *disk,
 		 grub_disk_addr_t offset, grub_size_t numblocks, char *buf)
 {
   struct ubootdisk_data *d;
-  lbasize_t real_size;
+  grub_size_t real_size;
   int retval;
 
   d = disk->data;
 
-  retval = uboot_dev_read (d->handle, buf, numblocks, offset, &real_size);
+  retval = grub_uboot_dev_read (d->dev, buf, numblocks, offset, &real_size);
   grub_dprintf ("ubootdisk",
 		"retval=%d, numblocks=%d, real_size=%llu, sector=%llu\n",
 		retval, numblocks, (grub_uint64_t) real_size,
@@ -318,8 +271,8 @@ uboot_disk_write (struct grub_disk *disk __attribute__ ((unused)),
 		  grub_size_t size __attribute__ ((unused)),
 		  const char *buf __attribute__ ((unused)))
 {
-  grub_dprintf ("ubootdisk", "attempt to write\n");
-  return GRUB_ERR_NOT_IMPLEMENTED_YET;
+  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		     "attempt to write (not supported)");
 }
 
 static struct grub_disk_dev grub_ubootdisk_dev = {

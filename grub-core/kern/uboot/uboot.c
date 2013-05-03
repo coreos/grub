@@ -18,6 +18,7 @@
 
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/uboot/api_public.h>
 #include <grub/uboot/uboot.h>
 
 /*
@@ -38,25 +39,25 @@
  * returns:	0 if the call not found, 1 if serviced
  */
 
-extern int (*uboot_syscall_ptr) (int, int *, ...);
-extern int uboot_syscall (int, int *, ...);
-extern grub_addr_t uboot_search_hint;
+extern int (*grub_uboot_syscall_ptr) (int, int *, ...);
+extern int grub_uboot_syscall (int, int *, ...);
+extern grub_addr_t grub_uboot_search_hint;
 
 static struct sys_info uboot_sys_info;
 static struct mem_region uboot_mem_info[5];
-static struct device_info uboot_devices[6];
+static struct device_info * devices;
 static int num_devices;
 
 int
-uboot_api_init (void)
+grub_uboot_api_init (void)
 {
   struct api_signature *start, *end;
   struct api_signature *p;
 
-  if (uboot_search_hint)
+  if (grub_uboot_search_hint)
     {
       /* Extended search range to work around Trim Slice U-Boot issue */
-      start = (struct api_signature *) ((uboot_search_hint & ~0x000fffff)
+      start = (struct api_signature *) ((grub_uboot_search_hint & ~0x000fffff)
 					- 0x00500000);
       end =
 	(struct api_signature *) ((grub_addr_t) start + UBOOT_API_SEARCH_LEN -
@@ -73,7 +74,7 @@ uboot_api_init (void)
     {
       if (grub_memcmp (&(p->magic), API_SIG_MAGIC, API_SIG_MAGLEN) == 0)
 	{
-	  uboot_syscall_ptr = p->syscall;
+	  grub_uboot_syscall_ptr = p->syscall;
 	  return p->version;
 	}
     }
@@ -81,69 +82,50 @@ uboot_api_init (void)
   return 0;
 }
 
-/* All functions below are wrappers around the uboot_syscall() function */
-
 /*
- * int API_getc(int *c)
+ * All functions below are wrappers around the grub_uboot_syscall() function
  */
+
 int
-uboot_getc (void)
+grub_uboot_getc (void)
 {
   int c;
-  if (!uboot_syscall (API_GETC, NULL, &c))
+  if (!grub_uboot_syscall (API_GETC, NULL, &c))
     return -1;
 
   return c;
 }
 
-/*
- * int API_tstc(int *c)
- */
 int
-uboot_tstc (void)
+grub_uboot_tstc (void)
 {
   int c;
-  if (!uboot_syscall (API_TSTC, NULL, &c))
+  if (!grub_uboot_syscall (API_TSTC, NULL, &c))
     return -1;
 
   return c;
 }
 
-/*
- * int API_putc(char *ch)
- */
 void
-uboot_putc (int c)
+grub_uboot_putc (int c)
 {
-  uboot_syscall (API_PUTC, NULL, &c);
+  grub_uboot_syscall (API_PUTC, NULL, &c);
 }
 
-/*
- * int API_puts(const char *s)
- */
 void
-uboot_puts (const char *s)
+grub_uboot_puts (const char *s)
 {
-  uboot_syscall (API_PUTS, NULL, s);
+  grub_uboot_syscall (API_PUTS, NULL, s);
 }
 
-/*
- * int API_reset(void)
- */
 void
-uboot_reset (void)
+grub_uboot_reset (void)
 {
-  uboot_syscall (API_RESET, NULL, 0);
+  grub_uboot_syscall (API_RESET, NULL, 0);
 }
 
-/*
- * int API_get_sys_info(struct sys_info *si)
- *
- * fill out the sys_info struct containing selected parameters about the
- * machine
- */
 struct sys_info *
-uboot_get_sys_info (void)
+grub_uboot_get_sys_info (void)
 {
   int retval;
 
@@ -152,212 +134,193 @@ uboot_get_sys_info (void)
   uboot_sys_info.mr = uboot_mem_info;
   uboot_sys_info.mr_no = sizeof (uboot_mem_info) / sizeof (struct mem_region);
 
-  if (uboot_syscall (API_GET_SYS_INFO, &retval, &uboot_sys_info))
+  if (grub_uboot_syscall (API_GET_SYS_INFO, &retval, &uboot_sys_info))
     if (retval == 0)
       return &uboot_sys_info;
 
   return NULL;
 }
 
-/*
- * int API_udelay(unsigned long *udelay)
- */
 void
-uboot_udelay (grub_uint32_t usec)
+grub_uboot_udelay (grub_uint32_t usec)
 {
-  uboot_syscall (API_UDELAY, NULL, &usec);
+  grub_uboot_syscall (API_UDELAY, NULL, &usec);
 }
 
-/*
- * int API_get_timer(unsigned long *current, unsigned long *base)
- */
 grub_uint32_t
-uboot_get_timer (grub_uint32_t base)
+grub_uboot_get_timer (grub_uint32_t base)
 {
   grub_uint32_t current;
 
-  if (!uboot_syscall (API_GET_TIMER, NULL, &current, &base))
+  if (!grub_uboot_syscall (API_GET_TIMER, NULL, &current, &base))
     return 0;
 
   return current;
 }
 
-/*
- * int API_dev_enum(struct device_info *)
- *
- */
 int
-uboot_dev_enum (void)
+grub_uboot_dev_enum (void)
 {
-  int max;
+  struct device_info * enum_devices;
+  int num_enum_devices, max_devices;
 
-  grub_memset (&uboot_devices, 0, sizeof (uboot_devices));
-  max = sizeof (uboot_devices) / sizeof (struct device_info);
+  if (num_devices)
+    return num_devices;
+
+  max_devices = 2;
+  enum_devices = grub_malloc (sizeof(struct device_info) * max_devices);
+  if (!enum_devices)
+    return 0;
 
   /*
    * The API_DEV_ENUM call starts a fresh enumeration when passed a
    * struct device_info with a NULL cookie, and then depends on having
-   * the prevoiusly enumerated device cookie "seeded" into the target
+   * the previously enumerated device cookie "seeded" into the target
    * structure.
    */
-  if (!uboot_syscall (API_DEV_ENUM, NULL, &uboot_devices)
-      || uboot_devices[0].cookie == NULL)
-    return 0;
 
-  for (num_devices = 1; num_devices < max; num_devices++)
+  enum_devices[0].cookie = NULL;
+  num_enum_devices = 0;
+
+  if (grub_uboot_syscall (API_DEV_ENUM, NULL,
+			  &enum_devices[num_enum_devices]) == 0)
+    goto error;
+
+  num_enum_devices++;
+
+  while (enum_devices[num_enum_devices - 1].cookie != NULL)
     {
-      uboot_devices[num_devices].cookie =
-	uboot_devices[num_devices - 1].cookie;
-      if (!uboot_syscall (API_DEV_ENUM, NULL, &uboot_devices[num_devices]))
-	return 0;
+      if (num_enum_devices == max_devices)
+	{
+	  struct device_info *tmp;
+	  int new_max;
+	  new_max = max_devices * 2;
+	  tmp = grub_realloc (enum_devices,
+			      sizeof (struct device_info) * new_max);
+	  if (!tmp)
+	    {
+	      /* Failed to realloc, so return what we have */
+	      break;
+	    }
+	  enum_devices = tmp;
+	  max_devices = new_max;
+	}
 
-      /* When no more devices to enumerate, target cookie set to NULL */
-      if (uboot_devices[num_devices].cookie == NULL)
+      enum_devices[num_enum_devices].cookie =
+	enum_devices[num_enum_devices - 1].cookie;
+      if (grub_uboot_syscall (API_DEV_ENUM, NULL,
+			      &enum_devices[num_enum_devices]) == 0)
+	goto error;
+
+      if (enum_devices[num_enum_devices].cookie == NULL)
 	break;
+
+      num_enum_devices++;
     }
 
-  return num_devices;
+  devices = enum_devices;
+  return num_devices = num_enum_devices;
+
+ error:
+  grub_free (enum_devices);
+  return 0;
 }
 
 #define VALID_DEV(x) (((x) < num_devices) && ((x) >= 0))
-#define OPEN_DEV(x) (VALID_DEV(x) && (uboot_devices[(x)].state == DEV_STA_OPEN))
+#define OPEN_DEV(x) ((x->state == DEV_STA_OPEN))
 
 struct device_info *
-uboot_dev_get (int handle)
+grub_uboot_dev_get (int index)
 {
-  if (VALID_DEV (handle))
-    return &uboot_devices[handle];
+  if (VALID_DEV (index))
+    return &devices[index];
 
   return NULL;
 }
 
 
-/*
- * int API_dev_open(struct device_info *)
- */
 int
-uboot_dev_open (int handle)
+grub_uboot_dev_open (struct device_info *dev)
 {
-  struct device_info *dev;
   int retval;
 
-  if (!VALID_DEV (handle))
-    return -1;
-
-  dev = &uboot_devices[handle];
-
-  if (!uboot_syscall (API_DEV_OPEN, &retval, dev))
+  if (!grub_uboot_syscall (API_DEV_OPEN, &retval, dev))
     return -1;
 
   return retval;
 }
 
-/*
- * int API_dev_close(struct device_info *)
- */
 int
-uboot_dev_close (int handle)
+grub_uboot_dev_close (struct device_info *dev)
 {
-  struct device_info *dev;
   int retval;
 
-  if (!VALID_DEV (handle))
-    return -1;
-
-  dev = &uboot_devices[handle];
-
-  if (!uboot_syscall (API_DEV_CLOSE, &retval, dev))
+  if (!grub_uboot_syscall (API_DEV_CLOSE, &retval, dev))
     return -1;
 
   return retval;
 }
 
 
-/*
- * int API_dev_read(struct device_info *di, void *buf,	size_t *len,
- *                  unsigned long *start, size_t *act_len)
- */
 int
-uboot_dev_read (int handle, void *buf, lbasize_t blocks,
-		lbastart_t start, lbasize_t * real_blocks)
+grub_uboot_dev_read (struct device_info *dev, void *buf, grub_size_t blocks,
+		     grub_uint32_t start, grub_size_t * real_blocks)
 {
-  struct device_info *dev;
   int retval;
 
-  if (!OPEN_DEV (handle))
+  if (!OPEN_DEV (dev))
     return -1;
 
-  dev = &uboot_devices[handle];
-
-  if (!uboot_syscall (API_DEV_READ, &retval, dev, buf,
-		      &blocks, &start, real_blocks))
+  if (!grub_uboot_syscall (API_DEV_READ, &retval, dev, buf,
+			   &blocks, &start, real_blocks))
     return -1;
 
   return retval;
 }
 
-/*
- * int API_dev_read(struct device_info *di, void *buf,
- *                  size_t *len, size_t *act_len)
- */
 int
-uboot_dev_recv (int handle, void *buf, int size, int *real_size)
+grub_uboot_dev_recv (struct device_info *dev, void *buf,
+		     int size, int *real_size)
 {
-  struct device_info *dev;
   int retval;
 
-  if (!OPEN_DEV (handle))
+  if (!OPEN_DEV (dev))
     return -1;
 
-  dev = &uboot_devices[handle];
-  if (!uboot_syscall (API_DEV_READ, &retval, dev, buf, &size, real_size))
+  if (!grub_uboot_syscall (API_DEV_READ, &retval, dev, buf, &size, real_size))
     return -1;
 
   return retval;
 
 }
 
-/*
- * Notice: this is for sending network packets only, as U-Boot does not
- * support writing to storage at the moment (12.2007)
- *
- * int API_dev_write(struct device_info *di, void *buf,	int *len)
- */
 int
-uboot_dev_send (int handle, void *buf, int size)
+grub_uboot_dev_send (struct device_info *dev, void *buf, int size)
 {
-  struct device_info *dev;
   int retval;
 
-  if (!OPEN_DEV (handle))
+  if (!OPEN_DEV (dev))
     return -1;
 
-  dev = &uboot_devices[handle];
-  if (!uboot_syscall (API_DEV_WRITE, &retval, dev, buf, &size))
+  if (!grub_uboot_syscall (API_DEV_WRITE, &retval, dev, buf, &size))
     return -1;
 
   return retval;
 }
 
-/*
- * int API_env_get(const char *name, char **value)
- */
 char *
-uboot_env_get (const char *name)
+grub_uboot_env_get (const char *name)
 {
   char *value;
 
-  if (!uboot_syscall (API_ENV_GET, NULL, name, &value))
+  if (!grub_uboot_syscall (API_ENV_GET, NULL, name, &value))
     return NULL;
 
   return value;
 }
 
-/*
- * int API_env_set(const char *name, const char *value)
- */
 void
-uboot_env_set (const char *name, const char *value)
+grub_uboot_env_set (const char *name, const char *value)
 {
-  uboot_syscall (API_ENV_SET, NULL, name, value);
+  grub_uboot_syscall (API_ENV_SET, NULL, name, value);
 }

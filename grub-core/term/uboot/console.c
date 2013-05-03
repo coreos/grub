@@ -28,14 +28,14 @@
 static void
 put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 {
-  uboot_putc (c);
+  grub_uboot_putc (c);
 }
 
 static int
 readkey (struct grub_term_input *term __attribute__ ((unused)))
 {
-  if (uboot_tstc () > 0)
-    return uboot_getc ();
+  if (grub_uboot_tstc () > 0)
+    return grub_uboot_getc ();
 
   return -1;
 }
@@ -127,7 +127,7 @@ grub_console_init_lately (void)
   const char *type;
 
   /* See if explicitly set by U-Boot environment */
-  type = uboot_env_get ("grub_term");
+  type = grub_uboot_env_get ("grub_term");
   if (!type)
     type = "vt100";
 

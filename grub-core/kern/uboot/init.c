@@ -29,41 +29,42 @@
 #include <grub/uboot/console.h>
 #include <grub/uboot/disk.h>
 #include <grub/uboot/uboot.h>
+#include <grub/uboot/api_public.h>
 
 extern char __bss_start[];
 extern char _end[];
 extern grub_size_t grub_total_module_size;
-extern int (*uboot_syscall_ptr) (int, int *, ...);
+extern int (*grub_uboot_syscall_ptr) (int, int *, ...);
 
 /* Set to anything other than zero so it lands in .data and not .bss.  */
 grub_addr_t grub_modbase = 0x55aa55aa;
-grub_uint32_t uboot_machine_type = 0x55aa55aa;
-grub_addr_t uboot_boot_data = 0x55aa55aa;
+grub_uint32_t grub_uboot_machine_type = 0x55aa55aa;
+grub_addr_t grub_uboot_boot_data = 0x55aa55aa;
 
 static unsigned long timer_start;
 
 void
 grub_exit (void)
 {
-  uboot_return (0);
+  grub_uboot_return (0);
 }
 
 grub_uint32_t
-uboot_get_machine_type (void)
+grub_uboot_get_machine_type (void)
 {
-  return uboot_machine_type;
+  return grub_uboot_machine_type;
 }
 
 grub_addr_t
-uboot_get_boot_data (void)
+grub_uboot_get_boot_data (void)
 {
-  return uboot_boot_data;
+  return grub_uboot_boot_data;
 }
 
 static grub_uint64_t
 uboot_timer_ms (void)
 {
-  return (grub_uint64_t) uboot_get_timer (timer_start) / 1000;
+  return (grub_uint64_t) grub_uboot_get_timer (timer_start) / 1000;
 }
 
 void
@@ -72,7 +73,7 @@ grub_machine_init (void)
   int ver;
 
   /* First of all - establish connection with U-Boot */
-  ver = uboot_api_init ();
+  ver = grub_uboot_api_init ();
   if (!ver)
     {
       /* Don't even have a console to log errors to... */
@@ -81,7 +82,7 @@ grub_machine_init (void)
   else if (ver > API_SIG_VERSION)
     {
       /* Try to print an error message */
-      uboot_puts ("invalid U-Boot API version\n");
+      grub_uboot_puts ("invalid U-Boot API version\n");
     }
 
   /* Initialize the console so that GRUB can display messages.  */
@@ -103,7 +104,7 @@ grub_machine_init (void)
   grub_uboot_probe_hardware ();
 
   /* Initialise timer */
-  timer_start = uboot_get_timer (0);
+  timer_start = grub_uboot_get_timer (0);
   grub_install_get_time_ms (uboot_timer_ms);
 
   /* Initialize  */
@@ -127,7 +128,7 @@ grub_machine_get_bootlocation (char **device, char **path)
 {
   char *tmp;
 
-  tmp = uboot_env_get ("grub_bootdev");
+  tmp = grub_uboot_env_get ("grub_bootdev");
   if (tmp)
     {
       *device = grub_strdup (tmp);
@@ -137,7 +138,7 @@ grub_machine_get_bootlocation (char **device, char **path)
   else
     *device = NULL;
 
-  tmp = uboot_env_get ("grub_bootpath");
+  tmp = grub_uboot_env_get ("grub_bootpath");
   if (tmp)
     {
       *path = grub_strdup (tmp);

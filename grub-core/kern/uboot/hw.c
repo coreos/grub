@@ -25,6 +25,7 @@
 #include <grub/machine/kernel.h>
 #include <grub/uboot/disk.h>
 #include <grub/uboot/uboot.h>
+#include <grub/uboot/api_public.h>
 
 grub_addr_t start_of_ram;
 
@@ -37,7 +38,7 @@ grub_addr_t start_of_ram;
 void
 grub_uboot_mm_init (void)
 {
-  struct sys_info *si = uboot_get_sys_info ();
+  struct sys_info *si = grub_uboot_get_sys_info ();
 
   grub_mm_init_region ((void *) (grub_modules_get_end ()
 				 + GRUB_KERNEL_MACHINE_STACK_SIZE),
@@ -57,19 +58,18 @@ grub_uboot_mm_init (void)
 
 /*
  * grub_uboot_probe_hardware():
- *   
  */
 grub_err_t
 grub_uboot_probe_hardware (void)
 {
   int devcount, i;
 
-  devcount = uboot_dev_enum ();
+  devcount = grub_uboot_dev_enum ();
   grub_dprintf ("init", "%d devices found\n", devcount);
 
   for (i = 0; i < devcount; i++)
     {
-      struct device_info *devinfo = uboot_dev_get (i);
+      struct device_info *devinfo = grub_uboot_dev_get (i);
 
       grub_dprintf ("init", "device handle: %d\n", i);
       grub_dprintf ("init", "  cookie\t= 0x%08x\n",
@@ -78,11 +78,12 @@ grub_uboot_probe_hardware (void)
       if (devinfo->type & DEV_TYP_STOR)
 	{
 	  grub_dprintf ("init", "  type\t\t= DISK\n");
-	  grub_ubootdisk_register (devinfo, i);
+	  grub_ubootdisk_register (devinfo);
 	}
       else if (devinfo->type & DEV_TYP_NET)
 	{
-	  grub_dprintf ("init", "  type\t\t= NET\n");
+	  /* Dealt with in ubootnet module. */
+	  grub_dprintf ("init", "  type\t\t= NET (not supported yet)\n");
 	}
       else
 	{
@@ -97,7 +98,7 @@ grub_err_t
 grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 {
   int i;
-  struct sys_info *si = uboot_get_sys_info ();
+  struct sys_info *si = grub_uboot_get_sys_info ();
 
   if (!si || (si->mr_no < 1))
     return GRUB_ERR_BUG;

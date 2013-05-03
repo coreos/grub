@@ -65,9 +65,9 @@ FUNCTION(codestart)
 	ldr	sp, =entry_state
 	push	{r4-r12,lr}	@ store U-Boot context (sp in r12)
 
-	ldr     r12, =EXT_C(uboot_machine_type)
+	ldr     r12, =EXT_C(grub_uboot_machine_type)
 	str     r1, [r12]
-	ldr     r12, =EXT_C(uboot_boot_data)
+	ldr     r12, =EXT_C(grub_uboot_boot_data)
 	str     r2, [r12]
 
 	@ Modules have been stored as a blob in BSS,
@@ -115,12 +115,12 @@ FUNCTION(codestart)
 	 *   r12 (ip). Furthermore it needs to restore r8 for
 	 *   U-Boot (Global Data Pointer) and preserve it for Grub.
 	 */
-FUNCTION(uboot_syscall)
+FUNCTION(grub_uboot_syscall)
 	ldr	ip, =transition_space
 	stm	ip, {r8, lr}
 	ldr	ip, =gd_backup
 	ldr	r8, [ip]
-	ldr	ip, =uboot_syscall_ptr
+	ldr	ip, =grub_uboot_syscall_ptr
 	mov	lr, pc
 	ldr	pc, [ip]
 	ldr	ip, =gd_backup
@@ -129,7 +129,7 @@ FUNCTION(uboot_syscall)
 	ldm	ip, {r8, lr}
 	bx	lr
 	
-FUNCTION(uboot_return)
+FUNCTION(grub_uboot_return)
 	ldr	sp, =entry_state_end
 	pop	{r4-r12, lr}
 	mov	sp, r12
@@ -149,7 +149,7 @@ gd_backup:
 	.long	0	@ r9
 	.long	0	@ r10
 	.long	0	@ r11
-VARIABLE(uboot_search_hint)@ U-Boot stack pointer - 
+VARIABLE(grub_uboot_search_hint)@ U-Boot stack pointer - 
 	.long	0	@ also API signature address hint.
 	.long	0	@ lr
 entry_state:		@ backup for U-Boot context
@@ -159,7 +159,7 @@ transition_space:
 	.long	0	@ r8
 	.long	0	@ lr
 
-VARIABLE(uboot_syscall_ptr)
+VARIABLE(grub_uboot_syscall_ptr)
 	.long	0	@
 
 	.end
