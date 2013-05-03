@@ -613,7 +613,7 @@ struct checksum_desc
 };
 
 const struct checksum_desc checksum_table[] = {
-#include "checksums.c"
+#include "checksums.h"
 };
 
 void
@@ -625,7 +625,7 @@ grub_video_checksum (const char *basename_in)
 
 #if defined (GENERATE_MODE) && defined (GRUB_MACHINE_EMU)
   if (genfd < 0)
-    genfd = open ("checksums.c", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    genfd = open ("checksums.h", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
   if (genfd >= 0)
     {
       char buf[400];

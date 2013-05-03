@@ -1731,6 +1731,7 @@ module = {
   name = functional_test;
   common = tests/lib/functional_test.c;
   common = tests/lib/test.c;
+  common = tests/checksums.h;
   common = tests/video_checksum.c;
   common = tests/fake_input.c;
   common = video/capture.c;
