@@ -101,6 +101,11 @@ enum grub_video_blit_format
 
     /* When needed, decode color or just use value as is.  */
     GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR,
+    /* Like index but only 16-colors and F0 is a special value for transparency.
+       Could be extended to 4 bits of alpha and 4 bits of color if necessary.
+       Used internally for text rendering.
+     */
+    GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR_ALPHA,
 
     /* Two color bitmap; bits packed: rows are not padded to byte boundary.  */
     GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED

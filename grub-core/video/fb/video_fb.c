@@ -542,11 +542,18 @@ grub_video_color_t
 grub_video_fb_map_rgba (grub_uint8_t red, grub_uint8_t green,
 			grub_uint8_t blue, grub_uint8_t alpha)
 {
+
   if ((framebuffer.render_target->mode_info.mode_type
        & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR) != 0)
-    /* No alpha available in index color modes, just use
-       same value as in only RGB modes.  */
-    return grub_video_fb_map_rgb (red, green, blue);
+    {
+      if ((framebuffer.render_target->mode_info.mode_type
+	   & GRUB_VIDEO_MODE_TYPE_ALPHA) != 0
+	  && alpha == 0)
+	return 0xf0;
+      /* No alpha available in index color modes, just use
+	 same value as in only RGB modes.  */
+      return grub_video_fb_map_rgb (red, green, blue);
+    }
   else if ((framebuffer.render_target->mode_info.mode_type
             & GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP) != 0)
     {
@@ -605,6 +612,17 @@ grub_video_fb_unmap_color_int (struct grub_video_fbblit_info * source,
   if ((mode_info->mode_type
        & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR) != 0)
     {
+      if ((framebuffer.render_target->mode_info.mode_type
+	   & GRUB_VIDEO_MODE_TYPE_ALPHA) != 0
+	  && color == 0xf0)
+        {
+          *red = 0;
+          *green = 0;
+          *blue = 0;
+          *alpha = 0;
+          return;
+        }
+	
       /* If we have an out-of-bounds color, return transparent black.  */
       if (color > 255)
         {
@@ -772,134 +790,153 @@ common_blitter (struct grub_video_fbblit_info *target,
   if (oper == GRUB_VIDEO_BLIT_REPLACE)
     {
       /* Try to figure out more optimized version for replace operator.  */
-      if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGBA_8888)
+      switch (source->mode_info->blit_format)
 	{
-	  if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGBA_8888)
+	case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
+	  switch (target->mode_info->blit_format)
 	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
 	      grub_video_fbblit_replace_directN (target, source,
 						       x, y, width, height,
 						       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_BGRA_8888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
 	      grub_video_fbblit_replace_BGRX8888_RGBX8888 (target, source,
 								 x, y, width, height,
 								 offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_BGR_888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_888:
 	      grub_video_fbblit_replace_BGR888_RGBX8888 (target, source,
 							       x, y, width, height,
 							       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGB_888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
 	      grub_video_fbblit_replace_RGB888_RGBX8888 (target, source,
 							       x, y, width, height,
 							       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
 	      grub_video_fbblit_replace_index_RGBX8888 (target, source,
 							      x, y, width, height,
 							      offset_x, offset_y);
 	      return;
+	    default:
+	      break;
 	    }
-	}
-      else if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGB_888)
-	{
-	  if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_BGRA_8888)
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
+	  switch (target->mode_info->blit_format)
 	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
 	      grub_video_fbblit_replace_BGRX8888_RGB888 (target, source,
 							       x, y, width, height,
 							       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGBA_8888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
 	      grub_video_fbblit_replace_RGBX8888_RGB888 (target, source,
 							       x, y, width, height,
 							       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_BGR_888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_888:
 	      grub_video_fbblit_replace_BGR888_RGB888 (target, source,
 							     x, y, width, height,
 							     offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGB_888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
 	      grub_video_fbblit_replace_directN (target, source,
 						       x, y, width, height,
 						       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
 	      grub_video_fbblit_replace_index_RGB888 (target, source,
 							    x, y, width, height,
 							    offset_x, offset_y);
 	      return;
+	    default:
+	      break;
 	    }
-	}
-      else if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_BGRA_8888)
-	{
-	  if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_BGRA_8888)
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
+	  switch (target->mode_info->blit_format)
 	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
 	      grub_video_fbblit_replace_directN (target, source,
 						       x, y, width, height,
 						       offset_x, offset_y);
 	      return;
+	    default:
+	      break;
 	    }
-	}
-      else if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
-	{
-	  if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
+	  switch (target->mode_info->blit_format)
 	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR_ALPHA:
 	      grub_video_fbblit_replace_directN (target, source,
 						       x, y, width, height,
 						       offset_x, offset_y);
 	      return;
+	    default:
+	      break;
 	    }
-	}
-      else if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED)
-	{
-	  if (target->mode_info->bpp == 32)
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR_ALPHA:
+	  switch (target->mode_info->bytes_per_pixel)
 	    {
+	    case 4:
+	      grub_video_fbblit_replace_32bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 3:
+	      grub_video_fbblit_replace_24bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 2:
+	      grub_video_fbblit_replace_16bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 1:
+	      grub_video_fbblit_replace_8bit_indexa (target, source,
+						     x, y, width, height,
+						     offset_x, offset_y);
+	      return;
+	    default:
+	      break;
+	    }
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED:
+	  switch (target->mode_info->bytes_per_pixel)
+	    {
+	    case 4:
 	      grub_video_fbblit_replace_32bit_1bit (target, source,
 						    x, y, width, height,
 						    offset_x, offset_y);
 	      return;
-	    }
 #ifdef GRUB_HAVE_UNALIGNED_ACCESS
-	  else if (target->mode_info->bpp == 24)
-	    {
+	    case 3:
 	      grub_video_fbblit_replace_24bit_1bit (target, source,
 						    x, y, width, height,
 						    offset_x, offset_y);
 	      return;
-	    }
 #endif
-	  else if (target->mode_info->bpp == 16)
-	    {
+	    case 2:
 	      grub_video_fbblit_replace_16bit_1bit (target, source,
 						    x, y, width, height,
 						    offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->bpp == 8)
-	    {
+	    case 1:
 	      grub_video_fbblit_replace_8bit_1bit (target, source,
 						   x, y, width, height,
 						   offset_x, offset_y);
 	      return;
 	    }
+	  break;
+	default:
+	  break;
 	}
 
       /* No optimized replace operator found, use default (slow) blitter.  */
@@ -909,122 +946,130 @@ common_blitter (struct grub_video_fbblit_info *target,
   else
     {
       /* Try to figure out more optimized blend operator.  */
-      if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGBA_8888)
+      switch (source->mode_info->blit_format)
 	{
-	  if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_BGRA_8888)
+	case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
+	  switch (target->mode_info->blit_format)
 	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
 	      grub_video_fbblit_blend_BGRA8888_RGBA8888 (target, source,
 							       x, y, width, height,
 							       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGBA_8888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
 	      grub_video_fbblit_blend_RGBA8888_RGBA8888 (target, source,
 							       x, y, width, height,
 							       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_BGR_888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_888:
 	      grub_video_fbblit_blend_BGR888_RGBA8888 (target, source,
 							     x, y, width, height,
 							     offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGB_888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
 	      grub_video_fbblit_blend_RGB888_RGBA8888 (target, source,
 							     x, y, width, height,
 							     offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
 	      grub_video_fbblit_blend_index_RGBA8888 (target, source,
 							    x, y, width, height,
 							    offset_x, offset_y);
 	      return;
+	    default:
+	      break;
 	    }
-	}
-      else if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGB_888)
-	{
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
 	  /* Note: There is really no alpha information here, so blend is
 	     changed to replace.  */
 
-	  if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_BGRA_8888)
+	  switch (target->mode_info->blit_format)
 	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
 	      grub_video_fbblit_replace_BGRX8888_RGB888 (target, source,
 							       x, y, width, height,
 							       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGBA_8888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
 	      grub_video_fbblit_replace_RGBX8888_RGB888 (target, source,
 							       x, y, width, height,
 							       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_BGR_888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_888:
 	      grub_video_fbblit_replace_BGR888_RGB888 (target, source,
 							     x, y, width, height,
 							     offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_RGB_888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
 	      grub_video_fbblit_replace_directN (target, source,
 						       x, y, width, height,
 						       offset_x, offset_y);
 	      return;
-	    }
-	  else if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
 	      grub_video_fbblit_replace_index_RGB888 (target, source,
 							    x, y, width, height,
 							    offset_x, offset_y);
 	      return;
+	    default:
+	      break;
 	    }
-	}
-      else if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED)
-	{
-	  if (target->mode_info->blit_format
-	      == GRUB_VIDEO_BLIT_FORMAT_BGRA_8888
-	      || target->mode_info->blit_format
-	      == GRUB_VIDEO_BLIT_FORMAT_RGBA_8888)
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED:
+	  switch (target->mode_info->blit_format)
 	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
+	    case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
 	      grub_video_fbblit_blend_XXXA8888_1bit (target, source,
 						     x, y, width, height,
 						     offset_x, offset_y);
 	      return;
-	    }
 #ifdef GRUB_HAVE_UNALIGNED_ACCESS
-	  else if (target->mode_info->blit_format
-		   == GRUB_VIDEO_BLIT_FORMAT_BGR_888
-		   || target->mode_info->blit_format
-		   == GRUB_VIDEO_BLIT_FORMAT_RGB_888)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_888:
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
 	      grub_video_fbblit_blend_XXX888_1bit (target, source,
 						   x, y, width, height,
 						   offset_x, offset_y);
 	      return;
-	    }
 #endif
-	  else if (target->mode_info->blit_format
-		   == GRUB_VIDEO_BLIT_FORMAT_BGR_565
-		   || target->mode_info->blit_format
-		   == GRUB_VIDEO_BLIT_FORMAT_RGB_565)
-	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_565:
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_565:
 	      grub_video_fbblit_blend_XXX565_1bit (target, source,
 						   x, y, width, height,
 						   offset_x, offset_y);
 	      return;
+	    default:
+	      break;
 	    }
-
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR_ALPHA:
+	  switch (target->mode_info->bytes_per_pixel)
+	    {
+	    case 4:
+	      grub_video_fbblit_blend_32bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 3:
+	      grub_video_fbblit_blend_24bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 2:
+	      grub_video_fbblit_blend_16bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 1:
+	      grub_video_fbblit_blend_8bit_indexa (target, source,
+						     x, y, width, height,
+						     offset_x, offset_y);
+	      return;
+	    }
+	  break;
+	default:
+	  break;
 	}
-
 
       /* No optimized blend operation found, use default (slow) blitter.  */
       grub_video_fbblit_blend (target, source, x, y, width, height,
@@ -1411,22 +1456,35 @@ grub_video_fb_create_render_target (struct grub_video_fbrender_target **result,
   /* Setup render target format.  */
   target->mode_info.width = width;
   target->mode_info.height = height;
-  target->mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_RGB
-                                | GRUB_VIDEO_MODE_TYPE_ALPHA;
-  target->mode_info.bpp = 32;
-  target->mode_info.bytes_per_pixel = 4;
+  switch (mode_type)
+    {
+    case GRUB_VIDEO_MODE_TYPE_INDEX_COLOR
+      | GRUB_VIDEO_MODE_TYPE_ALPHA:
+      target->mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR
+	| GRUB_VIDEO_MODE_TYPE_ALPHA;
+      target->mode_info.bpp = 8;
+      target->mode_info.bytes_per_pixel = 1;
+      target->mode_info.number_of_colors = 16;
+      target->mode_info.blit_format = GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR_ALPHA;
+      break;
+    default:
+      target->mode_info.mode_type = GRUB_VIDEO_MODE_TYPE_RGB
+	| GRUB_VIDEO_MODE_TYPE_ALPHA;
+      target->mode_info.bpp = 32;
+      target->mode_info.bytes_per_pixel = 4;
+      target->mode_info.red_mask_size = 8;
+      target->mode_info.red_field_pos = 0;
+      target->mode_info.green_mask_size = 8;
+      target->mode_info.green_field_pos = 8;
+      target->mode_info.blue_mask_size = 8;
+      target->mode_info.blue_field_pos = 16;
+      target->mode_info.reserved_mask_size = 8;
+      target->mode_info.reserved_field_pos = 24;
+      target->mode_info.number_of_colors = framebuffer.palette_size; /* Emulated palette.  */
+      target->mode_info.blit_format = GRUB_VIDEO_BLIT_FORMAT_RGBA_8888;
+      break;
+    }
   target->mode_info.pitch = target->mode_info.bytes_per_pixel * width;
-  target->mode_info.number_of_colors = framebuffer.palette_size; /* Emulated palette.  */
-  target->mode_info.red_mask_size = 8;
-  target->mode_info.red_field_pos = 0;
-  target->mode_info.green_mask_size = 8;
-  target->mode_info.green_field_pos = 8;
-  target->mode_info.blue_mask_size = 8;
-  target->mode_info.blue_field_pos = 16;
-  target->mode_info.reserved_mask_size = 8;
-  target->mode_info.reserved_field_pos = 24;
-
-  target->mode_info.blit_format = grub_video_get_blit_format (&target->mode_info);
 
   /* Calculate size needed for the data.  */
   size = (width * target->mode_info.bytes_per_pixel) * height;

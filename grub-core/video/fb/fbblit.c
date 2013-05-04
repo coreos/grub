@@ -389,6 +389,376 @@ grub_video_fbblit_replace_8bit_1bit (struct grub_video_fbblit_info *dst,
     }
 }
 
+void
+grub_video_fbblit_replace_32bit_indexa (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+					int offset_x, int offset_y)
+{
+  int i;
+  int j;
+  grub_uint8_t *srcptr;
+  grub_uint32_t *dstptr;
+  unsigned int dstrowskip;
+  unsigned int srcrowskip;
+  grub_uint32_t palette[17];
+
+  srcptr = grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = grub_video_fb_get_video_ptr (dst, x, y);
+
+  /* Calculate the number of bytes to advance from the end of one line
+     to the beginning of the next line.  */
+  dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
+  srcrowskip = src->mode_info->pitch - width;
+
+  for (i = 0; i < 16; i++)
+    palette[i] = grub_video_fb_map_color (i);
+  palette[16] = grub_video_fb_map_rgba (0, 0, 0, 0);
+
+  for (j = 0; j < height; j++)
+    {
+      for (i = 0; i < width; i++)
+        {
+	  if (*srcptr == 0xf0)
+	    *dstptr = palette[16];
+	  else
+	    *dstptr = palette[*srcptr & 0xf];
+	  srcptr++;
+	  dstptr++;
+        }
+
+      srcptr += srcrowskip;
+      GRUB_VIDEO_FB_ADVANCE_POINTER (dstptr, dstrowskip);
+    }
+}
+
+/* Optimized replacing blitter for 1-bit to 16bit.  */
+void
+grub_video_fbblit_replace_24bit_indexa (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+					int offset_x, int offset_y)
+{
+  int i;
+  int j;
+  grub_uint8_t *srcptr;
+  grub_uint8_t *dstptr;
+  unsigned int dstrowskip;
+  unsigned int srcrowskip;
+  grub_uint32_t palette[17];
+
+  srcptr = grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = grub_video_fb_get_video_ptr (dst, x, y);
+
+  /* Calculate the number of bytes to advance from the end of one line
+     to the beginning of the next line.  */
+  dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
+  srcrowskip = src->mode_info->pitch - width;
+
+  for (i = 0; i < 16; i++)
+    palette[i] = grub_video_fb_map_color (i);
+  palette[16] = grub_video_fb_map_rgba (0, 0, 0, 0);
+
+  for (j = 0; j < height; j++)
+    {
+      for (i = 0; i < width; i++)
+        {
+	  register grub_uint32_t col;
+	  if (*srcptr == 0xf0)	      
+	    col = palette[16];
+	  else
+	    col = palette[*srcptr & 0xf];
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+	  *dstptr++ = col >> 16;
+	  *dstptr++ = col >> 8;
+	  *dstptr++ = col >> 0;
+#else
+	  *dstptr++ = col >> 0;
+	  *dstptr++ = col >> 8;
+	  *dstptr++ = col >> 16;
+#endif	  
+	  srcptr++;
+        }
+
+      srcptr += srcrowskip;
+      dstptr += dstrowskip;
+    }
+}
+
+/* Optimized replacing blitter for 1-bit to 16bit.  */
+void
+grub_video_fbblit_replace_16bit_indexa (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+					int offset_x, int offset_y)
+{
+  int i;
+  int j;
+  grub_uint8_t *srcptr;
+  grub_uint16_t *dstptr;
+  unsigned int dstrowskip;
+  unsigned int srcrowskip;
+  grub_uint16_t palette[17];
+
+  srcptr = grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = grub_video_fb_get_video_ptr (dst, x, y);
+
+  /* Calculate the number of bytes to advance from the end of one line
+     to the beginning of the next line.  */
+  dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
+  srcrowskip = src->mode_info->pitch - width;
+
+  for (i = 0; i < 16; i++)
+    palette[i] = grub_video_fb_map_color (i);
+  palette[16] = grub_video_fb_map_rgba (0, 0, 0, 0);
+
+  for (j = 0; j < height; j++)
+    {
+      for (i = 0; i < width; i++)
+        {
+	  if (*srcptr == 0xf0)
+	    *dstptr = palette[16];
+	  else
+	    *dstptr = palette[*srcptr & 0xf];
+	  srcptr++;
+	  dstptr++;
+        }
+
+      srcptr += srcrowskip;
+      GRUB_VIDEO_FB_ADVANCE_POINTER (dstptr, dstrowskip);
+    }
+}
+
+/* Optimized replacing blitter for 1-bit to 8bit.  */
+void
+grub_video_fbblit_replace_8bit_indexa (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+					int offset_x, int offset_y)
+{
+  int i;
+  int j;
+  grub_uint8_t *srcptr;
+  grub_uint8_t *dstptr;
+  unsigned int dstrowskip;
+  unsigned int srcrowskip;
+  grub_uint8_t palette[17];
+
+  srcptr = grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = grub_video_fb_get_video_ptr (dst, x, y);
+
+  /* Calculate the number of bytes to advance from the end of one line
+     to the beginning of the next line.  */
+  dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
+  srcrowskip = src->mode_info->pitch - width;
+
+  for (i = 0; i < 16; i++)
+    palette[i] = grub_video_fb_map_color (i);
+  palette[16] = grub_video_fb_map_rgba (0, 0, 0, 0);
+
+  for (j = 0; j < height; j++)
+    {
+      for (i = 0; i < width; i++)
+        {
+	  if (*srcptr == 0xf0)
+	    *dstptr = palette[16];
+	  else
+	    *dstptr = palette[*srcptr & 0xf];
+	  srcptr++;
+	  dstptr++;
+        }
+
+      srcptr += srcrowskip;
+      dstptr += dstrowskip;
+    }
+}
+
+
+void
+grub_video_fbblit_blend_32bit_indexa (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+					int offset_x, int offset_y)
+{
+  int i;
+  int j;
+  grub_uint8_t *srcptr;
+  grub_uint32_t *dstptr;
+  unsigned int dstrowskip;
+  unsigned int srcrowskip;
+  grub_uint32_t palette[16];
+
+  srcptr = grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = grub_video_fb_get_video_ptr (dst, x, y);
+
+  /* Calculate the number of bytes to advance from the end of one line
+     to the beginning of the next line.  */
+  dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
+  srcrowskip = src->mode_info->pitch - width;
+
+  for (i = 0; i < 16; i++)
+    palette[i] = grub_video_fb_map_color (i);
+
+  for (j = 0; j < height; j++)
+    {
+      for (i = 0; i < width; i++)
+        {
+	  if (*srcptr != 0xf0)
+	    *dstptr = palette[*srcptr & 0xf];
+	  srcptr++;
+	  dstptr++;
+        }
+
+      srcptr += srcrowskip;
+      GRUB_VIDEO_FB_ADVANCE_POINTER (dstptr, dstrowskip);
+    }
+}
+
+/* Optimized replacing blitter for 1-bit to 16bit.  */
+void
+grub_video_fbblit_blend_24bit_indexa (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+					int offset_x, int offset_y)
+{
+  int i;
+  int j;
+  grub_uint8_t *srcptr;
+  grub_uint8_t *dstptr;
+  unsigned int dstrowskip;
+  unsigned int srcrowskip;
+  grub_uint32_t palette[16];
+
+  srcptr = grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = grub_video_fb_get_video_ptr (dst, x, y);
+
+  /* Calculate the number of bytes to advance from the end of one line
+     to the beginning of the next line.  */
+  dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
+  srcrowskip = src->mode_info->pitch - width;
+
+  for (i = 0; i < 16; i++)
+    palette[i] = grub_video_fb_map_color (i);
+
+  for (j = 0; j < height; j++)
+    {
+      for (i = 0; i < width; i++)
+        {
+	  register grub_uint32_t col;
+	  if (*srcptr != 0xf0)	      
+	    {
+	      col = palette[*srcptr & 0xf];
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+	      *dstptr++ = col >> 16;
+	      *dstptr++ = col >> 8;
+	      *dstptr++ = col >> 0;
+#else
+	      *dstptr++ = col >> 0;
+	      *dstptr++ = col >> 8;
+	      *dstptr++ = col >> 16;
+#endif	  
+	    }
+	  else
+	    dstptr += 3;
+	  srcptr++;
+        }
+
+      srcptr += srcrowskip;
+      dstptr += dstrowskip;
+    }
+}
+
+/* Optimized replacing blitter for 1-bit to 16bit.  */
+void
+grub_video_fbblit_blend_16bit_indexa (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+					int offset_x, int offset_y)
+{
+  int i;
+  int j;
+  grub_uint8_t *srcptr;
+  grub_uint16_t *dstptr;
+  unsigned int dstrowskip;
+  unsigned int srcrowskip;
+  grub_uint16_t palette[17];
+
+  srcptr = grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = grub_video_fb_get_video_ptr (dst, x, y);
+
+  /* Calculate the number of bytes to advance from the end of one line
+     to the beginning of the next line.  */
+  dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
+  srcrowskip = src->mode_info->pitch - width;
+
+  for (i = 0; i < 16; i++)
+    palette[i] = grub_video_fb_map_color (i);
+
+  for (j = 0; j < height; j++)
+    {
+      for (i = 0; i < width; i++)
+        {
+	  if (*srcptr != 0xf0)
+	    *dstptr = palette[*srcptr & 0xf];
+	  srcptr++;
+	  dstptr++;
+        }
+
+      srcptr += srcrowskip;
+      GRUB_VIDEO_FB_ADVANCE_POINTER (dstptr, dstrowskip);
+    }
+}
+
+/* Optimized replacing blitter for 1-bit to 8bit.  */
+void
+grub_video_fbblit_blend_8bit_indexa (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+					int offset_x, int offset_y)
+{
+  int i;
+  int j;
+  grub_uint8_t *srcptr;
+  grub_uint8_t *dstptr;
+  unsigned int dstrowskip;
+  unsigned int srcrowskip;
+  grub_uint8_t palette[16];
+
+  srcptr = grub_video_fb_get_video_ptr (src, offset_x, offset_y);
+  dstptr = grub_video_fb_get_video_ptr (dst, x, y);
+
+  /* Calculate the number of bytes to advance from the end of one line
+     to the beginning of the next line.  */
+  dstrowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
+  srcrowskip = src->mode_info->pitch - width;
+
+  for (i = 0; i < 16; i++)
+    palette[i] = grub_video_fb_map_color (i);
+
+  for (j = 0; j < height; j++)
+    {
+      for (i = 0; i < width; i++)
+        {
+	  if (*srcptr != 0xf0)
+	    *dstptr = palette[*srcptr & 0xf];
+	  srcptr++;
+	  dstptr++;
+        }
+
+      srcptr += srcrowskip;
+      dstptr += dstrowskip;
+    }
+}
+
+
 /* Optimized replacing blitter for RGBX8888 to BGRX8888.  */
 void
 grub_video_fbblit_replace_BGRX8888_RGBX8888 (struct grub_video_fbblit_info *dst,

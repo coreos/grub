@@ -254,7 +254,7 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   grub_video_create_render_target (&text_layer,
                                    virtual_screen.width,
                                    virtual_screen.height,
-                                   GRUB_VIDEO_MODE_TYPE_RGB
+                                   GRUB_VIDEO_MODE_TYPE_INDEX_COLOR
                                    | GRUB_VIDEO_MODE_TYPE_ALPHA);
   if (grub_errno != GRUB_ERR_NONE)
     return grub_errno;

@@ -1,5 +1,10 @@
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Speed-up gfxterm by saving intermediate results in index+alpha
+	format.
+
+2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/lib/functional_test.c: Don't stop on first failed
 	test.
 
