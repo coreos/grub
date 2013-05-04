@@ -1,5 +1,9 @@
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/main.c: Fix freed memory dereference.
+
+2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix several memory leaks.
 
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>

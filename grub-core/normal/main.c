@@ -163,8 +163,9 @@ static grub_menu_t
 read_config_file (const char *config)
 {
   grub_file_t file;
-  const char *old_file, *old_dir;
+  char *old_file = 0, *old_dir = 0;
   char *config_dir, *ptr = 0;
+  const char *ctmp;
 
   grub_menu_t newmenu;
 
@@ -183,8 +184,12 @@ read_config_file (const char *config)
   if (! file)
     return 0;
 
-  old_file = grub_env_get ("config_file");
-  old_dir = grub_env_get ("config_directory");
+  ctmp = grub_env_get ("config_file");
+  if (ctmp)
+    old_file = grub_strdup (ctmp);
+  ctmp = grub_env_get ("config_directory");
+  if (ctmp)
+    old_dir = grub_strdup (ctmp);
   grub_env_set ("config_file", config);
   config_dir = grub_strdup (config);
   if (config_dir)
@@ -220,6 +225,8 @@ read_config_file (const char *config)
     grub_env_set ("config_directory", old_dir);
   else
     grub_env_unset ("config_directory");
+  grub_free (old_file);
+  grub_free (old_dir);
 
   grub_file_close (file);
 
