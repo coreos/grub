@@ -583,6 +583,12 @@ script = {
 
 script = {
   testcase;
+  name = grub_script_test;
+  common = tests/grub_script_test.in;
+};
+
+script = {
+  testcase;
   name = grub_script_echo1;
   common = tests/grub_script_echo1.in;
 };

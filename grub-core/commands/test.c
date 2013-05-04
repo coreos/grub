@@ -41,7 +41,8 @@ grub_strtosl (char *arg, char **end, int base)
 /* Context for test_parse.  */
 struct test_parse_ctx
 {
-  int ret, discard, invert;
+  int invert;
+  int or, and;
   int file_exists;
   struct grub_dirhook_info file_info;
   char *filename;
@@ -51,9 +52,8 @@ struct test_parse_ctx
 static void
 update_val (int val, struct test_parse_ctx *ctx)
 {
-  if (! ctx->discard)
-    ctx->ret = ctx->invert ? ! val : val;
-  ctx->invert = ctx->discard = 0;
+  ctx->and = ctx->and && (ctx->invert ? ! val : val);
+  ctx->invert = 0;
 }
 
 /* A hook for iterating directories. */
@@ -153,8 +153,8 @@ static int
 test_parse (char **args, int *argn, int argc)
 {
   struct test_parse_ctx ctx = {
-    .ret = 0,
-    .discard = 0,
+    .and = 1,
+    .or = 0,
     .invert = 0
   };
 
@@ -332,7 +332,7 @@ test_parse (char **args, int *argn, int argc)
 	      get_fileinfo (args[*argn + 1], &ctx);
 	      update_val (ctx.file_exists && ctx.file_info.dir, &ctx);
 	      (*argn) += 2;
-	      return ctx.ret;
+	      return ctx.or || ctx.and;
 	    }
 
 	  if (grub_strcmp (args[*argn], "-e") == 0)
@@ -340,7 +340,7 @@ test_parse (char **args, int *argn, int argc)
 	      get_fileinfo (args[*argn + 1], &ctx);
 	      update_val (ctx.file_exists, &ctx);
 	      (*argn) += 2;
-	      return ctx.ret;
+	      return ctx.or || ctx.and;
 	    }
 
 	  if (grub_strcmp (args[*argn], "-f") == 0)
@@ -349,7 +349,7 @@ test_parse (char **args, int *argn, int argc)
 	      /* FIXME: check for other types. */
 	      update_val (ctx.file_exists && ! ctx.file_info.dir, &ctx);
 	      (*argn) += 2;
-	      return ctx.ret;
+	      return ctx.or || ctx.and;
 	    }
 
 	  if (grub_strcmp (args[*argn], "-s") == 0)
@@ -362,7 +362,7 @@ test_parse (char **args, int *argn, int argc)
 		grub_file_close (file);
 	      grub_errno = GRUB_ERR_NONE;
 	      (*argn) += 2;
-	      return ctx.ret;
+	      return ctx.or || ctx.and;
 	    }
 
 	  /* String tests. */
@@ -387,7 +387,7 @@ test_parse (char **args, int *argn, int argc)
       if (grub_strcmp (args[*argn], ")") == 0)
 	{
 	  (*argn)++;
-	  return ctx.ret;
+	  return ctx.or || ctx.and;
 	}
       /* Recursively invoke if parenthesis. */
       if (grub_strcmp (args[*argn], "(") == 0)
@@ -405,15 +405,13 @@ test_parse (char **args, int *argn, int argc)
 	}
       if (grub_strcmp (args[*argn], "-a") == 0)
 	{
-	  /* If current value is 0 second value is to be discarded. */
-	  ctx.discard = ! ctx.ret;
 	  (*argn)++;
 	  continue;
 	}
       if (grub_strcmp (args[*argn], "-o") == 0)
 	{
-	  /* If current value is 1 second value is to be discarded. */
-	  ctx.discard = ctx.ret;
+	  ctx.or = ctx.or || ctx.and;
+	  ctx.and = 1;
 	  (*argn)++;
 	  continue;
 	}
@@ -422,7 +420,7 @@ test_parse (char **args, int *argn, int argc)
       update_val (args[*argn][0], &ctx);
       (*argn)++;
     }
-  return ctx.ret;
+  return ctx.or || ctx.and;
 }
 
 static grub_err_t

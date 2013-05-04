@@ -1,5 +1,10 @@
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix test -a and -o precedence.
+	Reported by: adrian15.
+
+2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/font/font.c (grub_font_construct_glyph): Fix memory leak.
 
 2013-05-03  Andrey Borzenkov <arvidjaar@gmail.com>
