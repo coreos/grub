@@ -1,5 +1,9 @@
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu.c (run_menu): Fix timeout reference point.
+
+2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gettext/gettext.c: Try $lang.gmo as well.
 
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>

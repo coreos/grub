@@ -519,11 +519,11 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
   current_entry = default_entry;
 
-  /* Initialize the time.  */
-  saved_time = grub_get_time_ms ();
-
  refresh:
   menu_init (current_entry, menu, nested);
+
+  /* Initialize the time.  */
+  saved_time = grub_get_time_ms ();
 
   timeout = grub_menu_get_timeout ();
 
