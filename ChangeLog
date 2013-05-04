@@ -1,3 +1,7 @@
+2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/font/font.c (grub_font_construct_glyph): Fix memory leak.
+
 2013-05-03  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	Rename grub-core/tests/checksums.c into grub-core/tests/checksums.h

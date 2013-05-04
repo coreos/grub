@@ -1544,6 +1544,8 @@ grub_font_construct_glyph (grub_font_t hinted_font,
 
   blit_comb (glyph_id, glyph, NULL, main_glyph, combining_glyphs, NULL);
 
+  grub_free (combining_glyphs);
+
   return glyph;
 }
 
