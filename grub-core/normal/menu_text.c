@@ -460,6 +460,8 @@ menu_text_clear_timeout (void *dataptr)
 
   grub_term_gotoxy (data->term, 0, grub_term_height (data->term) - 3);
   grub_print_spaces (data->term, grub_term_width (data->term) - 1);
+  grub_term_gotoxy (data->term, 0, grub_term_height (data->term) - 2);
+  grub_print_spaces (data->term, grub_term_width (data->term) - 1);
   grub_term_gotoxy (data->term, grub_term_cursor_x (data->term),
 		    GRUB_TERM_FIRST_ENTRY_Y + data->offset);
   grub_term_refresh (data->term);
