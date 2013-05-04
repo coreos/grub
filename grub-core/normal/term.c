@@ -952,6 +952,8 @@ print_ucs4_real (const grub_uint32_t * str,
 	      ret++;
 	  if (visual_len_show && visual[visual_len_show - 1].base != '\n')
 	    ret++;
+	  for (vptr = visual; vptr < visual + visual_len; vptr++)
+	    grub_free (vptr->combining);
 	  grub_free (visual);
 	}
       else

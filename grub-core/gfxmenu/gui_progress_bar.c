@@ -185,6 +185,7 @@ draw_text (grub_gui_progress_bar_t self)
       int y = ((height - grub_font_get_descent (font)) / 2
                + grub_font_get_ascent (font) / 2);
       grub_font_draw_string (text, font, text_color, x, y);
+      grub_free (text);
     }
 }
 

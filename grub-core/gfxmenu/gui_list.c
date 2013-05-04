@@ -83,7 +83,10 @@ list_destroy (void *vself)
     self->selected_item_box->destroy (self->selected_item_box);
   if (self->icon_manager)
     grub_gfxmenu_icon_manager_destroy (self->icon_manager);
-
+  if (self->scrollbar_thumb)
+    self->scrollbar_thumb->destroy (self->scrollbar_thumb);
+  if (self->scrollbar_frame)
+    self->scrollbar_frame->destroy (self->scrollbar_frame);
   grub_free (self);
 }
 

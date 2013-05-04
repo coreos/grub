@@ -1,5 +1,9 @@
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix several memory leaks.
+
+2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu.c (run_menu): Fix timeout reference point.
 
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>

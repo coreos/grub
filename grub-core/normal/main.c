@@ -127,6 +127,7 @@ grub_normal_free_menu (grub_menu_t menu)
       grub_free ((void *) entry->users);
       grub_free ((void *) entry->title);
       grub_free ((void *) entry->sourcecode);
+      grub_free (entry);
       entry = next_entry;
     }
 
@@ -191,6 +192,7 @@ read_config_file (const char *config)
   if (ptr)
     *ptr = 0;
   grub_env_set ("config_directory", config_dir);
+  grub_free (config_dir);
 
   grub_env_export ("config_file");
   grub_env_export ("config_directory");

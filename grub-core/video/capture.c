@@ -115,6 +115,7 @@ grub_video_capture_get_framebuffer (void)
 void
 grub_video_capture_end (void)
 {
+  grub_video_fb_delete_render_target (framebuffer.render_target);
   grub_free (framebuffer.ptr);
   grub_video_fb_fini ();
   grub_video_adapter_active = saved;

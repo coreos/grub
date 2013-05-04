@@ -70,6 +70,8 @@ grub_font_draw_string (const char *str, grub_font_t font,
 	return err;
     }
 
+  for (ptr = visual; ptr < visual + visual_len; ptr++)
+    grub_free (ptr->combining);
   grub_free (visual);
 
   return GRUB_ERR_NONE;

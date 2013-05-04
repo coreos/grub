@@ -517,7 +517,15 @@ destroy_screen (struct screen *screen)
 	struct line *linep = screen->lines + i;
 
 	if (linep)
-	  grub_free (linep->buf);
+	  {
+	    unsigned j;
+	    if (linep->pos)
+	      for (j = 0; j < screen->nterms; j++)
+		grub_free (linep->pos[j]);
+
+	    grub_free (linep->buf);
+	    grub_free (linep->pos);
+	  }
       }
 
   grub_free (screen->killed_text);

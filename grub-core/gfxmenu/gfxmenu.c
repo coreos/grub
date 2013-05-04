@@ -85,7 +85,7 @@ grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
       || cached_view->screen.width != mode_info.width
       || cached_view->screen.height != mode_info.height)
     {
-      grub_free (cached_view);
+      grub_gfxmenu_view_destroy (cached_view);
       /* Create the view.  */
       cached_view = grub_gfxmenu_view_new (full_theme_path ? : theme_path,
 					   mode_info.width,
