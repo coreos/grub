@@ -1,5 +1,10 @@
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/lib/functional_test.c: Don't stop on first failed
+	test.
+
+2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu_text.c (menu_clear_timeout): Clear second
 	line of timeout as it may contain the rest of long line.
 

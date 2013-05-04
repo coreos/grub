@@ -33,7 +33,11 @@ grub_functional_test (grub_extcmd_context_t ctxt __attribute__ ((unused)),
   int ok = 1;
 
   FOR_LIST_ELEMENTS (test, grub_test_list)
-    ok = ok && !grub_test_run (test);
+    {
+      grub_errno = 0;
+      ok = ok && !grub_test_run (test);
+      grub_errno = 0;
+    }
   if (ok)
     grub_printf ("ALL TESTS PASSED\n");
   else
