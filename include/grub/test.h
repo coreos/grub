@@ -101,7 +101,11 @@ void
 grub_terminal_input_fake_sequence (int *seq_in, int nseq_in);
 void
 grub_terminal_input_fake_sequence_end (void);
+const char *
+grub_video_checksum_get_modename (void);
 
+
+#define GRUB_TEST_VIDEO_SMALL_N_MODES 6
 extern struct grub_video_mode_info grub_test_video_modes[30];
 
 #endif /* ! GRUB_TEST_HEADER */

@@ -26,12 +26,12 @@
 #include <grub/procfs.h>
 #include <grub/env.h>
 #include <grub/normal.h>
+#include <grub/time.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
 
 static const char testfile[] =
-  "terminal_output gfxterm\n"
   "menuentry \"test\" {\n"
   "\ttrue\n"
   "}\n"
@@ -68,12 +68,36 @@ struct grub_procfs_entry test_cfg =
   .get_contents = get_test_cfg
 };
 
+struct
+{
+  const char *name;
+  const char *var;
+  const char *val;  
+} tests[] =
+  {
+    { "gfxterm_menu", NULL, NULL },
+    { "gfxmenu", "theme", "starfield/theme.txt" },
+    { "gfxterm_ar", "lang", "en@arabic" },
+    { "gfxterm_cyr", "lang", "en@cyrillic" },
+    { "gfxterm_heb", "lang", "en@hebrew" },
+    { "gfxterm_gre", "lang", "en@greek" },
+    { "gfxterm_ru", "lang", "ru" },
+    { "gfxterm_fr", "lang", "fr" },
+    { "gfxterm_quot", "lang", "en@quot" },
+    { "gfxterm_piglatin", "lang", "en@piglatin" },
+    { "gfxterm_ch", "lang", "de_CH" },
+  };
+
 
 /* Functional test main method.  */
 static void
 gfxterm_menu (void)
 {
   unsigned i, j;
+  grub_dl_load ("png");
+  grub_dl_load ("gettext");
+  grub_dl_load ("gfxterm");
+
   if (grub_font_load ("unicode") == 0)
     {
       grub_test_assert (0, "unicode font not found: %s", grub_errmsg);
@@ -82,28 +106,63 @@ gfxterm_menu (void)
 
   grub_procfs_register ("test.cfg", &test_cfg);
   
-  for (j = 0; j < 2; j++)
-    for (i = 0; i < ARRAY_SIZE (grub_test_video_modes); i++)
+  for (j = 0; j < ARRAY_SIZE (tests); j++)
+    for (i = 0; i < GRUB_TEST_VIDEO_SMALL_N_MODES; i++)
       {
+	struct grub_term_output *saved_outputs;
+	struct grub_term_output *saved_gfxnext;
+	struct grub_term_output *gfxterm;
+	grub_uint64_t start = grub_get_time_ms ();
+
 	grub_video_capture_start (&grub_test_video_modes[i],
 				  grub_video_fbstd_colors,
 				  grub_test_video_modes[i].number_of_colors);
-	grub_terminal_input_fake_sequence ((int []) { -1, -1, -1, GRUB_TERM_KEY_DOWN, -1, '\e' }, 6);
+	grub_terminal_input_fake_sequence ((int []) { -1, -1, -1, GRUB_TERM_KEY_DOWN, -1, 'e',
+	      -1, GRUB_TERM_KEY_RIGHT, -1, 'x', -1,  '\e', -1, '\e' }, 14);
 
-	grub_video_checksum (j ? "gfxmenu" : "gfxterm_menu");
+	grub_video_checksum (tests[j].name);
+
+	saved_outputs = grub_term_outputs;
+
+	FOR_ACTIVE_TERM_OUTPUTS (gfxterm)
+	  if (grub_strcmp (gfxterm->name, "gfxterm") == 0)
+	    break;
+	if (!gfxterm)
+	  FOR_DISABLED_TERM_OUTPUTS (gfxterm)
+	    if (grub_strcmp (gfxterm->name, "gfxterm") == 0)
+	      break;
+
+	if (!gfxterm)
+	  {
+	    grub_test_assert (0, "terminal `%s' isn't found", "gfxterm");
+	    return;
+	  }
+
+	saved_gfxnext = gfxterm->next;
+	grub_term_outputs = gfxterm;
+	gfxterm->next = 0;
+	gfxterm->init (gfxterm);
 
 	grub_env_context_open ();
-	if (j)
-	  grub_env_set ("theme", "starfield/theme.txt");
+	if (tests[j].var)
+	  grub_env_set (tests[j].var, tests[j].val);
 	grub_normal_execute ("(proc)/test.cfg", 1, 0);
 	grub_env_context_close ();
 
-	char *args[] = { (char *) "console", 0 };
-	grub_command_execute ("terminal_output", 1, args);
+	gfxterm->fini (gfxterm);
+	gfxterm->next = saved_gfxnext;
+	grub_term_outputs = saved_outputs;
 
 	grub_terminal_input_fake_sequence_end ();
 	grub_video_checksum_end ();
 	grub_video_capture_end ();
+
+	if (tests[j].var)
+	  grub_env_unset (tests[j].var);
+	grub_printf ("%s %dx%dx%s done %lld ms\n", tests[j].name,
+		     grub_test_video_modes[i].width,
+		     grub_test_video_modes[i].height,
+		     grub_video_checksum_get_modename (), (long long) (grub_get_time_ms () - start));
       }
 
   grub_procfs_unregister (&test_cfg);

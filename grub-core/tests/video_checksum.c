@@ -62,6 +62,25 @@ struct grub_video_mode_info grub_test_video_modes[30] = {
   {
     .width = 640,
     .height = 480,
+    .pitch = 640 * 4,
+    GRUB_VIDEO_MI_RGBA8888()
+  },
+  {
+    .width = 800,
+    .height = 600,
+    .pitch = 800 * 4,
+    GRUB_VIDEO_MI_RGBA8888()
+  },
+  {
+    .width = 1024,
+    .height = 768,
+    .pitch = 1024 * 4,
+    GRUB_VIDEO_MI_RGBA8888()
+  },
+
+  {
+    .width = 640,
+    .height = 480,
     .pitch = 640,
     .mode_type = GRUB_VIDEO_MODE_TYPE_INDEX_COLOR,
     .bpp = 8,
@@ -86,6 +105,10 @@ struct grub_video_mode_info grub_test_video_modes[30] = {
     .bytes_per_pixel = 1,
     .number_of_colors = GRUB_VIDEO_FBSTD_EXT_NUMCOLORS
   },
+
+
+
+
   {
     .width = 640,
     .height = 480,
@@ -140,25 +163,6 @@ struct grub_video_mode_info grub_test_video_modes[30] = {
     .pitch = 1024 * 3,
     GRUB_VIDEO_MI_RGB888 ()
   },
-  {
-    .width = 640,
-    .height = 480,
-    .pitch = 640 * 4,
-    GRUB_VIDEO_MI_RGBA8888()
-  },
-  {
-    .width = 800,
-    .height = 600,
-    .pitch = 800 * 4,
-    GRUB_VIDEO_MI_RGBA8888()
-  },
-  {
-    .width = 1024,
-    .height = 768,
-    .pitch = 1024 * 4,
-    GRUB_VIDEO_MI_RGBA8888()
-  },
-
   {
     .width = 640,
     .height = 480,
@@ -440,8 +444,8 @@ grub_video_capture_write_bmp (const char *fname,
 
 #endif
 
-static const char *
-get_modename (void)
+const char *
+grub_video_checksum_get_modename (void)
 {
   static char buf[40];
   if (capt_mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
@@ -465,10 +469,38 @@ get_modename (void)
 }
 
 //#define GENERATE_MODE 1
+//#define SAVE_ALL_IMAGES
+//#define COLLECT_TIME_STATISTICS 1
 
 #if defined (GENERATE_MODE) && defined (GRUB_MACHINE_EMU)
 int genfd = -1;
 #endif
+
+#include <grub/time.h>
+
+static void
+write_time (void)
+{
+#if defined (GRUB_MACHINE_EMU) && defined (COLLECT_TIME_STATISTICS)
+  char buf[60];
+  static grub_uint64_t prev;
+  grub_uint64_t cur;
+  static int tmrfd = -1;
+  if (tmrfd < 0)
+    tmrfd = open ("time.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+  cur = grub_get_time_ms ();
+  grub_snprintf (buf, sizeof (buf), "%s_%dx%dx%s:%d: %" PRIuGRUB_UINT64_T " ms\n",
+		 basename, 			
+		 capt_mode_info.width,
+		 capt_mode_info.height, 
+		 grub_video_checksum_get_modename (), ctr,
+		 cur - prev);
+  prev = cur;
+  if (tmrfd >= 0)
+    write (tmrfd, buf, grub_strlen (buf));
+#endif
+}
+
 
 static void
 checksum (void)
@@ -477,6 +509,8 @@ checksum (void)
   grub_uint32_t crc = 0;
 
   ptr = grub_video_capture_get_framebuffer ();
+
+  write_time ();
 
 #ifdef GRUB_CPU_WORDS_BIGENDIAN
   switch (capt_mode_info.bytes_per_pixel)
@@ -549,35 +583,6 @@ checksum (void)
 #else
   crc = grub_getcrc32c (0, ptr, capt_mode_info.pitch * capt_mode_info.height);
 #endif
-  if (!checksums || ctr >= nchk)
-    {
-      grub_test_assert (0, "Unexpected checksum %s_%dx%dx%s:%d: 0x%x",
-			basename, 			
-			capt_mode_info.width,
-			capt_mode_info.height, get_modename (), ctr, crc);
-    }
-  else if (crc != checksums[ctr])
-    {
-      grub_test_assert (0, "Checksum %s_%dx%dx%s:%d failed: 0x%x vs 0x%x",
-			basename,
-			capt_mode_info.width,
-			capt_mode_info.height, get_modename (),
-			ctr, crc, checksums[ctr]);
-    }
-  else
-    {
-#if !(defined (GENERATE_MODE) && defined (GRUB_MACHINE_EMU))
-      ctr++;
-      return;
-#endif
-    }
-#ifdef GRUB_MACHINE_EMU
-  char *name = grub_xasprintf ("%s_%dx%dx%s_%d.bmp", basename, 
-			       capt_mode_info.width,
-			       capt_mode_info.height, get_modename (),
-			       ctr);
-  grub_video_capture_write_bmp (name, ptr, &capt_mode_info);
-#endif
 
 #if defined (GENERATE_MODE) && defined (GRUB_MACHINE_EMU)
   if (genfd >= 0)
@@ -587,6 +592,43 @@ checksum (void)
       write (genfd, buf, grub_strlen (buf));
     }
 #endif
+
+  if (!checksums || ctr >= nchk)
+    {
+      grub_test_assert (0, "Unexpected checksum %s_%dx%dx%s:%d: 0x%x",
+			basename, 			
+			capt_mode_info.width,
+			capt_mode_info.height, 
+			grub_video_checksum_get_modename (), ctr, crc);
+    }
+  else if (crc != checksums[ctr])
+    {
+      grub_test_assert (0, "Checksum %s_%dx%dx%s:%d failed: 0x%x vs 0x%x",
+			basename,
+			capt_mode_info.width,
+			capt_mode_info.height,
+			grub_video_checksum_get_modename (),
+			ctr, crc, checksums[ctr]);
+    }
+#if !(defined (SAVE_ALL_IMAGES) && defined (GRUB_MACHINE_EMU))
+  else
+    {
+      write_time ();
+      ctr++;
+      return;
+    }
+#endif
+#ifdef GRUB_MACHINE_EMU
+  char *name = grub_xasprintf ("%s_%dx%dx%s_%d.bmp", basename, 
+			       capt_mode_info.width,
+			       capt_mode_info.height,
+			       grub_video_checksum_get_modename (),
+			       ctr);
+  grub_video_capture_write_bmp (name, ptr, &capt_mode_info);
+  grub_free (name);
+#endif
+
+  write_time ();
 
   ctr++;
 }
@@ -691,14 +733,15 @@ grub_video_checksum_end (void)
   if (genfd >= 0)
     {
       char buf[40];
-      grub_snprintf (buf, sizeof (buf), "}, %x },\n", ctr);
+      grub_snprintf (buf, sizeof (buf), "}, %d },\n", ctr);
       write (genfd, buf, grub_strlen (buf));
     }
 #endif
   grub_test_assert (ctr == nchk, "Not enough checksums %s_%dx%dx%s: %d vs %d",
 		    basename,
 		    capt_mode_info.width,
-		    capt_mode_info.height, get_modename (),
+		    capt_mode_info.height,
+		    grub_video_checksum_get_modename (),
 		    ctr, nchk);
   grub_free (basename);
   basename = 0;

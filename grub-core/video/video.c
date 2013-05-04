@@ -499,6 +499,9 @@ grub_video_set_mode (const char *modestring,
   char *current_mode;
   char *modevar;
 
+  if (grub_video_adapter_active && grub_video_adapter_active->id == GRUB_VIDEO_ADAPTER_CAPTURE)
+    return GRUB_ERR_NONE;
+
   modevalue &= modemask;
 
   /* Take copy of env.var. as we don't want to modify that.  */
@@ -509,9 +512,6 @@ grub_video_set_mode (const char *modestring,
 
   if (! modevar)
     return grub_errno;
-
-  if (grub_video_adapter_active && grub_video_adapter_active->id == GRUB_VIDEO_ADAPTER_CAPTURE)
-    return GRUB_ERR_NONE;
 
   if (grub_memcmp (next_mode, "keep", sizeof ("keep")) == 0
       || grub_memcmp (next_mode, "keep,", sizeof ("keep,") - 1) == 0

@@ -411,8 +411,10 @@ elif [ x$boot = xemu ]; then
     grubdir="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
     mkdir -p "$grubdir/fonts"
     mkdir -p "$grubdir/themes"
+    mkdir -p "$grubdir/locale"
     cp "@builddir@/"unicode.pf2 "$grubdir/fonts/unicode.pf2"
     cp -R "@srcdir@/themes/starfield" "$grubdir/themes/starfield"
+    cp -R "@srcdir@/po/"*.gmo "$grubdir/locale/"
     cp "${cfgfile}" "$grubdir/grub.cfg"
     cp "${source}" "$grubdir/testcase.cfg"
     @builddir@/grub-core/grub-emu -m "$device_map" -d "$grubdir" | tr -d "\r" | do_trim
