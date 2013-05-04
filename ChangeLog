@@ -1,5 +1,9 @@
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Speed-up gfxterm by slightly agglomerating mallocs.
+
+2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	More video checks.
 
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -49,7 +49,7 @@ struct grub_dirty_region
 struct grub_colored_char
 {
   /* An Unicode codepoint.  */
-  struct grub_unicode_glyph *code;
+  struct grub_unicode_glyph code;
 
   /* Color values.  */
   grub_video_color_t fg_color;
@@ -175,14 +175,8 @@ set_term_color (grub_uint8_t term_color)
 static void
 clear_char (struct grub_colored_char *c)
 {
-  if (c->code)
-    {
-      grub_free (c->code->combining);
-      grub_free (c->code);
-    }
-  c->code = grub_unicode_glyph_from_code (' ');
-  if (!c->code)
-    grub_errno = GRUB_ERR_NONE;
+  grub_free (c->code.combining);
+  grub_unicode_set_glyph_from_code (&c->code, ' ');
   c->fg_color = virtual_screen.fg_color;
   c->bg_color = virtual_screen.bg_color;
 }
@@ -197,11 +191,7 @@ grub_virtual_screen_free (void)
       for (i = 0;
 	   i < virtual_screen.columns * virtual_screen.rows;
 	   i++)
-	if (virtual_screen.text_buffer[i].code)
-	  {
-	    grub_free (virtual_screen.text_buffer[i].code->combining);
-	    grub_free (virtual_screen.text_buffer[i].code);
-	  }
+	grub_free (virtual_screen.text_buffer[i].code.combining);
       grub_free (virtual_screen.text_buffer);
     }
 
@@ -277,7 +267,7 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   /* Clear out text buffer. */
   for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
     {
-      virtual_screen.text_buffer[i].code = 0;
+      virtual_screen.text_buffer[i].code.combining = 0;
       clear_char (&(virtual_screen.text_buffer[i]));
     }
 
@@ -418,12 +408,9 @@ grub_gfxterm_term_fini (struct grub_term_output *term __attribute__ ((unused)))
 
   for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
     {
-      if (virtual_screen.text_buffer[i].code)
-	{
-	  grub_free (virtual_screen.text_buffer[i].code->combining);
-	  grub_free (virtual_screen.text_buffer[i].code);
-	}
-      virtual_screen.text_buffer[i].code = 0;
+      grub_free (virtual_screen.text_buffer[i].code.combining);
+      virtual_screen.text_buffer[i].code.combining = 0;
+      virtual_screen.text_buffer[i].code.base = 0;
     }
 
   /* Clear error state.  */
@@ -634,11 +621,11 @@ paint_char (unsigned cx, unsigned cy)
   p = (virtual_screen.text_buffer
        + cx + (cy * virtual_screen.columns));
 
-  if (!p->code)
+  if (!p->code.base)
     return;
 
   /* Get glyph for character.  */
-  glyph = grub_font_construct_glyph (virtual_screen.font, p->code);
+  glyph = grub_font_construct_glyph (virtual_screen.font, &p->code);
   if (!glyph)
     {
       grub_errno = GRUB_ERR_NONE;
@@ -817,11 +804,7 @@ scroll_up (void)
 
   /* Clear first line in text buffer.  */
   for (i = 0; i < virtual_screen.columns; i++)
-    if (virtual_screen.text_buffer[i].code)
-      {
-	grub_free (virtual_screen.text_buffer[i].code->combining);
-	grub_free (virtual_screen.text_buffer[i].code);
-      }
+    grub_free (virtual_screen.text_buffer[i].code.combining);
 
   /* Scroll text buffer with one line to up.  */
   grub_memmove (virtual_screen.text_buffer,
@@ -834,10 +817,7 @@ scroll_up (void)
   for (i = virtual_screen.columns * (virtual_screen.rows - 1);
        i < virtual_screen.columns * virtual_screen.rows;
        i++)
-    {
-      virtual_screen.text_buffer[i].code = 0;
-      clear_char (&(virtual_screen.text_buffer[i]));
-    }
+    clear_char (&(virtual_screen.text_buffer[i]));
 
   virtual_screen.total_scroll++;
 }
@@ -897,14 +877,9 @@ grub_gfxterm_putchar (struct grub_term_output *term,
       p = (virtual_screen.text_buffer +
            virtual_screen.cursor_x +
            virtual_screen.cursor_y * virtual_screen.columns);
-      if (p->code)
-	{
-	  grub_free (p->code->combining);
-	  grub_free (p->code);
-	}
-      p->code = grub_unicode_glyph_dup (c);
-      if (!p->code)
-	grub_errno = GRUB_ERR_NONE;
+      grub_free (p->code.combining);
+      grub_unicode_set_glyph (&p->code, c);
+      grub_errno = GRUB_ERR_NONE;
       p->fg_color = virtual_screen.fg_color;
       p->bg_color = virtual_screen.bg_color;
 
@@ -916,11 +891,9 @@ grub_gfxterm_putchar (struct grub_term_output *term,
           for (i = 1; i < char_width && p + i < 
 		 virtual_screen.text_buffer + virtual_screen.columns
 		 * virtual_screen.rows; i++)
-	    if (p[i].code)
 	      {
-		grub_free (p[i].code->combining);
-		grub_free (p[i].code);
-		p[i].code = NULL;
+		grub_free (p[i].code.combining);
+		p[i].code.base = 0;
 	      }
         }
 

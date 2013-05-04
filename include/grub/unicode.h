@@ -274,6 +274,21 @@ grub_unicode_glyph_dup (const struct grub_unicode_glyph *in)
   return out;
 }
 
+static inline void
+grub_unicode_set_glyph (struct grub_unicode_glyph *out,
+			const struct grub_unicode_glyph *in)
+{
+  grub_memcpy (out, in, sizeof (*in));
+  if (in->combining)
+    {
+      out->combining = grub_malloc (in->ncomb * sizeof (out->combining[0]));
+      if (!out->combining)
+	return;
+      grub_memcpy (out->combining, in->combining,
+		   in->ncomb * sizeof (out->combining[0]));
+    }
+}
+
 static inline struct grub_unicode_glyph *
 grub_unicode_glyph_from_code (grub_uint32_t code)
 {
@@ -285,6 +300,15 @@ grub_unicode_glyph_from_code (grub_uint32_t code)
   ret->base = code;
 
   return ret;
+}
+
+static inline void
+grub_unicode_set_glyph_from_code (struct grub_unicode_glyph *glyph,
+				  grub_uint32_t code)
+{
+  grub_memset (glyph, 0, sizeof (*glyph));
+
+  glyph->base = code;
 }
 
 grub_uint32_t
