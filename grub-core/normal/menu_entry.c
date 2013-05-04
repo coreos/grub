@@ -624,7 +624,7 @@ backward_char (struct screen *screen, int update)
 						    linep->buf + screen->column)
 	- linep->buf;
 
-      grub_free (glyph.combining);
+      grub_unicode_destroy_glyph (&glyph);
     }
   else if (screen->line > 0)
     {

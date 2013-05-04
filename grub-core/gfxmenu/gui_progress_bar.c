@@ -59,6 +59,9 @@ static void
 progress_bar_destroy (void *vself)
 {
   grub_gui_progress_bar_t self = vself;
+  grub_free (self->theme_dir);
+  grub_free (self->template);
+  grub_free (self->id);
   grub_gfxmenu_timeout_unregister ((grub_gui_component_t) self);
   grub_free (self);
 }

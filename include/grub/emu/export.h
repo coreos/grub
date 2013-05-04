@@ -5,3 +5,5 @@ void EXPORT_FUNC (write) (void);
 void EXPORT_FUNC (ioctl) (void);
 void EXPORT_FUNC (__errno_location) (void);
 void EXPORT_FUNC (strerror) (void);
+void EXPORT_FUNC (sysconf) (void);
+void EXPORT_FUNC (times) (void);

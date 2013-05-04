@@ -56,10 +56,10 @@ grub_getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position,
   while (str < last_position)
     {
       struct grub_unicode_glyph glyph;
-      glyph.combining = 0;
+      glyph.ncomb = 0;
       str += grub_unicode_aglomerate_comb (str, last_position - str, &glyph);
       width += grub_term_getcharwidth (term, &glyph);
-      grub_free (glyph.combining);
+      grub_unicode_destroy_glyph (&glyph);
     }
   return width;
 }
@@ -259,7 +259,8 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 					     len - i, &glyph);
 
 	  width = grub_term_getcharwidth (term, &glyph);
-	  grub_free (glyph.combining);
+
+	  grub_unicode_destroy_glyph (&glyph);
 
 	  if (x + width <= (int) (GRUB_TERM_LEFT_BORDER_X 
 				 + grub_term_border_width (term)
@@ -284,7 +285,6 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 	.variant = 0,
 	.attributes = 0,
 	.ncomb = 0,
-	.combining = 0,
 	.estimated_width = 1
       };
       x += grub_term_getcharwidth (term, &pseudo_glyph);

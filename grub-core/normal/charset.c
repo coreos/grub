@@ -435,7 +435,6 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
       out->attributes = 0;
       out->ncomb = 0;
       out->estimated_width = 1;
-      out->combining = NULL;
       return 1;
     }
 
@@ -473,25 +472,42 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 	      || comb_type == GRUB_UNICODE_COMB_ME
 	      || comb_type == GRUB_UNICODE_COMB_MN)
 	    last_comb_pointer = out->ncomb;
-	  n = grub_realloc (out->combining,
-			    sizeof (n[0]) * (out->ncomb + 1));
-	  if (!n)
+
+	  if (out->ncomb + 1 <= (int) ARRAY_SIZE (out->combining_inline))
+	    n = out->combining_inline;
+	  else if (out->ncomb > (int) ARRAY_SIZE (out->combining_inline))
 	    {
-	      grub_errno = GRUB_ERR_NONE;
-	      continue;
+	      n = grub_realloc (out->combining_ptr,
+				sizeof (n[0]) * (out->ncomb + 1));
+	      if (!n)
+		{
+		  grub_errno = GRUB_ERR_NONE;
+		  continue;
+		}
+	      out->combining_ptr = n;
 	    }
-	  out->combining = n;
+	  else
+	    {
+	      n = grub_malloc (sizeof (n[0]) * (out->ncomb + 1));
+	      if (!n)
+		{
+		  grub_errno = GRUB_ERR_NONE;
+		  continue;
+		}
+	      grub_memcpy (n, out->combining_inline,
+			   sizeof (out->combining_inline));
+	      out->combining_ptr = n;
+	    }
 
 	  for (j = last_comb_pointer; j < out->ncomb; j++)
-	    if (is_type_after (out->combining[j].type, comb_type))
+	    if (is_type_after (n[j].type, comb_type))
 	      break;
-	  grub_memmove (out->combining + j + 1,
-			out->combining + j,
+	  grub_memmove (n + j + 1,
+			n + j,
 			(out->ncomb - j)
-			* sizeof (out->combining[0]));
-	  out->combining = n;
-	  out->combining[j].code = *ptr;
-	  out->combining[j].type = comb_type;
+			* sizeof (n[0]));
+	  n[j].code = *ptr;
+	  n[j].type = comb_type;
 	  out->ncomb++;
 	  continue;
 	}
@@ -503,7 +519,6 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
       out->attributes = 0;
       out->ncomb = 0;
       out->estimated_width = 1;
-      out->combining = NULL;
     }
   return ptr - in;
 }
@@ -511,7 +526,7 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 static grub_ssize_t
 bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 		struct grub_unicode_glyph *visual,
-		grub_size_t visual_len, unsigned *levels,
+		grub_size_t visual_len,
 		grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual, void *getcharwidth_arg),
 		void *getcharwidth_arg,
 		grub_size_t maxwidth, grub_size_t startwidth,
@@ -531,7 +546,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
   void revert (unsigned start, unsigned end)
   {
     struct grub_unicode_glyph t;
-    unsigned i, tl;
+    unsigned i;
     int a, b;
     if (pos)
       {
@@ -549,9 +564,6 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	    pos[visual[start + i].orig_pos].x = a + b - pos[visual[start + i].orig_pos].x;
 	    pos[visual[end - i].orig_pos].x = a + b - pos[visual[end - i].orig_pos].x;
 	  }
-	tl = levels[start + i];
-	levels[start + i] = levels[end - i];
-	levels[end - i] = tl;
       }
   }
 
@@ -611,10 +623,10 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	    unsigned i;
 	    for (i = line_start; i < k; i++)
 	      {
-		if (levels[i] > max_level)
-		  max_level = levels[i];
-		if (levels[i] < min_odd_level && (levels[i] & 1))
-		  min_odd_level = levels[i];
+		if (visual[i].bidi_level > max_level)
+		  max_level = visual[i].bidi_level;
+		if (visual[i].bidi_level < min_odd_level && (visual[i].bidi_level & 1))
+		  min_odd_level = visual[i].bidi_level;
 	      }
 	  }
 
@@ -627,9 +639,11 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 		unsigned i;
 		for (i = line_start; i < k; i++)
 		  {
-		    if (i != line_start && levels[i] >= j && levels[i-1] < j)
+		    if (i != line_start && visual[i].bidi_level >= j
+			&& visual[i-1].bidi_level < j)
 		      in = i;
-		    if (levels[i] >= j && (i + 1 == k || levels[i+1] < j))
+		    if (visual[i].bidi_level >= j && (i + 1 == k
+						 || visual[i+1].bidi_level < j))
 		      revert (in, i);
 		  }
 	      }
@@ -639,10 +653,10 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	    unsigned i;
 	    for (i = line_start; i < k; i++)
 	      {
-		if (is_mirrored (visual[i].base) && levels[i])
+		if (is_mirrored (visual[i].base) && visual[i].bidi_level)
 		  visual[i].attributes |= GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR;
 		if ((visual[i].attributes & GRUB_UNICODE_GLYPH_ATTRIBUTES_JOIN)
-		    && levels[i])
+		    && visual[i].bidi_level)
 		  {
 		    int left, right;
 		    left = visual[i].attributes
@@ -763,8 +777,6 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 {
   enum grub_bidi_type type = GRUB_BIDI_TYPE_L;
   enum override_status {OVERRIDE_NEUTRAL = 0, OVERRIDE_R, OVERRIDE_L};
-  unsigned *levels;
-  enum grub_bidi_type *resolved_types;
   unsigned base_level;
   enum override_status cur_override;
   unsigned i;
@@ -808,24 +820,9 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
     cur_override = stack_override[stack_depth];
   }
 
-  levels = grub_malloc (sizeof (levels[0]) * logical_len);
-  if (!levels)
-    return -1;
-
-  resolved_types = grub_malloc (sizeof (resolved_types[0]) * logical_len);
-  if (!resolved_types)
-    {
-      grub_free (levels);
-      return -1;
-    }
-
   visual = grub_malloc (sizeof (visual[0]) * logical_len);
   if (!visual)
-    {
-      grub_free (resolved_types);
-      grub_free (levels);
-      return -1;
-    }
+    return -1;
 
   for (i = 0; i < logical_len; i++)
     {
@@ -930,13 +927,13 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 	      join_state = JOIN_DEFAULT;
 	      zwj_propagate_to_previous = 1;
 
-	      levels[visual_len] = cur_level;
+	      visual[visual_len].bidi_level = cur_level;
 	      if (cur_override != OVERRIDE_NEUTRAL)
-		resolved_types[visual_len] = 
+		visual[visual_len].bidi_type = 
 		  (cur_override == OVERRIDE_L) ? GRUB_BIDI_TYPE_L
 		  : GRUB_BIDI_TYPE_R;
 	      else
-		resolved_types[visual_len] = type;
+		visual[visual_len].bidi_type = type;
 	      visual_len++;
 	    }
 	  }
@@ -951,16 +948,16 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 	  unsigned prev_level, next_level, cur_run_level;
 	  unsigned last_type, last_strong_type;
 	  for (run_end = run_start; run_end < visual_len &&
-		 levels[run_end] == levels[run_start]; run_end++);
+		 visual[run_end].bidi_level == visual[run_start].bidi_level; run_end++);
 	  if (run_start == 0)
 	    prev_level = base_level;
 	  else
-	    prev_level = levels[run_start - 1];
+	    prev_level = visual[run_start - 1].bidi_level;
 	  if (run_end == visual_len)
 	    next_level = base_level;
 	  else
-	    next_level = levels[run_end];
-	  cur_run_level = levels[run_start];
+	    next_level = visual[run_end].bidi_level;
+	  cur_run_level = visual[run_start].bidi_level;
 	  if (prev_level & 1)
 	    last_type = GRUB_BIDI_TYPE_R;
 	  else
@@ -968,48 +965,48 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 	  last_strong_type = last_type;
 	  for (i = run_start; i < run_end; i++)
 	    {
-	      switch (resolved_types[i])
+	      switch (visual[i].bidi_type)
 		{
 		case GRUB_BIDI_TYPE_NSM:
-		  resolved_types[i] = last_type;
+		  visual[i].bidi_type = last_type;
 		  break;
 		case GRUB_BIDI_TYPE_EN:
 		  if (last_strong_type == GRUB_BIDI_TYPE_AL)
-		    resolved_types[i] = GRUB_BIDI_TYPE_AN;
+		    visual[i].bidi_type = GRUB_BIDI_TYPE_AN;
 		  break;
 		case GRUB_BIDI_TYPE_L:
 		case GRUB_BIDI_TYPE_R:
-		  last_strong_type = resolved_types[i];
+		  last_strong_type = visual[i].bidi_type;
 		  break;
 		case GRUB_BIDI_TYPE_ES:
 		  if (last_type == GRUB_BIDI_TYPE_EN
 		      && i + 1 < run_end 
-		      && resolved_types[i + 1] == GRUB_BIDI_TYPE_EN)
-		    resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		      && visual[i + 1].bidi_type == GRUB_BIDI_TYPE_EN)
+		    visual[i].bidi_type = GRUB_BIDI_TYPE_EN;
 		  else
-		    resolved_types[i] = GRUB_BIDI_TYPE_ON;
+		    visual[i].bidi_type = GRUB_BIDI_TYPE_ON;
 		  break;
 		case GRUB_BIDI_TYPE_ET:
 		  {
 		    unsigned j;
 		    if (last_type == GRUB_BIDI_TYPE_EN)
 		      {
-			resolved_types[i] = GRUB_BIDI_TYPE_EN;
+			visual[i].bidi_type = GRUB_BIDI_TYPE_EN;
 			break;
 		      }
 		    for (j = i; j < run_end
-			   && resolved_types[j] == GRUB_BIDI_TYPE_ET; j++);
-		    if (j != run_end && resolved_types[j] == GRUB_BIDI_TYPE_EN)
+			   && visual[j].bidi_type == GRUB_BIDI_TYPE_ET; j++);
+		    if (j != run_end && visual[j].bidi_type == GRUB_BIDI_TYPE_EN)
 		      {
 			for (; i < run_end
-			       && resolved_types[i] == GRUB_BIDI_TYPE_ET; i++)
-			  resolved_types[i] = GRUB_BIDI_TYPE_EN;
+			       && visual[i].bidi_type == GRUB_BIDI_TYPE_ET; i++)
+			  visual[i].bidi_type = GRUB_BIDI_TYPE_EN;
 			i--;
 			break;
 		      }
 		    for (; i < run_end
-			   && resolved_types[i] == GRUB_BIDI_TYPE_ET; i++)
-		      resolved_types[i] = GRUB_BIDI_TYPE_ON;
+			   && visual[i].bidi_type == GRUB_BIDI_TYPE_ET; i++)
+		      visual[i].bidi_type = GRUB_BIDI_TYPE_ON;
 		    i--;
 		    break;		
 		  }
@@ -1017,33 +1014,33 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 		case GRUB_BIDI_TYPE_CS:
 		  if (last_type == GRUB_BIDI_TYPE_EN
 		      && i + 1 < run_end 
-		      && resolved_types[i + 1] == GRUB_BIDI_TYPE_EN)
+		      && visual[i + 1].bidi_type == GRUB_BIDI_TYPE_EN)
 		    {
-		      resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		      visual[i].bidi_type = GRUB_BIDI_TYPE_EN;
 		      break;
 		    }
 		  if (last_type == GRUB_BIDI_TYPE_AN
 		      && i + 1 < run_end 
-		      && (resolved_types[i + 1] == GRUB_BIDI_TYPE_AN
-			  || (resolved_types[i + 1] == GRUB_BIDI_TYPE_EN
+		      && (visual[i + 1].bidi_type == GRUB_BIDI_TYPE_AN
+			  || (visual[i + 1].bidi_type == GRUB_BIDI_TYPE_EN
 			      && last_strong_type == GRUB_BIDI_TYPE_AL)))
 		    {
-		      resolved_types[i] = GRUB_BIDI_TYPE_EN;
+		      visual[i].bidi_type = GRUB_BIDI_TYPE_EN;
 		      break;
 		    }
-		  resolved_types[i] = GRUB_BIDI_TYPE_ON;
+		  visual[i].bidi_type = GRUB_BIDI_TYPE_ON;
 		  break;
 		case GRUB_BIDI_TYPE_AL:
-		  last_strong_type = resolved_types[i];
-		  resolved_types[i] = GRUB_BIDI_TYPE_R;
+		  last_strong_type = visual[i].bidi_type;
+		  visual[i].bidi_type = GRUB_BIDI_TYPE_R;
 		  break;
 		default: /* Make GCC happy.  */
 		  break;
 		}
-	      last_type = resolved_types[i];
-	      if (resolved_types[i] == GRUB_BIDI_TYPE_EN
+	      last_type = visual[i].bidi_type;
+	      if (visual[i].bidi_type == GRUB_BIDI_TYPE_EN
 		  && last_strong_type == GRUB_BIDI_TYPE_L)
-		resolved_types[i] = GRUB_BIDI_TYPE_L;
+		visual[i].bidi_type = GRUB_BIDI_TYPE_L;
 	    }
 	  if (prev_level & 1)
 	    last_type = GRUB_BIDI_TYPE_R;
@@ -1054,13 +1051,13 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 	      unsigned j;
 	      unsigned next_type;
 	      for (j = i; j < run_end &&
-		     (resolved_types[j] == GRUB_BIDI_TYPE_B
-		      || resolved_types[j] == GRUB_BIDI_TYPE_S
-		      || resolved_types[j] == GRUB_BIDI_TYPE_WS
-		      || resolved_types[j] == GRUB_BIDI_TYPE_ON); j++);
+		     (visual[j].bidi_type == GRUB_BIDI_TYPE_B
+		      || visual[j].bidi_type == GRUB_BIDI_TYPE_S
+		      || visual[j].bidi_type == GRUB_BIDI_TYPE_WS
+		      || visual[j].bidi_type == GRUB_BIDI_TYPE_ON); j++);
 	      if (j == i)
 		{
-		  if (resolved_types[i] == GRUB_BIDI_TYPE_L)
+		  if (visual[i].bidi_type == GRUB_BIDI_TYPE_L)
 		    last_type = GRUB_BIDI_TYPE_L;
 		  else
 		    last_type = GRUB_BIDI_TYPE_R;
@@ -1071,39 +1068,39 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 		next_type = (next_level & 1) ? GRUB_BIDI_TYPE_R : GRUB_BIDI_TYPE_L;
 	      else
 		{
-		  if (resolved_types[j] == GRUB_BIDI_TYPE_L)
+		  if (visual[j].bidi_type == GRUB_BIDI_TYPE_L)
 		    next_type = GRUB_BIDI_TYPE_L;
 		  else
 		    next_type = GRUB_BIDI_TYPE_R;
 		}
 	      if (next_type == last_type)
 		for (; i < j; i++)
-		  resolved_types[i] = last_type;
+		  visual[i].bidi_type = last_type;
 	      else
 		for (; i < j; i++)
-		  resolved_types[i] = (cur_run_level & 1) ? GRUB_BIDI_TYPE_R
+		  visual[i].bidi_type = (cur_run_level & 1) ? GRUB_BIDI_TYPE_R
 		    : GRUB_BIDI_TYPE_L;
 	    }
 	}
 
       for (i = 0; i < visual_len; i++)
 	{
-	  if (!(levels[i] & 1) && resolved_types[i] == GRUB_BIDI_TYPE_R)
+	  if (!(visual[i].bidi_level & 1) && visual[i].bidi_type == GRUB_BIDI_TYPE_R)
 	    {
-	      levels[i]++;
+	      visual[i].bidi_level++;
 	      continue;
 	    }
-	  if (!(levels[i] & 1) && (resolved_types[i] == GRUB_BIDI_TYPE_AN
-				   || resolved_types[i] == GRUB_BIDI_TYPE_EN))
+	  if (!(visual[i].bidi_level & 1) && (visual[i].bidi_type == GRUB_BIDI_TYPE_AN
+				   || visual[i].bidi_type == GRUB_BIDI_TYPE_EN))
 	    {
-	      levels[i] += 2;
+	      visual[i].bidi_level += 2;
 	      continue;
 	    }
-	  if ((levels[i] & 1) && (resolved_types[i] == GRUB_BIDI_TYPE_L
-				  || resolved_types[i] == GRUB_BIDI_TYPE_AN
-				  || resolved_types[i] == GRUB_BIDI_TYPE_EN))
+	  if ((visual[i].bidi_level & 1) && (visual[i].bidi_type == GRUB_BIDI_TYPE_L
+				  || visual[i].bidi_type == GRUB_BIDI_TYPE_AN
+				  || visual[i].bidi_type == GRUB_BIDI_TYPE_EN))
 	    {
-	      levels[i]++;
+	      visual[i].bidi_level++;
 	      continue;
 	    }
 	}
@@ -1111,16 +1108,14 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
   else
     {
       for (i = 0; i < visual_len; i++)
-	levels[i] = 0;
+	visual[i].bidi_level = 0;
     }
-  grub_free (resolved_types);
 
   {
     grub_ssize_t ret;
-    ret = bidi_line_wrap (visual_out, visual, visual_len, levels, 
+    ret = bidi_line_wrap (visual_out, visual, visual_len,
 			  getcharwidth, getcharwidth_arg, maxwidth, startwidth, contchar,
 			  pos, primitive_wrap, log_end);
-    grub_free (levels);
     grub_free (visual);
     return ret;
   }

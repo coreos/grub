@@ -478,6 +478,11 @@ int genfd = -1;
 
 #include <grub/time.h>
 
+#if defined (GRUB_MACHINE_EMU) && defined (COLLECT_TIME_STATISTICS)
+#include <sys/times.h>
+#include <unistd.h>
+#endif
+
 static void
 write_time (void)
 {
@@ -486,9 +491,12 @@ write_time (void)
   static grub_uint64_t prev;
   grub_uint64_t cur;
   static int tmrfd = -1;
+  struct tms tm;
   if (tmrfd < 0)
     tmrfd = open ("time.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-  cur = grub_get_time_ms ();
+
+  times (&tm); 
+  cur = (tm.tms_utime * 1000ULL) / sysconf(_SC_CLK_TCK);
   grub_snprintf (buf, sizeof (buf), "%s_%dx%dx%s:%d: %" PRIuGRUB_UINT64_T " ms\n",
 		 basename, 			
 		 capt_mode_info.width,

@@ -1085,15 +1085,9 @@ grub_video_fbblit_replace_index_RGBX8888 (struct grub_video_fbblit_info *dst,
 	{
 	  color = *srcptr++;
 
-#ifdef GRUB_CPU_WORDS_BIGENDIAN
-	  sb = (color >> 0) & 0xFF;
-	  sg = (color >> 8) & 0xFF;
-	  sr = (color >> 16) & 0xFF;
-#else
 	  sr = (color >> 0) & 0xFF;
 	  sg = (color >> 8) & 0xFF;
 	  sb = (color >> 16) & 0xFF;
-#endif
 
 	  color = grub_video_fb_map_rgb(sr, sg, sb);
 	  *dstptr++ = color & 0xFF;
