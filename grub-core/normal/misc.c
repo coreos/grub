@@ -28,25 +28,45 @@
 #include <grub/i18n.h>
 #include <grub/partition.h>
 
-static const char *grub_human_sizes[] = {N_("B"), N_("KiB"), N_("MiB"), N_("GiB"), N_("TiB")};
-static const char *grub_human_short_sizes[] = {"", "K", "M", "G", "T"};
+static const char *grub_human_sizes[3][6] =
+  {
+    /* This algorithm in reality would work only up to (2^64) / 100 B = 81 PiB.
+       Put here all possible suffixes it can produce so no array bounds check
+       is needed.
+     */
+    /* TRANSLATORS: that's the list of binary unit prefixes.  */
+    { N_("B"),   N_("KiB"),   N_("MiB"),   N_("GiB"),   N_("TiB"),   N_("PiB")},
+    /* TRANSLATORS: that's the list of binary unit prefixes.  */
+    {    "",     N_("K"),     N_("M"),     N_("G"),     N_("T"),     N_("P") },
+    /* TRANSLATORS: that's the list of binary unit prefixes.  */
+    { N_("B/s"), N_("KiB/s"), N_("MiB/s"), N_("GiB/s"), N_("TiB/s"), N_("PiB/s"),  },    
+  };
 
 const char *
-grub_get_human_size (grub_uint64_t size, int sh)
+grub_get_human_size (grub_uint64_t size, enum grub_human_size_type type)
 {
-  grub_uint64_t fsize = size * 100ULL;
-  grub_uint64_t fsz = size;
-  int units = 0;
-  static char buf[20];
+  grub_uint64_t fsize;
+  unsigned units = 0;
+  static char buf[30];
+  const char *umsg;
 
-  while (fsz / 1024)
+  if (type != GRUB_HUMAN_SIZE_SPEED)
+    fsize = size * 100ULL;
+  else
+    fsize = size;
+
+  /* Since 2^64 / 1024^5  < 102400, this can give at most 5 iterations.
+     So units <=5, so impossible to go past the end of array.
+   */
+  while (fsize >= 102400)
     {
       fsize = (fsize + 512) / 1024;
-      fsz /= 1024;
       units++;
     }
 
-  if (units)
+  umsg = _(grub_human_sizes[type][units]);
+
+  if (units || type == GRUB_HUMAN_SIZE_SPEED)
     {
       grub_uint64_t whole, fraction;
 
@@ -54,11 +74,11 @@ grub_get_human_size (grub_uint64_t size, int sh)
       grub_snprintf (buf, sizeof (buf),
 		     "%" PRIuGRUB_UINT64_T
 		     ".%02" PRIuGRUB_UINT64_T "%s", whole, fraction,
-		     sh ? grub_human_short_sizes[units] : _(grub_human_sizes[units]));
+		     umsg);
     }
   else
     grub_snprintf (buf, sizeof (buf), "%llu%s", (unsigned long long) size,
-		   sh ? grub_human_short_sizes[units] : _(grub_human_sizes[units]));
+		   umsg);
   return buf;
 }
 

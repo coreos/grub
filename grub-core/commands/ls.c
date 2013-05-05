@@ -141,7 +141,8 @@ print_files_long (const char *filename, const struct grub_dirhook_info *info,
       if (! ctx->human)
 	grub_printf ("%-12llu", (unsigned long long) file->size);
       else
-	grub_printf ("%-12s", grub_get_human_size (file->size, 1));
+	grub_printf ("%-12s", grub_get_human_size (file->size,
+						   GRUB_HUMAN_SIZE_SHORT));
       grub_file_close (file);
       grub_free (pathname);
     }

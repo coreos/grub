@@ -2019,3 +2019,7 @@ module = {
   enable = i386;
 };
 
+module = {
+  name = testspeed;
+  common = commands/testspeed.c;
+};

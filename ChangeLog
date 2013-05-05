@@ -1,3 +1,7 @@
+2013-05-05  Bean  <bean123ch@gmail.com>
+
+	* grub-core/commands/testspeed.c: New command testspeed.
+
 2013-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Factor-out human-size printing.
