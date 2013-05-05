@@ -1,3 +1,7 @@
+2013-05-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Factor-out human-size printing.
+
 2013-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Agglomerate more mallocs to speed-up gfxterm.

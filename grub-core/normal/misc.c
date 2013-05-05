@@ -28,6 +28,40 @@
 #include <grub/i18n.h>
 #include <grub/partition.h>
 
+static const char *grub_human_sizes[] = {N_("B"), N_("KiB"), N_("MiB"), N_("GiB"), N_("TiB")};
+static const char *grub_human_short_sizes[] = {"", "K", "M", "G", "T"};
+
+const char *
+grub_get_human_size (grub_uint64_t size, int sh)
+{
+  grub_uint64_t fsize = size * 100ULL;
+  grub_uint64_t fsz = size;
+  int units = 0;
+  static char buf[20];
+
+  while (fsz / 1024)
+    {
+      fsize = (fsize + 512) / 1024;
+      fsz /= 1024;
+      units++;
+    }
+
+  if (units)
+    {
+      grub_uint64_t whole, fraction;
+
+      whole = grub_divmod64 (fsize, 100, &fraction);
+      grub_snprintf (buf, sizeof (buf),
+		     "%" PRIuGRUB_UINT64_T
+		     ".%02" PRIuGRUB_UINT64_T "%s", whole, fraction,
+		     sh ? grub_human_short_sizes[units] : _(grub_human_sizes[units]));
+    }
+  else
+    grub_snprintf (buf, sizeof (buf), "%llu%s", (unsigned long long) size,
+		   sh ? grub_human_short_sizes[units] : _(grub_human_sizes[units]));
+  return buf;
+}
+
 /* Print the information on the device NAME.  */
 grub_err_t
 grub_normal_print_device_info (const char *name)

@@ -150,4 +150,7 @@ grub_dyncmd_get_cmd (grub_command_t cmd);
 void
 grub_gettext_reread_prefix (const char *val);
 
+const char *
+grub_get_human_size (grub_uint64_t size, int sh);
+
 #endif /* ! GRUB_NORMAL_HEADER */
