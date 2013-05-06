@@ -1,3 +1,8 @@
+2013-05-06  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	Reimplement grub-reboot to not depend on saved_entry. Use next_entry
+	variable for one time boot menu entry.
+
 2013-05-05  Bean  <bean123ch@gmail.com>
 
 	* grub-core/commands/testspeed.c: New command testspeed.

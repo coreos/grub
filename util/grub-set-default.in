@@ -130,6 +130,7 @@ fi
 grubdir=`echo "${bootdir}/@grubdirname@" | sed 's,//*,/,g'`
 
 $grub_editenv ${grubdir}/grubenv unset prev_saved_entry
+$grub_editenv ${grubdir}/grubenv unset next_entry
 $grub_editenv ${grubdir}/grubenv set saved_entry="$entry"
 
 # Bye.

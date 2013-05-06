@@ -51,13 +51,25 @@ if [ "x$GRUB_BUTTON_CMOS_ADDRESS" != "x" ]; then
     cat <<EOF
 if cmostest $GRUB_BUTTON_CMOS_ADDRESS ; then
    set default="${GRUB_DEFAULT_BUTTON}"
+elif [ "\${next_entry}" ] ; then
+   set default="\${next_entry}"
+   set next_entry=
+   save_env next_entry
+   set boot_once=true
 else
    set default="${GRUB_DEFAULT}"
 fi
 EOF
 else
     cat <<EOF
-set default="${GRUB_DEFAULT}"
+if [ "\${next_entry}" ] ; then
+   set default="\${next_entry}"
+   set next_entry=
+   save_env next_entry
+   set boot_once=true
+else
+   set default="${GRUB_DEFAULT}"
+fi
 EOF
 fi
 cat <<EOF
