@@ -1186,6 +1186,11 @@ module = {
 };
 
 module = {
+  name = hfspluscomp;
+  common = fs/hfspluscomp.c;
+};
+
+module = {
   name = iso9660;
   common = fs/iso9660.c;
 };

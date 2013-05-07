@@ -85,6 +85,7 @@ library = {
   common = grub-core/fs/fshelp.c;
   common = grub-core/fs/hfs.c;
   common = grub-core/fs/hfsplus.c;
+  common = grub-core/fs/hfspluscomp.c;
   common = grub-core/fs/iso9660.c;
   common = grub-core/fs/jfs.c;
   common = grub-core/fs/minix.c;
