@@ -1,5 +1,9 @@
 2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/efi/console.c: Fix compile error.
+
+2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Compressed HFS+ support.
 
 2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
