@@ -1,3 +1,8 @@
+2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/font/font.c: Use grub_dprintf for debug statements rather
+	than printf.
+
 2013-05-06  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	Reimplement grub-reboot to not depend on saved_entry. Use next_entry

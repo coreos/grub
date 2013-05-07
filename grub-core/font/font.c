@@ -293,7 +293,7 @@ load_font_index (grub_file_t file, grub_uint32_t sect_length, struct
   grub_uint32_t last_code;
 
 #if FONT_DEBUG >= 2
-  grub_printf ("load_font_index(sect_length=%d)\n", sect_length);
+  grub_dprintf ("font", "load_font_index(sect_length=%d)\n", sect_length);
 #endif
 
   /* Sanity check: ensure section length is divisible by the entry size.  */
@@ -321,7 +321,7 @@ load_font_index (grub_file_t file, grub_uint32_t sect_length, struct
 
 
 #if FONT_DEBUG >= 2
-  grub_printf ("num_chars=%d)\n", font->num_chars);
+  grub_dprintf ("font", "num_chars=%d)\n", font->num_chars);
 #endif
 
   last_code = 0;
@@ -365,7 +365,7 @@ load_font_index (grub_file_t file, grub_uint32_t sect_length, struct
 #if FONT_DEBUG >= 5
       /* Print the 1st 10 characters.  */
       if (i < 10)
-	grub_printf ("c=%d o=%d\n", entry->code, entry->offset);
+	grub_dprintf ("font", "c=%d o=%d\n", entry->code, entry->offset);
 #endif
     }
 
@@ -431,7 +431,7 @@ grub_font_load (const char *filename)
   grub_font_t font = 0;
 
 #if FONT_DEBUG >= 1
-  grub_printf ("add_font(%s)\n", filename);
+  grub_dprintf ("font", "add_font(%s)\n", filename);
 #endif
 
   if (filename[0] == '(' || filename[0] == '/' || filename[0] == '+')
@@ -462,7 +462,7 @@ grub_font_load (const char *filename)
     goto fail;
 
 #if FONT_DEBUG >= 3
-  grub_printf ("file opened\n");
+  grub_dprintf ("font", "file opened\n");
 #endif
 
   /* Read the FILE section.  It indicates the file format.  */
@@ -470,7 +470,7 @@ grub_font_load (const char *filename)
     goto fail;
 
 #if FONT_DEBUG >= 3
-  grub_printf ("opened FILE section\n");
+  grub_dprintf ("font", "opened FILE section\n");
 #endif
   if (grub_memcmp (section.name, FONT_FORMAT_SECTION_NAMES_FILE,
 		   sizeof (FONT_FORMAT_SECTION_NAMES_FILE) - 1) != 0)
@@ -481,7 +481,7 @@ grub_font_load (const char *filename)
     }
 
 #if FONT_DEBUG >= 3
-  grub_printf ("section name ok\n");
+  grub_dprintf ("font", "section name ok\n");
 #endif
   if (section.length != 4)
     {
@@ -492,14 +492,14 @@ grub_font_load (const char *filename)
     }
 
 #if FONT_DEBUG >= 3
-  grub_printf ("section length ok\n");
+  grub_dprintf ("font", "section length ok\n");
 #endif
   /* Check the file format type code.  */
   if (grub_file_read (file, magic, 4) != 4)
     goto fail;
 
 #if FONT_DEBUG >= 3
-  grub_printf ("read magic ok\n");
+  grub_dprintf ("font", "read magic ok\n");
 #endif
 
   if (grub_memcmp (magic, FONT_FORMAT_PFF2_MAGIC, 4) != 0)
@@ -510,7 +510,7 @@ grub_font_load (const char *filename)
     }
 
 #if FONT_DEBUG >= 3
-  grub_printf ("compare magic ok\n");
+  grub_dprintf ("font", "compare magic ok\n");
 #endif
 
   /* Allocate the font object.  */
@@ -522,7 +522,7 @@ grub_font_load (const char *filename)
   font->file = file;
 
 #if FONT_DEBUG >= 3
-  grub_printf ("allocate font ok; loading font info\n");
+  grub_dprintf ("font", "allocate font ok; loading font info\n");
 #endif
 
   /* Load the font information.  */
@@ -537,7 +537,7 @@ grub_font_load (const char *filename)
 	}
 
 #if FONT_DEBUG >= 2
-      grub_printf ("opened section %c%c%c%c ok\n",
+      grub_dprintf ("font", "opened section %c%c%c%c ok\n",
 		   section.name[0], section.name[1],
 		   section.name[2], section.name[3]);
 #endif
@@ -621,7 +621,7 @@ grub_font_load (const char *filename)
 	{
 	  /* Unhandled section type, simply skip past it.  */
 #if FONT_DEBUG >= 3
-	  grub_printf ("Unhandled section type, skipping.\n");
+	  grub_dprintf ("font", "Unhandled section type, skipping.\n");
 #endif
 	  grub_off_t section_end = grub_file_tell (file) + section.length;
 	  if ((int) grub_file_seek (file, section_end) == -1)
@@ -636,7 +636,7 @@ grub_font_load (const char *filename)
     }
 
 #if FONT_DEBUG >= 1
-  grub_printf ("Loaded font `%s'.\n"
+  grub_dprintf ("font", "Loaded font `%s'.\n"
 	       "Ascent=%d Descent=%d MaxW=%d MaxH=%d Number of characters=%d.\n",
 	       font->name,
 	       font->ascent, font->descent,
