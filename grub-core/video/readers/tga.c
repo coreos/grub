@@ -29,8 +29,8 @@ GRUB_MOD_LICENSE ("GPLv3+");
 /* Uncomment following define to enable TGA debug.  */
 //#define TGA_DEBUG
 
+#define dump_int_field(x) grub_dprintf ("tga", #x " = %d (0x%04x)\n", x, x);
 #if defined(TGA_DEBUG)
-#define dump_int_field(x) grub_printf( #x " = %d (0x%04x)\n", x, x);
 static grub_command_t cmd;
 #endif
 
@@ -347,8 +347,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
       return grub_errno;
     }
 
-#if defined(TGA_DEBUG)
-  grub_printf("tga: header\n");
+  grub_dprintf("tga", "tga: header\n");
   dump_int_field(header.id_length);
   dump_int_field(header.color_map_type);
   dump_int_field(header.image_type);
@@ -361,7 +360,6 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
   dump_int_field(header.image_height);
   dump_int_field(header.image_bpp);
   dump_int_field(header.image_descriptor);
-#endif
 
   /* Check that bitmap encoding is supported.  */
   switch (header.image_type)

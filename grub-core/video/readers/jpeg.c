@@ -693,9 +693,7 @@ grub_jpeg_decode_jpeg (struct grub_jpeg_data *data)
       if (grub_errno)
 	break;
 
-#ifdef JPEG_DEBUG
-      grub_printf ("jpeg marker: %x\n", marker);
-#endif
+      grub_dprintf ("jpeg", "jpeg marker: %x\n", marker);
 
       switch (marker)
 	{
