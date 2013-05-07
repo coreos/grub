@@ -1,5 +1,9 @@
 2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Menu color test.
+
+2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/setjmp_test.c: New test.
 
 2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -86,6 +86,8 @@ struct
     { "gfxterm_quot", "lang", "en@quot" },
     { "gfxterm_piglatin", "lang", "en@piglatin" },
     { "gfxterm_ch", "lang", "de_CH" },
+    { "gfxterm_red", "menu_color_normal", "red/blue" },
+    { "gfxterm_high", "menu_color_highlight", "blue/red" },
   };
 
 

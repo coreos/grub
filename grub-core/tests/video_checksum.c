@@ -696,7 +696,8 @@ grub_video_checksum (const char *basename_in)
 		     capt_mode_info.reserved_field_pos,
 		     capt_mode_info.reserved_mask_size,
 		     capt_mode_info.width,
-		     capt_mode_info.height, get_modename ());
+		     capt_mode_info.height,
+		     grub_video_checksum_get_modename ());
 
       write (genfd, "  { \"", 5);
       write (genfd, basename_in, grub_strlen (basename_in));
