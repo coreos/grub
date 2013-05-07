@@ -599,7 +599,8 @@ malloc_in_range (struct grub_relocator *rel,
       do 
 	{
 	  if (p->magic != GRUB_MM_FREE_MAGIC)
-	    grub_fatal (__FILE__":%d free magic broken at %p (0x%x)\n",
+	    grub_fatal ("%s:%d free magic broken at %p (0x%x)\n",
+			__FILE__,
 			__LINE__, p, p->magic);
 	  if (p == (grub_mm_header_t) (r + 1))
 	    {
