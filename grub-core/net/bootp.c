@@ -211,6 +211,9 @@ grub_net_configure_by_dhcp_ack (const char *name,
       grub_print_error ();
     }
 
+  if (is_def)
+    grub_env_set ("net_default_interface", name);
+
   if (device && !*device && bp->server_ip)
     {
       *device = grub_xasprintf ("tftp,%d.%d.%d.%d",

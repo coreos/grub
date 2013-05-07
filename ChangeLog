@@ -1,5 +1,9 @@
 2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	New variables 'net_default_*' to determine MAC/IP of default interface.
+
+2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/gettext_strings_test.in: A test to check for strings not
 	marked for translation.
 

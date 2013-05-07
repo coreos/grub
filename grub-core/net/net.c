@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010,2011  Free Software Foundation, Inc.
+ *  Copyright (C) 2010,2011,2012,2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -813,6 +813,69 @@ defserver_get_env (struct grub_env_var *var __attribute__ ((unused)),
   return grub_net_default_server ? : "";
 }
 
+static const char *
+defip_get_env (struct grub_env_var *var __attribute__ ((unused)),
+	       const char *val __attribute__ ((unused)))
+{
+  const char *intf = grub_env_get ("net_default_interface");
+  const char *ret = NULL;
+  if (intf)
+    {
+      char *buf = grub_xasprintf ("net_%s_ip", intf);
+      if (buf)
+	ret = grub_env_get (buf);
+      grub_free (buf);
+    }
+  return ret;
+}
+
+static char *
+defip_set_env (struct grub_env_var *var __attribute__ ((unused)),
+	       const char *val)
+{
+  const char *intf = grub_env_get ("net_default_interface");
+  if (intf)
+    {
+      char *buf = grub_xasprintf ("net_%s_ip", intf);
+      if (buf)
+	grub_env_set (buf, val);
+      grub_free (buf);
+    }
+  return NULL;
+}
+
+
+static const char *
+defmac_get_env (struct grub_env_var *var __attribute__ ((unused)),
+	       const char *val __attribute__ ((unused)))
+{
+  const char *intf = grub_env_get ("net_default_interface");
+  const char *ret = NULL;
+  if (intf)
+    {
+      char *buf = grub_xasprintf ("net_%s_mac", intf);
+      if (buf)
+	ret = grub_env_get (buf);
+      grub_free (buf);
+    }
+  return ret;
+}
+
+static char *
+defmac_set_env (struct grub_env_var *var __attribute__ ((unused)),
+	       const char *val)
+{
+  const char *intf = grub_env_get ("net_default_interface");
+  if (intf)
+    {
+      char *buf = grub_xasprintf ("net_%s_mac", intf);
+      if (buf)
+	grub_env_set (buf, val);
+      grub_free (buf);
+    }
+  return NULL;
+}
+
 
 static void
 grub_net_network_level_interface_register (struct grub_net_network_level_interface *inter)
@@ -1560,6 +1623,10 @@ GRUB_MOD_INIT(net)
 			       defserver_set_env);
   grub_register_variable_hook ("pxe_default_server", defserver_get_env,
 			       defserver_set_env);
+  grub_register_variable_hook ("net_default_ip", defip_get_env,
+			       defip_set_env);
+  grub_register_variable_hook ("net_default_mac", defmac_get_env,
+			       defmac_set_env);
 
   cmd_addaddr = grub_register_command ("net_add_addr", grub_cmd_addaddr,
 					/* TRANSLATORS: HWADDRESS stands for
