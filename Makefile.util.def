@@ -547,6 +547,12 @@ script = {
 
 script = {
   testcase;
+  name = gettext_strings_test;
+  common = tests/gettext_strings_test.in;
+};
+
+script = {
+  testcase;
   name = pata_test;
   common = tests/pata_test.in;
 };
