@@ -126,7 +126,7 @@ insert_dir (const char *name, struct dir **root,
 	  n->name = grub_strndup (cb, ce - cb);
 	  if (ptr)
 	    {
-	      grub_printf ("Creating directory %s, %s\n", name, ce);
+	      grub_dprintf ("linux", "Creating directory %s, %s\n", name, ce);
 	      ptr = make_header (ptr, name, ce - name,
 				 040777, 0);
 	    }
