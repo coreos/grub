@@ -464,7 +464,9 @@ if test "x$target_cpu" = xi386; then
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
   fi
+fi
 
+if test "x$target_cpu" = xi386 || test "x$target_cpu" = xx86_64; then
   # Some toolchains enable these features by default, but they need
   # registers that aren't set up properly in GRUB.
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
