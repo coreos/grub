@@ -6,7 +6,7 @@ export LC_CTYPE=C
 export LC_COLLATE=C
 unset LC_ALL
 
-find . -iname '*.[ch]' -not -ipath './grub-core/lib/libgcrypt-grub/*' -not -ipath './build-aux/*' |sort > po/POTFILES.in
+find . -iname '*.[ch]' -not -ipath './grub-core/lib/libgcrypt-grub/*' -not -ipath './build-aux/*' -not -ipath './grub-core/lib/libgcrypt/src/misc.c' -not -ipath './grub-core/lib/libgcrypt/src/global.c' -not -ipath './grub-core/lib/libgcrypt/src/secmem.c' |sort > po/POTFILES.in
 
 autogen --version >/dev/null || exit 1
 

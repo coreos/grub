@@ -1,5 +1,9 @@
 2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* autogen.sh: Exclude unused libgcrypt files from translation.
+
+2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Simplify few strings.
 
 2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
