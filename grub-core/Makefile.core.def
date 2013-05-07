@@ -1743,6 +1743,11 @@ module = {
 };
 
 module = {
+  name = setjmp_test;
+  common = tests/setjmp_test.c;
+};
+
+module = {
   name = videotest_checksum;
   common = tests/videotest_checksum.c;
 };
