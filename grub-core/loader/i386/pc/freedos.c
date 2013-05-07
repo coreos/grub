@@ -145,7 +145,7 @@ grub_cmd_freedos (grub_command_t cmd __attribute__ ((unused)),
   if (kernelsyssize > GRUB_FREEDOS_MAX_SIZE)
     {
       grub_error (GRUB_ERR_BAD_OS,
-		  N_("file `%s' is too large"), argv[0]);
+		  N_("the size of `%s' is too large"), argv[0]);
       goto fail;
     }
 

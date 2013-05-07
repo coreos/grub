@@ -55,7 +55,7 @@ static struct argp_option options[] = {
   {"bgcolor",  'b', N_("COLOR"), 0,
    N_("use COLOR for background"), 0},
   {"text",  't', N_("STR"), 0,
-   N_("supply the string."), 0},
+   N_("set the label to render."), 0},
   {"output",  'o', N_("FILE"), 0,
    N_("set output filename. Default is STDOUT"), 0},
   {"font",  'f', N_("FILE"), 0,
@@ -89,13 +89,13 @@ argp_parser (int key, char *arg, struct argp_state *state)
     case 'b':
       err = grub_video_parse_color (arg, &arguments->bgcolor);
       if (err)
-	grub_util_error (_("Invalud color `%s'"), arg);
+	grub_util_error (_("invalid color specification `%s'"), arg);
       break;
 
     case 'c':
       err = grub_video_parse_color (arg, &arguments->fgcolor);
       if (err)
-	grub_util_error (_("Invalud color `%s'"), arg);
+	grub_util_error (_("invalid color specification `%s'"), arg);
       break;
 
     case 'f':

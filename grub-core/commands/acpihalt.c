@@ -311,13 +311,13 @@ main (int argc, char **argv)
   buf = malloc (len);
   if (!buf)
     {
-      printf ("Couldn't malloc buffer\n");
+      printf (_("error: %s.\n"), _("out of memory"));
       fclose (f);
       return 2;
     }
   if (fread (buf, 1, len, f) != len)
     {
-      printf ("Read failed\n");
+      printf (_("cannot read `%s': %s"), strerror (errno));
       free (buf);
       fclose (f);
       return 2;

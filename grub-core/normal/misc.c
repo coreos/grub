@@ -181,7 +181,9 @@ grub_normal_print_device_info (const char *name)
       else
 	grub_printf (_(" - Total size %llu%sKiB"),
 		     (unsigned long long) (grub_disk_get_size (dev->disk) >> 1),
-		     (grub_disk_get_size (dev->disk) & 1) ? ".5" : "");
+		     /* TRANSLATORS: Replace dot with appropriate decimal separator for
+			your language.  */
+		     (grub_disk_get_size (dev->disk) & 1) ? _(".5") : "");
 
       grub_device_close (dev);
     }

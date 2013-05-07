@@ -301,7 +301,7 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(nativedisk)
 {
-  cmd = grub_register_command ("nativedisk", grub_cmd_nativedisk, "[MODULE1 MODULE2 ...]",
+  cmd = grub_register_command ("nativedisk", grub_cmd_nativedisk, N_("[MODULE1 MODULE2 ...]"),
 			       N_("Switch to native disk drivers. If no modules are specified default set (pata,ahci,usbms,ohci,uhci,ehci) is used"));
 }
 
