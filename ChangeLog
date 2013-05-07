@@ -1,5 +1,9 @@
 2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/priority_queue_unit_test.cc: New test.
+
+2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/font/font.c: Use grub_dprintf for debug statements rather
 	than printf.
 

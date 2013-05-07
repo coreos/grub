@@ -859,6 +859,23 @@ program = {
 
 program = {
   testcase;
+  name = priority_queue_unit_test;
+  common = tests/priority_queue_unit_test.cc;
+  common = tests/lib/unit_test.c;
+  common = grub-core/kern/list.c;
+  common = grub-core/kern/misc.c;
+  common = grub-core/tests/lib/test.c;
+  common = grub-core/lib/priority_queue.c;
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+  condition = COND_HAVE_CXX;
+};
+
+program = {
+  testcase;
   name = cmp_test;
   common = tests/cmp_unit_test.c;
   common = tests/lib/unit_test.c;

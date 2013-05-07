@@ -392,7 +392,7 @@ void EXPORT_FUNC (__deregister_frame_info) (void);
 static inline char *
 grub_memchr (const void *p, int c, grub_size_t len)
 {
-  const char *s = p;
+  const char *s = (const char *) p;
   const char *e = s + len;
 
   for (; s < e; s++)
