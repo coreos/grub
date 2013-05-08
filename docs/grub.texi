@@ -2134,37 +2134,52 @@ this should be changed both in the prefix and in any references to the
 device name in the configuration file.
 
 GRUB provides several environment variables which may be used to inspect or
-change the behaviour of the PXE device:
+change the behaviour of the PXE device. In the following description
+@var{<interface>} is placeholder for the name of network interface (platform
+dependent):
 
 @table @samp
-@item net_pxe_ip
-The IP address of this machine.  Read-only.
+@item net_@var{<interface>}_ip
+The network interface's IP address.  Read-only.
 
-@item net_pxe_mac
+@item net_@var{<interface>}_mac
 The network interface's MAC address.  Read-only.
 
-@item net_pxe_hostname
+@item net_@var{<interface>}_hostname
 The client host name provided by DHCP.  Read-only.
 
-@item net_pxe_domain
+@item net_@var{<interface>}_domain
 The client domain name provided by DHCP.  Read-only.
 
-@item net_pxe_rootpath
+@item net_@var{<interface>}_rootpath
 The path to the client's root disk provided by DHCP.  Read-only.
 
-@item net_pxe_extensionspath
+@item net_@var{<interface>}_extensionspath
 The path to additional DHCP vendor extensions provided by DHCP.  Read-only.
 
-@item net_pxe_boot_file
+@item net_@var{<interface>}_boot_file
 The boot file name provided by DHCP.  Read-only.
 
-@item net_pxe_dhcp_server_name
+@item net_@var{<interface>}_dhcp_server_name
 The name of the DHCP server responsible for these boot parameters.
 Read-only.
 
+@item net_default_interface
+Initially set to name of network interface that was used to load grub.
+Read-write, although setting it affects only interpretation of
+@samp{net_default_ip} and @samp{net_default_mac}
+
+@item net_default_ip
+The IP address of default interface.  Read-only. This is alias for the
+@samp{net_$@{net_default_interface@}_ip}.
+
+@item net_default_mac
+The default interface's MAC address.  Read-only.  This is alias for the
+@samp{net_$@{net_default_interface@}_mac}.
+
 @item net_default_server
-The default server.  Read-write, although setting this is only useful
-before opening a network device.
+The default server used by network drives (@pxref{Device syntax}).  Read-write,
+although setting this is only useful before opening a network device.
 
 @end table
 
@@ -2735,14 +2750,18 @@ These variables have special meaning to GRUB.
 * locale_dir::
 * menu_color_highlight::
 * menu_color_normal::
-* net_pxe_boot_file::
-* net_pxe_dhcp_server_name::
-* net_pxe_domain::
-* net_pxe_extensionspath::
-* net_pxe_hostname::
-* net_pxe_ip::
-* net_pxe_mac::
-* net_pxe_rootpath::
+* net_@var{<interface>}_boot_file::
+* net_@var{<interface>}_dhcp_server_name::
+* net_@var{<interface>}_domain::
+* net_@var{<interface>}_extensionspath::
+* net_@var{<interface>}_hostname::
+* net_@var{<interface>}_ip::
+* net_@var{<interface>}_mac::
+* net_@var{<interface>}_rootpath::
+* net_default_interface::
+* net_default_ip::
+* net_default_mac::
+* net_default_server::
 * pager::
 * prefix::
 * pxe_blksize::
@@ -3009,50 +3028,74 @@ variable changes those colors.  For the available color names,
 The default is the value of @samp{color_normal} (@pxref{color_normal}).
 
 
-@node net_pxe_boot_file
-@subsection net_pxe_boot_file
+@node net_@var{<interface>}_boot_file
+@subsection net_@var{<interface>}_boot_file
 
 @xref{Network}.
 
 
-@node net_pxe_dhcp_server_name
-@subsection net_pxe_dhcp_server_name
+@node net_@var{<interface>}_dhcp_server_name
+@subsection net_@var{<interface>}_dhcp_server_name
 
 @xref{Network}.
 
 
-@node net_pxe_domain
-@subsection net_pxe_domain
+@node net_@var{<interface>}_domain
+@subsection net_@var{<interface>}_domain
 
 @xref{Network}.
 
 
-@node net_pxe_extensionspath
-@subsection net_pxe_extensionspath
+@node net_@var{<interface>}_extensionspath
+@subsection net_@var{<interface>}_extensionspath
 
 @xref{Network}.
 
 
-@node net_pxe_hostname
-@subsection net_pxe_hostname
+@node net_@var{<interface>}_hostname
+@subsection net_@var{<interface>}_hostname
 
 @xref{Network}.
 
 
-@node net_pxe_ip
-@subsection net_pxe_ip
+@node net_@var{<interface>}_ip
+@subsection net_@var{<interface>}_ip
 
 @xref{Network}.
 
 
-@node net_pxe_mac
-@subsection net_pxe_mac
+@node net_@var{<interface>}_mac
+@subsection net_@var{<interface>}_mac
 
 @xref{Network}.
 
 
-@node net_pxe_rootpath
-@subsection net_pxe_rootpath
+@node net_@var{<interface>}_rootpath
+@subsection net_@var{<interface>}_rootpath
+
+@xref{Network}.
+
+
+@node net_default_interface
+@subsection net_default_interface
+
+@xref{Network}.
+
+
+@node net_default_ip
+@subsection net_default_ip
+
+@xref{Network}.
+
+
+@node net_default_mac
+@subsection net_default_mac
+
+@xref{Network}.
+
+
+@node net_default_server
+@subsection net_default_server
 
 @xref{Network}.
 

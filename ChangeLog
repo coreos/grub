@@ -1,3 +1,9 @@
+2013-05-08  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* docs/grub.texi (Network): Add description of net_default_interface,
+	net_default_ip and net_default_mac. Rewrite variables description
+	to emphasize that they are per-interface.
+
 2013-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	New test: cmdline and cat.
