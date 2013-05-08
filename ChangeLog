@@ -1,5 +1,9 @@
 2013-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/cat.c: Show UTF-8 characters.
+
+2013-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common: Poison float and double on non-emu.
 
 2013-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
