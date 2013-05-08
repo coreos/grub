@@ -1,3 +1,7 @@
+2013-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Don't disable extended registers on emu.
+
 2013-05-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Don't use extended registers on x86_64.
