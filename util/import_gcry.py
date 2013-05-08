@@ -488,6 +488,12 @@ for src in sorted (os.listdir (os.path.join (indir, "src"))):
         fw.close ()
         continue
     f = codecs.open (infile, "r", "utf-8")
+    if src == "types.h":
+        fw.write (f.read ().replace ("float f;", "").replace ("double g;", ""))
+        f.close ()
+        fw.close ()
+        continue
+
     fw.write (f.read ())
     f.close ()
     fw.close ()
