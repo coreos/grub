@@ -22,6 +22,7 @@
 #include <grub/video.h>
 #include <grub/lib/crc.h>
 #include <grub/mm.h>
+#include <grub/term.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -758,4 +759,43 @@ grub_video_checksum_end (void)
   checksums = 0;
   ctr = 0;
   grub_video_capture_refresh_cb = 0;
+}
+
+static struct grub_term_output *saved_outputs;
+static struct grub_term_output *saved_gfxnext;
+static struct grub_term_output *gfxterm;
+
+int
+grub_test_use_gfxterm (void)
+{
+  saved_outputs = grub_term_outputs;
+
+  FOR_ACTIVE_TERM_OUTPUTS (gfxterm)
+    if (grub_strcmp (gfxterm->name, "gfxterm") == 0)
+      break;
+  if (!gfxterm)
+    FOR_DISABLED_TERM_OUTPUTS (gfxterm)
+      if (grub_strcmp (gfxterm->name, "gfxterm") == 0)
+	break;
+
+  if (!gfxterm)
+    {
+      grub_test_assert (0, "terminal `%s' isn't found", "gfxterm");
+      return 1;
+    }
+
+  saved_gfxnext = gfxterm->next;
+  grub_term_outputs = gfxterm;
+  gfxterm->next = 0;
+  gfxterm->init (gfxterm);
+
+  return 0;
+}
+
+void
+grub_test_use_gfxterm_end (void)
+{
+  gfxterm->fini (gfxterm);
+  gfxterm->next = saved_gfxnext;
+  grub_term_outputs = saved_outputs;
 }

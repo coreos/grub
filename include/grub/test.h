@@ -114,6 +114,10 @@ grub_video_checksum_get_modename (void);
 
 extern struct grub_video_mode_info grub_test_video_modes[GRUB_TEST_VIDEO_ALL_N_MODES];
 
+int
+grub_test_use_gfxterm (void);
+void grub_test_use_gfxterm_end (void);
+
 #ifdef __cplusplus
 }
 #endif

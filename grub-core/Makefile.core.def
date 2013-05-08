@@ -1763,6 +1763,11 @@ module = {
 };
 
 module = {
+  name = cmdline_cat_test;
+  common = tests/cmdline_cat_test.c;
+};
+
+module = {
   name = bitmap;
   common = video/bitmap.c;
   enable = videomodules;

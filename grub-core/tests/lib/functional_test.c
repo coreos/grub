@@ -57,6 +57,7 @@ grub_functional_all_tests (grub_extcmd_context_t ctxt __attribute__ ((unused)),
   grub_dl_load ("videotest_checksum");
   grub_dl_load ("gfxterm_menu");
   grub_dl_load ("setjmp_test");
+  grub_dl_load ("cmdline_cat_test");
 
   FOR_LIST_ELEMENTS (test, grub_test_list)
     ok = !grub_test_run (test) && ok;

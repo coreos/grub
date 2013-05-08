@@ -111,9 +111,6 @@ gfxterm_menu (void)
   for (j = 0; j < ARRAY_SIZE (tests); j++)
     for (i = 0; i < GRUB_TEST_VIDEO_SMALL_N_MODES; i++)
       {
-	struct grub_term_output *saved_outputs;
-	struct grub_term_output *saved_gfxnext;
-	struct grub_term_output *gfxterm;
 	grub_uint64_t start = grub_get_time_ms ();
 
 	grub_video_capture_start (&grub_test_video_modes[i],
@@ -124,26 +121,8 @@ gfxterm_menu (void)
 
 	grub_video_checksum (tests[j].name);
 
-	saved_outputs = grub_term_outputs;
-
-	FOR_ACTIVE_TERM_OUTPUTS (gfxterm)
-	  if (grub_strcmp (gfxterm->name, "gfxterm") == 0)
-	    break;
-	if (!gfxterm)
-	  FOR_DISABLED_TERM_OUTPUTS (gfxterm)
-	    if (grub_strcmp (gfxterm->name, "gfxterm") == 0)
-	      break;
-
-	if (!gfxterm)
-	  {
-	    grub_test_assert (0, "terminal `%s' isn't found", "gfxterm");
-	    return;
-	  }
-
-	saved_gfxnext = gfxterm->next;
-	grub_term_outputs = gfxterm;
-	gfxterm->next = 0;
-	gfxterm->init (gfxterm);
+	if (grub_test_use_gfxterm ())
+	  return;
 
 	grub_env_context_open ();
 	if (tests[j].var)
@@ -151,9 +130,7 @@ gfxterm_menu (void)
 	grub_normal_execute ("(proc)/test.cfg", 1, 0);
 	grub_env_context_close ();
 
-	gfxterm->fini (gfxterm);
-	gfxterm->next = saved_gfxnext;
-	grub_term_outputs = saved_outputs;
+	grub_test_use_gfxterm_end ();
 
 	grub_terminal_input_fake_sequence_end ();
 	grub_video_checksum_end ();

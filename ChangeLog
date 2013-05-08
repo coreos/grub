@@ -1,5 +1,9 @@
 2013-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	New test: cmdline and cat.
+
+2013-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/cat.c: Show UTF-8 characters.
 
 2013-05-08  Vladimir Serbinenko  <phcoder@gmail.com>
