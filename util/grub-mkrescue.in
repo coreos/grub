@@ -65,8 +65,8 @@ usage () {
     print_option_help "--label-font=$filetrans" "$(gettext "use FILE as font for label")"
     print_option_help "--label-color=$(gettext "COLOR")" "$(gettext "use COLOR for label")"
     print_option_help "--label-bgcolor=$(gettext "COLOR")" "$(gettext "use COLOR for label background")"
-    print_option_help "--product-name=$(gettext "STR")" "$(gettext "use STR as product")"
-    print_option_help "--product-version=$(gettext "STR")" "$(gettext "use STR as product version")"
+    print_option_help "--product-name=$(gettext "STRING")" "$(gettext "use STRING as product name")"
+    print_option_help "--product-version=$(gettext "STRING")" "$(gettext "use STRING as product version")"
     print_option_help "--sparc-boot" "$(gettext "enable sparc boot. Disables HFS+, APM, ARCS and boot as disk image for i386-pc")"
     print_option_help "--arcs-boot" "$(gettext "enable ARCS (big-endian mips machines, mostly SGI) boot. Disables HFS+, APM, sparc64 and boot as disk image for i386-pc")"
     echo

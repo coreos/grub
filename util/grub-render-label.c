@@ -54,7 +54,7 @@ static struct argp_option options[] = {
    N_("use COLOR for text"), 0},
   {"bgcolor",  'b', N_("COLOR"), 0,
    N_("use COLOR for background"), 0},
-  {"text",  't', N_("STR"), 0,
+  {"text",  't', N_("STRING"), 0,
    N_("set the label to render."), 0},
   {"output",  'o', N_("FILE"), 0,
    N_("set output filename. Default is STDOUT"), 0},
