@@ -754,9 +754,21 @@ elif [ x"$grub_modinfo_platform" = xefi ]; then
     fi
 
     # Try to make this image bootable using the EFI Boot Manager, if available.
-    efibootmgr="`which efibootmgr`"
-    if test "$removable" = no && test -n "$efi_distributor" && \
-	test -n "$efibootmgr"; then
+    if test "$removable" = no; then
+
+	efibootmgr="`which efibootmgr`" || {
+            # TRANSLATORS: This message is shown when required executable `%s'
+            # isn't found
+	    gettext_printf "%s: Not found.\n" "efibootmgr" 1>&2
+	    exit 1
+	}
+
+	test -n "$efi_distributor" || {
+	    gettext "EFI distributor id isn't specified." 1>&2
+	    echo 1>&2
+	    exit 1
+	}
+
         # On Linux, we need the efivars kernel modules.
 	case "$host_os" in
 	    linux*)

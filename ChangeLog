@@ -1,5 +1,10 @@
 2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Handle efibootmgr presence check.
+	Reported by: Leif Lindholm.
+
+2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/testspeed.c: Reuse formatting string to decrease
 	new strings to translate.
 
