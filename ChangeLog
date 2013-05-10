@@ -1,5 +1,10 @@
 2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Redirect xasprintf to grub_xvasprintf rather than having #ifdef's
+	for vasprintf presence.
+
+2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.in: Handle efibootmgr presence check.
 	Reported by: Leif Lindholm.
 

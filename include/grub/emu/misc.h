@@ -64,14 +64,6 @@ void EXPORT_FUNC(grub_util_warn) (const char *fmt, ...) __attribute__ ((format (
 void EXPORT_FUNC(grub_util_info) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 void EXPORT_FUNC(grub_util_error) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2), noreturn));
 
-#ifndef HAVE_VASPRINTF
-int EXPORT_FUNC(vasprintf) (char **buf, const char *fmt, va_list ap);
-#endif
-
-#ifndef  HAVE_ASPRINTF
-int EXPORT_FUNC(asprintf) (char **buf, const char *fmt, ...);
-#endif
-
 extern char * canonicalize_file_name (const char *path);
 
 #ifdef HAVE_DEVICE_MAPPER
