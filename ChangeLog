@@ -1,5 +1,9 @@
 2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/net.c (grub_net_open_real): Autoload network modules.
+
+2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/terminfo.c: Rename ANSI_C0 to ANSI_CSI to avoid
 	misnomer.
 

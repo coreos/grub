@@ -1243,6 +1243,7 @@ grub_net_open_real (const char *name)
   grub_net_app_level_t proto;
   const char *protname, *server;
   grub_size_t protnamelen;
+  int try;
 
   if (grub_strncmp (name, "pxe:", sizeof ("pxe:") - 1) == 0)
     {
@@ -1280,32 +1281,53 @@ grub_net_open_real (const char *name)
       return NULL;
     }  
 
-  FOR_NET_APP_LEVEL (proto)
-  {
-    if (grub_memcmp (proto->name, protname, protnamelen) == 0
-	&& proto->name[protnamelen] == 0)
+  for (try = 0; try < 2; try++)
+    {
+      FOR_NET_APP_LEVEL (proto)
       {
-	grub_net_t ret = grub_zalloc (sizeof (*ret));
-	if (!ret)
-	  return NULL;
-	ret->protocol = proto;
-	if (server)
+	if (grub_memcmp (proto->name, protname, protnamelen) == 0
+	    && proto->name[protnamelen] == 0)
 	  {
-	    ret->server = grub_strdup (server);
-	    if (!ret->server)
+	    grub_net_t ret = grub_zalloc (sizeof (*ret));
+	    if (!ret)
+	      return NULL;
+	    ret->protocol = proto;
+	    if (server)
 	      {
-		grub_free (ret);
-		return NULL;
+		ret->server = grub_strdup (server);
+		if (!ret->server)
+		  {
+		    grub_free (ret);
+		    return NULL;
+		  }
 	      }
+	    else
+	      ret->server = NULL;
+	    ret->fs = &grub_net_fs;
+	    ret->offset = 0;
+	    ret->eof = 0;
+	    return ret;
 	  }
-	else
-	  ret->server = NULL;
-	ret->fs = &grub_net_fs;
-	ret->offset = 0;
-	ret->eof = 0;
-	return ret;
       }
-  }
+      if (try == 0)
+	{
+	  if (sizeof ("http") - 1 == protnamelen
+	      && grub_memcmp ("http", protname, protnamelen) == 0)
+	    {
+	      grub_dl_load ("http");
+	      grub_errno = GRUB_ERR_NONE;
+	      continue;
+	    }
+	  if (sizeof ("tftp") - 1 == protnamelen
+	      && grub_memcmp ("tftp", protname, protnamelen) == 0)
+	    {
+	      grub_dl_load ("tftp");
+	      grub_errno = GRUB_ERR_NONE;
+	      continue;
+	    }
+	}
+      break;
+    }
 
   /* Restore original error.  */
   grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("disk `%s' not found"),
