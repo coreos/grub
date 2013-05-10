@@ -80,9 +80,9 @@ grub_cmd_testspeed (grub_extcmd_context_t ctxt, int argc, char **args)
   grub_printf_ (N_("File size: %s\n"),
 		grub_get_human_size (total_size, GRUB_HUMAN_SIZE_NORMAL));
   whole = grub_divmod64 (end - start, 1000, &fraction);
-  grub_printf_ (N_("Elapsed time: %llu.%03llu s \n"),
-		(unsigned long long) whole,
-		(unsigned long long) fraction);
+  grub_printf_ (N_("Elapsed time: %d.%03d s \n"),
+		(unsigned) whole,
+		(unsigned) fraction);
 
   if (end != start)
     {

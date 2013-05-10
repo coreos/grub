@@ -1,5 +1,10 @@
 2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/testspeed.c: Reuse formatting string to decrease
+	new strings to translate.
+
+2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Replace `STR' with `STRING' to avoid adding
 	yet another string (pun intended) to translate.
 
