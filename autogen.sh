@@ -7,6 +7,7 @@ export LC_COLLATE=C
 unset LC_ALL
 
 find . -iname '*.[ch]' -not -ipath './grub-core/lib/libgcrypt-grub/*' -not -ipath './build-aux/*' -not -ipath './grub-core/lib/libgcrypt/src/misc.c' -not -ipath './grub-core/lib/libgcrypt/src/global.c' -not -ipath './grub-core/lib/libgcrypt/src/secmem.c' |sort > po/POTFILES.in
+find util -iname '*.in' -not -name Makefile.in  |sort > po/POTFILES-shell.in
 
 autogen --version >/dev/null || exit 1
 

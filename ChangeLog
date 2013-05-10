@@ -1,5 +1,9 @@
 2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/POTFILES-shell.in: Autogenerate it.
+
+2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/net.c (grub_net_open_real): Autoload network modules.
 
 2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
