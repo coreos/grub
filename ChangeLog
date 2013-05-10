@@ -1,3 +1,8 @@
+2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/terminfo.c: Rename ANSI_C0 to ANSI_CSI to avoid
+	misnomer.
+
 2013-05-08  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* docs/grub.texi (Network): Add description of net_default_interface,
