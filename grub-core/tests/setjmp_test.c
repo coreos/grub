@@ -25,6 +25,8 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static grub_jmp_buf jmp_point;
 static int expected, ctr;
 
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+
 static void
 jmp0 (void)
 {

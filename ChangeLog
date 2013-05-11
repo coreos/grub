@@ -1,5 +1,9 @@
 2013-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/setjmp_test.c: Ignore missing noreturn.
+
+2013-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/hfspluscomp.c (grub_hfsplus_compress_attr): Add packed
 	attribute since structure is not necessarily aligned.
 
