@@ -36,6 +36,8 @@ static const grub_port_t serial_hw_io_addr[] = GRUB_MACHINE_SERIAL_PORTS;
 #define GRUB_SERIAL_PORT_NUM (ARRAY_SIZE(serial_hw_io_addr))
 #endif
 
+static int dead_ports = 0;
+
 /* Convert speed to divisor.  */
 static unsigned short
 serial_get_divisor (const struct grub_serial_port *port __attribute__ ((unused)),
@@ -83,6 +85,8 @@ do_real_config (struct grub_serial_port *port)
 {
   int divisor;
   unsigned char status = 0;
+  grub_uint64_t endtime;
+
   const unsigned char parities[] = {
     [GRUB_SERIAL_PARITY_NONE] = UART_NO_PARITY,
     [GRUB_SERIAL_PARITY_ODD] = UART_ODD_PARITY,
@@ -132,8 +136,16 @@ do_real_config (struct grub_serial_port *port)
 #endif
 
   /* Drain the input buffer.  */
+  endtime = grub_get_time_ms () + 1000;
   while (grub_inb (port->port + UART_LSR) & UART_DATA_READY)
-    grub_inb (port->port + UART_RX);
+    {
+      grub_inb (port->port + UART_RX);
+      if (grub_get_time_ms () > endtime)
+	{
+	  port->broken = 1;
+	  break;
+	}
+    }
 
   port->configured = 1;
 }
@@ -239,6 +251,20 @@ grub_ns8250_init (void)
     if (serial_hw_io_addr[i])
       {
 	grub_err_t err;
+
+	grub_outb (0x5a, serial_hw_io_addr[i] + UART_SR);
+	if (grub_inb (serial_hw_io_addr[i] + UART_SR) != 0x5a)
+	  {
+	    dead_ports |= (1 << i);
+	    continue;
+	  }
+	grub_outb (0xa5, serial_hw_io_addr[i] + UART_SR);
+	if (grub_inb (serial_hw_io_addr[i] + UART_SR) != 0xa5)
+	  {
+	    dead_ports |= (1 << i);
+	    continue;
+	  }
+
 	grub_snprintf (com_names[i], sizeof (com_names[i]), "com%d", i);
 	com_ports[i].name = com_names[i];
 	com_ports[i].driver = &grub_ns8250_driver;
@@ -255,7 +281,8 @@ grub_ns8250_init (void)
 grub_port_t
 grub_ns8250_hw_get_port (const unsigned int unit)
 {
-  if (unit < GRUB_SERIAL_PORT_NUM)
+  if (unit < GRUB_SERIAL_PORT_NUM
+      && !(dead_ports & (1 << unit)))
     return serial_hw_io_addr[unit];
   else
     return 0;
@@ -268,7 +295,20 @@ grub_serial_ns8250_add_port (grub_port_t port)
   unsigned i;
   for (i = 0; i < GRUB_SERIAL_PORT_NUM; i++)
     if (com_ports[i].port == port)
-      return com_names[i];
+      {
+	if (dead_ports & (1 << i))
+	  return NULL;
+	return com_names[i];
+      }
+
+  grub_outb (0x5a, port + UART_SR);
+  if (grub_inb (port + UART_SR) != 0x5a)
+    return NULL;
+
+  grub_outb (0xa5, port + UART_SR);
+  if (grub_inb (port + UART_SR) != 0xa5)
+    return NULL;
+
   p = grub_malloc (sizeof (*p));
   if (!p)
     return NULL;

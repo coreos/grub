@@ -38,7 +38,7 @@ grub_relocator_firmware_get_max_events (void)
 {
   int counter = 0;
 
-  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_CANNOT_INTERPRET))
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_FORCE_CLAIM))
     return 0;
   grub_machine_mmap_iterate (count, &counter);
   return 2 * counter;
@@ -92,7 +92,7 @@ grub_relocator_firmware_fill_events (struct grub_relocator_mmap_event *events)
     .counter = 0
   };
 
-  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_CANNOT_INTERPRET))
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_FORCE_CLAIM))
     return 0;
   grub_machine_mmap_iterate (grub_relocator_firmware_fill_events_iter, &ctx);
   return ctx.counter;

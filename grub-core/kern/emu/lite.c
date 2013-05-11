@@ -21,6 +21,8 @@
 #error "No target cpu type is defined"
 #endif
 
+const int grub_no_modules = 0;
+
 /* grub-emu-lite supports dynamic module loading, so it won't have any
    embedded modules.  */
 void
@@ -33,15 +35,4 @@ void
 grub_fini_all (void)
 {
   return;
-}
-
-void
-grub_emu_init (void)
-{
-  return;
-}
-
-void
-grub_emu_post_init (void)
-{
 }

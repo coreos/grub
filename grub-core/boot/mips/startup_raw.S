@@ -197,6 +197,21 @@ argfw:
 	not $s7, $a2
 cmdlinedone:	
 #endif
+#ifdef GRUB_MACHINE_ARC
+	lui $t0, %hi(_start - 256)
+	addiu $t0, $t0, %lo(_start - 256)
+	addiu $t3, $t0, 255
+	lw $t1, 0($a1)
+1:	
+	bne $t0, $t3, 2f
+	 lb $t2, 0($t1)
+	move $t2, $zero
+2:
+	sb $t2, 0($t0)
+	addiu $t0, $t0, 1
+	bnez $t2, 1b
+	 addiu $t1, $t1, 1
+#endif
 	/* Copy the decompressor. */
 	lui $t1, %hi(base)
 	addiu $t1, $t1, %lo(base)
@@ -253,10 +268,15 @@ cmdlinedone:
 	lui $t0, %hi(EXT_C(grub_decompress_core))
 	addiu $t0, $t0, %lo(EXT_C(grub_decompress_core))
 
+#ifdef GRUB_MACHINE_ARC
+	lui $sp, %hi(_start - 512)
+	jalr $t0
+	 addiu $sp, $sp, %lo(_start - 512)
+#else
 	lui $sp, %hi(_start - 256)
 	jalr $t0
 	 addiu $sp, $sp, %lo(_start - 256)
-	
+#endif	
 	move $a0, $s1
 	move $a1, $s6
 

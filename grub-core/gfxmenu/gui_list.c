@@ -83,7 +83,11 @@ list_destroy (void *vself)
     self->selected_item_box->destroy (self->selected_item_box);
   if (self->icon_manager)
     grub_gfxmenu_icon_manager_destroy (self->icon_manager);
-
+  if (self->scrollbar_thumb)
+    self->scrollbar_thumb->destroy (self->scrollbar_thumb);
+  if (self->scrollbar_frame)
+    self->scrollbar_frame->destroy (self->scrollbar_frame);
+  grub_free (self->scrollbar_thumb_pattern);
   grub_free (self);
 }
 
@@ -541,6 +545,16 @@ list_set_view_info (void *vself,
   self->view = view;
 }
 
+/* Refresh list variables */
+static void
+list_refresh_info (void *vself,
+                   grub_gfxmenu_view_t view)
+{
+  list_impl_t self = vself;
+  if (view->nested)
+    self->first_shown_index = 0;
+}
+
 static struct grub_gui_component_ops list_comp_ops =
   {
     .destroy = list_destroy,
@@ -557,7 +571,8 @@ static struct grub_gui_component_ops list_comp_ops =
 
 static struct grub_gui_list_ops list_ops =
 {
-  .set_view_info = list_set_view_info
+  .set_view_info = list_set_view_info,
+  .refresh_list = list_refresh_info
 };
 
 grub_gui_component_t

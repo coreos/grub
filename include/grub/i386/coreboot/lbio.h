@@ -54,17 +54,39 @@ struct grub_linuxbios_mainboard
 
 struct grub_linuxbios_table_item
 {
-#define GRUB_LINUXBIOS_MEMBER_UNUSED		0x00
-#define GRUB_LINUXBIOS_MEMBER_MEMORY		0x01
-#define GRUB_LINUXBIOS_MEMBER_MAINBOARD		0x03
-#define GRUB_LINUXBIOS_MEMBER_CONSOLE           0x10
-#define GRUB_LINUXBIOS_MEMBER_LINK              0x11
-#define GRUB_LINUXBIOS_MEMBER_TIMESTAMPS        0x16
-#define GRUB_LINUXBIOS_MEMBER_CBMEMC            0x17
   grub_uint32_t tag;
   grub_uint32_t size;
 };
 typedef struct grub_linuxbios_table_item *grub_linuxbios_table_item_t;
+
+enum
+  {
+    GRUB_LINUXBIOS_MEMBER_UNUSED      = 0x00,
+    GRUB_LINUXBIOS_MEMBER_MEMORY      = 0x01,
+    GRUB_LINUXBIOS_MEMBER_MAINBOARD   = 0x03,
+    GRUB_LINUXBIOS_MEMBER_CONSOLE     = 0x10,
+    GRUB_LINUXBIOS_MEMBER_LINK        = 0x11,
+    GRUB_LINUXBIOS_MEMBER_FRAMEBUFFER = 0x12,
+    GRUB_LINUXBIOS_MEMBER_TIMESTAMPS  = 0x16,
+    GRUB_LINUXBIOS_MEMBER_CBMEMC      = 0x17
+  };
+
+struct grub_linuxbios_table_framebuffer {
+  grub_uint64_t lfb;
+  grub_uint32_t width;
+  grub_uint32_t height;
+  grub_uint32_t pitch;
+  grub_uint8_t bpp;
+
+  grub_uint8_t red_field_pos;
+  grub_uint8_t red_mask_size;
+  grub_uint8_t green_field_pos;
+  grub_uint8_t green_mask_size;
+  grub_uint8_t blue_field_pos;
+  grub_uint8_t blue_mask_size;
+  grub_uint8_t reserved_field_pos;
+  grub_uint8_t reserved_mask_size;
+};
 
 struct grub_linuxbios_mem_region
 {

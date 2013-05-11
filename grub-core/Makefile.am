@@ -151,6 +151,7 @@ endif
 if COND_mips_arc
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/arc/arc.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 endif
 
 if COND_mips_qemu_mips
@@ -159,6 +160,7 @@ KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video_fb.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap_scale.h
@@ -177,6 +179,7 @@ KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/time.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video_fb.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap_scale.h
@@ -228,6 +231,7 @@ if COND_emu
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/datetime.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/misc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/export.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 if COND_GRUB_EMU_SDL
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/sdl.h
 endif

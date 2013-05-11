@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010,2011  Free Software Foundation, Inc.
+ *  Copyright (C) 2010,2011,2012,2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -813,6 +813,69 @@ defserver_get_env (struct grub_env_var *var __attribute__ ((unused)),
   return grub_net_default_server ? : "";
 }
 
+static const char *
+defip_get_env (struct grub_env_var *var __attribute__ ((unused)),
+	       const char *val __attribute__ ((unused)))
+{
+  const char *intf = grub_env_get ("net_default_interface");
+  const char *ret = NULL;
+  if (intf)
+    {
+      char *buf = grub_xasprintf ("net_%s_ip", intf);
+      if (buf)
+	ret = grub_env_get (buf);
+      grub_free (buf);
+    }
+  return ret;
+}
+
+static char *
+defip_set_env (struct grub_env_var *var __attribute__ ((unused)),
+	       const char *val)
+{
+  const char *intf = grub_env_get ("net_default_interface");
+  if (intf)
+    {
+      char *buf = grub_xasprintf ("net_%s_ip", intf);
+      if (buf)
+	grub_env_set (buf, val);
+      grub_free (buf);
+    }
+  return NULL;
+}
+
+
+static const char *
+defmac_get_env (struct grub_env_var *var __attribute__ ((unused)),
+	       const char *val __attribute__ ((unused)))
+{
+  const char *intf = grub_env_get ("net_default_interface");
+  const char *ret = NULL;
+  if (intf)
+    {
+      char *buf = grub_xasprintf ("net_%s_mac", intf);
+      if (buf)
+	ret = grub_env_get (buf);
+      grub_free (buf);
+    }
+  return ret;
+}
+
+static char *
+defmac_set_env (struct grub_env_var *var __attribute__ ((unused)),
+	       const char *val)
+{
+  const char *intf = grub_env_get ("net_default_interface");
+  if (intf)
+    {
+      char *buf = grub_xasprintf ("net_%s_mac", intf);
+      if (buf)
+	grub_env_set (buf, val);
+      grub_free (buf);
+    }
+  return NULL;
+}
+
 
 static void
 grub_net_network_level_interface_register (struct grub_net_network_level_interface *inter)
@@ -1180,6 +1243,7 @@ grub_net_open_real (const char *name)
   grub_net_app_level_t proto;
   const char *protname, *server;
   grub_size_t protnamelen;
+  int try;
 
   if (grub_strncmp (name, "pxe:", sizeof ("pxe:") - 1) == 0)
     {
@@ -1217,32 +1281,53 @@ grub_net_open_real (const char *name)
       return NULL;
     }  
 
-  FOR_NET_APP_LEVEL (proto)
-  {
-    if (grub_memcmp (proto->name, protname, protnamelen) == 0
-	&& proto->name[protnamelen] == 0)
+  for (try = 0; try < 2; try++)
+    {
+      FOR_NET_APP_LEVEL (proto)
       {
-	grub_net_t ret = grub_zalloc (sizeof (*ret));
-	if (!ret)
-	  return NULL;
-	ret->protocol = proto;
-	if (server)
+	if (grub_memcmp (proto->name, protname, protnamelen) == 0
+	    && proto->name[protnamelen] == 0)
 	  {
-	    ret->server = grub_strdup (server);
-	    if (!ret->server)
+	    grub_net_t ret = grub_zalloc (sizeof (*ret));
+	    if (!ret)
+	      return NULL;
+	    ret->protocol = proto;
+	    if (server)
 	      {
-		grub_free (ret);
-		return NULL;
+		ret->server = grub_strdup (server);
+		if (!ret->server)
+		  {
+		    grub_free (ret);
+		    return NULL;
+		  }
 	      }
+	    else
+	      ret->server = NULL;
+	    ret->fs = &grub_net_fs;
+	    ret->offset = 0;
+	    ret->eof = 0;
+	    return ret;
 	  }
-	else
-	  ret->server = NULL;
-	ret->fs = &grub_net_fs;
-	ret->offset = 0;
-	ret->eof = 0;
-	return ret;
       }
-  }
+      if (try == 0)
+	{
+	  if (sizeof ("http") - 1 == protnamelen
+	      && grub_memcmp ("http", protname, protnamelen) == 0)
+	    {
+	      grub_dl_load ("http");
+	      grub_errno = GRUB_ERR_NONE;
+	      continue;
+	    }
+	  if (sizeof ("tftp") - 1 == protnamelen
+	      && grub_memcmp ("tftp", protname, protnamelen) == 0)
+	    {
+	      grub_dl_load ("tftp");
+	      grub_errno = GRUB_ERR_NONE;
+	      continue;
+	    }
+	}
+      break;
+    }
 
   /* Restore original error.  */
   grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("disk `%s' not found"),
@@ -1560,6 +1645,10 @@ GRUB_MOD_INIT(net)
 			       defserver_set_env);
   grub_register_variable_hook ("pxe_default_server", defserver_get_env,
 			       defserver_set_env);
+  grub_register_variable_hook ("net_default_ip", defip_get_env,
+			       defip_set_env);
+  grub_register_variable_hook ("net_default_mac", defmac_get_env,
+			       defmac_set_env);
 
   cmd_addaddr = grub_register_command ("net_add_addr", grub_cmd_addaddr,
 					/* TRANSLATORS: HWADDRESS stands for

@@ -46,7 +46,6 @@ grub_putcode_dumb (grub_uint32_t code,
       .variant = 0,
       .attributes = 0,
       .ncomb = 0,
-      .combining = 0,
       .estimated_width = 1
     };
 

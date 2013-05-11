@@ -382,6 +382,8 @@ grub_ata_real_open (int id, int bus)
       err = grub_ata_identify (ata);
       if (err)
 	{
+	  if (!grub_errno)
+	    grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such ATA device");
 	  grub_free (ata);
 	  return NULL;
 	}

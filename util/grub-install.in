@@ -17,39 +17,19 @@
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
 # Initialize some variables.
-prefix="@prefix@"
-exec_prefix="@exec_prefix@"
-datarootdir="@datarootdir@"
 sbindir="@sbindir@"
-bindir="@bindir@"
-libdir="@libdir@"
 sysconfdir="@sysconfdir@"
-PACKAGE_NAME=@PACKAGE_NAME@
-PACKAGE_TARNAME=@PACKAGE_TARNAME@
-PACKAGE_VERSION=@PACKAGE_VERSION@
-
-export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR="@localedir@"
 
 host_os=@host_os@
-source_dir=
 target=
-datadir="@datadir@"
-if [ "x$pkgdatadir" = x ]; then
-    pkgdatadir="${datadir}/@PACKAGE@"
-fi
 localedir="@datadir@/locale"
 
-self="`basename $0`"
-
-grub_mkimage="${bindir}/@grub_mkimage@"
 grub_probe="${sbindir}/@grub_probe@"
 grub_editenv="${bindir}/@grub_editenv@"
 grub_mkrelpath="${bindir}/@grub_mkrelpath@"
 rootdir=
 bootdir=
 grubdir="`echo "/@bootdirname@/@grubdirname@" | sed 's,//*,/,g'`"
-modules=
 
 install_device=
 force_lba=
@@ -74,8 +54,6 @@ fi
 
 disk_module=unspecified
 
-. "${pkgdatadir}/grub-mkconfig_lib"
-
 # Usage: usage
 # Print the usage.
 usage () {
@@ -86,8 +64,6 @@ usage () {
     gettext "Install GRUB on your drive." ; echo
     echo
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
-    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
-    print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
     grub_print_install_files_help
 
     dirmsg="$(gettext_printf "install GRUB images under the directory DIR/%s instead of the %s directory" "@grubdirname@" "$grubdir")"
@@ -96,9 +72,7 @@ usage () {
     target_trans="$(gettext "TARGET")"
     # TRANSLATORS: "current" refers to the platform user's currently running on
     print_option_help "--target=$target_trans" "$(gettext "install GRUB for TARGET platform [default=current]")"
-    print_option_help "--directory=$(gettext "DIR")" "$(gettext "use GRUB images from DIR. Takes precedence over target")"
     print_option_help "--grub-setup=$(gettext "FILE")" "$(gettext "use FILE as grub-setup")"
-    print_option_help "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
     print_option_help "--grub-mkrelpath=$(gettext "FILE")" "$(gettext "use FILE as grub-mkrelpath")"
     print_option_help "--grub-probe=$(gettext "FILE")" "$(gettext "use FILE as grub-probe")"
     # TRANSLATORS: "may break" doesn't just mean that option wouldn't have any
@@ -142,14 +116,6 @@ do
     -h | --help)
 	usage
 	exit 0 ;;
-    -v | --version)
-	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
-	exit 0 ;;
-
-    --modules)
-	modules=`argument $option "$@"`; shift;;
-    --modules=*)
-	modules=`echo "$option" | sed 's/--modules=//'` ;;
 
     --force-file-id)
 	force_file_id=y ;;
@@ -176,11 +142,6 @@ do
     --efi-directory=*)
 	efidir="`echo "$option" | sed 's/--efi-directory=//'`" ;;
 
-    --directory | -d)
-	source_dir="`argument $option "$@"`"; shift;;
-    --directory=*)
-	source_dir="`echo "$option" | sed 's/--directory=//'`" ;;
-
     --target)
 	target="`argument $option "$@"`"; shift;;
     --target=*)
@@ -195,11 +156,6 @@ do
 	bootloader_id="`argument $option "$@"`"; shift;;
     --bootloader-id=*)
 	bootloader_id="`echo "$option" | sed 's/--bootloader-id=//'`" ;;
-
-    --grub-mkimage)
-	grub_mkimage="`argument $option "$@"`"; shift;;
-    --grub-mkimage=*)
-	grub_mkimage="`echo "$option" | sed 's/--grub-mkimage=//'`" ;;
 
     --grub-mkrelpath)
 	grub_mkrelpath="`argument "$option" "$@"`"; shift;;
@@ -264,7 +220,7 @@ do
     esac
 done
 
-if [ x$source_dir = x ]; then
+if [ x$source_directory = x ]; then
     if [ x$target = x ]; then
 	case x"`uname -m`" in
 	    x"powerpc"* | x"ppc"*)
@@ -323,15 +279,15 @@ if [ x$source_dir = x ]; then
 		echo	;;
 	esac
     fi
-    source_dir="${libdir}/@PACKAGE@/$target"
+    source_directory="${libdir}/@PACKAGE@/$target"
 fi
 
-if ! [ -d "$source_dir" ]; then
-    gettext_printf "%s doesn't exist. Please specify --target or --directory\\n" "$source_dir"
+if ! [ -d "$source_directory" ]; then
+    gettext_printf "%s doesn't exist. Please specify --target or --directory\\n" "$source_directory"
     exit 1
 fi
 
-. "${source_dir}"/modinfo.sh
+. "${source_directory}"/modinfo.sh
 
 if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ] ; then
     if [ x$disk_module = xunspecified ]; then
@@ -522,10 +478,10 @@ else
 fi
 
 # Copy the GRUB images to the GRUB directory.
-grub_install_files "${source_dir}" "${grubdir}" "${grub_modinfo_target_cpu}-$grub_modinfo_platform" all
+grub_install_files "${source_directory}" "${grubdir}" "${grub_modinfo_target_cpu}-$grub_modinfo_platform" all
 
 if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "sparc64-ieee1275" ] ; then
-    for file in "${source_dir}"/*.img "${source_dir}"/efiemu??.o; do
+    for file in "${source_directory}"/*.img "${source_directory}"/efiemu??.o; do
 	if test -f "$file"; then
 	    cp -f "$file" "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform" || exit 1
 	fi
@@ -679,20 +635,21 @@ fi
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     sparc64-ieee1275) mkimage_target=sparc64-ieee1275-raw ;;
     mipsel-loongson) mkimage_target=mipsel-loongson-elf ;;
+    mips-qemu_mips | mipsel-qemu_mips) mkimage_target="${grub_modinfo_target_cpu}-${grub_modinfo_platform}"-elf ;;
     *) mkimage_target="${grub_modinfo_target_cpu}-${grub_modinfo_platform}" ;;
 esac
 
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
-    i386-efi | x86_64-efi) imgext=efi ;;
+    i386-efi | x86_64-efi | ia64-efi) imgext=efi ;;
     mipsel-loongson | i386-coreboot | i386-multiboot | i386-ieee1275 \
-	| powerpc-ieee1275) imgext=elf ;;
+	| powerpc-ieee1275 | mips-qemu_mips | mipsel-qemu_mips) imgext=elf ;;
     *) imgext=img ;;
 esac
 
 if [ x"$config_opt_file" = x ]; then
-    "$grub_mkimage" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
+    "$grub_mkimage" -d "${source_directory}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $grub_decompression_module $modules || exit 1
 else
-    "$grub_mkimage" -c "${config_opt_file}" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $modules || exit 1
+    "$grub_mkimage" -c "${config_opt_file}" -d "${source_directory}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/core.${imgext}" --prefix="${prefix_drive}${relative_grubdir}" $grub_decompression_module $modules || exit 1
 fi
 
 # Backward-compatibility kludges
@@ -703,9 +660,9 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
 elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-efi" ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "x86_64-efi" ]; then
 
     if [ x"$config_opt_file" = x ]; then
-	"$grub_mkimage" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $modules || exit 1
+	"$grub_mkimage" -d "${source_directory}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $grub_decompression_module $modules || exit 1
     else
-	"$grub_mkimage" -c "${config_opt_file}" -d "${source_dir}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $modules || exit 1
+	"$grub_mkimage" -c "${config_opt_file}" -d "${source_directory}" -O "${mkimage_target}" --output="${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/grub.efi" --prefix="" $grub_decompression_module $modules || exit 1
     fi
 fi
 
@@ -803,9 +760,21 @@ elif [ x"$grub_modinfo_platform" = xefi ]; then
     fi
 
     # Try to make this image bootable using the EFI Boot Manager, if available.
-    efibootmgr="`which efibootmgr`"
-    if test "$removable" = no && test -n "$efi_distributor" && \
-	test -n "$efibootmgr"; then
+    if test "$removable" = no; then
+
+	efibootmgr="`which efibootmgr`" || {
+            # TRANSLATORS: This message is shown when required executable `%s'
+            # isn't found
+	    gettext_printf "%s: Not found.\n" "efibootmgr" 1>&2
+	    exit 1
+	}
+
+	test -n "$efi_distributor" || {
+	    gettext "EFI distributor id isn't specified." 1>&2
+	    echo 1>&2
+	    exit 1
+	}
+
         # On Linux, we need the efivars kernel modules.
 	case "$host_os" in
 	    linux*)

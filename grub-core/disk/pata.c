@@ -530,13 +530,7 @@ static struct grub_ata_dev grub_pata_dev =
 
 GRUB_MOD_INIT(ata_pthru)
 {
-  /* To prevent two drivers operating on the same disks.  */
-  grub_disk_firmware_is_tainted = 1;
-  if (grub_disk_firmware_fini)
-    {
-      grub_disk_firmware_fini ();
-      grub_disk_firmware_fini = NULL;
-    }
+  grub_stop_disk_firmware ();
 
   /* ATA initialization.  */
   grub_pata_initialize ();

@@ -87,10 +87,15 @@ grub_video_fbfill_direct24 (struct grub_video_fbblit_info *dst,
   int j;
   grub_size_t rowskip;
   grub_uint8_t *dstptr;
+#ifndef GRUB_CPU_WORDS_BIGENDIAN
   grub_uint8_t fill0 = (grub_uint8_t)((color >> 0) & 0xFF);
   grub_uint8_t fill1 = (grub_uint8_t)((color >> 8) & 0xFF);
   grub_uint8_t fill2 = (grub_uint8_t)((color >> 16) & 0xFF);
-
+#else
+  grub_uint8_t fill2 = (grub_uint8_t)((color >> 0) & 0xFF);
+  grub_uint8_t fill1 = (grub_uint8_t)((color >> 8) & 0xFF);
+  grub_uint8_t fill0 = (grub_uint8_t)((color >> 16) & 0xFF);
+#endif
   /* Calculate the number of bytes to advance from the end of one line
      to the beginning of the next line.  */
   rowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
@@ -122,13 +127,11 @@ grub_video_fbfill_direct16 (struct grub_video_fbblit_info *dst,
   int i;
   int j;
   grub_size_t rowskip;
-  grub_uint8_t *dstptr;
-  grub_uint8_t fill0 = (grub_uint8_t)((color >> 0) & 0xFF);
-  grub_uint8_t fill1 = (grub_uint8_t)((color >> 8) & 0xFF);
+  grub_uint16_t *dstptr;
 
   /* Calculate the number of bytes to advance from the end of one line
      to the beginning of the next line.  */
-  rowskip = dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width;
+  rowskip = (dst->mode_info->pitch - dst->mode_info->bytes_per_pixel * width);
 
   /* Get the start address.  */
   dstptr = grub_video_fb_get_video_ptr (dst, x, y);
@@ -136,13 +139,10 @@ grub_video_fbfill_direct16 (struct grub_video_fbblit_info *dst,
   for (j = 0; j < height; j++)
     {
       for (i = 0; i < width; i++)
-        {
-          *dstptr++ = fill0;
-          *dstptr++ = fill1;
-        }
+	*dstptr++ = color;
 
       /* Advance the dest pointer to the right location on the next line.  */
-      dstptr += rowskip;
+      GRUB_VIDEO_FB_ADVANCE_POINTER (dstptr, rowskip);
     }
 }
 

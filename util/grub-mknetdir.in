@@ -15,23 +15,8 @@
 # along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
 # Initialize some variables.
-prefix="@prefix@"
-exec_prefix="@exec_prefix@"
-datarootdir="@datarootdir@"
-bindir="@bindir@"
-libdir="@libdir@"
-PACKAGE_NAME=@PACKAGE_NAME@
-PACKAGE_TARNAME=@PACKAGE_TARNAME@
-PACKAGE_VERSION=@PACKAGE_VERSION@
 host_os=@host_os@
-datadir="@datadir@"
-if [ "x$pkgdatadir" = x ]; then
-    pkgdatadir="${datadir}/@PACKAGE@"
-fi
 
-self=`basename $0`
-
-grub_mkimage="${bindir}/@grub_mkimage@"
 rootdir=/srv/tftp
 modules=
 
@@ -48,11 +33,6 @@ efi32_dir="${libdir}/@PACKAGE@/i386-efi"
 efi64_dir="${libdir}/@PACKAGE@/x86_64-efi"
 itanium_dir="${libdir}/@PACKAGE@/ia64-efi"
 
-export TEXTDOMAIN=@PACKAGE@
-export TEXTDOMAINDIR="@localedir@"
-
-. "${pkgdatadir}/grub-mkconfig_lib"
-
 # Usage: usage
 # Print the usage.
 usage () {
@@ -60,15 +40,9 @@ usage () {
     gettext; echo "Install GRUB on your drive."; echo
     echo
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
-    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
-    print_option_help "--modules=$(gettext "MODULES")" "$(gettext "pre-load specified modules MODULES")"
     grub_print_install_files_help
     print_option_help "--net-directory=$(gettext "DIR")" "$(gettext "root directory of TFTP server")"
     print_option_help "--subdir=$(gettext "DIR")" "$(gettext "relative subdirectory on network server")"
-    print_option_help "--grub-mkimage=$(gettext "FILE")" "$(gettext "use FILE as grub-mkimage")"
-    # TRANSLATORS: platform here isn't identifier. It can be translated.
-    dir_msg="$(gettext_printf "use images and modules under DIR [default=%s/<platform>]" "${libdir}/@PACKAGE@")"
-    print_option_help "-d, --directory=$(gettext "DIR")" "$dir_msg"
     echo
     gettext_printf "%s copies GRUB images into net_directory/subdir/target_cpu-platform\n" "$self" 
     echo
@@ -91,14 +65,6 @@ do
     -h | --help)
 	usage
 	exit 0 ;;
-    -v | --version)
-	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
-	exit 0 ;;
-
-    --modules)
-	modules=`argument $option "$@"`; shift;;
-    --modules=*)
-	modules=`echo "$option" | sed 's/--modules=//'` ;;
 
     --net-directory)
 	rootdir=`argument $option "$@"`; shift;;
@@ -110,11 +76,6 @@ do
     --subdir=*)
 	subdir=`echo "$option" | sed 's/--subdir=//'` ;;
 
-    --grub-mkimage)
-	grub_mkimage=`argument $option "$@"`; shift;;
-    --grub-mkimage=*)
-	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
-
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
@@ -122,11 +83,6 @@ do
 	debug_image=`argument $option "$@"`; shift;;
     --debug-image=*)
 	debug_image=`echo "$option" | sed 's/--debug-image=//'` ;;
-
-    --directory | -d)
-	source_directory=`argument $option "$@"`; shift ;;
-    --directory=*)
-	source_directory=`echo "$option" | sed 's/--directory=//'` ;;
 
     -*)
 	gettext_printf "Unrecognized option \`%s'\n" "$option" 1>&2
@@ -191,7 +147,7 @@ process_input_dir ()
 source ${subdir}/grub.cfg
 EOF
 
-    "$grub_mkimage" ${config_opt} -d "${input_dir}" -O ${mkimage_target} "--output=${grubdir}/core.$ext" "--prefix=$prefix" $modules $netmodules tftp || exit 1
+    "$grub_mkimage" ${config_opt} -d "${input_dir}" -O ${mkimage_target} "--output=${grubdir}/core.$ext" "--prefix=$prefix" $modules $grub_decompression_module $netmodules tftp || exit 1
     # TRANSLATORS: First %s is replaced by platform name. Second one by filename.
     gettext_printf "Netboot directory for %s created. Configure your DHCP server to point to %s\n" "${platform}" "${subdir}/${platform}/core.$ext"
 }

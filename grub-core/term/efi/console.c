@@ -86,7 +86,7 @@ grub_console_putchar (struct grub_term_output *term __attribute__ ((unused)),
   j = 1;
   for (i = 0; i < c->ncomb; i++)
     if (c->base < 0xffff)
-      str[j++] = c->combining[i].code;
+      str[j++] = grub_unicode_get_comb (c)[i].code;
   str[j] = 0;
 
   /* Should this test be cached?  */

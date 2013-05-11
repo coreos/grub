@@ -553,8 +553,7 @@ typedef struct grub_efi_device_path grub_efi_device_path_protocol_t;
 
 #define GRUB_EFI_DEVICE_PATH_TYPE(dp)		((dp)->type & 0x7f)
 #define GRUB_EFI_DEVICE_PATH_SUBTYPE(dp)	((dp)->subtype)
-#define GRUB_EFI_DEVICE_PATH_LENGTH(dp)		\
-  ((dp)->length[0] | ((grub_efi_uint16_t) ((dp)->length[1]) << 8))
+#define GRUB_EFI_DEVICE_PATH_LENGTH(dp)		(grub_get_unaligned16 ((dp)->length))
 
 /* The End of Device Path nodes.  */
 #define GRUB_EFI_END_DEVICE_PATH_TYPE			(0xff & 0x7f)

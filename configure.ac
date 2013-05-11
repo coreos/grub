@@ -56,6 +56,7 @@ grub_TRANSFORM([grub-install])
 grub_TRANSFORM([grub-mkconfig])
 grub_TRANSFORM([grub-mkfont])
 grub_TRANSFORM([grub-mkimage])
+grub_TRANSFORM([grub-glue-efi])
 grub_TRANSFORM([grub-mklayout])
 grub_TRANSFORM([grub-mkpasswd-pbkdf2])
 grub_TRANSFORM([grub-mkrelpath])
@@ -65,6 +66,7 @@ grub_TRANSFORM([grub-reboot])
 grub_TRANSFORM([grub-script-check])
 grub_TRANSFORM([grub-set-default])
 grub_TRANSFORM([grub-sparc64-setup])
+grub_TRANSFORM([grub-render-label])
 
 # Optimization flag.  Allow user to override.
 if test "x$TARGET_CFLAGS" = x; then
@@ -147,6 +149,7 @@ case "$target_cpu"-"$platform" in
   mips-qemu_mips) ;;
   mips-qemu-mips) platform=qemu_mips;;
   mips-arc) ;;
+  mipsel-arc) ;;
   mipsel-qemu_mips) ;;
   mipsel-qemu-mips) platform=qemu_mips;;
   mipsel-yeeloong) platform=loongson ;;
@@ -203,6 +206,23 @@ if test x${target_cpu} = xmipsel ; then
 else
    machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,` -DGRUB_TARGET_CPU_`echo ${target_cpu} | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`=1"
 fi
+
+case "${target_cpu}-$platform" in
+     mips-arc)
+        TARGET_LINK_ADDR=0x88200000
+        TARGET_DECOMPRESSOR_LINK_ADDR=0x88100000
+	;;
+     mipsel-arc)
+        TARGET_LINK_ADDR=0x80700000
+	TARGET_DECOMPRESSOR_LINK_ADDR=0x80600000
+	;;
+     mips*-qemu_mips | mips*-loongson)
+        TARGET_DECOMPRESSOR_LINK_ADDR=0x80100000
+	;;
+esac
+
+AC_SUBST(TARGET_LINK_ADDR)
+AC_SUBST(TARGET_DECOMPRESSOR_LINK_ADDR)
 
 TARGET_CPPFLAGS="$TARGET_CPPFLAGS $machine_CPPFLAGS"
 
@@ -308,11 +328,14 @@ AC_PATH_PROGS(MAKEINFO, makeinfo true)
 
 AC_PROG_CC
 gl_EARLY
+AC_PROG_CXX
 AM_PROG_CC_C_O
 AM_PROG_AS
 
 # Must be GCC.
 test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])
+
+AC_CHECK_PROG(HAVE_CXX, $CXX, yes, no)
 
 AC_GNU_SOURCE
 AM_GNU_GETTEXT([external])
@@ -340,7 +363,7 @@ else
 fi
 
 # Check for functions and headers.
-AC_CHECK_FUNCS(posix_memalign memalign asprintf vasprintf getextmntent)
+AC_CHECK_FUNCS(posix_memalign memalign getextmntent)
 AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/mnttab.h sys/mkdev.h limits.h)
 
 AC_CHECK_MEMBERS([struct statfs.f_fstypename],,,[$ac_includes_default
@@ -449,7 +472,9 @@ if test "x$target_cpu" = xi386; then
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
   fi
+fi
 
+if ( test "x$target_cpu" = xi386 || test "x$target_cpu" = xx86_64 ) && test "x$platform" != xemu; then
   # Some toolchains enable these features by default, but they need
   # registers that aren't set up properly in GRUB.
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
@@ -593,7 +618,7 @@ if test "x$target_m64" = x1; then
   TARGET_MODULE_FORMAT="elf64"
 fi
 
-if test "$target_cpu"-"$platform" = x86_64-efi; then
+if test "$target_cpu" = x86_64; then
   # Use large model to support 4G memory
   AC_CACHE_CHECK([whether option -mcmodel=large works], grub_cv_cc_mcmodel, [
     SAVED_CFLAGS=$CFLAGS
@@ -607,7 +632,9 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
   fi
+fi
 
+if test "$target_cpu"-"$platform" = x86_64-efi; then
   # EFI writes to stack below %rsp, we must not use the red zone
   AC_CACHE_CHECK([whether option -mno-red-zone works], grub_cv_cc_no_red_zone, [
     CFLAGS="$CFLAGS -m64 -mno-red-zone"
@@ -838,22 +865,6 @@ AC_ARG_ENABLE([grub-emu-pci],
                              [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
 
 if test "$platform" = emu; then
-  missing_ncurses=
-[# Check for curses libraries.]
-  AC_CHECK_LIB([ncurses], [wgetch], [LIBCURSES="-lncurses"],
-    [AC_CHECK_LIB([curses], [wgetch], [LIBCURSES="-lcurses"],
-      [missing_ncurses=[true]])])
-  AC_SUBST([LIBCURSES])
-[if [ x"$missing_ncurses" = x ]; then ]
-  [# Check for headers.]
-  AC_CHECK_HEADERS([ncurses/curses.h], [],
-    [AC_CHECK_HEADERS([ncurses.h], [],
-      [AC_CHECK_HEADERS([curses.h], [],
-	[missing_ncurses=[true]])])])
-[fi]
-if test x"$missing_ncurses" = xtrue ; then
-  AC_MSG_ERROR([grub-emu can't be compiled without ncurses])
-fi
 
 if test x"$enable_grub_emu_usb" != xyes ; then
    grub_emu_usb_excuse="not enabled"
@@ -1160,7 +1171,7 @@ AM_CONDITIONAL([COND_i386_multiboot], [test x$target_cpu = xi386 -a x$platform =
 AM_CONDITIONAL([COND_x86_64_efi], [test x$target_cpu = xx86_64 -a x$platform = xefi])
 AM_CONDITIONAL([COND_mips_loongson], [test x$target_cpu = xmipsel -a x$platform = xloongson])
 AM_CONDITIONAL([COND_mips_qemu_mips], [test "(" x$target_cpu = xmips -o x$target_cpu = xmipsel ")"  -a x$platform = xqemu_mips])
-AM_CONDITIONAL([COND_mips_arc], [test x$target_cpu = xmips -a x$platform = xarc])
+AM_CONDITIONAL([COND_mips_arc], [test "(" x$target_cpu = xmips -o x$target_cpu = xmipsel ")"  -a x$platform = xarc])
 AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_mips], [test x$target_cpu = xmips -o x$target_cpu = xmipsel])
@@ -1190,6 +1201,8 @@ AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
 AM_CONDITIONAL([COND_ENABLE_CACHE_STATS], [test x$DISK_CACHE_STATS = x1])
 AM_CONDITIONAL([COND_ENABLE_BOOT_TIME_STATS], [test x$BOOT_TIME_STATS = x1])
+
+AM_CONDITIONAL([COND_HAVE_CXX], [test x$HAVE_CXX = xyes])
 
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
 AM_CONDITIONAL([COND_CYGWIN], [test x$host_os = xcygwin])

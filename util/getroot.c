@@ -220,9 +220,6 @@ xgetcwd (void)
 
 #if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
 
-#if (defined (__linux__) || \
-     !defined (HAVE_LIBZFS) || !defined (HAVE_LIBNVPAIR))
-
 static pid_t
 exec_pipe (char **argv, int *fd)
 {
@@ -243,6 +240,13 @@ exec_pipe (char **argv, int *fd)
   else if (mdadm_pid == 0)
     {
       /* Child.  */
+
+      /* Close fd's.  */
+#ifdef HAVE_DEVICE_MAPPER
+      dm_lib_release ();
+#endif
+      grub_diskfilter_fini ();
+
       /* Ensure child is not localised.  */
       setenv ("LC_ALL", "C", 1);
 
@@ -260,8 +264,6 @@ exec_pipe (char **argv, int *fd)
       return mdadm_pid;
     }
 }
-
-#endif
 
 static char **
 find_root_devices_from_poolname (char *poolname)
@@ -660,14 +662,14 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
 	      char *ptr;
 	      *relroot = xmalloc (strlen (entries[i].enc_root) +
 				  2 + strlen (dir));
-	      ptr = stpcpy (*relroot, entries[i].enc_root);
+	      ptr = grub_stpcpy (*relroot, entries[i].enc_root);
 	      if (strlen (dir) > strlen (entries[i].enc_path))
 		{
 		  while (ptr > *relroot && *(ptr - 1) == '/')
 		    ptr--;
 		  if (dir[strlen (entries[i].enc_path)] != '/')
 		    *ptr++ = '/';
-		  ptr = stpcpy (ptr, dir + strlen (entries[i].enc_path));
+		  ptr = grub_stpcpy (ptr, dir + strlen (entries[i].enc_path));
 		}
 	      *ptr = 0;
 	    }
@@ -1315,6 +1317,80 @@ grub_util_get_dev_abstraction (const char *os_dev)
   return GRUB_DEV_ABSTRACTION_NONE;
 }
 
+#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
+
+static void
+pull_lvm_by_command (const char *os_dev)
+{
+  char *argv[6];
+  int fd;
+  pid_t pid;
+  FILE *mdadm;
+  char *buf = NULL;
+  size_t len = 0;
+  char *vgname;
+  const char *iptr;
+  char *optr;
+
+  if (strncmp (os_dev, "/dev/mapper/", sizeof ("/dev/mapper/") - 1)
+      != 0)
+    return;
+
+  vgname = xmalloc (strlen (os_dev + sizeof ("/dev/mapper/") - 1) + 1);
+  for (iptr = os_dev + sizeof ("/dev/mapper/") - 1, optr = vgname; *iptr; )
+    if (*iptr != '-')
+      *optr++ = *iptr++;
+    else if (iptr[0] == '-' && iptr[1] == '-')
+      {
+	iptr += 2;
+	*optr++ = '-';
+      }
+    else
+      break;
+  *optr = '\0';
+
+  /* execvp has inconvenient types, hence the casts.  None of these
+     strings will actually be modified.  */
+  argv[0] = (char *) "vgs";
+  argv[1] = (char *) "--options";
+  argv[2] = (char *) "pv_name";
+  argv[3] = (char *) "--noheadings";
+  argv[4] = vgname;
+  argv[5] = NULL;
+
+  pid = exec_pipe (argv, &fd);
+  free (vgname);
+
+  if (!pid)
+    return;
+
+  /* Parent.  Read mdadm's output.  */
+  mdadm = fdopen (fd, "r");
+  if (! mdadm)
+    {
+      grub_util_warn (_("Unable to open stream from %s: %s"),
+		      "vgs", strerror (errno));
+      goto out;
+    }
+
+  while (getline (&buf, &len, mdadm) > 0)
+    {
+      char *ptr;
+      for (ptr = buf; ptr < buf + 2 && *ptr == ' '; ptr++);
+      if (*ptr == '\0')
+	continue;
+      *(ptr + strlen (ptr) - 1) = '\0';
+      grub_util_pull_device (ptr);
+    }
+
+out:
+  close (fd);
+  waitpid (pid, NULL, 0);
+  free (buf);
+}
+
+#endif
+
 #ifdef __linux__
 static char *
 get_mdadm_uuid (const char *os_dev)
@@ -1538,6 +1614,10 @@ grub_util_pull_device (const char *os_dev)
       break;
 
     case GRUB_DEV_ABSTRACTION_LVM:
+#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
+      pull_lvm_by_command (os_dev);
+#endif
+      /* Fallthrough in case that lvm-tools are unavailable.  */
     case GRUB_DEV_ABSTRACTION_LUKS:
 #ifdef HAVE_DEVICE_MAPPER
       {
@@ -1877,6 +1957,7 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	      grub_util_info ("dm_tree_find_node failed");
 	      goto devmapper_out;
 	    }
+	reiterate:
 	  node_uuid = dm_tree_node_get_uuid (node);
 	  if (! node_uuid)
 	    {
@@ -1951,6 +2032,9 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	      goto devmapper_out;
 	    }
 	  mapper_name = child_name;
+	  *is_part = 1;
+	  node = child;
+	  goto reiterate;
 
 devmapper_out:
 	  if (! mapper_name && node)

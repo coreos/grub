@@ -43,8 +43,6 @@ static const struct grub_arg_option options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
-static const char grub_human_sizes[] = {' ', 'K', 'M', 'G', 'T'};
-
 /* Helper for grub_ls_list_devices.  */
 static int
 grub_ls_print_devices (const char *name, void *data)
@@ -143,34 +141,8 @@ print_files_long (const char *filename, const struct grub_dirhook_info *info,
       if (! ctx->human)
 	grub_printf ("%-12llu", (unsigned long long) file->size);
       else
-	{
-	  grub_uint64_t fsize = file->size * 100ULL;
-	  grub_uint64_t fsz = file->size;
-	  int units = 0;
-	  char buf[20];
-
-	  while (fsz / 1024)
-	    {
-	      fsize = (fsize + 512) / 1024;
-	      fsz /= 1024;
-	      units++;
-	    }
-
-	  if (units)
-	    {
-	      grub_uint64_t whole, fraction;
-
-	      whole = grub_divmod64 (fsize, 100, &fraction);
-	      grub_snprintf (buf, sizeof (buf),
-			     "%" PRIuGRUB_UINT64_T
-			     ".%02" PRIuGRUB_UINT64_T "%c", whole, fraction,
-			     grub_human_sizes[units]);
-	      grub_printf ("%-12s", buf);
-	    }
-	  else
-	    grub_printf ("%-12llu", (unsigned long long) file->size);
-
-	}
+	grub_printf ("%-12s", grub_get_human_size (file->size,
+						   GRUB_HUMAN_SIZE_SHORT));
       grub_file_close (file);
       grub_free (pathname);
     }

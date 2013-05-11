@@ -44,6 +44,11 @@ endif
 
 # Other options
 
+if ! COND_emu
+CFLAGS_PLATFORM += -Dfloat=__grub_poision
+CFLAGS_PLATFORM += -Ddouble=__grub_poision
+endif
+
 CPPFLAGS_DEFAULT = -DGRUB_FILE=\"$(subst $(srcdir)/,,$<)\"
 CPPFLAGS_DEFAULT += -I$(builddir)
 CPPFLAGS_DEFAULT += -I$(srcdir)

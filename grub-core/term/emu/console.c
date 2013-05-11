@@ -1,7 +1,7 @@
-/*  console.c -- Ncurses console for GRUB.  */
+/*  console.c -- console for GRUB.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,274 +20,159 @@
 #include <config.h>
 #include <config-util.h>
 
-/* For compatibility.  */
-#ifndef A_NORMAL
-# define A_NORMAL	0
-#endif /* ! A_NORMAL */
-#ifndef A_STANDOUT
-# define A_STANDOUT	0
-#endif /* ! A_STANDOUT */
-
-#include <grub/emu/console.h>
 #include <grub/term.h>
 #include <grub/types.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
+#include <grub/time.h>
+#include <grub/terminfo.h>
+#include <grub/dl.h>
 
-#if defined(HAVE_NCURSES_CURSES_H)
-# include <ncurses/curses.h>
-#elif defined(HAVE_NCURSES_H)
-# include <ncurses.h>
-#elif defined(HAVE_CURSES_H)
-# include <curses.h>
-#else
-#error What the hell?
-#endif
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <termios.h>
+#include <stdlib.h>
+#include <sys/ioctl.h>
+#include <langinfo.h>
 
-static int grub_console_attr = A_NORMAL;
+#include <grub/emu/console.h>
 
-grub_uint8_t grub_console_cur_color = 7;
-
-static const grub_uint8_t grub_console_standard_color = 0x7;
-
-#define NUM_COLORS	8
-
-static grub_uint8_t color_map[NUM_COLORS] =
-{
-  COLOR_BLACK,
-  COLOR_BLUE,
-  COLOR_GREEN,
-  COLOR_CYAN,
-  COLOR_RED,
-  COLOR_MAGENTA,
-  COLOR_YELLOW,
-  COLOR_WHITE
-};
-
-static int use_color;
+extern struct grub_terminfo_output_state grub_console_terminfo_output;
+static int original_fl;
+static int saved_orig;
+static struct termios orig_tty;
+static struct termios new_tty;
 
 static void
-grub_ncurses_putchar (struct grub_term_output *term __attribute__ ((unused)),
-		      const struct grub_unicode_glyph *c)
+put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 {
-  addch (c->base | grub_console_attr);
-}
+  char chr = c;
 
-static void
-grub_ncurses_setcolorstate (struct grub_term_output *term,
-			    grub_term_color_state state)
-{
-  switch (state)
-    {
-    case GRUB_TERM_COLOR_STANDARD:
-      grub_console_cur_color = grub_console_standard_color;
-      grub_console_attr = A_NORMAL;
-      break;
-    case GRUB_TERM_COLOR_NORMAL:
-      grub_console_cur_color = grub_term_normal_color;
-      grub_console_attr = A_NORMAL;
-      break;
-    case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_console_cur_color = grub_term_highlight_color;
-      grub_console_attr = A_STANDOUT;
-      break;
-    default:
-      break;
-    }
-
-  if (use_color)
-    {
-      grub_uint8_t fg, bg;
-
-      fg = (grub_console_cur_color & 7);
-      bg = (grub_console_cur_color >> 4) & 7;
-
-      grub_console_attr = (grub_console_cur_color & 8) ? A_BOLD : A_NORMAL;
-      color_set ((bg << 3) + fg, 0);
-    }
+  write (STDOUT_FILENO, &chr, 1);
 }
 
 static int
-grub_ncurses_getkey (struct grub_term_input *term __attribute__ ((unused)))
+readkey (struct grub_term_input *term __attribute__ ((unused)))
 {
-  int c;
+  grub_uint8_t c;
+  ssize_t actual;
 
-  wtimeout (stdscr, 100);
-  c = getch ();
-
-  switch (c)
-    {
-    case ERR:
-      return GRUB_TERM_NO_KEY;
-    case KEY_LEFT:
-      c = GRUB_TERM_KEY_LEFT;
-      break;
-
-    case KEY_RIGHT:
-      c = GRUB_TERM_KEY_RIGHT;
-      break;
-
-    case KEY_UP:
-      c = GRUB_TERM_KEY_UP;
-      break;
-
-    case KEY_DOWN:
-      c = GRUB_TERM_KEY_DOWN;
-      break;
-
-    case KEY_IC:
-      c = 24;
-      break;
-
-    case KEY_DC:
-      c = GRUB_TERM_KEY_DC;
-      break;
-
-    case KEY_BACKSPACE:
-      /* XXX: For some reason ncurses on xterm does not return
-	 KEY_BACKSPACE.  */
-    case 127:
-      c = '\b';
-      break;
-
-    case KEY_HOME:
-      c = GRUB_TERM_KEY_HOME;
-      break;
-
-    case KEY_END:
-      c = GRUB_TERM_KEY_END;
-      break;
-
-    case KEY_NPAGE:
-      c = GRUB_TERM_KEY_NPAGE;
-      break;
-
-    case KEY_PPAGE:
-      c = GRUB_TERM_KEY_PPAGE;
-      break;
-    }
-
-  return c;
-}
-
-static grub_uint16_t
-grub_ncurses_getxy (struct grub_term_output *term __attribute__ ((unused)))
-{
-  int x;
-  int y;
-
-  getyx (stdscr, y, x);
-
-  return (x << 8) | y;
-}
-
-static grub_uint16_t
-grub_ncurses_getwh (struct grub_term_output *term __attribute__ ((unused)))
-{
-  int x;
-  int y;
-
-  getmaxyx (stdscr, y, x);
-
-  return (x << 8) | y;
-}
-
-static void
-grub_ncurses_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
-		     grub_uint8_t x, grub_uint8_t y)
-{
-  move (y, x);
-}
-
-static void
-grub_ncurses_cls (struct grub_term_output *term __attribute__ ((unused)))
-{
-  clear ();
-  refresh ();
-}
-
-static void
-grub_ncurses_setcursor (struct grub_term_output *term __attribute__ ((unused)),
-			int on)
-{
-  curs_set (on ? 1 : 0);
-}
-
-static void
-grub_ncurses_refresh (struct grub_term_output *term __attribute__ ((unused)))
-{
-  refresh ();
+  actual = read (STDIN_FILENO, &c, 1);
+  if (actual > 0)
+    return c;
+  return -1;
 }
 
 static grub_err_t
-grub_ncurses_init (struct grub_term_output *term __attribute__ ((unused)))
+grub_console_init_input (struct grub_term_input *term)
 {
-  initscr ();
-  raw ();
-  noecho ();
-  scrollok (stdscr, TRUE);
-
-  nonl ();
-  intrflush (stdscr, FALSE);
-  keypad (stdscr, TRUE);
-
-  if (has_colors ())
+  if (!saved_orig)
     {
-      start_color ();
-
-      if ((COLORS >= NUM_COLORS) && (COLOR_PAIRS >= NUM_COLORS * NUM_COLORS))
-        {
-          int i, j, n;
-
-          n = 0;
-          for (i = 0; i < NUM_COLORS; i++)
-            for (j = 0; j < NUM_COLORS; j++)
-              init_pair(n++, color_map[j], color_map[i]);
-
-          use_color = 1;
-        }
+      original_fl = fcntl (STDIN_FILENO, F_GETFL);
+      fcntl (STDIN_FILENO, F_SETFL, original_fl | O_NONBLOCK);
     }
 
-  return 0;
+  saved_orig = 1;
+
+  tcgetattr(STDIN_FILENO, &orig_tty);
+  new_tty = orig_tty;
+  new_tty.c_lflag &= ~(ICANON | ECHO);
+  new_tty.c_cc[VMIN] = 1;
+  tcsetattr(STDIN_FILENO, TCSANOW, &new_tty);
+
+  return grub_terminfo_input_init (term);
 }
 
 static grub_err_t
-grub_ncurses_fini (struct grub_term_output *term __attribute__ ((unused)))
+grub_console_fini_input (struct grub_term_input *term
+		       __attribute__ ((unused)))
 {
-  endwin ();
+  fcntl (STDIN_FILENO, F_SETFL, original_fl);
+  tcsetattr(STDIN_FILENO, TCSANOW, &orig_tty);
+  saved_orig = 0;
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_console_init_output (struct grub_term_output *term)
+{
+  struct winsize size;
+  if (ioctl (STDOUT_FILENO, TIOCGWINSZ, &size) >= 0)
+    {
+      grub_console_terminfo_output.width = size.ws_col;
+      grub_console_terminfo_output.height = size.ws_row;
+    }
+  else
+    {
+      grub_console_terminfo_output.width = 80;
+      grub_console_terminfo_output.height = 24;
+    }
+
+  grub_terminfo_output_init (term);
+
   return 0;
 }
 
 
-static struct grub_term_input grub_ncurses_term_input =
+
+struct grub_terminfo_input_state grub_console_terminfo_input =
   {
-    .name = "console",
-    .getkey = grub_ncurses_getkey,
+    .readkey = readkey
   };
 
-static struct grub_term_output grub_ncurses_term_output =
+struct grub_terminfo_output_state grub_console_terminfo_output =
+  {
+    .put = put,
+    .width = 80,
+    .height = 24
+  };
+
+static struct grub_term_input grub_console_term_input =
   {
     .name = "console",
-    .init = grub_ncurses_init,
-    .fini = grub_ncurses_fini,
-    .putchar = grub_ncurses_putchar,
-    .getxy = grub_ncurses_getxy,
-    .getwh = grub_ncurses_getwh,
-    .gotoxy = grub_ncurses_gotoxy,
-    .cls = grub_ncurses_cls,
-    .setcolorstate = grub_ncurses_setcolorstate,
-    .setcursor = grub_ncurses_setcursor,
-    .refresh = grub_ncurses_refresh,
-    .flags = GRUB_TERM_CODE_TYPE_ASCII
+    .init = grub_console_init_input,
+    .fini = grub_console_fini_input,
+    .getkey = grub_terminfo_getkey,
+    .data = &grub_console_terminfo_input
+  };
+
+static struct grub_term_output grub_console_term_output =
+  {
+    .name = "console",
+    .init = grub_console_init_output,
+    .putchar = grub_terminfo_putchar,
+    .getxy = grub_terminfo_getxy,
+    .getwh = grub_terminfo_getwh,
+    .gotoxy = grub_terminfo_gotoxy,
+    .cls = grub_terminfo_cls,
+    .setcolorstate = grub_terminfo_setcolorstate,
+    .setcursor = grub_terminfo_setcursor,
+    .data = &grub_console_terminfo_output,
   };
 
 void
 grub_console_init (void)
 {
-  grub_term_register_output ("console", &grub_ncurses_term_output);
-  grub_term_register_input ("console", &grub_ncurses_term_input);
+  const char *cs = nl_langinfo (CODESET);
+  if (cs && grub_strcasecmp (cs, "UTF-8"))
+    grub_console_term_output.flags = GRUB_TERM_CODE_TYPE_UTF8_LOGICAL;
+  else
+    grub_console_term_output.flags = GRUB_TERM_CODE_TYPE_ASCII;
+  grub_term_register_input ("console", &grub_console_term_input);
+  grub_term_register_output ("console", &grub_console_term_output);
+  grub_terminfo_init ();
+  grub_terminfo_output_register (&grub_console_term_output, "vt100-color");
 }
 
 void
 grub_console_fini (void)
 {
-  grub_ncurses_fini (&grub_ncurses_term_output);
+  if (saved_orig)
+    {
+      fcntl (STDIN_FILENO, F_SETFL, original_fl);
+      tcsetattr(STDIN_FILENO, TCSANOW, &orig_tty);
+    }
+  saved_orig = 0;
 }

@@ -111,6 +111,20 @@ grub_linux_claimmap_iterate (grub_addr_t target, grub_size_t size,
     .found_addr = (grub_addr_t) -1
   };
 
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_FORCE_CLAIM))
+    {
+      grub_uint64_t addr = target;
+      if (addr < GRUB_IEEE1275_STATIC_HEAP_START
+	  + GRUB_IEEE1275_STATIC_HEAP_LEN)
+	addr = GRUB_IEEE1275_STATIC_HEAP_START
+	  + GRUB_IEEE1275_STATIC_HEAP_LEN;
+      addr = ALIGN_UP (addr, align);
+      if (grub_claimmap (addr, size) == GRUB_ERR_NONE)
+	return addr;
+      return (grub_addr_t) -1;
+    }
+	
+
   grub_machine_mmap_iterate (alloc_mem, &ctx);
 
   return ctx.found_addr;
@@ -204,7 +218,7 @@ grub_linux_load32 (grub_elf_t elf, const char *filename)
   linux_addr = seg_addr;
 
   /* Now load the segments into the area we claimed.  */
-  return grub_elf32_load (elf, filename, (void *) (seg_addr - base_addr), GRUB_ELF_LOAD_FLAGS_NONE, 0, 0);
+  return grub_elf32_load (elf, filename, (void *) (seg_addr - base_addr), GRUB_ELF_LOAD_FLAGS_30BITS, 0, 0);
 }
 
 static grub_err_t
@@ -238,7 +252,7 @@ grub_linux_load64 (grub_elf_t elf, const char *filename)
   linux_addr = seg_addr;
 
   /* Now load the segments into the area we claimed.  */
-  return grub_elf64_load (elf, filename, (void *) (grub_addr_t) (seg_addr - base_addr), GRUB_ELF_LOAD_FLAGS_NONE, 0, 0);
+  return grub_elf64_load (elf, filename, (void *) (grub_addr_t) (seg_addr - base_addr), GRUB_ELF_LOAD_FLAGS_62BITS, 0, 0);
 }
 
 static grub_err_t

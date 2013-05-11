@@ -223,6 +223,25 @@ circprog_set_state (void *vself, int visible, int start,
   self->end = end;
 }
 
+static int
+parse_angle (const char *value)
+{
+  char *ptr;
+  int angle;
+
+  angle = grub_strtol (value, &ptr, 10);
+  if (grub_errno)
+    return 0;
+  while (grub_isspace (*ptr))
+    ptr++;
+  if (grub_strcmp (ptr, "deg") == 0
+      /* Unicode symbol of degrees (a circle, U+b0). Put here in UTF-8 to
+	 avoid potential problem with text file reesncoding  */
+      || grub_strcmp (ptr, "\xc2\xb0") == 0)
+    angle = (angle * 64 + 45) / 90;
+  return angle;
+}
+
 static grub_err_t
 circprog_set_property (void *vself, const char *name, const char *value)
 {
@@ -233,7 +252,7 @@ circprog_set_property (void *vself, const char *name, const char *value)
     }
   else if (grub_strcmp (name, "start_angle") == 0)
     {
-      self->start_angle = grub_strtol (value, 0, 10);
+      self->start_angle = parse_angle (value);
     }
   else if (grub_strcmp (name, "ticks_disappear") == 0)
     {

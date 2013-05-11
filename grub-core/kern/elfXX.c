@@ -101,8 +101,20 @@ grub_elfXX_load (grub_elf_t elf, const char *filename,
       continue;
 
     load_addr = (grub_addr_t) phdr->p_paddr;
-    if (load_flags & GRUB_ELF_LOAD_FLAGS_28BITS)
-      load_addr &= 0xFFFFFFF;
+    switch (load_flags & GRUB_ELF_LOAD_FLAGS_BITS)
+      {
+      case GRUB_ELF_LOAD_FLAGS_ALL_BITS:
+	break;
+      case GRUB_ELF_LOAD_FLAGS_28BITS:
+	load_addr &= 0xFFFFFFF;
+	break;
+      case GRUB_ELF_LOAD_FLAGS_30BITS:
+	load_addr &= 0x3FFFFFFF;
+	break;
+      case GRUB_ELF_LOAD_FLAGS_62BITS:
+	load_addr &= 0x3FFFFFFFFFFFFFFFULL;
+	break;
+      }
     load_addr += (grub_addr_t) load_offset;
 
     if (load_addr < load_base)

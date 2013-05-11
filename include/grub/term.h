@@ -347,14 +347,6 @@ grub_term_border_width (struct grub_term_output *term)
   return grub_term_width (term) - GRUB_TERM_MARGIN * 2;
 }
 
-/* The max column number of an entry. The last "-1" is for a
-   continuation marker.  */
-static inline int
-grub_term_entry_width (struct grub_term_output *term)
-{
-  return grub_term_border_width (term) - GRUB_TERM_MARGIN * 2 - 1;
-}
-
 static inline grub_uint16_t
 grub_term_getxy (struct grub_term_output *term)
 {

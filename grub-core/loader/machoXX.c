@@ -55,7 +55,7 @@ SUFFIX (grub_macho_parse) (grub_macho_t macho, const char *filename)
 
   if (head.macho.magic != GRUB_MACHO_MAGIC)
     {
-      grub_error (GRUB_ERR_BAD_OS, "invalid Mach-O " XX "-bit header");
+      grub_error (GRUB_ERR_BAD_OS, "invalid Mach-O  header");
       macho->offsetXX = -1;
       return;
     }
@@ -154,7 +154,7 @@ grub_macho_cmds_iterate (grub_macho_t macho,
     }
 
   if (! macho->cmdsXX)
-    return grub_error (GRUB_ERR_BAD_OS, "couldn't find " XX "-bit Mach-O");
+    return grub_error (GRUB_ERR_BAD_OS, "couldn't find Mach-O commands");
   hdrs = macho->cmdsXX;
   for (i = 0; i < macho->ncmdsXX; i++)
     {

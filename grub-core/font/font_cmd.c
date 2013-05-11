@@ -32,7 +32,7 @@ loadfont_command (grub_command_t cmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   while (argc--)
-    if (grub_font_load (*args++) != 0)
+    if (grub_font_load (*args++) == 0)
       {
 	if (!grub_errno)
 	  return grub_error (GRUB_ERR_BAD_FONT, "invalid font");

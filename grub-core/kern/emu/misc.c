@@ -145,36 +145,6 @@ xstrdup (const char *str)
   return newstr;
 }
 
-#ifndef HAVE_VASPRINTF
-
-int
-vasprintf (char **buf, const char *fmt, va_list ap)
-{
-  /* Should be large enough.  */
-  *buf = xmalloc (512);
-
-  return vsnprintf (*buf, 512, fmt, ap);
-}
-
-#endif
-
-#ifndef  HAVE_ASPRINTF
-
-int
-asprintf (char **buf, const char *fmt, ...)
-{
-  int status;
-  va_list ap;
-
-  va_start (ap, fmt);
-  status = vasprintf (buf, fmt, ap);
-  va_end (ap);
-
-  return status;
-}
-
-#endif
-
 char *
 xasprintf (const char *fmt, ...)
 { 
@@ -182,12 +152,9 @@ xasprintf (const char *fmt, ...)
   char *result;
   
   va_start (ap, fmt);
-  if (vasprintf (&result, fmt, ap) < 0)
-    { 
-      if (errno == ENOMEM)
-        grub_util_error ("%s", _("out of memory"));
-      return NULL;
-    }
+  result = grub_xvasprintf (fmt, ap);
+  if (!result)
+    grub_util_error ("%s", _("out of memory"));
   
   return result;
 }

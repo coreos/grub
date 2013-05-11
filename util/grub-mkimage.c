@@ -42,6 +42,7 @@
 #include <grub/efi/pe32.h>
 #include <grub/uboot/image.h>
 #include <grub/arm/reloc.h>
+#include <grub/ia64/reloc.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -68,7 +69,8 @@ struct image_target_desc
   int bigendian;
   enum {
     IMAGE_I386_PC, IMAGE_EFI, IMAGE_COREBOOT,
-    IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_I386_IEEE1275,
+    IMAGE_SPARC64_AOUT, IMAGE_SPARC64_RAW, IMAGE_SPARC64_CDCORE,
+    IMAGE_I386_IEEE1275,
     IMAGE_LOONGSON_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
     IMAGE_FULOONG2F_FLASH, IMAGE_I386_PC_PXE, IMAGE_MIPS_ARC,
     IMAGE_QEMU_MIPS_FLASH, IMAGE_UBOOT
@@ -337,6 +339,21 @@ struct image_target_desc image_targets[] =
     },
     {
       .dirname = "sparc64-ieee1275",
+      .names = { "sparc64-ieee1275-cdcore", NULL },
+      .voidp_sizeof = 8,
+      .bigendian = 1, 
+      .id = IMAGE_SPARC64_CDCORE,
+      .flags = PLATFORM_FLAGS_NONE,
+      .total_module_size = GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE,
+      .decompressor_compressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_addr = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
+    },
+    {
+      .dirname = "sparc64-ieee1275",
       .names = { "sparc64-ieee1275-aout", NULL },
       .voidp_sizeof = 8,
       .bigendian = 1,
@@ -372,8 +389,7 @@ struct image_target_desc image_targets[] =
       .voidp_sizeof = 4,
       .bigendian = 1,
       .id = IMAGE_MIPS_ARC, 
-      .flags = (PLATFORM_FLAGS_DECOMPRESSORS
-		| PLATFORM_FLAGS_MODULES_BEFORE_KERNEL),
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
       .total_module_size = GRUB_KERNEL_MIPS_ARC_TOTAL_MODULE_SIZE,
       .decompressor_compressed_size = GRUB_DECOMPRESSOR_MIPS_LOONGSON_COMPRESSED_SIZE,
       .decompressor_uncompressed_size = GRUB_DECOMPRESSOR_MIPS_LOONGSON_UNCOMPRESSED_SIZE,
@@ -381,6 +397,24 @@ struct image_target_desc image_targets[] =
       .section_align = 1,
       .vaddr_offset = 0,
       .link_addr = GRUB_KERNEL_MIPS_ARC_LINK_ADDR,
+      .elf_target = EM_MIPS,
+      .link_align = GRUB_KERNEL_MIPS_ARC_LINK_ALIGN,
+      .default_compression = COMPRESSION_NONE
+    },
+    {
+      .dirname = "mipsel-arc",
+      .names = {"mipsel-arc", NULL},
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_MIPS_ARC, 
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .total_module_size = GRUB_KERNEL_MIPS_ARC_TOTAL_MODULE_SIZE,
+      .decompressor_compressed_size = GRUB_DECOMPRESSOR_MIPS_LOONGSON_COMPRESSED_SIZE,
+      .decompressor_uncompressed_size = GRUB_DECOMPRESSOR_MIPS_LOONGSON_UNCOMPRESSED_SIZE,
+      .decompressor_uncompressed_addr = GRUB_DECOMPRESSOR_MIPS_LOONGSON_UNCOMPRESSED_ADDR,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .link_addr = GRUB_KERNEL_MIPSEL_ARC_LINK_ADDR,
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_ARC_LINK_ALIGN,
       .default_compression = COMPRESSION_NONE
@@ -1062,6 +1096,7 @@ generate_image (const char *dir, const char *prefix,
       break;
     case IMAGE_SPARC64_AOUT:
     case IMAGE_SPARC64_RAW:
+    case IMAGE_SPARC64_CDCORE:
     case IMAGE_I386_IEEE1275:
     case IMAGE_PPC:
     case IMAGE_UBOOT:
@@ -1244,10 +1279,10 @@ generate_image (const char *dir, const char *prefix,
 	    o->subsystem = grub_host_to_target16 (GRUB_PE32_SUBSYSTEM_EFI_APPLICATION);
 
 	    /* Do these really matter? */
-	    o->stack_reserve_size = grub_host_to_target32 (0x10000);
-	    o->stack_commit_size = grub_host_to_target32 (0x10000);
-	    o->heap_reserve_size = grub_host_to_target32 (0x10000);
-	    o->heap_commit_size = grub_host_to_target32 (0x10000);
+	    o->stack_reserve_size = grub_host_to_target64 (0x10000);
+	    o->stack_commit_size = grub_host_to_target64 (0x10000);
+	    o->heap_reserve_size = grub_host_to_target64 (0x10000);
+	    o->heap_commit_size = grub_host_to_target64 (0x10000);
     
 	    o->num_data_directories
 	      = grub_host_to_target32 (GRUB_PE32_NUM_DATA_DIRECTORIES);
@@ -1401,6 +1436,8 @@ generate_image (const char *dir, const char *prefix,
 	free (boot_img);
 	free (boot_path);
       }
+      break;
+    case IMAGE_SPARC64_CDCORE:
       break;
     case IMAGE_YEELOONG_FLASH:
     case IMAGE_FULOONG2F_FLASH:
@@ -1581,22 +1618,23 @@ generate_image (const char *dir, const char *prefix,
 
 	program_size = ALIGN_ADDR (core_size);
 	if (comp == COMPRESSION_NONE)
-	  target_addr = (image_target->link_addr 
-			 - total_module_size - decompress_size);
+	  target_addr = (image_target->link_addr - decompress_size);
 	else
-	  target_addr = (image_target->link_addr 
-			 - ALIGN_UP(total_module_size + core_size, 1048576)
-			 - (1 << 20));
+	  target_addr = ALIGN_UP (image_target->link_addr
+				  + kernel_size + total_module_size, 32);
 
 	ecoff_img = xmalloc (program_size + sizeof (*head) + sizeof (*section));
 	grub_memset (ecoff_img, 0, program_size + sizeof (*head) + sizeof (*section));
 	head = (void *) ecoff_img;
 	section = (void *) (head + 1);
-	head->magic = grub_host_to_target16 (0x160);
+	head->magic = image_target->bigendian ? grub_host_to_target16 (0x160)
+	  : grub_host_to_target16 (0x166);
 	head->nsec = grub_host_to_target16 (1);
 	head->time = grub_host_to_target32 (0);
 	head->opt = grub_host_to_target16 (0x38);
-	head->flags = grub_host_to_target16 (0x207);
+	head->flags = image_target->bigendian
+	  ? grub_host_to_target16 (0x207)
+	  : grub_host_to_target16 (0x103);
 	head->magic2 = grub_host_to_target16 (0x107);
 	head->textsize = grub_host_to_target32 (program_size);
 	head->entry = grub_host_to_target32 (target_addr);
@@ -1606,6 +1644,11 @@ generate_image (const char *dir, const char *prefix,
 	section->vaddr = grub_host_to_target32 (target_addr);
 	section->size = grub_host_to_target32 (program_size);
 	section->file_offset = grub_host_to_target32 (sizeof (*head) + sizeof (*section));
+	if (!image_target->bigendian)
+	  {
+	    section->paddr = grub_host_to_target32 (0xaa60);
+	    section->flags = grub_host_to_target32 (0x20);
+	  }
 	memcpy (section + 1, core_img, core_size);
 	free (core_img);
 	core_img = ecoff_img;
@@ -1788,7 +1831,9 @@ static struct argp_option options[] = {
   {"memdisk",  'm', N_("FILE"), 0,
    /* TRANSLATORS: "memdisk" here isn't an identifier, it can be translated.
     "embed" is a verb (command description).  "*/
-   N_("embed FILE as a memdisk image"), 0},
+   N_("embed FILE as a memdisk image\n"
+      "Implies `-p (memdisk)/boot/grub' but prefix can be overridden by "
+      "later options"), 0},
    /* TRANSLATORS: "embed" is a verb (command description).  "*/
   {"config",   'c', N_("FILE"), 0, N_("embed FILE as an early config"), 0},
    /* TRANSLATORS: "embed" is a verb (command description).  "*/
@@ -1797,7 +1842,7 @@ static struct argp_option options[] = {
   {"note",   'n', 0, 0, N_("add NOTE segment for CHRP IEEE1275"), 0},
   {"output",  'o', N_("FILE"), 0, N_("output a generated image to FILE [default=stdout]"), 0},
   {"format",  'O', N_("FORMAT"), 0, 0, 0},
-  {"compression",  'C', "(xz|none|auto)", 0, N_("choose the compression to use"), 0},
+  {"compression",  'C', "(xz|none|auto)", 0, N_("choose the compression to use for core image"), 0},
   {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };

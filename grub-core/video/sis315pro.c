@@ -152,7 +152,7 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
   framebuffer.mode_info.bpp = 8;
   framebuffer.mode_info.bytes_per_pixel = 1;
   framebuffer.mode_info.pitch = 640 * 1;
-  framebuffer.mode_info.number_of_colors = 256;
+  framebuffer.mode_info.number_of_colors = 16;
   framebuffer.mode_info.red_mask_size = 0;
   framebuffer.mode_info.red_field_pos = 0;
   framebuffer.mode_info.green_mask_size = 0;
@@ -372,7 +372,7 @@ grub_video_sis315pro_setup (unsigned int width, unsigned int height,
     return err;
 
   /* Copy default palette to initialize emulated palette.  */
-  err = grub_video_fb_set_palette (0, GRUB_VIDEO_FBSTD_NUMCOLORS,
+  err = grub_video_fb_set_palette (0, GRUB_VIDEO_FBSTD_EXT_NUMCOLORS,
 				   grub_video_fbstd_colors);
 #endif
   return err;

@@ -43,9 +43,6 @@ grub_ieee1275_set_flag (enum grub_ieee1275_flag flag)
   grub_ieee1275_flags |= (1 << flag);
 }
 
-#define SF "SmartFirmware(tm)"
-#define OHW "PPC Open Hack'Ware"
-
 static void
 grub_ieee1275_find_options (void)
 {
@@ -76,7 +73,8 @@ grub_ieee1275_find_options (void)
 
   rc = grub_ieee1275_get_property (openprom, "CodeGen-copyright",
 				   tmp,	sizeof (tmp), 0);
-  if (rc >= 0 && !grub_strncmp (tmp, SF, sizeof (SF) - 1))
+  if (rc >= 0 && !grub_strncmp (tmp, "SmartFirmware(tm)",
+				sizeof ("SmartFirmware(tm)") - 1))
     is_smartfirmware = 1;
 
   rc = grub_ieee1275_get_property (root, "architecture",
@@ -188,10 +186,12 @@ grub_ieee1275_find_options (void)
       grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_HAS_CURSORONOFF);
     }
 
-  if (! grub_ieee1275_finddevice ("/rom/boot-rom", &bootrom))
+  if (! grub_ieee1275_finddevice ("/rom/boot-rom", &bootrom)
+      || ! grub_ieee1275_finddevice ("/boot-rom", &bootrom))
     {
       rc = grub_ieee1275_get_property (bootrom, "model", tmp, sizeof (tmp), 0);
-      if (rc >= 0 && !grub_strncmp (tmp, OHW, sizeof (OHW) - 1))
+      if (rc >= 0 && !grub_strncmp (tmp, "PPC Open Hack'Ware",
+				    sizeof ("PPC Open Hack'Ware") - 1))
 	{
 	  grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_BROKEN_OUTPUT);
 	  grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_CANNOT_SET_COLORS);
@@ -201,9 +201,6 @@ grub_ieee1275_find_options (void)
 	}
     }
 }
-
-#undef SF
-#undef OHW
 
 void
 grub_ieee1275_init (void)

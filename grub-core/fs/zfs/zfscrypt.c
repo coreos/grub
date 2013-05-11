@@ -263,8 +263,8 @@ algo_decrypt (grub_crypto_cipher_handle_t cipher, grub_uint64_t algo,
       return grub_gcm_decrypt (cipher, out, in, psize, mac_out, nonce,
 			       15 - l, m);
     default:
-      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "algorithm %" 
-			 PRIuGRUB_UINT64_T " is not supported yet", algo);
+      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "algorithm %lld is not supported yet",
+			 (long long) algo);
     }
 }
 

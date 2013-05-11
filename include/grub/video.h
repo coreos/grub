@@ -101,6 +101,11 @@ enum grub_video_blit_format
 
     /* When needed, decode color or just use value as is.  */
     GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR,
+    /* Like index but only 16-colors and F0 is a special value for transparency.
+       Could be extended to 4 bits of alpha and 4 bits of color if necessary.
+       Used internally for text rendering.
+     */
+    GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR_ALPHA,
 
     /* Two color bitmap; bits packed: rows are not padded to byte boundary.  */
     GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED
@@ -283,6 +288,9 @@ typedef enum grub_video_driver_id
     GRUB_VIDEO_DRIVER_SDL,
     GRUB_VIDEO_DRIVER_SIS315PRO,
     GRUB_VIDEO_DRIVER_RADEON_FULOONG2E,
+    GRUB_VIDEO_DRIVER_COREBOOT,
+    GRUB_VIDEO_DRIVER_IEEE1275,
+    GRUB_VIDEO_ADAPTER_CAPTURE
   } grub_video_driver_id_t;
 
 typedef enum grub_video_adapter_prio
@@ -416,7 +424,7 @@ grub_err_t EXPORT_FUNC (grub_video_get_info) (struct grub_video_mode_info *mode_
 grub_err_t EXPORT_FUNC (grub_video_get_info_and_fini) (struct grub_video_mode_info *mode_info,
 					 void **framebuffer);
 
-enum grub_video_blit_format grub_video_get_blit_format (struct grub_video_mode_info *mode_info);
+enum grub_video_blit_format EXPORT_FUNC(grub_video_get_blit_format) (struct grub_video_mode_info *mode_info);
 
 grub_err_t grub_video_set_palette (unsigned int start, unsigned int count,
                                    struct grub_video_palette_data *palette_data);
@@ -541,5 +549,123 @@ extern void grub_video_radeon_fuloong2e_init (void);
 extern void grub_video_sis315pro_fini (void);
 extern void grub_video_radeon_fuloong2e_fini (void);
 #endif
+
+void
+grub_video_set_adapter (grub_video_adapter_t adapter);
+grub_video_adapter_t
+grub_video_get_adapter (void);
+grub_err_t
+grub_video_capture_start (const struct grub_video_mode_info *mode_info,
+			  struct grub_video_palette_data *palette,
+			  unsigned int palette_size);
+void
+grub_video_capture_end (void);
+
+void *
+grub_video_capture_get_framebuffer (void);
+
+extern grub_video_adapter_t EXPORT_VAR (grub_video_adapter_active);
+extern void (*grub_video_capture_refresh_cb) (void);
+
+#define GRUB_VIDEO_MI_RGB555(x)						\
+  x.mode_type = GRUB_VIDEO_MODE_TYPE_RGB,				\
+    x.bpp = 15,								\
+    x.bytes_per_pixel = 2,						\
+    x.number_of_colors = 256,						\
+    x.red_mask_size = 5,						\
+    x.red_field_pos = 10,						\
+    x.green_mask_size = 5,						\
+    x.green_field_pos = 5,						\
+    x.blue_mask_size = 5,						\
+    x.blue_field_pos = 0
+
+#define GRUB_VIDEO_MI_RGB565(x)						\
+  x.mode_type = GRUB_VIDEO_MODE_TYPE_RGB,				\
+    x.bpp = 16,								\
+    x.bytes_per_pixel = 2,						\
+    x.number_of_colors = 256,						\
+    x.red_mask_size = 5,						\
+    x.red_field_pos = 11,						\
+    x.green_mask_size = 6,						\
+    x.green_field_pos = 5,						\
+    x.blue_mask_size = 5,						\
+    x.blue_field_pos = 0
+
+#define GRUB_VIDEO_MI_RGB888(x) \
+  x.mode_type = GRUB_VIDEO_MODE_TYPE_RGB,			\
+    x.bpp = 24,							\
+    x.bytes_per_pixel = 3,					\
+    x.number_of_colors = 256,					\
+    x.red_mask_size = 8,					\
+    x.red_field_pos = 16,					\
+    x.green_mask_size = 8,					\
+    x.green_field_pos = 8,					\
+    x.blue_mask_size = 8,					\
+    x.blue_field_pos = 0
+
+#define GRUB_VIDEO_MI_RGBA8888(x) \
+  x.mode_type = GRUB_VIDEO_MODE_TYPE_RGB,	\
+    x.bpp = 32,					\
+    x.bytes_per_pixel = 4,			\
+    x.number_of_colors = 256,			\
+    x.reserved_mask_size = 8,			\
+    x.reserved_field_pos = 24,			\
+    x.red_mask_size = 8,			\
+    x.red_field_pos = 16,			\
+    x.green_mask_size = 8,			\
+    x.green_field_pos = 8,			\
+    x.blue_mask_size = 8,			\
+    x.blue_field_pos = 0
+
+
+#define GRUB_VIDEO_MI_BGR555(x)						\
+  x.mode_type = GRUB_VIDEO_MODE_TYPE_RGB,				\
+    x.bpp = 15,								\
+    x.bytes_per_pixel = 2,						\
+    x.number_of_colors = 256,						\
+    x.red_mask_size = 5,						\
+    x.red_field_pos = 0,						\
+    x.green_mask_size = 5,						\
+    x.green_field_pos = 5,						\
+    x.blue_mask_size = 5,						\
+    x.blue_field_pos = 10
+
+#define GRUB_VIDEO_MI_BGR565(x)						\
+  x.mode_type = GRUB_VIDEO_MODE_TYPE_RGB,				\
+    x.bpp = 16,								\
+    x.bytes_per_pixel = 2,						\
+    x.number_of_colors = 256,						\
+    x.red_mask_size = 5,						\
+    x.red_field_pos = 0,						\
+    x.green_mask_size = 6,						\
+    x.green_field_pos = 5,						\
+    x.blue_mask_size = 5,						\
+    x.blue_field_pos = 11
+
+#define GRUB_VIDEO_MI_BGR888(x) \
+  x.mode_type = GRUB_VIDEO_MODE_TYPE_RGB,			\
+    x.bpp = 24,							\
+    x.bytes_per_pixel = 3,					\
+    x.number_of_colors = 256,					\
+    x.red_mask_size = 8,					\
+    x.red_field_pos = 0,					\
+    x.green_mask_size = 8,					\
+    x.green_field_pos = 8,					\
+    x.blue_mask_size = 8,					\
+    x.blue_field_pos = 16
+
+#define GRUB_VIDEO_MI_BGRA8888(x) \
+  x.mode_type = GRUB_VIDEO_MODE_TYPE_RGB,	\
+    x.bpp = 32,					\
+    x.bytes_per_pixel = 4,			\
+    x.number_of_colors = 256,			\
+    x.reserved_mask_size = 8,			\
+    x.reserved_field_pos = 24,			\
+    x.red_mask_size = 8,			\
+    x.red_field_pos = 0,			\
+    x.green_mask_size = 8,			\
+    x.green_field_pos = 8,			\
+    x.blue_mask_size = 8,			\
+    x.blue_field_pos = 16
 
 #endif /* ! GRUB_VIDEO_HEADER */

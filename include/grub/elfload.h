@@ -53,7 +53,11 @@ enum grub_elf_load_flags
   {
     GRUB_ELF_LOAD_FLAGS_NONE = 0,
     GRUB_ELF_LOAD_FLAGS_LOAD_PT_DYNAMIC = 1,
+    GRUB_ELF_LOAD_FLAGS_BITS = 6,
+    GRUB_ELF_LOAD_FLAGS_ALL_BITS = 0,
     GRUB_ELF_LOAD_FLAGS_28BITS = 2,
+    GRUB_ELF_LOAD_FLAGS_30BITS = 4,
+    GRUB_ELF_LOAD_FLAGS_62BITS = 6,
   };
 grub_err_t grub_elf32_load (grub_elf_t, const char *filename,
 			    void *load_offset, enum grub_elf_load_flags flags, grub_addr_t *,

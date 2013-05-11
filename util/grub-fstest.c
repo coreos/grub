@@ -289,10 +289,10 @@ cmd_cmp (char *src, char *dest)
 			    + strlen (entry->d_name));
 	  destnew = xmalloc (strlen (dest) + sizeof ("/")
 			    + strlen (entry->d_name));
-	  ptr = stpcpy (srcnew, src);
+	  ptr = grub_stpcpy (srcnew, src);
 	  *ptr++ = '/';
 	  strcpy (ptr, entry->d_name);
-	  ptr = stpcpy (destnew, dest);
+	  ptr = grub_stpcpy (destnew, dest);
 	  *ptr++ = '/';
 	  strcpy (ptr, entry->d_name);
 

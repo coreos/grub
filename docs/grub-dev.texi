@@ -74,8 +74,8 @@ This edition documents version @value{VERSION}.
 
 @menu
 * Getting the source code::
-* Finding your way around::
 * Coding style::
+* Finding your way around::
 * Contributing Changes::
 * Porting::
 * Error Handling::
@@ -948,8 +948,8 @@ driver manager works are not included here.
 
 @menu
 * Video API::
-* Bitmap API::
 * Example usage of Video API::
+* Bitmap API::
 @end menu
 
 @node Video API
@@ -1394,8 +1394,8 @@ grub_video_blit_glyph (&glyph, color, 0, 0);
 
 @node Bitmap API
 @section Bitmap API
-@itemize
 @subsection grub_video_bitmap_create
+@itemize
 @item Prototype:
 @example
 grub_err_t grub_video_bitmap_create (struct grub_video_bitmap **bitmap, unsigned int width, unsigned int height, enum grub_video_blit_format blit_format)

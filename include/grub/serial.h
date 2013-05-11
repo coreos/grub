@@ -30,6 +30,9 @@
 #ifdef GRUB_MACHINE_IEEE1275
 #include <grub/ieee1275/ieee1275.h>
 #endif
+#ifdef GRUB_MACHINE_ARC
+#include <grub/arc/arc.h>
+#endif
 
 struct grub_serial_port;
 struct grub_serial_config;
@@ -105,6 +108,13 @@ struct grub_serial_port
 #ifdef GRUB_MACHINE_EFI
     struct grub_efi_serial_io_interface *interface;
 #endif
+#ifdef GRUB_MACHINE_ARC
+    struct
+    {
+      grub_arc_fileno_t handle;
+      int handle_valid;
+    };
+#endif
   };
   grub_term_output_t term_out;
   grub_term_input_t term_in;
@@ -169,6 +179,12 @@ void grub_ofserial_init (void);
 #ifdef GRUB_MACHINE_EFI
 void
 grub_efiserial_init (void);
+#endif
+#ifdef GRUB_MACHINE_ARC
+void
+grub_arcserial_init (void);
+const char *
+grub_arcserial_add_port (const char *path);
 #endif
 
 struct grub_serial_port *grub_serial_find (const char *name);

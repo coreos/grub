@@ -25,6 +25,13 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 
+#include <grub/video.h>
+#include <grub/video_fb.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct grub_test
 {
   /* The next test.  */
@@ -89,5 +96,30 @@ void grub_unit_test_fini (void);
   {						\
     grub_test_unregister (#name);		\
   }
+
+void
+grub_video_checksum (const char *basename_in);
+void
+grub_video_checksum_end (void);
+void
+grub_terminal_input_fake_sequence (int *seq_in, int nseq_in);
+void
+grub_terminal_input_fake_sequence_end (void);
+const char *
+grub_video_checksum_get_modename (void);
+
+
+#define GRUB_TEST_VIDEO_SMALL_N_MODES 6
+#define GRUB_TEST_VIDEO_ALL_N_MODES 30
+
+extern struct grub_video_mode_info grub_test_video_modes[GRUB_TEST_VIDEO_ALL_N_MODES];
+
+int
+grub_test_use_gfxterm (void);
+void grub_test_use_gfxterm_end (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! GRUB_TEST_HEADER */

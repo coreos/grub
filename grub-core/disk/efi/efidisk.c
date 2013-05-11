@@ -329,18 +329,28 @@ name_devices (struct grub_efidisk_data *devices)
     {
       grub_efi_device_path_t *dp;
       grub_efi_block_io_media_t *m;
+      int is_floppy = 0;
 
       dp = d->last_device_path;
       if (! dp)
 	continue;
 
       m = d->block_io->media;
-      if (m->logical_partition)
+      if (GRUB_EFI_DEVICE_PATH_TYPE (dp) == GRUB_EFI_ACPI_DEVICE_PATH_TYPE
+	  && GRUB_EFI_DEVICE_PATH_SUBTYPE (dp)
+	  == GRUB_EFI_ACPI_DEVICE_PATH_SUBTYPE)
 	{
-	  /* Only one partition in a non-media device. Assume that this
-	     is a floppy drive.  */
+	  grub_efi_acpi_device_path_t *acpi
+	    = (grub_efi_acpi_device_path_t *) dp;
+	  /* Floppy EISA ID.  */ 
+	  if (acpi->hid == 0x60441d0 || acpi->hid == 0x70041d0
+	      || acpi->hid == 0x70141d1)
+	    is_floppy = 1;
+	}
+      if (is_floppy)
+	{
 #ifdef DEBUG_NAMES
-	  grub_printf ("adding a floppy by guessing: ");
+	  grub_printf ("adding a floppy: ");
 	  grub_efi_print_device_path (d->device_path);
 #endif
 	  add_device (&fd_devices, d);
@@ -528,9 +538,9 @@ grub_efidisk_close (struct grub_disk *disk __attribute__ ((unused)))
   grub_dprintf ("efidisk", "closing %s\n", disk->name);
 }
 
-static grub_err_t
-grub_efidisk_read (struct grub_disk *disk, grub_disk_addr_t sector,
-		   grub_size_t size, char *buf)
+static grub_efi_status_t
+grub_efidisk_readwrite (struct grub_disk *disk, grub_disk_addr_t sector,
+			grub_size_t size, char *buf, int wr)
 {
   /* For now, use the disk io interface rather than the block io's.  */
   struct grub_efidisk_data *d;
@@ -540,14 +550,38 @@ grub_efidisk_read (struct grub_disk *disk, grub_disk_addr_t sector,
   d = disk->data;
   bio = d->block_io;
 
+  while (size > 0)
+    {
+      grub_size_t len;
+      len = 0x500;
+      if (len > size)
+	len = size;
+      status = efi_call_5 ((wr ? bio->write_blocks : bio->read_blocks), bio,
+			   bio->media->media_id,
+			   (grub_efi_uint64_t) sector,
+			   (grub_efi_uintn_t) len << disk->log_sector_size,
+			   buf);
+      size -= len;
+      buf += len << disk->log_sector_size;
+      sector += len;
+      if (status != GRUB_EFI_SUCCESS)
+	return status;
+    }
+  return GRUB_EFI_SUCCESS;
+}
+
+static grub_err_t
+grub_efidisk_read (struct grub_disk *disk, grub_disk_addr_t sector,
+		   grub_size_t size, char *buf)
+{
+  grub_efi_status_t status;
+
   grub_dprintf ("efidisk",
 		"reading 0x%lx sectors at the sector 0x%llx from %s\n",
 		(unsigned long) size, (unsigned long long) sector, disk->name);
 
-  status = efi_call_5 (bio->read_blocks, bio, bio->media->media_id,
-		       (grub_efi_uint64_t) sector,
-		       (grub_efi_uintn_t) size << disk->log_sector_size,
-		       buf);
+  status = grub_efidisk_readwrite (disk, sector, size, buf, 0);
+
   if (status != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_READ_ERROR,
 		       N_("failure reading sector 0x%llx from `%s'"),
@@ -561,22 +595,14 @@ static grub_err_t
 grub_efidisk_write (struct grub_disk *disk, grub_disk_addr_t sector,
 		    grub_size_t size, const char *buf)
 {
-  /* For now, use the disk io interface rather than the block io's.  */
-  struct grub_efidisk_data *d;
-  grub_efi_block_io_t *bio;
   grub_efi_status_t status;
-
-  d = disk->data;
-  bio = d->block_io;
 
   grub_dprintf ("efidisk",
 		"writing 0x%lx sectors at the sector 0x%llx to %s\n",
 		(unsigned long) size, (unsigned long long) sector, disk->name);
 
-  status = efi_call_5 (bio->write_blocks, bio, bio->media->media_id,
-		       (grub_efi_uint64_t) sector,
-		       (grub_efi_uintn_t) size << disk->log_sector_size,
-		       (void *) buf);
+  status = grub_efidisk_readwrite (disk, sector, size, (char *) buf, 1);
+
   if (status != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_WRITE_ERROR,
 		       N_("failure writing sector 0x%llx to `%s'"),
@@ -598,19 +624,24 @@ static struct grub_disk_dev grub_efidisk_dev =
   };
 
 void
-grub_efidisk_init (void)
-{
-  enumerate_disks ();
-  grub_disk_dev_register (&grub_efidisk_dev);
-}
-
-void
 grub_efidisk_fini (void)
 {
   free_devices (fd_devices);
   free_devices (hd_devices);
   free_devices (cd_devices);
+  fd_devices = 0;
+  hd_devices = 0;
+  cd_devices = 0;
   grub_disk_dev_unregister (&grub_efidisk_dev);
+}
+
+void
+grub_efidisk_init (void)
+{
+  grub_disk_firmware_fini = grub_efidisk_fini;
+
+  enumerate_disks ();
+  grub_disk_dev_register (&grub_efidisk_dev);
 }
 
 /* Some utility functions to map GRUB devices with EFI devices.  */

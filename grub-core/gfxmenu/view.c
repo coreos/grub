@@ -58,6 +58,14 @@ grub_gfxmenu_view_new (const char *theme_path,
   if (! view)
     return 0;
 
+  while (grub_gfxmenu_timeout_notifications)
+    {
+      struct grub_gfxmenu_timeout_notify *p;
+      p = grub_gfxmenu_timeout_notifications;
+      grub_gfxmenu_timeout_notifications = grub_gfxmenu_timeout_notifications->next;
+      grub_free (p);
+    }
+
   view->screen.x = 0;
   view->screen.y = 0;
   view->screen.width = width;
@@ -105,6 +113,13 @@ grub_gfxmenu_view_destroy (grub_gfxmenu_view_t view)
 {
   if (!view)
     return;
+  while (grub_gfxmenu_timeout_notifications)
+    {
+      struct grub_gfxmenu_timeout_notify *p;
+      p = grub_gfxmenu_timeout_notifications;
+      grub_gfxmenu_timeout_notifications = grub_gfxmenu_timeout_notifications->next;
+      grub_free (p);
+    }
   grub_video_bitmap_destroy (view->desktop_image);
   if (view->terminal_box)
     view->terminal_box->destroy (view->terminal_box);
@@ -237,6 +252,27 @@ update_menu_components (grub_gfxmenu_view_t view)
 }
 
 static void
+refresh_menu_visit (grub_gui_component_t component,
+              void *userdata)
+{
+  grub_gfxmenu_view_t view;
+  view = userdata;
+  if (component->ops->is_instance (component, "list"))
+    {
+      grub_gui_list_t list = (grub_gui_list_t) component;
+      list->ops->refresh_list (list, view);
+    }
+}
+
+/* Refresh list information (useful for submenus) */
+static void
+refresh_menu_components (grub_gfxmenu_view_t view)
+{
+  grub_gui_iterate_recursively ((grub_gui_component_t) view->canvas,
+                                refresh_menu_visit, view);
+}
+
+static void
 draw_message (grub_gfxmenu_view_t view)
 {
   char *text = view->progress_message_text;
@@ -294,6 +330,7 @@ grub_gfxmenu_view_draw (grub_gfxmenu_view_t view)
 			  view->screen.x, view->screen.y,
 			  view->screen.width, view->screen.height);
 
+  refresh_menu_components (view);
   update_menu_components (view);
 
   grub_gfxmenu_view_redraw (view, &view->screen);

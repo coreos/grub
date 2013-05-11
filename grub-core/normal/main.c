@@ -127,6 +127,7 @@ grub_normal_free_menu (grub_menu_t menu)
       grub_free ((void *) entry->users);
       grub_free ((void *) entry->title);
       grub_free ((void *) entry->sourcecode);
+      grub_free (entry);
       entry = next_entry;
     }
 
@@ -162,8 +163,9 @@ static grub_menu_t
 read_config_file (const char *config)
 {
   grub_file_t file;
-  const char *old_file, *old_dir;
+  char *old_file = 0, *old_dir = 0;
   char *config_dir, *ptr = 0;
+  const char *ctmp;
 
   grub_menu_t newmenu;
 
@@ -182,8 +184,12 @@ read_config_file (const char *config)
   if (! file)
     return 0;
 
-  old_file = grub_env_get ("config_file");
-  old_dir = grub_env_get ("config_directory");
+  ctmp = grub_env_get ("config_file");
+  if (ctmp)
+    old_file = grub_strdup (ctmp);
+  ctmp = grub_env_get ("config_directory");
+  if (ctmp)
+    old_dir = grub_strdup (ctmp);
   grub_env_set ("config_file", config);
   config_dir = grub_strdup (config);
   if (config_dir)
@@ -191,6 +197,7 @@ read_config_file (const char *config)
   if (ptr)
     *ptr = 0;
   grub_env_set ("config_directory", config_dir);
+  grub_free (config_dir);
 
   grub_env_export ("config_file");
   grub_env_export ("config_directory");
@@ -218,6 +225,8 @@ read_config_file (const char *config)
     grub_env_set ("config_directory", old_dir);
   else
     grub_env_unset ("config_directory");
+  grub_free (old_file);
+  grub_free (old_dir);
 
   grub_file_close (file);
 
@@ -263,7 +272,7 @@ grub_normal_init_page (struct grub_term_output *term)
 static void
 read_lists (const char *val)
 {
-  if (! grub_no_autoload)
+  if (! grub_no_modules)
     {
       read_command_list (val);
       read_fs_list (val);
@@ -506,7 +515,8 @@ static void (*grub_xputs_saved) (const char *str);
 static const char *features[] = {
   "feature_chainloader_bpb", "feature_ntldr", "feature_platform_search_hint",
   "feature_default_font_path", "feature_all_video_module",
-  "feature_menuentry_id", "feature_menuentry_options", "feature_200_final"
+  "feature_menuentry_id", "feature_menuentry_options", "feature_200_final",
+  "feature_nativedisk_cmd"
 };
 
 GRUB_MOD_INIT(normal)

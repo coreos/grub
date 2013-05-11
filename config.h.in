@@ -49,4 +49,6 @@
 
 #define RE_ENABLE_I18N 1
 
+#define __USE_GNU 1
+
 #endif

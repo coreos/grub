@@ -355,19 +355,30 @@ grub_mofile_open_lang (struct grub_gettext_context *ctx,
     return grub_errno;
 
   err = grub_mofile_open (ctx, mo_file);
+  grub_free (mo_file);
 
   /* Will try adding .gz as well.  */
   if (err)
     {
-      char *mo_file_old;
       grub_errno = GRUB_ERR_NONE;
-      mo_file_old = mo_file;
-      mo_file = grub_xasprintf ("%s.gz", mo_file);
-      grub_free (mo_file_old);
+      mo_file = grub_xasprintf ("%s%s/%s.mo.gz", part1, part2, locale);
       if (!mo_file)
 	return grub_errno;
       err = grub_mofile_open (ctx, mo_file);
+      grub_free (mo_file);
     }
+
+  /* Will try adding .gmo as well.  */
+  if (err)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      mo_file = grub_xasprintf ("%s%s/%s.gmo", part1, part2, locale);
+      if (!mo_file)
+	return grub_errno;
+      err = grub_mofile_open (ctx, mo_file);
+      grub_free (mo_file);
+    }
+
   return err;
 }
 

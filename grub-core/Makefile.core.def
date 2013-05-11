@@ -30,6 +30,20 @@ script = {
   common = gdb_grub.in;
 };
 
+script = {
+  installdir = platform;
+  name = grub.chrp;
+  common = boot/powerpc/grub.chrp.in;
+  enable = powerpc_ieee1275;
+};
+
+script = {
+  installdir = platform;
+  name = bootinfo.txt;
+  common = boot/powerpc/bootinfo.txt.in;
+  enable = powerpc_ieee1275;
+};
+
 kernel = {
   name = kernel;
 
@@ -62,9 +76,10 @@ kernel = {
   mips_loongson_ldflags    = '-Wl,-Ttext,0x80200000';
   powerpc_ieee1275_ldflags = '-Wl,-Ttext,0x200000';
   sparc64_ieee1275_ldflags = '-Wl,-Ttext,0x4400';
-  mips_arc_ldflags    = '-Wl,-Ttext,0x8bd00000';
+  mips_arc_ldflags    = '-Wl,-Ttext,$(TARGET_LINK_ADDR)';
   mips_qemu_mips_ldflags    = '-Wl,-Ttext,0x80200000';
 
+  mips_arc_cppflags = '-DGRUB_DECOMPRESSOR_LINK_ADDR=$(TARGET_DECOMPRESSOR_LINK_ADDR)';
   mips_loongson_cppflags = '-DUSE_ASCII_FAILBACK';
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
   emu_cflags = '$(CFLAGS_GNULIB)';
@@ -132,7 +147,9 @@ kernel = {
 
   i386 = kern/i386/dl.c;
 
-  i386_coreboot_multiboot_qemu = kern/i386/coreboot/init.c;
+  i386_coreboot = kern/i386/coreboot/init.c;
+  i386_multiboot = kern/i386/coreboot/init.c;
+  i386_qemu = kern/i386/qemu/init.c;
   i386_coreboot_multiboot_qemu = term/i386/pc/vga_text.c;
 
   efi = disk/efi/efidisk.c;
@@ -214,7 +231,7 @@ kernel = {
 
   emu = disk/host.c;
   emu = gnulib/progname.c;
-  emu = gnulib/error.c;
+  emu = kern/emu/error.c;
   emu = kern/emu/cache_s.S;
   emu = kern/emu/hostdisk.c;
   emu = kern/emu/hostfs.c;
@@ -254,9 +271,9 @@ program = {
   emu = kern/emu/full.c;
   emu_nodist = grub_emu_init.c;
 
-  ldadd = 'kernel.img$(EXEEXT)';
+  ldadd = 'kernel.exec$(EXEEXT)';
   ldadd = '$(MODULE_FILES)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+  ldadd = 'gnulib/libgnu.a $(LIBINTL) $(LIBUTIL) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;
 };
@@ -267,8 +284,8 @@ program = {
   emu = kern/emu/lite.c;
   emu_nodist = symlist.c;
 
-  ldadd = 'kernel.img$(EXEEXT)';
-  ldadd = '$(LIBUTIL) $(LIBCURSES) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+  ldadd = 'kernel.exec$(EXEEXT)';
+  ldadd = 'gnulib/libgnu.a $(LIBINTL) $(LIBUTIL) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;
 };
@@ -296,11 +313,33 @@ image = {
 };
 
 image = {
+  name = boot_hybrid;
+  i386_pc = boot/i386/pc/boot.S;
+
+  cppflags = '-DHYBRID_BOOT=1';
+  
+  i386_pc_ldflags = '$(TARGET_IMG_LDFLAGS)';
+  i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x7C00';
+
+  objcopyflags = '-O binary';
+  enable = i386_pc;
+};
+
+image = {
   name = cdboot;
+
   i386_pc = boot/i386/pc/cdboot.S;
   i386_pc_ldflags = '$(TARGET_IMG_LDFLAGS)';
   i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x7C00';
+
+  sparc64_ieee1275 = boot/sparc64/ieee1275/boot.S;
+  sparc64_ieee1275_objcopyflags = '-O a.out-sunos-big';
+  sparc64_ieee1275_ldflags = ' -Wl,-Ttext=0x4000';
+  sparc64_ieee1275_cppflags = '-DCDBOOT=1';
+
   objcopyflags = '-O binary';
+
+  enable = sparc64_ieee1275;
   enable = i386_pc;
 };
 
@@ -354,9 +393,7 @@ image = {
   cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1';
 
   objcopyflags = '-O binary';
-  mips_loongson_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
-  mips_qemu_mips_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
-  mips_arc_ldflags = '-static-libgcc -Wl,-Ttext,0x8bc00000';
+  mips_ldflags = '-static-libgcc -Wl,-Ttext,$(TARGET_DECOMPRESSOR_LINK_ADDR)';
   ldadd = '-lgcc';
   cflags = '-Wno-unreachable-code -static-libgcc';
   enable = mips;
@@ -370,9 +407,7 @@ image = {
   cppflags = '-DGRUB_EMBED_DECOMPRESSOR=1';
 
   objcopyflags = '-O binary';
-  mips_loongson_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
-  mips_qemu_mips_ldflags = '-static-libgcc -Wl,-Ttext,0x80100000';
-  mips_arc_ldflags = '-static-libgcc -Wl,-Ttext,0x8bc00000';
+  mips_ldflags = '-static-libgcc -Wl,-Ttext,$(TARGET_DECOMPRESSOR_LINK_ADDR)';
   ldadd = '-lgcc';
   cflags = '-static-libgcc';
   enable = mips;
@@ -469,7 +504,7 @@ module = {
 module = {
   name = uhci;
   common = bus/usb/uhci.c;
-  enable = x86;
+  enable = pci;
 };
 
 module = {
@@ -492,6 +527,15 @@ module = {
   enable = i386_ieee1275;
   enable = i386_coreboot;
   enable = i386_multiboot;
+};
+
+module = {
+  name = nativedisk;
+  common = commands/nativedisk.c;
+
+  enable = x86;
+  enable = mips_loongson;
+  enable = mips_qemu_mips;
 };
 
 module = {
@@ -1165,6 +1209,11 @@ module = {
 };
 
 module = {
+  name = hfspluscomp;
+  common = fs/hfspluscomp.c;
+};
+
+module = {
   name = iso9660;
   common = fs/iso9660.c;
 };
@@ -1339,6 +1388,8 @@ module = {
 module = {
   name = elf;
   common = kern/elf.c;
+
+  extra_dist = kern/elfXX.c;
 };
 
 module = {
@@ -1652,10 +1703,12 @@ module = {
   common = term/serial.c;
   x86 = term/ns8250.c;
   ieee1275 = term/ieee1275/serial.c;
+  mips_arc = term/arc/serial.c;
   efi = term/efi/serial.c;
 
   enable = terminfomodule;
   enable = ieee1275;
+  enable = mips_arc;
 };
 
 module = {
@@ -1712,11 +1765,35 @@ module = {
   name = functional_test;
   common = tests/lib/functional_test.c;
   common = tests/lib/test.c;
+  common = tests/checksums.h;
+  common = tests/video_checksum.c;
+  common = tests/fake_input.c;
+  common = video/capture.c;
 };
 
 module = {
   name = exfctest;
   common = tests/example_functional_test.c;
+};
+
+module = {
+  name = setjmp_test;
+  common = tests/setjmp_test.c;
+};
+
+module = {
+  name = videotest_checksum;
+  common = tests/videotest_checksum.c;
+};
+
+module = {
+  name = gfxterm_menu;
+  common = tests/gfxterm_menu.c;
+};
+
+module = {
+  name = cmdline_cat_test;
+  common = tests/cmdline_cat_test.c;
 };
 
 module = {
@@ -1788,6 +1865,12 @@ module = {
 };
 
 module = {
+  name = coreboot_fb;
+  common = video/i386/coreboot/cbfb.c;
+  enable = i386_coreboot;
+};
+
+module = {
   name = sdl;
   emu = video/emu/sdl.c;
   enable = emu;
@@ -1853,7 +1936,12 @@ module = {
   common = commands/legacycfg.c;
   common = lib/legacy_parse.c;
   emu = lib/i386/pc/vesa_modes_table.c;
+  i386_efi = lib/i386/pc/vesa_modes_table.c;
+  x86_64_efi = lib/i386/pc/vesa_modes_table.c;
+
   enable = i386_pc;
+  enable = i386_efi;
+  enable = x86_64_efi;
   enable = emu;
 };
 
@@ -1981,3 +2069,7 @@ module = {
   enable = i386;
 };
 
+module = {
+  name = testspeed;
+  common = commands/testspeed.c;
+};

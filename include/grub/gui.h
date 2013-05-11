@@ -67,6 +67,8 @@ struct grub_gui_list_ops
 {
   void (*set_view_info) (void *self,
                          grub_gfxmenu_view_t view);
+  void (*refresh_list) (void *self,
+                        grub_gfxmenu_view_t view);
 };
 
 struct grub_gui_progress_ops
@@ -110,6 +112,7 @@ grub_gfxmenu_timeout_unregister (grub_gui_component_t self)
     if (q->self == self)
       {
 	*p = q->next;
+	grub_free (q);
 	break;
       }
 }

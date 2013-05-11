@@ -73,9 +73,9 @@ hook (const struct grub_video_mode_info *info, void *hook_arg)
 		  info->blue_field_pos,
 		  info->reserved_field_pos);
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR)
-    /* TRANSLATORS: In "packed pixel" mode you write the index of the color
-       in the palette. Synonyms include "paletted color".  */
-    grub_xputs (_("Packed pixel "));
+    /* TRANSLATORS: In "paletted color" mode you write the index of the color
+       in the palette. Synonyms include "packed pixel".  */
+    grub_xputs (_("Paletted "));
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_YUV)
     grub_xputs (_("YUV "));
   if (info->mode_type & GRUB_VIDEO_MODE_TYPE_PLANAR)

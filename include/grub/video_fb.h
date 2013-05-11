@@ -31,45 +31,48 @@ struct grub_video_fbblit_info;
 struct grub_video_fbrender_target;
 
 #define GRUB_VIDEO_FBSTD_NUMCOLORS 16
-extern struct grub_video_palette_data grub_video_fbstd_colors[GRUB_VIDEO_FBSTD_NUMCOLORS];
+#define GRUB_VIDEO_FBSTD_EXT_NUMCOLORS 256
+
+extern struct grub_video_palette_data EXPORT_VAR(grub_video_fbstd_colors)[GRUB_VIDEO_FBSTD_EXT_NUMCOLORS];
 
 grub_err_t
-grub_video_fb_init (void);
+EXPORT_FUNC(grub_video_fb_init) (void);
 
 grub_err_t
-grub_video_fb_fini (void);
+EXPORT_FUNC(grub_video_fb_fini) (void);
 
 grub_err_t
-grub_video_fb_get_info (struct grub_video_mode_info *mode_info);
+EXPORT_FUNC(grub_video_fb_get_info) (struct grub_video_mode_info *mode_info);
 
 grub_err_t
-grub_video_fb_get_palette (unsigned int start, unsigned int count,
-			   struct grub_video_palette_data *palette_data);
+EXPORT_FUNC(grub_video_fb_get_palette) (unsigned int start, unsigned int count,
+					struct grub_video_palette_data *palette_data);
 grub_err_t
-grub_video_fb_set_palette (unsigned int start, unsigned int count,
-			   struct grub_video_palette_data *palette_data);
+EXPORT_FUNC(grub_video_fb_set_palette) (unsigned int start, unsigned int count,
+					struct grub_video_palette_data *palette_data);
 grub_err_t
-grub_video_fb_set_viewport (unsigned int x, unsigned int y,
-			    unsigned int width, unsigned int height);
+EXPORT_FUNC(grub_video_fb_set_viewport) (unsigned int x, unsigned int y,
+					 unsigned int width, unsigned int height);
 grub_err_t
-grub_video_fb_get_viewport (unsigned int *x, unsigned int *y,
-			    unsigned int *width, unsigned int *height);
-
-grub_video_color_t
-grub_video_fb_map_color (grub_uint32_t color_name);
-
-grub_video_color_t
-grub_video_fb_map_rgb (grub_uint8_t red, grub_uint8_t green,
-		       grub_uint8_t blue);
+EXPORT_FUNC(grub_video_fb_get_viewport) (unsigned int *x, unsigned int *y,
+					 unsigned int *width,
+					 unsigned int *height);
 
 grub_video_color_t
-grub_video_fb_map_rgba (grub_uint8_t red, grub_uint8_t green,
-			grub_uint8_t blue, grub_uint8_t alpha);
+EXPORT_FUNC(grub_video_fb_map_color) (grub_uint32_t color_name);
+
+grub_video_color_t
+EXPORT_FUNC(grub_video_fb_map_rgb) (grub_uint8_t red, grub_uint8_t green,
+				    grub_uint8_t blue);
+
+grub_video_color_t
+EXPORT_FUNC(grub_video_fb_map_rgba) (grub_uint8_t red, grub_uint8_t green,
+				     grub_uint8_t blue, grub_uint8_t alpha);
 
 grub_err_t
-grub_video_fb_unmap_color (grub_video_color_t color,
-			   grub_uint8_t *red, grub_uint8_t *green,
-			   grub_uint8_t *blue, grub_uint8_t *alpha);
+EXPORT_FUNC(grub_video_fb_unmap_color) (grub_video_color_t color,
+					grub_uint8_t *red, grub_uint8_t *green,
+					grub_uint8_t *blue, grub_uint8_t *alpha);
 
 void
 grub_video_fb_unmap_color_int (struct grub_video_fbblit_info * source,
@@ -78,42 +81,96 @@ grub_video_fb_unmap_color_int (struct grub_video_fbblit_info * source,
 			       grub_uint8_t *blue, grub_uint8_t *alpha);
 
 grub_err_t
-grub_video_fb_fill_rect (grub_video_color_t color, int x, int y,
-			 unsigned int width, unsigned int height);
+EXPORT_FUNC(grub_video_fb_fill_rect) (grub_video_color_t color, int x, int y,
+				      unsigned int width, unsigned int height);
 
 grub_err_t
-grub_video_fb_blit_bitmap (struct grub_video_bitmap *bitmap,
+EXPORT_FUNC(grub_video_fb_blit_bitmap) (struct grub_video_bitmap *bitmap,
 			   enum grub_video_blit_operators oper, int x, int y,
 			   int offset_x, int offset_y,
 			   unsigned int width, unsigned int height);
 
 grub_err_t
-grub_video_fb_blit_render_target (struct grub_video_fbrender_target *source,
+EXPORT_FUNC(grub_video_fb_blit_render_target) (struct grub_video_fbrender_target *source,
 				  enum grub_video_blit_operators oper,
 				  int x, int y, int offset_x, int offset_y,
 				  unsigned int width, unsigned int height);
 
 grub_err_t
-grub_video_fb_scroll (grub_video_color_t color, int dx, int dy);
+EXPORT_FUNC(grub_video_fb_scroll) (grub_video_color_t color, int dx, int dy);
 
 grub_err_t
-grub_video_fb_create_render_target (struct grub_video_fbrender_target **result,
+EXPORT_FUNC(grub_video_fb_create_render_target) (struct grub_video_fbrender_target **result,
 				    unsigned int width, unsigned int height,
 				    unsigned int mode_type __attribute__ ((unused)));
 
 grub_err_t
-grub_video_fb_create_render_target_from_pointer (struct grub_video_fbrender_target **result,
+EXPORT_FUNC(grub_video_fb_create_render_target_from_pointer) (struct grub_video_fbrender_target **result,
 						 const struct grub_video_mode_info *mode_info,
 						 void *ptr);
 
 grub_err_t
-grub_video_fb_delete_render_target (struct grub_video_fbrender_target *target);
+EXPORT_FUNC(grub_video_fb_delete_render_target) (struct grub_video_fbrender_target *target);
 
 grub_err_t
-grub_video_fb_get_active_render_target (struct grub_video_fbrender_target **target);
+EXPORT_FUNC(grub_video_fb_get_active_render_target) (struct grub_video_fbrender_target **target);
 
 grub_err_t
-grub_video_fb_set_active_render_target (struct grub_video_fbrender_target *target);
+EXPORT_FUNC(grub_video_fb_set_active_render_target) (struct grub_video_fbrender_target *target);
+
+void
+EXPORT_FUNC (grub_video_fbblit_blend_32bit_indexa) (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+				      int offset_x, int offset_y);
+
+void
+EXPORT_FUNC (grub_video_fbblit_blend_24bit_indexa) (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+				      int offset_x, int offset_y);
+void
+EXPORT_FUNC (grub_video_fbblit_blend_16bit_indexa) (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+				      int offset_x, int offset_y);
+void
+EXPORT_FUNC (grub_video_fbblit_blend_8bit_indexa) (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+				      int offset_x, int offset_y);
+
+
+void
+EXPORT_FUNC (grub_video_fbblit_replace_32bit_indexa) (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+				      int offset_x, int offset_y);
+
+void
+EXPORT_FUNC (grub_video_fbblit_replace_24bit_indexa) (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+				      int offset_x, int offset_y);
+
+void
+EXPORT_FUNC (grub_video_fbblit_replace_16bit_indexa) (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+				      int offset_x, int offset_y);
+void
+EXPORT_FUNC (grub_video_fbblit_replace_8bit_indexa) (struct grub_video_fbblit_info *dst,
+					struct grub_video_fbblit_info *src,
+					int x, int y,
+					int width, int height,
+				      int offset_x, int offset_y);
 
 typedef grub_err_t (*grub_video_fb_set_page_t) (int page);
 

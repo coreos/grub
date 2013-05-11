@@ -16,6 +16,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
+#include <config-util.h>
+
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,8 +54,6 @@ static jmp_buf main_env;
 
 /* Store the prefix specified by an argument.  */
 static char *root_dev = NULL, *dir = NULL;
-
-int grub_no_autoload;
 
 grub_addr_t grub_modbase = 0;
 
@@ -168,7 +169,6 @@ void grub_hostfs_init (void);
 void grub_hostfs_fini (void);
 void grub_host_init (void);
 void grub_host_fini (void);
-void grub_emu_init (void);
 
 int
 main (int argc, char *argv[])
@@ -205,7 +205,6 @@ main (int argc, char *argv[])
     }
 
   signal (SIGINT, SIG_IGN);
-  grub_emu_init ();
   grub_console_init ();
   grub_host_init ();
 
@@ -215,8 +214,6 @@ main (int argc, char *argv[])
   grub_init_all ();
 
   grub_hostfs_init ();
-
-  grub_emu_post_init ();
 
   /* Make sure that there is a root device.  */
   if (! root_dev)

@@ -392,7 +392,7 @@ void EXPORT_FUNC (__deregister_frame_info) (void);
 static inline char *
 grub_memchr (const void *p, int c, grub_size_t len)
 {
-  const char *s = p;
+  const char *s = (const char *) p;
   const char *e = s + len;
 
   for (; s < e; s++)
@@ -437,10 +437,10 @@ void grub_halt (void) __attribute__ ((noreturn));
 #endif
 
 #ifdef GRUB_MACHINE_EMU
-/* Flag to control module autoloading in normal mode.  */
-extern int EXPORT_VAR(grub_no_autoload);
+/* Flag to check if module loading is available.  */
+extern const int EXPORT_VAR(grub_no_modules);
 #else
-#define grub_no_autoload 0
+#define grub_no_modules 0
 #endif
 
 static inline void

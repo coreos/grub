@@ -338,9 +338,12 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 	case GRUB_VIDEO_DRIVER_CIRRUS:
 	case GRUB_VIDEO_DRIVER_BOCHS:
 	case GRUB_VIDEO_DRIVER_RADEON_FULOONG2E:
+	case GRUB_VIDEO_DRIVER_IEEE1275:
+	case GRUB_VIDEO_DRIVER_COREBOOT:
 	  /* Make gcc happy. */
 	case GRUB_VIDEO_DRIVER_SDL:
 	case GRUB_VIDEO_DRIVER_NONE:
+	case GRUB_VIDEO_ADAPTER_CAPTURE:
 	  params->have_vga = GRUB_VIDEO_LINUX_TYPE_SIMPLE;
 	  break;
 	}
@@ -501,15 +504,20 @@ grub_linux_boot (void)
 #endif
       grub_free (tmp);
     }
-  else
-    {
+  else       /* We can't go back to text mode from coreboot fb.  */
+#ifdef GRUB_MACHINE_COREBOOT
+    if (grub_video_get_driver_id () == GRUB_VIDEO_DRIVER_COREBOOT)
+      err = GRUB_ERR_NONE;
+    else
+#endif
+      {
 #if ACCEPTS_PURE_TEXT
-      err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
+	err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0, 0);
 #else
-      err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
+	err = grub_video_set_mode (DEFAULT_VIDEO_MODE,
 				 GRUB_VIDEO_MODE_TYPE_PURE_TEXT, 0);
 #endif
-    }
+      }
 
   if (err)
     {
@@ -688,7 +696,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file = 0;
   struct linux_kernel_header lh;
-  struct linux_kernel_params *params;
   grub_uint8_t setup_sects;
   grub_size_t real_size, prot_size, prot_file_size;
   grub_ssize_t len;
@@ -808,16 +815,15 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		      preferred_address))
     goto fail;
 
-  params = (struct linux_kernel_params *) &linux_params;
-  grub_memset (params, 0, sizeof (*params));
-  grub_memcpy (&params->setup_sects, &lh.setup_sects, sizeof (lh) - 0x1F1);
+  grub_memset (&linux_params, 0, sizeof (linux_params));
+  grub_memcpy (&linux_params.setup_sects, &lh.setup_sects, sizeof (lh) - 0x1F1);
 
-  params->code32_start = prot_mode_target + lh.code32_start - GRUB_LINUX_BZIMAGE_ADDR;
-  params->kernel_alignment = (1 << align);
-  params->ps_mouse = params->padding10 =  0;
+  linux_params.code32_start = prot_mode_target + lh.code32_start - GRUB_LINUX_BZIMAGE_ADDR;
+  linux_params.kernel_alignment = (1 << align);
+  linux_params.ps_mouse = linux_params.padding10 =  0;
 
-  len = sizeof (*params) - sizeof (lh);
-  if (grub_file_read (file, (char *) params + sizeof (lh), len) != len)
+  len = sizeof (linux_params) - sizeof (lh);
+  if (grub_file_read (file, (char *) &linux_params + sizeof (lh), len) != len)
     {
       if (!grub_errno)
 	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
@@ -825,58 +831,58 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  params->type_of_loader = GRUB_LINUX_BOOT_LOADER_TYPE;
+  linux_params.type_of_loader = GRUB_LINUX_BOOT_LOADER_TYPE;
 
   /* These two are used (instead of cmd_line_ptr) by older versions of Linux,
      and otherwise ignored.  */
-  params->cl_magic = GRUB_LINUX_CL_MAGIC;
-  params->cl_offset = 0x1000;
+  linux_params.cl_magic = GRUB_LINUX_CL_MAGIC;
+  linux_params.cl_offset = 0x1000;
 
-  params->ramdisk_image = 0;
-  params->ramdisk_size = 0;
+  linux_params.ramdisk_image = 0;
+  linux_params.ramdisk_size = 0;
 
-  params->heap_end_ptr = GRUB_LINUX_HEAP_END_OFFSET;
-  params->loadflags |= GRUB_LINUX_FLAG_CAN_USE_HEAP;
+  linux_params.heap_end_ptr = GRUB_LINUX_HEAP_END_OFFSET;
+  linux_params.loadflags |= GRUB_LINUX_FLAG_CAN_USE_HEAP;
 
   /* These are not needed to be precise, because Linux uses these values
      only to raise an error when the decompression code cannot find good
      space.  */
-  params->ext_mem = ((32 * 0x100000) >> 10);
-  params->alt_mem = ((32 * 0x100000) >> 10);
+  linux_params.ext_mem = ((32 * 0x100000) >> 10);
+  linux_params.alt_mem = ((32 * 0x100000) >> 10);
 
   /* Ignored by Linux.  */
-  params->video_page = 0;
+  linux_params.video_page = 0;
 
   /* Only used when `video_mode == 0x7', otherwise ignored.  */
-  params->video_ega_bx = 0;
+  linux_params.video_ega_bx = 0;
 
-  params->font_size = 16; /* XXX */
+  linux_params.font_size = 16; /* XXX */
 
 #ifdef GRUB_MACHINE_EFI
 #ifdef __x86_64__
-  if (grub_le_to_cpu16 (params->version) < 0x0208 &&
+  if (grub_le_to_cpu16 (linux_params.version) < 0x0208 &&
       ((grub_addr_t) grub_efi_system_table >> 32) != 0)
     return grub_error(GRUB_ERR_BAD_OS,
 		      "kernel does not support 64-bit addressing");
 #endif
 
-  if (grub_le_to_cpu16 (params->version) >= 0x0208)
+  if (grub_le_to_cpu16 (linux_params.version) >= 0x0208)
     {
-      params->v0208.efi_signature = GRUB_LINUX_EFI_SIGNATURE;
-      params->v0208.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
+      linux_params.v0208.efi_signature = GRUB_LINUX_EFI_SIGNATURE;
+      linux_params.v0208.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
 #ifdef __x86_64__
-      params->v0208.efi_system_table_hi = (grub_uint32_t) ((grub_uint64_t) grub_efi_system_table >> 32);
+      linux_params.v0208.efi_system_table_hi = (grub_uint32_t) ((grub_uint64_t) grub_efi_system_table >> 32);
 #endif
     }
-  else if (grub_le_to_cpu16 (params->version) >= 0x0206)
+  else if (grub_le_to_cpu16 (linux_params.version) >= 0x0206)
     {
-      params->v0206.efi_signature = GRUB_LINUX_EFI_SIGNATURE;
-      params->v0206.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
+      linux_params.v0206.efi_signature = GRUB_LINUX_EFI_SIGNATURE;
+      linux_params.v0206.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
     }
-  else if (grub_le_to_cpu16 (params->version) >= 0x0204)
+  else if (grub_le_to_cpu16 (linux_params.version) >= 0x0204)
     {
-      params->v0204.efi_signature = GRUB_LINUX_EFI_SIGNATURE_0204;
-      params->v0204.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
+      linux_params.v0204.efi_signature = GRUB_LINUX_EFI_SIGNATURE_0204;
+      linux_params.v0204.efi_system_table = (grub_uint32_t) (unsigned long) grub_efi_system_table;
     }
 #endif
 
@@ -1012,7 +1018,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       }
     else if (grub_memcmp (argv[i], "quiet", sizeof ("quiet") - 1) == 0)
       {
-	params->loadflags |= GRUB_LINUX_FLAG_QUIET;
+	linux_params.loadflags |= GRUB_LINUX_FLAG_QUIET;
       }
 
   /* Create kernel command line.  */

@@ -49,7 +49,7 @@ static grub_usb_controller_dev_t grub_usb_list;
 static grub_usb_device_t
 grub_usb_hub_add_dev (grub_usb_controller_t controller,
                       grub_usb_speed_t speed,
-                      int port, int hubaddr)
+                      int split_hubport, int split_hubaddr)
 {
   grub_usb_device_t dev;
   int i;
@@ -63,8 +63,8 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller,
 
   dev->controller = *controller;
   dev->speed = speed;
-  dev->port = port;
-  dev->hubaddr = hubaddr;
+  dev->split_hubport = split_hubport;
+  dev->split_hubaddr = split_hubaddr;
 
   err = grub_usb_device_initialize (dev);
   if (err)
@@ -108,8 +108,8 @@ grub_usb_hub_add_dev (grub_usb_controller_t controller,
 
   grub_dprintf ("usb", "Added new usb device: %p, addr=%d\n",
 		dev, i);
-  grub_dprintf ("usb", "speed=%d, port=%d, hubaddr=%d\n",
-		speed, port, hubaddr);
+  grub_dprintf ("usb", "speed=%d, split_hubport=%d, split_hubaddr=%d\n",
+		speed, split_hubport, split_hubaddr);
 
   /* Wait "recovery interval", spec. says 2ms */
   grub_millisleep (2);
@@ -219,7 +219,12 @@ attach_root_port (struct grub_usb_hub *hub, int portno,
   grub_boot_time ("Port enabled");
 
   /* Enable the port and create a device.  */
-  dev = grub_usb_hub_add_dev (hub->controller, speed, portno, 0);
+  /* High speed device needs not transaction translation
+     and full/low speed device cannot be connected to EHCI root hub
+     and full/low speed device connected to OHCI/UHCI needs not
+     transaction translation - e.g. hubport and hubaddr should be
+     always none (zero) for any device connected to any root hub. */
+  dev = grub_usb_hub_add_dev (hub->controller, speed, 0, 0);
   hub->controller->dev->pending_reset = 0;
   npending--;
   if (! dev)
@@ -593,6 +598,8 @@ poll_nonroot_hub (grub_usb_device_t dev)
 	    {
 	      grub_usb_speed_t speed;
 	      grub_usb_device_t next_dev;
+	      int split_hubport = 0;
+	      int split_hubaddr = 0;
 
 	      /* Determine the device speed.  */
 	      if (status & GRUB_USB_HUB_STATUS_PORT_LOWSPEED)
@@ -608,8 +615,37 @@ poll_nonroot_hub (grub_usb_device_t dev)
 	      /* Wait a recovery time after reset, spec. says 10ms */
 	      grub_millisleep (10);
 
+              /* Find correct values for SPLIT hubport and hubaddr */
+	      if (speed == GRUB_USB_SPEED_HIGH)
+	        {
+		  /* HIGH speed device needs not transaction translation */
+		  split_hubport = 0;
+		  split_hubaddr = 0;
+		}
+	      else
+	        /* FULL/LOW device needs hub port and hub address
+		   for transaction translation (if connected to EHCI) */
+	        if (dev->speed == GRUB_USB_SPEED_HIGH)
+	          {
+		    /* This port is the first FULL/LOW speed port
+		       in the chain from root hub. Attached device
+		       should use its port number and hub address */
+		    split_hubport = i;
+		    split_hubaddr = dev->addr;
+		  }
+	        else
+	          {
+		    /* This port is NOT the first FULL/LOW speed port
+		       in the chain from root hub. Attached device
+		       should use values inherited from some parent
+		       HIGH speed hub - if any. */
+		    split_hubport = dev->split_hubport;
+		    split_hubaddr = dev->split_hubaddr;
+		  }
+		
 	      /* Add the device and assign a device address to it.  */
-	      next_dev = grub_usb_hub_add_dev (&dev->controller, speed, i, dev->addr);
+	      next_dev = grub_usb_hub_add_dev (&dev->controller, speed,
+					       split_hubport, split_hubaddr);
 	      if (dev->controller.dev->pending_reset)
 		{
 		  dev->controller.dev->pending_reset = 0;

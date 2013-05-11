@@ -193,18 +193,22 @@ grub_ieee1275_devalias_next (struct grub_ieee1275_devalias *alias)
     {
       grub_ssize_t pathlen;
       grub_ssize_t actual;
+      char *tmp;
 
       if (alias->path)
 	{
 	  grub_free (alias->path);
 	  alias->path = 0;
 	}
-      if (grub_ieee1275_next_property (alias->parent_dev, alias->name,
+      tmp = grub_strdup (alias->name);
+      if (grub_ieee1275_next_property (alias->parent_dev, tmp,
 				       alias->name) <= 0)
 	{
+	  grub_free (tmp);
 	  grub_ieee1275_devalias_free (alias);
 	  return 0;
 	}
+      grub_free (tmp);
 
       grub_dprintf ("devalias", "devalias name = %s\n", alias->name);
 

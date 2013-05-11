@@ -25,6 +25,7 @@
 #include <grub/err.h>
 #include <grub/types.h>
 #include <grub/elf.h>
+#include <grub/list.h>
 #endif
 
 /*
@@ -181,15 +182,41 @@ typedef struct grub_dl *grub_dl_t;
 grub_dl_t grub_dl_load_file (const char *filename);
 grub_dl_t EXPORT_FUNC(grub_dl_load) (const char *name);
 grub_dl_t grub_dl_load_core (void *addr, grub_size_t size);
+grub_dl_t EXPORT_FUNC(grub_dl_load_core_noinit) (void *addr, grub_size_t size);
 int EXPORT_FUNC(grub_dl_unload) (grub_dl_t mod);
 void grub_dl_unload_unneeded (void);
 int EXPORT_FUNC(grub_dl_ref) (grub_dl_t mod);
 int EXPORT_FUNC(grub_dl_unref) (grub_dl_t mod);
 extern grub_dl_t EXPORT_VAR(grub_dl_head);
 
+#ifndef GRUB_UTIL
+
 #define FOR_DL_MODULES(var) FOR_LIST_ELEMENTS ((var), (grub_dl_head))
 
-grub_dl_t EXPORT_FUNC(grub_dl_get) (const char *name);
+static inline void
+grub_dl_init (grub_dl_t mod)
+{
+  if (mod->init)
+    (mod->init) (mod);
+
+  mod->next = grub_dl_head;
+  grub_dl_head = mod;
+}
+
+static inline grub_dl_t
+grub_dl_get (const char *name)
+{
+  grub_dl_t l;
+
+  FOR_DL_MODULES(l)
+    if (grub_strcmp (name, l->name) == 0)
+      return l;
+
+  return 0;
+}
+
+#endif
+
 grub_err_t grub_dl_register_symbol (const char *name, void *addr,
 				    int isfunc, grub_dl_t mod);
 

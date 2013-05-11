@@ -46,8 +46,6 @@ export TEXTDOMAINDIR="@localedir@"
 usage () {
     gettext_printf "Usage: %s [OPTION] MENU_ENTRY\n" "$self"
     gettext "Set the default boot menu entry for GRUB, for the next boot only."; echo
-    gettext_printf "This requires setting GRUB_DEFAULT=saved in %s/default/grub.\n" "$sysconfdir"
-    echo
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
     print_option_help "-v, --version" "$(gettext "print the version information and exit")"
     dirmsg="$(gettext_printf "expect GRUB images under the directory DIR/%s instead of the %s directory" "@grubdirname@" "$grubdir")"
@@ -129,17 +127,14 @@ fi
 
 grubdir=`echo "${bootdir}/@grubdirname@" | sed 's,//*,/,g'`
 
-prev_saved_entry=`$grub_editenv ${grubdir}/grubenv list | sed -n 's/^saved_entry=//p'`
+# Restore saved_entry if it was set by previous version
+prev_saved_entry=`$grub_editenv ${grubdir}/grubenv list | sed -n 's/^prev_saved_entry=//p'`
 if [ "$prev_saved_entry" ]; then
-    $grub_editenv ${grubdir}/grubenv set prev_saved_entry="$prev_saved_entry"
-else
-    # We need some non-empty value for prev_saved_entry so that GRUB will
-    # recognise that grub-reboot has been used and restore the previous
-    # saved entry. "0" is the same as an empty value, i.e. the first menu
-    # entry.
-    $grub_editenv ${grubdir}/grubenv set prev_saved_entry=0
+    $grub_editenv ${grubdir}/grubenv set saved_entry="$prev_saved_entry"
+    $grub_editenv ${grubdir}/grubenv unset prev_saved_entry
 fi
-$grub_editenv ${grubdir}/grubenv set saved_entry="$entry"
+
+$grub_editenv ${grubdir}/grubenv set next_entry="$entry"
 
 # Bye.
 exit 0

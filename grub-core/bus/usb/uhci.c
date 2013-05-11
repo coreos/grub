@@ -26,6 +26,7 @@
 #include <grub/cpu/io.h>
 #include <grub/time.h>
 #include <grub/cpu/pci.h>
+#include <grub/disk.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -44,12 +45,22 @@ typedef enum
     GRUB_UHCI_REG_USBLEGSUP = 0xc0
   } grub_uhci_reg_t;
 
+enum
+  {
+    GRUB_UHCI_DETECT_CHANGED = (1 << 1),
+    GRUB_UHCI_DETECT_HAVE_DEVICE = 1,
+    GRUB_UHCI_DETECT_LOW_SPEED = (1 << 8)
+  };
+
 /* R/WC legacy support bits */
-#define GRUB_UHCI_LEGSUP_END_A20GATE (1 << 15)
-#define GRUB_UHCI_TRAP_BY_64H_WSTAT  (1 << 11)
-#define GRUB_UHCI_TRAP_BY_64H_RSTAT  (1 << 10)
-#define GRUB_UHCI_TRAP_BY_60H_WSTAT  (1 <<  9)
-#define GRUB_UHCI_TRAP_BY_60H_RSTAT  (1 <<  8)
+enum
+  {
+    GRUB_UHCI_LEGSUP_END_A20GATE = (1 << 15),
+    GRUB_UHCI_TRAP_BY_64H_WSTAT = (1 << 11),
+    GRUB_UHCI_TRAP_BY_64H_RSTAT = (1 << 10),
+    GRUB_UHCI_TRAP_BY_60H_WSTAT = (1 <<  9),
+    GRUB_UHCI_TRAP_BY_60H_RSTAT = (1 <<  8)
+  };
 
 /* Reset all legacy support - clear all R/WC bits and all R/W bits */
 #define GRUB_UHCI_RESET_LEGSUP_SMI ( GRUB_UHCI_LEGSUP_END_A20GATE \
@@ -125,7 +136,7 @@ typedef volatile struct grub_uhci_qh *grub_uhci_qh_t;
 
 struct grub_uhci
 {
-  int iobase;
+  grub_port_t iobase;
   volatile grub_uint32_t *framelist_virt;
   grub_uint32_t framelist_phys;
   struct grub_pci_dma_chunk *framelist_chunk;
@@ -213,22 +224,28 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
 
   /* Set bus master - needed for coreboot or broken BIOSes */
   addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
-  grub_pci_write_word(addr,
-    GRUB_PCI_COMMAND_BUS_MASTER | grub_pci_read_word(addr));
+  grub_pci_write_word(addr, GRUB_PCI_COMMAND_IO_ENABLED
+		      | GRUB_PCI_COMMAND_BUS_MASTER
+		      | grub_pci_read_word (addr));
 
   /* Determine IO base address.  */
   addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG4);
   base = grub_pci_read (addr);
   /* Stop if there is no IO space base address defined.  */
-  if (! (base & 1))
+  if ((base & GRUB_PCI_ADDR_SPACE_MASK) != GRUB_PCI_ADDR_SPACE_IO)
     return 0;
+
+  if ((base & GRUB_UHCI_IOMASK) == 0)
+    return 0;
+
+  grub_dprintf ("uhci", "base = %x\n", base);
 
   /* Allocate memory for the controller and register it.  */
   u = grub_zalloc (sizeof (*u));
   if (! u)
     return 1;
 
-  u->iobase = base & GRUB_UHCI_IOMASK;
+  u->iobase = (base & GRUB_UHCI_IOMASK) + GRUB_MACHINE_PCI_IO_BASE;
 
   /* Reset PIRQ and SMI */
   addr = grub_pci_make_address (dev, GRUB_UHCI_REG_USBLEGSUP);       
@@ -392,6 +409,7 @@ grub_free_queue (struct grub_uhci *u, grub_uhci_qh_t qh, grub_uhci_td_t td,
     {
       grub_uhci_td_t tdprev;
 
+      grub_dprintf ("uhci", "Freeing %p\n", td);
       /* Check state of TD and possibly set last_trans */
       if (transfer && (td->linkptr & 1))
         transfer->last_trans = i;
@@ -400,7 +418,10 @@ grub_free_queue (struct grub_uhci *u, grub_uhci_qh_t qh, grub_uhci_td_t td,
       
       /* Unlink the queue.  */
       tdprev = td;
-      td = grub_dma_phys2virt (td->linkptr2, u->td_chunk);
+      if (!td->linkptr2)
+	td = 0;
+      else
+	td = grub_dma_phys2virt (td->linkptr2, u->td_chunk);
 
       /* Free the TD.  */
       grub_free_td (u, tdprev);
@@ -583,10 +604,17 @@ grub_uhci_check_transfer (grub_usb_controller_t dev,
 
   *actual = 0;
 
-  errtd = grub_dma_phys2virt (cdata->qh->elinkptr & ~0x0f, u->qh_chunk);
+  if (cdata->qh->elinkptr & ~0x0f)
+    errtd = grub_dma_phys2virt (cdata->qh->elinkptr & ~0x0f, u->qh_chunk);
+  else
+    errtd = 0;
   
-  grub_dprintf ("uhci", ">t status=0x%02x data=0x%02x td=%p\n",
-		errtd->ctrl_status, errtd->buffer & (~15), errtd);
+  if (errtd)
+    {
+      grub_dprintf ("uhci", ">t status=0x%02x data=0x%02x td=%p, %x\n",
+		    errtd->ctrl_status, errtd->buffer & (~15), errtd,
+		    cdata->qh->elinkptr);
+    }
 
   /* Check if the transaction completed.  */
   if (cdata->qh->elinkptr & 1)
@@ -788,7 +816,7 @@ grub_uhci_detect_dev (grub_usb_controller_t dev, int port, int *changed)
   grub_dprintf ("uhci", "detect=0x%02x port=%d\n", status, port);
 
   /* Connect Status Change bit - it detects change of connection */
-  if (status & (1 << 1))
+  if (status & GRUB_UHCI_DETECT_CHANGED)
     {
       *changed = 1;
       /* Reset bit Connect Status Change */
@@ -798,9 +826,9 @@ grub_uhci_detect_dev (grub_usb_controller_t dev, int port, int *changed)
   else
     *changed = 0;
     
-  if (! (status & 1))
+  if (! (status & GRUB_UHCI_DETECT_HAVE_DEVICE))
     return GRUB_USB_SPEED_NONE;
-  else if (status & (1 << 8))
+  else if (status & GRUB_UHCI_DETECT_LOW_SPEED)
     return GRUB_USB_SPEED_LOW;
   else
     return GRUB_USB_SPEED_FULL;
@@ -830,6 +858,8 @@ static struct grub_usb_controller_dev usb_controller =
 
 GRUB_MOD_INIT(uhci)
 {
+  grub_stop_disk_firmware ();
+
   grub_uhci_inithw ();
   grub_usb_controller_dev_register (&usb_controller);
   grub_dprintf ("uhci", "registered\n");

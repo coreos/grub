@@ -28,6 +28,60 @@
 #include <grub/i18n.h>
 #include <grub/partition.h>
 
+static const char *grub_human_sizes[3][6] =
+  {
+    /* This algorithm in reality would work only up to (2^64) / 100 B = 81 PiB.
+       Put here all possible suffixes it can produce so no array bounds check
+       is needed.
+     */
+    /* TRANSLATORS: that's the list of binary unit prefixes.  */
+    { N_("B"),   N_("KiB"),   N_("MiB"),   N_("GiB"),   N_("TiB"),   N_("PiB")},
+    /* TRANSLATORS: that's the list of binary unit prefixes.  */
+    {    "",     N_("K"),     N_("M"),     N_("G"),     N_("T"),     N_("P") },
+    /* TRANSLATORS: that's the list of binary unit prefixes.  */
+    { N_("B/s"), N_("KiB/s"), N_("MiB/s"), N_("GiB/s"), N_("TiB/s"), N_("PiB/s"),  },    
+  };
+
+const char *
+grub_get_human_size (grub_uint64_t size, enum grub_human_size_type type)
+{
+  grub_uint64_t fsize;
+  unsigned units = 0;
+  static char buf[30];
+  const char *umsg;
+
+  if (type != GRUB_HUMAN_SIZE_SPEED)
+    fsize = size * 100ULL;
+  else
+    fsize = size;
+
+  /* Since 2^64 / 1024^5  < 102400, this can give at most 5 iterations.
+     So units <=5, so impossible to go past the end of array.
+   */
+  while (fsize >= 102400)
+    {
+      fsize = (fsize + 512) / 1024;
+      units++;
+    }
+
+  umsg = _(grub_human_sizes[type][units]);
+
+  if (units || type == GRUB_HUMAN_SIZE_SPEED)
+    {
+      grub_uint64_t whole, fraction;
+
+      whole = grub_divmod64 (fsize, 100, &fraction);
+      grub_snprintf (buf, sizeof (buf),
+		     "%" PRIuGRUB_UINT64_T
+		     ".%02" PRIuGRUB_UINT64_T "%s", whole, fraction,
+		     umsg);
+    }
+  else
+    grub_snprintf (buf, sizeof (buf), "%llu%s", (unsigned long long) size,
+		   umsg);
+  return buf;
+}
+
 /* Print the information on the device NAME.  */
 grub_err_t
 grub_normal_print_device_info (const char *name)
@@ -127,7 +181,9 @@ grub_normal_print_device_info (const char *name)
       else
 	grub_printf (_(" - Total size %llu%sKiB"),
 		     (unsigned long long) (grub_disk_get_size (dev->disk) >> 1),
-		     (grub_disk_get_size (dev->disk) & 1) ? ".5" : "");
+		     /* TRANSLATORS: Replace dot with appropriate decimal separator for
+			your language.  */
+		     (grub_disk_get_size (dev->disk) & 1) ? _(".5") : "");
 
       grub_device_close (dev);
     }

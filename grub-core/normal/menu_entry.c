@@ -118,6 +118,15 @@ ensure_space (struct line *linep, int extra)
   return 1;
 }
 
+/* The max column number of an entry. The last "-1" is for a
+   continuation marker.  */
+static inline int
+grub_term_entry_width (struct grub_term_output *term)
+{
+  return grub_term_border_width (term) - GRUB_TERM_MARGIN * 2 - 2;
+}
+
+
 /* Return the number of lines occupied by this line on the screen.  */
 static int
 get_logical_num_lines (struct line *linep, struct per_term_screen *term_screen)
@@ -150,7 +159,7 @@ print_empty_line (int y, struct per_term_screen *term_screen)
 		    GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + 1,
 		    y + GRUB_TERM_FIRST_ENTRY_Y);
 
-  for (i = 0; i < grub_term_entry_width (term_screen->term); i++)
+  for (i = 0; i < grub_term_entry_width (term_screen->term) + 1; i++)
     grub_putcode (' ', term_screen->term);
 }
 
@@ -508,7 +517,15 @@ destroy_screen (struct screen *screen)
 	struct line *linep = screen->lines + i;
 
 	if (linep)
-	  grub_free (linep->buf);
+	  {
+	    unsigned j;
+	    if (linep->pos)
+	      for (j = 0; j < screen->nterms; j++)
+		grub_free (linep->pos[j]);
+
+	    grub_free (linep->buf);
+	    grub_free (linep->pos);
+	  }
       }
 
   grub_free (screen->killed_text);
@@ -607,7 +624,7 @@ backward_char (struct screen *screen, int update)
 						    linep->buf + screen->column)
 	- linep->buf;
 
-      grub_free (glyph.combining);
+      grub_unicode_destroy_glyph (&glyph);
     }
   else if (screen->line > 0)
     {

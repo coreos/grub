@@ -29,7 +29,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 grub_video_adapter_t grub_video_adapter_list = NULL;
 
 /* Active video adapter.  */
-static grub_video_adapter_t grub_video_adapter_active;
+grub_video_adapter_t grub_video_adapter_active;
 
 /* Restore back to initial mode (where applicable).  */
 grub_err_t
@@ -339,6 +339,7 @@ grub_video_create_render_target (struct grub_video_render_target **result,
                                  unsigned int width, unsigned int height,
                                  unsigned int mode_type)
 {
+  *result = 0;
   if (! grub_video_adapter_active)
     return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
@@ -351,6 +352,8 @@ grub_video_create_render_target (struct grub_video_render_target **result,
 grub_err_t
 grub_video_delete_render_target (struct grub_video_render_target *target)
 {
+  if (!target)
+    return GRUB_ERR_NONE;
   if (! grub_video_adapter_active)
     return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
 
@@ -495,6 +498,9 @@ grub_video_set_mode (const char *modestring,
   char *next_mode;
   char *current_mode;
   char *modevar;
+
+  if (grub_video_adapter_active && grub_video_adapter_active->id == GRUB_VIDEO_ADAPTER_CAPTURE)
+    return GRUB_ERR_NONE;
 
   modevalue &= modemask;
 

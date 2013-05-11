@@ -528,7 +528,11 @@ grub_jpeg_ycrcb_to_rgb (int yy, int cr, int cb, grub_uint8_t * rgb)
     dd = 0;
   if (dd > 255)
     dd = 255;
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+  rgb[2] = dd;
+#else
   *(rgb++) = dd;
+#endif
 
   /* Green  */
   dd = yy - ((cb * CONST (0.34414) + cr * CONST (0.71414)) >> SHIFT_BITS);
@@ -536,7 +540,11 @@ grub_jpeg_ycrcb_to_rgb (int yy, int cr, int cb, grub_uint8_t * rgb)
     dd = 0;
   if (dd > 255)
     dd = 255;
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+  rgb[1] = dd;
+#else
   *(rgb++) = dd;
+#endif
 
   /* Blue  */
   dd = yy + ((cb * CONST (1.772)) >> SHIFT_BITS);
@@ -544,7 +552,12 @@ grub_jpeg_ycrcb_to_rgb (int yy, int cr, int cb, grub_uint8_t * rgb)
     dd = 0;
   if (dd > 255)
     dd = 255;
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+  rgb[0] = dd;
+  rgb += 3;
+#else
   *(rgb++) = dd;
+#endif
 }
 
 static grub_err_t
@@ -680,9 +693,7 @@ grub_jpeg_decode_jpeg (struct grub_jpeg_data *data)
       if (grub_errno)
 	break;
 
-#ifdef JPEG_DEBUG
-      grub_printf ("jpeg marker: %x\n", marker);
-#endif
+      grub_dprintf ("jpeg", "jpeg marker: %x\n", marker);
 
       switch (marker)
 	{

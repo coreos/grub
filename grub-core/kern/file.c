@@ -64,7 +64,7 @@ grub_file_open (const char *name)
   grub_device_t device = 0;
   grub_file_t file = 0, last_file = 0;
   char *device_name;
-  char *file_name;
+  const char *file_name;
   grub_file_filter_id_t filter;
 
   device_name = grub_file_get_device_name (name);
@@ -76,7 +76,7 @@ grub_file_open (const char *name)
   if (file_name)
     file_name++;
   else
-    file_name = (char *) name;
+    file_name = name;
 
   device = grub_device_open (device_name);
   grub_free (device_name);

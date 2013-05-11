@@ -87,7 +87,8 @@ failure_append_vtext(grub_test_failure_t failure, const char *fmt, va_list args)
       char *oldmsg = failure->message;
 
       failure->message = grub_xasprintf("%s%s", oldmsg, msg);
-      grub_free(oldmsg);
+      grub_free (oldmsg);
+      grub_free (msg);
     }
   else
     {

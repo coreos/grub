@@ -6,6 +6,9 @@ export LC_CTYPE=C
 export LC_COLLATE=C
 unset LC_ALL
 
+find . -iname '*.[ch]' -not -ipath './grub-core/lib/libgcrypt-grub/*' -not -ipath './build-aux/*' -not -ipath './grub-core/lib/libgcrypt/src/misc.c' -not -ipath './grub-core/lib/libgcrypt/src/global.c' -not -ipath './grub-core/lib/libgcrypt/src/secmem.c' |sort > po/POTFILES.in
+find util -iname '*.in' -not -name Makefile.in  |sort > po/POTFILES-shell.in
+
 autogen --version >/dev/null || exit 1
 
 echo "Importing unicode..."
@@ -24,7 +27,7 @@ ln -s ../../../grub-core/lib/libgcrypt-grub/src/g10lib.h include/grub/gcrypt/g10
 cp -R grub-core/lib/libgcrypt/mpi/generic grub-core/lib/libgcrypt-grub/mpi/generic
 
 for x in mpi-asm-defs.h mpih-add1.c mpih-sub1.c mpih-mul1.c mpih-mul2.c mpih-mul3.c mpih-lshift.c mpih-rshift.c; do
-    if [ -f grub-core/lib/libgcrypt-grub/mpi/"$x" ]; then
+    if [ -h grub-core/lib/libgcrypt-grub/mpi/"$x" ] || [ -f grub-core/lib/libgcrypt-grub/mpi/"$x" ]; then
 	rm grub-core/lib/libgcrypt-grub/mpi/"$x"
     fi
     ln -s generic/"$x" grub-core/lib/libgcrypt-grub/mpi/"$x"

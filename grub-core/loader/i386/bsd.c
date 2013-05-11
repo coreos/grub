@@ -1045,7 +1045,7 @@ grub_netbsd_add_boot_disk_and_wedge (void)
     struct grub_partition_bsd_disk_label label;
   } buf;
   grub_uint8_t *hash;
-  grub_uint64_t ctx[(GRUB_MD_MD5->contextsize + 7) / 8];
+  GRUB_PROPERLY_ALIGNED_ARRAY (ctx, GRUB_MD_MD5->contextsize);
 
   dev = grub_device_open (0);
   if (! (dev && dev->disk && dev->disk->partition))

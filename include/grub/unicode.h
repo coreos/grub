@@ -132,21 +132,33 @@ enum grub_comb_type
     GRUB_UNICODE_COMB_MN = 255,
   };
 
+struct grub_unicode_combining
+{
+  grub_uint32_t code:21;
+  enum grub_comb_type type:8;
+};
 /* This structure describes a glyph as opposed to character.  */
 struct grub_unicode_glyph
 {
-  grub_uint32_t base;
-  grub_uint16_t variant:9;
-  grub_uint8_t attributes:5;
-  grub_size_t ncomb;
-  grub_size_t orig_pos;
-  struct grub_unicode_combining {
-    grub_uint32_t code;
-    enum grub_comb_type type;
-  } *combining;
+  grub_uint32_t base:23; /* minimum: 21 */
+  grub_uint16_t variant:9; /* minimum: 9 */
+
+  grub_uint8_t attributes:5; /* minimum: 5 */
+  grub_uint8_t bidi_level:6; /* minimum: 6 */
+  enum grub_bidi_type bidi_type:5; /* minimum: :5 */
+
+  unsigned ncomb:8;
   /* Hint by unicode subsystem how wide this character usually is.
      Real width is determined by font. Set only in UTF-8 stream.  */
-  int estimated_width;
+  int estimated_width:8;
+
+  grub_size_t orig_pos;
+  union
+  {
+    struct grub_unicode_combining combining_inline[sizeof (void *)
+						   / sizeof (struct grub_unicode_combining)];
+    struct grub_unicode_combining *combining_ptr;
+  };
 };
 
 #define GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR 0x1
@@ -253,6 +265,24 @@ grub_size_t
 grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
 			      struct grub_unicode_glyph *out);
 
+static inline const struct grub_unicode_combining *
+grub_unicode_get_comb (const struct grub_unicode_glyph *in)
+{
+  if (in->ncomb == 0)
+    return NULL;
+  if (in->ncomb > ARRAY_SIZE (in->combining_inline))
+    return in->combining_ptr;
+  return in->combining_inline;
+}
+
+static inline void
+grub_unicode_destroy_glyph (struct grub_unicode_glyph *glyph)
+{
+  if (glyph->ncomb > ARRAY_SIZE (glyph->combining_inline))
+    grub_free (glyph->combining_ptr);
+  glyph->ncomb = 0;
+}
+
 static inline struct grub_unicode_glyph *
 grub_unicode_glyph_dup (const struct grub_unicode_glyph *in)
 {
@@ -260,18 +290,39 @@ grub_unicode_glyph_dup (const struct grub_unicode_glyph *in)
   if (!out)
     return NULL;
   grub_memcpy (out, in, sizeof (*in));
-  if (in->combining)
+  if (in->ncomb > ARRAY_SIZE (out->combining_inline))
     {
-      out->combining = grub_malloc (in->ncomb * sizeof (out->combining[0]));
-      if (!out->combining)
+      out->combining_ptr = grub_malloc (in->ncomb * sizeof (out->combining_ptr[0]));
+      if (!out->combining_ptr)
 	{
 	  grub_free (out);
 	  return NULL;
 	}
-      grub_memcpy (out->combining, in->combining,
-		   in->ncomb * sizeof (out->combining[0]));
+      grub_memcpy (out->combining_ptr, in->combining_ptr,
+		   in->ncomb * sizeof (out->combining_ptr[0]));
     }
+  else
+    grub_memcpy (&out->combining_inline, &in->combining_inline,
+		 sizeof (out->combining_inline));
   return out;
+}
+
+static inline void
+grub_unicode_set_glyph (struct grub_unicode_glyph *out,
+			const struct grub_unicode_glyph *in)
+{
+  grub_memcpy (out, in, sizeof (*in));
+  if (in->ncomb > ARRAY_SIZE (out->combining_inline))
+    {
+      out->combining_ptr = grub_malloc (in->ncomb * sizeof (out->combining_ptr[0]));
+      if (!out->combining_ptr)
+	return;
+      grub_memcpy (out->combining_ptr, in->combining_ptr,
+		   in->ncomb * sizeof (out->combining_ptr[0]));
+    }
+  else
+    grub_memcpy (&out->combining_inline, &in->combining_inline,
+		 sizeof (out->combining_inline));
 }
 
 static inline struct grub_unicode_glyph *
@@ -285,6 +336,15 @@ grub_unicode_glyph_from_code (grub_uint32_t code)
   ret->base = code;
 
   return ret;
+}
+
+static inline void
+grub_unicode_set_glyph_from_code (struct grub_unicode_glyph *glyph,
+				  grub_uint32_t code)
+{
+  grub_memset (glyph, 0, sizeof (*glyph));
+
+  glyph->base = code;
 }
 
 grub_uint32_t

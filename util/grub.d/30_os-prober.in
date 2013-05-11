@@ -195,7 +195,7 @@ EOF
 
 	if [ "x$is_first_entry" = xtrue ]; then
             cat << EOF
-menuentry '$(echo "$OS" | grub_quote)' --class gnu-linux --class gnu --class os \$menuentry_id_option 'osprober-gnulinux-simple-$boot_device_id' {
+menuentry '$(echo "$OS $onstr" | grub_quote)' --class gnu-linux --class gnu --class os \$menuentry_id_option 'osprober-gnulinux-simple-$boot_device_id' {
 EOF
 	    save_default_entry | grub_add_tab
 	    printf '%s\n' "${prepare_boot_cache}"
@@ -210,7 +210,7 @@ EOF
         cat << EOF
 }
 EOF
-	    echo "submenu '$(gettext_printf "Advanced options for %s" "${OS}" | grub_quote)' \$menuentry_id_option 'osprober-gnulinux-advanced-$boot_device_id' {"
+	    echo "submenu '$(gettext_printf "Advanced options for %s" "${OS} $onstr" | grub_quote)' \$menuentry_id_option 'osprober-gnulinux-advanced-$boot_device_id' {"
 	    is_first_entry=false
 	fi
 	title="${LLABEL} $onstr"
@@ -231,7 +231,7 @@ EOF
 	}
 EOF
 	if [ x"$title" = x"$GRUB_ACTUAL_DEFAULT" ] || [ x"Previous Linux versions>$title" = x"$GRUB_ACTUAL_DEFAULT" ]; then
-	    replacement_title="$(echo "Advanced options for ${OS}" | sed 's,>,>>,g')>$(echo "$title" | sed 's,>,>>,g')"
+	    replacement_title="$(echo "Advanced options for ${OS} $onstr" | sed 's,>,>>,g')>$(echo "$title" | sed 's,>,>>,g')"
 	    quoted="$(echo "$GRUB_ACTUAL_DEFAULT" | grub_quote)"
 	    title_correction_code="${title_correction_code}if [ \"x\$default\" = '$quoted' ]; then default='$(echo "$replacement_title" | grub_quote)'; fi;"
 	    grub_warn "$(gettext_printf "Please don't use old title \`%s' for GRUB_DEFAULT, use \`%s' (for versions before 2.00) or \`%s' (for 2.00 or later)" "$GRUB_ACTUAL_DEFAULT" "$replacement_title" "gnulinux-advanced-$boot_device_id>gnulinux-$version-$type-$boot_device_id")"
