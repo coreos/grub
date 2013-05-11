@@ -2531,8 +2531,10 @@ of the partition when installing GRUB).
 (hd0,1,3)
 @end example
 
-If you enabled the network support, the special drives @samp{(tftp)},
-@samp{(http)} and so on ars also available.
+If you enabled the network support, the special drives
+@code{(@var{protocol}[,@var{server}])} are also available. Supported protocols
+are @samp{http} and @samp{tftp}. If @var{server} is omitted, value of
+environment variable @samp{net_default_server} is used.
 Before using the network drive, you must initialize the network.
 @xref{Network}, for more information.
 

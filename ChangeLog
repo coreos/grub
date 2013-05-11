@@ -1,3 +1,8 @@
+2013-05-11  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* docs/grub.texi (Device syntax): Clarify description of network
+	drives.
+
 2013-05-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Redirect xasprintf to grub_xvasprintf rather than having #ifdef's
