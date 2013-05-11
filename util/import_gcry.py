@@ -473,7 +473,17 @@ for cipher_file in cipher_files:
 cryptolist.close ()
 
 for src in sorted (os.listdir (os.path.join (indir, "src"))):
-    if src == "versioninfo.rc.in":
+    if src == "versioninfo.rc.in" or src == "ath.c" or src == "ChangeLog-2011" \
+            or src == "dumpsexp.c" or src == "fips.c" or src == "gcrypt.h.in" \
+            or src == "gcryptrnd.c"or src == "getrandom.c" \
+            or src == "global.c" or src == "hmac256.c" \
+            or src == "hwfeatures.c" or src == "libgcrypt-config.in" \
+            or src == "libgcrypt.def" or src == "libgcrypt.m4" \
+            or src == "libgcrypt.vers" or src == "Makefile.am" \
+            or src == "Manifest" or src == "misc.c" \
+            or src == "missing-string.c" or src == "module.c" \
+            or src == "secmem.c" or src == "sexp.c" \
+            or src == "stdmem.c" or src == "visibility.c":
         continue
     outfile = os.path.join (basedir, "src", src)
     infile = os.path.join (indir, "src", src)
@@ -499,6 +509,10 @@ for src in sorted (os.listdir (os.path.join (indir, "src"))):
     fw.close ()
 
 for src in sorted (os.listdir (os.path.join (indir, "mpi"))):
+    if src == "config.links" or src == "ChangeLog-2011" \
+            or src == "mpi-scan.c" or src == "Manifest" \
+            or src == "Makefile.am":
+        continue
     infile = os.path.join (indir, "mpi", src)
     outfile = os.path.join (basedir, "mpi", src)
     if os.path.isdir (infile):

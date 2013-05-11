@@ -550,6 +550,7 @@ script = {
   testcase;
   name = gettext_strings_test;
   common = tests/gettext_strings_test.in;
+  extra_dist = po/exclude.pot;
 };
 
 script = {

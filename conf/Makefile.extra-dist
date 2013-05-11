@@ -26,17 +26,18 @@ EXTRA_DIST += grub-core/gensymlist.sh
 EXTRA_DIST += grub-core/genemuinit.sh
 EXTRA_DIST += grub-core/genemuinitheader.sh
 
-EXTRA_DIST += grub-core/lib/libgcrypt/cipher
+EXTRA_DIST += grub-core/lib/libgcrypt
+EXTRA_DIST += grub-core/lib/libgcrypt-grub/mpi/generic
 EXTRA_DIST += $(shell find $(top_srcdir)/include -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/lib -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/gnulib -name '*.h')
 EXTRA_DIST += grub-core/efiemu/runtime/config.h
-EXTRA_DIST += grub-core/lib/libgcrypt/src/gcrypt.h.in
 
 EXTRA_DIST += grub-core/lib/LzmaDec.c
 
 EXTRA_DIST += BUGS
 EXTRA_DIST += util/i386/efi/grub-dumpdevtree
+EXTRA_DIST += util/spkmodem-recv.c
 EXTRA_DIST += util/import_gcrypth.sed
 
 EXTRA_DIST += m4/gnulib-cache.m4
@@ -53,3 +54,4 @@ EXTRA_DIST += m4/printf-posix.m4
 EXTRA_DIST += m4/threadlib.m4
 EXTRA_DIST += m4/uintmax_t.m4
 EXTRA_DIST += m4/visibility.m4
+EXTRA_DIST += m4/math_h.m4

@@ -1,4 +1,9 @@
-2013-05-11  Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>
+2013-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix distfiles list.
+	Reported by: Andrey Borzenkov <arvidjaar@gmail.com>
+
+2013-05-11  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
 	* grub-core/net/bootp.c (grub_cmd_bootp): Check if there is any card
 	present.
