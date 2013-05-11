@@ -422,7 +422,6 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		       grub_util_info ("  ABS32:\toffset=%d\t(0x%08x)",
 				       (int) sym_addr, (int) sym_addr);
 		       /* Data will be naturally aligned */
-		       //      sym_addr -= offset;
 		       sym_addr += 0x400;
 		       *target = grub_host_to_target32 (grub_target_to_host32 (*target) + sym_addr);
 		     }
@@ -446,9 +445,9 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		       grub_util_info ("  THM_JUMP19:\toffset=%d\t(0x%08x)",
 				       sym_addr, sym_addr);
 		       sym_addr -= offset;
+
 		       /* Thumb instructions can be 16-bit aligned */
-		       err = grub_arm_reloc_thm_jump19 ((grub_uint16_t *) target,
-							sym_addr);
+		       err = grub_arm_reloc_thm_jump19 ((grub_uint16_t *) target, sym_addr);
 		       if (err)
 			 grub_util_error ("%s", grub_errmsg);
 		     }
@@ -705,15 +704,10 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		    break;
 		    /* Create fixup entry for PE/COFF loader */
 		  case R_ARM_ABS32:
-		    {      
+		    {
 		      Elf_Addr addr;
 
 		      addr = section_address + offset;
-#if 0
-		      grub_util_info ("  %s:  add_fixup: 0x%08x : 0x%08x",
-				      __FUNCTION__, (unsigned int) addr,
-				      (unsigned int) current_address);
-#endif
 		      current_address
 			= SUFFIX (add_fixup_entry) (&lst,
 						    GRUB_PE32_REL_BASED_HIGHLOW,
@@ -722,7 +716,7 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		    }
 		    break;
 		  default:
-		    grub_util_error (_("relocation 0x%x is not implemented yet2"), ELF_R_TYPE (info));
+		    grub_util_error (_("fixup for relocation 0x%x not implemented"), ELF_R_TYPE (info));
 		    break;
 		  }
 		break;

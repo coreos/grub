@@ -226,6 +226,7 @@ kernel = {
   sparc64_ieee1275 = kern/sparc64/ieee1275/ieee1275.c;
 
   arm = kern/arm/dl.c;
+  arm = kern/arm/dl_helper.c;
   arm = kern/arm/cache.S;
   arm = kern/arm/misc.S;
 
