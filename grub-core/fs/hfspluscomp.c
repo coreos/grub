@@ -74,7 +74,7 @@ struct grub_hfsplus_compress_attr
   grub_uint32_t type;
   grub_uint32_t uncompressed_inline_size;
   grub_uint32_t always_0;
-};
+} __attribute__ ((packed));
 
 enum
   {
