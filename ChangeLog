@@ -1,5 +1,9 @@
 2013-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.in: Gettextize "Not found" message.
+
+2013-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix distfiles list.
 	Reported by: Andrey Borzenkov <arvidjaar@gmail.com>
 
