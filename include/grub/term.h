@@ -124,24 +124,11 @@ grub_term_color_state;
 
 /* Menu-related geometrical constants.  */
 
-/* The number of lines of "GRUB version..." at the top.  */
-#define GRUB_TERM_INFO_HEIGHT	1
-
 /* The number of columns/lines between messages/borders/etc.  */
 #define GRUB_TERM_MARGIN	1
 
 /* The number of columns of scroll information.  */
 #define GRUB_TERM_SCROLL_WIDTH	1
-
-/* The Y position of the top border.  */
-#define GRUB_TERM_TOP_BORDER_Y	(GRUB_TERM_MARGIN + GRUB_TERM_INFO_HEIGHT \
-                                 + GRUB_TERM_MARGIN)
-
-/* The X position of the left border.  */
-#define GRUB_TERM_LEFT_BORDER_X	GRUB_TERM_MARGIN
-
-/* The Y position of the first entry.  */
-#define GRUB_TERM_FIRST_ENTRY_Y	(GRUB_TERM_TOP_BORDER_Y + 1)
 
 struct grub_term_input
 {
@@ -338,13 +325,6 @@ static inline unsigned grub_term_width (struct grub_term_output *term)
 static inline unsigned grub_term_height (struct grub_term_output *term)
 {
   return (term->getwh(term)&0xFF);
-}
-
-/* The width of the border.  */
-static inline unsigned
-grub_term_border_width (struct grub_term_output *term)
-{
-  return grub_term_width (term) - GRUB_TERM_MARGIN * 2;
 }
 
 static inline grub_uint16_t

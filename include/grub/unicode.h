@@ -210,6 +210,7 @@ enum
     GRUB_UNICODE_UPARROW                   = 0x2191,
     GRUB_UNICODE_RIGHTARROW                = 0x2192,
     GRUB_UNICODE_DOWNARROW                 = 0x2193,
+    GRUB_UNICODE_UPDOWNARROW               = 0x2195,
     GRUB_UNICODE_LIGHT_HLINE               = 0x2500,
     GRUB_UNICODE_HLINE                     = 0x2501,
     GRUB_UNICODE_LIGHT_VLINE               = 0x2502,

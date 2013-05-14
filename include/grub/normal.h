@@ -48,9 +48,23 @@ extern int grub_normal_exit_level;
 /* Defined in `main.c'.  */
 void grub_enter_normal_mode (const char *config);
 void grub_normal_execute (const char *config, int nested, int batch);
-void grub_menu_init_page (int nested, int edit, int *num_entries,
+struct grub_term_screen_geometry
+{
+  /* The number of entries shown at a time.  */
+  int num_entries;
+  int first_entry_y;
+  int first_entry_x;
+  int entry_width;
+  int timeout_y;
+  int timeout_lines;
+  int border;
+  int right_margin;
+};
+
+void grub_menu_init_page (int nested, int edit,
+			  struct grub_term_screen_geometry *geo,
 			  struct grub_term_output *term);
-void grub_normal_init_page (struct grub_term_output *term);
+void grub_normal_init_page (struct grub_term_output *term, int y);
 char *grub_file_getline (grub_file_t file);
 void grub_cmdline_run (int nested);
 

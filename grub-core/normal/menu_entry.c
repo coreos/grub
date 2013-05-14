@@ -50,8 +50,7 @@ struct per_term_screen
 {
   struct grub_term_output *term;
   int y_line_start;
-  /* Number of entries.  */
-  int num_entries;
+  struct grub_term_screen_geometry geo;
 };
 
 struct screen
@@ -118,22 +117,13 @@ ensure_space (struct line *linep, int extra)
   return 1;
 }
 
-/* The max column number of an entry. The last "-1" is for a
-   continuation marker.  */
-static inline int
-grub_term_entry_width (struct grub_term_output *term)
-{
-  return grub_term_border_width (term) - GRUB_TERM_MARGIN * 2 - 2;
-}
-
-
 /* Return the number of lines occupied by this line on the screen.  */
 static int
 get_logical_num_lines (struct line *linep, struct per_term_screen *term_screen)
 {
   return (grub_getstringwidth (linep->buf, linep->buf + linep->len,
 			       term_screen->term)
-	  / grub_term_entry_width (term_screen->term)) + 1;
+	  / term_screen->geo.entry_width) + 1;
 }
 
 static void
@@ -156,10 +146,28 @@ print_empty_line (int y, struct per_term_screen *term_screen)
   int i;
 
   grub_term_gotoxy (term_screen->term,
-		    GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + 1,
-		    y + GRUB_TERM_FIRST_ENTRY_Y);
+		    term_screen->geo.first_entry_x,
+		    y + term_screen->geo.first_entry_y);
 
-  for (i = 0; i < grub_term_entry_width (term_screen->term) + 1; i++)
+  for (i = 0; i < term_screen->geo.entry_width + 1; i++)
+    grub_putcode (' ', term_screen->term);
+}
+
+static void
+print_updown (int upflag, int downflag, struct per_term_screen *term_screen)
+{
+  grub_term_gotoxy (term_screen->term, term_screen->geo.first_entry_x
+		    + term_screen->geo.entry_width + 1
+		    + term_screen->geo.border,
+		    term_screen->geo.first_entry_y);
+
+  if (upflag && downflag)
+    grub_putcode (GRUB_UNICODE_UPDOWNARROW, term_screen->term);
+  else if (upflag)
+    grub_putcode (GRUB_UNICODE_UPARROW, term_screen->term);
+  else if (downflag)
+    grub_putcode (GRUB_UNICODE_DOWNARROW, term_screen->term);
+  else
     grub_putcode (' ', term_screen->term);
 }
 
@@ -167,9 +175,10 @@ print_empty_line (int y, struct per_term_screen *term_screen)
 static void
 print_up (int flag, struct per_term_screen *term_screen)
 {
-  grub_term_gotoxy (term_screen->term, GRUB_TERM_LEFT_BORDER_X 
-		    + grub_term_border_width (term_screen->term),
-		    GRUB_TERM_FIRST_ENTRY_Y);
+  grub_term_gotoxy (term_screen->term, term_screen->geo.first_entry_x
+		    + term_screen->geo.entry_width + 1
+		    + term_screen->geo.border,
+		    term_screen->geo.first_entry_y);
 
   if (flag)
     grub_putcode (GRUB_UNICODE_UPARROW, term_screen->term);
@@ -181,10 +190,11 @@ print_up (int flag, struct per_term_screen *term_screen)
 static void
 print_down (int flag, struct per_term_screen *term_screen)
 {
-  grub_term_gotoxy (term_screen->term, GRUB_TERM_LEFT_BORDER_X
-		    + grub_term_border_width (term_screen->term),
-		    GRUB_TERM_TOP_BORDER_Y 
-		    + term_screen->num_entries);
+  grub_term_gotoxy (term_screen->term, term_screen->geo.first_entry_x
+		    + term_screen->geo.entry_width + 1
+		    + term_screen->geo.border,
+		    term_screen->geo.first_entry_y
+		    + term_screen->geo.num_entries - 1);
 
   if (flag)
     grub_putcode (GRUB_UNICODE_DOWNARROW, term_screen->term);
@@ -210,17 +220,20 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
   for (i = 0; i < screen->line; i++, linep++)
     y += get_logical_num_lines (linep, term_screen);
   linep = screen->lines + screen->line;
-  y += grub_getstringwidth (linep->buf, linep->buf + screen->column,
-			    term_screen->term) / grub_term_entry_width (term_screen->term);
-
+  int t = grub_getstringwidth (linep->buf, linep->buf + screen->column,
+			       term_screen->term);
+  y += t / term_screen->geo.entry_width;
+  if (t % term_screen->geo.entry_width == 0
+      && t != 0 &&  screen->column == linep->len)
+    y--;
   /* Check if scrolling is necessary.  */
-  if (y < 0 || y >= term_screen->num_entries)
+  if (y < 0 || y >= term_screen->geo.num_entries)
     {
       int delta;
       if (y < 0)
 	delta = -y;
       else
-	delta = term_screen->num_entries - 1 - y;
+	delta = term_screen->geo.num_entries - 1 - y;
       term_screen->y_line_start += delta;
 
       region_start = 0;
@@ -265,24 +278,22 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 	  if (i == region_start || linep == screen->lines + screen->line
 	      || (i > region_start && mode == ALL_LINES))
 	    {
-	      grub_term_gotoxy (term_screen->term, GRUB_TERM_LEFT_BORDER_X
-				+ GRUB_TERM_MARGIN + 1, (y < 0 ? 0 : y)
-				+ GRUB_TERM_FIRST_ENTRY_Y);
+	      grub_term_gotoxy (term_screen->term, term_screen->geo.first_entry_x,
+				(y < 0 ? 0 : y)
+				+ term_screen->geo.first_entry_y);
 
 	      grub_print_ucs4_menu (linep->buf,
 				    linep->buf + linep->len,
-				    GRUB_TERM_LEFT_BORDER_X
-				    + GRUB_TERM_MARGIN + 1,
-				    GRUB_TERM_MARGIN
-				    + GRUB_TERM_SCROLL_WIDTH,
+				    term_screen->geo.first_entry_x,
+				    term_screen->geo.right_margin,
 				    term_screen->term,
 				    (y < 0) ? -y : 0,
-				    term_screen->num_entries
+				    term_screen->geo.num_entries
 				    - ((y > 0) ? y : 0), '\\',
 				    *pos);
 	    }
 	  y += get_logical_num_lines (linep, term_screen);
-	  if (y >= term_screen->num_entries)
+	  if (y >= term_screen->geo.num_entries)
 	    {
 	      if (i + 1 < screen->num_lines)
 		down_flag = 1;
@@ -292,16 +303,25 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 	  i++;
 
 	  if (mode == ALL_LINES && i == screen->num_lines)
-	    for (; y < term_screen->num_entries; y++)
+	    for (; y < term_screen->geo.num_entries; y++)
 	      print_empty_line (y, term_screen);
 	}
-      while (y < term_screen->num_entries);
+      while (y < term_screen->geo.num_entries);
 
       /* Draw up and down arrows.  */
-      if (up)
-	print_up (up_flag, term_screen);
-      if (down)
-	print_down (down_flag, term_screen);
+      
+      if (term_screen->geo.num_entries == 1)
+	{
+	  if (up || down)
+	    print_updown (up_flag, down_flag, term_screen);
+	}
+      else
+	{
+	  if (up)
+	    print_up (up_flag, term_screen);
+	  if (down)
+	    print_down (down_flag, term_screen);
+	}
     }
 
   /* Place the cursor.  */
@@ -318,15 +338,13 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 	y += get_logical_num_lines (screen->lines + i, term_screen);
       if (cpos >= &(screen->lines[screen->line].pos[term_screen - screen->terms])[0])
 	grub_term_gotoxy (term_screen->term, 
-			  cpos->x + GRUB_TERM_LEFT_BORDER_X
-			  + GRUB_TERM_MARGIN + 1,
+			  cpos->x + term_screen->geo.first_entry_x,
 			  cpos->y + y
-			  + GRUB_TERM_FIRST_ENTRY_Y);
+			  + term_screen->geo.first_entry_y);
       else
 	grub_term_gotoxy (term_screen->term, 
-			  GRUB_TERM_LEFT_BORDER_X
-			  + GRUB_TERM_MARGIN + 1,
-			  y + GRUB_TERM_FIRST_ENTRY_Y);
+			  term_screen->geo.first_entry_x,
+			  y + term_screen->geo.first_entry_y);
 
     }
 
@@ -1003,57 +1021,58 @@ complete (struct screen *screen, int continuous, int update)
       if (restore)
 	for (i = 0; i < screen->nterms; i++)
 	  {
+	    int width = grub_term_width (screen->terms[i].term) - 2;
+	    if (width > 15)
+	      width -= 6;
 	    int num_sections = ((completion_buffer.len
-				 + grub_term_width (screen->terms[i].term) 
-				 - 8 - 1)
-				/ (grub_term_width (screen->terms[i].term)
-				   - 8));
+				 + width - 1)
+				/ width);
 	    grub_uint32_t *endp;
 	    grub_uint16_t pos;
 	    grub_uint32_t *p = ucs4;
 
 	    pos = grub_term_getxy (screen->terms[i].term);
-	    grub_term_gotoxy (screen->terms[i].term, 0,
-			      grub_term_height (screen->terms[i].term) - 3);
 
 	    screen->completion_shown = 1;
 
 	    grub_term_gotoxy (screen->terms[i].term, 0,
-			      grub_term_height (screen->terms[i].term) - 3);
-	    grub_puts_terminal ("   ", screen->terms[i].term);
-	    switch (completion_type)
+			      screen->terms[i].geo.timeout_y);
+	    if (screen->terms[i].geo.timeout_lines >= 2)
 	      {
-	      case GRUB_COMPLETION_TYPE_COMMAND:
-		grub_puts_terminal (_("Possible commands are:"),
-				    screen->terms[i].term);
-		break;
-	      case GRUB_COMPLETION_TYPE_DEVICE:
-		grub_puts_terminal (_("Possible devices are:"),
-				    screen->terms[i].term);
-		break;
-	      case GRUB_COMPLETION_TYPE_FILE:
-		grub_puts_terminal (_("Possible files are:"),
-				    screen->terms[i].term);
-		break;
-	      case GRUB_COMPLETION_TYPE_PARTITION:
-		grub_puts_terminal (_("Possible partitions are:"),
-				    screen->terms[i].term);
-		break;
-	      case GRUB_COMPLETION_TYPE_ARGUMENT:
-		grub_puts_terminal (_("Possible arguments are:"),
-				    screen->terms[i].term);
-		break;
-	      default:
-		grub_puts_terminal (_("Possible things are:"),
-				    screen->terms[i].term);
-		break;
+		grub_puts_terminal ("   ", screen->terms[i].term);
+		switch (completion_type)
+		  {
+		  case GRUB_COMPLETION_TYPE_COMMAND:
+		    grub_puts_terminal (_("Possible commands are:"),
+					screen->terms[i].term);
+		    break;
+		  case GRUB_COMPLETION_TYPE_DEVICE:
+		    grub_puts_terminal (_("Possible devices are:"),
+					screen->terms[i].term);
+		    break;
+		  case GRUB_COMPLETION_TYPE_FILE:
+		    grub_puts_terminal (_("Possible files are:"),
+					screen->terms[i].term);
+		    break;
+		  case GRUB_COMPLETION_TYPE_PARTITION:
+		    grub_puts_terminal (_("Possible partitions are:"),
+					screen->terms[i].term);
+		    break;
+		  case GRUB_COMPLETION_TYPE_ARGUMENT:
+		    grub_puts_terminal (_("Possible arguments are:"),
+					screen->terms[i].term);
+		    break;
+		  default:
+		    grub_puts_terminal (_("Possible things are:"),
+					screen->terms[i].term);
+		    break;
+		  }
+
+		grub_puts_terminal ("\n    ", screen->terms[i].term);
 	      }
 
-	    grub_puts_terminal ("\n    ", screen->terms[i].term);
-
-	    p += (count % num_sections)
-	      * (grub_term_width (screen->terms[i].term) - 8);
-	    endp = p + (grub_term_width (screen->terms[i].term) - 8);
+	    p += (count % num_sections) * width;
+	    endp = p + width;
 
 	    if (p != ucs4)
 	      grub_putcode (GRUB_UNICODE_LEFTARROW, screen->terms[i].term);
@@ -1087,17 +1106,19 @@ static void
 clear_completions (struct per_term_screen *term_screen)
 {
   grub_uint16_t pos;
-  unsigned i, j;
+  unsigned j;
+  int i;
 
   pos = grub_term_getxy (term_screen->term);
   grub_term_gotoxy (term_screen->term, 0,
-		    grub_term_height (term_screen->term) - 3);
+		    term_screen->geo.timeout_y);
 
-  for (i = 0; i < 2; i++)
+  for (i = 0; i < term_screen->geo.timeout_lines; i++)
     {
       for (j = 0; j < grub_term_width (term_screen->term) - 1; j++)
 	grub_putcode (' ', term_screen->term);
-      grub_putcode ('\n', term_screen->term);
+      if (i + 1 < term_screen->geo.timeout_lines)
+	grub_putcode ('\n', term_screen->term);
     }
 
   grub_term_gotoxy (term_screen->term, pos >> 8, pos & 0xFF);
@@ -1249,7 +1270,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
   }
   /* Draw the screen.  */
   for (i = 0; i < screen->nterms; i++)
-    grub_menu_init_page (0, 1, &screen->terms[i].num_entries,
+    grub_menu_init_page (0, 1, &screen->terms[i].geo,
 			 screen->terms[i].term);
   update_screen_all (screen, 0, 0, 1, 1, ALL_LINES);
   for (i = 0; i < screen->nterms; i++)
