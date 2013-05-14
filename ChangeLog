@@ -1,3 +1,8 @@
+2013-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* tests/util/grub-shell.in: Remove the temporary directory on grub-emu
+	after the test.
+
 2013-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.in: Gettextize "Not found" message.
