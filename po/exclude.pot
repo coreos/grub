@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"PO-Revision-Date: 2013-05-07 00:07+0200\n"
+"PO-Revision-Date: 2013-05-12 14:21+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -4985,4 +4985,8 @@ msgstr ""
 #: util/grub-setup.c:343
 #, c-format
 msgid "guessing the root device failed, because of `%s'"
+msgstr ""
+#: grub-core/commands/cat.c:106
+#, c-format
+msgid "%C"
 msgstr ""
