@@ -1,5 +1,10 @@
 2013-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/cmdline.c (grub_cmdline_get): Fix off-by-one error
+	to avoid losing last column.
+
+2013-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/exclude.pot: Add missing string "%C".
 
 2013-05-14  Vladimir Serbinenko  <phcoder@gmail.com>

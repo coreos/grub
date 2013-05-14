@@ -237,9 +237,9 @@ grub_cmdline_get (const char *prompt_translated)
 
   void cl_set_pos (struct cmdline_term *cl_term)
   {
-    cl_term->xpos = (cl_term->prompt_len + lpos) % (cl_term->width - 1);
+    cl_term->xpos = (cl_term->prompt_len + lpos) % cl_term->width;
     cl_term->ypos = cl_term->ystart
-      + (cl_term->prompt_len + lpos) / (cl_term->width - 1);
+      + (cl_term->prompt_len + lpos) / cl_term->width;
     grub_term_gotoxy (cl_term->term, cl_term->xpos, cl_term->ypos);
   }
 
