@@ -1,3 +1,10 @@
+2013-05-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* gentpl.py: Replace EXTRA_DIST with dist_noinst_DATA or
+	dist_<directory>_DATA. EXTRA_DIST is ignored by automake inside
+	false conditions.
+	* conf/Makefile.common: define dist_grubconf_DATA
+
 2013-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Progressively skip menu elements on small terminals rather
