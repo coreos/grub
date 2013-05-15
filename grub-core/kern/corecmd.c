@@ -134,18 +134,18 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
 
       fs = grub_fs_probe (dev);
       path = grub_strchr (argv[0], ')');
-      if (! path)
+      if (! *path)
 	path = argv[0];
       else
 	path++;
 
-      if (! path && ! device_name)
+      if (! *path && ! device_name)
 	{
 	  grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
 	  goto fail;
 	}
 
-      if (! path)
+      if (! *path)
 	{
 	  if (grub_errno == GRUB_ERR_UNKNOWN_FS)
 	    grub_errno = GRUB_ERR_NONE;

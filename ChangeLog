@@ -1,3 +1,9 @@
+2013-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/corecmd.c (grub_core_cmd_ls): Fix empty path
+	checking.
+	Reported by: Francesco Lavra.
+
 2013-05-14  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* gentpl.py: Replace EXTRA_DIST with dist_noinst_DATA or
