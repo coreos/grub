@@ -1,3 +1,7 @@
+2013-05-15  Radosław Szymczyszyn  <lavrin@gmail.com>
+
+	* grub-core/partmap/dfly.c: New partition map.
+
 2013-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/corecmd.c (grub_core_cmd_ls): Fix empty path

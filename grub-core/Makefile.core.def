@@ -1653,6 +1653,11 @@ module = {
 };
 
 module = {
+  name = part_dfly;
+  common = partmap/dfly.c;
+};
+
+module = {
   name = msdospart;
   common = parttool/msdospart.c;
 };
