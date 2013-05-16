@@ -227,7 +227,9 @@ kernel = {
 
   arm = kern/arm/dl.c;
   arm = kern/arm/dl_helper.c;
-  arm = kern/arm/cache.S;
+  arm = kern/arm/cache_armv6.S;
+  arm = kern/arm/cache_armv7.S;
+  arm = kern/arm/cache.c;
   arm = kern/arm/misc.S;
 
   emu = disk/host.c;
