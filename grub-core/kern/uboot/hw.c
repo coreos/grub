@@ -40,8 +40,7 @@ grub_uboot_mm_init (void)
 {
   struct sys_info *si = grub_uboot_get_sys_info ();
 
-  grub_mm_init_region ((void *) (grub_modules_get_end ()
-				 + GRUB_KERNEL_MACHINE_STACK_SIZE),
+  grub_mm_init_region ((void *) grub_modules_get_end (),
 		       GRUB_KERNEL_MACHINE_HEAP_SIZE);
 
   if (si && (si->mr_no != 0))

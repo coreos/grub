@@ -1,5 +1,9 @@
 2013-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/uboot/startup.S: Move stack before modules.
+
+2013-05-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/dtc/libfdt-grub.diff: Remove extraneous uintptr_t
 	declaration.
 

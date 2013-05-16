@@ -39,11 +39,9 @@
  *              Also where global/static variables are located.
  * _end:
  *              End of bss region (but not necessarily module blob).
- * <overflow>:
- *              Any part of the module blob that extends beyond _end.
+ * <stack>:     
  * <modules>:
  *              Loadable modules, post relocation.
- * <stack>:     
  * <heap>:
  */
 	
@@ -71,8 +69,7 @@ FUNCTION(codestart)
 	str     r2, [r12]
 
 	@ Modules have been stored as a blob in BSS,
-	@ they need to be manually relocated to _end or
-	@ (__bss_start + grub_total_module_size), whichever greater.
+	@ they need to be manually relocated to _end
 	ldr	r0, =EXT_C(__bss_start)		@ src
 	add	r0, r0, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
 	mvn	r1, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
@@ -80,22 +77,24 @@ FUNCTION(codestart)
 
 	ldr	r1, =EXT_C(_end)		@ dst = End of BSS
 	ldr	r2, grub_total_module_size	@ blob size
-	add	r3, r0, r2			@ blob end
-	cmp	r1, r3				@ _end < blob end?
-	movlt	r1, r3				@ dst = blob end + blob size
+
+	add     r1, r1, #GRUB_KERNEL_MACHINE_STACK_SIZE
+	and	r1, r1, #~0x7	@ Ensure 8-byte alignment
+	sub	sp, r1, #8
+	add     r1, r1, #1024
 
 	ldr     r12, =EXT_C(grub_modbase)
 	str     r1, [r12]
 
-1:	ldr	r3, [r0], #4 			@ r3 = *src++ 
-	str	r3, [r1], #4			@ *dst++ = r3 
+	add	r1, r1, r2
+	add	r0, r0, r2
+	sub     r1, r1, #4
+	sub     r0, r0, #4
+
+1:	ldr	r3, [r0], #-4 			@ r3 = *src--
+	str	r3, [r1], #-4			@ *dst-- = r3 
 	subs	r2, #4				@ remaining -= 4
 	bne	1b				@ while remaining != 0
-	
-	@ Set up a new stack, beyond the end of copied modules.
-	ldr	r3, =GRUB_KERNEL_MACHINE_STACK_SIZE
-	add	r3, r1, r3	@ Place stack beyond end of modules
-	and	sp, r3, #~0x7	@ Ensure 8-byte alignment
 
 	@ Since we _are_ the C run-time, we need to manually zero the BSS
 	@ region before continuing
