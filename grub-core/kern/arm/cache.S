@@ -51,7 +51,11 @@ clean_dcache_range:
 	and	r0, r0, r3
 1:	cmp	r0, r1
 	bge	2f
+#if (__ARM_ARCH_6__ == 1)
+	mcr	p15, 0, r0, c7, c10, 1	@ Clean data cache line by MVA
+#else
 	mcr	p15, 0, r0, c7, c11, 1	@ DCCMVAU
+#endif
 	add	r0, r0, r2		@ Next line
 	b	1b
 2:	DSB
@@ -77,37 +81,47 @@ invalidate_icache_range:
 	bx	lr
 
 sync_caches:
-	DMB
 	DSB
-	push	{r4-r6, lr}
+	push	{r0-r1, r4-r6, lr}
 	ldr	r2, probed	@ If first call, probe cache sizes
 	cmp	r2, #0
-	bleq	probe_caches	@ This call corrupts r3
-	mov	r4, r0
-	mov	r5, r1
+	bleq	probe_caches
+	ldrdeq	r0, r1, [sp]
 	bl	clean_dcache_range
-	mov	r0, r4
-	mov	r1, r5
+	pop	{r0, r1}
 	bl	invalidate_icache_range
 	pop	{r4-r6, pc}
 
 probe_caches:
 	push	{r4-r6, lr}
-	mrc 	p15, 0, r4, c0, c0, 1	@ Read Cache Type Register
-	mov	r5, #1
-	lsr	r6, r4, #16		@ Extract min D-cache num word log2
-	and	r6, r6, #0xf
-	add	r6, r6, #2		@ words->bytes
-	lsl	r6, r5, r6		@ Convert to num bytes
+	mrc 	p15, 0, r0, c0, c0, 1	@ Read Cache Type Register
+	mov	r1, #1
+@ Cache Type Register format changed in ARMv7
+@ r5 - dlinesz
+@ r6 - ilinesz
+#if (__ARM_ARCH_6__ == 1)
+	lsl	r2, r0, #12
+	and	r2, r2, #3		@ Dsize 'len'
+	lsl	r2, r1, r2		@ Convert to num 8-byte blocks
+	lsl	r5, r2, #3		@ Convert to num bytes
+	and	r2, r0, #3		@ Isize 'len'
+	lsl	r2, r1, r2		@ Convert to num 8-byte blocks
+	lsl	r6, r2, #3		@ Convert to num bytes
+#else
+	lsr	r2, r0, #16		@ Extract min D-cache num word log2
+	and	r2, r2, #0xf
+	add	r2, r2, #2		@ words->bytes
+	lsl	r5, r1, r2		@ Convert to num bytes
+	and	r2, r0, #0xf		@ Extract min I-cache num word log2
+	add	r2, r2, #2		@ words->bytes
+	lsl	r6, r1, r2		@ Convert to num bytes
+#endif
 	ldr	r3, =dlinesz
-	str	r6, [r3]
-	and	r6, r4, #0xf		@ Extract min I-cache num word log2
-	add	r6, r6, #2		@ words->bytes
-	lsl	r6, r5, r6		@ Convert to num bytes
+	str	r5, [r3]
 	ldr	r3, =ilinesz
 	str	r6, [r3]
 	ldr	r3, =probed		@ Flag cache probing done
-	str	r5, [r3]
+	str	r1, [r3]
 	pop	{r4-r6, pc}
 
 	.align	3
@@ -135,6 +149,10 @@ FUNCTION(grub_arch_sync_caches)
 	@ r10 - scratch
 	@ r11 - scratch
 clean_invalidate_dcache:
+#if (__ARM_ARCH_6__ == 1)
+	mcr	p15, 0, r0, c7, c14, 0	@ Clean/Invalidate D-cache
+	bx	lr
+#elif (__ARM_ARCH_7A__ == 1)
 	push	{r4-r12, lr}
 	mrc 	p15, 1, r0, c0, c0, 1	@ Read CLIDR
 	lsr	r1, r0, #24		@ Extract LoC
@@ -204,6 +222,7 @@ clean_invalidate_dcache:
 6:	DSB
 	ISB
 	pop	{r4-r12, pc}
+#endif
 
 FUNCTION(grub_arm_disable_caches_mmu)
 	push	{r4, lr}
