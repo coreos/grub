@@ -99,8 +99,13 @@ FUNCTION(codestart)
 	@ Since we _are_ the C run-time, we need to manually zero the BSS
 	@ region before continuing
 	ldr	r0, =EXT_C(__bss_start)	@ zero from here
-	ldr	r1, =EXT_C(_end)		@ to here
+	@ If unaligned, bytewise zero until base address aligned.
 	mov	r2, #0
+1:	tst	r0, #3
+	beq	2f
+	strb	r2, [r0], #1
+	b	1b
+2:	ldr	r1, =EXT_C(_end)		@ to here
 1:	str	r2, [r0], #4
 	cmp	r0, r1
 	bne	1b
