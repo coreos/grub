@@ -1536,11 +1536,10 @@ module = {
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
   ia64_efi = loader/ia64/efi/linux.c;
   arm = loader/arm/linux.c;
+  arm = lib/fdt.c;
   common = loader/linux.c;
   common = lib/cmdline.c;
   enable = noemu;
-
-  fdt_cppflags = '$(CPPFLAGS_LIBFDT)';
 };
 
 module = {

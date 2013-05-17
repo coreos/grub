@@ -18,6 +18,7 @@
  */
 
 #include <grub/dl.h>
+#include <grub/fdt.h>
 #include <grub/file.h>
 #include <grub/loader.h>
 #include <grub/mm.h>
@@ -27,23 +28,29 @@
 #include <grub/cpu/linux.h>
 #include <grub/lib/cmdline.h>
 
-#include <libfdt.h>
-
 GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_dl_t my_mod;
 
 static grub_addr_t initrd_start;
-static grub_size_t initrd_end;
+static grub_addr_t initrd_end;
 
 static grub_addr_t linux_addr;
 static grub_size_t linux_size;
 
 static char *linux_args;
 
-static grub_addr_t firmware_boot_data;
-static grub_addr_t boot_data;
 static grub_uint32_t machine_type;
+static void *fdt_addr;
+
+#define LINUX_ZIMAGE_OFFSET	0x24
+#define LINUX_ZIMAGE_MAGIC	0x016f2818
+
+#define ARM_FDT_MACHINE_TYPE 0xFFFFFFFF
+
+#define LINUX_PHYS_OFFSET        (0x00008000)
+#define LINUX_INITRD_PHYS_OFFSET (LINUX_PHYS_OFFSET + 0x02000000)
+#define LINUX_FDT_PHYS_OFFSET    (LINUX_INITRD_PHYS_OFFSET - 0x10000)
 
 /*
  * linux_prepare_fdt():
@@ -58,19 +65,20 @@ linux_prepare_fdt (void)
   int tmp_size;
   void *tmp_fdt;
 
-  tmp_size = fdt_totalsize ((void *) boot_data) + FDT_ADDITIONAL_ENTRIES_SIZE;
+  tmp_size = grub_fdt_get_totalsize (fdt_addr) + 0x100 + grub_strlen (linux_args);
   tmp_fdt = grub_malloc (tmp_size);
   if (!tmp_fdt)
-    return GRUB_ERR_OUT_OF_MEMORY;
+    return grub_errno;
 
-  fdt_open_into ((void *) boot_data, tmp_fdt, tmp_size);
+  grub_memcpy (tmp_fdt, fdt_addr, grub_fdt_get_totalsize (fdt_addr));
+  grub_fdt_set_totalsize (tmp_fdt, tmp_size);
 
   /* Find or create '/chosen' node */
-  node = fdt_subnode_offset (tmp_fdt, 0, "chosen");
+  node = grub_fdt_find_subnode (tmp_fdt, 0, "chosen");
   if (node < 0)
     {
       grub_printf ("No 'chosen' node in FDT - creating.\n");
-      node = fdt_add_subnode (tmp_fdt, 0, "chosen");
+      node = grub_fdt_add_subnode (tmp_fdt, 0, "chosen");
       if (node < 0)
 	goto failure;
     }
@@ -78,8 +86,8 @@ linux_prepare_fdt (void)
   grub_printf ("linux_args: '%s'\n", linux_args);
 
   /* Generate and set command line */
-  retval = fdt_setprop (tmp_fdt, node, "bootargs", linux_args,
-			grub_strlen (linux_args) + 1);
+  retval = grub_fdt_set_prop (tmp_fdt, node, "bootargs", linux_args,
+			      grub_strlen (linux_args) + 1);
   if (retval)
     goto failure;
 
@@ -89,26 +97,22 @@ linux_prepare_fdt (void)
        * We're using physical addresses, so even if we have LPAE, we're
        * restricted to a 32-bit address space.
        */
-      grub_uint32_t fdt_initrd_start = cpu_to_fdt32 (initrd_start);
-      grub_uint32_t fdt_initrd_end = cpu_to_fdt32 (initrd_end);
-
       grub_dprintf ("loader", "Initrd @ 0x%08x-0x%08x\n",
 		    initrd_start, initrd_end);
 
-      retval = fdt_setprop (tmp_fdt, node, "linux,initrd-start",
-			    &fdt_initrd_start, sizeof (fdt_initrd_start));
+      retval = grub_fdt_set_prop32 (tmp_fdt, node, "linux,initrd-start",
+				    initrd_start);
       if (retval)
 	goto failure;
-      retval = fdt_setprop (tmp_fdt, node, "linux,initrd-end",
-			    &fdt_initrd_end, sizeof (fdt_initrd_end));
+      retval = grub_fdt_set_prop32 (tmp_fdt, node, "linux,initrd-end",
+				    initrd_end);
       if (retval)
 	goto failure;
     }
 
   /* Copy updated FDT to its launch location */
-  fdt_move (tmp_fdt, (void *) boot_data, fdt_totalsize (tmp_fdt));
+  grub_memcpy (fdt_addr, tmp_fdt, tmp_size);
   grub_free (tmp_fdt);
-  fdt_pack ((void *) boot_data);
 
   grub_dprintf ("loader", "FDT updated for Linux boot\n");
 
@@ -116,52 +120,35 @@ linux_prepare_fdt (void)
 
 failure:
   grub_free (tmp_fdt);
-  return GRUB_ERR_BAD_ARGUMENT;
+  return grub_error (GRUB_ERR_BAD_ARGUMENT, "unable to prepare FDT");
 }
 
 static grub_err_t
 linux_boot (void)
 {
   kernel_entry_t linuxmain;
-  grub_err_t err = GRUB_ERR_NONE;
+  grub_err_t err;
+
+  if (!fdt_addr && machine_type == ARM_FDT_MACHINE_TYPE)
+    return grub_error (GRUB_ERR_FILE_NOT_FOUND,
+		       N_("device tree must be supplied"));
 
   grub_arch_sync_caches ((void *) linux_addr, linux_size);
 
   grub_dprintf ("loader", "Kernel at: 0x%x\n", linux_addr);
 
-  if (!boot_data)
-    {
-      if (firmware_boot_data)
-	{
-	  grub_printf ("Using firmware-supplied boot data @ 0x%08x\n",
-		       firmware_boot_data);
-	  boot_data = firmware_boot_data;
-	}
-      else
-	{
-	  return GRUB_ERR_FILE_NOT_FOUND;
-	}
-    }
-
-  grub_dprintf ("loader", "Boot data at: 0x%x\n", boot_data);
-
-  if (fdt32_to_cpu (*(grub_uint32_t *) (boot_data)) == FDT_MAGIC)
-    {
-      grub_dprintf ("loader", "FDT @ 0x%08x\n", (grub_addr_t) boot_data);
-      if (linux_prepare_fdt () != GRUB_ERR_NONE)
-	{
-	  grub_dprintf ("loader", "linux_prepare_fdt() failed\n");
-	  return GRUB_ERR_FILE_NOT_FOUND;
-	}
-    }
+  err = linux_prepare_fdt ();
+  if (err)
+    return err;
+  grub_dprintf ("loader", "FDT @ 0x%p\n", fdt_addr);
 
   grub_dprintf ("loader", "Jumping to Linux...\n");
 
   /* Boot the kernel.
    *   Arguments to kernel:
    *     r0 - 0
-   *     r1 - machine type (possibly passed from firmware)
-   *     r2 - address of DTB or ATAG list
+   *     r1 - machine type
+   *     r2 - address of DTB
    */
   linuxmain = (kernel_entry_t) linux_addr;
 
@@ -171,7 +158,7 @@ linux_boot (void)
     return err;
 #endif
 
-  linuxmain (0, machine_type, (void *) boot_data);
+  linuxmain (0, machine_type, fdt_addr);
 
   return err;
 }
@@ -180,21 +167,18 @@ linux_boot (void)
  * Only support zImage, so no relocations necessary
  */
 static grub_err_t
-linux_load (const char *filename)
+linux_load (const char *filename, grub_file_t file)
 {
-  grub_file_t file;
   int size;
-
-  file = grub_file_open (filename);
-  if (!file)
-    return GRUB_ERR_FILE_NOT_FOUND;
 
   size = grub_file_size (file);
   if (size == 0)
-    return GRUB_ERR_FILE_READ_ERROR;
+    return grub_error (GRUB_ERR_BAD_OS, "empty kernel");
 
 #ifdef GRUB_MACHINE_EFI
   linux_addr = (grub_addr_t) grub_efi_allocate_loader_memory (LINUX_PHYS_OFFSET, size);
+  if (!linux_addr)
+    return grub_errno;
 #else
   linux_addr = LINUX_ADDRESS;
 #endif
@@ -203,8 +187,10 @@ linux_load (const char *filename)
 
   if (grub_file_read (file, (void *) linux_addr, size) != size)
     {
-      grub_printf ("Kernel read failed!\n");
-      return GRUB_ERR_FILE_READ_ERROR;
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    filename);
+      return grub_errno;
     }
 
   if (*(grub_uint32_t *) (linux_addr + LINUX_ZIMAGE_OFFSET)
@@ -235,7 +221,8 @@ static grub_err_t
 grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
 {
-  int size, retval;
+  int size;
+  grub_err_t err;
   grub_file_t file;
   grub_dl_ref (my_mod);
 
@@ -246,17 +233,20 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (!file)
     goto fail;
 
-  retval = linux_load (argv[0]);
+  err = linux_load (argv[0], file);
   grub_file_close (file);
-  if (retval != GRUB_ERR_NONE)
+  if (err)
     goto fail;
 
-  grub_loader_set (linux_boot, linux_unload, 1);
+  grub_loader_set (linux_boot, linux_unload, 0);
 
   size = grub_loader_cmdline_size (argc, argv);
   linux_args = grub_malloc (size + sizeof (LINUX_IMAGE));
   if (!linux_args)
-    goto fail;
+    {
+      grub_loader_unset();
+      goto fail;
+    }
 
   /* Create kernel command line.  */
   grub_memcpy (linux_args, LINUX_IMAGE, sizeof (LINUX_IMAGE));
@@ -288,16 +278,31 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (size == 0)
     goto fail;
 
+  if (initrd_start)
+    grub_free ((void *) initrd_start);
 #ifdef GRUB_MACHINE_EFI
   initrd_start = (grub_addr_t) grub_efi_allocate_loader_memory (LINUX_INITRD_PHYS_OFFSET, size);
+
+  if (!initrd_start)
+    {
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("memory allocation failed"));
+      goto fail;
+    }
 #else
   initrd_start = LINUX_INITRD_ADDRESS;
 #endif
+
   grub_dprintf ("loader", "Loading initrd to 0x%08x\n",
 		(grub_addr_t) initrd_start);
 
   if (grub_file_read (file, (void *) initrd_start, size) != size)
-    goto fail;
+    {
+      initrd_start = 0;
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    argv[0]);
+      goto fail;
+    }
 
   initrd_end = initrd_start + size;
 
@@ -309,28 +314,15 @@ fail:
   return grub_errno;
 }
 
-static void *
+static grub_err_t
 load_dtb (grub_file_t dtb, int size)
 {
-  void *fdt;
+  if ((grub_file_read (dtb, fdt_addr, size) != size)
+      || (grub_fdt_check_header (fdt_addr, size) != 0))
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid device tree"));
 
-  fdt = grub_malloc (size);
-  if (!fdt)
-    return NULL;
-
-  if (grub_file_read (dtb, fdt, size) != size)
-    {
-      grub_free (fdt);
-      return NULL;
-    }
-
-  if (fdt_check_header (fdt) != 0)
-    {
-      grub_free (fdt);
-      return NULL;
-    }
-
-  return fdt;
+  grub_fdt_set_totalsize (fdt_addr, size);
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -338,7 +330,6 @@ grub_cmd_devicetree (grub_command_t cmd __attribute__ ((unused)),
 		     int argc, char *argv[])
 {
   grub_file_t dtb;
-  void *blob;
   int size;
 
   if (argc != 1)
@@ -346,33 +337,40 @@ grub_cmd_devicetree (grub_command_t cmd __attribute__ ((unused)),
 
   dtb = grub_file_open (argv[0]);
   if (!dtb)
-    return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("failed to open file"));
+    goto out;
 
   size = grub_file_size (dtb);
   if (size == 0)
-    goto out;
-
-  blob = load_dtb (dtb, size);
-  if (!blob)
-    return GRUB_ERR_FILE_NOT_FOUND;
+    {
+      grub_error (GRUB_ERR_BAD_OS, "empty file");
+      goto out;
+    }
 
 #ifdef GRUB_MACHINE_EFI
-  boot_data = (grub_addr_t) grub_efi_allocate_loader_memory (LINUX_FDT_PHYS_OFFSET, size);
+  fdt_addr = grub_efi_allocate_loader_memory (LINUX_FDT_PHYS_OFFSET, size);
+  if (!fdt_addr)
+    {
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("memory allocation failed"));
+      goto out;
+    }
 #else
-  boot_data = LINUX_FDT_ADDRESS;
+  fdt_addr = (void *) LINUX_FDT_ADDRESS;
 #endif
+
   grub_dprintf ("loader", "Loading device tree to 0x%08x\n",
-		(grub_addr_t) boot_data);
-  fdt_move (blob, (void *) boot_data, fdt_totalsize (blob));
-  grub_free (blob);
+		(grub_addr_t) fdt_addr);
+  load_dtb (dtb, size);
+  if (grub_errno != GRUB_ERR_NONE)
+    {
+      fdt_addr = NULL;
+      goto out;
+    }
 
   /* 
    * We've successfully loaded an FDT, so any machine type passed
    * from firmware is now obsolete.
    */
   machine_type = ARM_FDT_MACHINE_TYPE;
-
-  return GRUB_ERR_NONE;
 
  out:
   grub_file_close (dtb);
@@ -391,9 +389,7 @@ GRUB_MOD_INIT (linux)
   cmd_devicetree = grub_register_command ("devicetree", grub_cmd_devicetree,
 					  0, N_("Load DTB file."));
   my_mod = mod;
-  firmware_boot_data = firmware_get_boot_data ();
-
-  boot_data = (grub_addr_t) NULL;
+  fdt_addr = (void *) firmware_get_boot_data ();
   machine_type = firmware_get_machine_type ();
 }
 
