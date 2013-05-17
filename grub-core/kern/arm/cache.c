@@ -2,10 +2,13 @@
 #include <grub/cache.h>
 #include <grub/arm/system.h>
 
+/* This is only about cache architecture. It doesn't imply
+   the CPU architecture.  */
 static enum
   {
     ARCH_UNKNOWN,
     ARCH_ARMV6,
+    ARCH_ARMV6_UNIFIED,
     ARCH_ARMV7
   } type = ARCH_UNKNOWN;
 
@@ -23,7 +26,7 @@ probe_caches (void)
 {
   grub_uint32_t main_id, cache_type;
 
-  /* Read Cache Type Register */
+  /* Read main ID Register */
   asm volatile ("mrc 	p15, 0, %0, c0, c0, 0": "=r"(main_id));
 
   if (((main_id >> 12) & 0xf) == 0x0 || ((main_id >> 12) & 0xf) == 0x7
@@ -33,17 +36,31 @@ probe_caches (void)
   /* Read Cache Type Register */
   asm volatile ("mrc 	p15, 0, %0, c0, c0, 1": "=r"(cache_type));
 
-  switch (cache_type >> 29)
+  switch (cache_type >> 24)
     {
-    case 0:
+    case 0x04:
+    case 0x0a:
+    case 0x0c:
+    case 0x0e:
+    case 0x1c:
+      grub_arch_cache_dlinesz = 8 << ((cache_type >> 12) & 3);
+      grub_arch_cache_ilinesz = 8 << (cache_type & 3);
+      type = ARCH_ARMV6_UNIFIED;
+      break;
+    case 0x05:
+    case 0x0b:
+    case 0x0d:
+    case 0x0f:
+    case 0x1d:
       grub_arch_cache_dlinesz = 8 << ((cache_type >> 12) & 3);
       grub_arch_cache_ilinesz = 8 << (cache_type & 3);
       type = ARCH_ARMV6;
       break;
-    case 4:
+    case 0x80 ... 0x9f:
       grub_arch_cache_dlinesz = 4 << ((cache_type >> 16) & 0xf);
       grub_arch_cache_ilinesz = 4 << (cache_type & 0xf);
       type = ARCH_ARMV7;
+      break;
     default:
       grub_fatal ("Unsupported cache type 0x%x", cache_type);
     }
@@ -54,10 +71,21 @@ grub_arch_sync_caches (void *address, grub_size_t len)
 {
   if (type == ARCH_UNKNOWN)
     probe_caches ();
-  if (type == ARCH_ARMV6)
-    grub_arch_sync_caches_armv6 (address, len);
-  if (type == ARCH_ARMV7)
-    grub_arch_sync_caches_armv7 (address, len);
+  switch (type)
+    {
+    case ARCH_ARMV6:
+      grub_arch_sync_caches_armv6 (address, len);
+      break;
+    case ARCH_ARMV7:
+      grub_arch_sync_caches_armv7 (address, len);
+      break;
+      /* Nothing to do.  */
+    case ARCH_ARMV6_UNIFIED:
+      break;
+      /* Pacify GCC.  */
+    case ARCH_UNKNOWN:
+      break;
+    }
 }
 
 void
@@ -65,8 +93,17 @@ grub_arm_disable_caches_mmu (void)
 {
   if (type == ARCH_UNKNOWN)
     probe_caches ();
-  if (type == ARCH_ARMV6)
-    grub_arm_disable_caches_mmu_armv6 ();
-  if (type == ARCH_ARMV7)
-    grub_arm_disable_caches_mmu_armv7 ();
+  switch (type)
+    {
+    case ARCH_ARMV6_UNIFIED:
+    case ARCH_ARMV6:
+      grub_arm_disable_caches_mmu_armv6 ();
+      break;
+    case ARCH_ARMV7:
+      grub_arm_disable_caches_mmu_armv7 ();
+      break;
+      /* Pacify GCC.  */
+    case ARCH_UNKNOWN:
+      break;
+    }
 }
