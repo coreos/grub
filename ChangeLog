@@ -1,3 +1,8 @@
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/acpihalt.c: Fix handling of DSDT in presence of
+	SSDT.
+
 2013-05-15  Radosław Szymczyszyn  <lavrin@gmail.com>
 
 	* grub-core/partmap/dfly.c: New partition map.
