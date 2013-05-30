@@ -587,7 +587,7 @@ grub_cmdline_get (const char *prompt_translated)
 
 	      grub_free (kill_buf);
 
-	      kill_buf = grub_malloc (n + 1);
+	      kill_buf = grub_malloc ((n + 1) * sizeof(grub_uint32_t));
 	      if (grub_errno)
 		{
 		  grub_print_error ();
@@ -595,8 +595,8 @@ grub_cmdline_get (const char *prompt_translated)
 		}
 	      if (kill_buf)
 		{
-		  grub_memcpy (kill_buf, buf, n);
-		  kill_buf[n] = '\0';
+		  grub_memcpy (kill_buf, buf, n * sizeof(grub_uint32_t));
+		  kill_buf[n] = 0;
 		}
 
 	      lpos = 0;

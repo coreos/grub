@@ -1,3 +1,12 @@
+2013-05-30  Josh Triplett  <josh@joshtriplett.org>
+
+	* grub-core/normal/cmdline.c (grub_cmdline_get): Fix Ctrl-u
+	handling to copy the killed characters to the kill buffer as
+	UCS4 stored as grub_uint32_t rather than as 8-bit characters
+	stored as char.  Eliminates UCS4 truncation and corruption
+	observed when killing characters with Ctrl-u and yanking them
+	back with Ctrl-y.
+
 2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Detach optional parts of gfxterm and integrate in with coreboot init.
