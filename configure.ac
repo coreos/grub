@@ -277,7 +277,7 @@ fi
 FONT_SOURCE=
 
 for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
-  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont /usr/share/fonts/uni; do
+  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont /usr/share/fonts/uni /usr/share/fonts/truetype/unifont; do
     if test -f "$dir/unifont.$ext"; then
       FONT_SOURCE="$dir/unifont.$ext"
       break 2
@@ -1287,6 +1287,11 @@ if [ x"$libzfs_excuse" = x ]; then
 echo With libzfs support: Yes
 else
 echo With libzfs support: No "($libzfs_excuse)"
+fi
+if test "x$FONT_SOURCE" = x ; then
+echo "Without unifont"
+else
+echo "With unifont from $FONT_SOURCE"
 fi
 echo "*******************************************************"
 ]

@@ -1,5 +1,9 @@
 2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add Ubuntu path to unifont and report unifont path used.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.am, conf/Makefile.common: Fix compilation problem with some
 	automake versions.
 
