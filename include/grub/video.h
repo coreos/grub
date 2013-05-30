@@ -531,12 +531,6 @@ grub_video_map_rgba_color (grub_video_rgba_color_t c)
   return grub_video_map_rgba (c.red, c.green, c.blue, c.alpha);
 }
 
-int EXPORT_FUNC (grub_video_get_named_color) (const char *name,
-					      grub_video_rgba_color_t *color);
-
-grub_err_t EXPORT_FUNC (grub_video_parse_color) (const char *s,
-						 grub_video_rgba_color_t *color);
-
 #ifndef GRUB_MACHINE_EMU
 extern void grub_font_init (void);
 extern void grub_font_fini (void);

@@ -31,41 +31,6 @@
 #include <grub/types.h>
 #include <grub/video.h>
 
-void *
-grub_video_fb_get_video_ptr (struct grub_video_fbblit_info *source,
-              unsigned int x, unsigned int y)
-{
-  grub_uint8_t *ptr = 0;
-
-  switch (source->mode_info->bpp)
-    {
-    case 32:
-      ptr = source->data + y * source->mode_info->pitch + x * 4;
-      break;
-
-    case 24:
-      ptr = source->data + y * source->mode_info->pitch + x * 3;
-      break;
-
-    case 16:
-    case 15:
-      ptr = source->data + y * source->mode_info->pitch + x * 2;
-      break;
-
-    case 8:
-      ptr = source->data + y * source->mode_info->pitch + x;
-      break;
-
-    case 1:
-      /* For 1-bit bitmaps, addressing needs to be done at the bit level
-         and it doesn't make sense, in general, to ask for a pointer
-         to a particular pixel's data.  */
-      break;
-    }
-
-  return ptr;
-}
-
 grub_video_color_t
 get_pixel (struct grub_video_fbblit_info *source,
            unsigned int x, unsigned int y)

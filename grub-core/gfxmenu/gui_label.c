@@ -23,6 +23,7 @@
 #include <grub/font.h>
 #include <grub/gui_string_util.h>
 #include <grub/i18n.h>
+#include <grub/color.h>
 
 static const char *align_options[] =
 {

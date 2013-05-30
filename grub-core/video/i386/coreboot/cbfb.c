@@ -26,10 +26,9 @@
 #include <grub/video.h>
 #include <grub/video_fb.h>
 #include <grub/machine/lbio.h>
+#include <grub/machine/console.h>
 
-GRUB_MOD_LICENSE ("GPLv3+");
-
-static struct grub_linuxbios_table_framebuffer *cbfb;
+struct grub_linuxbios_table_framebuffer *grub_video_coreboot_fbtable;
 
 static struct
 {
@@ -50,22 +49,22 @@ grub_video_cbfb_fill_mode_info (struct grub_video_mode_info *out)
 {
   grub_memset (out, 0, sizeof (*out));
 
-  out->width = cbfb->width;
-  out->height = cbfb->height;
-  out->pitch = cbfb->pitch;
+  out->width = grub_video_coreboot_fbtable->width;
+  out->height = grub_video_coreboot_fbtable->height;
+  out->pitch = grub_video_coreboot_fbtable->pitch;
 
-  out->red_field_pos = cbfb->red_field_pos;
-  out->red_mask_size = cbfb->red_mask_size;
-  out->green_field_pos = cbfb->green_field_pos;
-  out->green_mask_size = cbfb->green_mask_size;
-  out->blue_field_pos = cbfb->blue_field_pos;
-  out->blue_mask_size = cbfb->blue_mask_size;
-  out->reserved_field_pos = cbfb->reserved_field_pos;
-  out->reserved_mask_size = cbfb->reserved_mask_size;
+  out->red_field_pos = grub_video_coreboot_fbtable->red_field_pos;
+  out->red_mask_size = grub_video_coreboot_fbtable->red_mask_size;
+  out->green_field_pos = grub_video_coreboot_fbtable->green_field_pos;
+  out->green_mask_size = grub_video_coreboot_fbtable->green_mask_size;
+  out->blue_field_pos = grub_video_coreboot_fbtable->blue_field_pos;
+  out->blue_mask_size = grub_video_coreboot_fbtable->blue_mask_size;
+  out->reserved_field_pos = grub_video_coreboot_fbtable->reserved_field_pos;
+  out->reserved_mask_size = grub_video_coreboot_fbtable->reserved_mask_size;
 
   out->mode_type = GRUB_VIDEO_MODE_TYPE_RGB;
-  out->bpp = cbfb->bpp;
-  out->bytes_per_pixel = (cbfb->bpp + 7) / 8;
+  out->bpp = grub_video_coreboot_fbtable->bpp;
+  out->bytes_per_pixel = (grub_video_coreboot_fbtable->bpp + 7) / 8;
   out->number_of_colors = 256;
 
   out->blit_format = grub_video_get_blit_format (out);
@@ -79,10 +78,10 @@ grub_video_cbfb_setup (unsigned int width, unsigned int height,
 {
   grub_err_t err;
 
-  if (!cbfb)
+  if (!grub_video_coreboot_fbtable)
     return grub_error (GRUB_ERR_IO, "Couldn't find display device.");
 
-  if (!((width == cbfb->width && height == cbfb->height)
+  if (!((width == grub_video_coreboot_fbtable->width && height == grub_video_coreboot_fbtable->height)
 	|| (width == 0 && height == 0)))
     return grub_error (GRUB_ERR_IO, "can't set mode %dx%d", width, height);
 
@@ -93,7 +92,7 @@ grub_video_cbfb_setup (unsigned int width, unsigned int height,
       return err;
     }
 
-  framebuffer.ptr = (void *) (grub_addr_t) cbfb->lfb;
+  framebuffer.ptr = (void *) (grub_addr_t) grub_video_coreboot_fbtable->lfb;
 
   grub_dprintf ("video", "CBFB: initialising FB @ %p %dx%dx%d\n",
 		framebuffer.ptr, framebuffer.mode_info.width,
@@ -162,20 +161,26 @@ iterate_linuxbios_table (grub_linuxbios_table_item_t table_item,
 {
   if (table_item->tag != GRUB_LINUXBIOS_MEMBER_FRAMEBUFFER)
     return 0;
-  cbfb = (struct grub_linuxbios_table_framebuffer *) (table_item + 1);
+  grub_video_coreboot_fbtable = (struct grub_linuxbios_table_framebuffer *) (table_item + 1);
   return 1;
 }
 
-GRUB_MOD_INIT(coreboot_fb)
+void
+grub_video_coreboot_fb_early_init (void)
 {
   grub_linuxbios_table_iterate (iterate_linuxbios_table, 0);
+}
 
-  if (cbfb)
+void
+grub_video_coreboot_fb_late_init (void)
+{
+  if (grub_video_coreboot_fbtable)
     grub_video_register (&grub_video_cbfb_adapter);
 }
 
-GRUB_MOD_FINI(coreboot_fb)
+void
+grub_video_coreboot_fb_fini (void)
 {
-  if (cbfb)
+  if (grub_video_coreboot_fbtable)
     grub_video_unregister (&grub_video_cbfb_adapter);
 }

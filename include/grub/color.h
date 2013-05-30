@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2009  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,17 +16,15 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_MACHINE_CONSOLE_HEADER
-#define GRUB_MACHINE_CONSOLE_HEADER	1
+#ifndef GRUB_VIDEO_COLOR_HEADER
+#define GRUB_VIDEO_COLOR_HEADER	1
 
-void grub_vga_text_init (void);
-void grub_vga_text_fini (void);
+#include <grub/video.h>
 
-void grub_video_coreboot_fb_init (void);
-void grub_video_coreboot_fb_early_init (void);
-void grub_video_coreboot_fb_late_init (void);
-void grub_video_coreboot_fb_fini (void);
+int grub_video_get_named_color (const char *name,
+				grub_video_rgba_color_t *color);
 
-extern struct grub_linuxbios_table_framebuffer *grub_video_coreboot_fbtable;
+grub_err_t grub_video_parse_color (const char *s,
+				   grub_video_rgba_color_t *color);
 
-#endif /* ! GRUB_MACHINE_CONSOLE_HEADER */
+#endif

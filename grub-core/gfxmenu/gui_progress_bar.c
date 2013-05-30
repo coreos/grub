@@ -25,6 +25,7 @@
 #include <grub/gfxmenu_view.h>
 #include <grub/gfxwidgets.h>
 #include <grub/i18n.h>
+#include <grub/color.h>
 
 struct grub_gui_progress_bar
 {

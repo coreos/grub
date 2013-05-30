@@ -1,5 +1,9 @@
 2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Detach optional parts of gfxterm and integrate in with coreboot init.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move blit and fill dispatcher to appropriate files to decrease export
 	and relocation overhead.
 

@@ -138,6 +138,7 @@ kernel = {
   i386_multiboot = kern/i386/coreboot/init.c;
   i386_qemu = kern/i386/qemu/init.c;
   i386_coreboot_multiboot_qemu = term/i386/pc/vga_text.c;
+  i386_coreboot = video/i386/coreboot/cbfb.c;
 
   efi = disk/efi/efidisk.c;
   efi = kern/efi/efi.c;
@@ -180,6 +181,7 @@ kernel = {
   mips_qemu_mips = term/ns8250.c;
   mips_qemu_mips = term/serial.c;
   mips_qemu_mips = term/at_keyboard.c;
+  mips_qemu_mips = commands/boot.c;
   mips_qemu_mips = commands/keylayouts.c;
   mips_qemu_mips = term/i386/pc/vga_text.c;
   mips_qemu_mips = kern/vga_init.c;
@@ -194,6 +196,7 @@ kernel = {
   mips_loongson = bus/pci.c;
   mips_loongson = kern/mips/loongson/init.c;
   mips_loongson = term/at_keyboard.c;
+  mips_loongson = commands/boot.c;
   mips_loongson = term/serial.c;
   mips_loongson = video/sm712.c;
   mips_loongson = video/sis315pro.c;
@@ -227,16 +230,11 @@ kernel = {
   videoinkernel = font/font.c;
   videoinkernel = font/font_cmd.c;
   videoinkernel = io/bufio.c;
-  videoinkernel = video/bitmap.c;
-  videoinkernel = video/bitmap_scale.c;
-  videoinkernel = video/colors.c;
   videoinkernel = video/fb/fbblit.c;
   videoinkernel = video/fb/fbfill.c;
   videoinkernel = video/fb/fbutil.c;
   videoinkernel = video/fb/video_fb.c;
   videoinkernel = video/video.c;
-
-  videoinkernel = commands/boot.c;
 
   extra_dist = kern/i386/int.S;
   extra_dist = kern/i386/realmode.S;
@@ -656,7 +654,12 @@ module = {
   name = boot;
   common = commands/boot.c;
   i386_pc = lib/i386/pc/biosnum.c;
-  enable = videomodules;
+  enable = x86;
+  enable = emu;
+  enable = sparc64_ieee1275;
+  enable = powerpc_ieee1275;
+  enable = mips_arc;
+  enable = ia64_efi;
 };
 
 module = {
@@ -1675,6 +1678,11 @@ module = {
 };
 
 module = {
+  name = gfxterm_background;
+  common = term/gfxterm_background.c;
+};
+
+module = {
   name = serial;
   common = term/serial.c;
   x86 = term/ns8250.c;
@@ -1775,13 +1783,11 @@ module = {
 module = {
   name = bitmap;
   common = video/bitmap.c;
-  enable = videomodules;
 };
 
 module = {
   name = bitmap_scale;
   common = video/bitmap_scale.c;
-  enable = videomodules;
 };
 
 module = {
@@ -1830,20 +1836,18 @@ module = {
 module = {
   name = video;
   common = video/video.c;
-  common = video/colors.c;
   enable = videomodules;
+};
+
+module = {
+  name = video_colors;
+  common = video/colors.c;
 };
 
 module = {
   name = ieee1275_fb;
   ieee1275 = video/ieee1275.c;
   enable = powerpc_ieee1275;
-};
-
-module = {
-  name = coreboot_fb;
-  common = video/i386/coreboot/cbfb.c;
-  enable = i386_coreboot;
 };
 
 module = {
@@ -1959,7 +1963,7 @@ module = {
 module = {
   name = keylayouts;
   common = commands/keylayouts.c;
-  enable = videomodules;
+  enable = x86;
 };
 
 module = {

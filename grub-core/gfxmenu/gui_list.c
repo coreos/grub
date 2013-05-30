@@ -23,6 +23,7 @@
 #include <grub/gui_string_util.h>
 #include <grub/gfxmenu_view.h>
 #include <grub/gfxwidgets.h>
+#include <grub/color.h>
 
 struct grub_gui_list_impl
 {

@@ -69,8 +69,6 @@ grub_machine_init (void)
   grub_serial_init ();
 
   grub_boot_init ();
-
-  grub_gfxterm_init ();
 }
 
 void
