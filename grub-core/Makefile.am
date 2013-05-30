@@ -37,7 +37,7 @@ CLEANFILES += gentrigtables
 
 # trigtables.c
 trigtables.c: gentrigtables gentrigtables.c $(top_srcdir)/configure.ac
-	$(builddir)/gentrigtables > $@
+	./gentrigtables > $@
 CLEANFILES += trigtables.c
 
 gensm712: video/sm712.c
