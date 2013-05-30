@@ -48,28 +48,8 @@ struct grub_video_fbrender_target
 };
 
 void
-grub_video_fbfill (struct grub_video_fbblit_info *dst,
-		   grub_video_color_t color, int x, int y,
-		   int width, int height);
-
-void
-grub_video_fbfill_direct32 (struct grub_video_fbblit_info *dst,
-			    grub_video_color_t color,  int x, int y,
-			    int width, int height);
-
-void
-grub_video_fbfill_direct24 (struct grub_video_fbblit_info *dst,
-			    grub_video_color_t color, int x, int y,
-			    int width, int height);
-
-void
-grub_video_fbfill_direct16 (struct grub_video_fbblit_info *dst,
-			    grub_video_color_t color, int x, int y,
-			    int width, int height);
-
-void
-grub_video_fbfill_direct8 (struct grub_video_fbblit_info *dst,
-			   grub_video_color_t color, int x, int y,
-			   int width, int height);
+grub_video_fb_fill_dispatch (struct grub_video_fbblit_info *target,
+			     grub_video_color_t color, int x, int y,
+			     unsigned int width, unsigned int height);
 
 #endif /* ! GRUB_FBFILL_HEADER */
