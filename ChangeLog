@@ -1,5 +1,10 @@
 2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/font/font.c, include/grub/font.h: Inline simple font
+	functions.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.am: Fix compilation problem with some
 	automake versions.
 

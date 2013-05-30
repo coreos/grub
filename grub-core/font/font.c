@@ -55,23 +55,6 @@ struct char_index_entry
 #define FONT_WEIGHT_BOLD 200
 #define ASCII_BITMAP_SIZE 16
 
-struct grub_font
-{
-  char *name;
-  grub_file_t file;
-  char *family;
-  short point_size;
-  short weight;
-  short max_char_width;
-  short max_char_height;
-  short ascent;
-  short descent;
-  short leading;
-  grub_uint32_t num_chars;
-  struct char_index_entry *char_index;
-  grub_uint16_t *bmp_idx;
-};
-
 /* Definition of font registry.  */
 struct grub_font_node *grub_font_list;
 
@@ -907,20 +890,6 @@ int
 grub_font_get_max_char_width (grub_font_t font)
 {
   return font->max_char_width;
-}
-
-/* Get the maximum height of any character in the font in pixels.  */
-int
-grub_font_get_max_char_height (grub_font_t font)
-{
-  return font->max_char_height;
-}
-
-/* Get the distance in pixels from the top of characters to the baseline.  */
-int
-grub_font_get_ascent (grub_font_t font)
-{
-  return font->ascent;
 }
 
 /* Get the distance in pixels from the baseline to the lowest descenders
