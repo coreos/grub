@@ -1,5 +1,10 @@
 2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am, conf/Makefile.common: Fix compilation problem with some
+	automake versions.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/acpihalt.c: Fix handling of DSDT in presence of
 	SSDT.
 
