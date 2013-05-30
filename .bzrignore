@@ -176,3 +176,8 @@ include/grub/gcrypt/gcrypt.h
 include/grub/gcrypt/g10lib.h
 po/POTFILES.in
 po/POTFILES-shell.in
+grub-glue-efi
+grub-render-label
+grub-core/gnulib/locale.h
+grub-core/gnulib/unitypes.h
+grub-core/gnulib/uniwidth.h
