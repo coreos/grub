@@ -1,3 +1,7 @@
+2013-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Add yet another path to unifont. For parabola.
+
 2013-05-30  Josh Triplett  <josh@joshtriplett.org>
 
 	* grub-core/normal/cmdline.c (grub_cmdline_get): Fix Ctrl-u
