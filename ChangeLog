@@ -1,3 +1,8 @@
+2013-05-31  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub.d/30_os-prober.in: Add support for probing EFI
+	System Partition (as of os-prober 1.58).
+
 2013-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Add yet another path to unifont. For parabola.

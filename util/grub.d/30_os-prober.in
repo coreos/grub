@@ -149,6 +149,22 @@ EOF
 }
 EOF
     ;;
+    efi)
+
+	EFIPATH=${DEVICE#*@}
+	DEVICE=${DEVICE%@*}
+	onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
+      cat << EOF
+menuentry '$(echo "${LONGNAME} $onstr" | grub_quote)' --class windows --class os \$menuentry_id_option 'osprober-efi-$(grub_get_device_id "${DEVICE}")' {
+EOF
+      save_default_entry | sed -e "s/^/\t/"
+      prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
+
+      cat <<EOF
+	chainloader ${EFIPATH}
+}
+EOF
+    ;;
     linux)
       if [ "x$BTRFS" = "xbtrfs" ]; then
          LINUXPROBED="`linux-boot-prober btrfs ${BTRFSuuid} ${BTRFSsubvol}  2> /dev/null | tr ' ' '^' | paste -s -d ' '`"
