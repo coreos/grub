@@ -1,4 +1,8 @@
-2013-06-02  Francesco Lavra  <francescolavra.fl@gmail.com>
+2013-06-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	Fix make dist on non-pc.
+
+2013-06-07  Francesco Lavra  <francescolavra.fl@gmail.com>
 
 	* grub-core/kern/corecmd.c (grub_core_cmd_ls): Fix handling of paths
 	without a device name.

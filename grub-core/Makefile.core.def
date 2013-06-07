@@ -394,6 +394,7 @@ image = {
 image = {
   name = lzma_decompress;
   i386_pc = boot/i386/pc/startup_raw.S;
+  i386_pc_nodist = rs_decoder.h;
 
   objcopyflags = '-O binary';
   ldflags = '$(TARGET_IMG_LDFLAGS) $(TARGET_IMG_BASE_LDOPT),0x8200';
@@ -403,6 +404,7 @@ image = {
 image = {
   name = fwstart;
   mips_loongson = boot/mips/loongson/fwstart.S;
+  mips_loongson_nodist = sm712_start.h;
   objcopyflags = '-O binary';
   ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_loongson;

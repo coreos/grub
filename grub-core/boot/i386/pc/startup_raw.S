@@ -119,7 +119,7 @@ LOCAL (codestart):
 
 #include "../../../kern/i386/realmode.S"
 
-#include <rs_decoder.S>
+#include <rs_decoder.h>
 
 	.text
 

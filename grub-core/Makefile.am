@@ -45,9 +45,9 @@ gensm712: video/sm712.c
 CLEANFILES += gensm712
 
 # trigtables.c
-sm712_start.S: gensm712 video/sm712.c $(top_srcdir)/configure.ac
+sm712_start.h: gensm712 video/sm712.c $(top_srcdir)/configure.ac
 	$(builddir)/gensm712 > $@
-CLEANFILES += sm712_start.S
+CLEANFILES += sm712_start.h
 
 # XXX Use Automake's LEX & YACC support
 grub_script.tab.h: script/parser.y
@@ -60,11 +60,8 @@ grub_script.yy.h: script/yylex.l
 	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $<
 grub_script.yy.c: grub_script.yy.h
 
-rs_decoder.S: $(srcdir)/lib/reed_solomon.c
+rs_decoder.h: $(srcdir)/lib/reed_solomon.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Os -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3 -ffreestanding
-
-boot/i386/pc/startup_raw.S: $(builddir)/rs_decoder.S
-boot/mips/loongson/fwstart.S: $(builddir)/sm712_start.S
 
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 

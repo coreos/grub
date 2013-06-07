@@ -886,7 +886,7 @@ table_cont:
 	b init_end
 	  nop
 init_table:	
-#include "sm712_start.S"
+#include "sm712_start.h"
 init_table_end:
 	.align 4
 init_end:	
