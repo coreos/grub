@@ -1,5 +1,10 @@
 2013-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove enable_executable_check as it's not needed anymore.
+	Reported by: dougray.
+
+2013-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/diskfilter.c (insert_array): Fix order to discover
 	ambigouos RAID before discovering RAIDs on top of it.
 	Reported by: bodom.

@@ -313,32 +313,6 @@ else
 fi
 ])
 
-dnl Check if the C compiler generates calls to `__enable_execute_stack()'.
-AC_DEFUN([grub_CHECK_ENABLE_EXECUTE_STACK],[
-AC_MSG_CHECKING([whether `$CC' generates calls to `__enable_execute_stack()'])
-AC_LANG_CONFTEST([AC_LANG_SOURCE([[
-void f (int (*p) (void));
-void g (int i)
-{
-  int nestedfunc (void) { return i; }
-  f (nestedfunc);
-}
-]])])
-if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -S conftest.c]) && test -s conftest.s; then
-  true
-else
-  AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
-fi
-if grep __enable_execute_stack conftest.s >/dev/null 2>&1; then
-  NEED_ENABLE_EXECUTE_STACK=1
-  AC_MSG_RESULT([yes])
-else
-  NEED_ENABLE_EXECUTE_STACK=0
-  AC_MSG_RESULT([no])
-fi
-rm -f conftest*
-])
-
 
 dnl Check if the C compiler supports `-fstack-protector'.
 AC_DEFUN([grub_CHECK_STACK_PROTECTOR],[
