@@ -1,5 +1,10 @@
 2013-06-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* grub-core/kern/corecmd.c (grub_core_cmd_set): Use grub_env_get
+	to fetch values when listing.
+
+2013-06-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	Fix make dist on non-pc.
 
 2013-06-07  Francesco Lavra  <francescolavra.fl@gmail.com>
