@@ -33,7 +33,7 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-#ifdef USE_ASCII_FAILBACK
+#ifdef USE_ASCII_FALLBACK
 #include "ascii.h"
 #endif
 
@@ -110,14 +110,14 @@ static struct grub_font null_font;
 /* Flag to ensure module is initialized only once.  */
 static grub_uint8_t font_loader_initialized;
 
-#ifdef USE_ASCII_FAILBACK
+#ifdef USE_ASCII_FALLBACK
 static struct grub_font_glyph *ascii_font_glyph[0x80];
 #endif
 
 static struct grub_font_glyph *
 ascii_glyph_lookup (grub_uint32_t code)
 {
-#ifdef USE_ASCII_FAILBACK
+#ifdef USE_ASCII_FALLBACK
   static int ascii_failback_initialized = 0;
 
   if (code >= 0x80)

@@ -1,3 +1,7 @@
+2013-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix typo (failback vs fallback).
+
 2013-05-31  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/grub.d/30_os-prober.in: Add support for probing EFI
