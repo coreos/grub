@@ -1,5 +1,11 @@
 2013-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/diskfilter.c (insert_array): Fix order to discover
+	ambigouos RAID before discovering RAIDs on top of it.
+	Reported by: bodom.
+
+2013-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix typo (failback vs fallback).
 
 2013-05-31  Andrey Borzenkov <arvidjaar@gmail.com>

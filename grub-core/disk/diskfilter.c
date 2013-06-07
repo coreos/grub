@@ -1045,10 +1045,14 @@ insert_array (grub_disk_t disk, const struct grub_diskfilter_pv_id *id,
 {
   struct grub_diskfilter_pv *pv;
 
-  grub_dprintf ("diskfilter", "Inserting %s into %s (%s)\n", disk->name,
+  grub_dprintf ("diskfilter", "Inserting %s (+%lld,%lld) into %s (%s)\n", disk->name,
+		(unsigned long long) grub_partition_get_start (disk->partition),
+		(unsigned long long) grub_disk_get_size (disk),
 		array->name, diskfilter->name);
 #ifdef GRUB_UTIL
-  grub_util_info ("Inserting %s into %s (%s)\n", disk->name,
+  grub_util_info ("Inserting %s (+%lld,%lld) into %s (%s)\n", disk->name,
+		  (unsigned long long) grub_partition_get_start (disk->partition),
+		  (unsigned long long) grub_disk_get_size (disk),
 		  array->name, diskfilter->name);
   array->driver = diskfilter;
 #endif
@@ -1092,14 +1096,7 @@ insert_array (grub_disk_t disk, const struct grub_diskfilter_pv_id *id,
 	/* Add the device to the array. */
 	for (lv = array->lvs; lv; lv = lv->next)
 	  if (!lv->became_readable_at && lv->fullname && is_lv_readable (lv, 0))
-	    {
-	      lv->became_readable_at = ++inscnt;
-	      if (is_lv_readable (lv, 1))
-		{
-		  scan_disk (lv->fullname, 1);
-		  lv->scanned = 1;
-		}
-	    }
+	    lv->became_readable_at = ++inscnt;
 	break;
       }
 
