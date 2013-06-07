@@ -134,7 +134,7 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
 
       fs = grub_fs_probe (dev);
       path = grub_strchr (argv[0], ')');
-      if (! *path)
+      if (! path)
 	path = argv[0];
       else
 	path++;

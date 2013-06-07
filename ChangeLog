@@ -1,3 +1,8 @@
+2013-06-02  Francesco Lavra  <francescolavra.fl@gmail.com>
+
+	* grub-core/kern/corecmd.c (grub_core_cmd_ls): Fix handling of paths
+	without a device name.
+
 2013-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove enable_executable_check as it's not needed anymore.
