@@ -704,6 +704,11 @@ module = {
 };
 
 module = {
+  name = eval;
+  common = commands/eval.c;
+};
+
+module = {
   name = extcmd;
   common = commands/extcmd.c;
   common = lib/arg.c;

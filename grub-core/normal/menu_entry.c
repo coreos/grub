@@ -1181,7 +1181,7 @@ run (struct screen *screen)
       }
     script[size] = '\0';
   }
-  grub_script_execute_sourcecode (script, 0, dummy);
+  grub_script_execute_new_scope (script, 0, dummy);
   grub_free (script);
 
   if (errs_before != grub_err_printed_errors)

@@ -3435,6 +3435,7 @@ you forget a command, you can run the command @command{help}
 * date::                        Display or set current date and time
 * drivemap::                    Map a drive to another
 * echo::                        Display a line of text
+* eval::                        Evaluate agruments as GRUB commands
 * export::                      Export an environment variable
 * false::                       Do nothing, unsuccessfully
 * gettext::                     Translate a string
@@ -3809,6 +3810,15 @@ vertical tab
 
 When interpreting backslash escapes, backslash followed by any other
 character will print that character.
+@end deffn
+
+
+@node eval
+@subsection eval
+
+@deffn Command eval string ...
+Concatenate arguments together using single space as separator and evaluate
+result as sequence of GRUB commands.
 @end deffn
 
 

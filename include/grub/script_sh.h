@@ -329,7 +329,8 @@ grub_err_t grub_script_execute_cmdwhile (struct grub_script_cmd *cmd);
 
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t grub_script_execute (struct grub_script *script);
-grub_err_t grub_script_execute_sourcecode (const char *source, int argc, char **args);
+grub_err_t grub_script_execute_sourcecode (const char *source);
+grub_err_t grub_script_execute_new_scope (const char *source, int argc, char **args);
 
 /* Break command for loops.  */
 grub_err_t grub_script_break (grub_command_t cmd, int argc, char *argv[]);

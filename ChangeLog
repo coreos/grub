@@ -1,5 +1,13 @@
 2013-06-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* grub-core/script/execute.c (grub_script_execute_sourcecode): Split
+	off new function grub_script_execute_new_scope. Change callers to use
+	either of them as appropriate.
+	* grub-core/commands/eval.c: New command eval.
+	* docs/grub.texi (Commands): Document it.
+
+2013-06-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* grub-core/kern/corecmd.c (grub_core_cmd_set): Use grub_env_get
 	to fetch values when listing.
 
