@@ -29,8 +29,7 @@ probe_caches (void)
   /* Read main ID Register */
   asm volatile ("mrc 	p15, 0, %0, c0, c0, 0": "=r"(main_id));
 
-  if (((main_id >> 12) & 0xf) == 0x0 || ((main_id >> 12) & 0xf) == 0x7
-      || (((main_id >> 16) & 0x7) != 0x7))
+  if (((main_id >> 16) & 0x7) != 0x7)
     grub_fatal ("Unsupported ARM ID 0x%x", main_id);
 
   /* Read Cache Type Register */
@@ -56,7 +55,7 @@ probe_caches (void)
       grub_arch_cache_ilinesz = 8 << (cache_type & 3);
       type = ARCH_ARMV6;
       break;
-    case 0x80 ... 0x9f:
+    case 0x80 ... 0x8f:
       grub_arch_cache_dlinesz = 4 << ((cache_type >> 16) & 0xf);
       grub_arch_cache_ilinesz = 4 << (cache_type & 0xf);
       type = ARCH_ARMV7;
