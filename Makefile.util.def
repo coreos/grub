@@ -592,6 +592,12 @@ script = {
 
 script = {
   testcase;
+  name = grub_script_eval;
+  common = tests/grub_script_eval.in;
+};
+
+script = {
+  testcase;
   name = grub_script_test;
   common = tests/grub_script_test.in;
 };

@@ -1,3 +1,8 @@
+2013-06-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move flavour-specific parts out of common cpio.c file and
+	rename remaining to cpio_common.c
+
 2013-06-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/script/execute.c (grub_script_execute_sourcecode): Split
