@@ -170,6 +170,7 @@ kernel = {
   i386_qemu = kern/i386/qemu/mmap.c;
 
   i386_coreboot = kern/i386/coreboot/mmap.c;
+  i386_coreboot = kern/i386/coreboot/cbtable.c;
 
   i386_multiboot = kern/i386/multiboot_mmap.c;
 
@@ -559,21 +560,32 @@ module = {
 };
 
 module = {
+  name = cbtable;
+  common = kern/i386/coreboot/cbtable.c;
+  enable = i386_pc;
+  enable = i386_efi;
+  enable = i386_qemu;
+  enable = i386_multiboot;
+  enable = i386_ieee1275;
+  enable = x86_64_efi;
+};
+
+module = {
   name = cbtime;
   common = commands/i386/coreboot/cb_timestamps.c;
-  enable = i386_coreboot;
+  enable = x86;
 };
 
 module = {
   name = cbls;
   common = commands/i386/coreboot/cbls.c;
-  enable = i386_coreboot;
+  enable = x86;
 };
 
 module = {
   name = cbmemc;
   common = term/i386/coreboot/cbmemc.c;
-  enable = i386_coreboot;
+  enable = x86;
 };
 
 module = {
