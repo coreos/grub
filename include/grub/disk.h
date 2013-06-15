@@ -46,6 +46,7 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_ARCDISK_ID,
     GRUB_DISK_DEVICE_HOSTDISK_ID,
     GRUB_DISK_DEVICE_PROCFS_ID,
+    GRUB_DISK_DEVICE_CBFSDISK_ID
   };
 
 struct grub_disk;

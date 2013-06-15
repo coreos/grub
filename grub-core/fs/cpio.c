@@ -53,7 +53,6 @@ read_number (const grub_uint16_t *arr, grub_size_t size)
 GRUB_MOD_INIT (cpio)
 {
   grub_fs_register (&grub_cpio_fs);
-  my_mod = mod;
 }
 
 GRUB_MOD_FINI (cpio)

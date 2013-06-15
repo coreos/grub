@@ -1146,6 +1146,16 @@ module = {
 };
 
 module = {
+  name = archelp;
+  common = fs/archelp.c;
+};
+
+module = {
+  name = cbfs;
+  common = fs/cbfs.c;
+};
+
+module = {
   name = cpio;
   common = fs/cpio.c;
 };

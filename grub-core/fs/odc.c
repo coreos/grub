@@ -20,6 +20,7 @@
 #include <grub/misc.h>
 
 #define ALIGN_CPIO(x) x
+
 #define	MAGIC	"070707"
 struct head
 {
@@ -52,7 +53,6 @@ read_number (const char *str, grub_size_t size)
 GRUB_MOD_INIT (odc)
 {
   grub_fs_register (&grub_cpio_fs);
-  my_mod = mod;
 }
 
 GRUB_MOD_FINI (odc)

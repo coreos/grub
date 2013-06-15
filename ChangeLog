@@ -1,3 +1,10 @@
+2013-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support for cbfs. Also factor out the part which is common
+	for all archives to a separate module. This splits tar from cpio
+	as they are very different but keeps cpio, cpio_be, odc and newc
+	together since they're very similar.
+
 2013-06-15  David Michael  <fedora.dm0@gmail.com>
 
 	* configure.ac (FREETYPE): Change AC_CHECK_PROGS to AC_CHECK_TOOLS.
