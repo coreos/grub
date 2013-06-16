@@ -260,7 +260,7 @@ grub_cbfs_close (grub_file_t file)
   return grub_errno;
 }
 
-#if (defined (__i386__) || defined (__x86_64__)) && !defined (GRUB_UTIL)
+#if (defined (__i386__) || defined (__x86_64__)) && !defined (GRUB_UTIL) && !defined (GRUB_MACHINE_EMU)
 
 static char *cbfsdisk_addr;
 static grub_off_t cbfsdisk_size = 0;
@@ -367,7 +367,7 @@ static struct grub_fs grub_cbfs_fs = {
 
 GRUB_MOD_INIT (cbfs)
 {
-#if (defined (__i386__) || defined (__x86_64__)) && !defined (GRUB_UTIL)
+#if (defined (__i386__) || defined (__x86_64__)) && !defined (GRUB_UTIL) && !defined (GRUB_MACHINE_EMU)
   init_cbfsdisk ();
 #endif
   grub_fs_register (&grub_cbfs_fs);
@@ -376,7 +376,7 @@ GRUB_MOD_INIT (cbfs)
 GRUB_MOD_FINI (cbfs)
 {
   grub_fs_unregister (&grub_cbfs_fs);
-#if (defined (__i386__) || defined (__x86_64__)) && !defined (GRUB_UTIL)
+#if (defined (__i386__) || defined (__x86_64__)) && !defined (GRUB_UTIL) && !defined (GRUB_MACHINE_EMU)
   fini_cbfsdisk ();
 #endif
 }

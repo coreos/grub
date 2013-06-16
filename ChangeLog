@@ -1,5 +1,9 @@
 2013-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't try to detect cbfs on *-emu.
+
+2013-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/gfxterm.c: USe right background color when scrolling.
 
 2013-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
