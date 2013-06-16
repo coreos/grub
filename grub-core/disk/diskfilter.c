@@ -188,6 +188,7 @@ scan_disk (const char *name, int accept_diskfilter)
   if (!accept_diskfilter && is_valid_diskfilter_name (name))
     return 0;
 
+  /* FIXME do we still need it? It is not called recursively anymore */
   if (scan_depth > 100)
     return 0;
 
@@ -219,6 +220,8 @@ scan_devices (const char *arname)
   grub_disk_pull_t pull;
   struct grub_diskfilter_vg *vg;
   struct grub_diskfilter_lv *lv = NULL;
+  int scan_depth;
+  int need_rescan;
 
   for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
     for (p = grub_disk_dev_list; p; p = p->next)
@@ -231,16 +234,26 @@ scan_devices (const char *arname)
 	    return;
 	}
 
-  for (vg = array_list; vg; vg = vg->next)
+  scan_depth = 0;
+  need_rescan = 1;
+  while (need_rescan && scan_depth++ < 100)
     {
-      if (vg->lvs)
-	for (lv = vg->lvs; lv; lv = lv->next)
-	  if (!lv->scanned && lv->fullname && lv->became_readable_at)
-	    {
-	      scan_disk (lv->fullname, 1);
-	      lv->scanned = 1;
-	    }
+      need_rescan = 0;
+      for (vg = array_list; vg; vg = vg->next)
+	{
+	  if (vg->lvs)
+	    for (lv = vg->lvs; lv; lv = lv->next)
+	      if (!lv->scanned && lv->fullname && lv->became_readable_at)
+		{
+		  scan_disk (lv->fullname, 1);
+		  lv->scanned = 1;
+		  need_rescan = 1;
+		}
+	}
     }
+
+  if (need_rescan)
+     grub_error (GRUB_ERR_UNKNOWN_DEVICE, "DISKFILTER scan depth exceeded");
 }
 
 static int

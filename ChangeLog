@@ -1,3 +1,8 @@
+2013-06-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/disk/diskfilter.c (scan_devices): Iteratively
+	rescan diskfilter devices until nothing new is found.
+
 2013-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix casts when compiling coreboot-specific code for 64-bit EFI.
