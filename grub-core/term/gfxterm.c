@@ -721,7 +721,7 @@ real_scroll (void)
 
       i = window.double_repaint ? 2 : 1;
 
-      color = virtual_screen.bg_color;
+      color = virtual_screen.bg_color_display;
 
       while (i--)
 	{
