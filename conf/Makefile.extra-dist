@@ -35,6 +35,8 @@ EXTRA_DIST += grub-core/efiemu/runtime/config.h
 
 EXTRA_DIST += grub-core/lib/LzmaDec.c
 
+EXTRA_DIST += grub-core/fs/cpio_common.c
+
 EXTRA_DIST += BUGS
 EXTRA_DIST += util/i386/efi/grub-dumpdevtree
 EXTRA_DIST += util/spkmodem-recv.c
