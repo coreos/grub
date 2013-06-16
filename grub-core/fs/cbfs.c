@@ -331,7 +331,7 @@ init_cbfsdisk (void)
   struct cbfs_header *head;
 
   ptr = *(grub_uint32_t *) 0xfffffffc;
-  head = (struct cbfs_header *) ptr;
+  head = (struct cbfs_header *) (grub_addr_t) ptr;
 
   if (!validate_head (head))
     return;
