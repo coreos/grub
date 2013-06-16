@@ -188,7 +188,6 @@ scan_disk (const char *name, int accept_diskfilter)
   if (!accept_diskfilter && is_valid_diskfilter_name (name))
     return 0;
 
-  /* FIXME do we still need it? It is not called recursively anymore */
   if (scan_depth > 100)
     return 0;
 

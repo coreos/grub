@@ -1,5 +1,10 @@
 2013-06-16  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* grub-core/disk/diskfilter.c: Forgot to remove comment
+	from previous commit.
+
+2013-06-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* grub-core/term/gfxterm.c (grub_virtual_screen_setup): Use
 	grub_term_normal_color, do not hardcode GRUB_TERM_DEFAULT_NORMAL_COLOR.
 
