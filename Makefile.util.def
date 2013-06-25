@@ -750,6 +750,12 @@ script = {
 
 script = {
   testcase;
+  name = grub_script_no_commands;
+  common = tests/grub_script_no_commands.in;
+};
+
+script = {
+  testcase;
   name = partmap_test;
   common = tests/partmap_test.in;
 };

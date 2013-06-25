@@ -1,3 +1,12 @@
+2013-06-25  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-script-check.c: Fail on scripts containing no
+	commands, to guard against corrupted grub-mkconfig setups that
+	produce no useful output.
+	* tests/grub_script_no_commands.in: New test.
+	* Makefile.util.def (grub_script_no_commands): Add.
+	Reported by Hans Putter.  Fixes Debian bug #713886.
+
 2013-06-16  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/disk/diskfilter.c: Forgot to remove comment

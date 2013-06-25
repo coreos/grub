@@ -143,7 +143,7 @@ main (int argc, char *argv[])
     .file = 0
   };
   char *input;
-  int found_input = 0;
+  int found_input = 0, found_cmd = 0;
   struct grub_script *script = NULL;
 
   set_program_name (argv[0]);
@@ -188,6 +188,8 @@ main (int argc, char *argv[])
       script = grub_script_parse (input, get_config_line, &ctx);
       if (script)
 	{
+	  if (script->cmd)
+	    found_cmd = 1;
 	  grub_script_execute (script);
 	  grub_script_free (script);
 	}
@@ -200,6 +202,12 @@ main (int argc, char *argv[])
   if (found_input && script == 0)
     {
       fprintf (stderr, _("Syntax error at line %u\n"), ctx.lineno);
+      return 1;
+    }
+  if (! found_cmd)
+    {
+      fprintf (stderr, _("Script contains no commands and will do nothing\n"),
+	       ctx.arguments.filename);
       return 1;
     }
 
