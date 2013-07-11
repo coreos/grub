@@ -784,24 +784,38 @@ write_font_ascii_bitmap (struct grub_font_info *font_info, char *output_file)
     grub_util_error (_("cannot write to `%s': %s"), output_file,
 		     strerror (errno));
 
-  int correct_size;
   for (glyph = font_info->glyphs_sorted, num = 0; num < font_info->num_glyphs;
        glyph++, num++)
     {
-      correct_size = 1;
-      if (glyph->width != 8 || glyph->height != 16)
-      {
-        /* printf ("Width or height from glyph U+%04x not supported, skipping.\n", glyph->char_code);  */
-	correct_size = 0;
-      }
-      int row;
-      for (row = 0; row < glyph->height; row++)
-        {
-	  if (correct_size)
-	    fwrite (&glyph->bitmap[row], sizeof(glyph->bitmap[row]), 1, file);
-	  else
-	    fwrite (&correct_size, 1, 1, file);
-        }
+      if (glyph->width == 8 && glyph->height == 16
+	  && glyph->x_ofs == 0 && glyph->y_ofs == 0)
+	fwrite (glyph->bitmap, 16, 1, file);
+      else
+	{
+	  grub_uint8_t glph[16];
+	  int p = 0, mask = 0x80;
+	  int row, col;
+	  int dy = 12 - glyph->height - glyph->y_ofs;
+	  for (row = 0; row < 16; row++)
+	    glph[row] = 0;
+	  for (row = 0; row < glyph->height; row++)
+	    for (col = 0; col < glyph->width; col++)
+	      {
+		int val = glyph->bitmap[p] & mask;
+		mask >>= 1;
+		if (mask == 0)
+		  {
+		    mask = 0x80;
+		    p++;
+		  }
+		if (val && dy + row >= 0
+		    && dy + row < 16
+		    && glyph->x_ofs + col >= 0
+		    && glyph->x_ofs + col < 8)
+		  glph[dy + row] |= 1 << (7 - (glyph->x_ofs + col));
+	      }
+	  fwrite (glph, 16, 1, file);
+	}
     }
     fclose (file);
 }
