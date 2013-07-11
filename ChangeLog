@@ -1,5 +1,10 @@
 2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove early sm712 init as there is no reason for it (the "watchdog"
+	effect was due to wrong GPIO map).
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/pcidump.c: Remove static variables.
 
 2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -405,7 +405,6 @@ image = {
 image = {
   name = fwstart;
   mips_loongson = boot/mips/loongson/fwstart.S;
-  mips_loongson_nodist = sm712_start.h;
   objcopyflags = '-O binary';
   ldflags = '-static-libgcc -lgcc -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_loongson;

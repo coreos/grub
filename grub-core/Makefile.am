@@ -40,15 +40,6 @@ trigtables.c: gentrigtables gentrigtables.c $(top_srcdir)/configure.ac
 	./gentrigtables > $@
 CLEANFILES += trigtables.c
 
-gensm712: video/sm712.c
-	$(BUILD_CC) -DGENINIT -o $@ -I$(top_builddir) -I$(top_builddir)/include -I$(top_srcdir)/include $(CPPFLAGS) $<
-CLEANFILES += gensm712
-
-# trigtables.c
-sm712_start.h: gensm712 video/sm712.c $(top_srcdir)/configure.ac
-	$(builddir)/gensm712 > $@
-CLEANFILES += sm712_start.h
-
 # XXX Use Automake's LEX & YACC support
 grub_script.tab.h: script/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $<
