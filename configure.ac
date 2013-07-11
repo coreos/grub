@@ -1292,10 +1292,10 @@ echo "Without unifont"
 else
 echo "With unifont from $FONT_SOURCE"
 fi
-echo "*******************************************************"
 if test "x$LIBLZMA" = x ; then
 echo "Without liblzma (no support for XZ-compressed mips images)"
 else
 echo "With liblzma from $LIBLZMA (support for XZ-compressed mips images)"
 fi
+echo "*******************************************************"
 ]
