@@ -1,5 +1,9 @@
 2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/charset.c (bidi_line_wrap): Fix spurios warning.
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Indicate which liblzma is used if any.
 
 2013-06-21  Paul Wise  <pabs3@bonedaddy.net>
