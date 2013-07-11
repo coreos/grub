@@ -1,5 +1,9 @@
 2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/sleep.c: Refresh screen before sleeping.
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Move delimiter after the infos.
 
 2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>

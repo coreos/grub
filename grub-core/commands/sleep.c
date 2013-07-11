@@ -78,6 +78,8 @@ grub_cmd_sleep (grub_extcmd_context_t ctxt, int argc, char **args)
       return 0;
     }
 
+  grub_refresh ();
+
   pos = grub_term_save_pos ();
 
   for (; n; n--)
