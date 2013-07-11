@@ -688,10 +688,12 @@ grub_usb_poll_devices (int wait_for_completion)
                    * addressed properly, timeout happened */
 	          hub->controller->dev->pending_reset = 0;
 		  npending--;
-	          speed = hub->controller->dev->detect_dev (hub->controller,
-                                                            i, &changed);
                 }
             }
+          if (!hub->controller->dev->pending_reset)
+	    speed = hub->controller->dev->detect_dev (hub->controller,
+						      i, &changed);
+
 	  if (changed)
 	    {
 	      detach_device (hub->devices[i]);

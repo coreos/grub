@@ -1,5 +1,9 @@
 2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/usbhub.c: Fix recheck logic.
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkfont.c (write_font_ascii_bitmap): Fix handling of glyphs
 	not filling whole 8x16 space.
 
