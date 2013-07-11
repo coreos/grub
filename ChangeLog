@@ -1,3 +1,8 @@
+2013-06-21  Paul Wise  <pabs3@bonedaddy.net>
+2013-06-21  Craig Sanders <savannah@taz.net.au>
+
+	* util/grub-reboot.in: Document submenu usage.
+
 2013-06-25  Colin Watson  <cjwatson@ubuntu.com>
 
 	* .bzrignore: Update with a number of new test-related files.
