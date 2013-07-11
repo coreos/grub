@@ -1,3 +1,7 @@
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Indicate which liblzma is used if any.
+
 2013-06-21  Paul Wise  <pabs3@bonedaddy.net>
 2013-06-21  Craig Sanders <savannah@taz.net.au>
 
