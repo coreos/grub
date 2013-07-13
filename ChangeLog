@@ -1,3 +1,7 @@
+2013-07-13  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub-mknetdir.in: Remove stray line from help output.
+
 2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove early sm712 init as there is no reason for it (the "watchdog"
