@@ -1,3 +1,7 @@
+2013-07-14  Vladimir Testov <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/gui_list.c: Fix height calculation.
+
 2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/zfs/zfs.c: Stylistic fixes.

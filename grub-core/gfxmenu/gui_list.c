@@ -102,9 +102,13 @@ get_num_shown_items (list_impl_t self)
   grub_gfxmenu_box_t box = self->menu_box;
   int box_top_pad = box->get_top_pad (box);
   int box_bottom_pad = box->get_bottom_pad (box);
+  grub_gfxmenu_box_t selbox = self->selected_item_box;
+  int sel_top_pad = selbox->get_top_pad (selbox);
+  int sel_bottom_pad = selbox->get_bottom_pad (selbox);
       
   return (self->bounds.height + item_vspace - 2 * boxpad
-	  - box_top_pad - box_bottom_pad) / (item_height + item_vspace);
+          - sel_top_pad - sel_bottom_pad
+          - box_top_pad - box_bottom_pad) / (item_height + item_vspace);
 }
 
 static int
@@ -257,7 +261,7 @@ draw_menu (list_impl_t self, int num_shown_items)
 	  int cwidth = oviewport.width - 2 * boxpad - 2;
 	  if (selbox->get_border_width)
 	    cwidth -= selbox->get_border_width (selbox);
-	  selbox->set_content_size (selbox, cwidth, item_height - 1);
+	  selbox->set_content_size (selbox, cwidth, item_height);
           selbox->draw (selbox, 0,
                         item_top - sel_toppad);
         }
@@ -397,7 +401,8 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       unsigned width_s;
 
       grub_gfxmenu_box_t selbox = self->selected_item_box;
-      int sel_toppad = selbox->get_top_pad (selbox);
+      int sel_top_pad = selbox->get_top_pad (selbox);
+      int sel_bottom_pad = selbox->get_bottom_pad (selbox);
       
       *width = grub_font_get_string_width (self->item_font, "Typical OS");
       width_s = grub_font_get_string_width (self->selected_item_font,
@@ -411,7 +416,8 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       *height = (item_height * num_items
                  + item_vspace * (num_items - 1)
                  + 2 * boxpad
-                 + box_top_pad + box_bottom_pad + sel_toppad);
+                 + box_top_pad + box_bottom_pad
+                 + sel_top_pad + sel_bottom_pad);
     }
   else
     {
