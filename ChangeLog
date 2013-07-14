@@ -1,5 +1,9 @@
 2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs_lz4.c: Add missing packed attribute.
+
+2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (nvlist_next_nvpair): Fix improper cast.
 
 2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
