@@ -812,7 +812,7 @@ fill_vdev_info (struct grub_zfs_data *data,
  * nvpair is the last pair in the nvlist, NULL is returned.
  */
 static const char *
-nvlist_next_nvpair(const char *nvl, const char *nvpair)
+nvlist_next_nvpair (const char *nvl, const char *nvpair)
 {
   const char *nvp;
   int encode_size;
@@ -820,24 +820,28 @@ nvlist_next_nvpair(const char *nvl, const char *nvpair)
   if (nvl == NULL)
     return NULL;
 
-  if (nvpair == NULL) {
-    /* skip over header, nvl_version and nvl_nvflag */
-    nvpair = nvl + 4 * 3;
-  } else {
-    /* skip to the next nvpair */
-    encode_size = grub_be_to_cpu32 (grub_get_unaligned32(nvpair));
-    nvpair += encode_size;
-    /*If encode_size equals 0 nvlist_next_nvpair would return
-     * the same pair received in input, leading to an infinite loop.
-     * If encode_size is less than 0, this will move the pointer
-     * backwards, *possibly* examinining two times the same nvpair
-     * and potentially getting into an infinite loop. */
-    if(encode_size <= 0) {
-      grub_dprintf ("zfs", "nvpair with size <= 0\n");
-      grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
-      return NULL;
+  if (nvpair == NULL)
+    {
+      /* skip over header, nvl_version and nvl_nvflag */
+      nvpair = nvl + 4 * 3;
+    } 
+  else
+    {
+      /* skip to the next nvpair */
+      encode_size = grub_be_to_cpu32 (grub_get_unaligned32(nvpair));
+      nvpair += encode_size;
+      /*If encode_size equals 0 nvlist_next_nvpair would return
+       * the same pair received in input, leading to an infinite loop.
+       * If encode_size is less than 0, this will move the pointer
+       * backwards, *possibly* examinining two times the same nvpair
+       * and potentially getting into an infinite loop. */
+      if(encode_size <= 0)
+	{
+	  grub_dprintf ("zfs", "nvpair with size <= 0\n");
+	  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
+	  return NULL;
+	}
     }
-  }
   /* 8 bytes of 0 marks the end of the list */
   if (grub_get_unaligned64 (nvpair) == 0)
     return NULL;
@@ -867,12 +871,13 @@ nvlist_next_nvpair(const char *nvl, const char *nvpair)
 
   return nvpair;
 }
+
 /*
  * This function returns 0 on success and 1 on failure. On success, a string
  * containing the name of nvpair is saved in buf.
  */
 static int
-nvpair_name(const char *nvp, char **buf, int* buflen)
+nvpair_name (const char *nvp, char **buf, int *buflen)
 {
   int len;
 
@@ -887,12 +892,13 @@ nvpair_name(const char *nvp, char **buf, int* buflen)
 
   return 0;
 }
+
 /*
  * This function retrieves the value of the nvpair in the form of enumerated
  * type data_type_t.
  */
 static int
-nvpair_type(const char *nvp)
+nvpair_type (const char *nvp)
 {
   int name_len, type;
 
@@ -910,9 +916,10 @@ nvpair_type(const char *nvp)
 
   return type;
 }
+
 static int
-nvpair_value(const char *nvp,char **val,
-	     grub_size_t *size_out, grub_size_t *nelm_out)
+nvpair_value (const char *nvp,char **val,
+	      grub_size_t *size_out, grub_size_t *nelm_out)
 {
   int name_len,nelm,encode_size;
 

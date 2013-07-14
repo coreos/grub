@@ -1,5 +1,9 @@
 2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c: Stylistic fixes.
+
+2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c: Run emacs indent on file.
 
 2013-07-14  Andrey Borzenkov <arvidjaar@gmail.com>
