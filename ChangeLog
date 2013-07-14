@@ -1,3 +1,7 @@
+20013-07-14  Massimo Maggi <me@massimo-maggi.eu>
+
+	* grub-core/fs/zfs/zfsinfo.c (print_vdev_info): Fix RAIDZ reporting.
+
 2013-07-13  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* docs/grub.texi (Commands): Document postition parameters
