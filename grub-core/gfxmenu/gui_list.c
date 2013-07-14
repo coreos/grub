@@ -249,6 +249,19 @@ draw_menu (list_impl_t self, int num_shown_items)
 			   oviewport.width - 2 * boxpad,
 			   oviewport.height - 2 * boxpad);
 
+  int cwidth = oviewport.width - 2 * boxpad - 2;
+  if (selbox->get_border_width)
+    cwidth -= selbox->get_border_width (selbox);
+  selbox->set_content_size (selbox, cwidth, item_height);
+
+  int string_left_offset = self->icon_width + icon_text_space;
+  int string_top_offset = (item_height - (ascent + descent)) / 2 + ascent;
+
+  grub_video_rect_t svpsave, sviewport;
+  sviewport.x = sel_leftpad + string_left_offset;
+  sviewport.width = cwidth - string_left_offset;
+  sviewport.height = item_height;
+
   for (visible_index = 0, menu_index = self->first_shown_index;
        visible_index < num_shown_items && menu_index < self->view->menu->size;
        visible_index++, menu_index++)
@@ -258,10 +271,6 @@ draw_menu (list_impl_t self, int num_shown_items)
 
       if (is_selected)
         {
-	  int cwidth = oviewport.width - 2 * boxpad - 2;
-	  if (selbox->get_border_width)
-	    cwidth -= selbox->get_border_width (selbox);
-	  selbox->set_content_size (selbox, cwidth, item_height);
           selbox->draw (selbox, 0,
                         item_top - sel_toppad);
         }
@@ -283,12 +292,15 @@ draw_menu (list_impl_t self, int num_shown_items)
         ((is_selected && self->selected_item_color_set)
          ? self->selected_item_color
          : self->item_color);
+
+      sviewport.y = item_top;
+      grub_gui_set_viewport (&sviewport, &svpsave);
       grub_font_draw_string (item_title,
                              font,
                              grub_video_map_rgba_color (text_color),
-                             sel_leftpad + self->icon_width + icon_text_space,
-                             (item_top + (item_height - (ascent + descent))
-                              / 2 + ascent));
+                             0,
+                             string_top_offset);
+      grub_gui_restore_viewport (&svpsave);
 
       item_top += item_height + item_vspace;
     }
