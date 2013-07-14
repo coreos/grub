@@ -271,6 +271,20 @@ grub_crypto_cipher_handle_t (*grub_zfs_load_key) (const struct grub_zfs_key *key
 						  grub_size_t keysize,
 						  grub_uint64_t salt,
 						  grub_uint64_t algo) = NULL;
+/*
+ * List of pool features that the grub implementation of ZFS supports for
+ * read. Note that features that are only required for write do not need
+ * to be listed here since grub opens pools in read-only mode.
+ */
+#define MAX_SUPPORTED_FEATURE_STRLEN 50
+static const char *spa_feature_names[] = {
+	"max.test:feat1",NULL
+};
+
+static int
+check_feature(const char *name, grub_uint64_t val, struct grub_zfs_dir_ctx *ctx);
+static int
+check_mos_features(dnode_phys_t *mosmdn_phys,grub_zfs_endian_t endian,struct grub_zfs_data* data );
 
 static grub_err_t 
 zlib_decompress (void *s, void *d,
@@ -777,7 +791,7 @@ check_pool_label (struct grub_zfs_data *data,
 		  int *inserted)
 {
   grub_uint64_t pool_state, txg = 0;
-  char *nvlist;
+  char *nvlist,*features;
 #if 0
   char *nv;
 #endif
@@ -897,7 +911,31 @@ check_pool_label (struct grub_zfs_data *data,
     grub_free (nv);
   }
   grub_dprintf ("zfs", "check 10 passed\n");
-
+  features = grub_zfs_nvlist_lookup_nvlist(nvlist,
+					   ZPOOL_CONFIG_FEATURES_FOR_READ);
+  if (features)
+  {
+    const char *nvp=NULL;
+    char name[MAX_SUPPORTED_FEATURE_STRLEN + 1];
+    char *nameptr;
+    int namelen;
+    while ((nvp = nvlist_next_nvpair(features, nvp)) != NULL)
+    {
+      nvpair_name(nvp, &nameptr,&namelen);
+      if(namelen > MAX_SUPPORTED_FEATURE_STRLEN)
+	namelen = MAX_SUPPORTED_FEATURE_STRLEN;
+      grub_strncpy(name,nameptr,namelen);
+      name[namelen]=0;
+      grub_dprintf("zfs","namelen=%u str=%s\n",namelen,name);
+      if (check_feature(name,1, NULL) != 0)
+      {
+	grub_dprintf("zfs","feature missing in check_pool_label:%s\n",name);
+	err= grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET," check_pool_label missing feature '%s' for read",name);
+	return err;
+      }
+    }
+  }
+  grub_dprintf ("zfs", "check 12 passed (feature flags)\n");
   grub_free (nvlist);
 
   return GRUB_ERR_NONE;
@@ -3416,6 +3454,11 @@ zfs_mount (grub_device_t dev)
       return NULL;
     }
 
+    if (ub->ub_version >= SPA_VERSION_FEATURES &&
+	check_mos_features(&((objset_phys_t *) osp)->os_meta_dnode,ub_endian,
+			   data) != 0)
+	  return NULL;
+	
   /* Got the MOS. Save it at the memory addr MOS. */
   grub_memmove (&(data->mos.dn), &((objset_phys_t *) osp)->os_meta_dnode,
 		DNODE_SIZE);
@@ -3982,6 +4025,68 @@ grub_zfs_dir (grub_device_t device, const char *path,
   zfs_unmount (data);
   return grub_errno;
 }
+
+static int
+check_feature(const char *name, grub_uint64_t val,__attribute__((unused)) struct grub_zfs_dir_ctx *ctx)
+{
+  int i;
+  if(val ==0) return 0;
+  if(*name==0) return 0;
+  for (i = 0; spa_feature_names[i] != NULL; i++) 
+  {
+    if (grub_strcmp(name, spa_feature_names[i]) == 0) 
+        return 0;
+  }
+  grub_printf("missing feature for read '%s'\n",name);
+  return 1;
+}
+
+/*
+ * Checks whether the MOS features that are active are supported by this
+ * (GRUB's) implementation of ZFS.
+ *
+ * Return:
+ *	0: Success.
+ *	errnum: Failure.
+ */
+	    	   
+static int
+check_mos_features(dnode_phys_t *mosmdn_phys,grub_zfs_endian_t endian,struct grub_zfs_data* data )
+{
+  grub_uint64_t objnum;
+  grub_uint8_t errnum = 0;
+  dnode_end_t dn,mosmdn;
+  mzap_phys_t* mzp;
+  grub_zfs_endian_t endianzap;
+  int size;
+  grub_memmove(&(mosmdn.dn),mosmdn_phys,sizeof(dnode_phys_t));
+  mosmdn.endian=endian;
+  errnum = dnode_get(&mosmdn, DMU_POOL_DIRECTORY_OBJECT,
+		     DMU_OT_OBJECT_DIRECTORY, &dn,data);
+  if (errnum != 0)
+      return errnum;
+
+  /*
+   * Find the object number for 'features_for_read' and retrieve its
+   * corresponding dnode. Note that we don't check features_for_write
+   * because GRUB is not opening the pool for write.
+   */
+  errnum = zap_lookup(&dn, DMU_POOL_FEATURES_FOR_READ, &objnum, data,0);
+  if (errnum != 0)
+      return errnum;
+  
+  errnum = dnode_get(&mosmdn, objnum, DMU_OTN_ZAP_METADATA, &dn, data);
+  if (errnum != 0)
+      return errnum;
+
+  errnum = dmu_read(&dn, 0, (void**)&mzp, &endianzap,data);
+  if (errnum != 0)
+      return errnum;
+
+  size = grub_zfs_to_cpu16 (dn.dn.dn_datablkszsec, dn.endian) << SPA_MINBLOCKSHIFT;
+  return mzap_iterate (mzp,endianzap, size, check_feature,NULL);
+}
+
 
 #ifdef GRUB_UTIL
 static grub_err_t

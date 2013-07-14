@@ -1,5 +1,9 @@
 2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
 
+	* grub-core/fs/zfs/zfs.c: Check for feature compatibility.
+
+2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
+
 	* grub-core/fs/zfs/zfs.c (uberblock_verify): Accept version 5000.
 	(check_pool_label): Likewise.
 	* include/grub/zfs/zfs.h: Rewrite SPA_VERSION_* macros.
