@@ -827,6 +827,16 @@ nvlist_next_nvpair(const char *nvl, const char *nvpair)
 		/* skip to the next nvpair */
 		encode_size = grub_be_to_cpu32 (grub_get_unaligned32(nvpair));
 		nvpair += encode_size;
+    /*If encode_size equals 0 nvlist_next_nvpair would return
+    * the same pair received in input, leading to an infinite loop.
+    * If encode_size is less than 0, this will move the pointer
+    * backwards, *possibly* examinining two times the same nvpair
+    * and potentially getting into an infinite loop. */
+		if(encode_size <= 0) {
+		  grub_dprintf ("zfs", "nvpair with size <= 0\n");
+		  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
+		  return NULL;
+		}
 	}
 	/* 8 bytes of 0 marks the end of the list */
 	if (*(grub_uint64_t*)nvpair == 0)
