@@ -36,8 +36,12 @@ typedef enum grub_zfs_endian
 /*
  * On-disk version number.
  */
-#define	SPA_VERSION			33ULL
-
+#define	SPA_VERSION_INITIAL		1ULL
+#define	SPA_VERSION_BEFORE_FEATURES	33ULL
+#define	SPA_VERSION_FEATURES		5000ULL
+#define	SPA_VERSION_IS_SUPPORTED(v) \
+	(((v) >= SPA_VERSION_INITIAL && (v) <= SPA_VERSION_BEFORE_FEATURES) || \
+	((v) == SPA_VERSION_FEATURES))
 /*
  * The following are configuration names used in the nvlist describing a pool's
  * configuration.
