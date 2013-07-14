@@ -367,7 +367,7 @@ zfs_log2 (grub_uint64_t num)
       num = num >> 1;
     }
 
-  return (i);
+  return i;
 }
 
 /* Checksum Functions */
@@ -475,19 +475,19 @@ vdev_uberblock_compare (uberblock_t * ub1, uberblock_t * ub2)
 
   if (grub_zfs_to_cpu64 (ub1->ub_txg, ub1_endian) 
       < grub_zfs_to_cpu64 (ub2->ub_txg, ub2_endian))
-    return (-1);
+    return -1;
   if (grub_zfs_to_cpu64 (ub1->ub_txg, ub1_endian) 
       > grub_zfs_to_cpu64 (ub2->ub_txg, ub2_endian))
-    return (1);
+    return 1;
 
   if (grub_zfs_to_cpu64 (ub1->ub_timestamp, ub1_endian) 
       < grub_zfs_to_cpu64 (ub2->ub_timestamp, ub2_endian))
-    return (-1);
+    return -1;
   if (grub_zfs_to_cpu64 (ub1->ub_timestamp, ub1_endian) 
       > grub_zfs_to_cpu64 (ub2->ub_timestamp, ub2_endian))
-    return (1);
+    return 1;
 
-  return (0);
+  return 0;
 }
 
 /*
@@ -569,7 +569,7 @@ find_bestub (uberblock_phys_t * ub_array,
   if (!ubbest)
     grub_errno = err;
 
-  return (ubbest);
+  return ubbest;
 }
 
 static inline grub_size_t
@@ -818,7 +818,7 @@ nvlist_next_nvpair(const char *nvl, const char *nvpair)
 	int encode_size;
 	int name_len;
 	if (nvl == NULL)
-		return (NULL);
+		return NULL;
 
 	if (nvpair == NULL) {
 		/* skip over header, nvl_version and nvl_nvflag */
@@ -846,7 +846,7 @@ nvlist_next_nvpair(const char *nvl, const char *nvpair)
 	{
 	  grub_dprintf ("zfs", "nvlist overflow\n");
 	  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
-	  return (NULL);
+	  return NULL;
 	}
 	encode_size = grub_be_to_cpu32 (grub_get_unaligned32(nvpair));
 
@@ -861,11 +861,11 @@ nvlist_next_nvpair(const char *nvl, const char *nvpair)
 	{
 	  grub_dprintf ("zfs", "nvlist overflow\n");
 	  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
-	  return (NULL);
+	  return NULL;
 	}
 	 /* end consistency checks */
 
-	return (nvpair);
+	return nvpair;
 }
 /*
  * This function returns 0 on success and 1 on failure. On success, a string
@@ -885,7 +885,7 @@ nvpair_name(const char *nvp, char **buf, int* buflen)
 	*buf=(char*)nvp;
 	*buflen=len;
 
-	return (0);
+	return 0;
 }
 /*
  * This function retrieves the value of the nvpair in the form of enumerated
@@ -908,7 +908,7 @@ nvpair_type(const char *nvp)
 
 	type = grub_be_to_cpu32 (grub_get_unaligned32 (nvp));
 
-	return (type);
+	return type;
 }
 static int
 nvpair_value(const char *nvp,char **val,
@@ -1443,7 +1443,9 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	      break;
 	    grub_errno = GRUB_ERR_NONE;
 	  }
-	return (grub_errno = err);
+	grub_errno = err;
+
+	return err;
       }
     case DEVICE_RAIDZ:
       {
@@ -2051,7 +2053,7 @@ zap_hash (grub_uint64_t salt, const char *name,
    */
   crc &= ~((1ULL << (64 - ZAP_HASHBITS)) - 1);
 
-  return (crc);
+  return crc;
 }
 
 /*
