@@ -74,14 +74,6 @@ static int LZ4_uncompress_unknownOutputSize(const char *source, char *dest,
  * Compiler Options
  */
 
-#if __STDC_VERSION__ >= 199901L	/* C99 */
-/* "restrict" is a known keyword */
-#else
-/* Disable restrict */
-#ifndef restrict
-#define	restrict /* Only if somebody already didn't take care of that.*/
-#endif
-#endif
 
 #define	GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__)
 
@@ -196,11 +188,11 @@ LZ4_uncompress_unknownOutputSize(const char *source,
     char *dest, int isize, int maxOutputSize)
 {
 	/* Local Variables */
-	const BYTE *restrict ip = (const BYTE *) source;
+	const BYTE * ip = (const BYTE *) source;
 	const BYTE *const iend = ip + isize;
-	const BYTE *restrict ref;
+	const BYTE * ref;
 
-	BYTE *restrict op = (BYTE *) dest;
+	BYTE * op = (BYTE *) dest;
 	BYTE *const oend = op + maxOutputSize;
 	BYTE *cpy;
 

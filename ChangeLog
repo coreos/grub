@@ -1,3 +1,7 @@
+2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs_lz4.c: Remove restrict keyword.
+
 2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
 
 	* grub-core/fs/zfs/zfs.c (nvlist_next_nvpair): Error is encode_size
