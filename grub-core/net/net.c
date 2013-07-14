@@ -891,6 +891,7 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
 	*ptr = '_';    
     grub_env_set (name, buf);
     grub_register_variable_hook (name, 0, hwaddr_set_env);
+    grub_env_export (name);
   }
 
   {
@@ -904,6 +905,7 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
 	*ptr = '_';    
     grub_env_set (name, buf);
     grub_register_variable_hook (name, 0, addr_set_env);
+    grub_env_export (name);
   }
 
   inter->card->num_ifaces++;
@@ -1643,12 +1645,16 @@ GRUB_MOD_INIT(net)
 {
   grub_register_variable_hook ("net_default_server", defserver_get_env,
 			       defserver_set_env);
+  grub_env_export ("net_default_server");
   grub_register_variable_hook ("pxe_default_server", defserver_get_env,
 			       defserver_set_env);
+  grub_env_export ("pxe_default_server");
   grub_register_variable_hook ("net_default_ip", defip_get_env,
 			       defip_set_env);
+  grub_env_export ("net_default_ip");
   grub_register_variable_hook ("net_default_mac", defmac_get_env,
 			       defmac_set_env);
+  grub_env_export ("net_default_mac");
 
   cmd_addaddr = grub_register_command ("net_add_addr", grub_cmd_addaddr,
 					/* TRANSLATORS: HWADDRESS stands for

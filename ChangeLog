@@ -1,3 +1,8 @@
+2013-07-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/net/bootp.c: Export net_* variables.
+	* grub-core/net/net.c: Likewise.
+
 2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/zfs/zfs_lz4.c: Add missing packed attribute.
