@@ -2,6 +2,7 @@
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002,2003,2004,2009,2010,2011  Free Software Foundation, Inc.
  *  Copyright 2010  Sun Microsystems, Inc.
+ *  Copyright (c) 2012 by Delphix. All rights reserved.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -782,6 +783,155 @@ fill_vdev_info (struct grub_zfs_data *data,
   return fill_vdev_info_real (data, nvlist,
 			      &data->devices_attached[data->n_devices_attached - 1],
 			      diskdesc, inserted, 0xffffffff);
+}
+
+/*
+ * For a given XDR packed nvlist, verify the first 4 bytes and move on.
+ *
+ * An XDR packed nvlist is encoded as (comments from nvs_xdr_create) :
+ *
+ *      encoding method/host endian     (4 bytes)
+ *      nvl_version                     (4 bytes)
+ *      nvl_nvflag                      (4 bytes)
+ *	encoded nvpairs:
+ *		encoded size of the nvpair      (4 bytes)
+ *		decoded size of the nvpair      (4 bytes)
+ *		name string size                (4 bytes)
+ *		name string data                (sizeof(NV_ALIGN4(string))
+ *		data type                       (4 bytes)
+ *		# of elements in the nvpair     (4 bytes)
+ *		data
+ *      2 zero's for the last nvpair
+ *		(end of the entire list)	(8 bytes)
+ *
+ */
+
+/*
+ * The nvlist_next_nvpair() function returns a handle to the next nvpair in the
+ * list following nvpair. If nvpair is NULL, the first pair is returned. If
+ * nvpair is the last pair in the nvlist, NULL is returned.
+ */
+static const char *
+nvlist_next_nvpair(const char *nvl, const char *nvpair)
+{
+	const char *nvp;
+	int encode_size;
+	int name_len;
+	if (nvl == NULL)
+		return (NULL);
+
+	if (nvpair == NULL) {
+		/* skip over header, nvl_version and nvl_nvflag */
+		nvpair = nvl + 4 * 3;
+	} else {
+		/* skip to the next nvpair */
+		encode_size = grub_be_to_cpu32 (grub_get_unaligned32(nvpair));
+		nvpair += encode_size;
+	}
+	/* 8 bytes of 0 marks the end of the list */
+	if (*(grub_uint64_t*)nvpair == 0)
+		return (NULL);
+	/*consistency checks*/
+	if (nvpair + 4 * 3 >= nvl + VDEV_PHYS_SIZE)
+	{
+	  grub_dprintf ("zfs", "nvlist overflow\n");
+	  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
+	  return (NULL);
+	}
+	encode_size = grub_be_to_cpu32 (grub_get_unaligned32(nvpair));
+
+	nvp = nvpair + 4*2;
+	name_len = grub_be_to_cpu32 (grub_get_unaligned32 (nvp));
+	nvp += 4;
+
+	nvp = nvp + ((name_len + 3) & ~3); // align 
+	if (nvp + 4 >= nvl + VDEV_PHYS_SIZE                        
+	    || encode_size < 0
+	    || nvp + 4 + encode_size > nvl + VDEV_PHYS_SIZE)       
+	{
+	  grub_dprintf ("zfs", "nvlist overflow\n");
+	  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
+	  return (NULL);
+	}
+	 /* end consistency checks */
+
+	return (nvpair);
+}
+/*
+ * This function returns 0 on success and 1 on failure. On success, a string
+ * containing the name of nvpair is saved in buf.
+ */
+static int
+nvpair_name(const char *nvp, char **buf, int* buflen)
+{
+	int len;
+
+	/* skip over encode/decode size */
+	nvp += 4 * 2;
+
+	len = grub_be_to_cpu32 (grub_get_unaligned32 (nvp));
+	nvp=nvp+4;
+	
+	*buf=(char*)nvp;
+	*buflen=len;
+
+	return (0);
+}
+/*
+ * This function retrieves the value of the nvpair in the form of enumerated
+ * type data_type_t.
+ */
+static int
+nvpair_type(const char *nvp)
+{
+	int name_len, type;
+
+	/* skip over encode/decode size */
+	nvp += 4 * 2;
+
+	/* skip over name_len */
+	name_len = grub_be_to_cpu32 (grub_get_unaligned32 (nvp));
+	nvp += 4;
+
+	/* skip over name */
+	nvp = nvp + ((name_len + 3) & ~3); /* align */
+
+	type = grub_be_to_cpu32 (grub_get_unaligned32 (nvp));
+
+	return (type);
+}
+static int
+nvpair_value(const char *nvp,char **val,
+		   grub_size_t *size_out, grub_size_t *nelm_out)
+{
+	int name_len,nelm,encode_size;
+
+	/* skip over encode/decode size */
+	encode_size = grub_be_to_cpu32 (grub_get_unaligned32(nvp));
+	nvp += 8;
+
+	/* skip over name_len */
+	name_len = grub_be_to_cpu32 (grub_get_unaligned32 (nvp));
+	nvp += 4;
+
+	/* skip over name */
+	nvp = nvp + ((name_len + 3) & ~3); /* align */
+	
+	/* skip over type */
+	nvp += 4;
+	nelm = grub_be_to_cpu32 (grub_get_unaligned32 (nvp));
+	nvp +=4;
+	if (nelm < 1)
+	{
+	  grub_error (GRUB_ERR_BAD_FS, "empty nvpair");
+	  return 0;
+	}
+	  *val = (char *) nvp;
+	  *size_out = encode_size;
+	  if (nelm_out)
+	    *nelm_out = nelm;
+	    
+	return 1;
 }
 
 /*
@@ -3105,34 +3255,14 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
   return err;
 }
 
-/*
- * For a given XDR packed nvlist, verify the first 4 bytes and move on.
- *
- * An XDR packed nvlist is encoded as (comments from nvs_xdr_create) :
- *
- *      encoding method/host endian     (4 bytes)
- *      nvl_version                     (4 bytes)
- *      nvl_nvflag                      (4 bytes)
- *	encoded nvpairs:
- *		encoded size of the nvpair      (4 bytes)
- *		decoded size of the nvpair      (4 bytes)
- *		name string size                (4 bytes)
- *		name string data                (sizeof(NV_ALIGN4(string))
- *		data type                       (4 bytes)
- *		# of elements in the nvpair     (4 bytes)
- *		data
- *      2 zero's for the last nvpair
- *		(end of the entire list)	(8 bytes)
- *
- */
-
 static int
 nvlist_find_value (const char *nvlist_in, const char *name,
 		   int valtype, char **val,
 		   grub_size_t *size_out, grub_size_t *nelm_out)
 {
-  int name_len, type, encode_size;
-  const char *nvpair, *nvp_name, *nvlist = nvlist_in;
+  int name_len, type ;
+  const char *nvpair=NULL,*nvlist=nvlist_in;
+  char *nvp_name;
 
   /* Verify if the 1st and 2nd byte in the nvlist are valid. */
   /* NOTE: independently of what endianness header announces all 
@@ -3145,62 +3275,18 @@ nvlist_find_value (const char *nvlist_in, const char *name,
       return 0;
     }
 
-  /* skip the header, nvl_version, and nvl_nvflag */
-  nvlist = nvlist + 4 * 3;
   /*
    * Loop thru the nvpair list
    * The XDR representation of an integer is in big-endian byte order.
    */
-  while ((encode_size = grub_be_to_cpu32 (grub_get_unaligned32 (nvlist))))
+  while ((nvpair=nvlist_next_nvpair(nvlist,nvpair)))
     {
-      int nelm;
-
-      if (nvlist + 4 * 4 >= nvlist_in + VDEV_PHYS_SIZE)
+      nvpair_name(nvpair,&nvp_name,&name_len);
+      type = nvpair_type(nvpair);
+      if ((grub_strncmp (nvp_name, name, grub_strlen(name)) == 0) && type == valtype)
 	{
-	  grub_dprintf ("zfs", "nvlist overflow\n");
-	  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
-	  return 0;
+	  return nvpair_value(nvpair,val,size_out,nelm_out);
 	}
-
-      nvpair = nvlist + 4 * 2;	/* skip the encode/decode size */
-
-      name_len = grub_be_to_cpu32 (grub_get_unaligned32 (nvpair));
-      nvpair += 4;
-
-      nvp_name = nvpair;
-      nvpair = nvpair + ((name_len + 3) & ~3);	/* align */
-
-      if (nvpair + 8 >= nvlist_in + VDEV_PHYS_SIZE
-	  || encode_size < 0
-	  || nvpair + 8 + encode_size > nvlist_in + VDEV_PHYS_SIZE)
-	{
-	  grub_dprintf ("zfs", "nvlist overflow\n");
-	  grub_error (GRUB_ERR_BAD_FS, "incorrect nvlist");
-	  return 0;
-	}
-
-      type = grub_be_to_cpu32 (grub_get_unaligned32 (nvpair));
-      nvpair += 4;
-
-      nelm = grub_be_to_cpu32 (grub_get_unaligned32 (nvpair));
-      if (nelm < 1)
-	{
-	  grub_error (GRUB_ERR_BAD_FS, "empty nvpair");
-	  return 0;
-	}
-
-      nvpair += 4;
-
-      if ((grub_strncmp (nvp_name, name, name_len) == 0) && type == valtype)
-	{
-	  *val = (char *) nvpair;
-	  *size_out = encode_size;
-	  if (nelm_out)
-	    *nelm_out = nelm;
-	  return 1;
-	}
-
-      nvlist += encode_size;	/* goto the next nvpair */
     }
   return 0;
 }

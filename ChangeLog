@@ -1,5 +1,10 @@
 2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
 
+	* grub-core/fs/zfs/zfs.c: Split nvpair iterators into separate
+	functions.
+
+2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
+
 	* grub-core/fs/zfs/zfs_lz4.c: New file.
 	* grub-core/fs/zfs/zfs.c: Tie up lz4 decompression.
 
