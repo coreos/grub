@@ -839,8 +839,8 @@ nvlist_next_nvpair(const char *nvl, const char *nvpair)
 		}
 	}
 	/* 8 bytes of 0 marks the end of the list */
-	if (*(grub_uint64_t*)nvpair == 0)
-		return (NULL);
+	if (grub_get_unaligned64 (nvpair) == 0)
+		return NULL;
 	/*consistency checks*/
 	if (nvpair + 4 * 3 >= nvl + VDEV_PHYS_SIZE)
 	{
