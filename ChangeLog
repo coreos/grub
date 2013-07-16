@@ -1,5 +1,11 @@
 2013-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/multiboot_elfxx.c: Check eip after v2p translation
+	and not before.
+	Reported by: Leon Drugi.
+
+2013-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/powerpc/ieee1275/startup.S: Handle unaligned bss.
 	Reported by: Paulo Flabiano Smorigo.
 
