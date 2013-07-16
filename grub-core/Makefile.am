@@ -10,7 +10,7 @@ CCAS=$(TARGET_CC)
 
 if COND_GRUB_MKFONT
 if COND_HAVE_FONT_SOURCE
-TARGET_CFLAGS += -DUSE_ASCII_FAILBACK=1 -DHAVE_UNIFONT_WIDTHSPEC=1
+TARGET_CFLAGS += -DUSE_ASCII_FALLBACK=1 -DHAVE_UNIFONT_WIDTHSPEC=1
 endif
 endif
 
@@ -37,17 +37,8 @@ CLEANFILES += gentrigtables
 
 # trigtables.c
 trigtables.c: gentrigtables gentrigtables.c $(top_srcdir)/configure.ac
-	$(builddir)/gentrigtables > $@
+	./gentrigtables > $@
 CLEANFILES += trigtables.c
-
-gensm712: video/sm712.c
-	$(BUILD_CC) -DGENINIT -o $@ -I$(top_builddir) -I$(top_builddir)/include -I$(top_srcdir)/include $(CPPFLAGS) $<
-CLEANFILES += gensm712
-
-# trigtables.c
-sm712_start.S: gensm712 video/sm712.c $(top_srcdir)/configure.ac
-	$(builddir)/gensm712 > $@
-CLEANFILES += sm712_start.S
 
 # XXX Use Automake's LEX & YACC support
 grub_script.tab.h: script/parser.y
@@ -60,11 +51,8 @@ grub_script.yy.h: script/yylex.l
 	$(LEX) -o grub_script.yy.c --header-file=grub_script.yy.h $<
 grub_script.yy.c: grub_script.yy.h
 
-rs_decoder.S: $(srcdir)/lib/reed_solomon.c
+rs_decoder.h: $(srcdir)/lib/reed_solomon.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) -Os -I$(top_builddir) -S -DSTANDALONE -o $@ $< -g0 -mregparm=3 -ffreestanding
-
-boot/i386/pc/startup_raw.S: $(builddir)/rs_decoder.S
-boot/mips/loongson/fwstart.S: $(builddir)/sm712_start.S
 
 CLEANFILES += grub_script.yy.c grub_script.yy.h
 
@@ -112,6 +100,11 @@ if COND_i386_coreboot
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/coreboot/lbio.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/i386/pc/int.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video_fb.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
 endif
 
 if COND_i386_multiboot
@@ -158,12 +151,10 @@ if COND_mips_qemu_mips
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video_fb.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap_scale.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/serial.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
@@ -177,12 +168,10 @@ KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/time.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video_fb.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bitmap_scale.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/cs5536.h

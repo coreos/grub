@@ -35,7 +35,7 @@
 #include <grub/video.h>
 
 /* Generic replacing blitter (slow).  Works for every supported format.  */
-void
+static void
 grub_video_fbblit_replace (struct grub_video_fbblit_info *dst,
 			   struct grub_video_fbblit_info *src,
 			   int x, int y, int width, int height,
@@ -68,7 +68,7 @@ grub_video_fbblit_replace (struct grub_video_fbblit_info *dst,
 }
 
 /* Block copy replacing blitter.  Works with modes multiple of 8 bits.  */
-void
+static void
 grub_video_fbblit_replace_directN (struct grub_video_fbblit_info *dst,
 				   struct grub_video_fbblit_info *src,
 				   int x, int y, int width, int height,
@@ -92,7 +92,7 @@ grub_video_fbblit_replace_directN (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for 1-bit to 32bit.  */
-void
+static void
 grub_video_fbblit_replace_32bit_1bit (struct grub_video_fbblit_info *dst,
 				      struct grub_video_fbblit_info *src,
 				      int x, int y,
@@ -163,7 +163,7 @@ grub_video_fbblit_replace_32bit_1bit (struct grub_video_fbblit_info *dst,
 
 #ifdef GRUB_HAVE_UNALIGNED_ACCESS
 /* Optimized replacing blitter for 1-bit to 24-bit.  */
-void
+static void
 grub_video_fbblit_replace_24bit_1bit (struct grub_video_fbblit_info *dst,
 				      struct grub_video_fbblit_info *src,
 				      int x, int y,
@@ -252,7 +252,7 @@ grub_video_fbblit_replace_24bit_1bit (struct grub_video_fbblit_info *dst,
 #endif
 
 /* Optimized replacing blitter for 1-bit to 16-bit.  */
-void
+static void
 grub_video_fbblit_replace_16bit_1bit (struct grub_video_fbblit_info *dst,
 				      struct grub_video_fbblit_info *src,
 				      int x, int y,
@@ -321,7 +321,7 @@ grub_video_fbblit_replace_16bit_1bit (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for 1-bit to 8-bit.  */
-void
+static void
 grub_video_fbblit_replace_8bit_1bit (struct grub_video_fbblit_info *dst,
 				      struct grub_video_fbblit_info *src,
 				      int x, int y,
@@ -389,7 +389,7 @@ grub_video_fbblit_replace_8bit_1bit (struct grub_video_fbblit_info *dst,
     }
 }
 
-void
+static void
 grub_video_fbblit_replace_32bit_indexa (struct grub_video_fbblit_info *dst,
 					struct grub_video_fbblit_info *src,
 					int x, int y,
@@ -434,7 +434,7 @@ grub_video_fbblit_replace_32bit_indexa (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for 1-bit to 16bit.  */
-void
+static void
 grub_video_fbblit_replace_24bit_indexa (struct grub_video_fbblit_info *dst,
 					struct grub_video_fbblit_info *src,
 					int x, int y,
@@ -488,7 +488,7 @@ grub_video_fbblit_replace_24bit_indexa (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for 1-bit to 16bit.  */
-void
+static void
 grub_video_fbblit_replace_16bit_indexa (struct grub_video_fbblit_info *dst,
 					struct grub_video_fbblit_info *src,
 					int x, int y,
@@ -533,7 +533,7 @@ grub_video_fbblit_replace_16bit_indexa (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for 1-bit to 8bit.  */
-void
+static void
 grub_video_fbblit_replace_8bit_indexa (struct grub_video_fbblit_info *dst,
 					struct grub_video_fbblit_info *src,
 					int x, int y,
@@ -578,7 +578,7 @@ grub_video_fbblit_replace_8bit_indexa (struct grub_video_fbblit_info *dst,
 }
 
 
-void
+static void
 grub_video_fbblit_blend_32bit_indexa (struct grub_video_fbblit_info *dst,
 					struct grub_video_fbblit_info *src,
 					int x, int y,
@@ -620,7 +620,7 @@ grub_video_fbblit_blend_32bit_indexa (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for 1-bit to 16bit.  */
-void
+static void
 grub_video_fbblit_blend_24bit_indexa (struct grub_video_fbblit_info *dst,
 					struct grub_video_fbblit_info *src,
 					int x, int y,
@@ -675,7 +675,7 @@ grub_video_fbblit_blend_24bit_indexa (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for 1-bit to 16bit.  */
-void
+static void
 grub_video_fbblit_blend_16bit_indexa (struct grub_video_fbblit_info *dst,
 					struct grub_video_fbblit_info *src,
 					int x, int y,
@@ -717,7 +717,7 @@ grub_video_fbblit_blend_16bit_indexa (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for 1-bit to 8bit.  */
-void
+static void
 grub_video_fbblit_blend_8bit_indexa (struct grub_video_fbblit_info *dst,
 					struct grub_video_fbblit_info *src,
 					int x, int y,
@@ -760,7 +760,7 @@ grub_video_fbblit_blend_8bit_indexa (struct grub_video_fbblit_info *dst,
 
 
 /* Optimized replacing blitter for RGBX8888 to BGRX8888.  */
-void
+static void
 grub_video_fbblit_replace_BGRX8888_RGBX8888 (struct grub_video_fbblit_info *dst,
 					     struct grub_video_fbblit_info *src,
 					     int x, int y,
@@ -813,7 +813,7 @@ grub_video_fbblit_replace_BGRX8888_RGBX8888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for RGB888 to BGRX8888.  */
-void
+static void
 grub_video_fbblit_replace_BGRX8888_RGB888 (struct grub_video_fbblit_info *dst,
 					   struct grub_video_fbblit_info *src,
 					   int x, int y,
@@ -864,7 +864,7 @@ grub_video_fbblit_replace_BGRX8888_RGB888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for RGBX8888 to BGR888.  */
-void
+static void
 grub_video_fbblit_replace_BGR888_RGBX8888 (struct grub_video_fbblit_info *dst,
 					   struct grub_video_fbblit_info *src,
 					   int x, int y,
@@ -918,7 +918,7 @@ grub_video_fbblit_replace_BGR888_RGBX8888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for RGB888 to BGR888.  */
-void
+static void
 grub_video_fbblit_replace_BGR888_RGB888 (struct grub_video_fbblit_info *dst,
 					 struct grub_video_fbblit_info *src,
 					 int x, int y,
@@ -959,7 +959,7 @@ grub_video_fbblit_replace_BGR888_RGB888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for RGB888 to RGBX8888.  */
-void
+static void
 grub_video_fbblit_replace_RGBX8888_RGB888 (struct grub_video_fbblit_info *dst,
 					   struct grub_video_fbblit_info *src,
 					   int x, int y,
@@ -1006,7 +1006,7 @@ grub_video_fbblit_replace_RGBX8888_RGB888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for RGBX8888 to RGB888.  */
-void
+static void
 grub_video_fbblit_replace_RGB888_RGBX8888 (struct grub_video_fbblit_info *dst,
 					   struct grub_video_fbblit_info *src,
 					   int x, int y,
@@ -1055,7 +1055,7 @@ grub_video_fbblit_replace_RGB888_RGBX8888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for RGBX8888 to indexed color.  */
-void
+static void
 grub_video_fbblit_replace_index_RGBX8888 (struct grub_video_fbblit_info *dst,
 					  struct grub_video_fbblit_info *src,
 					  int x, int y,
@@ -1098,7 +1098,7 @@ grub_video_fbblit_replace_index_RGBX8888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized replacing blitter for RGB888 to indexed color.  */
-void
+static void
 grub_video_fbblit_replace_index_RGB888 (struct grub_video_fbblit_info *dst,
 					struct grub_video_fbblit_info *src,
 					int x, int y,
@@ -1146,7 +1146,7 @@ grub_video_fbblit_replace_index_RGB888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Generic blending blitter.  Works for every supported format.  */
-void
+static void
 grub_video_fbblit_blend (struct grub_video_fbblit_info *dst,
 			 struct grub_video_fbblit_info *src,
 			 int x, int y, int width, int height,
@@ -1207,7 +1207,7 @@ grub_video_fbblit_blend (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized blending blitter for RGBA8888 to BGRA8888.  */
-void
+static void
 grub_video_fbblit_blend_BGRA8888_RGBA8888 (struct grub_video_fbblit_info *dst,
 					   struct grub_video_fbblit_info *src,
 					   int x, int y,
@@ -1288,7 +1288,7 @@ grub_video_fbblit_blend_BGRA8888_RGBA8888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized blending blitter for RGBA8888 to BGR888.  */
-void
+static void
 grub_video_fbblit_blend_BGR888_RGBA8888 (struct grub_video_fbblit_info *dst,
 					 struct grub_video_fbblit_info *src,
 					 int x, int y,
@@ -1382,7 +1382,7 @@ grub_video_fbblit_blend_BGR888_RGBA8888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized blending blitter for RGBA888 to RGBA8888.  */
-void
+static void
 grub_video_fbblit_blend_RGBA8888_RGBA8888 (struct grub_video_fbblit_info *dst,
 					   struct grub_video_fbblit_info *src,
 					   int x, int y,
@@ -1454,7 +1454,7 @@ grub_video_fbblit_blend_RGBA8888_RGBA8888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized blending blitter for RGBA8888 to RGB888.  */
-void
+static void
 grub_video_fbblit_blend_RGB888_RGBA8888 (struct grub_video_fbblit_info *dst,
 					 struct grub_video_fbblit_info *src,
 					 int x, int y,
@@ -1545,7 +1545,7 @@ grub_video_fbblit_blend_RGB888_RGBA8888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized blending blitter for RGBA8888 to indexed color.  */
-void
+static void
 grub_video_fbblit_blend_index_RGBA8888 (struct grub_video_fbblit_info *dst,
 					struct grub_video_fbblit_info *src,
 					int x, int y,
@@ -1615,7 +1615,7 @@ grub_video_fbblit_blend_index_RGBA8888 (struct grub_video_fbblit_info *dst,
 }
 
 /* Optimized blending blitter for 1-bit to XXXA8888.  */
-void
+static void
 grub_video_fbblit_blend_XXXA8888_1bit (struct grub_video_fbblit_info *dst,
 				       struct grub_video_fbblit_info *src,
 				       int x, int y,
@@ -1714,7 +1714,7 @@ grub_video_fbblit_blend_XXXA8888_1bit (struct grub_video_fbblit_info *dst,
 
 /* Optimized blending blitter for 1-bit to XXX888.  */
 #ifdef GRUB_HAVE_UNALIGNED_ACCESS
-void
+static void
 grub_video_fbblit_blend_XXX888_1bit (struct grub_video_fbblit_info *dst,
 				     struct grub_video_fbblit_info *src,
 				     int x, int y,
@@ -1820,7 +1820,7 @@ grub_video_fbblit_blend_XXX888_1bit (struct grub_video_fbblit_info *dst,
 #endif
 
 /* Optimized blending blitter for 1-bit to XXX888.  */
-void
+static void
 grub_video_fbblit_blend_XXX565_1bit (struct grub_video_fbblit_info *dst,
 				     struct grub_video_fbblit_info *src,
 				     int x, int y,
@@ -1913,5 +1913,304 @@ grub_video_fbblit_blend_XXX565_1bit (struct grub_video_fbblit_info *dst,
 	  srcmask <<= 8 - srcrowskipbit;
 	}
       GRUB_VIDEO_FB_ADVANCE_POINTER (dstptr, dstrowskip);
+    }
+}
+
+/* NOTE: This function assumes that given coordinates are within bounds of
+   handled data.  */
+void
+grub_video_fb_dispatch_blit (struct grub_video_fbblit_info *target,
+			     struct grub_video_fbblit_info *source,
+			     enum grub_video_blit_operators oper, int x, int y,
+			     unsigned int width, unsigned int height,
+			     int offset_x, int offset_y)
+{
+  if (oper == GRUB_VIDEO_BLIT_REPLACE)
+    {
+      /* Try to figure out more optimized version for replace operator.  */
+      switch (source->mode_info->blit_format)
+	{
+	case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
+	  switch (target->mode_info->blit_format)
+	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
+	      grub_video_fbblit_replace_directN (target, source,
+						       x, y, width, height,
+						       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
+	      grub_video_fbblit_replace_BGRX8888_RGBX8888 (target, source,
+								 x, y, width, height,
+								 offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_888:
+	      grub_video_fbblit_replace_BGR888_RGBX8888 (target, source,
+							       x, y, width, height,
+							       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
+	      grub_video_fbblit_replace_RGB888_RGBX8888 (target, source,
+							       x, y, width, height,
+							       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
+	      grub_video_fbblit_replace_index_RGBX8888 (target, source,
+							      x, y, width, height,
+							      offset_x, offset_y);
+	      return;
+	    default:
+	      break;
+	    }
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
+	  switch (target->mode_info->blit_format)
+	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
+	      grub_video_fbblit_replace_BGRX8888_RGB888 (target, source,
+							       x, y, width, height,
+							       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
+	      grub_video_fbblit_replace_RGBX8888_RGB888 (target, source,
+							       x, y, width, height,
+							       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_888:
+	      grub_video_fbblit_replace_BGR888_RGB888 (target, source,
+							     x, y, width, height,
+							     offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
+	      grub_video_fbblit_replace_directN (target, source,
+						       x, y, width, height,
+						       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
+	      grub_video_fbblit_replace_index_RGB888 (target, source,
+							    x, y, width, height,
+							    offset_x, offset_y);
+	      return;
+	    default:
+	      break;
+	    }
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
+	  switch (target->mode_info->blit_format)
+	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
+	      grub_video_fbblit_replace_directN (target, source,
+						       x, y, width, height,
+						       offset_x, offset_y);
+	      return;
+	    default:
+	      break;
+	    }
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
+	  switch (target->mode_info->blit_format)
+	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR_ALPHA:
+	      grub_video_fbblit_replace_directN (target, source,
+						       x, y, width, height,
+						       offset_x, offset_y);
+	      return;
+	    default:
+	      break;
+	    }
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR_ALPHA:
+	  switch (target->mode_info->bytes_per_pixel)
+	    {
+	    case 4:
+	      grub_video_fbblit_replace_32bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 3:
+	      grub_video_fbblit_replace_24bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 2:
+	      grub_video_fbblit_replace_16bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 1:
+	      grub_video_fbblit_replace_8bit_indexa (target, source,
+						     x, y, width, height,
+						     offset_x, offset_y);
+	      return;
+	    default:
+	      break;
+	    }
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED:
+	  switch (target->mode_info->bytes_per_pixel)
+	    {
+	    case 4:
+	      grub_video_fbblit_replace_32bit_1bit (target, source,
+						    x, y, width, height,
+						    offset_x, offset_y);
+	      return;
+#ifdef GRUB_HAVE_UNALIGNED_ACCESS
+	    case 3:
+	      grub_video_fbblit_replace_24bit_1bit (target, source,
+						    x, y, width, height,
+						    offset_x, offset_y);
+	      return;
+#endif
+	    case 2:
+	      grub_video_fbblit_replace_16bit_1bit (target, source,
+						    x, y, width, height,
+						    offset_x, offset_y);
+	      return;
+	    case 1:
+	      grub_video_fbblit_replace_8bit_1bit (target, source,
+						   x, y, width, height,
+						   offset_x, offset_y);
+	      return;
+	    }
+	  break;
+	default:
+	  break;
+	}
+
+      /* No optimized replace operator found, use default (slow) blitter.  */
+      grub_video_fbblit_replace (target, source, x, y, width, height,
+				       offset_x, offset_y);
+    }
+  else
+    {
+      /* Try to figure out more optimized blend operator.  */
+      switch (source->mode_info->blit_format)
+	{
+	case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
+	  switch (target->mode_info->blit_format)
+	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
+	      grub_video_fbblit_blend_BGRA8888_RGBA8888 (target, source,
+							       x, y, width, height,
+							       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
+	      grub_video_fbblit_blend_RGBA8888_RGBA8888 (target, source,
+							       x, y, width, height,
+							       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_888:
+	      grub_video_fbblit_blend_BGR888_RGBA8888 (target, source,
+							     x, y, width, height,
+							     offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
+	      grub_video_fbblit_blend_RGB888_RGBA8888 (target, source,
+							     x, y, width, height,
+							     offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
+	      grub_video_fbblit_blend_index_RGBA8888 (target, source,
+							    x, y, width, height,
+							    offset_x, offset_y);
+	      return;
+	    default:
+	      break;
+	    }
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
+	  /* Note: There is really no alpha information here, so blend is
+	     changed to replace.  */
+
+	  switch (target->mode_info->blit_format)
+	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
+	      grub_video_fbblit_replace_BGRX8888_RGB888 (target, source,
+							       x, y, width, height,
+							       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
+	      grub_video_fbblit_replace_RGBX8888_RGB888 (target, source,
+							       x, y, width, height,
+							       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_888:
+	      grub_video_fbblit_replace_BGR888_RGB888 (target, source,
+							     x, y, width, height,
+							     offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
+	      grub_video_fbblit_replace_directN (target, source,
+						       x, y, width, height,
+						       offset_x, offset_y);
+	      return;
+	    case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR:
+	      grub_video_fbblit_replace_index_RGB888 (target, source,
+							    x, y, width, height,
+							    offset_x, offset_y);
+	      return;
+	    default:
+	      break;
+	    }
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED:
+	  switch (target->mode_info->blit_format)
+	    {
+	    case GRUB_VIDEO_BLIT_FORMAT_BGRA_8888:
+	    case GRUB_VIDEO_BLIT_FORMAT_RGBA_8888:
+	      grub_video_fbblit_blend_XXXA8888_1bit (target, source,
+						     x, y, width, height,
+						     offset_x, offset_y);
+	      return;
+#ifdef GRUB_HAVE_UNALIGNED_ACCESS
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_888:
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_888:
+	      grub_video_fbblit_blend_XXX888_1bit (target, source,
+						   x, y, width, height,
+						   offset_x, offset_y);
+	      return;
+#endif
+	    case GRUB_VIDEO_BLIT_FORMAT_BGR_565:
+	    case GRUB_VIDEO_BLIT_FORMAT_RGB_565:
+	      grub_video_fbblit_blend_XXX565_1bit (target, source,
+						   x, y, width, height,
+						   offset_x, offset_y);
+	      return;
+	    default:
+	      break;
+	    }
+	  break;
+	case GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR_ALPHA:
+	  switch (target->mode_info->bytes_per_pixel)
+	    {
+	    case 4:
+	      grub_video_fbblit_blend_32bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 3:
+	      grub_video_fbblit_blend_24bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 2:
+	      grub_video_fbblit_blend_16bit_indexa (target, source,
+						      x, y, width, height,
+						      offset_x, offset_y);
+	      return;
+	    case 1:
+	      grub_video_fbblit_blend_8bit_indexa (target, source,
+						     x, y, width, height,
+						     offset_x, offset_y);
+	      return;
+	    }
+	  break;
+	default:
+	  break;
+	}
+
+      /* No optimized blend operation found, use default (slow) blitter.  */
+      grub_video_fbblit_blend (target, source, x, y, width, height,
+				     offset_x, offset_y);
     }
 }

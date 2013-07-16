@@ -547,7 +547,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
   {
     struct grub_unicode_glyph t;
     unsigned i;
-    int a, b;
+    int a = 0, b = 0;
     if (pos)
       {
 	a = pos[visual[start].orig_pos].x;

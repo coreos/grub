@@ -30,6 +30,7 @@
 #include <grub/gfxwidgets.h>
 #include <grub/gfxmenu_view.h>
 #include <grub/gui.h>
+#include <grub/color.h>
 
 /* Construct a new box widget using ABSPATTERN to find the pixmap files for
    it, storing the new box instance at *BOXPTR.

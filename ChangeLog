@@ -7,6 +7,344 @@
 	* grub-core/lib/dtc/libfdt-grub.diff: Remove extraneous uintptr_t
 	declaration.
 
+2013-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/multiboot_elfxx.c: Check eip after v2p translation
+	and not before.
+	Reported by: Leon Drugi.
+
+2013-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/powerpc/ieee1275/startup.S: Handle unaligned bss.
+	Reported by: Paulo Flabiano Smorigo.
+
+2013-07-14  Vladimir Testov <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/gui_list.c: USe viewport when drawing strings.
+
+2013-07-14  Vladimir Testov <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/gui_list.c: Fix height calculation.
+
+2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c: Stylistic fixes.
+
+2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c: Run emacs indent on file.
+
+2013-07-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/net/bootp.c: Export net_* variables.
+	* grub-core/net/net.c: Likewise.
+
+2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c: Remove brackets around return value.
+
+2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs_lz4.c: Add missing packed attribute.
+
+2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c (nvlist_next_nvpair): Fix improper cast.
+
+2013-07-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs_lz4.c: Remove restrict keyword.
+
+2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
+
+	* grub-core/fs/zfs/zfs.c (nvlist_next_nvpair): Error is encode_size
+	<= 0.
+
+2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
+
+	* grub-core/fs/zfs/zfs.c: Split nvpair iterators into separate
+	functions.
+
+2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
+
+	* grub-core/fs/zfs/zfs_lz4.c: New file.
+	* grub-core/fs/zfs/zfs.c: Tie up lz4 decompression.
+
+2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
+
+	* grub-core/fs/zfs/zfs.c: Check for feature compatibility.
+
+2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
+
+	* grub-core/fs/zfs/zfs.c (uberblock_verify): Accept version 5000.
+	(check_pool_label): Likewise.
+	* include/grub/zfs/zfs.h: Rewrite SPA_VERSION_* macros.
+
+2013-07-14  Massimo Maggi <me@massimo-maggi.eu>
+
+	* grub-core/fs/zfs/zfsinfo.c (print_vdev_info): Fix RAIDZ reporting.
+
+2013-07-13  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* docs/grub.texi (Commands): Document postition parameters
+	for menuentry command.
+
+2013-07-13  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub-mknetdir.in: Remove stray line from help output.
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove early sm712 init as there is no reason for it (the "watchdog"
+	effect was due to wrong GPIO map).
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/pcidump.c: Remove static variables.
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/sleep.c: Refresh screen before sleeping.
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Move delimiter after the infos.
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/bus/usb/usbhub.c: Fix recheck logic.
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkfont.c (write_font_ascii_bitmap): Fix handling of glyphs
+	not filling whole 8x16 space.
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/charset.c (bidi_line_wrap): Fix spurios warning.
+
+2013-07-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Indicate which liblzma is used if any.
+
+2013-06-21  Paul Wise  <pabs3@bonedaddy.net>
+2013-06-21  Craig Sanders <savannah@taz.net.au>
+
+	* util/grub-reboot.in: Document submenu usage.
+
+2013-06-25  Colin Watson  <cjwatson@ubuntu.com>
+
+	* .bzrignore: Update with a number of new test-related files.
+
+2013-06-25  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-script-check.c: Fail on scripts containing no
+	commands, to guard against corrupted grub-mkconfig setups that
+	produce no useful output.
+	* tests/grub_script_no_commands.in: New test.
+	* Makefile.util.def (grub_script_no_commands): Add.
+	Reported by Hans Putter.  Fixes Debian bug #713886.
+
+2013-06-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/disk/diskfilter.c: Forgot to remove comment
+	from previous commit.
+
+2013-06-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/term/gfxterm.c (grub_virtual_screen_setup): Use
+	grub_term_normal_color, do not hardcode GRUB_TERM_DEFAULT_NORMAL_COLOR.
+
+2013-06-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* conf/Makefile.extra-dist: Add grub-core/fs/cpio_common.c.
+
+2013-06-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/disk/diskfilter.c (scan_devices): Iteratively
+	rescan diskfilter devices until nothing new is found.
+
+2013-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix casts when compiling coreboot-specific code for 64-bit EFI.
+
+2013-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't try to detect cbfs on *-emu.
+
+2013-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/gfxterm.c: USe right background color when scrolling.
+
+2013-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add support for processed coreboot payload chainloading.
+
+2013-06-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Enable coreboot information commands even when not loaded as
+	coreboot payload (e.g. when loaded from SeaBIOS-as-payload).
+
+2013-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support for cbfs. Also factor out the part which is common
+	for all archives to a separate module. This splits tar from cpio
+	as they are very different but keeps cpio, cpio_be, odc and newc
+	together since they're very similar.
+
+2013-06-15  David Michael  <fedora.dm0@gmail.com>
+
+	* configure.ac (FREETYPE): Change AC_CHECK_PROGS to AC_CHECK_TOOLS.
+	(freetype_cflags,freetype_libs): Change freetype-config to $FREETYPE.
+
+2013-06-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* tests/grub_script_eval.in: Really add the eval test.
+
+2013-06-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move flavour-specific parts out of common cpio.c file and
+	rename remaining to cpio_common.c
+
+2013-06-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/script/execute.c (grub_script_execute_sourcecode): Split
+	off new function grub_script_execute_new_scope. Change callers to use
+	either of them as appropriate.
+	* grub-core/commands/eval.c: New command eval.
+	* docs/grub.texi (Commands): Document it.
+
+2013-06-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/kern/corecmd.c (grub_core_cmd_set): Use grub_env_get
+	to fetch values when listing.
+
+2013-06-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	Fix make dist on non-pc.
+
+2013-06-07  Francesco Lavra  <francescolavra.fl@gmail.com>
+
+	* grub-core/kern/corecmd.c (grub_core_cmd_ls): Fix handling of paths
+	without a device name.
+
+2013-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove enable_executable_check as it's not needed anymore.
+	Reported by: dougray.
+
+2013-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/diskfilter.c (insert_array): Fix order to discover
+	ambigouos RAID before discovering RAIDs on top of it.
+	Reported by: bodom.
+
+2013-06-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix typo (failback vs fallback).
+
+2013-05-31  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub.d/30_os-prober.in: Add support for probing EFI
+	System Partition (as of os-prober 1.58).
+
+2013-05-31  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Add yet another path to unifont. For parabola.
+
+2013-05-30  Josh Triplett  <josh@joshtriplett.org>
+
+	* grub-core/normal/cmdline.c (grub_cmdline_get): Fix Ctrl-u
+	handling to copy the killed characters to the kill buffer as
+	UCS4 stored as grub_uint32_t rather than as 8-bit characters
+	stored as char.  Eliminates UCS4 truncation and corruption
+	observed when killing characters with Ctrl-u and yanking them
+	back with Ctrl-y.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Detach optional parts of gfxterm and integrate in with coreboot init.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move blit and fill dispatcher to appropriate files to decrease export
+	and relocation overhead.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/font/font.c, include/grub/font.h: Inline simple font
+	functions.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.am: Fix compilation problem with some
+	automake versions.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Add Ubuntu path to unifont and report unifont path used.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.am, conf/Makefile.common: Fix compilation problem with some
+	automake versions.
+
+2013-05-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/acpihalt.c: Fix handling of DSDT in presence of
+	SSDT.
+
+2013-05-15  Radosław Szymczyszyn  <lavrin@gmail.com>
+
+	* grub-core/partmap/dfly.c: New partition map.
+
+2013-05-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/corecmd.c (grub_core_cmd_ls): Fix empty path
+	checking.
+	Reported by: Francesco Lavra.
+
+2013-05-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* gentpl.py: Replace EXTRA_DIST with dist_noinst_DATA or
+	dist_<directory>_DATA. EXTRA_DIST is ignored by automake inside
+	false conditions.
+	* conf/Makefile.common: define dist_grubconf_DATA
+
+2013-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Progressively skip menu elements on small terminals rather
+	than crashing.
+
+2013-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/cmdline.c (grub_cmdline_get): Fix off-by-one error
+	to avoid losing last column.
+
+2013-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* po/exclude.pot: Add missing string "%C".
+
+2013-05-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* tests/util/grub-shell.in: Remove the temporary directory on grub-emu
+	after the test.
+
+2013-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.in: Gettextize "Not found" message.
+
+2013-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix distfiles list.
+	Reported by: Andrey Borzenkov <arvidjaar@gmail.com>
+
+2013-05-11  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
+	* grub-core/net/bootp.c (grub_cmd_bootp): Check if there is any card
+	present.
+	* include/grub/err.h (grub_err_t): New enum value GRUB_ERR_NET_NO_CARD.
+
 2013-05-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/tests/setjmp_test.c: Ignore missing noreturn.

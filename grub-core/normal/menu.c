@@ -245,7 +245,7 @@ grub_menu_execute_entry(grub_menu_entry_t entry, int auto_boot)
   else
     grub_env_unset ("default");
 
-  grub_script_execute_sourcecode (entry->sourcecode, entry->argc, entry->args);
+  grub_script_execute_new_scope (entry->sourcecode, entry->argc, entry->args);
 
   if (errs_before != grub_err_printed_errors)
     grub_wait_after_message ();

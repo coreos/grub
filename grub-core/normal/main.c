@@ -235,7 +235,8 @@ read_config_file (const char *config)
 
 /* Initialize the screen.  */
 void
-grub_normal_init_page (struct grub_term_output *term)
+grub_normal_init_page (struct grub_term_output *term,
+		       int y)
 {
   grub_ssize_t msg_len;
   int posx;
@@ -260,8 +261,10 @@ grub_normal_init_page (struct grub_term_output *term)
     }
 
   posx = grub_getstringwidth (unicode_msg, last_position, term);
-  posx = (grub_term_width (term) - posx) / 2;
-  grub_term_gotoxy (term, posx, 1);
+  posx = ((int) grub_term_width (term) - posx) / 2;
+  if (posx < 0)
+    posx = 0;
+  grub_term_gotoxy (term, posx, y);
 
   grub_print_ucs4 (unicode_msg, last_position, 0, 0, term);
   grub_putcode ('\n', term);
@@ -405,10 +408,14 @@ grub_normal_reader_init (int nested)
 
   FOR_ACTIVE_TERM_OUTPUTS(term)
   {
-    grub_normal_init_page (term);
+    grub_normal_init_page (term, 1);
     grub_term_setcursor (term, 1);
 
-    grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN, term);
+    if (grub_term_width (term) > 3 + STANDARD_MARGIN + 20)
+      grub_print_message_indented (msg_formatted, 3, STANDARD_MARGIN, term);
+    else
+      grub_print_message_indented (msg_formatted, 0, 0, term);
+    grub_putcode ('\n', term);
     grub_putcode ('\n', term);
     grub_putcode ('\n', term);
   }

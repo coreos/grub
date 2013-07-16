@@ -23,6 +23,7 @@
 #include <grub/gui_string_util.h>
 #include <grub/gfxmenu_view.h>
 #include <grub/gfxwidgets.h>
+#include <grub/color.h>
 
 struct grub_gui_list_impl
 {
@@ -101,9 +102,13 @@ get_num_shown_items (list_impl_t self)
   grub_gfxmenu_box_t box = self->menu_box;
   int box_top_pad = box->get_top_pad (box);
   int box_bottom_pad = box->get_bottom_pad (box);
+  grub_gfxmenu_box_t selbox = self->selected_item_box;
+  int sel_top_pad = selbox->get_top_pad (selbox);
+  int sel_bottom_pad = selbox->get_bottom_pad (selbox);
       
   return (self->bounds.height + item_vspace - 2 * boxpad
-	  - box_top_pad - box_bottom_pad) / (item_height + item_vspace);
+          - sel_top_pad - sel_bottom_pad
+          - box_top_pad - box_bottom_pad) / (item_height + item_vspace);
 }
 
 static int
@@ -244,6 +249,19 @@ draw_menu (list_impl_t self, int num_shown_items)
 			   oviewport.width - 2 * boxpad,
 			   oviewport.height - 2 * boxpad);
 
+  int cwidth = oviewport.width - 2 * boxpad - 2;
+  if (selbox->get_border_width)
+    cwidth -= selbox->get_border_width (selbox);
+  selbox->set_content_size (selbox, cwidth, item_height);
+
+  int string_left_offset = self->icon_width + icon_text_space;
+  int string_top_offset = (item_height - (ascent + descent)) / 2 + ascent;
+
+  grub_video_rect_t svpsave, sviewport;
+  sviewport.x = sel_leftpad + string_left_offset;
+  sviewport.width = cwidth - string_left_offset;
+  sviewport.height = item_height;
+
   for (visible_index = 0, menu_index = self->first_shown_index;
        visible_index < num_shown_items && menu_index < self->view->menu->size;
        visible_index++, menu_index++)
@@ -253,10 +271,6 @@ draw_menu (list_impl_t self, int num_shown_items)
 
       if (is_selected)
         {
-	  int cwidth = oviewport.width - 2 * boxpad - 2;
-	  if (selbox->get_border_width)
-	    cwidth -= selbox->get_border_width (selbox);
-	  selbox->set_content_size (selbox, cwidth, item_height - 1);
           selbox->draw (selbox, 0,
                         item_top - sel_toppad);
         }
@@ -278,12 +292,15 @@ draw_menu (list_impl_t self, int num_shown_items)
         ((is_selected && self->selected_item_color_set)
          ? self->selected_item_color
          : self->item_color);
+
+      sviewport.y = item_top;
+      grub_gui_set_viewport (&sviewport, &svpsave);
       grub_font_draw_string (item_title,
                              font,
                              grub_video_map_rgba_color (text_color),
-                             sel_leftpad + self->icon_width + icon_text_space,
-                             (item_top + (item_height - (ascent + descent))
-                              / 2 + ascent));
+                             0,
+                             string_top_offset);
+      grub_gui_restore_viewport (&svpsave);
 
       item_top += item_height + item_vspace;
     }
@@ -396,7 +413,8 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       unsigned width_s;
 
       grub_gfxmenu_box_t selbox = self->selected_item_box;
-      int sel_toppad = selbox->get_top_pad (selbox);
+      int sel_top_pad = selbox->get_top_pad (selbox);
+      int sel_bottom_pad = selbox->get_bottom_pad (selbox);
       
       *width = grub_font_get_string_width (self->item_font, "Typical OS");
       width_s = grub_font_get_string_width (self->selected_item_font,
@@ -410,7 +428,8 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       *height = (item_height * num_items
                  + item_vspace * (num_items - 1)
                  + 2 * boxpad
-                 + box_top_pad + box_bottom_pad + sel_toppad);
+                 + box_top_pad + box_bottom_pad
+                 + sel_top_pad + sel_bottom_pad);
     }
   else
     {

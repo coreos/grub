@@ -350,7 +350,9 @@ if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ] || [ "$
     if test -f "$1"; then
         :
     else
-        echo "$1: Not found." 1>&2
+	# TRANSLATORS: This message is shown when required executable `%s'
+	# isn't found
+        gettext_printf "%s: Not found.\n" "$1" 1>&2
         exit 1
     fi
 fi
@@ -359,7 +361,9 @@ set "$grub_mkimage" dummy
 if test -f "$1"; then
     :
 else
-    echo "$1: Not found." 1>&2
+    # TRANSLATORS: This message is shown when required executable `%s'
+    # isn't found
+    gettext_printf "%s: Not found.\n" "$1" 1>&2
     exit 1
 fi
 
@@ -703,14 +707,18 @@ elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-ieee1275" ]
 	if test -f "$1"; then
 	    :
 	else
-	    echo "$1: Not found." 1>&2
+            # TRANSLATORS: This message is shown when required executable `%s'
+            # isn't found
+	    gettext_printf "%s: Not found.\n" "$1" 1>&2
 	    exit 1
 	fi
 	set "$nvsetenv" dummy
 	if test -f "$1"; then
 	    :
 	else
-	    echo "$1: Not found." 1>&2
+            # TRANSLATORS: This message is shown when required executable `%s'
+            # isn't found
+	    gettext_printf "%s: Not found.\n" "$1" 1>&2
 	    exit 1
 	fi
 	if  [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" != "powerpc-ieee1275" ] \

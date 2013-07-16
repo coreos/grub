@@ -856,19 +856,10 @@ grub_script_execute_sourcecode_getline (char **line,
 
 /* Execute a source script.  */
 grub_err_t
-grub_script_execute_sourcecode (const char *source, int argc, char **args)
+grub_script_execute_sourcecode (const char *source)
 {
   grub_err_t ret = 0;
   struct grub_script *parsed_script;
-  struct grub_script_scope new_scope;
-  struct grub_script_scope *old_scope;
-
-  new_scope.argv.argc = argc;
-  new_scope.argv.args = args;
-  new_scope.flags = 0;
-
-  old_scope = scope;
-  scope = &new_scope;
 
   while (source)
     {
@@ -880,12 +871,34 @@ grub_script_execute_sourcecode (const char *source, int argc, char **args)
       if (! parsed_script)
 	{
 	  ret = grub_errno;
+	  grub_free (line);
 	  break;
 	}
 
       ret = grub_script_execute (parsed_script);
+      grub_script_free (parsed_script);
       grub_free (line);
     }
+
+  return ret;
+}
+
+/* Execute a source script in new scope.  */
+grub_err_t
+grub_script_execute_new_scope (const char *source, int argc, char **args)
+{
+  grub_err_t ret = 0;
+  struct grub_script_scope new_scope;
+  struct grub_script_scope *old_scope;
+
+  new_scope.argv.argc = argc;
+  new_scope.argv.args = args;
+  new_scope.flags = 0;
+
+  old_scope = scope;
+  scope = &new_scope;
+
+  ret = grub_script_execute_sourcecode (source);
 
   scope = old_scope;
   return ret;

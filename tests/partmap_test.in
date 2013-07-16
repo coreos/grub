@@ -28,6 +28,14 @@ create_disk_image () {
     dd if=/dev/zero of="${name}" bs=512 count=1 seek=$((size * 2048 - 1)) status=noxfer > /dev/null
 }
 
+create_dfly_image () {
+    name="$1"
+    rm -f ${name}
+    
+    gunzip < "@srcdir@/tests/dfly-mbr-mbexample.mbr.img.gz" | dd of=${name} bs=1 seek=440 count=72 conv=notrunc > /dev/null
+    gunzip < "@srcdir@/tests/dfly-mbr-mbexample.dfly.img.gz" | dd of=${name} bs=512 seek=33 count=1 conv=notrunc > /dev/null
+}
+
 check_output () {
     outfile=$1
     shift
@@ -461,3 +469,12 @@ ${parted} -a none -s "${imgfile}" mklabel amiga mkpart x 0 10M mkpart x 10M 20M 
 list_parts part_amiga "${imgfile}" "${outfile}"
 check_output "${outfile}" $disk $disk,amiga1 $disk,amiga2 $disk,amiga3 $disk,amiga4 $disk,amiga5 $disk,amiga6 $disk,amiga7
 
+#
+# DragonFly BSD disklabel64
+#
+
+echo "Checking DragonFly BSD disklabel64..."
+
+create_dfly_image "${imgfile}"
+list_parts part_dfly "${imgfile}" "${outfile}"
+check_output "${outfile}" $disk $disk,msdos1 $disk,msdos1,dfly1 $disk,msdos1,dfly2 $disk,msdos1,dfly3

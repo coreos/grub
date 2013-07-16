@@ -33,7 +33,7 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-#ifdef USE_ASCII_FAILBACK
+#ifdef USE_ASCII_FALLBACK
 #include "ascii.h"
 #endif
 
@@ -54,23 +54,6 @@ struct char_index_entry
 #define FONT_WEIGHT_NORMAL 100
 #define FONT_WEIGHT_BOLD 200
 #define ASCII_BITMAP_SIZE 16
-
-struct grub_font
-{
-  char *name;
-  grub_file_t file;
-  char *family;
-  short point_size;
-  short weight;
-  short max_char_width;
-  short max_char_height;
-  short ascent;
-  short descent;
-  short leading;
-  grub_uint32_t num_chars;
-  struct char_index_entry *char_index;
-  grub_uint16_t *bmp_idx;
-};
 
 /* Definition of font registry.  */
 struct grub_font_node *grub_font_list;
@@ -127,14 +110,14 @@ static struct grub_font null_font;
 /* Flag to ensure module is initialized only once.  */
 static grub_uint8_t font_loader_initialized;
 
-#ifdef USE_ASCII_FAILBACK
+#ifdef USE_ASCII_FALLBACK
 static struct grub_font_glyph *ascii_font_glyph[0x80];
 #endif
 
 static struct grub_font_glyph *
 ascii_glyph_lookup (grub_uint32_t code)
 {
-#ifdef USE_ASCII_FAILBACK
+#ifdef USE_ASCII_FALLBACK
   static int ascii_failback_initialized = 0;
 
   if (code >= 0x80)
@@ -907,20 +890,6 @@ int
 grub_font_get_max_char_width (grub_font_t font)
 {
   return font->max_char_width;
-}
-
-/* Get the maximum height of any character in the font in pixels.  */
-int
-grub_font_get_max_char_height (grub_font_t font)
-{
-  return font->max_char_height;
-}
-
-/* Get the distance in pixels from the top of characters to the baseline.  */
-int
-grub_font_get_ascent (grub_font_t font)
-{
-  return font->ascent;
 }
 
 /* Get the distance in pixels from the baseline to the lowest descenders

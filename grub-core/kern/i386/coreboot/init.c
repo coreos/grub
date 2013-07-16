@@ -34,6 +34,7 @@
 #include <grub/cpu/io.h>
 #include <grub/cpu/floppy.h>
 #include <grub/cpu/tsc.h>
+#include <grub/video.h>
 
 extern grub_uint8_t _start[];
 extern grub_uint8_t _end[];
@@ -89,12 +90,19 @@ grub_machine_init (void)
 {
   modend = grub_modules_get_end ();
 
+  grub_video_coreboot_fb_early_init ();
+
   grub_vga_text_init ();
 
 #ifdef GRUB_MACHINE_MULTIBOOT
   grub_machine_mmap_init ();
 #endif
   grub_machine_mmap_iterate (heap_init, NULL);
+
+  grub_video_coreboot_fb_late_init ();
+
+  grub_font_init ();
+  grub_gfxterm_init ();
 
   grub_tsc_init ();
 }

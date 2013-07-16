@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <errno.h>
 
 #define grub_dprintf(cond, args...) printf ( args )
 #define grub_printf printf
@@ -184,7 +185,6 @@ get_sleep_type (grub_uint8_t *table, grub_uint8_t *ptr, grub_uint8_t *end,
 		grub_uint8_t *scope, int scope_len)
 {
   grub_uint8_t *prev = table;
-  int sleep_type = -2;
   
   if (!ptr)
     ptr = table + sizeof (struct grub_acpi_table_header);
@@ -233,14 +233,11 @@ get_sleep_type (grub_uint8_t *table, grub_uint8_t *ptr, grub_uint8_t *end,
 	      switch (*ptr2)
 		{
 		case GRUB_ACPI_OPCODE_ZERO:
-		  sleep_type = 0;
-		  break;
+		  return 0;
 		case GRUB_ACPI_OPCODE_ONE:
-		  sleep_type = 1;
-		  break;
+		  return 1;
 		case GRUB_ACPI_OPCODE_BYTE_CONST:
-		  sleep_type = ptr2[1];
-		  break;
+		  return ptr2[1];
 		default:
 		  grub_printf ("Unknown data type in _S5: 0x%x\n", *ptr2);
 		  return -1;
@@ -286,8 +283,7 @@ get_sleep_type (grub_uint8_t *table, grub_uint8_t *ptr, grub_uint8_t *end,
 	}
     }
 
-  grub_dprintf ("acpi", "TYP = %d\n", sleep_type);
-  return sleep_type;
+  return -2;
 }
 
 #ifdef GRUB_DSDT_TEST
@@ -317,7 +313,7 @@ main (int argc, char **argv)
     }
   if (fread (buf, 1, len, f) != len)
     {
-      printf (_("cannot read `%s': %s"), strerror (errno));
+      printf (_("cannot read `%s': %s"), argv[1], strerror (errno));
       free (buf);
       fclose (f);
       return 2;
@@ -369,11 +365,13 @@ grub_acpi_halt (void)
 	  grub_dprintf ("acpi", "PM1a port=%x\n", port);
 
 	  if (grub_memcmp (dsdt->signature, "DSDT",
-			   sizeof (dsdt->signature)) == 0)
+			   sizeof (dsdt->signature)) == 0
+	      && sleep_type < 0)
 	    sleep_type = get_sleep_type (buf, NULL, buf + dsdt->length,
 					 NULL, 0);
 	}
-      else if (grub_memcmp ((void *) (grub_addr_t) *entry_ptr, "SSDT", 4) == 0)
+      else if (grub_memcmp ((void *) (grub_addr_t) *entry_ptr, "SSDT", 4) == 0
+	       && sleep_type < 0)
 	{
 	  struct grub_acpi_table_header *ssdt
 	    = (struct grub_acpi_table_header *) (grub_addr_t) *entry_ptr;
@@ -385,13 +383,10 @@ grub_acpi_halt (void)
 	}
     }
 
+  grub_dprintf ("acpi", "SLP_TYP = %d, port = 0x%x\n", sleep_type, port);
   if (port && sleep_type >= 0 && sleep_type < 8)
-    {
-      grub_dprintf ("acpi", "SLP_TYP = %d, port = 0x%x\n", sleep_type, port);
-
-      grub_outw (GRUB_ACPI_SLP_EN | (sleep_type << GRUB_ACPI_SLP_TYP_OFFSET),
-		 port & 0xffff);
-    }
+    grub_outw (GRUB_ACPI_SLP_EN | (sleep_type << GRUB_ACPI_SLP_TYP_OFFSET),
+	       port & 0xffff);
 
   grub_millisleep (1500);
 

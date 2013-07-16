@@ -24,6 +24,7 @@
 #include <grub/term.h>
 #include <grub/font.h>
 #include <grub/gfxmenu_view.h>
+#include <grub/color.h>
 
 #define _GNU_SOURCE	1
 

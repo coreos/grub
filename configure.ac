@@ -285,7 +285,7 @@ fi
 FONT_SOURCE=
 
 for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
-  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont /usr/share/fonts/uni; do
+  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont /usr/share/fonts/uni /usr/share/fonts/truetype/unifont /usr/share/fonts/misc; do
     if test -f "$dir/unifont.$ext"; then
       FONT_SOURCE="$dir/unifont.$ext"
       break 2
@@ -960,7 +960,7 @@ fi
 
 if test x"$grub_mkfont_excuse" = x ; then
   # Check for freetype libraries.
-  AC_CHECK_PROGS([FREETYPE], [freetype-config])
+  AC_CHECK_TOOLS([FREETYPE], [freetype-config])
   if test "x$FREETYPE" = x ; then
     grub_mkfont_excuse=["need freetype2 library"]
   fi
@@ -968,8 +968,8 @@ fi
 
 if test x"$grub_mkfont_excuse" = x ; then
   # Check for freetype libraries.
-  freetype_cflags=`freetype-config --cflags`
-  freetype_libs=`freetype-config --libs`
+  freetype_cflags=`$FREETYPE --cflags`
+  freetype_libs=`$FREETYPE --libs`
   SAVED_CPPFLAGS="$CPPFLAGS"
   CPPFLAGS="$CPPFLAGS $freetype_cflags"
   AC_CHECK_HEADERS([ft2build.h], [],
@@ -1153,7 +1153,6 @@ AC_SUBST(BSS_START_SYMBOL)
 AC_SUBST(END_SYMBOL)
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
-AC_SUBST(NEED_ENABLE_EXECUTE_STACK)
 AC_SUBST(NEED_REGISTER_FRAME_INFO)
 
 #
@@ -1306,6 +1305,16 @@ if [ x"$libzfs_excuse" = x ]; then
 echo With libzfs support: Yes
 else
 echo With libzfs support: No "($libzfs_excuse)"
+fi
+if test "x$FONT_SOURCE" = x ; then
+echo "Without unifont"
+else
+echo "With unifont from $FONT_SOURCE"
+fi
+if test "x$LIBLZMA" = x ; then
+echo "Without liblzma (no support for XZ-compressed mips images)"
+else
+echo "With liblzma from $LIBLZMA (support for XZ-compressed mips images)"
 fi
 echo "*******************************************************"
 ]

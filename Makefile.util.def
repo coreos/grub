@@ -75,6 +75,8 @@ library = {
   common = grub-core/fs/afs.c;
   common = grub-core/fs/bfs.c;
   common = grub-core/fs/btrfs.c;
+  common = grub-core/fs/cbfs.c;
+  common = grub-core/fs/archelp.c;
   common = grub-core/fs/cpio.c;
   common = grub-core/fs/cpio_be.c;
   common = grub-core/fs/odc.c;
@@ -111,6 +113,7 @@ library = {
   common = grub-core/fs/zfs/zfs.c;
   common = grub-core/fs/zfs/zfsinfo.c;
   common = grub-core/fs/zfs/zfs_lzjb.c;
+  common = grub-core/fs/zfs/zfs_lz4.c;
   common = grub-core/fs/zfs/zfs_sha256.c;
   common = grub-core/fs/zfs/zfs_fletcher.c;
   common = grub-core/lib/envblk.c;
@@ -130,6 +133,7 @@ library = {
   common = grub-core/partmap/dvh.c;
   common = grub-core/partmap/sunpc.c;
   common = grub-core/partmap/bsdlabel.c;
+  common = grub-core/partmap/dfly.c;
   common = grub-core/script/function.c;
   common = grub-core/script/lexer.c;
   common = grub-core/script/main.c;
@@ -552,6 +556,7 @@ script = {
   testcase;
   name = gettext_strings_test;
   common = tests/gettext_strings_test.in;
+  extra_dist = po/exclude.pot;
 };
 
 script = {
@@ -588,6 +593,12 @@ script = {
   testcase;
   name = example_grub_script_test;
   common = tests/example_grub_script_test.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_eval;
+  common = tests/grub_script_eval.in;
 };
 
 script = {
@@ -738,6 +749,12 @@ script = {
   testcase;
   name = grub_script_not;
   common = tests/grub_script_not.in;
+};
+
+script = {
+  testcase;
+  name = grub_script_no_commands;
+  common = tests/grub_script_no_commands.in;
 };
 
 script = {

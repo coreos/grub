@@ -22,6 +22,10 @@
 #include <grub/vga.h>
 #include <grub/term.h>
 
+#if defined (GRUB_MACHINE_COREBOOT)
+#include <grub/machine/console.h>
+#endif
+
 /* MODESET is used for testing to force monochrome or colour mode.
    You shouldn't use mda_text on vga.
  */
@@ -267,24 +271,23 @@ static struct grub_term_output grub_vga_text_term =
     .flags = GRUB_TERM_CODE_TYPE_CP437,
   };
 
-#ifdef MODE_MDA
-GRUB_MOD_INIT(mda_text)
-#elif defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
+/* FIXME: this is was too spaghetti.  */
+
+#ifndef MODE_MDA
+
+#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
 void grub_vga_text_init (void)
 #else
 GRUB_MOD_INIT(vga_text)
 #endif
 {
-#ifdef MODE_MDA
-  grub_term_register_output ("mda_text", &grub_vga_text_term);
-#else
-  grub_term_register_output ("vga_text", &grub_vga_text_term);
+#ifdef GRUB_MACHINE_COREBOOT
+  if (!grub_video_coreboot_fbtable)
 #endif
+    grub_term_register_output ("vga_text", &grub_vga_text_term);
 }
 
-#ifdef MODE_MDA
-GRUB_MOD_FINI(mda_text)
-#elif defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
+#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
 void grub_vga_text_fini (void)
 #else
 GRUB_MOD_FINI(vga_text)
@@ -292,3 +295,5 @@ GRUB_MOD_FINI(vga_text)
 {
   grub_term_unregister_output (&grub_vga_text_term);
 }
+
+#endif

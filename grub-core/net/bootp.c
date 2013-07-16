@@ -49,6 +49,7 @@ set_env_limn_ro (const char *intername, const char *suffix,
   grub_env_set (varname, value);
   value[len] = c;
   grub_register_variable_hook (varname, 0, grub_env_write_readonly);
+  grub_env_export (varname);
 }
 
 static void
@@ -212,7 +213,10 @@ grub_net_configure_by_dhcp_ack (const char *name,
     }
 
   if (is_def)
-    grub_env_set ("net_default_interface", name);
+    {
+      grub_env_set ("net_default_interface", name);
+      grub_env_export ("net_default_interface");
+    }
 
   if (device && !*device && bp->server_ip)
     {
@@ -446,6 +450,9 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
       continue;
     ncards++;
   }
+
+  if (ncards == 0)
+    return grub_error (GRUB_ERR_NET_NO_CARD, N_("no network card found"));
 
   ifaces = grub_zalloc (ncards * sizeof (ifaces[0]));
   if (!ifaces)

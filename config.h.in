@@ -39,8 +39,6 @@
 #define GRUB_BOOT_DIR_NAME "@bootdirname@"
 /* Default grub directory name */
 #define GRUB_DIR_NAME "@grubdirname@"
-/* Define to 1 if GCC generates calls to __enable_execute_stack().  */
-#define NEED_ENABLE_EXECUTE_STACK @NEED_ENABLE_EXECUTE_STACK@
 /* Define to 1 if GCC generates calls to __register_frame_info().  */
 #define NEED_REGISTER_FRAME_INFO @NEED_REGISTER_FRAME_INFO@
 

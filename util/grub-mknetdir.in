@@ -37,7 +37,6 @@ itanium_dir="${libdir}/@PACKAGE@/ia64-efi"
 # Print the usage.
 usage () {
     gettext_printf "Usage: %s [OPTION]\n" "$self"
-    gettext; echo "Install GRUB on your drive."; echo
     echo
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
     grub_print_install_files_help

@@ -40,7 +40,7 @@ grub_core_cmd_set (struct grub_command *cmd __attribute__ ((unused)),
     {
       struct grub_env_var *env;
       FOR_SORTED_ENV (env)
-	grub_printf ("%s=%s\n", env->name, env->value);
+	grub_printf ("%s=%s\n", env->name, grub_env_get (env->name));
       return 0;
     }
 
@@ -139,13 +139,13 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
       else
 	path++;
 
-      if (! path && ! device_name)
+      if (! *path && ! device_name)
 	{
 	  grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
 	  goto fail;
 	}
 
-      if (! path)
+      if (! *path)
 	{
 	  if (grub_errno == GRUB_ERR_UNKNOWN_FS)
 	    grub_errno = GRUB_ERR_NONE;

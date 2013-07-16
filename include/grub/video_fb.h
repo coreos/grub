@@ -118,72 +118,18 @@ EXPORT_FUNC(grub_video_fb_get_active_render_target) (struct grub_video_fbrender_
 grub_err_t
 EXPORT_FUNC(grub_video_fb_set_active_render_target) (struct grub_video_fbrender_target *target);
 
-void
-EXPORT_FUNC (grub_video_fbblit_blend_32bit_indexa) (struct grub_video_fbblit_info *dst,
-					struct grub_video_fbblit_info *src,
-					int x, int y,
-					int width, int height,
-				      int offset_x, int offset_y);
-
-void
-EXPORT_FUNC (grub_video_fbblit_blend_24bit_indexa) (struct grub_video_fbblit_info *dst,
-					struct grub_video_fbblit_info *src,
-					int x, int y,
-					int width, int height,
-				      int offset_x, int offset_y);
-void
-EXPORT_FUNC (grub_video_fbblit_blend_16bit_indexa) (struct grub_video_fbblit_info *dst,
-					struct grub_video_fbblit_info *src,
-					int x, int y,
-					int width, int height,
-				      int offset_x, int offset_y);
-void
-EXPORT_FUNC (grub_video_fbblit_blend_8bit_indexa) (struct grub_video_fbblit_info *dst,
-					struct grub_video_fbblit_info *src,
-					int x, int y,
-					int width, int height,
-				      int offset_x, int offset_y);
-
-
-void
-EXPORT_FUNC (grub_video_fbblit_replace_32bit_indexa) (struct grub_video_fbblit_info *dst,
-					struct grub_video_fbblit_info *src,
-					int x, int y,
-					int width, int height,
-				      int offset_x, int offset_y);
-
-void
-EXPORT_FUNC (grub_video_fbblit_replace_24bit_indexa) (struct grub_video_fbblit_info *dst,
-					struct grub_video_fbblit_info *src,
-					int x, int y,
-					int width, int height,
-				      int offset_x, int offset_y);
-
-void
-EXPORT_FUNC (grub_video_fbblit_replace_16bit_indexa) (struct grub_video_fbblit_info *dst,
-					struct grub_video_fbblit_info *src,
-					int x, int y,
-					int width, int height,
-				      int offset_x, int offset_y);
-void
-EXPORT_FUNC (grub_video_fbblit_replace_8bit_indexa) (struct grub_video_fbblit_info *dst,
-					struct grub_video_fbblit_info *src,
-					int x, int y,
-					int width, int height,
-				      int offset_x, int offset_y);
-
 typedef grub_err_t (*grub_video_fb_set_page_t) (int page);
 
 grub_err_t
-grub_video_fb_setup (unsigned int mode_type, unsigned int mode_mask,
+EXPORT_FUNC (grub_video_fb_setup) (unsigned int mode_type, unsigned int mode_mask,
 		     struct grub_video_mode_info *mode_info,
 		     volatile void *page0_ptr,
 		     grub_video_fb_set_page_t set_page_in,
 		     volatile void *page1_ptr);
 grub_err_t
-grub_video_fb_swap_buffers (void);
+EXPORT_FUNC (grub_video_fb_swap_buffers) (void);
 grub_err_t
-grub_video_fb_get_info_and_fini (struct grub_video_mode_info *mode_info,
-				 void **framebuf);
+EXPORT_FUNC (grub_video_fb_get_info_and_fini) (struct grub_video_mode_info *mode_info,
+					       void **framebuf);
 
 #endif /* ! GRUB_VIDEO_FB_HEADER */

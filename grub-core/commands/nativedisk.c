@@ -78,8 +78,12 @@ get_uuid (const char *name, char **uuid, int getnative)
 	break;
 
       /* Virtual disks.  */
+      /* GRUB dynamically generated files.  */
     case GRUB_DISK_DEVICE_PROCFS_ID:
+      /* To access through host OS routines (grub-emu only).  */
     case GRUB_DISK_DEVICE_HOST_ID:
+      /* To access coreboot roms.  */
+    case GRUB_DISK_DEVICE_CBFSDISK_ID:
       /* GRUB-only memdisk. Can't match any of firmware devices.  */
     case GRUB_DISK_DEVICE_MEMDISK_ID:
       grub_dprintf ("nativedisk", "Skipping native disk %s\n",

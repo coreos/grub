@@ -28,7 +28,6 @@
 #include <grub/bitmap.h>
 #include <grub/command.h>
 #include <grub/extcmd.h>
-#include <grub/bitmap_scale.h>
 #include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
@@ -113,7 +112,6 @@ static struct grub_video_render_target *render_target;
 void (*grub_gfxterm_decorator_hook) (void) = NULL;
 static struct grub_gfxterm_window window;
 static struct grub_virtual_screen virtual_screen;
-static grub_gfxterm_repaint_callback_t repaint_callback;
 static int repaint_scheduled = 0;
 static int repaint_was_scheduled = 0;
 
@@ -121,11 +119,7 @@ static void destroy_window (void);
 
 static struct grub_video_render_target *text_layer;
 
-static unsigned int bitmap_width;
-static unsigned int bitmap_height;
-static struct grub_video_bitmap *bitmap;
-static int blend_text_bg;
-static grub_video_rgba_color_t default_bg_color = { 0, 0, 0, 0 };
+struct grub_gfxterm_background grub_gfxterm_background;
 
 static struct grub_dirty_region dirty_region;
 
@@ -255,14 +249,14 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
 
   virtual_screen.standard_color_setting = DEFAULT_STANDARD_COLOR;
 
-  virtual_screen.term_color = GRUB_TERM_DEFAULT_NORMAL_COLOR;
+  virtual_screen.term_color = grub_term_normal_color;
 
   set_term_color (virtual_screen.term_color);
 
   grub_video_set_active_render_target (render_target);
 
   virtual_screen.bg_color_display =
-    grub_video_map_rgba_color (default_bg_color);
+    grub_video_map_rgba_color (grub_gfxterm_background.default_bg_color);
 
   /* Clear out text buffer. */
   for (i = 0; i < virtual_screen.columns * virtual_screen.rows; i++)
@@ -336,7 +330,7 @@ grub_gfxterm_fullscreen (void)
     && !(mode_info.mode_type & GRUB_VIDEO_MODE_TYPE_UPDATING_SWAP);
 
   /* Make sure screen is set to the default background color.  */
-  color = grub_video_map_rgba_color (default_bg_color);
+  color = grub_video_map_rgba_color (grub_gfxterm_background.default_bg_color);
   grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
   if (double_redraw)
     {
@@ -395,7 +389,6 @@ grub_gfxterm_term_init (struct grub_term_output *term __attribute__ ((unused)))
 static void
 destroy_window (void)
 {
-  repaint_callback = 0;
   grub_virtual_screen_free ();
 }
 
@@ -433,10 +426,11 @@ redraw_screen_rect (unsigned int x, unsigned int y,
                            (unsigned *) &saved_view.height);
   grub_video_set_viewport (window.x, window.y, window.width, window.height);
 
-  if (bitmap)
+  if (grub_gfxterm_background.bitmap)
     {
       /* Render bitmap as background.  */
-      grub_video_blit_bitmap (bitmap, GRUB_VIDEO_BLIT_REPLACE, x, y,
+      grub_video_blit_bitmap (grub_gfxterm_background.bitmap,
+			      GRUB_VIDEO_BLIT_REPLACE, x, y,
 			      x, y,
                               width, height);
 
@@ -445,20 +439,21 @@ redraw_screen_rect (unsigned int x, unsigned int y,
       color = virtual_screen.bg_color_display;
 
       /* Fill right side of the bitmap if needed.  */
-      if ((x + width >= bitmap_width) && (y < bitmap_height))
+      if ((x + width >= grub_gfxterm_background.bitmap->mode_info.width)
+	  && (y < grub_gfxterm_background.bitmap->mode_info.height))
         {
-          int w = (x + width) - bitmap_width;
+          int w = (x + width) - grub_gfxterm_background.bitmap->mode_info.width;
           int h = height;
           unsigned int tx = x;
 
-          if (y + height >= bitmap_height)
+          if (y + height >= grub_gfxterm_background.bitmap->mode_info.height)
             {
-              h = bitmap_height - y;
+              h = grub_gfxterm_background.bitmap->mode_info.height - y;
             }
 
-          if (bitmap_width > tx)
+          if (grub_gfxterm_background.bitmap->mode_info.width > tx)
             {
-              tx = bitmap_width;
+              tx = grub_gfxterm_background.bitmap->mode_info.width;
             }
 
           /* Render background layer.  */
@@ -466,14 +461,14 @@ redraw_screen_rect (unsigned int x, unsigned int y,
         }
 
       /* Fill bottom side of the bitmap if needed.  */
-      if (y + height >= bitmap_height)
+      if (y + height >= grub_gfxterm_background.bitmap->mode_info.height)
         {
-          int h = (y + height) - bitmap_height;
+          int h = (y + height) - grub_gfxterm_background.bitmap->mode_info.height;
           unsigned int ty = y;
 
-          if (bitmap_height > ty)
+          if (grub_gfxterm_background.bitmap->mode_info.height > ty)
             {
-              ty = bitmap_height;
+              ty = grub_gfxterm_background.bitmap->mode_info.height;
             }
 
           /* Render background layer.  */
@@ -487,7 +482,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
       grub_video_fill_rect (color, x, y, width, height);
     }
 
-  if (blend_text_bg)
+  if (grub_gfxterm_background.blend_text_bg)
     /* Render text layer as blended.  */
     grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, x, y,
                                    x - virtual_screen.offset_x,
@@ -504,9 +499,6 @@ redraw_screen_rect (unsigned int x, unsigned int y,
   grub_video_set_viewport (saved_view.x, saved_view.y,
                            saved_view.width, saved_view.height);
   grub_video_set_active_render_target (render_target);
-  
-  if (repaint_callback)
-    repaint_callback (x, y, width, height);
 }
 
 static void
@@ -561,8 +553,8 @@ dirty_region_add (int x, int y, unsigned int width, unsigned int height)
 
   if (repaint_scheduled)
     {
-      dirty_region_add_real (virtual_screen.offset_x, virtual_screen.offset_y,
-			     virtual_screen.width, virtual_screen.height);
+      dirty_region_add_real (0, 0,
+			     window.width, window.height);
       repaint_scheduled = 0;
       repaint_was_scheduled = 1;
     }
@@ -707,7 +699,7 @@ real_scroll (void)
     return;
 
   /* If we have bitmap, re-draw screen, otherwise scroll physical screen too.  */
-  if (bitmap)
+  if (grub_gfxterm_background.bitmap)
     {
       /* Scroll physical screen.  */
       grub_video_set_active_render_target (text_layer);
@@ -729,7 +721,7 @@ real_scroll (void)
 
       i = window.double_repaint ? 2 : 1;
 
-      color = virtual_screen.bg_color;
+      color = virtual_screen.bg_color_display;
 
       while (i--)
 	{
@@ -791,9 +783,6 @@ real_scroll (void)
   /* Draw cursor if visible.  */
   if (virtual_screen.cursor_state)
     draw_cursor (1);
-
-  if (repaint_callback)
-    repaint_callback (window.x, window.y, window.width, window.height);
 }
 
 static void
@@ -1092,145 +1081,6 @@ grub_gfxterm_refresh (struct grub_term_output *term __attribute__ ((unused)))
   dirty_region_reset ();
 }
 
-void 
-grub_gfxterm_set_repaint_callback (grub_gfxterm_repaint_callback_t func)
-{
-  repaint_callback = func;
-}
-
-/* Option array indices.  */
-#define BACKGROUND_CMD_ARGINDEX_MODE 0
-
-static const struct grub_arg_option background_image_cmd_options[] =
-  {
-    {"mode", 'm', 0, N_("Background image mode."),
-    /* TRANSLATORS: This refers to background image mode (stretched or 
-       in left-top corner). Note that GRUB will accept only original
-       keywords stretch and normal, not the translated ones.
-       So please put both in translation
-       e.g. stretch(=%STRETCH%)|normal(=%NORMAL%).
-       The percents mark the translated version. Since many people
-       may not know the word stretch or normal I recommend
-       putting the translation either here or in "Background image mode."
-       string.  */
-     N_("stretch|normal"),
-     ARG_TYPE_STRING},
-    {0, 0, 0, 0, 0, 0}
-  };
-
-static grub_err_t
-grub_gfxterm_background_image_cmd (grub_extcmd_context_t ctxt,
-                                   int argc, char **args)
-{
-  struct grub_arg_list *state = ctxt->state;
-
-  /* Check that we have video adapter active.  */
-  if (grub_video_get_info(NULL) != GRUB_ERR_NONE)
-    return grub_errno;
-
-  /* Destroy existing background bitmap if loaded.  */
-  if (bitmap)
-    {
-      grub_video_bitmap_destroy (bitmap);
-      bitmap = 0;
-      blend_text_bg = 0;
-
-      /* Mark whole screen as dirty.  */
-      dirty_region_add (0, 0, window.width, window.height);
-    }
-
-  /* If filename was provided, try to load that.  */
-  if (argc >= 1)
-    {
-      /* Try to load new one.  */
-      grub_video_bitmap_load (&bitmap, args[0]);
-      if (grub_errno != GRUB_ERR_NONE)
-        return grub_errno;
-
-      /* Determine if the bitmap should be scaled to fit the screen.  */
-      if (!state[BACKGROUND_CMD_ARGINDEX_MODE].set
-          || grub_strcmp (state[BACKGROUND_CMD_ARGINDEX_MODE].arg,
-                          "stretch") == 0)
-          {
-            if (window.width != grub_video_bitmap_get_width (bitmap)
-                || window.height != grub_video_bitmap_get_height (bitmap))
-              {
-                struct grub_video_bitmap *scaled_bitmap;
-                grub_video_bitmap_create_scaled (&scaled_bitmap,
-                                                 window.width, 
-                                                 window.height,
-                                                 bitmap,
-                                                 GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
-                if (grub_errno == GRUB_ERR_NONE)
-                  {
-                    /* Replace the original bitmap with the scaled one.  */
-                    grub_video_bitmap_destroy (bitmap);
-                    bitmap = scaled_bitmap;
-                  }
-              }
-          }
-
-      /* If bitmap was loaded correctly, display it.  */
-      if (bitmap)
-        {
-	  blend_text_bg = 1;
-
-          /* Determine bitmap dimensions.  */
-          bitmap_width = grub_video_bitmap_get_width (bitmap);
-          bitmap_height = grub_video_bitmap_get_height (bitmap);
-
-          /* Mark whole screen as dirty.  */
-          dirty_region_add (0, 0, window.width, window.height);
-        }
-    }
-
-  /* All was ok.  */
-  grub_errno = GRUB_ERR_NONE;
-  return grub_errno;
-}
-
-static grub_err_t
-grub_gfxterm_background_color_cmd (grub_command_t cmd __attribute__ ((unused)),
-                                   int argc, char **args)
-{
-  struct grub_video_render_target *old_target;
-
-  if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
-
-  /* Check that we have video adapter active.  */
-  if (grub_video_get_info (NULL) != GRUB_ERR_NONE)
-    return grub_errno;
-
-  if (grub_video_parse_color (args[0], &default_bg_color) != GRUB_ERR_NONE)
-    return grub_errno;
-
-  /* Destroy existing background bitmap if loaded.  */
-  if (bitmap)
-    {
-      grub_video_bitmap_destroy (bitmap);
-      bitmap = 0;
-
-      /* Mark whole screen as dirty.  */
-      dirty_region_add (0, 0, window.width, window.height);
-    }
-
-  /* Set the background and border colors.  The background color needs to be
-     compatible with the text layer.  */
-  grub_video_get_active_render_target (&old_target);
-  grub_video_set_active_render_target (text_layer);
-  virtual_screen.bg_color = grub_video_map_rgba_color (default_bg_color);
-  grub_video_set_active_render_target (old_target);
-  virtual_screen.bg_color_display =
-    grub_video_map_rgba_color (default_bg_color);
-  blend_text_bg = 1;
-
-  /* Mark whole screen as dirty.  */
-  dirty_region_add (0, 0, window.width, window.height);
-
-  return GRUB_ERR_NONE;
-}
-
 static struct grub_term_output grub_video_term =
   {
     .name = "gfxterm",
@@ -1250,36 +1100,40 @@ static struct grub_term_output grub_video_term =
     .next = 0
   };
 
-static grub_extcmd_t background_image_cmd_handle;
-static grub_command_t background_color_cmd_handle;
+void
+grub_gfxterm_video_update_color (void)
+{
+  struct grub_video_render_target *old_target;
 
-#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+  grub_video_get_active_render_target (&old_target);
+  grub_video_set_active_render_target (text_layer);
+  virtual_screen.bg_color = grub_video_map_rgba_color (grub_gfxterm_background.default_bg_color);
+  grub_video_set_active_render_target (old_target);
+  virtual_screen.bg_color_display =
+    grub_video_map_rgba_color (grub_gfxterm_background.default_bg_color);
+}
+
+void
+grub_gfxterm_get_dimensions (unsigned *width, unsigned *height)
+{
+  *width = window.width;
+  *height = window.height;
+}
+
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_COREBOOT)
 void grub_gfxterm_init (void)
 #else
 GRUB_MOD_INIT(gfxterm)
 #endif
 {
   grub_term_register_output ("gfxterm", &grub_video_term);
-  background_image_cmd_handle =
-    grub_register_extcmd ("background_image",
-                          grub_gfxterm_background_image_cmd, 0,
-                          N_("[-m (stretch|normal)] FILE"),
-                          N_("Load background image for active terminal."),
-                          background_image_cmd_options);
-  background_color_cmd_handle =
-    grub_register_command ("background_color",
-                           grub_gfxterm_background_color_cmd,
-                           N_("COLOR"),
-                           N_("Set background color for active terminal."));
 }
 
-#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS)
+#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_COEBOOT)
 void grub_gfxterm_fini (void)
 #else
 GRUB_MOD_FINI(gfxterm)
 #endif
 {
-  grub_unregister_command (background_color_cmd_handle);
-  grub_unregister_extcmd (background_image_cmd_handle);
   grub_term_unregister_output (&grub_video_term);
 }

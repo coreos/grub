@@ -469,7 +469,7 @@ grub_video_checksum_get_modename (void)
   return buf;
 }
 
-//#define GENERATE_MODE 1
+#define GENERATE_MODE 1
 //#define SAVE_ALL_IMAGES
 //#define COLLECT_TIME_STATISTICS 1
 

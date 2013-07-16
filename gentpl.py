@@ -54,7 +54,7 @@ GROUPS["pci"]      = GROUPS["x86"] + ["mips_loongson"]
 GROUPS["usb"]      = GROUPS["pci"]
 
 # If gfxterm is main output console integrate it into kernel
-GROUPS["videoinkernel"] = ["mips_loongson", "mips_qemu_mips"]
+GROUPS["videoinkernel"] = ["mips_loongson", "i386_coreboot" ]
 GROUPS["videomodules"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["videoinkernel"]: GROUPS["videomodules"].remove(i)
 
@@ -387,7 +387,7 @@ def module(platform):
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_MODULE) " + platform_ccasflags(platform))
     # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
-    r += gvar_add("EXTRA_DIST", extra_dist())
+    r += gvar_add("dist_noinst_DATA", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
@@ -415,7 +415,7 @@ def kernel(platform):
     r += var_set(cname() + "_STRIPFLAGS", "$(AM_STRIPFLAGS) $(STRIPFLAGS_KERNEL) " + platform_stripflags(platform))
     # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
-    r += gvar_add("EXTRA_DIST", extra_dist())
+    r += gvar_add("dist_noinst_DATA", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
@@ -448,7 +448,7 @@ def image(platform):
     r += var_set(cname() + "_OBJCOPYFLAGS", "$(OBJCOPYFLAGS_IMAGE) " + platform_objcopyflags(platform))
     # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
-    r += gvar_add("EXTRA_DIST", extra_dist())
+    r += gvar_add("dist_noinst_DATA", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
 
@@ -481,7 +481,7 @@ def library(platform):
     r += var_add(cname() + "_CCASFLAGS", first_time("$(AM_CCASFLAGS) $(CCASFLAGS_LIBRARY) ") + platform_ccasflags(platform))
     # r += var_add(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
-    r += gvar_add("EXTRA_DIST", extra_dist())
+    r += gvar_add("dist_noinst_DATA", extra_dist())
     r += first_time(gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)"))
     r += first_time(gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)"))
     return r
@@ -520,15 +520,14 @@ def program(platform, test=False):
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_PROGRAM) " + platform_ccasflags(platform))
     # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
 
-    r += gvar_add("EXTRA_DIST", extra_dist())
+    r += gvar_add("dist_noinst_DATA", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
     r += gvar_add("CLEANFILES", "$(nodist_" + cname() + "_SOURCES)")
     return r
 
 def data(platform):
-    r  = gvar_add("EXTRA_DIST", platform_sources(platform))
-    r += gvar_add("EXTRA_DIST", extra_dist())
-    r += var_add(installdir() + "_DATA", platform_sources(platform))
+    r  = var_add("dist_" + installdir() + "_DATA", platform_sources(platform))
+    r += gvar_add("dist_noinst_DATA", extra_dist())
     return r
 
 def script(platform):
@@ -546,6 +545,7 @@ chmod a+x [+ name +]
 """)
 
     r += gvar_add("CLEANFILES", "[+ name +]")
+    r += gvar_add("EXTRA_DIST", extra_dist())
     r += gvar_add("dist_noinst_DATA", platform_sources(platform))
     return r
 
