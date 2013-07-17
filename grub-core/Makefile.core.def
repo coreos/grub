@@ -696,6 +696,8 @@ module = {
   enable = powerpc_ieee1275;
   enable = mips_arc;
   enable = ia64_efi;
+  enable = arm_efi;
+  enable = arm_uboot;
 };
 
 module = {
