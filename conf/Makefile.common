@@ -37,6 +37,10 @@ if COND_sparc64_ieee1275
   CFLAGS_PLATFORM += -mno-app-regs
   LDFLAGS_PLATFORM = -Wl,-melf64_sparc -mno-relax
 endif
+if COND_arm
+  CFLAGS_PLATFORM += -mthumb-interwork -mlong-calls
+  LDFLAGS_PLATFORM = -Wl,--wrap=__clear_cache
+endif
 
 # Other options
 
@@ -114,6 +118,8 @@ CPPFLAGS_GNULIB = -I$(top_builddir)/grub-core/gnulib -I$(top_srcdir)/grub-core/g
 
 CFLAGS_POSIX = -fno-builtin
 CPPFLAGS_POSIX = -I$(top_srcdir)/grub-core/lib/posix_wrap
+
+CPPFLAGS_LIBFDT = -I$(top_srcdir)/grub-core/lib/dtc-grub/libfdt $(CPPFLAGS_POSIX)
 
 CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers $(CFLAGS_POSIX)
 CPPFLAGS_GCRY = -I$(top_srcdir)/grub-core/lib/libgcrypt_wrap $(CPPFLAGS_POSIX) -D_GCRYPT_IN_LIBGCRYPT=1 -I$(top_srcdir)/include/grub/gcrypt

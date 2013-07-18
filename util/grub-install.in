@@ -272,6 +272,8 @@ if [ x$source_directory = x ]; then
 		    target=i386-pc
 		fi
 		;;
+	    x"arm"*)
+		target="arm-uboot";;
 	    *)
 		gettext "Unable to determine your platform. Use --target." ;
 		echo	;;
@@ -291,7 +293,7 @@ if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = "i386-pc" ] ; then
     if [ x$disk_module = xunspecified ]; then
 	disk_module=biosdisk
     fi
-elif [ "${grub_modinfo_platform}" = "ieee1275" ] || [ "${grub_modinfo_platform}" = "efi" ] || [ "${grub_modinfo_platform}" = "arc" ] ; then
+elif [ "${grub_modinfo_platform}" = "ieee1275" ] || [ "${grub_modinfo_platform}" = "efi" ] || [ "${grub_modinfo_platform}" = "arc" ] || [ "${grub_modinfo_platform}" = "uboot" ] ; then
     disk_module=
 else
     disk_module=native
@@ -424,6 +426,8 @@ if [ x"$grub_modinfo_platform" = xefi ]; then
 	    # expansion.
 		ia64)
 		    efi_file=BOOTIA64.EFI ;;
+		arm)
+		    efi_file=BOOTARM.EFI ;;
 	    esac
 	else
 	    # It is convenient for each architecture to have a different
@@ -438,6 +442,8 @@ if [ x"$grub_modinfo_platform" = xefi ]; then
 	 # expansion.
 		ia64)
 		    efi_file=grubia64.efi ;;
+		arm)
+		    efi_file=grubarm.efi ;;
 		*)
 		    efi_file=grub.efi ;;
 	    esac

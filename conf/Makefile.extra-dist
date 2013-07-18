@@ -18,6 +18,7 @@ EXTRA_DIST += conf/i386-pc-cygwin-img-ld.sc
 
 EXTRA_DIST += grub-core/Makefile.core.def
 EXTRA_DIST += grub-core/Makefile.gcry.def
+EXTRA_DIST += grub-core/Makefile.libfdt.def
 
 EXTRA_DIST += grub-core/genmoddep.awk
 EXTRA_DIST += grub-core/genmod.sh.in

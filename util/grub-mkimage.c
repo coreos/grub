@@ -40,6 +40,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <grub/efi/pe32.h>
+#include <grub/uboot/image.h>
+#include <grub/arm/reloc.h>
 #include <grub/ia64/reloc.h>
 
 #define _GNU_SOURCE	1
@@ -71,7 +73,7 @@ struct image_target_desc
     IMAGE_I386_IEEE1275,
     IMAGE_LOONGSON_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
     IMAGE_FULOONG2F_FLASH, IMAGE_I386_PC_PXE, IMAGE_MIPS_ARC,
-    IMAGE_QEMU_MIPS_FLASH
+    IMAGE_QEMU_MIPS_FLASH, IMAGE_UBOOT
   } id;
   enum
     {
@@ -488,6 +490,46 @@ struct image_target_desc image_targets[] =
       .elf_target = EM_MIPS,
       .link_align = GRUB_KERNEL_MIPS_QEMU_MIPS_LINK_ALIGN,
       .default_compression = COMPRESSION_NONE
+    },
+    {
+      .dirname = "arm-uboot",
+      .names = { "arm-uboot", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_UBOOT, 
+      .flags = PLATFORM_FLAGS_NONE,
+      .total_module_size = GRUB_KERNEL_ARM_UBOOT_TOTAL_MODULE_SIZE,
+      .decompressor_compressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_addr = TARGET_NO_FIELD,
+      .section_align = GRUB_KERNEL_ARM_UBOOT_MOD_ALIGN,
+      .vaddr_offset = 0,
+      .link_addr = GRUB_KERNEL_ARM_UBOOT_LINK_ADDR,
+      .elf_target = EM_ARM,
+      .mod_gap = GRUB_KERNEL_ARM_UBOOT_MOD_GAP,
+      .mod_align = GRUB_KERNEL_ARM_UBOOT_MOD_ALIGN,
+      .link_align = 4
+    },
+    {
+      .dirname = "arm-efi",
+      .names = { "arm-efi", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 0, 
+      .id = IMAGE_EFI, 
+      .flags = PLATFORM_FLAGS_NONE,
+      .total_module_size = TARGET_NO_FIELD,
+      .decompressor_compressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_addr = TARGET_NO_FIELD,
+      .section_align = GRUB_PE32_SECTION_ALIGNMENT,
+      .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
+                                + GRUB_PE32_SIGNATURE_SIZE
+                                + sizeof (struct grub_pe32_coff_header)
+                                + sizeof (struct grub_pe32_optional_header)
+                                + 4 * sizeof (struct grub_pe32_section_table),
+                                GRUB_PE32_SECTION_ALIGNMENT),
+      .pe_target = GRUB_PE32_MACHINE_ARMTHUMB_MIXED,
+      .elf_target = EM_ARM,
     },
   };
 
@@ -1057,6 +1099,7 @@ generate_image (const char *dir, const char *prefix,
     case IMAGE_SPARC64_CDCORE:
     case IMAGE_I386_IEEE1275:
     case IMAGE_PPC:
+    case IMAGE_UBOOT:
       break;
     }
 
@@ -1496,6 +1539,42 @@ generate_image (const char *dir, const char *prefix,
       core_size = rom_size;
     }
     break;
+
+    case IMAGE_UBOOT:
+    {
+      struct grub_uboot_image_header *hdr;
+      GRUB_PROPERLY_ALIGNED_ARRAY (crc32_context, GRUB_MD_CRC32->contextsize);
+
+      hdr = xmalloc (core_size + sizeof (struct grub_uboot_image_header));
+      memcpy (hdr + 1, core_img, core_size);
+
+      memset (hdr, 0, sizeof (*hdr));
+      hdr->ih_magic = grub_cpu_to_be32_compile_time (GRUB_UBOOT_IH_MAGIC);
+      hdr->ih_time = grub_cpu_to_be32 (time (0));
+      hdr->ih_size = grub_cpu_to_be32 (core_size);
+      hdr->ih_load = grub_cpu_to_be32 (image_target->link_addr);
+      hdr->ih_ep = grub_cpu_to_be32 (image_target->link_addr);
+      hdr->ih_type = GRUB_UBOOT_IH_TYPE_KERNEL;
+      hdr->ih_os = GRUB_UBOOT_IH_OS_LINUX;
+      hdr->ih_arch = GRUB_UBOOT_IH_ARCH_ARM;
+      hdr->ih_comp = GRUB_UBOOT_IH_COMP_NONE;
+
+      GRUB_MD_CRC32->init(crc32_context);
+      GRUB_MD_CRC32->write(crc32_context, hdr + 1, core_size);
+      GRUB_MD_CRC32->final(crc32_context);
+      hdr->ih_dcrc = grub_get_unaligned32 (GRUB_MD_CRC32->read (crc32_context));
+
+      GRUB_MD_CRC32->init(crc32_context);
+      GRUB_MD_CRC32->write(crc32_context, hdr, sizeof (*hdr));
+      GRUB_MD_CRC32->final(crc32_context);
+      hdr->ih_hcrc = grub_get_unaligned32 (GRUB_MD_CRC32->read (crc32_context));
+
+      free (core_img);
+      core_img = (char *) hdr;
+      core_size += sizeof (struct grub_uboot_image_header);
+    }
+    break;
+
     case IMAGE_MIPS_ARC:
       {
 	char *ecoff_img;

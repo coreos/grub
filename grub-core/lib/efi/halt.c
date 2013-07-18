@@ -28,7 +28,7 @@ void
 grub_halt (void)
 {
   grub_machine_fini ();
-#ifndef __ia64__
+#if !defined(__ia64__) && !defined(__arm__)
   grub_acpi_halt ();
 #endif
   efi_call_4 (grub_efi_system_table->runtime_services->reset_system,

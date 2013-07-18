@@ -23,7 +23,7 @@ GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
                    "i386_multiboot", "i386_ieee1275", "x86_64_efi",
                    "mips_loongson", "sparc64_ieee1275",
                    "powerpc_ieee1275", "mips_arc", "ia64_efi",
-                   "mips_qemu_mips" ]
+                   "mips_qemu_mips", "arm_uboot", "arm_efi" ]
 
 GROUPS = {}
 
@@ -36,10 +36,12 @@ GROUPS["x86"]      = GROUPS["i386"] + GROUPS["x86_64"]
 GROUPS["mips"]     = [ "mips_loongson", "mips_qemu_mips", "mips_arc" ]
 GROUPS["sparc64"]  = [ "sparc64_ieee1275" ]
 GROUPS["powerpc"]  = [ "powerpc_ieee1275" ]
+GROUPS["arm"]      = [ "arm_uboot", "arm_efi" ]
 
 # Groups based on firmware
-GROUPS["efi"]  = [ "i386_efi", "x86_64_efi", "ia64_efi" ]
+GROUPS["efi"]  = [ "i386_efi", "x86_64_efi", "ia64_efi", "arm_efi" ]
 GROUPS["ieee1275"]   = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
+GROUPS["uboot"] = [ "arm_uboot" ]
 
 # emu is a special case so many core functionality isn't needed on this platform
 GROUPS["noemu"]   = GRUB_PLATFORMS[:]; GROUPS["noemu"].remove("emu")
@@ -57,9 +59,12 @@ GROUPS["videomodules"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["videoinkernel"]: GROUPS["videomodules"].remove(i)
 
 # Similar for terminfo
-GROUPS["terminfoinkernel"] = [ "emu", "mips_loongson", "mips_arc", "mips_qemu_mips" ] + GROUPS["ieee1275"];
+GROUPS["terminfoinkernel"] = [ "emu", "mips_loongson", "mips_arc", "mips_qemu_mips" ] + GROUPS["ieee1275"] + GROUPS["uboot"];
 GROUPS["terminfomodule"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["terminfoinkernel"]: GROUPS["terminfomodule"].remove(i)
+
+# Flattened Device Trees (FDT)
+GROUPS["fdt"] = [ "arm_uboot", "arm_efi" ]
 
 # Miscelaneous groups schedulded to disappear in future
 GROUPS["i386_coreboot_multiboot_qemu"] = ["i386_coreboot", "i386_multiboot", "i386_qemu"]

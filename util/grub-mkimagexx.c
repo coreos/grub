@@ -58,6 +58,8 @@
 #error "I'm confused"
 #endif
 
+static Elf_Addr SUFFIX (entry_point);
+
 /* Relocate symbols; note that this function overwrites the symbol table.
    Return the address of a start symbol.  */
 static Elf_Addr
@@ -408,6 +410,55 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		}
 	       break;
 #endif
+#if defined(MKIMAGE_ELF32)
+	     case EM_ARM:
+	       {
+		 sym_addr += addend;
+		 sym_addr -= SUFFIX (entry_point);
+		 switch (ELF_R_TYPE (info))
+		   {
+		   case R_ARM_ABS32:
+		     {
+		       grub_util_info ("  ABS32:\toffset=%d\t(0x%08x)",
+				       (int) sym_addr, (int) sym_addr);
+		       /* Data will be naturally aligned */
+		       sym_addr += 0x400;
+		       *target = grub_host_to_target32 (grub_target_to_host32 (*target) + sym_addr);
+		     }
+		     break;
+		   case R_ARM_THM_CALL:
+		   case R_ARM_THM_JUMP24:
+		     {
+		       grub_err_t err;
+		       grub_util_info ("  THM_JUMP24:\ttarget=0x%08lx\toffset=(0x%08x)",	(unsigned long) target, sym_addr);
+		       sym_addr -= offset;
+		       /* Thumb instructions can be 16-bit aligned */
+		       err = grub_arm_reloc_thm_call ((grub_uint16_t *) target,
+						      sym_addr);
+		       if (err)
+			 grub_util_error ("%s", grub_errmsg);
+		     }
+		     break;
+		   case R_ARM_THM_JUMP19:
+		     {
+		       grub_err_t err;
+		       grub_util_info ("  THM_JUMP19:\toffset=%d\t(0x%08x)",
+				       sym_addr, sym_addr);
+		       sym_addr -= offset;
+
+		       /* Thumb instructions can be 16-bit aligned */
+		       err = grub_arm_reloc_thm_jump19 ((grub_uint16_t *) target, sym_addr);
+		       if (err)
+			 grub_util_error ("%s", grub_errmsg);
+		     }
+		     break;
+		   default:
+		     grub_util_error (_("relocation 0x%x is not implemented yet!"), ELF_R_TYPE (info));
+		     break;
+		   }
+		 break;
+	       }
+#endif /* MKIMAGE_ELF32 */
 	     default:
 	       grub_util_error ("unknown architecture type %d",
 				image_target->elf_target);
@@ -635,6 +686,41 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		  break;
 		}
 		break;
+#if defined(MKIMAGE_ELF32)
+	      case EM_ARM:
+		switch (ELF_R_TYPE (info))
+		  {
+		    /* Relative relocations do not require fixup entries. */
+		  case R_ARM_JUMP24:
+		  case R_ARM_THM_CALL:
+		  case R_ARM_THM_JUMP19:
+		  case R_ARM_THM_JUMP24:
+		    {
+		      Elf_Addr addr;
+
+		      addr = section_address + offset;
+		      grub_util_info ("  %s:  not adding fixup: 0x%08x : 0x%08x", __FUNCTION__, (unsigned int) addr, (unsigned int) current_address);
+		    }
+		    break;
+		    /* Create fixup entry for PE/COFF loader */
+		  case R_ARM_ABS32:
+		    {
+		      Elf_Addr addr;
+
+		      addr = section_address + offset;
+		      current_address
+			= SUFFIX (add_fixup_entry) (&lst,
+						    GRUB_PE32_REL_BASED_HIGHLOW,
+						    addr, 0, current_address,
+						    image_target);
+		    }
+		    break;
+		  default:
+		    grub_util_error (_("fixup for relocation 0x%x not implemented"), ELF_R_TYPE (info));
+		    break;
+		  }
+		break;
+#endif /* defined(MKIMAGE_ELF32) */
 	      default:
 		grub_util_error ("unknown machine type 0x%x", image_target->elf_target);
 	      }
@@ -945,6 +1031,8 @@ SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size,
       if (*start == 0)
 	grub_util_error ("start symbol is not defined");
       
+      SUFFIX (entry_point) = (Elf_Addr) *start;
+
       /* Resolve addresses in the virtual address space.  */
       SUFFIX (relocate_addresses) (e, sections, section_addresses, 
 				   section_entsize,

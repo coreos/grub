@@ -745,7 +745,9 @@ grub_cmd_terminfo (grub_extcmd_context_t ctxt, int argc, char **args)
 
 static grub_extcmd_t cmd;
 
-#if defined (GRUB_MACHINE_IEEE1275) || defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_ARC)
+#if defined (GRUB_MACHINE_IEEE1275) || defined (GRUB_MACHINE_MIPS_LOONGSON) \
+  || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_ARC) \
+  || defined (GRUB_MACHINE_UBOOT)
 void grub_terminfo_init (void)
 #else
 GRUB_MOD_INIT(terminfo)

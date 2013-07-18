@@ -167,6 +167,8 @@ program = {
   common = util/resolve.c;
   common = grub-core/kern/emu/argp_common.c;
 
+  common = grub-core/kern/arm/dl_helper.c;
+
   extra_dist = util/grub-mkimagexx.c;
 
   ldadd = libgrubmods.a;

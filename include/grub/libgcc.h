@@ -112,3 +112,14 @@ void EXPORT_FUNC (_savegpr_29) (void);
 void EXPORT_FUNC (_savegpr_30) (void);
 void EXPORT_FUNC (_savegpr_31) (void);
 #endif
+
+#if defined (__arm__)
+void EXPORT_FUNC (__aeabi_idiv) (void);
+void EXPORT_FUNC (__aeabi_idivmod) (void);
+void EXPORT_FUNC (__aeabi_lasr) (void);
+void EXPORT_FUNC (__aeabi_llsl) (void);
+void EXPORT_FUNC (__aeabi_llsr) (void);
+void EXPORT_FUNC (__aeabi_uidiv) (void);
+void EXPORT_FUNC (__aeabi_uidivmod) (void);
+void EXPORT_FUNC (__aeabi_ulcmp) (void);
+#endif

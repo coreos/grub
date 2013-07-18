@@ -1,3 +1,11 @@
+2013-07-18  Leif Lindholm  <leif.lindholm@arm.com>
+2013-07-18  Francesco Lavra  <francescolavra.fl@gmail.com>
+2013-07-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	New ports to arm-uboot and arm-efi.
+	Mostly by Leif Lindholm with some additions from
+	Francesco Lavra and cleanup by Vladimir Serbinenko.
+
 2013-07-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/multiboot_elfxx.c: Check eip after v2p translation
