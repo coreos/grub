@@ -189,8 +189,6 @@ netopenbsdlabel_partition_map_iterate (grub_disk_t disk, grub_uint8_t type,
 				       grub_partition_iterate_hook_t hook,
 				       void *hook_data)
 {
-  int count = 0;
-
   if (disk->partition && grub_strcmp (disk->partition->partmap->name, "msdos")
       == 0)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no embedding supported");
@@ -201,7 +199,7 @@ netopenbsdlabel_partition_map_iterate (grub_disk_t disk, grub_uint8_t type,
       .pmap = pmap,
       .hook = hook,
       .hook_data = hook_data,
-      .count = count
+      .count = 0
     };
     grub_err_t err;
 
@@ -209,7 +207,7 @@ netopenbsdlabel_partition_map_iterate (grub_disk_t disk, grub_uint8_t type,
 
     if (err)
       return err;
-    if (!count)
+    if (!ctx.count)
       return grub_error (GRUB_ERR_BAD_PART_TABLE, "no bsdlabel found");
   }
   return GRUB_ERR_NONE;
