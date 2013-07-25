@@ -1,3 +1,8 @@
+2013-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/nativedisk.c (get_uuid): Handle
+	GRUB_DISK_DEVICE_UBOOTDISK_ID.
+
 2013-07-25  Vladimir Testov <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/widget-box.c: Fixed draw function. Now it takes
