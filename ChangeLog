@@ -1,3 +1,9 @@
+2013-07-25  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* .bzrignore: Remove grub-core/lib/dtc-grub,
+	grub-core/Makefile.libfdt.def
+	* conf/Makefile.extra-dist: Remove grub-core/Makefile.libfdt.def.
+
 2013-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/video.h (grub_video_register): Keep double-linked as
