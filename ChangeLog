@@ -1,5 +1,11 @@
 2013-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/video.h (grub_video_register): Keep double-linked as
+	well as single-linked invariants.
+	Reported by: qwertial.
+
+2013-07-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/nativedisk.c (get_uuid): Handle
 	GRUB_DISK_DEVICE_UBOOTDISK_ID.
 

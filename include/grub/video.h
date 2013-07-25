@@ -400,6 +400,10 @@ grub_video_register (grub_video_adapter_t adapter)
        p = &((*p)->next));
   adapter->next = *p;
   *p = adapter;
+
+  adapter->prev = p;
+  if (adapter->next)
+    adapter->next->prev = &adapter->next;
 }
 #endif
 
