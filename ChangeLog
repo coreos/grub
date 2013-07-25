@@ -1,3 +1,10 @@
+2013-07-25  Vladimir Testov <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/widget-box.c: Fixed draw function. Now it takes
+	maximum of NW, N, NE heights instead of N's height and maximum of
+	NW, W, SW widths instead of W's width. (So the box will be always
+	correctly drawn)
+
 2013-07-20  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* grub-core/partmap/bsdlabel.c (netopenbsdlabel_partition_map_iterate):
