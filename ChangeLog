@@ -1,5 +1,10 @@
 2013-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/checksums.h: Update (1-pixel difference in marker
+	position).
+
+2013-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/exclude.pot: Add few recent exceptions.
 
 2013-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
