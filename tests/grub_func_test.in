@@ -3,7 +3,7 @@ set -e
 
 . "@builddir@/grub-core/modinfo.sh"
 
-out=`echo all_functional_test | @builddir@/grub-shell --timeout=3600`
+out=`echo all_functional_test | @builddir@/grub-shell --timeout=3600 --files="/boot/grub/fonts/unicode.pf2"="@builddir@/"unicode.pf2`
 
 if [ "$(echo "$out" | tail -n 1)" != "ALL TESTS PASSED" ]; then
   echo "Functional test failure: $out"
