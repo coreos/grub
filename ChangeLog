@@ -1,5 +1,9 @@
 2013-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/exclude.pot: Add few recent exceptions.
+
+2013-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/grub_func_test.in: Add unicode.pf2.
 
 2013-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
