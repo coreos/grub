@@ -67,10 +67,9 @@ dfly_partition_map_iterate (grub_disk_t disk,
   if (label.magic != grub_cpu_to_le32_compile_time (GRUB_DISKLABEL64_MAGIC))
     {
       grub_dprintf ("partition",
-		    "bad magic (found 0x%" PRIxGRUB_UINT32_T "; "
-		    "wanted 0x%" PRIxGRUB_UINT32_T ")\n",
-		    grub_le_to_cpu32 (label.magic),
-		    GRUB_DISKLABEL64_MAGIC);
+		    "bad magic (found 0x%x; wanted 0x%x)\n",
+		    (unsigned int) grub_le_to_cpu32 (label.magic),
+		    (unsigned int) GRUB_DISKLABEL64_MAGIC);
       return grub_error (GRUB_ERR_BAD_PART_TABLE, "disklabel64 not found");
     }
 
@@ -88,11 +87,11 @@ dfly_partition_map_iterate (grub_disk_t disk,
 	return grub_errno;
 
       grub_dprintf ("partition",
-		    "partition %2d: offset 0x%" PRIxGRUB_UINT64_T ", "
-		    "size 0x%" PRIxGRUB_UINT64_T "\n",
+		    "partition %2d: offset 0x%llx, "
+		    "size 0x%llx\n",
 		    partno,
-		    grub_le_to_cpu64 (dpart.boffset),
-		    grub_le_to_cpu64 (dpart.bsize));
+		    (unsigned long long) grub_le_to_cpu64 (dpart.boffset),
+		    (unsigned long long) grub_le_to_cpu64 (dpart.bsize));
 
       /* Is partition initialized? */
       if (dpart.bsize == 0)
