@@ -77,13 +77,13 @@ linux_prepare_fdt (void)
   node = grub_fdt_find_subnode (tmp_fdt, 0, "chosen");
   if (node < 0)
     {
-      grub_printf ("No 'chosen' node in FDT - creating.\n");
+      grub_dprintf ("linux", "No 'chosen' node in FDT - creating.\n");
       node = grub_fdt_add_subnode (tmp_fdt, 0, "chosen");
       if (node < 0)
 	goto failure;
     }
 
-  grub_printf ("linux_args: '%s'\n", linux_args);
+  grub_dprintf ("linux", "linux_args: '%s'\n", linux_args);
 
   /* Generate and set command line */
   retval = grub_fdt_set_prop (tmp_fdt, node, "bootargs", linux_args,
