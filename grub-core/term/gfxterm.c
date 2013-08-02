@@ -249,7 +249,7 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
 
   virtual_screen.standard_color_setting = DEFAULT_STANDARD_COLOR;
 
-  virtual_screen.term_color = grub_term_normal_color;
+  virtual_screen.term_color = virtual_screen.standard_color_setting;
 
   set_term_color (virtual_screen.term_color);
 
