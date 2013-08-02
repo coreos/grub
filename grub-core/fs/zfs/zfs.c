@@ -4135,17 +4135,17 @@ grub_zfs_dir (grub_device_t device, const char *path,
 }
 
 static int
-check_feature(const char *name, grub_uint64_t val,__attribute__((unused)) struct grub_zfs_dir_ctx *ctx)
+check_feature (const char *name, grub_uint64_t val,
+	       struct grub_zfs_dir_ctx *ctx __attribute__((unused)))
 {
   int i;
-  if(val ==0) return 0;
-  if(*name==0) return 0;
+  if (val == 0)
+    return 0;
+  if (name[0] == 0)
+    return 0;
   for (i = 0; spa_feature_names[i] != NULL; i++) 
-    {
-      if (grub_strcmp(name, spa_feature_names[i]) == 0) 
-        return 0;
-    }
-  grub_printf("missing feature for read '%s'\n",name);
+    if (grub_strcmp (name, spa_feature_names[i]) == 0) 
+      return 0;
   return 1;
 }
 

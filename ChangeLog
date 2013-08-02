@@ -1,3 +1,8 @@
+2013-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs.c (check_feature): Cleanup and remove
+	inappropriate printf.
+
 2013-07-25  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* .bzrignore: Remove grub-core/lib/dtc-grub,
