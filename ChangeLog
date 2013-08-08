@@ -1,4 +1,4 @@
-2013-08-07  Vladimir Testov  <vladimir.testov@rosalab.ru>
+2013-08-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* docs/grub.texi: Introduce terminal window position options:
 	terminal-left: terminal window's left position
@@ -12,6 +12,8 @@
 	* grub-core/gfxmenu/view.c: Likewise.
 	Also updated minimal window size.
 	Also terminal_sanity_check function has been introduced.
+	* grub-core/tests/checksums.h: Update (terminal window height
+	is adjusted now for low resolution screen)
 
 2013-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
