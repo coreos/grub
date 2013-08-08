@@ -84,6 +84,10 @@ struct grub_gfxmenu_view
 {
   grub_video_rect_t screen;
 
+  int need_to_check_sanity;
+  grub_video_rect_t terminal_rect;
+  int terminal_border;
+
   grub_font_t title_font;
   grub_font_t message_font;
   char *terminal_font_name;

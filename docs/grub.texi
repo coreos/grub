@@ -1904,6 +1904,11 @@ In this example, name3 is assigned a color value.
 @item desktop-image @tab Specifies the image to use as the background.  It will be scaled to fit the screen size.
 @item desktop-color @tab Specifies the color for the background if *desktop-image* is not specified.
 @item terminal-box @tab Specifies the file name pattern for the styled box slices used for the command line terminal window.  For example, ``terminal-box: terminal_*.png'' will use the images ``terminal_c.png`` as the center area, ``terminal_n.png`` as the north (top) edge, ``terminal_nw.png`` as the northwest (upper left) corner, and so on.  If the image for any slice is not found, it will simply be left empty.
+@item terminal-border @tab Specifies the border width of the terminal window.
+@item terminal-left @tab Specifies the left coordinate of the terminal window.
+@item terminal-top @tab Specifies the top coordinate of the terminal window.
+@item terminal-width @tab Specifies the width of the terminal window.
+@item terminal-height @tab Specifies the height of the terminal window.
 @end multitable
 
 

@@ -5072,3 +5072,23 @@ msgstr ""
 #: grub-core/term/uboot/console.c:130
 msgid "grub_term"
 msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:203
+msgid "terminal-border"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:209
+msgid "terminal-left"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:219
+msgid "terminal-top"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:229
+msgid "terminal-width"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:239
+msgid "terminal-height"
+msgstr ""

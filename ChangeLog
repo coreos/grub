@@ -1,3 +1,18 @@
+2013-08-07  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
+	* docs/grub.texi: Introduce terminal window position options:
+	terminal-left: terminal window's left position
+	terminal-top: terminal window's top position
+	terminal-width: terminal window's width
+	terminal-height: terminal window's height
+	terminal-border: terminal window's border width
+	* grub-core/gfxmenu/theme-loader.c: Likewise.
+	* include/grub/gfxmenu_view.h: Likewise.
+	* po/exlude.pot: Likewise.
+	* grub-core/gfxmenu/view.c: Likewise.
+	Also updated minimal window size.
+	Also terminal_sanity_check function has been introduced.
+
 2013-08-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/tests/checksums.h: Update (1-pixel difference in marker

@@ -32,6 +32,9 @@
 #include <grub/gui.h>
 #include <grub/color.h>
 
+static grub_err_t
+parse_proportional_spec (const char *value, signed *abs, grub_fixed_signed_t *prop);
+
 /* Construct a new box widget using ABSPATTERN to find the pixmap files for
    it, storing the new box instance at *BOXPTR.
    PATTERN should be of the form: "(hd0,0)/somewhere/style*.png".
@@ -113,6 +116,24 @@ grub_gui_recreate_box (grub_gfxmenu_box_t *boxptr,
   return grub_errno;
 }
 
+static grub_err_t
+theme_get_unsigned_int_from_proportional (const char *value,
+                                          unsigned absolute_value,
+                                          unsigned int *parsed_value)
+{
+  grub_err_t err;
+  grub_fixed_signed_t frac;
+  signed pixels;
+  err = parse_proportional_spec (value, &pixels, &frac);
+  if (err != GRUB_ERR_NONE)
+    return err;
+  int result = grub_fixed_sfs_multiply (absolute_value, frac) + pixels;
+  if (result < 0)
+    result = 0;
+  *parsed_value = result;
+  return GRUB_ERR_NONE;
+}
+
 /* Set the specified property NAME on the view to the given string VALUE.
    The caller is responsible for the lifetimes of NAME and VALUE.  */
 static grub_err_t
@@ -178,6 +199,52 @@ theme_set_string (grub_gfxmenu_view_t view,
         err = grub_gui_recreate_box (&view->terminal_box, value, theme_dir);
         if (err != GRUB_ERR_NONE)
           return err;
+    }
+  else if (! grub_strcmp ("terminal-border", name))
+    {
+      view->terminal_border = grub_strtoul (value, 0, 10);
+      if (grub_errno)
+        return grub_errno;
+    }
+  else if (! grub_strcmp ("terminal-left", name))
+    {
+      unsigned int tmp;
+      int err = theme_get_unsigned_int_from_proportional (value,
+                                                          view->screen.width,
+                                                          &tmp);
+      if (err != GRUB_ERR_NONE)
+        return err;
+      view->terminal_rect.x = tmp;
+    }
+  else if (! grub_strcmp ("terminal-top", name))
+    {
+      unsigned int tmp;
+      int err = theme_get_unsigned_int_from_proportional (value,
+                                                          view->screen.width,
+                                                          &tmp);
+      if (err != GRUB_ERR_NONE)
+        return err;
+      view->terminal_rect.y = tmp;
+    }
+  else if (! grub_strcmp ("terminal-width", name))
+    {
+      unsigned int tmp;
+      int err = theme_get_unsigned_int_from_proportional (value,
+                                                          view->screen.width,
+                                                          &tmp);
+      if (err != GRUB_ERR_NONE)
+        return err;
+      view->terminal_rect.width = tmp;
+    }
+  else if (! grub_strcmp ("terminal-height", name))
+    {
+      unsigned int tmp;
+      int err = theme_get_unsigned_int_from_proportional (value,
+                                                          view->screen.width,
+                                                          &tmp);
+      if (err != GRUB_ERR_NONE)
+        return err;
+      view->terminal_rect.height = tmp;
     }
   else if (! grub_strcmp ("title-text", name))
     {
@@ -363,10 +430,10 @@ read_expression (struct parsebuf *p)
 }
 
 static grub_err_t
-parse_proportional_spec (char *value, signed *abs, grub_fixed_signed_t *prop)
+parse_proportional_spec (const char *value, signed *abs, grub_fixed_signed_t *prop)
 {
   signed num;
-  char *ptr;
+  const char *ptr;
   int sig = 0;
   *abs = 0;
   *prop = 0;
@@ -382,7 +449,7 @@ parse_proportional_spec (char *value, signed *abs, grub_fixed_signed_t *prop)
 	  ptr++;
 	}
 
-      num = grub_strtoul (ptr, &ptr, 0);
+      num = grub_strtoul (ptr, (char **) &ptr, 0);
       if (grub_errno)
 	return grub_errno;
       if (sig)

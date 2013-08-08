@@ -40,7 +40,6 @@
 
 static void
 init_terminal (grub_gfxmenu_view_t view);
-static grub_video_rect_t term_rect;
 static grub_gfxmenu_view_t term_view;
 
 /* Create a new view object, loading the theme specified by THEME_PATH and
@@ -70,6 +69,15 @@ grub_gfxmenu_view_new (const char *theme_path,
   view->screen.y = 0;
   view->screen.width = width;
   view->screen.height = height;
+
+  view->need_to_check_sanity = 1;
+  view->terminal_border = 3;
+  view->terminal_rect.width = view->screen.width * 7 / 10;
+  view->terminal_rect.height = view->screen.height * 7 / 10;
+  view->terminal_rect.x = view->screen.x + (view->screen.width
+                                            - view->terminal_rect.width) / 2;
+  view->terminal_rect.y = view->screen.y + (view->screen.height
+                                            - view->terminal_rect.height) / 2;
 
   default_font = grub_font_get ("Unknown Regular 16");
   default_fg_color = grub_video_rgba_color_rgb (0, 0, 0);
@@ -302,7 +310,7 @@ void
 grub_gfxmenu_view_redraw (grub_gfxmenu_view_t view,
 			  const grub_video_rect_t *region)
 {
-  if (grub_video_have_common_points (&term_rect, region))
+  if (grub_video_have_common_points (&view->terminal_rect, region))
     grub_gfxterm_schedule_repaint ();
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
@@ -386,25 +394,109 @@ grub_gfxmenu_draw_terminal_box (void)
   term_box = term_view->terminal_box;
   if (!term_box)
     return;
-  
-  term_box->set_content_size (term_box, term_rect.width,
-			      term_rect.height);
+
+  term_box->set_content_size (term_box, term_view->terminal_rect.width,
+			      term_view->terminal_rect.height);
   
   term_box->draw (term_box,
-		  term_rect.x - term_box->get_left_pad (term_box),
-		  term_rect.y - term_box->get_top_pad (term_box));
+		  term_view->terminal_rect.x - term_box->get_left_pad (term_box),
+		  term_view->terminal_rect.y - term_box->get_top_pad (term_box));
+}
+
+static void
+get_min_terminal (grub_font_t terminal_font,
+                  unsigned int border_width,
+                  unsigned int *min_terminal_width,
+                  unsigned int *min_terminal_height)
+{
+  struct grub_font_glyph *glyph;
+  glyph = grub_font_get_glyph (terminal_font, 'M');
+  *min_terminal_width = (glyph? glyph->device_width : 8) * 80
+                        + 2 * border_width;
+  *min_terminal_height = grub_font_get_max_char_height (terminal_font) * 24
+                         + 2 * border_width;
+}
+
+static void
+terminal_sanity_check (grub_gfxmenu_view_t view)
+{
+  if (!view->need_to_check_sanity)
+    return;
+
+  /* terminal_font was checked before in the init_terminal function. */
+  grub_font_t terminal_font = grub_font_get (view->terminal_font_name);
+
+  /* Non-negative numbers below. */
+  int scr_x = view->screen.x;
+  int scr_y = view->screen.y;
+  int scr_width = view->screen.width;
+  int scr_height = view->screen.height;
+  int term_x = view->terminal_rect.x;
+  int term_y = view->terminal_rect.y;
+  int term_width = view->terminal_rect.width;
+  int term_height = view->terminal_rect.height;
+
+  /* Check that border_width isn't too big. */
+  unsigned int border_width = view->terminal_border;
+  unsigned int min_terminal_width;
+  unsigned int min_terminal_height;
+  get_min_terminal (terminal_font, border_width,
+                    &min_terminal_width, &min_terminal_height);
+  if (border_width > 3 && ((int) min_terminal_width >= scr_width
+                           || (int) min_terminal_height >= scr_height))
+    {
+      border_width = 3;
+      get_min_terminal (terminal_font, border_width,
+                        &min_terminal_width, &min_terminal_height);
+    }
+
+  /* Sanity checks. */
+  if (term_width > scr_width)
+    term_width = scr_width;
+  if (term_height > scr_height)
+    term_height = scr_height;
+
+  if (scr_width <= (int) min_terminal_width
+      || scr_height <= (int) min_terminal_height)
+    {
+      /* The screen resulution is too low. Use all space, except a small border
+         to show the user, that it is a window. Then center the window. */
+      term_width = scr_width - 6 * border_width;
+      term_height = scr_height - 6 * border_width;
+      term_x = scr_x + (scr_width - term_width) / 2;
+      term_y = scr_y + (scr_height - term_height) / 2;
+    }
+  else if (term_width < (int) min_terminal_width
+           || term_height < (int) min_terminal_height)
+    {
+      /* The screen resolution is big enough. Make sure, that terminal screen
+         dimensions aren't less than minimal values. Then center the window. */
+      term_width = (int) min_terminal_width;
+      term_height = (int) min_terminal_height;
+      term_x = scr_x + (scr_width - term_width) / 2;
+      term_y = scr_y + (scr_height - term_height) / 2;
+    }
+
+  /* At this point w and h are satisfying. */
+  if (term_x + term_width > scr_width)
+    term_x = scr_width - term_width;
+  if (term_y + term_height > scr_height)
+    term_y = scr_height - term_height;
+
+  /* Write down corrected data. */
+  view->terminal_rect.x = (unsigned int) term_x;
+  view->terminal_rect.y = (unsigned int) term_y;
+  view->terminal_rect.width = (unsigned int) term_width;
+  view->terminal_rect.height = (unsigned int) term_height;
+  view->terminal_border = border_width;
+
+  view->need_to_check_sanity = 0;
 }
 
 static void
 init_terminal (grub_gfxmenu_view_t view)
 {
-  const int border_width = 3;
-
   grub_font_t terminal_font;
-
-  unsigned int line_width;
-
-  struct grub_font_glyph *glyph;
 
   terminal_font = grub_font_get (view->terminal_font_name);
   if (!terminal_font)
@@ -413,38 +505,22 @@ init_terminal (grub_gfxmenu_view_t view)
       return;
     }
 
-  glyph = grub_font_get_glyph (terminal_font, 'M');
-
-  line_width = ((glyph ? glyph->device_width : 8) * 80 + 2 * border_width);
-
-  if (view->screen.width <= line_width)
-    /* The screen is too small. Use all space, except a small border
-       to show the user, it is a window and not full screen: */
-    term_rect.width = view->screen.width - 6 * border_width;
-  else
-    {
-      /* The screen is big enough. Try 70% of the screen width: */
-      term_rect.width = view->screen.width * 7 / 10;
-      /* Make sure, that we use at least the line_width: */
-      if ( term_rect.width < line_width )
-	term_rect.width = line_width;
-    }
-
-  term_rect.height = view->screen.height * 7 / 10;
-
-  term_rect.x = view->screen.x + (view->screen.width  - term_rect.width) / 2;
-  term_rect.y = view->screen.y + (view->screen.height - term_rect.height) / 2;
+  /* Check that terminal window size and position are sane. */
+  terminal_sanity_check (view);
 
   term_view = view;
 
   /* Note: currently there is no API for changing the gfxterm font
      on the fly, so whatever font the initially loaded theme specifies
      will be permanent.  */
-  grub_gfxterm_set_window (GRUB_VIDEO_RENDER_TARGET_DISPLAY, term_rect.x,
-			   term_rect.y,
-			   term_rect.width, term_rect.height,
-			   view->double_repaint, terminal_font,
-			   border_width);
+  grub_gfxterm_set_window (GRUB_VIDEO_RENDER_TARGET_DISPLAY,
+                           view->terminal_rect.x,
+                           view->terminal_rect.y,
+                           view->terminal_rect.width,
+                           view->terminal_rect.height,
+                           view->double_repaint,
+                           terminal_font,
+                           view->terminal_border);
   grub_gfxterm_decorator_hook = grub_gfxmenu_draw_terminal_box;
 }
 
