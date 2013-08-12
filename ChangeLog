@@ -1,3 +1,10 @@
+2013-08-12  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	Prevent shadowing of stdlib's devname(3) on BSD.
+
+	* grub-core/disk/cryptodisk.c (grub_cmd_cryptomount): Rename devname
+	and devlast to diskname and disklast, respectively.
+
 2013-08-11  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-mkconfig.in: Fix detection of Emacs autosave files.
