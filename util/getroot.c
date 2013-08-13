@@ -2408,6 +2408,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	    grub_util_warn
 	      (_("disk does not exist, so falling back to partition device %s"),
 	       os_dev);
+	    grub_errno = GRUB_ERR_NONE;
 
 	    canon = canonicalize_file_name (os_dev);
 	    drive = find_system_device (canon ? : os_dev, &st, 0, 1);

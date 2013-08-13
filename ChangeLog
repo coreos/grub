@@ -1,3 +1,11 @@
+2013-08-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/getroot.c (grub_util_biosdisk_get_grub_dev): Zero out
+	grub_errno in the case where we handle GRUB_ERR_UNKNOWN_DEVICE by
+	falling back to the partition device, otherwise a later call to this
+	function may fail spuriously.
+	Reported by Axel Beckert.  Fixes Debian bug #708614.
+
 2013-08-12  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* autogen.sh: Replace find -not by the POSIX-compliant find !.
