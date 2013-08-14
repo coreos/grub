@@ -1,3 +1,8 @@
+2013-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/vga_init.c: Fix compilation on qemu-mips.
+	* grub-core/kern/mips/qemu_mips/init.c: Likewise.
+
 2013-08-13  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/getroot.c (grub_util_biosdisk_get_grub_dev): Zero out

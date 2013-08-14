@@ -57,8 +57,6 @@ grub_machine_init (void)
 
   grub_install_get_time_ms (grub_rtc_get_time_ms);
 
-  grub_font_init ();
-
   grub_keylayouts_init ();
   grub_at_keyboard_init ();
 

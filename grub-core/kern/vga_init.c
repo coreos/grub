@@ -46,11 +46,7 @@ static struct {grub_uint8_t r, g, b, a; } colors[] =
     {0xFE, 0xFE, 0xFE, 0xFF}  // 15 = white
   };
 
-#ifdef __mips__
-extern unsigned char ascii_bitmaps[];
-#else
 #include <ascii.h>
-#endif
 
 #ifdef __mips__
 #define VGA_ADDR 0xb00a0000
