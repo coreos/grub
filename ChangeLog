@@ -1,5 +1,10 @@
 2013-08-14  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	*  util/getroot.c (grub_util_is_imsm): Fix descriptor and
+	memory leak.
+
+2013-08-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	*  util/getroot.c (pull_lvm_by_command): add --separator option
 	to vgs call to disable padding of output to 10 characters.
 

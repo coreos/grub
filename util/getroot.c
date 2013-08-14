@@ -1461,10 +1461,12 @@ out:
 static int
 grub_util_is_imsm (const char *os_dev)
 {
-  int try;
+  int retry;
+  int is_imsm = 0;
+  int container_seen = 0;
   const char *dev = os_dev;
 
-  for (try = 0; try < 2; try++)
+  do
     {
       char *argv[5];
       int fd;
@@ -1472,6 +1474,8 @@ grub_util_is_imsm (const char *os_dev)
       FILE *mdadm;
       char *buf = NULL;
       size_t len = 0;
+
+      retry = 0; /* We'll do one more pass if device is part of container */
 
       /* execvp has inconvenient types, hence the casts.  None of these
 	 strings will actually be modified.  */
@@ -1505,7 +1509,8 @@ grub_util_is_imsm (const char *os_dev)
 
       while (getline (&buf, &len, mdadm) > 0)
 	{
-	  if (strncmp (buf, "MD_CONTAINER=", sizeof ("MD_CONTAINER=") - 1) == 0)
+	  if (strncmp (buf, "MD_CONTAINER=", sizeof ("MD_CONTAINER=") - 1) == 0
+	      && !container_seen)
 	    {
 	      char *newdev, *ptr;
 	      newdev = xstrdup (buf + sizeof ("MD_CONTAINER=") - 1);
@@ -1514,31 +1519,27 @@ grub_util_is_imsm (const char *os_dev)
 	      ptr[1] = 0;
 	      grub_util_info ("Container of %s is %s", dev, newdev);
 	      dev = newdev;
-	      goto out;
+	      container_seen = retry = 1;
+	      break;
 	    }
 	  if (strncmp (buf, "MD_METADATA=imsm",
 		       sizeof ("MD_METADATA=imsm") - 1) == 0)
 	    {
-	      close (fd);
-	      waitpid (pid, NULL, 0);
+	      is_imsm = 1;
 	      grub_util_info ("%s is imsm", dev);	      
-	      if (dev != os_dev)
-		free ((void *) dev);
-	      return 1;
+	      break;
 	    }
 	}
 
       free (buf);
-
-      return 0;
-
-    out:
       close (fd);
       waitpid (pid, NULL, 0);
     }
+  while (retry);
+
   if (dev != os_dev)
     free ((void *) dev);
-  return 0;
+  return is_imsm;
 }
 #endif /* __linux__ */
 
