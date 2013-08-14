@@ -1,5 +1,10 @@
 2013-08-14  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	*  grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_iterate): Remove
+	unused attribute from pull argument.
+
+2013-08-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	*  util/getroot.c (grub_util_is_imsm): Fix descriptor and
 	memory leak.
 

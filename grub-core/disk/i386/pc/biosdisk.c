@@ -287,7 +287,7 @@ grub_biosdisk_call_hook (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 
 static int
 grub_biosdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
-		       grub_disk_pull_t pull __attribute__ ((unused)))
+		       grub_disk_pull_t pull)
 {
   int num_floppies;
   int drive;
