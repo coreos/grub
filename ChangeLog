@@ -1,5 +1,10 @@
 2013-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/i386/pc/biosdisk.h (grub_biosdisk_drp): Fix device_path
+	length.
+
+2013-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix handling of build-time grub-bin2h and grub-mkfont when doing
 	full Canadian cross. Tested with build=x86_64, host=arm,
 	target=ppc-ieee1275.

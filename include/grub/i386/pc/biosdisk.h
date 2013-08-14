@@ -69,7 +69,7 @@ struct grub_biosdisk_drp
   grub_uint8_t name_of_host_bus[4];
   grub_uint8_t name_of_interface_type[8];
   grub_uint8_t interface_path[8];
-  grub_uint8_t device_path[8];
+  grub_uint8_t device_path[16];
   grub_uint8_t reserved2;
   grub_uint8_t checksum;
 
