@@ -406,8 +406,8 @@ fi
 # Check for host and build compilers.
 #
 HOST_CC=$CC
-AC_CHECK_PROGS(BUILD_CC, [gcc egcs cc],
-                 [AC_MSG_ERROR([none of gcc, egcs and cc is found. set BUILD_CC manually.])])
+AC_CHECK_PROGS(BUILD_CC, [gcc egcs cc])
+test -z "$BUILD_CC" && AC_MSG_ERROR([none of gcc, egcs and cc is found. set BUILD_CC manually.])
 
 # For gnulib.
 gl_INIT

@@ -1,5 +1,10 @@
 2013-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Error if no $BUILD_CC could be found.
+	Reported by: DevHC.
+
+2013-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/coreboot/init.c: Fix compilation on
 	i386-multiboot.
 
