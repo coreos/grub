@@ -149,17 +149,6 @@ library = {
 };
 
 program = {
-  name = grub-bin2h;
-  common = util/bin2h.c;
-  ldadd = libgrubmods.a;
-  ldadd = libgrubgcry.a;
-  ldadd = libgrubkern.a;
-  ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER)';
-  installdir = noinst;
-};
-
-program = {
   name = grub-mkimage;
   mansection = 1;
 
@@ -292,15 +281,15 @@ program = {
   common = util/grub-mkfont.c;
   common = grub-core/unidata.c;
   common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/kern/emu/misc.c;
+  common = util/misc.c;
+  common = grub-core/gnulib/progname.c;
 
   cflags = '$(freetype_cflags)';
+  cppflags = '-DGRUB_MKFONT=1';
 
-  ldadd = libgrubmods.a;
-  ldadd = libgrubgcry.a;
-  ldadd = libgrubkern.a;
-  ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(freetype_libs)';
-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+  ldadd = '$(LIBINTL)';
   condition = COND_GRUB_MKFONT;
 };
 

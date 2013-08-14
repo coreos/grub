@@ -850,7 +850,7 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 {
   FILE *file;
   grub_uint32_t leng;
-  char style_name[20], *font_name;
+  char style_name[20], *font_name, *ptr;
   int offset;
   struct grub_glyph_info *cur;
 
@@ -885,8 +885,13 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   if (! style_name[0])
     strcpy (style_name, " Regular");
 
-  font_name = xasprintf ("%s %s %d", font_info->name, &style_name[1],
-			 font_info->size);
+  font_name = xmalloc (strlen (font_info->name) + strlen (&style_name[1])
+		       + 3 + 20);
+  ptr = stpcpy (font_name, font_info->name);
+  *ptr++ = ' ';
+  ptr = stpcpy (ptr, &style_name[1]);
+  *ptr++ = ' ';
+  snprintf (ptr, 20, "%d", font_info->size);
 
   write_string_section (FONT_FORMAT_SECTION_NAMES_FONT_NAME,
   			font_name, &offset, file, output_file);
@@ -1210,9 +1215,9 @@ main (int argc, char *argv[])
 			   arguments.font_index, &ft_face);
 	if (err)
 	  {
-	    grub_printf (_("can't open file %s, index %d: error %d"),
-			 arguments.files[i],
-			 arguments.font_index, err);
+	    printf (_("can't open file %s, index %d: error %d"),
+		    arguments.files[i],
+		    arguments.font_index, err);
 	    if (err > 0 && err < (signed) ARRAY_SIZE (ft_errmsgs))
 	      printf (": %s\n", ft_errmsgs[err]);
 	    else

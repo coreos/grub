@@ -73,6 +73,8 @@ if test "x$TARGET_CFLAGS" = x; then
   TARGET_CFLAGS="$TARGET_CFLAGS -Os"
 fi
 
+BUILD_CPPFLAGS="$BUILD_CPPFLAGS -DLOCALEDIR=\\\"\$(localedir)\\\""
+
 # Default HOST_CPPFLAGS
 HOST_CPPFLAGS="$HOST_CPPFLAGS -Wall -W"
 HOST_CPPFLAGS="$HOST_CPPFLAGS -I\$(top_builddir)/include"
@@ -282,23 +284,6 @@ if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
-FONT_SOURCE=
-
-for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
-  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont /usr/share/fonts/uni /usr/share/fonts/truetype/unifont /usr/share/fonts/misc; do
-    if test -f "$dir/unifont.$ext"; then
-      FONT_SOURCE="$dir/unifont.$ext"
-      break 2
-    fi
-  done
-done
-
-if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips); then
-   AC_MSG_ERROR([qemu and loongson ports need unifont])
-fi
-
-AC_SUBST([FONT_SOURCE])
-
 AC_PROG_RANLIB
 AC_PROG_INSTALL
 AC_PROG_AWK
@@ -438,6 +423,8 @@ else
 fi
 AC_SUBST(HOST_CC)
 AC_SUBST(BUILD_CC)
+AC_SUBST(BUILD_CFLAGS)
+AC_SUBST(BUILD_CPPFLAGS)
 AC_SUBST(TARGET_CC)
 
 # Test the C compiler for the target environment.
@@ -985,20 +972,61 @@ enable_grub_mkfont=yes
 else
 enable_grub_mkfont=no
 fi
-if test x"$enable_grub_mkfont" = xno && test "x$platform" = xloongson; then
-  AC_MSG_ERROR([loongson port needs grub-mkfont])
-fi
 AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
 
+SAVED_CC="$CC"
+SAVED_CFLAGS="$CFLAGS"
+SAVED_CPPFLAGS="$CPPFLAGS"
+CC="$BUILD_CC"
+CFLAGS="$BUILD_CFLAGS"
+CPPFLAGS="$SAVED_CPPFLAGS"
+
+if test x"$grub_build_mkfont_excuse" = x ; then
+  # Check for freetype libraries.
+  AC_CHECK_TOOLS([BUILD_FREETYPE], [freetype-config])
+  if test "x$BUILD_FREETYPE" = x ; then
+    grub_build_mkfont_excuse=["need freetype2 library"]
+  fi
+fi
+
+if test x"$grub_build_mkfont_excuse" = x ; then
+  # Check for freetype libraries.
+  build_freetype_cflags=`$BUILD_FREETYPE --cflags`
+  build_freetype_libs=`$BUILD_FREETYPE --libs`
+  SAVED_CPPFLAGS_2="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $build_freetype_cflags"
+  AC_CHECK_HEADERS([ft2build.h], [],
+  	[grub_build_mkfont_excuse=["need freetype2 headers"]])
+  CPPFLAGS="$SAVED_CPPFLAGS_2"
+fi
+
+if test x"$enable_build_grub_mkfont" = xyes && test x"$grub_build_mkfont_excuse" != x ; then
+  AC_MSG_ERROR([build-grub-mkfont was explicitly requested but can't be compiled])
+fi
+if test x"$grub_build_mkfont_excuse" = x ; then
+  enable_build_grub_mkfont=yes
+else
+  enable_build_grub_mkfont=no
+  starfield_excuse="No build-time grub-mkfont"
+  FONT_SOURCE=
+fi
+if test x"$enable_build_grub_mkfont" = xno && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips ); then
+  AC_MSG_ERROR([loongson port needs build-time grub-mkfont])
+fi
+
+AC_SUBST([build_freetype_cflags])
+AC_SUBST([build_freetype_libs])
+
+CC="$SAVED_CC"
+CFLAGS="$SAVED_CFLAGS"
+CPPFLAGS="$SAVED_CPPFLAGS"
+
+
 DJVU_FONT_SOURCE=
 
 starfield_excuse=
-
-if test x$enable_grub_mkfont = xno; then
-   starfield_excuse="No grub-mkfont"
-fi
 
 if test x"$starfield_excuse" = x; then
    for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
@@ -1016,6 +1044,28 @@ if test x"$starfield_excuse" = x; then
 fi
 
 AC_SUBST([DJVU_FONT_SOURCE])
+
+FONT_SOURCE=
+
+for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
+  for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/unifont /usr/share/fonts/uni /usr/share/fonts/truetype/unifont /usr/share/fonts/misc; do
+    if test -f "$dir/unifont.$ext"; then
+      FONT_SOURCE="$dir/unifont.$ext"
+      break 2
+    fi
+  done
+done
+
+if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips ); then
+   AC_MSG_ERROR([qemu and loongson ports need unifont])
+fi
+
+AC_SUBST([FONT_SOURCE])
+
+if test x"$FONT_SOURCE" = x &&  test x"$DJVU_FONT_SOURCE" = x; then
+  grub_build_mkfont_excuse="no fonts"
+fi
+
 
 AC_ARG_ENABLE([grub-mount],
 	      [AS_HELP_STRING([--enable-grub-mount],
@@ -1193,6 +1243,7 @@ AM_CONDITIONAL([COND_GRUB_EMU_USB], [test x$enable_grub_emu_usb = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_SDL], [test x$enable_grub_emu_sdl = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_PCI], [test x$enable_grub_emu_pci = xyes])
 AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
+AM_CONDITIONAL([COND_BUILD_GRUB_MKFONT], [test x$enable_build_grub_mkfont = xyes])
 AM_CONDITIONAL([COND_GRUB_MOUNT], [test x$enable_grub_mount = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
 AM_CONDITIONAL([COND_GRUB_PE2ELF], [test x$TARGET_OBJ2ELF != x])
@@ -1306,10 +1357,16 @@ echo With libzfs support: Yes
 else
 echo With libzfs support: No "($libzfs_excuse)"
 fi
-if test "x$FONT_SOURCE" = x ; then
-echo "Without unifont"
+if [ x"$build_grub_mkfont_excuse" = x ]; then
+  echo Build-time grub-mkfont: Yes
+  if test "x$FONT_SOURCE" = x ; then
+    echo "Without unifont"
+  else
+    echo "With unifont from $FONT_SOURCE"
+  fi
 else
-echo "With unifont from $FONT_SOURCE"
+  echo Build-time grub-mkfont: No "($build_grub_mkfont_excuse)"
+  echo "Without unifont (no build-time grub-mkfont)"
 fi
 if test "x$LIBLZMA" = x ; then
 echo "Without liblzma (no support for XZ-compressed mips images)"

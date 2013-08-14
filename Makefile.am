@@ -60,26 +60,30 @@ grub_fstest_init.c: grub_fstest_init.lst $(top_srcdir)/geninit.sh
 	sh $(top_srcdir)/geninit.sh `cat $<` > $@ || (rm -f $@; exit 1)
 CLEANFILES += grub_fstest_init.c
 
-if COND_GRUB_MKFONT
 if COND_HAVE_FONT_SOURCE
 pkgdata_DATA += unicode.pf2 ascii.pf2 euro.pf2 ascii.h widthspec.h
-endif
 endif
 
 starfield_theme_files = $(srcdir)/themes/starfield/blob_w.png $(srcdir)/themes/starfield/boot_menu_c.png $(srcdir)/themes/starfield/boot_menu_e.png $(srcdir)/themes/starfield/boot_menu_ne.png $(srcdir)/themes/starfield/boot_menu_n.png $(srcdir)/themes/starfield/boot_menu_nw.png $(srcdir)/themes/starfield/boot_menu_se.png $(srcdir)/themes/starfield/boot_menu_s.png $(srcdir)/themes/starfield/boot_menu_sw.png $(srcdir)/themes/starfield/boot_menu_w.png $(srcdir)/themes/starfield/slider_c.png $(srcdir)/themes/starfield/slider_n.png $(srcdir)/themes/starfield/slider_s.png $(srcdir)/themes/starfield/starfield.png $(srcdir)/themes/starfield/terminal_box_c.png $(srcdir)/themes/starfield/terminal_box_e.png $(srcdir)/themes/starfield/terminal_box_ne.png $(srcdir)/themes/starfield/terminal_box_n.png $(srcdir)/themes/starfield/terminal_box_nw.png $(srcdir)/themes/starfield/terminal_box_se.png $(srcdir)/themes/starfield/terminal_box_s.png $(srcdir)/themes/starfield/terminal_box_sw.png $(srcdir)/themes/starfield/terminal_box_w.png $(srcdir)/themes/starfield/theme.txt $(srcdir)/themes/starfield/README $(srcdir)/themes/starfield/COPYING.CC-BY-SA-3.0
 
+build-grub-mkfont: util/grub-mkfont.c grub-core/unidata.c grub-core/kern/emu/argp_common.c grub-core/kern/emu/misc.c util/misc.c grub-core/gnulib/progname.c
+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -I$(top_srcdir)/grub-core/gnulib -DGRUB_MKFONT=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) $(LIBINTL)
+
+build-grub-bin2h: util/bin2h.c
+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $<
+
 if COND_STARFIELD
 starfield_DATA = dejavu_10.pf2 dejavu_12.pf2 dejavu_bold_14.pf2 dejavu_14.pf2 dejavu_16.pf2 $(starfield_theme_files)
-dejavu_10.pf2: $(DJVU_FONT_SOURCE) grub-mkfont
-	./grub-mkfont -s 10 -o $@ $(DJVU_FONT_SOURCE)
-dejavu_12.pf2: $(DJVU_FONT_SOURCE) grub-mkfont
-	./grub-mkfont -s 12 -o $@ $(DJVU_FONT_SOURCE)
-dejavu_14.pf2: $(DJVU_FONT_SOURCE) grub-mkfont
-	./grub-mkfont -s 14 -o $@ $(DJVU_FONT_SOURCE)
-dejavu_bold_14.pf2: $(DJVU_FONT_SOURCE) grub-mkfont
-	./grub-mkfont -b -s 14 -o $@ $(DJVU_FONT_SOURCE)
-dejavu_16.pf2: $(DJVU_FONT_SOURCE) grub-mkfont
-	./grub-mkfont -s 16 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_10.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
+	./build-grub-mkfont -s 10 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_12.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
+	./build-grub-mkfont -s 12 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_14.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
+	./build-grub-mkfont -s 14 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_bold_14.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
+	./build-grub-mkfont -b -s 14 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_16.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
+	./build-grub-mkfont -s 16 -o $@ $(DJVU_FONT_SOURCE)
 else
 starfield_DATA = 
 endif
@@ -87,36 +91,36 @@ endif
 EXTRA_DIST += $(starfield_theme_files)
 EXTRA_DIST += $(srcdir)/themes/starfield/src/slider_s.xcf $(srcdir)/themes/starfield/src/slider_n.xcf $(srcdir)/themes/starfield/src/slider_c.xcf $(srcdir)/themes/starfield/src/blob_nw.xcf $(srcdir)/themes/starfield/src/bootmenu/center.xcf $(srcdir)/themes/starfield/src/bootmenu/corner.xcf $(srcdir)/themes/starfield/src/bootmenu/side.xcf $(srcdir)/themes/starfield/src/terminalbox/side.xcf $(srcdir)/themes/starfield/src/terminalbox/corner.xcf $(srcdir)/themes/starfield/src/terminalbox/center.xcf
 
-unicode.pf2: $(FONT_SOURCE) grub-mkfont
-	./grub-mkfont -o $@ $(FONT_SOURCE)
+unicode.pf2: $(FONT_SOURCE) build-grub-mkfont
+	./build-grub-mkfont -o $@ $(FONT_SOURCE)
 CLEANFILES += unicode.pf2
 
 # Arrows and lines are needed to draw the menu, so always include them
 UNICODE_ARROWS=0x2190-0x2193
 UNICODE_LINES=0x2501-0x251B
 
-ascii.pf2: $(FONT_SOURCE) grub-mkfont
-	./grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
+ascii.pf2: $(FONT_SOURCE) build-grub-mkfont
+	./build-grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
 CLEANFILES += ascii.pf2
 
-euro.pf2: $(FONT_SOURCE) grub-mkfont
-	./grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x4ff,0x1e00-0x1fff,$(UNICODE_ARROWS),$(UNICODE_LINES)
+euro.pf2: $(FONT_SOURCE) build-grub-mkfont
+	./build-grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x4ff,0x1e00-0x1fff,$(UNICODE_ARROWS),$(UNICODE_LINES)
 CLEANFILES += euro.pf2
 
-ascii.bitmaps: $(FONT_SOURCE) grub-mkfont
-	./grub-mkfont --ascii-bitmaps -o $@ $(FONT_SOURCE)
+ascii.bitmaps: $(FONT_SOURCE) build-grub-mkfont
+	./build-grub-mkfont --ascii-bitmaps -o $@ $(FONT_SOURCE)
 CLEANFILES += ascii.bitmaps
 
-ascii.h: ascii.bitmaps grub-bin2h
-	./grub-bin2h ascii_bitmaps < $< > $@
+ascii.h: ascii.bitmaps build-grub-bin2h
+	./build-grub-bin2h ascii_bitmaps < $< > $@
 CLEANFILES += ascii.h $(top_builddir)/grub-core/include/ascii.h
 
-widthspec.bin: $(FONT_SOURCE) grub-mkfont
-	./grub-mkfont --width-spec -o $@ $(FONT_SOURCE)
+widthspec.bin: $(FONT_SOURCE) build-grub-mkfont
+	./build-grub-mkfont --width-spec -o $@ $(FONT_SOURCE)
 CLEANFILES += widthspec.bin
 
-widthspec.h: widthspec.bin grub-bin2h
-	./grub-bin2h widthspec < $< > $@
+widthspec.h: widthspec.bin build-grub-bin2h
+	./build-grub-bin2h widthspec < $< > $@
 CLEANFILES += widthspec.h
 
 # Install config.h into platformdir

@@ -145,6 +145,7 @@ xstrdup (const char *str)
   return newstr;
 }
 
+#ifndef GRUB_MKFONT
 char *
 xasprintf (const char *fmt, ...)
 { 
@@ -158,6 +159,7 @@ xasprintf (const char *fmt, ...)
   
   return result;
 }
+#endif
 
 void
 grub_exit (void)

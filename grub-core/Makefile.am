@@ -8,10 +8,8 @@ CC=$(TARGET_CC)
 CPP=$(TARGET_CC)
 CCAS=$(TARGET_CC)
 
-if COND_GRUB_MKFONT
 if COND_HAVE_FONT_SOURCE
 TARGET_CFLAGS += -DUSE_ASCII_FALLBACK=1 -DHAVE_UNIFONT_WIDTHSPEC=1
-endif
 endif
 
 MACHO2IMG=$(top_builddir)/grub-macho2img
@@ -32,7 +30,7 @@ CCASFLAGS_LIBRARY += $(CCASFLAGS_PLATFORM)
 
 # gentrigtables
 gentrigtables: gentrigtables.c
-	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(CPPFLAGS) $< -lm
+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $< -lm
 CLEANFILES += gentrigtables
 
 # trigtables.c
@@ -151,11 +149,6 @@ if COND_mips_qemu_mips
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/cpu/cache.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video_fb.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/serial.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h

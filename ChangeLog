@@ -1,5 +1,11 @@
 2013-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix handling of build-time grub-bin2h and grub-mkfont when doing
+	full Canadian cross. Tested with build=x86_64, host=arm,
+	target=ppc-ieee1275.
+
+2013-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Error if no $BUILD_CC could be found.
 	Reported by: DevHC.
 
