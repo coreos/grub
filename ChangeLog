@@ -1,3 +1,8 @@
+2013-08-14  Avik Sil <aviksil@in.ibm.com>
+
+	* grub-core/net/drivers/ieee1275/ofnet.c: Get proper mac address when
+	using qemu.
+
 2013-08-14  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
 	* .bzrignore: Add bootinfo.txt, grub.chrp, gnulib/float.h, and

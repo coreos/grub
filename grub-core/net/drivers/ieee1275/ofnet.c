@@ -202,6 +202,9 @@ search_net_devices (struct grub_ieee1275_devalias *alias)
   struct grub_net_card *card;
   grub_ieee1275_phandle_t devhandle;
   grub_net_link_level_address_t lla;
+  grub_ssize_t prop_size;
+  grub_uint64_t prop;
+  grub_uint8_t *pprop;
   char *shortname;
 
   if (grub_strcmp (alias->type, "network") != 0)
@@ -235,15 +238,21 @@ search_net_devices (struct grub_ieee1275_devalias *alias)
       card->mtu = t;
   }
 
+  pprop = (grub_uint8_t *) &prop;
   if (grub_ieee1275_get_property (devhandle, "mac-address",
-				  &(lla.mac), 6, 0)
+				  pprop, sizeof(prop), &prop_size)
       && grub_ieee1275_get_property (devhandle, "local-mac-address",
-				     &(lla.mac), 6, 0))
+				     pprop, sizeof(prop), &prop_size))
     {
       grub_error (GRUB_ERR_IO, "Couldn't retrieve mac address.");
       grub_print_error ();
       return 0;
     }
+
+  if (prop_size == 8)
+    grub_memcpy (&lla.mac, pprop+2, 6);
+  else
+    grub_memcpy (&lla.mac, pprop, 6);
 
   lla.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
   card->default_address = lla;
