@@ -1,4 +1,8 @@
-2013-08-14  Avik Sil <aviksil@in.ibm.com>
+2013-08-14 Avik Sil <aviksil@in.ibm.com>
+
+	* grub-core/net/tftp.c: Send tftp ack packet before closing the socket.
+
+2013-08-14 Avik Sil <aviksil@in.ibm.com>
 
 	* grub-core/net/drivers/ieee1275/ofnet.c: Get proper mac address when
 	using qemu.

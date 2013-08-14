@@ -243,6 +243,8 @@ tftp_receive (grub_net_udp_socket_t sock __attribute__ ((unused)),
 	    data->block++;
 	    if (size < data->block_size)
 	      {
+		if (data->ack_sent < data->block)
+		  ack (data, data->block);
 		file->device->net->eof = 1;
 		file->device->net->stall = 1;
 		grub_net_udp_close (data->sock);
