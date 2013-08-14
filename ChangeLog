@@ -1,5 +1,10 @@
 2013-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/coreboot/init.c: Fix compilation on
+	i386-multiboot.
+
+2013-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/vga_init.c: Fix compilation on qemu-mips.
 	* grub-core/kern/mips/qemu_mips/init.c: Likewise.
 

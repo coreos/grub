@@ -85,6 +85,8 @@ heap_init (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
   return 0;
 }
 
+#ifndef GRUB_MACHINE_MULTIBOOT
+
 void
 grub_machine_init (void)
 {
@@ -94,9 +96,6 @@ grub_machine_init (void)
 
   grub_vga_text_init ();
 
-#ifdef GRUB_MACHINE_MULTIBOOT
-  grub_machine_mmap_init ();
-#endif
   grub_machine_mmap_iterate (heap_init, NULL);
 
   grub_video_coreboot_fb_late_init ();
@@ -106,6 +105,23 @@ grub_machine_init (void)
 
   grub_tsc_init ();
 }
+
+#else
+
+void
+grub_machine_init (void)
+{
+  modend = grub_modules_get_end ();
+
+  grub_vga_text_init ();
+
+  grub_machine_mmap_init ();
+  grub_machine_mmap_iterate (heap_init, NULL);
+
+  grub_tsc_init ();
+}
+
+#endif
 
 void
 grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
