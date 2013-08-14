@@ -1,3 +1,8 @@
+2013-08-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	*  util/getroot.c (pull_lvm_by_command): add --separator option
+	to vgs call to disable padding of output to 10 characters.
+
 2013-08-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/misc.c (grub_device_mapper_supported): Move from
