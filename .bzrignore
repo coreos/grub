@@ -166,6 +166,7 @@ grub-core/lib/libgcrypt-grub
 **/.dirstamp
 Makefile.util.am
 contrib
+grub-core/bootinfo.txt
 grub-core/Makefile.core.am
 grub-core/Makefile.gcry.def
 grub-core/contrib
@@ -173,6 +174,7 @@ grub-core/gdb_grub
 grub-core/genmod.sh
 grub-core/gensyminfo.sh
 grub-core/gmodule.pl
+grub-core/grub.chrp
 grub-core/modinfo.sh
 grub-core/*.module
 grub-core/*.pp
@@ -182,6 +184,7 @@ grub-core/gnulib/arg-nonnull.h
 grub-core/gnulib/c++defs.h
 grub-core/gnulib/charset.alias
 grub-core/gnulib/configmake.h
+grub-core/gnulib/float.h
 grub-core/gnulib/getopt.h
 grub-core/gnulib/langinfo.h
 grub-core/gnulib/ref-add.sed
@@ -204,6 +207,7 @@ Makefile.utilgcry.def
 po/*.po
 po/*.gmo
 po/LINGUAS
+po/remove-potcdate.sed
 include/grub/gcrypt/gcrypt.h
 include/grub/gcrypt/g10lib.h
 po/POTFILES.in
