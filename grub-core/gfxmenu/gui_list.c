@@ -231,6 +231,8 @@ draw_menu (list_impl_t self, int num_shown_items)
 
   int ascent = grub_font_get_ascent (self->item_font);
   int descent = grub_font_get_descent (self->item_font);
+  int selected_ascent = grub_font_get_ascent (self->selected_item_font);
+  int selected_descent = grub_font_get_descent (self->selected_item_font);
   int item_height = self->item_height;
 
   make_selected_item_visible (self);
@@ -255,12 +257,15 @@ draw_menu (list_impl_t self, int num_shown_items)
     cwidth -= selbox->get_border_width (selbox);
   selbox->set_content_size (selbox, cwidth, item_height);
 
-  int string_left_offset = self->icon_width + icon_text_space;
-  int string_top_offset = (item_height - (ascent + descent)) / 2 + ascent;
+  int item_left_offset = self->icon_width + icon_text_space;
+  int item_top_offset = (item_height - (ascent + descent)) / 2 + ascent;
+  int selected_item_top_offset = (item_height - (selected_ascent
+                                                 + selected_descent)) / 2
+                                 + selected_ascent;
 
   grub_video_rect_t svpsave, sviewport;
-  sviewport.x = sel_leftpad + string_left_offset;
-  sviewport.width = cwidth - string_left_offset;
+  sviewport.x = sel_leftpad + item_left_offset;
+  sviewport.width = cwidth - item_left_offset;
   sviewport.height = item_height;
 
   grub_video_color_t item_color;
@@ -276,6 +281,7 @@ draw_menu (list_impl_t self, int num_shown_items)
       struct grub_video_bitmap *icon;
       grub_font_t font;
       grub_video_color_t color;
+      int top_offset;
 
       if (is_selected)
         {
@@ -283,11 +289,13 @@ draw_menu (list_impl_t self, int num_shown_items)
                         item_top - sel_toppad);
           font = self->selected_item_font;
           color = selected_item_color;
+          top_offset = selected_item_top_offset;
         }
       else
         {
           font = self->item_font;
           color = item_color;
+          top_offset = item_top_offset;
         }
 
       icon = get_item_icon (self, menu_index);
@@ -306,7 +314,7 @@ draw_menu (list_impl_t self, int num_shown_items)
                              font,
                              color,
                              0,
-                             string_top_offset);
+                             top_offset);
       grub_gui_restore_viewport (&svpsave);
 
       item_top += item_height + item_vspace;
