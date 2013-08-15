@@ -41,9 +41,10 @@ struct grub_gui_list_impl
   int item_icon_space;
   int item_spacing;
   grub_font_t item_font;
+  int selected_item_font_inherit;
   grub_font_t selected_item_font;
   grub_video_rgba_color_t item_color;
-  int selected_item_color_set;
+  int selected_item_color_inherit;
   grub_video_rgba_color_t selected_item_color;
 
   int draw_scrollbar;
@@ -262,17 +263,31 @@ draw_menu (list_impl_t self, int num_shown_items)
   sviewport.width = cwidth - string_left_offset;
   sviewport.height = item_height;
 
+  grub_video_color_t item_color;
+  grub_video_color_t selected_item_color;
+  item_color = grub_video_map_rgba_color (self->item_color);
+  selected_item_color = grub_video_map_rgba_color (self->selected_item_color);
+
   for (visible_index = 0, menu_index = self->first_shown_index;
        visible_index < num_shown_items && menu_index < self->view->menu->size;
        visible_index++, menu_index++)
     {
       int is_selected = (menu_index == self->view->selected);
       struct grub_video_bitmap *icon;
+      grub_font_t font;
+      grub_video_color_t color;
 
       if (is_selected)
         {
           selbox->draw (selbox, 0,
                         item_top - sel_toppad);
+          font = self->selected_item_font;
+          color = selected_item_color;
+        }
+      else
+        {
+          font = self->item_font;
+          color = item_color;
         }
 
       icon = get_item_icon (self, menu_index);
@@ -284,20 +299,12 @@ draw_menu (list_impl_t self, int num_shown_items)
 
       const char *item_title =
         grub_menu_get_entry (self->view->menu, menu_index)->title;
-      grub_font_t font =
-        (is_selected && self->selected_item_font
-         ? self->selected_item_font
-         : self->item_font);
-      grub_video_rgba_color_t text_color =
-        ((is_selected && self->selected_item_color_set)
-         ? self->selected_item_color
-         : self->item_color);
 
       sviewport.y = item_top;
       grub_gui_set_viewport (&sviewport, &svpsave);
       grub_font_draw_string (item_title,
                              font,
-                             grub_video_map_rgba_color (text_color),
+                             color,
                              0,
                              string_top_offset);
       grub_gui_restore_viewport (&svpsave);
@@ -446,29 +453,48 @@ list_set_property (void *vself, const char *name, const char *value)
   if (grub_strcmp (name, "item_font") == 0)
     {
       self->item_font = grub_font_get (value);
+      if (self->selected_item_font_inherit)
+        self->selected_item_font = self->item_font;
     }
   else if (grub_strcmp (name, "selected_item_font") == 0)
     {
       if (! value || grub_strcmp (value, "inherit") == 0)
-        self->selected_item_font = 0;
+        {
+          self->selected_item_font = self->item_font;
+          self->selected_item_font_inherit = 1;
+        }
       else
-        self->selected_item_font = grub_font_get (value);
+        {
+          self->selected_item_font = grub_font_get (value);
+          self->selected_item_font_inherit = 0;
+        }
     }
   else if (grub_strcmp (name, "item_color") == 0)
     {
-      grub_video_parse_color (value, &self->item_color);
+      grub_video_rgba_color_t color;
+      if (grub_video_parse_color (value, &color) == GRUB_ERR_NONE)
+        {
+          self->item_color = color;
+          if (self->selected_item_color_inherit)
+            self->selected_item_color = self->item_color;
+        }
     }
   else if (grub_strcmp (name, "selected_item_color") == 0)
     {
       if (! value || grub_strcmp (value, "inherit") == 0)
         {
-          self->selected_item_color_set = 0;
+          self->selected_item_color = self->item_color;
+          self->selected_item_color_inherit = 1;
         }
       else
         {
-          if (grub_video_parse_color (value, &self->selected_item_color)
+          grub_video_rgba_color_t color;
+          if (grub_video_parse_color (value, &color)
               == GRUB_ERR_NONE)
-            self->selected_item_color_set = 1;
+            {
+              self->selected_item_color = color;
+              self->selected_item_color_inherit = 0;
+            }
         }
     }
   else if (grub_strcmp (name, "icon_width") == 0)
@@ -621,9 +647,10 @@ grub_gui_list_new (void)
   self->item_icon_space = 4;
   self->item_spacing = 16;
   self->item_font = default_font;
-  self->selected_item_font = 0;    /* Default to using the item_font.  */
+  self->selected_item_font_inherit = 1; /* Default to using the item_font.  */
+  self->selected_item_font = default_font;
   self->item_color = default_fg_color;
-  self->selected_item_color_set = 0;  /* Default to using the item_color.  */
+  self->selected_item_color_inherit = 1;  /* Default to using the item_color.  */
   self->selected_item_color = default_fg_color;
 
   self->draw_scrollbar = 1;
