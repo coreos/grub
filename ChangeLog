@@ -1,3 +1,7 @@
+2013-08-15  Vladimir Testov  <vladimir.testov@gmail.com>
+
+	* grub-core/gfxmenu/gui_list.c: Minimal width fixed.
+
 2013-08-14 Avik Sil <aviksil@in.ibm.com>
 
 	* grub-core/net/tftp.c: Send tftp ack packet before closing the socket.

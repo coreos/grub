@@ -422,7 +422,8 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       if (*width < width_s)
 	*width = width_s;
 
-      *width += 2 * boxpad + box_left_pad + box_right_pad;
+      *width += 2 * boxpad + box_left_pad + box_right_pad
+                + self->item_icon_space + self->icon_width;
 
       /* Set the menu box height to fit the items.  */
       *height = (item_height * num_items
