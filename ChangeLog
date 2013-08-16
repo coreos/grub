@@ -1,5 +1,10 @@
 2013-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/Makefile.extra-dist: Add util/bin2h.c.
+	Reported by: floppym.
+
+2013-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Make unifont mandatory for powerpc-ieee1275.
 
 2013-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
