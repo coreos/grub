@@ -1,5 +1,9 @@
 2013-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Make unifont mandatory for powerpc-ieee1275.
+
+2013-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Disable unifont and starfield if no freetype was found.
 
 2013-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
