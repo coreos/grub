@@ -1088,22 +1088,30 @@ grub_netbsd_add_boot_disk_and_wedge (void)
     grub_bsd_add_meta (NETBSD_BTINFO_BOOTWEDGE, &biw, sizeof (biw));
   }
 
-  /* Fill bootdisk if this a NetBSD disk label.  */
-  if (part->partmap != NULL &&
-      (grub_strcmp (part->partmap->name, "netbsd") == 0) &&
-      buf.label.magic == grub_cpu_to_le32 (GRUB_PC_PARTITION_BSD_LABEL_MAGIC))
-    {
-      struct grub_netbsd_btinfo_bootdisk bid;
+  /* Fill bootdisk.  */
+  {
+    struct grub_netbsd_btinfo_bootdisk bid;
 
-      grub_memset (&bid, 0, sizeof (bid));
-      bid.labelsector = partmapsector;
-      bid.label.type = buf.label.type;
-      bid.label.checksum = buf.label.checksum;
-      memcpy (bid.label.packname, buf.label.packname, 16);
-      bid.biosdev = biosdev;
-      bid.partition = part->number;
-      grub_bsd_add_meta (NETBSD_BTINFO_BOOTDISK, &bid, sizeof (bid));
-    }
+    grub_memset (&bid, 0, sizeof (bid));
+    /* Check for a NetBSD disk label.  */
+    if (part->partmap != NULL &&
+	(grub_strcmp (part->partmap->name, "netbsd") == 0 ||
+	 (part->parent == NULL && grub_strcmp (part->partmap->name, "bsd") == 0)))
+      {
+	bid.labelsector = partmapsector;
+	bid.label.type = buf.label.type;
+	bid.label.checksum = buf.label.checksum;
+	memcpy (bid.label.packname, buf.label.packname, 16);
+      }
+    else
+      {
+	bid.labelsector = -1;
+      }
+    bid.biosdev = biosdev;
+    bid.partition = part->number;
+
+    grub_bsd_add_meta (NETBSD_BTINFO_BOOTDISK, &bid, sizeof (bid));
+  }
 
 fail:
   if (dev)

@@ -1,3 +1,8 @@
+2013-08-16  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* grub-core/loader/i386/bsd.c (grub_netbsd_add_boot_disk_and_wedge):
+	Always fill bootdisk info and improve check for NetBSD disklabel.
+
 2013-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/Makefile.extra-dist: Add util/bin2h.c.
