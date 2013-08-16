@@ -1,5 +1,9 @@
 2013-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Disable unifont and starfield if no freetype was found.
+
+2013-08-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/wchar.h: Fix wchar_t and mbstate_t conflict
 	on NetBSD and OpenBSD.
 

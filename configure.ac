@@ -1009,8 +1009,6 @@ if test x"$grub_build_mkfont_excuse" = x ; then
   enable_build_grub_mkfont=yes
 else
   enable_build_grub_mkfont=no
-  starfield_excuse="No build-time grub-mkfont"
-  FONT_SOURCE=
 fi
 if test x"$enable_build_grub_mkfont" = xno && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips ); then
   AC_MSG_ERROR([loongson port needs build-time grub-mkfont])
@@ -1027,6 +1025,10 @@ CPPFLAGS="$SAVED_CPPFLAGS"
 DJVU_FONT_SOURCE=
 
 starfield_excuse=
+
+if test x"$enable_build_grub_mkfont" = xno ; then
+  starfield_excuse="No build-time grub-mkfont"
+fi
 
 if test x"$starfield_excuse" = x; then
    for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
@@ -1055,6 +1057,10 @@ for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
     fi
   done
 done
+
+if test x"$enable_build_grub_mkfont" = xno ; then
+  FONT_SOURCE=
+fi
 
 if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips ); then
    AC_MSG_ERROR([qemu and loongson ports need unifont])
