@@ -21,16 +21,16 @@
 	* grub-core/lib/posix_wrap/wchar.h: Fix wchar_t and mbstate_t conflict
 	on NetBSD and OpenBSD.
 
-2013-08-15  Vladimir Testov  <vladimir.testov@gmail.com>
+2013-08-15  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_list.c: Baseline misplacement fixed.
 
-2013-08-15  Vladimir Testov  <vladimir.testov@gmail.com>
+2013-08-15  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_list.c: The number of color mappings is
 	reduced. Inheritant options are processed during the theme loading.
 
-2013-08-15  Vladimir Testov  <vladimir.testov@gmail.com>
+2013-08-15  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_list.c: Minimal width fixed.
 
