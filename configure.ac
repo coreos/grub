@@ -172,6 +172,10 @@ case "$host_os" in
   mingw32*) host_os=cygwin ;;
 esac
 
+case "$target_os" in
+  mingw32*) target_os=cygwin ;;
+esac
+
 # This normalizes the names, and creates a new variable ("host_kernel")
 # while at it, since the mapping is not always 1:1 (e.g. different OSes
 # using the same kernel type).
@@ -408,24 +412,28 @@ if test "x$target_alias" != x && test "x$host_alias" != "x$target_alias"; then
 
   AC_CHECK_TOOLS(TARGET_CC, [gcc egcs cc],
                  [AC_MSG_ERROR([none of gcc, egcs and cc is found. set TARGET_CC manually.])])
-  AC_CHECK_TOOL(OBJCOPY, objcopy)
-  AC_CHECK_TOOL(STRIP, strip)
-  AC_CHECK_TOOL(NM, nm)
+  AC_CHECK_TOOL(TARGET_OBJCOPY, objcopy)
+  AC_CHECK_TOOL(TARGET_STRIP, strip)
+  AC_CHECK_TOOL(TARGET_NM, nm)
 
   ac_tool_prefix="$tmp_ac_tool_prefix"
 else
   if test "x$TARGET_CC" = x; then
     TARGET_CC=$CC
   fi
-  AC_CHECK_TOOL(OBJCOPY, objcopy)
-  AC_CHECK_TOOL(STRIP, strip)
-  AC_CHECK_TOOL(NM, nm)
+  AC_CHECK_TOOL(TARGET_OBJCOPY, objcopy)
+  AC_CHECK_TOOL(TARGET_STRIP, strip)
+  AC_CHECK_TOOL(TARGET_NM, nm)
 fi
+
 AC_SUBST(HOST_CC)
 AC_SUBST(BUILD_CC)
 AC_SUBST(BUILD_CFLAGS)
 AC_SUBST(BUILD_CPPFLAGS)
 AC_SUBST(TARGET_CC)
+AC_SUBST(TARGET_NM)
+AC_SUBST(TARGET_STRIP)
+AC_SUBST(TARGET_OBJCOPY)
 
 # Test the C compiler for the target environment.
 tmp_CC="$CC"
@@ -438,6 +446,11 @@ CFLAGS="$TARGET_CFLAGS"
 CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 LIBS=""
+
+grub_PROG_NM_MINUS_P
+grub_PROG_NM_DEFINED_ONLY
+AC_SUBST(TARGET_NMFLAGS_MINUS_P)
+AC_SUBST(TARGET_NMFLAGS_DEFINED_ONLY)
 
 # debug flags.
 WARN_FLAGS="-Wall -W -Wshadow -Wold-style-definition -Wpointer-arith -Wundef -Wextra -Waddress -Wattributes -Wcast-align -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels -Wfloat-equal -Wformat-extra-args -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Winit-self -Wint-to-pointer-cast -Winvalid-pch -Wmain -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-noreturn -Wmultichar -Wnonnull -Woverflow -Wparentheses -Wpointer-arith -Wpointer-to-int-cast -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wswitch -Wtrigraphs -Wundef -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value  -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings -Wnested-externs -Wstrict-prototypes -Wpointer-sign"
@@ -507,11 +520,11 @@ if test x$grub_cv_apple_target_cc = xyes ; then
 
   CFLAGS="$CFLAGS -fnested-functions"
   TARGET_APPLE_CC=1
-  AC_CHECK_PROG([OBJCONV], [objconv], [objconv], [])
-  if test "x$OBJCONV" = x ; then
-     AC_CHECK_PROG([OBJCONV], [objconv], [./objconv], [], [.])
+  AC_CHECK_PROG([TARGET_OBJCONV], [objconv], [objconv], [])
+  if test "x$TARGET_OBJCONV" = x ; then
+     AC_CHECK_PROG([TARGET_OBJCONV], [objconv], [./objconv], [], [.])
   fi
-  if test "x$OBJCONV" = x ; then
+  if test "x$TARGET_OBJCONV" = x ; then
     AC_MSG_ERROR([objconv not found which is required when building with apple compiler])
   fi
   TARGET_IMG_LDSCRIPT=
@@ -524,10 +537,10 @@ else
   TARGET_APPLE_CC=0
   TARGET_LDFLAGS_OLDMAGIC="-Wl,-N"
 # Use linker script if present, otherwise use builtin -N script.
-if test -f "${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"; then
-  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
+if test -f "${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"; then
+  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/${grub_coredir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
   TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}"
-  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
   TARGET_IMG_BASE_LDOPT="-Wl,-Ttext"
 else
   TARGET_IMG_LDSCRIPT=
@@ -542,7 +555,7 @@ AC_SUBST(TARGET_LDFLAGS_OLDMAGIC)
 
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
-case "${host_os}" in
+case "${target_os}" in
   cygwin) TARGET_OBJ2ELF='$(top_builddir)/grub-pe2elf';
 # FIXME: put proper test here
   NEED_REGISTER_FRAME_INFO=1
@@ -695,7 +708,7 @@ GRUB_PLATFORM="${platform}"
 AC_SUBST(GRUB_TARGET_CPU)
 AC_SUBST(GRUB_PLATFORM)
 
-AC_SUBST(OBJCONV)
+AC_SUBST(TARGET_OBJCONV)
 AC_SUBST(TARGET_CPP)
 AC_SUBST(TARGET_CCAS)
 AC_SUBST(TARGET_OBJ2ELF)
@@ -1261,7 +1274,7 @@ AM_CONDITIONAL([COND_ENABLE_BOOT_TIME_STATS], [test x$BOOT_TIME_STATS = x1])
 AM_CONDITIONAL([COND_HAVE_CXX], [test x$HAVE_CXX = xyes])
 
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
-AM_CONDITIONAL([COND_CYGWIN], [test x$host_os = xcygwin])
+AM_CONDITIONAL([COND_CYGWIN], [test x$target_os = xcygwin])
 AM_CONDITIONAL([COND_STARFIELD], [test "x$starfield_excuse" = x])
 
 # Output files.

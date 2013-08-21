@@ -1,3 +1,15 @@
+2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* INSTALL: Document cross-compilation.
+	* acinclude.m4: Determine whether nm support -P and --defined-only.
+	* configure.ac: Add TARGET_ to all variables pertaining to target
+	that don't have it yet.
+	* gentpl.py: Likewise.
+	* grub-core/Makefile.am: Likewise.
+	* grub-core/genmod.sh.in: Likewise.
+	* grub-core/gensyminfo.sh.in: Handle OpenBSD and other non-GNU nm
+	as well.
+
 2013-08-21  Ilya Bakulin <Ilya_Bakulin@genua.de>
 
 	* configure.ac: Remove -Wempty-body. It's not essential and needs

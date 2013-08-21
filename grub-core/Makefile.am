@@ -264,11 +264,11 @@ kern/emu/grub_emu_dyn-main.$(OBJEXT):grub_emu_init.h
 grub_emu_dyn-grub_emu_init.$(OBJEXT):grub_emu_init.h
 
 grub_emu_init.h: genemuinitheader.sh $(MOD_FILES)
-	rm -f $@; echo $(MOD_FILES) | sh $(srcdir)/genemuinitheader.sh $(NM) > $@
+	rm -f $@; echo $(MOD_FILES) | sh $(srcdir)/genemuinitheader.sh $(TARGET_NM) > $@
 CLEANFILES += grub_emu_init.h
 
 grub_emu_init.c: grub_emu_init.h genemuinit.sh $(MOD_FILES)
-	rm -f $@; echo $(MOD_FILES) | sh $(srcdir)/genemuinit.sh $(NM) > $@
+	rm -f $@; echo $(MOD_FILES) | sh $(srcdir)/genemuinit.sh $(TARGET_NM) > $@
 CLEANFILES += grub_emu_init.c
 endif
 

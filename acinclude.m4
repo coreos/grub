@@ -74,7 +74,7 @@ AC_MSG_RESULT([$grub_cv_asm_uscore])
 dnl Some versions of `objcopy -O binary' vary their output depending
 dnl on the link address.
 AC_DEFUN([grub_PROG_OBJCOPY_ABSOLUTE],
-[AC_MSG_CHECKING([whether ${OBJCOPY} works for absolute addresses])
+[AC_MSG_CHECKING([whether ${TARGET_OBJCOPY} works for absolute addresses])
 AC_CACHE_VAL(grub_cv_prog_objcopy_absolute,
 [cat > conftest.c <<\EOF
 void cmain (void);
@@ -95,9 +95,9 @@ for link_addr in 0x2000 0x8000 0x7C00; do
   else
     AC_MSG_ERROR([${CC-cc} cannot link at address $link_addr])
   fi
-  if AC_TRY_COMMAND([${OBJCOPY-objcopy} --only-section=.text -O binary conftest.exec conftest]); then :
+  if AC_TRY_COMMAND([${TARGET_OBJCOPY-objcopy} --only-section=.text -O binary conftest.exec conftest]); then :
   else
-    AC_MSG_ERROR([${OBJCOPY-objcopy} cannot create binary files])
+    AC_MSG_ERROR([${TARGET_OBJCOPY-objcopy} cannot create binary files])
   fi
   if test ! -f conftest.old || AC_TRY_COMMAND([cmp -s conftest.old conftest]); then
     mv -f conftest conftest.old
@@ -131,6 +131,54 @@ AC_MSG_RESULT([$grub_cv_prog_ld_build_id_none])
 
 if test "x$grub_cv_prog_ld_build_id_none" = xyes; then
   TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,--build-id=none"
+fi
+])
+
+dnl Supply -P to nm
+AC_DEFUN([grub_PROG_NM_MINUS_P],
+[AC_MSG_CHECKING([whether nm accepts -P])
+AC_CACHE_VAL(grub_cv_prog_nm_minus_p,
+[
+nm_minus_p_tmp_dir="$(mktemp -d "./confXXXXXX")"
+AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]], [[]])])
+$TARGET_CC conftest.c -o "$nm_minus_p_tmp_dir/ef"
+if $TARGET_NM -P "$nm_minus_p_tmp_dir/ef" 2>&1 > /dev/null; then
+   grub_cv_prog_nm_minus_p=yes
+else
+   grub_cv_prog_nm_minus_p=no
+fi
+rm "$nm_minus_p_tmp_dir/ef"
+])
+AC_MSG_RESULT([$grub_cv_prog_nm_minus_p])
+
+if test "x$grub_cv_prog_nm_minus_p" = xyes; then
+  TARGET_NMFLAGS_MINUS_P="-P"
+else
+  TARGET_NMFLAGS_MINUS_P=
+fi
+])
+
+dnl Supply --defined-only to nm
+AC_DEFUN([grub_PROG_NM_DEFINED_ONLY],
+[AC_MSG_CHECKING([whether nm accepts --defined-only])
+AC_CACHE_VAL(grub_cv_prog_nm_defined_only,
+[
+nm_defined_only_tmp_dir="$(mktemp -d "./confXXXXXX")"
+AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]], [[]])])
+$TARGET_CC conftest.c -o "$nm_defined_only_tmp_dir/ef"
+if $TARGET_NM --defined-only "$nm_defined_only_tmp_dir/ef" 2>&1 > /dev/null; then
+   grub_cv_prog_nm_defined_only=yes
+else
+   grub_cv_prog_nm_defined_only=no
+fi
+rm "$nm_defined_only_tmp_dir/ef"
+])
+AC_MSG_RESULT([$grub_cv_prog_nm_defined_only])
+
+if test "x$grub_cv_prog_nm_defined_only" = xyes; then
+  TARGET_NMFLAGS_DEFINED_ONLY=--defined-only
+else
+  TARGET_NMFLAGS_DEFINED_ONLY=
 fi
 ])
 
