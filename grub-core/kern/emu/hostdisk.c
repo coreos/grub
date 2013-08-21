@@ -98,7 +98,7 @@ struct hd_geometry
 # include <libdevmapper.h>
 #endif
 
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 # define HAVE_DIOCGDINFO
 # include <sys/ioctl.h>
 # include <sys/disklabel.h>    /* struct disklabel */
@@ -107,11 +107,16 @@ struct hd_geometry
 # undef HAVE_DIOCGDINFO
 #endif /* defined(__NetBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) */
 
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 # ifdef HAVE_GETRAWPARTITION
 #  include <util.h>    /* getrawpartition */
 # endif /* HAVE_GETRAWPARTITION */
+# if defined(__NetBSD__)
 # include <sys/fdio.h>
+# endif
+# if defined(__OpenBSD__)
+# include <sys/dkio.h>
+# endif
 # ifndef RAW_FLOPPY_MAJOR
 #  define RAW_FLOPPY_MAJOR	9
 # endif /* ! RAW_FLOPPY_MAJOR */
@@ -245,7 +250,7 @@ grub_uint64_t
 grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
 {
 #if !defined (__GNU__)
-# if defined(__NetBSD__)
+# if defined(__NetBSD__) || defined(__OpenBSD__)
   struct disklabel label;
 # elif defined (__sun__)
   struct dk_minfo minfo;
@@ -262,9 +267,9 @@ grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
 
 #if defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || \
   defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) \
-  || defined (__sun__)
+  || defined (__sun__) || defined(__OpenBSD__)
 
-# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) || defined (__sun__)
+# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) || defined (__sun__)  || defined(__OpenBSD__)
   if (! S_ISCHR (st.st_mode))
 # else
   if (! S_ISBLK (st.st_mode))
@@ -275,8 +280,10 @@ grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
     if (ioctl (fd, DIOCGMEDIASIZE, &nr))
 # elif defined(__APPLE__)
     if (ioctl (fd, DKIOCGETBLOCKCOUNT, &nr))
-# elif defined(__NetBSD__)
+# elif defined(__NetBSD__) || defined(__OpenBSD__)
+#  if defined(__NetBSD__)
     configure_device_driver (fd);
+#  endif
     if (ioctl (fd, DIOCGDINFO, &label) == -1)
 # elif defined (__sun__)
     if (!ioctl (fd, DKIOCGMEDIAINFO, &minfo))
@@ -293,7 +300,7 @@ grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
       goto fail;
 # elif defined(__sun__)
     sector_size = minfo.dki_lbsize;
-# elif defined(__NetBSD__)
+# elif defined(__NetBSD__) || defined(__OpenBSD__)
     sector_size = label.d_secsize;
 # else
     if (ioctl (fd, BLKSSZGET, &sector_size))
@@ -310,7 +317,7 @@ grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
 
 # if defined (__APPLE__)
     return nr << log_sector_size;
-# elif defined(__NetBSD__)
+# elif defined(__NetBSD__) || defined(__OpenBSD__)
     return (grub_uint64_t) label.d_secperunit << log_sector_size;
 # elif defined (__sun__)
     return minfo.dki_capacity << log_sector_size;

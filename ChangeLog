@@ -1,3 +1,8 @@
+2013-08-21  Ilya Bakulin <Ilya_Bakulin@genua.de>
+
+	* grub-core/kern/emu/hostdisk.c: Add conditionals for OpenBSD.
+	* util/getroot.c: Likewise.
+
 2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/ahci.c: Add needed explicit cast.

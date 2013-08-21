@@ -54,7 +54,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)
+# include <sys/param.h>
 # include <sys/mount.h>
 #endif
 
@@ -121,7 +122,7 @@
 # include <libdevmapper.h>
 #endif
 
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 # define HAVE_DIOCGDINFO
 # include <sys/ioctl.h>
 # include <sys/disklabel.h>    /* struct disklabel */
@@ -130,11 +131,13 @@
 # undef HAVE_DIOCGDINFO
 #endif /* defined(__NetBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) */
 
-#if defined(__NetBSD__)
+#if defined(__NetBSD__)  || defined(__OpenBSD__)
 # ifdef HAVE_GETRAWPARTITION
 #  include <util.h>    /* getrawpartition */
 # endif /* HAVE_GETRAWPARTITION */
+#if defined(__NetBSD__)
 # include <sys/fdio.h>
+#endif
 # ifndef FLOPPY_MAJOR
 #  define FLOPPY_MAJOR	2
 # endif /* ! FLOPPY_MAJOR */
@@ -2121,7 +2124,7 @@ devmapper_out:
     }
   return path;
 
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
   int rawpart = -1;
 # ifdef HAVE_GETRAWPARTITION
   rawpart = getrawpartition();
@@ -2129,6 +2132,7 @@ devmapper_out:
   if (rawpart < 0)
     return xstrdup (os_dev);
 
+#if defined(__NetBSD__)
   /* NetBSD disk wedges are of the form "/dev/rdk.*".  */
   if (strncmp ("/dev/rdk", os_dev, sizeof("/dev/rdk") - 1) == 0)
     {
@@ -2155,6 +2159,7 @@ devmapper_out:
       close (fd);
       return xasprintf ("/dev/r%s%c", dkw.dkw_parent, 'a' + rawpart);
     }
+#endif
 
   /* NetBSD (disk label) partitions are of the form "/dev/r[a-z]+[0-9][a-z]".  */
   if (strncmp ("/dev/r", os_dev, sizeof("/dev/r") - 1) == 0 &&
@@ -2357,7 +2362,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 #endif
     return make_device_name (drive, -1, -1);
 
-#if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined (__sun__)
+#if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined (__sun__) || defined(__OpenBSD__)
 
   /* Linux counts partitions uniformly, whether a BSD partition or a DOS
      partition, so mapping them to GRUB devices is not trivial.
