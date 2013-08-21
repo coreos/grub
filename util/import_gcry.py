@@ -494,7 +494,7 @@ for src in sorted (os.listdir (os.path.join (indir, "src"))):
         fw.close ()
         continue
     if src == "visibility.h":
-        fw.write ("# include <grub/gcrypt/gcrypt.h>")
+        fw.write ("# include <grub/gcrypt/gcrypt.h>\n")
         fw.close ()
         continue
     f = codecs.open (infile, "r", "utf-8")

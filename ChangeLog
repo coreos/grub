@@ -1,5 +1,9 @@
 2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/import_gcry.py: Add final newline in visibility.h.
+
+2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common: Fix typo.
 
 2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
