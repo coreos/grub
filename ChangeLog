@@ -1,5 +1,9 @@
 2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.util.def (grub-mkfont): Add missing libgnu.a.
+
+2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.am (widthspec.h): Fix typo.
 	* util/grub-gen-widthspec.c: Likewise.
 

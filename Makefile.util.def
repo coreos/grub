@@ -288,6 +288,7 @@ program = {
   cflags = '$(freetype_cflags)';
   cppflags = '-DGRUB_MKFONT=1';
 
+  ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(freetype_libs)';
   ldadd = '$(LIBINTL)';
   condition = COND_GRUB_MKFONT;
