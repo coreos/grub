@@ -68,9 +68,7 @@ struct grub_glyph_info
 
 enum file_formats
 {
-  PF2,
-  ASCII_BITMAPS,
-  WIDTH_SPEC
+  PF2
 };
 
 enum
@@ -773,79 +771,6 @@ print_glyphs (struct grub_font_info *font_info)
 }
 
 static void
-write_font_ascii_bitmap (struct grub_font_info *font_info, char *output_file)
-{
-  FILE *file;
-  struct grub_glyph_info *glyph;
-  int num; 
-  
-  file = fopen (output_file, "wb");
-  if (! file)
-    grub_util_error (_("cannot write to `%s': %s"), output_file,
-		     strerror (errno));
-
-  for (glyph = font_info->glyphs_sorted, num = 0; num < font_info->num_glyphs;
-       glyph++, num++)
-    {
-      if (glyph->width == 8 && glyph->height == 16
-	  && glyph->x_ofs == 0 && glyph->y_ofs == 0)
-	fwrite (glyph->bitmap, 16, 1, file);
-      else
-	{
-	  grub_uint8_t glph[16];
-	  int p = 0, mask = 0x80;
-	  int row, col;
-	  int dy = 12 - glyph->height - glyph->y_ofs;
-	  for (row = 0; row < 16; row++)
-	    glph[row] = 0;
-	  for (row = 0; row < glyph->height; row++)
-	    for (col = 0; col < glyph->width; col++)
-	      {
-		int val = glyph->bitmap[p] & mask;
-		mask >>= 1;
-		if (mask == 0)
-		  {
-		    mask = 0x80;
-		    p++;
-		  }
-		if (val && dy + row >= 0
-		    && dy + row < 16
-		    && glyph->x_ofs + col >= 0
-		    && glyph->x_ofs + col < 8)
-		  glph[dy + row] |= 1 << (7 - (glyph->x_ofs + col));
-	      }
-	  fwrite (glph, 16, 1, file);
-	}
-    }
-    fclose (file);
-}
-
-static void
-write_font_width_spec (struct grub_font_info *font_info, char *output_file)
-{
-  FILE *file;
-  struct grub_glyph_info *glyph;
-  grub_uint8_t *out;
-
-  out = xmalloc (8192);
-  memset (out, 0, 8192);
-  
-  file = fopen (output_file, "wb");
-  if (! file)
-    grub_util_error (_("cannot write to `%s': %s"), output_file,
-		     strerror (errno));
-
-  for (glyph = font_info->glyphs_sorted;
-       glyph < font_info->glyphs_sorted + font_info->num_glyphs; glyph++)
-    if (glyph->width > 12)
-      out[glyph->char_code >> 3] |= (1 << (glyph->char_code & 7));
-
-  fwrite (out, 8192, 1, file);
-  fclose (file);
-  free (out);
-}
-
-static void
 write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 {
   FILE *file;
@@ -997,7 +922,6 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 static struct argp_option options[] = {
   {"output",  'o', N_("FILE"), 0, N_("save output in FILE [required]"), 0},
   /* TRANSLATORS: bitmaps are images like e.g. in JPEG.  */
-  {"ascii-bitmaps",  0x102, 0, 0, N_("save only the ASCII bitmaps"), 0},
   {"width-spec",  0x103, 0, 0, 
    /* TRANSLATORS: this refers to creating a file containing the width of
       every glyph but not the glyphs themselves.  */
@@ -1131,14 +1055,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
       font_verbosity++;
       break;
 
-    case 0x102:
-      arguments->file_format = ASCII_BITMAPS;
-      break;
-
-    case 0x103:
-      arguments->file_format = WIDTH_SPEC;
-      break;
-
     case ARGP_KEY_ARG:
       assert (arguments->nfiles < arguments->files_max);
       arguments->files[arguments->nfiles++] = xstrdup(arg);
@@ -1178,23 +1094,6 @@ main (int argc, char *argv[])
     {
       fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
       exit(1);
-    }
-
-  if (arguments.file_format == ASCII_BITMAPS
-      && arguments.font_info.num_range > 0)
-    {
-      grub_util_error ("%s", _("Option --ascii-bitmaps doesn't accept ranges (it always uses ASCII)."));
-      return 1;
-    }
-  else if (arguments.file_format == ASCII_BITMAPS)
-    {
-      arguments.font_info.ranges = xrealloc (arguments.font_info.ranges,
-					     GRUB_FONT_RANGE_BLOCK *
-					     sizeof (grub_uint32_t) * 2);
-	  
-      arguments.font_info.ranges[0] = (grub_uint32_t) 0x00;
-      arguments.font_info.ranges[1] = (grub_uint32_t) 0x7f;
-      arguments.font_info.num_range = 1;
     }
 
   if (! arguments.output_file)
@@ -1286,14 +1185,6 @@ main (int argc, char *argv[])
     {
     case PF2:
       write_font_pf2 (&arguments.font_info, arguments.output_file);
-      break;
-
-    case ASCII_BITMAPS:
-      write_font_ascii_bitmap (&arguments.font_info, arguments.output_file);
-      break;
-
-    case WIDTH_SPEC:
-      write_font_width_spec (&arguments.font_info, arguments.output_file);
       break;
     }
 
