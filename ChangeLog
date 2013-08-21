@@ -1,5 +1,10 @@
 2013-08-21  Ilya Bakulin <Ilya_Bakulin@genua.de>
 
+	* configure.ac: Remove -Wempty-body. It's not essential and needs
+	recent gcc.
+
+2013-08-21  Ilya Bakulin <Ilya_Bakulin@genua.de>
+
 	* grub-core/kern/emu/hostdisk.c: Add conditionals for OpenBSD.
 	* util/getroot.c: Likewise.
 
