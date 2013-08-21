@@ -1,5 +1,10 @@
 2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am (widthspec.h): Fix typo.
+	* util/grub-gen-widthspec.c: Likewise.
+
+2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move ascii.h and widthspec.h generation to a separate build-time-only
 	tool.
 

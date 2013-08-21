@@ -114,7 +114,7 @@ ascii.h: $(FONT_SOURCE) build-grub-gen-asciih
 	./build-grub-gen-asciih $(FONT_SOURCE) $@ 
 CLEANFILES += ascii.h
 
-widthspec.h: $(FONT_SOURCE) build-grub-gen-asciih
+widthspec.h: $(FONT_SOURCE) build-grub-gen-widthspec
 	./build-grub-gen-widthspec $(FONT_SOURCE) $@ 
 CLEANFILES += widthspec.h
 

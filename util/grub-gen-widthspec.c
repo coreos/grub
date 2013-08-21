@@ -120,10 +120,10 @@ main (int argc, char *argv[])
 	return 1;
       }
   
-    for (char_code = FT_Get_First_Char (face, &glyph_index);
+    for (char_code = FT_Get_First_Char (ft_face, &glyph_index);
 	 glyph_index;
-	 char_code = FT_Get_Next_Char (face, char_code, &glyph_index))
-      add_glyph (face, char_code);
+	 char_code = FT_Get_Next_Char (ft_face, char_code, &glyph_index))
+      add_glyph (ft_face, char_code);
 
     FT_Done_Face (ft_face);
   }
