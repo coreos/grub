@@ -403,7 +403,7 @@ grub_net_recv_ip4_packets (struct grub_net_buff *nb,
 					    * sizeof (grub_uint32_t)))
     {
       grub_dprintf ("net", "IP packet too short: %" PRIdGRUB_SSIZE "\n",
-		    (nb->tail - nb->data));
+		    (grub_ssize_t) (nb->tail - nb->data));
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
     }
@@ -654,7 +654,7 @@ grub_net_recv_ip6_packets (struct grub_net_buff *nb,
   if (nb->tail - nb->data < (grub_ssize_t) sizeof (*iph))
     {
       grub_dprintf ("net", "IP packet too short: %" PRIdGRUB_SSIZE "\n",
-		    nb->tail - nb->data);
+		    (grub_ssize_t) (nb->tail - nb->data));
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
     }

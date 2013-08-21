@@ -970,8 +970,8 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
 		dev->command_table[0].prdt[0].data_base,
 		dev->command_table[0].prdt[0].unused,
 		dev->command_table[0].prdt[0].size,
-		(char *) &dev->command_table[0].prdt[0]
-		- (char *) &dev->command_table[0]);
+		(grub_size_t) ((char *) &dev->command_table[0].prdt[0]
+			       - (char *) &dev->command_table[0]));
 
   if (parms->write)
     grub_memcpy ((char *) grub_dma_get_virt (bufc), parms->buffer, parms->size);

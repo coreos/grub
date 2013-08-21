@@ -766,7 +766,7 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
 					     >> 12) * sizeof (grub_uint32_t)))
     {
       grub_dprintf ("net", "TCP packet too short: %" PRIuGRUB_SIZE "\n",
-		    nb->tail - nb->data);
+		    (grub_size_t) (nb->tail - nb->data));
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
     }

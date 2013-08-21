@@ -1,5 +1,13 @@
 2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ahci.c: Add needed explicit cast.
+	* grub-core/lib/backtrace.c: Likewise.
+	* grub-core/net/ip.c: Likewise.
+	* grub-core/net/tcp.c: Likewise.
+	* grub-core/net/udp.c: Likewise.
+
+2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/wchar.h: Fix typo.
 
 2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
