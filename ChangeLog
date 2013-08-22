@@ -1,5 +1,12 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/crypto.c (grub_password_get) [GRUB_UTIL]: Add
+	windows variant.
+	* util/grub-mkpasswd-pbkdf2.c: Add windows flavour for retrieving random
+	data.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Add -Wl,-melf_i386 and -Wl,-melf_x86_64 systematically
 	when on x86 and not cygwin.
 	* conf/Makefile.common: Remove unsystematic -Wl,-melf_i386 and

@@ -34,6 +34,11 @@
 
 #include <argp.h>
 
+#if defined (_WIN32) || defined (__CYGWIN__)
+#include <windows.h>
+#include <wincrypt.h>
+#endif
+
 #include "progname.h"
 
 static struct argp_option options[] = {
@@ -104,6 +109,51 @@ hexify (char *hex, grub_uint8_t *bin, grub_size_t n)
   *hex = 0;
 }
 
+static int
+grub_get_random (void *out, grub_size_t len)
+{
+#if ! defined (__linux__) && ! defined (__FreeBSD__)
+  /* TRANSLATORS: The generator might still be secure just GRUB isn't sure about it.  */
+  printf ("%s", _("WARNING: your random generator isn't known to be secure\n"));
+#warning "your random generator isn't known to be secure"
+#endif
+
+#if defined (_WIN32) || defined (__CYGWIN__)
+  HCRYPTPROV   hCryptProv;
+  if (!CryptAcquireContext (&hCryptProv,
+			    NULL,
+			    MS_DEF_PROV,
+			    PROV_RSA_FULL,
+			    CRYPT_VERIFYCONTEXT))
+    {
+      printf ("context: %x\n", GetLastError());
+      return 1;
+    }
+  if (!CryptGenRandom (hCryptProv, len, out))
+    {
+      CryptReleaseContext (hCryptProv, 0);
+      return 1;
+    }
+
+  CryptReleaseContext (hCryptProv, 0);
+
+  return 0;
+#else
+  FILE *f;
+  size_t rd;
+
+  f = fopen ("/dev/urandom", "rb");
+  if (!f)
+    return 1;
+  rd = fread (out, 1, len, f);
+  fclose (f);
+
+  if (rd != len)
+    return 1;
+  return 0;
+#endif
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -143,7 +193,7 @@ main (int argc, char *argv[])
       free (salt);
       grub_util_error ("%s", _("failure to read password"));
     }
-  printf ("\n%s", _("Reenter password: "));
+  printf ("%s", _("Reenter password: "));
   if (!grub_password_get (pass2, GRUB_AUTH_MAX_PASSLEN))
     {
       free (buf);
@@ -165,38 +215,15 @@ main (int argc, char *argv[])
     }
   memset (pass2, 0, sizeof (pass2));
 
-#if ! defined (__linux__) && ! defined (__FreeBSD__)
-  /* TRANSLATORS: The generator might still be secure just GRUB isn't sure about it.  */
-  printf ("%s", _("WARNING: your random generator isn't known to be secure\n"));
-#endif
-
-  {
-    FILE *f;
-    size_t rd;
-    f = fopen ("/dev/urandom", "rb");
-    if (!f)
-      {
-	memset (pass1, 0, sizeof (pass1));
-	free (buf);
-	free (bufhex);
-	free (salthex);
-	free (salt);
-	fclose (f);
-	grub_util_error ("%s", _("couldn't retrieve random data for salt"));
-      }
-    rd = fread (salt, 1, arguments.saltlen, f);
-    if (rd != arguments.saltlen)
-      {
-	fclose (f);
-	memset (pass1, 0, sizeof (pass1));
-	free (buf);
-	free (bufhex);
-	free (salthex);
-	free (salt);
-	grub_util_error ("%s", _("couldn't retrieve random data for salt"));
-      }
-    fclose (f);
-  }
+  if (grub_get_random (salt, arguments.saltlen))
+    {
+      memset (pass1, 0, sizeof (pass1));
+      free (buf);
+      free (bufhex);
+      free (salthex);
+      free (salt);
+      grub_util_error ("%s", _("couldn't retrieve random data for salt"));
+    }
 
   gcry_err = grub_crypto_pbkdf2 (GRUB_MD_SHA512,
 				 (grub_uint8_t *) pass1, strlen (pass1),

@@ -26,7 +26,11 @@
 #include <grub/env.h>
 
 #ifdef GRUB_UTIL
+#if !defined (_WIN32) || defined (__CYGWIN__)
 #include <termios.h>
+#else
+#include <windows.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -441,10 +445,13 @@ int
 grub_password_get (char buf[], unsigned buf_size)
 {
 #ifdef GRUB_UTIL
+#if !defined (_WIN32) || defined (__CYGWIN__)
   FILE *in;
   struct termios s, t;
   int tty_changed = 0;
   char *ptr;
+
+  grub_refresh ();
 
   /* Disable echoing. Based on glibc.  */
   in = fopen ("/dev/tty", "w+c");
@@ -473,6 +480,27 @@ grub_password_get (char buf[], unsigned buf_size)
   grub_refresh ();
 
   return 1;
+#else
+  HANDLE hStdin = GetStdHandle (STD_INPUT_HANDLE); 
+  DWORD mode = 0;
+  char *ptr;
+
+  grub_refresh ();
+  
+  GetConsoleMode (hStdin, &mode);
+  SetConsoleMode (hStdin, mode & (~ENABLE_ECHO_INPUT));
+
+  fgets (buf, buf_size, stdin);
+  ptr = buf + strlen (buf) - 1;
+  while (buf <= ptr && (*ptr == '\n' || *ptr == '\r'))
+    *ptr-- = 0;
+
+  SetConsoleMode (hStdin, mode);
+
+  grub_refresh ();
+
+  return 1;
+#endif
 #else
   unsigned cur_len = 0;
   int key;
