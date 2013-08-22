@@ -10,7 +10,19 @@
 #define DISK_CACHE_STATS @DISK_CACHE_STATS@
 #define BOOT_TIME_STATS @BOOT_TIME_STATS@
 
-#if defined (GRUB_UTIL) || !defined (GRUB_MACHINE)
+#if defined (GRUB_BUILD)
+#define BUILD_SIZEOF_LONG @BUILD_SIZEOF_LONG@
+#define BUILD_SIZEOF_VOID_P @BUILD_SIZEOF_VOID_P@
+#if defined __APPLE__
+# if defined __BIG_ENDIAN__
+#  define BUILD_WORDS_BIGENDIAN 1
+# else
+#  define BUILD_WORDS_BIGENDIAN 0
+# endif
+#else
+#define BUILD_WORDS_BIGENDIAN @BUILD_WORDS_BIGENDIAN@
+#endif
+#elif defined (GRUB_UTIL) || !defined (GRUB_MACHINE)
 #include <config-util.h>
 #else
 /* Define if C symbols get an underscore after compilation. */

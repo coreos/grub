@@ -232,19 +232,6 @@ program = {
 };
 
 program = {
-  name = grub-pe2elf;
-  mansection = 1;
-  common = util/grub-pe2elf.c;
-
-  ldadd = libgrubmods.a;
-  ldadd = libgrubgcry.a;
-  ldadd = libgrubkern.a;
-  ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(LIBINTL)';
-  condition = COND_GRUB_PE2ELF;
-};
-
-program = {
   name = grub-fstest;
   mansection = 1;
   common_nodist = grub_fstest_init.c;

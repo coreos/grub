@@ -28,6 +28,9 @@ CFLAGS_LIBRARY += $(CFLAGS_PLATFORM) -fno-builtin
 CPPFLAGS_LIBRARY += $(CPPFLAGS_PLATFORM)
 CCASFLAGS_LIBRARY += $(CCASFLAGS_PLATFORM)
 
+build-grub-pe2elf: $(top_srcdir)/util/grub-pe2elf.c $(top_srcdir)/grub-core/kern/emu/misc.c $(top_srcdir)/util/misc.c
+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -DGRUB_BUILD=1 -DGRUB_UTIL=1 -DGRUB_BUILD_PROGRAM_NAME=\"build-grub-pe2elf\" $^
+
 # gentrigtables
 gentrigtables: gentrigtables.c
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $< -lm

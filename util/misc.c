@@ -44,7 +44,11 @@
 #include <grub/script_sh.h>
 
 #define ENABLE_RELOCATABLE 0
+#ifdef GRUB_BUILD
+const char *program_name = GRUB_BUILD_PROGRAM_NAME;
+#else
 #include "progname.h"
+#endif
 
 /* Include malloc.h, only if memalign is available. It is known that
    memalign is declared in malloc.h in all systems, if present.  */

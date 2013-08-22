@@ -137,7 +137,7 @@ xstrdup (const char *str)
   return newstr;
 }
 
-#ifndef GRUB_MKFONT
+#if !defined (GRUB_MKFONT) && !defined (GRUB_BUILD)
 char *
 xasprintf (const char *fmt, ...)
 { 

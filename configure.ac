@@ -331,6 +331,8 @@ AM_GNU_GETTEXT([external])
 AC_SYS_LARGEFILE
 
 # Identify characteristics of the host architecture.
+unset ac_cv_c_bigendian
+
 AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
@@ -556,7 +558,7 @@ AC_SUBST(TARGET_LDFLAGS_OLDMAGIC)
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
 case "${target_os}" in
-  cygwin) TARGET_OBJ2ELF='$(top_builddir)/grub-pe2elf';
+  cygwin) TARGET_OBJ2ELF='./build-grub-pe2elf';
 # FIXME: put proper test here
   NEED_REGISTER_FRAME_INFO=1
   ;;
@@ -966,6 +968,8 @@ if test x"$grub_mkfont_excuse" = x ; then
   fi
 fi
 
+unset ac_cv_header_ft2build_h
+
 if test x"$grub_mkfont_excuse" = x ; then
   # Check for freetype libraries.
   freetype_cflags=`$FREETYPE --cflags`
@@ -994,11 +998,26 @@ SAVED_CFLAGS="$CFLAGS"
 SAVED_CPPFLAGS="$CPPFLAGS"
 CC="$BUILD_CC"
 CFLAGS="$BUILD_CFLAGS"
-CPPFLAGS="$SAVED_CPPFLAGS"
+CPPFLAGS="$BUILD_CPPFLAGS"
+
+unset ac_cv_c_bigendian
+unset ac_cv_header_ft2build_h
+
+AC_COMPUTE_INT([BUILD_SIZEOF_VOID_P], [sizeof (void *)])
+AC_COMPUTE_INT([BUILD_SIZEOF_LONG], [sizeof (long)])
+AC_C_BIGENDIAN([BUILD_WORDS_BIGENDIAN=1], [BUILD_WORDS_BIGENDIAN=0], [BUILD_WORDS_BIGENDIAN=err], [BUILD_WORDS_BIGENDIAN=err])
+
+if test x$BUILD_WORDS_BIGENDIAN = xerr ; then
+   AC_MSG_ERROR([couldnt determine build endianness])
+fi
+
+AC_SUBST([BUILD_SIZEOF_LONG])
+AC_SUBST([BUILD_SIZEOF_VOID_P])
+AC_SUBST([BUILD_WORDS_BIGENDIAN])
 
 if test x"$grub_build_mkfont_excuse" = x ; then
   # Check for freetype libraries.
-  AC_CHECK_TOOLS([BUILD_FREETYPE], [freetype-config])
+  AC_CHECK_PROGS([BUILD_FREETYPE], [freetype-config])
   if test "x$BUILD_FREETYPE" = x ; then
     grub_build_mkfont_excuse=["need freetype2 library"]
   fi
@@ -1081,7 +1100,7 @@ fi
 
 AC_SUBST([FONT_SOURCE])
 
-if test x"$FONT_SOURCE" = x &&  test x"$DJVU_FONT_SOURCE" = x; then
+if test x"$FONT_SOURCE" = x &&  test x"$DJVU_FONT_SOURCE" = x && test x"$grub_build_mkfont_excuse" = x; then
   grub_build_mkfont_excuse="no fonts"
 fi
 
@@ -1376,7 +1395,7 @@ echo With libzfs support: Yes
 else
 echo With libzfs support: No "($libzfs_excuse)"
 fi
-if [ x"$build_grub_mkfont_excuse" = x ]; then
+if [ x"$grub_build_mkfont_excuse" = x ]; then
   echo Build-time grub-mkfont: Yes
   if test "x$FONT_SOURCE" = x ; then
     echo "Without unifont"
@@ -1384,7 +1403,7 @@ if [ x"$build_grub_mkfont_excuse" = x ]; then
     echo "With unifont from $FONT_SOURCE"
   fi
 else
-  echo Build-time grub-mkfont: No "($build_grub_mkfont_excuse)"
+  echo Build-time grub-mkfont: No "($grub_build_mkfont_excuse)"
   echo "Without unifont (no build-time grub-mkfont)"
 fi
 if test "x$LIBLZMA" = x ; then

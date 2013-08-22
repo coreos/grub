@@ -31,9 +31,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef GRUB_BUILD
 #define _GNU_SOURCE	1
 #include <argp.h>
+#endif
 #include <assert.h>
+
+#include <errno.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -47,7 +51,9 @@
 #define FT_ERROR_END_LIST     };
 #include FT_ERRORS_H   
 
+#ifndef GRUB_BUILD
 #include "progname.h"
+#endif
 
 #define GRUB_FONT_DEFAULT_SIZE		16
 
@@ -919,13 +925,10 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   fclose (file);
 }
 
+#ifndef GRUB_BUILD
 static struct argp_option options[] = {
   {"output",  'o', N_("FILE"), 0, N_("save output in FILE [required]"), 0},
   /* TRANSLATORS: bitmaps are images like e.g. in JPEG.  */
-  {"width-spec",  0x103, 0, 0, 
-   /* TRANSLATORS: this refers to creating a file containing the width of
-      every glyph but not the glyphs themselves.  */
-   N_("create width summary file"), 0},
   {"index",  'i', N_("NUM"), 0,
    /* TRANSLATORS: some font files may have multiple faces (fonts).
       This option is used to chose among them, the first face being '0'.
@@ -953,6 +956,23 @@ static struct argp_option options[] = {
   {"verbose",  'v', 0, 0, N_("print verbose messages."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };
+#define my_argp_parse argp_parse
+#define MY_ARGP_KEY_ARG ARGP_KEY_ARG
+#define my_error_t error_t
+#define MY_ARGP_ERR_UNKNOWN ARGP_ERR_UNKNOWN
+
+#else
+
+#define my_error_t int
+#define MY_ARGP_ERR_UNKNOWN -1
+#define MY_ARGP_KEY_ARG -1
+#define my_argp_parse(a, argc, argv, b, c, st) my_argp_parse_real(argc, argv, st)
+struct my_argp_state
+{
+  void *input;
+};
+
+#endif
 
 struct arguments
 {
@@ -966,8 +986,15 @@ struct arguments
   enum file_formats file_format;
 };
 
-static error_t
-argp_parser (int key, char *arg, struct argp_state *state)
+static int
+has_argument (int v)
+{
+  return v =='o' || v == 'i' || v == 'r' || v == 'n' || v == 's'
+    || v == 'd' || v == 'c';
+}
+
+static my_error_t
+argp_parser (int key, char *arg, struct my_argp_state *state)
 {
   /* Get the input argument from argp_parse, which we
      know is a pointer to our arguments structure. */
@@ -1055,22 +1082,66 @@ argp_parser (int key, char *arg, struct argp_state *state)
       font_verbosity++;
       break;
 
-    case ARGP_KEY_ARG:
+    case MY_ARGP_KEY_ARG:
       assert (arguments->nfiles < arguments->files_max);
       arguments->files[arguments->nfiles++] = xstrdup(arg);
       break;
 
     default:
-      return ARGP_ERR_UNKNOWN;
+      return MY_ARGP_ERR_UNKNOWN;
     }
   return 0;
 }
 
+#ifdef GRUB_BUILD
+
+/* We don't require host platform to have argp. In the same time configuring
+   gnulib for build would result in even worse mess. So we have our
+   minimalistic argp replacement just enough for build system. Most
+   argp features are omitted.  */
+
+static int
+my_argp_parse_real (int argc, char **argv, void *st)
+{
+  int curar;
+  struct my_argp_state p;
+
+  p.input = st;
+
+  for (curar = 1; curar < argc; )
+    {
+      if (argv[curar][0] == '-')
+	{
+	  if (has_argument (argv[curar][1])
+	      && curar + 1 >= argc)
+	    return 1;
+	  if (has_argument (argv[curar][1]))
+	    {
+	      if (argp_parser (argv[curar][1], argv[curar + 1], &p))
+		return 1;
+	      curar += 2;
+	      continue;
+	    }
+	  if (argp_parser (argv[curar][1], NULL, &p))
+	    return 1;
+	  curar++;
+	  continue;
+	}
+      if (argp_parser (MY_ARGP_KEY_ARG, argv[curar], &p))
+	return 1;
+      curar++;
+    }
+  return 0;
+}
+#endif
+
+#ifndef GRUB_BUILD
 static struct argp argp = {
   options, argp_parser, N_("[OPTIONS] FONT_FILES"),
   N_("Convert common font file formats into PF2"),
   NULL, NULL, NULL
 };
+#endif
 
 int
 main (int argc, char *argv[])
@@ -1078,7 +1149,9 @@ main (int argc, char *argv[])
   FT_Library ft_lib;
   struct arguments arguments;
 
+#ifndef GRUB_BUILD
   set_program_name (argv[0]);
+#endif
 
   grub_util_init_nls ();
 
@@ -1090,7 +1163,7 @@ main (int argc, char *argv[])
   memset (arguments.files, 0, (arguments.files_max + 1)
 	  * sizeof (arguments.files[0]));
 
-  if (argp_parse (&argp, argc, argv, 0, 0, &arguments) != 0)
+  if (my_argp_parse (&argp, argc, argv, 0, 0, &arguments) != 0)
     {
       fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
       exit(1);

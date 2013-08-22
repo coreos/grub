@@ -30,36 +30,8 @@
 #include <stdlib.h>
 #include <getopt.h>
 
-#include "progname.h"
 
 /* Please don't internationalise this file. It's pointless.  */
-
-static struct option options[] = {
-  {"help", no_argument, 0, 'h'},
-  {"version", no_argument, 0, 'V'},
-  {"verbose", no_argument, 0, 'v'},
-  {0, 0, 0, 0}
-};
-
-static void __attribute__ ((noreturn))
-usage (int status)
-{
-  if (status)
-    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
-  else
-    printf ("\
-Usage: %s [OPTIONS] input [output]\n\
-\n\
-Tool to convert pe image to elf.\n\
-\nOptions:\n\
-  -h, --help                display this message and exit\n\
-  -V, --version             print version information and exit\n\
-  -v, --verbose             print verbose messages\n\
-\n\
-Report bugs to <%s>.\n", program_name, PACKAGE_BUGREPORT);
-
-  exit (status);
-}
 
 /*
  *  Section layout
@@ -490,54 +462,27 @@ main (int argc, char *argv[])
 {
   char *image;
   FILE* fp;
-
-  set_program_name (argv[0]);
-
-    /* Check for options.  */
-  while (1)
-    {
-      int c = getopt_long (argc, argv, "hVv", options, 0);
-
-      if (c == -1)
-	break;
-      else
-	switch (c)
-	  {
-	  case 'h':
-	    usage (0);
-	    break;
-
-	  case 'V':
-	    printf ("%s (%s) %s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION);
-	    return 0;
-
-	  case 'v':
-	    verbosity++;
-	    break;
-
-	  default:
-	    usage (1);
-	    break;
-	  }
-    }
+  char *in, *out;
 
   /* Obtain PATH.  */
-  if (optind >= argc)
+  if (1 >= argc)
     {
       fprintf (stderr, "Filename not specified.\n");
-      usage (1);
+      return 1;
     }
 
-  image = grub_util_read_image (argv[optind]);
+  in = argv[1];
+  if (argc > 2)
+    out = argv[2];
+  else
+    out = in;
+  image = grub_util_read_image (in);
 
-  if (optind + 1 < argc)
-    optind++;
-
-  fp = fopen (argv[optind], "wb");
+  fp = fopen (out, "wb");
   if (! fp)
-    grub_util_error ("cannot open %s", argv[optind]);
+    grub_util_error ("cannot open %s", out);
 
-  convert_pe (fp, argv[optind], image);
+  convert_pe (fp, out, image);
 
   fclose (fp);
 

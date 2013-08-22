@@ -1,5 +1,26 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Handle grub-pe2elf and grub-mkfont for cases when build != host.
+
+	* Makefile.am (build-grub-mkfont): Don't include gnulib.
+	(build-grub-gen-asciih): Likewise.
+	(build-grub-gen-widthspec): Likewise.
+	* Makefile.util.def (grub-pe2elf): Remove.
+	* config.h.in [GRUB_BUILD]: Use build rather than host constants.
+	* configure.ac: Separate tests for build.
+	Move ./build-grub-pe2elf to grub-core.
+	Fix typo.
+	* grub-core/Makefile.am (build-grub-pe2elf): New target.
+	* grub-core/kern/emu/misc.c (xasprintf): Don't compile if GRUB_BUILD is
+	defined.
+	* include/grub/types.h [GRUB_BUILD]: Use build rather than host
+	constants.
+	* util/grub-mkfont.c [GRUB_BUILD]: Simplify not to rely on argp.
+	* util/grub-pe2elf.c: Simplify not to rely on getopt.
+	* util/misc.c (program_name) [GRUB_BUILD]: Define to static string.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_get_fd_size): Adapt for
 	mingw32 as well based on grub_util_get_disk_size.
 	* util/misc.c (grub_util_get_disk_size): Removed. all users switched to
