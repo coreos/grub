@@ -960,6 +960,7 @@ static struct argp_option options[] = {
 #define MY_ARGP_KEY_ARG ARGP_KEY_ARG
 #define my_error_t error_t
 #define MY_ARGP_ERR_UNKNOWN ARGP_ERR_UNKNOWN
+#define my_argp_state argp_state
 
 #else
 
@@ -986,12 +987,16 @@ struct arguments
   enum file_formats file_format;
 };
 
+#ifdef GRUB_BUILD
+
 static int
 has_argument (int v)
 {
   return v =='o' || v == 'i' || v == 'r' || v == 'n' || v == 's'
     || v == 'd' || v == 'c';
 }
+
+#endif
 
 static my_error_t
 argp_parser (int key, char *arg, struct my_argp_state *state)

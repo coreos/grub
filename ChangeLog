@@ -1,5 +1,10 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkfont.c [!GRUB_BUILD]: Define my_argp_state.
+	[!GRUB_BUILD]: Remove has_argument.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/ieee1275/ofpath.c (grub_util_devname_to_ofpath) [_WIN32]:
 	Replace with a dummy.
 
