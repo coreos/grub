@@ -121,6 +121,8 @@ For grub-emu host and target must be the same but may differ from build.
 
 If build and host are different make check isn't available.
 
+If build and host are different man pages are not generated.
+
 As an example imagine you have a build system running on FreeBSD on sparc
 which prepares packages for developpers running amd64 GNU/Linux laptop and
 they need to make images for ARM board running U-boot. In this case:
