@@ -173,7 +173,7 @@ case "$host_os" in
 esac
 
 case "$target_os" in
-  mingw32*) target_os=cygwin ;;
+  windows* | mingw32*) target_os=cygwin ;;
 esac
 
 # This normalizes the names, and creates a new variable ("host_kernel")

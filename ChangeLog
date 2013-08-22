@@ -1,5 +1,9 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Change target_os from windows to cygwin.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle grub-pe2elf and grub-mkfont for cases when build != host.
 
 	* Makefile.am (build-grub-mkfont): Don't include gnulib.
