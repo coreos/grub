@@ -1,5 +1,11 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/mm.c (grub_memalign): Don't define if there is no
+	implementation available to cause compile-time rather than runtime
+	error.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-fstest.c: Don't check for symlinks on windows.
 
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
