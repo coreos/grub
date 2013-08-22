@@ -122,7 +122,7 @@ CPPFLAGS_POSIX = -I$(top_srcdir)/grub-core/lib/posix_wrap
 
 CPPFLAGS_LIBFDT = -I$(top_srcdir)/grub-core/lib/dtc-grub/libfdt $(CPPFLAGS_POSIX)
 
-CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers $(CFLAGS_POSIX)
+CFLAGS_GCRY = -Wno-error -Wno-missing-field-initializers -Wno-redundant-decls $(CFLAGS_POSIX)
 CPPFLAGS_GCRY = -I$(top_srcdir)/grub-core/lib/libgcrypt_wrap $(CPPFLAGS_POSIX) -D_GCRYPT_IN_LIBGCRYPT=1 -I$(top_srcdir)/include/grub/gcrypt
 
 CPPFLAGS_EFIEMU = -I$(top_srcdir)/grub-core/efiemu/runtime
