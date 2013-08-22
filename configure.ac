@@ -395,6 +395,7 @@ fi
 HOST_CC=$CC
 AC_CHECK_PROGS(BUILD_CC, [gcc egcs cc])
 test -z "$BUILD_CC" && AC_MSG_ERROR([none of gcc, egcs and cc is found. set BUILD_CC manually.])
+BUILD_CPP="$BUILD_CC -E"
 
 # For gnulib.
 gl_INIT
@@ -990,9 +991,11 @@ AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
 
 SAVED_CC="$CC"
+SAVED_CPP="$CPP"
 SAVED_CFLAGS="$CFLAGS"
 SAVED_CPPFLAGS="$CPPFLAGS"
 CC="$BUILD_CC"
+CPP="$BUILD_CPP"
 CFLAGS="$BUILD_CFLAGS"
 CPPFLAGS="$BUILD_CPPFLAGS"
 
@@ -1046,6 +1049,7 @@ AC_SUBST([build_freetype_cflags])
 AC_SUBST([build_freetype_libs])
 
 CC="$SAVED_CC"
+CPP="$SAVED_CPP"
 CFLAGS="$SAVED_CFLAGS"
 CPPFLAGS="$SAVED_CPPFLAGS"
 

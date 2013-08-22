@@ -1,5 +1,10 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Set CPP to build one when checkoing for freetype for
+	build.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkfont.c [!GRUB_BUILD]: Define my_argp_state.
 	[!GRUB_BUILD]: Remove has_argument.
 
