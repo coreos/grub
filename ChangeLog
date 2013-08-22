@@ -1,5 +1,10 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkpasswd-pbkdf2.c (grub_password_get): Remove extraneous
+	error message.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/crypto.c (grub_password_get) [GRUB_UTIL]: Add
 	windows variant.
 	* util/grub-mkpasswd-pbkdf2.c: Add windows flavour for retrieving random

@@ -125,10 +125,7 @@ grub_get_random (void *out, grub_size_t len)
 			    MS_DEF_PROV,
 			    PROV_RSA_FULL,
 			    CRYPT_VERIFYCONTEXT))
-    {
-      printf ("context: %x\n", GetLastError());
-      return 1;
-    }
+    return 1;
   if (!CryptGenRandom (hCryptProv, len, out))
     {
       CryptReleaseContext (hCryptProv, 0);
