@@ -66,6 +66,12 @@ void EXPORT_FUNC(grub_util_error) (const char *fmt, ...) __attribute__ ((format 
 
 extern char * canonicalize_file_name (const char *path);
 
+#ifdef __MINGW32__
+
+int fsync (int fno);
+
+#endif
+
 #ifdef HAVE_DEVICE_MAPPER
 int grub_device_mapper_supported (void);
 #endif

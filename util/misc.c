@@ -281,63 +281,6 @@ grub_millisleep (grub_uint32_t ms)
 
 #endif
 
-#ifdef __MINGW32__
-
-void sync (void)
-{
-}
-
-int fsync (int fno __attribute__ ((unused)))
-{
-  return 0;
-}
-
-grub_int64_t
-grub_util_get_disk_size (char *name)
-{
-  HANDLE hd;
-  grub_int64_t size = -1LL;
-
-  strip_trailing_slashes(name);
-  hd = CreateFile (name, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
-                   0, OPEN_EXISTING, 0, 0);
-
-  if (hd == INVALID_HANDLE_VALUE)
-    return size;
-
-  if (((name[0] == '/') || (name[0] == '\\')) &&
-      ((name[1] == '/') || (name[1] == '\\')) &&
-      (name[2] == '.') &&
-      ((name[3] == '/') || (name[3] == '\\')) &&
-      (! strncasecmp (name + 4, "PHYSICALDRIVE", 13)))
-    {
-      DWORD nr;
-      DISK_GEOMETRY g;
-
-      if (! DeviceIoControl (hd, IOCTL_DISK_GET_DRIVE_GEOMETRY,
-                             0, 0, &g, sizeof (g), &nr, 0))
-        goto fail;
-
-      size = g.Cylinders.QuadPart;
-      size *= g.TracksPerCylinder * g.SectorsPerTrack * g.BytesPerSector;
-    }
-  else
-    {
-      LARGE_INTEGER s;
-
-      s.LowPart = GetFileSize (hd, &s.HighPart);
-      size = s.QuadPart;
-    }
-
-fail:
-
-  CloseHandle (hd);
-
-  return size;
-}
-
-#endif /* __MINGW32__ */
-
 #ifdef GRUB_UTIL
 void
 grub_util_init_nls (void)

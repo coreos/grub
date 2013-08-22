@@ -44,11 +44,6 @@ void grub_util_write_image_at (const void *img, size_t size, off_t offset,
 #define fseeko fseeko64
 #define ftello ftello64
 
-void sync (void);
-int fsync (int fno);
-
-grub_int64_t grub_util_get_disk_size (char *name);
-
 #endif
 
 

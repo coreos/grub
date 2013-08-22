@@ -132,11 +132,7 @@ grub_hostfs_open (struct grub_file *file, const char *name)
 
   file->data = data;
 
-#ifdef __MINGW32__
-  file->size = grub_util_get_disk_size (name);
-#else
   file->size = grub_util_get_fd_size (fileno (f), name, NULL);
-#endif
 
   return GRUB_ERR_NONE;
 }

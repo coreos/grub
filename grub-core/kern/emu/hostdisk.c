@@ -43,6 +43,12 @@
 #include <errno.h>
 #include <limits.h>
 
+#ifdef __MINGW32__
+#include <windows.h>
+#include <winioctl.h>
+#include "dirname.h"
+#endif
+
 #ifdef __linux__
 # include <sys/ioctl.h>         /* ioctl */
 # include <sys/mount.h>
@@ -245,6 +251,73 @@ grub_util_biosdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
   return 0;
 }
 
+
+#ifdef __MINGW32__
+
+grub_uint64_t
+grub_util_get_fd_size (int fd __attribute__ ((unused)), const char *name_in,
+		       unsigned *log_secsize)
+{
+  HANDLE hd;
+  grub_int64_t size = -1LL;
+  int log_sector_size = 9;
+  char *name = xstrdup (name_in);
+
+  if (log_secsize)
+    *log_secsize = log_sector_size;
+
+  strip_trailing_slashes(name);
+  hd = CreateFile (name, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                   0, OPEN_EXISTING, 0, 0);
+
+  if (hd == INVALID_HANDLE_VALUE)
+    {
+      free (name);
+      return size;
+    }
+
+  if (((name[0] == '/') || (name[0] == '\\')) &&
+      ((name[1] == '/') || (name[1] == '\\')) &&
+      (name[2] == '.') &&
+      ((name[3] == '/') || (name[3] == '\\')) &&
+      (! strncasecmp (name + 4, "PHYSICALDRIVE", 13)))
+    {
+      DWORD nr;
+      DISK_GEOMETRY g;
+
+      if (! DeviceIoControl (hd, IOCTL_DISK_GET_DRIVE_GEOMETRY,
+                             0, 0, &g, sizeof (g), &nr, 0))
+        goto fail;
+
+      size = g.Cylinders.QuadPart;
+      size *= g.TracksPerCylinder * g.SectorsPerTrack * g.BytesPerSector;
+
+      for (log_sector_size = 0;
+	   (1 << log_sector_size) < g.BytesPerSector;
+	   log_sector_size++);
+    }
+  else
+    {
+      ULARGE_INTEGER s;
+
+      s.LowPart = GetFileSize (hd, &s.HighPart);
+      size = s.QuadPart;
+    }
+
+fail:
+
+  if (log_secsize)
+    *log_secsize = log_sector_size;
+
+  free (name);
+
+  CloseHandle (hd);
+
+  return size;
+}
+
+#endif
+
 #if !defined(__MINGW32__)
 grub_uint64_t
 grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
@@ -366,33 +439,23 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   data->device_map = map[drive].device_map;
 
   /* Get the size.  */
-#if defined(__MINGW32__)
-  {
-    grub_uint64_t size;
-
-    size = grub_util_get_disk_size (map[drive].device);
-
-    if (size % 512)
-      grub_util_error (_("unaligned device size"));
-
-    disk->total_sectors = size >> 9;
-
-    grub_util_info ("the size of %s is %llu", name, disk->total_sectors);
-
-    return GRUB_ERR_NONE;
-  }
-#else
   {
     int fd;
 
+#if defined(__MINGW32__)
+    fd = -1;
+#else
     fd = open (map[drive].device, O_RDONLY);
     if (fd == -1)
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("cannot open `%s': %s"),
 			 map[drive].device, strerror (errno));
+#endif
 
     disk->total_sectors = grub_util_get_fd_size (fd, map[drive].device,
 						 &disk->log_sector_size);
     disk->total_sectors >>= disk->log_sector_size;
+
+#if !defined(__MINGW32__)
 
 # if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__)
     if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
@@ -402,13 +465,13 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
       data->is_disk = 1;
 
     close (fd);
+#endif
 
     grub_util_info ("the size of %s is %" PRIuGRUB_UINT64_T,
 		    name, disk->total_sectors);
 
     return GRUB_ERR_NONE;
   }
-#endif
 }
 
 #ifdef HAVE_DEVICE_MAPPER
@@ -1359,7 +1422,7 @@ read_device_map (const char *dev_map)
 
 #ifdef __MINGW32__
       (void) st;
-      if (grub_util_get_disk_size (p) == -1LL)
+      if (grub_util_get_fd_size (-1, p, NULL) == -1LL)
 #else
       if (stat (p, &st) == -1)
 #endif

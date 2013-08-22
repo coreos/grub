@@ -57,10 +57,8 @@ grub_hostdisk_find_partition_start (const char *dev);
 const char *
 grub_hostdisk_os_dev_to_grub_drive (const char *os_dev, int add);
 
-#if !defined(__MINGW32__)
 grub_uint64_t
 grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize);
-#endif
 
 char *
 grub_util_get_os_disk (const char *os_dev);

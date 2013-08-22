@@ -42,10 +42,6 @@
 #include <grub/time.h>
 #include <grub/emu/misc.h>
 
-#ifdef HAVE_DEVICE_MAPPER
-# include <libdevmapper.h>
-#endif
-
 #ifdef HAVE_SYS_PARAM_H
 # include <sys/param.h>
 #endif
@@ -57,10 +53,6 @@
 #ifdef HAVE_SYS_MNTTAB_H
 # include <stdio.h> /* Needed by sys/mnttab.h.  */
 # include <sys/mnttab.h>
-#endif
-
-#ifdef HAVE_SYS_MKDEV_H
-# include <sys/mkdev.h> /* makedev */
 #endif
 
 int verbosity;
@@ -188,6 +180,15 @@ grub_get_rtc (void)
 	  + (((tv.tv_sec % GRUB_TICKS_PER_SECOND) * 1000000 + tv.tv_usec)
 	     * GRUB_TICKS_PER_SECOND / 1000000));
 }
+
+#ifdef __MINGW32__
+
+int fsync (int fno __attribute__ ((unused)))
+{
+  return 0;
+}
+
+#endif
 
 char *
 canonicalize_file_name (const char *path)
