@@ -1,5 +1,9 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-fstest.c: Don't check for symlinks on windows.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* INSTALL: Mention unavailability of man pages when cross-compiling.
 
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>

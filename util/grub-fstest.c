@@ -296,9 +296,11 @@ cmd_cmp (char *src, char *dest)
 	  *ptr++ = '/';
 	  strcpy (ptr, entry->d_name);
 
+#if !defined (_WIN32) || defined (__CYGWIN__)
 	  if (lstat (destnew, &st) == -1 || (!S_ISREG (st.st_mode)
 					  && !S_ISDIR (st.st_mode)))
 	    continue;
+#endif
 
 	  cmd_cmp (srcnew, destnew);
 	}
