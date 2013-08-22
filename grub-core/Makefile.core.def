@@ -615,6 +615,7 @@ module = {
   common = commands/regexp.c;
   common = commands/wildcard.c;
   ldadd = libgnulib.a;
+  dependencies = libgnulib.a;
   cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
   cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
 };

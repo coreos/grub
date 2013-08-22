@@ -1,5 +1,13 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix dependencies on cygwin.
+
+	* gentpl.py: Support variable dependencies. Add $TARGET_OBJ2ELF to
+	dependencies when used and defined.
+	* grub-core/Makefile.core.def (regexp): Add dependency on libgnulib.a.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/zfs/spa.h (zio_cksum): Add explicit members for mac.
 	* grub-core/fs/zfs/zfs.c (zio_read): Don't use casts to retrieve mac.
 

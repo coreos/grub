@@ -331,6 +331,10 @@ def define_macro_for_platform_ldadd(p):
     return define_autogen_macro(
         "get_" + p + "_ldadd",
         platform_specific_values(p, "_ldadd", "ldadd"))
+def define_macro_for_platform_dependencies(p):
+    return define_autogen_macro(
+        "get_" + p + "_dependencies",
+        platform_specific_values(p, "_dependencies", "dependencies"))
 def define_macro_for_platform_ldflags(p):
     return define_autogen_macro(
         "get_" + p + "_ldflags",
@@ -356,6 +360,7 @@ def define_macro_for_platform_objcopyflags(p):
 #
 def platform_startup(p): return "[+ get_" + p + "_startup +]"
 def platform_ldadd(p): return "[+ get_" + p + "_ldadd +]"
+def platform_dependencies(p): return "[+ get_" + p + "_dependencies +]"
 def platform_cflags(p): return "[+ get_" + p + "_cflags +]"
 def platform_ldflags(p): return "[+ get_" + p + "_ldflags +]"
 def platform_cppflags(p): return "[+ get_" + p + "_cppflags +]"
@@ -385,7 +390,7 @@ def module(platform):
     r += var_set(cname() + "_LDFLAGS", "$(AM_LDFLAGS) $(LDFLAGS_MODULE) " + platform_ldflags(platform))
     r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_MODULE) " + platform_cppflags(platform))
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_MODULE) " + platform_ccasflags(platform))
-    # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
+    r += var_set(cname() + "_DEPENDENCIES", "$(TARGET_OBJ2ELF) " + platform_dependencies(platform))
 
     r += gvar_add("dist_noinst_DATA", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
@@ -413,7 +418,7 @@ def kernel(platform):
     r += var_set(cname() + "_CPPFLAGS", "$(AM_CPPFLAGS) $(CPPFLAGS_KERNEL) " + platform_cppflags(platform))
     r += var_set(cname() + "_CCASFLAGS", "$(AM_CCASFLAGS) $(CCASFLAGS_KERNEL) " + platform_ccasflags(platform))
     r += var_set(cname() + "_STRIPFLAGS", "$(AM_STRIPFLAGS) $(STRIPFLAGS_KERNEL) " + platform_stripflags(platform))
-    # r += var_set(cname() + "_DEPENDENCIES", platform_dependencies(platform) + " " + platform_ldadd(platform))
+    r += var_set(cname() + "_DEPENDENCIES", "$(TARGET_OBJ2ELF)")
 
     r += gvar_add("dist_noinst_DATA", extra_dist())
     r += gvar_add("BUILT_SOURCES", "$(nodist_" + cname() + "_SOURCES)")
@@ -605,6 +610,7 @@ for p in GRUB_PLATFORMS:
     print (define_macro_for_platform_startup(p))
     print (define_macro_for_platform_cflags(p))
     print (define_macro_for_platform_ldadd(p))
+    print (define_macro_for_platform_dependencies(p))
     print (define_macro_for_platform_ldflags(p))
     print (define_macro_for_platform_cppflags(p))
     print (define_macro_for_platform_ccasflags(p))
