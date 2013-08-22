@@ -10,12 +10,6 @@ unexport LC_ALL
 if COND_i386_pc
   CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif
-if COND_i386_efi
-  LDFLAGS_PLATFORM = -Wl,-melf_i386
-endif
-if COND_x86_64_efi
-  LDFLAGS_PLATFORM = -Wl,-melf_x86_64
-endif
 if COND_i386_qemu
   CFLAGS_PLATFORM += -mrtd -mregparm=3
 endif

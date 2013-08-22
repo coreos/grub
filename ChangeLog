@@ -1,5 +1,12 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add -Wl,-melf_i386 and -Wl,-melf_x86_64 systematically
+	when on x86 and not cygwin.
+	* conf/Makefile.common: Remove unsystematic -Wl,-melf_i386 and
+	-Wl,-melf_x86_64.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Set CPP to build one when checkoing for freetype for
 	build.
 
