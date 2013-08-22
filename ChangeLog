@@ -1,3 +1,9 @@
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/crypto.h: Don't declare gcry_log_bug, gcry_log_printf
+	and gcry_log_bug.
+	* grub-core/lib/libgcrypt_wrap/mem.c: Include g10lib.h
+
 2013-08-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* INSTALL: Document cross-compilation.

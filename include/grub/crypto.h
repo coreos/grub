@@ -401,10 +401,6 @@ void _gcry_assert_failed (const char *expr, const char *file, int line,
 
 void _gcry_burn_stack (int bytes);
 void _gcry_log_error( const char *fmt, ... )  __attribute__ ((format (printf, 1, 2)));
-void _gcry_log_bug( const char *fmt, ... )  __attribute__ ((format (printf, 1, 2)));
-void _gcry_log_printf( const char *fmt, ... )  __attribute__ ((format (printf, 1, 2)));
-void
-_gcry_check_heap (const void *a __attribute__ ((unused)));
 
 
 #ifdef GRUB_UTIL

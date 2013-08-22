@@ -1,4 +1,4 @@
-#include <grub/gcrypt/gcrypt.h>
+#include <grub/gcrypt/g10lib.h>
 #include <grub/gcrypt/gpg-error.h>
 #include <grub/term.h>
 #include <grub/crypto.h>
