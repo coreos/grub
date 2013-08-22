@@ -168,10 +168,6 @@ case "$target_cpu" in
   x86_64 | sparc64) target_m64=1 ;;
 esac
 
-case "$host_os" in
-  mingw32*) host_os=cygwin ;;
-esac
-
 case "$target_os" in
   windows* | mingw32*) target_os=cygwin ;;
 esac

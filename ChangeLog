@@ -1,5 +1,9 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Don't change host_os from mingw to cygwin.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Change target_os from windows to cygwin.
 
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
