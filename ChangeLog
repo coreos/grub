@@ -1,5 +1,9 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c: Include sys/wait.h only when we need waitpid.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix dependencies on cygwin.
 
 	* gentpl.py: Support variable dependencies. Add $TARGET_OBJ2ELF to

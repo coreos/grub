@@ -52,7 +52,6 @@
 #endif
 
 #include <sys/types.h>
-#include <sys/wait.h>
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)
 # include <sys/param.h>
@@ -222,6 +221,9 @@ xgetcwd (void)
 #endif
 
 #if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
+
+#include <sys/types.h>
+#include <sys/wait.h>
 
 static pid_t
 exec_pipe (char **argv, int *fd)
