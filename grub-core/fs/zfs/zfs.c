@@ -1871,7 +1871,7 @@ zio_read (blkptr_t *bp, grub_zfs_endian_t endian, void **buf,
 	  err = grub_zfs_decrypt (data->subvol.keyring[besti].cipher,
 				  data->subvol.keyring[besti].algo,
 				  &(bp)->blk_dva[encrypted],
-				  compbuf, psize, ((grub_uint32_t *) &zc + 5),
+				  compbuf, psize, zc.zc_mac,
 				  endian);
 	}
       if (err)
