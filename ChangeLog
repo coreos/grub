@@ -1,5 +1,11 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/mm.h (grub_extend_alloc): Remove.
+	* grub-core/loader/i386/pc/plan9.c: Use own version of
+	grub_extend_alloc with appropriate types.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common (CFLAGS_GCRY): Add -Wno-redundant-decls.
 
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>

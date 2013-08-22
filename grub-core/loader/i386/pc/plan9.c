@@ -119,6 +119,23 @@ static const char prefixes[5][10] = {
   "dos", "plan9", "ntfs", "linux", "linuxswap"
 };
 
+#include <grub/err.h>
+
+static inline grub_err_t 
+grub_extend_alloc (grub_size_t sz, grub_size_t *allocated, char **ptr)
+{
+  void *n;
+  if (sz < *allocated)
+    return GRUB_ERR_NONE;
+
+  *allocated = 2 * sz;
+  n = grub_realloc (*ptr, *allocated);
+  if (!n)
+    return grub_errno;
+  *ptr = n;
+  return GRUB_ERR_NONE;
+}
+
 /* Helper for grub_cmd_plan9.  */
 static int
 fill_partition (grub_disk_t disk, const grub_partition_t partition, void *data)
@@ -130,7 +147,7 @@ fill_partition (grub_disk_t disk, const grub_partition_t partition, void *data)
   if (!fill_ctx->noslash)
     {
       if (grub_extend_alloc (fill_ctx->pmapptr + 1, &fill_ctx->pmapalloc,
-			     (void **) &fill_ctx->pmap))
+			     &fill_ctx->pmap))
 	return 1;
       fill_ctx->pmap[fill_ctx->pmapptr++] = '/';
     }
@@ -149,7 +166,7 @@ fill_partition (grub_disk_t disk, const grub_partition_t partition, void *data)
       do
 	{
 	  if (grub_extend_alloc (fill_ctx->pmapptr + 1, &fill_ctx->pmapalloc,
-				 (void **) &fill_ctx->pmap))
+				 &fill_ctx->pmap))
 	    return 1;
 	  err = grub_disk_read (disk, 1, ptr, 1,
 				fill_ctx->pmap + fill_ctx->pmapptr);
@@ -197,14 +214,14 @@ fill_partition (grub_disk_t disk, const grub_partition_t partition, void *data)
 		       fill_ctx->prefixescnt[c]);
       fill_ctx->prefixescnt[c]++;
       if (grub_extend_alloc (fill_ctx->pmapptr + grub_strlen (name) + 1,
-			     &fill_ctx->pmapalloc, (void **) &fill_ctx->pmap))
+			     &fill_ctx->pmapalloc, &fill_ctx->pmap))
 	return 1;
       grub_strcpy (fill_ctx->pmap + fill_ctx->pmapptr, name);
       fill_ctx->pmapptr += grub_strlen (name);
     }
   pend = fill_ctx->pmapptr;
   if (grub_extend_alloc (fill_ctx->pmapptr + 2 + 25 + 5 + 25,
-			 &fill_ctx->pmapalloc, (void **) &fill_ctx->pmap))
+			 &fill_ctx->pmapalloc, &fill_ctx->pmap))
     return 1;
   fill_ctx->pmap[fill_ctx->pmapptr++] = ' ';
   grub_snprintf (fill_ctx->pmap + fill_ctx->pmapptr, 25 + 5 + 25,
@@ -329,7 +346,7 @@ fill_disk (const char *name, void *data)
     }
   if (grub_extend_alloc (fill_ctx->pmapptr + grub_strlen (plan9name)
 			 + sizeof ("part="), &fill_ctx->pmapalloc,
-			 (void **) &fill_ctx->pmap))
+			 &fill_ctx->pmap))
     {
       grub_free (plan9name);
       return 1;
@@ -351,7 +368,7 @@ fill_disk (const char *name, void *data)
   if (grub_partition_iterate (dev->disk, fill_partition, fill_ctx))
     return 1;
   if (grub_extend_alloc (fill_ctx->pmapptr + 1, &fill_ctx->pmapalloc,
-			 (void **) &fill_ctx->pmap))
+			 &fill_ctx->pmap))
     return 1;
   fill_ctx->pmap[fill_ctx->pmapptr++] = '\n';
 
@@ -399,7 +416,7 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
     goto fail;
 
   if (grub_extend_alloc (fill_ctx.pmapptr + 1, &fill_ctx.pmapalloc,
-			 (void **) &fill_ctx.pmap))
+			 &fill_ctx.pmap))
     goto fail;
   fill_ctx.pmap[fill_ctx.pmapptr] = 0;
 
