@@ -1,5 +1,10 @@
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/ofpath.c (grub_util_devname_to_ofpath) [_WIN32]:
+	Replace with a dummy.
+
+2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Don't change host_os from mingw to cygwin.
 
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>

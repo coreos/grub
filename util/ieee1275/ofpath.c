@@ -70,6 +70,8 @@ grub_util_info (const char *fmt, ...)
 #define xstrdup strdup
 #endif
 
+#ifndef _WIN32
+
 static void
 kill_trailing_dir(char *path)
 {
@@ -531,6 +533,16 @@ grub_util_devname_to_ofpath (const char *sys_devname)
 
   return ofpath;
 }
+
+#else
+
+char *
+grub_util_devname_to_ofpath (const char *sys_devname __attribute__ ((unused)))
+{
+  return NULL;
+}
+
+#endif
 
 #ifdef OFPATH_STANDALONE
 int main(int argc, char **argv)
