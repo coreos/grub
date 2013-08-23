@@ -496,6 +496,19 @@ if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
 fi
 
+if test x"$target_os" = xcygwin; then
+  AC_CACHE_CHECK([whether option -fno-reorder-functions works], grub_cv_cc_no_reorder_functions, [
+    CFLAGS="$CFLAGS -fno-reorder-functions"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		      [grub_cv_cc_no_reorder_functions=yes],
+		      [grub_cv_cc_no_reorder_functions=no])
+  ])
+fi
+
+if test x"$target_os" = xcygwin && test "x$grub_cv_cc_no_reorder_functions" = xyes; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-reorder-functions"
+fi
+
 # By default, GCC 4.6 generates .eh_frame sections containing unwind
 # information in some cases where it previously did not. GRUB doesn't need
 # these and they just use up vital space. Restore the old compiler
@@ -569,6 +582,9 @@ AC_ARG_ENABLE([efiemu],
                              [build and install the efiemu runtimes (default=guessed)])])
 if test x"$enable_efiemu" = xno ; then
   efiemu_excuse="explicitly disabled"
+fi
+if test x"$target_os" = xcygwin ; then
+  efiemu_excuse="not available on cygwin"
 fi
 if test x"$target_cpu" != xi386 ; then
   efiemu_excuse="only available on i386"
