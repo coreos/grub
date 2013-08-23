@@ -1,3 +1,8 @@
+2013-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/Makefile.extra-dist: Add missing util/grub-gen-asciih.c,
+	util/grub-gen-widthspec.c and util/grub-pe2elf.c.
+
 2013-08-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkpasswd-pbkdf2.c (grub_password_get): Remove extraneous
