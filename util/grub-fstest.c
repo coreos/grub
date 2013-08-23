@@ -105,8 +105,8 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len, void
           len = (leng > BUF_SIZE) ? BUF_SIZE : leng;
 
           if (grub_disk_read (dev->disk, 0, skip, len, buf))
-            grub_util_error (_("disk read fails at offset %lld, length %d"),
-                             skip, len);
+            grub_util_error (_("disk read fails at offset %lld, length %lld"),
+                             (long long) skip, (long long) len);
 
           if (hook (skip, buf, len, hook_arg))
             break;
@@ -153,8 +153,8 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len, void
 	sz = grub_file_read (file, buf, (len > BUF_SIZE) ? BUF_SIZE : len);
 	if (sz < 0)
 	  {
-	    grub_util_error (_("read error at offset %llu: %s"), ofs,
-			     grub_errmsg);
+	    grub_util_error (_("read error at offset %llu: %s"),
+			     (unsigned long long) ofs, grub_errmsg);
 	    break;
 	  }
 
@@ -238,8 +238,8 @@ cmp_hook (grub_off_t ofs, char *buf, int len, void *ff_in)
   static char buf_1[BUF_SIZE];
   if ((int) fread (buf_1, 1, len, ff) != len)
     {
-      grub_util_error (_("read error at offset %llu: %s"), ofs,
-		       grub_errmsg);
+      grub_util_error (_("read error at offset %llu: %s"),
+		       (unsigned long long) ofs, grub_errmsg);
       return 1;
     }
 
@@ -250,7 +250,8 @@ cmp_hook (grub_off_t ofs, char *buf, int len, void *ff_in)
       for (i = 0; i < len; i++, ofs++)
 	if (buf_1[i] != buf[i])
 	  {
-	    grub_util_error (_("compare fail at offset %llu"), ofs);
+	    grub_util_error (_("compare fail at offset %llu"),
+			     (unsigned long long) ofs);
 	    return 1;
 	  }
     }

@@ -1,5 +1,12 @@
 2013-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-fstest.c: Fix several printf formats.
+	* util/grub-mkimage.c: Likewise.
+	* util/grub-mkimagexx.c: Likewise.
+	* util/grub-script-check.c: Likewise.
+
+2013-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/xzembed/xz_dec_lzma2.c: Make -Wattributes not cause
 	error.
 

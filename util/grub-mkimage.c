@@ -1077,14 +1077,15 @@ generate_image (const char *dir, const char *prefix,
 	    || (core_size > (0xffff << GRUB_DISK_SECTOR_BITS))
 	    || (kernel_size + bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000))
 	  grub_util_error (_("core image is too big (0x%x > 0x%x)"),
-			   GRUB_KERNEL_I386_PC_LINK_ADDR + core_size,
+			   GRUB_KERNEL_I386_PC_LINK_ADDR + (unsigned) core_size,
 			   0x78000);
 	/* fallthrough */
     case IMAGE_COREBOOT:
     case IMAGE_QEMU:
 	if (kernel_size + bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000)
 	  grub_util_error (_("kernel image is too big (0x%x > 0x%x)"),
-			   kernel_size + bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR,
+			   (unsigned) kernel_size + (unsigned) bss_size
+			   + GRUB_KERNEL_I386_PC_LINK_ADDR,
 			   0x68000);
 	break;
     case IMAGE_LOONGSON_ELF:
