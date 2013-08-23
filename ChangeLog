@@ -1,5 +1,10 @@
 2013-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/xzembed/xz_dec_lzma2.c: Make -Wattributes not cause
+	error.
+
+2013-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* config.h.in [GRUB_BUILD]: Explicitly undefine ENABLE_NLS.
 
 2013-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
