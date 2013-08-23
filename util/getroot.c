@@ -92,6 +92,8 @@
 # include <sys/ioctl.h>
 # include <cygwin/fs.h> /* BLKGETSIZE64 */
 # include <cygwin/hdreg.h> /* HDIO_GETGEO */
+# include <sys/cygwin.h>
+
 # define MAJOR(dev)	((unsigned) ((dev) >> 16))
 # define FLOPPY_MAJOR	2
 #endif
@@ -1002,8 +1004,9 @@ grub_find_device (const char *path, dev_t dev)
 
   /* Convert to full POSIX and Win32 path.  */
   char fullpath[PATH_MAX], winpath[PATH_MAX];
-  cygwin_conv_to_full_posix_path (path, fullpath);
-  cygwin_conv_to_full_win32_path (fullpath, winpath);
+
+  cygwin_conv_path (CCP_WIN_A_TO_POSIX, path, fullpath, sizeof (fullpath));
+  cygwin_conv_path (CCP_POSIX_TO_WIN_A, fullpath, winpath, sizeof (winpath));
 
   /* If identical, this is no real filesystem path.  */
   if (strcmp (fullpath, winpath) == 0)
