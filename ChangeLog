@@ -1,5 +1,9 @@
 2013-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* config.h.in [GRUB_BUILD]: Explicitly undefine ENABLE_NLS.
+
+2013-08-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_find_device): Use cygwin_conv_path ratherthan
 	removed in current versions cygwin_conv_*.
 
