@@ -117,6 +117,15 @@ grub_mm_init_region (void *addr, grub_size_t size)
   grub_printf ("Using memory for heap: start=%p, end=%p\n", addr, addr + (unsigned int) size);
 #endif
 
+  /* Exclude last 4K to avoid overflows. */
+  /* If addr + 0x1000 overflows then whole region is in excluded zone.  */
+  if ((grub_addr_t) addr > ~((grub_addr_t) 0x1000))
+    return;
+
+  /* If addr + 0x1000 + size overflows then decrease size.  */
+  if (((grub_addr_t) addr + 0x1000) > ~(grub_addr_t) size)
+    size = ((grub_addr_t) -0x1000) - (grub_addr_t) addr;
+
   for (p = &grub_mm_base, q = *p; q; p = &(q->next), q = *p)
     if ((grub_uint8_t *) addr + size + q->pre_size == (grub_uint8_t *) q)
       {

@@ -3,6 +3,12 @@
 	* docs/grub.texi (Networking commands): Add documentation for
 	network related commands.
 
+2013-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mm.c (grub_mm_init_region): Skip regions less than
+	4K before the end.
+	Reported by: Leif Lindholm
+
 2013-09-18  Pawel Wojtalczyk <eyak@wp.pl>
 2013-09-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
