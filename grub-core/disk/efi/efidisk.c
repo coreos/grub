@@ -766,7 +766,7 @@ struct grub_efidisk_get_device_name_ctx
 /* Helper for grub_efidisk_get_device_name.
    Find the identical partition.  */
 static int
-grub_efidisk_get_device_name_iter (grub_disk_t disk __attribute__ ((unused)),
+grub_efidisk_get_device_name_iter (grub_disk_t disk,
 				   const grub_partition_t part, void *data)
 {
   struct grub_efidisk_get_device_name_ctx *ctx = data;
