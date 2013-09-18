@@ -20,7 +20,9 @@ datarootdir="@datarootdir@"
 datadir="@datadir@"
 bindir="@bindir@"
 sbindir="@sbindir@"
-pkgdatadir="${datadir}/@PACKAGE@"
+if [ "x$pkgdatadir" = x ]; then
+    pkgdatadir="${datadir}/@PACKAGE@"
+fi
 
 if test "x$grub_probe" = x; then
   grub_probe="${sbindir}/@grub_probe@"
