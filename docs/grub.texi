@@ -5630,7 +5630,7 @@ just do:
 @end example
 
 Also, the latest version is available using Bazaar. See
-@uref{http://www.gnu.org/software/grub/grub-download.en.html} for more
+@uref{http://www.gnu.org/software/grub/grub-download.html} for more
 information.
 
 @node Reporting bugs

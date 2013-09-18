@@ -1,3 +1,7 @@
+2013-09-18  Aleš Nesrsta  <starous@volny.cz>
+
+	* docs/grub.texi: Fix broken link.
+
 2013-09-18  Melki Christian  <Christian.melki@saabgroup.com>
 
 	* grub-core/bus/usb/usb.c (grub_usb_device_initialize): Add condition
