@@ -148,6 +148,7 @@ grub_usb_device_initialize (grub_usb_device_t dev)
       int pos;
       int currif;
       char *data;
+      struct grub_usb_desc *desc;
 
       /* First just read the first 4 bytes of the configuration
 	 descriptor, after that it is known how many bytes really have
@@ -174,18 +175,35 @@ grub_usb_device_initialize (grub_usb_device_t dev)
       /* Read all interfaces.  */
       for (currif = 0; currif < dev->config[i].descconf->numif; currif++)
 	{
-	  while (pos < config.totallen
-		 && ((struct grub_usb_desc *)&data[pos])->type
-		 != GRUB_USB_DESCRIPTOR_INTERFACE)
-	    pos += ((struct grub_usb_desc *)&data[pos])->length;
+	  while (pos < config.totallen)
+            {
+              desc = (struct grub_usb_desc *)&data[pos];
+              if (desc->type == GRUB_USB_DESCRIPTOR_INTERFACE)
+                break;
+              if (!desc->length)
+                {
+                  err = GRUB_USB_ERR_BADDEVICE;
+                  goto fail;
+                }
+              pos += desc->length;
+            }
+
 	  dev->config[i].interf[currif].descif
 	    = (struct grub_usb_desc_if *) &data[pos];
 	  pos += dev->config[i].interf[currif].descif->length;
 
-	  while (pos < config.totallen
-		 && ((struct grub_usb_desc *)&data[pos])->type
-		 != GRUB_USB_DESCRIPTOR_ENDPOINT)
-	    pos += ((struct grub_usb_desc *)&data[pos])->length;
+	  while (pos < config.totallen)
+            {
+              desc = (struct grub_usb_desc *)&data[pos];
+              if (desc->type == GRUB_USB_DESCRIPTOR_ENDPOINT)
+                break;
+              if (!desc->length)
+                {
+                  err = GRUB_USB_ERR_BADDEVICE;
+                  goto fail;
+                }
+              pos += desc->length;
+            }
 
 	  /* Point to the first endpoint.  */
 	  dev->config[i].interf[currif].descendp
