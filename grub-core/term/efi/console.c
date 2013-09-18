@@ -125,7 +125,17 @@ grub_console_getkey (struct grub_term_input *term __attribute__ ((unused)))
     return GRUB_TERM_NO_KEY;
 
   if (key.scan_code == 0)
-    return key.unicode_char;
+    {
+      /* Some firmware implementations use VT100-style codes against the spec.
+	 This is especially likely if driven by serial.
+       */
+      if (key.unicode_char < 0x20 && key.unicode_char != 0
+	  && key.unicode_char != '\t' && key.unicode_char != '\b'
+	  && key.unicode_char != '\n' && key.unicode_char != '\r')
+	return GRUB_TERM_CTRL | (key.unicode_char - 1 + 'a');
+      else
+	return key.unicode_char;
+    }
   else if (key.scan_code < ARRAY_SIZE (efi_codes))
     return efi_codes[key.scan_code];
 
