@@ -1,3 +1,8 @@
+2013-09-18  Douglas Ray <dougray@cpan.org>
+
+	* util/grub-mkpasswd-pbkdf2.c (grub_get_random): Declare OpenBSD PRNG
+	as secure.
+
 2013-09-18  Aleš Nesrsta  <starous@volny.cz>
 
 	* docs/grub.texi: Fix broken link.
