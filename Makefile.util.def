@@ -301,7 +301,6 @@ program = {
   installdir = sbin;
   mansection = 8;
   common = util/grub-setup.c;
-  common = util/lvm.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
 
@@ -318,7 +317,6 @@ program = {
   installdir = sbin;
   mansection = 8;
   common = util/grub-setup.c;
-  common = util/lvm.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
   common = util/ieee1275/ofpath.c;

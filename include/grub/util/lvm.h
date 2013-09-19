@@ -28,7 +28,6 @@
 #define LVM_DEV_MAPPER_STRING "/dev/linux_lvm/"
 #endif
 
-int grub_util_lvm_isvolume (char *name);
 #endif
 
 #endif /* ! GRUB_RAID_UTIL_HEADER */

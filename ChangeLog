@@ -5,6 +5,10 @@
 
 2013-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/lvm.c: Remove since unused. Remove remaining references.
+
+2013-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Handle the case of partitioned LVM properly.
 
 	* grub-core/kern/emu/hostdisk.c (grub_util_get_dm_node_linear_info):
