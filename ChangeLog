@@ -3,6 +3,14 @@
 	* docs/grub.texi (Networking commands): Add documentation for
 	network related commands.
 
+2013-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/getroot.c (grub_util_open_dm): Check major rather than the name
+	to determine if device is handled by devmapper.
+	(convert_system_partition_to_system_disk): Likewise.
+	(get_dm_uuid): Don't check explicitly if device is mapped, it's
+	already done in grub_util_open_dm.
+
 2013-09-19  Leif Lindholm  <leif.lindholm@linaro.org>
 
 	* kern/arm/cache.S: Correct access to ilinesz/dlinesz variables.

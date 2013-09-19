@@ -1140,10 +1140,13 @@ grub_util_open_dm (const char *os_dev, struct dm_tree **tree,
   *node = NULL;
   *tree = NULL;
 
-  if ((strncmp ("/dev/mapper/", os_dev, 12) != 0))
+  if (stat (os_dev, &st) < 0)
     return 0;
 
-  if (stat (os_dev, &st) < 0)
+  maj = major (st.st_rdev);
+  min = minor (st.st_rdev);
+
+  if (!dm_is_dm_major (maj))
     return 0;
 
   *tree = dm_tree_create ();
@@ -1153,9 +1156,6 @@ grub_util_open_dm (const char *os_dev, struct dm_tree **tree,
       grub_dprintf ("hostdisk", "dm_tree_create failed\n");
       return 0;
     }
-
-  maj = major (st.st_rdev);
-  min = minor (st.st_rdev);
 
   if (! dm_tree_add_dev (*tree, maj, min))
     {
@@ -1187,9 +1187,6 @@ get_dm_uuid (const char *os_dev)
   const char *node_uuid;
   char *ret;
 
-  if ((strncmp ("/dev/mapper/", os_dev, 12) != 0))
-    return NULL;
-  
   if (!grub_util_open_dm (os_dev, &tree, &node))
     return NULL;
 
@@ -1942,8 +1939,7 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	}
 
 #ifdef HAVE_DEVICE_MAPPER
-      if ((strncmp ("/dev/mapper/", path, sizeof ("/dev/mapper/") - 1) == 0)
-	  || (strncmp ("/dev/dm-", path, sizeof ("/dev/dm-") - 1) == 0))
+      if (dm_is_dm_major (major (st->st_rdev)))
 	{
 	  struct dm_tree *tree;
 	  uint32_t maj, min;
