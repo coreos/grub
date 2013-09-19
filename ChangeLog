@@ -3,6 +3,11 @@
 	* docs/grub.texi (Networking commands): Add documentation for
 	network related commands.
 
+2013-09-19  Leif Lindholm  <leif.lindholm@linaro.org>
+
+	* kern/arm/cache.S: Correct access to ilinesz/dlinesz variables.
+	Clean up stack manipulation (sync_caches_armv*)
+
 2013-09-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/lvm.c: Remove since unused. Remove remaining references.

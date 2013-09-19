@@ -37,6 +37,7 @@
 clean_dcache_range:
 	@ Clean data cache for range to point-of-unification
 	ldr	r2, =EXT_C(grub_arch_cache_dlinesz)
+	ldr	r2, [r2]
 	sub	r3, r2, #1		@ align "beg" to start of line
 	mvn	r3, r3
 	and	r0, r0, r3
@@ -57,6 +58,7 @@ clean_dcache_range:
 invalidate_icache_range:
 	@ Invalidate instruction cache for range to point-of-unification
 	ldr	r2, =EXT_C(grub_arch_cache_ilinesz)
+	ldr	r2, [r2]
 	sub	r3, r2, #1		@ align "beg" to start of line
 	mvn	r3, r3
 	and	r0, r0, r3
@@ -77,14 +79,13 @@ FUNCTION(grub_arch_sync_caches_armv6)
 #else
 FUNCTION(grub_arch_sync_caches_armv7)
 #endif
-	add	r1, r0, r1
 	DSB
-	push	{r0-r1, r4-r6, lr}
-	ldrdeq	r0, r1, [sp]
+	add	r1, r0, r1
+	push	{r0-r2, lr}
 	bl	clean_dcache_range
 	pop	{r0, r1}
 	bl	invalidate_icache_range
-	pop	{r4-r6, pc}
+	pop	{r2, pc}
 
 #ifdef ARMV6
 FUNCTION(grub_arm_disable_caches_mmu_armv6)
