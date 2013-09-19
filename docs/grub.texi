@@ -3231,6 +3231,7 @@ shell}.
 * Menu-specific commands::
 * General commands::
 * Command-line and menu entry commands::
+* Networking commands::
 @end menu
 
 
@@ -4630,6 +4631,180 @@ only on PC BIOS platforms.
 @deffn Command videoinfo [[WxH]xD]
 List available video modes. If resolution is given, show only matching modes.
 @end deffn
+
+@node Networking commands
+@section The list of networking commands
+
+@menu
+* net_add_addr::                Add a network address
+* net_add_dns::                 Add a DNS server
+* net_add_route::               Add routing entry
+* net_bootp::                   Perform a bootp autoconfiguration
+* net_del_addr::                Remove IP address from interface
+* net_del_dns::                 Remove a DNS server
+* net_del_route::               Remove a route entry
+* net_get_dhcp_option::         Retrieve DHCP options
+* net_ipv6_autoconf::           Perform IPv6 autoconfiguration
+* net_ls_addr::                 List interfaces
+* net_ls_cards::                List network cards
+* net_ls_dns::                  List DNS servers
+* net_ls_routes::               List routing entries
+* net_nslookup::                Perform a DNS lookup
+@end menu
+
+
+@node net_add_addr
+@subsection net_add_addr
+
+@deffn Command net_add_addr @var{interface} @var{card} @var{address}
+Configure additional network @var{interface} with @var{address} on a
+network @var{card}. @var{address} can be either IP in dotted decimal notation,
+or symbolic name which is resolved using DNS lookup. If successful, this command
+also adds local link routing entry to the default subnet of @var{address}
+with name @var{interface}@samp{:local} via @var{interface}.
+@end deffn
+
+
+@node net_add_dns
+@subsection net_add_dns
+
+@deffn Command net_add_dns @var{server}
+Resolve @var{server} IP address and add to the list of DNS servers used during
+name lookup.
+@end deffn
+
+
+@node net_add_route
+@subsection net_add_route
+
+@deffn Command net_add_route @var{shortname} @var{ip}[/@var{prefix}] [@var{interface} | @samp{gw} @var{gateway}]
+Add route to network with address @var{ip} as modified by @var{prefix} via
+either local @var{interface} or @var{gateway}. @var{prefix} is optional and
+defaults to 32 for IPv4 address and 128 for IPv6 address. Route is identified
+by @var{shortname} which can be used to remove it (@pxref{net_del_route}).
+@end deffn
+
+
+@node net_bootp
+@subsection net_bootp
+
+@deffn Command net_bootp [@var{card}]
+Perform configuration of @var{card} using DHCP protocol. If no card name
+is specified, try to configure all existing cards. If configuration was
+successful, interface with name @var{card}@samp{:dhcp} and configured
+address is added to @var{card}. If server provided gateway information in
+DHCP ACK packet, it is added as route entry with the name @var{card}@samp{:dhcp:gw}. Additionally the following DHCP options are recognized and processed:
+
+@table @samp
+@item 1 (Subnet Mask)
+Used to calculate network local routing entry for interface @var{card}@samp{:dhcp}.
+@item 3 (Router)
+Adds default route entry with the name @var{card}@samp{:dhcp:default} via gateway
+from DHCP option. Note that only option with single route is accepted.
+@item 6 (Domain Name Server)
+Adds all servers from option value to the list of servers used during name resolution.
+@item 12 (Host Name)
+Sets environment variable @samp{net_}@var{<card>}@samp{_dhcp_hostname}
+(@pxref{net_@var{<interface>}_hostname}) to the value of option.
+@item 15 (Domain Name)
+Sets environment variable @samp{net_}@var{<card>}@samp{_dhcp_domain}
+(@pxref{net_@var{<interface>}_domain}) to the value of option.
+@item 17 (Root Path)
+Sets environment variable @samp{net_}@var{<card>}@samp{_dhcp_rootpath}
+(@pxref{net_@var{<interface>}_rootpath}) to the value of option.
+@item 18 (Extensions Path)
+Sets environment variable @samp{net_}@var{<card>}@samp{_dhcp_extensionspath}
+(@pxref{net_@var{<interface>}_extensionspath}) to the value of option.
+@end table
+
+@end deffn
+
+
+@node net_del_addr
+@subsection net_del_addr
+
+@deffn Command net_del_addr @var{interface}
+Remove configured @var{interface} with associated address.
+@end deffn
+
+
+@node net_del_dns
+@subsection net_del_dns
+
+@deffn Command net_del_dns @var{address}
+Remove @var{address} from list of servers used during name lookup.
+@end deffn
+
+
+@node net_del_route
+@subsection net_del_route
+
+@deffn Command net_del_route @var{shortname}
+Remove route entry identified by @var{shortname}.
+@end deffn
+
+
+@node net_get_dhcp_option
+@subsection net_get_dhcp_option
+
+@deffn Command net_get_dhcp_option @var{var} @var{interface} @var{number} @var{type}
+Request DHCP option @var{number} of @var{type} via @var{interface}. @var{type}
+can be one of @samp{string}, @samp{number} or @samp{hex}. If option is found,
+assign its value to variable @var{var}. Values of types @samp{number} and @samp{hex}
+are converted to string representation.
+@end deffn
+
+
+@node net_ipv6_autoconf
+@subsection net_ipv6_autoconf
+
+@deffn Command net_ipv6_autoconf [@var{card}]
+Perform IPv6 autoconfiguration by adding to the @var{card} interface with name
+@var{card}@samp{:link} and link local MAC-based address. If no card is specified,
+perform autoconfiguration for all existing cards.
+@end deffn
+
+
+@node net_ls_addr
+@subsection net_ls_addr
+
+@deffn Command net_ls_addr
+List all configured interfaces with their MAC and IP addresses.
+@end deffn
+
+
+@node net_ls_cards
+@subsection net_ls_cards
+
+@deffn Command net_ls_cards
+List all detected network cards with their MAC address.
+@end deffn
+
+
+@node net_ls_dns
+@subsection net_ls_dns
+
+@deffn Command net_ls_dns
+List addresses of DNS servers used during name lookup.
+@end deffn
+
+
+@node net_ls_routes
+@subsection net_ls_routes
+
+@deffn Command net_ls_routes
+List routing entries.
+@end deffn
+
+
+@node net_nslookup
+@subsection net_nslookup
+
+@deffn Command net_nslookup @var{name} [@var{server}]
+Resolve address of @var{name} using DNS server @var{server}. If no server
+is given, use default list of servers.
+@end deffn
+
 
 @node Internationalisation
 @chapter Charset
