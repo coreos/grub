@@ -1977,13 +1977,11 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 	  if (! node_uuid)
 	    {
 	      grub_util_info ("%s has no DM uuid", path);
-	      node = NULL;
 	      goto devmapper_out;
 	    }
 	  if (strncmp (node_uuid, "LVM-", 4) == 0)
 	    {
 	      grub_util_info ("%s is an LVM", path);
-	      node = NULL;
 	      goto devmapper_out;
 	    }
 	  if (strncmp (node_uuid, "mpath-", 6) == 0)
@@ -1993,7 +1991,6 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 		 grub_util_get_dm_node_linear_info.  Multipath disks are not
 		 linear mappings and must be handled specially.  */
 	      grub_util_info ("%s is a multipath disk", path);
-	      mapper_name = dm_tree_node_get_name (node);
 	      goto devmapper_out;
 	    }
 	  if (strncmp (node_uuid, "DMRAID-", 7) != 0)
@@ -2015,7 +2012,6 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 		  return ret;
 		}
 
-	      node = NULL;
 	      goto devmapper_out;
 	    }
 
@@ -2527,7 +2523,10 @@ grub_util_biosdisk_is_present (const char *os_dev)
   if (stat (os_dev, &st) < 0)
     return 0;
 
-  return find_system_device (os_dev, &st, 1, 0) != NULL;
+  int ret= (find_system_device (os_dev, &st, 1, 0) != NULL);
+  grub_util_info ((ret ? "%s is present" : "%s is not present"), 
+		  os_dev);
+  return ret;
 }
 
 char *

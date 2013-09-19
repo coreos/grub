@@ -541,6 +541,7 @@ grub_util_get_dm_node_linear_info (const char *dev,
   int major = 0, minor = 0;
   int first = 1;
   grub_disk_addr_t partstart = 0;
+  const char *node_uuid;
 
   while (1)
     {
@@ -560,6 +561,15 @@ grub_util_get_dm_node_linear_info (const char *dev,
 	  dm_task_destroy (dmt);
 	  break;
 	}
+      node_uuid = dm_task_get_uuid (dmt);
+      if (node_uuid && (strncmp (node_uuid, "LVM-", 4) == 0
+			|| strncmp (node_uuid, "mpath-", 6) == 0
+			|| strncmp (node_uuid, "DMRAID-", 7) == 0))
+	{
+	  dm_task_destroy (dmt);
+	  break;
+	}
+
       next = dm_get_next_target(dmt, next, &start, &length,
 				&target, &params);
       if (grub_strcmp (target, "linear") != 0)
@@ -920,21 +930,32 @@ const char *
 grub_hostdisk_os_dev_to_grub_drive (const char *os_disk, int add)
 {
   unsigned int i;
+  char *canon;
+
+  canon = canonicalize_file_name (os_disk);
+  if (!canon)
+    canon = xstrdup (os_disk);
 
   for (i = 0; i < ARRAY_SIZE (map); i++)
     if (! map[i].device)
       break;
-    else if (strcmp (map[i].device, os_disk) == 0)
-      return map[i].drive;
+    else if (strcmp (map[i].device, canon) == 0)
+      {
+	free (canon);
+	return map[i].drive;
+      }
 
   if (!add)
-    return NULL;
+    {
+      free (canon);
+      return NULL;
+    }
 
   if (i == ARRAY_SIZE (map))
     /* TRANSLATORS: it refers to the lack of free slots.  */
     grub_util_error ("%s", _("device count exceeds limit"));
 
-  map[i].device = xstrdup (os_disk);
+  map[i].device = canon;
   map[i].drive = xmalloc (sizeof ("hostdisk/") + strlen (os_disk));
   strcpy (map[i].drive, "hostdisk/");
   strcpy (map[i].drive + sizeof ("hostdisk/") - 1, os_disk);
@@ -1433,19 +1454,13 @@ read_device_map (const char *dev_map)
 	  continue;
 	}
 
-#ifdef __linux__
       /* On Linux, the devfs uses symbolic links horribly, and that
 	 confuses the interface very much, so use realpath to expand
-	 symbolic links.  Leave /dev/mapper/ alone, though.  */
-      if (strncmp (p, "/dev/mapper/", 12) != 0)
-	{
-	  map[drive].device = xmalloc (PATH_MAX);
-	  if (! realpath (p, map[drive].device))
-	    grub_util_error (_("failed to get canonical path of `%s'"), p);
-	}
-      else
-#endif
-      map[drive].device = xstrdup (p);
+	 symbolic links.  */
+      map[drive].device = canonicalize_file_name (p);
+      if (! map[drive].device)
+	map[drive].device = xstrdup (p);
+      
       if (!map[drive].drive)
 	{
 	  char c;
@@ -1466,6 +1481,9 @@ read_device_map (const char *dev_map)
 			  drive_e, map[drive].drive);
 	  *drive_p = c;
 	}
+
+      grub_util_info ("adding `%s' -> `%s' from device.map", map[drive].drive,
+		      map[drive].device);
 
       flush_initial_buffer (map[drive].device);
     }
