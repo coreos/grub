@@ -80,6 +80,7 @@ struct grub_diskfilter_pv {
 struct grub_diskfilter_lv {
   /* Name used for disk.  */
   char *fullname;
+  char *idname;
   /* Optional.  */
   char *name;
   int number;

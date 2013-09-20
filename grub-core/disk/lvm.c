@@ -387,6 +387,29 @@ grub_lvm_detect (grub_disk_t disk,
 		      *optr++ = '-';
 		  }
 		*optr++ = 0;
+		lv->idname = grub_malloc (sizeof ("lvmid/")
+					  + 2 * GRUB_LVM_ID_STRLEN + 1);
+		if (!lv->idname)
+		  goto lvs_fail;
+		grub_memcpy (lv->idname, "lvmid/",
+			     sizeof ("lvmid/") - 1);
+		grub_memcpy (lv->idname + sizeof ("lvmid/") - 1,
+			     vg_id, GRUB_LVM_ID_STRLEN);
+		lv->idname[sizeof ("lvmid/") - 1 + GRUB_LVM_ID_STRLEN] = '/';
+
+		p = grub_strstr (q, "id = \"");
+		if (p == NULL)
+		  {
+#ifdef GRUB_UTIL
+		    grub_util_info ("couldn't find ID\n");
+#endif
+		    goto lvs_fail;
+		  }
+		p += sizeof ("id = \"") - 1;
+		grub_memcpy (lv->idname + sizeof ("lvmid/") - 1
+			     + GRUB_LVM_ID_STRLEN + 1,
+			     p, GRUB_LVM_ID_STRLEN);
+		lv->idname[sizeof ("lvmid/") - 1 + 2 * GRUB_LVM_ID_STRLEN + 1] = '\0';
 	      }
 
 	      lv->size = 0;

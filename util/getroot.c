@@ -1333,26 +1333,55 @@ pull_lvm_by_command (const char *os_dev)
   FILE *mdadm;
   char *buf = NULL;
   size_t len = 0;
-  char *vgname;
+  char *vgname = NULL;
   const char *iptr;
   char *optr;
+  char *vgid = NULL;
+  grub_size_t vgidlen = 0;
 
-  if (strncmp (os_dev, "/dev/mapper/", sizeof ("/dev/mapper/") - 1)
-      != 0)
-    return;
+#ifdef HAVE_DEVICE_MAPPER
+  char *uuid;
 
-  vgname = xmalloc (strlen (os_dev + sizeof ("/dev/mapper/") - 1) + 1);
-  for (iptr = os_dev + sizeof ("/dev/mapper/") - 1, optr = vgname; *iptr; )
-    if (*iptr != '-')
-      *optr++ = *iptr++;
-    else if (iptr[0] == '-' && iptr[1] == '-')
-      {
-	iptr += 2;
-	*optr++ = '-';
-      }
-    else
-      break;
-  *optr = '\0';
+  uuid = get_dm_uuid (os_dev);
+  if (uuid)
+    {
+      int dashes[] = { 0, 6, 10, 14, 18, 22, 26, 32};
+      unsigned i;
+      vgid = xmalloc (grub_strlen (uuid));
+      optr = vgid;
+      for (i = 0; i < ARRAY_SIZE (dashes) - 1; i++)
+	  {
+	    memcpy (optr, uuid + sizeof ("LVM-") - 1 + dashes[i],
+		    dashes[i+1] - dashes[i]);
+	    optr += dashes[i+1] - dashes[i];
+	    *optr++ = '-';
+	  }
+      optr--;
+      *optr = '\0';
+      vgidlen = optr - vgid;
+    }
+#endif
+
+  if (!vgid)
+    {
+      if (strncmp (os_dev, LVM_DEV_MAPPER_STRING,
+		   sizeof (LVM_DEV_MAPPER_STRING) - 1)
+	  != 0)
+	return;
+
+      vgname = xmalloc (strlen (os_dev + sizeof (LVM_DEV_MAPPER_STRING) - 1) + 1);
+      for (iptr = os_dev + sizeof (LVM_DEV_MAPPER_STRING) - 1, optr = vgname; *iptr; )
+	if (*iptr != '-')
+	  *optr++ = *iptr++;
+	else if (iptr[0] == '-' && iptr[1] == '-')
+	  {
+	    iptr += 2;
+	    *optr++ = '-';
+	  }
+	else
+	  break;
+      *optr = '\0';
+    }
 
   /* execvp has inconvenient types, hence the casts.  None of these
      strings will actually be modified.  */
@@ -1361,7 +1390,10 @@ pull_lvm_by_command (const char *os_dev)
      alignment. We have a single field, so separator itself is not output */
   argv[0] = (char *) "vgs";
   argv[1] = (char *) "--options";
-  argv[2] = (char *) "pv_name";
+  if (vgid)
+    argv[2] = (char *) "vg_uuid,pv_name";
+  else
+    argv[2] = (char *) "pv_name";
   argv[3] = (char *) "--noheadings";
   argv[4] = (char *) "--separator";
   argv[5] = (char *) ":";
@@ -1388,6 +1420,12 @@ pull_lvm_by_command (const char *os_dev)
       char *ptr;
       /* LVM adds two spaces as standard prefix */
       for (ptr = buf; ptr < buf + 2 && *ptr == ' '; ptr++);
+
+      if (vgid && (grub_strncmp (vgid, ptr, vgidlen) != 0
+		   || ptr[vgidlen] != ':'))
+	continue;
+      if (vgid)
+	ptr += vgidlen + 1;
       if (*ptr == '\0')
 	continue;
       *(ptr + strlen (ptr) - 1) = '\0';
@@ -2534,7 +2572,32 @@ grub_util_get_grub_dev (const char *os_dev)
 
   switch (grub_util_get_dev_abstraction (os_dev))
     {
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#ifdef HAVE_DEVICE_MAPPER
+    case GRUB_DEV_ABSTRACTION_LVM:
+      {
+	char *uuid, *optr;
+	unsigned i;
+	int dashes[] = { 0, 6, 10, 14, 18, 22, 26, 32, 38, 42, 46, 50, 54, 58};
+	uuid = get_dm_uuid (os_dev);
+	if (!uuid)
+	  break;
+	grub_dev = xmalloc (grub_strlen (uuid) + 40);
+	optr = grub_stpcpy (grub_dev, "lvmid/");
+	for (i = 0; i < ARRAY_SIZE (dashes) - 1; i++)
+	  {
+	    memcpy (optr, uuid + sizeof ("LVM-") - 1 + dashes[i],
+		    dashes[i+1] - dashes[i]);
+	    optr += dashes[i+1] - dashes[i];
+	    *optr++ = '-';
+	  }
+	optr = stpcpy (optr, uuid + sizeof ("LVM-") - 1 + dashes[i]);
+	*optr = '\0';
+	grub_dev[sizeof("lvmid/xxxxxx-xxxx-xxxx-xxxx-xxxx-xxxx-xxxxxx") - 1]
+	  = '/';
+	free (uuid);
+      }
+      break;
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     case GRUB_DEV_ABSTRACTION_LVM:
 
       {

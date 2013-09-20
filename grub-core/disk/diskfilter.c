@@ -117,6 +117,7 @@ is_valid_diskfilter_name (const char *name)
 {
   return (grub_memcmp (name, "md", sizeof ("md") - 1) == 0
 	  || grub_memcmp (name, "lvm/", sizeof ("lvm/") - 1) == 0
+	  || grub_memcmp (name, "lvmid/", sizeof ("lvmid/") - 1) == 0
 	  || grub_memcmp (name, "ldm/", sizeof ("ldm/") - 1) == 0);
 }
 
@@ -387,16 +388,12 @@ grub_diskfilter_getname (struct grub_disk *disk)
 }
 #endif
 
-static inline int
-ascii2hex (char c)
+static inline char
+hex2ascii (int c)
 {
-  if (c >= '0' && c <= '9')
-    return c - '0';
-  if (c >= 'a' && c <= 'f')
-    return c - 'a' + 10;
-  if (c >= 'A' && c <= 'F')
-    return c - 'A' + 10;
-  return 0;
+  if (c >= 10)
+    return 'a' + c - 10;
+  return c + '0';
 }
 
 static struct grub_diskfilter_lv *
@@ -405,30 +402,12 @@ find_lv (const char *name)
   struct grub_diskfilter_vg *vg;
   struct grub_diskfilter_lv *lv = NULL;
 
-  if (grub_memcmp (name, "mduuid/", sizeof ("mduuid/") - 1) == 0)
-    {
-      const char *uuidstr = name + sizeof ("mduuid/") - 1;
-      grub_size_t uuid_len = grub_strlen (uuidstr) / 2;
-      grub_uint8_t uuidbin[uuid_len];
-      unsigned i;
-      for (i = 0; i < uuid_len; i++)
-	uuidbin[i] = ascii2hex (uuidstr[2 * i + 1])
-	  | (ascii2hex (uuidstr[2 * i]) << 4);
-
-      for (vg = array_list; vg; vg = vg->next)      
-	{
-	  if (uuid_len == vg->uuid_len
-	      && grub_memcmp (uuidbin, vg->uuid, uuid_len) == 0)
-	    if (is_lv_readable (vg->lvs, 0))
-	      return vg->lvs;
-	}
-    }
-
   for (vg = array_list; vg; vg = vg->next)
     {
       if (vg->lvs)
 	for (lv = vg->lvs; lv; lv = lv->next)
-	  if (lv->fullname && grub_strcmp (lv->fullname, name) == 0
+	  if (((lv->fullname && grub_strcmp (lv->fullname, name) == 0)
+	       || (lv->idname && grub_strcmp (lv->idname, name) == 0))
 	      && is_lv_readable (lv, 0))
 	    return lv;
     }
@@ -440,9 +419,7 @@ grub_diskfilter_open (const char *name, grub_disk_t disk)
 {
   struct grub_diskfilter_lv *lv;
 
-  if (grub_memcmp (name, "md", sizeof ("md") - 1) != 0
-      && grub_memcmp (name, "lvm/", sizeof ("lvm/") - 1) != 0
-      && grub_memcmp (name, "ldm/", sizeof ("ldm/") - 1) != 0)
+  if (!is_valid_diskfilter_name (name))
      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown DISKFILTER device %s",
 			name);
 
@@ -929,6 +906,7 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
 {
   struct grub_diskfilter_vg *array;
   int i;
+  grub_size_t j;
   grub_uint64_t totsize;
   struct grub_diskfilter_pv *pv;
   grub_err_t err;
@@ -995,6 +973,7 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
 
       array->name = new_name;
     }
+
   array->extent_size = 1;
   array->lvs = grub_zalloc (sizeof (*array->lvs));
   if (!array->lvs)
@@ -1003,6 +982,20 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
   array->lvs->visible = 1;
   array->lvs->name = array->name;
   array->lvs->fullname = array->name;
+
+  array->lvs->idname = grub_malloc (sizeof ("mduuid/") + 2 * uuidlen);
+  if (!array->lvs->idname)
+    goto fail;
+
+  grub_memcpy (array->lvs->idname, "mduuid/", sizeof ("mduuid/") - 1);
+  for (j = 0; j < uuidlen; j++)
+    {
+      array->lvs->idname[sizeof ("mduuid/") - 1 + 2 * j]
+	= hex2ascii (((unsigned char) uuid[j] >> 4));
+      array->lvs->idname[sizeof ("mduuid/") - 1 + 2 * j + 1]
+	= hex2ascii (((unsigned char) uuid[j] & 0xf));
+    }
+  array->lvs->idname[sizeof ("mduuid/") - 1 + 2 * uuidlen] = '\0';
 
   array->lvs->size = totsize;
 

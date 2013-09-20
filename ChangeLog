@@ -1,3 +1,9 @@
+2013-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/diskfilter.c: Handle non-md UUIDs.
+	* grub-core/disk/lvm.c: Add LVM UUIDs.
+	* util/getroot.c: Use LVM UUIDs whenever possible.
+
 2013-09-19  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* docs/grub.texi (Networking commands): Add documentation for
