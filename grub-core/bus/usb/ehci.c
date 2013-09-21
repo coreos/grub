@@ -670,7 +670,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
     grub_cpu_to_le32 (GRUB_EHCI_TERMINATE);
   e->tdfree_virt = e->td_virt;
   /* Set Terminate in first QH, which is used in framelist */
-  e->qh_virt[0].qh_hptr = grub_cpu_to_le32 (GRUB_EHCI_TERMINATE);
+  e->qh_virt[0].qh_hptr = grub_cpu_to_le32 (GRUB_EHCI_TERMINATE | GRUB_EHCI_HPTR_TYPE_QH);
   e->qh_virt[0].td_overlay.next_td = grub_cpu_to_le32 (GRUB_EHCI_TERMINATE);
   e->qh_virt[0].td_overlay.alt_next_td =
     grub_cpu_to_le32 (GRUB_EHCI_TERMINATE);
@@ -977,6 +977,10 @@ grub_ehci_find_qh (struct grub_ehci *e, grub_usb_transfer_t transfer)
   int i;
   grub_ehci_qh_t qh = e->qh_virt;
   grub_ehci_qh_t head;
+  grub_uint32_t qh_phys;
+  grub_uint32_t qh_terminate =
+    GRUB_EHCI_TERMINATE | GRUB_EHCI_HPTR_TYPE_QH;
+  grub_ehci_qh_t qh_iter;
 
   /* Prepare part of EP Characteristic to find existing QH */
   target = ((transfer->endpoint << GRUB_EHCI_EP_NUM_OFF) |
@@ -984,21 +988,58 @@ grub_ehci_find_qh (struct grub_ehci *e, grub_usb_transfer_t transfer)
   target = grub_cpu_to_le32 (target);
   mask = grub_cpu_to_le32 (GRUB_EHCI_TARGET_MASK);
 
-  /* First try to find existing QH with proper target */
-  for (i = 2; i < GRUB_EHCI_N_QH; i++)	/* We ignore zero and first QH */
+  /* low speed interrupt transfers are linked to the periodic */
+  /* schedule, everything else to the asynchronous schedule */
+  if (transfer->dev->speed == GRUB_USB_SPEED_LOW
+      && transfer->type != GRUB_USB_TRANSACTION_TYPE_CONTROL)
+    head = &qh[0];
+  else
+    head = &qh[1];
+
+  /* First try to find existing QH with proper target in proper list */
+  qh_phys = grub_le_to_cpu32( head->qh_hptr );
+  if (qh_phys != qh_terminate)
+    qh_iter = grub_dma_phys2virt ( qh_phys & GRUB_EHCI_QHTDPTR_MASK,
+      e->qh_chunk );
+  else
+    qh_iter = NULL;
+
+  for (
+    i = 0;
+    (qh_phys != qh_terminate) && (qh_iter != NULL) &&
+    (qh_iter != head) && (i < GRUB_EHCI_N_QH);
+    i++ )
     {
-      if (!qh[i].ep_char)
-	break;			/* Found first not-allocated QH, finish */
-      if (target == (qh[i].ep_char & mask))
+      if (target == (qh_iter->ep_char & mask))
 	{		
 	  /* Found proper existing (and linked) QH, do setup of QH */
-	  grub_dprintf ("ehci", "find_qh: found, i=%d, QH=%p\n",
-			i, &qh[i]);
-	  grub_ehci_setup_qh (&qh[i], transfer);
-	  return &qh[i];
+	  grub_dprintf ("ehci", "find_qh: found, QH=%p\n", qh_iter);
+	  grub_ehci_setup_qh (qh_iter, transfer);
+	  return qh_iter;
 	}
+
+      qh_phys = grub_le_to_cpu32( qh_iter->qh_hptr );
+      if (qh_phys != qh_terminate)
+        qh_iter = grub_dma_phys2virt ( qh_phys & GRUB_EHCI_QHTDPTR_MASK,
+	  e->qh_chunk );
+      else
+        qh_iter = NULL;
     }
-  /* QH with target_addr does not exist, we have to add it */
+
+  /* variable "i" should be never equal to GRUB_EHCI_N_QH here */
+  if (i >= GRUB_EHCI_N_QH)
+    { /* Something very bad happened in QH list(s) ! */
+      grub_dprintf ("ehci", "find_qh: Mismatch in QH list! head=%p\n",
+        head);
+    }
+
+  /* QH with target_addr does not exist, we have to find and add it */
+  for (i = 2; i < GRUB_EHCI_N_QH; i++) /* We ignore zero and first QH */
+    {
+      if (!qh[i].ep_char)
+	break;	             /* Found first not-allocated QH, finish */
+    }
+
   /* Have we any free QH in array ? */
   if (i >= GRUB_EHCI_N_QH)	/* No. */
     {
@@ -1012,14 +1053,6 @@ grub_ehci_find_qh (struct grub_ehci *e, grub_usb_transfer_t transfer)
    * de-allocate QHs of unplugged devices. */
   /* We should preset new QH and link it into AL */
   grub_ehci_setup_qh (&qh[i], transfer);
-
-  /* low speed interrupt transfers are linked to the periodic
-   * scheudle, everything else to the asynchronous schedule */
-  if (transfer->dev->speed == GRUB_USB_SPEED_LOW
-      && transfer->type != GRUB_USB_TRANSACTION_TYPE_CONTROL)
-    head = &qh[0];
-  else
-    head = &qh[1];
 
   /* Linking - this new (last) QH will copy the QH from the head QH */
   qh[i].qh_hptr = head->qh_hptr;
@@ -1538,17 +1571,20 @@ grub_ehci_cancel_transfer (grub_usb_controller_t dev,
   int i;
   grub_uint64_t maxtime;
   grub_uint32_t qh_phys;
+  grub_uint32_t interrupt =
+    cdata->qh_virt->ep_cap & GRUB_EHCI_SMASK_MASK;
 
   /* QH can be active and should be de-activated and halted */
 
   grub_dprintf ("ehci", "cancel_transfer: begin\n");
 
-  /* First check if EHCI is running and AL is enabled and if not,
-   * there is no problem... */
-  if (((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
-	& GRUB_EHCI_ST_HC_HALTED) != 0) ||
-      ((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
-	& (GRUB_EHCI_ST_AS_STATUS | GRUB_EHCI_ST_PS_STATUS)) == 0))
+  /* First check if EHCI is running - if not, there is no problem */
+  /* to cancel any transfer. Or, if transfer is asynchronous, check */
+  /* if AL is enabled - if not, transfer can be canceled also. */
+  if (((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS) &
+      GRUB_EHCI_ST_HC_HALTED) != 0) ||
+    (!interrupt && ((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS) &
+      (GRUB_EHCI_ST_AS_STATUS | GRUB_EHCI_ST_PS_STATUS)) == 0)))
     {
       grub_ehci_pre_finish_transfer (transfer);
       grub_ehci_free_tds (e, cdata->td_first_virt, transfer, &actual);
@@ -1558,13 +1594,14 @@ grub_ehci_cancel_transfer (grub_usb_controller_t dev,
       return GRUB_USB_ERR_NONE;
     }
 
-  /* EHCI and AL are running. What to do?
-   * Try to Halt QH via de-scheduling QH. */
+  /* EHCI and (AL or SL) are running. What to do? */
+  /* Try to Halt QH via de-scheduling QH. */
   /* Find index of previous QH */
   qh_phys = grub_dma_virt2phys(cdata->qh_virt, e->qh_chunk);
   for (i = 0; i < GRUB_EHCI_N_QH; i++)
     {
-      if ((e->qh_virt[i].qh_hptr & GRUB_EHCI_QHTDPTR_MASK) == qh_phys)
+      if ((grub_le_to_cpu32(e->qh_virt[i].qh_hptr)
+        & GRUB_EHCI_QHTDPTR_MASK) == qh_phys)
         break;
     }
   if (i == GRUB_EHCI_N_QH)
@@ -1618,24 +1655,12 @@ grub_ehci_cancel_transfer (grub_usb_controller_t dev,
   grub_ehci_free_tds (e, cdata->td_first_virt, transfer, &actual);
   grub_ehci_free_td (e, cdata->td_alt_virt);
 
-  /* FIXME Putting the QH back on the list should work, but for some
-   * strange reason doing that will affect other QHs on the periodic
-   * list.  So free the QH instead of putting it back on the list
-   * which does seem to work, but I would like to know why. */
-
-#if 0
-  /* Finaly we should return QH back to the AL... */
-  e->qh_virt[i].qh_hptr =
-    grub_cpu_to_le32 (grub_dma_virt2phys
-		      (cdata->qh_virt, e->qh_chunk));
-#else
-  /* Free the QH */
+  /* "Free" the QH - link it to itself */
   cdata->qh_virt->ep_char = 0;
   cdata->qh_virt->qh_hptr =
     grub_cpu_to_le32 ((grub_dma_virt2phys (cdata->qh_virt,
                                            e->qh_chunk)
                        & GRUB_EHCI_POINTER_MASK) | GRUB_EHCI_HPTR_TYPE_QH);
-#endif
 
   grub_free (cdata);
 
