@@ -1,3 +1,7 @@
+2013-09-21  Ales Nesrsta <starous@volny.cz>
+
+	* grub-core/bus/usb/ehci.c: Correceted EHCI QH handling (async./sync.)
+
 2013-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/diskfilter.c: Handle non-md UUIDs.
