@@ -33,7 +33,6 @@ int grub_util_biosdisk_is_floppy (grub_disk_t disk);
 const char *
 grub_util_biosdisk_get_compatibility_hint (grub_disk_t disk);
 grub_err_t grub_util_biosdisk_flush (struct grub_disk *disk);
-void grub_util_pull_device (const char *osname);
 grub_err_t
 grub_util_fd_seek (int fd, const char *name, grub_uint64_t sector);
 ssize_t grub_util_fd_read (int fd, char *buf, size_t len);
@@ -52,8 +51,6 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
 		     grub_embed_type_t embed_type,
 		     grub_disk_addr_t **sectors);
 #endif
-grub_disk_addr_t
-grub_hostdisk_find_partition_start (const char *dev);
 const char *
 grub_hostdisk_os_dev_to_grub_drive (const char *os_dev, int add);
 
@@ -63,11 +60,45 @@ grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize);
 char *
 grub_util_get_os_disk (const char *os_dev);
 
-#ifdef HAVE_DEVICE_MAPPER
+#ifdef __linux__
+int
+grub_hostdisk_linux_find_partition (char *dev, grub_disk_addr_t sector);
+#endif
+
 int
 grub_util_get_dm_node_linear_info (const char *dev,
 				   int *maj, int *min,
 				   grub_disk_addr_t *st);
+
+
+/* Supplied by hostdisk_*.c.  */
+grub_int64_t
+grub_util_get_fd_size_os (int fd, const char *name, unsigned *log_secsize);
+/* REturns partition offset in 512B blocks.  */
+grub_disk_addr_t
+grub_hostdisk_find_partition_start_os (const char *dev);
+/* Adjust device driver parameters.  This function should be called just
+   after successfully opening the device.  For now, it simply prevents the
+   floppy driver from retrying operations on failure, as otherwise the
+   driver takes a while to abort when there is no floppy in the drive.
+   For now it's non-nop only on NetBSD.
+*/
+void
+grub_hostdisk_configure_device_driver (int fd);
+void
+grub_hostdisk_flush_initial_buffer (const char *os_dev);
+
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) || defined (__sun__) || defined(__OpenBSD__)
+#define GRUB_DISK_DEVS_ARE_CHAR 1
+#else
+#define GRUB_DISK_DEVS_ARE_CHAR 0
+#endif
+
+#ifdef __GNU__
+int
+grub_util_hurd_get_disk_info (const char *dev, grub_uint32_t *secsize,
+			      grub_disk_addr_t *offset,
+			      grub_disk_addr_t *size, char **parent);
 #endif
 
 #endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */

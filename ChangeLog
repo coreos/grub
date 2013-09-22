@@ -1,5 +1,11 @@
 2013-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c: Disentagle into a series of OS-specific
+	files rather than one file with loads of #if's.
+	* util/getroot.c: Likewise.
+
+2013-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/sys/types.h: Use stddef on *BSD.
 
 2013-09-22  Vladimir Serbinenko  <phcoder@gmail.com>

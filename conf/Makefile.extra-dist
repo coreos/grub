@@ -61,3 +61,22 @@ EXTRA_DIST += m4/threadlib.m4
 EXTRA_DIST += m4/uintmax_t.m4
 EXTRA_DIST += m4/visibility.m4
 EXTRA_DIST += m4/math_h.m4
+
+EXTRA_DIST += grub-core/kern/emu/hostdisk_apple.c
+EXTRA_DIST += grub-core/kern/emu/hostdisk_basic.c
+EXTRA_DIST += grub-core/kern/emu/hostdisk_bsd.c
+EXTRA_DIST += grub-core/kern/emu/hostdisk_cygwin.c
+EXTRA_DIST += grub-core/kern/emu/hostdisk_freebsd.c
+EXTRA_DIST += grub-core/kern/emu/hostdisk_hurd.c
+EXTRA_DIST += grub-core/kern/emu/hostdisk_linux.c
+EXTRA_DIST += grub-core/kern/emu/hostdisk_mingw.c
+EXTRA_DIST += grub-core/kern/emu/hostdisk_sun.c
+
+EXTRA_DIST += util/getroot_apple.c
+EXTRA_DIST += util/getroot_basic.c
+EXTRA_DIST += util/getroot_bsd.c
+EXTRA_DIST += util/getroot_cygwin.c
+EXTRA_DIST += util/getroot_freebsd.c
+EXTRA_DIST += util/getroot_hurd.c
+EXTRA_DIST += util/getroot_linux.c
+EXTRA_DIST += util/getroot_sun.c

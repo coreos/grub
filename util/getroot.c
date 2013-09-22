@@ -40,8 +40,18 @@
 #include <grub/cryptodisk.h>
 #include <grub/i18n.h>
 
-#ifdef HAVE_DEVICE_MAPPER
-# include <libdevmapper.h>
+#ifdef __linux__
+#include <sys/ioctl.h>         /* ioctl */
+#include <sys/mount.h>
+#ifndef MAJOR
+# ifndef MINORBITS
+#  define MINORBITS	8
+# endif /* ! MINORBITS */
+# define MAJOR(dev)	((unsigned) ((dev) >> MINORBITS))
+#endif /* ! MAJOR */
+#ifndef FLOPPY_MAJOR
+# define FLOPPY_MAJOR	2
+#endif /* ! FLOPPY_MAJOR */
 #endif
 
 #ifdef __GNU__
@@ -53,19 +63,9 @@
 
 #include <sys/types.h>
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)
-# include <sys/param.h>
-# include <sys/mount.h>
-#endif
-
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 # include <grub/util/libzfs.h>
 # include <grub/util/libnvpair.h>
-#endif
-
-#ifdef __sun__
-# include <sys/types.h>
-# include <sys/mkdev.h>
 #endif
 
 #include <grub/mm.h>
@@ -73,20 +73,6 @@
 #include <grub/emu/misc.h>
 #include <grub/emu/hostdisk.h>
 #include <grub/emu/getroot.h>
-
-#ifdef __linux__
-# include <sys/ioctl.h>         /* ioctl */
-# include <sys/mount.h>
-# ifndef MAJOR
-#  ifndef MINORBITS
-#   define MINORBITS	8
-#  endif /* ! MINORBITS */
-#  define MAJOR(dev)	((unsigned) ((dev) >> MINORBITS))
-# endif /* ! MAJOR */
-# ifndef FLOPPY_MAJOR
-#  define FLOPPY_MAJOR	2
-# endif /* ! FLOPPY_MAJOR */
-#endif
 
 #ifdef __CYGWIN__
 # include <sys/ioctl.h>
@@ -99,40 +85,24 @@
 #endif
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-# include <sys/disk.h> /* DIOCGMEDIASIZE */
-# include <sys/param.h>
-# include <sys/sysctl.h>
-# include <sys/mount.h>
-#include <libgeom.h>
 # define MAJOR(dev) major(dev)
 # define FLOPPY_MAJOR	2
 #endif
 
-#if defined (__sun__)
-# include <sys/dkio.h>
-#endif
-
-#if defined(__APPLE__)
-# include <sys/disk.h>
-# include <sys/param.h>
-# include <sys/sysctl.h>
-# include <sys/mount.h>
-#endif
-
-#ifdef HAVE_DEVICE_MAPPER
-# include <libdevmapper.h>
+#if defined (__FreeBSD__) || defined (__FreeBSD_kernel__)
+#include <sys/mount.h>
 #endif
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
-# define HAVE_DIOCGDINFO
 # include <sys/ioctl.h>
 # include <sys/disklabel.h>    /* struct disklabel */
 # include <sys/disk.h>    /* struct dkwedge_info */
-#else /* !defined(__NetBSD__) && !defined(__FreeBSD__) && !defined(__FreeBSD_kernel__) */
-# undef HAVE_DIOCGDINFO
+#include <sys/param.h>
+#include <sys/mount.h>
 #endif /* defined(__NetBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) */
 
-#if defined(__NetBSD__)  || defined(__OpenBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+# define MAJOR(dev) major(dev)
 # ifdef HAVE_GETRAWPARTITION
 #  include <util.h>    /* getrawpartition */
 # endif /* HAVE_GETRAWPARTITION */
@@ -147,39 +117,13 @@
 # endif /* ! RAW_FLOPPY_MAJOR */
 #endif /* defined(__NetBSD__) */
 
-#ifdef __linux__
-/* Defines taken from btrfs/ioctl.h.  */
+#if !defined (__MINGW32__) && !defined (__CYGWIN__)
 
-struct btrfs_ioctl_dev_info_args
-{
-  grub_uint64_t devid;
-  grub_uint8_t uuid[16];
-  grub_uint64_t bytes_used;
-  grub_uint64_t total_bytes;
-  grub_uint64_t unused[379];
-  grub_uint8_t path[1024];
-};
-
-struct btrfs_ioctl_fs_info_args
-{
-  grub_uint64_t max_id;
-  grub_uint64_t num_devices;
-  grub_uint8_t fsid[16];
-  grub_uint64_t reserved[124];
-};
-
-#define BTRFS_IOC_DEV_INFO _IOWR(0x94, 30, \
-                                 struct btrfs_ioctl_dev_info_args)
-#define BTRFS_IOC_FS_INFO _IOR(0x94, 31, \
-                               struct btrfs_ioctl_fs_info_args)
+static void
+pull_lvm_by_command (const char *os_dev);
 #endif
 
-#ifdef __linux__
-static int
-grub_util_is_imsm (const char *os_dev);
-#endif
-
-#if ! defined(__CYGWIN__) && !defined(__GNU__)
+#if ! defined(__CYGWIN__)
 
 static void
 strip_extra_slashes (char *dir)
@@ -222,13 +166,13 @@ xgetcwd (void)
 
 #endif
 
-#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
+#if !defined (__MINGW32__) && !defined (__CYGWIN__)
 
 #include <sys/types.h>
 #include <sys/wait.h>
 
-static pid_t
-exec_pipe (char **argv, int *fd)
+pid_t
+grub_util_exec_pipe (char **argv, int *fd)
 {
   int mdadm_pipe[2];
   pid_t mdadm_pid;
@@ -249,9 +193,7 @@ exec_pipe (char **argv, int *fd)
       /* Child.  */
 
       /* Close fd's.  */
-#ifdef HAVE_DEVICE_MAPPER
-      dm_lib_release ();
-#endif
+      grub_util_devmapper_cleanup ();
       grub_diskfilter_fini ();
 
       /* Ensure child is not localised.  */
@@ -272,8 +214,11 @@ exec_pipe (char **argv, int *fd)
     }
 }
 
-static char **
-find_root_devices_from_poolname (char *poolname)
+#endif
+
+#if !defined (__CYGWIN__) && !defined(__MINGW32__) && !defined (__GNU__)
+char **
+grub_util_find_root_devices_from_poolname (char *poolname)
 {
   char **devices = 0;
   size_t ndevices = 0;
@@ -361,7 +306,7 @@ find_root_devices_from_poolname (char *poolname)
   argv[2] = (char *) poolname;
   argv[3] = NULL;
 
-  pid = exec_pipe (argv, &fd);
+  pid = grub_util_exec_pipe (argv, &fd);
   if (!pid)
     return NULL;
 
@@ -451,258 +396,6 @@ find_root_devices_from_poolname (char *poolname)
 
 #endif
 
-#ifdef __linux__
-
-#define ESCAPED_PATH_MAX (4 * PATH_MAX)
-struct mountinfo_entry
-{
-  int id;
-  int major, minor;
-  char enc_root[ESCAPED_PATH_MAX + 1], enc_path[ESCAPED_PATH_MAX + 1];
-  char fstype[ESCAPED_PATH_MAX + 1], device[ESCAPED_PATH_MAX + 1];
-};
-
-/* Statting something on a btrfs filesystem always returns a virtual device
-   major/minor pair rather than the real underlying device, because btrfs
-   can span multiple underlying devices (and even if it's currently only
-   using a single device it can be dynamically extended onto another).  We
-   can't deal with the multiple-device case yet, but in the meantime, we can
-   at least cope with the single-device case by scanning
-   /proc/self/mountinfo.  */
-static void
-unescape (char *str)
-{
-  char *optr;
-  const char *iptr;
-  for (iptr = optr = str; *iptr; optr++)
-    {
-      if (iptr[0] == '\\' && iptr[1] >= '0' && iptr[1] < '8'
-	  && iptr[2] >= '0' && iptr[2] < '8'
-	  && iptr[3] >= '0' && iptr[3] < '8')
-	{
-	  *optr = (((iptr[1] - '0') << 6) | ((iptr[2] - '0') << 3)
-		   | (iptr[3] - '0'));
-	  iptr += 4;
-	}
-      else
-	*optr = *iptr++;
-    }
-  *optr = 0;
-}
-
-static char **
-grub_find_root_devices_from_btrfs (const char *dir)
-{
-  int fd;
-  struct btrfs_ioctl_fs_info_args fsi;
-  int i, j = 0;
-  char **ret;
-
-  fd = open (dir, 0);
-  if (!fd)
-    return NULL;
-
-  if (ioctl (fd, BTRFS_IOC_FS_INFO, &fsi) < 0)
-    {
-      close (fd);
-      return NULL;
-    }
-
-  ret = xmalloc ((fsi.num_devices + 1) * sizeof (ret[0]));
-
-  for (i = 1; i <= fsi.max_id && j < fsi.num_devices; i++)
-    {
-      struct btrfs_ioctl_dev_info_args devi;
-      memset (&devi, 0, sizeof (devi));
-      devi.devid = i;
-      if (ioctl (fd, BTRFS_IOC_DEV_INFO, &devi) < 0)
-	{
-	  close (fd);
-	  free (ret);
-	  return NULL;
-	}
-      ret[j++] = xstrdup ((char *) devi.path);
-      if (j >= fsi.num_devices)
-	break;
-    }
-  close (fd);
-  ret[j] = 0;
-  return ret;
-}
-
-static char **
-grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
-{
-  FILE *fp;
-  char *buf = NULL;
-  size_t len = 0;
-  grub_size_t entry_len = 0, entry_max = 4;
-  struct mountinfo_entry *entries;
-  struct mountinfo_entry parent_entry = { 0, 0, 0, "", "", "", "" };
-  int i;
-
-  if (! *dir)
-    dir = "/";
-  if (relroot)
-    *relroot = NULL;
-
-  fp = fopen ("/proc/self/mountinfo", "r");
-  if (! fp)
-    return NULL; /* fall through to other methods */
-
-  entries = xmalloc (entry_max * sizeof (*entries));
-
-  /* First, build a list of relevant visible mounts.  */
-  while (getline (&buf, &len, fp) > 0)
-    {
-      struct mountinfo_entry entry;
-      int count;
-      size_t enc_path_len;
-      const char *sep;
-
-      if (sscanf (buf, "%d %d %u:%u %s %s%n",
-		  &entry.id, &parent_entry.id, &entry.major, &entry.minor,
-		  entry.enc_root, entry.enc_path, &count) < 6)
-	continue;
-
-      unescape (entry.enc_root);
-      unescape (entry.enc_path);
-
-      enc_path_len = strlen (entry.enc_path);
-      /* Check that enc_path is a prefix of dir.  The prefix must either be
-         the entire string, or end with a slash, or be immediately followed
-         by a slash.  */
-      if (strncmp (dir, entry.enc_path, enc_path_len) != 0 ||
-	  (enc_path_len && dir[enc_path_len - 1] != '/' &&
-	   dir[enc_path_len] && dir[enc_path_len] != '/'))
-	continue;
-
-      sep = strstr (buf + count, " - ");
-      if (!sep)
-	continue;
-
-      sep += sizeof (" - ") - 1;
-      if (sscanf (sep, "%s %s", entry.fstype, entry.device) != 2)
-	continue;
-
-      unescape (entry.device);
-
-      /* Using the mount IDs, find out where this fits in the list of
-	 visible mount entries we've seen so far.  There are three
-	 interesting cases.  Firstly, it may be inserted at the end: this is
-	 the usual case of /foo/bar being mounted after /foo.  Secondly, it
-	 may be inserted at the start: for example, this can happen for
-	 filesystems that are mounted before / and later moved under it.
-	 Thirdly, it may occlude part or all of the existing filesystem
-	 tree, in which case the end of the list needs to be pruned and this
-	 new entry will be inserted at the end.  */
-      if (entry_len >= entry_max)
-	{
-	  entry_max <<= 1;
-	  entries = xrealloc (entries, entry_max * sizeof (*entries));
-	}
-
-      if (!entry_len)
-	{
-	  /* Initialise list.  */
-	  entry_len = 2;
-	  entries[0] = parent_entry;
-	  entries[1] = entry;
-	}
-      else
-	{
-	  for (i = entry_len - 1; i >= 0; i--)
-	    {
-	      if (entries[i].id == parent_entry.id)
-		{
-		  /* Insert at end, pruning anything previously above this.  */
-		  entry_len = i + 2;
-		  entries[i + 1] = entry;
-		  break;
-		}
-	      else if (i == 0 && entries[i].id == entry.id)
-		{
-		  /* Insert at start.  */
-		  entry_len++;
-		  memmove (entries + 1, entries,
-			   (entry_len - 1) * sizeof (*entries));
-		  entries[0] = parent_entry;
-		  entries[1] = entry;
-		  break;
-		}
-	    }
-	}
-    }
-
-  /* Now scan visible mounts for the ones we're interested in.  */
-  for (i = entry_len - 1; i >= 0; i--)
-    {
-      char **ret = NULL;
-      if (!*entries[i].device)
-	continue;
-
-      if (grub_strcmp (entries[i].fstype, "fuse.zfs") == 0
-	  || grub_strcmp (entries[i].fstype, "zfs") == 0)
-	{
-	  char *slash;
-	  slash = strchr (entries[i].device, '/');
-	  if (slash)
-	    *slash = 0;
-	  ret = find_root_devices_from_poolname (entries[i].device);
-	  if (slash)
-	    *slash = '/';
-	  if (relroot)
-	    {
-	      if (!slash)
-		*relroot = xasprintf ("/@%s", entries[i].enc_root);
-	      else if (strchr (slash + 1, '@'))
-		*relroot = xasprintf ("/%s%s", slash + 1, entries[i].enc_root);
-	      else
-		*relroot = xasprintf ("/%s@%s", slash + 1, entries[i].enc_root);
-	    }
-	}
-      else if (grub_strcmp (entries[i].fstype, "btrfs") == 0)
-	{
-	  ret = grub_find_root_devices_from_btrfs (dir);
-	  if (relroot)
-	    {
-	      char *ptr;
-	      *relroot = xmalloc (strlen (entries[i].enc_root) +
-				  2 + strlen (dir));
-	      ptr = grub_stpcpy (*relroot, entries[i].enc_root);
-	      if (strlen (dir) > strlen (entries[i].enc_path))
-		{
-		  while (ptr > *relroot && *(ptr - 1) == '/')
-		    ptr--;
-		  if (dir[strlen (entries[i].enc_path)] != '/')
-		    *ptr++ = '/';
-		  ptr = grub_stpcpy (ptr, dir + strlen (entries[i].enc_path));
-		}
-	      *ptr = 0;
-	    }
-	}
-      if (!ret)
-	{
-	  ret = xmalloc (2 * sizeof (ret[0]));
-	  ret[0] = strdup (entries[i].device);
-	  ret[1] = 0;
-	  if (relroot)
-	    *relroot = strdup (entries[i].enc_root);
-	}
-	free (buf);
-	free (entries);
-	fclose (fp);
-	return ret;
-    }
-
-  free (buf);
-  free (entries);
-  fclose (fp);
-  return NULL;
-}
-
-#endif /* __linux__ */
-
 #if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
 
 static char **
@@ -716,7 +409,7 @@ find_root_devices_from_libzfs (const char *dir)
   if (! poolname)
     return NULL;
 
-  devices = find_root_devices_from_poolname (poolname);
+  devices = grub_util_find_root_devices_from_poolname (poolname);
 
   free (poolname);
   if (poolfs)
@@ -734,83 +427,6 @@ grub_find_device (const char *dir __attribute__ ((unused)),
                   dev_t dev __attribute__ ((unused)))
 {
   return 0;
-}
-
-#elif defined (__GNU__)
-
-static char *
-find_hurd_root_device (const char *path)
-{
-  file_t file;
-  error_t err;
-  char *argz = NULL, *name = NULL, *ret;
-  size_t argz_len = 0;
-  int i;
-
-  file = file_name_lookup (path, 0, 0);
-  if (file == MACH_PORT_NULL)
-    /* TRANSLATORS: The first %s is the file being looked at, the second %s is
-       the error message.  */
-    grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
-
-  /* This returns catenated 0-terminated strings.  */
-  err = file_get_fs_options (file, &argz, &argz_len);
-  if (err)
-    /* TRANSLATORS: On GNU/Hurd, a "translator" is similar to a filesystem
-       mount, but handled by a userland daemon, whose invocation command line
-       is being fetched here.  First %s is the file being looked at (for which
-       we are fetching the "translator" command line), second %s is the error
-       message.
-       */
-    grub_util_error (_("cannot get translator command line "
-                       "for path `%s': %s"), path, strerror(err));
-  if (argz_len == 0)
-    grub_util_error (_("translator command line is empty for path `%s'"), path);
-
-  /* Make sure the string is terminated.  */
-  argz[argz_len-1] = 0;
-
-  /* Skip first word (translator path) and options.  */
-  for (i = strlen (argz) + 1; i < argz_len; i += strlen (argz + i) + 1)
-    {
-      if (argz[i] != '-')
-        {
-          /* Non-option.  Only accept one, assumed to be the FS path.  */
-          /* XXX: this should be replaced by an RPC to the translator.  */
-          if (name)
-            /* TRANSLATORS: we expect to get something like
-               /hurd/foobar --option1 --option2=baz /dev/something
-             */
-            grub_util_error (_("translator `%s' for path `%s' has several "
-                               "non-option words, at least `%s' and `%s'"),
-                               argz, path, name, argz + i);
-          name = argz + i;
-        }
-    }
-
-  if (!name)
-    /* TRANSLATORS: we expect to get something like
-       /hurd/foobar --option1 --option2=baz /dev/something
-     */
-    grub_util_error (_("translator `%s' for path `%s' is given only options, "
-                       "cannot find device part"), argz, path);
-
-  if (strncmp (name, "device:", sizeof ("device:") - 1) == 0)
-    {
-      char *dev_name = name + sizeof ("device:") - 1;
-      size_t size = sizeof ("/dev/") - 1 + strlen (dev_name) + 1;
-      char *next;
-      ret = malloc (size);
-      next = stpncpy (ret, "/dev/", size);
-      stpncpy (next, dev_name, size - (next - ret));
-    }
-  else if (!strncmp (name, "file:", sizeof ("file:") - 1))
-    ret = strdup (name + sizeof ("file:") - 1);
-  else
-    ret = strdup (name);
-
-  munmap (argz, argz_len);
-  return ret;
 }
 
 #elif ! defined(__CYGWIN__)
@@ -913,7 +529,7 @@ grub_find_device (const char *dir, dev_t dev)
 	  /* Found!  */
 	  char *res;
 	  char *cwd;
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 	  /* Convert this block device to its character (raw) device.  */
 	  const char *template = "%s/r%s";
 #else
@@ -1110,7 +726,7 @@ grub_guess_root_devices (const char *dir)
 
 #elif defined __GNU__
   /* GNU/Hurd specific function.  */
-  os_dev[0] = find_hurd_root_device (dir);
+  os_dev[0] = grub_util_find_hurd_root_device (dir);
 
 #else
 
@@ -1128,171 +744,67 @@ grub_guess_root_devices (const char *dir)
   return os_dev;
 }
 
-#ifdef HAVE_DEVICE_MAPPER
-
-static int
-grub_util_open_dm (const char *os_dev, struct dm_tree **tree,
-		   struct dm_tree_node **node)
+grub_disk_addr_t
+grub_util_find_partition_start (const char *dev)
 {
-  uint32_t maj, min;
-  struct stat st;
+  grub_disk_addr_t partition_start;
+  if (grub_util_device_is_mapped (dev)
+      && grub_util_get_dm_node_linear_info (dev, 0, 0, &partition_start))
+    return partition_start;
 
-  *node = NULL;
-  *tree = NULL;
-
-  if (stat (os_dev, &st) < 0)
-    return 0;
-
-  maj = major (st.st_rdev);
-  min = minor (st.st_rdev);
-
-  if (!dm_is_dm_major (maj))
-    return 0;
-
-  *tree = dm_tree_create ();
-  if (! *tree)
-    {
-      grub_puts_ (N_("Failed to create `device-mapper' tree"));
-      grub_dprintf ("hostdisk", "dm_tree_create failed\n");
-      return 0;
-    }
-
-  if (! dm_tree_add_dev (*tree, maj, min))
-    {
-      grub_dprintf ("hostdisk", "dm_tree_add_dev failed\n");
-      dm_tree_free (*tree);
-      *tree = NULL;
-      return 0;
-    }
-
-  *node = dm_tree_find_node (*tree, maj, min);
-  if (! *node)
-    {
-      grub_dprintf ("hostdisk", "dm_tree_find_node failed\n");
-      dm_tree_free (*tree);
-      *tree = NULL;
-      return 0;
-    }
-  return 1;
+  return grub_util_find_partition_start_os (dev);
 }
 
-#endif
-
-#ifdef HAVE_DEVICE_MAPPER
-static char *
-get_dm_uuid (const char *os_dev)
+void
+grub_util_pull_device (const char *os_dev)
 {
-  struct dm_tree *tree;
-  struct dm_tree_node *node;
-  const char *node_uuid;
+  enum grub_dev_abstraction_types ab;
+  ab = grub_util_get_dev_abstraction (os_dev);
+  switch (ab)
+    {
+    case GRUB_DEV_ABSTRACTION_LVM:
+#if !defined (__MINGW32__) && !defined (__CYGWIN__)
+      pull_lvm_by_command (os_dev);
+#endif
+      /* Fallthrough in case that lvm-tools are unavailable.  */
+    case GRUB_DEV_ABSTRACTION_LUKS:
+      grub_util_pull_devmapper (os_dev);
+      return;
+
+    default:
+      if (grub_util_pull_device_os (os_dev, ab))
+	return;
+    case GRUB_DEV_ABSTRACTION_NONE:
+      free (grub_util_biosdisk_get_grub_dev (os_dev));
+      return;
+    }
+}
+
+char *
+grub_util_get_grub_dev (const char *os_dev)
+{
   char *ret;
 
-  if (!grub_util_open_dm (os_dev, &tree, &node))
-    return NULL;
+  grub_util_pull_device (os_dev);
 
-  node_uuid = dm_tree_node_get_uuid (node);
-  if (! node_uuid)
-    {
-      grub_dprintf ("hostdisk", "%s has no DM uuid\n", os_dev);
-      dm_tree_free (tree);
-      return NULL;
-    }
-
-  ret = grub_strdup (node_uuid);
-
-  dm_tree_free (tree);
-
-  return ret;
-}
-#endif
-
-#ifdef __linux__
-
-static enum grub_dev_abstraction_types
-grub_util_get_dm_abstraction (const char *os_dev)
-{
-#ifdef HAVE_DEVICE_MAPPER
-  char *uuid;
-
-  uuid = get_dm_uuid (os_dev);
-
-  if (uuid == NULL)
-    return GRUB_DEV_ABSTRACTION_NONE;
-
-  if (strncmp (uuid, "LVM-", 4) == 0)
-    {
-      grub_free (uuid);
-      return GRUB_DEV_ABSTRACTION_LVM;
-    }
-  if (strncmp (uuid, "CRYPT-LUKS1-", 4) == 0)
-    {
-      grub_free (uuid);
-      return GRUB_DEV_ABSTRACTION_LUKS;
-    }
-
-  grub_free (uuid);
-  return GRUB_DEV_ABSTRACTION_NONE;
-#else
-  if ((strncmp ("/dev/mapper/", os_dev, 12) != 0))
-    return GRUB_DEV_ABSTRACTION_NONE;
-  return GRUB_DEV_ABSTRACTION_LVM;  
-#endif
+  ret = grub_util_get_devmapper_grub_dev (os_dev);
+  if (ret)
+    return ret;
+  ret = grub_util_get_grub_dev_os (os_dev);
+  if (ret)
+    return ret;
+  return grub_util_biosdisk_get_grub_dev (os_dev);
 }
 
-#endif
-
-#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include <libgeom.h>
-
-static const char *
-grub_util_get_geom_abstraction (const char *dev)
-{
-  char *whole;
-  struct gmesh mesh;
-  struct gclass *class;
-  const char *name;
-  int err;
-
-  if (strncmp (dev, "/dev/", sizeof ("/dev/") - 1) != 0)
-    return 0;
-  name = dev + sizeof ("/dev/") - 1;
-  grub_util_follow_gpart_up (name, NULL, &whole);
-
-  grub_util_info ("following geom '%s'", name);
-
-  err = geom_gettree (&mesh);
-  if (err != 0)
-    /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
-       Usually left untranslated.
-     */
-    grub_util_error ("%s", _("couldn't open geom"));
-
-  LIST_FOREACH (class, &mesh.lg_class, lg_class)
-    {
-      struct ggeom *geom;
-      LIST_FOREACH (geom, &class->lg_geom, lg_geom)
-	{ 
-	  struct gprovider *provider;
-	  LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
-	    if (strcmp (provider->lg_name, name) == 0)
-	      return class->lg_name;
-	}
-    }
-  return NULL;
-}
-#endif
 
 int
 grub_util_get_dev_abstraction (const char *os_dev)
 {
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+  enum grub_dev_abstraction_types ret;
+
   /* User explicitly claims that this drive is visible by BIOS.  */
   if (grub_util_biosdisk_is_present (os_dev))
     return GRUB_DEV_ABSTRACTION_NONE;
-#endif
-
-#ifdef __linux__
-  enum grub_dev_abstraction_types ret;
 
   /* Check for LVM and LUKS.  */
   ret = grub_util_get_dm_abstraction (os_dev);
@@ -1300,29 +812,10 @@ grub_util_get_dev_abstraction (const char *os_dev)
   if (ret != GRUB_DEV_ABSTRACTION_NONE)
     return ret;
 
-  /* Check for RAID.  */
-  if (!strncmp (os_dev, "/dev/md", 7) && ! grub_util_device_is_mapped (os_dev)
-      && !grub_util_is_imsm (os_dev))
-    return GRUB_DEV_ABSTRACTION_RAID;
-#endif
-
-#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
-  const char *abstrac;
-  abstrac = grub_util_get_geom_abstraction (os_dev);
-  grub_util_info ("abstraction of %s is %s", os_dev, abstrac);
-  if (abstrac && grub_strcasecmp (abstrac, "eli") == 0)
-    return GRUB_DEV_ABSTRACTION_GELI;
-
-  /* Check for LVM.  */
-  if (!strncmp (os_dev, LVM_DEV_MAPPER_STRING, sizeof(LVM_DEV_MAPPER_STRING)-1))
-    return GRUB_DEV_ABSTRACTION_LVM;
-#endif
-
-  /* No abstraction found.  */
-  return GRUB_DEV_ABSTRACTION_NONE;
+  return grub_util_get_dev_abstraction_os (os_dev);
 }
 
-#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
+#if !defined (__MINGW32__) && !defined (__CYGWIN__)
 
 static void
 pull_lvm_by_command (const char *os_dev)
@@ -1339,28 +832,9 @@ pull_lvm_by_command (const char *os_dev)
   char *vgid = NULL;
   grub_size_t vgidlen = 0;
 
-#ifdef HAVE_DEVICE_MAPPER
-  char *uuid;
-
-  uuid = get_dm_uuid (os_dev);
-  if (uuid)
-    {
-      int dashes[] = { 0, 6, 10, 14, 18, 22, 26, 32};
-      unsigned i;
-      vgid = xmalloc (grub_strlen (uuid));
-      optr = vgid;
-      for (i = 0; i < ARRAY_SIZE (dashes) - 1; i++)
-	  {
-	    memcpy (optr, uuid + sizeof ("LVM-") - 1 + dashes[i],
-		    dashes[i+1] - dashes[i]);
-	    optr += dashes[i+1] - dashes[i];
-	    *optr++ = '-';
-	  }
-      optr--;
-      *optr = '\0';
-      vgidlen = optr - vgid;
-    }
-#endif
+  vgid = grub_util_get_vg_uuid (os_dev);
+  if (vgid)
+    vgidlen = grub_strlen (vgid);
 
   if (!vgid)
     {
@@ -1400,7 +874,7 @@ pull_lvm_by_command (const char *os_dev)
   argv[6] = vgname;
   argv[7] = NULL;
 
-  pid = exec_pipe (argv, &fd);
+  pid = grub_util_exec_pipe (argv, &fd);
   free (vgname);
 
   if (!pid)
@@ -1439,299 +913,6 @@ out:
 }
 
 #endif
-
-#ifdef __linux__
-static char *
-get_mdadm_uuid (const char *os_dev)
-{
-  char *argv[5];
-  int fd;
-  pid_t pid;
-  FILE *mdadm;
-  char *buf = NULL;
-  size_t len = 0;
-  char *name = NULL;
-
-  /* execvp has inconvenient types, hence the casts.  None of these
-     strings will actually be modified.  */
-  argv[0] = (char *) "mdadm";
-  argv[1] = (char *) "--detail";
-  argv[2] = (char *) "--export";
-  argv[3] = (char *) os_dev;
-  argv[4] = NULL;
-
-  pid = exec_pipe (argv, &fd);
-
-  if (!pid)
-    return NULL;
-
-  /* Parent.  Read mdadm's output.  */
-  mdadm = fdopen (fd, "r");
-  if (! mdadm)
-    {
-      grub_util_warn (_("Unable to open stream from %s: %s"),
-		      "mdadm", strerror (errno));
-      goto out;
-    }
-
-  while (getline (&buf, &len, mdadm) > 0)
-    {
-      if (strncmp (buf, "MD_UUID=", sizeof ("MD_UUID=") - 1) == 0)
-	{
-	  char *name_start, *ptri, *ptro;
-	  
-	  free (name);
-	  name_start = buf + sizeof ("MD_UUID=") - 1;
-	  ptro = name = xmalloc (strlen (name_start) + 1);
-	  for (ptri = name_start; *ptri && *ptri != '\n' && *ptri != '\r';
-	       ptri++)
-	    if ((*ptri >= '0' && *ptri <= '9')
-		|| (*ptri >= 'a' && *ptri <= 'f')
-		|| (*ptri >= 'A' && *ptri <= 'F'))
-	      *ptro++ = *ptri;
-	  *ptro = 0;
-	}
-    }
-
-out:
-  close (fd);
-  waitpid (pid, NULL, 0);
-  free (buf);
-
-  return name;
-}
-
-static int
-grub_util_is_imsm (const char *os_dev)
-{
-  int retry;
-  int is_imsm = 0;
-  int container_seen = 0;
-  const char *dev = os_dev;
-
-  do
-    {
-      char *argv[5];
-      int fd;
-      pid_t pid;
-      FILE *mdadm;
-      char *buf = NULL;
-      size_t len = 0;
-
-      retry = 0; /* We'll do one more pass if device is part of container */
-
-      /* execvp has inconvenient types, hence the casts.  None of these
-	 strings will actually be modified.  */
-      argv[0] = (char *) "mdadm";
-      argv[1] = (char *) "--detail";
-      argv[2] = (char *) "--export";
-      argv[3] = (char *) dev;
-      argv[4] = NULL;
-
-      pid = exec_pipe (argv, &fd);
-
-      if (!pid)
-	{
-	  if (dev != os_dev)
-	    free ((void *) dev);
-	  return 0;
-	}
-
-      /* Parent.  Read mdadm's output.  */
-      mdadm = fdopen (fd, "r");
-      if (! mdadm)
-	{
-	  grub_util_warn (_("Unable to open stream from %s: %s"),
-			  "mdadm", strerror (errno));
-	  close (fd);
-	  waitpid (pid, NULL, 0);
-	  if (dev != os_dev)
-	    free ((void *) dev);
-	  return 0;
-	}
-
-      while (getline (&buf, &len, mdadm) > 0)
-	{
-	  if (strncmp (buf, "MD_CONTAINER=", sizeof ("MD_CONTAINER=") - 1) == 0
-	      && !container_seen)
-	    {
-	      char *newdev, *ptr;
-	      newdev = xstrdup (buf + sizeof ("MD_CONTAINER=") - 1);
-	      ptr = newdev + strlen (newdev) - 1;
-	      for (; ptr >= newdev && (*ptr == '\n' || *ptr == '\r'); ptr--);
-	      ptr[1] = 0;
-	      grub_util_info ("Container of %s is %s", dev, newdev);
-	      dev = newdev;
-	      container_seen = retry = 1;
-	      break;
-	    }
-	  if (strncmp (buf, "MD_METADATA=imsm",
-		       sizeof ("MD_METADATA=imsm") - 1) == 0)
-	    {
-	      is_imsm = 1;
-	      grub_util_info ("%s is imsm", dev);	      
-	      break;
-	    }
-	}
-
-      free (buf);
-      close (fd);
-      waitpid (pid, NULL, 0);
-    }
-  while (retry);
-
-  if (dev != os_dev)
-    free ((void *) dev);
-  return is_imsm;
-}
-#endif /* __linux__ */
-
-void
-grub_util_pull_device (const char *os_dev)
-{
-  int ab;
-  ab = grub_util_get_dev_abstraction (os_dev);
-  switch (ab)
-    {
-    case GRUB_DEV_ABSTRACTION_GELI:
-#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
-      {
-	char *whole;
-	struct gmesh mesh;
-	struct gclass *class;
-	const char *name;
-	int err;
-	char *lastsubdev = NULL;
-
-	if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
-	  return;
-	name = os_dev + sizeof ("/dev/") - 1;
-	grub_util_follow_gpart_up (name, NULL, &whole);
-
-	grub_util_info ("following geom '%s'", name);
-
-	err = geom_gettree (&mesh);
-	if (err != 0)
-	  /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
-	     Usually left untranslated.
-	  */
-	  grub_util_error ("%s", _("couldn't open geom"));
-
-	LIST_FOREACH (class, &mesh.lg_class, lg_class)
-	  {
-	    struct ggeom *geom;
-	    LIST_FOREACH (geom, &class->lg_geom, lg_geom)
-	      { 
-		struct gprovider *provider;
-		LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
-		  if (strcmp (provider->lg_name, name) == 0)
-		    {
-		      struct gconsumer *consumer;
-		      char *fname;
-
-		      LIST_FOREACH (consumer, &geom->lg_consumer, lg_consumer)
-			break;
-		      if (!consumer)
-			grub_util_error ("%s",
-					 _("couldn't find geli consumer"));
-		      fname = xasprintf ("/dev/%s", consumer->lg_provider->lg_name);
-		      grub_util_info ("consumer %s", consumer->lg_provider->lg_name);
-		      lastsubdev = consumer->lg_provider->lg_name;
-		      grub_util_pull_device (fname);
-		      free (fname);
-		    }
-	      }
-	  }
-	if (ab == GRUB_DEV_ABSTRACTION_GELI && lastsubdev)
-	  {
-	    char *fname = xasprintf ("/dev/%s", lastsubdev);
-	    char *grdev = grub_util_get_grub_dev (fname);
-	    free (fname);
-
-	    if (grdev)
-	      {
-		grub_err_t gr_err;
-		gr_err = grub_cryptodisk_cheat_mount (grdev, os_dev);
-		if (gr_err)
-		  grub_util_error (_("can't mount encrypted volume `%s': %s"),
-				   lastsubdev, grub_errmsg);
-	      }
-
-	    grub_free (grdev);
-	  }
-      }
-#endif
-      break;
-
-    case GRUB_DEV_ABSTRACTION_LVM:
-#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__GNU__)
-      pull_lvm_by_command (os_dev);
-#endif
-      /* Fallthrough in case that lvm-tools are unavailable.  */
-    case GRUB_DEV_ABSTRACTION_LUKS:
-#ifdef HAVE_DEVICE_MAPPER
-      {
-	struct dm_tree *tree;
-	struct dm_tree_node *node;
-	struct dm_tree_node *child;
-	void *handle = NULL;
-	char *lastsubdev = NULL;
-
-	if (!grub_util_open_dm (os_dev, &tree, &node))
-	  return;
-
-	while ((child = dm_tree_next_child (&handle, node, 0)))
-	  {
-	    const struct dm_info *dm = dm_tree_node_get_info (child);
-	    char *subdev;
-	    if (!dm)
-	      continue;
-	    subdev = grub_find_device ("/dev", makedev (dm->major, dm->minor));
-	    if (subdev)
-	      {
-		lastsubdev = subdev;
-		grub_util_pull_device (subdev);
-	      }
-	  }
-	if (ab == GRUB_DEV_ABSTRACTION_LUKS && lastsubdev)
-	  {
-	    char *grdev = grub_util_get_grub_dev (lastsubdev);
-	    dm_tree_free (tree);
-	    if (grdev)
-	      {
-		grub_err_t err;
-		err = grub_cryptodisk_cheat_mount (grdev, os_dev);
-		if (err)
-		  grub_util_error (_("can't mount encrypted volume `%s': %s"),
-				   lastsubdev, grub_errmsg);
-	      }
-	    grub_free (grdev);
-	  }
-	else
-	  dm_tree_free (tree);
-      }
-#endif
-      return;
-    case GRUB_DEV_ABSTRACTION_RAID:
-#ifdef __linux__
-      {
-	char **devicelist = grub_util_raid_getmembers (os_dev, 0);
-	int i;
-	for (i = 0; devicelist[i];i++)
-	  {
-	    grub_util_pull_device (devicelist[i]);
-	    free (devicelist[i]);
-	  }
-	free (devicelist);
-      }
-#endif
-      return;
-
-    default:  /* GRUB_DEV_ABSTRACTION_NONE */
-      free (grub_util_biosdisk_get_grub_dev (os_dev));
-      return;
-    }
-}
 
 int
 grub_util_biosdisk_is_floppy (grub_disk_t disk)
@@ -1785,476 +966,12 @@ convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
 {
   *is_part = 0;
 
-#if defined(__linux__)
-  char *path = xmalloc (PATH_MAX);
+  if (grub_util_device_is_mapped_stat (st))
+    return grub_util_devmapper_part_to_disk (st, is_part, os_dev);
 
-  if (! realpath (os_dev, path))
-    return NULL;
+  *is_part = 0;
 
-  if (strncmp ("/dev/", path, 5) == 0)
-    {
-      char *p = path + 5;
-
-      /* If this is an IDE disk.  */
-      if (strncmp ("ide/", p, 4) == 0)
-	{
-	  p = strstr (p, "part");
-	  if (p)
-	    {
-	      *is_part = 1;
-	      strcpy (p, "disc");
-	    }
-
-	  return path;
-	}
-
-      /* If this is a SCSI disk.  */
-      if (strncmp ("scsi/", p, 5) == 0)
-	{
-	  p = strstr (p, "part");
-	  if (p)
-	    {
-	      *is_part = 1;
-	      strcpy (p, "disc");
-	    }
-
-	  return path;
-	}
-
-      /* If this is a DAC960 disk.  */
-      if (strncmp ("rd/c", p, 4) == 0)
-	{
-	  /* /dev/rd/c[0-9]+d[0-9]+(p[0-9]+)? */
-	  p = strchr (p, 'p');
-	  if (p)
-	    {
-	      *is_part = 1;
-	      *p = '\0';
-	    }
-
-	  return path;
-	}
-
-      /* If this is a Mylex AcceleRAID Array.  */
-      if (strncmp ("rs/c", p, 4) == 0)
-	{
-	  /* /dev/rd/c[0-9]+d[0-9]+(p[0-9]+)? */
-	  p = strchr (p, 'p');
-	  if (p)
-	    {
-	      *is_part = 1;
-	      *p = '\0';
-	    }
-
-	  return path;
-	}
-      /* If this is a CCISS disk.  */
-      if (strncmp ("cciss/c", p, sizeof ("cciss/c") - 1) == 0)
-	{
-	  /* /dev/cciss/c[0-9]+d[0-9]+(p[0-9]+)? */
-	  p = strchr (p, 'p');
-	  if (p)
-	    {
-	      *is_part = 1;
-	      *p = '\0';
-	    }
-
-	  return path;
-	}
-
-      /* If this is an AOE disk.  */
-      if (strncmp ("etherd/e", p, sizeof ("etherd/e") - 1) == 0)
-	{
-	  /* /dev/etherd/e[0-9]+\.[0-9]+(p[0-9]+)? */
-	  p = strchr (p, 'p');
-	  if (p)
-	    {
-	      *is_part = 1;
-	      *p = '\0';
-	    }
-
-	  return path;
-	}
-
-      /* If this is a Compaq Intelligent Drive Array.  */
-      if (strncmp ("ida/c", p, sizeof ("ida/c") - 1) == 0)
-	{
-	  /* /dev/ida/c[0-9]+d[0-9]+(p[0-9]+)? */
-	  p = strchr (p, 'p');
-	  if (p)
-	    {
-	      *is_part = 1;
-	      *p = '\0';
-	    }
-
-	  return path;
-	}
-
-      /* If this is an I2O disk.  */
-      if (strncmp ("i2o/hd", p, sizeof ("i2o/hd") - 1) == 0)
-      	{
-	  /* /dev/i2o/hd[a-z]([0-9]+)? */
-	  if (p[sizeof ("i2o/hda") - 1])
-	    *is_part = 1;
-	  p[sizeof ("i2o/hda") - 1] = '\0';
-	  return path;
-	}
-
-      /* If this is a MultiMediaCard (MMC).  */
-      if (strncmp ("mmcblk", p, sizeof ("mmcblk") - 1) == 0)
-	{
-	  /* /dev/mmcblk[0-9]+(p[0-9]+)? */
-	  p = strchr (p, 'p');
-	  if (p)
-	    {
-	      *is_part = 1;
-	      *p = '\0';
-	    }
-
-	  return path;
-	}
-
-      if (strncmp ("md", p, 2) == 0
-	  && p[2] >= '0' && p[2] <= '9')
-	{
-	  char *ptr = p + 2;
-	  while (*ptr >= '0' && *ptr <= '9')
-	    ptr++;
-	  if (*ptr)
-	    *is_part = 1;
-	  *ptr = 0;
-	  return path;
-	}
-
-      if (strncmp ("nbd", p, 3) == 0
-	  && p[3] >= '0' && p[3] <= '9')
-	{
-	  char *ptr = p + 3;
-	  while (*ptr >= '0' && *ptr <= '9')
-	    ptr++;
-	  if (*ptr)
-	    *is_part = 1;
-	  *ptr = 0;
-	  return path;
-	}
-
-      /* If this is an IDE, SCSI or Virtio disk.  */
-      if (strncmp ("vdisk", p, 5) == 0
-	  && p[5] >= 'a' && p[5] <= 'z')
-	{
-	  /* /dev/vdisk[a-z][0-9]* */
-	  if (p[6])
-	    *is_part = 1;
-	  p[6] = '\0';
-	  return path;
-	}
-      if ((strncmp ("hd", p, 2) == 0
-	   || strncmp ("vd", p, 2) == 0
-	   || strncmp ("sd", p, 2) == 0)
-	  && p[2] >= 'a' && p[2] <= 'z')
-	{
-	  char *pp = p + 2;
-	  while (*pp >= 'a' && *pp <= 'z')
-	    pp++;
-	  if (*pp)
-	    *is_part = 1;
-	  /* /dev/[hsv]d[a-z]+[0-9]* */
-	  *pp = '\0';
-	  return path;
-	}
-
-      /* If this is a Xen virtual block device.  */
-      if ((strncmp ("xvd", p, 3) == 0) && p[3] >= 'a' && p[3] <= 'z')
-	{
-	  char *pp = p + 3;
-	  while (*pp >= 'a' && *pp <= 'z')
-	    pp++;
-	  if (*pp)
-	    *is_part = 1;
-	  /* /dev/xvd[a-z]+[0-9]* */
-	  *pp = '\0';
-	  return path;
-	}
-
-#ifdef HAVE_DEVICE_MAPPER
-      if (dm_is_dm_major (major (st->st_rdev)))
-	{
-	  struct dm_tree *tree;
-	  uint32_t maj, min;
-	  struct dm_tree_node *node = NULL, *child;
-	  void *handle;
-	  const char *node_uuid, *mapper_name = NULL, *child_uuid, *child_name;
-
-	  tree = dm_tree_create ();
-	  if (! tree)
-	    {
-	      grub_util_info ("dm_tree_create failed");
-	      goto devmapper_out;
-	    }
-
-	  maj = major (st->st_rdev);
-	  min = minor (st->st_rdev);
-	  if (! dm_tree_add_dev (tree, maj, min))
-	    {
-	      grub_util_info ("dm_tree_add_dev failed");
-	      goto devmapper_out;
-	    }
-
-	  node = dm_tree_find_node (tree, maj, min);
-	  if (! node)
-	    {
-	      grub_util_info ("dm_tree_find_node failed");
-	      goto devmapper_out;
-	    }
-	reiterate:
-	  node_uuid = dm_tree_node_get_uuid (node);
-	  if (! node_uuid)
-	    {
-	      grub_util_info ("%s has no DM uuid", path);
-	      goto devmapper_out;
-	    }
-	  if (strncmp (node_uuid, "LVM-", 4) == 0)
-	    {
-	      grub_util_info ("%s is an LVM", path);
-	      goto devmapper_out;
-	    }
-	  if (strncmp (node_uuid, "mpath-", 6) == 0)
-	    {
-	      /* Multipath partitions have partN-mpath-* UUIDs, and are
-		 linear mappings so are handled by
-		 grub_util_get_dm_node_linear_info.  Multipath disks are not
-		 linear mappings and must be handled specially.  */
-	      grub_util_info ("%s is a multipath disk", path);
-	      goto devmapper_out;
-	    }
-	  if (strncmp (node_uuid, "DMRAID-", 7) != 0)
-	    {
-	      int major, minor;
-	      const char *node_name;
-	      grub_util_info ("%s is not DM-RAID", path);
-
-	      if ((node_name = dm_tree_node_get_name (node))
-		  && grub_util_get_dm_node_linear_info (node_name,
-							&major, &minor, 0))
-		{
-		  *is_part = 1;
-		  if (tree)
-		    dm_tree_free (tree);
-		  free (path);
-		  char *ret = grub_find_device ("/dev",
-						(major << 8) | minor);
-		  return ret;
-		}
-
-	      goto devmapper_out;
-	    }
-
-	  handle = NULL;
-	  /* Counter-intuitively, device-mapper refers to the disk-like
-	     device containing a DM-RAID partition device as a "child" of
-	     the partition device.  */
-	  child = dm_tree_next_child (&handle, node, 0);
-	  if (! child)
-	    {
-	      grub_util_info ("%s has no DM children", path);
-	      goto devmapper_out;
-	    }
-	  child_uuid = dm_tree_node_get_uuid (child);
-	  if (! child_uuid)
-	    {
-	      grub_util_info ("%s child has no DM uuid", path);
-	      goto devmapper_out;
-	    }
-	  else if (strncmp (child_uuid, "DMRAID-", 7) != 0)
-	    {
-	      grub_util_info ("%s child is not DM-RAID", path);
-	      goto devmapper_out;
-	    }
-	  child_name = dm_tree_node_get_name (child);
-	  if (! child_name)
-	    {
-	      grub_util_info ("%s child has no DM name", path);
-	      goto devmapper_out;
-	    }
-	  mapper_name = child_name;
-	  *is_part = 1;
-	  node = child;
-	  goto reiterate;
-
-devmapper_out:
-	  if (! mapper_name && node)
-	    {
-	      /* This is a DM-RAID disk, not a partition.  */
-	      mapper_name = dm_tree_node_get_name (node);
-	      if (! mapper_name)
-		grub_util_info ("%s has no DM name", path);
-	    }
-	  char *ret;
-	  if (mapper_name)
-	    ret = xasprintf ("/dev/mapper/%s", mapper_name);
-	  else
-	    ret = NULL;
-
-	  if (tree)
-	    dm_tree_free (tree);
-	  free (path);
-	  return ret;
-	}
-#endif /* HAVE_DEVICE_MAPPER */
-    }
-
-  return path;
-
-#elif defined(__GNU__)
-  char *path = xstrdup (os_dev);
-  if (strncmp ("/dev/sd", path, 7) == 0 || strncmp ("/dev/hd", path, 7) == 0)
-    {
-      char *p = strchr (path + 7, 's');
-      if (p)
-	{
-	  *is_part = 1;
-	  *p = '\0';
-	}
-    }
-  return path;
-
-#elif defined(__CYGWIN__)
-  char *path = xstrdup (os_dev);
-  if (strncmp ("/dev/sd", path, 7) == 0 && 'a' <= path[7] && path[7] <= 'z'
-      && path[8])
-    {
-      *is_part = 1;
-      path[8] = 0;
-    }
-  return path;
-
-#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-  char *out, *out2;
-  if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
-    return xstrdup (os_dev);
-  grub_util_follow_gpart_up (os_dev + sizeof ("/dev/") - 1, NULL, &out);
-
-  if (grub_strcmp (os_dev + sizeof ("/dev/") - 1, out) != 0)
-    *is_part = 1;
-  out2 = xasprintf ("/dev/%s", out);
-  free (out);
-
-  return out2;
-#elif defined(__APPLE__)
-  char *path = xstrdup (os_dev);
-  if (strncmp ("/dev/", path, 5) == 0)
-    {
-      char *p;
-      for (p = path + 5; *p; ++p)
-        if (grub_isdigit(*p))
-          {
-            p = strpbrk (p, "sp");
-            if (p)
-	      {
-		*is_part = 1;
-		*p = '\0';
-	      }
-            break;
-          }
-    }
-  return path;
-
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-  int rawpart = -1;
-# ifdef HAVE_GETRAWPARTITION
-  rawpart = getrawpartition();
-# endif /* HAVE_GETRAWPARTITION */
-  if (rawpart < 0)
-    return xstrdup (os_dev);
-
-#if defined(__NetBSD__)
-  /* NetBSD disk wedges are of the form "/dev/rdk.*".  */
-  if (strncmp ("/dev/rdk", os_dev, sizeof("/dev/rdk") - 1) == 0)
-    {
-      struct dkwedge_info dkw;
-      int fd;
-
-      fd = open (os_dev, O_RDONLY);
-      if (fd == -1)
-	{
-	  grub_error (GRUB_ERR_BAD_DEVICE,
-		      N_("cannot open `%s': %s"), os_dev,
-		      strerror (errno));
-	  return xstrdup (os_dev);
-	}
-      /* We don't call configure_device_driver since this isn't a floppy device name.  */
-      if (ioctl (fd, DIOCGWEDGEINFO, &dkw) == -1)
-	{
-	  grub_error (GRUB_ERR_BAD_DEVICE,
-		      "cannot get disk wedge info of `%s'", os_dev);
-	  close (fd);
-	  return xstrdup (os_dev);
-	}
-      *is_part = (dkw.dkw_offset != 0);
-      close (fd);
-      return xasprintf ("/dev/r%s%c", dkw.dkw_parent, 'a' + rawpart);
-    }
-#endif
-
-  /* NetBSD (disk label) partitions are of the form "/dev/r[a-z]+[0-9][a-z]".  */
-  if (strncmp ("/dev/r", os_dev, sizeof("/dev/r") - 1) == 0 &&
-      (os_dev[sizeof("/dev/r") - 1] >= 'a' && os_dev[sizeof("/dev/r") - 1] <= 'z') &&
-      strncmp ("fd", os_dev + sizeof("/dev/r") - 1, sizeof("fd") - 1) != 0)    /* not a floppy device name */
-    {
-      char *path = xstrdup (os_dev);
-      char *p;
-      for (p = path + sizeof("/dev/r"); *p >= 'a' && *p <= 'z'; p++);
-      if (grub_isdigit(*p))
-	{
-	  p++;
-	  if ((*p >= 'a' && *p <= 'z') && (*(p+1) == '\0'))
-	    {
-	      if (*p != 'a' + rawpart)
-		*is_part = 1;
-	      /* path matches the required regular expression and
-		 p points to its last character.  */
-	      *p = 'a' + rawpart;
-	    }
-	}
-      return path;
-    }
-
-  return xstrdup (os_dev);
-
-#elif defined (__sun__)
-  char *colon = grub_strrchr (os_dev, ':');
-  if (grub_memcmp (os_dev, "/devices", sizeof ("/devices") - 1) == 0
-      && colon)
-    {
-      char *ret = xmalloc (colon - os_dev + sizeof (":q,raw"));
-      if (grub_strcmp (colon, ":q,raw") != 0)
-	*is_part = 1;
-      grub_memcpy (ret, os_dev, colon - os_dev);
-      grub_memcpy (ret + (colon - os_dev), ":q,raw", sizeof (":q,raw"));
-      return ret;
-    }
-  else
-    return xstrdup (os_dev);
-#elif defined (__APPLE__)
-  char *ptr;
-  char *ret = xstrdup (os_dev);
-  int disk = grub_memcmp (ret, "/dev/disk", sizeof ("/dev/disk") - 1) == 0;
-  int rdisk = grub_memcmp (ret, "/dev/rdisk", sizeof ("/dev/rdisk") - 1) == 0;
-  if (!disk && !rdisk)
-    return ret;
-  ptr = ret + sizeof ("/dev/disk") + rdisk - 1;
-  while (*ptr >= '0' && *ptr <= '9')
-    ptr++;
-  if (*ptr)
-    {
-      *is_part = 1;
-      *ptr = 0;
-    }
-  return ret;
-#else
-# warning "The function `convert_system_partition_to_system_disk' might not work on your OS correctly."
-  return xstrdup (os_dev);
-#endif
+  return grub_util_part_to_disk (os_dev, st, is_part);
 }
 
 static const char *
@@ -2329,7 +1046,7 @@ grub_util_get_os_disk (const char *os_dev)
   return convert_system_partition_to_system_disk (os_dev, &st, &is_part);
 }
 
-#if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined (__sun__)
+#if !defined(__APPLE__)
 /* Context for grub_util_biosdisk_get_grub_dev.  */
 struct grub_util_biosdisk_get_grub_dev_ctx
 {
@@ -2390,14 +1107,36 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     }
   free (sys_disk);
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) || defined (__sun__)
+#if GRUB_DISK_DEVS_ARE_CHAR
   if (! S_ISCHR (st.st_mode))
 #else
   if (! S_ISBLK (st.st_mode))
 #endif
     return make_device_name (drive, -1, -1);
 
-#if defined(__linux__) || defined(__CYGWIN__) || defined(HAVE_DIOCGDINFO) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined (__sun__) || defined(__OpenBSD__)
+#if defined(__APPLE__)
+  /* Apple uses "/dev/r?disk[0-9]+(s[0-9]+)?".  */
+  {
+    const char *p;
+    int disk = (grub_memcmp (os_dev, "/dev/disk", sizeof ("/dev/disk") - 1)
+		 == 0);
+    int rdisk = (grub_memcmp (os_dev, "/dev/rdisk", sizeof ("/dev/rdisk") - 1)
+		 == 0);
+ 
+    if (!disk && !rdisk)
+      return make_device_name (drive, -1, -1);
+
+    p = os_dev + sizeof ("/dev/disk") + rdisk - 1;
+    while (*p >= '0' && *p <= '9')
+      p++;
+    if (*p != 's')
+      return make_device_name (drive, -1, -1);
+    p++;
+
+    return make_device_name (drive, strtol (p, NULL, 10) - 1, -1);
+  }
+
+#else
 
   /* Linux counts partitions uniformly, whether a BSD partition or a DOS
      partition, so mapping them to GRUB devices is not trivial.
@@ -2417,20 +1156,51 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
     name = make_device_name (drive, -1, -1);
 
-# if !defined(HAVE_DIOCGDINFO) && !defined(__sun__)
+# ifdef FLOPPY_MAJOR
     if (MAJOR (st.st_rdev) == FLOPPY_MAJOR)
       return name;
-# else /* defined(HAVE_DIOCGDINFO) */
+# else
     /* Since os_dev and convert_system_partition_to_system_disk (os_dev) are
      * different, we know that os_dev cannot be a floppy device.  */
-# endif /* !defined(HAVE_DIOCGDINFO) */
+# endif
 
-    ctx.start = grub_hostdisk_find_partition_start (os_dev);
+    ctx.start = grub_util_find_partition_start (os_dev);
     if (grub_errno != GRUB_ERR_NONE)
       {
 	free (name);
 	return 0;
       }
+
+#if defined(__GNU__)
+    /* Some versions of Hurd use badly glued Linux code to handle partitions
+       resulting in partitions being promoted to disks.  */
+    /* GNU uses "/dev/[hs]d[0-9]+(s[0-9]+[a-z]?)?".  */
+    if (ctx.start == (grub_disk_addr_t) -1)
+      {
+	char *p;
+	int dos_part = -1;
+	int bsd_part = -1;
+
+	p = strrchr (os_dev + sizeof ("/dev/hd") - 1, 's');
+	if (p)
+	  {
+	    long int n;
+	    char *q;
+
+	    p++;
+	    n = strtol (p, &q, 10);
+	    if (p != q && n != GRUB_LONG_MIN && n != GRUB_LONG_MAX)
+	      {
+		dos_part = (int) n - 1;
+
+		if (*q >= 'a' && *q <= 'g')
+		  bsd_part = *q - 'a';
+	      }
+	  }
+
+	return make_device_name (drive, dos_part, bsd_part);
+      }
+#endif
 
     grub_util_info ("%s starts from %" PRIuGRUB_UINT64_T, os_dev, ctx.start);
 
@@ -2495,57 +1265,6 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     return name;
   }
 
-#elif defined(__GNU__)
-  /* GNU uses "/dev/[hs]d[0-9]+(s[0-9]+[a-z]?)?".  */
-  {
-    char *p;
-    int dos_part = -1;
-    int bsd_part = -1;
-
-    p = strrchr (os_dev, 's');
-    if (p)
-      {
-	long int n;
-	char *q;
-
-	p++;
-	n = strtol (p, &q, 10);
-	if (p != q && n != GRUB_LONG_MIN && n != GRUB_LONG_MAX)
-	  {
-	    dos_part = (int) n - 1;
-
-	    if (*q >= 'a' && *q <= 'g')
-	      bsd_part = *q - 'a';
-	  }
-      }
-
-    return make_device_name (drive, dos_part, bsd_part);
-  }
-
-#elif defined(__APPLE__)
-  /* Apple uses "/dev/r?disk[0-9]+(s[0-9]+)?".  */
-  {
-    const char *p;
-    int disk = (grub_memcmp (os_dev, "/dev/disk", sizeof ("/dev/disk") - 1)
-		 == 0);
-    int rdisk = (grub_memcmp (os_dev, "/dev/rdisk", sizeof ("/dev/rdisk") - 1)
-		 == 0);
- 
-    if (!disk && !rdisk)
-      return make_device_name (drive, -1, -1);
-
-    p = os_dev + sizeof ("/dev/disk") + rdisk - 1;
-    while (*p >= '0' && *p <= '9')
-      p++;
-    if (*p != 's')
-      return make_device_name (drive, -1, -1);
-    p++;
-
-    return make_device_name (drive, strtol (p, NULL, 10) - 1, -1);
-  }
-#else
-# warning "The function `grub_util_biosdisk_get_grub_dev' might not work on your OS correctly."
-  return make_device_name (drive, -1, -1);
 #endif
 }
 
@@ -2561,239 +1280,6 @@ grub_util_biosdisk_is_present (const char *os_dev)
   grub_util_info ((ret ? "%s is present" : "%s is not present"), 
 		  os_dev);
   return ret;
-}
-
-char *
-grub_util_get_grub_dev (const char *os_dev)
-{
-  char *grub_dev = NULL;
-
-  grub_util_pull_device (os_dev);
-
-  switch (grub_util_get_dev_abstraction (os_dev))
-    {
-#ifdef HAVE_DEVICE_MAPPER
-    case GRUB_DEV_ABSTRACTION_LVM:
-      {
-	char *uuid, *optr;
-	unsigned i;
-	int dashes[] = { 0, 6, 10, 14, 18, 22, 26, 32, 38, 42, 46, 50, 54, 58};
-	uuid = get_dm_uuid (os_dev);
-	if (!uuid)
-	  break;
-	grub_dev = xmalloc (grub_strlen (uuid) + 40);
-	optr = grub_stpcpy (grub_dev, "lvmid/");
-	for (i = 0; i < ARRAY_SIZE (dashes) - 1; i++)
-	  {
-	    memcpy (optr, uuid + sizeof ("LVM-") - 1 + dashes[i],
-		    dashes[i+1] - dashes[i]);
-	    optr += dashes[i+1] - dashes[i];
-	    *optr++ = '-';
-	  }
-	optr = stpcpy (optr, uuid + sizeof ("LVM-") - 1 + dashes[i]);
-	*optr = '\0';
-	grub_dev[sizeof("lvmid/xxxxxx-xxxx-xxxx-xxxx-xxxx-xxxx-xxxxxx") - 1]
-	  = '/';
-	free (uuid);
-      }
-      break;
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-    case GRUB_DEV_ABSTRACTION_LVM:
-
-      {
-	unsigned short len;
-	grub_size_t offset = sizeof (LVM_DEV_MAPPER_STRING) - 1;
-
-	len = strlen (os_dev) - offset + 1;
-	grub_dev = xmalloc (len + sizeof ("lvm/"));
-
-	grub_memcpy (grub_dev, "lvm/", sizeof ("lvm/") - 1);
-	grub_memcpy (grub_dev + sizeof ("lvm/") - 1, os_dev + offset, len);
-      }
-
-      break;
-#endif
-
-    case GRUB_DEV_ABSTRACTION_LUKS:
-#ifdef HAVE_DEVICE_MAPPER
-      {
-	char *uuid, *dash;
-	uuid = get_dm_uuid (os_dev);
-	if (!uuid)
-	  break;
-	dash = grub_strchr (uuid + sizeof ("CRYPT-LUKS1-") - 1, '-');
-	if (dash)
-	  *dash = 0;
-	grub_dev = grub_xasprintf ("cryptouuid/%s",
-				   uuid + sizeof ("CRYPT-LUKS1-") - 1);
-	grub_free (uuid);
-      }
-#endif
-      break;
-
-#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
-    case GRUB_DEV_ABSTRACTION_GELI:
-      {
-	char *whole;
-	struct gmesh mesh;
-	struct gclass *class;
-	const char *name;
-	int err;
-
-	if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
-	  return 0;
-	name = os_dev + sizeof ("/dev/") - 1;
-	grub_util_follow_gpart_up (name, NULL, &whole);
-
-	grub_util_info ("following geom '%s'", name);
-
-	err = geom_gettree (&mesh);
-	if (err != 0)
-	  /* TRANSLATORS: geom is the name of (k)FreeBSD device framework.
-	     Usually left untranslated.
-	  */
-	  grub_util_error ("%s", _("couldn't open geom"));
-
-	LIST_FOREACH (class, &mesh.lg_class, lg_class)
-	  {
-	    struct ggeom *geom;
-	    LIST_FOREACH (geom, &class->lg_geom, lg_geom)
-	      { 
-		struct gprovider *provider;
-		LIST_FOREACH (provider, &geom->lg_provider, lg_provider)
-		  if (strcmp (provider->lg_name, name) == 0)
-		    {
-		      struct gconsumer *consumer;
-		      char *fname;
-		      char *uuid;
-
-		      LIST_FOREACH (consumer, &geom->lg_consumer, lg_consumer)
-			break;
-		      if (!consumer)
-			grub_util_error ("%s",
-					 _("couldn't find geli consumer"));
-		      fname = xasprintf ("/dev/%s", consumer->lg_provider->lg_name);
-		      uuid = grub_util_get_geli_uuid (fname);
-		      if (!uuid)
-			grub_util_error ("%s",
-					 _("couldn't retrieve geli UUID"));
-		      grub_dev = xasprintf ("cryptouuid/%s", uuid);
-		      free (fname);
-		      free (uuid);
-		    }
-	      }
-	  }
-      }
-      break;
-#endif
-
-#ifdef __linux__
-    case GRUB_DEV_ABSTRACTION_RAID:
-
-      if (os_dev[7] == '_' && os_dev[8] == 'd')
-	{
-	  /* This a partitionable RAID device of the form /dev/md_dNNpMM. */
-
-	  char *p, *q;
-
-	  p = strdup (os_dev + sizeof ("/dev/md_d") - 1);
-
-	  q = strchr (p, 'p');
-	  if (q)
-	    *q = ',';
-
-	  grub_dev = xasprintf ("md%s", p);
-	  free (p);
-	}
-      else if (os_dev[7] == '/' && os_dev[8] == 'd')
-	{
-	  /* This a partitionable RAID device of the form /dev/md/dNNpMM. */
-
-	  char *p, *q;
-
-	  p = strdup (os_dev + sizeof ("/dev/md/d") - 1);
-
-	  q = strchr (p, 'p');
-	  if (q)
-	    *q = ',';
-
-	  grub_dev = xasprintf ("md%s", p);
-	  free (p);
-	}
-      else if (os_dev[7] >= '0' && os_dev[7] <= '9')
-	{
-	  char *p , *q;
-
-	  p = strdup (os_dev + sizeof ("/dev/md") - 1);
-
-	  q = strchr (p, 'p');
-	  if (q)
-	    *q = ',';
-
-	  grub_dev = xasprintf ("md%s", p);
-	  free (p);
-	}
-      else if (os_dev[7] == '/' && os_dev[8] >= '0' && os_dev[8] <= '9')
-	{
-	  char *p , *q;
-
-	  p = strdup (os_dev + sizeof ("/dev/md/") - 1);
-
-	  q = strchr (p, 'p');
-	  if (q)
-	    *q = ',';
-
-	  grub_dev = xasprintf ("md%s", p);
-	  free (p);
-	}
-      else if (os_dev[7] == '/')
-	{
-	  /* mdraid 1.x with a free name.  */
-	  char *p , *q;
-
-	  p = strdup (os_dev + sizeof ("/dev/md/") - 1);
-
-	  q = strchr (p, 'p');
-	  if (q)
-	    *q = ',';
-
-	  grub_dev = xasprintf ("md/%s", p);
-	  free (p);
-	}
-      else
-	grub_util_error (_("unknown kind of RAID device `%s'"), os_dev);
-
-      {
-	char *mdadm_name = get_mdadm_uuid (os_dev);
-
-	if (mdadm_name)
-	  {
-	    const char *q;
-
-	    for (q = os_dev + strlen (os_dev) - 1; q >= os_dev
-		   && grub_isdigit (*q); q--);
-
-	    if (q >= os_dev && *q == 'p')
-	      {
-		free (grub_dev);
-		grub_dev = xasprintf ("mduuid/%s,%s", mdadm_name, q + 1);
-		goto done;
-	      }
-	    free (grub_dev);
-	    grub_dev = xasprintf ("mduuid/%s", mdadm_name);
-
-	  done:
-	    free (mdadm_name);
-	  }
-      }
-      break;
-#endif /* __linux__ */
-
-    default:  /* GRUB_DEV_ABSTRACTION_NONE */
-      grub_dev = grub_util_biosdisk_get_grub_dev (os_dev);
-    }
-
-  return grub_dev;
 }
 
 const char *

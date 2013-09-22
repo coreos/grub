@@ -20,14 +20,10 @@
 #ifndef GRUB_LVM_UTIL_HEADER
 #define GRUB_LVM_UTIL_HEADER	1
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-
-#ifdef __linux__
-#define LVM_DEV_MAPPER_STRING "/dev/mapper/"
-#else
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #define LVM_DEV_MAPPER_STRING "/dev/linux_lvm/"
-#endif
-
+#else
+#define LVM_DEV_MAPPER_STRING "/dev/mapper/"
 #endif
 
 #endif /* ! GRUB_RAID_UTIL_HEADER */
