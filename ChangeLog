@@ -1,5 +1,10 @@
 2013-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkpasswd-pbkdf2.c (grub_get_random): Add windows and
+	GNU/Hurd to the list of checked PRNG.
+
+2013-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: On FreeBSD use -melf_*_fbsd format.
 
 2013-09-21  Ales Nesrsta <starous@volny.cz>
