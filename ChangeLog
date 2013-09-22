@@ -1,5 +1,9 @@
 2013-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/posix_wrap/sys/types.h: Use stddef on *BSD.
+
+2013-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkpasswd-pbkdf2.c (grub_get_random): Add windows and
 	GNU/Hurd to the list of checked PRNG.
 
