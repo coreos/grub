@@ -45,10 +45,14 @@ handler.lst video.lst crypto.lst terminal.lst"
 grub_mkimage="${bindir}/@grub_mkimage@"
 
 grub_compress_file () {
-    if [ "$compressor" != "" ] ; then
-        "$compressor" $compressor_opts "$1" > "$2"
+    if [ -f "$1" ] ; then
+	if [ "$compressor" != "" ] ; then
+	    "$compressor" $compressor_opts "$1" > "$2"
+	else
+	    cp -f "$1" "$2"
+	fi
     else
-        cp -f "$1" "$2"
+	gettext_printf "Skipping file \`%s': not a plain file\n" "$1" 1>&2
     fi
 }
 

@@ -1,5 +1,11 @@
 2013-09-22  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* util/grub-install.in: Add --grub-editenv option.
+	* util/grub-install_header (grub_compress_file): Explicitly check for
+	plain file to avoid cp error.
+
+2013-09-22  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* docs/grub.texi (Device syntax): Document new LVM UUID based device
 	names; fix LVM driver name (lvm, not lv).
 	* util/grub-probe.c (probe_abstraction): Support lvmid/xxx device

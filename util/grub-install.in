@@ -75,6 +75,7 @@ usage () {
     print_option_help "--grub-setup=$(gettext "FILE")" "$(gettext "use FILE as grub-setup")"
     print_option_help "--grub-mkrelpath=$(gettext "FILE")" "$(gettext "use FILE as grub-mkrelpath")"
     print_option_help "--grub-probe=$(gettext "FILE")" "$(gettext "use FILE as grub-probe")"
+    print_option_help "--grub-editenv=$(gettext "FILE")" "$(gettext "use FILE as grub-editenv")"
     # TRANSLATORS: "may break" doesn't just mean that option wouldn't have any
     # effect but that it will make the resulting install unbootable from HDD.
     print_option_help "--allow-floppy" "$(gettext "make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes.")"
@@ -172,6 +173,11 @@ do
 	    grub_probe="`argument "$option" "$@"`"; shift;;
     --grub-probe=*)
 	grub_probe="`echo "$option" | sed 's/--grub-probe=//'`" ;;
+
+    --grub-editenv)
+	    grub_editenv="`argument "$option" "$@"`"; shift;;
+    --grub-editenv=*)
+	grub_editenv="`echo "$option" | sed 's/--grub-editenv=//'`" ;;
 
     --no-floppy)
 	;;
