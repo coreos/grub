@@ -292,7 +292,8 @@ probe_abstraction (grub_disk_t disk)
     }
 
   if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID
-      && grub_memcmp (disk->name, "lvm/", sizeof ("lvm/") - 1) == 0)
+      && (grub_memcmp (disk->name, "lvm/", sizeof ("lvm/") - 1) == 0 ||
+	  grub_memcmp (disk->name, "lvmid/", sizeof ("lvmid/") - 1) == 0))
     printf ("lvm ");
 
   if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID

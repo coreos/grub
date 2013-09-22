@@ -2484,7 +2484,7 @@ by a digit, like @samp{fd0}, or @samp{cd}.
 AHCI, PATA (ata), crypto, USB use the name of driver followed by a number.
 Memdisk and host are limited to one disk and so it's refered just by driver
 name.
-RAID (md), ofdisk (ieee1275 and nand), LVM (lv), LDM and arcdisk (arc) use
+RAID (md), ofdisk (ieee1275 and nand), LVM (lvm), LDM and arcdisk (arc) use
 intrinsic name of disk prefixed by driver name. Additionally just ``nand''
 refers to the disk aliased as ``nand''.
 Conflicts are solved by suffixing a number if necessarry.
@@ -2493,7 +2493,8 @@ Loopback uses whatever name specified to @command{loopback} command.
 Hostdisk uses names specified in device.map as long as it's of the form
 [fhc]d[0-9]* or hostdisk/<OS DEVICE>.
 For crypto and RAID (md) additionally you can use the syntax
-<driver name>uuid/<uuid>.
+<driver name>uuid/<uuid>.  For LVM additionally you can use the syntax
+lvmid/<volume-group-uuid>/<volume-uuid>.
 
 @example
 (fd0)
@@ -2505,7 +2506,8 @@ For crypto and RAID (md) additionally you can use the syntax
 (usb0)
 (cryptouuid/123456789abcdef0123456789abcdef0)
 (mduuid/123456789abcdef0123456789abcdef0)
-(lv/system-root)
+(lvm/system-root)
+(lvmid/F1ikgD-2RES-306G-il9M-7iwa-4NKW-EbV1NV/eLGuCQ-L4Ka-XUgR-sjtJ-ffch-bajr-fCNfz5)
 (md/myraid)
 (md/0)
 (ieee1275/disk2)
