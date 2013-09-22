@@ -633,14 +633,26 @@ if test "x$target_m64" = x1; then
   TARGET_MODULE_FORMAT="elf64"
 fi
 
-if test x"$target_os" != xcygwin; then
-   if test x"$target_cpu" = xi386; then
-     TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_i386"
-   fi
-   if test x"$target_cpu" = xx86_64; then
-     TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_x86_64"
-   fi
-fi
+case "$target_os" in
+  cygwin)
+    ;;
+  freebsd)
+    if test x"$target_cpu" = xi386; then
+      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_i386_fbsd"
+    fi
+    if test x"$target_cpu" = xx86_64; then
+      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_x86_64_fbsd"
+    fi
+    ;;
+  *)
+    if test x"$target_cpu" = xi386; then
+      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_i386"
+    fi
+    if test x"$target_cpu" = xx86_64; then
+      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_x86_64"
+    fi
+    ;;
+esac
 
 if test "$target_cpu" = x86_64; then
   # Use large model to support 4G memory

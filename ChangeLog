@@ -1,3 +1,7 @@
+2013-09-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: On FreeBSD use -melf_*_fbsd format.
+
 2013-09-21  Ales Nesrsta <starous@volny.cz>
 
 	* grub-core/bus/usb/ehci.c: Correceted EHCI QH handling (async./sync.)
