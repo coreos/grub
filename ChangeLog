@@ -1,3 +1,8 @@
+2013-09-23  Melki Christian  <Christian.melki@saabgroup.com>
+
+	* grub-core/bus/usb/usbhub.c (poll_nonroot_hub): Fix the type of
+	"changed".
+
 2013-09-23  Josh Triplett <josh@joshtriplett.org>
 
 	* grub-core/boot/i386/pc/lnxboot.S: Re-add support for recording the
