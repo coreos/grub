@@ -1,3 +1,7 @@
+2013-09-23  Massimo Maggi <me@massimo-maggi.eu>
+
+	* grub-core/fs/zfs/zfs.c (check_pool_label): Check nvlist.
+
 2013-09-23  Tim Hardeck  <thardeck>
 
 	* util/grub.d/10_hurd.in: Filter out character for the class.
