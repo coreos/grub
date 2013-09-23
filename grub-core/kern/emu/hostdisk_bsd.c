@@ -61,7 +61,7 @@
    floppy driver from retrying operations on failure, as otherwise the
    driver takes a while to abort when there is no floppy in the drive.  */
 void
-grub_hostdisk_configure_device_driver (int fd)
+grub_hostdisk_configure_device_driver (grub_util_fd_t fd)
 {
   struct stat st;
 
@@ -80,13 +80,13 @@ grub_hostdisk_configure_device_driver (int fd)
 }
 #else
 void
-grub_hostdisk_configure_device_driver (int fd __attribute__ ((unused)))
+grub_hostdisk_configure_device_driver (grub_util_fd_t fd __attribute__ ((unused)))
 {
 }
 #endif
 
 grub_int64_t
-grub_util_get_fd_size_os (int fd, const char *name, unsigned *log_secsize)
+grub_util_get_fd_size_os (grub_util_fd_t fd, const char *name, unsigned *log_secsize)
 {
   struct disklabel label;
   unsigned sector_size, log_sector_size;

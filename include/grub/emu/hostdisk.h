@@ -24,6 +24,28 @@
 #include <grub/partition.h>
 #include <sys/types.h>
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+#include <windows.h>
+typedef HANDLE grub_util_fd_t;
+#define GRUB_UTIL_FD_INVALID INVALID_HANDLE_VALUE
+#define GRUB_UTIL_FD_IS_VALID(x) ((x) != GRUB_UTIL_FD_INVALID)
+#define grub_util_fd_close(x) CloseHandle(x)
+#define grub_util_fd_sync(x) FlushFileBuffers(x)
+grub_util_fd_t
+grub_util_fd_open (const char *os_dev, int flags);
+#else
+typedef int grub_util_fd_t;
+#define GRUB_UTIL_FD_INVALID -1
+#define GRUB_UTIL_FD_IS_VALID(x) ((x) >= 0)
+#define grub_util_fd_close(x) close(x)
+#define grub_util_fd_sync(x) fsync(x)
+#define grub_util_fd_open(x,y) open(x,y)
+#endif
+
+grub_util_fd_t
+grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
+			  grub_disk_addr_t *max);
+
 void grub_util_biosdisk_init (const char *dev_map);
 void grub_util_biosdisk_fini (void);
 char *grub_util_biosdisk_get_grub_dev (const char *os_dev);
@@ -34,9 +56,9 @@ const char *
 grub_util_biosdisk_get_compatibility_hint (grub_disk_t disk);
 grub_err_t grub_util_biosdisk_flush (struct grub_disk *disk);
 grub_err_t
-grub_util_fd_seek (int fd, const char *name, grub_uint64_t sector);
-ssize_t grub_util_fd_read (int fd, char *buf, size_t len);
-ssize_t grub_util_fd_write (int fd, const char *buf, size_t len);
+grub_util_fd_seek (grub_util_fd_t fd, const char *name, grub_uint64_t sector);
+ssize_t grub_util_fd_read (grub_util_fd_t fd, char *buf, size_t len);
+ssize_t grub_util_fd_write (grub_util_fd_t fd, const char *buf, size_t len);
 grub_err_t
 grub_cryptodisk_cheat_mount (const char *sourcedev, const char *cheat);
 void grub_util_cryptodisk_print_uuid (grub_disk_t disk);
@@ -55,7 +77,7 @@ const char *
 grub_hostdisk_os_dev_to_grub_drive (const char *os_dev, int add);
 
 grub_uint64_t
-grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize);
+grub_util_get_fd_size (grub_util_fd_t fd, const char *name, unsigned *log_secsize);
 
 char *
 grub_util_get_os_disk (const char *os_dev);
@@ -73,7 +95,7 @@ grub_util_get_dm_node_linear_info (const char *dev,
 
 /* Supplied by hostdisk_*.c.  */
 grub_int64_t
-grub_util_get_fd_size_os (int fd, const char *name, unsigned *log_secsize);
+grub_util_get_fd_size_os (grub_util_fd_t fd, const char *name, unsigned *log_secsize);
 /* REturns partition offset in 512B blocks.  */
 grub_disk_addr_t
 grub_hostdisk_find_partition_start_os (const char *dev);
@@ -84,7 +106,7 @@ grub_hostdisk_find_partition_start_os (const char *dev);
    For now it's non-nop only on NetBSD.
 */
 void
-grub_hostdisk_configure_device_driver (int fd);
+grub_hostdisk_configure_device_driver (grub_util_fd_t fd);
 void
 grub_hostdisk_flush_initial_buffer (const char *os_dev);
 
@@ -94,11 +116,13 @@ grub_hostdisk_flush_initial_buffer (const char *os_dev);
 #define GRUB_DISK_DEVS_ARE_CHAR 0
 #endif
 
-#ifdef __GNU__
-int
-grub_util_hurd_get_disk_info (const char *dev, grub_uint32_t *secsize,
-			      grub_disk_addr_t *offset,
-			      grub_disk_addr_t *size, char **parent);
-#endif
+struct grub_util_hostdisk_data
+{
+  char *dev;
+  int access_mode;
+  grub_util_fd_t fd;
+  int is_disk;
+  int device_map;
+};
 
 #endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */

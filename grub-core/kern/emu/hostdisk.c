@@ -46,11 +46,6 @@
 #ifdef __linux__
 # include <sys/ioctl.h>         /* ioctl */
 # include <sys/mount.h>
-# if !defined(__GLIBC__) || \
-        ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1)))
-/* Maybe libc doesn't have large file support.  */
-#  include <linux/unistd.h>     /* _llseek */
-# endif /* (GLIBC < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR < 1)) */
 # ifndef BLKFLSBUF
 #  define BLKFLSBUF     _IO (0x12,97)   /* flush buffer cache */
 # endif /* ! BLKFLSBUF */
@@ -67,15 +62,6 @@ static struct
   char *device;
   int device_map;
 } map[256];
-
-struct grub_util_biosdisk_data
-{
-  char *dev;
-  int access_mode;
-  int fd;
-  int is_disk;
-  int device_map;
-};
 
 static int
 unescape_cmp (const char *a, const char *b_escaped)
@@ -141,81 +127,42 @@ grub_util_biosdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
   return 0;
 }
 
-#ifdef __MINGW32__
-
-grub_uint64_t
-grub_util_get_fd_size (int fd, const char *name,
-		       unsigned *log_secsize)
-{
-  return grub_util_get_fd_size_os (fd, name, log_secsize);
-}
-
-#else
-
-grub_uint64_t
-grub_util_get_fd_size (int fd, const char *name, unsigned *log_secsize)
-{
-  struct stat st;
-  grub_int64_t ret = -1;
-
-  if (fstat (fd, &st) < 0)
-    /* TRANSLATORS: "stat" comes from the name of POSIX function.  */
-    grub_util_error (_("cannot stat `%s': %s"), name, strerror (errno));
-#if GRUB_DISK_DEVS_ARE_CHAR
-  if (S_ISCHR (st.st_mode))
-#else
-  if (S_ISBLK (st.st_mode))
-#endif
-    ret = grub_util_get_fd_size_os (fd, name, log_secsize);
-  if (ret != -1LL)
-    return ret;
-
-  if (log_secsize)
-    *log_secsize = 9;
-
-  return st.st_size;
-}
-
-#endif
-
 static grub_err_t
 grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 {
   int drive;
   struct stat st;
-  struct grub_util_biosdisk_data *data;
+  struct grub_util_hostdisk_data *data;
 
   drive = find_grub_drive (name);
+  grub_util_info ("drive = %d", drive);
   if (drive < 0)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "no mapping exists for `%s'", name);
 
   disk->id = drive;
-  disk->data = data = xmalloc (sizeof (struct grub_util_biosdisk_data));
+  disk->data = data = xmalloc (sizeof (struct grub_util_hostdisk_data));
   data->dev = NULL;
   data->access_mode = 0;
-  data->fd = -1;
+  data->fd = GRUB_UTIL_FD_INVALID;
   data->is_disk = 0;
   data->device_map = map[drive].device_map;
 
   /* Get the size.  */
   {
-    int fd;
+    grub_util_fd_t fd;
 
-#if defined(__MINGW32__)
-    fd = -1;
-#else
-    fd = open (map[drive].device, O_RDONLY);
-    if (fd == -1)
+    fd = grub_util_fd_open (map[drive].device, O_RDONLY);
+
+    if (!GRUB_UTIL_FD_IS_VALID(fd))
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("cannot open `%s': %s"),
 			 map[drive].device, strerror (errno));
-#endif
 
     disk->total_sectors = grub_util_get_fd_size (fd, map[drive].device,
 						 &disk->log_sector_size);
     disk->total_sectors >>= disk->log_sector_size;
 
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) && !defined(__CYGWIN__)
 
 # if GRUB_DISK_DEVS_ARE_CHAR
     if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
@@ -223,9 +170,9 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
 # endif
       data->is_disk = 1;
-
-    close (fd);
 #endif
+
+    grub_util_fd_close (fd);
 
     grub_util_info ("the size of %s is %" PRIuGRUB_UINT64_T,
 		    name, disk->total_sectors);
@@ -233,37 +180,6 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     return GRUB_ERR_NONE;
   }
 }
-
-#if defined(__linux__) && (!defined(__GLIBC__) || \
-        ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))))
-  /* Maybe libc doesn't have large file support.  */
-grub_err_t
-grub_util_fd_seek (int fd, const char *name, grub_uint64_t off)
-{
-  loff_t offset, result;
-  static int _llseek (uint filedes, ulong hi, ulong lo,
-		      loff_t *res, uint wh);
-  _syscall5 (int, _llseek, uint, filedes, ulong, hi, ulong, lo,
-	     loff_t *, res, uint, wh);
-
-  offset = (loff_t) off;
-  if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
-    return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
-		       name, strerror (errno));
-  return GRUB_ERR_NONE;
-}
-#else
-grub_err_t
-grub_util_fd_seek (int fd, const char *name, grub_uint64_t off)
-{
-  off_t offset = (off_t) off;
-
-  if (lseek (fd, offset, SEEK_SET) != offset)
-    return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
-		       name, strerror (errno));
-  return 0;
-}
-#endif
 
 const char *
 grub_hostdisk_os_dev_to_grub_drive (const char *os_disk, int add)
@@ -305,12 +221,13 @@ grub_hostdisk_os_dev_to_grub_drive (const char *os_disk, int add)
   return map[i].drive;
 }
 
-static int
-open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
-	     grub_disk_addr_t *max)
+#ifndef __linux__
+grub_util_fd_t
+grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
+			  grub_disk_addr_t *max)
 {
-  int fd;
-  struct grub_util_biosdisk_data *data = disk->data;
+  grub_util_fd_t fd;
+  struct grub_util_hostdisk_data *data = disk->data;
 
   *max = ~0ULL;
 
@@ -327,87 +244,6 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
   flags |= O_BINARY;
 #endif
 
-#ifdef __linux__
-  /* Linux has a bug that the disk cache for a whole disk is not consistent
-     with the one for a partition of the disk.  */
-  {
-    int is_partition = 0;
-    char dev[PATH_MAX];
-    grub_disk_addr_t part_start = 0;
-
-    part_start = grub_partition_get_start (disk->partition);
-
-    strcpy (dev, map[disk->id].device);
-    if (disk->partition
-	&& strncmp (map[disk->id].device, "/dev/", 5) == 0)
-      {
-	if (sector >= part_start)
-	  is_partition = grub_hostdisk_linux_find_partition (dev, part_start);
-	else
-	  *max = part_start - sector;
-      }
-
-  reopen:
-
-    if (data->dev && strcmp (data->dev, dev) == 0 &&
-	data->access_mode == (flags & O_ACCMODE))
-      {
-	grub_dprintf ("hostdisk", "reusing open device `%s'\n", dev);
-	fd = data->fd;
-      }
-    else
-      {
-	free (data->dev);
-	data->dev = 0;
-	if (data->fd != -1)
-	  {
-	    if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
-	      {
-		fsync (data->fd);
-		if (data->is_disk)
-		  ioctl (data->fd, BLKFLSBUF, 0);
-	      }
-
-	    close (data->fd);
-	    data->fd = -1;
-	  }
-
-	/* Open the partition.  */
-	grub_dprintf ("hostdisk", "opening the device `%s' in open_device()\n", dev);
-	fd = open (dev, flags);
-	if (fd < 0)
-	  {
-	    grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot open `%s': %s"),
-			dev, strerror (errno));
-	    return -1;
-	  }
-
-	data->dev = xstrdup (dev);
-	data->access_mode = (flags & O_ACCMODE);
-	data->fd = fd;
-
-	if (data->is_disk)
-	  ioctl (data->fd, BLKFLSBUF, 0);
-      }
-
-    if (is_partition)
-      {
-	*max = grub_util_get_fd_size (fd, dev, 0);
-	*max >>= disk->log_sector_size;
-	if (sector - part_start >= *max)
-	  {
-	    *max = disk->partition->len - (sector - part_start);
-	    if (*max == 0)
-	      *max = ~0ULL;
-	    is_partition = 0;
-	    strcpy (dev, map[disk->id].device);
-	    goto reopen;
-	  }
-	sector -= part_start;
-	*max -= sector;
-      }
-  }
-#else /* ! __linux__ */
 #if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
   int sysctl_flags, sysctl_oldflags;
   size_t sysctl_size = sizeof (sysctl_flags);
@@ -415,14 +251,14 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
   if (sysctlbyname ("kern.geom.debugflags", &sysctl_oldflags, &sysctl_size, NULL, 0))
     {
       grub_error (GRUB_ERR_BAD_DEVICE, "cannot get current flags of sysctl kern.geom.debugflags");
-      return -1;
+      return GRUB_UTIL_FD_INVALID;
     }
   sysctl_flags = sysctl_oldflags | 0x10;
   if (! (sysctl_oldflags & 0x10)
       && sysctlbyname ("kern.geom.debugflags", NULL , 0, &sysctl_flags, sysctl_size))
     {
       grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags of sysctl kern.geom.debugflags");
-      return -1;
+      return GRUB_UTIL_FD_INVALID;
     }
 #endif
 
@@ -436,18 +272,16 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
     {
       free (data->dev);
       data->dev = 0;
-      if (data->fd != -1)
+      if (GRUB_UTIL_FD_IS_VALID(data->fd))
 	{
 	    if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
-	      {
-		fsync (data->fd);
-	      }
-	    close (data->fd);
-	    data->fd = -1;
+	      grub_util_fd_sync (data->fd);
+	    grub_util_fd_close (data->fd);
+	    data->fd = GRUB_UTIL_FD_INVALID;
 	}
 
-      fd = open (map[disk->id].device, flags);
-      if (fd >= 0)
+      fd = grub_util_fd_open (map[disk->id].device, flags);
+      if (GRUB_UTIL_FD_IS_VALID(fd))
 	{
 	  data->dev = xstrdup (map[disk->id].device);
 	  data->access_mode = (flags & O_ACCMODE);
@@ -460,7 +294,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
       && sysctlbyname ("kern.geom.debugflags", NULL , 0, &sysctl_oldflags, sysctl_size))
     {
       grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags back to the old value for sysctl kern.geom.debugflags");
-      return -1;
+      return GRUB_UTIL_FD_INVALID;
     }
 #endif
 
@@ -470,77 +304,26 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
     fd = open(map[disk->id].device, flags | O_SHLOCK);
 #endif
 
-  if (fd < 0)
+  if (!GRUB_UTIL_FD_IS_VALID(data->fd))
     {
       grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot open `%s': %s"),
 		  map[disk->id].device, strerror (errno));
-      return -1;
+      return GRUB_UTIL_FD_INVALID;
     }
-#endif /* ! __linux__ */
 
   grub_hostdisk_configure_device_driver (fd);
 
   if (grub_util_fd_seek (fd, map[disk->id].device,
 			 sector << disk->log_sector_size))
     {
-      close (fd);
-      return -1;
+      grub_util_fd_close (fd);
+      return GRUB_UTIL_FD_INVALID;
     }
 
   return fd;
 }
+#endif
 
-/* Read LEN bytes from FD in BUF. Return less than or equal to zero if an
-   error occurs, otherwise return LEN.  */
-ssize_t
-grub_util_fd_read (int fd, char *buf, size_t len)
-{
-  ssize_t size = len;
-
-  while (len)
-    {
-      ssize_t ret = read (fd, buf, len);
-
-      if (ret <= 0)
-        {
-          if (errno == EINTR)
-            continue;
-          else
-            return ret;
-        }
-
-      len -= ret;
-      buf += ret;
-    }
-
-  return size;
-}
-
-/* Write LEN bytes from BUF to FD. Return less than or equal to zero if an
-   error occurs, otherwise return LEN.  */
-ssize_t
-grub_util_fd_write (int fd, const char *buf, size_t len)
-{
-  ssize_t size = len;
-
-  while (len)
-    {
-      ssize_t ret = write (fd, buf, len);
-
-      if (ret <= 0)
-        {
-          if (errno == EINTR)
-            continue;
-          else
-            return ret;
-        }
-
-      len -= ret;
-      buf += ret;
-    }
-
-  return size;
-}
 
 static grub_err_t
 grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
@@ -548,10 +331,10 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 {
   while (size)
     {
-      int fd;
+      grub_util_fd_t fd;
       grub_disk_addr_t max = ~0ULL;
-      fd = open_device (disk, sector, O_RDONLY, &max);
-      if (fd < 0)
+      fd = grub_util_fd_open_device (disk, sector, O_RDONLY, &max);
+      if (!GRUB_UTIL_FD_IS_VALID (fd))
 	return grub_errno;
 
 #ifdef __linux__
@@ -583,10 +366,10 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 {
   while (size)
     {
-      int fd;
+      grub_util_fd_t fd;
       grub_disk_addr_t max = ~0ULL;
-      fd = open_device (disk, sector, O_WRONLY, &max);
-      if (fd < 0)
+      fd = grub_util_fd_open_device (disk, sector, O_WRONLY, &max);
+      if (!GRUB_UTIL_FD_IS_VALID (fd))
 	return grub_errno;
 
 #ifdef __linux__
@@ -614,18 +397,18 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 grub_err_t
 grub_util_biosdisk_flush (struct grub_disk *disk)
 {
-  struct grub_util_biosdisk_data *data = disk->data;
+  struct grub_util_hostdisk_data *data = disk->data;
 
   if (disk->dev->id != GRUB_DISK_DEVICE_BIOSDISK_ID)
     return GRUB_ERR_NONE;
-  if (data->fd == -1)
+  if (!GRUB_UTIL_FD_IS_VALID (data->fd))
     {
       grub_disk_addr_t max;
-      data->fd = open_device (disk, 0, O_RDONLY, &max);
-      if (data->fd < 0)
+      data->fd = grub_util_fd_open_device (disk, 0, O_RDONLY, &max);
+      if (!GRUB_UTIL_FD_IS_VALID (data->fd))
 	return grub_errno;
     }
-  fsync (data->fd);
+  grub_util_fd_sync (data->fd);
 #ifdef __linux__
   if (data->is_disk)
     ioctl (data->fd, BLKFLSBUF, 0);
@@ -636,14 +419,14 @@ grub_util_biosdisk_flush (struct grub_disk *disk)
 static void
 grub_util_biosdisk_close (struct grub_disk *disk)
 {
-  struct grub_util_biosdisk_data *data = disk->data;
+  struct grub_util_hostdisk_data *data = disk->data;
 
   free (data->dev);
-  if (data->fd != -1)
+  if (!GRUB_UTIL_FD_IS_VALID (data->fd))
     {
       if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
 	grub_util_biosdisk_flush (disk);
-      close (data->fd);
+      grub_util_fd_close (data->fd);
     }
   free (data);
 }
@@ -660,13 +443,31 @@ static struct grub_disk_dev grub_util_biosdisk_dev =
     .next = 0
   };
 
+static int
+grub_util_check_file_presence (const char *p)
+{
+#if defined (__MINGW32__) || defined(__CYGWIN__)
+  HANDLE h;
+  h = grub_util_fd_open (p, O_RDONLY);
+  if (!GRUB_UTIL_FD_IS_VALID(h))
+    return 0;
+  CloseHandle (h);
+  return 1;
+#else
+  struct stat st;
+
+  if (stat (p, &st) == -1)
+    return 0;
+  return 1;
+#endif
+}
+
 static void
 read_device_map (const char *dev_map)
 {
   FILE *fp;
   char buf[1024];	/* XXX */
   int lineno = 0;
-  struct stat st;
 
   if (dev_map[0] == '\0')
     {
@@ -770,12 +571,7 @@ read_device_map (const char *dev_map)
 	e++;
       *e = '\0';
 
-#ifdef __MINGW32__
-      (void) st;
-      if (grub_util_get_fd_size (-1, p, NULL) == -1LL)
-#else
-      if (stat (p, &st) == -1)
-#endif
+      if (!grub_util_check_file_presence (p))
 	{
 	  free (map[drive].drive);
 	  map[drive].drive = NULL;

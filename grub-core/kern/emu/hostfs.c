@@ -132,7 +132,13 @@ grub_hostfs_open (struct grub_file *file, const char *name)
 
   file->data = data;
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+  fseek (f, 0, SEEK_END);
+  file->size = ftello (f);
+  fseek (f, 0, SEEK_SET);
+#else
   file->size = grub_util_get_fd_size (fileno (f), name, NULL);
+#endif
 
   return GRUB_ERR_NONE;
 }

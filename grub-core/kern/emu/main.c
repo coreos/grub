@@ -234,7 +234,7 @@ main (int argc, char *argv[])
   return 0;
 }
 
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined (__CYGWIN__)
 
 void
 grub_millisleep (grub_uint32_t ms)

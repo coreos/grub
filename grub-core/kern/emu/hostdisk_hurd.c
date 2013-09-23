@@ -48,7 +48,7 @@
 #include <sys/mman.h>
 
 void
-grub_hostdisk_configure_device_driver (int fd __attribute__ ((unused)))
+grub_hostdisk_configure_device_driver (grub_util_fd_t fd __attribute__ ((unused)))
 {
 }
 
@@ -124,7 +124,7 @@ grub_util_hurd_get_disk_info (const char *dev, grub_uint32_t *secsize, grub_disk
 }
 
 grub_int64_t
-grub_util_get_fd_size_os (int fd, const char *name, unsigned *log_secsize)
+grub_util_get_fd_size_os (grub_util_fd_t fd, const char *name, unsigned *log_secsize)
 {
   grub_uint32_t sector_size;
   grub_disk_addr_t size;

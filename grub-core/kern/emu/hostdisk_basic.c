@@ -43,7 +43,7 @@
 #include <limits.h>
 
 grub_int64_t
-grub_util_get_fd_size_os (int fd __attribute__ ((unused)),
+grub_util_get_fd_size_os (grub_util_fd_t fd __attribute__ ((unused)),
 		       const char *name __attribute__ ((unused)),
 		       unsigned *log_secsize __attribute__ ((unused)))
 {
@@ -53,7 +53,7 @@ grub_util_get_fd_size_os (int fd __attribute__ ((unused)),
 }
 
 void
-grub_hostdisk_configure_device_driver (int fd __attribute__ ((unused)))
+grub_hostdisk_configure_device_driver (grub_util_fd_t fd __attribute__ ((unused)))
 {
 }
 

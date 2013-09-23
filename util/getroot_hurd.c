@@ -52,8 +52,7 @@
 #include <hurd/fs.h>
 #include <sys/mman.h>
 
-
-char *
+static char *
 grub_util_find_hurd_root_device (const char *path)
 {
   file_t file;
@@ -218,4 +217,25 @@ grub_util_find_partition_start_os (const char *dev)
     }
   free (path);
   return -1;
+}
+
+char **
+grub_guess_root_devices (const char *dir)
+{
+  char **os_dev = NULL;
+
+  os_dev = xmalloc (2 * sizeof (os_dev[0]));
+
+  /* GNU/Hurd specific function.  */
+  os_dev[0] = grub_util_find_hurd_root_device (dir);
+
+  if (!os_dev[0])
+    {
+      free (os_dev);
+      return 0;
+    }
+
+  os_dev[1] = 0;
+
+  return os_dev;
 }

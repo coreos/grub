@@ -1,0 +1,197 @@
+/*
+ *  GRUB  --  GRand Unified Bootloader
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2006,2007,2008,2009,2010,2011,2012,2013  Free Software Foundation, Inc.
+ *
+ *  GRUB is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  GRUB is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <config-util.h>
+
+#include <grub/disk.h>
+#include <grub/partition.h>
+#include <grub/msdos_partition.h>
+#include <grub/types.h>
+#include <grub/err.h>
+#include <grub/emu/misc.h>
+#include <grub/emu/hostdisk.h>
+#include <grub/emu/getroot.h>
+#include <grub/misc.h>
+#include <grub/i18n.h>
+#include <grub/list.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <assert.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <limits.h>
+
+#include <grub/util/windows.h>
+#include <grub/charset.h>
+
+#include <windows.h>
+#include <winioctl.h>
+
+#ifdef __CYGWIN__
+LPTSTR
+grub_util_get_windows_path (const char *path)
+{
+  LPTSTR winpath;
+  winpath = xmalloc (sizeof (winpath[0]) * PATH_MAX);
+  if (cygwin_conv_path (sizeof (winpath[0]) == 1 ? CCP_POSIX_TO_WIN_A
+			: CCP_POSIX_TO_WIN_W, path, winpath,
+			sizeof (winpath[0]) * PATH_MAX))
+    grub_util_error ("%s", _("cygwin_conv_path() failed"));
+  return winpath;
+}
+#else
+LPTSTR
+grub_util_get_windows_path (const char *path)
+{
+#if SIZEOF_TCHAR == 1
+  return xstrdup (path);
+#elif SIZEOF_TCHAR == 2
+  size_t ssz = strlen (path);
+  size_t tsz = 2 * (GRUB_MAX_UTF16_PER_UTF8 * ssz + 1);
+  LPTSTR ret = xmalloc (tsz);
+  tsz = grub_utf8_to_utf16 (ret, tsz, (const grub_uint8_t *) path, ssz, NULL);
+  ret[tsz] = 0;
+  return ret;
+#else
+#error SIZEOF_TCHAR
+#error "Unsupported TCHAR size"
+#endif
+}
+#endif
+
+grub_uint64_t
+grub_util_get_fd_size (grub_util_fd_t hd, const char *name_in,
+		       unsigned *log_secsize)
+{
+  grub_int64_t size = -1LL;
+  int log_sector_size = 9;
+  LPTSTR name = grub_util_get_windows_path (name_in);
+
+  if (log_secsize)
+    *log_secsize = log_sector_size;
+
+  if (((name[0] == '/') || (name[0] == '\\')) &&
+      ((name[1] == '/') || (name[1] == '\\')) &&
+      ((name[2] == '.') || (name[2] == '?')) &&
+      ((name[3] == '/') || (name[3] == '\\')))
+    {
+      DWORD nr;
+      DISK_GEOMETRY g;
+
+      if (! DeviceIoControl (hd, IOCTL_DISK_GET_DRIVE_GEOMETRY,
+                             0, 0, &g, sizeof (g), &nr, 0))
+        goto fail;
+
+      size = g.Cylinders.QuadPart;
+      size *= g.TracksPerCylinder * g.SectorsPerTrack * g.BytesPerSector;
+
+      for (log_sector_size = 0;
+	   (1 << log_sector_size) < g.BytesPerSector;
+	   log_sector_size++);
+    }
+  else
+    {
+      ULARGE_INTEGER s;
+
+      s.LowPart = GetFileSize (hd, &s.HighPart);
+      size = s.QuadPart;
+    }
+
+ fail:
+
+  if (log_secsize)
+    *log_secsize = log_sector_size;
+
+  free (name);
+
+  return size;
+}
+
+void
+grub_hostdisk_configure_device_driver (grub_util_fd_t fd __attribute__ ((unused)))
+{
+}
+
+void
+grub_hostdisk_flush_initial_buffer (const char *os_dev __attribute__ ((unused)))
+{
+}
+
+grub_err_t
+grub_util_fd_seek (grub_util_fd_t fd, const char *name, grub_uint64_t off)
+{
+  LARGE_INTEGER offset;
+  offset.QuadPart = off;
+
+  if (!SetFilePointerEx (fd, offset, NULL, FILE_BEGIN))
+    return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
+		       name, strerror (errno));
+  return 0;
+}
+
+grub_util_fd_t
+grub_util_fd_open (const char *os_dev, int flags)
+{
+  DWORD flg = 0;
+  LPTSTR dev = grub_util_get_windows_path (os_dev);
+  grub_util_fd_t ret;
+
+  if (flags & O_WRONLY)
+    flg |= GENERIC_WRITE;
+  if (flags & O_RDONLY)
+    flg |= GENERIC_READ;
+  flg = GENERIC_READ;
+  ret = CreateFile (dev, flg, FILE_SHARE_READ | FILE_SHARE_WRITE,
+		    0, OPEN_EXISTING, 0, 0);
+  free (dev);
+  grub_util_info ("handle = %p", ret);
+  return ret;
+}
+
+ssize_t
+grub_util_fd_read (grub_util_fd_t fd, char *buf, size_t len)
+{
+  DWORD real_read;
+  if (!ReadFile(fd, buf, len, &real_read, NULL))
+    {
+      grub_util_info ("read err %x", (int) GetLastError ());
+      return -1;
+    }
+  grub_util_info ("successful read");
+  return real_read;
+}
+
+ssize_t
+grub_util_fd_write (grub_util_fd_t fd, const char *buf, size_t len)
+{
+  DWORD real_read;
+  if (!WriteFile(fd, buf, len, &real_read, NULL))
+    {
+      grub_util_info ("write err %x", (int) GetLastError ());
+      return -1;
+    }
+
+  grub_util_info ("successful write");
+  return real_read;
+}

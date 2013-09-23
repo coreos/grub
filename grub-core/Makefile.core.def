@@ -241,6 +241,7 @@ kernel = {
   emu = kern/emu/error.c;
   emu = kern/emu/cache_s.S;
   emu = kern/emu/hostdisk.c;
+  emu = kern/emu/hostdisk_unix.c;
   emu = kern/emu/hostdisk_devmapper.c;
   emu = kern/emu/hostdisk_os.c;
   emu = kern/emu/hostfs.c;

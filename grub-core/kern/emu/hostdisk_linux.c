@@ -67,7 +67,7 @@ struct hd_geometry
 
 
 grub_int64_t
-grub_util_get_fd_size_os (int fd, const char *name, unsigned *log_secsize)
+grub_util_get_fd_size_os (grub_util_fd_t fd, const char *name, unsigned *log_secsize)
 {
   unsigned long long nr;
   unsigned sector_size, log_sector_size;
@@ -96,7 +96,7 @@ grub_util_get_fd_size_os (int fd, const char *name, unsigned *log_secsize)
 grub_disk_addr_t
 grub_util_find_partition_start_os (const char *dev)
 {
-  int fd;
+  grub_util_fd_t fd;
   struct hd_geometry hdg;
 
   fd = open (dev, O_RDONLY);
@@ -195,7 +195,7 @@ grub_hostdisk_linux_find_partition (char *dev, grub_disk_addr_t sector)
 
   for (i = 1; i < 10000; i++)
     {
-      int fd;
+      grub_util_fd_t fd;
       grub_disk_addr_t start;
 
       sprintf (p, format, i);
@@ -239,7 +239,7 @@ grub_hostdisk_linux_find_partition (char *dev, grub_disk_addr_t sector)
 void
 grub_hostdisk_flush_initial_buffer (const char *os_dev)
 {
-  int fd;
+  grub_util_fd_t fd;
   struct stat st;
 
   fd = open (os_dev, O_RDONLY);
@@ -249,7 +249,114 @@ grub_hostdisk_flush_initial_buffer (const char *os_dev)
     close (fd);
 }
 
-void
-grub_hostdisk_configure_device_driver (int fd __attribute__ ((unused)))
+int
+grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
+			  grub_disk_addr_t *max)
 {
+  grub_util_fd_t fd;
+  struct grub_util_hostdisk_data *data = disk->data;
+
+  *max = ~0ULL;
+
+#ifdef O_LARGEFILE
+  flags |= O_LARGEFILE;
+#endif
+#ifdef O_SYNC
+  flags |= O_SYNC;
+#endif
+#ifdef O_FSYNC
+  flags |= O_FSYNC;
+#endif
+#ifdef O_BINARY
+  flags |= O_BINARY;
+#endif
+
+  /* Linux has a bug that the disk cache for a whole disk is not consistent
+     with the one for a partition of the disk.  */
+  {
+    int is_partition = 0;
+    char dev[PATH_MAX];
+    grub_disk_addr_t part_start = 0;
+
+    part_start = grub_partition_get_start (disk->partition);
+
+    strcpy (dev, grub_util_biosdisk_get_osdev (disk));
+    if (disk->partition
+	&& strncmp (dev, "/dev/", 5) == 0)
+      {
+	if (sector >= part_start)
+	  is_partition = grub_hostdisk_linux_find_partition (dev, part_start);
+	else
+	  *max = part_start - sector;
+      }
+
+  reopen:
+
+    if (data->dev && strcmp (data->dev, dev) == 0 &&
+	data->access_mode == (flags & O_ACCMODE))
+      {
+	grub_dprintf ("hostdisk", "reusing open device `%s'\n", dev);
+	fd = data->fd;
+      }
+    else
+      {
+	free (data->dev);
+	data->dev = 0;
+	if (data->fd != -1)
+	  {
+	    if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
+	      {
+		fsync (data->fd);
+		if (data->is_disk)
+		  ioctl (data->fd, BLKFLSBUF, 0);
+	      }
+
+	    close (data->fd);
+	    data->fd = -1;
+	  }
+
+	/* Open the partition.  */
+	grub_dprintf ("hostdisk", "opening the device `%s' in open_device()\n", dev);
+	fd = open (dev, flags);
+	if (fd < 0)
+	  {
+	    grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot open `%s': %s"),
+			dev, strerror (errno));
+	    return -1;
+	  }
+
+	data->dev = xstrdup (dev);
+	data->access_mode = (flags & O_ACCMODE);
+	data->fd = fd;
+
+	if (data->is_disk)
+	  ioctl (data->fd, BLKFLSBUF, 0);
+      }
+
+    if (is_partition)
+      {
+	*max = grub_util_get_fd_size (fd, dev, 0);
+	*max >>= disk->log_sector_size;
+	if (sector - part_start >= *max)
+	  {
+	    *max = disk->partition->len - (sector - part_start);
+	    if (*max == 0)
+	      *max = ~0ULL;
+	    is_partition = 0;
+	    strcpy (dev, grub_util_biosdisk_get_osdev (disk));
+	    goto reopen;
+	  }
+	sector -= part_start;
+	*max -= sector;
+      }
+  }
+
+  if (grub_util_fd_seek (fd, grub_util_biosdisk_get_osdev (disk),
+			 sector << disk->log_sector_size))
+    {
+      close (fd);
+      return -1;
+    }
+
+  return fd;
 }

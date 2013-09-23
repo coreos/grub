@@ -182,7 +182,7 @@ case "$host_os" in
   netbsd*)			host_kernel=netbsd ;;
   solaris*)			host_kernel=illumos ;;
   darwin*)			host_kernel=xnu ;;
-  cygwin)			host_kernel=windows ;;
+  cygwin | windows* | mingw32*)	host_kernel=windows ;;
 esac
 
 case "$platform" in
@@ -332,6 +332,14 @@ unset ac_cv_c_bigendian
 AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
+
+case "$host_os" in
+  cygwin | windows* | mingw32*)
+     HOST_CPPFLAGS="$HOST_CPPFLAGS -DUNICODE=1 -D_WIN32_WINNT=0x0500"
+     CPPFLAGS="$CPPFLAGS -DUNICODE=1 -D_WIN32_WINNT=0x0500"
+     AC_CHECK_SIZEOF(TCHAR,,[#include <windows.h>])
+   ;;
+esac
 
 grub_apple_cc
 if test x$grub_cv_apple_cc = xyes ; then
