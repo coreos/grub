@@ -1,5 +1,14 @@
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/cryptodisk.h (grub_cryptodisk): Use grub_util_fd_t
+	for cheat_fd.
+	* grub-core/disk/cryptodisk.c (grub_cryptodisk_open): Use grub_util_*
+	functions.
+	(grub_cryptodisk_cheat_insert): Likewise.
+	(grub_cryptodisk_close): Likewise.
+
+2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/emu/misc.h: Remove leftover cygwin definitions.
 	Use windows path for DEFAULT_DIRECTORY.
 

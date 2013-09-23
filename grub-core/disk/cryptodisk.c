@@ -504,9 +504,9 @@ grub_cryptodisk_open (const char *name, grub_disk_t disk)
 #ifdef GRUB_UTIL
   if (dev->cheat)
     {
-      if (dev->cheat_fd == -1)
-	dev->cheat_fd = open (dev->cheat, O_RDONLY);
-      if (dev->cheat_fd == -1)
+      if (!GRUB_UTIL_FD_IS_VALID (dev->cheat_fd))
+	dev->cheat_fd = grub_util_fd_open (dev->cheat, O_RDONLY);
+      if (!GRUB_UTIL_FD_IS_VALID (dev->cheat_fd))
 	return grub_error (GRUB_ERR_IO, N_("cannot open `%s': %s"),
 			   dev->cheat, strerror (errno));
     }
@@ -541,8 +541,8 @@ grub_cryptodisk_close (grub_disk_t disk)
 #ifdef GRUB_UTIL
   if (dev->cheat)
     {
-      close (dev->cheat_fd);
-      dev->cheat_fd = -1;
+      grub_util_fd_close (dev->cheat_fd);
+      dev->cheat_fd = GRUB_UTIL_FD_INVALID;
     }
 #endif
   grub_disk_close (dev->source_disk);
@@ -735,7 +735,7 @@ grub_cryptodisk_cheat_insert (grub_cryptodisk_t newdev, const char *name,
       return grub_errno;
     }
 
-  newdev->cheat_fd = -1;
+  newdev->cheat_fd = GRUB_UTIL_FD_INVALID;
   newdev->source_id = source->id;
   newdev->source_dev_id = source->dev->id;
   newdev->id = n++;

@@ -22,6 +22,9 @@
 #include <grub/disk.h>
 #include <grub/crypto.h>
 #include <grub/list.h>
+#ifdef GRUB_UTIL
+#include <grub/emu/hostdisk.h>
+#endif
 
 typedef enum
   {
@@ -85,7 +88,7 @@ struct grub_cryptodisk
   grub_size_t keysize;
 #ifdef GRUB_UTIL
   char *cheat;
-  int cheat_fd;
+  grub_util_fd_t cheat_fd;
 #endif
   const char *modname;
   int log_sector_size;
