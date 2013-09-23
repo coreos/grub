@@ -367,8 +367,7 @@ grub_video_gop_setup (unsigned int width, unsigned int height,
 
   if (width == 0 && height == 0)
     {
-      err = 1;
-      grub_gop_get_preferred_mode (&preferred_width, &preferred_height);
+      err = grub_gop_get_preferred_mode (&preferred_width, &preferred_height);
       if (err || preferred_width >= 4096 || preferred_height >= 4096)
 	{
 	  preferred_width = 800;
