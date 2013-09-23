@@ -25,14 +25,9 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 
-#ifdef __CYGWIN__
-# include <sys/fcntl.h>
-# include <sys/cygwin.h>
-# include <limits.h>
-# define DEV_CYGDRIVE_MAJOR 98
-#endif
-
-#ifdef __NetBSD__
+#if defined __CYGWIN__ || defined (__MINGW32__)
+# define DEFAULT_DIRECTORY	"C:\\"GRUB_BOOT_DIR_NAME"\\"GRUB_DIR_NAME
+#elif defined (__NetBSD__)
 /* NetBSD uses /boot for its boot block.  */
 # define DEFAULT_DIRECTORY	"/"GRUB_DIR_NAME
 #else
