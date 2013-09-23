@@ -1,3 +1,9 @@
+2013-09-23  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
+	* util/grub-install.in: Add GPT PReP support.
+	* util/grub-probe.c (probe): Support GPT partition type.
+	(main): Support -t gpt_parttype.
+
 2013-09-23  Aleš Nesrsta  <starous@volny.cz>
 
 	* grub-core/bus/usb/ehci.c: SMI disabled in all cases

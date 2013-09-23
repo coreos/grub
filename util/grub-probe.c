@@ -27,6 +27,7 @@
 #include <grub/fs.h>
 #include <grub/partition.h>
 #include <grub/msdos_partition.h>
+#include <grub/gpt_partition.h>
 #include <grub/emu/hostdisk.h>
 #include <grub/emu/getroot.h>
 #include <grub/term.h>
@@ -67,6 +68,7 @@ enum {
   PRINT_ARC_HINT,
   PRINT_COMPATIBILITY_HINT,
   PRINT_MSDOS_PARTTYPE,
+  PRINT_GPT_PARTTYPE,
   PRINT_ZERO_CHECK,
   PRINT_DISK
 };
@@ -725,6 +727,39 @@ probe (const char *path, char **device_names, char delim)
 	  grub_device_close (dev);
 	  continue;
 	}
+
+      if (print == PRINT_GPT_PARTTYPE)
+	{
+          if (dev->disk->partition
+	      && strcmp (dev->disk->partition->partmap->name, "gpt") == 0)
+            {
+              struct grub_gpt_partentry gptdata;
+              grub_partition_t p = dev->disk->partition;
+              dev->disk->partition = dev->disk->partition->parent;
+
+              if (grub_disk_read (dev->disk, p->offset, p->index,
+                                  sizeof (gptdata), &gptdata) == 0)
+                {
+                  grub_gpt_part_type_t gpttype;
+                  gpttype.data1 = grub_le_to_cpu32 (gptdata.type.data1);
+                  gpttype.data2 = grub_le_to_cpu16 (gptdata.type.data2);
+                  gpttype.data3 = grub_le_to_cpu16 (gptdata.type.data3);
+                  grub_memcpy (gpttype.data4, gptdata.type.data4, 8);
+
+                  grub_printf ("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                               gpttype.data1, gpttype.data2,
+                               gpttype.data3, gpttype.data4[0], 
+                               gpttype.data4[1], gpttype.data4[2],
+                               gpttype.data4[3], gpttype.data4[4],
+                               gpttype.data4[5], gpttype.data4[6],
+                               gpttype.data4[7]);
+                }
+              dev->disk->partition = p;
+            }
+          putchar (delim);
+          grub_device_close (dev);
+          continue;
+        }
     }
 
  end:
@@ -805,6 +840,8 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	print = PRINT_CRYPTODISK_UUID;
       else if (!strcmp (arg, "msdos_parttype"))
 	print = PRINT_MSDOS_PARTTYPE;
+      else if (!strcmp (arg, "gpt_parttype"))
+	print = PRINT_GPT_PARTTYPE;
       else if (!strcmp (arg, "hints_string"))
 	print = PRINT_HINT_STR;
       else if (!strcmp (arg, "bios_hints"))
