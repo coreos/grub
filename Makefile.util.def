@@ -44,7 +44,7 @@ library = {
 
 library = {
   name = libgrubmods.a;
-  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cflags = '-fno-builtin -Wno-undef';
   cppflags = '-I$(top_srcdir)/grub-core/lib/minilzo -I$(srcdir)/grub-core/lib/xzembed -DMINILZO_HAVE_CONFIG_H';
 
   common_nodist = grub_script.tab.c;

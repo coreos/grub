@@ -1,5 +1,10 @@
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.util.def (libgrubmods.a): Remove CFLAGS_POSIX as this lib
+	doesn't use posix_wrap. Keep literal -fno-builtin however.
+
+2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common (CPPFLAGS_LIBFDT): Remove leftover.
 
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
