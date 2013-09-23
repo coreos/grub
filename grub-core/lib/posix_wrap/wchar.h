@@ -21,10 +21,8 @@
 
 #include <grub/charset.h>
 
-#if defined(__NetBSD__) || defined(__OpenBSD__)
 #define wchar_t grub_posix_wchar_t
 #define mbstate_t grub_posix_mbstate_t
-#endif
 
 /* UCS-4.  */
 typedef grub_int32_t wint_t;

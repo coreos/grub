@@ -21,11 +21,7 @@
 
 #include <grub/misc.h>
 
-#if defined (__APPLE__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include <stddef.h>
-#else
-typedef grub_size_t size_t;
-#endif
 
 typedef grub_ssize_t ssize_t;
 #ifndef GRUB_POSIX_BOOL_DEFINED
