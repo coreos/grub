@@ -1,3 +1,7 @@
+2013-09-23  Aleš Nesrsta  <starous@volny.cz>
+
+	* grub-core/bus/usb/ehci.c: SMI disabled in all cases
+
 2013-09-23  Massimo Maggi <me@massimo-maggi.eu>
 
 	* grub-core/fs/zfs/zfs.c (check_pool_label): Check nvlist.
@@ -146,7 +150,7 @@
 
 2013-09-21  Ales Nesrsta <starous@volny.cz>
 
-	* grub-core/bus/usb/ehci.c: Correceted EHCI QH handling (async./sync.)
+	* grub-core/bus/usb/ehci.c: Corrected EHCI QH handling (async./sync.)
 
 2013-09-20  Vladimir Serbinenko  <phcoder@gmail.com>
 

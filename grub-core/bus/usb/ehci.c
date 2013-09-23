@@ -716,7 +716,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
       usblegsup = grub_pci_read (pciaddr_eecp);
       if (usblegsup & GRUB_EHCI_BIOS_OWNED)
 	{
-	  grub_boot_time ("Taking ownership of EHCI port");
+	  grub_boot_time ("Taking ownership of EHCI controller");
 	  grub_dprintf ("ehci",
 			"EHCI grub_ehci_pci_iter: EHCI owned by: BIOS\n");
 	  /* Ownership change - set OS_OWNED bit */
@@ -737,13 +737,7 @@ grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
 	      grub_pci_write (pciaddr_eecp, GRUB_EHCI_OS_OWNED);
 	      /* Ensure PCI register is written */
 	      grub_pci_read (pciaddr_eecp);
-	      /* Disable SMI.  */
-	      pciaddr_eecp = grub_pci_make_address (dev, eecp_offset + 4);
-	      grub_pci_write (pciaddr_eecp, 0);
-	      /* Ensure PCI register is written */
-	      grub_pci_read (pciaddr_eecp);
 	    }
-	  grub_boot_time ("Ownership of EHCI port taken");
 	}
       else if (usblegsup & GRUB_EHCI_OS_OWNED)
 	/* XXX: What to do in this case - nothing ? Can it happen ? */
@@ -758,12 +752,14 @@ grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
 	  grub_pci_write (pciaddr_eecp, GRUB_EHCI_OS_OWNED);
 	  /* Ensure PCI register is written */
 	  grub_pci_read (pciaddr_eecp);
-	  /* Disable SMI, just to be sure.  */
-	  pciaddr_eecp = grub_pci_make_address (dev, eecp_offset + 4);
-	  grub_pci_write (pciaddr_eecp, 0);
-	  /* Ensure PCI register is written */
-	  grub_pci_read (pciaddr_eecp);
 	}
+
+    /* Disable SMI, just to be sure.  */
+    pciaddr_eecp = grub_pci_make_address (dev, eecp_offset + 4);
+    grub_pci_write (pciaddr_eecp, 0);
+    /* Ensure PCI register is written */
+    grub_pci_read (pciaddr_eecp);
+
     }
 
   grub_dprintf ("ehci", "inithw: EHCI grub_ehci_pci_iter: ownership OK\n");
