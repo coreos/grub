@@ -140,7 +140,7 @@ CC=amd64-linux-gnu-gcc CFLAGS="-g -O2" FREETYPE=amd64-linux-gnu-freetype-config
 --target=arm --with-platform=uboot TARGET_CC=arm-elf-gcc
 TARGET_CFLAGS="-Os -march=armv6" TARGET_CCASFLAGS="-march=armv6"
 TARGET_OBJCOPY="arm-elf-objcopy" TARGET_STRIP="arm-elf-strip"
-TARGET_NM=arm-elf-nm LEX=gflex
+TARGET_NM=arm-elf-nm TARGET_RANLIB=arm-elf-ranlib LEX=gflex
 
 You need to use following options to specify tools and platforms. For minimum
 version look at prerequisites. All tools not mentioned in this section under
@@ -177,6 +177,7 @@ corresponding platform are not needed for the platform in question.
     8. TARGET_OBJCOPY= for objcopy for target.
     9. TARGET_STRIP= for strip for target.
     10. TARGET_NM= for nm for target.
+    11. TARGET_RANLIB= for ranlib for target.
 
   - Additionally for emu, for host and target.
     1. SDL is looked for in stadard linker directories (-lSDL) (optional)

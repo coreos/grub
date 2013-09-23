@@ -1,5 +1,13 @@
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.am: Override STRIP and RANLIB.
+	* configure.ac: compute TARGET_RANLIB.
+	* INSTALL: Document TARGET_RANLIB
+
+	Based on patches from AROS.
+
+2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_util_biosdisk_get_grub_dev): Do not assume
 	that floppies are unpartitioned.
 

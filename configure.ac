@@ -422,6 +422,7 @@ if test "x$target_alias" != x && test "x$host_alias" != "x$target_alias"; then
   AC_CHECK_TOOL(TARGET_OBJCOPY, objcopy)
   AC_CHECK_TOOL(TARGET_STRIP, strip)
   AC_CHECK_TOOL(TARGET_NM, nm)
+  AC_CHECK_TOOL(TARGET_RANLIB, ranlib)
 
   ac_tool_prefix="$tmp_ac_tool_prefix"
 else
@@ -431,6 +432,7 @@ else
   AC_CHECK_TOOL(TARGET_OBJCOPY, objcopy)
   AC_CHECK_TOOL(TARGET_STRIP, strip)
   AC_CHECK_TOOL(TARGET_NM, nm)
+  AC_CHECK_TOOL(TARGET_RANLIB, ranlib)
 fi
 
 AC_SUBST(HOST_CC)
