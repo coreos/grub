@@ -216,8 +216,15 @@ grub_multiboot_set_console (int console_type, int accepted_consoles,
       grub_env_set ("gfxpayload", buf);
       grub_free (buf);
     }
- else
-   grub_env_set ("gfxpayload", "text");
+  else
+    {
+#if GRUB_MACHINE_HAS_VGA_TEXT
+      grub_env_set ("gfxpayload", "text");
+#else
+      /* Always use video if no VGA text is available.  */
+      grub_env_set ("gfxpayload", "auto");
+#endif
+    }
 
   accepts_video = !!(accepted_consoles & GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER);
   accepts_ega_text = !!(accepted_consoles & GRUB_MULTIBOOT_CONSOLE_EGA_TEXT);

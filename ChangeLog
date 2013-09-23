@@ -1,6 +1,12 @@
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
 2013-09-23  neil
 
+	* grub-core/loader/multiboot.c (grub_multiboot_set_console): Always use
+	video if no text is available.
+
+2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-09-23  neil
+
 	* configure.ac: Substitute TARGET_RANLIB.
 
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
