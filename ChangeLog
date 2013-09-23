@@ -1,3 +1,8 @@
+2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk_windows.c (grub_util_get_windows_path):
+	Always return full path. Fixes a problem with mkrelpath.
+
 2013-09-23  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
 	* util/grub-install.in: Add GPT PReP support.

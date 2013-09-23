@@ -54,8 +54,8 @@ grub_util_get_windows_path (const char *path)
 {
   LPTSTR winpath;
   winpath = xmalloc (sizeof (winpath[0]) * PATH_MAX);
-  if (cygwin_conv_path (sizeof (winpath[0]) == 1 ? CCP_POSIX_TO_WIN_A
-			: CCP_POSIX_TO_WIN_W, path, winpath,
+  if (cygwin_conv_path ((sizeof (winpath[0]) == 1 ? CCP_POSIX_TO_WIN_A
+			 : CCP_POSIX_TO_WIN_W) | CCP_ABSOLUTE, path, winpath,
 			sizeof (winpath[0]) * PATH_MAX))
     grub_util_error ("%s", _("cygwin_conv_path() failed"));
   return winpath;
@@ -64,19 +64,28 @@ grub_util_get_windows_path (const char *path)
 LPTSTR
 grub_util_get_windows_path (const char *path)
 {
+  char *fpa;
+  const char *fp;
+  LPTSTR ret;
+
+  fp = fpa = xmalloc (PATH_MAX);
+  if (!_fullpath (fpa, path, PATH_MAX))
+    fp = path;
 #if SIZEOF_TCHAR == 1
-  return xstrdup (path);
+  ret = xstrdup (fp);
 #elif SIZEOF_TCHAR == 2
-  size_t ssz = strlen (path);
+  size_t ssz = strlen (fp);
   size_t tsz = 2 * (GRUB_MAX_UTF16_PER_UTF8 * ssz + 1);
-  LPTSTR ret = xmalloc (tsz);
-  tsz = grub_utf8_to_utf16 (ret, tsz, (const grub_uint8_t *) path, ssz, NULL);
+  ret = xmalloc (tsz);
+  tsz = grub_utf8_to_utf16 (ret, tsz, (const grub_uint8_t *) fp, ssz, NULL);
   ret[tsz] = 0;
-  return ret;
 #else
 #error SIZEOF_TCHAR
 #error "Unsupported TCHAR size"
 #endif
+
+  free (fpa);
+  return ret;
 }
 #endif
 
