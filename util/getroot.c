@@ -43,15 +43,6 @@
 #ifdef __linux__
 #include <sys/ioctl.h>         /* ioctl */
 #include <sys/mount.h>
-#ifndef MAJOR
-# ifndef MINORBITS
-#  define MINORBITS	8
-# endif /* ! MINORBITS */
-# define MAJOR(dev)	((unsigned) ((dev) >> MINORBITS))
-#endif /* ! MAJOR */
-#ifndef FLOPPY_MAJOR
-# define FLOPPY_MAJOR	2
-#endif /* ! FLOPPY_MAJOR */
 #endif
 
 #include <sys/types.h>
@@ -67,11 +58,6 @@
 #include <grub/emu/hostdisk.h>
 #include <grub/emu/getroot.h>
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-# define MAJOR(dev) major(dev)
-# define FLOPPY_MAJOR	2
-#endif
-
 #if defined (__FreeBSD__) || defined (__FreeBSD_kernel__)
 #include <sys/mount.h>
 #endif
@@ -84,21 +70,9 @@
 #include <sys/mount.h>
 #endif /* defined(__NetBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) */
 
-#if defined(__NetBSD__) || defined(__OpenBSD__)
-# define MAJOR(dev) major(dev)
-# ifdef HAVE_GETRAWPARTITION
-#  include <util.h>    /* getrawpartition */
-# endif /* HAVE_GETRAWPARTITION */
 #if defined(__NetBSD__)
 # include <sys/fdio.h>
 #endif
-# ifndef FLOPPY_MAJOR
-#  define FLOPPY_MAJOR	2
-# endif /* ! FLOPPY_MAJOR */
-# ifndef RAW_FLOPPY_MAJOR
-#  define RAW_FLOPPY_MAJOR	9
-# endif /* ! RAW_FLOPPY_MAJOR */
-#endif /* defined(__NetBSD__) */
 
 grub_disk_addr_t
 grub_util_find_partition_start (const char *dev)
@@ -376,14 +350,6 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     struct grub_util_biosdisk_get_grub_dev_ctx ctx;
 
     name = make_device_name (drive, -1, -1);
-
-# ifdef FLOPPY_MAJOR
-    if (MAJOR (st.st_rdev) == FLOPPY_MAJOR)
-      return name;
-# else
-    /* Since os_dev and convert_system_partition_to_system_disk (os_dev) are
-     * different, we know that os_dev cannot be a floppy device.  */
-# endif
 
     ctx.start = grub_util_find_partition_start (os_dev);
     if (grub_errno != GRUB_ERR_NONE)
