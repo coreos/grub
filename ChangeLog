@@ -1,3 +1,10 @@
+2013-09-23  Tim Hardeck  <thardeck>
+
+	* util/grub.d/10_hurd.in: Filter out character for the class.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
 2013-09-23  Melki Christian  <Christian.melki@saabgroup.com>
 
 	* grub-core/bus/usb/usbhub.c (poll_nonroot_hub): Fix the type of

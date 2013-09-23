@@ -32,7 +32,7 @@ if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
   OS=GNU
 else
   OS="${GRUB_DISTRIBUTOR} GNU/Hurd"
-  CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr 'A-Z' 'a-z' | cut -d' ' -f1) ${CLASS}"
+  CLASS="--class $(echo ${GRUB_DISTRIBUTOR} | tr 'A-Z' 'a-z' | cut -d' ' -f1|LC_ALL=C sed 's,[^[:alnum:]_],_,g') ${CLASS}"
 fi
 
 at_least_one=false
