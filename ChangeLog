@@ -1,5 +1,16 @@
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot_unix.c [__MINGW32__ || __CYGWIN__]:
+	Define dummy grub_util_pull_lvm_by_command to decrease number of #if's.
+
+2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/posix_wrap/sys/types.h: Use OpenBSD approach: it's
+	less nice but more portable.
+	* grub-core/lib/posix_wrap/wchar.h: Likewise.
+
+2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/cryptodisk.h (grub_cryptodisk): Use grub_util_fd_t
 	for cheat_fd.
 	* grub-core/disk/cryptodisk.c (grub_cryptodisk_open): Use grub_util_*

@@ -79,9 +79,9 @@ grub_util_get_devmapper_grub_dev (const char *os_dev);
 #include <sys/types.h>
 pid_t
 grub_util_exec_pipe (char **argv, int *fd);
+#endif
 void
 grub_util_pull_lvm_by_command (const char *os_dev);
-#endif
 char **
 grub_util_find_root_devices_from_poolname (char *poolname);
 
