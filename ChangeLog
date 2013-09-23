@@ -1,4 +1,10 @@
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-09-23  neil
+
+	* configure.ac: Do no explicitly enable -Waddress as it's not
+	supported by all gcc and when it is, it's already enabled by -Wall.
+
+2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/video/efi_gop.c (grub_video_gop_setup): Fix a typo which
 	desactivated use of EDID at all.
