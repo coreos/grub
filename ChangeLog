@@ -1,5 +1,10 @@
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/i386/setjmp.h: Remove useless #if MINGW where original
+	difference was likely just gcc version, not anything mingw-related.
+
+2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use Winapi on both cygwin and mingw32 to share more code between both.
 
 2013-09-22  Andrey Borzenkov <arvidjaar@gmail.com>
