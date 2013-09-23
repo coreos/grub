@@ -1,3 +1,8 @@
+2013-09-23  Josh Triplett <josh@joshtriplett.org>
+
+	* grub-core/boot/i386/pc/lnxboot.S: Re-add support for recording the
+	boot partition.
+
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* Makefile.util.def (libgrubmods.a): Remove CFLAGS_POSIX as this lib
