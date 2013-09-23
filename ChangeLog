@@ -1,10 +1,17 @@
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-09-23  neil
+
+	* configure.ac: Substitute TARGET_RANLIB.
+
+2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-09-23  neil
 
 	* grub-core/genmod.sh.in: Remove ./ from TARGET_OBJ2ELF. Add quotes.
 
 	Based on patches from AROS.
 
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-09-23  neil
 
 	* grub-core/Makefile.am: Override STRIP and RANLIB.
 	* configure.ac: compute TARGET_RANLIB.
