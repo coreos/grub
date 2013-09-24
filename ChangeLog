@@ -1,5 +1,10 @@
 2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_util_biosdisk_is_present): Don't do stat on
+	platforms on which it doesn't work.
+
+2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_open): Move struct
 	stat immediately to where it's used.
 

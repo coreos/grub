@@ -462,12 +462,16 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 int
 grub_util_biosdisk_is_present (const char *os_dev)
 {
+#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__AROS__)
   struct stat st;
 
   if (stat (os_dev, &st) < 0)
     return 0;
 
   int ret= (find_system_device (os_dev, &st, 1, 0) != NULL);
+#else
+  int ret= (find_system_device (os_dev, NULL, 1, 0) != NULL);
+#endif
   grub_util_info ((ret ? "%s is present" : "%s is not present"), 
 		  os_dev);
   return ret;
