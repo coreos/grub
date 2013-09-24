@@ -39,7 +39,7 @@
 #include <grub/cryptodisk.h>
 #include <grub/i18n.h>
 
-#if !defined (__MINGW32__) && !defined (__CYGWIN__)
+#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__AROS__)
 
 #ifdef __linux__
 #include <sys/ioctl.h>         /* ioctl */

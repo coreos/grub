@@ -43,7 +43,7 @@
 #include <errno.h>
 #include <limits.h>
 
-#if !defined (__CYGWIN__) && !defined (__MINGW32__)
+#if !defined (__CYGWIN__) && !defined (__MINGW32__) && !defined (__AROS__)
 
 #ifdef __linux__
 # include <sys/ioctl.h>         /* ioctl */

@@ -132,7 +132,7 @@ grub_hostfs_open (struct grub_file *file, const char *name)
 
   file->data = data;
 
-#if defined (__CYGWIN__) || defined (__MINGW32__)
+#if defined (__CYGWIN__) || defined (__MINGW32__) || defined (__AROS__)
   fseek (f, 0, SEEK_END);
   file->size = ftello (f);
   fseek (f, 0, SEEK_SET);
