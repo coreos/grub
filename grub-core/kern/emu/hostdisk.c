@@ -422,7 +422,7 @@ grub_util_biosdisk_close (struct grub_disk *disk)
   struct grub_util_hostdisk_data *data = disk->data;
 
   free (data->dev);
-  if (!GRUB_UTIL_FD_IS_VALID (data->fd))
+  if (GRUB_UTIL_FD_IS_VALID (data->fd))
     {
       if (data->access_mode == O_RDWR || data->access_mode == O_WRONLY)
 	grub_util_biosdisk_flush (disk);

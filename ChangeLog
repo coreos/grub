@@ -1,3 +1,8 @@
+2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_close): Fix
+	disk closing logic.
+
 2013-09-24  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* docs/grub.texi (Simple configuration): Document GRUB_ENABLE_CRYPTODISK.
