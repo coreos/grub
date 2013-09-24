@@ -473,35 +473,6 @@ grub_util_biosdisk_is_present (const char *os_dev)
   return ret;
 }
 
-const char *
-grub_util_check_block_device (const char *blk_dev)
-{
-  struct stat st;
-
-  if (stat (blk_dev, &st) < 0)
-    grub_util_error (_("cannot stat `%s': %s"), blk_dev,
-		     strerror (errno));
-
-  if (S_ISBLK (st.st_mode))
-    return (blk_dev);
-  else
-    return 0;
-}
-
-const char *
-grub_util_check_char_device (const char *blk_dev)
-{
-  struct stat st;
-
-  if (stat (blk_dev, &st) < 0)
-    grub_util_error (_("cannot stat `%s': %s"), blk_dev, strerror (errno));
-
-  if (S_ISCHR (st.st_mode))
-    return (blk_dev);
-  else
-    return 0;
-}
-
 #ifdef HAVE_LIBZFS
 static libzfs_handle_t *__libzfs_handle;
 

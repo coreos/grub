@@ -1,5 +1,12 @@
 2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_util_check_block_device): Move to ...
+	* util/getroot_unix.c (grub_util_check_block_device): ... here.
+	* util/getroot.c (grub_util_check_char_device): Move to ...
+	* util/getroot_unix.c (grub_util_check_char_device): ... here.
+
+2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_close): Fix
 	disk closing logic.
 
