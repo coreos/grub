@@ -29,18 +29,20 @@
 typedef HANDLE grub_util_fd_t;
 #define GRUB_UTIL_FD_INVALID INVALID_HANDLE_VALUE
 #define GRUB_UTIL_FD_IS_VALID(x) ((x) != GRUB_UTIL_FD_INVALID)
-#define grub_util_fd_close(x) CloseHandle(x)
-#define grub_util_fd_sync(x) FlushFileBuffers(x)
-grub_util_fd_t
-grub_util_fd_open (const char *os_dev, int flags);
 #else
 typedef int grub_util_fd_t;
 #define GRUB_UTIL_FD_INVALID -1
 #define GRUB_UTIL_FD_IS_VALID(x) ((x) >= 0)
-#define grub_util_fd_close(x) close(x)
-#define grub_util_fd_sync(x) fsync(x)
-#define grub_util_fd_open(x,y) open(x,y)
 #endif
+
+grub_util_fd_t
+grub_util_fd_open (const char *os_dev, int flags);
+const char *
+grub_util_fd_strerror (void);
+void
+grub_util_fd_sync (grub_util_fd_t fd);
+void
+grub_util_fd_close (grub_util_fd_t fd);
 
 grub_util_fd_t
 grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,

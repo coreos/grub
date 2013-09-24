@@ -204,3 +204,38 @@ grub_util_fd_write (grub_util_fd_t fd, const char *buf, size_t len)
   grub_util_info ("successful write");
   return real_read;
 }
+
+void
+grub_util_fd_sync (grub_util_fd_t fd)
+{
+  FlushFileBuffers (fd);
+}
+
+void
+grub_util_fd_close (grub_util_fd_t fd)
+{
+  CloseHandle (fd);
+}
+
+const char *
+grub_util_fd_strerror (void)
+{
+  DWORD err;
+  static TCHAR tbuf[1024];
+  err = GetLastError ();
+  FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM |
+		 FORMAT_MESSAGE_IGNORE_INSERTS,
+		 NULL, err,
+		 MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+		 tbuf, ARRAY_SIZE (tbuf), NULL);
+
+#if SIZEOF_TCHAR == 1
+  return (char *) tbuf;
+#elif SIZEOF_TCHAR == 2
+  static grub_uint8_t buf[ARRAY_SIZE (tbuf) * GRUB_MAX_UTF8_PER_UTF16 + 1];
+  *grub_utf16_to_utf8 (buf, tbuf, ARRAY_SIZE (tbuf)) = '\0';
+  return (char *) buf;
+#else
+#error "Unsupported TCHAR size"
+#endif
+}

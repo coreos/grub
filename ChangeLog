@@ -1,5 +1,25 @@
 2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_open): Use
+	grub_util_fd_strerror when using grub_util_fd_*.
+	(grub_util_fd_open_device): Likewise.
+	(grub_util_biosdisk_read): Likewise.
+	(grub_util_biosdisk_write): Likewise.
+	* grub-core/kern/emu/hostdisk_unix.c (grub_util_fd_open): New function.
+	(grub_util_fd_strerror): Likewise.
+	(grub_util_fd_sync): Likewise.
+	(grub_util_fd_close): Likewise.
+	* grub-core/kern/emu/hostdisk_windows.c (grub_util_fd_sync): Likewise.
+	(grub_util_fd_close): Likewise.
+	(grub_util_fd_strerror): Likewise.
+	* include/grub/emu/hostdisk.h (grub_util_fd_close): Make into real
+	function proto rather than macro.
+	(grub_util_fd_sync): Likewise.
+	(grub_util_fd_open): Likewise.
+	(grub_util_fd_strerror): New proto.
+
+2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_util_biosdisk_is_present): Don't do stat on
 	platforms on which it doesn't work.
 

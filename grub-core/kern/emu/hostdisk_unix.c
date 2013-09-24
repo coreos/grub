@@ -166,4 +166,28 @@ grub_util_fd_write (grub_util_fd_t fd, const char *buf, size_t len)
   return size;
 }
 
+grub_util_fd_t
+grub_util_fd_open (const char *os_dev, int flags)
+{
+  return open (os_dev, flags);
+}
+
+const char *
+grub_util_fd_strerror (void)
+{
+  return strerror (errno);
+}
+
+void
+grub_util_fd_sync (grub_util_fd_t fd)
+{
+  fsync (fd);
+}
+
+void
+grub_util_fd_close (grub_util_fd_t fd)
+{
+  close (fd);
+}
+
 #endif

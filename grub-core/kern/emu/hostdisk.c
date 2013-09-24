@@ -155,7 +155,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
     if (!GRUB_UTIL_FD_IS_VALID(fd))
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("cannot open `%s': %s"),
-			 map[drive].device, strerror (errno));
+			 map[drive].device, grub_util_fd_strerror ());
 
     disk->total_sectors = grub_util_get_fd_size (fd, map[drive].device,
 						 &disk->log_sector_size);
@@ -308,7 +308,7 @@ grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int f
   if (!GRUB_UTIL_FD_IS_VALID(data->fd))
     {
       grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot open `%s': %s"),
-		  map[disk->id].device, strerror (errno));
+		  map[disk->id].device, grub_util_fd_strerror ());
       return GRUB_UTIL_FD_INVALID;
     }
 
@@ -353,7 +353,7 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
       if (grub_util_fd_read (fd, buf, max << disk->log_sector_size)
 	  != (ssize_t) (max << disk->log_sector_size))
 	return grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
-			   map[disk->id].device, strerror (errno));
+			   map[disk->id].device, grub_util_fd_strerror ());
       size -= max;
       buf += (max << disk->log_sector_size);
       sector += max;
@@ -388,7 +388,7 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
       if (grub_util_fd_write (fd, buf, max << disk->log_sector_size)
 	  != (ssize_t) (max << disk->log_sector_size))
 	return grub_error (GRUB_ERR_WRITE_ERROR, N_("cannot write to `%s': %s"),
-			   map[disk->id].device, strerror (errno));
+			   map[disk->id].device, grub_util_fd_strerror ());
       size -= max;
       buf += (max << disk->log_sector_size);
     }
