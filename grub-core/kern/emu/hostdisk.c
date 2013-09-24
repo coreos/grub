@@ -131,7 +131,6 @@ static grub_err_t
 grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 {
   int drive;
-  struct stat st;
   struct grub_util_hostdisk_data *data;
 
   drive = find_grub_drive (name);
@@ -162,14 +161,16 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 						 &disk->log_sector_size);
     disk->total_sectors >>= disk->log_sector_size;
 
-#if !defined(__MINGW32__) && !defined(__CYGWIN__)
-
+#if !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined (__AROS__)
+    {
+      struct stat st;
 # if GRUB_DISK_DEVS_ARE_CHAR
-    if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
+      if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
 # else
-    if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
+      if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
 # endif
-      data->is_disk = 1;
+	data->is_disk = 1;
+    }
 #endif
 
     grub_util_fd_close (fd);

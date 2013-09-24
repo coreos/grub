@@ -1,5 +1,10 @@
 2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_open): Move struct
+	stat immediately to where it's used.
+
+2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_util_check_block_device): Move to ...
 	* util/getroot_unix.c (grub_util_check_block_device): ... here.
 	* util/getroot.c (grub_util_check_char_device): Move to ...
