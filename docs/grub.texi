@@ -1354,6 +1354,12 @@ Normally, @command{grub-mkconfig} will try to use the external
 systems installed on the same system and generate appropriate menu entries
 for them.  Set this option to @samp{true} to disable this.
 
+@item GRUB_ENABLE_CRYPTODISK
+If set to @samp{y}, @command{grub-mkconfig} and @command{grub-install} will
+check for encrypted disks and generate additional commands needed to access
+them during boot.  Note that in this case unattended boot is not possible
+because GRUB will wait for passphrase to unlock encrypted container.
+
 @item GRUB_INIT_TUNE
 Play a tune on the speaker when GRUB starts.  This is particularly useful
 for users unable to see the screen.  The value of this option is passed

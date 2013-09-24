@@ -1,5 +1,9 @@
 2013-09-24  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* docs/grub.texi (Simple configuration): Document GRUB_ENABLE_CRYPTODISK.
+
+2013-09-24  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* docs/grub.texi (File name syntax): Document ZFS filenames
 	(/volume@snapshot/...).
 
