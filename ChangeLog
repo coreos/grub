@@ -1,3 +1,8 @@
+2013-09-24  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* docs/grub.texi (File name syntax): Document ZFS filenames
+	(/volume@snapshot/...).
+
 2013-09-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/hostdisk_windows.c (grub_util_get_windows_path):

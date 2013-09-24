@@ -2564,6 +2564,13 @@ GRUB's @dfn{root device} implicitly. So if you set the root device to,
 say, @samp{(hd1,1)} by the command @samp{set root=(hd1,1)} (@pxref{set}),
 then @code{/boot/kernel} is the same as @code{(hd1,1)/boot/kernel}.
 
+On ZFS filesystem the first path component must be
+@var{volume}@samp{@@}[@var{snapshot}].
+So @samp{/rootvol@@snap-129/boot/grub/grub.cfg} refers to file
+@samp{/boot/grub/grub.cfg} in snapshot of volume @samp{rootvol} with name
+@samp{snap-129}.  Trailing @samp{@@} after volume name is mandatory even if
+snapshot name is omitted.
+
 
 @node Block list syntax
 @section How to specify block lists
