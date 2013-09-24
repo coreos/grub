@@ -29,10 +29,12 @@
 typedef HANDLE grub_util_fd_t;
 #define GRUB_UTIL_FD_INVALID INVALID_HANDLE_VALUE
 #define GRUB_UTIL_FD_IS_VALID(x) ((x) != GRUB_UTIL_FD_INVALID)
+#define GRUB_UTIL_FD_STAT_IS_FUNCTIONAL 0
 #else
 typedef int grub_util_fd_t;
 #define GRUB_UTIL_FD_INVALID -1
 #define GRUB_UTIL_FD_IS_VALID(x) ((x) >= 0)
+#define GRUB_UTIL_FD_STAT_IS_FUNCTIONAL 1
 #endif
 
 grub_util_fd_t

@@ -1,5 +1,10 @@
 2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/emu/hostdisk.h (GRUB_FD_STAT_IS_FUNTIONAL): New define.
+	Migrate all explicit defines to this new one.
+
+2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_biosdisk_open): Use
 	grub_util_fd_strerror when using grub_util_fd_*.
 	(grub_util_fd_open_device): Likewise.

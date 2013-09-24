@@ -161,7 +161,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 						 &disk->log_sector_size);
     disk->total_sectors >>= disk->log_sector_size;
 
-#if !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined (__AROS__)
+#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
     {
       struct stat st;
 # if GRUB_DISK_DEVS_ARE_CHAR

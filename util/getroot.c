@@ -215,7 +215,7 @@ grub_util_get_os_disk (const char *os_dev)
 
   grub_util_info ("Looking for %s", os_dev);
 
-#if !defined (__MINGW32__) && !defined (__CYGWIN__)
+#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
   struct stat st;
 
   if (stat (os_dev, &st) < 0)
@@ -266,7 +266,7 @@ find_partition (grub_disk_t dsk __attribute__ ((unused)),
 char *
 grub_util_biosdisk_get_grub_dev (const char *os_dev)
 {
-#if !defined (__MINGW32__) && !defined (__CYGWIN__)
+#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
   struct stat st;
 #endif
   const char *drive;
@@ -275,7 +275,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
   grub_util_info ("Looking for %s", os_dev);
 
-#if !defined (__MINGW32__) && !defined (__CYGWIN__)
+#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
   if (stat (os_dev, &st) < 0)
     {
       const char *errstr = strerror (errno); 
@@ -415,7 +415,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	    grub_errno = GRUB_ERR_NONE;
 
 	    canon = canonicalize_file_name (os_dev);
-#if !defined (__MINGW32__) && !defined (__CYGWIN__)
+#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
 	    drive = find_system_device (canon ? : os_dev, &st, 0, 1);
 #else
 	    drive = find_system_device (canon ? : os_dev, NULL, 0, 1);
@@ -462,7 +462,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 int
 grub_util_biosdisk_is_present (const char *os_dev)
 {
-#if !defined (__MINGW32__) && !defined (__CYGWIN__) && !defined (__AROS__)
+#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
   struct stat st;
 
   if (stat (os_dev, &st) < 0)
