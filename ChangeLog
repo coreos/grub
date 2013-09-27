@@ -1,3 +1,7 @@
+2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/video/readers/jpeg.c: Support grayscale.
+
 2013-09-24  Jon McCune <jonmccune@google.com>
 
 	* grub-core/commands/loadenv.c: Support skipping signature check
