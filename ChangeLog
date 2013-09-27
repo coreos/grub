@@ -1,5 +1,10 @@
 2013-09-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/readers/png.c (grub_png_decode_image_header):
+	Fix formula for computing total number of bytes.
+
+2013-09-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/readers/tga.c: Reorganize to separate RLE and
 	image processing, fix big-endian and support grayscale.
 

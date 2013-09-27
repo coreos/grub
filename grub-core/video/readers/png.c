@@ -278,7 +278,7 @@ grub_png_decode_image_header (struct grub_png_data *data)
     }
 #endif
 
-  data->raw_bytes = data->image_height * (data->image_width + 1) * data->bpp;
+  data->raw_bytes = data->image_height * (data->image_width * data->bpp + 1)
 
   data->cur_column = 0;
   data->first_line = 1;
