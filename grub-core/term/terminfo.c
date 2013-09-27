@@ -487,6 +487,25 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
       {
 	CONTINUE_READ;
 
+	if (c == 'O')
+	  {
+	    CONTINUE_READ;
+
+	    switch (c)
+	      {
+	      case 'H':
+		keys[0] = GRUB_TERM_KEY_HOME;
+		*len = 1;
+		return;
+	      case 'F':
+		keys[0] = GRUB_TERM_KEY_END;
+		*len = 1;
+		return;
+	      default:
+		return;
+	      }
+	  }
+
 	if (c != '[')
 	  return;
       }

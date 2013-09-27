@@ -1,5 +1,9 @@
 2013-09-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/terminfo.c: Add Home and End key sequences.
+
+2013-09-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/readers/png.c (grub_png_decode_image_header):
 	Fix formula for computing total number of bytes.
 
