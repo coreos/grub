@@ -1175,7 +1175,11 @@ grub_video_fb_create_render_target (struct grub_video_fbrender_target **result,
     }
 
   /* Clear render target with black and maximum transparency.  */
-  grub_memset (target->data, 0, size);
+  if (mode_type == (GRUB_VIDEO_MODE_TYPE_INDEX_COLOR
+		    | GRUB_VIDEO_MODE_TYPE_ALPHA))
+    grub_memset (target->data, 0xf0, size);
+  else
+    grub_memset (target->data, 0, size);
 
   /* TODO: Add render target to render target list.  */
 

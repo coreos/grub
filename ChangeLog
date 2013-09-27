@@ -1,5 +1,10 @@
 2013-09-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/fb/video_fb.c (grub_video_fb_create_render_target):
+	Correctly will with maximum transparency when using index color.
+
+2013-09-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/readers/png.c: Support grayscale
 
 2013-09-27  Vladimir Serbinenko  <phcoder@gmail.com>
