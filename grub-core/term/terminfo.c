@@ -561,7 +561,7 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 	      CONTINUE_READ;
 	      if (c != '~')
 		return;
-	      keys[0] = three_code_table[i].ascii;
+	      keys[0] = four_code_table[i].ascii;
 	      *len = 1;
 	      return;
 	    }

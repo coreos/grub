@@ -1,4 +1,10 @@
-2013-09-27  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/terminfo.c (grub_terminfo_readkey): Fix
+	usage of wrong table which resulted in mishandling of 4-byte
+	sequences.
+
+2013-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/terminfo.c: Add Home and End key sequences.
 
