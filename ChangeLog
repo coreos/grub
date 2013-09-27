@@ -1,3 +1,8 @@
+2013-09-24  Jon McCune <jonmccune@google.com>
+
+	* grub-core/commands/loadenv.c: Support skipping signature check
+	and variable names filtering.
+
 2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/emu/hostdisk_unix.c: Declare AROS as non-unix.

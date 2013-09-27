@@ -35,45 +35,53 @@ static const struct grub_arg_option options[] =
     /* TRANSLATORS: This option is used to override default filename
        for loading and storing environment.  */
     {"file", 'f', 0, N_("Specify filename."), 0, ARG_TYPE_PATHNAME},
+    {"skip-sig", 's', 0,
+     N_("Skip signature-checking of the environment file."), 0, ARG_TYPE_NONE},
     {0, 0, 0, 0, 0, 0}
   };
 
+/* Opens 'filename' with compression filters disabled. Optionally disables the
+   PUBKEY filter (that insists upon properly signed files) as well.  PUBKEY
+   filter is restored before the function returns. */
 static grub_file_t
-open_envblk_file (char *filename)
+open_envblk_file (char *filename, int untrusted)
 {
   grub_file_t file;
+  char *buf = 0;
 
   if (! filename)
     {
       const char *prefix;
+      int len;
 
       prefix = grub_env_get ("prefix");
-      if (prefix)
-        {
-          int len;
-
-          len = grub_strlen (prefix);
-          filename = grub_malloc (len + 1 + sizeof (GRUB_ENVBLK_DEFCFG));
-          if (! filename)
-            return 0;
-
-          grub_strcpy (filename, prefix);
-          filename[len] = '/';
-          grub_strcpy (filename + len + 1, GRUB_ENVBLK_DEFCFG);
-	  grub_file_filter_disable_compression ();
-          file = grub_file_open (filename);
-          grub_free (filename);
-          return file;
-        }
-      else
+      if (! prefix)
         {
           grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("variable `%s' isn't set"), "prefix");
           return 0;
         }
+
+      len = grub_strlen (prefix);
+      buf = grub_malloc (len + 1 + sizeof (GRUB_ENVBLK_DEFCFG));
+      if (! buf)
+        return 0;
+      filename = buf;
+
+      grub_strcpy (filename, prefix);
+      filename[len] = '/';
+      grub_strcpy (filename + len + 1, GRUB_ENVBLK_DEFCFG);
     }
 
+  /* The filters that are disabled will be re-enabled by the call to
+     grub_file_open() after this particular file is opened. */
   grub_file_filter_disable_compression ();
-  return grub_file_open (filename);
+  if (untrusted)
+    grub_file_filter_disable_pubkey ();
+
+  file = grub_file_open (filename);
+
+  grub_free (buf);
+  return file;
 }
 
 static grub_envblk_t
@@ -114,24 +122,56 @@ read_envblk_file (grub_file_t file)
   return envblk;
 }
 
+struct grub_env_whitelist
+{
+  grub_size_t len;
+  char **list;
+};
+typedef struct grub_env_whitelist grub_env_whitelist_t;
+
+static int
+test_whitelist_membership (const char* name,
+                           const grub_env_whitelist_t* whitelist)
+{
+  grub_size_t i;
+
+  for (i = 0; i < whitelist->len; i++)
+    if (grub_strcmp (name, whitelist->list[i]) == 0)
+      return 1;  /* found it */
+
+  return 0;  /* not found */
+}
+
 /* Helper for grub_cmd_load_env.  */
 static int
-set_var (const char *name, const char *value)
+set_var (const char *name, const char *value, void *whitelist)
 {
-  grub_env_set (name, value);
+  if (! whitelist)
+    {
+      grub_env_set (name, value);
+      return 0;
+    }
+
+  if (test_whitelist_membership (name,
+				 (const grub_env_whitelist_t *) whitelist))
+    grub_env_set (name, value);
+
   return 0;
 }
 
 static grub_err_t
-grub_cmd_load_env (grub_extcmd_context_t ctxt,
-		   int argc __attribute__ ((unused)),
-		   char **args __attribute__ ((unused)))
+grub_cmd_load_env (grub_extcmd_context_t ctxt, int argc, char **args)
 {
   struct grub_arg_list *state = ctxt->state;
   grub_file_t file;
   grub_envblk_t envblk;
+  grub_env_whitelist_t whitelist;
 
-  file = open_envblk_file ((state[0].set) ? state[0].arg : 0);
+  whitelist.len = argc;
+  whitelist.list = args;
+
+  /* state[0] is the -f flag; state[1] is the --skip-sig flag */
+  file = open_envblk_file ((state[0].set) ? state[0].arg : 0, state[1].set);
   if (! file)
     return grub_errno;
 
@@ -139,7 +179,8 @@ grub_cmd_load_env (grub_extcmd_context_t ctxt,
   if (! envblk)
     goto fail;
 
-  grub_envblk_iterate (envblk, set_var);
+  /* argc > 0 indicates caller provided a whitelist of variables to read. */
+  grub_envblk_iterate (envblk, argc > 0 ? &whitelist : 0, set_var);
   grub_envblk_close (envblk);
 
  fail:
@@ -149,7 +190,8 @@ grub_cmd_load_env (grub_extcmd_context_t ctxt,
 
 /* Print all variables in current context.  */
 static int
-print_var (const char *name, const char *value)
+print_var (const char *name, const char *value,
+           void *hook_data __attribute__ ((unused)))
 {
   grub_printf ("%s=%s\n", name, value);
   return 0;
@@ -164,7 +206,7 @@ grub_cmd_list_env (grub_extcmd_context_t ctxt,
   grub_file_t file;
   grub_envblk_t envblk;
 
-  file = open_envblk_file ((state[0].set) ? state[0].arg : 0);
+  file = open_envblk_file ((state[0].set) ? state[0].arg : 0, 0);
   if (! file)
     return grub_errno;
 
@@ -172,7 +214,7 @@ grub_cmd_list_env (grub_extcmd_context_t ctxt,
   if (! envblk)
     goto fail;
 
-  grub_envblk_iterate (envblk, print_var);
+  grub_envblk_iterate (envblk, NULL, print_var);
   grub_envblk_close (envblk);
 
  fail:
@@ -333,7 +375,8 @@ grub_cmd_save_env (grub_extcmd_context_t ctxt, int argc, char **args)
   if (! argc)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no variable is specified");
 
-  file = open_envblk_file ((state[0].set) ? state[0].arg : 0);
+  file = open_envblk_file ((state[0].set) ? state[0].arg : 0,
+                           1 /* allow untrusted */);
   if (! file)
     return grub_errno;
 
@@ -386,7 +429,8 @@ static grub_extcmd_t cmd_load, cmd_list, cmd_save;
 GRUB_MOD_INIT(loadenv)
 {
   cmd_load =
-    grub_register_extcmd ("load_env", grub_cmd_load_env, 0, N_("[-f FILE]"),
+    grub_register_extcmd ("load_env", grub_cmd_load_env, 0,
+			  N_("[-f FILE] [-s|--skip-sig] [whitelisted_variable_name] [...]"),
 			  N_("Load variables from environment block file."),
 			  options);
   cmd_list =
