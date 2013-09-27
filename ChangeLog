@@ -1,8 +1,12 @@
-2013-09-24  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-09-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/video/readers/png.c: Support grayscale
+
+2013-09-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/video/readers/jpeg.c: Support grayscale.
 
-2013-09-24  Jon McCune <jonmccune@google.com>
+2013-09-26  Jon McCune <jonmccune@google.com>
 
 	* grub-core/commands/loadenv.c: Support skipping signature check
 	and variable names filtering.
