@@ -1,5 +1,9 @@
 2013-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/readers/tga.c: Support paletted tga.
+
+2013-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/readers/jpeg.c (grub_jpeg_decode_data): Remove
 	incorrect cbcr setting when in color mode.
 
