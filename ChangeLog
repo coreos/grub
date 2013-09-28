@@ -1,5 +1,10 @@
 2013-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/readers/png.c: Support paletted images and clean up
+	greyscale support.
+
+2013-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/terminfo.c (grub_terminfo_readkey): Fix
 	usage of wrong table which resulted in mishandling of 4-byte
 	sequences.
