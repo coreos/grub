@@ -1,5 +1,10 @@
 2013-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/readers/jpeg.c (grub_jpeg_decode_data): Remove
+	incorrect cbcr setting when in color mode.
+
+2013-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/readers/png.c: Support paletted images and clean up
 	greyscale support.
 

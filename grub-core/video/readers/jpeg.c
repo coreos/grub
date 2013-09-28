@@ -638,8 +638,6 @@ grub_jpeg_decode_data (struct grub_jpeg_data *data)
 	    grub_jpeg_decode_du (data, 1, data->cbdu);
 	    grub_jpeg_decode_du (data, 2, data->crdu);
 	  }
-	grub_memset (&data->cbdu, 0, sizeof (data->cbdu));
-	grub_memset (&data->crdu, 0, sizeof (data->crdu));
 
 	if (grub_errno)
 	  return grub_errno;
