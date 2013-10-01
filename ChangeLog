@@ -1,3 +1,8 @@
+2013-10-01  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
+	* grub-core/video/bitmap_scale.c (scale_bilinear): Increased precision
+	to eliminate artefacts in bilinear interpolation.
+
 2013-09-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/video/readers/tga.c: Support paletted tga.

@@ -286,18 +286,20 @@ scale_bilinear (struct grub_video_bitmap *dst, struct grub_video_bitmap *src)
                 {
                   /* Get the component's values for the
                      four source corner pixels. */
-                  grub_uint8_t f00 = sptr[comp];
-                  grub_uint8_t f10 = sptr[comp + bytes_per_pixel];
-                  grub_uint8_t f01 = sptr[comp + sstride];
-                  grub_uint8_t f11 = sptr[comp + sstride + bytes_per_pixel];
+                  int f00 = sptr[comp];
+                  int f10 = sptr[comp + bytes_per_pixel];
+                  int f01 = sptr[comp + sstride];
+                  int f11 = sptr[comp + sstride + bytes_per_pixel];
 
-                  /* Do linear interpolations along the top and bottom
-                     rows of the box. */
-                  grub_uint8_t f0y = (256 - v) * f00 / 256 + v * f01 / 256;
-                  grub_uint8_t f1y = (256 - v) * f10 / 256 + v * f11 / 256;
+                  /* Count coeffecients. */
+                  int c00 = (256 - u) * (256 - v);
+                  int c10 = u * (256 - v);
+                  int c01 = (256 - u) * v;
+                  int c11 = u * v;
 
-                  /* Interpolate vertically. */
-                  grub_uint8_t fxy = (256 - u) * f0y / 256 + u * f1y / 256;
+                  /* Interpolate. */
+                  int fxy = c00 * f00 + c01 * f01 + c10 * f10 + c11 * f11;
+                  fxy = fxy / (256 * 256);
 
                   dptr[comp] = fxy;
                 }
