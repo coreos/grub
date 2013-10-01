@@ -1,5 +1,10 @@
 2013-10-01  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
+	* grub-core/tests/checksums.h: Corrected due to changes in
+	bilinear interpolation function.
+
+2013-10-01  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
 	* grub-core/video/bitmap_scale.c (scale_bilinear): Increased precision
 	to eliminate artefacts in bilinear interpolation.
 
