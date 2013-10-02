@@ -1,3 +1,16 @@
+2013-10-02  Vladimir Testov <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/theme_loader.c: New global options for the
+	theme background image handling. desktop-image-scale-method,
+	desktop-image-h-align, desktop-image-v-align.
+	* grub-core/gfxmenu/view.c: Likewise.
+	* include/gfxmenu_view.h: Likewise.
+	* include/bitmap_scale.h: Proportional scale functions introduced.
+	* grub-core/video/bitmap_scale.c: Likewise. Verification checks are
+	put in a separate functions. GRUB_ERR_BUG is set for grub_error in
+	cases of unexpected input variables for scale functions.
+	* docs/grub.texi: Updated documentation for new options.
+
 2013-10-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/video/readers/png.c: Support narrow (4-/2-/1-bpp) PNG.

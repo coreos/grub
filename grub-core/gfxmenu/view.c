@@ -40,6 +40,8 @@
 
 static void
 init_terminal (grub_gfxmenu_view_t view);
+static void
+init_background (grub_gfxmenu_view_t view);
 static grub_gfxmenu_view_t term_view;
 
 /* Create a new view object, loading the theme specified by THEME_PATH and
@@ -91,7 +93,11 @@ grub_gfxmenu_view_new (const char *theme_path,
   view->title_color = default_fg_color;
   view->message_color = default_bg_color;
   view->message_bg_color = default_fg_color;
-  view->desktop_image = 0;
+  view->raw_desktop_image = 0;
+  view->scaled_desktop_image = 0;
+  view->desktop_image_scale_method = GRUB_VIDEO_BITMAP_SELECTION_METHOD_STRETCH;
+  view->desktop_image_h_align = GRUB_VIDEO_BITMAP_H_ALIGN_CENTER;
+  view->desktop_image_v_align = GRUB_VIDEO_BITMAP_V_ALIGN_CENTER;
   view->desktop_color = default_bg_color;
   view->terminal_box = grub_gfxmenu_create_box (0, 0);
   view->title_text = grub_strdup (_("GRUB Boot Menu"));
@@ -128,7 +134,8 @@ grub_gfxmenu_view_destroy (grub_gfxmenu_view_t view)
       grub_gfxmenu_timeout_notifications = grub_gfxmenu_timeout_notifications->next;
       grub_free (p);
     }
-  grub_video_bitmap_destroy (view->desktop_image);
+  grub_video_bitmap_destroy (view->raw_desktop_image);
+  grub_video_bitmap_destroy (view->scaled_desktop_image);
   if (view->terminal_box)
     view->terminal_box->destroy (view->terminal_box);
   grub_free (view->terminal_font_name);
@@ -144,9 +151,9 @@ static void
 redraw_background (grub_gfxmenu_view_t view,
 		   const grub_video_rect_t *bounds)
 {
-  if (view->desktop_image)
+  if (view->scaled_desktop_image)
     {
-      struct grub_video_bitmap *img = view->desktop_image;
+      struct grub_video_bitmap *img = view->scaled_desktop_image;
       grub_video_blit_bitmap (img, GRUB_VIDEO_BLIT_REPLACE,
                               bounds->x, bounds->y,
 			      bounds->x - view->screen.x,
@@ -327,6 +334,8 @@ void
 grub_gfxmenu_view_draw (grub_gfxmenu_view_t view)
 {
   init_terminal (view);
+
+  init_background (view);
 
   /* Clear the screen; there may be garbage left over in video memory. */
   grub_video_fill_rect (grub_video_map_rgb (0, 0, 0),
@@ -522,6 +531,35 @@ init_terminal (grub_gfxmenu_view_t view)
                            terminal_font,
                            view->terminal_border);
   grub_gfxterm_decorator_hook = grub_gfxmenu_draw_terminal_box;
+}
+
+static void
+init_background (grub_gfxmenu_view_t view)
+{
+  if (view->scaled_desktop_image)
+    return;
+
+  struct grub_video_bitmap *scaled_bitmap;
+  if (view->desktop_image_scale_method ==
+      GRUB_VIDEO_BITMAP_SELECTION_METHOD_STRETCH)
+    grub_video_bitmap_create_scaled (&scaled_bitmap,
+                                     view->screen.width,
+                                     view->screen.height,
+                                     view->raw_desktop_image,
+                                     GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
+  else
+    grub_video_bitmap_scale_proportional (&scaled_bitmap,
+                                          view->screen.width,
+                                          view->screen.height,
+                                          view->raw_desktop_image,
+                                          GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST,
+                                          view->desktop_image_scale_method,
+                                          view->desktop_image_v_align,
+                                          view->desktop_image_h_align);
+  if (! scaled_bitmap)
+    return;
+  view->scaled_desktop_image = scaled_bitmap;
+
 }
 
 /* FIXME: previously notifications were displayed in special case.

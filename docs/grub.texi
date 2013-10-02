@@ -1907,7 +1907,28 @@ In this example, name3 is assigned a color value.
 @item message-font @tab Defines the font used for messages, such as when GRUB is unable to automatically boot an entry.
 @item message-color @tab Defines the color of the message text.
 @item message-bg-color @tab Defines the background color of the message text area.
-@item desktop-image @tab Specifies the image to use as the background.  It will be scaled to fit the screen size.
+@item desktop-image
+   @tab Specifies the image to use as the background.  It will be scaled
+   to fit the screen size or proportionally scaled depending on the scale
+   method.
+@item desktop-image-scale-method
+   @tab Specifies the scaling method for the *desktop-image*. Options are
+   ``stretch``, ``crop``, ``padding``, ``fitwidth``, ``fitheight``.
+   ``stretch`` for fitting the screen size. Otherwise it is proportional
+   scaling of a part of *desktop-image* to the part of the screen.
+   ``crop`` part of the *desktop-image* will be proportionally scaled to
+   fit the screen sizes. ``padding`` the entire *desktop-image* will be
+   contained on the screen. ``fitwidth`` for fitting the *desktop-image*'s
+   width with screen width. ``fitheight`` for fitting the *desktop-image*'s
+   height with the screen height. Default is ``stretch``.
+@item desktop-image-h-align
+   @tab Specifies the horizontal alignment of the *desktop-image* if
+   *desktop-image-scale-method* isn't equeal to ``stretch``. Options are
+   ``left``, ``center``, ``right``. Default is ``center``.
+@item desktop-image-v-align
+   @tab Specifies the vertical alignment of the *desktop-image* if
+   *desktop-image-scale-method* isn't equeal to ``stretch``. Options are
+   ``top``, ``center``, ``bottom``. Default is ``center``.
 @item desktop-color @tab Specifies the color for the background if *desktop-image* is not specified.
 @item terminal-box @tab Specifies the file name pattern for the styled box slices used for the command line terminal window.  For example, ``terminal-box: terminal_*.png'' will use the images ``terminal_c.png`` as the center area, ``terminal_n.png`` as the north (top) edge, ``terminal_nw.png`` as the northwest (upper left) corner, and so on.  If the image for any slice is not found, it will simply be left empty.
 @item terminal-border @tab Specifies the border width of the terminal window.

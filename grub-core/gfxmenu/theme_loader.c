@@ -165,7 +165,6 @@ theme_set_string (grub_gfxmenu_view_t view,
   else if (! grub_strcmp ("desktop-image", name))
     {
       struct grub_video_bitmap *raw_bitmap;
-      struct grub_video_bitmap *scaled_bitmap;
       char *path;
       path = grub_resolve_relative_path (theme_dir, value);
       if (! path)
@@ -176,20 +175,56 @@ theme_set_string (grub_gfxmenu_view_t view,
           return grub_errno;
         }
       grub_free(path);
-      grub_video_bitmap_create_scaled (&scaled_bitmap,
-                                       view->screen.width,
-                                       view->screen.height,
-                                       raw_bitmap,
-                                       GRUB_VIDEO_BITMAP_SCALE_METHOD_BEST);
-      grub_video_bitmap_destroy (raw_bitmap);
-      if (! scaled_bitmap)
-        {
-          grub_error_push ();
-          return grub_error (grub_errno, "error scaling desktop image");
-        }
-
-      grub_video_bitmap_destroy (view->desktop_image);
-      view->desktop_image = scaled_bitmap;
+      grub_video_bitmap_destroy (view->raw_desktop_image);
+      view->raw_desktop_image = raw_bitmap;
+    }
+  else if (! grub_strcmp ("desktop-image-scale-method", name))
+    {
+      if (! value || ! grub_strcmp ("stretch", value))
+        view->desktop_image_scale_method =
+            GRUB_VIDEO_BITMAP_SELECTION_METHOD_STRETCH;
+      else if (! grub_strcmp ("crop", value))
+        view->desktop_image_scale_method =
+            GRUB_VIDEO_BITMAP_SELECTION_METHOD_CROP;
+      else if (! grub_strcmp ("padding", value))
+        view->desktop_image_scale_method =
+            GRUB_VIDEO_BITMAP_SELECTION_METHOD_PADDING;
+      else if (! grub_strcmp ("fitwidth", value))
+        view->desktop_image_scale_method =
+            GRUB_VIDEO_BITMAP_SELECTION_METHOD_FITWIDTH;
+      else if (! grub_strcmp ("fitheight", value))
+        view->desktop_image_scale_method =
+            GRUB_VIDEO_BITMAP_SELECTION_METHOD_FITHEIGHT;
+      else
+        return grub_error (GRUB_ERR_BAD_ARGUMENT,
+                           _("Unsupported scale method: %s"),
+                           grub_strdup (value));
+    }
+  else if (! grub_strcmp ("desktop-image-h-align", name))
+    {
+      if (! grub_strcmp ("left", value))
+        view->desktop_image_h_align = GRUB_VIDEO_BITMAP_H_ALIGN_LEFT;
+      else if (! grub_strcmp ("center", value))
+        view->desktop_image_h_align = GRUB_VIDEO_BITMAP_H_ALIGN_CENTER;
+      else if (! grub_strcmp ("right", value))
+        view->desktop_image_h_align = GRUB_VIDEO_BITMAP_H_ALIGN_RIGHT;
+      else
+        return grub_error (GRUB_ERR_BAD_ARGUMENT,
+                           _("Unsupported horizontal align method: %s"),
+                           grub_strdup (value));
+    }
+  else if (! grub_strcmp ("desktop-image-v-align", name))
+    {
+      if (! grub_strcmp ("top", value))
+        view->desktop_image_v_align = GRUB_VIDEO_BITMAP_V_ALIGN_TOP;
+      else if (! grub_strcmp ("center", value))
+        view->desktop_image_v_align = GRUB_VIDEO_BITMAP_V_ALIGN_CENTER;
+      else if (! grub_strcmp ("bottom", value))
+        view->desktop_image_v_align = GRUB_VIDEO_BITMAP_V_ALIGN_BOTTOM;
+      else
+        return grub_error (GRUB_ERR_BAD_ARGUMENT,
+                           _("Unsupported vertical align method: %s"),
+                           grub_strdup (value));
     }
   else if (! grub_strcmp ("desktop-color", name))
      grub_video_parse_color (value, &view->desktop_color);
