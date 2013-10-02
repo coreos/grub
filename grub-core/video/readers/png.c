@@ -99,6 +99,7 @@ struct grub_png_data
 
   int image_width, image_height, bpp, is_16bit;
   int raw_bytes, is_gray, is_alpha, is_palette;
+  int row_bytes, color_bits;
   grub_uint8_t *image_data;
 
   int inside_idat, idat_remain;
@@ -253,12 +254,10 @@ grub_png_decode_image_header (struct grub_png_data *data)
     return grub_error (GRUB_ERR_BAD_FILE_TYPE, "png: invalid image size");
 
   color_bits = grub_png_get_byte (data);
-  if ((color_bits != 8) && (color_bits != 16))
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE,
-                       "png: bit depth must be 8 or 16");
   data->is_16bit = (color_bits == 16);
 
   color_type = grub_png_get_byte (data);
+
   /* According to PNG spec, no other types are valid.  */
   if ((color_type & ~(PNG_COLOR_MASK_ALPHA | PNG_COLOR_MASK_COLOR))
       && (color_type != PNG_COLOR_TYPE_PALETTE))
@@ -283,6 +282,12 @@ grub_png_decode_image_header (struct grub_png_data *data)
       data->bpp = 1;
     }
 
+  if ((color_bits != 8) && (color_bits != 16)
+      && (color_bits != 4
+	  || !(data->is_gray || data->is_palette)))
+    return grub_error (GRUB_ERR_BAD_FILE_TYPE,
+                       "png: bit depth must be 8 or 16");
+
   if (color_type & PNG_COLOR_MASK_ALPHA)
     data->bpp++;
 
@@ -294,12 +299,16 @@ grub_png_decode_image_header (struct grub_png_data *data)
   if (data->is_16bit)
       data->bpp <<= 1;
 
+  data->color_bits = color_bits;
+  data->row_bytes = data->image_width * data->bpp;
+  if (data->color_bits <= 4)
+    data->row_bytes = (data->image_width * data->color_bits + 7) / 8;
+
 #ifndef GRUB_CPU_WORDS_BIGENDIAN
   if (data->is_16bit || data->is_gray || data->is_palette)
 #endif
     {
-      data->image_data = grub_malloc (data->image_height *
-                                      data->image_width *  data->bpp);
+      data->image_data = grub_malloc (data->image_height * data->row_bytes);
       if (grub_errno)
         return grub_errno;
 
@@ -313,7 +322,7 @@ grub_png_decode_image_header (struct grub_png_data *data)
     }
 #endif
 
-  data->raw_bytes = data->image_height * (data->image_width * data->bpp + 1);
+  data->raw_bytes = data->image_height * (data->row_bytes + 1);
 
   data->cur_column = 0;
   data->first_line = 1;
@@ -567,8 +576,6 @@ grub_png_init_dynamic_block (struct grub_png_data *data)
 static grub_err_t
 grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
 {
-  int row_bytes;
-
   if (--data->raw_bytes < 0)
     return grub_error (GRUB_ERR_BAD_FILE_TYPE, "image size overflown");
 
@@ -583,24 +590,23 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
     *data->cur_rgb++ = n;
 
   data->cur_column++;
-  row_bytes = data->image_width * data->bpp;
-  if (data->cur_column == row_bytes + 1)
+  if (data->cur_column == data->row_bytes + 1)
     {
       grub_uint8_t *blank_line = NULL;
-      grub_uint8_t *cur = data->cur_rgb - row_bytes;
+      grub_uint8_t *cur = data->cur_rgb - data->row_bytes;
       grub_uint8_t *left = cur;
       grub_uint8_t *up;
 
       if (data->first_line)
 	{
-	  blank_line = grub_zalloc (row_bytes);
+	  blank_line = grub_zalloc (data->row_bytes);
 	  if (blank_line == NULL)
 	    return grub_errno;
 
 	  up = blank_line;
 	}
       else
-	up = cur - row_bytes;
+	up = cur - data->row_bytes;
 
       switch (data->cur_filter)
 	{
@@ -609,7 +615,7 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
 	    int i;
 
 	    cur += data->bpp;
-	    for (i = data->bpp; i < row_bytes; i++, cur++, left++)
+	    for (i = data->bpp; i < data->row_bytes; i++, cur++, left++)
 	      *cur += *left;
 
 	    break;
@@ -618,7 +624,7 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
 	  {
 	    int i;
 
-	    for (i = 0; i < row_bytes; i++, cur++, up++)
+	    for (i = 0; i < data->row_bytes; i++, cur++, up++)
 	      *cur += *up;
 
 	    break;
@@ -630,7 +636,7 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
 	    for (i = 0; i < data->bpp; i++, cur++, up++)
 	      *cur += *up >> 1;
 
-	    for (; i < row_bytes; i++, cur++, up++, left++)
+	    for (; i < data->row_bytes; i++, cur++, up++, left++)
 	      *cur += ((int) *up + (int) *left) >> 1;
 
 	    break;
@@ -643,7 +649,7 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
 	    for (i = 0; i < data->bpp; i++, cur++, up++)
 	      *cur += *up;
 
-	    for (; i < row_bytes; i++, cur++, up++, left++, upper_left++)
+	    for (; i < data->row_bytes; i++, cur++, up++, left++, upper_left++)
 	      {
 		int a, b, c, pa, pb, pc;
 
@@ -836,6 +842,48 @@ grub_png_convert_image (struct grub_png_data *data)
 #define B3 2
 #endif
 
+  if (data->color_bits <= 4)
+    {
+      grub_uint8_t palette[16][3];
+      grub_uint8_t *d1c, *d2c;
+      int shift;
+      int mask = (1 << data->color_bits) - 1;
+      int j;
+      if (data->is_gray)
+	for (i = 0; i < (1 << data->color_bits); i++)
+	  {
+	    grub_uint8_t col = (0xff * i) / ((1 << data->color_bits) - 1);
+	    palette[i][0] = col;
+	    palette[i][1] = col;
+	    palette[i][2] = col;
+	  }
+      else
+	grub_memcpy (palette, data->palette, 16 * 3);
+      d1c = d1;
+      d2c = d2;
+      for (j = 0; j < data->image_height; j++, d1c += data->image_width * 3,
+	   d2c += data->row_bytes)
+	{
+	  d1 = d1c;
+	  d2 = d2c;
+	  shift = 8 - data->color_bits;
+	  for (i = 0; i < data->image_width; i++, d1 += 3)
+	    {
+	      grub_uint8_t col = (d2[0] >> shift) & mask;
+	      d1[R3] = data->palette[col][2];
+	      d1[G3] = data->palette[col][1];
+	      d1[B3] = data->palette[col][0];
+	      shift -= data->color_bits;
+	      if (shift < 0)
+		{
+		  d2++;
+		  shift += 8;
+		}
+	    }
+	}
+      return;
+    }
+
   if (data->is_palette)
     {
       for (i = 0; i < (data->image_width * data->image_height);
@@ -845,8 +893,10 @@ grub_png_convert_image (struct grub_png_data *data)
 	  d1[G3] = data->palette[d2[0]][1];
 	  d1[B3] = data->palette[d2[0]][0];
 	}
+      return;
     }
-  else if (data->is_gray)
+  
+  if (data->is_gray)
     {
       switch (data->bpp)
 	{
@@ -896,8 +946,9 @@ grub_png_convert_image (struct grub_png_data *data)
 	    }
 	  break;
 	}
+      return;
     }
-  else
+
     {
   /* Only copy the upper 8 bit.  */
 #ifndef GRUB_CPU_WORDS_BIGENDIAN
