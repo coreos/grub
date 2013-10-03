@@ -1,5 +1,9 @@
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/arm/setjmp.S: Add missing license section.
+
+2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/swiss.sed: Add replacement for key names and for term computer.
 
 2013-10-02  Vladimir Testov <vladimir.testov@rosalab.ru>
