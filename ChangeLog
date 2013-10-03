@@ -1,5 +1,10 @@
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/capture.c: Do not do finalization when .fini
+	is called as there is explicit capture_end.
+
+2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/gfxterm.c: Add flag "functional" to skip input when
 	changing windows to avoid crash.
 

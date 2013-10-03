@@ -31,6 +31,12 @@ grub_video_capture_set_active_render_target (struct grub_video_render_target *ta
   return grub_video_fb_set_active_render_target (target);
 }
 
+static grub_err_t
+grub_video_capture_fini (void)
+{
+  return GRUB_ERR_NONE;
+}
+
 static struct grub_video_adapter grub_video_capture_adapter =
   {
     .name = "Render capture",
@@ -38,7 +44,7 @@ static struct grub_video_adapter grub_video_capture_adapter =
     .prio = 0,
     .id = GRUB_VIDEO_ADAPTER_CAPTURE,
 
-    .fini = grub_video_fb_fini,
+    .fini = grub_video_capture_fini,
     .get_info = grub_video_fb_get_info,
     .get_info_and_fini = 0,
     .set_palette = grub_video_fb_set_palette,
