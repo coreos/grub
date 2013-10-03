@@ -1,3 +1,7 @@
+2013-10-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Split random retrieving code into separate files.
+
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/arm/dl.c (do_relocations): Accept and ignore

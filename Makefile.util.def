@@ -222,6 +222,7 @@ program = {
 
   common = util/grub-mkpasswd-pbkdf2.c;
   common = grub-core/kern/emu/argp_common.c;
+  common = util/random.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;

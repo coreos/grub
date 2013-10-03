@@ -406,6 +406,10 @@ void _gcry_log_error( const char *fmt, ... )  __attribute__ ((format (printf, 1,
 #ifdef GRUB_UTIL
 void grub_gcry_init_all (void);
 void grub_gcry_fini_all (void);
+
+int
+grub_get_random (void *out, grub_size_t len);
+
 #endif
 
 #endif
