@@ -5092,3 +5092,69 @@ msgstr ""
 #: grub-core/gfxmenu/theme_loader.c:239
 msgid "terminal-height"
 msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:181
+msgid "desktop-image-scale-method"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:186
+msgid "crop"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:189
+msgid "padding"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:192
+msgid "fitwidth"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:195
+msgid "fitheight"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:203
+msgid "desktop-image-h-align"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:216
+msgid "desktop-image-v-align"
+msgstr ""
+
+#: grub-core/gfxmenu/theme_loader.c:222
+msgid "bottom"
+msgstr ""
+
+#: include/grub/emu/misc.h:29
+msgid "C:\\"
+msgstr ""
+
+#: grub-core/disk/diskfilter.c:120 util/grub-probe.c:298
+msgid "lvmid/"
+msgstr ""
+
+#: grub-core/kern/emu/hostdisk_devmapper.c:112
+msgid "LVM-"
+msgstr ""
+
+#: grub-core/kern/emu/hostdisk_devmapper.c:113
+msgid "mpath-"
+msgstr ""
+
+#: grub-core/kern/emu/hostdisk_devmapper.c:114
+msgid "DMRAID-"
+msgstr ""
+
+#: util/grub-probe.c:749
+#, c-format
+msgid "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x"
+msgstr ""
+
+#: util/grub-probe.c:843
+msgid "gpt_parttype"
+msgstr ""
+
+#: grub-core/kern/uboot/init.c:85
+msgid "invalid U-Boot API version
+"
+msgstr ""
