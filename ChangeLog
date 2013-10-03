@@ -1,5 +1,10 @@
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/dl.c (do_relocations): Accept and ignore
+	R_ARM_V4BX.
+
+2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/video_checksum.c: Increase robustness to out of memory
 	condition.
 	* grub-core/tests/fake_input.c: Likewise.

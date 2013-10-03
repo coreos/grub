@@ -90,6 +90,11 @@ do_relocations (Elf_Shdr * relhdr, Elf_Ehdr * e, grub_dl_t mod)
 	      return retval;
 	  }
 	  break;
+	  /* Happens when compiled with -march=armv4.  Since currently we need
+	     at least armv5, keep bx as-is.
+	   */
+	case R_ARM_V4BX:
+	  break;
 	case R_ARM_THM_JUMP19:
 	  {
 	    /* Thumb instructions can be 16-bit aligned */
