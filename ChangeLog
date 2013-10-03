@@ -1,5 +1,10 @@
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/uboot/ubootdisk.c (uboot_disk_open): Use grub_error
+	properly in case of missing block size.
+
+2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/arm/setjmp.S: Add missing license section.
 
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>

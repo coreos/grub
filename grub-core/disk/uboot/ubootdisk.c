@@ -183,10 +183,7 @@ uboot_disk_open (const char *name, struct grub_disk *disk)
 
   d->block_size = devinfo->di_stor.block_size;
   if (d->block_size == 0)
-    {
-      grub_printf ("%s: no block size!\n", __FUNCTION__);
-      return GRUB_ERR_IO;
-    }
+    return grub_error (GRUB_ERR_IO, "no block size");
 
   for (disk->log_sector_size = 0;
        (1U << disk->log_sector_size) < d->block_size;
