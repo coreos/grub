@@ -26,6 +26,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static int *seq;
 static int seqptr, nseq;
 static struct grub_term_input *saved;
+static int fake_input;
 
 static int
 fake_getkey (struct grub_term_input *term __attribute__ ((unused)))
@@ -44,23 +45,28 @@ static struct grub_term_input fake_input_term =
 void
 grub_terminal_input_fake_sequence (int *seq_in, int nseq_in)
 {
-  if (!saved)
+  if (!fake_input)
     saved = grub_term_inputs;
   if (seq)
     grub_free (seq);
   seq = grub_malloc (nseq_in * sizeof (seq[0]));
-  if (seq)
-    {
-      grub_term_inputs = &fake_input_term;
-      grub_memcpy (seq, seq_in, nseq_in * sizeof (seq[0]));
-    }
+  if (!seq)
+    return;
+
+  grub_term_inputs = &fake_input_term;
+  grub_memcpy (seq, seq_in, nseq_in * sizeof (seq[0]));
+
   nseq = nseq_in;
   seqptr = 0;
+  fake_input = 1;
 }
 
 void
 grub_terminal_input_fake_sequence_end (void)
 {
+  if (!fake_input)
+    return;
+  fake_input = 0;
   grub_term_inputs = saved;
   grub_free (seq);
   seq = 0;

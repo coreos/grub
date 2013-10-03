@@ -764,12 +764,11 @@ grub_video_checksum_end (void)
 static struct grub_term_output *saved_outputs;
 static struct grub_term_output *saved_gfxnext;
 static struct grub_term_output *gfxterm;
+static int use_gfxterm = 0;
 
 int
 grub_test_use_gfxterm (void)
 {
-  saved_outputs = grub_term_outputs;
-
   FOR_ACTIVE_TERM_OUTPUTS (gfxterm)
     if (grub_strcmp (gfxterm->name, "gfxterm") == 0)
       break;
@@ -784,10 +783,17 @@ grub_test_use_gfxterm (void)
       return 1;
     }
 
+  if (gfxterm->init (gfxterm))
+    { 
+      grub_test_assert (0, "terminal `%s' failed: %s", "gfxterm", grub_errmsg);
+      return 1;
+    }
+
+  saved_outputs = grub_term_outputs;
   saved_gfxnext = gfxterm->next;
   grub_term_outputs = gfxterm;
   gfxterm->next = 0;
-  gfxterm->init (gfxterm);
+  use_gfxterm = 1;
 
   return 0;
 }
@@ -795,7 +801,12 @@ grub_test_use_gfxterm (void)
 void
 grub_test_use_gfxterm_end (void)
 {
+  if (!use_gfxterm)
+    return;
+  use_gfxterm = 0;
   gfxterm->fini (gfxterm);
   gfxterm->next = saved_gfxnext;
   grub_term_outputs = saved_outputs;
+  saved_outputs = 0;
+  saved_gfxnext = 0;
 }

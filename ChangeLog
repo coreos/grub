@@ -1,5 +1,12 @@
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/video_checksum.c: Increase robustness to out of memory
+	condition.
+	* grub-core/tests/fake_input.c: Likewise.
+	* grub-core/tests/cmdline_cat_test.c: Likewise.
+
+2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/capture.c: Do not do finalization when .fini
 	is called as there is explicit capture_end.
 
