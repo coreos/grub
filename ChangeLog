@@ -1,3 +1,7 @@
+2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* po/swiss.sed: Add replacement for key names and for term computer.
+
 2013-10-02  Vladimir Testov <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/theme_loader.c: New global options for the
