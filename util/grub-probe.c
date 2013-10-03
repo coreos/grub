@@ -77,6 +77,12 @@ static int print = PRINT_FS;
 static unsigned int argument_is_device = 0;
 
 static void
+do_print (const char *x)
+{
+  grub_printf ("%s ", x);
+}
+
+static void
 probe_partmap (grub_disk_t disk)
 {
   grub_partition_t part;
@@ -91,7 +97,7 @@ probe_partmap (grub_disk_t disk)
     printf ("%s ", part->partmap->name);
 
   if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID)
-    grub_diskfilter_print_partmap (disk);
+    grub_diskfilter_get_partmap (disk, do_print);
 
   /* In case of LVM/RAID, check the member devices as well.  */
   if (disk->dev->memberlist)
@@ -125,7 +131,10 @@ probe_cryptodisk_uuid (grub_disk_t disk)
       list = tmp;
     }
   if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
-    grub_util_cryptodisk_print_uuid (disk);
+    {
+      const char *uu = grub_util_cryptodisk_get_uuid (disk);
+      grub_printf ("%s ", uu);
+    }
 }
 
 static int
@@ -303,7 +312,7 @@ probe_abstraction (grub_disk_t disk)
     printf ("ldm ");
 
   if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
-    grub_util_cryptodisk_print_abstraction (disk);
+    grub_util_cryptodisk_get_abstraction (disk, do_print);
 
   raid_level = probe_raid_level (disk);
   if (raid_level >= 0)

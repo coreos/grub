@@ -144,7 +144,9 @@ grub_err_t
 grub_cryptodisk_cheat_insert (grub_cryptodisk_t newdev, const char *name,
 			      grub_disk_t source, const char *cheat);
 void
-grub_util_cryptodisk_print_abstraction (grub_disk_t disk);
+grub_util_cryptodisk_get_abstraction (grub_disk_t disk,
+				      void (*cb) (const char *val));
+
 char *
 grub_util_get_geli_uuid (const char *dev);
 #endif

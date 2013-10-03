@@ -1,5 +1,10 @@
 2013-10-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make cryptodisk and diskfilter probe data retrievable programmatically
+	and not just printable.
+
+2013-10-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Split random retrieving code into separate files.
 
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>

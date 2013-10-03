@@ -746,31 +746,33 @@ grub_cryptodisk_cheat_insert (grub_cryptodisk_t newdev, const char *name,
 }
 
 void
-grub_util_cryptodisk_print_abstraction (grub_disk_t disk)
+grub_util_cryptodisk_get_abstraction (grub_disk_t disk,
+				      void (*cb) (const char *val))
 {
   grub_cryptodisk_t dev = (grub_cryptodisk_t) disk->data;
 
-  grub_printf ("cryptodisk %s ", dev->modname);
+  cb ("cryptodisk");
+  cb (dev->modname);
 
   if (dev->cipher)
-    grub_printf ("%s ", dev->cipher->cipher->modname);
+    cb (dev->cipher->cipher->modname);
   if (dev->secondary_cipher)
-    grub_printf ("%s ", dev->secondary_cipher->cipher->modname);
+    cb (dev->secondary_cipher->cipher->modname);
   if (dev->essiv_cipher)
-    grub_printf ("%s ", dev->essiv_cipher->cipher->modname);
+    cb (dev->essiv_cipher->cipher->modname);
   if (dev->hash)
-    grub_printf ("%s ", dev->hash->modname);
+    cb (dev->hash->modname);
   if (dev->essiv_hash)
-    grub_printf ("%s ", dev->essiv_hash->modname);
+    cb (dev->essiv_hash->modname);
   if (dev->iv_hash)
-    grub_printf ("%s ", dev->iv_hash->modname);
+    cb (dev->iv_hash->modname);
 }
 
-void
-grub_util_cryptodisk_print_uuid (grub_disk_t disk)
+const char *
+grub_util_cryptodisk_get_uuid (grub_disk_t disk)
 {
   grub_cryptodisk_t dev = (grub_cryptodisk_t) disk->data;
-  grub_printf ("%s ", dev->uuid);
+  return dev->uuid;
 }
 
 #endif

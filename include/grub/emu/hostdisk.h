@@ -65,7 +65,8 @@ ssize_t grub_util_fd_read (grub_util_fd_t fd, char *buf, size_t len);
 ssize_t grub_util_fd_write (grub_util_fd_t fd, const char *buf, size_t len);
 grub_err_t
 grub_cryptodisk_cheat_mount (const char *sourcedev, const char *cheat);
-void grub_util_cryptodisk_print_uuid (grub_disk_t disk);
+const char *
+grub_util_cryptodisk_get_uuid (grub_disk_t disk);
 char *
 grub_util_get_ldm (grub_disk_t disk, grub_disk_addr_t start);
 int
