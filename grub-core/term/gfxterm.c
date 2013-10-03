@@ -97,6 +97,8 @@ struct grub_virtual_screen
   struct grub_colored_char *text_buffer;
 
   int total_scroll;
+
+  int functional;
 };
 
 struct grub_gfxterm_window
@@ -178,6 +180,8 @@ clear_char (struct grub_colored_char *c)
 static void
 grub_virtual_screen_free (void)
 {
+  virtual_screen.functional = 0;
+
   /* If virtual screen has been allocated, free it.  */
   if (virtual_screen.text_buffer != 0)
     {
@@ -264,8 +268,12 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
       virtual_screen.text_buffer[i].code.ncomb = 0;
       clear_char (&(virtual_screen.text_buffer[i]));
     }
+  if (grub_errno)
+    return grub_errno;
 
-  return grub_errno;
+  virtual_screen.functional = 1;
+
+  return GRUB_ERR_NONE;
 }
 
 void
@@ -814,6 +822,9 @@ static void
 grub_gfxterm_putchar (struct grub_term_output *term,
 		      const struct grub_unicode_glyph *c)
 {
+  if (!virtual_screen.functional)
+    return;
+
   if (c->base == '\a')
     /* FIXME */
     return;

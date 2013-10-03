@@ -1,5 +1,10 @@
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/gfxterm.c: Add flag "functional" to skip input when
+	changing windows to avoid crash.
+
+2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/arm/cache.c: Add v5 write-through cache support.
 
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
