@@ -1,5 +1,10 @@
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* autogen.sh: Add ./util/grub-gen-widthspec.c and
+	./util/grub-gen-asciih.c to exclude list.
+
+2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gfxmenu/theme_loader.c (theme_set_string): Fix memory leak
 	and don't mark error strings for translation.
 
