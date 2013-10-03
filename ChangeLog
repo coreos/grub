@@ -1,5 +1,9 @@
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/cache.c: Add v5 write-through cache support.
+
+2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/exclude.pot: Add several strings to exclude.
 
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>

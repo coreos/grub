@@ -7,6 +7,7 @@
 static enum
   {
     ARCH_UNKNOWN,
+    ARCH_ARMV5_WRITE_THROUGH,
     ARCH_ARMV6,
     ARCH_ARMV6_UNIFIED,
     ARCH_ARMV7
@@ -29,14 +30,30 @@ probe_caches (void)
   /* Read main ID Register */
   asm volatile ("mrc 	p15, 0, %0, c0, c0, 0": "=r"(main_id));
 
-  if (((main_id >> 16) & 0x7) != 0x7)
-    grub_fatal ("Unsupported ARM ID 0x%x", main_id);
+  switch ((main_id >> 16) & 0xf)
+    {
+    case 0x3:
+    case 0x4:
+    case 0x5:
+    case 0x6:
+    case 0x7:
+    case 0xf:
+      break;
+    default:
+      grub_fatal ("Unsupported ARM ID 0x%x", main_id);
+    }
 
   /* Read Cache Type Register */
   asm volatile ("mrc 	p15, 0, %0, c0, c0, 1": "=r"(cache_type));
 
   switch (cache_type >> 24)
     {
+    case 0x00:
+    case 0x01:
+      grub_arch_cache_dlinesz = 8 << ((cache_type >> 12) & 3);
+      grub_arch_cache_ilinesz = 8 << (cache_type & 3);
+      type = ARCH_ARMV5_WRITE_THROUGH;
+      break;
     case 0x04:
     case 0x0a:
     case 0x0c:
@@ -79,6 +96,7 @@ grub_arch_sync_caches (void *address, grub_size_t len)
       grub_arch_sync_caches_armv7 (address, len);
       break;
       /* Nothing to do.  */
+    case ARCH_ARMV5_WRITE_THROUGH:
     case ARCH_ARMV6_UNIFIED:
       break;
       /* Pacify GCC.  */
@@ -100,6 +118,9 @@ grub_arm_disable_caches_mmu (void)
       break;
     case ARCH_ARMV7:
       grub_arm_disable_caches_mmu_armv7 ();
+      break;
+      /* Nothing to do.  */
+    case ARCH_ARMV5_WRITE_THROUGH:
       break;
       /* Pacify GCC.  */
     case ARCH_UNKNOWN:
