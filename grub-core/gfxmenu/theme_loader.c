@@ -197,8 +197,8 @@ theme_set_string (grub_gfxmenu_view_t view,
             GRUB_VIDEO_BITMAP_SELECTION_METHOD_FITHEIGHT;
       else
         return grub_error (GRUB_ERR_BAD_ARGUMENT,
-                           _("Unsupported scale method: %s"),
-                           grub_strdup (value));
+                           "Unsupported scale method: %s",
+                           value);
     }
   else if (! grub_strcmp ("desktop-image-h-align", name))
     {
@@ -210,8 +210,8 @@ theme_set_string (grub_gfxmenu_view_t view,
         view->desktop_image_h_align = GRUB_VIDEO_BITMAP_H_ALIGN_RIGHT;
       else
         return grub_error (GRUB_ERR_BAD_ARGUMENT,
-                           _("Unsupported horizontal align method: %s"),
-                           grub_strdup (value));
+                           "Unsupported horizontal align method: %s",
+                           value);
     }
   else if (! grub_strcmp ("desktop-image-v-align", name))
     {
@@ -223,8 +223,8 @@ theme_set_string (grub_gfxmenu_view_t view,
         view->desktop_image_v_align = GRUB_VIDEO_BITMAP_V_ALIGN_BOTTOM;
       else
         return grub_error (GRUB_ERR_BAD_ARGUMENT,
-                           _("Unsupported vertical align method: %s"),
-                           grub_strdup (value));
+                           "Unsupported vertical align method: %s",
+                           value);
     }
   else if (! grub_strcmp ("desktop-color", name))
      grub_video_parse_color (value, &view->desktop_color);

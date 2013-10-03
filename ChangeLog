@@ -1,5 +1,10 @@
 2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gfxmenu/theme_loader.c (theme_set_string): Fix memory leak
+	and don't mark error strings for translation.
+
+2013-10-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/uboot/ubootdisk.c (uboot_disk_open): Use grub_error
 	properly in case of missing block size.
 
