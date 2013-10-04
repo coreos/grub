@@ -12,6 +12,8 @@
 #include "hostdisk_hurd.c"
 #elif defined(__CYGWIN__) || defined(__MINGW32__)
 #include "hostdisk_windows.c"
+#elif defined(__AROS__)
+#include "hostdisk_aros.c"
 #else
 # warning "No hostdisk OS-specific functions is available for your system. Device detection may not work properly."
 #include "hostdisk_basic.c"

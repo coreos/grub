@@ -55,6 +55,13 @@
 # include <sys/mnttab.h>
 #endif
 
+#ifdef __AROS__
+#include <dos/dos.h>
+#include <dos/filesystem.h>
+#include <dos/exall.h>
+#include <proto/dos.h>
+#endif
+
 int verbosity;
 
 void
@@ -194,7 +201,26 @@ char *
 canonicalize_file_name (const char *path)
 {
   char *ret;
-#ifdef __MINGW32__
+#ifdef __AROS__
+  BPTR lck;
+  const char *p;
+
+  p = strchr (path, ':');
+  if (p && !p[1])
+    return xstrdup (path);
+
+  ret = xmalloc (2048);
+  lck = Lock ((const unsigned char *) path, SHARED_LOCK);
+
+  if (!lck || !NameFromLock (lck, (unsigned char *) ret, 2040))
+    {
+      free (ret);
+      ret = xstrdup (path);
+    }
+  if (lck)
+    UnLock (lck);
+
+#elif defined (__MINGW32__)
   ret = xmalloc (PATH_MAX);
   if (!_fullpath (ret, path, PATH_MAX))
     return NULL;

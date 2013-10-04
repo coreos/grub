@@ -25,7 +25,9 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 
-#if defined __CYGWIN__ || defined (__MINGW32__)
+#if defined (__AROS__)
+# define DEFAULT_DIRECTORY	"SYS:" GRUB_BOOT_DIR_NAME "/" GRUB_DIR_NAME
+#elif defined __CYGWIN__ || defined (__MINGW32__)
 # define DEFAULT_DIRECTORY	"C:\\"GRUB_BOOT_DIR_NAME"\\"GRUB_DIR_NAME
 #elif defined (__NetBSD__)
 /* NetBSD uses /boot for its boot block.  */

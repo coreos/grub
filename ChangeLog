@@ -1,5 +1,9 @@
 2013-10-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add AROS hostdisk and getroot routines.
+
+2013-10-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make cryptodisk and diskfilter probe data retrievable programmatically
 	and not just printable.
 

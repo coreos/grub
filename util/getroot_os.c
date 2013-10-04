@@ -12,6 +12,8 @@
 #include "getroot_hurd.c"
 #elif defined(__CYGWIN__) || defined (__MINGW32__)
 #include "getroot_windows.c"
+#elif defined(__AROS__)
+#include "getroot_aros.c"
 #else
 # warning "No getroot OS-specific functions is available for your system. Device detection may not work properly."
 #include "getroot_basic.c"
