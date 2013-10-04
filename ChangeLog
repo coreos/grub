@@ -1,5 +1,9 @@
 2013-10-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/random_unix.c: Add kFreeBSD to the list of secure RNG.
+
+2013-10-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add AROS hostdisk and getroot routines.
 
 2013-10-04  Vladimir Serbinenko  <phcoder@gmail.com>
