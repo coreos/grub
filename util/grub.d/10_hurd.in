@@ -153,8 +153,8 @@ title_correction_code=
 submenu_indentation=""
 is_first_entry=true
 
-for kernel in ${kernels}
-do
+while [ "x$kernels" != "x" ] ; do
+  kernel=`version_find_latest $kernels`
 
   if [ "x$is_first_entry" = xtrue ]; then
       hurd_entry "$kernel" simple
@@ -166,6 +166,8 @@ do
 
   hurd_entry "$kernel" advanced
   hurd_entry "$kernel" recovery
+
+  kernels=`echo $kernels | tr ' ' '\n' | grep -vx $kernel | tr '\n' ' '`
   is_first_entry=false
 done
 

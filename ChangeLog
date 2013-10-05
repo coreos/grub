@@ -1,3 +1,8 @@
+2013-10-04  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* util/grub.d/10_hurd.in: Use `version_find_latest` to sort gnumach
+	kernels by version order.
+
 2013-10-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/random_unix.c: Add kFreeBSD to the list of secure RNG.
