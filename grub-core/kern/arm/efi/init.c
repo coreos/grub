@@ -24,45 +24,47 @@
 #include <grub/time.h>
 #include <grub/efi/efi.h>
 
-/*
- * A bit ugly, but functional - and should be completely portable.
- */
+static grub_uint64_t tmr;
+static grub_efi_event_t tmr_evt;
+
 static grub_uint64_t
-grub_efi_get_time_ms(void)
+grub_efi_get_time_ms (void)
 {
-  grub_efi_time_t now;
-  grub_uint64_t retval;
-  grub_efi_status_t status;
+  return tmr;
+}
 
-  status = efi_call_2 (grub_efi_system_table->runtime_services->get_time,
-		       &now, NULL);
-  if (status != GRUB_EFI_SUCCESS)
-    {
-      grub_printf("No time!\n");
-      return 0;
-    }
-  retval = now.year * 365 * 24 * 60 * 60 * 1000;
-  retval += now.month * 30 * 24 * 60 * 60 * 1000;
-  retval += now.day * 24 * 60 * 60 * 1000;
-  retval += now.hour * 60 * 60 * 1000;
-  retval += now.minute * 60 * 1000;
-  retval += now.second * 1000;
-  retval += now.nanosecond / 1000;
- 
-  grub_dprintf("timer", "timestamp: 0x%llx\n", retval);
-
-  return retval;
+static void 
+increment_timer (grub_efi_event_t event __attribute__ ((unused)),
+		 void *context __attribute__ ((unused)))
+{
+  tmr++;
 }
 
 void
 grub_machine_init (void)
 {
+  grub_efi_boot_services_t *b;
+
   grub_efi_init ();
+
+  b = grub_efi_system_table->boot_services;
+
+  efi_call_5 (b->create_event, GRUB_EFI_EVT_TIMER | GRUB_EFI_EVT_NOTIFY_SIGNAL,
+	      GRUB_EFI_TPL_CALLBACK, increment_timer, NULL, &tmr_evt);
+  efi_call_3 (b->set_timer, tmr_evt, GRUB_EFI_TIMER_PERIODIC, 10000);
+
   grub_install_get_time_ms (grub_efi_get_time_ms);
 }
 
 void
 grub_machine_fini (void)
 {
+  grub_efi_boot_services_t *b;
+
+  b = grub_efi_system_table->boot_services;
+
+  efi_call_3 (b->set_timer, tmr_evt, GRUB_EFI_TIMER_PERIODIC, 0);
+  efi_call_1 (b->close_event, tmr_evt);
+
   grub_efi_fini ();
 }
