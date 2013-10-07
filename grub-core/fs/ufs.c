@@ -321,7 +321,7 @@ grub_ufs_get_file_block (struct grub_ufs_data *data, grub_disk_addr_t blk)
       return indir[blk & ((1 << log_indirsz) - 1)];
     }
 
-  grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+  grub_error (GRUB_ERR_BAD_FS,
 	      "ufs does not support quadruple indirect blocks");
   return 0;
 }
