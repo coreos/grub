@@ -33,6 +33,4 @@ FUNCTION(_start)
 	str	r1, [ip]
 	ldr	ip, =EXT_C(grub_main)
 	bx	ip
-	.thumb		@ For relocation debugging
-	blx	_start
 	.end

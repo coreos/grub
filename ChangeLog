@@ -1,5 +1,9 @@
 2013-10-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/efi/startup.S: Remove thumb leftover.
+
+2013-10-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/arm/efi/init.c: Rewrite timer fucntion.
 
 2013-10-04  Samuel Thibault  <samuel.thibault@ens-lyon.org>
