@@ -1,5 +1,9 @@
 2013-10-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi: Update note on colors on emu console.
+
+2013-10-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ufs.c (grub_ufs_get_file_block): Give GRUB_ERR_BAD_FS
 	for quadruple indirect rather than GRUB_ERR_NOT_IMPLEMENTED_YET as
 	it's FS and not GRUB limitation.

@@ -2886,15 +2886,13 @@ The color support support varies from terminal to terminal.
 @samp{mda_text} color support is limited to highlighting by
 black/white reversal.
 
-@samp{console} on ARC and IEEE1275, @samp{serial_*} and
+@samp{console} on ARC, EMU and IEEE1275, @samp{serial_*} and
 @samp{spkmodem} are governed by terminfo and support
-only 8 colors if in modes @samp{vt100-color}, @samp{arc}
-(default for console on ARC), @samp{ieee1275} (default
+only 8 colors if in modes @samp{vt100-color} (default for console on emu),
+@samp{arc} (default for console on ARC), @samp{ieee1275} (default
 for console on IEEE1275). When in mode @samp{vt100}
 then the color support is limited to highlighting by black/white
 reversal. When in mode @samp{dumb} there is no color support.
-
-@samp{console} on EMU supports 8 colors.
 
 When console supports no colors this setting is ignored.
 When console supports 8 colors, then the colors from the
