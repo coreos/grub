@@ -1,5 +1,9 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move sleep routines to grub-core/osdep.
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move OS-dependent files to grub-core/osdep and document it.
 
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>

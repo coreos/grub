@@ -50,12 +50,6 @@ const char *program_name = GRUB_BUILD_PROGRAM_NAME;
 #include "progname.h"
 #endif
 
-#ifdef __MINGW32__
-#include <windows.h>
-#include <winioctl.h>
-#include "dirname.h"
-#endif
-
 #ifdef GRUB_UTIL
 int
 grub_err_printf (const char *fmt, ...)
@@ -256,28 +250,6 @@ void
 grub_register_exported_symbols (void)
 {
 }
-
-#ifdef __MINGW32__
-
-void
-grub_millisleep (grub_uint32_t ms)
-{
-  Sleep (ms);
-}
-
-#else
-
-void
-grub_millisleep (grub_uint32_t ms)
-{
-  struct timespec ts;
-
-  ts.tv_sec = ms / 1000;
-  ts.tv_nsec = (ms % 1000) * 1000000;
-  nanosleep (&ts, NULL);
-}
-
-#endif
 
 #ifdef GRUB_UTIL
 void
