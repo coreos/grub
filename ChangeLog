@@ -1,5 +1,9 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/misc.c (grub_get_rtc): Remove (it's a leftover).
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/drivers/emu/emunet.c: Move to ..
 	* grub-core/osdep/linux/emunet.c: ..here.
 

@@ -29,9 +29,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#ifdef HAVE_LIMITS_H
-#include <limits.h>
-#endif
 
 #include <grub/mm.h>
 #include <grub/err.h>
@@ -154,18 +151,6 @@ grub_get_time_ms (void)
   gettimeofday (&tv, 0);
 
   return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
-}
-
-grub_uint32_t
-grub_get_rtc (void)
-{
-  struct timeval tv;
-
-  gettimeofday (&tv, 0);
-
-  return (tv.tv_sec * GRUB_TICKS_PER_SECOND
-	  + (((tv.tv_sec % GRUB_TICKS_PER_SECOND) * 1000000 + tv.tv_usec)
-	     * GRUB_TICKS_PER_SECOND / 1000000));
 }
 
 #ifdef __MINGW32__
