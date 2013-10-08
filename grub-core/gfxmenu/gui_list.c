@@ -430,7 +430,9 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       grub_gfxmenu_box_t selbox = self->selected_item_box;
       int sel_top_pad = selbox->get_top_pad (selbox);
       int sel_bottom_pad = selbox->get_bottom_pad (selbox);
-      
+      int sel_left_pad = selbox->get_left_pad (selbox);
+      int sel_right_pad = selbox->get_right_pad (selbox);
+
       *width = grub_font_get_string_width (self->item_font, "Typical OS");
       width_s = grub_font_get_string_width (self->selected_item_font,
 					    "Typical OS");
@@ -438,6 +440,7 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
 	*width = width_s;
 
       *width += 2 * boxpad + box_left_pad + box_right_pad
+                + sel_left_pad + sel_right_pad + 2
                 + self->item_icon_space + self->icon_width;
 
       /* Set the menu box height to fit the items.  */
