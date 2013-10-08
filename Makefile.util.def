@@ -294,7 +294,7 @@ program = {
   installdir = sbin;
   mansection = 8;
   common = util/grub-probe.c;
-  common = util/ieee1275/ofpath.c;
+  common = grub-core/osdep/ofpath.c;
   common = grub-core/kern/emu/argp_common.c;
 
   ldadd = libgrubmods.a;
@@ -327,7 +327,7 @@ program = {
   common = util/grub-setup.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
-  common = util/ieee1275/ofpath.c;
+  common = grub-core/osdep/ofpath.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
@@ -342,7 +342,7 @@ program = {
   installdir = sbin;
   mansection = 8;
   common = util/ieee1275/grub-ofpathname.c;
-  common = util/ieee1275/ofpath.c;
+  common = grub-core/osdep/ofpath.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;

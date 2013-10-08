@@ -1,5 +1,11 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/ieee1275/ofpath.c: Move to ...
+	* grub-core/osdep/linux/ofpath.c: ..here, split stub into ...
+	* grub-core/osdep/basic/ofpath.c: ..here.
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move password-querying (util-version) routines to grub-core/osdep.
 
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
