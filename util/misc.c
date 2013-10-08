@@ -50,12 +50,6 @@ const char *program_name = GRUB_BUILD_PROGRAM_NAME;
 #include "progname.h"
 #endif
 
-/* Include malloc.h, only if memalign is available. It is known that
-   memalign is declared in malloc.h in all systems, if present.  */
-#ifdef HAVE_MEMALIGN
-# include <malloc.h>
-#endif
-
 #ifdef __MINGW32__
 #include <windows.h>
 #include <winioctl.h>

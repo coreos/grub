@@ -1,5 +1,9 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/misc.c: Remove leftover inclusion of malloc.h.
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/setjmp.h: Remove leftover GRUBOF.
 
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
