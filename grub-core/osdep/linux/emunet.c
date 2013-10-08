@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010,2011  Free Software Foundation, Inc.
+ *  Copyright (C) 2010,2011,2012,2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,10 +21,8 @@
 #include <sys/socket.h>
 #include <grub/net.h>
 #include <sys/types.h>
-#ifdef __linux__
-# include <linux/if.h>
-# include <linux/if_tun.h>
-#endif /* __linux__ */
+#include <linux/if.h>
+#include <linux/if_tun.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -99,7 +97,6 @@ static struct grub_net_card emucard =
 
 GRUB_MOD_INIT(emunet)
 {
-#ifdef __linux__
   struct ifreq ifr;
   fd = open ("/dev/net/tun", O_RDWR | O_NONBLOCK);
   if (fd < 0)
@@ -113,10 +110,6 @@ GRUB_MOD_INIT(emunet)
       return;
     }
   grub_net_card_register (&emucard);
-#else /* !__linux__ */
-  fd = -1;
-  return;
-#endif /* __linux__ */
 }
 
 GRUB_MOD_FINI(emunet)

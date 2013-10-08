@@ -1,5 +1,10 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/drivers/emu/emunet.c: Move to ..
+	* grub-core/osdep/linux/emunet.c: ..here.
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/ieee1275/ofpath.c: Move to ...
 	* grub-core/osdep/linux/ofpath.c: ..here, split stub into ...
 	* grub-core/osdep/basic/ofpath.c: ..here.
