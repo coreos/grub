@@ -1,5 +1,10 @@
 2013-10-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
+	* grub-core/gfxmenu/gui_list.c: Draw the scrollbar in a separate
+	viewport.
+
+2013-10-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
 	* grub-core/gfxmenu/gui_list.c (list_get_minimal_size): Corrected
 	minimal width calculations.
 

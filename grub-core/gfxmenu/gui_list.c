@@ -193,7 +193,7 @@ make_selected_item_visible (list_impl_t self)
 static void
 draw_scrollbar (list_impl_t self,
                 int value, int extent, int min, int max,
-                int rightx, int topy, int height)
+                int scrollbar_width, int scrollbar_height)
 {
   grub_gfxmenu_box_t frame = self->scrollbar_frame;
   grub_gfxmenu_box_t thumb = self->scrollbar_thumb;
@@ -201,21 +201,23 @@ draw_scrollbar (list_impl_t self,
                             + frame->get_bottom_pad (frame));
   int frame_horizontal_pad = (frame->get_left_pad (frame)
                               + frame->get_right_pad (frame));
-  int tracktop = topy + frame->get_top_pad (frame);
-  int tracklen = height - frame_vertical_pad;
-  frame->set_content_size (frame, self->scrollbar_width, tracklen);
+  int thumb_vertical_pad = (thumb->get_top_pad (thumb)
+                            + thumb->get_bottom_pad (thumb));
+  int thumb_horizontal_pad = (thumb->get_left_pad (thumb)
+                              + thumb->get_right_pad (thumb));
+  int tracktop = frame->get_top_pad (frame);
+  int tracklen = scrollbar_height - frame_vertical_pad;
+  frame->set_content_size (frame,
+                           scrollbar_width - frame_horizontal_pad,
+                           tracklen);
   int thumby = tracktop + tracklen * (value - min) / (max - min);
   int thumbheight = tracklen * extent / (max - min) + 1;
   thumb->set_content_size (thumb,
-                           self->scrollbar_width - frame_horizontal_pad,
-                           thumbheight - (thumb->get_top_pad (thumb)
-                                          + thumb->get_bottom_pad (thumb)));
-  frame->draw (frame,
-               rightx - (self->scrollbar_width + frame_horizontal_pad),
-               topy);
-  thumb->draw (thumb,
-               rightx - (self->scrollbar_width - frame->get_right_pad (frame)),
-               thumby);
+                           scrollbar_width - frame_horizontal_pad
+                           - thumb_horizontal_pad,
+                           thumbheight - thumb_vertical_pad);
+  frame->draw (frame, 0, 0);
+  thumb->draw (thumb, frame->get_left_pad (frame), thumby);
 }
 
 /* Draw the list of items.  */
@@ -368,13 +370,19 @@ list_paint (void *vself, const grub_video_rect_t *region)
     grub_gui_restore_viewport (&vpsave2);
 
     if (drawing_scrollbar)
-      draw_scrollbar (self,
-		      self->first_shown_index, num_shown_items,
-		      0, self->view->menu->size,
-		      self->bounds.width - box_right_pad
-		      + self->scrollbar_width,
-		      box_top_pad,
-		      self->bounds.height - box_top_pad - box_bottom_pad);
+      {
+        /* Draw the scrollbar in the east slice. */
+        content_rect.x = self->bounds.width - box_right_pad;
+        content_rect.width = box_right_pad;
+
+        grub_gui_set_viewport (&content_rect, &vpsave2);
+        draw_scrollbar (self,
+                        self->first_shown_index, num_shown_items,
+                        0, self->view->menu->size,
+                        self->scrollbar_width,
+                        content_rect.height);
+        grub_gui_restore_viewport (&vpsave2);
+      }
   }
 
   grub_gui_restore_viewport (&vpsave);
