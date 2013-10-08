@@ -1,5 +1,11 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/basic/random.c: New file. Abort on an attempt to
+	get random when no RNG is available.
+	* grub-core/osdep/random.c: Use basic/random.c on OS out of whitelist.
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/util/lvm.h: Removed.
 
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>

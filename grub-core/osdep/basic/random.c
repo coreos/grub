@@ -33,16 +33,9 @@
 int
 grub_get_random (void *out, grub_size_t len)
 {
-  FILE *f;
-  size_t rd;
-
-  f = fopen ("/dev/urandom", "rb");
-  if (!f)
-    return 1;
-  rd = fread (out, 1, len, f);
-  fclose (f);
-
-  if (rd != len)
-    return 1;
-  return 0;
+#warning "No random number generator is available for your OS. \
+Some functions like grub-mkpaswd and installing on UUID-less disks will be \
+disabled."
+  grub_util_error ("%s",
+		   _("no random number generator is available for your OS"));
 }
