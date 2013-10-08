@@ -16,6 +16,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config-util.h>
+#include <config.h>
+
 #include <windows.h>
 #include <winioctl.h>
 #include <grub/time.h>
