@@ -45,29 +45,10 @@ static int LZ4_uncompress_unknownOutputSize(const char *source, char *dest,
  */
 
 /* 32 or 64 bits ? */
-#if (defined(__x86_64__) || defined(__x86_64) || defined(__amd64__) || \
-	defined(__amd64) || defined(__ppc64__) || defined(_WIN64) || \
-	defined(__LP64__) || defined(_LP64))
+#if (GRUB_CPU_SIZEOF_VOID_P == 8)
 #define	LZ4_ARCH64	1
 #else
 #define	LZ4_ARCH64	0
-#endif
-
-/*
- * Little Endian or Big Endian?
- * Note: overwrite the below #define if you know your architecture endianess.
- */
-#if (defined(__BIG_ENDIAN__) || defined(__BIG_ENDIAN) || \
-	defined(_BIG_ENDIAN) || defined(_ARCH_PPC) || defined(__PPC__) || \
-	defined(__PPC) || defined(PPC) || defined(__powerpc__) || \
-	defined(__powerpc) || defined(powerpc) || \
-	((defined(__BYTE_ORDER__)&&(__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__))))
-#define	LZ4_BIG_ENDIAN	1
-#else
-	/*
-	 * Little Endian assumed. PDP Endian and other very rare endian format
-	 * are unsupported.
-	 */
 #endif
 
 /*
@@ -76,9 +57,6 @@ static int LZ4_uncompress_unknownOutputSize(const char *source, char *dest,
 
 
 #define	GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__)
-
-#define	lz4_bswap16(x) ((unsigned short int) ((((x) >> 8) & 0xffu) \
-	| (((x) & 0xffu) << 8)))
 
 #if (GCC_VERSION >= 302) || (__INTEL_COMPILER >= 800) || defined(__clang__)
 #define	expect(expr, value)    (__builtin_expect((expr), (value)))
@@ -147,15 +125,8 @@ typedef struct _U64_S {
 #define	INITBASE(base)		const int base = 0
 #endif
 
-#if (defined(LZ4_BIG_ENDIAN) && !defined(BIG_ENDIAN_NATIVE_BUT_INCOMPATIBLE))
-#define	LZ4_READ_LITTLEENDIAN_16(d, s, p) \
-	{ U16 v = A16(p); v = lz4_bswap16(v); d = (s) - v; }
-#define	LZ4_WRITE_LITTLEENDIAN_16(p, i) \
-	{ U16 v = (U16)(i); v = lz4_bswap16(v); A16(p) = v; p += 2; }
-#else
-#define	LZ4_READ_LITTLEENDIAN_16(d, s, p) { d = (s) - A16(p); }
-#define	LZ4_WRITE_LITTLEENDIAN_16(p, v)  { A16(p) = v; p += 2; }
-#endif
+#define	LZ4_READ_LITTLEENDIAN_16(d, s, p) { d = (s) - grub_le_to_cpu16 (A16 (p)); }
+#define	LZ4_WRITE_LITTLEENDIAN_16(p, v)  { A16(p) = grub_cpu_to_le16 (v); p += 2; }
 
 /* Macros */
 #define	LZ4_WILDCOPY(s, d, e) do { LZ4_COPYPACKET(s, d) } while (d < e);

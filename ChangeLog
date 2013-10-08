@@ -1,3 +1,8 @@
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs/zfs_lz4.c: Switch from ad-hoc endiannes and width
+	macros to GRUB ones.
+
 2013-10-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_list.c (draw_scrollbar): Fixed rare
@@ -7,7 +12,7 @@
 
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* util/random_unix.c: Add NetBSD and Mac OS X to verified list.
+	* util/random_unix.c: Add NetBSD, Solaris and Mac OS X to verified list.
 
 2013-10-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
