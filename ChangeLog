@@ -1,5 +1,10 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/raid.c: Fold into ...
+	* util/getroot_linux.c: ... here. Make all functions static.
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs_lz4.c: Switch from ad-hoc endiannes and width
 	macros to GRUB ones.
 
