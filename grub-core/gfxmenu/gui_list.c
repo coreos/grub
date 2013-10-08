@@ -25,6 +25,12 @@
 #include <grub/gfxwidgets.h>
 #include <grub/color.h>
 
+enum scrollbar_slice_mode {
+  SCROLLBAR_SLICE_WEST,
+  SCROLLBAR_SLICE_CENTER,
+  SCROLLBAR_SLICE_EAST
+};
+
 struct grub_gui_list_impl
 {
   struct grub_gui_list list;
@@ -54,6 +60,7 @@ struct grub_gui_list_impl
   grub_gfxmenu_box_t scrollbar_frame;
   grub_gfxmenu_box_t scrollbar_thumb;
   int scrollbar_width;
+  enum scrollbar_slice_mode scrollbar_slice;
 
   int first_shown_index;
 
@@ -254,7 +261,7 @@ draw_menu (list_impl_t self, int num_shown_items)
 			   oviewport.width - 2 * boxpad,
 			   oviewport.height - 2 * boxpad);
 
-  int cwidth = oviewport.width - 2 * boxpad - 2;
+  int cwidth = oviewport.width - 2 * boxpad;
   if (selbox->get_border_width)
     cwidth -= selbox->get_border_width (selbox);
   selbox->set_content_size (selbox, cwidth, item_height);
@@ -355,6 +362,7 @@ list_paint (void *vself, const grub_video_rect_t *region)
     int drawing_scrollbar = (self->draw_scrollbar
 			     && (num_shown_items < self->view->menu->size)
 			     && check_scrollbar (self));
+    int scrollbar_width = self->scrollbar_width;
 
     content_rect.x = box_left_pad;
     content_rect.y = box_top_pad;
@@ -365,21 +373,58 @@ list_paint (void *vself, const grub_video_rect_t *region)
 
     box->draw (box, 0, 0);
 
+    switch (self->scrollbar_slice)
+      {
+        case SCROLLBAR_SLICE_WEST:
+          content_rect.x += 2;
+          content_rect.width -= 2;
+          break;
+        case SCROLLBAR_SLICE_CENTER:
+          if (drawing_scrollbar)
+            content_rect.width -= scrollbar_width + 2;
+          break;
+        case SCROLLBAR_SLICE_EAST:
+          content_rect.width -= 2;
+          break;
+      }
+
     grub_gui_set_viewport (&content_rect, &vpsave2);
     draw_menu (self, num_shown_items);
     grub_gui_restore_viewport (&vpsave2);
 
     if (drawing_scrollbar)
       {
-        /* Draw the scrollbar in the east slice. */
-        content_rect.x = self->bounds.width - box_right_pad;
-        content_rect.width = box_right_pad;
+        content_rect.width = scrollbar_width;
+        switch (self->scrollbar_slice)
+          {
+            case SCROLLBAR_SLICE_WEST:
+              if (box_left_pad > scrollbar_width)
+                {
+                  content_rect.x = box_left_pad - scrollbar_width;
+                  content_rect.width = scrollbar_width;
+                }
+              else
+                {
+                  content_rect.x = 0;
+                  content_rect.width = box_left_pad;
+                }
+              break;
+            case SCROLLBAR_SLICE_CENTER:
+              content_rect.x = self->bounds.width - box_right_pad
+                               - scrollbar_width;
+              content_rect.width = scrollbar_width;
+              break;
+            case SCROLLBAR_SLICE_EAST:
+              content_rect.x = self->bounds.width - box_right_pad;
+              content_rect.width = box_right_pad;
+              break;
+          }
 
         grub_gui_set_viewport (&content_rect, &vpsave2);
         draw_scrollbar (self,
                         self->first_shown_index, num_shown_items,
                         0, self->view->menu->size,
-                        self->scrollbar_width,
+                        scrollbar_width,
                         content_rect.height);
         grub_gui_restore_viewport (&vpsave2);
       }
@@ -448,8 +493,21 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
 	*width = width_s;
 
       *width += 2 * boxpad + box_left_pad + box_right_pad
-                + sel_left_pad + sel_right_pad + 2
+                + sel_left_pad + sel_right_pad
                 + self->item_icon_space + self->icon_width;
+
+      switch (self->scrollbar_slice)
+        {
+          case SCROLLBAR_SLICE_WEST:
+            *width += 2;
+            break;
+          case SCROLLBAR_SLICE_CENTER:
+            *width += self->scrollbar_width + 2;
+            break;
+          case SCROLLBAR_SLICE_EAST:
+            *width += 2;
+            break;
+        }
 
       /* Set the menu box height to fit the items.  */
       *height = (item_height * num_items
@@ -578,6 +636,15 @@ list_set_property (void *vself, const char *name, const char *value)
     {
       self->scrollbar_width = grub_strtol (value, 0, 10);
     }
+  else if (grub_strcmp (name, "scrollbar_slice") == 0)
+    {
+      if (grub_strcmp (value, "west") == 0)
+        self->scrollbar_slice = SCROLLBAR_SLICE_WEST;
+      else if (grub_strcmp (value, "center") == 0)
+        self->scrollbar_slice = SCROLLBAR_SLICE_CENTER;
+      else if (grub_strcmp (value, "east") == 0)
+        self->scrollbar_slice = SCROLLBAR_SLICE_EAST;
+    }
   else if (grub_strcmp (name, "scrollbar") == 0)
     {
       self->draw_scrollbar = grub_strcmp (value, "false") != 0;
@@ -679,6 +746,7 @@ grub_gui_list_new (void)
   self->scrollbar_frame_pattern = 0;
   self->scrollbar_thumb_pattern = 0;
   self->scrollbar_width = 16;
+  self->scrollbar_slice = SCROLLBAR_SLICE_EAST;
 
   self->first_shown_index = 0;
 

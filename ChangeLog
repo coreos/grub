@@ -1,5 +1,10 @@
 2013-10-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
+	* grub-core/gfxmenu/gui_list.c: New option `scrollbar-slice`.
+	* docs/grub.texi: Likewise.
+
+2013-10-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
 	* grub-core/gfxmenu/gui_list.c: Draw the scrollbar in a separate
 	viewport.
 

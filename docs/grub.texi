@@ -2079,6 +2079,19 @@ The following is a list of the components and the properties they support.
       @tab The image file pattern for the scroll bar thumb (the part of the scroll
       bar that moves as scrolling occurs).
       Example:  ``scrollbar_thumb_*.png``
+   @item scrollbar_slice
+      @tab The menu frame styled box's slice in which the scrollbar will be
+      drawn. Possible values are ``west``, ``center``, ``east`` (default).
+      ``west`` - the scrollbar will be drawn in the west slice (right-aligned).
+      ``east`` - the scrollbar will be drawn in the east slice (left-aligned).
+      ``center`` - the scrollbar will be drawn in the center slice.
+      Note: in case of ``center`` slice:
+      a) If the scrollbar should be drawn then boot menu entry's width is
+      decreased by the scrollbar's width and the scrollbar is drawn at the
+      right side of the center slice.
+      b) If the scrollbar won't be drawn then the boot menu entry's width
+      is the width of the center slice.
+      c) We don't necessary need the menu pixmap box to display the scrollbar.
    @item max_items_shown
       @tab The maximum number of items to show on the menu.  If there are more than
       *max_items_shown* items in the menu, the list will scroll to make all
