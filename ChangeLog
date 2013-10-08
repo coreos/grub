@@ -1,3 +1,7 @@
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/random_unix.c: Add NetBSD and Mac OS X to verified list.
+
 2013-10-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_list.c: New option `scrollbar-slice`.

@@ -33,7 +33,7 @@
 int
 grub_get_random (void *out, grub_size_t len)
 {
-#if ! defined (__linux__) && ! defined (__FreeBSD__) && ! defined (__FreeBSD_kernel__) && ! defined (__OpenBSD__) && !defined (__GNU__) && ! defined (_WIN32) && !defined(__CYGWIN__)
+#if ! defined (__linux__) && ! defined (__FreeBSD__) && ! defined (__FreeBSD_kernel__) && ! defined (__OpenBSD__) && !defined (__GNU__) && ! defined (_WIN32) && !defined(__CYGWIN__) && !defined (__NetBSD__) && !defined (__APPLE__) && !defined(__sun__)
   /* TRANSLATORS: The generator might still be secure just GRUB isn't sure about it.  */
   printf ("%s", _("WARNING: your random generator isn't known to be secure\n"));
 #warning "your random generator isn't known to be secure"
