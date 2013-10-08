@@ -36,7 +36,7 @@
 #include <limits.h>
 #endif
 #include <grub/util/misc.h>
-#include <grub/util/lvm.h>
+
 #include <grub/cryptodisk.h>
 #include <grub/i18n.h>
 

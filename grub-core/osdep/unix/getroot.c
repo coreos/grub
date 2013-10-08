@@ -35,7 +35,7 @@
 #include <limits.h>
 #endif
 #include <grub/util/misc.h>
-#include <grub/util/lvm.h>
+
 #include <grub/cryptodisk.h>
 #include <grub/i18n.h>
 
@@ -100,6 +100,12 @@
 #  define RAW_FLOPPY_MAJOR	9
 # endif /* ! RAW_FLOPPY_MAJOR */
 #endif /* defined(__NetBSD__) */
+
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#define LVM_DEV_MAPPER_STRING "/dev/linux_lvm/"
+#else
+#define LVM_DEV_MAPPER_STRING "/dev/mapper/"
+#endif
 
 #include <sys/types.h>
 #include <sys/wait.h>

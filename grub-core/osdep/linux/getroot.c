@@ -40,7 +40,7 @@
 #include <sys/mount.h>
 
 #include <grub/util/misc.h>
-#include <grub/util/lvm.h>
+
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/emu/misc.h>
@@ -55,6 +55,7 @@
 #include <linux/raid/md_u.h>
 #include <grub/i18n.h>
 
+#define LVM_DEV_MAPPER_STRING "/dev/mapper/"
 
 /* Defines taken from btrfs/ioctl.h.  */
 

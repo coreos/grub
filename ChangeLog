@@ -1,5 +1,9 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/util/lvm.h: Removed.
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/misc.c (fsync) [__MINGW32__]: Move to ...
 	* grub-core/osdep/windows/hostdisk.c (fsync) [__MINGW32__]: ... here.
 

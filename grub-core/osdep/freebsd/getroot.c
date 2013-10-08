@@ -44,7 +44,7 @@
 #include <libgeom.h>
 
 #include <grub/util/misc.h>
-#include <grub/util/lvm.h>
+
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/emu/misc.h>
@@ -55,6 +55,8 @@
 #include <sys/wait.h>
 
 #include <libgeom.h>
+
+#define LVM_DEV_MAPPER_STRING "/dev/linux_lvm/"
 
 static const char *
 grub_util_get_geom_abstraction (const char *dev)

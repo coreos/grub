@@ -30,7 +30,7 @@
 #include <grub/emu/hostdisk.h>
 #include <grub/term.h>
 #include <grub/i18n.h>
-#include <grub/util/lvm.h>
+
 #ifdef GRUB_SETUP_SPARC64
 #include <grub/util/ofpath.h>
 #include <grub/sparc64/ieee1275/boot.h>

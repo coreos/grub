@@ -38,7 +38,7 @@
 #include <grub/types.h>
 
 #include <grub/util/misc.h>
-#include <grub/util/lvm.h>
+
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/emu/misc.h>
