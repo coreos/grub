@@ -255,3 +255,13 @@ canonicalize_file_name (const char *path)
 #endif
   return ret;
 }
+
+
+#ifdef __MINGW32__
+
+int fsync (int fno __attribute__ ((unused)))
+{
+  return 0;
+}
+
+#endif
