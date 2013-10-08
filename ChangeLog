@@ -1,5 +1,10 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/misc.c (canonicalize_file_name): Move to ...
+	* grub-core/kern/emu/hostdisk_*.c (canonicalize_file_name): ... here.
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/arm/misc.S: Remove leftover ARM and THUMB.
 
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>

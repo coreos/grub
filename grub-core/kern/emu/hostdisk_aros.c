@@ -59,6 +59,31 @@
 
 static ULONG *bounce;
 
+char *
+canonicalize_file_name (const char *path)
+{
+  char *ret;
+  BPTR lck;
+  const char *p;
+
+  p = strchr (path, ':');
+  if (p && !p[1])
+    return xstrdup (path);
+
+  ret = xmalloc (2048);
+  lck = Lock ((const unsigned char *) path, SHARED_LOCK);
+
+  if (!lck || !NameFromLock (lck, (unsigned char *) ret, 2040))
+    {
+      free (ret);
+      ret = xstrdup (path);
+    }
+  if (lck)
+    UnLock (lck);
+
+  return ret;
+}
+
 static grub_uint64_t
 grub_util_get_fd_size_volume (grub_util_fd_t fd __attribute__ ((unused)),
 			      const char *dev,

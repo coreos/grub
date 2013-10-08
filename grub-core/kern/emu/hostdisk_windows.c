@@ -239,3 +239,19 @@ grub_util_fd_strerror (void)
 #error "Unsupported TCHAR size"
 #endif
 }
+
+char *
+canonicalize_file_name (const char *path)
+{
+  char *ret;
+  ret = xmalloc (PATH_MAX);
+
+#ifndef __CYGWIN__
+  if (!_fullpath (ret, path, PATH_MAX))
+    return NULL;
+#else
+  if (!realpath (path, ret))
+    return NULL;
+#endif
+  return ret;
+}

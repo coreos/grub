@@ -190,4 +190,19 @@ grub_util_fd_close (grub_util_fd_t fd)
   close (fd);
 }
 
+char *
+canonicalize_file_name (const char *path)
+{
+#if defined (PATH_MAX)
+  char *ret;
+
+  ret = xmalloc (PATH_MAX);
+  if (!realpath (path, ret))
+    return NULL;
+  return ret;
+#else
+  return realpath (path, NULL);
+#endif
+}
+
 #endif

@@ -42,26 +42,6 @@
 #include <grub/time.h>
 #include <grub/emu/misc.h>
 
-#ifdef HAVE_SYS_PARAM_H
-# include <sys/param.h>
-#endif
-
-#ifdef HAVE_SYS_MOUNT_H
-# include <sys/mount.h>
-#endif
-
-#ifdef HAVE_SYS_MNTTAB_H
-# include <stdio.h> /* Needed by sys/mnttab.h.  */
-# include <sys/mnttab.h>
-#endif
-
-#ifdef __AROS__
-#include <dos/dos.h>
-#include <dos/filesystem.h>
-#include <dos/exall.h>
-#include <proto/dos.h>
-#endif
-
 int verbosity;
 
 void
@@ -196,41 +176,3 @@ int fsync (int fno __attribute__ ((unused)))
 }
 
 #endif
-
-char *
-canonicalize_file_name (const char *path)
-{
-  char *ret;
-#ifdef __AROS__
-  BPTR lck;
-  const char *p;
-
-  p = strchr (path, ':');
-  if (p && !p[1])
-    return xstrdup (path);
-
-  ret = xmalloc (2048);
-  lck = Lock ((const unsigned char *) path, SHARED_LOCK);
-
-  if (!lck || !NameFromLock (lck, (unsigned char *) ret, 2040))
-    {
-      free (ret);
-      ret = xstrdup (path);
-    }
-  if (lck)
-    UnLock (lck);
-
-#elif defined (__MINGW32__)
-  ret = xmalloc (PATH_MAX);
-  if (!_fullpath (ret, path, PATH_MAX))
-    return NULL;
-#elif defined (PATH_MAX)
-  ret = xmalloc (PATH_MAX);
-  if (!realpath (path, ret))
-    return NULL;
-#else
-  ret = realpath (path, NULL);
-#endif
-  return ret;
-}
-
