@@ -233,25 +233,3 @@ main (int argc, char *argv[])
 
   return 0;
 }
-
-#if defined (__MINGW32__) || defined (__CYGWIN__)
-
-void
-grub_millisleep (grub_uint32_t ms)
-{
-  Sleep (ms);
-}
-
-#else
-
-void
-grub_millisleep (grub_uint32_t ms)
-{
-  struct timespec ts;
-
-  ts.tv_sec = ms / 1000;
-  ts.tv_nsec = (ms % 1000) * 1000000;
-  nanosleep (&ts, NULL);
-}
-
-#endif
