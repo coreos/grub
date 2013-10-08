@@ -19,7 +19,7 @@
 #ifndef GRUB_SETJMP_HEADER
 #define GRUB_SETJMP_HEADER	1
 
-#if defined(GRUB_UTIL) && !defined(GRUBOF)
+#if defined(GRUB_UTIL)
 #include <setjmp.h>
 typedef jmp_buf grub_jmp_buf;
 #define grub_setjmp setjmp

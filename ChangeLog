@@ -1,5 +1,9 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/setjmp.h: Remove leftover GRUBOF.
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/raid.c: Fold into ...
 	* util/getroot_linux.c: ... here. Make all functions static.
 
