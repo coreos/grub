@@ -286,13 +286,18 @@ live under @file{grub-core/term/}.
 
 @item
 The @samp{efiemu_*} commands live under @file{grub-core/efiemu/}.
+
+@item
+OS-dependent code should be under @file{grub-core/osdep/}
+
+@item
+Utility programs meant to be run from a full operating system
+(except OS-dependent code mentioned previously) are in @file{util/}.
+
 @end itemize
 
 There are a few other special-purpose exceptions; grep for them if they
 matter to you.
-
-Utility programs meant to be run from a full operating system are in
-@file{util/}.
 
 @node Contributing Changes
 @chapter Contributing changes

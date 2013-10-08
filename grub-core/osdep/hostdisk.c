@@ -1,20 +1,20 @@
 #ifdef __linux__
-#include "hostdisk_linux.c"
+#include "linux/hostdisk.c"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "hostdisk_freebsd.c"
+#include "freebsd/hostdisk.c"
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
-#include "hostdisk_bsd.c"
+#include "bsd/hostdisk.c"
 #elif defined(__APPLE__)
-#include "hostdisk_apple.c"
+#include "apple/hostdisk.c"
 #elif defined(__sun__)
-#include "hostdisk_sun.c"
+#include "sun/hostdisk.c"
 #elif defined(__GNU__)
-#include "hostdisk_hurd.c"
+#include "hurd/hostdisk.c"
 #elif defined(__CYGWIN__) || defined(__MINGW32__)
-#include "hostdisk_windows.c"
+#include "windows/hostdisk.c"
 #elif defined(__AROS__)
-#include "hostdisk_aros.c"
+#include "aros/hostdisk.c"
 #else
 # warning "No hostdisk OS-specific functions is available for your system. Device detection may not work properly."
-#include "hostdisk_basic.c"
+#include "basic/hostdisk.c"
 #endif

@@ -1,20 +1,20 @@
 #ifdef __linux__
-#include "getroot_linux.c"
+#include "linux/getroot.c"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "getroot_freebsd.c"
+#include "freebsd/getroot.c"
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
-#include "getroot_bsd.c"
+#include "bsd/getroot.c"
 #elif defined(__APPLE__)
-#include "getroot_apple.c"
+#include "apple/getroot.c"
 #elif defined(__sun__)
-#include "getroot_sun.c"
+#include "sun/getroot.c"
 #elif defined(__GNU__)
-#include "getroot_hurd.c"
+#include "hurd/getroot.c"
 #elif defined(__CYGWIN__) || defined (__MINGW32__)
-#include "getroot_windows.c"
+#include "windows/getroot.c"
 #elif defined(__AROS__)
-#include "getroot_aros.c"
+#include "aros/getroot.c"
 #else
 # warning "No getroot OS-specific functions is available for your system. Device detection may not work properly."
-#include "getroot_basic.c"
+#include "basic/getroot.c"
 #endif

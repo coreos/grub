@@ -1,5 +1,9 @@
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move OS-dependent files to grub-core/osdep and document it.
+
+2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/misc.c (canonicalize_file_name): Move to ...
 	* grub-core/kern/emu/hostdisk_*.c (canonicalize_file_name): ... here.
 

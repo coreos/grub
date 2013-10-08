@@ -1,5 +1,5 @@
 #if defined (_WIN32) || defined (__CYGWIN__)
-#include "random_windows.c"
+#include "windows/random.c"
 #else
-#include "random_unix.c"
+#include "unix/random.c"
 #endif
