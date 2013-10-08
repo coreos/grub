@@ -1,7 +1,7 @@
 2013-10-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
-	* grub-core/gfxmenu.c (list_get_minimal_size): Corrected minimal
-	width calculations.
+	* grub-core/gfxmenu/gui_list.c (list_get_minimal_size): Corrected
+	minimal width calculations.
 
 2013-10-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
