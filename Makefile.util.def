@@ -18,6 +18,7 @@ library = {
   common = grub-core/osdep/hostdisk.c;
   common = grub-core/osdep/unix/hostdisk.c;
   common = grub-core/osdep/sleep.c;
+  common = grub-core/osdep/password.c;
   common = grub-core/kern/emu/misc.c;
   common = grub-core/kern/emu/mm.c;
   common = grub-core/kern/env.c;

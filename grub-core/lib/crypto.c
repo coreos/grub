@@ -25,17 +25,6 @@
 #include <grub/i18n.h>
 #include <grub/env.h>
 
-#ifdef GRUB_UTIL
-#if !defined (_WIN32) || defined (__CYGWIN__)
-#include <termios.h>
-#else
-#include <windows.h>
-#endif
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#endif
-
 GRUB_MOD_LICENSE ("GPLv3+");
 
 struct grub_crypto_hmac_handle
@@ -441,67 +430,11 @@ grub_crypto_memcmp (const void *a, const void *b, grub_size_t n)
   return !!counter;
 }
 
+#ifndef GRUB_UTIL
+
 int
 grub_password_get (char buf[], unsigned buf_size)
 {
-#ifdef GRUB_UTIL
-#if !defined (_WIN32) || defined (__CYGWIN__)
-  FILE *in;
-  struct termios s, t;
-  int tty_changed = 0;
-  char *ptr;
-
-  grub_refresh ();
-
-  /* Disable echoing. Based on glibc.  */
-  in = fopen ("/dev/tty", "w+c");
-  if (in == NULL)
-    in = stdin;
-
-  if (tcgetattr (fileno (in), &t) == 0)
-    {
-      /* Save the old one. */
-      s = t;
-      /* Tricky, tricky. */
-      t.c_lflag &= ~(ECHO|ISIG);
-      tty_changed = (tcsetattr (fileno (in), TCSAFLUSH, &t) == 0);
-    }
-  else
-    tty_changed = 0;
-  fgets (buf, buf_size, stdin);
-  ptr = buf + strlen (buf) - 1;
-  while (buf <= ptr && (*ptr == '\n' || *ptr == '\r'))
-    *ptr-- = 0;
-  /* Restore the original setting.  */
-  if (tty_changed)
-    (void) tcsetattr (fileno (in), TCSAFLUSH, &s);
-
-  grub_xputs ("\n");
-  grub_refresh ();
-
-  return 1;
-#else
-  HANDLE hStdin = GetStdHandle (STD_INPUT_HANDLE); 
-  DWORD mode = 0;
-  char *ptr;
-
-  grub_refresh ();
-  
-  GetConsoleMode (hStdin, &mode);
-  SetConsoleMode (hStdin, mode & (~ENABLE_ECHO_INPUT));
-
-  fgets (buf, buf_size, stdin);
-  ptr = buf + strlen (buf) - 1;
-  while (buf <= ptr && (*ptr == '\n' || *ptr == '\r'))
-    *ptr-- = 0;
-
-  SetConsoleMode (hStdin, mode);
-
-  grub_refresh ();
-
-  return 1;
-#endif
-#else
   unsigned cur_len = 0;
   int key;
 
@@ -536,6 +469,6 @@ grub_password_get (char buf[], unsigned buf_size)
   grub_refresh ();
 
   return (key != '\e');
-#endif
 }
+#endif
 
