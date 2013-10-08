@@ -24,12 +24,8 @@
 	.syntax	unified
 #if !defined (__thumb2__)
 	.arm
-#define ARM(x...)	x
-#define THUMB(x...)
 #else
 	.thumb
-#define THUMB(x...)	x
-#define ARM(x...)
 #endif
 
 	.align	2
