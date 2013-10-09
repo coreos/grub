@@ -1,5 +1,12 @@
 2013-10-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c (generate_image): Use size_t instead of
+	grub_size_t.
+	* util/grub-mkimagexx.c (locate_sections): Likewise.
+	(load_image): Likewise.
+
+2013-10-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/misc.c (grub_util_write_image_at): Don't use PRIxGRUB_SIZE for
 	size_t.
 	(grub_util_write_image): Likewise.

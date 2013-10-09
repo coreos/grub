@@ -800,8 +800,8 @@ SUFFIX (check_elf_header) (Elf_Ehdr *e, size_t size, struct image_target_desc *i
 static Elf_Addr *
 SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 			  Elf_Half num_sections, const char *strtab,
-			  grub_size_t *exec_size, grub_size_t *kernel_sz,
-			  grub_size_t *all_align,
+			  size_t *exec_size, size_t *kernel_sz,
+			  size_t *all_align,
 			  struct image_target_desc *image_target)
 {
   int i;
@@ -879,11 +879,11 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 }
 
 static char *
-SUFFIX (load_image) (const char *kernel_path, grub_size_t *exec_size, 
-		     grub_size_t *kernel_sz, grub_size_t *bss_size,
-		     grub_size_t total_module_size, grub_uint64_t *start,
-		     void **reloc_section, grub_size_t *reloc_size,
-		     grub_size_t *align,
+SUFFIX (load_image) (const char *kernel_path, size_t *exec_size, 
+		     size_t *kernel_sz, size_t *bss_size,
+		     size_t total_module_size, grub_uint64_t *start,
+		     void **reloc_section, size_t *reloc_size,
+		     size_t *align,
 		     struct image_target_desc *image_target)
 {
   char *kernel_img, *out_img;
