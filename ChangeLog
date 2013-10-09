@@ -1,3 +1,7 @@
+2013-10-09  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/gui_list.c (list_destroy): Fixed memory leak.
+
 2013-10-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Move OS-dependent file definitions to include/grub/osdep/hostfile*.h.

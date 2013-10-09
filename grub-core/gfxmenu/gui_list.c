@@ -97,6 +97,7 @@ list_destroy (void *vself)
   if (self->scrollbar_frame)
     self->scrollbar_frame->destroy (self->scrollbar_frame);
   grub_free (self->scrollbar_thumb_pattern);
+  grub_free (self->scrollbar_frame_pattern);
   grub_free (self);
 }
 
