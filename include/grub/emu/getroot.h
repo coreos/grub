@@ -50,10 +50,6 @@ void grub_util_follow_gpart_up (const char *name, grub_disk_addr_t *off_out,
 char **
 grub_find_root_devices_from_mountinfo (const char *dir, char **relroot);
 #endif
-#if defined (__GNU__)
-char *
-grub_util_find_hurd_root_device (const char *path);
-#endif
 
 /* Devmapper functions provided by getroot_devmapper.c.  */
 void

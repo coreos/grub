@@ -1,5 +1,10 @@
 2013-10-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/emu/getroot.h (grub_util_find_hurd_root_device): Remove
+	leftover.
+
+2013-10-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move OS-specific driver configuration to grub_util_fd_open. This
 	moves OS-dependent parts from kern/emu/hostdisk.c to
 	grub-core/osdep/*/hostdisk.c.
