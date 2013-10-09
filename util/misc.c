@@ -140,8 +140,8 @@ void
 grub_util_write_image_at (const void *img, size_t size, off_t offset, FILE *out,
 			  const char *name)
 {
-  grub_util_info ("writing 0x%" PRIxGRUB_SIZE " bytes at offset 0x%llx",
-		  size, (unsigned long long) offset);
+  grub_util_info ("writing 0x%llx bytes at offset 0x%llx",
+		  (unsigned long long) size, (unsigned long long) offset);
   if (fseeko (out, offset, SEEK_SET) == -1)
     grub_util_error (_("cannot seek `%s': %s"),
 		     name, strerror (errno));
@@ -154,7 +154,7 @@ void
 grub_util_write_image (const char *img, size_t size, FILE *out,
 		       const char *name)
 {
-  grub_util_info ("writing 0x%" PRIxGRUB_SIZE " bytes", size);
+  grub_util_info ("writing 0x%llx bytes", (unsigned long long) size);
   if (fwrite (img, 1, size, out) != size)
     {
       if (!name)

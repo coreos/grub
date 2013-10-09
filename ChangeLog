@@ -1,3 +1,9 @@
+2013-10-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/misc.c (grub_util_write_image_at): Don't use PRIxGRUB_SIZE for
+	size_t.
+	(grub_util_write_image): Likewise.
+
 2013-10-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/osdep/basic/random.c: New file. Abort on an attempt to
