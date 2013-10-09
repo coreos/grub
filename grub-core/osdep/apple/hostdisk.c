@@ -68,7 +68,23 @@ grub_util_get_fd_size (grub_util_fd_t fd, const char *name, unsigned *log_secsiz
   return nr << log_sector_size;
 }
 
-void
-grub_hostdisk_configure_device_driver (grub_util_fd_t fd __attribute__ ((unused)))
+grub_util_fd_t
+grub_util_fd_open (const char *os_dev, int flags)
 {
+  grub_util_fd_t ret;
+
+#ifdef O_LARGEFILE
+  flags |= O_LARGEFILE;
+#endif
+#ifdef O_BINARY
+  flags |= O_BINARY;
+#endif
+
+  ret = open (os_dev, flags);
+
+  /* If we can't have exclusive access, try shared access */
+  if (ret < 0)
+    ret = open (os_dev, flags | O_SHLOCK);
+
+  return ret;
 }

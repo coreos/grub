@@ -60,8 +60,8 @@
    after successfully opening the device.  For now, it simply prevents the
    floppy driver from retrying operations on failure, as otherwise the
    driver takes a while to abort when there is no floppy in the drive.  */
-void
-grub_hostdisk_configure_device_driver (grub_util_fd_t fd)
+static void
+configure_device_driver (grub_util_fd_t fd)
 {
   struct stat st;
 
@@ -78,11 +78,24 @@ grub_hostdisk_configure_device_driver (grub_util_fd_t fd)
 	return;
     }
 }
-#else
-void
-grub_hostdisk_configure_device_driver (grub_util_fd_t fd __attribute__ ((unused)))
+grub_util_fd_t
+grub_util_fd_open (const char *os_dev, int flags)
 {
+  grub_util_fd_t ret;
+
+#ifdef O_LARGEFILE
+  flags |= O_LARGEFILE;
+#endif
+#ifdef O_BINARY
+  flags |= O_BINARY;
+#endif
+
+  ret = open (os_dev, flags);
+  if (ret >= 0)
+    configure_device_driver (fd);
+  return ret;
 }
+
 #endif
 
 grub_int64_t

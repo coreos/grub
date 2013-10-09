@@ -53,9 +53,6 @@
 /* Maybe libc doesn't have large file support.  */
 #  include <linux/unistd.h>     /* _llseek */
 # endif /* (GLIBC < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR < 1)) */
-# ifndef BLKFLSBUF
-#  define BLKFLSBUF     _IO (0x12,97)   /* flush buffer cache */
-# endif /* ! BLKFLSBUF */
 #endif /* __linux__ */
 
 grub_uint64_t
@@ -166,11 +163,20 @@ grub_util_fd_write (grub_util_fd_t fd, const char *buf, size_t len)
   return size;
 }
 
+#if !defined (__NetBSD__) && !defined (__APPLE__) && !defined (__FreeBSD__) && !defined(__FreeBSD_kernel__)
 grub_util_fd_t
 grub_util_fd_open (const char *os_dev, int flags)
 {
+#ifdef O_LARGEFILE
+  flags |= O_LARGEFILE;
+#endif
+#ifdef O_BINARY
+  flags |= O_BINARY;
+#endif
+
   return open (os_dev, flags);
 }
+#endif
 
 const char *
 grub_util_fd_strerror (void)

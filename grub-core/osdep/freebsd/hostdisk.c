@@ -48,11 +48,6 @@
 # include <sys/mount.h>
 # include <libgeom.h>
 
-void
-grub_hostdisk_configure_device_driver (grub_util_fd_t fd __attribute__ ((unused)))
-{
-}
-
 grub_int64_t
 grub_util_get_fd_size_os (grub_util_fd_t fd, const char *name, unsigned *log_secsize)
 {
@@ -82,4 +77,46 @@ grub_util_get_fd_size_os (grub_util_fd_t fd, const char *name, unsigned *log_sec
 void
 grub_hostdisk_flush_initial_buffer (const char *os_dev __attribute__ ((unused)))
 {
+}
+
+grub_util_fd_t
+grub_util_fd_open (const char *os_dev, int flags)
+{
+  grub_util_fd_t ret;
+  int sysctl_flags, sysctl_oldflags;
+  size_t sysctl_size = sizeof (sysctl_flags);
+
+#ifdef O_LARGEFILE
+  flags |= O_LARGEFILE;
+#endif
+#ifdef O_BINARY
+  flags |= O_BINARY;
+#endif
+
+  if (sysctlbyname ("kern.geom.debugflags", &sysctl_oldflags, &sysctl_size, NULL, 0))
+    {
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot get current flags of sysctl kern.geom.debugflags");
+      return GRUB_UTIL_FD_INVALID;
+    }
+  sysctl_flags = sysctl_oldflags | 0x10;
+  if (! (sysctl_oldflags & 0x10)
+      && sysctlbyname ("kern.geom.debugflags", NULL , 0, &sysctl_flags, sysctl_size))
+    {
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags of sysctl kern.geom.debugflags");
+      return GRUB_UTIL_FD_INVALID;
+    }
+
+  ret = open (os_dev, flags);
+
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+  if (! (sysctl_oldflags & 0x10)
+      && sysctlbyname ("kern.geom.debugflags", NULL , 0, &sysctl_oldflags, sysctl_size))
+    {
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags back to the old value for sysctl kern.geom.debugflags");
+      close (ret);
+      return GRUB_UTIL_FD_INVALID;
+    }
+#endif
+
+  return ret;
 }

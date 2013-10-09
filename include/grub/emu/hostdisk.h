@@ -126,14 +126,6 @@ grub_util_get_fd_size_os (grub_util_fd_t fd, const char *name, unsigned *log_sec
 /* REturns partition offset in 512B blocks.  */
 grub_disk_addr_t
 grub_hostdisk_find_partition_start_os (const char *dev);
-/* Adjust device driver parameters.  This function should be called just
-   after successfully opening the device.  For now, it simply prevents the
-   floppy driver from retrying operations on failure, as otherwise the
-   driver takes a while to abort when there is no floppy in the drive.
-   For now it's non-nop only on NetBSD.
-*/
-void
-grub_hostdisk_configure_device_driver (grub_util_fd_t fd);
 void
 grub_hostdisk_flush_initial_buffer (const char *os_dev);
 

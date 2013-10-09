@@ -232,35 +232,11 @@ grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int f
 
   *max = ~0ULL;
 
-#ifdef O_LARGEFILE
-  flags |= O_LARGEFILE;
-#endif
 #ifdef O_SYNC
   flags |= O_SYNC;
 #endif
 #ifdef O_FSYNC
   flags |= O_FSYNC;
-#endif
-#ifdef O_BINARY
-  flags |= O_BINARY;
-#endif
-
-#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
-  int sysctl_flags, sysctl_oldflags;
-  size_t sysctl_size = sizeof (sysctl_flags);
-
-  if (sysctlbyname ("kern.geom.debugflags", &sysctl_oldflags, &sysctl_size, NULL, 0))
-    {
-      grub_error (GRUB_ERR_BAD_DEVICE, "cannot get current flags of sysctl kern.geom.debugflags");
-      return GRUB_UTIL_FD_INVALID;
-    }
-  sysctl_flags = sysctl_oldflags | 0x10;
-  if (! (sysctl_oldflags & 0x10)
-      && sysctlbyname ("kern.geom.debugflags", NULL , 0, &sysctl_flags, sysctl_size))
-    {
-      grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags of sysctl kern.geom.debugflags");
-      return GRUB_UTIL_FD_INVALID;
-    }
 #endif
 
   if (data->dev && strcmp (data->dev, map[disk->id].device) == 0 &&
@@ -290,29 +266,12 @@ grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int f
 	}
     }
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-  if (! (sysctl_oldflags & 0x10)
-      && sysctlbyname ("kern.geom.debugflags", NULL , 0, &sysctl_oldflags, sysctl_size))
-    {
-      grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags back to the old value for sysctl kern.geom.debugflags");
-      return GRUB_UTIL_FD_INVALID;
-    }
-#endif
-
-#if defined(__APPLE__)
-  /* If we can't have exclusive access, try shared access */
-  if (fd < 0)
-    fd = open(map[disk->id].device, flags | O_SHLOCK);
-#endif
-
   if (!GRUB_UTIL_FD_IS_VALID(data->fd))
     {
       grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot open `%s': %s"),
 		  map[disk->id].device, grub_util_fd_strerror ());
       return GRUB_UTIL_FD_INVALID;
     }
-
-  grub_hostdisk_configure_device_driver (fd);
 
   if (grub_util_fd_seek (fd, map[disk->id].device,
 			 sector << disk->log_sector_size))

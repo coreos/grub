@@ -169,6 +169,13 @@ grub_util_fd_open (const char *dev, int flg)
   IPTR unit = 0;
   ULONG flags = 0;
 
+#ifdef O_LARGEFILE
+  flg |= O_LARGEFILE;
+#endif
+#ifdef O_BINARY
+  flg |= O_BINARY;
+#endif
+
   ret->off = 0;
 
   if (dev[0] == '\0')
@@ -477,12 +484,6 @@ grub_util_fd_sync (grub_util_fd_t fd)
       grub_util_fd_sync_volume (fd);
       return;
     }
-}
-
-
-void
-grub_hostdisk_configure_device_driver (grub_util_fd_t fd __attribute__ ((unused)))
-{
 }
 
 void

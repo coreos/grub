@@ -86,7 +86,6 @@ grub_util_part_to_disk (const char *os_dev, struct stat *st,
 		      strerror (errno));
 	  return xstrdup (os_dev);
 	}
-      /* We don't call configure_device_driver since this isn't a floppy device name.  */
       if (ioctl (fd, DIOCGWEDGEINFO, &dkw) == -1)
 	{
 	  grub_error (GRUB_ERR_BAD_DEVICE,
@@ -156,7 +155,7 @@ grub_util_find_partition_start_os (const char *dev)
   struct disklabel label;
   int p_index;
 
-  fd = open (dev, O_RDONLY);
+  fd = grub_util_fd_open (dev, O_RDONLY);
   if (fd == -1)
     {
       grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot open `%s': %s"),
@@ -165,7 +164,6 @@ grub_util_find_partition_start_os (const char *dev)
     }
 
 #  if defined(__NetBSD__)
-  configure_device_driver (fd);
   /* First handle the case of disk wedges.  */
   if (ioctl (fd, DIOCGWEDGEINFO, &dkw) == 0)
     {

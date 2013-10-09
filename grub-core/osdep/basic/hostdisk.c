@@ -53,11 +53,6 @@ grub_util_get_fd_size_os (grub_util_fd_t fd __attribute__ ((unused)),
 }
 
 void
-grub_hostdisk_configure_device_driver (grub_util_fd_t fd __attribute__ ((unused)))
-{
-}
-
-void
 grub_hostdisk_flush_initial_buffer (const char *os_dev __attribute__ ((unused)))
 {
 }

@@ -47,11 +47,6 @@
 #include <hurd/fs.h>
 #include <sys/mman.h>
 
-void
-grub_hostdisk_configure_device_driver (grub_util_fd_t fd __attribute__ ((unused)))
-{
-}
-
 int
 grub_util_hurd_get_disk_info (const char *dev, grub_uint32_t *secsize, grub_disk_addr_t *offset,
 			      grub_disk_addr_t *size, char **parent)
