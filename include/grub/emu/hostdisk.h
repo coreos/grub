@@ -23,41 +23,7 @@
 #include <grub/disk.h>
 #include <grub/partition.h>
 #include <sys/types.h>
-
-#if defined (__AROS__)
-struct grub_util_fd
-{
-  enum { GRUB_UTIL_FD_FILE, GRUB_UTIL_FD_DISK } type;
-  grub_uint64_t off;
-  union
-  {
-    int fd;
-    struct {
-      struct IOExtTD *ioreq;
-      struct MsgPort *mp;
-      unsigned int is_floppy:1;
-      unsigned int is_64:1;
-    };
-  };
-};
-typedef struct grub_util_fd *grub_util_fd_t;
-
-#define GRUB_UTIL_FD_INVALID NULL
-#define GRUB_UTIL_FD_IS_VALID(x) ((x) != GRUB_UTIL_FD_INVALID)
-#define GRUB_UTIL_FD_STAT_IS_FUNCTIONAL 0
-
-#elif defined (__CYGWIN__) || defined (__MINGW32__)
-#include <windows.h>
-typedef HANDLE grub_util_fd_t;
-#define GRUB_UTIL_FD_INVALID INVALID_HANDLE_VALUE
-#define GRUB_UTIL_FD_IS_VALID(x) ((x) != GRUB_UTIL_FD_INVALID)
-#define GRUB_UTIL_FD_STAT_IS_FUNCTIONAL 0
-#else
-typedef int grub_util_fd_t;
-#define GRUB_UTIL_FD_INVALID -1
-#define GRUB_UTIL_FD_IS_VALID(x) ((x) >= 0)
-#define GRUB_UTIL_FD_STAT_IS_FUNCTIONAL 1
-#endif
+#include <grub/osdep/hostfile.h>
 
 grub_util_fd_t
 grub_util_fd_open (const char *os_dev, int flags);
@@ -123,12 +89,6 @@ grub_disk_addr_t
 grub_hostdisk_find_partition_start_os (const char *dev);
 void
 grub_hostdisk_flush_initial_buffer (const char *os_dev);
-
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) || defined (__sun__) || defined(__OpenBSD__)
-#define GRUB_DISK_DEVS_ARE_CHAR 1
-#else
-#define GRUB_DISK_DEVS_ARE_CHAR 0
-#endif
 
 struct grub_util_hostdisk_data
 {

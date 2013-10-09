@@ -29,6 +29,7 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 #include <grub/emu/misc.h>
+#include <grub/osdep/hostfile.h>
 
 char *grub_util_get_path (const char *dir, const char *file);
 size_t grub_util_get_image_size (const char *path);
@@ -38,14 +39,6 @@ void grub_util_write_image (const char *img, size_t size, FILE *out,
 			    const char *name);
 void grub_util_write_image_at (const void *img, size_t size, off_t offset,
 			       FILE *out, const char *name);
-
-#ifdef __MINGW32__
-
-#define fseeko fseeko64
-#define ftello ftello64
-
-#endif
-
 
 char *make_system_path_relative_to_its_root (const char *path);
 
