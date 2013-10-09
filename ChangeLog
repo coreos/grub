@@ -1,5 +1,12 @@
 2013-10-09  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
+	* grub-core/gfxmenu/gui_list.c: New options for scrollbar padding:
+	scrollbar_left_pad, scrollbar_right_pad, scrollbar_top_pad,
+	scrollbar_bottom_pad
+	* docs/grub.texi: Likewise.
+
+2013-10-09  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
 	* grub-core/gfxmenu/gui_list.c (list_destroy): Fixed memory leak.
 
 2013-10-09  Vladimir Serbinenko  <phcoder@gmail.com>

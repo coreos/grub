@@ -61,6 +61,10 @@ struct grub_gui_list_impl
   grub_gfxmenu_box_t scrollbar_thumb;
   int scrollbar_width;
   enum scrollbar_slice_mode scrollbar_slice;
+  int scrollbar_left_pad;
+  int scrollbar_right_pad;
+  int scrollbar_top_pad;
+  int scrollbar_bottom_pad;
 
   int first_shown_index;
 
@@ -384,15 +388,16 @@ list_paint (void *vself, const grub_video_rect_t *region)
     switch (self->scrollbar_slice)
       {
         case SCROLLBAR_SLICE_WEST:
-          content_rect.x += 2;
-          content_rect.width -= 2;
+          content_rect.x += self->scrollbar_right_pad;
+          content_rect.width -= self->scrollbar_right_pad;
           break;
         case SCROLLBAR_SLICE_CENTER:
           if (drawing_scrollbar)
-            content_rect.width -= scrollbar_width + 2;
+            content_rect.width -= scrollbar_width + self->scrollbar_left_pad
+                                  + self->scrollbar_right_pad;
           break;
         case SCROLLBAR_SLICE_EAST:
-          content_rect.width -= 2;
+          content_rect.width -= self->scrollbar_left_pad;
           break;
       }
 
@@ -402,6 +407,9 @@ list_paint (void *vself, const grub_video_rect_t *region)
 
     if (drawing_scrollbar)
       {
+        content_rect.y += self->scrollbar_top_pad;
+        content_rect.height -= self->scrollbar_top_pad
+                               + self->scrollbar_bottom_pad;
         content_rect.width = scrollbar_width;
         switch (self->scrollbar_slice)
           {
@@ -419,7 +427,7 @@ list_paint (void *vself, const grub_video_rect_t *region)
               break;
             case SCROLLBAR_SLICE_CENTER:
               content_rect.x = self->bounds.width - box_right_pad
-                               - scrollbar_width;
+                               - scrollbar_width - self->scrollbar_right_pad;
               content_rect.width = scrollbar_width;
               break;
             case SCROLLBAR_SLICE_EAST:
@@ -507,13 +515,14 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       switch (self->scrollbar_slice)
         {
           case SCROLLBAR_SLICE_WEST:
-            *width += 2;
+            *width += self->scrollbar_right_pad;
             break;
           case SCROLLBAR_SLICE_CENTER:
-            *width += self->scrollbar_width + 2;
+            *width += self->scrollbar_width + self->scrollbar_left_pad
+                      + self->scrollbar_right_pad;
             break;
           case SCROLLBAR_SLICE_EAST:
-            *width += 2;
+            *width += self->scrollbar_left_pad;
             break;
         }
 
@@ -653,6 +662,22 @@ list_set_property (void *vself, const char *name, const char *value)
       else if (grub_strcmp (value, "east") == 0)
         self->scrollbar_slice = SCROLLBAR_SLICE_EAST;
     }
+  else if (grub_strcmp (name, "scrollbar_left_pad") == 0)
+    {
+      self->scrollbar_left_pad = grub_strtol (value, 0, 10);
+    }
+  else if (grub_strcmp (name, "scrollbar_right_pad") == 0)
+    {
+      self->scrollbar_right_pad = grub_strtol (value, 0, 10);
+    }
+  else if (grub_strcmp (name, "scrollbar_top_pad") == 0)
+    {
+      self->scrollbar_top_pad = grub_strtol (value, 0, 10);
+    }
+  else if (grub_strcmp (name, "scrollbar_bottom_pad") == 0)
+    {
+      self->scrollbar_bottom_pad = grub_strtol (value, 0, 10);
+    }
   else if (grub_strcmp (name, "scrollbar") == 0)
     {
       self->draw_scrollbar = grub_strcmp (value, "false") != 0;
@@ -755,6 +780,10 @@ grub_gui_list_new (void)
   self->scrollbar_thumb_pattern = 0;
   self->scrollbar_width = 16;
   self->scrollbar_slice = SCROLLBAR_SLICE_EAST;
+  self->scrollbar_left_pad = 2;
+  self->scrollbar_right_pad = 0;
+  self->scrollbar_top_pad = 0;
+  self->scrollbar_bottom_pad = 0;
 
   self->first_shown_index = 0;
 

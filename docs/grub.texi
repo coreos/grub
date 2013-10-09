@@ -2092,6 +2092,16 @@ The following is a list of the components and the properties they support.
       b) If the scrollbar won't be drawn then the boot menu entry's width
       is the width of the center slice.
       c) We don't necessary need the menu pixmap box to display the scrollbar.
+   @item scrollbar_left_pad
+      @tab The left scrollbar padding in pixels.
+      Unused if ``scrollbar_slice`` is ``west``.
+   @item scrollbar_right_pad
+      @tab The right scrollbar padding in pixels.
+      Unused if ``scrollbar_slice`` is ``east``.
+   @item scrollbar_top_pad
+      @tab The top scrollbar padding in pixels.
+   @item scrollbar_bottom_pad
+      @tab The bottom scrollbar padding in pixels.
    @item max_items_shown
       @tab The maximum number of items to show on the menu.  If there are more than
       *max_items_shown* items in the menu, the list will scroll to make all
