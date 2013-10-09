@@ -148,7 +148,7 @@ have_devfs (void)
   return dev_devfsd_exists;
 }
 
-int
+static int
 grub_hostdisk_linux_find_partition (char *dev, grub_disk_addr_t sector)
 {
   size_t len = strlen (dev);

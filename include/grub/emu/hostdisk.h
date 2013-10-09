@@ -109,11 +109,6 @@ grub_util_get_fd_size (grub_util_fd_t fd, const char *name, unsigned *log_secsiz
 char *
 grub_util_get_os_disk (const char *os_dev);
 
-#ifdef __linux__
-int
-grub_hostdisk_linux_find_partition (char *dev, grub_disk_addr_t sector);
-#endif
-
 int
 grub_util_get_dm_node_linear_info (const char *dev,
 				   int *maj, int *min,

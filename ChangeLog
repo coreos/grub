@@ -1,5 +1,12 @@
 2013-10-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/emu/hostdisk.h (grub_hostdisk_linux_find_partition):
+	Removed.
+	* grub-core/osdep/linux/hostdisk.c (grub_hostdisk_linux_find_partition):
+	Made static.
+
+2013-10-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/emu/getroot.h (grub_util_find_hurd_root_device): Remove
 	leftover.
 
