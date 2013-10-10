@@ -233,6 +233,7 @@ kernel = {
   arm = kern/arm/dl_helper.c;
   arm = kern/arm/cache_armv6.S;
   arm = kern/arm/cache_armv7.S;
+  extra_dist = kern/arm/cache.S;
   arm = kern/arm/cache.c;
   arm = kern/arm/misc.S;
 

@@ -62,20 +62,41 @@ EXTRA_DIST += m4/uintmax_t.m4
 EXTRA_DIST += m4/visibility.m4
 EXTRA_DIST += m4/math_h.m4
 
-EXTRA_DIST += grub-core/kern/emu/hostdisk_apple.c
-EXTRA_DIST += grub-core/kern/emu/hostdisk_basic.c
-EXTRA_DIST += grub-core/kern/emu/hostdisk_bsd.c
-EXTRA_DIST += grub-core/kern/emu/hostdisk_freebsd.c
-EXTRA_DIST += grub-core/kern/emu/hostdisk_hurd.c
-EXTRA_DIST += grub-core/kern/emu/hostdisk_linux.c
-EXTRA_DIST += grub-core/kern/emu/hostdisk_windows.c
-EXTRA_DIST += grub-core/kern/emu/hostdisk_sun.c
+EXTRA_DIST += grub-core/osdep/apple/hostdisk.c
+EXTRA_DIST += grub-core/osdep/aros/hostdisk.c
+EXTRA_DIST += grub-core/osdep/basic/hostdisk.c
+EXTRA_DIST += grub-core/osdep/bsd/hostdisk.c
+EXTRA_DIST += grub-core/osdep/freebsd/hostdisk.c
+EXTRA_DIST += grub-core/osdep/hurd/hostdisk.c
+EXTRA_DIST += grub-core/osdep/linux/hostdisk.c
+EXTRA_DIST += grub-core/osdep/windows/hostdisk.c
+EXTRA_DIST += grub-core/osdep/sun/hostdisk.c
 
-EXTRA_DIST += util/getroot_apple.c
-EXTRA_DIST += util/getroot_basic.c
-EXTRA_DIST += util/getroot_bsd.c
-EXTRA_DIST += util/getroot_windows.c
-EXTRA_DIST += util/getroot_freebsd.c
-EXTRA_DIST += util/getroot_hurd.c
-EXTRA_DIST += util/getroot_linux.c
-EXTRA_DIST += util/getroot_sun.c
+EXTRA_DIST += grub-core/osdep/apple/getroot.c
+EXTRA_DIST += grub-core/osdep/aros/getroot.c
+EXTRA_DIST += grub-core/osdep/basic/getroot.c
+EXTRA_DIST += grub-core/osdep/bsd/getroot.c
+EXTRA_DIST += grub-core/osdep/windows/getroot.c
+EXTRA_DIST += grub-core/osdep/freebsd/getroot.c
+EXTRA_DIST += grub-core/osdep/hurd/getroot.c
+EXTRA_DIST += grub-core/osdep/linux/getroot.c
+EXTRA_DIST += grub-core/osdep/sun/getroot.c
+
+EXTRA_DIST += grub-core/osdep/basic/emunet.c
+EXTRA_DIST += grub-core/osdep/basic/random.c
+EXTRA_DIST += grub-core/osdep/basic/ofpath.c
+
+EXTRA_DIST += grub-core/osdep/unix/password.c
+EXTRA_DIST += grub-core/osdep/unix/random.c
+EXTRA_DIST += grub-core/osdep/unix/sleep.c
+
+EXTRA_DIST += grub-core/osdep/linux/emunet.c
+EXTRA_DIST += grub-core/osdep/linux/ofpath.c
+
+EXTRA_DIST += grub-core/osdep/windows/password.c
+EXTRA_DIST += grub-core/osdep/windows/random.c
+EXTRA_DIST += grub-core/osdep/windows/sleep.c
+
+EXTRA_DIST += tests/dfly-mbr-mbexample.mbr.img.gz
+EXTRA_DIST += tests/dfly-mbr-mbexample.dfly.img.gz
+

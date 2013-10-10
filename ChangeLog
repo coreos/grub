@@ -1,5 +1,10 @@
 2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/Makefile.extra-dist: Fix extra-dist list.
+	* grub-core/Makefile.core.def: Likewise.
+
+2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi: Document disk names used on Windows and AROS.
 
 2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
