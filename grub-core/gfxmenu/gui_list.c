@@ -59,6 +59,7 @@ struct grub_gui_list_impl
   char *scrollbar_thumb_pattern;
   grub_gfxmenu_box_t scrollbar_frame;
   grub_gfxmenu_box_t scrollbar_thumb;
+  int scrollbar_thumb_overlay;
   int scrollbar_width;
   enum scrollbar_slice_mode scrollbar_slice;
   int scrollbar_left_pad;
@@ -222,6 +223,11 @@ draw_scrollbar (list_impl_t self,
   frame->set_content_size (frame,
                            scrollbar_width - frame_horizontal_pad,
                            tracklen);
+  if (self->scrollbar_thumb_overlay)
+    {
+      tracklen += thumb_vertical_pad;
+      tracktop -= thumb->get_top_pad (thumb);
+    }
   int thumby = tracktop + tracklen * (value - min) / (max - min);
   int thumbheight = tracklen * extent / (max - min) + 1;
   /* Rare occasion: too many entries or too low height. */
@@ -231,12 +237,16 @@ draw_scrollbar (list_impl_t self,
       thumby = tracktop + ((tracklen - thumb_vertical_pad) * (value - min)
                            / (max - extent));
     }
-  thumb->set_content_size (thumb,
-                           scrollbar_width - frame_horizontal_pad
-                           - thumb_horizontal_pad,
+  int thumbx = frame->get_left_pad (frame);
+  int thumbwidth = scrollbar_width - frame_horizontal_pad;
+  if (!self->scrollbar_thumb_overlay)
+    thumbwidth -= thumb_horizontal_pad;
+  else
+    thumbx -= thumb->get_left_pad (thumb);
+  thumb->set_content_size (thumb, thumbwidth,
                            thumbheight - thumb_vertical_pad);
   frame->draw (frame, 0, 0);
-  thumb->draw (thumb, frame->get_left_pad (frame), thumby);
+  thumb->draw (thumb, thumbx, thumby);
 }
 
 /* Draw the list of items.  */
@@ -649,6 +659,10 @@ list_set_property (void *vself, const char *name, const char *value)
       grub_free (self->scrollbar_thumb_pattern);
       self->scrollbar_thumb_pattern = value ? grub_strdup (value) : 0;
     }
+  else if (grub_strcmp (name, "scrollbar_thumb_overlay") == 0)
+    {
+      self->scrollbar_thumb_overlay = grub_strcmp (value, "true") == 0;
+    }
   else if (grub_strcmp (name, "scrollbar_width") == 0)
     {
       self->scrollbar_width = grub_strtol (value, 0, 10);
@@ -778,6 +792,7 @@ grub_gui_list_new (void)
   self->scrollbar_thumb = 0;
   self->scrollbar_frame_pattern = 0;
   self->scrollbar_thumb_pattern = 0;
+  self->scrollbar_thumb_overlay = 0;
   self->scrollbar_width = 16;
   self->scrollbar_slice = SCROLLBAR_SLICE_EAST;
   self->scrollbar_left_pad = 2;

@@ -1,3 +1,8 @@
+2013-10-10  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/gui_list.c: New option `scrollbar_thumb_overlay`.
+	* docs/grub.texi: Likewise.
+
 2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/getroot.c (make_device_name): Remove dos_part and bsd_part as

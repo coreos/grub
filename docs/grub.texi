@@ -2151,6 +2151,14 @@ The following is a list of the components and the properties they support.
       @tab The image file pattern for the scroll bar thumb (the part of the scroll
       bar that moves as scrolling occurs).
       Example:  ``scrollbar_thumb_*.png``
+   @item scrollbar_thumb_overlay
+      @tab If this option is set to ``true`` then the scrollbar thumb
+      side slices (every slice except the center slice) will overlay the
+      scrollbar frame side slices. And the center slice of the scrollbar_thumb
+      can move all the way (from top to bottom), being drawn on the center
+      slice of the scrollbar frame. That way we can make a scrollbar with
+      round-shaped edges so there won't be a free space from the thumb to
+      the frame in top and bottom scrollbar positions. Default is ``false``.
    @item scrollbar_slice
       @tab The menu frame styled box's slice in which the scrollbar will be
       drawn. Possible values are ``west``, ``center``, ``east`` (default).
