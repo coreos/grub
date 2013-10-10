@@ -81,6 +81,9 @@ This edition documents version @value{VERSION}.
 @menu
 * Introduction::                Capturing the spirit of GRUB
 * Naming convention::           Names of your drives in GRUB
+* OS-specific notes about grub tools:: 
+                                Some notes about OS-specific behaviour of GRUB
+                                tools
 * Installation::                Installing GRUB on your drive
 * Booting::                     How to boot different operating systems
 * Configuration::               Writing your own configuration file
@@ -538,6 +541,75 @@ completion works with file names, too.
 That was easy, admit it. Now read the next chapter, to find out how to
 actually install GRUB on your drive.
 
+@node OS-specific notes about grub tools
+@chapter OS-specific notes about grub tools
+
+On OS which have device nodes similar to Unix-like OS GRUB tools use the
+OS name. E.g. for GNU/Linux:
+
+@example
+# @kbd{grub-install /dev/sda}
+@end example
+
+On AROS we use another syntax. For volumes:
+
+@example
+//:<volume name>
+@end example
+
+E.g.
+
+@example
+//:DH0
+@end example
+
+For disks we use syntax:
+@example
+//:<driver name>/unit/flags
+@end example
+
+E.g.
+
+@example
+# @kbd{grub-install //:ata.device/0/0}
+@end example
+
+On Windows we use UNC path. For volumes it's typically
+
+@example
+\\?\Volume{<GUID>}
+\\?\<drive letter>:
+@end example
+
+E.g.
+
+@example
+\\?\Volume{17f34d50-cf64-4b02-800e-51d79c3aa2ff}
+\\?\C:
+@end example
+
+
+For disks it's
+
+@example
+\\?\PhysicalDrive<number>
+@end example
+
+E.g.
+
+@example
+# @kbd{grub-install \\?\PhysicalDrive0}
+@end example
+
+Beware that you may need to further escape the backslashes depending on your
+shell.
+
+When compiled with cygwin support then cygwin drive names are automatically
+when needed. E.g.
+
+@example
+# @kbd{grub-install /dev/sda}
+@end example
 
 @node Installation
 @chapter Installation
@@ -584,7 +656,7 @@ For example, under Linux the following will install GRUB into the MBR
 of the first IDE disk:
 
 @example
-# @kbd{grub-install /dev/hda}
+# @kbd{grub-install /dev/sda}
 @end example
 
 Likewise, under GNU/Hurd, this has the same effect:

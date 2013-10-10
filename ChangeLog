@@ -1,5 +1,9 @@
 2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi: Document disk names used on Windows and AROS.
+
+2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/aros/getroot.c: Change to //: prefix as discussed
 	with AROS devs.
 	* grub-core/osdep/aros/hostdisk.c: Likewise.
