@@ -24,6 +24,7 @@
 #include <grub/emu/misc.h>
 #include <grub/util/misc.h>
 #include <grub/i18n.h>
+#include <grub/misc.h>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -112,7 +113,7 @@ main (int argc, char *argv[])
     .buflen = 64,
     .saltlen = 64
   };
-  char *bufhex, *salthex, *result;
+  char *result, *ptr;
   gcry_err_code_t gcry_err;
   grub_uint8_t *buf, *salt;
   char pass1[GRUB_AUTH_MAX_PASSLEN];
@@ -129,17 +130,13 @@ main (int argc, char *argv[])
       exit(1);
     }
 
-  bufhex = xmalloc (arguments.buflen * 2 + 1);
   buf = xmalloc (arguments.buflen);
   salt = xmalloc (arguments.saltlen);
-  salthex = xmalloc (arguments.saltlen * 2 + 1);
   
   printf ("%s", _("Enter password: "));
   if (!grub_password_get (pass1, GRUB_AUTH_MAX_PASSLEN))
     {
       free (buf);
-      free (bufhex);
-      free (salthex);
       free (salt);
       grub_util_error ("%s", _("failure to read password"));
     }
@@ -147,8 +144,6 @@ main (int argc, char *argv[])
   if (!grub_password_get (pass2, GRUB_AUTH_MAX_PASSLEN))
     {
       free (buf);
-      free (bufhex);
-      free (salthex);
       free (salt);
       grub_util_error ("%s", _("failure to read password"));
     }
@@ -158,8 +153,6 @@ main (int argc, char *argv[])
       memset (pass1, 0, sizeof (pass1));
       memset (pass2, 0, sizeof (pass2));
       free (buf);
-      free (bufhex);
-      free (salthex);
       free (salt);
       grub_util_error ("%s", _("passwords don't match"));
     }
@@ -169,8 +162,6 @@ main (int argc, char *argv[])
     {
       memset (pass1, 0, sizeof (pass1));
       free (buf);
-      free (bufhex);
-      free (salthex);
       free (salt);
       grub_util_error ("%s", _("couldn't retrieve random data for salt"));
     }
@@ -184,35 +175,33 @@ main (int argc, char *argv[])
   if (gcry_err)
     {
       memset (buf, 0, arguments.buflen);
-      memset (bufhex, 0, 2 * arguments.buflen);
       free (buf);
-      free (bufhex);
       memset (salt, 0, arguments.saltlen);
-      memset (salthex, 0, 2 * arguments.saltlen);
       free (salt);
-      free (salthex);
       grub_util_error (_("cryptographic error number %d"), gcry_err);
     }
 
-  hexify (bufhex, buf, arguments.buflen);
-  hexify (salthex, salt, arguments.saltlen);
-
   result = xmalloc (sizeof ("grub.pbkdf2.sha512.XXXXXXXXXXXXXXXXXXX.S.S")
 		    + arguments.buflen * 2 + arguments.saltlen * 2);
-  snprintf (result, sizeof ("grub.pbkdf2.sha512.XXXXXXXXXXXXXXXXXXX.S.S")
-	    + arguments.buflen * 2 + arguments.saltlen * 2,
-	    "grub.pbkdf2.sha512.%d.%s.%s",
-	    arguments.count, salthex, bufhex);
+  ptr = result;
+  memcpy (ptr, "grub.pbkdf2.sha512.", sizeof ("grub.pbkdf2.sha512.") - 1);
+  ptr += sizeof ("grub.pbkdf2.sha512.") - 1;
+  
+  grub_snprintf (ptr, sizeof ("XXXXXXXXXXXXXXXXXXX"), "%d", arguments.count);
+  ptr += strlen (ptr);
+  *ptr++ = '.';
+  hexify (ptr, salt, arguments.saltlen);
+  ptr += arguments.saltlen * 2;
+  *ptr++ = '.';
+  hexify (ptr, buf, arguments.buflen);
+  ptr += arguments.buflen * 2;
+  *ptr = '\0';
 
   printf (_("PBKDF2 hash of your password is %s\n"), result);
   memset (buf, 0, arguments.buflen);
-  memset (bufhex, 0, 2 * arguments.buflen);
   free (buf);
-  free (bufhex);
   memset (salt, 0, arguments.saltlen);
-  memset (salthex, 0, 2 * arguments.saltlen);
   free (salt);
-  free (salthex);
 
   return 0;
 }
