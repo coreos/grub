@@ -23,6 +23,7 @@
 #include <grub/util/misc.h>
 #include <grub/lib/envblk.h>
 #include <grub/i18n.h>
+#include <grub/osdep/hostfile.h>
 
 #include <stdio.h>
 #include <unistd.h>

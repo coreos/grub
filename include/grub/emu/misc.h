@@ -24,7 +24,6 @@
 
 #include <grub/symbol.h>
 #include <grub/types.h>
-#include <grub/osdep/hostfile.h>
 
 extern int verbosity;
 extern const char *program_name;

@@ -34,6 +34,7 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 #include <grub/zfs/zfs.h>
+#include <grub/osdep/hostfile.h>
 
 #include <stdio.h>
 #include <unistd.h>

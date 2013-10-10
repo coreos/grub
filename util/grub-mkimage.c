@@ -43,6 +43,7 @@
 #include <grub/uboot/image.h>
 #include <grub/arm/reloc.h>
 #include <grub/ia64/reloc.h>
+#include <grub/osdep/hostfile.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>

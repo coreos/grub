@@ -1,3 +1,9 @@
+2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Avoid including hostfile.h when not necessarry as it pulls
+	in OS-specific headers which may redefine generic names
+	like "far".
+
 2013-10-09  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_list.c: New options for scrollbar padding:

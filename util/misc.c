@@ -42,6 +42,7 @@
 #include <grub/time.h>
 #include <grub/i18n.h>
 #include <grub/script_sh.h>
+#include <grub/osdep/hostfile.h>
 
 #define ENABLE_RELOCATABLE 0
 #ifdef GRUB_BUILD

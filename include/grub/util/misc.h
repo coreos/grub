@@ -29,7 +29,6 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 #include <grub/emu/misc.h>
-#include <grub/osdep/hostfile.h>
 
 char *grub_util_get_path (const char *dir, const char *file);
 size_t grub_util_get_image_size (const char *path);
