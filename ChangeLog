@@ -1,5 +1,10 @@
 2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (make_device_name): Remove dos_part and bsd_part as
+	it's mostly unused. Move vestiges to the callers.
+
+2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkpasswd-pbkdf2.c: Remove temporary buffers for hex
 	version of salt and hash. Use grub_snprintf rather than snprintf.
 

@@ -175,22 +175,13 @@ find_system_device (const char *os_dev, struct stat *st, int convert, int add)
   return drive;
 }
 
-/*
- * Note: we do not use the new partition naming scheme as dos_part does not
- * necessarily correspond to an msdos partition.
- */
 static char *
-make_device_name (const char *drive, int dos_part, int bsd_part)
+make_device_name (const char *drive)
 {
-  char *ret, *ptr, *end;
+  char *ret, *ptr;
   const char *iptr;
 
-  ret = xmalloc (strlen (drive) * 2 
-		 + sizeof (",XXXXXXXXXXXXXXXXXXXXXXXXXX"
-			   ",XXXXXXXXXXXXXXXXXXXXXXXXXX"));
-  end = (ret + strlen (drive) * 2 
-	 + sizeof (",XXXXXXXXXXXXXXXXXXXXXXXXXX"
-		   ",XXXXXXXXXXXXXXXXXXXXXXXXXX"));
+  ret = xmalloc (strlen (drive) * 2);
   ptr = ret;
   for (iptr = drive; *iptr; iptr++)
     {
@@ -199,11 +190,6 @@ make_device_name (const char *drive, int dos_part, int bsd_part)
       *ptr++ = *iptr;
     }
   *ptr = 0;
-  if (dos_part >= 0)
-    snprintf (ptr, end - ptr, ",%d", dos_part + 1);
-  ptr += strlen (ptr);
-  if (bsd_part >= 0)
-    snprintf (ptr, end - ptr, ",%d", bsd_part + 1); 
 
   return ret;
 }
@@ -291,7 +277,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 #else
   if (! S_ISBLK (st.st_mode))
 #endif
-    return make_device_name (drive, -1, -1);
+    return make_device_name (drive);
 
   sys_disk = convert_system_partition_to_system_disk (os_dev, &st, &is_part);
 #else
@@ -305,30 +291,45 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   if (!is_part)
     {
       free (sys_disk);
-      return make_device_name (drive, -1, -1);
+      return make_device_name (drive);
     }
   free (sys_disk);
 
 #if defined(__APPLE__)
   /* Apple uses "/dev/r?disk[0-9]+(s[0-9]+)?".  */
+  /*
+   * Note: we do not use the new partition naming scheme as dos_part does not
+   * necessarily correspond to an msdos partition.
+   */
   {
     const char *p;
+    char *dri, *ret;
+    int part;
     int disk = (grub_memcmp (os_dev, "/dev/disk", sizeof ("/dev/disk") - 1)
 		 == 0);
     int rdisk = (grub_memcmp (os_dev, "/dev/rdisk", sizeof ("/dev/rdisk") - 1)
 		 == 0);
+
+    dri = make_device_name (drive)
  
     if (!disk && !rdisk)
-      return make_device_name (drive, -1, -1);
+      return dri;
 
     p = os_dev + sizeof ("/dev/disk") + rdisk - 1;
     while (*p >= '0' && *p <= '9')
       p++;
     if (*p != 's')
-      return make_device_name (drive, -1, -1);
+      return dri;
     p++;
 
-    return make_device_name (drive, strtol (p, NULL, 10) - 1, -1);
+    part = strtol (p, NULL, 10);
+    if (part == 0)
+      return dri;
+
+    ret = xasprintf ("%s,%d", dri, part);
+    free (dri);
+
+    return ret;
   }
 
 #else
@@ -349,7 +350,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     grub_disk_t disk;
     struct grub_util_biosdisk_get_grub_dev_ctx ctx;
 
-    name = make_device_name (drive, -1, -1);
+    name = make_device_name (drive);
 
     ctx.start = grub_util_find_partition_start (os_dev);
     if (grub_errno != GRUB_ERR_NONE)
@@ -362,11 +363,18 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     /* Some versions of Hurd use badly glued Linux code to handle partitions
        resulting in partitions being promoted to disks.  */
     /* GNU uses "/dev/[hs]d[0-9]+(s[0-9]+[a-z]?)?".  */
+    /*
+     * Note: we do not use the new partition naming scheme as dos_part does not
+     * necessarily correspond to an msdos partition.
+     */
     if (ctx.start == (grub_disk_addr_t) -1)
       {
 	char *p;
+	char *dri;
 	int dos_part = -1;
 	int bsd_part = -1;
+
+	dri = make_device_name (drive);
 
 	p = strrchr (os_dev + sizeof ("/dev/hd") - 1, 's');
 	if (p)
@@ -376,16 +384,19 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
 	    p++;
 	    n = strtol (p, &q, 10);
-	    if (p != q && n != GRUB_LONG_MIN && n != GRUB_LONG_MAX)
+	    if (p != q && n > 0 && n != GRUB_LONG_MAX)
 	      {
-		dos_part = (int) n - 1;
-
+		char *t;
+		t = dri;
 		if (*q >= 'a' && *q <= 'g')
-		  bsd_part = *q - 'a';
+		  dri = xasprintf ("%s,%d,%d", t, n, *q - 'a' + 1);
+		else
+		  dri = xasprintf ("%s,%d", t, n);
+		free (t);
 	      }
 	  }
 
-	return make_device_name (drive, dos_part, bsd_part);
+	return dri;
       }
 #endif
 
@@ -422,7 +433,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 #endif
 	    if (canon)
 	      free (canon);
-	    return make_device_name (drive, -1, -1);
+	    return make_device_name (drive);
 	  }
 	else
 	  return 0;
