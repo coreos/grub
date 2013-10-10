@@ -577,14 +577,14 @@ E.g.
 On Windows we use UNC path. For volumes it's typically
 
 @example
-\\?\Volume{<GUID>}
+\\?\Volume@{<GUID>@}
 \\?\<drive letter>:
 @end example
 
 E.g.
 
 @example
-\\?\Volume{17f34d50-cf64-4b02-800e-51d79c3aa2ff}
+\\?\Volume@{17f34d50-cf64-4b02-800e-51d79c3aa2ff@}
 \\?\C:
 @end example
 
