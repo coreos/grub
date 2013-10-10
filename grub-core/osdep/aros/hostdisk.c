@@ -64,10 +64,8 @@ canonicalize_file_name (const char *path)
 {
   char *ret;
   BPTR lck;
-  const char *p;
 
-  p = strchr (path, ':');
-  if (p && !p[1])
+  if (path[0] == '/' && path[1] == '/' && path[2] == ':')
     return xstrdup (path);
 
   ret = xmalloc (2048);
@@ -164,7 +162,8 @@ grub_util_fd_t
 grub_util_fd_open (const char *dev, int flg)
 {
   grub_util_fd_t ret = xmalloc (sizeof (*ret));
-  const char *p, *p1, *p2;
+  const char *p1, *p2;
+  const char *dname;
   char *tmp;
   IPTR unit = 0;
   ULONG flags = 0;
@@ -178,15 +177,7 @@ grub_util_fd_open (const char *dev, int flg)
 
   ret->off = 0;
 
-  if (dev[0] == '\0')
-    {
-      free (ret);
-      return NULL;
-    }
-
-  p = strchr (dev, ':');
-
-  if (!p || p[1])
+  if (dev[0] != '/' || dev[1] != '/' || dev[2] != ':')
     {
       ret->type = GRUB_UTIL_FD_FILE;
       ret->fd = open (dev, flg);
@@ -198,9 +189,9 @@ grub_util_fd_open (const char *dev, int flg)
       return ret;
     }
 
-  p1 = strchr (dev, '/');
+  p1 = strchr (dev + 3, '/');
   if (!p1)
-    p1 = p;
+    p1 = dev + strlen (dev);
   else
     {
       unit = grub_strtoul (p1 + 1, (char **) &p2, 16);
@@ -223,15 +214,18 @@ grub_util_fd_open (const char *dev, int flg)
       return NULL;
     }
 
-  tmp = xmalloc (p1 - dev + 1);
-  memcpy (tmp, dev, p1 - dev);
-  tmp[p1 - dev] = '\0';
+  dname = dev + 3;
   ret->type = GRUB_UTIL_FD_DISK;
+
+  tmp = xmalloc (p1 - dname + 1);
+  memcpy (tmp, dname, p1 - dname);
+  tmp[p1 - dname] = '\0';
 
   ret->is_floppy = (strcmp (tmp, TD_NAME) == 0);
   ret->is_64 = 1;
 
-  if (OpenDevice ((unsigned char *) tmp, unit, (struct IORequest *) ret->ioreq, flags))
+  if (OpenDevice ((unsigned char *) tmp, unit,
+		  (struct IORequest *) ret->ioreq, flags))
     {
       free (tmp);
       free (ret);

@@ -40,35 +40,27 @@ grub_util_part_to_disk (const char *dev,
 			struct stat *st __attribute__ ((unused)),
 			int *is_part)
 {
-  const char *p;
-  char *dname;
+  const char *dname;
   char *ret;
   struct DosList *dl;
   struct DeviceNode *dn;
   struct FileSysStartupMsg *fm;
   struct DosEnvec *envec;
 
-  if (!dev[0])
+  if (dev[0] != '/' || dev[1] != '/' || dev[2] != ':')
     return xstrdup (dev);
 
-  p = dev + strlen (dev) - 1;
-  if (*p != ':')
-    return xstrdup (dev);
-  dname = xmalloc (p - dev + 1);
-  memcpy (dname, dev, p - dev);
-  dname[p - dev] = '\0';
+  dname = dev + 3;
   dl = LockDosList(LDF_READ);
 
   if (!dl)
     {
-      free (dname);
       return xstrdup (dev);
     }
 
   dn = (struct DeviceNode *) FindDosEntry (dl, (unsigned char *) dname,
 					   LDF_DEVICES);
   UnLockDosList (LDF_READ);
-  free (dname);
   if (!dn)
     return xstrdup (dev);
 
@@ -80,7 +72,7 @@ grub_util_part_to_disk (const char *dev,
 
   *is_part = 1;
 
-  ret = xasprintf ("%s/%lx/%lx:", fm->fssm_Device, fm->fssm_Unit, (unsigned long) fm->fssm_Flags);
+  ret = xasprintf ("//:%s/%lx/%lx", fm->fssm_Device, fm->fssm_Unit, (unsigned long) fm->fssm_Flags);
 
   return ret;
 }
@@ -108,32 +100,24 @@ grub_util_get_grub_dev_os (const char *os_dev __attribute__ ((unused)))
 grub_disk_addr_t
 grub_util_find_partition_start_os (const char *dev)
 {
-  const char *p;
-  char *dname;
+  const char *dname;
   struct DosList *dl;
   struct DeviceNode *dn;
   struct FileSysStartupMsg *fm;
   struct DosEnvec *envec;
 
-  if (!dev[0])
+  if (dev[0] != '/' || dev[1] != '/' || dev[2] != ':')
     return 0;
 
-  p = dev + strlen (dev) - 1;
-  if (*p != ':')
-    return 0;
-  dname = xmalloc (p - dev + 1);
-  memcpy (dname, dev, p - dev);
-  dname[p - dev] = '\0';
+  dname = dev + 3;
   dl = LockDosList(LDF_READ);
   if (!dl)
     {
-      free (dname);
       return 0;
     }
   dn = (struct DeviceNode *) FindDosEntry (dl, (unsigned char *) dname,
 					   LDF_DEVICES);
   UnLockDosList (LDF_READ);
-  free (dname);
   if (!dn)
     return 0;
 
@@ -150,9 +134,15 @@ char *
 grub_make_system_path_relative_to_its_root (const char *path)
 {
   char *p;
-  unsigned char *tmp = xmalloc (2048);
+  unsigned char *tmp;
   char *ret;
   BPTR lck;
+
+  if (path[0] == '/' && path[1] == '/' && path[2] == ':')
+    return xstrdup (path);
+
+  tmp = xmalloc (2048);
+
   lck = Lock ((const unsigned char *) path, SHARED_LOCK);
   if (!lck || !NameFromLock (lck, tmp, 2040))
     {
@@ -201,12 +191,15 @@ grub_guess_root_devices (const char *path)
       grub_util_info ("Info(%s) failed", path);
       os_dev = xmalloc (2 * sizeof (os_dev[0]));
       sz = strlen (path);
-      os_dev[0] = xmalloc (sz + 2);
-      memcpy (os_dev[0], path, sz);
-      os_dev[0][sz] = ':';
-      os_dev[0][sz+1] = '\0';
-      p = strchr (os_dev[0], ':');
-      *(p + 1) = '\0';
+      os_dev[0] = xmalloc (sz + 5);
+      os_dev[0][0] = '/';
+      os_dev[0][1] = '/';
+      os_dev[0][2] = ':';
+      memcpy (os_dev[0] + 3, path, sz);
+      os_dev[0][sz + 3] = ':';
+      os_dev[0][sz + 4] = '\0';
+      p = strchr (os_dev[0] + 3, ':');
+      *p = '\0';
       os_dev[1] = NULL;
       return os_dev;
     }
@@ -240,10 +233,12 @@ grub_guess_root_devices (const char *path)
   os_dev = xmalloc (2 * sizeof (os_dev[0]));
   sz = strlen (nm);
   
-  os_dev[0] = xmalloc (sz + 2);
-  memcpy (os_dev[0], nm, sz);
-  os_dev[0][sz] = ':';
-  os_dev[0][sz+1] = '\0';
+  os_dev[0] = xmalloc (sz + 4);
+  os_dev[0][0] = '/';
+  os_dev[0][1] = '/';
+  os_dev[0][2] = ':';
+  memcpy (os_dev[0] + 3, nm, sz);
+  os_dev[0][sz+3] = '\0';
   os_dev[1] = NULL;
 
   UnLockDosList (LDF_READ | LDF_DEVICES);
@@ -254,17 +249,18 @@ grub_guess_root_devices (const char *path)
 int
 grub_util_biosdisk_is_floppy (grub_disk_t disk)
 {
-  const char *dname, *p;
+  const char *dname;
 
   dname = grub_util_biosdisk_get_osdev (disk);
 
-  p = strchr (dname, ':');
-  if (!p || p[1])
+  if (dname[0] != '/' || dname[1] != '/' || dname[2] != ':')
     return 0;
+
+  dname += 3;
 
   if (strncmp (dname, TD_NAME, sizeof (TD_NAME) - 1) == 0
       && (TD_NAME[sizeof (TD_NAME) - 1] == '/'
-	  || TD_NAME[sizeof (TD_NAME) - 1] == ':'))
+	  || TD_NAME[sizeof (TD_NAME) - 1] == '\0'))
     return 1;
   return 0;
 }
