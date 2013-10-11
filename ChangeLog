@@ -1,3 +1,7 @@
+2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/fat.c: Fix handling of exfat contiguous files.
+
 2013-10-10  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_list.c: New option `scrollbar_thumb_overlay`.

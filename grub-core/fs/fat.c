@@ -87,6 +87,10 @@ typedef struct grub_fat_bpb grub_current_fat_bpb_t;
 #endif
 
 #ifdef MODE_EXFAT
+enum
+  {
+    FLAG_CONTIGUOUS = 2
+  };
 struct grub_fat_dir_entry
 {
   grub_uint8_t entry_type;
@@ -135,7 +139,7 @@ struct grub_fat_dir_node
   grub_uint64_t file_size;
   grub_uint64_t valid_size;
   int have_stream;
-  int is_label;
+  int is_contiguous;
 };
 
 typedef struct grub_fat_dir_node grub_fat_dir_node_t;
@@ -186,6 +190,8 @@ struct grub_fat_data
 #ifndef MODE_EXFAT
   grub_uint32_t root_sector;
   grub_uint32_t num_root_sectors;
+#else
+  int is_contiguous;
 #endif
 
   int cluster_bits;
@@ -336,13 +342,12 @@ grub_fat_mount (grub_disk_t disk)
 #ifdef MODE_EXFAT
   {
     /* exFAT.  */
-    grub_uint16_t flags = grub_le_to_cpu16 (bpb.volume_flags);
-
     data->root_cluster = grub_le_to_cpu32 (bpb.root_cluster);
     data->fat_size = 32;
     data->cluster_eof_mark = 0xffffffff;
 
-    if ((flags & 0x1) && bpb.num_fats > 1)
+    if ((bpb.volume_flags & grub_cpu_to_le16_compile_time (0x1))
+	&& bpb.num_fats > 1)
       data->fat_sector += data->sectors_per_fat;
   }
 #else
@@ -443,6 +448,9 @@ grub_fat_mount (grub_disk_t disk)
   data->file_cluster = data->root_cluster;
   data->cur_cluster_num = ~0U;
   data->attr = GRUB_FAT_ATTR_DIRECTORY;
+#ifdef MODE_EXFAT
+  data->is_contiguous = 0;
+#endif
   return data;
 
  fail:
@@ -479,6 +487,26 @@ grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
     }
 #endif
 
+#ifdef MODE_EXFAT
+  if (data->is_contiguous)
+    {
+      /* Read the data here.  */
+      sector = (data->cluster_sector
+		+ ((data->file_cluster - 2)
+		   << data->cluster_bits));
+
+      disk->read_hook = read_hook;
+      disk->read_hook_data = read_hook_data;
+      grub_disk_read (disk, sector + (offset >> GRUB_DISK_SECTOR_BITS),
+		      offset & (GRUB_DISK_SECTOR_SIZE - 1), len, buf);
+      disk->read_hook = 0;
+      if (grub_errno)
+	return -1;
+
+      return len;
+    }
+#endif
+
   /* Calculate the logical cluster number and offset.  */
   logical_cluster_bits = (data->cluster_bits
 			  + GRUB_DISK_SECTOR_BITS);
@@ -497,7 +525,7 @@ grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
 	{
 	  /* Find next cluster.  */
 	  grub_uint32_t next_cluster;
-	  unsigned long fat_offset;
+	  grub_uint32_t fat_offset;
 
 	  switch (data->fat_size)
 	    {
@@ -669,6 +697,8 @@ grub_fat_iterate_dir_next (grub_disk_t disk, struct grub_fat_data *data,
 		  ctxt->dir.file_size
 		    = grub_cpu_to_le64 (sec.type_specific.stream_extension.file_size);
 		  ctxt->dir.have_stream = 1;
+		  ctxt->dir.is_contiguous = !!(dir.type_specific.stream_extension.flags
+					       & grub_cpu_to_le16_compile_time (FLAG_CONTIGUOUS));
 		  break;
 		case 0xc1:
 		  {
@@ -917,6 +947,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 #ifdef MODE_EXFAT
 	  data->file_size = ctxt.dir.file_size;
 	  data->file_cluster = ctxt.dir.first_cluster;
+	  data->is_contiguous = ctxt.dir.is_contiguous;
 #else
 	  data->file_size = grub_le_to_cpu32 (ctxt.dir.file_size);
 	  data->file_cluster = ((grub_le_to_cpu16 (ctxt.dir.first_cluster_high) << 16)
