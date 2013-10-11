@@ -1,4 +1,9 @@
-2013-10-10  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-10-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-setup.c (setup): Move copying of partition table as
+	futher up as possible to avoid possible overwrite by floppy routines.
+
+2013-10-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/fat.c: Fix handling of exfat contiguous files.
 

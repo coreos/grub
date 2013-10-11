@@ -396,6 +396,15 @@ setup (const char *dir,
 
     grub_partition_iterate (dest_dev->disk, identify_partmap, &ctx);
 
+    /* Copy the partition table.  */
+    if (ctx.dest_partmap ||
+        (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk)))
+      memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
+
+    free (tmp_img);
+
     if (ctx.container
 	&& grub_strcmp (ctx.container->partmap->name, "msdos") == 0
 	&& ctx.dest_partmap
@@ -450,15 +459,6 @@ setup (const char *dir,
 
       }
 
-    /* Copy the partition table.  */
-    if (ctx.dest_partmap ||
-        (!allow_floppy && !grub_util_biosdisk_is_floppy (dest_dev->disk)))
-      memcpy (boot_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
-	      tmp_img + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
-	      GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
-
-    free (tmp_img);
-    
     if (! ctx.dest_partmap && ! fs && !is_ldm)
       {
 	grub_util_warn ("%s", _("Attempting to install GRUB to a partitionless disk or to a partition.  This is a BAD idea."));
