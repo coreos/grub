@@ -655,6 +655,14 @@ case "$target_os" in
       TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_x86_64_fbsd"
     fi
     ;;
+  openbsd*)
+    if test x"$target_cpu" = xi386; then
+      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_i386_obsd"
+    fi
+    if test x"$target_cpu" = xx86_64; then
+      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_x86_64_obsd"
+    fi
+    ;;
   *)
     if test x"$target_cpu" = xi386; then
       TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_i386"

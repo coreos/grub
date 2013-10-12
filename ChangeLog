@@ -1,3 +1,7 @@
+2013-10-12  Ilya Bakulin <Ilya_Bakulin@genua.de>
+
+	* configure.ac: Use -melf_*_obsd on openbsd.
+
 2013-10-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/arm/dl_helper.c: Use more proper %p for pointer.
