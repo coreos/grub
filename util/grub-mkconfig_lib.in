@@ -71,7 +71,7 @@ is_path_readable_by_grub ()
     return 1
   fi
 
-  if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
+  if [ x$GRUB_ENABLE_CRYPTODISK = xy ]; then
       return 0
   fi
   
@@ -138,7 +138,7 @@ prepare_grub_to_access_device ()
     echo "insmod ${module}"
   done
 
-  if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
+  if [ x$GRUB_ENABLE_CRYPTODISK = xy ]; then
       for uuid in "`"${grub_probe}" --device "$@" --target=cryptodisk_uuid`"; do
 	  echo "cryptomount -u $uuid"
       done

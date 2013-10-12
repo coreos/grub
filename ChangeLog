@@ -1,3 +1,12 @@
+2013-10-12  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	Fix inconsistent use of GRUB_CRYPTODISK_ENABLE and
+	GRUB_ENABLE_CRYPTODISK.
+
+	* util/grub-install.in: Rename all GRUB_CRYPTODISK_ENABLE to
+	GRUB_ENABLE_CRYPTODISK.
+	* util/grub-mkconfig_lib.in: Likewise.
+
 2013-10-12  Christian Cier-Zniewski <c.cier@gmx.de>
 
 	* docs/grub.texi (Vendor power-on keys): Add Dell Latitude E4300.

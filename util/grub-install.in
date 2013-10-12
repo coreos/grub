@@ -632,7 +632,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
 	fi
     fi
 else
-    if [ x$GRUB_CRYPTODISK_ENABLE = xy ]; then
+    if [ x$GRUB_ENABLE_CRYPTODISK = xy ]; then
 	for uuid in "`echo "${grub_device}" | xargs "${grub_probe}"  --target=cryptodisk_uuid --device`"; do
 	    echo "cryptomount -u $uuid" >> "${grubdir}/${grub_modinfo_target_cpu}-$grub_modinfo_platform/load.cfg"
 	done
