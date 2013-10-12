@@ -1,3 +1,7 @@
+2013-10-12  Christian Cier-Zniewski <c.cier@gmx.de>
+
+	* docs/grub.texi (Vendor power-on keys): Add Dell Latitude E4300.
+
 2013-10-12  Melki Christian  <Christian.melki@saabgroup.com>
 
 	* grub-core/term/at_keyboard.c [DEBUG_AT_KEYBOARD]: Fix compilation

@@ -2384,6 +2384,8 @@ model-specific.  Values known to the GRUB team are:
 @table @key
 @item Dell XPS M1530
 85:3
+@item Dell Latitude E4300
+85:3
 @item Asus EeePC 1005PE 
 84:1 (unconfirmed)
 @end table
