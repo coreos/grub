@@ -109,8 +109,8 @@ grub_arm_reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
     return grub_error (GRUB_ERR_BAD_MODULE,
 		       N_("THM_CALL Relocation out of range."));
 
-  grub_dprintf ("dl", "    relative destination = 0x%08lx",
-		(unsigned long)target + offset);
+  grub_dprintf ("dl", "    relative destination = %p",
+		(char *) target + offset);
 
   /* Reassemble instruction word */
   sign = (offset >> 24) & 1;

@@ -1,5 +1,9 @@
 2013-10-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/dl_helper.c: Use more proper %p for pointer.
+
+2013-10-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h: Use gnu_printf rather than printf as format
 	template since our functions are independent of libc.
 
