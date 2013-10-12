@@ -1,3 +1,8 @@
+2013-10-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/misc.h: Use gnu_printf rather than printf as format
+	template since our functions are independent of libc.
+
 2013-10-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-setup.c (setup): Move copying of partition table as
