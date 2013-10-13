@@ -236,7 +236,7 @@ main (int argc, char *argv[])
     text = arguments.text;
   else
     {
-      FILE *in = fopen (arguments.input, "r");
+      FILE *in = grub_util_fopen (arguments.input, "r");
       size_t s;
       if (!in)
 	grub_util_error (_("cannot open `%s': %s"), arguments.input,
@@ -253,7 +253,7 @@ main (int argc, char *argv[])
     }
 
   if (arguments.output)
-    out = fopen (arguments.output, "wb");
+    out = grub_util_fopen (arguments.output, "wb");
   else
     out = stdout;
   if (!out)

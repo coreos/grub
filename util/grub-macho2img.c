@@ -52,13 +52,13 @@ main (int argc, char **argv)
 	      "Convert Mach-O into raw image\n", argv[0]);
       return 0;
     }
-  in = fopen (argv[1 + do_bss], "rb");
+  in = grub_util_fopen (argv[1 + do_bss], "rb");
   if (! in)
     {
       printf ("Couldn't open %s\n", argv[1 + do_bss]);
       return 1;
     }
-  out = fopen (argv[2 + do_bss], "wb");
+  out = grub_util_fopen (argv[2 + do_bss], "wb");
   if (! out)
     {
       fclose (in);

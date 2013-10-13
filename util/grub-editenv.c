@@ -119,7 +119,7 @@ create_envblk_file (const char *name)
   buf = xmalloc (DEFAULT_ENVBLK_SIZE);
 
   namenew = xasprintf ("%s.new", name);
-  fp = fopen (namenew, "wb");
+  fp = grub_util_fopen (namenew, "wb");
   if (! fp)
     grub_util_error (_("cannot open `%s': %s"), namenew,
 		     strerror (errno));
@@ -149,12 +149,12 @@ open_envblk_file (const char *name)
   size_t size;
   grub_envblk_t envblk;
 
-  fp = fopen (name, "rb");
+  fp = grub_util_fopen (name, "rb");
   if (! fp)
     {
       /* Create the file implicitly.  */
       create_envblk_file (name);
-      fp = fopen (name, "rb");
+      fp = grub_util_fopen (name, "rb");
       if (! fp)
         grub_util_error (_("cannot open `%s': %s"), name,
 			 strerror (errno));
@@ -208,7 +208,7 @@ write_envblk (const char *name, grub_envblk_t envblk)
 {
   FILE *fp;
 
-  fp = fopen (name, "wb");
+  fp = grub_util_fopen (name, "wb");
   if (! fp)
     grub_util_error (_("cannot open `%s': %s"), name,
 		     strerror (errno));

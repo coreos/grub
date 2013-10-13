@@ -22,6 +22,8 @@
 #include <config.h>
 #include <stdarg.h>
 
+#include <stdio.h>
+
 #include <grub/symbol.h>
 #include <grub/types.h>
 
@@ -52,6 +54,13 @@ extern char * canonicalize_file_name (const char *path);
 
 #ifdef HAVE_DEVICE_MAPPER
 int grub_device_mapper_supported (void);
+#endif
+
+#ifdef GRUB_BUILD
+#define grub_util_fopen fopen
+#else
+FILE *
+grub_util_fopen (const char *path, const char *mode);
 #endif
 
 #endif /* GRUB_EMU_MISC_H */

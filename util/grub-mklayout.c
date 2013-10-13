@@ -482,7 +482,7 @@ main (int argc, char *argv[])
     }
 
   if (arguments.input)
-    in = fopen (arguments.input, "r");
+    in = grub_util_fopen (arguments.input, "r");
   else
     in = stdin;
 
@@ -491,7 +491,7 @@ main (int argc, char *argv[])
 		     strerror (errno));
 
   if (arguments.output)
-    out = fopen (arguments.output, "wb");
+    out = grub_util_fopen (arguments.output, "wb");
   else
     out = stdout;
 

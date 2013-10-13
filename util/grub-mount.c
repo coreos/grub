@@ -474,7 +474,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	  FILE *f;
 	  ssize_t real_size;
 	  grub_uint8_t buf[1024];
-	  f = fopen (arg, "rb");
+	  f = grub_util_fopen (arg, "rb");
 	  if (!f)
 	    {
 	      printf (_("%s: error:"), program_name);

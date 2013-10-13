@@ -2052,7 +2052,7 @@ main (int argc, char *argv[])
 
   if (arguments.output)
     {
-      fp = fopen (arguments.output, "wb");
+      fp = grub_util_fopen (arguments.output, "wb");
       if (! fp)
 	grub_util_error (_("cannot open `%s': %s"), arguments.output,
 			 strerror (errno));

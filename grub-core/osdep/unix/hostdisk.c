@@ -211,4 +211,10 @@ canonicalize_file_name (const char *path)
 #endif
 }
 
+FILE *
+grub_util_fopen (const char *path, const char *mode)
+{
+  return fopen (path, mode);
+}
+
 #endif

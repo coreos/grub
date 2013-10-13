@@ -36,7 +36,7 @@ grub_get_random (void *out, grub_size_t len)
   FILE *f;
   size_t rd;
 
-  f = fopen ("/dev/urandom", "rb");
+  f = grub_util_fopen ("/dev/urandom", "rb");
   if (!f)
     return 1;
   rd = fread (out, 1, len, f);

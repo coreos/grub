@@ -184,19 +184,19 @@ main (int argc, char *argv[])
       exit(1);
     }
 
-  in32 = fopen (arguments.input32, "r");
+  in32 = grub_util_fopen (arguments.input32, "r");
 
   if (!in32)
     grub_util_error (_("cannot open `%s': %s"), arguments.input32,
 		     strerror (errno));
 
-  in64 = fopen (arguments.input64, "r");
+  in64 = grub_util_fopen (arguments.input64, "r");
   if (!in64)
     grub_util_error (_("cannot open `%s': %s"), arguments.input64,
 		     strerror (errno));
 
   if (arguments.output)
-    out = fopen (arguments.output, "wb");
+    out = grub_util_fopen (arguments.output, "wb");
   else
     out = stdout;
 

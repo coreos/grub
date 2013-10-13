@@ -499,3 +499,9 @@ grub_util_fd_strerror (void)
     return buf + 1;
   return buf;
 }
+
+FILE *
+grub_util_fopen (const char *path, const char *mode)
+{
+  return fopen (path, mode);
+}

@@ -164,7 +164,7 @@ main (int argc, char *argv[])
     }
   else
     {
-      ctx.file = fopen (ctx.arguments.filename, "r");
+      ctx.file = grub_util_fopen (ctx.arguments.filename, "r");
       if (! ctx.file)
 	{
           char *program = xstrdup(program_name);

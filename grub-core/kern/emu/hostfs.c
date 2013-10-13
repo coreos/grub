@@ -109,7 +109,7 @@ grub_hostfs_open (struct grub_file *file, const char *name)
   FILE *f;
   struct grub_hostfs_data *data;
 
-  f = fopen (name, "rb");
+  f = grub_util_fopen (name, "rb");
   if (! f)
     return grub_error (GRUB_ERR_BAD_FILENAME,
 		       N_("can't open `%s': %s"), name,

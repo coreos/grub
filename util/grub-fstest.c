@@ -200,7 +200,7 @@ cmd_cp (char *src, const char *dest)
       .dest = dest
     };
 
-  ctx.ff = fopen (dest, "wb");
+  ctx.ff = grub_util_fopen (dest, "wb");
   if (ctx.ff == NULL)
     {
       grub_util_error (_("cannot open OS file `%s': %s"), dest,
@@ -310,7 +310,7 @@ cmd_cmp (char *src, char *dest)
       return;
     }
 
-  ff = fopen (dest, "rb");
+  ff = grub_util_fopen (dest, "rb");
   if (ff == NULL)
     {
       grub_util_error (_("OS file %s open error: %s"), dest,
@@ -562,7 +562,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	FILE *f;
 	ssize_t real_size;
 	grub_uint8_t buf[1024];
-	f = fopen (arg, "rb");
+	f = grub_util_fopen (arg, "rb");
 	if (!f)
 	  {
 	    printf (_("%s: error:"), program_name);

@@ -721,7 +721,7 @@ grub_find_zpool_from_dir (const char *dir, char **poolname, char **poolfs)
     if (stat (dir, &st) != 0)
       return;
 
-    FILE *mnttab = fopen ("/etc/mnttab", "r");
+    FILE *mnttab = grub_util_fopen ("/etc/mnttab", "r");
     if (! mnttab)
       return;
 

@@ -662,14 +662,14 @@ unable_to_embed:
 		FILE *dump;
 		FILE *dump2;
 
-		dump = fopen ("dump.img", "wb");
+		dump = grub_util_fopen ("dump.img", "wb");
 		if (dump)
 		  {
 		    fwrite (tmp_img, 1, core_size, dump);
 		    fclose (dump);
 		  }
 
-		dump2 = fopen ("dump2.img", "wb");
+		dump2 = grub_util_fopen ("dump2.img", "wb");
 		if (dump2)
 		  {
 		    fwrite (core_img, 1, core_size, dump2);
@@ -731,7 +731,7 @@ unable_to_embed:
 
     /* Write the first two sectors of the core image onto the disk.  */
     grub_util_info ("opening the core image `%s'", core_path);
-    fp = fopen (core_path, "rb");
+    fp = grub_util_fopen (core_path, "rb");
     if (! fp)
       grub_util_error (_("cannot open `%s': %s"), core_path,
 		       strerror (errno));
@@ -893,7 +893,7 @@ unable_to_embed:
 
   /* Write the first two sectors of the core image onto the disk.  */
   grub_util_info ("opening the core image `%s'", core_path);
-  fp = fopen (core_path, "r+b");
+  fp = grub_util_fopen (core_path, "r+b");
   if (! fp)
     grub_util_error (_("cannot open `%s': %s"), core_path,
 		     strerror (errno));

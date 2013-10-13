@@ -291,9 +291,35 @@ canonicalize_file_name (const char *path)
 
 #ifdef __MINGW32__
 
+FILE *
+grub_util_fopen (const char *path, const char *mode)
+{
+  LPTSTR tpath;
+  FILE *ret;
+  tpath = grub_util_get_windows_path (path);
+#if SIZEOF_TCHAR == 1
+  ret = fopen (tpath, tmode);
+#else
+  LPTSTR tmode;
+  tmode = grub_util_utf8_to_tchar (mode);
+  ret = _wfopen (tpath, tmode);
+  free (tmode);
+#endif
+  free (tpath);
+  return ret;
+}
+
 int fsync (int fno __attribute__ ((unused)))
 {
   return 0;
+}
+
+#else
+
+FILE *
+grub_util_fopen (const char *path, const char *mode)
+{
+  return fopen (path, mode);
 }
 
 #endif

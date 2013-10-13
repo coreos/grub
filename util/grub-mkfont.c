@@ -55,6 +55,10 @@
 #include "progname.h"
 #endif
 
+#ifdef GRUB_BUILD
+#define grub_util_fopen fopen
+#endif
+
 #define GRUB_FONT_DEFAULT_SIZE		16
 
 #define GRUB_FONT_RANGE_BLOCK		1024
@@ -785,7 +789,7 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
   int offset;
   struct grub_glyph_info *cur;
 
-  file = fopen (output_file, "wb");
+  file = grub_util_fopen (output_file, "wb");
   if (! file)
     grub_util_error (_("cannot write to `%s': %s"), output_file,
 		     strerror (errno));

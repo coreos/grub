@@ -435,7 +435,7 @@ read_device_map (const char *dev_map)
       return;
     }
 
-  fp = fopen (dev_map, "r");
+  fp = grub_util_fopen (dev_map, "r");
   if (! fp)
     {
       grub_util_info (_("cannot open `%s': %s"), dev_map, strerror (errno));

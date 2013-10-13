@@ -239,7 +239,7 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
   if (relroot)
     *relroot = NULL;
 
-  fp = fopen ("/proc/self/mountinfo", "r");
+  fp = grub_util_fopen ("/proc/self/mountinfo", "r");
   if (! fp)
     return NULL; /* fall through to other methods */
 

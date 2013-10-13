@@ -295,7 +295,7 @@ main (int argc, char **argv)
   unsigned char *buf;
   if (argc < 2)
     printf ("Usage: %s FILE\n", argv[0]);
-  f = fopen (argv[1], "rb");
+  f = grub_util_fopen (argv[1], "rb");
   if (!f)
     {
       printf ("Couldn't open file\n");

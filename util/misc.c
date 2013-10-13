@@ -101,7 +101,7 @@ grub_util_read_image (const char *path)
   size = grub_util_get_image_size (path);
   img = (char *) xmalloc (size);
 
-  fp = fopen (path, "rb");
+  fp = grub_util_fopen (path, "rb");
   if (! fp)
     grub_util_error (_("cannot open `%s': %s"), path,
 		     strerror (errno));
@@ -125,7 +125,7 @@ grub_util_load_image (const char *path, char *buf)
 
   size = grub_util_get_image_size (path);
 
-  fp = fopen (path, "rb");
+  fp = grub_util_fopen (path, "rb");
   if (! fp)
     grub_util_error (_("cannot open `%s': %s"), path,
 		     strerror (errno));

@@ -1,5 +1,10 @@
 2013-10-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add a wrapper for fopen. On unix-like systems just pass-through. On
+	windows use unicode version.
+
+2013-10-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move set_program_name and init_nls to host_init. On windows
 	fix in this fuction console and argument charset as well.
 

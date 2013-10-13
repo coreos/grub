@@ -478,7 +478,7 @@ main (int argc, char *argv[])
     out = in;
   image = grub_util_read_image (in);
 
-  fp = fopen (out, "wb");
+  fp = grub_util_fopen (out, "wb");
   if (! fp)
     grub_util_error ("cannot open %s", out);
 
