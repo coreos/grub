@@ -276,10 +276,6 @@ main (int argc, char *argv[])
 
   grub_util_host_init (&argc, &argv);
 
-  set_program_name (argv[0]);
-
-  grub_util_init_nls ();
-
   /* Parse our arguments */
   if (argp_parse (&argp, argc, argv, 0, &curindex, 0) != 0)
     {
