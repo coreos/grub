@@ -79,14 +79,21 @@ grub_util_get_path (const char *dir, const char *file)
 size_t
 grub_util_get_image_size (const char *path)
 {
-  struct stat st;
+  FILE *f;
+  size_t ret;
 
-  grub_util_info ("getting the size of %s", path);
+  f = grub_util_fopen (path, "rb");
 
-  if (stat (path, &st) == -1)
-    grub_util_error (_("cannot stat `%s': %s"), path, strerror (errno));
+  if (!f)
+    grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
 
-  return st.st_size;
+  fseeko (f, 0, SEEK_END);
+  
+  ret = ftello (f);
+
+  fclose (f);
+
+  return ret;
 }
 
 char *

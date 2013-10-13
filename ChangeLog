@@ -1,5 +1,10 @@
 2013-10-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/misc.c (grub_util_get_image_size): Use FILE functions rather than
+	stat.
+
+2013-10-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-editenv.c: Remove leftover set_program_name and init_nls.
 
 2013-10-13  Vladimir Serbinenko  <phcoder@gmail.com>
