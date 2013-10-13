@@ -48,6 +48,51 @@
 #include <windows.h>
 #include <winioctl.h>
 
+#if SIZEOF_TCHAR == 1
+
+LPTSTR
+grub_util_utf8_to_tchar (const char *in)
+{
+  return xstrdup (in);
+}
+
+char *
+grub_util_tchar_to_utf8 (LPCTSTR in)
+{
+  return xstrdup (in);
+}
+
+#elif SIZEOF_TCHAR == 2
+
+LPTSTR
+grub_util_utf8_to_tchar (const char *in)
+{
+  LPTSTR ret;
+  size_t ssz = strlen (in);
+  size_t tsz = 2 * (GRUB_MAX_UTF16_PER_UTF8 * ssz + 1);
+  ret = xmalloc (tsz);
+  tsz = grub_utf8_to_utf16 (ret, tsz,
+			    (const grub_uint8_t *) in, ssz, NULL);
+  ret[tsz] = 0;
+  return ret;
+}
+
+char *
+grub_util_tchar_to_utf8 (LPCTSTR in)
+{
+  size_t ssz;
+  for (ssz = 0; in[ssz]; ssz++);
+
+  size_t tsz = GRUB_MAX_UTF8_PER_UTF16 * ssz + 1;
+  grub_uint8_t *ret = xmalloc (tsz);
+  *grub_utf16_to_utf8 (ret, in, ssz) = '\0';
+  return (char *) ret;
+}
+
+#else
+#error "Unsupported TCHAR size"
+#endif
+
 #ifdef __CYGWIN__
 LPTSTR
 grub_util_get_windows_path (const char *path)
@@ -64,28 +109,20 @@ grub_util_get_windows_path (const char *path)
 LPTSTR
 grub_util_get_windows_path (const char *path)
 {
-  char *fpa;
-  const char *fp;
-  LPTSTR ret;
+  LPTSTR fpa;
+  LPTSTR tpath;
 
-  fp = fpa = xmalloc (PATH_MAX);
-  if (!_fullpath (fpa, path, PATH_MAX))
-    fp = path;
-#if SIZEOF_TCHAR == 1
-  ret = xstrdup (fp);
-#elif SIZEOF_TCHAR == 2
-  size_t ssz = strlen (fp);
-  size_t tsz = 2 * (GRUB_MAX_UTF16_PER_UTF8 * ssz + 1);
-  ret = xmalloc (tsz);
-  tsz = grub_utf8_to_utf16 (ret, tsz, (const grub_uint8_t *) fp, ssz, NULL);
-  ret[tsz] = 0;
-#else
-#error SIZEOF_TCHAR
-#error "Unsupported TCHAR size"
-#endif
+  tpath = grub_util_utf8_to_tchar (path);
 
-  free (fpa);
-  return ret;
+  fpa = xmalloc (PATH_MAX * sizeof (fpa[0]));
+  if (!_wfullpath (fpa, tpath, PATH_MAX))
+    {
+      free (fpa);
+      return tpath;
+    }
+
+  free (tpath);
+  return fpa;
 }
 #endif
 

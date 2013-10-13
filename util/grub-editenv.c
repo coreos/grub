@@ -274,6 +274,8 @@ main (int argc, char *argv[])
   char *command;
   int curindex, arg_count;
 
+  grub_util_host_init (&argc, &argv);
+
   set_program_name (argv[0]);
 
   grub_util_init_nls ();

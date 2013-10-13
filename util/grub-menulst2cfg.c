@@ -37,6 +37,8 @@ main (int argc, char **argv)
   int suffixlen = 0;
   const char *out_fname = 0;
 
+  grub_util_host_init (&argc, &argv);
+
   if (argc >= 2 && argv[1][0] == '-')
     {
       fprintf (stdout, _("Usage: %s [INFILE [OUTFILE]]\n"), argv[0]);

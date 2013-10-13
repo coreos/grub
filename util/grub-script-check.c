@@ -146,8 +146,7 @@ main (int argc, char *argv[])
   int found_input = 0, found_cmd = 0;
   struct grub_script *script = NULL;
 
-  set_program_name (argv[0]);
-  grub_util_init_nls ();
+  grub_util_host_init (&argc, &argv);
 
   memset (&ctx.arguments, 0, sizeof (struct arguments));
 

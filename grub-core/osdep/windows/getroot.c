@@ -49,24 +49,6 @@
 #include <windows.h>
 #include <winioctl.h>
 
-char *
-grub_util_tchar_to_utf8 (LPCTSTR in)
-{
-#if SIZEOF_TCHAR == 1
-  return xstrdup (path);
-#elif SIZEOF_TCHAR == 2
-  size_t ssz;
-  for (ssz = 0; in[ssz]; ssz++);
-
-  size_t tsz = GRUB_MAX_UTF8_PER_UTF16 * ssz + 1;
-  grub_uint8_t *ret = xmalloc (tsz);
-  *grub_utf16_to_utf8 (ret, in, ssz) = '\0';
-  return (char *) ret;
-#else
-#error "Unsupported TCHAR size"
-#endif
-}
-
 #if SIZEOF_TCHAR == 1
 #define tcsnicmp strncasecmp
 #define tclen strlen

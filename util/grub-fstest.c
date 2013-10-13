@@ -733,9 +733,7 @@ main (int argc, char *argv[])
   const char *default_root;
   char *alloc_root;
 
-  set_program_name (argv[0]);
-
-  grub_util_init_nls ();
+  grub_util_host_init (&argc, &argv);
 
   args = xmalloc (argc * sizeof (args[0]));
 

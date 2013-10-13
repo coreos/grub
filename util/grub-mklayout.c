@@ -471,7 +471,7 @@ main (int argc, char *argv[])
   FILE *in, *out;
   struct arguments arguments;
 
-  set_program_name (argv[0]);
+  grub_util_host_init (&argc, &argv);
 
   /* Check for options.  */
   memset (&arguments, 0, sizeof (struct arguments));

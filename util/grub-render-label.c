@@ -208,9 +208,7 @@ main (int argc, char *argv[])
   ieee1275_palette[cptr].b = 0;
   ieee1275_palette[cptr].a = 0xff;
 
-  set_program_name (argv[0]);
-
-  grub_util_init_nls ();
+  grub_util_host_init (&argc, &argv);
 
   /* Check for options.  */
   memset (&arguments, 0, sizeof (struct arguments));

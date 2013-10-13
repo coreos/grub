@@ -541,9 +541,7 @@ main (int argc, char *argv[])
   const char *default_root;
   char *alloc_root;
 
-  set_program_name (argv[0]);
-
-  grub_util_init_nls ();
+  grub_util_host_init (&argc, &argv);
 
   fuse_args = xrealloc (fuse_args, (fuse_argc + 2) * sizeof (fuse_args[0]));
   fuse_args[fuse_argc] = xstrdup (argv[0]);

@@ -1,3 +1,8 @@
+2013-10-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move set_program_name and init_nls to host_init. On windows
+	fix in this fuction console and argument charset as well.
+
 2013-10-12  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	Fix inconsistent use of GRUB_CRYPTODISK_ENABLE and

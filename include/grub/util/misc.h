@@ -45,4 +45,6 @@ char *canonicalize_file_name (const char *path);
 
 void grub_util_init_nls (void);
 
+void grub_util_host_init (int *argc, char ***argv);
+
 #endif /* ! GRUB_UTIL_MISC_HEADER */

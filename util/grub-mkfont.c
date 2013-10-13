@@ -1155,10 +1155,8 @@ main (int argc, char *argv[])
   struct arguments arguments;
 
 #ifndef GRUB_BUILD
-  set_program_name (argv[0]);
+  grub_util_host_init (&argc, &argv);
 #endif
-
-  grub_util_init_nls ();
 
   memset (&arguments, 0, sizeof (struct arguments));
   arguments.file_format = PF2;

@@ -180,7 +180,7 @@ main (int argc, char *argv[])
     };
   volatile int hold = 0;
 
-  set_program_name (argv[0]);
+  grub_util_host_init (&argc, &argv);
 
   dir = xstrdup (DEFAULT_DIRECTORY);
 

@@ -910,9 +910,7 @@ main (int argc, char *argv[])
   char delim;
   struct arguments arguments;
 
-  set_program_name (argv[0]);
-
-  grub_util_init_nls ();
+  grub_util_host_init (&argc, &argv);
 
   memset (&arguments, 0, sizeof (struct arguments));
   arguments.device_max = argc + 1;

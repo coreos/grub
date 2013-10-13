@@ -2025,9 +2025,7 @@ main (int argc, char *argv[])
   FILE *fp = stdout;
   struct arguments arguments;
 
-  set_program_name (argv[0]);
-
-  grub_util_init_nls ();
+  grub_util_host_init (&argc, &argv);
 
   memset (&arguments, 0, sizeof (struct arguments));
   arguments.comp = COMPRESSION_AUTO;

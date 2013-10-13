@@ -1138,9 +1138,7 @@ main (int argc, char *argv[])
   char *dest_dev = NULL;
   struct arguments arguments;
 
-  set_program_name (argv[0]);
-
-  grub_util_init_nls ();
+  grub_util_host_init (&argc, &argv);
 
   /* Default option values. */
   memset (&arguments, 0, sizeof (struct arguments));

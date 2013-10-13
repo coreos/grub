@@ -162,6 +162,7 @@ program = {
   common = util/grub-mkimage.c;
   common = util/resolve.c;
   common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/osdep/init.c;
 
   common = grub-core/kern/arm/dl_helper.c;
 
@@ -182,6 +183,7 @@ program = {
 
   common = util/grub-mkrelpath.c;
   common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -196,6 +198,7 @@ program = {
 
   common = util/grub-script-check.c;
   common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -209,6 +212,7 @@ program = {
   mansection = 1;
 
   common = util/grub-editenv.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -224,6 +228,7 @@ program = {
   common = util/grub-mkpasswd-pbkdf2.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/osdep/random.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -246,6 +251,7 @@ program = {
   common = util/grub-fstest.c;
   common = grub-core/kern/emu/hostfs.c;
   common = grub-core/disk/host.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -274,18 +280,18 @@ program = {
   name = grub-mkfont;
   mansection = 1;
   common = util/grub-mkfont.c;
-  common = grub-core/unidata.c;
   common = grub-core/kern/emu/argp_common.c;
-  common = grub-core/kern/emu/misc.c;
-  common = util/misc.c;
-  common = grub-core/gnulib/progname.c;
+  common = grub-core/osdep/init.c;
 
   cflags = '$(freetype_cflags)';
   cppflags = '-DGRUB_MKFONT=1';
 
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(freetype_libs)';
-  ldadd = '$(LIBINTL)';
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
   condition = COND_GRUB_MKFONT;
 };
 
@@ -296,6 +302,7 @@ program = {
   common = util/grub-probe.c;
   common = grub-core/osdep/ofpath.c;
   common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -311,6 +318,7 @@ program = {
   common = util/grub-setup.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
@@ -328,6 +336,7 @@ program = {
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
   common = grub-core/osdep/ofpath.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubkern.a;
@@ -343,6 +352,7 @@ program = {
   mansection = 8;
   common = util/ieee1275/grub-ofpathname.c;
   common = grub-core/osdep/ofpath.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -357,6 +367,7 @@ program = {
 
   common = util/grub-mklayout.c;
   common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -904,6 +915,7 @@ program = {
   common = util/grub-menulst2cfg.c;
   common = grub-core/lib/legacy_parse.c;
   common = grub-core/lib/i386/pc/vesa_modes_table.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -918,6 +930,7 @@ program = {
 
   common = util/grub-glue-efi.c;
   common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
@@ -934,6 +947,7 @@ program = {
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/kern/emu/hostfs.c;
   common = grub-core/disk/host.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;

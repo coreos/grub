@@ -119,9 +119,7 @@ main (int argc, char *argv[])
   char pass1[GRUB_AUTH_MAX_PASSLEN];
   char pass2[GRUB_AUTH_MAX_PASSLEN];
 
-  set_program_name (argv[0]);
-
-  grub_util_init_nls ();
+  grub_util_host_init (&argc, &argv);
 
   /* Check for options.  */
   if (argp_parse (&argp, argc, argv, 0, 0, &arguments) != 0)
