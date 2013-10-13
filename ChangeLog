@@ -1,5 +1,9 @@
 2013-10-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h: Use gnu_printf only on gcc 4.4 or later.
+
+2013-10-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add a wrapper for fopen. On unix-like systems just pass-through. On
 	windows use unicode version.
 

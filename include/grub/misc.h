@@ -42,6 +42,13 @@
 #  define ATTRIBUTE_ERROR(msg) __attribute__ ((noreturn))
 #endif
 
+#if GNUC_PREREQ(4,4)
+#  define GNU_PRINTF gnu_printf
+#else
+#  define GNU_PRINTF printf
+#endif
+
+
 #define ALIGN_UP(addr, align) \
 	((addr + (typeof (addr)) align - 1) & ~((typeof (addr)) align - 1))
 #define ALIGN_UP_OVERHEAD(addr, align) ((-(addr)) & ((typeof (addr)) (align) - 1))
@@ -328,8 +335,8 @@ char *EXPORT_FUNC(grub_strdup) (const char *s) __attribute__ ((warn_unused_resul
 char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n) __attribute__ ((warn_unused_result));
 void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
 grub_size_t EXPORT_FUNC(grub_strlen) (const char *s) __attribute__ ((warn_unused_result));
-int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (gnu_printf, 1, 2)));
-int EXPORT_FUNC(grub_printf_) (const char *fmt, ...) __attribute__ ((format (gnu_printf, 1, 2)));
+int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (GNU_PRINTF, 1, 2)));
+int EXPORT_FUNC(grub_printf_) (const char *fmt, ...) __attribute__ ((format (GNU_PRINTF, 1, 2)));
 
 /* Replace all `ch' characters of `input' with `with' and copy the
    result into `output'; return EOS address of `output'. */
@@ -367,14 +374,14 @@ int EXPORT_FUNC(grub_puts_) (const char *s);
 void EXPORT_FUNC(grub_real_dprintf) (const char *file,
                                      const int line,
                                      const char *condition,
-                                     const char *fmt, ...) __attribute__ ((format (gnu_printf, 4, 5)));
+                                     const char *fmt, ...) __attribute__ ((format (GNU_PRINTF, 4, 5)));
 int EXPORT_FUNC(grub_vprintf) (const char *fmt, va_list args);
 int EXPORT_FUNC(grub_snprintf) (char *str, grub_size_t n, const char *fmt, ...)
-     __attribute__ ((format (gnu_printf, 3, 4)));
+     __attribute__ ((format (GNU_PRINTF, 3, 4)));
 int EXPORT_FUNC(grub_vsnprintf) (char *str, grub_size_t n, const char *fmt,
 				 va_list args);
 char *EXPORT_FUNC(grub_xasprintf) (const char *fmt, ...)
-     __attribute__ ((format (gnu_printf, 1, 2))) __attribute__ ((warn_unused_result));
+     __attribute__ ((format (GNU_PRINTF, 1, 2))) __attribute__ ((warn_unused_result));
 char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args) __attribute__ ((warn_unused_result));
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
@@ -472,7 +479,7 @@ extern struct grub_boot_time *EXPORT_VAR(grub_boot_time_head);
 
 void EXPORT_FUNC(grub_real_boot_time) (const char *file,
 				       const int line,
-				       const char *fmt, ...) __attribute__ ((format (gnu_printf, 3, 4)));
+				       const char *fmt, ...) __attribute__ ((format (GNU_PRINTF, 3, 4)));
 #define grub_boot_time(fmt, args...) grub_real_boot_time(GRUB_FILE, __LINE__, fmt, ## args)
 #else
 #define grub_boot_time(fmt, args...) 
