@@ -31,6 +31,15 @@ typedef HANDLE grub_util_fd_t;
 #define DEFAULT_DIRECTORY	"C:\\"GRUB_BOOT_DIR_NAME"\\"GRUB_DIR_NAME
 #define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
 
+enum grub_util_fd_open_flags_t
+  {
+    GRUB_UTIL_FD_O_RDONLY = 1,
+    GRUB_UTIL_FD_O_WRONLY = 2,
+    GRUB_UTIL_FD_O_RDWR = 3,
+    GRUB_UTIL_FD_O_CREATTRUNC = 4,
+    GRUB_UTIL_FD_O_SYNC = 0,
+  };
+
 LPTSTR
 grub_util_utf8_to_tchar (const char *in);
 char *

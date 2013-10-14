@@ -194,19 +194,23 @@ grub_util_fd_seek (grub_util_fd_t fd, const char *name, grub_uint64_t off)
 grub_util_fd_t
 grub_util_fd_open (const char *os_dev, int flags)
 {
-  DWORD flg = 0;
+  DWORD flg = 0, crt;
   LPTSTR dev = grub_util_get_windows_path (os_dev);
   grub_util_fd_t ret;
 
-  if (flags & O_WRONLY)
+  if (flags & GRUB_UTIL_FD_O_WRONLY)
     flg |= GENERIC_WRITE;
-  if (flags & O_RDONLY)
+  if (flags & GRUB_UTIL_FD_O_RDONLY)
     flg |= GENERIC_READ;
-  flg = GENERIC_READ;
+
+  if (flags & GRUB_UTIL_FD_O_CREATTRUNC)
+    crt = CREATE_ALWAYS;
+  else
+    crt = OPEN_EXISTING;
+
   ret = CreateFile (dev, flg, FILE_SHARE_READ | FILE_SHARE_WRITE,
-		    0, OPEN_EXISTING, 0, 0);
+		    0, crt, 0, 0);
   free (dev);
-  grub_util_info ("handle = %p", ret);
   return ret;
 }
 

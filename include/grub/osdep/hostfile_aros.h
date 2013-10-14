@@ -39,6 +39,22 @@ struct grub_util_fd
 };
 typedef struct grub_util_fd *grub_util_fd_t;
 
+enum grub_util_fd_open_flags_t
+  {
+    GRUB_UTIL_FD_O_RDONLY = O_RDONLY,
+    GRUB_UTIL_FD_O_WRONLY = O_WRONLY,
+    GRUB_UTIL_FD_O_RDWR = O_RDWR,
+    GRUB_UTIL_FD_O_CREAT = O_CREAT,
+    GRUB_UTIL_FD_O_SYNC = (0
+#ifdef O_SYNC
+			   | O_SYNC
+#endif
+#ifdef O_FSYNC
+			   | O_FSYNC
+#endif
+			   )
+  };
+
 #define GRUB_UTIL_FD_INVALID NULL
 #define GRUB_UTIL_FD_IS_VALID(x) ((x) != GRUB_UTIL_FD_INVALID)
 #define GRUB_UTIL_FD_STAT_IS_FUNCTIONAL 0

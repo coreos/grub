@@ -25,12 +25,32 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #if defined (__NetBSD__)
 /* NetBSD uses /boot for its boot block.  */
 # define DEFAULT_DIRECTORY	"/"GRUB_DIR_NAME
 #else
 # define DEFAULT_DIRECTORY	"/"GRUB_BOOT_DIR_NAME"/"GRUB_DIR_NAME
 #endif
+
+enum grub_util_fd_open_flags_t
+  {
+    GRUB_UTIL_FD_O_RDONLY = O_RDONLY,
+    GRUB_UTIL_FD_O_WRONLY = O_WRONLY,
+    GRUB_UTIL_FD_O_RDWR = O_RDWR,
+    GRUB_UTIL_FD_O_CREATTRUNC = O_CREAT | O_TRUNC,
+    GRUB_UTIL_FD_O_SYNC = (0
+#ifdef O_SYNC
+			   | O_SYNC
+#endif
+#ifdef O_FSYNC
+			   | O_FSYNC
+#endif
+			   )
+  };
 
 #define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
 

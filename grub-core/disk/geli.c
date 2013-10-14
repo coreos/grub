@@ -210,7 +210,7 @@ make_uuid (const struct grub_geli_phdr *header,
 char *
 grub_util_get_geli_uuid (const char *dev)
 {
-  grub_util_fd_t fd = grub_util_fd_open (dev, O_RDONLY);
+  grub_util_fd_t fd = grub_util_fd_open (dev, GRUB_UTIL_FD_O_RDONLY);
   grub_uint64_t s;
   unsigned log_secsize;
   grub_uint8_t hdr[512];

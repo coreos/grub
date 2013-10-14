@@ -151,7 +151,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   {
     grub_util_fd_t fd;
 
-    fd = grub_util_fd_open (map[drive].device, O_RDONLY);
+    fd = grub_util_fd_open (map[drive].device, GRUB_UTIL_FD_O_RDONLY);
 
     if (!GRUB_UTIL_FD_IS_VALID(fd))
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, N_("cannot open `%s': %s"),
@@ -232,12 +232,7 @@ grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int f
 
   *max = ~0ULL;
 
-#ifdef O_SYNC
-  flags |= O_SYNC;
-#endif
-#ifdef O_FSYNC
-  flags |= O_FSYNC;
-#endif
+  flags |= GRUB_UTIL_FD_O_SYNC;
 
   if (data->dev && strcmp (data->dev, map[disk->id].device) == 0 &&
       data->access_mode == (flags & O_ACCMODE))
@@ -293,7 +288,7 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
     {
       grub_util_fd_t fd;
       grub_disk_addr_t max = ~0ULL;
-      fd = grub_util_fd_open_device (disk, sector, O_RDONLY, &max);
+      fd = grub_util_fd_open_device (disk, sector, GRUB_UTIL_FD_O_RDONLY, &max);
       if (!GRUB_UTIL_FD_IS_VALID (fd))
 	return grub_errno;
 
@@ -328,7 +323,7 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
     {
       grub_util_fd_t fd;
       grub_disk_addr_t max = ~0ULL;
-      fd = grub_util_fd_open_device (disk, sector, O_WRONLY, &max);
+      fd = grub_util_fd_open_device (disk, sector, GRUB_UTIL_FD_O_WRONLY, &max);
       if (!GRUB_UTIL_FD_IS_VALID (fd))
 	return grub_errno;
 
@@ -364,7 +359,7 @@ grub_util_biosdisk_flush (struct grub_disk *disk)
   if (!GRUB_UTIL_FD_IS_VALID (data->fd))
     {
       grub_disk_addr_t max;
-      data->fd = grub_util_fd_open_device (disk, 0, O_RDONLY, &max);
+      data->fd = grub_util_fd_open_device (disk, 0, GRUB_UTIL_FD_O_RDONLY, &max);
       if (!GRUB_UTIL_FD_IS_VALID (data->fd))
 	return grub_errno;
     }
@@ -408,7 +403,7 @@ grub_util_check_file_presence (const char *p)
 {
 #if defined (__MINGW32__) || defined(__CYGWIN__)
   HANDLE h;
-  h = grub_util_fd_open (p, O_RDONLY);
+  h = grub_util_fd_open (p, GRUB_UTIL_FD_O_RDONLY);
   if (!GRUB_UTIL_FD_IS_VALID(h))
     return 0;
   CloseHandle (h);

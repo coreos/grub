@@ -505,7 +505,7 @@ grub_cryptodisk_open (const char *name, grub_disk_t disk)
   if (dev->cheat)
     {
       if (!GRUB_UTIL_FD_IS_VALID (dev->cheat_fd))
-	dev->cheat_fd = grub_util_fd_open (dev->cheat, O_RDONLY);
+	dev->cheat_fd = grub_util_fd_open (dev->cheat, GRUB_UTIL_FD_O_RDONLY);
       if (!GRUB_UTIL_FD_IS_VALID (dev->cheat_fd))
 	return grub_error (GRUB_ERR_IO, N_("cannot open `%s': %s"),
 			   dev->cheat, strerror (errno));

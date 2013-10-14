@@ -1,5 +1,9 @@
 2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Define GRUB_UTIL_FD_O_* and always use them with grub_util_fd_open.
+
+2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/osdep/hostfile_windows.h (grub_util_utf8_to_tchar): Add
 	missing prototype.
 	(grub_util_tchar_to_utf8): Likewise.
