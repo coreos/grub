@@ -1,3 +1,12 @@
+2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.core.def: Add osdep/init.c on emu.
+	* grub-core/kern/emu/main.c: Add missing include.
+	* grub-core/osdep/basic/init.c (grub_util_host_init) [!GRUB_UTIL]:
+	Don't call grub_util_init_nls.
+	* grub-core/osdep/windows/init.c (grub_util_host_init) [!GRUB_UTIL]:
+	Likewise.
+
 2013-10-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/misc.c (grub_util_get_image_size): Use FILE functions rather than

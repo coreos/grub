@@ -254,6 +254,7 @@ kernel = {
   emu = kern/emu/cache.c;
   emu = term/emu/console.c;
   emu = osdep/sleep.c;
+  emu = osdep/init.c;
 
   videoinkernel = term/gfxterm.c;
   videoinkernel = font/font.c;

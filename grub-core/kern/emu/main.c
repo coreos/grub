@@ -43,6 +43,7 @@
 #include <grub/env.h>
 #include <grub/partition.h>
 #include <grub/i18n.h>
+#include <grub/util/misc.h>
 
 #include "progname.h"
 #include <argp.h>

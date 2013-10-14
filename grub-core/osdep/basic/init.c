@@ -29,5 +29,7 @@ grub_util_host_init (int *argc __attribute__ ((unused)),
 {
   set_program_name ((*argv)[0]);
 
+#ifdef GRUB_UTIL
   grub_util_init_nls ();
+#endif
 }
