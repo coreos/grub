@@ -31,6 +31,11 @@ typedef HANDLE grub_util_fd_t;
 #define DEFAULT_DIRECTORY	"C:\\"GRUB_BOOT_DIR_NAME"\\"GRUB_DIR_NAME
 #define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
 
+LPTSTR
+grub_util_utf8_to_tchar (const char *in);
+char *
+grub_util_tchar_to_utf8 (LPCTSTR in);
+
 #ifdef __MINGW32__
 
 int fsync (int fno);

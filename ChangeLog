@@ -1,5 +1,11 @@
 2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/osdep/hostfile_windows.h (grub_util_utf8_to_tchar): Add
+	missing prototype.
+	(grub_util_tchar_to_utf8): Likewise.
+
+2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def: Add osdep/init.c on emu.
 	* grub-core/kern/emu/main.c: Add missing include.
 	* grub-core/osdep/basic/init.c (grub_util_host_init) [!GRUB_UTIL]:
