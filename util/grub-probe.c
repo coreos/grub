@@ -555,7 +555,10 @@ probe (const char *path, char **device_names, char delim)
 	      print_full_name (map, dev);
 	      printf ("' ");
 	    }
-	  printf ("\n");
+	  if (curdrive[1])
+	    printf (" ");
+	  else
+	    printf ("\n");
 
 	  grub_device_close (dev);
 	  continue;

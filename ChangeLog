@@ -1,3 +1,9 @@
+2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-probe.c (probe): Separate different drives in hint-str
+	by spaces and not newlines.
+	* util/grub-mkconfig_lib.in: Handle multidevice filesystem.
+
 2013-10-14  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/disk/efi/efidisk.c (grub_efidisk_get_device_name):
