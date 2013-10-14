@@ -72,6 +72,9 @@ EXTRA_DIST += grub-core/osdep/linux/hostdisk.c
 EXTRA_DIST += grub-core/osdep/windows/hostdisk.c
 EXTRA_DIST += grub-core/osdep/sun/hostdisk.c
 
+EXTRA_DIST += grub-core/osdep/basic/init.c
+EXTRA_DIST += grub-core/osdep/windows/init.c
+
 EXTRA_DIST += grub-core/osdep/apple/getroot.c
 EXTRA_DIST += grub-core/osdep/aros/getroot.c
 EXTRA_DIST += grub-core/osdep/basic/getroot.c

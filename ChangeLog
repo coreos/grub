@@ -1,3 +1,7 @@
+2013-10-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* conf/Makefile.extra-dist: Add osdep/*/init.c
+
 2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* Makefile.am: Use TARGET_OBJCOPY when doing objcopy for target.
