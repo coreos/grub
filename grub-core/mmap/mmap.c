@@ -35,23 +35,7 @@ static int curhandle = 1;
 
 #endif
 
-/* If same page is used by multiple types it's resolved
-   according to priority:
-   1 - free memory
-   2 - memory usable by firmware-aware code
-   3 - unusable memory
-   4 - a range deliberately empty
-*/
-static const int priority[] =
-{
-  [GRUB_MEMORY_AVAILABLE] = 1,
-  [GRUB_MEMORY_RESERVED] = 3,
-  [GRUB_MEMORY_ACPI] = 2,
-  [GRUB_MEMORY_COREBOOT_TABLES] = 2,
-  [GRUB_MEMORY_CODE] = 3,
-  [GRUB_MEMORY_NVS] = 3,
-  [GRUB_MEMORY_HOLE] = 4,
-};
+static int current_priority = 1;
 
 /* Scanline events. */
 struct grub_mmap_scan
@@ -61,7 +45,9 @@ struct grub_mmap_scan
   /* 0 = region starts, 1 = region ends. */
   int type;
   /* Which type of memory region? */
-  int memtype;
+  grub_memory_type_t memtype;
+  /* Priority. 0 means coming from firmware.  */
+  int priority;
 };
 
 /* Context for grub_mmap_iterate.  */
@@ -90,26 +76,35 @@ fill_hook (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
 {
   struct grub_mmap_iterate_ctx *ctx = data;
 
-  ctx->scanline_events[ctx->i].pos = addr;
-  ctx->scanline_events[ctx->i].type = 0;
-  if (type < ARRAY_SIZE (priority) && priority[type])
-    ctx->scanline_events[ctx->i].memtype = type;
-  else
+  if (type == GRUB_MEMORY_HOLE)
     {
       grub_dprintf ("mmap", "Unknown memory type %d. Assuming unusable\n",
 		    type);
-      ctx->scanline_events[ctx->i].memtype = GRUB_MEMORY_RESERVED;
+      type = GRUB_MEMORY_RESERVED;
     }
+
+  ctx->scanline_events[ctx->i].pos = addr;
+  ctx->scanline_events[ctx->i].type = 0;
+  ctx->scanline_events[ctx->i].memtype = type;
+  ctx->scanline_events[ctx->i].priority = 0;
+
   ctx->i++;
 
   ctx->scanline_events[ctx->i].pos = addr + size;
   ctx->scanline_events[ctx->i].type = 1;
-  ctx->scanline_events[ctx->i].memtype =
-    ctx->scanline_events[ctx->i - 1].memtype;
+  ctx->scanline_events[ctx->i].memtype = type;
+  ctx->scanline_events[ctx->i].priority = 0;
   ctx->i++;
 
   return 0;
 }
+
+struct mm_list
+{
+  struct mm_list *next;
+  grub_memory_type_t val;
+  int present;
+};
 
 grub_err_t
 grub_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
@@ -127,8 +122,9 @@ grub_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
   int lasttype;
   /* Current scanline event. */
   int curtype;
-  /* How many regions of given type overlap at current location? */
-  int present[ARRAY_SIZE (priority)];
+  /* How many regions of given type/priority overlap at current location? */
+  /* Normally there shouldn't be more than one region per priority but be robust.  */
+  struct mm_list *present;
   /* Number of mmap chunks. */
   int mmap_num;
 
@@ -146,12 +142,17 @@ grub_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
   grub_machine_mmap_iterate (count_hook, &mmap_num);
 
   /* Initialize variables. */
-  grub_memset (present, 0, sizeof (present));
   ctx.scanline_events = (struct grub_mmap_scan *)
     grub_malloc (sizeof (struct grub_mmap_scan) * 2 * mmap_num);
 
-  if (! ctx.scanline_events)
-    return grub_errno;
+  present = grub_zalloc (sizeof (present[0]) * current_priority);
+
+  if (! ctx.scanline_events || !present)
+    {
+      grub_free (ctx.scanline_events);
+      grub_free (present);
+      return grub_errno;
+    }
 
   ctx.i = 0;
 #ifndef GRUB_MMAP_REGISTER_BY_FIRMWARE
@@ -160,16 +161,14 @@ grub_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
     {
       ctx.scanline_events[ctx.i].pos = cur->start;
       ctx.scanline_events[ctx.i].type = 0;
-      if (cur->type < ARRAY_SIZE (priority) && priority[cur->type])
-	ctx.scanline_events[ctx.i].memtype = cur->type;
-      else
-	ctx.scanline_events[ctx.i].memtype = GRUB_MEMORY_RESERVED;
+      ctx.scanline_events[ctx.i].memtype = cur->type;
+      ctx.scanline_events[ctx.i].priority = cur->priority;
       ctx.i++;
 
       ctx.scanline_events[ctx.i].pos = cur->end;
       ctx.scanline_events[ctx.i].type = 1;
-      ctx.scanline_events[ctx.i].memtype =
-	ctx.scanline_events[ctx.i - 1].memtype;
+      ctx.scanline_events[ctx.i].memtype = cur->type;
+      ctx.scanline_events[ctx.i].priority = cur->priority;
       ctx.i++;
     }
 #endif /* ! GRUB_MMAP_REGISTER_BY_FIRMWARE */
@@ -200,18 +199,66 @@ grub_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
   lasttype = ctx.scanline_events[0].memtype;
   for (i = 0; i < 2 * mmap_num; i++)
     {
-      unsigned k;
       /* Process event. */
       if (ctx.scanline_events[i].type)
-	present[ctx.scanline_events[i].memtype]--;
+	{
+	  if (present[ctx.scanline_events[i].priority].present)
+	    {
+	      if (present[ctx.scanline_events[i].priority].val == ctx.scanline_events[i].memtype)
+		{
+		  if (present[ctx.scanline_events[i].priority].next)
+		    {
+		      struct mm_list *p = present[ctx.scanline_events[i].priority].next;
+		      present[ctx.scanline_events[i].priority] = *p;
+		      grub_free (p);
+		    }
+		  else
+		    {
+		      present[ctx.scanline_events[i].priority].present = 0;
+		    }
+		}
+	      else
+		{
+		  struct mm_list **q = &(present[ctx.scanline_events[i].priority].next), *p;
+		  for (; *q; q = &((*q)->next))
+		    if ((*q)->val == ctx.scanline_events[i].memtype)
+		      {
+			p = *q;
+			*q = p->next;
+			grub_free (p);
+			break;
+		      }
+		}
+	    }
+	}
       else
-	present[ctx.scanline_events[i].memtype]++;
+	{
+	  if (!present[ctx.scanline_events[i].priority].present)
+	    {
+	      present[ctx.scanline_events[i].priority].present = 1;
+	      present[ctx.scanline_events[i].priority].val = ctx.scanline_events[i].memtype;
+	    }
+	  else
+	    {
+	      struct mm_list *n = grub_malloc (sizeof (*n));
+	      n->val = ctx.scanline_events[i].memtype;
+	      n->present = 1;
+	      n->next = present[ctx.scanline_events[i].priority].next;
+	      present[ctx.scanline_events[i].priority].next = n;
+	    }
+	}
 
       /* Determine current region type. */
       curtype = -1;
-      for (k = 0; k < ARRAY_SIZE (priority); k++)
-	if (present[k] && (curtype == -1 || priority[k] > priority[curtype]))
-	  curtype = k;
+      {
+	int k;
+	for (k = current_priority - 1; k >= 0; k--)
+	  if (present[k].present)
+	    {
+	      curtype = present[k].val;
+	      break;
+	    }
+      }
 
       /* Announce region to the hook if necessary. */
       if ((curtype == -1 || curtype != lasttype)
@@ -255,6 +302,7 @@ grub_mmap_register (grub_uint64_t start, grub_uint64_t size, int type)
   cur->end = start + size;
   cur->type = type;
   cur->handle = curhandle++;
+  cur->priority = current_priority++;
   grub_mmap_overlays = cur;
 
   if (grub_machine_mmap_register (start, size, type, curhandle))

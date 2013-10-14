@@ -1,3 +1,8 @@
+2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Pass-through unknown E820 types. It required reorganisation of mmap
+	module.
+
 2013-10-14  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* Makefile.util.def: Add osdep/init.c to grub-mount files.

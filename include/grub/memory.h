@@ -33,8 +33,9 @@ typedef enum grub_memory_type
     GRUB_MEMORY_COREBOOT_TABLES = 16,
     GRUB_MEMORY_CODE = 20,
     /* This one is special: it's used internally but is never reported
-       by firmware. */
-    GRUB_MEMORY_HOLE = 21
+       by firmware. Don't use -1 as it's used internally for other purposes. */
+    GRUB_MEMORY_HOLE = -2,
+    GRUB_MEMORY_MAX = 0x10000
   } grub_memory_type_t;
 
 typedef int (*grub_memory_hook_t) (grub_uint64_t,
@@ -75,6 +76,7 @@ struct grub_mmap_region
   grub_uint64_t end;
   grub_memory_type_t type;
   int handle;
+  int priority;
 };
 
 extern struct grub_mmap_region *grub_mmap_overlays;

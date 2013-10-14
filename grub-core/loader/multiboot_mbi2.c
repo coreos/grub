@@ -331,28 +331,7 @@ grub_fill_multiboot_mmap_iter (grub_uint64_t addr, grub_uint64_t size,
 
   (*mmap_entry)->addr = addr;
   (*mmap_entry)->len = size;
-  switch (type)
-    {
-    case GRUB_MEMORY_AVAILABLE:
-      (*mmap_entry)->type = MULTIBOOT_MEMORY_AVAILABLE;
-      break;
-
-    case GRUB_MEMORY_ACPI:
-      (*mmap_entry)->type = MULTIBOOT_MEMORY_ACPI_RECLAIMABLE;
-      break;
-
-    case GRUB_MEMORY_NVS:
-      (*mmap_entry)->type = MULTIBOOT_MEMORY_NVS;
-      break;
-
-    case GRUB_MEMORY_BADRAM:
-      (*mmap_entry)->type = MULTIBOOT_MEMORY_BADRAM;
-      break;
-
-    default:
-      (*mmap_entry)->type = MULTIBOOT_MEMORY_RESERVED;
-      break;
-    }
+  (*mmap_entry)->type = type;
   (*mmap_entry)++;
 
   return 0;

@@ -38,8 +38,7 @@ static const char *names[] =
     [GRUB_MEMORY_NVS] = N_("ACPI non-volatile storage RAM"),
     [GRUB_MEMORY_BADRAM] = N_("faulty RAM (BadRAM)"),
     [GRUB_MEMORY_COREBOOT_TABLES] = N_("RAM holding coreboot tables"),
-    [GRUB_MEMORY_CODE] = N_("RAM holding firmware code"),
-    [GRUB_MEMORY_HOLE] = N_("Address range not associated with RAM")
+    [GRUB_MEMORY_CODE] = N_("RAM holding firmware code")
   };
 
 /* Helper for grub_cmd_lsmmap.  */
@@ -47,7 +46,7 @@ static int
 lsmmap_hook (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
 	     void *data __attribute__ ((unused)))
 {
-  if (type < ARRAY_SIZE (names) && names[type])
+  if (type < (int) ARRAY_SIZE (names) && type >= 0 && names[type])
     grub_printf_ (N_("base_addr = 0x%llx, length = 0x%llx, %s\n"),
 		  (long long) addr, (long long) size, _(names[type]));
   else

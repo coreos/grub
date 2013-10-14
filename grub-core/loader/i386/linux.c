@@ -421,36 +421,15 @@ grub_linux_boot_mmap_find (grub_uint64_t addr, grub_uint64_t size,
   return 1;
 }
 
+/* GRUB types conveniently match E820 types.  */
 static int
 grub_linux_boot_mmap_fill (grub_uint64_t addr, grub_uint64_t size,
 			   grub_memory_type_t type, void *data)
 {
   struct grub_linux_boot_ctx *ctx = data;
 
-  grub_uint32_t e820_type;
-  switch (type)
-    {
-    case GRUB_MEMORY_AVAILABLE:
-      e820_type = GRUB_E820_RAM;
-      break;
-
-    case GRUB_MEMORY_ACPI:
-      e820_type = GRUB_E820_ACPI;
-      break;
-
-    case GRUB_MEMORY_NVS:
-      e820_type = GRUB_E820_NVS;
-      break;
-
-    case GRUB_MEMORY_BADRAM:
-      e820_type = GRUB_E820_BADRAM;
-      break;
-
-    default:
-      e820_type = GRUB_E820_RESERVED;
-    }
   if (grub_e820_add_region (ctx->params->e820_map, &ctx->e820_num,
-			    addr, size, e820_type))
+			    addr, size, type))
     return 1;
 
   return 0;
