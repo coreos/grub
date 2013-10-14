@@ -268,10 +268,12 @@ grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int f
       return GRUB_UTIL_FD_INVALID;
     }
 
-  if (grub_util_fd_seek (fd, map[disk->id].device,
-			 sector << disk->log_sector_size))
+  if (grub_util_fd_seek (fd, sector << disk->log_sector_size))
     {
       grub_util_fd_close (fd);
+      grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
+		  map[disk->id].device, grub_util_fd_strerror ());
+
       return GRUB_UTIL_FD_INVALID;
     }
 

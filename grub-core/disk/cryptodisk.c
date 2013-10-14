@@ -560,10 +560,11 @@ grub_cryptodisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 #ifdef GRUB_UTIL
   if (dev->cheat)
     {
-      err = grub_util_fd_seek (dev->cheat_fd, dev->cheat,
-			       sector << disk->log_sector_size);
-      if (err)
-	return err;
+      int r;
+      r = grub_util_fd_seek (dev->cheat_fd, sector << disk->log_sector_size);
+      if (r)
+	return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
+			   dev->cheat, grub_util_fd_strerror ());
       if (grub_util_fd_read (dev->cheat_fd, buf, size << disk->log_sector_size)
 	  != (ssize_t) (size << disk->log_sector_size))
 	return grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
@@ -604,10 +605,11 @@ grub_cryptodisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 #ifdef GRUB_UTIL
   if (dev->cheat)
     {
-      err = grub_util_fd_seek (dev->cheat_fd, dev->cheat,
-			       sector << disk->log_sector_size);
-      if (err)
-	return err;
+      int r;
+      r = grub_util_fd_seek (dev->cheat_fd, sector << disk->log_sector_size);
+      if (r)
+	return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
+			   dev->cheat, grub_util_fd_strerror ());
       if (grub_util_fd_write (dev->cheat_fd, buf, size << disk->log_sector_size)
 	  != (ssize_t) (size << disk->log_sector_size))
 	return grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),

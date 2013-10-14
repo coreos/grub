@@ -351,10 +351,11 @@ grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int f
       }
   }
 
-  if (grub_util_fd_seek (fd, grub_util_biosdisk_get_osdev (disk),
-			 sector << disk->log_sector_size))
+  if (grub_util_fd_seek (fd, sector << disk->log_sector_size))
     {
       close (fd);
+      grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
+		  grub_util_biosdisk_get_osdev (disk), strerror (errno));
       return -1;
     }
 

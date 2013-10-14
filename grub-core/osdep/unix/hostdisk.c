@@ -82,8 +82,8 @@ grub_util_get_fd_size (grub_util_fd_t fd, const char *name, unsigned *log_secsiz
 #if defined(__linux__) && (!defined(__GLIBC__) || \
         ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))))
   /* Maybe libc doesn't have large file support.  */
-grub_err_t
-grub_util_fd_seek (grub_util_fd_t fd, const char *name, grub_uint64_t off)
+int
+grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t off)
 {
   loff_t offset, result;
   static int _llseek (uint filedes, ulong hi, ulong lo,
@@ -93,19 +93,18 @@ grub_util_fd_seek (grub_util_fd_t fd, const char *name, grub_uint64_t off)
 
   offset = (loff_t) off;
   if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
-    return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
-		       name, strerror (errno));
+    return -1;
   return GRUB_ERR_NONE;
 }
 #else
-grub_err_t
-grub_util_fd_seek (grub_util_fd_t fd, const char *name, grub_uint64_t off)
+int
+grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t off)
 {
   off_t offset = (off_t) off;
 
   if (lseek (fd, offset, SEEK_SET) != offset)
-    return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
-		       name, strerror (errno));
+    return -1;
+
   return 0;
 }
 #endif

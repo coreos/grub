@@ -179,15 +179,14 @@ grub_hostdisk_flush_initial_buffer (const char *os_dev __attribute__ ((unused)))
 {
 }
 
-grub_err_t
-grub_util_fd_seek (grub_util_fd_t fd, const char *name, grub_uint64_t off)
+int
+grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t off)
 {
   LARGE_INTEGER offset;
   offset.QuadPart = off;
 
   if (!SetFilePointerEx (fd, offset, NULL, FILE_BEGIN))
-    return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
-		       name, strerror (errno));
+    return -1;
   return 0;
 }
 

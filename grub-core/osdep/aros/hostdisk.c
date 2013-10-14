@@ -139,15 +139,14 @@ grub_util_get_fd_size_file (grub_util_fd_t fd,
   return ro;
 }
 
-grub_err_t
-grub_util_fd_seek (grub_util_fd_t fd, const char *name, grub_uint64_t off)
+int
+grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t off)
 {
   switch (fd->type)
     {
     case GRUB_UTIL_FD_FILE:
       if (lseek (fd->fd, 0, SEEK_SET) == (off_t) -1)
-	return grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot seek `%s': %s"),
-			   name, strerror (errno));
+	return -1;
       fd->off = off;
       return 0;
     case GRUB_UTIL_FD_DISK:
@@ -155,7 +154,7 @@ grub_util_fd_seek (grub_util_fd_t fd, const char *name, grub_uint64_t off)
       return 0;
     }
 
-  return 0;
+  return -1;
 }
 
 grub_util_fd_t

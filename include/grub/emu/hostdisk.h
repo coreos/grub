@@ -47,8 +47,8 @@ int grub_util_biosdisk_is_floppy (grub_disk_t disk);
 const char *
 grub_util_biosdisk_get_compatibility_hint (grub_disk_t disk);
 grub_err_t grub_util_biosdisk_flush (struct grub_disk *disk);
-grub_err_t
-grub_util_fd_seek (grub_util_fd_t fd, const char *name, grub_uint64_t sector);
+int
+grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t offset);
 ssize_t grub_util_fd_read (grub_util_fd_t fd, char *buf, size_t len);
 ssize_t grub_util_fd_write (grub_util_fd_t fd, const char *buf, size_t len);
 grub_err_t
