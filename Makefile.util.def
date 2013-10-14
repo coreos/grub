@@ -267,6 +267,7 @@ program = {
   common = util/grub-mount.c;
   common = grub-core/kern/emu/hostfs.c;
   common = grub-core/disk/host.c;
+  common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
