@@ -1,3 +1,7 @@
+2013-10-14  Jon McCune <jonmccune@google.com>
+
+	* docs/grub.texi: Document new signatures possibility.
+
 2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Define GRUB_UTIL_FD_O_* and always use them with grub_util_fd_open.

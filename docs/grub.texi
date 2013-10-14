@@ -99,6 +99,7 @@ This edition documents version @value{VERSION}.
 * Commands::                    The list of available builtin commands
 * Internationalisation::        Topics relating to language support
 * Security::                    Authentication and authorisation
+* Security and signatures::     Verifying digital signatures in GRUB
 * Platform limitations::        The list of platform-specific limitations
 * Platform-specific operations:: Platform-specific operations
 * Supported kernels::           The list of supported kernels
@@ -2882,6 +2883,7 @@ These variables have special meaning to GRUB.
 
 @menu
 * biosnum::
+* check_signatures::
 * chosen::
 * color_highlight::
 * color_normal::
@@ -2933,6 +2935,25 @@ this.
 
 For an alternative approach which also changes BIOS drive mappings for the
 chain-loaded system, @pxref{drivemap}.
+
+
+@node check_signatures
+@subsection check_signatures
+
+This variable controls whether GRUB enforces digital signature
+validation (@pxref{Security and signatures}) on all loaded files.  If
+@code{check_signatures=enforce}, then every attempt by the GRUB
+@file{core.img} to load another file @file{foo} (e.g., a loadable
+module, a configuration file, or a Linux kernel) implicitly invokes
+@code{verify_detached foo foo.sig} (@pxref{verify_detached}).
+@code{foo.sig} must contain a valid digital signature over the
+contents of @code{foo}, which can be verified with a public key
+currently trusted by GRUB (@pxref{list_trusted}, @pxref{trust}, and
+@pxref{distrust}).  If validation fails, then file @file{foo} cannot
+be opened.  This failure may halt or otherwise impact the boot
+process.  An initial trusted public key can be embedded within the
+GRUB @file{core.img} using the @code{--pubkey} option to
+@command{grub-mkimage} (@pxref{Invoking grub-install}).
 
 
 @node chosen
@@ -3582,6 +3603,7 @@ you forget a command, you can run the command @command{help}
 * cryptomount::                 Mount a crypto device
 * date::                        Display or set current date and time
 * devicetree::                  Load a device tree blob
+* distrust::                    Remove a pubkey from trusted keys
 * drivemap::                    Map a drive to another
 * echo::                        Display a line of text
 * eval::                        Evaluate agruments as GRUB commands
@@ -3599,6 +3621,7 @@ you forget a command, you can run the command @command{help}
 * linux::                       Load a Linux kernel
 * linux16::                     Load a Linux kernel (16-bit mode)
 * list_env::                    List variables in environment block
+* list_trusted::                List trusted public keys
 * loadfont::                    Load font files
 * load_env::                    Load variables from environment block
 * loopback::                    Make a device from a filesystem image
@@ -3630,9 +3653,11 @@ you forget a command, you can run the command @command{help}
 * source::                      Read a configuration file in same context
 * test::                        Check file types and compare values
 * true::                        Do nothing, successfully
+* trust::                       Add public key to list of trusted keys
 * unset::                       Unset an environment variable
 * uppermem::                    Set the upper memory size
 @comment * vbeinfo::                     List available video modes
+* verify_detached::             Verify detached digital signature
 * videoinfo::                   List available video modes
 @end menu
 
@@ -3903,6 +3928,16 @@ but rather replaces it completely.
 @ref{GNU/Linux}.
 @end deffn
 
+@node distrust
+@subsection distrust
+
+@deffn Command distrust pubkey_id
+Remove public key @var{pubkey_id} from GRUB's keyring of trusted keys.
+These keys are used to validate signatures when
+@code{check_signatures=enforce} (@pxref{check_signatures}), and by some
+invocations of @command{verify_detached} (@pxref{verify_detached}).
+@xref{Security and signatures} for more information.
+@end deffn
 
 @node drivemap
 @subsection drivemap
@@ -4061,7 +4096,8 @@ list of @var{hash name} pairs in the same format as used by UNIX
 @command{md5sum} command. Option @option{--prefix}
 may be used to give directory where files are located. Hash verification
 stops after the first mismatch was found unless option @option{--keep-going}
-was given.
+was given.  The exit code @code{$?} is set to 0 if hash verification
+is successful.  If it fails, @code{$?} is set to a nonzero value.
 @end deffn
 
 
@@ -4170,16 +4206,50 @@ The @option{-f} option overrides the default location of the environment
 block.
 @end deffn
 
+@node list_trusted
+@subsection list_trusted
+
+@deffn Command list_trusted
+List all public keys trusted by GRUB for validating signatures. These
+public keys are used implicitly when environment variable
+@code{check_signatures=enforce} (@pxref{check_signatures}), and by some
+invocations of @command{verify_detached}.  @xref{Security and
+signatures} for more information.
+@end deffn
 
 @node load_env
 @subsection load_env
 
-@deffn Command load_env [@option{-f} file]
+@deffn Command load_env [@option{-f} file] [@option{-s}] [whitelisted_variable_name] @dots{}
 Load all variables from the environment block file into the environment.
 @xref{Environment block}.
 
 The @option{-f} option overrides the default location of the environment
 block.
+
+The @option{-s} (long form @option{--skip-sig}) option skips signature
+checking even when the value of @code{check_signatures=enforce}
+(@pxref{check_signatures}).
+
+If one or more variable names are provided as arguments, they are
+interpreted as a whitelist of variables to load from the environment
+block file.  Variables set in the file but not present in the
+whitelist are ignored.
+
+The @option{-s} option should be used with care, and should always be
+used in concert with a whitelist of acceptable variables whose values
+should be set.  Failure to employ a carefully constructed whitelist
+could result in reading a malicious value of critical environment
+variables from the file, such as setting @code{check_signatures=no},
+modifying @code{prefix} to boot from an unexpected location or not at
+all, etc.
+
+When used with care, @option{-s} and the whitelist enable an
+administrator to configure a system to boot only signed
+configurations, but to allow the user to select from among multiple
+configurations, and to enable ``one-shot'' boot attempts and
+``savedefault'' behavior.  @xref{Security and signatures} for more
+information.
 @end deffn
 
 
@@ -4429,6 +4499,16 @@ Save the named variables from the environment to the environment block file.
 
 The @option{-f} option overrides the default location of the environment
 block.
+
+This command will operate successfully even when
+@code{check_signatures=enforce} (@pxref{check_signatures}), since it
+writes to disk and does not alter the behavior of GRUB based on any
+contents of disk that have been read.  It is possible to modify a
+digitally signed environment block file from within GRUB using this
+command, such that its signature will no longer be valid on subsequent
+boots.  Care should be taken in such advanced configurations to avoid
+rendering the system unbootable. @xref{Security and signatures} for
+more information.
 @end deffn
 
 
@@ -4738,6 +4818,16 @@ Do nothing, successfully.  This is mainly useful in control constructs such
 as @code{if} and @code{while} (@pxref{Shell-like scripting}).
 @end deffn
 
+@node trust
+@subsection trust
+
+@deffn Command trust pubkey_file
+Read public key from @var{pubkey_file} and add it to GRUB's internal
+list of trusted public keys.  These keys are used to validate digital
+signatures when @code{check_signatures=enforce}.
+@xref{Security and signatures} for more information.
+@end deffn
+
 
 @node unset
 @subsection unset
@@ -4763,6 +4853,25 @@ only on PC BIOS platforms.
 @end deffn
 @end ignore
 
+
+@node verify_detached
+@subsection verify_detached
+
+@deffn Command verify_detached file signature_file [pubkey_file]
+Verifies a GPG-style detached signature, where the signed file is
+@var{file}, and the signature itself is in file @var{signature_file}.
+Optionally, a specific public key to use can be specified using
+@var{pubkey_file}.  Otherwise, public keys from GRUB's trusted keys
+(@pxref{list_trusted}, @pxref{trust}, and @pxref{distrust}) are
+tried.  Note that, when @code{check_signatures=enforce}, an explicitly
+identified @var{pubkey_file} must itself be signed by an
+already-trusted key.
+
+Exit code @code{$?} is set to 0 if the signature validates
+successfully.  If validation fails, it is set to a non-zero value.
+
+@xref{Security and signatures} for more information.
+@end deffn
 
 @node videoinfo
 @subsection videoinfo
@@ -5127,6 +5236,77 @@ generating configuration files with authentication.  You can use
 adding @kbd{set superusers=} and @kbd{password} or @kbd{password_pbkdf2}
 commands.
 
+@node Security and signatures
+@chapter Security considerations when using digital signatures
+
+GRUB's @file{core.img} can optionally provide enforcement that all
+files subsequently read from disk are covered by a valid digital
+signature.  This includes GRUB configuration files, the GRUB
+environment block, GRUB loadable modules and their dependency files,
+and loaded operating system files such as a Linux kernel.  This
+document does @strong{not} cover how to ensure that your platform's
+firmware (e.g., Coreboot) validates
+@file{core.img}.
+
+GRUB uses GPG-style detached signatures (meaning that a file
+@file{foo.sig} will be produced when file @file{foo} is signed), and
+currently supports the DSA signing algorithm.  Both 2048-bit and
+3072-bit keys are supported. A signing key can be generated as
+follows:
+
+@example
+gpg --gen-key
+@end example
+
+An individual file can be signed as follows:
+
+@example
+gpg --detach-sign /path/to/file
+@end example
+
+For successful validation of all of GRUB's subcomponents and the
+loaded OS kernel, they must all be signed.  One way to accomplish this
+is the following (after having already produced the desired
+@file{grub.cfg} file, e.g., by running @command{grub-mkconfig}
+(@pxref{Invoking grub-mkconfig}):
+
+@example
+@group
+# Edit /dev/shm/passphrase.txt to contain your signing key's passphrase
+for i in `find /boot -name "*.cfg" -or -name "*.lst" -or \
+  -name "*.mod" -or -name "vmlinuz*" -or -name "initrd*" -or \
+  -name "grubenv"`;
+do
+  gpg --batch --detach-sign --passphrase-fd 0 $i < \
+    /dev/shm/passphrase.txt
+done
+shred /dev/shm/passphrase.txt
+@end group
+@end example
+
+See also: @ref{check_signatures}, @ref{verify_detached}, @ref{trust},
+@ref{list_trusted}, @ref{distrust}, @ref{load_env}, @ref{save_env}.
+
+Note that internally signature enforcement is controlled by setting
+the environment variable @code{check_signatures=enforce}.  Passing one
+or more @code{--pubkey} options to @command{grub-mkimage} implicitly
+sets @code{check_signatures=enforce} in @file{core.img} prior to
+processing any configuration files.
+
+Note that signature checking does @strong{not} prevent an attacker
+with (serial, physical, ...) console access from dropping manually to
+the GRUB console and executing:
+
+@example
+set check_signatures=no
+@end example
+
+To prevent this, password-protection (@pxref{Security}) is essential.
+Note that even with GRUB password protection, GRUB itself cannot
+prevent someone with physical access to the machine from altering that
+machine's firmware (e.g., Coreboot or BIOS) configuration to cause
+the machine to boot from a different (attacker-controlled) device.
+GRUB is at best only one link in a secure boot chain.
 
 @node Platform limitations
 @chapter Platform limitations
