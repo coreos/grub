@@ -1,3 +1,8 @@
+2013-10-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/disk/efi/efidisk.c (grub_efidisk_get_device_name):
+	Handle CD-ROMs.
+
 2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Pass-through unknown E820 types. It required reorganisation of mmap
