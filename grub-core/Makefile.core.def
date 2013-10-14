@@ -252,7 +252,9 @@ kernel = {
   emu = kern/emu/mm.c;
   emu = kern/emu/time.c;
   emu = kern/emu/cache.c;
-  emu = term/emu/console.c;
+  emu = osdep/emuconsole.c;
+  extra_dist = osdep/unix/emuconsole.c;
+  extra_dist = osdep/windows/emuconsole.c;
   emu = osdep/sleep.c;
   emu = osdep/init.c;
 
