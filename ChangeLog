@@ -1,5 +1,9 @@
 2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am: Use TARGET_OBJCOPY when doing objcopy for target.
+
+2013-10-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-probe.c (probe): Separate different drives in hint-str
 	by spaces and not newlines.
 	* util/grub-mkconfig_lib.in: Handle multidevice filesystem.
