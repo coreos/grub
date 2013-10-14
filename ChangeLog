@@ -1,3 +1,7 @@
+2013-10-14  qwertial  <qwertial>
+
+	* grub-core/gdb_grub.in: Fix overflow and wrong field.
+
 2013-10-14  Jon McCune <jonmccune@google.com>
 
 	* docs/grub.texi: Document new signatures possibility.
