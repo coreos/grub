@@ -524,11 +524,15 @@ grub_find_device (const char *dir, dev_t dev)
 }
 
 char **
-grub_guess_root_devices (const char *dir)
+grub_guess_root_devices (const char *dir_in)
 {
   char **os_dev = NULL;
   struct stat st;
   dev_t dev;
+  char *dir = canonicalize_file_name (dir_in);
+
+  if (!dir)
+    grub_util_error (_("failed to get canonical path of `%s'"), dir_in);
 
 #ifdef __linux__
   if (!os_dev)
