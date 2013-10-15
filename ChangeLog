@@ -1,5 +1,9 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/editenv.c (grub_util_create_envblk_file): Use grub_util_rename.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-editenv.c (create_envblk_file): More from here ...
 	* util/editenv.c (grub_util_create_envblk_file): ... to here.
 

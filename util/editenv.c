@@ -57,7 +57,7 @@ grub_util_create_envblk_file (const char *name)
   free (buf);
   fclose (fp);
 
-  if (rename (namenew, name) < 0)
+  if (grub_util_rename (namenew, name) < 0)
     grub_util_error (_("cannot rename the file %s to %s"), namenew, name);
   free (namenew);
 }
