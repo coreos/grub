@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/windows/hostdisk.c (fsync) [__MINGW32__]: Really
+	implement fsync.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Check for nvlist_lookup_string in nvpair since we
 	use nvlist_lookup_string and don't use nvlist_print.
 

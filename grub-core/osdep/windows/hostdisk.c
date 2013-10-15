@@ -422,8 +422,11 @@ grub_util_fopen (const char *path, const char *mode)
   return ret;
 }
 
-int fsync (int fno __attribute__ ((unused)))
+int fsync (int fno)
 {
+  HANDLE hnd;
+  hnd = _get_osfhandle (fno);
+  FlushFileBuffers (hnd);
   return 0;
 }
 
