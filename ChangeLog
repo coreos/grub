@@ -1,5 +1,9 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/checksums.h: Regenerate due to swiss.sed change.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move cpu time retrieval to separate grub_util_get_cpu_time_ms
 	and remove export.h.
 
