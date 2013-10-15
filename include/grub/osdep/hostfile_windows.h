@@ -67,6 +67,7 @@ enum grub_util_fd_open_flags_t
 #if defined (__MINGW32__) && !defined (__MINGW64__)
 
 #define fseeko fseeko64
+#define ftello ftello64
 
 #endif
 
