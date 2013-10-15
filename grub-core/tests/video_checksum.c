@@ -485,11 +485,6 @@ grub_util_fd_t genfd = GRUB_UTIL_FD_INVALID;
 
 #include <grub/time.h>
 
-#if defined (GRUB_MACHINE_EMU) && defined (COLLECT_TIME_STATISTICS)
-#include <sys/times.h>
-#include <unistd.h>
-#endif
-
 static void
 write_time (void)
 {
@@ -498,13 +493,11 @@ write_time (void)
   static grub_uint64_t prev;
   grub_uint64_t cur;
   static grub_util_fd_t tmrfd = GRUB_UTIL_FD_INVALID;
-  struct tms tm;
   if (!GRUB_UTIL_FD_IS_VALID (tmrfd))
     tmrfd = grub_util_fd_open ("time.txt", GRUB_UTIL_FD_O_WRONLY
 			       | GRUB_UTIL_FD_O_CREATTRUNC);
 
-  times (&tm); 
-  cur = (tm.tms_utime * 1000ULL) / sysconf(_SC_CLK_TCK);
+  cur = grub_util_get_cpu_time_ms ();
   grub_snprintf (buf, sizeof (buf), "%s_%dx%dx%s:%d: %" PRIuGRUB_UINT64_T " ms\n",
 		 basename, 			
 		 capt_mode_info.width,

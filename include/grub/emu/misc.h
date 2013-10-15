@@ -50,6 +50,8 @@ void EXPORT_FUNC(grub_util_warn) (const char *fmt, ...) __attribute__ ((format (
 void EXPORT_FUNC(grub_util_info) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 void EXPORT_FUNC(grub_util_error) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2), noreturn));
 
+grub_uint64_t EXPORT_FUNC (grub_util_get_cpu_time_ms) (void);
+
 extern char * canonicalize_file_name (const char *path);
 
 #ifdef HAVE_DEVICE_MAPPER

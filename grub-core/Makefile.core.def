@@ -258,6 +258,9 @@ kernel = {
   emu = osdep/emunet.c;
   extra_dist = osdep/linux/emunet.c;
   extra_dist = osdep/basic/emunet.c;
+  emu = osdep/cputime.c;
+  extra_dist = osdep/unix/cputime.c;
+  extra_dist = osdep/windows/cputime.c;
 
   videoinkernel = term/gfxterm.c;
   videoinkernel = font/font.c;
