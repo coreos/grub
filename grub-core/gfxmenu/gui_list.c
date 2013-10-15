@@ -176,7 +176,34 @@ check_scrollbar (list_impl_t self)
       self->need_to_recreate_scrollbar = 0;
     }
 
-  return (self->scrollbar_frame != 0 && self->scrollbar_thumb != 0);
+  if (self->scrollbar_frame == 0 || self->scrollbar_thumb == 0)
+    return 0;
+
+  /* Sanity checks. */
+  grub_gfxmenu_box_t frame = self->scrollbar_frame;
+  grub_gfxmenu_box_t thumb = self->scrollbar_thumb;
+  grub_gfxmenu_box_t menu = self->menu_box;
+  int min_width = frame->get_left_pad (frame)
+                  + frame->get_right_pad (frame);
+  int min_height = frame->get_top_pad (frame)
+                   + frame->get_bottom_pad (frame)
+                   + self->scrollbar_top_pad + self->scrollbar_bottom_pad
+                   + menu->get_top_pad (menu)
+                   + menu->get_bottom_pad (menu);
+  if (!self->scrollbar_thumb_overlay)
+    {
+      min_width += thumb->get_left_pad (thumb)
+                   + thumb->get_right_pad (thumb);
+      min_height += thumb->get_top_pad (thumb)
+                    + thumb->get_bottom_pad (thumb);
+    }
+  if (min_width <= self->scrollbar_width
+      && min_height <= (int) self->bounds.height)
+    return 1;
+
+  /* Unprintable dimenstions. */
+  self->draw_scrollbar = 0;
+  return 0;
 }
 
 static const char *
