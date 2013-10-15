@@ -26,7 +26,11 @@
 #include <grub/err.h>
 #include <grub/dl.h>
 #include <grub/charset.h>
+#ifndef MODE_EXFAT
 #include <grub/fat.h>
+#else
+#include <grub/exfat.h>
+#endif
 #include <grub/i18n.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
@@ -60,27 +64,6 @@ enum
   };
 
 #ifdef MODE_EXFAT
-struct grub_exfat_bpb
-{
-  grub_uint8_t jmp_boot[3];
-  grub_uint8_t oem_name[8];
-  grub_uint8_t mbz[53];
-  grub_uint64_t num_hidden_sectors;
-  grub_uint64_t num_total_sectors;
-  grub_uint32_t num_reserved_sectors;
-  grub_uint32_t sectors_per_fat;
-  grub_uint32_t cluster_offset;
-  grub_uint32_t cluster_count;
-  grub_uint32_t root_cluster;
-  grub_uint32_t num_serial;
-  grub_uint16_t fs_revision;
-  grub_uint16_t volume_flags;
-  grub_uint8_t bytes_per_sector_shift;
-  grub_uint8_t sectors_per_cluster_shift;
-  grub_uint8_t num_fats;
-  grub_uint8_t num_ph_drive;
-  grub_uint8_t reserved[8];
-} __attribute__ ((packed));
 typedef struct grub_exfat_bpb grub_current_fat_bpb_t;
 #else
 typedef struct grub_fat_bpb grub_current_fat_bpb_t;
@@ -1207,6 +1190,29 @@ grub_fat_uuid (grub_device_t device, char **uuid)
 
   return grub_errno;
 }
+
+#ifdef GRUB_UTIL
+#ifndef MODE_EXFAT
+grub_disk_addr_t
+grub_fat_get_cluster_sector (grub_disk_t disk, grub_uint64_t *sec_per_lcn)
+#else
+grub_disk_addr_t
+  grub_exfat_get_cluster_sector (grub_disk_t disk, grub_uint64_t *sec_per_lcn)
+#endif
+{
+  grub_disk_addr_t ret;
+  struct grub_fat_data *data;
+  data = grub_fat_mount (disk);
+  if (!data)
+    return 0;
+  ret = data->cluster_sector;
+
+  *sec_per_lcn = 1ULL << data->cluster_bits;
+
+  grub_free (data);
+  return ret;
+}
+#endif
 
 static struct grub_fs grub_fat_fs =
   {

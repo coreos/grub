@@ -27,6 +27,7 @@
 #include <grub/fshelp.h>
 #include <grub/charset.h>
 #include <grub/datetime.h>
+#include <grub/udf.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -799,6 +800,24 @@ fail:
   grub_free (data);
   return 0;
 }
+
+#ifdef GRUB_UTIL
+grub_disk_addr_t
+grub_udf_get_cluster_sector (grub_disk_t disk, grub_uint64_t *sec_per_lcn)
+{
+  grub_disk_addr_t ret;
+  static struct grub_udf_data *data;
+
+  data = grub_udf_mount (disk);
+  if (!data)
+    return 0;
+
+  ret = U32 (data->pds[data->pms[0]->type1.part_num].start);
+  *sec_per_lcn = 1ULL << data->lbshift;
+  grub_free (data);
+  return ret;
+}
+#endif
 
 static char *
 read_string (const grub_uint8_t *raw, grub_size_t sz, char *outbuf)

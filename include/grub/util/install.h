@@ -36,4 +36,15 @@ grub_util_sparc_setup (const char *dir,
 		       const char *dest, int force,
 		       int fs_probe, int allow_floppy);
 
+
+void
+grub_install_get_blocklist (grub_device_t root_dev,
+			    const char *core_path, const char *core_img,
+			    size_t core_size,
+			    void (*callback) (grub_disk_addr_t sector,
+					      unsigned offset,
+					      unsigned length,
+					      void *data),
+			    void *hook_data);
+
 #endif

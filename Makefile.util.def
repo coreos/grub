@@ -320,6 +320,10 @@ program = {
   common = util/setup_bios.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
+  common = grub-core/osdep/blocklist.c;
+  extra_dist = grub-core/osdep/generic/blocklist.c;
+  extra_dist = grub-core/osdep/linux/blocklist.c;
+  extra_dist = grub-core/osdep/windows/blocklist.c;
   common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;
@@ -339,6 +343,7 @@ program = {
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
   common = grub-core/osdep/ofpath.c;
+  common = grub-core/osdep/blocklist.c;
   common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;

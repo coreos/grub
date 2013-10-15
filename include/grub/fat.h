@@ -72,4 +72,11 @@ struct grub_fat_bpb
   } __attribute__ ((packed)) version_specific;
 } __attribute__ ((packed));
 
+#ifdef GRUB_UTIL
+#include <grub/disk.h>
+
+grub_disk_addr_t
+grub_fat_get_cluster_sector (grub_disk_t disk, grub_uint64_t *sec_per_lcn);
+#endif
+
 #endif

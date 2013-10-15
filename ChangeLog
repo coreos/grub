@@ -1,5 +1,12 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Split out blocklist retrieving from setup.c to
+	grub-core/osdep/blocklist.c and add windows implementation since
+	generic version doesn't work on NTFS on Windows due to aggressive
+	unflushable cache.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Split grub-setup.c into frontend (grub-setup.c) and backend (setup.c)
 	files.
 

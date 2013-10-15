@@ -54,15 +54,9 @@
 #include <grub/msdos_partition.h>
 #include <grub/crypto.h>
 #include <grub/util/install.h>
+#include <grub/emu/hostfile.h>
 
-#ifdef __linux__
-#include <sys/ioctl.h>
-#include <linux/fs.h>
-#include <linux/fiemap.h>
-#endif
-
-#define _GNU_SOURCE	1
-#include <argp.h>
+#include <errno.h>
 
 /* On SPARC this program fills in various fields inside of the 'boot' and 'core'
  * image files.
@@ -137,19 +131,6 @@ write_rootdev (grub_device_t root_dev,
 #endif
 
 /* Helper for setup.  */
-static void
-save_first_sector (grub_disk_addr_t sector, unsigned offset, unsigned length,
-		   void *data)
-{
-  grub_disk_addr_t *first_sector = data;
-  grub_util_info ("the first sector is <%" PRIuGRUB_UINT64_T ",%u,%u>",
-		  sector, offset, length);
-
-  if (offset != 0 || length != GRUB_DISK_SECTOR_SIZE)
-    grub_util_error ("%s", _("the first sector of the core file is not sector-aligned"));
-
-  *first_sector = sector;
-}
 
 struct blocklists
 {
@@ -158,6 +139,7 @@ struct blocklists
   grub_uint16_t current_segment;
 #endif
   grub_uint16_t last_length;
+  grub_disk_addr_t first_sector;
 };
 
 /* Helper for setup.  */
@@ -170,6 +152,15 @@ save_blocklists (grub_disk_addr_t sector, unsigned offset, unsigned length,
 
   grub_util_info ("saving <%" PRIuGRUB_UINT64_T ",%u,%u>",
 		  sector, offset, length);
+
+  if (bl->first_sector == (grub_disk_addr_t) -1)
+    {
+      if (offset != 0 || length != GRUB_DISK_SECTOR_SIZE)
+	grub_util_error ("%s", _("the first sector of the core file is not sector-aligned"));
+
+      bl->first_sector = sector;
+      return;
+    }
 
   if (offset != 0 || bl->last_length != GRUB_DISK_SECTOR_SIZE)
     grub_util_error ("%s", _("non-sector-aligned data is found in the core file"));
@@ -252,18 +243,18 @@ SETUP (const char *dir,
        const char *dest, int force,
        int fs_probe, int allow_floppy)
 {
-  char *boot_path, *core_path, *core_path_dev, *core_path_dev_full;
-  char *boot_img, *core_img;
+  char *core_path;
+  char *boot_img, *core_img, *boot_path;
   char *root = 0;
   size_t boot_size, core_size;
 #ifdef GRUB_SETUP_BIOS
   grub_uint16_t core_sectors;
 #endif
   grub_device_t root_dev = 0, dest_dev, core_dev;
+  grub_util_fd_t fp;
   struct blocklists bl;
-  char *tmp_img;
-  grub_disk_addr_t first_sector = (grub_disk_addr_t)-1;
-  FILE *fp;
+
+  bl.first_sector = (grub_disk_addr_t) -1;
 
 #ifdef GRUB_SETUP_BIOS
   bl.current_segment =
@@ -358,15 +349,15 @@ SETUP (const char *dir,
     grub_util_error ("%s", grub_errmsg);
 
 #ifdef GRUB_SETUP_BIOS
-  /* Read the original sector from the disk.  */
-  tmp_img = xmalloc (GRUB_DISK_SECTOR_SIZE);
-  if (grub_disk_read (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE, tmp_img))
-    grub_util_error ("%s", grub_errmsg);
-#endif
-
-#ifdef GRUB_SETUP_BIOS
   {
+    char *tmp_img;
     grub_uint8_t *boot_drive_check;
+
+    /* Read the original sector from the disk.  */
+    tmp_img = xmalloc (GRUB_DISK_SECTOR_SIZE);
+    if (grub_disk_read (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE, tmp_img))
+      grub_util_error ("%s", grub_errmsg);
+    
     boot_drive_check = (grub_uint8_t *) (boot_img
 					  + GRUB_BOOT_MACHINE_DRIVE_CHECK);
     /* Copy the possible DOS BPB.  */
@@ -383,11 +374,7 @@ SETUP (const char *dir,
 	boot_drive_check[0] = 0x90;
 	boot_drive_check[1] = 0x90;
       }
-  }
-#endif
 
-#ifdef GRUB_SETUP_BIOS
-  {
     struct identify_partmap_ctx ctx = {
       .dest_partmap = NULL,
       .container = dest_dev->disk->partition,
@@ -535,11 +522,8 @@ SETUP (const char *dir,
 	  grub_util_error ("%s", _("no terminator in the core image"));
       }
 
-    save_first_sector (sectors[0] + grub_partition_get_start (ctx.container),
-		       0, GRUB_DISK_SECTOR_SIZE, &first_sector);
-
     bl.block = bl.first_block;
-    for (i = 1; i < nsec; i++)
+    for (i = 0; i < nsec; i++)
       save_blocklists (sectors[i] + grub_partition_get_start (ctx.container),
 		       0, GRUB_DISK_SECTOR_SIZE, &bl);
 
@@ -550,7 +534,7 @@ SETUP (const char *dir,
     bl.block->len = 0;
     bl.block->segment = 0;
 
-    write_rootdev (root_dev, boot_img, first_sector);
+    write_rootdev (root_dev, boot_img, bl.first_sector);
 
     core_img = realloc (core_img, nsec * GRUB_DISK_SECTOR_SIZE);
     bl.first_block = (struct grub_boot_blocklist *) (core_img
@@ -628,87 +612,7 @@ unable_to_embed:
   /* The core image must be put on a filesystem unfortunately.  */
   grub_util_info ("will leave the core image on the filesystem");
 
-  /* Make sure that GRUB reads the identical image as the OS.  */
-  tmp_img = xmalloc (core_size);
-  core_path_dev_full = grub_util_get_path (dir, core_file);
-  core_path_dev = grub_make_system_path_relative_to_its_root (core_path_dev_full);
-  free (core_path_dev_full);
-
   grub_util_biosdisk_flush (root_dev->disk);
-
-#ifndef __linux__
-
-#define MAX_TRIES	5
-  {
-    int i;
-    for (i = 0; i < MAX_TRIES; i++)
-      {
-	grub_file_t file;
-
-	grub_util_info ((i == 0) ? _("attempting to read the core image `%s' from GRUB")
-			: _("attempting to read the core image `%s' from GRUB again"),
-			core_path_dev);
-
-	grub_disk_cache_invalidate_all ();
-
-	grub_file_filter_disable_compression ();
-	file = grub_file_open (core_path_dev);
-	if (file)
-	  {
-	    if (grub_file_size (file) != core_size)
-	      grub_util_info ("succeeded in opening the core image but the size is different (%d != %d)",
-			      (int) grub_file_size (file), (int) core_size);
-	    else if (grub_file_read (file, tmp_img, core_size)
-		     != (grub_ssize_t) core_size)
-	      grub_util_info ("succeeded in opening the core image but cannot read %d bytes",
-			      (int) core_size);
-	    else if (memcmp (core_img, tmp_img, core_size) != 0)
-	      {
-#if 0
-		FILE *dump;
-		FILE *dump2;
-
-		dump = grub_util_fopen ("dump.img", "wb");
-		if (dump)
-		  {
-		    fwrite (tmp_img, 1, core_size, dump);
-		    fclose (dump);
-		  }
-
-		dump2 = grub_util_fopen ("dump2.img", "wb");
-		if (dump2)
-		  {
-		    fwrite (core_img, 1, core_size, dump2);
-		    fclose (dump2);
-		  }
-
-#endif
-		grub_util_info ("succeeded in opening the core image but the data is different");
-	      }
-	    else
-	      {
-		grub_file_close (file);
-		break;
-	      }
-
-	    grub_file_close (file);
-	  }
-	else
-	  grub_util_info ("couldn't open the core image");
-
-	if (grub_errno)
-	  grub_util_info ("error message = %s", grub_errmsg);
-
-	grub_errno = GRUB_ERR_NONE;
-	grub_util_biosdisk_flush (root_dev->disk);
-	sleep (1);
-      }
-
-    if (i == MAX_TRIES)
-      grub_util_error (_("cannot read `%s' correctly"), core_path_dev);
-  }
-
-#endif
 
   /* Clean out the blocklists.  */
   bl.block = bl.first_block;
@@ -728,140 +632,11 @@ unable_to_embed:
 
   bl.block = bl.first_block;
 
-#ifdef __linux__
-  {
-    grub_partition_t container = root_dev->disk->partition;
-    grub_uint64_t container_start = grub_partition_get_start (container);
-    struct fiemap fie1;
-    int fd;
+  grub_install_get_blocklist (root_dev, core_path, core_img, core_size,
+			      save_blocklists, &bl);
 
-    /* Write the first two sectors of the core image onto the disk.  */
-    grub_util_info ("opening the core image `%s'", core_path);
-    fp = grub_util_fopen (core_path, "rb");
-    if (! fp)
-      grub_util_error (_("cannot open `%s': %s"), core_path,
-		       strerror (errno));
-    fd = fileno (fp);
-
-    grub_memset (&fie1, 0, sizeof (fie1));
-    fie1.fm_length = core_size;
-    fie1.fm_flags = FIEMAP_FLAG_SYNC;
-
-    if (ioctl (fd, FS_IOC_FIEMAP, &fie1) < 0)
-      {
-	int nblocks, i, j;
-	int bsize;
-	int mul;
-
-	grub_util_info ("FIEMAP failed. Reverting to FIBMAP");
-
-	if (ioctl (fd, FIGETBSZ, &bsize) < 0)
-	  grub_util_error (_("can't retrieve blocklists: %s"),
-			   strerror (errno));
-	if (bsize & (GRUB_DISK_SECTOR_SIZE - 1))
-	  grub_util_error ("%s", _("blocksize is not divisible by 512"));
-	mul = bsize >> GRUB_DISK_SECTOR_BITS;
-	nblocks = (core_size + bsize - 1) / bsize;
-	if (mul == 0 || nblocks == 0)
-	  grub_util_error ("%s", _("can't retrieve blocklists"));
-	for (i = 0; i < nblocks; i++)
-	  {
-	    unsigned blk = i;
-	    if (ioctl (fd, FIBMAP, &blk) < 0)
-	      grub_util_error (_("can't retrieve blocklists: %s"),
-			       strerror (errno));
-	    
-	    for (j = 0; j < mul; j++)
-	      {
-		int rest = core_size - ((i * mul + j) << GRUB_DISK_SECTOR_BITS);
-		if (rest <= 0)
-		  break;
-		if (rest > GRUB_DISK_SECTOR_SIZE)
-		  rest = GRUB_DISK_SECTOR_SIZE;
-		if (i == 0 && j == 0)
-		  save_first_sector (((grub_uint64_t) blk) * mul
-				     + container_start,
-				     0, rest, &first_sector);
-		else
-		  save_blocklists (((grub_uint64_t) blk) * mul + j
-				   + container_start,
-				   0, rest, &bl);
-	      }
-	  }
-      }
-    else
-      {
-	struct fiemap *fie2;
-	int i, j;
-	fie2 = xmalloc (sizeof (*fie2)
-			+ fie1.fm_mapped_extents
-			* sizeof (fie1.fm_extents[1]));
-	memset (fie2, 0, sizeof (*fie2)
-		+ fie1.fm_mapped_extents * sizeof (fie2->fm_extents[1]));
-	fie2->fm_length = core_size;
-	fie2->fm_flags = FIEMAP_FLAG_SYNC;
-	fie2->fm_extent_count = fie1.fm_mapped_extents;
-	if (ioctl (fd, FS_IOC_FIEMAP, fie2) < 0)
-	  grub_util_error (_("can't retrieve blocklists: %s"),
-			   strerror (errno));
-	for (i = 0; i < fie2->fm_mapped_extents; i++)
-	  {
-	    for (j = 0;
-		 j < ((fie2->fm_extents[i].fe_length
-		       + GRUB_DISK_SECTOR_SIZE - 1)
-		      >> GRUB_DISK_SECTOR_BITS);
-		 j++)
-	      {
-		size_t len = (fie2->fm_extents[i].fe_length
-			      - j * GRUB_DISK_SECTOR_SIZE);
-		if (len > GRUB_DISK_SECTOR_SIZE)
-		  len = GRUB_DISK_SECTOR_SIZE;
-		if (first_sector == (grub_disk_addr_t)-1)
-		  save_first_sector ((fie2->fm_extents[i].fe_physical
-				      >> GRUB_DISK_SECTOR_BITS)
-				     + j + container_start,
-				     fie2->fm_extents[i].fe_physical
-				     & (GRUB_DISK_SECTOR_SIZE - 1), len,
-				     &first_sector);
-		else
-		  save_blocklists ((fie2->fm_extents[i].fe_physical
-				    >> GRUB_DISK_SECTOR_BITS)
-				   + j + container_start,
-				   fie2->fm_extents[i].fe_physical
-				   & (GRUB_DISK_SECTOR_SIZE - 1), len, &bl);
-
-
-	      }
-	  }
-	if (first_sector == (grub_disk_addr_t)-1)
-	  grub_util_error ("%s", _("can't retrieve blocklists"));
-      }
-    fclose (fp);
-  }
-#else
-  {
-    grub_file_t file;
-    /* Now read the core image to determine where the sectors are.  */
-    grub_file_filter_disable_compression ();
-    file = grub_file_open (core_path_dev);
-    if (! file)
-      grub_util_error ("%s", grub_errmsg);
-
-    file->read_hook = save_first_sector;
-    file->read_hook_data = &first_sector;
-    if (grub_file_read (file, tmp_img, GRUB_DISK_SECTOR_SIZE)
-	!= GRUB_DISK_SECTOR_SIZE)
-      grub_util_error ("%s", _("failed to read the first sector of the core image"));
-
-    bl.block = bl.first_block;
-    file->read_hook = save_blocklists;
-    file->read_hook_data = &bl;
-    if (grub_file_read (file, tmp_img, core_size - GRUB_DISK_SECTOR_SIZE)
-	!= (grub_ssize_t) core_size - GRUB_DISK_SECTOR_SIZE)
-      grub_util_error ("%s", _("failed to read the rest sectors of the core image"));
-    grub_file_close (file);
-  }
-#endif
+  if (bl.first_sector == (grub_disk_addr_t)-1)
+    grub_util_error ("%s", _("can't retrieve blocklists"));
 
 #ifdef GRUB_SETUP_SPARC64
   {
@@ -892,22 +667,21 @@ unable_to_embed:
   }
 #endif
 
-  free (core_path_dev);
-  free (tmp_img);
-
-  write_rootdev (root_dev, boot_img, first_sector);
+  write_rootdev (root_dev, boot_img, bl.first_sector);
 
   /* Write the first two sectors of the core image onto the disk.  */
   grub_util_info ("opening the core image `%s'", core_path);
-  fp = grub_util_fopen (core_path, "r+b");
-  if (! fp)
+  fp = grub_util_fd_open (core_path, GRUB_UTIL_FD_O_WRONLY);
+  if (! GRUB_UTIL_FD_IS_VALID (fp))
     grub_util_error (_("cannot open `%s': %s"), core_path,
-		     strerror (errno));
+		     grub_util_fd_strerror ());
 
-  grub_util_write_image (core_img, GRUB_DISK_SECTOR_SIZE * 2, fp, core_path);
-  fflush (fp);
-  fsync (fileno (fp));
-  fclose (fp);
+  if (grub_util_fd_write (fp, core_img, GRUB_DISK_SECTOR_SIZE * 2)
+      != GRUB_DISK_SECTOR_SIZE * 2)
+    grub_util_error (_("cannot write to `%s': %s"),
+		     core_path, strerror (errno));
+  grub_util_fd_sync (fp);
+  grub_util_fd_close (fp);
   grub_util_biosdisk_flush (root_dev->disk);
 
   grub_disk_cache_invalidate_all ();
@@ -922,7 +696,7 @@ unable_to_embed:
     core_dev->disk->partition = 0;
 
     buf = xmalloc (core_size);
-    blk = first_sector;
+    blk = bl.first_sector;
     err = grub_disk_read (core_dev->disk, blk, 0, GRUB_DISK_SECTOR_SIZE, buf);
     if (err)
       grub_util_error (_("cannot read `%s': %s"), core_dev->disk->name,
