@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/windows/emuconsole.c: Add missing config.h and
+	config-util.h include.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Split emunet into platform-dependent and GRUB-binding parts. Keep
 	platform-dependent part in kernel for easy access to OS functions.
 
