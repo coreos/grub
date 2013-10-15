@@ -910,6 +910,12 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 	    }
 	}
 
+      if (c == '%')
+	{
+	  write_char (c);
+	  continue;
+	}
+
       if (curn >= count_args)
 	continue;
 

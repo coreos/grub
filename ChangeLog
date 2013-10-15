@@ -1,5 +1,11 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Handle %% properly.
+	* tests/printf_unit_test.c (printf_test): Add %% tests.
+	Reported by: Paulo Flabiano Smorigo.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/windows/hostdisk.c (fsync) [__MINGW32__]: Really
 	implement fsync.
 
