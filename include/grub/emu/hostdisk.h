@@ -23,16 +23,7 @@
 #include <grub/disk.h>
 #include <grub/partition.h>
 #include <sys/types.h>
-#include <grub/osdep/hostfile.h>
-
-grub_util_fd_t
-EXPORT_FUNC(grub_util_fd_open) (const char *os_dev, int flags);
-const char *
-EXPORT_FUNC(grub_util_fd_strerror) (void);
-void
-grub_util_fd_sync (grub_util_fd_t fd);
-void
-EXPORT_FUNC(grub_util_fd_close) (grub_util_fd_t fd);
+#include <grub/emu/hostfile.h>
 
 grub_util_fd_t
 grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
@@ -47,10 +38,6 @@ int grub_util_biosdisk_is_floppy (grub_disk_t disk);
 const char *
 grub_util_biosdisk_get_compatibility_hint (grub_disk_t disk);
 grub_err_t grub_util_biosdisk_flush (struct grub_disk *disk);
-int
-grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t offset);
-ssize_t EXPORT_FUNC(grub_util_fd_read) (grub_util_fd_t fd, char *buf, size_t len);
-ssize_t EXPORT_FUNC(grub_util_fd_write) (grub_util_fd_t fd, const char *buf, size_t len);
 grub_err_t
 grub_cryptodisk_cheat_mount (const char *sourcedev, const char *cheat);
 const char *
@@ -69,8 +56,6 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
 const char *
 grub_hostdisk_os_dev_to_grub_drive (const char *os_dev, int add);
 
-grub_uint64_t
-grub_util_get_fd_size (grub_util_fd_t fd, const char *name, unsigned *log_secsize);
 
 char *
 grub_util_get_os_disk (const char *os_dev);

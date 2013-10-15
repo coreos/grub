@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/emu/hostdisk.h: Move file operations to
+	* include/grub/emu/hostfile.h: ... here.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/windows/hostdisk.c (canonicalize_file_name): Handle
 	unicode path.
 

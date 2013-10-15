@@ -219,6 +219,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/datetime.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/misc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/net.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/hostdisk.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/hostfile.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 if COND_GRUB_EMU_SDL
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/sdl.h
