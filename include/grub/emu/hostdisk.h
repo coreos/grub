@@ -26,13 +26,13 @@
 #include <grub/osdep/hostfile.h>
 
 grub_util_fd_t
-grub_util_fd_open (const char *os_dev, int flags);
+EXPORT_FUNC(grub_util_fd_open) (const char *os_dev, int flags);
 const char *
-grub_util_fd_strerror (void);
+EXPORT_FUNC(grub_util_fd_strerror) (void);
 void
 grub_util_fd_sync (grub_util_fd_t fd);
 void
-grub_util_fd_close (grub_util_fd_t fd);
+EXPORT_FUNC(grub_util_fd_close) (grub_util_fd_t fd);
 
 grub_util_fd_t
 grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags,
@@ -49,8 +49,8 @@ grub_util_biosdisk_get_compatibility_hint (grub_disk_t disk);
 grub_err_t grub_util_biosdisk_flush (struct grub_disk *disk);
 int
 grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t offset);
-ssize_t grub_util_fd_read (grub_util_fd_t fd, char *buf, size_t len);
-ssize_t grub_util_fd_write (grub_util_fd_t fd, const char *buf, size_t len);
+ssize_t EXPORT_FUNC(grub_util_fd_read) (grub_util_fd_t fd, char *buf, size_t len);
+ssize_t EXPORT_FUNC(grub_util_fd_write) (grub_util_fd_t fd, const char *buf, size_t len);
 grub_err_t
 grub_cryptodisk_cheat_mount (const char *sourcedev, const char *cheat);
 const char *

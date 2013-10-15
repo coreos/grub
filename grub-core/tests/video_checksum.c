@@ -17,12 +17,19 @@
  */
 
 /* All tests need to include test.h for GRUB testing framework.  */
+
+#include <config.h>
+
 #include <grub/test.h>
 #include <grub/dl.h>
 #include <grub/video.h>
 #include <grub/lib/crc.h>
 #include <grub/mm.h>
 #include <grub/term.h>
+#ifdef GRUB_MACHINE_EMU
+#include <grub/emu/hostdisk.h>
+#include <grub/emu/misc.h>
+#endif
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -239,13 +246,11 @@ struct grub_video_mode_info grub_test_video_modes[30] = {
 };
 
 #ifdef GRUB_MACHINE_EMU
-#include <grub/emu/misc.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
-#include <string.h>
 #include <stdlib.h>
 
 struct bmp_header
@@ -266,13 +271,13 @@ grub_video_capture_write_bmp (const char *fname,
 			      void *ptr,
 			      const struct grub_video_mode_info *mode_info)
 {
-  int fd = open (fname, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+  grub_util_fd_t fd = grub_util_fd_open (fname, O_WRONLY | O_CREAT | O_TRUNC);
   struct bmp_header head;
 
-  if (fd < 0)
+  if (!GRUB_UTIL_FD_IS_VALID (fd))
     {
       grub_printf (_("cannot open `%s': %s"),
-		   fname, strerror (errno));
+		   fname, grub_util_fd_strerror ());
     }
 
   grub_memset (&head, 0, sizeof (head));
@@ -300,7 +305,7 @@ grub_video_capture_write_bmp (const char *fname,
   head.width = grub_cpu_to_le16 (mode_info->width);
   head.height = grub_cpu_to_le16 (mode_info->height);
 
-  write (fd, &head, sizeof (head));
+  grub_util_fd_write (fd, (char *) &head, sizeof (head));
 
   if (!(mode_info->mode_type & GRUB_VIDEO_MODE_TYPE_RGB))
     {
@@ -318,9 +323,9 @@ grub_video_capture_write_bmp (const char *fname,
 	  g = palette_data[i].g;
 	  b = palette_data[i].b;
 
-	  write (fd, &b, 1);
-	  write (fd, &g, 1);
-	  write (fd, &r, 1);
+	  grub_util_fd_write (fd, (char *) &b, 1);
+	  grub_util_fd_write (fd, (char *) &g, 1);
+	  grub_util_fd_write (fd, (char *) &r, 1);
 	}
     }
 
@@ -355,7 +360,7 @@ grub_video_capture_write_bmp (const char *fname,
 		*optr++ = ((val >> gshift) & gmask) << mulgshift;
 		*optr++ = ((val >> rshift) & rmask) << mulrshift;
 	      }
-	    write (fd, buffer, mode_info->width * 3);
+	    grub_util_fd_write (fd, (char *) buffer, mode_info->width * 3);
 	  }
 	grub_free (buffer);
 	break;
@@ -395,7 +400,7 @@ grub_video_capture_write_bmp (const char *fname,
 		*optr++ = ((val >> gshift) & gmask) << mulgshift;
 		*optr++ = ((val >> rshift) & rmask) << mulrshift;
 	      }
-	    write (fd, buffer, mode_info->width * 3);
+	    grub_util_fd_write (fd, (char *) buffer, mode_info->width * 3);
 	  }
 	grub_free (buffer);
 	break;
@@ -426,7 +431,7 @@ grub_video_capture_write_bmp (const char *fname,
 		*optr++ = ((val >> gshift) & gmask) << mulgshift;
 		*optr++ = ((val >> rshift) & rmask) << mulrshift;
 	      }
-	    write (fd, buffer, mode_info->width * 3);
+	    grub_util_fd_write (fd, (char *) buffer, mode_info->width * 3);
 	  }
 	grub_free (buffer);
 	break;
@@ -436,11 +441,12 @@ grub_video_capture_write_bmp (const char *fname,
 	int y;
 
 	for (y = mode_info->height - 1; y >= 0; y--)
-	  write (fd, ((grub_uint8_t *) ptr + mode_info->pitch * y), mode_info->width);
+	  grub_util_fd_write (fd, ((char *) ptr + mode_info->pitch * y),
+			      mode_info->width);
 	break;
       }
     }
-  close (fd);
+  grub_util_fd_close (fd);
 }
 
 #endif
@@ -474,7 +480,7 @@ grub_video_checksum_get_modename (void)
 //#define COLLECT_TIME_STATISTICS 1
 
 #if defined (GENERATE_MODE) && defined (GRUB_MACHINE_EMU)
-int genfd = -1;
+grub_util_fd_t genfd = GRUB_UTIL_FD_INVALID;
 #endif
 
 #include <grub/time.h>
@@ -491,10 +497,11 @@ write_time (void)
   char buf[60];
   static grub_uint64_t prev;
   grub_uint64_t cur;
-  static int tmrfd = -1;
+  static grub_util_fd_t tmrfd = GRUB_UTIL_FD_INVALID;
   struct tms tm;
-  if (tmrfd < 0)
-    tmrfd = open ("time.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+  if (!GRUB_UTIL_FD_IS_VALID (tmrfd))
+    tmrfd = grub_util_fd_open ("time.txt", GRUB_UTIL_FD_O_WRONLY
+			       | GRUB_UTIL_FD_O_CREATTRUNC);
 
   times (&tm); 
   cur = (tm.tms_utime * 1000ULL) / sysconf(_SC_CLK_TCK);
@@ -505,8 +512,8 @@ write_time (void)
 		 grub_video_checksum_get_modename (), ctr,
 		 cur - prev);
   prev = cur;
-  if (tmrfd >= 0)
-    write (tmrfd, buf, grub_strlen (buf));
+  if (GRUB_UTIL_FD_IS_VALID (tmrfd))
+    grub_util_fd_write (tmrfd, buf, grub_strlen (buf));
 #endif
 }
 
@@ -594,11 +601,11 @@ checksum (void)
 #endif
 
 #if defined (GENERATE_MODE) && defined (GRUB_MACHINE_EMU)
-  if (genfd >= 0)
+  if (GRUB_UTIL_FD_IS_VALID (genfd))
     {
       char buf[20];
       grub_snprintf (buf, sizeof (buf), "0x%x, ", crc);
-      write (genfd, buf, grub_strlen (buf));
+      grub_util_fd_write (genfd, buf, grub_strlen (buf));
     }
 #endif
 
@@ -675,9 +682,10 @@ grub_video_checksum (const char *basename_in)
   grub_video_get_info (&capt_mode_info);
 
 #if defined (GENERATE_MODE) && defined (GRUB_MACHINE_EMU)
-  if (genfd < 0)
-    genfd = open ("checksums.h", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-  if (genfd >= 0)
+  if (!GRUB_UTIL_FD_IS_VALID (genfd))
+    genfd = grub_util_fd_open ("checksums.h", GRUB_UTIL_FD_O_WRONLY
+			       | GRUB_UTIL_FD_O_CREATTRUNC);
+  if (GRUB_UTIL_FD_IS_VALID (genfd))
     {
       char buf[400];
 
@@ -700,9 +708,9 @@ grub_video_checksum (const char *basename_in)
 		     capt_mode_info.height,
 		     grub_video_checksum_get_modename ());
 
-      write (genfd, "  { \"", 5);
-      write (genfd, basename_in, grub_strlen (basename_in));
-      write (genfd, buf, grub_strlen (buf));
+      grub_util_fd_write (genfd, "  { \"", 5);
+      grub_util_fd_write (genfd, basename_in, grub_strlen (basename_in));
+      grub_util_fd_write (genfd, buf, grub_strlen (buf));
     }
 #endif
 
@@ -740,11 +748,11 @@ void
 grub_video_checksum_end (void)
 {
 #if defined (GENERATE_MODE) && defined (GRUB_MACHINE_EMU)
-  if (genfd >= 0)
+  if (GRUB_UTIL_FD_IS_VALID (genfd))
     {
       char buf[40];
       grub_snprintf (buf, sizeof (buf), "}, %d },\n", ctr);
-      write (genfd, buf, grub_strlen (buf));
+      grub_util_fd_write (genfd, buf, grub_strlen (buf));
     }
 #endif
   grub_test_assert (ctr == nchk, "Not enough checksums %s_%dx%dx%s: %d vs %d",

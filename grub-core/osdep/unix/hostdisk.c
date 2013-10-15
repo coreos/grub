@@ -173,7 +173,7 @@ grub_util_fd_open (const char *os_dev, int flags)
   flags |= O_BINARY;
 #endif
 
-  return open (os_dev, flags);
+  return open (os_dev, flags, S_IRUSR | S_IWUSR);
 }
 #endif
 
