@@ -1,3 +1,9 @@
+2013-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/osdep/unix/hostdisk.c (grub_util_fd_read): Return correct
+	value in case of incomplete read.
+	(grub_util_fd_write): Likewise.
+
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/editenv.c (grub_util_create_envblk_file): Use grub_util_rename.
