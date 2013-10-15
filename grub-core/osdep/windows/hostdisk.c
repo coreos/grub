@@ -410,6 +410,39 @@ grub_util_unlink (const char *name)
   return ret;
 }
 
+int
+grub_util_is_directory (const char *name)
+{
+  LPTSTR name_windows;
+  DWORD attr;
+
+  name_windows = grub_util_get_windows_path (name);
+  if (!name_windows)
+    return 0;
+
+  attr = GetFileAttributes (name_windows);
+  grub_free (name_windows);
+
+  return !!(attr & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+int
+grub_util_is_regular (const char *name)
+{
+  LPTSTR name_windows;
+  DWORD attr;
+
+  name_windows = grub_util_get_windows_path (name);
+  if (!name_windows)
+    return 0;
+
+  attr = GetFileAttributes (name_windows);
+  grub_free (name_windows);
+
+  return !(attr & FILE_ATTRIBUTE_DIRECTORY)
+    && !(attr & FILE_ATTRIBUTE_REPARSE_POINT) && attr;
+}
+
 #ifdef __MINGW32__
 
 FILE *
@@ -438,12 +471,38 @@ int fsync (int fno)
   return 0;
 }
 
+int
+grub_util_is_special_file (const char *name)
+{
+  LPTSTR name_windows;
+  DWORD attr;
+
+  name_windows = grub_util_get_windows_path (name);
+  if (!name_windows)
+    return 1;
+
+  attr = GetFileAttributes (name_windows);
+  grub_free (name_windows);
+
+  return !!(attr & FILE_ATTRIBUTE_REPARSE_POINT) || !attr;
+}
+
 #else
 
 FILE *
 grub_util_fopen (const char *path, const char *mode)
 {
   return fopen (path, mode);
+}
+
+int
+grub_util_is_special_file (const char *path)
+{
+  struct stat st;
+
+  if (lstat (destnew, &st) == -1)
+    return 1;
+  return (!S_ISREG (st.st_mode) && !S_ISDIR (st.st_mode));
 }
 
 #endif

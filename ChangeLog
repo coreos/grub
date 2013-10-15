@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Define grub_util_is_directory/regular/special_file and
+	use OS-dependent versions rather than to rely on stat().
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimage.c: Move backend part to ...
 	* util/mkimage.c: ... here.
 

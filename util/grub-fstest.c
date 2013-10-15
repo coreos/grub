@@ -34,18 +34,11 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 #include <grub/zfs/zfs.h>
-#include <grub/osdep/hostfile.h>
+#include <grub/emu/hostfile.h>
 
 #include <stdio.h>
-#include <unistd.h>
+#include <errno.h>
 #include <string.h>
-#include <stdlib.h>
-
-#include <sys/types.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 #include "progname.h"
 #include "argp.h"
@@ -265,22 +258,17 @@ cmd_cmp (char *src, char *dest)
 {
   FILE *ff;
 
-  struct stat st;
-  if (stat (dest, &st) == -1)
-    grub_util_error (_("OS file %s open error: %s"), dest,
-		     strerror (errno));
-
-  if (S_ISDIR (st.st_mode))
+  if (grub_util_is_directory (dest))
     {
-      DIR *dir = opendir (dest);
-      struct dirent *entry;
+      grub_util_fd_dir_t dir = grub_util_fd_opendir (dest);
+      grub_util_fd_dirent_t entry;
       if (dir == NULL)
 	{
 	  grub_util_error (_("OS file %s open error: %s"), dest,
-			   strerror (errno));
+			   grub_util_fd_strerror ());
 	  return;
 	}
-      while ((entry = readdir (dir)))
+      while ((entry = grub_util_fd_readdir (dir)))
 	{
 	  char *srcnew, *destnew;
 	  char *ptr;
@@ -298,15 +286,12 @@ cmd_cmp (char *src, char *dest)
 	  *ptr++ = '/';
 	  strcpy (ptr, entry->d_name);
 
-#if !defined (_WIN32) || defined (__CYGWIN__)
-	  if (lstat (destnew, &st) == -1 || (!S_ISREG (st.st_mode)
-					  && !S_ISDIR (st.st_mode)))
+	  if (grub_util_is_special_file (destnew))
 	    continue;
-#endif
 
 	  cmd_cmp (srcnew, destnew);
 	}
-      closedir (dir);
+      grub_util_fd_closedir (dir);
       return;
     }
 

@@ -30,11 +30,8 @@
 #include <grub/emu/hostdisk.h>
 #include <grub/i18n.h>
 
-#include <dirent.h>
 #include <stdio.h>
 #include <errno.h>
-
-#include <sys/stat.h>
 #include <string.h>
 
 static int
@@ -52,10 +49,7 @@ is_dir (const char *path, const char *name)
 
   strcat (pathname, name);
 
-  struct stat st;
-  if (stat (pathname, &st))
-    return 0;
-  return S_ISDIR (st.st_mode);
+  return grub_util_is_directory (pathname);
 }
 
 struct grub_hostfs_data

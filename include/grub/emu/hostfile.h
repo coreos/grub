@@ -25,6 +25,13 @@
 #include <grub/osdep/hostfile.h>
 
 int
+grub_util_is_directory (const char *path);
+int
+grub_util_is_special_file (const char *path);
+int
+grub_util_is_regular (const char *path);
+
+int
 grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t off);
 ssize_t
 EXPORT_FUNC(grub_util_fd_read) (grub_util_fd_t fd, char *buf, size_t len);
