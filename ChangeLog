@@ -1,5 +1,11 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/error.c: Removed.
+	* grub-core/Makefile.core.def (kernel): Don't add error.c and progname.c
+	explicitly as it's already in libgnu.a.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/windows/emuconsole.c: Add missing config.h and
 	config-util.h include.
 
