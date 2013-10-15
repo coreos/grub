@@ -67,7 +67,7 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
 			   Elf_Shdr *symtab_section, Elf_Addr *section_addresses,
 			   Elf_Half section_entsize, Elf_Half num_sections,
 			   void *jumpers, Elf_Addr jumpers_addr,
-			   struct image_target_desc *image_target)
+			   const struct grub_install_image_target_desc *image_target)
 {
   Elf_Word symtab_size, sym_size, num_syms;
   Elf_Off symtab_offset;
@@ -140,7 +140,7 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
 /* Return the address of a symbol at the index I in the section S.  */
 static Elf_Addr
 SUFFIX (get_symbol_address) (Elf_Ehdr *e, Elf_Shdr *s, Elf_Word i,
-			     struct image_target_desc *image_target)
+			     const struct grub_install_image_target_desc *image_target)
 {
   Elf_Sym *sym;
 
@@ -153,7 +153,7 @@ SUFFIX (get_symbol_address) (Elf_Ehdr *e, Elf_Shdr *s, Elf_Word i,
 /* Return the address of a modified value.  */
 static Elf_Addr *
 SUFFIX (get_target_address) (Elf_Ehdr *e, Elf_Shdr *s, Elf_Addr offset,
-		    struct image_target_desc *image_target)
+		    const struct grub_install_image_target_desc *image_target)
 {
   return (Elf_Addr *) ((char *) e + grub_target_to_host (s->sh_offset) + offset);
 }
@@ -161,7 +161,7 @@ SUFFIX (get_target_address) (Elf_Ehdr *e, Elf_Shdr *s, Elf_Addr offset,
 #ifdef MKIMAGE_ELF64
 static Elf_Addr
 SUFFIX (count_funcs) (Elf_Ehdr *e, Elf_Shdr *symtab_section,
-		      struct image_target_desc *image_target)
+		      const struct grub_install_image_target_desc *image_target)
 {
   Elf_Word symtab_size, sym_size, num_syms;
   Elf_Off symtab_offset;
@@ -195,7 +195,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 			     const char *strtab,
 			     char *pe_target, Elf_Addr tramp_off,
 			     Elf_Addr got_off,
-			     struct image_target_desc *image_target)
+			     const struct grub_install_image_target_desc *image_target)
 {
   Elf_Half i;
   Elf_Shdr *s;
@@ -472,7 +472,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 static Elf_Addr
 SUFFIX (add_fixup_entry) (struct fixup_block_list **cblock, grub_uint16_t type,
 			  Elf_Addr addr, int flush, Elf_Addr current_address,
-			  struct image_target_desc *image_target)
+			  const struct grub_install_image_target_desc *image_target)
 {
   struct grub_pe32_fixup_block *b;
 
@@ -569,7 +569,7 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 			     Elf_Half section_entsize, Elf_Half num_sections,
 			     const char *strtab,
 			     Elf_Addr jumpers, grub_size_t njumpers,
-			     struct image_target_desc *image_target)
+			     const struct grub_install_image_target_desc *image_target)
 {
   unsigned i;
   Elf_Shdr *s;
@@ -755,7 +755,7 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 /* Determine if this section is a text section. Return false if this
    section is not allocated.  */
 static int
-SUFFIX (is_text_section) (Elf_Shdr *s, struct image_target_desc *image_target)
+SUFFIX (is_text_section) (Elf_Shdr *s, const struct grub_install_image_target_desc *image_target)
 {
   if (image_target->id != IMAGE_EFI 
       && grub_target_to_host32 (s->sh_type) != SHT_PROGBITS)
@@ -768,7 +768,7 @@ SUFFIX (is_text_section) (Elf_Shdr *s, struct image_target_desc *image_target)
    BSS is also a data section, since the converter initializes BSS
    when producing PE32 to avoid a bug in EFI implementations.  */
 static int
-SUFFIX (is_data_section) (Elf_Shdr *s, struct image_target_desc *image_target)
+SUFFIX (is_data_section) (Elf_Shdr *s, const struct grub_install_image_target_desc *image_target)
 {
   if (image_target->id != IMAGE_EFI 
       && grub_target_to_host32 (s->sh_type) != SHT_PROGBITS)
@@ -779,7 +779,7 @@ SUFFIX (is_data_section) (Elf_Shdr *s, struct image_target_desc *image_target)
 
 /* Return if the ELF header is valid.  */
 static int
-SUFFIX (check_elf_header) (Elf_Ehdr *e, size_t size, struct image_target_desc *image_target)
+SUFFIX (check_elf_header) (Elf_Ehdr *e, size_t size, const struct grub_install_image_target_desc *image_target)
 {
   if (size < sizeof (*e)
       || e->e_ident[EI_MAG0] != ELFMAG0
@@ -802,7 +802,7 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 			  Elf_Half num_sections, const char *strtab,
 			  size_t *exec_size, size_t *kernel_sz,
 			  size_t *all_align,
-			  struct image_target_desc *image_target)
+			  const struct grub_install_image_target_desc *image_target)
 {
   int i;
   Elf_Addr current_address;
@@ -884,7 +884,7 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 		     size_t total_module_size, grub_uint64_t *start,
 		     void **reloc_section, size_t *reloc_size,
 		     size_t *align,
-		     struct image_target_desc *image_target)
+		     const struct grub_install_image_target_desc *image_target)
 {
   char *kernel_img, *out_img;
   const char *strtab;

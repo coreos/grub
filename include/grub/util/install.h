@@ -25,6 +25,30 @@
 #include <grub/device.h>
 #include <grub/disk.h>
 #include <grub/emu/hostfile.h>
+
+typedef enum {
+  GRUB_COMPRESSION_AUTO,
+  GRUB_COMPRESSION_NONE,
+  GRUB_COMPRESSION_XZ,
+  GRUB_COMPRESSION_LZMA
+} grub_compression_t;
+
+struct grub_install_image_target_desc;
+
+void
+grub_install_generate_image (const char *dir, const char *prefix,
+			     FILE *out,
+			     const char *outname, char *mods[],
+			     char *memdisk_path, char **pubkey_paths,
+			     size_t npubkeys,
+			     char *config_path,
+			     const struct grub_install_image_target_desc *image_target,
+			     int note,
+			     grub_compression_t comp);
+
+const struct grub_install_image_target_desc *
+grub_install_get_image_target (const char *arg);
+
 void
 grub_util_bios_setup (const char *dir,
 		      const char *boot_file, const char *core_file,
@@ -36,6 +60,11 @@ grub_util_sparc_setup (const char *dir,
 		       const char *dest, int force,
 		       int fs_probe, int allow_floppy);
 
+char *
+grub_install_get_image_targets_string (void);
+
+const char *
+grub_util_get_target_dirname (const struct grub_install_image_target_desc *t);
 
 void
 grub_install_get_blocklist (grub_device_t root_dev,

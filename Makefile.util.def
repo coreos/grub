@@ -160,6 +160,7 @@ program = {
   mansection = 1;
 
   common = util/grub-mkimage.c;
+  common = util/mkimage.c;
   common = util/resolve.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/osdep/init.c;

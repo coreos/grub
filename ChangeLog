@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimage.c: Move backend part to ...
+	* util/mkimage.c: ... here.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Allow compilation with mingw64 albeit with warnings due to lack of
 	%llx/%llu.
 
