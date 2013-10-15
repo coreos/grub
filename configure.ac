@@ -1260,7 +1260,7 @@ if test x"$libzfs_excuse" = x ; then
 fi
 
 if test x"$libzfs_excuse" = x ; then
-  AC_CHECK_LIB([nvpair], [nvlist_print],
+  AC_CHECK_LIB([nvpair], [nvlist_lookup_string],
                [],
                [libzfs_excuse="need nvpair library"])
 fi

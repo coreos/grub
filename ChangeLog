@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Check for nvlist_lookup_string in nvpair since we
+	use nvlist_lookup_string and don't use nvlist_print.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add wrappers around rename, unlink, mkdir, opendir, readdir and
 	closedir to handle filename charset translation.
 
