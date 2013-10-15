@@ -43,7 +43,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <assert.h>
 
 #define _GNU_SOURCE	1

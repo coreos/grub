@@ -1,5 +1,9 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove leftover references to some of the system headers.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/geli.c (grub_util_get_geli_uuid): Close handle after
 	read.
 

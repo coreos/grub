@@ -246,12 +246,7 @@ struct grub_video_mode_info grub_test_video_modes[30] = {
 };
 
 #ifdef GRUB_MACHINE_EMU
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-#include <stdlib.h>
+#include <grub/emu/hostfile.h>
 
 struct bmp_header
 {

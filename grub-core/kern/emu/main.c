@@ -23,11 +23,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
-#include <sys/stat.h>
 #include <string.h>
 #include <signal.h>
 #include <sys/types.h>
-#include <unistd.h>
 
 #include <grub/dl.h>
 #include <grub/mm.h>
