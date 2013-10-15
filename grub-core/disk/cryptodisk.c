@@ -27,13 +27,7 @@
 #include <grub/procfs.h>
 
 #ifdef GRUB_UTIL
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <grub/emu/hostdisk.h>
-#include <unistd.h>
-#include <string.h>
 #endif
 
 GRUB_MOD_LICENSE ("GPLv3+");
@@ -508,7 +502,7 @@ grub_cryptodisk_open (const char *name, grub_disk_t disk)
 	dev->cheat_fd = grub_util_fd_open (dev->cheat, GRUB_UTIL_FD_O_RDONLY);
       if (!GRUB_UTIL_FD_IS_VALID (dev->cheat_fd))
 	return grub_error (GRUB_ERR_IO, N_("cannot open `%s': %s"),
-			   dev->cheat, strerror (errno));
+			   dev->cheat, grub_util_fd_strerror ());
     }
 #endif
 
@@ -568,7 +562,7 @@ grub_cryptodisk_read (grub_disk_t disk, grub_disk_addr_t sector,
       if (grub_util_fd_read (dev->cheat_fd, buf, size << disk->log_sector_size)
 	  != (ssize_t) (size << disk->log_sector_size))
 	return grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
-			   dev->cheat, strerror (errno));
+			   dev->cheat, grub_util_fd_strerror ());
       return GRUB_ERR_NONE;
     }
 #endif
@@ -613,7 +607,7 @@ grub_cryptodisk_write (grub_disk_t disk, grub_disk_addr_t sector,
       if (grub_util_fd_write (dev->cheat_fd, buf, size << disk->log_sector_size)
 	  != (ssize_t) (size << disk->log_sector_size))
 	return grub_error (GRUB_ERR_READ_ERROR, N_("cannot read `%s': %s"),
-			   dev->cheat, strerror (errno));
+			   dev->cheat, grub_util_fd_strerror ());
       return GRUB_ERR_NONE;
     }
 #endif
