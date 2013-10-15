@@ -76,4 +76,7 @@ grub_install_get_blocklist (grub_device_t root_dev,
 					      void *data),
 			    void *hook_data);
 
+void
+grub_util_create_envblk_file (const char *name);
+
 #endif

@@ -213,6 +213,7 @@ program = {
   mansection = 1;
 
   common = util/grub-editenv.c;
+  common = util/editenv.c;
   common = grub-core/osdep/init.c;
 
   ldadd = libgrubmods.a;

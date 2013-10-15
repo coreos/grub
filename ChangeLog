@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-editenv.c (create_envblk_file): More from here ...
+	* util/editenv.c (grub_util_create_envblk_file): ... to here.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/unix/getroot.c (grub_guess_root_devices):
 	canonicalize file name before doing the rest.
 

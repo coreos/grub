@@ -23,7 +23,8 @@
 #include <grub/util/misc.h>
 #include <grub/lib/envblk.h>
 #include <grub/i18n.h>
-#include <grub/osdep/hostfile.h>
+#include <grub/emu/hostfile.h>
+#include <grub/util/install.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -33,7 +34,6 @@
 
 #include "progname.h"
 
-#define DEFAULT_ENVBLK_SIZE	1024
 #define DEFAULT_ENVBLK_PATH DEFAULT_DIRECTORY "/" GRUB_ENVBLK_DEFCFG
 
 static struct argp_option options[] = {
@@ -109,38 +109,6 @@ If FILENAME is `-', the default value %s is used."),
   NULL, help_filter, NULL
 };
 
-static void
-create_envblk_file (const char *name)
-{
-  FILE *fp;
-  char *buf;
-  char *namenew;
-
-  buf = xmalloc (DEFAULT_ENVBLK_SIZE);
-
-  namenew = xasprintf ("%s.new", name);
-  fp = grub_util_fopen (namenew, "wb");
-  if (! fp)
-    grub_util_error (_("cannot open `%s': %s"), namenew,
-		     strerror (errno));
-
-  memcpy (buf, GRUB_ENVBLK_SIGNATURE, sizeof (GRUB_ENVBLK_SIGNATURE) - 1);
-  memset (buf + sizeof (GRUB_ENVBLK_SIGNATURE) - 1, '#',
-          DEFAULT_ENVBLK_SIZE - sizeof (GRUB_ENVBLK_SIGNATURE) + 1);
-
-  if (fwrite (buf, 1, DEFAULT_ENVBLK_SIZE, fp) != DEFAULT_ENVBLK_SIZE)
-    grub_util_error (_("cannot write to `%s': %s"), namenew,
-		     strerror (errno));
-
-  fsync (fileno (fp));
-  free (buf);
-  fclose (fp);
-
-  if (rename (namenew, name) < 0)
-    grub_util_error (_("cannot rename the file %s to %s"), namenew, name);
-  free (namenew);
-}
-
 static grub_envblk_t
 open_envblk_file (const char *name)
 {
@@ -153,7 +121,7 @@ open_envblk_file (const char *name)
   if (! fp)
     {
       /* Create the file implicitly.  */
-      create_envblk_file (name);
+      grub_util_create_envblk_file (name);
       fp = grub_util_fopen (name, "rb");
       if (! fp)
         grub_util_error (_("cannot open `%s': %s"), name,
@@ -299,7 +267,7 @@ main (int argc, char *argv[])
     }
 
   if (strcmp (command, "create") == 0)
-    create_envblk_file (filename);
+    grub_util_create_envblk_file (filename);
   else if (strcmp (command, "list") == 0)
     list_variables (filename);
   else if (strcmp (command, "set") == 0)
