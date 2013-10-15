@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Split grub-setup.c into frontend (grub-setup.c) and backend (setup.c)
+	files.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/windows/hostdisk.c (grub_util_fd_strerror):
 	Cut tailing newline. Remove arbitrary limitation. Always use
 	grub_util_tchar_to_utf8.

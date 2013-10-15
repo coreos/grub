@@ -317,6 +317,7 @@ program = {
   installdir = sbin;
   mansection = 8;
   common = util/grub-setup.c;
+  common = util/setup_bios.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
   common = grub-core/osdep/init.c;
@@ -326,7 +327,7 @@ program = {
   ldadd = libgrubgcry.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
-  cppflags = '-DGRUB_SETUP_BIOS=1';
+  cppflags = '-DGRUB_SETUP_FUNC=grub_util_bios_setup';
 };
 
 program = {
@@ -334,6 +335,7 @@ program = {
   installdir = sbin;
   mansection = 8;
   common = util/grub-setup.c;
+  common = util/setup_sparc.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
   common = grub-core/osdep/ofpath.c;
@@ -344,7 +346,7 @@ program = {
   ldadd = libgrubgcry.a;
   ldadd = grub-core/gnulib/libgnu.a;
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
-  cppflags = '-DGRUB_SETUP_SPARC64=1';
+  cppflags = '-DGRUB_SETUP_FUNC=grub_util_sparc_setup';
 };
 
 program = {
