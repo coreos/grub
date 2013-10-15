@@ -2140,6 +2140,8 @@ The following is a list of the components and the properties they support.
       @tab The image file pattern for the menu frame styled box.
       Example:  ``menu_*.png`` (this will use images such as ``menu_c.png``,
       ``menu_w.png``, `menu_nw.png``, etc.)
+   @item item_pixmap_style
+      @tab The image file pattern for the item styled box.
    @item selected_item_pixmap_style
       @tab The image file pattern for the selected item highlight styled box.
    @item scrollbar

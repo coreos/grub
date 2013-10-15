@@ -1,3 +1,8 @@
+2013-10-16  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/gui_list.c: New option `item_pixmap_style`.
+	* docs/grub.texi: Likewise.
+
 2013-10-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/osdep/unix/hostdisk.c (grub_util_fd_read): Return correct

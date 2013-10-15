@@ -72,9 +72,12 @@ struct grub_gui_list_impl
   int need_to_recreate_boxes;
   char *theme_dir;
   char *menu_box_pattern;
+  char *item_box_pattern;
+  int selected_item_box_pattern_inherit;
   char *selected_item_box_pattern;
   grub_gfxmenu_box_t menu_box;
   grub_gfxmenu_box_t selected_item_box;
+  grub_gfxmenu_box_t item_box;
 
   grub_gfxmenu_icon_manager_t icon_manager;
 
@@ -90,9 +93,12 @@ list_destroy (void *vself)
 
   grub_free (self->theme_dir);
   grub_free (self->menu_box_pattern);
+  grub_free (self->item_box_pattern);
   grub_free (self->selected_item_box_pattern);
   if (self->menu_box)
     self->menu_box->destroy (self->menu_box);
+  if (self->item_box)
+    self->item_box->destroy (self->item_box);
   if (self->selected_item_box)
     self->selected_item_box->destroy (self->selected_item_box);
   if (self->icon_manager)
@@ -116,12 +122,17 @@ get_num_shown_items (list_impl_t self)
   grub_gfxmenu_box_t box = self->menu_box;
   int box_top_pad = box->get_top_pad (box);
   int box_bottom_pad = box->get_bottom_pad (box);
+  grub_gfxmenu_box_t itembox = self->item_box;
   grub_gfxmenu_box_t selbox = self->selected_item_box;
+  int item_top_pad = itembox->get_top_pad (itembox);
+  int item_bottom_pad = itembox->get_bottom_pad (itembox);
   int sel_top_pad = selbox->get_top_pad (selbox);
   int sel_bottom_pad = selbox->get_bottom_pad (selbox);
-      
+  int max_top_pad = grub_max (item_top_pad, sel_top_pad);
+  int max_bottom_pad = grub_max (item_bottom_pad, sel_bottom_pad);
+
   return (self->bounds.height + item_vspace - 2 * boxpad
-          - sel_top_pad - sel_bottom_pad
+          - max_top_pad - max_bottom_pad
           - box_top_pad - box_bottom_pad) / (item_height + item_vspace);
 }
 
@@ -134,6 +145,10 @@ check_boxes (list_impl_t self)
                              self->menu_box_pattern,
                              self->theme_dir);
 
+      grub_gui_recreate_box (&self->item_box,
+                             self->item_box_pattern,
+                             self->theme_dir);
+
       grub_gui_recreate_box (&self->selected_item_box,
                              self->selected_item_box_pattern,
                              self->theme_dir);
@@ -141,7 +156,8 @@ check_boxes (list_impl_t self)
       self->need_to_recreate_boxes = 0;
     }
 
-  return (self->menu_box != 0 && self->selected_item_box != 0);
+  return (self->menu_box != 0 && self->selected_item_box != 0
+          && self->item_box != 0);
 }
 
 static int
@@ -253,7 +269,7 @@ draw_scrollbar (list_impl_t self,
 static void
 draw_menu (list_impl_t self, int num_shown_items)
 {
-  if (! self->menu_box || ! self->selected_item_box)
+  if (! self->menu_box || ! self->selected_item_box || ! self->item_box)
     return;
 
   int boxpad = self->item_padding;
@@ -264,14 +280,24 @@ draw_menu (list_impl_t self, int num_shown_items)
   int descent = grub_font_get_descent (self->item_font);
   int selected_ascent = grub_font_get_ascent (self->selected_item_font);
   int selected_descent = grub_font_get_descent (self->selected_item_font);
-  int item_height = self->item_height;
+  int text_box_height = self->item_height;
 
   make_selected_item_visible (self);
 
+  grub_gfxmenu_box_t itembox = self->item_box;
   grub_gfxmenu_box_t selbox = self->selected_item_box;
+  int item_leftpad = itembox->get_left_pad (itembox);
+  int item_rightpad = itembox->get_right_pad (itembox);
+  int item_border_width = item_leftpad + item_rightpad;
+  int item_toppad = itembox->get_top_pad (itembox);
   int sel_leftpad = selbox->get_left_pad (selbox);
+  int sel_rightpad = selbox->get_right_pad (selbox);
+  int sel_border_width = sel_leftpad + sel_rightpad;
   int sel_toppad = selbox->get_top_pad (selbox);
-  int item_top = sel_toppad;
+
+  int max_leftpad = grub_max (item_leftpad, sel_leftpad);
+  int max_toppad = grub_max (item_toppad, sel_toppad);
+  int item_top = 0;
   int menu_index;
   int visible_index;
   struct grub_video_rect oviewport;
@@ -284,25 +310,35 @@ draw_menu (list_impl_t self, int num_shown_items)
 			   oviewport.height - 2 * boxpad);
 
   int cwidth = oviewport.width - 2 * boxpad;
-  if (selbox->get_border_width)
-    cwidth -= selbox->get_border_width (selbox);
-  selbox->set_content_size (selbox, cwidth, item_height);
 
-  int item_left_offset = self->icon_width + icon_text_space;
-  int item_top_offset = (item_height - (ascent + descent)) / 2 + ascent;
-  int selected_item_top_offset = (item_height - (selected_ascent
-                                                 + selected_descent)) / 2
+  itembox->set_content_size (itembox, cwidth - item_border_width,
+                             text_box_height);
+  selbox->set_content_size (selbox, cwidth - sel_border_width,
+                            text_box_height);
+
+  int text_left_offset = self->icon_width + icon_text_space;
+  int item_text_top_offset = (text_box_height - (ascent + descent)) / 2 + ascent;
+  int sel_text_top_offset = (text_box_height - (selected_ascent
+                                                + selected_descent)) / 2
                                  + selected_ascent;
 
   grub_video_rect_t svpsave, sviewport;
-  sviewport.x = sel_leftpad + item_left_offset;
-  sviewport.width = cwidth - item_left_offset;
-  sviewport.height = item_height;
+  sviewport.x = max_leftpad + text_left_offset;
+  int text_viewport_width = cwidth - sviewport.x;
+  sviewport.height = text_box_height;
 
   grub_video_color_t item_color;
-  grub_video_color_t selected_item_color;
+  grub_video_color_t sel_color;
   item_color = grub_video_map_rgba_color (self->item_color);
-  selected_item_color = grub_video_map_rgba_color (self->selected_item_color);
+  sel_color = grub_video_map_rgba_color (self->selected_item_color);
+
+  int item_box_top_offset = max_toppad - item_toppad;
+  int sel_box_top_offset = max_toppad - sel_toppad;
+  int item_viewport_width = text_viewport_width - item_rightpad;
+  int sel_viewport_width = text_viewport_width - sel_rightpad;
+  int tmp_icon_top_offset = (text_box_height - self->icon_height) / 2;
+  int item_icon_top_offset = item_toppad + tmp_icon_top_offset;
+  int sel_icon_top_offset = sel_toppad + tmp_icon_top_offset;
 
   for (visible_index = 0, menu_index = self->first_shown_index;
        visible_index < num_shown_items && menu_index < self->view->menu->size;
@@ -312,43 +348,53 @@ draw_menu (list_impl_t self, int num_shown_items)
       struct grub_video_bitmap *icon;
       grub_font_t font;
       grub_video_color_t color;
-      int top_offset;
+      int text_top_offset;
+      int top_pad;
+      int icon_top_offset;
+      int viewport_width;
 
       if (is_selected)
         {
-          selbox->draw (selbox, 0,
-                        item_top - sel_toppad);
+          selbox->draw (selbox, 0, item_top + sel_box_top_offset);
           font = self->selected_item_font;
-          color = selected_item_color;
-          top_offset = selected_item_top_offset;
+          color = sel_color;
+          text_top_offset = sel_text_top_offset;
+          top_pad = sel_toppad;
+          icon_top_offset = sel_icon_top_offset;
+          viewport_width = sel_viewport_width;
         }
       else
         {
+          itembox->draw (itembox, 0, item_top + item_box_top_offset);
           font = self->item_font;
           color = item_color;
-          top_offset = item_top_offset;
+          text_top_offset = item_text_top_offset;
+          top_pad = item_toppad;
+          icon_top_offset = item_icon_top_offset;
+          viewport_width = item_viewport_width;
         }
 
       icon = get_item_icon (self, menu_index);
       if (icon != 0)
         grub_video_blit_bitmap (icon, GRUB_VIDEO_BLIT_BLEND,
-                                sel_leftpad,
-                                item_top + (item_height - self->icon_height) / 2,
+                                max_leftpad,
+                                item_top + icon_top_offset,
                                 0, 0, self->icon_width, self->icon_height);
 
       const char *item_title =
         grub_menu_get_entry (self->view->menu, menu_index)->title;
 
-      sviewport.y = item_top;
+      sviewport.y = item_top + top_pad;
+      sviewport.width = viewport_width;
       grub_gui_set_viewport (&sviewport, &svpsave);
       grub_font_draw_string (item_title,
                              font,
                              color,
                              0,
-                             top_offset);
+                             text_top_offset);
       grub_gui_restore_viewport (&svpsave);
 
-      item_top += item_height + item_vspace;
+      item_top += text_box_height + item_vspace;
     }
   grub_video_set_viewport (oviewport.x,
 			   oviewport.y,
@@ -369,7 +415,7 @@ list_paint (void *vself, const grub_video_rect_t *region)
 
   check_boxes (self);
 
-  if (! self->menu_box || ! self->selected_item_box)
+  if (! self->menu_box || ! self->selected_item_box || ! self->item_box)
     return;
 
   grub_gui_set_viewport (&self->bounds, &vpsave);
@@ -512,6 +558,17 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
       int sel_left_pad = selbox->get_left_pad (selbox);
       int sel_right_pad = selbox->get_right_pad (selbox);
 
+      grub_gfxmenu_box_t itembox = self->item_box;
+      int item_top_pad = itembox->get_top_pad (itembox);
+      int item_bottom_pad = itembox->get_bottom_pad (itembox);
+      int item_left_pad = itembox->get_left_pad (itembox);
+      int item_right_pad = itembox->get_right_pad (itembox);
+
+      int max_left_pad = grub_max (item_left_pad, sel_left_pad);
+      int max_right_pad = grub_max (item_right_pad, sel_right_pad);
+      int max_top_pad = grub_max (item_top_pad, sel_top_pad);
+      int max_bottom_pad = grub_max (item_bottom_pad, sel_bottom_pad);
+
       *width = grub_font_get_string_width (self->item_font, "Typical OS");
       width_s = grub_font_get_string_width (self->selected_item_font,
 					    "Typical OS");
@@ -519,7 +576,7 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
 	*width = width_s;
 
       *width += 2 * boxpad + box_left_pad + box_right_pad
-                + sel_left_pad + sel_right_pad
+                + max_left_pad + max_right_pad
                 + self->item_icon_space + self->icon_width;
 
       switch (self->scrollbar_slice)
@@ -541,7 +598,7 @@ list_get_minimal_size (void *vself, unsigned *width, unsigned *height)
                  + item_vspace * (num_items - 1)
                  + 2 * boxpad
                  + box_top_pad + box_bottom_pad
-                 + sel_top_pad + sel_bottom_pad);
+                 + max_top_pad + max_bottom_pad);
     }
   else
     {
@@ -641,11 +698,33 @@ list_set_property (void *vself, const char *name, const char *value)
       grub_free (self->menu_box_pattern);
       self->menu_box_pattern = value ? grub_strdup (value) : 0;
     }
-  else if (grub_strcmp (name, "selected_item_pixmap_style") == 0)
+  else if (grub_strcmp (name, "item_pixmap_style") == 0)
     {
       self->need_to_recreate_boxes = 1;
-      grub_free (self->selected_item_box_pattern);
-      self->selected_item_box_pattern = value ? grub_strdup (value) : 0;
+      grub_free (self->item_box_pattern);
+      self->item_box_pattern = value ? grub_strdup (value) : 0;
+      if (self->selected_item_box_pattern_inherit)
+        {
+          grub_free (self->selected_item_box_pattern);
+          self->selected_item_box_pattern = value ? grub_strdup (value) : 0;
+        }
+    }
+  else if (grub_strcmp (name, "selected_item_pixmap_style") == 0)
+    {
+      if (!value || grub_strcmp (value, "inherit") == 0)
+        {
+          grub_free (self->selected_item_box_pattern);
+          char *tmp = self->item_box_pattern;
+          self->selected_item_box_pattern = tmp ? grub_strdup (tmp) : 0;
+          self->selected_item_box_pattern_inherit = 1;
+        }
+      else
+        {
+          self->need_to_recreate_boxes = 1;
+          grub_free (self->selected_item_box_pattern);
+          self->selected_item_box_pattern = value ? grub_strdup (value) : 0;
+          self->selected_item_box_pattern_inherit = 0;
+        }
     }
   else if (grub_strcmp (name, "scrollbar_frame") == 0)
     {
@@ -805,8 +884,11 @@ grub_gui_list_new (void)
   self->need_to_recreate_boxes = 0;
   self->theme_dir = 0;
   self->menu_box_pattern = 0;
+  self->item_box_pattern = 0;
+  self->selected_item_box_pattern_inherit = 1;/*Default to using the item_box.*/
   self->selected_item_box_pattern = 0;
   self->menu_box = grub_gfxmenu_create_box (0, 0);
+  self->item_box = grub_gfxmenu_create_box (0, 0);
   self->selected_item_box = grub_gfxmenu_create_box (0, 0);
 
   self->icon_manager = grub_gfxmenu_icon_manager_new ();
