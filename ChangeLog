@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Split emunet into platform-dependent and GRUB-binding parts. Keep
+	platform-dependent part in kernel for easy access to OS functions.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/video_checksum.c: Use grub_util_fd_* rather than
 	open/read/write.
 

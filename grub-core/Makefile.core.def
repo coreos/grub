@@ -257,6 +257,9 @@ kernel = {
   extra_dist = osdep/windows/emuconsole.c;
   emu = osdep/sleep.c;
   emu = osdep/init.c;
+  emu = osdep/emunet.c;
+  extra_dist = osdep/linux/emunet.c;
+  extra_dist = osdep/basic/emunet.c;
 
   videoinkernel = term/gfxterm.c;
   videoinkernel = font/font.c;
@@ -1978,7 +1981,7 @@ module = {
 
 module = {
   name = emunet;
-  emu = osdep/emunet.c;
+  emu = net/drivers/emu/emunet.c;
   enable = emu;
 };
 

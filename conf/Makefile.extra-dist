@@ -85,7 +85,6 @@ EXTRA_DIST += grub-core/osdep/hurd/getroot.c
 EXTRA_DIST += grub-core/osdep/linux/getroot.c
 EXTRA_DIST += grub-core/osdep/sun/getroot.c
 
-EXTRA_DIST += grub-core/osdep/basic/emunet.c
 EXTRA_DIST += grub-core/osdep/basic/random.c
 EXTRA_DIST += grub-core/osdep/basic/ofpath.c
 
@@ -93,7 +92,6 @@ EXTRA_DIST += grub-core/osdep/unix/password.c
 EXTRA_DIST += grub-core/osdep/unix/random.c
 EXTRA_DIST += grub-core/osdep/unix/sleep.c
 
-EXTRA_DIST += grub-core/osdep/linux/emunet.c
 EXTRA_DIST += grub-core/osdep/linux/ofpath.c
 
 EXTRA_DIST += grub-core/osdep/windows/password.c

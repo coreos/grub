@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010,2011,2012,2013  Free Software Foundation, Inc.
+ *  Copyright (C) 2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,35 +16,22 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
-#include <config-util.h>
+#ifndef GRUB_EMUNET_HEADER
+#define GRUB_EMUNET_HEADER	1
 
-#include <grub/i18n.h>
-#include <grub/emu/net.h>
-
-grub_ssize_t
-grub_emunet_send (const void *packet __attribute__ ((unused)),
-		  grub_size_t sz __attribute__ ((unused)))
-{
-  return -1;
-}
+#include <grub/types.h>
+#include <grub/symbol.h>
 
 grub_ssize_t
-grub_emunet_receive (void *packet __attribute__ ((unused)),
-		     grub_size_t sz __attribute__ ((unused)))
-{
-  return -1;
-}
+EXPORT_FUNC(grub_emunet_send) (const void *packet, grub_size_t sz);
+
+grub_ssize_t
+EXPORT_FUNC(grub_emunet_receive) (void *packet, grub_size_t sz);
 
 int
-grub_emunet_create (grub_size_t *mtu)
-{
-  *mtu = 1500;
-  return -1;
-}
+EXPORT_FUNC(grub_emunet_create) (grub_size_t *mtu);
 
 void
-grub_emunet_close (void)
-{
-  return;
-}
+EXPORT_FUNC(grub_emunet_close) (void);
+
+#endif
