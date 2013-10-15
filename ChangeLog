@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/windows/hostdisk.c (canonicalize_file_name): Handle
+	unicode path.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/checksums.h: Regenerate due to swiss.sed change.
 
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>

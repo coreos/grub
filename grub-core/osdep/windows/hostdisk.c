@@ -279,15 +279,15 @@ char *
 canonicalize_file_name (const char *path)
 {
   char *ret;
+  LPTSTR windows_path;
   ret = xmalloc (PATH_MAX);
 
-#ifndef __CYGWIN__
-  if (!_fullpath (ret, path, PATH_MAX))
+  windows_path = grub_util_get_windows_path (path);
+  if (!windows_path)
     return NULL;
-#else
-  if (!realpath (path, ret))
-    return NULL;
-#endif
+  ret = grub_util_tchar_to_utf8 (windows_path);
+  free (windows_path);
+ 
   return ret;
 }
 
