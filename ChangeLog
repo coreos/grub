@@ -1,5 +1,11 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/windows/hostdisk.c (grub_util_fd_strerror):
+	Cut tailing newline. Remove arbitrary limitation. Always use
+	grub_util_tchar_to_utf8.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_vsnprintf_real): Handle %% properly.
 	* tests/printf_unit_test.c (printf_test): Add %% tests.
 	Reported by: Paulo Flabiano Smorigo.

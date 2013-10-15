@@ -255,24 +255,33 @@ grub_util_fd_close (grub_util_fd_t fd)
 const char *
 grub_util_fd_strerror (void)
 {
-  DWORD err;
-  static TCHAR tbuf[1024];
-  err = GetLastError ();
-  FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM |
-		 FORMAT_MESSAGE_IGNORE_INSERTS,
-		 NULL, err,
-		 MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
-		 tbuf, ARRAY_SIZE (tbuf), NULL);
+  DWORD err = GetLastError ();
+  LPTSTR tstr = NULL;
+  static char *last;
+  char *ret, *ptr;
 
-#if SIZEOF_TCHAR == 1
-  return (char *) tbuf;
-#elif SIZEOF_TCHAR == 2
-  static grub_uint8_t buf[ARRAY_SIZE (tbuf) * GRUB_MAX_UTF8_PER_UTF16 + 1];
-  *grub_utf16_to_utf8 (buf, tbuf, ARRAY_SIZE (tbuf)) = '\0';
-  return (char *) buf;
-#else
-#error "Unsupported TCHAR size"
-#endif
+  free (last);
+  last = 0;
+
+  FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
+		 | FORMAT_MESSAGE_IGNORE_INSERTS,
+		 NULL, err, 0, (LPTSTR) &tstr, 0, NULL);
+
+  if (!tstr)
+    return "unknown error";
+
+  ret = grub_util_tchar_to_utf8 (tstr);
+
+  LocalFree (tstr);
+
+  last = ret;
+
+  for (ptr = ret + strlen (ret) - 1;
+       ptr >= ret && (*ptr == '\n' || *ptr == '\r');
+       ptr--);
+  ptr[1] = '\0';
+
+  return ret;
 }
 
 char *
