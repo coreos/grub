@@ -198,25 +198,21 @@ make_uuid (const struct grub_geli_phdr *header,
 
 #ifdef GRUB_UTIL
 
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <grub/emu/hostdisk.h>
-#include <unistd.h>
-#include <string.h>
 #include <grub/emu/misc.h>
 
 char *
 grub_util_get_geli_uuid (const char *dev)
 {
-  grub_util_fd_t fd = grub_util_fd_open (dev, GRUB_UTIL_FD_O_RDONLY);
+  grub_util_fd_t fd;
   grub_uint64_t s;
   unsigned log_secsize;
   grub_uint8_t hdr[512];
   struct grub_geli_phdr *header;
   char *uuid; 
   gcry_err_code_t err;
+
+  fd = grub_util_fd_open (dev, GRUB_UTIL_FD_O_RDONLY);
 
   if (!GRUB_UTIL_FD_IS_VALID (fd))
     return NULL;
@@ -228,6 +224,8 @@ grub_util_get_geli_uuid (const char *dev)
   uuid = xmalloc (GRUB_MD_SHA256->mdlen * 2 + 1);
   if (grub_util_fd_read (fd, (void *) &hdr, 512) < 0)
     grub_util_error ("%s", _("couldn't read ELI metadata"));
+
+  grub_util_fd_close (fd);
 	  
   COMPILE_TIME_ASSERT (sizeof (header) <= 512);
   header = (void *) &hdr;

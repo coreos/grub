@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/geli.c (grub_util_get_geli_uuid): Close handle after
+	read.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/cryptodisk.c: Use grub_util_fd_strerror instead
 	of strerror.
 
