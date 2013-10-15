@@ -1,5 +1,17 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Allow compilation with mingw64 albeit with warnings due to lack of
+	%llx/%llu.
+
+	* grub-core/gnulib/msvc-inval.c: Use __cdecl rather than cdecl.
+	* grub-core/lib/posix_wrap/wchar.h: Define wint_t.
+	* grub-core/lib/posix_wrap/wctype.h: Define wctype_t.
+	* include/grub/osdep/hostfile_windows.h: Don't define fseeko/ftello
+	on mingw64.
+	* include/grub/types.h: Allow sizeof (long) != sizeof (void *).
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove leftover references to some of the system headers.
 
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>

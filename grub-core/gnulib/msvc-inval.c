@@ -28,7 +28,7 @@
 
 # if MSVC_INVALID_PARAMETER_HANDLING == DEFAULT_HANDLING
 
-static void cdecl
+static void __cdecl
 gl_msvc_invalid_parameter_handler (const wchar_t *expression,
                                    const wchar_t *function,
                                    const wchar_t *file,

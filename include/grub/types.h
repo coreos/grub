@@ -50,12 +50,12 @@
 # endif
 #endif /* ! GRUB_UTIL */
 
-#if GRUB_CPU_SIZEOF_VOID_P != GRUB_CPU_SIZEOF_LONG
-# error "This architecture is not supported because sizeof(void *) != sizeof(long)"
-#endif
-
 #if GRUB_CPU_SIZEOF_VOID_P != 4 && GRUB_CPU_SIZEOF_VOID_P != 8
 # error "This architecture is not supported because sizeof(void *) != 4 and sizeof(void *) != 8"
+#endif
+
+#if GRUB_CPU_SIZEOF_LONG != 4 && GRUB_CPU_SIZEOF_LONG != 8
+# error "This architecture is not supported because sizeof(long) != 4 and sizeof(long) != 8"
 #endif
 
 #if !defined (GRUB_UTIL) && !defined (GRUB_TARGET_WORDSIZE)

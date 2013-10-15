@@ -64,6 +64,12 @@ enum grub_util_fd_open_flags_t
     GRUB_UTIL_FD_O_SYNC = 0,
   };
 
+#if defined (__MINGW32__) && !defined (__MINGW64__)
+
+#define fseeko fseeko64
+
+#endif
+
 LPTSTR
 grub_util_utf8_to_tchar (const char *in);
 char *
@@ -72,9 +78,6 @@ grub_util_tchar_to_utf8 (LPCTSTR in);
 #ifdef __MINGW32__
 
 int fsync (int fno);
-
-#define fseeko fseeko64
-#define ftello ftello64
 
 #endif
 
