@@ -291,6 +291,116 @@ canonicalize_file_name (const char *path)
   return ret;
 }
 
+void
+grub_util_mkdir (const char *dir)
+{
+  LPTSTR windows_name;
+      
+  windows_name = grub_util_get_windows_path (dir);
+  CreateDirectory (windows_name, NULL);
+  free (windows_name);
+}
+
+int
+grub_util_rename (const char *from, const char *to)
+{
+  LPTSTR windows_from, windows_to;
+  int ret;
+
+  windows_from = grub_util_get_windows_path (from);
+  windows_to = grub_util_get_windows_path (to);
+  ret = !MoveFile (windows_from, windows_to);
+  free (windows_from);
+  free (windows_to);
+  return ret;
+}
+
+struct grub_util_fd_dir
+{
+  WIN32_FIND_DATA fd;
+  HANDLE hnd;
+  int is_end;
+  char *last;
+};
+
+grub_util_fd_dir_t
+grub_util_fd_opendir (const char *name)
+{
+  struct grub_util_fd_dir *ret;
+  LPTSTR name_windows;
+  LPTSTR pattern;
+  ssize_t l;
+
+  name_windows = grub_util_get_windows_path (name);
+  for (l = 0; name_windows[l]; l++);
+  for (l--; l >= 0 && (name_windows[l] == '\\' || name_windows[l] == '/'); l--);
+  l++;
+  pattern = xmalloc ((l + 3) * sizeof (pattern[0]));
+  memcpy (pattern, name_windows, l * sizeof (pattern[0]));
+  pattern[l] = '\\';
+  pattern[l + 1] = '*';
+  pattern[l + 2] = '\0';
+
+  ret = xmalloc (sizeof (*ret));
+  memset (ret, 0, sizeof (*ret));
+
+  ret->hnd = FindFirstFile (pattern, &ret->fd);
+
+  free (name_windows);
+  free (pattern);
+
+  if (ret->hnd == INVALID_HANDLE_VALUE)
+    {
+      DWORD err = GetLastError ();
+      if (err == ERROR_FILE_NOT_FOUND)
+	{
+	  ret->is_end = 1;
+	  return ret;
+	}
+      return NULL;
+    }
+  return ret;
+}
+
+void
+grub_util_fd_closedir (grub_util_fd_dir_t dirp)
+{
+  if (dirp->hnd != INVALID_HANDLE_VALUE)
+    CloseHandle (dirp->hnd);
+  free (dirp->last);
+  free (dirp);
+}
+
+grub_util_fd_dirent_t
+grub_util_fd_readdir (grub_util_fd_dir_t dirp)
+{
+  char *ret;
+  free (dirp->last);
+  dirp->last = NULL;
+
+  if (dirp->is_end)
+    return NULL;
+
+  ret = grub_util_tchar_to_utf8 (dirp->fd.cFileName);
+  dirp->last = ret;
+
+  if (!FindNextFile (dirp->hnd, &dirp->fd))
+    dirp->is_end = 1;
+  return (grub_util_fd_dirent_t) ret;
+}
+
+int
+grub_util_unlink (const char *name)
+{
+  LPTSTR name_windows;
+  int ret;
+
+  name_windows = grub_util_get_windows_path (name);
+
+  ret = !DeleteFile (name_windows);
+  free (name_windows);
+  return ret;
+}
 
 #ifdef __MINGW32__
 

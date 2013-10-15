@@ -1,5 +1,10 @@
 2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add wrappers around rename, unlink, mkdir, opendir, readdir and
+	closedir to handle filename charset translation.
+
+2013-10-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/emu/hostdisk.h: Move file operations to
 	* include/grub/emu/hostfile.h: ... here.
 

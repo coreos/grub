@@ -28,6 +28,44 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <stdio.h>
+
+typedef struct dirent *grub_util_fd_dirent_t;
+typedef DIR *grub_util_fd_dir_t;
+
+static inline grub_util_fd_dir_t
+grub_util_fd_opendir (const char *name)
+{
+  return opendir (name);
+}
+
+static inline void
+grub_util_fd_closedir (grub_util_fd_dir_t dirp)
+{
+  closedir (dirp);
+}
+
+static inline grub_util_fd_dirent_t
+grub_util_fd_readdir (grub_util_fd_dir_t dirp)
+{
+  return readdir (dirp);
+}
+
+static inline int
+grub_util_unlink (const char *pathname)
+{
+  return unlink (pathname);
+}
+
+static inline int
+grub_util_rename (const char *from, const char *to)
+{
+  return rename (from, to);
+}
+
+#define grub_util_mkdir(a) mkdir ((a), 0700)
 
 #if defined (__NetBSD__)
 /* NetBSD uses /boot for its boot block.  */
