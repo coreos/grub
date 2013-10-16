@@ -1,5 +1,10 @@
 2013-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkstandalone.in: Remove needless copying since we already
+	pass the files to tar.
+
+2013-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* autogen.sh: Don't set LC_CTYPE as it doesn't create problem for
 	compilation but prevents gcc from displaying messages in non-Latin
 	alphabets.
