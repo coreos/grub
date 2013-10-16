@@ -170,8 +170,8 @@ POS_MULTILINE   {WORD}?\\\n
  /* Reserved words */
 "{"             { RECORD; return GRUB_PARSER_TOKEN_LBR;       }
 "}"             { RECORD; return GRUB_PARSER_TOKEN_RBR;       }
-"[["            { RECORD; return GRUB_PARSER_TOKEN_RSQBR2;    }
-"]]"            { RECORD; return GRUB_PARSER_TOKEN_LSQBR2;    }
+"[["            { RECORD; return GRUB_PARSER_TOKEN_LSQBR2;    }
+"]]"            { RECORD; return GRUB_PARSER_TOKEN_RSQBR2;    }
 "case"          { RECORD; return GRUB_PARSER_TOKEN_CASE;      }
 "do"            { RECORD; return GRUB_PARSER_TOKEN_DO;        }
 "done"          { RECORD; return GRUB_PARSER_TOKEN_DONE;      }
