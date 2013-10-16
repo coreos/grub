@@ -266,7 +266,7 @@ static grub_uint8_t linux_to_usb_map[128] = {
   /* 0x72 */ 0,                             GRUB_KEYBOARD_KEY_JP_RO,
   /* 0x74 */ 0,                             0,
   /* 0x76 */ 0,                             0,
-  /* 0x78 */ 0,                             0,
+  /* 0x78 */ 0,                             GRUB_KEYBOARD_KEY_KPCOMMA,
   /* 0x7a */ 0,                             0,
   /* 0x7c */ GRUB_KEYBOARD_KEY_JP_YEN,
 }; 

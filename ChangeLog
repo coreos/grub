@@ -1,3 +1,9 @@
+2013-10-16  Hiroyuki YAMAMORI
+
+	Handle Japanese special keys.
+	Reported by: Hiroyuki YAMAMORI.
+	Codes supplied by: Hiroyuki YAMAMORI.
+
 2013-10-16  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_list.c: Scrollbar sanity checks added.

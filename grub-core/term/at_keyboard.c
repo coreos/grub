@@ -108,6 +108,7 @@ static const grub_uint8_t set1_mapping[128] =
     /* 0x78 */ 0,                             0,
     /* 0x7a */ 0,                             0,
     /* 0x7c */ 0,                             GRUB_KEYBOARD_KEY_JP_YEN,
+    /* 0x7e */ GRUB_KEYBOARD_KEY_KPCOMMA
   };
 
 static const struct
@@ -187,7 +188,7 @@ static const grub_uint8_t set2_mapping[256] =
     /* 0x66 */ GRUB_KEYBOARD_KEY_BACKSPACE,   0,
     /* 0x68 */ 0,                             GRUB_KEYBOARD_KEY_NUM1,
     /* 0x6a */ GRUB_KEYBOARD_KEY_JP_YEN,      GRUB_KEYBOARD_KEY_NUM4,
-    /* 0x6c */ GRUB_KEYBOARD_KEY_NUM7,        0,
+    /* 0x6c */ GRUB_KEYBOARD_KEY_NUM7,        GRUB_KEYBOARD_KEY_KPCOMMA,
     /* 0x6e */ 0,                             0,
     /* 0x70 */ GRUB_KEYBOARD_KEY_NUMDOT,      GRUB_KEYBOARD_KEY_NUM0,
     /* 0x72 */ GRUB_KEYBOARD_KEY_NUM2,        GRUB_KEYBOARD_KEY_NUM5,
