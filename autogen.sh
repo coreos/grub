@@ -2,7 +2,6 @@
 
 set -e
 
-export LC_CTYPE=C
 export LC_COLLATE=C
 unset LC_ALL
 
