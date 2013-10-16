@@ -5446,15 +5446,15 @@ Information retrieval:
 @itemize
 @item mipsel-loongson: lsspd
 @item mips-arc: lsdev
-@item efi: lsefisystab, lssal, lsefimmap
+@item efi: lsefisystab, lssal, lsefimmap, lsefi
 @item i386-pc: lsapm
-@item i386-coreboot: lscoreboot, coreboot_boottime
+@item i386-coreboot: lscoreboot, coreboot_boottime, cbmemc
 @item acpi-enabled (i386-pc, i386-coreboot, i386-multiboot, *-efi): lsacpi
 @end itemize
 
 Workarounds for platform-specific issues:
 @itemize
-@item i386-efi/x86_64-efi: loadbios, fixvideo
+@item i386-efi/x86_64-efi: loadbios, fakebios, fix_video
 @item acpi-enabled (i386-pc, i386-coreboot, i386-multiboot, *-efi):
     acpi (override ACPI tables)
 @item i386-pc: drivemap
@@ -5469,7 +5469,7 @@ Advanced operations for power users:
 Miscelaneous:
 @itemize
 @item cmos (x86-*, ieee1275, mips-qemu_mips, mips-loongson): cmostest
-    (used on some laptops to check for special power-on key)
+    (used on some laptops to check for special power-on key), cmosclean
 @item i386-pc: play
 @end itemize
 

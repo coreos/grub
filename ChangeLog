@@ -1,5 +1,9 @@
 2013-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi: Mention few new platform-specific commands.
+
+2013-10-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/yylex.l: Fix LSQBR2 and RSQBR2. It's not
 	currently used so this doesn't really have any effect.
 	Reported by:  	Douglas Ray <dougray>
