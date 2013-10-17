@@ -857,6 +857,12 @@ script = {
   common = tests/grub_func_test.in;
 };
 
+script = {
+  testcase;
+  name = grub_cmd_tr;
+  common = tests/grub_cmd_tr.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;

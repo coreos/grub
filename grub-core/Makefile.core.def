@@ -2128,3 +2128,8 @@ module = {
   name = testspeed;
   common = commands/testspeed.c;
 };
+
+module = {
+  name = tr;
+  common = commands/tr.c;
+};

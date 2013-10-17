@@ -1,3 +1,13 @@
+2013-10-17  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	Added `tr' command support.
+
+	* grub-core/commands/tr.c: New file.
+	* grub-core/Makefile.core.def: Build rules for new module.
+
+	* tests/grub_cmd_tr.in: New test.
+	* Makefile.util.def: Build rules for new test.
+
 2013-10-17  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_progress_bar.c: Sanity checks added.
