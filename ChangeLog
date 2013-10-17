@@ -1,5 +1,9 @@
 2013-10-17  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
+	* grub-core/gfxmenu/gui_progress_bar.c: Sanity checks added.
+
+2013-10-17  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
 	* grub-core/gfxmenu/gui_progress_bar.c: New option ``highlight_overlay``
 	* docs/gurb.texi: Likewise.
 

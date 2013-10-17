@@ -266,22 +266,40 @@ static void
 progress_bar_get_minimal_size (void *vself,
 			       unsigned *width, unsigned *height)
 {
-  unsigned text_width = 0, text_height = 0;
+  unsigned min_width = 0;
+  unsigned min_height = 0;
   grub_gui_progress_bar_t self = vself;
 
   if (self->template)
     {
-      text_width = grub_font_get_string_width (self->font, self->template);
-      text_width += grub_font_get_string_width (self->font, "XXXXXXXXXX");
-      text_height = grub_font_get_descent (self->font)
-	+ grub_font_get_ascent (self->font);
+      min_width = grub_font_get_string_width (self->font, self->template);
+      min_width += grub_font_get_string_width (self->font, "XXXXXXXXXX");
+      min_height = grub_font_get_descent (self->font)
+                   + grub_font_get_ascent (self->font);
+    }
+  if (check_pixmaps (self))
+    {
+      grub_gfxmenu_box_t bar = self->bar_box;
+      grub_gfxmenu_box_t hl = self->highlight_box;
+      min_width += bar->get_left_pad (bar) + bar->get_right_pad (bar);
+      min_height += bar->get_top_pad (bar) + bar->get_bottom_pad (bar);
+      if (!self->highlight_overlay)
+        {
+          min_width += hl->get_left_pad (hl) + hl->get_right_pad (hl);
+          min_height += hl->get_top_pad (hl) + hl->get_bottom_pad (hl);
+        }
+    }
+  else
+    {
+      min_height += 2;
+      min_width += 2;
     }
   *width = 200;
-  if (*width < text_width)
-    *width = text_width;
+  if (*width < min_width)
+    *width = min_width;
   *height = 28;
-  if (*height < text_height)
-    *height = text_height;
+  if (*height < min_height)
+    *height = min_height;
 }
 
 static void
