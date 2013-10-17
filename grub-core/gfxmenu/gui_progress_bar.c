@@ -52,6 +52,7 @@ struct grub_gui_progress_bar
   char *highlight_pattern;
   grub_gfxmenu_box_t bar_box;
   grub_gfxmenu_box_t highlight_box;
+  int highlight_overlay;
 };
 
 typedef struct grub_gui_progress_bar *grub_gui_progress_bar_t;
@@ -152,17 +153,29 @@ draw_pixmap_bar (grub_gui_progress_bar_t self)
   int tracklen = w - bar_h_pad;
   int trackheight = h - bar_v_pad;
   int barwidth;
+  int hlheight = trackheight;
+  int hlx = bar_l_pad;
+  int hly = bar_t_pad;
 
   bar->set_content_size (bar, tracklen, trackheight);
   bar->draw (bar, 0, 0);
+
+  if (self->highlight_overlay)
+    {
+      tracklen += hl_h_pad;
+      hlx -= hl_l_pad;
+      hly -= hl_t_pad;
+    }
+  else
+    hlheight -= hl_v_pad;
 
   barwidth = (tracklen * (self->value - self->start) 
 	      / (self->end - self->start));
 
   if (barwidth >= hl_h_pad)
     {
-      hl->set_content_size (hl, barwidth - hl_h_pad, h - bar_v_pad - hl_v_pad);
-      hl->draw (hl, bar_l_pad, bar_t_pad);
+      hl->set_content_size (hl, barwidth - hl_h_pad, hlheight);
+      hl->draw (hl, hlx, hly);
     }
 }
 
@@ -339,6 +352,10 @@ progress_bar_set_property (void *vself, const char *name, const char *value)
       grub_free (self->highlight_pattern);
       self->highlight_pattern = value ? grub_strdup (value) : 0;
     }
+  else if (grub_strcmp (name, "highlight_overlay") == 0)
+    {
+      self->highlight_overlay = grub_strcmp (value, "true") == 0;
+    }
   else if (grub_strcmp (name, "theme_dir") == 0)
     {
       self->need_to_recreate_pixmaps = 1;
@@ -399,6 +416,7 @@ grub_gui_progress_bar_new (void)
   self->border_color = black;
   self->bg_color = gray;
   self->fg_color = lightgray;
+  self->highlight_overlay = 0;
 
   return (grub_gui_component_t) self;
 }

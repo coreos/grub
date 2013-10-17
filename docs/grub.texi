@@ -2121,6 +2121,14 @@ The following is a list of the components and the properties they support.
       Example: ``progress_hl_*.png``.
       If the value is equal to ``bar_style`` then no styled boxes
       will be shown.
+   @item highlight_overlay
+      @tab If this option is set to ``true`` then the highlight box
+      side slices (every slice except the center slice) will overlay the
+      frame box side slices. And the center slice of the highlight box
+      can move all the way (from top to bottom), being drawn on the center
+      slice of the frame box. That way we can make a progress bar with
+      round-shaped edges so there won't be a free space from the highlight to
+      the frame in top and bottom scrollbar positions. Default is ``false``.
    @item font
       @tab The font to use for progress bar.
    @item text
