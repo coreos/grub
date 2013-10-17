@@ -1974,12 +1974,18 @@ In this example, name3 is assigned a color value.
 @subsection Global Property List
 
 @multitable @columnfractions 0.3 0.6
-@item title-text @tab Specifies the text to display at the top center of the screen as a title.
-@item title-font @tab Defines the font used for the title message at the top of the screen.
-@item title-color @tab Defines the color of the title message.
-@item message-font @tab Defines the font used for messages, such as when GRUB is unable to automatically boot an entry.
-@item message-color @tab Defines the color of the message text.
-@item message-bg-color @tab Defines the background color of the message text area.
+@item title-text
+   @tab Specifies the text to display at the top center of the screen as a title.
+@item title-font
+   @tab Defines the font used for the title message at the top of the screen.
+@item title-color
+   @tab Defines the color of the title message.
+@item message-font
+   @tab Currently unused. Left for backward compatibility.
+@item message-color
+   @tab Currently unused. Left for backward compatibility.
+@item message-bg-color
+   @tab Currently unused. Left for backward compatibility.
 @item desktop-image
    @tab Specifies the image to use as the background.  It will be scaled
    to fit the screen size or proportionally scaled depending on the scale
@@ -2002,13 +2008,26 @@ In this example, name3 is assigned a color value.
    @tab Specifies the vertical alignment of the *desktop-image* if
    *desktop-image-scale-method* isn't equeal to ``stretch``. Options are
    ``top``, ``center``, ``bottom``. Default is ``center``.
-@item desktop-color @tab Specifies the color for the background if *desktop-image* is not specified.
-@item terminal-box @tab Specifies the file name pattern for the styled box slices used for the command line terminal window.  For example, ``terminal-box: terminal_*.png'' will use the images ``terminal_c.png`` as the center area, ``terminal_n.png`` as the north (top) edge, ``terminal_nw.png`` as the northwest (upper left) corner, and so on.  If the image for any slice is not found, it will simply be left empty.
-@item terminal-border @tab Specifies the border width of the terminal window.
-@item terminal-left @tab Specifies the left coordinate of the terminal window.
-@item terminal-top @tab Specifies the top coordinate of the terminal window.
-@item terminal-width @tab Specifies the width of the terminal window.
-@item terminal-height @tab Specifies the height of the terminal window.
+@item desktop-color
+   @tab Specifies the color for the background if *desktop-image* is not
+   specified.
+@item terminal-box
+   @tab Specifies the file name pattern for the styled box slices used for the
+   command line terminal window.  For example, ``terminal-box: terminal_*.png``
+   will use the images ``terminal_c.png`` as the center area, ``terminal_n.png``
+   as the north (top) edge, ``terminal_nw.png`` as the northwest (upper left)
+   corner, and so on.  If the image for any slice is not found, it will simply
+   be left empty.
+@item terminal-border
+   @tab Specifies the border width of the terminal window.
+@item terminal-left
+   @tab Specifies the left coordinate of the terminal window.
+@item terminal-top
+   @tab Specifies the top coordinate of the terminal window.
+@item terminal-width
+   @tab Specifies the width of the terminal window.
+@item terminal-height
+   @tab Specifies the height of the terminal window.
 @end multitable
 
 
@@ -2042,21 +2061,34 @@ The following is a list of the components and the properties they support.
    
    Properties:
    @multitable @columnfractions 0.2 0.7
-   @item text @tab The text to display.
-   @item font @tab The font to use for text display.
-   @item color @tab The color of the text.
-   @item align @tab The horizontal alignment of the text within the component. Options are ``left``, ``center``, and ``right``.
+   @item id
+      @tab Set to ``__timeout__`` to display the time elapsed to an automatical
+      boot of the default entry.
+   @item text
+      @tab The text to display. If ``id`` is set to ``__timeout__`` and no
+      ``text`` property is set then the amount of seconds will be shown.
+      If set to ``@@KEYMAP_SHORT@@``, ``@@KEYMAP_MIDDLE@@`` or
+      ``@@KEYMAP_LONG@@`` then predefined hotkey information will be shown.
+   @item font
+      @tab The font to use for text display.
+   @item color
+      @tab The color of the text.
+   @item align
+      @tab The horizontal alignment of the text within the component.
+      Options are ``left``, ``center`` and ``right``.
+   @item visible
+      @tab Set to ``false`` to hide the label.
    @end multitable
 
 @item image
-   A component that displays an image.  The image is scaled to fit the
-   component, although the preferred size defaults to the image's original
-   size unless the ``preferred_size`` property is explicitly set.
+   A component that displays an image.  The image is scaled to fit
+   the component.
 
    Properties:
 
    @multitable @columnfractions 0.2 0.7
-   @item file @tab The full path to the image file to load.
+   @item file
+      @tab The full path to the image file to load.
    @end multitable
 
 @item progress_bar
@@ -2066,17 +2098,37 @@ The following is a list of the components and the properties they support.
    Properties:
 
    @multitable @columnfractions 0.2 0.7
-   @item fg_color @tab The foreground color for plain solid color rendering.
-   @item bg_color @tab The background color for plain solid color rendering.
-   @item border_color @tab The border color for plain solid color rendering.
-   @item text_color @tab The text color.
-   @item show_text @tab Boolean value indicating whether or not text should be displayed on the progress bar.  If set to *false*, then no text will be displayed on the bar.  If set to any other value, text will be displayed on the bar.
-   @item bar_style @tab The styled box specification for the frame of the progress bar. Example: ``progress_frame_*.png``
-   @item highlight_style @tab The styled box specification for the highlighted region of the progress bar. This box will be used to paint just the highlighted region of the bar, and will be increased in size as the bar nears completion. Example: ``progress_hl_*.png``.
-   @item text @tab The text to display on the progress bar.  If the progress bar's ID is set to ``__timeout__``, then GRUB will updated this property with an informative message as the timeout approaches.
-   @item value @tab The progress bar current value.  Normally not set manually.
-   @item start @tab The progress bar start value.  Normally not set manually.
-   @item end @tab The progress bar end value.  Normally not set manually.
+   @item id
+      @tab Set to ``__timeout__`` to display the time elapsed to an automatical
+      boot of the default entry.
+   @item fg_color
+      @tab The foreground color for plain solid color rendering.
+   @item bg_color
+      @tab The background color for plain solid color rendering.
+   @item border_color
+      @tab The border color for plain solid color rendering.
+   @item text_color
+      @tab The text color.
+   @item bar_style
+      @tab The styled box specification for the frame of the progress bar.
+      Example: ``progress_frame_*.png``
+      If the value is equal to ``highlight_style`` then no styled boxes
+      will be shown.
+   @item highlight_style
+      @tab The styled box specification for the highlighted region of the
+      progress bar. This box will be used to paint just the highlighted region
+      of the bar, and will be increased in size as the bar nears completion.
+      Example: ``progress_hl_*.png``.
+      If the value is equal to ``bar_style`` then no styled boxes
+      will be shown.
+   @item font
+      @tab The font to use for progress bar.
+   @item text
+      @tab The text to display on the progress bar.  If the progress bar's ID
+      is set to ``__timeout__`` and the value of this property is set to
+      ``@@TIMEOUT_NOTIFICATION_SHORT@@``, ``@@TIMEOUT_NOTIFICATION_MIDDLE@@``
+      or ``@@TIMEOUT_NOTIFICATION_LONG@@``, then GRUB will update this
+      property with an informative message as the timeout approaches.
    @end multitable
 
 @item circular_progress
@@ -2090,6 +2142,9 @@ The following is a list of the components and the properties they support.
    Properties:
 
    @multitable @columnfractions 0.3 0.6
+   @item id
+      @tab Set to ``__timeout__`` to display the time elapsed to an automatical
+      boot of the default entry.
    @item center_bitmap
       @tab The file name of the image to draw in the center of the component.
    @item tick_bitmap
@@ -2099,14 +2154,13 @@ The following is a list of the components and the properties they support.
    @item ticks_disappear
       @tab Boolean value indicating whether tick marks should progressively appear,
       or progressively disappear as *value* approaches *end*.  Specify
-      ``true`` or ``false``.
-   @item value
-      @tab The progress indicator current value.  Normally not set manually.
-   @item start
-      @tab The progress indicator start value.  Normally not set manually.
-   @item end
-      @tab The progress indicator end value.  Normally not set manually.
+      ``true`` or ``false``. Default is ``false``.
+   @item start_angle
+      @tab The position of the first tick mark to appear or disappear.
+      Measured in "parrots", 1 "parrot" = 1 / 256 of the full circle.
+      Use values ``xxx deg`` or ``xxx \xc2\xb0`` to set the angle in degrees.
    @end multitable
+
 @item boot_menu
    Displays the GRUB boot menu.  It allows selecting items and executing them.
 
@@ -2185,10 +2239,8 @@ The following is a list of the components and the properties they support.
       @tab The top scrollbar padding in pixels.
    @item scrollbar_bottom_pad
       @tab The bottom scrollbar padding in pixels.
-   @item max_items_shown
-      @tab The maximum number of items to show on the menu.  If there are more than
-      *max_items_shown* items in the menu, the list will scroll to make all
-      items accessible.
+   @item visible
+      @tab Set to ``false`` to hide the boot menu.
    @end multitable
 
 @item canvas
@@ -2232,7 +2284,10 @@ The following properties are supported by all components:
    recognizes:
 
    @multitable @columnfractions 0.2 0.7
-   @item ``__timeout__`` @tab Any component with this ID will have its *text*, *start*, *end*, *value*, and *visible* properties set by GRUB when it is counting down to an automatic boot of the default menu entry.
+   @item ``__timeout__``
+      @tab Component with this ID will be updated by GRUB and will indicate
+      time elapsed to an automatical boot of the default entry.
+      Affected components: ``label``, ``circular_progress``, ``progress_bar``.
    @end multitable
 @end table
 
