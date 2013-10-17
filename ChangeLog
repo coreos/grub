@@ -1,5 +1,11 @@
 2013-10-17  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
+	* grub-core/gfxmenu/gui_progress_bar.c (draw_pixmap_bar): Fixed bug.
+	Pixmap highlighted section with east and west slices was displayed
+	incorrectly due to negative width of the central slice.
+
+2013-10-17  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
 	* docs/grub.texi: Graphical options information update.
 	Removed outdated. Updated current. Inserted missed.
 

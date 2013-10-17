@@ -154,14 +154,16 @@ draw_pixmap_bar (grub_gui_progress_bar_t self)
   int barwidth;
 
   bar->set_content_size (bar, tracklen, trackheight);
+  bar->draw (bar, 0, 0);
 
   barwidth = (tracklen * (self->value - self->start) 
 	      / (self->end - self->start));
 
-  hl->set_content_size (hl, barwidth - hl_h_pad, h - bar_v_pad - hl_v_pad);
-
-  bar->draw (bar, 0, 0);
-  hl->draw (hl, bar_l_pad, bar_t_pad);
+  if (barwidth >= hl_h_pad)
+    {
+      hl->set_content_size (hl, barwidth - hl_h_pad, h - bar_v_pad - hl_v_pad);
+      hl->draw (hl, bar_l_pad, bar_t_pad);
+    }
 }
 
 static void
