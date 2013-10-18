@@ -82,7 +82,7 @@ configure_ciphers (grub_disk_t disk, const char *check_uuid,
   const gcry_md_spec_t *hash = NULL, *essiv_hash = NULL;
   const struct gcry_cipher_spec *ciph;
   grub_cryptodisk_mode_t mode;
-  grub_cryptodisk_mode_iv_t mode_iv;
+  grub_cryptodisk_mode_iv_t mode_iv = GRUB_CRYPTODISK_MODE_IV_PLAIN64;
   int benbi_log = 0;
   grub_err_t err;
 

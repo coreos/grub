@@ -1,5 +1,9 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/luks.c (configure_ciphers): Fix spurious warning.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs_lz4.c: Check that __INTEL_COMPILER is
 	defined before trying to use it.
 
