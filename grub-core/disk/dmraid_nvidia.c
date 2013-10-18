@@ -98,7 +98,6 @@ grub_dmraid_nv_detect (grub_disk_t disk,
   grub_disk_addr_t sector;
   struct grub_nv_super sb;
   int level;
-  int layout;
   grub_uint64_t disk_size;
   char *uuid;
 
@@ -139,7 +138,6 @@ grub_dmraid_nv_detect (grub_disk_t disk,
 
     case NV_LEVEL_5:
       level = 5;
-      layout = GRUB_RAID_LAYOUT_LEFT_ASYMMETRIC;
       disk_size = sb.capacity / (sb.array.total_volumes - 1);
       break;
 
@@ -164,7 +162,8 @@ grub_dmraid_nv_detect (grub_disk_t disk,
   return grub_diskfilter_make_raid (sizeof (sb.array.signature),
 				    uuid, sb.array.total_volumes,
 				    NULL, disk_size,
-				    sb.array.stripe_block_size, layout,
+				    sb.array.stripe_block_size,
+				    GRUB_RAID_LAYOUT_LEFT_ASYMMETRIC,
 				    level);
 }
 

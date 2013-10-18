@@ -1,5 +1,9 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/dmraid_nvidia.c: Fix potentially uninited "layout".
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h: Don't use warn_unused_result on gcc < 3.4.
 	* include/grub/emu/misc.h: Likewise.
 
