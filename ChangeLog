@@ -1,5 +1,10 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/affs.c (grub_affs_create_node): Fix uninited value
+	warning.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/dl.h: Remove double declaration of GRUB_MOD_DEP.
 	Use __unused__ rather than __used__ on gcc < 3.2.
 

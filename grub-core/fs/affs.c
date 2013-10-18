@@ -325,7 +325,7 @@ grub_affs_create_node (grub_fshelp_node_t dir,
 		       grub_uint32_t block, const struct grub_affs_file *fil)
 {
   struct grub_affs_data *data = dir->data;
-  int type;
+  int type = GRUB_FSHELP_REG;
   grub_uint8_t name_u8[sizeof (fil->name) * GRUB_MAX_UTF8_PER_LATIN1 + 1];
   grub_size_t len;
   unsigned int nest;
