@@ -1,5 +1,10 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h: Don't use warn_unused_result on gcc < 3.4.
+	* include/grub/emu/misc.h: Likewise.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/i386/pc/vga_text.c: Remove extra declaration of
 	cur_color.
 

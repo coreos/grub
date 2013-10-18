@@ -26,6 +26,7 @@
 
 #include <grub/symbol.h>
 #include <grub/types.h>
+#include <grub/misc.h>
 
 extern int verbosity;
 extern const char *program_name;
@@ -37,14 +38,14 @@ void grub_find_zpool_from_dir (const char *dir,
 			       char **poolname, char **poolfs);
 
 char *grub_make_system_path_relative_to_its_root (const char *path)
-  __attribute__ ((warn_unused_result));
+ WARN_UNUSED_RESULT;
 int
 grub_util_device_is_mapped (const char *dev);
 
-void * EXPORT_FUNC(xmalloc) (grub_size_t size) __attribute__ ((warn_unused_result));
-void * EXPORT_FUNC(xrealloc) (void *ptr, grub_size_t size) __attribute__ ((warn_unused_result));
-char * EXPORT_FUNC(xstrdup) (const char *str) __attribute__ ((warn_unused_result));
-char * EXPORT_FUNC(xasprintf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2))) __attribute__ ((warn_unused_result));
+void * EXPORT_FUNC(xmalloc) (grub_size_t size) WARN_UNUSED_RESULT;
+void * EXPORT_FUNC(xrealloc) (void *ptr, grub_size_t size) WARN_UNUSED_RESULT;
+char * EXPORT_FUNC(xstrdup) (const char *str) WARN_UNUSED_RESULT;
+char * EXPORT_FUNC(xasprintf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2))) WARN_UNUSED_RESULT;
 
 void EXPORT_FUNC(grub_util_warn) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 void EXPORT_FUNC(grub_util_info) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));

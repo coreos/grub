@@ -48,6 +48,11 @@
 #  define GNU_PRINTF printf
 #endif
 
+#if GNUC_PREREQ(3,4)
+#  define WARN_UNUSED_RESULT __attribute__ ((warn_unused_result))
+#else
+#  define WARN_UNUSED_RESULT
+#endif
 
 #define ALIGN_UP(addr, align) \
 	((addr + (typeof (addr)) align - 1) & ~((typeof (addr)) align - 1))
@@ -331,10 +336,10 @@ grub_strtol (const char *str, char **end, int base)
     }
 }
 
-char *EXPORT_FUNC(grub_strdup) (const char *s) __attribute__ ((warn_unused_result));
-char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n) __attribute__ ((warn_unused_result));
+char *EXPORT_FUNC(grub_strdup) (const char *s) WARN_UNUSED_RESULT;
+char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n) WARN_UNUSED_RESULT;
 void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
-grub_size_t EXPORT_FUNC(grub_strlen) (const char *s) __attribute__ ((warn_unused_result));
+grub_size_t EXPORT_FUNC(grub_strlen) (const char *s) WARN_UNUSED_RESULT;
 int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (GNU_PRINTF, 1, 2)));
 int EXPORT_FUNC(grub_printf_) (const char *fmt, ...) __attribute__ ((format (GNU_PRINTF, 1, 2)));
 
@@ -381,8 +386,8 @@ int EXPORT_FUNC(grub_snprintf) (char *str, grub_size_t n, const char *fmt, ...)
 int EXPORT_FUNC(grub_vsnprintf) (char *str, grub_size_t n, const char *fmt,
 				 va_list args);
 char *EXPORT_FUNC(grub_xasprintf) (const char *fmt, ...)
-     __attribute__ ((format (GNU_PRINTF, 1, 2))) __attribute__ ((warn_unused_result));
-char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args) __attribute__ ((warn_unused_result));
+     __attribute__ ((format (GNU_PRINTF, 1, 2))) WARN_UNUSED_RESULT;
+char *EXPORT_FUNC(grub_xvasprintf) (const char *fmt, va_list args) WARN_UNUSED_RESULT;
 void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
