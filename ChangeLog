@@ -1,5 +1,10 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/pc/mmap.c (grub_machine_mmap_iterate): Pass
+	unknown types through.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/unix/getroot.c (grub_util_check_block_device): Remove.
 	(grub_util_check_char_device): Likewise.
 	* include/grub/emu/getroot.h: Likewise.

@@ -156,8 +156,7 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 	if (hook (entry->addr, entry->len,
 		  /* GRUB mmaps have been defined to match with the E820 definition.
 		     Therefore, we can just pass type through.  */
-		  ((entry->type <= GRUB_MACHINE_MEMORY_BADRAM) && (entry->type >= GRUB_MACHINE_MEMORY_AVAILABLE)) ? entry->type : GRUB_MEMORY_RESERVED,
-		  hook_data))
+		  entry->type, hook_data))
 	  break;
 
 	if (! cont)
