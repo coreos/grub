@@ -131,7 +131,7 @@ int grub_zfs_nvlist_lookup_uint64 (const char *nvlist, const char *name,
 				   grub_uint64_t *out);
 char *grub_zfs_nvlist_lookup_nvlist_array (const char *nvlist,
 					   const char *name,
-					   grub_size_t index);
+					   grub_size_t array_index);
 int grub_zfs_nvlist_lookup_nvlist_array_get_nelm (const char *nvlist,
 						  const char *name);
 grub_err_t

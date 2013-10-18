@@ -1,5 +1,15 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ldm.c: Rename variables and arguments to prevent
+	shadowing.
+	* grub-core/kern/disk.c: Likewise.
+	* grub-core/kern/misc.c: Likewise.
+	* include/grub/parser.h: Likewise.
+	* include/grub/script_sh.h: Likewise.
+	* include/grub/zfs/zfs.h: Likewise.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/luks.c (configure_ciphers): Fix spurious warning.
 
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>

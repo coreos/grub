@@ -707,16 +707,16 @@ make_vg (grub_disk_t disk,
 
 	  if (comp->segment_alloc == 1)
 	    {
-	      unsigned index;
+	      unsigned node_index;
 	      ptr += *ptr + 1;
 	      if (ptr + *ptr + 1 >= vblk[i].dynamic
 		  + sizeof (vblk[i].dynamic))
 		{
 		  goto fail2;
 		}
-	      index = read_int (ptr + 1, *ptr);
-	      if (index < comp->segments->node_count)
-		comp->segments->nodes[index] = part;
+	      node_index = read_int (ptr + 1, *ptr);
+	      if (node_index < comp->segments->node_count)
+		comp->segments->nodes[node_index] = part;
 	    }
 	  else
 	    {

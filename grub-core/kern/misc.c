@@ -641,7 +641,7 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
   const char *fmt;
   auto void write_char (unsigned char ch);
   auto void write_str (const char *s);
-  auto void write_fill (const char ch, int n);
+  auto void write_fill (const char ch, int count_fill);
 
   void write_char (unsigned char ch)
     {

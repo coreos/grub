@@ -72,12 +72,12 @@ static void
 grub_disk_cache_invalidate (unsigned long dev_id, unsigned long disk_id,
 			    grub_disk_addr_t sector)
 {
-  unsigned index;
+  unsigned cache_index;
   struct grub_disk_cache *cache;
 
   sector &= ~(GRUB_DISK_CACHE_SIZE - 1);
-  index = grub_disk_cache_get_index (dev_id, disk_id, sector);
-  cache = grub_disk_cache_table + index;
+  cache_index = grub_disk_cache_get_index (dev_id, disk_id, sector);
+  cache = grub_disk_cache_table + cache_index;
 
   if (cache->dev_id == dev_id && cache->disk_id == disk_id
       && cache->sector == sector && cache->data)
@@ -111,10 +111,10 @@ grub_disk_cache_fetch (unsigned long dev_id, unsigned long disk_id,
 		       grub_disk_addr_t sector)
 {
   struct grub_disk_cache *cache;
-  unsigned index;
+  unsigned cache_index;
 
-  index = grub_disk_cache_get_index (dev_id, disk_id, sector);
-  cache = grub_disk_cache_table + index;
+  cache_index = grub_disk_cache_get_index (dev_id, disk_id, sector);
+  cache = grub_disk_cache_table + cache_index;
 
   if (cache->dev_id == dev_id && cache->disk_id == disk_id
       && cache->sector == sector)
@@ -138,10 +138,10 @@ grub_disk_cache_unlock (unsigned long dev_id, unsigned long disk_id,
 			grub_disk_addr_t sector)
 {
   struct grub_disk_cache *cache;
-  unsigned index;
+  unsigned cache_index;
 
-  index = grub_disk_cache_get_index (dev_id, disk_id, sector);
-  cache = grub_disk_cache_table + index;
+  cache_index = grub_disk_cache_get_index (dev_id, disk_id, sector);
+  cache = grub_disk_cache_table + cache_index;
 
   if (cache->dev_id == dev_id && cache->disk_id == disk_id
       && cache->sector == sector)
@@ -152,11 +152,11 @@ static grub_err_t
 grub_disk_cache_store (unsigned long dev_id, unsigned long disk_id,
 		       grub_disk_addr_t sector, const char *data)
 {
-  unsigned index;
+  unsigned cache_index;
   struct grub_disk_cache *cache;
 
-  index = grub_disk_cache_get_index (dev_id, disk_id, sector);
-  cache = grub_disk_cache_table + index;
+  cache_index = grub_disk_cache_get_index (dev_id, disk_id, sector);
+  cache = grub_disk_cache_table + cache_index;
 
   cache->lock = 1;
   grub_free (cache->data);
