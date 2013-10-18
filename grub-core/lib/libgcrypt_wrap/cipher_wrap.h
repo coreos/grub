@@ -52,15 +52,9 @@ fips_mode (void)
 }
 
 #ifdef GRUB_UTIL
-#pragma GCC diagnostic ignored "-Wshadow"
 
-static inline void *
-memset (void *s, int c, grub_size_t n)
-{
-  return grub_memset (s, c, n);
-}
+#define memset grub_memset
 
-#pragma GCC diagnostic error "-Wshadow"
 #endif
 
 

@@ -1,5 +1,10 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h: Use define for defining
+	memset rather than inline static function.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/xzembed/xz_config.h: Enable all bcj filters when
 	not doing embedded decompressor.
 
