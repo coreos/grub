@@ -58,7 +58,7 @@ static int LZ4_uncompress_unknownOutputSize(const char *source, char *dest,
 
 #define	GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__)
 
-#if (GCC_VERSION >= 302) || (__INTEL_COMPILER >= 800) || defined(__clang__)
+#if (GCC_VERSION >= 302) || (defined (__INTEL_COMPILER) && __INTEL_COMPILER >= 800) || defined(__clang__)
 #define	expect(expr, value)    (__builtin_expect((expr), (value)))
 #else
 #define	expect(expr, value)    (expr)
