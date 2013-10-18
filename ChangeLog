@@ -1,5 +1,10 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/xzembed/xz_config.h: Enable all bcj filters when
+	not doing embedded decompressor.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ldm.c: Rename variables and arguments to prevent
 	shadowing.
 	* grub-core/kern/disk.c: Likewise.
