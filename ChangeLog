@@ -1,5 +1,10 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/dl.h: Remove double declaration of GRUB_MOD_DEP.
+	Use __unused__ rather than __used__ on gcc < 3.2.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/setjmp.h: Define RETURNS_TWICE. Keep it empty for
 	gcc < 4.0.
 	* include/grub/*/setjmp.h: USe RETURNS_TWICE.

@@ -91,15 +91,6 @@ grub_mod_fini (void)
 #endif
 #endif
 
-#ifndef ASM_FILE
-#define GRUB_MOD_DEP(name)	\
-static const char grub_module_depend_##name[] \
-  __attribute__((section(GRUB_MOD_SECTION(moddeps)), __used__)) = #name
-#define GRUB_MOD_NAME(name)	\
-static const char grub_module_name_##name[] \
- __attribute__((section(GRUB_MOD_SECTION(modname)), __used__)) = #name
-#endif
-
 /* Me, Vladimir Serbinenko, hereby I add this module check as per new
    GNU module policy. Note that this license check is informative only.
    Modules have to be licensed under GPLv3 or GPLv3+ (optionally
@@ -109,11 +100,19 @@ static const char grub_module_name_##name[] \
    Be sure to understand your license obligations.
 */
 #ifndef ASM_FILE
+#if GNUC_PREREQ (3,2)
+#define ATTRIBUTE_USED __used__
+#else
+#define ATTRIBUTE_USED __unused__
+#endif
 #define GRUB_MOD_LICENSE(license)	\
-  static char grub_module_license[] __attribute__ ((section (GRUB_MOD_SECTION (module_license)), used)) = "LICENSE=" license;
+  static char grub_module_license[] __attribute__ ((section (GRUB_MOD_SECTION (module_license)), ATTRIBUTE_USED)) = "LICENSE=" license;
 #define GRUB_MOD_DEP(name)	\
 static const char grub_module_depend_##name[] \
- __attribute__((section(GRUB_MOD_SECTION(moddeps)), __used__)) = #name
+ __attribute__((section(GRUB_MOD_SECTION(moddeps)), ATTRIBUTE_USED)) = #name
+#define GRUB_MOD_NAME(name)	\
+static const char grub_module_name_##name[] \
+ __attribute__((section(GRUB_MOD_SECTION(modname)), __used__)) = #name
 #else
 #ifdef __APPLE__
 .macro GRUB_MOD_LICENSE
