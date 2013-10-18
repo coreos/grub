@@ -52,7 +52,6 @@ static int grub_curr_x, grub_curr_y;
 #define VGA_TEXT_SCREEN		((grub_uint16_t *) 0xb0000)
 #define cr_read grub_vga_cr_bw_read
 #define cr_write grub_vga_cr_bw_write
-static grub_uint8_t cur_color;
 #else
 #define VGA_TEXT_SCREEN		((grub_uint16_t *) 0xb8000)
 #define cr_read grub_vga_cr_read

@@ -1,3 +1,8 @@
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/i386/pc/vga_text.c: Remove extra declaration of
+	cur_color.
+
 2013-10-18  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/tests/checksums.h: Regenerated due to progress bar
