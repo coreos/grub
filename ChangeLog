@@ -1,5 +1,11 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/setjmp.h: Define RETURNS_TWICE. Keep it empty for
+	gcc < 4.0.
+	* include/grub/*/setjmp.h: USe RETURNS_TWICE.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/dmraid_nvidia.c: Fix potentially uninited "layout".
 
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -21,7 +21,7 @@
 
 typedef unsigned long grub_jmp_buf[6];
 
-int grub_setjmp (grub_jmp_buf env) __attribute__ ((returns_twice, cdecl,
+int grub_setjmp (grub_jmp_buf env) RETURNS_TWICE  __attribute__ ((cdecl,
 						   regparm (3)));
 void grub_longjmp (grub_jmp_buf env, int val) __attribute__ ((noreturn, cdecl,
 							      regparm (3)));
