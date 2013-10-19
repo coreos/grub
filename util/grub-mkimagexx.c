@@ -749,6 +749,14 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
     assert ((current_address + (grub_uint8_t *) *out) == ptr);
   }
 
+  for (lst = lst0; lst; )
+    {
+      struct fixup_block_list *next;
+      next = lst->next;
+      free (lst);
+      lst = next;
+    }
+
   return current_address;
 }
 
@@ -1064,6 +1072,9 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 		  grub_host_to_target_addr (s->sh_size));
       }
   free (kernel_img);
+
+  free (section_vaddresses);
+  free (section_addresses);
 
   return out_img;
 }
