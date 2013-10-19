@@ -25,6 +25,7 @@
 #include <grub/emu/hostdisk.h>
 #include <grub/emu/getroot.h>
 #include <grub/util/misc.h>
+#include <grub/disk.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -46,8 +47,10 @@ grub_util_exec (const char *const *argv)
       /* Child.  */
 
       /* Close fd's.  */
+#ifdef GRUB_UTIL
       grub_util_devmapper_cleanup ();
       grub_diskfilter_fini ();
+#endif
 
       /* Ensure child is not localised.  */
       setenv ("LC_ALL", "C", 1);
@@ -78,8 +81,10 @@ grub_util_exec_redirect (const char *const *argv, const char *stdin_file,
       /* Child.  */
       
       /* Close fd's.  */
+#ifdef GRUB_UTIL
       grub_util_devmapper_cleanup ();
       grub_diskfilter_fini ();
+#endif
 
       in = open (stdin_file, O_RDONLY);
       dup2 (in, STDIN_FILENO);
@@ -129,8 +134,10 @@ grub_util_exec_pipe (const char *const *argv, int *fd)
       /* Child.  */
 
       /* Close fd's.  */
+#ifdef GRUB_UTIL
       grub_util_devmapper_cleanup ();
       grub_diskfilter_fini ();
+#endif
 
       /* Ensure child is not localised.  */
       setenv ("LC_ALL", "C", 1);
@@ -172,8 +179,10 @@ grub_util_exec_pipe_stderr (const char *const *argv, int *fd)
       /* Child.  */
 
       /* Close fd's.  */
+#ifdef GRUB_UTIL
       grub_util_devmapper_cleanup ();
       grub_diskfilter_fini ();
+#endif
 
       /* Ensure child is not localised.  */
       setenv ("LC_ALL", "C", 1);

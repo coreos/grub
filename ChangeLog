@@ -1,5 +1,9 @@
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/unix/exec.c: Fix compilation error on emu.
+
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_vsnprintf_real): Fix formatting of
 	"(null)" string.
 	Simplify expressions to save around 256 bytes in kernel.img.
