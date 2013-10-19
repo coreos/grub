@@ -1,3 +1,8 @@
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-render-label.c: Move backend part to ...
+	* util/render-label.c: ... here.
+
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/osdep/random.c: Use unix/random.c on haiku. Haiku uses

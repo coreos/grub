@@ -79,4 +79,11 @@ grub_install_get_blocklist (grub_device_t root_dev,
 void
 grub_util_create_envblk_file (const char *name);
 
+void
+grub_util_render_label (const char *label_font,
+			const char *label_bgcolor,
+			const char *label_color,
+			const char *label_string,
+			const char *label);
+
 #endif
