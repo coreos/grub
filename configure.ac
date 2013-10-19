@@ -405,6 +405,10 @@ AC_CHECK_PROGS(BUILD_CC, [gcc egcs cc])
 test -z "$BUILD_CC" && AC_MSG_ERROR([none of gcc, egcs and cc is found. set BUILD_CC manually.])
 BUILD_CPP="$BUILD_CC -E"
 
+case "$build_os" in
+  haiku*)				BUILD_LIBM= ;;
+  *) 					BUILD_LIBM=-lm ;;
+esac
 # For gnulib.
 gl_INIT
 
@@ -792,6 +796,8 @@ AC_SUBST(HOST_CFLAGS)
 AC_SUBST(HOST_LDFLAGS)
 AC_SUBST(HOST_CPPFLAGS)
 AC_SUBST(HOST_CCASFLAGS)
+
+AC_SUBST(BUILD_LIBM)
 
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"

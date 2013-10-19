@@ -35,7 +35,7 @@ build-grub-pe2elf: $(top_srcdir)/util/grub-pe2elf.c $(top_srcdir)/grub-core/kern
 
 # gentrigtables
 gentrigtables: gentrigtables.c
-	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $< -lm
+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $< $(BUILD_LIBM)
 CLEANFILES += gentrigtables
 
 # trigtables.c

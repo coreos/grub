@@ -1,5 +1,14 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't add -lm on haiku.
+
+	* configure.ac: Define BUILD_LIBM to -lm on most platforms
+	and empty on haiku.
+	* grub-core/Makefile.am (gentrigtables): Use $(BUILD_LIBM) rather than
+	-lm.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Use -melf_*_haiku as target on haiku.
 
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
