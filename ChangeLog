@@ -1,5 +1,10 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/efi/efidisk.c (grub_efidisk_get_device_name): Handle
+	CD-ROM in case when it's declared as having subpartitions.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't add -lm on haiku.
 
 	* configure.ac: Define BUILD_LIBM to -lm on most platforms

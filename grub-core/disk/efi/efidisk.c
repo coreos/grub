@@ -799,77 +799,82 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
   if (! ldp)
     return 0;
 
-  if (GRUB_EFI_DEVICE_PATH_TYPE (ldp) == GRUB_EFI_MEDIA_DEVICE_PATH_TYPE)
+  if (GRUB_EFI_DEVICE_PATH_TYPE (ldp) == GRUB_EFI_MEDIA_DEVICE_PATH_TYPE
+      && (GRUB_EFI_DEVICE_PATH_SUBTYPE (ldp) == GRUB_EFI_CDROM_DEVICE_PATH_SUBTYPE
+	  || GRUB_EFI_DEVICE_PATH_SUBTYPE (ldp) == GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE))
     {
       int is_cdrom = 0;
- 
-      switch (GRUB_EFI_DEVICE_PATH_SUBTYPE (ldp))
- 	{
-	case GRUB_EFI_CDROM_DEVICE_PATH_SUBTYPE:
-	  is_cdrom = 1;
-	  /* Intentionally fall through */
-	case GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE:
-	  {
-	    struct grub_efidisk_get_device_name_ctx ctx;
-	    char *dev_name;
-	    grub_efi_device_path_t *dup_dp, *dup_ldp;
-	    grub_disk_t parent = 0;
+      struct grub_efidisk_get_device_name_ctx ctx;
+      char *dev_name;
+      grub_efi_device_path_t *dup_dp;
+      grub_disk_t parent = 0;
 
-	    /* It is necessary to duplicate the device path so that GRUB
-	       can overwrite it.  */
-	    dup_dp = duplicate_device_path (dp);
-	    if (! dup_dp)
+      /* It is necessary to duplicate the device path so that GRUB
+	 can overwrite it.  */
+      dup_dp = duplicate_device_path (dp);
+      if (! dup_dp)
+	return 0;
+
+      while (1)
+	{
+	  grub_efi_device_path_t *dup_ldp;
+	  dup_ldp = find_last_device_path (dup_dp);
+	  if (!(GRUB_EFI_DEVICE_PATH_TYPE (dup_ldp) == GRUB_EFI_MEDIA_DEVICE_PATH_TYPE
+		&& (GRUB_EFI_DEVICE_PATH_SUBTYPE (dup_ldp) == GRUB_EFI_CDROM_DEVICE_PATH_SUBTYPE
+		    || GRUB_EFI_DEVICE_PATH_SUBTYPE (dup_ldp) == GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE)))
+	    break;
+
+	  if (GRUB_EFI_DEVICE_PATH_SUBTYPE (dup_ldp) == GRUB_EFI_CDROM_DEVICE_PATH_SUBTYPE)
+	    is_cdrom = 1;
+
+	  dup_ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
+	  dup_ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
+	  dup_ldp->length[0] = sizeof (*dup_ldp);
+	  dup_ldp->length[1] = 0;
+	}
+
+      if (!get_diskname_from_path (dup_dp, device_name))
+	{
+	  grub_free (dup_dp);
+	  return 0;
+	}
+
+      parent = grub_disk_open (device_name);
+      grub_free (dup_dp);
+
+      if (! parent)
+	return 0;
+
+      /* Find a partition which matches the hard drive device path.  */
+      ctx.partition_name = NULL;
+      grub_memcpy (&ctx.hd, ldp, sizeof (ctx.hd));
+      if (ctx.hd.partition_start == 0
+	  && (ctx.hd.partition_size << (parent->log_sector_size
+					- GRUB_DISK_SECTOR_BITS))
+	  == grub_disk_get_size (parent))
+	{
+	  dev_name = grub_strdup (parent->name);
+	}
+      else
+	{
+	  grub_partition_iterate (parent, grub_efidisk_get_device_name_iter,
+				  &ctx);
+
+	  if (! ctx.partition_name)
+	    {
+	      grub_disk_close (parent);
+	      if (is_cdrom)
+		return grub_strdup (device_name);
 	      return 0;
+	    }
 
-	    dup_ldp = find_last_device_path (dup_dp);
-	    dup_ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
-	    dup_ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
-	    dup_ldp->length[0] = sizeof (*dup_ldp);
-	    dup_ldp->length[1] = 0;
+	  dev_name = grub_xasprintf ("%s,%s", parent->name,
+				     ctx.partition_name);
+	  grub_free (ctx.partition_name);
+	}
+      grub_disk_close (parent);
 
-	    if (!get_diskname_from_path (dup_dp, device_name))
-	      {
-		grub_free (dup_dp);
-		return 0;
-	      }
-	    parent = grub_disk_open (device_name);
-	    grub_free (dup_dp);
-
-	    if (! parent)
-	      return 0;
-
-	    /* Find a partition which matches the hard drive device path.  */
-	    ctx.partition_name = NULL;
-	    grub_memcpy (&ctx.hd, ldp, sizeof (ctx.hd));
-	    if (ctx.hd.partition_start == 0
-		&& (ctx.hd.partition_size << (parent->log_sector_size
-					      - GRUB_DISK_SECTOR_BITS))
-		== grub_disk_get_size (parent))
-	      {
-		dev_name = grub_strdup (parent->name);
-	      }
-	    else
-	      {
-		grub_partition_iterate (parent, grub_efidisk_get_device_name_iter,
-					&ctx);
-
-		if (! ctx.partition_name)
-		  {
-		    grub_disk_close (parent);
-		    if (is_cdrom)
-		      return grub_strdup (device_name);
-		    return 0;
-		  }
-
-		dev_name = grub_xasprintf ("%s,%s", parent->name,
-					   ctx.partition_name);
-		grub_free (ctx.partition_name);
-	      }
-	    grub_disk_close (parent);
- 
-	    return dev_name;
-	  }
- 	}
+      return dev_name;
     }
   /* This may be guessed device - floppy, cdrom or entire disk.  */
   if (!get_diskname_from_path (dp, device_name))
