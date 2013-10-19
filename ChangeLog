@@ -1,5 +1,9 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Use -melf_*_haiku as target on haiku.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.util.def: Add util/setup.c to extra_dist.
 
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
