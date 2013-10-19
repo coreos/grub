@@ -54,6 +54,7 @@
 #include <linux/raid/md_p.h>
 #include <linux/raid/md_u.h>
 #include <grub/i18n.h>
+#include <grub/emu/exec.h>
 
 #define LVM_DEV_MAPPER_STRING "/dev/mapper/"
 
@@ -397,7 +398,7 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
 static char *
 get_mdadm_uuid (const char *os_dev)
 {
-  char *argv[5];
+  const char *argv[5];
   int fd;
   pid_t pid;
   FILE *mdadm;
@@ -405,12 +406,10 @@ get_mdadm_uuid (const char *os_dev)
   size_t len = 0;
   char *name = NULL;
 
-  /* execvp has inconvenient types, hence the casts.  None of these
-     strings will actually be modified.  */
-  argv[0] = (char *) "mdadm";
-  argv[1] = (char *) "--detail";
-  argv[2] = (char *) "--export";
-  argv[3] = (char *) os_dev;
+  argv[0] = "mdadm";
+  argv[1] = "--detail";
+  argv[2] = "--export";
+  argv[3] = os_dev;
   argv[4] = NULL;
 
   pid = grub_util_exec_pipe (argv, &fd);
@@ -464,7 +463,7 @@ grub_util_is_imsm (const char *os_dev)
 
   do
     {
-      char *argv[5];
+      const char *argv[5];
       int fd;
       pid_t pid;
       FILE *mdadm;
@@ -473,12 +472,10 @@ grub_util_is_imsm (const char *os_dev)
 
       retry = 0; /* We'll do one more pass if device is part of container */
 
-      /* execvp has inconvenient types, hence the casts.  None of these
-	 strings will actually be modified.  */
-      argv[0] = (char *) "mdadm";
-      argv[1] = (char *) "--detail";
-      argv[2] = (char *) "--export";
-      argv[3] = (char *) dev;
+      argv[0] = "mdadm";
+      argv[1] = "--detail";
+      argv[2] = "--export";
+      argv[3] = dev;
       argv[4] = NULL;
 
       pid = grub_util_exec_pipe (argv, &fd);

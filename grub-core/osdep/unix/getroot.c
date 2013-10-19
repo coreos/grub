@@ -35,6 +35,7 @@
 #include <limits.h>
 #endif
 #include <grub/util/misc.h>
+#include <grub/emu/exec.h>
 
 #include <grub/cryptodisk.h>
 #include <grub/i18n.h>
@@ -149,49 +150,6 @@ xgetcwd (void)
   return path;
 }
 
-pid_t
-grub_util_exec_pipe (char **argv, int *fd)
-{
-  int mdadm_pipe[2];
-  pid_t mdadm_pid;
-
-  *fd = 0;
-
-  if (pipe (mdadm_pipe) < 0)
-    {
-      grub_util_warn (_("Unable to create pipe: %s"),
-		      strerror (errno));
-      return 0;
-    }
-  mdadm_pid = fork ();
-  if (mdadm_pid < 0)
-    grub_util_error (_("Unable to fork: %s"), strerror (errno));
-  else if (mdadm_pid == 0)
-    {
-      /* Child.  */
-
-      /* Close fd's.  */
-      grub_util_devmapper_cleanup ();
-      grub_diskfilter_fini ();
-
-      /* Ensure child is not localised.  */
-      setenv ("LC_ALL", "C", 1);
-
-      close (mdadm_pipe[0]);
-      dup2 (mdadm_pipe[1], STDOUT_FILENO);
-      close (mdadm_pipe[1]);
-
-      execvp (argv[0], argv);
-      exit (127);
-    }
-  else
-    {
-      close (mdadm_pipe[1]);
-      *fd = mdadm_pipe[0];
-      return mdadm_pid;
-    }
-}
-
 #if !defined (__GNU__)
 char **
 grub_util_find_root_devices_from_poolname (char *poolname)
@@ -271,15 +229,13 @@ grub_util_find_root_devices_from_poolname (char *poolname)
   char name[PATH_MAX + 1], state[257], readlen[257], writelen[257];
   char cksum[257], notes[257];
   unsigned int dummy;
-  char *argv[4];
+  const char *argv[4];
   pid_t pid;
   int fd;
 
-  /* execvp has inconvenient types, hence the casts.  None of these
-     strings will actually be modified.  */
-  argv[0] = (char *) "zpool";
-  argv[1] = (char *) "status";
-  argv[2] = (char *) poolname;
+  argv[0] = "zpool";
+  argv[1] = "status";
+  argv[2] = poolname;
   argv[3] = NULL;
 
   pid = grub_util_exec_pipe (argv, &fd);
@@ -603,7 +559,7 @@ grub_guess_root_devices (const char *dir_in)
 void
 grub_util_pull_lvm_by_command (const char *os_dev)
 {
-  char *argv[8];
+  const char *argv[8];
   int fd;
   pid_t pid;
   FILE *mdadm;
@@ -640,20 +596,18 @@ grub_util_pull_lvm_by_command (const char *os_dev)
       *optr = '\0';
     }
 
-  /* execvp has inconvenient types, hence the casts.  None of these
-     strings will actually be modified.  */
   /* by default PV name is left aligned in 10 character field, meaning that
      we do not know where name ends. Using dummy --separator disables
      alignment. We have a single field, so separator itself is not output */
-  argv[0] = (char *) "vgs";
-  argv[1] = (char *) "--options";
+  argv[0] = "vgs";
+  argv[1] = "--options";
   if (vgid)
-    argv[2] = (char *) "vg_uuid,pv_name";
+    argv[2] = "vg_uuid,pv_name";
   else
-    argv[2] = (char *) "pv_name";
-  argv[3] = (char *) "--noheadings";
-  argv[4] = (char *) "--separator";
-  argv[5] = (char *) ":";
+    argv[2] = "pv_name";
+  argv[3] = "--noheadings";
+  argv[4] = "--separator";
+  argv[5] = ":";
   argv[6] = vgname;
   argv[7] = NULL;
 

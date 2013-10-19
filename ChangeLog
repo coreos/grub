@@ -1,5 +1,10 @@
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/unix/getroot.c: Move exec functions to ...
+	* osdep/unix/exec.c: ... here. Add few additional exec_* variants.
+
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h: Define size_t to
 	grub_size_t. This fixes the case when size_t mismatches grub_size_t.
 

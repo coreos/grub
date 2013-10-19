@@ -65,12 +65,6 @@ grub_util_devmapper_part_to_disk (struct stat *st,
 char *
 grub_util_get_devmapper_grub_dev (const char *os_dev);
 
-/* Functions provided by getroot.c.  */
-#if !defined (__MINGW32__) && !defined (__CYGWIN__)
-#include <sys/types.h>
-pid_t
-grub_util_exec_pipe (char **argv, int *fd);
-#endif
 void
 grub_util_pull_lvm_by_command (const char *os_dev);
 char **
