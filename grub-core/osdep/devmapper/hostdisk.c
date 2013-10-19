@@ -72,6 +72,13 @@ grub_util_device_is_mapped (const char *dev)
   if (stat (dev, &st) < 0)
     return 0;
 
+#if GRUB_DISK_DEVS_ARE_CHAR
+  if (! S_ISCHR (st.st_mode))
+#else
+  if (! S_ISBLK (st.st_mode))
+#endif
+    return 0;
+
   return dm_is_dm_major (major (st.st_rdev));
 }
 

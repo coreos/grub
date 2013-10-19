@@ -65,6 +65,13 @@ grub_util_part_to_disk (const char *os_dev, struct stat *st,
 			int *is_part)
 {
   int rawpart = -1;
+
+  if (! S_ISCHR (st->st_mode))
+    {
+      *is_part = 0;
+      return xstrdup (os_dev);
+    }
+
 # ifdef HAVE_GETRAWPARTITION
   rawpart = getrawpartition();
 # endif /* HAVE_GETRAWPARTITION */

@@ -1,5 +1,10 @@
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move stat () and device mode checking into OS-dependent files as
+	long as performance doesn't suffer.
+
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Split make_system_path_relative_to_its_root into separate file
 	relpath.c from getroot.c as it's common between unix and haiku
 	but otherwise haiku doesn't use any functions from unix getroot.c.

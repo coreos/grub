@@ -143,34 +143,47 @@ grub_util_get_dev_abstraction (const char *os_dev)
 }
 
 static char *
-convert_system_partition_to_system_disk (const char *os_dev, struct stat *st,
-					 int *is_part)
+convert_system_partition_to_system_disk (const char *os_dev, int *is_part)
 {
+#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
+  struct stat st;
+
+  if (stat (os_dev, &st) < 0)
+    {
+      const char *errstr = strerror (errno); 
+      grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot stat `%s': %s"),
+		  os_dev, errstr);
+      grub_util_info (_("cannot stat `%s': %s"), os_dev, errstr);
+      return 0;
+    }
+
   *is_part = 0;
 
-  if (grub_util_device_is_mapped_stat (st))
-    return grub_util_devmapper_part_to_disk (st, is_part, os_dev);
+  if (grub_util_device_is_mapped_stat (&st))
+    return grub_util_devmapper_part_to_disk (&st, is_part, os_dev);
 
   *is_part = 0;
 
-  return grub_util_part_to_disk (os_dev, st, is_part);
+  return grub_util_part_to_disk (os_dev, &st, is_part);
+#else
+  *is_part = 0;
+
+  return grub_util_part_to_disk (os_dev, NULL, is_part);
+#endif
 }
 
 static const char *
-find_system_device (const char *os_dev, struct stat *st, int convert, int add)
+find_system_device (const char *os_dev)
 {
   char *os_disk;
   const char *drive;
   int is_part;
 
-  if (convert)
-    os_disk = convert_system_partition_to_system_disk (os_dev, st, &is_part);
-  else
-    os_disk = xstrdup (os_dev);
+  os_disk = convert_system_partition_to_system_disk (os_dev, &is_part);
   if (! os_disk)
     return NULL;
 
-  drive = grub_hostdisk_os_dev_to_grub_drive (os_disk, add);
+  drive = grub_hostdisk_os_dev_to_grub_drive (os_disk, 0);
   free (os_disk);
   return drive;
 }
@@ -201,22 +214,7 @@ grub_util_get_os_disk (const char *os_dev)
 
   grub_util_info ("Looking for %s", os_dev);
 
-#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
-  struct stat st;
-
-  if (stat (os_dev, &st) < 0)
-    {
-      const char *errstr = strerror (errno); 
-      grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot stat `%s': %s"),
-		  os_dev, errstr);
-      grub_util_info (_("cannot stat `%s': %s"), os_dev, errstr);
-      return 0;
-    }
-
-  return convert_system_partition_to_system_disk (os_dev, &st, &is_part);
-#else
-  return convert_system_partition_to_system_disk (os_dev, NULL, &is_part);
-#endif
+  return convert_system_partition_to_system_disk (os_dev, &is_part);
 }
 
 #if !defined(__APPLE__)
@@ -252,41 +250,19 @@ find_partition (grub_disk_t dsk __attribute__ ((unused)),
 char *
 grub_util_biosdisk_get_grub_dev (const char *os_dev)
 {
-#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
-  struct stat st;
-#endif
   const char *drive;
   char *sys_disk;
   int is_part;
 
   grub_util_info ("Looking for %s", os_dev);
 
-#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
-  if (stat (os_dev, &st) < 0)
-    {
-      const char *errstr = strerror (errno); 
-      grub_error (GRUB_ERR_BAD_DEVICE, N_("cannot stat `%s': %s"), os_dev,
-		  errstr);
-      grub_util_info (_("cannot stat `%s': %s"), os_dev, errstr);
-      return 0;
-    }
-  drive = find_system_device (os_dev, &st, 1, 1);
-
-#if GRUB_DISK_DEVS_ARE_CHAR
-  if (! S_ISCHR (st.st_mode))
-#else
-  if (! S_ISBLK (st.st_mode))
-#endif
-    return make_device_name (drive);
-
-  sys_disk = convert_system_partition_to_system_disk (os_dev, &st, &is_part);
-#else
-  drive = find_system_device (os_dev, NULL, 1, 1);
-  sys_disk = convert_system_partition_to_system_disk (os_dev, NULL, &is_part);
-#endif
+  sys_disk = convert_system_partition_to_system_disk (os_dev, &is_part);
 
   if (!sys_disk)
     return 0;
+
+  drive = grub_hostdisk_os_dev_to_grub_drive (sys_disk, 1);
+
   grub_util_info ("%s is a parent of %s", sys_disk, os_dev);
   if (!is_part)
     {
@@ -426,11 +402,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	    grub_errno = GRUB_ERR_NONE;
 
 	    canon = canonicalize_file_name (os_dev);
-#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
-	    drive = find_system_device (canon ? : os_dev, &st, 0, 1);
-#else
-	    drive = find_system_device (canon ? : os_dev, NULL, 0, 1);
-#endif
+	    drive = grub_hostdisk_os_dev_to_grub_drive (canon ? : os_dev, 1);
 	    if (canon)
 	      free (canon);
 	    return make_device_name (drive);
@@ -473,16 +445,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 int
 grub_util_biosdisk_is_present (const char *os_dev)
 {
-#if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
-  struct stat st;
-
-  if (stat (os_dev, &st) < 0)
-    return 0;
-
-  int ret= (find_system_device (os_dev, &st, 1, 0) != NULL);
-#else
-  int ret= (find_system_device (os_dev, NULL, 1, 0) != NULL);
-#endif
+  int ret = (find_system_device (os_dev) != NULL);
   grub_util_info ((ret ? "%s is present" : "%s is not present"), 
 		  os_dev);
   return ret;

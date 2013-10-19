@@ -57,6 +57,13 @@ grub_util_part_to_disk (const char *os_dev, struct stat *st,
 			int *is_part)
 {
   char *path = xstrdup (os_dev);
+
+  if (! S_ISCHR (st->st_mode))
+    {
+      *is_part = 0;
+      return path;
+    }
+
   if (strncmp ("/dev/", path, 5) == 0)
     {
       char *p;

@@ -541,6 +541,12 @@ grub_util_part_to_disk (const char *os_dev, struct stat *st,
 {
   char *path = xmalloc (PATH_MAX);
 
+  if (! S_ISBLK (st->st_mode))
+    {
+      *is_part = 0;
+      return xstrdup (os_dev);
+    }
+
   if (! realpath (os_dev, path))
     return NULL;
 

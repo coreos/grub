@@ -115,6 +115,13 @@ grub_util_part_to_disk (const char *os_dev, struct stat *st,
 			int *is_part)
 {
   char *out, *out2;
+
+  if (! S_ISCHR (st->st_mode))
+    {
+      *is_part = 0;
+      return xstrdup (os_dev);
+    }
+
   if (strncmp (os_dev, "/dev/", sizeof ("/dev/") - 1) != 0)
     return xstrdup (os_dev);
   grub_util_follow_gpart_up (os_dev + sizeof ("/dev/") - 1, NULL, &out);

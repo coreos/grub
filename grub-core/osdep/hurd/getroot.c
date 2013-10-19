@@ -143,12 +143,18 @@ is_fulldisk (const char *child, const char *parent)
 
 char *
 grub_util_part_to_disk (const char *os_dev,
-			struct stat *st __attribute__ ((unused)),
+			struct stat *st,
 			int *is_part)
 {
   char *path;
   grub_disk_addr_t offset;
   char *p;
+
+  if (! S_ISBLK (st->st_mode))
+    {
+      *is_part = 0;
+      return xstrdup (os_dev);
+    }
 
   if (!grub_util_hurd_get_disk_info (os_dev, NULL, &offset, NULL, &path))
     return xstrdup (os_dev);

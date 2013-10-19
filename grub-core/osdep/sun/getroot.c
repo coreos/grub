@@ -54,10 +54,17 @@
 
 char *
 grub_util_part_to_disk (const char *os_dev,
-			struct stat *st __attribute__ ((unused)),
+			struct stat *st,
 			int *is_part)
 {
   char *colon = grub_strrchr (os_dev, ':');
+
+  if (! S_ISCHR (st->st_mode))
+    {
+      *is_part = 0;
+      return xstrdup (os_dev);
+    }
+
   if (grub_memcmp (os_dev, "/devices", sizeof ("/devices") - 1) == 0
       && colon)
     {

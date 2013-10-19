@@ -321,6 +321,13 @@ grub_util_devmapper_part_to_disk (struct stat *st,
 int
 grub_util_device_is_mapped_stat (struct stat *st)
 {
+#if GRUB_DISK_DEVS_ARE_CHAR
+  if (! S_ISCHR (st->st_mode))
+#else
+  if (! S_ISBLK (st->st_mode))
+#endif
+    return 0;
+
   if (!grub_device_mapper_supported ())
     return 0;
 
