@@ -828,7 +828,6 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
   while ((c = *fmt++) != 0)
     {
       char tmp[32];
-      char *p;
       unsigned int format1 = 0;
       unsigned int format2 = ~ 0U;
       char zerofill = ' ';
@@ -854,38 +853,20 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 	  fmt++;
 	}
 
-      p = (char *) fmt;
       /* Read formatting parameters.  */
-      while (*p && grub_isdigit (*p))
-	p++;
-
-      if (p > fmt)
+      if (grub_isdigit (*fmt))
 	{
-	  char s[p - fmt + 1];
-	  grub_strncpy (s, fmt, p - fmt);
-	  s[p - fmt] = 0;
-	  if (s[0] == '0')
+	  if (fmt[0] == '0')
 	    zerofill = '0';
-	  format1 = grub_strtoul (s, 0, 10);
-	  fmt = p;
+	  format1 = grub_strtoul (fmt, (char **) &fmt, 10);
 	}
 
-      if (*p && *p == '.')
-	{
-	  p++;
-	  fmt++;
-	  while (*p && grub_isdigit (*p))
-	    p++;
+      if (*fmt == '.')
+	fmt++;
 
-	  if (p > fmt)
-	    {
-	      char fstr[p - fmt + 1];
-	      grub_strncpy (fstr, fmt, p - fmt);
-	      fstr[p - fmt] = 0;
-	      format2 = grub_strtoul (fstr, 0, 10);
-	      fmt = p;
-	    }
-	}
+      if (grub_isdigit (*fmt))
+	format2 = grub_strtoul (fmt, (char **) &fmt, 10);
+
       if (*fmt == '$')
 	{
 	  curn = format1 - 1;
@@ -1003,25 +984,23 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 	  break;
 
 	case 's':
-	  p = args[curn].p;
-	  if (p)
-	    {
-	      grub_size_t len = 0;
-	      while (len < format2 && p[len])
-		len++;
+	  {
+	    grub_size_t len = 0;
+	    const char *p = args[curn].p ? : "(null)";
 
-	      if (!rightfill && len < format1)
-		write_fill (zerofill, format1 - len);
+	    while (len < format2 && p[len])
+	      len++;
 
-	      grub_size_t i;
-	      for (i = 0; i < len; i++)
-		write_char (*p++);
+	    if (!rightfill && len < format1)
+	      write_fill (zerofill, format1 - len);
 
-	      if (rightfill && len < format1)
-		write_fill (zerofill, format1 - len);
-	    }
-	  else
-	    write_str ("(null)");
+	    grub_size_t i;
+	    for (i = 0; i < len; i++)
+	      write_char (*p++);
+
+	    if (rightfill && len < format1)
+	      write_fill (zerofill, format1 - len);
+	  }
 
 	  break;
 

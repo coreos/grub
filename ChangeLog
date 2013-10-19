@@ -1,5 +1,12 @@
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Fix formatting of
+	"(null)" string.
+	Simplify expressions to save around 256 bytes in kernel.img.
+	* tests/printf_unit_test.c (printf_test): Add "(null)" tests.
+
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/video_checksum.c (grub_video_capture_write_bmp):
 	Use GRUB_UTIL_FD_O_* rather than O_*.
 
