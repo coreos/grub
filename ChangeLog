@@ -1,5 +1,10 @@
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/video_checksum.c (grub_video_capture_write_bmp):
+	Use GRUB_UTIL_FD_O_* rather than O_*.
+
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add haiku-specific functions.
 
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -266,7 +266,7 @@ grub_video_capture_write_bmp (const char *fname,
 			      void *ptr,
 			      const struct grub_video_mode_info *mode_info)
 {
-  grub_util_fd_t fd = grub_util_fd_open (fname, O_WRONLY | O_CREAT | O_TRUNC);
+  grub_util_fd_t fd = grub_util_fd_open (fname, GRUB_UTIL_FD_O_WRONLY | GRUB_UTIL_FD_O_CREATTRUNC);
   struct bmp_header head;
 
   if (!GRUB_UTIL_FD_IS_VALID (fd))
