@@ -26,6 +26,8 @@
 #include <grub/util/install.h>
 #include <grub/emu/hostdisk.h>
 
+#include <string.h>
+
 #define MAX_TRIES	5
 
 void

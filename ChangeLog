@@ -1,5 +1,9 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/generic/blocklist.c: Add missing include to string.h.
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/efi/efidisk.c (grub_efidisk_get_device_name): Handle
 	CD-ROM in case when it's declared as having subpartitions.
 
