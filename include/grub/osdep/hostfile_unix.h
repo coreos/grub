@@ -97,7 +97,7 @@ typedef int grub_util_fd_t;
 #define GRUB_UTIL_FD_IS_VALID(x) ((x) >= 0)
 #define GRUB_UTIL_FD_STAT_IS_FUNCTIONAL 1
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) || defined (__sun__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__) || defined(__NetBSD__) || defined (__sun__) || defined(__OpenBSD__) || defined(__HAIKU__)
 #define GRUB_DISK_DEVS_ARE_CHAR 1
 #else
 #define GRUB_DISK_DEVS_ARE_CHAR 0

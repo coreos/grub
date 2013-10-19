@@ -71,6 +71,7 @@ EXTRA_DIST += grub-core/osdep/hurd/hostdisk.c
 EXTRA_DIST += grub-core/osdep/linux/hostdisk.c
 EXTRA_DIST += grub-core/osdep/windows/hostdisk.c
 EXTRA_DIST += grub-core/osdep/sun/hostdisk.c
+EXTRA_DIST += grub-core/osdep/haiku/hostdisk.c
 
 EXTRA_DIST += grub-core/osdep/basic/init.c
 EXTRA_DIST += grub-core/osdep/windows/init.c
@@ -84,6 +85,7 @@ EXTRA_DIST += grub-core/osdep/freebsd/getroot.c
 EXTRA_DIST += grub-core/osdep/hurd/getroot.c
 EXTRA_DIST += grub-core/osdep/linux/getroot.c
 EXTRA_DIST += grub-core/osdep/sun/getroot.c
+EXTRA_DIST += grub-core/osdep/haiku/getroot.c
 
 EXTRA_DIST += grub-core/osdep/basic/random.c
 EXTRA_DIST += grub-core/osdep/basic/ofpath.c

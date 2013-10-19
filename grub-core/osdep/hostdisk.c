@@ -14,6 +14,8 @@
 #include "windows/hostdisk.c"
 #elif defined(__AROS__)
 #include "aros/hostdisk.c"
+#elif defined (__HAIKU__)
+#include "haiku/hostdisk.c"
 #else
 # warning "No hostdisk OS-specific functions is available for your system. Device detection may not work properly."
 #include "basic/hostdisk.c"

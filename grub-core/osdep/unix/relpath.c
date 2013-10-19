@@ -49,10 +49,12 @@ grub_make_system_path_relative_to_its_root (const char *path)
     grub_util_error (_("failed to get canonical path of `%s'"), path);
 
   /* For ZFS sub-pool filesystems, could be extended to others (btrfs?).  */
+#ifndef __HAIKU__
   {
     char *dummy;
     grub_find_zpool_from_dir (p, &dummy, &poolfs);
   }
+#endif
 
   len = strlen (p) + 1;
   buf = xstrdup (p);
