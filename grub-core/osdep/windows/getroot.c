@@ -51,10 +51,8 @@
 
 #if SIZEOF_TCHAR == 1
 #define tcsnicmp strncasecmp
-#define tclen strlen
 #elif SIZEOF_TCHAR == 2
 #define tcsnicmp wcsnicmp
-#define tclen wcslen
 #endif
 
 char **
@@ -242,64 +240,6 @@ grub_util_find_partition_start_os (const char *os_dev)
   CloseHandle (hd);
   free (name);
   return exts.Extents[0].StartingOffset.QuadPart / 512;
-}
-
-char *
-grub_make_system_path_relative_to_its_root (const char *path)
-{
-  TCHAR *dirwindows, *mntpointwindows;
-  TCHAR *ptr;
-  TCHAR volumename[100];
-  size_t mntpointwindows_sz;
-  size_t offset, flen;
-  TCHAR *ret;
-  char *cret;
-
-  dirwindows = grub_util_get_windows_path (path);
-  if (!dirwindows)
-    return xstrdup (path);
-
-  mntpointwindows_sz = strlen (path) * 2 + 1;
-  mntpointwindows = xmalloc ((mntpointwindows_sz + 1) * sizeof (mntpointwindows[0]));
-
-  if (!GetVolumePathName (dirwindows,
-			  mntpointwindows,
-			  mntpointwindows_sz))
-    {
-      offset = 0;
-      if (dirwindows[0] && dirwindows[1] == ':')
-	offset = 2;
-    }
-  offset = tclen (mntpointwindows);
-  free (mntpointwindows);
-  flen = tclen (dirwindows);
-  if (offset > flen)
-    {
-      offset = 0;
-      if (dirwindows[0] && dirwindows[1] == ':')
-	offset = 2;
-    }
-  ret = xmalloc (sizeof (ret[0]) * (flen - offset + 2));
-  if (dirwindows[offset] != '\\'
-      && dirwindows[offset] != '/'
-      && dirwindows[offset])
-    {
-      ret[0] = '\\';
-      memcpy (ret + 1, dirwindows + offset, (flen - offset + 1) * sizeof (ret[0]));
-    }
-  else
-    memcpy (ret, dirwindows + offset, (flen - offset + 1) * sizeof (ret[0]));
-
-  free (dirwindows);
-
-  for (ptr = ret; *ptr; ptr++)
-    if (*ptr == '\\')
-      *ptr = '/';
-
-  cret = grub_util_tchar_to_utf8 (ret);
-  free (ret);
-
-  return cret;
 }
 
 int
