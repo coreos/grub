@@ -27,6 +27,8 @@
 
 #include <sys/types.h>
 
+#define size_t grub_size_t
+
 #undef __GNU_LIBRARY__
 #define __GNU_LIBRARY__ 1
 

@@ -1,5 +1,10 @@
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt_wrap/cipher_wrap.h: Define size_t to
+	grub_size_t. This fixes the case when size_t mismatches grub_size_t.
+
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimagexx.c (make_reloc_section): Fix memory leak.
 	(load_image): Likewise.
 
