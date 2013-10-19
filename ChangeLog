@@ -1,5 +1,11 @@
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/aros/hostdisk.c (grub_util_is_directory):
+	New function.
+	(grub_util_is_special_file): Likewise.
+
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/unix/getroot.c: Move exec functions to ...
 	* osdep/unix/exec.c: ... here. Add few additional exec_* variants.
 
