@@ -49,12 +49,7 @@
 # ifndef BLKFLSBUF
 #  define BLKFLSBUF     _IO (0x12,97)   /* flush buffer cache */
 # endif /* ! BLKFLSBUF */
-# include <sys/ioctl.h>		/* ioctl */
 #endif /* __linux__ */
-
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-# include <sys/sysctl.h>
-#endif
 
 static struct
 {

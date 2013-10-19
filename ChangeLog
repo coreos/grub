@@ -1,5 +1,9 @@
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c: Remove few leftover includes.
+
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move stat () and device mode checking into OS-dependent files as
 	long as performance doesn't suffer.
 
