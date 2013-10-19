@@ -80,6 +80,9 @@ void
 grub_util_create_envblk_file (const char *name);
 
 void
+grub_util_glue_efi (const char *file32, const char *file64, const char *out);
+
+void
 grub_util_render_label (const char *label_font,
 			const char *label_bgcolor,
 			const char *label_color,

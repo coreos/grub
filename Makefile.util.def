@@ -946,6 +946,7 @@ program = {
   mansection = 1;
 
   common = util/grub-glue-efi.c;
+  common = util/glue-efi.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/osdep/init.c;
 
