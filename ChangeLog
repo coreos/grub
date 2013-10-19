@@ -1,5 +1,10 @@
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/random.c: Use unix/random.c on haiku. Haiku uses
+	yarrow (by B. Schneier et al) for its /dev/urandom (similar to FreeBSD).
+
+2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/generic/blocklist.c: Add missing include to string.h.
 
 2013-10-18  Vladimir Serbinenko  <phcoder@gmail.com>
