@@ -206,7 +206,8 @@ print_completion (const char *item, grub_completion_type_t type, int count)
 
 struct cmdline_term
 {
-  unsigned xpos, ypos, ystart, width, height;
+  struct grub_term_coordinate pos;
+  unsigned ystart, width, height;
   unsigned prompt_len;
   struct grub_term_output *term;
 };
@@ -237,10 +238,10 @@ grub_cmdline_get (const char *prompt_translated)
 
   void cl_set_pos (struct cmdline_term *cl_term)
   {
-    cl_term->xpos = (cl_term->prompt_len + lpos) % cl_term->width;
-    cl_term->ypos = cl_term->ystart
+    cl_term->pos.x = (cl_term->prompt_len + lpos) % cl_term->width;
+    cl_term->pos.y = cl_term->ystart
       + (cl_term->prompt_len + lpos) / cl_term->width;
-    grub_term_gotoxy (cl_term->term, cl_term->xpos, cl_term->ypos);
+    grub_term_gotoxy (cl_term->term, cl_term->pos);
   }
 
   void cl_set_pos_all (void)
@@ -260,14 +261,14 @@ grub_cmdline_get (const char *prompt_translated)
 	    grub_putcode (c, cl_term->term);
 	  else
 	    grub_putcode (*p, cl_term->term);
-	  cl_term->xpos++;
-	  if (cl_term->xpos >= cl_term->width - 1)
+	  cl_term->pos.x++;
+	  if (cl_term->pos.x >= cl_term->width - 1)
 	    {
-	      cl_term->xpos = 0;
-	      if (cl_term->ypos >= (unsigned) (cl_term->height - 1))
+	      cl_term->pos.x = 0;
+	      if (cl_term->pos.y >= (unsigned) (cl_term->height - 1))
 		cl_term->ystart--;
 	      else
-		cl_term->ypos++;
+		cl_term->pos.y++;
 	      grub_putcode ('\n', cl_term->term);
 	    }
 	}
@@ -335,9 +336,9 @@ grub_cmdline_get (const char *prompt_translated)
 
   void init_clterm (struct cmdline_term *cl_term_cur)
   {
-    cl_term_cur->xpos = cl_term_cur->prompt_len;
-    cl_term_cur->ypos = (grub_term_getxy (cl_term_cur->term) & 0xFF);
-    cl_term_cur->ystart = cl_term_cur->ypos;
+    cl_term_cur->pos.x = cl_term_cur->prompt_len;
+    cl_term_cur->pos.y = grub_term_getxy (cl_term_cur->term).y;
+    cl_term_cur->ystart = cl_term_cur->pos.y;
     cl_term_cur->width = grub_term_width (cl_term_cur->term);
     cl_term_cur->height = grub_term_height (cl_term_cur->term);
   }
@@ -360,7 +361,7 @@ grub_cmdline_get (const char *prompt_translated)
     grub_term_output_t term;
 
     FOR_ACTIVE_TERM_OUTPUTS(term)
-      if ((grub_term_getxy (term) >> 8) != 0)
+      if ((grub_term_getxy (term).x) != 0)
 	grub_putcode ('\n', term);
   }
   grub_xputs (prompt_translated);

@@ -115,7 +115,8 @@ draw_border (struct grub_term_output *term, const struct grub_term_screen_geomet
 
   grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
 
-  grub_term_gotoxy (term, geo->first_entry_x - 1, geo->first_entry_y - 1);
+  grub_term_gotoxy (term, (struct grub_term_coordinate) { geo->first_entry_x - 1,
+	geo->first_entry_y - 1 });
   grub_putcode (GRUB_UNICODE_CORNER_UL, term);
   for (i = 0; i < geo->entry_width + 1; i++)
     grub_putcode (GRUB_UNICODE_HLINE, term);
@@ -123,15 +124,18 @@ draw_border (struct grub_term_output *term, const struct grub_term_screen_geomet
 
   for (i = 0; i < geo->num_entries; i++)
     {
-      grub_term_gotoxy (term, geo->first_entry_x - 1, geo->first_entry_y + i);
+      grub_term_gotoxy (term, (struct grub_term_coordinate) { geo->first_entry_x - 1,
+	    geo->first_entry_y + i });
       grub_putcode (GRUB_UNICODE_VLINE, term);
-      grub_term_gotoxy (term, geo->first_entry_x + geo->entry_width + 1,
-			geo->first_entry_y + i);
+      grub_term_gotoxy (term,
+			(struct grub_term_coordinate) { geo->first_entry_x + geo->entry_width + 1,
+			    geo->first_entry_y + i });
       grub_putcode (GRUB_UNICODE_VLINE, term);
     }
 
-  grub_term_gotoxy (term, geo->first_entry_x - 1,
-		    geo->first_entry_y - 1 + geo->num_entries + 1);
+  grub_term_gotoxy (term,
+		    (struct grub_term_coordinate) { geo->first_entry_x - 1,
+			geo->first_entry_y - 1 + geo->num_entries + 1 });
   grub_putcode (GRUB_UNICODE_CORNER_LL, term);
   for (i = 0; i < geo->entry_width + 1; i++)
     grub_putcode (GRUB_UNICODE_HLINE, term);
@@ -139,9 +143,10 @@ draw_border (struct grub_term_output *term, const struct grub_term_screen_geomet
 
   grub_term_setcolorstate (term, GRUB_TERM_COLOR_NORMAL);
 
-  grub_term_gotoxy (term, geo->first_entry_x - 1,
-		    (geo->first_entry_y - 1 + geo->num_entries
-		     + GRUB_TERM_MARGIN + 1));
+  grub_term_gotoxy (term,
+		    (struct grub_term_coordinate) { geo->first_entry_x - 1,
+			(geo->first_entry_y - 1 + geo->num_entries
+			 + GRUB_TERM_MARGIN + 1) });
 }
 
 static int
@@ -228,7 +233,8 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 			   ? GRUB_TERM_COLOR_HIGHLIGHT
 			   : GRUB_TERM_COLOR_NORMAL);
 
-  grub_term_gotoxy (data->term, data->geo.first_entry_x, y);
+  grub_term_gotoxy (data->term, (struct grub_term_coordinate) { 
+      data->geo.first_entry_x, y });
 
   for (i = 0; i < len; i++)
     if (unicode_title[i] == '\n' || unicode_title[i] == '\b'
@@ -246,7 +252,9 @@ print_entry (int y, int highlight, grub_menu_entry_t entry,
 			GRUB_UNICODE_RIGHTARROW, 0);
 
   grub_term_setcolorstate (data->term, GRUB_TERM_COLOR_NORMAL);
-  grub_term_gotoxy (data->term, grub_term_cursor_x (&data->geo), y);
+  grub_term_gotoxy (data->term,
+		    (struct grub_term_coordinate) { 
+		      grub_term_cursor_x (&data->geo), y });
 
   grub_term_normal_color = old_color_normal;
   grub_term_highlight_color = old_color_highlight;
@@ -262,9 +270,10 @@ print_entries (grub_menu_t menu, const struct menu_viewer_data *data)
   int i;
 
   grub_term_gotoxy (data->term,
-		    data->geo.first_entry_x + data->geo.entry_width
-		    + data->geo.border + 1,
-		    data->geo.first_entry_y);
+		    (struct grub_term_coordinate) { 
+		      data->geo.first_entry_x + data->geo.entry_width
+			+ data->geo.border + 1,
+			data->geo.first_entry_y });
 
   if (data->geo.num_entries != 1)
     {
@@ -283,9 +292,10 @@ print_entries (grub_menu_t menu, const struct menu_viewer_data *data)
 	e = e->next;
     }
 
-  grub_term_gotoxy (data->term, data->geo.first_entry_x + data->geo.entry_width
-		    + data->geo.border + 1,
-		    data->geo.first_entry_y + data->geo.num_entries - 1);
+  grub_term_gotoxy (data->term,
+		    (struct grub_term_coordinate) { data->geo.first_entry_x + data->geo.entry_width
+			+ data->geo.border + 1,
+			data->geo.first_entry_y + data->geo.num_entries - 1 });
   if (data->geo.num_entries == 1)
     {
       if (data->first && e)
@@ -305,8 +315,9 @@ print_entries (grub_menu_t menu, const struct menu_viewer_data *data)
 	grub_putcode (' ', data->term);
     }
 
-  grub_term_gotoxy (data->term, grub_term_cursor_x (&data->geo),
-		    data->geo.first_entry_y + data->offset);
+  grub_term_gotoxy (data->term,
+		    (struct grub_term_coordinate) { grub_term_cursor_x (&data->geo),
+			data->geo.first_entry_y + data->offset });
 }
 
 /* Initialize the screen.  If NESTED is non-zero, assume that this menu
@@ -404,8 +415,9 @@ grub_menu_init_page (int nested, int edit,
     + geo->border + empty_lines;
   if (bottom_message)
     {
-      grub_term_gotoxy (term, GRUB_TERM_MARGIN,
-			geo->timeout_y);
+      grub_term_gotoxy (term,
+			(struct grub_term_coordinate) { GRUB_TERM_MARGIN,
+			    geo->timeout_y });
 
       print_message (nested, edit, term, 0);
       geo->timeout_y += msg_num_lines;
@@ -424,7 +436,8 @@ menu_text_print_timeout (int timeout, void *dataptr)
   struct menu_viewer_data *data = dataptr;
   char *msg_translated = 0;
 
-  grub_term_gotoxy (data->term, 0, data->geo.timeout_y);
+  grub_term_gotoxy (data->term,
+		    (struct grub_term_coordinate) { 0, data->geo.timeout_y });
 
   if (data->timeout_msg == TIMEOUT_TERSE
       || data->timeout_msg == TIMEOUT_TERSE_NO_MARGIN)
@@ -459,8 +472,9 @@ menu_text_print_timeout (int timeout, void *dataptr)
   grub_free (msg_translated);
 
   grub_term_gotoxy (data->term,
-		    grub_term_cursor_x (&data->geo),
-		    data->geo.first_entry_y + data->offset);
+		    (struct grub_term_coordinate) { 
+		      grub_term_cursor_x (&data->geo),
+			data->geo.first_entry_y + data->offset });
   grub_term_refresh (data->term);
 }
 
@@ -516,22 +530,28 @@ menu_text_clear_timeout (void *dataptr)
 
   for (i = 0; i < data->geo.timeout_lines;i++)
     {
-      grub_term_gotoxy (data->term, 0, data->geo.timeout_y + i);
+      grub_term_gotoxy (data->term, (struct grub_term_coordinate) {
+	  0, data->geo.timeout_y + i });
       grub_print_spaces (data->term, grub_term_width (data->term) - 1);
     }
   if (data->geo.num_entries <= 5 && !data->geo.border)
     {
-      grub_term_gotoxy (data->term, data->geo.first_entry_x + data->geo.entry_width
-			+ data->geo.border + 1,
-			data->geo.first_entry_y + data->geo.num_entries - 1);
+      grub_term_gotoxy (data->term,
+			(struct grub_term_coordinate) { 
+			  data->geo.first_entry_x + data->geo.entry_width
+			    + data->geo.border + 1,
+			    data->geo.first_entry_y + data->geo.num_entries - 1
+			    });
       grub_putcode (' ', data->term);
 
       data->geo.timeout_lines = 0;
       data->geo.num_entries++;
       print_entries (data->menu, data);
     }
-  grub_term_gotoxy (data->term, grub_term_cursor_x (&data->geo),
-		    data->geo.first_entry_y + data->offset);
+  grub_term_gotoxy (data->term,
+		    (struct grub_term_coordinate) {
+		      grub_term_cursor_x (&data->geo),
+			data->geo.first_entry_y + data->offset });
   grub_term_refresh (data->term);
 }
 

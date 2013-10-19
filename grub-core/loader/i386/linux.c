@@ -530,9 +530,9 @@ grub_linux_boot (void)
 	    || grub_strcmp (term->name, "console") == 0
 	    || grub_strcmp (term->name, "ofconsole") == 0)
 	  {
-	    grub_uint16_t pos = grub_term_getxy (term);
-	    linux_params.video_cursor_x = pos >> 8;
-	    linux_params.video_cursor_y = pos & 0xff;
+	    struct grub_term_coordinate pos = grub_term_getxy (term);
+	    linux_params.video_cursor_x = pos.x;
+	    linux_params.video_cursor_y = pos.y;
 	    linux_params.video_width = grub_term_width (term);
 	    linux_params.video_height = grub_term_height (term);
 	    found = 1;

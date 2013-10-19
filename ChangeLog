@@ -1,5 +1,10 @@
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Lift 255x255 erminal sie restriction to 65535x65535. Also change from
+	bitmasks to small structures of size chosen to fit in registers.
+
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common: Use -freg-struct-return on i386. This
 	decreases code size and improves performance.
 

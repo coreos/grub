@@ -109,8 +109,7 @@ grub_spkmodem_fini_output (struct grub_term_output *term __attribute__ ((unused)
 struct grub_terminfo_output_state grub_spkmodem_terminfo_output =
   {
     .put = put,
-    .width = 80,
-    .height = 24
+    .size = { 80, 24 }
   };
 
 static struct grub_term_output grub_spkmodem_term_output =

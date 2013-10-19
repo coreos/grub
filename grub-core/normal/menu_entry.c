@@ -146,8 +146,8 @@ print_empty_line (int y, struct per_term_screen *term_screen)
   int i;
 
   grub_term_gotoxy (term_screen->term,
-		    term_screen->geo.first_entry_x,
-		    y + term_screen->geo.first_entry_y);
+		    (struct grub_term_coordinate) { term_screen->geo.first_entry_x,
+			y + term_screen->geo.first_entry_y });
 
   for (i = 0; i < term_screen->geo.entry_width + 1; i++)
     grub_putcode (' ', term_screen->term);
@@ -156,10 +156,11 @@ print_empty_line (int y, struct per_term_screen *term_screen)
 static void
 print_updown (int upflag, int downflag, struct per_term_screen *term_screen)
 {
-  grub_term_gotoxy (term_screen->term, term_screen->geo.first_entry_x
-		    + term_screen->geo.entry_width + 1
-		    + term_screen->geo.border,
-		    term_screen->geo.first_entry_y);
+  grub_term_gotoxy (term_screen->term,
+		    (struct grub_term_coordinate) { term_screen->geo.first_entry_x
+			+ term_screen->geo.entry_width + 1
+			+ term_screen->geo.border,
+			term_screen->geo.first_entry_y });
 
   if (upflag && downflag)
     grub_putcode (GRUB_UNICODE_UPDOWNARROW, term_screen->term);
@@ -175,10 +176,11 @@ print_updown (int upflag, int downflag, struct per_term_screen *term_screen)
 static void
 print_up (int flag, struct per_term_screen *term_screen)
 {
-  grub_term_gotoxy (term_screen->term, term_screen->geo.first_entry_x
-		    + term_screen->geo.entry_width + 1
-		    + term_screen->geo.border,
-		    term_screen->geo.first_entry_y);
+  grub_term_gotoxy (term_screen->term,
+		    (struct grub_term_coordinate) { term_screen->geo.first_entry_x
+			+ term_screen->geo.entry_width + 1
+			+ term_screen->geo.border,
+			term_screen->geo.first_entry_y });
 
   if (flag)
     grub_putcode (GRUB_UNICODE_UPARROW, term_screen->term);
@@ -190,11 +192,12 @@ print_up (int flag, struct per_term_screen *term_screen)
 static void
 print_down (int flag, struct per_term_screen *term_screen)
 {
-  grub_term_gotoxy (term_screen->term, term_screen->geo.first_entry_x
-		    + term_screen->geo.entry_width + 1
-		    + term_screen->geo.border,
-		    term_screen->geo.first_entry_y
-		    + term_screen->geo.num_entries - 1);
+  grub_term_gotoxy (term_screen->term,
+		    (struct grub_term_coordinate) { term_screen->geo.first_entry_x
+			+ term_screen->geo.entry_width + 1
+			+ term_screen->geo.border,
+			term_screen->geo.first_entry_y
+			+ term_screen->geo.num_entries - 1 });
 
   if (flag)
     grub_putcode (GRUB_UNICODE_DOWNARROW, term_screen->term);
@@ -278,9 +281,10 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 	  if (i == region_start || linep == screen->lines + screen->line
 	      || (i > region_start && mode == ALL_LINES))
 	    {
-	      grub_term_gotoxy (term_screen->term, term_screen->geo.first_entry_x,
-				(y < 0 ? 0 : y)
-				+ term_screen->geo.first_entry_y);
+	      grub_term_gotoxy (term_screen->term,
+				(struct grub_term_coordinate) { term_screen->geo.first_entry_x,
+				    (y < 0 ? 0 : y)
+				    + term_screen->geo.first_entry_y });
 
 	      grub_print_ucs4_menu (linep->buf,
 				    linep->buf + linep->len,
@@ -338,13 +342,13 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 	y += get_logical_num_lines (screen->lines + i, term_screen);
       if (cpos >= &(screen->lines[screen->line].pos[term_screen - screen->terms])[0])
 	grub_term_gotoxy (term_screen->term, 
-			  cpos->x + term_screen->geo.first_entry_x,
-			  cpos->y + y
-			  + term_screen->geo.first_entry_y);
+			  (struct grub_term_coordinate) { cpos->x + term_screen->geo.first_entry_x,
+			      cpos->y + y
+			      + term_screen->geo.first_entry_y });
       else
 	grub_term_gotoxy (term_screen->term, 
-			  term_screen->geo.first_entry_x,
-			  y + term_screen->geo.first_entry_y);
+			  (struct grub_term_coordinate) { term_screen->geo.first_entry_x,
+			      y + term_screen->geo.first_entry_y });
 
     }
 
@@ -1028,15 +1032,16 @@ complete (struct screen *screen, int continuous, int update)
 				 + width - 1)
 				/ width);
 	    grub_uint32_t *endp;
-	    grub_uint16_t pos;
+	    struct grub_term_coordinate pos;
 	    grub_uint32_t *p = ucs4;
 
 	    pos = grub_term_getxy (screen->terms[i].term);
 
 	    screen->completion_shown = 1;
 
-	    grub_term_gotoxy (screen->terms[i].term, 0,
-			      screen->terms[i].geo.timeout_y);
+	    grub_term_gotoxy (screen->terms[i].term,
+			      (struct grub_term_coordinate) { 0,
+				  screen->terms[i].geo.timeout_y });
 	    if (screen->terms[i].geo.timeout_lines >= 2)
 	      {
 		grub_puts_terminal ("   ", screen->terms[i].term);
@@ -1084,7 +1089,7 @@ complete (struct screen *screen, int continuous, int update)
 
 	    if (ucs4 + ucs4len > endp)
 	      grub_putcode (GRUB_UNICODE_RIGHTARROW, screen->terms[i].term);
-	    grub_term_gotoxy (screen->terms[i].term, pos >> 8, pos & 0xFF);
+	    grub_term_gotoxy (screen->terms[i].term, pos);
 	  }
     }
 
@@ -1105,13 +1110,14 @@ complete (struct screen *screen, int continuous, int update)
 static void
 clear_completions (struct per_term_screen *term_screen)
 {
-  grub_uint16_t pos;
+  struct grub_term_coordinate pos;
   unsigned j;
   int i;
 
   pos = grub_term_getxy (term_screen->term);
-  grub_term_gotoxy (term_screen->term, 0,
-		    term_screen->geo.timeout_y);
+  grub_term_gotoxy (term_screen->term,
+		    (struct grub_term_coordinate) { 0,
+			term_screen->geo.timeout_y });
 
   for (i = 0; i < term_screen->geo.timeout_lines; i++)
     {
@@ -1121,7 +1127,7 @@ clear_completions (struct per_term_screen *term_screen)
 	grub_putcode ('\n', term_screen->term);
     }
 
-  grub_term_gotoxy (term_screen->term, pos >> 8, pos & 0xFF);
+  grub_term_gotoxy (term_screen->term, pos);
   grub_term_refresh (term_screen->term);
 }
 

@@ -970,34 +970,34 @@ grub_gfxterm_getcharwidth (struct grub_term_output *term __attribute__ ((unused)
     / virtual_screen.normal_char_width;
 }
 
-static grub_uint16_t
+static struct grub_term_coordinate
 grub_virtual_screen_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
-  return (virtual_screen.columns << 8) | virtual_screen.rows;
+  return (struct grub_term_coordinate) { virtual_screen.columns, virtual_screen.rows };
 }
 
-static grub_uint16_t
+static struct grub_term_coordinate
 grub_virtual_screen_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
-  return ((virtual_screen.cursor_x << 8) | virtual_screen.cursor_y);
+  return (struct grub_term_coordinate) { virtual_screen.cursor_x, virtual_screen.cursor_y };
 }
 
 static void
 grub_gfxterm_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
-		     grub_uint8_t x, grub_uint8_t y)
+		     struct grub_term_coordinate pos)
 {
-  if (x >= virtual_screen.columns)
-    x = virtual_screen.columns - 1;
+  if (pos.x >= virtual_screen.columns)
+    pos.x = virtual_screen.columns - 1;
 
-  if (y >= virtual_screen.rows)
-    y = virtual_screen.rows - 1;
+  if (pos.y >= virtual_screen.rows)
+    pos.y = virtual_screen.rows - 1;
 
   /* Erase current cursor, if any.  */
   if (virtual_screen.cursor_state)
     draw_cursor (0);
 
-  virtual_screen.cursor_x = x;
-  virtual_screen.cursor_y = y;
+  virtual_screen.cursor_x = pos.x;
+  virtual_screen.cursor_y = pos.y;
 
   /* Draw cursor if visible.  */
   if (virtual_screen.cursor_state)

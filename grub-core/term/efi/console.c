@@ -142,7 +142,7 @@ grub_console_getkey (struct grub_term_input *term __attribute__ ((unused)))
   return GRUB_TERM_NO_KEY;
 }
 
-static grub_uint16_t
+static struct grub_term_coordinate
 grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_efi_simple_text_output_interface_t *o;
@@ -157,24 +157,24 @@ grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
       rows = 25;
     }
 
-  return ((columns << 8) | rows);
+  return (struct grub_term_coordinate) { columns, rows };
 }
 
-static grub_uint16_t
+static struct grub_term_coordinate
 grub_console_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   grub_efi_simple_text_output_interface_t *o;
 
   if (grub_efi_is_finished)
-    return 0;
+    return (struct grub_term_coordinate) { 0, 0 };
 
   o = grub_efi_system_table->con_out;
-  return ((o->mode->cursor_column << 8) | o->mode->cursor_row);
+  return (struct grub_term_coordinate) { o->mode->cursor_column, o->mode->cursor_row };
 }
 
 static void
 grub_console_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
-		     grub_uint8_t x, grub_uint8_t y)
+		     struct grub_term_coordinate pos)
 {
   grub_efi_simple_text_output_interface_t *o;
 
@@ -182,7 +182,7 @@ grub_console_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
     return;
 
   o = grub_efi_system_table->con_out;
-  efi_call_3 (o->set_cursor_position, o, x, y);
+  efi_call_3 (o->set_cursor_position, o, pos.x, pos.y);
 }
 
 static void

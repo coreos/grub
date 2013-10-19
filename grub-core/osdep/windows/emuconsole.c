@@ -129,7 +129,7 @@ grub_console_getkey (struct grub_term_input *term __attribute__ ((unused)))
     }
 }
 
-static grub_uint16_t
+static struct grub_term_coordinate
 grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
   CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -139,24 +139,24 @@ grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
 
   GetConsoleScreenBufferInfo (hStdout, &csbi);
 
-  return ((csbi.dwSize.X << 8) | csbi.dwSize.Y);
+  return (struct grub_term_coordinate) { csbi.dwSize.X, csbi.dwSize.Y };
 }
 
-static grub_uint16_t
+static struct grub_term_coordinate
 grub_console_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   CONSOLE_SCREEN_BUFFER_INFO csbi;
 
   GetConsoleScreenBufferInfo (hStdout, &csbi);
 
-  return ((csbi.dwCursorPosition.X << 8) | csbi.dwCursorPosition.Y);
+  return (struct grub_term_coordinate) { csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y };
 }
 
 static void
 grub_console_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
-		     grub_uint8_t x, grub_uint8_t y)
+		     struct grub_term_coordinate pos)
 {
-  COORD coord = { x, y };
+  COORD coord = { pos.x, pos.y };
 
   SetConsoleCursorPosition (hStdout, coord);
 }
@@ -179,13 +179,13 @@ grub_console_cls (struct grub_term_output *term)
   GetConsoleScreenBufferInfo (hStdout, &csbi);
 
   SetConsoleTextAttribute (hStdout, 0);
-  grub_console_gotoxy (term, 0, 0);
+  grub_console_gotoxy (term, (struct grub_term_coordinate) { 0, 0 });
   tsz = csbi.dwSize.X * csbi.dwSize.Y;
 
   while (tsz--)
     grub_console_putchar (term, &c);
 
-  grub_console_gotoxy (term, 0, 0);
+  grub_console_gotoxy (term, (struct grub_term_coordinate) { 0, 0 });
   SetConsoleTextAttribute (hStdout, csbi.wAttributes);
 }
 

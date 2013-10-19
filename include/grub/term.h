@@ -155,6 +155,13 @@ struct grub_term_input
 };
 typedef struct grub_term_input *grub_term_input_t;
 
+/* Made in a way to fit into uint32_t and so be passed in a register.  */
+struct grub_term_coordinate
+{
+  grub_uint8_t x;
+  grub_uint8_t y;
+};
+
 struct grub_term_output
 {
   /* The next terminal.  */
@@ -179,15 +186,15 @@ struct grub_term_output
   grub_ssize_t (*getcharwidth) (struct grub_term_output *term,
 				const struct grub_unicode_glyph *c);
 
-  /* Get the screen size. The return value is ((Width << 8) | Height).  */
-  grub_uint16_t (*getwh) (struct grub_term_output *term);
+  /* Get the screen size.  */
+  struct grub_term_coordinate (*getwh) (struct grub_term_output *term);
 
   /* Get the cursor position. The return value is ((X << 8) | Y).  */
-  grub_uint16_t (*getxy) (struct grub_term_output *term);
+  struct grub_term_coordinate (*getxy) (struct grub_term_output *term);
 
   /* Go to the position (X, Y).  */
   void (*gotoxy) (struct grub_term_output *term,
-		  grub_uint8_t x, grub_uint8_t y);
+		  struct grub_term_coordinate pos);
 
   /* Clear the screen.  */
   void (*cls) (struct grub_term_output *term);
@@ -314,20 +321,20 @@ int EXPORT_FUNC(grub_getkey_noblock) (void);
 void grub_cls (void);
 void EXPORT_FUNC(grub_refresh) (void);
 void grub_puts_terminal (const char *str, struct grub_term_output *term);
-grub_uint16_t *grub_term_save_pos (void);
-void grub_term_restore_pos (grub_uint16_t *pos);
+struct grub_term_coordinate *grub_term_save_pos (void);
+void grub_term_restore_pos (struct grub_term_coordinate *pos);
 
 static inline unsigned grub_term_width (struct grub_term_output *term)
 {
-  return ((term->getwh(term)&0xFF00)>>8);
+  return term->getwh(term).x;
 }
 
 static inline unsigned grub_term_height (struct grub_term_output *term)
 {
-  return (term->getwh(term)&0xFF);
+  return term->getwh(term).y;
 }
 
-static inline grub_uint16_t
+static inline struct grub_term_coordinate
 grub_term_getxy (struct grub_term_output *term)
 {
   return term->getxy (term);
@@ -341,9 +348,9 @@ grub_term_refresh (struct grub_term_output *term)
 }
 
 static inline void
-grub_term_gotoxy (struct grub_term_output *term, grub_uint8_t x, grub_uint8_t y)
+grub_term_gotoxy (struct grub_term_output *term, struct grub_term_coordinate pos)
 {
-  term->gotoxy (term, x, y);
+  term->gotoxy (term, pos);
 }
 
 static inline void 

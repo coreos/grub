@@ -92,8 +92,7 @@ static const struct grub_serial_output_state grub_serial_terminfo_output_templat
     .tinfo =
     {
       .put = serial_put,
-      .width = 80,
-      .height = 24
+      .size = { 80, 24 }
     }
   };
 

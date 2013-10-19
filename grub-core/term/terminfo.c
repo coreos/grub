@@ -230,38 +230,37 @@ putstr (struct grub_term_output *term, const char *str)
     data->put (term, *str++);
 }
 
-grub_uint16_t
+struct grub_term_coordinate
 grub_terminfo_getxy (struct grub_term_output *term)
 {
   struct grub_terminfo_output_state *data
     = (struct grub_terminfo_output_state *) term->data;
 
-  return ((data->xpos << 8) | data->ypos);
+  return data->pos;
 }
 
 void
 grub_terminfo_gotoxy (struct grub_term_output *term,
-		      grub_uint8_t x, grub_uint8_t y)
+		      struct grub_term_coordinate pos)
 {
   struct grub_terminfo_output_state *data
     = (struct grub_terminfo_output_state *) term->data;
 
-  if (x > grub_term_width (term) || y > grub_term_height (term))
+  if (pos.x > grub_term_width (term) || pos.y > grub_term_height (term))
     {
-      grub_error (GRUB_ERR_BUG, "invalid point (%u,%u)", x, y);
+      grub_error (GRUB_ERR_BUG, "invalid point (%u,%u)", pos.x, pos.y);
       return;
     }
 
   if (data->gotoxy)
-    putstr (term, grub_terminfo_tparm (data->gotoxy, y, x));
+    putstr (term, grub_terminfo_tparm (data->gotoxy, pos.y, pos.x));
   else
     {
-      if ((y == data->ypos) && (x == data->xpos - 1))
+      if ((pos.y == data->pos.y) && (pos.x == data->pos.x - 1))
 	data->put (term, '\b');
     }
 
-  data->xpos = x;
-  data->ypos = y;
+  data->pos = pos;
 }
 
 /* Clear the screen.  */
@@ -272,7 +271,7 @@ grub_terminfo_cls (struct grub_term_output *term)
     = (struct grub_terminfo_output_state *) term->data;
 
   putstr (term, grub_terminfo_tparm (data->cls));
-  grub_terminfo_gotoxy (term, 0, 0);
+  grub_terminfo_gotoxy (term, (struct grub_term_coordinate) { 0, 0 });
 }
 
 void
@@ -360,42 +359,42 @@ grub_terminfo_putchar (struct grub_term_output *term,
 
     case '\b':
     case 127:
-      if (data->xpos > 0)
-	data->xpos--;
+      if (data->pos.x > 0)
+	data->pos.x--;
     break;
 
     case '\n':
-      if (data->ypos < grub_term_height (term) - 1)
-	data->ypos++;
+      if (data->pos.y < grub_term_height (term) - 1)
+	data->pos.y++;
       break;
 
     case '\r':
-      data->xpos = 0;
+      data->pos.x = 0;
       break;
 
     default:
-      if (data->xpos + c->estimated_width >= grub_term_width (term) + 1)
+      if ((int) data->pos.x + c->estimated_width >= (int) grub_term_width (term) + 1)
 	{
-	  data->xpos = 0;
-	  if (data->ypos < grub_term_height (term) - 1)
-	    data->ypos++;
+	  data->pos.x = 0;
+	  if (data->pos.y < grub_term_height (term) - 1)
+	    data->pos.y++;
 	  data->put (term, '\r');
 	  data->put (term, '\n');
 	}
-      data->xpos += c->estimated_width;
+      data->pos.x += c->estimated_width;
       break;
     }
 
   data->put (term, c->base);
 }
 
-grub_uint16_t
+struct grub_term_coordinate
 grub_terminfo_getwh (struct grub_term_output *term)
 {
   struct grub_terminfo_output_state *data
     = (struct grub_terminfo_output_state *) term->data;
 
-  return (data->width << 8) | data->height;
+  return data->size;
 }
 
 static void
@@ -673,8 +672,8 @@ print_terminfo (void)
 		 grub_terminfo_get_current(cur),
 		 encoding_names[(cur->flags & GRUB_TERM_CODE_TYPE_MASK)
 				>> GRUB_TERM_CODE_TYPE_SHIFT],
-		 ((struct grub_terminfo_output_state *) cur->data)->width,
-	         ((struct grub_terminfo_output_state *) cur->data)->height);
+		 ((struct grub_terminfo_output_state *) cur->data)->pos.x,
+	         ((struct grub_terminfo_output_state *) cur->data)->pos.y);
 
   return GRUB_ERR_NONE;
 }
@@ -747,8 +746,8 @@ grub_cmd_terminfo (grub_extcmd_context_t ctxt, int argc, char **args)
 	  {
 	    struct grub_terminfo_output_state *data
 	      = (struct grub_terminfo_output_state *) cur->data;
-	    data->width = w;
-	    data->height = h;
+	    data->pos.x = w;
+	    data->pos.y = h;
 	  }
 
 	if (argc == 1)

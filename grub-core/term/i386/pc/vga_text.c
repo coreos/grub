@@ -42,7 +42,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define COLS	80
 #define ROWS	25
 
-static int grub_curr_x, grub_curr_y;
+static struct grub_term_coordinate grub_curr_pos;
 
 #ifdef __mips__
 #define VGA_TEXT_SCREEN		((grub_uint16_t *) 0xb00b8000)
@@ -75,7 +75,7 @@ screen_read_char (int x, int y)
 static void
 update_cursor (void)
 {
-  unsigned int pos = grub_curr_y * COLS + grub_curr_x;
+  unsigned int pos = grub_curr_pos.y * COLS + grub_curr_pos.x;
   cr_write (pos >> 8, GRUB_VGA_CR_CURSOR_ADDR_HIGH);
   cr_write (pos & 0xFF, GRUB_VGA_CR_CURSOR_ADDR_LOW);
 }
@@ -83,9 +83,9 @@ update_cursor (void)
 static void
 inc_y (void)
 {
-  grub_curr_x = 0;
-  if (grub_curr_y < ROWS - 1)
-    grub_curr_y++;
+  grub_curr_pos.x = 0;
+  if (grub_curr_pos.y < ROWS - 1)
+    grub_curr_pos.y++;
   else
     {
       int x, y;
@@ -100,10 +100,10 @@ inc_y (void)
 static void
 inc_x (void)
 {
-  if (grub_curr_x >= COLS - 1)
+  if (grub_curr_pos.x >= COLS - 1)
     inc_y ();
   else
-    grub_curr_x++;
+    grub_curr_pos.x++;
 }
 
 static void
@@ -113,17 +113,17 @@ grub_vga_text_putchar (struct grub_term_output *term __attribute__ ((unused)),
   switch (c->base)
     {
       case '\b':
-	if (grub_curr_x != 0)
-	  screen_write_char (grub_curr_x--, grub_curr_y, ' ');
+	if (grub_curr_pos.x != 0)
+	  screen_write_char (grub_curr_pos.x--, grub_curr_pos.y, ' ');
 	break;
       case '\n':
 	inc_y ();
 	break;
       case '\r':
-	grub_curr_x = 0;
+	grub_curr_pos.x = 0;
 	break;
       default:
-	screen_write_char (grub_curr_x, grub_curr_y,
+	screen_write_char (grub_curr_pos.x, grub_curr_pos.y,
 			   c->base | (cur_color << 8));
 	inc_x ();
     }
@@ -131,18 +131,17 @@ grub_vga_text_putchar (struct grub_term_output *term __attribute__ ((unused)),
   update_cursor ();
 }
 
-static grub_uint16_t
+static struct grub_term_coordinate
 grub_vga_text_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
-  return (grub_curr_x << 8) | grub_curr_y;
+  return grub_curr_pos;
 }
 
 static void
 grub_vga_text_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
-		      grub_uint8_t x, grub_uint8_t y)
+		      struct grub_term_coordinate pos)
 {
-  grub_curr_x = x;
-  grub_curr_y = y;
+  grub_curr_pos = pos;
   update_cursor ();
 }
 
@@ -152,7 +151,7 @@ grub_vga_text_cls (struct grub_term_output *term)
   int i;
   for (i = 0; i < ROWS * COLS; i++)
     VGA_TEXT_SCREEN[i] = grub_cpu_to_le16 (' ' | (cur_color << 8));
-  grub_vga_text_gotoxy (term, 0, 0);
+  grub_vga_text_gotoxy (term, (struct grub_term_coordinate) { 0, 0 });
 }
 
 static void
@@ -203,10 +202,10 @@ grub_vga_text_fini_real (struct grub_term_output *term)
   return 0;
 }
 
-static grub_uint16_t
+static struct grub_term_coordinate
 grub_vga_text_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
-  return (80 << 8) | 25;
+  return (struct grub_term_coordinate) { 80, 25 };
 }
 
 #ifndef MODE_MDA

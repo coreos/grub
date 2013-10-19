@@ -47,7 +47,7 @@ int10_9 (grub_uint8_t ch, grub_uint16_t n)
  */
 
 
-static grub_uint16_t
+static struct grub_term_coordinate
 grub_console_getxy (struct grub_term_output *term __attribute__ ((unused)))
 {
   struct grub_bios_int_registers regs;
@@ -57,7 +57,8 @@ grub_console_getxy (struct grub_term_output *term __attribute__ ((unused)))
   regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;  
   grub_bios_interrupt (0x10, &regs);
 
-  return ((regs.edx & 0xff) << 8) | ((regs.edx & 0xff00) >> 8);
+  return (struct grub_term_coordinate) {
+    (regs.edx & 0xff), ((regs.edx & 0xff00) >> 8) };
 }
 
 /*
@@ -69,14 +70,14 @@ grub_console_getxy (struct grub_term_output *term __attribute__ ((unused)))
  */
 static void
 grub_console_gotoxy (struct grub_term_output *term __attribute__ ((unused)),
-		     grub_uint8_t x, grub_uint8_t y)
+		     struct grub_term_coordinate pos)
 {
   struct grub_bios_int_registers regs;
 
   /* set page to 0 */
   regs.ebx = 0;
   regs.eax = 0x0200;
-  regs.edx = (y << 8) | x;
+  regs.edx = (pos.y << 8) | pos.x;
   regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;  
   grub_bios_interrupt (0x10, &regs);
 }
@@ -94,7 +95,7 @@ static void
 grub_console_putchar_real (grub_uint8_t c)
 {
   struct grub_bios_int_registers regs;
-  grub_uint16_t pos;
+  struct grub_term_coordinate pos;
 
   if (c == 7 || c == 8 || c == 0xa || c == 0xd)
     {
@@ -112,14 +113,14 @@ grub_console_putchar_real (grub_uint8_t c)
   int10_9 (c, 1);
 
   /* check the column with the width */
-  if ((pos & 0xff00) >= (79 << 8))
+  if (pos.x >= 79)
     {
       grub_console_putchar_real (0x0d);
       grub_console_putchar_real (0x0a);
     }
   else
-    grub_console_gotoxy (NULL, ((pos & 0xff00) >> 8) + 1, (pos & 0xff));
-
+    grub_console_gotoxy (NULL, (struct grub_term_coordinate) { pos.x + 1,
+	  pos.y });
 }
 
 static void
@@ -141,13 +142,13 @@ static void
 grub_console_cls (struct grub_term_output *term)
 {
   /* move the cursor to the beginning */
-  grub_console_gotoxy (term, 0, 0);
+  grub_console_gotoxy (term, (struct grub_term_coordinate) { 0, 0 });
 
   /* write spaces to the entire screen */
   int10_9 (' ', 80 * 25);
 
   /* move back the cursor */
-  grub_console_gotoxy (term, 0, 0);
+  grub_console_gotoxy (term, (struct grub_term_coordinate) { 0, 0 });
 }
 
 /*
@@ -247,10 +248,10 @@ grub_console_getkeystatus (struct grub_term_input *term __attribute__ ((unused))
   return bios_data_area->keyboard_flag_lower & ~0x80;
 }
 
-static grub_uint16_t
+static struct grub_term_coordinate
 grub_console_getwh (struct grub_term_output *term __attribute__ ((unused)))
 {
-  return (80 << 8) | 25;
+  return (struct grub_term_coordinate) { 80, 25 };
 }
 
 static void

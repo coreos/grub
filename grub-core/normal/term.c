@@ -73,7 +73,7 @@ static void
 print_more (void)
 {
   char key;
-  grub_uint16_t *pos;
+  struct grub_term_coordinate *pos;
   grub_term_output_t term;
   grub_uint32_t *unicode_str, *unicode_last_position;
 
@@ -257,12 +257,12 @@ grub_puts_terminal (const char *str, struct grub_term_output *term)
   grub_free (unicode_str);
 }
 
-grub_uint16_t *
+struct grub_term_coordinate *
 grub_term_save_pos (void)
 {
   struct grub_term_output *cur;
   unsigned cnt = 0;
-  grub_uint16_t *ret, *ptr;
+  struct grub_term_coordinate *ret, *ptr;
   
   FOR_ACTIVE_TERM_OUTPUTS(cur)
     cnt++;
@@ -279,17 +279,17 @@ grub_term_save_pos (void)
 }
 
 void
-grub_term_restore_pos (grub_uint16_t *pos)
+grub_term_restore_pos (struct grub_term_coordinate *pos)
 {
   struct grub_term_output *cur;
-  grub_uint16_t *ptr = pos;
+  struct grub_term_coordinate *ptr = pos;
 
   if (!pos)
     return;
 
   FOR_ACTIVE_TERM_OUTPUTS(cur)
   {
-    grub_term_gotoxy (cur, (*ptr & 0xff00) >> 8, *ptr & 0xff);
+    grub_term_gotoxy (cur, *ptr);
     ptr++;
   }
 }
@@ -444,7 +444,7 @@ putglyph (const struct grub_unicode_glyph *c, struct grub_term_output *term,
     {
       int n;
 
-      n = GRUB_TERM_TAB_WIDTH - ((term->getxy (term) >> 8)
+      n = GRUB_TERM_TAB_WIDTH - ((term->getxy (term).x)
 				 % GRUB_TERM_TAB_WIDTH);
       c2.base = ' ';
       while (n--)
@@ -545,14 +545,14 @@ static grub_ssize_t
 get_startwidth (struct grub_term_output *term,
 		int margin_left)
 {
-  return ((term->getxy (term) >> 8) & 0xff) - margin_left;
+  return (term->getxy (term).x) - margin_left;
 }
 
 static void
 fill_margin (struct grub_term_output *term, int r)
 {
-  int sp = (term->getwh (term) >> 8)
-    - (term->getxy (term) >> 8) - r;
+  int sp = (term->getwh (term).x)
+    - (term->getxy (term).x) - r;
   if (sp > 0)
     grub_print_spaces (term, sp);
 }
@@ -713,8 +713,8 @@ print_ucs4_terminal (const grub_uint32_t * str,
 	      if (!contchar)
 		grub_print_spaces (term, margin_left);
 	      else
-		grub_term_gotoxy (term, margin_left,
-				  grub_term_getxy (term) & 0xff);
+		grub_term_gotoxy (term, (struct grub_term_coordinate)
+				  { margin_left, grub_term_getxy (term).y });
 	      for (i = 0; i < state->bidi_stack_depth; i++)
 		putcode_real (state->bidi_stack[i] | (GRUB_UNICODE_LRE & ~0xff),
 			      term, fixed_tab);
@@ -807,8 +807,9 @@ put_glyphs_terminal (struct grub_unicode_glyph *visual,
 	  if (!contchar)
 	    grub_print_spaces (term, margin_left);
 	  else
-	    grub_term_gotoxy (term, margin_left,
-			      grub_term_getxy (term) & 0xff);
+	    grub_term_gotoxy (term,
+			      (struct grub_term_coordinate)
+			      { margin_left, grub_term_getxy (term).y });
 	}
       grub_unicode_destroy_glyph (visual_ptr);
     }
@@ -885,19 +886,19 @@ print_ucs4_real (const grub_uint32_t * str,
 
   if (!dry_run)
     {
-      int xy;
+      struct grub_term_coordinate xy;
       if (backlog)
 	state = find_term_state (term);
 
       xy = term->getxy (term);
       
-      if (((xy >> 8) & 0xff) < margin_left)
+      if (xy.x < margin_left)
 	{
 	  if (!contchar)
-	    grub_print_spaces (term, margin_left - ((xy >> 8) & 0xff));
+	    grub_print_spaces (term, margin_left - xy.x);
 	  else
-	    grub_term_gotoxy (term, margin_left,
-			      xy & 0xff);
+	    grub_term_gotoxy (term, (struct grub_term_coordinate) {margin_left,
+		  xy.y});
 	}
     }
 

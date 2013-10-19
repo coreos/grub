@@ -34,7 +34,7 @@ static const struct grub_arg_option options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
-static grub_uint16_t *pos;
+static struct grub_term_coordinate *pos;
 
 static void
 do_print (int n)

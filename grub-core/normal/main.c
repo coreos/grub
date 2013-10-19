@@ -264,7 +264,7 @@ grub_normal_init_page (struct grub_term_output *term,
   posx = ((int) grub_term_width (term) - posx) / 2;
   if (posx < 0)
     posx = 0;
-  grub_term_gotoxy (term, posx, y);
+  grub_term_gotoxy (term, (struct grub_term_coordinate) { posx, y });
 
   grub_print_ucs4 (unicode_msg, last_position, 0, 0, term);
   grub_putcode ('\n', term);

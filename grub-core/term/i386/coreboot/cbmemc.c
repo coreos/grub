@@ -51,8 +51,7 @@ put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 struct grub_terminfo_output_state grub_cbmemc_terminfo_output =
   {
     .put = put,
-    .width = 80,
-    .height = 24
+    .size = { 80, 24 }
   };
 
 static struct grub_term_output grub_cbmemc_term_output =

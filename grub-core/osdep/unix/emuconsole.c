@@ -101,13 +101,13 @@ grub_console_init_output (struct grub_term_output *term)
   struct winsize size;
   if (ioctl (STDOUT_FILENO, TIOCGWINSZ, &size) >= 0)
     {
-      grub_console_terminfo_output.width = size.ws_col;
-      grub_console_terminfo_output.height = size.ws_row;
+      grub_console_terminfo_output.size.x = size.ws_col;
+      grub_console_terminfo_output.size.y = size.ws_row;
     }
   else
     {
-      grub_console_terminfo_output.width = 80;
-      grub_console_terminfo_output.height = 24;
+      grub_console_terminfo_output.size.x = 80;
+      grub_console_terminfo_output.size.y = 24;
     }
 
   grub_terminfo_output_init (term);
@@ -125,8 +125,7 @@ struct grub_terminfo_input_state grub_console_terminfo_input =
 struct grub_terminfo_output_state grub_console_terminfo_output =
   {
     .put = put,
-    .width = 80,
-    .height = 24
+    .size = { 80, 24 }
   };
 
 static struct grub_term_input grub_console_term_input =

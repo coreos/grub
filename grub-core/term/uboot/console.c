@@ -56,21 +56,10 @@ uboot_console_init_input (struct grub_term_input *term)
 
 extern struct grub_terminfo_output_state uboot_console_terminfo_output;
 
-static void
-uboot_console_dimensions (void)
-{
-  /* Use a small console by default.  */
-  if (!uboot_console_terminfo_output.width)
-    uboot_console_terminfo_output.width = 80;
-  if (!uboot_console_terminfo_output.height)
-    uboot_console_terminfo_output.height = 24;
-}
 
 static grub_err_t
 uboot_console_init_output (struct grub_term_output *term)
 {
-  uboot_console_dimensions ();
-
   grub_terminfo_output_init (term);
 
   return 0;
@@ -82,8 +71,9 @@ struct grub_terminfo_input_state uboot_console_terminfo_input = {
 
 struct grub_terminfo_output_state uboot_console_terminfo_output = {
   .put = put,
-  .width = 80,
-  .height = 24
+  /* FIXME: In rare cases when console isn't serial,
+     determine real width.  */
+  .size = { 80, 24 }
 };
 
 static struct grub_term_input uboot_console_term_input = {
