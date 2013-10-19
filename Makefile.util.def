@@ -320,6 +320,7 @@ program = {
   mansection = 8;
   common = util/grub-setup.c;
   common = util/setup_bios.c;
+  extra_dist = util/setup.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/lib/reed_solomon.c;
   common = grub-core/osdep/blocklist.c;
