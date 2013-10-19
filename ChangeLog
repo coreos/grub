@@ -1,5 +1,10 @@
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/Makefile.common: Use -freg-struct-return on i386. This
+	decreases code size and improves performance.
+
+2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/unix/exec.c: Fix compilation error on emu.
 
 2013-10-19  Vladimir Serbinenko  <phcoder@gmail.com>
