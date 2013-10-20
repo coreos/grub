@@ -635,9 +635,13 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
       if (real_offset != 0 || (size < (1U << disk->log_sector_size)
 			       && size != 0))
 	{
-	  char tmp_buf[1 << disk->log_sector_size];
+	  char *tmp_buf;
 	  grub_size_t len;
 	  grub_partition_t part;
+
+	  tmp_buf = grub_malloc (1 << disk->log_sector_size);
+	  if (!tmp_buf)
+	    return grub_errno;
 
 	  part = disk->partition;
 	  disk->partition = 0;
@@ -646,6 +650,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	      != GRUB_ERR_NONE)
 	    {
 	      disk->partition = part;
+	      grub_free (tmp_buf);
 	      goto finish;
 	    }
 	  disk->partition = part;
@@ -660,7 +665,12 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 
 	  if ((disk->dev->write) (disk, transform_sector (disk, sector),
 				  1, tmp_buf) != GRUB_ERR_NONE)
-	    goto finish;
+	    {
+	      grub_free (tmp_buf);
+	      goto finish;
+	    }
+
+	  grub_free (tmp_buf);
 
 	  sector += (1 << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 	  buf = (const char *) buf + len;

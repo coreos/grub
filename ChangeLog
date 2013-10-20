@@ -1,5 +1,12 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/disk.c (grub_disk_write): Use malloc/free instead of
+	variable length arrays.
+
+	Saves 50 bytes on compressed image.
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/bsd.c: Remove variable length arrays.
 
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
