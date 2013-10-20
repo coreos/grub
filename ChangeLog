@@ -1,5 +1,9 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ufs.c: Remove variable length arrays.
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c: Add comment about fixed allocation size.
 
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
