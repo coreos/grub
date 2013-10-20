@@ -1,5 +1,13 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/arp.c: Remove variable length arrays.
+	* grub-core/net/bootp.c: Likewise.
+	* grub-core/net/dns.c: Likewise.
+	* grub-core/net/icmp6.c: Likewise.
+	* grub-core/net/net.c: Likewise.
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c: Remove variable length arrays.
 	Increases ntfs.mod by 64 bytes (but decreases by 3 when
 	compressed).

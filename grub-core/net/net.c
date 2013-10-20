@@ -243,16 +243,67 @@ grub_net_ipv6_get_slaac (struct grub_net_card *card,
   return slaac;
 }
 
+static void
+grub_net_network_level_interface_register (struct grub_net_network_level_interface *inter);
+
+static struct grub_net_network_level_interface *
+grub_net_add_addr_real (char *name, 
+			struct grub_net_card *card,
+			const grub_net_network_level_address_t *addr,
+			const grub_net_link_level_address_t *hwaddress,
+			grub_net_interface_flags_t flags)
+{
+  struct grub_net_network_level_interface *inter;
+
+  inter = grub_zalloc (sizeof (*inter));
+  if (!inter)
+    return NULL;
+
+  inter->name = name;
+  grub_memcpy (&(inter->address), addr, sizeof (inter->address));
+  grub_memcpy (&(inter->hwaddress), hwaddress, sizeof (inter->hwaddress));
+  inter->flags = flags;
+  inter->card = card;
+  inter->dhcp_ack = NULL;
+  inter->dhcp_acklen = 0;
+
+  grub_net_network_level_interface_register (inter);
+
+  return inter;
+}
+
+struct grub_net_network_level_interface *
+grub_net_add_addr (const char *name, 
+		   struct grub_net_card *card,
+		   const grub_net_network_level_address_t *addr,
+		   const grub_net_link_level_address_t *hwaddress,
+		   grub_net_interface_flags_t flags)
+{
+  char *name_dup = grub_strdup (name);
+  struct grub_net_network_level_interface *ret;
+ 
+  if (!name_dup)
+    return NULL;
+  ret = grub_net_add_addr_real (name_dup, card, addr, hwaddress, flags);
+  if (!ret)
+    grub_free (name_dup);
+  return ret;
+}
+
 struct grub_net_network_level_interface *
 grub_net_ipv6_get_link_local (struct grub_net_card *card,
 			      const grub_net_link_level_address_t *hwaddr)
 {
   struct grub_net_network_level_interface *inf;
-  char name[grub_strlen (card->name)
-	    + GRUB_NET_MAX_STR_HWADDR_LEN
-	    + sizeof (":link")];
+  char *name;
   char *ptr;
   grub_net_network_level_address_t addr;
+
+  name = grub_malloc (grub_strlen (card->name)
+		      + GRUB_NET_MAX_STR_HWADDR_LEN
+		      + sizeof (":link"));
+  if (!name)
+    return NULL;
 
   addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
   addr.ipv6[0] = grub_cpu_to_be64 (0xfe80ULL << 48);
@@ -274,7 +325,7 @@ grub_net_ipv6_get_link_local (struct grub_net_card *card,
       ptr += grub_strlen (ptr);
     }
   ptr = grub_stpcpy (ptr, ":link");
-  return grub_net_add_addr (name, card, &addr, hwaddr, 0);
+  return grub_net_add_addr_real (name, card, &addr, hwaddr, 0);
 }
 
 /* FIXME: allow to specify mac address.  */
@@ -882,30 +933,36 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
 {
   {
     char buf[GRUB_NET_MAX_STR_HWADDR_LEN];
-    char name[grub_strlen (inter->name) + sizeof ("net__mac")];
+    char *name;
     char *ptr;
     grub_net_hwaddr_to_str (&inter->hwaddress, buf);
-    grub_snprintf (name, sizeof (name), "net_%s_mac", inter->name);
+    name = grub_xasprintf ("net_%s_mac", inter->name);
+    if (!name)
+      return;
     for (ptr = name; *ptr; ptr++)
       if (*ptr == ':')
 	*ptr = '_';    
     grub_env_set (name, buf);
     grub_register_variable_hook (name, 0, hwaddr_set_env);
     grub_env_export (name);
+    grub_free (name);
   }
 
   {
     char buf[GRUB_NET_MAX_STR_ADDR_LEN];
-    char name[grub_strlen (inter->name) + sizeof ("net__ip")];
+    char *name;
     char *ptr;
     grub_net_addr_to_str (&inter->address, buf);
-    grub_snprintf (name, sizeof (name), "net_%s_ip", inter->name);
+    name = grub_xasprintf ("net_%s_ip", inter->name);
+    if (!name)
+      return;
     for (ptr = name; *ptr; ptr++)
       if (*ptr == ':')
 	*ptr = '_';    
     grub_env_set (name, buf);
     grub_register_variable_hook (name, 0, addr_set_env);
     grub_env_export (name);
+    grub_free (name);
   }
 
   inter->card->num_ifaces++;
@@ -916,31 +973,6 @@ grub_net_network_level_interface_register (struct grub_net_network_level_interfa
   grub_net_network_level_interfaces = inter;
 }
 
-struct grub_net_network_level_interface *
-grub_net_add_addr (const char *name, 
-		   struct grub_net_card *card,
-		   const grub_net_network_level_address_t *addr,
-		   const grub_net_link_level_address_t *hwaddress,
-		   grub_net_interface_flags_t flags)
-{
-  struct grub_net_network_level_interface *inter;
-
-  inter = grub_zalloc (sizeof (*inter));
-  if (!inter)
-    return NULL;
-
-  inter->name = grub_strdup (name);
-  grub_memcpy (&(inter->address), addr, sizeof (inter->address));
-  grub_memcpy (&(inter->hwaddress), hwaddress, sizeof (inter->hwaddress));
-  inter->flags = flags;
-  inter->card = card;
-  inter->dhcp_ack = NULL;
-  inter->dhcp_acklen = 0;
-
-  grub_net_network_level_interface_register (inter);
-
-  return inter;
-}
 
 grub_err_t
 grub_net_add_ipv4_local (struct grub_net_network_level_interface *inter,

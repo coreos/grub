@@ -37,10 +37,11 @@ set_env_limn_ro (const char *intername, const char *suffix,
 		 char *value, grub_size_t len)
 {
   char c;
-  char varname[sizeof ("net_") + grub_strlen (intername) + sizeof ("_")
-	       + grub_strlen (suffix)];
+  char *varname;
   char *ptr;
-  grub_snprintf (varname, sizeof (varname), "net_%s_%s", intername, suffix);
+  varname = grub_xasprintf ("net_%s_%s", intername, suffix);
+  if (!varname)
+    return;
   for (ptr = varname; *ptr; ptr++)
     if (*ptr == ':')
       *ptr = '_';    
@@ -50,6 +51,7 @@ set_env_limn_ro (const char *intername, const char *suffix,
   value[len] = c;
   grub_register_variable_hook (varname, 0, grub_env_write_readonly);
   grub_env_export (varname);
+  grub_free (varname);
 }
 
 static void
@@ -100,15 +102,17 @@ parse_dhcp_vendor (const char *name, void *vend, int limit, int *mask)
 	    {
 	      grub_net_network_level_netaddress_t target;
 	      grub_net_network_level_address_t gw;
-	      char rname[grub_strlen (name) + sizeof (":default")];
+	      char *rname;
 	      
 	      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
 	      target.ipv4.base = 0;
 	      target.ipv4.masksize = 0;
 	      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
 	      grub_memcpy (&gw.ipv4, ptr, sizeof (gw.ipv4));
-	      grub_snprintf (rname, sizeof (rname), "%s:default", name);
-	      grub_net_add_route_gw (rname, target, gw);
+	      rname = grub_xasprintf ("%s:default", name);
+	      if (rname)
+		grub_net_add_route_gw (rname, target, gw);
+	      grub_free (rname);
 	    }
 	  break;
 	case GRUB_NET_BOOTP_DNS:
@@ -181,15 +185,17 @@ grub_net_configure_by_dhcp_ack (const char *name,
     {
       grub_net_network_level_netaddress_t target;
       grub_net_network_level_address_t gw;
-      char rname[grub_strlen (name) + sizeof (":gw")];
+      char *rname;
 	  
       target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
       target.ipv4.base = bp->server_ip;
       target.ipv4.masksize = 32;
       gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
       gw.ipv4 = bp->gateway_ip;
-      grub_snprintf (rname, sizeof (rname), "%s:gw", name);
-      grub_net_add_route_gw (rname, target, gw);
+      rname = grub_xasprintf ("%s:gw", name);
+      if (rname)
+	grub_net_add_route_gw (rname, target, gw);
+      grub_free (rname);
 
       target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
       target.ipv4.base = bp->gateway_ip;

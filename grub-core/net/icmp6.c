@@ -412,14 +412,19 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 		    grub_dprintf ("net", "creating slaac\n");
 
 		    {
-		      char name[grub_strlen (slaac->name)
-				+ sizeof (":XXXXXXXXXXXXXXXXXXXX")];
-		      grub_snprintf (name, sizeof (name), "%s:%d",
-				     slaac->name, slaac->slaac_counter++);
+		      char *name;
+		      name = grub_xasprintf ("%s:%d",
+					     slaac->name, slaac->slaac_counter++);
+		      if (!name)
+			{
+			  grub_errno = GRUB_ERR_NONE;
+			  continue;
+			}
 		      inf = grub_net_add_addr (name, 
 					       card, &addr,
 					       &slaac->address, 0);
 		      grub_net_add_route (name, netaddr, inf);
+		      grub_free (name);
 		    }
 		  }
 	      }

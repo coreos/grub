@@ -163,17 +163,20 @@ grub_net_arp_receive (struct grub_net_buff *nb,
       {
 	grub_net_link_level_address_t target;
 	/* We've already checked that pln is either 4 or 16.  */
-	char tmp[arp_header->pln];
+	char tmp[16];
+	grub_size_t pln = arp_header->pln;
+
+	if (pln > 16)
+	  pln = 16;
 
 	target.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 	grub_memcpy (target.mac, sender_hardware_address, 6);
 	grub_memcpy (target_hardware_address, target.mac, 6);
 	grub_memcpy (sender_hardware_address, inf->hwaddress.mac, 6);
 
-	grub_memcpy (tmp, sender_protocol_address, arp_header->pln);
-	grub_memcpy (sender_protocol_address, target_protocol_address,
-		     arp_header->pln);
-	grub_memcpy (target_protocol_address, tmp, arp_header->pln);
+	grub_memcpy (tmp, sender_protocol_address, pln);
+	grub_memcpy (sender_protocol_address, target_protocol_address, pln);
+	grub_memcpy (target_protocol_address, tmp, pln);
 
 	/* Change operation to REPLY and send packet */
 	arp_header->op = grub_be_to_cpu16 (ARP_REPLY);

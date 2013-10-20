@@ -421,7 +421,7 @@ grub_net_dns_lookup (const char *name,
   grub_size_t send_servers = 0;
   grub_size_t i, j;
   struct grub_net_buff *nb;
-  grub_net_udp_socket_t sockets[n_servers];
+  grub_net_udp_socket_t *sockets;
   grub_uint8_t *optr;
   const char *iptr;
   struct dns_header *head;
@@ -463,9 +463,16 @@ grub_net_dns_lookup (const char *name,
 	}
     }
 
+  sockets = grub_malloc (sizeof (sockets[0]) * n_servers);
+  if (!sockets)
+    return grub_errno;
+
   data.name = grub_strdup (name);
   if (!data.name)
-    return grub_errno;
+    {
+      grub_free (sockets);
+      return grub_errno;
+    }
 
   nb = grub_netbuff_alloc (GRUB_NET_OUR_MAX_IP_HEADER_SIZE
 			   + GRUB_NET_MAX_LINK_HEADER_SIZE
@@ -475,6 +482,7 @@ grub_net_dns_lookup (const char *name,
 			   + 2 + 4);
   if (!nb)
     {
+      grub_free (sockets);
       grub_free (data.name);
       return grub_errno;
     }
@@ -493,6 +501,7 @@ grub_net_dns_lookup (const char *name,
 	dot = iptr + grub_strlen (iptr);
       if ((dot - iptr) >= 64)
 	{
+	  grub_free (sockets);
 	  grub_free (data.name);
 	  return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			     N_("domain name component is too long"));
@@ -584,6 +593,8 @@ grub_net_dns_lookup (const char *name,
   for (j = 0; j < send_servers; j++)
     grub_net_udp_close (sockets[j]);
   
+  grub_free (sockets);
+
   if (*data.naddresses)
     return GRUB_ERR_NONE;
   if (data.dns_err)
