@@ -136,6 +136,7 @@ struct grub_nilfs2_dir_entry
 {
   grub_uint64_t inode;
   grub_uint16_t rec_len;
+#define MAX_NAMELEN 255
   grub_uint8_t name_len;
   grub_uint8_t file_type;
 #if 0				/* followed by file name. */
@@ -505,9 +506,13 @@ grub_nilfs2_btree_lookup (struct grub_nilfs2_data *data,
 			  grub_uint64_t key, int need_translate)
 {
   struct grub_nilfs2_btree_node *node;
-  GRUB_PROPERLY_ALIGNED_ARRAY (block, NILFS2_BLOCK_SIZE (data));
+  void *block;
   grub_uint64_t ptr;
-  int level, found, index;
+  int level, found = 0, index;
+
+  block = grub_malloc (NILFS2_BLOCK_SIZE (data));
+  if (!block)
+    return -1;
 
   node = grub_nilfs2_btree_get_root (inode);
   level = grub_nilfs2_btree_get_level (node);
@@ -522,14 +527,14 @@ grub_nilfs2_btree_lookup (struct grub_nilfs2_data *data,
       grub_nilfs2_btree_get_nonroot_node (data, ptr, block);
       if (grub_errno)
 	{
-	  return -1;
+	  goto fail;
 	}
       node = (struct grub_nilfs2_btree_node *) block;
 
       if (node->bn_level != level)
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "btree level mismatch\n");
-	  return -1;
+	  goto fail;
 	}
 
       if (!found)
@@ -546,14 +551,19 @@ grub_nilfs2_btree_lookup (struct grub_nilfs2_data *data,
       else
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "btree corruption\n");
-	  return -1;
+	  goto fail;
 	}
     }
+
+  grub_free (block);
 
   if (!found)
     return -1;
 
   return ptr;
+ fail:
+  grub_free (block);
+  return -1;
 }
 
 static inline grub_uint64_t
@@ -896,7 +906,7 @@ grub_nilfs2_iterate_dir (grub_fshelp_node_t dir,
 
       if (dirent.name_len != 0)
 	{
-	  char filename[dirent.name_len + 1];
+	  char filename[MAX_NAMELEN + 1];
 	  struct grub_fshelp_node *fdiro;
 	  enum grub_fshelp_filetype type = GRUB_FSHELP_UNKNOWN;
 
