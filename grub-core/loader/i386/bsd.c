@@ -216,8 +216,8 @@ grub_bsd_get_device (grub_uint32_t * biosdev,
     grub_device_close (dev);
 }
 
-grub_err_t
-grub_bsd_add_meta (grub_uint32_t type, const void *data, grub_uint32_t len)
+static grub_err_t
+grub_bsd_add_meta_ptr (grub_uint32_t type, void **ptr, grub_uint32_t len)
 {
   struct bsd_tag *newtag;
 
@@ -227,8 +227,7 @@ grub_bsd_add_meta (grub_uint32_t type, const void *data, grub_uint32_t len)
   newtag->len = len;
   newtag->type = type;
   newtag->next = NULL;
-  if (len)
-    grub_memcpy (newtag->data, data, len);
+  *ptr = newtag->data;
 
   if (kernel_type == KERNEL_TYPE_FREEBSD 
       && type == (FREEBSD_MODINFO_METADATA | FREEBSD_MODINFOMD_SMAP))
@@ -256,6 +255,21 @@ grub_bsd_add_meta (grub_uint32_t type, const void *data, grub_uint32_t len)
 
   return GRUB_ERR_NONE;
 }
+
+grub_err_t
+grub_bsd_add_meta (grub_uint32_t type, const void *data, grub_uint32_t len)
+{
+  grub_err_t err;
+  void *ptr;
+
+  err = grub_bsd_add_meta_ptr (type, &ptr, len);
+  if (err)
+    return err;
+  if (len)
+    grub_memcpy (ptr, data, len);
+  return GRUB_ERR_NONE;
+}
+
 
 struct grub_e820_mmap
 {
@@ -440,7 +454,11 @@ grub_freebsd_add_meta_module (const char *filename, const char *type,
 
       if (n)
 	{
-	  char cmdline[n], *p;
+	  void *cmdline;
+	  char *p;
+
+	  if (grub_bsd_add_meta_ptr (FREEBSD_MODINFO_ARGS, &cmdline, n))
+	    return grub_errno;
 
 	  p = cmdline;
 	  for (i = 0; i < argc; i++)
@@ -450,9 +468,6 @@ grub_freebsd_add_meta_module (const char *filename, const char *type,
 	      *(p++) = ' ';
 	    }
 	  *p = 0;
-
-	  if (grub_bsd_add_meta (FREEBSD_MODINFO_ARGS, cmdline, n))
-	    return grub_errno;
 	}
     }
 
