@@ -291,15 +291,18 @@ static inline void grub_set_unaligned32 (void *ptr, grub_uint32_t val)
   dd->d = val;
 }
 
+struct grub_unaligned_uint64
+{
+  grub_uint64_t val;
+} __attribute__ ((packed));
+
+typedef struct grub_unaligned_uint64 grub_unaligned_uint64_t;
+
 static inline grub_uint64_t grub_get_unaligned64 (const void *ptr)
 {
-  struct grub_unaligned_uint64_t
-  {
-    grub_uint64_t d;
-  } __attribute__ ((packed));
-  const struct grub_unaligned_uint64_t *dd
-    = (const struct grub_unaligned_uint64_t *)ptr;
-  return dd->d;
+  const struct grub_unaligned_uint64 *dd
+    = (const struct grub_unaligned_uint64 *) ptr;
+  return dd->val;
 }
 
 static inline void grub_set_unaligned64 (void *ptr, grub_uint64_t val)
