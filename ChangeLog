@@ -1,5 +1,10 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/jfs.c: Remove variable length arrays. Reduces jfs.mod
+	by 364 bytes (169 compressed).
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/bfs.c: Remove variable length arrays. Reduces afs.mod and
 	bfs.mod size by 556 resp 740 bytes (288 resp 334 compressed).
 	* include/grub/types.h (grub_unaligned_uint64_t): New type.

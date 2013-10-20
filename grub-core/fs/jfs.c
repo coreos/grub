@@ -639,136 +639,74 @@ static grub_err_t
 grub_jfs_find_file (struct grub_jfs_data *data, const char *path,
 		    grub_uint32_t start_ino)
 {
-  char fpath[grub_strlen (path)];
-  char *name = fpath;
-  char *next;
-  struct grub_jfs_diropen *diro;
-
-  grub_strncpy (fpath, path, grub_strlen (path) + 1);
+  const char *name;
+  const char *next = path;
+  struct grub_jfs_diropen *diro = NULL;
 
   if (grub_jfs_read_inode (data, start_ino, &data->currinode))
     return grub_errno;
 
-  /* Skip the first slashes.  */
-  while (*name == '/')
+  while (1)
     {
-      name++;
-      if (!*name)
-	return 0;
-    }
-
-  /* Extract the actual part from the pathname.  */
-  next = grub_strchr (name, '/');
-  if (next)
-    {
-      while (*next == '/')
-	{
-	  next[0] = '\0';
-	  next++;
-	}
-    }
-  diro = grub_jfs_opendir (data, &data->currinode);
-  if (!diro)
-    return grub_errno;
-
-  for (;;)
-    {
+      name = next;
+      while (*name == '/')
+	name++;
       if (name[0] == 0)
 	return GRUB_ERR_NONE;
+      for (next = name; *next && *next != '/'; next++);
 
-      if (name[0] == '.' && name[1] == 0)
-	{
-	  if (!next)
-	    return 0;
+      if (name[0] == '.' && name + 1 == next)
+	continue;
 
-	  name = next;
-	  next = grub_strchr (name, '/');
-	  while (next && *next == '/')
-	    {
-	      next[0] = '\0';
-	      next++;
-	    }
-	  continue;
-	}
-
-      if (name[0] == '.' && name[1] == '.' && name[2] == 0)
+      if (name[0] == '.' && name[1] == '.' && name + 2 == next)
 	{
 	  grub_uint32_t ino = grub_le_to_cpu32 (data->currinode.dir.header.idotdot);
 
-	  grub_jfs_closedir (diro);
-	  diro = 0;
-
 	  if (grub_jfs_read_inode (data, ino, &data->currinode))
-	    break;
-
-	  if (!next)
-	    return 0;
-
-	  name = next;
-	  next = grub_strchr (name, '/');
-	  while (next && *next == '/')
-	    {
-	      next[0] = '\0';
-	      next++;
-	    }
-
-	  /* Open this directory for reading dirents.  */
-	  diro = grub_jfs_opendir (data, &data->currinode);
-	  if (!diro)
 	    return grub_errno;
 
 	  continue;
 	}
 
-      if (grub_jfs_getent (diro) == GRUB_ERR_OUT_OF_RANGE)
-	break;
+      diro = grub_jfs_opendir (data, &data->currinode);
+      if (!diro)
+	return grub_errno;
 
-      /* Check if the current direntry matches the current part of the
-	 pathname.  */
-      if (data->caseins ? grub_strcasecmp (name, diro->name) == 0
-	  : grub_strcmp (name, diro->name) == 0)
+      for (;;)
 	{
-	  grub_uint32_t ino = diro->ino;
-	  grub_uint32_t dirino = grub_le_to_cpu32 (data->currinode.inode);
-
-	  grub_jfs_closedir (diro);
-	  diro = 0;
-
-	  if (grub_jfs_read_inode (data, ino, &data->currinode))
-	    break;
-
-	  /* Check if this is a symlink.  */
-	  if ((grub_le_to_cpu32 (data->currinode.mode)
-	       & GRUB_JFS_FILETYPE_MASK) == GRUB_JFS_FILETYPE_LNK)
+	  if (grub_jfs_getent (diro) == GRUB_ERR_OUT_OF_RANGE)
 	    {
-	      grub_jfs_lookup_symlink (data, dirino);
-	      if (grub_errno)
-		return grub_errno;
+	      grub_jfs_closedir (diro);
+	      return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
 	    }
 
-	  if (!next)
-	    return 0;
-
-	  name = next;
-	  next = grub_strchr (name, '/');
-	  while (next && *next == '/')
+	  /* Check if the current direntry matches the current part of the
+	     pathname.  */
+	  if ((data->caseins ? grub_strncasecmp (name, diro->name, next - name) == 0
+	       : grub_strncmp (name, diro->name, next - name) == 0) && !diro->name[next - name])
 	    {
-	      next[0] = '\0';
-	      next++;
+	      grub_uint32_t ino = diro->ino;
+	      grub_uint32_t dirino = grub_le_to_cpu32 (data->currinode.inode);
+
+	      grub_jfs_closedir (diro);
+	      diro = 0;
+
+	      if (grub_jfs_read_inode (data, ino, &data->currinode))
+		break;
+
+	      /* Check if this is a symlink.  */
+	      if ((grub_le_to_cpu32 (data->currinode.mode)
+		   & GRUB_JFS_FILETYPE_MASK) == GRUB_JFS_FILETYPE_LNK)
+		{
+		  grub_jfs_lookup_symlink (data, dirino);
+		  if (grub_errno)
+		    return grub_errno;
+		}
+
+	      break;
 	    }
-
-	  /* Open this directory for reading dirents.  */
-	  diro = grub_jfs_opendir (data, &data->currinode);
-	  if (!diro)
-	    return grub_errno;
-
-	  continue;
 	}
     }
-
-  grub_jfs_closedir (diro);
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
-  return grub_errno;
 }
 
 
@@ -776,15 +714,21 @@ static grub_err_t
 grub_jfs_lookup_symlink (struct grub_jfs_data *data, grub_uint32_t ino)
 {
   grub_size_t size = grub_le_to_cpu64 (data->currinode.size);
-  char symlink[size + 1];
+  char *symlink;
 
   if (++data->linknest > GRUB_JFS_MAX_SYMLNK_CNT)
     return grub_error (GRUB_ERR_SYMLINK_LOOP, N_("too deep nesting of symlinks"));
 
+  symlink = grub_malloc (size + 1);
+  if (!symlink)
+    return grub_errno;
   if (size <= sizeof (data->currinode.symlink.path))
     grub_strncpy (symlink, (char *) (data->currinode.symlink.path), size);
   else if (grub_jfs_read_file (data, 0, 0, 0, size, symlink) < 0)
-    return grub_errno;
+    {
+      grub_free (symlink);
+      return grub_errno;
+    }
 
   symlink[size] = '\0';
 
@@ -793,6 +737,8 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, grub_uint32_t ino)
     ino = 2;
 
   grub_jfs_find_file (data, symlink, ino);
+
+  grub_free (symlink);
 
   return grub_errno;
 }
