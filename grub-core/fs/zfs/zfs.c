@@ -989,8 +989,11 @@ check_pool_label (struct grub_zfs_data *data,
 	   == ZEC_MAGIC)
     endian = GRUB_ZFS_BIG_ENDIAN;
   else
-    return grub_error (GRUB_ERR_BAD_FS,
-		       "bad vdev_phys_t.vp_zbt.zec_magic number");
+    {
+      grub_free (nvlist);
+      return grub_error (GRUB_ERR_BAD_FS,
+			 "bad vdev_phys_t.vp_zbt.zec_magic number");
+    }
   /* Now check the integrity of the vdev_phys_t structure though checksum.  */
   ZIO_SET_CHECKSUM(&emptycksum, diskdesc->vdev_phys_sector << 9, 0, 0, 0);
   err = zio_checksum_verify (emptycksum, ZIO_CHECKSUM_LABEL, endian,

@@ -1,5 +1,9 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (check_pool_label): Fix memory leak.
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/arp.c: Remove variable length arrays.
 	* grub-core/net/bootp.c: Likewise.
 	* grub-core/net/dns.c: Likewise.
