@@ -1,24 +1,30 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ntfs.c: Remove variable length arrays.
+	Increases ntfs.mod by 64 bytes (but decreases by 3 when
+	compressed).
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/hfs.c: Remove variable length arrays.
 	Reduces hfs.mod by 8 bytes (52 compressed).
 
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/udf.c: Remove variable length arrays.
-	Increases udf.mod by 128 bytes (but decreases by 13 compressed when
+	Increases udf.mod by 128 bytes (but decreases by 13 when
 	compressed).
 
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/iso9660.c: Remove variable length arrays.
-	Increases iso9660.mod by 200 bytes (but decreases by 79 compressed when
+	Increases iso9660.mod by 200 bytes (but decreases by 79 when
 	compressed).
 
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/nilfs2.c: Remove variable length arrays.
-	Increases nilfs2.mod by 24 bytes (but decreases by 115 compressed when
+	Increases nilfs2.mod by 24 bytes (but decreases by 115 when
 	compressed).
 
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>

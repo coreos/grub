@@ -643,7 +643,7 @@ list_file (struct grub_ntfs_file *diro, grub_uint8_t *pos,
 	  if (ustr == NULL)
 	    return 0;
 	  {
-	    grub_uint16_t tmp[ns];
+	    grub_uint16_t tmp[256];
 	    int i;
 	    for (i = 0; i < ns; i++)
 	      tmp[i] = grub_le_to_cpu16 (grub_get_unaligned16 ((char *) np
@@ -1185,18 +1185,24 @@ grub_ntfs_label (grub_device_t device, char **label)
   if ((pa) && (pa[8] == 0) && (u32at (pa, 0x10)))
     {
       grub_uint8_t *buf;
+      grub_uint16_t *tmp;
       int len;
+      int i;
 
       len = u32at (pa, 0x10) / 2;
       buf = grub_malloc (len * 4 + 1);
+      tmp = grub_malloc (len * 2);
+      if (!buf || !tmp)
+	{
+	  grub_free (buf);
+	  grub_free (tmp);
+	  goto fail;
+	}
       pa += u16at (pa, 0x14);
-      {
-	grub_uint16_t tmp[len];
-	int i;
-	for (i = 0; i < len; i++)
-	  tmp[i] = grub_le_to_cpu16 (grub_get_unaligned16 (pa + 2 * i));
-	*grub_utf16_to_utf8 (buf, tmp, len) = '\0';
-      }
+      for (i = 0; i < len; i++)
+	tmp[i] = grub_le_to_cpu16 (grub_get_unaligned16 (pa + 2 * i));
+      *grub_utf16_to_utf8 (buf, tmp, len) = '\0';
+      grub_free (tmp);
       *label = (char *) buf;
     }
 
