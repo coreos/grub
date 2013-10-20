@@ -1,7 +1,13 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/iso9660.c: Remove variable length arrays.
+	Increases iso9660.mod by 200 bytes (but decreases by 79 compressed when
+	compressed).
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/nilfs2.c: Remove variable length arrays.
-	Increases xfs.mod by 24 bytes (but decreases by 115 compressed when
+	Increases nilfs2.mod by 24 bytes (but decreases by 115 compressed when
 	compressed).
 
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>

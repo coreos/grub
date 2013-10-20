@@ -79,6 +79,7 @@ struct grub_iso9660_dir
   struct grub_iso9660_date2 mtime;
   grub_uint8_t flags;
   grub_uint8_t unused2[6];
+#define MAX_NAMELEN 255
   grub_uint8_t namelen;
 } __attribute__ ((packed));
 
@@ -328,11 +329,11 @@ grub_iso9660_convert_string (grub_uint8_t *us, int len)
 {
   char *p;
   int i;
-  grub_uint16_t t[len];
+  grub_uint16_t t[MAX_NAMELEN / 2 + 1];
 
   p = grub_malloc (len * GRUB_MAX_UTF8_PER_UTF16 + 1);
   if (! p)
-    return p;
+    return NULL;
 
   for (i=0; i<len; i++)
     t[i] = grub_be_to_cpu16 (grub_get_unaligned16 (us + 2 * i));
@@ -680,7 +681,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 	}
 
       {
-	char name[dirent.namelen + 1];
+	char name[MAX_NAMELEN + 1];
 	int nameoffset = offset + sizeof (dirent);
 	struct grub_fshelp_node *node;
 	int sua_off = (sizeof (dirent) + dirent.namelen + 1
