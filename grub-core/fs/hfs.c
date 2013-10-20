@@ -665,14 +665,21 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
 						      void *hook_arg),
 			  void *hook_arg)
 {
-  int nodesize = type == 0 ? data->cat_size : data->ext_size;
+  grub_size_t nodesize = type == 0 ? data->cat_size : data->ext_size;
 
-  union
+  union node_union
   {
     struct grub_hfs_node node;
-    char rawnode[nodesize];
-    grub_uint16_t offsets[nodesize / 2];
-  } node;
+    char rawnode[0];
+    grub_uint16_t offsets[0];
+  } *node;
+
+  if (nodesize < sizeof (struct grub_hfs_node))
+    nodesize = sizeof (struct grub_hfs_node);
+
+  node = grub_malloc (nodesize);
+  if (!node)
+    return grub_errno;
 
   do
     {
@@ -689,15 +696,16 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
                             (type == 0) ? GRUB_HFS_CNID_CAT : GRUB_HFS_CNID_EXT,
 			    idx / (data->blksz / nodesize), 0);
       blk += (idx % (data->blksz / nodesize));
-      if (grub_errno)
-	return grub_errno;
 
-      if (grub_disk_read (data->disk, blk, 0,
-			  sizeof (node), &node))
-	return grub_errno;
+      if (grub_errno || grub_disk_read (data->disk, blk, 0,
+					nodesize, node))
+	{
+	  grub_free (node);
+	  return grub_errno;
+	}
 
       /* Iterate over all records in this node.  */
-      for (i = 0; i < grub_be_to_cpu16 (node.node.reccnt); i++)
+      for (i = 0; i < grub_be_to_cpu16 (node->node.reccnt); i++)
 	{
 	  int pos = (nodesize >> 1) - 1 - i;
  	  struct pointer
@@ -705,25 +713,28 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
 	    grub_uint8_t keylen;
 	    grub_uint8_t key;
 	  } __attribute__ ((packed)) *pnt;
-	  pnt = (struct pointer *) (grub_be_to_cpu16 (node.offsets[pos])
-				    + node.rawnode);
+	  pnt = (struct pointer *) (grub_be_to_cpu16 (node->offsets[pos])
+				    + node->rawnode);
 
 	  struct grub_hfs_record rec =
 	    {
 	      &pnt->key,
 	      pnt->keylen,
 	      &pnt->key + pnt->keylen +(pnt->keylen + 1) % 2,
-	      nodesize - grub_be_to_cpu16 (node.offsets[pos])
+	      nodesize - grub_be_to_cpu16 (node->offsets[pos])
 	      - pnt->keylen - 1
 	    };
 
-	  if (node_hook (&node.node, &rec, hook_arg))
-	    return 0;
+	  if (node_hook (&node->node, &rec, hook_arg))
+	    {
+	      grub_free (node);
+	      return 0;
+	    }
 	}
 
-      idx = grub_be_to_cpu32 (node.node.next);
+      idx = grub_be_to_cpu32 (node->node.next);
     } while (idx && this);
-
+  grub_free (node);
   return 0;
 }
 

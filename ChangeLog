@@ -1,5 +1,10 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/hfs.c: Remove variable length arrays.
+	Reduces hfs.mod by 8 bytes (52 compressed).
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/udf.c: Remove variable length arrays.
 	Increases udf.mod by 128 bytes (but decreases by 13 compressed when
 	compressed).
