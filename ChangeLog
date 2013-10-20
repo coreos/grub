@@ -1,5 +1,10 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/minix.c: Remove variable length arrays. Reduces jfs.mod
+	by 356 bytes (158 compressed).
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/jfs.c: Remove variable length arrays. Reduces jfs.mod
 	by 364 bytes (169 compressed).
 

@@ -161,6 +161,12 @@ struct grub_minix_inode
 
 #endif
 
+#if defined(MODE_MINIX3)
+#define MAX_MINIX_FILENAME_SIZE 60
+#else
+#define MAX_MINIX_FILENAME_SIZE 30
+#endif
+
 /* Information about a "mounted" minix filesystem.  */
 struct grub_minix_data
 {
@@ -346,16 +352,19 @@ grub_minix_read_inode (struct grub_minix_data *data, grub_minix_ino_t ino)
 static grub_err_t
 grub_minix_lookup_symlink (struct grub_minix_data *data, grub_minix_ino_t ino)
 {
-  char symlink[GRUB_MINIX_INODE_SIZE (data) + 1];
+  char *symlink;
+  grub_size_t sz = GRUB_MINIX_INODE_SIZE (data);
 
   if (++data->linknest > GRUB_MINIX_MAX_SYMLNK_CNT)
     return grub_error (GRUB_ERR_SYMLINK_LOOP, N_("too deep nesting of symlinks"));
 
-  if (grub_minix_read_file (data, 0, 0, 0,
-			    GRUB_MINIX_INODE_SIZE (data), symlink) < 0)
+  symlink = grub_malloc (sz + 1);
+  if (!symlink)
+    return grub_errno;
+  if (grub_minix_read_file (data, 0, 0, 0, sz, symlink) < 0)
     return grub_errno;
 
-  symlink[GRUB_MINIX_INODE_SIZE (data)] = '\0';
+  symlink[sz] = '\0';
 
   /* The symlink is an absolute path, go back to the root inode.  */
   if (symlink[0] == '/')
@@ -376,90 +385,70 @@ grub_minix_lookup_symlink (struct grub_minix_data *data, grub_minix_ino_t ino)
 static grub_err_t
 grub_minix_find_file (struct grub_minix_data *data, const char *path)
 {
-  char fpath[grub_strlen (path) + 1];
-  char *name = fpath;
-  char *next;
+  const char *name;
+  const char *next = path;
   unsigned int pos = 0;
   grub_minix_ino_t dirino;
 
-  grub_strcpy (fpath, path);
-
-  /* Skip the first slash.  */
-  while (*name == '/')
-    name++;
-  if (!*name)
-    return 0;
-
-  /* Extract the actual part from the pathname.  */
-  next = grub_strchr (name, '/');
-  if (next)
+  while (1)
     {
-      next[0] = '\0';
-      next++;
-      while (*next == '/')
-	next++;
-    }
-
-  do
-    {
-      grub_minix_ino_t ino;
-      char filename[data->filename_size + 1];
-
-      if (grub_strlen (name) == 0)
+      name = next;
+      /* Skip the first slash.  */
+      while (*name == '/')
+	name++;
+      if (!*name)
 	return GRUB_ERR_NONE;
 
-      if (grub_minix_read_file (data, 0, 0, pos, sizeof (ino),
-				(char *) &ino) < 0)
-	return grub_errno;
-      if (grub_minix_read_file (data, 0, 0, pos + sizeof (ino),
-				data->filename_size, (char *) filename)< 0)
-	return grub_errno;
+      if ((GRUB_MINIX_INODE_MODE (data)
+	   & GRUB_MINIX_IFDIR) != GRUB_MINIX_IFDIR)
+	return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
 
-      filename[data->filename_size] = '\0';
+      /* Extract the actual part from the pathname.  */
+      for (next = name; *next && *next != '/'; next++);
 
-      /* Check if the current direntry matches the current part of the
-	 pathname.  */
-      if (!grub_strcmp (name, filename))
+      for (pos = 0; ; )
 	{
-	  dirino = data->ino;
-	  grub_minix_read_inode (data, grub_minix_to_cpu_ino (ino));
+	  grub_minix_ino_t ino;
+	  char filename[MAX_MINIX_FILENAME_SIZE + 1];
 
-	  /* Follow the symlink.  */
-	  if ((GRUB_MINIX_INODE_MODE (data)
-	       & GRUB_MINIX_IFLNK) == GRUB_MINIX_IFLNK)
+	  if (pos >= GRUB_MINIX_INODE_SIZE (data))
 	    {
-	      grub_minix_lookup_symlink (data, dirino);
-	      if (grub_errno)
-		return grub_errno;
+	      grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
+	      return grub_errno;
 	    }
 
-	  if (!next)
-	    return 0;
+	  if (grub_minix_read_file (data, 0, 0, pos, sizeof (ino),
+				    (char *) &ino) < 0)
+	    return grub_errno;
+	  if (grub_minix_read_file (data, 0, 0, pos + sizeof (ino),
+				    data->filename_size, (char *) filename)< 0)
+	    return grub_errno;
 
-	  pos = 0;
+	  pos += sizeof (ino) + data->filename_size;
 
-	  name = next;
-	  next = grub_strchr (name, '/');
-	  if (next)
+	  filename[data->filename_size] = '\0';
+
+	  /* Check if the current direntry matches the current part of the
+	     pathname.  */
+	  if (grub_strncmp (name, filename, next - name) == 0
+	      && filename[next - name] == '\0')
 	    {
-	      next[0] = '\0';
-	      next++;
-	      while (*next == '/')
-		next++;
+	      dirino = data->ino;
+	      grub_minix_read_inode (data, grub_minix_to_cpu_ino (ino));
+
+	      /* Follow the symlink.  */
+	      if ((GRUB_MINIX_INODE_MODE (data)
+		   & GRUB_MINIX_IFLNK) == GRUB_MINIX_IFLNK)
+		{
+		  grub_minix_lookup_symlink (data, dirino);
+		  if (grub_errno)
+		    return grub_errno;
+		}
+
+	      break;
 	    }
-
-     	  if ((GRUB_MINIX_INODE_MODE (data)
-	       & GRUB_MINIX_IFDIR) != GRUB_MINIX_IFDIR)
-	    return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
-
-	  continue;
 	}
-
-      pos += sizeof (ino) + data->filename_size;
-    } while (pos < GRUB_MINIX_INODE_SIZE (data));
-
-  grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
-  return grub_errno;
+    }
 }
 
 
@@ -561,7 +550,7 @@ grub_minix_dir (grub_device_t device, const char *path,
   while (pos < GRUB_MINIX_INODE_SIZE (data))
     {
       grub_minix_ino_t ino;
-      char filename[data->filename_size + 1];
+      char filename[MAX_MINIX_FILENAME_SIZE + 1];
       grub_minix_ino_t dirino = data->ino;
       struct grub_dirhook_info info;
       grub_memset (&info, 0, sizeof (info));
