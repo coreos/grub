@@ -458,7 +458,7 @@ static int iterate_dir_call_hook (grub_uint64_t ino, const char *filename,
 
   fdiro = grub_malloc (sizeof (struct grub_fshelp_node)
 		       - sizeof (struct grub_xfs_inode)
-		       + (1 << ctx->diro->data->sblock.log2_inode));
+		       + (1 << ctx->diro->data->sblock.log2_inode) + 1);
   if (!fdiro)
     {
       grub_print_error ();
@@ -528,7 +528,7 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 	    grub_uint8_t *inopos = (((grub_uint8_t *) de)
 			    + sizeof (struct grub_xfs_dir_entry)
 			    + de->len - 1);
-	    char name[de->len + 1];
+	    grub_uint8_t c;
 
 	    /* inopos might be unaligned.  */
 	    if (smallino)
@@ -547,10 +547,11 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 		| (((grub_uint64_t) inopos[7]) << 0);
 	    ino = grub_cpu_to_be64 (ino);
 
-	    grub_memcpy (name, de->name, de->len);
-	    name[de->len] = '\0';
-	    if (iterate_dir_call_hook (ino, name, &ctx))
+	    c = de->name[de->len];
+	    de->name[de->len] = '\0';
+	    if (iterate_dir_call_hook (ino, de->name, &ctx))
 	      return 1;
+	    de->name[de->len] = c;
 
 	    de = ((struct grub_xfs_dir_entry *)
 		  (((char *) de)+ sizeof (struct grub_xfs_dir_entry) + de->len
@@ -683,7 +684,7 @@ grub_xfs_mount (grub_disk_t disk)
   data = grub_realloc (data,
 		       sizeof (struct grub_xfs_data)
 		       - sizeof (struct grub_xfs_inode)
-		       + (1 << data->sblock.log2_inode));
+		       + (1 << data->sblock.log2_inode) + 1);
 
   if (! data)
     goto fail;
