@@ -1,5 +1,10 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/fshelp.c: Remove variable length arrays.
+	Reduces fshelp.mod by 116 bytes (23 compressed).
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/completion.c: Remove variable length arrays.
 	* grub-core/normal/menu_entry.c: Likewise.
 

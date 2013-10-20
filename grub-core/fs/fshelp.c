@@ -39,7 +39,8 @@ struct grub_fshelp_find_file_ctx
   grub_fshelp_node_t rootnode, currroot, currnode, oldnode;
   enum grub_fshelp_filetype foundtype;
   int symlinknest;
-  char *name;
+  const char *name;
+  const char *next;
   enum grub_fshelp_filetype type;
 };
 
@@ -59,9 +60,10 @@ find_file_iter (const char *filename, enum grub_fshelp_filetype filetype,
   struct grub_fshelp_find_file_ctx *ctx = data;
 
   if (filetype == GRUB_FSHELP_UNKNOWN ||
-      (grub_strcmp (ctx->name, filename) &&
-       (! (filetype & GRUB_FSHELP_CASE_INSENSITIVE) ||
-	grub_strcasecmp (ctx->name, filename))))
+      ((filetype & GRUB_FSHELP_CASE_INSENSITIVE)
+       ? grub_strncasecmp (ctx->name, filename, ctx->next - ctx->name)
+       : grub_strncmp (ctx->name, filename, ctx->next - ctx->name))
+      || filename[ctx->next - ctx->name])
     {
       grub_free (node);
       return 0;
@@ -81,39 +83,30 @@ find_file (const char *currpath, grub_fshelp_node_t currroot,
 	   iterate_dir_func iterate_dir, read_symlink_func read_symlink,
 	   struct grub_fshelp_find_file_ctx *ctx)
 {
-  char fpath[grub_strlen (currpath) + 1];
-  char *next;
-
   ctx->currroot = currroot;
-  ctx->name = fpath;
+  ctx->name = currpath;
   ctx->type = GRUB_FSHELP_DIR;
   ctx->currnode = currroot;
   ctx->oldnode = currroot;
-
-  grub_strncpy (fpath, currpath, grub_strlen (currpath) + 1);
-
-  /* Remove all leading slashes.  */
-  while (*ctx->name == '/')
-    ctx->name++;
-
-  if (! *ctx->name)
-    {
-      *currfound = ctx->currnode;
-      return 0;
-    }
 
   for (;;)
     {
       int found;
 
-      /* Extract the actual part from the pathname.  */
-      next = grub_strchr (ctx->name, '/');
-      if (next)
+      /* Remove all leading slashes.  */
+      while (*ctx->name == '/')
+	ctx->name++;
+
+      /* Found the node!  */
+      if (! *ctx->name)
 	{
-	  /* Remove all leading slashes.  */
-	  while (*next == '/')
-	    *(next++) = '\0';
+	  *currfound = ctx->currnode;
+	  ctx->foundtype = ctx->type;
+	  return 0;
 	}
+
+      /* Extract the actual part from the pathname.  */
+      for (ctx->next = ctx->name; *ctx->next && *ctx->next != '/'; ctx->next++);
 
       /* At this point it is expected that the current node is a
 	 directory, check if this is true.  */
@@ -190,15 +183,7 @@ find_file (const char *currpath, grub_fshelp_node_t currroot,
 	  ctx->oldnode = 0;
 	}
 
-      /* Found the node!  */
-      if (! next || *next == '\0')
-	{
-	  *currfound = ctx->currnode;
-	  ctx->foundtype = ctx->type;
-	  return 0;
-	}
-
-      ctx->name = next;
+      ctx->name = ctx->next;
     }
 
   return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"),
