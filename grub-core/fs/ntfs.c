@@ -643,6 +643,7 @@ list_file (struct grub_ntfs_file *diro, grub_uint8_t *pos,
 	  if (ustr == NULL)
 	    return 0;
 	  {
+	    /* ns is read at uint8_t, so is can be at most 255.  */
 	    grub_uint16_t tmp[256];
 	    int i;
 	    for (i = 0; i < ns; i++)
