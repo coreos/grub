@@ -1,5 +1,11 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/udf.c: Remove variable length arrays.
+	Increases udf.mod by 128 bytes (but decreases by 13 compressed when
+	compressed).
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/iso9660.c: Remove variable length arrays.
 	Increases iso9660.mod by 200 bytes (but decreases by 79 compressed when
 	compressed).

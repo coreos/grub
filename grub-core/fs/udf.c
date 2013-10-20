@@ -216,6 +216,7 @@ struct grub_udf_file_ident
   struct grub_udf_tag tag;
   grub_uint16_t version_num;
   grub_uint8_t characteristics;
+#define MAX_FILE_IDENT_LENGTH 256
   grub_uint8_t file_ident_length;
   struct grub_udf_long_ad icb;
   grub_uint16_t imp_use_length;
@@ -909,7 +910,7 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 	    {
 	      enum grub_fshelp_filetype type;
 	      char *filename;
-	      grub_uint8_t raw[dirent.file_ident_length];
+	      grub_uint8_t raw[MAX_FILE_IDENT_LENGTH];
 
 	      type = ((dirent.characteristics & GRUB_UDF_FID_CHAR_DIRECTORY) ?
 		      (GRUB_FSHELP_DIR) : (GRUB_FSHELP_REG));
