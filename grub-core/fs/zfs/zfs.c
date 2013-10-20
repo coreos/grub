@@ -1302,7 +1302,9 @@ gf_mul (grub_uint8_t a, grub_uint8_t b)
   return powx[powx_inv[a] + powx_inv[b]];
 }
 
-static inline grub_err_t
+#define MAX_NBUFS 4
+
+static grub_err_t
 recovery (grub_uint8_t *bufs[4], grub_size_t s, const int nbufs,
 	  const unsigned *powers,
 	  const int *idx)
@@ -1356,9 +1358,9 @@ recovery (grub_uint8_t *bufs[4], grub_size_t s, const int nbufs,
 	return GRUB_ERR_NONE;
       }
       /* Otherwise use Gauss.  */
-    default:
+    case 3:
       {
-	grub_uint8_t matrix1[nbufs][nbufs], matrix2[nbufs][nbufs];
+	grub_uint8_t matrix1[MAX_NBUFS][MAX_NBUFS], matrix2[MAX_NBUFS][MAX_NBUFS];
 	int i, j, k;
 
 	for (i = 0; i < nbufs; i++)
@@ -1426,7 +1428,7 @@ recovery (grub_uint8_t *bufs[4], grub_size_t s, const int nbufs,
 
 	for (i = 0; i < (int) s; i++)
 	  {
-	    grub_uint8_t b[nbufs];
+	    grub_uint8_t b[MAX_NBUFS];
 	    for (j = 0; j < nbufs; j++)
 	      b[j] = bufs[j][i];
 	    for (j = 0; j < nbufs; j++)
@@ -1438,6 +1440,8 @@ recovery (grub_uint8_t *bufs[4], grub_size_t s, const int nbufs,
 	  }
 	return GRUB_ERR_NONE;
       }
+    default:
+      return grub_error (GRUB_ERR_BUG, "too big matrix");
     }      
 }
 
