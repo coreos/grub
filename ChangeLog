@@ -1,5 +1,12 @@
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/completion.c: Remove variable length arrays.
+	* grub-core/normal/menu_entry.c: Likewise.
+
+	Reduces normal.mod by 496 bytes.
+
+2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/minix.c: Remove variable length arrays. Reduces jfs.mod
 	by 356 bytes (158 compressed).
 

@@ -51,6 +51,11 @@ struct per_term_screen
   struct grub_term_output *term;
   int y_line_start;
   struct grub_term_screen_geometry geo;
+  /* Scratch variables used when updating. Having them here avoids
+     loads of small mallocs.  */
+  int orig_num;
+  int down;
+  enum update_mode mode;
 };
 
 struct screen
@@ -371,14 +376,12 @@ insert_string (struct screen *screen, const char *s, int update)
 {
   int region_start = screen->num_lines;
   int region_column = 0;
-  int down[screen->nterms];
-  enum update_mode mode[screen->nterms];
   unsigned i;
 
   for (i = 0; i < screen->nterms; i++)
     {
-      down[i] = 0;
-      mode[i] = NO_LINE;
+      screen->terms[i].down = 0;
+      screen->terms[i].mode = NO_LINE;
     }
 
   while (*s)
@@ -436,8 +439,8 @@ insert_string (struct screen *screen, const char *s, int update)
 
 	  for (i = 0; i < screen->nterms; i++)
 	    {
-	      mode[i] = ALL_LINES;
-	      down[i] = 1; /* XXX not optimal.  */
+	      screen->terms[i].mode = ALL_LINES;
+	      screen->terms[i].down = 1; /* XXX not optimal.  */
 	    }
 
 	  /* Move the cursor.  */
@@ -451,7 +454,6 @@ insert_string (struct screen *screen, const char *s, int update)
 	  const char *p;
 	  struct line *current_linep;
 	  int size;
-	  int orig_num[screen->nterms], new_num[screen->nterms];
 	  grub_uint32_t *unicode_msg;
 
 	  /* Find a string delimited by LF.  */
@@ -488,12 +490,9 @@ insert_string (struct screen *screen, const char *s, int update)
 	    }
 
 	  for (i = 0; i < screen->nterms; i++)
-	    orig_num[i] = get_logical_num_lines (current_linep,
+	    screen->terms[i].orig_num = get_logical_num_lines (current_linep,
 						 &screen->terms[i]);
 	  current_linep->len += size;
-	  for (i = 0; i < screen->nterms; i++)
-	    new_num[i] = get_logical_num_lines (current_linep,
-						&screen->terms[i]);
 
 	  /* Update the dirty region.  */
 	  if (region_start > screen->line)
@@ -503,13 +502,17 @@ insert_string (struct screen *screen, const char *s, int update)
 	    }
 
 	  for (i = 0; i < screen->nterms; i++)
-	    if (orig_num[i] != new_num[i])
-	      {
-		mode[i] = ALL_LINES;
-		down[i] = 1; /* XXX not optimal.  */
-	      }
-	    else if (mode[i] != ALL_LINES)
-	      mode[i] = SINGLE_LINE;
+	    {
+	      int new_num = get_logical_num_lines (current_linep,
+						   &screen->terms[i]);
+	      if (screen->terms[i].orig_num != new_num)
+		{
+		  screen->terms[i].mode = ALL_LINES;
+		  screen->terms[i].down = 1; /* XXX not optimal.  */
+		}
+	      else if (screen->terms[i].mode != ALL_LINES)
+		screen->terms[i].mode = SINGLE_LINE;
+	    }
 
 	  /* Move the cursor.  */
 	  advance_to (screen, screen->column + size);
@@ -522,7 +525,8 @@ insert_string (struct screen *screen, const char *s, int update)
   if (update)
     for (i = 0; i < screen->nterms; i++)
       update_screen (screen, &screen->terms[i],
-		     region_start, region_column, 0, down[i], mode[i]);
+		     region_start, region_column, 0, screen->terms[i].down,
+		     screen->terms[i].mode);
 
   return 1;
 }
@@ -754,11 +758,10 @@ delete_char (struct screen *screen, int update)
   linep = screen->lines + screen->line;
   if (linep->len > screen->column)
     {
-      int orig_num[screen->nterms], new_num;
       unsigned i;
 
       for (i = 0; i < screen->nterms; i++)
-	orig_num[i] = get_logical_num_lines (linep, &screen->terms[i]);
+	screen->terms[i].orig_num = get_logical_num_lines (linep, &screen->terms[i]);
 
       grub_memmove (linep->buf + screen->column,
 		    linep->buf + screen->column + 1,
@@ -780,8 +783,9 @@ delete_char (struct screen *screen, int update)
 	{
 	  for (i = 0; i < screen->nterms; i++)
 	    {
+	      int new_num;
 	      new_num = get_logical_num_lines (linep, &screen->terms[i]);
-	      if (orig_num[i] != new_num)
+	      if (screen->terms[i].orig_num != new_num)
 		update_screen (screen, &screen->terms[i],
 			       start, column, 0, 0, ALL_LINES);
 	      else
@@ -867,7 +871,6 @@ kill_line (struct screen *screen, int continuous, int update)
 
   if (size > 0)
     {
-      int orig_num[screen->nterms], new_num;
       unsigned i;
 
       p = grub_realloc (p, offset + size + 1);
@@ -880,15 +883,16 @@ kill_line (struct screen *screen, int continuous, int update)
       screen->killed_text = p;
 
       for (i = 0; i < screen->nterms; i++)
-	orig_num[i] = get_logical_num_lines (linep, &screen->terms[i]);
+	screen->terms[i].orig_num = get_logical_num_lines (linep, &screen->terms[i]);
       linep->len = screen->column;
 
       if (update)
 	{
 	  for (i = 0; i < screen->nterms; i++)
 	    {
+	      int new_num;
 	      new_num = get_logical_num_lines (linep, &screen->terms[i]);
-	      if (orig_num[i] != new_num)
+	      if (screen->terms[i].orig_num != new_num)
 		update_screen (screen, &screen->terms[i],
 			       screen->line, screen->column, 0, 1, ALL_LINES);
 	      else

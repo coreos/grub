@@ -168,36 +168,27 @@ iterate_dev (const char *devname, void *data __attribute__ ((unused)))
       grub_errno = GRUB_ERR_NONE;
       return 0;
     }
-  {
-    char tmp[grub_strlen (devname) + sizeof (",")];
 
-    grub_memcpy (tmp, devname, grub_strlen (devname));
+  if (grub_strcmp (devname, current_word) == 0)
+    {
+      if (add_completion (devname, ")", GRUB_COMPLETION_TYPE_PARTITION))
+	{
+	  grub_device_close (dev);
+	  return 1;
+	}
 
-    if (grub_strcmp (devname, current_word) == 0)
-      {
-	if (add_completion (devname, ")", GRUB_COMPLETION_TYPE_PARTITION))
+      if (dev->disk)
+	if (grub_partition_iterate (dev->disk, iterate_partition, NULL))
 	  {
 	    grub_device_close (dev);
 	    return 1;
 	  }
-
-	if (dev->disk)
-	  if (grub_partition_iterate (dev->disk, iterate_partition, NULL))
-	    {
-	      grub_device_close (dev);
-	      return 1;
-	    }
-      }
-    else
-      {
-	grub_memcpy (tmp + grub_strlen (devname), "", sizeof (""));
-	if (add_completion (tmp, "", GRUB_COMPLETION_TYPE_DEVICE))
-	  {
-	    grub_device_close (dev);
-	    return 1;
-	  }
-      }
-  }
+    }
+  else if (add_completion (devname, "", GRUB_COMPLETION_TYPE_DEVICE))
+    {
+      grub_device_close (dev);
+      return 1;
+    }
 
   grub_device_close (dev);
   grub_errno = GRUB_ERR_NONE;
