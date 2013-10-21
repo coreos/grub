@@ -839,7 +839,8 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
 
   if (bitmap)
     {
-      grub_disk_addr_t v, i;
+      grub_disk_addr_t i;
+      grub_uint8_t v;
 
       indx = grub_malloc (mft->data->idx_size << GRUB_NTFS_BLK_SHR);
       if (indx == NULL)
@@ -862,7 +863,7 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
 		goto done;
 	    }
 	  v <<= 1;
-	  if (v >= 0x100)
+	  if (!v)
 	    {
 	      v = 1;
 	      bitmap++;
