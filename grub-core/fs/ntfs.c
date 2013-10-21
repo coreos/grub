@@ -373,7 +373,6 @@ read_data (struct grub_ntfs_attr *at, grub_uint8_t *pa, grub_uint8_t *dest,
 	   grub_disk_addr_t ofs, grub_size_t len, int cached,
 	   grub_disk_read_hook_t read_hook, void *read_hook_data)
 {
-  grub_disk_addr_t vcn;
   struct grub_ntfs_rlst cc, *ctx;
 
   if (len == 0)
@@ -393,52 +392,23 @@ read_data (struct grub_ntfs_attr *at, grub_uint8_t *pa, grub_uint8_t *dest,
       return 0;
     }
 
-  if (u16at (pa, 0xC) & GRUB_NTFS_FLAG_COMPRESSED)
-    ctx->flags |= GRUB_NTFS_RF_COMP;
-  else
-    ctx->flags &= ~GRUB_NTFS_RF_COMP;
   ctx->cur_run = pa + u16at (pa, 0x20);
 
-  if (ctx->flags & GRUB_NTFS_RF_COMP)
+  ctx->next_vcn = u32at (pa, 0x10);
+  ctx->curr_lcn = 0;
+
+  if ((pa[0xC] & GRUB_NTFS_FLAG_COMPRESSED)
+      && !(at->flags & GRUB_NTFS_AF_GPOS))
     {
       if (!cached)
 	return grub_error (GRUB_ERR_BAD_FS, "attribute can\'t be compressed");
 
-      if (at->sbuf)
-	{
-	  if ((ofs & (~(GRUB_NTFS_COM_LEN - 1))) == at->save_pos)
-	    {
-	      grub_disk_addr_t n;
-
-	      n = GRUB_NTFS_COM_LEN - (ofs - at->save_pos);
-	      if (n > len)
-		n = len;
-
-	      grub_memcpy (dest, at->sbuf + ofs - at->save_pos, n);
-	      if (n == len)
-		return 0;
-
-	      dest += n;
-	      len -= n;
-	      ofs += n;
-	    }
-	}
-      else
-	{
-	  at->sbuf = grub_malloc (GRUB_NTFS_COM_LEN);
-	  if (at->sbuf == NULL)
-	    return grub_errno;
-	  at->save_pos = 1;
-	}
-
-      vcn = ctx->target_vcn = (ofs >> GRUB_NTFS_COM_LOG_LEN) * (GRUB_NTFS_COM_SEC >> ctx->comp.log_spc);
-      ctx->target_vcn &= ~0xFULL;
+      return (grub_ntfscomp_func) ? grub_ntfscomp_func (dest, ofs, len, ctx)
+	: grub_error (GRUB_ERR_BAD_FS, N_("module `%s' isn't loaded"),
+		      "ntfscomp");
     }
-  else
-    vcn = ctx->target_vcn = ofs >> (GRUB_NTFS_BLK_SHR + ctx->comp.log_spc);
 
-  ctx->next_vcn = u32at (pa, 0x10);
-  ctx->curr_lcn = 0;
+  ctx->target_vcn = ofs >> (GRUB_NTFS_BLK_SHR + ctx->comp.log_spc);
   while (ctx->next_vcn <= ctx->target_vcn)
     {
       if (grub_ntfs_read_run_list (ctx))
@@ -467,20 +437,12 @@ read_data (struct grub_ntfs_attr *at, grub_uint8_t *pa, grub_uint8_t *dest,
       return 0;
     }
 
-  if (!(ctx->flags & GRUB_NTFS_RF_COMP))
-    {
-      grub_fshelp_read_file (ctx->comp.disk, (grub_fshelp_node_t) ctx,
-			     read_hook, read_hook_data, ofs, len,
-			     (char *) dest,
-			     grub_ntfs_read_block, ofs + len,
-			     ctx->comp.log_spc, 0);
-      return grub_errno;
-    }
-
-  return (grub_ntfscomp_func) ? grub_ntfscomp_func (at, dest, ofs, len, ctx,
-						    vcn) :
-    grub_error (GRUB_ERR_BAD_FS, N_("module `%s' isn't loaded"),
-		"ntfscomp");
+  grub_fshelp_read_file (ctx->comp.disk, (grub_fshelp_node_t) ctx,
+			 read_hook, read_hook_data, ofs, len,
+			 (char *) dest,
+			 grub_ntfs_read_block, ofs + len,
+			 ctx->comp.log_spc, 0);
+  return grub_errno;
 }
 
 static grub_err_t

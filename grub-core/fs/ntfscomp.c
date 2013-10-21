@@ -289,10 +289,46 @@ read_block (struct grub_ntfs_rlst *ctx, grub_uint8_t *buf, grub_size_t num)
 }
 
 static grub_err_t
-ntfscomp (struct grub_ntfs_attr *at, grub_uint8_t *dest, grub_disk_addr_t ofs,
-	  grub_size_t len, struct grub_ntfs_rlst *ctx, grub_disk_addr_t vcn)
+ntfscomp (grub_uint8_t *dest, grub_disk_addr_t ofs,
+	  grub_size_t len, struct grub_ntfs_rlst *ctx)
 {
   grub_err_t ret;
+  grub_disk_addr_t vcn;
+
+  if (ctx->attr->sbuf)
+    {
+      if ((ofs & (~(GRUB_NTFS_COM_LEN - 1))) == ctx->attr->save_pos)
+	{
+	  grub_disk_addr_t n;
+
+	  n = GRUB_NTFS_COM_LEN - (ofs - ctx->attr->save_pos);
+	  if (n > len)
+	    n = len;
+
+	  grub_memcpy (dest, ctx->attr->sbuf + ofs - ctx->attr->save_pos, n);
+	  if (n == len)
+	    return 0;
+
+	  dest += n;
+	  len -= n;
+	  ofs += n;
+	}
+    }
+  else
+    {
+      ctx->attr->sbuf = grub_malloc (GRUB_NTFS_COM_LEN);
+      if (ctx->attr->sbuf == NULL)
+	return grub_errno;
+      ctx->attr->save_pos = 1;
+    }
+
+  vcn = ctx->target_vcn = (ofs >> GRUB_NTFS_COM_LOG_LEN) * (GRUB_NTFS_COM_SEC >> ctx->comp.log_spc);
+  ctx->target_vcn &= ~0xFULL;
+  while (ctx->next_vcn <= ctx->target_vcn)
+    {
+      if (grub_ntfs_read_run_list (ctx))
+	return grub_errno;
+    }
 
   ctx->comp.comp_head = ctx->comp.comp_tail = 0;
   ctx->comp.cbuf = grub_malloc (1 << (ctx->comp.log_spc + GRUB_NTFS_BLK_SHR));
@@ -317,19 +353,19 @@ ntfscomp (struct grub_ntfs_attr *at, grub_uint8_t *dest, grub_disk_addr_t ofs,
       grub_uint32_t t, n, o;
 
       t = ctx->target_vcn << (ctx->comp.log_spc + GRUB_NTFS_BLK_SHR);
-      if (read_block (ctx, at->sbuf, 1))
+      if (read_block (ctx, ctx->attr->sbuf, 1))
 	{
 	  ret = grub_errno;
 	  goto quit;
 	}
 
-      at->save_pos = t;
+      ctx->attr->save_pos = t;
 
       o = ofs % GRUB_NTFS_COM_LEN;
       n = GRUB_NTFS_COM_LEN - o;
       if (n > len)
 	n = len;
-      grub_memcpy (dest, &at->sbuf[o], n);
+      grub_memcpy (dest, &ctx->attr->sbuf[o], n);
       if (n == len)
 	goto quit;
       dest += n;
@@ -349,15 +385,15 @@ ntfscomp (struct grub_ntfs_attr *at, grub_uint8_t *dest, grub_disk_addr_t ofs,
       grub_uint32_t t;
 
       t = ctx->target_vcn << (ctx->comp.log_spc + GRUB_NTFS_BLK_SHR);
-      if (read_block (ctx, at->sbuf, 1))
+      if (read_block (ctx, ctx->attr->sbuf, 1))
 	{
 	  ret = grub_errno;
 	  goto quit;
 	}
 
-      at->save_pos = t;
+      ctx->attr->save_pos = t;
 
-      grub_memcpy (dest, at->sbuf, len);
+      grub_memcpy (dest, ctx->attr->sbuf, len);
     }
 
 quit:

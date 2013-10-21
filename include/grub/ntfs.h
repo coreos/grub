@@ -98,9 +98,7 @@ enum
 
 enum
   {
-    GRUB_NTFS_RF_COMP		= 1,
-    GRUB_NTFS_RF_CBLK		= 2,
-    GRUB_NTFS_RF_BLNK		= 4
+    GRUB_NTFS_RF_BLNK		= 1
   };
 
 struct grub_ntfs_bpb
@@ -187,12 +185,10 @@ struct grub_ntfs_rlst
   struct grub_ntfs_comp comp;
 };
 
-typedef grub_err_t (*grub_ntfscomp_func_t) (struct grub_ntfs_attr * at,
-					    grub_uint8_t *dest,
+typedef grub_err_t (*grub_ntfscomp_func_t) (grub_uint8_t *dest,
 					    grub_disk_addr_t ofs,
 					    grub_size_t len,
-					    struct grub_ntfs_rlst * ctx,
-					    grub_disk_addr_t vcn);
+					    struct grub_ntfs_rlst * ctx);
 
 extern grub_ntfscomp_func_t grub_ntfscomp_func;
 

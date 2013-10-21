@@ -1,3 +1,8 @@
+2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/ntfs.c (read_data): Move code for compressed data to ...
+	* grub-core/fs/ntfscomp.c (ntfscomp): ... here.
+
 2013-10-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/disk.c (grub_disk_write): Use malloc/free instead of
