@@ -1,5 +1,12 @@
 2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_strtoull): Remove needless *ptr != 0
+	check.
+
+	Saves 10 bytes on compressed image.
+
+2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_isprint): Move to ...
 	* include/grub/misc.h (grub_isprint): ... here. Make inline.
 

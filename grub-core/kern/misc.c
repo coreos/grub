@@ -371,7 +371,8 @@ grub_strtoull (const char *str, char **end, int base)
   int found = 0;
 
   /* Skip white spaces.  */
-  while (*str && grub_isspace (*str))
+  /* grub_isspace checks that *str != '\0'.  */
+  while (grub_isspace (*str))
     str++;
 
   /* Guess the base, if not specified. The prefix `0x' means 16, and
