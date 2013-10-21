@@ -29,8 +29,21 @@
 #include <grub/pubkey.h>
 #include <grub/env.h>
 #include <grub/kernel.h>
+#include <grub/extcmd.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
+
+enum
+  {
+    OPTION_SKIP_SIG = 0
+  };
+
+static const struct grub_arg_option options[] =
+  {
+    {"skip-sig", 's', 0,
+     N_("Skip signature-checking of the signature file."), 0, ARG_TYPE_NONE},
+    {0, 0, 0, 0, 0, 0}
+  };
 
 static grub_err_t
 read_packet_header (grub_file_t sig, grub_uint8_t *out_type, grub_size_t *len)
@@ -544,8 +557,8 @@ grub_verify_signature (grub_file_t f, grub_file_t sig,
 }
 
 static grub_err_t
-grub_cmd_trust (grub_command_t cmd  __attribute__ ((unused)),
-			   int argc, char **args)
+grub_cmd_trust (grub_extcmd_context_t ctxt,
+		int argc, char **args)
 {
   grub_file_t pkf;
   struct grub_public_key *pk = NULL;
@@ -553,7 +566,9 @@ grub_cmd_trust (grub_command_t cmd  __attribute__ ((unused)),
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
-  grub_file_filter_disable_all ();
+  grub_file_filter_disable_compression ();
+  if (ctxt->state[OPTION_SKIP_SIG].set)
+    grub_file_filter_disable_pubkey ();
   pkf = grub_file_open (args[0]);
   if (!pkf)
     return grub_errno;
@@ -625,7 +640,7 @@ grub_cmd_distrust (grub_command_t cmd  __attribute__ ((unused)),
 }
 
 static grub_err_t
-grub_cmd_verify_signature (grub_command_t cmd  __attribute__ ((unused)),
+grub_cmd_verify_signature (grub_extcmd_context_t ctxt,
 			   int argc, char **args)
 {
   grub_file_t f, sig;
@@ -642,7 +657,9 @@ grub_cmd_verify_signature (grub_command_t cmd  __attribute__ ((unused)),
   if (argc > 2)
     {
       grub_file_t pkf;
-      grub_file_filter_disable_all ();
+      grub_file_filter_disable_compression ();
+      if (ctxt->state[OPTION_SKIP_SIG].set)
+	grub_file_filter_disable_pubkey ();
       pkf = grub_file_open (args[2]);
       if (!pkf)
 	return grub_errno;
@@ -790,7 +807,8 @@ struct gcry_pk_spec *grub_crypto_pk_dsa;
 struct gcry_pk_spec *grub_crypto_pk_ecdsa;
 struct gcry_pk_spec *grub_crypto_pk_rsa;
 
-static grub_command_t cmd, cmd_trust, cmd_distrust, cmd_list;
+static grub_extcmd_t cmd, cmd_trust;
+static grub_command_t cmd_distrust, cmd_list;
 
 GRUB_MOD_INIT(verify)
 {
@@ -835,12 +853,14 @@ GRUB_MOD_INIT(verify)
   if (!val)
     grub_env_set ("check_signatures", grub_pk_trusted ? "enforce" : "no");
 
-  cmd = grub_register_command ("verify_detached", grub_cmd_verify_signature,
-			       N_("FILE SIGNATURE_FILE [PUBKEY_FILE]"),
-			       N_("Verify detached signature."));
-  cmd_trust = grub_register_command ("trust", grub_cmd_trust,
-				     N_("PUBKEY_FILE"),
-				     N_("Add PKFILE to trusted keys."));
+  cmd = grub_register_extcmd ("verify_detached", grub_cmd_verify_signature, 0,
+			      N_("[-s|--skip-sig] FILE SIGNATURE_FILE [PUBKEY_FILE]"),
+			      N_("Verify detached signature."),
+			      options);
+  cmd_trust = grub_register_extcmd ("trust", grub_cmd_trust, 0,
+				     N_("[-s|--skip-sig] PUBKEY_FILE"),
+				     N_("Add PKFILE to trusted keys."),
+				     options);
   cmd_list = grub_register_command ("list_trusted", grub_cmd_list,
 				    0,
 				    N_("List trusted keys."));
@@ -852,8 +872,8 @@ GRUB_MOD_INIT(verify)
 GRUB_MOD_FINI(verify)
 {
   grub_file_filter_unregister (GRUB_FILE_FILTER_PUBKEY);
-  grub_unregister_command (cmd);
-  grub_unregister_command (cmd_trust);
+  grub_unregister_extcmd (cmd);
+  grub_unregister_extcmd (cmd_trust);
   grub_unregister_command (cmd_list);
   grub_unregister_command (cmd_distrust);
 }

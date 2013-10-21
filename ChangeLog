@@ -1,3 +1,7 @@
+2013-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Verify signatures of signatures unless --skip-sig is specified.
+
 2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/misc.c (grub_vsnprintf_real): Remove needless explicit
