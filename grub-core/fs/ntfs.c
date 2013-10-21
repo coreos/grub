@@ -546,6 +546,28 @@ free_file (struct grub_ntfs_file *mft)
   grub_free (mft->buf);
 }
 
+static char *
+get_utf8 (grub_uint8_t *in, grub_size_t len)
+{
+  grub_uint8_t *buf;
+  grub_uint16_t *tmp;
+  grub_size_t i;
+
+  buf = grub_malloc (len * GRUB_MAX_UTF8_PER_UTF16 + 1);
+  tmp = grub_malloc (len * sizeof (tmp[0]));
+  if (!buf || !tmp)
+    {
+      grub_free (buf);
+      grub_free (tmp);
+      return NULL;
+    }
+  for (i = 0; i < len; i++)
+    tmp[i] = grub_le_to_cpu16 (grub_get_unaligned16 (in + 2 * i));
+  *grub_utf16_to_utf8 (buf, tmp, len) = '\0';
+  grub_free (tmp);
+  return (char *) buf;
+}
+
 static int
 list_file (struct grub_ntfs_file *diro, grub_uint8_t *pos,
 	   grub_fshelp_iterate_dir_hook_t hook, void *hook_data)
@@ -591,19 +613,9 @@ list_file (struct grub_ntfs_file *diro, grub_uint8_t *pos,
 	  fdiro->ino = u64at (pos, 0) & 0xffffffffffffULL;
 	  fdiro->mtime = u64at (pos, 0x20);
 
-	  ustr = grub_malloc (ns * GRUB_MAX_UTF8_PER_UTF16 + 1);
+	  ustr = get_utf8 (np, ns);
 	  if (ustr == NULL)
 	    return 0;
-	  {
-	    /* ns is read at uint8_t, so is can be at most 255.  */
-	    grub_uint16_t tmp[256];
-	    int i;
-	    for (i = 0; i < ns; i++)
-	      tmp[i] = grub_le_to_cpu16 (grub_get_unaligned16 ((char *) np
-							       + 2 * i));
-
-	    *grub_utf16_to_utf8 ((grub_uint8_t *) ustr, tmp, ns) = '\0';
-	  }
           if (namespace)
             type |= GRUB_FSHELP_CASE_INSENSITIVE;
 
@@ -636,10 +648,9 @@ grub_ntfs_read_symlink (grub_fshelp_node_t node)
   struct grub_ntfs_file *mft;
   struct symlink_descriptor symdesc;
   grub_err_t err;
-  grub_uint16_t *buf16;
+  grub_uint8_t *buf16;
   char *buf, *end;
   grub_size_t len;
-  grub_size_t i;
   grub_uint8_t *pa;
   grub_size_t off;
 
@@ -655,7 +666,8 @@ grub_ntfs_read_symlink (grub_fshelp_node_t node)
   pa = locate_attr (&mft->attr, mft, GRUB_NTFS_AT_SYMLINK);
   if (pa == NULL)
     {
-      grub_error (GRUB_ERR_BAD_FS, "no $SYMLINK in MFT 0x%X", mft->ino);
+      grub_error (GRUB_ERR_BAD_FS, "no $SYMLINK in MFT 0x%llx",
+		  (unsigned long long) mft->ino);
       return NULL;
     }
 
@@ -686,26 +698,22 @@ grub_ntfs_read_symlink (grub_fshelp_node_t node)
   if (!buf16)
     return NULL;
 
-  err = read_attr (&mft->attr, (grub_uint8_t *) buf16, off, len, 1, 0, 0);
+  err = read_attr (&mft->attr, buf16, off, len, 1, 0, 0);
   if (err)
     return NULL;
 
-  buf = grub_malloc (len * 2 + 1);
+  buf = get_utf8 (buf16, len / 2);
   if (!buf)
     {
       grub_free (buf16);
       return NULL;
     }
+  grub_free (buf16);
 
-  for (i = 0; i < len / 2; i++)
-    {
-      buf16[i] = grub_le_to_cpu16 (buf16[i]);
-      if (buf16[i] == '\\')
-	buf16[i] = '/';
-    }
+  for (end = buf; *end; end++)
+    if (*end == '\\')
+      *end = '/';
 
-  end = (char *) grub_utf16_to_utf8 ((grub_uint8_t *) buf, buf16, len / 2);
-  *end = '\0';
   /* Split the sequence to avoid GCC thinking that this is a trigraph.  */
   if (grub_memcmp (buf, "/?" "?/", 4) == 0 && buf[5] == ':' && buf[6] == '/'
       && grub_isalpha (buf[4]))
@@ -1138,26 +1146,11 @@ grub_ntfs_label (grub_device_t device, char **label)
   pa = find_attr (&mft->attr, GRUB_NTFS_AT_VOLUME_NAME);
   if ((pa) && (pa[8] == 0) && (u32at (pa, 0x10)))
     {
-      grub_uint8_t *buf;
-      grub_uint16_t *tmp;
       int len;
-      int i;
 
       len = u32at (pa, 0x10) / 2;
-      buf = grub_malloc (len * 4 + 1);
-      tmp = grub_malloc (len * 2);
-      if (!buf || !tmp)
-	{
-	  grub_free (buf);
-	  grub_free (tmp);
-	  goto fail;
-	}
       pa += u16at (pa, 0x14);
-      for (i = 0; i < len; i++)
-	tmp[i] = grub_le_to_cpu16 (grub_get_unaligned16 (pa + 2 * i));
-      *grub_utf16_to_utf8 (buf, tmp, len) = '\0';
-      grub_free (tmp);
-      *label = (char *) buf;
+      *label = get_utf8 (pa, len);
     }
 
 fail:

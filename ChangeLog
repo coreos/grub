@@ -1,5 +1,12 @@
 2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ntfs.c: Move common UTF-16 handling to a separate
+	function get_utf8.
+
+	Saves 379 bytes on compressed image.
+
+2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c: Handle 48-bit MFT no.
 
 2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
