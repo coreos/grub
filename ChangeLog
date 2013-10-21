@@ -1,5 +1,12 @@
 2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_isprint): Move to ...
+	* include/grub/misc.h (grub_isprint): ... here. Make inline.
+
+	Saves 20 bytes on compressed image due to remving exporting.
+
+2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c (grub_ntfs_mount): Remove redundant check.
 
 	Saves 5 bytes on compressed image.

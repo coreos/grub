@@ -193,7 +193,12 @@ grub_strstr (const char *haystack, const char *needle)
 }
 
 int EXPORT_FUNC(grub_isspace) (int c);
-int EXPORT_FUNC(grub_isprint) (int c);
+
+static inline int
+grub_isprint (int c)
+{
+  return (c >= ' ' && c <= '~');
+}
 
 static inline int
 grub_iscntrl (int c)

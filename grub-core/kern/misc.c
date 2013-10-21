@@ -347,13 +347,6 @@ grub_isspace (int c)
   return (c == '\n' || c == '\r' || c == ' ' || c == '\t');
 }
 
-int
-grub_isprint (int c)
-{
-  return (c >= ' ' && c <= '~');
-}
-
-
 unsigned long
 grub_strtoul (const char *str, char **end, int base)
 {
