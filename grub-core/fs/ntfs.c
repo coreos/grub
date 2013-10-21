@@ -283,25 +283,17 @@ locate_attr (struct grub_ntfs_attr *at, struct grub_ntfs_file *mft,
   return pa;
 }
 
-static grub_uint8_t *
-read_run_data (grub_uint8_t *run, int nn, grub_disk_addr_t * val, int sig)
+static grub_disk_addr_t
+read_run_data (const grub_uint8_t *run, int nn, int sig)
 {
-  grub_disk_addr_t r, v;
+  grub_uint64_t r = 0;
 
-  r = 0;
-  v = 1;
+  if (sig && nn && (run[nn - 1] & 0x80))
+    r = -1;
 
-  while (nn--)
-    {
-      r += v * (*(run++));
-      v <<= 8;
-    }
+  grub_memcpy (&r, run, nn);
 
-  if ((sig) && (r & (v >> 1)))
-    r -= v;
-
-  *val = r;
-  return run;
+  return grub_le_to_cpu64 (r);
 }
 
 grub_err_t
@@ -313,8 +305,9 @@ grub_ntfs_read_run_list (struct grub_ntfs_rlst * ctx)
 
   run = ctx->cur_run;
 retry:
-  c1 = ((*run) & 0xF);
-  c2 = ((*run) >> 4);
+  c1 = ((*run) & 0x7);
+  c2 = ((*run) >> 4) & 0x7;
+  run++;
   if (!c1)
     {
       if ((ctx->attr) && (ctx->attr->flags & GRUB_NTFS_AF_ALST))
@@ -338,10 +331,11 @@ retry:
 	}
       return grub_error (GRUB_ERR_BAD_FS, "run list overflown");
     }
-  run = read_run_data (run + 1, c1, &val, 0);	/* length of current VCN */
   ctx->curr_vcn = ctx->next_vcn;
-  ctx->next_vcn += val;
-  run = read_run_data (run, c2, &val, 1);	/* offset to previous LCN */
+  ctx->next_vcn += read_run_data (run, c1, 0);	/* length of current VCN */
+  run += c1;
+  val = read_run_data (run, c2, 1);	/* offset to previous LCN */
+  run += c2;
   ctx->curr_lcn += val;
   if (val == 0)
     ctx->flags |= GRUB_NTFS_RF_BLNK;

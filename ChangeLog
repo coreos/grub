@@ -1,5 +1,11 @@
 2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ntfs.c (read_run_data): Rewrite using bitfields.
+
+	Saves 40 bytes on compressed image.
+
+2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c (grub_ntfs_iterate_dir): Use grub_uint8_t for
 	mask rather than 64-bit type.
 
