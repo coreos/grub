@@ -1,5 +1,12 @@
 2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Remove needless explicit
+	\0 checking.
+
+	Saves 70 bytes on compressed image.
+
+2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_strtoull): Remove needless *ptr != 0
 	check.
 
