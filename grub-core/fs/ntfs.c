@@ -907,7 +907,7 @@ grub_ntfs_mount (grub_disk_t disk)
   spc = (((grub_uint32_t) bpb.sectors_per_cluster
 	  * (grub_uint32_t) grub_le_to_cpu16 (bpb.bytes_per_sector))
 	 >> GRUB_NTFS_BLK_SHR);
-  if (spc == 0 || (spc & (spc - 1)))
+  if (spc == 0)
     goto fail;
 
   for (data->log_spc = 0; (1U << data->log_spc) < spc; data->log_spc++);
