@@ -1,5 +1,9 @@
 2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ntfs.c: Handle 48-bit MFT no.
+
+2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ntfs.c (read_run_data): Rewrite using bitfields.
 
 	Saves 40 bytes on compressed image.

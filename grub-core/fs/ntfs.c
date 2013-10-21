@@ -87,7 +87,7 @@ fixup (grub_uint8_t *buf, grub_size_t len, const grub_uint8_t *magic)
 }
 
 static grub_err_t read_mft (struct grub_ntfs_data *data, grub_uint8_t *buf,
-			    grub_uint32_t mftno);
+			    grub_uint64_t mftno);
 static grub_err_t read_attr (struct grub_ntfs_attr *at, grub_uint8_t *dest,
 			     grub_disk_addr_t ofs, grub_size_t len,
 			     int cached,
@@ -488,17 +488,17 @@ read_attr (struct grub_ntfs_attr *at, grub_uint8_t *dest, grub_disk_addr_t ofs,
 }
 
 static grub_err_t
-read_mft (struct grub_ntfs_data *data, grub_uint8_t *buf, grub_uint32_t mftno)
+read_mft (struct grub_ntfs_data *data, grub_uint8_t *buf, grub_uint64_t mftno)
 {
   if (read_attr
       (&data->mmft.attr, buf, mftno * ((grub_disk_addr_t) data->mft_size << GRUB_NTFS_BLK_SHR),
        data->mft_size << GRUB_NTFS_BLK_SHR, 0, 0, 0))
-    return grub_error (GRUB_ERR_BAD_FS, "read MFT 0x%X fails", mftno);
+    return grub_error (GRUB_ERR_BAD_FS, "read MFT 0x%llx fails", (unsigned long long) mftno);
   return fixup (buf, data->mft_size, (const grub_uint8_t *) "FILE");
 }
 
 static grub_err_t
-init_file (struct grub_ntfs_file *mft, grub_uint32_t mftno)
+init_file (struct grub_ntfs_file *mft, grub_uint64_t mftno)
 {
   unsigned short flag;
 
@@ -513,7 +513,8 @@ init_file (struct grub_ntfs_file *mft, grub_uint32_t mftno)
 
   flag = u16at (mft->buf, 0x16);
   if ((flag & 1) == 0)
-    return grub_error (GRUB_ERR_BAD_FS, "MFT 0x%X is not in use", mftno);
+    return grub_error (GRUB_ERR_BAD_FS, "MFT 0x%llx is not in use",
+		       (unsigned long long) mftno);
 
   if ((flag & 2) == 0)
     {
@@ -521,7 +522,8 @@ init_file (struct grub_ntfs_file *mft, grub_uint32_t mftno)
 
       pa = locate_attr (&mft->attr, mft, GRUB_NTFS_AT_DATA);
       if (pa == NULL)
-	return grub_error (GRUB_ERR_BAD_FS, "no $DATA in MFT 0x%X", mftno);
+	return grub_error (GRUB_ERR_BAD_FS, "no $DATA in MFT 0x%llx",
+			   (unsigned long long) mftno);
 
       if (!pa[8])
 	mft->size = u32at (pa, 0x10);
@@ -573,12 +575,6 @@ list_file (struct grub_ntfs_file *diro, grub_uint8_t *pos,
 	  struct grub_ntfs_file *fdiro;
 	  grub_uint32_t attr;
 
-	  if (u16at (pos, 4))
-	    {
-	      grub_error (GRUB_ERR_BAD_FS, "64-bit MFT number");
-	      return 0;
-	    }
-
 	  attr = u32at (pos, 0x48);
 	  if (attr & GRUB_NTFS_ATTR_REPARSE)
 	    type = GRUB_FSHELP_SYMLINK;
@@ -592,7 +588,7 @@ list_file (struct grub_ntfs_file *diro, grub_uint8_t *pos,
 	    return 0;
 
 	  fdiro->data = diro->data;
-	  fdiro->ino = u32at (pos, 0);
+	  fdiro->ino = u64at (pos, 0) & 0xffffffffffffULL;
 	  fdiro->mtime = u64at (pos, 0x20);
 
 	  ustr = grub_malloc (ns * GRUB_MAX_UTF8_PER_UTF16 + 1);

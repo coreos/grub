@@ -143,7 +143,7 @@ struct grub_ntfs_file
   grub_uint8_t *buf;
   grub_uint64_t size;
   grub_uint64_t mtime;
-  grub_uint32_t ino;
+  grub_uint64_t ino;
   int inode_read;
   struct grub_ntfs_attr attr;
 };
