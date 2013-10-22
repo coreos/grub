@@ -149,6 +149,7 @@ static struct grub_term_output grub_console_term_output =
     .setcolorstate = grub_terminfo_setcolorstate,
     .setcursor = grub_terminfo_setcursor,
     .data = &grub_console_terminfo_output,
+    .progress_update_divisor = GRUB_PROGRESS_FAST
   };
 
 void

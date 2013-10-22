@@ -267,6 +267,7 @@ static struct grub_term_output grub_vga_text_term =
     .setcolorstate = grub_vga_text_setcolorstate,
     .setcursor = grub_vga_text_setcursor,
     .flags = GRUB_TERM_CODE_TYPE_CP437,
+    .progress_update_divisor = GRUB_PROGRESS_FAST
   };
 
 /* FIXME: this is was too spaghetti.  */

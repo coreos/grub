@@ -118,7 +118,8 @@ static struct grub_term_output grub_audio_term_output =
    .cls = (void *) dummy,
    .setcolorstate = (void *) dummy,
    .setcursor = (void *) dummy,
-   .flags = GRUB_TERM_CODE_TYPE_ASCII | GRUB_TERM_DUMB
+   .flags = GRUB_TERM_CODE_TYPE_ASCII | GRUB_TERM_DUMB,
+   .progress_update_divisor = GRUB_PROGRESS_NO_UPDATE
   };
 
 GRUB_MOD_INIT (morse)

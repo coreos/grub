@@ -2135,3 +2135,8 @@ module = {
   name = tr;
   common = commands/tr.c;
 };
+
+module = {
+  name = progress;
+  common = lib/progress.c;
+};

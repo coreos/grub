@@ -1,3 +1,31 @@
+2013-10-22  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
+	Add new progress module that displays the load progress of files.
+
+	* grub-core/lib/progress.c: New file.
+	* grub-core/Makefile.core.def (progress): New module.
+	* grub-core/kern/file.c (grub_file_open): File name added.
+	* (grub_file_read): Progress hook added.
+	* grub-core/fs/cbfs.c (grub_cbfs_read): Likewise.
+	* grub-core/fs/cpio_common.c (grub_cpio_read): Likewise.
+	* grub-core/net/net.c (grub_net_fs_read_real): Likewise.
+	* include/grub/file.h (struct grub_file): Add progress module members.
+	* include/grub/term.h (struct grub_term_output): Likewise.
+	* grub-core/osdep/unix/emuconsole.c (grub_console_term_output):
+	Terminal velocity added.
+	* grub-core/osdep/windows/emuconsole.c (grub_console_term_output): Likewise.
+	* grub-core/term/arc/console.c (grub_console_term_output): Likewise.
+	* grub-core/term/efi/console.c (grub_console_term_output): Likewise.
+	* grub-core/term/gfxterm.c (grub_video_term): Likewise.
+	* grub-core/term/i386/coreboot/cbmemc.c (grub_cbmemc_term_output): Likewise.
+	* grub-core/term/i386/pc/console.c (grub_console_term_output): Likewise.
+	* grub-core/term/i386/pc/vga_text.c (grub_vga_text_term): Likewise.
+	* grub-core/term/ieee1275/console.c (grub_console_term_output): Likewise.
+	* grub-core/term/morse.c (grub_audio_term_output): Likewise.
+	* grub-core/term/serial.c (grub_serial_term_output): Likewise.
+	* grub-core/term/spkmodem.c (grub_spkmodem_term_output): Likewise.
+	* grub-core/term/uboot/console.c (uboot_console_term_output): Likewise.
+
 2013-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Verify signatures of signatures unless --skip-sig is specified.

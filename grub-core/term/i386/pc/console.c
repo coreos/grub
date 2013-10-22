@@ -292,6 +292,7 @@ static struct grub_term_output grub_console_term_output =
     .setcolorstate = grub_console_setcolorstate,
     .setcursor = grub_console_setcursor,
     .flags = GRUB_TERM_CODE_TYPE_CP437,
+    .progress_update_divisor = GRUB_PROGRESS_FAST
   };
 
 void

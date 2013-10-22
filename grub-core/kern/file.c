@@ -87,6 +87,9 @@ grub_file_open (const char *name)
   if (! file)
     goto fail;
 
+  file->name = grub_strdup (name);
+  grub_errno = GRUB_ERR_NONE;
+
   file->device = device;
 
   if (device->disk && file_name[0] != '/')
@@ -131,10 +134,14 @@ grub_file_open (const char *name)
   return 0;
 }
 
+grub_disk_read_hook_t grub_file_progress_hook;
+
 grub_ssize_t
 grub_file_read (grub_file_t file, void *buf, grub_size_t len)
 {
   grub_ssize_t res;
+  grub_disk_read_hook_t read_hook;
+  void *read_hook_data;
 
   if (file->offset > file->size)
     {
@@ -155,7 +162,17 @@ grub_file_read (grub_file_t file, void *buf, grub_size_t len)
 
   if (len == 0)
     return 0;
+  read_hook = file->read_hook;
+  read_hook_data = file->read_hook_data;
+  if (!file->read_hook)
+    {
+      file->read_hook = grub_file_progress_hook;
+      file->read_hook_data = file;
+      file->progress_offset = file->offset;
+    }
   res = (file->fs->read) (file, buf, len);
+  file->read_hook = read_hook;
+  file->read_hook_data = read_hook_data;
   if (res > 0)
     file->offset += res;
 

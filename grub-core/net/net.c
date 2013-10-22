@@ -1536,6 +1536,8 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
 	  len -= amount;
 	  total += amount;
 	  file->device->net->offset += amount;
+	  if (grub_file_progress_hook)
+	    grub_file_progress_hook (0, 0, amount, file);
 	  if (buf)
 	    {
 	      grub_memcpy (ptr, nb->data, amount);

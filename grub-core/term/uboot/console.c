@@ -95,6 +95,7 @@ static struct grub_term_output uboot_console_term_output = {
   .setcursor = uboot_console_setcursor,
   .flags = GRUB_TERM_CODE_TYPE_ASCII,
   .data = &uboot_console_terminfo_output,
+  .progress_update_divisor = GRUB_PROGRESS_FAST
 };
 
 void

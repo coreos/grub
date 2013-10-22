@@ -123,6 +123,7 @@ static struct grub_term_output grub_serial_term_output =
   .setcursor = grub_terminfo_setcursor,
   .flags = GRUB_TERM_CODE_TYPE_ASCII,
   .data = &grub_serial_terminfo_output,
+  .progress_update_divisor = GRUB_PROGRESS_SLOW
 };
 
 

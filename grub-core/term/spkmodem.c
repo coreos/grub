@@ -126,6 +126,7 @@ static struct grub_term_output grub_spkmodem_term_output =
     .setcursor = grub_terminfo_setcursor,
     .flags = GRUB_TERM_CODE_TYPE_ASCII,
     .data = &grub_spkmodem_terminfo_output,
+    .progress_update_divisor = GRUB_PROGRESS_NO_UPDATE
   };
 
 GRUB_MOD_INIT (spkmodem)

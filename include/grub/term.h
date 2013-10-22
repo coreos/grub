@@ -59,6 +59,10 @@
 #define GRUB_TERM_TAB		'\t'
 #define GRUB_TERM_BACKSPACE	'\b'
 
+#define GRUB_PROGRESS_NO_UPDATE -1
+#define GRUB_PROGRESS_FAST      0
+#define GRUB_PROGRESS_SLOW      2
+
 #ifndef ASM_FILE
 
 #include <grub/err.h>
@@ -214,6 +218,10 @@ struct grub_term_output
 
   /* The feature flags defined above.  */
   grub_uint32_t flags;
+
+  /* Progress data. */
+  grub_uint32_t progress_update_divisor;
+  grub_uint32_t progress_update_counter;
 
   void *data;
 };

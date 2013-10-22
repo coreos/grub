@@ -1108,6 +1108,7 @@ static struct grub_term_output grub_video_term =
     .refresh = grub_gfxterm_refresh,
     .fullscreen = grub_gfxterm_fullscreen,
     .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS,
+    .progress_update_divisor = GRUB_PROGRESS_SLOW,
     .next = 0
   };
 

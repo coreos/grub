@@ -283,7 +283,8 @@ static struct grub_term_output grub_console_term_output =
     .cls = grub_console_cls,
     .setcolorstate = grub_console_setcolorstate,
     .setcursor = grub_console_setcursor,
-    .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS
+    .flags = GRUB_TERM_CODE_TYPE_VISUAL_GLYPHS,
+    .progress_update_divisor = GRUB_PROGRESS_FAST
   };
 
 void

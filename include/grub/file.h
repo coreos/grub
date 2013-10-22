@@ -28,6 +28,9 @@
 /* File description.  */
 struct grub_file
 {
+  /* File name.  */
+  char *name;
+
   /* The underlying device.  */
   grub_device_t device;
 
@@ -36,6 +39,12 @@ struct grub_file
 
   /* The current offset.  */
   grub_off_t offset;
+  grub_off_t progress_offset;
+
+  /* Progress info. */
+  grub_uint64_t last_progress_time;
+  grub_off_t last_progress_offset;
+  grub_uint64_t estimated_speed;
 
   /* The file size.  */
   grub_off_t size;
@@ -53,6 +62,8 @@ struct grub_file
   void *read_hook_data;
 };
 typedef struct grub_file *grub_file_t;
+
+extern grub_disk_read_hook_t EXPORT_VAR(grub_file_progress_hook);
 
 /* Filters with lower ID are executed first.  */
 typedef enum grub_file_filter_id
