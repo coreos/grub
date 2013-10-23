@@ -1,3 +1,8 @@
+2013-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/progress.c (grub_file_progress_hook_real): Use
+	divmod64 for offset division.
+
 2013-10-22  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
 	Rename .bzrignore to .gitignore. Add "*.o" rule.

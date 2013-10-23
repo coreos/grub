@@ -57,7 +57,7 @@ grub_file_progress_hook_real (grub_disk_addr_t sector __attribute__ ((unused)),
                      partial_file_name,
                      grub_get_human_size (file->progress_offset,
                                           GRUB_HUMAN_SIZE_NORMAL),
-                     (100 * file->progress_offset) / file->size);
+                     grub_divmod64 (100 * file->progress_offset, file->size, 0));
 
       char *ptr = buffer + grub_strlen (buffer);
       grub_snprintf (ptr, sizeof (buffer) - (ptr - buffer), "%s ]",
