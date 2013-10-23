@@ -1,5 +1,12 @@
 2013-10-22  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
+	Rename .bzrignore to .gitignore. Add "*.o" rule.
+
+	* .bzrignore: Renamed to...
+	* .gitignore: ...this.
+
+2013-10-22  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
 	Add new progress module that displays the load progress of files.
 
 	* grub-core/lib/progress.c: New file.

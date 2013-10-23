@@ -126,6 +126,7 @@ Makefile
 mod-*.c
 missing
 netboot_test
+*.o
 ohci_test
 partmap_test
 pata_test
