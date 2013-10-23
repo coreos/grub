@@ -1,5 +1,9 @@
 2013-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi: Fix ordering and use pxref rather than xref.
+
+2013-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/progress.c (grub_file_progress_hook_real): Use
 	divmod64 for offset division.
 

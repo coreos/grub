@@ -3687,8 +3687,8 @@ you forget a command, you can run the command @command{help}
 * linux16::                     Load a Linux kernel (16-bit mode)
 * list_env::                    List variables in environment block
 * list_trusted::                List trusted public keys
-* loadfont::                    Load font files
 * load_env::                    Load variables from environment block
+* loadfont::                    Load font files
 * loopback::                    Make a device from a filesystem image
 * ls::                          List devices or files
 * lsfonts::                     List loaded fonts
@@ -4001,7 +4001,7 @@ Remove public key @var{pubkey_id} from GRUB's keyring of trusted keys.
 These keys are used to validate signatures when
 @code{check_signatures=enforce} (@pxref{check_signatures}), and by some
 invocations of @command{verify_detached} (@pxref{verify_detached}).
-@xref{Security and signatures} for more information.
+@pxref{Security and signatures} for more information.
 @end deffn
 
 @node drivemap
@@ -4278,7 +4278,7 @@ block.
 List all public keys trusted by GRUB for validating signatures. These
 public keys are used implicitly when environment variable
 @code{check_signatures=enforce} (@pxref{check_signatures}), and by some
-invocations of @command{verify_detached}.  @xref{Security and
+invocations of @command{verify_detached}.  @pxref{Security and
 signatures} for more information.
 @end deffn
 
@@ -4313,7 +4313,7 @@ When used with care, @option{-s} and the whitelist enable an
 administrator to configure a system to boot only signed
 configurations, but to allow the user to select from among multiple
 configurations, and to enable ``one-shot'' boot attempts and
-``savedefault'' behavior.  @xref{Security and signatures} for more
+``savedefault'' behavior.  @pxref{Security and signatures} for more
 information.
 @end deffn
 
@@ -4572,7 +4572,7 @@ contents of disk that have been read.  It is possible to modify a
 digitally signed environment block file from within GRUB using this
 command, such that its signature will no longer be valid on subsequent
 boots.  Care should be taken in such advanced configurations to avoid
-rendering the system unbootable. @xref{Security and signatures} for
+rendering the system unbootable. @pxref{Security and signatures} for
 more information.
 @end deffn
 
@@ -4890,7 +4890,7 @@ as @code{if} and @code{while} (@pxref{Shell-like scripting}).
 Read public key from @var{pubkey_file} and add it to GRUB's internal
 list of trusted public keys.  These keys are used to validate digital
 signatures when @code{check_signatures=enforce}.
-@xref{Security and signatures} for more information.
+@pxref{Security and signatures} for more information.
 @end deffn
 
 
@@ -4935,7 +4935,7 @@ already-trusted key.
 Exit code @code{$?} is set to 0 if the signature validates
 successfully.  If validation fails, it is set to a non-zero value.
 
-@xref{Security and signatures} for more information.
+@pxref{Security and signatures} for more information.
 @end deffn
 
 @node videoinfo
