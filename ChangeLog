@@ -1,3 +1,9 @@
+2013-10-24  Robert Millan  <rmh@gnu.org>
+
+	* grub-core/video/i386/pc/vbe.c (grub_video_vbe_setup): Replace
+	numeric constants with their symbolic equivalent.
+	Taken from branch "vbe-on-coreboot".
+
 2013-10-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi: Fix ordering and use pxref rather than xref.

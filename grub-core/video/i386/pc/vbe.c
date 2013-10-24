@@ -1023,19 +1023,19 @@ grub_video_vbe_setup (unsigned int width, unsigned int height,
           break;
         }
 
-      if ((vbe_mode_info.mode_attributes & 0x001) == 0)
+      if ((vbe_mode_info.mode_attributes & GRUB_VBE_MODEATTR_SUPPORTED) == 0)
         /* If not available, skip it.  */
         continue;
 
-      if ((vbe_mode_info.mode_attributes & 0x008) == 0)
+      if ((vbe_mode_info.mode_attributes & GRUB_VBE_MODEATTR_COLOR) == 0)
         /* Monochrome is unusable.  */
         continue;
 
-      if ((vbe_mode_info.mode_attributes & 0x080) == 0)
+      if ((vbe_mode_info.mode_attributes & GRUB_VBE_MODEATTR_LFB_AVAIL) == 0)
         /* We support only linear frame buffer modes.  */
         continue;
 
-      if ((vbe_mode_info.mode_attributes & 0x010) == 0)
+      if ((vbe_mode_info.mode_attributes & GRUB_VBE_MODEATTR_GRAPHICS) == 0)
         /* We allow only graphical modes.  */
         continue;
 
