@@ -1278,9 +1278,9 @@ static const grub_uint8_t poly = 0x1d;
 /* perform the operation a ^= b * (x ** (known_idx * recovery_pow) ) */
 static inline void
 xor_out (grub_uint8_t *a, const grub_uint8_t *b, grub_size_t s,
-	 int known_idx, int recovery_pow)
+	 unsigned known_idx, unsigned recovery_pow)
 {
-  int add;
+  unsigned add;
 
   /* Simple xor.  */
   if (known_idx == 0 || recovery_pow == 0)
@@ -1307,7 +1307,7 @@ gf_mul (grub_uint8_t a, grub_uint8_t b)
 static grub_err_t
 recovery (grub_uint8_t *bufs[4], grub_size_t s, const int nbufs,
 	  const unsigned *powers,
-	  const int *idx)
+	  const unsigned *idx)
 {
   grub_dprintf ("zfs", "recovering %u buffers\n", nbufs);
   /* Now we have */
@@ -1494,7 +1494,7 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	grub_size_t orig_len = len;
 	grub_uint8_t *recovery_buf[4];
 	grub_size_t recovery_len[4];
-	int recovery_idx[4];
+	unsigned recovery_idx[4];
 	unsigned failed_devices = 0;
 	int idx, orig_idx;
 
