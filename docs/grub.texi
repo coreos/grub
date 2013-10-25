@@ -98,8 +98,7 @@ This edition documents version @value{VERSION}.
 * Environment::                 GRUB environment variables
 * Commands::                    The list of available builtin commands
 * Internationalisation::        Topics relating to language support
-* Security::                    Authentication and authorisation
-* Security and signatures::     Verifying digital signatures in GRUB
+* Security::                    Authentication, authorisation, and signatures
 * Platform limitations::        The list of platform-specific limitations
 * Platform-specific operations:: Platform-specific operations
 * Supported kernels::           The list of supported kernels
@@ -3006,20 +3005,7 @@ chain-loaded system, @pxref{drivemap}.
 @subsection check_signatures
 
 This variable controls whether GRUB enforces digital signature
-validation (@pxref{Security and signatures}) on all loaded files.  If
-@code{check_signatures=enforce}, then every attempt by the GRUB
-@file{core.img} to load another file @file{foo} (e.g., a loadable
-module, a configuration file, or a Linux kernel) implicitly invokes
-@code{verify_detached foo foo.sig} (@pxref{verify_detached}).
-@code{foo.sig} must contain a valid digital signature over the
-contents of @code{foo}, which can be verified with a public key
-currently trusted by GRUB (@pxref{list_trusted}, @pxref{trust}, and
-@pxref{distrust}).  If validation fails, then file @file{foo} cannot
-be opened.  This failure may halt or otherwise impact the boot
-process.  An initial trusted public key can be embedded within the
-GRUB @file{core.img} using the @code{--pubkey} option to
-@command{grub-mkimage} (@pxref{Invoking grub-install}).
-
+validation on loaded files. @xref{Using digital signatures}.
 
 @node chosen
 @subsection chosen
@@ -3998,10 +3984,15 @@ but rather replaces it completely.
 
 @deffn Command distrust pubkey_id
 Remove public key @var{pubkey_id} from GRUB's keyring of trusted keys.
-These keys are used to validate signatures when
-@code{check_signatures=enforce} (@pxref{check_signatures}), and by some
-invocations of @command{verify_detached} (@pxref{verify_detached}).
-@pxref{Security and signatures} for more information.
+@var{pubkey_id} is the last four bytes (eight hexadecimal digits) of
+the GPG v4 key id, which is also the output of @command{list_trusted}
+(@pxref{list_trusted}).  Outside of GRUB, the key id can be obtained
+using @code{gpg --fingerprint}).
+These keys are used to validate signatures when environment variable
+@code{check_signatures} is set to @code{enforce}
+(@pxref{check_signatures}), and by some invocations of
+@command{verify_detached} (@pxref{verify_detached}).  @xref{Using
+digital signatures}, for more information.
 @end deffn
 
 @node drivemap
@@ -4264,56 +4255,58 @@ This command is only available on x86 systems.
 @node list_env
 @subsection list_env
 
-@deffn Command list_env [@option{-f} file]
+@deffn Command list_env [@option{--file} file]
 List all variables in the environment block file.  @xref{Environment block}.
 
-The @option{-f} option overrides the default location of the environment
-block.
+The @option{--file} option overrides the default location of the
+environment block.
 @end deffn
 
 @node list_trusted
 @subsection list_trusted
 
 @deffn Command list_trusted
-List all public keys trusted by GRUB for validating signatures. These
-public keys are used implicitly when environment variable
-@code{check_signatures=enforce} (@pxref{check_signatures}), and by some
-invocations of @command{verify_detached}.  @pxref{Security and
-signatures} for more information.
+List all public keys trusted by GRUB for validating signatures.
+The output is in GPG's v4 key fingerprint format (i.e., the output of
+@code{gpg --fingerprint}).  The least significant four bytes (last
+eight hexadecimal digits) can be used as an argument to
+@command{distrust} (@pxref{distrust}).
+@xref{Using digital signatures}, for more information about uses for
+these keys.
 @end deffn
 
 @node load_env
 @subsection load_env
 
-@deffn Command load_env [@option{-f} file] [@option{-s}] [whitelisted_variable_name] @dots{}
+@deffn Command load_env [@option{--file} file] [@option{--skip-sig}] [whitelisted_variable_name] @dots{}
 Load all variables from the environment block file into the environment.
 @xref{Environment block}.
 
-The @option{-f} option overrides the default location of the environment
+The @option{--file} option overrides the default location of the environment
 block.
 
-The @option{-s} (long form @option{--skip-sig}) option skips signature
-checking even when the value of @code{check_signatures=enforce}
-(@pxref{check_signatures}).
+The @option{--skip-sig} option skips signature checking even when the
+value of environment variable @code{check_signatures} is set to
+@code{enforce} (@pxref{check_signatures}).
 
 If one or more variable names are provided as arguments, they are
 interpreted as a whitelist of variables to load from the environment
 block file.  Variables set in the file but not present in the
 whitelist are ignored.
 
-The @option{-s} option should be used with care, and should always be
-used in concert with a whitelist of acceptable variables whose values
-should be set.  Failure to employ a carefully constructed whitelist
-could result in reading a malicious value of critical environment
-variables from the file, such as setting @code{check_signatures=no},
-modifying @code{prefix} to boot from an unexpected location or not at
-all, etc.
+The @option{--skip-sig} option should be used with care, and should
+always be used in concert with a whitelist of acceptable variables
+whose values should be set.  Failure to employ a carefully constructed
+whitelist could result in reading a malicious value into critical
+environment variables from the file, such as setting
+@code{check_signatures=no}, modifying @code{prefix} to boot from an
+unexpected location or not at all, etc.
 
-When used with care, @option{-s} and the whitelist enable an
+When used with care, @option{--skip-sig} and the whitelist enable an
 administrator to configure a system to boot only signed
 configurations, but to allow the user to select from among multiple
 configurations, and to enable ``one-shot'' boot attempts and
-``savedefault'' behavior.  @pxref{Security and signatures} for more
+``savedefault'' behavior.  @xref{Using digital signatures}, for more
 information.
 @end deffn
 
@@ -4558,22 +4551,22 @@ Remove a loaded @var{module}.
 @node save_env
 @subsection save_env
 
-@deffn Command save_env [@option{-f} file] var @dots{}
+@deffn Command save_env [@option{--file} file] var @dots{}
 Save the named variables from the environment to the environment block file.
 @xref{Environment block}.
 
-The @option{-f} option overrides the default location of the environment
+The @option{--file} option overrides the default location of the environment
 block.
 
-This command will operate successfully even when
-@code{check_signatures=enforce} (@pxref{check_signatures}), since it
-writes to disk and does not alter the behavior of GRUB based on any
-contents of disk that have been read.  It is possible to modify a
-digitally signed environment block file from within GRUB using this
-command, such that its signature will no longer be valid on subsequent
-boots.  Care should be taken in such advanced configurations to avoid
-rendering the system unbootable. @pxref{Security and signatures} for
-more information.
+This command will operate successfully even when environment variable
+@code{check_signatures} is set to @code{enforce}
+(@pxref{check_signatures}), since it writes to disk and does not alter
+the behavior of GRUB based on any contents of disk that have been
+read.  It is possible to modify a digitally signed environment block
+file from within GRUB using this command, such that its signature will
+no longer be valid on subsequent boots.  Care should be taken in such
+advanced configurations to avoid rendering the system
+unbootable. @xref{Using digital signatures}, for more information.
 @end deffn
 
 
@@ -4886,11 +4879,17 @@ as @code{if} and @code{while} (@pxref{Shell-like scripting}).
 @node trust
 @subsection trust
 
-@deffn Command trust pubkey_file
+@deffn Command trust [@option{--skip-sig}] pubkey_file
 Read public key from @var{pubkey_file} and add it to GRUB's internal
 list of trusted public keys.  These keys are used to validate digital
-signatures when @code{check_signatures=enforce}.
-@pxref{Security and signatures} for more information.
+signatures when environment variable @code{check_signatures} is set to
+@code{enforce}.  Note that if @code{check_signatures} is set to
+@code{enforce} when @command{trust} executes, then @var{pubkey_file}
+must itself be properly signed.  The @option{--skip-sig} option can be
+used to disable signature-checking when reading @var{pubkey_file}
+itself. It is expected that @option{--skip-sig} is useful for testing
+and manual booting. @xref{Using digital signatures}, for more
+information.
 @end deffn
 
 
@@ -4922,20 +4921,21 @@ only on PC BIOS platforms.
 @node verify_detached
 @subsection verify_detached
 
-@deffn Command verify_detached file signature_file [pubkey_file]
+@deffn Command verify_detached [@option{--skip-sig}] file signature_file [pubkey_file]
 Verifies a GPG-style detached signature, where the signed file is
 @var{file}, and the signature itself is in file @var{signature_file}.
 Optionally, a specific public key to use can be specified using
-@var{pubkey_file}.  Otherwise, public keys from GRUB's trusted keys
+@var{pubkey_file}.  When environment variable @code{check_signatures}
+is set to @code{enforce}, then @var{pubkey_file} must itself be
+properly signed by an already-trusted key.  An unsigned
+@var{pubkey_file} can be loaded by specifying @option{--skip-sig}.
+If @var{pubkey_file} is omitted, then public keys from GRUB's trusted keys
 (@pxref{list_trusted}, @pxref{trust}, and @pxref{distrust}) are
-tried.  Note that, when @code{check_signatures=enforce}, an explicitly
-identified @var{pubkey_file} must itself be signed by an
-already-trusted key.
+tried.
 
 Exit code @code{$?} is set to 0 if the signature validates
 successfully.  If validation fails, it is set to a non-zero value.
-
-@pxref{Security and signatures} for more information.
+@xref{Using digital signatures}, for more information.
 @end deffn
 
 @node videoinfo
@@ -5234,7 +5234,15 @@ test from coreutils.
 environment variables and commands are listed in the same order.
 
 @node Security
-@chapter Authentication and authorisation
+@chapter Security
+
+@menu
+* Authentication and authorisation:: Users and access control
+* Using digital signatures::         Booting digitally signed code
+@end menu
+
+@node Authentication and authorisation
+@section Authentication and authorisation in GRUB
 
 By default, the boot loader interface is accessible to anyone with physical
 access to the console: anyone can select and edit any menu entry, and anyone
@@ -5301,17 +5309,34 @@ generating configuration files with authentication.  You can use
 adding @kbd{set superusers=} and @kbd{password} or @kbd{password_pbkdf2}
 commands.
 
-@node Security and signatures
-@chapter Security considerations when using digital signatures
+@node Using digital signatures
+@section Using digital signatures in GRUB
 
-GRUB's @file{core.img} can optionally provide enforcement that all
-files subsequently read from disk are covered by a valid digital
-signature.  This includes GRUB configuration files, the GRUB
-environment block, GRUB loadable modules and their dependency files,
-and loaded operating system files such as a Linux kernel.  This
-document does @strong{not} cover how to ensure that your platform's
-firmware (e.g., Coreboot) validates
-@file{core.img}.
+GRUB's @file{core.img} can optionally provide enforcement that all files
+subsequently read from disk are covered by a valid digital signature.
+This document does @strong{not} cover how to ensure that your
+platform's firmware (e.g., Coreboot) validates @file{core.img}.
+
+If environment variable @code{check_signatures}
+(@pxref{check_signatures}) is set to @code{enforce}, then every
+attempt by the GRUB @file{core.img} to load another file @file{foo}
+implicitly invokes @code{verify_detached foo foo.sig}
+(@pxref{verify_detached}).  @code{foo.sig} must contain a valid
+digital signature over the contents of @code{foo}, which can be
+verified with a public key currently trusted by GRUB
+(@pxref{list_trusted}, @pxref{trust}, and @pxref{distrust}).  If
+validation fails, then file @file{foo} cannot be opened.  This failure
+may halt or otherwise impact the boot process.
+
+@comment Unfortunately --pubkey is not yet supported by grub-install,
+@comment but we should not bring up internal detail grub-mkimage here
+@comment in the user guide (as opposed to developer's manual).
+
+@comment An initial trusted public key can be embedded within the GRUB
+@comment @file{core.img} using the @code{--pubkey} option to
+@comment @command{grub-mkimage} (@pxref{Invoking grub-install}).  Presently it
+@comment is necessary to write a custom wrapper around @command{grub-mkimage}
+@comment using the @code{--grub-mkimage} flag to @command{grub-install}.
 
 GRUB uses GPG-style detached signatures (meaning that a file
 @file{foo.sig} will be produced when file @file{foo} is signed), and
@@ -5353,10 +5378,11 @@ See also: @ref{check_signatures}, @ref{verify_detached}, @ref{trust},
 @ref{list_trusted}, @ref{distrust}, @ref{load_env}, @ref{save_env}.
 
 Note that internally signature enforcement is controlled by setting
-the environment variable @code{check_signatures=enforce}.  Passing one
-or more @code{--pubkey} options to @command{grub-mkimage} implicitly
-sets @code{check_signatures=enforce} in @file{core.img} prior to
-processing any configuration files.
+the environment variable @code{check_signatures} equal to
+@code{enforce}.  Passing one or more @code{--pubkey} options to
+@command{grub-mkimage} implicitly defines @code{check_signatures}
+equal to @code{enforce} in @file{core.img} prior to processing any
+configuration files.
 
 Note that signature checking does @strong{not} prevent an attacker
 with (serial, physical, ...) console access from dropping manually to
@@ -5366,12 +5392,13 @@ the GRUB console and executing:
 set check_signatures=no
 @end example
 
-To prevent this, password-protection (@pxref{Security}) is essential.
-Note that even with GRUB password protection, GRUB itself cannot
-prevent someone with physical access to the machine from altering that
-machine's firmware (e.g., Coreboot or BIOS) configuration to cause
-the machine to boot from a different (attacker-controlled) device.
-GRUB is at best only one link in a secure boot chain.
+To prevent this, password-protection (@pxref{Authentication and
+authorisation}) is essential.  Note that even with GRUB password
+protection, GRUB itself cannot prevent someone with physical access to
+the machine from altering that machine's firmware (e.g., Coreboot
+or BIOS) configuration to cause the machine to boot from a different
+(attacker-controlled) device.  GRUB is at best only one link in a
+secure boot chain.
 
 @node Platform limitations
 @chapter Platform limitations
