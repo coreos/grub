@@ -35,25 +35,38 @@
  */
 #ifndef ASM_FILE
 
-#if !defined (GRUB_UTIL) && !defined (GRUB_MACHINE_EMU)
-
 #ifndef GRUB_MOD_INIT
+
+#if !defined (GRUB_UTIL) && !defined (GRUB_MACHINE_EMU) && !defined (GRUB_KERNEL)
+
 #define GRUB_MOD_INIT(name)	\
 static void grub_mod_init (grub_dl_t mod __attribute__ ((unused))) __attribute__ ((used)); \
 static void \
 grub_mod_init (grub_dl_t mod __attribute__ ((unused)))
-#endif
 
-#ifndef GRUB_MOD_FINI
 #define GRUB_MOD_FINI(name)	\
 static void grub_mod_fini (void) __attribute__ ((used)); \
 static void \
 grub_mod_fini (void)
-#endif
+
+#elif defined (GRUB_KERNEL)
+
+#define GRUB_MOD_INIT(name)	\
+static void grub_mod_init (grub_dl_t mod __attribute__ ((unused))) __attribute__ ((used)); \
+void \
+grub_##name##_init (void) { grub_mod_init (0); } \
+static void \
+grub_mod_init (grub_dl_t mod __attribute__ ((unused)))
+
+#define GRUB_MOD_FINI(name)	\
+static void grub_mod_fini (void) __attribute__ ((used)); \
+void \
+grub_##name##_fini (void) { grub_mod_fini (); } \
+static void \
+grub_mod_fini (void)
 
 #else
 
-#ifndef GRUB_MOD_INIT
 #define GRUB_MOD_INIT(name)	\
 static void grub_mod_init (grub_dl_t mod __attribute__ ((unused))) __attribute__ ((used)); \
 void grub_##name##_init (void); \
@@ -61,9 +74,7 @@ void \
 grub_##name##_init (void) { grub_mod_init (0); } \
 static void \
 grub_mod_init (grub_dl_t mod __attribute__ ((unused)))
-#endif
 
-#ifndef GRUB_MOD_FINI
 #define GRUB_MOD_FINI(name)	\
 static void grub_mod_fini (void) __attribute__ ((used)); \
 void grub_##name##_fini (void); \
@@ -71,6 +82,7 @@ void \
 grub_##name##_fini (void) { grub_mod_fini (); } \
 static void \
 grub_mod_fini (void)
+
 #endif
 
 #endif

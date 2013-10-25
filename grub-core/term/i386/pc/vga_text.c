@@ -270,15 +270,9 @@ static struct grub_term_output grub_vga_text_term =
     .progress_update_divisor = GRUB_PROGRESS_FAST
   };
 
-/* FIXME: this is was too spaghetti.  */
-
 #ifndef MODE_MDA
 
-#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
-void grub_vga_text_init (void)
-#else
 GRUB_MOD_INIT(vga_text)
-#endif
 {
 #ifdef GRUB_MACHINE_COREBOOT
   if (!grub_video_coreboot_fbtable)
@@ -286,11 +280,7 @@ GRUB_MOD_INIT(vga_text)
     grub_term_register_output ("vga_text", &grub_vga_text_term);
 }
 
-#if defined (GRUB_MACHINE_COREBOOT) || defined (GRUB_MACHINE_QEMU) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_MULTIBOOT)
-void grub_vga_text_fini (void)
-#else
 GRUB_MOD_FINI(vga_text)
-#endif
 {
   grub_term_unregister_output (&grub_vga_text_term);
 }

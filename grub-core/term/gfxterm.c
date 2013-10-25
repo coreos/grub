@@ -1132,20 +1132,12 @@ grub_gfxterm_get_dimensions (unsigned *width, unsigned *height)
   *height = window.height;
 }
 
-#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_COREBOOT)
-void grub_gfxterm_init (void)
-#else
 GRUB_MOD_INIT(gfxterm)
-#endif
 {
   grub_term_register_output ("gfxterm", &grub_video_term);
 }
 
-#if defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_COEBOOT)
-void grub_gfxterm_fini (void)
-#else
 GRUB_MOD_FINI(gfxterm)
-#endif
 {
   grub_term_unregister_output (&grub_video_term);
 }

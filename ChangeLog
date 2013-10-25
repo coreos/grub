@@ -1,5 +1,11 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/Makefile.common (CPPFLAGS_KERNEL): Add -DGRUB_KERNEL=1.
+	* include/grub/dl.h (GRUB_MOD_INIT), (GRUB_MOD_FINI): Define
+	functions when compiling for kernel.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/progress.c (grub_file_progress_hook_real): Cast to
 	unsigned long long when using %llu.
 
