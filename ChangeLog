@@ -1,5 +1,11 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/cmdline.c (grub_history_get): Make argument into
+	unsigned.
+	(grub_history_replace): Likewise.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/raid6_recover.c: Use unsigned arithmetics when
 	appropriate.
 

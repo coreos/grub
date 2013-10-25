@@ -92,7 +92,7 @@ grub_set_history (int newsize)
 /* Get the entry POS from the history where `0' is the newest
    entry.  */
 static grub_uint32_t *
-grub_history_get (int pos)
+grub_history_get (unsigned pos)
 {
   pos = (hist_pos + pos) % hist_size;
   return hist_lines[pos];
@@ -154,7 +154,7 @@ grub_history_add (grub_uint32_t *s, grub_size_t len)
 
 /* Replace the history entry on position POS with the string S.  */
 static void
-grub_history_replace (int pos, grub_uint32_t *s, grub_size_t len)
+grub_history_replace (unsigned pos, grub_uint32_t *s, grub_size_t len)
 {
   grub_history_set ((hist_pos + pos) % hist_size, s, len);
 }
