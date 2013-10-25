@@ -1178,7 +1178,7 @@ test_zlib_header (grub_gzio_t gzio)
       return 0;
     }
 
-  if ((cmf * 256 + flg) % 31)
+  if ((cmf * 256U + flg) % 31U)
     {
       grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("unsupported gzip format"));
       return 0;
