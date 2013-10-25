@@ -1,3 +1,7 @@
+2013-10-25  Jon McCune <jonmccune@google.com>
+
+	* docs/grub.texi: Cleanup security documentation around signatures.
+
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/fs/ext2.c (EXT2_BLOCK_SIZE): Make unsigned.
