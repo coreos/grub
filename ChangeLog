@@ -1,5 +1,10 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/gptsync.c (lba_to_chs): Use proper types rather
+	than int.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common (CPPFLAGS_KERNEL): Add -DGRUB_KERNEL=1.
 	* include/grub/dl.h (GRUB_MOD_INIT), (GRUB_MOD_FINI): Define
 	functions when compiling for kernel.

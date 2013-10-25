@@ -37,11 +37,11 @@ GRUB_MOD_LICENSE ("GPLv3+");
    Is it a problem?
 */
 static void
-lba_to_chs (int lba, grub_uint8_t *cl, grub_uint8_t *ch,
+lba_to_chs (grub_uint32_t lba, grub_uint8_t *cl, grub_uint8_t *ch,
 	    grub_uint8_t *dh)
 {
-  int cylinder, head, sector;
-  int sectors = 63, heads = 255, cylinders = 1024;
+  grub_uint32_t cylinder, head, sector;
+  grub_uint32_t sectors = 63, heads = 255, cylinders = 1024;
 
   sector = lba % sectors + 1;
   head = (lba / sectors) % heads;
