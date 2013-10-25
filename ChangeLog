@@ -1,5 +1,9 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/dns.c (hash): Use unsigned arithmetic.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/io/gzio.c (test_zlib_header): Use undigned modulo rather
 	than signed.
 

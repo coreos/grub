@@ -114,7 +114,7 @@ struct recv_data
 static inline int
 hash (const char *str)
 {
-  int v = 0, xn = 1;
+  unsigned v = 0, xn = 1;
   const char *ptr;
   for (ptr = str; *ptr; )
     {
