@@ -1029,12 +1029,14 @@ complete (struct screen *screen, int continuous, int update)
       if (restore)
 	for (i = 0; i < screen->nterms; i++)
 	  {
-	    int width = grub_term_width (screen->terms[i].term) - 2;
+	    unsigned width = grub_term_width (screen->terms[i].term);
+	    if (width > 2)
+	      width -= 2;
 	    if (width > 15)
 	      width -= 6;
-	    int num_sections = ((completion_buffer.len
-				 + width - 1)
-				/ width);
+	    unsigned num_sections = ((completion_buffer.len
+				      + width - 1)
+				     / width);
 	    grub_uint32_t *endp;
 	    struct grub_term_coordinate pos;
 	    grub_uint32_t *p = ucs4;

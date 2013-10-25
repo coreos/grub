@@ -1,5 +1,9 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu_entry.c (complete): Make sure that width is >0.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make char and string width grub_size_t rather than grub_ssize_t.
 
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
