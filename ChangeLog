@@ -1,5 +1,11 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/readers/png.c (grub_png_convert_image): Use
+	unsigned arithmetics.
+	Add missing break.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/readers/jpeg.c: Use unsigned where appropriate.
 
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>

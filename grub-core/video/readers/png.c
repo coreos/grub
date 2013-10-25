@@ -97,7 +97,8 @@ struct grub_png_data
 
   grub_uint32_t next_offset;
 
-  int image_width, image_height, bpp, is_16bit;
+  unsigned image_width, image_height;
+  int bpp, is_16bit;
   int raw_bytes, is_gray, is_alpha, is_palette;
   int row_bytes, color_bits;
   grub_uint8_t *image_data;
@@ -818,7 +819,7 @@ static const grub_uint8_t png_magic[8] =
 static void
 grub_png_convert_image (struct grub_png_data *data)
 {
-  int i;
+  unsigned i;
   grub_uint8_t *d1, *d2;
 
   d1 = (*data->bitmap)->data;
@@ -848,11 +849,11 @@ grub_png_convert_image (struct grub_png_data *data)
       grub_uint8_t *d1c, *d2c;
       int shift;
       int mask = (1 << data->color_bits) - 1;
-      int j;
+      unsigned j;
       if (data->is_gray)
-	for (i = 0; i < (1 << data->color_bits); i++)
+	for (i = 0; i < (1U << data->color_bits); i++)
 	  {
-	    grub_uint8_t col = (0xff * i) / ((1 << data->color_bits) - 1);
+	    grub_uint8_t col = (0xff * i) / ((1U << data->color_bits) - 1);
 	    palette[i][0] = col;
 	    palette[i][1] = col;
 	    palette[i][2] = col;
@@ -910,6 +911,7 @@ grub_png_convert_image (struct grub_png_data *data)
 	      d1[B4] = d2[3];
 	      d1[A4] = d2[1];
 	    }
+	  break;
 	case 2:
 	  if (data->is_16bit)
 	    /* 16-bit gray without alpha.  */
