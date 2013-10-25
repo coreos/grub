@@ -1,5 +1,9 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/readers/jpeg.c: Use unsigned where appropriate.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfs.c (xor_out): Use unsigned modular arithmetics
 	rather than signed one.
 	(recovery): Likewise.

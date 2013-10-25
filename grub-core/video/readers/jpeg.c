@@ -80,8 +80,8 @@ struct grub_jpeg_data
   struct grub_video_bitmap **bitmap;
   grub_uint8_t *bitmap_ptr;
 
-  int image_width;
-  int image_height;
+  unsigned image_width;
+  unsigned image_height;
 
   grub_uint8_t *huff_value[4];
   int huff_offset[4][16];
@@ -94,9 +94,9 @@ struct grub_jpeg_data
   jpeg_data_unit_t crdu;
   jpeg_data_unit_t cbdu;
 
-  int vs, hs;
+  unsigned vs, hs;
   int dri;
-  int r1;
+  unsigned r1;
 
   int dc_value[3];
 
@@ -613,7 +613,7 @@ grub_jpeg_decode_sos (struct grub_jpeg_data *data)
 static grub_err_t
 grub_jpeg_decode_data (struct grub_jpeg_data *data)
 {
-  int c1, vb, hb, nr1, nc1;
+  unsigned c1, vb, hb, nr1, nc1;
   int rst = data->dri;
 
   vb = data->vs * 8;
@@ -626,7 +626,7 @@ grub_jpeg_decode_data (struct grub_jpeg_data *data)
     for (c1 = 0;  c1 < nc1 && (!data->dri || rst);
 	c1++, rst--, data->bitmap_ptr += hb * 3)
       {
-	int r2, c2, nr2, nc2;
+	unsigned r2, c2, nr2, nc2;
 	grub_uint8_t *ptr2;
 
 	for (r2 = 0; r2 < data->vs; r2++)
@@ -649,7 +649,8 @@ grub_jpeg_decode_data (struct grub_jpeg_data *data)
 	for (r2 = 0; r2 < nr2; r2++, ptr2 += (data->image_width - nc2) * 3)
 	  for (c2 = 0; c2 < nc2; c2++, ptr2 += 3)
 	    {
-	      int i0, yy;
+	      unsigned i0;
+	      int yy;
 
 	      i0 = (r2 / data->vs) * 8 + (c2 / data->hs);
 	      yy = data->ydu[(r2 / 8) * 2 + (c2 / 8)][(r2 % 8) * 8 + (c2 % 8)];
