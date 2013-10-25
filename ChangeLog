@@ -1,3 +1,8 @@
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/boot/i386/qemu/boot.S: Ensure that A20 is enabled.
+	Conceptually based on change in branch "vbe-on-coreboot".
+
 2013-10-24  Robert Millan  <rmh@gnu.org>
 
 	* grub-core/video/i386/pc/vbe.c (grub_video_vbe_setup): Replace
