@@ -1,5 +1,10 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/bitmap_scale.c: Use unsigned arithmetics when
+	appropriate.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/fb/fbblit.c: Use (255 ^ x) rather than (255 - x).
 	Use unsigned divisions rather than signed variants.
 

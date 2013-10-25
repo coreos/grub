@@ -123,10 +123,16 @@ grub_video_bitmap_create_scaled (struct grub_video_bitmap **dst,
 }
 
 static grub_err_t
-make_h_align (int *x, int *w, int new_w,
+make_h_align (unsigned *x, unsigned *w, unsigned new_w,
               grub_video_bitmap_h_align_t h_align)
 {
   grub_err_t ret = GRUB_ERR_NONE;
+  if (new_w >= *w)
+    {
+      *x = 0;
+      *w = new_w;
+      return GRUB_ERR_NONE;
+    }
   switch (h_align)
     {
     case GRUB_VIDEO_BITMAP_H_ALIGN_LEFT:
@@ -147,10 +153,16 @@ make_h_align (int *x, int *w, int new_w,
 }
 
 static grub_err_t
-make_v_align (int *y, int *h, int new_h,
+make_v_align (unsigned *y, unsigned *h, unsigned new_h,
               grub_video_bitmap_v_align_t v_align)
 {
   grub_err_t ret = GRUB_ERR_NONE;
+  if (new_h >= *h)
+    {
+      *y = 0;
+      *h = new_h;
+      return GRUB_ERR_NONE;
+    }
   switch (v_align)
     {
     case GRUB_VIDEO_BITMAP_V_ALIGN_TOP:
@@ -194,14 +206,14 @@ grub_video_bitmap_scale_proportional (struct grub_video_bitmap **dst,
   if (ret != GRUB_ERR_NONE)
     return ret;                 /* Error. */
 
-  int dx0 = 0;
-  int dy0 = 0;
-  int dw = dst_width;
-  int dh = dst_height;
-  int sx0 = 0;
-  int sy0 = 0;
-  int sw = src->mode_info.width;
-  int sh = src->mode_info.height;
+  unsigned dx0 = 0;
+  unsigned dy0 = 0;
+  unsigned dw = dst_width;
+  unsigned dh = dst_height;
+  unsigned sx0 = 0;
+  unsigned sy0 = 0;
+  unsigned sw = src->mode_info.width;
+  unsigned sh = src->mode_info.height;
 
   switch (selection_method)
     {
@@ -345,26 +357,26 @@ scale_nn (struct grub_video_bitmap *dst, struct grub_video_bitmap *src)
 
   grub_uint8_t *ddata = dst->data;
   grub_uint8_t *sdata = src->data;
-  int dw = dst->mode_info.width;
-  int dh = dst->mode_info.height;
-  int sw = src->mode_info.width;
-  int sh = src->mode_info.height;
-  int dstride = dst->mode_info.pitch;
-  int sstride = src->mode_info.pitch;
+  unsigned dw = dst->mode_info.width;
+  unsigned dh = dst->mode_info.height;
+  unsigned sw = src->mode_info.width;
+  unsigned sh = src->mode_info.height;
+  unsigned dstride = dst->mode_info.pitch;
+  unsigned sstride = src->mode_info.pitch;
   /* bytes_per_pixel is the same for both src and dst. */
-  int bytes_per_pixel = dst->mode_info.bytes_per_pixel;
+  unsigned bytes_per_pixel = dst->mode_info.bytes_per_pixel;
 
-  int dy;
+  unsigned dy;
   for (dy = 0; dy < dh; dy++)
     {
-      int dx;
+      unsigned dx;
       for (dx = 0; dx < dw; dx++)
         {
           grub_uint8_t *dptr;
           grub_uint8_t *sptr;
-          int sx;
-          int sy;
-          int comp;
+          unsigned sx;
+          unsigned sy;
+          unsigned comp;
 
           /* Compute the source coordinate that the destination coordinate
              maps to.  Note: sx/sw = dx/dw  =>  sx = sw*dx/dw. */
@@ -402,25 +414,25 @@ scale_bilinear (struct grub_video_bitmap *dst, struct grub_video_bitmap *src)
 
   grub_uint8_t *ddata = dst->data;
   grub_uint8_t *sdata = src->data;
-  int dw = dst->mode_info.width;
-  int dh = dst->mode_info.height;
-  int sw = src->mode_info.width;
-  int sh = src->mode_info.height;
+  unsigned dw = dst->mode_info.width;
+  unsigned dh = dst->mode_info.height;
+  unsigned sw = src->mode_info.width;
+  unsigned sh = src->mode_info.height;
   int dstride = dst->mode_info.pitch;
   int sstride = src->mode_info.pitch;
   /* bytes_per_pixel is the same for both src and dst. */
   int bytes_per_pixel = dst->mode_info.bytes_per_pixel;
 
-  int dy;
+  unsigned dy;
   for (dy = 0; dy < dh; dy++)
     {
-      int dx;
+      unsigned dx;
       for (dx = 0; dx < dw; dx++)
         {
           grub_uint8_t *dptr;
           grub_uint8_t *sptr;
-          int sx;
-          int sy;
+          unsigned sx;
+          unsigned sy;
           int comp;
 
           /* Compute the source coordinate that the destination coordinate
