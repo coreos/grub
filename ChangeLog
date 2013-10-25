@@ -1,5 +1,10 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/video/fb/fbblit.c: Use (255 ^ x) rather than (255 - x).
+	Use unsigned divisions rather than signed variants.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/readers/png.c (grub_png_convert_image): Use
 	unsigned arithmetics.
 	Add missing break.
