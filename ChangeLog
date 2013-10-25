@@ -1,3 +1,10 @@
+2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/menu_entry.c (get_logical_num_lines): Use unsigned
+	division as the one making more sense.
+	(update_screen): Likewise.
+	(complete): Likewise.
+
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/menu_entry.c (complete): Make sure that width is >0.
