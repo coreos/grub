@@ -58,7 +58,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 	(grub_le_to_cpu32 (data->sblock.log2_block_size) + 10)
 
 /* The size of an ext2 block in bytes.  */
-#define EXT2_BLOCK_SIZE(data)		(1 << LOG2_BLOCK_SIZE (data))
+#define EXT2_BLOCK_SIZE(data)		(1U << LOG2_BLOCK_SIZE (data))
 
 /* The revision level.  */
 #define EXT2_REVISION(data)	grub_le_to_cpu32 (data->sblock.revision_level)

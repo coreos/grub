@@ -1,5 +1,9 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ext2.c (EXT2_BLOCK_SIZE): Make unsigned.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/gptsync.c (lba_to_chs): Use proper types rather
 	than int.
 
