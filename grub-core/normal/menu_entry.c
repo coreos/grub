@@ -228,8 +228,8 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
   for (i = 0; i < screen->line; i++, linep++)
     y += get_logical_num_lines (linep, term_screen);
   linep = screen->lines + screen->line;
-  int t = grub_getstringwidth (linep->buf, linep->buf + screen->column,
-			       term_screen->term);
+  grub_size_t t = grub_getstringwidth (linep->buf, linep->buf + screen->column,
+				       term_screen->term);
   y += t / term_screen->geo.entry_width;
   if (t % term_screen->geo.entry_width == 0
       && t != 0 &&  screen->column == linep->len)

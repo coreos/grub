@@ -187,8 +187,8 @@ struct grub_term_output
 
   /* Get the number of columns occupied by a given character C. C is
      encoded in Unicode.  */
-  grub_ssize_t (*getcharwidth) (struct grub_term_output *term,
-				const struct grub_unicode_glyph *c);
+  grub_size_t (*getcharwidth) (struct grub_term_output *term,
+			       const struct grub_unicode_glyph *c);
 
   /* Get the screen size.  */
   struct grub_term_coordinate (*getwh) (struct grub_term_output *term);
@@ -400,7 +400,7 @@ grub_term_cls (struct grub_term_output *term)
 
 #ifdef HAVE_UNIFONT_WIDTHSPEC
 
-grub_ssize_t
+grub_size_t
 grub_unicode_estimate_width (const struct grub_unicode_glyph *c);
 
 #else
@@ -417,7 +417,7 @@ grub_unicode_estimate_width (const struct grub_unicode_glyph *c __attribute__ ((
 
 #define GRUB_TERM_TAB_WIDTH 8
 
-static inline grub_ssize_t 
+static inline grub_size_t
 grub_term_getcharwidth (struct grub_term_output *term,
 			const struct grub_unicode_glyph *c)
 {

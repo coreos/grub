@@ -866,7 +866,7 @@ print_backlog (struct grub_term_output *term,
   return 0;
 }
 
-static grub_ssize_t
+static grub_size_t
 getcharwidth (const struct grub_unicode_glyph *c, void *term)
 {
   return grub_term_getcharwidth (term, c);

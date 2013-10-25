@@ -138,7 +138,7 @@ static unsigned char calculate_character_width (struct grub_font_glyph *glyph);
 
 static void grub_gfxterm_refresh (struct grub_term_output *term __attribute__ ((unused)));
 
-static grub_ssize_t
+static grub_size_t
 grub_gfxterm_getcharwidth (struct grub_term_output *term __attribute__ ((unused)),
 			   const struct grub_unicode_glyph *c);
 
@@ -956,7 +956,7 @@ calculate_character_width (struct grub_font_glyph *glyph)
          / virtual_screen.normal_char_width;
 }
 
-static grub_ssize_t
+static grub_size_t
 grub_gfxterm_getcharwidth (struct grub_term_output *term __attribute__ ((unused)),
 			   const struct grub_unicode_glyph *c)
 {

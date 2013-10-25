@@ -51,7 +51,7 @@ grub_term_cursor_x (const struct grub_term_screen_geometry *geo)
   return (geo->first_entry_x + geo->entry_width);
 }
 
-grub_ssize_t
+grub_size_t
 grub_getstringwidth (grub_uint32_t * str, const grub_uint32_t * last_position,
 		     struct grub_term_output *term)
 {

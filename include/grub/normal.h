@@ -104,9 +104,9 @@ grub_ucs4_count_lines (const grub_uint32_t * str,
 		       const grub_uint32_t * last_position,
 		       int margin_left, int margin_right,
 		       struct grub_term_output *term);
-grub_ssize_t grub_getstringwidth (grub_uint32_t * str,
-				  const grub_uint32_t * last_position,
-				  struct grub_term_output *term);
+grub_size_t grub_getstringwidth (grub_uint32_t * str,
+				 const grub_uint32_t * last_position,
+				 struct grub_term_output *term);
 void grub_print_message_indented (const char *msg, int margin_left,
 				  int margin_right,
 				  struct grub_term_output *term);

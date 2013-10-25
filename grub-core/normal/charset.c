@@ -389,7 +389,7 @@ grub_unicode_get_comb_type (grub_uint32_t c)
 
 #ifdef HAVE_UNIFONT_WIDTHSPEC
 
-grub_ssize_t
+grub_size_t
 grub_unicode_estimate_width (const struct grub_unicode_glyph *c)
 {
   if (grub_unicode_get_comb_type (c->base))
@@ -527,7 +527,7 @@ static grub_ssize_t
 bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 		struct grub_unicode_glyph *visual,
 		grub_size_t visual_len,
-		grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual, void *getcharwidth_arg),
+		grub_size_t (*getcharwidth) (const struct grub_unicode_glyph *visual, void *getcharwidth_arg),
 		void *getcharwidth_arg,
 		grub_size_t maxwidth, grub_size_t startwidth,
 		grub_uint32_t contchar,
@@ -767,7 +767,7 @@ static grub_ssize_t
 grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 				  grub_size_t logical_len,
 				  struct grub_unicode_glyph *visual_out,
-				  grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual, void *getcharwidth_arg),
+				  grub_size_t (*getcharwidth) (const struct grub_unicode_glyph *visual, void *getcharwidth_arg),
 				  void *getcharwidth_arg,
 				  grub_size_t maxwidth, grub_size_t startwidth,
 				  grub_uint32_t contchar,
@@ -1125,7 +1125,7 @@ grub_ssize_t
 grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 			     grub_size_t logical_len,
 			     struct grub_unicode_glyph **visual_out,
-			     grub_ssize_t (*getcharwidth) (const struct grub_unicode_glyph *visual, void *getcharwidth_arg),
+			     grub_size_t (*getcharwidth) (const struct grub_unicode_glyph *visual, void *getcharwidth_arg),
 			     void *getcharwidth_arg,
 			     grub_size_t max_length, grub_size_t startwidth,
 			     grub_uint32_t contchar, struct grub_term_pos *pos, int primitive_wrap)

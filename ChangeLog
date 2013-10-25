@@ -1,5 +1,9 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make char and string width grub_size_t rather than grub_ssize_t.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/cmdline.c (grub_history_get): Make argument into
 	unsigned.
 	(grub_history_replace): Likewise.
