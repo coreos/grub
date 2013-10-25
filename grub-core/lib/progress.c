@@ -80,6 +80,8 @@ grub_file_progress_hook_real (grub_disk_addr_t sector __attribute__ ((unused)),
               grub_term_gotoxy (term, old_pos);
 
               term->progress_update_counter = 0;
+
+	      term->refresh (term);
             }
         }
 

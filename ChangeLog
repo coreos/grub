@@ -1,5 +1,10 @@
 2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/progress.c (grub_file_progress_hook_real): Refresh
+	terminal after updating progress.
+
+2013-10-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/i386/pc/startup_raw.S (grub_gate_a20): Remove
 	argument. We don't disable Gate A20 in this code.
 
