@@ -192,6 +192,8 @@ for option in "$@"; do
     --trim)
 	trim=1
 	;;
+    --debug)
+        debug=1 ;;
     --modules=*)
 	ms=`echo "$option" | sed -e 's/--modules=//' -e 's/,/ /g'`
 	modules="$modules $ms" ;;
@@ -331,7 +333,18 @@ if [ x$console != x ]; then
 fi
 echo "${halt_cmd}" >>${cfgfile}
 
+test -z "$debug" || echo "GRUB script: ${cfgfile}" >&2
+test -z "$debug" || echo "GRUB testcase script: ${tmpfile}" >&2
+test -z "$debug" || echo "Boot device: ${boot}" >&2
+
 isofile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
+test -z "$debug" || echo "GRUB ISO file: ${isofile}" >&2
+test -z "$debug" || echo "GRUB ROM directory: ${rom_directory}" >&2
+
+if test -z "$debug"; then
+  qemuopts="${qemuopts} -nographic -monitor file:/dev/null"
+fi
+
 if [ x$boot != xnet ] && [ x$boot != xemu ]; then
     pkgdatadir="@builddir@" sh "@builddir@/grub-mkrescue" "--grub-mkimage=${builddir}/grub-mkimage" "--grub-render-label=${builddir}/grub-render-label" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
 	--rom-directory="${rom_directory}" "--grub-mkimage-extra=$mkimage_extra_arg" ${mkrescue_args} \
@@ -381,6 +394,7 @@ if [ x$boot = xcoreboot ]; then
     "${GRUB_CBFSTOOL}" "${imgfile}" add-payload "${rom_directory}/coreboot.elf" fallback/payload
     bootdev="-bios ${imgfile}"
     device=cdrom
+    test -z "$debug" || echo "Coreboot image: ${imgfile}" >&2
 fi
 
 if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = mipsel-arc ]; then
@@ -406,7 +420,7 @@ if [ x$boot = xnet ]; then
     pkgdatadir="@builddir@" sh "@builddir@/grub-mknetdir" "--grub-mkimage=${builddir}/grub-mkimage" "--directory=${builddir}/grub-core" "--net-directory=$netdir" ${mkrescue_args} > /dev/null
     cp "${cfgfile}" "$netdir/boot/grub/grub.cfg"
     cp "${source}" "$netdir/boot/grub/testcase.cfg"
-    timeout -s KILL $timeout "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.$netbootext"  -net nic  | cat | tr -d "\r" | do_trim
+    timeout -s KILL $timeout "${qemu}" ${qemuopts} ${serial_null} -serial file:/dev/stdout -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.$netbootext"  -net nic  | cat | tr -d "\r" | do_trim
 elif [ x$boot = xemu ]; then
     grubdir="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
     mkdir -p "$grubdir/fonts"
@@ -420,15 +434,14 @@ elif [ x$boot = xemu ]; then
     @builddir@/grub-core/grub-emu -m "$device_map" -d "$grubdir" | tr -d "\r" | do_trim
     rm -rf "$grubdir"
 else
-    timeout -s KILL $timeout "${qemu}" ${qemuopts} -nographic ${serial_null} -serial file:/dev/stdout -monitor file:/dev/null -${device} ${isofile} ${bootdev} | cat | tr -d "\r" | do_trim
+    timeout -s KILL $timeout "${qemu}" ${qemuopts} ${serial_null} -serial file:/dev/stdout -${device} ${isofile} ${bootdev} | cat | tr -d "\r" | do_trim
 fi
-rm -f "${isofile}" "${imgfile}"
-rm -rf "${rom_directory}"
 if [ x$boot = xcoreboot ]; then
-    rm -f "${imgfile}"
+    test -n "$debug" || rm -f "${imgfile}"
 fi
-
-rm -f "${tmpfile}" "${cfgfile}"
+test -n "$debug" || rm -f "${isofile}"
+test -n "$debug" || rm -rf "${rom_directory}"
+test -n "$debug" || rm -f "${tmpfile}" "${cfgfile}"
 exit 0
 
 

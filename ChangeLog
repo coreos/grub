@@ -1,5 +1,9 @@
 2013-10-26  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	* tests/util/grub-shell.in: Add new --debug option.
+
+2013-10-26  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	* tests/test_unset.in: New test.
 
 2013-10-26  BVK Chaitanya  <bvk.groups@gmail.com>
