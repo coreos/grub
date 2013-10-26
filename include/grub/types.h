@@ -129,6 +129,8 @@ typedef grub_int32_t	grub_ssize_t;
 #define GRUB_SHRT_MAX 0x7fff
 #define GRUB_UINT_MAX 4294967295U
 #define GRUB_INT_MAX 0x7fffffff
+#define GRUB_INT32_MIN (-2147483647 - 1)
+#define GRUB_INT32_MAX 2147483647
 
 #if GRUB_CPU_SIZEOF_LONG == 8
 # define GRUB_ULONG_MAX 18446744073709551615UL
