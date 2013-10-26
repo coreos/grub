@@ -1,3 +1,7 @@
+2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move cpuid code to cpuid.h and TSC code to tsc.c.
+
 2013-10-26  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
 	* util/grub.d/00_header.in: Don't use LANG if it's not set.

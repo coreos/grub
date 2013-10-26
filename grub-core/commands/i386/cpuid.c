@@ -29,11 +29,6 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-#define cpuid(num,a,b,c,d) \
-  asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
-		: "=a" (a), "=r" (b), "=c" (c), "=d" (d)  \
-		: "0" (num))
-
 static const struct grub_arg_option options[] =
   {
     /* TRANSLATORS: "(default)" at the end means that this option is used if
@@ -78,18 +73,18 @@ GRUB_MOD_INIT(cpuid)
     goto done;
 
   /* Check the highest input value for eax.  */
-  cpuid (0, eax, ebx, ecx, edx);
+  grub_cpuid (0, eax, ebx, ecx, edx);
   /* We only look at the first four characters.  */
   max_level = eax;
   if (max_level == 0)
     goto done;
 
-  cpuid (0x80000000, eax, ebx, ecx, edx);
+  grub_cpuid (0x80000000, eax, ebx, ecx, edx);
   ext_level = eax;
   if (ext_level < 0x80000000)
     goto done;
 
-  cpuid (0x80000001, eax, ebx, ecx, edx);
+  grub_cpuid (0x80000001, eax, ebx, ecx, edx);
   grub_cpuid_has_longmode = !!(edx & bit_LM);
 done:
 #endif

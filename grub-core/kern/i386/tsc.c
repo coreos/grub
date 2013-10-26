@@ -24,6 +24,7 @@
 #include <grub/time.h>
 #include <grub/misc.h>
 #include <grub/i386/tsc.h>
+#include <grub/i386/cpuid.h>
 #include <grub/i386/pit.h>
 #include <grub/cpu/io.h>
 
@@ -34,6 +35,72 @@ static grub_uint64_t tsc_boot_time;
 /* We assume that the tick is less than 1 ms and hence this value fits
    in 32-bit.  */
 grub_uint32_t grub_tsc_rate;
+
+/* Read the TSC value, which increments with each CPU clock cycle. */
+static __inline grub_uint64_t
+grub_get_tsc (void)
+{
+  grub_uint32_t lo, hi;
+
+  /* The CPUID instruction is a 'serializing' instruction, and
+     avoids out-of-order execution of the RDTSC instruction. */
+#ifdef __APPLE__
+  __asm__ __volatile__ ("xorl %%eax, %%eax\n\t"
+#ifdef __x86_64__
+			"push %%rbx\n"
+#else
+			"push %%ebx\n"
+#endif
+			"cpuid\n"
+#ifdef __x86_64__
+			"pop %%rbx\n"
+#else
+			"pop %%ebx\n"
+#endif
+			:::"%rax", "%rcx", "%rdx");
+#else
+  __asm__ __volatile__ ("xorl %%eax, %%eax\n\t"
+			"cpuid":::"%rax", "%rbx", "%rcx", "%rdx");
+#endif
+  /* Read TSC value.  We cannot use "=A", since this would use
+     %rax on x86_64. */
+  __asm__ __volatile__ ("rdtsc":"=a" (lo), "=d" (hi));
+
+  return (((grub_uint64_t) hi) << 32) | lo;
+}
+
+static __inline int
+grub_cpu_is_tsc_supported (void)
+{
+  if (! grub_cpu_is_cpuid_supported ())
+    return 0;
+
+  grub_uint32_t features;
+#ifdef __APPLE__
+  __asm__ ("movl $1, %%eax\n\t"
+#ifdef __x86_64__
+	   "push %%rbx\n"
+#else
+	   "push %%ebx\n"
+#endif
+	   "cpuid\n"
+#ifdef __x86_64__
+	   "pop %%rbx\n"
+#else
+	   "pop %%ebx\n"
+#endif
+           : "=d" (features)
+           : /* No inputs.  */
+	   : /* Clobbered:  */ "%rax", "%rcx");
+#else
+  __asm__ ("movl $1, %%eax\n\t"
+           "cpuid\n"
+           : "=d" (features)
+           : /* No inputs.  */
+           : /* Clobbered:  */ "%rax", "%rbx", "%rcx");
+#endif
+  return (features & (1 << 4)) != 0;
+}
 
 static void
 grub_pit_wait (grub_uint16_t tics)
@@ -63,7 +130,7 @@ grub_pit_wait (grub_uint16_t tics)
              GRUB_PIT_SPEAKER_PORT);
 }
 
-grub_uint64_t
+static grub_uint64_t
 grub_tsc_get_time_ms (void)
 {
   grub_uint64_t a = grub_get_tsc () - tsc_boot_time;

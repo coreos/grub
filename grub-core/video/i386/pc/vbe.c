@@ -29,7 +29,7 @@
 #include <grub/video.h>
 #include <grub/i386/pc/int.h>
 #include <grub/i18n.h>
-#include <grub/cpu/tsc.h>
+#include <grub/cpu/cpuid.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -57,11 +57,6 @@ real2pm (grub_vbe_farptr_t ptr)
   return (void *) ((((unsigned long) ptr & 0xFFFF0000) >> 12UL)
                    + ((unsigned long) ptr & 0x0000FFFF));
 }
-
-#define cpuid(num,a,b,c,d) \
-  asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
-                : "=a" (a), "=r" (b), "=c" (c), "=d" (d)  \
-                : "0" (num))
 
 #define rdmsr(num,a,d) \
   asm volatile ("rdmsr" : "=a" (a), "=d" (d) : "c" (num))
@@ -136,7 +131,7 @@ grub_vbe_enable_mtrr (grub_uint8_t *base, grub_size_t size)
   if (! grub_cpu_is_cpuid_supported ())
     return;
 
-  cpuid (1, eax, ebx, ecx, edx);
+  grub_cpuid (1, eax, ebx, ecx, edx);
   features = edx;
   if (! (features & 0x00001000)) /* MTRR */
     return;
@@ -147,11 +142,11 @@ grub_vbe_enable_mtrr (grub_uint8_t *base, grub_size_t size)
     return;
   var_mtrrs = (mtrrcap & 0xFF);
 
-  cpuid (0x80000000, eax, ebx, ecx, edx);
+  grub_cpuid (0x80000000, eax, ebx, ecx, edx);
   max_extended_cpuid = eax;
   if (max_extended_cpuid >= 0x80000008)
     {
-      cpuid (0x80000008, eax, ebx, ecx, edx);
+      grub_cpuid (0x80000008, eax, ebx, ecx, edx);
       maxphyaddr = (eax & 0xFF);
     }
   else

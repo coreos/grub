@@ -25,6 +25,7 @@
 #include <grub/loader.h>
 #include <grub/autoefi.h>
 #include <grub/i386/tsc.h>
+#include <grub/i386/cpuid.h>
 #include <grub/efi/api.h>
 #include <grub/i386/pit.h>
 #include <grub/misc.h>
