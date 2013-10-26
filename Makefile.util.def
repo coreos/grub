@@ -901,6 +901,21 @@ program = {
 
 program = {
   testcase;
+  name = date_test;
+  common = tests/date_unit_test.c;
+  common = tests/lib/unit_test.c;
+  common = grub-core/kern/list.c;
+  common = grub-core/kern/misc.c;
+  common = grub-core/tests/lib/test.c;
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+};
+
+program = {
+  testcase;
   name = priority_queue_unit_test;
   common = tests/priority_queue_unit_test.cc;
   common = tests/lib/unit_test.c;
