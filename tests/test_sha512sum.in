@@ -1,0 +1,27 @@
+#! /bin/bash
+
+# create a randome file
+file=`mktemp`
+cat >$file <<EOF
+hello world!
+EOF
+
+outfile1=`mktemp`
+@builddir@/grub-shell --files=/boot/grub/file=$file >$outfile1 <<EOF
+sha512sum /boot/grub/file
+EOF
+
+outfile2=`mktemp`
+sha512sum $file >$outfile2
+
+SHA1=`cat $outfile1 | tr -d '\n' | cut -f1 -d\ `
+SHA2=`cat $outfile2 | cut -f1 -d\ `
+
+if test "$SHA1" = "$SHA2"; then
+    rm -f ${outfile1} ${outfile2}
+    exit 0
+else
+    echo "GRUB sha512sum output did not match sha512sum output."
+    echo "See diff -u ${outfile1} ${outfile2}"
+    exit 1
+fi
