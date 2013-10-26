@@ -865,6 +865,12 @@ script = {
 
 script = {
   testcase;
+  name = test_unset;
+  common = tests/test_unset.in;
+};
+
+script = {
+  testcase;
   name = grub_func_test;
   common = tests/grub_func_test.in;
 };

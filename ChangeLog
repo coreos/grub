@@ -1,5 +1,9 @@
 2013-10-26  BVK Chaitanya  <bvk.groups@gmail.com>
 
+	* tests/test_unset.in: New test.
+
+2013-10-26  BVK Chaitanya  <bvk.groups@gmail.com>
+
 	* tests/test_sha512sum.in: New test.
 
 2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
