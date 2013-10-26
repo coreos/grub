@@ -65,7 +65,7 @@ argument () {
   shift
 
   if test $# -eq 0; then
-      gettext_printf "%s: option requires an argument -- \`%s'\n" "$0" "$opt" 1>&2
+      gettext_printf "%s: option requires an argument -- \`%s'\n" "$self" "$opt" 1>&2
       exit 1
   fi
   echo $1
