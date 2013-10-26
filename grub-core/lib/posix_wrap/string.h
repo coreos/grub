@@ -93,12 +93,6 @@ strcat (char *dest, const char *src)
   return grub_strcat (dest, src);
 }
 
-static inline char *
-strncat (char *dest, const char *src, grub_size_t n)
-{
-  return grub_strncat (dest, src, n);
-}
-
 static inline int
 strcoll (const char *s1, const char *s2)
 {

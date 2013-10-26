@@ -536,8 +536,8 @@ add_part (struct iterate_dir_ctx *ctx,
   if (! ctx->symlink)
     return;
 
-  ctx->symlink[size] = 0;
-  grub_strncat (ctx->symlink, part, len2);
+  grub_memcpy (ctx->symlink + size, part, len2);
+  ctx->symlink[size + len2] = 0;  
 }
 
 static grub_err_t
@@ -558,20 +558,19 @@ susp_iterate_dir (struct grub_iso9660_susp_entry *entry,
 	ctx->filename = (char *) "..";
       else if (entry->len >= 5)
 	{
-	  grub_size_t size = 1, csize = 1;
+	  grub_size_t off = 0, csize = 1;
 	  char *old;
-	  csize = size = entry->len - 5;
+	  csize = entry->len - 5;
 	  old = ctx->filename;
 	  if (ctx->filename_alloc)
 	    {
-	      size += grub_strlen (ctx->filename);
-	      ctx->filename = grub_realloc (ctx->filename, size + 1);
+	      off = grub_strlen (ctx->filename);
+	      ctx->filename = grub_realloc (ctx->filename, csize + off + 1);
 	    }
 	  else
 	    {
-	      ctx->filename_alloc = 1;
-	      ctx->filename = grub_zalloc (size + 1);
-	      ctx->filename[0] = 0;
+	      off = 0;
+	      ctx->filename = grub_zalloc (csize + 1);
 	    }
 	  if (!ctx->filename)
 	    {
@@ -579,8 +578,8 @@ susp_iterate_dir (struct grub_iso9660_susp_entry *entry,
 	      return grub_errno;
 	    }
 	  ctx->filename_alloc = 1;
-	  grub_strncat (ctx->filename, (char *) &entry->data[1], csize);
-	  ctx->filename[size] = '\0';
+	  grub_memcpy (ctx->filename + off, (char *) &entry->data[1], csize);
+	  ctx->filename[off + csize] = '\0';
 	}
     }
   /* The mode information (st_mode).  */

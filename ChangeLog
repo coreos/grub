@@ -1,5 +1,11 @@
 2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/iso9660.c: Replace strncat with memcpy.
+	* include/grub/misc.h: Remove strncat.
+	* grub-core/lib/posix_wrap/string.h: Likewise.
+
+2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/date_unit_test.c: New test.
 
 2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -104,25 +104,6 @@ grub_strcat (char *dest, const char *src)
   return dest;
 }
 
-static inline char *
-grub_strncat (char *dest, const char *src, int c)
-{
-  char *p = dest;
-
-  while (*p)
-    p++;
-
-  while (c-- && (*p = *src) != '\0')
-    {
-      p++;
-      src++;
-    }
-
-  *p = '\0';
-
-  return dest;
-}
-
 /* Prototypes for aliases.  */
 #ifndef GRUB_UTIL
 #ifdef __APPLE__
