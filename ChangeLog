@@ -1,3 +1,9 @@
+2013-10-26  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
+	* util/grub-mkconfig.in: Replace $0 with $self.
+	* util/grub-reboot.in: Likewise.
+	* util/grub-set-default.in: Likewise.
+
 2013-10-26  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* docs/osdetect.cfg: New file.
