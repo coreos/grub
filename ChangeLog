@@ -1,5 +1,9 @@
 2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/date_unit_test.c: New test.
+
+2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/datetime.c (grub_unixtime2datetime): Fix mishandling
 	of first three years after start of validity of unixtime.
 
