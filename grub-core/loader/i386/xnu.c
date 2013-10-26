@@ -126,66 +126,22 @@ guessfsb (void)
 {
   const grub_uint64_t sane_value = 100000000;
   grub_uint32_t manufacturer[3], max_cpuid, capabilities, msrlow;
+  grub_uint32_t a, b, d;
 
   if (! grub_cpu_is_cpuid_supported ())
     return sane_value;
 
-#ifdef __APPLE__
-  asm volatile ("movl $0, %%eax\n"
-#ifdef __x86_64__
-		"push %%rbx\n"
-#else
-		"push %%ebx\n"
-#endif
-		"cpuid\n"
-#ifdef __x86_64__
-		"pop %%rbx\n"
-#else
-		"pop %%ebx\n"
-#endif
-		: "=a" (max_cpuid),
-		  "=d" (manufacturer[1]), "=c" (manufacturer[2]));
-
-  /* Only Intel for now is done. */
-  if (grub_memcmp (manufacturer + 1, "ineIntel", 12) != 0)
-    return sane_value;
-
-#else
-  asm volatile ("movl $0, %%eax\n"
-		"cpuid"
-		: "=a" (max_cpuid), "=b" (manufacturer[0]),
-		  "=d" (manufacturer[1]), "=c" (manufacturer[2]));
+  grub_cpuid (0, max_cpuid, manufacturer[0], manufacturer[2], manufacturer[1]);
 
   /* Only Intel for now is done. */
   if (grub_memcmp (manufacturer, "GenuineIntel", 12) != 0)
     return sane_value;
-#endif
 
   /* Check Speedstep. */
   if (max_cpuid < 1)
     return sane_value;
 
-#ifdef __APPLE__
-  asm volatile ("movl $1, %%eax\n"
-#ifdef __x86_64__
-		"push %%rbx\n"
-#else
-		"push %%ebx\n"
-#endif
-		"cpuid\n"
-#ifdef __x86_64__
-		"pop %%rbx\n"
-#else
-		"pop %%ebx\n"
-#endif
-		: "=c" (capabilities):
-		: "%rax", "%rdx");
-#else
-  asm volatile ("movl $1, %%eax\n"
-		"cpuid"
-		: "=c" (capabilities):
-		: "%rax", "%rbx", "%rdx");
-#endif
+  grub_cpuid (1, a, b, capabilities, d);
 
   if (! (capabilities & (1 << 7)))
     return sane_value;

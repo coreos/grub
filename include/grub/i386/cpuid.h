@@ -69,9 +69,16 @@ grub_cpu_is_cpuid_supported (void)
 
 #endif
 
+#ifdef __PIC__
 #define grub_cpuid(num,a,b,c,d) \
   asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
                 : "=a" (a), "=r" (b), "=c" (c), "=d" (d)  \
                 : "0" (num))
+#else
+#define grub_cpuid(num,a,b,c,d) \
+  asm volatile ("cpuid" \
+                : "=a" (a), "=b" (b), "=c" (c), "=d" (d)  \
+                : "0" (num))
+#endif
 
 #endif

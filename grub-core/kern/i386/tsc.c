@@ -41,27 +41,11 @@ static __inline grub_uint64_t
 grub_get_tsc (void)
 {
   grub_uint32_t lo, hi;
+  grub_uint32_t a,b,c,d;
 
   /* The CPUID instruction is a 'serializing' instruction, and
      avoids out-of-order execution of the RDTSC instruction. */
-#ifdef __APPLE__
-  __asm__ __volatile__ ("xorl %%eax, %%eax\n\t"
-#ifdef __x86_64__
-			"push %%rbx\n"
-#else
-			"push %%ebx\n"
-#endif
-			"cpuid\n"
-#ifdef __x86_64__
-			"pop %%rbx\n"
-#else
-			"pop %%ebx\n"
-#endif
-			:::"%rax", "%rcx", "%rdx");
-#else
-  __asm__ __volatile__ ("xorl %%eax, %%eax\n\t"
-			"cpuid":::"%rax", "%rbx", "%rcx", "%rdx");
-#endif
+  grub_cpuid (0,a,b,c,d);
   /* Read TSC value.  We cannot use "=A", since this would use
      %rax on x86_64. */
   __asm__ __volatile__ ("rdtsc":"=a" (lo), "=d" (hi));
@@ -72,34 +56,13 @@ grub_get_tsc (void)
 static __inline int
 grub_cpu_is_tsc_supported (void)
 {
+  grub_uint32_t a,b,c,d;
   if (! grub_cpu_is_cpuid_supported ())
     return 0;
 
-  grub_uint32_t features;
-#ifdef __APPLE__
-  __asm__ ("movl $1, %%eax\n\t"
-#ifdef __x86_64__
-	   "push %%rbx\n"
-#else
-	   "push %%ebx\n"
-#endif
-	   "cpuid\n"
-#ifdef __x86_64__
-	   "pop %%rbx\n"
-#else
-	   "pop %%ebx\n"
-#endif
-           : "=d" (features)
-           : /* No inputs.  */
-	   : /* Clobbered:  */ "%rax", "%rcx");
-#else
-  __asm__ ("movl $1, %%eax\n\t"
-           "cpuid\n"
-           : "=d" (features)
-           : /* No inputs.  */
-           : /* Clobbered:  */ "%rax", "%rbx", "%rcx");
-#endif
-  return (features & (1 << 4)) != 0;
+  grub_cpuid(1,a,b,c,d);
+
+  return (d & (1 << 4)) != 0;
 }
 
 static void
