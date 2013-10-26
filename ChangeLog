@@ -1,5 +1,9 @@
 2013-10-26  Grégoire Sutre  <gregoire.sutre@gmail.com>
 
+	* util/grub.d/00_header.in: Don't use LANG if it's not set.
+
+2013-10-26  Grégoire Sutre  <gregoire.sutre@gmail.com>
+
 	* util/grub-mkconfig.in: Replace $0 with $self.
 	* util/grub-reboot.in: Likewise.
 	* util/grub-set-default.in: Likewise.

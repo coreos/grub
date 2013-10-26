@@ -191,7 +191,7 @@ EOF
 EOF
 
 # Gettext variables and module
-if [ "x${LANG}" != "xC" ] ; then
+if [ "x${LANG}" != "xC" ] &&  [ "x${LANG}" != "x" ]; then
   cat << EOF
   set locale_dir=\$prefix/locale
   set lang=${grub_lang}
