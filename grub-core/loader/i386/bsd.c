@@ -1564,6 +1564,15 @@ grub_cmd_freebsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
   return grub_errno;
 }
 
+static const char *types[] = {
+  [0] = "wd",
+  [2] = "fd",
+  [4] = "sd",
+  [6] = "cd",
+  [14] = "vnd",
+  [17] = "rd"
+};
+
 static grub_err_t
 grub_cmd_openbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 {
@@ -1575,22 +1584,30 @@ grub_cmd_openbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
   if (ctxt->state[OPENBSD_ROOT_ARG].set)
     {
       const char *arg = ctxt->state[OPENBSD_ROOT_ARG].arg;
-      int unit, part;
-      if (*(arg++) != 'w' || *(arg++) != 'd')
+      unsigned type, unit, part;
+      for (type = 0; type < ARRAY_SIZE (types); type++)
+	if (types[type]
+	    && grub_strncmp (arg, types[type],
+			     grub_strlen (types[type])) == 0)
+	  {
+	    arg += grub_strlen (types[type]);
+	    break;
+	  }
+      if (type == ARRAY_SIZE (types))
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   "only device specifications of form "
-			   "wd<number><lowercase letter> are supported");
+			   "unknown disk type name");
 
       unit = grub_strtoul (arg, (char **) &arg, 10);
       if (! (arg && *arg >= 'a' && *arg <= 'z'))
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			   "only device specifications of form "
-			   "wd<number><lowercase letter> are supported");
+			   "<type><number><lowercase letter> are supported");
 
       part = *arg - 'a';
 
-      bootdev = (OPENBSD_B_DEVMAGIC + (unit << OPENBSD_B_UNITSHIFT) +
-		 (part << OPENBSD_B_PARTSHIFT));
+      bootdev = (OPENBSD_B_DEVMAGIC | (type << OPENBSD_B_TYPESHIFT)
+		 | (unit << OPENBSD_B_UNITSHIFT)
+		 | (part << OPENBSD_B_PARTSHIFT));
     }
   else
     bootdev = 0;

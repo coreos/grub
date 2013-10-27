@@ -1,5 +1,10 @@
 2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/bsd.c (grub_cmd_openbsd): Accept "sd", "cd",
+	"vnd", "rd" and "fd" disks.
+
+2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move grub_disk_write out of kernel into disk.mod.
 
 2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
