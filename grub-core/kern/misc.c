@@ -947,20 +947,10 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 		shift = 12;
 		mask = 0xe0;
 	      }
-	    else if (code <= 0x1fffff)
+	    else if (code <= 0x10ffff)
 	      {
 		shift = 18;
 		mask = 0xf0;
-	      }
-	    else if (code <= 0x3ffffff)
-	      {
-		shift = 24;
-		mask = 0xf8;
-	      }
-	    else if (code <= 0x7fffffff)
-	      {
-		shift = 30;
-		mask = 0xfc;
 	      }
 	    else
 	      {

@@ -1,5 +1,10 @@
 2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Don't attempt to
+	transform invalid unicode codepoints.
+
+2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_vsnprintf_real): Remove needless explicit
 	\0 checking.
 
