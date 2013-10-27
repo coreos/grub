@@ -9,6 +9,7 @@ library = {
   common = grub-core/kern/command.c;
   common = grub-core/kern/device.c;
   common = grub-core/kern/disk.c;
+  common = grub-core/lib/disk.c;
   common = util/getroot.c;
   common = grub-core/osdep/unix/getroot.c;
   common = grub-core/osdep/getroot.c;

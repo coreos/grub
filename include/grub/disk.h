@@ -193,11 +193,17 @@ grub_err_t EXPORT_FUNC(grub_disk_read) (grub_disk_t disk,
 					grub_off_t offset,
 					grub_size_t size,
 					void *buf);
-grub_err_t EXPORT_FUNC(grub_disk_write) (grub_disk_t disk,
-					 grub_disk_addr_t sector,
-					 grub_off_t offset,
-					 grub_size_t size,
-					 const void *buf);
+grub_err_t grub_disk_write (grub_disk_t disk,
+			    grub_disk_addr_t sector,
+			    grub_off_t offset,
+			    grub_size_t size,
+			    const void *buf);
+extern grub_err_t (*EXPORT_VAR(grub_disk_write_weak)) (grub_disk_t disk,
+						       grub_disk_addr_t sector,
+						       grub_off_t offset,
+						       grub_size_t size,
+						       const void *buf);
+
 
 grub_uint64_t EXPORT_FUNC(grub_disk_get_size) (grub_disk_t disk);
 
@@ -220,6 +226,18 @@ grub_stop_disk_firmware (void)
       grub_disk_firmware_fini = NULL;
     }
 }
+
+/* Disk cache.  */
+struct grub_disk_cache
+{
+  enum grub_disk_dev_id dev_id;
+  unsigned long disk_id;
+  grub_disk_addr_t sector;
+  char *data;
+  int lock;
+};
+
+extern struct grub_disk_cache EXPORT_VAR(grub_disk_cache_table)[GRUB_DISK_CACHE_NUM];
 
 #if defined (GRUB_UTIL)
 void grub_lvm_init (void);

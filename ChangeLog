@@ -1,5 +1,9 @@
 2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move grub_disk_write out of kernel into disk.mod.
+
+2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_vsnprintf_real): Unify int and wchar
 	handling.
 

@@ -456,6 +456,11 @@ image = {
 };
 
 module = {
+  name = disk;
+  common = lib/disk.c;
+};
+
+module = {
   name = trig;
   common_nodist = trigtables.c;
   extra_dist = gentrigtables.c;
