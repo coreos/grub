@@ -15,6 +15,7 @@ library = {
   common = grub-core/osdep/getroot.c;
   common = grub-core/osdep/devmapper/getroot.c;
   common = grub-core/osdep/relpath.c;
+  extra_dist = grub-core/kern/disk_common.c;
   extra_dist = grub-core/osdep/unix/relpath.c;
   extra_dist = grub-core/osdep/aros/relpath.c;
   extra_dist = grub-core/osdep/windows/relpath.c;

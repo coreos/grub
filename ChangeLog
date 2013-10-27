@@ -1,3 +1,10 @@
+2013-10-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	*  Makefile.util.def: Add grub-core/kern/disk_common.c to library
+	extra_dist.
+	* grub-core/Makefile.core.def: Add kern/disk_common.c to disk module
+	extra_dist.
+
 2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkfont.c (main): Show error message when FT_Set_Pixel_Sizes
