@@ -1,5 +1,10 @@
 2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Remove leftover COND_BUILD_GRUB_MKFONT and
+	COND_GRUB_PE2ELF conditions.
+
+2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/bsd.c (grub_cmd_openbsd): Accept "sd", "cd",
 	"vnd", "rd" and "fd" disks.
 
