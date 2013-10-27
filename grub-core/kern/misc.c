@@ -705,15 +705,16 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 	}
     }
 
-  enum { INT, WCHAR, LONG, LONGLONG, POINTER } types[count_args];
+  enum { INT, LONG, LONGLONG, POINTER } types[count_args];
   union 
   { 
     int i;
-    grub_uint32_t w;
     long l;
     long long ll;
     void *p;
   } args[count_args];
+
+  COMPILE_TIME_ASSERT (sizeof (int) == sizeof (grub_uint32_t));
 
   grub_memset (types, 0, sizeof (types));
 
@@ -786,11 +787,9 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 	case 's':
 	  types[curn] = POINTER;
 	  break;
+	case 'C':
 	case 'c':
 	  types[curn] = INT;
-	  break;
-	case 'C':
-	  types[curn] = WCHAR;
 	  break;
 	}
     }
@@ -798,9 +797,6 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
   for (n = 0; n < count_args; n++)
     switch (types[n])
       {
-      case WCHAR:
-	args[n].w = va_arg (args_in, grub_uint32_t);
-	break;
       case POINTER:
 	args[n].p = va_arg (args_in, void *);
 	break;
@@ -928,7 +924,7 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 
 	case 'C':
 	  {
-	    grub_uint32_t code = args[curn].w;
+	    grub_uint32_t code = args[curn].i;
 	    int shift;
 	    unsigned mask;
 

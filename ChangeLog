@@ -1,13 +1,18 @@
-2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Unify int and wchar
+	handling.
+
+2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/misc.c (grub_abort): Make static
 
-2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/misc.c (grub_vsnprintf_real): Don't attempt to
 	transform invalid unicode codepoints.
 
-2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/misc.c (grub_vsnprintf_real): Remove needless explicit
 	\0 checking.
