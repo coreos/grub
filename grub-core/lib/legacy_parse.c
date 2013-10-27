@@ -70,7 +70,7 @@ static struct legacy_command legacy_commands[] =
      "Print the blocklist notation of the file FILE."},
     {"boot", "boot\n", NULL, 0, 0, {}, 0, 0,
      "Boot the OS/chain-loader which has been loaded."},
-    {"bootp", "net_bootp; net_ls_addr; if [ x%s = x--with-configfile ]; then "
+    {"bootp", "net_bootp; net_ls_addr; echo $\"" N_("Default server is ${net_default_server}") "\"; if [ x%s = x--with-configfile ]; then "
      "if net_get_dhcp_option configfile_name pxe 150 string; then "
      "configfile $configfile_name; fi; fi\n", NULL, 0, 1,
      {TYPE_WITH_CONFIGFILE_OPTION}, FLAG_IGNORE_REST, "[--with-configfile]",
@@ -385,6 +385,29 @@ adjust_file (const char *in, grub_size_t len)
     if (*ptr == '\'' || *ptr == '\\')
       overhead++;
   comma = ptr;
+  if (*comma == ')' && comma - in == 3
+      && in[1] == 'n' && in[2] == 'd')
+    {
+      rest = comma + 1;
+      for (ptr = rest; ptr < in + len && *ptr; ptr++)
+	if (*ptr == '\'' || *ptr == '\\')
+	  overhead++;
+
+      ret = grub_malloc (ptr - in + overhead + 15);
+      if (!ret)
+	return NULL;
+
+      outptr = grub_stpcpy (ret, "(tftp)");;
+      for (ptr = rest; ptr < in + len; ptr++)
+	{
+	  if (*ptr == '\'' || *ptr == '\\')
+	    *outptr++ = '\\';
+
+	  *outptr++ = *ptr;
+	}
+      *outptr = 0;
+      return ret;
+    }
   if (*comma != ',')
     return grub_legacy_escape (in, len);
   part = grub_strtoull (comma + 1, (char **) &rest, 0);
@@ -398,7 +421,7 @@ adjust_file (const char *in, grub_size_t len)
       overhead++;
 
   /* 35 is enough for any 2 numbers.  */
-  ret = grub_malloc (ptr - in + overhead + 35);
+  ret = grub_malloc (ptr - in + overhead + 35 + 5);
   if (!ret)
     return NULL;
 

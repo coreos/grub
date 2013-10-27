@@ -1,3 +1,7 @@
+2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/legacy_parse.c: Add support for "nd" disk.
+
 2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Consolidate cpuid code.
