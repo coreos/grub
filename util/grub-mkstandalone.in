@@ -116,6 +116,9 @@ fi
 
 memdisk_dir="`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
 grub_install_files "${source_directory}" "${memdisk_dir}"/boot/grub "${grub_modinfo_target_cpu}-${grub_modinfo_platform}"
+for file in $source; do
+    cp -f "$file" "${memdisk_dir}"/"$file";
+done
 
 memdisk_img=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 
