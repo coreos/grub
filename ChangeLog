@@ -72,6 +72,13 @@
 
 2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/tftp.c: Retransmit ack when rereceiving old packet.
+	Try to handle more than 0xFFFF packets.
+	Reported by: Bernhard Übelacker <bernhardu>.
+	He also spotted few overflows in first version of this patch.
+
+2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/date_unit_test.c: New test.
 
 2013-10-26  Vladimir Serbinenko  <phcoder@gmail.com>
