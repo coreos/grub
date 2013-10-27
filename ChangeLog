@@ -1,3 +1,10 @@
+2013-10-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	*  Makefile.util.def: Add grub-core/kern/disk_common.c to library
+	extra_dist.
+	* grub-core/Makefile.core.def: Add kern/disk_common.c to disk module
+	extra_dist.
+
 2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/bsd.c (grub_cmd_openbsd): Accept "sd", "cd",
