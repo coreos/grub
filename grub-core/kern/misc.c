@@ -664,34 +664,33 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
       if (c != '%')
 	continue;
 
-      if (*fmt && *fmt =='-')
+      if (*fmt =='-')
 	fmt++;
 
-      while (*fmt && grub_isdigit (*fmt))
+      while (grub_isdigit (*fmt))
 	fmt++;
 
-      if (*fmt && *fmt == '$')
+      if (*fmt == '$')
 	fmt++;
 
-      if (*fmt && *fmt =='-')
+      if (*fmt =='-')
 	fmt++;
 
-      while (*fmt && grub_isdigit (*fmt))
+      while (grub_isdigit (*fmt))
 	fmt++;
 
-      if (*fmt && *fmt =='.')
+      if (*fmt =='.')
 	fmt++;
 
-      while (*fmt && grub_isdigit (*fmt))
+      while (grub_isdigit (*fmt))
 	fmt++;
 
       c = *fmt++;
       if (c == 'l')
-	{
-	  c = *fmt++;
-	  if (c == 'l')
-	    c = *fmt++;
-	}
+	c = *fmt++;
+      if (c == 'l')
+	c = *fmt++;
+
       switch (c)
 	{
 	case 'p':

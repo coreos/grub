@@ -1,3 +1,8 @@
+2013-10-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Remove needless explicit
+	\0 checking.
+
 2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/legacy_parse.c: Add support for "nd" disk.
