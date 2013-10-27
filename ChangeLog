@@ -1,3 +1,7 @@
+2013-10-27  BVK Chaitanya  <bvk.groups@gmail.com>
+
+	* docs/autoiso.cfg: New file.
+
 2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Remove leftover COND_BUILD_GRUB_MKFONT and
