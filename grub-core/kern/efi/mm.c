@@ -511,7 +511,7 @@ grub_efi_mm_init (void)
   grub_printf ("printing memory map\n");
   print_memory_map (memory_map, desc_size,
 		    NEXT_MEMORY_DESCRIPTOR (memory_map, map_size));
-  grub_abort ();
+  grub_fatal ("Debug. ");
 #endif
 
   /* Release the memory maps.  */

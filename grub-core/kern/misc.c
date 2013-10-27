@@ -1067,7 +1067,7 @@ grub_xasprintf (const char *fmt, ...)
 }
 
 /* Abort GRUB. This function does not return.  */
-void
+static void __attribute__ ((noreturn))
 grub_abort (void)
 {
   grub_printf ("\nAborted.");
@@ -1083,10 +1083,17 @@ grub_abort (void)
   grub_exit ();
 }
 
-#if ! defined (__APPLE__) && !defined (GRUB_UTIL)
-/* GCC emits references to abort().  */
-void abort (void) __attribute__ ((alias ("grub_abort")));
-#endif
+void
+grub_fatal (const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  grub_vprintf (_(fmt), ap);
+  va_end (ap);
+
+  grub_abort ();
+}
 
 #if NEED_REGISTER_FRAME_INFO && !defined(GRUB_UTIL)
 void __register_frame_info (void)
