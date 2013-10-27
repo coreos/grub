@@ -1221,9 +1221,13 @@ main (int argc, char *argv[])
 	arguments.font_info.style = ft_face->style_flags;
 	arguments.font_info.size = size;
 
-	if (FT_Set_Pixel_Sizes (ft_face, size, size))
-	  grub_util_error (_("can't set %dx%d font size"),
-			   size, size);
+	err = FT_Set_Pixel_Sizes (ft_face, size, size);
+
+	if (err)
+	  grub_util_error (_("can't set %dx%d font size: Freetype error %d: %s"),
+			   size, size, err,
+			   (err > 0 && err < (signed) ARRAY_SIZE (ft_errmsgs))
+			   ? ft_errmsgs[err] : "");
 	add_font (&arguments.font_info, ft_face, arguments.file_format != PF2);
 	FT_Done_Face (ft_face);
       }

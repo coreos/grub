@@ -1,3 +1,8 @@
+2013-10-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkfont.c (main): Show error message when FT_Set_Pixel_Sizes
+	fails.
+
 2013-10-27  BVK Chaitanya  <bvk.groups@gmail.com>
 
 	* docs/autoiso.cfg: New file.
