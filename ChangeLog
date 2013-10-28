@@ -1,3 +1,7 @@
+2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/xnu_resume.c (grub_xnu_resume): Reject empty images.
+
 2013-10-28  Francesco Lavra  <francescolavra.fl@gmail.com>
 
 	* grub-core/lib/fdt.c: Fix miscellaneous bugs.
