@@ -1,5 +1,10 @@
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/emu/hostdisk.h: Add proper declaration for grub_host_init
+	and grub_hostfs_init.
+
+2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/hostdisk.c (grub_util_check_file_presence): Use
 	windows method on other platforms without good stat as well.
 

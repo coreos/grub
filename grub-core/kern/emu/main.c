@@ -164,11 +164,6 @@ static struct argp argp = {
 
 
 
-void grub_hostfs_init (void);
-void grub_hostfs_fini (void);
-void grub_host_init (void);
-void grub_host_fini (void);
-
 int
 main (int argc, char *argv[])
 {

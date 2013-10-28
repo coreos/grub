@@ -20,9 +20,13 @@
 /* When using the disk, make a reference to this module.  Otherwise
    the user will end up with a useless module :-).  */
 
+#include <config.h>
+#include <config-util.h>
+
 #include <grub/dl.h>
 #include <grub/disk.h>
 #include <grub/misc.h>
+#include <grub/emu/hostdisk.h>
 
 int grub_disk_host_i_want_a_reference;
 

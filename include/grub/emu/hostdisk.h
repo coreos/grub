@@ -84,4 +84,9 @@ struct grub_util_hostdisk_data
   int device_map;
 };
 
+void grub_host_init (void);
+void grub_host_fini (void);
+void grub_hostfs_init (void);
+void grub_hostfs_fini (void);
+
 #endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */

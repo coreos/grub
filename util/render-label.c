@@ -25,6 +25,7 @@
 #include <grub/font.h>
 #include <grub/gfxmenu_view.h>
 #include <grub/color.h>
+#include <grub/emu/hostdisk.h>
 
 #define _GNU_SOURCE	1
 
@@ -34,9 +35,6 @@
 #include <argp.h>
 #include <unistd.h>
 #include <errno.h>
-
-void grub_hostfs_init (void);
-void grub_host_init (void);
 
 struct header
 {
