@@ -1,5 +1,10 @@
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/multiboot.c: Add support for multiboot kernels
+	quirks.
+
+2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/linux.c (allocate_pages): Allocate at least
 	a page in protected space.
 

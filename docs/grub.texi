@@ -3680,6 +3680,8 @@ you forget a command, you can run the command @command{help}
 * lsfonts::                     List loaded fonts
 * lsmod::                       Show loaded modules
 * md5sum::                      Compute or check MD5 hash
+* module::                      Load module for multiboot kernel
+* multiboot::                   Load multiboot compliant kernel
 * nativedisk::                  Switch to native disk drivers
 * normal::                      Enter normal mode
 * normal_exit::                 Exit from normal mode
@@ -4369,7 +4371,6 @@ List loaded fonts.
 Show list of loaded modules.
 @end deffn
 
-
 @node md5sum
 @subsection md5sum
 
@@ -4378,6 +4379,34 @@ Alias for @code{hashsum --hash md5 arg @dots{}}. See command @command{hashsum}
 (@pxref{hashsum}) for full description.
 @end deffn
 
+@node module
+@subsection module
+
+@deffn Command module [--nounzip] file [arguments]
+Load a module for multiboot kernel image.  The rest of the
+line is passed verbatim as the module command line.
+@end deffn
+
+@node multiboot
+@subsection multiboot
+
+@deffn Command multiboot [--quirk-bad-kludge] [--quirk-modules-after-kernel] file @dots{}
+Load a multiboot kernel image from @var{file}.  The rest of the
+line is passed verbatim as the @dfn{kernel command-line}.  Any module must
+be reloaded after using this command (@pxref{module}).
+
+Some kernels have known problems. You need to specify --quirk-* for those.
+--quirk-bad-kludge is a problem seen in several products that they include
+loading kludge information with invalid data in ELF file. GRUB prior to 0.97
+and some custom builds prefered ELF information while 0.97 and GRUB 2
+use kludge. Use this option to ignore kludge.
+Known affected systems: old Solaris, SkyOS.
+
+--quirk-modules-after-kernel is needed for kernels which load at relatively
+high address e.g. 16MiB mark and can't cope with modules stuffed between
+1MiB mark and beginning of the kernel.
+Known afftected systems: VMWare.
+@end deffn
 
 @node nativedisk
 @subsection nativedisk

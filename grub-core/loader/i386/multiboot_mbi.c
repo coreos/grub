@@ -58,7 +58,63 @@ static int bootdev_set;
 static grub_size_t elf_sec_num, elf_sec_entsize;
 static unsigned elf_sec_shstrndx;
 static void *elf_sections;
+grub_multiboot_quirks_t grub_multiboot_quirks;
 
+static grub_err_t
+load_kernel (grub_file_t file, const char *filename,
+	     char *buffer, struct multiboot_header *header)
+{
+  grub_err_t err;
+  if (grub_multiboot_quirks & GRUB_MULTIBOOT_QUIRK_BAD_KLUDGE)
+    {
+      err = grub_multiboot_load_elf (file, filename, buffer);
+      if (err == GRUB_ERR_UNKNOWN_OS && (header->flags & MULTIBOOT_AOUT_KLUDGE))
+	grub_errno = err = GRUB_ERR_NONE;
+    }
+  if (header->flags & MULTIBOOT_AOUT_KLUDGE)
+    {
+      int offset = ((char *) header - buffer -
+		    (header->header_addr - header->load_addr));
+      int load_size = ((header->load_end_addr == 0) ? file->size - offset :
+		       header->load_end_addr - header->load_addr);
+      grub_size_t code_size;
+      void *source;
+      grub_relocator_chunk_t ch;
+
+      if (header->bss_end_addr)
+	code_size = (header->bss_end_addr - header->load_addr);
+      else
+	code_size = load_size;
+
+      err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, 
+					     &ch, header->load_addr,
+					     code_size);
+      if (err)
+	{
+	  grub_dprintf ("multiboot_loader", "Error loading aout kludge\n");
+	  return err;
+	}
+      source = get_virtual_current_address (ch);
+
+      if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
+	{
+	  return grub_errno;
+	}
+
+      grub_file_read (file, source, load_size);
+      if (grub_errno)
+	return grub_errno;
+
+      if (header->bss_end_addr)
+	grub_memset ((grub_uint8_t *) source + load_size, 0,
+		     header->bss_end_addr - header->load_addr - load_size);
+
+      grub_multiboot_payload_eip = header->entry_addr;
+      return GRUB_ERR_NONE;
+    }
+
+  return grub_multiboot_load_elf (file, filename, buffer);
+}
 
 grub_err_t
 grub_multiboot_load (grub_file_t file, const char *filename)
@@ -106,59 +162,11 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 			 "unsupported flag: 0x%x", header->flags);
     }
 
-  if (header->flags & MULTIBOOT_AOUT_KLUDGE)
+  err = load_kernel (file, filename, buffer, header);
+  if (err)
     {
-      int offset = ((char *) header - buffer -
-		    (header->header_addr - header->load_addr));
-      int load_size = ((header->load_end_addr == 0) ? file->size - offset :
-		       header->load_end_addr - header->load_addr);
-      grub_size_t code_size;
-      void *source;
-      grub_relocator_chunk_t ch;
-
-      if (header->bss_end_addr)
-	code_size = (header->bss_end_addr - header->load_addr);
-      else
-	code_size = load_size;
-
-      err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, 
-					     &ch, header->load_addr,
-					     code_size);
-      if (err)
-	{
-	  grub_dprintf ("multiboot_loader", "Error loading aout kludge\n");
-	  grub_free (buffer);
-	  return err;
-	}
-      source = get_virtual_current_address (ch);
-
-      if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
-	{
-	  grub_free (buffer);
-	  return grub_errno;
-	}
-
-      grub_file_read (file, source, load_size);
-      if (grub_errno)
-	{
-	  grub_free (buffer);
-	  return grub_errno;
-	}
-
-      if (header->bss_end_addr)
-	grub_memset ((grub_uint8_t *) source + load_size, 0,
-		     header->bss_end_addr - header->load_addr - load_size);
-
-      grub_multiboot_payload_eip = header->entry_addr;
-    }
-  else
-    {
-      err = grub_multiboot_load_elf (file, filename, buffer);
-      if (err)
-	{
-	  grub_free (buffer);
-	  return err;
-	}
+      grub_free (buffer);
+      return err;
     }
 
   if (header->flags & MULTIBOOT_VIDEO_MODE)

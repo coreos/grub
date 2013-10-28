@@ -86,6 +86,9 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, const char *filename, voi
 	  grub_err_t err;
 	  void *source;
 
+	  if (phdr(i)->p_paddr + phdr(i)->p_memsz > highest_load)
+	    highest_load = phdr(i)->p_paddr + phdr(i)->p_memsz;
+
 	  grub_dprintf ("multiboot_loader", "segment %d: paddr=0x%lx, memsz=0x%lx, vaddr=0x%lx\n",
 			i, (long) phdr(i)->p_paddr, (long) phdr(i)->p_memsz, (long) phdr(i)->p_vaddr);
 
