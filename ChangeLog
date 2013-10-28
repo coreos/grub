@@ -1,5 +1,10 @@
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/progress.c (grub_file_progress_hook_real): Add missing
+	safeguards. Fixes a crash with i386/pc/console.c.
+
+2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/emu/hostdisk.h: Add proper declaration for grub_host_init
 	and grub_hostfs_init.
 
