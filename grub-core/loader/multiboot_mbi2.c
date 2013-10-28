@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009,2010,2011,2012,2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include <grub/video.h>
 #include <grub/acpi.h>
 #include <grub/i18n.h>
+#include <grub/net.h>
 
 #if defined (GRUB_MACHINE_EFI)
 #include <grub/efi/efi.h>
@@ -156,6 +157,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	      case MULTIBOOT_TAG_TYPE_EFI64:
 	      case MULTIBOOT_TAG_TYPE_ACPI_OLD:
 	      case MULTIBOOT_TAG_TYPE_ACPI_NEW:
+	      case MULTIBOOT_TAG_TYPE_NETWORK:
 	      case MULTIBOOT_TAG_TYPE_EFI_MMAP:
 		break;
 
@@ -339,6 +341,19 @@ find_efi_mmap_size (void)
 #endif
 
 static grub_size_t
+net_size (void)
+{
+  struct grub_net_network_level_interface *net;
+  grub_size_t ret = 0;
+
+  FOR_NET_NETWORK_LEVEL_INTERFACES(net)
+    if (net->dhcp_ack)
+      ret += ALIGN_UP (sizeof (struct multiboot_tag_network) + net->dhcp_acklen,
+		       MULTIBOOT_TAG_ALIGN);
+  return ret;
+}
+
+static grub_size_t
 grub_multiboot_get_mbi_size (void)
 {
 #ifdef GRUB_MACHINE_EFI
@@ -365,6 +380,7 @@ grub_multiboot_get_mbi_size (void)
     + ALIGN_UP (sizeof (struct multiboot_tag_old_acpi)
 		+ sizeof (struct grub_acpi_rsdp_v10), MULTIBOOT_TAG_ALIGN)
     + acpiv2_size ()
+    + net_size ()
 #ifdef GRUB_MACHINE_EFI
     + ALIGN_UP (sizeof (struct multiboot_tag_efi_mmap)
 		+ efi_mmap_size, MULTIBOOT_TAG_ALIGN)
@@ -734,6 +750,22 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
     tag->mem_upper = grub_mmap_get_upper () / 1024;
     ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN)
        / sizeof (grub_properly_aligned_t);
+  }
+
+  {
+    struct grub_net_network_level_interface *net;
+
+    FOR_NET_NETWORK_LEVEL_INTERFACES(net)
+      if (net->dhcp_ack)
+	{
+	  struct multiboot_tag_network *tag
+	    = (struct multiboot_tag_network *) ptrorig;
+	  tag->type = MULTIBOOT_TAG_TYPE_NETWORK;
+	  tag->size = sizeof (struct multiboot_tag_network) + net->dhcp_acklen;
+	  grub_memcpy (tag->dhcpack, net->dhcp_ack, net->dhcp_acklen);
+	  ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN)
+	    / sizeof (grub_properly_aligned_t);
+	}
   }
 
   if (bootdev_set)
