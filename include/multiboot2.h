@@ -58,6 +58,7 @@
 #define MULTIBOOT_TAG_TYPE_ACPI_OLD          14
 #define MULTIBOOT_TAG_TYPE_ACPI_NEW          15
 #define MULTIBOOT_TAG_TYPE_NETWORK           16
+#define MULTIBOOT_TAG_TYPE_EFI_MMAP          17
 
 #define MULTIBOOT_HEADER_TAG_END  0
 #define MULTIBOOT_HEADER_TAG_INFORMATION_REQUEST  1
@@ -360,6 +361,15 @@ struct multiboot_tag_network
   multiboot_uint32_t size;
   multiboot_uint8_t dhcpack[0];
 };
+
+struct multiboot_tag_efi_mmap
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint32_t descr_size;
+  multiboot_uint32_t descr_vers;
+  multiboot_uint8_t efi_mmap[0];
+}; 
 
 #endif /* ! ASM_FILE */
 

@@ -36,6 +36,10 @@
 #include <grub/net.h>
 #include <grub/i18n.h>
 
+#ifdef GRUB_MACHINE_EFI
+#include <grub/efi/efi.h>
+#endif
+
 /* The bits in the required part of flags field we don't support.  */
 #define UNSUPPORTED_FLAGS			0x0000fff8
 
@@ -585,6 +589,12 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   ptrdest += sizeof (struct grub_vbe_info_block);
   ptrorig += sizeof (struct grub_vbe_mode_info_block);
   ptrdest += sizeof (struct grub_vbe_mode_info_block);
+#endif
+
+#ifdef GRUB_MACHINE_EFI
+  err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    return err;
 #endif
 
   return GRUB_ERR_NONE;

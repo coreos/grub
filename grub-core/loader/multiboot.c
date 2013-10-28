@@ -131,12 +131,6 @@ grub_multiboot_boot (void)
   if (err)
     return err;
 
-#ifdef GRUB_MACHINE_EFI
-  err = grub_efi_finish_boot_services (NULL, NULL, NULL, NULL, NULL);
-  if (err)
-    return err;
-#endif
-
 #if defined (__i386__) || defined (__x86_64__)
   grub_relocator32_boot (grub_multiboot_relocator, state, 0);
 #else
