@@ -156,6 +156,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	      case MULTIBOOT_TAG_TYPE_EFI64:
 	      case MULTIBOOT_TAG_TYPE_ACPI_OLD:
 	      case MULTIBOOT_TAG_TYPE_ACPI_NEW:
+	      case MULTIBOOT_TAG_TYPE_EFI_MMAP:
 		break;
 
 	      default:

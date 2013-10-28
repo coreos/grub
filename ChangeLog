@@ -1,5 +1,10 @@
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/multiboot_mbi2.c: Add EFI memory map to the list
+	of supported tags.
+
+2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/multiboot_mbi2.c: Implement EFI memory map.
 
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
