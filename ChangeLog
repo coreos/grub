@@ -1,3 +1,7 @@
+2013-10-28  Francesco Lavra  <francescolavra.fl@gmail.com>
+
+	* grub-core/lib/fdt.c: Fix miscellaneous bugs.
+
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/progress.c (grub_file_progress_hook_real): Add missing

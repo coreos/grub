@@ -43,6 +43,16 @@
 #define prop_entry_size(prop_len)	\
 	(3 * sizeof(grub_uint32_t) + ALIGN_UP(prop_len, sizeof(grub_uint32_t)))
 
+#define SKIP_NODE_NAME(name, token, end)	\
+  name = (char *) ((token) + 1);	\
+  while (name < (char *) end)	\
+  {	\
+    if (!*name++)	\
+      break;	\
+  }	\
+  token = (grub_uint32_t *) ALIGN_UP((grub_addr_t) (name), sizeof(*token))
+
+
 static grub_uint32_t *get_next_node (const void *fdt, char *node_name)
 {
   grub_uint32_t *end = (void *) struct_end (fdt);
@@ -50,9 +60,9 @@ static grub_uint32_t *get_next_node (const void *fdt, char *node_name)
 
   if (node_name >= (char *) end)
     return NULL;
-  while (*node_name)
+  while (*node_name++)
   {
-    if (++node_name >= (char *) end)
+    if (node_name >= (char *) end)
   	  return NULL;
   }
   token = (grub_uint32_t *) ALIGN_UP ((grub_addr_t) node_name, 4);
@@ -73,7 +83,8 @@ static grub_uint32_t *get_next_node (const void *fdt, char *node_name)
       case FDT_PROP:
         /* Skip property token and following data (len, nameoff and property
            value). */
-        token += 3 + grub_be_to_cpu32 (*(token + 1));
+        token += prop_entry_size(grub_be_to_cpu32(*(token + 1)))
+                 / sizeof(*token);
         break;
       case FDT_NOP:
         token++;
@@ -116,12 +127,14 @@ static grub_uint32_t get_free_space (void *fdt)
 
 static int add_subnode (void *fdt, int parentoffset, const char *name)
 {
-  grub_uint32_t *begin = (void *) ((grub_addr_t) fdt
+  grub_uint32_t *token = (void *) ((grub_addr_t) fdt
                                    + grub_fdt_get_off_dt_struct(fdt)
                                    + parentoffset);
   grub_uint32_t *end = (void *) struct_end (fdt);
   unsigned int entry_size = node_entry_size (name);
-  grub_uint32_t *token = begin;
+  char *node_name;
+
+  SKIP_NODE_NAME(node_name, token, end);
 
   /* Insert the new subnode just after the properties of the parent node (if
      any).*/
@@ -132,28 +145,28 @@ static int add_subnode (void *fdt, int parentoffset, const char *name)
     switch (grub_be_to_cpu32(*token))
     {
       case FDT_PROP:
-        /* Skip len and nameoff. */
-        token += 2;
+        /* Skip len, nameoff and property value. */
+        token += prop_entry_size(grub_be_to_cpu32(*(token + 1)))
+                 / sizeof(*token);
         break;
       case FDT_BEGIN_NODE:
       case FDT_END_NODE:
         goto insert;
       case FDT_NOP:
+        token++;
         break;
       default:
         /* invalid token */
         return -1;
     }
-    token++;
   }
 insert:
-  grub_memmove (token + entry_size, token,
+  grub_memmove (token + entry_size / sizeof(*token), token,
                 (grub_addr_t) end - (grub_addr_t) token);
   *token = grub_cpu_to_be32(FDT_BEGIN_NODE);
   token[entry_size / sizeof(*token) - 2] = 0;	/* padding bytes */
   grub_strcpy((char *) (token + 1), name);
-  token += entry_size / sizeof(*token) - 1;
-  *token = grub_cpu_to_be32(FDT_END_NODE);
+  token[entry_size / sizeof(*token) - 1] = grub_cpu_to_be32(FDT_END_NODE);
   return ((grub_addr_t) token - (grub_addr_t) fdt
           - grub_fdt_get_off_dt_struct(fdt));
 }
@@ -175,29 +188,32 @@ static int rearrange_blocks (void *fdt, unsigned int clearance)
 
   if ((grub_fdt_get_off_mem_rsvmap (fdt) == off_mem_rsvmap)
       && (grub_fdt_get_off_dt_struct (fdt) == off_dt_struct))
-  {
-    /* No need to allocate memory for a temporary FDT, just move the strings
-       block if needed. */
-    if (grub_fdt_get_off_dt_strings (fdt) != off_dt_strings)
-      grub_memmove(fdt_ptr + off_dt_strings,
-                   fdt_ptr + grub_fdt_get_off_dt_strings (fdt),
-                   grub_fdt_get_size_dt_strings (fdt));
-    return 0;
-  }
+    {
+      /* No need to allocate memory for a temporary FDT, just move the strings
+         block if needed. */
+      if (grub_fdt_get_off_dt_strings (fdt) != off_dt_strings)
+        {
+          grub_memmove(fdt_ptr + off_dt_strings,
+                       fdt_ptr + grub_fdt_get_off_dt_strings (fdt),
+                       grub_fdt_get_size_dt_strings (fdt));
+          grub_fdt_set_off_dt_strings (fdt, off_dt_strings);
+        }
+      return 0;
+    }
   tmp_fdt = grub_malloc (grub_fdt_get_totalsize (fdt));
   if (!tmp_fdt)
     return -1;
   grub_memcpy (tmp_fdt + off_mem_rsvmap,
-              fdt_ptr + grub_fdt_get_off_mem_rsvmap (fdt),
-              get_mem_rsvmap_size (fdt));
+               fdt_ptr + grub_fdt_get_off_mem_rsvmap (fdt),
+               get_mem_rsvmap_size (fdt));
   grub_fdt_set_off_mem_rsvmap (fdt, off_mem_rsvmap);
   grub_memcpy (tmp_fdt + off_dt_struct,
-              fdt_ptr + grub_fdt_get_off_dt_struct (fdt),
-              grub_fdt_get_size_dt_struct (fdt));
+               fdt_ptr + grub_fdt_get_off_dt_struct (fdt),
+               grub_fdt_get_size_dt_struct (fdt));
   grub_fdt_set_off_dt_struct (fdt, off_dt_struct);
   grub_memcpy (tmp_fdt + off_dt_strings,
-              fdt_ptr + grub_fdt_get_off_dt_strings (fdt),
-              grub_fdt_get_size_dt_strings (fdt));
+               fdt_ptr + grub_fdt_get_off_dt_strings (fdt),
+               grub_fdt_get_size_dt_strings (fdt));
   grub_fdt_set_off_dt_strings (fdt, off_dt_strings);
 
   /* Copy reordered blocks back to fdt. */
@@ -214,9 +230,12 @@ static grub_uint32_t *find_prop (void *fdt, unsigned int nodeoffset,
   grub_uint32_t *prop = (void *) ((grub_addr_t) fdt
                                  + grub_fdt_get_off_dt_struct (fdt)
                                  + nodeoffset);
+  grub_uint32_t *end = (void *) struct_end(fdt);
   grub_uint32_t nameoff;
+  char *node_name;
 
-  do
+  SKIP_NODE_NAME(node_name, prop, end);
+  while (prop < end - 2)
   {
     if (grub_be_to_cpu32(*prop) == FDT_PROP)
       {
@@ -224,15 +243,19 @@ static grub_uint32_t *find_prop (void *fdt, unsigned int nodeoffset,
         if ((nameoff + grub_strlen (name) < grub_fdt_get_size_dt_strings (fdt))
             && !grub_strcmp (name, (char *) fdt +
                              grub_fdt_get_off_dt_strings (fdt) + nameoff))
-        	return prop;
-        prop += prop_entry_size(grub_be_to_cpu32(*prop + 1)) / sizeof (*prop);
+        {
+          if (prop + prop_entry_size(grub_be_to_cpu32(*(prop + 1)))
+              / sizeof (*prop) >= end)
+            return NULL;
+          return prop;
+        }
+        prop += prop_entry_size(grub_be_to_cpu32(*(prop + 1))) / sizeof (*prop);
       }
-    else if (grub_be_to_cpu32(*prop) != FDT_NOP)
+    else if (grub_be_to_cpu32(*prop) == FDT_NOP)
+      prop++;
+    else
       return NULL;
-    prop++;
-  } while ((grub_addr_t) prop < ((grub_addr_t) fdt
-                                 + grub_fdt_get_off_dt_struct (fdt)
-                                 + grub_fdt_get_size_dt_struct (fdt)));
+  }
   return NULL;
 }
 
@@ -271,6 +294,9 @@ int grub_fdt_find_subnode (const void *fdt, unsigned int parentoffset,
   token = (void *) ((grub_addr_t) fdt + grub_fdt_get_off_dt_struct(fdt)
                     + parentoffset);
   end = (void *) struct_end (fdt);
+  if ((token >= end) || (grub_be_to_cpu32(*token) != FDT_BEGIN_NODE))
+    return -1;
+  SKIP_NODE_NAME(node_name, token, end);
   while (token < end)
   {
     switch (grub_be_to_cpu32(*token))
@@ -280,19 +306,19 @@ int grub_fdt_find_subnode (const void *fdt, unsigned int parentoffset,
         if (node_name + grub_strlen (name) >= (char *) end)
           return -1;
         if (!grub_strcmp (node_name, name))
-          return (int) ((grub_addr_t) token
-                        + ALIGN_UP(grub_strlen (name) + 1, 4)
+          return (int) ((grub_addr_t) token - (grub_addr_t) fdt
                         - grub_fdt_get_off_dt_struct (fdt));
         token = get_next_node (fdt, node_name);
         if (!token)
           return -1;
         break;
-      case FDT_END_NODE:
-        return -1;
       case FDT_PROP:
         /* Skip property token and following data (len, nameoff and property
            value). */
-        token += 3 + grub_be_to_cpu32 (*(token + 1));
+        if (token >= end - 1)
+          return -1;
+        token += prop_entry_size(grub_be_to_cpu32(*(token + 1)))
+                 / sizeof(*token);
         break;
       case FDT_NOP:
         token++;
@@ -327,7 +353,10 @@ int grub_fdt_set_prop (void *fdt, unsigned int nodeoffset, const char *name,
   int prop_name_present = 0;
   grub_uint32_t nameoff = 0;
 
-  if ((nodeoffset >= grub_fdt_get_size_dt_struct (fdt)) || (nodeoffset & 0x3))
+  if ((nodeoffset >= grub_fdt_get_size_dt_struct (fdt)) || (nodeoffset & 0x3)
+      || (grub_be_to_cpu32(*(grub_uint32_t *) ((grub_addr_t) fdt
+                           + grub_fdt_get_off_dt_struct (fdt) + nodeoffset))
+          != FDT_BEGIN_NODE))
     return -1;
   prop = find_prop (fdt, nodeoffset, name);
   if (prop)
@@ -339,7 +368,7 @@ int grub_fdt_set_prop (void *fdt, unsigned int nodeoffset, const char *name,
       prop_name_present = 1;
 	  for (i = 0; i < prop_len / sizeof(grub_uint32_t); i++)
         *(prop + 3 + i) = grub_cpu_to_be32 (FDT_NOP);
-      if (len > prop_len)
+      if (len > ALIGN_UP(prop_len, sizeof(grub_uint32_t)))
         {
           /* Length of new property value is greater than the space allocated
              for the current value: a new entry needs to be created, so save the
@@ -371,19 +400,24 @@ int grub_fdt_set_prop (void *fdt, unsigned int nodeoffset, const char *name,
                                   + grub_strlen (name) + 1);
   }
   if (!prop) {
-    prop = (void *) ((grub_addr_t) fdt + grub_fdt_get_off_dt_struct (fdt)
-                     + nodeoffset);
-    grub_memmove (prop + prop_entry_size(len), prop,
-                  grub_fdt_get_size_dt_struct (fdt) - nodeoffset);
+    char *node_name = (char *) ((grub_addr_t) fdt
+                                + grub_fdt_get_off_dt_struct (fdt) + nodeoffset
+                                + sizeof(grub_uint32_t));
+
+    prop = (void *) (node_name + ALIGN_UP(grub_strlen(node_name) + 1, 4));
+    grub_memmove (prop + prop_entry_size(len) / sizeof(*prop), prop,
+                  struct_end(fdt) - (grub_addr_t) prop);
+    grub_fdt_set_size_dt_struct (fdt, grub_fdt_get_size_dt_struct (fdt)
+                                 + prop_entry_size(len));
     *prop = grub_cpu_to_be32 (FDT_PROP);
-    *(prop + 1) = grub_cpu_to_be32 (len);
     *(prop + 2) = grub_cpu_to_be32 (nameoff);
-
-    /* Insert padding bytes at the end of the value; if they are not needed,
-      they will be overwritten by the follozing memcpy. */
-    *(prop + prop_entry_size(len) / sizeof(grub_uint32_t) - 1) = 0;
-
-    grub_memcpy (prop + 3, val, len);
   }
+  *(prop + 1) = grub_cpu_to_be32 (len);
+
+  /* Insert padding bytes at the end of the value; if they are not needed, they
+     will be overwritten by the following memcpy. */
+  *(prop + prop_entry_size(len) / sizeof(grub_uint32_t) - 1) = 0;
+
+  grub_memcpy (prop + 3, val, len);
   return 0;
 }
