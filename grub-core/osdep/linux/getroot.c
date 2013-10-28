@@ -49,7 +49,6 @@
 
 #include <sys/wait.h>
 
-#include <btrfs/ioctl.h>
 #include <linux/types.h>
 #include <linux/major.h>
 #include <linux/raid/md_p.h>
@@ -60,7 +59,6 @@
 
 #define LVM_DEV_MAPPER_STRING "/dev/mapper/"
 
-#if 0
 /* Defines taken from btrfs/ioctl.h.  */
 
 struct btrfs_ioctl_dev_info_args
@@ -81,11 +79,42 @@ struct btrfs_ioctl_fs_info_args
   grub_uint64_t reserved[124];
 };
 
+struct btrfs_ioctl_ino_lookup_args
+{
+  grub_uint64_t treeid;
+  grub_uint64_t objectid;
+  char name[4080];
+};
+
+struct btrfs_ioctl_search_key
+{
+  grub_uint64_t tree_id;
+  grub_uint64_t min_objectid;
+  grub_uint64_t max_objectid;
+  grub_uint64_t min_offset;
+  grub_uint64_t max_offset;
+  grub_uint64_t min_transid;
+  grub_uint64_t max_transid;
+  grub_uint32_t min_type;
+  grub_uint32_t max_type;
+  grub_uint32_t nr_items;
+  grub_uint32_t unused[9];
+};
+
+struct btrfs_ioctl_search_args {
+	struct btrfs_ioctl_search_key key;
+	char buf[4096 - sizeof(struct btrfs_ioctl_search_key)];
+};
+
+#define BTRFS_IOC_TREE_SEARCH _IOWR(0x94, 17, \
+				   struct btrfs_ioctl_search_args)
+#define BTRFS_IOC_INO_LOOKUP _IOWR(0x94, 18, \
+				   struct btrfs_ioctl_ino_lookup_args)
 #define BTRFS_IOC_DEV_INFO _IOWR(0x94, 30, \
                                  struct btrfs_ioctl_dev_info_args)
 #define BTRFS_IOC_FS_INFO _IOR(0x94, 31, \
                                struct btrfs_ioctl_fs_info_args)
-#endif
+
 static int
 grub_util_is_imsm (const char *os_dev);
 

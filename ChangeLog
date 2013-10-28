@@ -1,5 +1,9 @@
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/linux/getroot.c: Add new btrfs defines.
+
+2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make / in btrfs refer to real root, not the default volume.
 	Modify mkrelpath to work even if device is mounted with subvolid option.
 
