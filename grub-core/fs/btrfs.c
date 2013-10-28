@@ -1,7 +1,7 @@
 /* btrfs.c - B-tree file system.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2010,2011,2012,2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include <grub/deflate.h>
 #include <minilzo.h>
 #include <grub/i18n.h>
+#include <grub/btrfs.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -106,24 +107,6 @@ struct grub_btrfs_data
   struct grub_btrfs_extent_data *extent;
 };
 
-enum
-  {
-    GRUB_BTRFS_ITEM_TYPE_INODE_ITEM = 0x01,
-    GRUB_BTRFS_ITEM_TYPE_INODE_REF = 0x0c,
-    GRUB_BTRFS_ITEM_TYPE_DIR_ITEM = 0x54,
-    GRUB_BTRFS_ITEM_TYPE_EXTENT_ITEM = 0x6c,
-    GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM = 0x84,
-    GRUB_BTRFS_ITEM_TYPE_DEVICE = 0xd8,
-    GRUB_BTRFS_ITEM_TYPE_CHUNK = 0xe4
-  };
-
-struct grub_btrfs_key
-{
-  grub_uint64_t object_id;
-  grub_uint8_t type;
-  grub_uint64_t offset;
-} __attribute__ ((packed));
-
 struct grub_btrfs_chunk_item
 {
   grub_uint64_t size;
@@ -186,13 +169,6 @@ struct grub_btrfs_leaf_descriptor
     unsigned maxiter;
     int leaf;
   } *data;
-};
-
-struct grub_btrfs_root_item
-{
-  grub_uint8_t dummy[0xb0];
-  grub_uint64_t tree;
-  grub_uint64_t inode;
 };
 
 struct grub_btrfs_time
@@ -1197,6 +1173,40 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 }
 
 static grub_err_t
+get_root (struct grub_btrfs_data *data, struct grub_btrfs_key *key,
+	  grub_uint64_t *tree, grub_uint8_t *type)
+{
+  grub_err_t err;
+  grub_disk_addr_t elemaddr;
+  grub_size_t elemsize;
+  struct grub_btrfs_key key_out, key_in;
+  struct grub_btrfs_root_item ri;
+
+  key_in.object_id = GRUB_BTRFS_ROOT_VOL_OBJECTID;
+  key_in.offset = 0;
+  key_in.type = GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM;
+  err = lower_bound (data, &key_in, &key_out,
+		     data->sblock.root_tree,
+		     &elemaddr, &elemsize, NULL, 0);
+  if (err)
+    return err;
+  if (key_in.object_id != key_out.object_id
+      || key_in.type != key_out.type
+      || key_in.offset != key_out.offset)
+    return grub_error (GRUB_ERR_BAD_FS, "no root");
+  err = grub_btrfs_read_logical (data, elemaddr, &ri,
+				 sizeof (ri), 0);
+  if (err)
+    return err;
+  key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
+  key->offset = 0;
+  key->object_id = grub_cpu_to_le64_compile_time (GRUB_BTRFS_OBJECT_ID_CHUNK);
+  *tree = ri.tree;
+  *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 find_path (struct grub_btrfs_data *data,
 	   const char *path, struct grub_btrfs_key *key,
 	   grub_uint64_t *tree, grub_uint8_t *type)
@@ -1208,42 +1218,31 @@ find_path (struct grub_btrfs_data *data,
   grub_size_t allocated = 0;
   struct grub_btrfs_dir_item *direl = NULL;
   struct grub_btrfs_key key_out;
-  int skip_default;
   const char *ctoken;
   grub_size_t ctokenlen;
   char *path_alloc = NULL;
   char *origpath = NULL;
   unsigned symlinks_max = 32;
 
-  *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
-  *tree = data->sblock.root_tree;
-  key->object_id = data->sblock.root_dir_objectid;
-  key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
-  key->offset = 0;
-  skip_default = 1;
+  err = get_root (data, key, tree, type);
+  if (err)
+    return err;
+
   origpath = grub_strdup (path);
   if (!origpath)
     return grub_errno;
 
   while (1)
     {
-      if (!skip_default)
-	{
-	  while (path[0] == '/')
-	    path++;
-	  if (!path[0])
-	    break;
-	  slash = grub_strchr (path, '/');
-	  if (!slash)
-	    slash = path + grub_strlen (path);
-	  ctoken = path;
-	  ctokenlen = slash - path;
-	}
-      else
-	{
-	  ctoken = "default";
-	  ctokenlen = sizeof ("default") - 1;
-	}
+      while (path[0] == '/')
+	path++;
+      if (!path[0])
+	break;
+      slash = grub_strchr (path, '/');
+      if (!slash)
+	slash = path + grub_strlen (path);
+      ctoken = path;
+      ctokenlen = slash - path;
 
       if (*type != GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY)
 	{
@@ -1254,10 +1253,8 @@ find_path (struct grub_btrfs_data *data,
 
       if (ctokenlen == 1 && ctoken[0] == '.')
 	{
-	  if (!skip_default)
-	    path = slash;
-	  skip_default = 0;
-	continue;
+	  path = slash;
+	  continue;
 	}
       if (ctokenlen == 2 && ctoken[0] == '.' && ctoken[1] == '.')
 	{
@@ -1287,9 +1284,7 @@ find_path (struct grub_btrfs_data *data,
 	  *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
 	  key->object_id = key_out.offset;
 
-	  if (!skip_default)
-	    path = slash;
-	  skip_default = 0;
+	  path = slash;
 
 	  continue;
 	}
@@ -1359,9 +1354,7 @@ find_path (struct grub_btrfs_data *data,
 	  return err;
 	}
 
-      if (!skip_default)
-	path = slash;
-      skip_default = 0;
+      path = slash;
       if (cdirel->type == GRUB_BTRFS_DIR_ITEM_TYPE_SYMLINK)
 	{
 	  struct grub_btrfs_inode inode;
@@ -1411,12 +1404,9 @@ find_path (struct grub_btrfs_data *data,
 	  path = path_alloc = tmp;
 	  if (path[0] == '/')
 	    {
-	      *type = GRUB_BTRFS_DIR_ITEM_TYPE_DIRECTORY;
-	      *tree = data->sblock.root_tree;
-	      key->object_id = data->sblock.root_dir_objectid;
-	      key->type = GRUB_BTRFS_ITEM_TYPE_DIR_ITEM;
-	      key->offset = 0;
-	      skip_default = 1;
+	      err = get_root (data, key, tree, type);
+	      if (err)
+		return err;
 	    }
 	  continue;
 	}

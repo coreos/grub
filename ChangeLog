@@ -1,6 +1,11 @@
-2013-10-14  Andrey Borzenkov <arvidjaar@gmail.com>
+2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	*  Makefile.util.def: Add grub-core/kern/disk_common.c to library
+	Make / in btrfs refer to real root, not the default volume.
+	Modify mkrelpath to work even if device is mounted with subvolid option.
+
+2013-10-28  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* Makefile.util.def: Add grub-core/kern/disk_common.c to library
 	extra_dist.
 	* grub-core/Makefile.core.def: Add kern/disk_common.c to disk module
 	extra_dist.
