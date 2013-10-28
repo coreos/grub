@@ -1,5 +1,10 @@
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/hostdisk.c (grub_util_check_file_presence): Use
+	windows method on other platforms without good stat as well.
+
+2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/linux/getroot.c: Add new btrfs defines.
 
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>

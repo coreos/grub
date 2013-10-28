@@ -398,12 +398,12 @@ static struct grub_disk_dev grub_util_biosdisk_dev =
 static int
 grub_util_check_file_presence (const char *p)
 {
-#if defined (__MINGW32__) || defined(__CYGWIN__)
-  HANDLE h;
+#if !GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
+  grub_util_fd_t h;
   h = grub_util_fd_open (p, GRUB_UTIL_FD_O_RDONLY);
   if (!GRUB_UTIL_FD_IS_VALID(h))
     return 0;
-  CloseHandle (h);
+  grub_util_fd_close (h);
   return 1;
 #else
   struct stat st;
