@@ -1,5 +1,10 @@
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c (allocate_pages): Allocate at least
+	a page in protected space.
+
+2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/multiboot.c (grub_cmd_module): Don't attempt to
 	allocate space for zero-sized modules.
 

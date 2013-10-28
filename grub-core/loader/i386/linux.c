@@ -198,6 +198,9 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
 {
   grub_err_t err;
 
+  if (prot_size == 0)
+    prot_size = 1;
+
   prot_size = page_align (prot_size);
 
   /* Initialize the memory pointers with NULL for convenience.  */
