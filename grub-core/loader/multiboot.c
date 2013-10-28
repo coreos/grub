@@ -316,6 +316,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
     return grub_errno;
 
   size = grub_file_size (file);
+  if (size)
   {
     grub_relocator_chunk_t ch;
     err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
@@ -330,6 +331,11 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
     module = get_virtual_current_address (ch);
     target = get_physical_target_address (ch);
   }
+  else
+    {
+      module = 0;
+      target = 0;
+    }
 
   err = grub_multiboot_add_module (target, size, argc - 1, argv + 1);
   if (err)
@@ -338,7 +344,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
       return err;
     }
 
-  if (grub_file_read (file, module, size) != size)
+  if (size && grub_file_read (file, module, size) != size)
     {
       grub_file_close (file);
       if (!grub_errno)
@@ -348,7 +354,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
     }
 
   grub_file_close (file);
-  return GRUB_ERR_NONE;;
+  return GRUB_ERR_NONE;
 }
 
 static grub_command_t cmd_multiboot, cmd_module;
