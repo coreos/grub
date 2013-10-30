@@ -1,3 +1,8 @@
+2013-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/io/gzio.c (huft_build): Use zalloc for safety.
+	(initialize_tables): reset tl and td to NULL after freeing.
+
 2013-10-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/multiboot_mbi2.c: Implement network tag.
