@@ -297,10 +297,17 @@ static grub_ssize_t
 grub_cpio_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_archelp_data *data;
+  grub_ssize_t ret;
 
   data = file->data;
-  return (grub_disk_read (data->disk, 0, data->dofs + file->offset,
-			  len, buf)) ? -1 : (grub_ssize_t) len;
+
+  data->disk->read_hook = file->read_hook;
+  data->disk->read_hook_data = file->read_hook_data;
+  ret = (grub_disk_read (data->disk, 0, data->dofs + file->offset,
+			 len, buf)) ? -1 : (grub_ssize_t) len;
+  data->disk->read_hook = 0;
+
+  return ret;
 }
 
 static grub_err_t

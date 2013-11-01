@@ -1,5 +1,9 @@
 2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/tar.c (grub_cpio_read): Add read_hook.
+
+2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Rewrite blocklist functions in order to get progress when
 	reading large extents and decrease amount of blocklist hook calls.
 
