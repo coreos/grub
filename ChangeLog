@@ -1,5 +1,10 @@
 2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/efi/efi.c (grub_efi_get_filename): Avoid inefficient
+	realloc.
+
+2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.in: Do not use UUID search on EFI.
 
 2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
