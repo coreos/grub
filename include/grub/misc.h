@@ -66,7 +66,18 @@
 
 void *EXPORT_FUNC(grub_memmove) (void *dest, const void *src, grub_size_t n);
 char *EXPORT_FUNC(grub_strcpy) (char *dest, const char *src);
-char *EXPORT_FUNC(grub_strncpy) (char *dest, const char *src, int c);
+
+static inline char *
+grub_strncpy (char *dest, const char *src, int c)
+{
+  char *p = dest;
+
+  while ((*p++ = *src++) != '\0' && --c)
+    ;
+
+  return dest;
+}
+
 static inline char *
 grub_stpcpy (char *dest, const char *src)
 {

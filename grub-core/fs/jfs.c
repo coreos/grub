@@ -723,7 +723,7 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, grub_uint32_t ino)
   if (!symlink)
     return grub_errno;
   if (size <= sizeof (data->currinode.symlink.path))
-    grub_strncpy (symlink, (char *) (data->currinode.symlink.path), size);
+    grub_memcpy (symlink, (char *) (data->currinode.symlink.path), size);
   else if (grub_jfs_read_file (data, 0, 0, 0, size, symlink) < 0)
     {
       grub_free (symlink);

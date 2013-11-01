@@ -734,8 +734,8 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target, char *buf)
   switch (target->type)
     {
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV:
-      /* TRANSLATORS: it refers to the network address.  */
-      grub_strncpy (buf, "temporary", GRUB_NET_MAX_STR_ADDR_LEN);
+      COMPILE_TIME_ASSERT (sizeof ("temporary") < GRUB_NET_MAX_STR_ADDR_LEN);
+      grub_strcpy (buf, "temporary");
       return;
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
       {
