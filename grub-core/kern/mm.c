@@ -483,7 +483,8 @@ grub_realloc (void *ptr, grub_size_t size)
   if (! q)
     return q;
 
-  grub_memcpy (q, ptr, size);
+  /* We've already checked that p->size < n.  */
+  grub_memcpy (q, ptr, p->size << GRUB_MM_ALIGN_LOG2);
   grub_free (ptr);
   return q;
 }

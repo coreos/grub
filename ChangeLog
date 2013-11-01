@@ -1,5 +1,9 @@
 2013-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mm.c (grub_realloc): Don't copy more data than we have.
+
+2013-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/io/gzio.c (huft_build): Use zalloc for safety.
 	(initialize_tables): reset tl and td to NULL after freeing.
 
