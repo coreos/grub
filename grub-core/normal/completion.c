@@ -500,7 +500,7 @@ grub_normal_do_completion (char *buf, int *restore,
       *newstr = '\0';
 
       if (num_found == 1)
-	grub_strcat (ret, suffix);
+	grub_strcpy (newstr, suffix);
 
       if (*ret == '\0')
 	{

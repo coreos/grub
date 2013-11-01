@@ -87,12 +87,6 @@ strncpy (char *dest, const char *src, grub_size_t n)
   return grub_strncpy (dest, src, n);
 }
 
-static inline char *
-strcat (char *dest, const char *src)
-{
-  return grub_strcat (dest, src);
-}
-
 static inline int
 strcoll (const char *s1, const char *s2)
 {

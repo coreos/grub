@@ -1,5 +1,10 @@
 2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h (grub_strcat): Removed. All users changed to
+	more appropriate functions.
+
+2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/efi/efi.c (grub_efi_get_filename): Avoid inefficient
 	realloc.
 

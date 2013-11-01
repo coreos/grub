@@ -87,23 +87,6 @@ grub_memcpy (void *dest, const void *src, grub_size_t n)
   return grub_memmove (dest, src, n);
 }
 
-static inline char *
-grub_strcat (char *dest, const char *src)
-{
-  char *p = dest;
-
-  while (*p)
-    p++;
-
-  while ((*p = *src) != '\0')
-    {
-      p++;
-      src++;
-    }
-
-  return dest;
-}
-
 /* Prototypes for aliases.  */
 #ifndef GRUB_UTIL
 #ifdef __APPLE__

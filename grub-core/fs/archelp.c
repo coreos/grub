@@ -67,6 +67,7 @@ handle_symlink (struct grub_archelp_data *data,
   grub_size_t prefixlen;
   char *rest;
   char *linktarget;
+  grub_size_t linktarget_len;
 
   *restart = 0;
 
@@ -96,7 +97,8 @@ handle_symlink (struct grub_archelp_data *data,
     return grub_errno;
   if (linktarget[0] == '\0')
     return GRUB_ERR_NONE;
-  target = grub_malloc (grub_strlen (linktarget) + grub_strlen (*name) + 2);
+  linktarget_len = grub_strlen (linktarget);
+  target = grub_malloc (linktarget_len + grub_strlen (*name) + 2);
   if (!target)
     return grub_errno;
 
@@ -121,7 +123,7 @@ handle_symlink (struct grub_archelp_data *data,
       grub_memcpy (target, *name, prefixlen);
       target[prefixlen-1] = '/';
     }
-  grub_strcat (target, rest);
+  grub_strcpy (target + prefixlen + linktarget_len, rest);
   grub_dprintf ("archelp", "symlink redirected %s to %s\n",
 		*name, target);
   grub_free (*name);
