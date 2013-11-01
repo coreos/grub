@@ -1,5 +1,11 @@
 2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (nvpair_name): Use correct type for size.
+	(check_pool_label): Likewise. Fixes overflow.
+	(nvlist_find_value): Fix comparison.
+
+2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h (grub_strcat): Removed. All users changed to
 	more appropriate functions.
 

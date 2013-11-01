@@ -877,18 +877,13 @@ nvlist_next_nvpair (const char *nvl, const char *nvpair)
  * containing the name of nvpair is saved in buf.
  */
 static int
-nvpair_name (const char *nvp, char **buf, int *buflen)
+nvpair_name (const char *nvp, char **buf, grub_size_t *buflen)
 {
-  int len;
-
   /* skip over encode/decode size */
   nvp += 4 * 2;
-
-  len = grub_be_to_cpu32 (grub_get_unaligned32 (nvp));
-  nvp=nvp+4;
 	
-  *buf=(char*)nvp;
-  *buflen=len;
+  *buf = (char *) (nvp + 4);
+  *buflen = grub_be_to_cpu32 (grub_get_unaligned32 (nvp));
 
   return 0;
 }
@@ -1113,15 +1108,15 @@ check_pool_label (struct grub_zfs_data *data,
       const char *nvp=NULL;
       char name[MAX_SUPPORTED_FEATURE_STRLEN + 1];
       char *nameptr;
-      int namelen;
+      grub_size_t namelen;
       while ((nvp = nvlist_next_nvpair(features, nvp)) != NULL)
 	{
-	  nvpair_name(nvp, &nameptr,&namelen);
+	  nvpair_name (nvp, &nameptr, &namelen);
 	  if(namelen > MAX_SUPPORTED_FEATURE_STRLEN)
 	    namelen = MAX_SUPPORTED_FEATURE_STRLEN;
-	  grub_strncpy(name,nameptr,namelen);
-	  name[namelen]=0;
-	  grub_dprintf("zfs","namelen=%u str=%s\n",namelen,name);
+	  grub_memcpy (name, nameptr, namelen);
+	  name[namelen] = '\0';
+	  grub_dprintf("zfs","str=%s\n",name);
 	  if (check_feature(name,1, NULL) != 0)
 	    {
 	      grub_dprintf("zfs","feature missing in check_pool_label:%s\n",name);
@@ -3308,7 +3303,8 @@ nvlist_find_value (const char *nvlist_in, const char *name,
 		   int valtype, char **val,
 		   grub_size_t *size_out, grub_size_t *nelm_out)
 {
-  int name_len, type ;
+  grub_size_t nvp_name_len, name_len = grub_strlen(name);
+  int type;
   const char *nvpair=NULL,*nvlist=nvlist_in;
   char *nvp_name;
 
@@ -3329,9 +3325,12 @@ nvlist_find_value (const char *nvlist_in, const char *name,
    */
   while ((nvpair=nvlist_next_nvpair(nvlist,nvpair)))
     {
-      nvpair_name(nvpair,&nvp_name,&name_len);
+      nvpair_name(nvpair,&nvp_name, &nvp_name_len);
       type = nvpair_type(nvpair);
-      if ((grub_strncmp (nvp_name, name, grub_strlen(name)) == 0) && type == valtype)
+      if (type == valtype
+	  && (nvp_name_len == name_len
+	      || (nvp_name_len > name_len && nvp_name[name_len] == '\0'))
+	  && grub_memcmp (nvp_name, name, name_len) == 0)
 	{
 	  return nvpair_value(nvpair,val,size_out,nelm_out);
 	}
