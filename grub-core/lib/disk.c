@@ -123,6 +123,13 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	  len = size & ~((1 << disk->log_sector_size) - 1);
 	  n = size >> disk->log_sector_size;
 
+	  if (n > (disk->max_agglomerate
+		   << (GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS
+		       - disk->log_sector_size)))
+	    n = (disk->max_agglomerate
+		 << (GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS
+		     - disk->log_sector_size));
+
 	  if ((disk->dev->write) (disk, transform_sector (disk, sector),
 				  n, buf) != GRUB_ERR_NONE)
 	    goto finish;

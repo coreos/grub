@@ -424,6 +424,9 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
     }
 
   disk->total_sectors = total_sectors;
+  /* Limit the max to 0x7f because of Phoenix EDD.  */
+  disk->max_agglomerate = 0x7f >> GRUB_DISK_CACHE_BITS;
+
   disk->data = data;
 
   return GRUB_ERR_NONE;
@@ -547,10 +550,6 @@ get_safe_sectors (grub_disk_t disk, grub_disk_addr_t sector)
   grub_divmod64 (sector, sectors, &offset);
 
   size = sectors - offset;
-
-  /* Limit the max to 0x7f because of Phoenix EDD.  */
-  if (size > ((0x7fU << GRUB_DISK_SECTOR_BITS) >> disk->log_sector_size))
-    size = ((0x7fU << GRUB_DISK_SECTOR_BITS) >> disk->log_sector_size);
 
   return size;
 }

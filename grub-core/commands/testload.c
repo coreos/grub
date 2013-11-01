@@ -35,10 +35,13 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static void
 read_progress (grub_disk_addr_t sector __attribute__ ((unused)),
 	       unsigned offset __attribute__ ((unused)),
-	       unsigned len __attribute__ ((unused)),
+	       unsigned len,
 	       void *data __attribute__ ((unused)))
 {
-  grub_xputs (".");
+  for (; len >= GRUB_DISK_SECTOR_SIZE; len -= GRUB_DISK_SECTOR_SIZE)
+    grub_xputs (".");
+  if (len)
+    grub_xputs (".");
   grub_refresh ();
 }
 

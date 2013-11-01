@@ -1,5 +1,10 @@
 2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Rewrite blocklist functions in order to get progress when
+	reading large extents and decrease amount of blocklist hook calls.
+
+2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/serial.c (options), (grub_cmd_serial): Fix handling
 	of SI suffixes.
 

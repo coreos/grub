@@ -259,10 +259,28 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
   for (p = blocklists; p; p = p->next)
     {
       struct blocklist *q;
+      /* Check if any pair of blocks overlap.  */
       for (q = p->next; q; q = q->next)
         {
-          /* Check if any pair of blocks overlap.  */
-          if (p->sector == q->sector)
+	  grub_disk_addr_t s1, s2;
+	  grub_disk_addr_t e1, e2, t;
+
+	  s1 = p->sector;
+	  e1 = s1 + ((p->length + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
+
+	  s2 = q->sector;
+	  e2 = s2 + ((q->length + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
+
+	  if (s2 > s1)
+	    {
+	      t = s2;
+	      s2 = s1;
+	      s1 = t;
+	      t = e2;
+	      e2 = e1;
+	      e1 = t;
+	    }
+          if (e1 > s2)
             {
               /* This might be actually valid, but it is unbelievable that
                  any filesystem makes such a silly allocation.  */
@@ -286,9 +304,18 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
   part_start = grub_partition_get_start (disk->partition);
 
   buf = grub_envblk_buffer (envblk);
+  char *blockbuf = NULL;
+  grub_size_t blockbuf_len = 0;
   for (p = blocklists, index = 0; p; index += p->length, p = p->next)
     {
-      char blockbuf[GRUB_DISK_SECTOR_SIZE];
+      if (p->length > blockbuf_len)
+	{
+	  grub_free (blockbuf);
+	  blockbuf_len = 2 * p->length;
+	  blockbuf = grub_malloc (blockbuf_len);
+	  if (!blockbuf)
+	    return grub_errno;
+	}
 
       if (grub_disk_read (disk, p->sector - part_start,
                           p->offset, p->length, blockbuf))
@@ -339,10 +366,6 @@ save_env_read_hook (grub_disk_addr_t sector, unsigned offset, unsigned length,
 {
   struct grub_cmd_save_env_ctx *ctx = data;
   struct blocklist *block;
-
-  if (offset + length > GRUB_DISK_SECTOR_SIZE)
-    /* Seemingly a bug.  */
-    return;
 
   block = grub_malloc (sizeof (*block));
   if (! block)

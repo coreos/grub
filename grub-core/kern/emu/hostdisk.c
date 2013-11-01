@@ -155,6 +155,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     disk->total_sectors = grub_util_get_fd_size (fd, map[drive].device,
 						 &disk->log_sector_size);
     disk->total_sectors >>= disk->log_sector_size;
+    disk->max_agglomerate = GRUB_DISK_MAX_MAX_AGGLOMERATE;
 
 #if GRUB_UTIL_FD_STAT_IS_FUNCTIONAL
     {

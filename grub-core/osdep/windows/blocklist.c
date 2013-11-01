@@ -49,7 +49,7 @@ grub_install_get_blocklist (grub_device_t root_dev,
   DWORD rets;
   RETRIEVAL_POINTERS_BUFFER *extbuf;
   size_t extbuf_size;
-  DWORD i, j, k;
+  DWORD i;
   grub_uint64_t sec_per_lcn;
   grub_uint64_t curvcn = 0;
   STARTING_VCN_INPUT_BUFFER start_vcn;
@@ -108,12 +108,8 @@ grub_install_get_blocklist (grub_device_t root_dev,
   CloseHandle (filehd);
 
   for (i = 0; i < extbuf->ExtentCount; i++)
-    {
-      for (j = 0; j < extbuf->Extents[i].NextVcn.QuadPart - curvcn; j++)
-	for (k = 0; k < sec_per_lcn; k++)
-	  callback ((extbuf->Extents[i].Lcn.QuadPart + j)
-		    * sec_per_lcn + first_lcn
-		    + k, 0, 512, hook_data);
-    }
+    callback (extbuf->Extents[i].Lcn.QuadPart
+	      * sec_per_lcn + first_lcn,
+	      0, 512 * sec_per_lcn * (extbuf->Extents[i].NextVcn.QuadPart - curvcn), hook_data);
   free (extbuf);
 }

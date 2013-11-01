@@ -62,23 +62,47 @@ read_blocklist (grub_disk_addr_t sector, unsigned offset, unsigned length,
   if (ctx->num_sectors > 0)
     {
       if (ctx->start_sector + ctx->num_sectors == sector
-	  && offset == 0 && length == GRUB_DISK_SECTOR_SIZE)
+	  && offset == 0 && length >= GRUB_DISK_SECTOR_SIZE)
 	{
-	  ctx->num_sectors++;
-	  return;
+	  ctx->num_sectors += length >> GRUB_DISK_SECTOR_BITS;
+	  sector += length >> GRUB_DISK_SECTOR_BITS;
+	  length &= (GRUB_DISK_SECTOR_SIZE - 1);
 	}
 
+      if (!length)
+	return;
       print_blocklist (ctx->start_sector, ctx->num_sectors, 0, 0, ctx);
       ctx->num_sectors = 0;
     }
 
-  if (offset == 0 && length == GRUB_DISK_SECTOR_SIZE)
+  if (offset)
     {
-      ctx->start_sector = sector;
-      ctx->num_sectors++;
+      unsigned l = length + offset;
+      l &= (GRUB_DISK_SECTOR_SIZE - 1);
+      l -= offset;
+      print_blocklist (sector, 0, offset, l, ctx);
+      length -= l;
+      sector++;
+      offset = 0;
+    }
+
+  if (!length)
+    return;
+
+  if (length & (GRUB_DISK_SECTOR_SIZE - 1))
+    {
+      if (length >> GRUB_DISK_SECTOR_BITS)
+	{
+	  print_blocklist (sector, length >> GRUB_DISK_SECTOR_BITS, 0, 0, ctx);
+	  sector += length >> GRUB_DISK_SECTOR_BITS;
+	}
+      print_blocklist (sector, 0, 0, length & (GRUB_DISK_SECTOR_SIZE - 1), ctx);
     }
   else
-    print_blocklist (sector, 0, offset, length, ctx);
+    {
+      ctx->start_sector = sector;
+      ctx->num_sectors = length >> GRUB_DISK_SECTOR_BITS;
+    }
 }
 
 static grub_err_t

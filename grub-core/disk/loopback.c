@@ -167,6 +167,10 @@ grub_loopback_open (const char *name, grub_disk_t disk)
 			   / GRUB_DISK_SECTOR_SIZE);
   else
     disk->total_sectors = GRUB_DISK_SIZE_UNKNOWN;
+  /* Avoid reading more than 512M.  */
+  disk->max_agglomerate = 1 << (29 - GRUB_DISK_SECTOR_BITS
+				- GRUB_DISK_CACHE_BITS);
+
   disk->id = (unsigned long) dev;
 
   disk->data = dev;

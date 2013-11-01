@@ -70,7 +70,7 @@ grub_install_get_blocklist (grub_device_t root_dev,
 
   if (ioctl (fd, FS_IOC_FIEMAP, &fie1) < 0)
     {
-      int nblocks, i, j;
+      int nblocks, i;
       int bsize;
       int mul;
 
@@ -88,27 +88,25 @@ grub_install_get_blocklist (grub_device_t root_dev,
       for (i = 0; i < nblocks; i++)
 	{
 	  unsigned blk = i;
+	  int rest;
 	  if (ioctl (fd, FIBMAP, &blk) < 0)
 	    grub_util_error (_("can't retrieve blocklists: %s"),
 			     strerror (errno));
 	    
-	  for (j = 0; j < mul; j++)
-	    {
-	      int rest = core_size - ((i * mul + j) << GRUB_DISK_SECTOR_BITS);
-	      if (rest <= 0)
-		break;
-	      if (rest > GRUB_DISK_SECTOR_SIZE)
-		rest = GRUB_DISK_SECTOR_SIZE;
-	      callback (((grub_uint64_t) blk) * mul + j
-			+ container_start,
-			0, rest, hook_data);
-	    }
+	  rest = core_size - ((i * mul) << GRUB_DISK_SECTOR_BITS);
+	  if (rest <= 0)
+	    break;
+	  if (rest > GRUB_DISK_SECTOR_SIZE * mul)
+	    rest = GRUB_DISK_SECTOR_SIZE * mul;
+	  callback (((grub_uint64_t) blk) * mul
+		    + container_start,
+		    0, rest, hook_data);
 	}
     }
   else
     {
       struct fiemap *fie2;
-      int i, j;
+      int i;
       fie2 = xmalloc (sizeof (*fie2)
 		      + fie1.fm_mapped_extents
 		      * sizeof (fie1.fm_extents[1]));
@@ -122,22 +120,12 @@ grub_install_get_blocklist (grub_device_t root_dev,
 			 strerror (errno));
       for (i = 0; i < fie2->fm_mapped_extents; i++)
 	{
-	  for (j = 0;
-	       j < ((fie2->fm_extents[i].fe_length
-		     + GRUB_DISK_SECTOR_SIZE - 1)
-		    >> GRUB_DISK_SECTOR_BITS);
-	       j++)
-	    {
-	      size_t len = (fie2->fm_extents[i].fe_length
-			    - j * GRUB_DISK_SECTOR_SIZE);
-	      if (len > GRUB_DISK_SECTOR_SIZE)
-		len = GRUB_DISK_SECTOR_SIZE;
-	      callback ((fie2->fm_extents[i].fe_physical
-			 >> GRUB_DISK_SECTOR_BITS)
-			+ j + container_start,
-			fie2->fm_extents[i].fe_physical
-			& (GRUB_DISK_SECTOR_SIZE - 1), len, hook_data);
-	    }
+	  callback ((fie2->fm_extents[i].fe_physical
+		     >> GRUB_DISK_SECTOR_BITS)
+		    + container_start,
+		    fie2->fm_extents[i].fe_physical
+		    & (GRUB_DISK_SECTOR_SIZE - 1),
+		    fie2->fm_extents[i].fe_length, hook_data);
 	}
     }
   close (fd);

@@ -285,7 +285,6 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 
   if (addressing == GRUB_ATA_LBA48 && ((sector + size) >> 28) != 0)
     {
-      batch = 65536;
       if (ata->dma)
 	{
 	  cmd = GRUB_ATA_CMD_READ_SECTORS_DMA_EXT;
@@ -301,10 +300,6 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
     {
       if (addressing == GRUB_ATA_LBA48)
 	addressing = GRUB_ATA_LBA;
-      if (addressing != GRUB_ATA_CHS)
-	batch = 256;
-      else
-	batch = 1;
       if (ata->dma)
 	{
 	  cmd = GRUB_ATA_CMD_READ_SECTORS_DMA;
@@ -317,8 +312,10 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	}
     }
 
-  if (batch > (ata->maxbuffer >> ata->log_sector_size))
-    batch = (ata->maxbuffer >> ata->log_sector_size);
+  if (addressing != GRUB_ATA_CHS)
+    batch = 256;
+  else
+    batch = 1;
 
   while (nsectors < size)
     {
@@ -464,6 +461,10 @@ grub_ata_open (const char *name, grub_disk_t disk)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not an ATA harddisk");
 
   disk->total_sectors = ata->size;
+  disk->max_agglomerate = (ata->maxbuffer >> (GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS));
+  if (disk->max_agglomerate > (256U >> (GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS - ata->log_sector_size)))
+    disk->max_agglomerate = (256U >> (GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS - ata->log_sector_size));
+
   disk->log_sector_size = ata->log_sector_size;
 
   disk->id = grub_make_scsi_id (id, bus, 0);
