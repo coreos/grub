@@ -59,7 +59,7 @@ static const struct grub_arg_option options[] =
   {"word",   'w', 0, N_("Set the serial port word length."), 0, ARG_TYPE_INT},
   {"parity", 'r', 0, N_("Set the serial port parity."),      0, ARG_TYPE_STRING},
   {"stop",   't', 0, N_("Set the serial port stop bits."),   0, ARG_TYPE_INT},
-  {"base-clock",   'b', 0, N_("Set the base clock."),   0, ARG_TYPE_INT},
+  {"base-clock",   'b', 0, N_("Set the base clock."),   0, ARG_TYPE_STRING},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -254,6 +254,8 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
     {
       char *ptr;
       config.base_clock = grub_strtoull (state[OPTION_BASE_CLOCK].arg, &ptr, 0);
+      if (grub_errno)
+	return grub_errno;
       if (ptr && *ptr == 'M')
 	config.base_clock *= 1000000;
       if (ptr && (*ptr == 'k' || *ptr == 'K'))

@@ -1,5 +1,10 @@
 2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/serial.c (options), (grub_cmd_serial): Fix handling
+	of SI suffixes.
+
+2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support --base-clock for serial command to handle weird cards with
 	non-standard base clock.
 
