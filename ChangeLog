@@ -1,3 +1,8 @@
+2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/dl.c: Unify section-finding algorithm. Saves 30 bytes
+	on core size.
+
 2013-10-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/mm.c (grub_realloc): Don't copy more data than we have.

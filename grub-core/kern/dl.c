@@ -433,6 +433,24 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
   return GRUB_ERR_NONE;
 }
 
+static Elf_Shdr *
+grub_dl_find_section (Elf_Ehdr *e, const char *name)
+{
+  Elf_Shdr *s;
+  const char *str;
+  unsigned i;
+
+  s = (Elf_Shdr *) ((char *) e + e->e_shoff + e->e_shstrndx * e->e_shentsize);
+  str = (char *) e + s->sh_offset;
+
+  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
+    if (grub_strcmp (str + s->sh_name, name) == 0)
+      return s;
+  return NULL;
+}
+
 /* Me, Vladimir Serbinenko, hereby I add this module check as per new
    GNU module policy. Note that this license check is informative only.
    Modules have to be licensed under GPLv3 or GPLv3+ (optionally
@@ -444,24 +462,11 @@ grub_dl_resolve_symbols (grub_dl_t mod, Elf_Ehdr *e)
 static grub_err_t
 grub_dl_check_license (Elf_Ehdr *e)
 {
-  Elf_Shdr *s;
-  const char *str;
-  unsigned i;
-
-  s = (Elf_Shdr *) ((char *) e + e->e_shoff + e->e_shstrndx * e->e_shentsize);
-  str = (char *) e + s->sh_offset;
-
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (grub_strcmp (str + s->sh_name, ".module_license") == 0)
-      {
-	if (grub_strcmp ((char *) e + s->sh_offset, "LICENSE=GPLv3") == 0
+  Elf_Shdr *s = grub_dl_find_section (e, ".module_license");
+  if (s && (grub_strcmp ((char *) e + s->sh_offset, "LICENSE=GPLv3") == 0
 	    || grub_strcmp ((char *) e + s->sh_offset, "LICENSE=GPLv3+") == 0
-	    || grub_strcmp ((char *) e + s->sh_offset, "LICENSE=GPLv2+") == 0)
-	  return GRUB_ERR_NONE;
-      }
-
+	    || grub_strcmp ((char *) e + s->sh_offset, "LICENSE=GPLv2+") == 0))
+    return GRUB_ERR_NONE;
   return grub_error (GRUB_ERR_BAD_MODULE, "incompatible license");
 }
 
@@ -469,25 +474,14 @@ static grub_err_t
 grub_dl_resolve_name (grub_dl_t mod, Elf_Ehdr *e)
 {
   Elf_Shdr *s;
-  const char *str;
-  unsigned i;
 
-  s = (Elf_Shdr *) ((char *) e + e->e_shoff + e->e_shstrndx * e->e_shentsize);
-  str = (char *) e + s->sh_offset;
-
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (grub_strcmp (str + s->sh_name, ".modname") == 0)
-      {
-	mod->name = grub_strdup ((char *) e + s->sh_offset);
-	if (! mod->name)
-	  return grub_errno;
-	break;
-      }
-
-  if (i == e->e_shnum)
+  s = grub_dl_find_section (e, ".modname");
+  if (!s)
     return grub_error (GRUB_ERR_BAD_MODULE, "no module name found");
+  
+  mod->name = grub_strdup ((char *) e + s->sh_offset);
+  if (! mod->name)
+    return grub_errno;
 
   return GRUB_ERR_NONE;
 }
@@ -496,42 +490,36 @@ static grub_err_t
 grub_dl_resolve_dependencies (grub_dl_t mod, Elf_Ehdr *e)
 {
   Elf_Shdr *s;
-  const char *str;
-  unsigned i;
 
-  s = (Elf_Shdr *) ((char *) e + e->e_shoff + e->e_shstrndx * e->e_shentsize);
-  str = (char *) e + s->sh_offset;
+  s = grub_dl_find_section (e, ".moddeps");
 
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (grub_strcmp (str + s->sh_name, ".moddeps") == 0)
-      {
-	const char *name = (char *) e + s->sh_offset;
-	const char *max = name + s->sh_size;
+  if (!s)
+    return GRUB_ERR_NONE;
 
-	while ((name < max) && (*name))
-	  {
-	    grub_dl_t m;
-	    grub_dl_dep_t dep;
+  const char *name = (char *) e + s->sh_offset;
+  const char *max = name + s->sh_size;
 
-	    m = grub_dl_load (name);
-	    if (! m)
-	      return grub_errno;
+  while ((name < max) && (*name))
+    {
+      grub_dl_t m;
+      grub_dl_dep_t dep;
 
-	    grub_dl_ref (m);
+      m = grub_dl_load (name);
+      if (! m)
+	return grub_errno;
 
-	    dep = (grub_dl_dep_t) grub_malloc (sizeof (*dep));
-	    if (! dep)
-	      return grub_errno;
+      grub_dl_ref (m);
 
-	    dep->mod = m;
-	    dep->next = mod->dep;
-	    mod->dep = dep;
+      dep = (grub_dl_dep_t) grub_malloc (sizeof (*dep));
+      if (! dep)
+	return grub_errno;
 
-	    name += grub_strlen (name) + 1;
-	  }
-      }
+      dep->mod = m;
+      dep->next = mod->dep;
+      mod->dep = dep;
+
+      name += grub_strlen (name) + 1;
+    }
 
   return GRUB_ERR_NONE;
 }
