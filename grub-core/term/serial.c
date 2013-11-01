@@ -39,6 +39,17 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 #define FOR_SERIAL_PORTS(var) FOR_LIST_ELEMENTS((var), (grub_serial_ports))
 
+enum
+  {
+    OPTION_UNIT,
+    OPTION_PORT,
+    OPTION_SPEED,
+    OPTION_WORD,
+    OPTION_PARITY,
+    OPTION_STOP,
+    OPTION_BASE_CLOCK
+  };
+
 /* Argument options.  */
 static const struct grub_arg_option options[] =
 {
@@ -48,6 +59,7 @@ static const struct grub_arg_option options[] =
   {"word",   'w', 0, N_("Set the serial port word length."), 0, ARG_TYPE_INT},
   {"parity", 'r', 0, N_("Set the serial port parity."),      0, ARG_TYPE_STRING},
   {"stop",   't', 0, N_("Set the serial port stop bits."),   0, ARG_TYPE_INT},
+  {"base-clock",   'b', 0, N_("Set the base clock."),   0, ARG_TYPE_INT},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -178,14 +190,14 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
   struct grub_serial_config config;
   grub_err_t err;
 
-  if (state[0].set)
+  if (state[OPTION_UNIT].set)
     {
       grub_snprintf (pname, sizeof (pname), "com%ld",
 		     grub_strtoul (state[0].arg, 0, 0));
       name = pname;
     }
 
-  if (state[1].set)
+  if (state[OPTION_PORT].set)
     {
       grub_snprintf (pname, sizeof (pname), "port%lx",
 		     grub_strtoul (state[1].arg, 0, 0));
@@ -206,36 +218,46 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 
   config = port->config;
 
-  if (state[2].set)
-    config.speed = grub_strtoul (state[2].arg, 0, 0);
+  if (state[OPTION_SPEED].set)
+    config.speed = grub_strtoul (state[OPTION_SPEED].arg, 0, 0);
 
-  if (state[3].set)
-    config.word_len = grub_strtoul (state[3].arg, 0, 0);
+  if (state[OPTION_WORD].set)
+    config.word_len = grub_strtoul (state[OPTION_WORD].arg, 0, 0);
 
-  if (state[4].set)
+  if (state[OPTION_PARITY].set)
     {
-      if (! grub_strcmp (state[4].arg, "no"))
+      if (! grub_strcmp (state[OPTION_PARITY].arg, "no"))
 	config.parity = GRUB_SERIAL_PARITY_NONE;
-      else if (! grub_strcmp (state[4].arg, "odd"))
+      else if (! grub_strcmp (state[OPTION_PARITY].arg, "odd"))
 	config.parity = GRUB_SERIAL_PARITY_ODD;
-      else if (! grub_strcmp (state[4].arg, "even"))
+      else if (! grub_strcmp (state[OPTION_PARITY].arg, "even"))
 	config.parity = GRUB_SERIAL_PARITY_EVEN;
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			   N_("unsupported serial port parity"));
     }
 
-  if (state[5].set)
+  if (state[OPTION_STOP].set)
     {
-      if (! grub_strcmp (state[5].arg, "1"))
+      if (! grub_strcmp (state[OPTION_STOP].arg, "1"))
 	config.stop_bits = GRUB_SERIAL_STOP_BITS_1;
-      else if (! grub_strcmp (state[5].arg, "2"))
+      else if (! grub_strcmp (state[OPTION_STOP].arg, "2"))
 	config.stop_bits = GRUB_SERIAL_STOP_BITS_2;
-      else if (! grub_strcmp (state[5].arg, "1.5"))
+      else if (! grub_strcmp (state[OPTION_STOP].arg, "1.5"))
 	config.stop_bits = GRUB_SERIAL_STOP_BITS_1_5;
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			   N_("unsupported serial port stop bits number"));
+    }
+
+  if (state[OPTION_BASE_CLOCK].set)
+    {
+      char *ptr;
+      config.base_clock = grub_strtoull (state[OPTION_BASE_CLOCK].arg, &ptr, 0);
+      if (ptr && *ptr == 'M')
+	config.base_clock *= 1000000;
+      if (ptr && (*ptr == 'k' || *ptr == 'K'))
+	config.base_clock *= 1000;
     }
 
   /* Initialize with new settings.  */

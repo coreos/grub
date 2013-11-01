@@ -1,5 +1,10 @@
 2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support --base-clock for serial command to handle weird cards with
+	non-standard base clock.
+
+2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ext2.c (grub_ext2_read_symlink): Use memcpy rather
 	strncpy.
 	* grub-core/fs/jfs.c (grub_jfs_lookup_symlink): Likewise.

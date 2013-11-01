@@ -67,6 +67,7 @@ struct grub_serial_config
   int word_len;
   grub_serial_parity_t parity;
   grub_serial_stop_bits_t stop_bits;
+  grub_uint64_t base_clock;
 };
 
 struct grub_serial_port
@@ -163,7 +164,8 @@ grub_serial_config_defaults (struct grub_serial_port *port)
 #endif
       .word_len = 8,
       .parity = GRUB_SERIAL_PARITY_NONE,
-      .stop_bits = GRUB_SERIAL_STOP_BITS_1
+      .stop_bits = GRUB_SERIAL_STOP_BITS_1,
+      .base_clock = 0
     };
 
   return port->driver->configure (port, &config);

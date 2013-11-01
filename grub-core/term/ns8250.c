@@ -38,46 +38,33 @@ static const grub_port_t serial_hw_io_addr[] = GRUB_MACHINE_SERIAL_PORTS;
 
 static int dead_ports = 0;
 
+#ifdef GRUB_MACHINE_MIPS_LOONGSON
+#define DEFAULT_BASE_CLOCK (2 * 115200)
+#else
+#define DEFAULT_BASE_CLOCK 115200
+#endif
+
+
 /* Convert speed to divisor.  */
 static unsigned short
 serial_get_divisor (const struct grub_serial_port *port __attribute__ ((unused)),
 		    const struct grub_serial_config *config)
 {
-  unsigned int i;
+  grub_uint32_t base_clock;
+  grub_uint32_t divisor;
+  grub_uint32_t actual_speed, error;
 
-  /* The structure for speed vs. divisor.  */
-  struct divisor
-  {
-    unsigned int speed;
-    unsigned short div;
-  };
+  base_clock = config->base_clock ? (config->base_clock >> 4) : DEFAULT_BASE_CLOCK;
 
-  /* The table which lists common configurations.  */
-  /* 1843200 / (speed * 16)  */
-  static struct divisor divisor_tab[] =
-    {
-      { 2400,   0x0030 },
-      { 4800,   0x0018 },
-      { 9600,   0x000C },
-      { 19200,  0x0006 },
-      { 38400,  0x0003 },
-      { 57600,  0x0002 },
-      { 115200, 0x0001 }
-    };
-
-  /* Set the baud rate.  */
-  for (i = 0; i < ARRAY_SIZE (divisor_tab); i++)
-    if (divisor_tab[i].speed == config->speed)
-      {
-	/* internal Loongson UART runs twice the usual rate.  */
-#ifdef GRUB_MACHINE_MIPS_LOONGSON
-	if (port->port == 0xbff003f8)
-	  return 2 * divisor_tab[i].div;
-	else
-#endif
-	  return divisor_tab[i].div;
-      }
-  return 0;
+  divisor = (base_clock + (config->speed / 2)) / config->speed;
+  if (divisor > 0xffff || divisor == 0)
+    return 0;
+  actual_speed = base_clock / divisor;
+  error = actual_speed > config->speed ? (actual_speed - config->speed)
+    : (config->speed - actual_speed);
+  if (error > (config->speed / 30 + 1))
+    return 0;
+  return divisor;
 }
 
 static void
