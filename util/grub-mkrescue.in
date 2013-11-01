@@ -370,11 +370,11 @@ if test -e "${efi64_dir}" || test -e "${efi32_dir}" || test -e "${ia64_dir}"; th
     mkdir -p "${efi_dir}/efi/boot"
 
     # build bootia64.efi
-    make_image "${ia64_dir}" ia64-efi "${efi_dir}"/efi/boot/bootia64.efi ""
+    make_image_fwdisk "${ia64_dir}" ia64-efi "${efi_dir}"/efi/boot/bootia64.efi ""
     # build bootx64.efi
-    make_image "${efi64_dir}" x86_64-efi "${efi_dir}"/efi/boot/bootx64.efi ""
+    make_image_fwdisk "${efi64_dir}" x86_64-efi "${efi_dir}"/efi/boot/bootx64.efi ""
     # build bootia32.efi
-    make_image "${efi32_dir}" i386-efi "${efi_dir}"/efi/boot/bootia32.efi ""
+    make_image_fwdisk "${efi32_dir}" i386-efi "${efi_dir}"/efi/boot/bootia32.efi ""
     if [ -e "${efi_dir}"/efi/boot/bootia32.efi ]; then
         # For old macs. Suggested by Peter Jones.
 	cp "${efi_dir}"/efi/boot/bootia32.efi "${efi_dir}"/efi/boot/boot.efi

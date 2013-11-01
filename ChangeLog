@@ -1,5 +1,9 @@
 2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.in: Do not use UUID search on EFI.
+
+2013-11-01  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/dl.c: Unify section-finding algorithm. Saves 30 bytes
 	on core size.
 
