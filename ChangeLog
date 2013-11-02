@@ -1,5 +1,9 @@
 2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mount.c: Handle symlinks to directories.
+
+2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/fshelp.c (find_file): Save ctx->next when calling
 	find_file recursively for symlink.
 

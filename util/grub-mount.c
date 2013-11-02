@@ -205,17 +205,24 @@ fuse_getattr (const char *path, struct stat *st)
   st->st_uid = 0;
   st->st_gid = 0;
   st->st_rdev = 0;
+  st->st_size = 0;
   if (!ctx.file_info.dir)
     {
       grub_file_t file;
       file = grub_file_open (path);
-      if (! file)
+      if (! file && grub_errno == GRUB_ERR_BAD_FILE_TYPE)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  st->st_mode = (0555 | S_IFDIR);
+	}
+      else if (! file)
 	return translate_error ();
-      st->st_size = file->size;
-      grub_file_close (file);
+      else
+	{
+	  st->st_size = file->size;
+	  grub_file_close (file);
+	}
     }
-  else
-    st->st_size = 0;
   st->st_blksize = 512;
   st->st_blocks = (st->st_size + 511) >> 9;
   st->st_atime = st->st_mtime = st->st_ctime = ctx.file_info.mtimeset
@@ -304,10 +311,21 @@ fuse_readdir_call_fill (const char *filename,
       tmp = xasprintf ("%s/%s", ctx->path, filename);
       file = grub_file_open (tmp);
       free (tmp);
-      if (! file)
-	return translate_error ();
-      st.st_size = file->size;
-      grub_file_close (file);
+      /* Symlink to directory.  */
+      if (! file && grub_errno == GRUB_ERR_BAD_FILE_TYPE)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	  st.st_mode = (0555 | S_IFDIR);
+	}
+      else if (!file)
+	{
+	  grub_errno = GRUB_ERR_NONE;
+	}
+      else
+	{
+	  st.st_size = file->size;
+	  grub_file_close (file);
+	}
     }
   st.st_blksize = 512;
   st.st_blocks = (st.st_size + 511) >> 9;
