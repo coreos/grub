@@ -1,5 +1,9 @@
 2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac (TARGET_CFLAGS): Add -march=i386 on i386.
+
+2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/hfspluscomp.c (hfsplus_read_compressed_real): Call
 	file_progress_read_hook.
 	* grub-core/fs/ntfscomp.c (hfsplus_read_compressed_real): Likewise.

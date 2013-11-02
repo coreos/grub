@@ -494,6 +494,10 @@ if ( test "x$target_cpu" = xi386 || test "x$target_cpu" = xx86_64 ) && test "x$p
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
 fi
 
+if test "x$target_cpu" = xi386 && test "x$platform" != xemu; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -march=i386"
+fi
+
 # By default, GCC 4.4 generates .eh_frame sections containing unwind
 # information in some cases where it previously did not. GRUB doesn't need
 # these and they just use up vital space. Restore the old compiler
