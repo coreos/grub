@@ -1,3 +1,7 @@
+2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Don't add -m32/-m64 on emu.
+
 2013-11-02  neil
 
 	* grub-core/osdep/linux/blocklist.c: Include linux/types.h for some

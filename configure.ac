@@ -163,10 +163,12 @@ case "$target_cpu"-"$platform" in
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
 
-case "$target_cpu" in
-  i386 | powerpc) target_m32=1 ;;
-  x86_64 | sparc64) target_m64=1 ;;
-esac
+if [ x$platform != xemu ]; then
+   case "$target_cpu" in
+	i386 | powerpc) target_m32=1 ;;
+	x86_64 | sparc64) target_m64=1 ;;
+   esac
+fi
 
 case "$target_os" in
   windows* | mingw32*) target_os=cygwin ;;
