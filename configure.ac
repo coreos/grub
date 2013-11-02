@@ -163,7 +163,7 @@ case "$target_cpu"-"$platform" in
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
 
-if [ x$platform != xemu ]; then
+if test x$platform != xemu ; then
    case "$target_cpu" in
 	i386 | powerpc) target_m32=1 ;;
 	x86_64 | sparc64) target_m64=1 ;;
