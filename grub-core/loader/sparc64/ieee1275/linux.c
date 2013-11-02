@@ -428,7 +428,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 /* Helper for determine_phys_base.  */
 static int
 get_physbase (grub_uint64_t addr, grub_uint64_t len __attribute__ ((unused)),
-	      grub_uint32_t type, void *data __attribute__ ((unused)))
+	      grub_memory_type_t type, void *data __attribute__ ((unused)))
 {
   if (type != 1)
     return 0;

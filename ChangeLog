@@ -1,5 +1,10 @@
 2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/sparc64/ieee1275/linux.c (get_physbase): Fix
+	signature.
+
+2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/efi/efidisk.c (grub_efidisk_readwrite): Remove unused
 	variable.
 
