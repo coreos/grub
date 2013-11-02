@@ -28,6 +28,7 @@
 #include <dirent.h>
 #include <assert.h>
 #include <sys/ioctl.h>
+#include <linux/types.h>
 #include <linux/fs.h>
 #include <linux/fiemap.h>
 
