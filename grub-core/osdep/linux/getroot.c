@@ -102,8 +102,9 @@ struct btrfs_ioctl_search_key
 };
 
 struct btrfs_ioctl_search_args {
-	struct btrfs_ioctl_search_key key;
-	char buf[4096 - sizeof(struct btrfs_ioctl_search_key)];
+  struct btrfs_ioctl_search_key key;
+  grub_uint64_t buf[(4096 - sizeof(struct btrfs_ioctl_search_key))
+		    / sizeof (grub_uint64_t)];
 };
 
 #define BTRFS_IOC_TREE_SEARCH _IOWR(0x94, 17, \
@@ -283,7 +284,6 @@ get_btrfs_fs_prefix (const char *mount_path)
   while (tree_id != GRUB_BTRFS_ROOT_VOL_OBJECTID
 	 || inode_id != GRUB_BTRFS_TREE_ROOT_OBJECTID)
     {
-      grub_uint64_t *nid;
       const char *name;
       size_t namelen;
       struct btrfs_ioctl_search_args sargs;
@@ -314,9 +314,8 @@ get_btrfs_fs_prefix (const char *mount_path)
 	  if (sargs.key.nr_items == 0)
 	    return NULL;
       
-	  nid = (grub_uint64_t *) (sargs.buf + 16);
-	  tree_id = *nid;
-	  br = (struct grub_btrfs_root_backref *) (sargs.buf + 32);
+	  tree_id = sargs.buf[2];
+	  br = (struct grub_btrfs_root_backref *) (sargs.buf + 4);
 	  inode_id = br->inode_id;
 	  name = br->name;
 	  namelen = br->n;
@@ -342,10 +341,9 @@ get_btrfs_fs_prefix (const char *mount_path)
 	  if (sargs.key.nr_items == 0)
 	    return NULL;
 
-	  nid = (grub_uint64_t *) (sargs.buf + 16);
-	  inode_id = *nid;
+	  inode_id = sargs.buf[2];
 
-	  ir = (struct grub_btrfs_inode_ref *) (sargs.buf + 32);
+	  ir = (struct grub_btrfs_inode_ref *) (sargs.buf + 4);
 	  name = ir->name;
 	  namelen = ir->n;
 	}
