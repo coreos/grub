@@ -133,6 +133,7 @@ find_file (const char *currpath, grub_fshelp_node_t currroot,
       if (ctx->type == GRUB_FSHELP_SYMLINK)
 	{
 	  char *symlink;
+	  const char *next;
 
 	  /* Test if the symlink does not loop.  */
 	  if (++ctx->symlinknest == 8)
@@ -164,8 +165,10 @@ find_file (const char *currpath, grub_fshelp_node_t currroot,
 	    }
 
 	  /* Lookup the node the symlink points to.  */
+	  next = ctx->next;
 	  find_file (symlink, ctx->oldnode, &ctx->currnode,
 		     iterate_dir, read_symlink, ctx);
+	  ctx->next = next;
 	  ctx->type = ctx->foundtype;
 	  grub_free (symlink);
 
