@@ -1,5 +1,9 @@
 2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Use 0x8000 for address instead of 8000.
+
+2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/sparc64/ieee1275/linux.c (get_physbase): Fix
 	signature.
 

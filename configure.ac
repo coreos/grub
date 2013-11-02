@@ -844,7 +844,7 @@ if test "x$target_cpu" = xi386; then
   if test "$platform" != emu && test "x$TARGET_APPLE_CC" != x1 ; then
     if test ! -z "$TARGET_IMG_LDSCRIPT"; then
       # Check symbols provided by linker script.
-      CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC} ${TARGET_IMG_BASE_LDOPT},8000 -Wl,--defsym,___main=0x8100"
+      CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC} ${TARGET_IMG_BASE_LDOPT},0x8000 -Wl,--defsym,___main=0x8100"
     fi
     grub_CHECK_BSS_START_SYMBOL
     grub_CHECK_END_SYMBOL
