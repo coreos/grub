@@ -544,10 +544,8 @@ static grub_efi_status_t
 grub_efidisk_readwrite (struct grub_disk *disk, grub_disk_addr_t sector,
 			grub_size_t size, char *buf, int wr)
 {
-  /* For now, use the disk io interface rather than the block io's.  */
   struct grub_efidisk_data *d;
   grub_efi_block_io_t *bio;
-  grub_efi_status_t status;
 
   d = disk->data;
   bio = d->block_io;

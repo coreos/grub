@@ -1,5 +1,10 @@
 2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/efi/efidisk.c (grub_efidisk_readwrite): Remove unused
+	variable.
+
+2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac (TARGET_CFLAGS): Add -march=i386 on i386.
 
 2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
