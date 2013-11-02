@@ -23,6 +23,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/deflate.h>
+#include <grub/file.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -121,6 +122,8 @@ hfsplus_read_compressed_real (struct grub_hfsplus_file *node,
   if (node->compressed == 1)
     {
       grub_memcpy (buf, node->cbuf + pos, len);
+      if (grub_file_progress_hook && node->file)
+	grub_file_progress_hook (0, 0, len, node->file);
       return len;
     }
 
@@ -162,6 +165,8 @@ hfsplus_read_compressed_real (struct grub_hfsplus_file *node,
 	}
       grub_memcpy (buf, node->cbuf + (pos % HFSPLUS_COMPRESS_BLOCK_SIZE),
 		   curlen);
+      if (grub_file_progress_hook && node->file)
+	grub_file_progress_hook (0, 0, curlen, node->file);
       buf += curlen;
       pos += curlen;
       len -= curlen;

@@ -378,6 +378,9 @@ read_data (struct grub_ntfs_attr *at, grub_uint8_t *pa, grub_uint8_t *dest,
   ctx->comp.log_spc = at->mft->data->log_spc;
   ctx->comp.disk = at->mft->data->disk;
 
+  if (read_hook == grub_file_progress_hook)
+    ctx->file = read_hook_data;
+
   if (pa[8] == 0)
     {
       if (ofs + len > u32at (pa, 0x10))

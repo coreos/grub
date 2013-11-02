@@ -183,6 +183,7 @@ struct grub_ntfs_rlst
   grub_uint8_t *cur_run;
   struct grub_ntfs_attr *attr;
   struct grub_ntfs_comp comp;
+  void *file;
 };
 
 typedef grub_err_t (*grub_ntfscomp_func_t) (grub_uint8_t *dest,

@@ -56,6 +56,7 @@ struct grub_hfsplus_file
   grub_int32_t mtime;
   int compressed;
   char *cbuf;
+  void *file;
   struct grub_hfsplus_compress_index *compress_index;
   grub_uint32_t cbuf_block;
   grub_uint32_t compress_index_size;

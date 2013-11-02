@@ -888,6 +888,8 @@ grub_hfsplus_read (grub_file_t file, char *buf, grub_size_t len)
   struct grub_hfsplus_data *data =
     (struct grub_hfsplus_data *) file->data;
 
+  data->opened_file.file = file;
+
   if (grub_hfsplus_read_compressed && data->opened_file.compressed)
     return grub_hfsplus_read_compressed (&data->opened_file,
 					 file->offset, len, buf);
