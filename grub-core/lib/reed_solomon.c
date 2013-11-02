@@ -382,9 +382,16 @@ grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs)
 {
   gf_single_t *ptr = ptr_;
   gf_single_t *rptr = ptr + s;
+  grub_uint8_t *cptr;
 
   /* Nothing to do.  */
   if (!rs)
+    return;
+
+  for (cptr = rptr + rs - 1; cptr >= rptr; cptr--)
+    if (*cptr)
+      break;
+  if (rptr + rs - 1 - cptr > (grub_ssize_t) rs / 2)
     return;
 
   init_powx ();
