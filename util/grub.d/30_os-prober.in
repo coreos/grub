@@ -134,6 +134,12 @@ EOF
       save_default_entry | grub_add_tab
       prepare_grub_to_access_device ${DEVICE} | grub_add_tab
 
+      if [ x"`${grub_probe} --device ${DEVICE} --target=partmap`" = xmsdos ]; then
+	  cat << EOF
+	parttool \${root} hidden-
+EOF
+      fi
+
       case ${LONGNAME} in
 	Windows\ Vista*|Windows\ 7*|Windows\ Server\ 2008*)
 	;;

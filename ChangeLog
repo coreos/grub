@@ -1,5 +1,9 @@
 2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub.d/30_os-prober.in: Add unhiding of partition if on msdos.
+
+2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/reed_solomon.c (grub_reed_solomon_recover): Don't do
 	Reed-Solomon recovery if more than half of redundancy info is 0.
 
