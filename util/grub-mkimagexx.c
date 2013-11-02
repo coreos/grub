@@ -806,7 +806,8 @@ SUFFIX (check_elf_header) (Elf_Ehdr *e, size_t size, const struct grub_install_i
    into .text and .data, respectively. Return the array of section
    addresses.  */
 static Elf_Addr *
-SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
+SUFFIX (locate_sections) (const char *kernel_path,
+			  Elf_Shdr *sections, Elf_Half section_entsize,
 			  Elf_Half num_sections, const char *strtab,
 			  size_t *exec_size, size_t *kernel_sz,
 			  size_t *all_align,
@@ -846,8 +847,17 @@ SUFFIX (locate_sections) (Elf_Shdr *sections, Elf_Half section_entsize,
 	grub_util_info ("locating the section %s at 0x%llx",
 			name, (unsigned long long) current_address);
 	if (image_target->id != IMAGE_EFI)
-	  current_address = grub_host_to_target_addr (s->sh_addr)
-	    - image_target->link_addr;
+	  {
+	    current_address = grub_host_to_target_addr (s->sh_addr)
+	      - image_target->link_addr;
+	    if (grub_host_to_target_addr (s->sh_addr)
+		!= image_target->link_addr)
+	      grub_util_error ("`%s' is miscompiled: it's start address is 0x%llx"
+			       " instead of 0x%llx: ld.gold bug?",
+			       kernel_path,
+			       (unsigned long long) grub_host_to_target_addr (s->sh_addr),
+			       (unsigned long long) image_target->link_addr);
+	  }
 	section_addresses[i] = current_address;
 	current_address += grub_host_to_target_addr (s->sh_size);
       }
@@ -935,7 +945,8 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 		      + grub_host_to_target16 (e->e_shstrndx) * section_entsize);
   strtab = (char *) e + grub_host_to_target_addr (s->sh_offset);
 
-  section_addresses = SUFFIX (locate_sections) (sections, section_entsize,
+  section_addresses = SUFFIX (locate_sections) (kernel_path,
+						sections, section_entsize,
 						num_sections, strtab,
 						exec_size, kernel_sz, align,
 						image_target);
