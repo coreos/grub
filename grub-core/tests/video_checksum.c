@@ -39,7 +39,7 @@ static char *basename;
 static const grub_uint32_t *checksums;
 static struct grub_video_mode_info capt_mode_info;
 
-struct grub_video_mode_info grub_test_video_modes[30] = {
+struct grub_video_mode_info grub_test_video_modes[GRUB_TEST_VIDEO_ALL_N_MODES] = {
   {
     .width = 640,
     .height = 480,
@@ -85,7 +85,12 @@ struct grub_video_mode_info grub_test_video_modes[30] = {
     .pitch = 1024 * 4,
     GRUB_VIDEO_MI_RGBA8888()
   },
-
+  {
+    .width = 2560,
+    .height = 1440,
+    .pitch = 2560 * 4,
+    GRUB_VIDEO_MI_RGBA8888()
+  },
   {
     .width = 640,
     .height = 480,

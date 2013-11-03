@@ -1,5 +1,9 @@
 2013-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/video_checksum.c: Add 2560x1440 mode to testing.
+
+2013-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/term.h (grub_term_coordinate): Extend to 16-bit per
 	coordinate.
 
