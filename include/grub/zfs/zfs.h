@@ -153,10 +153,6 @@ extern grub_crypto_cipher_handle_t (*grub_zfs_load_key) (const struct grub_zfs_k
 							 grub_uint64_t salt,
 							 grub_uint64_t algo);
 
-grub_err_t
-grub_zfs_get_property (grub_device_t dev,
-		       const char *fsfilename, const char *propname,
-		       grub_uint64_t *property);
 
 
 #endif	/* ! GRUB_ZFS_HEADER */

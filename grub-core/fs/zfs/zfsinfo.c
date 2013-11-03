@@ -419,72 +419,14 @@ grub_cmd_zfs_bootfs (grub_command_t cmd __attribute__ ((unused)), int argc,
   return GRUB_ERR_NONE;
 }
 
-static grub_err_t
-grub_cmd_zfs_property (grub_command_t cmd __attribute__ ((unused)), int argc,
-		       char **args)
-{
-  grub_device_t device = 0;
-  char *device_name;
-  const char *file_name;
-  char *fs_name = NULL;
-  const char *name, *ptr;
-  grub_uint64_t property;
-  grub_err_t err;
 
-  if (argc < 2)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("two arguments expected"));
-
-  name = args[0];
-  device_name = grub_file_get_device_name (name);
-  if (grub_errno)
-    return grub_errno;
-
-  /* Get the file part of NAME.  */  
-  file_name = (name[0] == '(') ? grub_strchr (name, ')') : NULL;
-  if (file_name)
-    file_name++;
-  else
-    file_name = name;
-
-  device = grub_device_open (device_name);
-  grub_free (device_name);
-  if (! device)
-    return grub_errno;
-
-  ptr = grub_strchr (file_name, '@');
-  if (ptr)
-    {
-      fs_name = grub_strndup (file_name, ptr - file_name);
-      if (!fs_name)
-	{
-	  grub_device_close (device);
-	  return grub_errno;
-	}
-    }
-
-  err = grub_zfs_get_property (device, fs_name ? : file_name, args[1],
-			       &property);
-  grub_free (fs_name);
-  grub_device_close (device);
-  if (err)
-    return err;
-
-  grub_printf ("0x%llx\n", (unsigned long long) property);
-
-  return GRUB_ERR_NONE;
-}
-
-
-static grub_command_t cmd_info, cmd_bootfs, cmd_property;
+static grub_command_t cmd_info, cmd_bootfs;
 
 GRUB_MOD_INIT (zfsinfo)
 {
   cmd_info = grub_register_command ("zfsinfo", grub_cmd_zfsinfo,
 				    N_("DEVICE"),
 				    N_("Print ZFS info about DEVICE."));
-  cmd_property = grub_register_command ("zfsproperty", grub_cmd_zfs_property,
-					N_("SUBVOLUME PROPNAME"),
-					N_("Print ZFS property value."));
   cmd_bootfs = grub_register_command ("zfs-bootfs", grub_cmd_zfs_bootfs,
 				      N_("FILESYSTEM [VARIABLE]"),
 				      N_("Print ZFS-BOOTFSOBJ or store it into VARIABLE"));
@@ -494,5 +436,4 @@ GRUB_MOD_FINI (zfsinfo)
 {
   grub_unregister_command (cmd_info);
   grub_unregister_command (cmd_bootfs);
-  grub_unregister_command (cmd_property);
 }

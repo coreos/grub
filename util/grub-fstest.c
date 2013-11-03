@@ -417,11 +417,9 @@ fstest (int n)
     {
     case CMD_LS:
       execute_command ("ls", n, args);
-      grub_print_error ();
       break;
     case CMD_ZFSINFO:
-      execute_command ("zfsproperty", n, args);
-      grub_print_error ();
+      execute_command ("zfsinfo", n, args);
       break;
     case CMD_CP:
       cmd_cp (args[0], args[1]);
