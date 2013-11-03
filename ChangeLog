@@ -1,5 +1,9 @@
 2013-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi: Mention RSA support.
+
+2013-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/verify.c: Add RSA support.
 
 2013-11-03  Vladimir Serbinenko  <phcoder@gmail.com>

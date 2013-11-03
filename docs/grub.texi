@@ -5369,9 +5369,8 @@ may halt or otherwise impact the boot process.
 
 GRUB uses GPG-style detached signatures (meaning that a file
 @file{foo.sig} will be produced when file @file{foo} is signed), and
-currently supports the DSA signing algorithm.  Both 2048-bit and
-3072-bit keys are supported. A signing key can be generated as
-follows:
+currently supports the DSA and RSA signing algorithms. A signing key
+can be generated as follows:
 
 @example
 gpg --gen-key
