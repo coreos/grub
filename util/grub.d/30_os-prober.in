@@ -179,7 +179,7 @@ EOF
       fi
       prepare_boot_cache=
       boot_device_id=
-      is_first_entry=true
+      is_top_level=true
       title_correction_code=
       OS="${LONGNAME}"
 
@@ -215,7 +215,7 @@ EOF
 	  prepare_boot_cache="$(prepare_grub_to_access_device ${LBOOT} | grub_add_tab)"
 	fi
 
-	if [ "x$is_first_entry" = xtrue ]; then
+	if [ "x$is_top_level" = xtrue ] && [ "x${GRUB_DISABLE_SUBMENU}" != xy ]; then
             cat << EOF
 menuentry '$(echo "$OS $onstr" | grub_quote)' --class gnu-linux --class gnu --class os \$menuentry_id_option 'osprober-gnulinux-simple-$boot_device_id' {
 EOF
@@ -233,7 +233,7 @@ EOF
 }
 EOF
 	    echo "submenu '$(gettext_printf "Advanced options for %s" "${OS} $onstr" | grub_quote)' \$menuentry_id_option 'osprober-gnulinux-advanced-$boot_device_id' {"
-	    is_first_entry=false
+	    is_top_level=false
 	fi
 	title="${LLABEL} $onstr"
         cat << EOF
@@ -259,7 +259,7 @@ EOF
 	    grub_warn "$(gettext_printf "Please don't use old title \`%s' for GRUB_DEFAULT, use \`%s' (for versions before 2.00) or \`%s' (for 2.00 or later)" "$GRUB_ACTUAL_DEFAULT" "$replacement_title" "gnulinux-advanced-$boot_device_id>gnulinux-$version-$type-$boot_device_id")"
 	fi
       done
-      if [ x"$is_first_entry" != xtrue ]; then
+      if [ x"$is_top_level" != xtrue ]; then
 	  echo '}'
       fi
       echo "$title_correction_code"

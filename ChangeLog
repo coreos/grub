@@ -1,3 +1,9 @@
+2013-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Support GRUB_DISABLE_SUBMENU config.
+
+	Inspired by patch from Prarit Bhargava.
+
 2013-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* docs/grub.texi: Mention RSA support.

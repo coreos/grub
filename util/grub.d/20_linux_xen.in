@@ -193,7 +193,7 @@ esac
 # yet, so it's empty. In a submenu it will be equal to '\t' (one tab).
 submenu_indentation=""
 
-is_first_entry=true
+is_top_level=true
 
 while [ "x${xen_list}" != "x" ] ; do
     list="${linux_list}"
@@ -205,7 +205,7 @@ while [ "x${xen_list}" != "x" ] ; do
     if [ -z "$boot_device_id" ]; then
 	boot_device_id="$(grub_get_device_id "${GRUB_DEVICE}")"
     fi
-    if [ "x$is_first_entry" != xtrue ]; then
+    if [ "x$is_top_level" != xtrue ]; then
 	echo "	submenu '$(gettext_printf "Xen hypervisor, version %s" "${xen_version}" | grub_quote)' \$menuentry_id_option 'xen-hypervisor-$xen_version-$boot_device_id' {"
     fi
     while [ "x$list" != "x" ] ; do
@@ -239,7 +239,7 @@ while [ "x${xen_list}" != "x" ] ; do
 	    linux_root_device_thisversion=${GRUB_DEVICE}
 	fi
 
-	if [ "x$is_first_entry" = xtrue ]; then
+	if [ "x$is_top_level" = xtrue ] && [ "x${GRUB_DISABLE_SUBMENU}" != xy ]; then
 	    linux_entry "${OS}" "${version}" "${xen_version}" simple \
 		"${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}" "${GRUB_CMDLINE_XEN} ${GRUB_CMDLINE_XEN_DEFAULT}"
 
@@ -251,8 +251,8 @@ while [ "x${xen_list}" != "x" ] ; do
             # TRANSLATORS: %s is replaced with an OS name
 	    echo "submenu '$(gettext_printf "Advanced options for %s (with Xen hypervisor)" "${OS}" | grub_quote)' \$menuentry_id_option 'gnulinux-advanced-$boot_device_id' {"
 	echo "	submenu '$(gettext_printf "Xen hypervisor, version %s" "${xen_version}" | grub_quote)' \$menuentry_id_option 'xen-hypervisor-$xen_version-$boot_device_id' {"
+	   is_top_level=false
 	fi
-	is_first_entry=false
 
 	linux_entry "${OS}" "${version}" "${xen_version}" advanced \
 	    "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}" "${GRUB_CMDLINE_XEN} ${GRUB_CMDLINE_XEN_DEFAULT}"
@@ -263,7 +263,7 @@ while [ "x${xen_list}" != "x" ] ; do
 
 	list=`echo $list | tr ' ' '\n' | grep -vx $linux | tr '\n' ' '`
     done
-    if [ x"$is_first_entry" != xtrue ]; then
+    if [ x"$is_top_level" != xtrue ]; then
 	echo '	}'
     fi
     xen_list=`echo $xen_list | tr ' ' '\n' | grep -vx $current_xen | tr '\n' ' '`
@@ -271,7 +271,7 @@ done
 
 # If at least one kernel was found, then we need to
 # add a closing '}' for the submenu command.
-if [ x"$is_first_entry" != xtrue ]; then
+if [ x"$is_top_level" != xtrue ]; then
   echo '}'
 fi
 

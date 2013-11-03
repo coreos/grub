@@ -154,7 +154,7 @@ title_correction_code=
 # yet, so it's empty. In a submenu it will be equal to '\t' (one tab).
 submenu_indentation=""
 
-is_first_entry=true
+is_top_level=true
 
 while [ "x$list" != "x" ] ; do
   kfreebsd=`version_find_latest $list`
@@ -211,7 +211,7 @@ while [ "x$list" != "x" ] ; do
     module_dir_rel=$(make_system_path_relative_to_its_root $module_dir)
   fi
 
-  if [ "x$is_first_entry" = xtrue ]; then
+  if [ "x$is_top_level" = xtrue ] && [ "x${GRUB_DISABLE_SUBMENU}" != xy ]; then
       kfreebsd_entry "${OS}" "${version}" simple
       submenu_indentation="$grub_tab"
     
@@ -220,6 +220,7 @@ while [ "x$list" != "x" ] ; do
       fi
       # TRANSLATORS: %s is replaced with an OS name
       echo "submenu '$(gettext_printf "Advanced options for %s" "${OS}" | grub_quote)' \$menuentry_id_option 'kfreebsd-advanced-$boot_device_id' {"
+      is_top_level=false
   fi
 
   kfreebsd_entry "${OS}" "${version}" advanced
@@ -228,12 +229,11 @@ while [ "x$list" != "x" ] ; do
   fi
 
   list=`echo $list | tr ' ' '\n' | grep -vx $kfreebsd | tr '\n' ' '`
-  is_first_entry=false
 done
 
 # If at least one kernel was found, then we need to
 # add a closing '}' for the submenu command.
-if [ x"$is_first_entry" != xtrue ]; then
+if [ x"$is_top_level" != xtrue ]; then
   echo '}'
 fi
 

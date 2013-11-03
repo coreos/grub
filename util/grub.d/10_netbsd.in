@@ -146,7 +146,7 @@ pattern="^ELF[^,]*executable.*statically linked"
 # yet, so it's empty. In a submenu it will be equal to '\t' (one tab).
 submenu_indentation=""
 
-is_first_entry=true
+is_top_level=true
 for k in /netbsd $(ls -t /netbsd?* 2>/dev/null) ; do
   if ! grub_file_is_not_garbage "$k" ; then
     continue
@@ -157,7 +157,7 @@ for k in /netbsd $(ls -t /netbsd?* 2>/dev/null) ; do
 
   gettext_printf "Found NetBSD kernel: %s\n" "$k" >&2
 
-  if [ "x$is_first_entry" = xtrue ]; then
+  if [ "x$is_top_level" = xtrue ] && [ "x${GRUB_DISABLE_SUBMENU}" != xy ]; then
       netbsd_entry "knetbsd"   "$k" simple "${GRUB_CMDLINE_NETBSD_DEFAULT}"
     submenu_indentation="$grub_tab"
     
@@ -166,6 +166,7 @@ for k in /netbsd $(ls -t /netbsd?* 2>/dev/null) ; do
     fi
     # TRANSLATORS: %s is replaced with an OS name
     echo "submenu '$(gettext_printf "Advanced options for %s" "${OS}" | grub_quote)' \$menuentry_id_option 'netbsd-advanced-$boot_device_id' {"
+    is_top_level=false
   fi
 
   netbsd_entry "knetbsd"   "$k" advanced "${GRUB_CMDLINE_NETBSD_DEFAULT}"
@@ -174,12 +175,11 @@ for k in /netbsd $(ls -t /netbsd?* 2>/dev/null) ; do
     netbsd_entry "knetbsd"   "$k" recovery "-s"
     netbsd_entry "multiboot" "$k" recovery "-s"
   fi
-  is_first_entry=false
 done
 
 # If at least one kernel was found, then we need to
 # add a closing '}' for the submenu command.
-if [ x"$is_first_entry" != xtrue ]; then
+if [ x"$is_top_level" != xtrue ]; then
   echo '}'
 fi
 

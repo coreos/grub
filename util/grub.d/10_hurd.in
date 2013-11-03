@@ -151,29 +151,29 @@ title_correction_code=
 # Extra indentation to add to menu entries in a submenu. We're not in a submenu
 # yet, so it's empty. In a submenu it will be equal to '\t' (one tab).
 submenu_indentation=""
-is_first_entry=true
+is_top_level=true
 
 while [ "x$kernels" != "x" ] ; do
   kernel=`version_find_latest $kernels`
 
-  if [ "x$is_first_entry" = xtrue ]; then
+  if [ "x$is_top_level" = xtrue ] && [ "x${GRUB_DISABLE_SUBMENU}" != xy ]; then
       hurd_entry "$kernel" simple
       submenu_indentation="$grub_tab"
     
       # TRANSLATORS: %s is replaced with an OS name
       echo "submenu '$(gettext_printf "Advanced options for %s" "${OS}" | grub_quote)' \$menuentry_id_option 'gnuhurd-advanced-$(grub_get_device_id "${GRUB_DEVICE_BOOT}")' {"
+      is_top_level=false
   fi
 
   hurd_entry "$kernel" advanced
   hurd_entry "$kernel" recovery
 
   kernels=`echo $kernels | tr ' ' '\n' | grep -vx $kernel | tr '\n' ' '`
-  is_first_entry=false
 done
 
 # If at least one kernel was found, then we need to
 # add a closing '}' for the submenu command.
-if [ x"$is_first_entry" != xtrue ]; then
+if [ x"$is_top_level" != xtrue ]; then
   echo '}'
 fi
 
