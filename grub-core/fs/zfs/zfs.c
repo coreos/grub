@@ -2604,7 +2604,8 @@ dnode_get (dnode_end_t * mdn, grub_uint64_t objnum, grub_uint8_t type,
       grub_memmove (&(buf->dn), &(data->dnode_buf)[idx], DNODE_SIZE);
       buf->endian = data->dnode_endian;
       if (type && buf->dn.dn_type != type) 
-	return grub_error(GRUB_ERR_BAD_FS, "incorrect dnode type"); 
+	return grub_error(GRUB_ERR_BAD_FS, "incorrect dnode type: %x, %x",
+			  buf->dn.dn_type, type); 
       return GRUB_ERR_NONE;
     }
 
@@ -2635,7 +2636,8 @@ dnode_get (dnode_end_t * mdn, grub_uint64_t objnum, grub_uint8_t type,
   grub_memmove (&(buf->dn), (dnode_phys_t *) dnbuf + idx, DNODE_SIZE);
   buf->endian = endian;
   if (type && buf->dn.dn_type != type) 
-    return grub_error(GRUB_ERR_BAD_FS, "incorrect dnode type"); 
+    return grub_error(GRUB_ERR_BAD_FS, "incorrect dnode type: %x, %x",
+		      buf->dn.dn_type, type); 
 
   return GRUB_ERR_NONE;
 }
@@ -3770,6 +3772,66 @@ grub_zfs_open (struct grub_file *file, const char *fsfilename)
 
   return GRUB_ERR_NONE;
 }
+
+#if 1
+
+static int print_hook (const void *name,
+		       grub_size_t namelen __attribute__ ((unused)),
+		       const void *val_in __attribute__ ((unused)),
+		       grub_size_t nelem __attribute__ ((unused)),
+		       grub_size_t elemsize __attribute__ ((unused)),
+		       void *data __attribute__ ((unused)))
+{
+  grub_printf ("<%s %u %u, %s>\n", (char *)name,
+	       (unsigned) elemsize, (unsigned) nelem,
+	       (char *) val_in);
+  return 0;
+}
+
+#endif
+
+grub_err_t
+grub_zfs_get_property (grub_device_t dev,
+		       const char *fsfilename, const char *propname,
+		       grub_uint64_t *property)
+{
+  struct grub_zfs_data *data;
+  grub_err_t err;
+  int isfs;
+  dnode_end_t props_dn;
+  grub_uint64_t propsobj;
+
+  data = zfs_mount (dev);
+  if (! data)
+    return grub_errno;
+
+  err = dnode_get_fullpath (fsfilename, &(data->subvol),
+			    &(data->dnode), &isfs, data);
+
+  propsobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&data->dnode.dn))->dd_props_zapobj, data->dnode.endian);
+
+  if (!err)
+    err = dnode_get (&(data->mos), propsobj, DMU_OT_DSL_PROPS,
+		     &props_dn, data);
+
+#if 0
+  if (!err)
+    err = zap_lookup (&props_dn, propname,
+		      property, data, 0);
+#else
+  (void) propname;
+  (void) property;
+#endif
+
+  zap_iterate (&props_dn, 1,
+	       print_hook,
+	       NULL, data);
+
+  zfs_unmount (data);
+
+  return err;
+}
+
 
 static grub_ssize_t
 grub_zfs_read (grub_file_t file, char *buf, grub_size_t len)
