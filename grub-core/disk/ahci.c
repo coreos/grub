@@ -133,6 +133,7 @@ struct grub_ahci_device
   volatile struct grub_ahci_cmd_table *command_table;
   struct grub_pci_dma_chunk *rfis;
   int present;
+  int atapi;
 };
 
 static grub_err_t 
@@ -617,6 +618,10 @@ grub_ahci_pciinit (grub_pci_device_t dev,
       }
 
   for (i = 0; i < nports; i++)
+    if (adevs[i] && (adevs[i]->hba->ports[adevs[i]->port].sig >> 16) == 0xeb14)
+      adevs[i]->atapi = 1;
+
+  for (i = 0; i < nports; i++)
     if (adevs[i])
       {
 	grub_list_push (GRUB_AS_LIST_P (&grub_ahci_devices),
@@ -1075,6 +1080,7 @@ grub_ahci_open (int id, int devnum, struct grub_ata *ata)
 
   ata->data = dev;
   ata->dma = 1;
+  ata->atapi = dev->atapi;
   ata->maxbuffer = GRUB_AHCI_PRDT_MAX_CHUNK_LENGTH;
   ata->present = &dev->present;
 

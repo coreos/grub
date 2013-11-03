@@ -108,6 +108,9 @@ grub_ata_identify (struct grub_ata *dev)
   grub_uint16_t *info16;
   grub_err_t err;
 
+  if (dev->atapi)
+    return grub_atapi_identify (dev);
+
   info64 = grub_malloc (GRUB_DISK_SECTOR_SIZE);
   info32 = (grub_uint32_t *) info64;
   info16 = (grub_uint16_t *) info64;
@@ -129,7 +132,7 @@ grub_ata_identify (struct grub_ata *dev)
       grub_free (info16);
       grub_errno = GRUB_ERR_NONE;
       if ((sts & (GRUB_ATA_STATUS_BUSY | GRUB_ATA_STATUS_DRQ
-	  | GRUB_ATA_STATUS_ERR)) == GRUB_ATA_STATUS_ERR
+		   | GRUB_ATA_STATUS_ERR)) == GRUB_ATA_STATUS_ERR
 	  && (parms.taskfile.error & 0x04 /* ABRT */))
 	/* Device without ATA IDENTIFY, try ATAPI.  */
 	return grub_atapi_identify (dev);
@@ -363,7 +366,7 @@ grub_ata_real_open (int id, int bus)
   struct grub_ata *ata;
   grub_ata_dev_t p;
 
-  ata = grub_malloc (sizeof (*ata));
+  ata = grub_zalloc (sizeof (*ata));
   if (!ata)
     return NULL;
   for (p = grub_ata_dev_list; p; p = p->next)
