@@ -145,16 +145,31 @@ const char *hashes[] = {
   [0x0b] = "sha224"
 };
 
+struct gcry_pk_spec *grub_crypto_pk_dsa;
+struct gcry_pk_spec *grub_crypto_pk_ecdsa;
+struct gcry_pk_spec *grub_crypto_pk_rsa;
+
+static int
+dsa_pad (gcry_mpi_t *hmpi, grub_uint8_t *hval,
+	 const gcry_md_spec_t *hash, struct grub_public_subkey *sk);
+static int
+rsa_pad (gcry_mpi_t *hmpi, grub_uint8_t *hval,
+	 const gcry_md_spec_t *hash, struct grub_public_subkey *sk);
+
 struct
 {
   const char *name;
   grub_size_t nmpisig;
   grub_size_t nmpipub;
+  struct gcry_pk_spec **algo;
+  int (*pad) (gcry_mpi_t *hmpi, grub_uint8_t *hval,
+	      const gcry_md_spec_t *hash, struct grub_public_subkey *sk);
+  const char *module;
 } pkalgos[] = 
   {
-    [1] = { "rsa", 1, 2 },
-    [3] = { "rsa", 1, 2 },
-    [17] = { "dsa", 2, 4 },
+    [1] = { "rsa", 1, 2, &grub_crypto_pk_rsa, rsa_pad, "gcry_rsa" },
+    [3] = { "rsa", 1, 2, &grub_crypto_pk_rsa, rsa_pad, "gcry_rsa" },
+    [17] = { "dsa", 2, 4, &grub_crypto_pk_dsa, dsa_pad, "gcry_dsa" },
   };
 
 struct grub_public_key
@@ -351,6 +366,51 @@ grub_crypto_pk_locate_subkey_in_trustdb (grub_uint64_t keyid)
   return 0;
 }
 
+
+static int
+dsa_pad (gcry_mpi_t *hmpi, grub_uint8_t *hval,
+	 const gcry_md_spec_t *hash, struct grub_public_subkey *sk)
+{
+  unsigned nbits = gcry_mpi_get_nbits (sk->mpis[1]);
+  grub_dprintf ("crypt", "must be %u bits got %d bits\n", nbits,
+		(int)(8 * hash->mdlen));
+  return gcry_mpi_scan (hmpi, GCRYMPI_FMT_USG, hval,
+			nbits / 8 < (unsigned) hash->mdlen ? nbits / 8
+			: (unsigned) hash->mdlen, 0);
+}
+
+static int
+rsa_pad (gcry_mpi_t *hmpi, grub_uint8_t *hval,
+	 const gcry_md_spec_t *hash, struct grub_public_subkey *sk)
+{
+  grub_size_t tlen, emlen, fflen;
+  grub_uint8_t *em, *emptr;
+  unsigned nbits = gcry_mpi_get_nbits (sk->mpis[0]);
+  int ret;
+  tlen = hash->mdlen + hash->asnlen;
+  emlen = (nbits + 7) / 8;
+  if (emlen < tlen + 11)
+    return 1;
+
+  em = grub_malloc (emlen);
+  if (!em)
+    return 1;
+
+  em[0] = 0x00;
+  em[1] = 0x01;
+  fflen = emlen - tlen - 3;
+  for (emptr = em + 2; emptr < em + 2 + fflen; emptr++)
+    *emptr = 0xff;
+  *emptr++ = 0x00;
+  grub_memcpy (emptr, hash->asnoid, hash->asnlen);
+  emptr += hash->asnlen;
+  grub_memcpy (emptr, hval, hash->mdlen);
+
+  ret = gcry_mpi_scan (hmpi, GCRYMPI_FMT_USG, em, emlen, 0);
+  grub_free (em);
+  return ret;
+}
+
 static grub_err_t
 grub_verify_signature_real (char *buf, grub_size_t size,
 			    grub_file_t f, grub_file_t sig,
@@ -532,17 +592,11 @@ grub_verify_signature_real (char *buf, grub_size_t size,
       /* TRANSLATORS: %08x is 32-bit key id.  */
       return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("public key %08x not found"), keyid);
 
-    unsigned nbits = gcry_mpi_get_nbits (sk->mpis[1]);
-    grub_dprintf ("crypt", "must be %u bits got %d bits\n", nbits,
-		  (int)(8 * hash->mdlen));
-
-    if (gcry_mpi_scan (&hmpi, GCRYMPI_FMT_USG, hval,
-		       nbits / 8 < (unsigned) hash->mdlen ? nbits / 8
-		       : (unsigned) hash->mdlen, 0))
+    if (pkalgos[pk].pad (&hmpi, hval, hash, sk))
       return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
-    if (!grub_crypto_pk_dsa)
-      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("module `%s' isn't loaded"), "gcry_dsa");
-    if (grub_crypto_pk_dsa->verify (0, hmpi, mpis, sk->mpis, 0, 0))
+    if (!*pkalgos[pk].algo)
+      return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("module `%s' isn't loaded"), pkalgos[pk].module);
+    if ((*pkalgos[pk].algo)->verify (0, hmpi, mpis, sk->mpis, 0, 0))
       return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
   }
 
@@ -803,9 +857,6 @@ struct grub_fs pseudo_fs =
     .read = pseudo_read
 };
 
-struct gcry_pk_spec *grub_crypto_pk_dsa;
-struct gcry_pk_spec *grub_crypto_pk_ecdsa;
-struct gcry_pk_spec *grub_crypto_pk_rsa;
 
 static grub_extcmd_t cmd, cmd_trust;
 static grub_command_t cmd_distrust, cmd_list;
