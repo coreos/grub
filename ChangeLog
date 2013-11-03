@@ -1,5 +1,10 @@
 2013-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/term.h (grub_term_coordinate): Extend to 16-bit per
+	coordinate.
+
+2013-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support GRUB_DISABLE_SUBMENU config.
 
 	Inspired by patch from Prarit Bhargava.

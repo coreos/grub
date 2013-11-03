@@ -162,8 +162,8 @@ typedef struct grub_term_input *grub_term_input_t;
 /* Made in a way to fit into uint32_t and so be passed in a register.  */
 struct grub_term_coordinate
 {
-  grub_uint8_t x;
-  grub_uint8_t y;
+  grub_uint16_t x;
+  grub_uint16_t y;
 };
 
 struct grub_term_output
