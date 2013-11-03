@@ -1,5 +1,10 @@
 2013-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gettext/gettext.c (grub_gettext_init_ext): Ignore errors
+	if language is English.
+
+2013-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/linux/getroot.c: Fix cast-align problems.
 
 2013-11-02  Vladimir Serbinenko  <phcoder@gmail.com>
