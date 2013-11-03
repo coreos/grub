@@ -41,7 +41,9 @@ AC_CONFIG_AUX_DIR([build-aux])
 
 # Checks for host and target systems.
 AC_CANONICAL_HOST
+save_program_prefix="${program_prefix}"
 AC_CANONICAL_TARGET
+program_prefix="${save_program_prefix}"
 
 AM_INIT_AUTOMAKE()
 AC_PREREQ(2.60)

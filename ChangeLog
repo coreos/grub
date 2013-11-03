@@ -1,3 +1,7 @@
+2013-11-03  Mike Frysinger <vapier>
+
+	* configure.ac: Don't add target-prefix.
+
 2013-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/loadenv.c (grub_cmd_save_env): Remove unset
