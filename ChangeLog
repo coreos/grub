@@ -1,5 +1,10 @@
 2013-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/loadenv.c (grub_cmd_save_env): Remove unset
+	variables.
+
+2013-11-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gettext/gettext.c (grub_gettext_init_ext): Ignore errors
 	if language is English.
 

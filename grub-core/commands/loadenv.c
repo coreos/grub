@@ -432,6 +432,8 @@ grub_cmd_save_env (grub_extcmd_context_t ctxt, int argc, char **args)
               goto fail;
             }
         }
+      else
+	grub_envblk_delete (envblk, args[0]);
 
       argc--;
       args++;
