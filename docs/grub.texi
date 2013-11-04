@@ -701,6 +701,26 @@ you may run those commands directly to install GRUB, without using
 with the internals of GRUB. Installing a boot loader on a running OS may be
 extremely dangerous.
 
+On EFI systems for fixed disk install you have to mount EFI System Partition.
+If you mount it at @file{/boot/efi} then you don't need any special arguments:
+
+@example
+# @kbd{grub-install}
+@end example
+
+Otherwise you need to specify where your EFI System partition is mounted:
+
+@example
+# @kbd{grub-install --efi-directory=/mnt/efi}
+@end example
+
+For removable installs you have to use @option{--removable} and specify both
+@option{--boot-directory} and @option{--efi-directory}:
+
+@example
+# @kbd{grub-install --efi-directory=/mnt/usb --boot-directory=/mnt/usb/boot --removable}
+@end example
+
 @node Making a GRUB bootable CD-ROM
 @section Making a GRUB bootable CD-ROM
 
@@ -3088,7 +3108,8 @@ to go beyond the current 16 colors.
 This variable may be set to enable debugging output from various components
 of GRUB.  The value is a list of debug facility names separated by
 whitespace or @samp{,}, or @samp{all} to enable all available debugging
-output.
+output. The facility names are the first argument to grub_dprintf. Consult
+source for more details.
 
 
 @node default
@@ -3136,7 +3157,8 @@ If this variable is set, it sets the resolution used on the @samp{gfxterm}
 graphical terminal.  Note that you can only use modes which your graphics
 card supports via VESA BIOS Extensions (VBE), so for example native LCD
 panel resolutions may not be available.  The default is @samp{auto}, which
-selects a platform-specific default that should look reasonable.
+selects a platform-specific default that should look reasonable. Supported
+modes can be listed by @samp{videoinfo} command in GRUB.
 
 The resolution may be specified as a sequence of one or more modes,
 separated by commas (@samp{,}) or semicolons (@samp{;}); each will be tried
