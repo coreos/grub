@@ -1026,6 +1026,13 @@ fi
 AC_SUBST([enable_grub_emu_sdl])
 AC_SUBST([enable_grub_emu_usb])
 AC_SUBST([enable_grub_emu_pci])
+
+else
+
+# Ignore --enable-emu-* if platform is not emu
+enable_grub_emu_sdl=no
+enable_grub_emu_usb=no
+enable_grub_emu_pci=no
 fi
 
 AC_ARG_ENABLE([grub-mkfont],

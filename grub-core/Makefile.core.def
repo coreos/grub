@@ -497,6 +497,7 @@ module = {
 module = {
   name = emuusb;
   common = bus/usb/usb.c;
+  enable = emu;
   condition = COND_GRUB_EMU_USB;
 };
 
@@ -566,6 +567,7 @@ module = {
   common = bus/emu/pci.c;
   common = commands/lspci.c;
 
+  enable = emu;
   condition = COND_GRUB_EMU_PCI;
 };
 
