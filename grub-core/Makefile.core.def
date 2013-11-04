@@ -576,6 +576,11 @@ module = {
   enable = mips_arc;
 };
 
+module = {
+  name = check_nt_hiberfil;
+  common = commands/i386/nthibr.c;
+};
+
 library = {
   name = libgnulib.a;
   common = gnulib/regex.c;
