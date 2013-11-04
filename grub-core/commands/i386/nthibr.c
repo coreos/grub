@@ -67,7 +67,7 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT (check_nt_hiberfil)
 {
-  cmd = grub_register_command ("check_nt_hibrerfil", grub_cmd_nthibr,
+  cmd = grub_register_command ("check_nt_hiberfil", grub_cmd_nthibr,
                                N_("FILE"),
                                N_("Test whether a hiberfil.sys is "
                                   "in hibernated state."));
