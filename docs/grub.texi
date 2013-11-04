@@ -2471,6 +2471,8 @@ button.  @samp{GRUB_BUTTON_CMOS_ADDRESS} is vendor-specific and partially
 model-specific.  Values known to the GRUB team are:
 
 @table @key
+@item Dell XPS M1330M
+121:3
 @item Dell XPS M1530
 85:3
 @item Dell Latitude E4300

@@ -1,5 +1,10 @@
 2013-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi (Vendor power-on keys): Add XPS M1330M based on old
+	e-mail by Per Öberg.
+
+2013-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/i386/nthibr.c (GRUB_MOD_INIT): Fix typo in command
 	name.
 
