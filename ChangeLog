@@ -1,5 +1,9 @@
 2013-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub.texi: Document usage of menuentry id.
+
+2013-11-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub.texi: Add few mentions about EFI, debug and videoinfo.
 
 2013-11-04  Peter Lustig <peter.lustig.7db@gmail.com>

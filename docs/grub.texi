@@ -1254,14 +1254,14 @@ Valid keys in @file{/etc/default/grub} are as follows:
 @item GRUB_DEFAULT
 The default menu entry.  This may be a number, in which case it identifies
 the Nth entry in the generated menu counted from zero, or the title of a
-menu entry, or the special string @samp{saved}.  Using the title may be
+menu entry, or the special string @samp{saved}.  Using the id may be
 useful if you want to set a menu entry as the default even though there may
 be a variable number of entries before it.
 
 For example, if you have:
 
 @verbatim
-menuentry 'Example GNU/Linux distribution' --class gnu-linux {
+menuentry 'Example GNU/Linux distribution' --class gnu-linux --id example-gnu-linux {
 	...
 }
 @end verbatim
@@ -1269,8 +1269,12 @@ menuentry 'Example GNU/Linux distribution' --class gnu-linux {
 then you can make this the default using:
 
 @example
-GRUB_DEFAULT='Example GNU/Linux distribution'
+GRUB_DEFAULT=example-gnu-linux
 @end example
+
+Previously it was documented the way to use entry title. While this still
+works it's not recommended since titles often contain unstable device names
+and may be translated
 
 If you set this to @samp{saved}, then the default menu entry will be that
 saved by @samp{GRUB_SAVEDEFAULT}, @command{grub-set-default}, or
@@ -3117,7 +3121,21 @@ source for more details.
 
 If this variable is set, it identifies a menu entry that should be selected
 by default, possibly after a timeout (@pxref{timeout}).  The entry may be
-identified by number or by title.
+identified by number or by id.
+
+For example, if you have:
+
+@verbatim
+menuentry 'Example GNU/Linux distribution' --class gnu-linux --id example-gnu-linux {
+	...
+}
+@end verbatim
+
+then you can make this the default using:
+
+@example
+default=example-gnu-linux
+@end example
 
 If the entry is in a submenu, then it must be identified using the titles of
 each of the submenus starting from the top level followed by the number or
