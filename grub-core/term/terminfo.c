@@ -470,7 +470,9 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 	{'1', GRUB_TERM_KEY_HOME},
 	{'3', GRUB_TERM_KEY_DC},
 	{'5', GRUB_TERM_KEY_PPAGE},
-	{'6', GRUB_TERM_KEY_NPAGE}
+	{'6', GRUB_TERM_KEY_NPAGE},
+	{'7', GRUB_TERM_KEY_HOME},
+	{'8', GRUB_TERM_KEY_END}
       };
     char fx_key[] = 
       { 'P', 'Q', 'w', 'x', 't', 'u',

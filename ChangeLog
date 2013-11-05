@@ -1,5 +1,9 @@
 2013-11-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/terminfo.c: Add sequences for home and end.
+
+2013-11-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/legacy_parse.c: Fix handling of hercules and add
 	graphics console.
 
