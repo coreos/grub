@@ -753,13 +753,12 @@ grub_video_fb_fill_rect (grub_video_color_t color, int x, int y,
   return GRUB_ERR_NONE;
 }
 
-grub_err_t
-grub_video_fb_blit_bitmap (struct grub_video_bitmap *bitmap,
-			   enum grub_video_blit_operators oper, int x, int y,
-			   int offset_x, int offset_y,
-			   unsigned int width, unsigned int height)
+static inline grub_err_t __attribute__ ((always_inline))
+grub_video_fb_blit_source (struct grub_video_fbblit_info *source,
+                           enum grub_video_blit_operators oper, int x, int y,
+                           int offset_x, int offset_y,
+                           unsigned int width, unsigned int height)
 {
-  struct grub_video_fbblit_info source;
   struct grub_video_fbblit_info target;
 
   /* Make sure there is something to do.  */
@@ -769,14 +768,14 @@ grub_video_fb_blit_bitmap (struct grub_video_bitmap *bitmap,
     return GRUB_ERR_NONE;
   if ((y >= (int)framebuffer.render_target->viewport.height) || (y + (int)height < 0))
     return GRUB_ERR_NONE;
-  if ((x + (int)bitmap->mode_info.width) < 0)
+  if ((x + (int)source->mode_info->width) < 0)
     return GRUB_ERR_NONE;
-  if ((y + (int)bitmap->mode_info.height) < 0)
+  if ((y + (int)source->mode_info->height) < 0)
     return GRUB_ERR_NONE;
-  if ((offset_x >= (int)bitmap->mode_info.width)
+  if ((offset_x >= (int)source->mode_info->width)
       || (offset_x + (int)width < 0))
     return GRUB_ERR_NONE;
-  if ((offset_y >= (int)bitmap->mode_info.height)
+  if ((offset_y >= (int)source->mode_info->height)
       || (offset_y + (int)height < 0))
     return GRUB_ERR_NONE;
 
@@ -815,126 +814,60 @@ grub_video_fb_blit_bitmap (struct grub_video_bitmap *bitmap,
   if ((y + height) > framebuffer.render_target->viewport.height)
     height = framebuffer.render_target->viewport.height - y;
 
-  if ((offset_x + width) > bitmap->mode_info.width)
-    width = bitmap->mode_info.width - offset_x;
-  if ((offset_y + height) > bitmap->mode_info.height)
-    height = bitmap->mode_info.height - offset_y;
+  if ((offset_x + width) > source->mode_info->width)
+    width = source->mode_info->width - offset_x;
+  if ((offset_y + height) > source->mode_info->height)
+    height = source->mode_info->height - offset_y;
 
   /* Limit drawing to source render target dimensions.  */
-  if (width > bitmap->mode_info.width)
-    width = bitmap->mode_info.width;
+  if (width > source->mode_info->width)
+    width = source->mode_info->width;
 
-  if (height > bitmap->mode_info.height)
-    height = bitmap->mode_info.height;
+  if (height > source->mode_info->height)
+    height = source->mode_info->height;
 
   /* Add viewport offset.  */
   x += framebuffer.render_target->viewport.x;
   y += framebuffer.render_target->viewport.y;
 
   /* Use fbblit_info to encapsulate rendering.  */
-  source.mode_info = &bitmap->mode_info;
-  source.data = bitmap->data;
   target.mode_info = &framebuffer.render_target->mode_info;
   target.data = framebuffer.render_target->data;
 
   /* Do actual blitting.  */
   dirty (y, height);
-  grub_video_fb_dispatch_blit (&target, &source, oper, x, y, width, height,
-				       offset_x, offset_y);
+  grub_video_fb_dispatch_blit (&target, source, oper, x, y, width, height,
+                               offset_x, offset_y);
 
   return GRUB_ERR_NONE;
 }
 
 grub_err_t
-grub_video_fb_blit_render_target (struct grub_video_fbrender_target *source,
-                                   enum grub_video_blit_operators oper,
-                                   int x, int y, int offset_x, int offset_y,
-                                   unsigned int width, unsigned int height)
+grub_video_fb_blit_bitmap (struct grub_video_bitmap *bitmap,
+                           enum grub_video_blit_operators oper, int x, int y,
+                           int offset_x, int offset_y,
+                           unsigned int width, unsigned int height)
 {
   struct grub_video_fbblit_info source_info;
-  struct grub_video_fbblit_info target_info;
+  source_info.mode_info = &bitmap->mode_info;
+  source_info.data = bitmap->data;
 
-  /* Make sure there is something to do.  */
-  if ((width == 0) || (height == 0))
-    return GRUB_ERR_NONE;
-  if ((x >= (int)framebuffer.render_target->viewport.width) || (x + (int)width < 0))
-    return GRUB_ERR_NONE;
-  if ((y >= (int)framebuffer.render_target->viewport.height) || (y + (int)height < 0))
-    return GRUB_ERR_NONE;
-  if ((x + (int)source->mode_info.width) < 0)
-    return GRUB_ERR_NONE;
-  if ((y + (int)source->mode_info.height) < 0)
-    return GRUB_ERR_NONE;
-  if ((offset_x >= (int)source->mode_info.width)
-      || (offset_x + (int)width < 0))
-    return GRUB_ERR_NONE;
-  if ((offset_y >= (int)source->mode_info.height)
-      || (offset_y + (int)height < 0))
-    return GRUB_ERR_NONE;
+  return grub_video_fb_blit_source (&source_info, oper, x, y,
+                                    offset_x, offset_y, width, height);
+}
 
-  /* If we have negative coordinates, optimize drawing to minimum.  */
-  if (offset_x < 0)
-    {
-      width += offset_x;
-      x -= offset_x;
-      offset_x = 0;
-    }
-
-  if (offset_y < 0)
-    {
-      height += offset_y;
-      y -= offset_y;
-      offset_y = 0;
-    }
-
-  if (x < 0)
-    {
-      width += x;
-      offset_x -= x;
-      x = 0;
-    }
-
-  if (y < 0)
-    {
-      height += y;
-      offset_y -= y;
-      y = 0;
-    }
-
-  /* Do not allow drawing out of viewport.  */
-  if ((x + width) > framebuffer.render_target->viewport.width)
-    width = framebuffer.render_target->viewport.width - x;
-  if ((y + height) > framebuffer.render_target->viewport.height)
-    height = framebuffer.render_target->viewport.height - y;
-
-  if ((offset_x + width) > source->mode_info.width)
-    width = source->mode_info.width - offset_x;
-  if ((offset_y + height) > source->mode_info.height)
-    height = source->mode_info.height - offset_y;
-
-  /* Limit drawing to source render target dimensions.  */
-  if (width > source->mode_info.width)
-    width = source->mode_info.width;
-
-  if (height > source->mode_info.height)
-    height = source->mode_info.height;
-
-  /* Add viewport offset.  */
-  x += framebuffer.render_target->viewport.x;
-  y += framebuffer.render_target->viewport.y;
-
-  /* Use fbblit_info to encapsulate rendering.  */
+grub_err_t
+grub_video_fb_blit_render_target (struct grub_video_fbrender_target *source,
+                                  enum grub_video_blit_operators oper,
+                                  int x, int y, int offset_x, int offset_y,
+                                  unsigned int width, unsigned int height)
+{
+  struct grub_video_fbblit_info source_info;
   source_info.mode_info = &source->mode_info;
   source_info.data = source->data;
-  target_info.mode_info = &framebuffer.render_target->mode_info;
-  target_info.data = framebuffer.render_target->data;
 
-  /* Do actual blitting.  */
-  dirty (y, height);
-  grub_video_fb_dispatch_blit (&target_info, &source_info, oper, x, y, width, height,
-			       offset_x, offset_y);
-
-  return GRUB_ERR_NONE;
+  return grub_video_fb_blit_source (&source_info, oper, x, y,
+                                    offset_x, offset_y, width, height);
 }
 
 grub_err_t

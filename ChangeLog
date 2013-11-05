@@ -1,3 +1,8 @@
+2013-11-05  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
+	* grub-core/video/fb/video_fb.c: Merge two blit functions
+	into one.
+
 2013-11-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/terminfo.c: Add sequences for home and end.
