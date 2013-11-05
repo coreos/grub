@@ -1,5 +1,10 @@
 2013-11-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/legacy_parse.c: Fix handling of hercules and add
+	graphics console.
+
+2013-11-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/i386/pc/vga.c: Fix double bufferring and
 	add mode 0x12.
 

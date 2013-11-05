@@ -77,6 +77,7 @@ static struct legacy_command legacy_commands[] =
      "Initialize a network device via BOOTP. If the option `--with-configfile'"
      " is given, try to load a configuration file specified by the 150 vendor"
      " tag."},
+    /* FIXME: border unsupported.  */
     {"cat", "cat '%s'\n", NULL, 0, 1, {TYPE_FILE}, 0, "FILE",
      "Print the contents of the file FILE."},
     {"chainloader", "chainloader %s '%s'\n", NULL, 0,
@@ -295,6 +296,7 @@ static struct legacy_command legacy_commands[] =
      " STOP is the length of stop bit(s). The option --device can be used only"
      " in the grub shell, which specifies the file name of a tty device. The"
      " default values are COM1, 9600, 8N1."},
+    /* FIXME: shade unsupported.  */
     /* FIXME: silent unsupported.  */
     /* FIXME: splashimage unsupported.  */
     /* FIXME: setkey unsupported.  */    /* NUL_TERMINATE */
@@ -305,7 +307,7 @@ static struct legacy_command legacy_commands[] =
     /* FIXME: graphics unsupported.  */
     {"terminal", NULL, NULL, 0, 0, {}, FLAG_TERMINAL | FLAG_IGNORE_REST,
      "[--dumb] [--no-echo] [--no-edit] [--timeout=SECS] [--lines=LINES] "
-     "[--silent] [console] [serial] [hercules]",
+     "[--silent] [console] [serial] [hercules] [graphics]",
      "Select a terminal. When multiple terminals are specified, wait until"
      " you push any key to continue. If both console and serial are specified,"
      " the terminal to which you input a key first will be selected. If no"
@@ -346,6 +348,7 @@ static struct legacy_command legacy_commands[] =
      FLAG_FALLBACK, NULL, NULL}
     /* FIXME: verbose unsupported.  */
     /* FIXME: version unsupported.  */
+    /* FIXME: viewport unsupported.  */
   };
 
 char *
@@ -544,9 +547,9 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
       int no_echo = 0, no_edit = 0;
 #endif
       int hercules = 0;
-      int console = 0, serial = 0;
+      int console = 0, serial = 0, graphics = 0;
       /* Big enough for any possible resulting command. */
-      char outbuf[256] = "";
+      char outbuf[512] = "";
       char *outptr;
       while (*ptr)
 	{
@@ -578,46 +581,38 @@ grub_legacy_parse (const char *buf, char **entryname, char **suffix)
 	    serial = 1;
 	  if (grub_memcmp (ptr, "hercules", sizeof ("hercules") - 1) == 0)
 	    hercules = 1;
+	  if (grub_memcmp (ptr, "graphics", sizeof ("graphics") - 1) == 0)
+	    graphics = 1;
 	  while (*ptr && !grub_isspace (*ptr))
 	    ptr++;
 	  while (*ptr && grub_isspace (*ptr))
 	    ptr++;
 	}
 
-      if (!console && !serial)
+      if (!console && !serial && !hercules && !graphics)
 	return grub_strdup ("terminal_input; terminal_output; terminfo\n");
 
-      grub_strcpy (outbuf, "terminal_input ");
-      outptr = outbuf + grub_strlen (outbuf);
+      outptr = outbuf;
+
+      if (graphics)
+	outptr = grub_stpcpy (outptr, "insmod all_video; ");
+
+      outptr = grub_stpcpy (outptr, "terminal_input ");
       if (serial)
-	{
-	  grub_strcpy (outptr, "serial ");
-	  outptr += grub_strlen (outptr);
-	}
-      if (console || hercules)
-	{
-	  grub_strcpy (outptr, "console ");
-	  outptr += grub_strlen (outptr);
-	}
-      grub_strcpy (outptr, "; terminal_output ");
-      outptr += grub_strlen (outptr);
+	outptr = grub_stpcpy (outptr, "serial ");
+      if (console || hercules || graphics)
+	outptr = grub_stpcpy (outptr, "console ");
+      outptr = grub_stpcpy (outptr, "; terminal_output ");
       if (serial)
-	{
-	  grub_strcpy (outptr, "serial ");
-	  outptr += grub_strlen (outptr);
-	}
+	outptr = grub_stpcpy (outptr, "serial ");
       if (console)
-	{
-	  grub_strcpy (outptr, "console ");
-	  outptr += grub_strlen (outptr);
-	}
+	outptr = grub_stpcpy (outptr, "console ");
       if (hercules)
-	{
-	  grub_strcpy (outptr, "mda_text ");
-	  outptr += grub_strlen (outptr);
-	}
-      grub_strcpy (outptr, "; ");
-      outptr += grub_strlen (outptr);
+	outptr = grub_stpcpy (outptr, "mda_text ");
+      if (graphics)
+	outptr = grub_stpcpy (outptr, "gfxterm ");
+      outptr = grub_stpcpy (outptr, "; ");
+      *outptr = '\0';
       if (serial)
 	{
 	  grub_snprintf (outptr, outbuf + sizeof (outbuf) - outptr,
