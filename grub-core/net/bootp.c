@@ -123,6 +123,7 @@ parse_dhcp_vendor (const char *name, void *vend, int limit, int *mask)
 		struct grub_net_network_level_address s;
 		s.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
 		s.ipv4 = grub_get_unaligned32 (ptr);
+		s.option = DNS_OPTION_PREFER_IPV4;
 		grub_net_add_dns_server (&s);
 		ptr += 4;
 	      }

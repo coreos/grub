@@ -1,3 +1,24 @@
+2013-11-05  Gustavo Luiz Duarte  <gustavold@linux.vnet.ibm.com>
+2013-11-05  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
+	Issue separate DNS queries for ipv4 and ipv6
+
+	Adding multiple questions on a single DNS query is not supportted by
+	most DNS servers. This patch issues two separate DNS queries
+	sequentially for ipv4 and then for ipv6.
+
+	Fixes: https://savannah.gnu.org/bugs/?39710
+
+	* grub-core/net/bootp.c (parse_dhcp_vendor): Add DNS option.
+	* grub-core/net/dns.c (grub_dns_qtype_id): New enum.
+	* (grub_net_dns_lookup): Now using separated dns packages.
+	* (grub_cmd_nslookup): Add error condition.
+	* (grub_cmd_list_dns): Print DNS option.
+	* (grub_cmd_add_dns): Add four parameters: --only-ipv4, --only-ipv6,
+	--prefer-ipv4, and --prefer-ipv6.
+	* include/grub/net.h (grub_dns_option_t): New enum.
+	* (grub_net_network_level_address): option added.
+
 2013-11-05  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/video/fb/video_fb.c: Merge two blit functions
