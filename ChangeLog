@@ -1,5 +1,14 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/usbms.c (grub_usbms_cbi_cmd): Fix error type.
+	(grub_usbms_cbi_reset): Likewise.
+	(grub_usbms_bo_reset): Likewise.
+	(grub_usbms_reset): Likewise.
+	(grub_usbms_attach): Likewise.
+	(grub_usbms_transfer_cbi): Likewise.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/io/lzopio.c (test_header): Simplify code and remove useless
 	"checksum = checksum;".
 

@@ -76,7 +76,7 @@ typedef struct grub_usbms_dev *grub_usbms_dev_t;
 static grub_usbms_dev_t grub_usbms_devices[MAX_USBMS_DEVICES];
 static int first_available_slot = 0;
 
-static grub_err_t
+static grub_usb_err_t
 grub_usbms_cbi_cmd (grub_usb_device_t dev, int interface,
                     grub_uint8_t *cbicb)
 {
@@ -86,7 +86,7 @@ grub_usbms_cbi_cmd (grub_usb_device_t dev, int interface,
                                GRUB_USBMS_CBI_CMD_SIZE, (char*)cbicb);
 }
 
-static grub_err_t
+static grub_usb_err_t
 grub_usbms_cbi_reset (grub_usb_device_t dev, int interface)
 {
   /* Prepare array with Command Block Reset (=CBR) */
@@ -108,17 +108,13 @@ grub_usbms_cbi_reset (grub_usb_device_t dev, int interface)
   return grub_usbms_cbi_cmd (dev, interface, (grub_uint8_t *)&cbicb);
 }
 
-static grub_err_t
+static grub_usb_err_t
 grub_usbms_bo_reset (grub_usb_device_t dev, int interface)
 {
-  grub_usb_err_t u;
-  u = grub_usb_control_msg (dev, 0x21, 255, 0, interface, 0, 0);
-  if (u)
-    return grub_error (GRUB_ERR_IO, "USB error %d", u);
-  return GRUB_ERR_NONE;
+  return grub_usb_control_msg (dev, 0x21, 255, 0, interface, 0, 0);
 }
 
-static grub_err_t
+static grub_usb_err_t
 grub_usbms_reset (grub_usbms_dev_t dev)
 {
   if (dev->protocol == GRUB_USBMS_PROTOCOL_BULK)
@@ -149,7 +145,7 @@ grub_usbms_attach (grub_usb_device_t usbdev, int configno, int interfno)
   int j;
   grub_uint8_t luns = 0;
   unsigned curnum;
-  grub_usb_err_t err = GRUB_ERR_NONE;
+  grub_usb_err_t err = GRUB_USB_ERR_NONE;
 
   grub_boot_time ("Attaching USB mass storage");
 
@@ -571,8 +567,11 @@ grub_usbms_transfer_cbi (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
             }
         }
     }
+
+  if (err)
+    return grub_error (GRUB_ERR_IO, "USB error %d", err);
     
-  return err;
+  return GRUB_ERR_NONE;
 }
 
 
