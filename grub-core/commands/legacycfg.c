@@ -358,7 +358,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	  dev = grub_device_open (0);
 	  if (dev && dev->disk
 	      && dev->disk->dev->id == GRUB_DISK_DEVICE_BIOSDISK_ID
-	      && dev->disk->dev->id >= 0x80 && dev->disk->dev->id <= 0x90)
+	      && dev->disk->id >= 0x80 && dev->disk->id <= 0x90)
 	    {
 	      struct grub_partition *part = dev->disk->partition;
 	      bsd_device = dev->disk->id - 0x80 - hdbias;

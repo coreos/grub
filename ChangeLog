@@ -1,5 +1,10 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/legacycfg.c (grub_cmd_legacy_kernel): Fix
+	BIOS disk check.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/ehci.c (grub_ehci_restore_hw): Return right enum
 	type.
 	(grub_ehci_fini_hw): Likewise.
