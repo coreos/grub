@@ -1,5 +1,10 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/reiserfs.c (grub_reiserfs_iterate_dir): Fix type of
+	entry_type.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/legacycfg.c (grub_cmd_legacy_kernel): Fix
 	BIOS disk check.
 
