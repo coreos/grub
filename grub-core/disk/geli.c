@@ -153,7 +153,7 @@ geli_rekey (struct grub_cryptodisk *dev, grub_uint64_t zoneno)
   gcry_err = grub_crypto_hmac_buffer (dev->hash, dev->rekey_key, 64,
 				      &tohash, sizeof (tohash), key);
   if (gcry_err)
-    return grub_crypto_gcry_error (gcry_err);
+    return gcry_err;
 
   return grub_cryptodisk_setkey (dev, (grub_uint8_t *) key,
 				 dev->rekey_derived_size); 
