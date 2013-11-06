@@ -380,12 +380,8 @@ test_header (grub_file_t file)
       sizeof (checksum))
     goto CORRUPTED;
 
-  if (hcheck)
-  {
-    checksum = checksum;
-    if (grub_memcmp (&checksum, hcheck->read(context), sizeof(checksum)) != 0)
-      goto CORRUPTED;
-  }
+  if (hcheck && grub_memcmp (&checksum, hcheck->read(context), sizeof(checksum)) != 0)
+    goto CORRUPTED;
 
   lzopio->start_block_off = grub_file_tell (lzopio->file);
 
