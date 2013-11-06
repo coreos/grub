@@ -1677,7 +1677,7 @@ grub_ehci_hubports (grub_usb_controller_t dev)
   return portinfo;
 }
 
-static grub_err_t
+static grub_usb_err_t
 grub_ehci_portstatus (grub_usb_controller_t dev,
 		      unsigned int port, unsigned int enable)
 {
@@ -1699,14 +1699,14 @@ grub_ehci_portstatus (grub_usb_controller_t dev,
   endtime = grub_get_time_ms () + 1000;
   while (grub_ehci_port_read (e, port) & GRUB_EHCI_PORT_ENABLED)
     if (grub_get_time_ms () > endtime)
-      return grub_error (GRUB_ERR_IO, "portstatus: EHCI Timed out - disable");
+      return GRUB_USB_ERR_TIMEOUT;
 
   if (!enable)			/* We don't need reset port */
     {
       grub_dprintf ("ehci", "portstatus: Disabled.\n");
       grub_dprintf ("ehci", "portstatus: end, status=0x%02x\n",
 		    grub_ehci_port_read (e, port));
-      return GRUB_ERR_NONE;
+      return GRUB_USB_ERR_NONE;
     }
 
   grub_dprintf ("ehci", "portstatus: enable\n");
@@ -1724,8 +1724,7 @@ grub_ehci_portstatus (grub_usb_controller_t dev,
   endtime = grub_get_time_ms () + 1000;
   while (grub_ehci_port_read (e, port) & GRUB_EHCI_PORT_RESET)
     if (grub_get_time_ms () > endtime)
-      return grub_error (GRUB_ERR_IO,
-			 "portstatus: EHCI Timed out - reset port");
+      return GRUB_USB_ERR_TIMEOUT;
   grub_boot_time ("Port %d reset", port);
   /* Remember "we did the reset" - needed by detect_dev */
   e->reset |= (1 << port);
@@ -1753,7 +1752,7 @@ grub_ehci_portstatus (grub_usb_controller_t dev,
   grub_dprintf ("ehci", "portstatus: end, status=0x%02x\n",
 		grub_ehci_port_read (e, port));
 
-  return GRUB_ERR_NONE;
+  return GRUB_USB_ERR_NONE;
 }
 
 static grub_usb_speed_t

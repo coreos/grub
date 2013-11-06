@@ -116,8 +116,8 @@ struct grub_usb_controller_dev
 
   int (*hubports) (grub_usb_controller_t dev);
 
-  grub_err_t (*portstatus) (grub_usb_controller_t dev, unsigned int port,
-			    unsigned int enable);
+  grub_usb_err_t (*portstatus) (grub_usb_controller_t dev, unsigned int port,
+				unsigned int enable);
 
   grub_usb_speed_t (*detect_dev) (grub_usb_controller_t dev, int port, int *changed);
 

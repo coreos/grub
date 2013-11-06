@@ -189,11 +189,6 @@ grub_uhci_writereg32 (struct grub_uhci *u,
   grub_outl (val, u->iobase + reg);
 }
 
-static grub_err_t
-grub_uhci_portstatus (grub_usb_controller_t dev,
-		      unsigned int port, unsigned int enable);
-
-
 /* Iterate over all PCI devices.  Determine if a device is an UHCI
    controller.  If this is the case, initialize it.  */
 static int
@@ -715,7 +710,7 @@ grub_uhci_iterate (grub_usb_controller_iterate_hook_t hook, void *hook_data)
   return 0;
 }
 
-static grub_err_t
+static grub_usb_err_t
 grub_uhci_portstatus (grub_usb_controller_t dev,
 		      unsigned int port, unsigned int enable)
 {
@@ -733,8 +728,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
   else if (port == 1)
     reg = GRUB_UHCI_REG_PORTSC2;
   else
-    return grub_error (GRUB_ERR_OUT_OF_RANGE,
-		       "UHCI Root Hub port does not exist");
+    return GRUB_USB_ERR_INTERNAL;
 
   status = grub_uhci_readreg16 (u, reg);
   grub_dprintf ("uhci", "detect=0x%02x\n", status);
@@ -747,11 +741,11 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
       endtime = grub_get_time_ms () + 1000;
       while ((grub_uhci_readreg16 (u, reg) & (1 << 2)))
         if (grub_get_time_ms () > endtime)
-          return grub_error (GRUB_ERR_IO, "UHCI Timed out - disable");
+          return GRUB_USB_ERR_TIMEOUT;
 
       status = grub_uhci_readreg16 (u, reg);
       grub_dprintf ("uhci", ">3detect=0x%02x\n", status);
-      return GRUB_ERR_NONE;
+      return GRUB_USB_ERR_NONE;
     }
     
   /* Reset the port.  */
@@ -782,7 +776,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
   endtime = grub_get_time_ms () + 1000;
   while (! ((status = grub_uhci_readreg16 (u, reg)) & (1 << 2)))
     if (grub_get_time_ms () > endtime)
-      return grub_error (GRUB_ERR_IO, "UHCI Timed out - enable");
+      return GRUB_USB_ERR_TIMEOUT;
 
   /* Reset recovery time */
   grub_millisleep (10);
@@ -792,7 +786,7 @@ grub_uhci_portstatus (grub_usb_controller_t dev,
   grub_dprintf ("uhci", ">3detect=0x%02x\n", status);
 
 
-  return GRUB_ERR_NONE;
+  return GRUB_USB_ERR_NONE;
 }
 
 static grub_usb_speed_t

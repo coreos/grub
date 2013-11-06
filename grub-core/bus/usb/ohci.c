@@ -1216,7 +1216,7 @@ grub_ohci_cancel_transfer (grub_usb_controller_t dev,
   return GRUB_USB_ERR_NONE;
 }
 
-static grub_err_t
+static grub_usb_err_t
 grub_ohci_portstatus (grub_usb_controller_t dev,
 		      unsigned int port, unsigned int enable)
 {
@@ -1236,11 +1236,11 @@ grub_ohci_portstatus (grub_usb_controller_t dev,
        while ((grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port)
                & (1 << 1)))
          if (grub_get_time_ms () > endtime)
-           return grub_error (GRUB_ERR_IO, "OHCI Timed out - disable");
+           return GRUB_USB_ERR_TIMEOUT;
 
        grub_dprintf ("ohci", "end of portstatus=0x%02x\n",
          grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port));
-       return GRUB_ERR_NONE;
+       return GRUB_USB_ERR_NONE;
      }
      
    /* OHCI does one reset signal 10ms long but USB spec.
@@ -1257,7 +1257,7 @@ grub_ohci_portstatus (grub_usb_controller_t dev,
        while (! (grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port)
                & GRUB_OHCI_SET_PORT_RESET_STATUS_CHANGE))
          if (grub_get_time_ms () > endtime)
-           return grub_error (GRUB_ERR_IO, "OHCI Timed out - reset");
+           return GRUB_USB_ERR_TIMEOUT;
 
        /* End the reset signaling - reset the reset status change */
        grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
@@ -1275,7 +1275,7 @@ grub_ohci_portstatus (grub_usb_controller_t dev,
    while (! (grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port)
            & (1 << 1)))
      if (grub_get_time_ms () > endtime)
-       return grub_error (GRUB_ERR_IO, "OHCI Timed out - enable");
+       return GRUB_USB_ERR_TIMEOUT;
 
    /* Reset bit Connect Status Change */
    grub_ohci_writereg32 (o, GRUB_OHCI_REG_RHUBPORT + port,
@@ -1287,7 +1287,7 @@ grub_ohci_portstatus (grub_usb_controller_t dev,
    grub_dprintf ("ohci", "end of portstatus=0x%02x\n",
 		 grub_ohci_readreg32 (o, GRUB_OHCI_REG_RHUBPORT + port));
  
-   return GRUB_ERR_NONE;
+   return GRUB_USB_ERR_NONE;
 }
 
 static grub_usb_speed_t
