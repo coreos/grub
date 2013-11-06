@@ -1,5 +1,13 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfscrypt.c (grub_ccm_decrypt): Return right error
+	type.
+	(grub_gcm_decrypt): Likewise.
+	(algo_decrypt): Likewise.
+	(grub_zfs_decrypt_real): Transform error type.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/geli.c (geli_rekey): Fix error return type.
 
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
