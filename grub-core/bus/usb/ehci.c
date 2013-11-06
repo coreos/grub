@@ -1887,7 +1887,7 @@ grub_ehci_restore_hw (void)
 	}
     }
 
-  return GRUB_USB_ERR_NONE;
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -1910,7 +1910,7 @@ grub_ehci_fini_hw (int noreturn __attribute__ ((unused)))
       grub_ehci_reset (e);
     }
 
-  return GRUB_USB_ERR_NONE;
+  return GRUB_ERR_NONE;
 }
 
 static struct grub_usb_controller_dev usb_controller = {

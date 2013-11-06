@@ -1,5 +1,12 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/ehci.c (grub_ehci_restore_hw): Return right enum
+	type.
+	(grub_ehci_fini_hw): Likewise.
+	* grub-core/bus/usb/usbhub.c (grub_usb_add_hub): Likewise.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/usb.h (grub_usb_controller_dev): Make portstatus
 	return grub_usb_err_t for cosistency. All users updated.
 

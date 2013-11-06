@@ -195,7 +195,7 @@ grub_usb_add_hub (grub_usb_device_t dev)
 
   rescan = 1;
 
-  return GRUB_ERR_NONE;
+  return GRUB_USB_ERR_NONE;
 }
 
 static void
