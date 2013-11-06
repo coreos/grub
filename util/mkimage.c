@@ -646,8 +646,8 @@ struct grub_ieee1275_note
 
 #include <grub/lib/LzmaEnc.h>
 
-static void *SzAlloc(void *p, size_t size) { p = p; return xmalloc(size); }
-static void SzFree(void *p, void *address) { p = p; free(address); }
+static void *SzAlloc(void *p __attribute__ ((unused)), size_t size) { return xmalloc(size); }
+static void SzFree(void *p __attribute__ ((unused)), void *address) { free(address); }
 static ISzAlloc g_Alloc = { SzAlloc, SzFree };
 
 static void

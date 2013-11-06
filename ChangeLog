@@ -1,3 +1,8 @@
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/mkimage.c (SzAlloc): Use attribute unused rather than dubious
+	assigning to itself.
+
 2013-11-05  Gustavo Luiz Duarte  <gustavold@linux.vnet.ibm.com>
 2013-11-05  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
