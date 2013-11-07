@@ -485,9 +485,16 @@ if test "x$target_cpu" = xi386; then
 	[grub_cv_cc_falign_loop=no])
   ])
 
+  AC_CACHE_CHECK([whether -malign-loops works], [grub_cv_cc_malign_loop], [
+    CFLAGS="$TARGET_CFLAGS -malign-loops=1"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+        [grub_cv_cc_malign_loop=yes],
+	[grub_cv_cc_malign_loop=no])
+  ])
+
   if test "x$grub_cv_cc_falign_loop" = xyes; then
     TARGET_CFLAGS="$TARGET_CFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
-  else
+  elif test "x$grub_cv_cc_malign_loop" = xyes; then
     TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
   fi
 fi
