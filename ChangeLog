@@ -1,5 +1,10 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* acinclude.m4: Use -Werror on parameter tests.
+	* configure.ac: Likewise.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* acinclude.m4: Add missing TARGET_CCASFLAGS on asm tests.
 
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>

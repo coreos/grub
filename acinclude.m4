@@ -391,7 +391,7 @@ AC_MSG_CHECKING([whether `$CC' accepts `-mstack-arg-probe'])
 AC_LANG_CONFTEST([AC_LANG_SOURCE([[
 void foo (void) { volatile char a[8]; a[3]; }
 ]])])
-[if eval "$ac_compile -S -mstack-arg-probe -o conftest.s" 2> /dev/null; then]
+[if eval "$ac_compile -S -mstack-arg-probe -Werror -o conftest.s" 2> /dev/null; then]
   AC_MSG_RESULT([yes])
   [# Should we clear up other files as well, having called `AC_LANG_CONFTEST'?
   rm -f conftest.s

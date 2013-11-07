@@ -389,7 +389,7 @@ AC_SUBST([LIBUTIL])
 
 AC_CACHE_CHECK([whether -Wtrampolines work], [grub_cv_host_cc_wtrampolines], [
   SAVED_CFLAGS="$CFLAGS"
-  CFLAGS="$HOST_CFLAGS -Wtrampolines"
+  CFLAGS="$HOST_CFLAGS -Wtrampolines -Werror"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
 int va_arg_func (int fixed, va_list args);]], [[]])],
       [grub_cv_host_cc_wtrampolines=yes],
@@ -479,14 +479,14 @@ TARGET_CCASFLAGS="$TARGET_CCASFLAGS -g"
 # Force no alignment to save space on i386.
 if test "x$target_cpu" = xi386; then
   AC_CACHE_CHECK([whether -falign-loops works], [grub_cv_cc_falign_loop], [
-    CFLAGS="$TARGET_CFLAGS -falign-loops=1"
+    CFLAGS="$TARGET_CFLAGS -falign-loops=1 -Werror"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
         [grub_cv_cc_falign_loop=yes],
 	[grub_cv_cc_falign_loop=no])
   ])
 
   AC_CACHE_CHECK([whether -malign-loops works], [grub_cv_cc_malign_loop], [
-    CFLAGS="$TARGET_CFLAGS -malign-loops=1"
+    CFLAGS="$TARGET_CFLAGS -malign-loops=1 -Werror"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
         [grub_cv_cc_malign_loop=yes],
 	[grub_cv_cc_malign_loop=no])
