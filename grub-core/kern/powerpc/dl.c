@@ -38,6 +38,8 @@ grub_arch_dl_check_header (void *ehdr)
   return GRUB_ERR_NONE;
 }
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 void
 grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got)

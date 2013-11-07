@@ -1,5 +1,10 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/powerpc/dl.c: Add missing pragma to silence cast-align
+	warnings.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/net.c (grub_net_route_unregister): Remove unused
 	function.
 	* grub-core/loader/i386/xnu.c (hextoval): Likewise.
