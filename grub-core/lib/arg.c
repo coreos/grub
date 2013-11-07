@@ -212,6 +212,22 @@ parse_option (grub_extcmd_t cmd, const struct grub_arg_option *opt,
   return 0;
 }
 
+static inline grub_err_t
+add_arg (char ***argl, int *num, char *s)
+{
+  char **p = *argl;
+  *argl = grub_realloc (*argl, (++(*num) + 1) * sizeof (char *));
+  if (! *argl)
+    {
+      grub_free (p);
+      return grub_errno;
+    }
+  (*argl)[(*num) - 1] = s;
+  (*argl)[(*num)] = NULL;
+  return 0;
+}
+
+
 int
 grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 		struct grub_arg_list *usr, char ***args, int *argnum)
@@ -220,22 +236,6 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
   int arglen;
   char **argl = 0;
   int num = 0;
-  auto grub_err_t add_arg (char *s);
-
-  grub_err_t add_arg (char *s)
-    {
-      char **p = argl;
-      argl = grub_realloc (argl, (++num + 1) * sizeof (char *));
-      if (! argl)
-	{
-	  grub_free (p);
-	  return grub_errno;
-	}
-      argl[num - 1] = s;
-      argl[num] = NULL;
-      return 0;
-    }
-
 
   for (curarg = 0; curarg < argc; curarg++)
     {
@@ -247,7 +247,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
       if ((num && (cmd->cmd->flags & GRUB_COMMAND_OPTIONS_AT_START))
 	  || arg[0] != '-' || grub_strlen (arg) == 1)
 	{
-	  if (add_arg (arg) != 0)
+	  if (add_arg (&argl, &num, arg) != 0)
 	    goto fail;
 
 	  continue;
@@ -266,7 +266,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	    
 	      if (*curshort)
 		{
-		  if (add_arg (arg) != 0)
+		  if (add_arg (&argl, &num, arg) != 0)
 		    goto fail;
 		  continue;
 		}
@@ -319,7 +319,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 	  if (grub_strlen (arg) == 2)
 	    {
 	      for (curarg++; curarg < argc; curarg++)
-		if (add_arg (argv[curarg]) != 0)
+		if (add_arg (&argl, &num, argv[curarg]) != 0)
 		  goto fail;
 	      break;
 	    }
@@ -341,7 +341,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
 
 	  if (!opt && (cmd->cmd->flags & GRUB_COMMAND_ACCEPT_DASH))
 	    {
-	      if (add_arg (arg) != 0)
+	      if (add_arg (&argl, &num, arg) != 0)
 		goto fail;
 	      continue;
 	    }

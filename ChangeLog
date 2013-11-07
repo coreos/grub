@@ -1,5 +1,9 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/arg.c (grub_arg_parse): Remove nested function.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/cmdline.c (grub_cmdline_get):
 	Remove nested functions.
 
