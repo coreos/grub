@@ -1,5 +1,9 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Don't add -no-itegrated-as on clang on non-x86.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Allow compiling with clang (not really supported though).
 
 	* conf/Makefile.common (CFLAGS_PLATFORM): Don't add -mrtd -mregparm=3
