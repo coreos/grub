@@ -468,29 +468,30 @@ add_subst (grub_uint32_t from, grub_uint32_t to, struct glyph_replace **target)
 }
 
 static void
+subst (const struct gsub_substitution *sub, grub_uint32_t glyph,
+       struct glyph_replace **target, int *i)
+{
+  grub_uint16_t substtype;
+  substtype = grub_be_to_cpu16 (sub->type);
+
+  if (substtype == GSUB_SUBSTITUTION_DELTA)
+    add_subst (glyph, glyph + grub_be_to_cpu16 (sub->delta), target);
+  else if (*i >= grub_be_to_cpu16 (sub->count))
+    printf (_("Out of range substitution (%d, %d)\n"), *i,
+	    grub_be_to_cpu16 (sub->count));
+  else
+    add_subst (glyph, grub_be_to_cpu16 (sub->repl[(*i)++]), target);
+}
+
+static void
 process_cursive (struct gsub_feature *feature,
 		 struct gsub_lookup_list *lookups,
 		 grub_uint32_t feattag)
 {
   int j, k;
   int i;
-  struct glyph_replace **target;
+  struct glyph_replace **target = NULL;
   struct gsub_substitution *sub;
-
-  auto inline void subst (grub_uint32_t glyph);
-  void subst (grub_uint32_t glyph)
-  {
-    grub_uint16_t substtype;
-    substtype = grub_be_to_cpu16 (sub->type);
-
-    if (substtype == GSUB_SUBSTITUTION_DELTA)
-      add_subst (glyph, glyph + grub_be_to_cpu16 (sub->delta), target);
-    else if (i >= grub_be_to_cpu16 (sub->count))
-      printf (_("Out of range substitution (%d, %d)\n"), i,
-	      grub_be_to_cpu16 (sub->count));
-    else
-      add_subst (glyph, grub_be_to_cpu16 (sub->repl[i++]), target);
-  }
 
   for (j = 0; j < grub_be_to_cpu16 (feature->lookupcount); j++)
     {
@@ -552,14 +553,14 @@ process_cursive (struct gsub_feature *feature,
 	  void *coverage = (grub_uint8_t *) sub
 	    + grub_be_to_cpu16 (sub->coverage_off);
 	  grub_uint32_t covertype;
-	  covertype = grub_be_to_cpu16 (*(grub_uint16_t * __attribute__ ((packed))) coverage);
+	  covertype = grub_be_to_cpu16 (grub_get_unaligned16 (coverage));
 	  i = 0;
 	  if (covertype == GSUB_COVERAGE_LIST)
 	    {
 	      struct gsub_coverage_list *cover = coverage;
 	      int l;
 	      for (l = 0; l < grub_be_to_cpu16 (cover->count); l++)
-		subst (grub_be_to_cpu16 (cover->glyphs[l]));
+		subst (sub, grub_be_to_cpu16 (cover->glyphs[l]), target, &i);
 	    }
 	  else if (covertype == GSUB_COVERAGE_RANGE)
 	    {
@@ -568,7 +569,7 @@ process_cursive (struct gsub_feature *feature,
 	      for (l = 0; l < grub_be_to_cpu16 (cover->count); l++)
 		for (m = grub_be_to_cpu16 (cover->ranges[l].start);
 		     m <= grub_be_to_cpu16 (cover->ranges[l].end); m++)
-		  subst (m);
+		  subst (sub, m, target, &i);
 	    }
 	  else
 	    /* TRANSLATORS: most font transformations apply only to
