@@ -1,5 +1,18 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove vestiges of -Wunsafe-loop-optimisations.
+
+	* conf/Makefile.common (CFLAGS_GNULIB): Remove
+	-Wno-unsafe-loop-optimisations.
+	* grub-core/commands/legacycfg.c: Remove -Wunsafe-loop-optimisations
+	pragma.
+	* grub-core/io/gzio.c: Likewise.
+	* grub-core/script/parser.y: Likewise.
+	* grub-core/script/yylex.l: Likewise.
+	* util/grub-mkfont.c: Likewise.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkfont.c (process_cursive): Remove nested function.
 
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>

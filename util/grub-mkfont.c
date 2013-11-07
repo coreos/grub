@@ -707,8 +707,6 @@ write_be16_section (const char *name, grub_uint16_t data, int* offset,
   *offset += 10;
 }
 
-#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
-
 static void
 print_glyphs (struct grub_font_info *font_info)
 {
