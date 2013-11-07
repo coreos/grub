@@ -69,7 +69,7 @@ static int enforced_fips_mode;
 static int inactive_fips_mode;
 
 /* This is the lock we use to protect the FSM.  */
-static ath_mutex_t fsm_lock;
+static ath_mutex_t fsm_lock = ATH_MUTEX_INITIALIZER;
 
 /* The current state of the FSM.  The whole state machinery is only
    used while in fips mode. Change this only while holding fsm_lock. */
@@ -274,9 +274,17 @@ _gcry_fips_mode (void)
 int
 _gcry_enforced_fips_mode (void)
 {
+  if (!_gcry_fips_mode ())
+    return 0;
   return enforced_fips_mode;
 }
 
+/* Set a flag telling whether we are in the enforced fips mode.  */
+void
+_gcry_set_enforced_fips_mode (void)
+{
+  enforced_fips_mode = 1;
+}
 
 /* If we do not want to enforce the fips mode, we can set a flag so
    that the application may check whether it is still in fips mode.

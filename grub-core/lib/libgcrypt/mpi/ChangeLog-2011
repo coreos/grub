@@ -1,14 +1,9 @@
 2011-12-01  Werner Koch  <wk@g10code.com>
 
-	NB: ChangeLog files are no longer manually maintained.  Starting
-	on December 1st, 2011 we put change information only in the GIT
-	commit log, and generate a top-level ChangeLog file from logs at
-	"make dist".  See doc/HACKING for details.
-
-2011-07-04  Werner Koch  <wk@g10code.com>
-
-	* longlong.h (add_ssaaaa) [__arm__]: Do no use asm if thumb code
-	generation is enabled.  This is bug#1202.  Reported for gpg 1.4.
+        NB: ChangeLog files are no longer manually maintained.  Starting
+        on December 1st, 2011 we put change information only in the GIT
+        commit log, and generate a top-level ChangeLog file from logs at
+        "make dist".  See doc/HACKING for details.
 
 2011-03-28  Werner Koch  <wk@g10code.com>
 
@@ -825,7 +820,3 @@ Mon Feb 16 13:00:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-Local Variables:
-buffer-read-only: t
-End:

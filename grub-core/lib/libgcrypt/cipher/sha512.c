@@ -283,7 +283,7 @@ transform (SHA512_CONTEXT *hd, const unsigned char *data)
       t2 = Sum0 (b) + Maj (b, c, d);
       e += t1;
       a  = t1 + t2;
-      
+
       t += 8;
 #endif
     }
@@ -438,7 +438,7 @@ sha512_read (void *context)
 
 
 
-/* 
+/*
      Self-test section.
  */
 
@@ -448,10 +448,10 @@ selftests_sha384 (int extended, selftest_report_func_t report)
 {
   const char *what;
   const char *errtxt;
-  
+
   what = "short string";
   errtxt = _gcry_hash_selftest_check_one
-    (GCRY_MD_SHA384, 0, 
+    (GCRY_MD_SHA384, 0,
      "abc", 3,
      "\xcb\x00\x75\x3f\x45\xa3\x5e\x8b\xb5\xa0\x3d\x69\x9a\xc6\x50\x07"
      "\x27\x2c\x32\xab\x0e\xde\xd1\x63\x1a\x8b\x60\x5a\x43\xff\x5b\xed"
@@ -463,9 +463,9 @@ selftests_sha384 (int extended, selftest_report_func_t report)
     {
       what = "long string";
       errtxt = _gcry_hash_selftest_check_one
-        (GCRY_MD_SHA384, 0, 
+        (GCRY_MD_SHA384, 0,
          "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn"
-         "hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu", 112, 
+         "hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu", 112,
          "\x09\x33\x0C\x33\xF7\x11\x47\xE8\x3D\x19\x2F\xC7\x82\xCD\x1B\x47"
          "\x53\x11\x1B\x17\x3B\x3B\x05\xD2\x2F\xA0\x80\x86\xE3\xB0\xF7\x12"
          "\xFC\xC7\xC7\x1A\x55\x7E\x2D\xB9\x66\xC3\xE9\xFA\x91\x74\x60\x39",
@@ -498,10 +498,10 @@ selftests_sha512 (int extended, selftest_report_func_t report)
 {
   const char *what;
   const char *errtxt;
-  
+
   what = "short string";
   errtxt = _gcry_hash_selftest_check_one
-    (GCRY_MD_SHA512, 0, 
+    (GCRY_MD_SHA512, 0,
      "abc", 3,
      "\xDD\xAF\x35\xA1\x93\x61\x7A\xBA\xCC\x41\x73\x49\xAE\x20\x41\x31"
      "\x12\xE6\xFA\x4E\x89\xA9\x7E\xA2\x0A\x9E\xEE\xE6\x4B\x55\xD3\x9A"
@@ -514,9 +514,9 @@ selftests_sha512 (int extended, selftest_report_func_t report)
     {
       what = "long string";
       errtxt = _gcry_hash_selftest_check_one
-        (GCRY_MD_SHA512, 0, 
+        (GCRY_MD_SHA512, 0,
          "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn"
-         "hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu", 112, 
+         "hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu", 112,
          "\x8E\x95\x9B\x75\xDA\xE3\x13\xDA\x8C\xF4\xF7\x28\x14\xFC\x14\x3F"
          "\x8F\x77\x79\xC6\xEB\x9F\x7F\xA1\x72\x99\xAE\xAD\xB6\x88\x90\x18"
          "\x50\x1D\x28\x9E\x49\x00\xF7\xE4\x33\x1B\x99\xDE\xC4\xB5\x43\x3A"
@@ -524,7 +524,7 @@ selftests_sha512 (int extended, selftest_report_func_t report)
          64);
       if (errtxt)
         goto failed;
-      
+
       what = "one million \"a\"";
       errtxt = _gcry_hash_selftest_check_one
         (GCRY_MD_SHA512, 1,
@@ -564,7 +564,7 @@ run_selftests (int algo, int extended, selftest_report_func_t report)
     default:
       ec = GPG_ERR_DIGEST_ALGO;
       break;
-        
+
     }
   return ec;
 }
@@ -589,13 +589,13 @@ static gcry_md_oid_spec_t oid_spec_sha512[] =
     { NULL }
   };
 
-gcry_md_spec_t _gcry_digest_spec_sha512 = 
+gcry_md_spec_t _gcry_digest_spec_sha512 =
   {
     "SHA512", sha512_asn, DIM (sha512_asn), oid_spec_sha512, 64,
     sha512_init, sha512_write, sha512_final, sha512_read,
     sizeof (SHA512_CONTEXT),
   };
-md_extra_spec_t _gcry_digest_extraspec_sha512 = 
+md_extra_spec_t _gcry_digest_extraspec_sha512 =
   {
     run_selftests
   };
@@ -609,7 +609,7 @@ static byte sha384_asn[] =	/* Object ID is 2.16.840.1.101.3.4.2.2 */
 
 static gcry_md_oid_spec_t oid_spec_sha384[] =
   {
-    { "2.16.840.1.101.3.4.2.2" }, 
+    { "2.16.840.1.101.3.4.2.2" },
 
     /* PKCS#1 sha384WithRSAEncryption */
     { "1.2.840.113549.1.1.12" },
@@ -617,13 +617,13 @@ static gcry_md_oid_spec_t oid_spec_sha384[] =
     { NULL },
   };
 
-gcry_md_spec_t _gcry_digest_spec_sha384 = 
+gcry_md_spec_t _gcry_digest_spec_sha384 =
   {
     "SHA384", sha384_asn, DIM (sha384_asn), oid_spec_sha384, 48,
     sha384_init, sha512_write, sha512_final, sha512_read,
     sizeof (SHA512_CONTEXT),
   };
-md_extra_spec_t _gcry_digest_extraspec_sha384 = 
+md_extra_spec_t _gcry_digest_extraspec_sha384 =
   {
     run_selftests
   };

@@ -1,6 +1,8 @@
 /* gcrypt.h -  GNU Cryptographic Library Interface              -*- c -*-
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006
-                 2007, 2008, 2009, 2010, 2011  Free Software Foundation, Inc.
+                 2007, 2008, 2009, 2010, 2011,
+                 2012  Free Software Foundation, Inc.
+   Copyright (C) 2012, 2013  g10 Code GmbH
 
    This file is part of Libgcrypt.
 
@@ -62,6 +64,11 @@ extern "C" {
    autoconf (using the AM_PATH_GCRYPT macro) check that this header
    matches the installed library.  */
 #define GCRYPT_VERSION "@VERSION@"
+
+/* The version number of this header.  It may be used to handle minor
+   API incompatibilities.  */
+#define GCRYPT_VERSION_NUMBER @VERSION_NUMBER@
+
 
 /* Internal: We can't use the convenience macros for the multi
    precision integer functions when building this library. */
@@ -174,41 +181,6 @@ gcry_error_t gcry_err_make_from_errno (gcry_err_source_t source, int err);
 gcry_err_code_t gcry_error_from_errno (int err);
 
 
-/* NOTE: Since Libgcrypt 1.6 the thread callbacks are not anymore
-   used.  However we keep it to allow for some source code
-   compatibility if used in the standard way.  */
-
-/* Constants defining the thread model to use.  Used with the OPTION
-   field of the struct gcry_thread_cbs.  */
-#define GCRY_THREAD_OPTION_DEFAULT  0
-#define GCRY_THREAD_OPTION_USER     1
-#define GCRY_THREAD_OPTION_PTH      2
-#define GCRY_THREAD_OPTION_PTHREAD  3
-
-/* The version number encoded in the OPTION field of the struct
-   gcry_thread_cbs.  */
-#define GCRY_THREAD_OPTION_VERSION  1
-
-/* Wrapper for struct ath_ops.  */
-struct gcry_thread_cbs
-{
-  /* The OPTION field encodes the thread model and the version number
-     of this structure.
-       Bits  7 - 0  are used for the thread model
-       Bits 15 - 8  are used for the version number.  */
-  unsigned int option;
-} _GCRY_ATTR_INTERNAL;
-
-#define GCRY_THREAD_OPTION_PTH_IMPL                                     \
-  static struct gcry_thread_cbs gcry_threads_pth = {                    \
-    (GCRY_THREAD_OPTION_PTH | (GCRY_THREAD_OPTION_VERSION << 8))}
-
-#define GCRY_THREAD_OPTION_PTHREAD_IMPL                                 \
-  static struct gcry_thread_cbs gcry_threads_pthread = {                \
-    (GCRY_THREAD_OPTION_PTHREAD | (GCRY_THREAD_OPTION_VERSION << 8))}
-
-
-
 /* The data object used to hold a multi precision integer.  */
 struct gcry_mpi;
 typedef struct gcry_mpi *gcry_mpi_t;
@@ -285,7 +257,8 @@ enum gcry_ctl_cmds
     GCRYCTL_FORCE_FIPS_MODE = 56,
     GCRYCTL_SELFTEST = 57,
     /* Note: 58 .. 62 are used internally.  */
-    GCRYCTL_DISABLE_HWF = 63
+    GCRYCTL_DISABLE_HWF = 63,
+    GCRYCTL_SET_ENFORCED_FIPS_FLAG = 64
   };
 
 /* Perform various operations defined by CMD. */
@@ -821,6 +794,14 @@ size_t gcry_cipher_get_algo_blklen (int algo);
 #define gcry_cipher_test_algo(a) \
             gcry_cipher_algo_info( (a), GCRYCTL_TEST_ALGO, NULL, NULL )
 
+/* Get a list consisting of the IDs of the loaded cipher modules.  If
+   LIST is zero, write the number of loaded cipher modules to
+   LIST_LENGTH and return.  If LIST is non-zero, the first
+   *LIST_LENGTH algorithm IDs are stored in LIST, which must be of
+   according size.  In case there are less cipher modules than
+   *LIST_LENGTH, *LIST_LENGTH is updated to the correct number.  */
+gcry_error_t gcry_cipher_list (int *list, int *list_length);
+
 
 /************************************
  *                                  *
@@ -911,6 +892,13 @@ gcry_sexp_t gcry_pk_get_param (int algo, const char *name);
 #define gcry_pk_test_algo(a) \
             gcry_pk_algo_info( (a), GCRYCTL_TEST_ALGO, NULL, NULL )
 
+/* Get a list consisting of the IDs of the loaded pubkey modules.  If
+   LIST is zero, write the number of loaded pubkey modules to
+   LIST_LENGTH and return.  If LIST is non-zero, the first
+   *LIST_LENGTH algorithm IDs are stored in LIST, which must be of
+   according size.  In case there are less pubkey modules than
+   *LIST_LENGTH, *LIST_LENGTH is updated to the correct number.  */
+gcry_error_t gcry_pk_list (int *list, int *list_length);
 
 
 
@@ -1081,6 +1069,438 @@ void gcry_md_debug (gcry_md_hd_t hd, const char *suffix);
 #define gcry_md_get_asnoid(a,b,n) \
             gcry_md_algo_info((a), GCRYCTL_GET_ASNOID, (b), (n))
 
+/* Enable debugging for digest object A; i.e. create files named
+   dbgmd-<n>.<string> while hashing.  B is a string used as the suffix
+   for the filename.  This macro is deprecated, use gcry_md_debug. */
+#ifndef GCRYPT_NO_DEPRECATED
+#define gcry_md_start_debug(a,b) \
+            gcry_md_ctl( (a), GCRYCTL_START_DUMP, (b), 0 )
+
+/* Disable the debugging of A.  This macro is deprecated, use
+   gcry_md_debug.  */
+#define gcry_md_stop_debug(a,b) \
+            gcry_md_ctl( (a), GCRYCTL_STOP_DUMP, (b), 0 )
+#endif
+
+/* Get a list consisting of the IDs of the loaded message digest
+   modules.  If LIST is zero, write the number of loaded message
+   digest modules to LIST_LENGTH and return.  If LIST is non-zero, the
+   first *LIST_LENGTH algorithm IDs are stored in LIST, which must be
+   of according size.  In case there are less message digest modules
+   than *LIST_LENGTH, *LIST_LENGTH is updated to the correct
+   number.  */
+gcry_error_t gcry_md_list (int *list, int *list_length);
+
+
+#if !defined(GCRYPT_NO_DEPRECATED) || defined(_GCRYPT_IN_LIBGCRYPT)
+/* Alternative interface for asymmetric cryptography.  This interface
+   is deprecated.  */
+
+/* The algorithm IDs. */
+typedef enum gcry_ac_id
+  {
+    GCRY_AC_RSA = 1,
+    GCRY_AC_DSA = 17,
+    GCRY_AC_ELG = 20,
+    GCRY_AC_ELG_E = 16
+  }
+gcry_ac_id_t _GCRY_ATTR_INTERNAL;
+
+/* Key types.  */
+typedef enum gcry_ac_key_type
+  {
+    GCRY_AC_KEY_SECRET,
+    GCRY_AC_KEY_PUBLIC
+  }
+gcry_ac_key_type_t _GCRY_ATTR_INTERNAL;
+
+/* Encoding methods.  */
+typedef enum gcry_ac_em
+  {
+    GCRY_AC_EME_PKCS_V1_5,
+    GCRY_AC_EMSA_PKCS_V1_5
+  }
+gcry_ac_em_t _GCRY_ATTR_INTERNAL;
+
+/* Encryption and Signature schemes.  */
+typedef enum gcry_ac_scheme
+  {
+    GCRY_AC_ES_PKCS_V1_5,
+    GCRY_AC_SSA_PKCS_V1_5
+  }
+gcry_ac_scheme_t _GCRY_ATTR_INTERNAL;
+
+/* AC data.  */
+#define GCRY_AC_FLAG_DEALLOC     (1 << 0)
+#define GCRY_AC_FLAG_COPY        (1 << 1)
+#define GCRY_AC_FLAG_NO_BLINDING (1 << 2)
+
+/* This type represents a `data set'.  */
+typedef struct gcry_ac_data *gcry_ac_data_t _GCRY_ATTR_INTERNAL;
+
+/* This type represents a single `key', either a secret one or a
+   public one.  */
+typedef struct gcry_ac_key *gcry_ac_key_t _GCRY_ATTR_INTERNAL;
+
+/* This type represents a `key pair' containing a secret and a public
+   key.  */
+typedef struct gcry_ac_key_pair *gcry_ac_key_pair_t _GCRY_ATTR_INTERNAL;
+
+/* This type represents a `handle' that is needed by functions
+   performing cryptographic operations.  */
+typedef struct gcry_ac_handle *gcry_ac_handle_t _GCRY_ATTR_INTERNAL;
+
+typedef gpg_error_t (*gcry_ac_data_read_cb_t) (void *opaque,
+					       unsigned char *buffer,
+					       size_t *buffer_n)
+  /* */  _GCRY_ATTR_INTERNAL;
+
+typedef gpg_error_t (*gcry_ac_data_write_cb_t) (void *opaque,
+						unsigned char *buffer,
+						size_t buffer_n)
+  /* */  _GCRY_ATTR_INTERNAL;
+
+typedef enum
+  {
+    GCRY_AC_IO_READABLE,
+    GCRY_AC_IO_WRITABLE
+  }
+gcry_ac_io_mode_t _GCRY_ATTR_INTERNAL;
+
+typedef enum
+  {
+    GCRY_AC_IO_STRING,
+    GCRY_AC_IO_CALLBACK
+  }
+gcry_ac_io_type_t _GCRY_ATTR_INTERNAL;
+
+typedef struct gcry_ac_io
+{
+  /* This is an INTERNAL structure, do NOT use manually.  */
+  gcry_ac_io_mode_t mode _GCRY_ATTR_INTERNAL;
+  gcry_ac_io_type_t type _GCRY_ATTR_INTERNAL;
+  union
+  {
+    union
+    {
+      struct
+      {
+	gcry_ac_data_read_cb_t cb;
+	void *opaque;
+      } callback;
+      struct
+      {
+	unsigned char *data;
+	size_t data_n;
+      } string;
+      void *opaque;
+    } readable;
+    union
+    {
+      struct
+      {
+	gcry_ac_data_write_cb_t cb;
+	void *opaque;
+      } callback;
+      struct
+      {
+	unsigned char **data;
+	size_t *data_n;
+      } string;
+      void *opaque;
+    } writable;
+  } io _GCRY_ATTR_INTERNAL;
+}
+gcry_ac_io_t _GCRY_ATTR_INTERNAL;
+
+/* The caller of gcry_ac_key_pair_generate can provide one of these
+   structures in order to influence the key generation process in an
+   algorithm-specific way.  */
+typedef struct gcry_ac_key_spec_rsa
+{
+  gcry_mpi_t e;                 /* E to use.  */
+} gcry_ac_key_spec_rsa_t _GCRY_ATTR_INTERNAL;
+
+/* Structure used for passing data to the implementation of the
+   `EME-PKCS-V1_5' encoding method.  */
+typedef struct gcry_ac_eme_pkcs_v1_5
+{
+  size_t key_size;
+} gcry_ac_eme_pkcs_v1_5_t _GCRY_ATTR_INTERNAL;
+
+typedef enum gcry_md_algos gcry_md_algo_t _GCRY_ATTR_INTERNAL;
+
+/* Structure used for passing data to the implementation of the
+   `EMSA-PKCS-V1_5' encoding method.  */
+typedef struct gcry_ac_emsa_pkcs_v1_5
+{
+  gcry_md_algo_t md;
+  size_t em_n;
+} gcry_ac_emsa_pkcs_v1_5_t _GCRY_ATTR_INTERNAL;
+
+/* Structure used for passing data to the implementation of the
+   `SSA-PKCS-V1_5' signature scheme.  */
+typedef struct gcry_ac_ssa_pkcs_v1_5
+{
+  gcry_md_algo_t md;
+} gcry_ac_ssa_pkcs_v1_5_t _GCRY_ATTR_INTERNAL;
+#endif /* !GCRYPT_NO_DEPRECATED || !_GCRYPT_IN_LIBGCRYPT */
+
+
+#ifndef GCRYPT_NO_DEPRECATED
+/* Returns a new, empty data set in DATA.  */
+gcry_error_t gcry_ac_data_new (gcry_ac_data_t *data)
+  /* */                       _GCRY_ATTR_INTERNAL;
+
+/* Destroy the data set DATA.  */
+void gcry_ac_data_destroy (gcry_ac_data_t data)
+  /* */                       _GCRY_ATTR_INTERNAL;
+
+/* Create a copy of the data set DATA and store it in DATA_CP.  */
+gcry_error_t gcry_ac_data_copy (gcry_ac_data_t *data_cp,
+                                gcry_ac_data_t data)
+  /* */                       _GCRY_ATTR_INTERNAL;
+
+/* Return the number of named MPI values inside of the data set
+   DATA.  */
+unsigned int gcry_ac_data_length (gcry_ac_data_t data)
+  /* */                       _GCRY_ATTR_INTERNAL;
+
+/* Destroy any values contained in the data set DATA.  */
+void gcry_ac_data_clear (gcry_ac_data_t data)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Add the value MPI to DATA with the label NAME.  If FLAGS contains
+   GCRY_AC_FLAG_DATA_COPY, the data set will contain copies of NAME
+   and MPI.  If FLAGS contains GCRY_AC_FLAG_DATA_DEALLOC or
+   GCRY_AC_FLAG_DATA_COPY, the values contained in the data set will
+   be deallocated when they are to be removed from the data set.  */
+gcry_error_t gcry_ac_data_set (gcry_ac_data_t data, unsigned int flags,
+                               const char *name, gcry_mpi_t mpi)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Store the value labelled with NAME found in DATA in MPI.  If FLAGS
+   contains GCRY_AC_FLAG_COPY, store a copy of the MPI value contained
+   in the data set.  MPI may be NULL.  */
+gcry_error_t gcry_ac_data_get_name (gcry_ac_data_t data, unsigned int flags,
+                                    const char *name, gcry_mpi_t *mpi)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Stores in NAME and MPI the named MPI value contained in the data
+   set DATA with the index IDX.  If FLAGS contains GCRY_AC_FLAG_COPY,
+   store copies of the values contained in the data set. NAME or MPI
+   may be NULL.  */
+gcry_error_t gcry_ac_data_get_index (gcry_ac_data_t data, unsigned int flags,
+                                     unsigned int idx,
+                                     const char **name, gcry_mpi_t *mpi)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Convert the data set DATA into a new S-Expression, which is to be
+   stored in SEXP, according to the identifiers contained in
+   IDENTIFIERS.  */
+gcry_error_t gcry_ac_data_to_sexp (gcry_ac_data_t data, gcry_sexp_t *sexp,
+				   const char **identifiers)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Create a new data set, which is to be stored in DATA_SET, from the
+   S-Expression SEXP, according to the identifiers contained in
+   IDENTIFIERS.  */
+gcry_error_t gcry_ac_data_from_sexp (gcry_ac_data_t *data, gcry_sexp_t sexp,
+				     const char **identifiers)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Initialize AC_IO according to MODE, TYPE and the variable list of
+   arguments.  The list of variable arguments to specify depends on
+   the given TYPE.  */
+void gcry_ac_io_init (gcry_ac_io_t *ac_io, gcry_ac_io_mode_t mode,
+		      gcry_ac_io_type_t type, ...)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Initialize AC_IO according to MODE, TYPE and the variable list of
+   arguments AP.  The list of variable arguments to specify depends on
+   the given TYPE.  */
+void gcry_ac_io_init_va (gcry_ac_io_t *ac_io, gcry_ac_io_mode_t mode,
+			 gcry_ac_io_type_t type, va_list ap)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Create a new ac handle.  */
+gcry_error_t gcry_ac_open (gcry_ac_handle_t *handle,
+                           gcry_ac_id_t algorithm, unsigned int flags)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Destroy an ac handle.  */
+void gcry_ac_close (gcry_ac_handle_t handle)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Initialize a key from a given data set.  */
+gcry_error_t gcry_ac_key_init (gcry_ac_key_t *key, gcry_ac_handle_t handle,
+                               gcry_ac_key_type_t type, gcry_ac_data_t data)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Generates a new key pair via the handle HANDLE of NBITS bits and
+   stores it in KEY_PAIR.  In case non-standard settings are wanted, a
+   pointer to a structure of type gcry_ac_key_spec_<algorithm>_t,
+   matching the selected algorithm, can be given as KEY_SPEC.
+   MISC_DATA is not used yet.  */
+gcry_error_t gcry_ac_key_pair_generate (gcry_ac_handle_t handle,
+                                        unsigned int nbits, void *spec,
+                                        gcry_ac_key_pair_t *key_pair,
+                                        gcry_mpi_t **misc_data)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Returns the key of type WHICH out of the key pair KEY_PAIR.  */
+gcry_ac_key_t gcry_ac_key_pair_extract (gcry_ac_key_pair_t key_pair,
+                                        gcry_ac_key_type_t which)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Returns the data set contained in the key KEY.  */
+gcry_ac_data_t gcry_ac_key_data_get (gcry_ac_key_t key)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Verifies that the key KEY is sane via HANDLE.  */
+gcry_error_t gcry_ac_key_test (gcry_ac_handle_t handle, gcry_ac_key_t key)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Stores the number of bits of the key KEY in NBITS via HANDLE.  */
+gcry_error_t gcry_ac_key_get_nbits (gcry_ac_handle_t handle,
+                                    gcry_ac_key_t key, unsigned int *nbits)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Writes the 20 byte long key grip of the key KEY to KEY_GRIP via
+   HANDLE.  */
+gcry_error_t gcry_ac_key_get_grip (gcry_ac_handle_t handle, gcry_ac_key_t key,
+                                   unsigned char *key_grip)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Destroy a key.  */
+void gcry_ac_key_destroy (gcry_ac_key_t key)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Destroy a key pair.  */
+void gcry_ac_key_pair_destroy (gcry_ac_key_pair_t key_pair)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Encodes a message according to the encoding method METHOD.  OPTIONS
+   must be a pointer to a method-specific structure
+   (gcry_ac_em*_t).  */
+gcry_error_t gcry_ac_data_encode (gcry_ac_em_t method,
+				  unsigned int flags, void *options,
+				  gcry_ac_io_t *io_read,
+				  gcry_ac_io_t *io_write)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Decodes a message according to the encoding method METHOD.  OPTIONS
+   must be a pointer to a method-specific structure
+   (gcry_ac_em*_t).  */
+gcry_error_t gcry_ac_data_decode (gcry_ac_em_t method,
+				  unsigned int flags, void *options,
+				  gcry_ac_io_t *io_read,
+				  gcry_ac_io_t *io_write)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Encrypt the plain text MPI value DATA_PLAIN with the key KEY under
+   the control of the flags FLAGS and store the resulting data set
+   into DATA_ENCRYPTED.  */
+gcry_error_t gcry_ac_data_encrypt (gcry_ac_handle_t handle,
+                                   unsigned int flags,
+                                   gcry_ac_key_t key,
+                                   gcry_mpi_t data_plain,
+                                   gcry_ac_data_t *data_encrypted)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Decrypt the decrypted data contained in the data set DATA_ENCRYPTED
+   with the key KEY under the control of the flags FLAGS and store the
+   resulting plain text MPI value in DATA_PLAIN.  */
+gcry_error_t gcry_ac_data_decrypt (gcry_ac_handle_t handle,
+                                   unsigned int flags,
+                                   gcry_ac_key_t key,
+                                   gcry_mpi_t *data_plain,
+                                   gcry_ac_data_t data_encrypted)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Sign the data contained in DATA with the key KEY and store the
+   resulting signature in the data set DATA_SIGNATURE.  */
+gcry_error_t gcry_ac_data_sign (gcry_ac_handle_t handle,
+                                gcry_ac_key_t key,
+                                gcry_mpi_t data,
+                                gcry_ac_data_t *data_signature)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Verify that the signature contained in the data set DATA_SIGNATURE
+   is indeed the result of signing the data contained in DATA with the
+   secret key belonging to the public key KEY.  */
+gcry_error_t gcry_ac_data_verify (gcry_ac_handle_t handle,
+                                  gcry_ac_key_t key,
+                                  gcry_mpi_t data,
+                                  gcry_ac_data_t data_signature)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Encrypts the plain text readable from IO_MESSAGE through HANDLE
+   with the public key KEY according to SCHEME, FLAGS and OPTS.  If
+   OPTS is not NULL, it has to be a pointer to a structure specific to
+   the chosen scheme (gcry_ac_es_*_t).  The encrypted message is
+   written to IO_CIPHER. */
+gcry_error_t gcry_ac_data_encrypt_scheme (gcry_ac_handle_t handle,
+					  gcry_ac_scheme_t scheme,
+					  unsigned int flags, void *opts,
+					  gcry_ac_key_t key,
+					  gcry_ac_io_t *io_message,
+					  gcry_ac_io_t *io_cipher)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Decrypts the cipher text readable from IO_CIPHER through HANDLE
+   with the secret key KEY according to SCHEME, @var{flags} and OPTS.
+   If OPTS is not NULL, it has to be a pointer to a structure specific
+   to the chosen scheme (gcry_ac_es_*_t).  The decrypted message is
+   written to IO_MESSAGE.  */
+gcry_error_t gcry_ac_data_decrypt_scheme (gcry_ac_handle_t handle,
+					  gcry_ac_scheme_t scheme,
+					  unsigned int flags, void *opts,
+					  gcry_ac_key_t key,
+					  gcry_ac_io_t *io_cipher,
+					  gcry_ac_io_t *io_message)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Signs the message readable from IO_MESSAGE through HANDLE with the
+   secret key KEY according to SCHEME, FLAGS and OPTS.  If OPTS is not
+   NULL, it has to be a pointer to a structure specific to the chosen
+   scheme (gcry_ac_ssa_*_t).  The signature is written to
+   IO_SIGNATURE.  */
+gcry_error_t gcry_ac_data_sign_scheme (gcry_ac_handle_t handle,
+				       gcry_ac_scheme_t scheme,
+				       unsigned int flags, void *opts,
+				       gcry_ac_key_t key,
+				       gcry_ac_io_t *io_message,
+				       gcry_ac_io_t *io_signature)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Verifies through HANDLE that the signature readable from
+   IO_SIGNATURE is indeed the result of signing the message readable
+   from IO_MESSAGE with the secret key belonging to the public key KEY
+   according to SCHEME and OPTS.  If OPTS is not NULL, it has to be an
+   anonymous structure (gcry_ac_ssa_*_t) specific to the chosen
+   scheme.  */
+gcry_error_t gcry_ac_data_verify_scheme (gcry_ac_handle_t handle,
+					 gcry_ac_scheme_t scheme,
+					 unsigned int flags, void *opts,
+					 gcry_ac_key_t key,
+					 gcry_ac_io_t *io_message,
+					 gcry_ac_io_t *io_signature)
+  /* */ _GCRY_ATTR_INTERNAL;
+
+/* Store the textual representation of the algorithm whose id is given
+   in ALGORITHM in NAME.  This function is deprecated; use
+   gcry_pk_algo_name. */
+gcry_error_t gcry_ac_id_to_name (gcry_ac_id_t algorithm,
+                                 const char **name)
+     /* */                      _GCRY_GCC_ATTR_DEPRECATED;
+/* Store the numeric ID of the algorithm whose textual representation
+   is contained in NAME in ALGORITHM.  This function is deprecated;
+   use gcry_pk_map_name. */
+gcry_error_t gcry_ac_name_to_id (const char *name,
+                                 gcry_ac_id_t *algorithm)
+     /* */                      _GCRY_GCC_ATTR_DEPRECATED;
+#endif /*GCRYPT_NO_DEPRECATED*/
 
 
 /******************************
@@ -1322,6 +1742,9 @@ int gcry_is_secure (const void *a) _GCRY_GCC_ATTR_PURE;
 /* Return true if Libgcrypt is in FIPS mode.  */
 #define gcry_fips_mode_active()  !!gcry_control (GCRYCTL_FIPS_MODE_P, 0)
 
+
+/* Include support for Libgcrypt modules.  */
+#include <gcrypt-module.h>
 
 #if 0 /* (Keep Emacsens' auto-indent happy.) */
 {

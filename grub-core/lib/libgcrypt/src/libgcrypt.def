@@ -132,8 +132,7 @@ EXPORTS
       gcry_cipher_decrypt  @101
       gcry_cipher_get_algo_keylen  @102
       gcry_cipher_get_algo_blklen  @103
-
-;; @104 used to be part of the module register interface
+      gcry_cipher_list  @104
 
       gcry_pk_encrypt  @105
       gcry_pk_decrypt  @106
@@ -147,13 +146,33 @@ EXPORTS
       gcry_pk_map_name  @114
       gcry_pk_get_nbits  @115
       gcry_pk_get_keygrip  @116
+      gcry_pk_list  @117
 
-;; @117 used to be part of the module register interface
-
-;;
-;; 118 to 142 were used in previous Libgcrypt versions for the gcry_ac
-;; interface
-;;
+      gcry_ac_data_new  @118
+      gcry_ac_data_destroy  @119
+      gcry_ac_data_set  @120
+      gcry_ac_data_copy  @121
+      gcry_ac_data_length  @122
+      gcry_ac_data_get_name  @123
+      gcry_ac_data_get_index  @124
+      gcry_ac_data_clear  @125
+      gcry_ac_open  @126
+      gcry_ac_close  @127
+      gcry_ac_key_init  @128
+      gcry_ac_key_pair_generate  @129
+      gcry_ac_key_pair_extract  @130
+      gcry_ac_key_data_get  @131
+      gcry_ac_key_test  @132
+      gcry_ac_key_get_nbits  @133
+      gcry_ac_key_get_grip  @134
+      gcry_ac_key_destroy  @135
+      gcry_ac_key_pair_destroy  @136
+      gcry_ac_data_encrypt  @137
+      gcry_ac_data_decrypt  @138
+      gcry_ac_data_sign  @139
+      gcry_ac_data_verify  @140
+      gcry_ac_id_to_name  @141
+      gcry_ac_name_to_id  @142
 
       gcry_md_open  @143
       gcry_md_close  @144
@@ -173,7 +192,8 @@ EXPORTS
       gcry_md_algo_name  @158
       gcry_md_map_name  @159
       gcry_md_setkey  @160
-;; @161 used to be part of the module register interface
+      gcry_md_list  @161
+
       gcry_randomize  @162
       gcry_random_add_bytes  @163
       gcry_random_bytes  @164
@@ -189,15 +209,21 @@ EXPORTS
 
       gcry_md_debug  @172
 
-;; @173 used to be part of the module register interface
-;; @174 used to be part of the module register interface
-;; @175 used to be part of the module register interface
-;; @176 used to be part of the module register interface
-;; @177 used to be part of the module register interface
-;; @178 used to be part of the module register interface
-;;
-;; @179 to @186 used to be part of the removed gcry_ac interface
-;;
+      gcry_cipher_register  @173
+      gcry_cipher_unregister @174
+      gcry_md_register  @175
+      gcry_md_unregister @176
+      gcry_pk_register  @177
+      gcry_pk_unregister @178
+
+      gcry_ac_data_from_sexp  @179
+      gcry_ac_data_to_sexp  @180
+      gcry_ac_io_init  @181
+      gcry_ac_io_init_va  @182
+      gcry_ac_data_encrypt_scheme  @183
+      gcry_ac_data_decrypt_scheme  @184
+      gcry_ac_data_sign_scheme  @185
+      gcry_ac_data_verify_scheme  @186
 
       gcry_sexp_nth_string  @187
 

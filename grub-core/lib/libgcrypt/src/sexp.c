@@ -576,13 +576,25 @@ gcry_sexp_nth( const gcry_sexp_t list, int number )
     p++;
 
     if ( *p == ST_DATA ) {
-	memcpy ( &n, p, sizeof n ); p += sizeof n;
-	newlist = gcry_malloc ( sizeof *newlist + n + 1 );
+        memcpy ( &n, p, sizeof n );
+        /* Allocate 1 (=sizeof *newlist) byte for ST_OPEN
+                    1 byte for ST_DATA
+                    sizeof n byte for n
+                    n byte for the data
+                    1 byte for ST_CLOSE
+                    1 byte for ST_STOP */
+        newlist = gcry_malloc ( sizeof *newlist + 1 + sizeof n + n + 2 );
         if (!newlist)
-          return NULL;
-	d = newlist->d;
-	memcpy ( d, p, n ); d += n;
-	*d++ = ST_STOP;
+            return NULL;
+        d = newlist->d;
+        *d = ST_OPEN;   /* Put the ST_OPEN flag */
+        d++;            /* Move forward */
+        /* Copy ST_DATA, n and the data from p to d */
+        memcpy ( d, p, 1 + sizeof n + n );
+        d += 1 + sizeof n + n;  /* Move after the data copied */
+        *d = ST_CLOSE;          /* Put the ST_CLOSE flag */
+        d++;                    /* Move forward */
+        *d = ST_STOP;           /* Put the ST_STOP flag */
     }
     else if ( *p == ST_OPEN ) {
 	const byte *head = p;

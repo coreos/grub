@@ -27,6 +27,9 @@
 
 #include <sys/types.h>
 
+#define _gcry_mpi_invm gcry_mpi_invm
+#define _gcry_mpi_set gcry_mpi_set
+#define _gcry_mpi_set_ui gcry_mpi_set_ui
 #define size_t grub_size_t
 
 #undef __GNU_LIBRARY__
@@ -48,10 +51,12 @@ selftest (void)
 }
 
 static inline int
-fips_mode (void)
+_gcry_fips_mode (void)
 {
   return 0;
 }
+
+#define assert gcry_assert
 
 #ifdef GRUB_UTIL
 

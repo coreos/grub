@@ -26,7 +26,7 @@ EXTRA_DIST = Manifest libgcrypt-config.in libgcrypt.m4 libgcrypt.vers \
 bin_SCRIPTS = libgcrypt-config
 m4datadir = $(datadir)/aclocal
 m4data_DATA = libgcrypt.m4
-include_HEADERS = gcrypt.h
+include_HEADERS = gcrypt.h gcrypt-module.h
 
 lib_LTLIBRARIES = libgcrypt.la
 bin_PROGRAMS = dumpsexp hmac256
@@ -53,7 +53,7 @@ endif
 
 libgcrypt_la_CFLAGS = $(GPG_ERROR_CFLAGS)
 libgcrypt_la_SOURCES = g10lib.h visibility.c visibility.h types.h \
-	cipher.h cipher-proto.h gcrypt-module.h \
+	cipher.h cipher-proto.h \
 	misc.c global.c sexp.c hwfeatures.c \
 	stdmem.c stdmem.h secmem.c secmem.h \
 	mpi.h missing-string.c module.c fips.c \

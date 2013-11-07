@@ -522,7 +522,7 @@ _gcry_mpi_ec_add_points (mpi_point_t *result,
           ec_mulm (l1, l1, x1, ctx);
         }
       if (z1_is_one)
-        mpi_set (l2, x1);
+        mpi_set (l2, x2);
       else
         {
           ec_powm (l2, z1, ctx->two, ctx);
@@ -670,10 +670,23 @@ _gcry_mpi_ec_mul_point (mpi_point_t *result,
 
   mpi_mul (h, k, ctx->three); /* h = 3k */
   loops = mpi_get_nbits (h);
-
-  mpi_set (result->x, point->x);
-  mpi_set (result->y, yy); mpi_free (yy); yy = NULL;
-  mpi_set (result->z, point->z);
+  if (loops < 2)
+    {
+      /* If SCALAR is zero, the above mpi_mul sets H to zero and thus
+         LOOPs will be zero.  To avoid an underflow of I in the main
+         loop we set LOOP to 2 and the result to (0,0,0).  */
+      loops = 2;
+      mpi_clear (result->x);
+      mpi_clear (result->y);
+      mpi_clear (result->z);
+    }
+  else
+    {
+      mpi_set (result->x, point->x);
+      mpi_set (result->y, yy);
+      mpi_set (result->z, point->z);
+    }
+  mpi_free (yy); yy = NULL;
 
   p1.x = x1; x1 = NULL;
   p1.y = y1; y1 = NULL;

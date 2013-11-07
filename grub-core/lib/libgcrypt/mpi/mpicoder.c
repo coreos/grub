@@ -270,7 +270,7 @@ do_get_buffer (gcry_mpi_t a, unsigned int *nbytes, int *sign, int force_secure)
 
   /* This is sub-optimal but we need to do the shift operation because
      the caller has to free the returned buffer.  */
-  for (p=buffer; !*p && *nbytes; p++, --*nbytes)
+  for (p=buffer; *nbytes && !*p; p++, --*nbytes)
     ;
   if (p != buffer)
     memmove (buffer,p, *nbytes);

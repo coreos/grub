@@ -23,7 +23,7 @@ EXTRA_DIST = Manifest
 
 # Need to include ../src in addition to top_srcdir because gcrypt.h is
 # a built header.
-AM_CPPFLAGS = -I../src -I$(top_srcdir)/src 
+AM_CPPFLAGS = -I../src -I$(top_srcdir)/src
 AM_CFLAGS = $(GPG_ERROR_CFLAGS)
 
 
@@ -35,7 +35,7 @@ libcipher_la_DEPENDENCIES = $(GCRYPT_MODULES)
 libcipher_la_LIBADD = $(GCRYPT_MODULES)
 
 libcipher_la_SOURCES = \
-cipher.c pubkey.c ac.c md.c \
+cipher.c pubkey.c ac.c md.c kdf.c \
 hmac-tests.c \
 bithelp.h  \
 primegen.c  \
@@ -51,6 +51,7 @@ des.c \
 dsa.c \
 elgamal.c \
 ecc.c \
+idea.c \
 md4.c \
 md5.c \
 rijndael.c rijndael-tables.h \
@@ -68,7 +69,7 @@ rfc2268.c \
 camellia.c camellia.h camellia-glue.c
 
 if ENABLE_O_FLAG_MUNGING
-o_flag_munging = sed -e 's/-O[2-9s]*/-O1/g'
+o_flag_munging = sed -e 's/-O\([2-9s][2-9s]*\)/-O1/' -e 's/-Ofast/-O1/g'
 else
 o_flag_munging = cat
 endif

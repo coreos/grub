@@ -65,7 +65,8 @@ typedef enum
     GPG_ERR_WRONG_KEY_USAGE,
     GPG_ERR_WRONG_PUBKEY_ALGO,
     GPG_ERR_OUT_OF_MEMORY,
-    GPG_ERR_TOO_LARGE
+    GPG_ERR_TOO_LARGE,
+    GPG_ERR_ENOMEM
   } gpg_err_code_t;
 typedef gpg_err_code_t gpg_error_t;
 typedef gpg_error_t gcry_error_t;
@@ -331,6 +332,7 @@ grub_md_unregister (gcry_md_spec_t *cipher);
 
 extern struct gcry_pk_spec *grub_crypto_pk_dsa;
 extern struct gcry_pk_spec *grub_crypto_pk_ecdsa;
+extern struct gcry_pk_spec *grub_crypto_pk_ecdh;
 extern struct gcry_pk_spec *grub_crypto_pk_rsa;
 
 void

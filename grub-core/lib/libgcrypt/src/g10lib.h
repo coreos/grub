@@ -69,8 +69,6 @@
 
 /* Gettext macros.  */
 
-#define _(a)  _gcry_gettext(a)
-
 /* Some handy macros */
 #ifndef STR
 #define STR(v) #v
@@ -116,9 +114,20 @@ void _gcry_log_printhex (const char *text, const void *buffer, size_t length);
 void _gcry_set_log_verbosity( int level );
 int _gcry_log_verbosity( int level );
 
+#ifdef JNLIB_GCC_M_FUNCTION
+#define BUG() _gcry_bug( __FILE__ , __LINE__, __FUNCTION__ )
+#define gcry_assert(expr) ((expr)? (void)0 \
+         : _gcry_assert_failed (STR(expr), __FILE__, __LINE__, __FUNCTION__))
+#elif __STDC_VERSION__ >= 199901L
 #define BUG() _gcry_bug( __FILE__ , __LINE__, __func__ )
 #define gcry_assert(expr) ((expr)? (void)0 \
          : _gcry_assert_failed (STR(expr), __FILE__, __LINE__, __func__))
+#else
+#define BUG() _gcry_bug( __FILE__ , __LINE__ )
+#define gcry_assert(expr) ((expr)? (void)0 \
+         : _gcry_assert_failed (STR(expr), __FILE__, __LINE__))
+#endif
+
 
 #define log_bug     _gcry_log_bug
 #define log_fatal   _gcry_log_fatal
@@ -155,7 +164,6 @@ const char *_gcry_mpi_get_hw_config (void);
 #endif
 
 /*-- primegen.c --*/
-gcry_err_code_t _gcry_primegen_init (void);
 gcry_mpi_t _gcry_generate_secret_prime (unsigned int nbits,
                                  gcry_random_level_t random_level,
                                  int (*extra_check)(void*, gcry_mpi_t),
@@ -238,66 +246,6 @@ void _gcry_burn_stack (int bytes);
                       || (*(a) >= 'A' && *(a) <= 'F')  \
                       || (*(a) >= 'a' && *(a) <= 'f'))
 
-/* Management for ciphers/digests/pubkey-ciphers.  */
-
-/* Structure for each registered `module'.  */
-struct gcry_module
-{
-  struct gcry_module *next;     /* List pointers.      */
-  struct gcry_module **prevp;
-  void *spec;			/* Pointer to the subsystem-specific
-				   specification structure.  */
-  void *extraspec;		/* Pointer to the subsystem-specific
-				   extra specification structure.  */
-  int flags;			/* Associated flags.   */
-  int counter;			/* Use counter.        */
-  unsigned int mod_id;		/* ID of this module.  */
-};
-
-typedef struct gcry_module gcry_module_t;
-
-/* Flags for the `flags' member of gcry_module_t.  */
-#define FLAG_MODULE_DISABLED (1 << 0)
-
-gcry_err_code_t _gcry_module_add (gcry_module_t *entries,
-                                  unsigned int id,
-                                  void *spec,
-                                  void *extraspec,
-                                  gcry_module_t *module);
-
-typedef int (*gcry_module_lookup_t) (void *spec, void *data);
-
-/* Lookup a module specification by it's ID.  After a successful
-   lookup, the module has it's resource counter incremented.  */
-gcry_module_t _gcry_module_lookup_id (gcry_module_t entries,
-				       unsigned int id);
-
-/* Internal function.  Lookup a module specification.  */
-gcry_module_t _gcry_module_lookup (gcry_module_t entries, void *data,
-				    gcry_module_lookup_t func);
-
-/* Release a module.  In case the use-counter reaches zero, destroy
-   the module.  */
-void _gcry_module_release (gcry_module_t entry);
-
-/* Add a reference to a module.  */
-void _gcry_module_use (gcry_module_t module);
-
-/* Return a list of module IDs.  */
-gcry_err_code_t _gcry_module_list (gcry_module_t modules,
-				  int *list, int *list_length);
-
-gcry_err_code_t _gcry_cipher_init (void);
-gcry_err_code_t _gcry_md_init (void);
-gcry_err_code_t _gcry_pk_init (void);
-
-gcry_err_code_t _gcry_pk_module_lookup (int id, gcry_module_t *module);
-void _gcry_pk_module_release (gcry_module_t module);
-gcry_err_code_t _gcry_pk_get_elements (int algo, char **enc, char **sig);
-
-/* Memory management.  */
-#define GCRY_ALLOC_FLAG_SECURE (1 << 0)
-
 
 /*-- sexp.c --*/
 gcry_error_t _gcry_sexp_vbuild (gcry_sexp_t *retsexp, size_t *erroff,
@@ -309,7 +257,12 @@ char *_gcry_sexp_nth_string (const gcry_sexp_t list, int number);
 
 void _gcry_initialize_fips_mode (int force);
 
+int _gcry_fips_mode (void);
+#define fips_mode() _gcry_fips_mode ()
+
 int _gcry_enforced_fips_mode (void);
+
+void _gcry_set_enforced_fips_mode (void);
 
 void _gcry_inactivate_fips_mode (const char *text);
 int _gcry_is_fips_mode_inactive (void);

@@ -1,5 +1,5 @@
 dnl Autoconf macros for libgcrypt
-dnl       Copyright (C) 2002, 2004, 2011 Free Software Foundation, Inc.
+dnl       Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 dnl
 dnl This file is free software; as a special exception the author gives
 dnl unlimited permission to copy and/or distribute it, with or without
@@ -21,8 +21,7 @@ dnl this features allows to prevent build against newer versions of libgcrypt
 dnl with a changed API.
 dnl
 AC_DEFUN([AM_PATH_LIBGCRYPT],
-[ AC_REQUIRE([AC_CANONICAL_HOST])
-  AC_ARG_WITH(libgcrypt-prefix,
+[ AC_ARG_WITH(libgcrypt-prefix,
             AC_HELP_STRING([--with-libgcrypt-prefix=PFX],
                            [prefix where LIBGCRYPT is installed (optional)]),
      libgcrypt_config_prefix="$withval", libgcrypt_config_prefix="")
@@ -99,9 +98,10 @@ AC_DEFUN([AM_PATH_LIBGCRYPT],
     LIBGCRYPT_CFLAGS=`$LIBGCRYPT_CONFIG --cflags`
     LIBGCRYPT_LIBS=`$LIBGCRYPT_CONFIG --libs`
     ifelse([$2], , :, [$2])
-    libgcrypt_config_host=`$LIBGCRYPT_CONFIG --host 2>/dev/null || echo none`
-    if test x"$libgcrypt_config_host" != xnone ; then
-      if test x"$libgcrypt_config_host" != x"$host" ; then
+    if test x"$host" != x ; then
+      libgcrypt_config_host=`$LIBGCRYPT_CONFIG --host 2>/dev/null || echo none`
+      if test x"$libgcrypt_config_host" != xnone ; then
+        if test x"$libgcrypt_config_host" != x"$host" ; then
   AC_MSG_WARN([[
 ***
 *** The config script $LIBGCRYPT_CONFIG was
@@ -110,6 +110,7 @@ AC_DEFUN([AM_PATH_LIBGCRYPT],
 *** You may want to use the configure option --with-libgcrypt-prefix
 *** to specify a matching config script.
 ***]])
+        fi
       fi
     fi
   else

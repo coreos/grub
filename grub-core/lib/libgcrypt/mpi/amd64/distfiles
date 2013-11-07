@@ -5,3 +5,4 @@ mpih-mul2.S
 mpih-mul3.S
 mpih-rshift.S
 mpih-sub1.S
+mpi-asm-defs.h

@@ -1,72 +1,13 @@
 2011-12-01  Werner Koch  <wk@g10code.com>
 
-	NB: ChangeLog files are no longer manually maintained.  Starting
-	on December 1st, 2011 we put change information only in the GIT
-	commit log, and generate a top-level ChangeLog file from logs at
-	"make dist".  See doc/HACKING for details.
+        NB: ChangeLog files are no longer manually maintained.  Starting
+        on December 1st, 2011 we put change information only in the GIT
+        commit log, and generate a top-level ChangeLog file from logs at
+        "make dist".  See doc/HACKING for details.
 
-2011-09-16  Werner Koch  <wk@g10code.com>
+2011-09-08  Werner Koch  <wk@g10code.com>
 
-	Change ATH code and turn the thread initialization callbacks in
-	the API into dummy functions.
-
-	* global.c (global_init): Call _gcry_pimegen_init.
-
-	* gcrypt.h.in (GCRY_THREAD_OPTI ON_VERSION): Bump to 1.
-	(GCRY_THREAD_OPTION_PTH_IMPL): Simplify.
-	(GCRY_THREAD_OPTION_PTHREAD_IMPL): Simplify.
-
-	* ath.c (ath_read, ath_write): Remove.  They are only used in the
-	optional random-daemon.
-	(ath_select, ath_waitpid, ath_accept, ath_connect, ath_sendmsg)
-	(ath_recvmsg): Remove.  They are not used.
-	* ath.h: Remove prototypes and corresponding structure fields.
-
-2011-03-11  Werner Koch  <wk@g10code.com>
-
-	* ath.c (mutex_init): Rename second arg to FORCE and invert
-	logic.  Change all callers.
-
-2011-09-15  Werner Koch  <wk@g10code.com>
-
-	* gcrypt.h.in (enum gcry_thread_option): Remove deprecated enum.
-	(gcry_md_start_debug, gcry_md_stop_debug): Remove deprecated these
-	macros.
-
-2011-09-15  Werner Koch  <wk@g10code.com>
-
-	Removal of the gcry_ac and the module register interfaces.
-
-	* Makefile.am (include_HEADERS): Remove gcrypt-module.h.
-	(libgcrypt_la_SOURCES): Add gcrypt-module.h which is now internal
-	header.
-	* gcrypt-module.h (gcry_md_register, gcry_md_unregister): Remove.
-	(gcry_pk_register, gcry_pk_unregister): Remove.
-	(gcry_cipher_register, gcry_cipher_unregister): Remove.
-	* visibility.h: Include gcrypt-module.h.
-	* gcrypt.h.in: Do not include gcrypt-module.h.
-	* gcrypt.h.in: Remove all gcry_ac symbols.
-	(gcry_pk_list, gcry_md_list, gcry_cipher_list): Remove.
-	* visibility.h: Remove all gcry_ac symbols.
-	(gcry_pk_list, gcry_md_list, gcry_cipher_list): Remove.
-	(gcry_cipher_register, gcry_cipher_unregister, gcry_pk_register)
-	(gcry_pk_unregister, gcry_md_register, gcry_md_unregister): Remove.
-	* visibility.c: Remove all gcry_ac wrappers.
-	(gcry_pk_list, gcry_cipher_list, gcry_md_list): Remove.
-	(gcry_cipher_register, gcry_cipher_unregister, gcry_pk_register)
-	(gcry_pk_unregister, gcry_md_register, gcry_md_unregister): Remove.
-	* libgcrypt.vers: Remove all gcry_ac symbols.
-	(GCRYPT_1.2): Rename to GCRYPT_1.6.
-	(gcry_pk_list, gcry_md_list, gcry_cipher_list): Remove.
-	* libgcrypt.def: Remove all gcry_ac symbols.
-	(gcry_pk_list, gcry_md_list, gcry_cipher_list): Remove.
-	* global.c (global_init): Remove comment code with a call to
-	_gcry_ac_init.
-
-2011-09-15  Werner Koch  <wk@g10code.com>
-
-	* hmac256.c (main): Fix endless loop when using pipe input and
-	option --binary.
+	* gcrypt.h.in [GCRYPT_NO_DEPRECATED]: Exclude gcry_ac structures.
 
 2011-06-10  Werner Koch  <wk@g10code.com>
 
@@ -2392,7 +2333,3 @@ Tue Dec  8 13:15:16 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-Local Variables:
-buffer-read-only: t
-End:

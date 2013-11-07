@@ -6,6 +6,8 @@
 #define __powerpc__ 1
 #endif
 
+#define GCRYPT_NO_DEPRECATED 1
+
 /* Define to 1 to enable disk cache statistics.  */
 #define DISK_CACHE_STATS @DISK_CACHE_STATS@
 #define BOOT_TIME_STATS @BOOT_TIME_STATS@

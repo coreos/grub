@@ -575,10 +575,10 @@ do_twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
    * 128-bit keys use only sa through sh; 256-bit use all of them. */
   byte sa = 0, sb = 0, sc = 0, sd = 0, se = 0, sf = 0, sg = 0, sh = 0;
   byte si = 0, sj = 0, sk = 0, sl = 0, sm = 0, sn = 0, so = 0, sp = 0;
-  
+
   /* Temporary for CALC_S. */
   byte tmp;
-  
+
   /* Flags for self-test. */
   static int initialized = 0;
   static const char *selftest_failed=0;
@@ -668,7 +668,7 @@ do_twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
       CALC_K256 (k, 28, 0x84, 0x8A, 0x54, 0x00);
       CALC_K256 (k, 30, 0xDF, 0xBC, 0x23, 0x9D);
     }
-  else 
+  else
     {
       /* Compute the S-boxes. */
       for(i=j=0,k=1; i < 256; i++, j += 2, k += 2 )
@@ -980,7 +980,7 @@ main()
   timer = clock ();
 
   /* Encryption test. */
-  for (i = 0; i < 125; i++) 
+  for (i = 0; i < 125; i++)
     {
       twofish_setkey (&ctx, buffer[0], sizeof (buffer[0]));
       for (j = 0; j < 1000; j++)
@@ -998,7 +998,7 @@ main()
     "encryption failure!\n" : "encryption OK!\n";
 
   /* Decryption test. */
-  for (i = 0; i < 125; i++) 
+  for (i = 0; i < 125; i++)
     {
       twofish_setkey (&ctx, buffer[2], sizeof (buffer[2])*2);
       for (j = 0; j < 1000; j++) {

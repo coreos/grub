@@ -19,13 +19,11 @@
 
 /*
    This file contains the necessary declarations/definitions for
-   working with Libgcrypt modules.  Since 1.6 this is an internal
-   interface and will eventually be merged into another header or
-   entirely removed.
+   working with Libgcrypt modules.
  */
 
-#ifndef GCRYPT_MODULE_H
-#define GCRYPT_MODULE_H
+#ifndef _GCRYPT_MODULE_H
+#define _GCRYPT_MODULE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -95,6 +93,19 @@ typedef struct gcry_cipher_spec
   gcry_cipher_stdecrypt_t stdecrypt;
 } gcry_cipher_spec_t;
 
+/* Register a new cipher module whose specification can be found in
+   CIPHER.  On success, a new algorithm ID is stored in ALGORITHM_ID
+   and a pointer representing this module is stored in MODULE.  */
+gcry_error_t gcry_cipher_register (gcry_cipher_spec_t *cipher,
+				   int *algorithm_id,
+				   gcry_module_t *module)
+  /* */  _GCRY_ATTR_INTERNAL;
+
+
+/* Unregister the cipher identified by MODULE, which must have been
+   registered with gcry_cipher_register.  */
+void gcry_cipher_unregister (gcry_module_t module)
+  /* */  _GCRY_ATTR_INTERNAL;
 
 /* ********************** */
 
@@ -160,6 +171,18 @@ typedef struct gcry_pk_spec
   gcry_pk_get_nbits_t get_nbits;
 } gcry_pk_spec_t;
 
+/* Register a new pubkey module whose specification can be found in
+   PUBKEY.  On success, a new algorithm ID is stored in ALGORITHM_ID
+   and a pointer representhing this module is stored in MODULE.  */
+gcry_error_t gcry_pk_register (gcry_pk_spec_t *pubkey,
+			       unsigned int *algorithm_id,
+			       gcry_module_t *module)
+  /* */  _GCRY_ATTR_INTERNAL;
+
+/* Unregister the pubkey identified by ID, which must have been
+   registered with gcry_pk_register.  */
+void gcry_pk_unregister (gcry_module_t module)
+  /* */  _GCRY_ATTR_INTERNAL;
 
 /* ********************** */
 
@@ -195,10 +218,23 @@ typedef struct gcry_md_spec
   size_t contextsize; /* allocate this amount of context */
 } gcry_md_spec_t;
 
+/* Register a new digest module whose specification can be found in
+   DIGEST.  On success, a new algorithm ID is stored in ALGORITHM_ID
+   and a pointer representhing this module is stored in MODULE.  */
+gcry_error_t gcry_md_register (gcry_md_spec_t *digest,
+			       unsigned int *algorithm_id,
+			       gcry_module_t *module)
+  /* */  _GCRY_ATTR_INTERNAL;
+
+/* Unregister the digest identified by ID, which must have been
+   registered with gcry_digest_register.  */
+void gcry_md_unregister (gcry_module_t module)
+  /* */  _GCRY_ATTR_INTERNAL;
+
 #if 0 /* keep Emacsens's auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
 }
 #endif
-#endif /*GCRYPT_MODULE_H*/
+#endif

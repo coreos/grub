@@ -135,6 +135,7 @@ extern gcry_cipher_spec_t _gcry_cipher_spec_seed;
 extern gcry_cipher_spec_t _gcry_cipher_spec_camellia128;
 extern gcry_cipher_spec_t _gcry_cipher_spec_camellia192;
 extern gcry_cipher_spec_t _gcry_cipher_spec_camellia256;
+extern gcry_cipher_spec_t _gcry_cipher_spec_idea;
 
 extern cipher_extra_spec_t _gcry_cipher_extraspec_tripledes;
 extern cipher_extra_spec_t _gcry_cipher_extraspec_aes;
