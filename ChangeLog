@@ -1,5 +1,9 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/misc.c (grub_vsnprintf_real): Remove nested functions.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/arg.c (grub_arg_parse): Remove nested function.
 
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -614,6 +614,31 @@ grub_lltoa (char *str, int c, unsigned long long n)
   return p;
 }
 
+static inline void
+write_char (char *str, grub_size_t *count, grub_size_t max_len, unsigned char ch)
+{
+  if (*count < max_len)
+    str[*count] = ch;
+
+  (*count)++;
+}
+
+static inline void
+write_str (char *str, grub_size_t *count, grub_size_t max_len, const char *s)
+{
+  while (*s)
+    write_char (str, count, max_len, *s++);
+}
+
+static inline void
+write_fill (char *str, grub_size_t *count, grub_size_t max_len, const char ch, int count_fill)
+{
+  int i;
+  for (i = 0; i < count_fill; i++)
+    write_char (str, count, max_len, ch);
+}
+
+
 static int
 grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list args_in)
 {
@@ -622,30 +647,6 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
   grub_size_t count = 0;
   grub_size_t count_args = 0;
   const char *fmt;
-  auto void write_char (unsigned char ch);
-  auto void write_str (const char *s);
-  auto void write_fill (const char ch, int count_fill);
-
-  void write_char (unsigned char ch)
-    {
-      if (count < max_len)
-	*str++ = ch;
-
-      count++;
-    }
-
-  void write_str (const char *s)
-    {
-      while (*s)
-	write_char (*s++);
-    }
-
-  void write_fill (const char ch, int count_fill)
-    {
-      int i;
-      for (i = 0; i < count_fill; i++)
-	write_char (ch);
-    }
 
   fmt = fmt0;
   while ((c = *fmt++) != 0)
@@ -817,7 +818,7 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
       
       if (c != '%')
 	{
-	  write_char (c);
+	  write_char (str, &count, max_len,c);
 	  continue;
 	}
 
@@ -871,7 +872,7 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 
       if (c == '%')
 	{
-	  write_char (c);
+	  write_char (str, &count, max_len,c);
 	  continue;
 	}
 
@@ -881,7 +882,7 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
       switch (c)
 	{
 	case 'p':
-	  write_str ("0x");
+	  write_str (str, &count, max_len, "0x");
 	  c = 'x';
 	  longlongfmt |= (sizeof (void *) == sizeof (long long));
 	  /* Fall through. */
@@ -901,14 +902,14 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 	  else
 	    grub_lltoa (tmp, c, args[curn].i);
 	  if (! rightfill && grub_strlen (tmp) < format1)
-	    write_fill (zerofill, format1 - grub_strlen (tmp));
-	  write_str (tmp);
+	    write_fill (str, &count, max_len, zerofill, format1 - grub_strlen (tmp));
+	  write_str (str, &count, max_len, tmp);
 	  if (rightfill && grub_strlen (tmp) < format1)
-	    write_fill (zerofill, format1 - grub_strlen (tmp));
+	    write_fill (str, &count, max_len, zerofill, format1 - grub_strlen (tmp));
 	  break;
 
 	case 'c':
-	  write_char (args[curn].i & 0xff);
+	  write_char (str, &count, max_len,args[curn].i & 0xff);
 	  break;
 
 	case 'C':
@@ -944,10 +945,10 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 		mask = 0;
 	      }
 
-	    write_char (mask | (code >> shift));
+	    write_char (str, &count, max_len,mask | (code >> shift));
 
 	    for (shift -= 6; shift >= 0; shift -= 6)
-	      write_char (0x80 | (0x3f & (code >> shift)));
+	      write_char (str, &count, max_len,0x80 | (0x3f & (code >> shift)));
 	  }
 	  break;
 
@@ -960,25 +961,28 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0, va_list a
 	      len++;
 
 	    if (!rightfill && len < format1)
-	      write_fill (zerofill, format1 - len);
+	      write_fill (str, &count, max_len, zerofill, format1 - len);
 
 	    grub_size_t i;
 	    for (i = 0; i < len; i++)
-	      write_char (*p++);
+	      write_char (str, &count, max_len,*p++);
 
 	    if (rightfill && len < format1)
-	      write_fill (zerofill, format1 - len);
+	      write_fill (str, &count, max_len, zerofill, format1 - len);
 	  }
 
 	  break;
 
 	default:
-	  write_char (c);
+	  write_char (str, &count, max_len,c);
 	  break;
 	}
     }
 
-  *str = '\0';
+  if (count < max_len)
+    str[count] = '\0';
+  else
+    str[max_len] = '\0';
 
   return count;
 }
