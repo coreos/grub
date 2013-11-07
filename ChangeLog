@@ -1,5 +1,10 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add -freg-struct-return on all platforms that
+	support it.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* acinclude.m4: Use -Werror on parameter tests.
 	* configure.ac: Likewise.
 
