@@ -1,5 +1,11 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/charset.c (bidi_line_wrap): Eliminate nested
+	functions.
+	(grub_bidi_line_logical_to_visual): Likewise.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove vestiges of -Wunsafe-loop-optimisations.
 
 	* conf/Makefile.common (CFLAGS_GNULIB): Remove

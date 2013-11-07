@@ -523,6 +523,34 @@ grub_unicode_aglomerate_comb (const grub_uint32_t *in, grub_size_t inlen,
   return ptr - in;
 }
 
+static void
+revert (struct grub_unicode_glyph *visual,
+	struct grub_term_pos *pos,
+	unsigned start, unsigned end)
+{
+  struct grub_unicode_glyph t;
+  unsigned i;
+  int a = 0, b = 0;
+  if (pos)
+    {
+      a = pos[visual[start].orig_pos].x;
+      b = pos[visual[end].orig_pos].x;
+    }
+  for (i = 0; i < (end - start) / 2 + 1; i++)
+    {
+      t = visual[start + i];
+      visual[start + i] = visual[end - i];
+      visual[end - i] = t;
+
+      if (pos)
+	{
+	  pos[visual[start + i].orig_pos].x = a + b - pos[visual[start + i].orig_pos].x;
+	  pos[visual[end - i].orig_pos].x = a + b - pos[visual[end - i].orig_pos].x;
+	}
+    }
+}
+
+
 static grub_ssize_t
 bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 		struct grub_unicode_glyph *visual,
@@ -541,31 +569,6 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
   grub_ssize_t last_space = -1;
   grub_ssize_t last_space_width = 0;
   int lines = 0;
-
-  auto void revert (unsigned start, unsigned end);
-  void revert (unsigned start, unsigned end)
-  {
-    struct grub_unicode_glyph t;
-    unsigned i;
-    int a = 0, b = 0;
-    if (pos)
-      {
-	a = pos[visual[start].orig_pos].x;
-	b = pos[visual[end].orig_pos].x;
-      }
-    for (i = 0; i < (end - start) / 2 + 1; i++)
-      {
-	t = visual[start + i];
-	visual[start + i] = visual[end - i];
-	visual[end - i] = t;
-
-	if (pos)
-	  {
-	    pos[visual[start + i].orig_pos].x = a + b - pos[visual[start + i].orig_pos].x;
-	    pos[visual[end - i].orig_pos].x = a + b - pos[visual[end - i].orig_pos].x;
-	  }
-      }
-  }
 
   if (!visual_len)
     return 0;
@@ -644,7 +647,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 		      in = i;
 		    if (visual[i].bidi_level >= j && (i + 1 == k
 						 || visual[i+1].bidi_level < j))
-		      revert (in, i);
+		      revert (visual, pos, in, i);
 		  }
 	      }
 	  }
@@ -790,34 +793,34 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
   unsigned cur_level;
   int bidi_needed = 0;
 
-  auto void push_stack (unsigned new_override, unsigned new_level);
-  void push_stack (unsigned new_override, unsigned new_level)
-  {
-    if (new_level > GRUB_BIDI_MAX_EXPLICIT_LEVEL)
-      {
-	invalid_pushes++;
-	return;
-      }
-    stack_level[stack_depth] = cur_level;
-    stack_override[stack_depth] = cur_override;
-    stack_depth++;
-    cur_level = new_level;
-    cur_override = new_override;
+#define push_stack(new_override, new_level)		\
+  {							\
+    if (new_level > GRUB_BIDI_MAX_EXPLICIT_LEVEL)	\
+      {							\
+      invalid_pushes++;					\
+      }							\
+    else						\
+      {							\
+      stack_level[stack_depth] = cur_level;		\
+      stack_override[stack_depth] = cur_override;	\
+      stack_depth++;					\
+      cur_level = new_level;				\
+      cur_override = new_override;			\
+      }							\
   }
 
-  auto void pop_stack (void);
-  void pop_stack (void)
-  {
-    if (invalid_pushes)
-      {
-	invalid_pushes--;
-	return;
-      }
-    if (!stack_depth)
-      return;
-    stack_depth--;
-    cur_level = stack_level[stack_depth];
-    cur_override = stack_override[stack_depth];
+#define pop_stack()				\
+  {						\
+    if (invalid_pushes)				\
+      {						\
+      invalid_pushes--;				\
+      }						\
+    else if (stack_depth)			\
+      {						\
+      stack_depth--;				\
+      cur_level = stack_level[stack_depth];	\
+      cur_override = stack_override[stack_depth];	\
+      }							\
   }
 
   visual = grub_malloc (sizeof (visual[0]) * logical_len);
