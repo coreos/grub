@@ -1,5 +1,15 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Allow compiling with clang (not really supported though).
+
+	* conf/Makefile.common (CFLAGS_PLATFORM): Don't add -mrtd -mregparm=3
+	unconditionally.
+	* configure.ac: Add -no-integrated-as when using clangfor asm files.
+	Add -mrtd -mregparm=3 on i386 when not using clang.
+	* grub-core/kern/misc.c (grub_memset): Add volatile when on clang.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ieee1275/cmain.c: Add explicit attribute on asm
 	bindings.
 	* grub-core/lib/reed_solomon.c: Likewise.

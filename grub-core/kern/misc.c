@@ -454,6 +454,15 @@ grub_strndup (const char *s, grub_size_t n)
   return p;
 }
 
+/* clang detects that we're implementing here a memset so it decides to
+   optimise and calls memset resulting in infinite recursion. With volatile
+   we make it not optimise in this way.  */
+#ifdef __clang__
+#define VOLATILE_CLANG volatile
+#else
+#define VOLATILE_CLANG
+#endif
+
 void *
 grub_memset (void *s, int c, grub_size_t len)
 {
@@ -470,13 +479,13 @@ grub_memset (void *s, int c, grub_size_t len)
 
       while (len > 0 && (((grub_addr_t) p) & (sizeof (unsigned long) - 1)))
 	{
-	  *(grub_uint8_t *) p = pattern8;
+	  *(VOLATILE_CLANG grub_uint8_t *) p = pattern8;
 	  p = (grub_uint8_t *) p + 1;
 	  len--;
 	}
       while (len >= sizeof (unsigned long))
 	{
-	  *(unsigned long *) p = patternl;
+	  *(VOLATILE_CLANG unsigned long *) p = patternl;
 	  p = (unsigned long *) p + 1;
 	  len -= sizeof (unsigned long);
 	}
@@ -484,7 +493,7 @@ grub_memset (void *s, int c, grub_size_t len)
 
   while (len > 0)
     {
-      *(grub_uint8_t *) p = pattern8;
+      *(VOLATILE_CLANG grub_uint8_t *) p = pattern8;
       p = (grub_uint8_t *) p + 1;
       len--;
     }

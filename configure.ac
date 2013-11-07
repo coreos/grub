@@ -480,6 +480,45 @@ if test "x$target_cpu" != xi386 && test "x$target_cpu" != xx86_64; then
 TARGET_CFLAGS="$TARGET_CFLAGS -Wcast-align"
 fi
 
+AC_CACHE_CHECK([if compiling with clang], [grub_cv_cc_target_clang]
+[AC_COMPILE_IFELSE(
+[AC_LANG_PROGRAM([], [[
+#ifdef __clang__
+#error "is clang"
+#endif
+]])],
+[grub_cv_cc_target_clang=no], [grub_cv_cc_target_clang=yes])])
+
+if test "x$grub_cv_cc_target_clang" = xyes; then
+   TARGET_CCASFLAGS="$TARGET_CCASFLAGS -no-integrated-as"
+fi
+
+if test "x$target_cpu" = xi386 && test "x$platform" != xemu; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -march=i386"
+fi
+
+if test "x$target_m32" = x1; then
+  # Force 32-bit mode.
+  TARGET_CFLAGS="$TARGET_CFLAGS -m32"
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS -m32"
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -m32"
+  TARGET_LDFLAGS="$TARGET_LDFLAGS -m32"
+  TARGET_MODULE_FORMAT="elf32"
+fi
+
+if test "x$target_m64" = x1; then
+  # Force 64-bit mode.
+  TARGET_CFLAGS="$TARGET_CFLAGS -m64"
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS -m64"
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -m64"
+  TARGET_LDFLAGS="$TARGET_LDFLAGS -m64"
+  TARGET_MODULE_FORMAT="elf64"
+fi
+
+if test "x$grub_cv_cc_target_clang" = xno && test "x$target_cpu" = xi386 && test "x$platform" != xemu && test "x$platform" != xefi; then
+   TARGET_CFLAGS="$TARGET_CFLAGS -mrtd -mregparm=3"
+fi
+
 # Force no alignment to save space on i386.
 if test "x$target_cpu" = xi386; then
   AC_CACHE_CHECK([whether -falign-loops works], [grub_cv_cc_falign_loop], [
@@ -646,28 +685,6 @@ else
 enable_efiemu=no
 fi
 AC_SUBST([enable_efiemu])
-
-if test "x$target_cpu" = xi386 && test "x$platform" != xemu; then
-  TARGET_CFLAGS="$TARGET_CFLAGS -march=i386"
-fi
-
-if test "x$target_m32" = x1; then
-  # Force 32-bit mode.
-  TARGET_CFLAGS="$TARGET_CFLAGS -m32"
-  TARGET_CCASFLAGS="$TARGET_CCASFLAGS -m32"
-  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -m32"
-  TARGET_LDFLAGS="$TARGET_LDFLAGS -m32"
-  TARGET_MODULE_FORMAT="elf32"
-fi
-
-if test "x$target_m64" = x1; then
-  # Force 64-bit mode.
-  TARGET_CFLAGS="$TARGET_CFLAGS -m64"
-  TARGET_CCASFLAGS="$TARGET_CCASFLAGS -m64"
-  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -m64"
-  TARGET_LDFLAGS="$TARGET_LDFLAGS -m64"
-  TARGET_MODULE_FORMAT="elf64"
-fi
 
 case "$target_os" in
   cygwin)
