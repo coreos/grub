@@ -1,5 +1,9 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* acinclude.m4: Add missing TARGET_CCASFLAGS on asm tests.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Check that -malign-loops works rather than assuming that
 	either -falign-loops or -malign-loops work.
 

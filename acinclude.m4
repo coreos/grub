@@ -212,7 +212,7 @@ else
   sed -e s/@ADDR32@/addr32\;/ < conftest.s.in > conftest.s
 fi
 
-if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -c conftest.s]) && test -s conftest.o; then
+if AC_TRY_COMMAND([${CC-cc} ${TARGET_CCASFLAGS} ${CFLAGS} -c conftest.s]) && test -s conftest.o; then
   grub_cv_i386_asm_addr32=yes
 else
   grub_cv_i386_asm_addr32=no
@@ -266,7 +266,7 @@ AC_CACHE_VAL(grub_cv_i386_asm_prefix_requirement,
 l1:	addr32	movb	%al, l1
 EOF
 
-if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -c conftest.s]) && test -s conftest.o; then
+if AC_TRY_COMMAND([${CC-cc} ${TARGET_CCASFLAGS} ${CFLAGS} -c conftest.s]) && test -s conftest.o; then
   grub_cv_i386_asm_prefix_requirement=yes
 else
   grub_cv_i386_asm_prefix_requirement=no
