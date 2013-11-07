@@ -82,7 +82,9 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/term.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/mm_private.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/net.h
+if !COND_clang
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libgcc.h
+endif
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/memory.h
 
 if COND_i386_pc
