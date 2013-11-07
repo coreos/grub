@@ -1,5 +1,10 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h (grub_dprintf): Use unnamed vararg.
+	(grub_boot_time): Likewise.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/symbol.h (FUNCTION): Use @function rather than
 	"function".
 	(VARIABLE): Likewise.

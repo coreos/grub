@@ -62,7 +62,7 @@
 #define ARRAY_SIZE(array) (sizeof (array) / sizeof (array[0]))
 #define COMPILE_TIME_ASSERT(cond) switch (0) { case 1: case !(cond): ; }
 
-#define grub_dprintf(condition, fmt, args...) grub_real_dprintf(GRUB_FILE, __LINE__, condition, fmt, ## args)
+#define grub_dprintf(condition, ...) grub_real_dprintf(GRUB_FILE, __LINE__, condition, __VA_ARGS__)
 
 void *EXPORT_FUNC(grub_memmove) (void *dest, const void *src, grub_size_t n);
 char *EXPORT_FUNC(grub_strcpy) (char *dest, const char *src);
@@ -464,9 +464,9 @@ extern struct grub_boot_time *EXPORT_VAR(grub_boot_time_head);
 void EXPORT_FUNC(grub_real_boot_time) (const char *file,
 				       const int line,
 				       const char *fmt, ...) __attribute__ ((format (GNU_PRINTF, 3, 4)));
-#define grub_boot_time(fmt, args...) grub_real_boot_time(GRUB_FILE, __LINE__, fmt, ## args)
+#define grub_boot_time(...) grub_real_boot_time(GRUB_FILE, __LINE__, __VA_ARGS__)
 #else
-#define grub_boot_time(fmt, args...) 
+#define grub_boot_time(...)
 #endif
 
 #define grub_max(a, b) (((a) > (b)) ? (a) : (b))
