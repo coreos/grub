@@ -1,5 +1,10 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/bootp.c (set_env_limn_ro): Make pointer const.
+	(parse_dhcp_vendor): Likewise.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimagexx.c (relocate_symbols): Remove unneeded brackets.
 
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
