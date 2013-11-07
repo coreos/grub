@@ -1,5 +1,9 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/test_sha512sum.in: Make it work on emu.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/charset.c (bidi_line_wrap): Eliminate nested
 	functions.
 	(grub_bidi_line_logical_to_visual): Likewise.

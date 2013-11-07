@@ -6,9 +6,18 @@ cat >$file <<EOF
 hello world!
 EOF
 
+. "@builddir@/grub-core/modinfo.sh"
+
+if [ x"${grub_modinfo_platform}" = xemu ]; then
+    grub_file="(host)$file"
+else
+    grub_file="/boot/grub/file"
+fi
+
+
 outfile1=`mktemp`
 @builddir@/grub-shell --files=/boot/grub/file=$file >$outfile1 <<EOF
-sha512sum /boot/grub/file
+sha512sum $grub_file
 EOF
 
 outfile2=`mktemp`
