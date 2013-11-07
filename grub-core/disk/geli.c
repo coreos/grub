@@ -159,18 +159,6 @@ geli_rekey (struct grub_cryptodisk *dev, grub_uint64_t zoneno)
 				 dev->rekey_derived_size); 
 }
 
-static inline int
-ascii2hex (char c)
-{
-  if (c >= '0' && c <= '9')
-    return c - '0';
-  if (c >= 'a' && c <= 'f')
-    return c - 'a' + 10;
-  if (c >= 'A' && c <= 'F')
-    return c - 'A' + 10;
-  return 0;
-}
-
 static inline gcry_err_code_t
 make_uuid (const struct grub_geli_phdr *header,
 	   char *uuid)

@@ -415,12 +415,6 @@ grub_net_route_register (struct grub_net_route *route)
 		  GRUB_AS_LIST (route));
 }
 
-static inline void
-grub_net_route_unregister (struct grub_net_route *route)
-{
-  grub_list_remove (GRUB_AS_LIST (route));
-}
-
 #define FOR_NET_ROUTES(var) for (var = grub_net_routes; var; var = var->next)
 
 static int

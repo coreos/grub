@@ -354,18 +354,6 @@ grub_xnu_devprop_add_property_utf16 (struct grub_xnu_devprop_device_descriptor *
   return GRUB_ERR_NONE;
 }
 
-static inline int
-hextoval (char c)
-{
-  if (c >= '0' && c <= '9')
-    return c - '0';
-  if (c >= 'a' && c <= 'z')
-    return c - 'a' + 10;
-  if (c >= 'A' && c <= 'Z')
-    return c - 'A' + 10;
-  return 0;
-}
-
 void
 grub_cpu_xnu_unload (void)
 {
