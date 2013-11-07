@@ -106,6 +106,29 @@ check_varstate (grub_parser_state_t s)
 	  || s == GRUB_PARSER_STATE_QVARNAME2);
 }
 
+
+static void
+add_var (char *varname, char **bp, char **vp,
+	 grub_parser_state_t state, grub_parser_state_t newstate)
+{
+  const char *val;
+
+  /* Check if a variable was being read in and the end of the name
+     was reached.  */
+  if (!(check_varstate (state) && !check_varstate (newstate)))
+    return;
+
+  *((*vp)++) = '\0';
+  val = grub_env_get (varname);
+  *vp = varname;
+  if (!val)
+    return;
+
+  /* Insert the contents of the variable in the buffer.  */
+  for (; *val; val++)
+    *((*bp)++) = *val;
+}
+
 grub_err_t
 grub_parser_split_cmdline (const char *cmdline,
 			   grub_reader_getline_t getline, void *getline_data,
@@ -121,28 +144,6 @@ grub_parser_split_cmdline (const char *cmdline,
   char *vp = varname;
   char *args;
   int i;
-
-  auto void add_var (grub_parser_state_t newstate);
-
-  void add_var (grub_parser_state_t newstate)
-  {
-    const char *val;
-
-    /* Check if a variable was being read in and the end of the name
-       was reached.  */
-    if (!(check_varstate (state) && !check_varstate (newstate)))
-      return;
-
-    *(vp++) = '\0';
-    val = grub_env_get (varname);
-    vp = varname;
-    if (!val)
-      return;
-
-    /* Insert the contents of the variable in the buffer.  */
-    for (; *val; val++)
-      *(bp++) = *val;
-  }
 
   *argc = 0;
   do
@@ -168,7 +169,7 @@ grub_parser_split_cmdline (const char *cmdline,
 	  /* If a variable was being processed and this character does
 	     not describe the variable anymore, write the variable to
 	     the buffer.  */
-	  add_var (newstate);
+	  add_var (varname, &bp, &vp, state, newstate);
 
 	  if (check_varstate (newstate))
 	    {
@@ -198,7 +199,7 @@ grub_parser_split_cmdline (const char *cmdline,
 
   /* A special case for when the last character was part of a
      variable.  */
-  add_var (GRUB_PARSER_STATE_TEXT);
+  add_var (varname, &bp, &vp, state, GRUB_PARSER_STATE_TEXT);
 
   if (bp != buffer && *(bp - 1))
     {

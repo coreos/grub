@@ -1,5 +1,10 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/parser.c (grub_parser_split_cmdline): Remove nested
+	function.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_vsnprintf_real): Remove nested functions.
 
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
