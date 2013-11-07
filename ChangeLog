@@ -1,5 +1,10 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/cmdline.c (grub_cmdline_get):
+	Remove nested functions.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/test_sha512sum.in: Make it work on emu.
 
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
