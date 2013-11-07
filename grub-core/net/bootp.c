@@ -159,7 +159,7 @@ parse_dhcp_vendor (const char *name, const void *vend, int limit, int *mask)
     }
 }
 
-#define OFFSET_OF(x, y) ((grub_uint8_t *)((y)->x) - (grub_uint8_t *)(y))
+#define OFFSET_OF(x, y) ((grub_size_t)((grub_uint8_t *)((y)->x) - (grub_uint8_t *)(y)))
 
 struct grub_net_network_level_interface *
 grub_net_configure_by_dhcp_ack (const char *name,

@@ -1,5 +1,9 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/bootp.c (OFFSET_OF): Explicitly cast to grub_size_t.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/bootp.c (set_env_limn_ro): Make pointer const.
 	(parse_dhcp_vendor): Likewise.
 
