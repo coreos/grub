@@ -103,7 +103,7 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
         {
           continue;
         }
-      else if ((cur_index == STN_UNDEF))
+      else if (cur_index == STN_UNDEF)
 	{
 	  if (sym->st_name)
 	    grub_util_error ("undefined symbol %s", name);
