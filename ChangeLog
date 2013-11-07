@@ -1,5 +1,9 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Remove -fnested-functions. We don't need it anymore.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Prevent cflags leaking to subsequent tests by always
 	resetting cflags to target_cflags in target tests.
 

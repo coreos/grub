@@ -543,9 +543,6 @@ fi
 
 grub_apple_target_cc
 if test x$grub_cv_apple_target_cc = xyes ; then
-  TARGET_CPPFLAGS="$TARGET_CPPFLAGS -fnested-functions"
-
-  CFLAGS="$CFLAGS -fnested-functions"
   TARGET_APPLE_CC=1
   AC_CHECK_PROG([TARGET_OBJCONV], [objconv], [objconv], [])
   if test "x$TARGET_OBJCONV" = x ; then
