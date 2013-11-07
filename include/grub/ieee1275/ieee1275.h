@@ -76,7 +76,13 @@ extern void (*EXPORT_VAR(grub_ieee1275_net_config)) (const char *dev,
 /* Maps a device alias to a pathname.  */
 extern grub_ieee1275_phandle_t EXPORT_VAR(grub_ieee1275_chosen);
 extern grub_ieee1275_ihandle_t EXPORT_VAR(grub_ieee1275_mmu);
-extern int (* EXPORT_VAR(grub_ieee1275_entry_fn)) (void *);
+#ifdef __i386__
+#define GRUB_IEEE1275_ENTRY_FN_ATTRIBUTE  __attribute__ ((regparm(3)))
+#else
+#define GRUB_IEEE1275_ENTRY_FN_ATTRIBUTE
+#endif
+
+extern int (* EXPORT_VAR(grub_ieee1275_entry_fn)) (void *) GRUB_IEEE1275_ENTRY_FN_ATTRIBUTE;
 
 /* Static heap, used only if FORCE_CLAIM is set,
    happens on Open Hack'Ware. Should be in platform-specific

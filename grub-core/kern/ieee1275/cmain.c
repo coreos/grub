@@ -22,7 +22,7 @@
 #include <grub/types.h>
 #include <grub/ieee1275/ieee1275.h>
 
-int (*grub_ieee1275_entry_fn) (void *);
+int (*grub_ieee1275_entry_fn) (void *) GRUB_IEEE1275_ENTRY_FN_ATTRIBUTE;
 
 grub_ieee1275_phandle_t grub_ieee1275_chosen;
 grub_ieee1275_ihandle_t grub_ieee1275_mmu;

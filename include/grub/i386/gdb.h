@@ -71,7 +71,7 @@ struct grub_cpu_idt_descriptor
 extern void (*grub_gdb_trapvec[]) (void);
 void grub_gdb_idtinit (void);
 void grub_gdb_idtrestore (void);
-void grub_gdb_trap (int trap_no);
+void grub_gdb_trap (int trap_no) __attribute__ ((regparm(3)));
 
 #endif /* ! ASM */
 #endif /* ! GRUB_GDB_CPU_HEADER */

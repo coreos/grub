@@ -280,7 +280,7 @@ struct grub_pxenv_unload_stack
   grub_uint8_t reserved[10];
 } __attribute__ ((packed));
 
-int EXPORT_FUNC(grub_pxe_call) (int func, void * data, grub_uint32_t pxe_rm_entry);
+int EXPORT_FUNC(grub_pxe_call) (int func, void * data, grub_uint32_t pxe_rm_entry) __attribute__ ((regparm(3)));
 
 extern struct grub_pxe_bangpxe *grub_pxe_pxenv;
 

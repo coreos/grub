@@ -53,7 +53,11 @@ typedef unsigned char grub_uint8_t;
 #include <grub/misc.h>
 #endif
 void
-grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs);
+grub_reed_solomon_recover (void *ptr_, grub_size_t s, grub_size_t rs)
+#ifdef __i386__
+  __attribute__ ((regparm(3)))
+#endif
+  ;
 #endif
 
 #define GF_SIZE 8
