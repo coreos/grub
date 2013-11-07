@@ -479,7 +479,7 @@ TARGET_CCASFLAGS="$TARGET_CCASFLAGS -g"
 # Force no alignment to save space on i386.
 if test "x$target_cpu" = xi386; then
   AC_CACHE_CHECK([whether -falign-loops works], [grub_cv_cc_falign_loop], [
-    CFLAGS="$CFLAGS -falign-loops=1"
+    CFLAGS="$TARGET_CFLAGS -falign-loops=1"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
         [grub_cv_cc_falign_loop=yes],
 	[grub_cv_cc_falign_loop=no])
@@ -498,21 +498,15 @@ if ( test "x$target_cpu" = xi386 || test "x$target_cpu" = xx86_64 ) && test "x$p
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
 fi
 
-if test "x$target_cpu" = xi386 && test "x$platform" != xemu; then
-  TARGET_CFLAGS="$TARGET_CFLAGS -march=i386"
-fi
-
 # By default, GCC 4.4 generates .eh_frame sections containing unwind
 # information in some cases where it previously did not. GRUB doesn't need
 # these and they just use up vital space. Restore the old compiler
 # behaviour.
 AC_CACHE_CHECK([whether -fno-dwarf2-cfi-asm works], [grub_cv_cc_fno_dwarf2_cfi_asm], [
-  SAVE_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -fno-dwarf2-cfi-asm"
+  CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
       [grub_cv_cc_fno_dwarf2_cfi_asm=yes],
       [grub_cv_cc_fno_dwarf2_cfi_asm=no])
-  CFLAGS="$SAVE_CFLAGS"
 ])
 
 if test "x$grub_cv_cc_fno_dwarf2_cfi_asm" = xyes; then
@@ -521,7 +515,7 @@ fi
 
 if test x"$target_os" = xcygwin; then
   AC_CACHE_CHECK([whether option -fno-reorder-functions works], grub_cv_cc_no_reorder_functions, [
-    CFLAGS="$CFLAGS -fno-reorder-functions"
+    CFLAGS="$TARGET_CFLAGS -fno-reorder-functions"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_no_reorder_functions=yes],
 		      [grub_cv_cc_no_reorder_functions=no])
@@ -537,12 +531,10 @@ fi
 # these and they just use up vital space. Restore the old compiler
 # behaviour.
 AC_CACHE_CHECK([whether -fno-asynchronous-unwind-tables works], [grub_cv_cc_fno_asynchronous_unwind_tables], [
-  SAVE_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -fno-dwarf2-cfi-asm"
+  CFLAGS="$TARGET_CFLAGS -fno-dwarf2-cfi-asm"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
       [grub_cv_cc_fno_asynchronous_unwind_tables=yes],
       [grub_cv_cc_fno_asynchronous_unwind_tables=no])
-  CFLAGS="$SAVE_CFLAGS"
 ])
 
 if test "x$grub_cv_cc_fno_asynchronous_unwind_tables" = xyes; then
@@ -617,12 +609,10 @@ if test x"$platform" = xefi ; then
 fi
 if test x"$efiemu_excuse" = x ; then
   AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_efiemu, [
-    SAVED_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS -m64 -mcmodel=large -mno-red-zone -nostdlib"
+    CFLAGS="$TARGET_CFLAGS -m64 -mcmodel=large -mno-red-zone -nostdlib"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_efiemu=yes],
 		      [grub_cv_cc_efiemu=no])
-    CFLAGS="$SAVED_CFLAGS"
   ])
   if test x$grub_cv_cc_efiemu = xno; then
      efiemu_excuse="cannot compile with -m64 -mcmodel=large -mno-red-zone -nostdlib"
@@ -637,6 +627,10 @@ else
 enable_efiemu=no
 fi
 AC_SUBST([enable_efiemu])
+
+if test "x$target_cpu" = xi386 && test "x$platform" != xemu; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -march=i386"
+fi
 
 if test "x$target_m32" = x1; then
   # Force 32-bit mode.
@@ -696,8 +690,7 @@ esac
 if test "$target_cpu" = x86_64; then
   # Use large model to support 4G memory
   AC_CACHE_CHECK([whether option -mcmodel=large works], grub_cv_cc_mcmodel, [
-    SAVED_CFLAGS=$CFLAGS
-    CFLAGS="$CFLAGS -m64 -mcmodel=large"
+    CFLAGS="$TARGET_CFLAGS -m64 -mcmodel=large"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_mcmodel=yes],
 		      [grub_cv_cc_mcmodel=no])
@@ -712,7 +705,7 @@ fi
 if test "$target_cpu"-"$platform" = x86_64-efi; then
   # EFI writes to stack below %rsp, we must not use the red zone
   AC_CACHE_CHECK([whether option -mno-red-zone works], grub_cv_cc_no_red_zone, [
-    CFLAGS="$CFLAGS -m64 -mno-red-zone"
+    CFLAGS="$TARGET_CFLAGS -m64 -mno-red-zone"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_no_red_zone=yes],
 		      [grub_cv_cc_no_red_zone=no])
@@ -823,9 +816,9 @@ fi
 
 grub_ASM_USCORE
 if test x$grub_cv_asm_uscore = xyes; then
-CFLAGS="$CFLAGS -Wl,--defsym,_abort=_main"
+CFLAGS="$TARGET_CFLAGS -Wl,--defsym,_abort=_main"
 else
-CFLAGS="$CFLAGS -Wl,--defsym,abort=main"
+CFLAGS="$TARGET_CFLAGS -Wl,--defsym,abort=main"
 fi
 
 # Check for libgcc symbols
@@ -876,13 +869,11 @@ fi
 fi
 
 AC_CACHE_CHECK([whether -Wtrampolines work], [grub_cv_cc_wtrampolines], [
-  SAVED_CFLAGS="$CFLAGS"
-  CFLAGS="$TARGET_CFLAGS -Wtrampolines"
+  CFLAGS="$TARGET_CFLAGS -Wtrampolines -Werror"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
 int va_arg_func (int fixed, va_list args);]], [[]])],
       [grub_cv_cc_wtrampolines=yes],
       [grub_cv_cc_wtrampolines=no])
-  CFLAGS="$SAVED_CFLAGS"
 ])
 
 if test x"$grub_cv_cc_wtrampolines" = xyes ; then
