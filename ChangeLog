@@ -1,5 +1,12 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Run linker tests without -Werror.
+	Define TARGET_LDFLAGS_STATIC_LIBGCC and TARGET_LIBGCC.
+	Change all occurences of -static-libgcc resp -lgcc to
+	TARGET_LDFLAGS_STATIC_LIBGCC resp TARGET_LIBGCC.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Don't add -no-itegrated-as on clang on non-x86.
 
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
