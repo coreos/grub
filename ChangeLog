@@ -1,5 +1,10 @@
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gettext/gettext.c (main_context), (secondary_context):
+	Define after defining type and not before.
+
+2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs/zfscrypt.c (grub_ccm_decrypt): Return right error
 	type.
 	(grub_gcm_decrypt): Likewise.
