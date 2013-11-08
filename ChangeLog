@@ -1,3 +1,8 @@
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/multiboot_mbi2.c (grub_multiboot_add_module): Fix
+	NULL pointer dereference.
+
 2013-11-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/Makefile.am: Do not include libgcc.h when compiling with

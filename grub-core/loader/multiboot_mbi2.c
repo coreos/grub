@@ -978,10 +978,7 @@ grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
   if (modules_last)
     modules_last->next = newmod;
   else
-    {
-      modules = newmod;
-      modules_last->next = NULL;
-    }
+    modules = newmod;
   modules_last = newmod;
 
   modcnt++;
