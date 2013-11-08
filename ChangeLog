@@ -1,5 +1,9 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/symbol.h (FUNCTION), (VARIABLE): Fix precedence logic.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/symbol.h (FUNCTION), (VARIABLE) [__arm__]: Use % as
 	prefix symbol, not @.
 
