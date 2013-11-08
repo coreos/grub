@@ -1,5 +1,10 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/misc.S (__aeabi_unwind_cpp_pr0): Add dummy to
+	link with libgcc.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/symbol.h (FUNCTION), (VARIABLE): Fix precedence logic.
 
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>

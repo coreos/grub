@@ -33,6 +33,7 @@
 /*
  * Null divide-by-zero handler
  */
+FUNCTION(__aeabi_unwind_cpp_pr0)
 FUNCTION(raise)
 	mov	r0, #0
 	bx	lr
