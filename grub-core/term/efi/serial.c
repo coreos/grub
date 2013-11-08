@@ -58,6 +58,10 @@ do_real_config (struct grub_serial_port *port)
 		       stop_bits[port->config.stop_bits]);
   if (status != GRUB_EFI_SUCCESS)
     port->broken = 1;
+
+  status = efi_call_2 (port->interface->set_control_bits, port->interface,
+		       port->config.rtscts ? 0x4002 : 0x2);
+
   port->configured = 1;
 }
 

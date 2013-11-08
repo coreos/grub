@@ -125,7 +125,7 @@ real_config (struct grub_serial_port *port)
 			0x22, 3, 0, 0, 0);
 
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
-			1, 0, 0x61, 0, 0);
+			1, 0, port->config.rtscts ? 0x61 : 0, 0, 0);
   port->configured = 1;
 }
 

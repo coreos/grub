@@ -47,7 +47,8 @@ enum
     OPTION_WORD,
     OPTION_PARITY,
     OPTION_STOP,
-    OPTION_BASE_CLOCK
+    OPTION_BASE_CLOCK,
+    OPTION_RTSCTS
   };
 
 /* Argument options.  */
@@ -60,6 +61,7 @@ static const struct grub_arg_option options[] =
   {"parity", 'r', 0, N_("Set the serial port parity."),      0, ARG_TYPE_STRING},
   {"stop",   't', 0, N_("Set the serial port stop bits."),   0, ARG_TYPE_INT},
   {"base-clock",   'b', 0, N_("Set the base clock."),   0, ARG_TYPE_STRING},
+  {"rtscts",   'f', 0, N_("Enable/disable RTS/CTS."),   "on|off", ARG_TYPE_STRING},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -235,6 +237,17 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			   N_("unsupported serial port parity"));
+    }
+
+  if (state[OPTION_RTSCTS].set)
+    {
+      if (grub_strcmp (state[OPTION_PARITY].arg, "on") == 0)
+	config.rtscts = 1;
+      if (grub_strcmp (state[OPTION_PARITY].arg, "off") == 0)
+	config.rtscts = 0;
+      else
+	return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			   N_("unsupported serial port flow"));
     }
 
   if (state[OPTION_STOP].set)

@@ -91,11 +91,13 @@ real_config (struct grub_serial_port *port)
 
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
 			GRUB_FTDI_MODEM_CTRL,
-			GRUB_FTDI_MODEM_CTRL_DTRRTS, 0, 0, 0);
+			port->config.rtscts ? GRUB_FTDI_MODEM_CTRL_DTRRTS : 0,
+			0, 0, 0);
 
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,
 			GRUB_FTDI_FLOW_CTRL,
-			GRUB_FTDI_FLOW_CTRL_DTRRTS, 0, 0, 0);
+			port->config.rtscts ? GRUB_FTDI_FLOW_CTRL_DTRRTS : 0,
+			0, 0, 0);
 
   divisor = get_divisor (port->config.speed);
   grub_usb_control_msg (port->usbdev, GRUB_USB_REQTYPE_VENDOR_OUT,

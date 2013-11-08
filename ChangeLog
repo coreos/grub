@@ -1,5 +1,10 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* b/grub-core/term/serial.c: Add option for enabling/disabling
+	RTS/CTS flow control.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/libgcrypt/cipher/idea.c (mul_inv): Remove signed
 	divisions.
 

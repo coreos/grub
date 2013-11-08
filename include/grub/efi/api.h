@@ -1244,7 +1244,8 @@ struct grub_efi_serial_io_interface
 				       grub_efi_parity_type_t parity,
 				       grub_uint8_t word_len,
 				       grub_efi_stop_bits_t stop_bits);
-  void (*set_control_bits) (void);
+  grub_efi_status_t (*set_control_bits) (struct grub_efi_serial_io_interface *this,
+					 grub_efi_uint32_t flags);
   void (*get_control_bits) (void);
   grub_efi_status_t (*write) (struct grub_efi_serial_io_interface *this,
 			      grub_efi_uintn_t *buf_size,

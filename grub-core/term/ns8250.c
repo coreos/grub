@@ -107,20 +107,22 @@ do_real_config (struct grub_serial_port *port)
 	     | stop_bits[port->config.stop_bits]);
   grub_outb (status, port->port + UART_LCR);
 
-  /* On Loongson machines serial port has only 3 wires.  */
-#ifndef GRUB_MACHINE_MIPS_LOONGSON
-  /* Enable the FIFO.  */
-  grub_outb (UART_ENABLE_FIFO_TRIGGER1, port->port + UART_FCR);
+  if (port->config.rtscts)
+    {
+      /* Enable the FIFO.  */
+      grub_outb (UART_ENABLE_FIFO_TRIGGER1, port->port + UART_FCR);
 
-  /* Turn on DTR and RTS.  */
-  grub_outb (UART_ENABLE_DTRRTS, port->port + UART_MCR);
-#else
-  /* Enable the FIFO.  */
-  grub_outb (UART_ENABLE_FIFO_TRIGGER14, port->port + UART_FCR);
+      /* Turn on DTR and RTS.  */
+      grub_outb (UART_ENABLE_DTRRTS, port->port + UART_MCR);
+    }
+  else
+    {
+      /* Enable the FIFO.  */
+      grub_outb (UART_ENABLE_FIFO_TRIGGER14, port->port + UART_FCR);
 
-  /* Turn on DTR, RTS, and OUT2.  */
-  grub_outb (UART_ENABLE_DTRRTS | UART_ENABLE_OUT2, port->port + UART_MCR);
-#endif
+      /* Turn on DTR, RTS, and OUT2.  */
+      grub_outb (UART_ENABLE_DTRRTS | UART_ENABLE_OUT2, port->port + UART_MCR);
+    }
 
   /* Drain the input buffer.  */
   endtime = grub_get_time_ms () + 1000;
