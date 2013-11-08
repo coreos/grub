@@ -1,5 +1,11 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/reed_solomon.c (grub_reed_solomon_recover): Add
+	missing attribute.
+	* grub-core/gdb/cstub.c (grub_gdb_trap): Likewise.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/misc.c (grub_divmod64): Don't fallback to
 	simple division on arm and ia64.
 

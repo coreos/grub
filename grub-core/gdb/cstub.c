@@ -201,7 +201,7 @@ grub_gdb_hex2int (char **ptr, grub_uint64_t *int_value)
 }
 
 /* This function does all command procesing for interfacing to gdb.  */
-void
+void __attribute__ ((regparm(3)))
 grub_gdb_trap (int trap_no)
 {
   unsigned int sig_no;
