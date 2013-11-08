@@ -690,7 +690,7 @@ AC_SUBST([enable_efiemu])
 case "$target_os" in
   cygwin)
     ;;
-  freebsd)
+  freebsd | kfreebsd*-gnu)
     if test x"$target_cpu" = xi386; then
       TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_i386_fbsd"
     fi
