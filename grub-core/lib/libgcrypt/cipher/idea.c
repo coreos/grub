@@ -72,8 +72,8 @@ mul_inv( u16 x )
 
     if( x < 2 )
 	return x;
-    t1 = 0x10001L / x;
-    y =  0x10001L % x;
+    t1 = 0x10001UL / x;
+    y =  0x10001UL % x;
     if( y == 1 )
 	return (1-t1) & 0xffff;
 

@@ -1,5 +1,10 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt/cipher/idea.c (mul_inv): Remove signed
+	divisions.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/libgcrypt/mpi/mpih-div.c (_gcry_mpih_divrem):
 	Use grub_fatal rather than divide by zero.
 	* grub-core/lib/libgcrypt/mpi/mpi-pow.c (gcry_mpi_powm): Likewise.
