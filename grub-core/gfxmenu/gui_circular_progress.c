@@ -240,7 +240,7 @@ parse_angle (const char *value)
       /* Unicode symbol of degrees (a circle, U+b0). Put here in UTF-8 to
 	 avoid potential problem with text file reesncoding  */
       || grub_strcmp (ptr, "\xc2\xb0") == 0)
-    angle = (angle * 64 + 45) / 90;
+    angle = grub_divide_round (angle * 64, 90);
   return angle;
 }
 

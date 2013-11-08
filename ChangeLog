@@ -1,6 +1,11 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* b/grub-core/term/serial.c: Add option for enabling/disabling
+	* grub-core/gfxmenu/gui_circular_progress.c (parse_angle):
+	Use to get rounded angle rather than truncated.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/serial.c: Add option for enabling/disabling
 	RTS/CTS flow control.
 
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
