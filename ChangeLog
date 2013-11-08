@@ -1,5 +1,11 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gfxmenu/gui_circular_progress.c (circprog_paint): Avoid
+	division by-zero and senseless negative divisions.
+	(circprog_set_property): Don't accept negative num_ticks.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gfxmenu/gui_progress_bar.c (draw_pixmap_bar): Avoid
 	division by-zero and senseless negative divisions.
 

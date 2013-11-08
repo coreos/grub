@@ -37,7 +37,7 @@ struct grub_gui_circular_progress
   int start;
   int end;
   int value;
-  int num_ticks;
+  unsigned num_ticks;
   int start_angle;
   int ticks_disappear;
   char *theme_dir;
@@ -139,15 +139,16 @@ circprog_paint (void *vself, const grub_video_rect_t *region)
                           center_width, center_height);
 
   int radius = grub_min (height, width) / 2 - grub_max (tick_height, tick_width) / 2 - 1;
-  int nticks;
-  int tick_begin;
-  int tick_end;
-  if (self->end == self->start)
+  unsigned nticks;
+  unsigned tick_begin;
+  unsigned tick_end;
+  if (self->end <= self->start
+      || self->value <= self->start)
     nticks = 0;
   else
-    nticks = (self->num_ticks
-	      * (self->value - self->start)
-	      / (self->end - self->start));
+    nticks = ((unsigned) (self->num_ticks
+			  * (self->value - self->start)))
+      / ((unsigned) (self->end - self->start));
   /* Do ticks appear or disappear as the value approached the end?  */
   if (self->ticks_disappear)
     {
@@ -160,7 +161,7 @@ circprog_paint (void *vself, const grub_video_rect_t *region)
       tick_end = nticks;
     }
 
-  int i;
+  unsigned i;
   for (i = tick_begin; i < tick_end; i++)
     {
        int x;
@@ -168,7 +169,8 @@ circprog_paint (void *vself, const grub_video_rect_t *region)
        int angle;
 
        /* Calculate the location of the tick.  */
-       angle = self->start_angle + i * GRUB_TRIG_ANGLE_MAX / self->num_ticks;
+       angle = self->start_angle
+	 + i * GRUB_TRIG_ANGLE_MAX / self->num_ticks;
        x = width / 2 + (grub_cos (angle) * radius / GRUB_TRIG_FRACTION_SCALE);
        y = height / 2 + (grub_sin (angle) * radius / GRUB_TRIG_FRACTION_SCALE);
 
@@ -248,7 +250,7 @@ circprog_set_property (void *vself, const char *name, const char *value)
   circular_progress_t self = vself;
   if (grub_strcmp (name, "num_ticks") == 0)
     {
-      self->num_ticks = grub_strtol (value, 0, 10);
+      self->num_ticks = grub_strtoul (value, 0, 10);
     }
   else if (grub_strcmp (name, "start_angle") == 0)
     {
