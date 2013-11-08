@@ -1,3 +1,7 @@
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/tests/div_test.c: New test.
+
 2013-11-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
 
 	* grub-core/gfxmenu/gui_box.c: Updated to work with area status.
