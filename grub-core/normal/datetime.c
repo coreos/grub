@@ -34,7 +34,7 @@ static const char *const grub_weekday_names[] =
 int
 grub_get_weekday (struct grub_datetime *datetime)
 {
-  int a, y, m;
+  unsigned a, y, m;
 
   a = (14 - datetime->month) / 12;
   y = datetime->year - a;

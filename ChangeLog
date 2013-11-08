@@ -1,5 +1,9 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/datetime.c (grub_get_weekday): Use unsigned types.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gfxmenu/gui_circular_progress.c (parse_angle):
 	Use to get rounded angle rather than truncated.
 
