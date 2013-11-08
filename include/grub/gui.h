@@ -120,16 +120,36 @@ grub_gfxmenu_timeout_unregister (grub_gui_component_t self)
 typedef signed grub_fixed_signed_t;
 #define GRUB_FIXED_1 0x10000
 
+/* Special care is taken to round to nearest integer and not just truncate.  */
+static inline signed
+grub_divide_round (signed a, signed b)
+{
+  int neg = 0;
+  signed ret;
+  if (b < 0)
+    {
+      b = -b;
+      neg = !neg;
+    }
+  if (a < 0)
+    {
+      a = -a;
+      neg = !neg;
+    }
+  ret = (unsigned) (a + b / 2) / (unsigned) b;
+  return neg ? -ret : ret;
+}
+
 static inline signed
 grub_fixed_sfs_divide (signed a, grub_fixed_signed_t b)
 {
-  return (a * GRUB_FIXED_1) / b;
+  return grub_divide_round (a * GRUB_FIXED_1, b);
 }
 
 static inline grub_fixed_signed_t
 grub_fixed_fsf_divide (grub_fixed_signed_t a, signed b)
 {
-  return a / b;
+  return grub_divide_round (a, b);
 }
 
 static inline signed

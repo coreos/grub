@@ -1,5 +1,11 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/gui.h (grub_fixed_sfs_divide): Round rather than
+	truncate.
+	(grub_fixed_fsf_divide): Likewise.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gfxmenu/gui_list.c (draw_scrollbar): Avoid
 	division by-zero and senseless negative divisions.
 
