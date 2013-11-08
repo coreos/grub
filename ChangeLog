@@ -1,5 +1,10 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gfxmenu/gui_progress_bar.c (draw_pixmap_bar): Avoid
+	division by-zero and senseless negative divisions.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Use elf_*_fbsd on kfreebsd.
 
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
