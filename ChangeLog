@@ -1,5 +1,11 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt/mpi/mpih-div.c (_gcry_mpih_divrem):
+	Use grub_fatal rather than divide by zero.
+	* grub-core/lib/libgcrypt/mpi/mpi-pow.c (gcry_mpi_powm): Likewise.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/gui.h (grub_fixed_sfs_divide): Round rather than
 	truncate.
 	(grub_fixed_fsf_divide): Likewise.

@@ -77,7 +77,7 @@ gcry_mpi_powm (gcry_mpi_t res,
   ep = expo->d;
 
   if (!msize)
-    msize = 1 / msize;	    /* Provoke a signal.  */
+    grub_fatal ("mpi division by zero");
 
   if (!esize)
     {
