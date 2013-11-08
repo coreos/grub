@@ -1,5 +1,9 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* INSTALL: Add note about older gcc and clang.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/util/grub-shell.in: Boot as hdd on ppc by default.
 
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
