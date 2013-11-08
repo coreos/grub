@@ -43,6 +43,9 @@
 #elif ! defined (__CYGWIN__) && ! defined (__MINGW32__)
 #define FUNCTION(x)	.globl EXT_C(x) ; .type EXT_C(x), @function ; EXT_C(x):
 #define VARIABLE(x)	.globl EXT_C(x) ; .type EXT_C(x), @object ; EXT_C(x):
+#elif defined (__arm__)
+#define FUNCTION(x)	.globl EXT_C(x) ; .type EXT_C(x), %function ; EXT_C(x):
+#define VARIABLE(x)	.globl EXT_C(x) ; .type EXT_C(x), %object ; EXT_C(x):
 #else
 /* .type not supported for non-ELF targets.  XXX: Check this in configure? */
 #define FUNCTION(x)	.globl EXT_C(x) ; .def EXT_C(x); .scl 2; .type 32; .endef; EXT_C(x):
