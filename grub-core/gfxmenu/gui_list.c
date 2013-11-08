@@ -251,18 +251,24 @@ draw_scrollbar (list_impl_t self,
                 int value, int extent, int min, int max,
                 int scrollbar_width, int scrollbar_height)
 {
+  unsigned thumby, thumbheight;
+
   grub_gfxmenu_box_t frame = self->scrollbar_frame;
   grub_gfxmenu_box_t thumb = self->scrollbar_thumb;
   int frame_vertical_pad = (frame->get_top_pad (frame)
                             + frame->get_bottom_pad (frame));
   int frame_horizontal_pad = (frame->get_left_pad (frame)
                               + frame->get_right_pad (frame));
-  int thumb_vertical_pad = (thumb->get_top_pad (thumb)
-                            + thumb->get_bottom_pad (thumb));
+  unsigned thumb_vertical_pad = (thumb->get_top_pad (thumb)
+				 + thumb->get_bottom_pad (thumb));
   int thumb_horizontal_pad = (thumb->get_left_pad (thumb)
                               + thumb->get_right_pad (thumb));
   int tracktop = frame->get_top_pad (frame);
-  int tracklen = scrollbar_height - frame_vertical_pad;
+  unsigned tracklen;
+  if (scrollbar_height <= frame_vertical_pad)
+    tracklen = 0;
+  else
+    tracklen = scrollbar_height - frame_vertical_pad;
   frame->set_content_size (frame,
                            scrollbar_width - frame_horizontal_pad,
                            tracklen);
@@ -271,15 +277,28 @@ draw_scrollbar (list_impl_t self,
       tracklen += thumb_vertical_pad;
       tracktop -= thumb->get_top_pad (thumb);
     }
-  int thumby = tracktop + tracklen * (value - min) / (max - min);
-  int thumbheight = tracklen * extent / (max - min) + 1;
+  if (value <= min || max <= min)
+    thumby = 0;
+  else
+    thumby = ((unsigned) tracklen * (value - min))
+      / ((unsigned) (max - min));
+  if (max <= min)
+    thumbheight = 1;
+  else
+    thumbheight = ((unsigned) (tracklen * extent)
+		   / ((unsigned) (max - min))) + 1;
   /* Rare occasion: too many entries or too low height. */
   if (thumbheight < thumb_vertical_pad)
     {
       thumbheight = thumb_vertical_pad;
-      thumby = tracktop + ((tracklen - thumb_vertical_pad) * (value - min)
-                           / (max - extent));
+      if (value <= min || max <= extent
+	  || tracklen <= thumb_vertical_pad)
+	thumby = 0;
+      else
+	thumby = ((unsigned) ((tracklen - thumb_vertical_pad) * (value - min))
+		  / ((unsigned)(max - extent)));
     }
+  thumby += tracktop;
   int thumbx = frame->get_left_pad (frame);
   int thumbwidth = scrollbar_width - frame_horizontal_pad;
   if (!self->scrollbar_thumb_overlay)
