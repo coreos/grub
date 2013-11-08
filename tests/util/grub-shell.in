@@ -76,7 +76,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	trim=1
 	;;
     powerpc-ieee1275)
-	boot=cd
+	boot=hd
 	qemu=qemu-system-ppc
 	console=console
 	serial_port=escc-ch-a
