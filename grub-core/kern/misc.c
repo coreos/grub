@@ -551,6 +551,11 @@ grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
   grub_uint64_t q = 0;
   grub_uint64_t m = 0;
 
+  /* ARM and IA64 don't have a fast 32-bit division.
+     Using that code would just make us use libgcc routines, calling
+     them twice (once for modulo and once for quotient.
+  */
+#if !defined (__arm__) && !defined (__ia64__)
   /* Skip the slow computation if 32-bit arithmetic is possible.  */
   if (n < 0xffffffff && d < 0xffffffff)
     {
@@ -559,6 +564,7 @@ grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
 
       return ((grub_uint32_t) n) / (grub_uint32_t) d;
     }
+#endif
 
   while (bits--)
     {
