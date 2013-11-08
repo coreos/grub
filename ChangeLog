@@ -1,5 +1,10 @@
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mm.c (grub_real_malloc): Use AND rather than MOD
+	for alignment.
+
+2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/reed_solomon.c (grub_reed_solomon_recover): Add
 	missing attribute.
 	* grub-core/gdb/cstub.c (grub_gdb_trap): Likewise.
