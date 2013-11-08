@@ -1113,6 +1113,47 @@ struct grub_video_palette_data
 Used to query indexed color palettes. If mode is RGB mode, colors will be copied from emulated palette data. In Indexed Color modes, palettes will be read from hardware. Color values will be converted to suit structure format. @code{start} will tell what hardware color index (or emulated color index) will be used as a source for first indice of @code{palette_data}, after that both hardware color index and @code{palette_data} index will be incremented until @code{count} number of colors have been read.
 @end itemize
 
+@subsection grub_video_set_area_status
+@itemize
+
+@item Prototype:
+@example
+grub_err_t
+grub_video_set_area_status (grub_video_area_status_t area_status);
+@end example
+@example
+enum grub_video_area_status_t
+  @{
+    GRUB_VIDEO_AREA_DISABLED,
+    GRUB_VIDEO_AREA_ENABLED
+  @};
+@end example
+
+@item Description:
+
+Used to set area drawing mode for redrawing the specified region. Draw commands
+are performed in the intersection of the viewport and the region called area.
+Coordinates remain related to the viewport. If draw commands try to draw over
+the area, they are clipped.
+Set status to DISABLED if you need to draw everything.
+Set status to ENABLED and region to the desired rectangle to redraw everything
+inside the region leaving everything else intact.
+Should be used for redrawing of active elements.
+@end itemize
+
+@subsection grub_video_get_area_status
+@itemize
+
+@item Prototype:
+@example
+grub_err_r
+grub_video_get_area_status (grub_video_area_status_t *area_status);
+@end example
+
+@item Description:
+Used to query the area status.
+@end itemize
+
 @subsection grub_video_set_viewport
 @itemize
 @item Prototype:
@@ -1137,6 +1178,37 @@ grub_video_get_viewport (unsigned int *x, unsigned int *y, unsigned int *width, 
 @item Description:
 
 Used to query current viewport dimensions. Software developer can use this to choose best way to render contents of the viewport.
+@end itemize
+
+@subsection grub_video_set_region
+@itemize
+@item Prototype:
+
+@example
+grub_err_t
+grub_video_set_region (unsigned int x, unsigned int y, unsigned int width, unsigned int height);
+@end example
+@item Description:
+
+Used to specify the region of the screen which should be redrawn. Use absolute
+values. When the region is set and area status is ENABLE all draw commands will
+be performed inside the interseption of region and viewport named area.
+If draw commands try to draw over viewport, they are clipped. If developer
+requests larger than possible region, width and height will be clamped to fit
+screen. Should be used for redrawing of active elements.
+@end itemize
+
+@subsection grub_video_get_region
+@itemize
+@item Prototype:
+
+@example
+grub_err_t
+grub_video_get_region (unsigned int *x, unsigned int *y, unsigned int *width, unsigned int *height);
+@end example
+@item Description:
+
+Used to query current region dimensions.
 @end itemize
 
 @subsection grub_video_map_color

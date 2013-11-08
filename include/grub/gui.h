@@ -248,4 +248,15 @@ grub_video_have_common_points (const grub_video_rect_t *a,
   return 1;
 }
 
+static inline int
+grub_video_bounds_inside_region (const grub_video_rect_t *b,
+                                 const grub_video_rect_t *r)
+{
+  if (r->x > b->x || r->x + r->width < b->x + b->width)
+    return 0;
+  if (r->y > b->y || r->y + r->height < b->y + b->height)
+    return 0;
+  return 1;
+}
+
 #endif /* ! GRUB_GUI_H */

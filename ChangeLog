@@ -1,3 +1,34 @@
+2013-11-08  Vladimir Testov  <vladimir.testov@rosalab.ru>
+
+	* grub-core/gfxmenu/gui_box.c: Updated to work with area status.
+	* grub-core/gfxmenu/gui_canvas.c: Likewise.
+	* grub-core/gfxmenu/view.c: Likewise.
+	* grub-core/video/fb/video_fb.c: Introduce new functions:
+	grub_video_set_area_status, grub_video_get_area_status,
+	grub_video_set_region, grub_video_get_region.
+	* grub-core/video/bochs.c: Likewise.
+	* grub-core/video/capture.c: Likewise.
+	* grub-core/video/video.c: Likewise.
+	* grub-core/video/cirrus.c: Likewise.
+	* grub-core/video/efi_gop.c: Likewise.
+	* grub-core/video/efi_uga.c: Likewise.
+	* grub-core/video/emu/sdl.c: Likewise.
+	* grub-core/video/radeon_fuloong2e.c: Likewise.
+	* grub-core/video/sis315pro.c: Likewise.
+	* grub-core/video/sm712.c: Likewise.
+	* grub-core/video/i386/pc/vbe.c: Likewise.
+	* grub-core/video/i386/pc/vga.c: Likewise.
+	* grub-core/video/ieee1275.c: Likewise.
+	* grub-core/video/i386/coreboot/cbfb.c: Likewise.
+	* include/grub/video.h: Likewise.
+	* include/grub/video_fb.h: Likewise.
+	* include/grub/fbfill.h: Updated render_target structure.
+	grub_video_rect_t viewport, region, area
+	int area_offset_x, area_offset_y, area_enabled
+	* include/grub/gui.h: New helper function
+	grub_video_bounds_inside_region.
+	* docs/grub-dev.texi: Added information about new functions.
+
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/mm.c (grub_real_malloc): Use AND rather than MOD

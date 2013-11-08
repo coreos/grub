@@ -225,6 +225,48 @@ grub_video_get_viewport (unsigned int *x, unsigned int *y,
   return grub_video_adapter_active->get_viewport (x, y, width, height);
 }
 
+/* Set region dimensions.  */
+grub_err_t
+grub_video_set_region (unsigned int x, unsigned int y,
+                       unsigned int width, unsigned int height)
+{
+  if (! grub_video_adapter_active)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
+
+  return grub_video_adapter_active->set_region (x, y, width, height);
+}
+
+/* Get region dimensions.  */
+grub_err_t
+grub_video_get_region (unsigned int *x, unsigned int *y,
+                       unsigned int *width, unsigned int *height)
+{
+  if (! grub_video_adapter_active)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
+
+  return grub_video_adapter_active->get_region (x, y, width, height);
+}
+
+/* Set status of the intersection of the viewport and the region.  */
+grub_err_t
+grub_video_set_area_status (grub_video_area_status_t area_status)
+{
+  if (! grub_video_adapter_active)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
+
+  return grub_video_adapter_active->set_area_status (area_status);
+}
+
+/* Get status of the intersection of the viewport and the region.  */
+grub_err_t
+grub_video_get_area_status (grub_video_area_status_t *area_status)
+{
+  if (! grub_video_adapter_active)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "no video mode activated");
+
+  return grub_video_adapter_active->get_area_status (area_status);
+}
+
 /* Map color name to adapter specific color.  */
 grub_video_color_t
 grub_video_map_color (grub_uint32_t color_name)

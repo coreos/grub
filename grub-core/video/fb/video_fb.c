@@ -399,12 +399,67 @@ grub_video_fb_set_palette (unsigned int start, unsigned int count,
   return GRUB_ERR_NONE;
 }
 
+static grub_err_t
+grub_video_fb_set_area (void)
+{
+  unsigned int viewport_x1 = framebuffer.render_target->viewport.x;
+  unsigned int viewport_y1 = framebuffer.render_target->viewport.y;
+  unsigned int viewport_width = framebuffer.render_target->viewport.width;
+  unsigned int viewport_height = framebuffer.render_target->viewport.height;
+  unsigned int viewport_x2 = viewport_x1 + viewport_width;
+  unsigned int viewport_y2 = viewport_y1 + viewport_height;
+
+  unsigned int region_x1 = framebuffer.render_target->region.x;
+  unsigned int region_y1 = framebuffer.render_target->region.y;
+  unsigned int region_width = framebuffer.render_target->region.width;
+  unsigned int region_height = framebuffer.render_target->region.height;
+  unsigned int region_x2 = region_x1 + region_width;
+  unsigned int region_y2 = region_y1 + region_height;
+
+  unsigned int max_x1 = grub_max (viewport_x1, region_x1);
+  unsigned int min_x2 = grub_min (viewport_x2, region_x2);
+  unsigned int max_y1 = grub_max (viewport_y1, region_y1);
+  unsigned int min_y2 = grub_min (viewport_y2, region_y2);
+
+  /* Viewport and region do not intersect. */
+  if (viewport_width == 0 || viewport_height == 0 || region_width == 0
+      || region_height == 0 || max_x1 >= min_x2 || max_y1 >= min_y2)
+    {
+      framebuffer.render_target->area.x = 0;
+      framebuffer.render_target->area.y = 0;
+      framebuffer.render_target->area.width = 0;
+      framebuffer.render_target->area.height = 0;
+      framebuffer.render_target->area_offset_x = 0;
+      framebuffer.render_target->area_offset_y = 0;
+      return GRUB_ERR_NONE;
+    }
+
+  /* There is non-zero intersection. */
+  framebuffer.render_target->area.x = max_x1;
+  framebuffer.render_target->area.y = max_y1;
+  framebuffer.render_target->area.width = min_x2 - max_x1;
+  framebuffer.render_target->area.height = min_y2 - max_y1;
+
+  if (region_x1 > viewport_x1)
+    framebuffer.render_target->area_offset_x = (int)region_x1
+                                               - (int)viewport_x1;
+  else
+    framebuffer.render_target->area_offset_x = 0;
+  if (region_y1 > viewport_y1)
+    framebuffer.render_target->area_offset_y = (int)region_y1
+                                               - (int)viewport_y1;
+  else
+    framebuffer.render_target->area_offset_y = 0;
+
+  return GRUB_ERR_NONE;
+}
+
 grub_err_t
 grub_video_fb_set_viewport (unsigned int x, unsigned int y,
 			    unsigned int width, unsigned int height)
 {
-  /* Make sure viewport is withing screen dimensions.  If viewport was set
-     to be out of the region, mark its size as zero.  */
+  /* Make sure viewport is within screen dimensions.  If viewport was set
+     to be out of the screen, mark its size as zero.  */
   if (x > framebuffer.render_target->mode_info.width)
     {
       x = 0;
@@ -428,6 +483,10 @@ grub_video_fb_set_viewport (unsigned int x, unsigned int y,
   framebuffer.render_target->viewport.width = width;
   framebuffer.render_target->viewport.height = height;
 
+  /* Count drawing area only if needed. */
+  if (framebuffer.render_target->area_enabled)
+    grub_video_fb_set_area ();
+
   return GRUB_ERR_NONE;
 }
 
@@ -439,6 +498,78 @@ grub_video_fb_get_viewport (unsigned int *x, unsigned int *y,
   if (y) *y = framebuffer.render_target->viewport.y;
   if (width) *width = framebuffer.render_target->viewport.width;
   if (height) *height = framebuffer.render_target->viewport.height;
+
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_video_fb_set_region (unsigned int x, unsigned int y,
+                          unsigned int width, unsigned int height)
+{
+  /* Make sure region is within screen dimensions.  If region was set
+     to be out of the screen, mark its size as zero.  */
+  if (x > framebuffer.render_target->mode_info.width)
+    {
+      x = 0;
+      width = 0;
+    }
+
+  if (y > framebuffer.render_target->mode_info.height)
+    {
+      y = 0;
+      height = 0;
+    }
+
+  if (x + width > framebuffer.render_target->mode_info.width)
+    width = framebuffer.render_target->mode_info.width - x;
+
+  if (y + height > framebuffer.render_target->mode_info.height)
+    height = framebuffer.render_target->mode_info.height - y;
+
+  framebuffer.render_target->region.x = x;
+  framebuffer.render_target->region.y = y;
+  framebuffer.render_target->region.width = width;
+  framebuffer.render_target->region.height = height;
+
+  /* If we have called set_region then area is needed.  */
+  grub_video_fb_set_area ();
+
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_video_fb_get_region (unsigned int *x, unsigned int *y,
+                          unsigned int *width, unsigned int *height)
+{
+  if (x) *x = framebuffer.render_target->region.x;
+  if (y) *y = framebuffer.render_target->region.y;
+  if (width) *width = framebuffer.render_target->region.width;
+  if (height) *height = framebuffer.render_target->region.height;
+
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_video_fb_set_area_status (grub_video_area_status_t area_status)
+{
+  if (area_status == GRUB_VIDEO_AREA_ENABLED)
+    framebuffer.render_target->area_enabled = 1;
+  else
+    framebuffer.render_target->area_enabled = 0;
+
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_video_fb_get_area_status (grub_video_area_status_t *area_status)
+{
+  if (!area_status)
+    return GRUB_ERR_NONE;
+
+  if (framebuffer.render_target->area_enabled)
+    *area_status = GRUB_VIDEO_AREA_ENABLED;
+  else
+    *area_status = GRUB_VIDEO_AREA_DISABLED;
 
   return GRUB_ERR_NONE;
 }
@@ -714,14 +845,36 @@ grub_video_fb_fill_rect (grub_video_color_t color, int x, int y,
 			 unsigned int width, unsigned int height)
 {
   struct grub_video_fbblit_info target;
+  unsigned int area_x;
+  unsigned int area_y;
+  unsigned int area_width;
+  unsigned int area_height;
+  if (framebuffer.render_target->area_enabled)
+    {
+      area_x = framebuffer.render_target->area.x;
+      area_y = framebuffer.render_target->area.y;
+      area_width = framebuffer.render_target->area.width;
+      area_height = framebuffer.render_target->area.height;
+      x -= framebuffer.render_target->area_offset_x;
+      y -= framebuffer.render_target->area_offset_y;
+    }
+  else
+    {
+      area_x = framebuffer.render_target->viewport.x;
+      area_y = framebuffer.render_target->viewport.y;
+      area_width = framebuffer.render_target->viewport.width;
+      area_height = framebuffer.render_target->viewport.height;
+    }
 
   /* Make sure there is something to do.  */
-  if ((x >= (int)framebuffer.render_target->viewport.width) || (x + (int)width < 0))
+  if ((area_width == 0) || (area_height == 0))
     return GRUB_ERR_NONE;
-  if ((y >= (int)framebuffer.render_target->viewport.height) || (y + (int)height < 0))
+  if ((x >= (int)area_width) || (x + (int)width < 0))
+    return GRUB_ERR_NONE;
+  if ((y >= (int)area_height) || (y + (int)height < 0))
     return GRUB_ERR_NONE;
 
-  /* Do not allow drawing out of viewport.  */
+  /* Do not allow drawing out of area.  */
   if (x < 0)
     {
       width += x;
@@ -733,14 +886,14 @@ grub_video_fb_fill_rect (grub_video_color_t color, int x, int y,
       y = 0;
     }
 
-  if ((x + width) > framebuffer.render_target->viewport.width)
-    width = framebuffer.render_target->viewport.width - x;
-  if ((y + height) > framebuffer.render_target->viewport.height)
-    height = framebuffer.render_target->viewport.height - y;
+  if ((x + width) > area_width)
+    width = area_width - x;
+  if ((y + height) > area_height)
+    height = area_height - y;
 
-  /* Add viewport offset.  */
-  x += framebuffer.render_target->viewport.x;
-  y += framebuffer.render_target->viewport.y;
+  /* Add area offset.  */
+  x += area_x;
+  y += area_y;
 
   dirty (y, height);
 
@@ -760,13 +913,33 @@ grub_video_fb_blit_source (struct grub_video_fbblit_info *source,
                            unsigned int width, unsigned int height)
 {
   struct grub_video_fbblit_info target;
+  unsigned int area_x;
+  unsigned int area_y;
+  unsigned int area_width;
+  unsigned int area_height;
+  if (framebuffer.render_target->area_enabled)
+    {
+      area_x = framebuffer.render_target->area.x;
+      area_y = framebuffer.render_target->area.y;
+      area_width = framebuffer.render_target->area.width;
+      area_height = framebuffer.render_target->area.height;
+      x -= framebuffer.render_target->area_offset_x;
+      y -= framebuffer.render_target->area_offset_y;
+    }
+  else
+    {
+      area_x = framebuffer.render_target->viewport.x;
+      area_y = framebuffer.render_target->viewport.y;
+      area_width = framebuffer.render_target->viewport.width;
+      area_height = framebuffer.render_target->viewport.height;
+    }
 
   /* Make sure there is something to do.  */
-  if ((width == 0) || (height == 0))
+  if ((area_width == 0) || (area_height == 0) || (width == 0) || (height == 0))
     return GRUB_ERR_NONE;
-  if ((x >= (int)framebuffer.render_target->viewport.width) || (x + (int)width < 0))
+  if ((x >= (int)area_width) || (x + (int)width < 0))
     return GRUB_ERR_NONE;
-  if ((y >= (int)framebuffer.render_target->viewport.height) || (y + (int)height < 0))
+  if ((y >= (int)area_height) || (y + (int)height < 0))
     return GRUB_ERR_NONE;
   if ((x + (int)source->mode_info->width) < 0)
     return GRUB_ERR_NONE;
@@ -808,11 +981,11 @@ grub_video_fb_blit_source (struct grub_video_fbblit_info *source,
       y = 0;
     }
 
-  /* Do not allow drawing out of viewport.  */
-  if ((x + width) > framebuffer.render_target->viewport.width)
-    width = framebuffer.render_target->viewport.width - x;
-  if ((y + height) > framebuffer.render_target->viewport.height)
-    height = framebuffer.render_target->viewport.height - y;
+  /* Do not allow drawing out of area.  */
+  if ((x + width) > area_width)
+    width = area_width - x;
+  if ((y + height) > area_height)
+    height = area_height - y;
 
   if ((offset_x + width) > source->mode_info->width)
     width = source->mode_info->width - offset_x;
@@ -827,8 +1000,8 @@ grub_video_fb_blit_source (struct grub_video_fbblit_info *source,
     height = source->mode_info->height;
 
   /* Add viewport offset.  */
-  x += framebuffer.render_target->viewport.x;
-  y += framebuffer.render_target->viewport.y;
+  x += area_x;
+  y += area_y;
 
   /* Use fbblit_info to encapsulate rendering.  */
   target.mode_info = &framebuffer.render_target->mode_info;
@@ -1058,11 +1231,24 @@ grub_video_fb_create_render_target (struct grub_video_fbrender_target **result,
   /* Mark render target as allocated.  */
   target->is_allocated = 1;
 
-  /* Maximize viewport.  */
+  /* Maximize viewport, region and area.  */
   target->viewport.x = 0;
   target->viewport.y = 0;
   target->viewport.width = width;
   target->viewport.height = height;
+
+  target->region.x = 0;
+  target->region.y = 0;
+  target->region.width = width;
+  target->region.height = height;
+
+  target->area_enabled = 0;
+  target->area.x = 0;
+  target->area.y = 0;
+  target->area.width = width;
+  target->area.height = height;
+  target->area_offset_x = 0;
+  target->area_offset_y = 0;
 
   /* Setup render target format.  */
   target->mode_info.width = width;
@@ -1150,11 +1336,24 @@ grub_video_fb_create_render_target_from_pointer (struct grub_video_fbrender_targ
 
   grub_memcpy (&(target->mode_info), mode_info, sizeof (target->mode_info));
 
-  /* Reset viewport to match new mode.  */
+  /* Reset viewport, region and area to match new mode.  */
   target->viewport.x = 0;
   target->viewport.y = 0;
   target->viewport.width = mode_info->width;
   target->viewport.height = mode_info->height;
+
+  target->region.x = 0;
+  target->region.y = 0;
+  target->region.width = mode_info->width;
+  target->region.height = mode_info->height;
+
+  target->area_enabled = 0;
+  target->area.x = 0;
+  target->area.y = 0;
+  target->area.width = mode_info->width;
+  target->area.height = mode_info->height;
+  target->area_offset_x = 0;
+  target->area_offset_y = 0;
 
   /* Clear render target with black and maximum transparency.  */
   for (y = 0; y < mode_info->height; y++)

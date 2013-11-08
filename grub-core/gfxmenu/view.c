@@ -213,6 +213,7 @@ redraw_timeouts (struct grub_gfxmenu_view *view)
     {
       grub_video_rect_t bounds;
       cur->self->ops->get_bounds (cur->self, &bounds);
+      grub_video_set_area_status (GRUB_VIDEO_AREA_ENABLED);
       grub_gfxmenu_view_redraw (view, &bounds);
     }
 }
@@ -321,6 +322,11 @@ grub_gfxmenu_view_redraw (grub_gfxmenu_view_t view,
     grub_gfxterm_schedule_repaint ();
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
+  grub_video_area_status_t area_status;
+  grub_video_get_area_status (&area_status);
+  if (area_status == GRUB_VIDEO_AREA_ENABLED)
+    grub_video_set_region (region->x, region->y,
+                           region->width, region->height);
 
   redraw_background (view, region);
   if (view->canvas)
@@ -328,6 +334,9 @@ grub_gfxmenu_view_redraw (grub_gfxmenu_view_t view,
   draw_title (view);
   if (grub_video_have_common_points (&view->progress_message_frame, region))
     draw_message (view);
+
+  if (area_status == GRUB_VIDEO_AREA_ENABLED)
+    grub_video_set_area_status (GRUB_VIDEO_AREA_ENABLED);
 }
 
 void
@@ -350,10 +359,15 @@ grub_gfxmenu_view_draw (grub_gfxmenu_view_t view)
   refresh_menu_components (view);
   update_menu_components (view);
 
+  grub_video_set_area_status (GRUB_VIDEO_AREA_DISABLED);
   grub_gfxmenu_view_redraw (view, &view->screen);
   grub_video_swap_buffers ();
   if (view->double_repaint)
-    grub_gfxmenu_view_redraw (view, &view->screen);
+    {
+      grub_video_set_area_status (GRUB_VIDEO_AREA_DISABLED);
+      grub_gfxmenu_view_redraw (view, &view->screen);
+    }
+
 }
 
 static void
@@ -367,6 +381,7 @@ redraw_menu_visit (grub_gui_component_t component,
       grub_video_rect_t bounds;
 
       component->ops->get_bounds (component, &bounds);
+      grub_video_set_area_status (GRUB_VIDEO_AREA_ENABLED);
       grub_gfxmenu_view_redraw (view, &bounds);
     }
 }
@@ -403,6 +418,8 @@ grub_gfxmenu_draw_terminal_box (void)
   term_box = term_view->terminal_box;
   if (!term_box)
     return;
+
+  grub_video_set_area_status (GRUB_VIDEO_AREA_DISABLED);
 
   term_box->set_content_size (term_box, term_view->terminal_rect.width,
 			      term_view->terminal_rect.height);

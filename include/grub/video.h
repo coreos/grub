@@ -301,6 +301,11 @@ typedef enum grub_video_adapter_prio
     GRUB_VIDEO_ADAPTER_PRIO_NATIVE = 100
   } grub_video_adapter_prio_t;
 
+typedef enum grub_video_area_status
+  {
+    GRUB_VIDEO_AREA_DISABLED,
+    GRUB_VIDEO_AREA_ENABLED
+  } grub_video_area_status_t;
 
 struct grub_video_adapter
 {
@@ -340,6 +345,16 @@ struct grub_video_adapter
 
   grub_err_t (*get_viewport) (unsigned int *x, unsigned int *y,
                               unsigned int *width, unsigned int *height);
+
+  grub_err_t (*set_region) (unsigned int x, unsigned int y,
+                            unsigned int width, unsigned int height);
+
+  grub_err_t (*get_region) (unsigned int *x, unsigned int *y,
+                            unsigned int *width, unsigned int *height);
+
+  grub_err_t (*set_area_status) (grub_video_area_status_t area_status);
+
+  grub_err_t (*get_area_status) (grub_video_area_status_t *area_status);
 
   grub_video_color_t (*map_color) (grub_uint32_t color_name);
 
@@ -446,6 +461,22 @@ grub_err_t EXPORT_FUNC (grub_video_get_viewport) (unsigned int *x,
 						  unsigned int *y,
 						  unsigned int *width,
 						  unsigned int *height);
+
+grub_err_t EXPORT_FUNC (grub_video_set_region) (unsigned int x,
+                                                unsigned int y,
+                                                unsigned int width,
+                                                unsigned int height);
+
+grub_err_t EXPORT_FUNC (grub_video_get_region) (unsigned int *x,
+                                                unsigned int *y,
+                                                unsigned int *width,
+                                                unsigned int *height);
+
+grub_err_t EXPORT_FUNC (grub_video_set_area_status)
+    (grub_video_area_status_t area_status);
+
+grub_err_t EXPORT_FUNC (grub_video_get_area_status)
+    (grub_video_area_status_t *area_status);
 
 grub_video_color_t EXPORT_FUNC (grub_video_map_color) (grub_uint32_t color_name);
 

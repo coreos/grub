@@ -58,6 +58,22 @@ EXPORT_FUNC(grub_video_fb_get_viewport) (unsigned int *x, unsigned int *y,
 					 unsigned int *width,
 					 unsigned int *height);
 
+grub_err_t
+EXPORT_FUNC(grub_video_fb_set_region) (unsigned int x, unsigned int y,
+                                       unsigned int width, unsigned int height);
+grub_err_t
+EXPORT_FUNC(grub_video_fb_get_region) (unsigned int *x, unsigned int *y,
+                                       unsigned int *width,
+                                       unsigned int *height);
+
+grub_err_t
+EXPORT_FUNC(grub_video_fb_set_area_status)
+    (grub_video_area_status_t area_status);
+
+grub_err_t
+EXPORT_FUNC(grub_video_fb_get_area_status)
+    (grub_video_area_status_t *area_status);
+
 grub_video_color_t
 EXPORT_FUNC(grub_video_fb_map_color) (grub_uint32_t color_name);
 
