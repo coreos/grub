@@ -1,5 +1,10 @@
 2013-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/cmdline.c (grub_loader_cmdline_size): Fix empty cmdline
+	handling.
+
+2013-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/i386/cmostest.c: Add new command "cmosset".
 
 	Tested by: Denis 'GNUtoo' Carikli.
