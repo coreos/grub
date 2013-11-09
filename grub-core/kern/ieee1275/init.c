@@ -298,10 +298,13 @@ grub_machine_init (void)
 }
 
 void
-grub_machine_fini (void)
+grub_machine_fini (int flags)
 {
-  grub_ofdisk_fini ();
-  grub_console_fini ();
+  if (flags & GRUB_LOADER_FLAG_NORETURN)
+    {
+      grub_ofdisk_fini ();
+      grub_console_fini ();
+    }
 }
 
 grub_uint64_t

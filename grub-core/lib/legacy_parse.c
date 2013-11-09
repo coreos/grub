@@ -250,6 +250,9 @@ static struct legacy_command legacy_commands[] =
     {"pause", "echo %s; if ! sleep -i 60; then return; fi\n", NULL, 0, 1,
      {TYPE_REST_VERBATIM}, 0,
      "[MESSAGE ...]", "Print MESSAGE, then wait until a key is pressed."},
+    {"print", "echo %s\n", NULL, 0, 1,
+     {TYPE_REST_VERBATIM}, 0,
+     "[MESSAGE ...]", "Print MESSAGE."},
     /* FIXME: quit unsupported.  */
     /* FIXME: rarp unsupported.  */
     {"read", "read_dword %s\n", NULL, 0, 1, {TYPE_INT}, 0, "ADDR",

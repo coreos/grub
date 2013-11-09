@@ -23,6 +23,9 @@ if COND_arm
   LDFLAGS_PLATFORM = -Wl,--wrap=__clear_cache
 endif
 
+#FIXME: discover and check XEN headers
+CPPFLAGS_XEN = -I/usr/include
+
 # Other options
 
 CPPFLAGS_DEFAULT = -DGRUB_FILE=\"$(subst $(srcdir)/,,$<)\"

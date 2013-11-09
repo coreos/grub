@@ -2652,6 +2652,7 @@ Heavily limited platforms:
 Lightly limited platforms:
 
 @itemize
+@item *-xen: limited only by adress space and RAM size.
 @item i386-qemu: kernel.img (.text + .data + .bss) is limited by 392704 bytes.
                  (core.img would be limited by ROM size but it's unlimited on qemu
 @item All EFI platforms: limited by contiguous RAM size and possibly firmware bugs
@@ -2707,9 +2708,9 @@ by a digit, like @samp{fd0}, or @samp{cd}.
 AHCI, PATA (ata), crypto, USB use the name of driver followed by a number.
 Memdisk and host are limited to one disk and so it's refered just by driver
 name.
-RAID (md), ofdisk (ieee1275 and nand), LVM (lvm), LDM and arcdisk (arc) use
-intrinsic name of disk prefixed by driver name. Additionally just ``nand''
-refers to the disk aliased as ``nand''.
+RAID (md), ofdisk (ieee1275 and nand), LVM (lvm), LDM, virtio (vdsk)
+and arcdisk (arc) use intrinsic name of disk prefixed by driver name.
+Additionally just ``nand'' refers to the disk aliased as ``nand''.
 Conflicts are solved by suffixing a number if necessarry.
 Commas need to be escaped.
 Loopback uses whatever name specified to @command{loopback} command.

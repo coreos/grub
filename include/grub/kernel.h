@@ -78,7 +78,7 @@ struct grub_module_info64
 #if defined (GRUB_MACHINE_PCBIOS) || defined (GRUB_MACHINE_COREBOOT) \
   || defined (GRUB_MACHINE_MULTIBOOT) || defined (GRUB_MACHINE_MIPS_QEMU_MIPS) \
   || defined (GRUB_MACHINE_MIPS_LOONGSON) || defined (GRUB_MACHINE_ARC) \
-  || defined (__sparc__) || defined (GRUB_MACHINE_UBOOT)
+  || defined (__sparc__) || defined (GRUB_MACHINE_UBOOT) || defined (GRUB_MACHINE_XEN)
 /* FIXME: stack is between 2 heap regions. Move it.  */
 #define GRUB_KERNEL_PRELOAD_SPACE_REUSABLE 1
 #endif
@@ -114,7 +114,7 @@ void grub_main (void) __attribute__ ((noreturn));
 void grub_machine_init (void);
 
 /* The machine-specific finalization.  */
-void EXPORT_FUNC(grub_machine_fini) (void);
+void EXPORT_FUNC(grub_machine_fini) (int flags);
 
 /* The machine-specific prefix initialization.  */
 void

@@ -41,6 +41,7 @@
 #include <grub/env.h>
 #include <grub/partition.h>
 #include <grub/i18n.h>
+#include <grub/loader.h>
 #include <grub/util/misc.h>
 
 #include "progname.h"
@@ -75,9 +76,10 @@ grub_machine_get_bootlocation (char **device, char **path)
 }
 
 void
-grub_machine_fini (void)
+grub_machine_fini (int flags)
 {
-  grub_console_fini ();
+  if (flags & GRUB_LOADER_FLAG_NORETURN)
+    grub_console_fini ();
 }
 
 

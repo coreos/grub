@@ -75,6 +75,7 @@ get_uuid (const char *name, char **uuid, int getnative)
       /* Native disks.  */
     case GRUB_DISK_DEVICE_ATA_ID:
     case GRUB_DISK_DEVICE_SCSI_ID:
+    case GRUB_DISK_DEVICE_XEN:
       if (getnative)
 	break;
 

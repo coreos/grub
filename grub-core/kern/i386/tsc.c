@@ -25,7 +25,11 @@
 #include <grub/misc.h>
 #include <grub/i386/tsc.h>
 #include <grub/i386/cpuid.h>
+#ifdef GRUB_MACHINE_XEN
+#include <grub/xen.h>
+#else
 #include <grub/i386/pit.h>
+#endif
 #include <grub/cpu/io.h>
 
 /* This defines the value TSC had at the epoch (that is, when we calibrated it). */
@@ -65,6 +69,8 @@ grub_cpu_is_tsc_supported (void)
   return (d & (1 << 4)) != 0;
 }
 
+#ifndef GRUB_MACHINE_XEN
+
 static void
 grub_pit_wait (grub_uint16_t tics)
 {
@@ -92,6 +98,7 @@ grub_pit_wait (grub_uint16_t tics)
 	     & ~ (GRUB_PIT_SPK_DATA | GRUB_PIT_SPK_TMR2),
              GRUB_PIT_SPEAKER_PORT);
 }
+#endif
 
 static grub_uint64_t
 grub_tsc_get_time_ms (void)
@@ -103,6 +110,7 @@ grub_tsc_get_time_ms (void)
   return ((al * grub_tsc_rate) >> 32) + ah * grub_tsc_rate;
 }
 
+#ifndef GRUB_MACHINE_XEN
 /* Calibrate the TSC based on the RTC.  */
 static void
 calibrate_tsc (void)
@@ -116,10 +124,22 @@ calibrate_tsc (void)
 
   grub_tsc_rate = grub_divmod64 ((55ULL << 32), end_tsc - tsc_boot_time, 0);
 }
+#endif
 
 void
 grub_tsc_init (void)
 {
+#ifdef GRUB_MACHINE_XEN
+  grub_uint64_t t;
+  tsc_boot_time = grub_get_tsc ();
+  t = grub_xen_shared_info->vcpu_info[0].time.tsc_to_system_mul;
+  if (grub_xen_shared_info->vcpu_info[0].time.tsc_shift > 0)
+    t <<= grub_xen_shared_info->vcpu_info[0].time.tsc_shift;
+  else
+    t >>= -grub_xen_shared_info->vcpu_info[0].time.tsc_shift;
+  grub_tsc_rate = grub_divmod64 (t, 1000000, 0);
+  grub_install_get_time_ms (grub_tsc_get_time_ms);
+#else
   if (grub_cpu_is_tsc_supported ())
     {
       calibrate_tsc ();
@@ -133,4 +153,5 @@ grub_tsc_init (void)
       grub_fatal ("no TSC found");
 #endif
     }
+#endif
 }

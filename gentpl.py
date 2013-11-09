@@ -21,6 +21,7 @@
 
 GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
                    "i386_multiboot", "i386_ieee1275", "x86_64_efi",
+                   "i386_xen", "x86_64_xen",
                    "mips_loongson", "sparc64_ieee1275",
                    "powerpc_ieee1275", "mips_arc", "ia64_efi",
                    "mips_qemu_mips", "arm_uboot", "arm_efi" ]
@@ -42,6 +43,7 @@ GROUPS["arm"]      = [ "arm_uboot", "arm_efi" ]
 GROUPS["efi"]  = [ "i386_efi", "x86_64_efi", "ia64_efi", "arm_efi" ]
 GROUPS["ieee1275"]   = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
 GROUPS["uboot"] = [ "arm_uboot" ]
+GROUPS["xen"]  = [ "i386_xen", "x86_64_xen" ]
 
 # emu is a special case so many core functionality isn't needed on this platform
 GROUPS["noemu"]   = GRUB_PLATFORMS[:]; GROUPS["noemu"].remove("emu")
@@ -49,7 +51,7 @@ GROUPS["noemu"]   = GRUB_PLATFORMS[:]; GROUPS["noemu"].remove("emu")
 # Groups based on hardware features
 GROUPS["cmos"] = GROUPS["x86"][:] + ["mips_loongson", "mips_qemu_mips",
                                      "sparc64_ieee1275", "powerpc_ieee1275"]
-GROUPS["cmos"].remove("i386_efi"); GROUPS["cmos"].remove("x86_64_efi")
+GROUPS["cmos"].remove("i386_efi"); GROUPS["cmos"].remove("x86_64_efi");
 GROUPS["pci"]      = GROUPS["x86"] + ["mips_loongson"]
 GROUPS["usb"]      = GROUPS["pci"]
 
@@ -59,7 +61,7 @@ GROUPS["videomodules"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["videoinkernel"]: GROUPS["videomodules"].remove(i)
 
 # Similar for terminfo
-GROUPS["terminfoinkernel"] = [ "emu", "mips_loongson", "mips_arc", "mips_qemu_mips" ] + GROUPS["ieee1275"] + GROUPS["uboot"];
+GROUPS["terminfoinkernel"] = [ "emu", "mips_loongson", "mips_arc", "mips_qemu_mips" ] + GROUPS["xen"] + GROUPS["ieee1275"] + GROUPS["uboot"];
 GROUPS["terminfomodule"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["terminfoinkernel"]: GROUPS["terminfomodule"].remove(i)
 

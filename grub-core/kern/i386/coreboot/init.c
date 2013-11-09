@@ -130,8 +130,9 @@ grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
 }
 
 void
-grub_machine_fini (void)
+grub_machine_fini (int flags)
 {
-  grub_vga_text_fini ();
+  if (flags & GRUB_LOADER_FLAG_NORETURN)
+    grub_vga_text_fini ();
   grub_stop_floppy ();
 }

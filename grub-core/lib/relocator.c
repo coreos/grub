@@ -1432,7 +1432,7 @@ grub_relocator_alloc_chunk_align (struct grub_relocator *rel,
 #ifdef GRUB_MACHINE_EFI
     grub_efi_mmap_iterate (grub_relocator_alloc_chunk_align_iter, &ctx,
 			   avoid_efi_boot_services);
-#elif defined (__powerpc__)
+#elif defined (__powerpc__) || defined (GRUB_MACHINE_XEN)
     (void) avoid_efi_boot_services;
     grub_machine_mmap_iterate (grub_relocator_alloc_chunk_align_iter, &ctx);
 #else

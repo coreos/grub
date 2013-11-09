@@ -2454,7 +2454,9 @@ typedef Elf32_Addr Elf32_Conflict;
 #if GRUB_TARGET_WORDSIZE == 32
 
 typedef Elf32_Addr Elf_Addr;
+typedef Elf32_Nhdr Elf_Nhdr;
 typedef Elf32_Ehdr Elf_Ehdr;
+typedef Elf32_Phdr Elf_Phdr;
 typedef Elf32_Half Elf_Half;
 typedef Elf32_Off Elf_Off;
 typedef Elf32_Rel Elf_Rel;
@@ -2477,7 +2479,9 @@ typedef Elf32_Xword Elf_Xword;
 #elif GRUB_TARGET_WORDSIZE == 64
 
 typedef Elf64_Addr Elf_Addr;
+typedef Elf64_Nhdr Elf_Nhdr;
 typedef Elf64_Ehdr Elf_Ehdr;
+typedef Elf64_Phdr Elf_Phdr;
 typedef Elf64_Half Elf_Half;
 typedef Elf64_Off Elf_Off;
 typedef Elf64_Rel Elf_Rel;

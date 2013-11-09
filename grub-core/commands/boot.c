@@ -146,8 +146,7 @@ grub_loader_boot (void)
     return grub_error (GRUB_ERR_NO_KERNEL,
 		       N_("you need to load the kernel first"));
 
-  if (grub_loader_flags & GRUB_LOADER_FLAG_NORETURN)
-    grub_machine_fini ();
+  grub_machine_fini (grub_loader_flags);
 
   for (cur = preboots_head; cur; cur = cur->next)
     {

@@ -68,9 +68,10 @@ grub_machine_init (void)
 }
 
 void
-grub_machine_fini (void)
+grub_machine_fini (int flags)
 {
-  grub_efi_fini ();
+  if (flags & GRUB_LOADER_FLAG_NORETURN)
+    grub_efi_fini ();
 }
 
 void

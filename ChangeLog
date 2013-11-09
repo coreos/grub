@@ -1,5 +1,10 @@
 2013-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add new ports: i386-xen and x86_64-xen. This allows running GRUB in
+	XEN PV environment and load kernels.
+
+2013-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/multiboot_mbi.c: Handle space in command line.
 	* grub-core/loader/multiboot_mbi2.c: Likewise.
 
