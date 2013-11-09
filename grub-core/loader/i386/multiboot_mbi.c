@@ -35,6 +35,7 @@
 #include <grub/file.h>
 #include <grub/net.h>
 #include <grub/i18n.h>
+#include <grub/lib/cmdline.h>
 
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
@@ -641,31 +642,18 @@ grub_err_t
 grub_multiboot_init_mbi (int argc, char *argv[])
 {
   grub_ssize_t len = 0;
-  char *p;
-  int i;
 
   grub_multiboot_free_mbi ();
 
-  for (i = 0; i < argc; i++)
-    len += grub_strlen (argv[i]) + 1;
-  if (len == 0)
-    len = 1;
+  len = grub_loader_cmdline_size (argc, argv);
 
-  cmdline = p = grub_malloc (len);
+  cmdline = grub_malloc (len);
   if (! cmdline)
     return grub_errno;
   cmdline_size = len;
 
-  for (i = 0; i < argc; i++)
-    {
-      p = grub_stpcpy (p, argv[i]);
-      *(p++) = ' ';
-    }
-
-  /* Remove the space after the last word.  */
-  if (p != cmdline)
-    p--;
-  *p = '\0';
+  grub_create_loader_cmdline (argc, argv, cmdline,
+			      cmdline_size);
 
   return GRUB_ERR_NONE;
 }
@@ -675,9 +663,7 @@ grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
 			   int argc, char *argv[])
 {
   struct module *newmod;
-  char *p;
-  grub_ssize_t len = 0;
-  int i;
+  grub_size_t len = 0;
 
   newmod = grub_malloc (sizeof (*newmod));
   if (!newmod)
@@ -686,13 +672,9 @@ grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
   newmod->size = size;
   newmod->next = 0;
 
-  for (i = 0; i < argc; i++)
-    len += grub_strlen (argv[i]) + 1;
+  len = grub_loader_cmdline_size (argc, argv);
 
-  if (len == 0)
-    len = 1;
-
-  newmod->cmdline = p = grub_malloc (len);
+  newmod->cmdline = grub_malloc (len);
   if (! newmod->cmdline)
     {
       grub_free (newmod);
@@ -701,24 +683,13 @@ grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
   newmod->cmdline_size = len;
   total_modcmd += ALIGN_UP (len, 4);
 
-  for (i = 0; i < argc; i++)
-    {
-      p = grub_stpcpy (p, argv[i]);
-      *(p++) = ' ';
-    }
-
-  /* Remove the space after the last word.  */
-  if (p != newmod->cmdline)
-    p--;
-  *p = '\0';
+  grub_create_loader_cmdline (argc, argv, newmod->cmdline,
+			      newmod->cmdline_size);
 
   if (modules_last)
     modules_last->next = newmod;
   else
-    {
-      modules = newmod;
-      modules_last->next = NULL;
-    }
+    modules = newmod;
   modules_last = newmod;
 
   modcnt++;

@@ -1576,6 +1576,7 @@ module = {
   cppflags = "-DGRUB_USE_MULTIBOOT2";
 
   common = loader/multiboot.c;
+  common = lib/cmdline.c;
   common = loader/multiboot_mbi2.c;
   enable = x86;
   enable = mips;
@@ -1584,6 +1585,7 @@ module = {
 module = {
   name = multiboot;
   common = loader/multiboot.c;
+  common = lib/cmdline.c;
   x86 = loader/i386/multiboot_mbi.c;
   extra_dist = loader/multiboot_elfxx.c;
   enable = x86;
