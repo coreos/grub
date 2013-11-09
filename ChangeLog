@@ -1,3 +1,9 @@
+2013-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/i386/cmostest.c: Add new command "cmosset".
+
+	Tested by: Denis 'GNUtoo' Carikli.
+
 2013-11-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/datetime.c (grub_get_weekday): Use unsigned types.
