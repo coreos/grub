@@ -1450,6 +1450,18 @@ Normally, @command{grub-mkconfig} will try to use the external
 systems installed on the same system and generate appropriate menu entries
 for them.  Set this option to @samp{true} to disable this.
 
+@item GRUB_DISABLE_SUBMENU
+Normally, @command{grub-mkconfig} will generate top level menu entry for
+the kernel with highest version number and put all other found kernels
+or alternative menu entries for recovery mode in submenu. For entries returned
+by @command{os-prober} first entry will be put on top level and all others
+in submenu. If this option is set to @samp{y}, flat menu with all entries
+on top level will be generated instead. Changing this option will require
+changing existing values of @samp{GRUB_DEFAULT}, @samp{fallback} (@pxref{fallback})
+and @samp{default} (@pxref{default}) environment variables as well as saved
+default entry using @command{grub-set-default} and value used with
+@command{grub-reboot}.
+
 @item GRUB_ENABLE_CRYPTODISK
 If set to @samp{y}, @command{grub-mkconfig} and @command{grub-install} will
 check for encrypted disks and generate additional commands needed to access
