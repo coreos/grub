@@ -307,8 +307,8 @@ GRUB_MOD_INIT (escc)
       return;
     }
 
-  add_device (macio_addr[2] + escc_addr[0] + 32, 1);
-  add_device (macio_addr[2] + escc_addr[0], 0);
+  add_device (macio_addr[2] + escc_addr[0] + 32, 0);
+  add_device (macio_addr[2] + escc_addr[0], 1);
 
   grub_free (macio);
   grub_free (escc);
