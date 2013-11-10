@@ -162,7 +162,7 @@ load_segment (grub_file_t file, const char *filename,
 	buf = grub_malloc (*size);
 	if (!buf)
 	  return grub_errno;
-	if (grub_file_read (file, load_addr, *size)
+	if (grub_file_read (file, buf, *size)
 	    != (grub_ssize_t) *size)
 	  {
 	    if (!grub_errno)
@@ -187,6 +187,8 @@ load_segment (grub_file_t file, const char *filename,
 	/* ELzmaFinishMode finishMode,
 	   ELzmaStatus *status, ISzAlloc *alloc)*/
 	grub_free (buf);
+	grub_dprintf ("chain", "%x, %x, %x, %x\n",
+		      insize, src_len, outsize, dst_len);
 	if (res != SZ_OK
 	    || src_len != insize || dst_len != outsize)
 	  return grub_error (GRUB_ERR_BAD_OS, "decompression failure %d", res);

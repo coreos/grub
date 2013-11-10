@@ -1,5 +1,10 @@
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/coreboot/chainloader.c (load_segment): Use
+	right buffer for temporary load.
+
+2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/coreboot/chainloader.c: Support tianocore.
 
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
