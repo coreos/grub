@@ -1,5 +1,9 @@
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Remove leftover -fnested-funcions -Wl,-allow_execute.
+
+2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.am (efiemu): Remove leftover -DAPPLE_CC and
 	-DELF.
 	* grub-core/efiemu/runtime/config.h: Use __i386__ and __x86_64__

@@ -350,10 +350,6 @@ case "$host_os" in
 esac
 
 grub_apple_cc
-if test x$grub_cv_apple_cc = xyes ; then
-  HOST_CPPFLAGS="$HOST_CPPFLAGS -fnested-functions"
-  HOST_LDFLAGS="$HOST_LDFLAGS -Wl,-allow_stack_execute"
-fi
 
 if test x$USE_NLS = xno; then
   HOST_CFLAGS="$HOST_CFLAGS -fno-builtin-gettext"
