@@ -3,6 +3,10 @@
 	* configure.ac: Make efiemu test cflags match the cflags efiemu is
 	compiled with.
 
+2013-11-10  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* docs/grub.texi (Simple configuration): Document GRUB_DISABLE_SUBMENU.
+
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix grub_machine_fini bitrot.
