@@ -27,7 +27,7 @@
 void
 grub_halt (void)
 {
-  grub_machine_fini ();
+  grub_machine_fini (GRUB_LOADER_FLAG_NORETURN);
 #if !defined(__ia64__) && !defined(__arm__)
   grub_acpi_halt ();
 #endif

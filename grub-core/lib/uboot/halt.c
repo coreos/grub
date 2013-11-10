@@ -23,7 +23,7 @@
 void
 grub_halt (void)
 {
-  grub_machine_fini ();
+  grub_machine_fini (GRUB_LOADER_FLAG_NORETURN);
 
   /* Just stop here */
 

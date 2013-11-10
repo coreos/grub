@@ -225,7 +225,7 @@ main (int argc, char *argv[])
   grub_hostfs_fini ();
   grub_host_fini ();
 
-  grub_machine_fini ();
+  grub_machine_fini (GRUB_LOADER_FLAG_NORETURN);
 
   return 0;
 }

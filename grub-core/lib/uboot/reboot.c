@@ -23,7 +23,7 @@
 void
 grub_reboot (void)
 {
-  grub_machine_fini ();
+  grub_machine_fini (GRUB_LOADER_FLAG_NORETURN);
 
   grub_uboot_reset ();
   while (1);

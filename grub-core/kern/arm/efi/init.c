@@ -57,9 +57,12 @@ grub_machine_init (void)
 }
 
 void
-grub_machine_fini (void)
+grub_machine_fini (int flags)
 {
   grub_efi_boot_services_t *b;
+
+  if (!(flags & GRUB_LOADER_FLAG_NORETURN))
+    return;
 
   b = grub_efi_system_table->boot_services;
 

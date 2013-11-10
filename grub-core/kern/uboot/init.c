@@ -113,7 +113,7 @@ grub_machine_init (void)
 
 
 void
-grub_machine_fini (void)
+grub_machine_fini (int flags __attribute__ ((unused)))
 {
 }
 

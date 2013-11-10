@@ -1,5 +1,11 @@
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix grub_machine_fini bitrot.
+
+	Reported by: Glenn Washburn.
+
+2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Remove leftover -fnested-funcions -Wl,-allow_execute.
 
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
