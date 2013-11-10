@@ -1,3 +1,7 @@
+2013-11-11  Fam Zheng <famcool@gmail.com>
+
+	* util/grub.d/30_os-prober.in: Add minix entry.
+
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/loader/i386/coreboot/chainloader.c (load_segment): Use

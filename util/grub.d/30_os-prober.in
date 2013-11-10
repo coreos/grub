@@ -295,6 +295,17 @@ EOF
 }
 EOF
     ;;
+    minix)
+	  cat << EOF
+menuentry "${LONGNAME} (on ${DEVICE}, Multiboot)" {
+EOF
+         save_default_entry | sed -e "s/^/\t/"
+         prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
+	 cat << EOF
+	multiboot /boot/image_latest
+}
+EOF
+    ;;
     *)
       echo -n "  "
       # TRANSLATORS: %s is replaced by OS name.
