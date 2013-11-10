@@ -1,5 +1,10 @@
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Make efiemu test cflags match the cflags efiemu is
+	compiled with.
+
+2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix grub_machine_fini bitrot.
 
 	Reported by: Glenn Washburn.

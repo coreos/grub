@@ -668,7 +668,7 @@ if test x"$platform" = xefi ; then
 fi
 if test x"$efiemu_excuse" = x ; then
   AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_efiemu, [
-    CFLAGS="$TARGET_CFLAGS -march=core2 -m64 -mcmodel=large -mno-red-zone -nostdlib"
+    CFLAGS="-m64 -nostdlib -O2 -mcmodel=large -mno-red-zone"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_efiemu=yes],
 		      [grub_cv_cc_efiemu=no])
