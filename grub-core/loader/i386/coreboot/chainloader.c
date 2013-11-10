@@ -31,6 +31,8 @@
 #include <grub/i18n.h>
 #include <grub/cbfs_core.h>
 #include <grub/lib/LzmaDec.h>
+#include <grub/efi/pe32.h>
+#include <grub/i386/cpuid.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -198,6 +200,157 @@ load_segment (grub_file_t file, const char *filename,
 }
 
 static grub_err_t
+load_tianocore (grub_file_t file)
+{
+  grub_uint16_t header_length;
+  grub_uint32_t section_head;
+  grub_uint8_t mz[2], pe[4];
+  struct grub_pe32_coff_header coff_head;
+  struct file_header
+  {
+    grub_uint8_t unused[18];
+    grub_uint8_t type;
+    grub_uint8_t unused2;
+    grub_uint8_t size[3];
+    grub_uint8_t unused3;
+  } file_head;
+  grub_relocator_chunk_t ch;
+
+  if (grub_file_seek (file, 48) == (grub_off_t) -1
+      || grub_file_read (file, &header_length, sizeof (header_length))
+      != sizeof (header_length)
+      || grub_file_seek (file, header_length) == (grub_off_t) -1)
+    goto fail;
+
+  while (1)
+    {
+      grub_off_t off;
+      if (grub_file_read (file, &file_head, sizeof (file_head))
+	  != sizeof (file_head))
+	goto fail;
+      if (file_head.type != 0xf0)
+	break;
+      off = grub_get_unaligned32 (file_head.size) & 0xffffff;
+      if (off < sizeof (file_head))
+	goto fail;
+      if (grub_file_seek (file, grub_file_tell (file) + off
+			  - sizeof (file_head)) == (grub_off_t) -1)
+	goto fail;
+    }
+
+  if (file_head.type != 0x03)
+    goto fail;
+
+  while (1)
+    {
+      if (grub_file_read (file, &section_head, sizeof (section_head))
+	  != sizeof (section_head))
+	goto fail;
+      if ((section_head >> 24) != 0x19)
+	break;
+
+      if ((section_head & 0xffffff) < sizeof (section_head))
+	goto fail;
+
+      if (grub_file_seek (file, grub_file_tell (file)
+			  + (section_head & 0xffffff)
+			  - sizeof (section_head)) == (grub_off_t) -1)
+	goto fail;
+    }
+
+  if ((section_head >> 24) != 0x10)
+    goto fail;
+
+  grub_off_t exe_start = grub_file_tell (file);
+
+  if (grub_file_read (file, &mz, sizeof (mz)) != sizeof (mz))
+    goto fail;
+  if (mz[0] != 'M' || mz[1] != 'Z')
+    goto fail;
+
+  if (grub_file_seek (file, grub_file_tell (file) + 0x3a) == (grub_off_t) -1)
+    goto fail;
+
+  if (grub_file_read (file, &section_head, sizeof (section_head))
+      != sizeof (section_head))
+    goto fail;
+  if (section_head < 0x40)
+    goto fail;
+
+  if (grub_file_seek (file, grub_file_tell (file)
+		      + section_head - 0x40) == (grub_off_t) -1)
+    goto fail;
+
+  if (grub_file_read (file, &pe, sizeof (pe))
+      != sizeof (pe))
+    goto fail;
+
+  if (pe[0] != 'P' || pe[1] != 'E' || pe[2] != '\0' || pe[3] != '\0')
+    goto fail;
+
+  if (grub_file_read (file, &coff_head, sizeof (coff_head))
+      != sizeof (coff_head))
+    goto fail;
+
+  grub_uint32_t loadaddr;
+
+  switch (coff_head.machine)
+    {
+    case GRUB_PE32_MACHINE_I386:
+      {
+	struct grub_pe32_optional_header oh;
+	if (grub_file_read (file, &oh, sizeof (oh))
+	    != sizeof (oh))
+	  goto fail;
+	if (oh.magic != GRUB_PE32_PE32_MAGIC)
+	  goto fail;
+	loadaddr = oh.image_base - exe_start;
+	entry = oh.image_base + oh.entry_addr;
+	break;
+      }
+    case GRUB_PE32_MACHINE_X86_64:
+      {
+	struct grub_pe64_optional_header oh;
+	if (! grub_cpuid_has_longmode)
+	  {
+	    grub_error (GRUB_ERR_BAD_OS, "your CPU does not implement AMD64 architecture");
+	    goto fail;
+	  }
+
+	if (grub_file_read (file, &oh, sizeof (oh))
+	    != sizeof (oh))
+	  goto fail;
+	if (oh.magic != GRUB_PE32_PE64_MAGIC)
+	  goto fail;
+	loadaddr = oh.image_base - exe_start;
+	entry = oh.image_base + oh.entry_addr;
+	break;
+      }
+    default:
+      goto fail;
+    }
+  if (grub_file_seek (file, 0) == (grub_off_t) -1)
+    goto fail;
+
+  grub_size_t fz = grub_file_size (file);
+
+  if (grub_relocator_alloc_chunk_addr (relocator, &ch,
+				       loadaddr, fz))
+    goto fail;
+
+  if (grub_file_read (file, get_virtual_current_address (ch), fz)
+      != (grub_ssize_t) fz)
+    goto fail;
+
+  return GRUB_ERR_NONE;
+
+ fail:
+  if (!grub_errno)
+    grub_error (GRUB_ERR_BAD_OS, "fv volume is invalid");
+  return grub_errno;
+}
+
+static grub_err_t
 load_chewed (grub_file_t file, const char *filename)
 {
   grub_size_t i;
@@ -320,7 +473,13 @@ grub_cmd_chain (grub_command_t cmd __attribute__ ((unused)),
       break;
 
     default:
-      err = grub_error (GRUB_ERR_BAD_OS, "unrecognised payload type");
+      if (grub_file_seek (file, 40) == (grub_off_t) -1
+	  || grub_file_read (file, &head, sizeof (head)) != sizeof (head)
+	  || grub_file_seek (file, 0) == (grub_off_t) -1
+	  || head != 0x4856465f)
+	err = grub_error (GRUB_ERR_BAD_OS, "unrecognised payload type");
+      else
+	err = load_tianocore (file);
       break;
     }
   grub_file_close (file);

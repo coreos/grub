@@ -1,5 +1,9 @@
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/coreboot/chainloader.c: Support tianocore.
+
+2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/coreboot/chainloader.c: Support lzma-compressed
 	payload.
 
