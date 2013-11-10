@@ -672,7 +672,7 @@ if test x"$platform" = xefi ; then
 fi
 if test x"$efiemu_excuse" = x ; then
   AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_efiemu, [
-    CFLAGS="$TARGET_CFLAGS -m64 -mcmodel=large -mno-red-zone -nostdlib"
+    CFLAGS="$TARGET_CFLAGS -march=core2 -m64 -mcmodel=large -mno-red-zone -nostdlib"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_efiemu=yes],
 		      [grub_cv_cc_efiemu=no])
@@ -762,6 +762,8 @@ fi
 # Compiler features.
 #
 
+CFLAGS="$TARGET_CFLAGS"
+
 # Position independent executable.
 grub_CHECK_PIE
 [# Need that, because some distributions ship compilers that include
@@ -769,6 +771,8 @@ grub_CHECK_PIE
 if [ x"$pie_possible" = xyes ]; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIE"
 fi]
+
+CFLAGS="$TARGET_CFLAGS"
 
 # Position independent executable.
 grub_CHECK_PIC
@@ -778,6 +782,8 @@ if [ x"$pic_possible" = xyes ]; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIC"
 fi]
 
+CFLAGS="$TARGET_CFLAGS"
+
 # Smashing stack protector.
 grub_CHECK_STACK_PROTECTOR
 # Need that, because some distributions ship compilers that include
@@ -785,12 +791,17 @@ grub_CHECK_STACK_PROTECTOR
 if test "x$ssp_possible" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-stack-protector"
 fi
+
+CFLAGS="$TARGET_CFLAGS"
+
 grub_CHECK_STACK_ARG_PROBE
 # Cygwin's GCC uses alloca() to probe the stackframe on static
 # stack allocations above some threshold.
 if test x"$sap_possible" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-stack-arg-probe"
 fi
+
+CFLAGS="$TARGET_CFLAGS"
 
 # -mno-unaligned-access
 if test "$target_cpu" = arm; then

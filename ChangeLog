@@ -1,5 +1,12 @@
 2013-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Restore CFLAGS to TARGET_CFLAGS before external tests.
+	Add -march=core2 when testing compile of efiemu64.
+
+	Thanks Andrey Borzenkov for spotting this.
+
+2013-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add new ports: i386-xen and x86_64-xen. This allows running GRUB in
 	XEN PV environment and load kernels.
 
