@@ -30,6 +30,7 @@
 #include <grub/command.h>
 #include <grub/i18n.h>
 #include <grub/cbfs_core.h>
+#include <grub/lib/LzmaDec.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -124,16 +125,21 @@ load_elf (grub_file_t file, const char *filename)
   return GRUB_ERR_NONE;
 }
 
+static void *SzAlloc(void *p __attribute__ ((unused)), size_t size) { return grub_malloc (size); }
+static void SzFree(void *p __attribute__ ((unused)), void *address) { grub_free (address); }
+static ISzAlloc g_Alloc = { SzAlloc, SzFree };
+
+
 static grub_err_t
 load_segment (grub_file_t file, const char *filename,
 	      void *load_addr, grub_uint32_t comp,
-	      grub_size_t size)
+	      grub_size_t *size, grub_size_t max_size)
 {
   switch (comp)
     {
     case grub_cpu_to_be32_compile_time (CBFS_COMPRESS_NONE):
-      if (grub_file_read (file, load_addr, size)
-	  != (grub_ssize_t) size)
+      if (grub_file_read (file, load_addr, *size)
+	  != (grub_ssize_t) *size)
 	{
 	  if (!grub_errno)
 	    grub_error (GRUB_ERR_FILE_READ_ERROR,
@@ -141,6 +147,49 @@ load_segment (grub_file_t file, const char *filename,
 			filename);
 	      return grub_errno;
 	}
+      return GRUB_ERR_NONE;
+    case grub_cpu_to_be32_compile_time (CBFS_COMPRESS_LZMA):
+      {
+	grub_uint8_t *buf;
+	grub_size_t outsize, insize;
+	SRes res;
+	SizeT src_len, dst_len;
+	ELzmaStatus status;
+	if (*size < 13)
+	  return grub_error (GRUB_ERR_BAD_OS, "invalid compressed chunk");
+	buf = grub_malloc (*size);
+	if (!buf)
+	  return grub_errno;
+	if (grub_file_read (file, load_addr, *size)
+	    != (grub_ssize_t) *size)
+	  {
+	    if (!grub_errno)
+	      grub_error (GRUB_ERR_FILE_READ_ERROR,
+			  N_("premature end of file %s"),
+			  filename);
+	    grub_free (buf);
+	    return grub_errno;
+	  }
+	outsize = grub_get_unaligned64 (buf + 5);
+	if (outsize > max_size)
+	  {
+	    grub_free (buf);
+	    return grub_error (GRUB_ERR_BAD_OS, "invalid compressed chunk");
+	  }
+	insize = *size - 13;
+
+	src_len = insize;
+	dst_len = outsize;
+	res = LzmaDecode (load_addr, &dst_len, buf + 13, &src_len,
+			  buf, 5, LZMA_FINISH_END, &status, &g_Alloc);
+	/* ELzmaFinishMode finishMode,
+	   ELzmaStatus *status, ISzAlloc *alloc)*/
+	grub_free (buf);
+	if (res != SZ_OK
+	    || src_len != insize || dst_len != outsize)
+	  return grub_error (GRUB_ERR_BAD_OS, "decompression failure %d", res);
+	*size = outsize;
+      }
       return GRUB_ERR_NONE;
     default:
       return grub_error (GRUB_ERR_BAD_OS, "unsupported compression %d",
@@ -192,6 +241,8 @@ load_chewed (grub_file_t file, const char *filename)
 	    if (memsize < filesize)
 	      memsize = filesize;
 
+	    grub_dprintf ("chain", "%x+%x\n", target, memsize);
+
 	    err = grub_relocator_alloc_chunk_addr (relocator, &ch,
 						   target, memsize);
 	    if (err)
@@ -206,7 +257,7 @@ load_chewed (grub_file_t file, const char *filename)
 		  return grub_errno;
 
 		err = load_segment (file, filename, load_addr,
-				    segment.compression, filesize);
+				    segment.compression, &filesize, memsize);
 		if (err)
 		  return err;
 	      }

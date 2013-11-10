@@ -1,5 +1,10 @@
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/coreboot/chainloader.c: Support lzma-compressed
+	payload.
+
+2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/lib/LzmaDec.h: Fix to include LzmaTypes.h and
 	not Types.h.
 	* grub-core/lib/LzmaDec.c: Fix prologue to make it compileable in GRUB
