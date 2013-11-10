@@ -1,5 +1,9 @@
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimagexx.c (generate_elf): Fix module address on coreboot.
+
+2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/ieee1275/escc.c (GRUB_MOD_INIT): Fix order of channels.
 
 	Reported by: Aaro Koskinen <aaro.koskinen@iki.fi>

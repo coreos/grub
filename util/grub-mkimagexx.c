@@ -171,9 +171,12 @@ SUFFIX (generate_elf) (const struct grub_install_image_target_desc *image_target
       phdr->p_filesz = phdr->p_memsz
 	= grub_host_to_target32 (*core_size - kernel_size);
 
-      target_addr_mods = ALIGN_UP (target_addr + kernel_size + bss_size
-				   + image_target->mod_gap,
-				   image_target->mod_align);
+      if (image_target->id == IMAGE_COREBOOT)
+	target_addr_mods = GRUB_KERNEL_I386_COREBOOT_MODULES_ADDR;
+      else
+	target_addr_mods = ALIGN_UP (target_addr + kernel_size + bss_size
+				     + image_target->mod_gap,
+				     image_target->mod_align);
       phdr->p_vaddr = grub_host_to_target_addr (target_addr_mods);
       phdr->p_paddr = grub_host_to_target_addr (target_addr_mods);
       phdr->p_align = grub_host_to_target32 (image_target->link_align);
