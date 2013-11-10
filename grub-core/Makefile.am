@@ -390,27 +390,27 @@ if COND_ENABLE_EFIEMU
 efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)
 	-rm -f $@; \
 	if test "x$(TARGET_APPLE_CC)" = x1; then \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF32 -DAPPLE_CC -m32 -Wall -Werror -nostdlib -O2 -c -o $@.bin $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m32 -Wall -Werror -nostdlib -O2 -c -o $@.bin $< || exit 1; \
 	  $(OBJCONV) -felf32 -nu -nd $@.bin $@ || exit 1; \
 	  rm -f $@.bin; \
 	else \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF32 -m32 -Wall -Werror -nostdlib -O2 -c -o $@ $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m32 -Wall -Werror -nostdlib -O2 -c -o $@ $< || exit 1; \
 	  if test ! -z "$(TARGET_OBJ2ELF)"; then $(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi; \
 	fi
 
 efiemu64_c.o: efiemu/runtime/efiemu.c
 	if test "x$(TARGET_APPLE_CC)" = x1; then \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF64 -DAPPLE_CC=1 -m64 -nostdlib -Wall -Werror -mno-red-zone -c -o $@ $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m64 -nostdlib -Wall -Werror -mno-red-zone -c -o $@ $< || exit 1; \
 	else \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF64 -m64 -nostdlib -Wall -Werror -O2 -mcmodel=large -mno-red-zone -c -o $@ $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m64 -nostdlib -Wall -Werror -O2 -mcmodel=large -mno-red-zone -c -o $@ $< || exit 1; \
 	fi
 
 efiemu64_s.o: efiemu/runtime/efiemu.S
 	-rm -f $@
 	if test "x$(TARGET_APPLE_CC)" = x1; then \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF64 -DAPPLE_CC=1 -m64 -Wall -Werror -nostdlib -O2 -mno-red-zone -c -o $@ $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m64 -Wall -Werror -nostdlib -O2 -mno-red-zone -c -o $@ $< || exit 1; \
 	else \
-	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -DELF64 -m64 -Wall -Werror -nostdlib -O2 -mcmodel=large -mno-red-zone -c -o $@ $< || exit 1; \
+	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m64 -Wall -Werror -nostdlib -O2 -mcmodel=large -mno-red-zone -c -o $@ $< || exit 1; \
 	fi
 
 efiemu64.o: efiemu64_c.o efiemu64_s.o $(TARGET_OBJ2ELEF)

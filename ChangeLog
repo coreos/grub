@@ -1,4 +1,11 @@
-2013-11-09  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.am (efiemu): Remove leftover -DAPPLE_CC and
+	-DELF.
+	* grub-core/efiemu/runtime/config.h: Use __i386__ and __x86_64__
+	instead of ELF*.
+
+2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Restore CFLAGS to TARGET_CFLAGS before external tests.
 	Add -march=core2 when testing compile of efiemu64.
