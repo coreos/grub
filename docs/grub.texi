@@ -1277,8 +1277,9 @@ works it's not recommended since titles often contain unstable device names
 and may be translated
 
 If you set this to @samp{saved}, then the default menu entry will be that
-saved by @samp{GRUB_SAVEDEFAULT}, @command{grub-set-default}, or
-@command{grub-reboot}.
+saved by @samp{GRUB_SAVEDEFAULT} or @command{grub-set-default}.  This relies on
+the environment block, which may not be available in all situations
+(@pxref{Environment block}).
 
 The default is @samp{0}.
 
@@ -1287,7 +1288,7 @@ If this option is set to @samp{true}, then, when an entry is selected, save
 it as a new default entry for use by future runs of GRUB.  This is only
 useful if @samp{GRUB_DEFAULT=saved}; it is a separate option because
 @samp{GRUB_DEFAULT=saved} is useful without this option, in conjunction with
-@command{grub-set-default} or @command{grub-reboot}.  Unset by default.
+@command{grub-set-default}.  Unset by default.
 This option relies on the environment block, which may not be available in
 all situations (@pxref{Environment block}).
 

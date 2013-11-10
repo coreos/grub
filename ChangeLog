@@ -1,3 +1,9 @@
+2013-11-10  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* docs/grub.texi (Simple configuration): Remove reference to
+	grub-reboot from saved default entry description - grub-default
+	does not use it anymore.
+
 2013-11-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Make efiemu test cflags match the cflags efiemu is
