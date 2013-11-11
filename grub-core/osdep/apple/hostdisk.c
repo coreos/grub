@@ -44,8 +44,8 @@
 
 # include <sys/disk.h>
 
-grub_uint64_t
-grub_util_get_fd_size (grub_util_fd_t fd, const char *name, unsigned *log_secsize)
+grub_int64_t
+grub_util_get_fd_size_os (grub_util_fd_t fd, const char *name, unsigned *log_secsize)
 {
   unsigned long long nr;
   unsigned sector_size, log_sector_size;
@@ -87,4 +87,9 @@ grub_util_fd_open (const char *os_dev, int flags)
     ret = open (os_dev, flags | O_SHLOCK, S_IRUSR | S_IWUSR);
 
   return ret;
+}
+
+void
+grub_hostdisk_flush_initial_buffer (const char *os_dev __attribute__ ((unused)))
+{
 }

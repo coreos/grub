@@ -1,5 +1,11 @@
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/apple/hostdisk.c (grub_util_get_fd_size): Rename to ..
+	(grub_util_get_fd_size_os): ...this.
+	(grub_hostdisk_flush_initial_buffer): New empty function.
+
+2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gensyminfo.sh.in: Handle the case of portable output
 	without --defined-only.
 
