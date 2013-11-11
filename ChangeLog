@@ -1,5 +1,10 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/hashsum.c: Remove unneeded memset (zalloc already
+	covers it).
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/hashsum.c: Remove variable length arrays.
 
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -73,7 +73,6 @@ hash_file (grub_file_t file, const gcry_md_spec_t *hash, void *result)
   if (!readbuf || !context)
     goto fail;
 
-  grub_memset (context, 0, sizeof (context));
   hash->init (context);
   while (1)
     {
