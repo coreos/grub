@@ -71,12 +71,12 @@ void *memmove (void *dest, const void *src, grub_size_t n)
 void *memcpy (void *dest, const void *src, grub_size_t n)
   __attribute__ ((alias ("grub_memmove")));
 #else
-void * __attribute__ ((regparm(0)))
+void * GRUB_BUILTIN_ATTR
 memcpy (void *dest, const void *src, grub_size_t n)
 {
 	return grub_memmove (dest, src, n);
 }
-void * __attribute__ ((regparm(0)))
+void * GRUB_BUILTIN_ATTR
 memmove (void *dest, const void *src, grub_size_t n)
 {
 	return grub_memmove (dest, src, n);
@@ -225,7 +225,7 @@ grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 int memcmp (const void *s1, const void *s2, grub_size_t n)
   __attribute__ ((alias ("grub_memcmp")));
 #else
-int __attribute__ ((regparm(0)))
+int GRUB_BUILTIN_ATTR
 memcmp (const void *s1, const void *s2, grub_size_t n)
 {
   return grub_memcmp (s1, s2, n);
@@ -504,11 +504,18 @@ grub_memset (void *s, int c, grub_size_t len)
 void *memset (void *s, int c, grub_size_t n)
   __attribute__ ((alias ("grub_memset")));
 #else
-void * __attribute__ ((regparm(0)))
+void * GRUB_BUILTIN_ATTR
 memset (void *s, int c, grub_size_t n)
 {
   return grub_memset (s, c, n);
 }
+
+void GRUB_BUILTIN_ATTR
+__bzero (void *s, grub_size_t n)
+{
+  grub_memset (s, 0, n);
+}
+
 #endif
 
 grub_size_t

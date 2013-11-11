@@ -1,5 +1,10 @@
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h [__APPLE__]: Do not add regparm(0) on x86_64.
+	* grub-core/kern/misc.c (__bzero) [__APPLE__]: New function.
+
+2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/getroot.c (grub_util_biosdisk_get_grub_dev) [__APPLE__]:
 	Add missing semicolon.
 
