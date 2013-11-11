@@ -1,5 +1,9 @@
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-macho2img.c: Use plain fopen rather than grub_util_fopen.
+
+2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Check for lzma.h for enabling liblzma and allow
 	manual disabling.
 
