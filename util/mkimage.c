@@ -48,7 +48,7 @@
 
 #define ALIGN_ADDR(x) (ALIGN_UP((x), image_target->voidp_sizeof))
 
-#ifdef HAVE_LIBLZMA
+#ifdef USE_LIBLZMA
 #include <lzma.h>
 #endif
 
@@ -709,7 +709,7 @@ compress_kernel_lzma (char *kernel_img, size_t kernel_size,
     grub_util_error ("%s", _("cannot compress the kernel image"));
 }
 
-#ifdef HAVE_LIBLZMA
+#ifdef USE_LIBLZMA
 static void
 compress_kernel_xz (char *kernel_img, size_t kernel_size,
 		    char **core_img, size_t *core_size)
@@ -772,7 +772,7 @@ compress_kernel (const struct grub_install_image_target_desc *image_target, char
       return;
     }
 
-#ifdef HAVE_LIBLZMA
+#ifdef USE_LIBLZMA
  if (image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS
      && (comp == GRUB_COMPRESSION_XZ))
    {

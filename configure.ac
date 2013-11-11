@@ -1264,10 +1264,32 @@ fi
 
 AC_SUBST([LIBGEOM])
 
+AC_ARG_ENABLE([liblzma],
+              [AS_HELP_STRING([--enable-liblzma],
+                              [enable liblzma integration (default=guessed)])])
+if test x"$enable_liblzma" = xno ; then
+  liblzma_excuse="explicitly disabled"
+fi
+
+if test x"$liblzma_excuse" = x ; then
 AC_CHECK_LIB([lzma], [lzma_code],
-             [LIBLZMA="-llzma"
-              AC_DEFINE([HAVE_LIBLZMA], [1],
-                        [Define to 1 if you have the LZMA library.])],)
+             [],[liblzma_excuse="need lzma library"])
+fi
+if test x"$liblzma_excuse" = x ; then
+AC_CHECK_HEADER([lzma.h], [], [liblzma_excuse="need lzma header"])
+fi
+
+if test x"$enable_liblzma" = xyes && test x"$liblzma_excuse" != x ; then
+  AC_MSG_ERROR([liblzma support was explicitly requested but requirements are not satisfied])
+fi
+
+
+if test x"$liblzma_excuse" = x ; then
+   LIBLZMA="-llzma"
+   AC_DEFINE([USE_LIBLZMA], [1],
+   	     [Define to 1 if you have the LZMA library.])
+fi
+
 AC_SUBST([LIBLZMA])
 
 AC_ARG_ENABLE([libzfs],
@@ -1541,8 +1563,8 @@ else
   echo Build-time grub-mkfont: No "($grub_build_mkfont_excuse)"
   echo "Without unifont (no build-time grub-mkfont)"
 fi
-if test "x$LIBLZMA" = x ; then
-echo "Without liblzma (no support for XZ-compressed mips images)"
+if test x"$liblzma_excuse" != x ; then
+echo "Without liblzma (no support for XZ-compressed mips images) ($liblzma_excuse)"
 else
 echo "With liblzma from $LIBLZMA (support for XZ-compressed mips images)"
 fi
