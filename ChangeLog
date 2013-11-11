@@ -1,3 +1,7 @@
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/hashsum.c: Remove variable length arrays.
+
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/tests/gfxterm_menu.c (gfxterm_menu): Handle out-of-memory
