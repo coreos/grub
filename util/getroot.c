@@ -286,7 +286,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     int rdisk = (grub_memcmp (os_dev, "/dev/rdisk", sizeof ("/dev/rdisk") - 1)
 		 == 0);
 
-    dri = make_device_name (drive)
+    dri = make_device_name (drive);
  
     if (!disk && !rdisk)
       return dri;

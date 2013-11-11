@@ -1,5 +1,10 @@
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/getroot.c (grub_util_biosdisk_get_grub_dev) [__APPLE__]:
+	Add missing semicolon.
+
+2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-macho2img.c: Use plain fopen rather than grub_util_fopen.
 
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
