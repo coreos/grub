@@ -1,5 +1,10 @@
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/i386/relocator_common.S [__APPLE__ && __x86_64__]: Use
+	rip-relative addressing in prologue.
+
+2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h [__APPLE__]: Do not add regparm(0) on x86_64.
 	* grub-core/kern/misc.c (__bzero) [__APPLE__]: New function.
 
