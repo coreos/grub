@@ -26,6 +26,7 @@
 #include <grub/cache.h>
 #include <grub/kernel.h>
 #include <grub/efi/efi.h>
+#include <grub/loader.h>
 
 static grub_uint64_t divisor = 1;
 

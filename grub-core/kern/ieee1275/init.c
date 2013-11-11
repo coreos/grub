@@ -34,6 +34,7 @@
 #include <grub/net.h>
 #include <grub/offsets.h>
 #include <grub/memory.h>
+#include <grub/loader.h>
 #ifdef __i386__
 #include <grub/cpu/tsc.h>
 #endif

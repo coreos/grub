@@ -26,6 +26,7 @@
 #include <grub/kernel.h>
 #include <grub/efi/efi.h>
 #include <grub/i386/tsc.h>
+#include <grub/loader.h>
 
 void
 grub_machine_init (void)
