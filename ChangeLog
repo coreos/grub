@@ -1,5 +1,11 @@
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/gfxterm_menu.c (gfxterm_menu): Handle out-of-memory
+	condition.
+	* tests/grub_func_test.in: Increase memory allocation.
+
+2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/unix/getroot.c [HAVE_STRUCT_STATFS_F_FSTYPENAME
 	&& HAVE_STRUCT_STATFS_F_MNTFROMNAME]: Include sys/param.h and
 	sys/mount.h.

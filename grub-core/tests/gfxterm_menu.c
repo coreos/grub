@@ -116,6 +116,12 @@ gfxterm_menu (void)
 	grub_video_capture_start (&grub_test_video_modes[i],
 				  grub_video_fbstd_colors,
 				  grub_test_video_modes[i].number_of_colors);
+	if (grub_errno)
+	  {
+	    grub_test_assert (0, "can't start capture: %d: %s",
+			      grub_errno, grub_errmsg);
+	    return;
+	  }
 	grub_terminal_input_fake_sequence ((int []) { -1, -1, -1, GRUB_TERM_KEY_DOWN, -1, 'e',
 	      -1, GRUB_TERM_KEY_RIGHT, -1, 'x', -1,  '\e', -1, '\e' }, 14);
 
