@@ -1,5 +1,10 @@
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gensyminfo.sh.in: Handle the case of portable output
+	without --defined-only.
+
+2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/i386/relocator_common.S [__APPLE__ && __x86_64__]: Use
 	rip-relative addressing in prologue.
 
