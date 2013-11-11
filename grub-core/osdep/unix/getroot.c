@@ -111,6 +111,11 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#if defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) && defined(HAVE_STRUCT_STATFS_F_MNTFROMNAME)
+#include <sys/param.h>
+#include <sys/mount.h>
+#endif
+
 static void
 strip_extra_slashes (char *dir)
 {

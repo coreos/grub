@@ -1,5 +1,11 @@
 2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/unix/getroot.c [HAVE_STRUCT_STATFS_F_FSTYPENAME
+	&& HAVE_STRUCT_STATFS_F_MNTFROMNAME]: Include sys/param.h and
+	sys/mount.h.
+
+2013-11-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/apple/hostdisk.c (grub_util_get_fd_size): Rename to ..
 	(grub_util_get_fd_size_os): ...this.
 	(grub_hostdisk_flush_initial_buffer): New empty function.
