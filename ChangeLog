@@ -1,5 +1,12 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/AFSplitter.c: Remove variable length arrays.
+	* grub-core/disk/cryptodisk.c: Likewise.
+	* grub-core/disk/geli.c: Likewise.
+	* grub-core/disk/luks.c: Likewise.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/legacy_password_test.c: New test.
 	* grub-core/commands/legacycfg.c: Remove variable length arrays.
 

@@ -316,6 +316,8 @@ luks_recover_key (grub_disk_t source,
 
   grub_puts_ (N_("Attempting to decrypt master key..."));
   keysize = grub_be_to_cpu32 (header.keyBytes);
+  if (keysize > GRUB_CRYPTODISK_MAX_KEYLEN)
+    return grub_error (GRUB_ERR_BAD_FS, "key is too long");
 
   for (i = 0; i < ARRAY_SIZE (header.keyblock); i++)
     if (grub_be_to_cpu32 (header.keyblock[i].active) == LUKS_KEY_ENABLED
@@ -344,8 +346,8 @@ luks_recover_key (grub_disk_t source,
   for (i = 0; i < ARRAY_SIZE (header.keyblock); i++)
     {
       gcry_err_code_t gcry_err;
-      grub_uint8_t candidate_key[keysize];
-      grub_uint8_t digest[keysize];
+      grub_uint8_t candidate_key[GRUB_CRYPTODISK_MAX_KEYLEN];
+      grub_uint8_t digest[GRUB_CRYPTODISK_MAX_KEYLEN];
 
       /* Check if keyslot is enabled.  */
       if (grub_be_to_cpu32 (header.keyblock[i].active) != LUKS_KEY_ENABLED)

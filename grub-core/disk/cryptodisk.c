@@ -109,7 +109,9 @@ grub_crypto_pcbc_decrypt (grub_crypto_cipher_handle_t cipher,
 			 void *iv)
 {
   grub_uint8_t *inptr, *outptr, *end;
-  grub_uint8_t ivt[cipher->cipher->blocksize];
+  grub_uint8_t ivt[GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE];
+  if (cipher->cipher->blocksize > GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE)
+    return GPG_ERR_INV_ARG;
   if (!cipher->cipher->decrypt)
     return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
@@ -132,7 +134,9 @@ grub_crypto_pcbc_encrypt (grub_crypto_cipher_handle_t cipher,
 			  void *iv)
 {
   grub_uint8_t *inptr, *outptr, *end;
-  grub_uint8_t ivt[cipher->cipher->blocksize];
+  grub_uint8_t ivt[GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE];
+  if (cipher->cipher->blocksize > GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE)
+    return GPG_ERR_INV_ARG;
   if (!cipher->cipher->decrypt)
     return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
@@ -218,6 +222,9 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
   grub_size_t i;
   gcry_err_code_t err;
 
+  if (dev->cipher->cipher->blocksize > GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE)
+    return GPG_ERR_INV_ARG;
+
   /* The only mode without IV.  */
   if (dev->mode == GRUB_CRYPTODISK_MODE_ECB && !dev->rekey)
     return (do_encrypt ? grub_crypto_ecb_encrypt (dev->cipher, data, data, len)
@@ -228,7 +235,7 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
       grub_size_t sz = ((dev->cipher->cipher->blocksize
 			 + sizeof (grub_uint32_t) - 1)
 			/ sizeof (grub_uint32_t));
-      grub_uint32_t iv[sz];
+      grub_uint32_t iv[(GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE + 3) / 4];
 
       if (dev->rekey)
 	{
@@ -242,7 +249,7 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 	    }
 	}
 
-      grub_memset (iv, 0, sz * sizeof (iv[0]));
+      grub_memset (iv, 0, sizeof (iv));
       switch (dev->mode_iv)
 	{
 	case GRUB_CRYPTODISK_MODE_IV_NULL:
@@ -250,9 +257,11 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 	case GRUB_CRYPTODISK_MODE_IV_BYTECOUNT64_HASH:
 	  {
 	    grub_uint64_t tmp;
-	    GRUB_PROPERLY_ALIGNED_ARRAY (ctx, dev->iv_hash->contextsize);
+	    void *ctx;
 
-	    grub_memset (ctx, 0, sizeof (ctx));
+	    ctx = grub_zalloc (dev->iv_hash->contextsize);
+	    if (!ctx)
+	      return GPG_ERR_OUT_OF_MEMORY;
 
 	    tmp = grub_cpu_to_le64 (sector << dev->log_sector_size);
 	    dev->iv_hash->init (ctx);
@@ -261,6 +270,7 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 	    dev->iv_hash->final (ctx);
 
 	    grub_memcpy (iv, dev->iv_hash->read (ctx), sizeof (iv));
+	    grub_free (ctx);
 	  }
 	  break;
 	case GRUB_CRYPTODISK_MODE_IV_PLAIN64:
@@ -407,7 +417,9 @@ grub_cryptodisk_setkey (grub_cryptodisk_t dev, grub_uint8_t *key, grub_size_t ke
   if (dev->mode_iv == GRUB_CRYPTODISK_MODE_IV_ESSIV)
     {
       grub_size_t essiv_keysize = dev->essiv_hash->mdlen;
-      grub_uint8_t hashed_key[essiv_keysize];
+      grub_uint8_t hashed_key[GRUB_CRYPTO_MAX_MDLEN];
+      if (essiv_keysize > GRUB_CRYPTO_MAX_MDLEN)
+	return GPG_ERR_INV_ARG;
 
       grub_crypto_hash (dev->essiv_hash, hashed_key, key, keysize);
       err = grub_crypto_cipher_set_key (dev->essiv_cipher,

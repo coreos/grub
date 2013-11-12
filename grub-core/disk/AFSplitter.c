@@ -37,8 +37,8 @@ diffuse (const gcry_md_spec_t * hash, grub_uint8_t * src,
 
   grub_size_t fullblocks = size / hash->mdlen;
   int padding = size % hash->mdlen;
-  grub_uint8_t final[hash->mdlen];
-  grub_uint8_t temp[sizeof (IV) + hash->mdlen];
+  grub_uint8_t final[GRUB_CRYPTO_MAX_MDLEN];
+  grub_uint8_t temp[sizeof (IV) + GRUB_CRYPTO_MAX_MDLEN];
 
   /* hash block the whole data set with different IVs to produce
    * more than just a single data block
@@ -75,6 +75,9 @@ AF_merge (const gcry_md_spec_t * hash, grub_uint8_t * src, grub_uint8_t * dst,
   bufblock = grub_zalloc (blocksize);
   if (bufblock == NULL)
     return GPG_ERR_OUT_OF_MEMORY;
+
+  if (hash->mdlen > GRUB_CRYPTO_MAX_MDLEN)
+    return GPG_ERR_INV_ARG;
 
   grub_memset (bufblock, 0, blocksize);
   for (i = 0; i < blocknumbers - 1; i++)
