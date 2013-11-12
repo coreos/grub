@@ -23,6 +23,7 @@
 #include <grub/mm.h>
 #include <grub/time.h>
 #include <grub/efi/efi.h>
+#include <grub/loader.h>
 
 static grub_uint64_t tmr;
 static grub_efi_event_t tmr_evt;

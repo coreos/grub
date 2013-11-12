@@ -19,6 +19,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/kernel.h>
+#include <grub/loader.h>
 
 void
 grub_halt (void)

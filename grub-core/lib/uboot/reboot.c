@@ -19,6 +19,7 @@
 #include <grub/kernel.h>
 #include <grub/misc.h>
 #include <grub/uboot/uboot.h>
+#include <grub/loader.h>
 
 void
 grub_reboot (void)
