@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Redirect all divisions to grub_divmod64.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/tparm.c (tparam_internal): Use unsigned divisions.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>

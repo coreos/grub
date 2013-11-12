@@ -831,7 +831,7 @@ CFLAGS="$TARGET_CFLAGS -Wl,--defsym,abort=main"
 fi
 
 # Check for libgcc symbols
-AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __ucmpdi2 _restgpr_14_x __udivsi3 __umoddi3 __udivdi3 __divsi3 __modsi3 __umodsi3 __moddi3 __divdi3 __ctzdi2 __ctzsi2)
+AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __ucmpdi2 _restgpr_14_x __ctzdi2 __ctzsi2)
 
 if test "x$TARGET_APPLE_CC" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib"

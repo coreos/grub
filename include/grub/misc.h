@@ -453,6 +453,35 @@ grub_error_load (const struct grub_error_saved *save)
   grub_errno = save->grub_errno;
 }
 
+#if defined (__arm__)
+
+grub_uint32_t
+EXPORT_FUNC (__udivsi3) (grub_uint32_t a, grub_uint32_t b);
+
+grub_uint32_t
+EXPORT_FUNC (__umodsi3) (grub_uint32_t a, grub_uint32_t b);
+
+#endif
+
+#ifdef __arm__
+grub_uint32_t
+EXPORT_FUNC (__aeabi_uidiv) (grub_uint32_t a, grub_uint32_t b);
+grub_uint32_t
+EXPORT_FUNC (__aeabi_uidivmod) (grub_uint32_t a, grub_uint32_t b);
+
+#endif
+
+#if defined (__ia64__)
+
+grub_uint64_t
+EXPORT_FUNC (__udivdi3) (grub_uint64_t a, grub_uint64_t b);
+
+grub_uint64_t
+EXPORT_FUNC (__umoddi3) (grub_uint64_t a, grub_uint64_t b);
+
+#endif
+
+
 #if BOOT_TIME_STATS
 struct grub_boot_time
 {

@@ -42,30 +42,6 @@ void EXPORT_FUNC (__bswapsi2) (void);
 # ifdef HAVE___BSWAPDI2
 void EXPORT_FUNC (__bswapdi2) (void);
 # endif
-# ifdef HAVE___UDIVSI3
-void EXPORT_FUNC (__udivsi3) (void);
-# endif
-# ifdef HAVE___UMODSI3
-void EXPORT_FUNC (__umodsi3) (void);
-# endif
-# ifdef HAVE___UMODDI3
-void EXPORT_FUNC (__umoddi3) (void);
-# endif
-# ifdef HAVE___UDIVDI3
-void EXPORT_FUNC (__udivdi3) (void);
-# endif
-# ifdef HAVE___MODDI3
-void EXPORT_FUNC (__moddi3) (void);
-# endif
-# ifdef HAVE___DIVDI3
-void EXPORT_FUNC (__divdi3) (void);
-# endif
-# ifdef HAVE___DIVSI3
-void EXPORT_FUNC (__divsi3) (void);
-# endif
-# ifdef HAVE___MODSI3
-void EXPORT_FUNC (__modsi3) (void);
-# endif
 # ifdef HAVE___CTZDI2
 void EXPORT_FUNC (__ctzdi2) (void);
 # endif
@@ -114,12 +90,8 @@ void EXPORT_FUNC (_savegpr_31) (void);
 #endif
 
 #if defined (__arm__)
-void EXPORT_FUNC (__aeabi_idiv) (void);
-void EXPORT_FUNC (__aeabi_idivmod) (void);
 void EXPORT_FUNC (__aeabi_lasr) (void);
 void EXPORT_FUNC (__aeabi_llsl) (void);
 void EXPORT_FUNC (__aeabi_llsr) (void);
-void EXPORT_FUNC (__aeabi_uidiv) (void);
-void EXPORT_FUNC (__aeabi_uidivmod) (void);
 void EXPORT_FUNC (__aeabi_ulcmp) (void);
 #endif

@@ -596,6 +596,49 @@ grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
   return q;
 }
 
+#if defined (__arm__)
+
+grub_uint32_t
+__udivsi3 (grub_uint32_t a, grub_uint32_t b)
+{
+  return grub_divmod64 (a, b, 0);
+}
+
+grub_uint32_t
+__umodsi3 (grub_uint32_t a, grub_uint32_t b)
+{
+  grub_uint64_t ret;
+  grub_divmod64 (a, b, &ret);
+  return ret;
+}
+
+
+#endif
+
+#ifdef __arm__
+grub_uint32_t
+__aeabi_uidiv (grub_uint32_t a, grub_uint32_t b)
+  __attribute__ ((alias ("__udivsi3")));
+#endif
+
+#if defined (__ia64__)
+
+grub_uint64_t
+__udivdi3 (grub_uint64_t a, grub_uint64_t b)
+{
+  return grub_divmod64 (a, b, 0);
+}
+
+grub_uint64_t
+__umoddi3 (grub_uint64_t a, grub_uint64_t b)
+{
+  grub_uint64_t ret;
+  grub_divmod64 (a, b, &ret);
+  return ret;
+}
+
+#endif
+
 /* Convert a long long value to a string. This function avoids 64-bit
    modular arithmetic or divisions.  */
 static char *

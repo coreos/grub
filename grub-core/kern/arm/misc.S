@@ -30,6 +30,26 @@
 
 	.align	2
 
+	.macro division parent
+
+        stmfd   sp!, {lr}
+        sub     sp, sp, #12
+        mov     r2, r1
+        add     r1, sp, #4
+        str     r1, [sp, #0]
+        mov     r1, #0
+        mov     r3, #0
+        bl      \parent
+	ldr     r1, [sp, #4]
+        add     sp, sp, #12
+        ldmfd   sp!, {lr}
+        bx      lr
+	.endm
+
+FUNCTION(__aeabi_uidivmod)
+	division grub_divmod64
+
+
 /*
  * Null divide-by-zero handler
  */
