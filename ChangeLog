@@ -1,5 +1,10 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/verify.c: Remove variable length arrays.
+	Load gcry_dsa/gcry_rsa automatically.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/signature_test.c: New test.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
