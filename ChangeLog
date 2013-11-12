@@ -1,3 +1,7 @@
+2013-11-12  Lukas Schwaighofer <lukas@schwaighofer.name>
+
+	* util/grub.d/20_linux_xen.in: Don't decompress initrd.
+
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/at_keyboard.c: Don't poll non-functional AT controller

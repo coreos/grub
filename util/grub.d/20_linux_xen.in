@@ -135,7 +135,7 @@ EOF
     message="$(gettext_printf "Loading initial ramdisk ...")"
     sed "s/^/$submenu_indentation/" << EOF
 	echo	'$(echo "$message" | grub_quote)'
-	module	${rel_dirname}/${initrd}
+	module	--nounzip   ${rel_dirname}/${initrd}
 EOF
   fi
   sed "s/^/$submenu_indentation/" << EOF
