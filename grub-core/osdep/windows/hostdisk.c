@@ -264,7 +264,8 @@ grub_util_fd_strerror (void)
 
   FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
 		 | FORMAT_MESSAGE_IGNORE_INSERTS,
-		 NULL, err, 0, (LPTSTR) &tstr, 0, NULL);
+		 NULL, err, 0, (void *) &tstr,
+		 0, NULL);
 
   if (!tstr)
     return "unknown error";
@@ -466,7 +467,7 @@ grub_util_fopen (const char *path, const char *mode)
 int fsync (int fno)
 {
   HANDLE hnd;
-  hnd = _get_osfhandle (fno);
+  hnd = (HANDLE) _get_osfhandle (fno);
   FlushFileBuffers (hnd);
   return 0;
 }
