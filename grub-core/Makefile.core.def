@@ -1922,6 +1922,11 @@ module = {
 };
 
 module = {
+  name = legacy_password_test;
+  common = tests/legacy_password_test.c;
+};
+
+module = {
   name = div_test;
   common = tests/div_test.c;
 };

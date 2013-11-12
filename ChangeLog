@@ -1,5 +1,10 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/legacy_password_test.c: New test.
+	* grub-core/commands/legacycfg.c: Remove variable length arrays.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/pbkdf2.c: Remove variable length arrays.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
