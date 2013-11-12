@@ -1143,7 +1143,14 @@ DJVU_FONT_SOURCE=
 
 starfield_excuse=
 
-if test x"$enable_build_grub_mkfont" = xno ; then
+AC_ARG_ENABLE([grub-themes],
+	      [AS_HELP_STRING([--enable-grub-themes],
+                             [build and install GRUB themes (default=guessed)])])
+if test x"$enable_grub_themes" = xno ; then
+  starfield_excuse="explicitly disabled"
+fi
+
+if test x"$starfield_excuse" = x && test x"$enable_build_grub_mkfont" = xno ; then
   starfield_excuse="No build-time grub-mkfont"
 fi
 
@@ -1160,6 +1167,10 @@ if test x"$starfield_excuse" = x; then
    if test "x$DJVU_FONT_SOURCE" = x; then
      starfield_excuse="No DejaVu found"
    fi
+fi
+
+if test x"$enable_grub_themes" = xyes &&  test x"$starfield_excuse" != x; then
+   AC_MSG_ERROR([themes were explicitly requested but requirements are not satisfied])
 fi
 
 AC_SUBST([DJVU_FONT_SOURCE])
