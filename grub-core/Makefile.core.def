@@ -1917,6 +1917,11 @@ module = {
 };
 
 module = {
+  name = pbkdf2_test;
+  common = tests/pbkdf2_test.c;
+};
+
+module = {
   name = div_test;
   common = tests/div_test.c;
 };

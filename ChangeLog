@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/pbkdf2_test.c: New test.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/xzembed/xz_dec_stream.c: Remove variable length arrays.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
