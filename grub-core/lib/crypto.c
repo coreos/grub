@@ -261,10 +261,12 @@ grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
 {
   const grub_uint8_t *inptr;
   grub_uint8_t *outptr, *end;
-  grub_uint8_t ivt[cipher->cipher->blocksize];
+  grub_uint8_t ivt[GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE];
   if (!cipher->cipher->decrypt)
     return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
+    return GPG_ERR_INV_ARG;
+  if (cipher->cipher->blocksize > GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE)
     return GPG_ERR_INV_ARG;
   end = (grub_uint8_t *) in + size;
   for (inptr = in, outptr = out; inptr < end;
