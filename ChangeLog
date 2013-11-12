@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/tparm.c (tparam_internal): Use unsigned divisions.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add missing includes of loader.h.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>

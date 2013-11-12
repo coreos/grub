@@ -614,13 +614,15 @@ tparam_internal(const char *string, va_list ap)
 	    case '/':
 		y = npop();
 		x = npop();
-		npush(y ? (x / y) : 0);
+		/* GRUB has no signed divisions. */
+		npush(y ? ((unsigned)x / (unsigned)y) : 0);
 		break;
 
 	    case 'm':
 		y = npop();
 		x = npop();
-		npush(y ? (x % y) : 0);
+		/* GRUB has no signed divisions. */
+		npush(y ? ((unsigned)x % (unsigned)y) : 0);
 		break;
 
 	    case 'A':
