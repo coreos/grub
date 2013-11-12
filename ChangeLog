@@ -1,5 +1,10 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/legacy_password_test.c (vectors): Make static.
+	* grub-core/tests/pbkdf2_test.c (vectors): Likewise.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/setjmp_test.c: Reset counter to 0 before starting.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -25,7 +25,7 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-struct
+static struct
 {
   char **args;
   int argc;

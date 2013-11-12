@@ -23,7 +23,7 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-struct
+static struct
 {
   const char *P;
   grub_size_t Plen;
