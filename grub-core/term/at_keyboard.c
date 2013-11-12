@@ -42,6 +42,9 @@ static grub_uint8_t grub_keyboard_controller_orig;
 static grub_uint8_t grub_keyboard_orig_set;
 static grub_uint8_t current_set; 
 
+static void
+grub_keyboard_controller_init (void);
+
 static const grub_uint8_t set1_mapping[128] =
   {
     /* 0x00 */ 0 /* Unused  */,               GRUB_KEYBOARD_KEY_ESCAPE, 
@@ -222,6 +225,8 @@ static const struct
     {0x7a, GRUB_KEYBOARD_KEY_NPAGE},
     {0x7d, GRUB_KEYBOARD_KEY_PPAGE},
   };
+
+static int alive = 0, ping_sent;
 
 static void
 keyboard_controller_wait_until_ready (void)
@@ -532,12 +537,37 @@ grub_keyboard_getkey (void)
   return key;
 }
 
+int
+grub_at_keyboard_is_alive (void)
+{
+  if (alive)
+    return 1;
+  if (ping_sent
+      && KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS))
+      && grub_inb (KEYBOARD_REG_DATA) == 0x55)
+    {
+      grub_keyboard_controller_init ();
+      return 1;
+    }
+
+  if (KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
+    {
+      grub_outb (0xaa, KEYBOARD_REG_STATUS);
+      ping_sent = 1;
+    }
+  return 0;
+}
+
 /* If there is a character pending, return it;
    otherwise return GRUB_TERM_NO_KEY.  */
 static int
 grub_at_keyboard_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   int code;
+
+  if (!grub_at_keyboard_is_alive ())
+    return GRUB_TERM_NO_KEY;
+
   code = grub_keyboard_getkey ();
   if (code == -1)
     return GRUB_TERM_NO_KEY;
@@ -574,10 +604,11 @@ grub_at_keyboard_getkey (struct grub_term_input *term __attribute__ ((unused)))
     }
 }
 
-static grub_err_t
-grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unused)))
+static void
+grub_keyboard_controller_init (void)
 {
   at_keyboard_status = 0;
+  alive = 1;
   /* Drain input buffer. */
   while (1)
     {
@@ -600,13 +631,13 @@ grub_keyboard_controller_init (struct grub_term_input *term __attribute__ ((unus
 #endif
   set_scancodes ();
   keyboard_controller_led (led_status);
-
-  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
 grub_keyboard_controller_fini (struct grub_term_input *term __attribute__ ((unused)))
 {
+  if (!alive)
+    return GRUB_ERR_NONE;
   if (grub_keyboard_orig_set)
     write_mode (grub_keyboard_orig_set);
   grub_keyboard_controller_write (grub_keyboard_controller_orig);
@@ -622,6 +653,9 @@ grub_at_fini_hw (int noreturn __attribute__ ((unused)))
 static grub_err_t
 grub_at_restore_hw (void)
 {
+  if (!alive)
+    return GRUB_ERR_NONE;
+
   /* Drain input buffer. */
   while (1)
     {
@@ -641,7 +675,6 @@ grub_at_restore_hw (void)
 static struct grub_term_input grub_at_keyboard_term =
   {
     .name = "at_keyboard",
-    .init = grub_keyboard_controller_init,
     .fini = grub_keyboard_controller_fini,
     .getkey = grub_at_keyboard_getkey
   };

@@ -1,5 +1,10 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/at_keyboard.c: Don't poll non-functional AT controller
+	until it becomes operational.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def (legacy_password_test): Disable
 	on platforms where no legacycfg is compiled.
 	* grub-core/tests/lib/functional_test.c: Tolerate failure to
