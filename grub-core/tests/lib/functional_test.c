@@ -53,6 +53,8 @@ grub_functional_all_tests (grub_extcmd_context_t ctxt __attribute__ ((unused)),
   grub_test_t test;
   int ok = 1;
 
+  grub_dl_load ("legacy_password_test");
+  grub_errno = GRUB_ERR_NONE;
   grub_dl_load ("exfctest");
   grub_dl_load ("videotest_checksum");
   grub_dl_load ("gfxterm_menu");
@@ -61,7 +63,6 @@ grub_functional_all_tests (grub_extcmd_context_t ctxt __attribute__ ((unused)),
   grub_dl_load ("div_test");
   grub_dl_load ("xnu_uuid_test");
   grub_dl_load ("pbkdf2_test");
-  grub_dl_load ("legacy_password_test");
   grub_dl_load ("signature_test");
 
   FOR_LIST_ELEMENTS (test, grub_test_list)

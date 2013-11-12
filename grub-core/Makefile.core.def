@@ -1929,6 +1929,11 @@ module = {
 module = {
   name = legacy_password_test;
   common = tests/legacy_password_test.c;
+  enable = i386_pc;
+  enable = i386_efi;
+  enable = x86_64_efi;
+  enable = emu;
+  enable = xen;
 };
 
 module = {
