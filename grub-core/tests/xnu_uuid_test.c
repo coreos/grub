@@ -36,8 +36,7 @@ xnu_uuid_test (void)
 
   if (!cmd)
     {
-      grub_test_assert (0, "can't find command `%s'",
-			args[0]);
+      grub_test_assert (0, "can't find command `%s'", "xnu_uuid");
       return;
     }
   if ((cmd->func) (cmd, 2, args))
