@@ -1040,8 +1040,12 @@ grub_netbsd_add_boot_disk_and_wedge (void)
     grub_uint64_t raw[GRUB_DISK_SECTOR_SIZE / 8];
     struct grub_partition_bsd_disk_label label;
   } buf;
-  grub_uint8_t *hash;
-  GRUB_PROPERLY_ALIGNED_ARRAY (ctx, GRUB_MD_MD5->contextsize);
+
+  if (GRUB_MD_MD5->mdlen > GRUB_CRYPTO_MAX_MDLEN)
+    {
+      grub_error (GRUB_ERR_BUG, "mdlen too long");
+      return;
+    }
 
   dev = grub_device_open (0);
   if (! (dev && dev->disk && dev->disk->partition))
@@ -1067,6 +1071,7 @@ grub_netbsd_add_boot_disk_and_wedge (void)
   /* Fill bootwedge.  */
   {
     struct grub_netbsd_btinfo_bootwedge biw;
+    grub_uint8_t hash[GRUB_CRYPTO_MAX_MDLEN];
 
     grub_memset (&biw, 0, sizeof (biw));
     biw.biosdev = biosdev;
@@ -1075,10 +1080,8 @@ grub_netbsd_add_boot_disk_and_wedge (void)
     biw.matchblk = partmapsector;
     biw.matchnblks = 1;
 
-    GRUB_MD_MD5->init (&ctx);
-    GRUB_MD_MD5->write (&ctx, buf.raw, GRUB_DISK_SECTOR_SIZE);
-    GRUB_MD_MD5->final (&ctx);
-    hash = GRUB_MD_MD5->read (&ctx);
+    grub_crypto_hash (GRUB_MD_MD5, hash,
+		      buf.raw, GRUB_DISK_SECTOR_SIZE);
     memcpy (biw.matchhash, hash, 16);
 
     grub_bsd_add_meta (NETBSD_BTINFO_BOOTWEDGE, &biw, sizeof (biw));
