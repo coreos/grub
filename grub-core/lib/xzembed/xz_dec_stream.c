@@ -456,24 +456,23 @@ static enum xz_ret dec_stream_header(struct xz_dec *s)
 
 	if (s->crc32)
 	{
-		uint64_t hash_context[(s->crc32->contextsize + 7) / 8];
-		uint8_t resulthash[s->crc32->mdlen];
 		uint8_t readhash[4];
+		uint8_t computed_hash[4];
 
-		s->crc32->init(hash_context);
-		s->crc32->write(hash_context,s->temp.buf + HEADER_MAGIC_SIZE, 2);
-		s->crc32->final(hash_context);
+		if(4 != s->crc32->mdlen)
+		  return XZ_DATA_ERROR;
 
-		grub_memcpy (resulthash, s->crc32->read(hash_context),
-			     s->crc32->mdlen);
+		grub_crypto_hash (s->crc32, computed_hash,
+				  s->temp.buf + HEADER_MAGIC_SIZE, 2);
+
 		readhash[0] = s->temp.buf[HEADER_MAGIC_SIZE + 5];
 		readhash[1] = s->temp.buf[HEADER_MAGIC_SIZE + 4];
 		readhash[2] = s->temp.buf[HEADER_MAGIC_SIZE + 3];
 		readhash[3] = s->temp.buf[HEADER_MAGIC_SIZE + 2];
 
-		if(4 != s->crc32->mdlen
-		   || grub_memcmp (readhash, resulthash, s->crc32->mdlen) != 0)
-			return XZ_DATA_ERROR;
+		if (grub_memcmp (readhash, computed_hash,
+				 s->crc32->mdlen) != 0)
+		  return XZ_DATA_ERROR;
 	}
 #endif
 
@@ -561,23 +560,22 @@ static enum xz_ret dec_stream_footer(struct xz_dec *s)
 #ifndef GRUB_EMBED_DECOMPRESSOR
 	if (s->crc32)
 	{
-		uint64_t hash_context[(s->crc32->contextsize + 7) / 8];
-		uint8_t resulthash[s->crc32->mdlen];
 		uint8_t readhash[4];
+		uint8_t computed_hash[4];
 
-		s->crc32->init(hash_context);
-		s->crc32->write(hash_context,s->temp.buf + 4, 6);
-		s->crc32->final(hash_context);
+		if (4 != s->crc32->mdlen)
+		  return XZ_DATA_ERROR;
 
-		grub_memcpy (resulthash, s->crc32->read(hash_context),
-			     s->crc32->mdlen);
+		grub_crypto_hash (s->crc32, computed_hash,
+				  s->temp.buf + 4, 6);
+
 		readhash[0] = s->temp.buf[3];
 		readhash[1] = s->temp.buf[2];
 		readhash[2] = s->temp.buf[1];
 		readhash[3] = s->temp.buf[0];
 
-		if(4 != s->crc32->mdlen
-		   || grub_memcmp (readhash, resulthash, s->crc32->mdlen) != 0)
+		if(grub_memcmp (readhash, computed_hash,
+				s->crc32->mdlen) != 0)
 			return XZ_DATA_ERROR;
 	}
 #endif
@@ -616,23 +614,21 @@ static enum xz_ret dec_block_header(struct xz_dec *s)
 #ifndef GRUB_EMBED_DECOMPRESSOR
 	if (s->crc32)
 	{
-		uint64_t hash_context[(s->crc32->contextsize + 7) / 8];
-		uint8_t resulthash[s->crc32->mdlen];
-		uint8_t readhash[4];
+		uint8_t readhash[4], computed_hash[4];
 
-		s->crc32->init(hash_context);
-		s->crc32->write(hash_context,s->temp.buf, s->temp.size);
-		s->crc32->final(hash_context);
+		if(4 != s->crc32->mdlen)
+			return XZ_DATA_ERROR;
 
-		grub_memcpy (resulthash, s->crc32->read(hash_context),
-			     s->crc32->mdlen);
+		grub_crypto_hash (s->crc32, computed_hash,
+				  s->temp.buf, s->temp.size);
+
 		readhash[3] = s->temp.buf[s->temp.size];
 		readhash[2] = s->temp.buf[s->temp.size + 1];
 		readhash[1] = s->temp.buf[s->temp.size + 2];
 		readhash[0] = s->temp.buf[s->temp.size + 3];
 
-		if(4 != s->crc32->mdlen
-		   || grub_memcmp (readhash, resulthash, s->crc32->mdlen) != 0)
+		if(grub_memcmp (readhash, computed_hash,
+				s->crc32->mdlen) != 0)
 			return XZ_DATA_ERROR;
 	}
 #endif
@@ -847,21 +843,15 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 #ifndef GRUB_EMBED_DECOMPRESSOR
 			if (s->hash)
 			{
-				uint8_t block_hash[s->hash->mdlen];
-				uint8_t index_hash[s->hash->mdlen];
 				/* Compare the hashes to validate the Index field. */
 				s->hash->final(s->block.hash.hash_context);
 				s->hash->final(s->index.hash.hash_context);
-				grub_memcpy (block_hash,
-					     s->hash->read(s->block.hash.hash_context),
-					s->hash->mdlen);
-				grub_memcpy (index_hash,
-					     s->hash->read(s->index.hash.hash_context),
-					s->hash->mdlen);
 
 				if (s->block.hash.unpadded != s->index.hash.unpadded
 				    || s->block.hash.uncompressed != s->index.hash.uncompressed
-				    || grub_memcmp (block_hash, index_hash, s->hash->mdlen) != 0)
+				    || grub_memcmp (s->hash->read(s->block.hash.hash_context),
+						    s->hash->read(s->index.hash.hash_context),
+						    s->hash->mdlen) != 0)
 					return XZ_DATA_ERROR;
 			}
 #endif
