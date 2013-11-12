@@ -27,7 +27,7 @@ struct grub_procfs_entry
   struct grub_procfs_entry **prev;
 
   const char *name;
-  char * (*get_contents) (void);
+  char * (*get_contents) (grub_size_t *sz);
 };
 
 extern struct grub_procfs_entry *grub_procfs_entries;

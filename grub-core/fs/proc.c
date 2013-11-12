@@ -128,10 +128,11 @@ grub_procfs_open (struct grub_file *file, const char *path)
   FOR_LIST_ELEMENTS((entry), (grub_procfs_entries))
     if (grub_strcmp (pathptr, entry->name) == 0)
     {
-      file->data = entry->get_contents ();
+      grub_size_t sz;
+      file->data = entry->get_contents (&sz);
       if (!file->data)
 	return grub_errno;
-      file->size = grub_strlen (file->data);
+      file->size = sz;
       return GRUB_ERR_NONE;
     }
 

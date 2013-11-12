@@ -57,8 +57,9 @@ static const char testfile[] =
   "timeout=3\n";
 
 static char *
-get_test_cfg (void)
+get_test_cfg (grub_size_t *sz)
 {
+  *sz = grub_strlen (testfile);
   return grub_strdup (testfile);
 }
 

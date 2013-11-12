@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/proc.c: Allow \0 in proc files.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/xnu_uuid_test.c: Fix assert message.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>

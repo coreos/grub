@@ -54,8 +54,9 @@ static const char testfile[] =
 ;
 
 static char *
-get_test_txt (void)
+get_test_txt (grub_size_t *sz)
 {
+  *sz = grub_strlen (testfile);
   return grub_strdup (testfile);
 }
 
