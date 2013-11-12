@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/xnu_uuid.c: Remove variable length arrays.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/xnu_uuid_test.c: New test.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
