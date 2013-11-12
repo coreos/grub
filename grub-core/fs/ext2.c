@@ -247,6 +247,7 @@ struct ext2_dirent
 {
   grub_uint32_t inode;
   grub_uint16_t direntlen;
+#define MAX_NAMELEN 255
   grub_uint8_t namelen;
   grub_uint8_t filetype;
 };
@@ -344,11 +345,12 @@ grub_ext2_blockgroup (struct grub_ext2_data *data, int group,
 }
 
 static struct grub_ext4_extent_header *
-grub_ext4_find_leaf (struct grub_ext2_data *data, grub_properly_aligned_t *buf,
+grub_ext4_find_leaf (struct grub_ext2_data *data,
                      struct grub_ext4_extent_header *ext_block,
                      grub_uint32_t fileblock)
 {
   struct grub_ext4_extent_idx *index;
+  void *buf = NULL;
 
   while (1)
     {
@@ -357,8 +359,8 @@ grub_ext4_find_leaf (struct grub_ext2_data *data, grub_properly_aligned_t *buf,
 
       index = (struct grub_ext4_extent_idx *) (ext_block + 1);
 
-      if (grub_le_to_cpu16(ext_block->magic) != EXT4_EXT_MAGIC)
-        return 0;
+      if (ext_block->magic != grub_cpu_to_le16_compile_time (EXT4_EXT_MAGIC))
+	goto fail;
 
       if (ext_block->depth == 0)
         return ext_block;
@@ -370,17 +372,24 @@ grub_ext4_find_leaf (struct grub_ext2_data *data, grub_properly_aligned_t *buf,
         }
 
       if (--i < 0)
-        return 0;
+	goto fail;
 
       block = grub_le_to_cpu16 (index[i].leaf_hi);
       block = (block << 32) | grub_le_to_cpu32 (index[i].leaf);
+      if (!buf)
+	buf = grub_malloc (EXT2_BLOCK_SIZE(data));
+      if (!buf)
+	goto fail;
       if (grub_disk_read (data->disk,
                           block << LOG2_EXT2_BLOCK_SIZE (data),
                           0, EXT2_BLOCK_SIZE(data), buf))
-        return 0;
+	goto fail;
 
-      ext_block = (struct grub_ext4_extent_header *) buf;
+      ext_block = buf;
     }
+ fail:
+  grub_free (buf);
+  return 0;
 }
 
 static grub_disk_addr_t
@@ -394,14 +403,12 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
   if (inode->flags & grub_cpu_to_le32_compile_time (EXT4_EXTENTS_FLAG))
     {
-      GRUB_PROPERLY_ALIGNED_ARRAY (buf, EXT2_BLOCK_SIZE(data));
       struct grub_ext4_extent_header *leaf;
       struct grub_ext4_extent *ext;
       int i;
+      grub_disk_addr_t ret;
 
-      leaf = grub_ext4_find_leaf (data, buf,
-                                  (struct grub_ext4_extent_header *) inode->blocks.dir_blocks,
-                                  fileblock);
+      leaf = grub_ext4_find_leaf (data, (struct grub_ext4_extent_header *) inode->blocks.dir_blocks, fileblock);
       if (! leaf)
         {
           grub_error (GRUB_ERR_BAD_FS, "invalid extent");
@@ -419,7 +426,7 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
         {
           fileblock -= grub_le_to_cpu32 (ext[i].block);
           if (fileblock >= grub_le_to_cpu16 (ext[i].len))
-            return 0;
+	    ret = 0;
           else
             {
               grub_disk_addr_t start;
@@ -427,14 +434,19 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
               start = grub_le_to_cpu16 (ext[i].start_hi);
               start = (start << 32) + grub_le_to_cpu32 (ext[i].start);
 
-              return fileblock + start;
+              ret = fileblock + start;
             }
         }
       else
         {
           grub_error (GRUB_ERR_BAD_FS, "something wrong with extent");
-          return -1;
+	  ret = -1;
         }
+
+      if (leaf != (struct grub_ext4_extent_header *) inode->blocks.dir_blocks)
+	grub_free (leaf);
+
+      return ret;
     }
   /* Direct blocks.  */
   if (fileblock < INDIRECT_BLOCKS)
@@ -442,16 +454,17 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   /* Indirect.  */
   else if (fileblock < INDIRECT_BLOCKS + blksz / 4)
     {
-      grub_uint32_t indir[blksz / 4];
+      grub_uint32_t indir;
 
       if (grub_disk_read (data->disk,
 			  ((grub_disk_addr_t)
 			   grub_le_to_cpu32 (inode->blocks.indir_block))
 			  << log2_blksz,
-			  0, blksz, indir))
+			  (fileblock - INDIRECT_BLOCKS) * sizeof (indir),
+			  sizeof (indir), &indir))
 	return grub_errno;
 
-      blknr = grub_le_to_cpu32 (indir[fileblock - INDIRECT_BLOCKS]);
+      blknr = grub_le_to_cpu32 (indir);
     }
   /* Double indirect.  */
   else if (fileblock < INDIRECT_BLOCKS
@@ -460,24 +473,26 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       int log_perblock = log2_blksz + 9 - 2;
       grub_disk_addr_t rblock = fileblock - (INDIRECT_BLOCKS
 					     + blksz / 4);
-      grub_uint32_t indir[blksz / 4];
+      grub_uint32_t indir;
 
       if (grub_disk_read (data->disk,
 			  ((grub_disk_addr_t)
 			   grub_le_to_cpu32 (inode->blocks.double_indir_block))
 			  << log2_blksz,
-			  0, blksz, indir))
+			  (rblock >> log_perblock) * sizeof (indir),
+			  sizeof (indir), &indir))
 	return grub_errno;
 
       if (grub_disk_read (data->disk,
 			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (indir[rblock >> log_perblock]))
+			   grub_le_to_cpu32 (indir))
 			  << log2_blksz,
-			  0, blksz, indir))
+			  (rblock & ((1 << log_perblock) - 1)) * sizeof (indir),
+			  sizeof (indir), &indir))
 	return grub_errno;
 
 
-      blknr = grub_le_to_cpu32 (indir[rblock & ((1 << log_perblock) - 1)]);
+      blknr = grub_le_to_cpu32 (indir);
     }
   /* triple indirect.  */
   else if (fileblock < INDIRECT_BLOCKS + blksz / 4 * ((grub_disk_addr_t) blksz / 4 + 1)
@@ -487,34 +502,38 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       int log_perblock = log2_blksz + 9 - 2;
       grub_disk_addr_t rblock = fileblock - (INDIRECT_BLOCKS + blksz / 4
 					     * (blksz / 4 + 1));
-      grub_uint32_t indir[blksz / 4];
+      grub_uint32_t indir;
 
       if (grub_disk_read (data->disk,
 			  ((grub_disk_addr_t)
 			   grub_le_to_cpu32 (inode->blocks.triple_indir_block))
 			  << log2_blksz,
-			  0, blksz, indir))
+			  ((rblock >> log_perblock) >> log_perblock)
+			  * sizeof (indir), sizeof (indir), &indir))
 	return grub_errno;
 
       if (grub_disk_read (data->disk,
 			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (indir[(rblock >> log_perblock) >> log_perblock]))
+			   grub_le_to_cpu32 (indir))
 			  << log2_blksz,
-			  0, blksz, indir))
+			  ((rblock >> log_perblock)
+			   & ((1 << log_perblock) - 1)) * sizeof (indir),
+			  sizeof (indir), &indir))
 	return grub_errno;
 
       if (grub_disk_read (data->disk,
 			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (indir[(rblock >> log_perblock) & ((1 << log_perblock) - 1)]))
+			   grub_le_to_cpu32 (indir))
 			  << log2_blksz,
-			  0, blksz, indir))
+			  (rblock  & ((1 << log_perblock) - 1))
+			  * sizeof (indir), sizeof (indir), &indir))
 	return grub_errno;
 
-      blknr = grub_le_to_cpu32 (indir[rblock  & ((1 << log_perblock) - 1)]);
+      blknr = grub_le_to_cpu32 (indir);
     }
   else
     {
-      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+      grub_error (GRUB_ERR_BAD_FS,
 		  "ext2fs doesn't support quadruple indirect blocks");
     }
 
@@ -719,7 +738,7 @@ grub_ext2_iterate_dir (grub_fshelp_node_t dir,
 
       if (dirent.inode != 0 && dirent.namelen != 0)
 	{
-	  char filename[dirent.namelen + 1];
+	  char filename[MAX_NAMELEN + 1];
 	  struct grub_fshelp_node *fdiro;
 	  enum grub_fshelp_filetype type = GRUB_FSHELP_UNKNOWN;
 

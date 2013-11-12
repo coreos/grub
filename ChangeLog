@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ext2.c: Remove variable length arrays.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/crypto.c (grub_crypto_cbc_decrypt): Remove variable
 	length arrays.
 
