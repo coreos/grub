@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/efiemu/prepare.c: Remove variable length arrays.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/windows/hostdisk.c (grub_util_fd_strerror): Silence
 	strict-aliasing warning.
 	(fsync): Silence cast warning.
