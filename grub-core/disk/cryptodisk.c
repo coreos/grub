@@ -1011,11 +1011,13 @@ hex (grub_uint8_t val)
 
 /* Open a file named NAME and initialize FILE.  */
 static char *
-luks_script_get (void)
+luks_script_get (grub_size_t *sz)
 {
   grub_cryptodisk_t i;
   grub_size_t size = 0;
   char *ptr, *ret;
+
+  *sz = 0;
 
   for (i = cryptodisk_list; i != NULL; i = i->next)
     if (grub_strcmp (i->modname, "luks") == 0)
@@ -1098,6 +1100,7 @@ luks_script_get (void)
 	*ptr++ = '\n';
       }
   *ptr = '\0';
+  *sz = ptr - ret;
   return ret;
 }
 
