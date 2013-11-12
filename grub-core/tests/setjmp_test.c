@@ -51,6 +51,7 @@ setjmp_test (void)
   int val;
 
   expected = 0;
+  ctr = 0;
   val = grub_setjmp (jmp_point);
 
   grub_test_assert (val == expected, "setjmp returned %d instead of %d",

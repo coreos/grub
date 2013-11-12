@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/setjmp_test.c: Reset counter to 0 before starting.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/proc.c: Allow \0 in proc files.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
