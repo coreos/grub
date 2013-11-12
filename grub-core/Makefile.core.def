@@ -1912,6 +1912,11 @@ module = {
 };
 
 module = {
+  name = xnu_uuid_test;
+  common = tests/xnu_uuid_test.c;
+};
+
+module = {
   name = div_test;
   common = tests/div_test.c;
 };

@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/xnu_uuid_test.c: New test.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/hashsum.c: Remove unneeded memset (zalloc already
 	covers it).
 
