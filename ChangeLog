@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/pbkdf2.c: Remove variable length arrays.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/pbkdf2_test.c: New test.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
