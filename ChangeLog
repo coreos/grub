@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/xnu_uuid_test.c: Fix copyright year.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ext2.c: Remove variable length arrays.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
