@@ -1,5 +1,9 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/signature_test.c: New test.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/cryptodisk.c (luks_script_get): Adapt to new procfs
 	API.
 
