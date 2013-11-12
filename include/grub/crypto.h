@@ -85,6 +85,10 @@ enum gcry_cipher_modes
   };
 #endif
 
+/* Don't rely on this. Check!  */
+#define GRUB_CRYPTO_MAX_MDLEN 64
+#define GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE 16
+
 /* Type for the cipher_setkey function.  */
 typedef gcry_err_code_t (*gcry_cipher_setkey_t) (void *c,
 						 const unsigned char *key,

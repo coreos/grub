@@ -1,5 +1,10 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/crypto.h: Add maximums on hash size and cipher block
+	size.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/xnu_uuid.c: Remove variable length arrays.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
