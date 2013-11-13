@@ -469,6 +469,12 @@ EXPORT_FUNC (__aeabi_uidiv) (grub_uint32_t a, grub_uint32_t b);
 grub_uint32_t
 EXPORT_FUNC (__aeabi_uidivmod) (grub_uint32_t a, grub_uint32_t b);
 
+/* Needed for allowing modules to be compiled as thumb.  */
+grub_uint64_t
+EXPORT_FUNC (__muldi3) (grub_uint64_t a, grub_uint64_t b);
+grub_uint64_t
+EXPORT_FUNC (__aeabi_lmul) (grub_uint64_t a, grub_uint64_t b);
+
 #endif
 
 #if defined (__ia64__)

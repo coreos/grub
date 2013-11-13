@@ -30,6 +30,33 @@
 
 	.align	2
 
+FUNCTION(__muldi3)
+FUNCTION(__aeabi_lmul)
+        stmfd   sp!, {r4, fp}
+        add     fp, sp, #4
+        sub     sp, sp, #16
+        str     r0, [fp, #-12]
+        str     r1, [fp, #-8]
+        str     r2, [fp, #-20]
+        str     r3, [fp, #-16]
+        ldr     r3, [fp, #-8]
+        ldr     r2, [fp, #-20]
+        .long   0xe0020293   @ mul     r2, r3, r2
+        ldr     r3, [fp, #-16]
+        ldr     r1, [fp, #-12]
+        .long   0xe0030391   @ mul     r3, r1, r3
+        add     r2, r2, r3
+        ldr     r0, [fp, #-12]
+        ldr     r1, [fp, #-20]
+        umull   r3, r4, r0, r1
+        add     r2, r2, r4
+        mov     r4, r2
+        mov     r0, r3
+        mov     r1, r4
+        sub     sp, fp, #4
+        ldmfd   sp!, {r4, fp}
+        bx      lr
+
 	.macro division parent
 
         stmfd   sp!, {lr}
