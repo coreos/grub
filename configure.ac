@@ -349,8 +349,6 @@ case "$host_os" in
    ;;
 esac
 
-grub_apple_cc
-
 if test x$USE_NLS = xno; then
   HOST_CFLAGS="$HOST_CFLAGS -fno-builtin-gettext"
 fi

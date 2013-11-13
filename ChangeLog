@@ -1,3 +1,9 @@
+2013-11-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	* acinclude.m4 (grub_apple_cc): Remove; since the removal of nested
+	functions, we only need to check this for the target, not the host.
+	* configure.ac (grub_apple_cc): Likewise.
+
 2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/arm/cache.c (probe_caches): Move asm part to ...
