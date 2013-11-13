@@ -22,7 +22,9 @@
 	.text
 	.syntax	unified
 	.arm
+#ifndef __clang__
 	.arch	armv6
+#endif
 # define DMB	mcr	p15, 0, r0, c7, c10, 5
 # define DSB	mcr	p15, 0, r0, c7, c10, 4
 # define ISB	mcr	p15, 0, r0, c7, c5, 4

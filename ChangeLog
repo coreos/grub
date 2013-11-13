@@ -1,5 +1,10 @@
 2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/cache_armv6.S [__clang__]: Don't add .armv6 when
+	compiling with clang.
+
+2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/arm/uboot/startup.S: Use .org rather than assigning
 	".".
 
