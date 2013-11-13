@@ -93,7 +93,7 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
   switch (key)
     {
       case ARGP_KEY_HELP_POST_DOC:
-        return xasprintf(text, DEFAULT_ENVBLK_PATH);
+        return xasprintf (text, DEFAULT_ENVBLK_PATH, DEFAULT_ENVBLK_PATH);
 
       default:
         return (char *) text;
@@ -105,7 +105,9 @@ struct argp argp = {
   "\n"N_("\
 Tool to edit environment block.")
 "\v"N_("\
-If FILENAME is `-', the default value %s is used."),
+If FILENAME is `-', the default value %s is used.\n\n\
+There is no `delete' command; if you want to delete the whole environment\n\
+block, use `rm %s'."),
   NULL, help_filter, NULL
 };
 
