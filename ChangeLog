@@ -1,5 +1,9 @@
 2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/cache.S: Replace = with explicit litteral load.
+
+2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/symbol.h (END) [__arm__]: New macros. Replace all .end
 	occurencies with END.
 
