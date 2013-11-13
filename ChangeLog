@@ -1,5 +1,10 @@
 2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/uboot/init.c: Move grub_uboot_machine_type and
+	grub_uboot_boot_data to asm part.
+
+2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/arm/uboot/startup.S: Remove = by replacing with
 	literal load.
 	(grub_uboot_syscall): Save/restore r9 and align stack.

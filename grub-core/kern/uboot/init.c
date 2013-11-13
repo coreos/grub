@@ -35,13 +35,10 @@ extern char __bss_start[];
 extern char _end[];
 extern grub_size_t grub_total_module_size;
 extern int (*grub_uboot_syscall_ptr) (int, int *, ...);
-
-/* Set to anything other than zero so it lands in .data and not .bss.  */
-grub_addr_t grub_modbase = 0x55aa55aa;
-grub_uint32_t grub_uboot_machine_type = 0x55aa55aa;
-grub_addr_t grub_uboot_boot_data = 0x55aa55aa;
-
 static unsigned long timer_start;
+
+extern grub_uint32_t grub_uboot_machine_type;
+extern grub_addr_t grub_uboot_boot_data;
 
 void
 grub_exit (void)
