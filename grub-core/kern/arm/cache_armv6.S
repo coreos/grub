@@ -35,3 +35,11 @@ clean_invalidate_dcache:
 	bx	lr
 
 #include "cache.S"
+
+FUNCTION(grub_arm_main_id)
+	mrc 	p15, 0, r0, c0, c0, 0
+	bx lr
+
+FUNCTION(grub_arm_cache_type)
+	mrc 	p15, 0, r0, c0, c0, 1
+	bx lr

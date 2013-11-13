@@ -1,5 +1,11 @@
 2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/cache.c (probe_caches): Move asm part to ...
+	* grub-core/kern/arm/cache_armv6.S: ... here. This allows this
+	asm to stay in arm even if surrounding is thumb.
+
+2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/arm/misc.S: Add __muldi3 and __aeabi_lmul. Those
 	helper functions are needed for thumb.
 

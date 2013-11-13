@@ -21,6 +21,8 @@ void grub_arch_sync_caches_armv6 (void *address, grub_size_t len);
 void grub_arch_sync_caches_armv7 (void *address, grub_size_t len);
 void grub_arm_disable_caches_mmu_armv6 (void);
 void grub_arm_disable_caches_mmu_armv7 (void);
+grub_uint32_t grub_arm_main_id (void);
+grub_uint32_t grub_arm_cache_type (void);
 
 static void
 probe_caches (void)
@@ -28,7 +30,7 @@ probe_caches (void)
   grub_uint32_t main_id, cache_type;
 
   /* Read main ID Register */
-  asm volatile ("mrc 	p15, 0, %0, c0, c0, 0": "=r"(main_id));
+  main_id = grub_arm_main_id ();
 
   switch ((main_id >> 16) & 0xf)
     {
@@ -44,7 +46,7 @@ probe_caches (void)
     }
 
   /* Read Cache Type Register */
-  asm volatile ("mrc 	p15, 0, %0, c0, c0, 1": "=r"(cache_type));
+  cache_type = grub_arm_cache_type ();
 
   switch (cache_type >> 24)
     {
