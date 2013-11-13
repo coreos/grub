@@ -1,5 +1,10 @@
 2013-11-13  Colin Watson  <cjwatson@ubuntu.com>
 
+	* configure.ac (AM_INIT_AUTOMAKE): Require at least version 1.10.1,
+	to match INSTALL.
+
+2013-11-13  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/kern/misc.c: Don't redirect divisions in the
 	GRUB_UTIL case.
 	* include/grub/misc.h: Likewise.

@@ -45,7 +45,7 @@ save_program_prefix="${program_prefix}"
 AC_CANONICAL_TARGET
 program_prefix="${save_program_prefix}"
 
-AM_INIT_AUTOMAKE()
+AM_INIT_AUTOMAKE([1.10.1])
 AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config-util.h])
