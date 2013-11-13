@@ -2,7 +2,6 @@ EXTRA_DIST += autogen.sh
 EXTRA_DIST += geninit.sh
 
 EXTRA_DIST += gentpl.py
-EXTRA_DIST += Makefile.tpl
 EXTRA_DIST += Makefile.util.def
 EXTRA_DIST += Makefile.utilgcry.def
 

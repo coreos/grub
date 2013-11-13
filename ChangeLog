@@ -1,3 +1,9 @@
+2013-11-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	Generate Makefile.*.am directly from gentpl.py, eliminating the use
+	of Autogen.  The Autogen definitions files remain intact as they
+	offer a useful abstraction.
+
 2013-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add PCI command activation to all PCI drivers as required for coreboot
