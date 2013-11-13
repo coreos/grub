@@ -49,8 +49,14 @@ static void
 put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 {
   char chr = c;
+  ssize_t actual;
 
-  write (STDOUT_FILENO, &chr, 1);
+  actual = write (STDOUT_FILENO, &chr, 1);
+  if (actual < 1)
+    {
+      /* We cannot do anything about this, but some systems require us to at
+	 least pretend to check the result.  */
+    }
 }
 
 static int
