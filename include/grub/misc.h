@@ -453,6 +453,8 @@ grub_error_load (const struct grub_error_saved *save)
   grub_errno = save->grub_errno;
 }
 
+#ifndef GRUB_UTIL
+
 #if defined (__arm__)
 
 grub_uint32_t
@@ -486,6 +488,8 @@ grub_uint64_t
 EXPORT_FUNC (__umoddi3) (grub_uint64_t a, grub_uint64_t b);
 
 #endif
+
+#endif /* GRUB_UTIL */
 
 
 #if BOOT_TIME_STATS

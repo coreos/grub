@@ -596,6 +596,8 @@ grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
   return q;
 }
 
+#ifndef GRUB_UTIL
+
 #if defined (__arm__)
 
 grub_uint32_t
@@ -638,6 +640,8 @@ __umoddi3 (grub_uint64_t a, grub_uint64_t b)
 }
 
 #endif
+
+#endif /* GRUB_UTIL */
 
 /* Convert a long long value to a string. This function avoids 64-bit
    modular arithmetic or divisions.  */

@@ -1,5 +1,11 @@
 2013-11-13  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/kern/misc.c: Don't redirect divisions in the
+	GRUB_UTIL case.
+	* include/grub/misc.h: Likewise.
+
+2013-11-13  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/osdep/unix/emuconsole.c (put): Pacify the compiler on
 	systems that require checking the return value of write.
 
