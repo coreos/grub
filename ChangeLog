@@ -1,3 +1,8 @@
+2013-11-13  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub.texi (Internationalisation, Supported kernels): Fix
+	sectioning.
+
 2013-11-13  Josh Triplett <josh@joshtriplett.org>
 
 	* grub-core/normal/term.c (grub_set_more): Use bool logic rather than

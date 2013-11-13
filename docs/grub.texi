@@ -5205,12 +5205,14 @@ is given, use default list of servers.
 
 
 @node Internationalisation
-@chapter Charset
+@chapter Internationalisation
+
+@section Charset
 GRUB uses UTF-8 internally other than in rendering where some GRUB-specific
 appropriate representation is used. All text files (including config) are
 assumed to be encoded in UTF-8.
 
-@chapter Filesystems
+@section Filesystems
 NTFS, JFS, UDF, HFS+, exFAT, long filenames in FAT, Joliet part of
 ISO9660 are treated as UTF-16 as per specification. AFS and BFS are read
 as UTF-8, again according to specification. BtrFS, cpio, tar, squash4, minix,
@@ -5244,7 +5246,7 @@ treated as distinct from u+combining diaresis. This however means that in
 order to access file on HFS+ its name must be specified in normalisation form D.
 On normalized ZFS subvolumes filenames out of normalisation are inaccessible.
 
-@chapter Output terminal
+@section Output terminal
 Firmware output console ``console'' on ARC and IEEE1275 are limited to ASCII.
 
 BIOS firmware console and VGA text are limited to ASCII and some pseudographics.
@@ -5278,7 +5280,7 @@ called ``annotation characters'' If you can complete either of
 two lists or, better, propose a patch to improve rendering, please contact
 developer team.
 
-@chapter Input terminal
+@section Input terminal
 Firmware console on BIOS, IEEE1275 and ARC doesn't allow you to enter non-ASCII
 characters. EFI specification allows for such but author is unaware of any
 actual implementations. Serial input is currently limited for latin1 (unlikely
@@ -5288,15 +5290,15 @@ So no dead keys or advanced input method. Also there is no keymap change hotkey.
 In practice it makes difficult to enter any text using non-Latin alphabet.
 Moreover all current input consumers are limited to ASCII.
 
-@chapter Gettext
+@section Gettext
 GRUB supports being translated. For this you need to have language *.mo files in $prefix/locale, load gettext module and set ``lang'' variable.
 
-@chapter Regexp
+@section Regexp
 Regexps work on unicode characters, however no attempt at checking cannonical
 equivalence has been made. Moreover the classes like [:alpha:] match only
 ASCII subset.
 
-@chapter Other
+@section Other
 Currently GRUB always uses YEAR-MONTH-DAY HOUR:MINUTE:SECOND [WEEKDAY] 24-hour
 datetime format but weekdays are translated.
 GRUB always uses the decimal number format with [0-9] as digits and . as
@@ -5766,7 +5768,7 @@ X86 support is summarised in the following table. ``Yes'' means that the kernel 
 PowerPC, IA64 and Sparc64 ports support only Linux. MIPS port supports Linux
 and multiboot2.
 
-@chapter Boot tests
+@section Boot tests
 
 As you have seen in previous chapter the support matrix is pretty big and some of the configurations are only rarely used. To ensure the quality bootchecks are available for all x86 targets except EFI chainloader, Appleloader and XNU. All x86 platforms have bootcheck facility except ieee1275. Multiboot, multiboot2, BIOS chainloader, ntldr and freebsd-bootloader boot targets are tested only with a fake kernel images. Only Linux is tested among the payloads using Linux protocols.
 
