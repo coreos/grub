@@ -60,22 +60,22 @@ FUNCTION(codestart)
 	@ U-Boot API signature is stored on the U-Boot heap
 	@ Stack pointer used as start address for signature probing
 	mov	r12, sp
-	ldr	sp, =entry_state
+	ldr	sp, ADDR(entry_state)
 	push	{r4-r12,lr}	@ store U-Boot context (sp in r12)
 
-	ldr     r12, =EXT_C(grub_uboot_machine_type)
+	ldr     r12, ADDR(EXT_C(grub_uboot_machine_type))
 	str     r1, [r12]
-	ldr     r12, =EXT_C(grub_uboot_boot_data)
+	ldr     r12, ADDR(EXT_C(grub_uboot_boot_data))
 	str     r2, [r12]
 
 	@ Modules have been stored as a blob in BSS,
 	@ they need to be manually relocated to _end
-	ldr	r0, =EXT_C(__bss_start)		@ src
+	ldr	r0, ADDR(EXT_C(__bss_start))		@ src
 	add	r0, r0, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
 	mvn	r1, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
 	and	r0, r0, r1
 
-	ldr	r1, =EXT_C(_end)		@ dst = End of BSS
+	ldr	r1, ADDR(EXT_C(_end))		@ dst = End of BSS
 	ldr	r2, grub_total_module_size	@ blob size
 
 	add     r1, r1, #GRUB_KERNEL_MACHINE_STACK_SIZE
@@ -83,7 +83,7 @@ FUNCTION(codestart)
 	sub	sp, r1, #8
 	add     r1, r1, #1024
 
-	ldr     r12, =EXT_C(grub_modbase)
+	ldr     r12, ADDR(EXT_C(grub_modbase))
 	str     r1, [r12]
 
 	add	r1, r1, r2
@@ -98,14 +98,14 @@ FUNCTION(codestart)
 
 	@ Since we _are_ the C run-time, we need to manually zero the BSS
 	@ region before continuing
-	ldr	r0, =EXT_C(__bss_start)	@ zero from here
+	ldr	r0, ADDR(EXT_C(__bss_start))	@ zero from here
 	@ If unaligned, bytewise zero until base address aligned.
 	mov	r2, #0
 1:	tst	r0, #3
 	beq	2f
 	strb	r2, [r0], #1
 	b	1b
-2:	ldr	r1, =EXT_C(_end)		@ to here
+2:	ldr	r1, ADDR(EXT_C(_end))		@ to here
 1:	str	r2, [r0], #4
 	cmp	r0, r1
 	bne	1b
@@ -120,21 +120,21 @@ FUNCTION(codestart)
 	 *   U-Boot (Global Data Pointer) and preserve it for Grub.
 	 */
 FUNCTION(grub_uboot_syscall)
-	ldr	ip, =transition_space
+	ldr	ip, ADDR(transition_space)
 	stm	ip, {r8, lr}
-	ldr	ip, =gd_backup
+	ldr	ip, ADDR(gd_backup)
 	ldr	r8, [ip]
-	ldr	ip, =grub_uboot_syscall_ptr
+	ldr	ip, ADDR(grub_uboot_syscall_ptr)
 	mov	lr, pc
 	ldr	pc, [ip]
-	ldr	ip, =gd_backup
+	ldr	ip, ADDR(gd_backup)
 	str	r8, [ip]
-	ldr	ip, =transition_space
+	ldr	ip, ADDR(transition_space)
 	ldm	ip, {r8, lr}
 	bx	lr
 	
 FUNCTION(grub_uboot_return)
-	ldr	sp, =entry_state_end
+	ldr	sp, ADDR(entry_state_end)
 	pop	{r4-r12, lr}
 	mov	sp, r12
 	bx	lr
@@ -166,4 +166,4 @@ transition_space:
 VARIABLE(grub_uboot_syscall_ptr)
 	.long	0	@
 
-	.end
+	END

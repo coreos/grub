@@ -58,4 +58,4 @@ FUNCTION(raise)
 	mov	r0, #0
 	bx	lr
 	
-	.end
+	END

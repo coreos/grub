@@ -1,5 +1,11 @@
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/symbol.h (ADDR): New macro. Replace all occurences of
+	=x with ADDR(x) in arm assembly.
+	(END): New macro. Replace all .end with END.
+
+2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Redirect all divisions to grub_divmod64.
 
 2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
