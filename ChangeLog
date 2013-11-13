@@ -1,3 +1,7 @@
+2013-11-13  Leif Lindholm <leif.lindholm@linaro.org>
+
+	* .gitignore: fix rules for .dep* and add *.a post git migration
+
 2013-11-13  Colin Watson  <cjwatson@ubuntu.com>
 
 	* configure.ac (AM_INIT_AUTOMAKE): Require at least version 1.10.1,

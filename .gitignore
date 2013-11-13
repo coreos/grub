@@ -127,6 +127,7 @@ mod-*.c
 missing
 netboot_test
 *.o
+*.a
 ohci_test
 partmap_test
 pata_test
@@ -161,10 +162,10 @@ depcomp
 mdate-sh
 texinfo.tex
 grub-core/lib/libgcrypt-grub
-**/.deps
-**/.deps-util
-**/.deps-core
-**/.dirstamp
+.deps
+.deps-util
+.deps-core
+.dirstamp
 Makefile.util.am
 contrib
 grub-core/bootinfo.txt
