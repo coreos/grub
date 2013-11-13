@@ -124,10 +124,7 @@ print_more (void)
 void
 grub_set_more (int onoff)
 {
-  if (onoff == 1)
-    grub_more++;
-  else
-    grub_more--;
+  grub_more = !!onoff;
   grub_normal_reset_more ();
 }
 

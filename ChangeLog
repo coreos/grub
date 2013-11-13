@@ -1,3 +1,8 @@
+2013-11-13  Josh Triplett <josh@joshtriplett.org>
+
+	* grub-core/normal/term.c (grub_set_more): Use bool logic rather than
+	increment/decrement.
+
 2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/arm/cache_armv6.S [__clang__]: Don't add .armv6 when
