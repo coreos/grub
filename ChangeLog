@@ -1,5 +1,9 @@
 2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs/zfs.c (ZAP_LEAF_NUMCHUNKS): Use unsigned arithmetics.
+
+2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/datetime.c (grub_get_weekday): Use if rather than
 	division.
 

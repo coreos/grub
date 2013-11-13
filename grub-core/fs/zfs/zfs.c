@@ -129,7 +129,7 @@ LEAF_HASH (int bs, grub_uint64_t h, zap_leaf_phys_t *l)
 static inline int
 ZAP_LEAF_NUMCHUNKS (int bs)
 {
-  return (((1 << bs) - 2 * ZAP_LEAF_HASH_NUMENTRIES (bs)) /
+  return (((1U << bs) - 2 * ZAP_LEAF_HASH_NUMENTRIES (bs)) /
 	  ZAP_LEAF_CHUNKSIZE - 2);
 }
 
