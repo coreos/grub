@@ -166,4 +166,4 @@ transition_space:
 VARIABLE(grub_uboot_syscall_ptr)
 	.long	0	@
 
-	.end
+	END

@@ -1,3 +1,8 @@
+2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/symbol.h (END) [__arm__]: New macros. Replace all .end
+	occurencies with END.
+
 2013-11-13  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-editenv.c (help_filter, argp): Document how to delete

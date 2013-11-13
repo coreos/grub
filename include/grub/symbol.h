@@ -37,6 +37,14 @@
 # define EXT_C(sym)	sym
 #endif
 
+#ifdef __arm__
+#ifdef __clang__
+#define END
+#else
+#define END .end
+#endif
+#endif
+
 #if defined (__APPLE__)
 #define FUNCTION(x)	.globl EXT_C(x) ; EXT_C(x):
 #define VARIABLE(x)	.globl EXT_C(x) ; EXT_C(x):
