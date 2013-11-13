@@ -51,7 +51,7 @@ FUNCTION(_start)
 	b	codestart
 	
 	@ Size of final image integrated module blob - set by grub-mkimage
-	. = _start + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
+	.org _start + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
 VARIABLE(grub_total_module_size)
 	.long 	0
 

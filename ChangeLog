@@ -1,4 +1,9 @@
-2013-11-12  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/arm/uboot/startup.S: Use .org rather than assigning
+	".".
+
+2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/symbol.h (ADDR): New macro. Replace all occurences of
 	=x with ADDR(x) in arm assembly.
