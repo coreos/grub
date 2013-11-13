@@ -309,13 +309,8 @@ def define_macro_for_platform_nodist_sources(p):
     return define_autogen_macro(
         "get_" + p + "_nodist_sources",
         platform_values(p, "_nodist"))
-def define_macro_for_platform_dependencies(p):
-    return define_autogen_macro(
-        "get_" + p + "_dependencies",
-        platform_values(p, "dependencies", "_dependencies"))
 def platform_sources(p): return "[+ get_" + p + "_sources +]"
 def platform_nodist_sources(p): return "[+ get_" + p + "_nodist_sources +]"
-def platform_dependencies(p): return "[+ get_" + p + "_dependencies +]"
 
 #
 # Returns Autogen code which defines the autogen macros that collect
@@ -607,7 +602,6 @@ print ("[+ AutoGen5 template +]\n")
 for p in GRUB_PLATFORMS:
     print (define_macro_for_platform_sources(p))
     print (define_macro_for_platform_nodist_sources(p))
-    # print define_macro_for_platform_dependencies(p)
 
     print (define_macro_for_platform_startup(p))
     print (define_macro_for_platform_cflags(p))
