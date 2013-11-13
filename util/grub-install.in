@@ -40,7 +40,7 @@ debug_image=
 update_nvram=yes
 
 removable=no
-efi_quiet=
+efi_quiet=-q
 
 # Get GRUB_DISTRIBUTOR.
 if test -f "${sysconfdir}/default/grub" ; then
@@ -333,7 +333,7 @@ setup_verbose=
 if test x"$debug" = xyes; then
     set -x
     setup_verbose="--verbose"
-    efi_quiet=-q
+    efi_quiet=
 fi
 
 if [ -z "$bootdir" ]; then
