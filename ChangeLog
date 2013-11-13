@@ -1,5 +1,10 @@
 2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/datetime.c (grub_get_weekday): Use if rather than
+	division.
+
+2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/uboot/init.c: Move grub_uboot_machine_type and
 	grub_uboot_boot_data to asm part.
 

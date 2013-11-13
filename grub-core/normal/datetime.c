@@ -36,7 +36,10 @@ grub_get_weekday (struct grub_datetime *datetime)
 {
   unsigned a, y, m;
 
-  a = (14 - datetime->month) / 12;
+  if (datetime->month <= 2)
+    a = 1;
+  else
+    a = 0;
   y = datetime->year - a;
   m = datetime->month + 12 * a - 2;
 
