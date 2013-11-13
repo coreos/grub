@@ -55,27 +55,36 @@ FUNCTION(_start)
 VARIABLE(grub_total_module_size)
 	.long 	0
 
+VARIABLE(grub_uboot_machine_type)
+	.long   0
+VARIABLE(grub_uboot_boot_data)
+	.long   0
+VARIABLE(grub_modbase)
+	.long 0
+bss_start_ptr:
+	.long   EXT_C(__bss_start)
+end_ptr:
+	.long   EXT_C(_end)
+
 FUNCTION(codestart)
 	@ Store context: Machine ID, atags/dtb, ...
 	@ U-Boot API signature is stored on the U-Boot heap
 	@ Stack pointer used as start address for signature probing
 	mov	r12, sp
-	ldr	sp, =entry_state
+	adr	sp, entry_state
 	push	{r4-r12,lr}	@ store U-Boot context (sp in r12)
 
-	ldr     r12, =EXT_C(grub_uboot_machine_type)
-	str     r1, [r12]
-	ldr     r12, =EXT_C(grub_uboot_boot_data)
-	str     r2, [r12]
+	str     r1, EXT_C(grub_uboot_machine_type)
+	str     r2, EXT_C(grub_uboot_boot_data)
 
 	@ Modules have been stored as a blob in BSS,
 	@ they need to be manually relocated to _end
-	ldr	r0, =EXT_C(__bss_start)		@ src
+	ldr	r0, bss_start_ptr		@ src
 	add	r0, r0, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
 	mvn	r1, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
 	and	r0, r0, r1
 
-	ldr	r1, =EXT_C(_end)		@ dst = End of BSS
+	ldr	r1, end_ptr		@ dst = End of BSS
 	ldr	r2, grub_total_module_size	@ blob size
 
 	add     r1, r1, #GRUB_KERNEL_MACHINE_STACK_SIZE
@@ -83,8 +92,7 @@ FUNCTION(codestart)
 	sub	sp, r1, #8
 	add     r1, r1, #1024
 
-	ldr     r12, =EXT_C(grub_modbase)
-	str     r1, [r12]
+	str     r1, EXT_C(grub_modbase)
 
 	add	r1, r1, r2
 	add	r0, r0, r2
@@ -98,14 +106,14 @@ FUNCTION(codestart)
 
 	@ Since we _are_ the C run-time, we need to manually zero the BSS
 	@ region before continuing
-	ldr	r0, =EXT_C(__bss_start)	@ zero from here
+	ldr	r0, bss_start_ptr	@ zero from here
 	@ If unaligned, bytewise zero until base address aligned.
 	mov	r2, #0
 1:	tst	r0, #3
 	beq	2f
 	strb	r2, [r0], #1
 	b	1b
-2:	ldr	r1, =EXT_C(_end)		@ to here
+2:	ldr	r1, end_ptr		@ to here
 1:	str	r2, [r0], #4
 	cmp	r0, r1
 	bne	1b
@@ -120,30 +128,39 @@ FUNCTION(codestart)
 	 *   U-Boot (Global Data Pointer) and preserve it for Grub.
 	 */
 FUNCTION(grub_uboot_syscall)
-	ldr	ip, =transition_space
-	stm	ip, {r8, lr}
-	ldr	ip, =gd_backup
-	ldr	r8, [ip]
-	ldr	ip, =grub_uboot_syscall_ptr
+	str     r8, transition_space
+	str     lr, transition_space + 4
+	str     r9, transition_space + 8
+	str     sp, transition_space + 12
+
+	sub     sp, sp, #0x20
+	lsr     sp, sp, #3
+	lsl     sp, sp, #3
+
+	ldr	r8, gd_backup
+	ldr	r9, gd_backup + 4
+
 	mov	lr, pc
-	ldr	pc, [ip]
-	ldr	ip, =gd_backup
-	str	r8, [ip]
-	ldr	ip, =transition_space
-	ldm	ip, {r8, lr}
+	ldr	pc, grub_uboot_syscall_ptr
+	str	r8, gd_backup
+
+	ldr     r8, transition_space
+	ldr     lr, transition_space + 4
+	ldr     r9, transition_space + 8
+	ldr     sp, transition_space + 12
+
 	bx	lr
 	
 FUNCTION(grub_uboot_return)
-	ldr	sp, =entry_state_end
+	adr	sp, entry_state_end
 	pop	{r4-r12, lr}
 	mov	sp, r12
 	bx	lr
 
 	
-	.data
-	.align	3	@ 8-byte alignment for stack
+	.align	3
 @ U-boot context stack space
-entry_state_end:	
+entry_state_end:
 	.long	0	@ r4
 	.long	0	@ r5
 	.long	0	@ r6
@@ -162,6 +179,8 @@ entry_state:		@ backup for U-Boot context
 transition_space:	
 	.long	0	@ r8
 	.long	0	@ lr
+	.long	0	@ r9
+	.long	0	@ sp
 
 VARIABLE(grub_uboot_syscall_ptr)
 	.long	0	@

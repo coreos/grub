@@ -1,5 +1,11 @@
 2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/uboot/startup.S: Remove = by replacing with
+	literal load.
+	(grub_uboot_syscall): Save/restore r9 and align stack.
+
+2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/arm/cache.S: Replace = with explicit litteral load.
 
 2013-11-13  Vladimir Serbinenko  <phcoder@gmail.com>
