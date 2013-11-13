@@ -36,7 +36,7 @@
 @ r1 - *end (exclusive)
 clean_dcache_range:
 	@ Clean data cache for range to point-of-unification
-	ldr	r2, ADDR(EXT_C(grub_arch_cache_dlinesz))
+	ldr	r2, =EXT_C(grub_arch_cache_dlinesz)
 	ldr	r2, [r2]
 	sub	r3, r2, #1		@ align "beg" to start of line
 	mvn	r3, r3
@@ -57,7 +57,7 @@ clean_dcache_range:
 @ r1 - *end (exclusive)
 invalidate_icache_range:
 	@ Invalidate instruction cache for range to point-of-unification
-	ldr	r2, ADDR(EXT_C(grub_arch_cache_ilinesz))
+	ldr	r2, =EXT_C(grub_arch_cache_ilinesz)
 	ldr	r2, [r2]
 	sub	r3, r2, #1		@ align "beg" to start of line
 	mvn	r3, r3
