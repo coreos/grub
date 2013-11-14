@@ -463,11 +463,6 @@ CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 LIBS=""
 
-grub_PROG_NM_MINUS_P
-grub_PROG_NM_DEFINED_ONLY
-AC_SUBST(TARGET_NMFLAGS_MINUS_P)
-AC_SUBST(TARGET_NMFLAGS_DEFINED_ONLY)
-
 # debug flags.
 WARN_FLAGS="-Wall -W -Wshadow -Wold-style-definition -Wpointer-arith -Wundef -Wextra -Wattributes -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels -Wfloat-equal -Wformat-extra-args -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Winit-self -Wint-to-pointer-cast -Winvalid-pch -Wmain -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmultichar -Wnonnull -Woverflow -Wparentheses -Wpointer-arith -Wpointer-to-int-cast -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wswitch -Wtrigraphs -Wundef -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value  -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings -Wnested-externs -Wstrict-prototypes -Wpointer-sign"
 HOST_CFLAGS="$HOST_CFLAGS $WARN_FLAGS -Wcast-align"
@@ -858,6 +853,12 @@ if test "x$target_cpu" = xi386; then
   grub_I386_ASM_PREFIX_REQUIREMENT
   grub_I386_ASM_ADDR32
 fi
+
+grub_PROG_NM_WORKS
+grub_PROG_NM_MINUS_P
+grub_PROG_NM_DEFINED_ONLY
+AC_SUBST(TARGET_NMFLAGS_MINUS_P)
+AC_SUBST(TARGET_NMFLAGS_DEFINED_ONLY)
 
 if test "$platform" != emu; then
 AC_CACHE_CHECK([whether -nostdinc -isystem works], [grub_cv_cc_isystem], [

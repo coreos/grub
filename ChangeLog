@@ -1,3 +1,10 @@
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Move nm checks to the end.
+	Call grub_PROG_NM_WORKS.
+	* acinclude.m4: New check grub_PROG_NM_WORKS.
+	Use $TARGET_CFLAGS -c when compiling test binary.
+
 2013-11-14  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/getroot.c (grub_util_biosdisk_get_grub_dev) [__GNU__]: Remove

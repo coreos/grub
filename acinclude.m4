@@ -134,6 +134,29 @@ if test "x$grub_cv_prog_ld_build_id_none" = xyes; then
 fi
 ])
 
+dnl Check nm
+AC_DEFUN([grub_PROG_NM_WORKS],
+[AC_MSG_CHECKING([whether nm works])
+AC_CACHE_VAL(grub_cv_prog_nm_works,
+[
+nm_works_tmp_dir="$(mktemp -d "./confXXXXXX")"
+AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]], [[]])])
+$TARGET_CC $TARGET_CFLAGS -c conftest.c -o "$nm_works_tmp_dir/ef"
+if $TARGET_NM -P "$nm_works_tmp_dir/ef" > /dev/null; then
+   grub_cv_prog_nm_works=yes
+else
+   grub_cv_prog_nm_minus_p=no
+fi
+rm "$nm_works_tmp_dir/ef"
+rmdir "$nm_works_tmp_dir"
+])
+AC_MSG_RESULT([$grub_cv_prog_nm_works])
+
+if test "x$grub_cv_prog_nm_works" != xyes; then
+  AC_MSG_ERROR([nm does not work])
+fi
+])
+
 dnl Supply -P to nm
 AC_DEFUN([grub_PROG_NM_MINUS_P],
 [AC_MSG_CHECKING([whether nm accepts -P])
@@ -141,13 +164,14 @@ AC_CACHE_VAL(grub_cv_prog_nm_minus_p,
 [
 nm_minus_p_tmp_dir="$(mktemp -d "./confXXXXXX")"
 AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]], [[]])])
-$TARGET_CC conftest.c -o "$nm_minus_p_tmp_dir/ef"
+$TARGET_CC $TARGET_CFLAGS -c conftest.c -o "$nm_minus_p_tmp_dir/ef"
 if $TARGET_NM -P "$nm_minus_p_tmp_dir/ef" 2>&1 > /dev/null; then
    grub_cv_prog_nm_minus_p=yes
 else
    grub_cv_prog_nm_minus_p=no
 fi
 rm "$nm_minus_p_tmp_dir/ef"
+rmdir "$nm_minus_p_tmp_dir"
 ])
 AC_MSG_RESULT([$grub_cv_prog_nm_minus_p])
 
@@ -165,13 +189,14 @@ AC_CACHE_VAL(grub_cv_prog_nm_defined_only,
 [
 nm_defined_only_tmp_dir="$(mktemp -d "./confXXXXXX")"
 AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]], [[]])])
-$TARGET_CC conftest.c -o "$nm_defined_only_tmp_dir/ef"
+$TARGET_CC $TARGET_CFLAGS -c conftest.c -o "$nm_defined_only_tmp_dir/ef"
 if $TARGET_NM --defined-only "$nm_defined_only_tmp_dir/ef" 2>&1 > /dev/null; then
    grub_cv_prog_nm_defined_only=yes
 else
    grub_cv_prog_nm_defined_only=no
 fi
 rm "$nm_defined_only_tmp_dir/ef"
+rmdir "$nm_defined_only_tmp_dir"
 ])
 AC_MSG_RESULT([$grub_cv_prog_nm_defined_only])
 
