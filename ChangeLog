@@ -1,5 +1,10 @@
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/efi/efi.c (grub_efi_get_filename): Reset the pointer
+	at the start of second iteration.
+
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.am (efiemu64.o): Explicitly set link format.
 
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -307,10 +307,13 @@ grub_efi_modules_addr (void)
 #pragma GCC diagnostic error "-Wcast-align"
 
 char *
-grub_efi_get_filename (grub_efi_device_path_t *dp)
+grub_efi_get_filename (grub_efi_device_path_t *dp0)
 {
   char *name = 0, *p;
   grub_size_t filesize = 0;
+  grub_efi_device_path_t *dp;
+
+  dp = dp0;
 
   while (1)
     {
@@ -333,6 +336,8 @@ grub_efi_get_filename (grub_efi_device_path_t *dp)
 
   if (!filesize)
     return NULL;
+
+  dp = dp0;
 
   p = name = grub_malloc (filesize);
   if (!name)
