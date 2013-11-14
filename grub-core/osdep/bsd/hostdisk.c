@@ -104,8 +104,10 @@ grub_util_get_fd_size_os (grub_util_fd_t fd, const char *name, unsigned *log_sec
   struct disklabel label;
   unsigned sector_size, log_sector_size;
 
+#if defined(__NetBSD__)
   grub_hostdisk_configure_device_driver (fd);
-  
+#endif
+
   if (ioctl (fd, DIOCGDINFO, &label) == -1)
     return -1;
 

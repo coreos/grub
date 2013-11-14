@@ -1,5 +1,10 @@
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/bsd/hostdisk.c (grub_util_get_fd_size_os): Fix
+	compilation on NetBSD.
+
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* acinclude.m4: Don't add -P on initial nm test.
 
 	Note: even though this patch postdates Andrey's it bears 14 Nov as
