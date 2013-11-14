@@ -347,8 +347,6 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       {
 	char *p;
 	char *dri;
-	int dos_part = -1;
-	int bsd_part = -1;
 
 	dri = make_device_name (drive);
 
