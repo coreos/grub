@@ -1,3 +1,15 @@
+2013-11-15  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/Makefile.core.def (signature_test): Add missing
+	tests/signatures.h.
+
+2013-11-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install_header: Set localedir here, since this file is
+	where it's used.
+	* util/grub-install.in: Remove setting of localedir.
+	* util/grub-mkrescue.in: Likewise.
+
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* Makefile.am (default_payload.elf): Add uhci, ohci and usb_keyboard.
