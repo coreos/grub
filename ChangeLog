@@ -1,5 +1,9 @@
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am (default_payload.elf): Add uhci, ohci and usb_keyboard.
+
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Move nm checks to the end.
 	Call grub_PROG_NM_WORKS.
 	* acinclude.m4: New check grub_PROG_NM_WORKS.
