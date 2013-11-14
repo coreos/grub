@@ -12,7 +12,9 @@ ascii.bitmaps
 ascii.h
 autom4te.cache
 build_env.mk
-.bzrignore
+build-grub-gen-asciih
+build-grub-gen-widthspec
+build-grub-mkfont
 cdboot_test
 cmp_test
 config.cache
@@ -49,6 +51,7 @@ grub_cmd_set_date
 grub_cmd_sleep
 grub-editenv
 grub-emu
+grub-emu-lite
 grub_emu_init.c
 grub_emu_init.h
 grub-fstest
