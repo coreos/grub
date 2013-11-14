@@ -29,6 +29,7 @@ datadir="@datadir@"
 if [ "x$pkgdatadir" = x ]; then
     pkgdatadir="${datadir}/@PACKAGE@"
 fi
+localedir="@datadir@/locale"
 
 self=`basename $0`
 

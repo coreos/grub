@@ -1,3 +1,10 @@
+2013-11-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install_header: Set localedir here, since this file is
+	where it's used.
+	* util/grub-install.in: Remove setting of localedir.
+	* util/grub-mkrescue.in: Likewise.
+
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Move nm checks to the end.

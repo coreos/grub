@@ -22,7 +22,6 @@ sysconfdir="@sysconfdir@"
 
 host_os=@host_os@
 target=
-localedir="@datadir@/locale"
 
 grub_probe="${sbindir}/@grub_probe@"
 grub_editenv="${bindir}/@grub_editenv@"

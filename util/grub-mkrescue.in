@@ -44,8 +44,6 @@ product_version="${PACKAGE_VERSION}"
 
 xorriso=xorriso
 
-localedir="@datadir@/locale"
-
 # Usage: usage
 # Print the usage.
 usage () {
