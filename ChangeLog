@@ -1,3 +1,16 @@
+2013-11-13  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
+	Fix make clean.
+
+	* Makefile.am: Remove build-grub-* in make clean.
+
+2013-11-13  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
+	New files to gitignore.
+
+	* .gitignore: Add build-grub-gen-asciih, build-grub-gen-widthspec,
+	build-grub-mkfont, and grub-emu-lite. Remove .bzrignore.
+
 2013-11-13  Leif Lindholm <leif.lindholm@linaro.org>
 
 	* grub-core/kern/arm/misc.S: Make thumb2-compatible.
