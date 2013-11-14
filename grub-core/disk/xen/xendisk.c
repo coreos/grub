@@ -449,5 +449,10 @@ grub_xendisk_fini (void)
       grub_xen_free_shared_page (virtdisks[i].shared_page);
 
       grub_xen_event_channel_op (EVTCHNOP_close, &close_op);
+
+      /* Prepare for handoff.  */
+      grub_snprintf (fdir, sizeof (fdir), "%s/state",
+		     virtdisks[i].frontend_dir);
+      grub_xenstore_write_file (fdir, "1", 1);
     }
 }

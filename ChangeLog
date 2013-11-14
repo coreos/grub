@@ -1,5 +1,12 @@
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/xen/xendisk.c (grub_xendisk_fini): Set state to
+	"1" prior to handoff.
+
+	Reported by: M A Young.
+
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/xen/init.c (grub_xenstore_write_file): Don't add
 	\0 to all files.
 
