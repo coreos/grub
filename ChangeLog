@@ -1,3 +1,8 @@
+2013-11-14  Matthew Garrett  <mjg@redhat.com>
+
+	* grub-core/kern/main.c (grub_set_prefix_and_root): Set variable
+	cmdpath to firmware directory.
+
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/efi/efi.c (grub_efi_get_filename): Reset the pointer

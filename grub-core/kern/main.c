@@ -125,6 +125,21 @@ grub_set_prefix_and_root (void)
 
   grub_register_variable_hook ("root", 0, grub_env_write_root);
 
+  grub_machine_get_bootlocation (&fwdevice, &fwpath);
+
+  if (fwdevice)
+    {
+      char *cmdpath;
+
+      cmdpath = grub_xasprintf ("(%s)%s", fwdevice, fwpath ? : "");
+      if (cmdpath)
+	{
+	  grub_env_set ("cmdpath", cmdpath);
+	  grub_env_export ("cmdpath");
+	  grub_free (cmdpath);
+	}
+    }
+
   if (prefix)
     {
       char *pptr = NULL;
@@ -142,8 +157,6 @@ grub_set_prefix_and_root (void)
       if (pptr[0])
 	path = grub_strdup (pptr);
     }
-  if ((!device || device[0] == ',' || !device[0]) || !path)
-    grub_machine_get_bootlocation (&fwdevice, &fwpath);
 
   if (!device && fwdevice)
     device = fwdevice;
