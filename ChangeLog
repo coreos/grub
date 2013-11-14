@@ -1,3 +1,10 @@
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* acinclude.m4: Don't add -P on initial nm test.
+
+	Note: even though this patch postdates Andrey's it bears 14 Nov as
+	date due to timezone difference.
+
 2013-11-15  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/Makefile.core.def (signature_test): Add missing

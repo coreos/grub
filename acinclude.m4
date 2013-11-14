@@ -142,7 +142,7 @@ AC_CACHE_VAL(grub_cv_prog_nm_works,
 nm_works_tmp_dir="$(mktemp -d "./confXXXXXX")"
 AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]], [[]])])
 $TARGET_CC $TARGET_CFLAGS -c conftest.c -o "$nm_works_tmp_dir/ef"
-if $TARGET_NM -P "$nm_works_tmp_dir/ef" > /dev/null; then
+if $TARGET_NM "$nm_works_tmp_dir/ef" > /dev/null; then
    grub_cv_prog_nm_works=yes
 else
    grub_cv_prog_nm_minus_p=no
