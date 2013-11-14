@@ -68,12 +68,15 @@ starfield_theme_files = $(srcdir)/themes/starfield/blob_w.png $(srcdir)/themes/s
 
 build-grub-mkfont: util/grub-mkfont.c grub-core/unidata.c grub-core/kern/emu/misc.c util/misc.c
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 -DGRUB_BUILD_PROGRAM_NAME=\"build-grub-mkfont\" $^ $(build_freetype_cflags) $(build_freetype_libs)
+CLEANFILES += build-grub-mkfont
 
 build-grub-gen-asciih: util/grub-gen-asciih.c
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall -Werror
+CLEANFILES += build-grub-gen-asciih
 
 build-grub-gen-widthspec: util/grub-gen-widthspec.c
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall -Werror
+CLEANFILES += build-grub-gen-widthspec
 
 if COND_STARFIELD
 starfield_DATA = dejavu_10.pf2 dejavu_12.pf2 dejavu_bold_14.pf2 dejavu_14.pf2 dejavu_16.pf2 $(starfield_theme_files)
@@ -88,7 +91,7 @@ dejavu_bold_14.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
 dejavu_16.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
 	./build-grub-mkfont -s 16 -o $@ $(DJVU_FONT_SOURCE)
 else
-starfield_DATA = 
+starfield_DATA =
 endif
 
 EXTRA_DIST += $(starfield_theme_files)
@@ -111,11 +114,11 @@ euro.pf2: $(FONT_SOURCE) build-grub-mkfont
 CLEANFILES += euro.pf2
 
 ascii.h: $(FONT_SOURCE) build-grub-gen-asciih
-	./build-grub-gen-asciih $(FONT_SOURCE) $@ 
+	./build-grub-gen-asciih $(FONT_SOURCE) $@
 CLEANFILES += ascii.h
 
 widthspec.h: $(FONT_SOURCE) build-grub-gen-widthspec
-	./build-grub-gen-widthspec $(FONT_SOURCE) $@ 
+	./build-grub-gen-widthspec $(FONT_SOURCE) $@
 CLEANFILES += widthspec.h
 
 # Install config.h into platformdir
