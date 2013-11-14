@@ -38,11 +38,7 @@
 #endif
 
 #ifdef __arm__
-#ifdef __clang__
-#define END
-#else
 #define END .end
-#endif
 #endif
 
 #if defined (__APPLE__)
