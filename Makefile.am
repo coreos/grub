@@ -392,4 +392,10 @@ BOOTCHECK_TIMEOUT=180
 
 bootcheck: $(BOOTCHECKS)
 
+if COND_i386_coreboot
+default_payload.elf: grub-mkstandalone grub-mkimage
+	pkgdatadir=. ./grub-mkstandalone --grub-mkimage=./grub-mkimage -O i386-coreboot -o $@ --modules='ahci ehci usbms part_msdos xfs ext2 fat at_keyboard part_gpt usbserial_usbdebug cbfs' --install-modules='ls linux search configfile normal cbtime cbls memrw iorw minicmd lsmmap lspci halt reboot hexdump pcidump setpci lsacpi chain' --fonts= --themes= --locales= -d grub-core/
+endif
+
+
 EXTRA_DIST += linguas.sh

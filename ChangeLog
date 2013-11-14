@@ -1,5 +1,10 @@
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am (default_payload.elf): New target for easier coreboot
+	build.
+
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/arm/cache_armv6.S: Remove special handling for
 	clang (not necessarry with -no-integrated-as).
 	* include/grub/symbol.h [__arm__]: Likewise.
