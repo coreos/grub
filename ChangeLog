@@ -1,3 +1,10 @@
+2013-11-14  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/fs/ext2.c (grub_ext2_read_block): Factor out common
+	code for indirect block handling.
+
+	Saves 185 bytes on compressed image.
+
 2013-11-13  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
 	Fix make clean.
