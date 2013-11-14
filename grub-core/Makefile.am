@@ -421,7 +421,7 @@ efiemu64.o: efiemu64_c.o efiemu64_s.o $(TARGET_OBJ2ELEF)
 	  $(OBJCONV) -felf64 -nu -nd $@.bin $@ || exit 1; \
 	  rm -f $@.bin; \
 	else \
-	  $(TARGET_CC) -m64 -nostdlib -Wl,-r -o $@ $^ || exit 1; \
+	  $(TARGET_CC) -m64 -Wl,-melf_x86_64 -nostdlib -Wl,-r -o $@ $^ || exit 1; \
 	  if test ! -z "$(TARGET_OBJ2ELF)"; then $(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi; \
 	fi
 

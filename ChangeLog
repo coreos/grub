@@ -1,5 +1,9 @@
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.am (efiemu64.o): Explicitly set link format.
+
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.am (default_payload.elf): New target for easier coreboot
 	build.
 
