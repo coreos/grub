@@ -1,5 +1,10 @@
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Probe for linking format rather than guessing it based
+	on target_os.
+
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/xen/xendisk.c (grub_xendisk_fini): Set state to
 	"1" prior to handoff.
 

@@ -389,7 +389,7 @@ CLEANFILES += $(MOD_FILES)
 if COND_ENABLE_EFIEMU
 efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)
 	-rm -f $@; \
-	if test "x$(TARGET_APPLE_CC)" = x1; then \
+	if test "x$(TARGET_APPLE_LINKER)" = x1; then \
 	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m32 -Wall -Werror -nostdlib -O2 -c -o $@.bin $< || exit 1; \
 	  $(OBJCONV) -felf32 -nu -nd $@.bin $@ || exit 1; \
 	  rm -f $@.bin; \
@@ -399,7 +399,7 @@ efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)
 	fi
 
 efiemu64_c.o: efiemu/runtime/efiemu.c
-	if test "x$(TARGET_APPLE_CC)" = x1; then \
+	if test "x$(TARGET_APPLE_LINKER)" = x1; then \
 	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m64 -nostdlib -Wall -Werror -mno-red-zone -c -o $@ $< || exit 1; \
 	else \
 	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m64 -nostdlib -Wall -Werror -O2 -mcmodel=large -mno-red-zone -c -o $@ $< || exit 1; \
@@ -407,7 +407,7 @@ efiemu64_c.o: efiemu/runtime/efiemu.c
 
 efiemu64_s.o: efiemu/runtime/efiemu.S
 	-rm -f $@
-	if test "x$(TARGET_APPLE_CC)" = x1; then \
+	if test "x$(TARGET_APPLE_LINKER)" = x1; then \
 	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m64 -Wall -Werror -nostdlib -O2 -mno-red-zone -c -o $@ $< || exit 1; \
 	else \
 	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m64 -Wall -Werror -nostdlib -O2 -mcmodel=large -mno-red-zone -c -o $@ $< || exit 1; \
@@ -415,7 +415,7 @@ efiemu64_s.o: efiemu/runtime/efiemu.S
 
 efiemu64.o: efiemu64_c.o efiemu64_s.o $(TARGET_OBJ2ELEF)
 	-rm -f $@; \
-	if test "x$(TARGET_APPLE_CC)" = x1; then \
+	if test "x$(TARGET_APPLE_LINKER)" = x1; then \
 	  rm -f $@.bin; \
 	  $(TARGET_CC) -m64 -Wl,-r -nostdlib -o $@.bin $^ || exit 1; \
 	  $(OBJCONV) -felf64 -nu -nd $@.bin $@ || exit 1; \

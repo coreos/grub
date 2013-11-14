@@ -247,22 +247,6 @@ rm -f conftest*])
 
 AC_MSG_RESULT([$grub_cv_i386_asm_addr32])])
 
-dnl check if our target compiler is apple cc
-dnl because it requires numerous workarounds
-AC_DEFUN([grub_apple_target_cc],
-[AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING([whether our target compiler is apple cc])
-AC_CACHE_VAL(grub_cv_apple_target_cc,
-[if $CC -v 2>&1 | grep "Apple Inc." > /dev/null; then
-  grub_cv_apple_target_cc=yes
-else
-  grub_cv_apple_target_cc=no
-fi
-])
-
-AC_MSG_RESULT([$grub_cv_apple_target_cc])])
-
-
 dnl Later versions of GAS requires that addr32 and data32 prefixes
 dnl appear in the same lines as the instructions they modify, while
 dnl earlier versions requires that they appear in separate lines.

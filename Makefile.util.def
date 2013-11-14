@@ -250,7 +250,7 @@ program = {
   name = grub-macho2img;
   mansection = 1;
   common = util/grub-macho2img.c;
-  condition = COND_APPLE_CC;
+  condition = COND_APPLE_LINKER;
 };
 
 program = {

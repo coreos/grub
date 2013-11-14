@@ -597,52 +597,14 @@ if test "x$grub_cv_cc_fno_asynchronous_unwind_tables" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-asynchronous-unwind-tables"
 fi
 
-grub_apple_target_cc
-if test x$grub_cv_apple_target_cc = xyes ; then
-  TARGET_APPLE_CC=1
-  AC_CHECK_PROG([TARGET_OBJCONV], [objconv], [objconv], [])
-  if test "x$TARGET_OBJCONV" = x ; then
-     AC_CHECK_PROG([TARGET_OBJCONV], [objconv], [./objconv], [], [.])
-  fi
-  if test "x$TARGET_OBJCONV" = x ; then
-    AC_MSG_ERROR([objconv not found which is required when building with apple compiler])
-  fi
-  TARGET_IMG_LDSCRIPT=
-  TARGET_IMG_CFLAGS="-static"
-  TARGET_IMG_LDFLAGS='-nostdlib -static -Wl,-preload -Wl,-segalign,20'
-  TARGET_IMG_LDFLAGS_AC='-nostdlib -static -Wl,-preload -Wl,-segalign,20'
-  TARGET_IMG_BASE_LDOPT="-Wl,-image_base"
-  TARGET_LDFLAGS_OLDMAGIC=""
-else
-  TARGET_APPLE_CC=0
-  TARGET_LDFLAGS_OLDMAGIC="-Wl,-N"
-# Use linker script if present, otherwise use builtin -N script.
-if test -f "${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"; then
-  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/${grub_coredir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
-  TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}"
-  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/${grub_coredir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
-  TARGET_IMG_BASE_LDOPT="-Wl,-Ttext"
-else
-  TARGET_IMG_LDSCRIPT=
-  TARGET_IMG_LDFLAGS='-Wl,-N'
-  TARGET_IMG_LDFLAGS_AC='-Wl,-N'
-  TARGET_IMG_BASE_LDOPT="-Wl,-Ttext"
-fi
-TARGET_IMG_CFLAGS=
-fi
-
-AC_SUBST(TARGET_LDFLAGS_OLDMAGIC)
-
 # For platforms where ELF is not the default link format.
-AC_MSG_CHECKING([for command to convert module to ELF format])
 case "${target_os}" in
-  cygwin) TARGET_OBJ2ELF='./build-grub-pe2elf';
+  cygwin)
 # FIXME: put proper test here
   NEED_REGISTER_FRAME_INFO=1
   ;;
   *) NEED_REGISTER_FRAME_INFO=0 ;;
 esac
-AC_MSG_RESULT([$TARGET_OBJ2ELF])
 
 
 AC_ARG_ENABLE([efiemu],
@@ -681,42 +643,75 @@ enable_efiemu=no
 fi
 AC_SUBST([enable_efiemu])
 
-case "$target_os" in
-  cygwin)
-    ;;
-  freebsd | kfreebsd*-gnu)
-    if test x"$target_cpu" = xi386; then
-      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_i386_fbsd"
-    fi
-    if test x"$target_cpu" = xx86_64; then
-      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_x86_64_fbsd"
-    fi
-    ;;
-  openbsd*)
-    if test x"$target_cpu" = xi386; then
-      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_i386_obsd"
-    fi
-    if test x"$target_cpu" = xx86_64; then
-      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_x86_64_obsd"
-    fi
-    ;;
-  haiku*)
-    if test x"$target_cpu" = xi386; then
-      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_i386_haiku"
-    fi
-    if test x"$target_cpu" = xx86_64; then
-      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_x86_64_haiku"
-    fi
-    ;;
-  *)
-    if test x"$target_cpu" = xi386; then
-      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_i386"
-    fi
-    if test x"$target_cpu" = xx86_64; then
-      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,-melf_x86_64"
-    fi
-    ;;
-esac
+CFLAGS="$TARGET_CFLAGS"
+
+if test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
+  AC_CACHE_CHECK([for linking format], [grub_cv_target_cc_link_format], [
+    grub_cv_target_cc_link_format=unknown
+    for format in -melf_${target_cpu} -melf_${target_cpu}_fbsd -melf_${target_cpu}_obsd -melf_${target_cpu}_haiku -m${target_cpu}pe -arch,${target_cpu}; do
+      if test x${target_cpu} != xi386 && test x$format = x${target_cpu}pe; then
+        continue
+      fi
+      CFLAGS="$TARGET_CFLAGS -static"
+      LDFLAGS="$TARGET_LDFLAGS -Wl,$format -nostdlib"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+      asm (".globl start; start:");
+      asm (".globl _start; _start:");
+      asm (".globl __start; __start:");
+      void __main (void);
+      void __main (void) {}
+      ]], [[]])], [flag=1], [])
+      if test x"$flag" = x1; then
+        grub_cv_target_cc_link_format="$format"
+	break;
+      fi
+    done])
+  if test x"$grub_cv_target_cc_link_format" = xunknown; then
+    AC_MSG_ERROR([no suitable link format found])
+  fi
+  TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,$grub_cv_target_cc_link_format"
+  if test x"$grub_cv_target_cc_link_format" = x-mi386pe; then
+    TARGET_OBJ2ELF='./build-grub-pe2elf';
+  fi
+fi
+
+if test x$grub_cv_target_cc_link_format = x-arch,i386 || test x$grub_cv_target_cc_link_format = x-arch,x86_64; then
+   TARGET_APPLE_LINKER=1
+   AC_CHECK_PROG([TARGET_OBJCONV], [objconv], [objconv], [])
+   if test "x$TARGET_OBJCONV" = x ; then
+      AC_CHECK_PROG([TARGET_OBJCONV], [objconv], [./objconv], [], [.])
+   fi
+   if test "x$TARGET_OBJCONV" = x ; then
+      AC_MSG_ERROR([objconv not found which is required when building with apple compiler])
+   fi
+   TARGET_IMG_LDSCRIPT=
+   TARGET_IMG_CFLAGS="-static"
+   TARGET_IMG_LDFLAGS='-nostdlib -static -Wl,-preload -Wl,-segalign,20'
+   TARGET_IMG_LDFLAGS_AC='-nostdlib -static -Wl,-preload -Wl,-segalign,20'
+   TARGET_IMG_BASE_LDOPT="-Wl,-image_base"
+   TARGET_LDFLAGS_OLDMAGIC=""
+elif test x$grub_cv_target_cc_link_format = x-mi386pe && test x$platform = xpc; then
+  TARGET_APPLE_LINKER=0
+  TARGET_LDFLAGS_OLDMAGIC="-Wl,-N"
+  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/${grub_coredir}/conf/i386-pc-cygwin-img-ld.sc"
+  TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/${grub_coredir}/conf/i386-pc-cygwin-img-ld.sc"
+  TARGET_IMG_BASE_LDOPT="-Wl,-Ttext"
+  TARGET_IMG_CFLAGS=
+else
+  TARGET_APPLE_LINKER=0
+  TARGET_LDFLAGS_OLDMAGIC="-Wl,-N"
+  TARGET_IMG_LDSCRIPT=
+  TARGET_IMG_LDFLAGS='-Wl,-N'
+  TARGET_IMG_LDFLAGS_AC='-Wl,-N'
+  TARGET_IMG_BASE_LDOPT="-Wl,-Ttext"
+  TARGET_IMG_CFLAGS=
+fi
+
+AC_SUBST(TARGET_LDFLAGS_OLDMAGIC)
+
+
+LDFLAGS="$TARGET_LDFLAGS"
 
 if test "$target_cpu" = x86_64; then
   # Use large model to support 4G memory
@@ -803,7 +798,7 @@ fi
 
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
-if test "x$TARGET_APPLE_CC" = x1 ; then
+if test "x$TARGET_APPLE_LINKER" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wno-error"
 else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wno-error"
@@ -818,16 +813,18 @@ fi
 LIBS="$TARGET_LIBGCC"
 
 grub_ASM_USCORE
+if test "x$TARGET_APPLE_LINKER" = x0 ; then
 if test x$grub_cv_asm_uscore = xyes; then
 CFLAGS="$TARGET_CFLAGS -Wl,--defsym,_abort=_main"
 else
 CFLAGS="$TARGET_CFLAGS -Wl,--defsym,abort=main"
 fi
+fi
 
 # Check for libgcc symbols
 AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __ucmpdi2 _restgpr_14_x __ctzdi2 __ctzsi2)
 
-if test "x$TARGET_APPLE_CC" = x1 ; then
+if test "x$TARGET_APPLE_LINKER" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib"
 else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100"
@@ -836,12 +833,12 @@ LIBS=""
 
 # Defined in aclocal.m4.
 grub_PROG_TARGET_CC
-if test "x$TARGET_APPLE_CC" != x1 ; then
+if test "x$TARGET_APPLE_LINKER" != x1 ; then
 grub_PROG_OBJCOPY_ABSOLUTE
 fi
 grub_PROG_LD_BUILD_ID_NONE
 if test "x$target_cpu" = xi386; then
-  if test "$platform" != emu && test "x$TARGET_APPLE_CC" != x1 ; then
+  if test "$platform" != emu && test "x$TARGET_APPLE_LINKER" != x1 ; then
     if test ! -z "$TARGET_IMG_LDSCRIPT"; then
       # Check symbols provided by linker script.
       CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC} ${TARGET_IMG_BASE_LDOPT},0x8000 -Wl,--defsym,___main=0x8100"
@@ -1349,8 +1346,6 @@ LIBS=""
 AC_SUBST([FONT_SOURCE])
 AS_IF([test x$target_cpu = xi386 -a x$platform = xqemu],
 	    [AC_SUBST([GRUB_BOOT_MACHINE_LINK_ADDR], 0xffe00)])
-AS_IF([test x$TARGET_APPLE_CC = x1],
-	    [AC_SUBST([USE_APPLE_CC_FIXES], yes)])
 
 AC_SUBST(HAVE_ASM_USCORE)
 AC_SUBST(ADDR32)
@@ -1390,7 +1385,6 @@ AC_SUBST(TARGET_LDFLAGS_STATIC_LIBGCC)
 AC_SUBST(TARGET_CPP)
 AC_SUBST(TARGET_CCAS)
 AC_SUBST(TARGET_OBJ2ELF)
-AC_SUBST(TARGET_APPLE_CC)
 AC_SUBST(TARGET_MODULE_FORMAT)
 
 AC_SUBST(TARGET_CFLAGS)
@@ -1402,6 +1396,7 @@ AC_SUBST(TARGET_IMG_LDSCRIPT)
 AC_SUBST(TARGET_IMG_LDFLAGS)
 AC_SUBST(TARGET_IMG_CFLAGS)
 AC_SUBST(TARGET_IMG_BASE_LDOPT)
+AC_SUBST(TARGET_APPLE_LINKER)
 
 AC_SUBST(HOST_CFLAGS)
 AC_SUBST(HOST_LDFLAGS)
@@ -1453,7 +1448,7 @@ AM_CONDITIONAL([COND_GRUB_EMU_PCI], [test x$enable_grub_emu_pci = xyes])
 AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
 AM_CONDITIONAL([COND_GRUB_MOUNT], [test x$enable_grub_mount = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
-AM_CONDITIONAL([COND_APPLE_CC], [test x$TARGET_APPLE_CC = x1])
+AM_CONDITIONAL([COND_APPLE_LINKER], [test x$TARGET_APPLE_LINKER = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
 AM_CONDITIONAL([COND_ENABLE_CACHE_STATS], [test x$DISK_CACHE_STATS = x1])
 AM_CONDITIONAL([COND_ENABLE_BOOT_TIME_STATS], [test x$BOOT_TIME_STATS = x1])

@@ -35,7 +35,7 @@ deps=`grep ^$modname: $moddep | sed s@^.*:@@`
 # remove old files if any
 rm -f $tmpfile $outfile
 
-if test x@TARGET_APPLE_CC@ != x1; then
+if test x@TARGET_APPLE_LINKER@ != x1; then
     # stripout .modname and .moddeps sections from input module
     @TARGET_OBJCOPY@ -R .modname -R .moddeps $infile $tmpfile
 
