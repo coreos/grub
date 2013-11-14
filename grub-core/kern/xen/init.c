@@ -256,11 +256,10 @@ grub_xenstore_write_file (const char *dir, const void *buf, grub_size_t len)
 
   grub_memset (&msg, 0, sizeof (msg));
   msg.type = XS_WRITE;
-  msg.len = dirlen + len + 1;
+  msg.len = dirlen + len;
   grub_xen_store_send (&msg, sizeof (msg));
   grub_xen_store_send (dir, dirlen);
   grub_xen_store_send (buf, len);
-  grub_xen_store_send ("", 1);
   grub_xen_store_recv (&msg, sizeof (msg));
   resp = grub_malloc (msg.len + 1);
   if (!resp)

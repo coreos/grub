@@ -1,5 +1,12 @@
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/xen/init.c (grub_xenstore_write_file): Don't add
+	\0 to all files.
+
+	Reported by: M A Young.
+
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/bsd/hostdisk.c (grub_util_get_fd_size_os): Fix
 	compilation on NetBSD.
 
