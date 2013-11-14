@@ -397,9 +397,12 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   struct grub_ext2_data *data = node->data;
   struct grub_ext2_inode *inode = &node->inode;
-  grub_disk_addr_t blknr = -1;
   unsigned int blksz = EXT2_BLOCK_SIZE (data);
+  grub_disk_addr_t blksz_quarter = blksz / 4;
   int log2_blksz = LOG2_EXT2_BLOCK_SIZE (data);
+  int log_perblock = log2_blksz + 9 - 2;
+  grub_uint32_t indir;
+  int shift;
 
   if (inode->flags & grub_cpu_to_le32_compile_time (EXT4_EXTENTS_FLAG))
     {
@@ -448,96 +451,50 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
       return ret;
     }
+
   /* Direct blocks.  */
   if (fileblock < INDIRECT_BLOCKS)
-    blknr = grub_le_to_cpu32 (inode->blocks.dir_blocks[fileblock]);
+    return grub_le_to_cpu32 (inode->blocks.dir_blocks[fileblock]);
+  fileblock -= INDIRECT_BLOCKS;
   /* Indirect.  */
-  else if (fileblock < INDIRECT_BLOCKS + blksz / 4)
+  if (fileblock < blksz_quarter)
     {
-      grub_uint32_t indir;
-
-      if (grub_disk_read (data->disk,
-			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (inode->blocks.indir_block))
-			  << log2_blksz,
-			  (fileblock - INDIRECT_BLOCKS) * sizeof (indir),
-			  sizeof (indir), &indir))
-	return grub_errno;
-
-      blknr = grub_le_to_cpu32 (indir);
+      indir = inode->blocks.indir_block;
+      shift = 0;
+      goto indirect;
     }
+  fileblock -= blksz_quarter;
   /* Double indirect.  */
-  else if (fileblock < INDIRECT_BLOCKS
-	   + blksz / 4 * ((grub_disk_addr_t) blksz / 4 + 1))
+  if (fileblock < blksz_quarter * blksz_quarter)
     {
-      int log_perblock = log2_blksz + 9 - 2;
-      grub_disk_addr_t rblock = fileblock - (INDIRECT_BLOCKS
-					     + blksz / 4);
-      grub_uint32_t indir;
-
-      if (grub_disk_read (data->disk,
-			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (inode->blocks.double_indir_block))
-			  << log2_blksz,
-			  (rblock >> log_perblock) * sizeof (indir),
-			  sizeof (indir), &indir))
-	return grub_errno;
-
-      if (grub_disk_read (data->disk,
-			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (indir))
-			  << log2_blksz,
-			  (rblock & ((1 << log_perblock) - 1)) * sizeof (indir),
-			  sizeof (indir), &indir))
-	return grub_errno;
-
-
-      blknr = grub_le_to_cpu32 (indir);
+      indir = inode->blocks.double_indir_block;
+      shift = 1;
+      goto indirect;
     }
-  /* triple indirect.  */
-  else if (fileblock < INDIRECT_BLOCKS + blksz / 4 * ((grub_disk_addr_t) blksz / 4 + 1)
-	   + ((grub_disk_addr_t) blksz / 4) * ((grub_disk_addr_t) blksz / 4)
-	   * ((grub_disk_addr_t) blksz / 4 + 1))
+  fileblock -= blksz_quarter * blksz_quarter;
+  /* Triple indirect.  */
+  if (fileblock < blksz_quarter * blksz_quarter * (blksz_quarter + 1))
     {
-      int log_perblock = log2_blksz + 9 - 2;
-      grub_disk_addr_t rblock = fileblock - (INDIRECT_BLOCKS + blksz / 4
-					     * (blksz / 4 + 1));
-      grub_uint32_t indir;
-
-      if (grub_disk_read (data->disk,
-			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (inode->blocks.triple_indir_block))
-			  << log2_blksz,
-			  ((rblock >> log_perblock) >> log_perblock)
-			  * sizeof (indir), sizeof (indir), &indir))
-	return grub_errno;
-
-      if (grub_disk_read (data->disk,
-			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (indir))
-			  << log2_blksz,
-			  ((rblock >> log_perblock)
-			   & ((1 << log_perblock) - 1)) * sizeof (indir),
-			  sizeof (indir), &indir))
-	return grub_errno;
-
-      if (grub_disk_read (data->disk,
-			  ((grub_disk_addr_t)
-			   grub_le_to_cpu32 (indir))
-			  << log2_blksz,
-			  (rblock  & ((1 << log_perblock) - 1))
-			  * sizeof (indir), sizeof (indir), &indir))
-	return grub_errno;
-
-      blknr = grub_le_to_cpu32 (indir);
+      indir = inode->blocks.triple_indir_block;
+      shift = 2;
+      goto indirect;
     }
-  else
-    {
-      grub_error (GRUB_ERR_BAD_FS,
-		  "ext2fs doesn't support quadruple indirect blocks");
-    }
+  return grub_error (GRUB_ERR_BAD_FS,
+		     "ext2fs doesn't support quadruple indirect blocks");
 
-  return blknr;
+indirect:
+  do {
+    if (grub_disk_read (data->disk,
+			((grub_disk_addr_t) grub_le_to_cpu32 (indir))
+			<< log2_blksz,
+			((fileblock >> (log_perblock * shift))
+			 & ((1 << log_perblock) - 1))
+			* sizeof (indir),
+			sizeof (indir), &indir))
+      return grub_errno;
+  } while (shift--);
+
+  return grub_le_to_cpu32 (indir);
 }
 
 /* Read LEN bytes from the file described by DATA starting with byte
