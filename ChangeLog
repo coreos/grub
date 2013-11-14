@@ -1,5 +1,9 @@
 2013-11-13  Leif Lindholm <leif.lindholm@linaro.org>
 
+	* grub-core/kern/arm/misc.S: Make thumb2-compatible.
+
+2013-11-13  Leif Lindholm <leif.lindholm@linaro.org>
+
 	* .gitignore: fix rules for .dep* and add *.a post git migration
 
 2013-11-13  Colin Watson  <cjwatson@ubuntu.com>
