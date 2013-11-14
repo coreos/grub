@@ -1,5 +1,10 @@
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Use -no-integrated-as on arm with clang.
+	* INSTALL: Mention ARM compilation with clang.
+
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common (CCASFLAGS_PLATFORM) [COND_arm]: Add
 	-mthumb-interwork.
 

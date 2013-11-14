@@ -487,8 +487,9 @@ AC_CACHE_CHECK([if compiling with clang], [grub_cv_cc_target_clang]
 ]])],
 [grub_cv_cc_target_clang=no], [grub_cv_cc_target_clang=yes])])
 
-# clang doesn't support .code16
-if test "x$grub_cv_cc_target_clang" = xyes && ( test "x$target_cpu" = xi386 || test "x$target_cpu" = xx86_64 ); then
+# on x86 clang doesn't support .code16
+# on arm clang doesn't support .arch directive
+if test "x$grub_cv_cc_target_clang" = xyes && ( test "x$target_cpu" = xi386 || test "x$target_cpu" = xx86_64 || test "x$target_cpu" = xarm ); then
    TARGET_CCASFLAGS="$TARGET_CCASFLAGS -no-integrated-as"
 fi
 

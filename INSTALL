@@ -15,6 +15,7 @@ configuring the GRUB.
   Note: older versions may work but support is limited
   Note: clang 3.2 or later works for i386 and x86_64 targets but results in
         much bigger binaries.
+  Note: clang 3.2 or later works for arm
   Note: clang 3.4 or later works for powerpc
 * GNU Make
 * GNU Bison 2.3 or later
