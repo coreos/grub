@@ -20,6 +20,7 @@ if COND_sparc64_ieee1275
 endif
 if COND_arm
   CFLAGS_PLATFORM += -mthumb-interwork -mlong-calls
+  CCASFLAGS_PLATFORM = -mthumb-interwork
   LDFLAGS_PLATFORM = -Wl,--wrap=__clear_cache
 endif
 

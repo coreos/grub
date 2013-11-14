@@ -1,3 +1,8 @@
+2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/Makefile.common (CCASFLAGS_PLATFORM) [COND_arm]: Add
+	-mthumb-interwork.
+
 2013-11-13  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
 	Fix make clean.
