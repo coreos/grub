@@ -614,6 +614,85 @@ __umodsi3 (grub_uint32_t a, grub_uint32_t b)
   return ret;
 }
 
+#endif
+
+#ifdef NEED_CTZDI2
+
+unsigned
+__ctzdi2 (grub_uint64_t x)
+{
+  unsigned ret = 0;
+  if (!x)
+    return 64;
+  if (!(x & 0xffffffff))
+    {
+      x >>= 32;
+      ret |= 32;
+    }
+  if (!(x & 0xffff))
+    {
+      x >>= 16;
+      ret |= 16;
+    }
+  if (!(x & 0xff))
+    {
+      x >>= 8;
+      ret |= 8;
+    }
+  if (!(x & 0xf))
+    {
+      x >>= 4;
+      ret |= 4;
+    }
+  if (!(x & 0x3))
+    {
+      x >>= 2;
+      ret |= 2;
+    }
+  if (!(x & 0x1))
+    {
+      x >>= 1;
+      ret |= 1;
+    }
+  return ret;
+}
+#endif
+
+#ifdef NEED_CTZSI2
+unsigned
+__ctzsi2 (grub_uint32_t x)
+{
+  unsigned ret = 0;
+  if (!x)
+    return 32;
+
+  if (!(x & 0xffff))
+    {
+      x >>= 16;
+      ret |= 16;
+    }
+  if (!(x & 0xff))
+    {
+      x >>= 8;
+      ret |= 8;
+    }
+  if (!(x & 0xf))
+    {
+      x >>= 4;
+      ret |= 4;
+    }
+  if (!(x & 0x3))
+    {
+      x >>= 2;
+      ret |= 2;
+    }
+  if (!(x & 0x1))
+    {
+      x >>= 1;
+      ret |= 1;
+    }
+  return ret;
+}
 
 #endif
 

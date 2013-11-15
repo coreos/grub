@@ -465,6 +465,18 @@ EXPORT_FUNC (__umodsi3) (grub_uint32_t a, grub_uint32_t b);
 
 #endif
 
+#if defined (__sparc64__) || defined (__powerpc__)
+unsigned
+EXPORT_FUNC (__ctzdi2) (grub_uint64_t x);
+#define NEED_CTZDI2 1
+#endif
+
+#if defined (__mips__) || defined (__arm__)
+unsigned
+EXPORT_FUNC (__ctzsi2) (grub_uint32_t x);
+#define NEED_CTZSI2 1
+#endif
+
 #ifdef __arm__
 grub_uint32_t
 EXPORT_FUNC (__aeabi_uidiv) (grub_uint32_t a, grub_uint32_t b);

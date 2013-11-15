@@ -1,3 +1,11 @@
+2013-11-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Replace libgcc version of ctz with our own.
+
+	On upcoming arm64 port libgcc ctz* are not usable in standalone
+	environment. Since we need ctz* for this case and implementation is
+	in C we may as well use it on all concerned platforms.
+
 2013-11-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Probe for linking format rather than guessing it based
