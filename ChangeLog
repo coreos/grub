@@ -1,3 +1,7 @@
+2013-11-15  Colin Watson  <cjwatson@debian.org>
+
+	* .gitignore: Only ignore grub-mk* at the top level.
+
 2013-11-15  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-reboot.in (usage): Fix a typo.

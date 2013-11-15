@@ -62,7 +62,7 @@ grub-install
 grub-kbdcomp
 grub-macho2img
 grub-menulst2cfg
-grub-mk*
+/grub-mk*
 grub-mount
 grub-ofpathname
 grub-pe2elf
