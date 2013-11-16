@@ -1,3 +1,8 @@
+2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install-common.c (platforms): Fix the order of entries and
+	remove useless field val.
+
 2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.c: Add new option --no-bootsector to skip
