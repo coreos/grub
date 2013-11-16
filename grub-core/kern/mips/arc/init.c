@@ -355,8 +355,7 @@ get_device_name_iter (grub_disk_t disk __attribute__ ((unused)),
 }
 
 void
-grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
-			       char **path __attribute__ ((unused)))
+grub_machine_get_bootlocation (char **device, char **path)
 {
   char *loaddev = boot_location;
   char *pptr, *partptr;

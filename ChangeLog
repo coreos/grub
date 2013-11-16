@@ -1,3 +1,8 @@
+2013-11-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/kern/mips/arc/init.c (grub_machine_get_bootlocation):
+	Remove "unused" attribute from arguments, they are used.
+
 2013-11-15  Colin Watson  <cjwatson@debian.org>
 
 	* .gitignore: Only ignore grub-mk* at the top level.
