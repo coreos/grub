@@ -815,9 +815,9 @@ LIBS="$TARGET_LIBGCC"
 grub_ASM_USCORE
 if test "x$TARGET_APPLE_LINKER" = x0 ; then
 if test x$grub_cv_asm_uscore = xyes; then
-CFLAGS="$TARGET_CFLAGS -Wl,--defsym,_abort=_main"
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,_abort=_main"
 else
-CFLAGS="$TARGET_CFLAGS -Wl,--defsym,abort=main"
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,abort=main"
 fi
 fi
 

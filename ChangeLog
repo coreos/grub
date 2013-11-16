@@ -1,5 +1,9 @@
 2013-11-16  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* configure.ac: Restore -nostdlib for libgcc symbols tests.
+
+2013-11-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* docs/grub.texi (Environment): Document cmdpath.
 
 2013-11-16  Andrey Borzenkov <arvidjaar@gmail.com>
