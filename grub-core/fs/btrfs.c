@@ -911,7 +911,6 @@ grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
 {
   grub_uint32_t total_size, cblock_size;
   grub_size_t ret = 0;
-  unsigned char buf[GRUB_BTRFS_LZO_BLOCK_SIZE];
   char *ibuf0 = ibuf;
 
   total_size = grub_le_to_cpu32 (grub_get_unaligned32 (ibuf));
@@ -955,13 +954,21 @@ grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
       if (off > 0 || osize < GRUB_BTRFS_LZO_BLOCK_SIZE)
 	{
 	  grub_size_t to_copy = GRUB_BTRFS_LZO_BLOCK_SIZE - off;
+	  grub_uint8_t *buf;
 
 	  if (to_copy > osize)
 	    to_copy = osize;
 
+	  buf = grub_malloc (GRUB_BTRFS_LZO_BLOCK_SIZE);
+	  if (!buf)
+	    return -1;
+
 	  if (lzo1x_decompress_safe ((lzo_bytep)ibuf, cblock_size, buf, &usize,
 	      NULL) != LZO_E_OK)
-	    return -1;
+	    {
+	      grub_free (buf);
+	      return -1;
+	    }
 
 	  if (to_copy > usize)
 	    to_copy = usize;
@@ -972,6 +979,8 @@ grub_btrfs_lzo_decompress(char *ibuf, grub_size_t isize, grub_off_t off,
 	  obuf += to_copy;
 	  ibuf += cblock_size;
 	  off = 0;
+
+	  grub_free (buf);
 	  continue;
 	}
 
