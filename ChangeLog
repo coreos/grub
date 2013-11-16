@@ -1,5 +1,14 @@
 2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Decrease stack usage in BtrFS.
+
+	We have only 92K of stack and using over 4K per frame is wasteful
+
+	* grub-core/fs/btrfs.c (grub_btrfs_lzo_decompress): Allocate on heap
+	rather than stack.
+
+2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Decrease stack usage in JFS.
 
 	We have only 92K of stack and using over 4K per frame is wasteful
