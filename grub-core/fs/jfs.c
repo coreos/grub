@@ -72,10 +72,13 @@ struct grub_jfs_extent
   grub_uint32_t blk2;
 } __attribute__ ((packed));
 
+#define GRUB_JFS_IAG_INODES_OFFSET 3072
+#define GRUB_JFS_IAG_INODES_COUNT 128
+
 struct grub_jfs_iag
 {
-  grub_uint8_t unused[3072];
-  struct grub_jfs_extent inodes[128];
+  grub_uint8_t unused[GRUB_JFS_IAG_INODES_OFFSET];
+  struct grub_jfs_extent inodes[GRUB_JFS_IAG_INODES_COUNT];
 } __attribute__ ((packed));
 
 
@@ -283,20 +286,25 @@ getblk (struct grub_jfs_treehead *treehead,
 
   if (found != -1)
     {
+      grub_int64_t ret = -1;
       struct
       {
 	struct grub_jfs_treehead treehead;
 	struct grub_jfs_tree_extent extents[254];
-      } tree;
+      } *tree;
 
-      if (grub_disk_read (data->disk,
-			  ((grub_disk_addr_t) grub_le_to_cpu32 (extents[found].extent.blk2))
-			  << (grub_le_to_cpu16 (data->sblock.log2_blksz)
-			      - GRUB_DISK_SECTOR_BITS), 0,
-			  sizeof (tree), (char *) &tree))
+      tree = grub_zalloc (sizeof (*tree));
+      if (!tree)
 	return -1;
 
-      return getblk (&tree.treehead, &tree.extents[0], data, blk);
+      if (!grub_disk_read (data->disk,
+			   ((grub_disk_addr_t) grub_le_to_cpu32 (extents[found].extent.blk2))
+			   << (grub_le_to_cpu16 (data->sblock.log2_blksz)
+			       - GRUB_DISK_SECTOR_BITS), 0,
+			   sizeof (*tree), (char *) tree))
+	ret = getblk (&tree->treehead, &tree->extents[0], data, blk);
+      grub_free (tree);
+      return ret;
     }
 
   return -1;
@@ -316,7 +324,7 @@ static grub_err_t
 grub_jfs_read_inode (struct grub_jfs_data *data, grub_uint32_t ino,
 		     struct grub_jfs_inode *inode)
 {
-  struct grub_jfs_iag iag;
+  struct grub_jfs_extent iag_inodes[GRUB_JFS_IAG_INODES_COUNT];
   grub_uint32_t iagnum = ino / 4096;
   unsigned inoext = (ino % 4096) / 32;
   unsigned inonum = (ino % 4096) % 32;
@@ -330,11 +338,12 @@ grub_jfs_read_inode (struct grub_jfs_data *data, grub_uint32_t ino,
   /* Read in the IAG.  */
   if (grub_disk_read (data->disk,
 		      iagblk << (grub_le_to_cpu16 (data->sblock.log2_blksz)
-				 - GRUB_DISK_SECTOR_BITS), 0,
-		      sizeof (struct grub_jfs_iag), &iag))
+				 - GRUB_DISK_SECTOR_BITS),
+		      GRUB_JFS_IAG_INODES_OFFSET,
+		      sizeof (iag_inodes), &iag_inodes))
     return grub_errno;
 
-  inoblk = grub_le_to_cpu32 (iag.inodes[inoext].blk2);
+  inoblk = grub_le_to_cpu32 (iag_inodes[inoext].blk2);
   inoblk <<= (grub_le_to_cpu16 (data->sblock.log2_blksz)
 	      - GRUB_DISK_SECTOR_BITS);
   inoblk += inonum;

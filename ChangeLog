@@ -1,7 +1,18 @@
+2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Decrease stack usage in JFS.
+
+	We have only 92K of stack and using over 4K per frame is wasteful
+
+	* grub-core/fs/jfs.c (getblk): Allocate on heap rather than on
+	stack. Note: this function is recursive.
+	(grub_jfs_read_inode): Read only part we care about.
+
 2013-11-16  Leif Lindholm <leif.lindholm@linaro.org>
 
 	* grub-core/kern/arm/uboot/startup.S: fix grub_uboot_syscall va_arg
 	handling
+
 2013-11-16  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* configure.ac: Restore -nostdlib for libgcc symbols tests.
