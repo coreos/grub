@@ -1,5 +1,10 @@
 2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/util/grub-shell.in: Use escc-ch-b on powerpc. This is missing
+	counterpart of fixing the naming of escc ports.
+
+2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install-common.c (platforms): Fix the order of entries and
 	remove useless field val.
 

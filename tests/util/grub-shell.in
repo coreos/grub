@@ -79,7 +79,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	boot=hd
 	qemu=qemu-system-ppc
 	console=console
-	serial_port=escc-ch-a
+	serial_port=escc-ch-b
 	serial_null="-serial null"
 	netbootext=elf
 	;;
