@@ -66,7 +66,7 @@ struct grub_install_image_target_desc
     IMAGE_I386_IEEE1275,
     IMAGE_LOONGSON_ELF, IMAGE_QEMU, IMAGE_PPC, IMAGE_YEELOONG_FLASH,
     IMAGE_FULOONG2F_FLASH, IMAGE_I386_PC_PXE, IMAGE_MIPS_ARC,
-    IMAGE_QEMU_MIPS_FLASH, IMAGE_UBOOT, IMAGE_XEN
+    IMAGE_QEMU_MIPS_FLASH, IMAGE_UBOOT, IMAGE_XEN, IMAGE_I386_PC_ELTORITO
   } id;
   enum
     {
@@ -164,6 +164,22 @@ static const struct grub_install_image_target_desc image_targets[] =
       .voidp_sizeof = 4,
       .bigendian = 0,
       .id = IMAGE_I386_PC_PXE, 
+      .flags = PLATFORM_FLAGS_DECOMPRESSORS,
+      .total_module_size = TARGET_NO_FIELD,
+      .decompressor_compressed_size = GRUB_DECOMPRESSOR_I386_PC_COMPRESSED_SIZE,
+      .decompressor_uncompressed_size = GRUB_DECOMPRESSOR_I386_PC_UNCOMPRESSED_SIZE,
+      .decompressor_uncompressed_addr = TARGET_NO_FIELD,
+      .section_align = 1,
+      .vaddr_offset = 0,
+      .link_addr = GRUB_KERNEL_I386_PC_LINK_ADDR,
+      .default_compression = GRUB_COMPRESSION_LZMA
+    },
+    {
+      .dirname = "i386-pc",
+      .names = { "i386-pc-eltorito", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_I386_PC_ELTORITO, 
       .flags = PLATFORM_FLAGS_DECOMPRESSORS,
       .total_module_size = TARGET_NO_FIELD,
       .decompressor_compressed_size = GRUB_DECOMPRESSOR_I386_PC_COMPRESSED_SIZE,
@@ -826,6 +842,12 @@ grub_util_get_target_dirname (const struct grub_install_image_target_desc *t)
   return t->dirname;
 }
 
+const char *
+grub_util_get_target_name (const struct grub_install_image_target_desc *t)
+{
+  return t->names[0];
+}
+
 char *
 grub_install_get_image_targets_string (void)
 {
@@ -874,7 +896,8 @@ grub_install_generate_image (const char *dir, const char *prefix,
     comp = image_target->default_compression;
 
   if (image_target->id == IMAGE_I386_PC
-      || image_target->id == IMAGE_I386_PC_PXE)
+      || image_target->id == IMAGE_I386_PC_PXE
+      || image_target->id == IMAGE_I386_PC_ELTORITO)
     comp = GRUB_COMPRESSION_LZMA;
 
   path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
@@ -1105,7 +1128,8 @@ grub_install_generate_image (const char *dir, const char *prefix,
       decompress_img = grub_util_read_image (decompress_path);
 
       if ((image_target->id == IMAGE_I386_PC
-	   || image_target->id == IMAGE_I386_PC_PXE)
+	   || image_target->id == IMAGE_I386_PC_PXE
+	   || image_target->id == IMAGE_I386_PC_ELTORITO)
 	  && decompress_size > GRUB_KERNEL_I386_PC_LINK_ADDR - 0x8200)
 	grub_util_error ("%s", _("Decompressor is too big"));
 
@@ -1149,6 +1173,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
     {
     case IMAGE_I386_PC:
     case IMAGE_I386_PC_PXE:
+    case IMAGE_I386_PC_ELTORITO:
 	if (GRUB_KERNEL_I386_PC_LINK_ADDR + core_size > 0x78000
 	    || (core_size > (0xffff << GRUB_DISK_SECTOR_BITS))
 	    || (kernel_size + bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000))
@@ -1185,6 +1210,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
     {
     case IMAGE_I386_PC:
     case IMAGE_I386_PC_PXE:
+    case IMAGE_I386_PC_ELTORITO:
       {
 	unsigned num;
 	char *boot_path, *boot_img;
@@ -1217,6 +1243,21 @@ grub_install_generate_image (const char *dir, const char *prefix,
 		  *ptr = 0;
 		  break;
 		}
+	  }
+
+	if (image_target->id == IMAGE_I386_PC_ELTORITO)
+	  {
+	    char *eltorito_path, *eltorito_img;
+	    size_t eltorito_size;
+	    
+	    eltorito_path = grub_util_get_path (dir, "cdboot.img");
+	    eltorito_size = grub_util_get_image_size (eltorito_path);
+	    eltorito_img = grub_util_read_image (eltorito_path);
+	    
+	    grub_util_write_image (eltorito_img, eltorito_size, out,
+				   outname);
+	    free (eltorito_img);
+	    free (eltorito_path);
 	  }
 
 	boot_path = grub_util_get_path (dir, "diskboot.img");
@@ -1764,6 +1805,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
   grub_util_write_image (core_img, core_size, out, outname);
   free (core_img);
   free (kernel_path);
+  free (rel_section);
 
   while (path_list)
     {

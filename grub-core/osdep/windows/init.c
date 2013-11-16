@@ -21,6 +21,7 @@
 #include <grub/util/misc.h>
 #include <grub/osdep/hostfile.h>
 #include <grub/util/windows.h>
+#include <grub/emu/config.h>
 
 #include <wincon.h>
 #include <windows.h>
@@ -111,10 +112,42 @@ set_console_unicode_font (void)
     }
 }
 
+static char *grub_util_base_directory;
+static char *locale_dir;
+
+const char *
+grub_util_get_config_filename (void)
+{
+  static char *value = NULL;
+  if (!value)
+    value = grub_util_path_concat (2, grub_util_base_directory, "grub.cfg");
+  return value;
+}
+
+const char *
+grub_util_get_pkgdatadir (void)
+{
+  return grub_util_base_directory;
+}
+
+const char *
+grub_util_get_localedir (void)
+{
+  return locale_dir;
+}
+
+const char *
+grub_util_get_pkglibdir (void)
+{
+  return grub_util_base_directory;
+}
+
 void
 grub_util_host_init (int *argc __attribute__ ((unused)),
 		     char ***argv)
 {
+  char *ptr;
+
   SetConsoleOutputCP (CP_UTF8);
   SetConsoleCP (CP_UTF8);
 
@@ -137,9 +170,21 @@ grub_util_host_init (int *argc __attribute__ ((unused)),
 #error "Unsupported TCHAR size"
 #endif
 
+  grub_util_base_directory = canonicalize_file_name ((*argv)[0]);
+  if (!grub_util_base_directory)
+    grub_util_base_directory = xstrdup ((*argv)[0]);
+  for (ptr = grub_util_base_directory + strlen (grub_util_base_directory) - 1;
+       ptr >= grub_util_base_directory && *ptr != '/' && *ptr != '\\'; ptr--);
+  if (ptr >= grub_util_base_directory)
+    *ptr = '\0';
+
+  locale_dir = grub_util_path_concat (2, grub_util_base_directory, "locale");
+
   set_program_name ((*argv)[0]);
 
-#ifdef GRUB_UTIL
-  grub_util_init_nls ();
-#endif
+#if (defined (GRUB_UTIL) && defined(ENABLE_NLS) && ENABLE_NLS)
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, locale_dir);
+  textdomain (PACKAGE);
+#endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
 }

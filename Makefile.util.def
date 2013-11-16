@@ -171,6 +171,10 @@ program = {
   common = util/resolve.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/osdep/init.c;
+  common = grub-core/osdep/config.c;
+  extra_dist = grub-core/osdep/windows/config.c;
+  extra_dist = grub-core/osdep/unix/config.c;
+  common = util/config.c;
 
   common = grub-core/kern/arm/dl_helper.c;
 
@@ -310,6 +314,7 @@ program = {
   installdir = sbin;
   mansection = 8;
   common = util/grub-probe.c;
+  common = util/probe.c;
   common = grub-core/osdep/ofpath.c;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/osdep/init.c;
@@ -479,38 +484,165 @@ script = {
   installdir = grubconf;
 };
 
-script = {
+program = {
   mansection = 1;
   name = grub-mkrescue;
-  common = util/grub-install_header;
-  common = util/grub-mkrescue.in;
-  enable = noemu;
+
+  common = util/grub-mkrescue.c;
+  common = util/render-label.c;
+  common = util/glue-efi.c;
+  common = util/mkimage.c;
+  common = util/grub-install-common.c;
+  common = util/setup_bios.c;
+  common = util/setup_sparc.c;
+  common = grub-core/lib/reed_solomon.c;
+  common = grub-core/osdep/random.c;
+  common = grub-core/osdep/ofpath.c;
+  common = grub-core/osdep/platform.c;
+  common = grub-core/osdep/platform_unix.c;
+  common = grub-core/osdep/compress.c;
+  extra_dist = grub-core/osdep/unix/compress.c;
+  extra_dist = grub-core/osdep/basic/compress.c;
+  common = util/editenv.c;
+  common = grub-core/osdep/blocklist.c;
+  common = grub-core/osdep/config.c;
+  common = util/config.c;
+
+  common = grub-core/kern/emu/hostfs.c;
+  common = grub-core/disk/host.c;
+
+  common = grub-core/kern/arm/dl_helper.c;
+
+  common = util/resolve.c;
+
+  common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/osdep/init.c;
+
+  ldadd = '$(LIBLZMA)';
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+
+  condition = COND_HAVE_EXEC;
 };
 
-script = {
+program = {
   mansection = 1;
   name = grub-mkstandalone;
-  common = util/grub-install_header;
-  common = util/grub-mkstandalone.in;
+  common = util/grub-mkstandalone.c;
+
+  common = util/render-label.c;
+  common = util/glue-efi.c;
+  common = util/mkimage.c;
+  common = util/grub-install-common.c;
+  common = util/setup_bios.c;
+  common = util/setup_sparc.c;
+  common = grub-core/lib/reed_solomon.c;
+  common = grub-core/osdep/random.c;
+  common = grub-core/osdep/ofpath.c;
+  common = grub-core/osdep/platform.c;
+  common = grub-core/osdep/platform_unix.c;
+  extra_dist = grub-core/osdep/linux/platform.c;
+  extra_dist = grub-core/osdep/basic/platform.c;
+  extra_dist = grub-core/osdep/basic/no_platform.c;
+  extra_dist = grub-core/osdep/unix/platform.c;
+  common = grub-core/osdep/compress.c;
+  common = util/editenv.c;
+  common = grub-core/osdep/blocklist.c;
+  common = grub-core/osdep/config.c;
+  common = util/config.c;
+
+  common = grub-core/kern/emu/hostfs.c;
+  common = grub-core/disk/host.c;
+
+  common = grub-core/kern/arm/dl_helper.c;
+
+  common = util/resolve.c;
+
+  common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/osdep/init.c;
+
+  ldadd = '$(LIBLZMA)';
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
-script = {
+program = {
   mansection = 8;
   installdir = sbin;
   name = grub-install;
 
-  common = util/grub-install_header;
-  common = util/grub-install.in;
+  common = util/grub-install.c;
+  common = util/probe.c;
+  common = util/mkimage.c;
+  common = util/grub-install-common.c;
+  common = util/setup_bios.c;
+  common = util/setup_sparc.c;
+  common = grub-core/lib/reed_solomon.c;
+  common = grub-core/osdep/random.c;
+  common = grub-core/osdep/ofpath.c;
+  common = grub-core/osdep/platform.c;
+  common = grub-core/osdep/platform_unix.c;
+  common = grub-core/osdep/compress.c;
+  common = util/editenv.c;
+  common = grub-core/osdep/blocklist.c;
+  common = grub-core/osdep/config.c;
+  common = util/config.c;
+
+  common = grub-core/kern/arm/dl_helper.c;
+
+  common = util/resolve.c;
   enable = noemu;
+  common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/osdep/init.c;
+
+  ldadd = '$(LIBLZMA)';
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
-script = {
+program = {
   mansection = 1;
   installdir = bin;
   name = grub-mknetdir;
 
-  common = util/grub-install_header;
-  common = util/grub-mknetdir.in;
+  common = util/grub-mknetdir.c;
+
+  common = util/mkimage.c;
+  common = util/grub-install-common.c;
+  common = util/setup_bios.c;
+  common = util/setup_sparc.c;
+  common = grub-core/lib/reed_solomon.c;
+  common = grub-core/osdep/random.c;
+  common = grub-core/osdep/ofpath.c;
+  common = grub-core/osdep/platform.c;
+  common = grub-core/osdep/platform_unix.c;
+  common = grub-core/osdep/compress.c;
+  common = util/editenv.c;
+  common = grub-core/osdep/blocklist.c;
+  common = grub-core/osdep/config.c;
+  common = util/config.c;
+
+  common = grub-core/kern/arm/dl_helper.c;
+
+  common = util/resolve.c;
+  common = grub-core/kern/emu/argp_common.c;
+  common = grub-core/osdep/init.c;
+
+  ldadd = '$(LIBLZMA)';
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
 script = {

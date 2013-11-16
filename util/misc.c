@@ -40,7 +40,7 @@
 #include <grub/time.h>
 #include <grub/i18n.h>
 #include <grub/script_sh.h>
-#include <grub/osdep/hostfile.h>
+#include <grub/emu/hostfile.h>
 
 #define ENABLE_RELOCATABLE 0
 #ifdef GRUB_BUILD
@@ -256,15 +256,3 @@ void
 grub_register_exported_symbols (void)
 {
 }
-
-#ifdef GRUB_UTIL
-void
-grub_util_init_nls (void)
-{
-#if (defined(ENABLE_NLS) && ENABLE_NLS)
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
-#endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
-}
-#endif

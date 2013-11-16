@@ -20,8 +20,10 @@
 #define GRUB_UTIL_GETROOT_HEADER	1
 
 #include <grub/types.h>
+#include <grub/device.h>
 
 #include <sys/types.h>
+#include <stdio.h>
 
 enum grub_dev_abstraction_types {
   GRUB_DEV_ABSTRACTION_NONE,
@@ -88,5 +90,15 @@ char *
 grub_util_get_grub_dev_os (const char *os_dev);
 grub_disk_addr_t
 grub_util_find_partition_start_os (const char *dev);
+
+char *
+grub_util_guess_bios_drive (const char *orig_path);
+char *
+grub_util_guess_efi_drive (const char *orig_path);
+char *
+grub_util_guess_baremetal_drive (const char *orig_path);
+void
+grub_util_fprint_full_disk_name (FILE *f,
+				 const char *drive, grub_device_t dev);
 
 #endif /* ! GRUB_UTIL_GETROOT_HEADER */

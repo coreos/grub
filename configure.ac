@@ -75,14 +75,10 @@ if test "x$TARGET_CFLAGS" = x; then
   TARGET_CFLAGS="$TARGET_CFLAGS -Os"
 fi
 
-BUILD_CPPFLAGS="$BUILD_CPPFLAGS -DLOCALEDIR=\\\"\$(localedir)\\\""
-
 # Default HOST_CPPFLAGS
 HOST_CPPFLAGS="$HOST_CPPFLAGS -Wall -W"
 HOST_CPPFLAGS="$HOST_CPPFLAGS -I\$(top_builddir)/include"
 HOST_CPPFLAGS="$HOST_CPPFLAGS -DGRUB_UTIL=1"
-HOST_CPPFLAGS="$HOST_CPPFLAGS -DGRUB_LIBDIR=\\\"\$(pkglibdir)\\\""
-HOST_CPPFLAGS="$HOST_CPPFLAGS -DLOCALEDIR=\\\"\$(localedir)\\\""
 
 TARGET_CPPFLAGS="$TARGET_CPPFLAGS -Wall -W"
 TARGET_CPPFLAGS="$TARGET_CPPFLAGS -I\$(top_srcdir)/include"
@@ -190,6 +186,12 @@ case "$host_os" in
   solaris*)			host_kernel=illumos ;;
   darwin*)			host_kernel=xnu ;;
   cygwin | windows* | mingw32*)	host_kernel=windows ;;
+esac
+
+case "$host_os" in
+  cygwin | windows* | mingw32*)	have_exec=n ;;
+  aros*) have_exec=n ;;
+  *) have_exec=y;;
 esac
 
 case "$platform" in
@@ -1458,6 +1460,20 @@ AM_CONDITIONAL([COND_HAVE_CXX], [test x$HAVE_CXX = xyes])
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
 AM_CONDITIONAL([COND_CYGWIN], [test x$target_os = xcygwin])
 AM_CONDITIONAL([COND_STARFIELD], [test "x$starfield_excuse" = x])
+AM_CONDITIONAL([COND_HAVE_EXEC], [test "x$have_exec" = xy])
+
+test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+test "x$exec_prefix" = xNONE && exec_prefix="${prefix}"
+datarootdir="$(eval echo "$datarootdir")"
+grub_libdir="$(eval echo "$libdir")"
+grub_localedir="$(eval echo "$localedir")"
+grub_datadir="$(eval echo "$datadir")"
+grub_sysconfdir="$(eval echo "$sysconfdir")"
+AC_DEFINE_UNQUOTED(LOCALEDIR, "$grub_localedir", [Locale dir])
+AC_DEFINE_UNQUOTED(GRUB_LIBDIR, "$grub_libdir", [Library dir])
+AC_DEFINE_UNQUOTED(GRUB_DATADIR, "$grub_datadir", [Data dir])
+AC_DEFINE_UNQUOTED(GRUB_SYSCONFDIR, "$grub_sysconfdir", [Configuration dir])
+
 
 # Output files.
 cpudir="${target_cpu}"

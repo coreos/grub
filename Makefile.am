@@ -397,5 +397,27 @@ default_payload.elf: grub-mkstandalone grub-mkimage
 	pkgdatadir=. ./grub-mkstandalone --grub-mkimage=./grub-mkimage -O i386-coreboot -o $@ --modules='ahci ehci uhci ohci usb_keyboard usbms part_msdos xfs ext2 fat at_keyboard part_gpt usbserial_usbdebug cbfs' --install-modules='ls linux search configfile normal cbtime cbls memrw iorw minicmd lsmmap lspci halt reboot hexdump pcidump setpci lsacpi chain' --fonts= --themes= --locales= -d grub-core/
 endif
 
+windowsdir=$(top_builddir)/$(PACKAGE)-$(VERSION)-for-windows
+windowsdir: $(PROGRAMS) $(starfield_DATA) $(platform_DATA)
+	test -d $(windowsdir) && rm -rf $(windowsdir) || true
+	test -d $(windowsdir) || mkdir $(windowsdir)
+	$(MAKE) -C po $(AM_MAKEFLAGS) windowsdir
+	$(MAKE) -C grub-core $(AM_MAKEFLAGS) windowsdir
+	test -d $(windowsdir)/themes || mkdir $(windowsdir)/themes
+	test -d $(windowsdir)/themes/starfield || mkdir $(windowsdir)/themes/starfield
+	for x in $(PROGRAMS); do \
+		$(STRIP) $$x -o $(windowsdir)/$$x; \
+	done
+	for x in $(pkgdata_DATA); do \
+		cp -fp $$x $(windowsdir)/$$x; \
+	done
+	for x in $(starfield_DATA); do \
+		cp -fp $$x $(windowsdir)/themes/starfield/$$(basename $$x); \
+	done
+
+windowszip=$(top_builddir)/$(PACKAGE)-$(VERSION)-for-windows.zip
+windowszip: windowsdir
+	test -f $(windowszip) && rm $(windowszip) || true
+	zip -r $(windowszip) $(windowsdir)
 
 EXTRA_DIST += linguas.sh

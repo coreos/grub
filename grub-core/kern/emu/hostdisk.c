@@ -609,3 +609,78 @@ grub_util_biosdisk_get_osdev (grub_disk_t disk)
 
   return map[disk->id].device;
 }
+
+
+static char *
+grub_util_path_concat_real (size_t n, int ext, va_list ap)
+{
+  size_t totlen = 0;
+  char **l = xmalloc ((n + ext) * sizeof (l[0]));
+  char *r, *p, *pi;
+  size_t i;
+  int first = 1;
+
+  for (i = 0; i < n + ext; i++)
+    {
+      l[i] = va_arg (ap, char *);
+      if (l[i])
+	totlen += strlen (l[i]) + 1;
+    }
+
+  r = xmalloc (totlen + 10);
+
+  p = r;
+  for (i = 0; i < n; i++)
+    {
+      pi = l[i];
+      if (!pi)
+	continue;
+      while (*pi == '/')
+	pi++;
+      if ((p != r || (pi != l[i] && first)) && (p == r || *(p - 1) != '/'))
+	*p++ = '/';
+      first = 0;
+      p = grub_stpcpy (p, pi);
+      while (p != r && p != r + 1 && *(p - 1) == '/')
+	p--;
+    }
+
+  if (ext && l[i])
+    p = grub_stpcpy (p, l[i]);
+
+  *p = '\0';
+
+  free (l);
+
+  return r;
+}
+
+char *
+grub_util_path_concat (size_t n, ...)
+{
+  va_list ap;
+  char *r;
+
+  va_start (ap, n);
+
+  r = grub_util_path_concat_real (n, 0, ap);
+
+  va_end (ap);
+
+  return r;
+}
+
+char *
+grub_util_path_concat_ext (size_t n, ...)
+{
+  va_list ap;
+  char *r;
+
+  va_start (ap, n);
+
+  r = grub_util_path_concat_real (n, 1, ap);
+
+  va_end (ap);
+
+  return r;
+}

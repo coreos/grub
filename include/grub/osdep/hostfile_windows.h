@@ -55,6 +55,9 @@ grub_util_fd_closedir (grub_util_fd_dir_t dirp);
 grub_util_fd_dirent_t
 grub_util_fd_readdir (grub_util_fd_dir_t dirp);
 
+int
+grub_util_rmdir (const char *pathname);
+
 enum grub_util_fd_open_flags_t
   {
     GRUB_UTIL_FD_O_RDONLY = 1,

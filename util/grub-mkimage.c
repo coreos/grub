@@ -45,6 +45,7 @@
 #include <grub/ia64/reloc.h>
 #include <grub/osdep/hostfile.h>
 #include <grub/util/install.h>
+#include <grub/emu/config.h>
 
 #define _GNU_SOURCE	1
 #include <argp.h>
@@ -83,7 +84,7 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
   switch (key)
     {
     case 'd':
-      return xasprintf (text, GRUB_PKGLIBDIR);
+      return xasprintf (text, grub_util_get_pkglibdir ());
     case 'p':
       return xasprintf (text, DEFAULT_DIRECTORY);
     case 'O':
@@ -268,10 +269,12 @@ main (int argc, char *argv[])
   if (!arguments.dir)
     {
       const char *dn = grub_util_get_target_dirname (arguments.image_target);
-      arguments.dir = xmalloc (sizeof (GRUB_PKGLIBDIR) + grub_strlen (dn) + 1);
-      memcpy (arguments.dir, GRUB_PKGLIBDIR, sizeof (GRUB_PKGLIBDIR) - 1);
-      *(arguments.dir + sizeof (GRUB_PKGLIBDIR) - 1) = '/';
-      strcpy (arguments.dir + sizeof (GRUB_PKGLIBDIR), dn);
+      const char *pkglibdir = grub_util_get_pkglibdir ();
+      char *ptr;
+      arguments.dir = xmalloc (grub_strlen (pkglibdir) + grub_strlen (dn) + 2);
+      ptr = grub_stpcpy (arguments.dir, pkglibdir);
+      *ptr++ = '/';
+      strcpy (ptr, dn);
     }
 
   grub_install_generate_image (arguments.dir,

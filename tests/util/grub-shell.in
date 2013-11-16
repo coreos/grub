@@ -347,8 +347,8 @@ fi
 
 if [ x$boot != xnet ] && [ x$boot != xemu ]; then
     cp -R "@srcdir@/themes" "@builddir@"
-    pkgdatadir="@builddir@" sh "@builddir@/grub-mkrescue" "--grub-mkimage=${builddir}/grub-mkimage" "--grub-render-label=${builddir}/grub-render-label" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
-	--rom-directory="${rom_directory}" "--grub-mkimage-extra=$mkimage_extra_arg" ${mkrescue_args} \
+    pkgdatadir="@builddir@" "@builddir@/grub-mkrescue" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
+	--rom-directory="${rom_directory}" $mkimage_extra_arg ${mkrescue_args} \
 	"/boot/grub/grub.cfg=${cfgfile}" "/boot/grub/testcase.cfg=${source}" \
 	${files} >/dev/null 2>&1
 fi
@@ -418,7 +418,7 @@ do_trim ()
 
 if [ x$boot = xnet ]; then
     netdir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
-    pkgdatadir="@builddir@" sh "@builddir@/grub-mknetdir" "--grub-mkimage=${builddir}/grub-mkimage" "--directory=${builddir}/grub-core" "--net-directory=$netdir" ${mkrescue_args} > /dev/null
+    pkgdatadir="@builddir@" "@builddir@/grub-mknetdir" "--grub-mkimage=${builddir}/grub-mkimage" "--directory=${builddir}/grub-core" "--net-directory=$netdir" ${mkrescue_args} > /dev/null
     cp "${cfgfile}" "$netdir/boot/grub/grub.cfg"
     cp "${source}" "$netdir/boot/grub/testcase.cfg"
     timeout -s KILL $timeout "${qemu}" ${qemuopts} ${serial_null} -serial file:/dev/stdout -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.$netbootext"  -net nic  | cat | tr -d "\r" | do_trim

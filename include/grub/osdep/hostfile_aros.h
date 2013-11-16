@@ -51,6 +51,12 @@ grub_util_fd_readdir (grub_util_fd_dir_t dirp)
 }
 
 static inline int
+grub_util_rmdir (const char *pathname)
+{
+  return rmdir (pathname);
+}
+
+static inline int
 grub_util_unlink (const char *pathname)
 {
   return unlink (pathname);
@@ -62,7 +68,7 @@ grub_util_rename (const char *from, const char *to)
   return rename (from, to);
 }
 
-#define grub_util_mkdir(a) mkdir (a)
+#define grub_util_mkdir(a) mkdir (a, 0700)
 
 struct grub_util_fd
 {
@@ -86,7 +92,7 @@ enum grub_util_fd_open_flags_t
     GRUB_UTIL_FD_O_RDONLY = O_RDONLY,
     GRUB_UTIL_FD_O_WRONLY = O_WRONLY,
     GRUB_UTIL_FD_O_RDWR = O_RDWR,
-    GRUB_UTIL_FD_O_CREAT = O_CREAT,
+    GRUB_UTIL_FD_O_CREATTRUNC = O_CREAT | O_TRUNC,
     GRUB_UTIL_FD_O_SYNC = (0
 #ifdef O_SYNC
 			   | O_SYNC

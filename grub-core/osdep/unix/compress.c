@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2013  Free Software Foundation, Inc.
+ *  Copyright (C) 2013 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,23 +16,26 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
-#include <config-util.h>
+#include <grub/emu/exec.h>
+#include <grub/util/install.h>
 
-#include <grub/util/misc.h>
-#include <grub/i18n.h>
-
-#include "progname.h"
-
-void
-grub_util_host_init (int *argc __attribute__ ((unused)),
-		     char ***argv)
+int 
+grub_install_compress_gzip (const char *src, const char *dest)
 {
-  set_program_name ((*argv)[0]);
+  return grub_util_exec_redirect ((const char * []) { "gzip", "--best",
+	"--stdout", NULL }, src, dest);
+}
 
-#if (defined (GRUB_UTIL) && defined(ENABLE_NLS) && ENABLE_NLS)
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
-#endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
+int 
+grub_install_compress_xz (const char *src, const char *dest)
+{
+  return grub_util_exec_redirect ((const char * []) { "xz",
+	"--lzma2=dict=128KiB", "--check=none", "--stdout", NULL }, src, dest);
+}
+
+int 
+grub_install_compress_lzop (const char *src, const char *dest)
+{
+  return grub_util_exec_redirect ((const char * []) { "lzop", "-9",  "-c",
+	NULL }, src, dest);
 }

@@ -41,6 +41,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <limits.h>
+#include <time.h>
 
 #include <string.h>
 #include <dos/dos.h>
@@ -517,6 +518,17 @@ grub_util_is_directory (const char *path)
 }
 
 int
+grub_util_is_regular (const char *path)
+{
+  struct stat st;
+
+  if (stat (path, &st) == -1)
+    return 0;
+
+  return S_ISREG (st.st_mode);
+}
+
+int
 grub_util_is_special_file (const char *path)
 {
   struct stat st;
@@ -524,4 +536,54 @@ grub_util_is_special_file (const char *path)
   if (lstat (path, &st) == -1)
     return 1;
   return (!S_ISREG (st.st_mode) && !S_ISDIR (st.st_mode));
+}
+
+static char *
+get_temp_name (void)
+{
+  static int ctr = 0;
+  char *t;
+  struct stat st;
+  
+  while (1)
+    {
+      t = xasprintf ("T:grub.%d.%d.%d.%d", (int) getpid (), (int) getppid (),
+		     ctr++, time (0));
+      if (stat (t, &st) == -1)
+	return t;
+      free (t);
+    }
+}
+
+char *
+grub_util_make_temporary_file (void)
+{
+  char *ret = get_temp_name ();
+  FILE *f;
+
+  f = grub_util_fopen (ret, "wb");
+  if (f)
+    fclose (f);
+  return ret;
+}
+
+char *
+grub_util_make_temporary_dir (void)
+{
+  char *ret = get_temp_name ();
+
+  grub_util_mkdir (ret);
+
+  return ret;
+}
+
+grub_uint32_t
+grub_util_get_mtime (const char *path)
+{
+  struct stat st;
+
+  if (stat (path, &st) == -1)
+    return 0;
+
+  return st.st_mtime;
 }

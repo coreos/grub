@@ -60,6 +60,12 @@ grub_util_unlink (const char *pathname)
 }
 
 static inline int
+grub_util_rmdir (const char *pathname)
+{
+  return rmdir (pathname);
+}
+
+static inline int
 grub_util_rename (const char *from, const char *to)
 {
   return rename (from, to);

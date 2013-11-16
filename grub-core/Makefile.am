@@ -428,3 +428,10 @@ efiemu64.o: efiemu64_c.o efiemu64_s.o $(TARGET_OBJ2ELEF)
 platform_DATA += efiemu32.o efiemu64.o
 CLEANFILES += efiemu32.o efiemu64.o efiemu64_c.o efiemu64_s.o
 endif
+
+windowsdir=$(top_builddir)/$(PACKAGE)-$(VERSION)-for-windows
+windowsdir: $(PROGRAMS) $(starfield_DATA) $(platform_DATA)
+	test -d $(windowsdir)/$(target_cpu)-$(platform) || mkdir $(windowsdir)/$(target_cpu)-$(platform)
+	for x in $(platform_DATA); do \
+		cp -fp $$x $(windowsdir)/$(target_cpu)-$(platform)/$$x; \
+	done

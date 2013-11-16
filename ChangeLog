@@ -1,3 +1,15 @@
+2013-11-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub-install.c (device_map_check_duplicates): Fix incorrect
+	order of qsort arguments (number of elements vs. element size).
+
+2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Rewrite grub-install, grub-mkrescue, grub-mkstandalone and grub-mknetdir
+	the function of these files exceeds what can be sanely handled in shell
+	in posix-comaptible way. Also writing it in C extends the functionality
+	to non-UNIX-like OS and minimal environments.
+
 2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/arm/cache.S: Don't switch back to ARM mode when

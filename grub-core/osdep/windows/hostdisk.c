@@ -46,6 +46,7 @@
 
 #include <windows.h>
 #include <winioctl.h>
+#include <wincrypt.h>
 
 #if SIZEOF_TCHAR == 1
 
@@ -412,6 +413,89 @@ grub_util_unlink (const char *name)
 }
 
 int
+grub_util_rmdir (const char *name)
+{
+  LPTSTR name_windows;
+  int ret;
+
+  name_windows = grub_util_get_windows_path (name);
+
+  ret = !RemoveDirectory (name_windows);
+  free (name_windows);
+  return ret;
+}
+
+static char *
+get_temp_name (void)
+{
+  TCHAR rt[1024];
+  TCHAR *ptr;
+  HCRYPTPROV   hCryptProv;
+  grub_uint8_t rnd[5];
+  const size_t sz = sizeof (rnd) * GRUB_CHAR_BIT / 5;
+  int i;
+
+  GetTempPath (ARRAY_SIZE (rt) - 100, rt);
+
+  if (!CryptAcquireContext (&hCryptProv,
+			    NULL,
+			    MS_DEF_PROV,
+			    PROV_RSA_FULL,
+			    CRYPT_VERIFYCONTEXT)
+      || !CryptGenRandom (hCryptProv, 5, rnd))
+    grub_util_error ("%s", _("couldn't retrieve random data"));
+
+  CryptReleaseContext (hCryptProv, 0);
+
+  for (ptr = rt; *ptr; ptr++);
+  memcpy (ptr, TEXT("\\GRUB."), sizeof (TEXT("\\GRUB.")));
+  ptr += sizeof ("\\GRUB.") - 1;
+
+  for (i = 0; i < 8; i++)
+    {
+      grub_size_t b = i * 5;
+      grub_uint8_t r;
+      grub_size_t f1 = GRUB_CHAR_BIT - b % GRUB_CHAR_BIT;
+      grub_size_t f2;
+      if (f1 > 5)
+	f1 = 5;
+      f2 = 5 - f1;
+      r = (rnd[b / GRUB_CHAR_BIT] >> (b % GRUB_CHAR_BIT)) & ((1 << f1) - 1);
+      if (f2)
+	r |= (rnd[b / GRUB_CHAR_BIT + 1] & ((1 << f2) - 1)) << f1;
+      if (r < 10)
+	*ptr++ = '0' + r;
+      else
+	*ptr++ = 'a' + (r - 10);
+    }  
+  *ptr = '\0';
+
+  return grub_util_tchar_to_utf8 (rt);
+}
+
+char *
+grub_util_make_temporary_file (void)
+{
+  char *ret = get_temp_name ();
+  FILE *f;
+
+  f = grub_util_fopen (ret, "wb");
+  if (f)
+    fclose (f);
+  return ret;
+}
+
+char *
+grub_util_make_temporary_dir (void)
+{
+  char *ret = get_temp_name ();
+
+  grub_util_mkdir (ret);
+
+  return ret;
+}
+
+int
 grub_util_is_directory (const char *name)
 {
   LPTSTR name_windows;
@@ -443,6 +527,33 @@ grub_util_is_regular (const char *name)
   return !(attr & FILE_ATTRIBUTE_DIRECTORY)
     && !(attr & FILE_ATTRIBUTE_REPARSE_POINT) && attr;
 }
+
+grub_uint32_t
+grub_util_get_mtime (const char *path)
+{
+  LPTSTR name_windows;
+  BOOL b;
+  WIN32_FILE_ATTRIBUTE_DATA attr;
+  ULARGE_INTEGER us_ul;
+
+  name_windows = grub_util_get_windows_path (path);
+  if (!name_windows)
+    return 0;
+
+  b = GetFileAttributesEx (name_windows, GetFileExInfoStandard, &attr);
+  grub_free (name_windows);
+
+  if (!b)
+    return 0;
+
+  us_ul.LowPart = attr.ftLastWriteTime.dwLowDateTime;
+  us_ul.HighPart = attr.ftLastWriteTime.dwHighDateTime;
+
+  return (us_ul.QuadPart / 10000000) 
+    - 86400ULL * 365 * (1970 - 1601)
+    - 86400ULL * ((1970 - 1601) / 4) + 86400ULL * ((1970 - 1601) / 100);
+}
+
 
 #ifdef __MINGW32__
 

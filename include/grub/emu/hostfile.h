@@ -31,6 +31,11 @@ grub_util_is_special_file (const char *path);
 int
 grub_util_is_regular (const char *path);
 
+char *
+grub_util_path_concat (size_t n, ...);
+char *
+grub_util_path_concat_ext (size_t n, ...);
+
 int
 grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t off);
 ssize_t
@@ -49,5 +54,13 @@ EXPORT_FUNC(grub_util_fd_close) (grub_util_fd_t fd);
 
 grub_uint64_t
 grub_util_get_fd_size (grub_util_fd_t fd, const char *name, unsigned *log_secsize);
+char *
+grub_util_make_temporary_file (void);
+char *
+grub_util_make_temporary_dir (void);
+void
+grub_util_unlink_recursive (const char *name);
+grub_uint32_t
+grub_util_get_mtime (const char *name);
 
 #endif /* ! GRUB_BIOSDISK_MACHINE_UTIL_HEADER */

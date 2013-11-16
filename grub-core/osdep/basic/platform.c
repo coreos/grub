@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2013  Free Software Foundation, Inc.
+ *  Copyright (C) 2013 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,23 +16,11 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
-#include <config-util.h>
+#include <grub/util/install.h>
 
-#include <grub/util/misc.h>
-#include <grub/i18n.h>
-
-#include "progname.h"
-
-void
-grub_util_host_init (int *argc __attribute__ ((unused)),
-		     char ***argv)
-{
-  set_program_name ((*argv)[0]);
-
-#if (defined (GRUB_UTIL) && defined(ENABLE_NLS) && ENABLE_NLS)
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
-#endif /* (defined(ENABLE_NLS) && ENABLE_NLS) */
+const char *
+grub_install_get_default_x86_platform (void)
+{ 
+  return "i386-pc";
 }
+

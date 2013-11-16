@@ -38,6 +38,23 @@ grub_util_exec (const char *const *argv)
 {
   pid_t pid;
   int status = -1;
+  char *str, *pstr;
+  const char *const *ptr;
+  grub_size_t strl = 0;
+  for (ptr = argv; *ptr; ptr++)
+    strl += grub_strlen (*ptr) + 1;
+  pstr = str = xmalloc (strl);
+  for (ptr = argv; *ptr; ptr++)
+    {
+      pstr = grub_stpcpy (pstr, *ptr);
+      *pstr++ = ' ';
+    }
+  if (pstr > str)
+    pstr--;
+  *pstr = '\0';
+
+  grub_util_info ("executing %s", str);
+  grub_free (str);
 
   pid = fork ();
   if (pid < 0)
@@ -71,6 +88,29 @@ grub_util_exec_redirect (const char *const *argv, const char *stdin_file,
 {
   pid_t mdadm_pid;
   int status = -1;
+  char *str, *pstr;
+  const char *const *ptr;
+  grub_size_t strl = 0;
+  for (ptr = argv; *ptr; ptr++)
+    strl += grub_strlen (*ptr) + 1;
+  strl += grub_strlen (stdin_file) + 2;
+  strl += grub_strlen (stdout_file) + 2;
+
+  pstr = str = xmalloc (strl);
+  for (ptr = argv; *ptr; ptr++)
+    {
+      pstr = grub_stpcpy (pstr, *ptr);
+      *pstr++ = ' ';
+    }
+  *pstr++ = '<';
+  pstr = grub_stpcpy (pstr, stdin_file);
+  *pstr++ = ' ';
+  *pstr++ = '>';
+  pstr = grub_stpcpy (pstr, stdout_file);
+  *pstr = '\0';
+
+  grub_util_info ("executing %s", str);
+  grub_free (str);
 
   mdadm_pid = fork ();
   if (mdadm_pid < 0)
@@ -87,12 +127,17 @@ grub_util_exec_redirect (const char *const *argv, const char *stdin_file,
 #endif
 
       in = open (stdin_file, O_RDONLY);
+      if (in < 0)
+	exit (127);
       dup2 (in, STDIN_FILENO);
       close (in);
 
       out = open (stdout_file, O_WRONLY | O_CREAT, 0700);
       dup2 (out, STDOUT_FILENO);
       close (out);
+
+      if (out < 0)
+	exit (127);
 
       /* Ensure child is not localised.  */
       setenv ("LC_ALL", "C", 1);
