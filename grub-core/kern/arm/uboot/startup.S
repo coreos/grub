@@ -137,7 +137,6 @@ FUNCTION(grub_uboot_syscall)
 
 	mov	lr, pc
 	ldr	pc, grub_uboot_syscall_ptr
-	str	r8, gd_backup
 
 	ldr     r8, transition_space
 	ldr     lr, transition_space + 4
