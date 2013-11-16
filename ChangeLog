@@ -1,3 +1,7 @@
+2013-11-16  Leif Lindholm <leif.lindholm@linaro.org>
+
+	* grub-core/kern/arm/uboot/startup.S: fix grub_uboot_syscall va_arg
+	handling
 2013-11-16  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* configure.ac: Restore -nostdlib for libgcc symbols tests.

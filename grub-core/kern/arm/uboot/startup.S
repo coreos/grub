@@ -131,11 +131,6 @@ FUNCTION(grub_uboot_syscall)
 	str     r8, transition_space
 	str     lr, transition_space + 4
 	str     r9, transition_space + 8
-	str     sp, transition_space + 12
-
-	sub     sp, sp, #0x20
-	lsr     sp, sp, #3
-	lsl     sp, sp, #3
 
 	ldr	r8, gd_backup
 	ldr	r9, gd_backup + 4
@@ -147,7 +142,6 @@ FUNCTION(grub_uboot_syscall)
 	ldr     r8, transition_space
 	ldr     lr, transition_space + 4
 	ldr     r9, transition_space + 8
-	ldr     sp, transition_space + 12
 
 	bx	lr
 	
@@ -166,8 +160,8 @@ entry_state_end:
 	.long	0	@ r6
 	.long	0	@ r7
 gd_backup:	
-	.long	0	@ r8 - U-Boot global data pointer
-	.long	0	@ r9
+	.long	0	@ r8 - U-Boot global data pointer up to 2013-09-21
+	.long	0	@ r9 - U-Boot global data pointer 2013-09-21 onwards
 	.long	0	@ r10
 	.long	0	@ r11
 VARIABLE(grub_uboot_search_hint)@ U-Boot stack pointer - 
@@ -180,7 +174,6 @@ transition_space:
 	.long	0	@ r8
 	.long	0	@ lr
 	.long	0	@ r9
-	.long	0	@ sp
 
 VARIABLE(grub_uboot_syscall_ptr)
 	.long	0	@
