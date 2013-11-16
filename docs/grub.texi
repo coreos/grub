@@ -2989,6 +2989,7 @@ These variables have special meaning to GRUB.
 * biosnum::
 * check_signatures::
 * chosen::
+* cmdpath::
 * color_highlight::
 * color_normal::
 * debug::
@@ -3056,6 +3057,16 @@ title of the entry being executed.
 If the menu entry is in one or more submenus, then @var{chosen} is set to
 the titles of each of the submenus starting from the top level followed by
 the title of the menu entry itself, separated by @samp{>}.
+
+
+@node cmdpath
+@subsection cmdpath
+
+The location from which @file{core.img} was loaded as an absolute
+directory name (@pxref{File name syntax}).  This is set by GRUB at
+startup based on information returned by platform firmware.  Not every
+platform provides this information and some may return only device
+without path name.
 
 
 @node color_highlight
