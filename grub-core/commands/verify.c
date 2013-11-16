@@ -198,17 +198,16 @@ free_pk (struct grub_public_key *pk)
   grub_free (pk);
 }
 
+#define READBUF_SIZE 4096
+
 struct grub_public_key *
 grub_load_public_key (grub_file_t f)
 {
   grub_err_t err;
   struct grub_public_key *ret;
   struct grub_public_subkey **last = 0;
-  void *fingerprint_context;
-
-  fingerprint_context = grub_zalloc (GRUB_MD_SHA1->contextsize);
-  if (!fingerprint_context)
-    return NULL;
+  void *fingerprint_context = NULL;
+  grub_uint8_t *buffer = NULL;
 
   ret = grub_zalloc (sizeof (*ret));
   if (!ret)
@@ -216,6 +215,12 @@ grub_load_public_key (grub_file_t f)
       grub_free (fingerprint_context);
       return NULL;
     }
+
+  buffer = grub_zalloc (READBUF_SIZE);
+  fingerprint_context = grub_zalloc (GRUB_MD_SHA1->contextsize);
+
+  if (!buffer || !fingerprint_context)
+    goto fail;
 
   last = &ret->subkeys;
 
@@ -304,7 +309,6 @@ grub_load_public_key (grub_file_t f)
 	{
 	  grub_uint16_t l;
 	  grub_size_t lb;
-	  grub_uint8_t buffer[4096];
 	  if (grub_file_read (f, &l, sizeof (l)) != sizeof (l))
 	    {
 	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
@@ -312,7 +316,7 @@ grub_load_public_key (grub_file_t f)
 	    }
 	  
 	  lb = (grub_be_to_cpu16 (l) + GRUB_CHAR_BIT - 1) / GRUB_CHAR_BIT;
-	  if (lb > sizeof (buffer) - sizeof (grub_uint16_t))
+	  if (lb > READBUF_SIZE - sizeof (grub_uint16_t))
 	    {
 	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
 	      goto fail;
@@ -348,6 +352,7 @@ grub_load_public_key (grub_file_t f)
  fail:
   free_pk (ret);
   grub_free (fingerprint_context);
+  grub_free (buffer);
   return NULL;
 }
 
@@ -486,10 +491,12 @@ grub_verify_signature_real (char *buf, grub_size_t size,
     gcry_mpi_t hmpi;
     grub_uint64_t keyid = 0;
     struct grub_public_subkey *sk;
+    grub_uint8_t *readbuf = NULL;
 
     context = grub_zalloc (hash->contextsize);
-    if (!context)
-      return grub_errno;
+    readbuf = grub_zalloc (READBUF_SIZE);
+    if (!context || !readbuf)
+      goto fail;
 
     hash->init (context);
     if (buf)
@@ -497,8 +504,7 @@ grub_verify_signature_real (char *buf, grub_size_t size,
     else 
       while (1)
 	{
-	  grub_uint8_t readbuf[4096];
-	  r = grub_file_read (f, readbuf, sizeof (readbuf));
+	  r = grub_file_read (f, readbuf, READBUF_SIZE);
 	  if (r < 0)
 	    goto fail;
 	  if (r == 0)
@@ -510,8 +516,8 @@ grub_verify_signature_real (char *buf, grub_size_t size,
     hash->write (context, &v4, sizeof (v4));
     while (rem)
       {
-	grub_uint8_t readbuf[4096];
-	r = grub_file_read (sig, readbuf, rem < (grub_ssize_t) sizeof (readbuf) ? rem : (grub_ssize_t) sizeof (readbuf));
+	r = grub_file_read (sig, readbuf,
+			    rem < READBUF_SIZE ? rem : READBUF_SIZE);
 	if (r < 0)
 	  goto fail;
 	if (r == 0)
@@ -527,11 +533,10 @@ grub_verify_signature_real (char *buf, grub_size_t size,
     if (r != sizeof (unhashed_sub))
       goto fail;
     {
-      grub_uint8_t readbuf[4096];
       grub_uint8_t *ptr;
       grub_uint32_t l;
       rem = grub_be_to_cpu16 (unhashed_sub);
-      if (rem > (int) sizeof (readbuf))
+      if (rem > READBUF_SIZE)
 	goto fail;
       r = grub_file_read (sig, readbuf, rem);
       if (r != rem)
@@ -576,24 +581,23 @@ grub_verify_signature_real (char *buf, grub_size_t size,
       {
 	grub_uint16_t l;
 	grub_size_t lb;
-	grub_uint8_t buffer[4096];
 	grub_dprintf ("crypt", "alive\n");
 	if (grub_file_read (sig, &l, sizeof (l)) != sizeof (l))
 	  goto fail;
 	grub_dprintf ("crypt", "alive\n");
 	lb = (grub_be_to_cpu16 (l) + 7) / 8;
 	grub_dprintf ("crypt", "l = 0x%04x\n", grub_be_to_cpu16 (l));
-	if (lb > sizeof (buffer) - sizeof (grub_uint16_t))
+	if (lb > READBUF_SIZE - sizeof (grub_uint16_t))
 	  goto fail;
 	grub_dprintf ("crypt", "alive\n");
-	if (grub_file_read (sig, buffer + sizeof (grub_uint16_t), lb) != (grub_ssize_t) lb)
+	if (grub_file_read (sig, readbuf + sizeof (grub_uint16_t), lb) != (grub_ssize_t) lb)
 	  goto fail;
 	grub_dprintf ("crypt", "alive\n");
-	grub_memcpy (buffer, &l, sizeof (l));
+	grub_memcpy (readbuf, &l, sizeof (l));
 	grub_dprintf ("crypt", "alive\n");
 
 	if (gcry_mpi_scan (&mpis[i], GCRYMPI_FMT_PGP,
-			   buffer, lb + sizeof (grub_uint16_t), 0))
+			   readbuf, lb + sizeof (grub_uint16_t), 0))
 	  goto fail;
 	grub_dprintf ("crypt", "alive\n");
       }
@@ -631,6 +635,7 @@ grub_verify_signature_real (char *buf, grub_size_t size,
 
   fail:
     grub_free (context);
+    grub_free (readbuf);
     if (!grub_errno)
       return grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
     return grub_errno;

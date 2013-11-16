@@ -1,5 +1,15 @@
 2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Decrease stack usage in signature verification.
+
+	We have only 92K of stack and using over 4K per frame is wasteful
+
+	* grub-core/commands/verify.c (grub_load_public_key): Allocate on heap
+	rather than stack.
+	(grub_verify_signature_real): Likewise.
+
+2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Decrease stack usage in mdraid 0.9x.
 
 	We have only 92K of stack and using over 4K per frame is wasteful
