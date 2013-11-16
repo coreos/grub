@@ -1,7 +1,6 @@
-/* efi.c - generic EFI support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,23 +16,38 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/efi/api.h>
-#include <grub/efi/efi.h>
-#include <grub/misc.h>
-#include <grub/mm.h>
-#include <grub/kernel.h>
-#include <grub/acpi.h>
-#include <grub/loader.h>
+#include <grub/symbol.h>
 
-void
-grub_halt (void)
-{
-  grub_machine_fini (GRUB_LOADER_FLAG_NORETURN);
-#if !defined(__ia64__) && !defined(__arm__) && !defined(__aarch64__)
-  grub_acpi_halt ();
-#endif
-  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
-              GRUB_EFI_RESET_SHUTDOWN, GRUB_EFI_SUCCESS, 0, NULL);
+	.file	"setjmp.S"
+	.text
 
-  while (1);
-}
+/*
+ * int grub_setjmp (grub_jmp_buf env)
+ */
+FUNCTION(grub_setjmp)
+	stp	x19, x20, [x0], #16
+	stp	x21, x22, [x0], #16
+	stp	x23, x24, [x0], #16
+	stp	x25, x26, [x0], #16
+	stp	x27, x28, [x0], #16
+	stp	x29, x30, [x0], #16
+	mov	x1, sp
+	str	x1, [x0]
+	mov	x0, #0
+	ret
+
+/*
+ * int grub_longjmp (grub_jmp_buf env, int val)
+ */
+FUNCTION(grub_longjmp)
+	ldp	x19, x20, [x0], #16
+	ldp	x21, x22, [x0], #16
+	ldp	x23, x24, [x0], #16
+	ldp	x25, x26, [x0], #16
+	ldp	x27, x28, [x0], #16
+	ldp	x29, x30, [x0], #16
+	ldr	x2, [x0]
+	mov	sp, x2
+	cmp	x1, #0
+	csel	x0, x1, x0, ne
+	ret

@@ -23,6 +23,9 @@ if COND_arm
   CCASFLAGS_PLATFORM = -mthumb-interwork
   LDFLAGS_PLATFORM = -Wl,--wrap=__clear_cache
 endif
+if COND_arm64
+  CFLAGS_PLATFORM += -mcmodel=large
+endif
 
 #FIXME: discover and check XEN headers
 CPPFLAGS_XEN = -I/usr/include

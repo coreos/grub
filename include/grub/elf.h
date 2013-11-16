@@ -246,6 +246,7 @@ typedef struct
 #define EM_ARC_A5	93		/* ARC Cores Tangent-A5 */
 #define EM_XTENSA	94		/* Tensilica Xtensa Architecture */
 #define EM_NUM		95
+#define EM_AARCH64	183		/* ARM 64-bit architecture */
 
 /* If it is necessary to assign new unofficial EM_* values, please
    pick large random numbers (0x8523, 0xa7f2, etc.) to minimize the
@@ -2061,6 +2062,21 @@ typedef Elf32_Addr Elf32_Conflict;
 #define SHT_ARM_PREEMPTMAP	(SHT_LOPROC + 2) /* Preemption details.  */
 #define SHT_ARM_ATTRIBUTES	(SHT_LOPROC + 3) /* ARM attributes section.  */
 
+
+/* AArch64 relocs.  */
+#define R_AARCH64_NONE			0	/* No relocation.  */
+#define R_AARCH64_ABS64			257	/* Direct 64 bit. */
+#define R_AARCH64_ABS32			258	/* Direct 32 bit.  */
+#define R_AARCH64_JUMP26		282	/* 26-bit relative. */
+#define R_AARCH64_CALL26		283	/* 26-bit relative. */
+#define R_AARCH64_COPY			1024	/* Copy symbol at runtime.  */
+#define R_AARCH64_GLOB_DAT		1025	/* Create GOT entry.  */
+#define R_AARCH64_JUMP_SLOT		1026	/* Create PLT entry.  */
+#define R_AARCH64_RELATIVE		1027	/* Adjust by program base.  */
+#define R_AARCH64_TLS_DTPMOD64		1028	/* Module number, 64 bit.  */
+#define R_AARCH64_TLS_DTPREL64		1029	/* Module-relative offset, 64 bit.  */
+#define R_AARCH64_TLS_TPREL64		1030	/* TP-relative offset, 64 bit.  */
+#define R_AARCH64_TLSDESC		1031	/* TLS Descriptor.  */
 
 /* ARM relocs.  */
 #define R_ARM_NONE		0	/* No reloc */

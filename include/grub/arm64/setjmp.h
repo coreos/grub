@@ -1,7 +1,6 @@
-/* efi.c - generic EFI support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,23 +16,12 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/efi/api.h>
-#include <grub/efi/efi.h>
-#include <grub/misc.h>
-#include <grub/mm.h>
-#include <grub/kernel.h>
-#include <grub/acpi.h>
-#include <grub/loader.h>
+#ifndef GRUB_SETJMP_CPU_HEADER
+#define GRUB_SETJMP_CPU_HEADER	1
 
-void
-grub_halt (void)
-{
-  grub_machine_fini (GRUB_LOADER_FLAG_NORETURN);
-#if !defined(__ia64__) && !defined(__arm__) && !defined(__aarch64__)
-  grub_acpi_halt ();
-#endif
-  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
-              GRUB_EFI_RESET_SHUTDOWN, GRUB_EFI_SUCCESS, 0, NULL);
+typedef unsigned long long grub_jmp_buf[13];
 
-  while (1);
-}
+int grub_setjmp (grub_jmp_buf env) RETURNS_TWICE;
+void grub_longjmp (grub_jmp_buf env, int val) __attribute__ ((noreturn));
+
+#endif /* ! GRUB_SETJMP_CPU_HEADER */

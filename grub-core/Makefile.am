@@ -234,6 +234,11 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 endif
 
+if COND_arm64_efi
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
+endif
+
 if COND_emu
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/datetime.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/misc.h

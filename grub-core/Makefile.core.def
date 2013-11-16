@@ -67,6 +67,9 @@ kernel = {
   arm_efi_ldflags          = '-Wl,-r,-d';
   arm_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
+  arm64_efi_ldflags          = '-Wl,-r,-d';
+  arm64_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
+
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
   i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x9000';
 
@@ -106,6 +109,7 @@ kernel = {
   powerpc_ieee1275_startup = kern/powerpc/ieee1275/startup.S;
   arm_uboot_startup = kern/arm/uboot/startup.S;
   arm_efi_startup = kern/arm/efi/startup.S;
+  arm64_efi_startup = kern/arm64/efi/startup.S;
 
   common = kern/command.c;
   common = kern/corecmd.c;
@@ -194,6 +198,8 @@ kernel = {
   arm_efi = kern/arm/efi/init.c;
   arm_efi = kern/arm/efi/misc.c;
 
+  arm64_efi = kern/arm/efi/init.c;
+
   i386_pc = kern/i386/pc/init.c;
   i386_pc = kern/i386/pc/mmap.c;
   i386_pc = term/i386/pc/console.c;
@@ -253,6 +259,11 @@ kernel = {
   extra_dist = kern/arm/cache.S;
   arm = kern/arm/cache.c;
   arm = kern/arm/misc.S;
+
+  arm64 = kern/arm64/cache.c;
+  arm64 = kern/arm64/cache_flush.S;
+  arm64 = kern/arm64/dl.c;
+  arm64 = kern/arm64/dl_helper.c;
 
   emu = disk/host.c;
   emu = kern/emu/cache_s.S;
@@ -750,6 +761,7 @@ module = {
   enable = mips_arc;
   enable = ia64_efi;
   enable = arm_efi;
+  enable = arm64_efi;
   enable = arm_uboot;
 };
 
@@ -845,6 +857,7 @@ module = {
   ia64_efi = lib/efi/reboot.c;
   x86_64_efi = lib/efi/reboot.c;
   arm_efi = lib/efi/reboot.c;
+  arm64_efi = lib/efi/reboot.c;
   powerpc_ieee1275 = lib/ieee1275/reboot.c;
   sparc64_ieee1275 = lib/ieee1275/reboot.c;
   mips_arc = lib/mips/arc/reboot.c;
@@ -1707,6 +1720,7 @@ module = {
   enable = x86;
   enable = ia64_efi;
   enable = arm_efi;
+  enable = arm64_efi;
   enable = mips;
 };
 

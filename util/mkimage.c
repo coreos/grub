@@ -42,6 +42,7 @@
 #include <grub/efi/pe32.h>
 #include <grub/uboot/image.h>
 #include <grub/arm/reloc.h>
+#include <grub/arm64/reloc.h>
 #include <grub/ia64/reloc.h>
 #include <grub/osdep/hostfile.h>
 #include <grub/util/install.h>
@@ -577,6 +578,22 @@ static const struct grub_install_image_target_desc image_targets[] =
                                 GRUB_PE32_SECTION_ALIGNMENT),
       .pe_target = GRUB_PE32_MACHINE_ARMTHUMB_MIXED,
       .elf_target = EM_ARM,
+    },
+    {
+      .dirname = "arm64-efi",
+      .names = { "arm64-efi", NULL },
+      .voidp_sizeof = 8,
+      .bigendian = 0,
+      .id = IMAGE_EFI,
+      .flags = PLATFORM_FLAGS_NONE,
+      .total_module_size = TARGET_NO_FIELD,
+      .decompressor_compressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_addr = TARGET_NO_FIELD,
+      .section_align = GRUB_PE32_SECTION_ALIGNMENT,
+      .vaddr_offset = EFI64_HEADER_SIZE,
+      .pe_target = GRUB_PE32_MACHINE_ARM64,
+      .elf_target = EM_AARCH64,
     },
   };
 
