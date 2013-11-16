@@ -1,3 +1,10 @@
+2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/arm/cache.S: Don't switch back to ARM mode when
+	compiling to thumb2.
+	* grub-core/kern/arm/cache_armv7.S: Likewise.
+	* grub-core/lib/arm/setjmp.S: Likewise.
+
 2013-11-16  Leif Lindholm <leif.lindholm@linaro.org>
 
 	* grub-core/kern/arm/uboot/startup.S: delete superflouous save of r8

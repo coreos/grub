@@ -21,7 +21,12 @@
 	.file	"cache.S"
 	.text
 	.syntax	unified
+#if !defined (__thumb2__) || !defined (ARMV7)
 	.arm
+#else
+	.thumb
+#endif
+
 #if !defined (ARMV6) && !defined (ARMV7)
 # error Unsupported architecture version!
 #endif

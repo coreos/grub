@@ -21,8 +21,13 @@
 	.file	"cache_armv7.S"
 	.text
 	.syntax	unified
-	.arm
+#if !defined (__thumb2__)
 	.arch	armv7a
+	.arm
+#else
+	.arch	armv7
+	.thumb
+#endif
 # define DMB	dmb
 # define DSB	dsb
 # define ISB	isb
@@ -58,11 +63,17 @@ clean_invalidate_dcache:
 	@ read current cache information
 	mrc	p15, 1, r8, c0, c0, 0	@ Read CCSIDR
 	lsr	r3, r8, #13		@ Number of sets -1
-	ldr	r9, =0x3fff
-	and	r3, r3, r9
+
+	@ Keep only 14 bits of r3
+	lsl     r3, r3, #18
+	lsr     r3, r3, #18
+
 	lsr	r4, r8, #3		@ Number of ways -1
-	ldr	r9, =0x1ff
-	and	r4, r4, r9
+
+	@ Keep only 9  bits of r4
+	lsl     r4, r4, #23
+	lsr     r4, r4, #23
+
 	and	r7, r8, #7		@ log2(line size in words) - 2
 	add	r7, r7, #2		@  adjust
 	mov	r8, #1

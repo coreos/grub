@@ -24,7 +24,11 @@
 GRUB_MOD_LICENSE "GPLv3+"
 
 	.syntax	unified
+#if !defined (__thumb2__)
 	.arm
+#else
+	.thumb
+#endif
 
 	.text
 
@@ -32,7 +36,8 @@ GRUB_MOD_LICENSE "GPLv3+"
  * int grub_setjmp (grub_jmp_buf env)
  */
 FUNCTION(grub_setjmp)
-	stm	r0, { r4-r11, sp, lr }
+	mov	r12, sp
+	stm	r0, { r4-r12, lr }
 	mov	r0, #0
 	bx	lr
 
@@ -40,7 +45,9 @@ FUNCTION(grub_setjmp)
  * int grub_longjmp (grub_jmp_buf env, int val)
  */
 FUNCTION(grub_longjmp)
- 	ldm	r0, { r4-r11, sp, lr }
+	ldm	r0, { r4-r12, lr }
+	mov	sp, r12
 	movs	r0, r1
+	it	eq
 	moveq	r0, #1
 	bx	lr
