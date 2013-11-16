@@ -1,5 +1,16 @@
 2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Decrease stack usage in lexer.
+
+	We have only 92K of stack and using over 4K per frame is wasteful
+
+	* grub-core/script/yylex.l (yyalloc), (yyfree), (yyrealloc): Declare
+	as macros so that compiler would remove useless structure on stack.
+	Better solution would be to fix flex not to put this structure on
+	the stack but flex is external program.
+
+2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Decrease stack usage in signature verification.
 
 	We have only 92K of stack and using over 4K per frame is wasteful
