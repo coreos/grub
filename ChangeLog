@@ -1,3 +1,9 @@
+2013-11-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.c: Add new option --no-bootsector to skip
+	installing of bootsector. Accept --grub-setup=/bin/true as
+	backwards-compatible synonym.
+
 2013-11-16  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/grub-install.c (device_map_check_duplicates): Fix incorrect

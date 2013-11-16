@@ -67,6 +67,7 @@ static char * bootloader_id;
 static int have_load_cfg = 0;
 static FILE * load_cfg_f = NULL;
 static char *load_cfg;
+static int install_bootsector = 1;
 
 enum
   {
@@ -91,7 +92,8 @@ enum
     OPTION_DEBUG,
     OPTION_DEBUG_IMAGE,
     OPTION_NO_FLOPPY,
-    OPTION_DISK_MODULE
+    OPTION_DISK_MODULE,
+    OPTION_NO_BOOTSECTOR
   };
 
 static int fs_probe = 1;
@@ -110,9 +112,13 @@ argp_parser (int key, char *arg, struct argp_state *state)
       fs_probe = 0;
       return 0;
 
+    case OPTION_SETUP:
+      if (!grub_strstr (arg, "setup"))
+	install_bootsector = 0;
+      return 0;
+
       /* Accept and ignore for compatibility.  */
     case OPTION_FONT:
-    case OPTION_SETUP:
     case OPTION_MKRELPATH:
     case OPTION_PROBE:
     case OPTION_EDITENV:
@@ -170,6 +176,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
       allow_floppy = 1;
       return 0;
 
+    case OPTION_NO_BOOTSECTOR:
+      install_bootsector = 0;
+      return 0;
+
     case OPTION_DEBUG:
       verbosity++;
       return 0;
@@ -224,6 +234,10 @@ static struct argp_option options[] = {
   {"no-nvram", OPTION_NO_NVRAM, 0, 0,
    N_("don't update the `boot-device' NVRAM variable. "
       "This option is only available on IEEE1275 targets."), 2},
+  {"skip-fs-probe",'s',0,      0,
+   N_("do not probe for filesystems in DEVICE"), 0},
+  {"no-bootsector", OPTION_NO_BOOTSECTOR, 0, 0,
+   N_("do not install bootsector"), 0},
 
   {"debug", OPTION_DEBUG, 0, OPTION_HIDDEN, 0, 2},
   {"no-floppy", OPTION_NO_FLOPPY, 0, OPTION_HIDDEN, 0, 2},
@@ -235,9 +249,6 @@ static struct argp_option options[] = {
    N_("the ID of bootloader. This option is only available on EFI."), 2},
   {"efi-directory", OPTION_EFI_DIRECTORY, N_("DIR"), 0,
    N_("use DIR as the EFI System Partition root."), 2},
-  {"skip-fs-probe",'s',0,      0,
-   N_("do not probe for filesystems in DEVICE"), 0},
-
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -1388,7 +1399,8 @@ main (int argc, char *argv[])
 					      "boot.img");
 	grub_install_copy_file (boot_img_src, boot_img, 1);
 
-	grub_util_info ("grub_bios_setup %s %s %s %s --directory='%s' --device-map='%s' '%s'",
+	grub_util_info ("%sgrub_bios_setup %s %s %s %s --directory='%s' --device-map='%s' '%s'",
+			install_bootsector ? "" : "NOT RUNNING: ",
 			allow_floppy ? "--allow-floppy " : "",
 			verbosity ? "--verbose " : "",
 			force ? "--force " : "",
@@ -1398,9 +1410,10 @@ main (int argc, char *argv[])
 			install_device);
 			
 	/*  Now perform the installation.  */
-	grub_util_bios_setup (platdir, "boot.img", "core.img",
-			      install_drive, force,
-			      fs_probe, allow_floppy);
+	if (install_bootsector)
+	  grub_util_bios_setup (platdir, "boot.img", "core.img",
+				install_drive, force,
+				fs_probe, allow_floppy);
 	break;
       }
     case GRUB_INSTALL_PLATFORM_SPARC64_IEEE1275:
@@ -1412,7 +1425,8 @@ main (int argc, char *argv[])
 					      "boot.img");
 	grub_install_copy_file (boot_img_src, boot_img, 1);
 
-	grub_util_info ("grub_sparc_setup %s %s %s %s --directory='%s' --device-map='%s' '%s'",
+	grub_util_info ("%sgrub_sparc_setup %s %s %s %s --directory='%s' --device-map='%s' '%s'",
+			install_bootsector ? "" : "NOT RUNNING: ",
 			allow_floppy ? "--allow-floppy " : "",
 			verbosity ? "--verbose " : "",
 			force ? "--force " : "",
@@ -1422,9 +1436,10 @@ main (int argc, char *argv[])
 			install_drive);
 			
 	/*  Now perform the installation.  */
-	grub_util_sparc_setup (platdir, "boot.img", "core.img",
-			       install_device, force,
-			       fs_probe, allow_floppy);
+	if (install_bootsector)
+	  grub_util_sparc_setup (platdir, "boot.img", "core.img",
+				 install_device, force,
+				 fs_probe, allow_floppy);
 	break;
       }
 
