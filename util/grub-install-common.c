@@ -329,7 +329,8 @@ grub_install_parse (int key, char *arg)
       handle_install_list (&install_fonts, arg, 0);
       return 1;
     case GRUB_INSTALL_OPTIONS_INSTALL_COMPRESS:
-      if (strcmp (arg, "no") == 0)
+      if (strcmp (arg, "no") == 0
+	  || strcmp (arg, "none") == 0)
 	{
 	  compress_func = NULL;
 	  return 1;
