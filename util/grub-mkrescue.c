@@ -583,7 +583,7 @@ main (int argc, char *argv[])
       free (label);
       label_text = grub_util_path_concat (2, core_services, ".disk_label.contentDetails");
       f = grub_util_fopen (label_text, "wb");
-      fprintf (f, "%s", label_string);
+      fprintf (f, "%s\n", label_string);
       fclose (f);
       free (label_string);
       free (label_text);
