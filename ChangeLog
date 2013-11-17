@@ -1,5 +1,10 @@
 2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/core_compress_test.in: Use full arguments as grub-mkimage-extra
+	now needs full arguments.
+
+2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.c (main): Add trailing \n in
 	.disk_label.contentDetails to be in line with previous shell script.
 

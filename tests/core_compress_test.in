@@ -27,10 +27,10 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 esac
 
 
-if [ "$(echo hello | "${grubshell}" --grub-mkimage-extra=-C --grub-mkimage-extra=xz)" != "Hello World" ]; then
+if [ "$(echo hello | "${grubshell}" --grub-mkimage-extra=--compress=xz)" != "Hello World" ]; then
    exit 1
 fi
 
-if [ "$(echo hello | "${grubshell}" --grub-mkimage-extra=-C --grub-mkimage-extra=none)" != "Hello World" ]; then
+if [ "$(echo hello | "${grubshell}" --grub-mkimage-extra=--compress=none)" != "Hello World" ]; then
    exit 1
 fi
