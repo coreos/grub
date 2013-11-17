@@ -1,5 +1,10 @@
 2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/grub_func_test.in: Increase memory reservation as on EFI we need
+	to leave some memory to firmware.
+
+2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/cmdline_cat_test.c (cmdline_cat_test): Ignore errors
 	of loading gfxterm as gfxterm is embed in kernel on some platforms.
 	* grub-core/tests/gfxterm_menu.c (gfxterm_menu): Likewise.
