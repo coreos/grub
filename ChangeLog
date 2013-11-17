@@ -1,5 +1,9 @@
 2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.c (main): Use right source file for bootinfo.txt.
+
+2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install-common.c (grub_install_parse): Recognize
 	--compress=none like shell script did.
 

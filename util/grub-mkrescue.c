@@ -679,7 +679,7 @@ main (int argc, char *argv[])
       char *grub_chrp = grub_util_path_concat (2, source_dirs[GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275],
 					       "grub.chrp");
       char *bisrc = grub_util_path_concat (2, source_dirs[GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275],
-					   "grub.chrp");
+					   "bootinfo.txt");
       char *bootx = grub_util_path_concat (2, core_services, "BootX");
       char *ppc_chrp = grub_util_path_concat (3, iso9660_dir, "ppc", "chrp");
       char *bitgt = grub_util_path_concat (3, iso9660_dir, "ppc", "bootinfo.txt");
