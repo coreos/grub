@@ -101,6 +101,10 @@ gfxterm_menu (void)
   grub_dl_load ("gettext");
   grub_dl_load ("gfxterm");
 
+  grub_errno = GRUB_ERR_NONE;
+
+  grub_dl_load ("gfxmenu");
+
   if (grub_font_load ("unicode") == 0)
     {
       grub_test_assert (0, "unicode font not found: %s", grub_errmsg);

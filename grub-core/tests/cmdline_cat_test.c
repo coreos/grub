@@ -74,6 +74,7 @@ cmdline_cat_test (void)
   unsigned i;
 
   grub_dl_load ("gfxterm");
+  grub_errno = GRUB_ERR_NONE;
 
   if (grub_font_load ("unicode") == 0)
     {

@@ -1,5 +1,12 @@
 2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/cmdline_cat_test.c (cmdline_cat_test): Ignore errors
+	of loading gfxterm as gfxterm is embed in kernel on some platforms.
+	* grub-core/tests/gfxterm_menu.c (gfxterm_menu): Likewise.
+	Load gfxmenu.
+
+2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/core_compress_test.in: Use full arguments as grub-mkimage-extra
 	now needs full arguments.
 
