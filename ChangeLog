@@ -1,5 +1,10 @@
 2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h: Replace check for __sparc64__ with one for
+	__sparc__ as __sparc64__ isn't actually defined.
+
+2013-11-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/util/grub-shell.in: Use escc-ch-b on powerpc. This is missing
 	counterpart of fixing the naming of escc ports.
 
