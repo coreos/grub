@@ -47,6 +47,7 @@ grub_ubootdisk_register (struct device_info *newdev)
     {
     case DT_STOR_IDE:
     case DT_STOR_SATA:
+    case DT_STOR_SCSI:
     case DT_STOR_MMC:
     case DT_STOR_USB:
       /* hd */
