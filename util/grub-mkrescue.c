@@ -388,8 +388,7 @@ main (int argc, char *argv[])
   xorriso_push ("-graft-points");
   
   iso9660_dir = grub_util_make_temporary_dir ();
-  grub_util_info ("temporaray iso9660 dir is `%s'", 
-		  iso9660_dir);
+  grub_util_info ("temporary iso9660 dir is `%s'", iso9660_dir);
   boot_grub = grub_util_path_concat (3, iso9660_dir, "boot", "grub");
   grub_install_mkdir_p (boot_grub);
   romdir = grub_util_path_concat (2, boot_grub, "roms");
