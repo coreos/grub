@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/legacycfg.c (grub_legacy_check_md5_password): Plug
+	memory leak.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/powerpc/setjmp.S (grub_setjmp): Save r31.
 	(grub_longjmp): Restore r31.
 	* include/grub/powerpc/setjmp.h (grub_jmp_buf): Reserve space for r31.
