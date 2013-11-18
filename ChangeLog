@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/terminfo.c (grub_cmd_terminfo): Fix a typo to make -g
+	work again.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/util/grub-shell.in: For powerpc tests put the CD-ROM as primary
 	master since with some combinations of qemu and firmware only primary
 	IDE channel is available.
