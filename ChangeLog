@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/util/grub-shell.in: Use -cdrom and don't force cdrom
+	on primary master on pseries.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/videotest_checksum.c: Don't reload unifont if it's
 	already loaded. This saves memory needed for tests,
 

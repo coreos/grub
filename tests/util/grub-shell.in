@@ -211,6 +211,7 @@ for option in "$@"; do
 	serial_null=
 	qemuopts="$qemuopts -M pseries -no-reboot"
 	trim=1
+	pseries=y
 	    ;;
     --qemu-opts=*)
         qs=`echo "$option" | sed -e 's/--qemu-opts=//'`
@@ -361,7 +362,7 @@ if [ x$boot = xhd ]; then
     bootdev="-boot c"
 fi
 if [ x$boot = xcd ]; then
-    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ]; then
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ] && [ x$pseries != xy ] ; then
 	device="-drive if=ide,media=cdrom,file="
     else
 	device="cdrom "
