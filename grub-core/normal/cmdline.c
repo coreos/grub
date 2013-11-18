@@ -379,12 +379,18 @@ grub_cmdline_get (const char *prompt_translated)
 
     cl_terms = grub_malloc (sizeof (cl_terms[0]) * nterms);
     if (!cl_terms)
-      return 0;
+      {
+	grub_free (buf);
+	return 0;
+      }
     cl_term_cur = cl_terms;
 
     unicode_msg = grub_malloc (msg_len * sizeof (grub_uint32_t));
     if (!unicode_msg)
-      return 0;;
+      {
+	grub_free (buf);
+	return 0;
+      }
     msg_len = grub_utf8_to_ucs4 (unicode_msg, msg_len - 1,
 				 (grub_uint8_t *) prompt_translated, -1, 0);
     unicode_msg[msg_len++] = ' ';
@@ -621,6 +627,7 @@ grub_cmdline_get (const char *prompt_translated)
 
 	case '\e':
 	  grub_free (cl_terms);
+	  grub_free (buf);
 	  return 0;
 
 	case '\b':
