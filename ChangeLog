@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/grub_func_test.in: Decrease RAM size to 512M. With less
+	fragmentation 512M is enough.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/mm.c (grub_real_malloc): Decrease cut-off of moving the
 	pointer to 32K. This is the size of cache element which is the most
 	common allocation >1K. This way the pointer is always around blocks
