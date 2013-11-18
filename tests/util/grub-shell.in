@@ -354,39 +354,43 @@ if [ x$boot != xnet ] && [ x$boot != xemu ]; then
 fi
 if [ x$boot = xhd ]; then
     if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = mips-arc ]; then
-	device=hdb
+	device="hdb "
     else
-	device=hda
+	device="hda "
     fi
     bootdev="-boot c"
 fi
 if [ x$boot = xcd ]; then
-    device=cdrom
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ]; then
+	device="-drive if=ide,media=cdrom,file="
+    else
+	device="cdrom "
+    fi
     bootdev="-boot d"
 fi
 if [ x$boot = xfd ]; then
-    device=fda
+    device="fda "
     bootdev="-boot a"
 fi
 
 if [ x$boot = xqemu ]; then
     bootdev="-bios ${rom_directory}/qemu.img"
-    device=cdrom
+    device="cdrom "
 fi
 
 if [ x$boot = xmipsel_qemu ]; then
     bootdev="-kernel ${rom_directory}/mipsel-qemu_mips.elf"
-    device=cdrom
+    device="cdrom "
 fi
 
 if [ x$boot = xmipsel_fulong2e ]; then
     bootdev="-kernel ${rom_directory}/mipsel-loongson.elf -append machtype=lemote-fuloong-2e"
-    device=cdrom
+    device="cdrom "
 fi
 
 if [ x$boot = xmips_qemu ]; then
     bootdev="-kernel ${rom_directory}/mips-qemu_mips.elf"
-    device=cdrom
+    device="cdrom "
 fi
 
 if [ x$boot = xcoreboot ]; then
@@ -394,7 +398,7 @@ if [ x$boot = xcoreboot ]; then
     cp "${GRUB_COREBOOT_ROM}" "${imgfile}"
     "${GRUB_CBFSTOOL}" "${imgfile}" add-payload "${rom_directory}/coreboot.elf" fallback/payload
     bootdev="-bios ${imgfile}"
-    device=cdrom
+    device="cdrom "
     test -z "$debug" || echo "Coreboot image: ${imgfile}" >&2
 fi
 
@@ -435,7 +439,7 @@ elif [ x$boot = xemu ]; then
     @builddir@/grub-core/grub-emu -m "$device_map" -d "$grubdir" | tr -d "\r" | do_trim
     rm -rf "$grubdir"
 else
-    timeout -s KILL $timeout "${qemu}" ${qemuopts} ${serial_null} -serial file:/dev/stdout -${device} ${isofile} ${bootdev} | cat | tr -d "\r" | do_trim
+    timeout -s KILL $timeout "${qemu}" ${qemuopts} ${serial_null} -serial file:/dev/stdout -${device}"${isofile}" ${bootdev} | cat | tr -d "\r" | do_trim
 fi
 if [ x$boot = xcoreboot ]; then
     test -n "$debug" || rm -f "${imgfile}"

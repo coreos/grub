@@ -1,5 +1,11 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* tests/util/grub-shell.in: For powerpc tests put the CD-ROM as primary
+	master since with some combinations of qemu and firmware only primary
+	IDE channel is available.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/gfxterm_menu.c: Skip high-resolution tests on
 	low-memory platforms where we don't have enough memory for them.
 	* grub-core/tests/videotest_checksum.c: Likewise.
