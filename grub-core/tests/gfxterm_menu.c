@@ -125,7 +125,16 @@ gfxterm_menu (void)
   for (j = 0; j < ARRAY_SIZE (tests); j++)
     for (i = 0; i < GRUB_TEST_VIDEO_SMALL_N_MODES; i++)
       {
-	grub_uint64_t start = grub_get_time_ms ();
+	grub_uint64_t start;
+
+#if defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_IEEE1275)
+	if (grub_test_video_modes[i].width > 1024)
+	  continue;
+	if (grub_strcmp (tests[j].name, "gfxmenu") == 0
+	    && grub_test_video_modes[i].width > 800)
+	  continue;
+#endif
+	start = grub_get_time_ms ();
 
 	grub_video_capture_start (&grub_test_video_modes[i],
 				  grub_video_fbstd_colors,

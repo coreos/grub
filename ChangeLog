@@ -1,5 +1,11 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/gfxterm_menu.c: Skip high-resolution tests on
+	low-memory platforms where we don't have enough memory for them.
+	* grub-core/tests/videotest_checksum.c: Likewise.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/tests/cmdline_cat_test.c: Don't reload unifont if it's
 	already loaded. This saves memory needed for tests,
 

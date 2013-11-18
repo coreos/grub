@@ -40,9 +40,20 @@ videotest_checksum (void)
 
   for (i = 0; i < ARRAY_SIZE (grub_test_video_modes); i++)
     {
-      grub_video_capture_start (&grub_test_video_modes[i],
-				grub_video_fbstd_colors,
-				grub_test_video_modes[i].number_of_colors);
+      grub_err_t err;
+#if defined (GRUB_MACHINE_MIPS_QEMU_MIPS) || defined (GRUB_MACHINE_IEEE1275)
+      if (grub_test_video_modes[i].width > 1024)
+	continue;
+#endif
+      err = grub_video_capture_start (&grub_test_video_modes[i],
+				      grub_video_fbstd_colors,
+				      grub_test_video_modes[i].number_of_colors);
+      if (err)
+	{
+	  grub_test_assert (0, "can't start capture: %s", grub_errmsg);
+	  grub_print_error ();
+	  continue;
+	}
       grub_terminal_input_fake_sequence ((int []) { '\n' }, 1);
 
       grub_video_checksum ("videotest");
