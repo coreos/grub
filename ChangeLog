@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	On i386-ieee1275 we run in paged mode. So we need to explicitly map
+	the devices before accessing them.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/relocator.c (grub_mm_check_real): Accept const char *
 	as file argument.
 
