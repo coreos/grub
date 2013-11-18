@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/mips/qemu_mips/init.c (grub_machine_init): Update
+	clock frequency to 200 MHz,
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* tests/util/grub-shell.in: Increase console size to 1024x1024.
 
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>

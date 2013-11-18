@@ -49,7 +49,7 @@ grub_machine_init (void)
     }
 
   /* FIXME: measure this.  */
-  grub_arch_cpuclock = 64000000;
+  grub_arch_cpuclock = 200000000;
 
   modend = grub_modules_get_end ();
   grub_mm_init_region ((void *) modend, grub_arch_memsize
