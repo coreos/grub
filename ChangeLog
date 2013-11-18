@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/videotest_checksum.c: Don't reload unifont if it's
+	already loaded. This saves memory needed for tests,
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.c (main): Fix a typo to make yeeloong part
 	work again.
 
