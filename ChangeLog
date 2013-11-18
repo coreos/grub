@@ -1,5 +1,9 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/sparc64/setjmp.S: Force spilling of current window.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	On i386-ieee1275 we run in paged mode. So we need to explicitly map
 	the devices before accessing them.
 
