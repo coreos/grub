@@ -10,6 +10,11 @@
 
 2013-11-18  Colin Watson  <cjwatson@ubuntu.com>
 
+	* tests/util/grub-shell.in: Don't fail on emu platform if po/*.gmo
+	files have not been built.
+
+2013-11-18  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/osdep/unix/hostdisk.c (grub_util_make_temporary_file):
 	Handle errors from mkstemp.
 	(grub_util_make_temporary_dir): Handle errors from mkdtemp.
