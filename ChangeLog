@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/file.c (grub_file_open): Free file->name on failure.
+	(grub_file_close): Free file->name.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/verify.c (free_pk): Plug memory leak.
 	(grub_load_public_key): Likewise.
 	(grub_verify_signature_real): Likewise.
