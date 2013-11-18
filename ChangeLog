@@ -1,5 +1,12 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/verify.c (free_pk): Plug memory leak.
+	(grub_load_public_key): Likewise.
+	(grub_verify_signature_real): Likewise.
+	(grub_cmd_verify_signature): Likewise.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/legacycfg.c (grub_legacy_check_md5_password): Plug
 	memory leak.
 
