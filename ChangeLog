@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/cmdline_cat_test.c: Don't reload unifont if it's
+	already loaded. This saves memory needed for tests,
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix handling of install lists.
 
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>

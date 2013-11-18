@@ -91,12 +91,15 @@ struct
     { "gfxterm_high", "menu_color_highlight", "blue/red" },
   };
 
+#define FONT_NAME "Unknown Regular 16"
 
 /* Functional test main method.  */
 static void
 gfxterm_menu (void)
 {
   unsigned i, j;
+  grub_font_t font;
+
   grub_dl_load ("png");
   grub_dl_load ("gettext");
   grub_dl_load ("gfxterm");
@@ -105,7 +108,13 @@ gfxterm_menu (void)
 
   grub_dl_load ("gfxmenu");
 
-  if (grub_font_load ("unicode") == 0)
+  font = grub_font_get (FONT_NAME);
+  if (font && grub_strcmp (font->name, FONT_NAME) != 0)
+    font = 0;
+  if (!font)
+    font = grub_font_load ("unicode");
+
+  if (!font)
     {
       grub_test_assert (0, "unicode font not found: %s", grub_errmsg);
       return;
