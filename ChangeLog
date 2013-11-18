@@ -1,5 +1,11 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/powerpc/setjmp.S (grub_setjmp): Save r31.
+	(grub_longjmp): Restore r31.
+	* include/grub/powerpc/setjmp.h (grub_jmp_buf): Reserve space for r31.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.c (make_image_fwdisk_abs): Insert all partmap
 	modules to be in line with make_image_abs.
 
