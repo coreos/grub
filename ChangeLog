@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.c (make_image_fwdisk_abs): Insert all partmap
+	modules to be in line with make_image_abs.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/mips/setjmp.h (grub_jmp_buf): Fix buffer size.
 
 	setjmp.S uses 12 entries but buffer is declared with only 11 entries.

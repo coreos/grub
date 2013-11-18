@@ -290,12 +290,24 @@ make_image_fwdisk_abs (enum grub_install_plat plat,
 		       const char *mkimage_target,
 		       const char *output)
 {
+  char *load_cfg;
+  FILE *load_cfg_f;
+
   if (!source_dirs[plat])
     return;
 
+  grub_util_info (N_("enabling %s support ..."),
+		  mkimage_target);
+
+  load_cfg = grub_util_make_temporary_file ();
+
+  load_cfg_f = grub_util_fopen (load_cfg, "wb");
+  write_part (load_cfg_f, source_dirs[plat]);
+  fclose (load_cfg_f);
+
   grub_install_push_module ("iso9660");
   grub_install_make_image_wrap (source_dirs[plat], "()/boot/grub", output,
-				0, 0, mkimage_target, 0,
+				0, load_cfg, mkimage_target, 0,
 				GRUB_COMPRESSION_AUTO);
   grub_install_pop_module ();
 }
