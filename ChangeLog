@@ -1,5 +1,12 @@
 2013-11-18  Colin Watson  <cjwatson@ubuntu.com>
 
+	* tests/gzcompress_test.in: Skip if gzip is not installed (unlikely,
+	but for symmetry).
+	* tests/lzocompress_test.in: Skip if lzop is not installed.
+	* tests/xzcompress_test.in: Skip if xz is not installed.
+
+2013-11-18  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-mkrescue.c (main): Fix typo.
 
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
