@@ -769,7 +769,7 @@ main (int argc, char *argv[])
   make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-loongson-elf", "loongson.elf", GRUB_COMPRESSION_XZ);
 
   make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-yeeloong-flash", "mipsel-yeeloong.bin", GRUB_COMPRESSION_XZ);
-  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-fulong2f-flash", "mipsel-fuloong2f.bin", GRUB_COMPRESSION_XZ);
+  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-fuloong2f-flash", "mipsel-fuloong2f.bin", GRUB_COMPRESSION_XZ);
 
   make_image (GRUB_INSTALL_PLATFORM_MIPS_QEMU_MIPS, "mips-qemu_mips-elf", "roms/mips-qemu_mips.elf", GRUB_COMPRESSION_AUTO);
 

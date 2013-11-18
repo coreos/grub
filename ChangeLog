@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.c (main): Fix a typo to make yeeloong part
+	work again.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/terminfo.c (grub_cmd_terminfo): Fix a typo to make -g
 	work again.
 
