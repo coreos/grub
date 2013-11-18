@@ -271,6 +271,7 @@ handle_install_list (struct install_list *il, const char *val,
     }
   il->n_alloc = il->n_entries + 1;
   il->entries = xmalloc (il->n_alloc * sizeof (il->entries[0]));
+  ptr = val;
   for (ce = il->entries; ; ce++)
     {
       const char *bptr;
@@ -284,7 +285,6 @@ handle_install_list (struct install_list *il, const char *val,
       *ce = xmalloc (ptr - bptr + 1);
       memcpy (*ce, bptr, ptr - bptr);
       (*ce)[ptr - bptr] = '\0';
-      ce++;
     }
   *ce = NULL;
 }
@@ -662,10 +662,17 @@ grub_install_copy_files (const char *src,
 						  install_modules.entries);
       for (p = path_list; p; p = p->next)
 	{
-	  char *srcf = grub_util_path_concat_ext (2, src, p->name, ".mo");
-	  char *dstf = grub_util_path_concat_ext (2, dst, p->name, ".mo");
+	  const char *srcf = p->name;
+	  const char *dir;
+	  char *dstf;
+
+	  dir = grub_strrchr (srcf, '/');
+	  if (dir)
+	    dir++;
+	  else
+	    dir = srcf;
+	  dstf = grub_util_path_concat (2, dst, dir);
 	  grub_install_compress_file (srcf, dstf, 1);
-	  free (srcf);
 	  free (dstf);
 	}
     }
