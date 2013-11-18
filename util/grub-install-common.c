@@ -671,7 +671,7 @@ grub_install_copy_files (const char *src,
 	    dir++;
 	  else
 	    dir = srcf;
-	  dstf = grub_util_path_concat (2, dst, dir);
+	  dstf = grub_util_path_concat (2, dst_platform, dir);
 	  grub_install_compress_file (srcf, dstf, 1);
 	  free (dstf);
 	}

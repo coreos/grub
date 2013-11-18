@@ -1,3 +1,8 @@
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install-common.c (grub_install_copy_files): Fix module
+	destination directory.
+
 2013-11-18  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/osdep/unix/hostdisk.c (grub_util_make_temporary_file):
