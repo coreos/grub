@@ -192,6 +192,10 @@ free_pk (struct grub_public_key *pk)
   struct grub_public_subkey *nsk, *sk;
   for (sk = pk->subkeys; sk; sk = nsk)
     {
+      grub_size_t i;
+      for (i = 0; i < ARRAY_SIZE (sk->mpis); i++)
+	if (sk->mpis[i])
+	  gcry_mpi_release (sk->mpis[i]);
       nsk = sk->next;
       grub_free (sk);
     }
@@ -244,6 +248,7 @@ grub_load_public_key (grub_file_t f)
       if (type == 0xff)
 	{
 	  grub_free (fingerprint_context);
+	  grub_free (buffer);
 	  return ret;
 	}
 
@@ -631,6 +636,9 @@ grub_verify_signature_real (char *buf, grub_size_t size,
     if ((*pkalgos[pk].algo)->verify (0, hmpi, mpis, sk->mpis, 0, 0))
       goto fail;
 
+    grub_free (context);
+    grub_free (readbuf);
+
     return GRUB_ERR_NONE;
 
   fail:
@@ -736,8 +744,8 @@ static grub_err_t
 grub_cmd_verify_signature (grub_extcmd_context_t ctxt,
 			   int argc, char **args)
 {
-  grub_file_t f, sig;
-  grub_err_t err;
+  grub_file_t f = NULL, sig = NULL;
+  grub_err_t err = GRUB_ERR_NONE;
   struct grub_public_key *pk = NULL;
 
   grub_dprintf ("crypt", "alive\n");
@@ -768,19 +776,27 @@ grub_cmd_verify_signature (grub_extcmd_context_t ctxt,
   grub_file_filter_disable_all ();
   f = grub_file_open (args[0]);
   if (!f)
-    return grub_errno;
+    {
+      err = grub_errno;
+      goto fail;
+    }
 
   grub_file_filter_disable_all ();
   sig = grub_file_open (args[1]);
   if (!sig)
     {
-      grub_file_close (f);
-      return grub_errno;
+      err = grub_errno;
+      goto fail;
     }
 
   err = grub_verify_signature (f, sig, pk);
-  grub_file_close (f);
-  grub_file_close (sig);
+ fail:
+  if (sig)
+    grub_file_close (sig);
+  if (f)
+    grub_file_close (f);
+  if (pk)
+    free_pk (pk);
   return err;
 }
 

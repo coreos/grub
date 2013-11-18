@@ -35,7 +35,7 @@ void EXPORT_FUNC(grub_free) (void *ptr);
 void *EXPORT_FUNC(grub_realloc) (void *ptr, grub_size_t size);
 void *EXPORT_FUNC(grub_memalign) (grub_size_t align, grub_size_t size);
 
-void grub_mm_check_real (char *file, int line);
+void grub_mm_check_real (const char *file, int line);
 #define grub_mm_check() grub_mm_check_real (GRUB_FILE, __LINE__);
 
 /* For debugging.  */

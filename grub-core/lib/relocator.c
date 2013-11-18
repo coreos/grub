@@ -1618,7 +1618,7 @@ grub_relocator_prepare_relocs (struct grub_relocator *rel, grub_addr_t addr,
 }
 
 void
-grub_mm_check_real (char *file, int line)
+grub_mm_check_real (const char *file, int line)
 {
   grub_mm_region_t r;
   grub_mm_header_t p, pa;

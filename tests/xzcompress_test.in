@@ -19,6 +19,11 @@ grubshell=@builddir@/grub-shell
 
 . "@builddir@/grub-core/modinfo.sh"
 
+if ! which xz >/dev/null 2>&1; then
+   echo "xz not installed; cannot test xz compression."
+   exit 77
+fi
+
 if [ "$(echo hello | "${grubshell}" --mkrescue-arg=--compress=xz)" != "Hello World" ]; then
    exit 1
 fi

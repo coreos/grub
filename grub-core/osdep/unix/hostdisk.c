@@ -281,7 +281,8 @@ grub_util_make_temporary_file (void)
   memcpy (tmp, t, tl);
   memcpy (tmp + tl, "/grub.XXXXXX",
 	  sizeof ("/grub.XXXXXX"));
-  mkstemp (tmp);
+  if (mkstemp (tmp) == -1)
+    grub_util_error (_("cannot make temporary file: %s"), strerror (errno));
   return tmp;
 }
 
@@ -298,7 +299,9 @@ grub_util_make_temporary_dir (void)
   memcpy (tmp, t, tl);
   memcpy (tmp + tl, "/grub.XXXXXX",
 	  sizeof ("/grub.XXXXXX"));
-  mkdtemp (tmp);
+  if (!mkdtemp (tmp))
+    grub_util_error (_("cannot make temporary directory: %s"),
+		     strerror (errno));
   return tmp;
 }
 

@@ -735,6 +735,7 @@ grub_legacy_check_md5_password (int argc, char **args,
 				char *entered)
 {
   struct legacy_md5_password *pw = NULL;
+  int ret;
 
   if (args[0][0] != '-' || args[0][1] != '-')
     {
@@ -751,7 +752,9 @@ grub_legacy_check_md5_password (int argc, char **args,
   if (!pw)
     return 0;
 
-  return check_password_md5_real (entered, pw);
+  ret = check_password_md5_real (entered, pw);
+  grub_free (pw);
+  return ret;
 }
 
 static grub_err_t

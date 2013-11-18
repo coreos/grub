@@ -66,16 +66,25 @@ struct grub_procfs_entry test_txt =
   .get_contents = get_test_txt
 };
 
+#define FONT_NAME "Unknown Regular 16"
 
 /* Functional test main method.  */
 static void
 cmdline_cat_test (void)
 {
   unsigned i;
+  grub_font_t font;
 
   grub_dl_load ("gfxterm");
+  grub_errno = GRUB_ERR_NONE;
 
-  if (grub_font_load ("unicode") == 0)
+  font = grub_font_get (FONT_NAME);
+  if (font && grub_strcmp (font->name, FONT_NAME) != 0)
+    font = 0;
+  if (!font)
+    font = grub_font_load ("unicode");
+
+  if (!font)
     {
       grub_test_assert (0, "unicode font not found: %s", grub_errmsg);
       return;

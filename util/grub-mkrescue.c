@@ -290,12 +290,24 @@ make_image_fwdisk_abs (enum grub_install_plat plat,
 		       const char *mkimage_target,
 		       const char *output)
 {
+  char *load_cfg;
+  FILE *load_cfg_f;
+
   if (!source_dirs[plat])
     return;
 
+  grub_util_info (N_("enabling %s support ..."),
+		  mkimage_target);
+
+  load_cfg = grub_util_make_temporary_file ();
+
+  load_cfg_f = grub_util_fopen (load_cfg, "wb");
+  write_part (load_cfg_f, source_dirs[plat]);
+  fclose (load_cfg_f);
+
   grub_install_push_module ("iso9660");
   grub_install_make_image_wrap (source_dirs[plat], "()/boot/grub", output,
-				0, 0, mkimage_target, 0,
+				0, load_cfg, mkimage_target, 0,
 				GRUB_COMPRESSION_AUTO);
   grub_install_pop_module ();
 }
@@ -376,8 +388,7 @@ main (int argc, char *argv[])
   xorriso_push ("-graft-points");
   
   iso9660_dir = grub_util_make_temporary_dir ();
-  grub_util_info ("temporaray iso9660 dir is `%s'", 
-		  iso9660_dir);
+  grub_util_info ("temporary iso9660 dir is `%s'", iso9660_dir);
   boot_grub = grub_util_path_concat (3, iso9660_dir, "boot", "grub");
   grub_install_mkdir_p (boot_grub);
   romdir = grub_util_path_concat (2, boot_grub, "roms");
@@ -583,7 +594,7 @@ main (int argc, char *argv[])
       free (label);
       label_text = grub_util_path_concat (2, core_services, ".disk_label.contentDetails");
       f = grub_util_fopen (label_text, "wb");
-      fprintf (f, "%s", label_string);
+      fprintf (f, "%s\n", label_string);
       fclose (f);
       free (label_string);
       free (label_text);
@@ -679,7 +690,7 @@ main (int argc, char *argv[])
       char *grub_chrp = grub_util_path_concat (2, source_dirs[GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275],
 					       "grub.chrp");
       char *bisrc = grub_util_path_concat (2, source_dirs[GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275],
-					   "grub.chrp");
+					   "bootinfo.txt");
       char *bootx = grub_util_path_concat (2, core_services, "BootX");
       char *ppc_chrp = grub_util_path_concat (3, iso9660_dir, "ppc", "chrp");
       char *bitgt = grub_util_path_concat (3, iso9660_dir, "ppc", "bootinfo.txt");
@@ -757,7 +768,7 @@ main (int argc, char *argv[])
   make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-loongson-elf", "loongson.elf", GRUB_COMPRESSION_XZ);
 
   make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-yeeloong-flash", "mipsel-yeeloong.bin", GRUB_COMPRESSION_XZ);
-  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-fulong2f-flash", "mipsel-fuloong2f.bin", GRUB_COMPRESSION_XZ);
+  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-fuloong2f-flash", "mipsel-fuloong2f.bin", GRUB_COMPRESSION_XZ);
 
   make_image (GRUB_INSTALL_PLATFORM_MIPS_QEMU_MIPS, "mips-qemu_mips-elf", "roms/mips-qemu_mips.elf", GRUB_COMPRESSION_AUTO);
 

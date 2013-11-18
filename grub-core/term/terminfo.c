@@ -748,8 +748,8 @@ grub_cmd_terminfo (grub_extcmd_context_t ctxt, int argc, char **args)
 	  {
 	    struct grub_terminfo_output_state *data
 	      = (struct grub_terminfo_output_state *) cur->data;
-	    data->pos.x = w;
-	    data->pos.y = h;
+	    data->size.x = w;
+	    data->size.y = h;
 	  }
 
 	if (argc == 1)

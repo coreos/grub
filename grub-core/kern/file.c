@@ -87,9 +87,6 @@ grub_file_open (const char *name)
   if (! file)
     goto fail;
 
-  file->name = grub_strdup (name);
-  grub_errno = GRUB_ERR_NONE;
-
   file->device = device;
 
   if (device->disk && file_name[0] != '/')
@@ -104,6 +101,9 @@ grub_file_open (const char *name)
 
   if ((file->fs->open) (file, file_name) != GRUB_ERR_NONE)
     goto fail;
+
+  file->name = grub_strdup (name);
+  grub_errno = GRUB_ERR_NONE;
 
   for (filter = 0; file && filter < ARRAY_SIZE (grub_file_filters_enabled);
        filter++)
@@ -187,6 +187,7 @@ grub_file_close (grub_file_t file)
 
   if (file->device)
     grub_device_close (file->device);
+  grub_free (file->name);
   grub_free (file);
   return grub_errno;
 }

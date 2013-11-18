@@ -271,6 +271,7 @@ handle_install_list (struct install_list *il, const char *val,
     }
   il->n_alloc = il->n_entries + 1;
   il->entries = xmalloc (il->n_alloc * sizeof (il->entries[0]));
+  ptr = val;
   for (ce = il->entries; ; ce++)
     {
       const char *bptr;
@@ -284,7 +285,6 @@ handle_install_list (struct install_list *il, const char *val,
       *ce = xmalloc (ptr - bptr + 1);
       memcpy (*ce, bptr, ptr - bptr);
       (*ce)[ptr - bptr] = '\0';
-      ce++;
     }
   *ce = NULL;
 }
@@ -329,7 +329,8 @@ grub_install_parse (int key, char *arg)
       handle_install_list (&install_fonts, arg, 0);
       return 1;
     case GRUB_INSTALL_OPTIONS_INSTALL_COMPRESS:
-      if (strcmp (arg, "no") == 0)
+      if (strcmp (arg, "no") == 0
+	  || strcmp (arg, "none") == 0)
 	{
 	  compress_func = NULL;
 	  return 1;
@@ -585,28 +586,27 @@ copy_locales (const char *dstd)
 
 static struct
 {
-  enum grub_install_plat val;
   const char *cpu;
   const char *platform;
-} platforms[] =
+} platforms[GRUB_INSTALL_PLATFORM_MAX] =
   {
-    { GRUB_INSTALL_PLATFORM_I386_PC,          "i386",    "pc"        },
-    { GRUB_INSTALL_PLATFORM_I386_EFI,         "i386",    "efi"       },
-    { GRUB_INSTALL_PLATFORM_I386_QEMU,        "i386",    "qemu"      },
-    { GRUB_INSTALL_PLATFORM_I386_COREBOOT,    "i386",    "coreboot"  },
-    { GRUB_INSTALL_PLATFORM_I386_MULTIBOOT,   "i386",    "multiboot" },
-    { GRUB_INSTALL_PLATFORM_I386_IEEE1275,    "i386",    "ieee1275"  },
-    { GRUB_INSTALL_PLATFORM_X86_64_EFI,       "x86_64",  "efi"       },
-    { GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON,  "mipsel",  "loongson"  },
-    { GRUB_INSTALL_PLATFORM_MIPSEL_QEMU_MIPS, "mipsel",  "qemu_mips" },
-    { GRUB_INSTALL_PLATFORM_MIPS_QEMU_MIPS,   "mips",    "qemu_mips" },
-    { GRUB_INSTALL_PLATFORM_MIPSEL_ARC,       "mipsel",  "arc"       },
-    { GRUB_INSTALL_PLATFORM_MIPS_ARC,         "mips",    "arc"       },
-    { GRUB_INSTALL_PLATFORM_SPARC64_IEEE1275, "sparc64", "ieee1275"  },
-    { GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275, "powerpc", "ieee1275"  },
-    { GRUB_INSTALL_PLATFORM_IA64_EFI,         "ia64",    "efi"       },
-    { GRUB_INSTALL_PLATFORM_ARM_EFI,          "arm",     "efi"       },
-    { GRUB_INSTALL_PLATFORM_ARM_UBOOT,        "arm",     "uboot"     },
+    [GRUB_INSTALL_PLATFORM_I386_PC] =          { "i386",    "pc"        },
+    [GRUB_INSTALL_PLATFORM_I386_EFI] =         { "i386",    "efi"       },
+    [GRUB_INSTALL_PLATFORM_I386_QEMU] =        { "i386",    "qemu"      },
+    [GRUB_INSTALL_PLATFORM_I386_COREBOOT] =    { "i386",    "coreboot"  },
+    [GRUB_INSTALL_PLATFORM_I386_MULTIBOOT] =   { "i386",    "multiboot" },
+    [GRUB_INSTALL_PLATFORM_I386_IEEE1275] =    { "i386",    "ieee1275"  },
+    [GRUB_INSTALL_PLATFORM_X86_64_EFI] =       { "x86_64",  "efi"       },
+    [GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON] =  { "mipsel",  "loongson"  },
+    [GRUB_INSTALL_PLATFORM_MIPSEL_QEMU_MIPS] = { "mipsel",  "qemu_mips" },
+    [GRUB_INSTALL_PLATFORM_MIPS_QEMU_MIPS] =   { "mips",    "qemu_mips" },
+    [GRUB_INSTALL_PLATFORM_MIPSEL_ARC] =       { "mipsel",  "arc"       },
+    [GRUB_INSTALL_PLATFORM_MIPS_ARC] =         { "mips",    "arc"       },
+    [GRUB_INSTALL_PLATFORM_SPARC64_IEEE1275] = { "sparc64", "ieee1275"  },
+    [GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275] = { "powerpc", "ieee1275"  },
+    [GRUB_INSTALL_PLATFORM_IA64_EFI] =         { "ia64",    "efi"       },
+    [GRUB_INSTALL_PLATFORM_ARM_EFI] =          { "arm",     "efi"       },
+    [GRUB_INSTALL_PLATFORM_ARM_UBOOT] =        { "arm",     "uboot"     },
   }; 
 
 char *
@@ -662,10 +662,17 @@ grub_install_copy_files (const char *src,
 						  install_modules.entries);
       for (p = path_list; p; p = p->next)
 	{
-	  char *srcf = grub_util_path_concat_ext (2, src, p->name, ".mo");
-	  char *dstf = grub_util_path_concat_ext (2, dst, p->name, ".mo");
+	  const char *srcf = p->name;
+	  const char *dir;
+	  char *dstf;
+
+	  dir = grub_strrchr (srcf, '/');
+	  if (dir)
+	    dir++;
+	  else
+	    dir = srcf;
+	  dstf = grub_util_path_concat (2, dst_platform, dir);
 	  grub_install_compress_file (srcf, dstf, 1);
-	  free (srcf);
 	  free (dstf);
 	}
     }
@@ -825,7 +832,7 @@ grub_install_get_target (const char *src)
 	&& strcmp (platforms[i].platform, pl) == 0)
       {
 	free (fn);
-	return platforms[i].val;
+	return i;
       }
   grub_util_error (_("Unknown platform `%s-%s'"), c, pl);
 }
