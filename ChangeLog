@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* Makefile.am (default_payload.elf): Add pata to loaded modules.
+	Load config file from (cbfsdisk)/etc/grub.cfg.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install-common.c (grub_install_copy_files): Fix module
 	destination directory.
 
