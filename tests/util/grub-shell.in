@@ -307,7 +307,7 @@ else
 fi
 
 cat <<EOF >>${cfgfile}
-terminfo -g 255x255 ${term} dumb
+terminfo -g 1024x1024 ${term} dumb
 terminal_input ${term}
 terminal_output ${term}
 EOF
