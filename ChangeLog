@@ -1,5 +1,10 @@
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/relocator.c (grub_mm_check_real): Accept const char *
+	as file argument.
+
+2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/cmdline.c (grub_cmdline_get): Plug memory leak.
 
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
