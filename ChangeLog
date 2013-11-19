@@ -1,3 +1,8 @@
+2013-11-19  Axel Kellermann <axel.kellermann@gmx.de>
+
+	* util/grub.d/30_os-prober.in: Add GRUB_OS_PROBER_SKIP_LIST to
+	selectively skipping systems.
+
 2013-11-19  Colin Watson  <cjwatson@ubuntu.com>
 
 	* Makefile.util.def (grub-mkimage): Add
