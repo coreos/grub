@@ -25,26 +25,25 @@
  * Simple cache maintenance functions
  */
 
-// r0 - *beg (inclusive)
-// r1 - *end (exclusive)
-clean_dcache_range:
+// x0 - *beg (inclusive)
+// x1 - *end (exclusive)
+// x2 - line size
+FUNCTION(grub_arch_clean_dcache_range)
 	// Clean data cache for range to point-of-unification
-	ldr	x2, =EXT_C(grub_arch_cache_dlinesz)
-	ldr	x2, [x2]
 1:	cmp	x0, x1
 	bge	2f
 	dc	cvau, x0		// Clean Virtual Address to PoU
 	add	x0, x0, x2		// Next line
 	b	1b
 2:	dsb	ish
+	isb
 	ret
 
-// r0 - *beg (inclusive)
-// r1 - *end (exclusive)
-invalidate_icache_range:
+// x0 - *beg (inclusive)
+// x1 - *end (exclusive)
+// x2 - line size
+FUNCTION(grub_arch_invalidate_icache_range)
 	// Invalidate instruction cache for range to point-of-unification
-	ldr	x2, =EXT_C(grub_arch_cache_ilinesz)
-	ldr	x2, [x2]
 1:	cmp	x0, x1
 	bge	2f
 	ic	ivau, x0		// Invalidate Virtual Address to PoU
@@ -53,15 +52,4 @@ invalidate_icache_range:
 	// Branch predictor invalidation not needed on AArch64
 2:	dsb	ish
 	isb
-	ret
-
-// void grub_arch_sync_caches_real (void *address, grub_size_t len)
-FUNCTION(grub_arch_sync_caches_real)
-	dsb	ish
-	stp	x0, x30, [sp, #-16]!
-	stp	x0, x1, [sp, #-16]!
-	bl	clean_dcache_range
-	ldp	x0, x1, [sp], #16
-	bl	invalidate_icache_range
-	ldp	x0, x30, [sp], #16
 	ret

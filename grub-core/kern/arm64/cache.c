@@ -19,11 +19,14 @@
 #include <grub/cache.h>
 #include <grub/misc.h>
 
-grub_int64_t grub_arch_cache_dlinesz;
-grub_int64_t grub_arch_cache_ilinesz;
+static grub_int64_t dlinesz;
+static grub_int64_t ilinesz;
 
 /* Prototypes for asm functions. */
-void grub_arch_sync_caches_real (grub_uint64_t address, grub_uint64_t end);
+void grub_arch_clean_dcache_range (grub_addr_t beg, grub_addr_t end,
+				   grub_uint64_t line_size);
+void grub_arch_invalidate_icache_range (grub_addr_t beg, grub_addr_t end,
+					grub_uint64_t line_size);
 
 static void
 probe_caches (void)
@@ -33,40 +36,28 @@ probe_caches (void)
   /* Read Cache Type Register */
   asm volatile ("mrs 	%0, ctr_el0": "=r"(cache_type));
 
-  grub_arch_cache_dlinesz = 8 << ((cache_type >> 16) & 0xf);
-  grub_arch_cache_ilinesz = 8 << (cache_type & 0xf);
+  dlinesz = 4 << ((cache_type >> 16) & 0xf);
+  ilinesz = 4 << (cache_type & 0xf);
 
-  grub_dprintf("cache", "D$ line size: %lld\n",
-	       (long long) grub_arch_cache_dlinesz);
-  grub_dprintf("cache", "I$ line size: %lld\n",
-	       (long long) grub_arch_cache_ilinesz);
+  grub_dprintf("cache", "D$ line size: %lld\n", (long long) dlinesz);
+  grub_dprintf("cache", "I$ line size: %lld\n", (long long) ilinesz);
 }
 
 void
 grub_arch_sync_caches (void *address, grub_size_t len)
 {
-  grub_uint64_t start, end;
+  grub_uint64_t start, end, max;
 
-  if (grub_arch_cache_dlinesz == 0)
+  if (dlinesz == 0)
     probe_caches();
-  if (grub_arch_cache_dlinesz == 0)
+  if (dlinesz == 0)
     grub_fatal ("Unknown cache line size!");
 
-  grub_dprintf("cache", "syncing caches for %p-%lx\n",
-	       address, (grub_addr_t) address + len);
+  max = dlinesz > ilinesz ? dlinesz : ilinesz;
 
-  /* Align here to both cache lines. Saves a tiny bit of asm complexity and
-     most of potential problems with different line sizes.  */
-  start = (grub_uint64_t) address;
-  end = (grub_uint64_t) address + len;
-  start = ALIGN_DOWN (start, grub_arch_cache_dlinesz);
-  start = ALIGN_DOWN (start, grub_arch_cache_ilinesz);
+  start = ALIGN_DOWN ((grub_uint64_t) address, max);
+  end = ALIGN_UP ((grub_uint64_t) address + len, max);
 
-  end = ALIGN_UP (end, grub_arch_cache_dlinesz);
-  end = ALIGN_UP (end, grub_arch_cache_ilinesz);
-
-  grub_dprintf("cache", "aligned to: %lx-%lx\n",
-	       start, end);
-
-  grub_arch_sync_caches_real (start, end);
+  grub_arch_clean_dcache_range (start, end, dlinesz);
+  grub_arch_invalidate_icache_range (start, end, ilinesz);
 }
