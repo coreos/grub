@@ -172,6 +172,7 @@ program = {
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/osdep/init.c;
   common = grub-core/osdep/config.c;
+  extra_dist = grub-core/osdep/aros/config.c;
   extra_dist = grub-core/osdep/windows/config.c;
   extra_dist = grub-core/osdep/unix/config.c;
   common = util/config.c;

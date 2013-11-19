@@ -1,3 +1,12 @@
+2013-11-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (grub-mkimage): Add
+	grub-core/osdep/aros/config.c to extra_dist.
+	* conf/Makefile.extra-dist (EXTRA_DIST): Add docs/autoiso.cfg,
+	docs/osdetect.cfg, grub-core/gnulib-fix-null-deref.diff,
+	grub-core/gnulib-fix-width.diff, grub-core/gnulib-no-abort.diff, and
+	grub-core/gnulib-no-gets.diff.
+
 2013-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add automated filesystem checking based on scripts I've used now for
