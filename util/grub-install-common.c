@@ -558,7 +558,7 @@ copy_locales (const char *dstd)
   grub_util_fd_dirent_t de;
   const char *locale_dir = grub_util_get_localedir ();
 
-  d = grub_util_fd_opendir (LOCALEDIR);
+  d = grub_util_fd_opendir (locale_dir);
   if (!d)
     {
       grub_util_warn (_("cannot open directory `%s': %s"),
@@ -706,6 +706,8 @@ grub_install_copy_files (const char *src,
     }
   else
     {
+      const char *locale_dir = grub_util_get_localedir ();
+
       for (i = 0; i < install_locales.n_entries; i++)
 	{
 	  char *srcf = grub_util_path_concat_ext (3, src,
@@ -723,7 +725,7 @@ grub_install_copy_files (const char *src,
 	    }
 	  free (srcf);
 	  srcf = grub_util_path_concat_ext (4,
-						 LOCALEDIR,
+						 locale_dir,
 						 install_locales.entries[i],
 						 "LC_MESSAGES",
 						 PACKAGE,

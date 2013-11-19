@@ -1,3 +1,9 @@
+2013-11-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install-common.c (copy_locales): Consistently use
+	grub_util_get_localedir () rather than LOCALEDIR.
+	(grub_install_copy_files): Likewise.
+
 2013-11-19  Josh Triplett  <josh@joshtriplett.org>
 
 	* grub-core/kern/x86_64/efi/startup.S (_start): Align the stack to a
