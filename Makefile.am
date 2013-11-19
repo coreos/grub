@@ -70,6 +70,10 @@ build-grub-mkfont: util/grub-mkfont.c grub-core/unidata.c grub-core/kern/emu/mis
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 -DGRUB_BUILD_PROGRAM_NAME=\"build-grub-mkfont\" $^ $(build_freetype_cflags) $(build_freetype_libs)
 CLEANFILES += build-grub-mkfont
 
+garbage-gen: util/garbage-gen.c
+	$(BUILD_CC) -o $@ $(BUILD_CFLAGS) $(BUILD_CPPFLAGS)  $^
+CLEANFILES += garbage-gen
+
 build-grub-gen-asciih: util/grub-gen-asciih.c
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall -Werror
 CLEANFILES += build-grub-gen-asciih

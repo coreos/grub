@@ -691,6 +691,127 @@ script = {
 };
 
 script = {
+  name = grub-fs-tester;
+  common = tests/util/grub-fs-tester.in;
+  installdir = noinst;
+  dependencies = garbage-gen;
+};
+
+script = {
+  testcase;
+  name = ext234_test;
+  common = tests/ext234_test.in;
+};
+
+script = {
+  testcase;
+  name = squashfs_test;
+  common = tests/squashfs_test.in;
+};
+
+script = {
+  testcase;
+  name = iso9660_test;
+  common = tests/iso9660_test.in;
+};
+
+script = {
+  testcase;
+  name = hfsplus_test;
+  common = tests/hfsplus_test.in;
+};
+
+script = {
+  testcase;
+  name = ntfs_test;
+  common = tests/ntfs_test.in;
+};
+
+script = {
+  testcase;
+  name = reiserfs_test;
+  common = tests/reiserfs_test.in;
+};
+
+script = {
+  testcase;
+  name = fat_test;
+  common = tests/fat_test.in;
+};
+
+script = {
+  testcase;
+  name = minixfs_test;
+  common = tests/minixfs_test.in;
+};
+
+script = {
+  testcase;
+  name = xfs_test;
+  common = tests/xfs_test.in;
+};
+
+script = {
+  testcase;
+  name = nilfs2_test;
+  common = tests/nilfs2_test.in;
+};
+
+script = {
+  testcase;
+  name = romfs_test;
+  common = tests/romfs_test.in;
+};
+
+script = {
+  testcase;
+  name = exfat_test;
+  common = tests/exfat_test.in;
+};
+
+script = {
+  testcase;
+  name = tar_test;
+  common = tests/tar_test.in;
+};
+
+script = {
+  testcase;
+  name = udf_test;
+  common = tests/udf_test.in;
+};
+
+script = {
+  testcase;
+  name = hfs_test;
+  common = tests/hfs_test.in;
+};
+
+script = {
+  testcase;
+  name = jfs_test;
+  common = tests/jfs_test.in;
+};
+
+script = {
+  testcase;
+  name = btrfs_test;
+  common = tests/btrfs_test.in;
+};
+
+script = {
+  testcase;
+  name = zfs_test;
+  common = tests/zfs_test.in;
+};
+
+script = {
+  testcase;
+  name = cpio_test;
+  common = tests/cpio_test.in;
+};
+
+script = {
   testcase;
   name = example_scripted_test;
   common = tests/example_scripted_test.in;
