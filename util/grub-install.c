@@ -1399,7 +1399,7 @@ main (int argc, char *argv[])
 					      "boot.img");
 	grub_install_copy_file (boot_img_src, boot_img, 1);
 
-	grub_util_info ("%sgrub_bios_setup %s %s %s %s --directory='%s' --device-map='%s' '%s'",
+	grub_util_info ("%sgrub-bios-setup %s %s %s %s --directory='%s' --device-map='%s' '%s'",
 			install_bootsector ? "" : "NOT RUNNING: ",
 			allow_floppy ? "--allow-floppy " : "",
 			verbosity ? "--verbose " : "",
@@ -1425,7 +1425,7 @@ main (int argc, char *argv[])
 					      "boot.img");
 	grub_install_copy_file (boot_img_src, boot_img, 1);
 
-	grub_util_info ("%sgrub_sparc_setup %s %s %s %s --directory='%s' --device-map='%s' '%s'",
+	grub_util_info ("%sgrub-sparc64-setup %s %s %s %s --directory='%s' --device-map='%s' '%s'",
 			install_bootsector ? "" : "NOT RUNNING: ",
 			allow_floppy ? "--allow-floppy " : "",
 			verbosity ? "--verbose " : "",
