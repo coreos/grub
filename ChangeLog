@@ -1,3 +1,7 @@
+2013-11-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* coreboot.cfg: Add missing file.
+
 2013-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* Makefile.am: Allow STRIP to be empty when creating windowszip.

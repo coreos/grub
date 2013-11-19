@@ -110,3 +110,4 @@ EXTRA_DIST += grub-core/osdep/windows/sleep.c
 EXTRA_DIST += tests/dfly-mbr-mbexample.mbr.img.gz
 EXTRA_DIST += tests/dfly-mbr-mbexample.dfly.img.gz
 
+EXTRA_DIST += coreboot.cfg
