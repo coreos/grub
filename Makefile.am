@@ -410,7 +410,8 @@ windowsdir: $(PROGRAMS) $(starfield_DATA) $(platform_DATA)
 	test -d $(windowsdir)/themes || mkdir $(windowsdir)/themes
 	test -d $(windowsdir)/themes/starfield || mkdir $(windowsdir)/themes/starfield
 	for x in $(PROGRAMS); do \
-		$(STRIP) $$x -o $(windowsdir)/$$x; \
+		if [ x$(STRIP) != x ]; then $(STRIP) $$x -o $(windowsdir)/$$x; \
+		else cp -fp $$x $(windowsdir)/$$x; fi; \
 	done
 	for x in $(pkgdata_DATA); do \
 		cp -fp $$x $(windowsdir)/$$x; \

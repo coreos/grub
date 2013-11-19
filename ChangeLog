@@ -1,3 +1,7 @@
+2013-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.am: Allow STRIP to be empty when creating windowszip.
+
 2013-11-19  Axel Kellermann <axel.kellermann@gmx.de>
 
 	* util/grub.d/30_os-prober.in: Add GRUB_OS_PROBER_SKIP_LIST to
