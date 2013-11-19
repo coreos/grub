@@ -1,3 +1,11 @@
+2013-11-19  Josh Triplett  <josh@joshtriplett.org>
+
+	* grub-core/kern/x86_64/efi/startup.S (_start): Align the stack to a
+	16-byte boundary, as required by the x86-64 ABI, before calling
+	grub_main.  In some cases, GCC emits code that assumes this
+	alignment, which crashes if not aligned.  The EFI firmware is also
+	entitled to assume that stack alignment without checking.
+
 2013-11-18  Josh Triplett  <josh@joshtriplett.org>
 
 	* grub-core/mmap/efi/mmap.c (grub_mmap_register): Round up/down to
