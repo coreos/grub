@@ -225,7 +225,7 @@ if test "x${grub_cfg}" != "x"; then
   exec > "${grub_cfg}.new"
   umask $oldumask
 fi
-gettext "Generating grub.cfg ..." >&2
+gettext "Generating grub configuration file ..." >&2
 echo >&2
 
 cat << EOF
