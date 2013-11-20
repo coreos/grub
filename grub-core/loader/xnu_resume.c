@@ -53,8 +53,8 @@ grub_xnu_resume (char *imagename)
   grub_addr_t target_image;
   grub_err_t err;
 
-  grub_file_filter_disable_compression ();
-  file = grub_file_open (imagename);
+  file = grub_file_open (imagename, GRUB_FILE_TYPE_XNU_HIBERNATE_IMAGE
+			 | GRUB_FILE_TYPE_NO_DECOMPRESS);
   if (! file)
     return 0;
 

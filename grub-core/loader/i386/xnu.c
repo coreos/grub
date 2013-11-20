@@ -487,7 +487,7 @@ grub_cmd_devprop_load (grub_command_t cmd __attribute__ ((unused)),
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
-  file = grub_file_open (args[0]);
+  file = grub_file_open (args[0], GRUB_FILE_XNU_DEVPROP);
   if (! file)
     return grub_errno;
   size = grub_file_size (file);

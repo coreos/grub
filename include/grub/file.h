@@ -25,6 +25,109 @@
 #include <grub/fs.h>
 #include <grub/disk.h>
 
+enum grub_file_type
+  {
+    GRUB_FILE_TYPE_NONE = 0,
+    /* GRUB module to be loaded.  */
+    GRUB_FILE_TYPE_GRUB_MODULE,
+    /* Loopback file to be represented as disk.  */
+    GRUB_FILE_TYPE_LOOPBACK,
+    /* Linux kernel to be loaded.  */
+    GRUB_FILE_TYPE_LINUX_KERNEL,
+    /* Linux initrd.  */
+    GRUB_FILE_TYPE_LINUX_INITRD,
+
+    /* Multiboot kernel.  */
+    GRUB_FILE_TYPE_MULTIBOOT_KERNEL,
+    /* Multiboot module.  */
+    GRUB_FILE_TYPE_MULTIBOOT_MODULE,
+
+    GRUB_FILE_TYPE_BSD_KERNEL,
+    GRUB_FILE_TYPE_FREEBSD_ENV,
+    GRUB_FILE_TYPE_FREEBSD_MODULE,
+    GRUB_FILE_TYPE_FREEBSD_MODULE_ELF,
+    GRUB_FILE_TYPE_NETBSD_MODULE,
+    GRUB_FILE_TYPE_OPENBSD_RAMDISK,
+
+    GRUB_FILE_TYPE_XNU_INFO_PLIST,
+    GRUB_FILE_TYPE_XNU_MKEXT,
+    GRUB_FILE_TYPE_XNU_KEXT,
+    GRUB_FILE_TYPE_XNU_KERNEL,
+    GRUB_FILE_TYPE_XNU_RAMDISK,
+    GRUB_FILE_TYPE_XNU_HIBERNATE_IMAGE,
+    GRUB_FILE_XNU_DEVPROP,
+
+    GRUB_FILE_TYPE_PLAN9_KERNEL,
+
+    GRUB_FILE_TYPE_NTLDR,
+    GRUB_FILE_TYPE_TRUECRYPT,
+    GRUB_FILE_TYPE_FREEDOS,
+    GRUB_FILE_TYPE_PXECHAINLOADER,
+    GRUB_FILE_TYPE_PCCHAINLOADER,
+
+    GRUB_FILE_TYPE_COREBOOT_CHAINLOADER,
+
+    GRUB_FILE_TYPE_EFI_CHAINLOADED_IMAGE,
+
+    /* File holding signature.  */
+    GRUB_FILE_TYPE_SIGNATURE,
+    /* File holding public key to verify signature once.  */
+    GRUB_FILE_TYPE_PUBLIC_KEY,
+    /* File holding public key to add to trused keys.  */
+    GRUB_FILE_TYPE_PUBLIC_KEY_TRUST,
+    /* File of which we intend to print a blocklist to the user.  */
+    GRUB_FILE_TYPE_PRINT_BLOCKLIST,
+    /* File we intend to use for test loading or testing speed.  */
+    GRUB_FILE_TYPE_TESTLOAD,
+    /* File we open only to get its size. E.g. in ls output.  */
+    GRUB_FILE_TYPE_GET_SIZE,
+    /* Font file.  */
+    GRUB_FILE_TYPE_FONT,
+    /* File holding encryption key for encrypted ZFS.  */
+    GRUB_FILE_TYPE_ZFS_ENCRYPTION_KEY,
+    /* File we open n grub-fstest.  */
+    GRUB_FILE_TYPE_FSTEST,
+    /* File we open n grub-mount.  */
+    GRUB_FILE_TYPE_MOUNT,
+    /* File which we attempt to identify the type of.  */
+    GRUB_FILE_TYPE_FILE_ID,
+    /* File holding ACPI table.  */
+    GRUB_FILE_TYPE_ACPI_TABLE,
+    /* File we intend show to user.  */
+    GRUB_FILE_TYPE_CAT,
+    GRUB_FILE_TYPE_HEXCAT,
+    /* One of pair of files we intend to compare.  */
+    GRUB_FILE_TYPE_CMP,
+    /* List of hashes for hashsum.  */
+    GRUB_FILE_TYPE_HASHLIST,
+    /* File hashed by hashsum.  */
+    GRUB_FILE_TYPE_TO_HASH,
+    /* Keyboard layout.  */
+    GRUB_FILE_TYPE_KEYBOARD_LAYOUT,
+    /* Picture file.  */
+    GRUB_FILE_TYPE_PIXMAP,
+    /* *.lst shipped by GRUB.  */
+    GRUB_FILE_TYPE_GRUB_MODULE_LIST,
+    /* config file.  */
+    GRUB_FILE_TYPE_CONFIG,
+    GRUB_FILE_TYPE_THEME,
+    GRUB_FILE_TYPE_GETTEXT_CATALOG,
+    GRUB_FILE_TYPE_FS_SEARCH,
+    GRUB_FILE_TYPE_AUDIO,
+    GRUB_FILE_TYPE_VBE_DUMP,
+
+    GRUB_FILE_TYPE_LOADENV,
+    GRUB_FILE_TYPE_SAVEENV,
+
+    GRUB_FILE_TYPE_VERIFY_SIGNATURE,
+
+    GRUB_FILE_TYPE_MASK = 0xffff,
+
+    /* --skip-sig is specified.  */
+    GRUB_FILE_TYPE_SKIP_SIGNATURE = 0x10000,
+    GRUB_FILE_TYPE_NO_DECOMPRESS = 0x20000
+  };
+
 /* File description.  */
 struct grub_file
 {
@@ -77,61 +180,26 @@ typedef enum grub_file_filter_id
     GRUB_FILE_FILTER_COMPRESSION_LAST = GRUB_FILE_FILTER_LZOPIO,
   } grub_file_filter_id_t;
 
-typedef grub_file_t (*grub_file_filter_t) (grub_file_t in, const char *filename);
+typedef grub_file_t (*grub_file_filter_t) (grub_file_t in, enum grub_file_type type);
 
-extern grub_file_filter_t EXPORT_VAR(grub_file_filters_all)[GRUB_FILE_FILTER_MAX];
-extern grub_file_filter_t EXPORT_VAR(grub_file_filters_enabled)[GRUB_FILE_FILTER_MAX];
+extern grub_file_filter_t EXPORT_VAR(grub_file_filters)[GRUB_FILE_FILTER_MAX];
 
 static inline void
 grub_file_filter_register (grub_file_filter_id_t id, grub_file_filter_t filter)
 {
-  grub_file_filters_all[id] = filter;
-  grub_file_filters_enabled[id] = filter;
+  grub_file_filters[id] = filter;
 }
 
 static inline void
 grub_file_filter_unregister (grub_file_filter_id_t id)
 {
-  grub_file_filters_all[id] = 0;
-  grub_file_filters_enabled[id] = 0;
-}
-
-static inline void
-grub_file_filter_disable (grub_file_filter_id_t id)
-{
-  grub_file_filters_enabled[id] = 0;
-}
-
-static inline void
-grub_file_filter_disable_compression (void)
-{
-  grub_file_filter_id_t id;
-
-  for (id = GRUB_FILE_FILTER_COMPRESSION_FIRST;
-       id <= GRUB_FILE_FILTER_COMPRESSION_LAST; id++)
-    grub_file_filters_enabled[id] = 0;
-}
-
-static inline void
-grub_file_filter_disable_all (void)
-{
-  grub_file_filter_id_t id;
-
-  for (id = 0;
-       id < GRUB_FILE_FILTER_MAX; id++)
-    grub_file_filters_enabled[id] = 0;
-}
-
-static inline void
-grub_file_filter_disable_pubkey (void)
-{
-  grub_file_filters_enabled[GRUB_FILE_FILTER_PUBKEY] = 0;
+  grub_file_filters[id] = 0;
 }
 
 /* Get a device name from NAME.  */
 char *EXPORT_FUNC(grub_file_get_device_name) (const char *name);
 
-grub_file_t EXPORT_FUNC(grub_file_open) (const char *name);
+grub_file_t EXPORT_FUNC(grub_file_open) (const char *name, enum grub_file_type type);
 grub_ssize_t EXPORT_FUNC(grub_file_read) (grub_file_t file, void *buf,
 					  grub_size_t len);
 grub_off_t EXPORT_FUNC(grub_file_seek) (grub_file_t file, grub_off_t offset);
@@ -159,8 +227,8 @@ grub_file_seekable (const grub_file_t file)
 }
 
 grub_file_t
-grub_file_offset_open (grub_file_t parent, grub_off_t start,
-		       grub_off_t size);
+grub_file_offset_open (grub_file_t parent, enum grub_file_type type,
+		       grub_off_t start, grub_off_t size);
 void
 grub_file_offset_close (grub_file_t file);
 

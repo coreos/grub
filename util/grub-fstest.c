@@ -120,9 +120,9 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len, void
       return;
     }
 
-  if (uncompress == 0)
-    grub_file_filter_disable_compression ();
-  file = grub_file_open (pathname);
+  file = grub_file_open (pathname, ((uncompress == 0)
+				    ? GRUB_FILE_TYPE_NO_DECOMPRESS : GRUB_FILE_TYPE_NONE)
+			 | GRUB_FILE_TYPE_FSTEST);
   if (!file)
     {
       grub_util_error (_("cannot open `%s': %s"), pathname,

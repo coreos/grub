@@ -743,7 +743,7 @@ grub_gfxmenu_view_load_theme (grub_gfxmenu_view_t view, const char *theme_path)
   p.view = view;
   p.theme_dir = grub_get_dirname (theme_path);
 
-  file = grub_file_open (theme_path);
+  file = grub_file_open (theme_path, GRUB_FILE_TYPE_THEME);
   if (! file)
     {
       grub_free (p.theme_dir);

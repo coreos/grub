@@ -44,7 +44,8 @@ static const struct grub_arg_option options[] =
    PUBKEY filter (that insists upon properly signed files) as well.  PUBKEY
    filter is restored before the function returns. */
 static grub_file_t
-open_envblk_file (char *filename, int untrusted)
+open_envblk_file (char *filename,
+		  enum grub_file_type type)
 {
   grub_file_t file;
   char *buf = 0;
@@ -72,13 +73,7 @@ open_envblk_file (char *filename, int untrusted)
       grub_strcpy (filename + len + 1, GRUB_ENVBLK_DEFCFG);
     }
 
-  /* The filters that are disabled will be re-enabled by the call to
-     grub_file_open() after this particular file is opened. */
-  grub_file_filter_disable_compression ();
-  if (untrusted)
-    grub_file_filter_disable_pubkey ();
-
-  file = grub_file_open (filename);
+  file = grub_file_open (filename, type);
 
   grub_free (buf);
   return file;
@@ -171,7 +166,10 @@ grub_cmd_load_env (grub_extcmd_context_t ctxt, int argc, char **args)
   whitelist.list = args;
 
   /* state[0] is the -f flag; state[1] is the --skip-sig flag */
-  file = open_envblk_file ((state[0].set) ? state[0].arg : 0, state[1].set);
+  file = open_envblk_file ((state[0].set) ? state[0].arg : 0,
+			   GRUB_FILE_TYPE_LOADENV
+			   | (state[1].set
+			      ? GRUB_FILE_TYPE_SKIP_SIGNATURE : GRUB_FILE_TYPE_NONE));
   if (! file)
     return grub_errno;
 
@@ -206,7 +204,10 @@ grub_cmd_list_env (grub_extcmd_context_t ctxt,
   grub_file_t file;
   grub_envblk_t envblk;
 
-  file = open_envblk_file ((state[0].set) ? state[0].arg : 0, 0);
+  file = open_envblk_file ((state[0].set) ? state[0].arg : 0,
+			   GRUB_FILE_TYPE_LOADENV
+			   | (state[1].set
+			      ? GRUB_FILE_TYPE_SKIP_SIGNATURE : GRUB_FILE_TYPE_NONE));
   if (! file)
     return grub_errno;
 
@@ -390,7 +391,8 @@ grub_cmd_save_env (grub_extcmd_context_t ctxt, int argc, char **args)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no variable is specified");
 
   file = open_envblk_file ((state[0].set) ? state[0].arg : 0,
-                           1 /* allow untrusted */);
+			   GRUB_FILE_TYPE_SAVEENV
+			   | GRUB_FILE_TYPE_SKIP_SIGNATURE);
   if (! file)
     return grub_errno;
 

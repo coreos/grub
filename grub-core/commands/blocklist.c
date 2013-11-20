@@ -121,8 +121,8 @@ grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
-  grub_file_filter_disable_compression ();
-  file = grub_file_open (args[0]);
+  file = grub_file_open (args[0], GRUB_FILE_TYPE_PRINT_BLOCKLIST
+			 | GRUB_FILE_TYPE_NO_DECOMPRESS);
   if (! file)
     return grub_errno;
 

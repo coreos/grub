@@ -136,12 +136,12 @@ fail:
 }
 
 grub_elf_t
-grub_elf_open (const char *name)
+grub_elf_open (const char *name, enum grub_file_type type)
 {
   grub_file_t file;
   grub_elf_t elf;
 
-  file = grub_file_open (name);
+  file = grub_file_open (name, type);
   if (! file)
     return 0;
 

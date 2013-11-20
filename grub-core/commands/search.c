@@ -81,8 +81,8 @@ iterate_device (const char *name, void *data)
       if (! buf)
 	return 1;
 
-      grub_file_filter_disable_compression ();
-      file = grub_file_open (buf);
+      file = grub_file_open (buf, GRUB_FILE_TYPE_FS_SEARCH
+			     | GRUB_FILE_TYPE_NO_DECOMPRESS);
       if (file)
 	{
 	  found = 1;

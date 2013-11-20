@@ -69,7 +69,8 @@ grub_file_offset_close (grub_file_t file)
 }
 
 grub_file_t
-grub_file_offset_open (grub_file_t parent, grub_off_t start, grub_off_t size)
+grub_file_offset_open (grub_file_t parent, enum grub_file_type type,
+		       grub_off_t start, grub_off_t size)
 {
   struct grub_offset_file *off_data;
   grub_file_t off_file, last_off_file;
@@ -95,10 +96,10 @@ grub_file_offset_open (grub_file_t parent, grub_off_t start, grub_off_t size)
   last_off_file = NULL;
   for (filter = GRUB_FILE_FILTER_COMPRESSION_FIRST;
        off_file && filter <= GRUB_FILE_FILTER_COMPRESSION_LAST; filter++)
-    if (grub_file_filters_enabled[filter])
+    if (grub_file_filters[filter])
       {
 	last_off_file = off_file;
-	off_file = grub_file_filters_enabled[filter] (off_file, parent->name);
+	off_file = grub_file_filters[filter] (off_file, type);
       }
 
   if (!off_file)

@@ -165,7 +165,7 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
   if (type == -1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no type specified");
 
-  file = grub_file_open (args[0]);
+  file = grub_file_open (args[0], GRUB_FILE_TYPE_XNU_KERNEL);
   if (!file)
     return grub_errno;
   switch (type)
@@ -546,7 +546,8 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
     case IS_XNU64:
     case IS_XNU32:
       {
-	macho = grub_macho_open (args[0], (type == IS_XNU64));
+	macho = grub_macho_open (args[0], GRUB_FILE_TYPE_XNU_KERNEL,
+				 (type == IS_XNU64));
 	if (!macho)
 	  break;
 	/* FIXME: more checks?  */

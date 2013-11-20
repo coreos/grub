@@ -123,7 +123,7 @@ read_config_file (const char *config)
     }
 
   /* Try to open the config file.  */
-  rawfile = grub_file_open (config);
+  rawfile = grub_file_open (config, GRUB_FILE_TYPE_CONFIG);
   if (! rawfile)
     return 0;
 

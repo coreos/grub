@@ -93,7 +93,7 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
       grub_uint32_t tempo;
       grub_file_t file;
 
-      file = grub_file_open (args[0]);
+      file = grub_file_open (args[0], GRUB_FILE_TYPE_AUDIO);
 
       if (! file)
         return grub_errno;

@@ -188,12 +188,12 @@ fail:
 }
 
 grub_macho_t
-grub_macho_open (const char *name, int is_64bit)
+grub_macho_open (const char *name, enum grub_file_type type, int is_64bit)
 {
   grub_file_t file;
   grub_macho_t macho;
 
-  file = grub_file_open (name);
+  file = grub_file_open (name, type);
   if (! file)
     return 0;
 

@@ -113,7 +113,7 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
   if (hash->mdlen > GRUB_CRYPTO_MAX_MDLEN)
     return grub_error (GRUB_ERR_BUG, "mdlen is too long");
 
-  hashlist = grub_file_open (hashfilename);
+  hashlist = grub_file_open (hashfilename, GRUB_FILE_TYPE_HASHLIST);
   if (!hashlist)
     return grub_errno;
   
@@ -141,17 +141,15 @@ check_list (const gcry_md_spec_t *hash, const char *hashfilename,
 	  filename = grub_xasprintf ("%s/%s", prefix, p);
 	  if (!filename)
 	    return grub_errno;
-	  if (!uncompress)
-	    grub_file_filter_disable_compression ();
-	  file = grub_file_open (filename);
+	  file = grub_file_open (filename, GRUB_FILE_TYPE_TO_HASH
+				 | (!uncompress ? GRUB_FILE_TYPE_NO_DECOMPRESS
+				    : GRUB_FILE_TYPE_NONE));
 	  grub_free (filename);
 	}
       else
-	{
-	  if (!uncompress)
-	    grub_file_filter_disable_compression ();
-	  file = grub_file_open (p);
-	}
+	file = grub_file_open (p, GRUB_FILE_TYPE_TO_HASH
+			       | (!uncompress ? GRUB_FILE_TYPE_NO_DECOMPRESS
+				  : GRUB_FILE_TYPE_NONE));
       if (!file)
 	{
 	  grub_file_close (hashlist);
@@ -242,9 +240,9 @@ grub_cmd_hashsum (struct grub_extcmd_context *ctxt,
       grub_file_t file;
       grub_err_t err;
       unsigned j;
-      if (!uncompress)
-	grub_file_filter_disable_compression ();
-      file = grub_file_open (args[i]);
+      file = grub_file_open (args[i], GRUB_FILE_TYPE_TO_HASH
+			     | (!uncompress ? GRUB_FILE_TYPE_NO_DECOMPRESS
+				: GRUB_FILE_TYPE_NONE));
       if (!file)
 	{
 	  if (!keep)

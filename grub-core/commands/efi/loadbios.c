@@ -169,7 +169,7 @@ grub_cmd_loadbios (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc > 1)
     {
-      file = grub_file_open (argv[1]);
+      file = grub_file_open (argv[1], GRUB_FILE_TYPE_VBE_DUMP);
       if (! file)
 	return grub_errno;
 
@@ -183,7 +183,7 @@ grub_cmd_loadbios (grub_command_t cmd __attribute__ ((unused)),
 	return grub_errno;
     }
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_VBE_DUMP);
   if (! file)
     return grub_errno;
 

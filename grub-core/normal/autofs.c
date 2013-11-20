@@ -33,12 +33,6 @@ autoload_fs_module (void)
 {
   grub_named_list_t p;
   int ret = 0;
-  grub_file_filter_t grub_file_filters_was[GRUB_FILE_FILTER_MAX];
-
-  grub_memcpy (grub_file_filters_was, grub_file_filters_enabled,
-	       sizeof (grub_file_filters_enabled));
-  grub_memcpy (grub_file_filters_enabled, grub_file_filters_all,
-	       sizeof (grub_file_filters_enabled));
 
   while ((p = fs_module_list) != NULL)
     {
@@ -55,9 +49,6 @@ autoload_fs_module (void)
       grub_free (p->name);
       grub_free (p);
     }
-
-  grub_memcpy (grub_file_filters_enabled, grub_file_filters_was,
-	       sizeof (grub_file_filters_enabled));
 
   return ret;
 }
@@ -82,7 +73,7 @@ read_fs_list (const char *prefix)
 	  tmp_autoload_hook = grub_fs_autoload_hook;
 	  grub_fs_autoload_hook = NULL;
 
-	  file = grub_file_open (filename);
+	  file = grub_file_open (filename, GRUB_FILE_TYPE_GRUB_MODULE_LIST);
 	  if (file)
 	    {
 	      /* Override previous fs.lst.  */

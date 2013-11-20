@@ -220,7 +220,7 @@ grub_cmd_keymap (struct grub_command *cmd __attribute__ ((unused)),
   else
     filename = argv[0];
 
-  file = grub_file_open (filename);
+  file = grub_file_open (filename, GRUB_FILE_TYPE_KEYBOARD_LAYOUT);
   if (! file)
     goto fail;
 

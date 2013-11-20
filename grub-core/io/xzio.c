@@ -169,11 +169,13 @@ ERROR:
 }
 
 static grub_file_t
-grub_xzio_open (grub_file_t io,
-		const char *name __attribute__ ((unused)))
+grub_xzio_open (grub_file_t io, enum grub_file_type type)
 {
   grub_file_t file;
   grub_xzio_t xzio;
+
+  if (type & GRUB_FILE_TYPE_NO_DECOMPRESS)
+    return io;
 
   file = (grub_file_t) grub_zalloc (sizeof (*file));
   if (!file)

@@ -696,7 +696,7 @@ syslinux_parse_real (struct syslinux_menu *menu)
   char *buf = NULL;
   grub_err_t err = GRUB_ERR_NONE;
 
-  file = grub_file_open (menu->filename);
+  file = grub_file_open (menu->filename, GRUB_FILE_TYPE_CONFIG);
   if (!file)
     return grub_errno;
   while ((grub_free (buf), buf = grub_file_getline (file)))

@@ -55,7 +55,7 @@ legacy_file (const char *filename)
   if (!suffix)
     return grub_errno;
 
-  file = grub_file_open (filename);
+  file = grub_file_open (filename, GRUB_FILE_TYPE_CONFIG);
   if (! file)
     {
       grub_free (suffix);

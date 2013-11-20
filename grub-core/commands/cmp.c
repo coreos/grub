@@ -45,8 +45,8 @@ grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
   grub_printf_ (N_("Compare file `%s' with `%s':\n"), args[0],
 		args[1]);
 
-  file1 = grub_file_open (args[0]);
-  file2 = grub_file_open (args[1]);
+  file1 = grub_file_open (args[0], GRUB_FILE_TYPE_CMP);
+  file2 = grub_file_open (args[1], GRUB_FILE_TYPE_CMP);
   if (! file1 || ! file2)
     goto cleanup;
 

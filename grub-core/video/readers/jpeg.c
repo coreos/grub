@@ -772,7 +772,7 @@ grub_video_reader_jpeg (struct grub_video_bitmap **bitmap,
   grub_file_t file;
   struct grub_jpeg_data *data;
 
-  file = grub_buffile_open (filename, 0);
+  file = grub_buffile_open (filename, GRUB_FILE_TYPE_PIXMAP, 0);
   if (!file)
     return grub_errno;
 

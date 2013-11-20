@@ -208,7 +208,7 @@ fuse_getattr (const char *path, struct stat *st)
   if (!ctx.file_info.dir)
     {
       grub_file_t file;
-      file = grub_file_open (path);
+      file = grub_file_open (path, GRUB_FILE_TYPE_GET_SIZE);
       if (! file && grub_errno == GRUB_ERR_BAD_FILE_TYPE)
 	{
 	  grub_errno = GRUB_ERR_NONE;
@@ -244,7 +244,7 @@ static int
 fuse_open (const char *path, struct fuse_file_info *fi __attribute__ ((unused)))
 {
   grub_file_t file;
-  file = grub_file_open (path);
+  file = grub_file_open (path, GRUB_FILE_TYPE_MOUNT);
   if (! file)
     return translate_error ();
   files[first_fd++] = file;
@@ -308,7 +308,7 @@ fuse_readdir_call_fill (const char *filename,
       grub_file_t file;
       char *tmp;
       tmp = xasprintf ("%s/%s", ctx->path, filename);
-      file = grub_file_open (tmp);
+      file = grub_file_open (tmp, GRUB_FILE_TYPE_GET_SIZE);
       free (tmp);
       /* Symlink to directory.  */
       if (! file && grub_errno == GRUB_ERR_BAD_FILE_TYPE)

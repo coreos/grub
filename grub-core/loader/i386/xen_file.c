@@ -78,7 +78,7 @@ grub_xen_file (grub_file_t file)
      Trim it.  */
   if (grub_memcmp (magic, XZ_MAGIC, sizeof (XZ_MAGIC) - 1) == 0)
     payload_length -= 4;
-  off_file = grub_file_offset_open (file, payload_offset,
+  off_file = grub_file_offset_open (file, GRUB_FILE_TYPE_LINUX_KERNEL, payload_offset,
 				    payload_length);
   if (!off_file)
     goto fail;

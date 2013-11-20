@@ -297,7 +297,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
 
   grub_memset (&data, 0, sizeof (data));
 
-  data.file = grub_buffile_open (filename, 0);
+  data.file = grub_buffile_open (filename, GRUB_FILE_TYPE_PIXMAP, 0);
   if (! data.file)
     return grub_errno;
 

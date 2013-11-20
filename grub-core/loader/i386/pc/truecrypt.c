@@ -99,7 +99,7 @@ grub_cmd_truecrypt (grub_command_t cmd __attribute__ ((unused)),
 
   grub_dl_ref (my_mod);
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_TRUECRYPT);
   if (! file)
     goto fail;
 

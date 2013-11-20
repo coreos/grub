@@ -242,7 +242,8 @@ grub_cmd_nativedisk (grub_command_t cmd __attribute__ ((unused)),
       if (! filename)
 	goto fail;
 
-      file = grub_file_open (filename);
+      file = grub_file_open (filename,
+			     GRUB_FILE_TYPE_GRUB_MODULE);
       grub_free (filename);
       if (! file)
 	goto fail;

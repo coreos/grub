@@ -187,7 +187,7 @@ grub_efiemu_load_file (const char *filename)
   grub_file_t file;
   grub_err_t err;
 
-  file = grub_file_open (filename);
+  file = grub_file_open (filename, GRUB_FILE_TYPE_GRUB_MODULE);
   if (! file)
     return grub_errno;
 

@@ -88,11 +88,11 @@ grub_bufio_open (grub_file_t io, grub_size_t size)
 }
 
 grub_file_t
-grub_buffile_open (const char *name, grub_size_t size)
+grub_buffile_open (const char *name, enum grub_file_type type, grub_size_t size)
 {
   grub_file_t io, file;
 
-  io = grub_file_open (name);
+  io = grub_file_open (name, type);
   if (! io)
     return 0;
 

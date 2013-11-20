@@ -110,7 +110,7 @@ grub_cmd_freedos (grub_command_t cmd __attribute__ ((unused)),
   if (!rel)
     goto fail;
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_FREEDOS);
   if (! file)
     goto fail;
 

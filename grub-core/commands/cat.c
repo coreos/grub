@@ -56,7 +56,7 @@ grub_cmd_cat (grub_extcmd_context_t ctxt, int argc, char **args)
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
-  file = grub_file_open (args[0]);
+  file = grub_file_open (args[0], GRUB_FILE_TYPE_CAT);
   if (! file)
     return grub_errno;
 

@@ -61,7 +61,7 @@ grub_cmd_testspeed (grub_extcmd_context_t ctxt, int argc, char **args)
   if (buffer == NULL)
     return grub_errno;
 
-  file = grub_file_open (args[0]);
+  file = grub_file_open (args[0], GRUB_FILE_TYPE_TESTLOAD);
   if (file == NULL)
     goto quit;
 

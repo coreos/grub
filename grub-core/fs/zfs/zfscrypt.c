@@ -425,7 +425,7 @@ grub_cmd_zfs_key (grub_extcmd_context_t ctxt, int argc, char **args)
   if (argc > 0)
     {
       grub_file_t file;
-      file = grub_file_open (args[0]);
+      file = grub_file_open (args[0], GRUB_FILE_TYPE_ZFS_ENCRYPTION_KEY);
       if (!file)
 	return grub_errno;
       real_size = grub_file_read (file, buf, 1024);

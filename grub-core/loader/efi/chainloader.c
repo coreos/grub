@@ -219,7 +219,7 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
 
   b = grub_efi_system_table->boot_services;
 
-  file = grub_file_open (filename);
+  file = grub_file_open (filename, GRUB_FILE_TYPE_EFI_CHAINLOADED_IMAGE);
   if (! file)
     goto fail;
 

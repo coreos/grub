@@ -331,7 +331,7 @@ read_terminal_list (const char *prefix)
       return;
     }
 
-  file = grub_file_open (filename);
+  file = grub_file_open (filename, GRUB_FILE_TYPE_GRUB_MODULE_LIST);
   grub_free (filename);
   if (!file)
     {

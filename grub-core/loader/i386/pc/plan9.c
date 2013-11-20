@@ -413,7 +413,7 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
   if (!rel)
     goto fail;
 
-  fill_ctx.file = grub_file_open (argv[0]);
+  fill_ctx.file = grub_file_open (argv[0], GRUB_FILE_TYPE_PLAN9_KERNEL);
   if (! fill_ctx.file)
     goto fail;
 

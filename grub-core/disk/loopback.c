@@ -92,7 +92,8 @@ grub_cmd_loopback (grub_extcmd_context_t ctxt, int argc, char **args)
   if (argc < 2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
-  file = grub_file_open (args[1]);
+  file = grub_file_open (args[1], GRUB_FILE_TYPE_LOOPBACK
+			 | GRUB_FILE_TYPE_NO_DECOMPRESS);
   if (! file)
     return grub_errno;
 

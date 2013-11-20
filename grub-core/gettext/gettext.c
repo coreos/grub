@@ -291,7 +291,7 @@ grub_mofile_open (struct grub_gettext_context *ctx,
   /* Using fd_mo and not another variable because
      it's needed for grub_gettext_get_info.  */
 
-  fd = grub_file_open (filename);
+  fd = grub_file_open (filename, GRUB_FILE_TYPE_GETTEXT_CATALOG);
 
   if (!fd)
     return grub_errno;

@@ -42,7 +42,7 @@ typedef int (*grub_elf32_phdr_iterate_hook_t)
 typedef int (*grub_elf64_phdr_iterate_hook_t)
   (grub_elf_t elf, Elf64_Phdr *phdr, void *arg);
 
-grub_elf_t grub_elf_open (const char *);
+grub_elf_t grub_elf_open (const char *, enum grub_file_type type);
 grub_elf_t grub_elf_file (grub_file_t file, const char *filename);
 grub_err_t grub_elf_close (grub_elf_t);
 

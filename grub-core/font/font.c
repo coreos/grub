@@ -418,7 +418,7 @@ grub_font_load (const char *filename)
 #endif
 
   if (filename[0] == '(' || filename[0] == '/' || filename[0] == '+')
-    file = grub_buffile_open (filename, 1024);
+    file = grub_buffile_open (filename, GRUB_FILE_TYPE_FONT, 1024);
   else
     {
       const char *prefix = grub_env_get ("prefix");
@@ -438,7 +438,7 @@ grub_font_load (const char *filename)
       ptr = grub_stpcpy (ptr, filename);
       ptr = grub_stpcpy (ptr, ".pf2");
       *ptr = 0;
-      file = grub_buffile_open (fullname, 1024);
+      file = grub_buffile_open (fullname, GRUB_FILE_TYPE_FONT, 1024);
       grub_free (fullname);
     }
   if (!file)

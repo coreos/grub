@@ -351,7 +351,7 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
 
   grub_xnu_unload ();
 
-  macho = grub_macho_open (args[0], 0);
+  macho = grub_macho_open (args[0], GRUB_FILE_TYPE_XNU_KERNEL, 0);
   if (! macho)
     return grub_errno;
 
@@ -456,7 +456,7 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
 
   grub_xnu_unload ();
 
-  macho = grub_macho_open (args[0], 1);
+  macho = grub_macho_open (args[0], GRUB_FILE_TYPE_XNU_KERNEL, 1);
   if (! macho)
     return grub_errno;
 
@@ -674,7 +674,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile,
     macho = 0;
 
   if (infoplistname)
-    infoplist = grub_file_open (infoplistname);
+    infoplist = grub_file_open (infoplistname, GRUB_FILE_TYPE_XNU_INFO_PLIST);
   else
     infoplist = 0;
   grub_errno = GRUB_ERR_NONE;
@@ -771,7 +771,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
   if (! grub_xnu_heap_size)
     return grub_error (GRUB_ERR_BAD_OS, N_("you need to load the kernel first"));
 
-  file = grub_file_open (args[0]);
+  file = grub_file_open (args[0], GRUB_FILE_TYPE_XNU_MKEXT);
   if (! file)
     return grub_errno;
 
@@ -885,7 +885,7 @@ grub_cmd_xnu_ramdisk (grub_command_t cmd __attribute__ ((unused)),
   if (! grub_xnu_heap_size)
     return grub_error (GRUB_ERR_BAD_OS, N_("you need to load the kernel first"));
 
-  file = grub_file_open (args[0]);
+  file = grub_file_open (args[0], GRUB_FILE_TYPE_XNU_RAMDISK);
   if (! file)
     return grub_errno;
 
@@ -925,7 +925,7 @@ grub_xnu_check_os_bundle_required (char *plistname,
   if (binname)
     *binname = 0;
 
-  file = grub_file_open (plistname);
+  file = grub_file_open (plistname, GRUB_FILE_TYPE_XNU_INFO_PLIST);
   if (! file)
     return 0;
 
@@ -1210,7 +1210,7 @@ grub_xnu_load_kext_from_dir (char *dirname, const char *osbundlerequired,
 		grub_strcpy (binname + grub_strlen (binname), "/");
 	      grub_strcpy (binname + grub_strlen (binname), binsuffix);
 	      grub_dprintf ("xnu", "%s:%s\n", ctx.plistname, binname);
-	      binfile = grub_file_open (binname);
+	      binfile = grub_file_open (binname, GRUB_FILE_TYPE_XNU_KEXT);
 	      if (! binfile)
 		grub_errno = GRUB_ERR_NONE;
 
@@ -1253,7 +1253,7 @@ grub_cmd_xnu_kext (grub_command_t cmd __attribute__ ((unused)),
       /* User explicitly specified plist and binary. */
       if (grub_strcmp (args[1], "-") != 0)
 	{
-	  binfile = grub_file_open (args[1]);
+	  binfile = grub_file_open (args[1], GRUB_FILE_TYPE_XNU_KEXT);
 	  if (! binfile)
 	    return grub_errno;
 	}

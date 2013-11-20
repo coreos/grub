@@ -680,10 +680,12 @@ grub_cmd_trust (grub_extcmd_context_t ctxt,
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
 
-  grub_file_filter_disable_compression ();
-  if (ctxt->state[OPTION_SKIP_SIG].set)
-    grub_file_filter_disable_pubkey ();
-  pkf = grub_file_open (args[0]);
+  pkf = grub_file_open (args[0],
+			GRUB_FILE_TYPE_PUBLIC_KEY_TRUST
+			| GRUB_FILE_TYPE_NO_DECOMPRESS
+			| (ctxt->state[OPTION_SKIP_SIG].set
+			   ? GRUB_FILE_TYPE_SKIP_SIGNATURE
+			   : GRUB_FILE_TYPE_NONE));
   if (!pkf)
     return grub_errno;
   pk = grub_load_public_key (pkf);
@@ -771,10 +773,12 @@ grub_cmd_verify_signature (grub_extcmd_context_t ctxt,
   if (argc > 2)
     {
       grub_file_t pkf;
-      grub_file_filter_disable_compression ();
-      if (ctxt->state[OPTION_SKIP_SIG].set)
-	grub_file_filter_disable_pubkey ();
-      pkf = grub_file_open (args[2]);
+      pkf = grub_file_open (args[2],
+			    GRUB_FILE_TYPE_PUBLIC_KEY
+			    | GRUB_FILE_TYPE_NO_DECOMPRESS
+			    | (ctxt->state[OPTION_SKIP_SIG].set
+			       ? GRUB_FILE_TYPE_SKIP_SIGNATURE
+			       : GRUB_FILE_TYPE_NONE));
       if (!pkf)
 	return grub_errno;
       pk = grub_load_public_key (pkf);
@@ -786,16 +790,16 @@ grub_cmd_verify_signature (grub_extcmd_context_t ctxt,
       grub_file_close (pkf);
     }
 
-  grub_file_filter_disable_all ();
-  f = grub_file_open (args[0]);
+  f = grub_file_open (args[0], GRUB_FILE_TYPE_VERIFY_SIGNATURE);
   if (!f)
     {
       err = grub_errno;
       goto fail;
     }
 
-  grub_file_filter_disable_all ();
-  sig = grub_file_open (args[1]);
+  sig = grub_file_open (args[1],
+			GRUB_FILE_TYPE_SIGNATURE
+			| GRUB_FILE_TYPE_NO_DECOMPRESS);
   if (!sig)
     {
       err = grub_errno;
@@ -858,14 +862,18 @@ struct grub_fs verified_fs =
 };
 
 static grub_file_t
-grub_pubkey_open (grub_file_t io, const char *filename)
+grub_pubkey_open (grub_file_t io, enum grub_file_type type)
 {
   grub_file_t sig;
   char *fsuf, *ptr;
   grub_err_t err;
-  grub_file_filter_t curfilt[GRUB_FILE_FILTER_MAX];
   grub_file_t ret;
   grub_verified_t verified;
+
+  if ((type & GRUB_FILE_TYPE_MASK) == GRUB_FILE_TYPE_SIGNATURE
+      || (type & GRUB_FILE_TYPE_MASK) == GRUB_FILE_TYPE_VERIFY_SIGNATURE
+      || (type & GRUB_FILE_TYPE_SKIP_SIGNATURE))
+    return io;
 
   if (!sec)
     return io;
@@ -873,18 +881,13 @@ grub_pubkey_open (grub_file_t io, const char *filename)
       (io->device->disk->dev->id == GRUB_DISK_DEVICE_MEMDISK_ID
        || io->device->disk->dev->id == GRUB_DISK_DEVICE_PROCFS_ID))
     return io;
-  fsuf = grub_malloc (grub_strlen (filename) + sizeof (".sig"));
+  fsuf = grub_malloc (grub_strlen (io->name) + sizeof (".sig"));
   if (!fsuf)
     return NULL;
-  ptr = grub_stpcpy (fsuf, filename);
+  ptr = grub_stpcpy (fsuf, io->name);
   grub_memcpy (ptr, ".sig", sizeof (".sig"));
 
-  grub_memcpy (curfilt, grub_file_filters_enabled,
-	       sizeof (curfilt));
-  grub_file_filter_disable_all ();
-  sig = grub_file_open (fsuf);
-  grub_memcpy (grub_file_filters_enabled, curfilt,
-	       sizeof (curfilt));
+  sig = grub_file_open (fsuf, GRUB_FILE_TYPE_SIGNATURE);
   grub_free (fsuf);
   if (!sig)
     return NULL;
@@ -918,7 +921,7 @@ grub_pubkey_open (grub_file_t io, const char *filename)
   if (!verified->buf)
     {
       grub_file_close (sig);
-      grub_free (verified);
+      verified_free (verified);
       grub_free (ret);
       return NULL;
     }
@@ -926,7 +929,7 @@ grub_pubkey_open (grub_file_t io, const char *filename)
     {
       if (!grub_errno)
 	grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
-		    filename);
+		    io->name);
       grub_file_close (sig);
       verified_free (verified);
       grub_free (ret);

@@ -57,7 +57,7 @@ grub_cmd_testload (struct grub_command *cmd __attribute__ ((unused)),
   if (argc < 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_TESTLOAD);
   if (! file)
     return grub_errno;
 

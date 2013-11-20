@@ -193,7 +193,7 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
 	  {
 	    grub_file_t file;
 
-	    file = grub_file_open (filename);
+	    file = grub_file_open (filename, GRUB_FILE_TYPE_GRUB_MODULE_LIST);
 	    if (file)
 	      {
 		char *buf = 0;

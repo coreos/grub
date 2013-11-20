@@ -90,7 +90,7 @@ grub_cmd_hexdump (grub_extcmd_context_t ctxt, int argc, char **args)
     {
       grub_file_t file;
 
-      file = grub_file_open (args[0]);
+      file = grub_file_open (args[0], GRUB_FILE_TYPE_HEXCAT);
       if (! file)
 	return 0;
 

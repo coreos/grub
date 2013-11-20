@@ -49,7 +49,8 @@ struct grub_macho_file
 };
 typedef struct grub_macho_file *grub_macho_t;
 
-grub_macho_t grub_macho_open (const char *, int is_64bit);
+grub_macho_t grub_macho_open (const char *, enum grub_file_type type,
+			      int is_64bit);
 grub_macho_t grub_macho_file (grub_file_t file, const char *filename,
 			      int is_64bit);
 grub_err_t grub_macho_close (grub_macho_t);

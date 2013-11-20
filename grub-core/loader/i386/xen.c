@@ -648,7 +648,7 @@ grub_cmd_xen (grub_command_t cmd __attribute__ ((unused)),
 			      (char *) xen_state.next_start.cmd_line,
 			      sizeof (xen_state.next_start.cmd_line) - 1);
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_LINUX_KERNEL);
   if (!file)
     return grub_errno;
 
@@ -893,9 +893,8 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
 
   xen_state.max_addr = ALIGN_UP (xen_state.max_addr, PAGE_SIZE);
 
-  if (nounzip)
-    grub_file_filter_disable_compression ();
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_LINUX_INITRD |
+			 (nounzip ? GRUB_FILE_TYPE_NO_DECOMPRESS : GRUB_FILE_TYPE_NONE));
   if (!file)
     return grub_errno;
   size = grub_file_size (file);

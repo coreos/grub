@@ -172,8 +172,8 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 
   grub_dl_ref (my_mod);
 
-  grub_file_filter_disable_compression ();
-  file = grub_file_open (filename);
+  file = grub_file_open (filename, GRUB_FILE_TYPE_PCCHAINLOADER
+			 | GRUB_FILE_TYPE_NO_DECOMPRESS);
   if (! file)
     goto fail;
 

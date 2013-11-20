@@ -439,7 +439,7 @@ grub_cmd_chain (grub_command_t cmd __attribute__ ((unused)),
 
   grub_loader_unset ();
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_COREBOOT_CHAINLOADER);
   if (!file)
     return grub_errno;
 
