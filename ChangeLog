@@ -1,3 +1,7 @@
+2013-11-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/normal/progress.c: Remove unused file.
+
 2013-11-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/crypto.c (grub_crypto_hash): Remove variable length
