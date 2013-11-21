@@ -1,5 +1,11 @@
 2013-11-21  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub-mkrescue.c (main): If a source directory is not
+	specified, read platform-specific files from subdirectories of
+	pkglibdir, not pkgdatadir.
+
+2013-11-21  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/normal/progress.c: Remove unused file.
 
 2013-11-20  Vladimir Serbinenko  <phcoder@gmail.com>
