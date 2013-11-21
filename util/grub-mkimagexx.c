@@ -1321,7 +1321,6 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 	  *kernel_sz = ALIGN_UP (*kernel_sz, 16);
 
 	  grub_ia64_dl_get_tramp_got_size (e, &tramp, &got);
-	  tramp *= sizeof (struct grub_ia64_trampoline);
 
 	  ia64_toff = *kernel_sz;
 	  *kernel_sz += ALIGN_UP (tramp, 16);
@@ -1332,7 +1331,7 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 	  *kernel_sz += 16 * ia64jmpnum;
 
 	  ia64_got_off = *kernel_sz;
-	  *kernel_sz += ALIGN_UP (got * sizeof (grub_uint64_t), 16);
+	  *kernel_sz += ALIGN_UP (got, 16);
 	}
 #endif
 

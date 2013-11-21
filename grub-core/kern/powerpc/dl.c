@@ -38,9 +38,26 @@ grub_arch_dl_check_header (void *ehdr)
   return GRUB_ERR_NONE;
 }
 
+/* For low-endian reverse lis and addr_high as well as ori and addr_low. */
+struct trampoline
+{
+  grub_uint32_t lis;
+  grub_uint32_t ori;
+  grub_uint32_t mtctr;
+  grub_uint32_t bctr;
+};
+
+static const struct trampoline trampoline_template = 
+  {
+    0x3d800000,
+    0x618c0000,
+    0x7d8903a6,
+    0x4e800420,
+  };
+
 #pragma GCC diagnostic ignored "-Wcast-align"
 
-void
+grub_err_t
 grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got)
 {
@@ -59,7 +76,7 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
       break;
 
   if (i == e->e_shnum)
-    return;
+    return GRUB_ERR_NONE;
 
   for (i = 0, s = (const Elf_Shdr *) ((const char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -77,25 +94,10 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 	
       }
 
-  return;
+  *tramp *= sizeof (struct trampoline);
+
+  return GRUB_ERR_NONE;
 }
-
-/* For low-endian reverse lis and addr_high as well as ori and addr_low. */
-struct trampoline
-{
-  grub_uint32_t lis;
-  grub_uint32_t ori;
-  grub_uint32_t mtctr;
-  grub_uint32_t bctr;
-};
-
-static const struct trampoline trampoline_template = 
-  {
-    0x3d800000,
-    0x618c0000,
-    0x7d8903a6,
-    0x4e800420,
-  };
 
 /* Relocate symbols.  */
 grub_err_t
@@ -167,8 +169,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
 		      if (delta << 6 >> 6 != delta)
 			{
-			  COMPILE_TIME_ASSERT (sizeof (struct trampoline)
-					       == GRUB_ARCH_DL_TRAMP_SIZE);
 			  grub_memcpy (tptr, &trampoline_template,
 				       sizeof (*tptr));
 			  delta = (grub_uint8_t *) tptr - (grub_uint8_t *) addr;

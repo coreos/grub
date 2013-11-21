@@ -51,6 +51,58 @@ grub_arch_dl_check_header (void *ehdr)
 
 #pragma GCC diagnostic ignored "-Wcast-align"
 
+grub_err_t
+grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
+				 grub_size_t *got)
+{
+  const Elf_Ehdr *e = ehdr;
+  const Elf_Shdr *s;
+  unsigned i;
+  /* FIXME: suboptimal.  */
+  grub_size_t gp_size = 0;
+
+  *tramp = 0;
+  *got = 0;
+
+  /* Find a symbol table.  */
+  for (i = 0, s = (const Elf_Shdr *) ((const char *) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (const Elf_Shdr *) ((const char *) s + e->e_shentsize))
+    if (s->sh_type == SHT_SYMTAB)
+      break;
+
+  if (i == e->e_shnum)
+    return grub_error (GRUB_ERR_BAD_MODULE, N_("no symbol table"));
+
+  for (i = 0, s = (const Elf_Shdr *) ((const char *) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (const Elf_Shdr *) ((const char *) s + e->e_shentsize))
+    if (s->sh_type == SHT_REL)
+      {
+	const Elf_Rel *rel, *max;
+
+	for (rel = (const Elf_Rel *) ((const char *) e + s->sh_offset),
+	       max = rel + s->sh_size / s->sh_entsize;
+	     rel < max;
+	     rel++)
+	  switch (ELF_R_TYPE (rel->r_info))
+	    {
+	    case R_MIPS_GOT16:
+	    case R_MIPS_CALL16:
+	    case R_MIPS_GPREL32:
+	      gp_size += 4;
+	      break;
+	    }
+      }
+
+  if (gp_size > 0x08000)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, "__gnu_local_gp is too big\n");
+
+  *got = gp_size;
+
+  return GRUB_ERR_NONE;
+}
+
 /* Relocate symbols.  */
 grub_err_t
 grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
@@ -59,7 +111,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
   Elf_Shdr *s;
   Elf_Word entsize;
   unsigned i;
-  grub_size_t gp_size = 0;
   /* FIXME: suboptimal.  */
   grub_uint32_t *gp, *gpptr;
   grub_uint32_t gp0;
@@ -88,43 +139,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
   gp0 = ((grub_uint32_t *)((char *) e + s->sh_offset))[5];
 
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_REL)
-      {
-	grub_dl_segment_t seg;
-
-	/* Find the target segment.  */
-	for (seg = mod->segment; seg; seg = seg->next)
-	  if (seg->section == s->sh_info)
-	    break;
-
-	if (seg)
-	  {
-	    Elf_Rel *rel, *max;
-
-	    for (rel = (Elf_Rel *) ((char *) e + s->sh_offset),
-		   max = rel + s->sh_size / s->sh_entsize;
-		 rel < max;
-		 rel++)
-		switch (ELF_R_TYPE (rel->r_info))
-		  {
-		  case R_MIPS_GOT16:
-		  case R_MIPS_CALL16:
-		  case R_MIPS_GPREL32:
-		    gp_size += 4;
-		    break;
-		  }
-	  }
-      }
-
-  if (gp_size > 0x08000)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "__gnu_local_gp is too big\n");
-
-  gpptr = gp = grub_malloc (gp_size);
-  if (!gp)
-    return grub_errno;
+  gpptr = gp = mod->got;
 
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -234,7 +249,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    break;
 		  default:
 		    {
-		      grub_free (gp);
 		      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 					 N_("relocation 0x%x is not implemented yet"),
 					 ELF_R_TYPE (rel->r_info));
