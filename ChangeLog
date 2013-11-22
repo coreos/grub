@@ -1,5 +1,9 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/xen/init.c: Do not map more pages than we can address.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/efi/mm.c: Limit allocations to 2GiB when not compiling
 	with -mcmodel=large.
 
