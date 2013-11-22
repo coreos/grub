@@ -79,6 +79,7 @@ This edition documents version @value{VERSION}.
 * Contributing Changes::
 * Porting::
 * Error Handling::
+* Stack and heap size::
 * BIOS port memory map::
 * Video Subsystem::
 * PFF2 Font File Format::
@@ -906,6 +907,69 @@ if (grub_errno != GRUB_ERR_NONE)
 grub_error_pop ();
 @end example
 
+@node Stack and heap size
+@chapter Stack and heap size
+
+On emu stack and heap are just normal host OS stack and heap. Stack is typically
+8 MiB although it's OS-dependent.
+
+On i386-pc, i386-coreboot, i386-qemu and i386-multiboot the stack is 60KiB.
+All available space between 1MiB and 4GiB marks is part of heap.
+
+On *-xen stack is 4MiB. If compiled for x86-64 with GCC 4.4 or later adressable
+space is unlimited. When compiled for x86-64 with older GCC version adressable
+space is limited to 2GiB. When compiling for i386 adressable space is limited
+to 4GiB. All adressable pages except the ones for stack, GRUB binary, special
+pages and page table are in the heap.
+
+On *-efi GRUB uses same stack as EFI. If compiled for x86-64 with GCC 4.4 or
+later adressable space is unlimited. When compiled for x86-64 with older GCC
+version adressable space is limited to 2GiB. For all other platforms adressable
+space is limited to 4GiB. GRUB allocates pages from EFI for its heap, at most
+1.6 GiB.
+
+On i386-ieee1275 and powerpc-ieee1275 GRUB uses same stack as IEEE1275.
+It allocates at most 32MiB for its heap.
+
+On sparc64-ieee1275 stack is 256KiB and heap is 2MiB.
+
+On mips(el)-qemu_mips and mipsel-loongson stack is 2MiB (everything below
+GRUB image) and everything above GRUB image (from 2MiB + kernel size)
+until 256MiB is part of heap.
+
+On mips-arc stack is 2MiB (everything below GRUB image) and everything above
+GRUB image(from 2MiB + kernel size) until 128MiB is part of heap.
+
+On mipsel-arc stack is 2MiB (everything below GRUB image which is not part
+of ARC) and everything above GRUB image (from 7MiB + kernel size)
+until 256MiB is part of heap.
+
+On arm-uboot stack is 256KiB and heap is 2MiB.
+
+In short:
+
+@multitable @columnfractions .15 .25 .5
+@headitem Platform @tab Stack @tab Heap
+@item emu                     @tab 8 MiB   @tab ?
+@item i386-pc                 @tab 60 KiB  @tab < 4 GiB
+@item i386-coreboot           @tab 60 KiB  @tab < 4 GiB
+@item i386-multiboot          @tab 60 KiB  @tab < 4 GiB
+@item i386-qemu               @tab 60 KiB  @tab < 4 GiB
+@item *-efi                   @tab ?       @tab < 1.6 GiB
+@item i386-ieee1275           @tab ?       @tab < 32 MiB
+@item powerpc-ieee1275        @tab ?       @tab < 32 MiB
+@item sparc64-ieee1275        @tab 256KiB  @tab 2 MiB
+@item arm-uboot               @tab 256KiB  @tab 2 MiB
+@item mips(el)-qemu_mips      @tab 2MiB    @tab 253 MiB
+@item mipsel-loongson         @tab 2MiB    @tab 253 MiB
+@item mips-arc                @tab 2MiB    @tab 125 MiB
+@item mipsel-arc              @tab 2MiB    @tab 248 MiB
+@item x86_64-xen (GCC >= 4.4) @tab 4MiB    @tab unlimited
+@item x86_64-xen (GCC < 4.4)  @tab 4MiB    @tab < 2GiB
+@item i386-xen                @tab 4MiB    @tab < 4GiB
+@end multitable
+
+
 @node BIOS port memory map
 @chapter BIOS port memory map
 @c By Yoshinori K Okuji
@@ -917,9 +981,8 @@ grub_error_pop ();
 @item ?        @tab 0x2000 - 1   @tab Real mode stack 
 @item 0x7C00   @tab 0x7D00 - 1   @tab Boot sector 
 @item 0x8000   @tab ?            @tab GRUB kernel 
-@item 0x68000  @tab 0x78000 - 1  @tab Disk buffer 
+@item 0x68000  @tab 0x71000 - 1  @tab Disk buffer 
 @item ?        @tab 0x80000 - 1  @tab Protected mode stack 
-@item 0x80000  @tab ?            @tab Heap 
 @item ?        @tab 0xA0000 - 1  @tab Extended BIOS Data Area 
 @item 0xA0000  @tab 0xC0000 - 1  @tab Video RAM 
 @item 0xC0000  @tab 0x100000 - 1 @tab BIOS 

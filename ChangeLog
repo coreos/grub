@@ -1,5 +1,9 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* docs/grub-dev.texi: Document stack and heap sizes.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/i386/pc/memory.h: Decrease
 	GRUB_MEMORY_MACHINE_SCRATCH_SIZE and increase
 	GRUB_MEMORY_MACHINE_PROT_STACK_SIZE.
