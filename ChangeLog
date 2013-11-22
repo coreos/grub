@@ -1,5 +1,11 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/mips/startup_raw.S: Handle the case of gap between
+	.data and .bss. May happen if compiler and assembly use different
+	alignment.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	On MIPS handle got16 relocations to local symbols in an ABI-compliant
 	way.
 

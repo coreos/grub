@@ -27,6 +27,7 @@
 
 .extern __bss_start
 .extern _end
+.extern _edata
 
 	.globl __start, _start, start
 	.set noreorder
@@ -248,8 +249,9 @@ cmdlinedone:
 #include "../../kern/mips/cache_flush.S"
 
 	/* Decompress the payload. */
-	lui $a0, %hi(__bss_start)
-	addiu $a0, $a0, %lo(__bss_start)
+	lui $a0, %hi(_edata)
+	addiu $a0, $a0, %lo(_edata)
+
 	lui $t0, %hi(base)
 	addiu $t0, $t0, %lo(base)
 	subu $a0, $a0, $t0
@@ -287,3 +289,11 @@ cmdlinedone:
 
 	jr $t1
 	 nop
+	/* Ensure that .data section is created. In code we suppose that _edata
+	   is first location not in decompressor image. Strictly speaking it's
+	   _edata only when .data is present and _etext otherwise. But checking
+	   for .data presence would cost more in code than it is to ensure that
+	   .data is created.
+	*/
+	.data
+	.long 0
