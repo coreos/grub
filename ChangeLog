@@ -1,5 +1,10 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/efi/mm.c: Limit allocations to 2GiB when not compiling
+	with -mcmodel=large.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/x86_64/dl.c (grub_arch_dl_relocate_symbols): Add
 	range-checking for 32-bit quantities.
 
