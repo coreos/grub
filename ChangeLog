@@ -1,5 +1,9 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add *-xen to the list of grub-install-common platforms.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Do not enforce -mcmodel=large. It's not necessarry with
 	3 last commits.
 

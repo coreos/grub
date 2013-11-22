@@ -597,6 +597,8 @@ static struct
     [GRUB_INSTALL_PLATFORM_I386_MULTIBOOT] =   { "i386",    "multiboot" },
     [GRUB_INSTALL_PLATFORM_I386_IEEE1275] =    { "i386",    "ieee1275"  },
     [GRUB_INSTALL_PLATFORM_X86_64_EFI] =       { "x86_64",  "efi"       },
+    [GRUB_INSTALL_PLATFORM_I386_XEN] =         { "i386",    "xen"       },
+    [GRUB_INSTALL_PLATFORM_X86_64_XEN] =       { "x86_64",  "xen"       },
     [GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON] =  { "mipsel",  "loongson"  },
     [GRUB_INSTALL_PLATFORM_MIPSEL_QEMU_MIPS] = { "mipsel",  "qemu_mips" },
     [GRUB_INSTALL_PLATFORM_MIPS_QEMU_MIPS] =   { "mips",    "qemu_mips" },
