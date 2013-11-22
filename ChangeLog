@@ -1,5 +1,9 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* INSTALL: Document about clang for mips.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/libgcrypt/mpi/longlong.h: Use C version with mips
 	clang.
 
