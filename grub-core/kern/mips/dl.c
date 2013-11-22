@@ -245,6 +245,30 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    }
 		    break;
 		  case R_MIPS_GOT16:
+		    if (ELF_ST_BIND (sym->st_info) == STB_LOCAL)
+		      {
+			Elf_Rel *rel2;
+			/* Handle partner lo16 relocation. Lower part is
+			   treated as signed. Hence add 0x8000 to compensate.
+			*/
+			sym_value += (*(grub_uint16_t *) addr << 16)
+			  + 0x8000;
+			for (rel2 = rel + 1; rel2 < max; rel2++)
+			  if (ELF_R_SYM (rel2->r_info)
+			      == ELF_R_SYM (rel->r_info)
+			      && ELF_R_TYPE (rel2->r_info) == R_MIPS_LO16)
+			    {
+			      sym_value += *(grub_int16_t *)
+				((char *) seg->addr + rel2->r_offset
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+				 + 2
+#endif
+				 );
+			      break;
+			    }
+			sym_value &= 0xffff0000;
+			*(grub_uint16_t *) addr = 0;
+		      }
 		  case R_MIPS_CALL16:
 		    /* FIXME: reuse*/
 #ifdef GRUB_CPU_WORDS_BIGENDIAN

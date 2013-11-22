@@ -1,5 +1,10 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	On MIPS handle got16 relocations to local symbols in an ABI-compliant
+	way.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add support for a new magic symbol _gp_disp on mips to handle PIC
 	binaries.
 
