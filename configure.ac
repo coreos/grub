@@ -486,7 +486,11 @@ AC_CACHE_CHECK([if compiling with clang], [grub_cv_cc_target_clang]
 
 # on x86 clang doesn't support .code16
 # on arm clang doesn't support .arch directive
-if test "x$grub_cv_cc_target_clang" = xyes && ( test "x$target_cpu" = xi386 || test "x$target_cpu" = xx86_64 || test "x$target_cpu" = xarm ); then
+# on mips clang doesn't support privilegied instructions, doubleword store/load
+# and crashes with hand-written assembly
+if test "x$grub_cv_cc_target_clang" = xyes && ( test "x$target_cpu" = xi386 \
+   || test "x$target_cpu" = xx86_64 || test "x$target_cpu" = xarm \
+   || test "x$target_cpu" = xmips || test "x$target_cpu" = xmipsel ); then
    TARGET_CCASFLAGS="$TARGET_CCASFLAGS -no-integrated-as"
 fi
 

@@ -1,5 +1,10 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add -no-integrated-as on mips(el) to TARGET_CCASFLAGS
+	when compiling with clang.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	clang emits calls to abort () under some unknown conditions.
 	Export abort () when compiling with clang.
 
