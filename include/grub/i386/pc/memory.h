@@ -34,13 +34,13 @@
 /* The scratch buffer used in real mode code.  */
 #define GRUB_MEMORY_MACHINE_SCRATCH_ADDR	0x68000
 #define GRUB_MEMORY_MACHINE_SCRATCH_SEG	(GRUB_MEMORY_MACHINE_SCRATCH_ADDR >> 4)
-#define GRUB_MEMORY_MACHINE_SCRATCH_SIZE	0x10000
+#define GRUB_MEMORY_MACHINE_SCRATCH_SIZE	0x9000
 
 /* The real mode stack.  */
 #define GRUB_MEMORY_MACHINE_REAL_STACK	(0x2000 - 0x10)
 
 /* The size of the protect mode stack.  */
-#define GRUB_MEMORY_MACHINE_PROT_STACK_SIZE	0x8000
+#define GRUB_MEMORY_MACHINE_PROT_STACK_SIZE	0xf000
 
 /* The protected mode stack.  */
 #define GRUB_MEMORY_MACHINE_PROT_STACK	\

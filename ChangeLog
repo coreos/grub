@@ -1,5 +1,13 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/i386/pc/memory.h: Decrease
+	GRUB_MEMORY_MACHINE_SCRATCH_SIZE and increase
+	GRUB_MEMORY_MACHINE_PROT_STACK_SIZE.
+	The binary doesn't change (checked). It's more to better reflect actual
+	usage.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_open): Ensure
 	at compile time that enough of scratch size is available.
 
