@@ -727,9 +727,7 @@ if test "$target_cpu" = x86_64; then
 		      [grub_cv_cc_mcmodel=yes],
 		      [grub_cv_cc_mcmodel=no])
   ])
-  if test "x$grub_cv_cc_mcmodel" = xno; then
-    AC_MSG_ERROR([-mcmodel=large not supported. Upgrade your gcc.])
-  else
+  if test "x$grub_cv_cc_mcmodel" = xyes; then
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
   fi
 fi
