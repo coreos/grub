@@ -1,5 +1,15 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/x86_64/efi/callwrap.S: Fix stack alignment.
+	Previously we misaligned stack by 8 in startup.S and compensated
+	for it in callwrap.S. According to ABI docs (EFI and sysv amd64)
+	right behaviour is to align stack in startup.S and keep it aligned
+	in callwrap.S. startup.S part was committed few commits before. This
+	takes care of callwrap.S.
+	Reported by: Gary Lin.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/mips/startup_raw.S: Handle the case of gap between
 	.data and .bss. May happen if compiler and assembly use different
 	alignment.
