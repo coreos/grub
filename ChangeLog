@@ -1,5 +1,10 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add support for a new magic symbol _gp_disp on mips to handle PIC
+	binaries.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use $t9 for indirect calls from asm to C as PIC ABI requires.
 
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
