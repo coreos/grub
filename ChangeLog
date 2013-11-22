@@ -1,5 +1,10 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/libgcrypt/mpi/longlong.h: Use C version with mips
+	clang.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add *-xen to the list of grub-install-common platforms.
 
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
