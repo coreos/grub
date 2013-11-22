@@ -12,7 +12,6 @@ if COND_mips_loongson
 endif
 if COND_mips
   CFLAGS_PLATFORM += -mflush-func=grub_red_herring
-  CCASFLAGS_PLATFORM = -march=mips3
 endif
 if COND_sparc64_ieee1275
   CFLAGS_PLATFORM += -mno-app-regs
