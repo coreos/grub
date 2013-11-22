@@ -767,10 +767,17 @@ CFLAGS="$TARGET_CFLAGS"
 
 # Position independent executable.
 grub_CHECK_PIC
-[# Need that, because some distributions ship compilers that include
-# `-fPIC' in the default specs.
-if [ x"$pic_possible" = xyes ]; then
-  TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIC"
+[# On most platforms we don't want PIC as it only makes relocations harder
+# and code less efficient. On mips we want to have one got table per module
+# and reload $gp in every function.
+# GCC implements it using symbol __gnu_local_gp in non-PIC as well.
+# However with clang we need PIC for this reloading to happen.
+# Since default varies across dictributions use either -fPIC or -fno-PIC
+# explicitly.
+if ( test x$target_cpu = xmips || test x$target_cpu = xmipsel ) && test "x$grub_cv_cc_target_clang" = xyes ; then
+   TARGET_CFLAGS="$TARGET_CFLAGS -fPIC"
+elif [ x"$pic_possible" = xyes ]; then
+   TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIC"
 fi]
 
 CFLAGS="$TARGET_CFLAGS"
