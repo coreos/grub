@@ -421,6 +421,10 @@ void EXPORT_FUNC(grub_reboot) (void) __attribute__ ((noreturn));
 void grub_reboot (void) __attribute__ ((noreturn));
 #endif
 
+#if defined (__clang__) && !defined (GRUB_UTIL)
+void __attribute__ ((noreturn)) EXPORT_FUNC (abort) (void);
+#endif
+
 #ifdef GRUB_MACHINE_PCBIOS
 /* Halt the system, using APM if possible. If NO_APM is true, don't
  * use APM even if it is available.  */

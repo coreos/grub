@@ -1220,6 +1220,15 @@ grub_abort (void)
   grub_exit ();
 }
 
+#if defined (__clang__) && !defined (GRUB_UTIL)
+/* clang emits references to abort().  */
+void __attribute__ ((noreturn))
+abort (void)
+{
+  grub_abort ();
+}
+#endif
+
 void
 grub_fatal (const char *fmt, ...)
 {

@@ -1,5 +1,10 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	clang emits calls to abort () under some unknown conditions.
+	Export abort () when compiling with clang.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* docs/grub-dev.texi: Document stack and heap sizes.
 
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
