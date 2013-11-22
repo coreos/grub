@@ -1,5 +1,9 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use $t9 for indirect calls from asm to C as PIC ABI requires.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove -march=mips3 from TARGET_CCASFLAGS as it creates linking problem
 	when rest of GRUB is compiled for hisher stepping. Instead use
 	.set mips3/.set mips1 around cache and sync opcodes.

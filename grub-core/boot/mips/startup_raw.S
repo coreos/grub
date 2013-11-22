@@ -265,16 +265,16 @@ cmdlinedone:
 	*/
 	move $s6, $a3
 
-	lui $t0, %hi(EXT_C(grub_decompress_core))
-	addiu $t0, $t0, %lo(EXT_C(grub_decompress_core))
+	lui $t9, %hi(EXT_C(grub_decompress_core))
+	addiu $t9, $t9, %lo(EXT_C(grub_decompress_core))
 
 #ifdef GRUB_MACHINE_ARC
 	lui $sp, %hi(_start - 512)
-	jalr $t0
+	jalr $t9
 	 addiu $sp, $sp, %lo(_start - 512)
 #else
 	lui $sp, %hi(_start - 256)
-	jalr $t0
+	jalr $t9
 	 addiu $sp, $sp, %lo(_start - 256)
 #endif	
 	move $a0, $s1
