@@ -1,5 +1,9 @@
 2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/garbage-gen.c: Add missing include of sys/time.h.
+
+2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Don't add -mflush-func if it's not supported by compiler.
 
 2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
