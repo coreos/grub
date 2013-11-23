@@ -520,6 +520,21 @@ if test "x$grub_cv_cc_target_clang" = xno && test "x$target_cpu" = xi386 && test
    TARGET_CFLAGS="$TARGET_CFLAGS -mrtd -mregparm=3"
 fi
 
+# on mips redirect cache flushing function to non-existant one.
+if test "x$target_cpu" = xmips || test "x$target_cpu" = xmipsel ; then
+  AC_CACHE_CHECK([whether -mflush-func=grub_red_herring works], [grub_cv_cc_mflush_func], [
+    CFLAGS="$TARGET_CFLAGS -mflush-func=grub_red_herring -Werror"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+        [grub_cv_cc_mflush_func=yes],
+	[grub_cv_cc_mflush_func=no])
+  ])
+
+  if test "x$grub_cv_cc_mflush_func" = xyes; then
+    TARGET_CFLAGS="$TARGET_CFLAGS -mflush-func=grub_red_herring"
+  fi
+fi
+
+
 # Force no alignment to save space on i386.
 if test "x$target_cpu" = xi386; then
   AC_CACHE_CHECK([whether -falign-loops works], [grub_cv_cc_falign_loop], [

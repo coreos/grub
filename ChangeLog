@@ -1,5 +1,9 @@
 2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't add -mflush-func if it's not supported by compiler.
+
+2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Move common BIOS/coreboot memory map declarations to
 	include/grub/i386/memory_raw.h and eliminate duplicate declarations.
 

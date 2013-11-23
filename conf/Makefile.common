@@ -10,9 +10,6 @@ if COND_mips_loongson
   CFLAGS_PLATFORM += -mexplicit-relocs
   CPPFLAGS_PLATFORM = -DUSE_ASCII_FALLBACK
 endif
-if COND_mips
-  CFLAGS_PLATFORM += -mflush-func=grub_red_herring
-endif
 if COND_sparc64_ieee1275
   CFLAGS_PLATFORM += -mno-app-regs
   LDFLAGS_PLATFORM = -Wl,-melf64_sparc -mno-relax
