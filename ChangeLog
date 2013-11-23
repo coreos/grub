@@ -1,3 +1,8 @@
+2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move common BIOS/coreboot memory map declarations to
+	include/grub/i386/memory_raw.h and eliminate duplicate declarations.
+
 2013-11-22  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* Makefile.am: Add util/garbage-gen.c to EXTRA_DIST.
