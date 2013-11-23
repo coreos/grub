@@ -233,7 +233,7 @@ static struct argp_option options[] = {
       "This option is only available on BIOS target."), 2},
   {"no-nvram", OPTION_NO_NVRAM, 0, 0,
    N_("don't update the `boot-device' NVRAM variable. "
-      "This option is only available on IEEE1275 targets."), 2},
+      "This option is only available on EFI and IEEE1275 targets."), 2},
   {"skip-fs-probe",'s',0,      0,
    N_("do not probe for filesystems in DEVICE"), 0},
   {"no-bootsector", OPTION_NO_BOOTSECTOR, 0, 0,
@@ -1522,7 +1522,7 @@ main (int argc, char *argv[])
 	grub_install_copy_file (imgfile, dst, 1);
 	free (dst);
       }
-      if (!removable)
+      if (!removable && update_nvram)
 	{
 	  char * efidir_disk;
 	  int efidir_part;

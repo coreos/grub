@@ -1,3 +1,8 @@
+2013-11-23  Keshav Padram Amburay <the.ridikulus.rat@gmail.com>
+
+	* util/grub-install.c (update_nvram): Support --no-nvram flag
+	for EFI targets.
+
 2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* INSTALL: Add note about sparc64/ia64 with clang (unsupported).
