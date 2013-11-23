@@ -23,6 +23,10 @@ configuring the GRUB.
 	fail.
   Note: clang 3.4 or later works for powerpc
 	earlier versions suffer from vacopy bug (#15286)
+  Note: clang has no support for generating 64-bit sparc code and hence you
+	can't compile GRUB for sparc64 with clang
+  Note: clang has no support for ia64 and hence you can't compile GRUB
+	for ia64 with clang
 * GNU Make
 * GNU Bison 2.3 or later
 * GNU gettext 0.17 or later

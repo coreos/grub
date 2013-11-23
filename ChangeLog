@@ -1,5 +1,9 @@
 2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* INSTALL: Add note about sparc64/ia64 with clang (unsupported).
+
+2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/garbage-gen.c: Add missing include of sys/time.h.
 
 2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
