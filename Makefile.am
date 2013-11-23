@@ -73,6 +73,7 @@ CLEANFILES += build-grub-mkfont
 garbage-gen: util/garbage-gen.c
 	$(BUILD_CC) -o $@ $(BUILD_CFLAGS) $(BUILD_CPPFLAGS)  $^
 CLEANFILES += garbage-gen
+EXTRA_DIST += util/garbage-gen.c
 
 build-grub-gen-asciih: util/grub-gen-asciih.c
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall -Werror

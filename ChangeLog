@@ -1,3 +1,7 @@
+2013-11-22  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* Makefile.am: Add util/garbage-gen.c to EXTRA_DIST.
+
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* INSTALL: Document why older clang versions aren't appropriate.
