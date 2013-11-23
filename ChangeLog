@@ -1,5 +1,9 @@
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* INSTALL: Document why older clang versions aren't appropriate.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* INSTALL: Document about clang for mips.
 
 2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
