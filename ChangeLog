@@ -1,3 +1,8 @@
+2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/arc/init.c (grub_machine_get_bootlocation):
+	Add missing cast to silence warning.
+
 2013-11-23  Keshav Padram Amburay <the.ridikulus.rat@gmail.com>
 
 	* util/grub-install.c (update_nvram): Support --no-nvram flag
