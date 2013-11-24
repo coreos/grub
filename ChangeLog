@@ -1,3 +1,9 @@
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/boot/i386/pc/boot.S: Fix floppy probe. Due to missing
+	%dx restore the probe worked on non-existant drive. Reorganize the
+	code a little bit to free 2 bytes necessary for push/pop.
+
 2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/mips/arc/init.c (grub_machine_get_bootlocation):

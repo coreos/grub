@@ -35,6 +35,7 @@ probe_values:
 	.byte	36, 18, 15, 9, 0
 
 LOCAL(floppy_probe):
+	pushw	%dx
 /*
  *  Perform floppy probe.
  */
@@ -50,8 +51,8 @@ LOCAL(probe_loop):
 	movb	(%si), %cl
 
 	/* if number of sectors is 0, display error and die */
-	cmpb	$0, %cl
-	jne	1f
+	testb	%cl, %cl
+	jnz	1f
 
 /*
  * Floppy disk probe failure.
@@ -318,11 +319,12 @@ LOCAL(chs_mode):
 	int	$0x13
 	jnc	LOCAL(final_init)
 
+	popw	%dx
 	/*
 	 *  The call failed, so maybe use the floppy probe instead.
 	 */
-	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
-	jz	LOCAL(floppy_probe)
+	testb	%dl, %dl
+	jnb	LOCAL(floppy_probe)
 
 	/* Nope, we definitely have a hard disk, and we're screwed. */
 	ERR(hd_probe_error_string)
