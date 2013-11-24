@@ -1,5 +1,11 @@
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Apple assembly doesn't handle symbol arithmetic well. So instead
+	of getting addres of kernel_sector + 4 define kernel_sector_high.
+	It also makes code more readable.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	With Apple assembly in .macro environvemnt you have to use $$ instead
 	of $. So introduce new preprocessor macro MACRO_DOLLAR(x) which expands
 	to $$x on Apple and to $x on everything else.

@@ -181,7 +181,9 @@ kernel_address:
 #ifndef HYBRID_BOOT
 	. = _start + GRUB_BOOT_MACHINE_KERNEL_SECTOR
 kernel_sector:
-	.long	1, 0
+	.long	1
+kernel_sector_high:
+	.long	0
 #endif
 
 	. = _start + GRUB_BOOT_MACHINE_BOOT_DRIVE
@@ -286,7 +288,7 @@ lba_mode:
 	/* the absolute address */
 	movl	kernel_sector, %ebx
 	movl	%ebx, 8(%si)
-	movl	kernel_sector + 4, %ebx
+	movl	kernel_sector_high, %ebx
 	movl	%ebx, 12(%si)
 
 	/* the segment of buffer address */
@@ -355,7 +357,7 @@ LOCAL(final_init):
 
 setup_sectors:
 	/* load logical sector start (top half) */
-	movl	kernel_sector + 4, %eax
+	movl	kernel_sector_high, %eax
 
 	orl	%eax, %eax
 	jnz	LOCAL(geometry_error)
@@ -507,7 +509,9 @@ LOCAL(message):
 #ifdef HYBRID_BOOT
 	. = _start + 0x1b0
 kernel_sector:
-	.long	1, 0
+	.long	1
+kernel_sector_high:
+	.long	0
 #endif
 	. = _start + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC
 nt_magic:
