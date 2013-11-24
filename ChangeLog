@@ -1,5 +1,10 @@
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.am: Use correct TARGET_OBJCONV rather than
+	OBJCONV.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gdb/i386/machdep.S: Use xorl %eax, %eax on both Apple
 	and non-Apple. This instruction is shorter and faster,
 	so no reason not to use it on both.
