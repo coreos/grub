@@ -1,5 +1,10 @@
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Apple assembly doesn't handle symbol arithmetic well. So define an
+	offset symbol in boot.S and use it.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Apple assembly doesn't handle symbol arithmetic well. So instead
 	of getting addres of kernel_sector + 4 define kernel_sector_high.
 	It also makes code more readable.

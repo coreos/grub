@@ -31,7 +31,7 @@
 	.macro floppy
 part_start:
 
-probe_values:
+LOCAL(probe_values):
 	.byte	36, 18, 15, 9, 0
 
 LOCAL(floppy_probe):
@@ -39,8 +39,12 @@ LOCAL(floppy_probe):
 /*
  *  Perform floppy probe.
  */
-
-	movw	MACRO_DOLLAR(probe_values) - 1, %si
+#ifdef __APPLE__
+	LOCAL(probe_values_minus_one) = LOCAL(probe_values) - 1
+	movw	MACRO_DOLLAR(LOCAL(probe_values_minus_one)), %si
+#else
+	movw	MACRO_DOLLAR(LOCAL(probe_values)) - 1, %si
+#endif
 
 LOCAL(probe_loop):
 	/* reset floppy controller INT 13h AH=0 */
