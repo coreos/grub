@@ -71,11 +71,7 @@ VARIABLE(grub_gdb_stack)
 #define REG \reg
 #define NDX \ndx
 #endif
-#ifdef __APPLE__
 	xorl %eax, %eax
-#else
-	movl $0, %eax
-#endif
 	movw REG, EXT_C(grub_gdb_regs)+(NDX * 4)
 	movw %ax, EXT_C(grub_gdb_regs)+(NDX * 4 + 2)
 	movl EXT_C(grub_gdb_regs)+(EAX * 4), %eax

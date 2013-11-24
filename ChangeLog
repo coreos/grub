@@ -1,5 +1,11 @@
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/gdb/i386/machdep.S: Use xorl %eax, %eax on both Apple
+	and non-Apple. This instruction is shorter and faster,
+	so no reason not to use it on both.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/reed_solomon.c: Use section _text, _text rather than
 	.text when compiling for Apple.
 
