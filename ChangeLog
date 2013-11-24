@@ -1,5 +1,11 @@
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	With Apple assembly in .macro environvemnt you have to use $$ instead
+	of $. So introduce new preprocessor macro MACRO_DOLLAR(x) which expands
+	to $$x on Apple and to $x on everything else.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.am: Use correct TARGET_OBJCONV rather than
 	OBJCONV.
 

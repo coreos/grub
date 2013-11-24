@@ -186,11 +186,7 @@ VARIABLE(grub_gdb_stack)
 	.text
 1:	
 	.if EC
-#ifdef __APPLE__
-		add $$4, %esp
-#else
-		add $4, %esp
-#endif
+		add MACRO_DOLLAR(4), %esp
 	.endif
 
 	save_context

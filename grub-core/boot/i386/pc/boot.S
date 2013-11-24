@@ -40,12 +40,12 @@ LOCAL(floppy_probe):
  *  Perform floppy probe.
  */
 
-	movw	$probe_values - 1, %si
+	movw	MACRO_DOLLAR(probe_values) - 1, %si
 
 LOCAL(probe_loop):
 	/* reset floppy controller INT 13h AH=0 */
 	xorw	%ax, %ax
-	int	$0x13
+	int	MACRO_DOLLAR(0x13)
 
 	incw	%si
 	movb	(%si), %cl
@@ -65,20 +65,20 @@ fd_probe_error_string:	.asciz "Floppy"
 
 1:
 	/* perform read */
-	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
+	movw	MACRO_DOLLAR(GRUB_BOOT_MACHINE_BUFFER_SEG), %bx
 	movw	%bx, %es
 	xorw	%bx, %bx
-	movw	$0x201, %ax
-	movb	$0, %ch
-	movb	$0, %dh
-	int	$0x13
+	movw	MACRO_DOLLAR(0x201), %ax
+	movb	MACRO_DOLLAR(0), %ch
+	movb	MACRO_DOLLAR(0), %dh
+	int	MACRO_DOLLAR(0x13)
 
 	/* if error, jump to "LOCAL(probe_loop)" */
 	jc	LOCAL(probe_loop)
 
 	/* %cl is already the correct value! */
-	movb	$1, %dh
-	movb	$79, %ch
+	movb	MACRO_DOLLAR(1), %dh
+	movb	MACRO_DOLLAR(79), %ch
 
 	jmp	LOCAL(final_init)
 	.endm
