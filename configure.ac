@@ -654,6 +654,30 @@ if test x"$efiemu_excuse" = x ; then
      efiemu_excuse="cannot compile with -m64 -mcmodel=large -mno-red-zone -nostdlib"
   fi
 fi
+if test x"$efiemu_excuse" = x ; then
+  AC_CACHE_CHECK([for efiemu64 linking format], [grub_cv_target_cc_efiemu64_link_format], [
+    grub_cv_target_cc_efiemu64_link_format=unknown
+    for format in -melf_x86_64 -melf_x86_64_fbsd -melf_x86_64_obsd -melf_x86_64_haiku -arch,x86_64; do
+      CFLAGS="-m64 -nostdlib -O2 -mcmodel=large -mno-red-zone"
+      LDFLAGS="-m64 -Wl,$format -nostdlib -static"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+      asm (".globl start; start:");
+      asm (".globl _start; _start:");
+      asm (".globl __start; __start:");
+      void __main (void);
+      void __main (void) {}
+      ]], [[]])], [flag=1], [flag=0])
+      if test x"$flag" = x1; then
+        grub_cv_target_cc_efiemu64_link_format="$format"
+	break;
+      fi
+    done])
+  if test x"$grub_cv_target_cc_efiemu64_link_format" = xunknown; then
+    efiemu_excuse="no suitable link format for efiemu64 found"
+  else
+    EFIEMU64_LINK_FORMAT="-Wl,$grub_cv_target_cc_efiemu64_link_format"
+  fi
+fi
 if test x"$enable_efiemu" = xyes && test x"$efiemu_excuse" != x ; then
   AC_MSG_ERROR([efiemu runtime was explicitly requested but can't be compiled])
 fi
@@ -663,11 +687,12 @@ else
 enable_efiemu=no
 fi
 AC_SUBST([enable_efiemu])
+AC_SUBST([EFIEMU64_LINK_FORMAT])
 
 CFLAGS="$TARGET_CFLAGS"
 
 if test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
-  AC_CACHE_CHECK([for linking format], [grub_cv_target_cc_link_format], [
+  AC_CACHE_CHECK([for target linking format], [grub_cv_target_cc_link_format], [
     grub_cv_target_cc_link_format=unknown
     for format in -melf_${target_cpu} -melf_${target_cpu}_fbsd -melf_${target_cpu}_obsd -melf_${target_cpu}_haiku -m${target_cpu}pe -arch,${target_cpu}; do
       if test x${target_cpu} != xi386 && test x$format = x${target_cpu}pe; then
@@ -681,7 +706,7 @@ if test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
       asm (".globl __start; __start:");
       void __main (void);
       void __main (void) {}
-      ]], [[]])], [flag=1], [])
+      ]], [[]])], [flag=1], [flag=0])
       if test x"$flag" = x1; then
         grub_cv_target_cc_link_format="$format"
 	break;
