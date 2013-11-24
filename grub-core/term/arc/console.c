@@ -114,8 +114,8 @@ check_is_serial (void)
      isn't critical.
   */
   if (GRUB_ARC_SYSTEM_PARAMETER_BLOCK->firmware_vector_length
-      >= ((char *) (&GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable + 1)
-	  - (char *) GRUB_ARC_FIRMWARE_VECTOR)
+      >= (unsigned) ((char *) (&GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable + 1)
+		     - (char *) GRUB_ARC_FIRMWARE_VECTOR)
       && GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable)
     consout = GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable ("ConsoleOut");
   if (!consout)
@@ -136,8 +136,8 @@ set_console_dimensions (void)
     }
 
   if (GRUB_ARC_SYSTEM_PARAMETER_BLOCK->firmware_vector_length
-      >= ((char *) (&GRUB_ARC_FIRMWARE_VECTOR->getdisplaystatus + 1)
-	  - (char *) GRUB_ARC_FIRMWARE_VECTOR)
+      >= (unsigned) ((char *) (&GRUB_ARC_FIRMWARE_VECTOR->getdisplaystatus + 1)
+		     - (char *) GRUB_ARC_FIRMWARE_VECTOR)
       && GRUB_ARC_FIRMWARE_VECTOR->getdisplaystatus)
     info = GRUB_ARC_FIRMWARE_VECTOR->getdisplaystatus (GRUB_ARC_STDOUT);
   if (info)
