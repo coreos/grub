@@ -1,5 +1,10 @@
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/reed_solomon.c: Use section _text, _text rather than
+	.text when compiling for Apple.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/arc/console.c: Add missing cast to silence warning.
 
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
