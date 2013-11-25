@@ -432,7 +432,7 @@ def kernel(platform):
    else cp $< $@; fi""",
 """if test x$(TARGET_APPLE_LINKER) = x1; then \
   $(TARGET_STRIP) -S -x $(""" + cname() + """) -o $@.bin $<; \
-  $(TARGET_OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -ed2022 -wd1106 -nu -nd $@.bin $@; \
+  $(TARGET_OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -ed2022 -ed2016 -wd1106 -nu -nd $@.bin $@; \
 else """  + "$(TARGET_STRIP) $(" + cname() + "_STRIPFLAGS) -o $@ $<; \
 fi"""))
     return r
