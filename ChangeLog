@@ -1,5 +1,11 @@
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/pc/startup.S [__APPLE__]: Create _edata by placing
+	an object after data. While it doesn't seem right solution, it
+	works well enough and OSX isn't main compilation platform.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gentpl.py: Add -ed2016 in order to make objconv accept our binary.
 	While it doesn't seem right solution, it works well enough and
 	OSX isn't main compilation platform.
