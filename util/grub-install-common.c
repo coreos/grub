@@ -58,6 +58,8 @@ grub_install_help_filter (int key, const char *text,
     case GRUB_INSTALL_OPTIONS_DIRECTORY:
     case GRUB_INSTALL_OPTIONS_DIRECTORY2:
       return xasprintf(text, grub_util_get_pkglibdir ());      
+    case GRUB_INSTALL_OPTIONS_LOCALE_DIRECTORY:
+      return xasprintf(text, grub_util_get_localedir ());
     default:
       return (char *) text;
     }
@@ -217,6 +219,7 @@ struct install_list install_locales = { 1, 0, 0, 0 };
 struct install_list install_fonts = { 1, 0, 0, 0 };
 struct install_list install_themes = { 1, 0, 0, 0 };
 char *grub_install_source_directory = NULL;
+char *grub_install_locale_directory = NULL;
 
 void
 grub_install_push_module (const char *val)
@@ -312,6 +315,10 @@ grub_install_parse (int key, char *arg)
     case GRUB_INSTALL_OPTIONS_DIRECTORY2:
       free (grub_install_source_directory);
       grub_install_source_directory = xstrdup (arg);
+      return 1;
+    case GRUB_INSTALL_OPTIONS_LOCALE_DIRECTORY:
+      free (grub_install_locale_directory);
+      grub_install_locale_directory = xstrdup (arg);
       return 1;
     case GRUB_INSTALL_OPTIONS_INSTALL_MODULES:
       handle_install_list (&install_modules, arg, 0);
@@ -551,12 +558,21 @@ copy_all (const char *srcd,
   grub_util_fd_closedir (d);
 }
 
+static const char *
+get_localedir (void)
+{
+  if (grub_install_locale_directory)
+    return grub_install_locale_directory;
+  else
+    return grub_util_get_localedir ();
+}
+
 static void
 copy_locales (const char *dstd)
 {
   grub_util_fd_dir_t d;
   grub_util_fd_dirent_t de;
-  const char *locale_dir = grub_util_get_localedir ();
+  const char *locale_dir = get_localedir ();
 
   d = grub_util_fd_opendir (locale_dir);
   if (!d)
@@ -570,13 +586,26 @@ copy_locales (const char *dstd)
     {
       char *srcf;
       char *dstf;
+      char *ext;
       if (strcmp (de->d_name, ".") == 0)
 	continue;
       if (strcmp (de->d_name, "..") == 0)
 	continue;
-      srcf = grub_util_path_concat_ext (4, locale_dir, de->d_name,
-					"LC_MESSAGES", PACKAGE, ".mo");
-      dstf = grub_util_path_concat_ext (2, dstd, de->d_name, ".mo");
+      ext = grub_strrchr (de->d_name, '.');
+      if (ext && (grub_strcmp (ext, ".mo") == 0
+		  || grub_strcmp (ext, ".gmo") == 0))
+	{
+	  srcf = grub_util_path_concat (2, locale_dir, de->d_name);
+	  dstf = grub_util_path_concat (2, dstd, de->d_name);
+	  ext = grub_strrchr (dstf, '.');
+	  grub_strcpy (ext, ".mo");
+	}
+      else
+	{
+	  srcf = grub_util_path_concat_ext (4, locale_dir, de->d_name,
+					    "LC_MESSAGES", PACKAGE, ".mo");
+	  dstf = grub_util_path_concat_ext (2, dstd, de->d_name, ".mo");
+	}
       grub_install_compress_file (srcf, dstf, 0);
       free (srcf);
       free (dstf);
@@ -708,7 +737,7 @@ grub_install_copy_files (const char *src,
     }
   else
     {
-      const char *locale_dir = grub_util_get_localedir ();
+      const char *locale_dir = get_localedir ();
 
       for (i = 0; i < install_locales.n_entries; i++)
 	{
