@@ -1,3 +1,7 @@
+2013-11-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/genmoddep.awk: Use more portable && rather than and.
+
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/i386/pc/startup.S [__APPLE__]: Create _edata by placing
