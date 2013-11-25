@@ -1,3 +1,8 @@
+2013-11-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mknetdir.c: Look for platform directories under pkglibdir
+	and not pkgdatadir.
+
 2013-11-25  Colin Watson  <cjwatson@ubuntu.com>
 2013-11-25  Vladimir Serbinenko  <phcoder@gmail.com>
 

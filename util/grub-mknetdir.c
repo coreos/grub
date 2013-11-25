@@ -168,10 +168,11 @@ process_input_dir (const char *input_dir, enum grub_install_plat platform)
 int
 main (int argc, char *argv[])
 {
-  const char *pkgdatadir = grub_util_get_pkgdatadir ();
+  const char *pkglibdir;
 
   grub_util_host_init (&argc, &argv);
   rootdir = xstrdup ("/srv/tftp");
+  pkglibdir = grub_util_get_pkglibdir ();
 
   subdir = grub_util_path_concat (2, GRUB_BOOT_DIR_NAME, GRUB_DIR_NAME);
 
@@ -191,8 +192,10 @@ main (int argc, char *argv[])
       for (plat = 0; plat < GRUB_INSTALL_PLATFORM_MAX; plat++)
 	if (targets[plat].mkimage_target)
 	  {
-	    char *platdir = grub_util_path_concat (2, pkgdatadir,
+	    char *platdir = grub_util_path_concat (2, pkglibdir,
 						   grub_install_get_platform_name (plat));
+
+	    grub_util_info ("Looking for `%s'", platdir);
 
 	    if (!grub_util_is_directory (platdir))
 	      {
